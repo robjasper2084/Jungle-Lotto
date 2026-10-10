@@ -1,13 +1,14 @@
+import type {SceneryWorld} from './sceneryWorld.ts';
 import * as T from 'three';
 import {GLTFLoader} from './compressedGLTFLoader.ts';
 import {VALADE,inValadeBeach} from './valadeSite.ts';
-import {heightAt,type DetroitWorld} from './world.ts';
+import {heightAt} from './world.ts';
 import {surfaceUV} from './environmentMaterials.ts';
 import {makeRoadSign} from './roadSigns.ts';
 
 /** Original Blender reconstruction. Mapped footprint and inlet geometry; visual
  * estimates for furniture/finishes. No photography is used as geometry texture. */
-export async function buildValade(_scene:T.Scene,world:DetroitWorld,groupAt:(x:number,z:number)=>T.Group,skins:Record<string,T.MeshStandardMaterial>){
+export async function buildValade(_scene:T.Scene,world:SceneryWorld,groupAt:(x:number,z:number)=>T.Group,skins:Record<string,T.MeshStandardMaterial>){
  const names=['valade-shed','valade-play-towers','valade-barge','valade-chair','valade-musical-garden','valade-picnic-table','valade-bbq'];
  const assets=await Promise.all(names.map(n=>new GLTFLoader().loadAsync('/exports/valade/'+n+'.glb')));
  assets.forEach(a=>a.scene.traverse(o=>{if((o as T.Mesh).isMesh)o.castShadow=o.receiveShadow=true;}));

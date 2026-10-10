@@ -1,6 +1,7 @@
+import type {SceneryWorld} from './sceneryWorld.ts';
 import * as T from 'three';
 import {cutPoint,heightAt} from './world.ts';
-import type {DetroitWorld,Solid} from './world.ts';
+import type {Solid} from './world.ts';
 import {GEO,nearestRamp} from './geo-profile.ts';
 
 /** Authored game advertising; these are not claims about real Detroit installations. */
@@ -29,7 +30,7 @@ function panelGeometry(w:number,h:number){
  // Parent map scene reflects X. Correct the printed artwork once at this boundary.
  for(let i=0;i<uv.count;i++)uv.setX(i,1-uv.getX(i));return g;
 }
-export async function buildRouteArt(world:DetroitWorld,groupAt:(x:number,z:number)=>T.Group){
+export async function buildRouteArt(world:SceneryWorld,groupAt:(x:number,z:number)=>T.Group){
  const urls=[
   new URL('../../art/route-campaign/lottomind-refined.png',import.meta.url).href,
   new URL('../../art/route-campaign/gothtechnology-refined.png',import.meta.url).href,

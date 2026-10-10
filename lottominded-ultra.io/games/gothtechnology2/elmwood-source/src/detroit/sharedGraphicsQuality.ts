@@ -1,3 +1,4 @@
+import {makeRenderResize} from './renderResize.ts';
 import * as T from 'three';
 import {budgetPixelRatio,makeTextureBudget} from './renderBudget.ts';
 export type GraphicsChoice='auto'|'low'|'balanced'|'high'|'ultra';
@@ -11,12 +12,14 @@ export function parseGraphicsTuning(raw:string|null):Partial<GraphicsTuning>{
  }catch{}return out;
 }
 export const GRAPHICS_PRESETS={low:{label:'Smooth · phones / weak systems',pixelRatio:.8,minRatio:.5,shadows:0,distance:180,fps:30,textureSize:512,maxPixels:600000,anisotropy:1},balanced:{label:'Balanced',pixelRatio:1.25,minRatio:1,shadows:1024,distance:300,fps:60,textureSize:1024,maxPixels:1800000,anisotropy:4},high:{label:'HD · high detail',pixelRatio:2,minRatio:1.5,shadows:2048,distance:460,fps:60,textureSize:2048,maxPixels:6000000,anisotropy:8},ultra:{label:'Ultra · maximum detail',pixelRatio:2,minRatio:1.5,shadows:4096,distance:600,fps:60,textureSize:4096,maxPixels:8000000,anisotropy:16}} as const;
-export function antialiasForDevice(aa:string,cores=4,memory?:number,mobile=false){return aa==='on'||aa!=='off'&&(mobile?cores>=8&&(memory??0)>=6:cores>=4&&(memory===undefined||memory>=4));}
+export function antialiasForDevice(aa:string,cores=4,memory?:number,mobile=false){return aa==='on'||aa!=='off'&&!mobile&&cores>=4&&(memory===undefined||memory>=4);}
 export function startupAntialias(){let aa='auto';try{aa=parseGraphicsTuning(localStorage.getItem(TUNING_KEY)).aa??'auto';}catch{}const mobile=/Android|iPhone|iPad|Mobile|OculusBrowser/i.test(navigator.userAgent)||navigator.maxTouchPoints>1&&/Macintosh/.test(navigator.userAgent);return antialiasForDevice(aa,navigator.hardwareConcurrency||4,(navigator as Navigator&{deviceMemory?:number}).deviceMemory,mobile);}
 export function resolveGraphics(value:string,cores=4,memory?:number,mobile=false,gpu=''){
  if(value==='low'||value==='balanced'||value==='high'||value==='ultra')return value;
  if(/swiftshader|llvmpipe|software|microsoft basic|mali-4|adreno [23]/i.test(gpu)||cores<=2||memory!==undefined&&memory<=2)return 'low';
- if(mobile)return cores>=8&&(memory??0)>=6?'high':cores>=6?'balanced':'low';
+ // CPU count and RAM do not establish sustained mobile GPU/thermal capacity.
+ // Start these large maps at Smooth; explicit quality choices above still win.
+ if(mobile)return 'low';
  if(memory!==undefined&&memory<=4)return cores<=4?'low':'balanced';
  return cores>=6||/nvidia|geforce|radeon|intel.*arc|apple m[2-9]/i.test(gpu)?'high':'balanced';
 }
@@ -34,7 +37,7 @@ export function createGraphicsQuality(renderer:T.WebGLRenderer,scene:T.Scene,can
  const tuningFields:{key:keyof GraphicsTuning,input:HTMLSelectElement}[]=[],restartButtons:HTMLButtonElement[]=[];
  const budgetTextures=makeTextureBudget();
  let resolutionScale=1,adaptiveDetail=1;
- const resize=()=>{const base=Math.max(devicePixelRatio,mobile?.5:current.minRatio)*(tuning.resolution??1);renderer.setPixelRatio(budgetPixelRatio(base,current.pixelRatio,innerWidth,innerHeight,current.maxPixels)*resolutionScale);renderer.setSize(innerWidth,innerHeight);canvas.dataset.pixelRatio=String(renderer.getPixelRatio());};
+ const resizeTarget=makeRenderResize(renderer);const resize=()=>{const base=Math.max(devicePixelRatio,mobile?.5:current.minRatio)*(tuning.resolution??1),ratio=budgetPixelRatio(base,current.pixelRatio,innerWidth,innerHeight,current.maxPixels)*resolutionScale;resizeTarget(innerWidth,innerHeight,ratio);canvas.dataset.pixelRatio=String(renderer.getPixelRatio());};
  function apply(){current=preset();if(choice==='auto'){current.distance=Math.max(140,Math.round(current.distance*adaptiveDetail));if(adaptiveDetail<.8)current.shadows=Math.min(current.shadows,1024);if(adaptiveDetail<.7)current.shadows=0;}resize();renderer.shadowMap.enabled=current.shadows>0;
   scene.traverse(o=>{const light=o as T.DirectionalLight;if(light.isLight&&light.shadow){if(!originalShadows.has(light))originalShadows.set(light,light.castShadow);light.castShadow=!!current.shadows&&!!originalShadows.get(light);const size=current.shadows||512;if(light.shadow.mapSize.x!==size){light.shadow.mapSize.set(size,size);light.shadow.map?.dispose();light.shadow.map=null;}}
   });budgetTextures(scene,current.textureSize);

@@ -4,12 +4,12 @@ import {budgetPixelRatio} from './renderBudget.ts';
 import {GRAPHICS_PRESETS,resolveGraphics,antialiasForDevice,parseGraphicsTuning} from './graphicsQuality.ts';
 import {FrameSchedule} from './frameSchedule.ts';
 import {CONTROL_IDS,defaultTouchPosition,controlRect} from './touchLayout.ts';
-test('Automatic uses High on capable desktops and lighter budgets on phones or weak hardware',()=>{
- assert.equal(resolveGraphics('auto'),'balanced');assert.equal(resolveGraphics('auto',8,4),'balanced');assert.equal(resolveGraphics('auto',8,8),'high');assert.equal(resolveGraphics('auto',12,undefined),'high');assert.equal(resolveGraphics('auto',4,4),'low');assert.equal(resolveGraphics('auto',12,8,false,'SwiftShader'),'low');assert.equal(resolveGraphics('auto',6,undefined,true),'balanced');assert.equal(resolveGraphics('auto',8,8,true),'high');assert.equal(resolveGraphics('auto',4,4,true),'low');assert.equal(resolveGraphics('high',2,2),'high');assert.equal(resolveGraphics('ultra',2,2),'ultra');
+test('Automatic uses High on capable desktops and Smooth on phones without changing manual preferences',()=>{
+ assert.equal(resolveGraphics('auto'),'balanced');assert.equal(resolveGraphics('auto',8,4),'balanced');assert.equal(resolveGraphics('auto',8,8),'high');assert.equal(resolveGraphics('auto',12,undefined),'high');assert.equal(resolveGraphics('auto',4,4),'low');assert.equal(resolveGraphics('auto',12,8,false,'SwiftShader'),'low');assert.equal(resolveGraphics('auto',6,undefined,true),'low');assert.equal(resolveGraphics('auto',8,8,true),'low');assert.equal(resolveGraphics('auto',4,4,true),'low');assert.equal(resolveGraphics('high',2,2,true),'high');assert.equal(resolveGraphics('ultra',2,2),'ultra');
  assert.equal(GRAPHICS_PRESETS.low.shadows,0);assert.equal(GRAPHICS_PRESETS.low.fps,30);
 });
-test('automatic antialiasing enables capable desktops and high-end mobiles while manual choices win',()=>{
- assert.equal(antialiasForDevice('auto',12,undefined),true);assert.equal(antialiasForDevice('auto',2,2),false);assert.equal(antialiasForDevice('auto',8,8,true),true);assert.equal(antialiasForDevice('auto',4,4,true),false);assert.equal(antialiasForDevice('off',16,16),false);assert.equal(antialiasForDevice('on',2,2,true),true);
+test('automatic antialiasing avoids mobile MSAA cost while manual choices win',()=>{
+ assert.equal(antialiasForDevice('auto',12,undefined),true);assert.equal(antialiasForDevice('auto',2,2),false);assert.equal(antialiasForDevice('auto',8,8,true),false);assert.equal(antialiasForDevice('auto',4,4,true),false);assert.equal(antialiasForDevice('off',16,16),false);assert.equal(antialiasForDevice('on',2,2,true),true);
 });
 test('saved graphics controls reject corrupted or unsupported values',()=>{
  assert.deepEqual(parseGraphicsTuning('{"fps":120,"shadows":4096,"aa":"on","resolution":1.25}'),{resolution:1.25,fps:120,shadows:4096,aa:'on'});

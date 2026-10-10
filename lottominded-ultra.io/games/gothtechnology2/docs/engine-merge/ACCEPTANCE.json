@@ -1,0 +1,1336 @@
+{
+  "recordedAt": "2026-10-10T01:42:56.339Z",
+  "scope": "CORE_RELEASE",
+  "overall": "IN PROGRESS — NOT RELEASE ACCEPTED",
+  "sixHumanTest": "PENDING BY USER REQUEST",
+  "note": "Evidence is local unless expressly stated. Shared SDK tests do not establish human, external-network or physical-device acceptance. Proof package results remain distinct.",
+  "entries": [
+    {
+      "id": "P01",
+      "status": "PASS",
+      "result": "Pinned input header and MIT license verified against upstream Git blobs.",
+      "evidence": [
+        "evidence/provided-source-verification.log",
+        "evidence/source-preflight.json"
+      ],
+      "action": "node scripts/verify-source.mjs in supplied-kit",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Shared supplied proof / selected integration",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "P02",
+      "status": "PASS",
+      "result": "Supplied C++ native program exercised all 6 x 64 input channels.",
+      "evidence": [
+        "evidence/provided-native.log"
+      ],
+      "action": "preflight/provided-native.ps1",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Shared supplied proof / selected integration",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "P03",
+      "status": "PARTIAL",
+      "result": "Local supplied and expanded native AddressSanitizer passed; expanded Wasm UBSan passed. Preparation-environment native UBSan results are not local results.",
+      "evidence": [
+        "evidence/provided-native.log",
+        "evidence/integration-native.log",
+        "evidence/integration-wasm-ubsan.log"
+      ],
+      "action": "preflight/provided-native.ps1; integration-native.ps1; integration-wasm-sanitizer.ps1",
+      "blocker": "Native UBSan / CTest not executed with installed toolchain.",
+      "next": "Run supported native Clang UBSan and CTest when that toolchain is available; keep Wasm and native outcomes separate.",
+      "target": "Shared supplied proof / selected integration",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "P04",
+      "status": "PASS",
+      "result": "Unity-installed full Emscripten compiled the unchanged actual upstream input header; selected target only.",
+      "evidence": [
+        "evidence/wasm-probe.log",
+        "evidence/integration-build.log"
+      ],
+      "action": "preflight/wasm-probe.ps1; integration/build.ps1",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Shared supplied proof / selected integration",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "P05",
+      "status": "PASS",
+      "result": "14 supplied Wasm tests passed in this local environment.",
+      "evidence": [
+        "evidence/provided-wasm-tests.log"
+      ],
+      "action": "node --test tests/wasm.test.mjs in supplied-kit",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Shared supplied proof / selected integration",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "P06",
+      "status": "PASS",
+      "result": "Supplied TypeScript adapter passes strict compilation with TypeScript 5.9.3; no files emitted into pristine kit.",
+      "evidence": [
+        "evidence/provided-typescript.log"
+      ],
+      "action": "node swoop-source/node_modules/typescript/bin/tsc -p engine/breadflowerdos/supplied-kit/tsconfig.json --noEmit",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Shared supplied proof / selected integration",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "P07",
+      "status": "NOT TESTED",
+      "result": "Complete upstream engine is not built or advertised as working. Selected input component and original extensions are built.",
+      "evidence": [
+        "UPSTREAM_AUDIT.md",
+        "evidence/event-manager-wasm-portability.log"
+      ],
+      "action": "Audit full pinned source and compile selected EventManager portability probe",
+      "blocker": "Full upstream includes incomplete facilities and incompatible layout assertions.",
+      "next": "Keep upstream immutable; evaluate full build separately. Do not suppress failing layout assertions.",
+      "target": "Shared supplied proof / selected integration",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "P08",
+      "status": "PARTIAL",
+      "result": "Post-integration desktop browser gameplay observed separately for both real games. The starter itself supplied no gameplay. Physical devices untested.",
+      "evidence": [
+        "evidence/browser-input.json",
+        "evidence/swoop-engine-current.json",
+        "evidence/elmwood-engine-round.json"
+      ],
+      "action": "Run actual staged packages and inspect compiled engine instrumentation",
+      "blocker": "No physical iPad/Android or controller session.",
+      "next": "Follow G09 per product.",
+      "target": "Shared supplied proof / selected integration",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "P09",
+      "status": "PASS — LOCAL AUTOMATED",
+      "result": "Expanded integration has six independent localhost SDK clients; the original starter has no network service.",
+      "evidence": [
+        "evidence/engine-network.log",
+        "../../love-tag-server/evidence/engine-royale-local-20261009.json"
+      ],
+      "action": "node tests/engine-royale-online.mjs in love-tag-server",
+      "blocker": "No six-human or hosted-internet inference.",
+      "next": "N01 remains pending at the user's explicit request.",
+      "target": "Shared supplied proof / selected integration",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "I01",
+      "status": "PASS",
+      "result": "Both actual source projects and linked original RideCore resolved; Elmwood is its own elmwood.html package.",
+      "evidence": [
+        "evidence/source-preflight.json",
+        "PROVENANCE.md"
+      ],
+      "action": "preflight/source-preflight.mjs",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "I02",
+      "status": "PASS",
+      "result": "Complete pinned upstream reference, immutable supplied kit, MIT notice and clearly attributed original integration are recorded.",
+      "evidence": [
+        "PROVENANCE.md",
+        "UPSTREAM_AUDIT.md",
+        "../../engine/breadflowerdos/UPSTREAM_SOURCE.json"
+      ],
+      "action": "Verify upstream manifests and staged license copies",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "I03",
+      "status": "PASS",
+      "result": "Selected component success and full-engine non-build are explicitly distinguished.",
+      "evidence": [
+        "UPSTREAM_AUDIT.md",
+        "evidence/wasm-preflight-status.json"
+      ],
+      "action": "Review component compile and portability logs",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "I04",
+      "status": "PASS",
+      "result": "Swoop's real controller routes existing physical controls through compiled PlayerInput and advances the original ride simulation.",
+      "evidence": [
+        "evidence/browser-input.json",
+        "evidence/swoop-engine-gameplay.jpg",
+        "evidence/swoop-engine-current.json"
+      ],
+      "action": "Start Swoop free ride with engine=breadflower; hold W; inspect engineInputFrames and HUD",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "I05",
+      "status": "N/A — OTHER PRODUCT",
+      "result": "See Elmwood I05; Swoop's actual controller is I04.",
+      "evidence": [
+        "evidence/browser-input.json",
+        "evidence/elmwood-engine-gameplay.jpg",
+        "evidence/elmwood-engine-round.json"
+      ],
+      "action": "Start actual elmwood.html with engine=breadflower; hold W; inspect engineInputFrames and HUD",
+      "blocker": "",
+      "next": "Use the other product's separate record.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "I06",
+      "status": "PARTIAL",
+      "result": "Compiled aim and steering channels are isolated by tests; browser keyboard movement and fire pass.",
+      "evidence": [
+        "evidence/engine-royale-tests.log",
+        "evidence/swoop-engine-current.json",
+        "evidence/elmwood-engine-round.json"
+      ],
+      "action": "Run channel isolation test and keyboard gameplay",
+      "blocker": "Physical multi-touch/controller simultaneous aim and steering not exercised.",
+      "next": "Run independent finger ownership, aim, fire and steering on actual touch and gamepad devices.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "I07",
+      "status": "PASS",
+      "result": "C++ rules beyond input own ammunition, damage, shield, loot, field, elimination and results in real practice and server sessions.",
+      "evidence": [
+        "evidence/engine-royale-tests.log",
+        "evidence/engine-network-round.json",
+        "OWNERSHIP.md"
+      ],
+      "action": "Run engine unit/replay suite and full socket round",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "I08",
+      "status": "PASS",
+      "result": "ABI is versioned and validated. The original EventManager assertion fails visibly (288 versus 776); it was not suppressed or represented as usable.",
+      "evidence": [
+        "evidence/event-manager-wasm-portability.log",
+        "UPSTREAM_AUDIT.md"
+      ],
+      "action": "preflight/wasm-probe.ps1",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "I09",
+      "status": "PARTIAL",
+      "result": "Both normal games run and accept movement with the engine gate off; no forced six-slot rules in exploration.",
+      "evidence": [
+        "evidence/swoop-gate-off.json",
+        "evidence/elmwood-gate-off.json"
+      ],
+      "action": "Remove query flag; launch each actual product; ride",
+      "blocker": "Complete before/after save/settings comparisons still untested.",
+      "next": "Compare existing profiles, audio, camera, input and saved progress with gate both off and on.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "I10",
+      "status": "PARTIAL",
+      "result": "Both return links preserve the originating product and optional engine gate; source clears held inputs on leave/focus/menu.",
+      "evidence": [
+        "evidence/elmwood-engine-round.json",
+        "OWNERSHIP.md"
+      ],
+      "action": "Use each menu entry and return-menu link in browser",
+      "blocker": "All pointer/focus/gamepad reconnect cases and preference restoration not yet exercised.",
+      "next": "Run the focus/device/rearm matrix and compare saved preferences.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "I11",
+      "status": "PARTIAL",
+      "result": "Injected corrupt Wasm produces a visible hash-error alert while normal riding remains usable in both games.",
+      "evidence": [
+        "evidence/swoop-engine-failure.jpg",
+        "evidence/elmwood-engine-failure.jpg"
+      ],
+      "action": "Run preflight/failure-server.mjs on 4192 and ride both routes",
+      "blocker": "Missing file and blocked JS variants not separately executed.",
+      "next": "Extend fault server to explicit 404/blocked-script cases and verify no silent engine-mode fallback.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "I12",
+      "status": "PARTIAL",
+      "result": "Feature gate is outside normal mode capacities; legacy Royale suite passes. Other chat's Tag checks are not counted as this engine acceptance.",
+      "evidence": [
+        "evidence/legacy-royale-tests.log",
+        "OWNERSHIP.md"
+      ],
+      "action": "Run legacy Royale with gate off; inspect normal adapters",
+      "blocker": "Full community, split-screen and XR interaction matrix untested.",
+      "next": "Run existing mode regressions independently for each product.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "A01",
+      "status": "PASS",
+      "result": "Existing loops own scheduling; RideCore moves each controller in two substeps; only one engine or legacy rule step runs.",
+      "evidence": [
+        "OWNERSHIP.md",
+        "evidence/engine-royale-tests.log",
+        "evidence/server-clock-tests.log"
+      ],
+      "action": "Inspect authoritative pipeline; replay and bounded-clock tests",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "A02",
+      "status": "PASS",
+      "result": "Independent Wasm instances, generation handles, slot/context isolation and disposal are exercised.",
+      "evidence": [
+        "evidence/engine-royale-tests.log",
+        "evidence/integration-native.log"
+      ],
+      "action": "Run isolation and native lifetime tests",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "A03",
+      "status": "PASS",
+      "result": "Whole rules plus host queues, AI and movement snapshot replay is identical; failed restore leaves the live context intact.",
+      "evidence": [
+        "evidence/engine-royale-tests.log"
+      ],
+      "action": "Run complete replay and rejected-restore tests",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "A04",
+      "status": "PASS",
+      "result": "Replay/reconciliation captures hidden movement/motor/brake state, not just displayed pose.",
+      "evidence": [
+        "evidence/engine-royale-tests.log",
+        "evidence/legacy-royale-tests.log"
+      ],
+      "action": "Controller replay test and whole simulation restore",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "A05",
+      "status": "PASS",
+      "result": "Finite values, channel/slot bounds, sequence and complete frame validation reject malformed or extra authoritative fields before execution.",
+      "evidence": [
+        "evidence/engine-royale-tests.log",
+        "evidence/provided-wasm-tests.log"
+      ],
+      "action": "Malformed frame, spoof and queue tests",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "A06",
+      "status": "PASS",
+      "result": "Full projectile segments use trusted server collision sweeps; real cover blocks shots and stale projectile results are rejected.",
+      "evidence": [
+        "evidence/engine-royale-tests.log",
+        "evidence/integration-native.log"
+      ],
+      "action": "Cover and stale/duplicate projectile resolution tests",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "A07",
+      "status": "PASS",
+      "result": "Same-tick damage is applied before outcome, including explicit simultaneous draw; results freeze.",
+      "evidence": [
+        "evidence/integration-native.log",
+        "evidence/engine-royale-tests.log"
+      ],
+      "action": "Native simultaneous lethal damage plus terminal replay tests",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "A08",
+      "status": "PASS",
+      "result": "Compiled field visits all five phases, radius only shrinks, final-center deadline forces draw; socket round records server field damage and results.",
+      "evidence": [
+        "evidence/engine-royale-tests.log",
+        "evidence/engine-network-round.json"
+      ],
+      "action": "Compiled full-field/deadline test and real-time authoritative round",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "A09",
+      "status": "PASS",
+      "result": "Bounded contexts/events/hits, generation handles and duplicate projectile rejection are tested; fatal rule errors stop the room visibly.",
+      "evidence": [
+        "evidence/integration-native.log",
+        "evidence/integration-wasm-ubsan.log",
+        "OWNERSHIP.md"
+      ],
+      "action": "Native overflow/stale-lifetime checks and server failure path audit",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "A10",
+      "status": "PASS",
+      "result": "Handshake validates exact engine commit/module/ABI/protocol/rules/map/collision/physics identity and rejects mismatch.",
+      "evidence": [
+        "evidence/engine-royale-tests.log",
+        "evidence/engine-network.log"
+      ],
+      "action": "Unit handshake and incompatible socket join",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "N01",
+      "status": "PENDING — USER DEFERRED",
+      "result": "User explicitly said: Leave six-human test pending. Automated clients are not human participants.",
+      "evidence": [
+        "STATUS.md"
+      ],
+      "action": "No human session claimed",
+      "blocker": "Six independent human participants intentionally pending.",
+      "next": "When user resumes this acceptance gate, run six humans on separate external networks with this exact artifact.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "N02",
+      "status": "PASS — LOCAL AUTOMATED",
+      "result": "Seventh active combatant rejected; late arrivals are spectator-only; bot slots counted independently.",
+      "evidence": [
+        "../../love-tag-server/evidence/engine-royale-local-20261009.json"
+      ],
+      "action": "node tests/engine-royale-online.mjs",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "N03",
+      "status": "PASS — LOCAL AUTOMATED",
+      "result": "All socket+AI mixes totaling six validated, from 1+5 through 6+0. Socket drivers were automated.",
+      "evidence": [
+        "../../love-tag-server/evidence/engine-royale-local-20261009.json",
+        "evidence/engine-network-round.json"
+      ],
+      "action": "Run mixed-room test and complete 1 automated +5 AI round",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "N04",
+      "status": "PARTIAL",
+      "result": "Public session API exercises create/code/ready/start/results/rematch; UI offline practice verified from both origins.",
+      "evidence": [
+        "evidence/engine-network-round.json",
+        "evidence/engine-network.log"
+      ],
+      "action": "Full-round public SDK test and browser practice",
+      "blocker": "Invitation copy/join via browser clipboard not yet verified.",
+      "next": "Create and join via copied invitation using separate browsers, then repeat rematch/leave.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "N05",
+      "status": "PARTIAL",
+      "result": "New client object reconnects with same identity, retained ammo and sequence floors; immediate firing accepted. Unit test prevents resurrection after expiry.",
+      "evidence": [
+        "evidence/engine-network-round.json",
+        "evidence/engine-royale-tests.log"
+      ],
+      "action": "Disconnect socket, recreate client, reconnect, fire, complete and rematch",
+      "blocker": "Full external-network reconnect near elimination and packet loss not tested.",
+      "next": "Run reconnect during combat/field damage and close to elimination under delay/loss.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "N06",
+      "status": "PARTIAL",
+      "result": "Local SDK owner-departure test confirms dedicated match survives. Online pause sends neutral input in source; offline menu pauses world.",
+      "evidence": [
+        "evidence/engine-network.log",
+        "OWNERSHIP.md"
+      ],
+      "action": "Owner departure test; inspect online/offline scheduling",
+      "blocker": "Online pause behavior not yet independently observed with two UI clients.",
+      "next": "Pause one online UI client while another observes continued field and vulnerability.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "N07",
+      "status": "PARTIAL",
+      "result": "Duplicate/old/nonfinite/oversized action fields and bounded queue limits covered; server rate caps exist.",
+      "evidence": [
+        "evidence/engine-royale-tests.log",
+        "evidence/legacy-royale-tests.log"
+      ],
+      "action": "Validation regressions and rate-cap audit",
+      "blocker": "Sustained hostile burst/reordering transport test not run.",
+      "next": "Add delayed/reordered/duplicate socket traffic and assert bounded work and unchanged shot cadence.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "N08",
+      "status": "PARTIAL",
+      "result": "Local full-round records bounded 60-Hz scheduler and hostPerformance; this is not a WAN or load profile.",
+      "evidence": [
+        "evidence/engine-network-round.json",
+        "evidence/server-clock-tests.log"
+      ],
+      "action": "Full-round socket test with host performance telemetry",
+      "blocker": "Latency/loss, p95/p99 correction metrics and sustained multi-room load missing.",
+      "next": "Run explicit latency/loss profiles and multi-room load; record correction and frame-time distributions.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "N09",
+      "status": "NOT TESTED",
+      "result": "New compiled integration has loopback server evidence only; older Supabase/Tag hosting is not evidence for this revision.",
+      "evidence": [
+        "REPRODUCE.md"
+      ],
+      "action": "Local HTTP 4191 + authority 8212 only",
+      "blocker": "Exact engine revision not verified on HTTPS/WSS across external networks.",
+      "next": "Use the previously authorized private test relay with matching hashes; obtain any newly needed access. Do not overwrite live games.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "N10",
+      "status": "PASS — LOCAL AUTOMATED",
+      "result": "Server maps connection identity to its actor; clients cannot submit another slot, damage, health, hits or outcomes.",
+      "evidence": [
+        "evidence/engine-network.log",
+        "evidence/engine-royale-tests.log",
+        "OWNERSHIP.md"
+      ],
+      "action": "Spoof validation, spectator restrictions and connection ownership audit",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "G01",
+      "status": "PASS — LOCAL MAP INTEGRATION",
+      "result": "Original Swoop scenery and canonical Detroit collision are connected to active compiled Royale; both games enter the same Atwater district and return to their own original maps.",
+      "evidence": [
+        "evidence/swoop-authored-arena.json",
+        "evidence/swoop-authored-arena.png",
+        "evidence/downtown-map.json",
+        "evidence/engine-network-round.json",
+        "evidence/swoop-authored-return.json"
+      ],
+      "action": "Browser entry, riding/firing, and return from each actual packaged product; localhost authority round.",
+      "blocker": "",
+      "next": "Continue complete landmark/mode preservation and physical-device acceptance separately.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "G02",
+      "status": "PARTIAL",
+      "result": "Mounted movement and aiming/fire use real rider/EUC assets; five rider rigs and wheel import in Blender and Unity.",
+      "evidence": [
+        "evidence/swoop-engine-current.json",
+        "evidence/elmwood-engine-round.json",
+        "evidence/blender-assets.json",
+        "evidence/unity-assets.json"
+      ],
+      "action": "Play compiled practice; Blender and Unity six-asset validation",
+      "blocker": "Every rider animation/weapon socket and six simultaneous visible actors not fully reviewed.",
+      "next": "Visually exercise each rider with maneuvering/aim/fire and verify sockets and mounted posture.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "G03",
+      "status": "PARTIAL",
+      "result": "Fixed battle handling and fixed hit volumes in source; normal riding retains its own profile.",
+      "evidence": [
+        "evidence/engine-royale-tests.log",
+        "evidence/legacy-royale-tests.log",
+        "OWNERSHIP.md"
+      ],
+      "action": "Read hit volumes and Battle handling 1; movement/cover tests",
+      "blocker": "Cross-cosmetic advantage comparison not yet executed.",
+      "next": "Compare each skin's effective cover, weapon origin and hit eligibility; correct any geometry advantage.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "G04",
+      "status": "PASS — AUTHORED DISTRICT",
+      "result": "Six starts, 12 supplies and five field centers are clear on canonical Detroit physics; routes connect every start to each center. C++ centers match the actual map and survive snapshot restore.",
+      "evidence": [
+        "evidence/downtown-map.json"
+      ],
+      "action": "node tests/downtown-royale.mjs",
+      "blocker": "",
+      "next": "Human playtest for competitive pacing and fairness remains pending.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "G05",
+      "status": "PARTIAL",
+      "result": "Touch layout, separate pointer owners and gamepad mappings implemented; narrow desktop viewport review is not device validation.",
+      "evidence": [
+        "evidence/swoop-engine-phone-layout.jpg",
+        "REPRODUCE.md"
+      ],
+      "action": "Source inspection and narrow viewport UI review",
+      "blocker": "Actual multi-touch/gamepad, long-press and both orientations untested.",
+      "next": "Test physical iPad/Android and gamepad with simultaneous move/aim/fire and rearm.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "G06",
+      "status": "PARTIAL",
+      "result": "Actual Elmwood cemetery gameplay and separate package retained; arena is a different route.",
+      "evidence": [
+        "evidence/elmwood-engine-gameplay.jpg",
+        "evidence/elmwood-gate-off.json",
+        "evidence/staging-build.json"
+      ],
+      "action": "Load separate Elmwood free ride and return route",
+      "blocker": "Full landmarks/content/save walkthrough not yet complete.",
+      "next": "Compare saved settings/progress and finish an original-map regression walkthrough.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "G07",
+      "status": "PASS — ARCHITECTURE",
+      "result": "Royale rule/session path is separate from LOVE TAG and normal exploration; no civilian/companion target roster.",
+      "evidence": [
+        "OWNERSHIP.md",
+        "evidence/engine-royale-tests.log"
+      ],
+      "action": "Inspect distinct room/session namespaces and actor roster",
+      "blocker": "Full legacy-mode UI regression remains tracked by I12.",
+      "next": "Keep Tag testing and Royale health/damage evidence separate.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "G08",
+      "status": "PASS",
+      "result": "Both package inputs preflight before isolated build output writes; staged packages and gate-off rollback documented.",
+      "evidence": [
+        "evidence/staging-build.json",
+        "REPRODUCE.md"
+      ],
+      "action": "node .game-builds/build-engine-staging.mjs",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "G09",
+      "status": "PARTIAL",
+      "result": "Separate actual product browser input, gate-off and error evidence recorded. Desktop samples around 60 fps are brief observations, not hardware guarantees.",
+      "evidence": [
+        "evidence/browser-input.json",
+        "evidence/swoop-engine-current.json",
+        "evidence/elmwood-engine-round.json",
+        "REPRODUCE.md"
+      ],
+      "action": "Actual local browser play with DOM engine trace, screenshots and errors",
+      "blocker": "2015+ physical iPad/Android, other browsers and sustained map traversal not tested; large chunks remain.",
+      "next": "Profile both original maps and Royale on target hardware with sustained p95/p99 frame times, load times and graphics fallback.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "G10",
+      "status": "PASS",
+      "result": "This task created isolated staging only and did not commit, merge, push, promote production packages, deploy or activate paid services.",
+      "evidence": [
+        "STATUS.md",
+        "REPRODUCE.md",
+        "PROVENANCE.md"
+      ],
+      "action": "Review task actions and isolated output paths",
+      "blocker": "Shared checkout has other chats' changes; this report does not claim ownership of their work.",
+      "next": "Keep live deployment gated on explicit authorization.",
+      "target": "Swoop Detroit",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "I01",
+      "status": "PASS",
+      "result": "Both actual source projects and linked original RideCore resolved; Elmwood is its own elmwood.html package.",
+      "evidence": [
+        "evidence/source-preflight.json",
+        "PROVENANCE.md"
+      ],
+      "action": "preflight/source-preflight.mjs",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "I02",
+      "status": "PASS",
+      "result": "Complete pinned upstream reference, immutable supplied kit, MIT notice and clearly attributed original integration are recorded.",
+      "evidence": [
+        "PROVENANCE.md",
+        "UPSTREAM_AUDIT.md",
+        "../../engine/breadflowerdos/UPSTREAM_SOURCE.json"
+      ],
+      "action": "Verify upstream manifests and staged license copies",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "I03",
+      "status": "PASS",
+      "result": "Selected component success and full-engine non-build are explicitly distinguished.",
+      "evidence": [
+        "UPSTREAM_AUDIT.md",
+        "evidence/wasm-preflight-status.json"
+      ],
+      "action": "Review component compile and portability logs",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "I04",
+      "status": "N/A — OTHER PRODUCT",
+      "result": "See Swoop I04; Elmwood's actual controller is I05.",
+      "evidence": [
+        "evidence/browser-input.json",
+        "evidence/swoop-engine-gameplay.jpg",
+        "evidence/swoop-engine-current.json"
+      ],
+      "action": "Start Swoop free ride with engine=breadflower; hold W; inspect engineInputFrames and HUD",
+      "blocker": "",
+      "next": "Use the other product's separate record.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "I05",
+      "status": "PASS",
+      "result": "The separately packaged Elmwood entry routes its real ride-motion input through compiled PlayerInput.",
+      "evidence": [
+        "evidence/browser-input.json",
+        "evidence/elmwood-engine-gameplay.jpg",
+        "evidence/elmwood-engine-round.json"
+      ],
+      "action": "Start actual elmwood.html with engine=breadflower; hold W; inspect engineInputFrames and HUD",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "I06",
+      "status": "PARTIAL",
+      "result": "Compiled aim and steering channels are isolated by tests; browser keyboard movement and fire pass.",
+      "evidence": [
+        "evidence/engine-royale-tests.log",
+        "evidence/swoop-engine-current.json",
+        "evidence/elmwood-engine-round.json"
+      ],
+      "action": "Run channel isolation test and keyboard gameplay",
+      "blocker": "Physical multi-touch/controller simultaneous aim and steering not exercised.",
+      "next": "Run independent finger ownership, aim, fire and steering on actual touch and gamepad devices.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "I07",
+      "status": "PASS",
+      "result": "C++ rules beyond input own ammunition, damage, shield, loot, field, elimination and results in real practice and server sessions.",
+      "evidence": [
+        "evidence/engine-royale-tests.log",
+        "evidence/engine-network-round.json",
+        "OWNERSHIP.md"
+      ],
+      "action": "Run engine unit/replay suite and full socket round",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "I08",
+      "status": "PASS",
+      "result": "ABI is versioned and validated. The original EventManager assertion fails visibly (288 versus 776); it was not suppressed or represented as usable.",
+      "evidence": [
+        "evidence/event-manager-wasm-portability.log",
+        "UPSTREAM_AUDIT.md"
+      ],
+      "action": "preflight/wasm-probe.ps1",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "I09",
+      "status": "PARTIAL",
+      "result": "Both normal games run and accept movement with the engine gate off; no forced six-slot rules in exploration.",
+      "evidence": [
+        "evidence/swoop-gate-off.json",
+        "evidence/elmwood-gate-off.json"
+      ],
+      "action": "Remove query flag; launch each actual product; ride",
+      "blocker": "Complete before/after save/settings comparisons still untested.",
+      "next": "Compare existing profiles, audio, camera, input and saved progress with gate both off and on.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "I10",
+      "status": "PARTIAL",
+      "result": "Both return links preserve the originating product and optional engine gate; source clears held inputs on leave/focus/menu.",
+      "evidence": [
+        "evidence/elmwood-engine-round.json",
+        "OWNERSHIP.md"
+      ],
+      "action": "Use each menu entry and return-menu link in browser",
+      "blocker": "All pointer/focus/gamepad reconnect cases and preference restoration not yet exercised.",
+      "next": "Run the focus/device/rearm matrix and compare saved preferences.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "I11",
+      "status": "PARTIAL",
+      "result": "Injected corrupt Wasm produces a visible hash-error alert while normal riding remains usable in both games.",
+      "evidence": [
+        "evidence/swoop-engine-failure.jpg",
+        "evidence/elmwood-engine-failure.jpg"
+      ],
+      "action": "Run preflight/failure-server.mjs on 4192 and ride both routes",
+      "blocker": "Missing file and blocked JS variants not separately executed.",
+      "next": "Extend fault server to explicit 404/blocked-script cases and verify no silent engine-mode fallback.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "I12",
+      "status": "PARTIAL",
+      "result": "Feature gate is outside normal mode capacities; legacy Royale suite passes. Other chat's Tag checks are not counted as this engine acceptance.",
+      "evidence": [
+        "evidence/legacy-royale-tests.log",
+        "OWNERSHIP.md"
+      ],
+      "action": "Run legacy Royale with gate off; inspect normal adapters",
+      "blocker": "Full community, split-screen and XR interaction matrix untested.",
+      "next": "Run existing mode regressions independently for each product.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "A01",
+      "status": "PASS",
+      "result": "Existing loops own scheduling; RideCore moves each controller in two substeps; only one engine or legacy rule step runs.",
+      "evidence": [
+        "OWNERSHIP.md",
+        "evidence/engine-royale-tests.log",
+        "evidence/server-clock-tests.log"
+      ],
+      "action": "Inspect authoritative pipeline; replay and bounded-clock tests",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "A02",
+      "status": "PASS",
+      "result": "Independent Wasm instances, generation handles, slot/context isolation and disposal are exercised.",
+      "evidence": [
+        "evidence/engine-royale-tests.log",
+        "evidence/integration-native.log"
+      ],
+      "action": "Run isolation and native lifetime tests",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "A03",
+      "status": "PASS",
+      "result": "Whole rules plus host queues, AI and movement snapshot replay is identical; failed restore leaves the live context intact.",
+      "evidence": [
+        "evidence/engine-royale-tests.log"
+      ],
+      "action": "Run complete replay and rejected-restore tests",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "A04",
+      "status": "PASS",
+      "result": "Replay/reconciliation captures hidden movement/motor/brake state, not just displayed pose.",
+      "evidence": [
+        "evidence/engine-royale-tests.log",
+        "evidence/legacy-royale-tests.log"
+      ],
+      "action": "Controller replay test and whole simulation restore",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "A05",
+      "status": "PASS",
+      "result": "Finite values, channel/slot bounds, sequence and complete frame validation reject malformed or extra authoritative fields before execution.",
+      "evidence": [
+        "evidence/engine-royale-tests.log",
+        "evidence/provided-wasm-tests.log"
+      ],
+      "action": "Malformed frame, spoof and queue tests",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "A06",
+      "status": "PASS",
+      "result": "Full projectile segments use trusted server collision sweeps; real cover blocks shots and stale projectile results are rejected.",
+      "evidence": [
+        "evidence/engine-royale-tests.log",
+        "evidence/integration-native.log"
+      ],
+      "action": "Cover and stale/duplicate projectile resolution tests",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "A07",
+      "status": "PASS",
+      "result": "Same-tick damage is applied before outcome, including explicit simultaneous draw; results freeze.",
+      "evidence": [
+        "evidence/integration-native.log",
+        "evidence/engine-royale-tests.log"
+      ],
+      "action": "Native simultaneous lethal damage plus terminal replay tests",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "A08",
+      "status": "PASS",
+      "result": "Compiled field visits all five phases, radius only shrinks, final-center deadline forces draw; socket round records server field damage and results.",
+      "evidence": [
+        "evidence/engine-royale-tests.log",
+        "evidence/engine-network-round.json"
+      ],
+      "action": "Compiled full-field/deadline test and real-time authoritative round",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "A09",
+      "status": "PASS",
+      "result": "Bounded contexts/events/hits, generation handles and duplicate projectile rejection are tested; fatal rule errors stop the room visibly.",
+      "evidence": [
+        "evidence/integration-native.log",
+        "evidence/integration-wasm-ubsan.log",
+        "OWNERSHIP.md"
+      ],
+      "action": "Native overflow/stale-lifetime checks and server failure path audit",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "A10",
+      "status": "PASS",
+      "result": "Handshake validates exact engine commit/module/ABI/protocol/rules/map/collision/physics identity and rejects mismatch.",
+      "evidence": [
+        "evidence/engine-royale-tests.log",
+        "evidence/engine-network.log"
+      ],
+      "action": "Unit handshake and incompatible socket join",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "N01",
+      "status": "PENDING — USER DEFERRED",
+      "result": "User explicitly said: Leave six-human test pending. Automated clients are not human participants.",
+      "evidence": [
+        "STATUS.md"
+      ],
+      "action": "No human session claimed",
+      "blocker": "Six independent human participants intentionally pending.",
+      "next": "When user resumes this acceptance gate, run six humans on separate external networks with this exact artifact.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "N02",
+      "status": "PASS — LOCAL AUTOMATED",
+      "result": "Seventh active combatant rejected; late arrivals are spectator-only; bot slots counted independently.",
+      "evidence": [
+        "../../love-tag-server/evidence/engine-royale-local-20261009.json"
+      ],
+      "action": "node tests/engine-royale-online.mjs",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "N03",
+      "status": "PASS — LOCAL AUTOMATED",
+      "result": "All socket+AI mixes totaling six validated, from 1+5 through 6+0. Socket drivers were automated.",
+      "evidence": [
+        "../../love-tag-server/evidence/engine-royale-local-20261009.json",
+        "evidence/engine-network-round.json"
+      ],
+      "action": "Run mixed-room test and complete 1 automated +5 AI round",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "N04",
+      "status": "PARTIAL",
+      "result": "Public session API exercises create/code/ready/start/results/rematch; UI offline practice verified from both origins.",
+      "evidence": [
+        "evidence/engine-network-round.json",
+        "evidence/engine-network.log"
+      ],
+      "action": "Full-round public SDK test and browser practice",
+      "blocker": "Invitation copy/join via browser clipboard not yet verified.",
+      "next": "Create and join via copied invitation using separate browsers, then repeat rematch/leave.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "N05",
+      "status": "PARTIAL",
+      "result": "New client object reconnects with same identity, retained ammo and sequence floors; immediate firing accepted. Unit test prevents resurrection after expiry.",
+      "evidence": [
+        "evidence/engine-network-round.json",
+        "evidence/engine-royale-tests.log"
+      ],
+      "action": "Disconnect socket, recreate client, reconnect, fire, complete and rematch",
+      "blocker": "Full external-network reconnect near elimination and packet loss not tested.",
+      "next": "Run reconnect during combat/field damage and close to elimination under delay/loss.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "N06",
+      "status": "PARTIAL",
+      "result": "Local SDK owner-departure test confirms dedicated match survives. Online pause sends neutral input in source; offline menu pauses world.",
+      "evidence": [
+        "evidence/engine-network.log",
+        "OWNERSHIP.md"
+      ],
+      "action": "Owner departure test; inspect online/offline scheduling",
+      "blocker": "Online pause behavior not yet independently observed with two UI clients.",
+      "next": "Pause one online UI client while another observes continued field and vulnerability.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "N07",
+      "status": "PARTIAL",
+      "result": "Duplicate/old/nonfinite/oversized action fields and bounded queue limits covered; server rate caps exist.",
+      "evidence": [
+        "evidence/engine-royale-tests.log",
+        "evidence/legacy-royale-tests.log"
+      ],
+      "action": "Validation regressions and rate-cap audit",
+      "blocker": "Sustained hostile burst/reordering transport test not run.",
+      "next": "Add delayed/reordered/duplicate socket traffic and assert bounded work and unchanged shot cadence.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "N08",
+      "status": "PARTIAL",
+      "result": "Local full-round records bounded 60-Hz scheduler and hostPerformance; this is not a WAN or load profile.",
+      "evidence": [
+        "evidence/engine-network-round.json",
+        "evidence/server-clock-tests.log"
+      ],
+      "action": "Full-round socket test with host performance telemetry",
+      "blocker": "Latency/loss, p95/p99 correction metrics and sustained multi-room load missing.",
+      "next": "Run explicit latency/loss profiles and multi-room load; record correction and frame-time distributions.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "N09",
+      "status": "NOT TESTED",
+      "result": "New compiled integration has loopback server evidence only; older Supabase/Tag hosting is not evidence for this revision.",
+      "evidence": [
+        "REPRODUCE.md"
+      ],
+      "action": "Local HTTP 4191 + authority 8212 only",
+      "blocker": "Exact engine revision not verified on HTTPS/WSS across external networks.",
+      "next": "Use the previously authorized private test relay with matching hashes; obtain any newly needed access. Do not overwrite live games.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "N10",
+      "status": "PASS — LOCAL AUTOMATED",
+      "result": "Server maps connection identity to its actor; clients cannot submit another slot, damage, health, hits or outcomes.",
+      "evidence": [
+        "evidence/engine-network.log",
+        "evidence/engine-royale-tests.log",
+        "OWNERSHIP.md"
+      ],
+      "action": "Spoof validation, spectator restrictions and connection ownership audit",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "G01",
+      "status": "PASS — LOCAL MAP INTEGRATION",
+      "result": "Original Swoop scenery and canonical Detroit collision are connected to active compiled Royale; both games enter the same Atwater district and return to their own original maps.",
+      "evidence": [
+        "evidence/elmwood-authored-arena.json",
+        "evidence/elmwood-authored-arena.png",
+        "evidence/downtown-map.json",
+        "evidence/engine-network-round.json",
+        "evidence/elmwood-authored-return.json"
+      ],
+      "action": "Browser entry, riding/firing, and return from each actual packaged product; localhost authority round.",
+      "blocker": "",
+      "next": "Continue complete landmark/mode preservation and physical-device acceptance separately.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "G02",
+      "status": "PARTIAL",
+      "result": "Mounted movement and aiming/fire use real rider/EUC assets; five rider rigs and wheel import in Blender and Unity.",
+      "evidence": [
+        "evidence/swoop-engine-current.json",
+        "evidence/elmwood-engine-round.json",
+        "evidence/blender-assets.json",
+        "evidence/unity-assets.json"
+      ],
+      "action": "Play compiled practice; Blender and Unity six-asset validation",
+      "blocker": "Every rider animation/weapon socket and six simultaneous visible actors not fully reviewed.",
+      "next": "Visually exercise each rider with maneuvering/aim/fire and verify sockets and mounted posture.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "G03",
+      "status": "PARTIAL",
+      "result": "Fixed battle handling and fixed hit volumes in source; normal riding retains its own profile.",
+      "evidence": [
+        "evidence/engine-royale-tests.log",
+        "evidence/legacy-royale-tests.log",
+        "OWNERSHIP.md"
+      ],
+      "action": "Read hit volumes and Battle handling 1; movement/cover tests",
+      "blocker": "Cross-cosmetic advantage comparison not yet executed.",
+      "next": "Compare each skin's effective cover, weapon origin and hit eligibility; correct any geometry advantage.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "G04",
+      "status": "PASS — AUTHORED DISTRICT",
+      "result": "Six starts, 12 supplies and five field centers are clear on canonical Detroit physics; routes connect every start to each center. C++ centers match the actual map and survive snapshot restore.",
+      "evidence": [
+        "evidence/downtown-map.json"
+      ],
+      "action": "node tests/downtown-royale.mjs",
+      "blocker": "",
+      "next": "Human playtest for competitive pacing and fairness remains pending.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "G05",
+      "status": "PARTIAL",
+      "result": "Touch layout, separate pointer owners and gamepad mappings implemented; narrow desktop viewport review is not device validation.",
+      "evidence": [
+        "evidence/swoop-engine-phone-layout.jpg",
+        "REPRODUCE.md"
+      ],
+      "action": "Source inspection and narrow viewport UI review",
+      "blocker": "Actual multi-touch/gamepad, long-press and both orientations untested.",
+      "next": "Test physical iPad/Android and gamepad with simultaneous move/aim/fire and rearm.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "G06",
+      "status": "PARTIAL",
+      "result": "Actual Elmwood cemetery gameplay and separate package retained; arena is a different route.",
+      "evidence": [
+        "evidence/elmwood-engine-gameplay.jpg",
+        "evidence/elmwood-gate-off.json",
+        "evidence/staging-build.json"
+      ],
+      "action": "Load separate Elmwood free ride and return route",
+      "blocker": "Full landmarks/content/save walkthrough not yet complete.",
+      "next": "Compare saved settings/progress and finish an original-map regression walkthrough.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "G07",
+      "status": "PASS — ARCHITECTURE",
+      "result": "Royale rule/session path is separate from LOVE TAG and normal exploration; no civilian/companion target roster.",
+      "evidence": [
+        "OWNERSHIP.md",
+        "evidence/engine-royale-tests.log"
+      ],
+      "action": "Inspect distinct room/session namespaces and actor roster",
+      "blocker": "Full legacy-mode UI regression remains tracked by I12.",
+      "next": "Keep Tag testing and Royale health/damage evidence separate.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "G08",
+      "status": "PASS",
+      "result": "Both package inputs preflight before isolated build output writes; staged packages and gate-off rollback documented.",
+      "evidence": [
+        "evidence/staging-build.json",
+        "REPRODUCE.md"
+      ],
+      "action": "node .game-builds/build-engine-staging.mjs",
+      "blocker": "",
+      "next": "No further local work for this recorded check.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "G09",
+      "status": "PARTIAL",
+      "result": "Separate actual product browser input, gate-off and error evidence recorded. Desktop samples around 60 fps are brief observations, not hardware guarantees.",
+      "evidence": [
+        "evidence/browser-input.json",
+        "evidence/swoop-engine-current.json",
+        "evidence/elmwood-engine-round.json",
+        "REPRODUCE.md"
+      ],
+      "action": "Actual local browser play with DOM engine trace, screenshots and errors",
+      "blocker": "2015+ physical iPad/Android, other browsers and sustained map traversal not tested; large chunks remain.",
+      "next": "Profile both original maps and Royale on target hardware with sustained p95/p99 frame times, load times and graphics fallback.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    },
+    {
+      "id": "G10",
+      "status": "PASS",
+      "result": "This task created isolated staging only and did not commit, merge, push, promote production packages, deploy or activate paid services.",
+      "evidence": [
+        "STATUS.md",
+        "REPRODUCE.md",
+        "PROVENANCE.md"
+      ],
+      "action": "Review task actions and isolated output paths",
+      "blocker": "Shared checkout has other chats' changes; this report does not claim ownership of their work.",
+      "next": "Keep live deployment gated on explicit authorization.",
+      "target": "Elmwood Explorer",
+      "sourceRevision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454 + uncommitted source in acceptance-source-manifest.json"
+    }
+  ]
+}

@@ -58,3 +58,10 @@ body.controls-open #elmwood-touch{visibility:hidden}body.layout-editing #elmwood
 [data-touch-action="trick"]{--touch-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22white%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m13%202-8%2012h7l-1%208%208-13h-7z%22%2F%3E%3C%2Fsvg%3E")}
 [data-touch-action="camera"]{--touch-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22white%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Crect%20x%3D%223%22%20y%3D%226%22%20width%3D%2218%22%20height%3D%2214%22%20rx%3D%223%22%2F%3E%3Cpath%20d%3D%22m8%206%202-3h4l2%203%22%2F%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2213%22%20r%3D%224%22%2F%3E%3C%2Fsvg%3E")}
 [data-touch-action="cruise"]{--touch-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22white%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M4%2018a9%209%200%201%201%2016%200M12%2013l5-5%22%2F%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2213%22%20r%3D%222%22%2F%3E%3C%2Fsvg%3E")}
+
+/* Keep recording below the compass, in the left utility column. */
+@media(max-width:650px) and (orientation:portrait){
+ body.playing .game-film-toolbar{top:calc(128px + env(safe-area-inset-top));bottom:auto}
+ body.playing:has(.game-film-toolbar:not([hidden])) #ride-tools{--tools-top:260px}
+ body.playing:has(.game-film-toolbar:not([hidden]) button:disabled) #ride-tools{--tools-top:206px}
+}

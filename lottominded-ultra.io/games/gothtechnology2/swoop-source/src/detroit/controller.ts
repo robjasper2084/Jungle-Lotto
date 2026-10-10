@@ -202,6 +202,9 @@ export class RideController {
       this.grounded=false;this.groundAge=1;this.flightYaw=p.headingY;this.charge=this.hopQueue=0;this.counts.hops++;p.takeoffExtension=1;this.tricks.launch(this.velocityY);
     }
     const dx=this.vx*dt,dz=this.vz*dt,travel=Math.hypot(dx,dz);
+    // Keep an ordinary curb plus this tick's downhill grade in ground contact.
+    // Cap the slope allowance so a curb's steep edge cannot conceal a real ledge.
+    const curbDropAllowance=.28+clamp((this.ground.normal.x*dx+this.ground.normal.z*dz)/Math.max(.5,this.ground.normal.y),0,Math.min(.12,travel*.5));
     // Older positions can lie below the visible water on a triangulated bank.
     // Allow climbing out through wet slope samples, while blocking entry and
     // level/downhill travel through water. Solid/actor sweeps still apply.
@@ -248,7 +251,7 @@ export class RideController {
     if(this.grounded){
       // Ordinary curbs and overlay seams are ground contact, not a takeoff.
       // Only larger drops enter flight; deliberate hops already set grounded=false.
-      if(oldY-floor>.22&&Math.abs(p.speed)>2){this.grounded=false;this.groundAge=0;this.flightYaw=p.headingY;this.velocityY=Math.max(0,this.velocityY);}
+      if(oldY-floor>curbDropAllowance&&Math.abs(p.speed)>2){this.grounded=false;this.groundAge=0;this.flightYaw=p.headingY;this.velocityY=Math.max(0,this.velocityY);}
       else{
         p.y=floor;
         // A discrete 15 cm step divided by a physics tick creates an artificial

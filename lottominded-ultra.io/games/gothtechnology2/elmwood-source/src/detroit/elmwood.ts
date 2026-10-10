@@ -1,3 +1,6 @@
+import {loadEngineForPage} from '../../../ride-core/src/engine/browser.ts';
+await loadEngineForPage();
+import {foliageSightline} from './foliageSightline.ts';
 import {FrameSchedule} from './frameSchedule.ts';
 import {loadingCinema} from './loadingCinema.ts';
 const loadingCard=loadingCinema();
@@ -98,7 +101,7 @@ const el=<E extends HTMLElement>(id:string)=>document.getElementById(id) as E;
 
 
 
-const canvas=el<HTMLCanvasElement>('view'),renderer=new T.WebGLRenderer({canvas,antialias:startupAntialias(),powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setSize(Math.max(1,innerWidth),Math.max(1,innerHeight));renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1;
+const canvas=el<HTMLCanvasElement>('view'),renderer=new T.WebGLRenderer({canvas,antialias:startupAntialias(),powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setSize(Math.max(1,innerWidth),Math.max(1,innerHeight));renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.88;
 
 
 
@@ -114,7 +117,7 @@ const scene=new T.Scene();scene.background=new T.Color('#b4c5bb');scene.fog=new 
 
 
 
-const hemi=new T.HemisphereLight('#dceaff','#495539',.8);scene.add(hemi);const sun=new T.DirectionalLight('#fff4df',3.2);scene.add(sun,sun.target);sun.castShadow=true;sun.shadow.mapSize.set(innerWidth<750?1024:2048,innerWidth<750?1024:2048);sun.shadow.bias=-.00015;sun.shadow.normalBias=.025;renderer.shadowMap.type=T.PCFShadowMap;
+const hemi=new T.HemisphereLight('#c9d4df','#414738',.60);scene.add(hemi);const sun=new T.DirectionalLight('#fff4df',2.3);scene.add(sun,sun.target);sun.castShadow=true;sun.shadow.mapSize.set(innerWidth<750?1024:2048,innerWidth<750?1024:2048);sun.shadow.bias=-.00015;sun.shadow.normalBias=.025;renderer.shadowMap.type=T.PCFShadowMap;
 
 
 
@@ -127,7 +130,7 @@ const weather=makeElmwoodWeather(scene,camera,sun,hemi,renderer);
 
 
 
-const pmrem=new T.PMREMGenerator(renderer);new HDRLoader().load(new URL('../../art/nvidia/elmwood-skylight.hdr',import.meta.url).href,hdr=>{const env=pmrem.fromEquirectangular(hdr);scene.environment=env.texture;scene.environmentIntensity=.475;canvas.dataset.lighting='NVIDIA OptiX baked skylight';hdr.dispose();pmrem.dispose();},undefined,e=>console.warn('Reflection environment unavailable',e));
+const pmrem=new T.PMREMGenerator(renderer);new HDRLoader().load(new URL('../../art/nvidia/elmwood-skylight.hdr',import.meta.url).href,hdr=>{const env=pmrem.fromEquirectangular(hdr);scene.environment=env.texture;canvas.dataset.lighting='NVIDIA OptiX baked skylight';hdr.dispose();pmrem.dispose();},undefined,e=>console.warn('Reflection environment unavailable',e));
 
 
 
@@ -668,7 +671,7 @@ const ps=placements.filter(p=>p.asset===id),source=cache.get(id)!;source.updateM
 
 
 
-    source.traverse(o=>{if(!(o instanceof T.Mesh))return;const inst=new T.InstancedMesh(o.geometry,o.material,bucket.length);inst.castShadow=true;inst.receiveShadow=true;const m=new T.Matrix4(),q=new T.Quaternion(),s=new T.Vector3();bucket.forEach((p,i)=>{q.setFromAxisAngle(new T.Vector3(0,1,0),p.rotation);s.setScalar(p.scale);m.compose(pos(p.position),q,s);m.multiply(o.matrixWorld);inst.setMatrixAt(i,m);});inst.instanceMatrix.needsUpdate=true;inst.computeBoundingSphere();tile.add(inst);});
+    source.traverse(o=>{if(!(o instanceof T.Mesh))return;for(const material of Array.isArray(o.material)?o.material:[o.material])if((material as T.MeshStandardMaterial).alphaTest>.2)foliageSightline(material);const inst=new T.InstancedMesh(o.geometry,o.material,bucket.length);inst.castShadow=true;inst.receiveShadow=true;const m=new T.Matrix4(),q=new T.Quaternion(),s=new T.Vector3();bucket.forEach((p,i)=>{q.setFromAxisAngle(new T.Vector3(0,1,0),p.rotation);s.setScalar(p.scale);m.compose(pos(p.position),q,s);m.multiply(o.matrixWorld);inst.setMatrixAt(i,m);});inst.instanceMatrix.needsUpdate=true;inst.computeBoundingSphere();tile.add(inst);});
 
 
 
@@ -792,3 +795,4 @@ if(measured){canvas.dataset.rideMsP95=frameStats.rideMsP95.toFixed(2);canvas.dat
 
 
 loadingCard.finish();
+

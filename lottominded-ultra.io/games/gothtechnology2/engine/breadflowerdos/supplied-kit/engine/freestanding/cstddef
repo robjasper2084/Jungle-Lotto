@@ -1,0 +1,5 @@
+#pragma once
+// Minimal declarations for the isolated PlayerInput header-only Wasm proof.
+// NOT a general replacement for libc++, WASI, or the Emscripten SDK.
+using size_t = __SIZE_TYPE__;
+namespace std { using size_t = ::size_t; }

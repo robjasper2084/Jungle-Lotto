@@ -1,0 +1,24 @@
+{
+  "at": "2026-10-10T01:38:55.915Z",
+  "url": "http://127.0.0.1:4191/arcade/swoop-detroit/royale.html?from=elmwood&engine=breadflower",
+  "ui": "- generic \"Static Royale riding arena\" [active]\n- banner:\n  - link \"← Elmwood Explorer\":\n    - /url: http://127.0.0.1:4191/arcade/elmwood-explorer/elmwood.html?engine=breadflower\n  - text: SWOOP /\n  - strong: STATIC ROYALE\n  - button \"Menu\"\n- strong: 2 RIDERS REMAIN\n- generic: Integrity 0 / Shield 0 / Flow 100\n- generic: Static Blaster · 78 shots · 1 repairs\n- generic: Field 186m → 130m · 63s\n- paragraph: Eliminated · one life per round",
+  "canvas": {
+    "adaptiveDetail": "1",
+    "antialias": "true",
+    "arena": "atwater-authored-1",
+    "collision": "8692124ce27f6b62ce39f669d5e53832a10a716862fddcc6b73518a4b1521329",
+    "engine": "three.js r185",
+    "engineFrames": "22616",
+    "engineModule": "0e029a5e3241d634280e1e1e696c270efebbd5e182e2e50ba2176cbbc1fcc137",
+    "engineTick": "6656",
+    "frameLimit": "60",
+    "pixelRatio": "1.5",
+    "profile": "{\"fps\":59.99400059993965,\"p95\":16.800000000017462,\"calls\":294,\"triangles\":434159}",
+    "quality": "high",
+    "qualityChoice": "auto",
+    "qualityReason": "Desktop hardware",
+    "shadowSize": "2048",
+    "textureLimit": "2048"
+  },
+  "errors": []
+}

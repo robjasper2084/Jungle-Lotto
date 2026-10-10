@@ -1,0 +1,58 @@
+{
+  "checkedAt": "2026-10-10T02:30:47.8483291Z",
+  "scope": "Shared Royale equipment asset pass only",
+  "deployment": "none",
+  "unitTests": "4 passed",
+  "typescript": "passed",
+  "unityImports": "6 passed",
+  "humanoidMocap": "existing channels retained",
+  "physicalDevices": "pending",
+  "sixHuman": "pending by user request",
+  "files": [
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\swoop-source\\src\\detroit\\royale\\main.ts",
+      "bytes": 24647,
+      "sha256": "bbdc4f7cf955ff93ce1d82cfc57a9f8083775cce1f1d8328ad6dd98272e26fba"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\swoop-source\\src\\detroit\\royale\\equipment.ts",
+      "bytes": 3870,
+      "sha256": "57910bd247be22c721b48c1c2482bbd17e053fb62d7ecd20d4774ac971bd5c68"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\swoop-source\\src\\detroit\\royaleEquipment.test.ts",
+      "bytes": 2768,
+      "sha256": "9b88387cc6fcc168a40443f73968df26634684a2cdd2bb186daad113c49748e5"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\swoop-source\\public\\exports\\polish\\royale-equipment\\ammo.glb",
+      "bytes": 96560,
+      "sha256": "778b52f5efc85f9cc6f9677d3c1c8ababfcfb17ed9d853c1e41513214ae930b4"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\swoop-source\\public\\exports\\polish\\royale-equipment\\bass.glb",
+      "bytes": 272460,
+      "sha256": "88bb5126daaeef0236f7934b26ff4f8215400d673db7df758c6d6a7bded30e8f"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\swoop-source\\public\\exports\\polish\\royale-equipment\\heart.glb",
+      "bytes": 258284,
+      "sha256": "e073b0dcbf2d71de1bd315c0605892050f54fbc83f38ecec4f7b82b104f37b54"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\swoop-source\\public\\exports\\polish\\royale-equipment\\repair.glb",
+      "bytes": 66644,
+      "sha256": "7574ecd39fb485d962728a9a93b5eac35ab0d1be7b035b18ff28a64a9ad51355"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\swoop-source\\public\\exports\\polish\\royale-equipment\\shield.glb",
+      "bytes": 52548,
+      "sha256": "34076548803411282431bd8df533692e78d024d6d4f15f9561d8accee90be431"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\swoop-source\\public\\exports\\polish\\royale-equipment\\static.glb",
+      "bytes": 219404,
+      "sha256": "6271910ebd5d29a4a517cda8c381b3acdcfa40b7285c9a26a451bdf6e1d2ce0e"
+    }
+  ]
+}

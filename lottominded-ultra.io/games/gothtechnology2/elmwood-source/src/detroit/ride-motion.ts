@@ -1,3 +1,4 @@
+import {RideInputGate} from '../../../ride-core/src/engine/browser.ts';
 import {EbikeController} from './ebikeController.ts';
 import {isCycle,ebikeProfile,eucProfile,eucHandling,eucSteering} from './electricVehicles.ts';
 import {RIDE_TUNING} from './riding/rideDynamics.ts';
@@ -12,6 +13,7 @@ export {RIDECORE};
 
 /** Actual Digital Static RideCore runtime, with fixed-step camera interpolation. */
 export class RideMotion {
+  readonly engineInput=new RideInputGate();
   readonly core:RideCore;bicycle:BicycleController;cycling=false;
   readonly terrain:ReturnType<typeof rideCoreTerrain>;
   readonly pose=createPose();
@@ -38,7 +40,7 @@ export class RideMotion {
     this.follow.reset(this.pose);this.captureCamera();Object.assign(this.previousCamera,this.currentCamera);Object.assign(this.view,this.currentCamera);
     this.accumulator=0;this.clearPendingInput();this.events.length=0;
   }
-  clearPendingInput(){this.pendingHop=false;this.pendingTrick=0;}
+  clearPendingInput(){this.pendingHop=false;this.pendingTrick=0;this.engineInput.clear();}
   render(alpha:number){
     lerpPose(this.previous,this.core.current,alpha,this.pose);
     for(const key of Object.keys(this.view) as (keyof typeof this.view)[])this.view[key]=this.previousCamera[key]+(this.currentCamera[key]-this.previousCamera[key])*alpha;
@@ -52,7 +54,7 @@ export class RideMotion {
     this.accumulator+=Math.min(dt,.1);const step=1/RIDECORE.fixedHz;
     while(this.accumulator+1e-12>=step){
       copyPose(this.core.current,this.previous);Object.assign(this.previousCamera,this.currentCamera);
-      const result=this.cycling?(this.bicycle.step(step,{...NEUTRAL_ACTIONS,...actions,hop:false,hopHeld:false,trick:0,crouch:false}),this.bicycle.writePose(this.core.current),{events:[] as RideEvent[]}):this.core.advance(step,{...actions,steer:eucProfile(this.vehicleId)?eucSteering(eucProfile(this.vehicleId)!,this.core.current.speed,actions.steer??0):actions.steer,hop:this.pendingHop,trick:this.pendingTrick});this.pendingHop=false;this.pendingTrick=0;
+      const result=this.cycling?(this.bicycle.step(step,this.engineInput.route({...NEUTRAL_ACTIONS,...actions,hop:false,hopHeld:false,trick:0,crouch:false})),this.bicycle.writePose(this.core.current),{events:[] as RideEvent[]}):this.core.advance(step,this.engineInput.route({...actions,steer:eucProfile(this.vehicleId)?eucSteering(eucProfile(this.vehicleId)!,this.core.current.speed,actions.steer??0):actions.steer,hop:this.pendingHop,trick:this.pendingTrick}));this.pendingHop=false;this.pendingTrick=0;
       this.events.push(...result.events);
       for(const event of result.events)if(event.type==='landing')this.follow.landing(event.impact);
       this.follow.step(step,this.core.current);this.captureCamera();
@@ -61,3 +63,4 @@ export class RideMotion {
     this.render(this.accumulator/step);
   }
 }
+

@@ -1,9 +1,10 @@
+import type {SceneryWorld} from './sceneryWorld.ts';
 import * as T from 'three';
 import {GLTFLoader} from './compressedGLTFLoader.ts';
-import {heightAt,type DetroitWorld} from './world.ts';
+import {heightAt} from './world.ts';
 import {streetFurnitureSites,type StreetAsset} from './streetFurnitureLayout.ts';
 
-export async function buildStreetFurniture(scene:T.Scene,world:DetroitWorld,groupAt:(x:number,z:number)=>T.Group){
+export async function buildStreetFurniture(scene:T.Scene,world:SceneryWorld,groupAt:(x:number,z:number)=>T.Group){
  const names:StreetAsset[]=['street-lamp','camera-pole','hydrant','bench','waste-bin','bike-rack','drain-grate','utility-cover'];
  const loader=new GLTFLoader(),assets=await Promise.all(names.map(n=>loader.loadAsync('/exports/street-furniture/'+n+'.glb')));
  const allowed=(x:number,z:number)=>world.chunks.some(c=>Math.abs(c.x-x)<=50&&Math.abs(c.z-z)<=50);

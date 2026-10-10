@@ -1,7 +1,8 @@
+import type {SceneryWorld} from './sceneryWorld.ts';
 import * as T from 'three';
 import {GEO,profileLevel,BRIDGE_SLAB_DEPTH,nearestRamp} from './geo-profile.ts';
 import {bridgeFrame} from './bridges.ts';
-import {cutPoint,cutCoords,heightAt,type DetroitWorld} from './world.ts';
+import {cutPoint,cutCoords,heightAt} from './world.ts';
 
 /** Photo sources and section locations: Conservancy 2025 Art Walk map.
  * Bridge dimensions and surface fitting remain game approximations. */
@@ -56,7 +57,7 @@ function sprayPaintMaterial(map:T.Texture){
  return material;
 }
 
-export async function buildCutMurals(world:DetroitWorld,groupAt:(x:number,z:number)=>T.Group){
+export async function buildCutMurals(world:SceneryWorld,groupAt:(x:number,z:number)=>T.Group){
  const urls=[
   new URL('../../art/cut-murals/ivanmontoyamural.jpg',import.meta.url).href,
   new URL('../../art/cut-murals/sydneyjames2.jpg',import.meta.url).href,

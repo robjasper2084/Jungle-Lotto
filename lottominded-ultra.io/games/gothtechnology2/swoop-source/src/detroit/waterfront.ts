@@ -1,15 +1,16 @@
+import type {SceneryWorld} from './sceneryWorld.ts';
 import * as T from 'three';
 import {GLTFLoader} from './compressedGLTFLoader.ts';
 import {WATERFRONT,ARETHA} from './waterfrontSite.ts';
 import {harborFixtures,HARBOR_GANGWAY,harborGangwayPoints,harborGangwayEdges,DOCK_TOP} from './harborLayout.ts';
 import {clearRailSpans,MAPPED_ACCESS,gateDirection} from './waterfrontRails.ts';
-import {heightAt,type DetroitWorld} from './world.ts';
+import {heightAt} from './world.ts';
 import {makeRoadSign} from './roadSigns.ts';
 import {roadsidePoint,streetFacingHeading} from './roadsidePlacement.ts';
 import {dryStreetSite} from './dryStreetSite.ts';
 import {ARETHA_ENTRANCE} from './arethaEntrance.ts';
 /** Original Blender art follows refreshed mapped geometry. Finishes/furniture are visual estimates. */
-export async function buildWaterfront(scene:T.Scene,world:DetroitWorld,groupAt:(x:number,z:number)=>T.Group){
+export async function buildWaterfront(scene:T.Scene,world:SceneryWorld,groupAt:(x:number,z:number)=>T.Group){
  const names=['aretha-amphitheatre','aretha-entry','shore-railing','dock-service','harbor-cruiser'];
  const [assets,benchAsset]=await Promise.all([Promise.all(names.map(n=>new GLTFLoader().loadAsync('/exports/waterfront/'+n+'.glb'))),new GLTFLoader().loadAsync('/exports/street-furniture/bench.glb')]);
  for(const asset of assets)asset.scene.traverse(o=>{if((o as T.Mesh).isMesh){o.castShadow=o.receiveShadow=true;const m=(o as T.Mesh).material;for(const material of Array.isArray(m)?m:[m])if(material.name==='White tensile membrane')material.side=T.DoubleSide;}});

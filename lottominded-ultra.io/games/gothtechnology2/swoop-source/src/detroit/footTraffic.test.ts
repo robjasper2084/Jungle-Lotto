@@ -20,7 +20,7 @@ async function mesh(id:string,lod:number){
 }
 test('stance cancels forward travel; walk has double support and jog has flight',()=>{
   for(const jog of [false,true]){
-    const speed=jog?2.65:1.1,cadence=jog?1.42:.88,a=footStride(.1,speed,jog),b=footStride(.1+cadence*.001,speed,jog);
+    const speed=jog?2.65:1.1,cadence=gaitTiming(speed,jog).cadence,a=footStride(.1,speed,jog),b=footStride(.1+cadence*.001,speed,jog);
     assert.ok(Math.abs(b.z-a.z+speed*.001)<1e-8,'planted foot slides on level ground');
     let double=0,flight=0,lift=0;
     for(let i=0;i<100;i++){const a=footStride(i/100,speed,jog),b=footStride(i/100+.5,speed,jog);if(a.stance&&b.stance)double++;if(!a.stance&&!b.stance)flight++;lift=Math.max(lift,a.lift);}
@@ -110,4 +110,21 @@ test('live traffic instantiates both hoodie characters and both gait types',()=>
   view.update(actors,.016);assert.equal(view.items.size,actors.length);assert.ok([...view.items.values()].every(i=>!!i.foot));
   assert.ok([...view.items.values()].some(i=>i.foot!.jog));assert.ok([...view.items.values()].some(i=>!i.foot!.jog));
   view.update([],0);assert.equal(scene.children.length,0);
+});
+
+// Mascots have very different thigh/shin proportions: check both inner and outer reach.
+test('all five heroes fit the recorded motions without stretched limbs or unreachable feet',async()=>{
+ for(const id of ['DS_Man_01','DS_Hoodie_Woman_01','DS_Mascot_Suit_01','DS_Mascot_Hoodie_01','DS_Armored_Rider_01']){
+  const asset=await mesh(id,id==='DS_Man_01'?0:1);
+  for(const action of ['walk','jog','run','door','pickup','reach'] as const){
+   const speed={walk:1.1,jog:2.65,run:3.8,door:0,pickup:0,reach:0}[action],p=new FootTraffic(asset,speed>2);
+   if(action==='door'||action==='pickup'||action==='reach')p.playInteraction(action);
+   const bind=p.bones.map(b=>b.p.clone());
+   for(let i=0;i<=64;i++){
+    p.phase=i/64;p.apply(speed,speed?0:.025);
+    p.bones.forEach((b,k)=>{assert.ok(Number.isFinite(b.o.quaternion.length()));if(b.o.name!=='Hips')assert.ok(b.o.position.distanceTo(bind[k])<1e-7);});
+    for(let k=0;k<2;k++)assert.ok(p.legs[k].end.getWorldPosition(new Vector3()).distanceTo(p.footTargets[k])<.015,id+' '+action+' ankle cannot reach target');
+   }
+  }
+ }
 });

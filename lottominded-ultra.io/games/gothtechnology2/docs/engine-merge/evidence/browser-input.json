@@ -1,0 +1,27 @@
+{
+  "capturedAt": "2026-10-10T00:12:51.001Z",
+  "tests": [
+    {
+      "url": "http://127.0.0.1:4191/arcade/swoop-detroit/?engine=breadflower",
+      "data": {
+        "engine": "{\"engine\":\"6b4d4e1f10dee9b1c8932db95f91b92e3eceb7db\",\"module\":\"ab9c12082c0be26d44bc9409a843d25ad7840373e427e16f06d1d0e1bf33420b\",\"bridgeAbi\":2,\"engineRules\":\"static-royale-cpp-1\"}",
+        "frames": "6360",
+        "steer": "0",
+        "throttle": "0",
+        "title": "Swoop . Detroit"
+      },
+      "errors": []
+    },
+    {
+      "url": "http://127.0.0.1:4191/arcade/elmwood-explorer/elmwood.html?engine=breadflower",
+      "data": {
+        "engine": "{\"engine\":\"6b4d4e1f10dee9b1c8932db95f91b92e3eceb7db\",\"module\":\"ab9c12082c0be26d44bc9409a843d25ad7840373e427e16f06d1d0e1bf33420b\",\"bridgeAbi\":2,\"engineRules\":\"static-royale-cpp-1\"}",
+        "frames": "5520",
+        "steer": "0",
+        "throttle": "0",
+        "title": "Elmwood Explorer · Detroit"
+      },
+      "errors": []
+    }
+  ]
+}

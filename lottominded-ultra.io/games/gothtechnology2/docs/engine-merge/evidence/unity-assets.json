@@ -1,0 +1,72 @@
+{
+    "editor": "6000.3.24f1",
+    "scope": "Six existing hero/EUC GLB imports and preview scene; not browser or network proof",
+    "assets": [
+        {
+            "name": "DS_Man_01",
+            "renderers": 9,
+            "bones": 24,
+            "triangles": 119435,
+            "size": {
+                "x": 1.2773547172546387,
+                "y": 2.2270264625549318,
+                "z": 1.4295010566711426
+            }
+        },
+        {
+            "name": "DS_Hoodie_Woman_01",
+            "renderers": 1,
+            "bones": 24,
+            "triangles": 15002,
+            "size": {
+                "x": 1.1903712749481202,
+                "y": 2.0302300453186037,
+                "z": 1.0029159784317017
+            }
+        },
+        {
+            "name": "DS_Mascot_Suit_01",
+            "renderers": 1,
+            "bones": 24,
+            "triangles": 13598,
+            "size": {
+                "x": 1.7382893562316895,
+                "y": 1.979682445526123,
+                "z": 2.107794761657715
+            }
+        },
+        {
+            "name": "DS_Mascot_Hoodie_01",
+            "renderers": 1,
+            "bones": 24,
+            "triangles": 13585,
+            "size": {
+                "x": 1.432616114616394,
+                "y": 1.9248294830322266,
+                "z": 1.8736306428909302
+            }
+        },
+        {
+            "name": "DS_Armored_Rider_01",
+            "renderers": 1,
+            "bones": 24,
+            "triangles": 49279,
+            "size": {
+                "x": 2.086033582687378,
+                "y": 2.409857749938965,
+                "z": 1.3265336751937867
+            }
+        },
+        {
+            "name": "DS_EUC_01",
+            "renderers": 37,
+            "bones": 0,
+            "triangles": 11175,
+            "size": {
+                "x": 0.5477074384689331,
+                "y": 0.8717778325080872,
+                "z": 0.5088810920715332
+            }
+        }
+    ]
+}

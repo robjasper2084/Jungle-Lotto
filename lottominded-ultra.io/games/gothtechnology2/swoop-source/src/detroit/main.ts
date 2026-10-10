@@ -1,3 +1,5 @@
+import {loadEngineForPage} from '../../../ride-core/src/engine/browser.ts';
+import {timeLoad,loadTimings} from './loadTiming.ts';
 import {registerDestinationCollision} from './tagSceneryCollisions.ts';
 import {MapPhotographers} from './mapPhotographers.ts';
 import {isCycle,ebikeProfile,eucProfile,vehicleOptions,vehicleSummary} from './electricVehicles.ts';
@@ -75,7 +77,7 @@ import {SPECIAL_MOVES} from './specialMoves.ts';
 import {fallCameraOffset} from './fallMotion.ts';
 import {TouchRideInput,bindTouchControls} from './touchInput.ts';
 import {FollowCamera,chaseFrameFov} from './followCamera.ts';
-import {underpassCameraHeight} from './cameraClearance.ts';
+import {underpassCameraHeight,clearRideCamera} from './cameraClearance.ts';
 import {RIDE_TUNING} from './rideDynamics.ts';
 import * as T from 'three';
 
@@ -117,6 +119,7 @@ if(!elmwood){const p=pennyMap(0,6.7);SPOTS.push({name:'Penny Exchange · next to
 const coarsePointer=matchMedia('(any-pointer: coarse)');document.documentElement.classList.toggle('touchDevice',coarsePointer.matches);coarsePointer.addEventListener('change',()=>document.documentElement.classList.toggle('touchDevice',coarsePointer.matches));
 const $=<E extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(id) as E;
 const canvas=$<HTMLCanvasElement>('world');
+await loadEngineForPage();
 boot.assertActive();
 const mobileGraphics=/Android|iPhone|iPad|Mobile|OculusBrowser/i.test(navigator.userAgent)||navigator.maxTouchPoints>1&&/Macintosh/.test(navigator.userAgent);
 const renderer=new T.WebGLRenderer({canvas,antialias:startupAntialias(),powerPreference:mobileGraphics&&!(navigator.hardwareConcurrency>=8)?'low-power':'high-performance'});
@@ -172,7 +175,7 @@ document.querySelector('.options')!.prepend(mapChooser());$('mapPanel').querySel
 let photographers:MapPhotographers|undefined;let hero!:Hero,traffic:TrafficView,scenery:Awaited<ReturnType<typeof buildScenery>|ReturnType<typeof buildElmwood>>,sim:BicycleAdapter;
 let bicycleView:BicycleView|undefined,community:CyclingSession|undefined;
 const communityActive=()=>running&&mode==='free'&&!practice&&!race&&!split&&!challengeRun&&!vr.active;
-const cycleOptions=document.createElement('div');cycleOptions.className='cycleOptions';cycleOptions.innerHTML='<label for="ride-vehicle">What will you ride?<select id="ride-vehicle"><option value="euc">Electric unicycle (one wheel)</option><option value="bicycle">Bicycle</option></select></label><div id="bikeOptions" hidden><label for="bike-style">Bicycle color<select id="bike-style"></select></label><p>Bicycles use the original suited rider. Push forward to pedal and let go to coast. Pull back to brake; keep holding after stopping to back up slowly. Free riding and races support bicycles.</p></div><button id="community-start">Join the group ride</button>';
+const cycleOptions=document.createElement('div');cycleOptions.className='cycleOptions';cycleOptions.innerHTML='<label for="ride-vehicle">What will you ride?<select id="ride-vehicle"><option value="euc">Electric unicycle (one wheel)</option></select></label><div id="bikeOptions" hidden><label for="bike-style">Bicycle color<select id="bike-style"></select></label><p>Bicycles use the original suited rider. Push forward to pedal and let go to coast. Pull back to brake; keep holding after stopping to back up slowly. Free riding and races support bicycles.</p></div><button id="community-start">Join the group ride</button>';
 $('start').before(cycleOptions);const vehicle=$<HTMLSelectElement>('ride-vehicle'),bikeStyle=$<HTMLSelectElement>('bike-style');bikeStyle.replaceChildren(...BIKE_STYLES.map((s,i)=>new Option(s.name,String(i))));vehicleOptions(vehicle);const performanceCard=document.createElement('p');performanceCard.setAttribute('role','status');performanceCard.style.cssText='line-height:1.5;color:#b3e9e6;max-width:46ch';cycleOptions.append(performanceCard);
 function chooseVehicle(cycling:boolean){if(!sim)return;const id=cycling?vehicle.value:(!isCycle(vehicle.value)?vehicle.value:'euc');sim.selectVehicle(id);for(const name of ['specialMove','hop','crouch']){const b=$<HTMLButtonElement>(name);b.disabled=cycling;b.title=cycling?'Select the EUC to use this action.':'';}clearInput();loop.stopReplay(false);loop.flow.cancel();if(cycling){setRider('DS_Man_01',false);const p=ebikeProfile(id);bicycleView?.dispose();bicycleView=p?new EbikeView(actorData.get('Ebike_'+p.id)!,actorData.get('DS_Man_01')!,p):new BicycleView(actorData.get('DS_Bicycle_01')!,actorData.get('DS_Man_01')!,Number(bikeStyle.value));scene.add(bicycleView.root);}else setRider(wheelRider);if(bicycleView)bicycleView.root.visible=cycling;}
 
@@ -248,6 +251,7 @@ function unlockRideAudio(){void rideAudio.enable(!muted).then(showAudioState).ca
 showAudioState();
 canvas.addEventListener('online-release-input',()=>clearInput());
 function clearInput(){
+ sim?.engineInput.clear();
  split?.input.clear();split?.view.resetTouch();
  trickRequest=0;keys.clear();resetTouch();hop=false;resetPressed=false;cruise=false;acc=0;
  deviceRearm.interrupt();clearCameraTouches();encounterWarning.reset();toastUntil=0;$('toast').hidden=true;
@@ -388,7 +392,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&!vr.active
 let drag:{id:number;x:number;y:number}|undefined;const cameraTouches=new Map<number,{x:number;y:number}>();let pinchDistance=0;
 const clearCameraTouches=()=>{for(const id of cameraTouches.keys())if(canvas.hasPointerCapture(id))canvas.releasePointerCapture(id);if(drag&&canvas.hasPointerCapture(drag.id))canvas.releasePointerCapture(drag.id);cameraTouches.clear();drag=undefined;pinchDistance=0;};
 window.addEventListener('blur',clearCameraTouches);window.addEventListener('resize',()=>{clearInput();clearCameraTouches();});
-canvas.onpointerdown=e=>{if(split){canvas.focus();return;}if(!running||paused||finished||sim.crashed||vr.active||!['first','orbit','photo'].includes(cameraMode))return;canvas.focus();if(e.pointerType==='touch'){cameraTouches.set(e.pointerId,{x:e.clientX,y:e.clientY});if(cameraTouches.size===2){const [a,b]=[...cameraTouches.values()];pinchDistance=Math.hypot(a.x-b.x,a.y-b.y);}}drag={id:e.pointerId,x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);};
+canvas.onpointerdown=e=>{if(e.pointerType==='touch'&&cameraMode==='first'&&e.clientX<innerWidth*.52)return;if(split){canvas.focus();return;}if(!running||paused||finished||sim.crashed||vr.active||!['first','orbit','photo'].includes(cameraMode))return;canvas.focus();if(e.pointerType==='touch'){cameraTouches.set(e.pointerId,{x:e.clientX,y:e.clientY});if(cameraTouches.size===2){const [a,b]=[...cameraTouches.values()];pinchDistance=Math.hypot(a.x-b.x,a.y-b.y);}}drag={id:e.pointerId,x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);};
 canvas.onpointermove=e=>{if(cameraMode==='first'){if(drag?.id===e.pointerId){firstYaw=clamp(firstYaw-(e.clientX-drag.x)*.0032,-1.45,1.45);firstPitch=clamp(firstPitch-(e.clientY-drag.y)*.0032,-1.25,.7);drag.x=e.clientX;drag.y=e.clientY;}return;}if(cameraTouches.has(e.pointerId)){cameraTouches.set(e.pointerId,{x:e.clientX,y:e.clientY});if(cameraTouches.size>=2){const [a,b]=[...cameraTouches.values()],distance=Math.hypot(a.x-b.x,a.y-b.y);if(pinchDistance>0){orbitDistance=clamp(orbitDistance*pinchDistance/Math.max(1,distance),2.5,12);if(cameraMode!=='orbit'){orbitYaw=cameraMode==='front'?Math.PI:cameraMode==='side'?Math.PI/2:0;setCamera('orbit');}}pinchDistance=distance;return;}}if(drag?.id!==e.pointerId)return;if(cameraMode!=='orbit'){orbitYaw=cameraMode==='front'?Math.PI:cameraMode==='side'?Math.PI/2:0;cameraMode='orbit';}
   orbitYaw-=(e.clientX-drag.x)*.007;orbitHeight=clamp(orbitHeight+(e.clientY-drag.y)*.015,1,10);drag.x=e.clientX;drag.y=e.clientY;};
 canvas.onpointerup=canvas.onpointercancel=canvas.onlostpointercapture=e=>{cameraTouches.delete(e.pointerId);pinchDistance=0;const first=cameraTouches.entries().next().value;drag=first?{id:first[0],x:first[1].x,y:first[1].y}:undefined;};canvas.oncontextmenu=e=>e.preventDefault();
@@ -408,6 +412,7 @@ let toastUntil=0;function toast(text:string){$('toast').textContent=text;toastUn
 installRaceUI(()=>startRace(!!race?.cyclingOpponents),freeRideHere,()=>{stopRace();$('menuButton').click();});
 const splitOption=document.createElement('option');splitOption.value='split';splitOption.textContent='2-player split-screen';$('mode').append(splitOption);
 const lobby=installLobby(elmwood,startRace,startSplit);
+const royaleEntry=document.createElement('button');royaleEntry.textContent='Static Royale · 6 riders';royaleEntry.onclick=()=>location.assign('./royale.html?from=swoop'+(new URLSearchParams(location.search).get('engine')==='breadflower'?'&engine=breadflower':''));lobby.moreItems.append(royaleEntry);
 const startupCinema=elmwood?undefined:new StartupCinema();
 const online=new OnlineRooms(elmwood?'elmwood':'cut',()=>ready,()=>Number($<HTMLSelectElement>('spawn').value),startOnline,()=>{if(split){stopSplit();running=false;clearInput();$('menu').hidden=false;document.body.classList.remove('playing');$('resumeRide').hidden=true;}});
 async function startOnline(match:RoomMatch,slot:number){
@@ -517,20 +522,20 @@ async function prepareSpawn(spot:number){
 }
 try{
   bootStage('loading','Loading your rider and Detroit district…');
-  const [data]=await Promise.all([loadActors(),mapWorld.init()]);
+  const [data]=await Promise.all([timeLoad('riders',()=>loadActors()),timeLoad('physics',()=>mapWorld.init())]);
   boot.assertActive();bootStage('preparing','Preparing streets, landmarks and collision…');
   // Ground queries need the initialized physics world, including nature placement.
   const cherrySites=elmwood?[35,150,390,640,940,1290,1640].map((d,i)=>({...pointOnCut(d,i%2?7:-7),scale:.95+i%3*.1})).filter(m=>dryStreetSite(m.x,m.z,1)):cherryTreeSites((x,z)=>(mapWorld as DetroitWorld).chunks.some(c=>Math.abs(c.x-x)<=50&&Math.abs(c.z-z)<=50));
   const cherryAnchors=cherrySites.map(m=>{const p=toLocal(m.x,0,m.z);return{x:p.x,z:p.z,y:world.sampleGround(p.x,p.z,cherryGround).height,scale:m.scale};});
   nature=new NatureWorld(scene,cherryAnchors,(x,z)=>world.sampleGround(x,z,cherryGround).height);void nature.load();
   natureAudio=new NatureAudio([{file:'birdsong.mp3',points:cherryAnchors,radius:65,volume:.15}],()=>!muted&&running&&!paused&&$('menu').hidden);
-  await interiorStream.warm([SPOTS[Number($<HTMLSelectElement>('spawn').value)]],350);
+  await timeLoad('nearby-interiors',()=>interiorStream.warm([SPOTS[Number($<HTMLSelectElement>('spawn').value)]],350));
 
 
   boot.assertActive();bootStage('preparing','Preparing the ride and controls…');
   if(!elmwood&&!qaVisualBaseline)ambience=new RouteAmbience(scene,world,effectPatches);
   if(!elmwood)buildFreestylePark(mapScene,mapWorld as DetroitWorld);
-  actorData=data;scenery=elmwood?await buildElmwood(mapScene,mapWorld as ElmwoodWorld,()=>compactElmwood||vr.active):await buildScenery(mapScene,mapWorld,!qaVisualBaseline,toMap(SPOTS[selectedSpot].x,0,SPOTS[selectedSpot].z));setRider(selectedRider);traffic=new TrafficView(scene,data,world);photographers=new MapPhotographers(scene,data,world);dogView=new CompanionView(data,world);scene.add(dogView.root);
+  actorData=data;scenery=elmwood?await buildElmwood(mapScene,mapWorld as ElmwoodWorld,()=>compactElmwood||vr.active):await timeLoad('scenery-total',()=>buildScenery(mapScene,mapWorld,!qaVisualBaseline,toMap(SPOTS[selectedSpot].x,0,SPOTS[selectedSpot].z)));setRider(selectedRider);traffic=new TrafficView(scene,data,world);photographers=new MapPhotographers(scene,data,world);dogView=new CompanionView(data,world);scene.add(dogView.root);
   setCompanion(dogEnabled);
   if(elmwood&&'waterGroup' in scenery&&!compactElmwood){
     // One reflection capture of the actual banks and trees, outside the frame loop.
@@ -546,7 +551,7 @@ try{
   if(!elmwood){community=new CyclingSession('Swoop Detroit',scene,actorData,world.withActorPassThrough(computerBikeContact),new LaneRoute(Array.from({length:31},(_,i)=>({...routePosition(850+i*5),width:5}))),()=>current,travelCommunity,()=>canvas.focus());community.ride.passThroughContact=o=>computerBikeContact(o)||o.id==='player'&&!!community?.ride.joined;}
   boot.assertActive();
   if(!boot.finish(!!actorData.get(selectedRider),!!SPOTS[Number($<HTMLSelectElement>('spawn').value)],!!scenery,!!sim))throw new Error('Rider, start location, scene or controller is unavailable');
-  renderBoot();graphics.apply();ready=true;loop.ready();canvas.dataset.ready='true';canvas.dataset.firstPlayableMs=String(Math.round(performance.now()-bootStarted));canvas.dataset.hero=selectedRider;canvas.dataset.controller=RIDE_TUNING.version;canvas.dataset.physics='Rapier terrain + Digital Static controller';canvas.dataset.routeLength=String(LENGTH);$('loading').hidden=true;$<HTMLButtonElement>('start').disabled=false;quickPractice.disabled=false;document.querySelectorAll<HTMLButtonElement>('.districtCard').forEach(b=>b.disabled=false);
+  renderBoot();graphics.apply();ready=true;loop.ready();canvas.dataset.ready='true';canvas.dataset.bootProfile=JSON.stringify(loadTimings);canvas.dataset.firstPlayableMs=String(Math.round(performance.now()-bootStarted));canvas.dataset.hero=selectedRider;canvas.dataset.controller=RIDE_TUNING.version;canvas.dataset.physics='Rapier terrain + Digital Static controller';canvas.dataset.routeLength=String(LENGTH);$('loading').hidden=true;$<HTMLButtonElement>('start').disabled=false;quickPractice.disabled=false;document.querySelectorAll<HTMLButtonElement>('.districtCard').forEach(b=>b.disabled=false);
   const {LoveTagClient}=await import('@digital-static/ridecore/tag-client');
   loveTag=new LoveTagClient({product:'swoop-detroit',scene,camera,canvas,mountDisplay:graphics.mount,menu:lobby.moreItems,
     fixtureUrl:new URL('./love-tag/swoop-detroit.json',location.href).href,configUrl:new URL('./love-tag/config.json',location.href).href,
@@ -686,14 +691,14 @@ function frame(now:number,xrFrame?:XRFrame){
     camera.rotateZ(eyes.roll);camera.fov=74;
   }
   else if(cameraMode==='photo'&&photoTarget){camera.position.set(pose.x,underpassCameraHeight(world,pose,pose.y+2.35),pose.z);camera.lookAt(photoTarget.x,photoTarget.y,photoTarget.z);camera.fov=60;}
-  else if((cameraMode==='chase'||cameraMode==='first')&&running){const view=follow.sample(!paused&&!finished?Math.min(1,acc*120):1);camera.position.set(view.eye.x,view.eye.y,view.eye.z);camera.lookAt(view.target.x,view.target.y,view.target.z);camera.rotateZ(view.roll);camera.fov=chaseFrameFov(view.fov,camera.aspect);}
+  else if((cameraMode==='chase'||cameraMode==='first')&&running){const view=follow.sample(!paused&&!finished?Math.min(1,acc*120):1);clearRideCamera(world,view.eye,view.target,pose.y);camera.position.set(view.eye.x,view.eye.y,view.eye.z);camera.lookAt(view.target.x,view.target.y,view.target.z);camera.rotateZ(view.roll);camera.fov=chaseFrameFov(view.fov,camera.aspect);}
   else {
     const angle=pose.headingY+(cameraMode==='front'?Math.PI:cameraMode==='side'?Math.PI/2:orbitYaw),distance=cameraMode==='orbit'?orbitDistance:5;
     const fall=fallCameraOffset(pose);
     const target=new T.Vector3(pose.x+fall.x,pose.y+1.1+fall.y,pose.z+fall.z),wanted=new T.Vector3(pose.x-Math.sin(angle)*distance+fall.x,pose.y+(cameraMode==='orbit'?orbitHeight:2.05),pose.z-Math.cos(angle)*distance+fall.z);
     wanted.y=Math.min(underpassCameraHeight(world,pose,wanted.y),underpassCameraHeight(world,wanted,wanted.y,pose.y));
     const direction=wanted.clone().sub(target),hit=world.raycast(target,direction,direction.length());if(hit!==null)wanted.copy(target).addScaledVector(direction.normalize(),Math.max(.65,hit-.2));wanted.y=Math.max(wanted.y,world.sampleGround(wanted.x,wanted.z,ground,pose.y).height+.35);
-    camera.position.lerp(wanted,1-Math.exp(-dt*10));
+    camera.position.lerp(wanted,1-Math.exp(-dt*10));clearRideCamera(world,camera.position,target,pose.y);
     camera.position.y=Math.min(underpassCameraHeight(world,pose,camera.position.y),underpassCameraHeight(world,camera.position,camera.position.y,pose.y));
     camera.lookAt(target);camera.fov=52;
   }
@@ -702,6 +707,7 @@ function frame(now:number,xrFrame?:XRFrame){
   const shopVisible=running&&!finished&&!split&&!vr.active&&$('menu').hidden&&$('helpPanel').hidden&&$('mapPanel').hidden&&!film.playing;
   if(shopVisible&&!paused&&!cabinets?.playing){const p=toMap(pose.x,pose.y,pose.z),room=studioCoordinates(p.x,p.z);if(Math.abs(room.u)<9.5&&room.v>-21&&room.v<-.5)welcomeGothTech('studio');else if(room.u>2.5&&room.u<21&&room.v>-.5&&room.v<17)welcomeGothTech('store');}
   pennyShop?.update(pose.x,pose.z,shopVisible&&!cabinets?.playing);studioScreens?.update(pose.x,pose.z,shopVisible&&!cabinets?.playing);lottoShop?.update(pose.x,pose.z,shopVisible&&!cabinets?.playing);cabinets?.update(pose.x,pose.z,shopVisible,camera);
+  camera.userData.rideSightline=running&&!vr.active&&cameraMode==='chase'?(camera.userData.rideSightline??new T.Vector3()).set(pose.x,pose.y+1.1,pose.z):undefined;
   if(!vr.active)camera.updateProjectionMatrix();followStableSun(sun,pose,night?DUSK_SUN:DAY_SUN);fill.position.set(pose.x-12,pose.y+8,pose.z-13);fill.target.position.copy(hero.root.position);if(!qaVisualBaseline&&!elmwood&&!night){const roof=world.raycastObstacle({x:pose.x,y:pose.y+2.3,z:pose.z},{x:0,y:1,z:0},7);fill.intensity=T.MathUtils.damp(fill.intensity,roof===null?.55:.9,5,dt);}
   canvas.dataset.visibleChunks=String(scenery.update(toMap(pose.x,0,pose.z).x,toMap(pose.x,0,pose.z).z,clock));if(now-hudAt>120)canvas.dataset.environment=JSON.stringify({rails:'rails' in scenery?scenery.rails:0,landmarks:'landmarks' in scenery?scenery.landmarks:null,flowers:'flowers' in scenery?scenery.flowers:0,trees:scenery.trees,grassClumps:'grassClumps' in scenery?scenery.grassClumps:0,routeArt:'routeArt' in scenery?scenery.routeArt:null,generatedSkins:scenery.skins,treeVersion:elmwood?'elmwood-five-species-20260916':'curved-elm-maple-20260915',style:elmwood?'Five botanical meshes, photographic PBR and outdoor HDR lighting':'Higgsfield elm/maple foliage, tapered branches and bark',quality:compactElmwood||vr.active?'compact':'detailed'});renderer.render(scene,camera);studioCapture?.afterRender();if(finished)loop.capture(canvas);frames++;if(now-fpsAt>1000){fps=frames*1000/(now-fpsAt);frames=0;fpsAt=now;}
   if(photoPending){photoPending=false;if(photoTarget&&challengeRun&&!finished&&!paused){const target=new T.Vector3(photoTarget.x,photoTarget.y,photoTarget.z),direction=target.clone().sub(camera.position),distance=direction.length(),projected=target.clone().project(camera),hit=world.raycast(camera.position,direction.clone().normalize(),Math.max(0,distance-.8));const check={distance:Math.hypot(target.x-pose.x,target.z-pose.z),speed:pose.speed,inFrame:Math.abs(projected.x)<.85&&Math.abs(projected.y)<.85&&projected.z>-1&&projected.z<1,unobstructed:hit===null||hit>=distance-.8};if(photoAllowed(check)&&challengeRun.capture(photoTarget.id,check)){district.savePhoto(photoTarget.id,canvas);confirmRide('checkpoint','PHOTO SAVED · '+photoTarget.name,'photo:'+photoTarget.id);if(challengeRun.done)completeChallenge();}else toast('Stop within 3–42 m with a clear view. Use Frame subject or orbit the camera.');}}
@@ -745,3 +751,4 @@ function frame(now:number,xrFrame?:XRFrame){
 renderer.setAnimationLoop(frame);
 window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;graphics.resize();camera.updateProjectionMatrix();});
 canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();paused=true;clearInput();renderer.setAnimationLoop(null);boot.fail('Graphics were interrupted. Reload to return to the menu.','WebGL context lost; simulation and race clocks stopped. Your saved records are unchanged.');renderBoot();});
+

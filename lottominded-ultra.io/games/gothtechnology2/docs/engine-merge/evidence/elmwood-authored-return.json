@@ -1,0 +1,5 @@
+{
+  "at": "2026-10-10T01:44:22.591Z",
+  "url": "http://127.0.0.1:4191/arcade/elmwood-explorer/elmwood.html?engine=breadflower",
+  "ui": "- banner:\n  - heading \"Elmwood Cemetery\" [level=1]\n- generic \"Interactive Elmwood Cemetery 3D environment\" [active]\n- navigation \"Ride controls\":\n  - button \"Pause ride\"\n  - button \"Main menu\"\n  - button \"Settings\"\n- generic \"Touch riding controls\":\n  - button \"Move joystick\":\n    - generic: MOVE\n  - button \"Brake\"\n  - button \"Hop\"\n  - button \"Crouch\"\n  - button \"Recover\"\n  - button \"Camera\"\n  - button \"Trick\"\n- strong: 30 km/h\n- text: 0.01 km · 0 pts\n- group \"Elmwood mini-map controls\":\n  - button \"Open Elmwood map\":\n    - generic: N ↑\n    - generic: Elmwood · lanes & pond\n  - button \"Zoom out mini-map\": −\n  - button \"Zoom in mini-map\": +\n- 'img \"Compass: NE 64 degrees\"':\n  - generic: NE\n  - generic: E\n  - strong: NE 064°\n- generic \"Gameplay recording\":\n  - button \"Record ride\"\n  - status\n- text: ▸ ▸ ✓ ✓\n- group \"Elmwood community ride\":\n  - generic \"▸ Group ride\""
+}
