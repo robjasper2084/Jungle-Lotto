@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "version": "2026.08.08",
-  "lastChecked": "2026-08-08",
+  "version": "2026.10.10",
+  "lastChecked": "2026-10-10",
   "games": [
     {
       "id": "gothtechnology",
@@ -171,6 +171,31 @@
       "featured": false,
       "accent": "gold",
       "notice": "Entertainment and educational purposes only. No prediction, wagering, cash value, or browser-issued LottoCredits."
+    },
+    {
+      "id": "robot-rahbe-underground",
+      "title": "ROBOT RAHBE: UNDERGROUND",
+      "route": "./games/robot-rahbe-underground/",
+      "thumbnail": "./games/robot-rahbe-underground/assets/environment/detroit/gm-renaissance-title.webp",
+      "status": "Playable",
+      "membershipRequirement": "Free",
+      "estimatedSessionTime": "10-20 minutes",
+      "supportedControls": "Keyboard + gamepad + customizable touch",
+      "rewardEligibility": "Not eligible",
+      "version": "1.1",
+      "description": "Descend through seven Detroit depths, recover three number seals, and defeat the Number Warden.",
+      "category": "Action",
+      "difficulty": "Intermediate",
+      "tags": [
+        "Detroit",
+        "platformer",
+        "vault",
+        "exploration",
+        "touch"
+      ],
+      "featured": true,
+      "accent": "gold",
+      "notice": "Fictional arcade relics and puzzles. No prediction, wagering, cash value or redemption."
     }
   ]
 }

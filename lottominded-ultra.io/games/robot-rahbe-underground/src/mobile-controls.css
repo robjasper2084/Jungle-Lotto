@@ -1,0 +1,8 @@
+#touch{position:static;pointer-events:none}#touch .touch-deck{display:block;--td-accent:#edbd6d}
+#touch button.td-control{background:#101b2370;border:1px solid #edf5efb0;border-radius:50%;padding:4px;backdrop-filter:none;font:600 9px system-ui}
+#touch button.td-customize{width:44px;height:44px;padding:10px;border-radius:50%;background:#0c202bb0}
+#touch .td-stage{min-height:200px}#touch .td-control[data-held=true]{background:#b7dcd95c;border-color:#fff}
+.td-editor{z-index:50}.td-editor button{font-size:12px}
+body.playing #game-hint{bottom:18px}body.playing:has(#touch:not([hidden])) #game-hint{display:none}
+@media(pointer:coarse),(max-width:899px){#boss-hud{top:142px;bottom:auto;width:min(360px,65%)}#context{bottom:292px;max-width:90%;white-space:normal;text-align:center}}
+@media(orientation:landscape) and (max-height:600px){#context{bottom:14px;max-width:40%;font-size:9px}#boss-hud{top:92px;width:30%}#touch .td-battle{height:min(270px,76dvh)}.playing #hud .depth-readout{min-width:0}#objective{display:none}#toast{top:100px}}
