@@ -1,4 +1,4 @@
-import {WIDTH,HEIGHT,STRIDE,DEPTHS,makeWorld,floorY,checkpoint} from './world.js?v=2.0.1';
+import {WIDTH,HEIGHT,STRIDE,DEPTHS,makeWorld,floorY,checkpoint} from './world.js?v=2.0.2';
 export const STEP=1/60;
 export const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
@@ -25,16 +25,16 @@ export function createSimulation(saved=null,options={}){
 export function serialize(s){return {version:1,reached:s.reached,coins:s.coins,secrets:s.secrets,seals:s.world.seals.filter(x=>x.taken).map(x=>x.number),taken:s.world.coins.filter(x=>x.taken).map(x=>x.id),treasures:s.world.treasures.flatMap((x,i)=>x.taken?[i]:[]),branches:s.world.branchRooms.filter(x=>x.taken).map(x=>x.id),wallOpen:s.world.walls[0].hp<=0,seed:s.seed,runMode:s.runMode,upgrades:s.upgrades,time:s.time,deaths:s.deaths,kills:s.kills};}
 export function emit(s,type,text,x=s.player.x,y=s.player.y){s.events.push({type,text,x,y});}
 function burst(s,x,y,color,count=10){for(let i=0;i<count;i++)s.sparks.push({x,y,vx:Math.cos(i*2.4)*80+(i%3)*25,vy:Math.sin(i*2.4)*110-65,life:.4+(i%5)*.06,color});}
-export function hurt(s,amount=1,sourceX=s.player.x-1){
+export function hurt(s,amount=1,sourceX=s.player.x-1,cause='DAMAGE'){
   const p=s.player;if(p.invuln>0||s.mode!=='playing')return false;
   if(s.shield>0){s.shield=0;p.invuln=.6;emit(s,'shield','SIGNAL SHIELD ABSORBED THE HIT');return false;}
   p.hp=Math.max(0,p.hp-amount);p.invuln=1.6;p.hurtUntil=s.time+.32;p.vx=(p.x<sourceX?-1:1)*210;p.vy=-230;p.rope=-1;p.cart=-1;
-  burst(s,p.x,p.y-30,'#ef7758');emit(s,'hurt','Integrity damaged');
-  if(p.hp===0){s.mode='dead';s.deaths++;emit(s,'dead','Signal lost. Your checkpoint is safe.');}
+  s.lastDamage={cause,time:s.time};burst(s,p.x,p.y-30,'#ef7758');emit(s,'hurt',cause+' · '+p.hp+' / '+p.maxHp+' INTEGRITY');
+  if(p.hp===0){s.mode='dead';s.deaths++;emit(s,'dead','Signal lost to '+cause.toLowerCase()+'. Your checkpoint is safe.');}
   return true;
 }
-export function respawn(s){Object.assign(s.player,checkpoint(s.reached),{vx:0,vy:0,hp:6,invuln:2,rope:-1,cart:-1,climbing:false,grounded:true});s.depth=s.reached;s.mode='playing';s.shots=[];s.world.boss.active=false;emit(s,'checkpoint','Signal restored at '+DEPTHS[s.reached].name);}
-function fallReset(s){if(hurt(s,1)){if(s.mode==='playing'){const hp=s.player.hp;Object.assign(s.player,checkpoint(s.reached),{vx:0,vy:0,rope:-1,cart:-1,grounded:true,climbing:false,hp});emit(s,'checkpoint','Recalled to the last access beacon.');}}else if(s.mode==='playing'){Object.assign(s.player,checkpoint(s.reached),{vx:0,vy:0,rope:-1,cart:-1});}}
+export function respawn(s){Object.assign(s.player,checkpoint(s.reached),{vx:0,vy:0,hp:6,invuln:2,rope:-1,cart:-1,climbing:false,grounded:true});s.shield=s.upgrades.shield?1:0;s.depth=s.reached;s.mode='playing';s.shots=[];s.world.boss.active=false;emit(s,'checkpoint','Signal restored at '+DEPTHS[s.reached].name);}
+function fallReset(s,cause='FALL'){if(hurt(s,1,s.player.x-1,cause)){if(s.mode==='playing'){const hp=s.player.hp;Object.assign(s.player,checkpoint(s.reached),{vx:0,vy:0,rope:-1,cart:-1,grounded:true,climbing:false,hp});emit(s,'checkpoint',cause+' · Recalled to the last access beacon.');}}else if(s.mode==='playing'){Object.assign(s.player,checkpoint(s.reached),{vx:0,vy:0,rope:-1,cart:-1});}}
 export function update(s,a={},dt=STEP){
   if(s.mode!=='playing')return;
   s.time+=dt;const p=s.player,w=s.world;const move=clamp((a.right?1:0)-(a.left?1:0)+(Number(a.moveX)||0),-1,1);const vertical=(a.down?1:0)-(a.up?1:0);
@@ -89,7 +89,8 @@ export function update(s,a={},dt=STEP){
       if(move)p.facing=Math.sign(move);
       p.coyote=p.grounded?.11:Math.max(0,p.coyote-dt);
       if(p.jumpBuffer>0&&p.coyote>0){p.vy=-685;p.grounded=false;p.coyote=0;p.jumpBuffer=0;emit(s,'jump','');}
-      if(a.jumpReleased&&p.vy<-270)p.vy=-270;
+      // A brief button tap must still clear a rolling coin; holding retains the full arc.
+      if(a.jumpReleased&&p.vy<-540)p.vy=-540;
       p.vy=Math.min(p.vy+1500*dt,900);
       p.x+=p.vx*dt;p.y+=p.vy*dt;p.grounded=false;p.standing=null;
       for(const plat of w.platforms){
@@ -125,9 +126,9 @@ export function update(s,a={},dt=STEP){
   for(const seal of w.seals){if(!seal.taken&&distance({x:p.x,y:p.y-27},seal)<55){seal.taken=true;s.coins+=250;s.saveRevision++;burst(s,seal.x,seal.y,'#82ded5',24);emit(s,'seal','NUMBER SEAL '+seal.number+' RECOVERED');}}
   for(const chest of w.treasures){if(!chest.taken&&distance({x:p.x,y:p.y-27},chest)<56&&(!chest.wall||w.walls.find(x=>x.id===chest.wall)?.hp<=0)){chest.taken=true;s.coins+=500;s.secrets++;p.hp=Math.min(6,p.hp+2);s.saveRevision++;emit(s,'treasure','TREASURE ROOM · +500 RELICS · INTEGRITY RESTORED');burst(s,chest.x,chest.y,'#edbd6d',30);}}
   for(const room of w.branchRooms){if(!room.taken&&distance({x:p.x,y:p.y-27},room)<50){room.taken=true;s.coins+=room.reward;s.saveRevision++;emit(s,'cache','SIDE ROUTE SECURED · +'+room.reward+' RELICS');}}
-  for(const h of w.hazards){if(overlaps(body(p),h)&&p.cart<0){fallReset(s);break;}}
-  for(const r of w.rolling){if(distance({x:p.x,y:p.y-24},r)<r.r+20)hurt(s,1,r.x);}
-  if(s.train.active&&s.depth===1&&overlaps(body(p),{x:s.train.x,y:floorY(1)-105,w:1150,h:105})){hurt(s,2,s.train.x+600);}
+  for(const h of w.hazards){if(overlaps(body(p),h)&&p.cart<0){const cause=h.type==='spikes'?'SPIKES':'FIRE PIT';if(h.surface)hurt(s,1,h.x+h.w/2,cause);else fallReset(s,cause);break;}}
+  for(const r of w.rolling){const box=body(p),cx=clamp(r.x,box.x,box.x+box.w),cy=clamp(r.y,box.y,box.y+box.h);if(Math.hypot(r.x-cx,r.y-cy)<r.r-2)hurt(s,1,r.x,'ROLLING COIN');}
+  if(s.train.active&&s.depth===1&&overlaps(body(p),{x:s.train.x,y:floorY(1)-105,w:1150,h:105})){hurt(s,2,s.train.x+600,'GHOST TRAIN');}
   for(const e of w.enemies){
     if(e.hp<=0||Math.abs(e.depth-s.depth)>1)continue;
     e.resting=(s.time+e.id*.17)%7<.8;
@@ -141,7 +142,7 @@ export function update(s,a={},dt=STEP){
       e.shot=e.type==='drone'?3.7:e.tactic==='sentinel'?2.8:2.3;e.attackUntil=s.time+.4;const sx=e.x,sy=e.y-(e.type==='drone'?0:33);const angle=Math.atan2(p.y-30-sy,p.x-sx);
       s.shots.push({x:sx,y:sy,vx:Math.cos(angle)*210,vy:Math.sin(angle)*210,enemy:true,life:4});
     }
-    if(distance({x:p.x,y:p.y-28},{x:e.x,y:e.y-(e.type==='guard'?30:0)})<37)hurt(s,1,e.x);
+    if(distance({x:p.x,y:p.y-28},{x:e.x,y:e.y-(e.type==='guard'?30:0)})<37)hurt(s,1,e.x,e.type==='guard'?'GUARD CONTACT':'DRONE CONTACT');
   }
   const b=w.boss;b.flash=Math.max(0,b.flash-dt);
   const stage=b.hp>43?1:b.hp>21?2:3;if(stage!==b.stage){b.stage=stage;if(b.active)emit(s,'boss-phase','WARDEN PHASE '+stage+' · '+['','LOCKED DRAW','CROSSFIRE','CORE OVERLOAD'][stage]);}
@@ -150,11 +151,11 @@ export function update(s,a={},dt=STEP){
     b.phase+=dt;b.x=2120+Math.sin(b.phase*.6)*190;b.facing=Math.sign(p.x-b.x)||-1;b.shot-=dt;b.pulse-=dt;
     if(b.shot<=0){b.attackUntil=s.time+.4;b.shot=stage===1?1.6:stage===2?1.3:1.2;const angle=Math.atan2(p.y-30-(b.y-80),p.x-b.x);for(let j=-1;j<=1;j++)s.shots.push({x:b.x,y:b.y-80,vx:Math.cos(angle+j*(stage===1?.17:stage===2?.28:.42))*(stage===3?220:240),vy:Math.sin(angle+j*(stage===1?.17:stage===2?.28:.42))*(stage===3?220:240),enemy:true,life:5});}
     if(b.pulse<=0){b.attackUntil=s.time+.48;b.pulse=b.hp<30?2.8:4.2;s.shots.push({x:b.x-30,y:b.y-14,vx:-330,vy:0,enemy:true,life:7,wave:true});emit(s,'wave','SHOCKWAVE · W TO JUMP');}
-    if(distance({x:p.x,y:p.y-30},{x:b.x,y:b.y-65})<100)hurt(s,2,b.x);
+    if(distance({x:p.x,y:p.y-30},{x:b.x,y:b.y-65})<100)hurt(s,2,b.x,'WARDEN CONTACT');
   }
   for(const shot of s.shots){
     shot.x+=shot.vx*dt;shot.y+=shot.vy*dt;shot.life-=dt;
-    if(shot.enemy){if(overlaps({x:shot.x-(shot.wave?17:6),y:shot.y-(shot.wave?10:6),w:shot.wave?34:12,h:shot.wave?20:12},body(p))){hurt(s,1,shot.x);shot.life=0;}}
+    if(shot.enemy){if(overlaps({x:shot.x-(shot.wave?17:6),y:shot.y-(shot.wave?10:6),w:shot.wave?34:12,h:shot.wave?20:12},body(p))){hurt(s,1,shot.x,shot.wave?'WARDEN SHOCKWAVE':'ENEMY FIRE');shot.life=0;}}
     else{
       for(const e of w.enemies){if(e.hp>0&&!shot.hitIds?.includes(e.id)&&Math.abs(shot.x-e.x)<32&&Math.abs(shot.y-(e.y-(e.type==='guard'?30:0)))<40){e.hp--;e.hurtUntil=s.time+.28;s.hitStop=.035;(shot.hitIds??=[]).push(e.id);if(shot.pierce>0)shot.pierce--;else shot.life=0;burst(s,shot.x,shot.y,'#82ded5',12);emit(s,'impact','');if(e.hp<=0){e.deadAt=s.time;s.kills++;s.coins+=50;emit(s,'enemy','');}break;}}
       for(const wall of w.walls){if(wall.hp>0&&overlaps({x:shot.x-5,y:shot.y-5,w:10,h:10},wall)){wall.hp--;shot.life=0;burst(s,shot.x,shot.y,'#b2aa86');if(wall.hp===0){s.saveRevision++;emit(s,'secret','SECRET PASSAGE OPENED · Treasure lies beyond.');}}}

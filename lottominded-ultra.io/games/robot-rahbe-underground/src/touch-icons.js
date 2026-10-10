@@ -1,4 +1,4 @@
-import { controlIcons } from './touch-icon-data.js?v=2.0.1';
+import { controlIcons } from './touch-icon-data.js?v=2.0.2';
 
 export function touchIcon(name) {
   const data = controlIcons[name];

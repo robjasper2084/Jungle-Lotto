@@ -1,8 +1,8 @@
-import {WIDTH,STRIDE,DEPTHS,floorY} from './world.js?v=2.0.1';
-import {clamp,ropeEnd} from './simulation.js?v=2.0.1';
-import {RAHBE_MOTIONS} from './rahbe-motions.js?v=2.0.1';
-import {DETROIT_ART,DETROIT_SCENES} from './detroit-art.js?v=2.0.1';
-import {VILLAIN_MOTIONS} from './villain-motions.js?v=2.0.1';
+import {WIDTH,STRIDE,DEPTHS,floorY} from './world.js?v=2.0.2';
+import {clamp,ropeEnd} from './simulation.js?v=2.0.2';
+import {RAHBE_MOTIONS} from './rahbe-motions.js?v=2.0.2';
+import {DETROIT_ART,DETROIT_SCENES} from './detroit-art.js?v=2.0.2';
+import {VILLAIN_MOTIONS} from './villain-motions.js?v=2.0.2';
 export const MANIFEST={'title-gm':'assets/environment/detroit/gm-renaissance-title.webp',rahbe:'assets/characters/rahbe.webp',...Object.fromEntries(Object.entries(RAHBE_MOTIONS).map(([name,data])=>['rahbe-'+name,data.sheet])),...Object.fromEntries(Object.entries(VILLAIN_MOTIONS).map(([name,data])=>['motion-'+name,data.sheet])),...DETROIT_ART};
 const noise=n=>{const x=Math.sin(n*127.1+311.7)*43758.5453;return x-Math.floor(x);};
 export class Renderer{
@@ -45,8 +45,9 @@ export class Renderer{
       const y=floorY(depth);if(y<view.y-100||y-STRIDE>view.y+view.h)continue;
       this.background(c,depth,y,left,right,s,view);
     }
-    for(const h of w.hazards){if(h.y<view.y-70||h.y>view.y+view.h)continue;this.hazard(c,h,t);}
     for(const plat of w.platforms){if(plat.x+plat.w<left||plat.x>right||plat.y<view.y-120||plat.y>view.y+view.h+50)continue;this.platform(c,plat,s.time);}
+    // Hazard art must remain in front of the floor that supports its collider.
+    for(const h of w.hazards){if(h.y<view.y-70||h.y>view.y+view.h)continue;this.hazard(c,h,t);}
     for(const l of w.ladders){if(l.x<left||l.x>right||l.y2<view.y||l.y1>view.y+view.h)continue;
       const im=this.images['art-ladder'];if(im){c.save();c.beginPath();c.rect(l.x-25,l.y1,50,l.y2-l.y1);c.clip();for(let yy=l.y1;yy<l.y2;yy+=142)c.drawImage(im,0,im.height*.14,im.width,im.height*.68,l.x-25,yy,50,142);c.restore();}
       if(!l.short){this.light(c,l.x-45,l.y1+10,'#8adde0',36);this.label(c,'↓',l.x,l.y1-17,19,'#82ded5');}
@@ -117,7 +118,7 @@ export class Renderer{
   }
   hazard(c,h,t){
     const im=this.images[h.type==='spikes'?'art-spikes':'art-fire'];if(!im)return;
-    if(h.type==='spikes'){const tile=90;c.save();c.beginPath();c.rect(h.x,h.y-2,h.w,h.h+8);c.clip();for(let x=h.x;x<h.x+h.w;x+=tile)c.drawImage(im,x,h.y,tile,h.h+4);c.restore();}
+    if(h.type==='spikes'){const tile=90;if(h.surface){this.light(c,h.x+h.w/2,h.y+12,'#f8c35f',75);c.fillStyle='#d1a242';c.fillRect(h.x,h.y+h.h-5,h.w,7);}c.save();c.beginPath();c.rect(h.x,h.y-2,h.w,h.h+8);c.clip();for(let x=h.x;x<h.x+h.w;x+=tile)c.drawImage(im,x,h.y,tile,h.h+4);c.restore();}
     else{this.light(c,h.x+h.w/2,h.y,'#f29d48',h.w*.8);c.fillStyle='#6a291b';c.fillRect(h.x,h.y+14,h.w,20);for(let x=h.x;x<h.x+h.w;x+=62){const f=this.reduced?1:Math.floor(t*11+x)%4;c.drawImage(im,f*256,0,256,256,x-5,h.y-58,86,96);}}
   }
   coin(c,x,y,r,t){

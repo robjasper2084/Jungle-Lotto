@@ -1,4 +1,4 @@
-import { touchIcon } from './touch-icons.js?v=2.0.1';
+import { touchIcon } from './touch-icons.js?v=2.0.2';
 
 const clamp = (value, low, high) => Math.max(low, Math.min(high, value));
 const copy = (value) => JSON.parse(JSON.stringify(value));
