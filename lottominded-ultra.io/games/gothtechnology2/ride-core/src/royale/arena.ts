@@ -22,7 +22,7 @@ export const ZONE_CANDIDATES=[{x:0,z:0},{x:-12,z:0},{x:12,z:0},{x:0,z:-12},{x:0,
 function hash(text:string){let n=2166136261;for(let i=0;i<text.length;i++)n=Math.imul(n^text.charCodeAt(i),16777619);return(n>>>0).toString(16).padStart(8,'0');}
 export const COLLISION_HASH=hash(JSON.stringify({blocks:BLOCKS,ramps:RAMPS,spawns:SPAWNS,zone:ZONE_CANDIDATES}));
 export const HANDSHAKE=Object.freeze({map:ARENA_ID,arena:'1',rules:'static-royale-1',protocol:1,physics:'ridecore-1.2.0-battle-1',collision:COLLISION_HASH});
-export function currentHandshake(base:BattleTerrain['arenaIdentity']=HANDSHAKE){return engineReady()?{...base,...ENGINE_ID,rules:'static-royale-cpp-2',protocol:4,combat:COMBAT_HASH,wheels:WHEEL_CATALOG_REVISION,optics:SCOPE_REVISION,physics:'ridecore-stance-ten-dogs-4'}:base;}
+export function currentHandshake(base:BattleTerrain['arenaIdentity']=HANDSHAKE){return engineReady()?{...base,...ENGINE_ID,rules:'static-royale-cpp-2',protocol:4,combat:COMBAT_HASH,wheels:WHEEL_CATALOG_REVISION,optics:SCOPE_REVISION,physics:'ridecore-reentry-5'}:base;}
 export function compatible(value:unknown,base:BattleTerrain['arenaIdentity']=HANDSHAKE){const expected=currentHandshake(base);return !!value&&Object.keys(value as object).length===Object.keys(expected).length&&Object.entries(expected).every(([k,v])=>(value as Record<string,unknown>)[k]===v);}
 export function ground(x:number,z:number){
  for(const r of RAMPS)if(Math.abs(x-r.x)<=r.w/2&&Math.abs(z-r.z)<=r.d/2){

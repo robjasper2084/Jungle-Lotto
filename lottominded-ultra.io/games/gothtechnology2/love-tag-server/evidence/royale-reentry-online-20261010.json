@@ -1,0 +1,33 @@
+{
+  "at": "2026-10-10T22:18:42.118Z",
+  "module": "cd0c0d595bb139d275dab145446e813706858634f122a4fea8a63d34075b796e",
+  "hostedInternet": false,
+  "evidence": [
+    {
+      "matchSize": 6,
+      "botCount": 0,
+      "roster": 1
+    },
+    {
+      "matchSize": 6,
+      "botCount": 2,
+      "roster": 3
+    },
+    {
+      "matchSize": 10,
+      "botCount": 9,
+      "roster": 10
+    },
+    {
+      "automatedClients": 2,
+      "physicalHumans": 0,
+      "hostFixturePositioning": true,
+      "compiledDamage": true,
+      "ownRequestOnly": true,
+      "safeRespawn": true,
+      "broadcastCount": true,
+      "protectionPreservedOnReconnect": true,
+      "combatCancelsProtection": true
+    }
+  ]
+}

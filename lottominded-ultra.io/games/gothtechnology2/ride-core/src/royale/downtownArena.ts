@@ -4,11 +4,12 @@ import type {TagTerrain} from '../tag/fixture.ts';
 import type {Vec3} from '../terrain.ts';
 import {DOWNTOWN_FIELD_REVISION,downtownExtent,downtownRadii} from './downtownField.ts';
 import {scopeSites} from './scopes.ts';
+import {configuredSpawnNodes} from './spawnNodes.ts';
 const distance=(a:Vec3,b:Vec3)=>Math.hypot(a.x-b.x,a.z-b.z);
 /** One shared district on the original Detroit map. The entire original map
  * remains scenery/collision; the field bounds the six-minute match, not walls. */
 export class DowntownArena extends AuthoredArena implements BattleTerrain {
- readonly spawns;readonly zones;readonly supplies:Vec3[]=[];readonly optics;readonly arenaIdentity;readonly fieldRadii;
+ readonly spawns;readonly spawnNodes;readonly zones;readonly supplies:Vec3[]=[];readonly optics;readonly arenaIdentity;readonly fieldRadii;
  constructor(terrain:TagTerrain){
   super(terrain);
   if(terrain.fixture.product!=='swoop-detroit')throw Error('Royale requires the shared Detroit map.');
@@ -32,6 +33,7 @@ export class DowntownArena extends AuthoredArena implements BattleTerrain {
    starts.push(next);
   }
   this.spawns=starts.map(p=>({position:{...p},headingY:distance(p,center)<1?-0.075:Math.atan2(center.x-p.x,center.z-p.z)}));
+  this.spawnNodes=configuredSpawnNodes(this.layout.nodes,t,p=>this.clear(p.x,p.z,1,p.y));
   for(const start of starts){
    const near=sites.filter(p=>distance(p,start)>8&&distance(p,start)<35).sort((a,b)=>distance(a,start)-distance(b,start));
    let count=0;for(const p of near)if(this.supplies.every(q=>distance(p,q)>5)){this.supplies.push({...p});if(++count===2)break;}
@@ -39,6 +41,7 @@ export class DowntownArena extends AuthoredArena implements BattleTerrain {
   }
   // Spread reachable weapon and utility stops across the full connected city.
   for(const p of this.layout.nodes)if(this.supplies.length<260&&this.supplies.every(q=>distance(p,q)>50))this.supplies.push({...p});
+  for(const node of this.spawnNodes){let count=0;for(const p of [...this.layout.nodes].filter(p=>distance(p,node.position)>8&&distance(p,node.position)<35).sort((a,b)=>distance(a,node.position)-distance(b,node.position)))if(this.supplies.every(q=>distance(p,q)>5)){this.supplies.push({...p});if(++count===2)break;}}
   this.optics=scopeSites(this.layout.nodes,this.spawns,fieldCenter,Math.min(...this.zones.map(z=>this.fieldRadii[0]-distance(z,fieldCenter))));
   this.arenaIdentity={...this.handshake,arena:DOWNTOWN_FIELD_REVISION};
  }

@@ -6,7 +6,8 @@ import {pack} from '../../ride-core/dist/royale/relayCodec.js';
 type Ticket={id:string;key:string;topic:string;expires:number;issued:number};
 type Link={ticket:Ticket;key:CryptoKey;channel:RealtimeChannel;room?:Room;seq:number;received:number;last:number;count:number;at:number;tail:Promise<void>;frames:{type:string;data:unknown}[]};
 const config=JSON.parse(await readFile(new URL('../.royale-test-private/session.json',import.meta.url),'utf8'));
-const local='http://127.0.0.1:8211';
+const local=process.env.ROYALE_LOCAL_HOST??'http://127.0.0.1:8211';
+if(!['127.0.0.1','localhost','[::1]'].includes(new URL(local).hostname))throw Error('Test simulation must stay on this computer.');
 async function heartbeat(){const r=await fetch(config.endpoint,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+config.workerToken},body:JSON.stringify({action:'worker'})});if(!r.ok)throw Error('Supabase worker authorization unavailable');return r.json();}
 const auth=await heartbeat(),key=await importKey(auth.relay_key),links=new Map<string,Link>(),created=new Set<string>();
 const realtime=new RealtimeClient(auth.project+'/realtime/v1',{params:{apikey:config.publishableKey},heartbeatIntervalMs:15000});
@@ -22,7 +23,7 @@ async function command(link:Link,p:any){
   else if(o.action==='reconnect')room=await client.reconnect(String(o.token));
   else{if(!/^[A-F0-9]{8}$/.test(o.code))throw Error('Invalid room code');const r=await fetch(local+'/v1/royale/'+o.code);if(!r.ok)throw Error('Room not found');room=await client.joinById((await r.json()).roomId,o.options);}
   link.room=room;room.reconnection.enabled=false;
-  for(const type of ['welcome','lobby','snapshot','notice','voice-roster','voice-signal'])room.onMessage(type,data=>send(link,type,data));
+  for(const type of ['welcome','lobby','snapshot','notice','respawn','voice-roster','voice-signal'])room.onMessage(type,data=>send(link,type,data));
   room.onError((_code,message)=>send(link,'error',message??'Room error'));room.onLeave(()=>{send(link,'closed',{});if(![...links.values()].some(l=>l!==link&&l.room?.roomId===room.roomId))created.delete(room.roomId);});
   send(link,'joined',{sessionId:room.sessionId,roomId:room.roomId,reconnectionToken:room.reconnectionToken});room.send('hello',{});return;
  }
@@ -30,7 +31,7 @@ async function command(link:Link,p:any){
  if(!link.room)return;
  if(p.type==='leave'){await drop(link,true);return;}
  if(p.type==='inputs'&&Array.isArray(p.data)&&p.data.length<=15){for(const input of p.data)link.room.send('input',input);return;}
- if(['hello','ready','start','rematch','release','voice-state','voice-signal'].includes(p.type))link.room.send(p.type,p.data);
+ if(['hello','ready','start','rematch','respawn','release','voice-state','voice-signal'].includes(p.type))link.room.send(p.type,p.data);
 }
 host.on('broadcast',{event:'hello'},({payload})=>{void (async()=>{
  try{const t=await open(key,payload,'royale-ticket-v1') as Ticket;if(t.expires<Date.now()||Date.now()-t.issued>60000||links.has(t.id)||links.size>=10)return;

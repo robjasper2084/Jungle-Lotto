@@ -18,10 +18,11 @@ export class HelmetSkinDecal{
    for(let i=0;i<p.count;i++){const u=center-(uv.getX(i)-.5)*2*halfU,v=(uv.getY(i)-.5)*2*halfV;p.setXYZ(i,.1445*Math.sin(u)*Math.cos(v),1.705+.159*Math.sin(v),-.018-.152*Math.cos(u)*Math.cos(v));}g.computeVertexNormals();
    const face=new T.Mesh(g,this.material);face.name='Ghoulies curved helmet decal';this.root.add(face);
   }
-  rider.updateWorldMatrix(true,true);(rider.getObjectByName('Head')??rider).attach(this.root);this.update();window.addEventListener(event,this.update);
-  void map().then(t=>{if(!this.disposed){this.material.map=t;this.material.needsUpdate=true;}}).catch(()=>{this.root.visible=false;});
+  rider.updateWorldMatrix(true,true);(rider.getObjectByName('Head')??rider).attach(this.root);this.update();
+  if(typeof window!=='undefined'){window.addEventListener(event,this.update);
+   void map().then(t=>{if(!this.disposed){this.material.map=t;this.material.needsUpdate=true;}}).catch(()=>{this.root.visible=false;});}
  }
- dispose(){this.disposed=true;window.removeEventListener(event,this.update);this.root.traverse(o=>{if(o instanceof T.Mesh)o.geometry.dispose();});this.material.dispose();this.root.removeFromParent();}
+ dispose(){this.disposed=true;if(typeof window!=='undefined')window.removeEventListener(event,this.update);this.root.traverse(o=>{if(o instanceof T.Mesh)o.geometry.dispose();});this.material.dispose();this.root.removeFromParent();}
 }
 export function makeHelmetSkinPicker(){
  const root=document.createElement('section');root.className='helmet-skin-picker';root.setAttribute('aria-label','Hero helmet skin');
