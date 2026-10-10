@@ -1,8 +1,8 @@
-import {WIDTH,STRIDE,DEPTHS,floorY} from './world.js';
-import {clamp,ropeEnd} from './simulation.js';
-import {RAHBE_MOTIONS} from './rahbe-motions.js';
-import {DETROIT_ART,DETROIT_SCENES} from './detroit-art.js';
-import {VILLAIN_MOTIONS} from './villain-motions.js';
+import {WIDTH,STRIDE,DEPTHS,floorY} from './world.js?v=2.0.1';
+import {clamp,ropeEnd} from './simulation.js?v=2.0.1';
+import {RAHBE_MOTIONS} from './rahbe-motions.js?v=2.0.1';
+import {DETROIT_ART,DETROIT_SCENES} from './detroit-art.js?v=2.0.1';
+import {VILLAIN_MOTIONS} from './villain-motions.js?v=2.0.1';
 export const MANIFEST={'title-gm':'assets/environment/detroit/gm-renaissance-title.webp',rahbe:'assets/characters/rahbe.webp',...Object.fromEntries(Object.entries(RAHBE_MOTIONS).map(([name,data])=>['rahbe-'+name,data.sheet])),...Object.fromEntries(Object.entries(VILLAIN_MOTIONS).map(([name,data])=>['motion-'+name,data.sheet])),...DETROIT_ART};
 const noise=n=>{const x=Math.sin(n*127.1+311.7)*43758.5453;return x-Math.floor(x);};
 export class Renderer{

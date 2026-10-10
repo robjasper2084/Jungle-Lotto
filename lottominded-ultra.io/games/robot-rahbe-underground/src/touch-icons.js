@@ -1,4 +1,4 @@
-import { controlIcons } from './touch-icon-data.js?v=galaxy-a16-performance-v1';
+import { controlIcons } from './touch-icon-data.js?v=2.0.1';
 
 export function touchIcon(name) {
   const data = controlIcons[name];
