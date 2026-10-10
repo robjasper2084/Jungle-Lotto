@@ -44,6 +44,7 @@ for(const {surface,id,index,path,title} of [
   if(surface==='Play'){
    await expect(page.locator('#game-collection-link')).toBeHidden();
    await expect(page.locator('#requested-character')).toContainText('Controls screen');
+   await page.locator('#game-frame').scrollIntoViewIfNeeded();
   }else{
    await expect(page.locator('#underground-title')).toHaveText(title);
    await expect(page.locator('#underground-help')).toContainText(id==='static-wave'?'IJKL':'Controls screen');
