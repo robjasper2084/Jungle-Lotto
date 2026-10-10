@@ -1,5 +1,5 @@
-import {locationAt} from './detroit-locations.js';
-import {random} from './progression.js';
+import {locationAt} from './detroit-locations.js?v=2.0.1';
+import {random} from './progression.js?v=2.0.1';
 export const WIDTH = 2880;
 export const STRIDE = 520;
 export const HEIGHT = 3700;

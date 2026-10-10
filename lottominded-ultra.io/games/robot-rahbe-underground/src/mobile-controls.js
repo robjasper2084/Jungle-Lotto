@@ -1,4 +1,4 @@
-import {createTouchDeck} from './touch-deck.js';
+import {createTouchDeck} from './touch-deck.js?v=2.0.1';
 export const controls = [
   {id:'move',label:'MOVE / CLIMB',stick:true,role:'move',x:18,landscapeX:12,y:78,size:112},
   {id:'aim',label:'AIM',stick:true,role:'aim',x:81,landscapeX:88,y:78,size:100},
