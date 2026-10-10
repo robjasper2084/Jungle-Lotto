@@ -84,7 +84,7 @@ jobs:
           npm test
           npm run build
       - name: Validate Pages assembly
-        run: node --test scripts/gothtechnology-pages.test.mjs scripts/game-pages.test.mjs scripts/share-ride-vehicles.test.mjs scripts/share-riding-media.test.mjs scripts/optimize-pages-images.test.mjs
+        run: node --test scripts/gothtechnology-pages.test.mjs scripts/game-pages.test.mjs scripts/share-ride-vehicles.test.mjs scripts/share-riding-media.test.mjs scripts/optimize-pages-images.test.mjs scripts/lossless-riding-textures.test.mjs scripts/share-unity-stage.test.mjs
       - name: Build lean Pages artifact
         run: node scripts/build-pages-artifact.mjs
       - name: Verify packaged arcade assets on desktop and mobile

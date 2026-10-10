@@ -1,0 +1,10 @@
+import {readFile,writeFile,unlink,stat,rename} from 'node:fs/promises';import {resolve} from 'node:path';import {randomUUID} from 'node:crypto';
+// Immutable, already-published source bytes from this reviewed game release.
+// The Unity program/clip remain exact; GitHub's public raw CDN serves their bytes.
+export const UNITY_STAGE_SOURCE='https://raw.githubusercontent.com/robjasper2084/Jungle-Lotto/995108b365a915c6aa7fe0c957915475ace1009f/lottominded-ultra.io/games/gothtechnology2/swoop-source/public/exports/jazz-stage/';
+// This endpoint serves the same public commit with application/wasm so Unity
+// can compile by streaming rather than buffering after a MIME fallback.
+export const UNITY_WASM_SOURCE='https://cdn.jsdelivr.net/gh/robjasper2084/Jungle-Lotto@995108b365a915c6aa7fe0c957915475ace1009f/lottominded-ultra.io/games/gothtechnology2/swoop-source/public/exports/jazz-stage/Build/WebGL.wasm';
+export async function shareUnityStage(root){const stage=resolve(root,'lottominded-ultra.io/games/gothtechnology2/arcade/swoop-detroit/exports/jazz-stage'),path=resolve(stage,'index.html');let html;try{html=await readFile(path,'utf8');}catch(e){if(e.code==='ENOENT')return{saved:0};throw e;}
+ const replacements=[['Build/WebGL.data',UNITY_STAGE_SOURCE+'Build/WebGL.data'],['Build/WebGL.wasm',UNITY_WASM_SOURCE],['StreamingAssets',UNITY_STAGE_SOURCE+'StreamingAssets']];let out=html;for(const [from,to]of replacements){if(!out.includes('"'+from+'"'))throw Error('Unity stage configuration changed: '+from);out=out.replace('"'+from+'"','"'+to+'"');}
+ const temporary=path+'.'+randomUUID()+'.tmp';await writeFile(temporary,out,{flag:'wx'});await rename(temporary,path);let saved=Buffer.byteLength(html)-Buffer.byteLength(out);for(const n of ['Build/WebGL.data','Build/WebGL.wasm','StreamingAssets/BloomPerformance.mp4']){const file=resolve(stage,n);saved+=(await stat(file)).size;await unlink(file);}console.log('Shared exact Unity stage assets through their immutable GitHub source: '+(saved/1048576).toFixed(1)+' MiB.');return{saved,source:UNITY_STAGE_SOURCE};}
