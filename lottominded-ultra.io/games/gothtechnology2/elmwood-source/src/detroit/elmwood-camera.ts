@@ -54,4 +54,5 @@ export function clearElmwoodCamera(eye:T.Vector3,anchor:T.Vector3,terrain:{rayca
   if(distance<.001)return;
   direction.multiplyScalar(1/distance);const hit=terrain.raycast(anchor,direction,distance);
   if(hit!==null)eye.copy(anchor).addScaledVector(direction,Math.max(0,hit-.25));
+  eye.y=Math.max(eye.y,terrain.height(eye.x,-eye.z)+.30);
 }

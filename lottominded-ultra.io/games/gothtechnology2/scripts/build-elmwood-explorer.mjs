@@ -18,6 +18,7 @@ files.add('exports/glb/DS_Bicycle_Styles/DS_Bicycle_Styles_LOD1.glb');files.add(
 async function collect(dir){for(const item of await readdir(resolve(source,'public',dir),{withFileTypes:true})){const file=dir+'/'+item.name;if(item.isDirectory())await collect(file);else files.add(file);}}await collect('elmwood/references');await collect('exports/nature');await collect('audio/nature');
 for(const file of await modelDependencies(resolve(source,'public'),files))files.add(file);
 const licenses=await runtimeLicenses(source,{ridecore:true});
+licenses.push({input:resolve(import.meta.dirname,'../engine/breadflowerdos/upstream/LICENSE'),output:'LICENSE-BreadFlowerDos.txt'});
 await readableTree(soundtrackRoot);
 for(const file of files)await readableTree(resolve(source,'public',file));
 await readableTree(resolve(source,'node_modules/@digital-static/ridecore/dist'));

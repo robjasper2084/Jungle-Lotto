@@ -1,13 +1,14 @@
+import type {SceneryWorld} from './sceneryWorld.ts';
 import {buildHarbor,harborBoundary} from './harbor.ts';
 import * as T from 'three';
 import {makeRoadSign} from './roadSigns.ts';
 import {roadsidePoint} from './roadsidePlacement.ts';
 import {CITY,riverEdge} from './geography.ts';
-import {heightAt,type DetroitWorld} from './world.ts';
+import {heightAt} from './world.ts';
 import {MILLIKEN_BERM} from './millikenTerrain.ts';
 import {MACK_PARKING_LOTS} from './mackParkingLayout.ts';
 /** Authored landscape detail on mapped roads. No map photography is baked into assets. */
-export function buildRiverfrontDetails(scene:T.Scene,world:DetroitWorld,groupAt:(x:number,z:number)=>T.Group){
+export function buildRiverfrontDetails(scene:T.Scene,world:SceneryWorld,groupAt:(x:number,z:number)=>T.Group){
  const concrete=new T.MeshStandardMaterial({color:0xb8b4a8,roughness:.92}),metal=new T.MeshStandardMaterial({color:0x263e3b,metalness:.5,roughness:.48}),asphalt=new T.MeshStandardMaterial({color:0x424747,roughness:.96}),white=new T.MeshStandardMaterial({color:0xe2e3cf});
  function box(x:number,y:number,z:number,w:number,h:number,d:number,m:T.Material,angle=0){const mesh=new T.Mesh(new T.BoxGeometry(w,h,d),m);mesh.position.set(x,y,z);mesh.rotation.y=angle;mesh.receiveShadow=true;groupAt(x,z).add(mesh);return mesh;}
  function sign(x:number,z:number,name:string,stop=false,angle=0,allWay=false){const p=roadsidePoint(x,z,(px,pz)=>world.chunks.some(c=>Math.abs(c.x-px)<=50&&Math.abs(c.z-pz)<=50));if(!p)return;const root=makeRoadSign(name,stop,allWay);root.position.set(p.x,heightAt(p.x,p.z),p.z);root.rotation.y=angle;groupAt(p.x,p.z).add(root);}

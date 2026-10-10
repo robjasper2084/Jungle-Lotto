@@ -1,3 +1,6 @@
+import type {SceneryWorld} from './sceneryWorld.ts';
+import {timeLoad} from './loadTiming.ts';
+import {foliageSightline} from './foliageSightline.ts';
 import {freightSites,registerFreightCollisions} from './tagSceneryCollisions.ts';
 import {SpatialAssetStream,type StreamPoint} from './spatialAssetStream.ts';
 import {signSupports} from './signSupports.ts';
@@ -22,18 +25,18 @@ import {polishSection} from './sectionPolish.ts';
 import {buildCity} from './city-render.ts';
 import {buildStreetFurniture} from './streetFurniture.ts';
 import {grassTreeSite} from './treePlacement.ts';
-import {riverEdge,pointOnCut,CUT_METRES,roadAt} from './geography.ts';
+import {riverEdge,roadAt} from './geography.ts';
 import * as T from 'three';
 import {GLTFLoader} from './compressedGLTFLoader.ts';
 import {batchStaticGroup} from './static-batch.ts';
-import {DetroitWorld,CUT_STATIONS,hash,heightAt,surfaceAt,cutPoint,cutCoords} from './world.ts';
+import {CUT_STATIONS,hash,heightAt,surfaceAt,cutPoint,cutCoords} from './world.ts';
 import type {SurfaceId} from './terrain.ts';
 import {GEO,nearestRamp,profileLevel,cutWidth} from './geo-profile.ts';
 import {loadEnvironmentMaterials,surfaceUV} from './environmentMaterials.ts';
 import {makeTreeBatch,wind} from './trees.ts';
 import {roadwayClearance} from './roadsidePlacement.ts';
 import type {TreeSite} from './trees.ts';
-export async function buildScenery(scene:T.Scene,world:DetroitWorld,polish=true,start?:StreamPoint){
+export async function buildScenery(scene:T.Scene,world:SceneryWorld,polish=true,start?:StreamPoint){
   const stream=new SpatialAssetStream(2);
   const loader=new GLTFLoader(),tl=new T.TextureLoader();
   const names=['asphalt','grass','brick','concrete','limestone','mural_heron','mural_detroit','mural_music'];
@@ -43,13 +46,12 @@ export async function buildScenery(scene:T.Scene,world:DetroitWorld,polish=true,
     map.colorSpace=T.SRGBColorSpace;map.wrapS=map.wrapT=T.RepeatWrapping;map.anisotropy=4;
     mats[n]=new T.MeshStandardMaterial({map,roughness:.94,side:n.startsWith('mural')?T.DoubleSide:T.FrontSide});
   }));
-  const skins=await loadEnvironmentMaterials();
+  const skins=await timeLoad('environment-materials',()=>loadEnvironmentMaterials());
   for(const key of ['asphalt','grass','concrete']){mats[key].map?.dispose();mats[key].dispose();mats[key]=skins[key];}
   mats.grass.color.set('#78895b');
-  const treeTime={value:0},foliage=[skins.elm,skins.maple];for(const material of foliage)wind(material,treeTime);
+  const treeTime={value:0},foliage=[skins.elm,skins.maple];for(const material of foliage){wind(material,treeTime);foliageSightline(material);}
   const treeBatches:ReturnType<typeof makeTreeBatch>[]=[];
   const steel=new T.MeshStandardMaterial({color:'#263c3e',metalness:.55,roughness:.45});
-  const gold=new T.MeshStandardMaterial({color:'#e8c16e',roughness:.7});
   const groups=world.chunks.map(c=>{const g=new T.Group();g.userData.center={x:c.x,z:c.z};scene.add(g);return g;});
   const groupIndex=new Map(world.chunks.map((c,i)=>[Math.floor(c.x/100)+','+Math.floor(c.z/100),groups[i]]));
   const groupAt=(x:number,z:number)=>{
@@ -129,11 +131,6 @@ export async function buildScenery(scene:T.Scene,world:DetroitWorld,polish=true,
     }
   }
   const freightCenters=freightSites();
-  for(let d=30;d<CUT_METRES;d+=8){
-    const p=cutPoint(d),g=groupAt(p.x,p.z),y=heightAt(p.x,p.z);
-    box(g,p.x,y+.049,p.z,.085,.006,3,gold,pointOnCut(d).heading-Math.PI);
-
-  }
   const lighting=buildCutLights(scene,groupAt);
   // Mapped deck outlines and their colliders share the exact same geometry.
   for(const item of world.geoMeshes){
@@ -169,24 +166,24 @@ export async function buildScenery(scene:T.Scene,world:DetroitWorld,polish=true,
   registerFreightCollisions(world);
   stream.add({id:'freight-yard',centers:freightCenters,async load(){const container=await loader.loadAsync('/exports/cut/DS_Cut_Freight_Container_01.glb');for(const p of freightCenters){const o=container.scene.clone(true);o.position.set(p.x,heightAt(p.x,p.z),p.z);o.rotation.y=p.heading;groupAt(p.x,p.z).add(o);}}});
   const wp=cutPoint(2052,-10),wg=groupAt(wp.x,wp.z);label(wg,'EASTERN MARKET / FREIGHT YARD',wp.x,heightAt(wp.x,wp.z)+3,wp.z,7,.8,wp.heading-Math.PI);for(const post of signSupports(wp.x,wp.z,wp.heading-Math.PI,7,heightAt(wp.x,wp.z)+3.2,heightAt))box(wg,post.x,post.y,post.z,.10,post.height,.10,steel);
-  const architecture=await buildCity(scene,world,groupAt,skins,stream);
-  const streetFurniture=await buildStreetFurniture(scene,world,groupAt);
-  await buildAtwaterSkyline(scene);
-  await buildMillikenLandmarks(scene,world);
+  const architecture=await timeLoad('city',()=>buildCity(scene,world,groupAt,skins,stream));
+  const streetFurniture=await timeLoad('street-furniture',()=>buildStreetFurniture(scene,world,groupAt));
+  await timeLoad('skyline',()=>buildAtwaterSkyline(scene));
+  await timeLoad('milliken',()=>buildMillikenLandmarks(scene,world));
   const riverfront=buildRiverfrontDetails(scene,world,groupAt);
-  const waterfront=await buildWaterfront(scene,world,groupAt);
-  const valade=await buildValade(scene,world,groupAt,skins);
+  const waterfront=await timeLoad('waterfront',()=>buildWaterfront(scene,world,groupAt));
+  const valade=await timeLoad('valade',()=>buildValade(scene,world,groupAt,skins));
   const rails=buildRouteRails(world,groupAt,heightAt);
   const landmarks=buildCutLandmarks(world,groupAt,label);
   const flowers=buildCutFlowers(scene,world);
   if(polish)polishSection(groupAt,mats.asphalt);
   let routeArt:Awaited<ReturnType<typeof buildRouteArt>>|{billboards:number;murals:number}={billboards:0,murals:0};if(polish)stream.add({id:'route-art',centers:[1080,1600,1900,2425].map(d=>cutPoint(d)),async load(){routeArt=await buildRouteArt(world,groupAt);world.step();}});
-  if(polish)buildTrailPaint(groupAt);
+  buildTrailPaint(groupAt,world.chunks);
   let cutMurals={walls:0,ceilings:0};if(polish)stream.add({id:'cut-murals',centers:GEO.bridges.map(b=>cutPoint(b.at)),async load(){cutMurals=await buildCutMurals(world,groupAt);}});
   // Consolidate static geometry by material inside each streamable tile.
   for(const g of groups)batchStaticGroup(g);
-  const grass=polish?await buildGrassField(scene,world,mats.grass):undefined;
-  if(start)await stream.warm([start],120);world.step();
+  const grass=polish?await timeLoad('grass',()=>buildGrassField(scene,world,mats.grass)):undefined;
+  if(start)await timeLoad('nearby-assets',()=>stream.warm([start],120));world.step();
   const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)'),mobile=matchMedia('(max-width:700px)');
   const trees=treeBatches.reduce((n,b)=>n+b.count,0);
   const allLighting={count:lighting.count+streetFurniture.count,setDusk(value:boolean){lighting.setDusk(value);streetFurniture.setDusk(value);}};

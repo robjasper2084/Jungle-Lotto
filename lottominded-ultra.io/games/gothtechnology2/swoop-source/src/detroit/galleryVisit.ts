@@ -52,7 +52,7 @@ export class GalleryVisit {
   this.active=true;document.body.classList.add('visitingGallery');this.parked=hero;Object.assign(this.parkedPose,p,{speed:0});
   const route=studioWalk(this.store),a=route.at(-2)!,b=route.at(-1)!,from=toLocal(a.x,MACK_STUDIO.floor,a.z),to=toLocal(b.x,MACK_STUDIO.floor,b.z);
   this.insideHeading=Math.atan2(to.x-from.x,to.z-from.z);
-  this.walker=new FootTraffic(data.get(rider)!,false);if(rider==='DS_Armored_Rider_01'){this.walkerSkin=new HelmetSkinDecal(this.walker.rider);this.walkerCharm=new ArmorKeychain(this.walker.rider);}this.walker.root.position.copy(this.door);this.walker.root.position.y+=.06;this.walker.root.rotation.y=this.insideHeading;this.scene.add(this.walker.root);hero.rider.visible=false;
+  this.walker=new FootTraffic(data.get(rider)!,false);this.walker.playInteraction('door');if(rider==='DS_Armored_Rider_01'){this.walkerSkin=new HelmetSkinDecal(this.walker.rider);this.walkerCharm=new ArmorKeychain(this.walker.rider);}this.walker.root.position.copy(this.door);this.walker.root.position.y+=.06;this.walker.root.rotation.y=this.insideHeading;this.scene.add(this.walker.root);hero.rider.visible=false;
   this.panel.dataset.walkAnimation='Entrance film / direct interior arrival';this.panel.dataset.phase='entrance';this.panel.querySelector('.arrival-status')!.textContent='Inside the studio';
   this.visit.hidden=true;this.enter.hidden=false;this.catalog.hidden=!this.store;this.panel.hidden=false;
   this.copy.textContent=this.store?'Welcome to GothTech inside the studio. Browse the collection or shop merch on the GothTech website.':'Welcome to Serengeti inside the studio. Visit its website to browse and shop, or return to your wheel.';

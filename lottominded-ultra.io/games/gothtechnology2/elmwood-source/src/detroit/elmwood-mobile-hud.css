@@ -68,3 +68,10 @@ body.layout-editing .community-panel,body.layout-editing .game-film-toolbar,body
  body:has(#view[data-riding="true"]) .game-film-toolbar{top:64px;bottom:auto;left:196px;height:max-content}
  body:has(#view[data-riding="true"]) #ride-tools:not([open]){--tools-top:146px}
 }
+
+/* Group ride belongs above the thumb controls, not between Brake and the stick. */
+@media(max-width:650px) and (orientation:portrait){
+ body:has(#view[data-riding="true"]) .community-panel{left:max(12px,env(safe-area-inset-left));right:auto;top:calc(278px + env(safe-area-inset-top));bottom:auto;transform:none;max-height:calc(100dvh - 490px)}
+ body:has(#view[data-riding="true"]) .community-panel:not([open]){max-width:calc(50vw - 24px);max-height:none}
+ body:has(#view[data-riding="true"]) .community-panel[open]{top:calc(278px + env(safe-area-inset-top));bottom:auto}
+}

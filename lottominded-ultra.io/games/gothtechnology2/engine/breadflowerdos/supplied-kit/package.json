@@ -1,0 +1,12 @@
+{
+  "name": "static-breadflower-input-proof",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "First verified BreadFlowerDos C++ input integration; not the complete game merge",
+  "scripts": {
+    "check": "tsc --noEmit",
+    "build:adapter": "tsc",
+    "test": "node --test tests/wasm.test.mjs"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "canvas": {
+    "adaptiveDetail": "1",
+    "antialias": "true",
+    "arena": "atwater-authored-1",
+    "collision": "8692124ce27f6b62ce39f669d5e53832a10a716862fddcc6b73518a4b1521329",
+    "engine": "three.js r185",
+    "engineFrames": "2328",
+    "engineModule": "0e029a5e3241d634280e1e1e696c270efebbd5e182e2e50ba2176cbbc1fcc137",
+    "engineTick": "388",
+    "equipment": "Higgsfield-Blender-Unity:6-models:6-clips",
+    "equipmentShots": "8",
+    "equipmentWeapon": "static",
+    "frameLimit": "60",
+    "pixelRatio": "1.4131573863868376",
+    "profile": "{\"fps\":59.99900828085495,\"p95\":16.80000000000291,\"calls\":516,\"triangles\":974689}",
+    "quality": "high",
+    "qualityChoice": "auto",
+    "qualityReason": "Desktop hardware",
+    "shadowSize": "2048",
+    "textureLimit": "2048"
+  },
+  "errors": []
+}

@@ -1,3 +1,4 @@
+import {RideInputGate} from '../../../ride-core/src/engine/browser.ts';
 import {EbikeController} from './ebikeController.ts';
 import {ebikeProfile,eucProfile,eucHandling} from './electricVehicles.ts';
 import {RIDE_TUNING} from './rideDynamics.ts';
@@ -6,12 +7,13 @@ import {RideController,createPose,type RidePose,type RideActions} from './contro
 import type {TerrainSampler} from './terrain.ts';
 /** The original EUC remains the default; bicycle motion is shared with Elmwood. */
 export class BicycleAdapter extends RideController {
+  readonly engineInput=new RideInputGate();
   bicycle:BicycleController;cycling=false;
   constructor(terrain:TerrainSampler){super(terrain);this.bicycle=new BicycleController(terrain);}
   vehicleId='euc';
   selectVehicle(id:string){this.vehicleId=id;const p=ebikeProfile(id);this.bicycle=p?new EbikeController(this.terrain,p):new BicycleController(this.terrain);this.cycling=id==='bicycle'||!!p;const e=eucProfile(id);this.setHandling(e?eucHandling(e):{...RIDE_TUNING});}
   override reset(spawn?:Parameters<RideController['reset']>[0]){super.reset(spawn);if(this.bicycle){const p=createPose();super.writePose(p);this.bicycle.reset({position:p,headingY:p.headingY});}}
-  override step(dt:number,input:RideActions){if(this.cycling)this.bicycle.step(dt,input);else super.step(dt,input);}
+  override step(dt:number,input:RideActions){input=this.engineInput.route(input);if(this.cycling)this.bicycle.step(dt,input);else super.step(dt,input);}
   override writePose(out:RidePose){if(this.cycling){Object.assign(out,createPose());this.bicycle.writePose(out);}else super.writePose(out);}
   override snapshot(){const original=super.snapshot();if(!this.cycling)return original;const b=this.bicycle.snapshot();return {...original,...b,engine:original.engine,fallPhase:original.fallPhase,trick:original.trick};}
   override recover(spawn?:Parameters<RideController['recover']>[0]){if(!this.cycling)return super.recover(spawn);const p=this.bicycle.cycle,travel=this.bicycle.travel;const ok=super.recover(spawn??{position:{x:p.x,y:p.y,z:p.z},headingY:p.headingY});if(ok)this.bicycle.travel=travel;return ok;}

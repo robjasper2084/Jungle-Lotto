@@ -1,0 +1,7 @@
+{
+  "serverUrl": "",
+  "supabaseTest": {
+    "endpoint": "https://sqdasdbvlkgpbbiyeune.supabase.co/functions/v1/royale-test",
+    "publishableKey": "sb_publishable_E2zwiUAV_Ox5L7KFl_A-Sw_6IiHf4qk"
+  }
+}

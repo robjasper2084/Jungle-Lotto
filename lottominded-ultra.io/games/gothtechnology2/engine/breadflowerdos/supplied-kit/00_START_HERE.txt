@@ -1,0 +1,30 @@
+Read README.md, then 01_ENGINE_MERGE_MASTER_PROMPT.md.
+
+MERGE_SCOPE=CORE_RELEASE.
+
+The latest direction supersedes the old reference-only adaptation brief:
+use ACTUAL BreadFlowerDos C++ code to integrate Swoop Detroit, the separate
+Elmwood Explorer, and the six-player downtown STATIC ROYALE mode.
+
+Run the provided source-hash verification and input-bridge tests first.
+The provided bridge is INPUT ONLY. It is not a complete engine port,
+a playable game, or a multiplayer server. Do not call it a finished merge.
+
+Locate the real source roots and RideCore. Connect compiled engine code
+into both actual gameplay paths, then follow the master's engine-backed
+rules, authoritative online service, and downtown integration milestones.
+
+Preserve the existing games, renderer, single physics owner, settings,
+controls, saves, and LOVE TAG as a separate ruleset. Do not edit only
+minified bundles, duplicate the city, or insert downtown into Elmwood.
+
+Complete six-human online support with private rooms, validated combat,
+reconnection, AI practice, and explicit version compatibility. The number
+of input slots is not evidence of online player capacity.
+
+Use 02_ENGINE_MERGE_ACCEPTANCE_TESTS.md. Record real progress and blockers
+per game in docs/engine-merge/STATUS.md, with exact next runnable commands.
+Missing external source is a blocker, not permission to fake completion.
+
+Do not deploy, overwrite live builds, buy assets, or activate paid
+services/generation without authorization.

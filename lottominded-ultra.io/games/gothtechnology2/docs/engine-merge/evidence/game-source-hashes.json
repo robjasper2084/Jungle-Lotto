@@ -1,0 +1,34 @@
+[
+  {
+    "Path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\swoop-source\\src\\detroit\\main.ts",
+    "Hash": "22695E9DB1893E7AEBE537E83C491B977F84883C6B41C9016A0AAF6C2541F338"
+  },
+  {
+    "Path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\elmwood-source\\src\\detroit\\elmwood-ride.ts",
+    "Hash": "3612DAAF6BDE2C87EFC277BE3E62BB29F9831F769B96D1DDB1403A9F503A64C2"
+  },
+  {
+    "Path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\scripts\\build-swoop-detroit.mjs",
+    "Hash": "4E895E5B781D0C518D0EAF741703F904F6DE7CF746788C5986B2AE57991EBBAF"
+  },
+  {
+    "Path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\scripts\\build-elmwood-explorer.mjs",
+    "Hash": "184C5D52F5B2D86B1E8CF25FCD536AC474FB03102402CEA9E4E61123367A5A62"
+  },
+  {
+    "Path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\ride-core\\src\\royale\\rules.ts",
+    "Hash": "E6667A1DC1E8874C8E4926DE3C0BB9F4082B58A0782BDA756032B0555F330893"
+  },
+  {
+    "Path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\ride-core\\src\\controller.ts",
+    "Hash": "95B790F5F204847F1B1AE2961FD5ED6708143A54771B2F454C50A86316F19563"
+  },
+  {
+    "Path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\love-tag-server\\src\\BattleRoyaleRoom.ts",
+    "Hash": "517561484A5FE246ABBEBE8E4E8DC966A8C5FB37A6D2355FD436514EF023FC02"
+  },
+  {
+    "Path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\swoop-source\\src\\detroit\\royale\\main.ts",
+    "Hash": "DFE32311A12A33DFE4E7B73E3AE5EB58C1EEED209EF9C498227AE9607CE5FEB2"
+  }
+]

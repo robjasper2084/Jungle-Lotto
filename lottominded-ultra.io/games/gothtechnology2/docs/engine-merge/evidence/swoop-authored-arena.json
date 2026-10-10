@@ -1,0 +1,24 @@
+{
+  "at": "2026-10-10T01:41:22.546Z",
+  "url": "http://127.0.0.1:4191/arcade/swoop-detroit/royale.html?engine=breadflower",
+  "ui": "- generic \"Static Royale riding arena\" [active]\n- banner:\n  - link \"← Swoop Detroit\":\n    - /url: http://127.0.0.1:4191/arcade/swoop-detroit/index.html?engine=breadflower\n  - text: SWOOP /\n  - strong: STATIC ROYALE\n  - button \"Menu\"\n- strong: 6 RIDERS REMAIN\n- generic: Integrity 100 / Shield 50 / Flow 100\n- generic: Static Blaster · 78 shots · 1 repairs\n- generic: Field 317m → 210m · 78s\n- generic: +\n- paragraph: WASD ride · drag to aim · F fire · Space hop",
+  "canvas": {
+    "adaptiveDetail": "1",
+    "antialias": "true",
+    "arena": "atwater-authored-1",
+    "collision": "8692124ce27f6b62ce39f669d5e53832a10a716862fddcc6b73518a4b1521329",
+    "engine": "three.js r185",
+    "engineFrames": "1536",
+    "engineModule": "0e029a5e3241d634280e1e1e696c270efebbd5e182e2e50ba2176cbbc1fcc137",
+    "engineTick": "256",
+    "frameLimit": "60",
+    "pixelRatio": "1.5",
+    "profile": "{\"fps\":59.999008280856245,\"p95\":16.79999999998836,\"calls\":390,\"triangles\":776185}",
+    "quality": "high",
+    "qualityChoice": "auto",
+    "qualityReason": "Desktop hardware",
+    "shadowSize": "2048",
+    "textureLimit": "2048"
+  },
+  "errors": []
+}

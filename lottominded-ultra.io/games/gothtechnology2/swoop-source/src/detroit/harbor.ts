@@ -1,13 +1,13 @@
+import type {SceneryWorld} from './sceneryWorld.ts';
 import * as T from 'three';
 import data from './harbor-data.json' with {type:'json'};
-import type {DetroitWorld} from './world.ts';
 export const harborBoundary=data.ways.find(w=>w.tags.leisure==='marina')!.points;
 const harborBounds={minX:Math.min(...harborBoundary.map(p=>p[0]))-12,maxX:Math.max(...harborBoundary.map(p=>p[0]))+12,minZ:Math.min(...harborBoundary.map(p=>p[1]))-12,maxZ:Math.max(...harborBoundary.map(p=>p[1]))+12};
 /** A coarse 20 m grid makes the basin's edge spill diagonally into its paths. */
 export const harborTerrainDetail=(x:number,z:number)=>x+50>=harborBounds.minX&&x-50<=harborBounds.maxX&&z+50>=harborBounds.minZ&&z-50<=harborBounds.maxZ;
 export function inHarbor(x:number,z:number){let inside=false;for(let i=0,j=harborBoundary.length-1;i<harborBoundary.length;j=i++){const a=harborBoundary[i],b=harborBoundary[j];if((a[1]>z)!==(b[1]>z)&&x<(b[0]-a[0])*(z-a[1])/(b[1]-a[1])+a[0])inside=!inside;}return inside;}
 /** OSM pier centrelines; deck width and fittings are authored visual detail. */
-export function buildHarbor(world:DetroitWorld,groupAt:(x:number,z:number)=>T.Group){
+export function buildHarbor(world:SceneryWorld,groupAt:(x:number,z:number)=>T.Group){
  const wood=new T.MeshStandardMaterial({color:'#a09a83',roughness:.88}),steel=new T.MeshStandardMaterial({color:'#626a69',metalness:.65,roughness:.4});
  const bins=new Map<T.Group,T.Matrix4[]>(),posts=new Map<T.Group,T.Matrix4[]>();
  function add(bin:Map<T.Group,T.Matrix4[]>,x:number,y:number,z:number,w:number,h:number,d:number,angle:number){const group=groupAt(x,z),list=bin.get(group)??[];list.push(new T.Matrix4().compose(new T.Vector3(x,y,z),new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),angle),new T.Vector3(w,h,d)));bin.set(group,list);}

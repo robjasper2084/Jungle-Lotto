@@ -1,7 +1,7 @@
+import type {SceneryWorld} from './sceneryWorld.ts';
 import * as T from 'three';
 import {GEO,nearestRamp,cutWidth} from './geo-profile.ts';
 import {pointOnCut,nearestCut} from './geography.ts';
-import type {DetroitWorld} from './world.ts';
 type Point={x:number;y:number;z:number};
 export type RailRun={name:string;a:Point;b:Point;height:number;kind:'fence'|'rail'|'gate'};
 /** Reference-informed additions: black steel mesh fencing and ramp handrails.
@@ -34,7 +34,7 @@ export function routeRailLayout(heightAt:(x:number,z:number)=>number):RailRun[]{
  }
  return runs.filter(run=>[run.a,run.b,{x:(run.a.x+run.b.x)/2,z:(run.a.z+run.b.z)/2}].every(p=>{const c=nearestCut(p.x,p.z);return Math.abs(c.u)>cutWidth(c.d)/2+.4;}));
 }
-export function buildRouteRails(world:DetroitWorld,groupAt:(x:number,z:number)=>T.Group,heightAt:(x:number,z:number)=>number){
+export function buildRouteRails(world:SceneryWorld,groupAt:(x:number,z:number)=>T.Group,heightAt:(x:number,z:number)=>number){
  const runs=routeRailLayout(heightAt),steel=new T.MeshStandardMaterial({color:'#27383a',metalness:.65,roughness:.55}),wire=new T.LineBasicMaterial({color:'#485451',transparent:true,opacity:.72});
  const lineBins=new Map<T.Group,number[]>();
  const bar=(g:T.Group,a:T.Vector3,b:T.Vector3,width:number)=>{const mesh=new T.Mesh(new T.BoxGeometry(width,a.distanceTo(b),width),steel);mesh.position.copy(a).add(b).multiplyScalar(.5);mesh.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),b.clone().sub(a).normalize());mesh.castShadow=mesh.receiveShadow=true;g.add(mesh);};

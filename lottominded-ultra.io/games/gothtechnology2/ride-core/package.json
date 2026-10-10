@@ -58,6 +58,10 @@
     "./chat": {
       "types": "./dist/roomChat.d.ts",
       "import": "./dist/roomChat.js"
+    },
+    "./royale": {
+      "types": "./dist/royale.d.ts",
+      "import": "./dist/royale.js"
     }
   },
   "files": [
@@ -72,7 +76,7 @@
     "LICENSE.txt"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && node scripts/copy-engine.mjs",
     "test": "node --test tests/*.test.ts",
     "demo": "node examples/headless.mjs"
   },
@@ -82,6 +86,7 @@
   "dependencies": {
     "@colyseus/sdk": "0.18.5",
     "@dimforge/rapier3d-compat": "0.20.0",
+    "@supabase/realtime-js": "2.117.2",
     "fflate": "0.8.3"
   },
   "peerDependencies": {
@@ -99,3 +104,4 @@
     "typescript": "5.9.3"
   }
 }
+

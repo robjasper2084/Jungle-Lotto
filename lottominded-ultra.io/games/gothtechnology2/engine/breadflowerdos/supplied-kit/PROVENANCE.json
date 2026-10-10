@@ -1,0 +1,64 @@
+{
+  "prepared": "2026-10-09",
+  "purpose": "Actual BreadFlowerDos component integration starter and full engine-merge instructions",
+  "upstream_commit": "6b4d4e1f10dee9b1c8932db95f91b92e3eceb7db",
+  "upstream_component": "src/dice/hfe/io/PlayerInput.hpp",
+  "upstream_git_blob": "9f7195e8424c3d95c6fef3c8ce48c6410a8feb68",
+  "implemented_capabilities": [
+    "validated-input-routing-only"
+  ],
+  "not_implemented": [
+    "full-upstream-engine-port",
+    "actual-game-integration",
+    "engine-backed-combat",
+    "downtown-map",
+    "online-server",
+    "six-human-gameplay",
+    "hosted-service"
+  ],
+  "checks": {
+    "native_test_program": "passed",
+    "native_asan_ubsan": "passed for tested cases",
+    "typescript": "passed with tsc 5.8.3",
+    "wasm_node_tests": {
+      "passed": 14,
+      "failed": 0
+    },
+    "browser_gameplay": "not tested"
+  },
+  "binary_sha256": "9bb041097f8b17ad3bef6a5ec4e97cdfe769eadde77cae67cd33afbb0aeb5902",
+  "files": {
+    ".gitattributes": "0853520233dd9a17c4577ef15bb35d0d8b133aacb724e308283a4155506804c0",
+    "00_START_HERE.txt": "beeca1ae2b2fb57c094e0eb550e8ea858415f0f7177883fbc66f0a7d3cc94a73",
+    "01_ENGINE_MERGE_MASTER_PROMPT.md": "0c3a860cc150003e886603c98188a7a16e3a010786b186a488f649325df0e67a",
+    "02_ENGINE_MERGE_ACCEPTANCE_TESTS.md": "4bd3ad8423156493d2a5ce08573a647e50dc0468b37c10d514d3f359e3edc693",
+    "03_STATIC_ROYALE_GAMEPLAY_SPEC.md": "eb5083849105d1f837a41f2c12b6d0d9d64619fdfd245353b65d2e675bf3eb46",
+    "CMakeLists.txt": "6a5badfdbd0d26ea823a951e4891c6c2f35226290b04df2e0d77f3143957a068",
+    "README.md": "72d325148c4b5dab6f59399ce38b25894d343f9a18c53dd03d3b1dd4339e3ca5",
+    "THIRD_PARTY_NOTICES.md": "4f502e28ffb14504b2b1a67917fec42b685bd2fb0930ff1c9b251c7bad730f6a",
+    "dist/breadflower-input.wasm": "9bb041097f8b17ad3bef6a5ec4e97cdfe769eadde77cae67cd33afbb0aeb5902",
+    "dist/bridge.d.ts": "137286341bde7d110d76a12a6e74ce9e93478fe161501f591e7da63cb59be308",
+    "dist/bridge.js": "b6817c42e9b925a140d43d67db205c8c531210a7febfa1642406cd911c48c11e",
+    "docs/VERIFICATION_REPORT.md": "16d0ce7d887dde80eaf3a2f383391aaa26d12075517f52c50d14486318edfcaf",
+    "engine/freestanding/cstddef": "677bdc86c35b3cf5de5606a02342865e7cdc04c2a6a5533f1efd90149e3ebc6c",
+    "engine/freestanding/cstdint": "594f9bd0b0eede0d06badb7db33587772ecb6a1c8e01c7bc2b4f8b26d6095f84",
+    "engine/include/input_bridge.h": "1f936a2cd91bbf084fe3634bc9be7ad81223f2e794737c365ea1f657e74ff77b",
+    "engine/src/input_bridge.cpp": "731c5a379eb0eb4a9ae5d88989f1c147ab4e9b681e85b930421bd192635b712d",
+    "evidence/native-build.txt": "42c6b61b693ba9bfb23c7cece28f42e4a028a2dfcc149309baaf40ed25e88d4e",
+    "evidence/native-sanitizers.txt": "94db9dbd87e3f72ead3fcc4048768285c53b5f1a0c09d7b250ccc0a63d224961",
+    "evidence/native-tests.txt": "4f28e0d761c68e0cf28055a5a43786a9fc4538daa957c6b344fd2ab5a9a5ff8e",
+    "evidence/provenance-check.txt": "4d09f90216f114384f7adb8d00c26031dc6f7e348634047d3c1afd12ebb74606",
+    "evidence/typescript-version.txt": "9265ac58ff367868abd52fc852ecff28622facad715e3c3a0fcf92c4ca2d86e2",
+    "evidence/wasm-build.txt": "00583b4c572bc8e51cbd99d1badc5f42d97ad939c2328a10389d1189e87a7ba7",
+    "evidence/wasm-tests.txt": "add83039668c12b038e051b0b1c5e599ad5c1b8a60ec72459c0f60273ccf785d",
+    "package.json": "f4edfda8cf818d797d8ae156e9e9c633da910b6ec459c25006fbf51ea03b2d36",
+    "scripts/build-wasm.sh": "7197ad6750e96f4d84ca3f0fc45ff40a28140ad7cc9813c852e7563134422b20",
+    "scripts/verify-source.mjs": "16d116422f198625cd524827921eac5f31eb93c5cf0f8f543ee3993f51929693",
+    "tests/native_test.cpp": "33c491c2495fdbd32820e8bae7fbef8e1e0d5f2cacbf02845871a7a63b4c2142",
+    "tests/wasm.test.mjs": "820eab80658efb49f867aaf940e8d8e744430f9bae5deefce783968da03bbb61",
+    "third_party/breadflowerdos/LICENSE": "446e144e2fb0c075d5900900f5b1bb85f2fcbbb4234c45cadda983236402606b",
+    "third_party/breadflowerdos/src/dice/hfe/io/PlayerInput.hpp": "f7a8705c35f97eefeb67f0f377393ebe5c5c4d3f7a80b1bf265d45d613b55414",
+    "tsconfig.json": "1012948ec572afb25d6f5f925dc10a711058402daaffc7f5cca89e010f692b15",
+    "web/bridge.ts": "950ece04c759696214e2018d4c157b30f481941b10c99d3a0d1cae6c0ba90fdc"
+  }
+}

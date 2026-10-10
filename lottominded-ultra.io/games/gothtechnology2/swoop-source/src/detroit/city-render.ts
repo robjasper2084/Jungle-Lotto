@@ -1,3 +1,4 @@
+import type {SceneryWorld} from './sceneryWorld.ts';
 import type {SpatialAssetStream} from './spatialAssetStream.ts';
 import * as T from 'three';
 import {orleansFloors,orleansMaterial} from './orleansLanding.ts';
@@ -13,10 +14,9 @@ import {parallelStreetSidewalk} from './streetSidewalk.ts';
 import {streetJoinExclusions} from './streetJunctions.ts';
 import {heightAt} from './world.ts';
 import {clearStreetJunction,sidewalkHalfWidth,streetMarkingStyle} from './streetFurnitureLayout.ts';
-import type {DetroitWorld} from './world.ts';
 
 /** Mapped polygons own both visible structure and collision. Facades remain authored art. */
-export async function buildCity(_scene:T.Scene,world:DetroitWorld,groupAt:(x:number,z:number)=>T.Group,skins:Record<string,T.MeshStandardMaterial>,stream?:SpatialAssetStream){
+export async function buildCity(_scene:T.Scene,world:SceneryWorld,groupAt:(x:number,z:number)=>T.Group,skins:Record<string,T.MeshStandardMaterial>,stream?:SpatialAssetStream){
  const loader=new T.TextureLoader();
  const maps=await Promise.all(['industrial_red','industrial_buff','storefront'].map(n=>loader.loadAsync('/textures/architecture/'+n+'.jpg')));
  maps.forEach(t=>{t.colorSpace=T.SRGBColorSpace;t.wrapS=t.wrapT=T.RepeatWrapping;t.anisotropy=8;});

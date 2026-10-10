@@ -1,0 +1,1842 @@
+{
+  "at": "2026-10-10T03:51:30.700Z",
+  "durationSeconds": 187.184,
+  "endpoint": "http://127.0.0.1:8226",
+  "humans": 0,
+  "automatedClients": 1,
+  "bots": 5,
+  "hostedInternet": false,
+  "engine": {
+    "engine": "6b4d4e1f10dee9b1c8932db95f91b92e3eceb7db",
+    "module": "2ac9a1d3a5fb5745e8b37e4411f2e17caadf82944ea0ec7b18ab00b075377136",
+    "bridgeAbi": 4,
+    "engineRules": "static-royale-cpp-2"
+  },
+  "reconnected": {
+    "sameEntity": true,
+    "healthNotReset": true,
+    "inputCursor": 94,
+    "shotCursor": 4
+  },
+  "rematch": true,
+  "result": {
+    "round": "2f0f823d-1426-4a23-beb6-62c09a3edd9a",
+    "tick": 11012,
+    "phase": "results",
+    "field": {
+      "x": 515.7241132754502,
+      "z": -165.2637209341201,
+      "radius": 705.0196078431372,
+      "nextRadius": 250,
+      "remaining": 75.46666666666667,
+      "phase": 2,
+      "damage": 8
+    },
+    "winner": "bot-487169aa-ec2b-415a-b41a-daa19fee0b1c",
+    "reason": "Last rider standing",
+    "remaining": 1,
+    "engine": {
+      "engine": "6b4d4e1f10dee9b1c8932db95f91b92e3eceb7db",
+      "module": "2ac9a1d3a5fb5745e8b37e4411f2e17caadf82944ea0ec7b18ab00b075377136",
+      "bridgeAbi": 4,
+      "engineRules": "static-royale-cpp-2"
+    },
+    "engineInputFrames": 55593,
+    "roster": [
+      {
+        "id": "PIXmgX6hV",
+        "name": "Automated round",
+        "bot": false,
+        "skin": "DS_Man_01",
+        "wheelId": "euc",
+        "alive": false,
+        "connected": true
+      },
+      {
+        "id": "bot-f8aa25bb-bd46-437e-aa88-6c694f870021",
+        "name": "AI 2",
+        "bot": true,
+        "skin": "hero",
+        "wheelId": "euc",
+        "alive": false,
+        "connected": true
+      },
+      {
+        "id": "bot-fb0c3774-8a95-4111-a047-80144f968c6f",
+        "name": "AI 3",
+        "bot": true,
+        "skin": "hero",
+        "wheelId": "euc",
+        "alive": false,
+        "connected": true
+      },
+      {
+        "id": "bot-cd954271-b79e-4732-9b50-5fa0a7cdbd63",
+        "name": "AI 4",
+        "bot": true,
+        "skin": "hero",
+        "wheelId": "euc",
+        "alive": false,
+        "connected": true
+      },
+      {
+        "id": "bot-487169aa-ec2b-415a-b41a-daa19fee0b1c",
+        "name": "AI 5",
+        "bot": true,
+        "skin": "hero",
+        "wheelId": "euc",
+        "alive": true,
+        "connected": true
+      },
+      {
+        "id": "bot-c36f4fc9-29d7-4d99-b7a2-6ac52051e00e",
+        "name": "AI 6",
+        "bot": true,
+        "skin": "hero",
+        "wheelId": "euc",
+        "alive": false,
+        "connected": true
+      }
+    ],
+    "actors": [
+      {
+        "id": "PIXmgX6hV",
+        "skin": "DS_Man_01",
+        "wheelId": "euc",
+        "combat": {
+          "magazine": {
+            "static": 0,
+            "heart": 0,
+            "bass": 0
+          },
+          "reloadStart": -1,
+          "reloadCommit": 0,
+          "reloadEnd": 0,
+          "committed": false,
+          "kickYaw": 2.1922467524633246e-185,
+          "kickPitch": 3.506648015791671e-184,
+          "aimBlend": 0,
+          "lean": 0,
+          "fireMode": 0,
+          "shotCounter": 20
+        },
+        "pose": {
+          "stopFoot": 0.9999999999999991,
+          "stopFootX": 1730.3578943747596,
+          "stopFootY": 5.318760000000001,
+          "stopFootZ": 157.81790326035014,
+          "warningLevel": 0,
+          "beepPulse": 0,
+          "scrape": 0,
+          "scrapeSide": 0,
+          "scrapeX": 1729.9716132754504,
+          "scrapeY": 5.318760000000001,
+          "scrapeZ": 157.75377906587983,
+          "scrapeHard": 0,
+          "trickFoot": 0,
+          "x": 1729.9716132754504,
+          "y": 5.318760000000001,
+          "z": 157.75377906587983,
+          "headingY": -0.075,
+          "speed": 0,
+          "wheelSpin": 0,
+          "groundPitch": 0,
+          "groundRoll": 0,
+          "rollAngle": 0,
+          "riderRoll": 0,
+          "riderPitch": 0,
+          "wheelPitch": 0,
+          "suspensionOffset": 0,
+          "crouch": 0,
+          "tuck": 0,
+          "attack": 0,
+          "carveStance": 0,
+          "technicalTurn": 0,
+          "riderTurnTwist": 0,
+          "riderLookYaw": 0,
+          "reverseBlend": 0,
+          "restFactor": 0.9999999999999983,
+          "airBlend": 0,
+          "airHeight": 0,
+          "wobble": 0,
+          "wobbleSway": 0,
+          "wobbleFight": 0,
+          "wobbleYaw": 0,
+          "wobbleRoll": 0,
+          "crashContact": 0,
+          "crashReach": 0,
+          "crashAbsorb": 0,
+          "crashCurl": 0,
+          "crashHeadTuck": 0,
+          "crashStagger": 0,
+          "crashSide": 0,
+          "crashDirection": 0,
+          "crashRecovery": 0,
+          "crashMotion": 0,
+          "crashBrace": 0,
+          "crashRelease": 0,
+          "crashSettle": 0,
+          "crashLegTuck": 0,
+          "crashImpactPulse": 0,
+          "wheelCrashForward": 0,
+          "wheelCrashLateral": 0,
+          "crashBlend": 0,
+          "crashLateral": 0,
+          "crashDrop": 0,
+          "crashForward": 0,
+          "crashTumble": 0,
+          "crashRoll": 0,
+          "wheelCrashPop": 0,
+          "wheelCrashSpin": 0,
+          "wheelCrashLean": 0,
+          "velocityX": 0,
+          "velocityZ": 0,
+          "yawRate": 0,
+          "turnIntent": 0,
+          "brakeAmount": 0,
+          "landingCompression": 0,
+          "takeoffExtension": 0,
+          "landingAnticipation": 0,
+          "bodyBob": -0.003945612453947633,
+          "motorLoad": 0,
+          "tiltback": 0,
+          "slipAngle": 0,
+          "rollVelocity": 0,
+          "weightShift": 0,
+          "lateralAcceleration": 0,
+          "tractionUsage": 0,
+          "driveIntent": 0,
+          "hipSway": 0,
+          "balanceReach": 0,
+          "naturalMotion": 1,
+          "terrainBend": 0,
+          "hopPreload": 0,
+          "bodyDrop": 0.07991575298426137,
+          "bodyShift": 0,
+          "bodyPitch": 0.10059775217891707,
+          "bodyLateral": 0,
+          "bodyHipTilt": 0,
+          "bodyChestRoll": 0,
+          "bodyHeadRoll": 0,
+          "bodyTwist": 0,
+          "bodyLook": 0.03409098516440219,
+          "bodyHipYaw": 0,
+          "armBank": 0,
+          "armSwing": 0,
+          "shoulderL": 0,
+          "shoulderR": 0,
+          "handLX": 0.03637853834607766,
+          "handLY": 0.015298876089458522,
+          "handLZ": 0.06043685556573948,
+          "handRX": -0.03637853834607766,
+          "handRY": 0.015298876089458522,
+          "handRZ": 0.06043685556573948,
+          "wristL": -0.024581260031375327,
+          "wristR": -0.024581260031375327
+        },
+        "aimYaw": 0,
+        "aimPitch": 0,
+        "alive": false,
+        "shieldActive": false,
+        "weapon": "static"
+      },
+      {
+        "id": "bot-f8aa25bb-bd46-437e-aa88-6c694f870021",
+        "skin": "hero",
+        "wheelId": "euc",
+        "combat": {
+          "magazine": {
+            "static": 20,
+            "heart": 0,
+            "bass": 0
+          },
+          "reloadStart": -1,
+          "reloadCommit": 0,
+          "reloadEnd": 0,
+          "committed": false,
+          "kickYaw": 0,
+          "kickPitch": 0,
+          "aimBlend": 0.5,
+          "lean": 0,
+          "fireMode": 0,
+          "shotCounter": 0
+        },
+        "pose": {
+          "stopFoot": 0,
+          "stopFootX": 1330.8170346089994,
+          "stopFootY": 1.2301598413085948,
+          "stopFootZ": 74.72219032946212,
+          "warningLevel": 0,
+          "beepPulse": 0,
+          "scrape": 0,
+          "scrapeSide": 0,
+          "scrapeX": 1330.931145834678,
+          "scrapeY": 1.3318177087402354,
+          "scrapeZ": 74.34953796632024,
+          "scrapeHard": 0,
+          "trickFoot": 0,
+          "x": 1330.931145834678,
+          "y": 1.3318177087402354,
+          "z": 74.34953796632024,
+          "headingY": 4.432020761510831,
+          "speed": 6e-323,
+          "wheelSpin": 835.0013983226359,
+          "groundPitch": -0.04768273914715735,
+          "groundRoll": 0,
+          "rollAngle": 0,
+          "riderRoll": 0,
+          "riderPitch": -0.0881672000537328,
+          "wheelPitch": 0,
+          "suspensionOffset": -0.0004052599711844673,
+          "crouch": 0.22,
+          "tuck": 0,
+          "attack": 0,
+          "carveStance": 0.5946915263190057,
+          "technicalTurn": 0,
+          "riderTurnTwist": -0.03838489051774124,
+          "riderLookYaw": -0.05030606268186669,
+          "reverseBlend": 0,
+          "restFactor": 5.526290890880545e-23,
+          "airBlend": 0,
+          "airHeight": 0,
+          "wobble": 0,
+          "wobbleSway": 0,
+          "wobbleFight": 0,
+          "wobbleYaw": 0,
+          "wobbleRoll": 0,
+          "crashContact": 1,
+          "crashReach": 0,
+          "crashAbsorb": 0,
+          "crashCurl": 0.48,
+          "crashHeadTuck": 0.35,
+          "crashStagger": 0.45,
+          "crashSide": -1,
+          "crashDirection": 1,
+          "crashRecovery": 0,
+          "crashMotion": 1,
+          "crashBrace": 0.35,
+          "crashRelease": 1,
+          "crashSettle": 1,
+          "crashLegTuck": 0.7919999999999999,
+          "crashImpactPulse": 0,
+          "wheelCrashForward": 0.5001856283549935,
+          "wheelCrashLateral": 0.04289981244601856,
+          "crashBlend": 1,
+          "crashLateral": -0.00479051505460586,
+          "crashDrop": 1.1,
+          "crashForward": 0.13445360396626396,
+          "crashTumble": 0,
+          "crashRoll": 1.5,
+          "wheelCrashPop": 0,
+          "wheelCrashSpin": -0.5142330786504974,
+          "wheelCrashLean": 1.48,
+          "velocityX": 0,
+          "velocityZ": 0,
+          "yawRate": -0.35286714608480474,
+          "turnIntent": -0.28306444610261927,
+          "brakeAmount": 0.8347011117784138,
+          "landingCompression": 0,
+          "takeoffExtension": 0,
+          "landingAnticipation": 0,
+          "bodyBob": 0,
+          "motorLoad": 1,
+          "tiltback": 0.22965966372340704,
+          "slipAngle": 0.015519687256474481,
+          "rollVelocity": 5.005500327245308,
+          "weightShift": 0.055,
+          "lateralAcceleration": -6.21594482430685,
+          "tractionUsage": 0.8684876711834639,
+          "driveIntent": -0.7410687795019115,
+          "hipSway": -0.0273932770244429,
+          "balanceReach": 0.20326219100805462,
+          "naturalMotion": 1,
+          "terrainBend": 0.000043405557358047324,
+          "hopPreload": 0,
+          "bodyDrop": 0.09,
+          "bodyShift": 0,
+          "bodyPitch": 0.2728,
+          "bodyLateral": 0,
+          "bodyHipTilt": 0,
+          "bodyChestRoll": 0.02099999999999999,
+          "bodyHeadRoll": 0,
+          "bodyTwist": 0.045,
+          "bodyLook": 0.0686,
+          "bodyHipYaw": 0,
+          "armBank": 0,
+          "armSwing": 0,
+          "shoulderL": 0.010274408712557692,
+          "shoulderR": 0.00854269021505799,
+          "handLX": 0.08184100231720262,
+          "handLY": 0.16710276686804693,
+          "handLZ": 0.24538177732567085,
+          "handRX": -0.05607505396957791,
+          "handRY": 0.137222140128355,
+          "handRZ": 0.13054441169739928,
+          "wristL": -0.058713837440935446,
+          "wristR": -0.014229289376074317
+        },
+        "aimYaw": 0,
+        "aimPitch": 0,
+        "alive": false,
+        "shieldActive": false,
+        "weapon": "static"
+      },
+      {
+        "id": "bot-fb0c3774-8a95-4111-a047-80144f968c6f",
+        "skin": "hero",
+        "wheelId": "euc",
+        "combat": {
+          "magazine": {
+            "static": 9,
+            "heart": 0,
+            "bass": 0
+          },
+          "reloadStart": -1,
+          "reloadCommit": 0,
+          "reloadEnd": 0,
+          "committed": false,
+          "kickYaw": -3e-323,
+          "kickPitch": 3e-323,
+          "aimBlend": 0.5,
+          "lean": 0,
+          "fireMode": 0,
+          "shotCounter": 11
+        },
+        "pose": {
+          "stopFoot": 0,
+          "stopFootX": 1253.6031149495864,
+          "stopFootY": 1.8079186303710948,
+          "stopFootZ": 86.22783050924208,
+          "warningLevel": 0,
+          "beepPulse": 0,
+          "scrape": 0,
+          "scrapeSide": 0,
+          "scrapeX": 1253.994455140721,
+          "scrapeY": 1.805454335937501,
+          "scrapeZ": 86.24116673069658,
+          "scrapeHard": 0,
+          "trickFoot": 0,
+          "x": 1253.994455140721,
+          "y": 1.805454335937501,
+          "z": 86.24116673069658,
+          "headingY": -3.086153985370946,
+          "speed": 0,
+          "wheelSpin": 4.955237050291267,
+          "groundPitch": 0.24494810087207144,
+          "groundRoll": 0.029069865158968512,
+          "rollAngle": 5.879662790977252e-11,
+          "riderRoll": 3.709777927745434e-11,
+          "riderPitch": 0.1664891086956279,
+          "wheelPitch": 0.015368225413734105,
+          "suspensionOffset": 0.0023879571837151486,
+          "crouch": 0,
+          "tuck": 0,
+          "attack": 0.4268951502970227,
+          "carveStance": 9.045635063041925e-11,
+          "technicalTurn": 1.0538703614780701e-8,
+          "riderTurnTwist": -3e-323,
+          "riderLookYaw": -2.5e-323,
+          "reverseBlend": 0,
+          "restFactor": 0.9999999999999983,
+          "airBlend": 0,
+          "airHeight": 0,
+          "wobble": 0,
+          "wobbleSway": 0,
+          "wobbleFight": 0,
+          "wobbleYaw": 0,
+          "wobbleRoll": 0,
+          "crashContact": 0,
+          "crashReach": 0,
+          "crashAbsorb": 0,
+          "crashCurl": 0,
+          "crashHeadTuck": 0,
+          "crashStagger": 0,
+          "crashSide": 0,
+          "crashDirection": 0,
+          "crashRecovery": 0,
+          "crashMotion": 0,
+          "crashBrace": 0,
+          "crashRelease": 0,
+          "crashSettle": 0,
+          "crashLegTuck": 0,
+          "crashImpactPulse": 0,
+          "wheelCrashForward": 0,
+          "wheelCrashLateral": 0,
+          "crashBlend": 0,
+          "crashLateral": 0,
+          "crashDrop": 0,
+          "crashForward": 0,
+          "crashTumble": 0,
+          "crashRoll": 0,
+          "wheelCrashPop": 0,
+          "wheelCrashSpin": 0,
+          "wheelCrashLean": 0,
+          "velocityX": -0.00021439055985598924,
+          "velocityZ": -0.0038632038332748245,
+          "yawRate": 2.6892068271461823e-8,
+          "turnIntent": -3.9498986523146886e-7,
+          "brakeAmount": 0,
+          "landingCompression": 0,
+          "takeoffExtension": 0,
+          "landingAnticipation": 0,
+          "bodyBob": 0.0025159389954744348,
+          "motorLoad": 0,
+          "tiltback": 0,
+          "slipAngle": 0,
+          "rollVelocity": -4.015424280261391e-12,
+          "weightShift": -9.373794426084037e-14,
+          "lateralAcceleration": 5.740046761661672e-10,
+          "tractionUsage": 6.536743187128586e-11,
+          "driveIntent": 0.8500000238418574,
+          "hipSway": 3.2123817545034567e-12,
+          "balanceReach": 0.04610467626618287,
+          "naturalMotion": 1,
+          "terrainBend": 2e-323,
+          "hopPreload": 0,
+          "bodyDrop": 0.09276067026497026,
+          "bodyShift": 0.03496271284052578,
+          "bodyPitch": 0.19608803419697723,
+          "bodyLateral": -3.315678824330321e-12,
+          "bodyHipTilt": 7.168811392943604e-12,
+          "bodyChestRoll": 7.161687424739122e-12,
+          "bodyHeadRoll": 2.7243593485065287e-11,
+          "bodyTwist": -6.4e-323,
+          "bodyLook": 0.029041448192014124,
+          "bodyHipYaw": 2.1968487117194547e-8,
+          "armBank": -5.985380260401257e-11,
+          "armSwing": -0.24999999999999978,
+          "shoulderL": -1.8430157418369278e-13,
+          "shoulderR": 1.8430157418369278e-13,
+          "handLX": 0.047172169518450276,
+          "handLY": 0.018843341303869342,
+          "handLZ": 0.0211123865094405,
+          "handRX": -0.047172169524300686,
+          "handRY": 0.018843429516514153,
+          "handRZ": 0.02111254785675144,
+          "wristL": -0.04718319882504734,
+          "wristR": -0.0471831973023875
+        },
+        "aimYaw": 0,
+        "aimPitch": 0,
+        "alive": false,
+        "shieldActive": false,
+        "weapon": "static"
+      },
+      {
+        "id": "bot-cd954271-b79e-4732-9b50-5fa0a7cdbd63",
+        "skin": "hero",
+        "wheelId": "euc",
+        "combat": {
+          "magazine": {
+            "static": 20,
+            "heart": 0,
+            "bass": 0
+          },
+          "reloadStart": -1,
+          "reloadCommit": 0,
+          "reloadEnd": 0,
+          "committed": false,
+          "kickYaw": 0,
+          "kickPitch": 0,
+          "aimBlend": 0,
+          "lean": 0,
+          "fireMode": 0,
+          "shotCounter": 0
+        },
+        "pose": {
+          "stopFoot": 0,
+          "stopFootX": 1841.3402881878783,
+          "stopFootY": 5.26440437866211,
+          "stopFootZ": -20.325256526826813,
+          "warningLevel": 0,
+          "beepPulse": 0,
+          "scrape": 0,
+          "scrapeSide": 0,
+          "scrapeX": 1841.5112012073548,
+          "scrapeY": 5.318760000000001,
+          "scrapeZ": -20.67755432666869,
+          "scrapeHard": 0,
+          "trickFoot": 0,
+          "x": 1841.5112012073548,
+          "y": 5.318760000000001,
+          "z": -20.67755432666869,
+          "headingY": -1.93297991358225,
+          "speed": 0,
+          "wheelSpin": 8.287160575978682,
+          "groundPitch": 0,
+          "groundRoll": 0,
+          "rollAngle": 3.187665886735433e-218,
+          "riderRoll": 2.3452772137518164e-216,
+          "riderPitch": 0.011916666666666685,
+          "wheelPitch": 0.0011000000000000018,
+          "suspensionOffset": 0.0033171639745634787,
+          "crouch": 0,
+          "tuck": 0,
+          "attack": 0.030555555555555582,
+          "carveStance": 4.904101364208358e-218,
+          "technicalTurn": 9.372641959148167e-216,
+          "riderTurnTwist": 3e-323,
+          "riderLookYaw": 2.5e-323,
+          "reverseBlend": 0,
+          "restFactor": 0.9999999999999983,
+          "airBlend": 0,
+          "airHeight": 0,
+          "wobble": 0,
+          "wobbleSway": 0,
+          "wobbleFight": 0,
+          "wobbleYaw": 0,
+          "wobbleRoll": 0,
+          "crashContact": 0,
+          "crashReach": 0,
+          "crashAbsorb": 0,
+          "crashCurl": 0,
+          "crashHeadTuck": 0,
+          "crashStagger": 0,
+          "crashSide": 0,
+          "crashDirection": 0,
+          "crashRecovery": 0,
+          "crashMotion": 0,
+          "crashBrace": 0,
+          "crashRelease": 0,
+          "crashSettle": 0,
+          "crashLegTuck": 0,
+          "crashImpactPulse": 0,
+          "wheelCrashForward": 0,
+          "wheelCrashLateral": 0,
+          "crashBlend": 0,
+          "crashLateral": 0,
+          "crashDrop": 0,
+          "crashForward": 0,
+          "crashTumble": 0,
+          "crashRoll": 0,
+          "wheelCrashPop": 0,
+          "wheelCrashSpin": 0,
+          "wheelCrashLean": 0,
+          "velocityX": -0.0002589728043078404,
+          "velocityZ": -0.00009812424178804264,
+          "yawRate": 6.095625653094127e-215,
+          "turnIntent": -4.9078561531539504e-213,
+          "brakeAmount": 0,
+          "landingCompression": 0,
+          "takeoffExtension": 0,
+          "landingAnticipation": 0,
+          "bodyBob": 0.003087878804784806,
+          "motorLoad": 0,
+          "tiltback": 0,
+          "slipAngle": 0,
+          "rollVelocity": -3.180708088135666e-217,
+          "weightShift": -5.067973713608266e-219,
+          "lateralAcceleration": 9.31276141444936e-218,
+          "tractionUsage": 6.011879515923327e-218,
+          "driveIntent": 0.8500000238418574,
+          "hipSway": -1.2778487397455056e-214,
+          "balanceReach": 0.003300000000000005,
+          "naturalMotion": 1,
+          "terrainBend": 0,
+          "hopPreload": 0,
+          "bodyDrop": 0.07713700971444902,
+          "bodyShift": 0.0025025000000000056,
+          "bodyPitch": 0.10108967613281226,
+          "bodyLateral": 2.2105722731190004e-213,
+          "bodyHipTilt": 6.837782574648871e-218,
+          "bodyChestRoll": 6.21968473050626e-196,
+          "bodyHeadRoll": 7.086711853438415e-218,
+          "bodyTwist": 6.4e-323,
+          "bodyLook": 0.020900955362561455,
+          "bodyHipYaw": 9.136027731066377e-213,
+          "armBank": -1.2889950259707538e-132,
+          "armSwing": -0.0186862379545864,
+          "shoulderL": -8.764179513182514e-175,
+          "shoulderR": 8.764179513182514e-175,
+          "handLX": 0.0348708200491781,
+          "handLY": 0.012381115844183886,
+          "handLZ": 0.05529441226617335,
+          "handRX": -0.0348708200491781,
+          "handRY": 0.012381115844183886,
+          "handRZ": 0.05529441226617335,
+          "wristL": -0.026404700828422507,
+          "wristR": -0.026404700828422507
+        },
+        "aimYaw": 0,
+        "aimPitch": 0,
+        "alive": false,
+        "shieldActive": false,
+        "weapon": "static"
+      },
+      {
+        "id": "bot-487169aa-ec2b-415a-b41a-daa19fee0b1c",
+        "skin": "hero",
+        "wheelId": "euc",
+        "combat": {
+          "magazine": {
+            "static": 20,
+            "heart": 0,
+            "bass": 0
+          },
+          "reloadStart": -1,
+          "reloadCommit": 0,
+          "reloadEnd": 0,
+          "committed": false,
+          "kickYaw": 0,
+          "kickPitch": 0,
+          "aimBlend": 0,
+          "lean": 0,
+          "fireMode": 0,
+          "shotCounter": 0
+        },
+        "pose": {
+          "stopFoot": 0,
+          "stopFootX": 529.2904842471736,
+          "stopFootY": 5.318760000000001,
+          "stopFootZ": -243.188946854665,
+          "warningLevel": 0,
+          "beepPulse": 0,
+          "scrape": 0,
+          "scrapeSide": 0,
+          "scrapeX": 529.356357126985,
+          "scrapeY": 5.318760000000001,
+          "scrapeZ": -243.5863484523032,
+          "scrapeHard": 0,
+          "trickFoot": 0,
+          "x": 529.356357126985,
+          "y": 5.318760000000001,
+          "z": -243.5863484523032,
+          "headingY": 10.579761144533425,
+          "speed": 16.440089895472905,
+          "wheelSpin": 1098.7737753375716,
+          "groundPitch": 4.706556172128995e-138,
+          "groundRoll": -2.8649491354153316e-139,
+          "rollAngle": 0.06201262133007967,
+          "riderRoll": 0.04751882973394571,
+          "riderPitch": 0.43851938389721834,
+          "wheelPitch": 0.034324688361767566,
+          "suspensionOffset": 7.590910720849784e-163,
+          "crouch": 0,
+          "tuck": 0,
+          "attack": 0.9087365394287702,
+          "carveStance": 0.09540403281550718,
+          "technicalTurn": 0,
+          "riderTurnTwist": 0.00947994718497706,
+          "riderLookYaw": 0.02237518386750558,
+          "reverseBlend": 0,
+          "restFactor": 2.3513763157536623e-21,
+          "airBlend": 0,
+          "airHeight": 0,
+          "wobble": 0,
+          "wobbleSway": 0,
+          "wobbleFight": 0,
+          "wobbleYaw": 0,
+          "wobbleRoll": 0,
+          "crashContact": 0,
+          "crashReach": 0,
+          "crashAbsorb": 0,
+          "crashCurl": 0,
+          "crashHeadTuck": 0,
+          "crashStagger": 0,
+          "crashSide": 0,
+          "crashDirection": 0,
+          "crashRecovery": 0,
+          "crashMotion": 0,
+          "crashBrace": 0,
+          "crashRelease": 0,
+          "crashSettle": 0,
+          "crashLegTuck": 0,
+          "crashImpactPulse": 0,
+          "wheelCrashForward": 0,
+          "wheelCrashLateral": 0,
+          "crashBlend": 0,
+          "crashLateral": 0,
+          "crashDrop": 0,
+          "crashForward": 0,
+          "crashTumble": 0,
+          "crashRoll": 0,
+          "wheelCrashPop": 0,
+          "wheelCrashSpin": 0,
+          "wheelCrashLean": 0,
+          "velocityX": -14.85282966564019,
+          "velocityZ": -6.578913334951972,
+          "yawRate": 0.033150870199454015,
+          "turnIntent": -0.07251524577327123,
+          "brakeAmount": 3.102613791388229e-13,
+          "landingCompression": 0,
+          "takeoffExtension": 0,
+          "landingAnticipation": 0,
+          "bodyBob": -2.1459687877713998e-23,
+          "motorLoad": 0.8500000238418579,
+          "tiltback": 1.1171053966783352e-11,
+          "slipAngle": -0.00115425090299177,
+          "rollVelocity": 0.1563928942010457,
+          "weightShift": 0.003739871558203099,
+          "lateralAcceleration": 0.5450032861921777,
+          "tractionUsage": 0.05407277555074403,
+          "driveIntent": 0.8500000237386517,
+          "hipSway": 0.0036007266232184094,
+          "balanceReach": 0.11815630124019814,
+          "naturalMotion": 1,
+          "terrainBend": 8.77576526066702e-122,
+          "hopPreload": 0,
+          "bodyDrop": 0.15451913698987482,
+          "bodyShift": 0.06754894689232546,
+          "bodyPitch": 0.46003785967237854,
+          "bodyLateral": -0.0010590299343340459,
+          "bodyHipTilt": 0.0056539214177115105,
+          "bodyChestRoll": 0.005130436227458153,
+          "bodyHeadRoll": 0.022820542544793147,
+          "bodyTwist": 0.006485685009810881,
+          "bodyLook": 0.018101105947712016,
+          "bodyHipYaw": 0.0028942853860477423,
+          "armBank": -0.0277659477614475,
+          "armSwing": -0.24986639300792576,
+          "shoulderL": 0.003198848929619017,
+          "shoulderR": -0.003198848929619017,
+          "handLX": 0.06982462889293667,
+          "handLY": 0.13120577686616564,
+          "handLZ": 0.045288436242543084,
+          "handRX": -0.06313400144672561,
+          "handRY": 0.13153668771170338,
+          "handRZ": 0.03776197180163727,
+          "wristL": -0.08596411947328367,
+          "wristR": -0.09331215685149565
+        },
+        "aimYaw": 0,
+        "aimPitch": 0,
+        "alive": true,
+        "shieldActive": false,
+        "weapon": "static"
+      },
+      {
+        "id": "bot-c36f4fc9-29d7-4d99-b7a2-6ac52051e00e",
+        "skin": "hero",
+        "wheelId": "euc",
+        "combat": {
+          "magazine": {
+            "static": 0,
+            "heart": 0,
+            "bass": 0
+          },
+          "reloadStart": -1,
+          "reloadCommit": 0,
+          "reloadEnd": 0,
+          "committed": false,
+          "kickYaw": 7.420149437362937e-38,
+          "kickPitch": 6.815827615171655e-36,
+          "aimBlend": 0.5,
+          "lean": 0,
+          "fireMode": 0,
+          "shotCounter": 20
+        },
+        "pose": {
+          "stopFoot": 0,
+          "stopFootX": 1242.6594898416306,
+          "stopFootY": 1.9272728784179698,
+          "stopFootZ": 86.05838345986551,
+          "warningLevel": 0,
+          "beepPulse": 0,
+          "scrape": 0,
+          "scrapeSide": 0,
+          "scrapeX": 1243.0446142942253,
+          "scrapeY": 1.8976212365722667,
+          "scrapeZ": 85.96100640960857,
+          "scrapeHard": 0,
+          "trickFoot": 0,
+          "x": 1243.0446142942253,
+          "y": 1.8976212365722667,
+          "z": 85.96100640960857,
+          "headingY": 9.474586297085644,
+          "speed": 13.839605344587996,
+          "wheelSpin": 2076.7477855242337,
+          "groundPitch": 0.2407736549150386,
+          "groundRoll": 0.0286086383115222,
+          "rollAngle": -0.18337226447255497,
+          "riderRoll": -0.14430558722555073,
+          "riderPitch": 0.43999964687766513,
+          "wheelPitch": 0.05132174734237835,
+          "suspensionOffset": 0.002343984866870433,
+          "crouch": 0,
+          "tuck": 0,
+          "attack": 1,
+          "carveStance": 0.282111176111623,
+          "technicalTurn": 0,
+          "riderTurnTwist": -0.030223200751067585,
+          "riderLookYaw": -0.06854484679297257,
+          "reverseBlend": 2.9909629829583123e-21,
+          "restFactor": 1.9666656082700636e-15,
+          "airBlend": 0,
+          "airHeight": 0,
+          "wobble": 0,
+          "wobbleSway": 0,
+          "wobbleFight": 0,
+          "wobbleYaw": 0,
+          "wobbleRoll": 0,
+          "crashContact": 0,
+          "crashReach": 0,
+          "crashAbsorb": 0,
+          "crashCurl": 0,
+          "crashHeadTuck": 0,
+          "crashStagger": 0,
+          "crashSide": 0,
+          "crashDirection": 0,
+          "crashRecovery": 0,
+          "crashMotion": 0,
+          "crashBrace": 0,
+          "crashRelease": 0,
+          "crashSettle": 0,
+          "crashLegTuck": 0,
+          "crashImpactPulse": 0,
+          "wheelCrashForward": 0,
+          "wheelCrashLateral": 0,
+          "crashBlend": 0,
+          "crashLateral": 0,
+          "crashDrop": 0,
+          "crashForward": 0,
+          "crashTumble": 0,
+          "crashRoll": 0,
+          "wheelCrashPop": 0,
+          "wheelCrashSpin": 0,
+          "wheelCrashLean": 0,
+          "velocityX": -0.7381546820167333,
+          "velocityZ": -13.498374260979832,
+          "yawRate": -0.13187041823509107,
+          "turnIntent": 0.19309043995625103,
+          "brakeAmount": 6.873608063735905e-11,
+          "landingCompression": 0,
+          "takeoffExtension": 0,
+          "landingAnticipation": 0,
+          "bodyBob": -1.176412247063191e-17,
+          "motorLoad": 0.8500000238418579,
+          "tiltback": 1.7379592493841203e-279,
+          "slipAngle": 0.004821961248082253,
+          "rollVelocity": -0.09515181836950894,
+          "weightShift": -0.002231229649746327,
+          "lateralAcceleration": -1.8250345449994207,
+          "tractionUsage": 0.19551768911738912,
+          "driveIntent": 0.8500000134386401,
+          "hipSway": -0.011055752258343104,
+          "balanceReach": 0.178011910312634,
+          "naturalMotion": 1,
+          "terrainBend": 0.00016928081046324117,
+          "hopPreload": 0,
+          "bodyDrop": 0.14559742336365875,
+          "bodyShift": 0.07326049550593133,
+          "bodyPitch": 0.3914090053968645,
+          "bodyLateral": 0.008533400984629813,
+          "bodyHipTilt": -0.020041656043250748,
+          "bodyChestRoll": -0.01833818990219381,
+          "bodyHeadRoll": -0.07918527332604579,
+          "bodyTwist": -0.025951838022986472,
+          "bodyLook": -0.06711681739505634,
+          "bodyHipYaw": -0.010277383507474317,
+          "armBank": 0.10776582075453892,
+          "armSwing": -0.24916417832066742,
+          "shoulderL": -0.008077755608793489,
+          "shoulderR": 0.00807775757857857,
+          "handLX": 0.07877607122172958,
+          "handLY": 0.10221939971978507,
+          "handLZ": 0.03969878162068334,
+          "handRX": -0.06899279927504168,
+          "handRY": 0.09298581185722064,
+          "handRZ": -0.012112060472240825,
+          "wristL": -0.09953392636362836,
+          "wristR": -0.07327877612655055
+        },
+        "aimYaw": 0,
+        "aimPitch": 0,
+        "alive": false,
+        "shieldActive": false,
+        "weapon": "static"
+      }
+    ],
+    "self": {
+      "id": "PIXmgX6hV",
+      "wheelId": "euc",
+      "combat": {
+        "magazine": {
+          "static": 0,
+          "heart": 0,
+          "bass": 0
+        },
+        "reloadStart": -1,
+        "reloadCommit": 0,
+        "reloadEnd": 0,
+        "committed": false,
+        "kickYaw": 2.1922467524633246e-185,
+        "kickPitch": 3.506648015791671e-184,
+        "aimBlend": 0,
+        "lean": 0,
+        "fireMode": 0,
+        "shotCounter": 20
+      },
+      "integrity": 0,
+      "shield": 50,
+      "energy": 100,
+      "burstUntil": 0,
+      "burstLatch": false,
+      "controller": {
+        "version": 1,
+        "fields": {
+          "regulatedSpeed": true,
+          "tuning": {
+            "version": "selected-wheel-2/euc",
+            "maxSpeed": 21.8,
+            "reverseSpeed": 2.8,
+            "driveAcceleration": 7.6,
+            "brakeAcceleration": 9.2,
+            "launchJerk": 22,
+            "brakeJerk": 75,
+            "releaseJerk": 32,
+            "gravity": 9.81,
+            "lowSpeedYaw": 2.55,
+            "highSpeedYaw": 0.62,
+            "maxLean": 0.94,
+            "hopSpeed": 2.4,
+            "chargedHopSpeed": 1.1,
+            "coyoteTime": 0.085,
+            "hopBuffer": 0.12,
+            "wheelRadius": 0.255,
+            "crashImpact": 11
+          },
+          "wheelScale": 0.86,
+          "pose": {
+            "stopFoot": 0.9999999999999991,
+            "stopFootX": 1730.3578943747596,
+            "stopFootY": 5.318760000000001,
+            "stopFootZ": 157.81790326035014,
+            "warningLevel": 0,
+            "beepPulse": 0,
+            "scrape": 0,
+            "scrapeSide": 0,
+            "scrapeX": 1729.9716132754504,
+            "scrapeY": 5.318760000000001,
+            "scrapeZ": 157.75377906587983,
+            "scrapeHard": 0,
+            "trickFoot": 0,
+            "x": 1729.9716132754504,
+            "y": 5.318760000000001,
+            "z": 157.75377906587983,
+            "headingY": -0.075,
+            "speed": 0,
+            "wheelSpin": 0,
+            "groundPitch": 0,
+            "groundRoll": 0,
+            "rollAngle": 0,
+            "riderRoll": 0,
+            "riderPitch": 0,
+            "wheelPitch": 0,
+            "suspensionOffset": 0,
+            "crouch": 0,
+            "tuck": 0,
+            "attack": 0,
+            "carveStance": 0,
+            "technicalTurn": 0,
+            "riderTurnTwist": 0,
+            "riderLookYaw": 0,
+            "reverseBlend": 0,
+            "restFactor": 0.9999999999999983,
+            "airBlend": 0,
+            "airHeight": 0,
+            "wobble": 0,
+            "wobbleSway": 0,
+            "wobbleFight": 0,
+            "wobbleYaw": 0,
+            "wobbleRoll": 0,
+            "crashContact": 0,
+            "crashReach": 0,
+            "crashAbsorb": 0,
+            "crashCurl": 0,
+            "crashHeadTuck": 0,
+            "crashStagger": 0,
+            "crashSide": 0,
+            "crashDirection": 0,
+            "crashRecovery": 0,
+            "crashMotion": 0,
+            "crashBrace": 0,
+            "crashRelease": 0,
+            "crashSettle": 0,
+            "crashLegTuck": 0,
+            "crashImpactPulse": 0,
+            "wheelCrashForward": 0,
+            "wheelCrashLateral": 0,
+            "crashBlend": 0,
+            "crashLateral": 0,
+            "crashDrop": 0,
+            "crashForward": 0,
+            "crashTumble": 0,
+            "crashRoll": 0,
+            "wheelCrashPop": 0,
+            "wheelCrashSpin": 0,
+            "wheelCrashLean": 0,
+            "velocityX": 0,
+            "velocityZ": 0,
+            "yawRate": 0,
+            "turnIntent": 0,
+            "brakeAmount": 0,
+            "landingCompression": 0,
+            "takeoffExtension": 0,
+            "landingAnticipation": 0,
+            "bodyBob": -0.003945612453947633,
+            "motorLoad": 0,
+            "tiltback": 0,
+            "slipAngle": 0,
+            "rollVelocity": 0,
+            "weightShift": 0,
+            "lateralAcceleration": 0,
+            "tractionUsage": 0,
+            "driveIntent": 0,
+            "hipSway": 0,
+            "balanceReach": 0,
+            "naturalMotion": 1,
+            "terrainBend": 0,
+            "hopPreload": 0,
+            "bodyDrop": 0.07991575298426137,
+            "bodyShift": 0,
+            "bodyPitch": 0.10059775217891707,
+            "bodyLateral": 0,
+            "bodyHipTilt": 0,
+            "bodyChestRoll": 0,
+            "bodyHeadRoll": 0,
+            "bodyTwist": 0,
+            "bodyLook": 0.03409098516440219,
+            "bodyHipYaw": 0,
+            "armBank": 0,
+            "armSwing": 0,
+            "shoulderL": 0,
+            "shoulderR": 0,
+            "handLX": 0.03637853834607766,
+            "handLY": 0.015298876089458522,
+            "handLZ": 0.06043685556573948,
+            "handRX": -0.03637853834607766,
+            "handRY": 0.015298876089458522,
+            "handRZ": 0.06043685556573948,
+            "wristL": -0.024581260031375327,
+            "wristR": -0.024581260031375327
+          },
+          "ground": {
+            "height": 5.318760000000001,
+            "normal": {
+              "x": 0,
+              "y": 1,
+              "z": 0
+            },
+            "surface": "pavement",
+            "offCourse": false
+          },
+          "ahead": {
+            "height": 5.318760000000001,
+            "normal": {
+              "x": 0,
+              "y": 1,
+              "z": 0
+            },
+            "surface": "pavement",
+            "offCourse": false
+          },
+          "spawn": {
+            "position": {
+              "x": 1729.9716132754504,
+              "y": 5.318760000000001,
+              "z": 157.75377906587983
+            },
+            "headingY": -0.075
+          },
+          "safe": {
+            "position": {
+              "x": 1729.9716132754504,
+              "y": 5.318760000000001,
+              "z": 157.75377906587983
+            },
+            "headingY": -0.075
+          },
+          "velocityY": 0,
+          "vx": 0,
+          "vz": 0,
+          "acceleration": 0,
+          "motor": 0,
+          "charge": 0,
+          "brakeLatch": false,
+          "reverseReady": true,
+          "balance": {
+            "tuning": {
+              "version": "selected-wheel-2/euc",
+              "maxSpeed": 21.8,
+              "reverseSpeed": 2.8,
+              "driveAcceleration": 7.6,
+              "brakeAcceleration": 9.2,
+              "launchJerk": 22,
+              "brakeJerk": 75,
+              "releaseJerk": 32,
+              "gravity": 9.81,
+              "lowSpeedYaw": 2.55,
+              "highSpeedYaw": 0.62,
+              "maxLean": 0.94,
+              "hopSpeed": 2.4,
+              "chargedHopSpeed": 1.1,
+              "coyoteTime": 0.085,
+              "hopBuffer": 0.12,
+              "wheelRadius": 0.255,
+              "crashImpact": 11
+            },
+            "input": {
+              "value": 0,
+              "velocity": 0
+            },
+            "bank": {
+              "value": 0,
+              "velocity": 0
+            },
+            "yaw": 0,
+            "load": 0
+          },
+          "pitch": {
+            "value": 0,
+            "velocity": 0
+          },
+          "suspension": {
+            "value": 0,
+            "velocity": 0
+          },
+          "hip": {
+            "value": 0,
+            "velocity": 0
+          },
+          "arms": {
+            "value": 0,
+            "velocity": 0
+          },
+          "naturalMotion": {
+            "channels": {
+              "__map": [
+                [
+                  "drop",
+                  {
+                    "value": 0.07991575298426137,
+                    "velocity": -0.006308969848208695
+                  }
+                ],
+                [
+                  "shift",
+                  {
+                    "value": 0,
+                    "velocity": 0
+                  }
+                ],
+                [
+                  "lateral",
+                  {
+                    "value": 0,
+                    "velocity": 0
+                  }
+                ],
+                [
+                  "hipTilt",
+                  {
+                    "value": 0,
+                    "velocity": 0
+                  }
+                ],
+                [
+                  "pitch",
+                  {
+                    "value": 0.10059775217891707,
+                    "velocity": -0.009252181323874509
+                  }
+                ],
+                [
+                  "hipYaw",
+                  {
+                    "value": 0,
+                    "velocity": 0
+                  }
+                ],
+                [
+                  "chestRoll",
+                  {
+                    "value": 0,
+                    "velocity": 0
+                  }
+                ],
+                [
+                  "headRoll",
+                  {
+                    "value": 0,
+                    "velocity": 0
+                  }
+                ],
+                [
+                  "twist",
+                  {
+                    "value": 0,
+                    "velocity": 0
+                  }
+                ],
+                [
+                  "look",
+                  {
+                    "value": 0.03409098516440219,
+                    "velocity": 0.009081838154632472
+                  }
+                ],
+                [
+                  "armBank",
+                  {
+                    "value": 0,
+                    "velocity": 0
+                  }
+                ],
+                [
+                  "armSwing",
+                  {
+                    "value": 0,
+                    "velocity": 0
+                  }
+                ],
+                [
+                  "shoulderL",
+                  {
+                    "value": 0,
+                    "velocity": 0
+                  }
+                ],
+                [
+                  "shoulderR",
+                  {
+                    "value": 0,
+                    "velocity": 0
+                  }
+                ],
+                [
+                  "hand0x",
+                  {
+                    "value": 0.03637853834607766,
+                    "velocity": -0.0029792936438859845
+                  }
+                ],
+                [
+                  "hand0y",
+                  {
+                    "value": 0.015298876089458522,
+                    "velocity": -0.004626090661937167
+                  }
+                ],
+                [
+                  "hand0z",
+                  {
+                    "value": 0.06043685556573948,
+                    "velocity": -0.002934323556171226
+                  }
+                ],
+                [
+                  "wrist0",
+                  {
+                    "value": -0.024581260031375327,
+                    "velocity": 0.0005479951011888063
+                  }
+                ],
+                [
+                  "hand1x",
+                  {
+                    "value": -0.03637853834607766,
+                    "velocity": 0.0029792936438859845
+                  }
+                ],
+                [
+                  "hand1y",
+                  {
+                    "value": 0.015298876089458522,
+                    "velocity": -0.004626090661937167
+                  }
+                ],
+                [
+                  "hand1z",
+                  {
+                    "value": 0.06043685556573948,
+                    "velocity": -0.002934323556171226
+                  }
+                ],
+                [
+                  "wrist1",
+                  {
+                    "value": -0.024581260031375327,
+                    "velocity": 0.0005479951011888063
+                  }
+                ]
+              ]
+            },
+            "idleTime": 104.21666666669567
+          },
+          "feedback": {
+            "warningPhase": 0,
+            "warningWasOn": false
+          },
+          "stoppedFor": 104.21666666669567,
+          "tricks": {
+            "phase": "idle",
+            "id": 0,
+            "age": 0,
+            "direction": 1,
+            "rotation": 0,
+            "duration": 1,
+            "foot": 0,
+            "twist": 0,
+            "reach": 0,
+            "tuck": 0,
+            "event": "",
+            "award": 0,
+            "completed": 0,
+            "down": false,
+            "eligible": false,
+            "groundYaw": 0,
+            "targetSpeed": null
+          },
+          "grounded": true,
+          "groundAge": 0,
+          "hopQueue": 0,
+          "hopDown": false,
+          "hopWindup": 0,
+          "pendingCharge": 0,
+          "recoveryAge": -1,
+          "recoveryRest": {
+            "__undefined": true
+          },
+          "crashAge": 0,
+          "fallMotion": {
+            "__undefined": true
+          },
+          "flightYaw": 0,
+          "distance": 0,
+          "idlePhase": 104.21666666669567,
+          "counts": {
+            "hops": 0,
+            "landings": 0,
+            "crashes": 0,
+            "spins": 0
+          },
+          "crashed": false,
+          "crashCause": "",
+          "groundClearance": 0,
+          "touchedDown": false,
+          "lastLandingImpact": 0,
+          "lastLandingQuality": "clean",
+          "lastHopCharge": 0
+        }
+      },
+      "ack": 3551,
+      "inputCursor": 3551,
+      "shotCursor": 119,
+      "slot": 0,
+      "loadout": [
+        "static"
+      ],
+      "ammo": {
+        "static": 60,
+        "heart": 0,
+        "bass": 0
+      },
+      "utility": 1,
+      "repairs": 1,
+      "alive": false,
+      "shotAt": 1235
+    },
+    "projectiles": [],
+    "loot": [
+      {
+        "id": "district-0",
+        "p": {
+          "x": 1736.0441132754504,
+          "y": 5.318760000000001,
+          "z": 149.78627906587985
+        },
+        "kind": "bass",
+        "available": true
+      },
+      {
+        "id": "district-1",
+        "p": {
+          "x": 1734.4891132754503,
+          "y": 5.318760000000001,
+          "z": 167.30627906587983
+        },
+        "kind": "ammo",
+        "available": true
+      },
+      {
+        "id": "district-2",
+        "p": {
+          "x": 1505.7291132754503,
+          "y": 5.318760000000001,
+          "z": 159.13627906587976
+        },
+        "kind": "heart",
+        "available": true
+      },
+      {
+        "id": "district-3",
+        "p": {
+          "x": 1509,
+          "y": 5.318760000000001,
+          "z": 193
+        },
+        "kind": "ammo",
+        "available": true
+      },
+      {
+        "id": "district-4",
+        "p": {
+          "x": 1821.1791132754504,
+          "y": 5.318760000000001,
+          "z": 351.87627906587977
+        },
+        "kind": "bass",
+        "available": true
+      },
+      {
+        "id": "district-5",
+        "p": {
+          "x": 1797,
+          "y": 5.318760000000001,
+          "z": 361
+        },
+        "kind": "ammo",
+        "available": true
+      },
+      {
+        "id": "district-6",
+        "p": {
+          "x": 1887.4791132754503,
+          "y": 5.318760000000001,
+          "z": 5.466279065879689
+        },
+        "kind": "heart",
+        "available": true
+      },
+      {
+        "id": "district-7",
+        "p": {
+          "x": 1885.2491132754503,
+          "y": 5.318760000000001,
+          "z": 14.086279065879808
+        },
+        "kind": "ammo",
+        "available": true
+      },
+      {
+        "id": "district-8",
+        "p": {
+          "x": 1629,
+          "y": 5.318760000000001,
+          "z": -23
+        },
+        "kind": "bass",
+        "available": true
+      },
+      {
+        "id": "district-9",
+        "p": {
+          "x": 1620.1841132754503,
+          "y": 5.318760000000001,
+          "z": -15.403720934120201
+        },
+        "kind": "ammo",
+        "available": true
+      },
+      {
+        "id": "district-10",
+        "p": {
+          "x": 1619.8633989897362,
+          "y": 5.318760000000001,
+          "z": 333.3577076373083
+        },
+        "kind": "heart",
+        "available": true
+      },
+      {
+        "id": "district-11",
+        "p": {
+          "x": 1629,
+          "y": 5.318760000000001,
+          "z": 337
+        },
+        "kind": "ammo",
+        "available": true
+      },
+      {
+        "id": "central-0",
+        "p": {
+          "x": 515.5591132754503,
+          "y": 5.318760000000001,
+          "z": -175.2937209341203
+        },
+        "kind": "shield",
+        "available": true
+      },
+      {
+        "id": "central-1",
+        "p": {
+          "x": 515.7241132754502,
+          "y": 5.318760000000001,
+          "z": -165.2637209341201
+        },
+        "kind": "repair",
+        "available": true
+      },
+      {
+        "id": "central-2",
+        "p": {
+          "x": 503.8941132754503,
+          "y": 5.318760000000001,
+          "z": -175.33372093412027
+        },
+        "kind": "shield",
+        "available": true
+      },
+      {
+        "id": "central-3",
+        "p": {
+          "x": 528.0791132754503,
+          "y": 5.318760000000001,
+          "z": -175.25872093412022
+        },
+        "kind": "repair",
+        "available": true
+      },
+      {
+        "id": "central-4",
+        "p": {
+          "x": 508.4916132754504,
+          "y": 5.318760000000001,
+          "z": -185.75122093412028
+        },
+        "kind": "shield",
+        "available": true
+      }
+    ],
+    "events": [
+      {
+        "tick": 1712,
+        "kind": "shot",
+        "actor": "bot-fb0c3774-8a95-4111-a047-80144f968c6f"
+      },
+      {
+        "tick": 1733,
+        "kind": "shot",
+        "actor": "bot-fb0c3774-8a95-4111-a047-80144f968c6f"
+      },
+      {
+        "tick": 1754,
+        "kind": "shot",
+        "actor": "bot-fb0c3774-8a95-4111-a047-80144f968c6f"
+      },
+      {
+        "tick": 1775,
+        "kind": "shot",
+        "actor": "bot-fb0c3774-8a95-4111-a047-80144f968c6f"
+      },
+      {
+        "tick": 1796,
+        "kind": "shot",
+        "actor": "bot-fb0c3774-8a95-4111-a047-80144f968c6f"
+      },
+      {
+        "tick": 1817,
+        "kind": "shot",
+        "actor": "bot-fb0c3774-8a95-4111-a047-80144f968c6f"
+      },
+      {
+        "tick": 1838,
+        "kind": "shot",
+        "actor": "bot-fb0c3774-8a95-4111-a047-80144f968c6f"
+      },
+      {
+        "tick": 1850,
+        "kind": "hit",
+        "actor": "bot-fb0c3774-8a95-4111-a047-80144f968c6f",
+        "target": "bot-c36f4fc9-29d7-4d99-b7a2-6ac52051e00e"
+      },
+      {
+        "tick": 1852,
+        "kind": "shot",
+        "actor": "bot-c36f4fc9-29d7-4d99-b7a2-6ac52051e00e"
+      },
+      {
+        "tick": 1859,
+        "kind": "shot",
+        "actor": "bot-fb0c3774-8a95-4111-a047-80144f968c6f"
+      },
+      {
+        "tick": 1873,
+        "kind": "shot",
+        "actor": "bot-c36f4fc9-29d7-4d99-b7a2-6ac52051e00e"
+      },
+      {
+        "tick": 1880,
+        "kind": "shot",
+        "actor": "bot-fb0c3774-8a95-4111-a047-80144f968c6f"
+      },
+      {
+        "tick": 1882,
+        "kind": "hit",
+        "actor": "bot-c36f4fc9-29d7-4d99-b7a2-6ac52051e00e",
+        "target": "bot-fb0c3774-8a95-4111-a047-80144f968c6f"
+      },
+      {
+        "tick": 1894,
+        "kind": "shot",
+        "actor": "bot-c36f4fc9-29d7-4d99-b7a2-6ac52051e00e"
+      },
+      {
+        "tick": 1900,
+        "kind": "hit",
+        "actor": "bot-c36f4fc9-29d7-4d99-b7a2-6ac52051e00e",
+        "target": "bot-fb0c3774-8a95-4111-a047-80144f968c6f"
+      },
+      {
+        "tick": 1901,
+        "kind": "shot",
+        "actor": "bot-fb0c3774-8a95-4111-a047-80144f968c6f"
+      },
+      {
+        "tick": 1915,
+        "kind": "shot",
+        "actor": "bot-c36f4fc9-29d7-4d99-b7a2-6ac52051e00e"
+      },
+      {
+        "tick": 1922,
+        "kind": "shot",
+        "actor": "bot-fb0c3774-8a95-4111-a047-80144f968c6f"
+      },
+      {
+        "tick": 1925,
+        "kind": "hit",
+        "actor": "bot-fb0c3774-8a95-4111-a047-80144f968c6f",
+        "target": "bot-c36f4fc9-29d7-4d99-b7a2-6ac52051e00e"
+      },
+      {
+        "tick": 1936,
+        "kind": "shot",
+        "actor": "bot-c36f4fc9-29d7-4d99-b7a2-6ac52051e00e"
+      },
+      {
+        "tick": 1938,
+        "kind": "hit",
+        "actor": "bot-c36f4fc9-29d7-4d99-b7a2-6ac52051e00e",
+        "target": "bot-fb0c3774-8a95-4111-a047-80144f968c6f"
+      },
+      {
+        "tick": 1939,
+        "kind": "shield",
+        "actor": "bot-fb0c3774-8a95-4111-a047-80144f968c6f"
+      },
+      {
+        "tick": 1957,
+        "kind": "shot",
+        "actor": "bot-c36f4fc9-29d7-4d99-b7a2-6ac52051e00e"
+      },
+      {
+        "tick": 5646,
+        "kind": "eliminated",
+        "actor": "bot-cd954271-b79e-4732-9b50-5fa0a7cdbd63"
+      },
+      {
+        "tick": 6253,
+        "kind": "eliminated",
+        "actor": "PIXmgX6hV"
+      },
+      {
+        "tick": 10053,
+        "kind": "shot",
+        "actor": "bot-c36f4fc9-29d7-4d99-b7a2-6ac52051e00e"
+      },
+      {
+        "tick": 10074,
+        "kind": "shot",
+        "actor": "bot-c36f4fc9-29d7-4d99-b7a2-6ac52051e00e"
+      },
+      {
+        "tick": 10075,
+        "kind": "reload",
+        "actor": "bot-c36f4fc9-29d7-4d99-b7a2-6ac52051e00e"
+      },
+      {
+        "tick": 10675,
+        "kind": "eliminated",
+        "actor": "bot-f8aa25bb-bd46-437e-aa88-6c694f870021"
+      },
+      {
+        "tick": 10995,
+        "kind": "eliminated",
+        "actor": "bot-c36f4fc9-29d7-4d99-b7a2-6ac52051e00e"
+      },
+      {
+        "tick": 11012,
+        "kind": "eliminated",
+        "actor": "bot-fb0c3774-8a95-4111-a047-80144f968c6f"
+      },
+      {
+        "tick": 11012,
+        "kind": "results",
+        "actor": "bot-487169aa-ec2b-415a-b41a-daa19fee0b1c"
+      }
+    ],
+    "results": [
+      {
+        "id": "PIXmgX6hV",
+        "name": "Automated round",
+        "kills": 0,
+        "damage": 0,
+        "distance": 0,
+        "shots": 20,
+        "hits": 0
+      },
+      {
+        "id": "bot-f8aa25bb-bd46-437e-aa88-6c694f870021",
+        "name": "AI 2",
+        "kills": 0,
+        "damage": 0,
+        "distance": 209,
+        "shots": 0,
+        "hits": 0
+      },
+      {
+        "id": "bot-fb0c3774-8a95-4111-a047-80144f968c6f",
+        "name": "AI 3",
+        "kills": 0,
+        "damage": 40,
+        "distance": 662,
+        "shots": 11,
+        "hits": 2
+      },
+      {
+        "id": "bot-cd954271-b79e-4732-9b50-5fa0a7cdbd63",
+        "name": "AI 4",
+        "kills": 0,
+        "damage": 0,
+        "distance": 50,
+        "shots": 0,
+        "hits": 0
+      },
+      {
+        "id": "bot-487169aa-ec2b-415a-b41a-daa19fee0b1c",
+        "name": "AI 5",
+        "kills": 0,
+        "damage": 0,
+        "distance": 2533,
+        "shots": 0,
+        "hits": 0
+      },
+      {
+        "id": "bot-c36f4fc9-29d7-4d99-b7a2-6ac52051e00e",
+        "name": "AI 6",
+        "kills": 0,
+        "damage": 60,
+        "distance": 554,
+        "shots": 20,
+        "hits": 3
+      }
+    ],
+    "hostPerformance": {
+      "steps": 11029,
+      "droppedMs": 2973.3333333333367,
+      "overloadCallbacks": 40,
+      "maxStepMs": 70.65750000000116
+    }
+  }
+}

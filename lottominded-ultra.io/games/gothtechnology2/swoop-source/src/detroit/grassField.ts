@@ -1,3 +1,4 @@
+import type {SceneryWorld} from './sceneryWorld.ts';
 import * as T from 'three';
 import {GLTFLoader} from './compressedGLTFLoader.ts';
 import {cutPoint,heightAt,hash,surfaceAt} from './world.ts';
@@ -8,10 +9,9 @@ import {inValadePark,inValadeBeach,inValadeInlet,VALADE} from './valadeSite.ts';
 import {inHarbor} from './harbor.ts';
 import {inWaterfrontPond,polygonContains,WATERFRONT} from './waterfrontSite.ts';
 import {roadwayClearance} from './roadsidePlacement.ts';
-import type {DetroitWorld} from './world.ts';
 import {grassTreeSite} from './treePlacement.ts';
 /** Grounded Blender meshes, instanced in short independently culled trail sections. */
-export async function buildGrassField(scene:T.Scene,world:DetroitWorld,ground:T.MeshStandardMaterial){
+export async function buildGrassField(scene:T.Scene,world:SceneryWorld,ground:T.MeshStandardMaterial){
  const [asset,albedo,normal]=await Promise.all([
   new GLTFLoader().loadAsync(new URL('../../art/swoop-field-pack/field-assets.glb',import.meta.url).href),
   new T.TextureLoader().loadAsync(new URL('../../art/swoop-field-pack/grass_01.jpg',import.meta.url).href),

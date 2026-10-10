@@ -33,6 +33,8 @@ type Spawn={position:Vec3;headingY:number};
 
 /** Original Motion 4: jerk-limited motor, bank-led steering and articulated body at 120 Hz. */
 export class RideController {
+  /** Selected-profile governor, opt-in for combat. Normal modes keep existing motor drag. */
+  regulatedSpeed=false;
   private tuning:RideTuning=tune;
   terrain:TerrainSampler;
   wheelScale=.86;
@@ -135,9 +137,12 @@ export class RideController {
     p.tiltback=damp(p.tiltback,clamp((absSpeed-18.5)/3,0,1),4,dt);
     const powerTaper=clamp((tune.maxSpeed-absSpeed)/6.5,0,1),force=this.motor*(braking||p.speed<0?1:powerTaper);
     const drag=p.speed*(rough?.5:.055)+p.speed*absSpeed*(input.crouch?.004:.006);
+    // Compensate level-road rolling/aero loss under positive demand. Slopes and
+    // rough terrain still limit speed; throttle release and braking never add force.
+    const regulation=this.regulatedSpeed&&!braking&&p.speed>=0&&!rough?drag*clamp(this.motor/tune.driveAcceleration,0,1):0;
     const hill=tune.gravity*(this.ground.normal.x*Math.sin(p.headingY)+this.ground.normal.z*Math.cos(p.headingY));
     if(this.grounded){
-      let speed=p.speed+(force-drag+hill)*dt;
+      let speed=p.speed+(force+regulation-drag+hill)*dt;
       if(this.brakeLatch&&speed<.04){speed=0;this.motor=0;}
       if(!throttle&&Math.abs(speed)<.025){speed=0;this.motor=0;}
       if(resting)speed=0;
@@ -183,6 +188,9 @@ export class RideController {
       this.grounded=false;this.groundAge=1;this.flightYaw=p.headingY;this.charge=this.hopQueue=0;this.counts.hops++;p.takeoffExtension=1;this.tricks.launch(this.velocityY);
     }
     const dx=this.vx*dt,dz=this.vz*dt,travel=Math.hypot(dx,dz);
+    // Keep an ordinary curb plus this tick's downhill grade in ground contact.
+    // Cap the slope allowance so a curb's steep edge cannot conceal a real ledge.
+    const curbDropAllowance=.28+clamp((this.ground.normal.x*dx+this.ground.normal.z*dz)/Math.max(.5,this.ground.normal.y),0,Math.min(.12,travel*.5));
     if(travel>1e-8){
       const hit=this.terrain.raycastObstacle({x:p.x,y:p.y+.65,z:p.z},{x:dx,y:0,z:dz},travel+.32,.28);
       if(hit!==null){this.tricks.cancel();const clear=clamp(hit-.33,0,travel);p.x+=dx*clear/travel;p.z+=dz*clear/travel;
@@ -200,8 +208,15 @@ export class RideController {
     }
     this.terrain.sampleGround(p.x,p.z,this.ground,p.y);const floor=this.ground.height;
     if(this.grounded){
-      if(oldY-floor>.07&&Math.abs(p.speed)>2){this.grounded=false;this.groundAge=0;this.flightYaw=p.headingY;this.velocityY=Math.max(0,this.velocityY);}
-      else{p.y=floor;this.velocityY=damp(this.velocityY,(floor-oldY)/dt,18,dt);}
+      // Hops have already released contact. Only substantial drops start a fall.
+      if(oldY-floor>curbDropAllowance&&Math.abs(p.speed)>2){this.grounded=false;this.groundAge=0;this.flightYaw=p.headingY;this.velocityY=Math.max(0,this.velocityY);}
+      else{
+        p.y=floor;
+        // Step height / dt turns a small curb into a huge launch impulse.
+        // Ground normals retain ramp momentum without that artificial kick.
+        const gradeVelocity=-(this.ground.normal.x*this.vx+this.ground.normal.z*this.vz)/Math.max(.5,this.ground.normal.y);
+        this.velocityY=damp(this.velocityY,clamp(gradeVelocity,-Math.abs(p.speed),Math.abs(p.speed)),18,dt);
+      }
     }
     if(!this.grounded){
       this.velocityY-=tune.gravity*dt;p.y+=this.velocityY*dt;

@@ -1,4 +1,5 @@
 import {mocapWalking,MOCAP_WALK_INFO} from './mocapWalking.ts';
+import {sampleMocap} from './installedMocap.ts';
 import * as T from 'three';
 import {clone} from 'three/addons/utils/SkeletonUtils.js';
 import type {GLTF} from './compressedGLTFLoader.ts';
@@ -52,7 +53,8 @@ export class ElmwoodWalkerView{
     });
     this.arms.forEach((arm,i)=>{
       const shoulder=this.root.worldToLocal(arm.upper.getWorldPosition(new T.Vector3())),length=arm.upper.getWorldPosition(new T.Vector3()).distanceTo(arm.knee.getWorldPosition(new T.Vector3()))+arm.knee.getWorldPosition(new T.Vector3()).distanceTo(arm.foot.getWorldPosition(new T.Vector3()));
-      const swing=Math.sin((this.phase+i*.5)*Math.PI*2)*.16*this.movement;
+      const recorded=sampleMocap('walk',this.phase),shoulderAngle=recorded[i*4]*this.movement;
+      const swing=-Math.sin(shoulderAngle)*length*.7;
       const hand=shoulder.clone().add(new T.Vector3(i?-.025:.025,-length*.94,.035-swing));
       hand.lerp(new T.Vector3(i?-.056:.056,1.41,.34),this.photoBlend);
       solve(arm,this.root.localToWorld(hand),new T.Vector3(i?-.5:.5,-1,.15).applyQuaternion(rotation),rotation.clone().multiply(arm.rotation));

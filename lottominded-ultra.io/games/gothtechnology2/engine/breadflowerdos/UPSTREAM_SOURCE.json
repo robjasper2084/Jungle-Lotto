@@ -1,0 +1,975 @@
+{
+  "repository": "https://github.com/kiwidoggie/breadflowerdos",
+  "commit": "6b4d4e1f10dee9b1c8932db95f91b92e3eceb7db",
+  "license": "MIT",
+  "subset": false,
+  "patches": [],
+  "files": [
+    {
+      "file": ".clang-format",
+      "gitBlob": "637a4ee65479248a903aabf83ba506708c7a7b35",
+      "sha256": "30b27bdb94c1d543288f4d073c634c2b1192b445d346d6541b64d36e22e05f8a",
+      "bytes": 3671
+    },
+    {
+      "file": ".github/workflows/build-bf2.yaml",
+      "gitBlob": "506fa5b4746ef2624951e164877515fc09447c93",
+      "sha256": "b5eaa4f2a7fce698b75cd06b1828f2574e949bc1bb9b6809a32b87215bd467c8",
+      "bytes": 2048
+    },
+    {
+      "file": ".gitignore",
+      "gitBlob": "8bedd6ce7ed203b75226406955c21c3fbc9ca139",
+      "sha256": "24f3a145930fcf6270f756097533ee20838465e4760ffc375a44f9781a1e088d",
+      "bytes": 51
+    },
+    {
+      "file": "CMakeLists.txt",
+      "gitBlob": "52698c63ff16afd30bce66643500c5e6405c3016",
+      "sha256": "67748c520dc1b7e0ae18eb7a68ba59b82312d94bec7079c64a018a8c9ddd5a27",
+      "bytes": 1592
+    },
+    {
+      "file": "LICENSE",
+      "gitBlob": "ac85cbb0290692129cad8960d25b357051d4db58",
+      "sha256": "446e144e2fb0c075d5900900f5b1bb85f2fcbbb4234c45cadda983236402606b",
+      "bytes": 1067
+    },
+    {
+      "file": "README.md",
+      "gitBlob": "ac558132fabb8d7fcf24c32bbd97078d8f2536d5",
+      "sha256": "70f46c40e200d2703407b740f5e66af5c89049b67fd9387ab7e19d0e8a5ef02b",
+      "bytes": 1026
+    },
+    {
+      "file": "src/Core_System.cpp",
+      "gitBlob": "6e71e44786a379a86e37625840c1e0c5fae74119",
+      "sha256": "6b988dc3e9cb1347be2deaf5c1095ed099d762f72a16fa88ed0c2fd48a334f77",
+      "bytes": 871
+    },
+    {
+      "file": "src/Core_System.hpp",
+      "gitBlob": "95b051ffb31a3ee8ec887e33afd2b2735e016419",
+      "sha256": "f653f176ffa59001322f41f2f6df2106b29d6b5dc3e39042f64439098db0ed18",
+      "bytes": 267
+    },
+    {
+      "file": "src/Game_Main_demo.cpp",
+      "gitBlob": "38f03a7e9c1f1a4fa42c125affc4616592a04104",
+      "sha256": "03f8d2ffe6787c7e095755bbe7ab4fc8265318054a7ec19c2726846a648a0427",
+      "bytes": 67
+    },
+    {
+      "file": "src/Game_Main_demo.hpp",
+      "gitBlob": "b488350683ae248fbef094706d1e066a0267eeaa",
+      "sha256": "9bc705f2fa6ed562dbd4d133b5484a8342bdab586b856ba5593466e4a6775083",
+      "bytes": 49
+    },
+    {
+      "file": "src/Main.cpp",
+      "gitBlob": "e45595b12baf208e0acbe6db197c5b0bf950243a",
+      "sha256": "61c701a3ef4623f10224311a584993629f25a1f175cb3c5fd52b69df9e3e88bd",
+      "bytes": 849
+    },
+    {
+      "file": "src/dice/hfe/ActionBuffer.hpp",
+      "gitBlob": "d4383c83ee6a2251f522faf4f5be1d6ca1378e20",
+      "sha256": "d93b54dae6a67e019b9733f6808d206f5848e158ada936822458b8e56b7fe6fc",
+      "bytes": 462
+    },
+    {
+      "file": "src/dice/hfe/BF2.cpp",
+      "gitBlob": "d66ea74372ecb34e80f888af74ef8ad7b5da906d",
+      "sha256": "b5aba7ad9823e0d32310d58263870208d15a6282b7168be634d7cc4d8c9ac920",
+      "bytes": 1465
+    },
+    {
+      "file": "src/dice/hfe/BF2.hpp",
+      "gitBlob": "303ecbfdfeaeffb4d44eada2c2125aab7595f5b8",
+      "sha256": "8cc609b6affdcc4646090a67b478492dc82fe61eef7bd9882b458807a49e9387",
+      "bytes": 366
+    },
+    {
+      "file": "src/dice/hfe/BF2Console.hpp",
+      "gitBlob": "f32514fb0d4b17fff6cf31f76b2aab1216f107ff",
+      "sha256": "0487ef1c4a539872bcd609364214d4eaa1a9ae7a948a3b291ba56bfb5a3fc6aa",
+      "bytes": 228
+    },
+    {
+      "file": "src/dice/hfe/BF2Engine.cpp",
+      "gitBlob": "88dfb7bb264979bdcd8af68846ba39944223d037",
+      "sha256": "9b3623786956e1793b720788263851497361d5acef799a6416dc0bbbd8652932",
+      "bytes": 27912
+    },
+    {
+      "file": "src/dice/hfe/BF2Engine.hpp",
+      "gitBlob": "fde591b4188a5833382ea6a74629b837c2839e88",
+      "sha256": "705a4f0499c41b32e501d02e1c7b70fe11dc37c0a3330d9b8787cf66fedec924",
+      "bytes": 3037
+    },
+    {
+      "file": "src/dice/hfe/BF2EngineSetup.cpp",
+      "gitBlob": "1fd2fe9bd72c4a1f24df5c408cb6bf4c979da7eb",
+      "sha256": "55736e6527ec874532f37183955f09418a4fa2ec649237f594919d26d4b2a7a8",
+      "bytes": 5812
+    },
+    {
+      "file": "src/dice/hfe/BF2EngineSetup.hpp",
+      "gitBlob": "a4b4c2c982766769bd70c13814b73a26a7db2c23",
+      "sha256": "9a218bc91c9fd0f47a8dd896258d66c3ac9a0cd3c1afe7d4bbc10bc3121bdc76",
+      "bytes": 639
+    },
+    {
+      "file": "src/dice/hfe/BF2Log.cpp",
+      "gitBlob": "e59856625a2bc33c1ec0d529c33e3cfd913200d7",
+      "sha256": "3c4b1ead1271a67845ecdce302cc25e1e8e133ce4b291fdaf9fc514c93d598bd",
+      "bytes": 640
+    },
+    {
+      "file": "src/dice/hfe/BF2Log.hpp",
+      "gitBlob": "981ebea769d5abd28dbf53033fb6580db4c4ad48",
+      "sha256": "384d2207eb0f90a0b7cbcea661ab5fa484987fcc627ac7dc86b0e5d405039486",
+      "bytes": 579
+    },
+    {
+      "file": "src/dice/hfe/ClassManager.cpp",
+      "gitBlob": "7c831e59f5ae19b4d3662f410495af39b1f16226",
+      "sha256": "7066d9c9c49a1db0966d87bd4f20e366526c70d726f749db33efae557d7940d6",
+      "bytes": 5510
+    },
+    {
+      "file": "src/dice/hfe/ClassManager.hpp",
+      "gitBlob": "ba3e34649444179096e8e9f260a0ddaff4bfff6c",
+      "sha256": "3f417f04a184cd024b0f9fb0355e41b9658e1582c3c4bf73d1206405b91e945e",
+      "bytes": 3612
+    },
+    {
+      "file": "src/dice/hfe/ClassRegInfo.hpp",
+      "gitBlob": "9042d1017f031c564818d759cb88cc494afda1b7",
+      "sha256": "bf9b76fb0e95c65becac7b7c23d336a4c9df1a37dc23f40d2f1c22b641e1ee99",
+      "bytes": 422
+    },
+    {
+      "file": "src/dice/hfe/ClientConnection.hpp",
+      "gitBlob": "676a6a576f202a547f8220aa9877699685951bea",
+      "sha256": "055ad6f0917f559c693c518b62f32d7e9800c543e58cf9285adf35ff24dc4cf0",
+      "bytes": 463
+    },
+    {
+      "file": "src/dice/hfe/Debug.hpp",
+      "gitBlob": "a51b04034e8c1b81661178b03c12e2ca7060c138",
+      "sha256": "6fb409739ff86d3f7605258823dd4e563ba2dc333435540696daaac2d22d0873",
+      "bytes": 1343
+    },
+    {
+      "file": "src/dice/hfe/Demo.cpp",
+      "gitBlob": "c98613831e57cd3ff04ea2f06ce1b0486997a8d5",
+      "sha256": "9e2ba8cede07a38d9d6aa31a46a7afb05d1248f9dc2fc3929c451c69f763f0e5",
+      "bytes": 537
+    },
+    {
+      "file": "src/dice/hfe/Demo.hpp",
+      "gitBlob": "6b4bb191b3a63c17d4c0ae59002cdabe097cf464",
+      "sha256": "cfe91da8b6c82c11893b48aece33229acf33e9b9d5542614af92ad4691477b77",
+      "bytes": 616
+    },
+    {
+      "file": "src/dice/hfe/EventCategory.hpp",
+      "gitBlob": "ff03f9e5af52b5a9edf4cfd49b39219d47ed061e",
+      "sha256": "8044840984a56b9e454834d7afdf947792f9dc2d6c044b34bda3907cdc1a405b",
+      "bytes": 300
+    },
+    {
+      "file": "src/dice/hfe/EventManager.cpp",
+      "gitBlob": "d9cfffbeadcc638428a03967c61a1b5294b933c0",
+      "sha256": "89c97e295ab2a6b8a88440dc9a5a3392860d6c6628983df3139cab0f40fe5bb3",
+      "bytes": 3684
+    },
+    {
+      "file": "src/dice/hfe/EventManager.hpp",
+      "gitBlob": "f6b1a3b4a54d267455f6a6333af427138c786d35",
+      "sha256": "331751cfa38f2fd6eacd76bebc26eacee873e9c900cd8cf1564d7f22bb2305e7",
+      "bytes": 2099
+    },
+    {
+      "file": "src/dice/hfe/EventNode.hpp",
+      "gitBlob": "46ab0eea06719e62ee29fcffe2ff50b5ac52621d",
+      "sha256": "ffa64ac95da88e5f9fdac382103ba1417dff1e67dc79d1797501f3d1d154e727",
+      "bytes": 310
+    },
+    {
+      "file": "src/dice/hfe/Game.cpp",
+      "gitBlob": "07728c1e7bb6eff89b060a3d7cfebf1fc05e9a16",
+      "sha256": "ae6bb309225c579f94da88aaf5dcd11a4c84268bce6488253f0c32b475b7ffd7",
+      "bytes": 2456
+    },
+    {
+      "file": "src/dice/hfe/Game.hpp",
+      "gitBlob": "4627a9595938bcfe3824d282996485be33bc7ec7",
+      "sha256": "c731571dfd6105133a6c0efdf0f6f212a8e4217fdafdd2f848efd6d8374d9182",
+      "bytes": 3547
+    },
+    {
+      "file": "src/dice/hfe/GameServer.cpp",
+      "gitBlob": "652a6bd9abf08a6791dd76c68b08c243ba66b9a4",
+      "sha256": "b116ece9b06da61b27d4b5761916f73be73945f77508edf8399405f404149a8b",
+      "bytes": 736
+    },
+    {
+      "file": "src/dice/hfe/GameServer.hpp",
+      "gitBlob": "2103f506bc8d066f9fa72e4ba3ae3b9d60bed427",
+      "sha256": "df63d3e57864b70ff56bdee524e53a45deaecab3d8f68b8c0c50cdb3e3c32bae",
+      "bytes": 678
+    },
+    {
+      "file": "src/dice/hfe/Hash.hpp",
+      "gitBlob": "4637fb6e32cf3cfb09896293f68a15c9781612ee",
+      "sha256": "ae06758cea6606e32caedaad498c2467207cfcd9ff9c5b3548917068d0a6c7fc",
+      "bytes": 1388
+    },
+    {
+      "file": "src/dice/hfe/IAllocator.hpp",
+      "gitBlob": "db2b5994233cca54c5ea6d377216912c05f81f4e",
+      "sha256": "95ea2543c7f0f16a1b86b1dd4d6ccfb06fbcf6fc5b116b56e627d8a89dee4613",
+      "bytes": 315
+    },
+    {
+      "file": "src/dice/hfe/IBase.hpp",
+      "gitBlob": "d0ebdd3368706b26290c137e0f81955a6b824665",
+      "sha256": "2f8e470a5c13e606babd2d1783817a38ebfd805d924a1c2f9842f7b6292c872a",
+      "bytes": 294
+    },
+    {
+      "file": "src/dice/hfe/IClassManager.hpp",
+      "gitBlob": "bfb8180af07bbab5885922dec2f99b55fd100bf1",
+      "sha256": "7a409d171abe582fe27c06be4dd9c7dacbe5b9b5be8ca1dbefa9dabddba7fb3b",
+      "bytes": 1665
+    },
+    {
+      "file": "src/dice/hfe/IClassServer.hpp",
+      "gitBlob": "7ba11c22ea5cab980d42da28e1508dc38b3ca107",
+      "sha256": "7cd90ce6410f8828c9a6c6e6c1fcdd0a5edd4d06c8978eb9304f7e6bd42bc523",
+      "bytes": 414
+    },
+    {
+      "file": "src/dice/hfe/IClientConnection.hpp",
+      "gitBlob": "c11f6386e794ffd1c95926fc62917605ab5fe2f2",
+      "sha256": "43ac2fdc4e6197f872cb1ac1850a6df2a96b1651db6c96c4beedb547d176a05e",
+      "bytes": 665
+    },
+    {
+      "file": "src/dice/hfe/IConsoleSaveable.hpp",
+      "gitBlob": "adfebea997f561395615282539748a1ce7bbd548",
+      "sha256": "cd5faa2103835522e43a42b931952d7e7458b2247c47b528800c7b680a1f8681",
+      "bytes": 221
+    },
+    {
+      "file": "src/dice/hfe/IEventListener.hpp",
+      "gitBlob": "08ba9d9fd1f25853a04d1465a7894aa7f726b4d3",
+      "sha256": "acfb3cf845f5b4e2cf6021242fab11d70b9514c576a09d9d2e1ba95ce265ce3e",
+      "bytes": 331
+    },
+    {
+      "file": "src/dice/hfe/IEventManager.hpp",
+      "gitBlob": "0b69c43e7156b1a0fd2f1c25ae81cc93fa03a722",
+      "sha256": "9d6709937575619dd262c63a068e0486009c918a34f0925db5c8ae05c10d00f3",
+      "bytes": 1004
+    },
+    {
+      "file": "src/dice/hfe/IGame.hpp",
+      "gitBlob": "8f067cf54e1761cc42a262a2889a1bb3191cc672",
+      "sha256": "91594285c909879134e347a5e7e5e66062f005db63aead0dc13cf998028dfe54",
+      "bytes": 4548
+    },
+    {
+      "file": "src/dice/hfe/IGameClient.hpp",
+      "gitBlob": "7a4792eb8a690c350ba052ea6ef6c153971b5545",
+      "sha256": "ad8166fd58ff6aa26aca674f65b15b67b21a374158fa6312c961937be226be94",
+      "bytes": 186
+    },
+    {
+      "file": "src/dice/hfe/IGameLogic.hpp",
+      "gitBlob": "e831bb84840107a448425930da0f621375bd4de8",
+      "sha256": "9cc020d6e524d72b25f8174781beecba8c1724f4001595211df15445d1f9cde5",
+      "bytes": 11834
+    },
+    {
+      "file": "src/dice/hfe/IGameServer.hpp",
+      "gitBlob": "811d3ca66ab06cdeae746517edffcfc4171349f8",
+      "sha256": "17d3bbff7374f34e0f9f43c359903e0405f397e6dc7325c775ff5a75780e21e7",
+      "bytes": 3051
+    },
+    {
+      "file": "src/dice/hfe/IMemoryPool.hpp",
+      "gitBlob": "d05fea73e5e822e4b1a8d50366d734655560ae5e",
+      "sha256": "c3b308e0b63354656197f490542c7f809d3a1aff3b802d1460ae763ec0680e7b",
+      "bytes": 236
+    },
+    {
+      "file": "src/dice/hfe/IModule.hpp",
+      "gitBlob": "8193280ec374d4f45c24c6486bfa0fa21c661331",
+      "sha256": "cf0d0338b44a712d2fe3b4cb0c53432cb47754bb0dbfecf85f25a406e17c6c40",
+      "bytes": 299
+    },
+    {
+      "file": "src/dice/hfe/IProfilerClient.hpp",
+      "gitBlob": "36405c6577eac5894f9349d292236b55a65b9e8d",
+      "sha256": "0e70fa5d78d0fba396a6a53c8c946aea4a2422d9a67bfa23b7300c500cc5ceb9",
+      "bytes": 704
+    },
+    {
+      "file": "src/dice/hfe/ISettingsRepostitory.cpp",
+      "gitBlob": "49a18a49a54cba36f2966f044065eca573b8be42",
+      "sha256": "6dfbf5baf55dc679847c98da1387922605b07aa4fc817100bbaf178cf87d9e9b",
+      "bytes": 436
+    },
+    {
+      "file": "src/dice/hfe/ISettingsRepostitory.hpp",
+      "gitBlob": "87dcc8d772219db0933bd19fb4f0974d3d02eba0",
+      "sha256": "d2ab814add908f8f8804e2a3aeab363c756190881ff28bcca4f5bf5fc7306d58",
+      "bytes": 1995
+    },
+    {
+      "file": "src/dice/hfe/ISquadManager.hpp",
+      "gitBlob": "e56706477ec4372e3ad0942ff93ef8eecc04ecf4",
+      "sha256": "68f8552c9c64f502d8fbd2532fea4133a27e8b330d669601b78ede99a05f2b54",
+      "bytes": 2311
+    },
+    {
+      "file": "src/dice/hfe/IStatsManager.hpp",
+      "gitBlob": "295198729b525457b0a98401fe7712bc870638d8",
+      "sha256": "e1ca5944a3725883abe9c22afde1f535bff2b2a2e7251357d4988fdeb030f970",
+      "bytes": 667
+    },
+    {
+      "file": "src/dice/hfe/LaunchArgs.hpp",
+      "gitBlob": "a36c1024c408ad21e8cd2e5a50228057e50a51a3",
+      "sha256": "1aeaeeba57f6e9506d2e74fb1a853e046e6fbd1a65ba96182fac57092020a941",
+      "bytes": 4188
+    },
+    {
+      "file": "src/dice/hfe/Mat4.hpp",
+      "gitBlob": "0878fea43e2e77f7d6aa2293c423cb80f47a3bf5",
+      "sha256": "763a335b994932678a0f213c2ab74f7b4a6bb302c9c54e086743d34186e5e8a3",
+      "bytes": 4781
+    },
+    {
+      "file": "src/dice/hfe/Math.hpp",
+      "gitBlob": "0a0611723db186e27264800eaee9618c9c25d9b7",
+      "sha256": "3d1a0dea5efc21f1625e99a699ee5497328a34816920b8ae055fbe0c24a48bf7",
+      "bytes": 501
+    },
+    {
+      "file": "src/dice/hfe/MathModule.cpp",
+      "gitBlob": "9d5931a05fb82d08d27db75ecbbf177dbe320867",
+      "sha256": "7c443ea59a433ca07c7bd6711f34212e53b2e3818b5bd24445e137d6470fe696",
+      "bytes": 1687
+    },
+    {
+      "file": "src/dice/hfe/MathModule.hpp",
+      "gitBlob": "2dca8ac320fc0396e889eff9d07e0ad320157f1e",
+      "sha256": "f57856f09562e57f06d4218559ab124b398cab783b3587199b2fbb3a3e153c26",
+      "bytes": 586
+    },
+    {
+      "file": "src/dice/hfe/MemoryPool.cpp",
+      "gitBlob": "43471b7c7436e90064b8e0021e7a9908ff2c9fc9",
+      "sha256": "9346190a7e19a7f7e00b3bdda37218ac400c034a2cb7992bc2e4982d656b01f0",
+      "bytes": 1407
+    },
+    {
+      "file": "src/dice/hfe/MemoryPool.hpp",
+      "gitBlob": "eb5f0f7e46e10144528512cbfae49eb07c9f5cc2",
+      "sha256": "c3cb39efcc3763b82f56d594e6153f143fe491dec0cc2db66af2a520ea887fad",
+      "bytes": 875
+    },
+    {
+      "file": "src/dice/hfe/Module.cpp",
+      "gitBlob": "37abb3480818e021c097860ac104e881b0999493",
+      "sha256": "78dbf21c17a3f5146f77e244fdb46684626d7edb71d30d0f8e86defc15f7825f",
+      "bytes": 4674
+    },
+    {
+      "file": "src/dice/hfe/Module.hpp",
+      "gitBlob": "d29d649038eafddd604477ebef50fe3f66422e36",
+      "sha256": "db20209104c49b2ddb084b78c4d49ff3af6487f4d8442b55eaac9c6df21b369b",
+      "bytes": 582
+    },
+    {
+      "file": "src/dice/hfe/ModuleBF2.cpp",
+      "gitBlob": "1fa4c29393908de3313cbc62f5d2bf25b9ae3976",
+      "sha256": "8c2a9e75e7953c6985270846faae28dc2dd6d78d3965128c80a9cd714049fa84",
+      "bytes": 1594
+    },
+    {
+      "file": "src/dice/hfe/ModuleBF2.hpp",
+      "gitBlob": "69e0496c899c4e1ac08e7c7cb6fbfe9910a7373f",
+      "sha256": "8fcc7682cd6f8c478ed02d677b7e1626b9fe3f609230c4d4968c38fb4546ab7a",
+      "bytes": 583
+    },
+    {
+      "file": "src/dice/hfe/ModuleGame.cpp",
+      "gitBlob": "15f7e014fc222cca0b8993d94afab2f3a71243cf",
+      "sha256": "b7ad3a78ec50fa9a8b120dcf87e048d527656371514c86b0d1a7e6933dcfca38",
+      "bytes": 3555
+    },
+    {
+      "file": "src/dice/hfe/ModuleGame.hpp",
+      "gitBlob": "aa03c56262b97dcba8d51eefcc4aca3fab861bfa",
+      "sha256": "8b5367397442db608698dd4311443751264f91f01729c297796f9c749413a5ac",
+      "bytes": 778
+    },
+    {
+      "file": "src/dice/hfe/ModuleGameLogic.cpp",
+      "gitBlob": "c018a29c23dea04cd317258e25f0dfd53af34a14",
+      "sha256": "c234bc22f01375318d98897c1c52e8a67851ec5d28f0e790f2d99cf3dd40a44a",
+      "bytes": 1988
+    },
+    {
+      "file": "src/dice/hfe/ModuleGameLogic.hpp",
+      "gitBlob": "c51c657051712169c6d939546e6ea3b7224c2b45",
+      "sha256": "17ee47b4df2f50c847063502068eb8d1efad3ef72eefd2c9fcf6e358babd6206",
+      "bytes": 601
+    },
+    {
+      "file": "src/dice/hfe/ModuleNetworkables.cpp",
+      "gitBlob": "515719842986a188847e202d5796bcf5d875ff8b",
+      "sha256": "7db13719ce3b1d0cae3edd21a48690a83402c36c379d0ace1379c3f2ca36371f",
+      "bytes": 4021
+    },
+    {
+      "file": "src/dice/hfe/ModuleNetworkables.hpp",
+      "gitBlob": "7033a720b4e98598db92813b25c56d9fe08c1a9a",
+      "sha256": "df30bc6d975f6cccd56be854fb3c7cce513db1615140cbb19bff0f51d8e9e136",
+      "bytes": 610
+    },
+    {
+      "file": "src/dice/hfe/Mutex.cpp",
+      "gitBlob": "55e7c0c1df788b5d35b0d29b28df23ba725a5aec",
+      "sha256": "2635c49d4e99b7f5f2463cc5f89fce85920a5d23fc591f13390ca41eecef7af8",
+      "bytes": 90
+    },
+    {
+      "file": "src/dice/hfe/Mutex.hpp",
+      "gitBlob": "bb8daf6ebbffea4da7a23f47117edeb18d2341c0",
+      "sha256": "93bbbd7be92345e4808749add7e0197178b304adf89cadba69db37d8e67be058",
+      "bytes": 163
+    },
+    {
+      "file": "src/dice/hfe/Profiler.cpp",
+      "gitBlob": "3aca73397d23b77f030ef6df42df9df5d9c6e83e",
+      "sha256": "bb8488b07e6213d831224e756fab6b32b5c03191ba4ccc295d80491d898424c1",
+      "bytes": 1763
+    },
+    {
+      "file": "src/dice/hfe/Profiler.hpp",
+      "gitBlob": "097d01b367b56055ab1fd278be0f6b501261435e",
+      "sha256": "c8fd15a1ae6512eca083e8a8fafc7d43757cc7217fc8d771167fba8f9115f57b",
+      "bytes": 1266
+    },
+    {
+      "file": "src/dice/hfe/ServerConnection.hpp",
+      "gitBlob": "947b3f1f5776ec64d9cb7487326270ce7b2710e3",
+      "sha256": "75281740f016496f58f109eb38e48c47eb33284011e3ea7a0653e6936cf0f614",
+      "bytes": 297
+    },
+    {
+      "file": "src/dice/hfe/ServerSettings.cpp",
+      "gitBlob": "2b831bbea6c3edeeea4601ba2a3e7db19953228e",
+      "sha256": "257d9763ec580eee9078f401c342ca50262eb0149c3dcf479fe2602daad2fc31",
+      "bytes": 127
+    },
+    {
+      "file": "src/dice/hfe/ServerSettings.hpp",
+      "gitBlob": "778df089ab5c59c85ccf279d9bd90d1fd463336b",
+      "sha256": "2962f05627e3d91baf45926d25bea7eb1bed29343e0c745568566ef3d91654f6",
+      "bytes": 4069
+    },
+    {
+      "file": "src/dice/hfe/SettingsRepostitory.cpp",
+      "gitBlob": "9d1d74c9a4c51065aa1157c55f9222ab06b55653",
+      "sha256": "978b66a2bbe213c29b1d0ec5978aa5c178a5e31ea43143c02afaad8bda1276ee",
+      "bytes": 3740
+    },
+    {
+      "file": "src/dice/hfe/SettingsRepostitory.hpp",
+      "gitBlob": "d6217184c39c7aeb33bc4c66fc60f1bd3b459984",
+      "sha256": "731c86c8052cd42a36830ca872a0055f5595692f40327614869cd9911a4b9ab4",
+      "bytes": 2805
+    },
+    {
+      "file": "src/dice/hfe/SimpleParser.cpp",
+      "gitBlob": "f3a3e5e3ad38a8ebaf9b776d770fd6548a9a07d3",
+      "sha256": "dc66f95c4777c75ec0edd163b19e1c7f406d0687f9dac2ba205152c3069c62cc",
+      "bytes": 2036
+    },
+    {
+      "file": "src/dice/hfe/SimpleParser.hpp",
+      "gitBlob": "f3bc49e24dde4a4ac94bf68e6173f9cbd882b231",
+      "sha256": "104f76f808f726aadab2f59439e16d1431d9c9880f7ba601c0e8a00b49332587",
+      "bytes": 557
+    },
+    {
+      "file": "src/dice/hfe/SingletonRegInfo.hpp",
+      "gitBlob": "013fcb2400a7641a0dc3716b835d1a62fa3b678c",
+      "sha256": "949844c272048ad01d134c3ac3153d10f8684139fe3564259a406d8898e9d79a",
+      "bytes": 786
+    },
+    {
+      "file": "src/dice/hfe/SpawnSystemModule.cpp",
+      "gitBlob": "b3e6978db110acefb76507709753d6fa7de29b35",
+      "sha256": "dab931510769bd4330e4c655563433aebbfa8a254036e3a02d2465eccda0b5be",
+      "bytes": 1608
+    },
+    {
+      "file": "src/dice/hfe/SpawnSystemModule.hpp",
+      "gitBlob": "01a292c0a47d98f1af063b8ba16e82e9375a3659",
+      "sha256": "49474fa17403fb5c8c568da4613f94865d6d0340ea4d0234158ea7a1615cc6c1",
+      "bytes": 607
+    },
+    {
+      "file": "src/dice/hfe/StatusMonitorImpl.hpp",
+      "gitBlob": "0204bd6fe5ad8bd52d2f2b4b8c4bcf93d02faa22",
+      "sha256": "a575c792400cec5cc13362edfbf7c6fe3f846a4bd8e32bb5958a0729293348a0",
+      "bytes": 410
+    },
+    {
+      "file": "src/dice/hfe/StatusMonitorImpl_posix.cpp",
+      "gitBlob": "a2fdfd2ab06ba69a878783f38281dce1e23dae4c",
+      "sha256": "658993719b78595587b2f9d6fff60c974a5f449559b2688c4cbb33171fe67781",
+      "bytes": 662
+    },
+    {
+      "file": "src/dice/hfe/StatusMonitorImpl_posix.hpp",
+      "gitBlob": "95b0a334c93d6bc7bf73f300b2d410850298a53a",
+      "sha256": "6c72fc1aa74d9a08d4fff2ab8ff8fbc11a623c4b13bffab9035bd48c45cc651f",
+      "bytes": 738
+    },
+    {
+      "file": "src/dice/hfe/StringUtils.hpp",
+      "gitBlob": "51306f1797c245f6500b0e9ed3b5d78efac2d7b1",
+      "sha256": "02d111fae7a4d9f2e4f1ed0addf1612f292648a68eddc633a6138b55677d5198",
+      "bytes": 789
+    },
+    {
+      "file": "src/dice/hfe/System.cpp",
+      "gitBlob": "9e006d8b6422dd6325435afee0171060b7ed61e5",
+      "sha256": "7af764c774b9e596e8d034ce95fdd0c1d2caca1c5a6c88e1869bf4859f2e01cb",
+      "bytes": 3086
+    },
+    {
+      "file": "src/dice/hfe/System.hpp",
+      "gitBlob": "7cd931d0975ef215211132e8adb3864e375fb7b0",
+      "sha256": "21b841c3682954569d8fdc30e8ce7ef2c6fefa886133579fb30bc01c34f95225",
+      "bytes": 1235
+    },
+    {
+      "file": "src/dice/hfe/TickCalculator.cpp",
+      "gitBlob": "bf06120f1648e57fd073b9f372d01ff17f93265c",
+      "sha256": "eeae5588173de0cb613b383f89a50c0dbcce15e1fdb26215d73ab39219e2a115",
+      "bytes": 234
+    },
+    {
+      "file": "src/dice/hfe/TickCalculator.hpp",
+      "gitBlob": "1ec3f9545c97fe7f5c2586708c2d7b6186e505e0",
+      "sha256": "37b5c0609154ff4363357dd4b539eeaf8e02e53a85d0bab7048a0d22c4e60dd4",
+      "bytes": 335
+    },
+    {
+      "file": "src/dice/hfe/VariableStorage.hpp",
+      "gitBlob": "ef394779f461b476dee550a0d6578ae3aabc5210",
+      "sha256": "9b21f042418cb0e00fb44c5342569f62b7c37c519f549e47bad7bc4d67c0c12c",
+      "bytes": 803
+    },
+    {
+      "file": "src/dice/hfe/Vec2.hpp",
+      "gitBlob": "52fbcf1e5aae9791c74031cea6bdd53ed499ebe0",
+      "sha256": "adbe54ff67043c4bd9244eacd5ac8c6f8944d641d30d87c4c8cba9da49fa85f0",
+      "bytes": 104
+    },
+    {
+      "file": "src/dice/hfe/Vec3.hpp",
+      "gitBlob": "5c4eddd916be75291b4e2e43be8676969c849666",
+      "sha256": "66bc29e3f53f98e64ecf4826488b637cebc8c9c986f8e2923bd53406f3b34c53",
+      "bytes": 123
+    },
+    {
+      "file": "src/dice/hfe/Vec4.hpp",
+      "gitBlob": "59af35a8718cfa3b9b05bd5eb1fda13bc4ebf432",
+      "sha256": "3544db6433b910cd0d21c1785448db003a15865866f0bcc6cefdc7bb58ec4188",
+      "bytes": 134
+    },
+    {
+      "file": "src/dice/hfe/WeakPtr.hpp",
+      "gitBlob": "3b9b5f3c444098cb0330b28544583cfc81fb5691",
+      "sha256": "0059fa15a45042c78fca77abd694444b3afff5eb4934f031bd079907e2516280",
+      "bytes": 159
+    },
+    {
+      "file": "src/dice/hfe/geom/IGeometry.hpp",
+      "gitBlob": "97bf4083de391319e3149e1fa6048c841390c03b",
+      "sha256": "cd458ece233fde77ec4b7a1c7aedfe554dfa5a6cb3566e27250108effed312de",
+      "bytes": 2304
+    },
+    {
+      "file": "src/dice/hfe/io/Console.cpp",
+      "gitBlob": "865ce8833aa4def62f856ae9b645ccc4e7b16356",
+      "sha256": "99b801394bb835f2fb346a13e19642920f937d7447776d9ad0a1080e6e06951f",
+      "bytes": 98
+    },
+    {
+      "file": "src/dice/hfe/io/Console.hpp",
+      "gitBlob": "680e19edeb85721b0a60c3f7c91f6ffc8263e7fd",
+      "sha256": "265641ad2ba006446c51347649ed936546b8c048d6f14bc67508d33932f90360",
+      "bytes": 3543
+    },
+    {
+      "file": "src/dice/hfe/io/FileAccess.hpp",
+      "gitBlob": "613c945a4517927ab820e3e6033c3fd4fbf7cba0",
+      "sha256": "b7dca1a4fb40542c6c22ae5a6a3c9ab6546247d6dc70cc8134480e91103193d6",
+      "bytes": 201
+    },
+    {
+      "file": "src/dice/hfe/io/FileChangeManager.cpp",
+      "gitBlob": "baaf3a973341c14c13369ce98f4362c326d67231",
+      "sha256": "89a37292fcc8eb82442eb47cdf4b6001c8315622a3fdd0e558b61ef3840a5fd5",
+      "bytes": 2974
+    },
+    {
+      "file": "src/dice/hfe/io/FileChangeManager.hpp",
+      "gitBlob": "db9726856efe1985305de78ee2e7fd601a43a9f0",
+      "sha256": "94cbdb374f172a659fc1910e80b403c58e2a9099f59f1b45e417616dacef8cff",
+      "bytes": 1816
+    },
+    {
+      "file": "src/dice/hfe/io/FileManager.cpp",
+      "gitBlob": "6e081abdc6fe666d7d036f653dde5dbacaca6024",
+      "sha256": "d04442861523273e5a9f009837b345ff59756d668f1f007ca31324c393b0a918",
+      "bytes": 6308
+    },
+    {
+      "file": "src/dice/hfe/io/FileManager.hpp",
+      "gitBlob": "85c94ac223557f00995431d664604f13a5965990",
+      "sha256": "d10769caf62535d4cf2950d33eba9618801e672cd3231fa3fa98668028e559db",
+      "bytes": 4778
+    },
+    {
+      "file": "src/dice/hfe/io/FileMode.hpp",
+      "gitBlob": "c9dd74b80ba49f1ba97686ebb5276f099dbe01d5",
+      "sha256": "55fdb614a6617784b46553c5c0f93a54ac6ffd399eb0eb1b2be78596c691ac47",
+      "bytes": 430
+    },
+    {
+      "file": "src/dice/hfe/io/FileModule.cpp",
+      "gitBlob": "1d5a455f8bd96fa0947fa477068593865c67fb33",
+      "sha256": "58eea69b02e659c31e211ddf47967df58f4bef84bc5228199dc7553dae7f1b5e",
+      "bytes": 2062
+    },
+    {
+      "file": "src/dice/hfe/io/FileModule.hpp",
+      "gitBlob": "37a041f259f139a70bb62d6ba57652ed84ee13b8",
+      "sha256": "15dcccd2908217a528e64c5a59d11bf91c12c312205c58aecff7eccd02edb78f",
+      "bytes": 594
+    },
+    {
+      "file": "src/dice/hfe/io/FileResolveMode.hpp",
+      "gitBlob": "e226a0f90f2684ba717e42875196499cde26dbe5",
+      "sha256": "4bd37271d1ad8f1592d081ccd85a5934683aa82a5fb0444180995e2cdd9678c7",
+      "bytes": 153
+    },
+    {
+      "file": "src/dice/hfe/io/IDirectoryChangeListener.hpp",
+      "gitBlob": "da7530f2b474e26409dd540967b4076c57671a35",
+      "sha256": "dc327f0a05e43f5ead792b5abaf2a34ae7c44a02489835ab9b5760bbbbf0dbd3",
+      "bytes": 316
+    },
+    {
+      "file": "src/dice/hfe/io/IFileChangeManager.hpp",
+      "gitBlob": "0646b375dff1941193b585032485c3770e1ce8b8",
+      "sha256": "4ddcf721674e9b3344a1c1b68a793647a57dcc17ee15dfecc2f89190ae11ab33",
+      "bytes": 856
+    },
+    {
+      "file": "src/dice/hfe/io/IFileManager.hpp",
+      "gitBlob": "214d23ad32cdd2fc4ad27e6947c9264059edab74",
+      "sha256": "5f7a198156e6e2d252db7b2ed6bd5d61d18c26129168f4f1f70bc798f22b090f",
+      "bytes": 1908
+    },
+    {
+      "file": "src/dice/hfe/io/IFileSystem.hpp",
+      "gitBlob": "16976953eb5a4a57bfff0754a0f429692a2b71a1",
+      "sha256": "1692f463fa876b99d659a8699cbbea4efc0dd6d25c3c333164d7015f22968c2a",
+      "bytes": 1305
+    },
+    {
+      "file": "src/dice/hfe/io/IInputFilter.hpp",
+      "gitBlob": "ad748d69832cb73ae8443bd9df492c16d0738109",
+      "sha256": "9c0923ecd02aae66c9e2279ab00c59e3d7461fa5844d1725f585c0c7ca0a9d1c",
+      "bytes": 376
+    },
+    {
+      "file": "src/dice/hfe/io/INetworkable.hpp",
+      "gitBlob": "dddb4652b77466a56327dc1c817acd3915d02d1d",
+      "sha256": "b54feea9ffc584d295cf6375e8e3d71a0fd2aeffb2e86e22016fd6204d9308c2",
+      "bytes": 1224
+    },
+    {
+      "file": "src/dice/hfe/io/INetworkableInfo.hpp",
+      "gitBlob": "2fe308ca14c480cdd1f8b18922007f9e5348d7ca",
+      "sha256": "05c23aa9861c17aafd56f5c7cc3c747113286ed896a4cea2c88c413fb855128e",
+      "bytes": 1166
+    },
+    {
+      "file": "src/dice/hfe/io/IStream.hpp",
+      "gitBlob": "88372e9d31c545cf286972176cbd63efbbe8f956",
+      "sha256": "3a1ed5a1a29c7a843dfa0ad9b62acab75162574861809a7aecf9b016642e6ef3",
+      "bytes": 671
+    },
+    {
+      "file": "src/dice/hfe/io/ModuleIO.cpp",
+      "gitBlob": "b7c6c31747d6f47061ae944e115026860388f5f3",
+      "sha256": "b338a8158d593671f5c54525cef8ab8a7aaaa7a00be23d9a4d93ba559d4f3d6a",
+      "bytes": 11927
+    },
+    {
+      "file": "src/dice/hfe/io/ModuleIO.hpp",
+      "gitBlob": "cc71eb7ac5f4871fa63ef283b17e9688749f104e",
+      "sha256": "10298e4872deb09bf9b469716e11f0d4dab719952ffacefaae9063707e33db6a",
+      "bytes": 588
+    },
+    {
+      "file": "src/dice/hfe/io/NetworkManager.cpp",
+      "gitBlob": "41c65421d5c83599068871e155abc656610cb025",
+      "sha256": "b79cac0e6d37e145ec361180de9ad1c540163eb0d8d8f4448f10ba62cfe786fb",
+      "bytes": 1035
+    },
+    {
+      "file": "src/dice/hfe/io/NetworkManager.hpp",
+      "gitBlob": "cd26c8b57fce2c5980390eabc1c3122e3b9b0e17",
+      "sha256": "161ad95f30fedb75d75ac4dcb58dd68ec0f98173f475bb672bd38fd99857edd2",
+      "bytes": 2122
+    },
+    {
+      "file": "src/dice/hfe/io/NetworkModule.cpp",
+      "gitBlob": "f1a1453bf77f89f71cfbbe667f41da8ecdb0bad9",
+      "sha256": "a9ca38aedeae8a51247764ab65fc5191efd97c2b955dc60b9652f597d2901964",
+      "bytes": 1741
+    },
+    {
+      "file": "src/dice/hfe/io/NetworkModule.hpp",
+      "gitBlob": "fc66e3d98135904ae1779b57981d4df07efb4ebf",
+      "sha256": "888f116224a3be14c314f137143acaf2218ed2ef35abdc0bb2fad4bde1ad98f3",
+      "bytes": 603
+    },
+    {
+      "file": "src/dice/hfe/io/NetworkableBase.hpp",
+      "gitBlob": "62346c5ad5b68ef8aadfe98dcd3545724ad3db8b",
+      "sha256": "36cefa0db41f8b986b7a13d674385716346913c38e523ef06328433dc550e0d7",
+      "bytes": 191
+    },
+    {
+      "file": "src/dice/hfe/io/NetworkableDescriptor.hpp",
+      "gitBlob": "bc2f5bea65c64f533c899d4f508ddb92c3a1cd1e",
+      "sha256": "64bd373ed4d5b9a243fb8f29a4413c8b20cf2c2d4c70f516030a7ec73bcdd724",
+      "bytes": 535
+    },
+    {
+      "file": "src/dice/hfe/io/NetworkableStateMask.hpp",
+      "gitBlob": "9a90c6269c06b107810ce8b15dabf3f666024839",
+      "sha256": "bdc083e87b2d505f718d36ef99d3a9fd0ba70b4221d56cf545231f61c80304c8",
+      "bytes": 960
+    },
+    {
+      "file": "src/dice/hfe/io/OldConsole.cpp",
+      "gitBlob": "b4ed566e1e81da5e6a15bfbda09f8045be86aaf1",
+      "sha256": "4dd9668a20a3b1b56c68558bbb759e81d045cf6353a7c6ca4dca6fad1f94ef6e",
+      "bytes": 5522
+    },
+    {
+      "file": "src/dice/hfe/io/OldConsole.hpp",
+      "gitBlob": "569d9e4f2040db2e64920a47c05172667532b81f",
+      "sha256": "4381d59aac6078e99dcb99da24f7eab6519e4e8fc4391141e6a2dce221535ada",
+      "bytes": 3518
+    },
+    {
+      "file": "src/dice/hfe/io/PlayerAction.hpp",
+      "gitBlob": "09eb278f80b7b9bfc0a27bd863676d373b470b50",
+      "sha256": "326ea1253566f3458b0f8024636dd190df7c44b01e547d7b46a960d3974a25d5",
+      "bytes": 1137
+    },
+    {
+      "file": "src/dice/hfe/io/PlayerInput.hpp",
+      "gitBlob": "9f7195e8424c3d95c6fef3c8ce48c6410a8feb68",
+      "sha256": "f7a8705c35f97eefeb67f0f377393ebe5c5c4d3f7a80b1bf265d45d613b55414",
+      "bytes": 3659
+    },
+    {
+      "file": "src/dice/hfe/io/SettingsManagerBase.cpp",
+      "gitBlob": "7c12552feadafb1babf4ef393983ce8a9d435803",
+      "sha256": "cc85513eb1dfc39f407a7081e5d6e885e4515037e945e56a561c0be9891342f6",
+      "bytes": 2263
+    },
+    {
+      "file": "src/dice/hfe/io/SettingsManagerBase.hpp",
+      "gitBlob": "0a04a0c1b73deae4db7c7c278056c44f11d1100b",
+      "sha256": "61dcc24f4c1a7e64715bed17b9af9815f9c8632c8ed15e81e58031cfaf0ec348",
+      "bytes": 1428
+    },
+    {
+      "file": "src/dice/hfe/io/io.cpp",
+      "gitBlob": "74eedef8506deb2bfc4edf2b4772955c9c646f48",
+      "sha256": "e6eca6bf4a50164ae0d73e0b5d2c2a49ba81efea82e54606968c721eeafbd1c7",
+      "bytes": 186
+    },
+    {
+      "file": "src/dice/hfe/io/io.hpp",
+      "gitBlob": "4badbbfae646dea0ed994245846a456101d4ffbf",
+      "sha256": "78292d53362306736704b15a2b9756c4fb8e92c8843f82711e1e22e1b6010d97",
+      "bytes": 283
+    },
+    {
+      "file": "src/dice/hfe/tool/ModuleToolObject.cpp",
+      "gitBlob": "9f98e92fb51d76d963560896ae36accfc23cff96",
+      "sha256": "e557d336b6e744d9d44bf7a253072af8b57e6866aaa3b20cb62f5f3d90069ceb",
+      "bytes": 1269
+    },
+    {
+      "file": "src/dice/hfe/tool/ModuleToolObject.hpp",
+      "gitBlob": "c831b7e8074757f8de5e31af842cf3ac19363d33",
+      "sha256": "afa7a9c1d4b134df2b4b33db83612b3003fc3cefce41229c91edeecc6e8885b9",
+      "bytes": 616
+    },
+    {
+      "file": "src/dice/hfe/world/GameLogicCompModule.cpp",
+      "gitBlob": "7f7cfa99c166ad19db76ec4459797abe99fc3b31",
+      "sha256": "26e2d94062cec0e4f1c4b2a500a91671d17c6065f59bc05b959bd6b0f491f3a4",
+      "bytes": 1943
+    },
+    {
+      "file": "src/dice/hfe/world/GameLogicCompModule.hpp",
+      "gitBlob": "ddc9d30d7062a6ce26c4aae7b462289566573281",
+      "sha256": "39029d376d39356e1f382811ed5f3c31ffe857533d9b6c4cdd13ed5e3f003d7f",
+      "bytes": 627
+    },
+    {
+      "file": "src/dice/hfe/world/IObject.hpp",
+      "gitBlob": "26e42953429e0b5bb68314df95a528fc9cba833f",
+      "sha256": "35202877b57a02356e597f31d1cb55db05914ca0468df93b2b01ceac9dbe9511",
+      "bytes": 6541
+    },
+    {
+      "file": "src/dice/hfe/world/IObjectTemplate.hpp",
+      "gitBlob": "d38b8ff8a7af4caca812245aa5a746c651be8747",
+      "sha256": "a81e297f7f90437d613313a073357f6f282faba4dd6b6240f7588a18c67dcf8e",
+      "bytes": 2518
+    },
+    {
+      "file": "src/dice/hfe/world/IPlayer.hpp",
+      "gitBlob": "da8b409790f95063bce5edefe95c71339834846f",
+      "sha256": "4d47ab31d1f89469df53953ff744e585ad42fda92d700f19019a9cb8d73254c9",
+      "bytes": 9425
+    },
+    {
+      "file": "src/dice/hfe/world/IPlayerManager.hpp",
+      "gitBlob": "83838f3b46bf5b9aa40c3cfa130c70f9d7a7d164",
+      "sha256": "1b3e24d0d9656990ff1a08dd9138efbcb681772e558acb586bc7ca2039524858",
+      "bytes": 2769
+    },
+    {
+      "file": "src/dice/hfe/world/Module.cpp",
+      "gitBlob": "e29e3d699324eaffcac39a7120b92f3117c59fb1",
+      "sha256": "e856e4c0806f7b18797b9a4dcee8bd15d13b2197ffd0f086c5a2024755d46374",
+      "bytes": 3065
+    },
+    {
+      "file": "src/dice/hfe/world/Module.hpp",
+      "gitBlob": "3cab42b14ade6486a306f2ca14666ad4372322f2",
+      "sha256": "9cfd4dd71fde770f6ba1eff3edafb4bd4b949f7165bb79b1a87e8a599509d613",
+      "bytes": 588
+    },
+    {
+      "file": "src/dice/hfe/world/ObjTemplBaseModule.cpp",
+      "gitBlob": "5ae72dd1d346a5853a8831e4d30ac86d7644e915",
+      "sha256": "60bf1a89dc1fbcd241da89f1bde3a79ffbfeeaea4bb347e648bc11a851540f2e",
+      "bytes": 1539
+    },
+    {
+      "file": "src/dice/hfe/world/ObjTemplBaseModule.hpp",
+      "gitBlob": "b3f5ff9a3b9d27a55d9b5ca9cb29b11ee1e1bb09",
+      "sha256": "a7dd4ad1807271a5d15a57b2ff5b02a50346db7ce33aaaddffda65ae383116d4",
+      "bytes": 624
+    },
+    {
+      "file": "src/dice/hfe/world/ObjTemplPortalModule.cpp",
+      "gitBlob": "b00cf4ebd662a2833f84d3c9c4385541829a7829",
+      "sha256": "fcb8d1174b8a37bf6282ac5ee588bd4859066bdf71d4841d4fdca06422debe52",
+      "bytes": 1796
+    },
+    {
+      "file": "src/dice/hfe/world/ObjTemplPortalModule.hpp",
+      "gitBlob": "10bbbe4077c8031a3616049dcac0d45941a503a5",
+      "sha256": "134bc73a6968c168bd0161a392fe3823db8bf9db765cb897e3386f3dd5ac03f8",
+      "bytes": 630
+    },
+    {
+      "file": "src/dice/hfe/world/Object.hpp",
+      "gitBlob": "bde184c40523fa299962c83a50c1918d44d27e5a",
+      "sha256": "c75301a1f86377a087b66aef84a7d6d75d2ea17270fc76e2c46a38f456bbfe0f",
+      "bytes": 1397
+    },
+    {
+      "file": "src/dice/hfe/world/ObjectModule.cpp",
+      "gitBlob": "cb0bb5df4e95e0631e4b669814aea20d1d1f044e",
+      "sha256": "3b9bdcc0db19ad6e5443bbc02a9919d24339e7aaa4ae9d9044f110834682a2c6",
+      "bytes": 2269
+    },
+    {
+      "file": "src/dice/hfe/world/ObjectModule.hpp",
+      "gitBlob": "919bc9332d721388a1423ec707ed9268ae5a5970",
+      "sha256": "e0034631eca6f710f21e611edc107aea708e78190b182b4f75bb5f584a9d3f6c",
+      "bytes": 606
+    },
+    {
+      "file": "src/dice/hfe/world/ObjectTemplate.hpp",
+      "gitBlob": "96088f1d263dc3847634414d7767d25d61d8b02e",
+      "sha256": "8ab0d0c96a9a9d4ad019c7fda01b41f92c05d30e9c9dcdf7a83d1a15aad034a7",
+      "bytes": 603
+    },
+    {
+      "file": "src/dice/hfe/world/PhysicsModule.cpp",
+      "gitBlob": "8830d5ec01c1dd585b968dc7204145a392d4b48b",
+      "sha256": "4296ff54ec7e865c84a3155b65076ee6026d1651e1383fa99ed90057c84fcf1c",
+      "bytes": 3947
+    },
+    {
+      "file": "src/dice/hfe/world/PhysicsModule.hpp",
+      "gitBlob": "f4ac76a67bafbaba9ff9b74c66146c61b9b12987",
+      "sha256": "c41576b8a953570e5f62db1fb98b58db5c7423503fc72cb85118b03fb85d8eeb",
+      "bytes": 609
+    },
+    {
+      "file": "src/dice/hfe/world/Player.hpp",
+      "gitBlob": "6851f5f88c2ad2b3a5f852907ccfce86042c66ec",
+      "sha256": "af513617ec4e37f58885a6113b6cb0d757b1a928891114d24c17a4b467b2bcd8",
+      "bytes": 648
+    },
+    {
+      "file": "src/dice/hfe/world/PlayerManager.cpp",
+      "gitBlob": "3ec00b86d1ad2992808336e4c68b98ae1dfbe854",
+      "sha256": "a35eea4e152e78ee721714f7986ce7d26b90217b1b706dd2f9a10e92cf970d1b",
+      "bytes": 8546
+    },
+    {
+      "file": "src/dice/hfe/world/PlayerManager.hpp",
+      "gitBlob": "0ee9241b7a187c770ba2f9be9410280bcc7e8ea2",
+      "sha256": "e214b9fccfa1dc3e0268cf28ef711170f20711d1a94b17ac118693d913ebc6a7",
+      "bytes": 4265
+    },
+    {
+      "file": "src/dice/hfe/world/SimpleObject.hpp",
+      "gitBlob": "b91c75052e13cfe10a49d5c021f41472bb8089a3",
+      "sha256": "3ba06caa45261513d3ee8320bf2314a2d655304c8f44336715da163bc2118fed",
+      "bytes": 235
+    }
+  ]
+}

@@ -17,7 +17,7 @@ files.push('exports/glb/DS_Bicycle_Styles/DS_Bicycle_Styles_LOD1.glb','exports/g
 for(const dir of ['exports/architecture','exports/cut','textures/architecture','textures/cut','textures/trees','textures/realistic'])for(const name of await readdir(resolve(pack,dir)))if(/\.(glb|png|jpg|hdr)$/i.test(name)&&!(dir==='textures/cut'&&name.endsWith('.png'))&&!(dir==='exports/architecture'&&!['DS_Detroit_Globe_OAC.glb','DS_Detroit_Shed_3.glb'].includes(name)))files.push(dir+'/'+name);
 for(const id of ['DS_Man_01','DS_EUC_01','DS_Boerboel_01','DS_Pedestrian_01','DS_Cyclist_01','DS_Bicycle_01','DS_Hazard_Cone_01','DS_Hazard_Barrier_01','DS_Hoodie_Man_01','DS_Hoodie_Woman_01','DS_Mascot_Suit_01','DS_Mascot_Hoodie_01'])files.push(`exports/glb/${id}/${id}_LOD${id==='DS_Man_01'?0:1}.glb`);
 // New source-authored riders are not part of the original external asset pack.
-const sourceFiles=[...['talaria','ultra','sr','varg'].map(id=>'exports/electric/Ebike_'+id+'.glb'),...['city','tour','trail','speed'].map(id=>'exports/electric/Euc_'+id+'.glb'),'exports/electric/NOTICE.md','exports/glb/DS_Armored_Rider_01/DS_Armored_Rider_01_LOD1.glb'];
+const sourceFiles=['royale-config.json',...['talaria','ultra','sr','varg'].map(id=>'exports/electric/Ebike_'+id+'.glb'),...['city','tour','trail','speed'].map(id=>'exports/electric/Euc_'+id+'.glb'),'exports/electric/NOTICE.md','exports/glb/DS_Armored_Rider_01/DS_Armored_Rider_01_LOD1.glb'];
 sourceFiles.push('art/loading-trailer.mp4','art/loading-trailer-poster.webp',...['serengeti','lottomind','penny-auction'].flatMap(id=>['art/entrances/'+id+'.mp4','art/entrances/'+id+'.webp']));
 sourceFiles.push(...await modelDependencies(resolve(source,'public'),sourceFiles));
 for(const file of sourceFiles)await readableTree(resolve(source,'public',file));
@@ -28,6 +28,7 @@ for(const file of files)await readableTree(resolve(pack,file));
 for(const dir of ['audio/swoop','detroit/geospatial'])await readableTree(resolve(pack,dir));
 for(const file of ['exports/boutique','exports/gallery','exports/scooter','exports/atwater','exports/polish','exports/visitors','exports/waterfront','exports/street-furniture','exports/valade','mural-credits.html','manifest.webmanifest','touch-icon.png'])await readableTree(resolve(source,'public',file));
 const licenses=await runtimeLicenses(source);licenses.push({input:resolve(source,'node_modules/@digital-static/ridecore/LICENSE.txt'),output:'LICENSE-RideCore.txt'});
+licenses.push({input:resolve(import.meta.dirname,'../engine/breadflowerdos/upstream/LICENSE'),output:'LICENSE-BreadFlowerDos.txt'});
 licenses.push({input:resolve(source,'src/vendor/LICENSE-hls.js.txt'),output:'LICENSE-hls.js.txt'});
 await readableTree(resolve(source,'node_modules/@digital-static/ridecore/LICENSE.txt'));
 await readableTree(resolve(pack,'detroit/licenses'));
@@ -51,7 +52,7 @@ await build({root:source,configFile:false,base:'./',publicDir:false,resolve:{ded
   return code;
  },
  transformIndexHtml(html,ctx){if(!ctx.path.endsWith("detroit.html"))return html.replaceAll("./detroit.html","./index.html");return html.replace('<head>', '<head><script>if(new URLSearchParams(location.search).get("map")==="elmwood")location.replace(new URL("../elmwood-explorer/elmwood.html",location.href).href);</script>').replaceAll('\r\n','\n').replace(/<p class="hint"><a href="\.\/rider-studio.html"[\s\S]*?<\/p>/,'').replace('</head>','<meta name="goth-reward-game" content="swoop-detroit"><style>button:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid #dec57c;outline-offset:3px}button{min-height:44px}@media(min-width:1025px) and (pointer:fine){.session{bottom:85px}}@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}</style></head>').replace('</body>','<script type="module" src="../reward-tracker.js"></script><script type="module" src="../swoop-store-return.js"></script></body>');}
-}],build:{outDir:out,emptyOutDir:true,target:'es2022',rollupOptions:{input:Object.fromEntries(['detroit','rider-studio','companion-studio','traffic-studio'].map(name=>[name,resolve(source,name+'.html')]))}}});
+}],build:{outDir:out,emptyOutDir:true,target:'es2022',rollupOptions:{input:Object.fromEntries(['detroit','royale','rider-studio','companion-studio','traffic-studio'].map(name=>[name,resolve(source,name+'.html')]))}}});
 await rename(resolve(out,'detroit.html'),resolve(out,'index.html'));
 for(const file of files){const target=resolve(out,file);await mkdir(dirname(target),{recursive:true});await copyFile(resolve(pack,file),target);}
 for(const file of sourceFiles){const target=resolve(out,file);await mkdir(dirname(target),{recursive:true});await copyFile(resolve(source,'public',file),target);}

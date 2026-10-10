@@ -1,0 +1,90 @@
+{
+  "blender": "5.2.1 LTS",
+  "scope": "read-only existing asset inspection",
+  "assets": [
+    {
+      "file": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\store\\public\\arcade\\swoop-detroit\\exports\\glb\\DS_Hoodie_Woman_01\\DS_Hoodie_Woman_01_LOD1.glb",
+      "meshes": 2,
+      "vertices": 18327,
+      "rigs": 1,
+      "bones": 24,
+      "actions": 0,
+      "sizeBlenderXYZ": [
+        1.9021157026290894,
+        1.9999998807907104,
+        2.7001497745513916
+      ],
+      "missingTextures": []
+    },
+    {
+      "file": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\store\\public\\arcade\\swoop-detroit\\exports\\glb\\DS_Mascot_Suit_01\\DS_Mascot_Suit_01_LOD1.glb",
+      "meshes": 2,
+      "vertices": 19833,
+      "rigs": 1,
+      "bones": 24,
+      "actions": 0,
+      "sizeBlenderXYZ": [
+        1.9021157026290894,
+        1.9999998807907104,
+        2.301717519760132
+      ],
+      "missingTextures": []
+    },
+    {
+      "file": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\store\\public\\arcade\\swoop-detroit\\exports\\glb\\DS_Mascot_Hoodie_01\\DS_Mascot_Hoodie_01_LOD1.glb",
+      "meshes": 2,
+      "vertices": 17957,
+      "rigs": 1,
+      "bones": 24,
+      "actions": 0,
+      "sizeBlenderXYZ": [
+        1.9021157026290894,
+        1.9999998807907104,
+        2.2991479635238647
+      ],
+      "missingTextures": []
+    },
+    {
+      "file": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\store\\public\\arcade\\swoop-detroit\\exports\\glb\\DS_Armored_Rider_01\\DS_Armored_Rider_01_LOD1.glb",
+      "meshes": 2,
+      "vertices": 51794,
+      "rigs": 1,
+      "bones": 24,
+      "actions": 0,
+      "sizeBlenderXYZ": [
+        1.9021157026290894,
+        1.9999998807907104,
+        2.861999750137329
+      ],
+      "missingTextures": []
+    },
+    {
+      "file": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\store\\public\\arcade\\swoop-detroit\\exports\\glb\\DS_Man_01\\DS_Man_01_LOD0.glb",
+      "meshes": 10,
+      "vertices": 86525,
+      "rigs": 1,
+      "bones": 24,
+      "actions": 1,
+      "sizeBlenderXYZ": [
+        1.9021157026290894,
+        1.9999998807907104,
+        2.8318930864334106
+      ],
+      "missingTextures": []
+    },
+    {
+      "file": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\store\\public\\arcade\\swoop-detroit\\exports\\glb\\DS_EUC_01\\DS_EUC_01_LOD1.glb",
+      "meshes": 37,
+      "vertices": 24521,
+      "rigs": 0,
+      "bones": 0,
+      "actions": 4,
+      "sizeBlenderXYZ": [
+        0.5477073788642883,
+        0.5088811218738556,
+        0.8717777729034424
+      ],
+      "missingTextures": []
+    }
+  ]
+}
