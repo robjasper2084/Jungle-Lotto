@@ -1,5 +1,5 @@
-import {locationAt} from './detroit-locations.js?v=2.0.1';
-import {random} from './progression.js?v=2.0.1';
+import {locationAt} from './detroit-locations.js?v=2.0.2';
+import {random} from './progression.js?v=2.0.2';
 export const WIDTH = 2880;
 export const STRIDE = 520;
 export const HEIGHT = 3700;
@@ -9,7 +9,7 @@ export const DEPTHS = [
   {name:'DEQUINDRE CUT',short:'Cut',color:'#85cbd1',note:'← Recover seal 03. Watch the train signals.',lore:'The platforms are silent until the signals turn red. Get above the tracks when the ghost train comes.'},
   {name:'ABANDONED STATION',short:'Station',color:'#e3b475',note:'Cross the broken concourse →',lore:'The station was sealed overnight. Its floor remembers every footstep. Keep moving across the cracked tiles.'},
   {name:'MAINTENANCE TUNNELS',short:'Tunnels',color:'#d59868',note:'← Ride the cart. Recover seal 13.',lore:'The service carts still run. Use one to cross the tunnels, then jump free before the end of the line.'},
-  {name:'NUMBER VAULT',short:'Vault',color:'#dfc378',note:'Follow the rolling coins into the vault →',lore:'The old machines minted numbers, not money. Their enormous coins still roll through the galleries.'},
+  {name:'NUMBER VAULT',short:'Vault',color:'#dfc378',note:'Jump rolling coins and the marked spike strip →',lore:'The old machines minted numbers, not money. Their enormous coins still roll through the galleries.'},
   {name:'ANCIENT CHAMBER',short:'Chamber',color:'#b4cfa0',note:'← Recover seal 31. Break the false wall.',lore:'03. 13. 31. The city built its lottery over a much older machine. The three seals open its heart.'},
   {name:'THE WARDEN',short:'Warden',color:'#f0b971',note:'Use all three seals at the gate. Defeat the Warden.',lore:'The Number Warden guards the original draw. Break its golden core and bring the light back to the surface.'}
 ];
@@ -51,7 +51,7 @@ export function makeWorld(seed=0){
   w.hazards.push({x:1120,y:floorY(0)+45,w:330,h:40,type:'spikes'});
   w.hazards.push({x:1180,y:floorY(2)+70,w:336,h:40,type:'spikes'});
   w.hazards.push({x:1020,y:floorY(3)+40,w:250,h:45,type:'fire'});
-  w.hazards.push({x:1500,y:floorY(4)-8,w:130,h:20,type:'spikes'});
+  w.hazards.push({x:1500,y:floorY(4)-28,w:130,h:28,type:'spikes',surface:true});
   w.hazards.push({x:930,y:floorY(5)+45,w:270,h:40,type:'fire'});
   w.ropes.push({x:1065,y:floorY(5)-315,length:232,phase:1});
   platform(1035,floorY(5)-30,110,'moving',{baseX:1035,baseY:floorY(5)-30,axis:'x',range:100,speed:.8});
@@ -66,6 +66,7 @@ export function makeWorld(seed=0){
   w.signs.push({x:1700,y:floorY(1)-260,text:'03 / EASTBOUND',large:true});
   w.signs.push({x:920,y:floorY(2)-125,text:'UNSTABLE FLOOR',small:true});
   w.signs.push({x:2320,y:floorY(3)-120,text:'SPACE · BOARD CART',small:true});
+  w.signs.push({x:1565,y:floorY(4)-65,text:'SPIKES · JUMP',small:true});
   w.signs.push({x:2170,y:floorY(5)-120,text:'HOLLOW STONE. TRY YOUR BLASTER.',small:true});
   w.gate={x:1000,y:floorY(6)-250,w:70,h:250,open:false};
   w.boss={x:2170,y:floorY(6),hp:65,maxHp:65,active:false,phase:0,shot:1.8,pulse:4,flash:0};

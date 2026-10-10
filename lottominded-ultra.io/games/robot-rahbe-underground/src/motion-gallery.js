@@ -1,5 +1,5 @@
-import {RAHBE_MOTIONS} from './rahbe-motions.js?v=2.0.1';
-import {VILLAIN_MOTIONS} from './villain-motions.js?v=2.0.1';
+import {RAHBE_MOTIONS} from './rahbe-motions.js?v=2.0.2';
+import {VILLAIN_MOTIONS} from './villain-motions.js?v=2.0.2';
 const names={rahbe:'ROBOT RAHBE',drone:'Security Drone',guard:'Robot Guard',warden:'Number Warden'};
 const labels={idle:'Ready / idle',move:'Patrol / advance',run:'Run',jump:'Jump',crouch:'Crouch',shoot:'Fire',charge:'Alert / charge',attack:'Attack',hit:'Damage reaction',defeat:'Defeat',ladder:'Climb ladder','rope-grab':'Grab rope','rope-swing':'Swing','rope-release':'Release rope',cart:'Board / ride cart',landing:'Land',hurt:'Damage reaction',victory:'Victory','aim-vertical':'Aim up / down'};
 const base={idle:5,run:0,jump:2,crouch:3,shoot:4};
