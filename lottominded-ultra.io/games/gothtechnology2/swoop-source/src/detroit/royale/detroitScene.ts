@@ -14,5 +14,5 @@ export async function buildDetroitArenaScene(scene:T.Scene,arena:DowntownArena){
  const root=new T.Scene();root.name='Original Swoop Detroit scenery';root.scale.x=1/t.sx;root.position.set(-t.tx/t.sx,-t.ty,-t.tz);scene.add(root);
  const start=arena.sourcePosition(arena.spawns[0].position),scenery=await buildScenery(root,visual,true,start);
  scenery.update(start.x,start.z,0);
- return {root,update(p:{x:number;y:number;z:number},time:number){const source=arena.sourcePosition(p);scenery.update(source.x,source.z,time);}};
+ return {root,jazz:scenery.jazz,update(p:{x:number;y:number;z:number},time:number){const source=arena.sourcePosition(p);scenery.update(source.x,source.z,time);}};
 }

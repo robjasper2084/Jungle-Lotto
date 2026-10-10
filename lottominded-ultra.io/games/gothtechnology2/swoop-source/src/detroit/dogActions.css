@@ -19,3 +19,10 @@
 body:has(#practiceHUD:not([hidden])) .community-panel,body:has(.elmwood-lesson:not([hidden])) .community-panel{display:none}
 @media(max-width:360px) and (orientation:portrait){body .dogActionHud{--dog-size:44px;left:max(8px,env(safe-area-inset-left));right:auto;width:140px}body .dogActionHud #dogLiveActions{grid-template-columns:repeat(3,var(--dog-size));gap:4px}body .dogActionHud .dogActionToggle{font-size:10px}body .dogRoundAction{font-size:9px;padding-top:22px}body .dogRoundAction svg{width:20px;height:20px;left:calc(50% - 10px);top:3px}}
 @media(max-height:540px) and (orientation:landscape){.dogActionHud[data-collapsed=true]{bottom:calc(165px + env(safe-area-inset-bottom))}}
+
+/* The collapsed tray stays clear of the six movable commands and mini-map. */
+@media(max-height:600px) and (orientation:landscape){body .dogCommandTray[data-collapsed=true]{top:auto;bottom:6px;left:50%;right:auto;transform:translateX(-50%);width:150px}}
+/* A single compact dog button preserves the centre of the playfield. */
+body .dogCommandTray{top:auto!important;left:max(12px,env(safe-area-inset-left))!important;right:auto!important;bottom:calc(240px + env(safe-area-inset-bottom))!important;transform:none!important;width:210px;background:#102c29b8;max-height:45dvh;overflow:auto}
+body .dogCommandTray[data-collapsed=true]{width:136px;padding:0 6px}
+@media(max-height:600px) and (orientation:landscape){body .dogCommandTray{bottom:calc(172px + env(safe-area-inset-bottom))!important;width:220px}}

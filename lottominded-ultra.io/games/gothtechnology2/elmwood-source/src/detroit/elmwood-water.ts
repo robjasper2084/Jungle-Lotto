@@ -41,10 +41,10 @@ float waterHeight(vec2 p,vec4 info){
 /** Water is dielectric, with the existing HDR/light/fog path and no extra scene capture. */
 export function makeElmwoodWater(source:T.MeshStandardMaterial,u:WaterUniforms){
  const creek=/creek/i.test(source.name),kind={value:creek?1:0},fountain={value:new T.Vector2()};
- const m=new T.MeshPhysicalMaterial({name:source.name,color:'#ffffff',side:source.side,roughness:.18,metalness:0,ior:1.333,envMapIntensity:1.15,clearcoat:.38,clearcoatRoughness:.17});
+ const m=new T.MeshPhysicalMaterial({name:source.name,color:'#ffffff',side:source.side,roughness:.18,metalness:0,ior:1.333,envMapIntensity:.68,clearcoat:.20,clearcoatRoughness:.26});
  m.userData.elmwoodWater={kind,fountain};
  m.onBeforeCompile=s=>{
-  Object.assign(s.uniforms,{waterNoise:{value:waterNoise()},waterTime:u.waterTime,waterDetail:u.waterDetail,waterRain:u.rain,waterWind:u.wind,waterKind:kind,waterFountain:fountain,waterDeep:{value:new T.Color(creek?'#284b42':'#204848')},waterShallow:{value:new T.Color('#748475')}});
+  Object.assign(s.uniforms,{waterNoise:{value:waterNoise()},waterTime:u.waterTime,waterDetail:u.waterDetail,waterRain:u.rain,waterWind:u.wind,waterKind:kind,waterFountain:fountain,waterDeep:{value:new T.Color(creek?'#284b42':'#204848')},waterShallow:{value:new T.Color('#5d7566')}});
   s.vertexShader=surface+'\nattribute vec4 waterInfo; varying vec3 waterWorld; varying vec4 waterData;\n'+s.vertexShader;
   s.vertexShader=s.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
    waterWorld=(modelMatrix*vec4(position,1.)).xyz;waterData=waterInfo;
@@ -59,7 +59,7 @@ export function makeElmwoodWater(source:T.MeshStandardMaterial,u:WaterUniforms){
    float shoreFoam=(1.-smoothstep(.04,.65,waterShore))*smoothstep(.48,.78,waterPattern)*(.08+.05*waterKind);
    diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.64,.72,.70),shoreFoam);`);
   s.fragmentShader=s.fragmentShader.replace('#include <roughnessmap_fragment>',`#include <roughnessmap_fragment>
-   roughnessFactor=clamp(.13+.09*waterKind+.045*waterWind+.06*(waterPattern-.5)+waterRain*.05,.12,.38);`);
+   roughnessFactor=clamp(.19+.09*waterKind+.045*waterWind+.06*(waterPattern-.5)+waterRain*.05,.18,.42);`);
   s.fragmentShader=s.fragmentShader.replace('#include <normal_fragment_maps>',`#include <normal_fragment_maps>
    float waterH=waterHeight(waterWorld.xz,waterData);
    vec3 waterX=dFdx(waterWorld),waterY=dFdy(waterWorld),waterUp=vec3(0.,1.,0.);
@@ -73,7 +73,7 @@ export function makeElmwoodWater(source:T.MeshStandardMaterial,u:WaterUniforms){
     clearcoatNormal=normal;
    #endif`);
  };
- m.customProgramCacheKey=()=> 'elmwood-depth-flow-water-v4';return m;
+ m.customProgramCacheKey=()=> 'elmwood-depth-flow-water-v5';return m;
 }
 
 /** Subdivide only water triangles; retain every authored shoreline and original water level. */

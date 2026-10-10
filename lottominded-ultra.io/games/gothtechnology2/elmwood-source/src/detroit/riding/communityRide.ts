@@ -2,7 +2,7 @@
 import {createGroundSample,type TerrainSampler,type NavigationObstacle} from '@digital-static/ridecore';
 export type RoutePoint={x:number;z:number;width?:number};
 const clamp=(n:number,a:number,b:number)=>Math.max(a,Math.min(b,n));
-export const COMMUNITY_PACE=7.2;
+export const COMMUNITY_PACE=11.3;
 const PACK_LATERAL_SPEED=1.9;
 const movingContact=(o:NavigationObstacle)=>['person','pedestrian','rider','cyclist','segway','skater','dog'].includes(o.kind);
 export class LaneRoute {
@@ -49,7 +49,8 @@ export class CommunityRide {
   }
   private place(r:PackRider){const at=this.route.at(r.s,r.offset);Object.assign(r,at);r.y=this.terrain.sampleGround(r.x,r.z,this.ground).height;}
   private yieldSideways(r:PackRider,dt:number,obstacles:readonly NavigationObstacle[]){
-    const clearance=(x:number,z:number)=>Math.min(...this.riders.filter(o=>o!==r).map(o=>Math.hypot(x-o.x,z-o.z)));
+    const nearby=[...this.riders.filter(o=>o!==r).map(o=>({...o,radius:.65})),...obstacles.filter(o=>o.id!==r.id&&!o.raycastSolid&&Math.abs(o.y-r.y)<2)];
+    const clearance=(x:number,z:number)=>Math.min(6,...nearby.map(o=>Math.hypot(x-o.x,z-o.z)-o.radius));
     const current=clearance(r.x,r.z),edge=this.route.at(r.s).width/2-.55;
     const options=[-1,1].map(sign=>{const offset=clamp(r.offset+sign*PACK_LATERAL_SPEED*dt,-edge,edge),at=this.route.at(r.s,offset);return {...at,offset,space:clearance(at.x,at.z)};}).sort((a,b)=>b.space-a.space);
     for(const at of options){
@@ -65,7 +66,7 @@ export class CommunityRide {
   leave(){this.joined=false;this.eligible=false;this.message='Left the ride. The pack continues; catch up to rejoin.';}
   cancel(){this.leave();this.stage='cleanup';this.message='Ride cancelled. Restart from the gathering when ready.';}
   recover(){this.eligible=false;this.message='Recovered · enjoy the ride; restart at the gathering for completion.';}
-  continue(){if(this.stage==='rollout')this.timer=0;if(this.stage==='regroup'){this.timer=0;this.stage='riding';}}
+  continue(){if(this.stage==='assembling'||this.stage==='rollout'||this.stage==='regroup'){this.timer=0;this.stage='riding';this.message='Rolling · catch the pack and keep up.';}}
   obstacles():NavigationObstacle[]{return this.stage==='cleanup'?[]:this.riders.map(r=>({id:r.id,x:r.x,y:r.y,z:r.z,radius:.55,height:1.8,kind:'cyclist',vx:Math.sin(r.headingY)*r.speed,vz:Math.cos(r.headingY)*r.speed}));}
   private park(r:PackRider,index:number,dt:number,contacts:readonly NavigationObstacle[],player:{x:number;y:number;z:number}){
     if(r.parked)return;const slot=this.destination!.slots[index],target=r.parkLeg?slot:slot.approach;
@@ -79,12 +80,12 @@ export class CommunityRide {
     r.blocked=false;r.x=x;r.z=z;r.y=g.height;r.headingY=Math.atan2(dx,dz);r.wheelSpin+=travel/.34;
   }
   step(dt:number,player:{x:number;y:number;z:number;speed:number},contacts:readonly NavigationObstacle[]=[],paused=false){
-    if(paused||dt<=0||!Number.isFinite(dt)||this.stage==='cleanup'||this.stage==='complete'||this.stage==='hangout')return;dt=Math.min(dt,.05);this.elapsed+=dt;
+    if(paused||dt<=0||!Number.isFinite(dt)||this.stage==='cleanup'||this.stage==='complete'||this.stage==='hangout')return;dt=Math.min(dt,.05);this.elapsed+=dt;contacts=[...contacts,{id:'player',x:player.x,y:player.y,z:player.z,radius:.6,height:1.8,kind:'rider',vx:0,vz:0}];
     if(this.joined){const near=this.route.nearest(player,this.gates[this.nextGate]??this.route.length),jump=this.previousPlayer?Math.hypot(player.x-this.previousPlayer.x,player.z-this.previousPlayer.z):0;if(jump>Math.max(3,Math.abs(player.speed)*dt+1))this.eligible=false;
       if(this.eligible&&near.distance<2.1&&jump<3){if(player.speed>.25)this.participation+=jump;const gate=this.gates[this.nextGate];if(gate!==undefined&&Math.abs(near.s-gate)<4)this.nextGate++;}
       this.previousPlayer={x:player.x,z:player.z};
     }
-    if(this.stage==='assembling'){if(!this.destination&&!this.autoStart||this.elapsed<5)return;this.stage='rollout';this.timer=1.5;this.message=this.destination?'Rolling together · follow the pack to GothTechnology at 2000 Mack.':'Rolling together · explore the grounds with the pack.';}
+    if(this.stage==='assembling'){if(!this.destination&&!this.autoStart)return;this.stage='riding';this.timer=0;this.message=this.destination?'Rolling together · follow the pack to GothTechnology at 2000 Mack.':'Rolling together · explore the grounds with the pack.';}
     if(this.stage==='rollout'){this.timer=Math.max(0,this.timer-dt);if(this.timer>0)return;this.stage='riding';}
     if(this.stage==='regroup'){this.timer=Math.max(0,this.timer-dt);if(this.timer<=0)this.stage='riding';}
     // Look ahead far enough to change lanes at cruising pace, rather than stop
@@ -96,7 +97,7 @@ export class CommunityRide {
       const at=this.route.at(r.s),turn=this.route.at(r.s+6).headingY-at.headingY,curve=Math.abs(Math.atan2(Math.sin(turn),Math.cos(turn)))/6;
       const width=this.laneWidth(r.s,r.speed),single=width<3.8||!this.continuous&&r.s>this.route.length-32;
       const formationLag=i*(single?4.1:2.2),catchup=clamp((front-r.s-formationLag)*.32,-.5,1.2),cohesion=r.s>=front-1?clamp((front-back-12)*.15,0,1.1):0;
-      let desired=Math.min(this.pace+catchup-cohesion,Math.sqrt(2.2/Math.max(.015,curve)),single?4.3:Infinity);
+      let desired=Math.min(this.pace+catchup-cohesion,Math.sqrt(2.8/Math.max(.015,curve)),single?7.2:Infinity);
       if(r.s>=front-1&&front-back>22)desired=Math.min(desired,Math.max(0,(32-(front-back))*.45));
       const finish=this.route.length-1-(this.destination?0:i*3.4),stop=this.continuous?Infinity:finish;
       desired=Math.min(desired,Math.sqrt(Math.max(0,stop-r.s)*4.8));
@@ -105,7 +106,7 @@ export class CommunityRide {
       const dynamicNear=nearby.some(o=>movingContact(o)&&Math.abs(o.y-r.y)<2&&Math.hypot(o.x-r.x,o.z-r.z)<4)||this.riders.some(o=>o!==r&&Math.hypot(o.x-r.x,o.z-r.z)<4);
       r.jamTime=r.speed<.7&&dynamicNear?(r.jamTime??0)+dt:0;
       if(r.jamTime>1.5){r.ghostUntil=this.elapsed+3;r.jamTime=0;}
-      const crowdPass=this.elapsed<(r.ghostUntil??0),obstacles=crowdPass?nearby.filter(o=>!movingContact(o)):nearby;
+      const crowdPass=false,obstacles=nearby;
       // Stagger across wide pavement. Commit to an open passing corridor;
       // return to formation after the obstruction is behind the whole bicycle.
       r.thinkIn-=dt;
@@ -147,7 +148,7 @@ export class CommunityRide {
       const blocks=(o:{x:number;y:number;z:number},radius:number)=>Math.abs(o.y-r.y)<2&&Math.hypot(candidate.x-o.x,candidate.z-o.z)<radius&&Math.hypot(candidate.x-o.x,candidate.z-o.z)<=Math.hypot(r.x-o.x,r.z-o.z)+1e-7;
       const packBlocked=!crowdPass&&this.riders.some(o=>o!==r&&blocks(o,1.25));
       r.blocked=g.offCourse||g.surface==='grass'||(hit!==null&&hit<d)||packBlocked||obstacles.some(o=>!o.id.startsWith('community-')&&blocks(o,o.radius+.6));
-      if(r.blocked){r.speed=0;r.thinkIn=0;if(packBlocked)this.yieldSideways(r,dt,obstacles);}else{const heading=d>.001?Math.atan2(candidate.x-r.x,candidate.z-r.z):r.headingY;r.offset=nextOffset;r.s=Math.min(stop,r.s+r.speed*dt);this.place(r);r.headingY=heading;r.wheelSpin+=d/.34;if(r.speed>.15)r.pedalPhase+=r.speed*dt/(.34*2.5);}
+      if(r.blocked){r.speed=0;r.thinkIn=0;this.yieldSideways(r,dt,obstacles);}else{const heading=d>.001?Math.atan2(candidate.x-r.x,candidate.z-r.z):r.headingY;r.offset=nextOffset;r.s=Math.min(stop,r.s+r.speed*dt);this.place(r);r.headingY=heading;r.wheelSpin+=d/.34;if(r.speed>.15)r.pedalPhase+=r.speed*dt/(.34*2.5);}
       if(this.destination&&r.s>=finish-.1){r.parking=true;r.speed=0;this.message='Arriving at GothTechnology · parking in the lot.';}
       if(!this.destination&&!this.continuous&&r.s>=finish-.1){r.parked=true;r.speed=0;}
     }
@@ -159,4 +160,5 @@ export class CommunityRide {
     }
   }
 }
+
 

@@ -3,6 +3,7 @@ export interface BattleTerrain extends TerrainSampler {
  readonly spawns: {position:Vec3;headingY:number}[];
  readonly zones: {x:number;z:number}[];
  readonly supplies?: Vec3[];
+ readonly optics?: {p:Vec3;kind:import('./scopes.ts').Scope}[];
  readonly fieldRadii?: readonly number[];
  readonly arenaIdentity: {map:string;arena:string;rules:string;protocol:number;physics:string;collision:string};
  ground(x:number,z:number,referenceY?:number):{height:number};

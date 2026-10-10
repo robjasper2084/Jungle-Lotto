@@ -23,18 +23,19 @@ export class EngineContext{
  call(name:string,...args:number[]){if(this.disposed)throw Error('Engine context disposed');return this.api['bf_'+name](this.handle,...args);}
  checked(name:string,...args:number[]){const result=this.call(name,...args);if(result!==1)throw Error('Engine '+name+' failed ('+result+')');}
  frame(slot:number,values:ReadonlyArray<readonly [number,number]>){
-  if(!Number.isInteger(slot)||slot<0||slot>=6)throw RangeError('Invalid engine slot');
+  if(!Number.isInteger(slot)||slot<0||slot>=10)throw RangeError('Invalid engine slot');
   const seen=new Set<number>();
   for(const [channel,value]of values){if(!Number.isInteger(channel)||channel<0||channel>=64||seen.has(channel)||!Number.isFinite(value)||Math.abs(value)>1)throw RangeError('Invalid complete engine frame');seen.add(channel);}
   // Validation precedes clear: an invalid frame never partially mutates held input.
   this.checked('clear',slot);for(const [channel,value]of values)this.checked('set',slot,channel,value);this.checked('frame');
  }
- get(slot:number,channel:number){if(!Number.isInteger(slot)||slot<0||slot>=6||!Number.isInteger(channel)||channel<0||channel>=64)throw RangeError('Invalid engine channel');return this.call('get',slot,channel);}
- clear(){for(let i=0;i<6;i++)this.checked('clear',i);}
- capture(){const size=this.call('capture');if(size<=0||size>24000)throw Error('Engine snapshot failed');return Array.from({length:size},(_,i)=>this.call('saved',i));}
+ get(slot:number,channel:number){if(!Number.isInteger(slot)||slot<0||slot>=10||!Number.isInteger(channel)||channel<0||channel>=64)throw RangeError('Invalid engine channel');return this.call('get',slot,channel);}
+ clear(){for(let i=0;i<10;i++)this.checked('clear',i);}
+ capture(){const size=this.call('capture');if(size<=0||size>50000)throw Error('Engine snapshot failed');return Array.from({length:size},(_,i)=>this.call('saved',i));}
  restore(values:readonly number[]){
-  if(!Array.isArray(values)||!values.length||values.length>24000||!values.every(Number.isFinite))throw Error('Invalid engine snapshot');
+  if(!Array.isArray(values)||!values.length||values.length>50000||!values.every(Number.isFinite))throw Error('Invalid engine snapshot');
   this.checked('restore_begin',values.length);values.forEach((v,i)=>this.checked('restore_value',i,v));this.checked('restore_commit');
  }
  dispose(){if(!this.disposed){this.checked('destroy');this.disposed=true;}}
 }
+

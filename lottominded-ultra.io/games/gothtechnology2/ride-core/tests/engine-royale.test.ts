@@ -20,7 +20,7 @@ test('hash failure is rejected; each instance/slot and aim channel is independen
  a.clear();assert.equal(a.get(0,8),0);a.dispose();assert.throws(()=>a.get(0,0));b.dispose();
 });
 test('handshake includes real module hash and rejects legacy/mismatched modules',()=>{
- assert.equal(currentHandshake().protocol,3);assert(compatible(currentHandshake()));
+ assert.equal(currentHandshake().protocol,4);assert(compatible(currentHandshake()));
  assert(!compatible({...currentHandshake(),module:'wrong'}));assert(!compatible({...currentHandshake(),engine:'legacy'}));
 });
 test('actual RideCore movement consumes compiled input and engine rules own shield damage',()=>{
@@ -39,6 +39,17 @@ test('real collision cover blocks full projectile segments',()=>{
 test('host snapshot restores engine, hidden controller, queues and bot brain exactly',()=>{
  const a=full(true);advance(a,340);const saved=a.captureEngineState(),b=full();b.restoreEngineState(saved);
  advance(a,180);advance(b,180);assert.deepEqual(b.captureEngineState(),a.captureEngineState());
+ a.dispose();b.dispose();
+});
+
+test('compiled match preserves walking and parked wheel through reconnect and host restore',()=>{
+ const a=full();place(a,0,0,0);advance(a,PROTECTION);
+ a.command('r0',{...neutral(a.round,1,a.tick),dismount:true});advance(a,1);
+ a.command('r0',neutral(a.round,2,a.tick));advance(a,60);assert.equal(a.actors[0].pose.footMode,2);
+ const park=[a.actors[0].pose.parkX,a.actors[0].pose.parkZ];
+ a.command('r0',{...neutral(a.round,3,a.tick),throttle:1,steer:.3,hop:true});advance(a,10);
+ const saved=a.captureEngineState(),b=full();b.restoreEngineState(saved);advance(a,40);advance(b,40);assert.deepEqual(b.captureEngineState(),a.captureEngineState());
+ a.disconnect('r0');a.reconnect('r0');assert.equal(a.actors[0].pose.footMode,2);assert.deepEqual([a.actors[0].pose.parkX,a.actors[0].pose.parkZ],park);
  a.dispose();b.dispose();
 });
 test('reconnect preserves gear and damage; input spoof/flood rejected before engine',()=>{

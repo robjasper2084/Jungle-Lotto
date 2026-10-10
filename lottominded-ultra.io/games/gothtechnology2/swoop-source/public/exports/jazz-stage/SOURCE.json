@@ -1,0 +1,32 @@
+{
+  "source": "C:\\Users\\digit\\Documents\\phone\\swoop-detroit-bloom-unity\\Builds\\WebGL",
+  "origin": "Actual Unity performance served on port 8229",
+  "integration": "Lazy stage iframe, user begins performance; destroyed on exit",
+  "files": [
+    {
+      "file": "Build/WebGL.data",
+      "bytes": 33145354,
+      "sha256": "9baac43471d0af191db0ac803c898b62abada27a8917f513279341acbe4d7f1d"
+    },
+    {
+      "file": "Build/WebGL.wasm",
+      "bytes": 17816804,
+      "sha256": "a25d562dce26d82862b9f2d7a8de727cf0236ba3f849fed7cb4823bb157e762b"
+    },
+    {
+      "file": "Build/WebGL.framework.js",
+      "bytes": 415339,
+      "sha256": "23f055370c91f14380017141c616d6339821210f442493ef0f4071dfc00cc5df"
+    },
+    {
+      "file": "Build/WebGL.loader.js",
+      "bytes": 19431,
+      "sha256": "fbcdff6011b2bdc58688f07b84abdca09f2989affe7491e67d39d07b0dd5f7be"
+    },
+    {
+      "file": "StreamingAssets/BloomPerformance.mp4",
+      "bytes": 29247590,
+      "sha256": "972e6d4c70b6bdb24ddcf29636e4ef2db6a6ca0b11163078043224776d7f2534"
+    }
+  ]
+}

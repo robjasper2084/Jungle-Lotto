@@ -14,6 +14,7 @@ import {parallelStreetSidewalk} from './streetSidewalk.ts';
 import {streetJoinExclusions} from './streetJunctions.ts';
 import {heightAt} from './world.ts';
 import {clearStreetJunction,sidewalkHalfWidth,streetMarkingStyle} from './streetFurnitureLayout.ts';
+import {loadStreetSurfaceCache} from './streetSurfaceCache.ts';
 
 /** Mapped polygons own both visible structure and collision. Facades remain authored art. */
 export async function buildCity(_scene:T.Scene,world:SceneryWorld,groupAt:(x:number,z:number)=>T.Group,skins:Record<string,T.MeshStandardMaterial>,stream?:SpatialAssetStream){
@@ -30,6 +31,8 @@ export async function buildCity(_scene:T.Scene,world:SceneryWorld,groupAt:(x:num
  const paint=new T.MeshStandardMaterial({color:'#e8c75d',roughness:.88,polygonOffset:true,polygonOffsetFactor:-2});
  const whitePaint=new T.MeshStandardMaterial({color:'#ebece1',roughness:.92,polygonOffset:true,polygonOffsetFactor:-2});
  const seam=new T.MeshStandardMaterial({color:'#8b8982',roughness:1,polygonOffset:true,polygonOffsetFactor:-2});
+ const cacheMaterials:Record<string,T.Material>={road:roadMat,park:parkMat,parkEdge,sidewalk,curb,yellow:paint,white:whitePaint,seam};
+ const cached=await loadStreetSurfaceCache();
  const paths=new Map<T.Group,Map<T.Material,number[]>>();
  let streetTriangles=0,streetSections=0;
  function append(material:T.Material,pieces:ReturnType<typeof drapeStreet>){
@@ -44,7 +47,7 @@ export async function buildCity(_scene:T.Scene,world:SceneryWorld,groupAt:(x:num
    append(material,drapeStreet({a:{x:x0,z:z0},b:{x:x1,z:z1},half,offset,lift,maxSpan,...joins,exclude},world.chunks,elevation));
  }
  const junctions=new Set<string>();
- for(const road of CITY.roads)for(let i=1;i<road.points.length;i++){
+ if(!cached)for(const road of CITY.roads)for(let i=1;i<road.points.length;i++){
    const a=road.points[i-1],b=road.points[i],dx=b[0]-a[0],dz=b[1]-a[1],length=Math.hypot(dx,dz),x=(a[0]+b[0])/2,z=(a[1]+b[1])/2;
    if(length<.2)continue;
    const walk=['cycleway','footway','path','pedestrian'].includes(road.kind),width=(road.name==='Dequindre Cut Greenway'?cutWidth(nearestCut(x,z).d):road.width)/2;
@@ -110,11 +113,14 @@ export async function buildCity(_scene:T.Scene,world:SceneryWorld,groupAt:(x:num
      }
    }
  }
- for(const[g,bins]of paths)for(const[material,positions]of bins){const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(positions,3));
+ const surfaces:Array<[T.Group,Array<[T.Material,number[]|Float32Array]>]>=cached?cached.tiles.map(t=>[groupAt(t.x,t.z),[[cacheMaterials[t.material],cached.positions.subarray(t.offset,t.offset+t.count)]]]):[...paths].map(([g,bins])=>[g,[...bins]]);
+ if(cached){streetSections=cached.sections;streetTriangles=cached.triangles;}
+ for(const[g,bins]of surfaces)for(const[material,positions]of bins){if(!material)throw Error('Unknown cached street material');const geo=new T.BufferGeometry();geo.userData.streetCacheMaterial=Object.keys(cacheMaterials).find(k=>cacheMaterials[k]===material);geo.setAttribute('position',positions instanceof Float32Array?new T.BufferAttribute(positions,3):new T.Float32BufferAttribute(positions,3));
    // These ribbons can sit above the bank terrain and extend beyond the deck.
    // Share their exact surface with riding, dog paws, falls and camera queries.
    if(material!==paint&&material!==whitePaint&&material!==seam)world.addRideSurface(geo.attributes.position.array as Float32Array);
-   const uv=[],scale=material===parkMat?1.1:material===sidewalk?4:2;for(let i=0;i<positions.length;i+=3)uv.push(positions[i]/scale-Math.floor(g.userData.center.x/scale),positions[i+2]/scale-Math.floor(g.userData.center.z/scale));geo.setAttribute('uv',new T.Float32BufferAttribute(uv,2));geo.computeVertexNormals();const m=new T.Mesh(geo,material);m.name=material===parkMat?'Milliken smooth park paths':material===sidewalk?'Concrete sidewalks':'Mapped street surface';m.receiveShadow=true;g.add(m);}
+   const uv=new Float32Array(positions.length/3*2),scale=material===parkMat?1.1:material===sidewalk?4:2;for(let i=0;i<positions.length;i+=3){const u=i/3*2;uv[u]=positions[i]/scale-Math.floor(g.userData.center.x/scale);uv[u+1]=positions[i+2]/scale-Math.floor(g.userData.center.z/scale);}geo.setAttribute('uv',new T.BufferAttribute(uv,2));geo.computeVertexNormals();const m=new T.Mesh(geo,material);m.name=material===parkMat?'Milliken smooth park paths':material===sidewalk?'Concrete sidewalks':'Mapped street surface';m.receiveShadow=true;g.add(m);}
+ if(!world.buildingMeshes.length)return{blocks:0,landmarks:[] as string[],bridges:GEO.bridges.length,ramps:GEO.ramps.length,mapped:true,streetSections,streetTriangles,streetTiles:paths.size,cached:!!cached};
  const residential=new Map([[3,orleansMaterial(3)],[4,orleansMaterial(4)]]);
  const landmarks:string[]=[];
  for(const{data:b,geometry:geo}of world.buildingMeshes){
@@ -143,5 +149,5 @@ export async function buildCity(_scene:T.Scene,world:SceneryWorld,groupAt:(x:num
      asset.traverse(o=>{if((o as T.Mesh).isMesh){o.castShadow=o.receiveShadow=true;}});g.add(asset);landmarks.push(id);};if(stream)stream.add({id:'architecture-'+id,centers:[{x:center.x,z:center.z}],load});else await load();
    }
  }
- return{blocks:world.buildingMeshes.length,landmarks,bridges:GEO.bridges.length,ramps:GEO.ramps.length,mapped:true,streetSections,streetTriangles,streetTiles:paths.size};
+ return{blocks:world.buildingMeshes.length,landmarks,bridges:GEO.bridges.length,ramps:GEO.ramps.length,mapped:true,streetSections,streetTriangles,streetTiles:cached?new Set(cached.tiles.map(t=>t.x+','+t.z)).size:paths.size,cached:!!cached};
 }

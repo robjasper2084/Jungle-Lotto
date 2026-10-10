@@ -1,4 +1,6 @@
-import {readFile,writeFile,mkdir,copyFile,readdir,rename,cp} from 'node:fs/promises';
+import {readFile,writeFile,mkdir,readdir,rename} from 'node:fs/promises';
+import {copyFile,cp} from './review-asset-copy.mjs';
+import {ridecoreAliases} from './local-ridecore-alias.mjs';
 import {buildRelease,readableTree,runtimeLicenses,modelDependencies} from './game-package.mjs';
 import {resolve,dirname,basename} from 'node:path';
 import {createRequire} from 'node:module';
@@ -33,7 +35,7 @@ licenses.push({input:resolve(source,'src/vendor/LICENSE-hls.js.txt'),output:'LIC
 await readableTree(resolve(source,'node_modules/@digital-static/ridecore/LICENSE.txt'));
 await readableTree(resolve(pack,'detroit/licenses'));
 return {name:'swoop-detroit',entry:'index.html',source,soundtrackRoot:resolve(pack,'audio/swoop'),async build(out){
-await build({root:source,configFile:false,base:'./',publicDir:false,resolve:{dedupe:['three','@dimforge/rapier3d-compat']},plugins:[{
+await build({root:source,configFile:false,base:'./',publicDir:false,resolve:{alias:ridecoreAliases,dedupe:['three','@dimforge/rapier3d-compat']},plugins:[{
  name:'swoop-store',enforce:'pre',
  transform(code,id){id=id.replaceAll('\\','/');if(!id.includes('/src/'))return;code=code.replaceAll('\r\n','\n');
   code=code.replace(/(['"`])\/(exports|textures|audio)\//g,'$1./$2/');
@@ -48,7 +50,7 @@ await build({root:source,configFile:false,base:'./',publicDir:false,resolve:{ded
    code+=bridge;
   }
   if(id.endsWith('/elmwoodScenery.ts'))code=replace(code,'time.value=t;','time.value=document.documentElement.dataset.reducedMotion==="true"||matchMedia("(prefers-reduced-motion: reduce)").matches||new URLSearchParams(location.search).has("reducedMotion")?0:t;');
-  if(id.endsWith('/scenery.ts'))code=replace(code,"treeTime.value=document.documentElement.dataset.renderQuality==='compact'?0:time;",'treeTime.value=document.documentElement.dataset.renderQuality==="compact"||document.documentElement.dataset.reducedMotion==="true"||matchMedia("(prefers-reduced-motion: reduce)").matches?0:time;');
+  // scenery.ts owns wind/reduced-motion handling in source for every game entry.
   return code;
  },
  transformIndexHtml(html,ctx){if(!ctx.path.endsWith("detroit.html"))return html.replaceAll("./detroit.html","./index.html");return html.replace('<head>', '<head><script>if(new URLSearchParams(location.search).get("map")==="elmwood")location.replace(new URL("../elmwood-explorer/elmwood.html",location.href).href);</script>').replaceAll('\r\n','\n').replace(/<p class="hint"><a href="\.\/rider-studio.html"[\s\S]*?<\/p>/,'').replace('</head>','<meta name="goth-reward-game" content="swoop-detroit"><style>button:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid #dec57c;outline-offset:3px}button{min-height:44px}@media(min-width:1025px) and (pointer:fine){.session{bottom:85px}}@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}</style></head>').replace('</body>','<script type="module" src="../reward-tracker.js"></script><script type="module" src="../swoop-store-return.js"></script></body>');}
@@ -64,6 +66,9 @@ await cp(resolve(source,'public/exports/waterfront'),resolve(out,'exports/waterf
 await cp(resolve(source,'public/exports/street-furniture'),resolve(out,'exports/street-furniture'),{recursive:true});
 await cp(resolve(source,'public/exports/valade'),resolve(out,'exports/valade'),{recursive:true});
 await cp(resolve(source,'public/exports/polish'),resolve(out,'exports/polish'),{recursive:true,filter:file=>basename(file)!=='swoop-intro-30.mp4'});
+await cp(resolve(source,'public/exports/street-life'),resolve(out,'exports/street-life'),{recursive:true});
+await cp(resolve(source,'public/exports/jazz'),resolve(out,'exports/jazz'),{recursive:true});
+await cp(resolve(source,'public/exports/jazz-stage'),resolve(out,'exports/jazz-stage'),{recursive:true});
 await cp(resolve(source,'public/exports/visitors'),resolve(out,'exports/visitors'),{recursive:true});
 await copyFile(resolve(source,'public/mural-credits.html'),resolve(out,'mural-credits.html'));
 for(const file of ['manifest.webmanifest','touch-icon.png'])await copyFile(resolve(source,'public',file),resolve(out,file));
@@ -90,3 +95,4 @@ if(process.argv[1]&&resolve(process.argv[1])===import.meta.filename){
  if(!process.argv.includes('--preflight'))await buildRelease(resolve(import.meta.dirname,'..'),[plan]);
  else console.log('Swoop preflight passed');
 }
+

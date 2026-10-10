@@ -2,7 +2,7 @@ import * as T from 'three';
 import type {GLTF, GLTFLoader} from '../compressedGLTFLoader.ts';
 import type {Weapon} from '../../../../ride-core/src/royale/rules.ts';
 
-export const EQUIPMENT_KINDS = ['static','heart','bass','ammo','repair','shield'] as const;
+export const EQUIPMENT_KINDS = ['static','heart','bass','ammo','repair','shield','dog'] as const;
 export type EquipmentKind = typeof EQUIPMENT_KINDS[number];
 const isWeapon = (kind:EquipmentKind):kind is Weapon => kind==='static'||kind==='heart'||kind==='bass';
 

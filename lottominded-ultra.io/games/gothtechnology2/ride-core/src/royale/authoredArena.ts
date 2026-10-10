@@ -3,8 +3,8 @@ import {TagTerrain,type TagFixture} from '../tag/fixture.ts';
 import {TagNavigation} from '../tag/navigation.ts';
 
 /** Static Royale's map contract uses the existing authored collision export.
- * Loading this adapter never creates replacement buildings or a second physics
- * world. The game keeps its original scenery; the host uses the same fixture. */
+ * The game keeps its original scenery and static snapshot. Small additional
+ * props use the same shared collision records on the client and host. */
 export const AUTHORED_ARENA_REVISION='authored-map-1';
 export const AUTHORED_MAPS={
  'swoop-detroit':{label:'Swoop Detroit',arena:'detroit-full-map',entry:'index.html'},

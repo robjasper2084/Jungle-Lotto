@@ -53,7 +53,7 @@ export class ElmwoodCompanion extends DogCompanion {
     const last=this.trail.at(-1);if(!last||Math.hypot(r.x-last.x,r.z-last.z)>1.5){this.trail.push({x:r.x,z:r.z});if(this.trail.length>60)this.trail.shift();}
     const x=this.x,z=this.z;let goal=r;
     this.idleTime=this.command==='follow'&&Math.abs(r.speed)<.15?this.idleTime+dt:0;
-    const wandering=this.idleTime>=11;this.speedLimit=wandering?1.05:Infinity;
+    const wandering=this.idleTime>=11;this.speedLimit=wandering?1.05:10.5;
     if(!wandering){this.wanderTarget=undefined;this.wanderClock=0;}
     else{
       this.wanderClock-=dt;
@@ -88,6 +88,6 @@ export class ElmwoodCompanion extends DogCompanion {
     this.sit+=(Number(seated)-this.sit)*(1-Math.exp(-dt*(seated?3.2:5)));this.lie+=(Number(this.command==='down'||this.command==='stay'&&this.holdDown)-this.lie)*(1-Math.exp(-dt*7));
     if(this.command==='follow'&&!wandering&&this.stopped>=1)this.note='Sitting beside rider';else if(this.command==='follow'&&Math.abs(r.speed)>.3)this.note='Following';
     this.stalled=this.command==='follow'&&distance>3&&Math.hypot(this.x-x,this.z-z)<.012?this.stalled+dt:Math.max(0,this.stalled-dt*2);
-    if(this.command==='follow'&&(this.stalled>.85||distance>24)){super.reset(r);this.stalled=0;this.waypoint=undefined;this.recoveries++;this.note='Regrouped beside rider';}
+    if(this.command==='follow'&&(this.stalled>2.5&&distance>12||distance>45)&&this.regroupAllowed()){super.reset(r);this.stalled=0;this.waypoint=undefined;this.recoveries++;this.note='Regrouped beside rider';}
   }
 }

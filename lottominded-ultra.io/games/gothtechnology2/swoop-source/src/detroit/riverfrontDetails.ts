@@ -1,5 +1,6 @@
 import type {SceneryWorld} from './sceneryWorld.ts';
 import {buildHarbor,harborBoundary} from './harbor.ts';
+import {waterSurface,waterDepths} from './waterSurface.ts';
 import * as T from 'three';
 import {makeRoadSign} from './roadSigns.ts';
 import {roadsidePoint} from './roadsidePlacement.ts';
@@ -62,7 +63,8 @@ export function buildRiverfrontDetails(scene:T.Scene,world:SceneryWorld,groupAt:
 
  // River surface follows the mapped shoreline instead of covering park terrain.
  const positions:number[]=[];for(let z=-2250;z<450;z+=20){const a=riverEdge(z)-3,c=riverEdge(z+20)-3;positions.push(a,-.3,z,a-1400,-.3,z,c,-.3,z+20,c,-.3,z+20,a-1400,-.3,z,c-1400,-.3,z+20);}
- const shape=new T.Shape(harborBoundary.map(p=>new T.Vector2(p[0],-p[1]))),basin=new T.ShapeGeometry(shape);basin.rotateX(-Math.PI/2);const basinMesh=new T.Mesh(basin,new T.MeshStandardMaterial({color:0x285d68,metalness:.35,roughness:.3}));basinMesh.position.y=-.3;basinMesh.name='Milliken Harbor basin';scene.add(basinMesh);buildHarbor(world,groupAt);
- const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.computeVertexNormals();const time={value:0};const water=new T.MeshStandardMaterial({color:0x285d68,metalness:.35,roughness:.3,side:T.DoubleSide});water.onBeforeCompile=s=>{s.uniforms.riverTime=time;s.vertexShader='uniform float riverTime;\n'+s.vertexShader;s.vertexShader=s.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\ntransformed.y += .055*sin(position.x*.16+riverTime*.8)+.035*cos(position.z*.22-riverTime*.6);');};const mesh=new T.Mesh(geometry,water);mesh.name='Detroit River shoreline';scene.add(mesh);
+ const time={value:0},water=waterSurface(time);
+ const shape=new T.Shape(harborBoundary.map(p=>new T.Vector2(p[0],-p[1]))),basin=new T.ShapeGeometry(shape);basin.rotateX(-Math.PI/2);waterDepths(basin,()=>2.5);const basinMesh=new T.Mesh(basin,water);basinMesh.position.y=-.3;basinMesh.name='Milliken Harbor basin';scene.add(basinMesh);buildHarbor(world,groupAt);
+ const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.computeVertexNormals();waterDepths(geometry,(x,z)=>Math.min(12,Math.max(.2,(riverEdge(z)-x)*.08)));const mesh=new T.Mesh(geometry,water);mesh.name='Detroit River shoreline';scene.add(mesh);
  return {update:(seconds:number)=>{time.value=seconds;}};
 }

@@ -1,3 +1,5 @@
+import {applyOnFootRider} from '../../../../ride-core/src/onFootRider.ts';
+import {solveLimb as solve} from '../../../../ride-core/src/limbIK.ts';
 import {ArmorKeychain} from '../armorKeychain.ts';
 import {HelmetSkinDecal} from '../helmetSkin.ts';
 import * as T from 'three';
@@ -9,26 +11,10 @@ import {HUMAN_PROFILE,type RiderProfile} from '@digital-static/ridecore';
 import { riderMotion } from './riderMotion.ts';
 import {CrashContact} from './crashContact.ts';
 import type {TerrainSampler} from '@digital-static/ridecore';
-import {transportedBend} from '../limbBend.ts';
 import {WheelLights} from '../wheelLights.ts';
 
 type Limb={upper:T.Object3D;knee:T.Object3D;foot:T.Object3D;target:T.Vector3;rotation:T.Quaternion;};
 const v=()=>new T.Vector3(),q=()=>new T.Quaternion();
-function pointBone(bone:T.Object3D,child:T.Object3D,target:T.Vector3){
-  const p=bone.getWorldPosition(v()),from=child.getWorldPosition(v()).sub(p).normalize(),to=target.clone().sub(p).normalize();
-  const world=bone.getWorldQuaternion(q()).premultiply(q().setFromUnitVectors(from,to));
-  bone.quaternion.copy(bone.parent!.getWorldQuaternion(q()).invert().multiply(world));bone.updateWorldMatrix(false,true);
-}
-function solve(l:Limb,target:T.Vector3,pole:T.Vector3,rotation?:T.Quaternion,reachFraction=1){
-  const a=l.upper.getWorldPosition(v()),b=l.knee.getWorldPosition(v()),c=l.foot.getWorldPosition(v());
-  const l1=a.distanceTo(b),l2=b.distanceTo(c),dir=target.clone().sub(a);
-  const d=clamp(dir.length(),Math.abs(l1-l2)+.0001,(l1+l2)*reachFraction-.0001);dir.normalize();
-  const reachableTarget=a.clone().addScaledVector(dir,d);
-  pole.addScaledVector(dir,-pole.dot(dir)).normalize();if(pole.lengthSq()<.01)pole.set(1,0,0);
-  const along=(l1*l1+d*d-l2*l2)/(2*d),bend=Math.sqrt(Math.max(0,l1*l1-along*along));
-  pointBone(l.upper,l.knee,a.clone().addScaledVector(dir,along).addScaledVector(pole,bend));pointBone(l.knee,l.foot,reachableTarget);
-  if(rotation)l.foot.quaternion.copy(l.foot.parent!.getWorldQuaternion(q()).invert().multiply(rotation));
-}
 function rotateWorld(bone:T.Object3D|undefined,axis:T.Vector3,angle:number){if(!bone)return;const w=bone.getWorldQuaternion(q()).premultiply(q().setFromAxisAngle(axis,angle));bone.quaternion.copy(bone.parent!.getWorldQuaternion(q()).invert().multiply(w));bone.updateWorldMatrix(false,true);}
 function prepare(o:T.Object3D){o.traverse(n=>{const m=n as T.Mesh;if(m.isMesh){m.castShadow=true;m.receiveShadow=true;m.frustumCulled=!(m as T.SkinnedMesh).isSkinnedMesh;}});}
 export class ThreeRiderView {
@@ -182,7 +168,7 @@ export class ThreeRiderView {
         target.lerp(protective,Math.min(1,p.crashBrace*1.7+p.crashRelease));
         armPole.lerp(bodyUp.negate().addScaledVector(bodyForward,.25),p.crashSettle);
       }
-      solve(l,target,transportedBend(shoulder,elbow,hand,target,armPole),undefined,.975);
+      solve(l,target,armPole,undefined,.975);
       // Bone reset preserved the authored hand-to-forearm orientation. Follow that
       // frame completely, then add a small passive flex about its own lateral axis.
       // A world-down blend was still pulling against the elbow's balance movement.
@@ -198,5 +184,6 @@ export class ThreeRiderView {
       this.riderContact.settle(this.rider,floor,this.terrain);
       this.root.updateMatrixWorld(true);
     }
+    applyOnFootRider(this,p);
   }
 }

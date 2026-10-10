@@ -29,6 +29,45 @@ const data=new Map([['DS_Man_01',await mesh('DS_Man_01',0)],['DS_EUC_01',await m
 const h=new Hero(data);
 const hoodie=await mesh('DS_Hoodie_Woman_01',1);data.set('DS_Hoodie_Woman_01',hoodie);
 
+test('on-foot tactical motion keeps all five skins continuous, wheels parked and bones rigid',async t=>{
+ for(const {id} of RIDER_CHOICES){
+  if(!data.has(id))data.set(id,await mesh(id,1));
+  const hero=new Hero(data,undefined,id),limbs=[...hero.legs,...hero.arms];
+  const lengths=limbs.map(l=>[l.upper.getWorldPosition(new Vector3()).distanceTo(l.knee.getWorldPosition(new Vector3())),l.knee.getWorldPosition(new Vector3()).distanceTo(l.foot.getWorldPosition(new Vector3()))]);
+  let lowest=Infinity;
+  for(let frame=0;frame<48;frame++){
+   const p={...createPose(),x:8,z:5,y:0,headingY:.8,parkX:0,parkY:0,parkZ:0,parkHeading:0,footMode:2,footBlend:1,footTime:frame/30,footPhase:frame/48,speed:frame<24?1.65:4.4};
+   hero.apply(p);assert(hero.vehicle.getWorldPosition(new Vector3()).distanceTo(new Vector3(0,0,0))<1e-6);
+   limbs.forEach((l,i)=>{assert(Math.abs(l.upper.getWorldPosition(new Vector3()).distanceTo(l.knee.getWorldPosition(new Vector3()))-lengths[i][0])<.001);assert(Math.abs(l.knee.getWorldPosition(new Vector3()).distanceTo(l.foot.getWorldPosition(new Vector3()))-lengths[i][1])<.001);});
+   hero.rider.traverse(o=>{const m=o as SkinnedMesh;if(!m.isSkinnedMesh)return;m.skeleton.update();for(let i=0;i<m.geometry.attributes.position.count;i++){const v=m.getVertexPosition(i,new Vector3()).applyMatrix4(m.matrixWorld);assert(v.toArray().every(Number.isFinite));lowest=Math.min(lowest,v.y);}});
+   const head=hero.head!.getWorldPosition(new Vector3());hero.apply(p);assert(head.distanceTo(hero.head!.getWorldPosition(new Vector3()))<1e-6,'paused pose accumulates');
+  }
+  assert(lowest>-.035,id+' skin under pavement: '+lowest);t.diagnostic(id+' lowest skin '+lowest.toFixed(4)+'m');hero.dispose();
+ }
+});
+
+test('on-foot shoulders, torso and wrists move naturally without opening skin seams at any heading',async t=>{
+ for(const {id} of RIDER_CHOICES){
+  if(!data.has(id))data.set(id,await mesh(id,1));const hero=new Hero(data,undefined,id);
+  const surfaces:{mesh:SkinnedMesh;edges:[number,number][];posed:Vector3[]}[]=[];
+  hero.rider.traverse(o=>{const m=o as SkinnedMesh;if(!m.isSkinnedMesh||!m.geometry.index)return;const p=m.geometry.attributes.position,index=m.geometry.index,edges:[number,number][]=[],a=new Vector3(),b=new Vector3();
+   for(let i=0;i<index.count;i+=3)for(let k=0;k<3;k++){const u=index.getX(i+k),v=index.getX(i+(k+1)%3);a.fromBufferAttribute(p,u);b.fromBufferAttribute(p,v);if(a.distanceTo(b)<.004)edges.push([u,v]);}
+   surfaces.push({mesh:m,edges,posed:Array.from({length:p.count},()=>new Vector3())});
+  });
+  let worst=0;const rotations=new Map<string,Set<string>>();
+  for(const speed of [1.65,2.8,4.4])for(let f=0;f<24;f++){
+   const p={...createPose(),speed,footMode:2,footBlend:1,footTime:f/30,footPhase:f/24,parkX:4,parkY:0,parkZ:0,parkHeading:0};hero.apply(p);
+   const local=hero.bones.map(b=>b.o.quaternion.clone());
+   for(const heading of [Math.PI/2,Math.PI,-Math.PI/2]){hero.apply({...p,headingY:heading});hero.bones.forEach((b,i)=>{const angle=b.o.quaternion.clone().normalize().angleTo(local[i].clone().normalize());assert(angle<.001,id+' heading changes '+b.o.name+' by '+angle+' at '+JSON.stringify({speed,f,heading}));});}
+   for(const name of ['Spine','LeftShoulder','RightShoulder','LeftHand','RightHand']){const bone=hero.rider.getObjectByName(name)!;if(!rotations.has(name))rotations.set(name,new Set());rotations.get(name)!.add(bone.quaternion.toArray().map(n=>n.toFixed(3)).join(','));}
+   for(const {mesh:m,edges,posed} of surfaces){m.skeleton.update();posed.forEach((v,i)=>m.getVertexPosition(i,v));for(const [u,v] of edges)worst=Math.max(worst,posed[u].distanceTo(posed[v]));}
+  }
+  assert(surfaces.some(s=>s.edges.length>100));assert(worst<.05,id+' skin seam '+worst);
+  for(const [name,values] of rotations)assert(values.size>20,id+' frozen '+name);
+  t.diagnostic(id+' moving torso/clavicles/wrists; maximum short skin edge '+(worst*1000).toFixed(2)+'mm');hero.dispose();
+ }
+});
+
 test('all five heroes retain limb lengths and continuous skin during riding and falls',async t=>{
  for(const {id} of RIDER_CHOICES){
   if(!data.has(id))data.set(id,await mesh(id,1));

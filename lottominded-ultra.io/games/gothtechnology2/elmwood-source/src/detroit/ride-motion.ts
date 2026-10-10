@@ -1,3 +1,4 @@
+import {interpolateFoot,footFields,footState,stepOnFoot} from '../../../ride-core/src/onFoot.ts';
 import {RideInputGate} from '../../../ride-core/src/engine/browser.ts';
 import {EbikeController} from './ebikeController.ts';
 import {isCycle,ebikeProfile,eucProfile,eucHandling,eucSteering} from './electricVehicles.ts';
@@ -16,14 +17,15 @@ export class RideMotion {
   readonly engineInput=new RideInputGate();
   readonly core:RideCore;bicycle:BicycleController;cycling=false;
   readonly terrain:ReturnType<typeof rideCoreTerrain>;
-  readonly pose=createPose();
+  readonly pose=Object.assign(createPose(),footFields());
+  private walking=footState();
   readonly follow:FollowCamera;
   readonly view={positionX:0,positionY:0,positionZ:0,targetX:0,targetY:0,targetZ:0,roll:0,fov:55*Math.PI/180};
-  private previous=createPose();
+  private previous=Object.assign(createPose(),footFields());
   private previousCamera={...this.view};
   private currentCamera={...this.view};
   private accumulator=0;
-  private pendingHop=false;
+  private pendingHop=false;private pendingDismount=false;
   private pendingTrick=0;
   readonly events:RideEvent[]=[];
   constructor(map:TerrainSampler,profile:RiderProfile=HUMAN_PROFILE){
@@ -36,24 +38,33 @@ export class RideMotion {
   setProfile(profile:RiderProfile){this.core.setProfile(profile);copyPose(this.core.current,this.previous);copyPose(this.core.current,this.pose);}
   private captureCamera(){const c=this.follow;Object.assign(this.currentCamera,{positionX:c.eye.x,positionY:c.eye.y,positionZ:c.eye.z,targetX:c.target.x,targetY:c.target.y,targetZ:c.target.z,roll:c.roll,fov:c.fov*Math.PI/180});}
   reset(position:Vec3,headingY:number){
+    this.walking=footState();
     this.core.reset({position,headingY});this.bicycle.reset({position,headingY});if(this.cycling)this.bicycle.writePose(this.core.current);copyPose(this.core.current,this.previous);copyPose(this.core.current,this.pose);
     this.follow.reset(this.pose);this.captureCamera();Object.assign(this.previousCamera,this.currentCamera);Object.assign(this.view,this.currentCamera);
+    Object.assign(this.core.current,footFields());Object.assign(this.pose,footFields());Object.assign(this.previous,footFields());
     this.accumulator=0;this.clearPendingInput();this.events.length=0;
   }
-  clearPendingInput(){this.pendingHop=false;this.pendingTrick=0;this.engineInput.clear();}
+  clearPendingInput(){this.pendingHop=false;this.pendingTrick=0;this.pendingDismount=false;this.engineInput.clear();}
   render(alpha:number){
     lerpPose(this.previous,this.core.current,alpha,this.pose);
+    interpolateFoot(this.previous,this.core.current as typeof this.pose,alpha,this.pose);
     for(const key of Object.keys(this.view) as (keyof typeof this.view)[])this.view[key]=this.previousCamera[key]+(this.currentCamera[key]-this.previousCamera[key])*alpha;
   }
-  update(dt:number,actions:Partial<RideActions>,paused=false){
+  update(dt:number,actions:Partial<RideActions>&{dismount?:boolean;run?:boolean},paused=false){
     this.events.length=0;
     if(paused){this.clearPendingInput();return;}
     if(!Number.isFinite(dt)||dt<0)throw new RangeError('Frame time must be finite and non-negative');
-    this.pendingHop ||= !!actions.hop;
+    this.pendingHop ||= !!actions.hop;this.pendingDismount ||= !!actions.dismount;
     if(actions.trick)this.pendingTrick=actions.trick;
     this.accumulator+=Math.min(dt,.1);const step=1/RIDECORE.fixedHz;
     while(this.accumulator+1e-12>=step){
       copyPose(this.core.current,this.previous);Object.assign(this.previousCamera,this.currentCamera);
+      if(!this.cycling&&stepOnFoot(this.walking,this.core.current as typeof this.pose,this.terrain,step,{...NEUTRAL_ACTIONS,...actions,hop:this.pendingHop,dismount:this.pendingDismount},this.sim.crashed)){
+        this.pendingHop=false;this.pendingTrick=0;this.pendingDismount=false;
+        if(!this.walking.mode){const p={...this.core.current};this.core.reset({position:p,headingY:p.headingY});Object.assign(this.core.current,footFields());}
+        this.follow.step(step,this.core.current);this.captureCamera();this.accumulator=Math.max(0,this.accumulator-step);continue;
+      }
+      this.pendingDismount=false;
       const result=this.cycling?(this.bicycle.step(step,this.engineInput.route({...NEUTRAL_ACTIONS,...actions,hop:false,hopHeld:false,trick:0,crouch:false})),this.bicycle.writePose(this.core.current),{events:[] as RideEvent[]}):this.core.advance(step,this.engineInput.route({...actions,steer:eucProfile(this.vehicleId)?eucSteering(eucProfile(this.vehicleId)!,this.core.current.speed,actions.steer??0):actions.steer,hop:this.pendingHop,trick:this.pendingTrick}));this.pendingHop=false;this.pendingTrick=0;
       this.events.push(...result.events);
       for(const event of result.events)if(event.type==='landing')this.follow.landing(event.impact);

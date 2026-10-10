@@ -6,6 +6,7 @@ import {fileURLToPath} from 'node:url';
 import {readFile} from 'node:fs/promises';
 import {randomBytes,randomUUID} from 'node:crypto';
 import {RoyaleClock} from './royaleClock.js';
+import {voiceChannel,voiceSignal,voiceRecipient,type VoiceChannel,type VoiceMember} from '@digital-static/ridecore/voice-protocol';
 export const royaleCodes=new Map<string,{roomId:string;expires:number}>();
 const origins=(process.env.ALLOWED_ORIGINS??'').split(',').filter(Boolean);
 let engineLoad:Promise<unknown>|undefined;
@@ -16,18 +17,27 @@ function downtown(){return downtownLoad??=(async()=>{
  return new DowntownArena(await TagTerrain.create(data.fixture,await data.physics()));
 })().catch(error=>{downtownLoad=undefined;throw error;});}
 export class BattleRoyaleRoom extends Room{
- maxClients=10;private match!:RoyaleMatch;private terrain!:DowntownArena;private host='';private code='';private botFill=false;
+ maxClients=14;private size:6|10=10;private match!:RoyaleMatch;private terrain!:DowntownArena;private host='';private code='';private botFill=false;
  private ready=new Set<string>();private spectators=new Set<string>();private rates=new Map<string,{at:number;n:number}>();private battleClock=new RoyaleClock();private failed=false;private telemetryAt=0;private sendClock=0;private born=Date.now();
+ private voices=new Map<string,VoiceChannel>();private voiceRates=new Map<string,{at:number;n:number}>();
+ private voiceMembers():VoiceMember[]{return this.clients.filter(c=>this.voices.has(c.sessionId)).map(c=>({id:c.sessionId,name:this.match.actors.find(a=>a.id===c.sessionId)?.name??'Spectator',channel:this.voices.get(c.sessionId)!}));}
+ private voiceRoster(){this.broadcast('voice-roster',this.voiceMembers());}
  async onCreate(options:any){
   if(process.env.BREADFLOWER_ENGINE==='1')await(engineLoad??=readFile(new URL('../../ride-core/dist/engine/breadflower.wasm',import.meta.url)).then(initializeEngine));
   this.terrain=await downtown();
   if(!compatible(options?.handshake,this.terrain.arenaIdentity))throw new ServerError(400,'INCOMPATIBLE_ARENA');
   try{wheelProfile(options.wheelId??'euc');}catch{throw new ServerError(400,'WHEEL_NOT_ALLOWED');}
   if(['maxSpeed','acceleration','wheelRadius'].some(key=>key in options))throw new ServerError(400,'SERVER_OWNS_WHEEL_PROFILE');
-  this.botFill=options.botFill===true;this.match=new RoyaleMatch(this.terrain);this.setPrivate(true);
+  this.size=options.matchSize===6?6:10;this.botFill=options.botFill!==false;this.match=new RoyaleMatch(this.terrain,undefined,this.size,options.botChase!==false);this.setPrivate(true);
   do{this.code=randomBytes(4).toString('hex').toUpperCase();}while(royaleCodes.has(this.code));
   royaleCodes.set(this.code,{roomId:this.roomId,expires:Date.now()+7200000});
   this.onMessage('*',(c,type,data)=>{
+   if(type==='voice-state'||type==='voice-signal'){
+    const now=Date.now(),r=this.voiceRates.get(c.sessionId);if(!r||now-r.at>=1000)this.voiceRates.set(c.sessionId,{at:now,n:1});else if(++r.n>60)return;
+    if(type==='voice-state'){if(data?.enabled===false)this.voices.delete(c.sessionId);else if(data?.enabled===true&&voiceChannel(data.channel))this.voices.set(c.sessionId,data.channel);this.voiceRoster();}
+    else {const signal=voiceSignal(data);if(signal&&voiceRecipient(c.sessionId,signal,this.voiceMembers()))this.clients.find(p=>p.sessionId===signal.to)?.send('voice-signal',{from:c.sessionId,signal});}
+    return;
+   }
    const now=Date.now(),r=this.rates.get(c.sessionId);if(!r||now-r.at>=1000)this.rates.set(c.sessionId,{at:now,n:1});else if(++r.n>100){c.leave(4008,'INPUT_RATE_LIMIT');return;}
    if(type==='hello')this.welcome(c);
    else if(type==='ready'&&compatible(data,this.terrain.arenaIdentity)){this.ready.add(c.sessionId);this.broadcastRoster();}
@@ -39,9 +49,9 @@ export class BattleRoyaleRoom extends Room{
     if(this.match.phase==='results'){this.match.actors=this.match.actors.filter(a=>a.bot||a.connected);}
     const humans=this.match.actors.filter(a=>!a.bot);
     if(!humans.length||humans.some(a=>!a.connected||!this.ready.has(a.id))){c.send('notice','Waiting for every rider to load and ready.');return;}
-    if(!this.botFill&&humans.length!==6){c.send('notice','Human-only matches need six ready riders.');return;}
+    if(!this.botFill&&humans.length!==this.size){c.send('notice','Human-only matches need '+this.size+' ready riders.');return;}
     if(this.match.phase==='results'){this.match.actors=this.match.actors.filter(a=>a.bot||a.connected);this.match.phase='lobby';}
-    if(this.botFill)while(this.match.actors.length<6)this.match.add('bot-'+randomUUID(),'AI '+(this.match.actors.length+1),true);
+    if(this.botFill)while(this.match.actors.length<this.size)this.match.add('bot-'+randomUUID(),'AI '+(this.match.actors.length+1),true,'DS_Armored_Rider_01');
     this.match.start(randomUUID(),randomBytes(2).readUInt16LE());this.ready.clear();this.broadcastRoster();
    }
   });
@@ -64,7 +74,7 @@ export class BattleRoyaleRoom extends Room{
   if(!compatible(options?.handshake,this.terrain.arenaIdentity))throw new ServerError(400,'INCOMPATIBLE_ARENA');
   const late=this.match.phase!=='lobby';
   if(late||options.spectate===true){if(this.spectators.size>=4)throw new ServerError(409,'SPECTATORS_FULL');}
-  else if(this.match.actors.length>=6)throw new ServerError(409,'SIX_COMBATANTS_ONLY');
+  else if(this.match.actors.length>=this.size)throw new ServerError(409,'ROOM_COMBATANTS_FULL');
   return true;
  }
  onJoin(c:Client,options:any){
@@ -73,11 +83,12 @@ export class BattleRoyaleRoom extends Room{
   if(this.match.phase!=='lobby'||options.spectate===true)this.spectators.add(c.sessionId);else this.match.add(c.sessionId,name,false,skins.includes(options.skin)?options.skin:skins[0],options.wheelId??'euc');
   if(!this.host&&!this.spectators.has(c.sessionId))this.host=c.sessionId;this.welcome(c);this.broadcastRoster();
  }
- private welcome(c:Client){c.send('welcome',{code:this.code,host:this.host,handshake:currentHandshake(this.terrain.arenaIdentity),botFill:this.botFill,spectator:this.spectators.has(c.sessionId)});c.send('snapshot',this.match.snapshot(this.spectators.has(c.sessionId)?undefined:c.sessionId));}
- private broadcastRoster(){this.broadcast('lobby',{host:this.host,ready:[...this.ready],botFill:this.botFill});}
- onDrop(c:Client){this.match.disconnect(c.sessionId);void this.allowReconnection(c,20).catch(()=>{});}
+ private welcome(c:Client){c.send('welcome',{code:this.code,host:this.host,handshake:currentHandshake(this.terrain.arenaIdentity),botFill:this.botFill,matchSize:this.size,spectator:this.spectators.has(c.sessionId)});c.send('snapshot',this.match.snapshot(this.spectators.has(c.sessionId)?undefined:c.sessionId));}
+ private broadcastRoster(){this.broadcast('lobby',{host:this.host,ready:[...this.ready],botFill:this.botFill,matchSize:this.size});}
+ onDrop(c:Client){this.voices.delete(c.sessionId);this.voiceRoster();this.match.disconnect(c.sessionId);void this.allowReconnection(c,20).catch(()=>{});}
  onReconnect(c:Client){this.match.reconnect(c.sessionId);this.welcome(c);}
  onLeave(c:Client){
+  this.voices.delete(c.sessionId);this.voiceRates.delete(c.sessionId);this.voiceRoster();
   this.match.disconnect(c.sessionId);if(this.match.phase==='lobby'||this.match.phase==='results')this.match.actors=this.match.actors.filter(a=>a.id!==c.sessionId);
   this.ready.delete(c.sessionId);this.spectators.delete(c.sessionId);this.rates.delete(c.sessionId);
   if(c.sessionId===this.host)this.host=this.clients.find(a=>a.sessionId!==c.sessionId&&!this.spectators.has(a.sessionId))?.sessionId??'';
@@ -85,3 +96,5 @@ export class BattleRoyaleRoom extends Room{
  }
  onDispose(){royaleCodes.delete(this.code);this.match?.dispose();}
 }
+
+

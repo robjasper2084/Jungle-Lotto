@@ -1,6 +1,6 @@
 /** Counts real rendered frames; hidden-tab gaps do not enter the active sample. */
 export class ElmwoodPerformance {
- frames=0;
+ frames=0;longFrames50=0;longFrames100=0;
  private previous:number|undefined;
  private windowStart:number|undefined;
  private samples:number[]=[];
@@ -14,7 +14,7 @@ export class ElmwoodPerformance {
  resetWindow(){this.previous=undefined;this.windowStart=undefined;this.samples=[];this.cpu=[];this.ride=[];this.draw=[];}
  rendered(now:number,cpuMs=0,rideMs=0,drawMs=0){
   this.frames++;
-  if(this.previous!==undefined&&now>this.previous)this.samples.push(now-this.previous);
+  if(this.previous!==undefined&&now>this.previous){const gap=now-this.previous;this.samples.push(gap);if(gap>50)this.longFrames50++;if(gap>100)this.longFrames100++;}
   this.previous=now;
   this.cpu.push(cpuMs);
   this.ride.push(rideMs);this.draw.push(drawMs);

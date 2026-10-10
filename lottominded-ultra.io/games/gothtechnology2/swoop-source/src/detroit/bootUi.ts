@@ -20,6 +20,10 @@ window.fetch=async (...args:Parameters<typeof fetch>)=>{
 export function renderBoot(){
  document.body.dataset.boot=boot.stage;
  if(boot.stage==='ready'||boot.stage==='error')cinema.finish();else cinema.status(boot.message);
+ if(boot.stage==='ready'){
+  node('bootError').hidden=true;
+  for(const child of document.body.children)if(child instanceof HTMLElement)child.inert=false;
+ }
  const loading=node('loading');loading.hidden=boot.stage==='ready'||boot.stage==='error';
  const status=document.getElementById('startupStatus');if(status)status.textContent=boot.message;
  if(previous!==boot.message){loading.textContent=boot.message;node('startReason').textContent=boot.stage==='ready'?'Your ride is ready.':boot.message;previous=boot.message;}
@@ -35,7 +39,8 @@ export function renderBoot(){
  if(boot.stage==='ready'||boot.stage==='error'){clearInterval(timer);window.fetch=originalFetch;}
 }
 export function failBoot(error:unknown,graphics=false){
- const detail=error instanceof Error?`${error.name}: ${error.message}`:String(error);
+ console.error('Swoop initialization failed',error);
+ const detail=error instanceof Error?(error.stack??`${error.name}: ${error.message}`):String(error);
  boot.fail(graphics?"Your browser couldn't start the 3D graphics needed for this ride.":'The ride could not finish loading. Please retry.',detail);renderBoot();
 }
 export function bootStage(stage:'checking'|'loading'|'preparing',message:string){boot.advance(stage,message);renderBoot();}

@@ -1,6 +1,7 @@
 import {riderEyeMotion,RIDER_EYE_PITCH} from '@digital-static/ridecore';
 import * as T from 'three';
 import type {RidePose} from '@digital-static/ridecore';
+import {clearCameraBoom} from './cameraSafety.ts';
 
 export const ELMWOOD_CAMERAS=[
   ['chase','Third person · Swoop'],['first','First person · Swoop'],['wide','Wide chase'],
@@ -49,10 +50,7 @@ export function frameElmwoodCamera(mode:ElmwoodCameraMode,p:RidePose,reducedMoti
 
 /** Apply clearance after smoothing too, so a lagging camera cannot pass through masonry. */
 export function clearElmwoodCamera(eye:T.Vector3,anchor:T.Vector3,terrain:{raycast:(o:T.Vector3,d:T.Vector3,m:number)=>number|null;height:(x:number,north:number)=>number},direction=new T.Vector3()){
-  eye.y=Math.max(eye.y,terrain.height(eye.x,-eye.z)+.30);
-  direction.copy(eye).sub(anchor);const distance=direction.length();
-  if(distance<.001)return;
-  direction.multiplyScalar(1/distance);const hit=terrain.raycast(anchor,direction,distance);
-  if(hit!==null)eye.copy(anchor).addScaledVector(direction,Math.max(0,hit-.25));
+  clearCameraBoom(eye,anchor,(o,d,max)=>terrain.raycast(direction.set(o.x,o.y,o.z),cameraRayDirection.set(d.x,d.y,d.z),max),terrain.height(eye.x,-eye.z)-.05);
   eye.y=Math.max(eye.y,terrain.height(eye.x,-eye.z)+.30);
 }
+const cameraRayDirection=new T.Vector3();

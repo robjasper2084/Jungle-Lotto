@@ -11,9 +11,9 @@ const library=new EquipmentLibrary(new Map(await Promise.all(EQUIPMENT_KINDS.map
  return [k,await loader.parseAsync(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength),'')] as const;
 }))));
 
-test('six actual exports have sane dimensions, finite geometry and bounded draw calls',()=>{
+test('seven actual exports have sane dimensions, finite geometry and bounded draw calls',()=>{
  for(const k of EQUIPMENT_KINDS){const v=library.create(k),box=new T.Box3().setFromObject(v.root),size=box.getSize(new T.Vector3());
-  assert(size.x>.1&&size.x<.4);assert(size.y>.2&&size.y<.4);assert(size.z>.2&&size.z<.7);
+  assert(size.x>.1&&size.x<.4);assert(size.y>(k==='dog'?.04:.2)&&size.y<.4);assert(size.z>(k==='dog'?.04:.2)&&size.z<.7);
   let draws=0;v.root.traverse(o=>{if(o instanceof T.Mesh){draws++;assert(o.geometry.getAttribute('uv'));for(const n of o.geometry.getAttribute('position').array)assert(Number.isFinite(n));}});assert(draws<=6);v.dispose();
  }
 });
@@ -35,3 +35,4 @@ test('weapon switching retains one visible model and reduced motion has no recoi
  for(const kind of ['static','heart','bass','static'] as const){rack.select(kind);rack.update(.03,true);assert.equal(rack.fire(true),false);assert.equal(rack.root.children.filter(c=>c.visible).length,1);assert.equal(rack.root.children.find(c=>c.visible)!.rotation.x,0);assert.deepEqual(rack.root.position.toArray(),[0,0,0]);}
  rack.dispose();
 });
+

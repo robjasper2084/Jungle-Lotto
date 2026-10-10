@@ -1,4 +1,5 @@
 import {loadHostFixture} from './hostFixture.js';
+import {voiceChannel,voiceSignal,voiceRecipient,type VoiceChannel} from '@digital-static/ridecore/voice-protocol';
 
 import {Room,Server,ServerError,type Client,type AuthContext} from '@colyseus/core';
 import {WebSocketTransport} from '@colyseus/ws-transport';
@@ -29,6 +30,15 @@ function originAllowed(origin:string|null){if(!origin)return process.env.NODE_EN
 type Options={product:TagProduct;version:string;hash:string;name?:string;ruleset?:TagRuleset;difficulty?:'easy'|'normal'|'hard'|'expert';target?:number;botFill?:boolean;spectate?:boolean};
 export class LoveTagRoom extends Room{
   private reserved=false;
+  private voices=new Map<string,VoiceChannel>();private voiceRates=new Map<string,{at:number;n:number}>();
+  private voiceMembers(){return this.clients.filter(c=>this.voices.has(c.sessionId)).map(c=>({id:c.sessionId,name:c.userData?.name??'Rider',channel:this.voices.get(c.sessionId)!}));}
+  private voiceRoster(){this.broadcast('voice-roster',this.voiceMembers());}
+  private voiceMessage(client:Client,type:string|number,data:any){
+    if(type!=='voice-state'&&type!=='voice-signal')return false;
+    const now=Date.now(),rate=this.voiceRates.get(client.sessionId);if(!rate||now-rate.at>=1000)this.voiceRates.set(client.sessionId,{at:now,n:1});else if(++rate.n>60)return true;
+    if(type==='voice-state'){if(data?.enabled===false)this.voices.delete(client.sessionId);else if(data?.enabled===true&&voiceChannel(data.channel))this.voices.set(client.sessionId,data.channel);this.voiceRoster();}
+    else {const signal=voiceSignal(data);if(signal&&voiceRecipient(client.sessionId,signal,this.voiceMembers()))this.clients.find(c=>c.sessionId===signal.to)?.send('voice-signal',{from:client.sessionId,signal});}return true;
+  }
   private chatRate=new ChatRateGate();
   maxClients=12;autoDispose=true;private match!:TagMatch;private terrain!:TagTerrain;private host='';private code='';private target=4;private botFill=true;private ready=new Set<string>();private spectators=new Set<string>();private messageRates=new Map<string,{time:number;count:number}>();private lastCommand=new Map<string,number>();private accumulator=0;private broadcastClock=0;private oldest=Date.now();private slowTicks=0;private tickTimes:number[]=[];private byteCount=0;private metricTime=performance.now();
   async onCreate(options:Options){
@@ -41,6 +51,7 @@ export class LoveTagRoom extends Room{
     do{this.code=randomBytes(5).toString('hex').slice(0,8).toUpperCase();}while(codes.has(this.code));
     codes.set(this.code,{roomId:this.roomId,product:options.product,expires:Date.now()+2*60*60*1000});
     this.onMessage('*',(client,type,data)=>{
+      if(this.voiceMessage(client,type,data))return;
       const now=Date.now(),rate=this.messageRates.get(client.sessionId);if(!rate||now-rate.time>1000)this.messageRates.set(client.sessionId,{time:now,count:1});else if(++rate.count>100){client.leave(4008,'INPUT_RATE_LIMIT');return;}
       if(type==='hello')this.welcome(client);
       else if(type==='chat'){const text=cleanChatText(data?.text);if(!text)return;if(!this.chatRate.allow(client.sessionId,now)){client.send('notice','Wait a moment before sending another message.');return;}this.broadcast('chat',{id:randomUUID(),player:client.sessionId,name:client.userData?.name??'Rider',text,at:now});}
@@ -78,9 +89,9 @@ export class LoveTagRoom extends Room{
     if(!this.host)this.host=client.sessionId;this.welcome(client);
   }
   private welcome(client:Client){client.send('welcome',{code:this.code,host:this.host,product:this.match.fixture.product,hash:this.match.fixture.hash,version:TAG_VERSION,spectator:this.spectators.has(client.sessionId),grace:20});client.send('snapshot',this.match.snapshot(this.spectators.has(client.sessionId)?undefined:client.sessionId));}
-  onDrop(client:Client){const actor=this.match.actors.find(a=>a.id===client.sessionId);if(actor)actor.connected=false;this.match.release(client.sessionId);void this.allowReconnection(client,20).catch(()=>{});}
+  onDrop(client:Client){this.voices.delete(client.sessionId);this.voiceRoster();const actor=this.match.actors.find(a=>a.id===client.sessionId);if(actor)actor.connected=false;this.match.release(client.sessionId);void this.allowReconnection(client,20).catch(()=>{});}
   onReconnect(client:Client){const actor=this.match.actors.find(a=>a.id===client.sessionId);if(actor)actor.connected=true;this.lastCommand.set(client.sessionId,Date.now());this.welcome(client);}
-  onLeave(client:Client){this.chatRate.forget(client.sessionId);this.match.leave(client.sessionId);this.spectators.delete(client.sessionId);this.ready.delete(client.sessionId);this.messageRates.delete(client.sessionId);this.lastCommand.delete(client.sessionId);if(client.sessionId===this.host){this.host=this.clients.find(c=>c.sessionId!==client.sessionId)?.sessionId??'';this.broadcast('host',this.host);}}
+  onLeave(client:Client){this.voices.delete(client.sessionId);this.voiceRates.delete(client.sessionId);this.voiceRoster();this.chatRate.forget(client.sessionId);this.match.leave(client.sessionId);this.spectators.delete(client.sessionId);this.ready.delete(client.sessionId);this.messageRates.delete(client.sessionId);this.lastCommand.delete(client.sessionId);if(client.sessionId===this.host){this.host=this.clients.find(c=>c.sessionId!==client.sessionId)?.sessionId??'';this.broadcast('host',this.host);}}
   onDispose(){roomMetrics.delete(this.roomId);codes.delete(this.code);if(this.match)this.match.phase='disposing';if(this.reserved){this.reserved=false;reservedRooms--;}}
 }
 export function createTagServer(extendApp?:(app:import('express').Application)=>void){const server=new Server({transport:new WebSocketTransport({maxPayload:8192,pingInterval:3000,pingMaxRetries:2}),express(app){
