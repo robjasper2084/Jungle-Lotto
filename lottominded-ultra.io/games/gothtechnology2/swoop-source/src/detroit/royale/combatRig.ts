@@ -13,11 +13,14 @@ export class CombatRig {
   apply(pose:RidePose,yaw:number,pitch:number,state:CombatState,tick:number){
     const h=this.hero,w=this.weapon.root,scale=h.motionScale;
     if(!h.arms[0]||!h.arms[1]){w.visible=false;return;}
-    if(h.chest){
-      // Imported bone-local Y is not world up. Apply bounded torso yaw in world
-      // space, then convert back to the parent's frame; no shoulder corkscrew.
-      const world=h.chest.getWorldQuaternion(new T.Quaternion()).premultiply(new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),yaw*.8));
-      h.chest.quaternion.copy(h.chest.parent!.getWorldQuaternion(new T.Quaternion()).invert().multiply(world));h.chest.updateWorldMatrix(false,true);
+    // Preserve Swoop's base pose and distribute the aim turn through the spine.
+    // A full turn on the top joint folds the jacket/armor around a fixed waist.
+    const spine=h.spine.length?h.spine:h.chest?[h.chest]:[];
+    const torsoYaw=T.MathUtils.clamp(yaw*.8,-1,1);
+    for(const bone of spine){
+      const turn=T.MathUtils.clamp(torsoYaw/Math.max(1,spine.length),-.4,.4);
+      const world=bone.getWorldQuaternion(new T.Quaternion()).premultiply(new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),turn));
+      bone.quaternion.copy(bone.parent!.getWorldQuaternion(new T.Quaternion()).invert().multiply(world));bone.updateWorldMatrix(false,true);
     }
     const socket=weaponSocket(pose,h.riderId,yaw,pitch,state.aimBlend,state.lean);
     w.position.set(socket.grip.x,socket.grip.y,socket.grip.z);
@@ -25,8 +28,12 @@ export class CombatRig {
     w.updateWorldMatrix(true,true);
     const rot=new T.Quaternion().setFromEuler(new T.Euler(0,pose.headingY,0));
     const aim=new T.Quaternion().setFromEuler(new T.Euler(-pitch,yaw,0,'YXZ'));
+    // Read the real shoulder axis: these assets put LeftArm on local +X.
+    // The old fixed signs pulled both elbows inward through the torso.
+    const outside=h.arms[0].upper.getWorldPosition(new T.Vector3()).sub(h.arms[1].upper.getWorldPosition(new T.Vector3())).normalize();
+    const elbowPole=(side:number)=>outside.clone().multiplyScalar(side*.7).add(new T.Vector3(0,-.65,0)).add(new T.Vector3(0,0,-.15).applyQuaternion(rot));
     const dominant=this.weapon.socket(sockets.weapon_grip_R);
-    solve(h.arms[1],dominant,new T.Vector3(.7,-.5,-.2).applyQuaternion(rot),rot.clone().multiply(aim).multiply(h.arms[1].rotation));
+    solve(h.arms[1],dominant,elbowPole(-1),rot.clone().multiply(aim).multiply(h.arms[1].rotation));
     h.root.updateWorldMatrix(true,true);
     const actual=h.arms[1].foot.getWorldPosition(new T.Vector3());this.errorR=actual.distanceTo(dominant);
     // Preserve a rigid grip even when a target exceeds the arm's natural reach.
@@ -41,7 +48,7 @@ export class CombatRig {
       const mag=this.weapon.socket(sockets.magazine_socket).add(new T.Vector3(-.03,-.18,-.08).multiplyScalar(scale).applyQuaternion(rot));
       target.lerp(mag,release);
     }
-    solve(h.arms[0],target,new T.Vector3(-.7,-.5,-.2).applyQuaternion(rot),rot.clone().multiply(aim).multiply(h.arms[0].rotation));
+    solve(h.arms[0],target,elbowPole(1),rot.clone().multiply(aim).multiply(h.arms[0].rotation));
     h.root.updateWorldMatrix(true,true);this.errorL=h.arms[0].foot.getWorldPosition(new T.Vector3()).distanceTo(target);
   }
 }
