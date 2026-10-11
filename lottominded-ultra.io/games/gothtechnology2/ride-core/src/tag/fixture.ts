@@ -54,7 +54,9 @@ export class TagTerrain implements TerrainSampler{
   private point(p:Vec3){const t=this.fixture.transform;return {x:t.tx+t.sx*p.x,y:p.y+t.ty,z:p.z+t.tz};}
   sweep(origin:Vec3,delta:Vec3,radius=0){const length=Math.hypot(delta.x,delta.y,delta.z);if(length<1e-9)return null;const t=this.fixture.transform;
     const velocity={x:t.sx*delta.x/length,y:delta.y/length,z:delta.z/length};
-    const hit=this.physics.castShape(this.point(origin),{x:0,y:0,z:0,w:1},velocity,new R.Ball(Math.max(.001,radius)),0,length,true,undefined,this.fixture.groundRays?0xffff0002:undefined,undefined,undefined,c=>!this.retiredColliders.has(c.handle));
+    // Elevated pavement is still solid to bodies and shots. Ground sampling
+    // chooses the floor below the feet; it cannot detect a slab through a torso.
+    const hit=this.physics.castShape(this.point(origin),{x:0,y:0,z:0,w:1},velocity,new R.Ball(Math.max(.001,radius)),0,length,true,undefined,this.fixture.groundRays?0xffff0006:undefined,undefined,undefined,c=>!this.retiredColliders.has(c.handle));
     let first=hit?hit.time_of_impact/length:Infinity;for(const box of this.fixture.staticBoxes??[]){const prop=staticBoxSweep(this.point(origin),{x:delta.x*t.sx,y:delta.y,z:delta.z},radius,box);if(prop!==null)first=Math.min(first,prop);}return Number.isFinite(first)?first:null;}
   raycastObstacle(origin:Vec3,direction:Vec3,max:number,halfWidth=0,_lateral?:Vec3,out?:ObstacleHit){
     const length=Math.hypot(direction.x,direction.y,direction.z);if(length<1e-9)return null;
@@ -71,6 +73,8 @@ export class TagTerrain implements TerrainSampler{
     if(distance===null)return null;if(out)Object.assign(out,{distance,halfExtentX:.5,halfExtentZ:.5});return distance;
   }
   raycast(origin:Vec3,direction:Vec3,max:number){const solid=this.raycastObstacle(origin,direction,max);const n=Math.hypot(direction.x,direction.y,direction.z)||1;
+    if(this.fixture.groundRays){const t=this.fixture.transform,hit=this.physics.castRay(new R.Ray(this.point(origin),{x:t.sx*direction.x/n,y:direction.y/n,z:direction.z/n}),max,true,undefined,0xffff0005);
+      return hit?Math.min(solid??max,hit.timeOfImpact):solid;}
     for(let d=0;d<(solid??max);d+=.08)if(origin.y+direction.y/n*d<this.height(origin.x+direction.x/n*d,origin.z+direction.z/n*d))return d;return solid;}
   dispose(){this.physics.free();}
 }

@@ -36,7 +36,7 @@ export function makeDuoTouch(canvas:HTMLCanvasElement,rects:()=>Rect[],pause:()=
   function beginStick(seat:number,e:PointerEvent,target:HTMLElement){
     if([...sticks.values()].some(s=>s.seat===seat)||canvas.dataset.paused==='true')return;
     const r=rects()[seat],node=nodes.get(seat+'-stick')!,floating=el<HTMLSelectElement>('elmwood-stick-mode')?.value!=='fixed',b=bounds(seat,'stick');
-    const x=floating?clamp(e.clientX-r.x,58,r.width-58):b.x,y=floating?clamp(e.clientY-r.y,58,r.height-58):b.y;
+    const x=floating?e.clientX-r.x:b.x,y=floating?e.clientY-r.y:b.y;
     node.style.left=x+'px';node.style.top=y+'px';sticks.set(e.pointerId,{seat,x:x+r.x,y:y+r.y,node});target.setPointerCapture(e.pointerId);canvas.focus();move(e);
   }
   for(let seat=0;seat<4;seat++){

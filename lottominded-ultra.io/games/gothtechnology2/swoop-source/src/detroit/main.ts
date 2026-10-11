@@ -2,6 +2,8 @@ import {mountHudTransparency} from '../../../ride-core/src/hudTransparency.ts';
 import {GyroscopeControl} from '../../../ride-core/src/gyroscope.ts';
 const gyroscope=new GyroscopeControl();
 import {JazzVisit} from './jazzVisit.ts';
+import {mountContextPanels} from './contextPanels.ts';
+mountContextPanels();
 import {JAZZ_CLUBS,jazzMap} from './jazzSites.ts';
 import {FOOD_TRUCK_SITES,FOOD_CART_SITES,VENDORS} from './foodTruckSites.ts';
 import {AmbientCyclistPacks,cyclistCircuit} from '../../../ride-core/src/ambientCyclists.ts';
@@ -325,6 +327,7 @@ const crashOverlay=document.createElement('section');crashOverlay.id='crashOverl
 const crashCopy=document.createElement('p');crashCopy.textContent='Take a breath. Your banked points are safe.';
 const crashRecover=document.createElement('button');crashRecover.id='crashRecover';crashRecover.textContent='Recover';crashRecover.onclick=queueRecovery;crashOverlay.append(crashCopy,crashRecover);document.body.append(crashOverlay);
 document.addEventListener('pointerdown',e=>{if(e.pointerType==='touch')inputDevice='touch';},{passive:true});
+document.addEventListener('swoop-touch-start',()=>{inputDevice='touch';closeRideOptions();});
 const mapRecover=document.createElement('button');mapRecover.textContent='Recover rider';mapRecover.onclick=queueRecovery;$('mapPanel').append(mapRecover);
 const mobileMap=document.createElement('button');mobileMap.textContent='Map';mobileMap.id='mobileMap';mobileMap.onclick=()=>{$('map').click();$('ridingOptions').classList.remove('expanded');$('optionsToggle').setAttribute('aria-expanded','false');};$('ridingOptions').append(mobileMap);
 const trickSelect=document.createElement('select');trickSelect.id='trickSelect';trickSelect.setAttribute('aria-label','Special move');
