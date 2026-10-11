@@ -35,7 +35,9 @@ export function stepOnFoot(s:ReturnType<typeof footState>,p:FootPose,t:TerrainSa
   const dx=nx-x,dz=nz-z,d=Math.hypot(dx,dz);if(d<1e-7)return true;
   // Overlapping sweeps cover the whole body; two spaced spheres left a gap
   // through which a thin raised sidewalk could slice the rider's torso.
-  const low=p.footProne>.5,heights=low?[.25,.45]:p.footCrouch>.5?[.4,.85]:[.35,.85,1.35,1.6];
+  // Ground sampling permits steps up to .34 m. Keep the lowest standing/crouch
+  // sphere above that step band so a normal curb does not act like a wall.
+  const low=p.footProne>.5,heights=low?[.30,.5]:p.footCrouch>.5?[.62,.95]:[.62,1.1,1.58];
   const offsets=low?[-.75,0,.65]:[0];
   return offsets.every(offset=>heights.every(h=>{const hit=t.raycastObstacle({x:x+Math.sin(p.headingY)*offset,y:Math.min(y,ny)+h,z:z+Math.cos(p.headingY)*offset},{x:dx/d,y:0,z:dz/d},d+.3,.27);return hit===null||hit>d+.27;}));
  };
@@ -65,7 +67,7 @@ export function stepOnFoot(s:ReturnType<typeof footState>,p:FootPose,t:TerrainSa
  p.footBlend=1;
  const beforeX=p.x,beforeZ=p.z,run=!!a.run,demand=clamp(Number.isFinite(a.throttle)?a.throttle:0,-1,1);
  let prone=!!a.prone&&!jump,crouch=!!a.crouch&&!prone&&!jump;
- if(!prone&&!crouch&&(p.footProne>.1||p.footCrouch>.1)&&t.raycastObstacle({x:p.x,y:p.y+.25,z:p.z},{x:0,y:1,z:0},1.45,.27)!==null){prone=p.footProne>.1;crouch=!prone;}
+ if(!prone&&!crouch&&(p.footProne>.1||p.footCrouch>.1)&&t.raycastObstacle({x:p.x,y:p.y+.30,z:p.z},{x:0,y:1,z:0},1.4,.27)!==null){prone=p.footProne>.1;crouch=!prone;}
  p.footProne+=((prone?1:0)-p.footProne)*(1-Math.exp(-8*dt));p.footCrouch+=((crouch?1:0)-p.footCrouch)*(1-Math.exp(-10*dt));
  s.turn+=(clamp(Number.isFinite(a.steer)?a.steer:0,-1,1)*2.7-s.turn)*(1-Math.exp(-16*dt));
  p.headingY-=s.turn*dt;
