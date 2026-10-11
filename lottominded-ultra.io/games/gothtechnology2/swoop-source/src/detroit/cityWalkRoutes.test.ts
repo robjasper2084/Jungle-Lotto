@@ -3,7 +3,7 @@ import {walkingLoop,cityWalkRoutes,seedCityPeople} from './cityWalkRoutes.ts';
 import {advanceCrowd} from './crowdFlow.ts';
 import {TRACKS} from './soundtrackCatalog.ts';import {ridingMusic} from './musicLocation.ts';
 test('store-only recording never leaks into a riding station, including an old saved selection',()=>{
- for(const station of ['shuffle','auto','all','bonus','track-02'])for(const scene of ['ride','garden','style','results']){const list=ridingMusic(TRACKS,station,scene);assert(list.length);assert(!list.some(t=>t.id==='track-02'));}
+ for(const station of ['shuffle','auto','all','bonus','track-01','track-02'])for(const scene of ['ride','garden','style','results']){const list=ridingMusic(TRACKS,station,scene);assert(list.length);assert(!list.some(t=>t.id==='track-01'||t.id==='track-02'));}
 });
 test('walking loop stays continuous across both ends and the wrap, with room to pass',()=>{
  const route=walkingLoop([[0,0],[0,100]],8),step=.01;

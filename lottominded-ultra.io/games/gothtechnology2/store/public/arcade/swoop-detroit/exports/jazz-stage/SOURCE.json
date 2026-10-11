@@ -1,32 +1,31 @@
 {
-  "source": "C:\\Users\\digit\\Documents\\phone\\swoop-detroit-bloom-unity\\Builds\\WebGL",
-  "origin": "Actual Unity performance served on port 8229",
-  "integration": "Lazy stage iframe, user begins performance; destroyed on exit",
+  "source": "C:\\Users\\digit\\Documents\\phone\\swoop-detroit-bloom-unity\\Builds\\JazzPortal",
+  "integration": "Full viewport playable music world, walking and riding, safe return to the original Detroit session",
   "files": [
     {
-      "file": "Build/WebGL.data",
-      "bytes": 33145354,
-      "sha256": "9baac43471d0af191db0ac803c898b62abada27a8917f513279341acbe4d7f1d"
+      "file": "Build/JazzPortal.data",
+      "bytes": 67950108,
+      "sha256": "ae776c1068dd5f5a3bfff5b5d5bb8ed6a13b18d805712ab936bbc1cf912bfc0f"
     },
     {
-      "file": "Build/WebGL.wasm",
-      "bytes": 17816804,
-      "sha256": "a25d562dce26d82862b9f2d7a8de727cf0236ba3f849fed7cb4823bb157e762b"
+      "file": "Build/JazzPortal.framework.js",
+      "bytes": 415704,
+      "sha256": "99c214c782a9f3d38ea70d2dbd6eff1fc1db245a2a4cebf885423068307bd441"
     },
     {
-      "file": "Build/WebGL.framework.js",
-      "bytes": 415339,
-      "sha256": "23f055370c91f14380017141c616d6339821210f442493ef0f4071dfc00cc5df"
+      "file": "Build/JazzPortal.wasm",
+      "bytes": 17902567,
+      "sha256": "592d6bd485632f61dd4dad107d2a7d65648ed3aacfabc21c15af83c6d6dc339f"
     },
     {
-      "file": "Build/WebGL.loader.js",
+      "file": "Build/JazzPortal.loader.js",
       "bytes": 19431,
-      "sha256": "fbcdff6011b2bdc58688f07b84abdca09f2989affe7491e67d39d07b0dd5f7be"
+      "sha256": "71a5d95acb77f281ef41b365b6dd6ee6c37381c85154d15bc6eb8dc70630d1de"
     },
     {
-      "file": "StreamingAssets/BloomPerformance.mp4",
-      "bytes": 29247590,
-      "sha256": "972e6d4c70b6bdb24ddcf29636e4ef2db6a6ca0b11163078043224776d7f2534"
+      "file": "index.html",
+      "bytes": 8017,
+      "sha256": "702f225379836a1cded851baf968606197a6925f5672c30bd7d39215c35caaa6"
     }
   ]
 }
