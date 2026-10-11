@@ -25,6 +25,27 @@ test('walkable bridge deck and passage beneath it remain separate',async()=>{
  const ground={height:0,normal:{x:0,y:1,z:0},surface:'pavement' as const,offCourse:false};
  assert(Math.abs(terrain.sampleGround(0,3,ground,4).height-4)<.01,'bridge deck lost support');terrain.dispose();
 });
+
+test('ordinary curb steps remain walkable after enabling raised-surface collisions',async()=>{
+ for(const height of [.15,.3])for(const crouch of [false,true]){
+  const terrain=await platform(height),rider=new RideController(terrain,{spawn:{position:{x:0,y:0,z:0},headingY:0}});
+  rider.step(1/120,{...NEUTRAL_ACTIONS,dismount:true});for(let i=0;i<90;i++)rider.step(1/120,NEUTRAL_ACTIONS);
+  for(let i=0;i<120;i++)rider.step(1/120,{...NEUTRAL_ACTIONS,crouch});
+  for(let i=0;i<240;i++)rider.step(1/120,{...NEUTRAL_ACTIONS,throttle:1,crouch});
+  assert(rider.poseValue.z>2,'curb blocked walking at height '+height);assert(Math.abs(rider.poseValue.y-height)<.02);terrain.dispose();
+ }
+});
+
+test('riders can crawl and stand back up on an elevated sidewalk',async()=>{
+ const terrain=await platform(.3),rider=new RideController(terrain,{spawn:{position:{x:0,y:.3,z:3},headingY:0}});
+ rider.step(1/120,{...NEUTRAL_ACTIONS,dismount:true});for(let i=0;i<90;i++)rider.step(1/120,NEUTRAL_ACTIONS);
+ for(let i=0;i<120;i++)rider.step(1/120,{...NEUTRAL_ACTIONS,prone:true});
+ const start=rider.poseValue.z;assert(rider.poseValue.footProne>.9);
+ for(let i=0;i<180;i++)rider.step(1/120,{...NEUTRAL_ACTIONS,prone:true,throttle:1});
+ assert(rider.poseValue.z>start+.6,'crawl probe collided with its own support floor');
+ for(let i=0;i<120;i++)rider.step(1/120,NEUTRAL_ACTIONS);
+ assert(rider.poseValue.footProne<.1,'support floor prevented standing up');terrain.dispose();
+});
 test('camera and projectile rays see raised surfaces, including their underside',async()=>{
  const terrain=await platform(.9);
  const down=terrain.raycast({x:0,y:2,z:3},{x:0,y:-1,z:0},4);
