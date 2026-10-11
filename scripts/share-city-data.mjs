@@ -1,7 +1,7 @@
 import {readFile,readdir,writeFile,rename,unlink} from 'node:fs/promises';import {resolve} from 'node:path';import {createHash,randomUUID} from 'node:crypto';
 const source='https://raw.githubusercontent.com/robjasper2084/Jungle-Lotto/995108b365a915c6aa7fe0c957915475ace1009f/lottominded-ultra.io/games/gothtechnology2/swoop-source/public/';
 export const CITY_DATA=[
- {file:'love-tag/swoop-detroit.json.gz',from:'./love-tag/swoop-detroit.json',to:source+'love-tag/swoop-detroit.json',sha:'64fc5daa1c15676a6605f8c0c95eca0ceb7fc1f5e414f792fdef9ab3f61aba3d'},
+ {file:'love-tag/swoop-detroit.json.gz',from:'./love-tag/swoop-detroit.json',to:'https://raw.githubusercontent.com/robjasper2084/Jungle-Lotto/8c1a3658176e8dd98a118576c677328c62389351/lottominded-ultra.io/games/gothtechnology2/swoop-source/public/love-tag/swoop-detroit.json',sha:'739ef5f08175664a95ab35e5082627960c7d044c8ea06604f5b0a68674bd38d2'},
  {file:'exports/street-life/street-surfaces.bin.gz',from:'./exports/street-life/street-surfaces.bin.gz',to:source+'exports/street-life/street-surfaces.bin.gz',sha:'756d55639f0dd568734d6a75f8dfd8b888d3d1498aa685398642fb90a4d3bc16'},
 ];
 async function texts(root){const files=[];for(const e of await readdir(root,{withFileTypes:true})){const p=resolve(root,e.name);if(e.isDirectory())files.push(...await texts(p));else if(/\.(js|html|json|css)$/.test(e.name))files.push(p);}return files;}
