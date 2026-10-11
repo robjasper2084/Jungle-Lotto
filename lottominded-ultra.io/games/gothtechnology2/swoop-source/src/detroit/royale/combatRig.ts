@@ -5,6 +5,7 @@ import {weaponSocket,type CombatState} from '../../../../ride-core/src/royale/ru
 import {EQUIPMENT_SOCKETS as sockets} from '../../../../ride-core/src/royale/combatProfiles.ts';
 import {WeaponView} from './equipment.ts';
 import leanProfile from './leanProfiles.json' with {type:'json'};
+import {meleeTargets} from '../../../../ride-core/src/royale/melee.ts';
 
 /** Base riding pose -> torso -> independent weapon frame -> dominant IK ->
  * hand-mounted weapon -> support IK. No hand ever drives its own IK target. */
@@ -17,7 +18,7 @@ export class CombatRig {
     // Preserve Swoop's base pose and distribute the aim turn through the spine.
     // A full turn on the top joint folds the jacket/armor around a fixed waist.
     const spine=h.spine.length?h.spine:h.chest?[h.chest]:[];
-    const torsoYaw=T.MathUtils.clamp(yaw*.8,-1,1);
+    const torsoYaw=state.melee?.brawl?0:T.MathUtils.clamp(yaw*.8,-1,1);
     for(const [index,bone] of spine.entries()){
       const turn=T.MathUtils.clamp(torsoYaw/Math.max(1,spine.length),-.4,.4);
       const world=bone.getWorldQuaternion(new T.Quaternion()).premultiply(new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),turn));
@@ -27,6 +28,16 @@ export class CombatRig {
       const axis=new T.Vector3(Math.sin(pose.headingY),0,Math.cos(pose.headingY));
       world.premultiply(new T.Quaternion().setFromAxisAngle(axis,T.MathUtils.clamp(state.lean,-1,1)*lean.radians*(lean.weights[index]??0)));
       bone.quaternion.copy(bone.parent!.getWorldQuaternion(new T.Quaternion()).invert().multiply(world));bone.updateWorldMatrix(false,true);
+    }
+    if(state.melee?.brawl&&pose.footMode===2){
+      const targets=meleeTargets(state.melee,tick),heading=new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),pose.headingY);
+      // Upper-body strike mask leaves the current stride intact. Only a power
+      // kick overrides one leg; the supporting foot retains ground contact.
+      for(const bone of spine){const world=bone.getWorldQuaternion(new T.Quaternion()).premultiply(new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),targets.twist/Math.max(1,spine.length)));bone.quaternion.copy(bone.parent!.getWorldQuaternion(new T.Quaternion()).invert().multiply(world));bone.updateWorldMatrix(false,true);}
+      const at=(values:number[])=>new T.Vector3().fromArray(values).multiplyScalar(scale).applyQuaternion(heading).add(new T.Vector3(pose.x,pose.y,pose.z));
+      for(const [i,values]of [targets.left,targets.right].entries()){const limb=h.arms[i],pole=new T.Vector3(i===0?.7:-.7,-.3,-.3).applyQuaternion(heading);solve(limb,at(values),pole,heading.clone().multiply(limb.rotation));}
+      if(state.melee.kind===3&&h.legs[1]){const leg=h.legs[1];solve(leg,at(targets.kick),new T.Vector3(0,.4,1).applyQuaternion(heading),heading.clone().multiply(leg.rotation));}
+      h.root.updateWorldMatrix(true,true);w.visible=false;this.errorL=this.errorR=0;return;
     }
     const socket=weaponSocket(pose,h.riderId,yaw,pitch,state.aimBlend,state.lean);
     w.position.set(socket.grip.x,socket.grip.y,socket.grip.z);

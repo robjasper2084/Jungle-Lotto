@@ -1,5 +1,10 @@
 import {Vector3} from 'three';
 
+/** Aim elevation rotates the view, not the chase boom down into the pavement. */
+export function chaseEye(anchor:Vector3,heading:number,back:number,height:number,side:number){
+ return anchor.clone().add(new Vector3(-Math.sin(heading)*back+Math.cos(heading)*side,height,-Math.cos(heading)*back-Math.sin(heading)*side));
+}
+
 /** Our rider faces +Z. Screen-right is -X, so rightward look input reduces yaw. */
 export function dragAim(yaw:number,pitch:number,dx:number,dy:number,gain:number){
  return {yaw:Math.max(-1.25,Math.min(1.25,yaw-dx*gain)),pitch:Math.max(-.65,Math.min(.65,pitch-dy*gain))};

@@ -184,7 +184,7 @@ export async function buildScenery(scene:T.Scene,world:SceneryWorld,polish=true,
   const landmarks=buildCutLandmarks(world,groupAt,label);
   const flowers=buildCutFlowers(scene,world);
   if(polish)polishSection(groupAt,mats.asphalt);
-  let routeArt:Awaited<ReturnType<typeof buildRouteArt>>|{billboards:number;murals:number}={billboards:0,murals:0};if(polish)stream.add({id:'route-art',centers:[1080,1600,1900,2425].map(d=>cutPoint(d)),async load(){routeArt=await buildRouteArt(world,groupAt);world.step();}});
+  let routeArt:Awaited<ReturnType<typeof buildRouteArt>>|{billboards:number;murals:number}={billboards:0,murals:0};if(polish)stream.add({id:'route-art',centers:[1080,1600,1900,2300,2425].map(d=>cutPoint(d)),async load(){routeArt=await buildRouteArt(world,groupAt);world.step();}});
   buildTrailPaint(groupAt,world.chunks);
   let cutMurals={walls:0,ceilings:0};if(polish)stream.add({id:'cut-murals',centers:GEO.bridges.map(b=>cutPoint(b.at)),async load(){cutMurals=await buildCutMurals(world,groupAt);}});
   // Consolidate static geometry by material inside each streamable tile.

@@ -30,7 +30,11 @@
  #touch button[data-action="free-look"]{right:35px;top:62px}
 }
 
-.header-actions{display:flex;gap:8px}fieldset{border:1px solid #456b70;border-radius:9px;margin:12px 0;padding:12px}legend{font-weight:700}#ride-settings{scroll-margin:12px}.graphicsSettings p{font-size:12px}#camera-settings fieldset{margin:10px 0 0}
+.header-actions{display:flex;gap:8px}fieldset{border:1px solid #456b70;border-radius:9px;margin:12px 0;padding:12px}legend{font-weight:700}#ride-settings{scroll-margin:70px}.graphicsSettings p{font-size:12px}#camera-settings fieldset{margin:10px 0 0}
+.lobby-nav{position:sticky;top:-27px;z-index:3;display:flex;gap:6px;align-items:center;margin:-27px -27px 16px;padding:10px;background:#102831f2;border-bottom:1px solid #668488}
+.lobby-nav a{display:flex;align-items:center;color:#e9fffb;text-decoration:none;flex:1;font-size:12px;padding:6px}.lobby-nav button{font-size:12px;padding:8px}
+#hud{border-radius:0 10px 10px 0;max-width:245px;padding:10px 12px;gap:4px}#vitals{display:none}#scope-status:empty,#hint:empty{display:none}
+#weapon[data-empty=true]{color:#ffdc8b;font-weight:700}#touch button[data-action=reload][data-needed=true]{border-color:#ffdc8b;color:#ffdc8b}
 
 /* Aiming is a broad clear area; buttons sit above it and retain their own pointers. */
 #aim-pad{top:76px;bottom:205px;right:0;width:54%;height:auto;border:0;border-radius:0;background:transparent;z-index:0;color:transparent}
