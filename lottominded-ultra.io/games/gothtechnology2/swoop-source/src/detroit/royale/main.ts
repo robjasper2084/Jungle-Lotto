@@ -121,7 +121,7 @@ async function prepare(){const hdr=await new HDRLoader().loadAsync(new URL('../.
  shieldAsset=await loader.loadAsync('/exports/polish/royale-equipment/rider-shield.glb');
  session.voice?.root.addEventListener('toggle',()=>{if(session.voice?.root.open)release();});
  const mapTransform=terrain.terrain.fixture.transform;ambientPacks=new AmbientCyclistPacks(scene,assetMap,terrain,cyclistCircuit(Array.from({length:100},(_,i)=>{const p=cutPoint(60+i*(LENGTH-120)/99);return {x:(p.x-mapTransform.tx)/mapTransform.sx,z:p.z-mapTransform.tz,width:5};})));canvas.dataset.ambientPackSizes='10,10';canvas.dataset.ambientPackStarts=JSON.stringify(ambientPacks.starts);
- jazzVisit=new JazzVisit(scene,scenery.jazz.clubs,assetMap,()=>actors.get(session.me)!.view,()=>{const was=paused;paused=true;release();return was;},was=>{paused=was;release();canvas.focus();},{toMap:(x,y,z)=>terrain.sourcePosition({x,y,z}),toLocal:(x,y,z)=>{const t=terrain.terrain.fixture.transform;return{x:(x-t.tx)/t.sx,y:y-t.ty,z:z-t.tz};}});
+ jazzVisit=new JazzVisit(scenery.jazz.clubs,()=>{const was=paused;paused=true;release();return was;},was=>{paused=was;release();canvas.focus();},()=>session.state?.actors.find(a=>a.id===session.me)?.pose.footMode?'walk':'ride',{toMap:(x,y,z)=>terrain.sourcePosition({x,y,z})});
  graphics.apply();loaded=true;loadedAt=performance.now();canvas.dataset.loadMs=String(Math.round(loadedAt));el<HTMLButtonElement>('practice').disabled=false;el('practice').textContent='Practice with AI opponents →';message('Original Detroit arena ready. Choose six or ten riders; AI fills empty seats when enabled.');
  if(query.get('room')){el<HTMLInputElement>('code').value=query.get('room')!;el<HTMLDetailsElement>('online').open=true;}
 }
@@ -276,7 +276,7 @@ function draw(now:number){
  canvas.dataset.optics=JSON.stringify({selected:selectedScope,owned,zoom:ads?scopeZoom(selectedScope):1,available:s.loot.filter(l=>isScope(l.kind)).length});
  canvas.dataset.aim=JSON.stringify({yaw:aimYaw,pitch:aimPitch,ads,steer,throttle,fire:held.has('fire')||held.has('fire-left'),lean:self.combat.lean,crouch:p.footCrouch,prone:p.footProne,footMode:p.footMode});for(const direction of [-1,1]){const b=el('touch').querySelector<HTMLButtonElement>(direction<0?'[data-action=lean-left]':'[data-action=lean-right]');b?.setAttribute('aria-pressed',String(self.combat.lean*direction>.1));}
  for(const [action,pressed]of [['crouch',p.footMode?p.footCrouch>.5:stanceGesture.value===1],['prone',p.footProne>.5]] as const)el('touch').querySelector('[data-action='+action+']')?.setAttribute('aria-pressed',String(pressed));
- jazzVisit?.update(p.x,p.z,!dialog.open&&!replaying&&self.alive,camera);
+ jazzVisit?.update(p.x,p.z,!dialog.open&&!replaying&&self.alive&&!session.room);
  const adsButton=el('touch').querySelector<HTMLButtonElement>('[data-action=aim]')!;adsButton.setAttribute('aria-pressed',String(ads));
 
  }
