@@ -1,4 +1,4 @@
-import {interpolateFoot,footFields,footState,stepOnFoot} from './onFoot.ts';
+import {interpolateFoot,footFields,footState,stepOnFoot,knockOffOnFoot} from './onFoot.ts';
 import {FallMotion,getUpPose} from './fallMotion.ts';
 import {RideFeedback} from './rideFeedback.ts';
 import {SpecialMoves} from './specialMoves.ts';
@@ -10,7 +10,7 @@ import {RIDE_TUNING as tune,clamp,damp,angle,spring,advanceSpring,advanceDrive} 
 import type {RideTuning} from './rideDynamics.ts';
 
 export const NEUTRAL_ACTIONS={throttle:0,steer:0,crouch:false,hop:false,hopHeld:false,reset:false,trick:0};
-export type RideActions=typeof NEUTRAL_ACTIONS & {eyeControl?:boolean;dismount?:boolean;run?:boolean;prone?:boolean};
+export type RideActions=typeof NEUTRAL_ACTIONS & {eyeControl?:boolean;dismount?:boolean;run?:boolean;prone?:boolean;mountBlocked?:boolean;evade?:number};
 export function createPose(){return {
   ...footFields(),
   stopFoot:0,stopFootX:0,stopFootY:0,stopFootZ:0,warningLevel:0,beepPulse:0,scrape:0,scrapeSide:0,scrapeX:0,scrapeY:0,scrapeZ:0,scrapeHard:0,
@@ -38,6 +38,7 @@ export class RideController {
   private walking=footState();
   /** Selected-profile governor, opt-in for combat. Normal modes keep existing motor drag. */
   regulatedSpeed=false;
+  combatOnFoot=false;
   private tuning:RideTuning=tune;
   terrain:TerrainSampler;
   wheelScale=.86;
@@ -86,16 +87,16 @@ export class RideController {
     this.groundClearance=0;this.touchedDown=false;this.groundAge=0;this.hopQueue=0;this.hopDown=false;
     this.brakeLatch=false;this.reverseReady=false;this.lastLandingImpact=0;this.lastHopCharge=0;this.lastLandingQuality='clean';
   }
-  private fall(reason:string){if(this.crashed)return;this.crashed=true;this.crashCause=reason;this.counts.crashes++;this.crashAge=0;this.fallMotion=new FallMotion(this.pose,reason);this.charge=this.hopQueue=0;}
+  private fall(reason:string){if(this.crashed)return;if(this.combatOnFoot){knockOffOnFoot(this.walking,this.pose);this.crashCause=reason;this.counts.crashes++;this.charge=this.hopQueue=0;return;}this.crashed=true;this.crashCause=reason;this.counts.crashes++;this.crashAge=0;this.fallMotion=new FallMotion(this.pose,reason);this.charge=this.hopQueue=0;}
   /** Host-selected contact; clients never submit a victim, pose or knock-off. */
-  knockOff(){if(!this.pose.footMode&&!this.crashed){this.fall('dog power-up');return true;}return false;}
+  knockOff(){if(this.combatOnFoot){knockOffOnFoot(this.walking,this.pose);return true;}if(!this.pose.footMode&&!this.crashed){this.fall('dog power-up');return true;}return false;}
   private finishRecovery(){const counts={...this.counts},distance=this.distance,origin=this.spawn;this.reset(this.safe);this.spawn=origin;this.counts=counts;this.distance=distance;}
   private recover(){if(this.recoveryAge>=0)return;if(this.crashed){this.recoveryRest={...this.pose};this.recoveryAge=0;}else this.finishRecovery();}
   step(dt:number,input:RideActions){
     const tune=this.tuning;
     if(!Number.isFinite(dt)||dt<=0)return;dt=Math.min(dt,1/30);this.touchedDown=false;
-    if(input.reset){this.walking=footState();this.pose.footMode=this.pose.footBlend=0;this.recover();return;}const p=this.pose;
-    if(stepOnFoot(this.walking,p,this.terrain,dt,input,this.crashed)){
+    if(input.reset&&!(this.combatOnFoot&&this.pose.footMode)){this.walking=footState();this.pose.footMode=this.pose.footBlend=0;this.recover();return;}const p=this.pose;
+    if(stepOnFoot(this.walking,p,this.terrain,dt,{...input,movingDismount:this.combatOnFoot},this.crashed)){
       this.vx=this.vz=this.velocityY=this.motor=this.acceleration=0;this.tricks.cancel();this.grounded=p.airHeight<.01;return;
     }
     if(this.recoveryAge>=0){this.recoveryAge+=dt;getUpPose(this.recoveryRest!,this.recoveryAge/1.8,p,true);p.speed=0;if(this.recoveryAge>=1.8)this.finishRecovery();return;}

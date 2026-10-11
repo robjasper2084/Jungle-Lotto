@@ -13,9 +13,9 @@ export class FootControls{
  }
  consume(){const p=this.pending;this.pending=false;return p;}
  clear(){this.pending=false;this.run=false;this.root.hidden=true;}
- update(p:Partial<FootPose>,visible:boolean){
+ update(p:Partial<FootPose>,visible:boolean,movingDismount=false,critical=false){
   this.root.hidden=!visible;if(!visible){this.pending=false;return;}
-  this.mount.textContent=footLabel(p);this.mount.disabled=(p.footMode===1||p.footMode===3)||(!p.footMode&&Math.abs(p.speed??0)>1);
+  this.mount.textContent=p.footMode&&critical?'Critical health · heal to mount':p.footStagger?'Recovering…':!movingDismount&&!p.footMode&&Math.abs(p.speed??0)>1?'Slow to get off':footLabel(p);this.mount.disabled=(p.footMode===1||p.footMode===3)||(!movingDismount&&!p.footMode&&Math.abs(p.speed??0)>1)||!!p.footStagger||!!p.footMode&&critical;
   this.sprint.hidden=!p.footMode;this.sprint.textContent=this.run?'Running · tap to walk':'Walking · tap to run';this.sprint.setAttribute('aria-pressed',String(this.run));
   this.note.hidden=!p.footMode;this.note.textContent='Steer + move as usual. Jump: Space / hop. Return to your wheel to ride.';
   this.root.dataset.mode=String(p.footMode??0);

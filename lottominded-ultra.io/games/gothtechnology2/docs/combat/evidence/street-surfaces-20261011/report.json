@@ -1,0 +1,24 @@
+{
+  "revision": "draped-streets-20261010-joins-ramp-1-756d55639f0dd568734d6a75f8dfd8b888d3d1498aa685398642fb90a4d3bc16-planar-1",
+  "hash": "14410cf246bba2c9574ec503ed937980543eacfe2a7c7c8d9857584c465c7cdb",
+  "surfaces": 786,
+  "foundations": 1139957,
+  "checks": [
+    {
+      "x": -98.43,
+      "z": -1287.61,
+      "height": 0.055004119873046875
+    },
+    {
+      "x": -115.56,
+      "z": -208.876,
+      "height": -0.8558006286621094
+    },
+    {
+      "x": -73.74,
+      "z": 27.265,
+      "height": -0.6957054138183594
+    }
+  ],
+  "gzipBytes": 84299422
+}

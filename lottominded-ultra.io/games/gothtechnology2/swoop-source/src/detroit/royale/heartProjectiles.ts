@@ -17,14 +17,14 @@ export class HeartProjectiles extends T.Group{
   const count=Math.min(shots.length,this.capacity),d=this.dummy;let particles=0,hearts=0;
   for(let i=0;i<count;i++){
    const s=shots[i];let trail=this.travelled.get(s.id);const point=new T.Vector3(s.p.x,s.p.y,s.p.z);if(!trail){trail={p:point.clone(),distance:0};this.travelled.set(s.id,trail);}trail.distance+=trail.p.distanceTo(point);trail.p.copy(point);d.position.set(s.p.x,s.p.y,s.p.z);d.quaternion.copy(camera.quaternion);d.scale.setScalar(.34);d.updateMatrix();this.hearts.setMatrixAt(hearts++,d.matrix);
-   // A readable 4-18 metre stream of progressively smaller hearts. Geometry is
+   // A readable 4-24 metre stream of progressively smaller hearts. Geometry is
    // presentation only; each tip remains the accepted host projectile position.
-   if(!reduced){const speed=Math.hypot(s.v.x,s.v.y,s.v.z)||1,length=Math.min(trail.distance,18,Math.max(4,speed*.10));for(let j=0;j<6;j++){
+   if(!reduced&&trail.distance>.05){const speed=Math.hypot(s.v.x,s.v.y,s.v.z)||1,length=Math.min(trail.distance,24,Math.max(4,speed*.14));for(let j=0;j<6;j++){
     const distance=length*(j+1)/6;d.position.set(s.p.x-s.v.x/speed*distance,s.p.y-s.v.y/speed*distance,s.p.z-s.v.z/speed*distance);d.scale.setScalar(.28*(1-j*.11));d.updateMatrix();this.hearts.setMatrixAt(hearts++,d.matrix);
    }}
    // Four short trailing sparks, bounded in world distance at every bullet speed.
-   if(!reduced){const speed=Math.hypot(s.v.x,s.v.y,s.v.z)||1;for(let j=0;j<4;j++){
-    const distance=(j+1)*.65,phase=time*9+i*2+j*1.7;
+   if(!reduced&&trail.distance>.05){const speed=Math.hypot(s.v.x,s.v.y,s.v.z)||1;for(let j=0;j<4;j++){
+    const distance=Math.min(trail.distance,(j+1)*.65),phase=time*9+i*2+j*1.7;
     d.position.set(s.p.x-s.v.x/speed*distance+Math.sin(phase)*.045,s.p.y-s.v.y/speed*distance+Math.cos(phase)*.045,s.p.z-s.v.z/speed*distance);
     d.scale.setScalar(.035*(1-j*.16));d.updateMatrix();this.sparks.setMatrixAt(particles,d.matrix);this.sparks.setColorAt(particles++,this.color.set(j%2?'#ffe9b0':'#ff72b6'));
    }}

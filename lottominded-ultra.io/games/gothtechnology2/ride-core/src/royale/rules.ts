@@ -17,11 +17,12 @@ import {traceBallistic} from './ballisticSweep.ts';
 import {stanceBounds} from './stanceVolume.ts';
 import {initialSpawnNodes,recoveryNode,type SpawnNode} from './spawnNodes.ts';
 import {createBattleDog,advanceBattleDog,type DogPower,type BattleDog} from './dogPower.ts';
+import {initialMelee,meleeTrigger,sweepMelee,type MeleeState} from './melee.ts';
 import {isScope,canReachScope,bestScope,type Scope} from './scopes.ts';
-export type CombatState={magazine:Record<Weapon,number>;reloadStart:number;reloadCommit:number;reloadEnd:number;committed:boolean;kickYaw:number;kickPitch:number;aimBlend:number;lean:number;fireMode:number;shotCounter:number};
-export const initialCombat=():CombatState=>({magazine:{static:20,heart:0,bass:0},reloadStart:-1,reloadCommit:0,reloadEnd:0,committed:false,kickYaw:0,kickPitch:0,aimBlend:0,lean:0,fireMode:0,shotCounter:0});
-export type Command={round:string;seq:number;tick:number;throttle:number;steer:number;aimYaw:number;aimPitch:number;fire:boolean;shot:number;hop:boolean;hopHeld:boolean;burst:boolean;utility:boolean;repair:boolean;recover:boolean;swap:boolean;slot:number;reload:boolean;cycleMode:boolean;aimMode:number;lean:number;crouch:boolean;prone:boolean;dogAttack:boolean;dogRadar:boolean;dismount:boolean};
-export const neutral=(round:string,seq=0,tick=0):Command=>({round,seq,tick,throttle:0,steer:0,aimYaw:0,aimPitch:0,fire:false,shot:0,hop:false,hopHeld:false,burst:false,utility:false,repair:false,recover:false,swap:false,slot:0,reload:false,cycleMode:false,aimMode:0,lean:0,crouch:false,prone:false,dogAttack:false,dogRadar:false,dismount:false});
+export type CombatState={melee?:MeleeState;magazine:Record<Weapon,number>;reloadStart:number;reloadCommit:number;reloadEnd:number;committed:boolean;kickYaw:number;kickPitch:number;aimBlend:number;lean:number;fireMode:number;shotCounter:number};
+export const initialCombat=():CombatState=>({melee:initialMelee(),magazine:{static:20,heart:0,bass:0},reloadStart:-1,reloadCommit:0,reloadEnd:0,committed:false,kickYaw:0,kickPitch:0,aimBlend:0,lean:0,fireMode:0,shotCounter:0});
+export type Command={round:string;seq:number;tick:number;throttle:number;steer:number;aimYaw:number;aimPitch:number;fire:boolean;shot:number;hop:boolean;hopHeld:boolean;burst:boolean;utility:boolean;repair:boolean;recover:boolean;swap:boolean;slot:number;reload:boolean;cycleMode:boolean;aimMode:number;lean:number;crouch:boolean;prone:boolean;dogAttack:boolean;dogRadar:boolean;dismount:boolean;brawl:boolean;light:boolean;heavy:boolean;evade:number};
+export const neutral=(round:string,seq=0,tick=0):Command=>({round,seq,tick,throttle:0,steer:0,aimYaw:0,aimPitch:0,fire:false,shot:0,hop:false,hopHeld:false,burst:false,utility:false,repair:false,recover:false,swap:false,slot:0,reload:false,cycleMode:false,aimMode:0,lean:0,crouch:false,prone:false,dogAttack:false,dogRadar:false,dismount:false,brawl:false,light:false,heavy:false,evade:0});
 export function weaponSocket(p:RidePose,skin:string,aimYaw:number,aimPitch:number,aimBlend=0,lean=0){
  const scale=skin.startsWith('DS_Mascot_')?.48:1,yaw=p.headingY+aimYaw;
  const prone=p.footProne||0,crouch=p.footCrouch||0;
@@ -37,7 +38,9 @@ export function move(a:Motion,c:Command,tick:number){
  a.controller.regulatedSpeed=true;
  a.controller.setHandling({...profile.tuning,driveAcceleration:profile.tuning.driveAcceleration*(boosted?1.65:1)});
 
- const input={...NEUTRAL_ACTIONS,throttle:c.throttle,steer:c.steer,crouch:c.crouch,prone:c.prone,hop:c.hop,hopHeld:c.hopHeld,dismount:c.dismount||c.prone&&!a.controller.poseValue.footMode&&Math.abs(a.controller.poseValue.speed)<=1,run:c.burst};
+ a.controller.combatOnFoot=true;const melee=(a as Actor).combat?.melee;
+ const blocked=!!melee&&melee.staggerUntil>tick;
+ const input={...NEUTRAL_ACTIONS,mountBlocked:(a as Actor).integrity<=15||blocked,evade:melee&&melee.evadeUntil>tick?melee.evadeDir:0,throttle:blocked?c.throttle*.25:c.throttle,steer:c.steer,crouch:c.crouch,prone:c.prone,hop:c.hop,hopHeld:c.hopHeld,dismount:c.dismount||c.prone&&!a.controller.poseValue.footMode&&Math.abs(a.controller.poseValue.speed)<=1,run:c.burst};
  a.controller.step(DT/2,input);a.controller.step(DT/2,{...input,hop:false});
 }
 export type Actor=Motion&{reentryUsed:boolean;reentryUntil:number;protectedUntil:number;spawnNode:string;spawnSerial:number;dogPower:DogPower;dog:BattleDog;scopes:Scope[];combat:CombatState;id:string;name:string;skin:string;bot:boolean;connected:boolean;disconnectTick:number;integrity:number;shield:number;alive:boolean;lastDamage:number;lastSeq:number;ack:number;lastShot:number;lastInput:number;shotAt:number;slot:number;switchUntil:number;loadout:Weapon[];ammo:Record<Weapon,number>;utility:number;shieldUntil:number;repairs:number;repairUntil:number;queue:Command[];input:Command;kills:number;damage:number;shots:number;hits:number;distance:number;eliminatedAt:number;path:Vec3[];target?:Vec3;seenAt:number;aimAt:number;recoverTick:number;pose:RidePose};
@@ -83,7 +86,8 @@ export class RoyaleMatch{
  const c=value as Command;if(c.round!==this.round||!Number.isSafeInteger(c.seq)||c.seq<=a.lastSeq||c.seq>a.lastSeq+180||!Number.isInteger(c.tick)||Math.abs(c.tick-this.tick)>180||!Number.isSafeInteger(c.shot)||c.shot<0||c.shot>a.lastShot+600)return false;
  for(const k of ['throttle','steer','aimYaw','aimPitch','slot','aimMode','lean'] as const)if(!Number.isFinite(c[k]))return false;
  if(Math.abs(c.throttle)>1||Math.abs(c.steer)>1||Math.abs(c.aimYaw)>1.25||Math.abs(c.aimPitch)>.65||![0,1].includes(c.slot)||![0,1,2].includes(c.aimMode)||Math.abs(c.lean)>1)return false;
- for(const k of ['fire','hop','hopHeld','burst','utility','repair','recover','swap','reload','cycleMode','crouch','prone','dogAttack','dogRadar','dismount']as const)if(typeof c[k]!=='boolean')return false;
+ for(const k of ['fire','hop','hopHeld','burst','utility','repair','recover','swap','reload','cycleMode','crouch','prone','dogAttack','dogRadar','dismount','brawl','light','heavy']as const)if(typeof c[k]!=='boolean')return false;
+ if(![-1,0,1,2].includes(c.evade))return false;
  if(Object.keys(c).length!==Object.keys(neutral('')).length||a.queue.length>=24)return false;
  a.lastSeq=c.seq;a.lastInput=this.tick;a.queue.push({...c});return true;
  }
@@ -123,7 +127,7 @@ export class RoyaleMatch{
  const damage:{target:Actor;amount:number;owner?:Actor;bypass?:boolean}[]=[];
  for(const a of this.actors){if(!a.alive)continue;
   if(!a.connected&&a.disconnectTick>=0&&this.tick-a.disconnectTick>=1200){damage.push({target:a,amount:999,bypass:true});continue;}
-  let c=a.bot?this.botInput(a):a.queue.shift();if(c){a.input=c;a.ack=c.seq;}else c={...a.input,hop:false,utility:false,repair:false,recover:false,swap:false,reload:false,cycleMode:false};
+  let c=a.bot?this.botInput(a):a.queue.shift();if(c){a.input=c;a.ack=c.seq;}else c={...a.input,hop:false,utility:false,repair:false,recover:false,swap:false,reload:false,cycleMode:false,brawl:false,light:false,heavy:false,evade:0,dismount:false,dogAttack:false,dogRadar:false};
   if(!a.bot&&(this.tick-a.lastInput>21||!a.connected))c={...neutral(this.round),throttle:a.pose.speed>.05?-1:a.pose.speed<-.05?1:0};
   if(c.recover&&a.controller.crashed&&this.tick-a.recoverTick>180){
    // Battle recovery stands up locally; normal ride mode's last-safe teleport is not used.
@@ -191,7 +195,7 @@ export class RoyaleMatch{
   for(const [slot,a]of this.actors.entries()){
    if(!a.alive){k.pose(slot,a);continue;}
    let c=a.bot?this.botInput(a):a.queue.shift();
-   if(c){a.input=c;a.ack=c.seq;}else c={...a.input,hop:false,utility:false,repair:false,recover:false,swap:false,reload:false,cycleMode:false};
+   if(c){a.input=c;a.ack=c.seq;}else c={...a.input,hop:false,utility:false,repair:false,recover:false,swap:false,reload:false,cycleMode:false,brawl:false,light:false,heavy:false,evade:0,dismount:false,dogAttack:false,dogRadar:false};
    if(!a.bot&&(this.tick-a.lastInput>21||!a.connected))c={...neutral(this.round),throttle:a.pose.speed>.05?-1:a.pose.speed<-.05?1:0};
    c=k.input(slot,c);a.input=c;
    if(c.recover&&a.controller.crashed&&this.tick-a.recoverTick>180){
@@ -204,6 +208,11 @@ export class RoyaleMatch{
   }
   k.rules();
   if(this.tick%3===0)for(const [owner,a]of this.actors.entries()){a.dogPower=k.power(owner);const target=advanceBattleDog(a.dog,a,a.dogPower,this.actors,this.terrain,this.tick);if(target){const index=this.actors.findIndex(r=>r.id===target);if(k.core.call("dog_contact",owner,index,a.dog.x,a.dog.y,a.dog.z)===1){const victim=this.actors[index];victim.controller.knockOff();victim.pose={...victim.controller.poseValue};a.dog.mode="pounce";}}}
+  for(const [owner,a]of this.actors.entries()){
+   const m=k.melee(owner),scale=a.skin.startsWith('DS_Mascot_')?.48:1,to=meleeTrigger(m,a.pose,scale,this.tick);if(!a.alive||!to)continue;
+   const from=meleeTrigger(m,previousPoses[owner],scale,this.tick-1)??to;
+   for(const [target,b]of this.actors.entries())if(b!==a&&b.alive&&sweepMelee(from,to,b.pose,stanceBounds(b.pose,b.skin),.19*scale)&&this.terrain.line({x:a.pose.x,y:to.y,z:a.pose.z},to,.08))k.core.call('melee_contact',owner,target,m.serial,to.x,to.y,to.z);
+  }
   for(const shot of k.projectiles(this.actors)){
    const owner=this.actors.find(a=>a.id===shot.owner)!,spec=WEAPONS[shot.weapon];
    // Geometry is queried only by the authoritative host. A new muzzle cannot shoot through cover.

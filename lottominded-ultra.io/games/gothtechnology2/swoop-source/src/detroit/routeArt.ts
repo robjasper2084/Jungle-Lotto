@@ -3,14 +3,16 @@ import * as T from 'three';
 import {cutPoint,heightAt} from './world.ts';
 import type {Solid} from './world.ts';
 import {GEO,nearestRamp} from './geo-profile.ts';
+import {STATIC_WAVE_ART} from './mackWallArt.ts';
 
 /** Authored game advertising; these are not claims about real Detroit installations. */
 export const ROUTE_BILLBOARDS=[
  {at:1080,offset:-8.5,art:0},
  {at:1900,offset:-8.5,art:1},
+ {at:2300,offset:-8.5,art:5},
  {at:2425,offset:-8.5,art:3},
 ] as const;
-// Keep the photos in the gallery; the trail has only three curated campaigns.
+// Keep gallery photos indoors; the trail carries the selected campaigns.
 export const ROUTE_GALLERY:{at:number;offset:number;art:number}[]=[];
 const WIDTH=6.4,HEIGHT=3.6;
 export const DETROIT_FIELD_SIGN={at:1600,offset:-22,width:14,height:9.4};
@@ -37,6 +39,7 @@ export async function buildRouteArt(world:SceneryWorld,groupAt:(x:number,z:numbe
   new URL('../../art/route-campaign/detroit-dreams.jpg',import.meta.url).href,
   new URL('../../art/route-campaign/serengeti-refined.png',import.meta.url).href,
   new URL('../../art/route-campaign/detroit-heart.png',import.meta.url).href,
+  STATIC_WAVE_ART,
  ];
  const maps=await Promise.all(urls.map(url=>new T.TextureLoader().loadAsync(url)));
  const materials=maps.map(map=>{map.colorSpace=T.SRGBColorSpace;map.anisotropy=8;return new T.MeshStandardMaterial({map,roughness:.88,metalness:0});});
@@ -54,7 +57,7 @@ export async function buildRouteArt(world:SceneryWorld,groupAt:(x:number,z:numbe
   }
   for(const yaw of [p.yaw,p.yaw+Math.PI]){
    const mesh=new T.Mesh(panelGeometry(WIDTH,HEIGHT),materials[site.art]);
-   mesh.name=['Lotto Mind','GothTechnology','Detroit Dreams','Serengeti Galleries'][site.art]+' campaign '+site.at;
+   mesh.name=['Lotto Mind','GothTechnology','Detroit Dreams','Serengeti Galleries','Detroit Heart','Static Wave'][site.art]+' campaign '+site.at;
    mesh.position.set(p.x+Math.sin(yaw)*.112,p.y,p.z+Math.cos(yaw)*.112);mesh.rotation.y=yaw;group.add(mesh);
   }
   billboards++;

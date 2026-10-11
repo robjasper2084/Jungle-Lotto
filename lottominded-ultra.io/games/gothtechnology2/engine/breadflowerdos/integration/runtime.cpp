@@ -20,6 +20,7 @@ struct Actor {
  int reloadStart=-1,reloadCommit=0,reloadEnd=0,reloadWeapon=-1,reloadCommitted=0;
  int dogCharges=0,dogUntil=0,dogReady=0,dogHit=0,dogHeld=0,radarUntil=0,radarReady=0,radarHeld=0;
  int reentryUsed=0,reentryUntil=0,protectedUntil=0;
+ int brawl=0,brawlHeld=0,lightHeld=0,heavyHeld=0,evadeHeld=0,meleeKind=0,meleeStart=-1,meleeEnd=0,meleeSerial=0,meleeHitMask=0,combo=0,comboUntil=0,queued=0,staggerUntil=0,evadeUntil=0,evadeReady=0,evadeDir=0;
  double vx=0,vz=0,roll=0,air=0,rough=0,kickYaw=0,kickPitch=0,aimBlend=0,lean=0;
 };
 struct Projectile {int active=0,serial=0,salvo=0,pellet=0;double x=0,y=0,z=0,vx=0,vy=0,vz=0;int resolvedTick=-1;};
@@ -56,7 +57,7 @@ Field field(const State& s){
 void fire(State& s,int who){
  auto& a=s.actors[who];
  int weapon=a.loadout[a.slot];auto w=weapons[weapon];
- if(s.phase!=2||a.shieldUntil>s.tick||a.crashed||s.tick<a.switchUntil||a.reloadStart>=0||s.tick-a.shotAt<w.cadence||a.mag[weapon]<=0)return;
+ if(s.phase!=2||a.brawl||a.staggerUntil>s.tick||a.shieldUntil>s.tick||a.crashed||s.tick<a.switchUntil||a.reloadStart>=0||s.tick-a.shotAt<w.cadence||a.mag[weapon]<=0)return;
  int group=-1,free=0;for(int i=0;i<Salvos;i++)if(!s.salvos[i].active){group=i;break;}
  for(auto& p:s.projectiles)if(!p.active)++free;
  if(group<0||free<w.pellets){fail(s,22);return;}
@@ -86,21 +87,41 @@ void fire(State& s,int who){
 void cancelReload(Actor& a){a.reloadStart=-1;a.reloadCommit=a.reloadEnd=0;a.reloadWeapon=-1;a.reloadCommitted=0;}
 void startReload(State& s,int who){
  auto& a=s.actors[who];int id=a.loadout[a.slot];auto w=weapons[id];
- if(a.reloadStart>=0||a.mag[id]>=w.magazine||a.ammo[id]<=a.mag[id]||a.crashed||s.tick<a.switchUntil)return;
+ if(a.brawl||a.staggerUntil>s.tick||a.reloadStart>=0||a.mag[id]>=w.magazine||a.ammo[id]<=a.mag[id]||a.crashed||s.tick<a.switchUntil)return;
  a.reloadStart=s.tick;a.reloadCommit=s.tick+w.reloadCommit;a.reloadEnd=s.tick+w.reloadEnd;a.reloadWeapon=id;a.reloadCommitted=0;a.burstLeft=0;event(s,7,who);
+}
+void startMelee(State& s,int who,int heavy){
+ auto& a=s.actors[who];if(!a.brawl||input(s,who,32)<.5||input(s,who,24)>.3||a.staggerUntil>s.tick||a.evadeUntil>s.tick||!a.connected||a.crashed)return;
+ if(a.meleeEnd>s.tick){if(s.tick>=a.meleeEnd-12)a.queued=heavy?2:1;return;}
+ if(s.tick>a.comboUntil)a.combo=0;
+ a.meleeKind=heavy?(a.combo%2?4:3):(a.combo%2?2:1);a.combo=(a.combo+1)%4;a.comboUntil=s.tick+90;
+ a.meleeStart=s.tick;a.meleeEnd=s.tick+(heavy?42:28);a.meleeHitMask=0;++a.meleeSerial;a.protectedUntil=0;a.repairUntil=0;cancelReload(a);event(s,12,who);
+}
+void meleeRules(State& s,int who){
+ auto& a=s.actors[who];bool toggle=input(s,who,28)>0,light=input(s,who,29)>0,heavy=input(s,who,30)>0;int evade=int(std::round(input(s,who,31)*2));
+ if(toggle&&!a.brawlHeld&&input(s,who,32)>.5){a.brawl=!a.brawl;a.meleeKind=0;a.meleeStart=-1;a.meleeEnd=0;a.queued=0;cancelReload(a);a.burstLeft=0;}
+ a.brawlHeld=toggle;
+ if(input(s,who,32)<.5){a.brawl=0;a.meleeKind=0;a.meleeStart=-1;a.meleeEnd=0;a.queued=0;}
+ if(a.meleeEnd&&s.tick>=a.meleeEnd){a.meleeKind=0;a.meleeStart=-1;a.meleeEnd=0;int queued=a.queued;a.queued=0;if(queued)startMelee(s,who,queued==2);}
+ if(s.phase==2){if(light&&!a.lightHeld)startMelee(s,who,0);if(heavy&&!a.heavyHeld)startMelee(s,who,1);
+  if(evade&&!a.evadeHeld&&input(s,who,32)>.5&&input(s,who,24)<.3&&a.staggerUntil<=s.tick&&a.evadeReady<=s.tick&&a.connected){a.evadeDir=std::clamp(evade,-1,2);a.evadeUntil=s.tick+15;a.evadeReady=s.tick+60;a.meleeKind=0;a.meleeStart=-1;a.meleeEnd=0;a.queued=0;a.protectedUntil=0;event(s,14,who);}
+ }
+ a.lightHeld=light;a.heavyHeld=heavy;a.evadeHeld=evade!=0;
+ if(a.brawl||a.staggerUntil>s.tick)a.aimBlend=0;
 }
 void rules(State& s){
  auto f=field(s);
  for(int who=0;who<Slots;who++){
   auto& a=s.actors[who];if(!a.present||!a.alive)continue;
+  meleeRules(s,who);
   if(!a.connected&&a.drop>=0&&s.tick-a.drop>=1200){hit(s,who,999,-1,1);continue;}
   int sel=a.commandSlot;if(sel!=a.slot&&a.loadout[sel]>=0){cancelReload(a);a.burstLeft=0;a.slot=sel;a.switchUntil=s.tick+24;}
   auto w=weapons[a.loadout[a.slot]];
   a.kickYaw*=std::exp(-w.recovery/60);a.kickPitch*=std::exp(-w.recovery/60);
-  double targetAim=input(s,who,18);a.aimBlend+=std::clamp(targetAim-a.aimBlend,-1.0/w.adsTicks,1.0/w.adsTicks);
+  double targetAim=a.brawl||a.staggerUntil>s.tick?0:input(s,who,18);a.aimBlend+=std::clamp(targetAim-a.aimBlend,-1.0/w.adsTicks,1.0/w.adsTicks);
   a.lean+=std::clamp(input(s,who,19)-a.lean,-.08,.08);
   bool held=input(s,who,8)>0,edge=held&&!a.fireHeld,reload=input(s,who,16)>0,mode=input(s,who,17)>0;
-  if(held||reload||input(s,who,10)>0||input(s,who,26)>0||input(s,who,27)>0||input(s,who,18)>0)a.protectedUntil=0;
+  if(held||reload||input(s,who,10)>0||input(s,who,26)>0||input(s,who,27)>0||input(s,who,18)>0||input(s,who,29)>0||input(s,who,30)>0||input(s,who,31)!=0)a.protectedUntil=0;
   a.lastShot=std::max(a.lastShot,a.commandShot);
   if(a.crashed||!a.alive){cancelReload(a);a.burstLeft=0;}
   if(mode&&!a.modeHeld){int id=a.loadout[a.slot];do{a.fireMode[id]=(a.fireMode[id]+1)%3;}while(!(w.modes&(1<<a.fireMode[id])));a.burstLeft=0;}
@@ -144,6 +165,7 @@ void rules(State& s){
 }
 void finish(State& s){
  for(int i=0;i<s.hitCount;i++){auto h=s.hits[i];auto& a=s.actors[h.target];a.lastDamage=s.tick;a.repairUntil=0;
+  if(h.owner>=0){a.meleeKind=0;a.meleeStart=-1;a.meleeEnd=0;a.queued=0;a.staggerUntil=std::max(a.staggerUntil,s.tick+24);a.aimBlend=0;cancelReload(a);}
   double shield=h.bypass?0:std::min(a.shield,h.amount),injury=std::min(a.integrity,h.amount-shield);
   a.shield-=shield;a.integrity-=injury;if(h.owner>=0){auto& owner=s.actors[h.owner];owner.damage+=shield+injury;++owner.hits;event(s,4,h.owner,h.target);}
  }
@@ -166,7 +188,7 @@ struct Stream {
  void integer(int& v,int lo,int hi){double n=v;number(n,lo,hi);if(reading){if(std::floor(n)!=n)ok=false;else v=int(n);}}
 };
 void serialize(State& s,Stream& v){
- int version=8;v.integer(version,8,8);v.integer(s.reentry,0,1);
+ int version=9;v.integer(version,9,9);v.integer(s.reentry,0,1);
  for(auto& r:s.radii)v.number(r,0,10000);
  if(v.reading){for(int i=0;i<5;i++)if(s.radii[i]<=s.radii[i+1])v.ok=false;if(s.radii[5]!=0)v.ok=false;}
  for(auto& center:s.centers)for(auto& n:center)v.number(n,-10000,10000);
@@ -187,6 +209,7 @@ void serialize(State& s,Stream& v){
   v.integer(a.reloadStart,-1,21840);v.integer(a.reloadCommit,0,22020);v.integer(a.reloadEnd,0,22020);v.integer(a.reloadWeapon,-1,2);v.integer(a.reloadCommitted,0,1);
   v.integer(a.dogCharges,0,2);v.integer(a.dogUntil,0,23000);v.integer(a.dogReady,0,24000);v.integer(a.dogHit,0,1);v.integer(a.dogHeld,0,1);v.integer(a.radarUntil,0,22020);v.integer(a.radarReady,0,23000);v.integer(a.radarHeld,0,1);
   v.integer(a.reentryUsed,0,1);v.integer(a.reentryUntil,0,24000);v.integer(a.protectedUntil,0,24000);
+  v.integer(a.brawl,0,1);v.integer(a.brawlHeld,0,1);v.integer(a.lightHeld,0,1);v.integer(a.heavyHeld,0,1);v.integer(a.evadeHeld,0,1);v.integer(a.meleeKind,0,4);v.integer(a.meleeStart,-1,21840);v.integer(a.meleeEnd,0,22020);v.integer(a.meleeSerial,0,100000);v.integer(a.meleeHitMask,0,1023);v.integer(a.combo,0,3);v.integer(a.comboUntil,0,22020);v.integer(a.queued,0,2);v.integer(a.staggerUntil,0,22020);v.integer(a.evadeUntil,0,22020);v.integer(a.evadeReady,0,22020);v.integer(a.evadeDir,-1,2);
   v.number(a.vx,-100,100);v.number(a.vz,-100,100);v.number(a.roll,-2,2);v.number(a.air,0,1);v.number(a.rough,0,1);v.number(a.kickYaw,-.12,.12);v.number(a.kickPitch,0,.22);v.number(a.aimBlend,0,1);v.number(a.lean,-1,1);
   if(v.reading&&a.reloadStart>=0&&(a.reloadWeapon<0||a.reloadCommit<a.reloadStart||a.reloadEnd<a.reloadCommit))v.ok=false;
   if(v.reading&&a.present&&(a.loadout[0]<0||a.loadout[a.slot]<0||(!a.alive&&a.integrity>0)))v.ok=false;
@@ -195,7 +218,7 @@ void serialize(State& s,Stream& v){
   v.number(p.x,-10000,10000);v.number(p.y,-10000,10000);v.number(p.z,-10000,10000);v.number(p.vx,-512,512);v.number(p.vy,-512,512);v.number(p.vz,-512,512);v.integer(p.resolvedTick,-1,21840);}
  for(auto& g:s.salvos){v.integer(g.active,0,1);v.integer(g.owner,0,Slots-1);v.integer(g.shot,0,2147483647);v.integer(g.weapon,0,2);v.integer(g.expires,0,22020);for(auto& n:g.awarded)v.number(n,0,48);}
  for(auto& l:s.loot){v.integer(l.present,0,1);v.integer(l.available,0,1);v.integer(l.kind,0,6);v.number(l.x,-10000,10000);v.number(l.y,-10000,10000);v.number(l.z,-10000,10000);}
- for(auto& e:s.events){v.integer(e.tick,0,21840);v.integer(e.kind,0,12);v.integer(e.actor,-1,Slots-1);v.integer(e.target,-1,Slots-1);}
+ for(auto& e:s.events){v.integer(e.tick,0,21840);v.integer(e.kind,0,14);v.integer(e.actor,-1,Slots-1);v.integer(e.target,-1,Slots-1);}
  for(auto& h:s.hits){v.integer(h.target,0,Slots-1);v.integer(h.owner,-1,Slots-1);v.integer(h.bypass,0,1);v.number(h.amount,0,999);}
  if(v.reading)for(auto& p:s.projectiles)if(p.active&&!s.salvos[p.salvo].active)v.ok=false;
 }
@@ -223,6 +246,12 @@ int bf_connected(int id,int who,int connected){auto c=bf::get(id);if(!c||!bf::sl
 int bf_loot(int id,int item,int kind,double x,double y,double z){auto c=bf::get(id);if(!c||item<0||item>=384||kind<0||kind>6||c->s.tick||!bf::finite(x,-10000,10000)||!bf::finite(y,-10000,10000)||!bf::finite(z,-10000,10000))return -1;c->s.loot[item]={1,1,kind,x,y,z};return 1;}
 // Called only by the host after its dog navigation, contact and cover checks.
 int bf_dog_contact(int id,int owner,int target,double x,double y,double z){auto c=bf::get(id);if(!c||!bf::slot(owner)||!bf::slot(target)||owner==target)return -1;auto& s=c->s;auto& a=s.actors[owner];auto& b=s.actors[target];if(s.stage!=2||s.phase!=2||!a.alive||!a.connected||!b.present||!b.alive||a.dogHit||a.dogUntil<=s.tick||b.shieldUntil>s.tick||b.protectedUntil>s.tick)return 0;if(!bf::finite(x,-10000,10000)||!bf::finite(y,-10000,10000)||!bf::finite(z,-10000,10000)||std::hypot(x-b.x,z-b.z)>1.6||std::abs(y-b.y)>1.2)return 0;a.dogHit=1;a.dogUntil=s.tick;bf::hit(s,target,25,owner);bf::event(s,11,owner,target);return 1;}
+// Host-only swept fist/foot trigger contact. The input protocol has no victim or damage fields.
+int bf_melee_contact(int id,int owner,int target,int serial,double x,double y,double z){auto c=bf::get(id);if(!c||!bf::slot(owner)||!bf::slot(target)||owner==target)return -1;auto& s=c->s;auto& a=s.actors[owner];auto& b=s.actors[target];int age=s.tick-a.meleeStart;
+ if(s.stage!=2||s.phase!=2||!a.alive||!a.connected||!a.brawl||!b.present||!b.alive||a.staggerUntil>s.tick||!a.meleeKind||a.meleeSerial!=serial||(a.meleeHitMask&(1<<target))||b.shieldUntil>s.tick||b.protectedUntil>s.tick)return 0;
+ if(age<(a.meleeKind>2?12:6)||age>(a.meleeKind>2?24:15)||!bf::finite(x,-10000,10000)||!bf::finite(y,-10000,10000)||!bf::finite(z,-10000,10000)||std::hypot(x-a.x,z-a.z)>2.3*a.scale||std::hypot(x-b.x,z-b.z)>1.3||std::abs(y-b.y)>2)return 0;
+ a.meleeHitMask|=1<<target;bf::hit(s,target,a.meleeKind>2?36:18,owner);bf::event(s,13,owner,target);return 1;}
+double bf_melee(int id,int who,int key){auto c=bf::get(id);if(!c||!bf::slot(who))return -1;auto& a=c->s.actors[who];switch(key){case 0:return a.brawl;case 1:return a.meleeKind;case 2:return a.meleeStart;case 3:return a.meleeEnd;case 4:return a.meleeSerial;case 5:return a.staggerUntil;case 6:return a.evadeUntil;case 7:return a.evadeDir;default:return -1;}}
 double bf_dog(int id,int who,int key){auto c=bf::get(id);if(!c||!bf::slot(who))return -1;auto& a=c->s.actors[who];switch(key){case 0:return a.dogCharges;case 1:return a.dogUntil;case 2:return a.dogReady;case 3:return a.radarUntil;case 4:return a.radarReady;default:return -1;}}
 int bf_zone(int id,int index,double x,double z){auto c=bf::get(id);if(!c||c->s.tick||index<0||index>=5||!bf::finite(x,-10000,10000)||!bf::finite(z,-10000,10000))return -1;c->s.centers[index][0]=x;c->s.centers[index][1]=z;return 1;}
 int bf_radii(int id,double a,double b,double d,double e,double f,double g){
