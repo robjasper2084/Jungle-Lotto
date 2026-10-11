@@ -14,7 +14,7 @@ button{font:600 13px system-ui;color:inherit;min-height:44px;padding:10px 15px;b
 <canvas id="unity-canvas" width="1280" height="720" tabindex="0" aria-label="Playable music world: WASD move, Q walk or ride, Shift boost, C camera, Space hop"></canvas>
 <div id="loading"><div class="load"><h1>Step inside the music.</h1><p>Explore the flower garden, waterfront and live band.<br>You control the rider. Switch to walking whenever you like.</p><progress id="progress" max="1" value="0"></progress><p id="status" role="status">Loading the music world…</p><p id="error" role="alert"></p></div></div>
 <div id="hud" hidden>
- <div class="top"><div class="readout"><strong>BLOOM THROUGH GLOOM</strong><span id="motion">Riding · 0 km/h · 0 m explored</span></div><button id="music" data-command="music">Sound on</button><button id="pause" data-command="pause">Pause</button></div>
+ <div class="top"><div class="readout"><strong>BLOOM THROUGH GLOOM</strong><span id="motion">Riding · 0 km/h · 0 m explored</span></div><button id="performance" data-command="performance">Watch performance</button><button id="music" data-command="music">Sound on</button><button id="pause" data-command="pause">Pause</button></div>
  <div id="stick" role="group" aria-label="Touch movement joystick"><div id="thumb"></div><span id="stick-label">MOVE / STEER</span></div>
  <div class="actions"><button id="mode" data-command="mode">Get off wheel · Q</button><button data-command="camera">Camera · C</button><button id="boost" data-command="boost" aria-pressed="false">Boost</button><button data-command="hop">Hop</button><button data-command="recover">Recover</button><button id="return" hidden>Return to Detroit</button></div>
  <div id="hint">WASD move · Shift run / boost · Q walk / ride<br>Explore freely while the musicians perform.</div>
@@ -33,12 +33,16 @@ config.showBanner=(message,type)=>{if(type==='error')failure(message);};
 const script=document.createElement('script');script.src="Build/JazzPortal.loader.js";script.onerror=()=>failure('The world download was interrupted.');
 script.onload=()=>createUnityInstance(canvas,config,p=>{document.getElementById('progress').value=p;status.textContent='Loading the music world · '+Math.round(p*100)+'%';}).then(game=>{instance=game;enter();}).catch(e=>failure(String(e)));document.head.append(script);
 document.querySelectorAll('[data-command]').forEach(button=>button.onclick=()=>{send('PortalCommand',button.dataset.command);canvas.focus();});
+const updateStatus=window.bloomStatus;window.bloomStatus=value=>{updateStatus(value);const s=JSON.parse(value);document.getElementById('performance').textContent=s.cinematic?'Explore garden':'Watch performance';document.getElementById('performance').setAttribute('aria-pressed',String(!!s.cinematic));};
 document.getElementById('return').hidden=!embedded;document.getElementById('return').onclick=()=>parent.postMessage({type:'bloom-exit'},location.origin);
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&embedded){e.preventDefault();parent.postMessage({type:'bloom-exit'},location.origin);}});
 canvas.addEventListener('pointerdown',()=>canvas.focus());
-const stick=document.getElementById('stick'),thumb=document.getElementById('thumb');let pointer=null;
-function move(e){const r=stick.getBoundingClientRect(),radius=r.width*.36,dx=e.clientX-r.left-r.width/2,dy=e.clientY-r.top-r.height/2,m=Math.max(1,Math.hypot(dx,dy)/radius),x=dx/m,y=dy/m;thumb.style.transform='translate('+x+'px,'+y+'px)';send('PortalInput',JSON.stringify({throttle:-y/radius,steer:x/radius}));}
-function clear(){pointer=null;thumb.style.transform='';send('PortalCommand','clear');}
-stick.onpointerdown=e=>{pointer=e.pointerId;stick.setPointerCapture(pointer);move(e);};stick.onpointermove=e=>{if(e.pointerId===pointer)move(e);};stick.onpointerup=clear;stick.onpointercancel=clear;stick.onlostpointercapture=clear;
+const stick=document.getElementById('stick'),thumb=document.getElementById('thumb');let pointer=null,origin=null;
+function move(e){if(e.pointerId!==pointer||!origin)return;const radius=stick.clientWidth*.36,dx=e.clientX-origin.x,dy=e.clientY-origin.y,m=Math.max(1,Math.hypot(dx,dy)/radius),x=dx/m,y=dy/m;thumb.style.transform='translate('+x+'px,'+y+'px)';send('PortalInput',JSON.stringify({throttle:-y/radius,steer:x/radius}));}
+function clear(){pointer=null;origin=null;thumb.style.transform='';stick.style.left=stick.style.top=stick.style.bottom='';send('PortalCommand','clear');}
+function begin(e){if(pointer!==null||!entered)return;e.preventDefault();pointer=e.pointerId;origin={x:e.clientX,y:e.clientY};stick.style.left=(origin.x-stick.clientWidth/2)+'px';stick.style.top=(origin.y-stick.clientHeight/2)+'px';stick.style.bottom='auto';stick.setPointerCapture(pointer);move(e);}
+stick.onpointerdown=begin;stick.onpointermove=move;const end=e=>{if(e.pointerId===pointer)clear();};stick.onpointerup=end;stick.onpointercancel=end;stick.onlostpointercapture=end;
+canvas.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'&&e.clientX<innerWidth*.5&&e.clientY>64){begin(e);e.stopImmediatePropagation();}},{capture:true});
+window.addEventListener('resize',clear);
 window.addEventListener('blur',clear);document.addEventListener('visibilitychange',()=>{if(document.hidden){clear();send('PortalCommand','suspend');}});
 </script></body></html>

@@ -33,7 +33,9 @@ export function stepOnFoot(s:ReturnType<typeof footState>,p:FootPose,t:TerrainSa
  const ground=createGroundSample();
  const clear=(x:number,y:number,z:number,nx:number,ny:number,nz:number)=>{
   const dx=nx-x,dz=nz-z,d=Math.hypot(dx,dz);if(d<1e-7)return true;
-  const low=p.footProne>.5,heights=low?[.25,.45]:p.footCrouch>.5?[.4,.85]:[.45,1.2];
+  // Overlapping sweeps cover the whole body; two spaced spheres left a gap
+  // through which a thin raised sidewalk could slice the rider's torso.
+  const low=p.footProne>.5,heights=low?[.25,.45]:p.footCrouch>.5?[.4,.85]:[.35,.85,1.35,1.6];
   const offsets=low?[-.75,0,.65]:[0];
   return offsets.every(offset=>heights.every(h=>{const hit=t.raycastObstacle({x:x+Math.sin(p.headingY)*offset,y:Math.min(y,ny)+h,z:z+Math.cos(p.headingY)*offset},{x:dx/d,y:0,z:dz/d},d+.3,.27);return hit===null||hit>d+.27;}));
  };

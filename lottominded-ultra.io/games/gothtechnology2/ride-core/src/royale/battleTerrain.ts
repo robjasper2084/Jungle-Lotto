@@ -7,7 +7,7 @@ export interface BattleTerrain extends TerrainSampler {
  readonly optics?: {p:Vec3;kind:import('./scopes.ts').Scope}[];
  readonly fieldRadii?: readonly number[];
  readonly arenaIdentity: {map:string;arena:string;rules:string;protocol:number;physics:string;collision:string};
- ground(x:number,z:number,referenceY?:number):{height:number};
+ ground(x:number,z:number,referenceY?:number):{height:number;offCourse?:boolean};
  clear(x:number,z:number,radius?:number,referenceY?:number):boolean;
  sweep(origin:Vec3,delta:Vec3,radius?:number):number|null;
  line(a:Vec3,b:Vec3,radius?:number):boolean;

@@ -1,14 +1,28 @@
 import type {BattleTerrain} from './battleTerrain.ts';import type {RidePose} from '../controller.ts';import type {DogPose} from '../companion.ts';
 import {gaitCadence} from '../dogGait.ts';
 export type DogPower={charges:number;until:number;ready:number;radarUntil:number;radarReady:number};
-export type BattleDog=DogPose&{mode:'follow'|'chase'|'pounce'|'return';target?:string;activation:number;pounceUntil:number;replan:number;path:{x:number;y:number;z:number}[]};
-export function createBattleDog(p:RidePose):BattleDog{return{x:p.x+1.5,y:p.y+.02,z:p.z,heading:p.headingY,pitch:0,roll:0,speed:0,phase:0,time:0,turnRate:0,mode:'follow',activation:0,pounceUntil:0,replan:0,path:[]};}
+export type BattleDog=DogPose&{mode:'follow'|'chase'|'pounce'|'return';target?:string;activation:number;pounceUntil:number;replan:number;fallVelocity?:number;path:{x:number;y:number;z:number}[]};
+export function createBattleDog(p:RidePose,terrain?:BattleTerrain):BattleDog{
+ let start={x:p.x+1.5,y:p.y,z:p.z};
+ if(terrain){start={x:p.x,y:p.y-p.airHeight,z:p.z};for(const side of [1,-1,0]){
+  const x=p.x+Math.cos(p.headingY)*1.5*side,z=p.z-Math.sin(p.headingY)*1.5*side,g=terrain.ground(x,z,p.y-p.airHeight);
+  if(!g.offCourse&&Number.isFinite(g.height)&&Math.abs(g.height-start.y)<=.35&&terrain.clear(x,z,.27,g.height)&&terrain.line({x:p.x,y:start.y+.5,z:p.z},{x,y:g.height+.5,z},.27)){start={x,y:g.height,z};break;}
+ }}
+ return{...start,y:start.y+.02,heading:p.headingY,pitch:0,roll:0,speed:0,phase:0,time:0,turnRate:0,mode:'follow',activation:0,pounceUntil:0,replan:0,fallVelocity:0,path:[]};
+}
 type Rival={id:string;pose:RidePose;alive:boolean;input?:{aimYaw:number}};
 /** Fixed authority steps; swept ground routes and support checks forbid a dog
  * reaching through walls, jumping water, or teleporting to a moving opponent. */
 export function advanceBattleDog(d:BattleDog,owner:Rival,power:DogPower,rivals:readonly Rival[],terrain:BattleTerrain,tick:number){
  const dt=1/20,p=owner.pose,active=owner.alive&&power.until>tick;
  if(!owner.alive){d.speed=0;return;}
+ // A blocked horizontal step must not freeze the dog in midair. Settle at its
+ // own feet, independently of its owner's height and the next route waypoint.
+ const support=terrain.ground(d.x,d.z,d.y),floor=support.height+.02;
+ if(!support.offCourse&&Number.isFinite(floor)&&floor<=d.y+.35){
+  if(d.y>floor+.04){d.fallVelocity=(d.fallVelocity??0)-13*dt;d.y=Math.max(floor,d.y+d.fallVelocity*dt);}else d.y=floor;
+  if(d.y<=floor+.001)d.fallVelocity=0;
+ }
  if(active&&d.activation!==power.until){d.activation=power.until;d.target=undefined;d.replan=0;}
  let target=rivals.find(a=>a.id===d.target&&a.alive&&Math.hypot(a.pose.x-p.x,a.pose.z-p.z)<110);
  if(active&&!target){target=rivals.filter(a=>{const turn=Math.atan2(a.pose.x-p.x,a.pose.z-p.z)-p.headingY-(owner.input?.aimYaw??0);return a.id!==owner.id&&a.alive&&Math.abs(Math.atan2(Math.sin(turn),Math.cos(turn)))<1.25&&Math.hypot(a.pose.x-d.x,a.pose.z-d.z)<90&&Math.abs(a.pose.y-d.y)<2&&terrain.line({x:d.x,y:d.y+.5,z:d.z},{x:a.pose.x,y:a.pose.y+.5,z:a.pose.z},.25);}).sort((a,b)=>Math.hypot(a.pose.x-d.x,a.pose.z-d.z)-Math.hypot(b.pose.x-d.x,b.pose.z-d.z))[0];d.target=target?.id;d.replan=0;}

@@ -10,14 +10,14 @@ test('stage keeps the local loader and references exact immutable program and fi
  try {
   const stage=resolve(root,'lottominded-ultra.io/games/gothtechnology2/arcade/swoop-detroit/exports/jazz-stage');
   await mkdir(resolve(stage,'Build'),{recursive:true});await mkdir(resolve(stage,'StreamingAssets'));
-  await writeFile(resolve(stage,'index.html'),'dataUrl:"Build/WebGL.data",codeUrl:"Build/WebGL.wasm",frameworkUrl:"Build/WebGL.framework.js",streamingAssetsUrl:"StreamingAssets"');
-  for(const name of ['Build/WebGL.data','Build/WebGL.wasm','StreamingAssets/BloomPerformance.mp4'])await writeFile(resolve(stage,name),Buffer.alloc(2048,42));
+  await writeFile(resolve(stage,'index.html'),'dataUrl:"Build/JazzPortal.data",codeUrl:"Build/JazzPortal.wasm",frameworkUrl:"Build/JazzPortal.framework.js",streamingAssetsUrl:"StreamingAssets"');
+  for(const name of ['Build/JazzPortal.data','Build/JazzPortal.wasm','StreamingAssets/BloomPerformance.mp4'])await writeFile(resolve(stage,name),Buffer.alloc(2048,42));
   const source=resolve(root,'original.data');await writeFile(source,Buffer.alloc(2048,42));
   const result=await shareUnityStage(root),html=await readFile(resolve(stage,'index.html'),'utf8');
-  assert(result.saved>0);assert(html.includes('frameworkUrl:"Build/WebGL.framework.js"'));
-  for(const name of ['Build/WebGL.data','StreamingAssets'])assert(html.includes('"'+UNITY_STAGE_SOURCE+name+'"'));
+  assert(result.saved>0);assert(html.includes('frameworkUrl:"Build/JazzPortal.framework.js"'));
+  for(const name of ['Build/JazzPortal.data','StreamingAssets'])assert(html.includes('"'+UNITY_STAGE_SOURCE+name+'"'));
   assert(html.includes('"'+UNITY_WASM_SOURCE+'"'));
   assert.equal((await readFile(source)).length,2048);
-  await assert.rejects(stat(resolve(stage,'Build/WebGL.data')),{code:'ENOENT'});
+  await assert.rejects(stat(resolve(stage,'Build/JazzPortal.data')),{code:'ENOENT'});
  } finally {await rm(root,{recursive:true,force:true});}
 });
