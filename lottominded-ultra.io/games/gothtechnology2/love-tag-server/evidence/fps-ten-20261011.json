@@ -1,0 +1,26 @@
+{
+  "endpoint": "http://127.0.0.1:8250",
+  "physicalHumans": 0,
+  "hostedInternet": false,
+  "evidence": [
+    {
+      "scenario": "10 independent network clients",
+      "physicalHumans": 0,
+      "module": "2e8d6f0643dccfc7779362e0e20f1d44381a7487e99e9adf0e0d4a75cde6a273",
+      "tenRoster": true,
+      "eleventhRejected": true,
+      "allMoved": true,
+      "tenthReconnect": true
+    },
+    {
+      "scenario": "AI fill",
+      "networkClients": 1,
+      "bots": 9
+    },
+    {
+      "scenario": "AI fill",
+      "networkClients": 4,
+      "bots": 6
+    }
+  ]
+}

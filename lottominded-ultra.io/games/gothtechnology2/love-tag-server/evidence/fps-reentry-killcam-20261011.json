@@ -1,0 +1,41 @@
+{
+  "at": "2026-10-12T01:06:21.169Z",
+  "module": "2e8d6f0643dccfc7779362e0e20f1d44381a7487e99e9adf0e0d4a75cde6a273",
+  "hostedInternet": false,
+  "evidence": [
+    {
+      "matchSize": 6,
+      "botCount": 0,
+      "roster": 1
+    },
+    {
+      "matchSize": 6,
+      "botCount": 2,
+      "roster": 3
+    },
+    {
+      "matchSize": 10,
+      "botCount": 9,
+      "roster": 10
+    },
+    {
+      "killerReplayDelivered": true,
+      "attackerIdentityCorrect": true,
+      "livingRequesterRejected": true,
+      "boundedChunks": true,
+      "requestsThrottled": true,
+      "maxChunkBytes": 48057
+    },
+    {
+      "automatedClients": 2,
+      "physicalHumans": 0,
+      "hostFixturePositioning": true,
+      "compiledDamage": true,
+      "ownRequestOnly": true,
+      "safeRespawn": true,
+      "broadcastCount": true,
+      "protectionPreservedOnReconnect": true,
+      "combatCancelsProtection": true
+    }
+  ]
+}

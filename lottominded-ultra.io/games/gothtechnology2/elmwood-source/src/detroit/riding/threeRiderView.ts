@@ -1,4 +1,5 @@
 import {applyOnFootRider} from '../../../../ride-core/src/onFootRider.ts';
+import {FingerPose} from '../../../../ride-core/src/fingerPose.ts';
 import {solveLimb as solve} from '../../../../ride-core/src/limbIK.ts';
 import {ArmorKeychain} from '../armorKeychain.ts';
 import {HelmetSkinDecal} from '../helmetSkin.ts';
@@ -18,6 +19,7 @@ const v=()=>new T.Vector3(),q=()=>new T.Quaternion();
 function rotateWorld(bone:T.Object3D|undefined,axis:T.Vector3,angle:number){if(!bone)return;const w=bone.getWorldQuaternion(q()).premultiply(q().setFromAxisAngle(axis,angle));bone.quaternion.copy(bone.parent!.getWorldQuaternion(q()).invert().multiply(w));bone.updateWorldMatrix(false,true);}
 function prepare(o:T.Object3D){o.traverse(n=>{const m=n as T.Mesh;if(m.isMesh){m.castShadow=true;m.receiveShadow=true;m.frustumCulled=!(m as T.SkinnedMesh).isSkinnedMesh;}});}
 export class ThreeRiderView {
+  readonly fingers:FingerPose;
   readonly lights:WheelLights;
   root=new T.Group();ground=new T.Group();lean=new T.Group();vehicle:T.Object3D;rider:T.Object3D;
   wheel?:T.Object3D;body?:T.Object3D;bodyRestY=0;hips?:T.Object3D;head?:T.Object3D;chest?:T.Object3D;
@@ -43,6 +45,7 @@ export class ThreeRiderView {
     this.shoulders=['LeftShoulder','RightShoulder'].map(name=>this.rider.getObjectByName(name)).filter((bone):bone is T.Object3D=>!!bone);
     if(this.wheel){const bounds=new T.Box3().setFromObject(this.wheel),size=bounds.getSize(v());this.axle.copy(this.lean.worldToLocal(bounds.getCenter(v())));this.tyreRadius=(size.y+size.z)/4;this.tyreHalfWidth=size.x/2;}
     this.rider.traverse(o=>{if((o as T.Bone).isBone)this.bones.push({o,p:o.position.clone(),q:o.quaternion.clone()});});
+    this.fingers=new FingerPose(this.rider,riderAsset.animations);
     for(const side of ['Left','Right'])for(const arm of [false,true]){
       const upper=this.rider.getObjectByName(side+(arm?'Arm':'UpLeg')),knee=this.rider.getObjectByName(side+(arm?'ForeArm':'Leg')),foot=this.rider.getObjectByName(side+(arm?'Hand':'Foot'));
       if(upper&&knee&&foot)(arm?this.arms:this.legs).push({upper,knee,foot,target:this.lean.worldToLocal(foot.getWorldPosition(v())),rotation:this.lean.getWorldQuaternion(q()).invert().multiply(foot.getWorldQuaternion(q()))});
@@ -184,6 +187,6 @@ export class ThreeRiderView {
       this.riderContact.settle(this.rider,floor,this.terrain);
       this.root.updateMatrixWorld(true);
     }
-    applyOnFootRider(this,p);
+    applyOnFootRider(this,p);this.fingers.apply();
   }
 }

@@ -37,7 +37,7 @@ export class CombatRig {
       const at=(values:number[])=>new T.Vector3().fromArray(values).multiplyScalar(scale).applyQuaternion(heading).add(new T.Vector3(pose.x,pose.y,pose.z));
       for(const [i,values]of [targets.left,targets.right].entries()){const limb=h.arms[i],pole=new T.Vector3(i===0?.7:-.7,-.3,-.3).applyQuaternion(heading);solve(limb,at(values),pole,heading.clone().multiply(limb.rotation));}
       if(state.melee.kind===3&&h.legs[1]){const leg=h.legs[1];solve(leg,at(targets.kick),new T.Vector3(0,.4,1).applyQuaternion(heading),heading.clone().multiply(leg.rotation));}
-      h.root.updateWorldMatrix(true,true);w.visible=false;this.errorL=this.errorR=0;return;
+      h.fingers.apply('MeleeFist');h.root.updateWorldMatrix(true,true);w.visible=false;this.errorL=this.errorR=0;return;
     }
     const socket=weaponSocket(pose,h.riderId,yaw,pitch,state.aimBlend,state.lean);
     w.position.set(socket.grip.x,socket.grip.y,socket.grip.z);
@@ -66,6 +66,8 @@ export class CombatRig {
       target.lerp(mag,release);
     }
     solve(h.arms[0],target,elbowPole(1),rot.clone().multiply(aim).multiply(h.arms[0].rotation));
+    const release=state.reloadStart<0?0:Math.sin(Math.PI*T.MathUtils.clamp((tick-state.reloadStart)/Math.max(1,state.reloadEnd-state.reloadStart),0,1))**2;
+    h.fingers.apply('SupportGrip','WeaponGrip',release);
     h.root.updateWorldMatrix(true,true);this.errorL=h.arms[0].foot.getWorldPosition(new T.Vector3()).distanceTo(target);
   }
 }

@@ -26,7 +26,7 @@ async function command(link:Link,p:any){
   else{if(!/^[A-F0-9]{8}$/.test(o.code))throw Error('Invalid room code');const r=await fetch(local+'/v1/royale/'+o.code);if(!r.ok)throw Error('Room not found');room=await client.joinById((await r.json()).roomId,o.options);}
   if(!links.has(link.ticket.id)){await room.leave();return;}
   link.room=room;room.reconnection.enabled=false;
-  for(const type of ['welcome','lobby','snapshot','notice','respawn','voice-roster','voice-signal'])room.onMessage(type,data=>send(link,type,data));
+  for(const type of ['welcome','lobby','snapshot','notice','respawn','killcam','voice-roster','voice-signal'])room.onMessage(type,data=>send(link,type,data));
   room.onError((_code,message)=>send(link,'error',message??'Room error'));room.onLeave(()=>{send(link,'closed',{});if(![...links.values()].some(l=>l!==link&&l.room?.roomId===room.roomId))created.delete(room.roomId);});
   send(link,'joined',{sessionId:room.sessionId,roomId:room.roomId,reconnectionToken:room.reconnectionToken});room.send('hello',{});return;
   }finally{link.joining=false;link.last=Date.now();}
@@ -35,7 +35,7 @@ async function command(link:Link,p:any){
  if(!link.room)return;
  if(p.type==='leave'){await drop(link,true);return;}
  if(p.type==='inputs'&&Array.isArray(p.data)&&p.data.length<=15){for(const input of p.data)link.room.send('input',input);return;}
- if(['hello','ready','start','rematch','respawn','release','voice-state','voice-signal'].includes(p.type))link.room.send(p.type,p.data);
+ if(['hello','ready','start','rematch','respawn','killcam','release','voice-state','voice-signal'].includes(p.type))link.room.send(p.type,p.data);
 }
 host.on('broadcast',{event:'hello'},({payload})=>{void (async()=>{
  try{const t=await open(key,payload,'royale-ticket-v1') as Ticket;if(t.expires<Date.now()||Date.now()-t.issued>60000||links.has(t.id)||links.size>=10)return;
@@ -48,7 +48,7 @@ host.on('broadcast',{event:'hello'},({payload})=>{void (async()=>{
 })();});
 await new Promise<void>((resolve,reject)=>host.subscribe(s=>s==='SUBSCRIBED'?resolve():s==='CHANNEL_ERROR'?reject(Error('Realtime connection failed')):undefined));
 console.log('Supabase encrypted test relay connected; simulation remains on '+new URL(local).host+'. Test expires '+auth.expires_at);
-let sending=false;const batchTimer=setInterval(()=>{if(sending||host.state!=='joined')return;sending=true;void (async()=>{try{const batch=[];for(const link of links.values()){if(!link.frames.length)continue;const data=pack(link.frames.splice(0));batch.push({id:link.ticket.id,payload:await seal(link.key,{seq:++link.seq,data},'server:'+link.ticket.topic)});}if(batch.length)await host.send({type:'broadcast',event:'batch',payload:batch});}finally{sending=false;}})();},250);
+let sending=false;const batchTimer=setInterval(()=>{if(sending||host.state!=='joined')return;sending=true;void (async()=>{try{const batch=[];for(const link of links.values()){if(!link.frames.length)continue;let count=Math.min(link.frames.length,12),batchFrames=link.frames.slice(0,count),data=pack(batchFrames);while(count>1&&(data.length>100000||JSON.stringify(batchFrames).length>800000)){count--;batchFrames=link.frames.slice(0,count);data=pack(batchFrames);}link.frames.splice(0,count);batch.push({id:link.ticket.id,payload:await seal(link.key,{seq:++link.seq,data},'server:'+link.ticket.topic)});}if(batch.length)await host.send({type:'broadcast',event:'batch',payload:batch});}finally{sending=false;}})();},250);
 const timer=setInterval(()=>{for(const link of links.values())if(Date.now()-link.last>(link.joining?45000:5000)||link.ticket.expires<Date.now())void drop(link);},1000);
 const beat=setInterval(()=>void heartbeat().catch(()=>{console.error('Test lease expired or unavailable. Closing relay.');void stop();}),15000);
 async function stop(){clearInterval(timer);clearInterval(beat);clearInterval(batchTimer);for(const link of links.values())await drop(link);await realtime.removeAllChannels();realtime.disconnect();process.exit(0);}

@@ -1,3 +1,4 @@
+import {KillcamHistory} from './killcam.ts';
 import {engineReady,ENGINE_ID} from '../engine/runtime.ts';
 import {RoyaleKernel} from '../engine/royaleKernel.ts';
 import {RideController,NEUTRAL_ACTIONS,type RidePose} from '../controller.ts';
@@ -21,8 +22,8 @@ import {initialMelee,meleeTrigger,sweepMelee,type MeleeState} from './melee.ts';
 import {isScope,canReachScope,bestScope,type Scope} from './scopes.ts';
 export type CombatState={melee?:MeleeState;magazine:Record<Weapon,number>;reloadStart:number;reloadCommit:number;reloadEnd:number;committed:boolean;kickYaw:number;kickPitch:number;aimBlend:number;lean:number;fireMode:number;shotCounter:number};
 export const initialCombat=():CombatState=>({melee:initialMelee(),magazine:{static:20,heart:0,bass:0},reloadStart:-1,reloadCommit:0,reloadEnd:0,committed:false,kickYaw:0,kickPitch:0,aimBlend:0,lean:0,fireMode:0,shotCounter:0});
-export type Command={round:string;seq:number;tick:number;throttle:number;steer:number;aimYaw:number;aimPitch:number;fire:boolean;shot:number;hop:boolean;hopHeld:boolean;burst:boolean;utility:boolean;repair:boolean;recover:boolean;swap:boolean;slot:number;reload:boolean;cycleMode:boolean;aimMode:number;lean:number;crouch:boolean;prone:boolean;dogAttack:boolean;dogRadar:boolean;dismount:boolean;brawl:boolean;light:boolean;heavy:boolean;evade:number};
-export const neutral=(round:string,seq=0,tick=0):Command=>({round,seq,tick,throttle:0,steer:0,aimYaw:0,aimPitch:0,fire:false,shot:0,hop:false,hopHeld:false,burst:false,utility:false,repair:false,recover:false,swap:false,slot:0,reload:false,cycleMode:false,aimMode:0,lean:0,crouch:false,prone:false,dogAttack:false,dogRadar:false,dismount:false,brawl:false,light:false,heavy:false,evade:0});
+export type Command={round:string;seq:number;tick:number;throttle:number;steer:number;facingYaw:number|null;aimYaw:number;aimPitch:number;fire:boolean;shot:number;hop:boolean;hopHeld:boolean;burst:boolean;utility:boolean;repair:boolean;recover:boolean;swap:boolean;slot:number;reload:boolean;cycleMode:boolean;aimMode:number;lean:number;crouch:boolean;prone:boolean;dogAttack:boolean;dogRadar:boolean;dismount:boolean;brawl:boolean;light:boolean;heavy:boolean;evade:number};
+export const neutral=(round:string,seq=0,tick=0):Command=>({round,seq,tick,throttle:0,steer:0,facingYaw:null,aimYaw:0,aimPitch:0,fire:false,shot:0,hop:false,hopHeld:false,burst:false,utility:false,repair:false,recover:false,swap:false,slot:0,reload:false,cycleMode:false,aimMode:0,lean:0,crouch:false,prone:false,dogAttack:false,dogRadar:false,dismount:false,brawl:false,light:false,heavy:false,evade:0});
 export function weaponSocket(p:RidePose,skin:string,aimYaw:number,aimPitch:number,aimBlend=0,lean=0){
  const scale=skin.startsWith('DS_Mascot_')?.48:1,yaw=p.headingY+aimYaw;
  const prone=p.footProne||0,crouch=p.footCrouch||0;
@@ -40,7 +41,7 @@ export function move(a:Motion,c:Command,tick:number){
 
  a.controller.combatOnFoot=true;const melee=(a as Actor).combat?.melee;
  const blocked=!!melee&&melee.staggerUntil>tick;
- const input={...NEUTRAL_ACTIONS,mountBlocked:(a as Actor).integrity<=15||blocked,evade:melee&&melee.evadeUntil>tick?melee.evadeDir:0,throttle:blocked?c.throttle*.25:c.throttle,steer:c.steer,crouch:c.crouch,prone:c.prone,hop:c.hop,hopHeld:c.hopHeld,dismount:c.dismount||c.prone&&!a.controller.poseValue.footMode&&Math.abs(a.controller.poseValue.speed)<=1,run:c.burst};
+ const input={...NEUTRAL_ACTIONS,mountBlocked:(a as Actor).integrity<=15||blocked,evade:melee&&melee.evadeUntil>tick?melee.evadeDir:0,throttle:blocked?c.throttle*.25:c.throttle,steer:c.steer,facingYaw:c.facingYaw??undefined,crouch:c.crouch,prone:c.prone,hop:c.hop,hopHeld:c.hopHeld,dismount:c.dismount||c.prone&&!a.controller.poseValue.footMode&&Math.abs(a.controller.poseValue.speed)<=1,run:c.burst};
  a.controller.step(DT/2,input);a.controller.step(DT/2,{...input,hop:false});
 }
 export type Actor=Motion&{reentryUsed:boolean;reentryUntil:number;protectedUntil:number;spawnNode:string;spawnSerial:number;dogPower:DogPower;dog:BattleDog;scopes:Scope[];combat:CombatState;id:string;name:string;skin:string;bot:boolean;connected:boolean;disconnectTick:number;integrity:number;shield:number;alive:boolean;lastDamage:number;lastSeq:number;ack:number;lastShot:number;lastInput:number;shotAt:number;slot:number;switchUntil:number;loadout:Weapon[];ammo:Record<Weapon,number>;utility:number;shieldUntil:number;repairs:number;repairUntil:number;queue:Command[];input:Command;kills:number;damage:number;shots:number;hits:number;distance:number;eliminatedAt:number;path:Vec3[];target?:Vec3;seenAt:number;aimAt:number;recoverTick:number;pose:RidePose};
@@ -56,6 +57,7 @@ export function fieldAt(tick:number,seed:number,zones=ZONE_CANDIDATES,radii:read
 function targetHit(p:Vec3,d:Vec3,a:Actor,r:number){const q=a.pose,b=stanceBounds(q,a.skin),lo=[q.x-b.x-r,q.y+b.minY-r,q.z-b.z-r],hi=[q.x+b.x+r,q.y+b.maxY+r,q.z+b.z+r],o=[p.x,p.y,p.z],v=[d.x,d.y,d.z];let t0=0,t1=1;for(let i=0;i<3;i++){if(Math.abs(v[i])<1e-8){if(o[i]<lo[i]||o[i]>hi[i])return null;}else{let a=(lo[i]-o[i])/v[i],b=(hi[i]-o[i])/v[i];if(a>b)[a,b]=[b,a];t0=Math.max(t0,a);t1=Math.min(t1,b);if(t0>t1)return null;}}return t0;}
 export class RoyaleMatch{
  phase:'lobby'|'deployment'|'active'|'results'='lobby';round='';tick=0;seed=0;actors:Actor[]=[];projectiles:Projectile[]=[];loot:Loot[]=[];winner:string|null=null;reason='';events:{tick:number;kind:string;actor:string;target?:string}[]=[];
+ private replayHistory=new KillcamHistory();
  private awarded=new Map<string,number>();
  private brains=new Map<string,{think:number;enemy?:string;acquired:number;stuck:number;last:Vec3;backUntil:number}>();
  private kernel?:RoyaleKernel;private roundStarts:SpawnNode[]=[];
@@ -75,7 +77,7 @@ export class RoyaleMatch{
  const a:Actor={reentryUsed:false,reentryUntil:0,protectedUntil:0,spawnNode:node?.id??'legacy-'+this.actors.length,spawnSerial:0,dogPower:{charges:0,until:0,ready:0,radarUntil:0,radarReady:0},dog:createBattleDog(controller.poseValue,this.terrain),scopes:[],wheelId,combat:initialCombat(),id,name:name.slice(0,20),skin,bot,connected:true,disconnectTick:-1,controller,energy:100,burstUntil:0,burstLatch:false,integrity:100,shield:50,alive:true,lastDamage:-99999,lastSeq:0,ack:0,lastShot:0,lastInput:0,shotAt:-999,slot:0,switchUntil:0,loadout:['static'],ammo:{static:80,heart:0,bass:0},utility:1,shieldUntil:0,repairs:1,repairUntil:0,queue:[],input:neutral(''),kills:0,damage:0,shots:0,hits:0,distance:0,eliminatedAt:-1,path:[],seenAt:0,aimAt:0,recoverTick:0,pose:{...controller.poseValue}};this.actors.push(a);return a;
  }
  start(round:string,seed=1){if(!this.actors.length||this.actors.length>this.size||!['lobby','results'].includes(this.phase))throw Error('ALL_ROOM_RIDERS_REQUIRED');
- this.round=round;this.seed=seed;this.tick=0;this.phase='deployment';this.winner=null;this.reason='';this.events=[];this.projectiles=[];this.awarded.clear();this.brains.clear();
+ this.replayHistory.reset();this.round=round;this.seed=seed;this.tick=0;this.phase='deployment';this.winner=null;this.reason='';this.events=[];this.projectiles=[];this.awarded.clear();this.brains.clear();
  const roster=this.actors.map(a=>({id:a.id,name:a.name,bot:a.bot,skin:a.skin,wheelId:a.wheelId,connected:a.connected}));this.roundStarts=this.terrain.spawnNodes?initialSpawnNodes(this.terrain.spawnNodes,roster.length,seed):[];this.actors=[];this.phase='lobby';for(const r of roster){const a=this.add(r.id,r.name,r.bot,r.skin,r.wheelId);a.connected=r.connected;a.input=neutral(round);a.disconnectTick=r.connected?-1:0;}this.phase='deployment';
  this.loot=this.terrain.supplies?this.terrain.supplies.map((p,i)=>({id:'district-'+i,p:{...p},kind:(['static','heart','bass','ammo','repair','shield','dog'] as const)[i%7],available:true} as Loot)):this.terrain.spawns.flatMap((s,i)=>{const x=s.position.x*.87,z=s.position.z*.87;return [{id:'weapon-'+i,p:{x,y:this.terrain.ground(x,z).height,z},kind:i%2?'heart':'bass',available:true},{id:'supply-'+i,p:{x:x+6,y:this.terrain.ground(x+6,z).height,z},kind:'ammo',available:true}] as Loot[];});
  for(const [i,p]of this.terrain.zones.entries())this.loot.push({id:'central-'+i,p:{...p,y:this.terrain.ground(p.x,p.z).height},kind:i%2?'repair':'shield',available:true});
@@ -88,6 +90,7 @@ export class RoyaleMatch{
  if(Math.abs(c.throttle)>1||Math.abs(c.steer)>1||Math.abs(c.aimYaw)>1.25||Math.abs(c.aimPitch)>.65||![0,1].includes(c.slot)||![0,1,2].includes(c.aimMode)||Math.abs(c.lean)>1)return false;
  for(const k of ['fire','hop','hopHeld','burst','utility','repair','recover','swap','reload','cycleMode','crouch','prone','dogAttack','dogRadar','dismount','brawl','light','heavy']as const)if(typeof c[k]!=='boolean')return false;
  if(![-1,0,1,2].includes(c.evade))return false;
+ if(c.facingYaw!==null&&(!Number.isFinite(c.facingYaw)||Math.abs(c.facingYaw)>Math.PI))return false;
  if(Object.keys(c).length!==Object.keys(neutral('')).length||a.queue.length>=24)return false;
  a.lastSeq=c.seq;a.lastInput=this.tick;a.queue.push({...c});return true;
  }
@@ -123,7 +126,7 @@ export class RoyaleMatch{
  c.recover=a.controller.crashed;c.repair=a.integrity<55&&this.tick-a.lastDamage>180;c.utility=a.shield<10&&this.tick-a.lastDamage<120;c.slot=a.slot;c.burst=Math.hypot(p.x-f.x,p.z-f.z)>f.radius;
  if(a.dogPower.charges&&visible){c.dogAttack=this.tick>=a.dogPower.ready;c.dogRadar=this.tick>=a.dogPower.radarReady;}return c;
  }
- step(){if(this.phase==='lobby'||this.phase==='results')return;if(this.kernel){this.stepEngine();return;}this.tick++;if(this.tick>=PROTECTION)this.phase='active';
+ step(){if(this.phase==='lobby'||this.phase==='results')return;if(this.kernel){this.stepEngine();this.recordReplay();return;}this.tick++;if(this.tick>=PROTECTION)this.phase='active';
  const damage:{target:Actor;amount:number;owner?:Actor;bypass?:boolean}[]=[];
  for(const a of this.actors){if(!a.alive)continue;
   if(!a.connected&&a.disconnectTick>=0&&this.tick-a.disconnectTick>=1200){damage.push({target:a,amount:999,bypass:true});continue;}
@@ -171,7 +174,7 @@ export class RoyaleMatch{
  if(this.phase==='active'){const live=this.actors.filter(a=>a.alive);if(live.length<=1&&(this.actors.length>1||!live.length))this.finish(live[0]?.id??null,live.length?'Last rider standing':'Simultaneous elimination');
  else if(this.tick>=PROTECTION+DEADLINE){for(const a of live){a.integrity=0;a.alive=false;a.eliminatedAt=this.tick;}this.finish(null,'Static Field deadline');}}
  this.collectScopes();
- if(this.events.length>32)this.events.splice(0,this.events.length-32);
+ if(this.events.length>32)this.events.splice(0,this.events.length-32);this.recordReplay();
  }
  private fire(a:Actor,c:Command){if(c.shot<=a.lastShot)return;a.lastShot=c.shot;const weapon=a.loadout[a.slot],w=WEAPONS[weapon];
  if(this.phase!=='active'||a.shieldUntil>this.tick||a.controller.crashed||this.tick<a.switchUntil||this.tick-a.shotAt<w.interval||a.ammo[weapon]<=0)return;
@@ -257,13 +260,20 @@ export class RoyaleMatch{
   this.winner=candidate.winner;this.reason=candidate.reason;this.projectiles=candidate.projectiles;
  }
  dispose(){this.kernel?.dispose();this.kernel=undefined;}
+ private actorView(a:Actor){return {id:a.id,skin:a.skin,wheelId:a.wheelId,spawnSerial:a.spawnSerial,protected:a.protectedUntil>this.tick,scope:bestScope(a.scopes),combat:structuredClone(a.combat),pose:{...a.pose},dog:{...structuredClone(a.dog),path:[],target:undefined,radar:a.dogPower.radarUntil>this.tick},aimYaw:a.input.aimYaw,aimPitch:a.input.aimPitch,alive:a.alive,shieldActive:a.shieldUntil>this.tick,weapon:a.loadout[a.slot]};}
+ private recordReplay(){
+  if(this.tick%6!==0&&!this.events.some(e=>e.tick===this.tick&&e.kind==='eliminated'))return;
+  const view=this.snapshot();view.actors=this.actors.map(a=>this.actorView(a));view.projectiles=this.projectiles.map(s=>({...s,p:{...s.p},v:{...s.v}}));view.events=this.events.map(e=>({...e}));view.loot=[];view.results=[];
+  this.replayHistory.record(view,(a,b)=>this.terrain.line(a,b));
+ }
+ killcam(viewer:string){const a=this.actors.find(a=>a.id===viewer);return a?this.replayHistory.get(viewer,a.alive,a.spawnSerial):undefined;}
  snapshot(viewer?:string){
   const me=this.actors.find(a=>a.id===viewer),playing=this.phase==='active'||this.phase==='deployment';
   const visible=(a:Actor)=>!playing||a===me||!!me?.alive&&Math.hypot(a.pose.x-me.pose.x,a.pose.z-me.pose.z)<150&&this.terrain.line({x:me.pose.x,y:me.pose.y+1.4,z:me.pose.z},{x:a.pose.x,y:a.pose.y+1.4,z:a.pose.z});
   return {round:this.round,size:this.size,tick:this.tick,phase:this.phase,field:this.kernel?.field()??fieldAt(this.tick,this.seed,this.terrain.zones,this.terrain.fieldRadii),winner:this.winner,reason:this.reason,remaining:this.actors.filter(a=>a.alive).length,
    engine:this.engineEnabled?ENGINE_ID:undefined,engineInputFrames:this.kernel?.core.call('frames')??0,
    roster:this.actors.map(a=>({id:a.id,name:a.name,bot:a.bot,skin:a.skin,wheelId:a.wheelId,alive:a.alive,connected:a.connected})),
-   actors:this.actors.filter(visible).map(a=>({id:a.id,skin:a.skin,wheelId:a.wheelId,spawnSerial:a.spawnSerial,protected:a.protectedUntil>this.tick,scope:bestScope(a.scopes),combat:structuredClone(a.combat),pose:{...a.pose},dog:{...structuredClone(a.dog),path:[],target:undefined,radar:a.dogPower.radarUntil>this.tick},aimYaw:a.input.aimYaw,aimPitch:a.input.aimPitch,alive:a.alive,shieldActive:a.shieldUntil>this.tick,weapon:a.loadout[a.slot]})),
+   actors:this.actors.filter(visible).map(a=>this.actorView(a)),
    self:me?{id:me.id,spawnSerial:me.spawnSerial,reentry:{used:me.reentryUsed,until:me.reentryUntil,eligible:this.reentry&&!me.alive&&!me.reentryUsed&&me.reentryUntil>this.tick,protectedUntil:me.protectedUntil},healingUntil:me.repairUntil,dogPower:{...me.dogPower},radar:me.dogPower.radarUntil>this.tick?this.actors.filter(a=>a!==me&&a.alive&&Math.hypot(a.pose.x-me.pose.x,a.pose.z-me.pose.z)<90).map(a=>({id:a.id,x:Math.round(a.pose.x/10)*10,z:Math.round(a.pose.z/10)*10})):[],wheelId:me.wheelId,scopes:[...me.scopes],combat:structuredClone(me.combat),integrity:me.integrity,shield:me.shield,energy:me.energy,burstUntil:me.burstUntil,burstLatch:me.burstLatch,controller:me.controller.captureState(),ack:me.ack,inputCursor:me.lastSeq,shotCursor:me.lastShot,slot:me.slot,loadout:[...me.loadout],ammo:{...me.ammo},utility:me.utility,repairs:me.repairs,alive:me.alive,shotAt:me.shotAt}:undefined,
    projectiles:!playing||me?.alive?this.projectiles.filter(s=>!me||Math.hypot(s.p.x-me.pose.x,s.p.z-me.pose.z)<(s.owner===me.id?500:150)&&this.terrain.line({x:me.pose.x,y:me.pose.y+1.4,z:me.pose.z},s.p)).map(s=>({...s,p:{...s.p},v:{...s.v}})):[],
    loot:me?.alive||!playing?this.loot.filter(l=>l.available).map(l=>({...l,p:{...l.p}})):[],

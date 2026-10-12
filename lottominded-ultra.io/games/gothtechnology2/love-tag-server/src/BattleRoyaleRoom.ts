@@ -19,11 +19,12 @@ function downtown(){return downtownLoad??=(async()=>{
 export class BattleRoyaleRoom extends Room{
  maxClients=14;private size:6|10=10;private match!:RoyaleMatch;private terrain!:DowntownArena;private host='';private code='';private botFill=false;private botCount=-1;
  private ready=new Set<string>();private spectators=new Set<string>();private rates=new Map<string,{at:number;n:number}>();private battleClock=new RoyaleClock();private failed=false;private telemetryAt=0;private sendClock=0;private born=Date.now();
+ private replaySent=new Map<string,number>();
  private voices=new Map<string,VoiceChannel>();private voiceRates=new Map<string,{at:number;n:number}>();
  private voiceMembers():VoiceMember[]{return this.clients.filter(c=>this.voices.has(c.sessionId)).map(c=>({id:c.sessionId,name:this.match.actors.find(a=>a.id===c.sessionId)?.name??'Spectator',channel:this.voices.get(c.sessionId)!}));}
  private voiceRoster(){this.broadcast('voice-roster',this.voiceMembers());}
  async onCreate(options:any){
-  if(process.env.BREADFLOWER_ENGINE==='1')await(engineLoad??=readFile(new URL('../../ride-core/dist/engine/breadflower.wasm',import.meta.url)).then(initializeEngine));
+  if(process.env.BREADFLOWER_ENGINE==='1')await(engineLoad??=readFile(process.env.ROYALE_ENGINE_PATH??new URL('../../ride-core/dist/engine/breadflower.wasm',import.meta.url)).then(initializeEngine));
   this.terrain=await downtown();
   if(!compatible(options?.handshake,this.terrain.arenaIdentity))throw new ServerError(400,'INCOMPATIBLE_ARENA');
   try{wheelProfile(options.wheelId??'euc');}catch{throw new ServerError(400,'WHEEL_NOT_ALLOWED');}
@@ -40,6 +41,7 @@ export class BattleRoyaleRoom extends Room{
    }
    const now=Date.now(),r=this.rates.get(c.sessionId);if(!r||now-r.at>=1000)this.rates.set(c.sessionId,{at:now,n:1});else if(++r.n>100){c.leave(4008,'INPUT_RATE_LIMIT');return;}
    if(type==='hello')this.welcome(c);
+   else if(type==='killcam'&&!this.spectators.has(c.sessionId)&&now-(this.replaySent.get(c.sessionId)??-Infinity)>5000){this.replaySent.set(c.sessionId,now);const replay=this.match.killcam(c.sessionId);if(replay)for(let index=0;index<Math.ceil(replay.frames.length/6);index++)c.send('killcam',{...replay,index,count:Math.ceil(replay.frames.length/6),frames:replay.frames.slice(index*6,index*6+6)});}
    else if(type==='ready'&&compatible(data,this.terrain.arenaIdentity)){this.ready.add(c.sessionId);this.broadcastRoster();}
    else if(type==='release')this.match.release(c.sessionId);
    else if(type==='input'&&!this.spectators.has(c.sessionId))this.match.command(c.sessionId,data);
@@ -91,7 +93,7 @@ export class BattleRoyaleRoom extends Room{
  onLeave(c:Client){
   this.voices.delete(c.sessionId);this.voiceRates.delete(c.sessionId);this.voiceRoster();
   this.match.disconnect(c.sessionId);if(this.match.phase==='lobby'||this.match.phase==='results')this.match.actors=this.match.actors.filter(a=>a.id!==c.sessionId);
-  this.ready.delete(c.sessionId);this.spectators.delete(c.sessionId);this.rates.delete(c.sessionId);
+  this.replaySent.delete(c.sessionId);this.ready.delete(c.sessionId);this.spectators.delete(c.sessionId);this.rates.delete(c.sessionId);
   if(c.sessionId===this.host)this.host=this.clients.find(a=>a.sessionId!==c.sessionId&&!this.spectators.has(a.sessionId))?.sessionId??'';
   this.broadcastRoster();
  }
