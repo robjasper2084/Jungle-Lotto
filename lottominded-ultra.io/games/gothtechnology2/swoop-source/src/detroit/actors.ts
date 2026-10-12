@@ -1,3 +1,4 @@
+import {FingerPose} from '../../../ride-core/src/fingerPose.ts';
 import {applyOnFootRider} from '../../../ride-core/src/onFootRider.ts';
 import {solveLimb as solve} from '../../../ride-core/src/limbIK.ts';
 import {BicycleView,CyclistMotion} from '@digital-static/ridecore/cycling-view';
@@ -34,6 +35,7 @@ export async function loadActors(){
   await loadAssetQueue(ids,assetConcurrency(),async id=>{
     if(id==='DS_Segway_01'||id==='DS_InlineSkate_01'){data.set(id,await loader.loadAsync(`/exports/mobility/${id}.glb`));return;}
     if(id.startsWith('SW_')){data.set(id,await loader.loadAsync(`/exports/scooter/${id}.glb`));return;}
+    if(['DS_Man_01','DS_Hoodie_Woman_01','DS_Mascot_Suit_01','DS_Mascot_Hoodie_01','DS_Armored_Rider_01'].includes(id)){data.set(id,await loader.loadAsync('/exports/rigged-heroes/'+id+'.glb'));return;}
     const original=()=>loader.loadAsync(`/exports/glb/${id}/${id}_LOD${id==='DS_Man_01'?0:1}.glb`);
     data.set(id,id==='DS_Boerboel_01'?await loader.loadAsync('/exports/polish/DS_Boerboel_Polished.glb'):id==='DS_Bicycle_01'?await loader.loadAsync('/exports/glb/DS_Bicycle_Styles/DS_Bicycle_Styles_LOD1.glb').catch(original):await original());
   });
@@ -45,6 +47,7 @@ export class Hero {
   wheel?:T.Object3D;body?:T.Object3D;bodyRestY=0;hips?:T.Object3D;head?:T.Object3D;chest?:T.Object3D;
   spine:T.Object3D[]=[];neck?:T.Object3D;shoulders:T.Object3D[]=[];
   private fallPivot=new T.Vector3();private axle=new T.Vector3();private tyreRadius=.255;private tyreHalfWidth=.07;
+  readonly fingers:FingerPose;
   bones:{o:T.Object3D;p:T.Vector3;q:T.Quaternion}[]=[];legs:Limb[]=[];arms:Limb[]=[];
   private riderContact:CrashContact;private wheelContact:CrashContact;private terrain?:TerrainSampler;
   readonly riderId:RiderId;
@@ -73,6 +76,7 @@ export class Hero {
     this.shoulders=['LeftShoulder','RightShoulder'].map(name=>this.rider.getObjectByName(name)).filter((bone):bone is T.Object3D=>!!bone);
     if(this.wheel){const bounds=new T.Box3().setFromObject(this.wheel),size=bounds.getSize(v());this.axle.copy(this.lean.worldToLocal(bounds.getCenter(v())));this.tyreRadius=(size.y+size.z)/4;this.tyreHalfWidth=size.x/2;}
     this.rider.traverse(o=>{if((o as T.Bone).isBone)this.bones.push({o,p:o.position.clone(),q:o.quaternion.clone()});});
+    this.fingers=new FingerPose(this.rider,data.get(riderId)!.animations);
     for(const side of ['Left','Right'])for(const arm of [false,true]){
       const upper=this.rider.getObjectByName(side+(arm?'Arm':'UpLeg')),knee=this.rider.getObjectByName(side+(arm?'ForeArm':'Leg')),foot=this.rider.getObjectByName(side+(arm?'Hand':'Foot'));
       if(upper&&knee&&foot)(arm?this.arms:this.legs).push({upper,knee,foot,target:this.lean.worldToLocal(foot.getWorldPosition(v())),rotation:this.lean.getWorldQuaternion(q()).invert().multiply(foot.getWorldQuaternion(q()))});
@@ -246,7 +250,7 @@ export class Hero {
       this.riderContact.settle(this.rider,floor,this.terrain,.025,p.crashMotion?p.crashContact:0);
       this.root.updateMatrixWorld(true);
     }
-    applyOnFootRider(this,p);
+    applyOnFootRider(this,p);this.fingers.apply();
   }
 }
 export class TrafficView {

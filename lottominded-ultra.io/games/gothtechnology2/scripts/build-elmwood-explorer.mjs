@@ -1,3 +1,4 @@
+import {reviewCorePlugin} from './review-core-plugin.mjs';
 import {readFile,writeFile,mkdir,readdir,stat} from 'node:fs/promises';
 import {copyFile,cp} from './review-asset-copy.mjs';
 import {ridecoreAliases} from './local-ridecore-alias.mjs';
@@ -14,8 +15,10 @@ const css=(await readFile(resolve(import.meta.dirname,'elmwood-explorer-embed.cs
 const assets=JSON.parse(await readFile(resolve(source,'public/elmwood/asset-manifest.json'),'utf8'));
 const files=new Set(['elmwood/models/hdrp-lab-car-black-lod1.glb','elmwood/hdrp-lab-car-NOTICE.txt','elmwood/title-screen.png','elmwood/asset-manifest.json','elmwood/placements.json','elmwood/terrain.json','elmwood/site.json','elmwood/placement-audit.json','elmwood/landmark-improvements.json','elmwood/walnut-grove.json','elmwood/firemen-memorial.json','elmwood/site-polish.json','elmwood/crypt-garden.json','elmwood/tree-tours.json','elmwood/Elmwood_Map_Audit.kml','elmwood/map-audit.png','elmwood/cemetery-plan.png','elmwood/reference-gallery.html','elmwood/models/elmwood-foundation.glb',...assets.map(a=>'elmwood/models/'+(a.id==='flying-geese-study'?'flying-geese-baked':a.id)+'.glb'),'exports/glb/DS_Man_01/DS_Man_01_LOD0.glb','exports/glb/DS_EUC_01/DS_EUC_Compact.glb','exports/glb/DS_Boerboel_01/DS_Boerboel_Elmwood.glb','exports/glb/DS_Pedestrian_01/DS_Pedestrian_01_LOD1.glb','exports/glb/DS_Cyclist_01/DS_Cyclist_01_LOD1.glb','exports/glb/DS_Bicycle_01/DS_Bicycle_01_LOD1.glb',...['DS_Hoodie_Woman_01','DS_Mascot_Suit_01','DS_Mascot_Hoodie_01','DS_Armored_Rider_01'].map(id=>`exports/glb/${id}/${id}_LOD1.glb`),...['suit','hoodie','euc'].map(id=>`circuit-riders/models/circuit-${id}.glb`)]);
 files.add('exports/glb/DS_Armored_Rider_01/DS_Armored_Rider_01_LOD1.glb');
+for(const id of ['DS_Man_01','DS_Hoodie_Woman_01','DS_Mascot_Suit_01','DS_Mascot_Hoodie_01','DS_Armored_Rider_01'])files.add('exports/rigged-heroes/'+id+'.glb');
+files.add('exports/rigged-heroes/manifest.json');
 files.add('elmwood/title-screen-two-riders-20261005.webp');
-for(const id of ['talaria','ultra','sr','varg'])files.add('exports/electric/Ebike_'+id+'.glb');for(const id of ['city','tour','trail','speed'])files.add('exports/electric/Euc_'+id+'.glb');files.add('exports/electric/NOTICE.md');files.add('love-tag/config.json');files.add('love-tag/elmwood-explorer.json.gz');
+for(const id of ['talaria','ultra','sr','varg'])files.add('exports/electric/Ebike_'+id+'.glb');for(const id of ['city','tour','trail','speed'])files.add('exports/electric/Euc_'+id+'.glb');files.add('exports/electric/NOTICE.md');files.add('love-tag/config.json');files.add('love-tag/elmwood-explorer.json.gz');for(const name of await readdir(resolve(source,'public/love-tag')))if(name==='elmwood-explorer.browser.json.gz'||/^elmwood-explorer\.physics-[a-f0-9]+\.bin\.gz$/.test(name))files.add('love-tag/'+name);
 files.add('exports/glb/DS_Bicycle_Styles/DS_Bicycle_Styles_LOD1.glb');files.add('exports/glb/DS_Bicycle_Styles/manifest.json');
 async function collect(dir){for(const item of await readdir(resolve(source,'public',dir),{withFileTypes:true})){const file=dir+'/'+item.name;if(item.isDirectory())await collect(file);else files.add(file);}}await collect('elmwood/references');await collect('exports/nature');await collect('audio/nature');
 for(const file of await modelDependencies(resolve(source,'public'),files))files.add(file);
@@ -25,7 +28,7 @@ await readableTree(soundtrackRoot);
 for(const file of files)await readableTree(resolve(source,'public',file));
 await readableTree(resolve(source,'node_modules/@digital-static/ridecore/dist'));
 return {name:'elmwood-explorer',entry:'elmwood.html',source,async build(out){
-await build({root:source,configFile:false,base:'./',publicDir:false,resolve:{alias:ridecoreAliases,dedupe:['three','@dimforge/rapier3d-compat']},plugins:[{name:'elmwood-explorer-store',enforce:'pre',
+await build({root:source,configFile:false,base:'./',publicDir:false,resolve:{alias:ridecoreAliases,dedupe:['three','@dimforge/rapier3d-compat']},plugins:[reviewCorePlugin(),{name:'elmwood-explorer-store',enforce:'pre',
  transform(code,id){id=id.replaceAll('\\','/');if(!id.includes('/src/'))return;
   code=code.replace(/(['"`])\/(elmwood|exports|audio)\//g,'$1./$2/');
   // Keep changed placements, terrain and model bytes from mixing across releases.

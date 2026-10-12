@@ -1,0 +1,21 @@
+(node:48648) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ binary fixture preserves bytes, checks integrity and consumes the temporary buffer once (56.2964ms)
+✔ legacy package fallback only follows a missing manifest; server errors do not start another massive download (4.9552ms)
+(node:47732) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ foot look crosses the yaw seam repeatedly and preserves the parked wheel (10.3448ms)
+✔ on-foot right input strafes screen right at every heading; diagonals do not boost speed (7.2473ms)
+✔ compiled authority accepts free foot heading, rejects invalid heading and shoots along it (224.5509ms)
+(node:2488) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ compiled elimination records the actual attacker, keeps live/spectator views private and returns historical shots (277.2237ms)
+✔ a compiled field elimination does not invent a killer (320.1975ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 982.2581

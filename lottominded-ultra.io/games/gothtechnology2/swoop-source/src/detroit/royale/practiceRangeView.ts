@@ -1,0 +1,21 @@
+import * as T from 'three';import {rangeLayout,RangeScoring} from '../../../../ride-core/src/royale/practiceRange.ts';
+import type {BattleTerrain} from '../../../../ride-core/src/royale/battleTerrain.ts';import {weaponSocket,type RoyaleSnapshot} from '../../../../ride-core/src/royale/rules.ts';
+export class PracticeRangeView {
+ root=new T.Group();layout:ReturnType<typeof rangeLayout>;private scoring:RangeScoring;private tick=-1;private dots:{mesh:T.Mesh;until:number}[]=[];private notice:HTMLElement;
+ constructor(scene:T.Scene,terrain:BattleTerrain){
+  this.layout=rangeLayout(terrain);this.scoring=new RangeScoring(this.layout.targets,this.layout.heading);scene.add(this.root);
+  const material=new T.MeshStandardMaterial({color:'#284751',roughness:.75}),postMaterial=new T.MeshStandardMaterial({color:'#abb8b8',roughness:.65});
+  for(const target of this.layout.targets){const board=new T.Group();board.position.set(target.center.x,target.center.y,target.center.z);board.rotation.y=this.layout.heading;this.root.add(board);
+   const back=new T.Mesh(new T.BoxGeometry(1.3,1.7,.10),material);board.add(back);const post=new T.Mesh(new T.BoxGeometry(.10,.65,.1),postMaterial);post.position.y=-1.12;board.add(post);
+   const canvas=document.createElement('canvas');canvas.width=256;canvas.height=384;const c=canvas.getContext('2d')!;c.fillStyle='#e9e5cd';c.fillRect(0,0,256,384);c.fillStyle='#1c343f';c.font='bold 40px sans-serif';c.textAlign='center';c.fillText(target.distance+' m',128,48);for(const [r,color]of [[88,'#1d3740'],[63,'#f7d773'],[38,'#1d3740'],[15,'#f08871']] as const){c.beginPath();c.arc(128,208,r,0,Math.PI*2);c.fillStyle=color;c.fill();}
+   const texture=new T.CanvasTexture(canvas);texture.colorSpace=T.SRGBColorSpace;const face=new T.Mesh(new T.PlaneGeometry(1.26,1.66),new T.MeshStandardMaterial({map:texture,roughness:.9,side:T.DoubleSide}));face.position.z=-.057;face.rotation.y=Math.PI;board.add(face);
+  }
+  const line=new T.Mesh(new T.BoxGeometry(16,.025,.2),new T.MeshBasicMaterial({color:'#68e5ce'}));line.position.set(this.layout.origin.x,this.layout.origin.y+.03,this.layout.origin.z);line.rotation.y=this.layout.heading;this.root.add(line);
+  this.notice=document.createElement('aside');this.notice.setAttribute('aria-label','Shooting range');Object.assign(this.notice.style,{position:'fixed',top:'125px',left:'50%',transform:'translateX(-50%)',maxWidth:'40vw',padding:'8px 12px',background:'#102a3266',borderRadius:'10px',color:'#fff',fontSize:'12px',pointerEvents:'none',zIndex:'3'});document.body.append(this.notice);this.updateNotice();
+ }
+ private updateNotice(){this.notice.textContent='Practice range · '+this.layout.targets.map(t=>t.distance+' m: '+t.hits).join(' / ')+' · Weapons and scopes behind the firing line';}
+ update(s:RoyaleSnapshot,me:string,now:number){if(s.tick!==this.tick){this.tick=s.tick;const actor=s.actors.find(a=>a.id===me);if(actor){const impacts=this.scoring.observe(s.projectiles,me,()=>weaponSocket(actor.pose,actor.skin,actor.aimYaw,actor.aimPitch,actor.combat.aimBlend,actor.combat.lean).muzzle);for(const hit of impacts){const dot=new T.Mesh(new T.SphereGeometry(.055,8,6),new T.MeshBasicMaterial({color:'#ffb36b'}));dot.position.set(hit.point.x,hit.point.y,hit.point.z);this.root.add(dot);this.dots.push({mesh:dot,until:now+8000});}if(impacts.length)this.updateNotice();}}
+  for(const dot of [...this.dots])if(now>dot.until){dot.mesh.removeFromParent();dot.mesh.geometry.dispose();(dot.mesh.material as T.Material).dispose();this.dots.splice(this.dots.indexOf(dot),1);}
+ }
+ dispose(){this.root.removeFromParent();this.root.traverse(o=>{if(o instanceof T.Mesh){o.geometry.dispose();const materials=Array.isArray(o.material)?o.material:[o.material];for(const material of materials){(material as T.MeshStandardMaterial).map?.dispose();material.dispose();}}});this.notice.remove();}
+}

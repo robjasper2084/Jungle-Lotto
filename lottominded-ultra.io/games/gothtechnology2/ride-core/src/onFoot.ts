@@ -4,7 +4,7 @@ export const FOOT_SPEED={walk:2.35,run:5.4,reverse:2.05,reverseRun:3.8} as const
 export const footFields=()=>({footMode:0,footBlend:0,footPhase:0,footCycle:0,footTime:0,footJump:0,footCrouch:0,footProne:0,footStagger:0,parkX:0,parkY:0,parkZ:0,parkHeading:0});
 export type FootPose=ReturnType<typeof footFields>&{x:number;y:number;z:number;headingY:number;speed:number;airHeight:number;airBlend:number;velocityX:number;velocityZ:number;rollAngle:number;groundPitch:number;groundRoll:number;stopFoot:number};
 export const footState=()=>({mode:0,age:0,latch:false,jumpLatch:false,vy:0,turn:0,fromX:0,fromY:0,fromZ:0,fromHeading:0,toX:0,toY:0,toZ:0,phase:0,time:0,land:0,carryX:0,carryZ:0,stagger:0});
-export type FootActions={throttle:number;steer:number;hop?:boolean;hopHeld?:boolean;crouch?:boolean;prone?:boolean;run?:boolean;dismount?:boolean;movingDismount?:boolean;mountBlocked?:boolean;evade?:number};
+export type FootActions={throttle:number;steer:number;facingYaw?:number;hop?:boolean;hopHeld?:boolean;crouch?:boolean;prone?:boolean;run?:boolean;dismount?:boolean;movingDismount?:boolean;mountBlocked?:boolean;evade?:number};
 /** Only an authoritative collision invokes this; actor and parked vehicle remain separate. */
 export function knockOffOnFoot(s:ReturnType<typeof footState>,p:FootPose){
  if(s.mode){s.stagger=Math.max(s.stagger,.7);return;}
@@ -69,13 +69,16 @@ export function stepOnFoot(s:ReturnType<typeof footState>,p:FootPose,t:TerrainSa
  let prone=!!a.prone&&!jump,crouch=!!a.crouch&&!prone&&!jump;
  if(!prone&&!crouch&&(p.footProne>.1||p.footCrouch>.1)&&t.raycastObstacle({x:p.x,y:p.y+.30,z:p.z},{x:0,y:1,z:0},1.4,.27)!==null){prone=p.footProne>.1;crouch=!prone;}
  p.footProne+=((prone?1:0)-p.footProne)*(1-Math.exp(-8*dt));p.footCrouch+=((crouch?1:0)-p.footCrouch)*(1-Math.exp(-10*dt));
- s.turn+=(clamp(Number.isFinite(a.steer)?a.steer:0,-1,1)*2.7-s.turn)*(1-Math.exp(-16*dt));
- p.headingY-=s.turn*dt;
+ const fps=Number.isFinite(a.facingYaw),strafe=fps?-clamp(a.steer,-1,1):0,magnitude=Math.hypot(demand,strafe);
+ if(fps){p.headingY=angle(a.facingYaw!);s.turn=0;}
+ else{s.turn+=(clamp(Number.isFinite(a.steer)?a.steer:0,-1,1)*2.7-s.turn)*(1-Math.exp(-16*dt));p.headingY-=s.turn*dt;}
  const limit=prone||p.footProne>.3?(demand<0?.55:.75):crouch||p.footCrouch>.3?(demand<0?1.1:1.4):demand<0?(run?FOOT_SPEED.reverseRun:FOOT_SPEED.reverse):(run?FOOT_SPEED.run:FOOT_SPEED.walk);
- const target=demand*limit*(s.stagger>0?.25:1),braking=Math.abs(target)<Math.abs(p.speed)||target*p.speed<0;
+ const drive=fps?Math.min(1,magnitude)*(demand<0?-1:1):demand;
+ const target=drive*limit*(s.stagger>0?.25:1),braking=Math.abs(target)<Math.abs(p.speed)||target*p.speed<0;
  p.speed+=(target-p.speed)*(1-Math.exp(-(braking?15:9)*dt));if(Math.abs(p.speed)<.002)p.speed=0;
  const evade=a.evade||0,side=evade===-1?-1:evade===1?1:0,back=evade===2?-1:0;
- const x=p.x+(Math.sin(p.headingY)*(p.speed+back*5)+Math.cos(p.headingY)*side*5+s.carryX)*dt,z=p.z+(Math.cos(p.headingY)*(p.speed+back*5)-Math.sin(p.headingY)*side*5+s.carryZ)*dt;
+ const forward=fps&&magnitude?Math.abs(p.speed)*demand/magnitude:fps?0:p.speed,lateral=fps&&magnitude?Math.abs(p.speed)*strafe/magnitude:0;
+ const x=p.x+(Math.sin(p.headingY)*(forward+back*5)+Math.cos(p.headingY)*(lateral+side*5)+s.carryX)*dt,z=p.z+(Math.cos(p.headingY)*(forward+back*5)-Math.sin(p.headingY)*(lateral+side*5)+s.carryZ)*dt;
  s.carryX*=Math.exp(-4*dt);s.carryZ*=Math.exp(-4*dt);
  t.sampleGround(x,z,ground,p.y-p.airHeight);
  if(!ground.offCourse&&ground.height<=p.y+.34&&clear(p.x,p.y,p.z,x,p.y,z)){p.x=x;p.z=z;}else p.speed=0;

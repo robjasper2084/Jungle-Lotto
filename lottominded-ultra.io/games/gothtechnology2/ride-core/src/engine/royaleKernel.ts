@@ -48,7 +48,7 @@ export class RoyaleKernel{
  melee(i:number):MeleeState{const v=(k:number)=>this.core.call('melee',i,k);return{brawl:!!v(0),kind:v(1),start:v(2),end:v(3),serial:v(4),staggerUntil:v(5),evadeUntil:v(6),evadeDir:v(7)};}
  sync(actors:Actor[],loot:Loot[]){
   actors.forEach((a,i)=>{const v=(k:number)=>this.core.call('actor',i,k);
-   a.reentryUsed=!!this.core.call('reentry_state',i,0);a.reentryUntil=this.core.call('reentry_state',i,1);a.protectedUntil=this.core.call('reentry_state',i,2);
+   a.reentryUsed=this.core.call('reentry_state',i,0);a.reentryUntil=this.core.call('reentry_state',i,1);a.protectedUntil=this.core.call('reentry_state',i,2);
    Object.assign(a,{integrity:v(0),shield:v(1),alive:!!v(2),slot:v(3),loadout:[v(4),v(5)].filter(n=>n>=0).map(n=>weapons[n]),ammo:{static:v(6),heart:v(7),bass:v(8)},utility:v(9),repairs:v(10),shieldUntil:v(11),repairUntil:v(12),switchUntil:v(13),shotAt:v(14),lastShot:v(15),lastDamage:v(16),kills:v(17),damage:v(18),shots:v(19),hits:v(20),eliminatedAt:v(21)});
    a.dogPower={charges:this.core.call("dog",i,0),until:this.core.call("dog",i,1),ready:this.core.call("dog",i,2),radarUntil:this.core.call("dog",i,3),radarReady:this.core.call("dog",i,4)};
    const c=(key:number)=>this.core.call('combat',i,key);

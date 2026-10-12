@@ -1,3 +1,4 @@
+import {RecoveryStock} from '../../../ride-core/src/recoveryStock.ts';
 import {RideController,NEUTRAL_ACTIONS,createPose,copyPose,type RideActions} from './controller.ts';
 import {RaceRules,RACE_ROUTE} from './raceRules.ts';
 import {routePosition} from './districtView.ts';
@@ -16,7 +17,7 @@ import type {RaceDifficulty} from './raceRules.ts';
  */
 export class SplitRaceSimulation {
  readonly rules:RaceRules;
- readonly riders:{id:RiderId;sim:RideController;previous:ReturnType<typeof createPose>;pose:ReturnType<typeof createPose>;flow:FlowCombo;message:string;challenge?:DistrictRun}[]=[];
+ readonly riders:{stock:RecoveryStock;id:RiderId;sim:RideController;previous:ReturnType<typeof createPose>;pose:ReturnType<typeof createPose>;flow:FlowCombo;message:string;challenge?:DistrictRun}[]=[];
  readonly sessionMode:'free'|'race'|'challenge';
  readonly terrain:TerrainSampler;
  readonly remoteFallPhase=new Map<number,string>();
@@ -41,7 +42,7 @@ export class SplitRaceSimulation {
    if(this.sessionMode==='free')p=freeRideLaunch(queries,p,this.riders.map(r=>r.pose));
    const sim=new RideController(queries,{spawn:{position:p,headingY:p.heading}});sim.wheelScale=id.startsWith('DS_Mascot_')?.75:.86;
    const pose=createPose(),previous=createPose();sim.writePose(pose);copyPose(pose,previous);
-   this.riders.push({id,sim,pose,previous,flow:new FlowCombo(),message:'',challenge:options.challenge?new DistrictRun(options.challenge):undefined});
+   this.riders.push({stock:new RecoveryStock(),id,sim,pose,previous,flow:new FlowCombo(),message:'',challenge:options.challenge?new DistrictRun(options.challenge):undefined});
    Object.assign(this.rules.racers[i],{station,previous:station,offset});
   });
  }
@@ -69,12 +70,16 @@ export class SplitRaceSimulation {
  }
  recover(index:number){
   const r=this.riders[index],progress=this.rules.racers[index];
+  if(!r||!progress||r.sim.snapshot().state==='recovering')return false;
+  const limited=this.sessionMode==='race'||this.sessionMode==='challenge'&&r.challenge?.challenge.kind!=='discovery';
+  if(limited&&!r.stock.remaining){r.message='All 3 recoveries used · restart from the menu';return false;}
   if(this.rules.done||progress.finish!==null||this.rules.countdown>0)return false;
   if(r.sim.crashed&&r.sim.snapshot().fallPhase!=='settled'){r.message='Let the fall settle, then recover';return false;}
   const gates=r.challenge?.challenge.gates??RACE_ROUTE.gates,station=progress.gate?gates[progress.gate-1]+.5:r.challenge?.challenge.start??RACE_ROUTE.start;
   const p=this.sessionMode==='free'?{x:r.pose.x,y:r.pose.y,z:r.pose.z,heading:r.pose.headingY}:routePosition(station+this.row(index),this.offset(index));p.y=this.terrain.sampleGround(p.x,p.z,createGroundSample(),r.pose.y).height;
   if(!r.sim.recover({position:p,headingY:p.heading})){r.message='Recovery space occupied · try again';return false;}
-  if(this.sessionMode==='race')this.rules.recover(r.id);r.sim.writePose(r.pose);copyPose(r.pose,r.previous);r.flow.cancel();r.message='Recovered · release controls, then ride';if(r.challenge){const c=cutCoords(toMap(r.pose.x,0,r.pose.z).x,toMap(r.pose.x,0,r.pose.z).z);r.challenge.step(1/120,{station:c.d,offset:c.u,speed:0,grounded:true,crashed:false,recovered:true,roll:0,slip:0,traction:0,airHeight:0});}return true;
+  if(limited)r.stock.consume();
+  if(this.sessionMode==='race')this.rules.recover(r.id);r.sim.writePose(r.pose);copyPose(r.pose,r.previous);r.flow.cancel();r.message='Recovered'+(limited?' · '+r.stock.remaining+'/3 recoveries left':'')+' · release controls, then ride';if(r.challenge){const c=cutCoords(toMap(r.pose.x,0,r.pose.z).x,toMap(r.pose.x,0,r.pose.z).z);r.challenge.step(1/120,{station:c.d,offset:c.u,speed:0,grounded:true,crashed:false,recovered:true,roll:0,slip:0,traction:0,airHeight:0});}return true;
  }
  get snapshot(){return {sessionMode:this.sessionMode,countdown:this.rules.countdown,elapsed:this.rules.elapsed,done:this.rules.done,racers:this.riders.map((r,i)=>({...this.rules.racers[i],position:{x:r.pose.x,y:r.pose.y,z:r.pose.z},speed:r.pose.speed,crashed:r.sim.crashed,fallPhase:r.sim.snapshot().fallPhase,banked:r.flow.banked,pending:r.flow.pending,hops:r.sim.snapshot().hops,challenge:r.challenge?{id:r.challenge.challenge.id,count:r.challenge.count,photos:[...r.challenge.photos],gate:r.challenge.gateCount,elapsed:r.challenge.elapsed,done:r.challenge.done,failed:r.challenge.failed}:undefined}))};}
 }

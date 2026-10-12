@@ -20,7 +20,8 @@ test('hash failure is rejected; each instance/slot and aim channel is independen
  a.clear();assert.equal(a.get(0,8),0);a.dispose();assert.throws(()=>a.get(0,0));b.dispose();
 });
 test('handshake includes real module hash and rejects legacy/mismatched modules',()=>{
- assert.equal(currentHandshake().protocol,4);assert(compatible(currentHandshake()));
+ assert.equal(currentHandshake().protocol,5);assert(compatible(currentHandshake()));
+ assert(!compatible({...currentHandshake(),protocol:4}));
  assert(!compatible({...currentHandshake(),module:'wrong'}));assert(!compatible({...currentHandshake(),engine:'legacy'}));
 });
 test('actual RideCore movement consumes compiled input and engine rules own shield damage',()=>{

@@ -1,0 +1,59 @@
+/* Full-screen lobby. Gameplay HUD transparency never fades the menu surface. */
+#lobby{--lobby-ink:#eef8f4;--lobby-mint:#76e7d5;--lobby-muted:#a9c0c0;--lobby-edge:#334c52;inset:0;width:100vw;max-width:none;height:100dvh;max-height:none;margin:0;padding:0;border:0;border-radius:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;background:#07121a!important;color:var(--lobby-ink);box-shadow:none;scrollbar-color:#426665 #0a1921;scrollbar-width:thin}
+#lobby::backdrop{background:#07121a!important}
+#lobby[open]{display:block}
+#lobby .lobby-art{position:fixed;inset:0 0 0 40%;pointer-events:none;background:linear-gradient(90deg,#07121a 0%,#07121a18 25%,transparent 60%),linear-gradient(0deg,#07121ae8,transparent 38%),url('../../../art/cinematics/static-royale-lobby-plain.webp') 72% center/cover no-repeat}
+#lobby .lobby-nav{position:sticky;top:0;z-index:4;margin:0;min-height:68px;padding:10px clamp(20px,4vw,64px);gap:10px;background:#07121ae8;border-bottom:1px solid #7ce5cf24;backdrop-filter:blur(16px)}
+#lobby .lobby-nav a{font-size:13px;letter-spacing:.03em;color:#bdd1d2;padding:0;text-decoration:none}
+#lobby .lobby-nav button{padding:8px 16px;font-size:12px;min-height:42px;background:#0c1d26;border:1px solid #3b5259;border-radius:4px;color:var(--lobby-ink)}
+#lobby .lobby-content{position:relative;z-index:1;width:min(51%,650px);padding:28px clamp(24px,4vw,64px) 32px;min-width:470px}
+#lobby .lobby-heading{margin-bottom:26px}
+#lobby .eyebrow{display:flex;align-items:center;gap:9px;margin:0 0 14px;font-size:10px;font-weight:700;letter-spacing:.2em;color:var(--lobby-mint)}
+#lobby .eyebrow span{display:inline-block;width:6px;height:6px;background:var(--lobby-mint);box-shadow:0 0 12px #76e7d580}
+#lobby h1{font-family:Impact,'Arial Narrow',sans-serif;font-size:clamp(52px,5.8vw,82px);line-height:.98;letter-spacing:-.025em;font-weight:900;margin:0 0 14px}
+#lobby h1 em{display:block;color:var(--lobby-mint);font-style:normal}
+#lobby .lobby-tagline{font-size:12px;font-weight:750;letter-spacing:.16em;margin:0 0 8px;color:#edf3e9}
+#lobby .lobby-intro{font-size:13px;line-height:1.55;color:var(--lobby-muted);max-width:340px;margin:0}
+#lobby .setup-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 0 16px;padding-top:18px;border-top:1px solid var(--lobby-edge)}
+#lobby h2{font-size:20px;letter-spacing:-.04em;margin:0;font-weight:750}
+#lobby .setup-heading span{color:#9db8b9;font-size:9px;letter-spacing:.14em}
+#lobby .lobby-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 12px}
+#lobby .lobby-fields .lobby-name{grid-column:1/-1}
+#lobby label{font-size:11px;letter-spacing:.02em;color:#bfcecf;gap:7px;margin-top:0}
+#lobby input:not([type=checkbox]):not([type=range]),#lobby select{min-width:0;width:100%;min-height:46px;border:1px solid #3b535c;border-radius:4px;background:#0c202b;color:#f1f8f5;font-size:13px;padding:11px 12px;box-shadow:inset 0 1px 0 #ffffff04}
+#lobby option{color:#f1f8f5;background:#0c202b}
+#lobby input::placeholder{color:#7f9a9f}
+#lobby .lobby-wheel-note{font-size:10px;line-height:1.5;color:#98afb4;margin:10px 0 13px}
+#lobby .check{font-size:12px;line-height:1.5;display:flex;gap:9px;margin:12px 0;color:#d3dfdd}
+#lobby input[type=checkbox]{accent-color:var(--lobby-mint);width:17px;height:17px;flex:none}
+#lobby button{border-radius:4px;border-color:#3b535c;background:#102630;min-height:44px}
+#lobby button.primary{width:100%;display:block;margin:16px 0 8px;min-height:54px;background:var(--lobby-mint);color:#08242b;border:1px solid #9cf9e4;font-size:15px;font-weight:800;letter-spacing:.04em;text-align:left;padding:15px 20px;box-shadow:0 4px 24px #62dcc515}
+#lobby button.primary:disabled{background:#214440;color:#c4dad3;border-color:#40655f;opacity:1}
+#lobby button.primary:not(:disabled):hover{background:#9af2df;box-shadow:0 4px 25px #62dcc530}
+#lobby :is(button,a,input,select,summary):focus-visible{outline:2px solid #e7c977;outline-offset:3px}
+#lobby .lobby-practice-note{display:flex;justify-content:space-between;gap:8px;margin:0 0 20px;color:var(--lobby-mint);font-size:9px;letter-spacing:.08em}
+#lobby .lobby-practice-note span{color:#a4bfc0;letter-spacing:0}
+#lobby details{border-top:1px solid var(--lobby-edge);padding-top:0;margin-top:0}
+#lobby summary{padding:16px 0;min-height:50px;font-size:13px;font-weight:650;cursor:pointer;color:#e7f5ef}
+#lobby .lobby-detail-hint{font-weight:400;font-size:11px;color:#9bb4b7;margin-left:8px}
+#lobby details[open]{padding-bottom:20px}
+#lobby details[open]>label{margin-top:14px}
+#lobby details p{font-size:12px;color:var(--lobby-muted)}
+#lobby fieldset{border-color:#334c52;border-radius:4px;background:#0a1921d9}
+#lobby #ride-settings{scroll-margin-top:88px}
+#lobby #ride-settings label{margin-top:12px}
+#lobby #message{font-size:12px;line-height:1.5;min-height:0;margin:8px 0 16px;color:#b7cbc7}
+#lobby #message:empty{display:none}
+#lobby .lobby-footer-link{display:none}
+#lobby .lobby-match-actions:has(button:not([hidden])){padding:12px 0}
+#lobby .lobby-match-actions:not(:has(button:not([hidden]))){display:none}
+#lobby .lobby-world-caption{position:fixed;right:clamp(24px,4vw,64px);bottom:42px;text-align:right;pointer-events:none;color:#edf6f1;text-shadow:0 2px 18px #000}
+#lobby .lobby-world-caption>span{color:var(--lobby-mint);font-size:9px;letter-spacing:.25em}
+#lobby .lobby-world-caption strong{display:block;font-family:Impact,'Arial Narrow',sans-serif;font-size:clamp(26px,3vw,44px);letter-spacing:.015em;line-height:1.06;margin-top:10px;font-weight:500}
+#lobby .lobby-world-caption p{font-size:10px;letter-spacing:.05em;color:#acc5c3}
+@media(max-width:1000px){#lobby .lobby-content{width:54%;min-width:450px;padding:24px 28px 30px}#lobby .lobby-world-caption{right:24px;bottom:26px}#lobby .lobby-world-caption strong{font-size:28px}#lobby .lobby-art{left:37%;background-position:74% center}#lobby h1{font-size:60px}}
+@media(max-width:700px){#lobby .lobby-nav{padding:8px 18px;min-height:60px}#lobby .lobby-nav button{padding:8px 12px}#lobby .lobby-content{width:100%;min-width:0;padding:24px 22px max(24px,env(safe-area-inset-bottom))}#lobby .lobby-art{position:absolute;inset:60px 0 auto 0;height:310px;background-image:linear-gradient(90deg,#07121ae6,#07121a12),linear-gradient(0deg,#07121a,transparent 60%),url('../../../art/cinematics/static-royale-lobby-plain.webp');background-position:75% center}#lobby .lobby-heading{min-height:240px;margin-bottom:6px}#lobby h1{font-size:58px}#lobby .eyebrow{font-size:8px;letter-spacing:.12em}#lobby .lobby-tagline{max-width:230px;font-size:10px;line-height:1.7;letter-spacing:.1em}#lobby .lobby-intro{max-width:210px;font-size:12px}#lobby .lobby-setup{position:relative}#lobby .lobby-world-caption{display:none}#lobby .setup-heading{padding-top:14px}#lobby .lobby-detail-hint{font-size:10px}}
+@media(max-width:370px){#lobby .lobby-content{padding-inline:16px}#lobby .lobby-nav{padding-inline:16px}#lobby .lobby-nav a{font-size:11px}#lobby .lobby-practice-note{font-size:8px}}
+@media(max-height:550px) and (min-width:701px){#lobby .lobby-content{padding-top:18px}#lobby h1{font-size:48px}#lobby h1 em{display:inline}#lobby .lobby-heading{margin-bottom:16px}#lobby .lobby-world-caption{display:none}}
+@media(prefers-reduced-motion:reduce){#lobby *,#lobby *::before,#lobby *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+

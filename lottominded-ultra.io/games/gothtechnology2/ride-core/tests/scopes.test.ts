@@ -32,7 +32,7 @@ for(const engine of [false,true])test((engine?'compiled':'fallback')+' match own
 test('authored sites cover the connected map and give each start a nearby 2x',()=>{
  const nodes=Array.from({length:41*41},(_,i)=>({x:(i%41-20)*20,y:0,z:(Math.floor(i/41)-20)*20}));
  const starts=[-100,0,100].flatMap(x=>[-100,100].map(z=>({position:{x,y:0,z},headingY:0})));
- const sites=scopeSites(nodes,starts,{x:0,y:0,z:0},500);assert.equal(sites.length,42);
+ const sites=scopeSites(nodes,starts,{x:0,y:0,z:0},500);assert.equal(sites.length,72);assert.equal(new Set(sites.map(s=>`${s.p.x},${s.p.z}`)).size,sites.length,'pickups occupy distinct sites');
  for(const start of starts)assert(sites.some(s=>s.kind==='scope2'&&Math.hypot(s.p.x-start.position.x,s.p.z-start.position.z)<=25));
  for(const kind of ['scope2','scope4','scope8'])assert(sites.some(s=>s.kind===kind));assert(Math.max(...sites.map(s=>s.p.x))-Math.min(...sites.map(s=>s.p.x))>700);
 });

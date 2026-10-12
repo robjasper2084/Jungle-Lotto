@@ -1,3 +1,4 @@
+import {FingerPose} from './fingerPose.ts';
 import {applyOnFootRider} from './onFootRider.ts';
 import {solveLimb as solve} from './limbIK.ts';
 import * as T from 'three';
@@ -19,6 +20,7 @@ export class ThreeRiderView {
   wheel?:T.Object3D;body?:T.Object3D;bodyRestY=0;hips?:T.Object3D;head?:T.Object3D;chest?:T.Object3D;
   spine:T.Object3D[]=[];neck?:T.Object3D;shoulders:T.Object3D[]=[];
   private fallPivot=new T.Vector3();private axle=new T.Vector3();private tyreRadius=.255;private tyreHalfWidth=.07;
+  readonly fingers:FingerPose;
   bones:{o:T.Object3D;p:T.Vector3;q:T.Quaternion}[]=[];legs:Limb[]=[];arms:Limb[]=[];
   private riderContact:CrashContact;private wheelContact:CrashContact;private terrain?:TerrainSampler;
   readonly profile:RiderProfile;
@@ -39,6 +41,7 @@ export class ThreeRiderView {
     this.shoulders=['LeftShoulder','RightShoulder'].map(name=>this.rider.getObjectByName(name)).filter((bone):bone is T.Object3D=>!!bone);
     if(this.wheel){const bounds=new T.Box3().setFromObject(this.wheel),size=bounds.getSize(v());this.axle.copy(this.lean.worldToLocal(bounds.getCenter(v())));this.tyreRadius=(size.y+size.z)/4;this.tyreHalfWidth=size.x/2;}
     this.rider.traverse(o=>{if((o as T.Bone).isBone)this.bones.push({o,p:o.position.clone(),q:o.quaternion.clone()});});
+    this.fingers=new FingerPose(this.rider,riderAsset.animations);
     for(const side of ['Left','Right'])for(const arm of [false,true]){
       const upper=this.rider.getObjectByName(side+(arm?'Arm':'UpLeg')),knee=this.rider.getObjectByName(side+(arm?'ForeArm':'Leg')),foot=this.rider.getObjectByName(side+(arm?'Hand':'Foot'));
       if(upper&&knee&&foot)(arm?this.arms:this.legs).push({upper,knee,foot,target:this.lean.worldToLocal(foot.getWorldPosition(v())),rotation:this.lean.getWorldQuaternion(q()).invert().multiply(foot.getWorldQuaternion(q()))});
@@ -177,6 +180,6 @@ export class ThreeRiderView {
       this.riderContact.settle(this.rider,floor,this.terrain);
       this.root.updateMatrixWorld(true);
     }
-    applyOnFootRider(this,p);
+    applyOnFootRider(this,p);this.fingers.apply();
   }
 }
