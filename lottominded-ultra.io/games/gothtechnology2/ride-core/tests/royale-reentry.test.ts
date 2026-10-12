@@ -8,7 +8,7 @@ const advance=(m:RoyaleMatch,n:number)=>{for(let i=0;i<n;i++)m.step();};
 function create(){const m=new RoyaleMatch(terrain,true,6,true,true);for(let i=0;i<6;i++)m.add('r'+i,'Rider '+i);m.start('reentry',7);advance(m,PROTECTION);return m;}
 function place(m:RoyaleMatch,i:number,x:number,z:number){const a=m.actors[i];a.controller.reset({position:{x,y:terrain.ground(x,z).height,z},headingY:0});a.pose={...a.controller.poseValue};}
 let seq=0;
-function shot(m:RoyaleMatch,who='r0'){m.command(who,{...neutral(m.round,++seq,m.tick),fire:true,shot:seq});advance(m,1);m.command(who,neutral(m.round,++seq,m.tick));advance(m,14);}
+function shot(m:RoyaleMatch,who='r0'){if(m.actors.find(a=>a.id===who)!.combat.magazine.static===0){m.command(who,{...neutral(m.round,++seq,m.tick),reload:true});advance(m,180);}m.command(who,{...neutral(m.round,++seq,m.tick),fire:true,shot:seq});advance(m,1);m.command(who,neutral(m.round,++seq,m.tick));advance(m,14);}
 function kill(m:RoyaleMatch){place(m,0,0,0);place(m,1,0,7);for(let i=0;i<9&&m.actors[1].alive;i++)shot(m);assert.equal(m.actors[1].alive,false);}
 test('actual downtown has 12+ clear clustered nodes and unique seeded six/ten starts',()=>{
  assert(downtown.spawnNodes.length>=12);assert.equal(new Set(downtown.spawnNodes.map(n=>n.id)).size,downtown.spawnNodes.length);
@@ -21,14 +21,46 @@ test('safe recovery excludes eliminated/occupied nodes, danger zones and outside
  const live=nodes.slice(1,4).map(n=>n.position),node=recoveryNode(downtown,nodes,dead,nodes[0].id,live,field,8);assert(node);assert.notEqual(node.id,nodes[0].id);for(const p of live)assert(Math.hypot(node.position.x-p.x,node.position.z-p.z)>=90);
  assert.equal(recoveryNode(downtown,nodes,dead,nodes[0].id,nodes.map(n=>n.position),field,8),undefined);
 });
-test('compiled single re-entry protects for exactly 600 ticks and preserves use through host restore',()=>{
+test('compiled respawn protects for exactly 600 ticks and preserves count through host restore',()=>{
  seq=0;const m=create();kill(m);const old=m.actors[1].spawnNode;assert(m.snapshot('r1').self!.reentry.eligible);assert.equal(m.requestReentry('r1',true).ok,true);assert.notEqual(m.actors[1].spawnNode,old);assert.equal(m.actors[1].spawnSerial,1);assert.equal(m.actors[1].protectedUntil,m.tick+600);
  place(m,0,0,0);place(m,1,0,7);shot(m);assert.equal(m.actors[1].shield,50);assert.equal(m.actors[1].integrity,100);
- const b=new RoyaleMatch(terrain,true,6,true,true);b.restoreEngineState(m.captureEngineState());assert.equal(b.actors[1].reentryUsed,true);advance(m,599-(m.tick-(m.actors[1].protectedUntil-600)));advance(b,599-(b.tick-(b.actors[1].protectedUntil-600)));assert.deepEqual(b.captureEngineState(),m.captureEngineState());assert(m.actors[1].protectedUntil>m.tick);advance(m,1);assert.equal(m.actors[1].protectedUntil,m.tick);shot(m);assert(m.actors[1].shield<50);kill(m);assert.equal(m.requestReentry('r1',true).ok,false);m.dispose();b.dispose();
+ const b=new RoyaleMatch(terrain,true,6,true,true);b.restoreEngineState(m.captureEngineState());assert.equal(b.actors[1].reentryUsed,1);advance(m,599-(m.tick-(m.actors[1].protectedUntil-600)));advance(b,599-(b.tick-(b.actors[1].protectedUntil-600)));assert.deepEqual(b.captureEngineState(),m.captureEngineState());assert(m.actors[1].protectedUntil>m.tick);advance(m,1);assert.equal(m.actors[1].protectedUntil,m.tick);shot(m);assert(m.actors[1].shield<50);kill(m);assert.equal(m.requestReentry('r1',true).ok,true);assert.equal(m.snapshot('r1').self!.reentry.remaining,1);m.dispose();b.dispose();
 });
 test('combat immediately cancels protection; decline and expired prompts cannot respawn',()=>{
  seq=0;const m=create();kill(m);assert(m.requestReentry('r1',true).ok);m.command('r1',{...neutral(m.round,1,m.tick),fire:true,shot:1});advance(m,1);assert.equal(m.actors[1].protectedUntil,0);m.dispose();
  seq=0;const a=create();kill(a);assert(a.requestReentry('r1',false).ok);assert.equal(a.requestReentry('r1',true).ok,false);a.dispose();
  seq=0;const b=create();kill(b);advance(b,1800);assert.equal(b.requestReentry('r1',true).ok,false);b.dispose();
 });
+test('three selectable respawns consume one each, reject duplicates and fourth use, then reset on rematch',()=>{
+ seq=0;const m=create();assert.equal(m.snapshot('r1').self!.reentry.remaining,3);
+ for(let used=0;used<3;used++){
+  if(used){m.command('r1',{...neutral(m.round,++seq,m.tick),fire:true,shot:seq});advance(m,1);}
+  kill(m);const offers=m.snapshot('r1').self!.reentry.choices;assert(offers.length>0);const choice=offers.at(-1)!;
+  assert.equal(m.requestReentry('r1',true,'unknown-location').ok,false);assert.equal(m.actors[1].reentryUsed,used);
+  assert(m.requestReentry('r1',true,choice.id).ok);assert.equal(m.actors[1].spawnNode,choice.id);assert.equal(m.actors[1].spawnSerial,used+1);
+  assert.equal(m.snapshot('r1').self!.reentry.remaining,2-used);assert.equal(m.requestReentry('r1',true,choice.id).ok,false);
+  m.disconnect('r1');m.reconnect('r1');assert.equal(m.snapshot('r1').self!.reentry.remaining,2-used);
+ }
+ m.command('r1',{...neutral(m.round,++seq,m.tick),fire:true,shot:seq});advance(m,1);kill(m);
+ assert.equal(m.snapshot('r1').self!.reentry.eligible,false);assert.equal(m.requestReentry('r1',true).ok,false);assert.equal(m.actors[1].reentryUsed,3);
+ while(m.phase!=='results')m.step();m.start('rematch',8);assert.equal(m.snapshot('r1').self!.reentry.remaining,3);assert.equal(m.actors[1].spawnSerial,0);m.dispose();
+});
+test('a chosen point is revalidated and an occupied location never consumes a respawn',()=>{
+ seq=0;const m=create();kill(m);const choice=m.respawnChoices('r1')[0];assert(choice);const old={...m.actors[2].pose};
+ place(m,2,choice.position.x,choice.position.z);assert.equal(m.requestReentry('r1',true,choice.id).ok,false);assert.equal(m.snapshot('r1').self!.reentry.remaining,3);
+ place(m,2,old.x,old.z);assert(m.requestReentry('r1',true,choice.id).ok);m.dispose();
+});
+
 test.after(()=>{terrain.dispose();downtown.terrain.dispose();});
+
+
+test('confirmed killer identity survives event expiry and host restore, then clears on respawn',()=>{
+ seq=0;const m=create();m.actors[0].name='Night Rider';kill(m);
+ const death=m.snapshot('r1').self!.elimination;assert.equal(death?.killer?.id,'r0');assert.equal(death?.killer?.name,'Night Rider');assert.equal(death?.killer?.bot,false);assert.equal(death?.cause,'rider');
+ assert.equal(m.snapshot('r0').self!.elimination,undefined);m.events=[];advance(m,12);assert.deepEqual(m.snapshot('r1').self!.elimination,death);
+ const restored=new RoyaleMatch(terrain,true,6,true,true);restored.restoreEngineState(m.captureEngineState());assert.deepEqual(restored.snapshot('r1').self!.elimination,death);
+ assert(m.requestReentry('r1',true).ok);assert.equal(m.snapshot('r1').self!.elimination,undefined);m.dispose();restored.dispose();
+});
+test('disconnect elimination does not invent a killer',()=>{
+ const m=create();m.disconnect('r1');advance(m,1201);const death=m.snapshot('r1').self!.elimination;assert.equal(death?.cause,'disconnect');assert.equal(death?.killer,undefined);m.dispose();
+});

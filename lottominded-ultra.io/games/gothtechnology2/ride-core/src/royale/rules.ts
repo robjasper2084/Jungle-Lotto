@@ -16,7 +16,7 @@ import {wheelProfile} from './wheelProfiles.ts';
 import {tacticalDestination,leadTarget} from './botTactics.ts';
 import {traceBallistic} from './ballisticSweep.ts';
 import {stanceBounds} from './stanceVolume.ts';
-import {initialSpawnNodes,recoveryNode,type SpawnNode} from './spawnNodes.ts';
+import {initialSpawnNodes,recoveryNodes,spawnLabel,type SpawnNode} from './spawnNodes.ts';
 import {createBattleDog,advanceBattleDog,type DogPower,type BattleDog} from './dogPower.ts';
 import {initialMelee,meleeTrigger,sweepMelee,type MeleeState} from './melee.ts';
 import {isScope,canReachScope,bestScope,type Scope} from './scopes.ts';
@@ -44,7 +44,8 @@ export function move(a:Motion,c:Command,tick:number){
  const input={...NEUTRAL_ACTIONS,mountBlocked:(a as Actor).integrity<=15||blocked,evade:melee&&melee.evadeUntil>tick?melee.evadeDir:0,throttle:blocked?c.throttle*.25:c.throttle,steer:c.steer,facingYaw:c.facingYaw??undefined,crouch:c.crouch,prone:c.prone,hop:c.hop,hopHeld:c.hopHeld,dismount:c.dismount||c.prone&&!a.controller.poseValue.footMode&&Math.abs(a.controller.poseValue.speed)<=1,run:c.burst};
  a.controller.step(DT/2,input);a.controller.step(DT/2,{...input,hop:false});
 }
-export type Actor=Motion&{reentryUsed:boolean;reentryUntil:number;protectedUntil:number;spawnNode:string;spawnSerial:number;dogPower:DogPower;dog:BattleDog;scopes:Scope[];combat:CombatState;id:string;name:string;skin:string;bot:boolean;connected:boolean;disconnectTick:number;integrity:number;shield:number;alive:boolean;lastDamage:number;lastSeq:number;ack:number;lastShot:number;lastInput:number;shotAt:number;slot:number;switchUntil:number;loadout:Weapon[];ammo:Record<Weapon,number>;utility:number;shieldUntil:number;repairs:number;repairUntil:number;queue:Command[];input:Command;kills:number;damage:number;shots:number;hits:number;distance:number;eliminatedAt:number;path:Vec3[];target?:Vec3;seenAt:number;aimAt:number;recoverTick:number;pose:RidePose};
+export type Elimination={tick:number;killer?:{id:string;name:string;bot:boolean};cause:'rider'|'field'|'disconnect'|'arena'};
+export type Actor=Motion&{elimination?:Elimination;reentryUsed:number;reentryUntil:number;protectedUntil:number;spawnNode:string;spawnSerial:number;dogPower:DogPower;dog:BattleDog;scopes:Scope[];combat:CombatState;id:string;name:string;skin:string;bot:boolean;connected:boolean;disconnectTick:number;integrity:number;shield:number;alive:boolean;lastDamage:number;lastSeq:number;ack:number;lastShot:number;lastInput:number;shotAt:number;slot:number;switchUntil:number;loadout:Weapon[];ammo:Record<Weapon,number>;utility:number;shieldUntil:number;repairs:number;repairUntil:number;queue:Command[];input:Command;kills:number;damage:number;shots:number;hits:number;distance:number;eliminatedAt:number;path:Vec3[];target?:Vec3;seenAt:number;aimAt:number;recoverTick:number;pose:RidePose};
 export type Projectile={id:string;owner:string;shot:number;weapon:Weapon;p:Vec3;v:Vec3;expires:number};
 export type Loot={id:string;p:Vec3;kind:Weapon|'repair'|'shield'|'ammo'|'dog'|Scope;available:boolean};
 export type Field={x:number;z:number;radius:number;nextRadius:number;remaining:number;phase:number;damage:number};
@@ -74,7 +75,7 @@ export class RoyaleMatch{
   spawn={position:{x,y,z},headingY:Math.atan2(human.pose.x-x,human.pose.z-z)};break;
  }}
  const controller=new RideController(this.terrain,{spawn,tuning:profile.tuning});
- const a:Actor={reentryUsed:false,reentryUntil:0,protectedUntil:0,spawnNode:node?.id??'legacy-'+this.actors.length,spawnSerial:0,dogPower:{charges:0,until:0,ready:0,radarUntil:0,radarReady:0},dog:createBattleDog(controller.poseValue,this.terrain),scopes:[],wheelId,combat:initialCombat(),id,name:name.slice(0,20),skin,bot,connected:true,disconnectTick:-1,controller,energy:100,burstUntil:0,burstLatch:false,integrity:100,shield:50,alive:true,lastDamage:-99999,lastSeq:0,ack:0,lastShot:0,lastInput:0,shotAt:-999,slot:0,switchUntil:0,loadout:['static'],ammo:{static:80,heart:0,bass:0},utility:1,shieldUntil:0,repairs:1,repairUntil:0,queue:[],input:neutral(''),kills:0,damage:0,shots:0,hits:0,distance:0,eliminatedAt:-1,path:[],seenAt:0,aimAt:0,recoverTick:0,pose:{...controller.poseValue}};this.actors.push(a);return a;
+ const a:Actor={reentryUsed:0,reentryUntil:0,protectedUntil:0,spawnNode:node?.id??'legacy-'+this.actors.length,spawnSerial:0,dogPower:{charges:0,until:0,ready:0,radarUntil:0,radarReady:0},dog:createBattleDog(controller.poseValue,this.terrain),scopes:[],wheelId,combat:initialCombat(),id,name:name.slice(0,20),skin,bot,connected:true,disconnectTick:-1,controller,energy:100,burstUntil:0,burstLatch:false,integrity:100,shield:50,alive:true,lastDamage:-99999,lastSeq:0,ack:0,lastShot:0,lastInput:0,shotAt:-999,slot:0,switchUntil:0,loadout:['static'],ammo:{static:80,heart:0,bass:0},utility:1,shieldUntil:0,repairs:1,repairUntil:0,queue:[],input:neutral(''),kills:0,damage:0,shots:0,hits:0,distance:0,eliminatedAt:-1,path:[],seenAt:0,aimAt:0,recoverTick:0,pose:{...controller.poseValue}};this.actors.push(a);return a;
  }
  start(round:string,seed=1){if(!this.actors.length||this.actors.length>this.size||!['lobby','results'].includes(this.phase))throw Error('ALL_ROOM_RIDERS_REQUIRED');
  this.replayHistory.reset();this.round=round;this.seed=seed;this.tick=0;this.phase='deployment';this.winner=null;this.reason='';this.events=[];this.projectiles=[];this.awarded.clear();this.brains.clear();
@@ -171,6 +172,7 @@ export class RoyaleMatch{
  if(this.tick%120===0){const active=new Set(this.projectiles.map(p=>p.owner+':'+p.shot+':'));for(const key of this.awarded.keys())if(![...active].some(prefix=>key.startsWith(prefix)))this.awarded.delete(key);}
  for(const hit of damage){const a=hit.target;a.lastDamage=this.tick;a.repairUntil=0;const shield=hit.bypass?0:Math.min(a.shield,hit.amount);a.shield-=shield;const injury=Math.min(a.integrity,hit.amount-shield);a.integrity=Math.max(0,a.integrity-injury);if(hit.owner){hit.owner.damage+=shield+injury;hit.owner.hits++;this.events.push({tick:this.tick,kind:'hit',actor:hit.owner.id,target:a.id});}}
  for(const a of this.actors)if(a.alive&&a.integrity<=0){a.alive=false;a.eliminatedAt=this.tick;const owner=damage.filter(d=>d.target===a&&d.owner).at(-1)?.owner;if(owner)owner.kills++;this.events.push({tick:this.tick,kind:'eliminated',actor:a.id});}
+ this.recordEliminations(this.events.filter(e=>e.tick===this.tick));
  if(this.phase==='active'){const live=this.actors.filter(a=>a.alive);if(live.length<=1&&(this.actors.length>1||!live.length))this.finish(live[0]?.id??null,live.length?'Last rider standing':'Simultaneous elimination');
  else if(this.tick>=PROTECTION+DEADLINE){for(const a of live){a.integrity=0;a.alive=false;a.eliminatedAt=this.tick;}this.finish(null,'Static Field deadline');}}
  this.collectScopes();
@@ -183,14 +185,19 @@ export class RoyaleMatch{
  for(let i=0;i<w.pellets;i++){const y=yaw+(i-(w.pellets-1)/2)*w.spread,pitch=c.aimPitch;this.projectiles.push({id:a.id+'-'+c.shot+'-'+i,owner:a.id,shot:c.shot,weapon,p:{...origin},v:{x:Math.sin(y)*Math.cos(pitch)*w.speed,y:Math.sin(pitch)*w.speed,z:Math.cos(y)*Math.cos(pitch)*w.speed},expires:this.tick+w.life});}
  }
  private finish(winner:string|null,reason:string){this.phase='results';this.winner=winner;this.reason=reason;this.projectiles=[];for(const a of this.actors){a.queue=[];a.input=neutral(this.round);}}
- requestReentry(id:string,accept:boolean){
-  const a=this.actors.find(a=>a.id===id);if(!this.reentry||!this.kernel||!a||a.alive||!a.connected||a.reentryUsed||a.reentryUntil<=this.tick||this.phase!=='active')return{ok:false,reason:'Re-entry is unavailable.'};
-  const index=this.actors.indexOf(a),nodes=this.terrain.spawnNodes??this.terrain.spawns.map((s,i)=>({...s,id:'legacy-'+i,cluster:'legacy'}));
-  const node=accept?recoveryNode(this.terrain,nodes,a.pose,a.spawnNode,this.actors.filter(r=>r.alive).map(r=>r.pose),this.kernel.field(),this.seed^this.tick^(index*7919)):undefined;
-  if(accept&&!node)return{ok:false,reason:'No safe spawn node is available. Try again before the timer ends.'};
+ respawnChoices(id:string){
+  const a=this.actors.find(a=>a.id===id);if(!this.reentry||!this.kernel||!a||a.alive||!a.connected||a.reentryUsed>=3||a.reentryUntil<=this.tick||this.phase!=='active')return [];
+  const nodes=this.terrain.spawnNodes??this.terrain.spawns.map((s,i)=>({...s,id:'legacy-'+i,cluster:'legacy'}));
+  return recoveryNodes(this.terrain,nodes,a.pose,a.spawnNode,this.actors.filter(r=>r.alive).map(r=>r.pose),this.kernel.field(),this.seed^a.eliminatedAt^(this.actors.indexOf(a)*7919));
+ }
+ requestReentry(id:string,accept:boolean,nodeId?:string){
+  const a=this.actors.find(a=>a.id===id);if(!this.reentry||!this.kernel||!a||a.alive||!a.connected||a.reentryUsed>=3||a.reentryUntil<=this.tick||this.phase!=='active')return{ok:false,reason:'Re-entry is unavailable.'};
+  const index=this.actors.indexOf(a),choices=accept?this.respawnChoices(id):[];
+  const node=accept?(nodeId?choices.find(n=>n.id===nodeId):choices[0]):undefined;
+  if(accept&&!node)return{ok:false,reason:nodeId?'That location is no longer safe. Choose another respawn point.':'No safe respawn point is available. Try again before the timer ends.'};
   if(this.kernel.core.call('reentry',index,+accept,node?.position.x??0,node?.position.y??0,node?.position.z??0)!==1)return{ok:false,reason:'Re-entry was rejected by the engine.'};
-  if(node){a.controller.reset({position:{...node.position},headingY:node.headingY});a.pose={...a.controller.poseValue};a.spawnNode=node.id;a.spawnSerial++;a.scopes=[];a.energy=100;a.burstUntil=0;a.burstLatch=false;a.queue=[];a.input=neutral(this.round);a.lastInput=this.tick;a.dog=createBattleDog(a.pose,this.terrain);this.brains.delete(id);this.events.push({tick:this.tick,kind:'respawn',actor:id});}
-  this.kernel.sync(this.actors,this.loot);return{ok:true,reason:accept?'Re-entered. Protection lasts ten seconds or until combat.':'Re-entry declined.'};
+  if(node){a.controller.reset({position:{...node.position},headingY:node.headingY});a.pose={...a.controller.poseValue};a.spawnNode=node.id;a.spawnSerial++;a.elimination=undefined;a.scopes=[];a.energy=100;a.burstUntil=0;a.burstLatch=false;a.queue=[];a.input=neutral(this.round);a.lastInput=this.tick;a.dog=createBattleDog(a.pose,this.terrain);this.brains.delete(id);this.events.push({tick:this.tick,kind:'respawn',actor:id});}
+  this.kernel.sync(this.actors,this.loot);return{ok:true,reason:accept?'Respawned. Protection lasts ten seconds or until combat.':'Spectating for the rest of this round.'};
  }
  private stepEngine(){
   for(const a of this.actors)if(a.bot&&!a.alive&&a.reentryUntil>this.tick&&this.tick-a.eliminatedAt>240&&this.tick%60===0)this.requestReentry(a.id,true);
@@ -226,7 +233,7 @@ export class RoyaleMatch{
 
   }
   k.finish();k.sync(this.actors,this.loot);this.phase=k.phase;this.winner=k.winner<0?null:this.actors[k.winner].id;this.reason=k.reason;
-  this.projectiles=k.projectiles(this.actors);this.events.push(...k.events(this.actors));this.collectScopes();if(this.events.length>32)this.events.splice(0,this.events.length-32);
+  this.projectiles=k.projectiles(this.actors);const confirmedEvents=k.events(this.actors);this.recordEliminations(confirmedEvents);this.events.push(...confirmedEvents);this.collectScopes();if(this.events.length>32)this.events.splice(0,this.events.length-32);
   if(this.phase==='results')for(const a of this.actors){a.queue=[];a.input=neutral(this.round);}
  }
  /** Attachment collection runs on the same authoritative host as collision and the C++ match.
@@ -260,6 +267,18 @@ export class RoyaleMatch{
   this.winner=candidate.winner;this.reason=candidate.reason;this.projectiles=candidate.projectiles;
  }
  dispose(){this.kernel?.dispose();this.kernel=undefined;}
+ /** Persist confirmed attribution independently of the short event/replay buffers. */
+ private recordEliminations(events:RoyaleMatch['events']){
+  for(const death of events){
+   if(death.kind!=='eliminated')continue;
+   const victim=this.actors.find(a=>a.id===death.actor);if(!victim)continue;
+   // The engine awards the final same-tick damage owner's kill, including melee/dog damage.
+   const hit=events.filter(e=>e.tick===death.tick&&e.kind==='hit'&&e.target===victim.id).at(-1);
+   const killer=hit&&this.actors.find(a=>a.id===hit.actor&&a.id!==victim.id);
+   const field=this.kernel?.field()??fieldAt(this.tick,this.seed,this.terrain.zones,this.terrain.fieldRadii);
+   victim.elimination={tick:death.tick,cause:killer?'rider':!victim.connected?'disconnect':Math.hypot(victim.pose.x-field.x,victim.pose.z-field.z)>field.radius||this.reason==='Static Field deadline'?'field':'arena',...(killer?{killer:{id:killer.id,name:killer.name,bot:killer.bot}}:{})};
+  }
+ }
  private actorView(a:Actor){return {id:a.id,skin:a.skin,wheelId:a.wheelId,spawnSerial:a.spawnSerial,protected:a.protectedUntil>this.tick,scope:bestScope(a.scopes),combat:structuredClone(a.combat),pose:{...a.pose},dog:{...structuredClone(a.dog),path:[],target:undefined,radar:a.dogPower.radarUntil>this.tick},aimYaw:a.input.aimYaw,aimPitch:a.input.aimPitch,alive:a.alive,shieldActive:a.shieldUntil>this.tick,weapon:a.loadout[a.slot]};}
  private recordReplay(){
   if(this.tick%6!==0&&!this.events.some(e=>e.tick===this.tick&&e.kind==='eliminated'))return;
@@ -274,7 +293,7 @@ export class RoyaleMatch{
    engine:this.engineEnabled?ENGINE_ID:undefined,engineInputFrames:this.kernel?.core.call('frames')??0,
    roster:this.actors.map(a=>({id:a.id,name:a.name,bot:a.bot,skin:a.skin,wheelId:a.wheelId,alive:a.alive,connected:a.connected})),
    actors:this.actors.filter(visible).map(a=>this.actorView(a)),
-   self:me?{id:me.id,spawnSerial:me.spawnSerial,reentry:{used:me.reentryUsed,until:me.reentryUntil,eligible:this.reentry&&!me.alive&&!me.reentryUsed&&me.reentryUntil>this.tick,protectedUntil:me.protectedUntil},healingUntil:me.repairUntil,dogPower:{...me.dogPower},radar:me.dogPower.radarUntil>this.tick?this.actors.filter(a=>a!==me&&a.alive&&Math.hypot(a.pose.x-me.pose.x,a.pose.z-me.pose.z)<90).map(a=>({id:a.id,x:Math.round(a.pose.x/10)*10,z:Math.round(a.pose.z/10)*10})):[],wheelId:me.wheelId,scopes:[...me.scopes],combat:structuredClone(me.combat),integrity:me.integrity,shield:me.shield,energy:me.energy,burstUntil:me.burstUntil,burstLatch:me.burstLatch,controller:me.controller.captureState(),ack:me.ack,inputCursor:me.lastSeq,shotCursor:me.lastShot,slot:me.slot,loadout:[...me.loadout],ammo:{...me.ammo},utility:me.utility,repairs:me.repairs,alive:me.alive,shotAt:me.shotAt}:undefined,
+   self:me?{id:me.id,elimination:me.alive?undefined:me.elimination,spawnSerial:me.spawnSerial,reentry:{used:me.reentryUsed,remaining:this.reentry?Math.max(0,3-me.reentryUsed):0,choices:this.respawnChoices(me.id).map(n=>({id:n.id,label:spawnLabel(n)})),until:me.reentryUntil,eligible:this.reentry&&this.phase==='active'&&me.connected&&!me.alive&&me.reentryUsed<3&&me.reentryUntil>this.tick,protectedUntil:me.protectedUntil},healingUntil:me.repairUntil,dogPower:{...me.dogPower},radar:me.dogPower.radarUntil>this.tick?this.actors.filter(a=>a!==me&&a.alive&&Math.hypot(a.pose.x-me.pose.x,a.pose.z-me.pose.z)<90).map(a=>({id:a.id,x:Math.round(a.pose.x/10)*10,z:Math.round(a.pose.z/10)*10})):[],wheelId:me.wheelId,scopes:[...me.scopes],combat:structuredClone(me.combat),integrity:me.integrity,shield:me.shield,energy:me.energy,burstUntil:me.burstUntil,burstLatch:me.burstLatch,controller:me.controller.captureState(),ack:me.ack,inputCursor:me.lastSeq,shotCursor:me.lastShot,slot:me.slot,loadout:[...me.loadout],ammo:{...me.ammo},utility:me.utility,repairs:me.repairs,alive:me.alive,shotAt:me.shotAt}:undefined,
    projectiles:!playing||me?.alive?this.projectiles.filter(s=>!me||Math.hypot(s.p.x-me.pose.x,s.p.z-me.pose.z)<(s.owner===me.id?500:150)&&this.terrain.line({x:me.pose.x,y:me.pose.y+1.4,z:me.pose.z},s.p)).map(s=>({...s,p:{...s.p},v:{...s.v}})):[],
    loot:me?.alive||!playing?this.loot.filter(l=>l.available).map(l=>({...l,p:{...l.p}})):[],
    events:this.events.filter(e=>!playing||e.actor===viewer||e.target===viewer),

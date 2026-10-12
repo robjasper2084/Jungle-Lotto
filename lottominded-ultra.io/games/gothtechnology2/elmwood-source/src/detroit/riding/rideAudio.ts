@@ -1,3 +1,4 @@
+import {wheelCue,brakingCue} from '../../../../ride-core/src/rideSoundCues.ts';
 import type {RidePose} from '@digital-static/ridecore';
 import type {SurfaceId} from '@digital-static/ridecore';
 
@@ -48,12 +49,14 @@ export class RideAudio {
   const note=chimeAge<.09?0:1,envelope=chimeAge>=0&&chimeAge<.28?Math.exp(-(chimeAge-(note?.09:0))*20):0;
   this.chimeTone!.frequency.setTargetAtTime((this.chimeKind==='trick'?660:540)*(note?1.5:1),t,.006);this.chime!.gain.setTargetAtTime(envelope*.022,t,.004);
   this.wind!.gain.setTargetAtTime(.002+Math.min(.018,Math.abs(p.speed)*.0006),t,.5);this.windFilter!.frequency.setTargetAtTime(180+Math.min(500,Math.abs(p.speed)*12),t,.5);
-  this.motor!.frequency.setTargetAtTime(85+Math.abs(p.speed)*15,t,.08);
-  this.motorGain!.gain.setTargetAtTime(cycling?0:.005+Math.min(.025,Math.abs(p.speed)*.001)+Math.max(0,p.driveIntent)*.003,t,.08);
+  const wheel=wheelCue(p,!cycling,this.enabled&&active);
+  this.motor!.frequency.setTargetAtTime(wheel.hz,t,.08);
+  this.motorGain!.gain.setTargetAtTime(wheel.gain,t,.08);
   const rough=['brick','gravel','dirt','sand'].includes(surface),rolling=Math.min(1,Math.abs(p.speed)/8)*(1-Math.min(1,p.airBlend));
   this.tire!.gain.setTargetAtTime(rolling*(rough?.026:.009),t,.12);this.tireFilter!.frequency.setTargetAtTime((rough?700:350)+Math.abs(p.speed)*24,t,.12);
   this.beep!.gain.setTargetAtTime(p.beepPulse*.035,t,.004);
-  this.scrape!.gain.setTargetAtTime(p.scrape*(p.scrapeHard?.11:.035),t,.012);
+  const braking=brakingCue(p,this.enabled&&active);
+  this.scrape!.gain.setTargetAtTime(Math.max(braking,p.scrape*(p.scrapeHard?.11:.035)),t,.012);
   this.filter!.frequency.setTargetAtTime((p.scrapeHard?1400:450)+Math.abs(p.speed)*55,t,.025);
  }
  async dispose(){const c=this.context;this.enabled=false;this.context=undefined;this.master=undefined;this.motor=undefined;this.motorGain=undefined;this.beep=undefined;this.scrape=undefined;this.filter=undefined;this.impact=this.thump=this.chime=this.tire=undefined;this.impactFilter=this.tireFilter=undefined;this.chimeTone=undefined;this.impactAt=this.chimeAt=-Infinity;if(c&&c.state!=='closed')await c.close();}

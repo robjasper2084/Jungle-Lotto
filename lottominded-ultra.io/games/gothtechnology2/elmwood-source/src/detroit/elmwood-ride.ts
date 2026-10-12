@@ -196,12 +196,13 @@ export function makeElmwoodRide(scene:T.Scene,camera:T.PerspectiveCamera,control
   function resetSeat(i:number,recover=false){
     const s=seats[i];if(!s||!terrain)return;
     if(!recover)s.raceRecovery=undefined;
-    if(recover&&s.raceRecovery)return;
+    if(recover&&(s.raceRecovery||s.motion.sim.snapshot().fallPhase==='recovering'||countdown>0||s.run.limitedRecovery&&(s.run.finished||s.run.failed)))return;
+    if(recover&&s.run.limitedRecovery&&!s.run.recoveryStock.remaining){message.textContent='All 3 recoveries used · restart this session from the menu';return;}
     const recovery=recover?elmwoodRaceRecovery(s.run,s.motion.terrain,count===2?(i?-.65:.65):0):undefined;
     if(recover&&s.run.mode==='sprint'&&!s.run.finished&&!recovery){message.textContent='The earned checkpoint is blocked. Move the obstruction and try Recover again.';return;}
     if(recover&&!s.motion.cycling&&s.motion.sim.crashed){
       if(recovery){s.raceRecovery=recovery;s.run.elapsed+=5;}
-      community?.ride.recover();s.motion.update(1/120,{reset:true});clearInput(i);if(!i)practice?.action('recover');return;
+      community?.ride.recover();s.motion.update(1/120,{reset:true});if(s.run.limitedRecovery&&s.motion.sim.snapshot().fallPhase==='recovering')s.run.recoveryStock.consume();clearInput(i);if(!i)practice?.action('recover');return;
     }
     let spawn=s.spawn;
     if(recover){community?.ride.recover();const p=s.motion.pose,near=terrain.nearest(p.x,-p.z);spawn=recovery?{x:recovery.position.x,north:-recovery.position.z,heading:recovery.heading}:{x:near.x,north:near.north,heading:p.headingY};if(s.run.mode==='sprint')s.run.elapsed+=5;}
@@ -209,6 +210,7 @@ export function makeElmwoodRide(scene:T.Scene,camera:T.PerspectiveCamera,control
     const x=spawn.x+Math.cos(spawn.heading)*side,z=-spawn.north-Math.sin(spawn.heading)*side;
     s.motion.setProfile(s.hero.profile);s.motion.reset({x,y:terrain.sampleGround(x,z,sample).height,z},spawn.heading);s.lastCamera='';
     clearInput(i);s.dog?.reset(s.motion.pose);s.run.relocate(s.motion.pose);
+    if(recover&&s.run.limitedRecovery)s.run.recoveryStock.consume();
     if(recover&&!i)practice?.action('recover');
   }
   function startMode(){
@@ -404,14 +406,14 @@ export function makeElmwoodRide(scene:T.Scene,camera:T.PerspectiveCamera,control
     film.capture(dt,!paused&&countdown<=0,active&&!vrMode&&!document.querySelector<HTMLDialogElement>('#elmwood-main-menu')?.open);
     audio.update(seats[0].motion.pose,!paused&&countdown<=0,seats[0].motion.cycling,seats[0].motion.terrain.sampleGround(seats[0].motion.pose.x,seats[0].motion.pose.z,audioSample).surface);music.update(dt,seats[0].run.mode==='tricks'?'style':'ride',!paused,seats[0].motion.pose.speed,seats[0].run.score,seats[0].motion.pose.warningLevel);
     const overlayHidden=vrMode||document.body.classList.contains('controls-open')||!!document.querySelector<HTMLDialogElement>('#elmwood-main-menu')?.open;
-    recovery.update(seats.slice(0,count).map(s=>s.motion.sim.crashed&&s.motion.pose.crashRecovery<=0),!overlayHidden&&!paused);
+    recovery.update(seats.slice(0,count).map(s=>s.motion.sim.crashed&&s.motion.pose.crashRecovery<=0),!overlayHidden&&!paused,seats.slice(0,count).map(s=>s.run.limitedRecovery?s.run.recoveryStock.remaining:undefined));
     practicePanel.hidden=!practice||overlayHidden||paused;
     resultPanel.hidden=overlayHidden||!seats.slice(0,count).every(s=>s.run.finished||s.run.failed);
     if(!resultPanel.hidden){const text=seats.slice(0,count).map((s,i)=>(count===2?'Player '+(i+1)+': ':'')+s.run.label+(!i&&racePilots.length?' · '+canvas.dataset.racePlace+'/4 place':'')).join(' · ')+(best.textContent?' · '+best.textContent:'');if(resultPanel.querySelector('p')!.textContent!==text)resultPanel.querySelector('p')!.textContent=text;}
     hudClock+=dt;if(hudClock>.12){hudClock=0;const boxes=rects();for(let i=0;i<count;i++){
       const s=seats[i],r=boxes[i],p=s.motion.pose;hud[i].hidden=false;hud[i].style.left=(r.x+12)+'px';hud[i].style.top=(r.y+(count===2&&i?12:count===2&&(innerWidth<750||innerHeight<500)?68:innerWidth<750?204:222))+'px';
       const heading=paused?'PAUSED':countdown>0?'Ready · '+Math.ceil(countdown):p.crashRecovery>0?'Getting back up…':s.motion.sim.crashed?'Fallen · recover':`${Math.abs(p.speed*3.6).toFixed(0)} km/h${input.seats[i].cruise?' · CRUISE':''}`;
-      hud[i].replaceChildren();const strong=document.createElement('strong');strong.textContent=(count===2?'P'+(i+1)+' · ':'')+heading;hud[i].append(strong,document.createTextNode('\n'+s.run.label+(!i&&racePilots.length?' · '+canvas.dataset.racePlace+'/4 place':'')+(wantsDog(i)&&s.dog?'\nDog · '+s.dog.note:'')+(s.run.messageTime>0&&!s.run.finished?'\n'+s.run.message:'')));
+      hud[i].replaceChildren();const strong=document.createElement('strong');strong.textContent=(count===2?'P'+(i+1)+' · ':'')+heading;hud[i].append(strong,document.createTextNode('\n'+s.run.label+(s.run.limitedRecovery?' · '+s.run.recoveryLabel:'')+(!i&&racePilots.length?' · '+canvas.dataset.racePlace+'/4 place':'')+(wantsDog(i)&&s.dog?'\nDog · '+s.dog.note:'')+(s.run.messageTime>0&&!s.run.finished?'\n'+s.run.message:'')));
     }
     status(paused?'Paused · P / Resume ride':seats[0].motion.cycling?'Bicycle · forward pedals · pull back to brake, then back up · C camera · R recover':count===2?'P1 WASD · P2 arrows · P pause · Settings for gamepads, touch and challenges':'WASD / arrows · Space hop · T trick · R recover · C camera · Settings for more');touch.update();}
   },render(renderer:T.WebGLRenderer){

@@ -171,9 +171,9 @@ void finish(State& s){
  }
  for(int who=0;who<Slots;who++){auto& a=s.actors[who];if(a.present&&a.alive&&a.integrity<=0){a.alive=0;a.eliminated=s.tick;
   for(int i=s.hitCount-1;i>=0;i--)if(s.hits[i].target==who&&s.hits[i].owner>=0){++s.actors[s.hits[i].owner].kills;break;}
-  cancelReload(a);a.burstLeft=0;a.fireHeld=0;if(s.reentry&&!a.reentryUsed)a.reentryUntil=s.tick+1800;event(s,5,who);
+  cancelReload(a);a.burstLeft=0;a.fireHeld=0;if(s.reentry&&a.reentryUsed<3)a.reentryUntil=s.tick+1800;event(s,5,who);
  }}
- int live=0,last=-1,total=0,pending=0;for(int i=0;i<Slots;i++){auto& a=s.actors[i];if(!a.present)continue;++total;if(a.alive){++live;last=i;}else if(s.reentry&&!a.reentryUsed&&a.connected&&a.reentryUntil>s.tick)++pending;}
+ int live=0,last=-1,total=0,pending=0;for(int i=0;i<Slots;i++){auto& a=s.actors[i];if(!a.present)continue;++total;if(a.alive){++live;last=i;}else if(s.reentry&&a.reentryUsed<3&&a.connected&&a.reentryUntil>s.tick)++pending;}
  if(s.phase==2&&live<=1&&!pending&&(total>1||!live)){s.phase=3;s.winner=last;s.reason=live?1:2;}
  else if(s.phase==2&&s.tick>=21840){s.phase=3;s.winner=-1;s.reason=3;for(auto& a:s.actors)if(a.present&&a.alive){a.alive=0;a.integrity=0;a.eliminated=s.tick;event(s,5,int(&a-s.actors));}}
  if(s.phase==3){for(auto& p:s.projectiles)p.active=0;for(auto& a:s.inputs)a={};for(auto& a:s.actors){cancelReload(a);a.burstLeft=0;a.fireHeld=0;}event(s,6,s.winner);}
@@ -188,7 +188,7 @@ struct Stream {
  void integer(int& v,int lo,int hi){double n=v;number(n,lo,hi);if(reading){if(std::floor(n)!=n)ok=false;else v=int(n);}}
 };
 void serialize(State& s,Stream& v){
- int version=9;v.integer(version,9,9);v.integer(s.reentry,0,1);
+ int version=10;v.integer(version,10,10);v.integer(s.reentry,0,1);
  for(auto& r:s.radii)v.number(r,0,10000);
  if(v.reading){for(int i=0;i<5;i++)if(s.radii[i]<=s.radii[i+1])v.ok=false;if(s.radii[5]!=0)v.ok=false;}
  for(auto& center:s.centers)for(auto& n:center)v.number(n,-10000,10000);
@@ -208,7 +208,7 @@ void serialize(State& s,Stream& v){
   v.integer(a.fireHeld,0,1);v.integer(a.reloadHeld,0,1);v.integer(a.modeHeld,0,1);v.integer(a.burstLeft,0,3);v.integer(a.fireSerial,0,10000);
   v.integer(a.reloadStart,-1,21840);v.integer(a.reloadCommit,0,22020);v.integer(a.reloadEnd,0,22020);v.integer(a.reloadWeapon,-1,2);v.integer(a.reloadCommitted,0,1);
   v.integer(a.dogCharges,0,2);v.integer(a.dogUntil,0,23000);v.integer(a.dogReady,0,24000);v.integer(a.dogHit,0,1);v.integer(a.dogHeld,0,1);v.integer(a.radarUntil,0,22020);v.integer(a.radarReady,0,23000);v.integer(a.radarHeld,0,1);
-  v.integer(a.reentryUsed,0,1);v.integer(a.reentryUntil,0,24000);v.integer(a.protectedUntil,0,24000);
+  v.integer(a.reentryUsed,0,3);v.integer(a.reentryUntil,0,24000);v.integer(a.protectedUntil,0,24000);
   v.integer(a.brawl,0,1);v.integer(a.brawlHeld,0,1);v.integer(a.lightHeld,0,1);v.integer(a.heavyHeld,0,1);v.integer(a.evadeHeld,0,1);v.integer(a.meleeKind,0,4);v.integer(a.meleeStart,-1,21840);v.integer(a.meleeEnd,0,22020);v.integer(a.meleeSerial,0,100000);v.integer(a.meleeHitMask,0,1023);v.integer(a.combo,0,3);v.integer(a.comboUntil,0,22020);v.integer(a.queued,0,2);v.integer(a.staggerUntil,0,22020);v.integer(a.evadeUntil,0,22020);v.integer(a.evadeReady,0,22020);v.integer(a.evadeDir,-1,2);
   v.number(a.vx,-100,100);v.number(a.vz,-100,100);v.number(a.roll,-2,2);v.number(a.air,0,1);v.number(a.rough,0,1);v.number(a.kickYaw,-.12,.12);v.number(a.kickPitch,0,.22);v.number(a.aimBlend,0,1);v.number(a.lean,-1,1);
   if(v.reading&&a.reloadStart>=0&&(a.reloadWeapon<0||a.reloadCommit<a.reloadStart||a.reloadEnd<a.reloadCommit))v.ok=false;
@@ -238,9 +238,9 @@ int bf_add(int id,int who){auto c=bf::get(id);if(!c||!bf::slot(who)||c->s.phase|
 int bf_start(int id,int seed){auto c=bf::get(id);if(!c||seed<0||(c->s.phase!=0&&c->s.phase!=3))return -1;int count=0;for(auto& a:c->s.actors)count+=a.present;if(count<1||count>bf::Slots)return -2;for(int i=0;i<bf::Slots;i++)if(c->s.actors[i].present!=(i<count))return -2;
  c->s={};for(int i=0;i<count;i++)c->s.actors[i].present=1;c->s.seed=seed;c->s.phase=1;return 1;}
 int bf_reentry_policy(int id,int enabled){auto c=bf::get(id);if(!c||c->s.tick||enabled<0||enabled>1)return -1;c->s.reentry=enabled;return 1;}
-int bf_reentry(int id,int who,int accept,double x,double y,double z){auto c=bf::get(id);if(!c||!bf::slot(who)||accept<0||accept>1)return -1;auto& s=c->s;auto& a=s.actors[who];if(s.stage||s.phase!=2||!s.reentry||!a.present||a.alive||!a.connected||a.reentryUsed||a.reentryUntil<=s.tick)return 0;
- if(!accept){a.reentryUsed=1;a.reentryUntil=0;return 1;}if(!bf::finite(x,-10000,10000)||!bf::finite(y,-10000,10000)||!bf::finite(z,-10000,10000))return -1;
- auto old=a;a={};a.present=1;a.connected=old.connected;a.reentryUsed=1;a.protectedUntil=s.tick+600;a.x=x;a.y=y;a.z=z;a.scale=old.scale;a.kills=old.kills;a.damage=old.damage;a.shots=old.shots;a.hits=old.hits;a.lastShot=old.lastShot;a.commandShot=old.commandShot;a.fireSerial=old.fireSerial;s.inputs[who]={};return 1;}
+int bf_reentry(int id,int who,int accept,double x,double y,double z){auto c=bf::get(id);if(!c||!bf::slot(who)||accept<0||accept>1)return -1;auto& s=c->s;auto& a=s.actors[who];if(s.stage||s.phase!=2||!s.reentry||!a.present||a.alive||!a.connected||a.reentryUsed>=3||a.reentryUntil<=s.tick)return 0;
+ if(!accept){a.reentryUntil=0;return 1;}if(!bf::finite(x,-10000,10000)||!bf::finite(y,-10000,10000)||!bf::finite(z,-10000,10000))return -1;
+ auto old=a;a={};a.present=1;a.connected=old.connected;a.reentryUsed=old.reentryUsed+1;a.protectedUntil=s.tick+600;a.x=x;a.y=y;a.z=z;a.scale=old.scale;a.kills=old.kills;a.damage=old.damage;a.shots=old.shots;a.hits=old.hits;a.lastShot=old.lastShot;a.commandShot=old.commandShot;a.fireSerial=old.fireSerial;s.inputs[who]={};return 1;}
 int bf_reentry_state(int id,int who,int key){auto c=bf::get(id);if(!c||!bf::slot(who))return -1;auto& a=c->s.actors[who];return key==0?a.reentryUsed:key==1?a.reentryUntil:key==2?a.protectedUntil:-1;}
 int bf_connected(int id,int who,int connected){auto c=bf::get(id);if(!c||!bf::slot(who)||(connected!=0&&connected!=1))return -1;auto& a=c->s.actors[who];if(a.connected!=connected){a.connected=connected;a.drop=connected?-1:c->s.tick;}if(!connected)c->s.inputs[who]={};return 1;}
 int bf_loot(int id,int item,int kind,double x,double y,double z){auto c=bf::get(id);if(!c||item<0||item>=384||kind<0||kind>6||c->s.tick||!bf::finite(x,-10000,10000)||!bf::finite(y,-10000,10000)||!bf::finite(z,-10000,10000))return -1;c->s.loot[item]={1,1,kind,x,y,z};return 1;}

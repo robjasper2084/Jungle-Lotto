@@ -19,7 +19,10 @@ export function initialSpawnNodes(nodes:readonly SpawnNode[],count:number,seed:n
  const clusters=shuffled([...new Set(nodes.map(n=>n.cluster))],seed),ordered=clusters.flatMap((c,i)=>shuffled(nodes.filter(n=>n.cluster===c),seed+i*7919));
  if(count>ordered.length)throw Error('Not enough distinct spawn nodes');return ordered.slice(0,count);
 }
-export function recoveryNode(terrain:BattleTerrain,nodes:readonly SpawnNode[],dead:Vec3,oldNode:string,live:readonly Vec3[],field:{x:number;z:number;radius:number},seed:number){
+export function recoveryNodes(terrain:BattleTerrain,nodes:readonly SpawnNode[],dead:Vec3,oldNode:string,live:readonly Vec3[],field:{x:number;z:number;radius:number},seed:number){
  const nearest=[...nodes].sort((a,b)=>distance(a.position,dead)-distance(b.position,dead))[0]?.id;
- return shuffled(nodes,seed).find(n=>n.id!==oldNode&&n.id!==nearest&&distance(n.position,dead)>=100&&live.every(p=>distance(n.position,p)>=90)&&Math.hypot(n.position.x-field.x,n.position.z-field.z)<field.radius-30&&terrain.clear(n.position.x,n.position.z,.8,n.position.y));
+ return shuffled(nodes,seed).filter(n=>n.id!==oldNode&&n.id!==nearest&&distance(n.position,dead)>=100&&live.every(p=>distance(n.position,p)>=90)&&Math.hypot(n.position.x-field.x,n.position.z-field.z)<field.radius-30&&terrain.clear(n.position.x,n.position.z,.8,n.position.y));
 }
+
+export function recoveryNode(...args:Parameters<typeof recoveryNodes>){return recoveryNodes(...args)[0];}
+export function spawnLabel(node:SpawnNode){const sector:Record<string,string>={atwater:'Atwater waterfront',chene:'Chene riverfront',cut:'Dequindre Cut',mack:'Mack Avenue',legacy:'Arena'};return (sector[node.cluster]??node.cluster)+' · Point '+(Number(node.id.split('-').at(-1))+1);}

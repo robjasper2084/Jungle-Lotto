@@ -46,8 +46,8 @@ test('trick scores come from completed simulation events, and deadline closes th
 test('trick tap between fixed ticks survives exactly once',()=>{
   const r=new RideMotion(flat);r.update(1/480,{trick:1});let points=0;for(let n=0;n<600;n++){r.update(1/120,{trick:0});points+=r.events.filter(e=>e.type==='trick').reduce((n,e)=>n+e.points,0);}assert.equal(points,120);
 });
-test('a stuck dog regroups in under a second and stays near a moving rider',()=>{
-  let blocked=true;const dog=new ElmwoodCompanion({...flat,raycastObstacle(){return blocked?0:null;}}),r={x:0,z:0,headingY:0,speed:4};dog.reset(r);r.z=9;for(let n=0;n<60;n++)dog.update(r,1/60);assert.ok(dog.recoveries>=1);assert.ok(Math.hypot(dog.x-r.x,dog.z-r.z)<3);blocked=false;for(let n=0;n<600;n++){r.z+=7/60;r.speed=7;dog.update(r,1/60);}assert.ok(Math.hypot(dog.x-r.x,dog.z-r.z)<3);
+test('a nearby blocked dog waits, then regroups only when stranded and allowed',()=>{
+  let blocked=true;const dog=new ElmwoodCompanion({...flat,raycastObstacle(){return blocked?0:null;}}),r={x:0,z:0,headingY:0,speed:4};dog.reset(r);r.z=9;for(let n=0;n<60;n++)dog.update(r,1/60);assert.equal(dog.recoveries,0,'nearby obstacle must not trigger a visible teleport');dog.regroupAllowed=()=>false;r.z=20;for(let n=0;n<180;n++)dog.update(r,1/60);assert.equal(dog.recoveries,0,'visibility guard prevents regroup');dog.regroupAllowed=()=>true;dog.update(r,1/60);assert.equal(dog.recoveries,1);assert.ok(Math.hypot(dog.x-r.x,dog.z-r.z)<3);blocked=false;for(let n=0;n<600;n++){r.z+=7/60;r.speed=7;dog.update(r,1/60);}assert.ok(Math.hypot(dog.x-r.x,dog.z-r.z)<3);
 });
 test('Hammond cover joins the uphill ridge and the rider uses the authored bank height',()=>{
   const placements=JSON.parse(readFileSync(new URL('../../public/elmwood/placements.json',import.meta.url),'utf8'));

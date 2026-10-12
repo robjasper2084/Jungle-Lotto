@@ -81,3 +81,14 @@ test('both local riders can complete the full route to Mack Avenue with the exis
   t.diagnostic(JSON.stringify(room.rules.racers.map(r=>({id:r.id,seconds:r.finish,gates:r.gate}))));
  }finally{mapped.physics.free();}
 });
+
+
+test('competitive recovery stock is per rider, denies a fourth return, and free roam stays unlimited',()=>{
+ const race=new SplitRaceSimulation(flat,ids);race.rules.countdown=0;
+ for(let i=0;i<3;i++){assert.equal(race.recover(0),true);assert.equal(race.recover(0),false,'in-progress recovery must not spend another return');for(let step=0;step<30;step++)race.step(1/120,[NEUTRAL_ACTIONS,NEUTRAL_ACTIONS]);}
+ assert.equal(race.recover(0),false);assert.equal(race.riders[0].stock.remaining,0);assert.equal(race.riders[1].stock.remaining,3);
+ const fresh=new SplitRaceSimulation(flat,ids);assert.equal(fresh.riders[0].stock.remaining,3);
+ const free=new SplitRaceSimulation(flat,ids,{mode:'free',spawn:{x:0,y:0,z:0,heading:0}});
+ for(let i=0;i<5;i++){assert.equal(free.recover(0),true);for(let step=0;step<30;step++)free.step(1/120,[NEUTRAL_ACTIONS,NEUTRAL_ACTIONS]);}
+ assert.equal(free.riders[0].stock.remaining,3);
+});

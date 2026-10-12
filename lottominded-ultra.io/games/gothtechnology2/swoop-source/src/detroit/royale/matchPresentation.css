@@ -1,0 +1,14 @@
+#royale-feedback{position:fixed;inset:0;pointer-events:none;z-index:18;overflow:hidden}
+#royale-feedback[hidden],#royale-feedback [hidden]{display:none!important}
+.royale-moment{position:absolute;top:22%;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;width:max-content;max-width:88%;padding:15px 30px;text-align:center;background:linear-gradient(90deg,transparent,#061c24eb 18%,#061c24eb 82%,transparent);border-block:1px solid #78e6d850;color:#edfff9;animation:royale-moment-in .4s ease-out both}
+.royale-moment strong{font:900 clamp(22px,5vw,44px)/1.1 system-ui;letter-spacing:.09em;color:#8bf2dc;text-shadow:0 0 22px #53e7bf65}
+.royale-moment span{margin-top:9px;font:600 11px/1.5 system-ui;letter-spacing:.12em;text-transform:uppercase}
+.royale-confirmed-hit{position:absolute;left:50%;top:50%;width:23px;height:23px;transform:translate(-50%,-50%) rotate(45deg);border:2px solid #edfff4;box-shadow:0 0 9px #76e7d5;clip-path:polygon(0 0,35% 0,35% 12%,12% 12%,12% 35%,0 35%,0 0,100% 0,100% 35%,88% 35%,88% 12%,65% 12%,65% 0,100% 0,100% 100%,65% 100%,65% 88%,88% 88%,88% 65%,100% 65%,100% 100%,0 100%,0 65%,12% 65%,12% 88%,35% 88%,35% 100%,0 100%)}
+.royale-damage-direction{position:absolute;left:50%;top:50%;width:160px;height:160px;border-radius:50%;transform:translate(-50%,-50%) rotate(var(--bearing));border-top:4px solid #ff7279;filter:drop-shadow(0 0 5px #ff4859)}
+.royale-damage-direction[data-directional=false]{border:2px solid #ff727980}
+.royale-field-danger{position:absolute;inset:0;box-shadow:inset 0 0 90px #d3206455;border:2px solid #f7608740;background:repeating-linear-gradient(0deg,transparent 0,transparent 5px,#f3426907 6px);animation:royale-field-breathe 2.8s ease-in-out infinite}
+@keyframes royale-moment-in{from{opacity:0;translate:0 9px}to{opacity:1;translate:0 0}}
+@keyframes royale-field-breathe{50%{box-shadow:inset 0 0 120px #d3206480}}
+#royale-feedback[data-reduced=true] *{animation:none!important;transition:none!important;filter:none}
+@media(prefers-reduced-motion:reduce){#royale-feedback *{animation:none!important;transition:none!important;filter:none}}
+@media(max-height:500px){.royale-moment{top:14%;padding:8px 20px}.royale-moment strong{font-size:24px}.royale-moment span{font-size:9px}}

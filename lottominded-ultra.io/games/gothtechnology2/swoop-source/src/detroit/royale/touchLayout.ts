@@ -1,5 +1,5 @@
 export type Rect={x:number;y:number;width:number;height:number};
-export const TOUCH_ACTIONS=['aim','hop','fire','reload','switch','utility','crouch','repair','burst','recover','swap','cycleMode','lean-left','lean-right','scope','camera','fire-left','free-look','prone','dog-attack','dog-radar','brawl','evade'] as const;
+export const TOUCH_ACTIONS=['aim','hop','fire','reload','switch','utility','crouch','repair','burst','recover','swap','cycleMode','lean-left','lean-right','scope','camera','free-look','prone','dog-attack','dog-radar','brawl','evade'] as const;
 /** Reserve the joystick and HUD before placing controls. Keep 44px targets even
  * when a saved large-button preference cannot fit a small phone. */
 export function touchLayout(width:number,height:number,requested=60,hudBottom=188,safe={left:0,right:0,top:0,bottom:0}){

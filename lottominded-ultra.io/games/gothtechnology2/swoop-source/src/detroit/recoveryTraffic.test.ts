@@ -31,8 +31,9 @@ test('the reservation expires by simulation ticks, preserves active traffic, and
   assert.equal(world.traffic.some(a=>a.id===t.id),false,'render/pause updates do not consume the reservation');
   for(let i=0;i<145;i++)world.step();world.updateTraffic(0,t.x,t.z);
   assert.equal(world.traffic.some(a=>a.id===t.id),true,'ordinary traffic can activate after the short window');
-  const collider=world.trafficBodies.get(t.id);world.reserveRecoverySpace(t,.6,2.2);world.updateTraffic(.5,t.x,t.z);
-  const moving=world.traffic.find(a=>a.id===t.id)!;assert.equal(moving.direction,t.direction);assert.ok(moving.routeDistance!>=t.routeDistance!);assert.ok(Math.hypot(moving.x-t.x,moving.z-t.z)<2.2,'active traffic may detour, but must not teleport');assert.equal(world.trafficBodies.get(t.id),collider);
+  const collider=world.trafficBodies.get(t.id);world.reserveRecoverySpace(t,.6,2.2);
+  let previous=world.traffic.find(a=>a.id===t.id)!;
+  for(let frame=1;frame<=30;frame++){world.updateTraffic(frame/60,t.x,t.z);const moving=world.traffic.find(a=>a.id===t.id)!;assert.equal(moving.direction,t.direction);assert.ok(moving.routeDistance!>=previous.routeDistance!);assert.ok(Math.hypot(moving.x-previous.x,moving.z-previous.z)<.3,'fast traffic must move continuously each frame');assert.equal(world.trafficBodies.get(t.id),collider);previous=moving;}
   const cone=trafficAt(7,0);world.clearRecoverySpace();world.updateTraffic(0,1e8,1e8);world.step();
   assert.equal(world.mountedClear(cone,0,.6,2.2),false,'unloaded cones remain excluded from safe placement');
   world.reserveRecoverySpace(cone,.6,2.2);world.updateTraffic(0,cone.x,cone.z);assert.ok(world.traffic.some(a=>a.id===cone.id),'static hazard collision is never disabled by recovery');

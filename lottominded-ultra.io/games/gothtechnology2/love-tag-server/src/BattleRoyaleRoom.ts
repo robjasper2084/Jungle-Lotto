@@ -45,7 +45,7 @@ export class BattleRoyaleRoom extends Room{
    else if(type==='ready'&&compatible(data,this.terrain.arenaIdentity)){this.ready.add(c.sessionId);this.broadcastRoster();}
    else if(type==='release')this.match.release(c.sessionId);
    else if(type==='input'&&!this.spectators.has(c.sessionId))this.match.command(c.sessionId,data);
-   else if(type==='respawn'&&!this.spectators.has(c.sessionId)){if(!data||typeof data.accept!=='boolean'||Object.keys(data).length!==1){c.send('notice','Invalid re-entry request.');return;}const result=this.match.requestReentry(c.sessionId,data.accept);c.send('notice',result.reason);if(result.ok&&data.accept)this.broadcast('respawn',{id:c.sessionId,remaining:this.match.actors.filter(a=>a.alive).length});}
+   else if(type==='respawn'&&!this.spectators.has(c.sessionId)){if(!data||typeof data.accept!=='boolean'||Object.keys(data).some(k=>k!=='accept'&&k!=='nodeId')||data.nodeId!==undefined&&(typeof data.nodeId!=='string'||data.nodeId.length>80)){c.send('notice','Invalid re-entry request.');return;}const result=this.match.requestReentry(c.sessionId,data.accept,data.nodeId);c.send('notice',result.reason);if(result.ok&&data.accept)this.broadcast('respawn',{id:c.sessionId,remaining:this.match.actors.filter(a=>a.alive).length});}
    else if(type==='start'||type==='rematch'){
     if(c.sessionId!==this.host){c.send('notice','Only the room owner can start.');return;}
     if(!['lobby','results'].includes(this.match.phase))return;

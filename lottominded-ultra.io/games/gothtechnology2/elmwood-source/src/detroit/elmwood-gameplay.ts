@@ -1,3 +1,4 @@
+import {RecoveryStock} from '../../../ride-core/src/recoveryStock.ts';
 import type {RideEvent} from '@digital-static/ridecore';
 export type RunMode='free'|'sprint'|'tricks'|'tour';
 export type Point={x:number;z:number};
@@ -15,12 +16,15 @@ export function laneGates(points:number[][],spacing=26):Point[]{
 }
 function sweptDistance(a:Point,b:Point,p:Point){const dx=b.x-a.x,dz=b.z-a.z,t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.z-a.z)*dz)/(dx*dx+dz*dz||1)));return Math.hypot(a.x+dx*t-p.x,a.z+dz*t-p.z);}
 export class ElmwoodRun {
+  readonly recoveryStock=new RecoveryStock();
+  get limitedRecovery(){return this.mode==='sprint'||this.mode==='tricks';}
+  get recoveryLabel(){return this.limitedRecovery?this.recoveryStock.remaining+'/3 recoveries':'';}
   mode:RunMode='free';elapsed=0;score=0;gate=1;finished=false;failed=false;finishTime=0;message='';messageTime=0;distance=0;
   private previous?:Point;
   splits:number[]=[];referenceSplits:readonly number[]=[];
   readonly gates:Point[];
   constructor(gates:Point[]){this.gates=gates;}
-  reset(mode:RunMode,position:Point){this.mode=mode;this.elapsed=this.score=this.distance=this.finishTime=0;this.gate=1;this.finished=this.failed=false;this.message='';this.messageTime=0;this.previous={...position};this.splits=[];}
+  reset(mode:RunMode,position:Point){this.recoveryStock.reset();this.mode=mode;this.elapsed=this.score=this.distance=this.finishTime=0;this.gate=1;this.finished=this.failed=false;this.message='';this.messageTime=0;this.previous={...position};this.splits=[];}
   relocate(position:Point){this.previous={...position};}
   update(dt:number,position:Point,events:readonly RideEvent[],paused=false){
     if(paused||this.finished||this.failed)return;
@@ -37,7 +41,8 @@ export class ElmwoodRun {
         this.splits.push(this.elapsed);const reference=this.referenceSplits[this.splits.length-1],gap=Number.isFinite(reference)?this.elapsed-reference:null;
         this.gate++;this.score+=100;this.message='Checkpoint '+(this.gate-1)+' · +100'+(gap===null?'':' · '+Math.abs(gap).toFixed(2)+' s '+(gap<=0?'ahead of':'behind')+' your best');this.messageTime=3;
         if(this.gate>=this.gates.length){this.finished=true;this.finishTime=this.elapsed;this.message='Finished in '+this.elapsed.toFixed(1)+'s';this.messageTime=Infinity;}
-      }    }
+      }
+    }
     if(this.mode==='tricks'&&this.elapsed>=120){this.finished=true;this.message='Session complete · '+this.score+' points';this.messageTime=Infinity;}
     this.previous={...position};
   }

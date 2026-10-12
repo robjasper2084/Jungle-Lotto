@@ -30,7 +30,7 @@ export class RoyaleSession{
   try{sessionStorage.setItem('static-royale-reconnect',JSON.stringify({endpoint,token:room.reconnectionToken}));}catch{}room.send('hello',{});
  }
  async reconnect(){const saved=JSON.parse(sessionStorage.getItem('static-royale-reconnect')??'null');if(!saved)throw Error('No reconnect session on this device.');this.disposed=false;this.connection.retry();try{if(this.relayConfig){this.bind(await RelayRoom.connect(this.relayConfig,{action:'reconnect',token:saved.token}),saved.endpoint);return;}this.sdk=new Client(saved.endpoint);this.bind(await this.sdk.reconnect(saved.token),saved.endpoint);}catch(error){this.connection.fail('Reconnect failed. Check the connection or leave and join a new room.');throw error;}}
- requestReentry(accept:boolean){if(this.room)this.room.send('respawn',{accept});else if(this.match){const result=this.match.requestReentry(this.me,accept);this.message=result.reason;this.accept(this.match.snapshot(this.me));}}
+ requestReentry(accept:boolean,nodeId?:string){if(this.room)this.room.send('respawn',{accept,...(nodeId?{nodeId}:{})});else if(this.match){const result=this.match.requestReentry(this.me,accept,nodeId);this.message=result.reason;this.accept(this.match.snapshot(this.me));}}
  readyUp(){this.room?.send('ready',currentHandshake(this.terrain.arenaIdentity));}
  start(){if(this.room)this.room.send(this.state?.phase==='results'?'rematch':'start',{});else if(this.match){this.match.start(crypto.randomUUID(),crypto.getRandomValues(new Uint32Array(1))[0]&0x7fffffff);this.accept(this.match.snapshot(this.me));}}
  release(){this.room?.send('release',{});this.match?.release(this.me);this.predictionInput?.clear();}

@@ -29,6 +29,8 @@ export class NaturalSky extends Sky {
    cloudColor*=mix(.035,1.,day);
    texColor=mix(texColor,cloudColor,mask*.94);
    texColor=mix(texColor,airHorizon,1.-smoothstep(-.06,.14,direction.y));
+   // Shared cool dusk grade; full daylight retains its original scattering.
+   texColor*=mix(vec3(1.),vec3(.48,.64,.82),1.-smoothstep(.065,.30,vSunDirection.y));
   `+m.fragmentShader.slice(end);
  }
  update(dt:number,solar:T.Vector3,cloud=.28,rain=0,low=false,reduced=false,paused=false,haze?:T.Color){
