@@ -1,31 +1,37 @@
 {
   "source": "C:\\Users\\digit\\Documents\\phone\\swoop-detroit-bloom-unity\\Builds\\JazzPortal",
-  "integration": "Full viewport playable music world, walking and riding, safe return to the original Detroit session",
+  "version": "duet-20261011",
+  "integration": "Current port 8229 music world; full viewport walking and riding; safe return to Detroit",
   "files": [
     {
-      "file": "Build/JazzPortal.data",
-      "bytes": 67950108,
-      "sha256": "ae776c1068dd5f5a3bfff5b5d5bb8ed6a13b18d805712ab936bbc1cf912bfc0f"
-    },
-    {
-      "file": "Build/JazzPortal.framework.js",
-      "bytes": 415704,
-      "sha256": "99c214c782a9f3d38ea70d2dbd6eff1fc1db245a2a4cebf885423068307bd441"
-    },
-    {
-      "file": "Build/JazzPortal.wasm",
-      "bytes": 17902567,
-      "sha256": "592d6bd485632f61dd4dad107d2a7d65648ed3aacfabc21c15af83c6d6dc339f"
-    },
-    {
-      "file": "Build/JazzPortal.loader.js",
-      "bytes": 19431,
-      "sha256": "71a5d95acb77f281ef41b365b6dd6ee6c37381c85154d15bc6eb8dc70630d1de"
-    },
-    {
       "file": "index.html",
-      "bytes": 8941,
-      "sha256": "e4df94d7a8c2503e642a81840f35b2fc707cce2bca81d6564ed080af89d87ff5"
+      "bytes": 10170,
+      "sha256": "b394ad523c2de653b7ea5a22d4e35a7709859468537e6725beb6b38c59192959"
+    },
+    {
+      "file": "Build/WebGL.data",
+      "bytes": 78193325,
+      "sha256": "26133327a15a6c41c04a17069c39f2fb7e5868f0809dc21c8b1bdd02ad856366"
+    },
+    {
+      "file": "Build/WebGL.framework.js",
+      "bytes": 417043,
+      "sha256": "f6e9360382e518fdb2e6d7dffd42cfe88a0dbfcd19ad53852a68b1e47e9a14f8"
+    },
+    {
+      "file": "Build/WebGL.wasm",
+      "bytes": 17986315,
+      "sha256": "e9950484c51e90a625c26e60deeeb690a50d12f4246ee9a8793c3b1afbf8e659"
+    },
+    {
+      "file": "Build/WebGL.loader.js",
+      "bytes": 19431,
+      "sha256": "2736e922cead3d3e8650c6c17b63dbe44a86cd63fce58ba415221e3cbda68acc"
+    },
+    {
+      "file": "StreamingAssets/BloomPerformance.mp4",
+      "bytes": 29247590,
+      "sha256": "972e6d4c70b6bdb24ddcf29636e4ef2db6a6ca0b11163078043224776d7f2534"
     }
   ]
 }
