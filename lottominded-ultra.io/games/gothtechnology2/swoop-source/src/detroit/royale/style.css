@@ -76,3 +76,6 @@ header,#hint{z-index:6}#touch{z-index:2}
 #eliminated-by,#reentry-killer{color:#ffdca0;overflow-wrap:anywhere}#eliminated-by{max-width:min(300px,75vw);font-size:14px}#reentry-killer{font-size:15px;margin:8px 0}
 
 #online .online-intro{font-size:13px;color:#d6e9e7}#online .online-entry-actions #join{background:#70e6d0;border-color:#70e6d0;color:#07232a}#online-status{font-size:13px;line-height:1.5;color:#a9eee0;overflow-wrap:anywhere;margin:12px 0}#online-options summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-size:12px;color:#c9dedb}#online #code{font-size:14px;letter-spacing:.03em}#invite-link{overflow-wrap:anywhere}#online-options{margin-top:10px}
+
+/* The HUD already identifies training; keep phone action space clear. */
+@media (max-width:700px), (max-height:500px){.combat-block-note{display:none}}

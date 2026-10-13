@@ -1,0 +1,124 @@
+vite v7.3.6 building client environment for production...
+transforming...
+✓ 526 modules transformed.
+rendering chunks...
+computing gzip size...
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/traffic-studio.html                                     2.25 kB │ gzip:     1.13 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/companion-studio.html                                   2.46 kB │ gzip:     1.11 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/rider-studio.html                                       3.54 kB │ gzip:     1.55 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/full-moon-Cbcm-7dC.webp                          5.62 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/we-are-detroit-user-DPh9B28-.jpg                10.77 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/detroit.html                                           13.35 kB │ gzip:     5.40 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/royale.html                                            14.00 kB │ gzip:     4.73 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/moon-and-branches-CbZbe8uk.webp                 15.99 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/detroit-lightning-Ds493A9b.webp                 25.48 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/detroit-sunset-BbJ4eidn.webp                    28.39 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/field-assets-CqvsqzPk.glb                       36.92 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/lottomind-charm-ChV7NTax.webp                   37.85 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/blue-dragon-user-Dr4YzOXo.jpg                   42.01 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/winter-companions-DOSQDyw8.webp                 44.13 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/carsmuraldequindrecut-BryLlqOB.jpg              50.59 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/mother-and-child-D0GCx3kj.webp                  50.64 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/sydneyjames2-BHs59PaF.jpg                       64.28 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/ivanmontoyamural-Paas6vPy.jpg                   72.05 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/ghoulies-decal-DGrjxLNP.webp                    72.42 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/river-watch-D3z549kB.webp                       76.95 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/freddymural-DKOKEo-L.jpg                        76.98 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/fel3000mural-DsTDehD4.jpg                       77.40 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/shoreline-companion-CGN4Jebr.webp               80.69 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/child-at-the-river-DPOKAtoN.webp                92.81 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/creek-jump-CfjIOZXR.webp                       103.43 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/underpass-companion-CwJpj4Ny.webp              112.99 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/mission-cover-B7obQXgy.webp                    113.61 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/belle-isle-blossoms-g2-d3Xj_.webp              156.05 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/elmwood-companion-CPE6rZ8b.webp                156.63 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/detroit-night-rider-CQilOUuB.webp              158.15 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/portrait-under-clouds-BpZZVGNy.webp            161.88 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/swoop-rivals-DPfBVZbw.webp                     216.13 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/meadow-portrait-DR9aaius.webp                  230.75 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/hdl-user-CjJCRD_J.jpg                          260.24 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/breadflower-B5i1lUG5.wasm                      335.61 kB │ gzip:    69.81 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/swoop-rivals-circuit-20261005-CQFlkSh0.webp    383.20 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/detroit-dreams-CuCNr6m2.jpg                    443.86 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/grass_01_normal-CeLXfj89.jpg                   484.81 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/static-royale-lobby-plain-Dll0_YVX.webp        524.79 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/grass_01-Bk--EHD6.jpg                          534.53 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/red-graffiti-wide-cAjE-YoY.webp                621.43 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/red-graffiti-wall-I5iGBd7_.webp                645.50 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/static-royale-startup-plain-CxoYs2B7.webp      650.31 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/hooded-portrait-B8tOUxr9.webp                  677.46 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/golden-abstract-B42trG8h.webp                  692.44 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/red-graffiti-close-BDEocs0x.webp               721.53 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/detroit-skylight-D_6A6MdD.hdr                1,032.92 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/lottomind-refined-6R7q-npO.png               1,234.91 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/gothtechnology-refined-DyG7icho.png          1,405.62 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/serengeti-refined-B6GS_DkN.png               1,533.17 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/detroit-heart-Cs8E2Zx8.png                   2,277.76 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/static-wave-mural-CRmQGjOv.png               2,509.55 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/static-royale-loading-plain-C7TM80Hp.mp4     2,852.10 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/rideSoundCues-1Yagepz7.css                       0.81 kB │ gzip:     0.42 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/rideAudio-C19J8wjh.css                           0.95 kB │ gzip:     0.51 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/royale-CLcx1rmz.css                             31.66 kB │ gzip:     7.81 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/bootUi-_bSOWRlu.css                             41.02 kB │ gzip:     9.52 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/main-C5MXd7mZ.css                               74.89 kB │ gzip:    15.16 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/dogSteering-D4Ay0oUu.js                          0.52 kB │ gzip:     0.33 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/detroit-atPoUdyD.js                              0.68 kB │ gzip:     0.45 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/modulepreload-polyfill-B5Qt9EMX.js               0.71 kB │ gzip:     0.40 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/companion-studio-Cz8AwfH5.js                     3.59 kB │ gzip:     1.74 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/traffic-studio-DbMQ0-Jx.js                       4.59 kB │ gzip:     2.24 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/bootUi-CC4vqldJ.js                               4.99 kB │ gzip:     2.16 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/companionView-CSQ9agXB.js                        7.60 kB │ gzip:     3.06 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/rider-studio-Cj2MRZgW.js                         8.58 kB │ gzip:     3.73 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/rideAudio-2MfQeKsa.js                           13.69 kB │ gzip:     5.06 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/OrbitControls-CbW2USv_.js                       19.73 kB │ gzip:     4.46 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/humanFallRig-BsGmCsiq.js                       111.71 kB │ gzip:    42.51 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/scenery-BbGpTXxQ.js                            287.87 kB │ gzip:   109.69 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/hls.light-Cm5ppQ94.js                          370.93 kB │ gzip:   117.84 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/royale-k_WHTyeV.js                             465.93 kB │ gzip:   147.20 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/terrain-CFCB_rx1.js                            703.81 kB │ gzip:   183.83 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/main-Bb8vOE9T.js                             2,077.70 kB │ gzip:   592.07 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/swoop-detroit/assets/rideSoundCues-D2aPLB4a.js                    5,378.70 kB │ gzip: 1,747.67 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 7.87s
+Packaged Swoop Detroit: 56 assets
+vite v7.3.6 building client environment for production...
+transforming...
+✓ 218 modules transformed.
+rendering chunks...
+computing gzip size...
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/elmwood-explorer/elmwood.html                                              36.90 kB │ gzip:    11.20 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/elmwood-explorer/assets/lottomind-charm-ChV7NTax.webp                      37.85 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/elmwood-explorer/assets/ghoulies-decal-DGrjxLNP.webp                       72.42 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/elmwood-explorer/assets/breadflower-B5i1lUG5.wasm                         335.61 kB │ gzip:    69.81 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/elmwood-explorer/assets/title-screen-two-riders-20261005-CS_uk91x.webp    515.86 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/elmwood-explorer/assets/elmwood-skylight-fHSiey3W.hdr                   1,060.83 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/elmwood-explorer/assets/elmwood-BCiNVq3l.css                               48.43 kB │ gzip:     9.95 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/elmwood-explorer/assets/browser-BzBbrBKd.js                                32.14 kB │ gzip:    12.33 kB
+../../../../.game-builds/fps-completion-20261011/.game-builds/ecef9dd5-6b08-4eb8-a954-a419010a702b/elmwood-explorer/assets/elmwood-CLyD7QiQ.js                             7,079.62 kB │ gzip: 2,117.44 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 3.81s
+{"files":135,"textures":0,"megabytes":156}
+{
+  "time": "2026-10-13T09:51:03.847Z",
+  "backup": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\.game-builds\\fps-completion-20261011\\.game-builds\\ecef9dd5-6b08-4eb8-a954-a419010a702b\\previous",
+  "packages": [
+    {
+      "name": "swoop-detroit",
+      "source": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\swoop-fps-release",
+      "entry": "index.html"
+    },
+    {
+      "name": "elmwood-explorer",
+      "source": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\elmwood-missed-release",
+      "entry": "elmwood.html"
+    }
+  ]
+}

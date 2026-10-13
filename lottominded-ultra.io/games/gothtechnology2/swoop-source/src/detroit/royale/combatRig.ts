@@ -1,3 +1,4 @@
+import {reloadPose} from './fpsMotion.ts';
 import * as T from 'three';
 import {Hero,solve} from '../actors.ts';
 import type {RidePose} from '../controller.ts';
@@ -60,13 +61,14 @@ export class CombatRig {
     this.supportLocked=state.reloadStart<0;
     let target=support.clone();
     if(!this.supportLocked){
-      const progress=T.MathUtils.clamp((tick-state.reloadStart)/Math.max(1,state.reloadEnd-state.reloadStart),0,1);
-      const release=Math.sin(Math.PI*progress)**2;
-      const mag=this.weapon.socket(sockets.magazine_socket).add(new T.Vector3(-.03,-.18,-.08).multiplyScalar(scale).applyQuaternion(rot));
-      target.lerp(mag,release);
+      const reload=reloadPose(state,tick);
+      const mag=this.weapon.socket(sockets.magazine_socket).add(new T.Vector3(-.03-.065*reload.magazine,-.10-.22*reload.magazine,-.08).multiplyScalar(scale).applyQuaternion(rot));
+      target.lerp(mag,reload.lower);
+      // After insertion the hand returns over the receiver to ready the weapon.
+      if(reload.charge>0)target.lerp(this.weapon.socket(sockets.support_grip_L).add(new T.Vector3(0,.06,-.12).multiplyScalar(scale).applyQuaternion(rot)),reload.charge);
     }
     solve(h.arms[0],target,elbowPole(1),rot.clone().multiply(aim).multiply(h.arms[0].rotation));
-    const release=state.reloadStart<0?0:Math.sin(Math.PI*T.MathUtils.clamp((tick-state.reloadStart)/Math.max(1,state.reloadEnd-state.reloadStart),0,1))**2;
+    const release=reloadPose(state,tick).magazine;
     h.fingers.apply('SupportGrip','WeaponGrip',release);
     h.root.updateWorldMatrix(true,true);this.errorL=h.arms[0].foot.getWorldPosition(new T.Vector3()).distanceTo(target);
   }
