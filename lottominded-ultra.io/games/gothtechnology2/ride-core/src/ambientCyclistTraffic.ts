@@ -3,6 +3,7 @@ import {createGroundSample,type TerrainSampler,type NavigationObstacle} from './
 type Position={x:number;y:number;z:number;headingY:number};
 const clamp=(n:number,a:number,b:number)=>Math.max(a,Math.min(b,n));
 export const AMBIENT_CYCLIST_PACE=10.8;
+const FOLLOW_GAP=5.2;
 /** Stay on an existing mapped corridor, using opposite sides for the return leg. */
 export function cyclistCircuit(points:readonly RoutePoint[],offset=.8):RoutePoint[]{
  if(points.length<3)throw Error('Cyclists need a connected mapped route');
@@ -46,14 +47,16 @@ export class AmbientCyclistTraffic {
    for(let attempt=0;attempt<160;attempt++){
     const start=randomStart+attempt*.75;
     const safe=this.rides[p].riders.every((_,i)=>{
-     const point=this.at(start-i*2.8,i%2?-.65:.65),g=this.terrain.sampleGround(point.x,point.z,this.probe);
+     const point=this.at(start-i*FOLLOW_GAP),g=this.terrain.sampleGround(point.x,point.z,this.probe);
      return !g.offCourse&&this.terrain.raycastObstacle({x:point.x,y:g.height+.65,z:point.z},{x:Math.sin(point.headingY),y:0,z:Math.cos(point.headingY)},.2,.32)===null;
     });
     if(safe){this.starts[p]=start%this.route.length;break;}
    }
   }
   this.rides.forEach((ride,p)=>ride.riders.forEach((r,i)=>{
-   r.s=this.starts[p]-i*2.8;r.offset=r.targetOffset=i%2?-.65:.65;r.speed=AMBIENT_CYCLIST_PACE;r.blocked=false;r.passUntil=0;
+   // Each circuit leg already has its own side of the trail. A second
+   // two-abreast offset crossed the centre and met the returning pack head-on.
+   r.s=this.starts[p]-i*FOLLOW_GAP;r.offset=r.targetOffset=0;r.speed=AMBIENT_CYCLIST_PACE;r.blocked=false;r.passUntil=0;r.thinkIn=0;
    let at=this.at(r.s,r.offset);let g=this.terrain.sampleGround(at.x,at.z,this.ground);
    if(g.offCourse){r.offset=r.targetOffset=0;at=this.at(r.s);g=this.terrain.sampleGround(at.x,at.z,this.ground);}
    Object.assign(r,at,{y:g.height});Object.assign(this.previous[p][i],r);Object.assign(this.current[p][i],r);
@@ -63,24 +66,39 @@ export class AmbientCyclistTraffic {
   if(paused)return;
   if(!paused)this.accumulator+=clamp(dt,0,.1);
   while(this.accumulator>=.05){this.accumulator-=.05;this.ticks++;
-   const neighbors=[...contacts,...this.obstacles()];
+   // Collision decisions use this simulation tick, not interpolated display poses.
+   const neighbors:NavigationObstacle[]=[...(this.terrain.navigationObstacles?.(observer.x,observer.z,175)??[]).filter(o=>!o.raycastSolid&&!contacts.some(c=>c.id===o.id)&&!o.id.startsWith('ambient-')),...contacts,...this.rides.flatMap((ride,p)=>ride.riders.map((r,i)=>({id:r.id,...this.current[p][i],radius:.55,height:1.8,kind:'cyclist',vx:Math.sin(this.current[p][i].headingY)*r.speed,vz:Math.cos(this.current[p][i].headingY)*r.speed})))];
    this.rides.forEach((ride,p)=>ride.riders.forEach((r,i)=>{
     const previous=this.previous[p][i],current=this.current[p][i];Object.assign(previous,current);
     const at=this.at(r.s),ahead=this.at(r.s+8),bend=Math.abs(Math.atan2(Math.sin(ahead.headingY-at.headingY),Math.cos(ahead.headingY-at.headingY)));
-    const cohesion=clamp((ride.riders[0].s-r.s-i*2.8)*.45,-.6,.6);
+    const cohesion=clamp((ride.riders[0].s-r.s-i*FOLLOW_GAP)*.25,-.6,.6);
     let wanted=Math.min(AMBIENT_CYCLIST_PACE+cohesion,Math.sqrt(4/Math.max(.035,bend/8)));
     const near=Math.hypot(current.x-observer.x,current.z-observer.z)<150;
-    if(near&&this.ticks%2===i%2){
+    r.thinkIn-=.05;
+    if(near&&r.thinkIn<=0){r.thinkIn=.2;
      const clear=(offset:number)=>{
       const probe=this.at(r.s+Math.max(3,r.speed*.7),offset),dx=probe.x-current.x,dz=probe.z-current.z,d=Math.hypot(dx,dz)||1;
       if(this.terrain.sampleGround(probe.x,probe.z,this.probe,current.y).offCourse)return false;
-      if(neighbors.some(o=>o.id!==r.id&&Math.abs(o.y-current.y)<2&&Math.hypot(probe.x-o.x-o.vx*.6,probe.z-o.z-o.vz*.6)<o.radius+.7))return false;
+      if(neighbors.some(o=>o.id!==r.id&&Math.abs(o.y-current.y)<2&&Math.hypot(probe.x-o.x-o.vx*.3,probe.z-o.z-o.vz*.3)<o.radius+.72))return false;
       return this.terrain.raycastObstacle({x:current.x,y:current.y+.65,z:current.z},{x:dx/d,y:0,z:dz/d},d,.32)===null;
      };
-     if(!clear(r.targetOffset)&&r.s>(r.passUntil??0)){
-      const alternate=[-r.targetOffset,0,-1.1,1.1].find(clear);
+     if(!clear(r.targetOffset)){
+      const edge=Math.max(0,Math.min(1.5,at.width/2-.65));
+      // Prefer the outside of our direction of travel. Only cross over when
+      // that corridor is clear; never swap sides just because a timer expired.
+      const alternate=[edge,edge*.5,0,-edge].find(clear);
       if(alternate!==undefined){r.targetOffset=alternate;r.passUntil=r.s+12;}else wanted=Math.min(wanted,2.2);
-     }
+     }else if(r.s>(r.passUntil??0)&&clear(0))r.targetOffset=0;
+    }
+    // Brake before contact. The old system drove every follower at full speed
+    // until its final sweep failed, compressing both packs around a stopped rider.
+    const fx=Math.sin(at.headingY),fz=Math.cos(at.headingY);
+    for(const o of neighbors){
+     if(o.id===r.id||Math.abs(o.y-current.y)>2)continue;
+     const dx=o.x-current.x,dz=o.z-current.z,along=dx*fx+dz*fz,lateral=dx*fz-dz*fx;
+     if(along<=0||along>18||Math.abs(lateral)>o.radius+.7)continue;
+     const following=o.vx*fx+o.vz*fz,headway=o.radius+.65+1.2+Math.max(0,r.speed)*.22;
+     wanted=Math.min(wanted,Math.max(0,following+(along-headway)*1.8));
     }
     r.speed+=clamp(wanted-r.speed,-.3,.12);let offset=r.offset+clamp(r.targetOffset-r.offset,-.06,.06);
     let position=this.at(r.s+r.speed*.05,offset),g=this.terrain.sampleGround(position.x,position.z,this.ground,current.y);
@@ -106,6 +124,7 @@ export class AmbientCyclistTraffic {
       Object.assign(current,side,{y:ground.height});r.thinkIn=0;break;
      }
     }
+    const own=neighbors.find(o=>o.id===r.id);if(own)Object.assign(own,current,{vx:Math.sin(current.headingY)*r.speed,vz:Math.cos(current.headingY)*r.speed});
    }));
   }
   const alpha=paused?1:this.accumulator/.05;
