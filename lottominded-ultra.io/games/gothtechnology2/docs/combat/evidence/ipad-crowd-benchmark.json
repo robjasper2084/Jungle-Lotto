@@ -1,0 +1,9 @@
+{
+  "actors": 60,
+  "seconds": 30,
+  "identicalEveryTick": true,
+  "beforeQueries": 215163,
+  "afterQueries": 214936,
+  "beforeMs": 446.7899999999994,
+  "afterMs": 294.0720999999998
+}

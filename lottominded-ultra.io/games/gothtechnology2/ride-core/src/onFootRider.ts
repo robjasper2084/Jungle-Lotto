@@ -1,6 +1,6 @@
 import * as T from 'three';
 import {TACTICAL_MOTION} from './tacticalMotionData.ts';
-import {footGait} from './onFootGait.ts';
+import {footGait,footBodyMotion} from './onFootGait.ts';
 import {solveLimb} from './limbIK.ts';
 import type {FootPose} from './onFoot.ts';
 type Rig={root:T.Object3D;ground:T.Object3D;lean:T.Object3D;rider:T.Object3D;vehicle:T.Object3D;mountHeight:number;motionScale:number;bones:{o:T.Object3D;p:T.Vector3;q:T.Quaternion}[]};
@@ -66,24 +66,25 @@ export function applyOnFootRider(h:Rig,pose:Partial<FootPose>){
   row=mix(row,sample('jog',phase),T.MathUtils.smoothstep(speed,2.5,3.6));row=mix(row,sample('run',phase),T.MathUtils.smoothstep(speed,3.6,5.4));
  }
  const frame=h.root.getWorldQuaternion(q()),forward=new T.Vector3(0,0,1).applyQuaternion(frame),right=new T.Vector3(1,0,0).applyQuaternion(frame),up=new T.Vector3(0,1,0);
- const upright=(source:T.Quaternion)=>{const e=new T.Euler().setFromQuaternion(source,'YXZ');e.x=0;e.z=T.MathUtils.clamp(e.z,-.035,.035);return q().setFromEuler(e);};
+ const motion=footBodyMotion(phase,p.speed);
+ const upright=(source:T.Quaternion,chest=false)=>{const e=new T.Euler().setFromQuaternion(source,'YXZ');e.x=chest?motion.chestPitch:motion.hipPitch;e.y=e.y*.35+(chest?motion.chestYaw:motion.hipYaw);e.z=T.MathUtils.clamp(e.z,-.025,.025);return q().setFromEuler(e);};
  const crouch=T.MathUtils.clamp(p.footCrouch||0,0,1),prone=T.MathUtils.clamp(p.footProne||0,0,1);
  const posture=q().setFromAxisAngle(new T.Vector3(1,0,0),prone*Math.PI/2+crouch*.10);
- const hipFrame=(p.footJump?quat(row,30):upright(quat(row,30))).premultiply(posture),chestFrame=(p.footJump?quat(row,34):upright(quat(row,34))).premultiply(posture);
+ const hipFrame=(p.footJump?quat(row,30):upright(quat(row,30))).premultiply(posture),chestFrame=(p.footJump?quat(row,34):upright(quat(row,34),true)).premultiply(posture);
  for(const b of data.body)worldRotation(b.bone,frame.clone().multiply(hipFrame.clone().slerp(chestFrame,b.channel/3)).multiply(b.offset));
  if(data.neck)worldRotation(data.neck.bone,frame.clone().multiply(hipFrame.clone().slerp(chestFrame,.35)).multiply(data.neck.offset));
  if(data.neck&&prone>0)worldRotation(data.neck.bone,data.neck.bone.getWorldQuaternion(q()).premultiply(q().setFromAxisAngle(right,-.9*prone)));
- // Small counter-swings keep the collar alive without importing each A-pose's
- // different elbow plane or bending the torso forward.
+ // Counter-swing stays synchronized with foot contact on every hero rig.
  for(const [i,side] of ['Left','Right'].entries()){
   const collar=h.rider.getObjectByName(side+'Shoulder'),arm=h.rider.getObjectByName(side+'Arm');
-  if(collar&&arm){const wave=Math.sin(phase*tau+i*Math.PI)*T.MathUtils.smoothstep(speed,0,.85);
+  if(collar&&arm){const wave=-Math.cos(phase*tau+i*Math.PI)*motion.effort;
    const target=new T.Vector3(i===0?1:-1,-.015+wave*.008,wave*.022).normalize().applyQuaternion(frame);
    point(collar,arm,collar.getWorldPosition(v()).add(target));
   }
  }
  const effort=T.MathUtils.smoothstep(speed,0,.85),jog=T.MathUtils.smoothstep(speed,2.5,4.1),hips=data.body[0].bone,hip=hips.getWorldPosition(v());
- hip.addScaledVector(up,-data.bottom+(.004+.008*jog)*Math.cos(phase*tau*2)*effort*(1-prone)-.34*scale*crouch);
+ hip.addScaledVector(up,-data.bottom+motion.bob*scale*(1-prone)-.34*scale*crouch);
+ hip.addScaledVector(right,motion.weight*scale*(1-prone)*(1-crouch*.5));
  hip.y=T.MathUtils.lerp(hip.y,h.root.getWorldPosition(v()).y+.26*scale+(h.motionScale<.7?.13:.03),prone);hip.addScaledVector(forward,-.30*scale*prone);
  hips.position.copy(hips.parent!.worldToLocal(hip));h.root.updateMatrixWorld(true);
  if(!p.footJump||p.footJump===3){
@@ -108,10 +109,10 @@ export function applyOnFootRider(h:Rig,pose:Partial<FootPose>){
  // each model's real upper-arm/forearm lengths and authored relaxed wrist.
  data.arms.forEach((l,i)=>{
   const source=12+i*6,upperAngle=Math.atan2(row[source+2],-row[source+1]),lowerAngle=Math.atan2(row[source+5],-row[source+4]);
-  const shoulder=T.MathUtils.clamp(upperAngle,-.55-.45*jog,.55+.40*jog)*effort*(p.footJump?1:.58+.12*jog);
+  const shoulder=p.footJump?T.MathUtils.clamp(upperAngle,-.55-.45*jog,.55+.40*jog)*effort:motion.shoulder*(i===0?1:-1)*(1-prone);
   const elbow=T.MathUtils.lerp(.18,T.MathUtils.clamp(Math.atan2(Math.sin(lowerAngle-upperAngle),Math.cos(lowerAngle-upperAngle)),.13+.57*jog,.65+.95*jog),effort);
-  const relaxedElbow=p.footJump?elbow:T.MathUtils.lerp(.18,elbow,.60+.15*jog);
-  const a=l.upper.getWorldPosition(v()),side=i===0?1:-1,bend=a.clone().addScaledVector(up,-l.upperLength*Math.cos(shoulder)).addScaledVector(forward,l.upperLength*Math.sin(shoulder)).addScaledVector(right,side*.015*scale);
+  const relaxedElbow=p.footJump?elbow:motion.elbow+Math.max(0,shoulder)*.22;
+  const a=l.upper.getWorldPosition(v()),side=i===0?1:-1,bend=a.clone().addScaledVector(up,-l.upperLength*Math.cos(shoulder)).addScaledVector(forward,l.upperLength*Math.sin(shoulder)).addScaledVector(right,side*.035*scale);
   bend.sub(a).setLength(l.upperLength).add(a);
   const hand=bend.clone().addScaledVector(up,-l.lowerLength*Math.cos(shoulder+relaxedElbow)).addScaledVector(forward,l.lowerLength*Math.sin(shoulder+relaxedElbow));
   point(l.upper,l.knee,bend);point(l.knee,l.foot,hand);

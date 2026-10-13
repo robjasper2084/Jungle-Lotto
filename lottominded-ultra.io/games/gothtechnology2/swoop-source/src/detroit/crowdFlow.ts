@@ -14,7 +14,7 @@ export function advanceCrowd(agents:CrowdAgent[],dt:number,path:CrowdPath,extern
   if(a.pace===0||a.incapacitated)continue;
   const route=path.point(a.distance,0),h=route.heading+(a.direction<0?Math.PI:0),nx=Math.sin(h),nz=Math.cos(h);
   const limit=Math.max(.4,path.width(a.distance)/2-a.radius-.18),home=a.direction*Math.min(1.65,limit);
-  const obstacles=agents.filter(b=>b!==a).map(crowdObstacle).concat(external).filter(o=>Math.abs(o.y-a.y)<1.3&&Math.hypot(o.x-a.x,o.z-a.z)<a.pace*3+5);
+  const obstacles=agents.filter(b=>b!==a&&Math.abs(b.y-a.y)<1.3&&Math.hypot(b.x-a.x,b.z-a.z)<a.pace*3+5).map(crowdObstacle).concat(external.filter(o=>Math.abs(o.y-a.y)<1.3&&Math.hypot(o.x-a.x,o.z-a.z)<a.pace*3+5));
   // Keep all actors for steering; computer bikes can overlap without stopping one another.
   const solid=obstacles.filter(o=>!(a.kind==='cyclist'&&computerBikeContact(o)));
   const threats=obstacles.map(o=>{const dx=o.x-a.x,dz=o.z-a.z;return {o,along:dx*nx+dz*nz,side:dx*nz-dz*nx};}).filter(q=>q.along>-.15&&q.along<a.pace*2.5+3&&Math.abs(q.side)<a.radius+q.o.radius+.45).sort((b,c)=>b.along-c.along);
@@ -24,8 +24,8 @@ export function advanceCrowd(agents:CrowdAgent[],dt:number,path:CrowdPath,extern
   if(threat&&!a.passing){
    const margin=a.radius+threat.o.radius+.3,candidates=[1,-1].map(side=>clamp(a.lane+a.direction*(path.offsetSign??1)*(threat.side+side*margin),-limit,limit));
    const clearance=(lane:number)=>{const goal=path.point(a.distance+a.direction*Math.max(2,threat.along),lane);if(path.walkable&&!path.walkable(goal.x,goal.y,goal.z))return -10;return Math.min(...obstacles.filter(o=>Math.hypot(o.x-goal.x,o.z-goal.z)<3).map(o=>Math.hypot(goal.x-o.x,goal.z-o.z)-o.radius-a.radius),10);};
-   const best=candidates.sort((b,c)=>clearance(c)-clearance(b))[0];
-   if(clearance(best)>.1){target=best;a.passing=threat.o.id;a.passLane=target;}
+   const best=candidates.map(lane=>({lane,clearance:clearance(lane)})).sort((b,c)=>c.clearance-b.clearance)[0];
+   if(best.clearance>.1){target=best.lane;a.passing=threat.o.id;a.passLane=target;}
   }
   const passPoint=threat?path.point(a.distance+a.direction*Math.max(.8,threat.along),target):undefined;
   const passingClear=threat&&passPoint&&Math.hypot(passPoint.x-threat.o.x,passPoint.z-threat.o.z)>a.radius+threat.o.radius+.2;
@@ -45,10 +45,10 @@ export function advanceCrowd(agents:CrowdAgent[],dt:number,path:CrowdPath,extern
   if(a.stuck>.6){
    // If another passer occupies our reservation, pick a reachable gap instead of queueing forever.
    const score=(lane:number)=>{const q=path.point(a.distance,lane),ahead=path.point(a.distance+a.direction*.8,lane);if(path.walkable&&!path.walkable(q.x,q.y,q.z))return -10;const fraction=actorTravelFraction(a,q.x-a.x,q.z-a.z,a.radius,a.height,solid);return fraction*3+Math.min(2,...obstacles.map(o=>Math.hypot(ahead.x-o.x,ahead.z-o.z)-a.radius-o.radius))-.08*Math.abs(lane-a.lane);};
-   const choices=[target,-limit,limit,home,0].sort((a,b)=>score(b)-score(a));target=choices[0];a.passLane=target;a.passing=threat?.o.id??a.passing;
+   const choices=[target,-limit,limit,home,0].map(lane=>({lane,score:score(lane)})).sort((a,b)=>b.score-a.score);target=choices[0].lane;a.passLane=target;a.passing=threat?.o.id??a.passing;
    // Back up a short distance if an occupied shoulder leaves no sideways
    // escape. Never teleport or reverse the person's chosen route direction.
-   if(a.stuck>2&&!a.retreat&&score(target)<.5){const back=path.point(a.distance-a.direction*.6,a.lane);if((!path.walkable||path.walkable(back.x,back.y,back.z))&&actorTravelFraction(a,back.x-a.x,back.z-a.z,a.radius,a.height,solid)>.8)a.retreat=.8;}
+   if(a.stuck>2&&!a.retreat&&choices[0].score<.5){const back=path.point(a.distance-a.direction*.6,a.lane);if((!path.walkable||path.walkable(back.x,back.y,back.z))&&actorTravelFraction(a,back.x-a.x,back.z-a.z,a.radius,a.height,solid)>.8)a.retreat=.8;}
   }
   a.behavior=rider?'stepping aside':pace<.15?'yielding':a.passing?'passing':'moving';
   a.speed+=clamp(pace-a.speed,-2.8*dt,1.4*dt);

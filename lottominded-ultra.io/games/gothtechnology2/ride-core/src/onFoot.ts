@@ -1,4 +1,5 @@
 import {createGroundSample,type TerrainSampler} from './terrain.ts';
+import {footCycleDistance} from './onFootGait.ts';
 
 export const FOOT_SPEED={walk:2.35,run:5.4,reverse:2.05,reverseRun:3.8} as const;
 export const footFields=()=>({footMode:0,footBlend:0,footPhase:0,footCycle:0,footTime:0,footJump:0,footCrouch:0,footProne:0,footStagger:0,parkX:0,parkY:0,parkZ:0,parkHeading:0});
@@ -110,7 +111,7 @@ export function stepOnFoot(s:ReturnType<typeof footState>,p:FootPose,t:TerrainSa
  p.velocityX=(p.x-beforeX)/dt;p.velocityZ=(p.z-beforeZ)/dt;
  // Continuous cycle count allows differently sized rigs to fit cadence without
  // a discontinuity whenever the human-sized cycle wraps. Advance by actual travel.
- const stride=1.65+(3.6-1.65)*ease((Math.abs(p.speed)-2.35)/3.05);
+ const stride=footCycleDistance(p.speed);
  s.phase+=Math.hypot(p.x-beforeX,p.z-beforeZ)/stride;
  p.footCycle=s.phase;p.footPhase=s.phase%1;
  return true;

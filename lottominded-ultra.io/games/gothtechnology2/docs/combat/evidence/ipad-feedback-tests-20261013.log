@@ -1,0 +1,32 @@
+(node:34924) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ permission return and backgrounding preserve open-mic intent, while muting still wins (7.0721ms)
+✔ permission accepted while hidden resumes on return, never transmits in the background (1.3444ms)
+✔ leaving during permission request stops the late stream (0.9793ms)
+✔ push-to-talk preparation never leaves the microphone open (1.72ms)
+(node:40332) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ voice signals cannot target a different room, channel or self (1.3572ms)
+✔ only bounded audio SDP and ICE pass; claimed sender is discarded (1.5713ms)
+(node:7044) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ callback jitter at 60 Hz does not drift into a 30 Hz cap (1.6277ms)
+✔ non-divisible display rates retain requested frame rate, idle caps and long-stall recovery (2.0067ms)
+(node:41756) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Automatic uses High on capable desktops and Smooth on phones without changing manual preferences (1.0257ms)
+✔ automatic antialiasing avoids mobile MSAA cost while manual choices win (0.1511ms)
+✔ saved graphics controls reject corrupted or unsupported values (0.8154ms)
+✔ render budget limits large screens and honors smaller device ratios (0.2112ms)
+✔ Low caps active riding at 30 FPS without limiting XR (0.1992ms)
+✔ default phone and tablet controls remain on screen without overlap (0.4579ms)
+✔ Ultra restores its detail after the old Smooth shortcut (0.2111ms)
+✔ manual HD and Ultra request antialiasing on tablets unless explicitly disabled (0.1173ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 284.0754

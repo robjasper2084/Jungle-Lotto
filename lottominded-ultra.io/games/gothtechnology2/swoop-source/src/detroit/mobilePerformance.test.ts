@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {budgetPixelRatio} from './renderBudget.ts';
-import {GRAPHICS_PRESETS,resolveGraphics,antialiasForDevice,parseGraphicsTuning} from './graphicsQuality.ts';
+import {GRAPHICS_PRESETS,resolveGraphics,antialiasForDevice,parseGraphicsTuning,savedGraphicsTuning,presetAntialias} from './graphicsQuality.ts';
 import {FrameSchedule} from './frameSchedule.ts';
 import {CONTROL_IDS,defaultTouchPosition,controlRect} from './touchLayout.ts';
 test('Automatic uses High on capable desktops and Smooth on phones without changing manual preferences',()=>{
@@ -28,4 +28,15 @@ test('default phone and tablet controls remain on screen without overlap',()=>{
   const circles=CONTROL_IDS.map(id=>{const size=id==='stick'?136:id==='hop'?80:64;const r=controlRect(defaultTouchPosition(id,w,h),size,size,w,h);assert.ok(r.width>=48);return {id,x:r.left+r.width/2,y:r.top+r.height/2,r:r.width/2};});
   for(let a=0;a<circles.length;a++)for(let b=a+1;b<circles.length;b++){const x=circles[a],y=circles[b];assert.ok(Math.hypot(x.x-y.x,x.y-y.y)>=x.r+y.r,`${w}x${h}: ${x.id} and ${y.id} overlap`);}
  }
+});
+
+test('Ultra restores its detail after the old Smooth shortcut',()=>{
+ const stale=JSON.stringify({fps:60,shadows:0,textureSize:512,distance:180,resolution:1});
+ assert.deepEqual(savedGraphicsTuning('ultra',stale),{});
+ assert.equal(savedGraphicsTuning('low',stale).textureSize,512);
+ assert.deepEqual(savedGraphicsTuning('high','{"fps":120,"textureSize":2048}'),{fps:120,textureSize:2048});
+});
+
+test('manual HD and Ultra request antialiasing on tablets unless explicitly disabled',()=>{
+ assert.equal(presetAntialias('ultra'),'on');assert.equal(presetAntialias('high','auto'),'on');assert.equal(presetAntialias('ultra','off'),'off');assert.equal(presetAntialias('auto'),'auto');
 });

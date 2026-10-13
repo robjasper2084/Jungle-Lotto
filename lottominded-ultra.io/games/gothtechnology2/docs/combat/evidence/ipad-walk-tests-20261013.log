@@ -1,0 +1,25 @@
+(node:39364) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ foot look crosses the yaw seam repeatedly and preserves the parked wheel (9.023ms)
+✔ on-foot right input strafes screen right at every heading; diagonals do not boost speed (7.8951ms)
+✔ compiled authority accepts free foot heading, rejects invalid heading and shoots along it (193.3331ms)
+(node:43856) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ relaxed gait preserves ground contact and distance-matched steps for every hero size (39.2248ms)
+✔ ankle velocity stays continuous at lift-off and landing instead of stopping abruptly (1.4916ms)
+✔ shooter walk counter-rotates the torso without excessive bounce and settles at idle (3.6663ms)
+(node:27572) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ standalone Elmwood adapter parks, walks, jumps and mounts; right steering is not inverted (48.4518ms)
+✔ Royale parks, walks, runs, jumps, returns and remounts without moving the wheel (21.403ms)
+✔ Swoop parks, walks, runs, jumps, returns and remounts without moving the wheel (13.6868ms)
+✔ no dismount at speed or into blocked terrain; walking sweeps obstacles (7.3722ms)
+✔ authoritative restore retains parked wheel, foot mode and jump trajectory (2.4622ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 592.7299
