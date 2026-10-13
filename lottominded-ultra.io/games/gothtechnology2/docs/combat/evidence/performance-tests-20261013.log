@@ -1,0 +1,113 @@
+✔ collision transport retains geometry, retired identities and query filters (69.849ms)
+✔ invalid/truncated collider transports fail before creating a usable map (7.1151ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 223.2905
+(node:40668) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ all rendered decks and beams keep full-width headroom through the entire crossing (1082.7641ms)
+✔ every crossing has both bank supports and edge protection, not just a slab (27.2515ms)
+✔ bridge tops and underpasses remain closed surfaces after static batching (30.6553ms)
+✔ the outer ends of both approaches join the bank surface (6.1605ms)
+(node:26180) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ paint follows sloping pavement with upward faces and stays at its overlay height (3.3332ms)
+✔ batching retains paint draw order and does not merge it with base pavement (11.9979ms)
+✔ rendered camera stays above ground and clears a nearby wall after interpolation (0.4697ms)
+(node:27700) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ static batching retains indexed vertices, transforms and separate shadow flags (17.8234ms)
+✔ idle rendering halves 60Hz work but active and XR frames are never throttled (0.3094ms)
+✔ hidden support surfaces stay hidden when static art is batched (0.9755ms)
+(node:24804) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ tree variations remain grounded and within the existing off-trail planting envelope (57.4061ms)
+✔ tree shapes repeat reliably and moving a map site only translates its geometry (3.8108ms)
+✔ distance detail never removes the whole crown and shadows use matching leaf alpha (10.1254ms)
+✔ distant trees retain every crown while reducing twig and leaf triangles (5.1522ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1904.2962
+(node:40156) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Automatic uses High on capable desktops and Smooth on phones without changing manual preferences (0.8964ms)
+✔ automatic antialiasing avoids mobile MSAA cost while manual choices win (0.1508ms)
+✔ saved graphics controls reject corrupted or unsupported values (0.7476ms)
+✔ render budget limits large screens and honors smaller device ratios (0.2028ms)
+✔ Low caps active riding at 30 FPS without limiting XR (0.1995ms)
+✔ default phone and tablet controls remain on screen without overlap (0.4648ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 203.6567
+(node:28844) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ a person steps aside for a rider approaching from behind and resumes their route (3.7349ms)
+✔ people use visible raised pavement as their footing and keep moving across it (4184.0842ms)
+✔ walking and skating envelopes leave a visible gap without granting pass-through (1.0642ms)
+✔ the riding view uses one character sweep while retaining contact and recovery checks (3131.0848ms)
+(node:25896) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✖ pedestrians, bikes, scooters and skaters travel continuously in their original direction (69.5436ms)
+✔ traffic recycling happens beyond the trail and never changes a persons travel direction (1.6467ms)
+✔ cones and barriers remain static over a long session (2.2257ms)
+✔ the southern traffic exit stays on the dry mapped Riverwalk (3.3279ms)
+✔ a ten-minute mapped traffic session does not pile up at the waterfront entrance (40057.717ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 8
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 40829.2253
+
+✖ failing tests:
+
+test at swoop-fps-release\src\detroit\trafficFlow.test.ts:7:1
+✖ pedestrians, bikes, scooters and skaters travel continuously in their original direction (69.5436ms)
+  AssertionError [ERR_ASSERTION]: sudden heading reversal
+      at TestContext.<anonymous> (C:\Users\digit\Documents\phone\_goth_swoop_release_20260916\lottominded-ultra.io\games\gothtechnology2\swoop-fps-release\src\detroit\trafficFlow.test.ts:20:14)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.start (node:internal/test_runner/test:1177:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+✔ binary fixture preserves bytes, checks integrity and consumes the temporary buffer once (35.4325ms)
+✔ legacy package fallback only follows a missing manifest; server errors do not start another massive download (2.6241ms)
+✔ v2 collision manifest preserves map identity and selects lossless reconstruction (5.4255ms)
+Map physics loaded from verified local cache.
+✔ a repeat load reuses verified compressed physics without a second large transfer (39.9609ms)
+Map physics loaded from verified local cache.
+✔ a corrupt cached map is evicted, downloaded once and verified again (6.8466ms)
+✔ denied storage leaves normal loading available (2.5608ms)
+✔ cache updates retain the other map and write only the requested byte view (0.6688ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 229.5111

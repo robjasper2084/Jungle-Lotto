@@ -1,3 +1,4 @@
+import {batchStaticGroup} from './static-batch.ts';
 import type {SceneryWorld} from './sceneryWorld.ts';
 import type {SpatialAssetStream} from './spatialAssetStream.ts';
 import * as T from 'three';
@@ -146,7 +147,7 @@ export async function buildCity(_scene:T.Scene,world:SceneryWorld,groupAt:(x:num
      // Detail stays inside the mapped envelope; the envelope is authoritative.
      const scale=Math.min((bounds.max.x-bounds.min.x)/size.x,(bounds.max.z-bounds.min.z)/size.z,.98);
      asset.scale.setScalar(scale);asset.position.set(center.x-(box.min.x+size.x/2)*scale,geo.userData.streetBase-box.min.y*scale,center.z-(box.min.z+size.z/2)*scale);
-     asset.traverse(o=>{if((o as T.Mesh).isMesh){o.castShadow=o.receiveShadow=true;}});g.add(asset);landmarks.push(id);};if(stream)stream.add({id:'architecture-'+id,centers:[{x:center.x,z:center.z}],load});else await load();
+     asset.traverse(o=>{if((o as T.Mesh).isMesh){o.castShadow=o.receiveShadow=true;}});batchStaticGroup(asset);g.add(asset);landmarks.push(id);};if(stream)stream.add({id:'architecture-'+id,centers:[{x:center.x,z:center.z}],load});else await load();
    }
  }
  return{blocks:world.buildingMeshes.length,landmarks,bridges:GEO.bridges.length,ramps:GEO.ramps.length,mapped:true,streetSections,streetTriangles,streetTiles:cached?new Set(cached.tiles.map(t=>t.x+','+t.z)).size:paths.size,cached:!!cached};

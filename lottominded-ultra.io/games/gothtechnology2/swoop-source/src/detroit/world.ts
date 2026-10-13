@@ -6,7 +6,7 @@ import {HARBOR_GANGWAY} from './harborLayout.ts';
 import {ARETHA_ENTRANCE} from './arethaEntrance.ts';
 import {ARETHA,waterfrontCorridor,waterfrontBuildings,inWaterfrontPond} from './waterfrontSite.ts';
 import {parkContains} from './freestylePark.ts';
-import {MACK_STUDIO,studioGrade,studioLot} from './mackStudioSite.ts';
+import {MACK_STUDIO,studioGrade,studioLot,studioMap} from './mackStudioSite.ts';
 import {LOTTO_SHOP,lottoCoordinates,lottoGrade} from './lottoShopSite.ts';
 import {PENNY_SHOP,pennyGrade,pennyNear} from './pennyShopSite.ts';
 import {millikenHill,MILLIKEN_BERM} from './millikenTerrain.ts';
@@ -46,6 +46,7 @@ export const CUT_STATIONS=[
 ].sort((a,b)=>a.at-b.at);
 export function cutPoint(d:number,u=0){return pointOnCut(d,u);}
 export function cutCoords(x:number,z:number){return nearestCut(x,z);}
+const muralArrival=studioMap(MACK_STUDIO.width/2+25,0);
 export const SPOTS=[
  {name:'Atwater Street / Renaissance Center view',x:-72.5,z:-1180,heading:.075},
  {name:'Gratiot / geographic origin',...cutPoint(GEO.bridges.find(b=>b.name==='Gratiot Avenue')!.at),heading:pointOnCut(GEO.bridges.find(b=>b.name==='Gratiot Avenue')!.at).heading},
@@ -59,7 +60,7 @@ export const SPOTS=[
  {name:'Flower banks',...cutPoint(1050),heading:pointOnCut(1050).heading},
  {name:'Woodbridge / Fit Park',...cutPoint(265),heading:pointOnCut(265).heading},
  {name:'MoGo / bike repair',...cutPoint(2130),heading:pointOnCut(2130).heading},
- {name:'Detroit heart / field sign',...cutPoint(1600),heading:pointOnCut(1600).heading+Math.PI/2},
+ {name:'Detroit heart / field sign',x:-73.5,z:-1176.6,heading:-Math.PI/2},
  {name:'Ze Mound overlook',x:MILLIKEN_BERM.x+42,z:MILLIKEN_BERM.z,heading:-Math.PI/2},
  {name:'Adelaide / Detroit mural',...cutPoint(1864),heading:pointOnCut(1864).heading-Math.PI/2},
  {name:'Atwater / Milliken Harbor docks',x:-95,z:-1385,heading:-Math.PI/2},
@@ -68,6 +69,7 @@ export const SPOTS=[
  {name:'The Aretha / riverfront canopy',x:-250,z:-1750,heading:.30},
  {name:'Chene Street / Atwater waterfront',x:-115,z:-1759,heading:Math.PI/2},
  {name:'Robert C. Valade Park / beach and The Shed',x:-131,z:-1799.4,heading:-2.29},
+ {name:'Innovation Floor / Cut-side mural',...muralArrival,heading:Math.atan2(MACK_STUDIO.x-muralArrival.x,MACK_STUDIO.z-muralArrival.z)},
 ];
 export const STATIONS=CUT_STATIONS;
 export const CHECKPOINTS=[
@@ -77,7 +79,8 @@ export const CHECKPOINTS=[
   {name:'Freight Yard',...cutPoint(2050)},{name:'Mack Avenue',...cutPoint(CUT_METRES-20)},
 ];
 export function locationAt(x:number,z:number){
-  if(inValadePark(x,z))return 'Robert C. Valade Park';
+  const club=JAZZ_CLUBS.find(s=>Math.hypot(x-s.x,z-s.z)<24);if(club)return club.name;
+  if(inValadePark(x,z)||Math.hypot(x+131,z+1799.4)<18)return 'Robert C. Valade Park';
   if(x<15&&z< -1510&&z> -1810)return ARETHA.name;
   if(pennyNear(x,z))return 'Penny Exchange / Mack Avenue';
   const lotto=lottoCoordinates(x,z);if(Math.abs(lotto.u)<9&&Math.abs(lotto.v)<14)return 'LottoMind Store / Mack Avenue';
@@ -334,11 +337,12 @@ export class DetroitWorld implements TerrainSampler{
     this.traffic=[];const active=new Set<number>();
     if(!this.crowd.length||time<this.crowdTime){this.crowd=Array.from({length:62},(_,id)=>{const t=trafficAt(id,time+(this.crowdSeed?crowdRandom(this.crowdSeed+id)()*2000:0)),b=trafficBounds(t.kind),width=cutWidth(clamp(t.routeDistance!,0,CUT_METRES));return {id:'traffic-'+id,kind:t.kind,distance:t.routeDistance!,lane:t.speed?t.direction!*Math.min(1.65,width/2-.65):width/2+1.2,direction:t.direction!,pace:t.speed,speed:t.speed,radius:trafficNavigationRadius(t.kind),height:b.hy*2,x:t.x,y:t.y,z:t.z,heading:t.heading};});this.crowdTime=time;}
     const trafficHandles=new Set([...this.trafficBodies.values()].map(c=>c.handle));const visitorShape=new RAPIER.Cuboid(.3,.65,.3);
-    const crowdGround={height:0,normal:{x:0,y:1,z:0},surface:'pavement' as const,offCourse:false},footing=(x:number,z:number)=>this.sampleGround(x,z,crowdGround,heightAt(x,z)).height;
-    const clear=(x:number,y:number,z:number)=>Number.isFinite(y)&&!this.physics.intersectionWithShape({x,y:y+.85,z},{x:0,y:0,z:0,w:1},visitorShape,undefined,0xffff0006,undefined,undefined,c=>!trafficHandles.has(c.handle));
+    // Exact crowd queries are limited to a margin beyond the 115m activation radius.
+    const crowdGround={height:0,normal:{x:0,y:1,z:0},surface:'pavement' as const,offCourse:false},footing=(x:number,z:number)=>Math.hypot(x-px,z-pz)>180?heightAt(x,z):this.sampleGround(x,z,crowdGround,heightAt(x,z)).height;
+    const clear=(x:number,y:number,z:number)=>Number.isFinite(y)&&(Math.hypot(x-px,z-pz)>180||!this.physics.intersectionWithShape({x,y:y+.85,z},{x:0,y:0,z:0,w:1},visitorShape,undefined,0xffff0006,undefined,undefined,c=>!trafficHandles.has(c.handle)));
     if(this.crowdSeed&&!this.cityCrowds.length)this.cityCrowds=seedCityPeople(cityWalkRoutes(),this.crowdSeed,footing,clear);
     let remaining=Math.max(0,Math.min(2,time-this.crowdTime));this.crowdTime=time;
-    while(remaining>1e-8){const step=Math.min(1/30,remaining);remaining-=step;for(const g of this.cityCrowds){g.path.walkable=(x,y,z)=>Math.hypot(x-px,z-pz)>160||clear(x,y,z);advanceCrowd(g.agents,step,g.path,[{id:'player',x:px,y:footing(px,pz),z:pz,radius:.52,height:2.2,kind:'rider',vx:Math.sin(this.rideIntent.heading)*this.rideIntent.speed,vz:Math.cos(this.rideIntent.heading)*this.rideIntent.speed},...this.crowdActors()]);}advanceCrowd(this.crowd,step,{length:CUT_TRAFFIC.length,runout:TRAFFIC_RUNOUT,offsetSign:-1,point:(d,u)=>{const p=trafficPoint(d,u);return {...p,y:footing(p.x,p.z)};},width:d=>cutWidth(clamp(d,0,CUT_METRES))+1.6,walkable:(x,y,z)=>Math.abs(heightAt(x+.2,z)-heightAt(x-.2,z))<.2&&Math.abs(heightAt(x,z+.2)-heightAt(x,z-.2))<.2&&Number.isFinite(y)&&!this.physics.intersectionWithShape({x,y:y+.85,z},{x:0,y:0,z:0,w:1},visitorShape,undefined,0xffff0006,undefined,undefined,c=>!trafficHandles.has(c.handle))},[{id:'player',x:px,y:footing(px,pz),z:pz,radius:.52,height:2.2,kind:'rider',vx:Math.sin(this.rideIntent.heading)*this.rideIntent.speed,vz:Math.cos(this.rideIntent.heading)*this.rideIntent.speed},...this.hazards.map(trafficObstacle),...this.crowdActors()]);}
+    while(remaining>1e-8){const step=Math.min(1/30,remaining);remaining-=step;for(const g of this.cityCrowds){g.path.walkable=(x,y,z)=>Math.hypot(x-px,z-pz)>160||clear(x,y,z);advanceCrowd(g.agents,step,g.path,[{id:'player',x:px,y:footing(px,pz),z:pz,radius:.52,height:2.2,kind:'rider',vx:Math.sin(this.rideIntent.heading)*this.rideIntent.speed,vz:Math.cos(this.rideIntent.heading)*this.rideIntent.speed},...this.crowdActors()]);}advanceCrowd(this.crowd,step,{length:CUT_TRAFFIC.length,runout:TRAFFIC_RUNOUT,offsetSign:-1,point:(d,u)=>{const p=trafficPoint(d,u);return {...p,y:footing(p.x,p.z)};},width:d=>cutWidth(clamp(d,0,CUT_METRES))+1.6,walkable:(x,y,z)=>Math.abs(heightAt(x+.2,z)-heightAt(x-.2,z))<.2&&Math.abs(heightAt(x,z+.2)-heightAt(x,z-.2))<.2&&clear(x,y,z)},[{id:'player',x:px,y:footing(px,pz),z:pz,radius:.52,height:2.2,kind:'rider',vx:Math.sin(this.rideIntent.heading)*this.rideIntent.speed,vz:Math.cos(this.rideIntent.heading)*this.rideIntent.speed},...this.hazards.map(trafficObstacle),...this.crowdActors()]);}
     const candidates:TrafficState[]=this.crowd.map<TrafficState>((agent,id)=>this.applyTrafficFall({...trafficAt(id,time),x:agent.x,y:agent.y,z:agent.z,heading:agent.heading,speed:agent.motionSpeed??agent.speed,routeDistance:agent.distance})).concat(this.cityCrowds.flatMap(g=>g.agents.map(a=>this.applyTrafficFall({id:Number(a.id.slice(8)),kind:a.kind as TrafficState['kind'],x:a.x,y:a.y,z:a.z,heading:a.heading,speed:a.motionSpeed??a.speed,routeDistance:a.distance,direction:a.direction}))),this.hazards);
     for(const t of candidates){const id=t.id;if(id<1000&&Math.hypot(t.x-px,t.z-pz)>115)continue;
       if(!this.trafficMayActivate(t))continue;

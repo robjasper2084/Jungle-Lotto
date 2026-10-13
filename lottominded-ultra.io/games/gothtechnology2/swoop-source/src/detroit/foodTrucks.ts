@@ -1,3 +1,4 @@
+import {batchStaticGroup} from './static-batch.ts';
 import * as T from 'three';
 import {GLTFLoader} from './compressedGLTFLoader.ts';
 import {FOOD_TRUCK_SITES,FOOD_CART_SITES,VENDORS,foodTruckSolids,type VendorId} from './foodTruckSites.ts';
@@ -6,17 +7,17 @@ import {assetConcurrency,loadAssetQueue} from './assetQueue.ts';
 import type {SceneryWorld} from './sceneryWorld.ts';
 import {heightAt} from './world.ts';
 export async function buildFoodTrucks(scene:T.Scene,world:SceneryWorld){
- const models=new Map<string,T.Object3D>();await loadAssetQueue([...Object.values(VENDORS).map(v=>v.asset),'paradise-cart'],assetConcurrency(),async id=>models.set(id,(await new GLTFLoader().loadAsync('/exports/street-life/'+id+'.glb')).scene));const media=new FoodVendorMedia();
+ const models=new Map<string,T.Object3D>();await loadAssetQueue([...Object.values(VENDORS).map(v=>v.asset),'paradise-cart'],assetConcurrency(),async id=>models.set(id,(await new GLTFLoader().loadAsync('/exports/street-life/'+id+'.glb')).scene));const media=new FoodVendorMedia();for(const model of models.values()){media.add(model);batchStaticGroup(model as T.Group);}
  // The original Detroit map reflects X. Reflect the asset's longitudinal axis
  // as well so signs stay readable while the service side still faces the path.
  const contactMaterial=new T.ShaderMaterial({transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1,uniforms:{},vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',fragmentShader:'varying vec2 vUv;void main(){vec2 q=abs(vUv-.5)*2.;float a=(1.-smoothstep(.55,1.,q.x))*(1.-smoothstep(.65,1.,q.y));gl_FragColor=vec4(.055,.065,.05,a*.24);}' });
- const trucks=FOOD_TRUCK_SITES.map(p=>{const root=models.get(VENDORS[p.vendor].asset)!.clone(true);root.name=VENDORS[p.vendor].name+' · '+p.name;root.scale.z=-1;root.position.set(p.x,p.y,p.z);root.rotation.y=p.yaw;root.traverse(o=>{if(o instanceof T.Mesh){o.castShadow=true;o.receiveShadow=true;}});media.add(root);scene.add(root);
+ const trucks=FOOD_TRUCK_SITES.map(p=>{const root=models.get(VENDORS[p.vendor].asset)!.clone(true);root.name=VENDORS[p.vendor].name+' · '+p.name;root.scale.z=-1;root.position.set(p.x,p.y,p.z);root.rotation.y=p.yaw;root.traverse(o=>{if(o instanceof T.Mesh){o.castShadow=true;o.receiveShadow=true;}});scene.add(root);
   // Soft contact remains on Smooth where dynamic shadows are disabled. Follow
   // the real ground at every vertex instead of laying a flat rectangle over it.
   const geometry=new T.PlaneGeometry(3.8,7.7,2,4);geometry.rotateX(-Math.PI/2);geometry.rotateY(p.yaw);geometry.translate(p.x,0,p.z);
   const positions=geometry.attributes.position;for(let i=0;i<positions.count;i++)positions.setY(i,heightAt(positions.getX(i),positions.getZ(i))+(p.curbside?.05:.018));geometry.computeBoundingSphere();
   const contact=new T.Mesh(geometry,contactMaterial);contact.name='Sauce Pitt soft ground contact';scene.add(contact);return {root,p,contact};});
- const carts=FOOD_CART_SITES.map(p=>{const root=models.get('paradise-cart')!.clone(true);root.name=p.name;root.scale.z=-1;root.position.set(p.x,p.y,p.z);root.rotation.y=p.yaw;root.traverse(o=>{if(o instanceof T.Mesh)o.castShadow=o.receiveShadow=true;});media.add(root);scene.add(root);return {root,p};});
+ const carts=FOOD_CART_SITES.map(p=>{const root=models.get('paradise-cart')!.clone(true);root.name=p.name;root.scale.z=-1;root.position.set(p.x,p.y,p.z);root.rotation.y=p.yaw;root.traverse(o=>{if(o instanceof T.Mesh)o.castShadow=o.receiveShadow=true;});scene.add(root);return {root,p};});
  for(const solid of foodTruckSolids())world.addBox(solid);
  const dots=new Float32Array(trucks.length*12*3),g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(dots,3));
  const m=new T.ShaderMaterial({transparent:true,depthWrite:false,uniforms:{},vertexShader:'varying float opacity;attribute float life;void main(){opacity=sin(life*3.14159265)*.11;vec4 mv=modelViewMatrix*vec4(position,1.);gl_Position=projectionMatrix*mv;gl_PointSize=clamp((35.+life*80.)/max(1.,-mv.z),2.,35.);}',fragmentShader:'varying float opacity;void main(){float r=length(gl_PointCoord-.5);gl_FragColor=vec4(.73,.76,.78,opacity*exp(-r*r*16.));}'});

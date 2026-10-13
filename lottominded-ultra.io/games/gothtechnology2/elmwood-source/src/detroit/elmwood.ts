@@ -548,7 +548,7 @@ async function choose(){
 
  }
 
- await landmarkStream?.ensure(id);const a=assets.find(x=>x.id===id)!;library.clear();const model=(await load(id)).clone(true);library.add(model);selection=model;el('detail').textContent=`${a.label} · ${a.triangles.toLocaleString()} triangles · ${a.dimensionsM.map(x=>x.toFixed(1)).join(' × ')} m. ${a.confidence.replace(/\.$/,'')}.`;if(library.visible)fit(model);else{const p=placements.find(x=>x.asset===id);if(p){const c=pos(p.position),davis=id==='davis-hillside-vault'||id==='hammond-bank-vault';controls.target.copy(c).add(new T.Vector3(0,id==='elmwood-park-bench' ? .5 : id==='firemen-memorial' ? 5.2 : davis?1.6:id==='hdrp-lab-car-black'?.7:3,0));const distance=davis?15:12;camera.position.copy(c).add(id==='elmwood-park-bench'?new T.Vector3(-4,2.3,3.5):id==='firemen-memorial'?new T.Vector3(-19,11,14):/crypt|mausoleum|vault/.test(id)?new T.Vector3(Math.sin(p.rotation)*distance+Math.cos(p.rotation)*3,davis?4.3:3.8,Math.cos(p.rotation)*distance-Math.sin(p.rotation)*3):id==='hdrp-lab-car-black'?new T.Vector3(Math.sin(p.rotation)*7+Math.cos(p.rotation)*4,2.6,Math.cos(p.rotation)*7-Math.sin(p.rotation)*4):new T.Vector3(19,6,27));}else el('detail').textContent+=' This asset has no verified site position. Switch to individual asset review.';}updateSun();
+ await landmarkStream?.ensure(id);const a=assets.find(x=>x.id===id)!;library.clear();const model=(await load(id)).clone(true);library.add(model);selection=model;el('detail').textContent=`${a.label} · ${a.triangles.toLocaleString()} triangles · ${a.dimensionsM.map(x=>x.toFixed(1)).join(' × ')} m. ${a.confidence.replace(/\.$/,'')}.`;if(library.visible)fit(model);else{const p=placements.find(x=>x.asset===id);if(p){const c=pos(p.position),davis=id==='davis-hillside-vault'||id==='hammond-bank-vault';controls.target.copy(c).add(new T.Vector3(0,id==='elmwood-park-bench' ? .5 : id==='firemen-memorial' ? 5.2 : davis?1.6:id==='hdrp-lab-car-black'?.7:3,0));const footprint=Math.max(a.dimensionsM[0],a.dimensionsM[1])*p.scale;const distance=davis?15:Math.max(12,footprint*.8+8);camera.position.copy(c).add(id==='elmwood-park-bench'?new T.Vector3(-4,2.3,3.5):id==='firemen-memorial'?new T.Vector3(-19,11,14):/crypt|mausoleum|vault/.test(id)?new T.Vector3(Math.sin(p.rotation)*distance+Math.cos(p.rotation)*3,davis?4.3:Math.max(3.8,a.dimensionsM[2]*p.scale*.7+2),Math.cos(p.rotation)*distance-Math.sin(p.rotation)*3):id==='hdrp-lab-car-black'?new T.Vector3(Math.sin(p.rotation)*7+Math.cos(p.rotation)*4,2.6,Math.cos(p.rotation)*7-Math.sin(p.rotation)*4):new T.Vector3(19,6,27));}else el('detail').textContent+=' This asset has no verified site position. Switch to individual asset review.';}updateSun();
 
 
 
@@ -652,11 +652,11 @@ try{
  landmarkStream=new SpatialAssetStream(2,()=>{canvas.dataset.streaming=JSON.stringify(landmarkStream!.status);});
  for(const id of ids){const ps=placements.filter(p=>p.asset===id);landmarkStream.add({id,centers:ps.map(p=>({x:p.position[0],z:-p.position[1]})),async load(){
   await load(id);
-const ps=placements.filter(p=>p.asset===id),source=cache.get(id)!;source.updateMatrixWorld(true);
+const ps=placements.filter(p=>p.asset===id),source=cache.get(id)!;source.updateMatrixWorld(true);quality.applyAssets(source);source.traverse(o=>{if(o instanceof T.Mesh)for(const m of Array.isArray(o.material)?o.material:[o.material])weather.attach(m);});let attachAt=performance.now();
 
 
 
-  if(ps[0].layer==='mapped'||ps[0].layer==='reference'){for(const p of ps){const clone=source.clone(true);clone.position.copy(pos(p.position));clone.rotation.set(p.pitch??0,p.rotation,p.roll??0,'YXZ');clone.scale.setScalar(p.scale);world.add(clone);}}
+  if(ps[0].layer==='mapped'||ps[0].layer==='reference'){for(const p of ps){const clone=source.clone(true);clone.position.copy(pos(p.position));clone.rotation.set(p.pitch??0,p.rotation,p.roll??0,'YXZ');clone.scale.setScalar(p.scale);world.add(clone);if(performance.now()-attachAt>5){await new Promise<void>(resolve=>setTimeout(resolve,0));attachAt=performance.now();}}}
 
 
 
@@ -672,7 +672,7 @@ const ps=placements.filter(p=>p.asset===id),source=cache.get(id)!;source.updateM
 
 
 
-    source.traverse(o=>{if(!(o instanceof T.Mesh))return;for(const material of Array.isArray(o.material)?o.material:[o.material])if((material as T.MeshStandardMaterial).alphaTest>.2)foliageSightline(material);const inst=new T.InstancedMesh(o.geometry,o.material,bucket.length);inst.castShadow=true;inst.receiveShadow=true;const m=new T.Matrix4(),q=new T.Quaternion(),s=new T.Vector3();bucket.forEach((p,i)=>{q.setFromAxisAngle(new T.Vector3(0,1,0),p.rotation);s.setScalar(p.scale);m.compose(pos(p.position),q,s);m.multiply(o.matrixWorld);inst.setMatrixAt(i,m);});inst.instanceMatrix.needsUpdate=true;inst.computeBoundingSphere();tile.add(inst);});
+    source.traverse(o=>{if(!(o instanceof T.Mesh))return;for(const material of Array.isArray(o.material)?o.material:[o.material])if((material as T.MeshStandardMaterial).alphaTest>.2)foliageSightline(material);const inst=new T.InstancedMesh(o.geometry,o.material,bucket.length);inst.castShadow=true;inst.receiveShadow=true;const m=new T.Matrix4(),q=new T.Quaternion(),s=new T.Vector3();bucket.forEach((p,i)=>{q.setFromAxisAngle(new T.Vector3(0,1,0),p.rotation);s.setScalar(p.scale);m.compose(pos(p.position),q,s);m.multiply(o.matrixWorld);inst.setMatrixAt(i,m);});inst.instanceMatrix.needsUpdate=true;inst.computeBoundingSphere();tile.add(inst);});if(performance.now()-attachAt>5){await new Promise<void>(resolve=>setTimeout(resolve,0));attachAt=performance.now();}
 
 
 
@@ -685,7 +685,7 @@ const ps=placements.filter(p=>p.asset===id),source=cache.get(id)!;source.updateM
 
 
 
-  world.traverse(o=>{if(o instanceof T.Mesh)for(const m of Array.isArray(o.material)?o.material:[o.material])weather.attach(m);});quality.apply();canvas.dataset.assetsLoaded=String(++loaded);
+  canvas.dataset.assetsLoaded=String(++loaded);
  }});}
  const entrance=placements.find(p=>p.asset==='elmwood-gatehouse');
  await landmarkStream.warm(entrance?[{x:entrance.position[0],z:-entrance.position[1]}]:[{x:-10,z:-55}],140);

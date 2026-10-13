@@ -13,3 +13,4 @@ test('idle rendering halves 60Hz work but active and XR frames are never throttl
  const schedule=new FrameSchedule();let rendered=0;for(let i=0;i<60;i++)if(schedule.shouldRender(i*1000/60,true,false))rendered++;
  assert.equal(rendered,30);assert.equal(schedule.shouldRender(990,false,false),true);assert.equal(schedule.shouldRender(991,true,true),true);
 });
+test('hidden support surfaces stay hidden when static art is batched',()=>{const group=new T.Group(),hidden=new T.Group(),material=new T.MeshBasicMaterial();hidden.visible=false;group.add(hidden);hidden.add(new T.Mesh(new T.BoxGeometry(),material));for(let i=0;i<2;i++)group.add(new T.Mesh(new T.BoxGeometry(),material));const support=new T.Mesh(new T.BoxGeometry(10,1,10),material);support.visible=false;group.add(support);batchStaticGroup(group);assert.equal(support.visible,false);assert.equal(hidden.visible,false);assert.equal(group.children.filter(o=>(o as T.Mesh).isMesh&&o.visible).length,1);});

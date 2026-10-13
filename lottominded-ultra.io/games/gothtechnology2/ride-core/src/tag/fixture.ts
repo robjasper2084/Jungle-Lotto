@@ -1,7 +1,8 @@
 import R from '@dimforge/rapier3d-compat';
 import type {TerrainSampler,GroundSample,Vec3,ObstacleHit} from '../terrain.ts';
 import {staticBoxSweep} from '../staticBoxSweep.ts';
-import {takeFixtureBytes} from '../fixtureBytes.ts';
+import {takeFixtureBytes,takeFixtureFormat} from '../fixtureBytes.ts';
+import {restoreColliderTransport} from '../colliderTransport.ts';
 let rapierReady:Promise<void>|undefined;
 async function ready(){try{R.version();return;}catch{}await (rapierReady??=R.init());}
 export type TagProduct='swoop-detroit'|'elmwood-explorer';
@@ -29,7 +30,10 @@ export class TagTerrain implements TerrainSampler{
     if(fixture.retiredBoxes?.length)physics.forEachCollider(c=>{const p=c.translation(),matches=fixture.retiredBoxes!.filter(s=>Math.abs(s.x-p.x)<.025&&Math.abs(s.y-p.y)<.025&&Math.abs(s.z-p.z)<.025);if(!matches.length)return;
       const shape=c.shape;if(shape.type!==R.ShapeType.Cuboid)return;const h=(shape as R.Cuboid).halfExtents;
       if(matches.some(s=>Math.abs(s.hx-h.x)<.002&&Math.abs(s.hy-h.y)<.002&&Math.abs(s.hz-h.z)<.002))this.retiredColliders.add(c.handle);});}
-  static async create(fixture:TagFixture,physicsBytes?:Uint8Array){await ready();let bytes=physicsBytes??takeFixtureBytes(fixture);if(!bytes){const binary=atob(fixture.physics);bytes=new Uint8Array(binary.length);for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);}const terrain=new TagTerrain(fixture,R.World.restoreSnapshot(bytes));
+  static async create(fixture:TagFixture,physicsBytes?:Uint8Array){await ready();const format=takeFixtureFormat(fixture);let bytes=physicsBytes??takeFixtureBytes(fixture);if(!bytes){const binary=atob(fixture.physics);bytes=new Uint8Array(binary.length);for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);}
+    const rebuilt=format==='colliders-v1'?await restoreColliderTransport(bytes):undefined;
+    if(rebuilt)try{fixture={...fixture,retiredColliderHandles:fixture.retiredColliderHandles?.map(h=>{const next=rebuilt.handles.get(h);if(next===undefined)throw Error('Retired collider missing');return next;})};}catch(error){rebuilt.world.free();throw error;}
+    const terrain=new TagTerrain(fixture,rebuilt?.world??R.World.restoreSnapshot(bytes));
     for(const s of fixture.staticBoxes??[])if(![s.x,s.y,s.z,s.hx,s.hy,s.hz,s.yaw].every(Number.isFinite)||Math.min(s.hx,s.hy,s.hz)<=0)throw Error('Invalid static prop collider');
     return terrain;}
   height(x:number,z:number){const g=this.fixture.grid,u=Math.max(0,Math.min(g.width-1,(x-g.x)/g.spacing)),v=Math.max(0,Math.min(g.height-1,(z-g.z)/g.spacing));

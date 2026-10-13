@@ -631,6 +631,7 @@ function frameSplit(now:number,dt:number){
  }
 }
 function frame(now:number,xrFrame?:XRFrame){
+  const frameCpuStarted=performance.now(),frameProfile:Record<string,number>={};
   bikeRecover.hidden=!(ready&&running&&sim?.cycling&&!vr.active&&!film.playing&&$('menu').hidden);
   if(!ready||boot.stage==='error'||(document.hidden&&!vr.active)){last=now;return;}
   if(!frameSchedule.shouldRender(now,(!running||paused)&&!film.playing&&!gallery?.active&&!boutique?.active,vr.active,jazzVisit?.active?10:graphics.current.fps))return;
@@ -648,6 +649,7 @@ function frame(now:number,xrFrame?:XRFrame){
   }
   if(split)studioCapture?.update(current.x,current.z,false,camera);if(split&&community){community.view.root.visible=false;community.ui.update(false);}courseView.update(split?split.simulation.riders.map(r=>r.pose):[current]);if(split){frameSplit(now,dt);return;}
   footControls.update(current,running&&!paused&&!finished&&!split&&!race&&!challengeRun&&!sim.cycling&&!hero.skateboarding&&$('menu').hidden);
+  frameProfile.setup=performance.now()-frameCpuStarted;
   const gp=gamepad(dt),xp=vr.poll(current.speed);if(vr.active){if(xp.sit)sitButton.click();if(xp.toggleHud)vr.toggleHud();if(previousXRConnected&&!xp.connected&&!paused){clearInput();pause();}if(xp.pause){if(finished)freeRideHere();else pause();}if(xp.recover){if(finished&&challengeRun)startChallenge(challengeRun.challenge);else queueRecovery();}if(xp.nextTrick)chooseTrick(selectedTrick%SPECIAL_MOVES.length+1);if(xp.trick)requestTrick();if(running&&!paused&&xp.hop)hop=true;vr.look(xp.snap,xp.recenter);}previousXRConnected=xp.connected;
   const manualSteer=clamp(touch.steer+gp.steer+xp.steer+(keys.has('KeyD')||keys.has('ArrowRight')?1:0)-(keys.has('KeyA')||keys.has('ArrowLeft')?1:0),-1,1);
   const steer=vr.steering(manualSteer,current,dt,xrFrame);
@@ -679,6 +681,7 @@ function frame(now:number,xrFrame?:XRFrame){
     acc+=dt;while(acc>=1/120){copyPose(current,previous);sim.step(1/120,NEUTRAL_ACTIONS);sim.writePose(current);follow.step(1/120,current);if(dogEnabled)dog.step(1/120,current);acc-=1/120;}
     lerpPose(previous,current,Math.min(1,acc*120),pose);
   }else{acc=0;copyPose(current,pose);}
+  frameProfile.simulation=performance.now()-frameCpuStarted;
   if(finished&&challengeRun&&sim.crashed)$('challengeResults').hidden=sim.snapshot().fallPhase!=='settled';
   for(const destination of [gallery,boutique])if(destination){const p=toMap(current.x,0,current.z),c=cutCoords(p.x,p.z);destination.offer(c.d,c.u,current,!!((race&&!finished)||(challengeRun&&!finished)),running&&!cabinets?.playing&&$('menu').hidden&&![gallery,boutique].some(other=>other&&other!==destination&&Math.hypot(current.x-other.approach.x,current.z-other.approach.z)<Math.hypot(current.x-destination.approach.x,current.z-destination.approach.z)));}
   race?.render(running&&$('menu').hidden,vr.active);
@@ -695,6 +698,7 @@ function frame(now:number,xrFrame?:XRFrame){
   vr.eyeHeight=hero.vrEyeHeight;
   const mapTraffic=mapWorld.traffic.map(t=>({...t,...toLocal(t.x,t.y,t.z),heading:-t.heading,fall:t.fall?{...t.fall,headingY:-t.fall.headingY,crashLateral:-t.fall.crashLateral,crashRoll:-t.fall.crashRoll,crashSide:-t.fall.crashSide,wheelCrashLateral:-t.fall.wheelCrashLateral,wheelCrashLean:-t.fall.wheelCrashLean}:undefined}));traffic.update(mapTraffic,running&&!paused&&!finished?dt:0,pose,graphics.current.distance);if(photographers){photographers.root.visible=running&&$('menu').hidden;photographers.update(running&&!paused&&!finished&&photographers.root.visible?dt:0,[pose],Math.min(200,graphics.current.distance));}
   dog.updateTargets(mapWorld.traffic.filter(t=>t.kind==='pedestrian').map(t=>toLocal(t.x,t.y,t.z)));
+  frameProfile.actors=performance.now()-frameCpuStarted;
   if(dogEnabled){dog.sample(running&&!paused&&!finished?acc*120:1,dogPose);dogView.apply(dogPose);dogView.reactToRider(pose,dogPose);}
   contactEffects?.update(dt,pose,hero,dogView,dogEnabled,running&&!paused&&!finished);
   confirmation.render(running&&$('menu').hidden&&!vr.active&&!finished);riderLamp.update(dt,pose,night,running&&$('menu').hidden&&!qaVisualBaseline);ambience?.update(clock,[pose]);
@@ -723,6 +727,7 @@ function frame(now:number,xrFrame?:XRFrame){
     camera.lookAt(target);camera.fov=52;
   }
   if(!vr.active){cameraBlend.apply(camera,cameraMode,dt,!cameraTransitionsEnabled()||matchMedia('(prefers-reduced-motion: reduce)').matches);clearRideCamera(world,camera.position,{x:pose.x,y:pose.y+1.05,z:pose.z},pose.y);}
+  frameProfile.camera=performance.now()-frameCpuStarted;
   loop.render(dt,running&&!paused&&!finished&&!sim.cycling&&!community?.ride.joined,hero,dogView.root,camera,vr.active,sim.tricks.snapshot());
   studioCapture?.update(pose.x,pose.z,running&&!paused&&!finished&&!split&&!vr.active&&$('menu').hidden&&$('helpPanel').hidden&&$('mapPanel').hidden&&!cabinets?.playing,camera);
   const shopVisible=running&&!finished&&!split&&!vr.active&&$('menu').hidden&&$('helpPanel').hidden&&$('mapPanel').hidden&&!film.playing;
@@ -731,7 +736,9 @@ function frame(now:number,xrFrame?:XRFrame){
   jazzVisit?.update(pose.x,pose.z,shopVisible&&mode==='free'&&!challengeRun&&!race&&!cabinets?.playing);
   camera.userData.rideSightline=running&&!vr.active&&cameraMode!=='first'?(camera.userData.rideSightline??new T.Vector3()).set(pose.x,pose.y+1.1,pose.z):undefined;
   if(!vr.active){gyroscope.applyCamera(camera,dt,running&&!paused&&!finished&&!split&&!jazzVisit?.active,cameraMode==='first');camera.updateProjectionMatrix();}followStableSun(sun,pose,night?DUSK_SUN:DAY_SUN);fill.position.set(pose.x-12,pose.y+8,pose.z-13);fill.target.position.copy(hero.root.position);if(!qaVisualBaseline&&!elmwood&&!night){const roof=world.raycastObstacle({x:pose.x,y:pose.y+2.3,z:pose.z},{x:0,y:1,z:0},7);fill.intensity=T.MathUtils.damp(fill.intensity,roof===null?.18:.45,5,dt);}
+  frameProfile.effects=performance.now()-frameCpuStarted;
   canvas.dataset.visibleChunks=String(scenery.update(toMap(pose.x,0,pose.z).x,toMap(pose.x,0,pose.z).z,clock));if(now-hudAt>120)canvas.dataset.environment=JSON.stringify({birds:'birds' in scenery?scenery.birds:null,foodTrucks:'foodTrucks' in scenery?scenery.foodTrucks:0,rails:'rails' in scenery?scenery.rails:0,landmarks:'landmarks' in scenery?scenery.landmarks:null,flowers:'flowers' in scenery?scenery.flowers:0,trees:scenery.trees,grassClumps:'grassClumps' in scenery?scenery.grassClumps:0,routeArt:'routeArt' in scenery?scenery.routeArt:null,generatedSkins:scenery.skins,treeVersion:elmwood?'elmwood-five-species-20260916':'curved-elm-maple-20260915',style:elmwood?'Five botanical meshes, photographic PBR and outdoor HDR lighting':'Higgsfield elm/maple foliage, tapered branches and bark',quality:compactElmwood||vr.active?'compact':'detailed'});renderer.render(scene,camera);studioCapture?.afterRender();if(finished)loop.capture(canvas);frames++;if(now-fpsAt>1000){fps=frames*1000/(now-fpsAt);frames=0;fpsAt=now;}
+  frameProfile.render=performance.now()-frameCpuStarted;
   if(photoPending){photoPending=false;if(photoTarget&&challengeRun&&!finished&&!paused){const target=new T.Vector3(photoTarget.x,photoTarget.y,photoTarget.z),direction=target.clone().sub(camera.position),distance=direction.length(),projected=target.clone().project(camera),hit=world.raycast(camera.position,direction.clone().normalize(),Math.max(0,distance-.8));const check={distance:Math.hypot(target.x-pose.x,target.z-pose.z),speed:pose.speed,inFrame:Math.abs(projected.x)<.85&&Math.abs(projected.y)<.85&&projected.z>-1&&projected.z<1,unobstructed:hit===null||hit>=distance-.8};if(photoAllowed(check)&&challengeRun.capture(photoTarget.id,check)){district.savePhoto(photoTarget.id,canvas);confirmRide('checkpoint','PHOTO SAVED · '+photoTarget.name,'photo:'+photoTarget.id);if(challengeRun.done)completeChallenge();}else toast('Stop within 3–42 m with a clear view. Use Frame subject or orbit the camera.');}}
   film.capture(dt,running&&!paused&&!finished,running&&$('menu').hidden&&!vr.active);
   rideAudio.update(pose,running&&!paused&&!finished&&!sim.crashed&&!sim.cycling);
@@ -739,7 +746,7 @@ function frame(now:number,xrFrame?:XRFrame){
   if(now-hudAt>120){
     if(race){race.hud();canvas.dataset.race=JSON.stringify({countdown:race.rules.countdown,elapsed:race.rules.elapsed,place:race.rules.place,done:race.rules.done,racers:race.rules.racers,pilots:race.pilots.map(p=>p.diagnostics())});}else delete canvas.dataset.race;
     const timings=[...frameTimes].sort((a,b)=>a-b),gl=renderer.getContext(),gpu=gl.getExtension('WEBGL_debug_renderer_info');
-    canvas.dataset.performance=JSON.stringify({sampleFrames:timings.length,frameP50:timings[Math.floor(timings.length*.5)],frameP95:timings[Math.floor(timings.length*.95)],loadMs:loadedAt-bootStarted,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures,programs:renderer.info.programs?.length,heapMB:((performance as Performance&{memory?:{usedJSHeapSize:number}}).memory?.usedJSHeapSize??0)/1048576,renderer:gpu?gl.getParameter(gpu.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER),visualBaseline:qaVisualBaseline});
+    canvas.dataset.performance=JSON.stringify({cpuFrameMs:performance.now()-frameCpuStarted,frameProfile,sampleFrames:timings.length,frameP50:timings[Math.floor(timings.length*.5)],frameP95:timings[Math.floor(timings.length*.95)],loadMs:loadedAt-bootStarted,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures,programs:renderer.info.programs?.length,heapMB:((performance as Performance&{memory?:{usedJSHeapSize:number}}).memory?.usedJSHeapSize??0)/1048576,renderer:gpu?gl.getParameter(gpu.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER),visualBaseline:qaVisualBaseline});
     const s=sim.snapshot(),mapped=toMap(pose.x,pose.y,pose.z),gps=gpsAt(mapped.x,mapped.z);updateMap(mapped.x,mapped.z);miniMap?.hud.setRaceCourse(race?{...DETROIT_RACE_COURSE,next:race.rules.player.gate,finished:race.rules.player.finish!==null}:null);miniMap?.update(mapped.x,mapped.z,pose.headingY,running&&$('menu').hidden&&!vr.active);if(communityActive()&&community?.ride.joined)miniMap?.hud.setRoute(community.ride.route.points.map(p=>{const m=toMap(p.x,0,p.z);return northUp(m.x,m.z);}),[],'Cut community ride · '+community.ride.nextGate+'/'+community.ride.gates.length);
     if(elmwood)Object.assign(canvas.dataset,{map:'elmwood',origin:JSON.stringify({name:'Elmwood entrance / local plan coordinates',source:ELMWOOD_SOURCE,estimated:true}),routeLength:String(ELM_PATHS.reduce((n,p)=>n+p.length,0))});
     else Object.assign(canvas.dataset,{map:'cut',latitude:gps.lat.toFixed(7),longitude:gps.lon.toFixed(7),station:cutCoords(mapped.x,mapped.z).d.toFixed(2),origin:JSON.stringify(GEO.origin)});

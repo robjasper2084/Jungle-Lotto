@@ -9,7 +9,7 @@ export function makeTextureBudget(){
  // back to High always restores detail, regardless of traversal order.
  const originals=new WeakMap<T.Source<unknown>,CanvasImageSource>();
  const sizes=new WeakMap<T.Source<unknown>,number>();
- return (scene:T.Scene,maxSize:number)=>{
+ return (scene:T.Object3D,maxSize:number)=>{
   const changed=new Set<T.Source<unknown>>();
   scene.traverse(o=>{
    const mesh=o as T.Mesh;if(!mesh.isMesh)return;
