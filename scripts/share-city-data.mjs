@@ -1,9 +1,12 @@
 import {readFile,readdir,writeFile,rename,unlink} from 'node:fs/promises';import {resolve} from 'node:path';import {createHash,randomUUID} from 'node:crypto';import {gunzipSync} from 'node:zlib';
 const source='https://raw.githubusercontent.com/robjasper2084/Jungle-Lotto/995108b365a915c6aa7fe0c957915475ace1009f/lottominded-ultra.io/games/gothtechnology2/swoop-source/public/';
+export const COLLIDER_SOURCE='https://raw.githubusercontent.com/robjasper2084/Jungle-Lotto/e09dc4a75d8a7490d86f46344072b1202bb8b436/lottominded-ultra.io/games/gothtechnology2/swoop-source/public/';
 export const CITY_DATA=[
- // The v2 browser manifest and lossless geometry now ship with the game.
- // Remove only the superseded snapshot exports, keeping the loader local.
- {file:'love-tag/swoop-detroit.json.gz',sha:'739ef5f08175664a95ab35e5082627960c7d044c8ea06604f5b0a68674bd38d2'},
+ // The reviewed v2 manifest and geometry are hosted together at an immutable
+ // commit. Keep these exact bytes while fitting the Pages artifact size cap.
+ {file:'love-tag/swoop-detroit.json.gz',from:'./love-tag/swoop-detroit.json',to:COLLIDER_SOURCE+'love-tag/swoop-detroit.json',sha:'739ef5f08175664a95ab35e5082627960c7d044c8ea06604f5b0a68674bd38d2'},
+ {file:'love-tag/swoop-detroit.browser.json.gz',derivedFrom:'./love-tag/swoop-detroit.json',sha:'889af027726e918e6dae7a5b3b15e0f046317bb2205a565e528cb65de68b504b'},
+ {file:'love-tag/swoop-detroit.physics-c573f8d7a1f757c5.bin.gz',derivedFrom:'./love-tag/swoop-detroit.json',sha:'58620337b1e2100bccfae0c0df28dbe1ee9c4ad9329591c75edd53175aaa5782'},
  {file:'love-tag/swoop-detroit.physics-178d8d52b4f2e37c.bin.gz',sha:'cb444718a28e193756afacf731aaddd17d8cb8ed004affd5791594e90ec486e8'},
  {file:'exports/street-life/street-surfaces.bin.gz',from:'./exports/street-life/street-surfaces.bin.gz',to:source+'exports/street-life/street-surfaces.bin.gz',sha:'756d55639f0dd568734d6a75f8dfd8b888d3d1498aa685398642fb90a4d3bc16'},
 ];
