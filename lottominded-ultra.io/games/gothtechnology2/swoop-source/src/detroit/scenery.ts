@@ -169,7 +169,7 @@ export async function buildScenery(scene:T.Scene,world:SceneryWorld,polish=true,
   }
   for(const r of GEO.ramps)postSign(r.name,r.at);
   registerFreightCollisions(world);
-  stream.add({id:'freight-yard',centers:freightCenters,async load(){const container=await loader.loadAsync('/exports/cut/DS_Cut_Freight_Container_01.glb');for(const p of freightCenters){const o=container.scene.clone(true);o.position.set(p.x,heightAt(p.x,p.z),p.z);o.rotation.y=p.heading;groupAt(p.x,p.z).add(o);}}});
+  stream.add({id:'freight-yard',centers:freightCenters,async load(){const container=await loader.loadAsync('/exports/cut/DS_Cut_Freight_Container_01.glb');batchStaticGroup(container.scene);for(const p of freightCenters){const o=container.scene.clone(true);o.position.set(p.x,heightAt(p.x,p.z),p.z);o.rotation.y=p.heading;groupAt(p.x,p.z).add(o);}}});
   const wp=cutPoint(2052,-10),wg=groupAt(wp.x,wp.z);label(wg,'EASTERN MARKET / FREIGHT YARD',wp.x,heightAt(wp.x,wp.z)+3,wp.z,7,.8,wp.heading-Math.PI);for(const post of signSupports(wp.x,wp.z,wp.heading-Math.PI,7,heightAt(wp.x,wp.z)+3.2,heightAt))box(wg,post.x,post.y,post.z,.10,post.height,.10,steel);
   const architecture=await timeLoad('city',()=>buildCity(scene,world,groupAt,skins,stream));
   const streetFurniture=await timeLoad('street-furniture',()=>buildStreetFurniture(scene,world,groupAt));
@@ -205,7 +205,7 @@ export async function buildScenery(scene:T.Scene,world:SceneryWorld,polish=true,
     treeTime.value=low||reduced?0:time;
     flowers.update(x,z,document.documentElement.dataset.renderQuality==='compact');
     grass?.update(x,z,time,reduced,mobile.matches||low);
-    for(const b of treeBatches){const c=b.group.userData.center;b.update(Math.hypot(c.x-x,c.z-z));}
+    for(const b of treeBatches){const c=b.group.userData.center;b.update(Math.hypot(c.x-x,c.z-z),low);}
     let visible=0;for(const g of groups){const c=g.userData.center;g.visible=Math.hypot(c.x-x,c.z-z)<(Number(document.documentElement.dataset.drawDistance)||360);if(g.visible)visible++;}return visible;
   }};
 }

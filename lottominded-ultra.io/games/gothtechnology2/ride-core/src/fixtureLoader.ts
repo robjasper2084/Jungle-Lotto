@@ -9,7 +9,7 @@ export async function loadFixture(url:string){
  const compactUrl=url.replace(/\.json([?#].*)?$/,'.browser.json.gz$1'),compact=await fetch(compactUrl);
  if(compact.ok){
   const data=JSON.parse(strFromU8(await inflate(compact)));
-  if(data.version!==1||!data.fixture||data.fixture.physics!==''||!/^[-a-z]+\.physics-[a-f0-9]{16}\.bin\.gz$/.test(data.physics)||!Number.isSafeInteger(data.physicsBytes)||data.physicsBytes<=0||data.physicsBytes>400_000_000||!/^[a-f0-9]{64}$/.test(data.physicsHash))throw Error('Invalid binary map manifest.');
+  if(![1,2].includes(data.version)||data.version===2&&data.encoding!=='colliders-v1'||!data.fixture||data.fixture.physics!==''||!/^[-a-z]+\.physics-[a-f0-9]{16}\.bin\.gz$/.test(data.physics)||!Number.isSafeInteger(data.physicsBytes)||data.physicsBytes<=0||data.physicsBytes>400_000_000||!/^[a-f0-9]{64}$/.test(data.physicsHash))throw Error('Invalid binary map manifest.');
   const physicsUrl=new URL(data.physics,url).href;
   const verify=async(response:Response)=>{
    const compressed=new Uint8Array(await response.arrayBuffer());
@@ -26,7 +26,7 @@ export async function loadFixture(url:string){
    verified=await verify(response);await savePhysics(physicsUrl,verified.compressed);
   }
   const bytes=verified.bytes;
-  setFixtureBytes(data.fixture,bytes);return data.fixture;
+  setFixtureBytes(data.fixture,bytes,data.version===2?'colliders-v1':'snapshot');return data.fixture;
  }
  if(compact.status!==404)throw Error('Map metadata unavailable. Please retry.');
  const zipped=await fetch(url.replace(/([?#].*)?$/,'.gz$1'));

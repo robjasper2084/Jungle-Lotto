@@ -1,0 +1,50 @@
+(node:34656) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ binary fixture preserves bytes, checks integrity and consumes the temporary buffer once (91.0481ms)
+✔ legacy package fallback only follows a missing manifest; server errors do not start another massive download (6.1434ms)
+✔ v2 collision manifest preserves map identity and selects lossless reconstruction (6.2716ms)
+(node:39320) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ collision transport retains geometry, retired identities and query filters (121.3075ms)
+✔ invalid/truncated collider transports fail before creating a usable map (9.4256ms)
+(node:7804) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Map physics loaded from verified local cache.
+✔ a repeat load reuses verified compressed physics without a second large transfer (77.8527ms)
+Map physics loaded from verified local cache.
+✔ a corrupt cached map is evicted, downloaded once and verified again (16.0966ms)
+✔ denied storage leaves normal loading available (6.1816ms)
+✔ cache updates retain the other map and write only the requested byte view (1.991ms)
+(node:38316) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ a person steps aside for a rider approaching from behind and resumes their route (3.0097ms)
+✔ people use visible raised pavement as their footing and keep moving across it (3680.7941ms)
+✔ walking and skating envelopes leave a visible gap without granting pass-through (0.9837ms)
+✔ the riding view uses one character sweep while retaining contact and recovery checks (3620.1802ms)
+(node:39772) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Automatic uses High on capable desktops and Smooth on phones without changing manual preferences (1.1095ms)
+✔ automatic antialiasing avoids mobile MSAA cost while manual choices win (0.1919ms)
+✔ saved graphics controls reject corrupted or unsupported values (0.9599ms)
+✔ render budget limits large screens and honors smaller device ratios (0.3229ms)
+✔ Low caps active riding at 30 FPS without limiting XR (0.3204ms)
+✔ default phone and tablet controls remain on screen without overlap (0.724ms)
+(node:42068) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ static batching retains indexed vertices, transforms and separate shadow flags (21.0485ms)
+✔ idle rendering halves 60Hz work but active and XR frames are never throttled (0.4068ms)
+✔ hidden support surfaces stay hidden when static art is batched (1.5561ms)
+(node:39972) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ tree variations remain grounded and within the existing off-trail planting envelope (72.1332ms)
+✔ tree shapes repeat reliably and moving a map site only translates its geometry (3.3886ms)
+✔ distance detail never removes the whole crown and shadows use matching leaf alpha (15.2502ms)
+✔ distant trees retain every crown while reducing twig and leaf triangles (4.0855ms)
+ℹ tests 26
+ℹ suites 0
+ℹ pass 26
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8087.6331

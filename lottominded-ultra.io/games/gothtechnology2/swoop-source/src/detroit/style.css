@@ -149,3 +149,9 @@ body.visitingGallery > :not(canvas):not(:is(#galleryArrival,#boutiqueArrival)){v
 body.playing #ridingOptions:not(.expanded){display:none!important}
 body.playing #optionsToggle{display:block!important;position:fixed;bottom:calc(10px + env(safe-area-inset-bottom));left:50%;right:auto;transform:translateX(-50%);min-height:44px;z-index:8}
 body.playing #ridingOptions.expanded{display:flex;right:max(12px,env(safe-area-inset-right));bottom:calc(72px + env(safe-area-inset-bottom));top:auto;max-height:58dvh;overflow:auto;background:#123d35c4;z-index:9}
+
+/* The desktop drawer uses the same bounded layout as touch devices. */
+body.playing #ridingOptions.expanded{left:50%;right:auto;transform:translateX(-50%);width:min(360px,calc(100vw - 28px));max-width:360px;display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px;border:1px solid #96b5a177;border-radius:10px;z-index:75}
+body.playing #ridingOptions.expanded>:is(select,p,label){grid-column:1/-1}
+body.playing #ridingOptions.expanded button{min-height:44px}
+body:has(#ridingOptions.expanded) .community-panel{visibility:hidden}
