@@ -30,13 +30,14 @@ const sim=new RideController(flat),current=createPose(),previous=createPose(),re
 const names:Record<string,string>={reverse:'Reverse • brake, release, ride back',pivot:'Slow turn • body pivot and forward knees',neutral:'Balance • relaxed knees',drive:'Accelerate • lean and drive',brake:'Brake • sit back and absorb',carve:'Carve • lean, counterbalance and look ahead',tuck:'Crouch • preload, then stand',air:'Hop / land • compress, extend, float, absorb'};
 for(const m of SPECIAL_MOVES){const name='trick'+m.id;names[name]=m.name+' · preload, balance, settle';const b=document.createElement('button');b.dataset.pose=name;b.textContent=m.name;document.querySelector('#play')!.before(b);}
 names.fall='Fall / recover • brace, separate, impact, slide';
-const entries=['neutral','drive','carve','brake','tuck','air','reverse','pivot'],step=1/120,duration=6;
-for(const [id,label] of [['seat','Seated ride'],['stop','One-foot stop'],['scrape','Pedal scrape'],['beeps','Warning beeps']]){names[id]=label;const b=document.createElement('button');b.dataset.pose=id;b.textContent=label;document.querySelector('#play')!.before(b);}
+const entries=['neutral','drive','carve','brake','tuck','air','reverse','pivot','walk','run'],step=1/120,duration=6;
+for(const [id,label] of [['stroll','Easy walk'],['walk','Brisk walk'],['run','Run'],['backstep','Walk backwards'],['seat','Seated ride'],['stop','One-foot stop'],['scrape','Pedal scrape'],['beeps','Warning beeps']]){names[id]=label;const b=document.createElement('button');b.dataset.pose=id;b.textContent=label;document.querySelector('#play')!.before(b);}
 const rideAudio=new RideAudio(),sparks=new PedalSparks(scene),sound=document.createElement('button');sound.textContent='Sound off';sound.onclick=()=>{void rideAudio.enable(!rideAudio.enabled);sound.textContent=rideAudio.enabled?'Sound on':'Sound off';};document.querySelector('#play')!.before(sound);
-let selected='carve',playing=true,paused=false,elapsed=0,acc=0,last=performance.now(),cameraLast=new T.Vector3(),studioView='side',playbackRate=1;
+let selected='carve',playing=true,paused=matchMedia('(prefers-reduced-motion: reduce)').matches,elapsed=0,acc=0,last=performance.now(),cameraLast=new T.Vector3(),studioView='side',playbackRate=1;
 orbit.addEventListener('start',()=>{studioView='orbit';document.querySelector<HTMLSelectElement>('#view')!.value='orbit';});
 const timeline=document.querySelector<HTMLInputElement>('#timeline')!,pauseButton=document.querySelector<HTMLButtonElement>('#freeze')!;
 function inputs(t:number):RideActions{
+  if(['stroll','walk','run','backstep'].includes(selected))return {...NEUTRAL_ACTIONS,throttle:selected==='backstep'?-1:selected==='stroll'?.65:1,run:selected==='run'};
   if(selected==='seat')return {...NEUTRAL_ACTIONS,throttle:Math.max(-.3,Math.min(.7,(5-current.speed)*.55)),seated:t>.5&&t<4.8,steer:Math.sin(t)*.13};
   if(selected==='scrape')return {...NEUTRAL_ACTIONS,throttle:.7,steer:t<2.5?1:0};
   if(selected==='beeps')return {...NEUTRAL_ACTIONS,throttle:t<4?1:-1};
@@ -51,6 +52,7 @@ function resetSimulation(){
   sim.wheelScale=hero.wheelScale;
   crashTest=false;
   sim.reset({position:{x:0,y:0,z:0},headingY:0});
+  if(['stroll','walk','run','backstep'].includes(selected)){sim.step(step,{...NEUTRAL_ACTIONS,dismount:true});for(let i=0;i<90;i++)sim.step(step,NEUTRAL_ACTIONS);}
   if(['reverse','brake','carve','tuck','air','fall'].includes(selected))for(let i=0;i<200;i++)sim.step(step,{...NEUTRAL_ACTIONS,throttle:.65});
   if(selected.startsWith('trick')&&!['trick5','trick6'].includes(selected))for(let i=0;i<85;i++)sim.step(step,{...NEUTRAL_ACTIONS,throttle:.55});
   if(['scrape','beeps'].includes(selected))for(let i=0;i<1100;i++)sim.step(step,{...NEUTRAL_ACTIONS,throttle:.9});
@@ -74,9 +76,10 @@ document.querySelector<HTMLSelectElement>('#rate')!.onchange=e=>{playbackRate=Nu
 document.querySelector<HTMLSelectElement>('#view')!.onchange=e=>{
   const value=(e.target as HTMLSelectElement).value,angle=current.headingY+(value==='side'?Math.PI/2:value==='rear'?Math.PI:0);
   studioView=value;
-  camera.position.set(current.x+Math.sin(angle)*5.3,current.y+2.3,current.z+Math.cos(angle)*5.3);orbit.target.set(current.x,current.y+(hero.motionScale<1?.7:1.05),current.z);orbit.update();
+  camera.position.set(current.x+Math.sin(angle)*3.9,current.y+1.7,current.z+Math.cos(angle)*3.9);orbit.target.set(current.x,current.y+(hero.motionScale<1?.7:1.05),current.z);orbit.update();
 };
-choose('carve');updateRiderActions();document.querySelector('#play')!.textContent='Stop sequence';
+choose('stroll');playing=false;updateRiderActions();document.querySelector('#play')!.textContent='Play sequence';
+if(paused)pauseButton.textContent='Resume motion';
 function frame(now:number){requestAnimationFrame(frame);const dt=Math.min(.06,(now-last)/1000);last=now;
   if(!paused){acc+=dt*playbackRate;while(acc>=step){tick();acc-=step;if(elapsed>=duration){if(playing)choose(entries[(entries.indexOf(selected)+1)%entries.length]);else resetSimulation();}}
     lerpPose(previous,current,acc/step,renderPose);
@@ -89,17 +92,25 @@ function frame(now:number){requestAnimationFrame(frame);const dt=Math.min(.06,(n
   const position=new T.Vector3(renderPose.x+fall.x,renderPose.y+fall.y,renderPose.z+fall.z),delta=position.clone().sub(cameraLast);camera.position.add(delta);orbit.target.add(delta);cameraLast.copy(position);
   if(studioView!=='orbit'){
     const a=renderPose.headingY+(studioView==='side'?Math.PI/2:studioView==='rear'?Math.PI:0);
-    camera.position.set(position.x+Math.sin(a)*5.3,position.y+2.3,position.z+Math.cos(a)*5.3);orbit.target.copy(position).add(new T.Vector3(0,hero.motionScale<1?.7:1.05,0));
+    camera.position.set(position.x+Math.sin(a)*3.9,position.y+1.7,position.z+Math.cos(a)*3.9);orbit.target.copy(position).add(new T.Vector3(0,hero.motionScale<1?.7:1.05,0));
   }
   key.position.copy(position).add(new T.Vector3(4,6,5));key.target.position.copy(position);fill.position.copy(position).add(new T.Vector3(-3,3,-4));fill.target.position.copy(position);
   orbit.update();renderer.render(scene,camera);
   timeline.value=String(elapsed);
   const state=sim.snapshot(),feet=Math.max(...hero.legs.map((l,i)=>l.foot.getWorldPosition(new T.Vector3()).distanceTo(hero.footTarget(i,renderPose))));
-  document.querySelector('#readout')!.textContent=Math.round(Math.abs(current.speed)*3.6)+' km/h · '+state.state+' · '+elapsed.toFixed(2)+' s';
+  document.querySelector('#readout')!.textContent=Math.round(Math.abs(current.speed)*3.6)+' km/h · '+(current.footMode===2?(selected==='run'?'running':'walking'):state.state)+' · '+elapsed.toFixed(2)+' s';
   Object.assign(canvas.dataset,{controller:RIDE_TUNING.version,pose:selected,footError:String(feet),speed:String(current.speed),fallPhase:state.fallPhase,phase:state.state,airHeight:String(current.airHeight),compression:String(current.landingCompression),roll:String(current.rollAngle),lean:String(current.riderPitch),hops:String(state.hops),landings:String(state.landings),paused:String(paused),weightShift:String(current.weightShift),traction:String(current.tractionUsage),yawRate:String(current.yawRate)});
   Object.assign(canvas.dataset,{bodyDrop:String(current.bodyDrop),bodyPitch:String(current.bodyPitch),bodyTwist:String(current.bodyTwist),bodyLook:String(current.bodyLook),handL:String([current.handLX,current.handLY,current.handLZ]),handR:String([current.handRX,current.handRY,current.handRZ]),spineJoints:String(hero.spine.length),playbackRate:String(playbackRate),neckJoint:hero.neck?.name,shoulderJoints:String(hero.shoulders.length),hipYaw:String(current.bodyHipYaw),armBank:String(current.armBank),rigRevision:'anatomical-road-posture-v3'});
 }
-requestAnimationFrame(frame);window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
+// Reserve the control panel's actual height so walking feet stay visible even
+// when touch-sized buttons wrap onto several rows on a tablet.
+const footer=document.querySelector<HTMLElement>('footer')!;footer.style.maxHeight='40dvh';footer.style.overflow='auto';
+const nav=footer.querySelector('nav')!,more=document.createElement('details'),summary=document.createElement('summary'),other=document.createElement('nav');
+summary.textContent='More movements';summary.style.cssText='cursor:pointer;padding:10px;';more.append(summary,other);nav.after(more);
+const preview=new Set(['stroll','walk','run','backstep']);
+for(const element of Array.from(nav.children))if(!['rider','view'].includes(element.id)&&!preview.has((element as HTMLElement).dataset.pose??''))other.append(element);
+function resizeStudio(){const height=Math.max(160,innerHeight-footer.getBoundingClientRect().height-36);camera.aspect=innerWidth/height;camera.updateProjectionMatrix();renderer.setSize(innerWidth,height);}
+new ResizeObserver(resizeStudio).observe(footer);resizeStudio();requestAnimationFrame(frame);window.addEventListener('resize',resizeStudio);
 
 
 

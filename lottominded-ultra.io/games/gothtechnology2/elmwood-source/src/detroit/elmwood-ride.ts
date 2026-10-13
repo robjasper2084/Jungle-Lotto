@@ -64,6 +64,7 @@ export function splitRects(w:number,h:number,count:number,layout:string){
 export function makeElmwoodRide(scene:T.Scene,camera:T.PerspectiveCamera,controls:OrbitControls,canvas:HTMLCanvasElement,status:(s:string)=>void,showSite:()=>void,birdTargets:()=>DogTarget[]=()=>[]) {
   const el=<E extends HTMLElement>(id:string)=>document.getElementById(id) as E;
   const button=el<HTMLButtonElement>('ride-start'),outfit=el<HTMLSelectElement>('ride-outfit'),cameraSelect=el<HTMLSelectElement>('ride-camera'),cameraButton=el<HTMLButtonElement>('ride-camera-next');
+  const cameraQuick=document.createElement('button');cameraQuick.type='button';cameraQuick.style.pointerEvents='auto';cameraQuick.style.minHeight='44px';cameraQuick.textContent='Camera';cameraQuick.setAttribute('aria-label','Change camera view');cameraQuick.onclick=()=>cameraButton.click();document.querySelector('header')!.append(cameraQuick);
   const returnCamera=document.createElement('button');returnCamera.type='button';returnCamera.hidden=true;returnCamera.textContent='Return to ride camera';returnCamera.style.minHeight='44px';document.querySelector('header')!.append(returnCamera);returnCamera.onclick=()=>{clearInput();for(const select of cameras)select.value='chase';for(const seat of seats){seat.firstYaw=0;seat.firstPitch=RIDER_EYE_PITCH;seat.lastCamera='';}controls.enabled=false;canvas.focus();};
   const bikeRecover=document.createElement('button');bikeRecover.id='bike-recover';bikeRecover.type='button';bikeRecover.textContent='Recover bike · R';bikeRecover.style.minHeight='44px';bikeRecover.hidden=true;document.querySelector('header')!.append(bikeRecover);bikeRecover.onclick=()=>{if(active){resetSeat(0,true);canvas.focus();}};
   const settings=document.createElement('section');settings.id='elmwood-session-settings';settings.innerHTML=`<h2 style="font-size:16px">Ride together</h2>
@@ -356,6 +357,7 @@ export function makeElmwoodRide(scene:T.Scene,camera:T.PerspectiveCamera,control
     document.querySelector<HTMLDialogElement>('#elmwood-main-menu')?.close();
   },endVR(){vrMode=false;vrPacket=undefined;clearInput();pause(true);},pauseVR(){pause(true);},
   vrInput(packet:VRPacket){vrPacket=packet;if(packet.pause)pause();},vrPose(){return active?seats[0]?.motion.pose:undefined;},update(dt:number){
+    const cameraToolbar=document.getElementById('elmwood-controls');if(cameraToolbar&&cameraQuick.parentElement!==cameraToolbar){cameraToolbar.append(cameraQuick,returnCamera);}
     returnCamera.hidden=!active||vrMode||film.playing||cameras[0].value==='chase';
     bikeRecover.hidden=!(active&&seats[0]?.motion.cycling&&!vrMode&&!film.playing&&!document.querySelector<HTMLDialogElement>('#elmwood-main-menu')?.open);
     filmDelta=dt;

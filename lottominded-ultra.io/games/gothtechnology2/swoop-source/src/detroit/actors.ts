@@ -268,10 +268,11 @@ export class TrafficView {
     item.root.position.set(a.x,a.y,a.z);item.root.rotation.y=a.heading;
     const distance=focus?Math.hypot(a.x-focus.x,a.z-focus.z):0;
     item.root.visible=distance<drawDistance;
-    const firstPose=item.animationAge===undefined;item.animationAge=(item.animationAge??0)+dt;
+    if(!item.root.visible){item.animationAge=undefined;continue;}
+    const firstPose=item.animationAge===undefined;item.animationAge=(item.animationAge??((Math.abs(a.id*37)%100)/100)*.1)+dt;
     // World collisions and actor positions still tick normally; only distant posing is paced.
-    if(!firstPose&&!a.fall&&distance>60&&item.animationAge<.1)continue;
-    const animationDt=item.animationAge;item.animationAge=0;
+    if(!firstPose&&!a.fall&&distance>45&&item.animationAge<(distance>120?.2:.1))continue;
+    const animationDt=item.animationAge;item.animationAge=-((Math.abs(a.id*37)%100)/100)*.025;
     if(a.fall){
       if(!item.fallRig){
         const mobility=item.mobility;

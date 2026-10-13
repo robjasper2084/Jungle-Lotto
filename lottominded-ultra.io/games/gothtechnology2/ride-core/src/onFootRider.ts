@@ -1,18 +1,29 @@
 import * as T from 'three';
 import {TACTICAL_MOTION} from './tacticalMotionData.ts';
-import {footGait} from './onFootGait.ts';
+import {footGait,footBodyMotion} from './onFootGait.ts';
 import {solveLimb} from './limbIK.ts';
 import type {FootPose} from './onFoot.ts';
 type Rig={root:T.Object3D;ground:T.Object3D;lean:T.Object3D;rider:T.Object3D;vehicle:T.Object3D;mountHeight:number;motionScale:number;bones:{o:T.Object3D;p:T.Vector3;q:T.Quaternion}[]};
 type Binding={bone:T.Object3D;offset:T.Quaternion;channel:number};
-type Leg={upper:T.Object3D;knee:T.Object3D;foot:T.Object3D;rest:T.Vector3;rotation:T.Quaternion;sole:T.Vector3[];length:number};
+type Leg={upper:T.Object3D;knee:T.Object3D;foot:T.Object3D;rest:T.Vector3;strideCenter:number;rotation:T.Quaternion;sole:T.Vector3[];length:number};
 type Arm={upper:T.Object3D;knee:T.Object3D;foot:T.Object3D;upperLength:number;lowerLength:number};
 type Fit={body:Binding[];neck?:Binding;legs:Leg[];arms:Arm[];bottom:number;legLength:number;jumpAt:number;jump:number};
 const rigs=new WeakMap<Rig,Fit>(),channels=[30,34,44,48,52,56,60,64],tau=Math.PI*2;
 const v=()=>new T.Vector3(),q=()=>new T.Quaternion();
 const quat=(row:number[],offset:number)=>q().fromArray(row,offset).normalize();
+// Imported captures begin at different headings. Remove only that constant
+// heading, retaining the small, non-uniform pelvis/chest rotations in the take.
+const motionRows=Object.fromEntries(Object.entries(TACTICAL_MOTION).map(([name,clip])=>{
+ if(!['walk','jog','run','idle'].includes(name))return[name,clip.samples];
+ const rows=clip.samples.map(row=>row.slice()),count=rows.length-1;
+ for(const offset of [30,34]){
+  const heading=rows.slice(0,count).reduce((sum,row)=>sum+new T.Euler().setFromQuaternion(quat(row,offset),'YXZ').y,0)/count;
+  for(const row of rows){const e=new T.Euler().setFromQuaternion(quat(row,offset),'YXZ');e.y-=heading;q().setFromEuler(e).toArray(row,offset);}
+ }
+ return[name,rows];
+})) as Record<keyof typeof TACTICAL_MOTION,number[][]>;
 function mix(a:number[],b:number[],t:number){const row=a.map((n,k)=>n+(b[k]-n)*t);for(const offset of channels)quat(a,offset).slerp(quat(b,offset),t).toArray(row,offset);return row;}
-function sample(name:keyof typeof TACTICAL_MOTION,phase:number){const rows=TACTICAL_MOTION[name].samples,f=T.MathUtils.clamp(phase,0,1)*(rows.length-1),i=Math.floor(f),j=Math.min(i+1,rows.length-1);return mix(rows[i],rows[j],f-i);}
+function sample(name:keyof typeof TACTICAL_MOTION,phase:number){const rows=motionRows[name],f=T.MathUtils.clamp(phase,0,1)*(rows.length-1),i=Math.floor(f),j=Math.min(i+1,rows.length-1);return mix(rows[i],rows[j],f-i);}
 function basis(x:T.Vector3,y:T.Vector3){y.normalize();x.addScaledVector(y,-x.dot(y)).normalize();return q().setFromRotationMatrix(new T.Matrix4().makeBasis(x,y,x.clone().cross(y).normalize()));}
 function worldRotation(bone:T.Object3D,world:T.Quaternion){bone.quaternion.copy(bone.parent!.getWorldQuaternion(q()).invert().multiply(world));bone.updateWorldMatrix(false,true);}
 function point(bone:T.Object3D,child:T.Object3D,target:T.Vector3){
@@ -31,7 +42,7 @@ function fit(h:Rig):Fit{
  const legs:Leg[]=[],arms:Arm[]=[];
  for(const side of ['Left','Right']){
   const upper=bone(side+'UpLeg'),knee=bone(side+'Leg'),foot=bone(side+'Foot');
-  legs.push({upper,knee,foot,rest:position(side+'Foot'),rotation:inverse.clone().multiply(foot.getWorldQuaternion(q())),sole:[],length:upper.getWorldPosition(v()).distanceTo(knee.getWorldPosition(v()))+knee.getWorldPosition(v()).distanceTo(foot.getWorldPosition(v()))});
+  legs.push({upper,knee,foot,rest:position(side+'Foot'),strideCenter:position(side+'UpLeg').z,rotation:inverse.clone().multiply(foot.getWorldQuaternion(q())),sole:[],length:upper.getWorldPosition(v()).distanceTo(knee.getWorldPosition(v()))+knee.getWorldPosition(v()).distanceTo(foot.getWorldPosition(v()))});
   const a=bone(side+'Arm'),b=bone(side+'ForeArm'),c=bone(side+'Hand');
   arms.push({upper:a,knee:b,foot:c,upperLength:a.getWorldPosition(v()).distanceTo(b.getWorldPosition(v())),lowerLength:b.getWorldPosition(v()).distanceTo(c.getWorldPosition(v()))});
  }
@@ -54,7 +65,7 @@ export function applyOnFootRider(h:Rig,pose:Partial<FootPose>){
  h.ground.position.y=0;h.ground.rotation.set(0,0,0);h.lean.rotation.set(0,0,0);h.rider.rotation.set(0,0,0);h.rider.position.set(0,0,0);
  for(const b of h.bones){b.o.position.copy(b.p);b.o.quaternion.copy(b.q);}h.root.updateMatrixWorld(true);
  let data=rigs.get(h);if(!data){data=fit(h);rigs.set(h,data);}
- const scale=Math.max(.35,data.legLength/.9),speed=Math.abs(p.speed);
+ const scale=Math.max(.2,data.legLength/.9),speed=Math.abs(p.speed);
  const cycle=((p.footCycle||p.footPhase)/scale)%1,phase=p.speed<0?(1-cycle)%1:cycle;
  let name:keyof typeof TACTICAL_MOTION=speed<.08?'idle':speed>3.2?'run':speed>2.5?'jog':'walk';
  let clipPhase=name==='idle'?(p.footTime/TACTICAL_MOTION.idle.duration)%1:phase;
@@ -66,36 +77,49 @@ export function applyOnFootRider(h:Rig,pose:Partial<FootPose>){
   row=mix(row,sample('jog',phase),T.MathUtils.smoothstep(speed,2.5,3.6));row=mix(row,sample('run',phase),T.MathUtils.smoothstep(speed,3.6,5.4));
  }
  const frame=h.root.getWorldQuaternion(q()),forward=new T.Vector3(0,0,1).applyQuaternion(frame),right=new T.Vector3(1,0,0).applyQuaternion(frame),up=new T.Vector3(0,1,0);
- const upright=(source:T.Quaternion)=>{const e=new T.Euler().setFromQuaternion(source,'YXZ');e.x=0;e.z=T.MathUtils.clamp(e.z,-.035,.035);return q().setFromEuler(e);};
+ const motion=footBodyMotion(phase,p.speed);
+ const upright=(source:T.Quaternion,chest=false)=>{
+  const e=new T.Euler().setFromQuaternion(source,'YXZ');
+  // Preserve capture timing and follow-through instead of flattening the
+  // torso and driving both arms with the same mirrored sine wave.
+  e.x*=chest?.65:.8;e.y*=chest?.68:.85;e.z*=chest?.65:.85;
+  return q().setFromEuler(e);
+ };
  const crouch=T.MathUtils.clamp(p.footCrouch||0,0,1),prone=T.MathUtils.clamp(p.footProne||0,0,1);
  const posture=q().setFromAxisAngle(new T.Vector3(1,0,0),prone*Math.PI/2+crouch*.10);
- const hipFrame=(p.footJump?quat(row,30):upright(quat(row,30))).premultiply(posture),chestFrame=(p.footJump?quat(row,34):upright(quat(row,34))).premultiply(posture);
+ const hipFrame=(p.footJump?quat(row,30):upright(quat(row,30))).premultiply(posture),chestFrame=(p.footJump?quat(row,34):upright(quat(row,34),true)).premultiply(posture);
  for(const b of data.body)worldRotation(b.bone,frame.clone().multiply(hipFrame.clone().slerp(chestFrame,b.channel/3)).multiply(b.offset));
- if(data.neck)worldRotation(data.neck.bone,frame.clone().multiply(hipFrame.clone().slerp(chestFrame,.35)).multiply(data.neck.offset));
+ if(data.neck)worldRotation(data.neck.bone,frame.clone().multiply(posture.clone().slerp(chestFrame,.22)).multiply(data.neck.offset));
  if(data.neck&&prone>0)worldRotation(data.neck.bone,data.neck.bone.getWorldQuaternion(q()).premultiply(q().setFromAxisAngle(right,-.9*prone)));
- // Small counter-swings keep the collar alive without importing each A-pose's
- // different elbow plane or bending the torso forward.
+ // Clavicles follow the captured chest; the arm socket must not be pinned to
+ // a world-horizontal line while the rib cage rotates beneath it.
  for(const [i,side] of ['Left','Right'].entries()){
   const collar=h.rider.getObjectByName(side+'Shoulder'),arm=h.rider.getObjectByName(side+'Arm');
-  if(collar&&arm){const wave=Math.sin(phase*tau+i*Math.PI)*T.MathUtils.smoothstep(speed,0,.85);
-   const target=new T.Vector3(i===0?1:-1,-.015+wave*.008,wave*.022).normalize().applyQuaternion(frame);
+  if(collar&&arm){const target=new T.Vector3().fromArray(row,38+i*3);
+   target.z*=.55;target.y=T.MathUtils.clamp(target.y,-.10,.10);target.normalize().applyQuaternion(frame);
    point(collar,arm,collar.getWorldPosition(v()).add(target));
   }
  }
  const effort=T.MathUtils.smoothstep(speed,0,.85),jog=T.MathUtils.smoothstep(speed,2.5,4.1),hips=data.body[0].bone,hip=hips.getWorldPosition(v());
- hip.addScaledVector(up,-data.bottom+(.004+.008*jog)*Math.cos(phase*tau*2)*effort*(1-prone)-.34*scale*crouch);
+ hip.addScaledVector(up,-data.bottom+motion.bob*scale*(1-prone)-.34*scale*crouch);
+ hip.addScaledVector(right,motion.weight*scale*(1-prone)*(1-crouch*.5));
  hip.y=T.MathUtils.lerp(hip.y,h.root.getWorldPosition(v()).y+.26*scale+(h.motionScale<.7?.13:.03),prone);hip.addScaledVector(forward,-.30*scale*prone);
  hips.position.copy(hips.parent!.worldToLocal(hip));h.root.updateMatrixWorld(true);
  if(!p.footJump||p.footJump===3){
   const strides=data.legs.map((_,i)=>footGait(cycle+i*.5,speed,data!.legLength));
   const targets=data.legs.map((l,i)=>{
    const stride=strides[i],pitch=stride.pitch*effort*(1-prone)+prone*.7,floor=Math.min(...l.sole.map(s=>s.y*Math.cos(pitch)-s.z*Math.sin(pitch))),target=l.rest.clone();
-   target.z+=stride.z*effort*(p.speed<0?-1:1)*(1-crouch*.4);target.y=-floor+stride.lift*effort+.006;
+   // The mounting bind pose has feet forward of the hips. Walking around
+   // that offset over-reached one leg and repeatedly pulled the pelvis down.
+   target.z=T.MathUtils.lerp(l.rest.z,l.strideCenter,effort)+stride.z*effort*(p.speed<0?-1:1)*(1-crouch*.4);target.y=-floor+stride.lift*effort+.006;
    target.z=T.MathUtils.lerp(target.z,(-1.10+Math.sin((phase+i*.5)*tau)*.08*effort)*scale,prone);target.y=-floor+stride.lift*effort*(1-prone)+.006;
    return h.root.localToWorld(target);
   });
-  let lower=0;data.legs.forEach((l,i)=>{const a=l.upper.getWorldPosition(v()),t=targets[i],reach=l.length*.998;
-   lower=Math.max(lower,a.y-t.y-Math.sqrt(Math.max(.000001,reach*reach-(a.x-t.x)**2-(a.z-t.z)**2)));
+  let lower=0;data.legs.forEach((l,i)=>{const a=l.upper.getWorldPosition(v()),t=targets[i],reach=l.length*.985;
+   const required=a.y-t.y-Math.sqrt(Math.max(.000001,reach*reach-(a.x-t.x)**2-(a.z-t.z)**2));
+   // Smooth maximum stays above both reach constraints, avoiding a hard
+   // pelvis velocity change when support transfers from one foot to the other.
+   lower=(lower+required+Math.hypot(lower-required,.035*scale))*.5;
   });
   if(lower>0){const a=hips.getWorldPosition(v());a.y-=lower;hips.position.copy(hips.parent!.worldToLocal(a));h.root.updateMatrixWorld(true);}
   data.legs.forEach((l,i)=>solveLimb(l,targets[i],forward.clone().lerp(up,prone).normalize(),frame.clone().multiply(q().setFromAxisAngle(new T.Vector3(1,0,0),strides[i].pitch*effort*(1-prone)+prone*.7)).multiply(l.rotation)));
@@ -108,14 +132,16 @@ export function applyOnFootRider(h:Rig,pose:Partial<FootPose>){
  // each model's real upper-arm/forearm lengths and authored relaxed wrist.
  data.arms.forEach((l,i)=>{
   const source=12+i*6,upperAngle=Math.atan2(row[source+2],-row[source+1]),lowerAngle=Math.atan2(row[source+5],-row[source+4]);
-  const shoulder=T.MathUtils.clamp(upperAngle,-.55-.45*jog,.55+.40*jog)*effort*(p.footJump?1:.58+.12*jog);
+  const shoulder=p.footJump?T.MathUtils.clamp(upperAngle,-.55-.45*jog,.55+.40*jog)*effort:
+   (upperAngle*(.72+.05*jog)+.10+.18*jog)*effort*(1-prone);
   const elbow=T.MathUtils.lerp(.18,T.MathUtils.clamp(Math.atan2(Math.sin(lowerAngle-upperAngle),Math.cos(lowerAngle-upperAngle)),.13+.57*jog,.65+.95*jog),effort);
-  const relaxedElbow=p.footJump?elbow:T.MathUtils.lerp(.18,elbow,.60+.15*jog);
-  const a=l.upper.getWorldPosition(v()),side=i===0?1:-1,bend=a.clone().addScaledVector(up,-l.upperLength*Math.cos(shoulder)).addScaledVector(forward,l.upperLength*Math.sin(shoulder)).addScaledVector(right,side*.015*scale);
+  const capturedFlex=Math.atan2(Math.sin(lowerAngle-upperAngle),Math.cos(lowerAngle-upperAngle));
+  const relaxedElbow=p.footJump?elbow:T.MathUtils.clamp(.10+capturedFlex*(.50+.16*jog),.18,1.32);
+  const a=l.upper.getWorldPosition(v()),side=i===0?1:-1,bend=a.clone().addScaledVector(up,-l.upperLength*Math.cos(shoulder)).addScaledVector(forward,l.upperLength*Math.sin(shoulder)).addScaledVector(right,side*.035*scale);
   bend.sub(a).setLength(l.upperLength).add(a);
   const hand=bend.clone().addScaledVector(up,-l.lowerLength*Math.cos(shoulder+relaxedElbow)).addScaledVector(forward,l.lowerLength*Math.sin(shoulder+relaxedElbow));
   point(l.upper,l.knee,bend);point(l.knee,l.foot,hand);
-  worldRotation(l.foot,l.foot.getWorldQuaternion(q()).premultiply(q().setFromAxisAngle(right,.020*effort*Math.sin(phase*tau+i*Math.PI-.25))));
+  worldRotation(l.foot,l.foot.getWorldQuaternion(q()).premultiply(q().setFromAxisAngle(right,.035*effort*Math.sin(phase*tau+i*Math.PI-.45))));
  });
  if(mounted)h.bones.forEach((b,i)=>{const target=b.o.quaternion.clone(),position=b.o.position.clone();b.o.quaternion.copy(mounted[i].q).slerp(target,blend);b.o.position.copy(mounted[i].p).lerp(position,blend);});
  h.rider.position.y=h.mountHeight*(1-blend);h.root.updateMatrixWorld(true);
