@@ -1,5 +1,6 @@
 import type {TerrainSampler,Vec3} from '../terrain.ts';
 export interface BattleTerrain extends TerrainSampler {
+ readonly training?:boolean;
  readonly spawns: {position:Vec3;headingY:number}[];
  readonly spawnNodes?: readonly import('./spawnNodes.ts').SpawnNode[];
  readonly zones: {x:number;z:number}[];

@@ -1,0 +1,20 @@
+(node:29608) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ binary fixture preserves bytes, checks integrity and consumes the temporary buffer once (36.5756ms)
+✔ legacy package fallback only follows a missing manifest; server errors do not start another massive download (2.9768ms)
+(node:37292) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Map physics loaded from verified local cache.
+✔ a repeat load reuses verified compressed physics without a second large transfer (38.0645ms)
+Map physics loaded from verified local cache.
+✔ a corrupt cached map is evicted, downloaded once and verified again (4.8532ms)
+✔ denied storage leaves normal loading available (2.4074ms)
+✔ cache updates retain the other map and write only the requested byte view (0.8717ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 230.2915

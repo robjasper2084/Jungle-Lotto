@@ -41,7 +41,7 @@ export function move(a:Motion,c:Command,tick:number){
 
  a.controller.combatOnFoot=true;const melee=(a as Actor).combat?.melee;
  const blocked=!!melee&&melee.staggerUntil>tick;
- const input={...NEUTRAL_ACTIONS,mountBlocked:(a as Actor).integrity<=15||blocked,evade:melee&&melee.evadeUntil>tick?melee.evadeDir:0,throttle:blocked?c.throttle*.25:c.throttle,steer:c.steer,facingYaw:c.facingYaw??undefined,crouch:c.crouch,prone:c.prone,hop:c.hop,hopHeld:c.hopHeld,dismount:c.dismount||c.prone&&!a.controller.poseValue.footMode&&Math.abs(a.controller.poseValue.speed)<=1,run:c.burst};
+ const input={...NEUTRAL_ACTIONS,mountBlocked:(a as Actor).integrity<=15||blocked,evade:melee&&melee.evadeUntil>tick?melee.evadeDir:0,throttle:blocked?c.throttle*.25:c.throttle,steer:c.steer,facingYaw:c.facingYaw??undefined,crouch:c.crouch,prone:c.prone,hop:c.hop,hopHeld:c.hopHeld,dismount:c.dismount||c.prone&&!a.controller.poseValue.footMode&&Math.abs(a.controller.poseValue.speed)<=1,run:c.burst&&!c.fire&&c.aimMode===0&&!c.reload};
  a.controller.step(DT/2,input);a.controller.step(DT/2,{...input,hop:false});
 }
 export type Elimination={tick:number;killer?:{id:string;name:string;bot:boolean};cause:'rider'|'field'|'disconnect'|'arena'};
@@ -112,16 +112,26 @@ export class RoyaleMatch{
   const target=tacticalDestination(this.terrain,p,f,enemy?.pose,a.target??hunted?.pose,defend,supplies,index,this.tick).point;
   a.path=this.terrain.route(p,target);a.aimAt=enemy?this.tick:0;
  }
- while(a.path.length&&Math.hypot(a.path[0].x-p.x,a.path[0].z-p.z)<5)a.path.shift();
+ while(a.path.length&&Math.hypot(a.path[0].x-p.x,a.path[0].z-p.z)<(p.footMode?.9:5))a.path.shift();
  // A fresh grid route begins at the closest node, which can be behind the rider.
  // Skip visible intermediate nodes so replanning cannot pull a moving EUC back
  // around that node. Swept clearance keeps the shortcut outside solid cover.
- while(a.path.length>1&&this.terrain.line({x:p.x,y:p.y+.7,z:p.z},{...a.path[1],y:a.path[1].y+.7},1.2))a.path.shift();
+ while(a.path.length>1&&this.terrain.line({x:p.x,y:p.y+.7,z:p.z},{...a.path[1],y:a.path[1].y+.7},p.footMode?.35:1.2))a.path.shift();
  const next=a.path[0]??{x:f.x,z:f.z},turn=angle(Math.atan2(next.x-p.x,next.z-p.z)-p.headingY);
  // RideCore's positive steering command decreases world heading.
  c.steer=clamp(-turn*2,-1,1);c.throttle=Math.abs(turn)>1.2?(p.speed>2?-1:.25):Math.abs(turn)>.55?.4:.85;
  const visible=this.actors.find(b=>b.id===brain.enemy&&b.alive&&Math.hypot(b.pose.x-p.x,b.pose.z-p.z)<85&&this.terrain.line({x:p.x,y:p.y+1.3,z:p.z},{x:b.pose.x,y:b.pose.y+1.3,z:b.pose.z}));
- if(visible&&this.tick-brain.acquired>18+index*3){const profile=WEAPONS[a.loadout[a.slot]],target=leadTarget(p,visible.pose,{x:Math.sin(visible.pose.headingY)*visible.pose.speed,z:Math.cos(visible.pose.headingY)*visible.pose.speed},profile.speed,profile.gravity),yaw=angle(Math.atan2(target.x-p.x,target.z-p.z)-p.headingY);c.aimYaw=clamp(yaw+Math.sin(this.tick*.075+index)*.035,-1.25,1.25);c.aimPitch=clamp(Math.atan2(target.y-p.y,Math.hypot(target.x-p.x,target.z-p.z)),-.65,.65);if(Math.abs(yaw)<1.2&&this.tick-a.shotAt>=profile.interval+12&&!a.repairUntil){c.fire=true;c.shot=a.lastShot+1;}}
+ // Close encounters use the same dismount and free-heading controls as a human.
+ if(!p.footMode&&visible&&Math.hypot(visible.pose.x-p.x,visible.pose.z-p.z)<34&&Math.abs(p.speed)<9)c.dismount=true;
+ if(p.footMode===2){
+  const targetYaw=visible?Math.atan2(visible.pose.x-p.x,visible.pose.z-p.z):Math.atan2(next.x-p.x,next.z-p.z);
+  const facing=angle(p.headingY+clamp(angle(targetYaw-p.headingY),-.09,.09));c.facingYaw=facing;
+  const dx=next.x-p.x,dz=next.z-p.z,d=Math.hypot(dx,dz)||1;
+  c.throttle=clamp((dx*Math.sin(facing)+dz*Math.cos(facing))/d,-1,1);c.steer=clamp(-(dx*Math.cos(facing)-dz*Math.sin(facing))/d,-1,1);
+  if(visible&&a.combat.reloadStart<0&&Math.hypot(visible.pose.x-p.x,visible.pose.z-p.z)<24){c.steer= index%2?.55:-.55;c.throttle*=.35;}
+  c.crouch=!!visible&&(a.integrity<45||a.combat.reloadStart>=0)&&Math.hypot(dx,dz)<2;
+ }
+ if(visible&&this.tick-brain.acquired>18+index*3){const profile=WEAPONS[a.loadout[a.slot]],target=leadTarget(p,visible.pose,{x:visible.pose.velocityX,z:visible.pose.velocityZ},profile.speed,profile.gravity),yaw=angle(Math.atan2(target.x-p.x,target.z-p.z)-p.headingY);c.aimYaw=clamp(yaw+Math.sin(this.tick*.075+index)*.035,-1.25,1.25);c.aimPitch=clamp(Math.atan2(target.y-p.y,Math.hypot(target.x-p.x,target.z-p.z)),-.65,.65);if(Math.abs(yaw)<1.2&&this.tick-a.shotAt>=profile.interval+12&&!a.repairUntil){c.fire=true;c.shot=a.lastShot+1;}}
  if(this.tick<brain.backUntil){c.throttle=-.35;c.steer=index%2?.7:-.7;}
  c.reload=this.engineEnabled&&a.combat.magazine[a.loadout[a.slot]]<(visible?1:5)&&a.combat.reloadStart<0;c.aimMode=visible?1:0;
  c.recover=a.controller.crashed;c.repair=a.integrity<55&&this.tick-a.lastDamage>180;c.utility=a.shield<10&&this.tick-a.lastDamage<120;c.slot=a.slot;c.burst=Math.hypot(p.x-f.x,p.z-f.z)>f.radius;

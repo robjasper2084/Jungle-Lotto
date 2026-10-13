@@ -1,8 +1,11 @@
+import {createGroundSample,type TerrainSampler} from '../../../../ride-core/src/terrain.ts';
+import {weaponSound,footstepSound} from './fpsSound.ts';
 import {spatialCue,wheelCue} from './audioCues.ts';
 import type {RidePose} from '../../../../ride-core/src/controller.ts';
 /** Original low-cost synthesized score and effects. Nothing is started before a play gesture. */
 export class RoyaleAudio {
- private context?:AudioContext;private master?:GainNode;private musicBus?:GainNode;private noise?:AudioBuffer;private nextBeat=0;private beat=0;private step=-1;private seen=new Set<string>();private round='';
+ private context?:AudioContext;private master?:GainNode;private musicBus?:GainNode;private noise?:AudioBuffer;private nextBeat=0;private beat=0;private seen=new Set<string>();private round='';
+ private steps=new Map<string,number>();private ground=createGroundSample();
  private motor?:OscillatorNode;private motorGain?:GainNode;private dogStep=-1;private cueTick=-1;private lastSpeed=0;private brakeAt=-999;private fieldCue='';private motorLevel=0;
  effects=true;music=true;volume=.6;musicVolume=.2;
  constructor(){try{const v=JSON.parse(localStorage.getItem('royale-audio')??'null');if(v){this.effects=v.effects!==false;this.music=v.music!==false;this.volume=Math.max(0,Math.min(1,v.volume??.6));this.musicVolume=Math.max(0,Math.min(1,v.musicVolume??.2));}}catch{}}
@@ -17,12 +20,12 @@ export class RoyaleAudio {
  }
  private tone(hz:number,time:number,length:number,gain:number,bus:GainNode,type:OscillatorType='sine',pan=0){const c=this.context!,o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.setValueAtTime(hz,time);g.gain.setValueAtTime(.0001,time);g.gain.exponentialRampToValueAtTime(Math.max(.0002,gain),time+.012);g.gain.exponentialRampToValueAtTime(.0001,time+length);o.connect(g);if(c.createStereoPanner){const p=c.createStereoPanner();p.pan.value=pan;g.connect(p).connect(bus);o.onended=()=>{o.disconnect();g.disconnect();p.disconnect();};}else{g.connect(bus);o.onended=()=>{o.disconnect();g.disconnect();};}o.start(time);o.stop(time+length+.02);}
  private hiss(hz:number,length:number,gain:number,pan=0){const c=this.context!,source=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();source.buffer=this.noise!;f.type='bandpass';f.frequency.value=hz;g.gain.setValueAtTime(gain,c.currentTime);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+length);source.connect(f).connect(g);let p:StereoPannerNode|undefined;if(c.createStereoPanner){p=c.createStereoPanner();p.pan.value=pan;g.connect(p).connect(this.master!);}else g.connect(this.master!);source.onended=()=>{source.disconnect();f.disconnect();g.disconnect();p?.disconnect();};source.start();source.stop(c.currentTime+length);}
- update(state:{round:string;tick:number;phase:string;events:{tick:number;kind:string;actor:string;target?:string}[];actors:{id:string;pose:RidePose;alive:boolean;dog?:{x:number;z:number;speed:number;phase:number;jumpHeight?:number}}[];field?:{x:number;z:number;radius:number;remaining:number;phase:number}},me:string,active:boolean,voiceOpen=false,listenerHeading?:number){const c=this.context;if(!c||c.state!=='running')return;const t=c.currentTime;this.master!.gain.setTargetAtTime(active&&this.effects?this.volume:0,t,.04);this.musicBus!.gain.setTargetAtTime(active&&this.music?this.musicVolume*(voiceOpen?.3:1):0,t,.15);
-  if(this.round!==state.round){this.round=state.round;this.seen.clear();this.step=-1;this.dogStep=-1;this.cueTick=-1;this.brakeAt=-999;this.lastSpeed=0;this.fieldCue='';}
+ update(state:{round:string;tick:number;phase:string;events:{tick:number;kind:string;actor:string;target?:string}[];actors:{id:string;weapon?:string;pose:RidePose;alive:boolean;dog?:{x:number;z:number;speed:number;phase:number;jumpHeight?:number}}[];field?:{x:number;z:number;radius:number;remaining:number;phase:number}},me:string,active:boolean,voiceOpen=false,listenerHeading?:number,terrain?:TerrainSampler){const c=this.context;if(!c||c.state!=='running')return;const t=c.currentTime;this.master!.gain.setTargetAtTime(active&&this.effects?this.volume:0,t,.04);this.musicBus!.gain.setTargetAtTime(active&&this.music?this.musicVolume*(voiceOpen?.3:1):0,t,.15);
+  if(this.round!==state.round){this.round=state.round;this.seen.clear();this.steps.clear();this.dogStep=-1;this.cueTick=-1;this.brakeAt=-999;this.lastSpeed=0;this.fieldCue='';}
   if(!active){this.nextBeat=t+.08;this.motorLevel=0;this.motorGain?.gain.setTargetAtTime(0,t,.06);this.cueTick=state.tick;return;}
   const self=state.actors.find(a=>a.id===me),p=self?.pose;
   if(this.effects)for(const e of state.events){const key=e.tick+':'+e.kind+':'+e.actor+':'+e.target;if(this.seen.has(key))continue;this.seen.add(key);if(state.tick-e.tick>20)continue;const a=state.actors.find(a=>a.id===e.actor);if(e.actor!==me&&!a)continue;const d=a&&p?Math.hypot(a.pose.x-p.x,a.pose.z-p.z):0;if(d>100)continue;const {gain,pan}=a&&p?spatialCue(a.pose.x-p.x,a.pose.z-p.z,listenerHeading??p.headingY):{gain:1,pan:0};
-   if(e.kind==='shot'){this.hiss(1200,.09,.16*gain,pan);this.tone(110,t,.11,.15*gain,this.master!,'triangle',pan);}
+   if(e.kind==='shot'){const sound=weaponSound(a?.weapon??'static',d);this.hiss(sound.noise,sound.tail,sound.gain*gain,pan);this.tone(sound.tone,t,sound.tail,.15*gain,this.master!,'triangle',pan);}
    else if(e.kind==='hit'||e.kind==='melee-hit'){this.hiss(500,.12,.12*gain,pan);this.tone(e.target===me?90:640,t,.12,.09*gain,this.master!,'triangle',pan);}
    else if(e.kind==='reload'||e.kind==='reload-commit'){this.hiss(2600,.07,.055*gain,pan);}
    else if(e.kind==='pickup'||e.kind.startsWith('pickup-scope')){this.tone(660,t,.12,.07*gain,this.master!);this.tone(990,t+.08,.18,.05*gain,this.master!);}
@@ -32,7 +35,11 @@ export class RoyaleAudio {
    else if(e.kind==='melee'||e.kind==='evade'){this.hiss(700,.12,.06*gain,pan);}
   }
   while(this.seen.size>128)this.seen.delete(this.seen.values().next().value!);
-  if(p&&self?.alive&&this.effects){const cycle=Math.floor((p.footCycle||0)*2);if(p.footMode===2&&cycle!==this.step&&Math.abs(p.speed)>.2){this.hiss(240,.06,.035);this.step=cycle;}}
+  if(p&&self?.alive&&this.effects){for(const actor of state.actors){const q=actor.pose,cycle=Math.floor((q.footCycle||0)*2),previous=this.steps.get(actor.id);this.steps.set(actor.id,cycle);
+   if(previous===undefined||previous===cycle||!actor.alive||q.footMode!==2||q.airHeight>.04||Math.abs(q.speed)<.2||Math.hypot(q.x-p.x,q.z-p.z)>28)continue;
+   const surface=terrain?.sampleGround(q.x,q.z,this.ground,q.y).surface??'pavement',sound=footstepSound(surface,q.footCrouch,q.footProne),cue=actor.id===me?{gain:.5,pan:0}:spatialCue(q.x-p.x,q.z-p.z,listenerHeading??p.headingY);
+   this.hiss(sound.hz,sound.length,sound.gain*cue.gain,cue.pan);
+  }for(const id of this.steps.keys())if(!state.actors.some(a=>a.id===id))this.steps.delete(id);}
   const motor=p?wheelCue(p,!!self?.alive,active&&this.effects&&state.phase==='active'):{hz:55,gain:0};this.motorLevel=motor.gain;
   this.motor?.frequency.setTargetAtTime(motor.hz,t,.12);this.motorGain?.gain.setTargetAtTime(motor.gain,t,.09);
   if(this.effects&&p&&self?.alive&&state.phase==='active'&&state.tick!==this.cueTick){

@@ -1,3 +1,4 @@
+import {roomVoiceIce} from './voiceIce.js';
 import {loadHostFixture} from './hostFixture.js';
 import {voiceChannel,voiceSignal,voiceRecipient,type VoiceChannel} from '@digital-static/ridecore/voice-protocol';
 
@@ -36,7 +37,7 @@ export class LoveTagRoom extends Room{
   private voiceMessage(client:Client,type:string|number,data:any){
     if(type!=='voice-state'&&type!=='voice-signal')return false;
     const now=Date.now(),rate=this.voiceRates.get(client.sessionId);if(!rate||now-rate.at>=1000)this.voiceRates.set(client.sessionId,{at:now,n:1});else if(++rate.n>60)return true;
-    if(type==='voice-state'){if(data?.enabled===false)this.voices.delete(client.sessionId);else if(data?.enabled===true&&voiceChannel(data.channel))this.voices.set(client.sessionId,data.channel);this.voiceRoster();}
+    if(type==='voice-state'){if(data?.enabled===false)this.voices.delete(client.sessionId);else if(data?.enabled===true&&voiceChannel(data.channel)){this.voices.set(client.sessionId,data.channel);client.send('voice-ice',roomVoiceIce(client.sessionId));}this.voiceRoster();}
     else {const signal=voiceSignal(data);if(signal&&voiceRecipient(client.sessionId,signal,this.voiceMembers()))this.clients.find(c=>c.sessionId===signal.to)?.send('voice-signal',{from:client.sessionId,signal});}return true;
   }
   private chatRate=new ChatRateGate();
@@ -88,7 +89,7 @@ export class LoveTagRoom extends Room{
     if(this.match.phase!=='lobby'||options.spectate)this.spectators.add(client.sessionId);else this.match.addActor(client.sessionId,name);
     if(!this.host)this.host=client.sessionId;this.welcome(client);
   }
-  private welcome(client:Client){client.send('welcome',{code:this.code,host:this.host,product:this.match.fixture.product,hash:this.match.fixture.hash,version:TAG_VERSION,spectator:this.spectators.has(client.sessionId),grace:20});client.send('snapshot',this.match.snapshot(this.spectators.has(client.sessionId)?undefined:client.sessionId));}
+  private welcome(client:Client){client.send('voice-ice',roomVoiceIce(client.sessionId));client.send('welcome',{code:this.code,host:this.host,product:this.match.fixture.product,hash:this.match.fixture.hash,version:TAG_VERSION,spectator:this.spectators.has(client.sessionId),grace:20});client.send('snapshot',this.match.snapshot(this.spectators.has(client.sessionId)?undefined:client.sessionId));}
   onDrop(client:Client){this.voices.delete(client.sessionId);this.voiceRoster();const actor=this.match.actors.find(a=>a.id===client.sessionId);if(actor)actor.connected=false;this.match.release(client.sessionId);void this.allowReconnection(client,20).catch(()=>{});}
   onReconnect(client:Client){const actor=this.match.actors.find(a=>a.id===client.sessionId);if(actor)actor.connected=true;this.lastCommand.set(client.sessionId,Date.now());this.welcome(client);}
   onLeave(client:Client){this.voices.delete(client.sessionId);this.voiceRates.delete(client.sessionId);this.voiceRoster();this.chatRate.forget(client.sessionId);this.match.leave(client.sessionId);this.spectators.delete(client.sessionId);this.ready.delete(client.sessionId);this.messageRates.delete(client.sessionId);this.lastCommand.delete(client.sessionId);if(client.sessionId===this.host){this.host=this.clients.find(c=>c.sessionId!==client.sessionId)?.sessionId??'';this.broadcast('host',this.host);}}

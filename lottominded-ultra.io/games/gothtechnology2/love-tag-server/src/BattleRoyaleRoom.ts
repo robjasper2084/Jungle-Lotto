@@ -1,3 +1,5 @@
+import {cleanChatText,ChatRateGate} from '@digital-static/ridecore/chat';
+import {roomVoiceIce} from './voiceIce.js';
 import {Room,ServerError,type Client,type AuthContext} from '@colyseus/core';
 import {DowntownArena,RoyaleMatch,currentHandshake,compatible,initializeEngine,wheelProfile} from '@digital-static/ridecore/royale';
 import {TagTerrain} from '@digital-static/ridecore/tag';
@@ -20,7 +22,7 @@ export class BattleRoyaleRoom extends Room{
  maxClients=14;private size:6|10=10;private match!:RoyaleMatch;private terrain!:DowntownArena;private host='';private code='';private botFill=false;private botCount=-1;
  private ready=new Set<string>();private spectators=new Set<string>();private rates=new Map<string,{at:number;n:number}>();private battleClock=new RoyaleClock();private failed=false;private telemetryAt=0;private sendClock=0;private born=Date.now();
  private replaySent=new Map<string,number>();
- private voices=new Map<string,VoiceChannel>();private voiceRates=new Map<string,{at:number;n:number}>();
+ private chatRate=new ChatRateGate();private voices=new Map<string,VoiceChannel>();private voiceRates=new Map<string,{at:number;n:number}>();
  private voiceMembers():VoiceMember[]{return this.clients.filter(c=>this.voices.has(c.sessionId)).map(c=>({id:c.sessionId,name:this.match.actors.find(a=>a.id===c.sessionId)?.name??'Spectator',channel:this.voices.get(c.sessionId)!}));}
  private voiceRoster(){this.broadcast('voice-roster',this.voiceMembers());}
  async onCreate(options:any){
@@ -33,9 +35,10 @@ export class BattleRoyaleRoom extends Room{
   do{this.code=randomBytes(4).toString('hex').toUpperCase();}while(royaleCodes.has(this.code));
   royaleCodes.set(this.code,{roomId:this.roomId,expires:Date.now()+7200000});
   this.onMessage('*',(c,type,data)=>{
+   if(type==='chat'){const text=cleanChatText(data?.text);if(text&&this.chatRate.allow(c.sessionId,Date.now()))this.broadcast('chat',{id:randomUUID(),player:c.sessionId,name:this.match.actors.find(a=>a.id===c.sessionId)?.name??'Spectator',text,at:Date.now()});return;}
    if(type==='voice-state'||type==='voice-signal'){
     const now=Date.now(),r=this.voiceRates.get(c.sessionId);if(!r||now-r.at>=1000)this.voiceRates.set(c.sessionId,{at:now,n:1});else if(++r.n>60)return;
-    if(type==='voice-state'){if(data?.enabled===false)this.voices.delete(c.sessionId);else if(data?.enabled===true&&voiceChannel(data.channel))this.voices.set(c.sessionId,data.channel);this.voiceRoster();}
+    if(type==='voice-state'){if(data?.enabled===false)this.voices.delete(c.sessionId);else if(data?.enabled===true&&voiceChannel(data.channel)){this.voices.set(c.sessionId,data.channel);c.send('voice-ice',roomVoiceIce(c.sessionId));}this.voiceRoster();}
     else {const signal=voiceSignal(data);if(signal&&voiceRecipient(c.sessionId,signal,this.voiceMembers()))this.clients.find(p=>p.sessionId===signal.to)?.send('voice-signal',{from:c.sessionId,signal});}
     return;
    }
@@ -86,11 +89,11 @@ export class BattleRoyaleRoom extends Room{
   if(this.match.phase!=='lobby'||options.spectate===true)this.spectators.add(c.sessionId);else this.match.add(c.sessionId,name,false,skins.includes(options.skin)?options.skin:skins[0],options.wheelId??'euc');
   if(!this.host&&!this.spectators.has(c.sessionId))this.host=c.sessionId;this.welcome(c);this.broadcastRoster();
  }
- private welcome(c:Client){c.send('welcome',{code:this.code,host:this.host,handshake:currentHandshake(this.terrain.arenaIdentity),botFill:this.botFill,matchSize:this.size,spectator:this.spectators.has(c.sessionId)});c.send('snapshot',this.match.snapshot(this.spectators.has(c.sessionId)?undefined:c.sessionId));}
+ private welcome(c:Client){c.send('voice-ice',roomVoiceIce(c.sessionId));c.send('welcome',{code:this.code,host:this.host,handshake:currentHandshake(this.terrain.arenaIdentity),botFill:this.botFill,matchSize:this.size,spectator:this.spectators.has(c.sessionId)});c.send('snapshot',this.match.snapshot(this.spectators.has(c.sessionId)?undefined:c.sessionId));}
  private broadcastRoster(){this.broadcast('lobby',{host:this.host,ready:[...this.ready],botFill:this.botFill,matchSize:this.size});}
  onDrop(c:Client){this.voices.delete(c.sessionId);this.voiceRoster();this.match.disconnect(c.sessionId);void this.allowReconnection(c,20).catch(()=>{});}
  onReconnect(c:Client){this.match.reconnect(c.sessionId);this.welcome(c);}
- onLeave(c:Client){
+ onLeave(c:Client){this.chatRate.forget(c.sessionId);
   this.voices.delete(c.sessionId);this.voiceRates.delete(c.sessionId);this.voiceRoster();
   this.match.disconnect(c.sessionId);if(this.match.phase==='lobby'||this.match.phase==='results')this.match.actors=this.match.actors.filter(a=>a.id!==c.sessionId);
   this.replaySent.delete(c.sessionId);this.ready.delete(c.sessionId);this.spectators.delete(c.sessionId);this.rates.delete(c.sessionId);

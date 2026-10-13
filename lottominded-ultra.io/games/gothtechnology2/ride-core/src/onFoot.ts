@@ -81,7 +81,24 @@ export function stepOnFoot(s:ReturnType<typeof footState>,p:FootPose,t:TerrainSa
  const x=p.x+(Math.sin(p.headingY)*(forward+back*5)+Math.cos(p.headingY)*(lateral+side*5)+s.carryX)*dt,z=p.z+(Math.cos(p.headingY)*(forward+back*5)-Math.sin(p.headingY)*(lateral+side*5)+s.carryZ)*dt;
  s.carryX*=Math.exp(-4*dt);s.carryZ*=Math.exp(-4*dt);
  t.sampleGround(x,z,ground,p.y-p.airHeight);
- if(!ground.offCourse&&ground.height<=p.y+.34&&clear(p.x,p.y,p.z,x,p.y,z)){p.x=x;p.z=z;}else p.speed=0;
+ // Resolve the full move first; if blocked, retain the unblocked tangent.
+ // Every candidate uses the same body sweeps and floor/ceiling checks. This
+ // runs identically on the authority and predicting client.
+ const travel=(nx:number,nz:number)=>{
+  if(Math.hypot(nx-p.x,nz-p.z)<1e-8)return false;
+  t.sampleGround(nx,nz,ground,p.y-p.airHeight);
+  if(ground.offCourse||ground.height>p.y+.34||!clear(p.x,p.y,p.z,nx,p.y,nz))return false;
+  const rise=ground.height-p.y;
+  if(rise>.01){const height=p.footProne>.5?.55:p.footCrouch>.5?1.12:1.8;
+   if(t.raycastObstacle({x:nx,y:p.y+height-.2,z:nz},{x:0,y:1,z:0},rise+.2,.22)!==null)return false;}
+  p.x=nx;p.z=nz;return true;
+ };
+ if(!travel(x,z)){
+  let moved=false;
+  if(Math.abs(x-p.x)>Math.abs(z-p.z)){moved=travel(x,p.z);moved=travel(p.x,z)||moved;}
+  else{moved=travel(p.x,z);moved=travel(x,p.z)||moved;}
+  if(!moved)p.speed=0;
+ }
  t.sampleGround(p.x,p.z,ground,p.y-p.airHeight);
  if(jump&&p.airHeight<.02&&s.vy<=0&&p.footProne<.15&&p.footCrouch<.15){s.vy=4.4;s.land=0;}
  s.vy-=13*dt;const nextY=p.y+s.vy*dt;
