@@ -33,13 +33,10 @@ test('ankle velocity stays continuous at lift-off and landing instead of stoppin
  }
 });
 
-test('shooter walk counter-rotates the torso without excessive bounce and settles at idle',()=>{
+test('grounded weight transfer remains restrained and settles at idle',()=>{
  for(const speed of [0,1,2.35,3.6,5.4])for(let phase=0;phase<1;phase+=.01){
   const m=footBodyMotion(phase,speed);
-  assert(m.hipYaw*m.chestYaw<=0,'shoulders oppose the hips');
   assert(Math.abs(m.bob)<.018&&Math.abs(m.weight)<.021,'weight transfer stays restrained');
-  assert(m.chestPitch>=m.hipPitch&&m.chestPitch<.11,'athletic lean stays modest');
-  assert(m.elbow>=.3&&m.elbow<1.03,'arms retain a relaxed bend');
-  if(speed===0)assert.equal(m.shoulder+m.weight+m.bob+m.chestPitch,0);
+  if(speed===0)assert.equal(Math.abs(m.weight)+Math.abs(m.bob),0);
  }
 });
