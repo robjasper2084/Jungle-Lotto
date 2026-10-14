@@ -4,9 +4,9 @@ const clamp=(n:number,a:number,b:number)=>Math.max(a,Math.min(b,n));
 /** Visual-only additive motion. Never feeds positions, aim or collisions back to authority. */
 export class RiderPresentation {
  private lastTick=-1;private speed=0;private heading=0;private acceleration=0;private turn=0;
- private kick=0;private flinch=0;private hitSide=1;private fall?:FallMotion;private fallTick=0;private serial=-1;
+ private kick=0;private flinch=0;private hitSide=1;private hitForward=1;private fall?:FallMotion;private fallTick=0;private serial=-1;
  private celebration=0;
- hit(side:number){this.flinch=1;this.hitSide=clamp(side,-1,1);}
+ hit(side:number,forward=1){this.flinch=1;this.hitSide=clamp(side,-1,1);this.hitForward=clamp(forward,-1,1);if(this.fall&&this.lastTick-this.fallTick<3)this.fall=undefined;}
  sample(source:RidePose,tick:number,alive:boolean,serial:number,shot:boolean,reduced:boolean,victory=false,renderDelta=1/60){
   const p={...source};
   if(this.serial!==serial||tick<this.lastTick){this.lastTick=-1;this.fall=undefined;this.kick=this.flinch=this.celebration=0;this.acceleration=this.turn=0;this.serial=serial;}
@@ -16,7 +16,7 @@ export class RiderPresentation {
    this.kick*=Math.exp(-18*dt);this.flinch*=Math.exp(-9*dt);}
   if(shot)this.kick=1;
   this.lastTick=tick;this.speed=p.speed;this.heading=p.headingY;
-  if(!alive){if(!this.fall){this.fall=new FallMotion(p,'collision');this.fallTick=tick;}
+  if(!alive){if(!this.fall){this.fall=new FallMotion({...p,rollAngle:this.hitSide*.3},Math.abs(this.hitSide)>.65?'side impact':'collision',.255,{vx:-(Math.sin(p.headingY)*this.hitForward+Math.cos(p.headingY)*this.hitSide)*2,vz:-(Math.cos(p.headingY)*this.hitForward-Math.sin(p.headingY)*this.hitSide)*2,speed:2});this.fallTick=tick;}
    this.fall.sample(reduced?this.fall.settleTime:Math.max(0,(tick-this.fallTick)/60),p);return p;}
   this.fall=undefined;
   // Existing controller owns actual crashes and supported get-up/re-mount poses.
@@ -25,7 +25,7 @@ export class RiderPresentation {
   const drive=mounted?clamp(this.acceleration*.012,-.13,.11)*gain:0;
   const bank=mounted?clamp(this.turn*Math.abs(p.speed)*.0025,-.075,.075)*gain:0;
   const brake=mounted?clamp(-this.acceleration/10,0,1)*gain:0;
-  p.bodyPitch+=drive-this.kick*.075*gain;p.riderPitch+=drive;
+  p.bodyPitch+=drive-this.kick*.075*gain+this.flinch*this.hitForward*.20*gain;p.riderPitch+=drive;
   p.bodyDrop+=brake*.045+clamp(p.landingCompression,0,1)*.025*gain;
   p.bodyShift+=drive*.25;p.bodyChestRoll+=bank+this.flinch*this.hitSide*.12*gain;
   p.bodyTwist+=this.flinch*this.hitSide*.08*gain;

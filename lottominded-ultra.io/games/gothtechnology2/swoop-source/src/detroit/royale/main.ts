@@ -301,7 +301,8 @@ function draw(now:number){
   else if(!replaying&&session.room)pose=session.remotePoses.pose(actor.id,pose,actor.spawnSerial,now);
   pose=a.motion.sample({...pose,seated:0},s.tick,actor.alive,actor.spawnSerial,firing.has(actor.id),reducedMotion,s.phase==='results'&&s.winner===actor.id,motionDelta);pose.stopFoot=0;a.view.apply({...pose,seated:0});a.view.visibility.setFirstPerson(!!replayFrame?.focus&&actor.id===replayFrame.focus);const yaw=actor.id===session.me&&!replaying?(footAim.active?footAim.relative(pose):aimYaw):actor.aimYaw,pitch=actor.id===session.me&&!replaying?aimPitch:actor.aimPitch;
   a.optic.visible=!!(actor.id===session.me?selectedScope:actor.scope);a.equipment.select(actor.weapon);if(firing.has(actor.id)&&a.equipment.fire(reducedMotion))equipmentShots++;a.equipment.update(motionDelta,reducedMotion);a.weapon.visible=actor.alive&&pose.crashBlend<.05&&s.phase!=='results';
-  if(actor.alive&&pose.crashBlend<.05&&s.phase!=='results')a.rig.apply({...pose,seated:0},yaw,pitch,actor.combat,s.tick);
+  if(firing.has(actor.id))a.rig.interruptPickup();
+  if(actor.alive&&pose.crashBlend<.05&&s.phase!=='results')a.rig.apply({...pose,seated:0},yaw,pitch,actor.combat,s.tick,(actor as typeof actor&{healingUntil?:number}).healingUntil||0);
   if(actor.id===session.me)canvas.dataset.rig=JSON.stringify({rider:actor.skin,wheel:actor.wheelId,rightError:a.rig.errorR,leftError:a.rig.errorL,supportLocked:a.rig.supportLocked});
   a.shield.position.set(pose.x,pose.y+1,pose.z);a.shield.rotation.y=pose.headingY-Math.PI/2;
   a.shield.update(motionDelta,reducedMotion,graphics.current.shadows===0,actor.shieldActive||actor.protected);
@@ -344,7 +345,7 @@ function draw(now:number){
   if(eyeView&&p.footMode&&self.alive&&!replaying&&p.crashBlend<.05&&s.phase!=='results'){
    if(!firstPerson||firstPerson.skin!==self.skin){firstPerson?.dispose();firstPerson=new FirstPersonView(assetMap,equipmentLibrary,riderChoice(self.skin));scene.add(firstPerson.root);}
    mine.view.rider.visible=false;mine.weapon.visible=false;
-   const presentation=firstPerson.update({...p,seated:0},self.combat,self.weapon,s.tick,renderAimYaw,aimPitch,camera,motionDelta,firing.has(self.id),ads,reducedMotion,activeTerrain());
+   const presentation=firstPerson.update({...p,seated:0},self.combat,self.weapon,s.tick,renderAimYaw,aimPitch,camera,motionDelta,firing.has(self.id),ads,reducedMotion,activeTerrain(),s.self?.healingUntil||0);
    if(ads&&selectedScope)firstPerson.hide();canvas.dataset.fpsPresentation=JSON.stringify(presentation);
   }else canvas.dataset.fpsPresentation='world';
  }
@@ -363,7 +364,7 @@ function draw(now:number){
  el('eliminated-by').textContent=killedText;el('eliminated-by').hidden=!killedText;el('reentry-killer').textContent=killedText;
  canvas.dataset.playerNames=JSON.stringify([...actors.values()].filter(a=>a.nameplate.root.visible).map(a=>a.nameplate.root.name));
  el('death-replay').textContent=el('reentry-replay').textContent=deathReplay.kind==='killer'?'Watch killer replay':'Watch last-view replay';
- if(!replaying)for(const e of s.events){if(e.kind!=='hit'&&e.kind!=='dog-knockoff'&&e.kind!=='melee-hit')continue;const key=s.round+':'+e.tick+':'+e.kind+':'+e.actor+':'+e.target;if(seenImpacts.has(key))continue;seenImpacts.add(key);if(s.tick-e.tick>30)continue;const victim=s.actors.find(a=>a.id===e.target);if(victim){impactEffect.hit(victim.pose,now,victim.shieldActive);const attacker=s.actors.find(a=>a.id===e.actor),relative=attacker?Math.atan2(attacker.pose.x-victim.pose.x,attacker.pose.z-victim.pose.z)-victim.pose.headingY:undefined;actors.get(victim.id)?.motion.hit(relative===undefined?0:Math.sin(relative));if(victim.shieldActive||victim.id===s.self?.id&&s.self.shield>0)actors.get(victim.id)?.shield.hit();if(e.target===session.me)matchFeedback.damage(now,relative===undefined?undefined:relative-aimYaw-lookYaw);}
+ if(!replaying)for(const e of s.events){if(e.kind.startsWith('pickup')&&s.tick-e.tick<40){actors.get(e.actor)?.rig.pickup(e.tick);if(e.actor===session.me)firstPerson?.pickup(e.tick);}if(e.kind!=='hit'&&e.kind!=='dog-knockoff'&&e.kind!=='melee-hit')continue;const key=s.round+':'+e.tick+':'+e.kind+':'+e.actor+':'+e.target;if(seenImpacts.has(key))continue;seenImpacts.add(key);if(s.tick-e.tick>30)continue;const victim=s.actors.find(a=>a.id===e.target);if(victim){impactEffect.hit(victim.pose,now,victim.shieldActive);const attacker=s.actors.find(a=>a.id===e.actor),relative=attacker?Math.atan2(attacker.pose.x-victim.pose.x,attacker.pose.z-victim.pose.z)-victim.pose.headingY:undefined;actors.get(victim.id)?.motion.hit(relative===undefined?0:Math.sin(relative),relative===undefined?1:Math.cos(relative));if(victim.shieldActive||victim.id===s.self?.id&&s.self.shield>0)actors.get(victim.id)?.shield.hit();if(e.target===session.me)matchFeedback.damage(now,relative===undefined?undefined:relative-aimYaw-lookYaw);}
  if(e.actor===session.me&&e.target!==session.me)matchFeedback.hit(now);if(e.target===session.me){hitFlashUntil=now+450;el('hit-flash').dataset.kind=e.kind==='dog-knockoff'?'knockdown':'bullet';}}
  if(seenImpacts.size>128){const oldest=seenImpacts.values().next().value;if(oldest)seenImpacts.delete(oldest);}
  impactEffect.visible=!replaying;impactEffect.update(now,reducedMotion);el('hit-flash').style.opacity=now<hitFlashUntil?'1':'0';

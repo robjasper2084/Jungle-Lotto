@@ -8,13 +8,17 @@ import {WeaponView} from './equipment.ts';
 import leanProfile from './leanProfiles.json' with {type:'json'};
 import {meleeTargets} from '../../../../ride-core/src/royale/melee.ts';
 
+const packShape=new T.BoxGeometry(.13,.08,.045),packMaterial=new T.MeshStandardMaterial({color:0xa9e6c9,roughness:.8});
 /** Base riding pose -> torso -> independent weapon frame -> dominant IK ->
  * hand-mounted weapon -> support IK. No hand ever drives its own IK target. */
 export class CombatRig {
-  errorR=0;errorL=0;supportLocked=true;
-  constructor(readonly hero:Hero,readonly weapon:WeaponView){}
-  apply(pose:RidePose,yaw:number,pitch:number,state:CombatState,tick:number){
-    const h=this.hero,w=this.weapon.root,scale=h.motionScale;
+  errorR=0;errorL=0;supportLocked=true;private pickupTick=-999;
+  pickup(tick:number){this.pickupTick=tick;}
+  interruptPickup(){this.pickupTick=-999;}
+  private repairPack=new T.Mesh(packShape,packMaterial);
+  constructor(readonly hero:Hero,readonly weapon:WeaponView){this.repairPack.name="Held health pack";this.repairPack.visible=false;hero.root.add(this.repairPack);}
+  apply(pose:RidePose,yaw:number,pitch:number,state:CombatState,tick:number,healingUntil=0){
+    const h=this.hero,w=this.weapon.root,scale=h.motionScale;w.visible=true;this.repairPack.visible=false;
     if(!h.arms[0]||!h.arms[1]){w.visible=false;return;}
     // Preserve Swoop's base pose and distribute the aim turn through the spine.
     // A full turn on the top joint folds the jacket/armor around a fixed waist.
@@ -30,6 +34,22 @@ export class CombatRig {
       world.premultiply(new T.Quaternion().setFromAxisAngle(axis,T.MathUtils.clamp(state.lean,-1,1)*lean.radians*(lean.weights[index]??0)));
       bone.quaternion.copy(bone.parent!.getWorldQuaternion(new T.Quaternion()).invert().multiply(world));bone.updateWorldMatrix(false,true);
     }
+    const socket=weaponSocket(pose,h.riderId,yaw,pitch,state.aimBlend,state.lean);
+    w.position.set(socket.grip.x,socket.grip.y,socket.grip.z);
+    w.rotation.set(-(pitch+state.kickPitch),pose.headingY+yaw+state.kickYaw,0,'YXZ');w.scale.setScalar(scale);
+    w.updateWorldMatrix(true,true);
+    const healing=healingUntil>tick,pickupAge=(tick-this.pickupTick)/60;
+    if(healing||(pickupAge>=0&&pickupAge<.65&&state.reloadStart<0)){
+      const heading=new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),pose.headingY);
+      const pulse=healing?Math.sin((healingUntil-tick)*.16):Math.sin(pickupAge/.65*Math.PI);
+      for(const [i,limb]of h.arms.entries()){
+        const side=i===0?1:-1,shoulder=limb.upper.getWorldPosition(new T.Vector3());
+        const offset=new T.Vector3(side*(healing?-.16:.12),healing?-.18:-.23-.18*pulse,healing?.26+.015*pulse:.25+.10*pulse).multiplyScalar(scale).applyQuaternion(heading);
+        solve(limb,shoulder.add(offset),new T.Vector3(side,-.4,-.3).applyQuaternion(heading),heading.clone().multiply(limb.rotation));
+      }
+      if(healing){this.repairPack.visible=true;this.repairPack.scale.setScalar(scale);this.repairPack.position.copy(h.root.worldToLocal(h.arms[0].foot.getWorldPosition(new T.Vector3())));this.repairPack.quaternion.copy(h.root.getWorldQuaternion(new T.Quaternion()).invert().multiply(h.arms[0].foot.getWorldQuaternion(new T.Quaternion())));}
+      h.fingers.apply('SupportGrip','WeaponGrip',healing?.45:.85);w.visible=false;this.errorL=this.errorR=0;return;
+    }
     if(state.melee?.brawl&&pose.footMode===2){
       const targets=meleeTargets(state.melee,tick),heading=new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),pose.headingY);
       // Upper-body strike mask leaves the current stride intact. Only a power
@@ -40,10 +60,6 @@ export class CombatRig {
       if(state.melee.kind===3&&h.legs[1]){const leg=h.legs[1];solve(leg,at(targets.kick),new T.Vector3(0,.4,1).applyQuaternion(heading),heading.clone().multiply(leg.rotation));}
       h.fingers.apply('MeleeFist');h.root.updateWorldMatrix(true,true);w.visible=false;this.errorL=this.errorR=0;return;
     }
-    const socket=weaponSocket(pose,h.riderId,yaw,pitch,state.aimBlend,state.lean);
-    w.position.set(socket.grip.x,socket.grip.y,socket.grip.z);
-    w.rotation.set(-(pitch+state.kickPitch),pose.headingY+yaw+state.kickYaw,0,'YXZ');w.scale.setScalar(scale);
-    w.updateWorldMatrix(true,true);
     const rot=new T.Quaternion().setFromEuler(new T.Euler(0,pose.headingY,0));
     const aim=new T.Quaternion().setFromEuler(new T.Euler(-pitch,yaw,0,'YXZ'));
     // Read the real shoulder axis: these assets put LeftArm on local +X.

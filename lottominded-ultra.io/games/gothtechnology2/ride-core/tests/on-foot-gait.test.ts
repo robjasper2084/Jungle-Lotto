@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {footGait,footBodyMotion} from '../src/onFootGait.ts';
+import {footGait,footBodyMotion,footCycleDistance} from '../src/onFootGait.ts';
 
 test('relaxed gait preserves ground contact and distance-matched steps for every hero size',()=>{
  for(const leg of [.45,.9,1.2])for(const speed of [0,1,2.35,3.6,5.4]){
@@ -11,7 +11,7 @@ test('relaxed gait preserves ground contact and distance-matched steps for every
    assert(a.lift>=0);maxLift=Math.max(maxLift,a.lift);
    if(a.contact)assert.equal(a.lift,0);
    if(a.contact&&b.contact){
-    const t=Math.max(0,Math.min(1,(speed-2.35)/3.05)),cycle=(1.65+1.35*t*t*(3-2*t))*Math.max(.35,leg/.9);
+    const cycle=footCycleDistance(speed)*Math.max(.2,leg/.9);
     assert(Math.abs((a.z-b.z)*1000-cycle)<1e-8,'stance speed still matches movement');
    }
    assert(Math.abs(a.z-b.z)<.02,'no ankle position pop at cycle seams');

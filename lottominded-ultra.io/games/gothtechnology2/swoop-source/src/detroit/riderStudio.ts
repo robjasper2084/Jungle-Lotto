@@ -30,13 +30,21 @@ const sim=new RideController(flat),current=createPose(),previous=createPose(),re
 const names:Record<string,string>={reverse:'Reverse • brake, release, ride back',pivot:'Slow turn • body pivot and forward knees',neutral:'Balance • relaxed knees',drive:'Accelerate • lean and drive',brake:'Brake • sit back and absorb',carve:'Carve • lean, counterbalance and look ahead',tuck:'Crouch • preload, then stand',air:'Hop / land • compress, extend, float, absorb'};
 for(const m of SPECIAL_MOVES){const name='trick'+m.id;names[name]=m.name+' · preload, balance, settle';const b=document.createElement('button');b.dataset.pose=name;b.textContent=m.name;document.querySelector('#play')!.before(b);}
 names.fall='Fall / recover • brace, separate, impact, slide';
+const footPreviews=['stroll','walk','run','backstep','strafeLeft','strafeRight','diagonal','crouchWalk','crawl','startStop','turnFoot','evade','stagger'];
 const entries=['neutral','drive','carve','brake','tuck','air','reverse','pivot','walk','run'],step=1/120,duration=6;
-for(const [id,label] of [['stroll','Easy walk'],['walk','Brisk walk'],['run','Run'],['backstep','Walk backwards'],['seat','Seated ride'],['stop','One-foot stop'],['scrape','Pedal scrape'],['beeps','Warning beeps']]){names[id]=label;const b=document.createElement('button');b.dataset.pose=id;b.textContent=label;document.querySelector('#play')!.before(b);}
+for(const [id,label] of [['stroll','Tactical pack walk'],['walk','Brisk walk'],['run','Run'],['backstep','Walk backwards'],['strafeLeft','Strafe left'],['strafeRight','Strafe right'],['diagonal','Diagonal steps'],['crouchWalk','Crouch walk'],['crawl','Prone crawl'],['startStop','Start / stop'],['turnFoot','Turn in place'],['mountFoot','Mount / dismount'],['evade','Side-step dodge'],['stagger','Stagger / recover'],['seat','Seated ride'],['stop','One-foot stop'],['scrape','Pedal scrape'],['beeps','Warning beeps']]){names[id]=label;const b=document.createElement('button');b.dataset.pose=id;b.textContent=label;document.querySelector('#play')!.before(b);}
 const rideAudio=new RideAudio(),sparks=new PedalSparks(scene),sound=document.createElement('button');sound.textContent='Sound off';sound.onclick=()=>{void rideAudio.enable(!rideAudio.enabled);sound.textContent=rideAudio.enabled?'Sound on':'Sound off';};document.querySelector('#play')!.before(sound);
 let selected='carve',playing=true,paused=matchMedia('(prefers-reduced-motion: reduce)').matches,elapsed=0,acc=0,last=performance.now(),cameraLast=new T.Vector3(),studioView='side',playbackRate=1;
 orbit.addEventListener('start',()=>{studioView='orbit';document.querySelector<HTMLSelectElement>('#view')!.value='orbit';});
 const timeline=document.querySelector<HTMLInputElement>('#timeline')!,pauseButton=document.querySelector<HTMLButtonElement>('#freeze')!;
 function inputs(t:number):RideActions{
+  if(['strafeLeft','strafeRight','diagonal'].includes(selected))return {...NEUTRAL_ACTIONS,facingYaw:0,steer:selected==='strafeRight'?1:-1,throttle:selected==='diagonal'?.7:0};
+  if(selected==='crouchWalk'||selected==='crawl')return {...NEUTRAL_ACTIONS,throttle:.65,crouch:selected==='crouchWalk',prone:selected==='crawl'};
+  if(selected==='startStop')return {...NEUTRAL_ACTIONS,throttle:t>1&&t<3.5?.65:0};
+  if(selected==='turnFoot')return {...NEUTRAL_ACTIONS,steer:t<3?.6:-.6};
+  if(selected==='mountFoot')return {...NEUTRAL_ACTIONS,dismount:(t>.2&&t<.3)||(t>3&&t<3.1)};
+  if(selected==='evade')return {...NEUTRAL_ACTIONS,facingYaw:0,evade:t%2>.7&&t%2<.92?(t<3?1:-1):0};
+  if(selected==='stagger')return {...NEUTRAL_ACTIONS,throttle:.25};
   if(['stroll','walk','run','backstep'].includes(selected))return {...NEUTRAL_ACTIONS,throttle:selected==='backstep'?-1:selected==='stroll'?.65:1,run:selected==='run'};
   if(selected==='seat')return {...NEUTRAL_ACTIONS,throttle:Math.max(-.3,Math.min(.7,(5-current.speed)*.55)),seated:t>.5&&t<4.8,steer:Math.sin(t)*.13};
   if(selected==='scrape')return {...NEUTRAL_ACTIONS,throttle:.7,steer:t<2.5?1:0};
@@ -52,13 +60,13 @@ function resetSimulation(){
   sim.wheelScale=hero.wheelScale;
   crashTest=false;
   sim.reset({position:{x:0,y:0,z:0},headingY:0});
-  if(['stroll','walk','run','backstep'].includes(selected)){sim.step(step,{...NEUTRAL_ACTIONS,dismount:true});for(let i=0;i<90;i++)sim.step(step,NEUTRAL_ACTIONS);}
+  if(footPreviews.includes(selected)){sim.step(step,{...NEUTRAL_ACTIONS,dismount:true});for(let i=0;i<90;i++)sim.step(step,NEUTRAL_ACTIONS);}
   if(['reverse','brake','carve','tuck','air','fall'].includes(selected))for(let i=0;i<200;i++)sim.step(step,{...NEUTRAL_ACTIONS,throttle:.65});
   if(selected.startsWith('trick')&&!['trick5','trick6'].includes(selected))for(let i=0;i<85;i++)sim.step(step,{...NEUTRAL_ACTIONS,throttle:.55});
   if(['scrape','beeps'].includes(selected))for(let i=0;i<1100;i++)sim.step(step,{...NEUTRAL_ACTIONS,throttle:.9});
   sparks.reset();
   sim.writePose(current);copyPose(current,previous);copyPose(current,renderPose);elapsed=0;acc=0;
-  camera.position.sub(cameraLast);cameraLast.set(current.x,current.y,current.z);camera.position.add(cameraLast);orbit.target.copy(cameraLast).add(new T.Vector3(0,hero.motionScale<1?.7:1.05,0));orbit.update();
+  camera.position.sub(cameraLast);cameraLast.set(current.x,current.y,current.z);camera.position.add(cameraLast);orbit.target.copy(cameraLast).add(new T.Vector3(0,hero.motionScale<1?.65:1.05,0));orbit.update();
 }
 function choose(name:string){
   selected=name;resetSimulation();document.querySelector('#status')!.textContent=names[name];
@@ -76,7 +84,7 @@ document.querySelector<HTMLSelectElement>('#rate')!.onchange=e=>{playbackRate=Nu
 document.querySelector<HTMLSelectElement>('#view')!.onchange=e=>{
   const value=(e.target as HTMLSelectElement).value,angle=current.headingY+(value==='side'?Math.PI/2:value==='rear'?Math.PI:0);
   studioView=value;
-  camera.position.set(current.x+Math.sin(angle)*3.9,current.y+1.7,current.z+Math.cos(angle)*3.9);orbit.target.set(current.x,current.y+(hero.motionScale<1?.7:1.05),current.z);orbit.update();
+  camera.position.set(current.x+Math.sin(angle)*3.9,current.y+1.7,current.z+Math.cos(angle)*3.9);orbit.target.set(current.x,current.y+(hero.motionScale<1?.65:1.05),current.z);orbit.update();
 };
 choose('stroll');playing=false;updateRiderActions();document.querySelector('#play')!.textContent='Play sequence';
 if(paused)pauseButton.textContent='Resume motion';
@@ -84,6 +92,7 @@ function frame(now:number){requestAnimationFrame(frame);const dt=Math.min(.06,(n
   if(!paused){acc+=dt*playbackRate;while(acc>=step){tick();acc-=step;if(elapsed>=duration){if(playing)choose(entries[(entries.indexOf(selected)+1)%entries.length]);else resetSimulation();}}
     lerpPose(previous,current,acc/step,renderPose);
   }else copyPose(current,renderPose);
+  if(selected==='stagger')renderPose.footStagger=Math.max(0,1-(elapsed%2)/.8);
   hero.apply(renderPose);
   rideAudio.update(renderPose,!paused&&!document.hidden);sparks.update(dt*playbackRate,renderPose,!paused);
   canvas.dataset.rideFeedback=JSON.stringify({seated:renderPose.seated,stopFoot:renderPose.stopFoot,scrape:renderPose.scrape,warningLevel:renderPose.warningLevel,beepPulse:renderPose.beepPulse,audio:rideAudio.state});
@@ -92,7 +101,7 @@ function frame(now:number){requestAnimationFrame(frame);const dt=Math.min(.06,(n
   const position=new T.Vector3(renderPose.x+fall.x,renderPose.y+fall.y,renderPose.z+fall.z),delta=position.clone().sub(cameraLast);camera.position.add(delta);orbit.target.add(delta);cameraLast.copy(position);
   if(studioView!=='orbit'){
     const a=renderPose.headingY+(studioView==='side'?Math.PI/2:studioView==='rear'?Math.PI:0);
-    camera.position.set(position.x+Math.sin(a)*3.9,position.y+1.7,position.z+Math.cos(a)*3.9);orbit.target.copy(position).add(new T.Vector3(0,hero.motionScale<1?.7:1.05,0));
+    camera.position.set(position.x+Math.sin(a)*(hero.motionScale<1?2.6:3.9),position.y+(hero.motionScale<1?1.15:1.7),position.z+Math.cos(a)*(hero.motionScale<1?2.6:3.9));orbit.target.copy(position).add(new T.Vector3(0,hero.motionScale<1?.65:1.05,0));
   }
   key.position.copy(position).add(new T.Vector3(4,6,5));key.target.position.copy(position);fill.position.copy(position).add(new T.Vector3(-3,3,-4));fill.target.position.copy(position);
   orbit.update();renderer.render(scene,camera);

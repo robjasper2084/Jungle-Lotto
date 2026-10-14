@@ -11,7 +11,7 @@ import type {TerrainSampler,Vec3,ActorImpact,NavigationObstacle} from './terrain
 import {RIDE_TUNING as tune,clamp,damp,angle,spring,advanceSpring,advanceDrive,type RideTuning} from './rideDynamics.ts';
 
 export const NEUTRAL_ACTIONS={throttle:0,steer:0,crouch:false,hop:false,hopHeld:false,reset:false,trick:0};
-export type RideActions=typeof NEUTRAL_ACTIONS & {seated?:boolean;eyeControl?:boolean;dismount?:boolean;run?:boolean};
+export type RideActions=typeof NEUTRAL_ACTIONS & {seated?:boolean;eyeControl?:boolean;facingYaw?:number;prone?:boolean;evade?:number;dismount?:boolean;run?:boolean};
 export function createPose(){return {
   ...footFields(),
   seated:0,stopFoot:0,stopFootX:0,stopFootY:0,stopFootZ:0,warningLevel:0,beepPulse:0,scrape:0,scrapeSide:0,scrapeX:0,scrapeY:0,scrapeZ:0,scrapeHard:0,

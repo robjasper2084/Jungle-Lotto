@@ -289,7 +289,7 @@ export class RoyaleMatch{
    victim.elimination={tick:death.tick,cause:killer?'rider':!victim.connected?'disconnect':Math.hypot(victim.pose.x-field.x,victim.pose.z-field.z)>field.radius||this.reason==='Static Field deadline'?'field':'arena',...(killer?{killer:{id:killer.id,name:killer.name,bot:killer.bot}}:{})};
   }
  }
- private actorView(a:Actor){return {id:a.id,skin:a.skin,wheelId:a.wheelId,spawnSerial:a.spawnSerial,protected:a.protectedUntil>this.tick,scope:bestScope(a.scopes),combat:structuredClone(a.combat),pose:{...a.pose},dog:{...structuredClone(a.dog),path:[],target:undefined,radar:a.dogPower.radarUntil>this.tick},aimYaw:a.input.aimYaw,aimPitch:a.input.aimPitch,alive:a.alive,shieldActive:a.shieldUntil>this.tick,weapon:a.loadout[a.slot]};}
+ private actorView(a:Actor){return {healingUntil:a.repairUntil,id:a.id,skin:a.skin,wheelId:a.wheelId,spawnSerial:a.spawnSerial,protected:a.protectedUntil>this.tick,scope:bestScope(a.scopes),combat:structuredClone(a.combat),pose:{...a.pose},dog:{...structuredClone(a.dog),path:[],target:undefined,radar:a.dogPower.radarUntil>this.tick},aimYaw:a.input.aimYaw,aimPitch:a.input.aimPitch,alive:a.alive,shieldActive:a.shieldUntil>this.tick,weapon:a.loadout[a.slot]};}
  private recordReplay(){
   if(this.tick%6!==0&&!this.events.some(e=>e.tick===this.tick&&e.kind==='eliminated'))return;
   const view=this.snapshot();view.actors=this.actors.map(a=>this.actorView(a));view.projectiles=this.projectiles.map(s=>({...s,p:{...s.p},v:{...s.v}}));view.events=this.events.map(e=>({...e}));view.loot=[];view.results=[];
