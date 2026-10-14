@@ -32,3 +32,23 @@ test('confirmed hit direction changes flinch and elimination direction without m
  assert(front.sample(source,30,false,0,false,false).crashDirection!==back.sample(source,30,false,0,false,false).crashDirection);
  assert.equal(source.crashBlend,0);assert.equal(source.x,0);
 });
+
+import {LOW_STANCE_MOTION} from '../src/lowStanceMotionData.ts';
+import {TURN_MOTION} from '../src/turnMotionData.ts';
+test('authored low stances retain planted contact, recover above ground and close their loops',()=>{
+ for(const [name,clip] of Object.entries(LOW_STANCE_MOTION)){
+  assert.deepEqual(clip.samples[0],clip.samples.at(-1),name+' seam');
+  assert(clip.samples.every(row=>row.every(Number.isFinite)&&row[1]>=0&&row[4]>=0),name+' below-ground target');
+  assert(clip.samples.some(row=>row[1]>.04),name+' has no foot recovery');
+  assert(clip.samples.filter(row=>row[1]<.005).length>20,name+' lacks planted support');
+ }
+ for(const [name,clip] of Object.entries(TURN_MOTION)){
+  const first=clip.samples[0],last=clip.samples.at(-1)!;
+  for(const [a,b] of [[0,30],[38,44]])assert.deepEqual(first.slice(a,b),last.slice(a,b),name+' turn direction seam');
+  for(const offset of [30,34,44,48,52,56,60,64]){
+   const dot=first.slice(offset,offset+4).reduce((sum,n,k)=>sum+n*last[offset+k],0);
+   assert(Math.abs(dot)>.99999,name+' turn rotation seam');
+  }
+  assert(clip.samples.every(row=>row.every(Number.isFinite)),name+' invalid turn sample');
+ }
+});

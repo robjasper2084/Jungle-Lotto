@@ -53,6 +53,7 @@ test('all five shipped heroes keep feet above ground and elbows bent through wal
     assert(rider.getObjectByName(side+'Foot')!.getWorldPosition(new T.Vector3()).y>-.03,`${id}: ${posture} direction ${angle} foot penetrates ground`);
     const a=rider.getObjectByName(side+'UpLeg')!.getWorldPosition(new T.Vector3()),b=rider.getObjectByName(side+'Leg')!.getWorldPosition(new T.Vector3()),c=rider.getObjectByName(side+'Foot')!.getWorldPosition(new T.Vector3());
     assert(Math.abs(a.distanceTo(b)+b.distanceTo(c)-lengths[side==='Left'?0:1])<.0001,`${id}: stretched leg`);
+    if(posture==='prone')assert(b.y<a.y+.04,`${id}: crawl knee folds upward above the pelvis ${a.y}/${b.y}/${c.y}`);
    }
    for(const b of bones)assert([...b.o.quaternion.toArray(),...b.o.position.toArray()].every(Number.isFinite),`${id}: invalid ${posture} direction pose`);
   }
@@ -102,3 +103,4 @@ test('all five shipped heroes keep feet above ground and elbows bent through wal
   }
  }
 });
+

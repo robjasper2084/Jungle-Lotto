@@ -31,3 +31,11 @@ Scope: the animation gaps discussed in the rider studio, including both mascot h
 - Browser review covers the local rider studio and local Royale practice. Visual acceptance remains the user's; iPad timing and real-player voice are outside this animation change.
 
 Preview: http://127.0.0.1:4196/arcade/swoop-detroit/rider-studio.html?animationReview=6
+
+## Follow-up and publication
+- Mascot walking now has wider shoulder clearance, relaxed elbows and a more visible counter-swing, fitted to each original skeleton. Actual-model tests check jacket clearance and exclude deep running curls during walking.
+- Imported the installed Turn01 Left/Right captures through Blender and connected them to stationary turning.
+- Authored distinct crouch and prone contact/recovery tracks in Blender. The crawl has alternating hand support and outward/downward knees. These are dedicated authored clips, not motion capture; no captured crouch/crawl asset was found in the installed TacticalOnFoot sources.
+- Dodge/stagger include a recovery step and bracing arms in addition to torso movement. Hit direction selects the existing impact-driven elimination motion; the original fall solver remains in use.
+- 23 focused checks pass, including all five shipped skeletons, both mascots, contact/loop checks, movement adapters and authoritative combat/replay. Core and both app type checks/builds pass. Twenty editable/baked clips per hero saved locally in the animation-completion output folder.
+- Initial release c635752e pushed to main but its Pages deployment failed: 1037.7 MiB exceeded the 1024 MiB artifact limit because superseded JS bundles remained packaged. Follow-up removes obsolete generated JS/CSS only. Publication is confirmed separately after the replacement deployment succeeds.

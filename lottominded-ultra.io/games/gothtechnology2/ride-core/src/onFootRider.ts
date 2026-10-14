@@ -1,5 +1,7 @@
 import * as T from 'three';
 import {DIRECTIONAL_MOTION} from './directionalMotionData.ts';
+import {TURN_MOTION} from './turnMotionData.ts';
+import {LOW_STANCE_MOTION} from './lowStanceMotionData.ts';
 import {WHEEL_TRANSITIONS} from './wheelTransitionData.ts';
 import {FootAnimation,gaitScale,movementDirection} from './footAnimation.ts';
 import {TACTICAL_MOTION} from './tacticalMotionData.ts';
@@ -27,6 +29,14 @@ const motionRows=Object.fromEntries(Object.entries(TACTICAL_MOTION).map(([name,c
 })) as Record<keyof typeof TACTICAL_MOTION,number[][]>;
 function mix(a:number[],b:number[],t:number){const row=a.map((n,k)=>n+(b[k]-n)*t);for(const offset of channels)quat(a,offset).slerp(quat(b,offset),t).toArray(row,offset);return row;}
 function sample(name:keyof typeof TACTICAL_MOTION,phase:number){const rows=motionRows[name],f=T.MathUtils.clamp(phase,0,1)*(rows.length-1),i=Math.floor(f),j=Math.min(i+1,rows.length-1);return mix(rows[i],rows[j],f-i);}
+function lowStance(name:keyof typeof LOW_STANCE_MOTION,phase:number){
+ const rows=LOW_STANCE_MOTION[name].samples,f=((phase%1+1)%1)*(rows.length-1),i=Math.floor(f);
+ return rows[i].map((n,k)=>T.MathUtils.lerp(n,rows[i+1][k],f-i));
+}
+function turnMotion(phase:number,left:boolean){
+ const rows=TURN_MOTION[left?'Left':'Right'].samples,f=phase*(rows.length-1),i=Math.floor(f);
+ return mix(rows[i],rows[Math.min(i+1,rows.length-1)],f-i);
+}
 const directionNames=['walk','ForwardLeft','Left','BackwardLeft','Backward','BackwardRight','Right','ForwardRight'] as const;
 function directional(phase:number,angle:number){
  const n=((angle/(Math.PI/4))%8+8)%8,i=Math.floor(n),t=n-i;
@@ -99,7 +109,7 @@ export function applyOnFootRider(h:Rig,pose:Partial<FootPose>&{crashBlend?:numbe
  if(p.footJump){name=p.footJump===1?'takeoff':p.footJump===2?'air':'land';clipPhase=Math.min(1,(p.footTime-data.jumpAt)/TACTICAL_MOTION[name].duration);}
  let row=sample(name,clipPhase);
  if(!p.footJump){
-  row=mix(sample('idle',(p.footTime/TACTICAL_MOTION.idle.duration)%1),directional(phase,turning>.05?Math.sign(data.animation.turn)*Math.PI/2:direction),Math.max(turning*.5,T.MathUtils.smoothstep(speed,0,.85)));
+  row=mix(sample('idle',(p.footTime/TACTICAL_MOTION.idle.duration)%1),turning>.05?turnMotion(phase,data.animation.turn>0):directional(phase,direction),Math.max(turning*.5,T.MathUtils.smoothstep(speed,0,.85)));
   row=mix(row,sample('jog',phase),T.MathUtils.smoothstep(speed,2.5,3.6)*Math.max(0,longitudinal));row=mix(row,sample('run',phase),T.MathUtils.smoothstep(speed,3.6,5.4)*Math.max(0,longitudinal));
  }
  const frame=h.root.getWorldQuaternion(q()),forward=new T.Vector3(0,0,1).applyQuaternion(frame),right=new T.Vector3(1,0,0).applyQuaternion(frame),up=new T.Vector3(0,1,0);
@@ -134,7 +144,12 @@ export function applyOnFootRider(h:Rig,pose:Partial<FootPose>&{crashBlend?:numbe
  hip.y=T.MathUtils.lerp(hip.y,h.root.getWorldPosition(v()).y+.26*scale+(h.motionScale<.7?.13:.03),prone);hip.addScaledVector(forward,-.30*scale*prone);
  hips.position.copy(hips.parent!.worldToLocal(hip));h.root.updateMatrixWorld(true);
  if(!p.footJump||p.footJump===3){
-  const strides=data.legs.map((_,i)=>footGait(cycle+i*.5,Math.max(speed,turning),data!.legLength));
+  const strides=data.legs.map((_,i)=>{
+   const stride=footGait(cycle+i*.5,Math.max(speed,turning),data!.legLength),clip=lowStance('crouch',cycle+i*.5);
+   stride.z=T.MathUtils.lerp(stride.z,clip[0]*scale,crouch);
+   stride.lift=T.MathUtils.lerp(stride.lift,clip[1]*scale,crouch);
+   stride.pitch=T.MathUtils.lerp(stride.pitch,clip[2],crouch);return stride;
+  });
   // Oversized mascot soles need less roll to keep the short-legged pelvis level.
   for(const stride of strides)stride.pitch*=Math.min(1,scale);
   const targets=data.legs.map((l,i)=>{
@@ -143,7 +158,11 @@ export function applyOnFootRider(h:Rig,pose:Partial<FootPose>&{crashBlend?:numbe
    // that offset over-reached one leg and repeatedly pulled the pelvis down.
    target.x=T.MathUtils.lerp(l.rest.x,l.strideX,effort*(1-prone))+stride.z*effort*lateral*(1-crouch*.45);
    target.z=T.MathUtils.lerp(l.rest.z,l.strideCenter,effort)+stride.z*effort*longitudinal*(1-crouch*.45);target.y=-floor+stride.lift*effort+.006;
-   target.z=T.MathUtils.lerp(target.z,(-.90+Math.sin((phase+i*.5)*tau)*.14*effort)*scale,prone);target.y=-floor+stride.lift*effort*(1-prone)+.006;
+   const crawl=lowStance('crawl',phase+i*.5);
+   target.z=T.MathUtils.lerp(target.z,(-.90+(crawl[0]+.90)*effort)*scale,prone);target.y=-floor+T.MathUtils.lerp(stride.lift,crawl[1]*scale,prone)*effort+.006;
+   target.x+=lateral*evade*.14*scale*(1-prone);
+   target.z+=(i===0?-.16:.08)*stagger*scale*(1-prone);
+   if((i===0)===(lateral>0))target.y+=evade*.045*scale*(1-prone);
    return h.root.localToWorld(target);
   });
   // Retarget the pack's thigh/shin directions, not a generated walking pose.
@@ -167,7 +186,10 @@ export function applyOnFootRider(h:Rig,pose:Partial<FootPose>&{crashBlend?:numbe
    lower=(lower+required+Math.hypot(lower-required,.035*scale))*.5;
   });
   if(lower>0){const a=hips.getWorldPosition(v());a.y-=lower;hips.position.copy(hips.parent!.worldToLocal(a));h.root.updateMatrixWorld(true);}
-  data.legs.forEach((l,i)=>solveLimb(l,targets[i],forward.clone().lerp(up,prone).normalize(),frame.clone().multiply(q().setFromAxisAngle(new T.Vector3(1,0,0),strides[i].pitch*effort*(1-prone)+prone*.7)).multiply(l.rotation)));
+  data.legs.forEach((l,i)=>{
+   const crawlPole=right.clone().multiplyScalar(i===0?1:-1).addScaledVector(up,-.85);
+   solveLimb(l,targets[i],forward.clone().lerp(crawlPole,prone).normalize(),frame.clone().multiply(q().setFromAxisAngle(new T.Vector3(1,0,0),strides[i].pitch*effort*(1-prone)+prone*.7)).multiply(l.rotation));
+  });
  }else{
   data.legs.forEach((l,i)=>{for(const [b,c,channel]of [[l.upper,l.knee,i*6],[l.knee,l.foot,i*6+3]] as const)point(b,c,b.getWorldPosition(v()).add(new T.Vector3().fromArray(row,channel).normalize().applyQuaternion(frame)));
    worldRotation(l.foot,frame.clone().multiply(l.rotation));
@@ -190,6 +212,11 @@ export function applyOnFootRider(h:Rig,pose:Partial<FootPose>&{crashBlend?:numbe
    shoulder+=standing*effort*(upperAngle*.30-.08);
    relaxedElbow=T.MathUtils.lerp(relaxedElbow,.22+.16*jog+T.MathUtils.clamp(capturedFlex,0,1.32)*.32,standing);
   }
+  // Bracing arms accompany the recovery step; this layer fades with the
+  // authoritative stagger/dodge and never changes movement or hit detection.
+  const brace=Math.max(stagger,evade*.7)*(1-prone);
+  shoulder=T.MathUtils.lerp(shoulder,.30+(i===0?.10:-.10),brace);
+  relaxedElbow=T.MathUtils.lerp(relaxedElbow,.85,brace);
   const upperSpread=mascot?.28:.0,lowerSpread=mascot?.18:0;
   const a=l.upper.getWorldPosition(v()),side=i===0?1:-1,bend=a.clone().addScaledVector(up,-l.upperLength*Math.cos(shoulder)*Math.cos(upperSpread)).addScaledVector(forward,l.upperLength*Math.sin(shoulder)*Math.cos(upperSpread)).addScaledVector(right,side*(mascot?l.upperLength*Math.sin(upperSpread):(.035+.02*effort)*scale));
   bend.sub(a).setLength(l.upperLength).add(a);
@@ -204,8 +231,9 @@ export function applyOnFootRider(h:Rig,pose:Partial<FootPose>&{crashBlend?:numbe
   }else handFrame.premultiply(q().setFromAxisAngle(right,wrist));
   worldRotation(l.foot,handFrame);
   if(prone>0){
-   const crawl=Math.sin((phase+i*.5)*tau)*effort;
-   const target=h.root.localToWorld(new T.Vector3(side*(.24+.05*crawl)*scale,.06+.06*scale,(.58+.13*crawl)*scale));
+   // Opposite hand and knee recover together; the other hand remains planted.
+   const crawl=lowStance('crawl',phase+(1-i)*.5);
+   const target=h.root.localToWorld(new T.Vector3(side*.29*scale,.06+T.MathUtils.lerp(.04,crawl[4],effort)*scale,T.MathUtils.lerp(.58,crawl[3],effort)*scale));
    solveLimb(l,l.foot.getWorldPosition(v()).lerp(target,prone),right.clone().multiplyScalar(side).addScaledVector(forward,-.3),frame.clone().multiply(q().setFromAxisAngle(new T.Vector3(1,0,0),-Math.PI/2)));
   }
  });
@@ -230,4 +258,5 @@ export function applyOnFootRider(h:Rig,pose:Partial<FootPose>&{crashBlend?:numbe
  }
  h.vehicle.position.copy(h.lean.worldToLocal(new T.Vector3(p.parkX,p.parkY,p.parkZ)));h.vehicle.rotation.set(0,p.parkHeading-p.headingY,-.07*blend);h.root.updateMatrixWorld(true);
 }
+
 
