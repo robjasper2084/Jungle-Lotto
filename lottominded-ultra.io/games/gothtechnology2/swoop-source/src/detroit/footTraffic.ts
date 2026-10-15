@@ -1,3 +1,4 @@
+import {soleSupport,soleFloor} from './soleSupport.ts';
 import {locomotionMocap,sampleMocap,INSTALLED_MOCAP_INFO,type MocapAction} from './installedMocap.ts';
 import * as T from 'three';
 import {clone} from 'three/addons/utils/SkeletonUtils.js';
@@ -5,6 +6,7 @@ import type {GLTF} from './compressedGLTFLoader.ts';
 
 type Limb={upper:T.Object3D;joint:T.Object3D;end:T.Object3D;rest:T.Vector3;rotation:T.Quaternion;sole?:T.Vector3[]};
 const v=()=>new T.Vector3(),q=()=>new T.Quaternion(),tau=Math.PI*2;
+const shoeCache=new WeakMap<T.Object3D,T.Vector3[][]>();
 const smooth=(a:number,b:number,x:number)=>{const t=T.MathUtils.clamp((x-a)/(b-a),0,1);return t*t*(3-2*t);};
 export function gaitTiming(speed:number,jog:boolean,legLength=.9){
   const run=jog?smooth(2.65,4.2,speed):0;
@@ -48,6 +50,7 @@ export class FootTraffic {
   hips:T.Object3D;phase=0;legLength=.9;private idleTime=0;private interaction?:{action:MocapAction;time:number};
   playInteraction(action:'door'|'pickup'|'reach'){this.interaction={action,time:0};}
   get interactionActive(){return Boolean(this.interaction);}
+  dispose(){const skeletons=new Set<T.Skeleton>();this.rider.traverse(o=>{const mesh=o as T.SkinnedMesh;if(mesh.isSkinnedMesh)skeletons.add(mesh.skeleton);});skeletons.forEach(s=>s.dispose());this.root.removeFromParent();}
   constructor(data:GLTF,jog:boolean){
     this.jog=jog;this.rider=clone(data.scene);this.root.add(this.rider);this.root.name=jog?'Detroit hoodie jogger':'Detroit hoodie walker';
     this.root.updateMatrixWorld(true);this.hips=this.rider.getObjectByName('Hips')!;
@@ -59,7 +62,9 @@ export class FootTraffic {
     this.legLength=this.legs.reduce((n,l)=>n+l.upper.getWorldPosition(v()).distanceTo(l.joint.getWorldPosition(v()))+l.joint.getWorldPosition(v()).distanceTo(l.end.getWorldPosition(v())),0)/2;
     // Measure the actual shoe, so a rolling ankle never drives the toe/heel
     // through the floor on either generated character's different footwear.
-    for(const l of this.legs){l.sole=[];this.rider.traverse(o=>{const m=o as T.Mesh;if(!m.isMesh)return;for(let i=0;i<m.geometry.attributes.position.count;i++){const p=this.root.worldToLocal(m.getVertexPosition(i,v()).applyMatrix4(m.matrixWorld));if(p.y<.10&&Math.sign(p.x)===Math.sign(l.rest.x))l.sole!.push(p.sub(l.rest));}});}
+    let shoes=shoeCache.get(data.scene);
+    if(!shoes){shoes=this.legs.map(l=>{const points:T.Vector3[]=[];this.rider.traverse(o=>{const m=o as T.Mesh;if(!m.isMesh)return;for(let i=0;i<m.geometry.attributes.position.count;i++){const p=this.root.worldToLocal(m.getVertexPosition(i,v()).applyMatrix4(m.matrixWorld));if(p.y<.10&&Math.sign(p.x)===Math.sign(l.rest.x))points.push(p.sub(l.rest));}});return soleSupport(points);});shoeCache.set(data.scene,shoes);}
+    this.legs.forEach((l,i)=>l.sole=shoes![i]);
     this.apply(0,0);
   }
   apply(speed:number,dt:number){
@@ -84,7 +89,7 @@ export class FootTraffic {
     const strides=this.legs.map((_,i)=>footStride(this.phase+i*.5,Math.abs(speed),this.jog,this.legLength));
     this.footTargets=this.legs.map((l,i)=>{
       const stride=strides[i],target=l.rest.clone(),pitch=stride.pitch*effort;
-      const floor=Math.min(...l.sole!.map(p=>p.y*Math.cos(pitch)-p.z*Math.sin(pitch)));
+      const floor=soleFloor(l.sole!,pitch);
       target.x=Math.sign(target.x)*Math.min(.08,Math.abs(target.x));target.z+=stride.z;
       target.y=-floor+stride.lift*effort+.003;
       return this.root.localToWorld(target);

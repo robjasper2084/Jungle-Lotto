@@ -1,6 +1,6 @@
 export type StreamPoint={x:number;z:number};
-export type StreamJob={id:string;centers:readonly StreamPoint[];load:()=>Promise<void>};
-type Entry=StreamJob&{state:'waiting'|'loading'|'loaded'|'error';promise?:Promise<void>;retryAt:number;error?:string};
+export type StreamJob={id:string;centers:readonly StreamPoint[];load:()=>Promise<void|(()=>void)>};
+type Entry=StreamJob&{state:'waiting'|'loading'|'loaded'|'error';promise?:Promise<void>;release?:()=>void;retryAt:number;error?:string};
 
 /** Fetch nearby art in priority order. Collision/ground data stays resident. */
 export class SpatialAssetStream {
@@ -15,14 +15,18 @@ export class SpatialAssetStream {
  private async start(entry:Entry){
   if(entry.promise)return entry.promise;if(entry.state==='loaded')return;
   entry.state='loading';this.active++;this.changed();
-  entry.promise=Promise.resolve().then(entry.load).then(()=>{entry.state='loaded';entry.error=undefined;},error=>{entry.state='error';entry.error=String(error);entry.retryAt=Date.now()+30000;throw error;}).finally(()=>{this.active--;entry.promise=undefined;this.changed();this.pump();});
+  entry.promise=Promise.resolve().then(entry.load).then(release=>{entry.release=release||undefined;entry.state='loaded';entry.error=undefined;},error=>{entry.state='error';entry.error=String(error);entry.retryAt=Date.now()+30000;throw error;}).finally(()=>{this.active--;entry.promise=undefined;this.changed();this.pump();});
   return entry.promise;
  }
  private pump(){
   const nearby=[...this.entries.values()].filter(e=>(e.state==='waiting'||e.state==='error'&&Date.now()>=e.retryAt)&&this.distance(e)<=this.radius).sort((a,b)=>this.distance(a)-this.distance(b));
   for(const entry of nearby){if(this.active>=this.concurrency)break;void this.start(entry).catch(()=>{});}
  }
- update(points:readonly StreamPoint[],radius:number){this.points=points;this.radius=Math.max(0,radius);const now=performance.now();if(now>=this.nextPump){this.nextPump=now+100;this.pump();}}
+ update(points:readonly StreamPoint[],radius:number){this.points=points;this.radius=Math.max(0,radius);const now=performance.now();if(now>=this.nextPump){this.nextPump=now+100;
+  // Hysteresis keeps art resident through turns and bridge crossings. Only
+  // explicitly owned visual resources can unload; collision data stays intact.
+  for(const e of this.entries.values())if(e.state==='loaded'&&e.release&&this.distance(e)>this.radius+200){e.release();e.release=undefined;e.state='waiting';this.changed();}
+  this.pump();}}
  async ensure(id:string){const entry=this.entries.get(id);if(!entry)return;if(entry.state==='error')entry.retryAt=0;await this.start(entry);}
  async warm(points:readonly StreamPoint[],radius:number){
   const jobs=[...this.entries.values()].filter(e=>this.distance(e,points)<=radius).sort((a,b)=>this.distance(a,points)-this.distance(b,points));

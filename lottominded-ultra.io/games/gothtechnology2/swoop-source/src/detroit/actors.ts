@@ -290,6 +290,6 @@ export class TrafficView {
       const pose=item.motion.step(animationDt,{...a,headingY:a.heading});item.pedalPhase=item.motion.pedals;
       item.cycling.apply({...pose,x:0,y:0,z:0,headingY:0},item.motion.steering,item.motion.pedals);
     }else for(const m of item.mixers)m.update(animationDt);
-  }for(const[id,item]of this.items)if(!keep.has(id)){item.root.removeFromParent();item.mixers.forEach(m=>m.stopAllAction());item.mobility?.dispose();item.cycling?.dispose();item.disposeStyle?.();this.items.delete(id);}}
+  }for(const[id,item]of this.items)if(!keep.has(id)){item.root.removeFromParent();item.mixers.forEach(m=>m.stopAllAction());item.mobility?.dispose();item.foot?.dispose();item.cycling?.dispose();item.disposeStyle?.();this.items.delete(id);}}
 }
 

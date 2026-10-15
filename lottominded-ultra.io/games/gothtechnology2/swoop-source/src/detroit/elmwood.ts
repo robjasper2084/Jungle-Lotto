@@ -72,6 +72,7 @@ export class ElmwoodWorld extends DetroitWorld{
   protected override staticTraffic(){return [];}
   override sampleGround(x:number,z:number,out:GroundSample){super.sampleGround(x,z,out);out.surface=elmDistance(x,z)<3?'pavement':'grass';out.offCourse=!elmInside(x,z)||inPond(x,z);return out;}
   override updateTraffic(time:number,px:number,pz:number){
+    this.collisionDirty=true;
     if(time<this.walkClock)this.walkers.clear();const dt=this.walkClock<0?0:Math.max(0,Math.min(.1,time-this.walkClock));this.walkClock=time;
     this.advanceTrafficFalls(time,px,pz);
     this.traffic=[];const active=new Set<number>();
