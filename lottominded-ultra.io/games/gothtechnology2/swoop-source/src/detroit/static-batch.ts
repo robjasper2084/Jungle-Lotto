@@ -1,7 +1,38 @@
 import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
+/** Split only the rendered material ranges. Building roofs and walls can then
+ * join their neighbours without changing UVs, materials or collision geometry. */
+function splitMaterials(group:T.Group){
+ const candidates:T.Mesh[]=[];
+ group.traverse(o=>{const m=o as T.Mesh;if(m.isMesh&&Array.isArray(m.material)&&!('isSkinnedMesh' in m)&&!('isInstancedMesh' in m)&&m.visible&&!Object.keys(m.geometry.morphAttributes).length)candidates.push(m);});
+ for(const mesh of candidates){
+  let hidden=false;for(let p=mesh.parent;p&&p!==group;p=p.parent)if(!p.visible)hidden=true;
+  if(hidden||!mesh.parent||mesh.children.length||!mesh.geometry.groups.length||Object.values(mesh.geometry.attributes).some(a=>(a as T.InterleavedBufferAttribute).isInterleavedBufferAttribute))continue;
+  const source=mesh.geometry,materials=mesh.material as T.Material[],parts:T.Mesh[]=[];
+  const limit=source.index?.count??source.attributes.position.count;
+  for(const range of source.groups){
+   const start=Math.max(range.start,source.drawRange.start),end=Math.min(range.start+range.count,source.drawRange.start+source.drawRange.count,limit);
+   if(end<=start||!materials[range.materialIndex??0])continue;
+   const geometry=new T.BufferGeometry(),vertices:number[]=[],indices:number[]=[],remap=new Map<number,number>();
+   for(let i=start;i<end;i++){const vertex=source.index?source.index.getX(i):i;let compact=remap.get(vertex);if(compact===undefined){compact=vertices.length;remap.set(vertex,compact);vertices.push(vertex);}indices.push(compact);}
+   geometry.setIndex(indices);
+   for(const [name,attribute] of Object.entries(source.attributes)){
+    const a=attribute as T.BufferAttribute,ArrayType=a.array.constructor as {new(length:number):T.TypedArray},values=new ArrayType(vertices.length*a.itemSize);
+    for(let i=0;i<vertices.length;i++)for(let c=0;c<a.itemSize;c++)values[i*a.itemSize+c]=a.array[vertices[i]*a.itemSize+c];
+    geometry.setAttribute(name,new T.BufferAttribute(values,a.itemSize,a.normalized));
+   }
+   const part=new T.Mesh(geometry,materials[range.materialIndex??0]);part.name=mesh.name;
+   part.position.copy(mesh.position);part.quaternion.copy(mesh.quaternion);part.scale.copy(mesh.scale);
+   part.matrix.copy(mesh.matrix);part.matrixAutoUpdate=mesh.matrixAutoUpdate;
+   part.castShadow=mesh.castShadow;part.receiveShadow=mesh.receiveShadow;part.renderOrder=mesh.renderOrder;part.layers.mask=mesh.layers.mask;
+   part.userData={...mesh.userData};parts.push(part);
+  }
+  if(parts.length){mesh.parent.add(...parts);mesh.removeFromParent();}
+ }
+}
 /** Merge only compatible meshes; preserve originals if a batch cannot merge. */
 export function batchStaticGroup(group:T.Group){
+  splitMaterials(group);
   group.updateMatrixWorld(true);
   const inverse=group.matrixWorld.clone().invert();
   const batches=new Map<string,{material:T.Material;geometries:T.BufferGeometry[];objects:T.Mesh[]}>();
@@ -17,7 +48,7 @@ export function batchStaticGroup(group:T.Group){
     batch.geometries.push(geometry);batch.objects.push(mesh);
   });
   for(const batch of batches.values()){
-    if(batch.objects.length<2){batch.objects[0].updateMatrix();batch.objects[0].matrixAutoUpdate=false;batch.geometries[0].dispose();continue;}
+    if(batch.objects.length<2){if(batch.objects[0].matrixAutoUpdate)batch.objects[0].updateMatrix();batch.objects[0].matrixAutoUpdate=false;batch.geometries[0].dispose();continue;}
     const geometry=mergeGeometries(batch.geometries,false);
     if(geometry){const mesh=new T.Mesh(geometry,batch.material);mesh.castShadow=batch.objects[0].castShadow;mesh.receiveShadow=batch.objects[0].receiveShadow;mesh.renderOrder=batch.objects[0].renderOrder;mesh.layers.mask=batch.objects[0].layers.mask;mesh.updateMatrix();mesh.matrixAutoUpdate=false;geometry.computeBoundingBox();geometry.computeBoundingSphere();mesh.userData.sourceObjects=batch.objects.map(o=>o.name);group.add(mesh);for(const original of batch.objects)original.removeFromParent();}
     for(const clone of batch.geometries)clone.dispose();

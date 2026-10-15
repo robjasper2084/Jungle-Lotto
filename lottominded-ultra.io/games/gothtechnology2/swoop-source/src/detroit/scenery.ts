@@ -42,7 +42,7 @@ import {makeTreeBatch,wind} from './trees.ts';
 import {roadwayClearance} from './roadsidePlacement.ts';
 import type {TreeSite} from './trees.ts';
 export async function buildScenery(scene:T.Scene,world:SceneryWorld,polish=true,start?:StreamPoint){
-  const stream=new SpatialAssetStream(2);
+  const stream=new SpatialAssetStream(1);
   const loader=new GLTFLoader(),tl=new T.TextureLoader();
   const names=['asphalt','grass','brick','concrete','limestone','mural_heron','mural_detroit','mural_music'];
   const mats:Record<string,T.MeshStandardMaterial>={};
@@ -186,7 +186,7 @@ export async function buildScenery(scene:T.Scene,world:SceneryWorld,polish=true,
   if(polish)polishSection(groupAt,mats.asphalt);
   let routeArt:Awaited<ReturnType<typeof buildRouteArt>>|{billboards:number;murals:number}={billboards:0,murals:0};if(polish)stream.add({id:'route-art',centers:[1080,1600,1900,2300,2425].map(d=>cutPoint(d)),async load(){routeArt=await buildRouteArt(world,groupAt);world.step();}});
   buildTrailPaint(groupAt,world.chunks);
-  let cutMurals={walls:0,ceilings:0};if(polish)stream.add({id:'cut-murals',centers:GEO.bridges.map(b=>cutPoint(b.at)),async load(){cutMurals=await buildCutMurals(world,groupAt);}});
+  const cutMurals=polish?await buildCutMurals(world,groupAt,stream):{walls:0,ceilings:0};
   // Consolidate static geometry by material inside each streamable tile.
   for(const g of groups)batchStaticGroup(g);
   const grass=polish?await timeLoad('grass',()=>buildGrassField(scene,world,mats.grass)):undefined;

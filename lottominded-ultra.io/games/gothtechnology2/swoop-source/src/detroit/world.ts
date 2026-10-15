@@ -194,6 +194,7 @@ function trafficObstacle(t:TrafficState):NavigationObstacle{
 export const trafficNavigationRadius=(kind:TrafficState['kind'])=>['pedestrian','jogger'].includes(kind)?.32:['segway','skater'].includes(kind)?.46:kind==='scooter'?.4:Math.hypot(trafficBounds(kind).hx,trafficBounds(kind).hz);
 export class DetroitWorld implements TerrainSampler{
   physics!:RAPIER.World;
+  protected collisionDirty=true;
   chunks=terrainChunks();solids=worldSolids();
   geoMeshes=geospatialMeshes(heightAt);
   buildingMeshes=waterfrontBuildings(CITY.buildings).filter(b=>![MACK_STUDIO.osmId,LOTTO_SHOP.osmId,PENNY_SHOP.osmId,ARETHA.osmId,'105519122','777936147',...JAZZ_CLUBS.map(s=>s.osmId)].includes(b.id)&&b.points.some(p=>this.chunks.some(c=>Math.abs(c.x-p[0])<50&&Math.abs(c.z-p[1])<50))).map(b=>({data:b,geometry:buildingEnvelope(b,heightAt)}));
@@ -233,7 +234,7 @@ export class DetroitWorld implements TerrainSampler{
   protected onTrafficRecovered(_id:number,_position:Vec3){}
   protected applyTrafficFall(t:TrafficState){const f=this.trafficFalls.get(t.id);return f?{...f.entry,speed:0,fall:f.fall.pose,fallPhase:f.fall.phase}:t;}
   trafficBodies=new Map<number,RAPIER.Collider>();traffic:TrafficState[]=[];
-  setHazards(seed:number,start:number,features=false){
+  setHazards(seed:number,start:number,features=false){this.collisionDirty=true;
     this.courseFeatures=features?courseFeatures(seed):[];
     this.hazardSeed=seed;
     for(const [id,c] of this.trafficBodies)if(id>=1000){this.metadata.delete(c.handle);this.physics.removeCollider(c,true);this.trafficBodies.delete(id);}
@@ -246,8 +247,8 @@ export class DetroitWorld implements TerrainSampler{
     for(const m of [...this.geoMeshes.filter(m=>m.collision!==false),...this.buildingMeshes]){const p=m.geometry.attributes.position,index=m.geometry.index;this.addMesh(new Float32Array(p.array),index?new Uint32Array(index.array):Uint32Array.from({length:p.count},(_,i)=>i),'kind' in m&&(m.kind==='deck'||m.kind==='approach'));}
     this.updateTraffic(0,0,0);this.step();return this;
   }
-  addBox(s:Solid){const desc=RAPIER.ColliderDesc.cuboid(s.hx,s.hy,s.hz).setTranslation(s.x,s.y,s.z).setCollisionGroups(0x0002ffff);if(s.yaw)desc.setRotation({x:0,y:Math.sin(s.yaw/2),z:0,w:Math.cos(s.yaw/2)});const c=this.physics.createCollider(desc);this.metadata.set(c.handle,{hx:s.hx,hz:s.hz});return c;}
-  addMesh(vertices:Float32Array,indices:Uint32Array,rideable=false){
+  addBox(s:Solid){this.collisionDirty=true;const desc=RAPIER.ColliderDesc.cuboid(s.hx,s.hy,s.hz).setTranslation(s.x,s.y,s.z).setCollisionGroups(0x0002ffff);if(s.yaw)desc.setRotation({x:0,y:Math.sin(s.yaw/2),z:0,w:Math.cos(s.yaw/2)});const c=this.physics.createCollider(desc);this.metadata.set(c.handle,{hx:s.hx,hz:s.hz});return c;}
+  addMesh(vertices:Float32Array,indices:Uint32Array,rideable=false){this.collisionDirty=true;
     const collider=this.physics.createCollider(RAPIER.ColliderDesc.trimesh(vertices,indices).setCollisionGroups(0x0002ffff));
     if(rideable){
       // Separate upward faces: Rapier ray normals face the ray even on a slab's
@@ -265,7 +266,7 @@ export class DetroitWorld implements TerrainSampler{
     return collider;
   }
   /** Register the same upward triangles used to render a draped street or sidewalk. */
-  addRideSurface(vertices:Float32Array,solidFoundation=false){
+  addRideSurface(vertices:Float32Array,solidFoundation=false){this.collisionDirty=true;
     return this.physics.createCollider(RAPIER.ColliderDesc.trimesh(vertices,Uint32Array.from({length:vertices.length/3},(_,i)=>i)).setCollisionGroups(solidFoundation?0x0001ffff:0x0004ffff));
   }
   sampleGround(x:number,z:number,out:GroundSample,referenceY?:number){
@@ -292,10 +293,10 @@ export class DetroitWorld implements TerrainSampler{
     // sampleGround still selects a reachable dock/bridge above the water.
     return this.sampleGround(x,z,{height:0,normal:{x:0,y:1,z:0},surface:'pavement',offCourse:false},referenceY).height<(pond?-.18:-.25);
   }
-  navigationObstacles(x:number,z:number,radius:number):NavigationObstacle[]{
+  navigationObstacles(x:number,z:number,radius:number,includeSolids=true):NavigationObstacle[]{
     const result:NavigationObstacle[]=[];
     for(const t of this.traffic){const o=trafficObstacle(t);if(Math.hypot(o.x-x,o.z-z)<radius+o.radius)result.push({...o,onImpact:(impact:ActorImpact)=>this.receiveTrafficImpact(t.id,impact)});}
-    for(let i=0;i<this.solids.length;i++){const s=this.solids[i],r=Math.hypot(s.hx,s.hz);if(Math.hypot(s.x-x,s.z-z)<radius+r)result.push({id:'solid-'+i,x:s.x,y:s.y-s.hy,z:s.z,radius:r,height:s.hy*2,kind:s.kind,vx:0,vz:0,raycastSolid:true});}
+    if(includeSolids)for(let i=0;i<this.solids.length;i++){const s=this.solids[i],r=Math.hypot(s.hx,s.hz);if(Math.hypot(s.x-x,s.z-z)<radius+r)result.push({id:'solid-'+i,x:s.x,y:s.y-s.hy,z:s.z,radius:r,height:s.hy*2,kind:s.kind,vx:0,vz:0,raycastSolid:true});}
     return result;
   }
   raycast(origin:Vec3,direction:Vec3,maxDistance:number){
@@ -333,6 +334,7 @@ export class DetroitWorld implements TerrainSampler{
     return this.trafficBodies.has(t.id)||t.speed===0||!space||!actorBlocksMountedSpace(trafficObstacle(t),space.position,space,space.remaining);
   }
   updateTraffic(time:number,px:number,pz:number){
+    this.collisionDirty=true;
     this.advanceTrafficFalls(time,px,pz);
     this.traffic=[];const active=new Set<number>();
     if(!this.crowd.length||time<this.crowdTime){this.crowd=Array.from({length:62},(_,id)=>{const t=trafficAt(id,time+(this.crowdSeed?crowdRandom(this.crowdSeed+id)()*2000:0)),b=trafficBounds(t.kind),width=cutWidth(clamp(t.routeDistance!,0,CUT_METRES));return {id:'traffic-'+id,kind:t.kind,distance:t.routeDistance!,lane:t.speed?t.direction!*Math.min(1.65,width/2-.65):width/2+1.2,direction:t.direction!,pace:t.speed,speed:t.speed,radius:trafficNavigationRadius(t.kind),height:b.hy*2,x:t.x,y:t.y,z:t.z,heading:t.heading};});this.crowdTime=time;}
@@ -359,9 +361,13 @@ export class DetroitWorld implements TerrainSampler{
     }
     for(const[id,c]of this.trafficBodies)if(!active.has(id)){this.metadata.delete(c.handle);this.physics.removeCollider(c,true);this.trafficBodies.delete(id);}
   }
-  step(){
+  step(onlyWhenChanged=false){
     if(this.recoverySpace){this.recoverySpace.remaining-=1/120;if(this.recoverySpace.remaining<=0)this.clearRecoverySpace();}
-    this.physics.timestep=1/120;this.physics.step();
+    // Rider/fall motion is custom, not Rapier rigid-body simulation. The main
+    // 120 Hz loop can reuse queries between the 30 Hz traffic updates. Explicit
+    // scenery/setup calls still always flush new or externally changed colliders.
+    if(onlyWhenChanged&&!this.collisionDirty&&this.physics.bodies.len()===0)return;
+    this.physics.timestep=1/120;this.physics.step();this.collisionDirty=false;
   }
 }
 export const RENCEN_TOWERS=[

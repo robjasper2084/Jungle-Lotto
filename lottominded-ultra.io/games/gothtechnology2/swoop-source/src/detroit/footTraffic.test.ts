@@ -29,6 +29,14 @@ test('stance cancels forward travel; walk has double support and jog has flight'
 });
 const data=new Map(await Promise.all(['DS_Hoodie_Man_01','DS_Hoodie_Woman_01'].map(async id=>[id,await mesh(id,1)] as const)));
 
+test('pedestrians reuse measured shoe support and release only their own skeleton texture',()=>{
+ const asset=data.values().next().value!,a=new FootTraffic(asset,false),b=new FootTraffic(asset,true);
+ assert.equal(a.legs[0].sole,b.legs[0].sole,'shared immutable measurement');assert(a.legs[0].sole!.length<100);
+ let own=0,other=0,geometry=0;const seen=new Set();
+ for(const [person,disposed]of [[a,()=>own++],[b,()=>other++]] as const)person.rider.traverse(o=>{const m=o as SkinnedMesh;if(!m.isSkinnedMesh||seen.has(m.skeleton))return;seen.add(m.skeleton);m.skeleton.computeBoneTexture();m.skeleton.boneTexture!.addEventListener('dispose',disposed);m.geometry.addEventListener('dispose',()=>geometry++);});
+ a.dispose();assert(own>0);assert.equal(other,0);assert.equal(geometry,0);b.dispose();assert(other>0);
+});
+
 test('both loaded hoodie skins keep joined limbs and ground contact through impact and get-up',()=>{
  for(const asset of data.values())for(const side of [-1,1]){
   const person=new FootTraffic(asset,false);person.apply(1.1,0);
