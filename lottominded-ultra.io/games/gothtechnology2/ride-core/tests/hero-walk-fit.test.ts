@@ -6,7 +6,6 @@ import {fileURLToPath} from 'node:url';
 import * as T from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {applyOnFootRider} from '../src/onFootRider.ts';
-import {TACTICAL_MOTION} from '../src/tacticalMotionData.ts';
 import {gaitScale} from '../src/footAnimation.ts';
 import {footFields} from '../src/onFoot.ts';
 
@@ -82,25 +81,33 @@ test('all five shipped heroes keep feet above ground and elbows bent through wal
      assert((elbow.x-shoulder.x)*outward>.018,`${id}: elbow is trapped against the torso`);
      assert(elbow.clone().sub(shoulder).angleTo(hand.clone().sub(elbow))<.75,`${id}: walking arm stays curled into a running pose`);
     }
-    if(i%2===0&&!id.includes('Mascot')){
-     const channel=side==='Left'?12:18,source=TACTICAL_MOTION.walk.samples[(i/2)%48];
-     const expected=Math.atan2(source[channel+2],-source[channel+1]);
-     const actual=Math.atan2(elbow.z-shoulder.z,shoulder.y-elbow.y);
-     assert(Math.abs(expected-actual)<.002,`${id}: arm no longer follows the TacticalOnFoot source clip`);
-    }
+    // Forward locomotion blends the installed Manny capture with TacticalOnFoot.
+    // Validate its contact, counterbalance and continuity below rather than
+    // requiring every arm sample to equal the older unblended source clip.
    }
    if(i===0||i===48){const footLead=rider.getObjectByName('LeftFoot')!.getWorldPosition(new T.Vector3()).z-rider.getObjectByName('RightFoot')!.getWorldPosition(new T.Vector3()).z;
     const handLead=handTravel[0][i]-handTravel[1][i];
     assert(footLead*handLead<0,`${id}: arm leads with the same leg instead of counterbalancing it`);
    }
   }
-  assert(Math.max(...hipHeights)-Math.min(...hipHeights)<.10*(lengths[0]+lengths[1])/2,`${id}: pelvis drops into a squat between steps`);
+  const hipTravel=Math.max(...hipHeights)-Math.min(...hipHeights),legLength=(lengths[0]+lengths[1])/2;
+  t.diagnostic(JSON.stringify({id,hipTravel,legLength}));
+  assert(hipTravel<.10*legLength,`${id}: pelvis drops into a squat between steps (${hipTravel} m)`);
   assert(Math.max(...stepWidths)<pedalWidth*.92,`${id}: walking still uses the wide pedal stance`);
   for(const hand of handTravel)assert(Math.max(...hand)-Math.min(...hand)>.20*(lengths[0]+lengths[1])/2,`${id}: arm swing is barely visible`);
   for(let j=0;j<poses[0].length;j++){
    assert(poses[0][j].angleTo(poses[96][j])<.005,`${id}: joint pops at the walking loop seam`);
    for(let i=1;i<poses.length;i++)assert(poses[i-1][j].angleTo(poses[i][j])<.18,`${id}: abrupt joint ${j} change at phase ${i}/96: ${poses[i-1][j].angleTo(poses[i][j])}`);
   }
+  // A stationary hop must still counterbalance with the arms. This used to
+  // multiply the capture by zero ground speed and leave both arms hanging.
+  const armAngles:number[]=[];
+  for(let i=0;i<30;i++){
+   Object.assign(p,{speed:0,footCycle:0,footTime:4+i/60,footJump:i<9?1:2});applyOnFootRider(rig,p);
+   const a=rider.getObjectByName('LeftArm')!.getWorldPosition(new T.Vector3()),b=rider.getObjectByName('LeftForeArm')!.getWorldPosition(new T.Vector3());
+   armAngles.push(Math.atan2(b.z-a.z,a.y-b.y));
+  }
+  assert(Math.max(...armAngles)-Math.min(...armAngles)>.05,`${id}: stationary jump has frozen upper arms`);
  }
 });
 

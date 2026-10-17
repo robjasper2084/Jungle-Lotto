@@ -1,4 +1,5 @@
 import {MACK_STUDIO,studioMap,studioRoom,studioWalk} from './mackStudioSite.ts';
+import {visibleSceneryMatrices} from '@digital-static/ridecore';
 import {destinationLayout} from './destinationLayout.ts';
 import * as T from 'three';
 import {GLTFLoader,type GLTF} from './compressedGLTFLoader.ts';
@@ -26,7 +27,7 @@ export class GalleryVisit {
   const room=studioRoom(store),outside=studioMap(room.u,29),end=studioWalk(store).at(-1)!;
   const inside=toLocal(end.x,MACK_STUDIO.floor,end.z);this.door.set(inside.x,inside.y,inside.z);
   const arrival=toLocal(outside.x,MACK_STUDIO.floor,outside.z);this.approach.set(arrival.x,arrival.y,arrival.z);
-  this.building.position.copy(centre);this.building.rotation.y=Math.atan2(facing.x,facing.z);scene.add(this.building);
+  this.building.position.copy(centre);this.building.rotation.y=Math.atan2(facing.x,facing.z);visibleSceneryMatrices(this.building);scene.add(this.building);
   this.panel.id=store?'boutiqueArrival':'galleryArrival';this.panel.className='destinationPanel arrival-hud';this.panel.hidden=true;this.panel.setAttribute('aria-label',store?'GothTechnology store':'Serengeti Galleries');
   this.panel.innerHTML='<div class="arrival-topline"><p class="eyebrow"></p><span class="arrival-status">Destination reached</span></div><div class="arrival-content"><svg class="arrival-portal" viewBox="0 0 84 92" fill="none" aria-hidden="true"><path d="M4 85h76M12 85V8l62 17v60M23 85V22l42 12v51M33 85V37l24 6v42M42 85V49l10 2v34" stroke="currentColor" stroke-width="1"/><path d="M42 85V49l10 2v34" fill="#e9ca83" fill-opacity=".55" stroke="#e9ca83"/></svg><div class="arrival-copy"><h2></h2><p data-copy role="status"></p></div></div><div class="arrival-actions"><button data-visit></button><a data-enter target="_blank" rel="noopener noreferrer" hidden></a><button data-back>Keep riding</button></div>';
   this.panel.querySelector('.eyebrow')!.textContent='2000 MACK AVENUE / GOTHTECH STUDIO';this.panel.querySelector('h2')!.textContent=store?'GOTHTECHNOLOGY':'Serengeti Galleries';

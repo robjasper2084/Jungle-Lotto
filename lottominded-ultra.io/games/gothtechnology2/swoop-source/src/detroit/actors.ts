@@ -250,7 +250,7 @@ export class Hero {
       this.riderContact.settle(this.rider,floor,this.terrain,.025,p.crashMotion?p.crashContact:0);
       this.root.updateMatrixWorld(true);
     }
-    applyOnFootRider(this,p);this.fingers.apply();
+    applyOnFootRider(this,p);this.fingers.apply('Relaxed',p.footMode===3&&(p.footMountTime||0)>.75&&(p.footMountTime||0)<2.5?'SupportGrip':'Relaxed');
   }
 }
 export class TrafficView {

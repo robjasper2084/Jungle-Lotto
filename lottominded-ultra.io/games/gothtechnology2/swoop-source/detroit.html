@@ -22,7 +22,7 @@ body:not([data-boot="ready"]) #menu .menuInner,body:not([data-boot="ready"]) #di
 <script>
 (function(){
  function unavailable(detail){if(document.body.dataset.boot==='ready')return;document.body.dataset.boot='error';document.getElementById('startupPreview').hidden=true;document.getElementById('loading').hidden=true;document.getElementById('bootError').hidden=false;document.getElementById('bootErrorMessage').textContent='The game files could not load. Check your connection and retry.';document.getElementById('bootDiagnostics').textContent=detail;for(const child of document.body.children)if(child instanceof HTMLElement&&child.id!=='bootError')child.inert=true;document.getElementById('bootRetry').focus();}
- addEventListener('error',function(e){if(e.target&&e.target.tagName==='SCRIPT')unavailable('A required game script did not download.');},true);
+ addEventListener('error',function(e){if(e.target&&e.target.tagName==='SCRIPT'&&!e.target.hasAttribute('data-swoop-optional'))unavailable('A required game script did not download.');},true);
  setTimeout(function(){if(!document.body.dataset.boot)unavailable('The startup module did not initialize.');},120000);
 })();
 </script><script type="module" src="/src/detroit/boot.ts"></script></body></html>

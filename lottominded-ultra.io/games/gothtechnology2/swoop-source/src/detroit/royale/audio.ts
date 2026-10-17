@@ -57,6 +57,7 @@ export class RoyaleAudio {
   this.cueTick=state.tick;
   if(this.music){if(this.nextBeat<t-.5)this.nextBeat=t+.04;while(this.nextBeat<t+.15){const chord=[[146.83,174.61,220],[130.81,164.81,196],[116.54,146.83,174.61],[130.81,164.81,196]][Math.floor(this.beat/16)%4],n=this.beat%8;if(n===0){for(const hz of chord)this.tone(hz,this.nextBeat,1.3,.045,this.musicBus!,'sine');}if(n%2===0)this.tone(chord[0]/2,this.nextBeat,.26,.07,this.musicBus!,'triangle');if(n===3||n===7)this.tone(chord[2]*2,this.nextBeat,.18,.025,this.musicBus!);this.nextBeat+=.3;this.beat++;}}
  }
+ rangeHit(){const c=this.context;if(c?.state==='running'&&this.effects&&this.master){this.tone(920,c.currentTime,.07,.06,this.master,'triangle');}}
  get status(){return{effects:this.effects,music:this.music,context:this.context?.state??'not-created',wheelLevel:this.motorLevel};}
  dispose(){this.motor?.stop();this.motor?.disconnect();this.motorGain?.disconnect();void this.context?.close();this.context=undefined;}
 }

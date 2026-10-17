@@ -2,15 +2,16 @@ import {footLabel,type FootPose} from './onFoot.ts';
 /** One touch-accessible control, shared wording and keyboard shortcut. */
 export class FootControls{
  readonly root=document.createElement('div');readonly mount=document.createElement('button');readonly sprint=document.createElement('button');readonly note=document.createElement('small');
- private pending=false;run=false;
+ private pending=false;run=false;private shortcut='KeyJ';
  constructor(){
   this.root.className='on-foot-controls';this.root.hidden=true;
   this.root.style.cssText='position:fixed;left:max(12px,env(safe-area-inset-left));top:43%;z-index:65;max-width:170px;display:flex;flex-direction:column;gap:5px;color:white;text-shadow:0 1px 3px black';
   const style=document.createElement('style');style.textContent='.on-foot-controls[hidden]{display:none!important}.on-foot-controls button{min-height:44px;padding:8px 12px;border:1px solid #9dbdb3;border-radius:12px;background:#122d29e8;color:white;font:600 12px system-ui;touch-action:manipulation}.on-foot-controls small{font:11px system-ui;background:#122d29d9;border-radius:6px;padding:5px}';document.head.append(style);
   this.mount.type=this.sprint.type='button';this.mount.title='Get off / get on wheel · J';this.mount.onclick=()=>{this.pending=true;this.mount.blur();};this.sprint.onclick=()=>{this.run=!this.run;this.sprint.setAttribute('aria-pressed',String(this.run));this.sprint.blur();};
   this.root.append(this.mount,this.sprint,this.note);document.body.append(this.root);
-  addEventListener('keydown',e=>{if(e.code==='KeyJ'&&!e.repeat&&!this.root.hidden&&!this.mount.disabled&&!(e.target as HTMLElement)?.matches('input,textarea,select,button,[contenteditable]')){e.preventDefault();this.pending=true;}});
+  addEventListener('keydown',e=>{if(e.code===this.shortcut&&!e.repeat&&!this.root.hidden&&!this.mount.disabled&&!(e.target as HTMLElement)?.matches('input,textarea,select,button,[contenteditable]')){e.preventDefault();this.pending=true;}});
  }
+ setShortcut(code:string){this.shortcut=code;this.mount.title='Get off / get on wheel · '+code.replace('Key','');}
  consume(){const p=this.pending;this.pending=false;return p;}
  clear(){this.pending=false;this.run=false;this.root.hidden=true;}
  update(p:Partial<FootPose>,visible:boolean,movingDismount=false,critical=false){

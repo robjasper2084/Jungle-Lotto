@@ -13,7 +13,7 @@ import {RIDE_TUNING as tune,clamp,damp,angle,spring,advanceSpring,advanceDrive,t
 export const NEUTRAL_ACTIONS={throttle:0,steer:0,crouch:false,hop:false,hopHeld:false,reset:false,trick:0};
 export type RideActions=typeof NEUTRAL_ACTIONS & {seated?:boolean;eyeControl?:boolean;facingYaw?:number;prone?:boolean;evade?:number;dismount?:boolean;run?:boolean};
 export function createPose(){return {
-  ...footFields(),
+  ...footFields(),footMountTime:0,
   seated:0,stopFoot:0,stopFootX:0,stopFootY:0,stopFootZ:0,warningLevel:0,beepPulse:0,scrape:0,scrapeSide:0,scrapeX:0,scrapeY:0,scrapeZ:0,scrapeHard:0,
   trickFoot:0,x:0,y:0,z:0,headingY:0,speed:0,wheelSpin:0,groundPitch:0,groundRoll:0,
   rollAngle:0,riderRoll:0,riderPitch:0,wheelPitch:0,suspensionOffset:0,
@@ -31,7 +31,7 @@ export function createPose(){return {
 };}
 export type RidePose=ReturnType<typeof createPose>;
 export function copyPose(from:RidePose,to:RidePose){Object.assign(to,from);}
-export function lerpPose(a:RidePose,b:RidePose,t:number,out:RidePose){const f=clamp(t,0,1);for(const key of Object.keys(a) as (keyof RidePose)[])out[key]=a[key]+(b[key]-a[key])*f;interpolateFoot(a,b,f,out);}
+export function lerpPose(a:RidePose,b:RidePose,t:number,out:RidePose){const f=clamp(t,0,1);for(const key of Object.keys(a) as (keyof RidePose)[])out[key]=(a[key]??0)+((b[key]??0)-(a[key]??0))*f;interpolateFoot(a,b,f,out);}
 type Spawn={position:Vec3;headingY:number};
 
 /** Original Motion 4: jerk-limited motor, bank-led steering and articulated body at 120 Hz. */

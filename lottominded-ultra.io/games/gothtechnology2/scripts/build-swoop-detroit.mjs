@@ -1,3 +1,4 @@
+import {buildMobileRiders} from './mobile-rider-assets.mjs';
 import {reviewCorePlugin} from './review-core-plugin.mjs';
 import {readFile,writeFile,mkdir,readdir,rename} from 'node:fs/promises';
 import {copyFile,cp} from './review-asset-copy.mjs';
@@ -56,7 +57,7 @@ await build({root:source,configFile:false,base:'./',publicDir:false,resolve:{ali
   // scenery.ts owns wind/reduced-motion handling in source for every game entry.
   return code;
  },
- transformIndexHtml(html,ctx){if(!ctx.path.endsWith("detroit.html"))return html.replaceAll("./detroit.html","./index.html");return html.replace('<head>', '<head><script>if(new URLSearchParams(location.search).get("map")==="elmwood")location.replace(new URL("../elmwood-explorer/elmwood.html",location.href).href);</script>').replaceAll('\r\n','\n').replace(/<p class="hint"><a href="\.\/rider-studio.html"[\s\S]*?<\/p>/,'').replace('</head>','<meta name="goth-reward-game" content="swoop-detroit"><style>button:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid #dec57c;outline-offset:3px}button{min-height:44px}@media(min-width:1025px) and (pointer:fine){.session{bottom:85px}}@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}</style></head>').replace('</body>','<script type="module" src="../reward-tracker.js"></script><script type="module" src="../swoop-store-return.js"></script></body>');}
+ transformIndexHtml(html,ctx){if(!ctx.path.endsWith("detroit.html"))return html.replaceAll("./detroit.html","./index.html");return html.replace('<head>', '<head><script>if(new URLSearchParams(location.search).get("map")==="elmwood")location.replace(new URL("../elmwood-explorer/elmwood.html",location.href).href);</script>').replaceAll('\r\n','\n').replace(/<p class="hint"><a href="\.\/rider-studio.html"[\s\S]*?<\/p>/,'').replace('</head>','<meta name="goth-reward-game" content="swoop-detroit"><style>button:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid #dec57c;outline-offset:3px}button{min-height:44px}@media(min-width:1025px) and (pointer:fine){.session{bottom:85px}}@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}</style></head>').replace('</body>','<script type="module" data-swoop-optional src="../reward-tracker.js"></script><script type="module" data-swoop-optional src="../swoop-store-return.js"></script></body>');}
 }],build:{outDir:out,emptyOutDir:true,target:'es2022',rollupOptions:{input:Object.fromEntries(['detroit','royale','rider-studio','companion-studio','traffic-studio'].map(name=>[name,resolve(source,name+'.html')]))}}});
 await rename(resolve(out,'detroit.html'),resolve(out,'index.html'));
 for(const file of files){const target=resolve(out,file);await mkdir(dirname(target),{recursive:true});await copyFile(resolve(pack,file),target);}
@@ -86,6 +87,7 @@ await cp(resolve(source,'public/love-tag'),resolve(out,'love-tag'),{recursive:tr
 await cp(resolve(source,'public/exports/nature'),resolve(out,'exports/nature'),{recursive:true});
 await cp(resolve(source,'public/audio/nature'),resolve(out,'audio/nature'),{recursive:true});
 await writeFile(resolve(out,'SOURCE.md'),'Digital Static Ride Detroit, supplied via Digital_Static_Street_Asset_Pack/integrations/digital-static-ride. Dequindre Cut with navigation to the separately packaged Elmwood Explorer; original riding, rider, dog, touch, controller and physics retained. Built by scripts/build-swoop-detroit.mjs from versioned swoop-source; original external asset pack remains unchanged. Store additions: portable assets, saved sound preference respected, reduced-motion scenery, shared discount-preview receipts for native earned scores. Reference geometry and placement remain approximate as disclosed by the game.\n');
+await buildMobileRiders(out);
 console.log('Packaged Swoop Detroit: '+files.length+' assets');
 
 for(const file of licenses){const target=resolve(out,file.output);await mkdir(dirname(target),{recursive:true});await copyFile(file.input,target);}

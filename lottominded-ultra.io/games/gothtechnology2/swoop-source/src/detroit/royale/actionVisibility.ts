@@ -8,7 +8,8 @@ export function contextualActions(c:ActionContext):Record<string,boolean>{
   recover:c.crashed,swap:c.canSwap,
   repair:c.healing||c.healthPacks>0&&c.health<100,
   utility:c.shields>0,
-  reload:c.brawling||c.reloading||c.magazine<c.capacity&&c.reserve>0,
+  // Core combat controls retain their positions and remain discoverable.
+  reload:true,
   cycleMode:!c.brawling&&(c.fireModes&(c.fireModes-1))!==0,
   aim:!c.brawling,'lean-left':!c.brawling,'lean-right':!c.brawling,
  };

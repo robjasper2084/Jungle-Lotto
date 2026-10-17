@@ -11,7 +11,7 @@ test('standalone Elmwood adapter parks, walks, jumps and mounts; right steering 
  step(30,{throttle:1,steer:1});assert(motion.pose.headingY<0,'right input must reduce +Z-facing yaw');
  assert(motion.pose.x<.68,'walk towards screen right');assert.deepEqual([motion.pose.parkX,motion.pose.parkZ],park);
  step(1,{hop:true});step(20);assert(motion.pose.airHeight>.2);step(140);assert.equal(motion.pose.airHeight,0);
- step(1,{dismount:true});step(95);assert.equal(motion.pose.footMode,0);assert(Math.hypot(motion.pose.x-park[0],motion.pose.z-park[1])<.01);
+ step(1,{dismount:true});step(420);assert.equal(motion.pose.footMode,0);assert(Math.hypot(motion.pose.x-park[0],motion.pose.z-park[1])<.01);
  step(120,{throttle:1});assert(motion.pose.speed>1);
 });
 for(const [name,make] of [['Royale',()=>new RideController(terrain)],['Swoop',()=>new SwoopController(terrain)]] as const){
@@ -27,7 +27,7 @@ for(const [name,make] of [['Royale',()=>new RideController(terrain)],['Swoop',()
   let ticks=0;while(ahead()>.25&&ticks++<900)step(1,{throttle:-1});step(100);
   // Controlled movement comes back within mounting distance; no teleport command.
   assert(Math.hypot(p.x-start.x,p.z-start.z)<1.2);
-  step(1,{dismount:true});step(90);assert.equal(p.footMode,0);assert(Math.hypot(p.x-park[0],p.z-park[2])<.01);
+  step(1,{dismount:true});step(420);assert.equal(p.footMode,0);assert(Math.hypot(p.x-park[0],p.z-park[2])<.01);
   step(120,{throttle:1});assert(p.speed>1);
  });
 }
@@ -41,4 +41,13 @@ test('authoritative restore retains parked wheel, foot mode and jump trajectory'
  a.step(1/120,{...NEUTRAL_ACTIONS,hop:true});b.restoreState(a.captureState());
  for(let i=0;i<100;i++){a.step(1/120,{...NEUTRAL_ACTIONS,throttle:1});b.step(1/120,{...NEUTRAL_ACTIONS,throttle:1});}
  assert.deepEqual(b.captureState(),a.captureState());
+});
+
+test('pickup keeps the wheel parked, resumes deterministically, and aborts on combat',()=>{
+ const a=new RideController(terrain),b=new RideController(terrain),step=(n:number,input={})=>{for(let i=0;i<n;i++)a.step(1/120,{...NEUTRAL_ACTIONS,...input});};
+ step(1,{dismount:true});step(100);step(1,{dismount:true});step(120);
+ assert.equal(a.poseValue.footMode,3);assert.equal(a.poseValue.footBlend,1);const park=[a.poseValue.parkX,a.poseValue.parkY,a.poseValue.parkZ];
+ b.restoreState(a.captureState());for(let i=0;i<80;i++){a.step(1/120,NEUTRAL_ACTIONS);b.step(1/120,NEUTRAL_ACTIONS);}assert.deepEqual(a.captureState(),b.captureState());
+ a.step(1/120,{...NEUTRAL_ACTIONS,interruptMount:true});assert.equal(a.poseValue.footMode,2);assert.equal(a.poseValue.footMountTime,0);assert.deepEqual([a.poseValue.parkX,a.poseValue.parkY,a.poseValue.parkZ],park);
+ step(1,{dismount:true});step(420);assert.equal(a.poseValue.footMode,0);
 });

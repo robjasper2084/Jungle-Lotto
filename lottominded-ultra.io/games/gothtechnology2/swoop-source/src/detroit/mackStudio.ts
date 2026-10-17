@@ -1,4 +1,5 @@
 import {registerRetailShell} from './tagSceneryCollisions.ts';
+import {visibleSceneryMatrices} from '@digital-static/ridecore';
 import * as T from 'three';
 import {GLTFLoader} from './compressedGLTFLoader.ts';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
@@ -10,7 +11,7 @@ import {storefrontDetails} from './storefrontDetails.ts';
 import {addMackWallArt} from './mackWallArt.ts';
 /** A single shared exterior; retail rooms are supplied by GalleryVisit. */
 export async function buildMackStudio(scene:T.Scene,world:DetroitWorld){
- const group=new T.Group();group.name='2000 Mack · GothTech Studio / Pellerito building';scene.add(group);
+ const group=new T.Group();group.visible=false;visibleSceneryMatrices(group);group.name='2000 Mack · GothTech Studio / Pellerito building';scene.add(group);
  const centre=toLocal(MACK_STUDIO.x,MACK_STUDIO.floor,MACK_STUDIO.z),building=(await new GLTFLoader().loadAsync('/exports/atwater/mack-gothtech-studio.glb?v=cinema-left-wall-20261003')).scene;
  building.position.set(centre.x,centre.y,centre.z);building.rotation.y=MACK_STUDIO.heading;group.add(building);
  const innovation=(await new GLTFLoader().loadAsync('/exports/boutique/innovation-floor-roof-sign.glb')).scene;

@@ -203,6 +203,7 @@ export class DetroitWorld implements TerrainSampler{
   private recoverySpace:{position:Vec3;radius:number;height:number;remaining:number}|undefined;
   courseFeatures:CourseFeature[]=[];hazards:TrafficState[]=[];hazardSeed=0;crowdActors:()=>NavigationObstacle[]=()=>[];
   private crowd:CrowdAgent[]=[];private crowdTime=-1;private crowdSeed=0;private cityCrowds:ReturnType<typeof seedCityPeople>=[];
+  private cityFooting:(x:number,z:number)=>number=heightAt;
   randomizePeople(seed=freshCrowdSeed()){this.crowdSeed=seed;this.crowd=[];this.cityCrowds=[];this.crowdTime=-1;}
   get peopleState(){return {seed:this.crowdSeed,routes:this.cityCrowds.map(g=>({name:g.name,count:g.agents.length})),positions:[...this.crowd,...this.cityCrowds.flatMap(g=>g.agents)].filter(a=>a.pace>0).map(a=>({id:a.id,x:a.x,z:a.z,speed:a.motionSpeed??a.speed}))};}
   private crowdAgent(id:number){return this.crowd[id]??this.cityCrowds.flatMap(g=>g.agents).find(a=>a.id==='traffic-'+id);}
@@ -341,10 +342,21 @@ export class DetroitWorld implements TerrainSampler{
     const trafficHandles=new Set([...this.trafficBodies.values()].map(c=>c.handle));const visitorShape=new RAPIER.Cuboid(.3,.65,.3);
     // Exact crowd queries are limited to a margin beyond the 115m activation radius.
     const crowdGround={height:0,normal:{x:0,y:1,z:0},surface:'pavement' as const,offCourse:false},footing=(x:number,z:number)=>Math.hypot(x-px,z-pz)>180?heightAt(x,z):this.sampleGround(x,z,crowdGround,heightAt(x,z)).height;
+    this.cityFooting=footing;
     const clear=(x:number,y:number,z:number)=>Number.isFinite(y)&&(Math.hypot(x-px,z-pz)>180||!this.physics.intersectionWithShape({x,y:y+.85,z},{x:0,y:0,z:0,w:1},visitorShape,undefined,0xffff0006,undefined,undefined,c=>!trafficHandles.has(c.handle)));
-    if(this.crowdSeed&&!this.cityCrowds.length)this.cityCrowds=seedCityPeople(cityWalkRoutes(),this.crowdSeed,footing,clear);
+    // Route closures must follow today's focus, not retain the initial spawn's
+    // query radius for the entire session as the rider travels down the Cut.
+    if(this.crowdSeed&&!this.cityCrowds.length)this.cityCrowds=seedCityPeople(cityWalkRoutes(),this.crowdSeed,(x,z)=>this.cityFooting(x,z),clear);
     let remaining=Math.max(0,Math.min(2,time-this.crowdTime));this.crowdTime=time;
-    while(remaining>1e-8){const step=Math.min(1/30,remaining);remaining-=step;for(const g of this.cityCrowds){g.path.walkable=(x,y,z)=>Math.hypot(x-px,z-pz)>160||clear(x,y,z);advanceCrowd(g.agents,step,g.path,[{id:'player',x:px,y:footing(px,pz),z:pz,radius:.52,height:2.2,kind:'rider',vx:Math.sin(this.rideIntent.heading)*this.rideIntent.speed,vz:Math.cos(this.rideIntent.heading)*this.rideIntent.speed},...this.crowdActors()]);}advanceCrowd(this.crowd,step,{length:CUT_TRAFFIC.length,runout:TRAFFIC_RUNOUT,offsetSign:-1,point:(d,u)=>{const p=trafficPoint(d,u);return {...p,y:footing(p.x,p.z)};},width:d=>cutWidth(clamp(d,0,CUT_METRES))+1.6,walkable:(x,y,z)=>Math.abs(heightAt(x+.2,z)-heightAt(x-.2,z))<.2&&Math.abs(heightAt(x,z+.2)-heightAt(x,z-.2))<.2&&clear(x,y,z)},[{id:'player',x:px,y:footing(px,pz),z:pz,radius:.52,height:2.2,kind:'rider',vx:Math.sin(this.rideIntent.heading)*this.rideIntent.speed,vz:Math.cos(this.rideIntent.heading)*this.rideIntent.speed},...this.hazards.map(trafficObstacle),...this.crowdActors()]);}
+    // Every district observes the same player and external riders during this
+    // traffic tick; avoid rebuilding that snapshot and raycasting the player
+    // ground once per district (up to 17 times).
+    const external:NavigationObstacle[]=remaining>1e-8?[{id:'player',x:px,y:footing(px,pz),z:pz,radius:.52,height:2.2,kind:'rider',vx:Math.sin(this.rideIntent.heading)*this.rideIntent.speed,vz:Math.cos(this.rideIntent.heading)*this.rideIntent.speed},...this.crowdActors()]:[];
+    const cutExternal=external.concat(this.hazards.map(trafficObstacle));
+    while(remaining>1e-8){const step=Math.min(1/30,remaining);remaining-=step;
+      for(const g of this.cityCrowds){g.path.walkable=(x,y,z)=>Math.hypot(x-px,z-pz)>160||clear(x,y,z);advanceCrowd(g.agents,step,g.path,external);}
+      advanceCrowd(this.crowd,step,{length:CUT_TRAFFIC.length,runout:TRAFFIC_RUNOUT,offsetSign:-1,point:(d,u)=>{const p=trafficPoint(d,u);return {...p,y:footing(p.x,p.z)};},width:d=>cutWidth(clamp(d,0,CUT_METRES))+1.6,walkable:(x,y,z)=>Math.abs(heightAt(x+.2,z)-heightAt(x-.2,z))<.2&&Math.abs(heightAt(x,z+.2)-heightAt(x,z-.2))<.2&&clear(x,y,z)},cutExternal);
+    }
     const candidates:TrafficState[]=this.crowd.map<TrafficState>((agent,id)=>this.applyTrafficFall({...trafficAt(id,time),x:agent.x,y:agent.y,z:agent.z,heading:agent.heading,speed:agent.motionSpeed??agent.speed,routeDistance:agent.distance})).concat(this.cityCrowds.flatMap(g=>g.agents.map(a=>this.applyTrafficFall({id:Number(a.id.slice(8)),kind:a.kind as TrafficState['kind'],x:a.x,y:a.y,z:a.z,heading:a.heading,speed:a.motionSpeed??a.speed,routeDistance:a.distance,direction:a.direction}))),this.hazards);
     for(const t of candidates){const id=t.id;if(id<1000&&Math.hypot(t.x-px,t.z-pz)>115)continue;
       if(!this.trafficMayActivate(t))continue;

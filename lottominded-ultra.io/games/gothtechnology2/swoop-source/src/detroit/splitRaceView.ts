@@ -62,6 +62,10 @@ export class SplitRaceView {
   this.results.querySelector('nav')!.append(button('Race again',actions.restart),button('Main menu',actions.menu));document.body.append(this.hud,this.results);
  }
  resetTouch(slot?:number){if(slot===undefined)this.pads.forEach(p=>p?.reset());else this.pads[slot]?.reset();}
+ /** Guests receive poses without executing the host's physics/afterStep loop. */
+ afterRemoteFrame(dt:number){
+  this.simulation.riders.forEach((r,i)=>this.follows[i].stepRemote(dt,r.pose));
+ }
  afterStep(dt:number){
   if(this.simulation.rules.countdown>0)return;
   this.simulation.riders.forEach((r,i)=>{
@@ -75,6 +79,7 @@ export class SplitRaceView {
  }
  recovered(i:number){this.follows[i].reset(this.simulation.riders[i].pose);this.first[i]=false;this.sparks[i].reset();this.effects[i].reset();this.cues[i].reset();}
  get feedback(){return this.effects.map((e,i)=>({...e.surface.model.state,confirmation:this.cues[i].model.text,lamp:this.lamps[i].intensity,audio:this.audio[i]?.state}));}
+ get cameraTracking(){return this.simulation.riders.map((r,i)=>({hero:r.id,slot:i,own:this.ownerSlot===i,mode:this.first[i]?'first':'chase',rider:{x:r.pose.x,y:r.pose.y,z:r.pose.z},eye:{...this.follows[i].eye},target:{...this.follows[i].target}}));}
  toggleCamera(i:number){this.photoFocus[i]=undefined;this.first[i]=!this.first[i];this.follows[i].reset(this.simulation.riders[i].pose);}
  clearPhoto(i:number){this.photoFocus[i]=undefined;}
  framePhoto(i:number,target:{x:number;y:number;z:number}){this.photoFocus[i]=new T.Vector3(target.x,target.y,target.z);}

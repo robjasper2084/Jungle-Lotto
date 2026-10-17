@@ -1,11 +1,12 @@
 import {createGroundSample,type TerrainSampler} from './terrain.ts';
 import {footCycleDistance} from './onFootGait.ts';
+import {wheelPickupTiming,WHEEL_PICKUP_TOTAL} from './wheelPickupTiming.ts';
 
 export const FOOT_SPEED={walk:2.35,run:5.4,reverse:2.05,reverseRun:3.8} as const;
-export const footFields=()=>({footMode:0,footBlend:0,footPhase:0,footCycle:0,footTime:0,footJump:0,footCrouch:0,footProne:0,footStagger:0,parkX:0,parkY:0,parkZ:0,parkHeading:0});
+export const footFields=()=>({footMode:0,footBlend:0,footPhase:0,footCycle:0,footTime:0,footMountTime:0,footJump:0,footCrouch:0,footProne:0,footStagger:0,parkX:0,parkY:0,parkZ:0,parkHeading:0});
 export type FootPose=ReturnType<typeof footFields>&{x:number;y:number;z:number;headingY:number;speed:number;airHeight:number;airBlend:number;velocityX:number;velocityZ:number;rollAngle:number;groundPitch:number;groundRoll:number;stopFoot:number};
 export const footState=()=>({mode:0,age:0,latch:false,jumpLatch:false,vy:0,turn:0,fromX:0,fromY:0,fromZ:0,fromHeading:0,toX:0,toY:0,toZ:0,phase:0,time:0,land:0,carryX:0,carryZ:0,stagger:0});
-export type FootActions={throttle:number;steer:number;facingYaw?:number;hop?:boolean;hopHeld?:boolean;crouch?:boolean;prone?:boolean;run?:boolean;dismount?:boolean;movingDismount?:boolean;mountBlocked?:boolean;evade?:number};
+export type FootActions={throttle:number;steer:number;facingYaw?:number;hop?:boolean;hopHeld?:boolean;crouch?:boolean;prone?:boolean;run?:boolean;dismount?:boolean;movingDismount?:boolean;mountBlocked?:boolean;interruptMount?:boolean;evade?:number};
 /** Only an authoritative collision invokes this; actor and parked vehicle remain separate. */
 export function knockOffOnFoot(s:ReturnType<typeof footState>,p:FootPose){
  if(s.mode){s.stagger=Math.max(s.stagger,.7);return;}
@@ -23,7 +24,7 @@ const ease=(n:number)=>{n=clamp(n,0,1);return n*n*(3-2*n);};
 const angle=(n:number)=>Math.atan2(Math.sin(n),Math.cos(n));
 export function footLabel(p:Partial<FootPose>){
  if(!p.footMode)return 'Get off wheel';
- if(p.footMode===1)return 'Getting off…';if(p.footMode===3)return 'Getting on…';
+ if(p.footMode===1)return 'Getting off…';if(p.footMode===3)return wheelPickupTiming(p.footMountTime||0).mount>0?'Getting on…':'Picking up wheel…';
  const d=Math.hypot(p.x!-p.parkX!,p.z!-p.parkZ!);return d>1.3?'Wheel · '+Math.ceil(d)+' m':'Get on wheel';
 }
 /** Fixed-step, serializable movement. Only inputs cross the network; the authority
@@ -54,15 +55,34 @@ export function stepOnFoot(s:ReturnType<typeof footState>,p:FootPose,t:TerrainSa
  }else if(toggle&&s.mode===2&&!a.mountBlocked&&s.stagger<=0&&p.airHeight<.04&&Math.hypot(p.x-p.parkX,p.z-p.parkZ)<=1.3&&Math.abs(p.y-p.parkY)<.3&&clear(p.x,p.y,p.z,p.parkX,p.parkY,p.parkZ)){
   Object.assign(s,{mode:3,age:0,fromX:p.x,fromY:p.y,fromZ:p.z,fromHeading:p.headingY,toX:p.parkX,toY:p.parkY,toZ:p.parkZ,vy:0});
  }
- if(!s.mode){p.footMode=p.footBlend=p.footCrouch=p.footProne=0;return false;}
+ if(!s.mode){p.footMode=p.footBlend=p.footCrouch=p.footProne=p.footMountTime=0;return false;}
  s.time+=dt;p.footTime=s.time;p.footMode=s.mode;
  s.stagger=Math.max(0,s.stagger-dt);p.footStagger=clamp(s.stagger/.8,0,1);
  p.stopFoot=p.rollAngle=p.groundPitch=p.groundRoll=0;p.velocityX=p.velocityZ=0;
- if(s.mode===1||s.mode===3){
+ if(s.mode===3&&(a.mountBlocked||a.interruptMount||crashed||s.stagger>0)){s.mode=p.footMode=2;p.footBlend=1;p.footMountTime=0;return true;}
+ if(s.mode===3){
+  s.age+=dt;p.footMountTime=s.age;const timing=wheelPickupTiming(s.age);
+  // Approach from the side on which the player is already standing. Keep the
+  // parked wheel authoritative and fixed while the harvested reach is played.
+  let dx=s.fromX-s.toX,dz=s.fromZ-s.toZ;
+  if(Math.hypot(dx,dz)<.05){dx=Math.cos(p.parkHeading);dz=-Math.sin(p.parkHeading);}
+  const length=Math.hypot(dx,dz);
+  const ax=s.toX+dx/length*.30,az=s.toZ+dz/length*.30;
+  const x=(s.fromX+(ax-s.fromX)*timing.approach)*(1-timing.mount)+s.toX*timing.mount;
+  const z=(s.fromZ+(az-s.fromZ)*timing.approach)*(1-timing.mount)+s.toZ*timing.mount;
+  if(!clear(p.x,p.y,p.z,x,s.toY,z)){s.mode=p.footMode=2;p.footBlend=1;p.footMountTime=0;return true;}
+  p.x=x;p.z=z;p.y=s.fromY+(s.toY-s.fromY)*timing.approach;
+  const facing=Math.atan2(s.toX-ax,s.toZ-az),pickupFacing=s.fromHeading+angle(facing-s.fromHeading)*timing.approach;
+  p.headingY=pickupFacing+angle(p.parkHeading-pickupFacing)*timing.mount;p.footBlend=1-timing.mount;
+  p.speed=p.airHeight=p.airBlend=p.footJump=p.footCrouch=p.footProne=0;
+  if(s.age>=WHEEL_PICKUP_TOTAL){s.mode=p.footMode=0;p.footBlend=p.footMountTime=0;}
+  return true;
+ }
+ if(s.mode===1){
   s.age+=dt;const duration=a.movingDismount?.42:.7,f=ease(s.age/duration),x=s.fromX+(s.toX-s.fromX)*f,z=s.fromZ+(s.toZ-s.fromZ)*f;
   if(clear(p.x,p.y,p.z,x,s.toY,z)){p.x=x;p.z=z;}p.y=s.fromY+(s.toY-s.fromY)*f;
-  p.headingY=s.fromHeading+angle(p.parkHeading-s.fromHeading)*f;p.footBlend=s.mode===1?f:1-f;p.speed=p.airHeight=p.airBlend=p.footJump=0;
-  if(s.age>=duration){s.mode=s.mode===1?2:0;p.footMode=s.mode;p.footBlend=s.mode?1:0;}
+  p.headingY=s.fromHeading+angle(p.parkHeading-s.fromHeading)*f;p.footBlend=f;p.speed=p.airHeight=p.airBlend=p.footJump=0;
+  if(s.age>=duration){s.mode=2;p.footMode=s.mode;p.footBlend=s.mode?1:0;}
   return true;
  }
  p.footBlend=1;

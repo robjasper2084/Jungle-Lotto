@@ -9,11 +9,11 @@ import type {TerrainSampler} from '../../../../ride-core/src/terrain.ts';
 import {EQUIPMENT_SOCKETS} from '../../../../ride-core/src/royale/combatProfiles.ts';
 import {EquipmentLibrary,WeaponView} from './equipment.ts';
 import {CombatRig} from './combatRig.ts';
-import {FpsMotion,reloadPose} from './fpsMotion.ts';
+import {FpsMotion,reloadPose,WeaponSwap} from './fpsMotion.ts';
 /** A separate instance of the selected hero's skinned hands. The world actor,
  * authoritative muzzle and other players' poses are never moved by view animation. */
 export class FirstPersonView {
- readonly root=new T.Group();private hero:Hero;private weapon:WeaponView;private rig:CombatRig;private motion=new FpsMotion();
+ readonly root=new T.Group();private hero:Hero;private weapon:WeaponView;private rig:CombatRig;private motion=new FpsMotion();private swap=new WeaponSwap();
  private arms:FpsArms;private materials=new Set<T.Material>();private previousForward?:T.Vector3;private sway=new T.Vector2();
  private forwardScratch=new T.Vector3();private rightScratch=new T.Vector3();private upScratch=new T.Vector3();private swayScratch=new T.Vector2();
  private magazine=new T.Mesh(new T.BoxGeometry(.055,.13,.085),new T.MeshStandardMaterial({color:'#293a3c',metalness:.65,roughness:.4}));
@@ -34,7 +34,7 @@ export class FirstPersonView {
  update(p:RidePose,state:CombatState,kind:Weapon,tick:number,yaw:number,pitch:number,camera:T.Camera,dt:number,shot:boolean,ads:boolean,reduced:boolean,terrain:TerrainSampler,healingUntil=0){
   this.root.visible=true;this.root.scale.setScalar(1);this.root.position.set(0,0,0);this.root.quaternion.identity();this.root.updateMatrixWorld(true);
   this.hero.apply({...p,seated:0});this.hero.visibility.setFirstPerson(true);this.hero.vehicle.visible=false;
-  this.weapon.select(kind);if(shot)this.rig.interruptPickup();if(shot)this.weapon.fire(reduced);this.weapon.update(dt,reduced);this.rig.apply({...p,seated:0},yaw,pitch,state,tick,healingUntil);
+  const equip=this.swap.update(dt,kind,shot,reduced);this.weapon.select(equip.weapon as Weapon);if(shot)this.rig.interruptPickup();if(shot)this.weapon.fire(reduced);this.weapon.update(dt,reduced);this.rig.apply({...p,seated:0},yaw,pitch,state,tick,healingUntil);
   const r=reloadPose(state,tick),m=this.motion.update(dt,kind,shot,Math.abs(p.speed),p.airHeight>.03,ads,reduced,r),scale=this.hero.motionScale;
   const f=this.forwardScratch.set(0,0,-1).applyQuaternion(camera.quaternion),right=this.rightScratch.set(1,0,0).applyQuaternion(camera.quaternion),up=this.upScratch.set(0,1,0).applyQuaternion(camera.quaternion);
   const obstacle=terrain.raycastObstacle(camera.position,f,.95,.07),blocked=obstacle===null?0:T.MathUtils.clamp((.95-obstacle)/.6,0,1);
@@ -46,7 +46,7 @@ export class FirstPersonView {
   // Smaller presentation scale clears the lower corners without changing hitboxes or muzzle authority.
   const wide=T.MathUtils.clamp((((camera as T.PerspectiveCamera).aspect??1)-.45)/.85,0,1),viewScale=.66+.14*wide;
   const target=camera.position.clone().addScaledVector(f,(.69+.12*m.aim-.11*blocked-.045*m.kick)*scale).addScaledVector(right,((1-m.aim)*.20*(.5+.5*wide)+m.run*.07+this.sway.x)*scale)
-   .addScaledVector(up,(-(1-m.aim)*.21-.12*r.lower-.22*m.equip-.14*m.run-.18*blocked-.035*m.land+bob+this.sway.y)*scale);
+   .addScaledVector(up,(-(1-m.aim)*.21-.12*r.lower-.26*equip.lower-.14*m.run-.18*blocked-.035*m.land+bob+this.sway.y)*scale);
   const sight=healingUntil>tick?this.hero.arms[0].foot.getWorldPosition(new T.Vector3()).lerp(this.hero.arms[1].foot.getWorldPosition(new T.Vector3()),.5):this.weapon.socket(EQUIPMENT_SOCKETS.sight_axis);
   if(healingUntil>tick)target.addScaledVector(up,-.10*scale);
   const mag=this.weapon.socket(EQUIPMENT_SOCKETS.magazine_socket);

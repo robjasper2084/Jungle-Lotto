@@ -27,6 +27,6 @@ export class ScopeSensitivityControls {
    controls.push(input);outputs.push(out);row.append(input,out);root.append(row);
   }
   const reset=document.createElement('button');reset.type='button';reset.textContent='Reset this optic';reset.onclick=()=>{this.value[choose.value as Optic]={look:1,ads:1,gyro:1};save();refresh();};
-  const note=document.createElement('p');note.textContent='Adjust each optic separately. These values multiply your general sensitivity; scope zoom still adds precision.';root.append(note,reset);choose.onchange=refresh;refresh();parent.append(root);
+  const note=document.createElement('p');note.textContent='Camera look controls scope panning; ADS controls panning while firing. Hip fire keeps its iron-sight settings. Scope zoom adds precision.';root.append(note,reset);choose.onchange=refresh;refresh();parent.append(root);
  }
 }

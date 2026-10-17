@@ -1,3 +1,4 @@
+import {PointLightBudget} from '@digital-static/ridecore';
 import {RecoveryStock} from '../../../ride-core/src/recoveryStock.ts';
 import {mountHudTransparency} from '../../../ride-core/src/hudTransparency.ts';
 import {GyroscopeControl} from '../../../ride-core/src/gyroscope.ts';
@@ -141,7 +142,7 @@ canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();canvas.dataset
 const adaptiveQuality=new AdaptiveQuality();renderer.setPixelRatio(Math.min(devicePixelRatio,1));renderer.setSize(innerWidth,innerHeight);
 renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;
 renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.0;
-const scene=new T.Scene();scene.background=new T.Color(DAY_HAZE);scene.fog=new T.Fog(DAY_HAZE,elmwood&&compactElmwood?65:130,elmwood&&compactElmwood?165:370);
+const scene=new T.Scene();const lightingBudget=new PointLightBudget(scene);scene.background=new T.Color(DAY_HAZE);scene.fog=new T.Fog(DAY_HAZE,elmwood&&compactElmwood?65:130,elmwood&&compactElmwood?165:370);
 const graphics=createGraphicsQuality(renderer,scene,canvas);
 const onlineView=new OnlineViewPreference(typeof localStorage==='undefined'?undefined:localStorage);
 const sky=new RouteSky();scene.add(sky);
@@ -531,14 +532,19 @@ function loadRetail<V>(id:string,load:()=>Promise<V>):Promise<V>{
  const promise=Promise.resolve().then(load).catch(error=>{retailLoads.delete(id);throw error;});retailLoads.set(id,promise);return promise;
 }
 interiorStream.add({id:'mack-retail',centers:[retailAnchor],async load(){
-  const interiors=elmwood?undefined:await Promise.all([
-    loadRetail('studio',()=>buildMackStudio(scene,mapWorld as DetroitWorld)),
-    loadRetail('lotto',()=>buildLottoShop(scene,mapWorld as DetroitWorld,()=>clearInput(),()=>{clearInput();lottoAppPausedRide=running&&!paused;if(lottoAppPausedRide)pause();},()=>{clearInput();const ridingView=$('menu').hidden&&$('helpPanel').hidden&&$('mapPanel').hidden;if(lottoAppPausedRide&&running&&paused&&ridingView)pause();lottoAppPausedRide=false;if(ridingView)canvas.focus();},()=>welcomeStore('lotto'))),
-    loadRetail('penny',()=>buildPennyShop(scene,mapWorld as DetroitWorld,()=>{clearInput();pennyPausedRide=running&&!paused;if(pennyPausedRide){paused=true;$('pause').textContent='Resume';rideAudio.update(pose,false);}},()=>{clearInput();if(pennyPausedRide&&running){paused=false;$('pause').textContent='Pause';}$('paused').hidden=!paused;pennyPausedRide=false;canvas.focus();},()=>welcomeStore('penny'))),
-    loadRetail('gallery',()=>gallery!.load()),loadRetail('boutique',()=>boutique!.load())
-  ]);
-  if(!elmwood){mackStudio=interiors![0];studioScreens=new StudioScreens(mackStudio.building,()=>{clearInput();canvas.focus();});lottoShop=interiors![1];cabinets!.add(mackStudio.building,-9,20.65,Math.PI,'wave','2084 Static Wave');cabinets!.add(mackStudio.building,-10.4,20.65,Math.PI,'rahbe','Robot RAHBE · Vault Rush');cabinets!.add(boutique!.building,2.35,-4.7,0,'underground','ROBOT RAHBE: Underground');}
-  if(!elmwood){pennyShop=interiors![2];lottoShop!.building.add(pennyShop.kiosk);cabinets!.add(lottoShop!.building,3.4,5.25,0,'wave','2084 Static Wave · LottoMind game kiosk');const q=lottoMap(3.4,5.25);(mapWorld as DetroitWorld).addBox({x:q.x,y:LOTTO_SHOP.floor+.8,z:q.z,hx:.64,hy:.8,hz:.55,yaw:-LOTTO_SHOP.heading,kind:'retail game kiosk'});}
+  if(elmwood)return;
+  // Keep the one-job stream budget through decoding too. Attach each finished
+  // room to its visibility controller before starting the next detailed model.
+  mackStudio=await loadRetail('studio',()=>buildMackStudio(scene,mapWorld as DetroitWorld));
+  mackStudio.update(current.x,current.z);
+  lottoShop=await loadRetail('lotto',()=>buildLottoShop(scene,mapWorld as DetroitWorld,()=>clearInput(),()=>{clearInput();lottoAppPausedRide=running&&!paused;if(lottoAppPausedRide)pause();},()=>{clearInput();const ridingView=$('menu').hidden&&$('helpPanel').hidden&&$('mapPanel').hidden;if(lottoAppPausedRide&&running&&paused&&ridingView)pause();lottoAppPausedRide=false;if(ridingView)canvas.focus();},()=>welcomeStore('lotto')));
+  lottoShop.update(current.x,current.z,false);
+  pennyShop=await loadRetail('penny',()=>buildPennyShop(scene,mapWorld as DetroitWorld,()=>{clearInput();pennyPausedRide=running&&!paused;if(pennyPausedRide){paused=true;$('pause').textContent='Resume';rideAudio.update(pose,false);}},()=>{clearInput();if(pennyPausedRide&&running){paused=false;$('pause').textContent='Pause';}$('paused').hidden=!paused;pennyPausedRide=false;canvas.focus();},()=>welcomeStore('penny')));
+  pennyShop.update(current.x,current.z,false);
+  await loadRetail('gallery',()=>gallery!.load());
+  await loadRetail('boutique',()=>boutique!.load());
+  studioScreens=new StudioScreens(mackStudio.building,()=>{clearInput();canvas.focus();});cabinets!.add(mackStudio.building,-9,20.65,Math.PI,'wave','2084 Static Wave');cabinets!.add(mackStudio.building,-10.4,20.65,Math.PI,'rahbe','Robot RAHBE · Vault Rush');cabinets!.add(boutique!.building,2.35,-4.7,0,'underground','ROBOT RAHBE: Underground');
+  lottoShop.building.add(pennyShop.kiosk);cabinets!.add(lottoShop.building,3.4,5.25,0,'wave','2084 Static Wave · LottoMind game kiosk');const q=lottoMap(3.4,5.25);(mapWorld as DetroitWorld).addBox({x:q.x,y:LOTTO_SHOP.floor+.8,z:q.z,hx:.64,hy:.8,hz:.55,yaw:-LOTTO_SHOP.heading,kind:'retail game kiosk'});
   for(const destination of [gallery,boutique])if(destination)registerDestinationCollision(mapWorld as DetroitWorld,destination.store);
   mapWorld.step();graphics.apply();
 }});
@@ -569,7 +575,7 @@ try{
   bootProgress(3);boot.assertActive();bootStage('preparing','Preparing the ride and controls…');
   if(!elmwood&&!qaVisualBaseline)ambience=new RouteAmbience(scene,world,effectPatches);
   if(!elmwood)buildFreestylePark(mapScene,mapWorld as DetroitWorld);
-  actorData=data;scenery=elmwood?await buildElmwood(mapScene,mapWorld as ElmwoodWorld,()=>compactElmwood||vr.active):await timeLoad('scenery-total',()=>buildScenery(mapScene,mapWorld,!qaVisualBaseline,toMap(SPOTS[selectedSpot].x,0,SPOTS[selectedSpot].z)));setRider(selectedRider);if('jazz'in scenery)jazzVisit=new JazzVisit(scenery.jazz.clubs,()=>{const was=paused;clearInput();if(!paused)pause();return was;},was=>{clearInput();if(paused!==was)pause();canvas.focus();},()=>pose.footMode?'walk':'ride');traffic=new TrafficView(scene,data,world);photographers=new MapPhotographers(scene,data,world);dogView=new CompanionView(data,world);scene.add(dogView.root);
+  actorData=data;scenery=elmwood?await buildElmwood(mapScene,mapWorld as ElmwoodWorld,()=>compactElmwood||vr.active):await timeLoad('scenery-total',()=>buildScenery(mapScene,mapWorld,!qaVisualBaseline,toMap(SPOTS[selectedSpot].x,0,SPOTS[selectedSpot].z),graphics.applyAssets));setRider(selectedRider);if('jazz'in scenery)jazzVisit=new JazzVisit(scenery.jazz.clubs,()=>{const was=paused;clearInput();if(!paused)pause();return was;},was=>{clearInput();if(paused!==was)pause();canvas.focus();},()=>pose.footMode?'walk':'ride');traffic=new TrafficView(scene,data,world);photographers=new MapPhotographers(scene,data,world);dogView=new CompanionView(data,world);scene.add(dogView.root);
   setCompanion(dogEnabled);
   if(elmwood&&'waterGroup' in scenery&&!compactElmwood){
     // One reflection capture of the actual banks and trees, outside the frame loop.
@@ -593,7 +599,7 @@ const frameSchedule=new FrameSchedule();
 let hudAt=0,frames=0,fpsAt=performance.now(),fps=0;
 function advanceOnlineHost(dt:number){
  const room=split!;acc+=dt;
- while(acc>=1/120&&!room.simulation.rules.done){mapWorld.step();const inputs=online.inputs(paused||document.hidden||online.inputBlocked||!$('menu').hidden?{...NEUTRAL_ACTIONS}:room.input.consume(0));for(let i=0;i<inputs.length;i++){if(inputs[i].reset){recoverSplit(i);inputs[i].reset=false;}if(online.events(i).photo)photoSplit(i);}room.simulation.step(1/120,inputs);for(const i of room.simulation.newCrashes)room.input.clear(i===online.slot?0:i);room.view.afterStep(1/120);acc=Math.max(0,acc-1/120);}
+ while(acc>=1/120&&!room.simulation.rules.done){mapWorld.step(true);const inputs=online.inputs(paused||document.hidden||online.inputBlocked||!$('menu').hidden?{...NEUTRAL_ACTIONS}:room.input.consume(0));for(let i=0;i<inputs.length;i++){if(inputs[i].reset){recoverSplit(i);inputs[i].reset=false;}if(online.events(i).photo)photoSplit(i);}room.simulation.step(1/120,inputs);for(const i of room.simulation.newCrashes)room.input.clear(i===online.slot?0:i);room.view.afterStep(1/120);acc=Math.max(0,acc-1/120);}
  online.update(dt,room.simulation,paused||document.hidden||online.inputBlocked?{...NEUTRAL_ACTIONS}:room.input.consume(0));
 }
 // Browsers throttle hidden tabs. Keep the authoritative room clock and remote riders moving.
@@ -605,8 +611,8 @@ function frameSplit(now:number,dt:number){
  if(controls.pause){if(!$('menu').hidden)resumeRide.click();else pause();}
  for(let i=0;i<room.simulation.riders.length;i++){const event=room.input.events(i),slot=online.active?online.slot:i;if(online.active&&i!==0)continue;if(event.recover){if(online.active&&!online.isHost)online.command({...NEUTRAL_ACTIONS,reset:true});else recoverSplit(slot);}if(event.camera)room.view.toggleCamera(slot);if(event.cruise)cruiseSplit(online.active?0:i);}
  const visible=$('menu').hidden,active=running&&!finished&&(online.active&&online.isHost||!paused&&visible);
- if(online.active&&!online.isHost){const f=online.frame;if(f){room.simulation.rules.countdown=f.countdown;room.simulation.rules.elapsed=f.elapsed;room.simulation.rules.done=f.done;f.riders.forEach((r,i)=>{const local=room.simulation.riders[i];lerpPose(local.pose,r.pose,1-Math.exp(-dt*16),local.pose);copyPose(local.pose,local.previous);Object.assign(room.simulation.rules.racers[i],{gate:r.gate,station:r.station,finish:r.finish,missed:r.missed});local.stock.used=r.recoveries??0;local.flow.banked=r.banked;local.message=r.message;local.sim.crashed=r.crashed;room.simulation.remoteFallPhase.set(i,r.fallPhase??'none');if(local.challenge&&r.challenge){Object.assign(local.challenge,r.challenge);local.challenge.photos=new Set(r.challenge.photos);}});}acc=0;const input=active&&!online.inputBlocked?room.input.consume(0):{...NEUTRAL_ACTIONS};if(input.hop||input.trick)online.command(input);online.update(dt,room.simulation,input);}
- else if(active){if(online.active)advanceOnlineHost(dt);else {acc+=dt;while(acc>=1/120&&!room.simulation.rules.done){mapWorld.step();room.simulation.step(1/120,room.simulation.riders.map((_,i)=>room.input.consume(i)));for(const i of room.simulation.newCrashes)room.input.clear(i);room.view.afterStep(1/120);acc=Math.max(0,acc-1/120);}}}
+ if(online.active&&!online.isHost){const f=online.frame;if(f){room.simulation.rules.countdown=f.countdown;room.simulation.rules.elapsed=f.elapsed;room.simulation.rules.done=f.done;f.riders.forEach((r,i)=>{const local=room.simulation.riders[i];lerpPose(local.pose,r.pose,1-Math.exp(-dt*16),local.pose);copyPose(local.pose,local.previous);Object.assign(room.simulation.rules.racers[i],{gate:r.gate,station:r.station,finish:r.finish,missed:r.missed});local.stock.used=r.recoveries??0;local.flow.banked=r.banked;local.message=r.message;local.sim.crashed=r.crashed;room.simulation.remoteFallPhase.set(i,r.fallPhase??'none');if(local.challenge&&r.challenge){Object.assign(local.challenge,r.challenge);local.challenge.photos=new Set(r.challenge.photos);}});room.view.afterRemoteFrame(dt);}acc=0;const input=active&&!online.inputBlocked?room.input.consume(0):{...NEUTRAL_ACTIONS};if(input.hop||input.trick)online.command(input);online.update(dt,room.simulation,input);}
+ else if(active){if(online.active)advanceOnlineHost(dt);else {acc+=dt;while(acc>=1/120&&!room.simulation.rules.done){mapWorld.step(true);room.simulation.step(1/120,room.simulation.riders.map((_,i)=>room.input.consume(i)));for(const i of room.simulation.newCrashes)room.input.clear(i);room.view.afterStep(1/120);acc=Math.max(0,acc-1/120);}}}
  else acc=0;
  if(room.simulation.rules.done&&!finished){finished=true;clearInput();}
  hero.root.visible=false;dogView.root.visible=false;confirmation.render(false);riderLamp.update(dt,current,night,false);ambience?.update(room.simulation.rules.elapsed,room.simulation.riders.map(r=>r.pose));
@@ -626,6 +632,7 @@ function frameSplit(now:number,dt:number){
   const navSlot=online.active?online.slot:0,navPose=room.simulation.riders[navSlot].pose,navPoint=toMap(navPose.x,navPose.y,navPose.z);miniMap?.hud.setRaceCourse(room.simulation.sessionMode==='race'?{...DETROIT_RACE_COURSE,next:room.simulation.rules.racers[navSlot].gate,finished:room.simulation.rules.racers[navSlot].finish!==null}:null);miniMap?.update(navPoint.x,navPoint.z,navPose.headingY,visible,room.simulation.riders.flatMap((r,i)=>i===navSlot?[]:[{...toMap(r.pose.x,r.pose.y,r.pose.z),heading:r.pose.headingY,label:(online.match?.members[i]?.bot?'AI ':'P')+(i+1),color:online.match?.members[i]?.bot?'#ffce76':'#73eafa'}]));
   canvas.dataset.effects=JSON.stringify({players:room.view.feedback,patches:effectPatches.length});
   canvas.dataset.splitRace=JSON.stringify({...room.simulation.snapshot,paused,bindings:room.input.bindings,cruise:room.input.cruising});
+  canvas.dataset.onlineCamera=JSON.stringify({revision:'guest-follow-2',players:room.view.cameraTracking});
   if(online.active)canvas.dataset.online=JSON.stringify(online.state);else delete canvas.dataset.online;
   const timings=[...frameTimes].sort((a,b)=>a-b);canvas.dataset.performance=JSON.stringify({sampleFrames:timings.length,frameP50:timings[Math.floor(timings.length*.5)],frameP95:timings[Math.floor(timings.length*.95)],geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,views:room.simulation.riders.length});
   Object.assign(canvas.dataset,{mode:'split',paused:String(paused),running:String(running),finished:String(finished),score:'0',cruise:'false',actors:String(room.simulation.riders.length)});hudAt=now;
@@ -747,7 +754,7 @@ function frame(now:number,xrFrame?:XRFrame){
   if(now-hudAt>120){
     if(race){race.hud();canvas.dataset.race=JSON.stringify({countdown:race.rules.countdown,elapsed:race.rules.elapsed,place:race.rules.place,done:race.rules.done,racers:race.rules.racers,pilots:race.pilots.map(p=>p.diagnostics())});}else delete canvas.dataset.race;
     const timings=[...frameTimes].sort((a,b)=>a-b),gl=renderer.getContext(),gpu=gl.getExtension('WEBGL_debug_renderer_info');
-    canvas.dataset.performance=JSON.stringify({cpuFrameMs:performance.now()-frameCpuStarted,frameProfile,sampleFrames:timings.length,frameP50:timings[Math.floor(timings.length*.5)],frameP95:timings[Math.floor(timings.length*.95)],loadMs:loadedAt-bootStarted,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures,programs:renderer.info.programs?.length,heapMB:((performance as Performance&{memory?:{usedJSHeapSize:number}}).memory?.usedJSHeapSize??0)/1048576,renderer:gpu?gl.getParameter(gpu.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER),visualBaseline:qaVisualBaseline});
+    canvas.dataset.performance=JSON.stringify({cpuFrameMs:performance.now()-frameCpuStarted,frameProfile,sampleFrames:timings.length,frameP50:timings[Math.floor(timings.length*.5)],frameP95:timings[Math.floor(timings.length*.95)],loadMs:loadedAt-bootStarted,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures,programs:renderer.info.programs?.length,lightBudget:lightingBudget.status,heapMB:((performance as Performance&{memory?:{usedJSHeapSize:number}}).memory?.usedJSHeapSize??0)/1048576,renderer:gpu?gl.getParameter(gpu.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER),visualBaseline:qaVisualBaseline});
     const s=sim.snapshot(),mapped=toMap(pose.x,pose.y,pose.z),gps=gpsAt(mapped.x,mapped.z);updateMap(mapped.x,mapped.z);miniMap?.hud.setRaceCourse(race?{...DETROIT_RACE_COURSE,next:race.rules.player.gate,finished:race.rules.player.finish!==null}:null);miniMap?.update(mapped.x,mapped.z,pose.headingY,running&&$('menu').hidden&&!vr.active);if(communityActive()&&community?.ride.joined)miniMap?.hud.setRoute(community.ride.route.points.map(p=>{const m=toMap(p.x,0,p.z);return northUp(m.x,m.z);}),[],'Cut community ride · '+community.ride.nextGate+'/'+community.ride.gates.length);
     if(elmwood)Object.assign(canvas.dataset,{map:'elmwood',origin:JSON.stringify({name:'Elmwood entrance / local plan coordinates',source:ELMWOOD_SOURCE,estimated:true}),routeLength:String(ELM_PATHS.reduce((n,p)=>n+p.length,0))});
     else Object.assign(canvas.dataset,{map:'cut',latitude:gps.lat.toFixed(7),longitude:gps.lon.toFixed(7),station:cutCoords(mapped.x,mapped.z).d.toFixed(2),origin:JSON.stringify(GEO.origin)});
