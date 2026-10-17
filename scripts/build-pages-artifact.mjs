@@ -1,4 +1,6 @@
 import {shareCityData} from './share-city-data.mjs';
+import {pruneRidingBundles} from './prune-riding-bundles.mjs';
+import {shareCinematicMedia} from './share-cinematic-media.mjs';
 import {optimizePagesImages} from './optimize-pages-images.mjs';
 import {shareRideTextures} from './share-ride-textures.mjs';
 import {compressRideModels} from './compress-ride-models.mjs';
@@ -204,7 +206,7 @@ const publicFiles = git(["ls-files", "-z", "--cached", "--others", "--exclude-st
 // This game's production subtree comes only from the compiled Astro build.
 // Retain its source in the reference scan so shared arcade media stays included.
 const sourceFiles = publicFiles.filter(file => !file.startsWith(gothtechnologyPath + "/"));
-const storeBuild = await readGothtechnologyBuild(repoRoot);
+const storeBuild = await shareCinematicMedia((await pruneRidingBundles(await readGothtechnologyBuild(repoRoot))).files);
 
 if (!sourceFiles.length) {
   throw new Error("No public source files were found for the Pages artifact.");

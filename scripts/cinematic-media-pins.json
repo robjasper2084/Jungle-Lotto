@@ -1,0 +1,42 @@
+[
+  {
+    "game": "swoop-detroit",
+    "name": "swoop-keyart.png",
+    "sha": "145445f1fc91a6de94b7a24cec48bf8263d5d3838f5d58a8483a9e4c090e39b8"
+  },
+  {
+    "game": "swoop-detroit",
+    "name": "swoop-loading.mp4",
+    "sha": "d0a03df517d611875cc03e1122821d0ffce5f60c9b7f6590091db118bdfea640"
+  },
+  {
+    "game": "swoop-detroit",
+    "name": "swoop-startup.mp4",
+    "sha": "56df117f4b555e7d11035f5c8efcdc027fb61995ac689f2c61ba3331dae8295b"
+  },
+  {
+    "game": "swoop-detroit",
+    "name": "swoop-title-energy.mp4",
+    "sha": "9173bf119022ca2195ca5158333b1b9c9f8ab4c62deeb625b8c66b5ff59eebcd"
+  },
+  {
+    "game": "elmwood-explorer",
+    "name": "elmwood-keyart.png",
+    "sha": "65aa0e0d9b0d76a48cbbfade388563ed9b7de51a67e237d68b217d0affd5203c"
+  },
+  {
+    "game": "elmwood-explorer",
+    "name": "elmwood-loading.mp4",
+    "sha": "9220105a707cf2e24bf91f2aec354bfc59462fcd8380bed36246fd7092f3fae3"
+  },
+  {
+    "game": "elmwood-explorer",
+    "name": "elmwood-startup.mp4",
+    "sha": "ba2097e86b8d1db9d9eb4c136c41a79acebd2cb0db662c60356900137b3d4d9c"
+  },
+  {
+    "game": "elmwood-explorer",
+    "name": "elmwood-title-moonlight.mp4",
+    "sha": "24ab488facc0aba5ff97cc6dd73c2bcbeb8e03d24a95afa0e7e40f88352c0192"
+  }
+]

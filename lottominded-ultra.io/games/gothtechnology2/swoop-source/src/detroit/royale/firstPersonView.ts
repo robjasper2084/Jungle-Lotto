@@ -15,6 +15,7 @@ import {FpsMotion,reloadPose} from './fpsMotion.ts';
 export class FirstPersonView {
  readonly root=new T.Group();private hero:Hero;private weapon:WeaponView;private rig:CombatRig;private motion=new FpsMotion();
  private arms:FpsArms;private materials=new Set<T.Material>();private previousForward?:T.Vector3;private sway=new T.Vector2();
+ private forwardScratch=new T.Vector3();private rightScratch=new T.Vector3();private upScratch=new T.Vector3();private swayScratch=new T.Vector2();
  private magazine=new T.Mesh(new T.BoxGeometry(.055,.13,.085),new T.MeshStandardMaterial({color:'#293a3c',metalness:.65,roughness:.4}));
  constructor(data:Map<string,GLTF>,library:EquipmentLibrary,readonly skin:RiderId){
   this.hero=new Hero(data,undefined,skin);this.weapon=new WeaponView(library);this.rig=new CombatRig(this.hero,this.weapon);
@@ -35,12 +36,12 @@ export class FirstPersonView {
   this.hero.apply({...p,seated:0});this.hero.visibility.setFirstPerson(true);this.hero.vehicle.visible=false;
   this.weapon.select(kind);if(shot)this.rig.interruptPickup();if(shot)this.weapon.fire(reduced);this.weapon.update(dt,reduced);this.rig.apply({...p,seated:0},yaw,pitch,state,tick,healingUntil);
   const r=reloadPose(state,tick),m=this.motion.update(dt,kind,shot,Math.abs(p.speed),p.airHeight>.03,ads,reduced,r),scale=this.hero.motionScale;
-  const f=new T.Vector3(0,0,-1).applyQuaternion(camera.quaternion),right=new T.Vector3(1,0,0).applyQuaternion(camera.quaternion),up=new T.Vector3(0,1,0).applyQuaternion(camera.quaternion);
+  const f=this.forwardScratch.set(0,0,-1).applyQuaternion(camera.quaternion),right=this.rightScratch.set(1,0,0).applyQuaternion(camera.quaternion),up=this.upScratch.set(0,1,0).applyQuaternion(camera.quaternion);
   const obstacle=terrain.raycastObstacle(camera.position,f,.95,.07),blocked=obstacle===null?0:T.MathUtils.clamp((.95-obstacle)/.6,0,1);
   const bob=reduced||ads?0:Math.sin(p.footCycle*Math.PI*2)*Math.min(.012,Math.abs(p.speed)*.003);
   const previous=this.previousForward??f,weight=reduced?0:1-m.aim;
   const lagX=T.MathUtils.clamp(previous.dot(right)*.45,-.022,.022)*weight,lagY=T.MathUtils.clamp(previous.dot(up)*.35,-.016,.016)*weight;
-  this.sway.lerp(new T.Vector2(lagX,lagY),1-Math.exp(-14*Math.min(.1,dt)));this.previousForward=f.clone();
+  this.sway.lerp(this.swayScratch.set(lagX,lagY),1-Math.exp(-14*Math.min(.1,dt)));(this.previousForward??=new T.Vector3()).copy(f);
   if(reduced)this.sway.set(0,0);
   // Smaller presentation scale clears the lower corners without changing hitboxes or muzzle authority.
   const wide=T.MathUtils.clamp((((camera as T.PerspectiveCamera).aspect??1)-.45)/.85,0,1),viewScale=.66+.14*wide;
