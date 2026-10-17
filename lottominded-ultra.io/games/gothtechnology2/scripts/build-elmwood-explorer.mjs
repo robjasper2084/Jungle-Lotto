@@ -18,6 +18,7 @@ files.add('exports/glb/DS_Armored_Rider_01/DS_Armored_Rider_01_LOD1.glb');
 for(const id of ['DS_Man_01','DS_Hoodie_Woman_01','DS_Mascot_Suit_01','DS_Mascot_Hoodie_01','DS_Armored_Rider_01'])files.add('exports/rigged-heroes/'+id+'.glb');
 files.add('exports/rigged-heroes/manifest.json');
 files.add('elmwood/title-screen-two-riders-20261005.webp');
+for(const f of ['elmwood-startup.mp4','elmwood-loading.mp4','elmwood-keyart.png','elmwood-title-moonlight.mp4'])files.add('cinematics/'+f);
 for(const id of ['talaria','ultra','sr','varg'])files.add('exports/electric/Ebike_'+id+'.glb');for(const id of ['city','tour','trail','speed'])files.add('exports/electric/Euc_'+id+'.glb');files.add('exports/electric/NOTICE.md');files.add('love-tag/config.json');files.add('love-tag/elmwood-explorer.json.gz');for(const name of await readdir(resolve(source,'public/love-tag')))if(name==='elmwood-explorer.browser.json.gz'||/^elmwood-explorer\.physics-[a-f0-9]+\.bin\.gz$/.test(name))files.add('love-tag/'+name);
 files.add('exports/glb/DS_Bicycle_Styles/DS_Bicycle_Styles_LOD1.glb');files.add('exports/glb/DS_Bicycle_Styles/manifest.json');
 async function collect(dir){for(const item of await readdir(resolve(source,'public',dir),{withFileTypes:true})){const file=dir+'/'+item.name;if(item.isDirectory())await collect(file);else files.add(file);}}await collect('elmwood/references');await collect('exports/nature');await collect('audio/nature');

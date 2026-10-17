@@ -35,7 +35,7 @@ import {DogBarkAudio} from './dogCommandAudio.ts';
 import {followStableSun} from './stableSun.ts';
 import {riderEyeMotion,RIDER_EYE_PITCH} from '@digital-static/ridecore';
 import {loadingCinema} from './loadingCinema.ts';
-import {boot,bootStage,renderBoot,failBoot} from './bootUi.ts';
+import {boot,bootStage,bootProgress,renderBoot,failBoot} from './bootUi.ts';
 import {BicycleAdapter} from './bicycleAdapter.ts';
 import {LaneRoute} from '@digital-static/ridecore/cycling';
 import {BicycleView,BIKE_STYLES,CyclingSession} from '@digital-static/ridecore/cycling-view';
@@ -555,9 +555,9 @@ async function prepareSpawn(spot:number){
  }finally{preparingSpawn=false;$('status').textContent='';}
 }
 try{
-  bootStage('loading','Loading your rider and Detroit district…');
+  bootProgress(1);bootStage('loading','Loading your rider and Detroit district…');
   const [data]=await Promise.all([timeLoad('riders',()=>loadActors()),timeLoad('physics',()=>mapWorld.init())]);
-  boot.assertActive();bootStage('preparing','Preparing streets, landmarks and collision…');
+  bootProgress(2);boot.assertActive();bootStage('preparing','Preparing streets, landmarks and collision…');
   // Ground queries need the initialized physics world, including nature placement.
   const cherrySites=elmwood?[35,150,390,640,940,1290,1640].map((d,i)=>({...pointOnCut(d,i%2?7:-7),scale:.95+i%3*.1})).filter(m=>dryStreetSite(m.x,m.z,1)):cherryTreeSites((x,z)=>(mapWorld as DetroitWorld).chunks.some(c=>Math.abs(c.x-x)<=50&&Math.abs(c.z-z)<=50));
   const cherryAnchors=cherrySites.map(m=>{const p=toLocal(m.x,0,m.z);return{x:p.x,z:p.z,y:world.sampleGround(p.x,p.z,cherryGround).height,scale:m.scale};});
@@ -566,7 +566,7 @@ try{
   await timeLoad('nearby-interiors',()=>interiorStream.warm([SPOTS[Number($<HTMLSelectElement>('spawn').value)]],350));
 
 
-  boot.assertActive();bootStage('preparing','Preparing the ride and controls…');
+  bootProgress(3);boot.assertActive();bootStage('preparing','Preparing the ride and controls…');
   if(!elmwood&&!qaVisualBaseline)ambience=new RouteAmbience(scene,world,effectPatches);
   if(!elmwood)buildFreestylePark(mapScene,mapWorld as DetroitWorld);
   actorData=data;scenery=elmwood?await buildElmwood(mapScene,mapWorld as ElmwoodWorld,()=>compactElmwood||vr.active):await timeLoad('scenery-total',()=>buildScenery(mapScene,mapWorld,!qaVisualBaseline,toMap(SPOTS[selectedSpot].x,0,SPOTS[selectedSpot].z)));setRider(selectedRider);if('jazz'in scenery)jazzVisit=new JazzVisit(scenery.jazz.clubs,()=>{const was=paused;clearInput();if(!paused)pause();return was;},was=>{clearInput();if(paused!==was)pause();canvas.focus();},()=>pose.footMode?'walk':'ride');traffic=new TrafficView(scene,data,world);photographers=new MapPhotographers(scene,data,world);dogView=new CompanionView(data,world);scene.add(dogView.root);
@@ -580,7 +580,7 @@ try{
     probe.update(renderer,scene);const generator=new T.PMREMGenerator(renderer);scenery.waterMaterial.envMap=generator.fromCubemap(target.texture).texture;scenery.waterMaterial.needsUpdate=true;
     generator.dispose();target.dispose();probe.removeFromParent();scenery.waterGroup.visible=true;hero.root.visible=true;dogView.root.visible=dogEnabled;
   }
-  canvas.dataset.architecture=JSON.stringify(scenery.architecture);
+  bootProgress(4);canvas.dataset.architecture=JSON.stringify(scenery.architecture);
   sim=new BicycleAdapter(riderTerrain);sim.mountedVolume=hero.mountedVolume;sim.wheelScale=selectedRider.startsWith('DS_Mascot_')?.75:.86;reset();
   if(!elmwood){community=new CyclingSession('Swoop Detroit',scene,actorData,world.withActorPassThrough(computerBikeContact),new LaneRoute(Array.from({length:31},(_,i)=>({...routePosition(850+i*5),width:5}))),()=>current,travelCommunity,()=>canvas.focus());community.ride.passThroughContact=o=>computerBikeContact(o);ambientPacks=new AmbientCyclistPacks(scene,actorData,world,cyclistCircuit(Array.from({length:100},(_,i)=>({...routePosition(60+i*(LENGTH-120)/99),width:5}))));canvas.dataset.ambientPackSizes='10,10';canvas.dataset.ambientPackStarts=JSON.stringify(ambientPacks.starts);}
   boot.assertActive();
