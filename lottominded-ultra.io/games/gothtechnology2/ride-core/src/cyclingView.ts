@@ -1,3 +1,4 @@
+import {acquireRiderTint} from './riderTintGeometry.ts';
 import * as T from 'three';
 import {clone} from 'three/addons/utils/SkeletonUtils.js';
 import type {GLTF} from 'three/addons/loaders/GLTFLoader.js';
@@ -13,7 +14,7 @@ type Limb={a:T.Object3D;b:T.Object3D;c:T.Object3D;rotation:T.Quaternion;side:num
 function point(a:T.Object3D,b:T.Object3D,target:T.Vector3){const from=a.getWorldPosition(v()),rotation=a.getWorldQuaternion(q()).premultiply(q().setFromUnitVectors(b.getWorldPosition(v()).sub(from).normalize(),target.clone().sub(from).normalize()));a.quaternion.copy(a.parent!.getWorldQuaternion(q()).invert().multiply(rotation));a.updateWorldMatrix(false,true);}
 function ik(l:Limb,target:T.Vector3,pole:T.Vector3,rotation:T.Quaternion){const a=l.a.getWorldPosition(v()),b=l.b.getWorldPosition(v()),c=l.c.getWorldPosition(v()),l1=a.distanceTo(b),l2=b.distanceTo(c),dir=target.clone().sub(a),d=Math.max(.02,Math.min(dir.length(),l1+l2-.001));dir.normalize();pole.addScaledVector(dir,-pole.dot(dir)).normalize();const along=(l1*l1+d*d-l2*l2)/(2*d),bend=Math.sqrt(Math.max(0,l1*l1-along*along));point(l.a,l.b,a.clone().addScaledVector(dir,along).addScaledVector(pole,bend));point(l.b,l.c,a.clone().addScaledVector(dir,d));l.c.quaternion.copy(l.c.parent!.getWorldQuaternion(q()).invert().multiply(rotation));l.c.updateWorldMatrix(false,true);}
 export function styleCyclist(bike:T.Object3D,rider:T.Object3D,style:number,npc=true){
-  style=Math.abs(style)%BIKE_STYLES.length;const materials:T.Material[]=[],geometry:T.BufferGeometry[]=[];
+  style=Math.abs(style)%BIKE_STYLES.length;const materials:T.Material[]=[],geometry:T.BufferGeometry[]=[],releaseTint:(()=>void)[]=[];
     // Every clone shares immutable geometry; remove only the unused frame nodes.
     // Legacy single-frame exports remain valid as the loading fallback.
     const unused:T.Object3D[]=[];
@@ -24,9 +25,7 @@ export function styleCyclist(bike:T.Object3D,rider:T.Object3D,style:number,npc=t
     const tinted=new Map<T.Material,T.Material>();
     bike.traverse(o=>{const m=o as T.Mesh;if(!m.isMesh)return;const color=(material:T.Material)=>{const existing=tinted.get(material);if(existing)return existing;const c=material.clone() as T.MeshStandardMaterial;materials.push(c);tinted.set(material,c);if(c.name.includes('Graphite_Paint'))c.color.setHex(palette.color);if(c.name.includes('Ochre'))c.color.setHex(palette.accent);return c;};m.material=Array.isArray(m.material)?m.material.map(color):color(m.material);});
     // Reuse texture detail, with separate skin/clothing masks derived from the rig.
-    if(npc)rider.traverse(o=>{const m=o as T.SkinnedMesh;if(!m.isSkinnedMesh)return;const geo=m.geometry.clone();geometry.push(geo);m.geometry=geo;const index=geo.getAttribute('skinIndex'),weight=geo.getAttribute('skinWeight'),mask=new Float32Array(index.count*2);
-      for(let i=0;i<index.count;i++)for(let j=0;j<4;j++){const bone=m.skeleton.bones[index.getComponent(i,j)]?.name??'',w=weight.getComponent(i,j);if(/Head|Neck|Hand|Finger|Thumb/.test(bone))mask[i*2]+=w;else if(/Spine|Arm|ForeArm/.test(bone))mask[i*2+1]+=w;}
-      geo.setAttribute('riderTint',new T.BufferAttribute(mask,2));const source=(Array.isArray(m.material)?m.material[0]:m.material) as T.MeshStandardMaterial,mat=source.clone();materials.push(mat);m.material=mat;mat.emissive.setHex(0);mat.emissiveMap=null;mat.roughness=.88;
+    if(npc)rider.traverse(o=>{const m=o as T.SkinnedMesh;if(!m.isSkinnedMesh)return;const tint=acquireRiderTint(m.geometry,m.skeleton.bones);m.geometry=tint.geometry;releaseTint.push(tint.release);const source=(Array.isArray(m.material)?m.material[0]:m.material) as T.MeshStandardMaterial,mat=source.clone();materials.push(mat);m.material=mat;mat.emissive.setHex(0);mat.emissiveMap=null;mat.roughness=.88;
       const skin=new T.Color([0x633c28,0xe3b499,0x85543a,0xf0c7b0,0x493020,0xc69270][style]);const shirt=new T.Color([0x32bba7,0xdb4c65,0x496ecc,0xe6a52d,0x8b50bf,0x48a675][style]);
       mat.onBeforeCompile=shader=>{shader.uniforms.rideSkin={value:skin};shader.uniforms.rideShirt={value:shirt};shader.vertexShader='attribute vec2 riderTint; varying vec2 rideTint;\n'+shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nrideTint=riderTint;');shader.fragmentShader='uniform vec3 rideSkin; uniform vec3 rideShirt; varying vec2 rideTint;\n'+shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
         float lightness=max(diffuseColor.r,max(diffuseColor.g,diffuseColor.b));
@@ -49,7 +48,7 @@ export function styleCyclist(bike:T.Object3D,rider:T.Object3D,style:number,npc=t
     if(style%3===1){box(.35,.022,.34,0,.8,-.67);const fabric=new T.MeshStandardMaterial({color:palette.accent,roughness:.95});fabric.color.multiplyScalar(.4);materials.push(fabric);for(const x of [-.2,.2]){const g=new RoundedBoxGeometry(.12,.27,.3,2,.035);geometry.push(g);const bag=new T.Mesh(g,fabric);bag.position.set(x,.64,-.67);bike.add(bag);box(.125,.025,.24,x,.72,-.67);}}
     if(style%3===2){const g=new T.CylinderGeometry(.045,.045,.2,8);geometry.push(g);const bottle=new T.Mesh(g,accessory);bottle.position.set(0,.54,.08);bottle.rotation.x=-.3;bike.add(bottle);}
 
-  return ()=>{materials.forEach(m=>m.dispose());geometry.forEach(g=>g.dispose());};
+  return ()=>{materials.forEach(m=>m.dispose());geometry.forEach(g=>g.dispose());releaseTint.forEach(release=>release());};
 }
 
 /** Fits the original articulated humans to measured saddle, crank and steering sockets. */

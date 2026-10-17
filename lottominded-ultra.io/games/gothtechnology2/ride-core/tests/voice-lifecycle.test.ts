@@ -44,3 +44,18 @@ test('push-to-talk preparation never leaves the microphone open',async()=>{
  const {voice,track,root}=fixture();
  try{const mode=root.children.find(e=>e.tagName==='select')!;mode.value='hold';mode.onchange!();voice.toggleMicrophone();await settle();assert.equal(track.enabled,false);assert.equal(root.dataset.micMode,'hold');}finally{voice.disconnect();}
 });
+
+test('Reconnect replaces a device-ended microphone and restores hands-free voice',async()=>{
+ let captures=0;const tracks:any[]=[];
+ const {voice,root}=fixture(async()=>{captures++;const track={enabled:false,muted:false,readyState:'live',onended:()=>{},stop(){this.readyState='ended';}};tracks.push(track);return {getAudioTracks:()=>[track],getTracks:()=>[track]} as unknown as MediaStream;});
+ try{voice.toggleMicrophone();await settle();tracks[0].readyState='ended';tracks[0].onended();assert.equal(root.dataset.mic,'off');voice.retryVoice();await settle();assert.equal(captures,2);assert.equal(root.dataset.mic,'on');assert.equal(tracks[1].enabled,true);}finally{voice.disconnect();}
+});
+
+test('Reconnect preserves intentional mute on a healthy track',async()=>{
+ const {voice,track}=fixture();try{voice.toggleMicrophone();await settle();voice.toggleMicrophone();await settle();voice.retryVoice();await settle();assert.equal(track.enabled,false);}finally{voice.disconnect();}
+});
+
+test('first speaker tap joins listening without turning sound back off or capturing the microphone',()=>{
+ let captures=0;const {voice,root}=fixture(async()=>{captures++;throw Error('unexpected capture');});
+ try{voice.toggleSpeaker();assert.equal(root.dataset.voice,'listening');assert.equal(root.dataset.speaker,'on');assert.equal(captures,0);voice.toggleSpeaker();assert.equal(root.dataset.speaker,'off');}finally{voice.disconnect();}
+});

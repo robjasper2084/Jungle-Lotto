@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {FootAnimation,gaitScale,movementDirection} from '../src/footAnimation.ts';
+import {FootAnimation,gaitScale,movementDirection,crawlReach} from '../src/footAnimation.ts';
 import {footCycleDistance} from '../src/onFootGait.ts';
-import {RiderPresentation} from '../../swoop-fps-release/src/detroit/royale/riderPresentation.ts';
-import {createPose} from '../../swoop-fps-release/src/detroit/controller.ts';
+import {RiderPresentation} from '../../swoop-source/src/detroit/royale/riderPresentation.ts';
+import {createPose} from '../../swoop-source/src/detroit/controller.ts';
 
 test('both short-legged mascots retain a readable walking cadence',()=>{
  for(const leg of [.27,.30]){
@@ -22,6 +22,12 @@ test('turn-in-place history steps the feet and resets safely when scrubbing',()=
  const a=new FootAnimation();for(let i=0;i<120;i++)a.update({footTime:i/60,headingY:i/60,speed:0});
  assert(a.turn>.9&&a.turnCycle>.6);a.update({footTime:0,headingY:0,speed:0});
  assert.equal(a.turnCycle,0);assert.equal(a.turn,0);assert.equal(a.acceleration,0);
+});
+test('crawl reach reverses and strafes around each planted limb without rotating the prone body',()=>{
+ const forward=crawlReach(.29,.58,.15,0),back=crawlReach(.29,.58,.15,Math.PI),side=crawlReach(.29,.58,.15,Math.PI/2);
+ assert(Math.abs((forward.z-.58)+ (back.z-.58))<1e-8);
+ assert(Math.abs(side.z-.58)<1e-8);assert(Math.abs(side.x-.44)<1e-8);
+ for(const direction of [0,Math.PI/4,Math.PI/2,Math.PI])assert.deepEqual(crawlReach(-.29,-.9,0,direction),{x:-.29,z:-.9});
 });
 test('confirmed hit direction changes flinch and elimination direction without moving authority',()=>{
  const source=createPose(),front=new RiderPresentation(),back=new RiderPresentation();

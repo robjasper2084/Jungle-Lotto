@@ -1,4 +1,5 @@
 import {registerRetailShell} from './tagSceneryCollisions.ts';
+import {visibleSceneryMatrices} from '@digital-static/ridecore';
 import * as T from 'three';
 import {GLTFLoader} from './compressedGLTFLoader.ts';
 import {toLocal,toMap} from './geo-profile.ts';
@@ -10,7 +11,7 @@ import {addPennyAdvertisements} from './pennyWayfinding.ts';
 import type {DetroitWorld} from './world.ts';
 import {addPhotographyExhibition} from './photographyExhibition.ts';
 export async function buildPennyShop(scene:T.Scene,world:DetroitWorld,entered:()=>void,left:()=>void,beforeEnter:()=>Promise<void>=async()=>{}){
- const loader=new GLTFLoader(),building=(await loader.loadAsync('/exports/atwater/penny-exchange.glb')).scene;
+ const loader=new GLTFLoader(),building=(await loader.loadAsync('/exports/atwater/penny-exchange.glb')).scene;building.visible=false;visibleSceneryMatrices(building);
  const at=pennyMap(0,0),local=toLocal(at.x,PENNY_SHOP.floor,at.z);building.name='Penny Exchange / connected LottoMind building';building.position.set(local.x,local.y,local.z);building.rotation.y=PENNY_SHOP.heading;scene.add(building);
  building.traverse(o=>{const m=o as T.Mesh;if(m.isMesh){m.receiveShadow=true;m.castShadow=true;}});
  registerRetailShell(world,'penny');

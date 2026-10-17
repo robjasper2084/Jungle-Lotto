@@ -1,0 +1,31 @@
+{
+  "textureLimit": 512,
+  "preserves": "Exact non-image buffers, joints, meshes and animations",
+  "models": [
+    {
+      "id": "DS_Man_01",
+      "originalBytes": 11188172,
+      "mobileBytes": 6249000
+    },
+    {
+      "id": "DS_Hoodie_Woman_01",
+      "originalBytes": 8751112,
+      "mobileBytes": 1685612
+    },
+    {
+      "id": "DS_Mascot_Suit_01",
+      "originalBytes": 9044748,
+      "mobileBytes": 1878132
+    },
+    {
+      "id": "DS_Mascot_Hoodie_01",
+      "originalBytes": 8890524,
+      "mobileBytes": 1884872
+    },
+    {
+      "id": "DS_Armored_Rider_01",
+      "originalBytes": 3775632,
+      "mobileBytes": 3609680
+    }
+  ]
+}

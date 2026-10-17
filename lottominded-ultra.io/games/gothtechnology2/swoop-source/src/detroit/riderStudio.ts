@@ -30,19 +30,22 @@ const sim=new RideController(flat),current=createPose(),previous=createPose(),re
 const names:Record<string,string>={reverse:'Reverse • brake, release, ride back',pivot:'Slow turn • body pivot and forward knees',neutral:'Balance • relaxed knees',drive:'Accelerate • lean and drive',brake:'Brake • sit back and absorb',carve:'Carve • lean, counterbalance and look ahead',tuck:'Crouch • preload, then stand',air:'Hop / land • compress, extend, float, absorb'};
 for(const m of SPECIAL_MOVES){const name='trick'+m.id;names[name]=m.name+' · preload, balance, settle';const b=document.createElement('button');b.dataset.pose=name;b.textContent=m.name;document.querySelector('#play')!.before(b);}
 names.fall='Fall / recover • brace, separate, impact, slide';
-const footPreviews=['stroll','walk','run','backstep','strafeLeft','strafeRight','diagonal','crouchWalk','crawl','startStop','turnFoot','evade','stagger'];
+const footPreviews=['stroll','walk','run','backstep','strafeLeft','strafeRight','diagonal','crouchWalk','crawl','crawlBack','crawlSide','footHop','startStop','turnFoot','evade','stagger'];
 const entries=['neutral','drive','carve','brake','tuck','air','reverse','pivot','walk','run'],step=1/120,duration=6;
-for(const [id,label] of [['stroll','Tactical pack walk'],['walk','Brisk walk'],['run','Run'],['backstep','Walk backwards'],['strafeLeft','Strafe left'],['strafeRight','Strafe right'],['diagonal','Diagonal steps'],['crouchWalk','Crouch walk'],['crawl','Prone crawl'],['startStop','Start / stop'],['turnFoot','Turn in place'],['mountFoot','Mount / dismount'],['evade','Side-step dodge'],['stagger','Stagger / recover'],['seat','Seated ride'],['stop','One-foot stop'],['scrape','Pedal scrape'],['beeps','Warning beeps']]){names[id]=label;const b=document.createElement('button');b.dataset.pose=id;b.textContent=label;document.querySelector('#play')!.before(b);}
+for(const [id,label] of [['stroll','Brother reference walk'],['walk','Brisk walk'],['run','Run'],['backstep','Walk backwards'],['strafeLeft','Strafe left'],['strafeRight','Strafe right'],['diagonal','Diagonal steps'],['crouchWalk','Crouch walk'],['crawl','Prone crawl'],['startStop','Start / stop'],['turnFoot','Turn in place'],['mountFoot','Mount / dismount'],['evade','Side-step dodge'],['stagger','Stagger / recover'],['seat','Seated ride'],['stop','One-foot stop'],['scrape','Pedal scrape'],['beeps','Warning beeps']]){names[id]=label;const b=document.createElement('button');b.dataset.pose=id;b.textContent=label;document.querySelector('#play')!.before(b);}
 const rideAudio=new RideAudio(),sparks=new PedalSparks(scene),sound=document.createElement('button');sound.textContent='Sound off';sound.onclick=()=>{void rideAudio.enable(!rideAudio.enabled);sound.textContent=rideAudio.enabled?'Sound on':'Sound off';};document.querySelector('#play')!.before(sound);
+for(const [id,label]of [['crawlBack','Crawl backwards'],['crawlSide','Crawl sideways'],['footHop','Standing hop / land']]){names[id]=label;const b=document.createElement('button');b.dataset.pose=id;b.textContent=label;document.querySelector('#play')!.before(b);}
 let selected='carve',playing=true,paused=matchMedia('(prefers-reduced-motion: reduce)').matches,elapsed=0,acc=0,last=performance.now(),cameraLast=new T.Vector3(),studioView='side',playbackRate=1;
 orbit.addEventListener('start',()=>{studioView='orbit';document.querySelector<HTMLSelectElement>('#view')!.value='orbit';});
 const timeline=document.querySelector<HTMLInputElement>('#timeline')!,pauseButton=document.querySelector<HTMLButtonElement>('#freeze')!;
 function inputs(t:number):RideActions{
+  if(selected==='footHop')return {...NEUTRAL_ACTIONS,hop:t%2>.5&&t%2<.55};
+  if(selected==='crawlBack'||selected==='crawlSide')return {...NEUTRAL_ACTIONS,prone:true,facingYaw:0,throttle:selected==='crawlBack'?-1:0,steer:selected==='crawlSide'?1:0};
   if(['strafeLeft','strafeRight','diagonal'].includes(selected))return {...NEUTRAL_ACTIONS,facingYaw:0,steer:selected==='strafeRight'?1:-1,throttle:selected==='diagonal'?.7:0};
   if(selected==='crouchWalk'||selected==='crawl')return {...NEUTRAL_ACTIONS,throttle:.65,crouch:selected==='crouchWalk',prone:selected==='crawl'};
   if(selected==='startStop')return {...NEUTRAL_ACTIONS,throttle:t>1&&t<3.5?.65:0};
   if(selected==='turnFoot')return {...NEUTRAL_ACTIONS,steer:t<3?.6:-.6};
-  if(selected==='mountFoot')return {...NEUTRAL_ACTIONS,dismount:(t>.2&&t<.3)||(t>3&&t<3.1)};
+  if(selected==='mountFoot')return {...NEUTRAL_ACTIONS,dismount:(t>.2&&t<.3)||(t>2&&t<2.1)};
   if(selected==='evade')return {...NEUTRAL_ACTIONS,facingYaw:0,evade:t%2>.7&&t%2<.92?(t<3?1:-1):0};
   if(selected==='stagger')return {...NEUTRAL_ACTIONS,throttle:.25};
   if(['stroll','walk','run','backstep'].includes(selected))return {...NEUTRAL_ACTIONS,throttle:selected==='backstep'?-1:selected==='stroll'?.65:1,run:selected==='run'};

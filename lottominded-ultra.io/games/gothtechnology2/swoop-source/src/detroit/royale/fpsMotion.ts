@@ -10,6 +10,19 @@ export function reloadPose(state:CombatState,tick:number){
  return {active:true,lower:tick<commit?smooth(before/.18):1-smooth(after),magazine,charge:tick>=commit?Math.sin(Math.PI*after):0,phase:tick<commit?(before<.3?'release':before<.64?'replace':'insert'):'readying'};
 }
 export function footEyeHeight(scale:number,crouch:number,prone:number){return ((1.64-.42*clamp(crouch))*(1-clamp(prone))+.46*clamp(prone))*scale;}
+/** Lower the old weapon before replacing its geometry, then raise the new one.
+ * Authoritative firing always wins over a cosmetic equip transition. */
+export class WeaponSwap {
+ private shown='';private requested='';private age=1;
+ update(dt:number,weapon:string,firing:boolean,reduced:boolean){
+  if(!this.shown||firing||reduced){this.shown=this.requested=weapon;this.age=1;return {weapon,lower:0};}
+  if(weapon!==this.requested){this.requested=weapon;this.age=0;}
+  this.age+=Math.max(0,Math.min(.1,dt));
+  if(this.age>=.12)this.shown=this.requested;
+  const lower=this.age<.12?smooth(this.age/.12):1-smooth((this.age-.12)/.18);
+  return {weapon:this.shown,lower};
+ }
+}
 export class FpsMotion {
  private age=1;private weapon='';private kick=0;private land=0;private air=false;private run=0;private aim=0;
  update(dt:number,weapon:string,shot:boolean,speed:number,air:boolean,ads:boolean,reduced:boolean,reload:ReturnType<typeof reloadPose>){

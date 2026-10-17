@@ -1,3 +1,4 @@
+import {SpatialUpdateGate,visibleSceneryMatrices} from '@digital-static/ridecore';
 import {buildJazzClubs} from './jazzClubs.ts';
 import type {SceneryWorld} from './sceneryWorld.ts';
 import {timeLoad} from './loadTiming.ts';
@@ -41,10 +42,11 @@ import {loadEnvironmentMaterials,surfaceUV} from './environmentMaterials.ts';
 import {makeTreeBatch,wind} from './trees.ts';
 import {roadwayClearance} from './roadsidePlacement.ts';
 import type {TreeSite} from './trees.ts';
-export async function buildScenery(scene:T.Scene,world:SceneryWorld,polish=true,start?:StreamPoint){
-  const stream=new SpatialAssetStream(1);
+export async function buildScenery(scene:T.Scene,world:SceneryWorld,polish=true,start?:StreamPoint,onAssetsLoaded?:(root:T.Object3D)=>void){
+  let streamedAssets=0;
+  const stream=new SpatialAssetStream(1,()=>{const loaded=stream.status.loaded;if(loaded!==streamedAssets){streamedAssets=loaded;onAssetsLoaded?.(scene);}});
   const loader=new GLTFLoader(),tl=new T.TextureLoader();
-  const names=['asphalt','grass','brick','concrete','limestone','mural_heron','mural_detroit','mural_music'];
+  const names=['brick','limestone','mural_heron','mural_detroit','mural_music'];
   const mats:Record<string,T.MeshStandardMaterial>={};
   await Promise.all(names.map(async n=>{
     const map=await tl.loadAsync('/textures/cut/'+n+'.jpg');
@@ -52,16 +54,18 @@ export async function buildScenery(scene:T.Scene,world:SceneryWorld,polish=true,
     mats[n]=new T.MeshStandardMaterial({map,roughness:.94,side:n.startsWith('mural')?T.DoubleSide:T.FrontSide});
   }));
   const skins=await timeLoad('environment-materials',()=>loadEnvironmentMaterials());
-  for(const key of ['asphalt','grass','concrete']){mats[key].map?.dispose();mats[key].dispose();mats[key]=skins[key];}
+  // These three surfaces come from the environment library. Do not download
+  // and decode older duplicates only to discard them during startup.
+  for(const key of ['asphalt','grass','concrete'])mats[key]=skins[key];
   mats.grass.color.set('#78895b');
   const treeTime={value:0},foliage=[skins.elm,skins.maple];for(const material of foliage){wind(material,treeTime);foliageSightline(material);}
   const treeBatches:ReturnType<typeof makeTreeBatch>[]=[];
   const steel=new T.MeshStandardMaterial({color:'#263c3e',metalness:.55,roughness:.45});
-  const groups=world.chunks.map(c=>{const g=new T.Group();g.userData.center={x:c.x,z:c.z};scene.add(g);return g;});
+  const groups=world.chunks.map(c=>{const g=new T.Group();visibleSceneryMatrices(g);g.userData.center={x:c.x,z:c.z};scene.add(g);return g;});
   const groupIndex=new Map(world.chunks.map((c,i)=>[Math.floor(c.x/100)+','+Math.floor(c.z/100),groups[i]]));
   const groupAt=(x:number,z:number)=>{
     const key=Math.floor(x/100)+','+Math.floor(z/100);let g=groupIndex.get(key);
-    if(!g){g=new T.Group();g.userData.center={x:Math.floor(x/100)*100+50,z:Math.floor(z/100)*100+50};groups.push(g);groupIndex.set(key,g);scene.add(g);}
+    if(!g){g=new T.Group();visibleSceneryMatrices(g);g.userData.center={x:Math.floor(x/100)*100+50,z:Math.floor(z/100)*100+50};groups.push(g);groupIndex.set(key,g);scene.add(g);}
     return g;
   };
   function mapPlane(w:number,h:number){
@@ -147,7 +151,7 @@ export async function buildScenery(scene:T.Scene,world:SceneryWorld,polish=true,
   for(const [i,d]of [382,806,1262,1798,2006,2246].entries()){
     const wall=GEO.walls.reduce((best,w)=>Math.abs(w.at-d)<Math.abs(best.at-d)?w:best),p=cutPoint(wall.at+3.9,wall.offset),g=groupAt(p.x,p.z);
     if(nearestRamp(p.x,p.z).distance<5)continue;
-    const ry=p.heading-Math.PI+(wall.offset>0?-Math.PI/2:Math.PI/2),art=new T.Mesh(mapPlane(7.4,wall.height-.08),mats[names[5+i%3]]);
+    const ry=p.heading-Math.PI+(wall.offset>0?-Math.PI/2:Math.PI/2),art=new T.Mesh(mapPlane(7.4,wall.height-.08),mats[['mural_heron','mural_detroit','mural_music'][i%3]]);
     art.position.set(p.x+Math.sin(ry)*.19,heightAt(p.x,p.z)+wall.height/2,p.z+Math.cos(ry)*.19);art.rotation.y=ry;g.add(art);
   }
   function postSign(name:string,at:number,w=3.4){
@@ -175,7 +179,7 @@ export async function buildScenery(scene:T.Scene,world:SceneryWorld,polish=true,
   const streetFurniture=await timeLoad('street-furniture',()=>buildStreetFurniture(scene,world,groupAt));
   await timeLoad('skyline',()=>buildAtwaterSkyline(scene));
   await timeLoad('milliken',()=>buildMillikenLandmarks(scene,world));
-  const jazz=await timeLoad('jazz-clubs',()=>buildJazzClubs(scene,world));
+  const jazz=await timeLoad('jazz-clubs',()=>buildJazzClubs(scene,world,stream));
   const foodTrucks=await timeLoad('food-trucks',()=>buildFoodTrucks(scene,world));const fieldSign=await timeLoad('field-sign',()=>buildFieldSign(scene,world));const air=new AirAtmosphere(scene);
   const riverfront=buildRiverfrontDetails(scene,world,groupAt);
   const waterfront=await timeLoad('waterfront',()=>buildWaterfront(scene,world,groupAt));
@@ -194,18 +198,20 @@ export async function buildScenery(scene:T.Scene,world:SceneryWorld,polish=true,
   const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)'),mobile=matchMedia('(max-width:700px)'),motionOverride=new URLSearchParams(location.search).has('reducedMotion');
   const birds=new LivingBirdFlock(scene,[0,650,1400,2200].map(at=>{const p=cutPoint(at);return {x:p.x,y:heightAt(p.x,p.z)+8,z:p.z};}).concat([{x:-140,y:9,z:-1360},{x:-220,y:10,z:-1820}]));
   void birds.load('/exports/nature/living-crow.glb');
+  const spatialGate=new SpatialUpdateGate();let visibleTiles=0;
   const trees=treeBatches.reduce((n,b)=>n+b.count,0);
   const allLighting={count:lighting.count+streetFurniture.count,setDusk(value:boolean){lighting.setDusk(value);streetFurniture.setDusk(value);}};
   return {get birds(){return birds.status;},jazz,foodTrucks:foodTrucks.count,lighting:allLighting,streetFurniture:streetFurniture.counts,materials:mats,architecture,waterfront,valade,trees,stream,get routeArt(){return {...routeArt,cutMurals};},rails,landmarks,flowers:flowers.count,grassClumps:grass?.count??0,skins:8,update(x:number,z:number,time=0){
-    stream.update([{x,z}],(Number(document.documentElement.dataset.drawDistance)||360)+100);lighting.update(x,z);
-    streetFurniture.update(x,z);jazz.update(x,z);
+    const spatial=spatialGate.due(x,z,time,(document.documentElement.dataset.drawDistance??'')+(document.documentElement.dataset.renderQuality??''));
+    if(spatial){stream.update([{x,z}],(Number(document.documentElement.dataset.drawDistance)||360)+100);lighting.update(x,z);
+    streetFurniture.update(x,z);jazz.update(x,z);}
     const reduced=document.documentElement.dataset.reducedMotion==='true'||reducedMotion.matches||motionOverride,low=document.documentElement.dataset.renderQuality==='compact';
     const waterTime=reduced?0:time;riverfront.update(waterTime);waterfront.update(waterTime);valade.update(waterTime);
-    birds.update(time,{x,z},low||mobile.matches,reduced);air.update(time,{x,y:heightAt(x,z),z},low||mobile.matches,reduced);foodTrucks.update(time,{x,z},low||mobile.matches,reduced);fieldSign.update(x,z,low);
+    birds.update(time,{x,z},low||mobile.matches,reduced);air.update(time,{x,y:heightAt(x,z),z},low||mobile.matches,reduced);foodTrucks.update(time,{x,z},low||mobile.matches,reduced);if(spatial)fieldSign.update(x,z,low);
     treeTime.value=low||reduced?0:time;
-    flowers.update(x,z,document.documentElement.dataset.renderQuality==='compact');
+    if(spatial)flowers.update(x,z,document.documentElement.dataset.renderQuality==='compact');
     grass?.update(x,z,time,reduced,mobile.matches||low);
-    for(const b of treeBatches){const c=b.group.userData.center;b.update(Math.hypot(c.x-x,c.z-z),low);}
-    let visible=0;for(const g of groups){const c=g.userData.center;g.visible=Math.hypot(c.x-x,c.z-z)<(Number(document.documentElement.dataset.drawDistance)||360);if(g.visible)visible++;}return visible;
+    if(spatial){for(const b of treeBatches){const c=b.group.userData.center;b.update(Math.hypot(c.x-x,c.z-z),low);}
+    let visible=0;for(const g of groups){const c=g.userData.center;g.visible=Math.hypot(c.x-x,c.z-z)<(Number(document.documentElement.dataset.drawDistance)||360);if(g.visible)visible++;}visibleTiles=visible;}return visibleTiles;
   }};
 }

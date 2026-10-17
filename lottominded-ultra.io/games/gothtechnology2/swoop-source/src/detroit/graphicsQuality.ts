@@ -29,6 +29,11 @@ export function resolveGraphics(value:string,cores=4,memory?:number,mobile=false
  if(memory!==undefined&&memory<=4)return cores<=4?'low':'balanced';
  return cores>=6||/nvidia|geforce|radeon|intel.*arc|apple m[2-9]/i.test(gpu)?'high':'balanced';
 }
+export function startupTextureBudget(){
+ const mobile=typeof navigator!=='undefined'&&(/Android|iPhone|iPad|Mobile|OculusBrowser/i.test(navigator.userAgent)||navigator.maxTouchPoints>1&&/Macintosh/.test(navigator.userAgent));
+ let choice='auto',tuning:Partial<GraphicsTuning>={};try{choice=localStorage.getItem('swoop-graphics-quality')??'auto';tuning=savedGraphicsTuning(choice,localStorage.getItem(TUNING_KEY));}catch{}
+ const preset=GRAPHICS_PRESETS[resolveGraphics(choice,4,undefined,mobile)];return {mobile,maxSize:tuning.textureSize??preset.textureSize};
+}
 export function createGraphicsQuality(renderer:T.WebGLRenderer,scene:T.Scene,canvas:HTMLCanvasElement,onApply?:()=>void){
  let choice:GraphicsChoice='auto';try{const saved=localStorage.getItem('swoop-graphics-quality');if(['auto','low','balanced','high','ultra'].includes(saved??''))choice=saved as GraphicsChoice;}catch{}
  let tuning:Partial<GraphicsTuning>={};try{tuning=savedGraphicsTuning(choice,localStorage.getItem(TUNING_KEY));}catch{}
@@ -41,11 +46,12 @@ export function createGraphicsQuality(renderer:T.WebGLRenderer,scene:T.Scene,can
  let current=preset();
  const fields:HTMLSelectElement[]=[],descriptions:HTMLElement[]=[],originalShadows=new WeakMap<T.Light,boolean>();
  const tuningFields:{key:keyof GraphicsTuning,input:HTMLSelectElement}[]=[],restartButtons:HTMLButtonElement[]=[];
- const budgetTextures=makeTextureBudget();
+ const budgetTextures=makeTextureBudget({retainOriginals:!mobile});let residentTextureLimit=current.textureSize;
  let resolutionScale=1,adaptiveDetail=1;
  const resizeTarget=makeRenderResize(renderer);const resize=()=>{const base=Math.max(devicePixelRatio,mobile?.5:current.minRatio)*(tuning.resolution??1),ratio=budgetPixelRatio(base,current.pixelRatio,innerWidth,innerHeight,current.maxPixels)*resolutionScale;resizeTarget(innerWidth,innerHeight,ratio);canvas.dataset.pixelRatio=String(renderer.getPixelRatio());};
  function applyAssets(root:T.Object3D){
   budgetTextures(root,current.textureSize);
+  if(mobile)residentTextureLimit=Math.min(residentTextureLimit,current.textureSize);
   const seen=new Set<T.Material>(),anisotropy=Math.min(current.anisotropy,renderer.capabilities.getMaxAnisotropy());
   root.traverse(o=>{const mesh=o as T.Mesh;if(!mesh.isMesh)return;for(const material of Array.isArray(mesh.material)?mesh.material:[mesh.material]){if(seen.has(material))continue;seen.add(material);for(const value of Object.values(material)){const texture=value as T.Texture;if(texture?.isTexture&&!texture.isRenderTargetTexture&&texture.anisotropy!==anisotropy){texture.anisotropy=anisotropy;texture.needsUpdate=true;}}}});
  }
@@ -56,7 +62,9 @@ export function createGraphicsQuality(renderer:T.WebGLRenderer,scene:T.Scene,can
   renderer.shadowMap.needsUpdate=true;document.documentElement.dataset.renderQuality=resolved()==='low'?'compact':'detailed';document.documentElement.dataset.drawDistance=String(current.distance);
   Object.assign(canvas.dataset,{qualityChoice:choice,quality:resolved(),frameLimit:String(current.fps),shadowSize:String(current.shadows),textureLimit:String(current.textureSize),pixelRatio:String(renderer.getPixelRatio()),antialias:String(gl.getContextAttributes()?.antialias),adaptiveDetail:String(adaptiveDetail),qualityReason:choice!=='auto'?'Manual selection':autoTier?'Adjusted for sustained slow frames':mobile?'Mobile device':resolved()==='high'?'Desktop hardware':'Hardware performance budget'});
   for(const s of fields)s.value=choice;for(const d of descriptions)d.textContent=current.label+' · '+current.fps+' FPS target · '+(current.shadows?current.shadows+'px shadows':'shadows off')+' · '+(gl.getContextAttributes()?.antialias?'antialiasing on':'antialiasing off')+'. Saved for all three games on this device.';
-  for(const {key,input}of tuningFields)input.value=String(tuning[key]??'auto');for(const button of restartButtons)button.hidden=antialiasForDevice(presetAntialias(choice,tuning.aa),cores,memory,mobile)===!!gl.getContextAttributes()?.antialias;
+  const sharperTextures=mobile&&current.textureSize>residentTextureLimit;
+  for(const {key,input}of tuningFields)input.value=String(tuning[key]??'auto');for(const button of restartButtons){button.hidden=!sharperTextures&&antialiasForDevice(presetAntialias(choice,tuning.aa),cores,memory,mobile)===!!gl.getContextAttributes()?.antialias;button.textContent=sharperTextures?'Load sharper textures & restart game':'Apply antialiasing & restart game';}
+  if(sharperTextures)for(const description of descriptions)description.textContent+=' Restart to load the higher texture detail.';
   onApply?.();
  }
  function mount(parent:HTMLElement){const field=document.createElement('fieldset');field.className='touchSettings graphicsSettings';const legend=document.createElement('legend');legend.textContent='Graphics & performance';const label=document.createElement('label');label.textContent='Graphics preset';const select=document.createElement('select');select.setAttribute('aria-label','Graphics detail');select.add(new Option('Automatic · match this device','auto'));for(const [v,p]of Object.entries(GRAPHICS_PRESETS))select.add(new Option(p.label,v));select.value=choice;const description=document.createElement('p');description.setAttribute('role','status');select.onchange=()=>{choice=select.value as GraphicsChoice;tuning={};autoTier=undefined;resolutionScale=1;adaptiveDetail=1;try{localStorage.setItem('swoop-graphics-quality',choice);localStorage.removeItem(TUNING_KEY);}catch{}apply();};fields.push(select);descriptions.push(description);label.append(select);field.append(legend,label,description);

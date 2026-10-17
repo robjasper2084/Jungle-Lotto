@@ -10,7 +10,7 @@ import {RIDE_TUNING as tune,clamp,damp,angle,spring,advanceSpring,advanceDrive} 
 import type {RideTuning} from './rideDynamics.ts';
 
 export const NEUTRAL_ACTIONS={throttle:0,steer:0,crouch:false,hop:false,hopHeld:false,reset:false,trick:0};
-export type RideActions=typeof NEUTRAL_ACTIONS & {eyeControl?:boolean;facingYaw?:number;dismount?:boolean;run?:boolean;prone?:boolean;mountBlocked?:boolean;evade?:number};
+export type RideActions=typeof NEUTRAL_ACTIONS & {eyeControl?:boolean;facingYaw?:number;dismount?:boolean;run?:boolean;prone?:boolean;mountBlocked?:boolean;interruptMount?:boolean;evade?:number};
 export function createPose(){return {
   ...footFields(),
   stopFoot:0,stopFootX:0,stopFootY:0,stopFootZ:0,warningLevel:0,beepPulse:0,scrape:0,scrapeSide:0,scrapeX:0,scrapeY:0,scrapeZ:0,scrapeHard:0,

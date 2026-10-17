@@ -21,14 +21,30 @@ export class FollowCamera {
   private ground=createGroundSample();
   private eyeSpring={x:spring(),y:spring(),z:spring()};
   private targetSpring={x:spring(),y:spring(),z:spring()};
+  private remoteAnchor?:Point;
   constructor(world:TerrainSampler){this.world=world;}
   reset(p:RidePose){
+    this.remoteAnchor={x:p.x,y:p.y,z:p.z};
     this.target={x:p.x,y:p.y+1.05,z:p.z};this.eye={x:p.x-Math.sin(p.headingY)*4.3,y:p.y+2.2,z:p.z-Math.cos(p.headingY)*4.3};
     this.eye.y=Math.min(underpassCameraHeight(this.world,p,this.eye.y),underpassCameraHeight(this.world,this.eye,this.eye.y,p.y));
     this.impact=0;this.roll=0;this.fov=55;Object.assign(this.previousEye,this.eye);Object.assign(this.previousTarget,this.target);this.previousRoll=this.roll;this.previousFov=this.fov;
     for(const k of axes){Object.assign(this.eyeSpring[k],{value:this.eye[k],velocity:0});Object.assign(this.targetSpring[k],{value:this.target[k],velocity:0});}
   }
   landing(impact:number){this.impact=Math.min(.14,impact*.013);}
+  /** Network poses are already smoothed. Carry their translation into the boom
+   * before damping turns/height, instead of making the camera chase them twice. */
+  stepRemote(dt:number,p:RidePose){
+    const previous=this.remoteAnchor;
+    if(!previous||Math.hypot(p.x-previous.x,p.y-previous.y,p.z-previous.z)>12){this.reset(p);return;}
+    for(const k of axes){
+      const delta=p[k]-previous[k];
+      this.eye[k]+=delta;this.target[k]+=delta;
+      this.previousEye[k]+=delta;this.previousTarget[k]+=delta;
+      this.eyeSpring[k].value+=delta;this.targetSpring[k].value+=delta;
+      previous[k]=p[k];
+    }
+    this.step(dt,p);
+  }
   step(dt:number,p:RidePose){
     Object.assign(this.previousEye,this.eye);Object.assign(this.previousTarget,this.target);this.previousRoll=this.roll;this.previousFov=this.fov;
     const speed=Math.abs(p.speed),distance=this.distance+Math.min(2,speed*.1);

@@ -12,3 +12,5 @@
 #royale-feedback[data-reduced=true] *{animation:none!important;transition:none!important;filter:none}
 @media(prefers-reduced-motion:reduce){#royale-feedback *{animation:none!important;transition:none!important;filter:none}}
 @media(max-height:500px){.royale-moment{top:14%;padding:8px 20px}.royale-moment strong{font-size:24px}.royale-moment span{font-size:9px}}
+
+.royale-hit-label{position:absolute;top:calc(50% + 24px);left:50%;transform:translateX(-50%);font:700 10px system-ui;letter-spacing:.12em;color:#f2fff8;text-shadow:0 1px 4px #000}.royale-confirmed-hit[data-kind=shield]{border-color:#78dcff}.royale-confirmed-hit[data-kind=eliminated]{border-color:#ffd384}.royale-hit-label[data-kind=eliminated]{color:#ffd384}

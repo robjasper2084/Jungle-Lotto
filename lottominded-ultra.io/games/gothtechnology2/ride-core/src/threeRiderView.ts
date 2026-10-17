@@ -180,6 +180,6 @@ export class ThreeRiderView {
       this.riderContact.settle(this.rider,floor,this.terrain);
       this.root.updateMatrixWorld(true);
     }
-    applyOnFootRider(this,p);this.fingers.apply();
+    applyOnFootRider(this,p);this.fingers.apply('Relaxed',p.footMode===3&&p.footMountTime>.75&&p.footMountTime<2.5?'SupportGrip':'Relaxed');
   }
 }

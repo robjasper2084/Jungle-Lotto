@@ -1,7 +1,11 @@
 import {AimComfortUi} from './aimComfortUi.ts';
 import {aimFriction,SIMPLE_ACTIONS,ShotPreview} from './aimComfort.ts';
 import {OpponentContrast} from './opponentContrast.ts';
+import {PointLightBudget} from '@digital-static/ridecore';
 import {fpsAim} from './fpsAim.ts';
+import {CombatPreferencesControls,combatLookGain,combatChaseEye,retractCombatCamera} from './combatPolish.ts';
+const combatPreferences=new CombatPreferencesControls();
+let barrelBlocked=false,aimDistance=0;
 import {FirstPersonView} from './firstPersonView.ts';
 import {footEyeHeight} from './fpsMotion.ts';
 import {parseRoomInvitation,roomInvitationLink} from '../../../../ride-core/src/roomInvitation.ts';
@@ -37,7 +41,7 @@ import {HeartProjectiles} from './heartProjectiles.ts';
 import {ShieldEffect} from './shieldEffect.ts';
 import {ScopeLibrary,type ScopePickup} from './scopeView.ts';
 import {isScope,SCOPES,cycleScope,bestScope,scopeZoom,scopedFov,type Scope} from '../../../../ride-core/src/royale/scopes.ts';
-import {combatEye,chaseEye,dragAim,stickAxes} from './combatView.ts';
+import {combatEye,dragAim,stickAxes} from './combatView.ts';
 import {FootControls} from '../../../../ride-core/src/onFootControls.ts';
 import {CameraBlend,mountCameraPreferences,cameraTransitionsEnabled} from '../../../../ride-core/src/cameraPresentation.ts';
 import {CAMERA_PROFILE} from '../../../../ride-core/src/cameraProfile.ts';
@@ -89,7 +93,7 @@ const cameraModes=['chase','first','front','side','orbit','drone'] as const;
 type ViewMode=typeof cameraModes[number];let viewMode:ViewMode='chase',sensitivity=1;const cameraBlend=new CameraBlend();
 try{const saved=localStorage.getItem('royale-camera');if(cameraModes.includes(saved as ViewMode))viewMode=saved as ViewMode;const value=Number(localStorage.getItem('royale-aim-sensitivity'));if(value>=.4&&value<=2)sensitivity=value;}catch{}
 function setCamera(mode:ViewMode){viewMode=mode;el<HTMLSelectElement>('camera-view').value=mode;try{localStorage.setItem('royale-camera',mode);}catch{}}
-function cycleCamera(){if(footAim.active){footView=footView==='first'?'chase':'first';saveFootView();}else setCamera(cameraModes[(cameraModes.indexOf(viewMode)+1)%cameraModes.length]);}
+function cycleCamera(){if(footAim.active){footView=footView==='first'?'chase':'first';saveFootView();}else setCamera(viewMode==='first'?'chase':'first');}
 setCamera(viewMode);el<HTMLSelectElement>('camera-view').onchange=e=>setCamera((e.target as HTMLSelectElement).value as ViewMode);
 let footView:'first'|'chase'='first';
 try{if(localStorage.getItem('royale-foot-view')==='chase')footView='chase';}catch{}
@@ -101,11 +105,11 @@ const aimComfort=new AimComfortUi(el('camera-settings'));
 const shotPreview=new ShotPreview();let localShotPending=false,assistChecked=-Infinity,assistGain=1,rosterSignature='',telemetryAt=0;
 const reticle=el('reticle');reticle.classList.add('comfort-reticle');reticle.textContent='';const coverWarning=document.createElement('span');coverWarning.className='cover-warning';coverWarning.textContent='COVER';coverWarning.hidden=true;reticle.append(coverWarning);
 let controlsExpanded=false;const moreControls=document.createElement('button');moreControls.className='combat-more';moreControls.type='button';moreControls.textContent='More';moreControls.setAttribute('aria-label','More combat controls');moreControls.setAttribute('aria-expanded','false');moreControls.onclick=()=>{controlsExpanded=!controlsExpanded;moreControls.textContent=controlsExpanded?'Less':'More';moreControls.setAttribute('aria-expanded',String(controlsExpanded));hudAt=0;};
-royaleAudio.mount(el('ride-settings'));mountCameraPreferences(el('camera-settings'));mountHudTransparency(el('camera-settings'));gyroscope.mount(el('camera-settings'),true);scopeSensitivity.mount(el('camera-settings'));
+royaleAudio.mount(el('ride-settings'));mountCameraPreferences(el('camera-settings'));mountHudTransparency(el('camera-settings'));gyroscope.mount(el('camera-settings'),true);scopeSensitivity.mount(el('camera-settings'));combatPreferences.mount(el('camera-settings'));
 try{bindings=readBindings(JSON.parse(localStorage.getItem('royale-combat-bindings')??'null'));const preset=localStorage.getItem('royale-aim-preset');if(['classic','hold','toggle'].includes(preset??''))aimGesture.preset=preset as AimPreset;}catch{}
 el<HTMLSelectElement>('aim-preset').value=aimGesture.preset;el<HTMLSelectElement>('aim-preset').onchange=e=>{aimGesture.reset();aimGesture.preset=(e.target as HTMLSelectElement).value as AimPreset;try{localStorage.setItem('royale-aim-preset',aimGesture.preset);}catch{}};
 for(const key of Object.keys(bindings) as (keyof typeof bindings)[]){const label=document.createElement('label');label.textContent=key;const input=document.createElement('button');input.textContent=bindings[key];input.onclick=()=>{input.textContent='Press a key…';input.onkeydown=e=>{e.preventDefault();e.stopPropagation();bindings=readBindings({...bindings,[key]:e.code});try{localStorage.setItem('royale-combat-bindings',JSON.stringify(bindings));}catch{}for(const b of el('bindings').querySelectorAll('button'))b.textContent=bindings[b.dataset.binding as keyof typeof bindings];input.onkeydown=null;};};input.dataset.binding=key;label.append(input);el('bindings').append(label);}
-const scene=new T.Scene();scene.background=new T.Color(ROYALE_HAZE);scene.fog=new T.Fog(ROYALE_HAZE,280,1200);
+const scene=new T.Scene();const lightingBudget=new PointLightBudget(scene);scene.background=new T.Color(ROYALE_HAZE);scene.fog=new T.Fog(ROYALE_HAZE,280,1200);
 const camera=new T.PerspectiveCamera(62,1,.12,4200);camera.position.set(65,85,100);camera.lookAt(0,0,0);
 const renderer=new T.WebGLRenderer({canvas,antialias:startupAntialias()});renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.0;renderer.shadowMap.type=T.PCFShadowMap;
 const atmosphereSky=new RouteSky();
@@ -154,7 +158,7 @@ el('menu').onclick=showMenu;el('resume').onclick=resume;dialog.addEventListener(
 async function run(work:()=>void|Promise<void>){try{message('');await work();}catch(e){message((e as Error).message);}}
 function preparationItemDone(){const root=el('royale-startup');root.dataset.completed=String(Number(root.dataset.completed??0)+1);}
 function preparationStage(completed:number,label:string){const root=el('royale-startup');if(completed===0){root.dataset.total=String(10+3+RIDER_CHOICES.length+WHEELS.filter(w=>w.id!=='euc').length);root.dataset.completed='0';}else preparationItemDone();message(label);}
-async function prepare(){preparationStage(0,'Warming up the arena…');const hdr=await new HDRLoader().loadAsync(new URL('../../../art/nvidia/detroit-skylight.hdr',import.meta.url).href),pm=new T.PMREMGenerator(renderer);scene.environment=pm.fromEquirectangular(hdr).texture;scene.environmentIntensity=.46;hdr.dispose();pm.dispose();await loadEngineForPage(true);if(!engineReady())throw Error('Compiled arena could not load. Return to normal riding or retry.');preparationStage(1,'Loading the original Detroit map…');terrain=new DowntownArena(await TagTerrain.create(await loadFixture(new URL('./love-tag/swoop-detroit.json',location.href).href)));preparationStage(2,'Building the Detroit skyline…');session=new RoyaleSession(terrain);radarMap=new RoyaleRadarMap(terrain);scenery=await buildDetroitArenaScene(scene,terrain);canvas.dataset.riverfront=JSON.stringify(scenery.root.userData.riverfront);canvas.dataset.arena=terrain.arenaIdentity.arena;canvas.dataset.collision=terrain.arenaIdentity.collision;
+async function prepare(){preparationStage(0,'Warming up the arena…');const hdr=await new HDRLoader().loadAsync(new URL('../../../art/nvidia/detroit-skylight.hdr',import.meta.url).href),pm=new T.PMREMGenerator(renderer);scene.environment=pm.fromEquirectangular(hdr).texture;scene.environmentIntensity=.46;hdr.dispose();pm.dispose();await loadEngineForPage(true);if(!engineReady())throw Error('Compiled arena could not load. Return to normal riding or retry.');preparationStage(1,'Loading the original Detroit map…');terrain=new DowntownArena(await TagTerrain.create(await loadFixture(new URL('./love-tag/swoop-detroit.json',location.href).href)));preparationStage(2,'Building the Detroit skyline…');session=new RoyaleSession(terrain);radarMap=new RoyaleRadarMap(terrain);scenery=await buildDetroitArenaScene(scene,terrain,graphics.applyAssets);canvas.dataset.riverfront=JSON.stringify(scenery.root.userData.riverfront);canvas.dataset.arena=terrain.arenaIdentity.arena;canvas.dataset.collision=terrain.arenaIdentity.collision;
  preparationStage(3,'Preparing riders…');const loader=new GLTFLoader();await loadAssetQueue(['DS_EUC_01','DS_Cyclist_01','DS_Bicycle_01',...RIDER_CHOICES.map(r=>r.id)],assetConcurrency(),async id=>{assetMap.set(id,await loader.loadAsync(['DS_Man_01','DS_Hoodie_Woman_01','DS_Mascot_Suit_01','DS_Mascot_Hoodie_01','DS_Armored_Rider_01'].includes(id)?'/exports/rigged-heroes/'+id+'.glb':'/exports/glb/'+id+'/'+id+'_LOD'+(id==='DS_Man_01'?0:1)+'.glb'));preparationItemDone();});
  preparationStage(4,'Preparing companions…');assetMap.set('DS_Boerboel_01',await loader.loadAsync('/exports/polish/royale-equipment/royale-dog.glb'));companions=new RoyaleCompanions(scene,assetMap,terrain);
  preparationStage(5,'Tuning the wheels…');await loadAssetQueue(WHEELS.filter(w=>w.id!=='euc'),assetConcurrency(),async w=>{assetMap.set(w.asset,await loader.loadAsync('/exports/electric/'+w.asset+'.glb'));preparationItemDone();});
@@ -230,7 +234,7 @@ canvas.addEventListener('contextmenu',e=>e.preventDefault());
   }return assistGain;
  }
 canvas.addEventListener('wheel',e=>{if(dialog.open)return;e.preventDefault();slot=1-slot;},{passive:false});
-const aimGain=(gain:number)=>gain*sensitivity*scopeSensitivity.gain(selectedScope,'look')*(aimMode()===2?adsSensitivity*scopeSensitivity.gain(selectedScope,'ads')/scopeZoom(selectedScope):1);
+const aimGain=(gain:number)=>combatLookGain(gain,sensitivity,adsSensitivity,aimMode(),(footAim.active?footView:viewMode)==='first',selectedScope,scopeSensitivity.value,combatPreferences.value,held.has('fire')||held.has('fire-left')||!!navigator.getGamepads?.()[0]?.buttons[7]?.pressed);
 function syncFootAim(){footAim.sync(session?.prediction?.controller.poseValue??session?.state?.actors.find(a=>a.id===session.me)?.pose);}
 function look(dx:number,dy:number,gain:number,device='touch'){if(!dx&&!dy)return;syncFootAim();dx*=aimComfort.value.x;dy*=aimComfort.value.y;const g=aimGain(gain)*aimSlowdown(device),next=dragAim(aimYaw,aimPitch,dx,dy,g);if(footAim.active){footAim.turn(-dx*g);aimYaw=0;}else aimYaw=next.yaw;aimPitch=next.pitch;}
 canvas.addEventListener('pointerdown',e=>{if(dialog.open||deathReplay.playing||e.pointerType!=='mouse'&&(aimPointer!==undefined||e.clientX<innerWidth*.4))return;canvas.focus();canvas.setPointerCapture(e.pointerId);aimPointer=e.pointerId;aimX=e.clientX;aimY=e.clientY;if(e.pointerType==='mouse'){captureMouse();if(e.button===0){held.add('fire');tap.add('fire');}if(e.button===2)aimGesture.down(performance.now());}});
@@ -291,7 +295,11 @@ function command():Command{const c=neutral(session.state?.round??'');const pad=n
  const brawling=!!session.state?.self?.combat.melee?.brawl;c.brawl=tap.has('brawl');c.light=brawling&&c.fire;c.heavy=brawling&&c.reload;if(brawling){c.fire=false;c.reload=false;c.aimMode=0;}c.evade=tap.has('evade')?(c.throttle<-.2?2:c.steer<-.1?-1:1):0;
  c.dogAttack=tap.has('dog-attack');c.dogRadar=tap.has('dog-radar');c.utility=tap.has('utility')||!!pad?.buttons[5]?.pressed;c.repair=tap.has('repair')||!!pad?.buttons[3]?.pressed;c.recover=tap.has('recover');c.swap=tap.has('swap');c.slot=slot;
  const self=session.state?.actors.find(a=>a.id===session.me),pose=session.prediction?.controller.poseValue??self?.pose;
- if(self&&pose?.footMode&&footAim.active&&(footView==='first'||c.aimMode===2)&&!brawling){const facing={...pose,headingY:c.facingYaw??pose.headingY},aim=fpsAim(facing,self.skin,footAim.heading,aimPitch,self.combat.aimBlend,self.combat.lean,activeTerrain(),session.state?.actors.filter(a=>a.id!==session.me)??[]);c.aimYaw=aim.aimYaw;c.aimPitch=aim.aimPitch;}
+ barrelBlocked=false;
+ if(self&&pose&&!brawling&&!keys.has(bindings.freeLook)&&!held.has('free-look')&&camera.position.distanceTo(new T.Vector3(pose.x,pose.y,pose.z))<15&&(footAim.active||c.aimMode||viewMode==='first'||viewMode==='chase')){
+  const facing={...pose,headingY:c.facingYaw??pose.headingY},w=WEAPONS[self.weapon],aim=fpsAim(facing,self.skin,facing.headingY+c.aimYaw+self.combat.kickYaw,aimPitch+self.combat.kickPitch,self.combat.aimBlend,self.combat.lean,activeTerrain(),session.state?.actors.filter(a=>a.id!==session.me)??[],{origin:camera.position,range:Math.min(600,w.speed*w.life/60),kickYaw:self.combat.kickYaw,kickPitch:self.combat.kickPitch,targets:practiceRange?.layout.targets,targetHeading:practiceRange?.layout.heading});
+  c.aimYaw=aim.aimYaw;c.aimPitch=aim.aimPitch;barrelBlocked=aim.blocked;aimDistance=aim.distance;
+ }
  if(self&&session.state?.self){const me=session.state.self,w=me.loadout[me.slot],mag=me.combat.magazine[w];
   if(aimComfort.value.autoReload&&!brawling&&mag===0&&me.ammo[w]>0&&me.combat.reloadStart<0)c.reload=true;
   if(session.room){const preview=shotPreview.sample({round:session.state.round,tick:session.state.tick,counter:me.combat.shotCounter,fire:c.fire,allowed:session.state.phase==='active'&&me.alive&&!brawling&&!c.reload&&me.combat.reloadStart<0&&!paused&&!dialog.open,mode:me.combat.fireMode,magazine:mag,interval:WEAPONS[w].interval,weapon:w},performance.now());if(preview){localShotPending=true;royaleAudio.previewShot(w);}}
@@ -314,7 +322,7 @@ function draw(now:number){
  const motionDelta=paused&&!session?.room?0:delta,reducedMotion=reducedEquipmentMotion.matches||document.documentElement.dataset.reducedMotion==='true'||query.has('reducedMotion');
  atmosphereSky.update(motionDelta,ROYALE_SUN,.42,0,graphics.current.shadows===0,reducedMotion,paused&&!session?.room,scene.fog?.color);if(telemetry)canvas.dataset.atmosphere=JSON.stringify(atmosphereSky.status);
  const replayFrame=deathReplay.sample(now);const replaying=!!replayFrame;const s=replayFrame?.state??session?.state;el('replay-status').hidden=!replaying;el('replay-status').querySelector('span')!.textContent=deathReplay.kind==='killer'?'Killer replay · attacker perspective':'Last-view replay · received positions only';el('replay-status').setAttribute('aria-label',deathReplay.kind==='killer'?'Killer replay':'Last-view replay');if(!s){matchFeedback.hide();for(const a of actors.values()){a.nameplate.root.visible=a.view.root.visible=a.weapon.visible=a.shield.visible=false;}companions?.dispose();jazzVisit?.stop();heartShots.reset();for(const m of items.values())m.root.visible=false;el('hud').hidden=el('reticle').hidden=el('scope-mask').hidden=true;return;}const rendered=new Set<string>();
- if(!replaying)practiceRange?.update(s,session.me,now);
+ if(!replaying&&practiceRange?.update(s,session.me,now)){matchFeedback.hit(now,'range');royaleAudio.rangeHit();}
  radarMap?.update(s,now,!combatBlock&&!dialog.open&&!!s.self?.alive);
  const bikeObserver=s.actors.find(a=>a.id===session.me)?.pose??terrain.spawns[0].position;ambientPacks?.update(delta,bikeObserver,!combatBlock&&!dialog.open,paused,s.actors.filter(a=>a.alive).map(a=>({id:a.id,...a.pose,radius:.65,height:1.8,kind:'rider' as const,vx:Math.sin(a.pose.headingY)*a.pose.speed,vz:Math.cos(a.pose.headingY)*a.pose.speed})));ambientPacks?.report(canvas,delta);
  royaleAudio.update(s,session.me,!dialog.open&&!paused&&!replaying,!!session.comms?.inputBlocked,Math.atan2(-camera.matrixWorld.elements[8],-camera.matrixWorld.elements[10]),activeTerrain());canvas.dataset.audio=JSON.stringify(royaleAudio.status);
@@ -354,7 +362,7 @@ function draw(now:number){
  const heading=p.headingY+renderAimYaw+lookYaw+self.combat.kickYaw,pitch=aimPitch+lookPitch+self.combat.kickPitch;
  const scale=self.skin.startsWith('DS_Mascot_')?.48:1,socket=weaponSocket(p,self.skin,renderAimYaw,aimPitch,self.combat.aimBlend,self.combat.lean);
  const at=new T.Vector3(socket.grip.x,socket.grip.y+.10*scale,socket.grip.z),forward=new T.Vector3(Math.sin(heading)*Math.cos(pitch),Math.sin(pitch),Math.cos(heading)*Math.cos(pitch));
- const comfort=aimComfort.value,blocked=activeTerrain().raycast(socket.muzzle,forward,.9);coverWarning.hidden=blocked===null;reticle.dataset.blocked=String(blocked!==null);reticle.dataset.outline=String(comfort.outline);reticle.style.setProperty('--reticle-color',comfort.reticleColor);reticle.style.setProperty('--reticle-size',(comfort.reticleSize+(ads?0:Math.min(14,Math.abs(p.speed)*.5+WEAPONS[self.weapon].spread*180+Math.abs(self.combat.kickPitch)*220)))+'px');
+ const comfort=aimComfort.value,blocked=activeTerrain().raycast(socket.muzzle,forward,.9);coverWarning.hidden=blocked===null&&!barrelBlocked;reticle.dataset.blocked=String(blocked!==null||barrelBlocked);reticle.dataset.outline=String(comfort.outline);reticle.style.setProperty('--reticle-color',comfort.reticleColor);reticle.style.setProperty('--reticle-size',(comfort.reticleSize+(ads?0:Math.min(14,Math.abs(p.speed)*.5+WEAPONS[self.weapon].spread*180+Math.abs(self.combat.kickPitch)*220)))+'px');
  const gameView=p.footMode?footView:viewMode;
  const activeMode=ads?'ads':mode===1&&gameView!=='first'?'shoulder':gameView;
  const profile=CAMERA_PROFILE.cameras.find(c=>c.mode===(activeMode==='shoulder'?'chase':activeMode))!;
@@ -362,14 +370,17 @@ function draw(now:number){
  const angle=activeMode==='orbit'?p.headingY+lookYaw+renderAimYaw:heading;
  const mine=actors.get(self.id),sight=mine?.equipment.socket(EQUIPMENT_SOCKETS.sight_axis)??at;
  const desired=eyeView&&p.footMode?new T.Vector3(p.x,p.y+footEyeHeight(scale,p.footCrouch,p.footProne),p.z):eyeView?combatEye(sight,heading,pitch,scale,ads):
-   activeMode==='chase'||activeMode==='shoulder'?chaseEye(at,heading,activeMode==='shoulder'?2.4:profile.back,profile.height,profile.side):
+   activeMode==='chase'||activeMode==='shoulder'?combatChaseEye(at,heading,scale,combatPreferences.value.shoulder,activeMode==='shoulder'):
    at.clone().add(new T.Vector3(-Math.sin(angle)*profile.back+Math.cos(angle)*profile.side,profile.height,-Math.cos(angle)*profile.back-Math.sin(angle)*profile.side));
- clearRideCamera(activeTerrain(),desired,at,p.y);
+ const clearCombat=(eye:T.Vector3)=>retractCombatCamera(eye,at,(o,d,max)=>activeTerrain().raycast(o,d,max),activeTerrain().ground(eye.x,eye.z,p.y).height);
+ if(activeMode==='chase'||activeMode==='shoulder')clearCombat(desired);else clearRideCamera(activeTerrain(),desired,at,p.y);
  followStableSun(sun,p,ROYALE_SUN);fill.position.set(p.x-12,p.y+8,p.z-13);fill.target.position.set(p.x,p.y+1,p.z);
  if(!combatBlock)scenery.update(p,now/1000);camera.position.copy(desired);
  camera.lookAt(eyeView||activeMode==='chase'||activeMode==='shoulder'?desired.clone().addScaledVector(forward,100):at);
- camera.fov=ads?scopedFov(profile.fov,selectedScope):profile.fov;cameraBlend.apply(camera,(p.footMode?'foot-':'ride-')+activeMode,delta,reducedMotion||!cameraTransitionsEnabled());
- clearRideCamera(activeTerrain(),camera.position,at,p.y);camera.updateProjectionMatrix();
+ camera.fov=ads?scopedFov(profile.fov,selectedScope):activeMode==='first'?combatPreferences.value.firstFov:activeMode==='chase'?combatPreferences.value.thirdFov:activeMode==='shoulder'?Math.max(50,combatPreferences.value.thirdFov-10):profile.fov;cameraBlend.apply(camera,(p.footMode?'foot-':'ride-')+activeMode,delta,reducedMotion||!cameraTransitionsEnabled());
+ if(activeMode==='chase'||activeMode==='shoulder')clearCombat(camera.position);else clearRideCamera(activeTerrain(),camera.position,at,p.y);camera.updateProjectionMatrix();
+ reticle.dataset.ads=String(ads);canvas.dataset.barrelBlocked=String(barrelBlocked);canvas.dataset.aimDistance=aimDistance.toFixed(1);
+ const viewButton=el('touch').querySelector<HTMLButtonElement>('[data-action=camera]');if(viewButton){viewButton.textContent=gameView==='first'?'TPP':'FPP';viewButton.setAttribute('aria-label',gameView==='first'?'Switch to third person':'Switch to first person');}
  canvas.dataset.cameraMode=viewMode;canvas.dataset.cameraActive=activeMode;canvas.dataset.cameraFov=camera.fov.toFixed(2);
  if(telemetry)canvas.dataset.grounding=JSON.stringify({rider:{x:p.x,y:p.y,z:p.z},source:terrain.sourcePosition(p),floor:terrain.ground(p.x,p.z,p.y).height,park:{x:p.parkX,y:p.parkY,z:p.parkZ},dog:self.dog,camera:camera.position.toArray(),cameraFloor:terrain.ground(camera.position.x,camera.position.z,p.y).height});
  if(mine){mine.view.rider.visible=true;mine.view.visibility.setFirstPerson(eyeView);if(ads&&selectedScope)mine.weapon.visible=false;
@@ -396,7 +407,7 @@ function draw(now:number){
  if(telemetry)canvas.dataset.playerNames=JSON.stringify([...actors.values()].filter(a=>a.nameplate.root.visible).map(a=>a.nameplate.root.name));
  el('death-replay').textContent=el('reentry-replay').textContent=deathReplay.kind==='killer'?'Watch killer replay':'Watch last-view replay';
  if(!replaying)for(const e of s.events){if(e.kind.startsWith('pickup')&&s.tick-e.tick<40){actors.get(e.actor)?.rig.pickup(e.tick);if(e.actor===session.me)firstPerson?.pickup(e.tick);}if(e.kind!=='hit'&&e.kind!=='dog-knockoff'&&e.kind!=='melee-hit')continue;const key=s.round+':'+e.tick+':'+e.kind+':'+e.actor+':'+e.target;if(seenImpacts.has(key))continue;seenImpacts.add(key);if(s.tick-e.tick>30)continue;const victim=s.actors.find(a=>a.id===e.target);if(victim){impactEffect.hit(victim.pose,now,victim.shieldActive);const attacker=s.actors.find(a=>a.id===e.actor),relative=attacker?Math.atan2(attacker.pose.x-victim.pose.x,attacker.pose.z-victim.pose.z)-victim.pose.headingY:undefined;actors.get(victim.id)?.motion.hit(relative===undefined?0:Math.sin(relative),relative===undefined?1:Math.cos(relative));if(victim.shieldActive||victim.id===s.self?.id&&s.self.shield>0)actors.get(victim.id)?.shield.hit();if(e.target===session.me)matchFeedback.damage(now,relative===undefined?undefined:relative-aimYaw-lookYaw);}
- if(e.actor===session.me&&e.target!==session.me)matchFeedback.hit(now);if(e.target===session.me){hitFlashUntil=now+450;el('hit-flash').dataset.kind=e.kind==='dog-knockoff'?'knockdown':'bullet';}}
+ if(e.actor===session.me&&e.target!==session.me)matchFeedback.hit(now,victim&&!victim.alive?'eliminated':victim?.shieldActive?'shield':'hit');if(e.target===session.me){hitFlashUntil=now+450;el('hit-flash').dataset.kind=e.kind==='dog-knockoff'?'knockdown':'bullet';}}
  if(seenImpacts.size>128){const oldest=seenImpacts.values().next().value;if(oldest)seenImpacts.delete(oldest);}
  impactEffect.visible=!replaying;impactEffect.update(now,reducedMotion);el('hit-flash').style.opacity=now<hitFlashUntil?'1':'0';
  heartShots.update(s.projectiles,camera,now/1000,reducedMotion);
@@ -416,6 +427,7 @@ function draw(now:number){
   if(me&&!layoutEditing){
    const profile=w?WEAPONS[w]:undefined,magazine=w?me.combat.magazine[w]:0;
    const canSwap=!!self&&me.loadout.length>=2&&s.loot.some(l=>l.available&&(l.kind==='static'||l.kind==='heart'||l.kind==='bass')&&!me.loadout.includes(l.kind)&&Math.hypot(l.p.x-self.pose.x,l.p.z-self.pose.z)<=2.5);
+   const reloadButton=el('touch').querySelector<HTMLButtonElement>('[data-action=reload]')!;reloadButton.disabled=!brawling&&(me.combat.reloadStart>=0||!w||magazine>=(profile?.magazine??0)||me.ammo[w]<=magazine);reloadButton.title=brawling?'Heavy melee attack':me.combat.reloadStart>=0?'Reloading':!w||me.ammo[w]<=magazine?'No reserve ammunition':magazine>=(profile?.magazine??0)?'Magazine full':'Reload weapon';
    const visible=contextualActions({foot,brawling,crashed:!!me.controller.fields.crashed,dogCharges:me.dogPower.charges,scopes:owned.length,weapons:me.loadout.length,health:me.integrity,healthPacks:me.repairs,healing,shields:me.utility,canSwap,magazine,capacity:profile?.magazine??0,reserve:w?me.ammo[w]-magazine:0,reloading:me.combat.reloadStart>=0,fireModes:profile?.modes??0});
    for(const b of el('touch').querySelectorAll<HTMLButtonElement>('button[data-action]')){const action=b.dataset.action!;if(!b.classList.contains('active'))b.hidden=visible[action]===false||(aimComfort.value.simple&&!controlsExpanded&&!SIMPLE_ACTIONS.has(action));if(b.hidden){held.delete(action);tap.delete(action);}}
    el('scope-select').hidden=!visible.scope;el('touch').dataset.simple=String(aimComfort.value.simple);el('touch').dataset.expanded=String(controlsExpanded);moreControls.hidden=!aimComfort.value.simple;
@@ -447,7 +459,7 @@ function loop(now:number){requestAnimationFrame(loop);const rawFrameMs=now-last,
  footControls.update(session?.prediction?.controller.poseValue??session?.state?.actors.find(a=>a.id===session.me)?.pose??{},loaded&&!dialog.open&&!!session?.state?.self?.alive,true,(session?.state?.self?.integrity??100)<=15);
  if(loaded&&session.state&&(!paused||session.room)&&!layoutEditing){acc+=delta;let n=0;while(acc>=DT&&n++<9){try{session.step(dialog.open||paused||deathReplay.playing||session.comms?.inputBlocked?neutral(session.state.round):command());}catch(error){paused=true;release();showMenu();message('The simulation stopped safely. Start a new practice or reconnect: '+(error as Error).message);break;}acc-=DT;}}else acc=0;
  if(!schedule.shouldRender(now,idle,false,graphics.current.fps))return;draw(now);renderer.render(scene,camera);samples.push(now-previousFrame);previousFrame=now;frames++;
- if(now-profileAt>2000){samples.sort((a,b)=>a-b);if(session?.state?.engine){canvas.dataset.engineModule=session.state.engine.module;canvas.dataset.engineFrames=String(session.state.engineInputFrames);canvas.dataset.engineTick=String(session.state.tick);}canvas.dataset.profile=JSON.stringify({fps:frames*1000/(now-profileAt),p95:samples[Math.floor(samples.length*.95)],calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures,idle,scale:adaptiveQuality.scale,detail:adaptiveQuality.detail});frames=0;profileAt=now;samples=[];}
+ if(now-profileAt>2000){samples.sort((a,b)=>a-b);if(session?.state?.engine){canvas.dataset.engineModule=session.state.engine.module;canvas.dataset.engineFrames=String(session.state.engineInputFrames);canvas.dataset.engineTick=String(session.state.tick);}canvas.dataset.profile=JSON.stringify({fps:frames*1000/(now-profileAt),p95:samples[Math.floor(samples.length*.95)],calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures,lightBudget:lightingBudget.status,idle,scale:adaptiveQuality.scale,detail:adaptiveQuality.detail});frames=0;profileAt=now;samples=[];}
 }
 canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();release();paused=true;showMenu();message('Graphics paused. Reload the page to restore the arena.');});
 requestAnimationFrame(loop);void run(prepare);

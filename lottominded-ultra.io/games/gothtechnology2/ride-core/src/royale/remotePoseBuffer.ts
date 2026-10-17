@@ -12,6 +12,7 @@ export class RemotePoseBuffer {
   const a=left.actors.find(a=>a.id===id&&a.spawnSerial===serial),b=right.actors.find(a=>a.id===id&&a.spawnSerial===serial);if(!a||!b||Math.hypot(a.pose.x-b.pose.x,a.pose.z-b.pose.z)>20)return current;
   const f=Math.max(0,Math.min(1,(tick-left.tick)/Math.max(1,right.tick-left.tick))),out={...current};
   for(const key of ['x','y','z','footCycle','footBlend','footCrouch','footProne','airHeight','speed'] as const)out[key]=a.pose[key]+(b.pose[key]-a.pose[key])*f;
+  if(a.pose.footMode===b.pose.footMode)out.footMountTime=(a.pose.footMountTime||0)+((b.pose.footMountTime||0)-(a.pose.footMountTime||0))*f;
   out.footPhase=out.footCycle%1;out.headingY=a.pose.headingY+Math.atan2(Math.sin(b.pose.headingY-a.pose.headingY),Math.cos(b.pose.headingY-a.pose.headingY))*f;return out;
  }
 }

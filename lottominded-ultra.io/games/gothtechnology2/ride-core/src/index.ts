@@ -13,3 +13,6 @@ export {riderMotion,stanceTargets} from './riderMotion.ts';
 export {FallMotion,fallCameraOffset} from './fallMotion.ts';
 export {FollowCamera} from './followCamera.ts';
 export {RideFeedback,pedalContact} from './rideFeedback.ts';
+export {SpatialUpdateGate} from './spatialUpdateGate.ts';
+export {PointLightBudget} from './pointLightBudget.ts';
+export {visibleSceneryMatrices} from './visibleMatrices.ts';
