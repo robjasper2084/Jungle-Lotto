@@ -19,10 +19,10 @@ window.fetch=async (...args:Parameters<typeof fetch>)=>{
 };
 export function renderBoot(){
  document.body.dataset.boot=boot.stage;
- if(boot.stage==='ready'||boot.stage==='error')cinema.finish();else cinema.status(boot.message);
+ if(boot.stage==='ready')cinema.finish();else if(boot.stage==='error')cinema.dismiss();else cinema.status(boot.message);
  if(boot.stage==='ready'){
   node('bootError').hidden=true;
-  for(const child of document.body.children)if(child instanceof HTMLElement)child.inert=false;
+
  }
  const loading=node('loading');loading.hidden=boot.stage==='ready'||boot.stage==='error';
  const status=document.getElementById('startupStatus');if(status)status.textContent=boot.message;
@@ -43,6 +43,7 @@ export function failBoot(error:unknown,graphics=false){
  const detail=error instanceof Error?(error.stack??`${error.name}: ${error.message}`):String(error);
  boot.fail(graphics?"Your browser couldn't start the 3D graphics needed for this ride.":'The ride could not finish loading. Please retry.',detail);renderBoot();
 }
+export function bootProgress(completed:number){cinema.progress(completed,5);}
 export function bootStage(stage:'checking'|'loading'|'preparing',message:string){boot.advance(stage,message);renderBoot();}
 timer=setInterval(()=>{boot.tick();renderBoot();},1000);
 node('bootRetry').onclick=()=>location.reload();

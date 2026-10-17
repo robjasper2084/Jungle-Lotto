@@ -620,7 +620,9 @@ try{
 
 
 
+ loadingCard.progress(1,5);loadingCard.status('Loading the Elmwood landscape…');
  const foundation=await load('elmwood-foundation');
+ loadingCard.progress(2,5);
 
  // Smooth shared terrain normals after the pond DEM edits; preserve the measured elevations.
 
@@ -689,6 +691,7 @@ const ps=placements.filter(p=>p.asset===id),source=cache.get(id)!;source.updateM
  }});}
  const entrance=placements.find(p=>p.asset==='elmwood-gatehouse');
  await landmarkStream.warm(entrance?[{x:entrance.position[0],z:-entrance.position[1]}]:[{x:-10,z:-55}],140);
+ loadingCard.progress(3,5);loadingCard.status('Preparing paths, water and wildlife…');
  const terrain=new ElmwoodTerrain(grid,site.features,placements);
  world.add(makeLaneMargins(terrain));
  const waterSetup=configureElmwoodWater(foundation,terrain,landmarkPass!.pond);canvas.dataset.waterMeshes=String(waterSetup.meshes);canvas.dataset.waterVertices=String(waterSetup.vertices);
@@ -733,7 +736,7 @@ const ps=placements.filter(p=>p.asset===id),source=cache.get(id)!;source.updateM
 
 
 
- stats=`USGS 1m source / 2m display · 41 mapped paths · ${assets.length} assets · ${placements.filter(p=>p.layer!=='mapped').length.toLocaleString()} estimated landscape instances`;notice(stats);await choose();el('detail').dataset.loaded='true';canvas.dataset.firstPlayableMs=String(Math.round(performance.now()-bootStarted));
+ stats=`USGS 1m source / 2m display · 41 mapped paths · ${assets.length} assets · ${placements.filter(p=>p.layer!=='mapped').length.toLocaleString()} estimated landscape instances`;notice(stats);await choose();loadingCard.progress(4,5);loadingCard.status('Preparing your controls…');el('detail').dataset.loaded='true';canvas.dataset.firstPlayableMs=String(Math.round(performance.now()-bootStarted));
 
 
 
@@ -741,7 +744,7 @@ const ps=placements.filter(p=>p.asset===id),source=cache.get(id)!;source.updateM
 
 
 
-}catch(e){el('error').textContent=String(e);notice('Loading failed — see the error panel.');console.error(e);}
+}catch(e){loadingCard.fail('Elmwood could not finish loading. Please retry.');el('error').textContent=String(e);notice('Loading failed — see the error panel.');console.error(e);}
 
 
 
@@ -792,5 +795,5 @@ if(measured){canvas.dataset.rideMsP95=frameStats.rideMsP95.toFixed(2);canvas.dat
 
 
 
-loadingCard.finish();
+if(el('detail').dataset.loaded==='true'&&rideControls)loadingCard.finish();
 
