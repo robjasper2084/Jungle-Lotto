@@ -1,4 +1,6 @@
 import {reloadPose} from './fpsMotion.ts';
+import {weaponReadyAmount} from '../../../../ride-core/src/royale/holster.ts';
+import {sampleHeroAction} from '../../../../ride-core/src/heroActions.ts';
 import * as T from 'three';
 import {Hero,solve} from '../actors.ts';
 import type {RidePose} from '../controller.ts';
@@ -22,6 +24,8 @@ export class CombatRig {
     const h=this.hero,w=this.weapon.root,scale=h.motionScale;w.visible=true;this.repairPack.visible=false;
     if(pose.footMode===3){w.visible=false;this.interruptPickup();this.supportLocked=false;return;}
     if(!h.arms[0]||!h.arms[1]){w.visible=false;return;}
+    const ready=weaponReadyAmount(state,tick);
+    if(ready<1&&!state.melee?.brawl&&healingUntil<=tick){this.applyHolster(pose,yaw,pitch,state,ready);return;}
     // Preserve Swoop's base pose and distribute the aim turn through the spine.
     // A full turn on the top joint folds the jacket/armor around a fixed waist.
     const spine=h.spine.length?h.spine:h.chest?[h.chest]:[];
@@ -100,5 +104,31 @@ export class CombatRig {
       // Holster while either hand is occupied; restore only at the ready grip.
       w.visible=false;h.fingers.apply('SupportGrip','WeaponGrip',(repair?.45:.85)*weight);
     }
+  }
+  private applyHolster(pose:RidePose,yaw:number,pitch:number,state:CombatState,ready:number){
+    const h=this.hero,w=this.weapon.root,scale=h.motionScale,curve=sampleHeroAction('draw',ready);
+    this.gestureWeight=0;this.supportLocked=curve[4]>.99;
+    const heading=new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),pose.headingY);
+    const socket=weaponSocket(pose,h.riderId,yaw*ready,pitch*ready,state.aimBlend*ready,state.lean*ready);
+    w.position.set(socket.grip.x,socket.grip.y,socket.grip.z).add(new T.Vector3(...curve.slice(0,3) as [number,number,number]).multiplyScalar(scale).applyQuaternion(heading));
+    // Rotate the stowed barrel along the prone body instead of down through
+    // the pavement. Fade this offset out during the authored draw.
+    const prone=T.MathUtils.clamp(pose.footProne,0,1)*(1-ready);
+    w.position.add(new T.Vector3(0,.16*prone,-.08*prone).multiplyScalar(scale).applyQuaternion(heading));
+    w.rotation.set(curve[3]*(1-prone)-pitch*ready,pose.headingY+yaw*ready,0,'YXZ');w.scale.setScalar(scale);w.updateWorldMatrix(true,true);
+    // A hand releases only after the gun reaches its belt position. While fully
+    // stowed, leave both arms to the shared idle/walk instead of pinning them.
+    const dominant=this.weapon.socket(sockets.weapon_grip_R);
+    for(const i of [1,0]){
+      const limb=h.arms[i],weight=i===1?curve[5]:curve[4];
+      if(weight<=0)continue;
+      const target=i===1?dominant:this.weapon.socket(sockets.support_grip_L);
+      const base=limb.foot.getWorldPosition(new T.Vector3()),rotation=limb.foot.getWorldQuaternion(new T.Quaternion());
+      const pole=new T.Vector3(i===0?.7:-.7,-.65,-.15).applyQuaternion(heading);
+      solve(limb,base.lerp(target,weight),pole,rotation.slerp(heading.clone().multiply(new T.Quaternion().setFromAxisAngle(new T.Vector3(1,0,0),curve[3])).multiply(limb.rotation),weight));
+      if(i===1&&weight>.99){const actual=limb.foot.getWorldPosition(new T.Vector3());this.errorR=actual.distanceTo(target);w.position.add(actual.sub(target));w.updateWorldMatrix(true,true);}
+    }
+    h.fingers.apply(curve[4]>.5?'SupportGrip':'Relaxed',curve[5]>.5?'WeaponGrip':'Relaxed');
+    h.root.updateWorldMatrix(true,true);
   }
 }

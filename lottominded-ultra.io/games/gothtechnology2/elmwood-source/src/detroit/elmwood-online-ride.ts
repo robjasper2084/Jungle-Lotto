@@ -89,13 +89,13 @@ export class ElmwoodOnlineRide {
   if(!this.match||!this.terrain)return;
   const menu=!!document.querySelector<HTMLDialogElement>('#elmwood-main-menu')?.open,blocked=this.frozen||menu||document.hidden||this.rooms.inputBlocked||!this.local&&!this.rooms.healthy;
   const error=this.input.poll(Array.from(navigator.getGamepads?.()??[]));if(error)this.pause(true);
-  const ownRider=this.riders[this.own],packet=this.input.consume(this.local?this.own:0,ownRider.motion.pose.speed,Number(document.querySelector<HTMLSelectElement>('#session-trick')?.value??1));
+  const ownRider=this.riders[this.own],packet=this.input.consume(this.local?this.own:0,ownRider.motion.pose.speed,Number(document.querySelector<HTMLSelectElement>('#session-trick')?.value??1),!blocked&&this.countdown<=0&&!ownRider.motion.pose.footMode&&!ownRider.motion.sim.crashed,dt);
   let actions:RideActions=blocked?{...NEUTRAL_ACTIONS}:{...packet.actions,reset:packet.recover};
   if(packet.camera&&!blocked)this.nextCamera();
   const host=this.local||this.rooms.isHost;
   if(host){
    if(!this.local||!blocked){this.countdown=Math.max(0,this.countdown-dt);if(this.countdown<=0)this.elapsed+=dt;}
-   const controls=this.local?this.riders.map((r,i)=>i===this.own?actions:(()=>{const p=this.input.consume(i,r.motion.pose.speed,Number(document.querySelector<HTMLSelectElement>('#session-trick')?.value??1));return {...p.actions,reset:p.recover};})()):this.rooms.inputs(actions);
+   const controls=this.local?this.riders.map((r,i)=>i===this.own?actions:(()=>{const p=this.input.consume(i,r.motion.pose.speed,Number(document.querySelector<HTMLSelectElement>('#session-trick')?.value??1),!blocked&&this.countdown<=0&&!r.motion.pose.footMode&&!r.motion.sim.crashed,dt);return {...p.actions,reset:p.recover};})()):this.rooms.inputs(actions);
    const bots=this.riders.flatMap(r=>r.bot?[r.bot]:[]);
    this.riders.forEach((r,i)=>{
     if(r.bot){r.bot.update(dt,bots,this.countdown>0||this.local&&blocked);copyPose(r.bot.pose,r.motion.pose);Object.assign(r.run,{gate:r.bot.run.gate,elapsed:r.bot.run.elapsed,score:r.bot.run.score,finished:r.bot.run.finished,finishTime:r.bot.run.finishTime});return;}
@@ -108,10 +108,10 @@ export class ElmwoodOnlineRide {
   }
   this.riders.forEach(r=>{r.view.root.visible=true;r.view.apply(r.motion.pose);r.view.lights.setBeam(r===ownRider&&r.motion.pose.crashBlend<.1);});
   if(!this.local)this.rooms.update(dt,this.snapshot(),actions);
-  const p=ownRider.motion.pose;Object.assign(this.canvas.dataset,{x:p.x.toFixed(2),z:p.z.toFixed(2),speed:p.speed.toFixed(3),heading:p.headingY.toFixed(4),crashed:String(p.crashBlend>.1),rider:this.match.members[this.own].rider,wheelLights:JSON.stringify(ownRider.view.lights.status),online:JSON.stringify({...this.rooms.state,local:this.local,players:this.riders.length,own:this.own,positions:this.positions})});
+  const p=ownRider.motion.pose;Object.assign(this.canvas.dataset,{cruise:String(this.input.seats[this.local?this.own:0].cruise),cruiseSpeed:String(this.input.seats[this.local?this.own:0].cruiseControl.targetSpeed),x:p.x.toFixed(2),z:p.z.toFixed(2),speed:p.speed.toFixed(3),heading:p.headingY.toFixed(4),crashed:String(p.crashBlend>.1),rider:this.match.members[this.own].rider,wheelLights:JSON.stringify(ownRider.view.lights.status),online:JSON.stringify({...this.rooms.state,local:this.local,players:this.riders.length,own:this.own,positions:this.positions})});
   const order=this.riders.map((r,i)=>({r,i})).sort((a,b)=>this.match!.mode==='tricks'?b.r.run.score-a.r.run.score:b.r.run.gate-a.r.run.gate||a.r.run.finishTime-b.r.run.finishTime);
   if(performance.now()-this.boardAt<100)return;this.boardAt=performance.now();
-  this.board.replaceChildren();const heading=document.createElement('strong');heading.textContent=this.countdown>0?'Ready · '+Math.ceil(this.countdown):this.frozen?'Paused · P to resume':this.match.mode==='race'?'Creek Lane race':'Ride together · '+this.match.mode;this.board.append(heading);
+  this.board.replaceChildren();const heading=document.createElement('strong');heading.textContent=this.countdown>0?'Ready · '+Math.ceil(this.countdown):this.frozen?'Paused · P to resume':this.match.mode==='race'?'Creek Lane race':'Ride together · '+this.match.mode;this.board.append(heading);if(this.input.seats[this.local?this.own:0].cruise){const cruise=document.createElement('p');cruise.textContent=this.input.seats[this.local?this.own:0].cruiseControl.label+' · brake to cancel';this.board.append(cruise);}
   for(const {r,i} of order){const row=document.createElement('p');row.textContent=(i===this.own?'YOU':'P'+(i+1))+(this.match.members[i].bot?' · AI':'')+' · '+r.run.label+(r.run.limitedRecovery?' · '+r.run.recoveryLabel:'');this.board.append(row);}
  }
  render(renderer:T.WebGLRenderer){

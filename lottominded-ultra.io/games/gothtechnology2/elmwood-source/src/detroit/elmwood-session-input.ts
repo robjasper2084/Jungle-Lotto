@@ -1,3 +1,4 @@
+import {CruiseControl} from '../../../ride-core/src/cruiseControl.ts';
 import {NEUTRAL_ACTIONS,type RideActions} from '@digital-static/ridecore';
 
 export type Binding='wasd'|'arrows'|'ijkl'|'numpad'|'touch'|`pad:${number}`;
@@ -18,8 +19,8 @@ export function setupError(bindings:Binding[],pads:readonly (Pad|null)[]){
   return '';
 }
 class SeatInput {
-  sources=new Map<string,Set<Action>>();edges=new Set<Action>();x=0;y=0;lookX=0;lookY=0;cruise=false;padReady=false;padId='';padDown=new Set<Action>();
-  clear(){this.sources.clear();this.edges.clear();this.x=this.y=this.lookX=this.lookY=0;this.cruise=false;this.padReady=false;this.padDown.clear();}
+  sources=new Map<string,Set<Action>>();edges=new Set<Action>();x=0;y=0;lookX=0;lookY=0;cruiseControl=new CruiseControl();get cruise(){return this.cruiseControl.active;}padReady=false;padId='';padDown=new Set<Action>();
+  clear(){this.sources.clear();this.edges.clear();this.x=this.y=this.lookX=this.lookY=0;this.cruiseControl.reset();this.padReady=false;this.padDown.clear();}
   set(source:string,action:Action,down:boolean){
     const before=this.held(action),set=this.sources.get(source)??new Set<Action>();
     down?set.add(action):set.delete(action);this.sources.set(source,set);
@@ -55,12 +56,11 @@ export class ElmwoodSessionInput {
       for(const a of new Set([...s.padDown,...down]))s.set('gamepad',a,down.has(a));s.padDown=down;
     }return '';
   }
-  consume(i:number,speed:number,trick:number):{actions:RideActions;recover:boolean;camera:boolean}{
+  consume(i:number,speed:number,trick:number,allowed=true,dt=1/120):{actions:RideActions;recover:boolean;camera:boolean}{
     const s=this.seats[i],held=(a:Action)=>s.held(a),edge=(a:Action)=>s.edges.has(a);
     let throttle=held('brake')?-1:held('forward')?1:s.y;
-    if(edge('cruise'))s.cruise=!s.cruise;
-    if(throttle<-.05||edge('recover'))s.cruise=false;
-    if(s.cruise&&Math.abs(throttle)<.05)throttle=Math.max(-.3,Math.min(.65,(5.5-speed)*.24));
+    if(edge('cruise')&&allowed)s.cruiseControl.toggle(speed);
+    throttle=s.cruiseControl.update(throttle,speed,dt,allowed,held('brake')||edge('recover'));
     // Recovery cannot carry the old frame's throttle, hop or trick into the new pose.
     const result={actions:edge('recover')?{...NEUTRAL_ACTIONS}:{...NEUTRAL_ACTIONS,throttle,steer:Math.max(-1,Math.min(1,s.x+Number(held('right'))-Number(held('left')))),crouch:held('crouch'),hop:edge('hop'),hopHeld:held('hop'),trick:edge('trick')?trick:0},recover:edge('recover'),camera:edge('camera')};
     s.edges.clear();return result;

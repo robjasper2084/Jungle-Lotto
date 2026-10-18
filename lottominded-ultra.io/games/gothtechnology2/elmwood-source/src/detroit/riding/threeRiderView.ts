@@ -1,4 +1,5 @@
 import {applyOnFootRider} from '../../../../ride-core/src/onFootRider.ts';
+import {wheelPickupTiming} from '../../../../ride-core/src/wheelPickupTiming.ts';
 import {FingerPose} from '../../../../ride-core/src/fingerPose.ts';
 import {solveLimb as solve} from '../../../../ride-core/src/limbIK.ts';
 import {ArmorKeychain} from '../armorKeychain.ts';
@@ -187,6 +188,6 @@ export class ThreeRiderView {
       this.riderContact.settle(this.rider,floor,this.terrain);
       this.root.updateMatrixWorld(true);
     }
-    applyOnFootRider(this,p);this.fingers.apply();
+    applyOnFootRider(this,p);this.fingers.apply('Relaxed',p.footMode===3&&wheelPickupTiming(p.footMountTime||0).grip>.5?'SupportGrip':'Relaxed');
   }
 }

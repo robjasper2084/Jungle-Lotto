@@ -2,7 +2,7 @@
 export type ActionContext={foot:boolean;brawling:boolean;crashed:boolean;dogCharges:number;scopes:number;weapons:number;health:number;healthPacks:number;healing:boolean;shields:number;canSwap:boolean;magazine:number;capacity:number;reserve:number;reloading:boolean;fireModes:number};
 export function contextualActions(c:ActionContext):Record<string,boolean>{
  return {
-  brawl:c.foot,evade:c.foot,
+  brawl:c.foot,evade:c.foot,holster:!c.brawling,
   'dog-attack':c.dogCharges>0,'dog-radar':c.dogCharges>0,
   scope:c.scopes>0&&!c.brawling,switch:c.weapons>1&&!c.brawling,
   recover:c.crashed,swap:c.canSwap,

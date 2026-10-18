@@ -26,7 +26,7 @@ test('two keyboards own separate throttle, steering, hop and recovery controls',
  input.clear(0);assert.equal(input.consume(0).throttle,0);assert.equal(input.consume(1).steer,-1,'a P1 crash cannot clear P2 controls');
 });
 test('per-player cruise cancels on braking or interruption without affecting the other rider',()=>{
- const input=new SplitRideInput(['wasd','arrows']);arm(input);input.toggleCruise(0);assert.ok(input.consume(0).throttle>0);assert.equal(input.consume(1).throttle,0);
+ const input=new SplitRideInput(['wasd','arrows']);arm(input);input.poll([],[7,9],1/120);input.toggleCruise(0);assert.equal(input.consume(0).throttle,0);input.poll([],[6,9],1/120);assert.ok(input.consume(0).throttle>0);assert.equal(input.consume(1).throttle,0);
  input.toggleCruise(1);input.handleKey('KeyS',true);assert.equal(input.consume(0).throttle,-1);assert.equal(input.cruising[0],false);assert.equal(input.cruising[1],true);
  input.clear(0);assert.equal(input.cruising[1],true);input.clear();arm(input);assert.deepEqual(input.cruising,[false,false]);assert.equal(input.consume(1).throttle,0);
 });

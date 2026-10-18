@@ -1,4 +1,6 @@
 import {FingerPose} from '../../../ride-core/src/fingerPose.ts';
+import {visibleSceneryMatrices} from '../../../ride-core/src/visibleMatrices.ts';
+import {wheelPickupTiming} from '../../../ride-core/src/wheelPickupTiming.ts';
 import {applyOnFootRider} from '../../../ride-core/src/onFootRider.ts';
 import {solveLimb as solve} from '../../../ride-core/src/limbIK.ts';
 import {BicycleView,CyclistMotion} from '@digital-static/ridecore/cycling-view';
@@ -250,23 +252,42 @@ export class Hero {
       this.riderContact.settle(this.rider,floor,this.terrain,.025,p.crashMotion?p.crashContact:0);
       this.root.updateMatrixWorld(true);
     }
-    applyOnFootRider(this,p);this.fingers.apply('Relaxed',p.footMode===3&&(p.footMountTime||0)>.75&&(p.footMountTime||0)<2.5?'SupportGrip':'Relaxed');
+    applyOnFootRider(this,p);this.fingers.apply('Relaxed',p.footMode===3&&wheelPickupTiming(p.footMountTime||0).grip>.5?'SupportGrip':'Relaxed');
   }
 }
 export class TrafficView {
   scene:T.Scene;data:Map<string,GLTF>;items=new Map<number,{root:T.Group;mixers:T.AnimationMixer[];pedalPhase:number;clipStart:number;clipDuration:number;animationAge?:number;mobility?:MobilityRider;foot?:FootTraffic;cycling?:BicycleView;motion?:CyclistMotion;fallRig?:HumanFallRig;disposeStyle?:()=>void}>();
+  private pool:{key:string;item:TrafficView['items'] extends Map<number,infer V>?V:never}[]=[];
+  private keys=new Map<number,string>();
+  private key(a:TrafficState){return a.kind+':'+(a.kind==='cyclist'?Math.abs((a.id*7)^(a.id>>>1))%6:a.kind==='pedestrian'||a.kind==='jogger'?Math.floor(a.id/2)%2:0);}
+  private release(item:TrafficView['pool'][number]['item']){item.root.removeFromParent();item.mixers.forEach(m=>{m.stopAllAction();m.uncacheRoot(m.getRoot());});item.mobility?.dispose();item.foot?.dispose();item.cycling?.dispose();item.disposeStyle?.();}
   constructor(scene:T.Scene,data:Map<string,GLTF>,readonly terrain?:TerrainSampler){this.scene=scene;this.data=data;}
-  update(actors:TrafficState[],dt:number,focus?:{x:number;z:number},drawDistance=300){const keep=new Set<number>();for(const a of actors){keep.add(a.id);let item=this.items.get(a.id);
+  update(actors:TrafficState[],dt:number,focus?:{x:number;z:number},drawDistance=300){
+    const source=new Map(actors.map(a=>[a.id,a]));
+    for(const [id,item]of this.items){const actor=source.get(id);if(actor&&(!focus||Math.hypot(actor.x-focus.x,actor.z-focus.z)<drawDistance+80))continue;
+      // Fallen rigs contain parent attachments; dispose those rather than
+      // handing a partially recovered skeleton to a different traffic actor.
+      if(item.fallRig)this.release(item);else{item.root.visible=false;item.animationAge=undefined;this.pool.push({key:this.keys.get(id)!,item});}
+      this.items.delete(id);this.keys.delete(id);
+    }
+    while(this.pool.length>8)this.release(this.pool.shift()!.item);
+    let created=0;for(const a of actors){let item=this.items.get(a.id);
+    const distance=focus?Math.hypot(a.x-focus.x,a.z-focus.z):0;
+    if(!item&&distance>=drawDistance)continue;
+    if(!item){const key=this.key(a),reuse=this.pool.findIndex(entry=>entry.key===key);
+      if(reuse>=0){item=this.pool.splice(reuse,1)[0].item;item.motion=item.cycling?new CyclistMotion(a.id):undefined;this.items.set(a.id,item);this.keys.set(a.id,key);}
+    }
+    if(!item&&focus&&created>=1)continue;
     if(!item){const root=new T.Group(),mixers:T.AnimationMixer[]=[];const add=(id:string,animate=false)=>{const d=this.data.get(id)!,o=animate?clone(d.scene):d.scene.clone(true);root.add(o);prepare(o);if(animate&&d.animations.length){const m=new T.AnimationMixer(o);m.clipAction(d.animations[0]).play();mixers.push(m);}};
+      created++;visibleSceneryMatrices(root);
       let mobility:MobilityRider|undefined,foot:FootTraffic|undefined,cycling:BicycleView|undefined,motion:CyclistMotion|undefined,disposeStyle:(()=>void)|undefined;
       if(a.kind==='segway'||a.kind==='skater'||a.kind==='scooter'){mobility=new MobilityRider(a.kind,this.data);mobility.phase=(a.id*.37)%1;root.add(mobility.root);}
       else if(a.kind==='pedestrian'||a.kind==='jogger'){foot=new FootTraffic(this.data.get(Math.floor(a.id/2)%2?'DS_Hoodie_Woman_01':'DS_Hoodie_Man_01')!,a.kind==='jogger');foot.phase=(a.id*.37)%1;root.add(foot.root);}
       else if(a.kind==='cyclist'){cycling=new BicycleView(this.data.get('DS_Bicycle_01')!,this.data.get('DS_Cyclist_01')!,Math.abs((a.id*7)^(a.id>>>1))%6,true);motion=new CyclistMotion(a.id);root.add(cycling.root);}else add(a.kind==='cone'?'DS_Hazard_Cone_01':'DS_Hazard_Barrier_01');
       const clip=this.data.get('DS_Cyclist_01')?.animations[0],clipStart=clip?Math.min(...clip.tracks.map(t=>t.times[0])):0;
-      item={root,mixers,pedalPhase:0,clipStart,clipDuration:(clip?.duration??2)-clipStart,mobility,foot,cycling,motion,disposeStyle};this.items.set(a.id,item);this.scene.add(root);
+      item={root,mixers,pedalPhase:0,clipStart,clipDuration:(clip?.duration??2)-clipStart,mobility,foot,cycling,motion,disposeStyle};this.items.set(a.id,item);this.keys.set(a.id,this.key(a));this.scene.add(root);
     }
     item.root.position.set(a.x,a.y,a.z);item.root.rotation.y=a.heading;
-    const distance=focus?Math.hypot(a.x-focus.x,a.z-focus.z):0;
     item.root.visible=distance<drawDistance;
     if(!item.root.visible){item.animationAge=undefined;continue;}
     const firstPose=item.animationAge===undefined;item.animationAge=(item.animationAge??((Math.abs(a.id*37)%100)/100)*.1)+dt;
@@ -290,6 +311,6 @@ export class TrafficView {
       const pose=item.motion.step(animationDt,{...a,headingY:a.heading});item.pedalPhase=item.motion.pedals;
       item.cycling.apply({...pose,x:0,y:0,z:0,headingY:0},item.motion.steering,item.motion.pedals);
     }else for(const m of item.mixers)m.update(animationDt);
-  }for(const[id,item]of this.items)if(!keep.has(id)){item.root.removeFromParent();item.mixers.forEach(m=>m.stopAllAction());item.mobility?.dispose();item.foot?.dispose();item.cycling?.dispose();item.disposeStyle?.();this.items.delete(id);}}
+  }}
 }
 
