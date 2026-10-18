@@ -1,4 +1,5 @@
 import {registerRetailShell} from './tagSceneryCollisions.ts';
+import {useThinDisplayGlass} from './displayGlass.ts';
 import {visibleSceneryMatrices} from '@digital-static/ridecore';
 import * as T from 'three';
 import {GLTFLoader} from './compressedGLTFLoader.ts';
@@ -14,6 +15,7 @@ export async function buildPennyShop(scene:T.Scene,world:DetroitWorld,entered:()
  const loader=new GLTFLoader(),building=(await loader.loadAsync('/exports/atwater/penny-exchange.glb')).scene;building.visible=false;visibleSceneryMatrices(building);
  const at=pennyMap(0,0),local=toLocal(at.x,PENNY_SHOP.floor,at.z);building.name='Penny Exchange / connected LottoMind building';building.position.set(local.x,local.y,local.z);building.rotation.y=PENNY_SHOP.heading;scene.add(building);
  building.traverse(o=>{const m=o as T.Mesh;if(m.isMesh){m.receiveShadow=true;m.castShadow=true;}});
+ useThinDisplayGlass(building);
  registerRetailShell(world,'penny');
  for(const v of [-5,5]){const light=new T.PointLight(0xffe5c9,60,15,2);light.position.set(0,3.7,v);building.add(light);}
  // Preserve the irregular mapped upper footprint instead of expanding into the road.
