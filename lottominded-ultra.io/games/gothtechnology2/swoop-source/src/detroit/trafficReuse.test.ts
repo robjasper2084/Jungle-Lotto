@@ -1,0 +1,34 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import * as T from 'three';
+import {TrafficView} from './actors.ts';
+import {rigModel} from './heroTestAssets.ts';
+import {assetPath} from './testAssets.ts';
+import {CommunityView,BicycleView} from '../../../ride-core/src/cyclingView.ts';
+import {CommunityRide,LaneRoute} from '../../../ride-core/src/communityRide.ts';
+import type {TrafficState} from './world.ts';
+test('traffic creates nearby views gradually, reuses them and preserves unfocused split-screen initialization',()=>{
+ const scene=new T.Scene(),model={scene:new T.Group(),animations:[]} as never;
+ const view=new TrafficView(scene,new Map([['DS_Hazard_Cone_01',model]]));
+ const actor=(id:number,x:number)=>({id,x,y:0,z:0,speed:0,heading:0,kind:'cone'} as TrafficState);
+ view.update([actor(1,0),actor(2,10),actor(3,900)],.016,{x:0,z:0},180);assert.equal(view.items.size,1);
+ view.update([actor(1,0),actor(2,10),actor(3,900)],.016,{x:0,z:0},180);assert.equal(view.items.size,2);
+ const old=view.items.get(1)!.root;
+ view.update([actor(4,900)],.016,{x:900,z:0},180);assert.equal(view.items.size,1);assert.equal(view.items.get(4)!.root,old);assert.equal(old.position.x,900);
+ const split=new TrafficView(new T.Scene(),new Map([['DS_Hazard_Cone_01',model]]));split.update([actor(1,0),actor(2,10),actor(3,900)],0);assert.equal(split.items.size,3);
+});
+test('community rigs load only on approach, reuse each rider, and share same-style materials',async()=>{
+ const models=new Map();
+ for(const id of ['DS_Bicycle_01','DS_Cyclist_01'])models.set(id,await rigModel(assetPath('exports/glb/'+id+'/'+id+'_LOD1.glb')));
+ const terrain={sampleGround(_x:number,_z:number,out:any){return Object.assign(out,{height:0,normal:{x:0,y:1,z:0},surface:'pavement',offCourse:false});},raycast:()=>null,raycastObstacle:()=>null};
+ const ride=new CommunityRide(new LaneRoute([{x:0,z:0,width:5},{x:0,z:300,width:5}]),terrain);
+ const view=new CommunityView(ride,models);assert.equal(view.views.filter(Boolean).length,0);
+ view.update(true,1/60,{x:1000,z:1000});assert.equal(view.views.filter(Boolean).length,0);
+ view.update(true,1/60,{x:0,z:0});assert.equal(view.views.filter(Boolean).length,1);
+ const first=view.views[0]!;view.update(true,1/60,{x:1000,z:1000});assert(!first.root.visible);
+ view.update(true,1/60,{x:0,z:0});assert.equal(view.views[0],first);assert(first.root.visible);
+ const other=new BicycleView(models.get('DS_Bicycle_01'),models.get('DS_Cyclist_01'),0,true);
+ const skin=(root:T.Object3D)=>{let result:T.Material|T.Material[]|undefined;root.traverse(o=>{if((o as T.SkinnedMesh).isSkinnedMesh)result=(o as T.Mesh).material;});return result;};
+ assert.equal(skin(first.rider),skin(other.rider));other.dispose();
+ view.update(true,1/60,{x:0,z:0});assert(first.root.visible);view.dispose();
+});

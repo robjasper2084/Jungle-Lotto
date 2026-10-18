@@ -1,5 +1,6 @@
 import {makeRenderResize} from './renderResize.ts';
 import * as T from 'three';
+import {installShadowBudget} from '../../../ride-core/src/shadowBudget.ts';
 import {budgetPixelRatio,makeTextureBudget} from './renderBudget.ts';
 export type GraphicsChoice='auto'|'low'|'balanced'|'high'|'ultra';
 export type GraphicsTuning={resolution:number;fps:number;shadows:number;textureSize:number;distance:number;aa:'auto'|'off'|'on'};
@@ -35,6 +36,7 @@ export function startupTextureBudget(){
  const preset=GRAPHICS_PRESETS[resolveGraphics(choice,4,undefined,mobile)];return {mobile,maxSize:tuning.textureSize??preset.textureSize};
 }
 export function createGraphicsQuality(renderer:T.WebGLRenderer,scene:T.Scene,canvas:HTMLCanvasElement,onApply?:()=>void){
+ installShadowBudget(renderer,scene,canvas);
  let choice:GraphicsChoice='auto';try{const saved=localStorage.getItem('swoop-graphics-quality');if(['auto','low','balanced','high','ultra'].includes(saved??''))choice=saved as GraphicsChoice;}catch{}
  let tuning:Partial<GraphicsTuning>={};try{tuning=savedGraphicsTuning(choice,localStorage.getItem(TUNING_KEY));}catch{}
  const cores=navigator.hardwareConcurrency||4,memory=(navigator as Navigator&{deviceMemory?:number}).deviceMemory;

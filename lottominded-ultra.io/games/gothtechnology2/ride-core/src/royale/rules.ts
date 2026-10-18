@@ -1,3 +1,4 @@
+import {initialHolster,routeHolster,type HolsterState} from './holster.ts';
 import {KillcamHistory} from './killcam.ts';
 import {engineReady,ENGINE_ID} from '../engine/runtime.ts';
 import {RoyaleKernel} from '../engine/royaleKernel.ts';
@@ -20,10 +21,10 @@ import {initialSpawnNodes,recoveryNodes,spawnLabel,type SpawnNode} from './spawn
 import {createBattleDog,advanceBattleDog,type DogPower,type BattleDog} from './dogPower.ts';
 import {initialMelee,meleeTrigger,sweepMelee,type MeleeState} from './melee.ts';
 import {isScope,canReachScope,bestScope,type Scope} from './scopes.ts';
-export type CombatState={melee?:MeleeState;magazine:Record<Weapon,number>;reloadStart:number;reloadCommit:number;reloadEnd:number;committed:boolean;kickYaw:number;kickPitch:number;aimBlend:number;lean:number;fireMode:number;shotCounter:number};
-export const initialCombat=():CombatState=>({melee:initialMelee(),magazine:{static:20,heart:0,bass:0},reloadStart:-1,reloadCommit:0,reloadEnd:0,committed:false,kickYaw:0,kickPitch:0,aimBlend:0,lean:0,fireMode:0,shotCounter:0});
-export type Command={round:string;seq:number;tick:number;throttle:number;steer:number;facingYaw:number|null;aimYaw:number;aimPitch:number;fire:boolean;shot:number;hop:boolean;hopHeld:boolean;burst:boolean;utility:boolean;repair:boolean;recover:boolean;swap:boolean;slot:number;reload:boolean;cycleMode:boolean;aimMode:number;lean:number;crouch:boolean;prone:boolean;dogAttack:boolean;dogRadar:boolean;dismount:boolean;brawl:boolean;light:boolean;heavy:boolean;evade:number};
-export const neutral=(round:string,seq=0,tick=0):Command=>({round,seq,tick,throttle:0,steer:0,facingYaw:null,aimYaw:0,aimPitch:0,fire:false,shot:0,hop:false,hopHeld:false,burst:false,utility:false,repair:false,recover:false,swap:false,slot:0,reload:false,cycleMode:false,aimMode:0,lean:0,crouch:false,prone:false,dogAttack:false,dogRadar:false,dismount:false,brawl:false,light:false,heavy:false,evade:0});
+export type CombatState={holster?:HolsterState;melee?:MeleeState;magazine:Record<Weapon,number>;reloadStart:number;reloadCommit:number;reloadEnd:number;committed:boolean;kickYaw:number;kickPitch:number;aimBlend:number;lean:number;fireMode:number;shotCounter:number};
+export const initialCombat=():CombatState=>({holster:initialHolster(),melee:initialMelee(),magazine:{static:20,heart:0,bass:0},reloadStart:-1,reloadCommit:0,reloadEnd:0,committed:false,kickYaw:0,kickPitch:0,aimBlend:0,lean:0,fireMode:0,shotCounter:0});
+export type Command={round:string;seq:number;tick:number;throttle:number;steer:number;facingYaw:number|null;aimYaw:number;aimPitch:number;fire:boolean;shot:number;hop:boolean;hopHeld:boolean;burst:boolean;utility:boolean;repair:boolean;recover:boolean;swap:boolean;slot:number;reload:boolean;cycleMode:boolean;aimMode:number;lean:number;crouch:boolean;prone:boolean;dogAttack:boolean;dogRadar:boolean;dismount:boolean;holster:boolean;brawl:boolean;light:boolean;heavy:boolean;evade:number};
+export const neutral=(round:string,seq=0,tick=0):Command=>({round,seq,tick,throttle:0,steer:0,facingYaw:null,aimYaw:0,aimPitch:0,fire:false,shot:0,hop:false,hopHeld:false,burst:false,utility:false,repair:false,recover:false,swap:false,slot:0,reload:false,cycleMode:false,aimMode:0,lean:0,crouch:false,prone:false,dogAttack:false,dogRadar:false,dismount:false,holster:false,brawl:false,light:false,heavy:false,evade:0});
 export function weaponSocket(p:RidePose,skin:string,aimYaw:number,aimPitch:number,aimBlend=0,lean=0){
  const scale=skin.startsWith('DS_Mascot_')?.48:1,yaw=p.headingY+aimYaw;
  const prone=p.footProne||0,crouch=p.footCrouch||0;
@@ -89,7 +90,7 @@ export class RoyaleMatch{
  const c=value as Command;if(c.round!==this.round||!Number.isSafeInteger(c.seq)||c.seq<=a.lastSeq||c.seq>a.lastSeq+180||!Number.isInteger(c.tick)||Math.abs(c.tick-this.tick)>180||!Number.isSafeInteger(c.shot)||c.shot<0||c.shot>a.lastShot+600)return false;
  for(const k of ['throttle','steer','aimYaw','aimPitch','slot','aimMode','lean'] as const)if(!Number.isFinite(c[k]))return false;
  if(Math.abs(c.throttle)>1||Math.abs(c.steer)>1||Math.abs(c.aimYaw)>1.25||Math.abs(c.aimPitch)>.65||![0,1].includes(c.slot)||![0,1,2].includes(c.aimMode)||Math.abs(c.lean)>1)return false;
- for(const k of ['fire','hop','hopHeld','burst','utility','repair','recover','swap','reload','cycleMode','crouch','prone','dogAttack','dogRadar','dismount','brawl','light','heavy']as const)if(typeof c[k]!=='boolean')return false;
+ for(const k of ['fire','hop','hopHeld','burst','utility','repair','recover','swap','reload','cycleMode','crouch','prone','dogAttack','dogRadar','dismount','holster','brawl','light','heavy']as const)if(typeof c[k]!=='boolean')return false;
  if(![-1,0,1,2].includes(c.evade))return false;
  if(c.facingYaw!==null&&(!Number.isFinite(c.facingYaw)||Math.abs(c.facingYaw)>Math.PI))return false;
  if(Object.keys(c).length!==Object.keys(neutral('')).length||a.queue.length>=24)return false;
@@ -141,8 +142,9 @@ export class RoyaleMatch{
  const damage:{target:Actor;amount:number;owner?:Actor;bypass?:boolean}[]=[];
  for(const a of this.actors){if(!a.alive)continue;
   if(!a.connected&&a.disconnectTick>=0&&this.tick-a.disconnectTick>=1200){damage.push({target:a,amount:999,bypass:true});continue;}
-  let c=a.bot?this.botInput(a):a.queue.shift();if(c){a.input=c;a.ack=c.seq;}else c={...a.input,hop:false,utility:false,repair:false,recover:false,swap:false,reload:false,cycleMode:false,brawl:false,light:false,heavy:false,evade:0,dismount:false,dogAttack:false,dogRadar:false};
+  let c=a.bot?this.botInput(a):a.queue.shift();if(c){a.input=c;a.ack=c.seq;}else c={...a.input,hop:false,utility:false,repair:false,recover:false,swap:false,reload:false,cycleMode:false,holster:false,brawl:false,light:false,heavy:false,evade:0,dismount:false,dogAttack:false,dogRadar:false};
   if(!a.bot&&(this.tick-a.lastInput>21||!a.connected))c={...neutral(this.round),throttle:a.pose.speed>.05?-1:a.pose.speed<-.05?1:0};
+  c=routeHolster(a.combat,c,this.tick,a.pose.footMode!==3&&!a.repairUntil);
   if(c.recover&&a.controller.crashed&&this.tick-a.recoverTick>180){
    // Battle recovery stands up locally; normal ride mode's last-safe teleport is not used.
    const p=a.pose,f=fieldAt(this.tick,this.seed,this.terrain.zones,this.terrain.fieldRadii),outside=Math.hypot(p.x-f.x,p.z-f.z)>f.radius;
@@ -206,7 +208,7 @@ export class RoyaleMatch{
   const node=accept?(nodeId?choices.find(n=>n.id===nodeId):choices[0]):undefined;
   if(accept&&!node)return{ok:false,reason:nodeId?'That location is no longer safe. Choose another respawn point.':'No safe respawn point is available. Try again before the timer ends.'};
   if(this.kernel.core.call('reentry',index,+accept,node?.position.x??0,node?.position.y??0,node?.position.z??0)!==1)return{ok:false,reason:'Re-entry was rejected by the engine.'};
-  if(node){a.controller.reset({position:{...node.position},headingY:node.headingY});a.pose={...a.controller.poseValue};a.spawnNode=node.id;a.spawnSerial++;a.elimination=undefined;a.scopes=[];a.energy=100;a.burstUntil=0;a.burstLatch=false;a.queue=[];a.input=neutral(this.round);a.lastInput=this.tick;a.dog=createBattleDog(a.pose,this.terrain);this.brains.delete(id);this.events.push({tick:this.tick,kind:'respawn',actor:id});}
+  if(node){a.controller.reset({position:{...node.position},headingY:node.headingY});a.pose={...a.controller.poseValue};a.spawnNode=node.id;a.spawnSerial++;a.combat.holster=initialHolster();a.elimination=undefined;a.scopes=[];a.energy=100;a.burstUntil=0;a.burstLatch=false;a.queue=[];a.input=neutral(this.round);a.lastInput=this.tick;a.dog=createBattleDog(a.pose,this.terrain);this.brains.delete(id);this.events.push({tick:this.tick,kind:'respawn',actor:id});}
   this.kernel.sync(this.actors,this.loot);return{ok:true,reason:accept?'Respawned. Protection lasts ten seconds or until combat.':'Spectating for the rest of this round.'};
  }
  private stepEngine(){
@@ -215,8 +217,9 @@ export class RoyaleMatch{
   for(const [slot,a]of this.actors.entries()){
    if(!a.alive){k.pose(slot,a);continue;}
    let c=a.bot?this.botInput(a):a.queue.shift();
-   if(c){a.input=c;a.ack=c.seq;}else c={...a.input,hop:false,utility:false,repair:false,recover:false,swap:false,reload:false,cycleMode:false,brawl:false,light:false,heavy:false,evade:0,dismount:false,dogAttack:false,dogRadar:false};
+   if(c){a.input=c;a.ack=c.seq;}else c={...a.input,hop:false,utility:false,repair:false,recover:false,swap:false,reload:false,cycleMode:false,holster:false,brawl:false,light:false,heavy:false,evade:0,dismount:false,dogAttack:false,dogRadar:false};
    if(!a.bot&&(this.tick-a.lastInput>21||!a.connected))c={...neutral(this.round),throttle:a.pose.speed>.05?-1:a.pose.speed<-.05?1:0};
+   c=routeHolster(a.combat,c,this.tick,a.pose.footMode!==3&&!a.repairUntil);
    c=k.input(slot,c);a.input=c;
    if(c.recover&&a.controller.crashed&&this.tick-a.recoverTick>180){
     const p=a.pose,f=k.field(),outside=Math.hypot(p.x-f.x,p.z-f.z)>f.radius;

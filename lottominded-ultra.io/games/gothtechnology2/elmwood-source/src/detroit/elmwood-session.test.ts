@@ -23,7 +23,7 @@ test('keyboard plus gamepad and simultaneous touch sources stay independent',()=
   i.configure(['touch','touch']);i.stick(0,.8,1);i.stick(1,-.6,.5);i.touch(1,'crouch',true,'finger1');i.touch(1,'crouch',true,'finger2');i.touch(1,'crouch',false,'finger1');assert.equal(i.consume(0,0,1).actions.throttle,1);assert.ok(i.consume(1,0,1).actions.steer<0);assert.equal(i.consume(1,0,1).actions.crouch,true);i.clear();assert.equal(i.consume(1,0,1).actions.crouch,false);
 });
 test('cruise cancels on brake and pause clears held controls',()=>{
-  const i=new ElmwoodSessionInput();i.key('KeyV',true);assert.ok(i.consume(0,0,1).actions.throttle>0);i.key('KeyS',true);assert.equal(i.consume(0,0,1).actions.throttle,-1);assert.equal(i.seats[0].cruise,false);i.clear();assert.equal(i.consume(0,0,1).actions.throttle,0);
+  const i=new ElmwoodSessionInput();i.key('KeyV',true);assert.equal(i.consume(0,8,1).actions.throttle,0);assert.ok(i.consume(0,7,1).actions.throttle>0);i.key('KeyS',true);assert.equal(i.consume(0,0,1).actions.throttle,-1);assert.equal(i.seats[0].cruise,false);i.clear();assert.equal(i.consume(0,0,1).actions.throttle,0);
 });
 for(const transition of ['pause','menu','blur','recovery'])test(`${transition} requires a new key press and cancels queued actions`,()=>{
   const i=new ElmwoodSessionInput();i.key('KeyW',true);i.key('Space',true);i.key('KeyV',true);

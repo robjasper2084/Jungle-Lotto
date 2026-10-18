@@ -1,4 +1,6 @@
 import {acquireRiderTint} from './riderTintGeometry.ts';
+import {acquireVisualMaterial} from './sharedVisualMaterial.ts';
+import {visibleSceneryMatrices} from './visibleMatrices.ts';
 import * as T from 'three';
 import {clone} from 'three/addons/utils/SkeletonUtils.js';
 import type {GLTF} from 'three/addons/loaders/GLTFLoader.js';
@@ -23,15 +25,17 @@ export function styleCyclist(bike:T.Object3D,rider:T.Object3D,style:number,npc=t
     const palette=BIKE_STYLES[style];
     if(style===4||style===5)bike.traverse(o=>{if(/^(Front|Rear)_Tire$/.test(o.name))o.scale.x*=style===5?1.7:.75;});
     const tinted=new Map<T.Material,T.Material>();
-    bike.traverse(o=>{const m=o as T.Mesh;if(!m.isMesh)return;const color=(material:T.Material)=>{const existing=tinted.get(material);if(existing)return existing;const c=material.clone() as T.MeshStandardMaterial;materials.push(c);tinted.set(material,c);if(c.name.includes('Graphite_Paint'))c.color.setHex(palette.color);if(c.name.includes('Ochre'))c.color.setHex(palette.accent);return c;};m.material=Array.isArray(m.material)?m.material.map(color):color(m.material);});
+    bike.traverse(o=>{const m=o as T.Mesh;if(!m.isMesh)return;const color=(material:T.Material)=>{const existing=tinted.get(material);if(existing)return existing;const shared=acquireVisualMaterial(material,'bike-'+style,()=>{const c=material.clone() as T.MeshStandardMaterial;if(c.name.includes('Graphite_Paint'))c.color.setHex(palette.color);if(c.name.includes('Ochre'))c.color.setHex(palette.accent);return c;});releaseTint.push(shared.release);tinted.set(material,shared.value);return shared.value;};m.material=Array.isArray(m.material)?m.material.map(color):color(m.material);});
     // Reuse texture detail, with separate skin/clothing masks derived from the rig.
-    if(npc)rider.traverse(o=>{const m=o as T.SkinnedMesh;if(!m.isSkinnedMesh)return;const tint=acquireRiderTint(m.geometry,m.skeleton.bones);m.geometry=tint.geometry;releaseTint.push(tint.release);const source=(Array.isArray(m.material)?m.material[0]:m.material) as T.MeshStandardMaterial,mat=source.clone();materials.push(mat);m.material=mat;mat.emissive.setHex(0);mat.emissiveMap=null;mat.roughness=.88;
+    if(npc)rider.traverse(o=>{const m=o as T.SkinnedMesh;if(!m.isSkinnedMesh)return;const tint=acquireRiderTint(m.geometry,m.skeleton.bones);m.geometry=tint.geometry;releaseTint.push(tint.release);const source=(Array.isArray(m.material)?m.material[0]:m.material) as T.MeshStandardMaterial;
+      const shared=acquireVisualMaterial(source,'rider-'+style,()=>{const mat=source.clone();mat.emissive.setHex(0);mat.emissiveMap=null;mat.roughness=.88;
       const skin=new T.Color([0x633c28,0xe3b499,0x85543a,0xf0c7b0,0x493020,0xc69270][style]);const shirt=new T.Color([0x32bba7,0xdb4c65,0x496ecc,0xe6a52d,0x8b50bf,0x48a675][style]);
       mat.onBeforeCompile=shader=>{shader.uniforms.rideSkin={value:skin};shader.uniforms.rideShirt={value:shirt};shader.vertexShader='attribute vec2 riderTint; varying vec2 rideTint;\n'+shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nrideTint=riderTint;');shader.fragmentShader='uniform vec3 rideSkin; uniform vec3 rideShirt; varying vec2 rideTint;\n'+shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
         float lightness=max(diffuseColor.r,max(diffuseColor.g,diffuseColor.b));
         float skinMask=smoothstep(.2,.7,rideTint.x)*smoothstep(.055,.18,lightness)*smoothstep(.005,.065,diffuseColor.r-diffuseColor.b);
         diffuseColor.rgb=mix(diffuseColor.rgb,rideSkin*(.65+lightness*.6),skinMask);
         diffuseColor.rgb=mix(diffuseColor.rgb,rideShirt*(.45+lightness*.8),smoothstep(.45,.9,rideTint.y)*.78);`);};mat.customProgramCacheKey=()=> 'community-skin-shirt-v1';
+      return mat;});m.material=shared.value;releaseTint.push(shared.release);
     });
     const accessory=new T.MeshStandardMaterial({color:palette.accent,roughness:.72});materials.push(accessory);
     const box=(w:number,h:number,d:number,x:number,y:number,z:number)=>{const g=new T.BoxGeometry(w,h,d);geometry.push(g);const m=new T.Mesh(g,accessory);m.position.set(x,y,z);bike.add(m);};
@@ -112,18 +116,22 @@ export class BicycleView {
 }
 
 export class CommunityView {
-  root=new T.Group();views:BicycleView[]=[];private marker:T.Mesh;private markerMaterial:T.MeshBasicMaterial;private cadence=new RiderCadence();private motions:CyclistMotion[]=[];private clock=0;
+  root=new T.Group();views:(BicycleView|undefined)[]=[];private marker:T.Mesh;private markerMaterial:T.MeshBasicMaterial;private cadence=new RiderCadence();private motions:CyclistMotion[]=[];private clock=0;
   readonly ride:CommunityRide;
-  constructor(ride:CommunityRide,assets:Map<string,GLTF>){
+  constructor(ride:CommunityRide,private assets:Map<string,GLTF>){
     this.ride=ride;
-    this.root.name='Local community ride';this.motions=ride.riders.map((_,i)=>new CyclistMotion(i));this.views=ride.riders.map((_,i)=>{const view=new BicycleView(assets.get('DS_Bicycle_01')!,assets.get('DS_Cyclist_01')!,i,true);this.root.add(view.root);return view;});
+    this.root.name='Local community ride';visibleSceneryMatrices(this.root);this.motions=ride.riders.map((_,i)=>new CyclistMotion(i));this.views=new Array(ride.riders.length);
     this.markerMaterial=new T.MeshBasicMaterial({color:0xf2cf70,side:T.DoubleSide,transparent:true,opacity:.8,depthWrite:false});this.marker=new T.Mesh(new T.RingGeometry(1.1,1.25,32),this.markerMaterial);this.marker.rotation.x=-Math.PI/2;this.root.add(this.marker);
   }
   update(visible:boolean,dt=1/60,observer?:{x:number;z:number}){
     this.root.visible=visible&&this.ride.stage!=='cleanup';
     if(!this.root.visible){return;}
-    this.clock+=dt;this.ride.riders.forEach((r,i)=>{
-      const view=this.views[i],distance=observer?Math.hypot(r.x-observer.x,r.z-observer.z):0;
+    this.clock+=dt;let created=0;this.ride.riders.forEach((r,i)=>{
+      const distance=observer?Math.hypot(r.x-observer.x,r.z-observer.z):0;
+      let view=this.views[i];
+      // Keep a rider's fitted instance for subsequent passes. Build at most one
+      // nearby rider per frame instead of twenty rigs during arena startup.
+      if(!view){if(distance>=140||created>=1)return;created++;view=new BicycleView(this.assets.get('DS_Bicycle_01')!,this.assets.get('DS_Cyclist_01')!,i,true);visibleSceneryMatrices(view.root);this.views[i]=view;this.root.add(view.root);}
       view.root.visible=distance<140;if(!view.root.visible)return;
       // Translation stays frame-smooth; only distant skeletal fitting runs less often.
       const motion=this.motions[i],pose=motion.step(dt,r);
@@ -131,10 +139,11 @@ export class CommunityView {
         view.apply(pose,motion.steering,motion.pedals);
       }else{view.root.position.set(r.x,r.y+.008,r.z);view.root.rotation.y=pose.headingY;}
     });
-    const at=this.ride.route.at(this.ride.gates[this.ride.nextGate]??this.ride.route.length);
-    this.marker.position.set(at.x,this.ride.terrain.sampleGround(at.x,at.z,{height:0,normal:{x:0,y:1,z:0},surface:'pavement',offCourse:false}).height+.055,at.z);this.marker.visible=this.ride.joined;
+    this.marker.visible=this.ride.joined;
+    if(this.marker.visible){const at=this.ride.route.at(this.ride.gates[this.ride.nextGate]??this.ride.route.length);
+    this.marker.position.set(at.x,this.ride.terrain.sampleGround(at.x,at.z,{height:0,normal:{x:0,y:1,z:0},surface:'pavement',offCourse:false}).height+.055,at.z);}
   }
-  dispose(){this.views.forEach(v=>v.dispose());this.marker.geometry.dispose();this.markerMaterial.dispose();this.root.removeFromParent();}
+  dispose(){this.views.forEach(v=>v?.dispose());this.marker.geometry.dispose();this.markerMaterial.dispose();this.root.removeFromParent();}
 }
 
 

@@ -1,3 +1,4 @@
+import {CruiseControl} from '../../../ride-core/src/cruiseControl.ts';
 import {PointLightBudget} from '@digital-static/ridecore';
 import {RecoveryStock} from '../../../ride-core/src/recoveryStock.ts';
 import {mountHudTransparency} from '../../../ride-core/src/hudTransparency.ts';
@@ -75,7 +76,7 @@ import {OnlineViewPreference} from './onlineViewPreference.ts';
 import {SplitRideInput,splitSetupError,type SplitBinding} from './splitInput.ts';
 import {EncounterWarning} from './encounterWarning.ts';
 import {PracticeCoach} from './practiceCoach.ts';
-import {RIDE_RULES,NeutralRearm} from './rideRules.ts';
+import {NeutralRearm} from './rideRules.ts';
 import {RivalRace,installRaceUI} from './raceView.ts';
 import {RACE_ROUTE,type RaceDifficulty} from './raceRules.ts';
 import {installLobby} from './lobby.ts';
@@ -253,6 +254,7 @@ const deviceRearm=new NeutralRearm();
 let inputDevice:'keyboard'|'touch'|'gamepad'|'vr'='keyboard';
 let handledCrash=0;const recoveryStock=new RecoveryStock();
 function competitiveRecovery(){return !!race||!!challengeRun&&challengeRun.challenge.kind!=='discovery';}
+const speedCruise=new CruiseControl();
 let cameraMode='chase',firstYaw=0,firstPitch=RIDER_EYE_PITCH,orbitYaw=0,orbitHeight=2.2,orbitDistance=5,night=false,cruise=false,hop=false,resetPressed=false,muted=false;
 try{muted=localStorage.getItem('digital-static-ride-sound')==='off';}catch{}
 let dogEnabled=true;try{dogEnabled=localStorage.getItem('digital-static-companion')!=='solo';}catch{}
@@ -275,7 +277,7 @@ canvas.addEventListener('online-release-input',()=>clearInput());
 function clearInput(){
  sim?.engineInput.clear();
  split?.input.clear();split?.view.resetTouch();
- trickRequest=0;keys.clear();resetTouch();hop=false;resetPressed=false;cruise=false;acc=0;
+ trickRequest=0;keys.clear();resetTouch();hop=false;resetPressed=false;cruise=false;speedCruise.reset();acc=0;
  deviceRearm.interrupt();clearCameraTouches();encounterWarning.reset();toastUntil=0;$('toast').hidden=true;
  $('stickThumb').style.transform='translate(-50%,-50%)';
 }
@@ -388,7 +390,7 @@ function openControlSettings(){cabinets?.stop();controlSettingsReturn=document.a
 $('helpPanel').querySelector('h2')!.textContent='Control settings';
 const touchSettings=$('helpPanel').querySelector('.touchSettings')!;
 touchSettings.querySelector('legend')!.after(touchLayoutButton,touchToggle);$('quickHelp').after(touchSettings);
-const layoutHelp=document.createElement('p');layoutHelp.textContent='Customize touch controls to move and resize your joystick and buttons. Choose floating or fixed joystick and assign each button below.';touchLayoutButton.before(layoutHelp);
+const layoutHelp=document.createElement('p');layoutHelp.textContent='Customize touch controls to move and resize your joystick and buttons. Choose floating or fixed joystick and assign each button below. Push up twice quickly to hold your current wheel speed; pull down or brake to cancel.';touchLayoutButton.before(layoutHelp);
 const rideControlSettings=document.createElement('button');rideControlSettings.id='rideControlSettings';rideControlSettings.textContent='Control settings';rideControlSettings.setAttribute('aria-controls','helpPanel');rideControlSettings.onclick=openControlSettings;$('ridingOptions').append(rideControlSettings);
 $('help').onclick=()=>{if($('helpPanel').hidden)openControlSettings();else $('closeHelp').click();};$('closeHelp').onclick=()=>{$('helpPanel').hidden=true;controlSettingsReturn?.focus();};
 $('light').onclick=toggleLight;$('audio').onclick=toggleAudio;$('recover').onclick=()=>{if(finished&&challengeRun)loop.retry();else queueRecovery();};
@@ -403,7 +405,7 @@ let seatedRide=false;
 const boardButton=document.createElement('button');boardButton.textContent='Switch to skateboard';boardButton.onclick=()=>{if(sim?.cycling){toast('Choose EUC to use the freestyle skateboard.');return;}const m=toMap(current.x,0,current.z);if(split||race||challengeRun||!parkContains(m.x,m.z)){toast('Switch boards in the Freestyle Yard during free ride');return;}if(Math.abs(current.speed)>.5||sim.crashed){toast('Stop upright to change your ride');return;}hero.skateboarding=!hero.skateboarding;seatedRide=false;cruise=false;sitButton.disabled=hero.skateboarding;sitButton.textContent='Sit down';sitButton.setAttribute('aria-pressed','false');boardButton.textContent=hero.skateboarding?'Switch to EUC':'Switch to skateboard';boardButton.setAttribute('aria-pressed',String(hero.skateboarding));toast(hero.skateboarding?'Arcade skateboard - steer, crouch and hop with your usual controls':'Electric unicycle');canvas.focus();};$('cruise').before(boardButton);
 const footControls=new FootControls();
 const sitButton=document.createElement('button');sitButton.id='sitRide';sitButton.textContent='Sit down';sitButton.setAttribute('aria-pressed','false');sitButton.onclick=()=>{if(sim?.cycling){toast('The cyclist is already seated on the saddle.');return;}if(hero.skateboarding){toast('Seated riding is available on the EUC');return;}seatedRide=!seatedRide;sitButton.textContent=seatedRide?'Stand up':'Sit down';sitButton.setAttribute('aria-pressed',String(seatedRide));toast(seatedRide?'Seated riding · Space / tricks rise out of the seat':'Standing riding');canvas.focus();};$('cruise').before(sitButton);
-$('cruise').onclick=()=>{if(!ready||!running||paused||finished||sim.crashed){cruise=false;return;}cruise=!cruise;toast(cruise?`Cruise • ${Math.round(RIDE_RULES.cruiseSpeed*3.6)} km/h · YOU steer · brake to cancel`:'Cruise off');canvas.focus();};
+$('cruise').onclick=()=>{if(!ready||!running||paused||finished||sim.crashed||current.footMode||sim.cycling||hero.skateboarding){cruise=false;speedCruise.reset();return;}speedCruise.toggle(current.speed);cruise=speedCruise.active;toast(cruise?`${speedCruise.label} · steer normally · brake to cancel`:'Cruise off · get moving, then push up twice');canvas.focus();};
 window.addEventListener('keydown',e=>{
   if(pennyShop?.active){if(e.code==='Escape'){e.preventDefault();pennyShop.close();}return;}
   if(lottoShop?.appActive){if(e.code==='Escape'){e.preventDefault();lottoShop.closeApp();}return;}
@@ -599,8 +601,8 @@ const frameSchedule=new FrameSchedule();
 let hudAt=0,frames=0,fpsAt=performance.now(),fps=0;
 function advanceOnlineHost(dt:number){
  const room=split!;acc+=dt;
- while(acc>=1/120&&!room.simulation.rules.done){mapWorld.step(true);const inputs=online.inputs(paused||document.hidden||online.inputBlocked||!$('menu').hidden?{...NEUTRAL_ACTIONS}:room.input.consume(0));for(let i=0;i<inputs.length;i++){if(inputs[i].reset){recoverSplit(i);inputs[i].reset=false;}if(online.events(i).photo)photoSplit(i);}room.simulation.step(1/120,inputs);for(const i of room.simulation.newCrashes)room.input.clear(i===online.slot?0:i);room.view.afterStep(1/120);acc=Math.max(0,acc-1/120);}
- online.update(dt,room.simulation,paused||document.hidden||online.inputBlocked?{...NEUTRAL_ACTIONS}:room.input.consume(0));
+ while(acc>=1/120&&!room.simulation.rules.done){mapWorld.step(true);const inputs=online.inputs(paused||document.hidden||online.inputBlocked||!$('menu').hidden?{...NEUTRAL_ACTIONS}:room.input.consume(0,!room.simulation.riders[online.slot].sim.crashed&&room.simulation.rules.countdown<=0));for(let i=0;i<inputs.length;i++){if(inputs[i].reset){recoverSplit(i);inputs[i].reset=false;}if(online.events(i).photo)photoSplit(i);}room.simulation.step(1/120,inputs);for(const i of room.simulation.newCrashes)room.input.clear(i===online.slot?0:i);room.view.afterStep(1/120);acc=Math.max(0,acc-1/120);}
+ online.update(dt,room.simulation,paused||document.hidden||online.inputBlocked?{...NEUTRAL_ACTIONS}:room.input.consume(0,!room.simulation.riders[online.slot].sim.crashed&&room.simulation.rules.countdown<=0));
 }
 // Browsers throttle hidden tabs. Keep the authoritative room clock and remote riders moving.
 let backgroundRoomAt=performance.now();
@@ -611,8 +613,8 @@ function frameSplit(now:number,dt:number){
  if(controls.pause){if(!$('menu').hidden)resumeRide.click();else pause();}
  for(let i=0;i<room.simulation.riders.length;i++){const event=room.input.events(i),slot=online.active?online.slot:i;if(online.active&&i!==0)continue;if(event.recover){if(online.active&&!online.isHost)online.command({...NEUTRAL_ACTIONS,reset:true});else recoverSplit(slot);}if(event.camera)room.view.toggleCamera(slot);if(event.cruise)cruiseSplit(online.active?0:i);}
  const visible=$('menu').hidden,active=running&&!finished&&(online.active&&online.isHost||!paused&&visible);
- if(online.active&&!online.isHost){const f=online.frame;if(f){room.simulation.rules.countdown=f.countdown;room.simulation.rules.elapsed=f.elapsed;room.simulation.rules.done=f.done;f.riders.forEach((r,i)=>{const local=room.simulation.riders[i];lerpPose(local.pose,r.pose,1-Math.exp(-dt*16),local.pose);copyPose(local.pose,local.previous);Object.assign(room.simulation.rules.racers[i],{gate:r.gate,station:r.station,finish:r.finish,missed:r.missed});local.stock.used=r.recoveries??0;local.flow.banked=r.banked;local.message=r.message;local.sim.crashed=r.crashed;room.simulation.remoteFallPhase.set(i,r.fallPhase??'none');if(local.challenge&&r.challenge){Object.assign(local.challenge,r.challenge);local.challenge.photos=new Set(r.challenge.photos);}});room.view.afterRemoteFrame(dt);}acc=0;const input=active&&!online.inputBlocked?room.input.consume(0):{...NEUTRAL_ACTIONS};if(input.hop||input.trick)online.command(input);online.update(dt,room.simulation,input);}
- else if(active){if(online.active)advanceOnlineHost(dt);else {acc+=dt;while(acc>=1/120&&!room.simulation.rules.done){mapWorld.step(true);room.simulation.step(1/120,room.simulation.riders.map((_,i)=>room.input.consume(i)));for(const i of room.simulation.newCrashes)room.input.clear(i);room.view.afterStep(1/120);acc=Math.max(0,acc-1/120);}}}
+ if(online.active&&!online.isHost){const f=online.frame;if(f){room.simulation.rules.countdown=f.countdown;room.simulation.rules.elapsed=f.elapsed;room.simulation.rules.done=f.done;f.riders.forEach((r,i)=>{const local=room.simulation.riders[i];lerpPose(local.pose,r.pose,1-Math.exp(-dt*16),local.pose);copyPose(local.pose,local.previous);Object.assign(room.simulation.rules.racers[i],{gate:r.gate,station:r.station,finish:r.finish,missed:r.missed});local.stock.used=r.recoveries??0;local.flow.banked=r.banked;local.message=r.message;local.sim.crashed=r.crashed;room.simulation.remoteFallPhase.set(i,r.fallPhase??'none');if(local.challenge&&r.challenge){Object.assign(local.challenge,r.challenge);local.challenge.photos=new Set(r.challenge.photos);}});room.view.afterRemoteFrame(dt);}acc=0;const input=active&&!online.inputBlocked?room.input.consume(0,!room.simulation.riders[online.slot].sim.crashed&&room.simulation.rules.countdown<=0):{...NEUTRAL_ACTIONS};if(input.hop||input.trick)online.command(input);online.update(dt,room.simulation,input);}
+ else if(active){if(online.active)advanceOnlineHost(dt);else {acc+=dt;while(acc>=1/120&&!room.simulation.rules.done){mapWorld.step(true);room.simulation.step(1/120,room.simulation.riders.map((_,i)=>room.input.consume(i,!room.simulation.riders[i].sim.crashed&&room.simulation.rules.countdown<=0)));for(const i of room.simulation.newCrashes)room.input.clear(i);room.view.afterStep(1/120);acc=Math.max(0,acc-1/120);}}}
  else acc=0;
  if(room.simulation.rules.done&&!finished){finished=true;clearInput();}
  hero.root.visible=false;dogView.root.visible=false;confirmation.render(false);riderLamp.update(dt,current,night,false);ambience?.update(room.simulation.rules.elapsed,room.simulation.riders.map(r=>r.pose));
@@ -665,7 +667,10 @@ function frame(now:number,xrFrame?:XRFrame){
   const deviceReady=deviceRearm.sample(dt,deviceActive);
   if(deviceActive&&deviceReady)inputDevice=vr.active?'vr':'gamepad';
   let throttle=clamp(touch.throttle+gp.throttle+xp.throttle+(keys.has('KeyW')||keys.has('ArrowUp')?1:0)-(keys.has('KeyS')||keys.has('ArrowDown')?1:0),-1,1);
-  if(touch.braking){throttle=touch.brakeThrottle(current.speed);cruise=false;}if(throttle<0||sim.crashed)cruise=false;if(cruise&&Math.abs(throttle)<.01)throttle=clamp((RIDE_RULES.cruiseSpeed-current.speed)*.45,-.3,.5);
+  if(!cruise&&speedCruise.active)speedCruise.reset();
+  if(touch.braking)throttle=touch.brakeThrottle(current.speed);
+  const wasCruising=cruise;throttle=speedCruise.update(throttle,current.speed,dt,running&&!paused&&!finished&&!sim.crashed&&!current.footMode&&!sim.cycling&&!hero.skateboarding&&!vr.active,touch.braking||resetPressed);cruise=speedCruise.active;
+  if(cruise&&!wasCruising)toast(`${speedCruise.label} · steer normally · brake to cancel`);
   if(vr.active){if(vr.driveMode==='lean')cruise=false;throttle=vr.drive(throttle,current,dt,xp.braking||touch.braking,xrFrame);throttle=vrThrottle(throttle,current.speed,vr.comfort);}
   if(hero.skateboarding){seatedRide=false;trickRequest=trickRequest===4||trickRequest===5||trickRequest===6?0:trickRequest;throttle=current.speed<0?Math.max(0,throttle):current.speed>=8?Math.min(0,throttle):throttle>0?throttle*.45:throttle;}
   const crouch=touch.crouch||gp.crouch||xp.crouch||xp.hopHeld||keys.has('ShiftLeft')||keys.has('ShiftRight');
@@ -773,13 +778,13 @@ function frame(now:number,xrFrame?:XRFrame){
     $('speedAlert').classList.toggle('beep-pulse',pose.beepPulse>.4&&!paused);
     $('speed').textContent=String(Math.round(Math.abs(s.speedKph)));$('location').textContent=elmwood?'ELMWOOD CEMETERY':parkContains(mapped.x,mapped.z)?'FREESTYLE YARD':locationAt(mapped.x,mapped.z).toUpperCase();
     $('distance').textContent=(s.distanceTravelled/1000).toFixed(2)+' km';$('run').textContent=race?race.rules.label:challengeRun?challengeRun.progress:`FREE RIDE${score?' · '+score+' PTS':''}`;if(competitiveRecovery())$('run').textContent+=' · '+recoveryStock.remaining+'/3 recoveries';canvas.dataset.recoveriesLeft=competitiveRecovery()?String(recoveryStock.remaining):'unlimited';district.update(challengeRun,pose.x,pose.z,pose.headingY);canvas.dataset.challenge=JSON.stringify(challengeRun?{id:challengeRun.challenge.id,start:challengeRun.challenge.start,end:challengeRun.challenge.end,gates:challengeRun.gateCount,totalGates:challengeRun.challenge.gates.length,count:challengeRun.count,elapsed:challengeRun.elapsed,done:challengeRun.done,failed:challengeRun.failed,score:challengeRun.score,medal:challengeRun.medal}:null);
-    $('status').textContent=s.crashed?`${paused?'PAUSED · ':''}${s.crashCause.toUpperCase()} · ${recoveryLabel()}`:paused?'PAUSED':s.crouchCharge>.1?`HOP CHARGE ${Math.round(s.crouchCharge*100)}%`:seatedRide?'SEATED RIDE':cruise?'CRUISE':' ';
+    $('status').textContent=s.crashed?`${paused?'PAUSED · ':''}${s.crashCause.toUpperCase()} · ${recoveryLabel()}`:paused?'PAUSED':s.crouchCharge>.1?`HOP CHARGE ${Math.round(s.crouchCharge*100)}%`:seatedRide?'SEATED RIDE':cruise?speedCruise.label:' ';
     $('speedAlert').textContent=paused||s.crashed?'':s.powerStage!=='normal'?`${s.powerStage.toUpperCase()} · EASE OFF`:pose.scrape>.05?'PEDAL SCRAPE · EASE THE CARVE':'';
     const hazard=encounterWarning.step((now-hudAt)/1000,pose,world,running&&!paused&&!finished);
     const m=toMap(pose.x,0,pose.z),route=cutCoords(m.x,m.z),feature=mapWorld.courseFeatures.find(f=>f.station-route.d>-f.length&&f.station-route.d<35);const courseWarning=!hazard&&feature&&running&&!paused?`${feature.kind==='jump'?'Jump ramp':'Slippery patch'} · ${Math.max(0,Math.round(feature.station-route.d))} m · pass ${feature.offset>0?'left':'right'} to avoid`:'';$('warning').hidden=!(hazard||courseWarning);$('warning').textContent=hazard||courseWarning;
     if(practice){$('practiceCopy').textContent=`${Math.min(6,practice.stepIndex+1)}/6 · ${practice.instruction}`;$('practiceHUD').hidden=!$('menu').hidden||vr.active;}
     $('toast').hidden=now>toastUntil||sim.crashed||paused;$<HTMLSelectElement>('camera').value=cameraMode;
-    canvas.dataset.cruise=String(cruise);canvas.dataset.inputDevice=inputDevice;crashOverlay.hidden=!running||!sim.crashed||!$('menu').hidden||finished||vr.active;crashRecover.textContent='Get back up · '+(inputDevice==='gamepad'?'X / Square':inputDevice==='keyboard'?'R':'tap here');if(competitiveRecovery()){crashRecover.textContent=recoveryStock.remaining?'Get back up · '+recoveryStock.remaining+' left':'No recoveries left · restart from menu';}crashRecover.disabled=competitiveRecovery()&&!recoveryStock.remaining;$<HTMLButtonElement>('cruise').disabled=paused||sim.crashed||finished;
+    canvas.dataset.cruise=String(cruise);canvas.dataset.cruiseSpeed=String(speedCruise.targetSpeed);canvas.dataset.inputDevice=inputDevice;crashOverlay.hidden=!running||!sim.crashed||!$('menu').hidden||finished||vr.active;crashRecover.textContent='Get back up · '+(inputDevice==='gamepad'?'X / Square':inputDevice==='keyboard'?'R':'tap here');if(competitiveRecovery()){crashRecover.textContent=recoveryStock.remaining?'Get back up · '+recoveryStock.remaining+' left':'No recoveries left · restart from menu';}crashRecover.disabled=competitiveRecovery()&&!recoveryStock.remaining;$<HTMLButtonElement>('cruise').disabled=paused||sim.crashed||finished;
     const inside=toMap(pose.x,pose.y,pose.z);canvas.dataset.music=JSON.stringify(loop.music.state);canvas.dataset.indoor=elmwood?'outside':indoorRideArea(inside.x,inside.z)??'outside';
     canvas.dataset.touchInput=JSON.stringify({throttle:touch.throttle,steer:touch.steer,crouch:touch.crouch,brake:touch.braking,hopHeld:touch.hopHeld});canvas.dataset.people=JSON.stringify(mapWorld.peopleState);canvas.dataset.trafficKinds=JSON.stringify(mapWorld.traffic.map(t=>({id:t.id,kind:t.kind,speed:t.speed,x:t.x,y:t.y,z:t.z,heading:t.heading})));
     Object.assign(canvas.dataset,{seated:pose.seated.toFixed(3),speed:s.speed.toFixed(3),x:pose.x.toFixed(2),z:pose.z.toFixed(2),height:pose.y.toFixed(3),grounded:String(s.grounded),lean:s.riderPitch.toFixed(3),roll:s.rollAngle.toFixed(3),crouch:s.crouchCharge.toFixed(2),hops:String(s.hops),landings:String(s.landings),crashes:String(s.crashes),crashed:String(s.crashed),cameraMode,eyeControl:String(!vr.active&&cameraMode==='first'),heading:pose.headingY.toFixed(4),eyeYaw:firstYaw.toFixed(4),eyePitch:firstPitch.toFixed(4),eyeRoll:riderEyeMotion(pose,calmRideToggle.checked||matchMedia('(prefers-reduced-motion: reduce)').matches).roll.toFixed(4),paused:String(paused),running:String(running),mode,checkpoint:String(gate),distance:s.distanceTravelled.toFixed(1),fps:fps.toFixed(1),drawCalls:String(renderer.info.render.calls),triangles:String(renderer.info.render.triangles),actors:String(mapWorld.traffic.length),score:String(score),finished:String(finished)});hudAt=now;

@@ -52,7 +52,7 @@ export class RoyaleKernel{
    Object.assign(a,{integrity:v(0),shield:v(1),alive:!!v(2),slot:v(3),loadout:[v(4),v(5)].filter(n=>n>=0).map(n=>weapons[n]),ammo:{static:v(6),heart:v(7),bass:v(8)},utility:v(9),repairs:v(10),shieldUntil:v(11),repairUntil:v(12),switchUntil:v(13),shotAt:v(14),lastShot:v(15),lastDamage:v(16),kills:v(17),damage:v(18),shots:v(19),hits:v(20),eliminatedAt:v(21)});
    a.dogPower={charges:this.core.call("dog",i,0),until:this.core.call("dog",i,1),ready:this.core.call("dog",i,2),radarUntil:this.core.call("dog",i,3),radarReady:this.core.call("dog",i,4)};
    const c=(key:number)=>this.core.call('combat',i,key);
-   a.combat={melee:this.melee(i),magazine:{static:c(0),heart:c(1),bass:c(2)},reloadStart:c(3),reloadCommit:c(4),reloadEnd:c(5),committed:!!c(6),kickYaw:c(7),kickPitch:c(8),aimBlend:c(9),lean:c(10),fireMode:c(11),shotCounter:c(12)};
+   a.combat={holster:a.combat.holster,melee:this.melee(i),magazine:{static:c(0),heart:c(1),bass:c(2)},reloadStart:c(3),reloadCommit:c(4),reloadEnd:c(5),committed:!!c(6),kickYaw:c(7),kickPitch:c(8),aimBlend:c(9),lean:c(10),fireMode:c(11),shotCounter:c(12)};
   });
   kernelLoot(loot).forEach((l,i)=>l.available=!!this.core.call('available',i));
  }

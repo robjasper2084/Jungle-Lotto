@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {weaponReadyAmount} from '../../../../ride-core/src/royale/holster.ts';
 import {Hero} from '../actors.ts';
 import {FpsArms} from './fpsArms.ts';
 import type {GLTF} from '../compressedGLTFLoader.ts';
@@ -54,6 +55,11 @@ export class FirstPersonView {
   this.root.scale.setScalar(viewScale);this.root.position.copy(target).sub(sight.clone().multiplyScalar(viewScale).applyQuaternion(this.root.quaternion));this.magazine.position.copy(mag).addScaledVector(up,-r.magazine*.22*scale).addScaledVector(right,-r.magazine*.065*scale);
   this.magazine.quaternion.copy(this.weapon.root.quaternion);this.magazine.scale.setScalar(scale);this.magazine.visible=r.active&&r.magazine>.02;
   this.root.updateMatrixWorld(true);this.arms.update(camera,scale,viewScale);
+  const ready=weaponReadyAmount(state,tick);
+  const healing=healingUntil>tick;
+  if(!healing)this.root.position.addScaledVector(up,-.72*(1-ready)*scale);
+  if((ready<=0&&!healing)||p.footMode===3)this.root.visible=false;
+  this.root.updateMatrixWorld(true);
   return {reload:r.phase,obstruction:blocked,rigRight:this.rig.errorR,rigLeft:this.rig.errorL};
  }
  hide(){this.root.visible=false;}

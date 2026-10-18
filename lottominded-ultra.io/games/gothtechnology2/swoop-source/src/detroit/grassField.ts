@@ -1,5 +1,6 @@
 import type {SceneryWorld} from './sceneryWorld.ts';
 import * as T from 'three';
+import {SpatialUpdateGate,visibleSceneryMatrices} from '@digital-static/ridecore';
 import {GLTFLoader} from './compressedGLTFLoader.ts';
 import {cutPoint,heightAt,hash,surfaceAt} from './world.ts';
 import {CUT_METRES} from './geography.ts';
@@ -67,5 +68,6 @@ export async function buildGrassField(scene:T.Scene,world:SceneryWorld,ground:T.
  }
  // Original drain mesh adds trail-edge detail; this is decorative, flush to supported paving.
  const drain=meshes.get('TrailDrain');if(drain){for(let d=1780;d<CUT_METRES-30;d+=130){const p=cutPoint(d,-cutWidth(d)/2+.25);if(nearestRamp(p.x,p.z).distance<5)continue;const o=new T.Mesh(drain.geometry.clone().applyMatrix4(drain.matrixWorld),drain.material);o.position.set(p.x,heightAt(p.x,p.z)+.028,p.z);o.rotation.y=p.heading;scene.add(o);}}
- return {count:total,update(x:number,z:number,t:number,reduced=false,compact=false){time.value=reduced?0:t;rider.value.set(reduced?1e6:x,0,z);let visible=0;for(const c of chunks){c.group.visible=Math.hypot(c.x-x,c.z-z)<(compact?85:155);if(c.group.visible)visible++;}return visible;}};
+ const gate=new SpatialUpdateGate();for(const c of chunks)visibleSceneryMatrices(c.group);let visible=0;
+ return {count:total,update(x:number,z:number,t:number,reduced=false,compact=false){time.value=reduced?0:t;rider.value.set(reduced?1e6:x,0,z);if(gate.due(x,z,t,String(compact))){visible=0;for(const c of chunks){c.group.visible=Math.hypot(c.x-x,c.z-z)<(compact?85:155);if(c.group.visible)visible++;}}return visible;}};
 }

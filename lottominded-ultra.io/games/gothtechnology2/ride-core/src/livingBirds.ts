@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {visibleSceneryMatrices} from './visibleMatrices.ts';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {MeshoptDecoder} from 'three/addons/libs/meshopt_decoder.module.js';
 import {clone} from 'three/addons/utils/SkeletonUtils.js';
@@ -13,7 +14,7 @@ export class LivingBirdFlock {
   const data=await new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).loadAsync(url);
   if(!data.animations.length)throw Error('Living Birds flight animation missing');
   for(const [i,p]of this.sites.entries()){
-   const root=clone(data.scene) as T.Group,mixer=new T.AnimationMixer(root);
+   const root=clone(data.scene) as T.Group,mixer=new T.AnimationMixer(root);visibleSceneryMatrices(root);
    mixer.clipAction(data.animations[0]).play();mixer.setTime(i*.137);
    root.traverse(o=>{if(o instanceof T.Mesh){o.castShadow=false;o.receiveShadow=false;}});
    this.root.add(root);this.birds.push({root,mixer,home:new T.Vector3(p.x,p.y,p.z),phase:i*2.399});

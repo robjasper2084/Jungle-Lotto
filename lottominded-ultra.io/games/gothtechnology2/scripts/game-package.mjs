@@ -67,13 +67,25 @@ export async function modelDependencies(directory,files){
 export async function validatePackage(directory,entry){
   const html=await readFile(resolve(directory,entry),'utf8');
   if(!html.includes('<script'))throw Error('Missing game entry scripts: '+entry);
-  // Check the actual nested entry's scripts and styles before replacing any package.
+  const visited=new Set();
+  async function moduleFile(file){
+    if(visited.has(file))return;visited.add(file);await readableTree(file);
+    if(!file.endsWith('.js'))return;
+    const source=await readFile(file,'utf8');
+    for(const match of source.matchAll(/(?:\bfrom\s*|\bimport\s*\(?\s*)["'](\.{1,2}\/[^"'\s]+\.js)(?:[?#][^"']*)?["']/g)){
+      const dependency=resolve(dirname(file),match[1]);
+      if(relative(directory,dependency).startsWith('..'))continue;
+      await moduleFile(dependency);
+    }
+  }
+  // Follow module imports too: a present entry can still fail immediately when
+  // an unchanged shared chunk was omitted from a sparse release checkout.
   for(const match of html.matchAll(/(?:src|href)=["']([^"']+)["']/g)){
     const url=match[1].split(/[?#]/)[0];
     if(!url||/^(?:[a-z]+:|\/|\.\.\/)/i.test(url)||!/(?:\.js|\.css)$/.test(url))continue;
     const file=resolve(directory,url);
     if(relative(directory,file).startsWith('..'))throw Error('Asset escapes package: '+url);
-    await readableTree(file);
+    await moduleFile(file);
   }
   await readableTree(resolve(directory,'SOURCE.md'));
   await readableTree(resolve(directory,'licenses'));

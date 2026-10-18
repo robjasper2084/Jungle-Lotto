@@ -11,7 +11,7 @@ export function aimFriction(angle:number,distance:number,strength:number,visible
  const cone=.065;if(angle>=cone)return 1;
  return 1-Math.max(0,Math.min(.6,strength))*(1-Math.max(0,angle)/cone);
 }
-export const SIMPLE_ACTIONS=new Set(['aim','fire','reload','crouch','hop','repair','recover']);
+export const SIMPLE_ACTIONS=new Set(['aim','fire','reload','holster','crouch','hop','repair','recover']);
 /** Local presentation only. Server remains the authority for ammunition and hits. */
 export class ShotPreview {
  private held=false;private next=0;private round='';private spent=0;private counter=-1;private confirmed=-1;private pending:number[]=[];private magazine=0;private weapon='';

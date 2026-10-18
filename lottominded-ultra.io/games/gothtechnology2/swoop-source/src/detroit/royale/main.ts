@@ -1,7 +1,9 @@
+import {CruiseControl} from '../../../../ride-core/src/cruiseControl.ts';
 import {AimComfortUi} from './aimComfortUi.ts';
 import {aimFriction,SIMPLE_ACTIONS,ShotPreview} from './aimComfort.ts';
 import {OpponentContrast} from './opponentContrast.ts';
 import {PointLightBudget} from '@digital-static/ridecore';
+import {weaponReady} from '../../../../ride-core/src/royale/holster.ts';
 import {fpsAim} from './fpsAim.ts';
 import {CombatPreferencesControls,combatLookGain,combatChaseEye,retractCombatCamera} from './combatPolish.ts';
 const combatPreferences=new CombatPreferencesControls();
@@ -93,7 +95,7 @@ const cameraModes=['chase','first','front','side','orbit','drone'] as const;
 type ViewMode=typeof cameraModes[number];let viewMode:ViewMode='chase',sensitivity=1;const cameraBlend=new CameraBlend();
 try{const saved=localStorage.getItem('royale-camera');if(cameraModes.includes(saved as ViewMode))viewMode=saved as ViewMode;const value=Number(localStorage.getItem('royale-aim-sensitivity'));if(value>=.4&&value<=2)sensitivity=value;}catch{}
 function setCamera(mode:ViewMode){viewMode=mode;el<HTMLSelectElement>('camera-view').value=mode;try{localStorage.setItem('royale-camera',mode);}catch{}}
-function cycleCamera(){if(footAim.active){footView=footView==='first'?'chase':'first';saveFootView();}else setCamera(viewMode==='first'?'chase':'first');}
+function cycleCamera(){syncFootAim();if(footAim.active){footView=footView==='first'?'chase':'first';saveFootView();}else setCamera(viewMode==='first'?'chase':'first');}
 setCamera(viewMode);el<HTMLSelectElement>('camera-view').onchange=e=>setCamera((e.target as HTMLSelectElement).value as ViewMode);
 let footView:'first'|'chase'='first';
 try{if(localStorage.getItem('royale-foot-view')==='chase')footView='chase';}catch{}
@@ -141,7 +143,8 @@ el('reentry-confirm').onclick=()=>{deathReplay.stop();release();session.requestR
 function playDeathReplay(){release();deathReplay.start(performance.now());if(deathReplay.playing)dialog.close();}el('death-replay').onclick=playDeathReplay;el('reentry-replay').onclick=playDeathReplay;el('replay-stop').onclick=()=>deathReplay.stop();
 const keys=new Set<string>(),held=new Set<string>(),tap=new Set<string>();let throttle=0,steer=0,aimPointer:number|undefined,aimX=0,aimY=0,stickPointer:number|undefined;
 const message=(s:string)=>el('message').textContent=s;
-function release(){shotPreview.reset();localShotPending=false;footControls.clear();stanceGesture.reset();leanGesture.reset();touchAds=false;aimGesture.reset();lookYaw=lookPitch=0;keys.clear();held.clear();tap.clear();steer=throttle=0;aimPointer=stickPointer=undefined;resetPointers.forEach(reset=>reset());session?.release();}
+const speedCruise=new CruiseControl();
+function release(){speedCruise.reset();shotPreview.reset();localShotPending=false;footControls.clear();stanceGesture.reset();leanGesture.reset();touchAds=false;aimGesture.reset();lookYaw=lookPitch=0;keys.clear();held.clear();tap.clear();steer=throttle=0;aimPointer=stickPointer=undefined;resetPointers.forEach(reset=>reset());session?.release();}
 function finishLayoutEditing(){if(layoutEditing)saveLayout();layoutEditing=false;el('touch').classList.remove('editing');el('layout-done').hidden=true;release();}
 function clearResults(){el('results').replaceChildren();el('rematch').hidden=true;}
 function showMenu(){if(document.pointerLockElement===canvas)document.exitPointerLock();release();finishLayoutEditing();paused=true;if(dialog.open)dialog.close();dialog.showModal();el('resume').hidden=!session?.state;el('quit').hidden=!session?.state;}
@@ -213,7 +216,7 @@ function buttonAction(action:string){if(action==='crouch'||action==='prone'){sta
 window.addEventListener('keydown',e=>{if((e.target as HTMLElement)?.matches('input,select,textarea,button')||dialog.open||deathReplay.playing||session?.comms?.inputBlocked)return;
  if([...Object.values(bindings),'ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Digit1','Digit2','Escape'].includes(e.code))e.preventDefault();
  if(e.code==='Escape'||e.code===bindings.loadout){showMenu();return;}
- if(!keys.has(e.code)){if(e.code===bindings.crouch)stanceGesture.down(1);if(e.code===bindings.prone)stanceGesture.down(2);if(e.code===bindings.hop)stanceGesture.reset();for(const [key,action] of [['hop','hop'],['utility','utility'],['repair','repair'],['recover','recover'],['reload','reload'],['pickup','swap'],['cycleMode','cycleMode'],['dogAttack','dog-attack'],['dogRadar','dog-radar'],['brawl','brawl'],['evade','evade']] as const)if(e.code===bindings[key])tap.add(action);if(e.code===bindings.camera)cycleCamera();if(e.code===bindings.scope)changeScope();}
+ if(!keys.has(e.code)){if(e.code===bindings.crouch)stanceGesture.down(1);if(e.code===bindings.prone)stanceGesture.down(2);if(e.code===bindings.hop)stanceGesture.reset();for(const [key,action] of [['holster','holster'],['hop','hop'],['utility','utility'],['repair','repair'],['recover','recover'],['reload','reload'],['pickup','swap'],['cycleMode','cycleMode'],['dogAttack','dog-attack'],['dogRadar','dog-radar'],['brawl','brawl'],['evade','evade']] as const)if(e.code===bindings[key])tap.add(action);if(e.code===bindings.camera)cycleCamera();if(e.code===bindings.scope)changeScope();}
  keys.add(e.code);if(e.code==='Digit1')slot=0;if(e.code==='Digit2')slot=1;
 });
 window.addEventListener('keyup',e=>keys.delete(e.code));window.addEventListener('blur',release);window.addEventListener('gamepaddisconnected',release);
@@ -284,25 +287,27 @@ for(const node of Array.from(el('touch').children)){
 }
 el('touch').append(moreControls);
 function aimMode(){return touchAds||touchAim==='hold'&&held.has('aim')||navigator.getGamepads?.()[0]?.buttons[6]?.pressed?2:aimGesture.get(performance.now());}
-function command():Command{const c=neutral(session.state?.round??'');const pad=navigator.getGamepads?.()[0];const axis=(n:number)=>deadZone(pad?.axes[n]??0,aimComfort.value.deadzone);
+function command():Command{syncFootAim();const c=neutral(session.state?.round??'');const pad=navigator.getGamepads?.()[0];const axis=(n:number)=>deadZone(pad?.axes[n]??0,aimComfort.value.deadzone);
  const scopePressed=!!pad?.buttons[12]?.pressed;if(scopePressed&&!scopePadHeld)changeScope();scopePadHeld=scopePressed;
  c.throttle=T.MathUtils.clamp(throttle+Number(keys.has(bindings.forward)||keys.has('ArrowUp'))-Number(keys.has(bindings.brake)||keys.has('ArrowDown'))-axis(1),-1,1);
  c.steer=T.MathUtils.clamp(steer+Number(keys.has(bindings.right)||keys.has('ArrowRight'))-Number(keys.has(bindings.left)||keys.has('ArrowLeft'))+axis(0),-1,1);
  look(axis(2)*6,axis(3)*4.5,.004,'controller');const gyro=gyroscope.consume(1/60,!dialog.open&&!paused,aimMode()===2||viewMode==='first');const gyroGain=scopeSensitivity.gain(aimMode()===2?selectedScope:null,'gyro')/(aimMode()===2?scopeZoom(selectedScope):1);gyro.yaw*=gyroGain;gyro.pitch*=gyroGain;if(footAim.active){footAim.turn(-gyro.yaw);aimYaw=0;}else aimYaw=T.MathUtils.clamp(aimYaw-gyro.yaw,-1.25,1.25);aimPitch=T.MathUtils.clamp(aimPitch+gyro.pitch,-.65,.65);c.facingYaw=footAim.active?footAim.heading:null;c.aimYaw=aimYaw;c.aimPitch=aimPitch;
  c.fire=(held.has('fire')||held.has('fire-left')||tap.has('fire')||tap.has('fire-left'))||!!pad?.buttons[7]?.pressed;c.aimMode=aimMode();if(c.fire&&!footAim.active&&!c.aimMode&&viewMode!=='first'&&viewMode!=='chase')setCamera('chase');
- c.reload=tap.has('reload')||!!pad?.buttons[2]?.pressed;c.cycleMode=tap.has('cycleMode');c.lean=leanGesture.get(keys.has(bindings.leanLeft),keys.has(bindings.leanRight),held.has('lean-left'),held.has('lean-right'));c.crouch=stanceGesture.value===1;c.prone=stanceGesture.value===2;
+ c.holster=tap.has('holster');if(c.holster){touchAds=false;aimGesture.reset();held.delete('aim');c.aimMode=0;}c.reload=tap.has('reload')||!!pad?.buttons[2]?.pressed;c.cycleMode=tap.has('cycleMode');c.lean=leanGesture.get(keys.has(bindings.leanLeft),keys.has(bindings.leanRight),held.has('lean-left'),held.has('lean-right'));c.crouch=stanceGesture.value===1;c.prone=stanceGesture.value===2;
  c.hop=tap.has('hop')||!!pad?.buttons[0]?.pressed;c.hopHeld=held.has('hop')||keys.has(bindings.hop)||!!pad?.buttons[0]?.pressed;c.dismount=footControls.consume();c.burst=footControls.run||held.has('burst')||keys.has(bindings.burst)||!!pad?.buttons[4]?.pressed;
  const brawling=!!session.state?.self?.combat.melee?.brawl;c.brawl=tap.has('brawl');c.light=brawling&&c.fire;c.heavy=brawling&&c.reload;if(brawling){c.fire=false;c.reload=false;c.aimMode=0;}c.evade=tap.has('evade')?(c.throttle<-.2?2:c.steer<-.1?-1:1):0;
  c.dogAttack=tap.has('dog-attack');c.dogRadar=tap.has('dog-radar');c.utility=tap.has('utility')||!!pad?.buttons[5]?.pressed;c.repair=tap.has('repair')||!!pad?.buttons[3]?.pressed;c.recover=tap.has('recover');c.swap=tap.has('swap');c.slot=slot;
  const self=session.state?.actors.find(a=>a.id===session.me),pose=session.prediction?.controller.poseValue??self?.pose;
+ c.throttle=speedCruise.update(c.throttle,pose?.speed??0,DT,!!self?.alive&&!!pose&&!pose.footMode&&!session.state?.self?.controller.fields.crashed&&session.state?.phase==='active',c.dismount||c.recover);
+ canvas.dataset.cruise=String(speedCruise.active);canvas.dataset.cruiseSpeed=String(speedCruise.targetSpeed);
  barrelBlocked=false;
  if(self&&pose&&!brawling&&!keys.has(bindings.freeLook)&&!held.has('free-look')&&camera.position.distanceTo(new T.Vector3(pose.x,pose.y,pose.z))<15&&(footAim.active||c.aimMode||viewMode==='first'||viewMode==='chase')){
   const facing={...pose,headingY:c.facingYaw??pose.headingY},w=WEAPONS[self.weapon],aim=fpsAim(facing,self.skin,facing.headingY+c.aimYaw+self.combat.kickYaw,aimPitch+self.combat.kickPitch,self.combat.aimBlend,self.combat.lean,activeTerrain(),session.state?.actors.filter(a=>a.id!==session.me)??[],{origin:camera.position,range:Math.min(600,w.speed*w.life/60),kickYaw:self.combat.kickYaw,kickPitch:self.combat.kickPitch,targets:practiceRange?.layout.targets,targetHeading:practiceRange?.layout.heading});
   c.aimYaw=aim.aimYaw;c.aimPitch=aim.aimPitch;barrelBlocked=aim.blocked;aimDistance=aim.distance;
  }
  if(self&&session.state?.self){const me=session.state.self,w=me.loadout[me.slot],mag=me.combat.magazine[w];
-  if(aimComfort.value.autoReload&&!brawling&&mag===0&&me.ammo[w]>0&&me.combat.reloadStart<0)c.reload=true;
-  if(session.room){const preview=shotPreview.sample({round:session.state.round,tick:session.state.tick,counter:me.combat.shotCounter,fire:c.fire,allowed:session.state.phase==='active'&&me.alive&&!brawling&&!c.reload&&me.combat.reloadStart<0&&!paused&&!dialog.open,mode:me.combat.fireMode,magazine:mag,interval:WEAPONS[w].interval,weapon:w},performance.now());if(preview){localShotPending=true;royaleAudio.previewShot(w);}}
+  if(aimComfort.value.autoReload&&weaponReady(me.combat,session.state.tick)&&!brawling&&mag===0&&me.ammo[w]>0&&me.combat.reloadStart<0)c.reload=true;
+  if(session.room){const preview=shotPreview.sample({round:session.state.round,tick:session.state.tick,counter:me.combat.shotCounter,fire:c.fire,allowed:weaponReady(me.combat,session.state.tick)&&!c.holster&&session.state.phase==='active'&&me.alive&&!brawling&&!c.reload&&me.combat.reloadStart<0&&!paused&&!dialog.open,mode:me.combat.fireMode,magazine:mag,interval:WEAPONS[w].interval,weapon:w},performance.now());if(preview){localShotPending=true;royaleAudio.previewShot(w);}}
  }
  tap.clear();return c;
 }
@@ -421,7 +426,11 @@ function draw(now:number){
   el('vitals').textContent=me?'Integrity '+Math.ceil(me.integrity)+' / Shield '+Math.ceil(me.shield)+' / Flow '+Math.round(me.energy):'Spectator · private live positions';
   const brawling=!!me?.combat.melee?.brawl,foot=self?.pose.footMode===2;for(const [action,label]of [['fire',brawling?'Jab':'Fire'],['reload',brawling?'Kick / palm':'Reload'],['brawl',brawling?'Weapon':'Brawl']] as const)el('touch').querySelector<HTMLButtonElement>('[data-action='+action+']')!.textContent=label;el<HTMLButtonElement>('touch').querySelector<HTMLButtonElement>('[data-action=brawl]')!.disabled=!foot;el<HTMLButtonElement>('touch').querySelector<HTMLButtonElement>('[data-action=evade]')!.disabled=!foot;
   const w=me?.loadout[me.slot];el('weapon').textContent=brawling?'Brawl stance · click / Jab to strike · R / Kick for heavy':w?WEAPONS[w].name+' · '+me!.combat.magazine[w]+' / '+(me!.ammo[w]-me!.combat.magazine[w])+' · '+FIRE_MODES[me!.combat.fireMode]+(me!.combat.reloadStart>=0?' · Reloading…':''):'';
-  const empty=!!w&&!brawling&&me!.combat.magazine[w]===0;el('weapon').dataset.empty=String(empty);el('touch').querySelector<HTMLElement>('[data-action=reload]')!.dataset.needed=String(empty);if(empty&&me!.combat.reloadStart<0)el('weapon').textContent+=me!.ammo[w!]>0?' · Reload':' · Out of ammo';
+  const holsterButton=el('touch').querySelector<HTMLButtonElement>('[data-action=holster]')!;
+  const holstered=!!me?.combat.holster?.stowed,handling=(me?.combat.holster?.end??0)>s.tick;
+  holsterButton.textContent=handling?(holstered?'Stowing…':'Drawing…'):holstered?'Draw':'Holster';holsterButton.disabled=handling;holsterButton.setAttribute('aria-pressed',String(holstered));
+  if(holstered||handling)el('weapon').textContent=handling?(holstered?'Holstering weapon…':'Drawing weapon…'):'Weapon holstered · tap Draw or '+bindings.holster.replace('Digit','');
+  const empty=!!w&&!brawling&&!holstered&&!handling&&me!.combat.magazine[w]===0;el('weapon').dataset.empty=String(empty);el('touch').querySelector<HTMLElement>('[data-action=reload]')!.dataset.needed=String(empty);if(empty&&me!.combat.reloadStart<0)el('weapon').textContent+=me!.ammo[w!]>0?' · Reload':' · Out of ammo';
   const scopeKeyLabel=bindings.scope.replace(/^(Key|Digit)/,'');const scopeLabel=selectedScope?SCOPES[selectedScope].label:'Iron sights';el('scope-select').textContent='Scope · '+scopeLabel+' · '+scopeKeyLabel;el<HTMLButtonElement>('scope-select').disabled=!owned.length;el<HTMLButtonElement>('scope-select').title=owned.length?'Switch collected scopes':'Find a scope and ride or walk over it';
   const scopeTouch=el('touch').querySelector<HTMLButtonElement>('[data-action=scope]')!;scopeTouch.textContent=selectedScope?SCOPES[selectedScope].zoom+'×':'Scope';scopeTouch.disabled=!owned.length;
   if(me&&!layoutEditing){
@@ -435,10 +444,10 @@ function draw(now:number){
   const nearby=s.loot.filter(l=>isScope(l.kind)).map(l=>({l,d:Math.hypot(l.p.x-bikeObserver.x,l.p.z-bikeObserver.z)})).sort((a,b)=>a.d-b.d)[0];
   const pickup=s.events.filter(e=>e.actor===session.me&&e.kind.startsWith('pickup-scope')&&s.tick-e.tick<180).at(-1);
   el('scope-status').textContent=pickup?'Collected '+SCOPES[pickup.kind.slice(7) as Scope].label+' · Scope / '+scopeKeyLabel+' to switch':nearby&&nearby.d<30?SCOPES[nearby.l.kind as Scope].label+' · '+Math.ceil(nearby.d)+' m · ride or walk over to collect':'';
-  el('speed').textContent=self?Math.round(Math.abs(self.pose.speed)*3.6)+' / '+Math.round(wheelProfile(self.wheelId).topKph)+' km/h · '+wheelProfile(self.wheelId).name+' · game estimate':'';
+  el('speed').textContent=self?Math.round(Math.abs(self.pose.speed)*3.6)+' / '+Math.round(wheelProfile(self.wheelId).topKph)+' km/h · '+wheelProfile(self.wheelId).name+' · game estimate'+(speedCruise.active?' · '+speedCruise.label:''):'';
   el('field').textContent='Field '+Math.round(s.field.radius)+'m → '+Math.round(s.field.nextRadius)+'m · '+Math.ceil(s.field.remaining)+'s';
   el('reticle').hidden=!me?.alive||dialog.open||!!(selectedScope&&aimMode()===2)||(!footAim.active&&!aimMode()&&viewMode!=='chase'&&viewMode!=='first');el('touch').hidden=(!(touchDisplay==='on'||touchDisplay==='auto'&&matchMedia('(any-pointer:coarse)').matches)||dialog.open||replaying||!me?.alive)&&!layoutEditing;
-  el('hint').textContent=layoutEditing?'Move controls, then open Menu to finish.':empty&&me!.combat.reloadStart<0?(me!.ammo[w!]>0?'Empty magazine · tap Reload or '+bindings.reload.replace(/^Key/,''):'Out of ammunition · find ammo or switch weapon'):!footAim.active&&Math.abs(aimYaw)>1.20?'Turn toward your target to aim farther.':replaying?(deathReplay.kind==='killer'?'Killer perspective · recorded by the server':'Last-view replay'):me&&!me.alive?me.reentry.eligible?'Eliminated · choose a respawn location':(deathReplay.kind==='killer'?'Eliminated · killer replay available':'Eliminated · last-view replay available'):s.phase==='deployment'?'Spawn protection · weapons unlock when the countdown ends':me&&Math.hypot((self?.pose.x??0)-s.field.x,(self?.pose.z??0)-s.field.z)>s.field.radius?'Outside the Static Field — ride toward the gold circle!':!el('touch').hidden?'Left stick: move · right side: aim · Fire: shoot · ADS: sights':foot?'WASD move · Shift sprint · mouse aim · R reload · J return to wheel':'WASD ride · mouse aim · click fire · right click ADS · R reload · J get off/on';
+  el('hint').textContent=layoutEditing?'Move controls, then open Menu to finish.':empty&&me!.combat.reloadStart<0?(me!.ammo[w!]>0?'Empty magazine · tap Reload or '+bindings.reload.replace(/^Key/,''):'Out of ammunition · find ammo or switch weapon'):!footAim.active&&Math.abs(aimYaw)>1.20?'Turn toward your target to aim farther.':replaying?(deathReplay.kind==='killer'?'Killer perspective · recorded by the server':'Last-view replay'):me&&!me.alive?me.reentry.eligible?'Eliminated · choose a respawn location':(deathReplay.kind==='killer'?'Eliminated · killer replay available':'Eliminated · last-view replay available'):s.phase==='deployment'?'Spawn protection · weapons unlock when the countdown ends':me&&Math.hypot((self?.pose.x??0)-s.field.x,(self?.pose.z??0)-s.field.z)>s.field.radius?'Outside the Static Field — ride toward the gold circle!':!el('touch').hidden?(speedCruise.active?speedCruise.label+' · pull down to cancel':'Left stick: push up twice for cruise · right side: aim'):foot?'WASD move · Shift sprint · R reload · 3 holster/draw · J return to wheel':'WASD ride · mouse aim · click fire · right click ADS · R reload · J get off/on';
   el('room').hidden=!session.room;el('roomcode').textContent='Room '+session.code+(session.botFill?' · AI fill on':' · '+s.size+' human seats · AI fill off');
   el('ready').hidden=session.ready.includes(session.me);const inRoom=!!session.room;el<HTMLInputElement>('code').closest('label')!.hidden=inRoom;el('create').hidden=el('join').hidden=inRoom;if(inRoom&&s.phase==='lobby')el('online-status').textContent='Room '+session.code+' · '+(session.ready.includes(session.me)?'You’re ready':'Preparing your rider…')+(session.host===session.me?' · Share invite, then Start match.':' · Waiting for the host to start.');
   el<HTMLButtonElement>('launch').disabled=session.host!==session.me;const rosterKey=s.roster.map(a=>a.id+':'+a.name+':'+a.connected+':'+session.ready.includes(a.id)).join('|');if(rosterKey!==rosterSignature){rosterSignature=rosterKey;el('roster').replaceChildren(...s.roster.map(a=>{const li=document.createElement('li');li.textContent=a.name+(a.bot?' · AI':session.ready.includes(a.id)?' · Ready':' · Loading / not ready')+(!a.connected?' · Disconnected':'');return li;}));}

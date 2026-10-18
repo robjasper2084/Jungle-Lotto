@@ -19,7 +19,7 @@ test('supplied pickup clip fits all five heroes without foot sliding or stretche
    h.legs.forEach((l,i)=>drift=Math.max(drift,l.foot.getWorldPosition(new Vector3()).distanceTo(feet[i])));
    travel=Math.max(travel,h.rider.getObjectByName('Hips')!.getWorldPosition(new Vector3()).distanceTo(hip));
    const timing=wheelPickupTiming(p.footMountTime);
-   if(timing.grip>.99){const box=new Box3().setFromObject(h.vehicle,true),handle=box.getCenter(new Vector3()).setY(box.max.y-.035);const e=h.arms[1].foot.getWorldPosition(new Vector3()).distanceTo(handle);if(e>error){error=e;errorPhase=timing.phase;}}
+   if(timing.grip>.99){const grip=h.vehicle.getObjectByName('CarryHandle_Grip'),box=new Box3().setFromObject(grip??h.vehicle,true),handle=grip?box.getCenter(new Vector3()):box.getCenter(new Vector3()).setY(box.max.y-.035);const e=h.arms[1].foot.getWorldPosition(new Vector3()).distanceTo(handle);if(e>error){error=e;errorPhase=timing.phase;}}
    for(const b of h.bones)assert([...b.o.position.toArray(),...b.o.quaternion.toArray()].every(Number.isFinite));
   }
   t.diagnostic(JSON.stringify({id,drift,error,travel,errorPhase}));
