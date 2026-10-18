@@ -2,12 +2,12 @@ import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 /** Split only the rendered material ranges. Building roofs and walls can then
  * join their neighbours without changing UVs, materials or collision geometry. */
-function splitMaterials(group:T.Group){
+function splitMaterials(group:T.Group,opaqueOnly=false){
  const candidates:T.Mesh[]=[];
  group.traverse(o=>{const m=o as T.Mesh;if(m.isMesh&&Array.isArray(m.material)&&!('isSkinnedMesh' in m)&&!('isInstancedMesh' in m)&&m.visible&&!Object.keys(m.geometry.morphAttributes).length)candidates.push(m);});
  for(const mesh of candidates){
   let hidden=false;for(let p=mesh.parent;p&&p!==group;p=p.parent)if(!p.visible)hidden=true;
-  if(hidden||!mesh.parent||mesh.children.length||!mesh.geometry.groups.length||Object.values(mesh.geometry.attributes).some(a=>(a as T.InterleavedBufferAttribute).isInterleavedBufferAttribute))continue;
+  if(hidden||!mesh.parent||mesh.children.length||opaqueOnly&&(mesh.material as T.Material[]).some(m=>m.transparent)||!mesh.geometry.groups.length||Object.values(mesh.geometry.attributes).some(a=>(a as T.InterleavedBufferAttribute).isInterleavedBufferAttribute))continue;
   const source=mesh.geometry,materials=mesh.material as T.Material[],parts:T.Mesh[]=[];
   const limit=source.index?.count??source.attributes.position.count;
   for(const range of source.groups){
@@ -19,7 +19,7 @@ function splitMaterials(group:T.Group){
    for(const [name,attribute] of Object.entries(source.attributes)){
     const a=attribute as T.BufferAttribute,ArrayType=a.array.constructor as {new(length:number):T.TypedArray},values=new ArrayType(vertices.length*a.itemSize);
     for(let i=0;i<vertices.length;i++)for(let c=0;c<a.itemSize;c++)values[i*a.itemSize+c]=a.array[vertices[i]*a.itemSize+c];
-    geometry.setAttribute(name,new T.BufferAttribute(values,a.itemSize,a.normalized));
+    const compact=new T.BufferAttribute(values,a.itemSize,a.normalized);compact.gpuType=a.gpuType;geometry.setAttribute(name,compact);
    }
    const part=new T.Mesh(geometry,materials[range.materialIndex??0]);part.name=mesh.name;
    part.position.copy(mesh.position);part.quaternion.copy(mesh.quaternion);part.scale.copy(mesh.scale);
@@ -31,18 +31,19 @@ function splitMaterials(group:T.Group){
  }
 }
 /** Merge only compatible meshes; preserve originals if a batch cannot merge. */
-export function batchStaticGroup(group:T.Group){
-  splitMaterials(group);
-  group.updateMatrixWorld(true);
+export function batchStaticGroup(group:T.Group,options:{opaqueOnly?:boolean}={}){
+  splitMaterials(group,options.opaqueOnly);
+  // Explicit queries must also work when a distance-culled root is hidden.
+  group.updateWorldMatrix(true,true);
   const inverse=group.matrixWorld.clone().invert();
   const batches=new Map<string,{material:T.Material;geometries:T.BufferGeometry[];objects:T.Mesh[]}>();
   group.traverse(o=>{
     const mesh=o as T.Mesh;
-    if(!mesh.isMesh||!mesh.visible||(mesh as T.InstancedMesh).isInstancedMesh||(mesh as T.SkinnedMesh).isSkinnedMesh||Array.isArray(mesh.material)||Object.keys(mesh.geometry.morphAttributes).length)return;
+    if(!mesh.isMesh||!mesh.visible||(mesh as T.InstancedMesh).isInstancedMesh||(mesh as T.SkinnedMesh).isSkinnedMesh||Array.isArray(mesh.material)||options.opaqueOnly&&mesh.material.transparent||Object.keys(mesh.geometry.morphAttributes).length)return;
     for(let parent=mesh.parent;parent&&parent!==group;parent=parent.parent)if(!parent.visible)return;
     const geometry=mesh.geometry.clone();
     geometry.applyMatrix4(new T.Matrix4().multiplyMatrices(inverse,mesh.matrixWorld));
-    const signature=Object.entries(geometry.attributes).sort(([a],[b])=>a.localeCompare(b)).map(([k,a])=>[k,a.itemSize,a.normalized,a.array.constructor.name].join(':')).join('|');
+    const signature=Object.entries(geometry.attributes).sort(([a],[b])=>a.localeCompare(b)).map(([k,a])=>[k,a.itemSize,a.normalized,a.array.constructor.name,(a as T.BufferAttribute).gpuType].join(':')).join('|');
     const key=mesh.material.uuid+'|'+signature+'|'+Boolean(geometry.index)+'|'+mesh.castShadow+'|'+mesh.receiveShadow+'|'+mesh.renderOrder+'|'+mesh.layers.mask;
     let batch=batches.get(key);if(!batch){batch={material:mesh.material,geometries:[],objects:[]};batches.set(key,batch);}
     batch.geometries.push(geometry);batch.objects.push(mesh);

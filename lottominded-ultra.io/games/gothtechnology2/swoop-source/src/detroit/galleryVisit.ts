@@ -1,4 +1,6 @@
 import {MACK_STUDIO,studioMap,studioRoom,studioWalk} from './mackStudioSite.ts';
+import {batchStaticGroup} from './static-batch.ts';
+import {interiorVisibility,interiorVisitorsVisible} from './interiorBudget.ts';
 import {visibleSceneryMatrices} from '@digital-static/ridecore';
 import {destinationLayout} from './destinationLayout.ts';
 import * as T from 'three';
@@ -27,7 +29,7 @@ export class GalleryVisit {
   const room=studioRoom(store),outside=studioMap(room.u,29),end=studioWalk(store).at(-1)!;
   const inside=toLocal(end.x,MACK_STUDIO.floor,end.z);this.door.set(inside.x,inside.y,inside.z);
   const arrival=toLocal(outside.x,MACK_STUDIO.floor,outside.z);this.approach.set(arrival.x,arrival.y,arrival.z);
-  this.building.position.copy(centre);this.building.rotation.y=Math.atan2(facing.x,facing.z);visibleSceneryMatrices(this.building);scene.add(this.building);
+  this.building.name=store?'GothTech enclosed showroom':'Serengeti enclosed gallery';this.building.position.copy(centre);this.building.rotation.y=Math.atan2(facing.x,facing.z);visibleSceneryMatrices(this.building);scene.add(this.building);
   this.panel.id=store?'boutiqueArrival':'galleryArrival';this.panel.className='destinationPanel arrival-hud';this.panel.hidden=true;this.panel.setAttribute('aria-label',store?'GothTechnology store':'Serengeti Galleries');
   this.panel.innerHTML='<div class="arrival-topline"><p class="eyebrow"></p><span class="arrival-status">Destination reached</span></div><div class="arrival-content"><svg class="arrival-portal" viewBox="0 0 84 92" fill="none" aria-hidden="true"><path d="M4 85h76M12 85V8l62 17v60M23 85V22l42 12v51M33 85V37l24 6v42M42 85V49l10 2v34" stroke="currentColor" stroke-width="1"/><path d="M42 85V49l10 2v34" fill="#e9ca83" fill-opacity=".55" stroke="#e9ca83"/></svg><div class="arrival-copy"><h2></h2><p data-copy role="status"></p></div></div><div class="arrival-actions"><button data-visit></button><a data-enter target="_blank" rel="noopener noreferrer" hidden></a><button data-back>Keep riding</button></div>';
   this.panel.querySelector('.eyebrow')!.textContent='2000 MACK AVENUE / GOTHTECH STUDIO';this.panel.querySelector('h2')!.textContent=store?'GOTHTECHNOLOGY':'Serengeti Galleries';
@@ -39,7 +41,6 @@ export class GalleryVisit {
   // Remove standalone roofs, forecourts and Gothic tower extensions.
   data.scene.traverse(o=>{if(/^(Roof|Crown|Gothic Gothic|Forecourt|Entry canopy|Canopy|Bronze facade fin|Icosphere|Facade vertical joint)/.test(o.name.replace(/_/g,' ')))o.visible=false;});
   if(!this.store)await addPhotographyExhibition(this.building,'serengeti');
-  this.visitors=new RetailVisitors(this.store);this.building.add(this.visitors.root);await this.visitors.load();this.panel.dataset.visitorCount=String(this.visitors.count);
   if(this.store){
    const innovation=(await new GLTFLoader().loadAsync('/exports/boutique/innovation-floor-hoodie-display.glb')).scene;
    innovation.name='Innovation Floor · navy hoodie';innovation.position.set(3.1,0,-5.54);innovation.traverse(o=>{if(o instanceof T.Mesh)o.castShadow=o.receiveShadow=true;});this.building.add(innovation);
@@ -48,8 +49,15 @@ export class GalleryVisit {
    const note=document.createElement('p');note.textContent='Official catalog concepts. Availability and checkout are managed by the storefront; concept items cannot be ordered.';this.catalog.append(note);
    for(const p of products){const a=document.createElement('a');a.href=p.url;a.target='_blank';a.rel='noopener noreferrer';const img=document.createElement('img');img.src='/exports/boutique/'+p.image;img.alt=p.title;img.loading='lazy';const label=document.createElement('strong');label.textContent=p.title;const status=document.createElement('span');status.textContent=(p.pending?'Price pending':new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(p.price))+(p.concept?' · Concept preview':'');a.append(img,label,status);this.catalog.append(a);}
   }
+ batchStaticGroup(this.building,{opaqueOnly:true});
+ this.visitors=new RetailVisitors(this.store);visibleSceneryMatrices(this.visitors.root);this.building.add(this.visitors.root);await this.visitors.load();this.panel.dataset.visitorCount=String(this.visitors.count);
  this.loaded=true; }
- animateVisitors(dt:number){if(!this.visitors||!this.building.visible||dt<=0)return;this.visitors.update(dt);this.visitorReport+=dt;if(this.visitorReport>.5){this.visitorReport=0;this.panel.dataset.visitors=JSON.stringify(this.visitors.summary);}}
+ updateVisibility(focus:readonly {x:number;z:number}[],camera:T.Camera){
+  const at=this.building.position,distance=Math.min(...[...focus,camera.position].map(p=>Math.hypot(p.x-at.x,p.z-at.z)));
+  this.building.visible=interiorVisibility(distance,this.building.visible,this.active);
+  if(this.visitors)this.visitors.root.visible=this.building.visible&&interiorVisitorsVisible(distance,this.visitors.root.visible,this.active);
+ }
+ animateVisitors(dt:number){if(!this.visitors||!this.building.visible||!this.visitors.root.visible||dt<=0)return;this.visitors.update(dt);this.visitorReport+=dt;if(this.visitorReport>.5){this.visitorReport=0;this.panel.dataset.visitors=JSON.stringify(this.visitors.summary);}}
  offer(station:number,_offset:number,p:RidePose,attemptActive:boolean,visible:boolean){if(!this.loaded||this.active)return;const near=Math.hypot(p.x-this.approach.x,p.z-this.approach.z)<16;if(!near&&Math.abs(station-CUT_METRES)>30)this.dismissed=false;this.panel.hidden=this.dismissed||!visible||attemptActive||Math.abs(p.speed)>=.5||p.crashBlend>0||!near;}
 
  /** The entrance movie covers dismounting and the walk; arrive inside immediately. */

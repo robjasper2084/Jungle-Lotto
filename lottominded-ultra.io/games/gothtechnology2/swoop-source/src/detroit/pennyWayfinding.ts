@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {batchStaticGroup} from './static-batch.ts';
 import {pennyMap,PENNY_SHOP} from './pennyShopSite.ts';
 import {studioMap,MACK_STUDIO} from './mackStudioSite.ts';
 import {toLocal} from './geo-profile.ts';
@@ -21,6 +22,7 @@ export async function addPennyAdvertisements(scene:T.Scene,building:T.Object3D,w
  const signs=(await new GLTFLoader().loadAsync('/exports/atwater/penny-auction-signs.glb')).scene;
  const billboard=signs.getObjectByName('PRP_billboard'),storeSign=signs.getObjectByName('PRP_store_sign');
  if(!billboard||!storeSign)throw Error('Penny Auction sign roots are missing');
+ for(const root of [billboard,storeSign])batchStaticGroup(root as T.Group,{opaqueOnly:true});
  for(const side of [-1,1])for(const [asset,y,v]of [[billboard,9.93,8.65],[storeSign,3.8,9.62]] as const){
   const root=asset.clone(true);root.position.set(0,y,side*v);root.rotation.y=side<0?Math.PI:0;root.traverse(o=>{if(o instanceof T.Mesh)o.castShadow=o.receiveShadow=true;});building.add(root);
  }
