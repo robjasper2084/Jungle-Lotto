@@ -7,7 +7,7 @@ import {scopeSites} from './scopes.ts';
 import {configuredSpawnNodes} from './spawnNodes.ts';
 const distance=(a:Vec3,b:Vec3)=>Math.hypot(a.x-b.x,a.z-b.z);
 /** One shared district on the original Detroit map. The entire original map
- * remains scenery/collision; the field bounds the six-minute match, not walls. */
+ * remains scenery/collision; the field bounds the ten-minute round, not walls. */
 export class DowntownArena extends AuthoredArena implements BattleTerrain {
  readonly spawns;readonly spawnNodes;readonly zones;readonly supplies:Vec3[]=[];readonly optics;readonly arenaIdentity;readonly fieldRadii;
  constructor(terrain:TagTerrain){

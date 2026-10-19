@@ -14,14 +14,14 @@ export function movingTargetHit(start:Vec3,end:Vec3,target:TargetVolume,radius:n
  return low;
 }
 /** C++ supplies the curve. Eight 1/480 s chords cap arc error below 0.01 mm at 12 m/s². */
-export function traceBallistic(point:(seconds:number)=>Vec3,radius:number,targets:TargetVolume[],sweep:(p:Vec3,d:Vec3,r:number)=>number|null,ground:(x:number,z:number)=>{height:number}){
+export function traceBallistic(point:(seconds:number)=>Vec3,radius:number,targets:TargetVolume[],sweep:(p:Vec3,d:Vec3,r:number)=>number|null,ground:(x:number,z:number)=>{height:number},impact?:(start:Vec3,delta:Vec3,ground:boolean)=>void){
  let start=point(0);
  for(let sub=0;sub<8;sub++){
   const end=point((sub+1)/480),d={x:end.x-start.x,y:end.y-start.y,z:end.z-start.z};
   let first=sweep(start,d,radius)??1.001,target=-1;
   for(const candidate of targets){if(!candidate.alive)continue;const t=movingTargetHit(start,end,candidate,radius,sub/8,(sub+1)/8);if(t!==null&&t<first){first=t;target=candidate.id;}}
-  if(first<=1)return target;
-  if(end.y-radius<ground(end.x,end.z).height)return -1;
+  if(first<=1){if(target===-1)impact?.(start,d,false);return target;}
+  if(end.y-radius<ground(end.x,end.z).height){impact?.(start,d,true);return -1;}
   start=end;
  }
  return -2;

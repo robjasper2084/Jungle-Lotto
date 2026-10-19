@@ -5,7 +5,7 @@ export const DOG_COATS=['#e8b979','#7d6c60','#ece8d9','#8c4932','#555d65','#cda6
 /** Server-driven companions share each owner's position visibility. They cannot reveal
  * a hidden opponent or cause client-only hits, blocking, pickups or damage. */
 export class RoyaleCompanions {
- private dogs=new Map<string,{view:CompanionView;materials:T.Material[];tick:number;previous:BattleDog;current:BattleDog;age:number;landing:number;victory:number}>();
+ private dogs=new Map<string,{view:CompanionView;materials:T.Material[];tick:number;previous:BattleDog;current:BattleDog;age:number;landing:number;victory:number;low?:boolean}>();
  constructor(private scene:T.Scene,private assets:Map<string,GLTF>,private terrain:TerrainSampler){}
  update(actors:readonly {id:string;pose:Omit<RidePose,'seated'>;alive:boolean;dog:BattleDog&{radar?:boolean}}[],roster:readonly {id:string}[],tick:number,delta:number,low:boolean,reduced=false,winner?:string|null){
   const visible=new Set<string>();
@@ -30,7 +30,7 @@ export class RoyaleCompanions {
    if(dog.victory>.001){rendered.speed*=1-dog.victory;rendered.gaitSpeed=rendered.speed;rendered.sit=dog.victory;}
    // The shared dog rig blends idle/walk/trot/run and plants its paws on terrain.
    dog.view.apply({...rendered,y:rendered.y+(actor.dog.jumpHeight??0),power:actor.dog.mode==='pounce'?'pounce':actor.dog.radar?'radar':undefined});dog.view.reactToRider(pose,rendered);
-   dog.view.root.traverse(o=>{if((o as T.Mesh).isMesh)o.castShadow=!low;});
+   if(dog.low!==low){dog.low=low;dog.view.root.traverse(o=>{if((o as T.Mesh).isMesh)o.castShadow=!low;});}
   }
   for(const [id,dog]of this.dogs)if(!visible.has(id))dog.view.root.visible=false;
  }

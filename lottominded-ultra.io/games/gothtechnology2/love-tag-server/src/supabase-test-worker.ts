@@ -35,7 +35,7 @@ async function command(link:Link,p:any){
  if(!link.room)return;
  if(p.type==='leave'){await drop(link,true);return;}
  if(p.type==='inputs'&&Array.isArray(p.data)&&p.data.length<=15){for(const input of p.data)link.room.send('input',input);return;}
- if(['hello','ready','start','rematch','respawn','killcam','release','voice-state','voice-signal','chat'].includes(p.type))link.room.send(p.type,p.data);
+ if(['hello','ready','start','rematch','spectate','respawn','killcam','release','voice-state','voice-signal','chat'].includes(p.type))link.room.send(p.type,p.data);
 }
 host.on('broadcast',{event:'hello'},({payload})=>{void (async()=>{
  try{const t=await open(key,payload,'royale-ticket-v1') as Ticket;if(t.expires<Date.now()||Date.now()-t.issued>60000||links.has(t.id)||links.size>=10)return;

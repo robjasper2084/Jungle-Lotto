@@ -1,4 +1,5 @@
 import {acquireRiderTint} from './riderTintGeometry.ts';
+import {batchRigidChildren} from './rigidBatch.ts';
 import {acquireVisualMaterial} from './sharedVisualMaterial.ts';
 import {visibleSceneryMatrices} from './visibleMatrices.ts';
 import * as T from 'three';
@@ -61,6 +62,8 @@ export class BicycleView {
   private bones:{o:T.Object3D;p:T.Vector3;q:T.Quaternion}[]=[];private legs:Limb[]=[];private arms:Limb[]=[];
   private steering:T.Object3D;private steerRest:T.Quaternion;private crank:T.Object3D;private cleanup:()=>void;
   private disposeHands:()=>void;
+  private disposeRigid:()=>void;
+  private grips:T.Object3D[]=[];private pedals:T.Object3D[]=[];private wheels:T.Object3D[]=[];
   readonly style:number;private restSole=.065;private lean=.55;private spine?:T.Object3D;private neck?:T.Object3D;
   constructor(bicycle:GLTF,human:GLTF,style=0,npc=false){
     this.lean=npc?.5:.9;this.restSole=npc?.10:.065;this.style=style%BIKE_STYLES.length;this.bike=bicycle.scene.clone(true);this.rider=clone(human.scene);this.root.name='Bicycle · '+BIKE_STYLES[this.style].name;this.root.add(this.frame);this.frame.add(this.bike,this.rider);
@@ -74,28 +77,30 @@ export class BicycleView {
     this.cleanup=styleCyclist(this.bike,this.rider,this.style,npc);
     this.disposeHands=curlHandlebarHands(this.rider);
     this.root.traverse(o=>{const m=o as T.Mesh;if(m.isMesh){m.castShadow=!npc;m.receiveShadow=true;m.frustumCulled=!(m as T.SkinnedMesh).isSkinnedMesh;}});
+    this.grips=this.arms.map(a=>this.bike.getObjectByName(a.side>0?'Grip001':'Grip')??this.bike.getObjectByName(a.side>0?'Grip.001':'Grip')!);
+    this.pedals=['Bicycle_Pedal_L_Pivot','Bicycle_Pedal_R_Pivot'].map(n=>this.bike.getObjectByName(n)!).filter(Boolean);
+    this.wheels=['Bicycle_Front_Wheel_Pivot','Bicycle_Rear_Wheel_Pivot'].map(n=>this.bike.getObjectByName(n)!).filter(Boolean);
+    this.disposeRigid=batchRigidChildren(this.bike);
   }
   apply(p:RidePose,steering=0,pedals=0){
-    this.root.position.set(p.x,p.y+.008,p.z);this.root.rotation.y=p.headingY;this.frame.rotation.set(p.groundPitch,0,p.rollAngle);this.frame.updateMatrixWorld(true);
+    this.root.position.set(p.x,p.y+.008,p.z);this.root.rotation.y=p.headingY;this.frame.rotation.set(p.groundPitch,0,p.rollAngle);
     this.steering.quaternion.copy(this.steerRest).multiply(q().setFromAxisAngle(new T.Vector3(0,1,0),steering));this.crank.rotation.x=pedals;
-    for(const name of ['Bicycle_Pedal_L_Pivot','Bicycle_Pedal_R_Pivot']){const o=this.bike.getObjectByName(name);if(o)o.rotation.x=-pedals;}
-    for(const name of ['Bicycle_Front_Wheel_Pivot','Bicycle_Rear_Wheel_Pivot']){const o=this.bike.getObjectByName(name);if(o)o.rotation.x=p.wheelSpin;}
+    for(const o of this.pedals)o.rotation.x=-pedals;
+    for(const o of this.wheels)o.rotation.x=p.wheelSpin;
     for(const b of this.bones){b.o.position.copy(b.p);b.o.quaternion.copy(b.q);}this.rider.position.set(0,0,0);this.root.updateMatrixWorld(true);
     const effort=Math.max(0,p.driveIntent)*(1-p.stopFoot),brake=Math.max(0,p.brakeAmount),bank=Math.max(-.42,Math.min(.42,p.rollAngle));
     const pulse=Math.sin(pedals*2)*.007*effort,settle=Math.min(.035,Math.abs(p.riderPitch)*.08);
-    const hips=this.frame.localToWorld(new T.Vector3(-bank*.045,1.07-p.stopFoot*.08-pulse-settle,-.25+p.stopFoot*.12-brake*.035));this.hips.position.copy(this.hips.parent!.worldToLocal(hips));this.root.updateMatrixWorld(true);
+    const hips=this.frame.localToWorld(new T.Vector3(-bank*.045,1.07-p.stopFoot*.08-pulse-settle,-.25+p.stopFoot*.12-brake*.035));this.hips.position.copy(this.hips.parent!.worldToLocal(hips));this.hips.updateWorldMatrix(false,true);
     const right=new T.Vector3(1,0,0).transformDirection(this.frame.matrixWorld),forward=new T.Vector3(0,0,1).transformDirection(this.frame.matrixWorld);
     const spine=this.spine;if(spine){
       const rest=spine.getWorldQuaternion(q()),parent=spine.parent!.getWorldQuaternion(q()).invert();
+      const reaches=this.arms.map((arm,i)=>({arm,length:arm.a.getWorldPosition(v()).distanceTo(arm.b.getWorldPosition(v()))+arm.b.getWorldPosition(v()).distanceTo(arm.c.getWorldPosition(v())),wrist:this.grips[i].getWorldPosition(v()).add(HANDLEBAR_WRIST_OFFSET.clone().applyQuaternion(this.frame.getWorldQuaternion(q()).multiply(q().setFromAxisAngle(new T.Vector3(0,1,0),steering))))}));
       let pitch=this.lean+effort*.055-brake*.10-p.stopFoot*.18+p.groundPitch*.2;
       // Lean from the saddle until both grips are reachable. Limb lengths never change.
       for(let attempt=0;attempt<8;attempt++){
         spine.quaternion.copy(parent).multiply(q().setFromAxisAngle(right,pitch).multiply(rest));spine.updateWorldMatrix(false,true);
         let excess=0;
-        for(const arm of this.arms){const shoulder=arm.a.getWorldPosition(v()),elbow=arm.b.getWorldPosition(v()),hand=arm.c.getWorldPosition(v());
-          const grip=this.bike.getObjectByName(arm.side>0?'Grip001':'Grip')??this.bike.getObjectByName(arm.side>0?'Grip.001':'Grip')!;
-          const wrist=grip.getWorldPosition(v()).add(HANDLEBAR_WRIST_OFFSET.clone().applyQuaternion(this.frame.getWorldQuaternion(q()).multiply(q().setFromAxisAngle(new T.Vector3(0,1,0),steering))));
-          excess=Math.max(excess,shoulder.distanceTo(wrist)-shoulder.distanceTo(elbow)-elbow.distanceTo(hand)+.055);}
+        for(const {arm,length,wrist} of reaches)excess=Math.max(excess,arm.a.getWorldPosition(v()).distanceTo(wrist)-length+.055);
         if(excess<=0)break;pitch=Math.min(1.4,pitch+Math.min(.12,excess*2));
       }
     }
@@ -105,14 +110,14 @@ export class BicycleView {
       const side=this.legs[i].side,phase=pedals+(side>0?Math.PI:0),foot=new T.Vector3(side*.13,.33-.165*Math.cos(phase)+this.restSole,-.13-.165*Math.sin(phase));
       if(!i)foot.lerp(new T.Vector3(side*.28,this.restSole,-.1),p.stopFoot);
       ik(this.legs[i],this.frame.localToWorld(foot),forward.clone(),frameQ.clone().multiply(this.legs[i].rotation));
-      const grip=this.bike.getObjectByName(side>0?'Grip001':'Grip')??this.bike.getObjectByName(side>0?'Grip.001':'Grip')!;
+      const grip=this.grips[i];
       const barRotation=frameQ.clone().multiply(q().setFromAxisAngle(new T.Vector3(0,1,0),steering));
       const wrist=grip.getWorldPosition(v()).add(HANDLEBAR_WRIST_OFFSET.clone().applyQuaternion(barRotation));
       ik(this.arms[i],wrist,forward.clone().multiplyScalar(-1).addScaledVector(right,side*(.3+effort*.08+brake*.10)+bank*.16),barRotation.multiply(handlebarHandRotation(side)));
     }
     this.root.updateMatrixWorld(true);
   }
-  dispose(){this.root.removeFromParent();this.cleanup();this.disposeHands();const skeletons=new Set<T.Skeleton>();this.rider.traverse(o=>{if((o as T.SkinnedMesh).isSkinnedMesh)skeletons.add((o as T.SkinnedMesh).skeleton);});skeletons.forEach(s=>s.dispose());}
+  dispose(){this.root.removeFromParent();this.disposeRigid();this.cleanup();this.disposeHands();const skeletons=new Set<T.Skeleton>();this.rider.traverse(o=>{if((o as T.SkinnedMesh).isSkinnedMesh)skeletons.add((o as T.SkinnedMesh).skeleton);});skeletons.forEach(s=>s.dispose());}
 }
 
 export class CommunityView {

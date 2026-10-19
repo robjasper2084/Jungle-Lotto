@@ -1,5 +1,5 @@
 import type {Command,CombatState} from './rules.ts';
-import {WEAPON_DRAW_TICKS} from '../heroActions.ts';
+import {CAMERA_DRAW_TICKS} from './cameraDraw.ts';
 export type HolsterState={stowed:boolean;from:number;to:number;start:number;end:number};
 export const initialHolster=():HolsterState=>({stowed:false,from:1,to:1,start:0,end:0});
 export function weaponReadyAmount(state:CombatState,tick:number){
@@ -16,7 +16,7 @@ export function routeHolster(state:CombatState,c:Command,tick:number,canToggle=t
  if(canToggle&&!state.melee?.brawl&&state.reloadStart<0&&!busy&&
     (c.holster||(h.stowed&&!c.brawl&&(c.fire||c.aimMode>0)))){
   const stowed=c.holster?!h.stowed:false;
-  Object.assign(h,{stowed,from:weaponReadyAmount(state,tick),to:stowed?0:1,start:tick,end:tick+WEAPON_DRAW_TICKS});
+  Object.assign(h,{stowed,from:weaponReadyAmount(state,tick),to:stowed?0:1,start:tick,end:tick+CAMERA_DRAW_TICKS});
  }
   // Stowing blocks firearm actions, not the separate unarmed combat system.
   // In Brawl, fire is the punch input; the authoritative melee rules own it.

@@ -31,6 +31,22 @@ test('victory salute is frame-rate independent and reduced-motion reaches a stea
  assert(Math.abs(poses[0].handRY-poses[1].handRY)<1e-9);assert(poses[0].handRY>p.handRY);
  const reduced=new RiderPresentation();assert.equal(reduced.sample(p,100,true,0,false,true,true).handRY,p.handRY+.8);
 });
+
+test('blue barrier follows sloping terrain and stays visible on low quality without motion',()=>{
+ const field=new FieldBoundary('#49adff',.9,true);field.update(14,-8,150,(x,z)=>x*.1+z*.2);
+ field.energize(12,50,true,true);const wall=field.barrier!;
+ assert(wall.visible);assert.equal(wall.material.depthWrite,false);
+ assert.equal(wall.material.uniforms.motion.value,0);assert.equal(wall.material.uniforms.time.value,0);
+ const points=wall.geometry.getAttribute('position');
+ for(let i=0;i<points.count;i+=2){
+  assert(Math.abs(points.getY(i)-(points.getX(i)*.1+points.getZ(i)*.2-.2))<1e-4);
+  assert(Math.abs(points.getY(i+1)-points.getY(i)-45)<1e-4);
+ }
+ assert(wall.geometry.index!.count/3<=512,'single low-poly curtain budget');
+ field.energize(13,50,false,false);assert.equal(wall.material.uniforms.motion.value,1);
+ const scene=new T.Scene();scene.add(field);let disposed=false;wall.material.addEventListener('dispose',()=>disposed=true);
+ field.dispose();assert(disposed);assert.equal(scene.children.length,0);
+});
 test('shield break reaction finishes and does not mutate shared source materials',()=>{
  const scene=new T.Group(),model=new T.Group();model.name='FX_RiderShield';for(const name of ['ShieldParticles','ShieldRibbons']){const part=new T.Group();part.name=name;model.add(part);}scene.add(model);
  const effect=new ShieldEffect({scene} as unknown as GLTF);effect.visible=true;effect.hit(true);assert(effect.reacting);

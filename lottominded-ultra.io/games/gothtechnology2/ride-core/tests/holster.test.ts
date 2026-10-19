@@ -12,10 +12,11 @@ test('holster and draw block shooting and reload until complete; repeated reques
  assert(!routeHolster(s,c,100).fire);assert(s.holster?.stowed);
  assert.equal(weaponReadyAmount(s,100),1);
  for(let t=101;t<100+WEAPON_DRAW_TICKS;t++){const out=routeHolster(s,c,t);assert(!out.fire&&!out.reload);assert(s.holster?.stowed);}
- routeHolster(s,neutral('test'),150);assert.equal(weaponReadyAmount(s,150),0);
- const draw=routeHolster(s,{...neutral('test'),fire:true},151);assert(!draw.fire);assert(!s.holster?.stowed);
- assert(!weaponReady(s,151+WEAPON_DRAW_TICKS-1));assert(weaponReady(s,151+WEAPON_DRAW_TICKS));
- assert(routeHolster(s,{...neutral('test'),fire:true},151+WEAPON_DRAW_TICKS).fire);
+ const finished=100+WEAPON_DRAW_TICKS;
+ routeHolster(s,neutral('test'),finished);assert.equal(weaponReadyAmount(s,finished),0);
+ const draw=routeHolster(s,{...neutral('test'),fire:true},finished+1);assert(!draw.fire);assert(!s.holster?.stowed);
+ assert(!weaponReady(s,finished+WEAPON_DRAW_TICKS));assert(weaponReady(s,finished+1+WEAPON_DRAW_TICKS));
+ assert(routeHolster(s,{...neutral('test'),fire:true},finished+1+WEAPON_DRAW_TICKS).fire);
  const busy=initialCombat();busy.reloadStart=1;routeHolster(busy,c,2);assert(!busy.holster?.stowed);
 });
 test('Blender idle is seamless and grip is held until the wheel is grounded',()=>{
@@ -29,7 +30,7 @@ test('actual authoritative engine keeps ammo while holstered, syncs guests, rest
  for(let n=0;n<PROTECTION;n++)m.step();
  let seq=0;const send=(bits:Partial<ReturnType<typeof neutral>>)=>{assert(m.command('r0',{...neutral(m.round,++seq,m.tick),...bits}));m.step();};
  const actor=m.actors[0],ammo=actor.ammo.static;
- send({holster:true,fire:true,shot:1});for(let i=0;i<45;i++)send({});
+ send({holster:true,fire:true,shot:1});for(let i=0;i<WEAPON_DRAW_TICKS;i++)send({});
  assert.equal(actor.ammo.static,ammo);assert(actor.combat.holster?.stowed);
  const guest=m.actors[1];guest.controller.reset({position:{x:actor.pose.x+.5,y:actor.pose.y,z:actor.pose.z},headingY:0});guest.pose={...guest.controller.poseValue};
  assert(m.snapshot('r1').actors.find(a=>a.id==='r0')?.combat.holster?.stowed);
@@ -38,7 +39,7 @@ test('actual authoritative engine keeps ammo while holstered, syncs guests, rest
  assert.equal(actor.ammo.static,ammo);
  send({fire:true,shot:3});assert.equal(actor.ammo.static,ammo-1);
  send({dismount:true});for(let i=0;i<65;i++)send({});
- send({holster:true});for(let i=0;i<45;i++)send({});
+ send({holster:true});for(let i=0;i<WEAPON_DRAW_TICKS;i++)send({});
  assert(actor.combat.holster?.stowed);send({brawl:true});
  assert(actor.combat.melee.brawl,'can enter Brawl with a stowed firearm');
  const before=actor.combat.melee.serial,remaining=actor.ammo.static;

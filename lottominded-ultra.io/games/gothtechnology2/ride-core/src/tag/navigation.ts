@@ -1,9 +1,12 @@
 import {lanePoint,type TagFixture} from './fixture.ts';
 import type {Vec3,TerrainSampler} from '../terrain.ts';
+import {NavigationNearest} from './navigationNearest.ts';
 const distance=(a:Vec3,b:Vec3)=>Math.hypot(a.x-b.x,a.z-b.z);
 /** Real paths and open-ground routes; junctions require physical clearance. */
 export class TagNavigation{
  readonly nodes:Vec3[]=[];readonly edges=new Map<number,Map<number,number>>();
+ private nearestIndex?:NavigationNearest;
+ private readonly routeCache=new Map<string,readonly number[]>();
  constructor(f:TagFixture,private terrain:TerrainSampler & {legal?(p:Vec3):boolean}){
   // Exported against the same canonical terrain/hash. Building thousands of
   // physical route edges is an asset-pipeline job, not a room-launch frame.
@@ -23,15 +26,23 @@ export class TagNavigation{
     for(const j of candidates.slice(0,16))link(i,j);}
  }
  clearPath(a:Vec3,b:Vec3){const d={x:b.x-a.x,y:b.y-a.y,z:b.z-a.z},l=distance(a,b);if(this.terrain.raycastObstacle({...a,y:a.y+.8},d,l,.25)!==null)return false;const steps=Math.max(1,Math.ceil(l/.5));for(let i=0;i<=steps;i++){const t=i/steps;if(this.terrain.legal?.({x:a.x+d.x*t,y:a.y+d.y*t,z:a.z+d.z*t})===false)return false;}return true;}
- nearest(p:Vec3){let best=0,d=Infinity;
+ nearest(p:Vec3){
   // Map polylines can end outside safe ground. Export keeps their display
   // coordinates, but these rejected, isolated endpoints are not drive targets.
-  for(const [i,edges]of this.edges){if(!edges.size)continue;const n=distance(p,this.nodes[i]);if(n<d){best=i;d=n;}}return best;}
- path(from:Vec3,to:Vec3){const start=this.nearest(from),end=this.nearest(to),cost=new Map([[start,0]]),prev=new Map<number,number>(),heap:{id:number;cost:number}[]=[];
+  this.nearestIndex??=new NavigationNearest(this.nodes,Array.from(this.edges).filter(([,edges])=>edges.size).map(([i])=>i));
+  return this.nearestIndex.nearest(p);}
+ path(from:Vec3,to:Vec3){const start=this.nearest(from),end=this.nearest(to),key=start+':'+end;
+  const project=(result:readonly number[])=>{const route=result.map(i=>({...this.nodes[i]}));if(route.length>1){const first=lanePoint(from,{a:route[0],b:route[1],width:0});if(distance(first,from)<3)route[0]=first;}return route;};
+  const cached=this.routeCache.get(key);if(cached){this.routeCache.delete(key);this.routeCache.set(key,cached);return project(cached);}
+  const cost=new Map([[start,0]]),prev=new Map<number,number>(),heap:{id:number;cost:number}[]=[];
   const push=(id:number,cost:number)=>{let i=heap.length;heap.push({id,cost});while(i){const p=(i-1)>>1;if(heap[p].cost<=cost)break;heap[i]=heap[p];i=p;}heap[i]={id,cost};};
   const pop=()=>{const first=heap[0],last=heap.pop()!;if(heap.length){let i=0;while(i*2+1<heap.length){let j=i*2+1;if(j+1<heap.length&&heap[j+1].cost<heap[j].cost)j++;if(heap[j].cost>=last.cost)break;heap[i]=heap[j];i=j;}heap[i]=last;}return first;};push(start,0);
   while(heap.length){const {id:best,cost:c}=pop();if(c!==(cost.get(best)??Infinity))continue;if(best===end)break;for(const [next,w]of this.edges.get(best)??[]){if(c+w<(cost.get(next)??Infinity)){cost.set(next,c+w);prev.set(next,best);push(next,c+w);}}}
-  if(!cost.has(end))return [this.nodes[start]];const result=[end];while(result[0]!==start)result.unshift(prev.get(result[0])!);const route=result.map(i=>({...this.nodes[i]}));if(route.length>1){const first=lanePoint(from,{a:route[0],b:route[1],width:0});if(distance(first,from)<3)route[0]=first;}return route;
+  const result=cost.has(end)?[end]:[start];while(result[0]!==start)result.unshift(prev.get(result[0])!);
+  // Cache only node indices. Each rider receives its own route and fresh first
+  // segment projection; neither caller mutation nor stale world positions leak.
+  this.routeCache.set(key,result);if(this.routeCache.size>256)this.routeCache.delete(this.routeCache.keys().next().value!);
+  return project(result);
  }
  reachable(p:Vec3){const seen=new Set([this.nearest(p)]),queue=[...seen];while(queue.length){for(const n of this.edges.get(queue.shift()!)?.keys()??[]){if(!seen.has(n)){seen.add(n);queue.push(n);}}}return [...seen].map(i=>this.nodes[i]);}
 }

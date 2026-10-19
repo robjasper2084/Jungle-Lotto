@@ -46,6 +46,7 @@ export class BattleRoyaleRoom extends Room{
    if(type==='hello')this.welcome(c);
    else if(type==='killcam'&&!this.spectators.has(c.sessionId)&&now-(this.replaySent.get(c.sessionId)??-Infinity)>5000){this.replaySent.set(c.sessionId,now);const replay=this.match.killcam(c.sessionId);if(replay)for(let index=0;index<Math.ceil(replay.frames.length/6);index++)c.send('killcam',{...replay,index,count:Math.ceil(replay.frames.length/6),frames:replay.frames.slice(index*6,index*6+6)});}
    else if(type==='ready'&&compatible(data,this.terrain.arenaIdentity)){this.ready.add(c.sessionId);this.broadcastRoster();}
+   else if(type==='spectate'&&typeof data?.target==='string'&&data.target.length<=80)this.match.watch(c.sessionId,data.target);
    else if(type==='release')this.match.release(c.sessionId);
    else if(type==='input'&&!this.spectators.has(c.sessionId))this.match.command(c.sessionId,data);
    else if(type==='respawn'&&!this.spectators.has(c.sessionId)){if(!data||typeof data.accept!=='boolean'||Object.keys(data).some(k=>k!=='accept'&&k!=='nodeId')||data.nodeId!==undefined&&(typeof data.nodeId!=='string'||data.nodeId.length>80)){c.send('notice','Invalid re-entry request.');return;}const result=this.match.requestReentry(c.sessionId,data.accept,data.nodeId);c.send('notice',result.reason);if(result.ok&&data.accept)this.broadcast('respawn',{id:c.sessionId,remaining:this.match.actors.filter(a=>a.alive).length});}
@@ -56,7 +57,8 @@ export class BattleRoyaleRoom extends Room{
     const humans=this.match.actors.filter(a=>!a.bot);
     if(!humans.length||humans.some(a=>!a.connected||!this.ready.has(a.id))){c.send('notice','Waiting for every rider to load and ready.');return;}
     if(!this.botFill&&humans.length!==this.size){c.send('notice','Human-only matches need '+this.size+' ready riders.');return;}
-    this.match.actors=this.match.actors.filter(a=>!a.bot&&a.connected);this.match.phase='lobby';
+    const continuing=this.match.phase==='results'&&!this.match.series.snapshot().complete;
+    this.match.actors=this.match.actors.filter(a=>a.bot?continuing:a.connected);this.match.phase='lobby';
     const wanted=this.botFill?Math.min(this.size-humans.length,this.botCount<0?this.size:this.botCount):0;while(this.match.actors.filter(a=>a.bot).length<wanted)this.match.add('bot-'+randomUUID(),'AI '+(this.match.actors.length+1),true,'DS_Armored_Rider_01');
     this.match.start(randomUUID(),randomBytes(2).readUInt16LE());this.ready.clear();this.broadcastRoster();
    }
@@ -67,7 +69,7 @@ export class BattleRoyaleRoom extends Room{
     this.failed=true;this.broadcast('notice','The match stopped because its engine could not continue safely. Return to the lobby and create a new room.');
     console.error('ROYALE_ENGINE_FAILURE',this.roomId,error);void this.disconnect(1011);return;
    }
-   this.sendClock+=ms;if(this.sendClock>=50){this.sendClock%=50;for(const c of this.clients)c.send('snapshot',{...this.match.snapshot(this.spectators.has(c.sessionId)?undefined:c.sessionId),hostPerformance:{...this.battleClock.metrics}});}
+   this.sendClock+=ms;if(this.sendClock>=50){this.sendClock%=50;for(const c of this.clients)c.send('snapshot',{...this.match.snapshot(c.sessionId,this.spectators.has(c.sessionId)),hostPerformance:{...this.battleClock.metrics}});}
    if(Date.now()-this.telemetryAt>=30000){this.telemetryAt=Date.now();console.info('ROYALE_FRAME_BUDGET',this.roomId,JSON.stringify(this.battleClock.metrics));}
    if(Date.now()-this.born>7200000)void this.disconnect();
   },1000/60);
@@ -89,7 +91,7 @@ export class BattleRoyaleRoom extends Room{
   if(this.match.phase!=='lobby'||options.spectate===true)this.spectators.add(c.sessionId);else this.match.add(c.sessionId,name,false,skins.includes(options.skin)?options.skin:skins[0],options.wheelId??'euc');
   if(!this.host&&!this.spectators.has(c.sessionId))this.host=c.sessionId;this.welcome(c);this.broadcastRoster();
  }
- private welcome(c:Client){c.send('voice-ice',roomVoiceIce(c.sessionId));c.send('welcome',{code:this.code,host:this.host,handshake:currentHandshake(this.terrain.arenaIdentity),botFill:this.botFill,matchSize:this.size,spectator:this.spectators.has(c.sessionId)});c.send('snapshot',this.match.snapshot(this.spectators.has(c.sessionId)?undefined:c.sessionId));}
+ private welcome(c:Client){c.send('voice-ice',roomVoiceIce(c.sessionId));c.send('welcome',{code:this.code,host:this.host,handshake:currentHandshake(this.terrain.arenaIdentity),botFill:this.botFill,matchSize:this.size,spectator:this.spectators.has(c.sessionId)});c.send('snapshot',this.match.snapshot(c.sessionId,this.spectators.has(c.sessionId)));}
  private broadcastRoster(){this.broadcast('lobby',{host:this.host,ready:[...this.ready],botFill:this.botFill,matchSize:this.size});}
  onDrop(c:Client){this.voices.delete(c.sessionId);this.voiceRoster();this.match.disconnect(c.sessionId);void this.allowReconnection(c,20).catch(()=>{});}
  onReconnect(c:Client){this.match.reconnect(c.sessionId);this.welcome(c);}

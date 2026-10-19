@@ -22,7 +22,7 @@ export class AimGesture {
  get(now:number){if(this.preset==='hold')return this.downAt===undefined?0:2;if(this.preset==='classic'&&this.downAt!==undefined&&now-this.downAt>=this.thresholdMs)return 1;return this.toggled?2:0;}
  reset(){this.downAt=undefined;this.toggled=false;}
 }
-export const COMBAT_BINDINGS={forward:'KeyW',brake:'KeyS',left:'KeyA',right:'KeyD',reload:'KeyR',holster:'Digit3',recover:'KeyK',hop:'Space',burst:'ShiftLeft',leanLeft:'KeyQ',leanRight:'KeyE',freeLook:'AltLeft',crouch:'KeyC',prone:'KeyX',dogAttack:'KeyZ',dogRadar:'KeyN',cycleMode:'KeyB',pickup:'KeyF',utility:'KeyG',repair:'KeyH',camera:'KeyV',scope:'KeyT',loadout:'Tab',brawl:'KeyU',evade:'KeyL'} as const;
+export const COMBAT_BINDINGS={captureMode:'KeyP',captureRecord:'KeyO',forward:'KeyW',brake:'KeyS',left:'KeyA',right:'KeyD',reload:'KeyR',holster:'Digit3',recover:'KeyK',hop:'Space',burst:'ShiftLeft',leanLeft:'KeyQ',leanRight:'KeyE',freeLook:'AltLeft',crouch:'KeyC',prone:'KeyX',dogAttack:'KeyZ',dogRadar:'KeyN',cycleMode:'KeyB',pickup:'KeyF',utility:'KeyG',repair:'KeyH',camera:'KeyV',scope:'KeyT',loadout:'Tab',brawl:'KeyU',evade:'KeyL'} as const;
 export type CombatBindings=Record<keyof typeof COMBAT_BINDINGS,string>;
 export function readBindings(value:unknown):CombatBindings{
  const bindings={...COMBAT_BINDINGS} as CombatBindings;

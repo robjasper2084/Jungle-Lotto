@@ -53,6 +53,7 @@ export class ArenaTerrain implements BattleTerrain{
   return hit?hit.time_of_impact/length:null;
  }
  raycastObstacle(o:Vec3,d:Vec3,max:number,w=0,_l?:Vec3,out?:ObstacleHit){const n=Math.hypot(d.x,d.y,d.z)||1,t=this.sweep(o,{x:d.x/n*max,y:d.y/n*max,z:d.z/n*max},w);if(t===null)return null;const distance=t*max;if(out)Object.assign(out,{distance,halfExtentX:1,halfExtentZ:1});return distance;}
+ surfaceHit(o:Vec3,d:Vec3,max:number){const n=Math.hypot(d.x,d.y,d.z)||1,hit=this.physics.castRayAndGetNormal(new R.Ray(o,{x:d.x/n,y:d.y/n,z:d.z/n}),max,false);return hit?{distance:hit.timeOfImpact,normal:{...hit.normal}}:null;}
  raycast(o:Vec3,d:Vec3,max:number){const n=Math.hypot(d.x,d.y,d.z)||1;const hit=this.physics.castRay(new R.Ray(o,{x:d.x/n,y:d.y/n,z:d.z/n}),max,true);return hit?.timeOfImpact??null;}
  line(a:Vec3,b:Vec3,radius=.1){return this.sweep(a,{x:b.x-a.x,y:b.y-a.y,z:b.z-a.z},radius)===null;}
  dispose(){this.physics.free();}

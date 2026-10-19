@@ -8,17 +8,19 @@ function point(bone:Object3D,child:Object3D,target:Vector3){
   if(from.lengthSq()<epsilon*epsilon||to.lengthSq()<epsilon*epsilon)return;
   const world=bone.getWorldQuaternion(new Quaternion()).premultiply(new Quaternion().setFromUnitVectors(from.normalize(),to.normalize()));
   if(bone.parent)world.premultiply(bone.parent.getWorldQuaternion(new Quaternion()).invert());
-  bone.quaternion.copy(world);bone.updateWorldMatrix(false,true);
+  bone.quaternion.copy(world);bone.updateWorldMatrix(false,false);
 }
 
 /** Two-bone IK shared by all game adapters. Rotate only: keep imported bone lengths
  * and skin weights intact. A collapsed reach or parallel hint must never flip or
  * shorten a limb. The caller's reusable target and hint vectors remain unchanged. */
 export function solveLimb(l:LimbChain,target:Vector3,hint:Vector3,rotation?:Quaternion,reachFraction=1){
-  l.upper.updateWorldMatrix(true,true);
+  // World queries below refresh the ancestor path they need. Defer unrelated
+  // descendants (including every finger/toe) until the completed solve.
+  l.upper.updateWorldMatrix(true,false);
   const a=l.upper.getWorldPosition(new Vector3()),b=l.knee.getWorldPosition(new Vector3()),c=l.foot.getWorldPosition(new Vector3());
   const l1=a.distanceTo(b),l2=b.distanceTo(c);
-  if(l1<epsilon||l2<epsilon||!target.toArray().every(Number.isFinite))return;
+  if(l1<epsilon||l2<epsilon||!target.toArray().every(Number.isFinite)){l.upper.updateWorldMatrix(false,true);return;}
   const direction=target.clone().sub(a);
   if(direction.lengthSq()<epsilon*epsilon)direction.copy(c).sub(a);
   if(direction.lengthSq()<epsilon*epsilon)direction.copy(b).sub(a);
@@ -35,6 +37,6 @@ export function solveLimb(l:LimbChain,target:Vector3,hint:Vector3,rotation?:Quat
   if(rotation&&rotation.toArray().every(Number.isFinite)){
     l.foot.quaternion.copy(rotation);
     if(l.foot.parent)l.foot.quaternion.premultiply(l.foot.parent.getWorldQuaternion(new Quaternion()).invert());
-    l.foot.updateWorldMatrix(false,true);
   }
+  l.upper.updateWorldMatrix(false,true);
 }

@@ -9,6 +9,7 @@ namespace bf {
 using dice::hfe::io::PlayerInput;
 using dice::hfe::io::PlayerInputMap;
 constexpr int Slots=10, Contexts=16, Projectiles=256, Salvos=64, Events=128, Hits=512, Words=50000;
+constexpr int MatchDeadline=240+600*60;
 struct Weapon {double damage,speed,radius,spread; int cadence,life,ammo,pellets;double gravity,inherit;int magazine,reloadCommit,reloadEnd,modes,burstCount,adsTicks;double kickYaw,kickPitch,recovery;};
 #include "combat_profiles.hpp"
 struct Actor {
@@ -49,10 +50,11 @@ void hit(State& s,int target,double amount,int owner=-1,int bypass=0){if(s.actor
 struct Field {double x,z,radius,next,remaining,damage;int phase;};
 Field field(const State& s){
 
- constexpr double ends[]={80,170,255,335,360},damage[]={2,4,8,18,100};
- double t=std::max(0,s.tick-240)/60.0;int p=0;while(p<4&&t>=ends[p])++p;
- double start=p?ends[p-1]:0,f=std::clamp((t-start)/(ends[p]-start),0.0,1.0);
- int center=s.seed%5;return {s.centers[center][0],s.centers[center][1],s.radii[p]+(s.radii[p+1]-s.radii[p])*f,s.radii[p+1],std::max(0.0,ends[p]-t),damage[p],p};
+ constexpr double holds[]={60,30,20,15,10},closes[]={120,120,110,85,30},damage[]={2,4,8,18,100};
+ double t=std::max(0,s.tick-240)/60.0,start=0;int p=0;
+ while(p<4&&t>=start+holds[p]+closes[p]){start+=holds[p]+closes[p];++p;}
+ double closingAt=start+holds[p],end=closingAt+closes[p],f=std::clamp((t-closingAt)/closes[p],0.0,1.0);
+ int center=s.seed%5;return {s.centers[center][0],s.centers[center][1],s.radii[p]+(s.radii[p+1]-s.radii[p])*f,s.radii[p+1],std::max(0.0,(t<closingAt?closingAt:end)-t),damage[p],p};
 }
 void fire(State& s,int who){
  auto& a=s.actors[who];
@@ -175,7 +177,7 @@ void finish(State& s){
  }}
  int live=0,last=-1,total=0,pending=0;for(int i=0;i<Slots;i++){auto& a=s.actors[i];if(!a.present)continue;++total;if(a.alive){++live;last=i;}else if(s.reentry&&a.reentryUsed<3&&a.connected&&a.reentryUntil>s.tick)++pending;}
  if(s.phase==2&&live<=1&&!pending&&(total>1||!live)){s.phase=3;s.winner=last;s.reason=live?1:2;}
- else if(s.phase==2&&s.tick>=21840){s.phase=3;s.winner=-1;s.reason=3;for(auto& a:s.actors)if(a.present&&a.alive){a.alive=0;a.integrity=0;a.eliminated=s.tick;event(s,5,int(&a-s.actors));}}
+ else if(s.phase==2&&s.tick>=MatchDeadline){s.phase=3;s.winner=-1;s.reason=3;for(auto& a:s.actors)if(a.present&&a.alive){a.alive=0;a.integrity=0;a.eliminated=s.tick;event(s,5,int(&a-s.actors));}}
  if(s.phase==3){for(auto& p:s.projectiles)p.active=0;for(auto& a:s.inputs)a={};for(auto& a:s.actors){cancelReload(a);a.burstLeft=0;a.fireHeld=0;}event(s,6,s.winner);}
  for(int i=0;i<Salvos;i++){bool active=false;for(auto& p:s.projectiles)if(p.active&&p.salvo==i){active=true;break;}if(!active)s.salvos[i].active=0;}
  s.stage=0;
@@ -192,33 +194,33 @@ void serialize(State& s,Stream& v){
  for(auto& r:s.radii)v.number(r,0,10000);
  if(v.reading){for(int i=0;i<5;i++)if(s.radii[i]<=s.radii[i+1])v.ok=false;if(s.radii[5]!=0)v.ok=false;}
  for(auto& center:s.centers)for(auto& n:center)v.number(n,-10000,10000);
- v.integer(s.tick,0,21840);v.integer(s.phase,0,3);v.integer(s.seed,0,2147483647);v.integer(s.winner,-1,Slots-1);v.integer(s.reason,0,3);
+ v.integer(s.tick,0,MatchDeadline);v.integer(s.phase,0,3);v.integer(s.seed,0,2147483647);v.integer(s.winner,-1,Slots-1);v.integer(s.reason,0,3);
  v.integer(s.serial,0,2147483647);v.integer(s.stage,0,2);v.integer(s.eventCount,0,Events);v.integer(s.hitCount,0,Hits);v.integer(s.error,0,100);v.number(s.frames,0,1e12);
  for(auto& a:s.inputs){for(int ch=0;ch<64;ch++){auto p=a.getInput(static_cast<PlayerInputMap>(ch));int has=p?1:0;double n=p?*p:0;v.integer(has,0,1);v.number(n,-1,1);if(v.reading){if(ch==0)a={};if(has)a.setInput(static_cast<PlayerInputMap>(ch),float(n));}}}
  for(auto& a:s.actors){
-  v.integer(a.present,0,1);v.integer(a.alive,0,1);v.integer(a.connected,0,1);v.integer(a.drop,-1,21840);v.integer(a.slot,0,1);
+  v.integer(a.present,0,1);v.integer(a.alive,0,1);v.integer(a.connected,0,1);v.integer(a.drop,-1,MatchDeadline);v.integer(a.slot,0,1);
   for(auto& n:a.loadout)v.integer(n,-1,2);for(int i=0;i<3;i++)v.integer(a.ammo[i],0,weapons[i].ammo);
-  v.integer(a.utility,0,1);v.integer(a.repairs,0,2);v.integer(a.shieldUntil,0,22020);v.integer(a.repairUntil,0,22020);v.integer(a.switchUntil,0,22020);
-  v.integer(a.shotAt,-999,21840);v.integer(a.lastShot,0,2147483647);v.integer(a.lastDamage,-99999,21840);v.integer(a.kills,0,(Slots-1)*2);
-  v.integer(a.shots,0,10000);v.integer(a.hits,0,100000);v.integer(a.eliminated,-1,21840);v.integer(a.crashed,0,1);
+  v.integer(a.utility,0,1);v.integer(a.repairs,0,2);v.integer(a.shieldUntil,0,MatchDeadline+180);v.integer(a.repairUntil,0,MatchDeadline+180);v.integer(a.switchUntil,0,MatchDeadline+180);
+  v.integer(a.shotAt,-999,MatchDeadline);v.integer(a.lastShot,0,2147483647);v.integer(a.lastDamage,-99999,MatchDeadline);v.integer(a.kills,0,(Slots-1)*2);
+  v.integer(a.shots,0,10000);v.integer(a.hits,0,100000);v.integer(a.eliminated,-1,MatchDeadline);v.integer(a.crashed,0,1);
   v.integer(a.commandShot,0,2147483647);v.integer(a.commandSlot,0,1);
   v.number(a.integrity,0,100);v.number(a.shield,0,50);v.number(a.damage,0,1e7);
   v.number(a.x,-10000,10000);v.number(a.y,-10000,10000);v.number(a.z,-10000,10000);v.number(a.heading,-1e9,1e9);v.number(a.scale,.1,2);
   for(int i=0;i<3;i++){v.integer(a.mag[i],0,weapons[i].magazine);v.integer(a.pattern[i],0,10000);v.integer(a.fireMode[i],0,2);if(v.reading&&(a.mag[i]>a.ammo[i]||!(weapons[i].modes&(1<<a.fireMode[i]))))v.ok=false;}
   v.integer(a.fireHeld,0,1);v.integer(a.reloadHeld,0,1);v.integer(a.modeHeld,0,1);v.integer(a.burstLeft,0,3);v.integer(a.fireSerial,0,10000);
-  v.integer(a.reloadStart,-1,21840);v.integer(a.reloadCommit,0,22020);v.integer(a.reloadEnd,0,22020);v.integer(a.reloadWeapon,-1,2);v.integer(a.reloadCommitted,0,1);
-  v.integer(a.dogCharges,0,2);v.integer(a.dogUntil,0,23000);v.integer(a.dogReady,0,24000);v.integer(a.dogHit,0,1);v.integer(a.dogHeld,0,1);v.integer(a.radarUntil,0,22020);v.integer(a.radarReady,0,23000);v.integer(a.radarHeld,0,1);
-  v.integer(a.reentryUsed,0,3);v.integer(a.reentryUntil,0,24000);v.integer(a.protectedUntil,0,24000);
-  v.integer(a.brawl,0,1);v.integer(a.brawlHeld,0,1);v.integer(a.lightHeld,0,1);v.integer(a.heavyHeld,0,1);v.integer(a.evadeHeld,0,1);v.integer(a.meleeKind,0,4);v.integer(a.meleeStart,-1,21840);v.integer(a.meleeEnd,0,22020);v.integer(a.meleeSerial,0,100000);v.integer(a.meleeHitMask,0,1023);v.integer(a.combo,0,3);v.integer(a.comboUntil,0,22020);v.integer(a.queued,0,2);v.integer(a.staggerUntil,0,22020);v.integer(a.evadeUntil,0,22020);v.integer(a.evadeReady,0,22020);v.integer(a.evadeDir,-1,2);
+  v.integer(a.reloadStart,-1,MatchDeadline);v.integer(a.reloadCommit,0,MatchDeadline+180);v.integer(a.reloadEnd,0,MatchDeadline+180);v.integer(a.reloadWeapon,-1,2);v.integer(a.reloadCommitted,0,1);
+  v.integer(a.dogCharges,0,2);v.integer(a.dogUntil,0,MatchDeadline+1160);v.integer(a.dogReady,0,MatchDeadline+2160);v.integer(a.dogHit,0,1);v.integer(a.dogHeld,0,1);v.integer(a.radarUntil,0,MatchDeadline+180);v.integer(a.radarReady,0,MatchDeadline+1160);v.integer(a.radarHeld,0,1);
+  v.integer(a.reentryUsed,0,3);v.integer(a.reentryUntil,0,MatchDeadline+2160);v.integer(a.protectedUntil,0,MatchDeadline+2160);
+  v.integer(a.brawl,0,1);v.integer(a.brawlHeld,0,1);v.integer(a.lightHeld,0,1);v.integer(a.heavyHeld,0,1);v.integer(a.evadeHeld,0,1);v.integer(a.meleeKind,0,4);v.integer(a.meleeStart,-1,MatchDeadline);v.integer(a.meleeEnd,0,MatchDeadline+180);v.integer(a.meleeSerial,0,100000);v.integer(a.meleeHitMask,0,1023);v.integer(a.combo,0,3);v.integer(a.comboUntil,0,MatchDeadline+180);v.integer(a.queued,0,2);v.integer(a.staggerUntil,0,MatchDeadline+180);v.integer(a.evadeUntil,0,MatchDeadline+180);v.integer(a.evadeReady,0,MatchDeadline+180);v.integer(a.evadeDir,-1,2);
   v.number(a.vx,-100,100);v.number(a.vz,-100,100);v.number(a.roll,-2,2);v.number(a.air,0,1);v.number(a.rough,0,1);v.number(a.kickYaw,-.12,.12);v.number(a.kickPitch,0,.22);v.number(a.aimBlend,0,1);v.number(a.lean,-1,1);
   if(v.reading&&a.reloadStart>=0&&(a.reloadWeapon<0||a.reloadCommit<a.reloadStart||a.reloadEnd<a.reloadCommit))v.ok=false;
   if(v.reading&&a.present&&(a.loadout[0]<0||a.loadout[a.slot]<0||(!a.alive&&a.integrity>0)))v.ok=false;
  }
  for(auto& p:s.projectiles){v.integer(p.active,0,1);v.integer(p.serial,0,2147483647);v.integer(p.salvo,0,Salvos-1);v.integer(p.pellet,0,3);
-  v.number(p.x,-10000,10000);v.number(p.y,-10000,10000);v.number(p.z,-10000,10000);v.number(p.vx,-512,512);v.number(p.vy,-512,512);v.number(p.vz,-512,512);v.integer(p.resolvedTick,-1,21840);}
- for(auto& g:s.salvos){v.integer(g.active,0,1);v.integer(g.owner,0,Slots-1);v.integer(g.shot,0,2147483647);v.integer(g.weapon,0,2);v.integer(g.expires,0,22020);for(auto& n:g.awarded)v.number(n,0,48);}
+  v.number(p.x,-10000,10000);v.number(p.y,-10000,10000);v.number(p.z,-10000,10000);v.number(p.vx,-512,512);v.number(p.vy,-512,512);v.number(p.vz,-512,512);v.integer(p.resolvedTick,-1,MatchDeadline);}
+ for(auto& g:s.salvos){v.integer(g.active,0,1);v.integer(g.owner,0,Slots-1);v.integer(g.shot,0,2147483647);v.integer(g.weapon,0,2);v.integer(g.expires,0,MatchDeadline+180);for(auto& n:g.awarded)v.number(n,0,48);}
  for(auto& l:s.loot){v.integer(l.present,0,1);v.integer(l.available,0,1);v.integer(l.kind,0,6);v.number(l.x,-10000,10000);v.number(l.y,-10000,10000);v.number(l.z,-10000,10000);}
- for(auto& e:s.events){v.integer(e.tick,0,21840);v.integer(e.kind,0,14);v.integer(e.actor,-1,Slots-1);v.integer(e.target,-1,Slots-1);}
+ for(auto& e:s.events){v.integer(e.tick,0,MatchDeadline);v.integer(e.kind,0,14);v.integer(e.actor,-1,Slots-1);v.integer(e.target,-1,Slots-1);}
  for(auto& h:s.hits){v.integer(h.target,0,Slots-1);v.integer(h.owner,-1,Slots-1);v.integer(h.bypass,0,1);v.number(h.amount,0,999);}
  if(v.reading)for(auto& p:s.projectiles)if(p.active&&!s.salvos[p.salvo].active)v.ok=false;
 }
