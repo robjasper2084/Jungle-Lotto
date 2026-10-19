@@ -33,6 +33,7 @@ export class CombatBlockTerrain implements BattleTerrain {
  sampleGround(x:number,z:number,out:GroundSample){const indoors=Math.abs(x+12)<5.8&&Math.abs(z-1)<6.8||Math.abs(x-12)<5.8&&Math.abs(z-13)<6.8;return Object.assign(out,{...this.ground(x,z),normal:{x:0,y:1,z:0},surface:indoors?'wood':'pavement'});}
  sweep(o:Vec3,delta:Vec3,r=.01){const length=Math.hypot(delta.x,delta.y,delta.z);if(length<1e-9)return null;const hit=this.physics.castShape(o,{x:0,y:0,z:0,w:1},{x:delta.x/length,y:delta.y/length,z:delta.z/length},new R.Ball(Math.max(.01,r)),0,length,true,undefined,0x00020002);return hit?hit.time_of_impact/length:null;}
  raycastObstacle(o:Vec3,d:Vec3,max:number,r=0,_l?:Vec3,out?:ObstacleHit){const n=Math.hypot(d.x,d.y,d.z)||1,t=this.sweep(o,{x:d.x/n*max,y:d.y/n*max,z:d.z/n*max},r);if(t===null)return null;const distance=t*max;if(out)Object.assign(out,{distance,halfExtentX:1,halfExtentZ:1});return distance;}
+ surfaceHit(o:Vec3,d:Vec3,max:number){const n=Math.hypot(d.x,d.y,d.z)||1,hit=this.physics.castRayAndGetNormal(new R.Ray(o,{x:d.x/n,y:d.y/n,z:d.z/n}),max,false);return hit?{distance:hit.timeOfImpact,normal:{...hit.normal}}:null;}
  raycast(o:Vec3,d:Vec3,max:number){const n=Math.hypot(d.x,d.y,d.z)||1;return this.physics.castRay(new R.Ray(o,{x:d.x/n,y:d.y/n,z:d.z/n}),max,true)?.timeOfImpact??null;}
  line(a:Vec3,b:Vec3,r=.1){return this.sweep(a,{x:b.x-a.x,y:b.y-a.y,z:b.z-a.z},r)===null;}
  route(from:Vec3,to:Vec3){

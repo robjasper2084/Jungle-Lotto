@@ -7,7 +7,7 @@ import {HANDLEBAR_WRIST_OFFSET} from '../src/handlebarGrip.ts';
 import {BicycleView} from '../dist/cyclingView.js';
 import {createPose} from '../src/controller.ts';
 // Exercise the shipped skeletons and mechanical nodes without needing a GPU or image decoder.
-async function asset(id:string,lod:number){const b=await readFile(new URL(`../../Digital_Static_Street_Asset_Pack/exports/glb/${id}/${id}_LOD${lod}.glb`,import.meta.url)),n=b.readUInt32LE(12),j=JSON.parse(b.toString('utf8',20,20+n));
+async function asset(id:string,lod:number){const root=process.env.BICYCLE_TEST_ASSETS??new URL('../../Digital_Static_Street_Asset_Pack/exports/glb/',import.meta.url).href;const b=await readFile(new URL(`${id}/${id}_LOD${lod}.glb`,root)),n=b.readUInt32LE(12),j=JSON.parse(b.toString('utf8',20,20+n));
  delete j.images;delete j.textures;delete j.samplers;j.materials=(j.materials??[]).map((m:{name:string})=>({name:m.name}));
  let json=JSON.stringify(j);while(json.length%4)json+=' ';const chunk=b.subarray(20+n),out=Buffer.alloc(20+json.length+chunk.length);out.writeUInt32LE(0x46546c67,0);out.writeUInt32LE(2,4);out.writeUInt32LE(out.length,8);out.writeUInt32LE(json.length,12);out.writeUInt32LE(0x4e4f534a,16);out.write(json,20);chunk.copy(out,20+json.length);return new GLTFLoader().parseAsync(out.buffer.slice(out.byteOffset,out.byteOffset+out.byteLength),'');}
 test('both shipped human rigs can pedal without crossed legs or missing hand sockets',async()=>{

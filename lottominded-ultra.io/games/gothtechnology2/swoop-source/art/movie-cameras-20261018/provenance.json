@@ -1,0 +1,22 @@
+{
+  "higgsfieldProject": "eb66baf3-02f8-4fb3-a901-fce871398078",
+  "revision": 4,
+  "operation": "movie-camera-shells-20261018-v1",
+  "exports": [
+    {
+      "weapon": "static",
+      "bytes": 76240,
+      "action": "Fire_static"
+    },
+    {
+      "weapon": "heart",
+      "bytes": 154768,
+      "action": "Fire_heart"
+    },
+    {
+      "weapon": "bass",
+      "bytes": 86384,
+      "action": "Fire_bass"
+    }
+  ]
+}

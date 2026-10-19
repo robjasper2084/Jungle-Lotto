@@ -1,4 +1,7 @@
 import type {SceneryWorld} from './sceneryWorld.ts';
+import {WorkSlice} from '../../../ride-core/src/workSlice.ts';
+import {loadAssetQueue,assetConcurrency} from './assetQueue.ts';
+import {batchStaticGroup} from './static-batch.ts';
 import * as T from 'three';
 import {GLTFLoader} from './compressedGLTFLoader.ts';
 import {heightAt} from './world.ts';
@@ -6,13 +9,16 @@ import {streetFurnitureSites,type StreetAsset} from './streetFurnitureLayout.ts'
 
 export async function buildStreetFurniture(scene:T.Scene,world:SceneryWorld,groupAt:(x:number,z:number)=>T.Group){
  const names:StreetAsset[]=['street-lamp','camera-pole','hydrant','bench','waste-bin','bike-rack','drain-grate','utility-cover'];
- const loader=new GLTFLoader(),assets=await Promise.all(names.map(n=>loader.loadAsync('/exports/street-furniture/'+n+'.glb')));
+ const slice=new WorkSlice(),loader=new GLTFLoader(),assets=await loadAssetQueue(names,assetConcurrency(),n=>loader.loadAsync('/exports/street-furniture/'+n+'.glb'));
  const allowed=(x:number,z:number)=>world.chunks.some(c=>Math.abs(c.x-x)<=50&&Math.abs(c.z-z)<=50);
  const sites=streetFurnitureSites(allowed),lenses=new Set<T.MeshStandardMaterial>();
  world.step(); // The new draped sidewalks must be queryable before grounding assets.
  for(const asset of assets)asset.scene.traverse(o=>{if(!(o as T.Mesh).isMesh)return;const m=o as T.Mesh;m.castShadow=m.receiveShadow=true;for(const a of Array.isArray(m.material)?m.material:[m.material])if(a.name==='Street LED diffuser'){lenses.add(a as T.MeshStandardMaterial);(a as T.MeshStandardMaterial).emissiveIntensity=0;}});
  const counts=Object.fromEntries(names.map(n=>[n,0])) as Record<StreetAsset,number>;
+ // Split/merge each immutable prototype once, before hundreds of copies.
+ for(const asset of assets){batchStaticGroup(asset.scene);await slice.checkpoint();}
  for(const s of sites){
+  await slice.checkpoint();
   const model=assets[names.indexOf(s.asset)].scene.clone(true),base=heightAt(s.x,s.z);
   const y=world.sampleGround(s.x,s.z,{height:base,normal:{x:0,y:1,z:0},surface:'pavement',offCourse:false},base+.15).height;
   model.position.set(s.x,y+.004,s.z);model.rotation.y=s.heading;model.name=s.asset+' · '+s.street;

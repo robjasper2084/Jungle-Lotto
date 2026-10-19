@@ -50,7 +50,9 @@ function directional(phase:number,angle:number){
  return mix(at(i),at(i+1),t);
 }
 function basis(x:T.Vector3,y:T.Vector3){y.normalize();x.addScaledVector(y,-x.dot(y)).normalize();return q().setFromRotationMatrix(new T.Matrix4().makeBasis(x,y,x.clone().cross(y).normalize()));}
-function worldRotation(bone:T.Object3D,world:T.Quaternion){bone.quaternion.copy(bone.parent!.getWorldQuaternion(q()).invert().multiply(world));bone.updateWorldMatrix(false,true);}
+// Each following world query refreshes its own ancestor path; the pose's
+// explicit root updates publish all descendants after the rotations settle.
+function worldRotation(bone:T.Object3D,world:T.Quaternion){bone.quaternion.copy(bone.parent!.getWorldQuaternion(q()).invert().multiply(world));bone.updateWorldMatrix(false,false);}
 function point(bone:T.Object3D,child:T.Object3D,target:T.Vector3){
  const a=bone.getWorldPosition(v()),from=child.getWorldPosition(v()).sub(a).normalize(),to=target.clone().sub(a).normalize();
  worldRotation(bone,bone.getWorldQuaternion(q()).premultiply(q().setFromUnitVectors(from,to)));

@@ -1,4 +1,5 @@
 import type {SceneryWorld} from './sceneryWorld.ts';
+import {WorkSlice} from '../../../ride-core/src/workSlice.ts';
 import * as T from 'three';
 import {SpatialUpdateGate,visibleSceneryMatrices} from '@digital-static/ridecore';
 import {GLTFLoader} from './compressedGLTFLoader.ts';
@@ -13,6 +14,7 @@ import {roadwayClearance} from './roadsidePlacement.ts';
 import {grassTreeSite} from './treePlacement.ts';
 /** Grounded Blender meshes, instanced in short independently culled trail sections. */
 export async function buildGrassField(scene:T.Scene,world:SceneryWorld,ground:T.MeshStandardMaterial){
+ const slice=new WorkSlice();
  const [asset,albedo,normal]=await Promise.all([
   new GLTFLoader().loadAsync(new URL('../../art/swoop-field-pack/field-assets.glb',import.meta.url).href),
   new T.TextureLoader().loadAsync(new URL('../../art/swoop-field-pack/grass_01.jpg',import.meta.url).href),
@@ -34,6 +36,7 @@ export async function buildGrassField(scene:T.Scene,world:SceneryWorld,ground:T.
   `);};material.customProgramCacheKey=()=> 'swoop-field-blades-1';materials.push(material);geometry.computeBoundingBox();const b=geometry.boundingBox!;const radius=Math.hypot(Math.max(Math.abs(b.min.x),Math.abs(b.max.x)),Math.max(Math.abs(b.min.z),Math.abs(b.max.z)));return {geometry,material,radius};});
  const chunks:{group:T.Group;x:number;z:number}[]=[],dummy=new T.Object3D();let total=0;
  for(let start=350;start<CUT_METRES;start+=50){
+  await slice.checkpoint();
   const positions:{x:number;y:number;z:number;scale:number;rotation:number;type:number}[]=[];
   for(let d=start;d<Math.min(start+50,CUT_METRES-3);d+=1.6)for(const side of [-1,1])for(let band=0;band<6;band++){
    const seed=d*61+side*7+band*83;if(hash(seed)<.16)continue;
@@ -51,6 +54,7 @@ export async function buildGrassField(scene:T.Scene,world:SceneryWorld,ground:T.
  // Low, irregular blades and clover add near detail to the riverfront lawns.
  // The short tile batches use the same quality-dependent visibility as the trail.
  for(const c of world.chunks){
+  await slice.checkpoint();
   if(!(inMillikenPark(c.x,c.z)&&c.z>-1510||inValadePark(c.x,c.z)))continue;
   const positions:{x:number;y:number;z:number;scale:number;rotation:number;type:number}[]=[];
   for(let x=c.x-48;x<c.x+49;x+=3.2)for(let z=c.z-48;z<c.z+49;z+=3.2){

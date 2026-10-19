@@ -1,25 +1,26 @@
 import {reloadPose} from './fpsMotion.ts';
 import {weaponReadyAmount} from '../../../../ride-core/src/royale/holster.ts';
-import {sampleHeroAction} from '../../../../ride-core/src/heroActions.ts';
+import {cameraDrawPose} from '../../../../ride-core/src/royale/cameraDraw.ts';
 import * as T from 'three';
 import {Hero,solve} from '../actors.ts';
 import type {RidePose} from '../controller.ts';
 import {weaponSocket,type CombatState} from '../../../../ride-core/src/royale/rules.ts';
 import {EQUIPMENT_SOCKETS as sockets} from '../../../../ride-core/src/royale/combatProfiles.ts';
-import {WeaponView} from './equipment.ts';
+import {WeaponView,type HeldRepairPack} from './equipment.ts';
 import leanProfile from './leanProfiles.json' with {type:'json'};
 import {meleeTargets} from '../../../../ride-core/src/royale/melee.ts';
 
-const packShape=new T.BoxGeometry(.13,.08,.045),packMaterial=new T.MeshStandardMaterial({color:0xa9e6c9,roughness:.8});
 /** Base riding pose -> torso -> independent weapon frame -> dominant IK ->
  * hand-mounted weapon -> support IK. No hand ever drives its own IK target. */
 export class CombatRig {
   errorR=0;errorL=0;supportLocked=true;private pickupTick=-999;
   private gestureTick=-1;private gestureWeight=0;private gestureHealing=false;private gesturePulse=0;
   pickup(tick:number){this.pickupTick=tick;}
+  hideHandheld(){this.repairPack.visible=false;}
   interruptPickup(){this.pickupTick=-999;this.gestureWeight=0;}
-  private repairPack=new T.Mesh(packShape,packMaterial);
-  constructor(readonly hero:Hero,readonly weapon:WeaponView){this.repairPack.name="Held health pack";this.repairPack.visible=false;hero.root.add(this.repairPack);}
+  private repairProp:HeldRepairPack;private repairPack:T.Group;
+  private backRest=new T.Quaternion();
+  constructor(readonly hero:Hero,readonly weapon:WeaponView){this.repairProp=weapon.createHeldRepair();this.repairPack=this.repairProp.root;hero.root.add(this.repairPack);(hero.chest??hero.rider).getWorldQuaternion(this.backRest).invert();}
   apply(pose:RidePose,yaw:number,pitch:number,state:CombatState,tick:number,healingUntil=0){
     const h=this.hero,w=this.weapon.root,scale=h.motionScale;w.visible=true;this.repairPack.visible=false;
     if(pose.footMode===3){w.visible=false;this.interruptPickup();this.supportLocked=false;return;}
@@ -100,35 +101,67 @@ export class CombatRig {
         const rotation=limb.foot.getWorldQuaternion(new T.Quaternion()).slerp(heading.clone().multiply(limb.rotation),weight);
         solve(limb,destination,elbowPole(side),rotation);
       }
-      if(repair&&healing){this.repairPack.visible=weight>.5;this.repairPack.scale.setScalar(scale);this.repairPack.position.copy(h.root.worldToLocal(h.arms[0].foot.getWorldPosition(new T.Vector3())));this.repairPack.quaternion.copy(h.root.getWorldQuaternion(new T.Quaternion()).invert().multiply(h.arms[0].foot.getWorldQuaternion(new T.Quaternion())));}
+      if(repair&&healing){
+        this.repairPack.visible=weight>.5;this.repairPack.scale.setScalar(scale);
+        // The authored case rests above the palm. Hand bone axes differ between
+        // heroes; inheriting them turns its lid into the wrist and sleeve.
+        const palm=h.arms[0].foot.getWorldPosition(new T.Vector3()).add(new T.Vector3(0,.035,.035).multiplyScalar(scale).applyQuaternion(heading));
+        this.repairPack.position.copy(h.root.worldToLocal(palm));
+        this.repairPack.quaternion.copy(h.root.getWorldQuaternion(new T.Quaternion()).invert().multiply(heading));
+        this.repairProp.sample(tick,healingUntil,typeof matchMedia!=='undefined'&&matchMedia('(prefers-reduced-motion: reduce)').matches);
+      }
       // Holster while either hand is occupied; restore only at the ready grip.
       w.visible=false;h.fingers.apply('SupportGrip','WeaponGrip',(repair?.45:.85)*weight);
     }
   }
   private applyHolster(pose:RidePose,yaw:number,pitch:number,state:CombatState,ready:number){
-    const h=this.hero,w=this.weapon.root,scale=h.motionScale,curve=sampleHeroAction('draw',ready);
-    this.gestureWeight=0;this.supportLocked=curve[4]>.99;
+    const h=this.hero,w=this.weapon.root,scale=h.motionScale,draw=cameraDrawPose(ready);
+    this.gestureWeight=0;this.supportLocked=draw.support>.99;this.errorL=this.errorR=0;
     const heading=new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),pose.headingY);
-    const socket=weaponSocket(pose,h.riderId,yaw*ready,pitch*ready,state.aimBlend*ready,state.lean*ready);
-    w.position.set(socket.grip.x,socket.grip.y,socket.grip.z).add(new T.Vector3(...curve.slice(0,3) as [number,number,number]).multiplyScalar(scale).applyQuaternion(heading));
-    // Rotate the stowed barrel along the prone body instead of down through
-    // the pavement. Fade this offset out during the authored draw.
-    const prone=T.MathUtils.clamp(pose.footProne,0,1)*(1-ready);
-    w.position.add(new T.Vector3(0,.16*prone,-.08*prone).multiplyScalar(scale).applyQuaternion(heading));
-    w.rotation.set(curve[3]*(1-prone)-pitch*ready,pose.headingY+yaw*ready,0,'YXZ');w.scale.setScalar(scale);w.updateWorldMatrix(true,true);
-    // A hand releases only after the gun reaches its belt position. While fully
-    // stowed, leave both arms to the shared idle/walk instead of pinning them.
-    const dominant=this.weapon.socket(sockets.weapon_grip_R);
-    for(const i of [1,0]){
-      const limb=h.arms[i],weight=i===1?curve[5]:curve[4];
-      if(weight<=0)continue;
-      const target=i===1?dominant:this.weapon.socket(sockets.support_grip_L);
-      const base=limb.foot.getWorldPosition(new T.Vector3()),rotation=limb.foot.getWorldQuaternion(new T.Quaternion());
-      const pole=new T.Vector3(i===0?.7:-.7,-.65,-.15).applyQuaternion(heading);
-      solve(limb,base.lerp(target,weight),pole,rotation.slerp(heading.clone().multiply(new T.Quaternion().setFromAxisAngle(new T.Vector3(1,0,0),curve[3])).multiply(limb.rotation),weight));
-      if(i===1&&weight>.99){const actual=limb.foot.getWorldPosition(new T.Vector3());this.errorR=actual.distanceTo(target);w.position.add(actual.sub(target));w.updateWorldMatrix(true,true);}
+    // Upper-body mask: a small reach turn, then the same aim/lean as the ready
+    // pose. Feet retain the walking/crouching action without an endpoint snap.
+    const spine=h.spine.length?h.spine:h.chest?[h.chest]:[];
+    for(const [index,bone]of spine.entries()){
+      const turn=T.MathUtils.clamp((T.MathUtils.clamp(yaw*.8,-1,1)*draw.swing+draw.twist)/Math.max(1,spine.length),-.4,.4);
+      const world=bone.getWorldQuaternion(new T.Quaternion()).premultiply(new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),turn));
+      const lean=leanProfile.profiles.CombatLeanRight,axis=new T.Vector3(Math.sin(pose.headingY),0,Math.cos(pose.headingY));
+      world.premultiply(new T.Quaternion().setFromAxisAngle(axis,T.MathUtils.clamp(state.lean,-1,1)*lean.radians*(lean.weights[index]??0)*draw.swing));
+      bone.quaternion.copy(bone.parent!.getWorldQuaternion(new T.Quaternion()).invert().multiply(world));bone.updateWorldMatrix(false,true);
     }
-    h.fingers.apply(curve[4]>.5?'SupportGrip':'Relaxed',curve[5]>.5?'WeaponGrip':'Relaxed');
+    const socket=weaponSocket(pose,h.riderId,yaw*ready,pitch*ready,state.aimBlend*ready,state.lean*ready);
+    const chest=h.chest??h.rider,backFrame=chest.getWorldQuaternion(new T.Quaternion()).multiply(this.backRest);
+    const origin=chest.getWorldPosition(new T.Vector3()),at=(x:number,y:number,z:number)=>new T.Vector3(x,y,z).multiplyScalar(scale).applyQuaternion(backFrame).add(origin);
+    // Move the handle toward the dominant shoulder. First lift the camera off
+    // its back mount; only then rotate it around the outside of the shoulder.
+    const back=at(-.22,-.09,-.27),lift=at(-.46,.15,-.23),readyGrip=new T.Vector3(socket.grip.x,socket.grip.y,socket.grip.z);
+    w.position.copy(back).lerp(lift,draw.lift);
+    if(draw.swing>0)w.position.copy(new T.CubicBezierCurve3(lift,at(-.53,.19,.04),readyGrip.clone().add(new T.Vector3(-.12,.065,.02).multiplyScalar(scale).applyQuaternion(heading)),readyGrip).getPoint(draw.swing));
+    w.position.y+=draw.settle*scale;
+    const stowedRotation=backFrame.clone().multiply(new T.Quaternion().setFromEuler(new T.Euler(-Math.PI/2,0,-.35,'ZXY')));
+    const aimRotation=new T.Quaternion().setFromEuler(new T.Euler(-(pitch+state.kickPitch),pose.headingY+yaw+state.kickYaw,0,'YXZ'));
+    w.quaternion.copy(stowedRotation).slerp(aimRotation,draw.swing);
+    w.scale.setScalar(scale);w.updateWorldMatrix(true,true);
+    const outside=h.arms[0].upper.getWorldPosition(new T.Vector3()).sub(h.arms[1].upper.getWorldPosition(new T.Vector3())).normalize();
+    for(const i of [1,0]){
+      const limb=h.arms[i],weight=i===1?draw.grip:draw.support;
+      if(weight<=0)continue;
+      const target=this.weapon.socket(i===1?sockets.weapon_grip_R:sockets.support_grip_L);
+      const base=limb.foot.getWorldPosition(new T.Vector3()),rotation=limb.foot.getWorldQuaternion(new T.Quaternion());
+      const reach=base.lerp(target,weight);
+      // The empty hand travels upward and outside before closing on the handle.
+      if(i===1&&weight<1)reach.add(new T.Vector3(-.12,.25,-.05).multiplyScalar(Math.sin(weight*Math.PI)*scale).applyQuaternion(heading));
+      const side=i===0?1:-1,pole=outside.clone().multiplyScalar(side*.7).add(new T.Vector3(0,-.65+.85*(1-draw.swing)*(i===1?1:0),-.15).applyQuaternion(heading));
+      const handRotation=w.quaternion.clone().multiply(limb.rotation);
+      solve(limb,reach,pole,rotation.slerp(handRotation,weight));
+      if(i===1&&weight>.999){
+        // Drive the prop from the solved palm, not an independent sliding path.
+        // This also keeps short mascot arms attached without stretching bones.
+        const actual=limb.foot.getWorldPosition(new T.Vector3());
+        w.position.add(actual.sub(target));w.updateWorldMatrix(true,true);
+        this.errorR=limb.foot.getWorldPosition(new T.Vector3()).distanceTo(this.weapon.socket(sockets.weapon_grip_R));
+      }else if(i===0&&weight>.999)this.errorL=limb.foot.getWorldPosition(new T.Vector3()).distanceTo(target);
+    }
+    h.fingers.apply(draw.support>.5?'SupportGrip':'Relaxed',draw.grip>.85?'WeaponGrip':'Relaxed');
     h.root.updateWorldMatrix(true,true);
   }
 }

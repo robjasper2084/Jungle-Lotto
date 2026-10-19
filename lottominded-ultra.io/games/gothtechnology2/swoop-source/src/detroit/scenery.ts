@@ -1,4 +1,5 @@
 import {SpatialUpdateGate,visibleSceneryMatrices} from '@digital-static/ridecore';
+import {WorkSlice} from '../../../ride-core/src/workSlice.ts';
 import {buildJazzClubs} from './jazzClubs.ts';
 import type {SceneryWorld} from './sceneryWorld.ts';
 import {timeLoad} from './loadTiming.ts';
@@ -43,6 +44,8 @@ import {makeTreeBatch,wind} from './trees.ts';
 import {roadwayClearance} from './roadsidePlacement.ts';
 import type {TreeSite} from './trees.ts';
 export async function buildScenery(scene:T.Scene,world:SceneryWorld,polish=true,start?:StreamPoint,onAssetsLoaded?:(root:T.Object3D)=>void){
+  const slice=new WorkSlice();
+  const buildingBounds=world.buildingMeshes.map(b=>{if(!b.geometry.boundingBox)b.geometry.computeBoundingBox();return b.geometry.boundingBox!;});
   let streamedAssets=0;
   const stream=new SpatialAssetStream(1,()=>{const loaded=stream.status.loaded;if(loaded!==streamedAssets){streamedAssets=loaded;onAssetsLoaded?.(scene);}});
   const loader=new GLTFLoader(),tl=new T.TextureLoader();
@@ -94,7 +97,8 @@ export async function buildScenery(scene:T.Scene,world:SceneryWorld,polish=true,
   }
   const surfaceMats=[mats.asphalt,mats.grass,mats.brick];
   const si=(s:SurfaceId)=>s==='grass'?1:s==='brick'?2:0;
-  world.chunks.forEach((c,index)=>{
+  for(const [index,c] of world.chunks.entries()){
+    await slice.checkpoint();
     const g=groups[index],geo=new T.BufferGeometry();geo.setAttribute('position',new T.BufferAttribute(c.vertices,3));
     const uv=new Float32Array(c.vertices.length/3*2);for(let i=0;i<c.vertices.length/3;i++){uv[i*2]=c.vertices[i*3]/2-Math.floor(c.x/2);uv[i*2+1]=c.vertices[i*3+2]/2-Math.floor(c.z/2);}
     geo.setAttribute('uv',new T.BufferAttribute(uv,2));const sorted:number[]=[];
@@ -113,12 +117,12 @@ export async function buildScenery(scene:T.Scene,world:SceneryWorld,polish=true,
       if(fieldSignSightline(x,z)||!grassTreeSite(x,z)||inWaterfrontPond(x,z)||inValadeInlet(x,z)||inValadeBeach(x,z)||WATERFRONT.buildings.filter(b=>['60624913','105519122','777936143','777936147'].includes(b.id)).some(b=>polygonContains(b.points,x,z)))continue;
       if(x<riverEdge(z)+8||roadAt(x,z)||surfaceAt(x,z)!=='grass'||Math.abs(cut.u)<12||world.solids.some(s=>Math.abs(s.x-x)<s.hx+4&&Math.abs(s.z-z)<s.hz+4))continue;
       if(Math.abs(cut.d-1600)<12&&cut.u<-8&&cut.u>-30)continue; // Keep the field artwork and its sightline clear.
-      if(nearestRamp(x,z).distance<5||world.buildingMeshes.some(b=>{b.geometry.computeBoundingBox();const q=b.geometry.boundingBox!;return x>q.min.x-4&&x<q.max.x+4&&z>q.min.z-4&&z<q.max.z+4;}))continue;
+      if(nearestRamp(x,z).distance<5||buildingBounds.some(q=>x>q.min.x-4&&x<q.max.x+4&&z>q.min.z-4&&z<q.max.z+4))continue;
       if(trees.some(t=>Math.hypot(t.x-x,t.z-z)<5))continue;
       trees.push({x,y:heightAt(x,z),z,h:6.5+hash(i+index)*5.5,seed:index*83+i});
     }
     if(trees.length){const batch=makeTreeBatch(trees,skins.bark,foliage,treeTime);batch.group.userData.center={x:c.x,z:c.z};g.add(batch.group);treeBatches.push(batch);}
-  });
+  }
   // Satellite reference shows tree groups around the beach and play loops.
   // Estimated planting sites stay clear of the actual mapped access ribbons.
   const parkTreeSites:TreeSite[]=[];
@@ -192,7 +196,7 @@ export async function buildScenery(scene:T.Scene,world:SceneryWorld,polish=true,
   buildTrailPaint(groupAt,world.chunks);
   const cutMurals=polish?await buildCutMurals(world,groupAt,stream):{walls:0,ceilings:0};
   // Consolidate static geometry by material inside each streamable tile.
-  for(const g of groups)batchStaticGroup(g);
+  for(const g of groups){await slice.checkpoint();batchStaticGroup(g);}
   const grass=polish?await timeLoad('grass',()=>buildGrassField(scene,world,mats.grass)):undefined;
   if(start)await timeLoad('nearby-assets',()=>stream.warm([start],120));world.step();
   const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)'),mobile=matchMedia('(max-width:700px)'),motionOverride=new URLSearchParams(location.search).has('reducedMotion');

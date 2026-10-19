@@ -38,7 +38,9 @@ licenses.push({input:resolve(import.meta.dirname,'../engine/breadflowerdos/upstr
 licenses.push({input:resolve(source,'src/vendor/LICENSE-hls.js.txt'),output:'LICENSE-hls.js.txt'});
 await readableTree(resolve(source,'node_modules/@digital-static/ridecore/LICENSE.txt'));
 await readableTree(resolve(pack,'detroit/licenses'));
-return {name:'swoop-detroit',entry:'index.html',source,soundtrackRoot:resolve(pack,'audio/swoop'),async build(out){
+// Reuse the exact production transforms for local code-only review. A full
+// release still goes through build(), including assets and package validation.
+async function buildCode(out){
 await build({root:source,configFile:false,base:'./',publicDir:false,resolve:{alias:ridecoreAliases,dedupe:['three','@dimforge/rapier3d-compat']},plugins:[reviewCorePlugin(),{
  name:'swoop-store',enforce:'pre',
  transform(code,id){id=id.replaceAll('\\','/');if(!id.includes('/src/'))return;code=code.replaceAll('\r\n','\n');
@@ -60,6 +62,9 @@ await build({root:source,configFile:false,base:'./',publicDir:false,resolve:{ali
  transformIndexHtml(html,ctx){html=html.replace(/\r\n?/g,'\n');if(!ctx.path.endsWith("detroit.html"))return html.replaceAll("./detroit.html","./index.html");return html.replace('<head>', '<head><script>if(new URLSearchParams(location.search).get("map")==="elmwood")location.replace(new URL("../elmwood-explorer/elmwood.html",location.href).href);</script>').replaceAll('\r\n','\n').replace(/<p class="hint"><a href="\.\/rider-studio.html"[\s\S]*?<\/p>/,'').replace('</head>','<meta name="goth-reward-game" content="swoop-detroit"><style>button:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid #dec57c;outline-offset:3px}button{min-height:44px}@media(min-width:1025px) and (pointer:fine){.session{bottom:85px}}@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}</style></head>').replace('</body>','<script type="module" data-swoop-optional src="../reward-tracker.js"></script><script type="module" data-swoop-optional src="../swoop-store-return.js"></script></body>');}
 }],build:{outDir:out,emptyOutDir:true,target:'es2022',rollupOptions:{input:Object.fromEntries(['detroit','royale','rider-studio','companion-studio','traffic-studio'].map(name=>[name,resolve(source,name+'.html')]))}}});
 await rename(resolve(out,'detroit.html'),resolve(out,'index.html'));
+}
+return {name:'swoop-detroit',entry:'index.html',source,soundtrackRoot:resolve(pack,'audio/swoop'),buildCode,async build(out){
+await buildCode(out);
 for(const file of files){const target=resolve(out,file);await mkdir(dirname(target),{recursive:true});await copyFile(resolve(pack,file),target);}
 for(const file of sourceFiles){const target=resolve(out,file);await mkdir(dirname(target),{recursive:true});await copyFile(resolve(source,'public',file),target);}
 await cp(resolve(source,'public/exports/boutique'),resolve(out,'exports/boutique'),{recursive:true});

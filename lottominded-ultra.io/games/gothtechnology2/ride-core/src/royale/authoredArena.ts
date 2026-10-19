@@ -89,6 +89,7 @@ export class AuthoredArena implements TerrainSampler{
  }
  sweep(origin:Vec3,delta:Vec3,radius=0){return this.terrain.sweep(origin,delta,radius);}
  raycastObstacle(o:Vec3,d:Vec3,max:number,w=0,l?:Vec3,out?:ObstacleHit){return this.terrain.raycastObstacle(o,d,max,w,l,out);}
+ surfaceHit(o:Vec3,d:Vec3,max:number){return this.terrain.surfaceHit(o,d,max);}
  raycast(o:Vec3,d:Vec3,max:number){return this.terrain.raycast(o,d,max);}
  line(a:Vec3,b:Vec3,radius=.1){return this.sweep(a,{x:b.x-a.x,y:b.y-a.y,z:b.z-a.z},radius)===null;}
  route(from:Vec3,to:Vec3){const result=this.navigation.path(from,to);

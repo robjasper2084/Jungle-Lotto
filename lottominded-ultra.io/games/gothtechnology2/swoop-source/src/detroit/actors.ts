@@ -29,7 +29,9 @@ import {WheelLights} from './wheelLights.ts';
 type Limb={upper:T.Object3D;knee:T.Object3D;foot:T.Object3D;target:T.Vector3;rotation:T.Quaternion;};
 const v=()=>new T.Vector3(),q=()=>new T.Quaternion();
 export {solveLimb as solve} from '../../../ride-core/src/limbIK.ts';
-function rotateWorld(bone:T.Object3D|undefined,axis:T.Vector3,angle:number){if(!bone)return;const w=bone.getWorldQuaternion(q()).premultiply(q().setFromAxisAngle(axis,angle));bone.quaternion.copy(bone.parent!.getWorldQuaternion(q()).invert().multiply(w));bone.updateWorldMatrix(false,true);}
+// Bone queries update their ancestor path. Publish the whole skeleton at the
+// existing pose boundaries instead of traversing it after every torso joint.
+function rotateWorld(bone:T.Object3D|undefined,axis:T.Vector3,angle:number){if(!bone)return;const w=bone.getWorldQuaternion(q()).premultiply(q().setFromAxisAngle(axis,angle));bone.quaternion.copy(bone.parent!.getWorldQuaternion(q()).invert().multiply(w));bone.updateWorldMatrix(false,false);}
 function prepare(o:T.Object3D){o.traverse(n=>{const m=n as T.Mesh;if(m.isMesh){m.castShadow=true;m.receiveShadow=true;m.frustumCulled=!(m as T.SkinnedMesh).isSkinnedMesh;}});}
 export async function loadActors(){
   const loader=new GLTFLoader(),data=new Map<string,GLTF>();
@@ -140,6 +142,13 @@ export class Hero {
       this.ground.position.y=support-(this.lean.localToWorld(this.axle.clone()).y-p.y);this.root.updateMatrixWorld(true);
     }
     const hips=this.hips;if(!hips)return;
+    // A completed dismount resets every rider bone in applyOnFootRider. Avoid
+    // solving the mounted spine/arms/boots only to overwrite them immediately.
+    // Transition blends, skateboard poses and falls still use the full path.
+    if(p.footMode===2&&p.footBlend>=1&&p.crashBlend<=0&&!this.skateboarding){
+      this.saddle.visible=false;this.vehicle.visible=true;this.skateboard.visible=false;
+      applyOnFootRider(this,p);this.fingers.apply('Relaxed','Relaxed');return;
+    }
     // Once released, posture belongs to the falling body, not the upright wheel.
     const bodyFrame=p.crashMotion?this.rider.matrixWorld:this.lean.matrixWorld;
     const forward=new T.Vector3(0,0,1).transformDirection(bodyFrame),right=new T.Vector3(1,0,0).transformDirection(bodyFrame),up=new T.Vector3(0,1,0).transformDirection(bodyFrame);

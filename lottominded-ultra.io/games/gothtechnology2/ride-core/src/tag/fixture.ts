@@ -1,6 +1,7 @@
 import R from '@dimforge/rapier3d-compat';
 import type {TerrainSampler,GroundSample,Vec3,ObstacleHit} from '../terrain.ts';
 import {staticBoxSweep} from '../staticBoxSweep.ts';
+import {StaticBoxIndex} from '../staticBoxIndex.ts';
 import {takeFixtureBytes,takeFixtureFormat} from '../fixtureBytes.ts';
 import {restoreColliderTransport} from '../colliderTransport.ts';
 let rapierReady:Promise<void>|undefined;
@@ -25,7 +26,8 @@ export const lanePoint=(p:Vec3,l:Lane)=>{const dx=l.b.x-l.a.x,dz=l.b.z-l.a.z,t=M
 export class TagTerrain implements TerrainSampler{
   private readonly support?:Uint8Array;
   private readonly retiredColliders=new Set<number>();
-  private constructor(readonly fixture:TagFixture,readonly physics:R.World){if(fixture.walkable)this.support=Uint8Array.from(atob(fixture.walkable),c=>c.charCodeAt(0));
+  private readonly boxIndex:StaticBoxIndex;
+  private constructor(readonly fixture:TagFixture,readonly physics:R.World){this.boxIndex=new StaticBoxIndex(fixture.staticBoxes??[]);if(fixture.walkable)this.support=Uint8Array.from(atob(fixture.walkable),c=>c.charCodeAt(0));
     for(const handle of fixture.retiredColliderHandles??[])if(physics.getCollider(handle))this.retiredColliders.add(handle);
     if(fixture.retiredBoxes?.length)physics.forEachCollider(c=>{const p=c.translation(),matches=fixture.retiredBoxes!.filter(s=>Math.abs(s.x-p.x)<.025&&Math.abs(s.y-p.y)<.025&&Math.abs(s.z-p.z)<.025);if(!matches.length)return;
       const shape=c.shape;if(shape.type!==R.ShapeType.Cuboid)return;const h=(shape as R.Cuboid).halfExtents;
@@ -62,7 +64,8 @@ export class TagTerrain implements TerrainSampler{
     // Elevated pavement is still solid to bodies and shots. Ground sampling
     // chooses the floor below the feet; it cannot detect a slab through a torso.
     const hit=this.physics.castShape(this.point(origin),{x:0,y:0,z:0,w:1},velocity,new R.Ball(Math.max(.001,radius)),0,length,true,undefined,this.fixture.groundRays?0xffff0006:undefined,undefined,undefined,c=>!this.retiredColliders.has(c.handle));
-    let first=hit?hit.time_of_impact/length:Infinity;for(const box of this.fixture.staticBoxes??[]){const prop=staticBoxSweep(this.point(origin),{x:delta.x*t.sx,y:delta.y,z:delta.z},radius,box);if(prop!==null)first=Math.min(first,prop);}return Number.isFinite(first)?first:null;}
+    const o=this.point(origin),d={x:delta.x*t.sx,y:delta.y,z:delta.z};
+    let first=hit?hit.time_of_impact/length:Infinity;for(const box of this.boxIndex.query(o,d,radius)){const prop=staticBoxSweep(o,d,radius,box);if(prop!==null)first=Math.min(first,prop);}return Number.isFinite(first)?first:null;}
   raycastObstacle(origin:Vec3,direction:Vec3,max:number,halfWidth=0,_lateral?:Vec3,out?:ObstacleHit){
     const length=Math.hypot(direction.x,direction.y,direction.z);if(length<1e-9)return null;
     const hit=this.sweep(origin,{x:direction.x/length*max,y:direction.y/length*max,z:direction.z/length*max},halfWidth);
@@ -76,6 +79,17 @@ export class TagTerrain implements TerrainSampler{
         if([[0,0],[halfWidth,0],[-halfWidth,0],[0,halfWidth],[0,-halfWidth]].some(([u,v])=>!this.supported(x+u,z+v))){distance=d;break;}}
     }
     if(distance===null)return null;if(out)Object.assign(out,{distance,halfExtentX:.5,halfExtentZ:.5});return distance;
+  }
+  surfaceHit(origin:Vec3,direction:Vec3,max:number){
+    const t=this.fixture.transform,n=Math.hypot(direction.x,direction.y,direction.z)||1,o=this.point(origin),d={x:t.sx*direction.x/n,y:direction.y/n,z:direction.z/n};
+    const hit=this.physics.castRayAndGetNormal(new R.Ray(o,d),max,false,undefined,this.fixture.groundRays?0xffff0007:undefined,undefined,undefined,c=>!this.retiredColliders.has(c.handle));
+    let result=hit?{distance:hit.timeOfImpact,normal:{x:hit.normal.x*t.sx,y:hit.normal.y,z:hit.normal.z}}:null;
+    const segment={x:d.x*max,y:d.y*max,z:d.z*max};
+    for(const box of this.boxIndex.query(o,segment)){const f=staticBoxSweep(o,segment,0,box);if(f===null||result&&f*max>=result.distance)continue;
+      const c=Math.cos(box.yaw),s=Math.sin(box.yaw),x=o.x+d.x*f*max-box.x,z=o.z+d.z*f*max-box.z,local={x:c*x-s*z,y:o.y+d.y*f*max-box.y,z:s*x+c*z};
+      const axis=([['x',box.hx],['y',box.hy],['z',box.hz]] as Array<['x'|'y'|'z',number]>).sort((a,b)=>Math.abs(Math.abs(local[a[0]])-a[1])-Math.abs(Math.abs(local[b[0]])-b[1]))[0][0];
+      const normal={x:axis==='x'?Math.sign(local.x):0,y:axis==='y'?Math.sign(local.y):0,z:axis==='z'?Math.sign(local.z):0};result={distance:f*max,normal:{x:(c*normal.x+s*normal.z)*t.sx,y:normal.y,z:-s*normal.x+c*normal.z}};
+    }return result;
   }
   raycast(origin:Vec3,direction:Vec3,max:number){const solid=this.raycastObstacle(origin,direction,max);const n=Math.hypot(direction.x,direction.y,direction.z)||1;
     if(this.fixture.groundRays){const t=this.fixture.transform,hit=this.physics.castRay(new R.Ray(this.point(origin),{x:t.sx*direction.x/n,y:direction.y/n,z:direction.z/n}),max,true,undefined,0xffff0005);

@@ -29,7 +29,7 @@ licenses.push({input:resolve(import.meta.dirname,'../engine/breadflowerdos/upstr
 await readableTree(soundtrackRoot);
 for(const file of files)await readableTree(resolve(source,'public',file));
 await readableTree(resolve(source,'node_modules/@digital-static/ridecore/dist'));
-return {name:'elmwood-explorer',entry:'elmwood.html',source,async build(out){
+async function buildCode(out){
 await build({root:source,configFile:false,base:'./',publicDir:false,resolve:{alias:ridecoreAliases,dedupe:['three','@dimforge/rapier3d-compat']},plugins:[reviewCorePlugin(),{name:'elmwood-explorer-store',enforce:'pre',
  transform(code,id){id=id.replaceAll('\\','/');if(!id.includes('/src/'))return;
   code=code.replace(/(['"`])\/(elmwood|exports|audio)\//g,'$1./$2/');
@@ -41,6 +41,9 @@ await build({root:source,configFile:false,base:'./',publicDir:false,resolve:{ali
  },
  transformIndexHtml(html){return html.replaceAll('"/elmwood/','"./elmwood/').replace('<a href="/">Return to Detroit ride</a>','<a href="../swoop-detroit/" target="_top">Return to Swoop Detroit</a>').replace('</head>',`<style>${css}</style></head>`).replace('</body>',`<script>${js}</script></body>`);}
 }],build:{outDir:out,emptyOutDir:true,target:'es2022',rollupOptions:{input:resolve(source,'elmwood.html'),output:{banner:'/*! EUC Thrills (c) 2026 VibezZzCoder, MIT. Digital Static adaptation and RideCore. */'}}}});
+}
+return {name:'elmwood-explorer',entry:'elmwood.html',source,buildCode,async build(out){
+await buildCode(out);
 const textures=new Set();let total=0;
 // A local rebuild can reuse its own already-extracted immutable textures/models.
 // Live builds always repack from source. Newer source models invalidate the cache.

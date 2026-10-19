@@ -39,6 +39,7 @@ import {followStableSun} from './stableSun.ts';
 import {riderEyeMotion,RIDER_EYE_PITCH} from '@digital-static/ridecore';
 import {loadingCinema} from './loadingCinema.ts';
 import {boot,bootStage,bootProgress,renderBoot,failBoot} from './bootUi.ts';
+import {warmFirstView} from './warmFirstView.ts';
 import {BicycleAdapter} from './bicycleAdapter.ts';
 import {LaneRoute} from '@digital-static/ridecore/cycling';
 import {BicycleView,BIKE_STYLES,CyclingSession} from '@digital-static/ridecore/cycling-view';
@@ -594,8 +595,21 @@ try{
   sim=new BicycleAdapter(riderTerrain);sim.mountedVolume=hero.mountedVolume;sim.wheelScale=selectedRider.startsWith('DS_Mascot_')?.75:.86;reset();
   if(!elmwood){community=new CyclingSession('Swoop Detroit',scene,actorData,world.withActorPassThrough(computerBikeContact),new LaneRoute(Array.from({length:31},(_,i)=>({...routePosition(850+i*5),width:5}))),()=>current,travelCommunity,()=>canvas.focus());community.ride.passThroughContact=o=>computerBikeContact(o);ambientPacks=new AmbientCyclistPacks(scene,actorData,world,cyclistCircuit(Array.from({length:100},(_,i)=>({...routePosition(60+i*(LENGTH-120)/99),width:5}))));canvas.dataset.ambientPackSizes='10,10';canvas.dataset.ambientPackStarts=JSON.stringify(ambientPacks.starts);}
   boot.assertActive();
+  bootStage('preparing','Preparing the first view…');
+  if(!qaVisualBaseline&&!night)toggleLight();
+  graphics.apply();
+  const initialMap=toMap(current.x,current.y,current.z);
+  scenery.update(initialMap.x,initialMap.z,0);
+  hero.apply(current);
+  camera.position.set(current.x+Math.sin(current.headingY)*5,current.y+2.05,current.z+Math.cos(current.headingY)*5);
+  camera.lookAt(current.x,current.y+1.1,current.z);camera.fov=52;camera.updateProjectionMatrix();
+  followStableSun(sun,current,night?DUSK_SUN:DAY_SUN);
+  // Upload only the visible starting district, yielding between textures so the
+  // startup movie and input are serviced before the first full render.
+  await timeLoad('first-view',()=>warmFirstView(renderer,scene,camera));
+  boot.assertActive();
   if(!boot.finish(!!actorData.get(selectedRider),!!SPOTS[Number($<HTMLSelectElement>('spawn').value)],!!scenery,!!sim))throw new Error('Rider, start location, scene or controller is unavailable');
-  if(!qaVisualBaseline&&!night)toggleLight();canvas.dataset.lighting='shared-cinematic-dusk';renderBoot();graphics.apply();ready=true;loop.ready();canvas.dataset.ready='true';canvas.dataset.bootProfile=JSON.stringify(loadTimings);canvas.dataset.firstPlayableMs=String(Math.round(performance.now()-bootStarted));canvas.dataset.hero=selectedRider;canvas.dataset.controller=RIDE_TUNING.version;canvas.dataset.physics='Rapier terrain + Digital Static controller';canvas.dataset.routeLength=String(LENGTH);$('loading').hidden=true;$<HTMLButtonElement>('start').disabled=false;quickPractice.disabled=false;document.querySelectorAll<HTMLButtonElement>('.districtCard').forEach(b=>b.disabled=false);
+  canvas.dataset.lighting='shared-cinematic-dusk';renderBoot();ready=true;loop.ready();canvas.dataset.ready='true';canvas.dataset.bootProfile=JSON.stringify(loadTimings);canvas.dataset.firstPlayableMs=String(Math.round(performance.now()-bootStarted));canvas.dataset.hero=selectedRider;canvas.dataset.controller=RIDE_TUNING.version;canvas.dataset.physics='Rapier terrain + Digital Static controller';canvas.dataset.routeLength=String(LENGTH);$('loading').hidden=true;$<HTMLButtonElement>('start').disabled=false;quickPractice.disabled=false;document.querySelectorAll<HTMLButtonElement>('.districtCard').forEach(b=>b.disabled=false);
   setCamera('front');
   if(new URLSearchParams(location.search).get('launch')==='quest')void vr.enterFromPackage();
 }catch(e){console.error(e);failBoot(e);}
@@ -645,7 +659,7 @@ function frameSplit(now:number,dt:number){
 function frame(now:number,xrFrame?:XRFrame){
   const frameCpuStarted=performance.now(),frameProfile:Record<string,number>={};
   bikeRecover.hidden=!(ready&&running&&sim?.cycling&&!vr.active&&!film.playing&&$('menu').hidden);
-  if(!ready||boot.stage==='error'||(document.hidden&&!vr.active)){last=now;return;}
+  if(!ready||boot.stage==='error'||(document.hidden&&!vr.active)||(!running&&!$('startupPreview').hidden)){last=now;return;}
   if(!frameSchedule.shouldRender(now,(!running||paused)&&!film.playing&&!gallery?.active&&!boutique?.active,vr.active,jazzVisit?.active?10:graphics.current.fps))return;
   const rawFrameMs=Math.max(0,now-last),dt=Math.min(rawFrameMs/1000,.06);last=now;
   sky.tick(dt,scene.fog?.color,graphics.current.shadows===0,reducedAtmosphereMotion.matches||document.documentElement.dataset.reducedMotion==='true'||atmosphereMotionOverride,paused);if(now-hudAt>120)canvas.dataset.atmosphere=JSON.stringify(sky.status);

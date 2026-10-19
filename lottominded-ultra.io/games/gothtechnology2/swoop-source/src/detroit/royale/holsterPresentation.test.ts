@@ -6,16 +6,52 @@ import {Hero} from '../actors.ts';
 import {RIDER_CHOICES} from '../riderChoices.ts';
 import {CombatRig} from './combatRig.ts';
 import {FirstPersonView} from './firstPersonView.ts';
-import {EquipmentLibrary,WeaponView,EQUIPMENT_KINDS} from './equipment.ts';
+import {EquipmentLibrary,WeaponView,EQUIPMENT_KINDS,CAMERA_SIGHTS} from './equipment.ts';
 import {createPose} from '../controller.ts';
 import {initialCombat,type Weapon} from '../../../../ride-core/src/royale/rules.ts';
+import {cameraDrawPose} from '../../../../ride-core/src/royale/cameraDraw.ts';
 test('all five heroes keep stowed barrels above ground through crouch/prone and can heal in first person',async()=>{
  const assets=await heroAssets(),models=new Map();
  for(const kind of EQUIPMENT_KINDS)models.set(kind,await rigModel(new URL('../../../public/exports/polish/royale-equipment/'+kind+'.glb',import.meta.url)));
- const library=new EquipmentLibrary(models);
+ const repairUse=await rigModel(new URL('../../../public/exports/polish/royale-equipment/repair-use.glb',import.meta.url));
+ const library=new EquipmentLibrary(models,repairUse);
+ for(const kind of ['static','heart','bass'] as Weapon[]){const model=library.create(kind);model.root.updateMatrixWorld(true);const sight=new T.Vector3(...CAMERA_SIGHTS[kind]),ray=new T.Raycaster(sight.clone().add(new T.Vector3(0,0,-.6)),new T.Vector3(0,0,1),0,1.5);assert.equal(ray.intersectObject(model.root,true).length,0,kind+' ADS clears the camera housing');model.dispose();}
  for(const {id}of RIDER_CHOICES){
   const hero=new Hero(assets,undefined,id),weapon=new WeaponView(library),rig=new CombatRig(hero,weapon);
   const state=initialCombat();state.holster={stowed:true,from:0,to:0,start:0,end:0};
+  // Verify actual hand transforms through both directions of the authored take.
+  for(const reverse of [false,true])for(const footMode of [0,2]){
+   let previous:T.Vector3|undefined;
+   for(let frame=0;frame<=64;frame++){
+    const ready=(reverse?64-frame:frame)/64,draw=cameraDrawPose(ready);
+    state.holster={stowed:reverse,from:ready,to:ready,start:0,end:0};
+    const pose={...createPose(),x:4,z:7,headingY:.7,footMode,footBlend:footMode===2?1:0};
+    hero.apply(pose);rig.apply(pose,.35,.12,state,100);
+    if(draw.grip>.999)assert(rig.errorR<.0001,id+' dominant grip remains attached '+ready);
+    if(draw.support>.999)assert(rig.errorL<.055*hero.motionScale,id+' support joins under camera '+rig.errorL);
+    const point=weapon.root.position.clone();
+    if(previous)assert(point.distanceTo(previous)<.11*hero.motionScale,id+' no draw/holster teleport '+ready+' '+point.distanceTo(previous));
+    previous=point;
+   }
+  }
+  state.holster={stowed:true,from:0,to:0,start:0,end:0};
+  // A stowed weapon remains attached to the upper torso and does not pin hands.
+  let backLocal:T.Vector3|undefined;
+  for(const headingY of [0,.9,-2.2])for(const footCycle of [0,.2,.6,.9]){
+   const pose={...createPose(),x:4,z:7,headingY,footMode:2,footBlend:1,footCycle,speed:2};
+   hero.apply(pose);hero.root.updateWorldMatrix(true,true);
+   const hands=hero.arms.map(limb=>limb.foot.getWorldPosition(new T.Vector3()));
+   rig.apply(pose,0,0,state,100);
+   const chest=hero.chest??hero.rider,local=chest.worldToLocal(weapon.root.getWorldPosition(new T.Vector3()));
+   if(!backLocal)backLocal=local.clone();else assert(local.distanceTo(backLocal)<1e-5,id+' back attachment follows stride and turning');
+   hero.arms.forEach((limb,i)=>assert(limb.foot.getWorldPosition(new T.Vector3()).distanceTo(hands[i])<1e-5,id+' released hand swings freely'));
+   if(headingY===0&&footCycle===0){
+    const back=weapon.root.getWorldPosition(new T.Vector3()).sub(chest.getWorldPosition(new T.Vector3()));
+    assert(back.z<-.15*hero.motionScale,id+' weapon is behind torso');
+    const barrel=new T.Vector3(0,0,1).applyQuaternion(weapon.root.getWorldQuaternion(new T.Quaternion()));
+    assert(barrel.y>.7,id+' barrel points above the shoulder');
+   }
+  }
   for(const kind of ['static','heart','bass'] as Weapon[]){weapon.select(kind);
    for(const prone of [0,.25,.5,.75,1])for(const crouch of [0,1]){
     const pose={...createPose(),footMode:2,footBlend:1,footProne:prone,footCrouch:crouch};
@@ -29,6 +65,24 @@ test('all five heroes keep stowed barrels above ground through crouch/prone and 
   fp.update(pose,state,'static',100,0,0,camera,1/60,false,false,false,terrain);assert(!fp.root.visible);
   for(let tick=101;tick<125;tick++)fp.update(pose,state,'static',tick,0,0,camera,1/60,false,false,false,terrain,200);
   assert(fp.root.visible,id+' healing hands');assert(fp.root.getObjectByName('Held health pack')?.visible,id+' health pack');
+  const pack=fp.root.getObjectByName('Held health pack')!,center=new T.Box3().setFromObject(pack).getCenter(new T.Vector3());
+  const projected=center.clone().project(camera);
+  assert(Math.abs(projected.x)<.65&&projected.y>-.7&&projected.y<.3&&projected.z<1,id+' pack stays inside the first-person view');
+  rig.hideHandheld();assert(!hero.root.getObjectByName('Held health pack')!.visible,id+' world prop can be masked independently');
+  assert(pack.visible,id+' view prop survives the world mask');
+  state.holster={stowed:false,from:1,to:1,start:0,end:0};
+  for(const footMode of [0,2])for(const ads of [false,true]){
+   const view=fp.update({...pose,footMode,footBlend:footMode?1:0},state,'static',220,0,0,camera,1/60,false,ads,false,terrain);
+   assert(fp.root.visible,id+' hands view is active '+footMode);
+   assert(view.rigRight<.0001,id+' dominant hand stays on grip');
+   assert(view.rigLeft<.065*hero.motionScale,id+' support hand stays on weapon');
+   const sleeves=fp.root.children.filter(o=>o.name==='First-person fitted sleeve');
+   assert.equal(sleeves.filter(o=>o.visible).length,2,id+' both sleeves visible');
+   if(!ads)for(const side of ['Left','Right']){
+    const hand=fp.root.getObjectByName(side+'Hand')!.getWorldPosition(new T.Vector3()).project(camera);
+    assert(Math.abs(hand.x)<.95&&hand.y>-.92&&hand.y<.4&&hand.z<1,id+' '+side+' grip stays on screen: '+hand.toArray());
+   }
+  }
   fp.dispose();hero.dispose();weapon.dispose();
  }
  library.dispose();

@@ -1,4 +1,5 @@
 import {HERO_ACTIONS} from './heroActionData.ts';
+import {CAMERA_DRAW_TICKS} from './royale/cameraDraw.ts';
 const clamp=(n:number)=>Math.max(0,Math.min(1,n));
 /** Small baked control curves, shared by all rigs; no extra model downloads. */
 export function sampleHeroAction(name:keyof typeof HERO_ACTIONS,phase:number){
@@ -6,4 +7,4 @@ export function sampleHeroAction(name:keyof typeof HERO_ACTIONS,phase:number){
  return rows[i].map((n,k)=>n+(rows[j][k]-n)*(f-i));
 }
 export function standingIdle(time:number){return sampleHeroAction('idle',((time%8)+8)%8/8);}
-export const WEAPON_DRAW_TICKS=Math.ceil(HERO_ACTIONS.draw.duration*60);
+export const WEAPON_DRAW_TICKS=CAMERA_DRAW_TICKS;

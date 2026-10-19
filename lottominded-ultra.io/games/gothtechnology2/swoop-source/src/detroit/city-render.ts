@@ -1,4 +1,6 @@
 import {batchStaticGroup} from './static-batch.ts';
+import {WorkSlice} from '../../../ride-core/src/workSlice.ts';
+import {buildingFacade,alignBuildingFacade} from './buildingFacade.ts';
 import type {SceneryWorld} from './sceneryWorld.ts';
 import type {SpatialAssetStream} from './spatialAssetStream.ts';
 import * as T from 'three';
@@ -19,6 +21,7 @@ import {loadStreetSurfaceCache} from './streetSurfaceCache.ts';
 
 /** Mapped polygons own both visible structure and collision. Facades remain authored art. */
 export async function buildCity(_scene:T.Scene,world:SceneryWorld,groupAt:(x:number,z:number)=>T.Group,skins:Record<string,T.MeshStandardMaterial>,stream?:SpatialAssetStream){
+ const slice=new WorkSlice();
  const loader=new T.TextureLoader();
  const maps=await Promise.all(['industrial_red','industrial_buff','storefront'].map(n=>loader.loadAsync('/textures/architecture/'+n+'.jpg')));
  maps.forEach(t=>{t.colorSpace=T.SRGBColorSpace;t.wrapS=t.wrapT=T.RepeatWrapping;t.anisotropy=8;});
@@ -49,6 +52,7 @@ export async function buildCity(_scene:T.Scene,world:SceneryWorld,groupAt:(x:num
  }
  const junctions=new Set<string>();
  if(!cached)for(const road of CITY.roads)for(let i=1;i<road.points.length;i++){
+   await slice.checkpoint();
    const a=road.points[i-1],b=road.points[i],dx=b[0]-a[0],dz=b[1]-a[1],length=Math.hypot(dx,dz),x=(a[0]+b[0])/2,z=(a[1]+b[1])/2;
    if(length<.2)continue;
    const walk=['cycleway','footway','path','pedestrian'].includes(road.kind),width=(road.name==='Dequindre Cut Greenway'?cutWidth(nearestCut(x,z).d):road.width)/2;
@@ -116,7 +120,7 @@ export async function buildCity(_scene:T.Scene,world:SceneryWorld,groupAt:(x:num
  }
  const surfaces:Array<[T.Group,Array<[T.Material,number[]|Float32Array]>]>=cached?cached.tiles.map(t=>[groupAt(t.x,t.z),[[cacheMaterials[t.material],cached.positions.subarray(t.offset,t.offset+t.count)]]]):[...paths].map(([g,bins])=>[g,[...bins]]);
  if(cached){streetSections=cached.sections;streetTriangles=cached.triangles;}
- for(const[g,bins]of surfaces)for(const[material,positions]of bins){if(!material)throw Error('Unknown cached street material');const geo=new T.BufferGeometry();geo.userData.streetCacheMaterial=Object.keys(cacheMaterials).find(k=>cacheMaterials[k]===material);geo.setAttribute('position',positions instanceof Float32Array?new T.BufferAttribute(positions,3):new T.Float32BufferAttribute(positions,3));
+ for(const[g,bins]of surfaces)for(const[material,positions]of bins){await slice.checkpoint();if(!material)throw Error('Unknown cached street material');const geo=new T.BufferGeometry();geo.userData.streetCacheMaterial=Object.keys(cacheMaterials).find(k=>cacheMaterials[k]===material);geo.setAttribute('position',positions instanceof Float32Array?new T.BufferAttribute(positions,3):new T.Float32BufferAttribute(positions,3));
    // These ribbons can sit above the bank terrain and extend beyond the deck.
    // Share their exact surface with riding, dog paws, falls and camera queries.
    if(material!==paint&&material!==whitePaint&&material!==seam)world.addRideSurface(geo.attributes.position.array as Float32Array);
@@ -125,15 +129,19 @@ export async function buildCity(_scene:T.Scene,world:SceneryWorld,groupAt:(x:num
  const residential=new Map([[3,orleansMaterial(3)],[4,orleansMaterial(4)]]);
  const landmarks:string[]=[];
  for(const{data:b,geometry:geo}of world.buildingMeshes){
+   await slice.checkpoint();
    if(b.id==='777936143')continue; // Original Blender Shed replaces generic facade, retaining footprint collision.
    geo.computeBoundingBox();const bounds=geo.boundingBox!,center=bounds.getCenter(new T.Vector3()),g=groupAt(center.x,center.z);
-   const pos=geo.getAttribute('position'),normal=geo.getAttribute('normal'),uv=geo.getAttribute('uv');
-   // Eight metre facade repeat preserves plausible door/window scale.
-   for(let i=0;i<pos.count;i++)uv.setXY(i,(Math.abs(normal.getX(i))>.5?pos.getZ(i):pos.getX(i))/8,pos.getY(i)/7.5);
+   const visual=buildingFacade(geo,b.points,heightAt),pos=visual.facade.getAttribute('position'),normal=visual.facade.getAttribute('normal'),uv=visual.facade.getAttribute('uv');
+   alignBuildingFacade(visual.facade,visual.base,visual.top);
    const floors=orleansFloors(b.id);
-   if(floors)for(let i=0;i<pos.count;i++)uv.setXY(i,(Math.abs(normal.getX(i))>.5?pos.getZ(i):pos.getX(i))/9.6,(pos.getY(i)-bounds.min.y)/(floors*3.3));
-   const side=floors?residential.get(floors)!:facades[Math.floor(hash(Number(b.id))*facades.length)];
-   const mesh=new T.Mesh(geo,[roof,side]);mesh.name='OSM '+b.id+' '+b.name;mesh.userData={osmId:b.id,source:'OSM footprint; facade and height require visual verification'};mesh.castShadow=mesh.receiveShadow=true;g.add(mesh);
+   if(floors)for(let i=0;i<pos.count;i++)uv.setXY(i,(Math.abs(normal.getX(i))>.5?pos.getZ(i):pos.getX(i))/9.6,(pos.getY(i)-visual.base)/(visual.top-visual.base));
+   // Tall blocks use window floors, never repeat ground-level shop doors on every storey.
+   const variant=Math.floor(hash(Number(b.id))*facades.length),shop=variant===2&&visual.top-visual.base<5;
+   if(shop)alignBuildingFacade(visual.facade,visual.base,visual.top,1,3.3,4);
+   const side=floors?residential.get(floors)!:facades[shop?2:variant%2];
+   const mesh=new T.Mesh(visual.facade,[roof,side]);mesh.name='OSM '+b.id+' '+b.name;mesh.userData={osmId:b.id,source:'OSM footprint; ground-aligned facade',facadeBase:visual.base};mesh.castShadow=mesh.receiveShadow=true;g.add(mesh);
+   if(visual.foundation){const foundation=new T.Mesh(visual.foundation,skins.concrete);foundation.name='Foundation '+b.id;foundation.castShadow=foundation.receiveShadow=true;g.add(foundation);}
    // Cornice follows every polygon edge, including non-rectangular footprints.
    for(let i=1;i<b.points.length;i++){
      const a=b.points[i-1],c=b.points[i],len=Math.hypot(c[0]-a[0],c[1]-a[1]);if(len<.6)continue;
