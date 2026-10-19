@@ -29,6 +29,7 @@ function plant(paw:Paw,target:T.Vector3,pole:T.Vector3,rotation:T.Quaternion){
   paw.foot.quaternion.copy(paw.foot.parent!.getWorldQuaternion(q()).invert().multiply(rotation));paw.foot.updateWorldMatrix(false,true);
 }
 export class CompanionView {
+  private materials=new Map<T.Material,T.Material>();private disposed=false;
   private commandActions:T.AnimationAction[]=[];private powerActions=new Map<string,T.AnimationAction>();
   root=new T.Group();ground=new T.Group();model:T.Object3D;mixer:T.AnimationMixer;gait='idle';
   paws:Paw[]=[];private blendedSpeed=0;private lastTime=-1;private lastPosition=v();private sample=createGroundSample();
@@ -55,7 +56,23 @@ export class CompanionView {
       if(!ankle)throw new Error('Boerboel articulated gait asset required: missing '+prefix+'_ankle_'+side);
       this.paws.push({upper,lower,ankle,foot,restHeight:foot.getWorldPosition(v()).y,anchor:null,contact:0});
     }
-    this.model.traverse(o=>{if((o as T.Mesh).isMesh){o.castShadow=true;o.receiveShadow=true;o.frustumCulled=!(o as T.SkinnedMesh).isSkinnedMesh;}});
+    this.model.traverse(o=>{const mesh=o as T.Mesh;if(!mesh.isMesh)return;
+      // Keep the supplied coat artwork, but do not treat fur as reflective metal.
+      // Own only the materials: textures and geometry remain shared asset data.
+      const coat=(source:T.Material)=>{let material=this.materials.get(source);if(material)return material;
+        material=source.clone();if((material as T.MeshStandardMaterial).isMeshStandardMaterial){
+          const fur=material as T.MeshStandardMaterial;fur.metalness=0;fur.metalnessMap=null;
+          fur.roughness=.94;fur.roughnessMap=null;fur.normalScale.multiplyScalar(.5);
+        }this.materials.set(source,material);return material;};
+      mesh.material=Array.isArray(mesh.material)?mesh.material.map(coat):coat(mesh.material);
+      o.castShadow=true;o.receiveShadow=true;o.frustumCulled=!(o as T.SkinnedMesh).isSkinnedMesh;
+    });
+  }
+  dispose(){
+    if(this.disposed)return;this.disposed=true;this.mixer.stopAllAction();this.mixer.uncacheRoot(this.model);
+    const skeletons=new Set<T.Skeleton>();this.model.traverse(o=>{if((o as T.SkinnedMesh).isSkinnedMesh)skeletons.add((o as T.SkinnedMesh).skeleton);});
+    for(const skeleton of skeletons)skeleton.dispose();
+    for(const material of this.materials.values())material.dispose();this.materials.clear();this.root.removeFromParent();
   }
   reactToRider(hero:{x:number;z:number;speed:number},p:DogPose){
     if(p.speed>.5||Math.abs(hero.speed)>.3)return;
@@ -105,7 +122,9 @@ export class CompanionView {
     for(const [i,paw] of this.paws.entries()){
       if(commanded>.01){paw.anchor=null;continue;}
       const animated=paw.foot.getWorldPosition(v()),rotation=paw.foot.getWorldQuaternion(q());
-      const contact=jumping?0:pawContact(gaitSpeed,p.phase,i);paw.contact=contact;
+      // A two-percent phase ramp released a planted paw in one render frame.
+      // Ease the visual IK contact over several frames; simulation is unchanged.
+      const contact=jumping?0:pawContact(gaitSpeed,p.phase,i,.07);paw.contact=contact;
       if(contact<.05||gaitSpeed<.04)paw.anchor=null;
       if(!reset&&p.time>0&&gaitSpeed>.04&&contact>.75&&!paw.anchor)paw.anchor=animated.clone();
       // Release an unreachable planted foot after an emergency collision/recovery.
