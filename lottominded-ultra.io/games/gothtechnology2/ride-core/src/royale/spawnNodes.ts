@@ -19,10 +19,20 @@ export function initialSpawnNodes(nodes:readonly SpawnNode[],count:number,seed:n
  const clusters=shuffled([...new Set(nodes.map(n=>n.cluster))],seed),ordered=clusters.flatMap((c,i)=>shuffled(nodes.filter(n=>n.cluster===c),seed+i*7919));
  if(count>ordered.length)throw Error('Not enough distinct spawn nodes');return ordered.slice(0,count);
 }
+/** Extra predetermined recovery sites, spaced over the connected navigation
+ * graph. Starting clusters remain unchanged; one enemy cannot block a sector. */
+export function configuredRecoveryNodes(nodes:readonly Vec3[],starts:readonly SpawnNode[],center:Vec3,clear:(p:Vec3)=>boolean):SpawnNode[]{
+ const out:SpawnNode[]=[];
+ for(const p of [...nodes].sort((a,b)=>distance(a,center)-distance(b,center)||a.x-b.x||a.z-b.z)){
+  if([...starts,...out].some(n=>distance(n.position,p)<100)||!clear(p))continue;
+  out.push({id:'recovery-'+out.length,cluster:'recovery',position:{...p},headingY:Math.atan2(center.x-p.x,center.z-p.z)});
+ }
+ return out;
+}
 export function recoveryNodes(terrain:BattleTerrain,nodes:readonly SpawnNode[],dead:Vec3,oldNode:string,live:readonly Vec3[],field:{x:number;z:number;radius:number},seed:number){
  const nearest=[...nodes].sort((a,b)=>distance(a.position,dead)-distance(b.position,dead))[0]?.id;
  return shuffled(nodes,seed).filter(n=>n.id!==oldNode&&n.id!==nearest&&distance(n.position,dead)>=100&&live.every(p=>distance(n.position,p)>=90)&&Math.hypot(n.position.x-field.x,n.position.z-field.z)<field.radius-30&&terrain.clear(n.position.x,n.position.z,.8,n.position.y));
 }
 
 export function recoveryNode(...args:Parameters<typeof recoveryNodes>){return recoveryNodes(...args)[0];}
-export function spawnLabel(node:SpawnNode){const sector:Record<string,string>={atwater:'Atwater waterfront',chene:'Chene riverfront',cut:'Dequindre Cut',mack:'Mack Avenue',legacy:'Arena'};return (sector[node.cluster]??node.cluster)+' · Point '+(Number(node.id.split('-').at(-1))+1);}
+export function spawnLabel(node:SpawnNode){const sector:Record<string,string>={atwater:'Atwater waterfront',chene:'Chene riverfront',cut:'Dequindre Cut',mack:'Mack Avenue',recovery:'Downtown recovery',legacy:'Arena'};return (sector[node.cluster]??node.cluster)+' · Point '+(Number(node.id.split('-').at(-1))+1);}

@@ -38,3 +38,9 @@ test('a nearby muzzle obstruction is reported even when the camera can see the t
  const terrain={raycast:(_o:unknown,_d:unknown,max:number)=>max<=2?.3:null} as unknown as BattleTerrain;
  assert(fpsAim(p,'DS_Armored_Rider_01',0,0,0,0,terrain,[],{origin,range:500,kickYaw:0,kickPitch:0}).blocked);
 });
+
+test('camera shoulders clear thin posts and billboard edges without changing the viewing axis',()=>{
+ const anchor=new Vector3(0,1.5,0),eye=new Vector3(0,1.8,-3),direction=eye.clone().sub(anchor).normalize();
+ retractCombatCamera(eye,anchor,o=>Math.abs(o.x)>.1?1.1:null,0);
+ assert(eye.distanceTo(anchor)<1);assert(eye.clone().sub(anchor).normalize().distanceTo(direction)<1e-7);
+});

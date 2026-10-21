@@ -23,8 +23,8 @@ export async function buildGrassField(scene:T.Scene,world:SceneryWorld,ground:T.
  albedo.colorSpace=T.SRGBColorSpace;albedo.wrapS=albedo.wrapT=T.RepeatWrapping;albedo.anisotropy=8;
  ground.map?.dispose();ground.normalMap?.dispose();ground.roughnessMap?.dispose();ground.map=albedo;normal.wrapS=normal.wrapT=T.RepeatWrapping;normal.anisotropy=4;ground.normalMap=normal;ground.normalScale.set(.35,.35);ground.roughnessMap=null;ground.color.set('#ffffff');ground.roughness=1;ground.needsUpdate=true;
  // Broad, restrained colour variation breaks tile repetition without painted shadows.
- ground.onBeforeCompile=s=>{s.vertexShader=s.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 fieldWorld;').replace('#include <begin_vertex>','#include <begin_vertex>\nfieldWorld=position;');s.fragmentShader=s.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 fieldWorld;').replace('#include <map_fragment>','#include <map_fragment>\nfloat meadowVariation=sin(fieldWorld.x*.093+sin(fieldWorld.z*.041))*sin(fieldWorld.z*.067); diffuseColor.rgb*=mix(vec3(.88,.94,.82),vec3(1.05,1.03,.97),meadowVariation*.5+.5);\nif(fieldWorld.x> -360.0 && fieldWorld.x<30.0 && fieldWorld.z< -1010.0 && fieldWorld.z> -2000.0) diffuseColor.rgb*=vec3(.70,1.04,.61);');};
- ground.customProgramCacheKey=()=> 'swoop-field-ground-park-2';
+ ground.onBeforeCompile=s=>{s.vertexShader=s.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 fieldWorld;').replace('#include <begin_vertex>','#include <begin_vertex>\nfieldWorld=position;');s.fragmentShader=s.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 fieldWorld;').replace('#include <map_fragment>','#include <map_fragment>\nfloat meadowVariation=sin(dot(fieldWorld.xz,vec2(.071,.113))+sin(dot(fieldWorld.xz,vec2(.019,-.043)))*2.1)*.65+sin(dot(fieldWorld.xz,vec2(-.137,.051)))*.35; diffuseColor.rgb*=mix(vec3(.88,.94,.82),vec3(1.05,1.03,.97),meadowVariation*.5+.5);\nif(fieldWorld.x> -360.0 && fieldWorld.x<30.0 && fieldWorld.z< -1010.0 && fieldWorld.z> -2000.0) diffuseColor.rgb*=vec3(.70,1.04,.61);');};
+ ground.customProgramCacheKey=()=> 'swoop-field-ground-park-3';
  asset.scene.updateMatrixWorld(true);const meshes=new Map<string,T.Mesh>();asset.scene.traverse(o=>{if(o instanceof T.Mesh)meshes.set(o.name,o);});
  const names=['GrassTuft','DryTuft','CloverPatch'],time={value:0},rider={value:new T.Vector3(1e6,0,1e6)},materials:T.MeshStandardMaterial[]=[];
  const sources=names.map(name=>{const o=meshes.get(name);if(!o)throw Error('Missing Blender grass mesh: '+name);const geometry=o.geometry.clone().applyMatrix4(o.matrixWorld),material=(o.material as T.MeshStandardMaterial).clone();material.side=T.DoubleSide;material.roughness=.93;material.vertexColors=false;
@@ -39,8 +39,8 @@ export async function buildGrassField(scene:T.Scene,world:SceneryWorld,ground:T.
   await slice.checkpoint();
   const positions:{x:number;y:number;z:number;scale:number;rotation:number;type:number}[]=[];
   for(let d=start;d<Math.min(start+50,CUT_METRES-3);d+=1.6)for(const side of [-1,1])for(let band=0;band<6;band++){
-   const seed=d*61+side*7+band*83;if(hash(seed)<.16)continue;
-   const u=side*(cutWidth(d)/2+.38+band*.55+hash(seed+9)*.35),p=cutPoint(d+hash(seed+4)*1.1,u);
+   const seed=d*61+side*7+band*83,density=.20+.30*hash(Math.floor(d/11)*101+side*37);if(hash(seed)<density)continue;
+   const u=side*(cutWidth(d)/2+.55+band*.55+(hash(seed+9)-.5)*.85),p=cutPoint(d+(hash(seed+4)-.5)*2.6,u);
    if(surfaceAt(p.x,p.z)!=='grass'||nearestRamp(p.x,p.z).distance<2.6||world.solids.some(s=>Math.hypot(p.x-s.x,p.z-s.z)<Math.hypot(s.hx,s.hz)+.4))continue;
    const scale=(band<2?.5:.8)+hash(seed+1)*.6,type=hash(seed+3)<.12?1:hash(seed+5)<.18?2:0;
    if(!grassTreeSite(p.x,p.z,sources[type].radius*scale+.12))continue;

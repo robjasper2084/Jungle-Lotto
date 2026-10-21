@@ -79,11 +79,16 @@ export type FlowerSite={x:number;y:number;z:number;at:number;type:number;scale:n
 export function flowerSites(blocked:(x:number,z:number)=>boolean=()=>false):FlowerSite[]{
  const sites:FlowerSite[]=[];
  for(const [start,end,side]of [[350,420,1],[550,685,-1],[760,870,1],[970,1120,1],[1010,1140,-1],[1250,1390,1],[1550,1620,-1],[1650,1720,1],[1975,2010,1],[2290,2410,-1],[2440,2520,1]]){
-  for(let d=start;d<end;d+=.85)for(let band=0;band<5;band++){
-   const seed=d*57+band*89;if(hash(seed)<.2)continue;const at=d+hash(seed+4)*.6,u=side*(cutWidth(d)/2+1.5+band*.68+hash(seed+7)*.4),p=cutPoint(at,u),r=nearestRamp(p.x,p.z);
-   if(r.distance<r.width/2+1||GEO.bridges.some(b=>Math.abs(b.at-at)<12)||roadAt(p.x,p.z)||blocked(p.x,p.z))continue;
-   const type=band===4?3:Math.floor(at/13)%3;
-   sites.push({...p,at,y:heightAt(p.x,p.z)+.018,type,scale:.7+hash(seed+2)*.55,rotation:hash(seed+1)*Math.PI*2});
+  // Irregular islands, separated by open ground; no repeated longitudinal rows.
+  for(let centre=start;centre<end;){const seed=centre*57+side*89,radius=1.6+hash(seed+1)*2.8,across=2.2+hash(seed+2)*3.5,count=10+Math.floor(hash(seed+3)*23);
+   for(let i=0;i<count;i++){
+    const key=seed+i*117,angle=hash(key+4)*Math.PI*2,spread=Math.sqrt(hash(key+5));
+    const at=centre+Math.cos(angle)*radius*spread,u=side*(cutWidth(at)/2+across+Math.sin(angle)*Math.min(1.4,across-1.4)*spread),p=cutPoint(at,u),r=nearestRamp(p.x,p.z);
+    if(at<start||at>end||Math.abs(u)<cutWidth(at)/2+1.4||r.distance<r.width/2+1||GEO.bridges.some(b=>Math.abs(b.at-at)<12)||roadAt(p.x,p.z)||blocked(p.x,p.z))continue;
+    const type=hash(key+6)<.78?Math.floor(hash(seed+8)*4):Math.floor(hash(key+9)*4);
+    sites.push({...p,at,y:heightAt(p.x,p.z)+.018,type,scale:.48+hash(key+2)*.65+(1-spread)*.16,rotation:hash(key+1)*Math.PI*2});
+   }
+   centre+=radius*1.6+2.5+hash(seed+10)*6;
   }
  }
  return sites;

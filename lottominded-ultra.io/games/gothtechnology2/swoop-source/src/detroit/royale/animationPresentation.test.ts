@@ -10,8 +10,39 @@ test('additive riding motion preserves authoritative pose and pauses without dri
  const motion=new RiderPresentation(),p={...createPose(),naturalMotion:1,speed:10};
  motion.sample(p,1,true,0,false,false);const snapshot=structuredClone(p);p.speed=8;
  const out=motion.sample(p,4,true,0,true,false);assert(out.bodyDrop>p.bodyDrop);assert(out.bodyPitch<p.bodyPitch);assert.equal(out.x,p.x);assert.equal(out.headingY,p.headingY);
- const repeat=motion.sample(p,4,true,0,false,false);assert.deepEqual(out,repeat);assert.equal(snapshot.bodyPitch,p.bodyPitch);
+ const repeat=motion.sample(p,4,true,0,false,false,false,0);assert.deepEqual(out,repeat);assert.equal(snapshot.bodyPitch,p.bodyPitch);
  const reduced=new RiderPresentation();reduced.sample(p,1,true,0,false,true);assert(Math.abs(reduced.sample(p,4,true,0,true,true).bodyPitch-p.bodyPitch)<Math.abs(out.bodyPitch-p.bodyPitch));
+});
+test('riding balance stays consistent at 60, 120 and 144Hz with interpolated display poses',()=>{
+ const values=[60,120,144].map(fps=>{
+  const motion=new RiderPresentation();let out=createPose();
+  for(let i=0;i<=fps;i++){const t=i/fps,tick=Math.floor(t*60);out=motion.sample({...createPose(),speed:5+t*2,headingY:t*.2},tick,true,0,false,false,false,1/fps,{...createPose(),speed:5+tick/30,headingY:tick/300});}
+  return out;
+ });
+ for(const p of values.slice(1)){
+  assert(Math.abs(p.bodyPitch-values[0].bodyPitch)<.0001);
+  assert(Math.abs(p.bodyChestRoll-values[0].bodyChestRoll)<.0001);
+ }
+});
+
+test('extra display callbacks cannot corrupt the next simulation balance baseline',()=>{
+ const poseAt=(tick:number)=>({...createPose(),naturalMotion:1,speed:12-tick/30,headingY:Math.atan2(Math.sin(Math.PI-.05+tick/75),Math.cos(Math.PI-.05+tick/75))});
+ for(const callbacks of [2,4]){const regular=new RiderPresentation(),frequent=new RiderPresentation();
+  for(let tick=0;tick<90;tick++){
+   const p=poseAt(tick),original=structuredClone(p),expected=regular.sample(p,tick,true,3,tick===10,false),actual=frequent.sample(p,tick,true,3,tick===10,false);
+   assert.deepEqual(actual,expected);assert.deepEqual(p,original);
+   // Extra callbacks are zero elapsed display time; the pose varies but the
+   // simulation baseline, pending recoil and authoritative pose must not change.
+   for(let frame=1;frame<callbacks;frame++)frequent.sample(poseAt(tick+frame/callbacks),tick,true,3,false,false,false,0);
+  }
+ }
+});
+
+test('bank articulation bends over planted pedals without changing wheel or collision pose',()=>{
+ const p={...createPose(),naturalMotion:1,speed:12,rollAngle:.5,riderRoll:.5},copy=structuredClone(p),m=new RiderPresentation();
+ const out=m.sample(p,10,true,0,false,false);
+ assert(out.bodyDrop>p.bodyDrop);assert(out.riderRoll<p.riderRoll);assert(out.bodyChestRoll>p.bodyChestRoll);
+ for(const key of ['x','y','z','rollAngle','wheelPitch','wheelSpin','suspensionOffset'] as const)assert.equal(out[key],p[key]);assert.deepEqual(p,copy);
 });
 test('elimination uses separation and settle; reentry resets death pose and leaves controller recovery intact',()=>{
  const motion=new RiderPresentation(),p={...createPose(),speed:8,naturalMotion:1};

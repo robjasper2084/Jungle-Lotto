@@ -4,6 +4,7 @@ import type {GLTF} from './compressedGLTFLoader.ts';
 import {ElmwoodOnlineRooms} from './onlineRooms.ts';
 import type {RoomMatch,RoomFrame} from './onlineProtocol.ts';
 import {ElmwoodSessionInput,type Action,type Binding} from './elmwood-session-input.ts';
+import {elmwoodKeyboardBlocked} from './elmwood-keyboard.ts';
 import {ElmwoodRun,laneGates} from './elmwood-gameplay.ts';
 import {ElmwoodRacePilot} from './elmwood-race.ts';
 import {RideMotion} from './ride-motion.ts';
@@ -31,7 +32,7 @@ export class ElmwoodOnlineRide {
  constructor(scene:T.Scene,camera:T.PerspectiveCamera,canvas:HTMLCanvasElement,rooms:ElmwoodOnlineRooms){
   this.scene=scene;this.mainCamera=camera;this.canvas=canvas;this.rooms=rooms;
   this.board.id='elmwood-online-scoreboard';this.board.setAttribute('aria-label','Multiplayer race and scores');this.board.hidden=true;document.body.append(this.board);
-  addEventListener('keydown',e=>{if(!this.active||(e.target as HTMLElement)?.closest('input,select,textarea,button,a,summary,dialog'))return;
+  addEventListener('keydown',e=>{if(!this.active||elmwoodKeyboardBlocked(e.target,e.code))return;
    if(e.code==='KeyP'&&!e.repeat){e.preventDefault();this.pause(!this.frozen);return;}
    if(e.code==='Escape'){e.preventDefault();if(this.local)this.stop();else void this.rooms.leave();this.canvas.dispatchEvent(new Event('elmwood-main-menu'));return;}
    if(this.input.key(e.code,true,e.repeat))e.preventDefault();

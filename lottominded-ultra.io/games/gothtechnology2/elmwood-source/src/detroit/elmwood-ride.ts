@@ -41,6 +41,7 @@ import {chooseElmwoodSpawn} from './elmwood-details.ts';
 import {ELMWOOD_CAMERAS,cameraMode,nextElmwoodCamera,cameraFrame,frameElmwoodCamera,clearElmwoodCamera} from './elmwood-camera.ts';
 import type {VRPacket} from './elmwood-vr.ts';
 import {ElmwoodSessionInput,setupError,type Binding,type Action} from './elmwood-session-input.ts';
+import {elmwoodKeyboardBlocked} from './elmwood-keyboard.ts';
 import {ElmwoodRun,laneGates,MODES,type RunMode} from './elmwood-gameplay.ts';
 import {ElmwoodCompanion,type DogTarget} from './elmwood-companion.ts';
 import {makeElmwoodMainMenu} from './elmwood-main-menu.ts';
@@ -297,11 +298,12 @@ export function makeElmwoodRide(scene:T.Scene,camera:T.PerspectiveCamera,control
   }) as EventListener);
   addEventListener('keydown',e=>{
     if(film.playing){if(e.code==='Escape')film.stopReplay();return;}
-    if(!active||(e.target as HTMLElement)?.closest('input,select,textarea,button,a,summary,dialog'))return;
+    if(!active||elmwoodKeyboardBlocked(e.target,e.code))return;
     if(e.code==='KeyP'&&!e.repeat){e.preventDefault();pause();return;}if(e.code==='Escape'){stop();return;}
     if(e.code==='KeyM'&&!e.repeat){el<HTMLButtonElement>('session-map').click();return;}
     if(paused)return;if(input.key(e.code,true,e.repeat))e.preventDefault();
-  });addEventListener('keyup',e=>{const ui=(e.target as HTMLElement)?.closest('input,select,textarea,button,a,summary,dialog');if(input.key(e.code,false)&&active&&!ui)e.preventDefault();});
+  });addEventListener('keyup',e=>{if(input.key(e.code,false)&&active&&!elmwoodKeyboardBlocked(e.target,e.code))e.preventDefault();});
+  canvas.addEventListener('elmwood-toggle-pause',()=>pause(canvas.dataset.paused!=='true'));
   addEventListener('resize',()=>clearInput());addEventListener('orientationchange',()=>clearInput());addEventListener('blur',()=>pause(true));document.addEventListener('visibilitychange',()=>{if(document.hidden)pause(true);});canvas.addEventListener('webglcontextlost',()=>pause(true));
   const lookPointers=new Map<number,{seat:number;x:number;y:number}>();
   canvas.addEventListener('pointerdown',e=>{if(!active||paused||document.body.classList.contains('controls-open'))return;const i=rects().findIndex(r=>e.clientX>=r.x&&e.clientX<r.x+r.width&&e.clientY>=r.y&&e.clientY<r.y+r.height);if(i<0||cameras[i].value!=='first'||e.pointerType==='touch'&&e.clientX<rects()[i].x+rects()[i].width*.52)return;e.preventDefault();lookPointers.set(e.pointerId,{seat:i,x:e.clientX,y:e.clientY});canvas.setPointerCapture(e.pointerId);});

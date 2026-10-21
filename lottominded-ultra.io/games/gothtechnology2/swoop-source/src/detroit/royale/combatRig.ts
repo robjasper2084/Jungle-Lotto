@@ -64,13 +64,13 @@ export class CombatRig {
       h.fingers.apply('MeleeFist');h.root.updateWorldMatrix(true,true);w.visible=false;this.errorL=this.errorR=0;return;
     }
     const rot=new T.Quaternion().setFromEuler(new T.Euler(0,pose.headingY,0));
-    const aim=new T.Quaternion().setFromEuler(new T.Euler(-pitch,yaw,0,'YXZ'));
     // Read the real shoulder axis: these assets put LeftArm on local +X.
     // The old fixed signs pulled both elbows inward through the torso.
-    const outside=h.arms[0].upper.getWorldPosition(new T.Vector3()).sub(h.arms[1].upper.getWorldPosition(new T.Vector3())).normalize();
+    const outside=h.arms[0].upper.getWorldPosition(new T.Vector3()).sub(h.arms[1].upper.getWorldPosition(new T.Vector3()));outside.y=0;outside.normalize();
     const elbowPole=(side:number)=>outside.clone().multiplyScalar(side*.7).add(new T.Vector3(0,-.65,0)).add(new T.Vector3(0,0,-.15).applyQuaternion(rot));
     const dominant=this.weapon.socket(sockets.weapon_grip_R);
-    solve(h.arms[1],dominant,elbowPole(-1),rot.clone().multiply(aim).multiply(h.arms[1].rotation));
+    const gripRotation=w.getWorldQuaternion(new T.Quaternion());
+    solve(h.arms[1],dominant,elbowPole(-1),gripRotation.clone().multiply(h.arms[1].rotation));
     h.root.updateWorldMatrix(true,true);
     const actual=h.arms[1].foot.getWorldPosition(new T.Vector3());this.errorR=actual.distanceTo(dominant);
     // Preserve a rigid grip even when a target exceeds the arm's natural reach.
@@ -86,7 +86,7 @@ export class CombatRig {
       // After insertion the hand returns over the receiver to ready the weapon.
       if(reload.charge>0)target.lerp(this.weapon.socket(sockets.support_grip_L).add(new T.Vector3(0,.06,-.12).multiplyScalar(scale).applyQuaternion(rot)),reload.charge);
     }
-    solve(h.arms[0],target,elbowPole(1),rot.clone().multiply(aim).multiply(h.arms[0].rotation));
+    solve(h.arms[0],target,elbowPole(1),gripRotation.clone().multiply(h.arms[0].rotation));
     const release=reloadPose(state,tick).magazine;
     h.fingers.apply('SupportGrip','WeaponGrip',release);
     h.root.updateWorldMatrix(true,true);this.errorL=h.arms[0].foot.getWorldPosition(new T.Vector3()).distanceTo(target);
