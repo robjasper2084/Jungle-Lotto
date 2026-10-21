@@ -39,8 +39,11 @@ export class RoyaleSession{
  readyUp(){this.room?.send('ready',currentHandshake(this.terrain.arenaIdentity));}
  start(){if(this.room)this.room.send(this.state?.phase==='results'?'rematch':'start',{});else if(this.match){this.match.start(crypto.randomUUID(),crypto.getRandomValues(new Uint32Array(1))[0]&0x7fffffff);this.accept(this.match.snapshot(this.me));}}
  release(){this.room?.send('release',{});this.match?.release(this.me);this.predictionInput?.clear();}
- private accept(s:RoyaleSnapshot){if(this.disposed||this.room&&this.state?.round===s.round&&s.tick<this.state.tick)return;this.remotePoses.push(s.round,s.tick,s.actors,performance.now());const reentered=this.state?.self&&s.self&&this.state.self.spawnSerial!==s.self.spawnSerial;this.previous=reentered?undefined:this.state;if(reentered)this.pending=[];if(s.phase==='results'&&this.state?.phase!=='results'&&this.room&&s.self)this.readyUp();this.state=s;this.received=performance.now();if(s.self?.alive){this.killcam=undefined;this.replayRequest='';this.replayParts.clear();}else if(s.self){const key=s.round+':'+s.self.spawnSerial;if(this.replayRequest!==key){this.replayRequest=key;this.replayParts.clear();if(this.match)this.killcam=this.match.killcam(this.me);else this.room?.send('killcam',{});}}if(this.room)this.connection.snapshot(this.received);
+ private accept(s:RoyaleSnapshot){if(this.disposed||this.room&&this.state?.round===s.round&&s.tick<this.state.tick)return;this.remotePoses.push(s.round+(s.spectating?':watch:'+s.spectating.target:':play'),s.spectating?(s.spectating.tick??Math.floor((s.tick-180)/6)*6):s.tick,s.actors,performance.now());const reentered=this.state?.self&&s.self&&this.state.self.spawnSerial!==s.self.spawnSerial;this.previous=reentered?undefined:this.state;if(reentered)this.pending=[];if(s.phase==='results'&&this.state?.phase!=='results'&&this.room&&s.self)this.readyUp();this.state=s;this.received=performance.now();if(s.self?.alive){this.killcam=undefined;this.replayRequest='';this.replayParts.clear();}else if(s.self){const key=s.round+':'+s.self.spawnSerial;if(this.replayRequest!==key){this.replayRequest=key;this.replayParts.clear();if(this.match)this.killcam=this.match.killcam(this.me);else this.room?.send('killcam',{});}}if(this.room)this.connection.snapshot(this.received);
   if(s.round!==this.round){this.round=s.round;this.seq=0;this.shot=0;this.pending=[];}
+  // A respawn is an authoritative input boundary. Discard commands queued for
+  // the previous life, including counters advanced by older clients while dead.
+  if(reentered&&s.self){this.seq=s.self.inputCursor??s.self.ack;this.shot=s.self.shotCursor??0;this.predictionInput?.clear();}
   if(!this.room||!s.self)return;
   if(!this.prediction)this.prediction={wheelId:s.self.wheelId,controller:new RideController(this.terrain,{tuning:BATTLE_HANDLING}),energy:100,burstUntil:0,burstLatch:false};
   if(engineReady()&&!this.predictionInput)this.predictionInput=new EngineContext();this.prediction.controller.restoreState(s.self.controller);this.prediction.energy=s.self.energy;this.prediction.burstUntil=s.self.burstUntil;this.prediction.burstLatch=s.self.burstLatch;this.seq=Math.max(this.seq,s.self.ack,s.self.inputCursor??0);this.shot=Math.max(this.shot,s.self.shotCursor??0);
@@ -48,6 +51,9 @@ export class RoyaleSession{
   for(let i=0;i<this.pending.length;i++)move(this.prediction,this.predictionInput?routeBattleInput(this.predictionInput,0,this.pending[i]):this.pending[i],s.tick+i+1);
  }
  step(input:Command){if(!this.state||!['active','deployment'].includes(this.state.phase))return;
+  // Dead riders cannot submit commands. Keep offline opponents/the respawn
+  // timer running without spending sequence or shot numbers the server rejects.
+  if(!this.state.self?.alive){if(this.match){this.match.step();this.accept(this.match.snapshot(this.me));}return;}
   if(this.room&&(this.pending.length>=150||this.connectionStatus().state==='disconnected'||this.connectionStatus().state==='reconnecting'))return;
   const c={...input,round:this.state.round,seq:++this.seq,tick:this.state.tick};if(c.fire)c.shot=++this.shot;else c.shot=this.shot;
   if(this.match){this.match.command(this.me,c);this.match.step();this.accept(this.match.snapshot(this.me));}

@@ -98,3 +98,14 @@ header,#hint{z-index:6}#touch{z-index:2}
 #touch button:disabled{opacity:.55}
 
 @media(max-height:500px){#hud{top:62px;gap:3px;padding:8px 10px;font-size:10px;max-width:210px}#hud #speed,#hud #respawn-stock{display:none}#phase{font-size:12px}#health-feedback{font-size:9px}.range-notice{top:68px!important;font-size:10px!important}}
+
+/* Keep match state readable without splitting the round fraction onto its own line. */
+#phase{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;line-height:1.35}
+#phase-count,#phase-round{white-space:nowrap}
+#phase-round{font-size:11px;font-weight:600;color:#c8e6e1}
+#weapon{border-top:1px solid #8be9da40;margin-top:3px;padding-top:6px;font-weight:700;line-height:1.4}
+#speed{font-variant-numeric:tabular-nums;color:#c8e6e1}
+#hud .health-bars{margin-top:3px}
+.health-bars label{display:grid;grid-template-columns:34px minmax(24px,112px) 24px}
+.health-bars progress{width:100%;min-width:0}
+@media(max-width:620px){#hud{max-width:calc(100vw - 156px)}}

@@ -18,8 +18,10 @@ test('spectators follow delayed actors without exposing live positions or privat
  assert.equal(m.watch('me','a'),false);assert.equal(m.snapshot('outsider').spectating,undefined);
  m.actors[0].alive=false;for(let i=0;i<450;i++)m.step();
  assert(m.watch('viewer','b'));const first=m.snapshot('viewer',true);assert.equal(first.spectating?.target,'b');assert.equal(first.self,undefined);assert(!('ammo' in first.actors[0]));
+ assert.equal(first.spectating?.tick,first.tick-180);
  const old=first.actors.find(a=>a.id==='b')!.pose.x;place(m,2,40,20);m.step();
  assert.equal(m.snapshot('viewer',true).actors.find(a=>a.id==='b')!.pose.x,old);
+ assert.equal(m.snapshot('viewer',true).spectating?.tick,first.spectating?.tick,'held poses retain their recorded time');
  for(let i=0;i<190;i++)m.step();assert(Math.abs(m.snapshot('viewer',true).actors.find(a=>a.id==='b')!.pose.x-40)<.1);
  assert(m.watch('me','a'));assert.equal(m.snapshot('me').spectating?.target,'a');m.dispose();
 });

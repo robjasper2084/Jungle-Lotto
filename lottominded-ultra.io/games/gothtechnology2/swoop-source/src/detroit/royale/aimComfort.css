@@ -12,12 +12,13 @@
 #touch[data-simple=true][data-expanded=false]:not(.editing) button[data-action=repair]:not([data-custom-position]){left:auto!important;top:auto!important;right:92px!important;bottom:216px!important}
 #touch[data-simple=true][data-expanded=false]:not(.editing) #aim-pad{right:0!important;left:auto!important;top:110px!important;bottom:290px!important;width:55%!important;height:auto!important;border:0;border-radius:0;background:none;color:transparent}
 #aim-comfort output{justify-self:end;font-variant-numeric:tabular-nums}#aim-comfort p{font-size:12px;color:#bbd5db}
-#range-coach{position:fixed;top:76px;left:50%;transform:translateX(-50%);max-width:min(420px,44vw);padding:10px 14px;background:#0b202be8;border-left:3px solid #80e8d4;color:#eefef8;font:12px/1.5 system-ui;z-index:4;pointer-events:none}
+#range-coach{position:fixed;top:120px;left:50%;transform:translateX(-50%);max-width:min(420px,44vw);padding:10px 14px;background:#0b202be8;border-left:3px solid #80e8d4;color:#eefef8;font:12px/1.5 system-ui;z-index:4;pointer-events:none}
+.range-score.range-notice{top:190px!important}
 #range-coach strong,#range-coach span{display:block}#range-coach strong{color:#b5f5df}
 @media(max-width:620px){#range-coach{top:auto;bottom:205px;left:12px;transform:none;max-width:calc(100vw - 195px);font-size:11px;padding:8px}.range-score{display:none}}
 @media(max-height:480px){#range-coach{top:65px;bottom:auto;left:40%;max-width:28vw}.range-score{display:none}#touch .combat-more{right:180px;bottom:66px}#touch[data-simple=true][data-expanded=false]:not(.editing) button[data-action=hop]:not([data-custom-position]){bottom:202px!important}#touch[data-simple=true][data-expanded=false]:not(.editing) button[data-action=repair]:not([data-custom-position]){bottom:202px!important}}
 
 @media(prefers-reduced-motion:reduce){#reticle.comfort-reticle{transition:none}}
-@media(max-width:620px) and (min-height:481px){#touch[data-expanded=true] .combat-more{top:232px;bottom:auto}}
+@media(max-width:620px) and (min-height:481px){#touch[data-expanded=true] .combat-more{top:274px;bottom:auto}}
 @media(max-height:480px){.royale-map{width:120px!important}.royale-map canvas{width:120px!important;height:70px!important}.royale-map .map-actions{display:none}#touch[data-simple=true][data-expanded=false]:not(.editing) button[data-action=hop]:not([data-custom-position]){right:170px!important;bottom:146px!important}#touch[data-simple=true][data-expanded=false]:not(.editing) button[data-action=repair]:not([data-custom-position]){right:240px!important;bottom:146px!important}}
-@media(max-height:360px){.royale-map canvas{display:none}}
+@media(max-height:360px){.royale-map canvas{height:70px!important}}

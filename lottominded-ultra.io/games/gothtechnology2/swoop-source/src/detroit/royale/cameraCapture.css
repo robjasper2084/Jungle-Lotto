@@ -10,4 +10,5 @@
 body.royale-camera-mode #range-coach,body.royale-camera-mode .range-notice{display:none}
 #spectator-controls{position:fixed;left:50%;bottom:max(20px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:12;display:flex;align-items:center;gap:10px;background:#102b33b3;border-radius:12px;padding:8px;color:#effffa;font:12px system-ui;max-width:90vw}
 #spectator-controls[hidden]{display:none}#spectator-controls button{min-width:44px;min-height:44px}#spectator-controls span{text-align:center}
-@media(max-width:700px){#camera-capture{top:64px;max-width:calc(100vw - 180px)}#camera-capture .capture-panel{padding:5px;gap:3px}#camera-capture button,#camera-capture a{padding:7px;font-size:11px}}
+@media(max-width:700px){#camera-capture{top:224px;left:auto;right:12px;transform:none;width:120px;max-width:120px}#camera-capture .capture-panel{padding:5px;gap:3px}#camera-capture button,#camera-capture a{padding:7px;font-size:11px}}
+@media(max-height:500px){header>span{visibility:hidden}#camera-capture{top:12px;left:50%;right:auto;transform:translateX(-50%);width:auto;max-width:120px}}

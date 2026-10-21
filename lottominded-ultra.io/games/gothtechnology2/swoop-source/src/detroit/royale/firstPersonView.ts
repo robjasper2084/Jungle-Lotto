@@ -45,13 +45,15 @@ export class FirstPersonView {
   this.sway.lerp(this.swayScratch.set(lagX,lagY),1-Math.exp(-14*Math.min(.1,dt)));(this.previousForward??=new T.Vector3()).copy(f);
   if(reduced)this.sway.set(0,0);
   // Smaller presentation scale clears the lower corners without changing hitboxes or muzzle authority.
-  const wide=T.MathUtils.clamp((((camera as T.PerspectiveCamera).aspect??1)-.45)/.85,0,1),viewScale=.66+.14*wide;
+  const wide=T.MathUtils.clamp((((camera as T.PerspectiveCamera).aspect??1)-.45)/.85,0,1),viewScale=.64+.10*wide;
   const target=camera.position.clone().addScaledVector(f,(.80+.01*m.aim-.11*blocked-.045*m.kick)*scale).addScaledVector(right,((1-m.aim)*.20*(.5+.5*wide)+m.run*.07+this.sway.x)*scale)
    .addScaledVector(up,(-(1-m.aim)*.15-.12*r.lower-.26*equip.lower-.14*m.run-.18*blocked-.035*m.land+bob+this.sway.y)*scale);
   const sight=healingUntil>tick?this.hero.arms[0].foot.getWorldPosition(new T.Vector3()).lerp(this.hero.arms[1].foot.getWorldPosition(new T.Vector3()),.5):this.weapon.sight();
   if(healingUntil>tick)target.addScaledVector(up,-.025*scale).addScaledVector(right,-.12*scale);
   const mag=this.weapon.socket(EQUIPMENT_SOCKETS.magazine_socket);
-  const roll=-(r.lower*.18+m.run*.23+blocked*.28);this.root.quaternion.setFromAxisAngle(f,roll);
+  // A small hip-view cant reveals the camera lens/receiver silhouette, then
+  // settles squarely onto the optic. Hands and sockets move as one rigid frame.
+  const roll=-(r.lower*.18+m.run*.18+blocked*.24+(reduced?0:.065*(1-m.aim)));this.root.quaternion.setFromAxisAngle(f,roll);
   this.root.scale.setScalar(viewScale);this.root.position.copy(target).sub(sight.clone().multiplyScalar(viewScale).applyQuaternion(this.root.quaternion));this.magazine.position.copy(mag).addScaledVector(up,-r.magazine*.22*scale).addScaledVector(right,-r.magazine*.065*scale);
   this.magazine.quaternion.copy(this.weapon.root.quaternion);this.magazine.scale.setScalar(scale);this.magazine.visible=r.active&&r.magazine>.02;
   this.root.updateMatrixWorld(true);this.arms.update(camera,scale,viewScale);

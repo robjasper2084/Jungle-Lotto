@@ -84,6 +84,7 @@ import {EquipmentLibrary,WeaponView,CAMERA_SIGHTS,type EquipmentView} from './eq
 import {CombatRig} from './combatRig.ts';
 import {FieldBoundary} from './fieldBoundary.ts';
 import {AimGesture,LeanGesture,StanceGesture,deadZone,readBindings,type AimPreset} from './combatControls.ts';
+import {MouseCombatInput} from './mouseCombatInput.ts';
 import {WHEELS,wheelProfile} from '../../../../ride-core/src/royale/wheelProfiles.ts';
 import {FIRE_MODES} from '../../../../ride-core/src/royale/combatProfiles.ts';
 const el=<K extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(id) as K;
@@ -95,7 +96,7 @@ const menuBack=el<HTMLAnchorElement>('return-menu');menuBack.href=back.href;menu
 dialog.close();if(!el<HTMLDialogElement>('royale-startup').open)dialog.showModal();
 for(const r of RIDER_CHOICES)skin.add(new Option(r.label,r.id));skin.value=riderChoice(null);
 const wheel=el<HTMLSelectElement>('wheel');for(const w of WHEELS)wheel.add(new Option(w.name+' · '+Math.round(w.topKph)+' km/h',w.id));
-const stanceGesture=new StanceGesture();const leanGesture=new LeanGesture();const aimGesture=new AimGesture();let touchAds=false,adsSensitivity=.65,touchDisplay='auto',touchAim='toggle',stickMode='floating';const resetPointers:Array<()=>void>=[];
+const stanceGesture=new StanceGesture();const leanGesture=new LeanGesture();const aimGesture=new AimGesture();const mouseCombat=new MouseCombatInput(aimGesture);let touchAds=false,adsSensitivity=.65,touchDisplay='auto',touchAim='toggle',stickMode='floating';const resetPointers:Array<()=>void>=[];
 for(const [id,fallback] of [['ads-sensitivity','0.65'],['touch-display','auto'],['touch-aim','toggle'],['touch-lean','toggle'],['stick-mode','floating']]){const field=el<HTMLInputElement>(id);try{field.value=localStorage.getItem('royale-'+id+(id==='stick-mode'?'-v2':''))??fallback;}catch{field.value=fallback;}const apply=()=>{if(id==='ads-sensitivity')adsSensitivity=T.MathUtils.clamp(Number(field.value)||.65,.2,1.5);if(id==='touch-display')touchDisplay=field.value;if(id==='touch-aim'){touchAim=field.value;touchAds=false;}if(id==='touch-lean'){leanGesture.mode=field.value==='hold'?'hold':'toggle';leanGesture.reset();}if(id==='stick-mode')stickMode=field.value;};field.onchange=()=>{apply();try{localStorage.setItem('royale-'+id+(id==='stick-mode'?'-v2':''),field.value);}catch{}};apply();}
 let bindings=readBindings(null),lookYaw=0,lookPitch=0;
 const cameraModes=['chase','first','front','side','orbit','drone'] as const;
@@ -150,12 +151,13 @@ let terrain:DowntownArena,session:RoyaleSession,loaded=false,acc=0,last=performa
 let predictionFrame:{round:string;id:string;pose:RidePose;spawnSerial:number;alive:boolean}|undefined;
 const footControls=new FootControls();const deathReplay=new DeathReplay(),impactEffect=new ImpactEffect();const surfaceMarks=new SurfaceMarks();scene.add(impactEffect,surfaceMarks);const seenImpacts=new Set<string>(),fallenAt=new Map<string,number>();let hitFlashUntil=0;const matchFeedback=new MatchPresentation();let previousShield=50,shieldSerial=-1;
 const bots=()=>Math.min(Number(el<HTMLSelectElement>('bot-count').value),Number(el<HTMLSelectElement>('match-size').value)-1);
-el('reentry-confirm').onclick=()=>{deathReplay.stop();release();session.requestReentry(true,el<HTMLSelectElement>('respawn-location').value||undefined);};el('reentry-decline').onclick=()=>session.requestReentry(false);
+let reentryRequested=false;
+el('reentry-confirm').onclick=()=>{reentryRequested=true;deathReplay.stop();release();session.requestReentry(true,el<HTMLSelectElement>('respawn-location').value||undefined);};el('reentry-decline').onclick=()=>{reentryRequested=false;session.requestReentry(false);};
 function playDeathReplay(){release();deathReplay.start(performance.now());if(deathReplay.playing)dialog.close();}el('death-replay').onclick=playDeathReplay;el('reentry-replay').onclick=playDeathReplay;el('replay-stop').onclick=()=>deathReplay.stop();
-const keys=new Set<string>(),held=new Set<string>(),tap=new Set<string>();let throttle=0,steer=0,aimPointer:number|undefined,aimX=0,aimY=0,stickPointer:number|undefined;
+const keys=new Set<string>(),held=new Set<string>(),tap=new Set<string>();let throttle=0,steer=0,aimPointer:number|undefined,mousePointer:number|undefined,aimX=0,aimY=0,stickPointer:number|undefined;
 const message=(s:string)=>el('message').textContent=s;
 const speedCruise=new CruiseControl();
-function release(){speedCruise.reset();shotPreview.reset();localShotPending=false;footControls.clear();stanceGesture.reset();leanGesture.reset();touchAds=false;aimGesture.reset();lookYaw=lookPitch=0;keys.clear();held.clear();tap.clear();steer=throttle=0;aimPointer=stickPointer=undefined;resetPointers.forEach(reset=>reset());session?.release();}
+function release(){speedCruise.reset();shotPreview.reset();localShotPending=false;footControls.clear();stanceGesture.reset();leanGesture.reset();touchAds=false;mouseCombat.reset();lookYaw=lookPitch=0;keys.clear();held.clear();tap.clear();steer=throttle=0;aimPointer=mousePointer=stickPointer=undefined;resetPointers.forEach(reset=>reset());session?.release();}
 function finishLayoutEditing(){if(layoutEditing)saveLayout();layoutEditing=false;el('touch').classList.remove('editing');el('layout-done').hidden=true;release();}
 function clearResults(){el('results').replaceChildren();el('rematch').hidden=true;}
 function showMenu(){if(document.pointerLockElement===canvas)document.exitPointerLock();release();finishLayoutEditing();paused=true;if(dialog.open)dialog.close();dialog.showModal();el('resume').hidden=!session?.state;el('quit').hidden=!session?.state;}
@@ -172,7 +174,7 @@ el('menu').onclick=showMenu;el('resume').onclick=resume;dialog.addEventListener(
 async function run(work:()=>void|Promise<void>){try{message('');await work();}catch(e){message((e as Error).message);}}
 function preparationItemDone(){const root=el('royale-startup');root.dataset.completed=String(Number(root.dataset.completed??0)+1);}
 function preparationStage(completed:number,label:string){const root=el('royale-startup');if(completed===0){root.dataset.total=String(10+3+RIDER_CHOICES.length+WHEELS.filter(w=>w.id!=='euc').length);root.dataset.completed='0';}else preparationItemDone();message(label);}
-async function prepare(){preparationStage(0,'Warming up the arena…');const hdr=await new HDRLoader().loadAsync(new URL('../../../art/nvidia/detroit-skylight.hdr',import.meta.url).href),pm=new T.PMREMGenerator(renderer);scene.environment=pm.fromEquirectangular(hdr).texture;scene.environmentIntensity=.46;hdr.dispose();pm.dispose();await loadEngineForPage(true);if(!engineReady())throw Error('Compiled arena could not load. Return to normal riding or retry.');preparationStage(1,'Loading the original Detroit map…');terrain=new DowntownArena(await TagTerrain.create(await loadFixture(new URL('./love-tag/swoop-detroit.json',location.href).href)));preparationStage(2,'Building the Detroit skyline…');session=new RoyaleSession(terrain);radarMap=new RoyaleRadarMap(terrain);scenery=await buildDetroitArenaScene(scene,terrain,graphics.applyAssets);canvas.dataset.riverfront=JSON.stringify(scenery.root.userData.riverfront);canvas.dataset.arena=terrain.arenaIdentity.arena;canvas.dataset.collision=terrain.arenaIdentity.collision;
+async function prepare(){preparationStage(0,'Warming up the arena…');const hdr=await new HDRLoader().loadAsync(new URL('../../../art/nvidia/detroit-skylight.hdr',import.meta.url).href),pm=new T.PMREMGenerator(renderer);scene.environment=pm.fromEquirectangular(hdr).texture;scene.environmentIntensity=.46;hdr.dispose();pm.dispose();await loadEngineForPage(true);if(!engineReady())throw Error('Compiled arena could not load. Return to normal riding or retry.');preparationStage(1,'Loading the original Detroit map…');terrain=new DowntownArena(await TagTerrain.create(await loadFixture(new URL('./love-tag/swoop-detroit.json',location.href).href)));preparationStage(2,'Building the Detroit skyline…');session=new RoyaleSession(terrain);radarMap=new RoyaleRadarMap(terrain,el('camera-settings'));scenery=await buildDetroitArenaScene(scene,terrain,graphics.applyAssets);canvas.dataset.riverfront=JSON.stringify(scenery.root.userData.riverfront);canvas.dataset.arena=terrain.arenaIdentity.arena;canvas.dataset.collision=terrain.arenaIdentity.collision;
  preparationStage(3,'Preparing riders…');const loader=new GLTFLoader();await loadAssetQueue(['DS_EUC_01','DS_Cyclist_01','DS_Bicycle_01',...RIDER_CHOICES.map(r=>r.id)],assetConcurrency(),async id=>{assetMap.set(id,await loader.loadAsync(['DS_Man_01','DS_Hoodie_Woman_01','DS_Mascot_Suit_01','DS_Mascot_Hoodie_01','DS_Armored_Rider_01'].includes(id)?'/exports/rigged-heroes/'+id+'.glb':'/exports/glb/'+id+'/'+id+'_LOD'+(id==='DS_Man_01'?0:1)+'.glb'));preparationItemDone();});
  preparationStage(4,'Preparing companions…');assetMap.set('DS_Boerboel_01',await loader.loadAsync('/exports/polish/royale-equipment/royale-dog.glb'));companions=new RoyaleCompanions(scene,assetMap,terrain);
  preparationStage(5,'Tuning the wheels…');await loadAssetQueue(WHEELS.filter(w=>w.id!=='euc'),assetConcurrency(),async w=>{assetMap.set(w.asset,await loader.loadAsync('/exports/electric/'+w.asset+'.glb'));preparationItemDone();});
@@ -227,18 +229,22 @@ el('invite').onclick=()=>run(async()=>{
 });
 void fetch('./royale-config.json').then(r=>r.ok?r.json():{}).then((c:{supabaseTest?:{endpoint:string;publishableKey:string};serverUrl?:string})=>{relayConfig=c.supabaseTest;el('supabase-test').hidden=!relayConfig;el<HTMLInputElement>('use-relay').checked=!['localhost','127.0.0.1'].includes(location.hostname);el<HTMLInputElement>('endpoint').value=c.serverUrl||(['localhost','127.0.0.1'].includes(location.hostname)?'http://127.0.0.1:8226':'');if(incomingInvitation?.testCode)applyInvitation(incomingInvitation);relayControls();}).catch(()=>{});
 function buttonAction(action:string){if(action==='crouch'||action==='prone'){stanceGesture.down(action==='crouch'?1:2);return;}if(action==='hop')stanceGesture.reset();if(action==='lean-left'||action==='lean-right'){leanGesture.down(action==='lean-left'?-1:1);return;}if(action==='scope'){changeScope();return;}if(action==='camera'){cycleCamera();return;}if(action==='fire-left'){tap.add('fire-left');return;}if(action==='aim'){if(touchAim==='toggle')touchAds=!touchAds;return;}if(action==='switch'){slot=1-slot;return;}tap.add(action);}
+function gameplayInputBlocked(){return !loaded||!session?.state||dialog.open||paused||layoutEditing||deathReplay.playing||capture.reviewing||!!session.comms?.inputBlocked||document.hidden;}
 window.addEventListener('keydown',e=>{const target=e.target as HTMLElement;
  // Clicking an on-screen action leaves its button focused. Keep WASD working
  // while preserving Enter/Space activation and text-entry keyboard ownership.
- if(target?.matches('input,select,textarea,[contenteditable=true]')||(target?.closest('button')&&['Enter','Space'].includes(e.code))||dialog.open||deathReplay.playing||session?.comms?.inputBlocked)return;
+ if(target?.matches('input,select,textarea,[contenteditable=true]')||(target?.closest('button')&&['Enter','Space'].includes(e.code))||dialog.open||deathReplay.playing||capture.reviewing||session?.comms?.inputBlocked)return;
+ if(e.code==='Escape'||e.code===bindings.loadout){e.preventDefault();showMenu();return;}
+ if(gameplayInputBlocked())return;
  if([...Object.values(bindings),'ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Digit1','Digit2','Escape'].includes(e.code))e.preventDefault();
- if(e.code==='Escape'||e.code===bindings.loadout){showMenu();return;}
  if(!keys.has(e.code)){if(e.code===bindings.crouch)stanceGesture.down(1);if(e.code===bindings.prone)stanceGesture.down(2);if(e.code===bindings.hop)stanceGesture.reset();for(const [key,action] of [['holster','holster'],['hop','hop'],['utility','utility'],['repair','repair'],['recover','recover'],['reload','reload'],['pickup','swap'],['cycleMode','cycleMode'],['dogAttack','dog-attack'],['dogRadar','dog-radar'],['brawl','brawl'],['evade','evade']] as const)if(e.code===bindings[key])tap.add(action);if(e.code===bindings.captureMode)capture.setActive(!capture.active);if(e.code===bindings.captureRecord)capture.toggleRecording();if(e.code===bindings.camera)cycleCamera();if(e.code===bindings.scope)changeScope();}
  keys.add(e.code);if(e.code==='Digit1')slot=0;if(e.code==='Digit2')slot=1;
 });
 window.addEventListener('keyup',e=>keys.delete(e.code));window.addEventListener('blur',release);window.addEventListener('gamepaddisconnected',release);
 document.addEventListener('visibilitychange',()=>{release();last=performance.now();acc=0;predictionFrame=undefined;frames=0;profileAt=previousFrame=last;samples=[];});
-canvas.addEventListener('contextmenu',e=>e.preventDefault());
+// The transparent aim pad and touch buttons are canvas siblings. Scope browser
+// menu suppression to these active game surfaces, leaving page/UI menus usable.
+for(const surface of [canvas,el('touch')])surface.addEventListener('contextmenu',e=>{if(!gameplayInputBlocked())e.preventDefault();});
  document.addEventListener('pointerlockchange',()=>{if(document.pointerLockElement!==canvas){release();if(session?.state&&!dialog.open&&!paused)showMenu();}});
  document.addEventListener('pointerlockerror',()=>{message('Mouse capture is unavailable here. Hold and drag to aim, or open the game in a full browser tab.');});
  function captureMouse(){if(document.pointerLockElement===canvas||!canvas.requestPointerLock)return;try{const result=canvas.requestPointerLock();result?.catch(()=>message('Click the arena to capture your mouse. Escape releases it.'));}catch{message('Hold and drag to aim. Mouse capture is unavailable.');}}
@@ -253,20 +259,30 @@ canvas.addEventListener('contextmenu',e=>e.preventDefault());
    const hit=activeTerrain().raycast(eye,{x:dx/d,y:dy/d,z:dz/d},d);assistGain=Math.min(assistGain,aimFriction(offset,d,aimComfort.value.assist,hit===null||hit>=d-.15,device));
   }return assistGain;
  }
-canvas.addEventListener('wheel',e=>{if(dialog.open)return;e.preventDefault();slot=1-slot;},{passive:false});
-const aimGain=(gain:number)=>combatLookGain(gain,sensitivity,adsSensitivity,aimMode(),(footAim.active?footView:viewMode)==='first',selectedScope,scopeSensitivity.value,combatPreferences.value,held.has('fire')||held.has('fire-left')||!!navigator.getGamepads?.()[0]?.buttons[7]?.pressed);
+canvas.addEventListener('wheel',e=>{if(gameplayInputBlocked())return;e.preventDefault();slot=1-slot;},{passive:false});
+const aimGain=(gain:number)=>combatLookGain(gain,sensitivity,adsSensitivity,aimMode(),(footAim.active?footView:viewMode)==='first',selectedScope,scopeSensitivity.value,combatPreferences.value,mouseCombat.canFire||held.has('fire')||held.has('fire-left')||!!navigator.getGamepads?.()[0]?.buttons[7]?.pressed);
 function syncFootAim(){footAim.sync(session?.prediction?.controller.poseValue??session?.state?.actors.find(a=>a.id===session.me)?.pose);}
 function look(dx:number,dy:number,gain:number,device='touch'){if(!dx&&!dy)return;syncFootAim();dx*=aimComfort.value.x;dy*=aimComfort.value.y;const g=aimGain(gain)*aimSlowdown(device),next=dragAim(aimYaw,aimPitch,dx,dy,g);if(footAim.active){footAim.turn(-dx*g);aimYaw=0;}else aimYaw=next.yaw;aimPitch=next.pitch;}
-canvas.addEventListener('pointerdown',e=>{if(dialog.open||deathReplay.playing||e.pointerType!=='mouse'&&(aimPointer!==undefined||e.clientX<innerWidth*.4))return;canvas.focus();canvas.setPointerCapture(e.pointerId);aimPointer=e.pointerId;aimX=e.clientX;aimY=e.clientY;if(e.pointerType==='mouse'){captureMouse();if(e.button===0){held.add('fire');tap.add('fire');}if(e.button===2)aimGesture.down(performance.now());}});
-canvas.addEventListener('pointermove',e=>{if(dialog.open||deathReplay.playing||aimPointer!==e.pointerId&&document.pointerLockElement!==canvas)return;
+function cancelAimPointer(){mouseCombat.reset();tap.delete('mouse-fire');localShotPending=false;shotPreview.reset();aimPointer=mousePointer=undefined;}
+const aimPad=el('aim-pad');
+for(const surface of [canvas,aimPad]){
+ const accepts=(e:PointerEvent)=>surface===canvas||e.pointerType==='mouse';
+ surface.addEventListener('pointerdown',e=>{if(!accepts(e)||gameplayInputBlocked()||e.pointerType!=='mouse'&&(aimPointer!==undefined||e.clientX<innerWidth*.4))return;canvas.focus();if(document.pointerLockElement!==canvas){try{surface.setPointerCapture(e.pointerId);}catch{}}aimPointer=e.pointerId;aimX=e.clientX;aimY=e.clientY;if(e.pointerType==='mouse')mousePointer=e.pointerId;});
+ // mousedown/up report each button in a chord. Pointer movement (including
+ // button-mask changes) must never start, stop, or queue a shot.
+ surface.addEventListener('mousedown',e=>{if(gameplayInputBlocked()||e.button!==0&&e.button!==2||mousePointer===undefined&&document.pointerLockElement!==canvas)return;const change=mouseCombat.handle(e,performance.now());if(change.firePressed)tap.add('mouse-fire');captureMouse();});
+ surface.addEventListener('pointermove',e=>{if(!accepts(e)||gameplayInputBlocked()||aimPointer!==e.pointerId&&document.pointerLockElement!==canvas)return;
  const dx=e.pointerType==='mouse'?e.movementX:e.clientX-aimX,dy=e.pointerType==='mouse'?e.movementY:e.clientY-aimY;
  if((keys.has(bindings.freeLook)||held.has('free-look'))){lookYaw=T.MathUtils.clamp(lookYaw-dx*.004,-1.8,1.8);lookPitch=T.MathUtils.clamp(lookPitch-dy*.003,-.8,.8);}
  else look(dx,dy,.004,e.pointerType==='mouse'?'mouse':'touch');
  aimX=e.clientX;aimY=e.clientY;
-});
-canvas.addEventListener('pointerup',e=>{if(e.button===2)aimGesture.up(performance.now());if(e.button===0)held.delete('fire');if(aimPointer===e.pointerId)aimPointer=undefined;});
-canvas.addEventListener('pointercancel',release);
-canvas.addEventListener('lostpointercapture',e=>{if(aimPointer===e.pointerId){held.delete('fire');aimPointer=undefined;}});
+ });
+ surface.addEventListener('pointerup',e=>{if(!accepts(e))return;if(aimPointer===e.pointerId)aimPointer=undefined;if(mousePointer===e.pointerId)mousePointer=undefined;});
+ surface.addEventListener('pointercancel',e=>{if(accepts(e)&&(aimPointer===e.pointerId||e.pointerType==='mouse'&&document.pointerLockElement===canvas))release();});
+ surface.addEventListener('lostpointercapture',e=>{if(accepts(e)&&aimPointer===e.pointerId&&document.pointerLockElement!==canvas)cancelAimPointer();});
+}
+// Release even if the pointer leaves the canvas or lands over a touch button.
+window.addEventListener('mouseup',e=>{if(gameplayInputBlocked())cancelAimPointer();else mouseCombat.handle(e,performance.now());});
 const orientation=()=>innerWidth>innerHeight?'landscape':'portrait';
 const layoutKey=()=> 'static-royale-touch-'+orientation();
 function saveLayout(){const result:Record<string,{x:number;y:number}>={};for(const node of el('touch').children){const h=node as HTMLElement;if(h.dataset.customPosition){const r=h.getBoundingClientRect();result[h.id||h.dataset.action!]={x:r.left/innerWidth,y:r.top/innerHeight};}}try{localStorage.setItem(layoutKey(),JSON.stringify(result));}catch{}}
@@ -289,7 +305,7 @@ let beginFloatingMove:((e:PointerEvent)=>void)|undefined;
 document.addEventListener('pointerdown',e=>{const target=e.target as Element;if(e.pointerType!=='touch'||stickMode!=='floating'||dialog.open||paused||deathReplay.playing||layoutEditing||el('touch').hidden||e.clientX>innerWidth*.5||e.clientY<64||target.closest('button,a,input,select,textarea,summary,dialog,[role=dialog]'))return;if(target===canvas||el('touch').contains(target)){beginFloatingMove?.(e);if(stickPointer===e.pointerId)e.stopImmediatePropagation();}},{capture:true});
 for(const node of Array.from(el('touch').children)){
  const h=node as HTMLElement;let pointer:number|undefined,dx=0,dy=0,originX=0,originY=0,homeLeft='',homeTop='';const act=()=>h.dataset.action;
- const down=(e:PointerEvent)=>{if(pointer!==undefined||h.id==='move-pad'&&stickPointer!==undefined||!layoutEditing&&h instanceof HTMLButtonElement&&h.disabled)return;e.preventDefault();pointer=e.pointerId;ridingAim.set(pointer,{x:e.clientX,y:e.clientY});h.setPointerCapture(pointer);const r=h.getBoundingClientRect();dx=e.clientX-r.left;dy=e.clientY-r.top;
+ const down=(e:PointerEvent)=>{if(h.id==='aim-pad'&&e.pointerType==='mouse'&&!layoutEditing)return;if(e.pointerType==='mouse'&&e.button!==0||!layoutEditing&&gameplayInputBlocked()||pointer!==undefined||h.id==='move-pad'&&stickPointer!==undefined||!layoutEditing&&h instanceof HTMLButtonElement&&h.disabled)return;e.preventDefault();pointer=e.pointerId;ridingAim.set(pointer,{x:e.clientX,y:e.clientY});h.setPointerCapture(pointer);const r=h.getBoundingClientRect();dx=e.clientX-r.left;dy=e.clientY-r.top;
   if(layoutEditing)return;if(h.id==='move-pad'){stickPointer=pointer;originX=stickMode==='floating'?e.clientX:r.left+r.width/2;originY=stickMode==='floating'?e.clientY:r.top+r.height/2;homeLeft=h.style.left;homeTop=h.style.top;if(stickMode==='floating'){h.style.left=(originX-r.width/2)+'px';h.style.top=(originY-r.height/2)+'px';}const axes=stickAxes(e.clientX-originX,e.clientY-originY,r.width/2);steer=axes.steer;throttle=axes.throttle;}
   else if(h.id==='aim-pad'){aimPointer=pointer;aimX=e.clientX;aimY=e.clientY;}else {held.add(act()!);buttonAction(act()!);}h.classList.add('active');
  };h.addEventListener('pointerdown',down);if(h.id==='move-pad')beginFloatingMove=down;
@@ -300,7 +316,7 @@ for(const node of Array.from(el('touch').children)){
   else if(h.id==='aim-pad'&&pointer===aimPointer){look(e.clientX-aimX,e.clientY-aimY,.004,e.pointerType==='mouse'?'mouse':'touch');aimX=e.clientX;aimY=e.clientY;}
  });
  const up=()=>{if(pointer===undefined)return;if(pointer!==undefined)ridingAim.delete(pointer);if(h.id==='move-pad'&&pointer===stickPointer){stickPointer=undefined;steer=throttle=0;h.style.setProperty('--stick-x','0px');h.style.setProperty('--stick-y','0px');h.style.left=homeLeft;h.style.top=homeTop;}if(pointer===aimPointer)aimPointer=undefined;held.delete(act()!);pointer=undefined;h.classList.remove('active');if(layoutEditing)saveLayout();};
- resetPointers.push(up);for(const type of ['pointerup','pointercancel','lostpointercapture'])h.addEventListener(type,e=>{if((e as PointerEvent).pointerId===pointer)up();});
+ resetPointers.push(up);for(const type of ['pointerup','pointercancel','lostpointercapture'])h.addEventListener(type,e=>{if((e as PointerEvent).pointerId!==pointer)return;if(type!=='pointerup'){tap.delete(act()!);if(act()==='fire'||act()==='fire-left'){localShotPending=false;shotPreview.reset();}if(act()==='aim'){touchAds=false;aimGesture.reset();}}up();});
 }
 el('touch').append(moreControls);
 function aimMode(){return touchAds||touchAim==='hold'&&held.has('aim')||navigator.getGamepads?.()[0]?.buttons[6]?.pressed?2:aimGesture.get(performance.now());}
@@ -309,7 +325,7 @@ function command():Command{syncFootAim();let c=neutral(session.state?.round??'')
  c.throttle=T.MathUtils.clamp(throttle+Number(keys.has(bindings.forward)||keys.has('ArrowUp'))-Number(keys.has(bindings.brake)||keys.has('ArrowDown'))-axis(1),-1,1);
  c.steer=T.MathUtils.clamp(steer+Number(keys.has(bindings.right)||keys.has('ArrowRight'))-Number(keys.has(bindings.left)||keys.has('ArrowLeft'))+axis(0),-1,1);
  look(axis(2)*6,axis(3)*4.5,.004,'controller');const gyro=gyroscope.consume(1/60,!dialog.open&&!paused,aimMode()===2||viewMode==='first');const gyroGain=scopeSensitivity.gain(aimMode()===2?selectedScope:null,'gyro')/(aimMode()===2?scopeZoom(selectedScope):1);gyro.yaw*=gyroGain;gyro.pitch*=gyroGain;if(footAim.active){footAim.turn(-gyro.yaw);aimYaw=0;}else aimYaw=T.MathUtils.clamp(aimYaw-gyro.yaw,-1.25,1.25);aimPitch=T.MathUtils.clamp(aimPitch+gyro.pitch,-.65,.65);c.facingYaw=footAim.active?footAim.heading:null;c.aimYaw=aimYaw;c.aimPitch=aimPitch;
- c.fire=(held.has('fire')||held.has('fire-left')||tap.has('fire')||tap.has('fire-left'))||!!pad?.buttons[7]?.pressed;c.aimMode=aimMode();if(c.fire&&!footAim.active&&!c.aimMode&&viewMode!=='first'&&viewMode!=='chase')setCamera('chase');
+ c.fire=(mouseCombat.canFire||tap.has('mouse-fire')||held.has('fire')||held.has('fire-left')||tap.has('fire')||tap.has('fire-left'))||!!pad?.buttons[7]?.pressed;c.aimMode=aimMode();if(c.fire&&!footAim.active&&!c.aimMode&&viewMode!=='first'&&viewMode!=='chase')setCamera('chase');
  c.holster=tap.has('holster');if(c.holster){touchAds=false;aimGesture.reset();held.delete('aim');c.aimMode=0;}c.reload=tap.has('reload')||!!pad?.buttons[2]?.pressed;c.cycleMode=tap.has('cycleMode');c.lean=leanGesture.get(keys.has(bindings.leanLeft),keys.has(bindings.leanRight),held.has('lean-left'),held.has('lean-right'));c.crouch=stanceGesture.value===1;c.prone=stanceGesture.value===2;
  c.hop=tap.has('hop')||!!pad?.buttons[0]?.pressed;c.hopHeld=held.has('hop')||keys.has(bindings.hop)||!!pad?.buttons[0]?.pressed;c.dismount=footControls.consume();c.burst=footControls.run||held.has('burst')||keys.has(bindings.burst)||!!pad?.buttons[4]?.pressed;
  const brawling=!!session.state?.self?.combat.melee?.brawl;c.brawl=tap.has('brawl');c.light=brawling&&c.fire;c.heavy=brawling&&c.reload;if(brawling){c.fire=false;c.reload=false;c.aimMode=0;}c.evade=tap.has('evade')?(c.throttle<-.2?2:c.steer<-.1?-1:1):0;
@@ -336,11 +352,18 @@ function view(id:string,choice:string,wheelId:string){let a=actors.get(id);if(a&
  const shield=new ShieldEffect(shieldAsset);scene.add(shield);const nameplate=new PlayerNameplate();scene.add(nameplate.root);a={nameplate,view:hero,equipment,weapon,shield,optic,rig:new CombatRig(hero,equipment),wheelId,motion:new RiderPresentation(),contrast:new OpponentContrast(hero.rider)};actors.set(id,a);return a;
 }
 const heartShots=new HeartProjectiles();scene.add(heartShots);
+let renderedLife='';
 function draw(now:number){
  let stageAt=profileCpu?performance.now():0;
  const stage=(name:string)=>{if(profileCpu){const at=performance.now();(drawStageSamples[name]??=[]).push(at-stageAt);stageAt=at;}};
  const telemetry=now-telemetryAt>200;if(telemetry)telemetryAt=now;
  session?.comms?.place(dialog.open?el('room'):undefined);
+ const live=session?.state,life=live?.self?live.round+':'+live.self.spawnSerial:'';
+ if(life&&life!==renderedLife){
+  if(renderedLife){release();footAim.reset();cameraBlend.reset();deathReplay.reset();aimYaw=aimPitch=lookYaw=lookPitch=0;slot=live!.self!.slot;predictionFrame=undefined;acc=0;}
+  renderedLife=life;
+  if(reentryRequested&&live?.self?.alive){reentryRequested=false;resume();}
+ }
 
  firstPerson?.hide();
  const delta=equipmentTime?Math.min(.1,(now-equipmentTime)/1000):0;equipmentTime=now;
@@ -350,6 +373,7 @@ function draw(now:number){
  if(!replaying&&practiceRange?.update(s,session.me,now)){matchFeedback.hit(now,'range');royaleAudio.rangeHit();}
  radarMap?.update(s,now,!combatBlock&&!dialog.open&&!!s.self?.alive);
  const watching=!replaying?s.spectating:undefined;const focusId=watching?.target||session.me;
+ const presentationTick=watching?(session.remotePoses.tick(now)??watching.tick??s.tick-180):s.tick;
  const smooth=!replaying&&(!paused||!!session.room)&&!layoutEditing&&(s.phase==='active'||s.phase==='deployment');
  const alpha=smooth?Math.min(1,acc/DT):1,basePoses=new Map<string,RidePose>();
  const previous=smooth&&session.previous?.round===s.round&&session.previous.tick===s.tick-1?session.previous:undefined;
@@ -365,15 +389,16 @@ function draw(now:number){
  if(s.self&&s.self.shotAt!==previousShotTick){if(s.self.shotAt>=0&&s.tick-s.self.shotAt<12&&(!session.room||shotPreview.confirm(s.self.combat.shotCounter,now)))firing.add(s.self.id);previousShotTick=s.self.shotAt;}
  stage('setup');
  for(const projectile of s.projectiles){const key=projectile.owner+':'+projectile.shot;if(!seenShots.has(key)){seenShots.add(key);if(projectile.owner!==s.self?.id)firing.add(projectile.owner);}}
- for(const actor of s.actors){const a=view(actor.id,actor.skin,actor.wheelId??'euc');a.contrast.set(aimComfort.value.contrast&&actor.id!==session.me);if(!actor.alive&&!fallenAt.has(actor.id))fallenAt.set(actor.id,s.tick);if(actor.alive)fallenAt.delete(actor.id);const falling=!actor.alive&&s.tick-(fallenAt.get(actor.id)??s.tick)<210;a.view.rider.visible=true;a.view.root.visible=actor.alive||falling;a.weapon.visible=actor.alive;a.shield.visible=actor.alive&&(actor.shieldActive||actor.protected||a.shield.reacting);a.shield.scale.setScalar(actor.protected&&!actor.shieldActive?.88:1);rendered.add(actor.id);let pose={...actor.pose};
+ for(const actor of s.actors){const a=view(actor.id,actor.skin,actor.wheelId??'euc');a.contrast.set(aimComfort.value.contrast&&actor.id!==session.me);if(!actor.alive&&!fallenAt.has(actor.id))fallenAt.set(actor.id,presentationTick);if(actor.alive)fallenAt.delete(actor.id);const falling=!actor.alive&&presentationTick-(fallenAt.get(actor.id)??presentationTick)<210;a.view.rider.visible=true;a.view.root.visible=actor.alive||falling;a.weapon.visible=actor.alive;a.shield.visible=actor.alive&&(actor.shieldActive||actor.protected||a.shield.reacting);a.shield.scale.setScalar(actor.protected&&!actor.shieldActive?.88:1);rendered.add(actor.id);let pose={...actor.pose};
   if(!replaying&&actor.id===session.me&&session.room&&session.prediction)pose=interpolateRenderPose(smooth&&predictionFrame?.round===s.round?previousRenderPose(predictionFrame,actor):undefined,session.prediction.controller.poseValue,alpha);
-  else if(!replaying&&session.room)pose=session.remotePoses.pose(actor.id,pose,actor.spawnSerial,now);
+  else if(!replaying&&(session.room||watching))pose=session.remotePoses.pose(actor.id,pose,actor.spawnSerial,now);
   else if(!replaying)pose=interpolateRenderPose(previousRenderPose(previous?.actors.find(a=>a.id===actor.id),actor),pose,alpha);
   basePoses.set(actor.id,pose);
-  pose=a.motion.sample({...pose,seated:0},s.tick,actor.alive,actor.spawnSerial,firing.has(actor.id),reducedMotion,s.phase==='results'&&s.winner===actor.id,motionDelta);pose.stopFoot=0;a.view.apply({...pose,seated:0});a.view.visibility.setFirstPerson(!!replayFrame?.focus&&actor.id===replayFrame.focus);const yaw=actor.id===session.me&&!replaying?(footAim.active?footAim.relative(pose):aimYaw):actor.aimYaw,pitch=actor.id===session.me&&!replaying?aimPitch:actor.aimPitch;
+  const balancePose=watching?pose:!replaying&&actor.id===session.me&&session.room&&session.prediction?session.prediction.controller.poseValue:actor.pose;
+  pose=a.motion.sample({...pose,seated:0},presentationTick,actor.alive,actor.spawnSerial,firing.has(actor.id),reducedMotion,s.phase==='results'&&s.winner===actor.id,motionDelta,balancePose);pose.stopFoot=0;a.view.apply({...pose,seated:0});a.view.visibility.setFirstPerson(!!replayFrame?.focus&&actor.id===replayFrame.focus);const yaw=actor.id===session.me&&!replaying?(footAim.active?footAim.relative(pose):aimYaw):actor.aimYaw,pitch=actor.id===session.me&&!replaying?aimPitch:actor.aimPitch;
   a.optic.visible=!!(actor.id===session.me?selectedScope:actor.scope);a.equipment.select(actor.weapon);a.optic.position.fromArray(CAMERA_SIGHTS[actor.weapon]);if(firing.has(actor.id)&&a.equipment.fire(reducedMotion))equipmentShots++;a.equipment.update(motionDelta,reducedMotion);a.weapon.visible=actor.alive&&pose.crashBlend<.05&&s.phase!=='results';
   if(firing.has(actor.id))a.rig.interruptPickup();
-  if(actor.alive&&pose.crashBlend<.05&&s.phase!=='results')a.rig.apply({...pose,seated:0},yaw,pitch,actor.combat,s.tick,(actor as typeof actor&{healingUntil?:number}).healingUntil||0);
+  if(actor.alive&&pose.crashBlend<.05&&s.phase!=='results')a.rig.apply({...pose,seated:0},yaw,pitch,actor.combat,presentationTick,(actor as typeof actor&{healingUntil?:number}).healingUntil||0);
   if(actor.id===session.me)canvas.dataset.rig=JSON.stringify({rider:actor.skin,wheel:actor.wheelId,rightError:a.rig.errorR,leftError:a.rig.errorL,supportLocked:a.rig.supportLocked});
   a.shield.position.set(pose.x,pose.y+1,pose.z);a.shield.rotation.y=pose.headingY-Math.PI/2;
   a.shield.update(motionDelta,reducedMotion,graphics.current.shadows===0,actor.shieldActive||actor.protected);
@@ -381,7 +406,7 @@ function draw(now:number){
  for(const [id,a]of actors)if(!rendered.has(id)){a.nameplate.root.visible=false;a.view.root.visible=false;a.weapon.visible=false;a.shield.visible=false;}
 
  stage('riders');
- companions?.update(s.actors,s.roster,s.tick,motionDelta,graphics.current.shadows===0,reducedMotion,s.phase==='results'?s.winner:undefined);canvas.dataset.companions=String(s.actors.filter(a=>a.alive).length);
+ companions?.update(s.actors,s.roster,presentationTick,motionDelta,graphics.current.shadows===0,reducedMotion,s.phase==='results'?s.winner:undefined);canvas.dataset.companions=String(s.actors.filter(a=>a.alive).length);
  stage('dogs');
  const presentLoot=new Set(s.loot.map(item=>item.id));
  for(const loot of s.loot){
@@ -439,7 +464,7 @@ function draw(now:number){
  el('scope-mask').hidden=!ads||!selectedScope||dialog.open||!self.alive;
  el('scope-magnification').textContent=selectedScope?SCOPES[selectedScope].label:'';
  if(telemetry)canvas.dataset.optics=JSON.stringify({selected:selectedScope,owned,zoom:ads?scopeZoom(selectedScope):1,available:s.loot.filter(l=>isScope(l.kind)).length});
- if(telemetry)canvas.dataset.aim=JSON.stringify({yaw:renderAimYaw,worldYaw:heading,freeFootAim:footAim.active,pitch:aimPitch,ads,steer,throttle,fire:held.has('fire')||held.has('fire-left'),lean:self.combat.lean,crouch:p.footCrouch,prone:p.footProne,footMode:p.footMode});for(const direction of [-1,1]){const b=el('touch').querySelector<HTMLButtonElement>(direction<0?'[data-action=lean-left]':'[data-action=lean-right]');b?.setAttribute('aria-pressed',String(self.combat.lean*direction>.1));}
+ if(telemetry)canvas.dataset.aim=JSON.stringify({yaw:renderAimYaw,worldYaw:heading,freeFootAim:footAim.active,pitch:aimPitch,ads,steer,throttle,fire:mouseCombat.canFire||held.has('fire')||held.has('fire-left'),lean:self.combat.lean,crouch:p.footCrouch,prone:p.footProne,footMode:p.footMode});for(const direction of [-1,1]){const b=el('touch').querySelector<HTMLButtonElement>(direction<0?'[data-action=lean-left]':'[data-action=lean-right]');b?.setAttribute('aria-pressed',String(self.combat.lean*direction>.1));}
  for(const [action,pressed]of [['crouch',p.footMode?p.footCrouch>.5:stanceGesture.value===1],['prone',p.footProne>.5]] as const)el('touch').querySelector('[data-action='+action+']')?.setAttribute('aria-pressed',String(pressed));
  jazzVisit?.update(p.x,p.z,!watching&&!dialog.open&&!replaying&&self.alive&&!session.room);
  const adsButton=el('touch').querySelector<HTMLButtonElement>('[data-action=aim]')!;adsButton.setAttribute('aria-pressed',String(ads));
@@ -459,10 +484,10 @@ function draw(now:number){
  heartShots.update(s.projectiles,camera,now/1000,reducedMotion);
  stage('feedback');
  canvas.dataset.projectileEffect='hearts-and-sparkles';canvas.dataset.animationPass='rider-weight;confirmed-hit;shield-ripple;field-energy;dog-interpolation;full-fall;match-moments';
- if(now-hudAt>150){hudAt=now;const me=s.self;el('hud').hidden=false;for(const [action,label,until]of [['dog-attack','Dog',me?.dogPower.ready??0],['dog-radar','Radar',me?.dogPower.radarReady??0]] as const){const b=el('touch').querySelector<HTMLButtonElement>('[data-action='+action+']')!;b.disabled=!me?.dogPower.charges||until>s.tick;b.textContent=until>s.tick?label+' '+Math.ceil((until-s.tick)/60)+'s':label+' '+(me?.dogPower.charges??0);}el('phase').textContent=s.phase==='deployment'?'DEPLOYING · '+Math.ceil((PROTECTION-s.tick)/60)+'s':s.remaining+' RIDERS REMAIN · ROUND '+(s.series.number||1)+' / '+s.series.total;
-  const liveSelf=session.state?.self;const eligible=!!liveSelf?.reentry.eligible&&!dialog.open&&!replaying;el('reentry-panel').hidden=!eligible;el('reentry-countdown').textContent=liveSelf?'Choose within '+Math.max(0,Math.ceil((liveSelf.reentry.until-(session.state?.tick??0))/60))+'s. Ten seconds of protection; fighting ends it.':'';const stock=liveSelf?.reentry.remaining??0;el('respawn-stock').textContent=combatBlock?'Local training · restart from Menu':'Respawns left · '+stock+' / 3';el('reentry-title').textContent='Eliminated · '+stock+' respawn'+(stock===1?'':'s')+' left';el('reentry-confirm').textContent='Respawn · '+stock+' left';
+ if(now-hudAt>150){hudAt=now;const me=s.self;el('hud').hidden=false;for(const [action,label,until]of [['dog-attack','Dog',me?.dogPower.ready??0],['dog-radar','Radar',me?.dogPower.radarReady??0]] as const){const b=el('touch').querySelector<HTMLButtonElement>('[data-action='+action+']')!;b.disabled=!me?.dogPower.charges||until>s.tick;b.textContent=until>s.tick?label+' '+Math.ceil((until-s.tick)/60)+'s':label+' '+(me?.dogPower.charges??0);}el('phase-count').textContent=s.phase==='deployment'?'Deploying · '+Math.ceil((PROTECTION-s.tick)/60)+'s':s.remaining+(s.remaining===1?' rider alive':' riders alive');el('phase-round').textContent='Round '+(s.series.number||1)+'/'+s.series.total;
+  const liveSelf=session.state?.self;const eligible=!!liveSelf?.reentry.eligible&&!dialog.open&&!replaying;el('reentry-panel').hidden=!eligible;el('reentry-countdown').textContent=liveSelf?'Choose within '+Math.max(0,Math.ceil((liveSelf.reentry.until-(session.state?.tick??0))/60))+'s. Ten seconds of protection; fighting ends it.':'';const stock=liveSelf?.reentry.remaining??0;el('respawn-stock').textContent=combatBlock?'Local training · restart from Menu':liveSelf&&!liveSelf.alive&&!liveSelf.reentry.eligible?'Respawn window closed · spectating':'Respawns left · '+stock+' / 3';el('reentry-title').textContent='Eliminated · '+stock+' respawn'+(stock===1?'':'s')+' left';el('reentry-confirm').textContent='Respawn · '+stock+' left';
   const location=el<HTMLSelectElement>('respawn-location'),choices=liveSelf?.reentry.choices??[],signature=JSON.stringify(choices);if(location.dataset.choices!==signature){const selected=location.value;location.replaceChildren(new Option('Safest available location',''),...choices.map(n=>new Option(n.label,n.id)));if(choices.some(n=>n.id===selected))location.value=selected;location.dataset.choices=signature;}
-  location.disabled=!choices.length;el<HTMLButtonElement>('reentry-confirm').disabled=!eligible||!choices.length;el('respawn-availability').textContent=eligible&&!choices.length?'No safe point right now. Checking for openings…':eligible&&/no longer safe|No safe respawn point|Re-entry was rejected/.test(session.message)?session.message:'';
+  location.disabled=!choices.length;el<HTMLButtonElement>('reentry-confirm').disabled=!eligible||!choices.length;if(eligible&&!choices.length)el('reentry-confirm').textContent='Waiting for a safe location…';el('respawn-availability').textContent=eligible&&!choices.length?'No safe point right now. Checking for openings…':eligible&&/respawn|Re-entry|re-entry/i.test(session.message)?session.message:'';
   el<HTMLButtonElement>('reentry-replay').disabled=!deathReplay.available;el('death-replay').hidden=!deathReplay.available||!!liveSelf?.alive;
   el<HTMLProgressElement>('health-meter').value=me?.integrity??0;el('health-value').textContent=String(Math.ceil(me?.integrity??0));el<HTMLProgressElement>('shield-meter').value=me?.shield??0;el('shield-value').textContent=String(Math.ceil(me?.shield??0));const healing=!!me&&me.healingUntil>s.tick;el('health-feedback').textContent=healing?'Healing · '+Math.ceil((me!.healingUntil-s.tick)/60)+'s':me?.reentry.protectedUntil&&me.reentry.protectedUntil>s.tick?'Protected · '+Math.ceil((me.reentry.protectedUntil-s.tick)/60)+'s · combat cancels':me?'Health packs · '+me.repairs+' · H to heal':'';const healthButton=el('touch').querySelector<HTMLButtonElement>('[data-action=repair]')!;healthButton.textContent=healing?'Healing…':'Heal '+(me?.repairs??0);healthButton.disabled=!me?.repairs||healing||!me.alive;
   el('vitals').textContent=me?'Integrity '+Math.ceil(me.integrity)+' / Shield '+Math.ceil(me.shield)+' / Flow '+Math.round(me.energy):'Spectator · 3-second delayed follow';
@@ -486,7 +511,7 @@ function draw(now:number){
   const nearby=s.loot.filter(l=>isScope(l.kind)).map(l=>({l,d:Math.hypot(l.p.x-bikeObserver.x,l.p.z-bikeObserver.z)})).sort((a,b)=>a.d-b.d)[0];
   const pickup=s.events.filter(e=>e.actor===session.me&&e.kind.startsWith('pickup-scope')&&s.tick-e.tick<180).at(-1);
   el('scope-status').textContent=pickup?'Collected '+SCOPES[pickup.kind.slice(7) as Scope].label+' · Scope / '+scopeKeyLabel+' to switch':nearby&&nearby.d<30?SCOPES[nearby.l.kind as Scope].label+' · '+Math.ceil(nearby.d)+' m · ride or walk over to collect':'';
-  el('speed').textContent=self?Math.round(Math.abs(self.pose.speed)*3.6)+' / '+Math.round(wheelProfile(self.wheelId).topKph)+' km/h · '+wheelProfile(self.wheelId).name+' · game estimate'+(speedCruise.active?' · '+speedCruise.label:''):'';
+  el('speed').textContent=self?(foot?'On foot':Math.round(Math.abs(self.pose.speed)*3.6)+' km/h'+(speedCruise.active?' · '+speedCruise.label:'')):'';
   el('field').textContent=(fieldStageAt(s.tick).closing?'Barrier closing · ':'Barrier holds · ')+Math.ceil(s.field.remaining)+'s · '+Math.round(s.field.radius)+'m → '+Math.round(s.field.nextRadius)+'m';
   el('reticle').hidden=!me?.alive||dialog.open||!!(selectedScope&&aimMode()===2)||(!footAim.active&&!aimMode()&&viewMode!=='chase'&&viewMode!=='first');el('touch').hidden=(!(touchDisplay==='on'||touchDisplay==='auto'&&matchMedia('(any-pointer:coarse)').matches)||dialog.open||replaying||!me?.alive)&&!layoutEditing;
   el('hint').textContent=capture.active?'Camera mode · Photo / fire: shutter · '+bindings.captureRecord.replace('Key','')+': record · '+bindings.captureMode.replace('Key','')+': combat':layoutEditing?'Move controls, then open Menu to finish.':empty&&me!.combat.reloadStart<0?(me!.ammo[w!]>0?'Empty magazine · tap Reload or '+bindings.reload.replace(/^Key/,''):'Out of ammunition · find ammo or switch weapon'):!footAim.active&&Math.abs(aimYaw)>1.20?'Turn toward your target to aim farther.':replaying?(deathReplay.kind==='killer'?'Killer perspective · recorded by the server':'Last-view replay'):me&&!me.alive?me.reentry.eligible?'Eliminated · choose a respawn location':(deathReplay.kind==='killer'?'Eliminated · killer replay available':'Eliminated · last-view replay available'):s.phase==='deployment'?'Spawn protection · weapons unlock when the countdown ends':me&&Math.hypot((self?.pose.x??0)-s.field.x,(self?.pose.z??0)-s.field.z)>s.field.radius?'Outside the Static Field — ride toward the gold circle!':!el('touch').hidden?(foot?'Left stick: walk · right side: aim · Wheel: return to ride':speedCruise.active?speedCruise.label+' · pull down to cancel':'Left stick: push up twice for cruise · right side: aim'):foot?'WASD move · Shift sprint · R reload · 3 holster/draw · J return to wheel':'WASD ride · mouse aim · click fire · right click ADS · R reload · J get off/on';

@@ -21,7 +21,12 @@ export function combatChaseEye(anchor:Vector3,yaw:number,scale:number,shoulder:n
 /** Combat cameras retract along their boom; never orbit across the aim axis. */
 export function retractCombatCamera(eye:Vector3,anchor:Vector3,cast:(o:Vector3,d:Vector3,max:number)=>number|null,floor:number){
  const delta=eye.clone().sub(anchor),length=delta.length();
- if(length>.001){delta.multiplyScalar(1/length);const hit=cast(anchor,delta,length+.12);if(hit!==null&&hit<length+.12)eye.copy(anchor).addScaledVector(delta,Math.max(.02,hit-.16));}
+ if(length>.001){delta.multiplyScalar(1/length);let hit=cast(anchor,delta,length+.12);
+  // The camera has width: a centre ray alone misses a sign edge or thin post
+  // passing through the near plane. Keep every correction on the aim boom.
+  const right=new Vector3(delta.z,0,-delta.x).normalize();
+  for(const offset of [-.14,.14]){const edge=cast(anchor.clone().addScaledVector(right,offset),delta,length+.12);if(edge!==null&&(hit===null||edge<hit))hit=edge;}
+  if(hit!==null&&hit<length+.12)eye.copy(anchor).addScaledVector(delta,Math.max(.02,hit-.16));}
  eye.y=Math.max(floor+.18,eye.y);return eye;
 }
 

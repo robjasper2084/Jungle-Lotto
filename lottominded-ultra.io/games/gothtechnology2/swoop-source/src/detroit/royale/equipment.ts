@@ -17,6 +17,13 @@ export class EquipmentLibrary {
       const asset=assets.get(kind),clip=(isWeapon(kind)?'Fire_':'Idle_')+kind;
       if(!asset?.scene.getObjectByName('PRP_'+kind)||!asset.animations.some(a=>a.name===clip))
         throw Error('Equipment model or animation missing: '+kind);
+      if(isWeapon(kind))asset.scene.traverse(o=>{if(!(o instanceof T.Mesh))return;for(const mat of Array.isArray(o.material)?o.material:[o.material]){
+        if(!(mat instanceof T.MeshStandardMaterial))continue;
+        // Keep the supplied movie-camera geometry; satin housings read against
+        // bright sky without mirror-like flashes obscuring the grip and lens.
+        if(mat.name==='Cinema_Graphite'){mat.roughness=.58;mat.metalness=.32;}
+        if(/Titanium/.test(mat.name))mat.roughness=Math.max(.42,mat.roughness);
+      }});
     }
   }
   static async load(loader:GLTFLoader,base:URL){

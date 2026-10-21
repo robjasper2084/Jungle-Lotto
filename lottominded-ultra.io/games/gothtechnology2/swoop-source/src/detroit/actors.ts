@@ -24,6 +24,7 @@ import {createGroundSample} from './terrain.ts';
 import {assetConcurrency,loadAssetQueue} from './assetQueue.ts';
 import {ArmorKeychain} from './armorKeychain.ts';
 import {HelmetSkinDecal} from './helmetSkin.ts';
+import {RiderSurfaces} from './riderSurfaces.ts';
 import {WheelLights} from './wheelLights.ts';
 
 type Limb={upper:T.Object3D;knee:T.Object3D;foot:T.Object3D;target:T.Vector3;rotation:T.Quaternion;};
@@ -59,12 +60,14 @@ export class Hero {
   skateboarding=false;private skateContact?:CrashContact;private skateboard=new T.Group();private skateWheels:T.Mesh[]=[];
   private saddle:T.Mesh;private hairWind:HairWind;
   private armorKeychain?:ArmorKeychain;private helmetSkin?:HelmetSkinDecal;
+  private surfaces:RiderSurfaces;
   readonly visibility:RiderVisibility;readonly vrEyeHeight:number;readonly mountedVolume:{radius:number;height:number};
   constructor(data:Map<string,GLTF>,terrain?:TerrainSampler,riderId:RiderId='DS_Man_01'){
     this.terrain=terrain;this.riderId=riderId;
     const mascot=riderId.startsWith('DS_Mascot_');this.wheelScale=mascot?.75:.86;this.motionScale=mascot?.48:1;this.mountHeight=.296*this.wheelScale;
     this.root.add(this.ground);this.ground.add(this.lean);
     this.vehicle=data.get('DS_EUC_01')!.scene.clone(true);this.rider=clone(data.get(riderId)!.scene);
+    this.surfaces=new RiderSurfaces(this.rider);
     this.hairWind=new HairWind(this.rider,riderId==='DS_Man_01');
     this.vehicle.scale.setScalar(this.wheelScale);this.rider.position.y=this.mountHeight;this.lean.add(this.vehicle,this.rider,this.skateboard);
     const deck=new T.Mesh(new T.BoxGeometry(.28,.045,.88),new T.MeshStandardMaterial({color:'#242a29',roughness:.95}));deck.position.y=.15;this.skateboard.add(deck);for(const end of [-1,1]){const tip=new T.Mesh(new T.BoxGeometry(.28,.045,.17),deck.material);tip.position.set(0,.18,end*.48);tip.rotation.x=end*-.32;this.skateboard.add(tip);}
@@ -96,7 +99,7 @@ export class Hero {
       this.apply({...initialMountedPose()});const box=new T.Box3().setFromObject(this.root,true);
       this.mountedVolume={radius:Math.max(.4,Math.abs(box.min.x),Math.abs(box.max.x),Math.abs(box.min.z),Math.abs(box.max.z))+.06,height:box.max.y+.08};
   }
-  dispose(){this.lights.dispose();this.armorKeychain?.dispose();this.helmetSkin?.dispose();this.skateboard.traverse(o=>{if(o instanceof T.Mesh){o.geometry.dispose();(o.material as T.Material).dispose();}});this.hairWind.dispose();this.saddle.geometry.dispose();(this.saddle.material as T.Material).dispose();this.visibility.dispose();this.root.removeFromParent();this.rider.traverse(o=>{if((o as T.SkinnedMesh).isSkinnedMesh)(o as T.SkinnedMesh).skeleton.dispose();});}
+  dispose(){this.lights.dispose();this.armorKeychain?.dispose();this.helmetSkin?.dispose();this.skateboard.traverse(o=>{if(o instanceof T.Mesh){o.geometry.dispose();(o.material as T.Material).dispose();}});this.hairWind.dispose();this.saddle.geometry.dispose();(this.saddle.material as T.Material).dispose();this.visibility.dispose();this.surfaces.dispose();this.root.removeFromParent();this.rider.traverse(o=>{if((o as T.SkinnedMesh).isSkinnedMesh)(o as T.SkinnedMesh).skeleton.dispose();});}
   pedalTarget(l:Limb,suspensionOffset:number){return this.vehicle.localToWorld(l.target.clone().add(new T.Vector3(0,suspensionOffset,0)));}
   footTarget(index:number,p:RidePose){
     const target=this.pedalTarget(this.legs[index],p.suspensionOffset);

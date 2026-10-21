@@ -1,9 +1,9 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';
 import {initializeEngine} from '../src/engine/runtime.ts';import {ArenaTerrain} from '../src/royale/arena.ts';import {DowntownArena} from '../src/royale/downtownArena.ts';import {TagTerrain} from '../src/tag/fixture.ts';
 import {RoyaleMatch,neutral,PROTECTION} from '../src/royale/rules.ts';import {initialSpawnNodes,recoveryNode} from '../src/royale/spawnNodes.ts';
-import {loadHostFixture} from '../../love-tag-server/dist/hostFixture.js';import {fileURLToPath} from 'node:url';
+import {loadHostFixture} from '../../love-tag-server/src/hostFixture.ts';import {fileURLToPath} from 'node:url';
 await initializeEngine(await readFile(new URL('../src/engine/breadflower.wasm',import.meta.url)));
-const terrain=await ArenaTerrain.create(),data=await loadHostFixture(fileURLToPath(new URL('../../love-tag-server/fixtures/',import.meta.url)),'swoop-detroit'),downtown=new DowntownArena(await TagTerrain.create(data.fixture,await data.physics()));
+const terrain=await ArenaTerrain.create(),data=await loadHostFixture(process.env.ROYALE_FIXTURES??fileURLToPath(new URL('../../swoop-source/public/love-tag/',import.meta.url)),'swoop-detroit'),downtown=new DowntownArena(await TagTerrain.create(data.fixture,await data.physics()));
 const advance=(m:RoyaleMatch,n:number)=>{for(let i=0;i<n;i++)m.step();};
 function create(){const m=new RoyaleMatch(terrain,true,6,true,true);for(let i=0;i<6;i++)m.add('r'+i,'Rider '+i);m.start('reentry',7);advance(m,PROTECTION);return m;}
 function place(m:RoyaleMatch,i:number,x:number,z:number){const a=m.actors[i];a.controller.reset({position:{x,y:terrain.ground(x,z).height,z},headingY:0});a.pose={...a.controller.poseValue};}
@@ -45,10 +45,21 @@ test('three selectable respawns consume one each, reject duplicates and fourth u
  assert.equal(m.snapshot('r1').self!.reentry.eligible,false);assert.equal(m.requestReentry('r1',true).ok,false);assert.equal(m.actors[1].reentryUsed,3);
  while(m.phase!=='results')m.step();m.start('rematch',8);assert.equal(m.snapshot('r1').self!.reentry.remaining,3);assert.equal(m.actors[1].spawnSerial,0);m.dispose();
 });
-test('a chosen point is revalidated and an occupied location never consumes a respawn',()=>{
+test('a chosen point is revalidated and an occupied location selects the next safe point',()=>{
  seq=0;const m=create();kill(m);const choice=m.respawnChoices('r1')[0];assert(choice);const old={...m.actors[2].pose};
- place(m,2,choice.position.x,choice.position.z);assert.equal(m.requestReentry('r1',true,choice.id).ok,false);assert.equal(m.snapshot('r1').self!.reentry.remaining,3);
- place(m,2,old.x,old.z);assert(m.requestReentry('r1',true,choice.id).ok);m.dispose();
+ place(m,2,choice.position.x,choice.position.z);assert(m.requestReentry('r1',true,choice.id).ok);assert.notEqual(m.actors[1].spawnNode,choice.id);assert.equal(m.snapshot('r1').self!.reentry.remaining,2);
+ assert(Math.hypot(m.actors[1].pose.x-choice.position.x,m.actors[1].pose.z-choice.position.z)>=90);m.dispose();
+});
+test('occupied starting clusters leave supported downtown recovery points inside a closing field',()=>{
+ const nodes=downtown.spawnNodes,dead=nodes[0].position,live=nodes.map(n=>n.position);
+ for(const radius of [1525,1220,762.5,250]){
+  const field={...downtown.zones[0],radius};
+  assert.equal(recoveryNode(downtown,nodes,dead,nodes[0].id,live,field,8),undefined);
+  const chosen=recoveryNode(downtown,[...nodes,...downtown.recoverySpawnNodes],dead,nodes[0].id,live,field,8);
+  assert(chosen,`safe recovery at radius ${radius}`);assert(downtown.clear(chosen.position.x,chosen.position.z,.8,chosen.position.y));
+  assert(Math.hypot(chosen.position.x-field.x,chosen.position.z-field.z)<radius-30);
+  assert(live.every(p=>Math.hypot(p.x-chosen.position.x,p.z-chosen.position.z)>=90));
+ }
 });
 
 test.after(()=>{terrain.dispose();downtown.terrain.dispose();});
