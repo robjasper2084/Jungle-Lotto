@@ -117,7 +117,7 @@ test('live traffic instantiates both hoodie characters and both gait types',()=>
   const scene=new Scene(),view=new TrafficView(scene,data),actors=Array.from({length:62},(_,id)=>trafficAt(id,0)).filter(a=>a.kind==='pedestrian'||a.kind==='jogger');
   view.update(actors,.016);assert.equal(view.items.size,actors.length);assert.ok([...view.items.values()].every(i=>!!i.foot));
   assert.ok([...view.items.values()].some(i=>i.foot!.jog));assert.ok([...view.items.values()].some(i=>!i.foot!.jog));
-  view.update([],0);assert.equal(scene.children.length,0);
+  view.update([],0);assert.equal(view.items.size,0);assert.equal(scene.children.filter(o=>o.visible).length,0);assert.ok(scene.children.length<=8,'only the bounded hidden reuse pool remains');
 });
 
 // Mascots have very different thigh/shin proportions: check both inner and outer reach.

@@ -62,6 +62,7 @@ import {makeElmwoodEnvironment} from './elmwood-environment.ts';
 
 
 import {makeElmwoodWeather,makeElmwoodWater,elmwoodSun,validElmwoodDate,type ElmwoodWeather} from './elmwood-weather.ts';
+import {InteractiveWater} from '../../../swoop-source/src/detroit/interactiveWater.ts';
 import {configureElmwoodWater} from './elmwood-water.ts';
 
 
@@ -112,7 +113,7 @@ const canvas=el<HTMLCanvasElement>('view'),renderer=new T.WebGLRenderer({canvas,
 
 
 
-const scene=new T.Scene();new PointLightBudget(scene);scene.background=new T.Color('#b4c5bb');scene.fog=new T.FogExp2('#b4c5bb',.0005);const camera=new T.PerspectiveCamera(47,innerWidth/innerHeight,.1,4000);camera.position.set(460,650,550);const controls=new OrbitControls(camera,canvas);controls.target.set(-150,0,-410);controls.enableDamping=true;controls.maxDistance=2200;controls.minDistance=1;controls.maxPolarAngle=Math.PI*.495;
+const scene=new T.Scene();new PointLightBudget(scene);scene.background=new T.Color('#b4c5bb');scene.fog=new T.FogExp2('#b4c5bb',.0005);const camera=new T.PerspectiveCamera(47,innerWidth/innerHeight,.1,4000);camera.position.set(460,650,550);const interactiveWater=new InteractiveWater(canvas,camera);interactiveWater.settings(document.querySelector('aside')!);const controls=new OrbitControls(camera,canvas);controls.target.set(-150,0,-410);controls.enableDamping=true;controls.maxDistance=2200;controls.minDistance=1;controls.maxPolarAngle=Math.PI*.495;
 
 
 
@@ -698,7 +699,7 @@ const ps=placements.filter(p=>p.asset===id),source=cache.get(id)!;source.updateM
  loadingCard.progress(3,5);loadingCard.status('Preparing paths, water and wildlife…');
  const terrain=new ElmwoodTerrain(grid,site.features,placements);
  world.add(makeLaneMargins(terrain));
- const waterSetup=configureElmwoodWater(foundation,terrain,landmarkPass!.pond);canvas.dataset.waterMeshes=String(waterSetup.meshes);canvas.dataset.waterVertices=String(waterSetup.vertices);
+ const waterSetup=configureElmwoodWater(foundation,terrain,landmarkPass!.pond);interactiveWater.register(foundation);canvas.dataset.waterMeshes=String(waterSetup.meshes);canvas.dataset.waterVertices=String(waterSetup.vertices);
 
 
 
@@ -779,6 +780,7 @@ const sceneryGate=new SpatialUpdateGate();const frameSchedule=new FrameSchedule(
 
 
 
+interactiveWater.update(canvas.dataset.riding==='true'?{x:Number(canvas.dataset.x),y:Number(canvas.dataset.riderY),z:Number(canvas.dataset.z)}:undefined,paused);
 const drawStarted=performance.now();if(!rideControls?.render(renderer))renderer.render(scene,camera);const measured=frameStats.rendered(now,performance.now()-cpuStarted,rideMs,performance.now()-drawStarted);canvas.dataset.frames=String(frameStats.frames);
 
 if(measured){canvas.dataset.rideMsP95=frameStats.rideMsP95.toFixed(2);canvas.dataset.drawMsP95=frameStats.drawMsP95.toFixed(2);canvas.dataset.cpuMsP95=frameStats.cpuMsP95.toFixed(2);canvas.dataset.fps=frameStats.fps.toFixed(1);canvas.dataset.frameMsP95=frameStats.frameMsP95.toFixed(1);canvas.dataset.frameMsP99=frameStats.frameMsP99.toFixed(1);canvas.dataset.longFrames50=String(frameStats.longFrames50);canvas.dataset.longFrames100=String(frameStats.longFrames100);performanceReadout.textContent=frameStats.fps.toFixed(1)+' FPS · p95 '+frameStats.frameMsP95.toFixed(1)+' ms · '+renderer.info.render.calls+' draw calls';}canvas.dataset.drawCalls=String(renderer.info.render.calls);}renderer.setAnimationLoop(animate);addEventListener('resize',()=>{if(renderer.xr.isPresenting)return;camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();quality.resize();});

@@ -1,8 +1,8 @@
 import * as T from 'three';
 import type {DowntownArena} from '../../../../ride-core/src/royale/downtownArena.ts';
 
-export const ROYALE_SUN=new T.Vector3(36,2.8,24).normalize();
-export const ROYALE_HAZE='#4d697b';
+export const ROYALE_SUN=new T.Vector3(36,15,24).normalize();
+export const ROYALE_HAZE='#9fb6c2';
 const district={x:-72.5,z:-1180};
 /** Royale-only dressing. All placement comes from existing, playable map geometry. */
 export function polishRiverfront(root:T.Scene,arena:DowntownArena,materials:Record<string,T.MeshStandardMaterial>){

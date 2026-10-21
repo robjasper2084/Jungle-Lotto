@@ -70,7 +70,9 @@ export class FootTraffic {
   apply(speed:number,dt:number){
     this.idleTime+=Math.max(0,dt);
     const effort=Math.min(1,Math.abs(speed)/(this.jog?2.65:1.1)),timing=gaitTiming(Math.abs(speed),this.jog,this.legLength);
-    this.phase=(this.phase+Math.max(0,dt)*timing.cadence*effort)%1;
+    // footStride already scales stride length to speed. Scaling phase as well
+    // makes the supporting foot slide forward whenever traffic slows down.
+    if(Math.abs(speed)>.001)this.phase=(this.phase+Math.max(0,dt)*timing.cadence)%1;
     const motion=locomotionMocap(this.phase,this.jog,timing.run);
     let gesture:number[]|undefined,gestureWeight=0;
     if(this.interaction){const c=this.interaction; c.time+=Math.max(0,dt);const duration=INSTALLED_MOCAP_INFO[c.action].duration;

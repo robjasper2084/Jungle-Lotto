@@ -1,3 +1,4 @@
+import {mountedClearance} from './mountedClearance.ts';
 import {interpolateFoot,footFields,footState,stepOnFoot,knockOffOnFoot} from './onFoot.ts';
 import {FallMotion,getUpPose} from './fallMotion.ts';
 import {RideFeedback} from './rideFeedback.ts';
@@ -72,6 +73,9 @@ export class RideController {
     const decode=(v:any):any=>v&&typeof v==='object'?v.__undefined===true?undefined:v.__map?new Map(v.__map.map(([k,x]:[string,unknown])=>[k,decode(x)])):Array.isArray(v)?v.map(decode):Object.fromEntries(Object.entries(v).map(([k,x])=>[k,decode(x)])):v;
     const restore=(target:any,source:any)=>{for(const [k,v] of Object.entries(source)){const current=target[k];if(v&&typeof v==='object'&&!(v as any).__undefined&&!(v as any).__map&&current&&typeof current==='object'&&Object.getPrototypeOf(current)!==Object.prototype){restore(current,v);}else target[k]=decode(v);}};
     restore(this,fields);
+    // Keep prediction compatible with a still-running pre-MSJ authority. This
+    // is derived only from trusted snapshots, never from player commands.
+    if(fields.walking)this.walking.legacyLocomotion=fields.walking.legacyLocomotion??!Object.hasOwn(fields.walking,'msjVelocityX');
   }
   reset(spawn:Spawn=this.spawn){
     this.walking=footState();
@@ -202,13 +206,13 @@ export class RideController {
     // Cap the slope allowance so a curb's steep edge cannot conceal a real ledge.
     const curbDropAllowance=.28+clamp((this.ground.normal.x*dx+this.ground.normal.z*dz)/Math.max(.5,this.ground.normal.y),0,Math.min(.12,travel*.5));
     if(travel>1e-8){
-      const hit=this.terrain.raycastObstacle({x:p.x,y:p.y+.65,z:p.z},{x:dx,y:0,z:dz},travel+.32,.28);
+      const hit=mountedClearance(this.terrain,p,{x:dx,y:0,z:dz},travel+.32,.28,p.crouch);
       if(hit!==null){this.tricks.cancel();const clear=clamp(hit-.33,0,travel);p.x+=dx*clear/travel;p.z+=dz*clear/travel;
         // Small knocks stop the wheel. A free tangential axis lets a glancing
         // contact scrub speed along the obstacle instead of throwing the rider.
         const remaining=1-clear/travel,ox=dx*remaining,oz=dz*remaining;
-        const freeX=Math.abs(ox)>1e-5&&this.terrain.raycastObstacle({x:p.x,y:p.y+.65,z:p.z},{x:ox,y:0,z:0},Math.abs(ox)+.34,.28)===null;
-        const freeZ=Math.abs(oz)>1e-5&&this.terrain.raycastObstacle({x:p.x,y:p.y+.65,z:p.z},{x:0,y:0,z:oz},Math.abs(oz)+.34,.28)===null;
+        const freeX=Math.abs(ox)>1e-5&&mountedClearance(this.terrain,p,{x:ox,y:0,z:0},Math.abs(ox)+.34,.28,p.crouch)===null;
+        const freeZ=Math.abs(oz)>1e-5&&mountedClearance(this.terrain,p,{x:0,y:0,z:oz},Math.abs(oz)+.34,.28,p.crouch)===null;
         const slideX=freeX&&(!freeZ||Math.abs(ox)>Math.abs(oz)),slideZ=freeZ&&!slideX;
         const normalSpeed=slideX?Math.abs(this.vz):slideZ?Math.abs(this.vx):Math.hypot(this.vx,this.vz);
         if(normalSpeed>4.2)this.fall('collision');
@@ -281,7 +285,7 @@ export class RideController {
       p.speed*=ratio;this.vx*=ratio;this.vz*=ratio;
     }
     if(this.ground.offCourse)this.fall('trail boundary');
-    if(this.grounded&&!this.crashed&&Math.abs(p.rollAngle)<.12&&this.terrain.raycastObstacle({x:p.x,y:p.y+.65,z:p.z},{x:s,y:0,z:c},3,.35)===null)this.safe={position:{x:p.x,y:floor,z:p.z},headingY:p.headingY};
+    if(this.grounded&&!this.crashed&&Math.abs(p.rollAngle)<.12&&mountedClearance(this.terrain,p,{x:s,y:0,z:c},3,.35,p.crouch)===null)this.safe={position:{x:p.x,y:floor,z:p.z},headingY:p.headingY};
   }
   get poseValue():Readonly<RidePose>{return this.pose;}
   writePose(out:RidePose){copyPose(this.pose,out);}

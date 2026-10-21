@@ -1,6 +1,7 @@
 import {batchStaticGroup} from './static-batch.ts';
 import {WorkSlice} from '../../../ride-core/src/workSlice.ts';
 import {buildingFacade,alignBuildingFacade} from './buildingFacade.ts';
+import {BuildingEntranceIndex,createBuildingEntrance} from './buildingEntrances.ts';
 import type {SceneryWorld} from './sceneryWorld.ts';
 import type {SpatialAssetStream} from './spatialAssetStream.ts';
 import * as T from 'three';
@@ -127,6 +128,9 @@ export async function buildCity(_scene:T.Scene,world:SceneryWorld,groupAt:(x:num
    const uv=new Float32Array(positions.length/3*2),scale=material===parkMat?1.1:material===sidewalk?4:2;for(let i=0;i<positions.length;i+=3){const u=i/3*2;uv[u]=positions[i]/scale-Math.floor(g.userData.center.x/scale);uv[u+1]=positions[i+2]/scale-Math.floor(g.userData.center.z/scale);}geo.setAttribute('uv',new T.BufferAttribute(uv,2));geo.computeVertexNormals();const m=new T.Mesh(geo,material);m.name=material===parkMat?'Milliken smooth park paths':material===sidewalk?'Concrete sidewalks':'Mapped street surface';m.receiveShadow=true;g.add(m);}
  if(!world.buildingMeshes.length)return{blocks:0,landmarks:[] as string[],bridges:GEO.bridges.length,ramps:GEO.ramps.length,mapped:true,streetSections,streetTriangles,streetTiles:paths.size,cached:!!cached};
  const residential=new Map([[3,orleansMaterial(3)],[4,orleansMaterial(4)]]);
+ const entranceIndex=new BuildingEntranceIndex(CITY.roads,CITY.buildings);
+ const entranceMaterials={stone:curb,door:facades[2],metal:new T.MeshStandardMaterial({color:'#172429',roughness:.76})};
+ let entrances=0;
  const landmarks:string[]=[];
  for(const{data:b,geometry:geo}of world.buildingMeshes){
    await slice.checkpoint();
@@ -142,6 +146,19 @@ export async function buildCity(_scene:T.Scene,world:SceneryWorld,groupAt:(x:num
    const side=floors?residential.get(floors)!:facades[shop?2:variant%2];
    const mesh=new T.Mesh(visual.facade,[roof,side]);mesh.name='OSM '+b.id+' '+b.name;mesh.userData={osmId:b.id,source:'OSM footprint; ground-aligned facade',facadeBase:visual.base};mesh.castShadow=mesh.receiveShadow=true;g.add(mesh);
    if(visual.foundation){const foundation=new T.Mesh(visual.foundation,skins.concrete);foundation.name='Foundation '+b.id;foundation.castShadow=foundation.receiveShadow=true;g.add(foundation);}
+   // Upper-storey window materials must not remove the ground-floor doorway.
+   // Named/custom landmarks keep their authored entrances. Generic doors are
+   // visual closed doors; the existing building collision envelope stays intact.
+   if(b.id!=='59452104'&&b.id!=='59440457'){
+    const entry=entranceIndex.entrance(b,visual.top,heightAt);
+    if(entry){
+     // Include the rendered sidewalk/curb surface, which can sit above heightAt.
+     const ground={height:0,normal:{x:0,y:1,z:0},surface:'pavement' as const,offCourse:false};
+     const threshold=[-1.15,0,1.15].map(u=>{const x=entry.x+entry.nz*u+entry.nx*.3,z=entry.z-entry.nx*u+entry.nz*.3;return world.sampleGround(x,z,ground,heightAt(x,z)).height;});
+     entry.y=Math.max(entry.y,...threshold.map(y=>y+.04));entry.height=Math.min(entry.height,visual.top-entry.y-.2);
+     if(entry.height>=2.35){g.add(createBuildingEntrance(entry,entranceMaterials,b.id));entrances++;}
+    }
+   }
    // Cornice follows every polygon edge, including non-rectangular footprints.
    for(let i=1;i<b.points.length;i++){
      const a=b.points[i-1],c=b.points[i],len=Math.hypot(c[0]-a[0],c[1]-a[1]);if(len<.6)continue;
@@ -158,5 +175,5 @@ export async function buildCity(_scene:T.Scene,world:SceneryWorld,groupAt:(x:num
      asset.traverse(o=>{if((o as T.Mesh).isMesh){o.castShadow=o.receiveShadow=true;}});batchStaticGroup(asset);g.add(asset);landmarks.push(id);};if(stream)stream.add({id:'architecture-'+id,centers:[{x:center.x,z:center.z}],load});else await load();
    }
  }
- return{blocks:world.buildingMeshes.length,landmarks,bridges:GEO.bridges.length,ramps:GEO.ramps.length,mapped:true,streetSections,streetTriangles,streetTiles:cached?new Set(cached.tiles.map(t=>t.x+','+t.z)).size:paths.size,cached:!!cached};
+ return{blocks:world.buildingMeshes.length,entrances,landmarks,bridges:GEO.bridges.length,ramps:GEO.ramps.length,mapped:true,streetSections,streetTriangles,streetTiles:cached?new Set(cached.tiles.map(t=>t.x+','+t.z)).size:paths.size,cached:!!cached};
 }

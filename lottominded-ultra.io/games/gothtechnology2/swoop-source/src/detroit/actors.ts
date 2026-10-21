@@ -1,4 +1,5 @@
 import {FingerPose} from '../../../ride-core/src/fingerPose.ts';
+import {invalidateAnimatedShadow} from '../../../ride-core/src/shadowBudget.ts';
 import {visibleSceneryMatrices} from '../../../ride-core/src/visibleMatrices.ts';
 import {wheelPickupTiming} from '../../../ride-core/src/wheelPickupTiming.ts';
 import {applyOnFootRider} from '../../../ride-core/src/onFootRider.ts';
@@ -115,6 +116,7 @@ export class Hero {
     return target;
   }
   apply(p:RidePose){
+    invalidateAnimatedShadow(this.root);
     this.lights.update(p,typeof matchMedia!=='undefined'&&(matchMedia('(prefers-reduced-motion: reduce)').matches||document.documentElement.dataset.reducedMotion==='true'));
     this.armorKeychain?.update(p,typeof matchMedia!=='undefined'&&matchMedia('(prefers-reduced-motion: reduce)').matches);
     if(this.skateboarding&&p.crashBlend===0)p={...p,stopFoot:0,seated:0};
@@ -302,10 +304,13 @@ export class TrafficView {
     item.root.position.set(a.x,a.y,a.z);item.root.rotation.y=a.heading;
     item.root.visible=distance<drawDistance;
     if(!item.root.visible){item.animationAge=undefined;continue;}
-    const firstPose=item.animationAge===undefined;item.animationAge=(item.animationAge??((Math.abs(a.id*37)%100)/100)*.1)+dt;
+    const firstPose=item.animationAge===undefined;item.animationAge=(item.animationAge??0)+Math.max(0,dt);
     // World collisions and actor positions still tick normally; only distant posing is paced.
-    if(!firstPose&&!a.fall&&distance>45&&item.animationAge<(distance>120?.2:.1))continue;
-    const animationDt=item.animationAge;item.animationAge=-((Math.abs(a.id*37)%100)/100)*.025;
+    const poseInterval=(distance>120?.2:.1)+((Math.abs(a.id*37)%100)/100)*.025;
+    if(!firstPose&&!a.fall&&distance>45&&item.animationAge<poseInterval)continue;
+    // Stagger the distant update interval, never subtract time from the gait.
+    // A negative reset starved nearby walkers of animation time at 60 Hz.
+    const animationDt=item.animationAge;item.animationAge=0;
     if(a.fall){
       if(!item.fallRig){
         const mobility=item.mobility;

@@ -49,9 +49,9 @@ export function makeElmwoodWeather(scene:T.Scene,camera:T.Camera,sun:T.Direction
   const day=T.MathUtils.smoothstep(solar.y,-.10,.20),gold=1-T.MathUtils.smoothstep(solar.y,.015,.40);
   // Balance the baked skylight with the sun and hemisphere instead of adding
   // three full-strength fills. Keep one weather-owned exposure at every hour.
-  sun.intensity=Math.max(0,solar.y)*3.4*state.sun+day*gold*.55*state.sun;sun.color.set('#fff4df').lerp(scratch.set('#ffa267'),gold*.77);
-  hemi.intensity=(.16+day*state.ambient*.86);hemi.color.set('#c9d4df').lerp(scratch.set('#92bdd5'),gold*.65);hemi.groundColor.set('#4b5553');
-  renderer.toneMappingExposure=.68+day*.20;scene.environmentIntensity=.06+day*(.25-state.cloud*.10);
+  sun.intensity=Math.max(0,solar.y)*2.8*state.sun+day*gold*.55*state.sun;sun.color.set('#fff4df').lerp(scratch.set('#ffa267'),gold*.77);
+  hemi.intensity=(.18+day*state.ambient*1.05);hemi.color.set('#c9d4df').lerp(scratch.set('#92bdd5'),gold*.65);hemi.groundColor.set('#5d6559');
+  renderer.toneMappingExposure=.70+day*.23;scene.environmentIntensity=.06+day*(.25-state.cloud*.10);
   fog.color.set('#b6c6cd').lerp(scratch.set('#4d697b'),gold*.55).lerp(scratch.set('#222b3a'),1-day);fog.density=state.fog;
   scene.fog=visible?fog:null;rain.visible=visible&&state.rain>.025;
   if(rain.visible&&!paused){

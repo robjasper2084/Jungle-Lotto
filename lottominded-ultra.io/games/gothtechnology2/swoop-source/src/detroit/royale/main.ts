@@ -8,7 +8,9 @@ import {PointLightBudget} from '@digital-static/ridecore';
 import {weaponReady} from '../../../../ride-core/src/royale/holster.ts';
 import {fpsAim} from './fpsAim.ts';
 import {CombatPreferencesControls,combatLookGain,combatChaseEye,retractCombatCamera} from './combatPolish.ts';
+import {FpsControlFlow} from './fpsControlFlow.ts';
 const combatPreferences=new CombatPreferencesControls();
+const fpsControlFlow=new FpsControlFlow();
 let barrelBlocked=false,aimDistance=0;
 import {FirstPersonView} from './firstPersonView.ts';
 import {footEyeHeight} from './fpsMotion.ts';
@@ -53,11 +55,13 @@ import {combatEye,dragAim,stickAxes} from './combatView.ts';
 import {FootControls} from '../../../../ride-core/src/onFootControls.ts';
 import {CameraBlend,mountCameraPreferences,cameraTransitionsEnabled} from '../../../../ride-core/src/cameraPresentation.ts';
 import {CAMERA_PROFILE} from '../../../../ride-core/src/cameraProfile.ts';
-import {clearRideCamera} from '../cameraClearance.ts';
+import {underpassCameraHeight,clearRideCamera} from '../cameraClearance.ts';
 import {loadEngineForPage,engineRequested} from '../../../../ride-core/src/engine/browser.ts';
 import {engineReady} from '../../../../ride-core/src/engine/runtime.ts';
 import './style.css';
 import './lobby.css';
+import {InteractiveWater} from '../interactiveWater.ts';
+import {gameMenuHome} from '../gameMenuHome.ts';
 import * as T from 'three';
 import {GLTFLoader} from '../compressedGLTFLoader.ts';
 import type {GLTF} from '../compressedGLTFLoader.ts';
@@ -103,7 +107,7 @@ const cameraModes=['chase','first','front','side','orbit','drone'] as const;
 type ViewMode=typeof cameraModes[number];let viewMode:ViewMode='chase',sensitivity=1;const cameraBlend=new CameraBlend();
 try{const saved=localStorage.getItem('royale-camera');if(cameraModes.includes(saved as ViewMode))viewMode=saved as ViewMode;const value=Number(localStorage.getItem('royale-aim-sensitivity'));if(value>=.4&&value<=2)sensitivity=value;}catch{}
 function setCamera(mode:ViewMode){viewMode=mode;el<HTMLSelectElement>('camera-view').value=mode;try{localStorage.setItem('royale-camera',mode);}catch{}}
-function cycleCamera(){syncFootAim();if(footAim.active){footView=footView==='first'?'chase':'first';saveFootView();}else setCamera(viewMode==='first'?'chase':'first');}
+function cycleCamera(){syncFootAim();firstPerson?.resetMotion();if(footAim.active){footView=footView==='first'?'chase':'first';saveFootView();}else setCamera(viewMode==='first'?'chase':'first');}
 setCamera(viewMode);el<HTMLSelectElement>('camera-view').onchange=e=>setCamera((e.target as HTMLSelectElement).value as ViewMode);
 let footView:'first'|'chase'='first';
 try{if(localStorage.getItem('royale-foot-view')==='chase')footView='chase';}catch{}
@@ -124,13 +128,14 @@ const camera=new T.PerspectiveCamera(62,1,.12,4200);camera.position.set(65,85,10
 const capture=new CameraCapture(canvas,()=>{release();if(capture.active&&session?.state?.self?.combat.holster?.stowed)tap.add('holster');},()=>royaleAudio.capture());
 const spectatorControls=document.createElement('div');spectatorControls.id='spectator-controls';spectatorControls.hidden=true;const spectatorLabel=document.createElement('span');
 for(const [label,delta]of [['Previous rider',-1],['Next rider',1]] as const){const b=document.createElement('button');b.textContent=delta<0?'←':'→';b.setAttribute('aria-label',label);b.onclick=()=>{const s=session.state?.spectating;if(!s?.choices.length)return;session.watch(s.choices[(Math.max(0,s.choices.indexOf(s.target))+delta+s.choices.length)%s.choices.length]);};spectatorControls.append(b);if(delta<0)spectatorControls.append(spectatorLabel);}document.body.append(spectatorControls);
+const interactiveWater=new InteractiveWater(canvas,camera);interactiveWater.settings(el('camera-settings'));
 const renderer=new T.WebGLRenderer({canvas,antialias:startupAntialias()});renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.0;renderer.shadowMap.type=T.PCFShadowMap;
 const atmosphereSky=new RouteSky();
 // Restrained Royale sky grade.
 atmosphereSky.material.fragmentShader=atmosphereSky.material.fragmentShader.replace('gl_FragColor = vec4( texColor, 1.0 );','texColor=mix(vec3(dot(texColor,vec3(.2126,.7152,.0722))),texColor,.74); gl_FragColor = vec4( texColor, 1.0 );');
-scene.add(atmosphereSky);const sky=new T.HemisphereLight('#adc3cd','#565b56',1.05);scene.add(sky);const sun=new T.DirectionalLight('#ffd4a1',1.55);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);Object.assign(sun.shadow.camera,{left:-32,right:32,top:36,bottom:-30,near:.1,far:100});sun.shadow.normalBias=.035;sun.shadow.bias=-.00015;scene.add(sun,sun.target);followStableSun(sun,{x:0,y:0,z:0},ROYALE_SUN);
+scene.add(atmosphereSky);const sky=new T.HemisphereLight('#c2d9e6','#5b6156',.94);scene.add(sky);const sun=new T.DirectionalLight('#fff0dc',1.8);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);Object.assign(sun.shadow.camera,{left:-32,right:32,top:36,bottom:-30,near:.1,far:100});sun.shadow.normalBias=.035;sun.shadow.bias=-.00015;scene.add(sun,sun.target);followStableSun(sun,{x:0,y:0,z:0},ROYALE_SUN);
 const graphics=createGraphicsQuality(renderer,scene,canvas);
-const fill=new T.DirectionalLight('#a4cccf',.48);fill.position.set(-12,8,-13);scene.add(fill,fill.target);
+const fill=new T.DirectionalLight('#c7dceb',.30);fill.position.set(-12,8,-13);scene.add(fill,fill.target);
 graphics.mount(el('graphics-settings'));
 
 const fieldRing=new FieldBoundary('#49adff',.9,true);scene.add(fieldRing);
@@ -157,7 +162,7 @@ function playDeathReplay(){release();deathReplay.start(performance.now());if(dea
 const keys=new Set<string>(),held=new Set<string>(),tap=new Set<string>();let throttle=0,steer=0,aimPointer:number|undefined,mousePointer:number|undefined,aimX=0,aimY=0,stickPointer:number|undefined;
 const message=(s:string)=>el('message').textContent=s;
 const speedCruise=new CruiseControl();
-function release(){speedCruise.reset();shotPreview.reset();localShotPending=false;footControls.clear();stanceGesture.reset();leanGesture.reset();touchAds=false;mouseCombat.reset();lookYaw=lookPitch=0;keys.clear();held.clear();tap.clear();steer=throttle=0;aimPointer=mousePointer=stickPointer=undefined;resetPointers.forEach(reset=>reset());session?.release();}
+function release(){fpsControlFlow.reset();firstPerson?.resetMotion();speedCruise.reset();shotPreview.reset();localShotPending=false;footControls.clear();stanceGesture.reset();leanGesture.reset();touchAds=false;mouseCombat.reset();lookYaw=lookPitch=0;keys.clear();held.clear();tap.clear();steer=throttle=0;aimPointer=mousePointer=stickPointer=undefined;resetPointers.forEach(reset=>reset());session?.release();}
 function finishLayoutEditing(){if(layoutEditing)saveLayout();layoutEditing=false;el('touch').classList.remove('editing');el('layout-done').hidden=true;release();}
 function clearResults(){el('results').replaceChildren();el('rematch').hidden=true;}
 function showMenu(){if(document.pointerLockElement===canvas)document.exitPointerLock();release();finishLayoutEditing();paused=true;if(dialog.open)dialog.close();dialog.showModal();el('resume').hidden=!session?.state;el('quit').hidden=!session?.state;}
@@ -170,11 +175,12 @@ const lobbyBack=back.cloneNode(true) as HTMLAnchorElement;lobbyBack.id='lobby-re
 const lobbySettings=document.createElement('button');lobbySettings.textContent='Settings';lobbySettings.onclick=openSettings;
 const lobbyHome=document.createElement('button');lobbyHome.textContent='Loadout';lobbyHome.onclick=()=>{el<HTMLDetailsElement>('ride-settings').open=false;dialog.scrollTop=0;lobbyBack.focus({preventScroll:true});};
 lobbyNav.append(lobbyBack,lobbySettings,lobbyHome);dialog.prepend(lobbyNav);dialog.scrollTop=0;
-el('menu').onclick=showMenu;el('resume').onclick=resume;dialog.addEventListener('cancel',e=>{e.preventDefault();if(session?.state)resume();});
+const menuHome=gameMenuHome(dialog,{kind:'royale',title:'Static',subtitle:'Royale',tagline:'DETROIT / SURVIVAL',description:'Ride the city. Find cover. Outlast the Static Field.',play:el<HTMLButtonElement>('practice'),resume:el<HTMLButtonElement>('resume'),configure:()=>{el('skin').focus();},settings:openSettings,online:()=>{el<HTMLDetailsElement>('online').open=true;el('code').focus();}});
+el('menu').onclick=()=>{showMenu();menuHome.show();};el('resume').onclick=resume;dialog.addEventListener('cancel',e=>{e.preventDefault();if(session?.state)resume();});
 async function run(work:()=>void|Promise<void>){try{message('');await work();}catch(e){message((e as Error).message);}}
 function preparationItemDone(){const root=el('royale-startup');root.dataset.completed=String(Number(root.dataset.completed??0)+1);}
 function preparationStage(completed:number,label:string){const root=el('royale-startup');if(completed===0){root.dataset.total=String(10+3+RIDER_CHOICES.length+WHEELS.filter(w=>w.id!=='euc').length);root.dataset.completed='0';}else preparationItemDone();message(label);}
-async function prepare(){preparationStage(0,'Warming up the arena…');const hdr=await new HDRLoader().loadAsync(new URL('../../../art/nvidia/detroit-skylight.hdr',import.meta.url).href),pm=new T.PMREMGenerator(renderer);scene.environment=pm.fromEquirectangular(hdr).texture;scene.environmentIntensity=.46;hdr.dispose();pm.dispose();await loadEngineForPage(true);if(!engineReady())throw Error('Compiled arena could not load. Return to normal riding or retry.');preparationStage(1,'Loading the original Detroit map…');terrain=new DowntownArena(await TagTerrain.create(await loadFixture(new URL('./love-tag/swoop-detroit.json',location.href).href)));preparationStage(2,'Building the Detroit skyline…');session=new RoyaleSession(terrain);radarMap=new RoyaleRadarMap(terrain,el('camera-settings'));scenery=await buildDetroitArenaScene(scene,terrain,graphics.applyAssets);canvas.dataset.riverfront=JSON.stringify(scenery.root.userData.riverfront);canvas.dataset.arena=terrain.arenaIdentity.arena;canvas.dataset.collision=terrain.arenaIdentity.collision;
+async function prepare(){preparationStage(0,'Warming up the arena…');const hdr=await new HDRLoader().loadAsync(new URL('../../../art/nvidia/detroit-skylight.hdr',import.meta.url).href),pm=new T.PMREMGenerator(renderer);scene.environment=pm.fromEquirectangular(hdr).texture;scene.environmentIntensity=.35;hdr.dispose();pm.dispose();await loadEngineForPage(true);if(!engineReady())throw Error('Compiled arena could not load. Return to normal riding or retry.');preparationStage(1,'Loading the original Detroit map…');terrain=new DowntownArena(await TagTerrain.create(await loadFixture(new URL('./love-tag/swoop-detroit.json',location.href).href)));preparationStage(2,'Building the Detroit skyline…');session=new RoyaleSession(terrain);radarMap=new RoyaleRadarMap(terrain,el('camera-settings'));scenery=await buildDetroitArenaScene(scene,terrain,graphics.applyAssets);interactiveWater.register(scenery.root);canvas.dataset.riverfront=JSON.stringify(scenery.root.userData.riverfront);canvas.dataset.arena=terrain.arenaIdentity.arena;canvas.dataset.collision=terrain.arenaIdentity.collision;
  preparationStage(3,'Preparing riders…');const loader=new GLTFLoader();await loadAssetQueue(['DS_EUC_01','DS_Cyclist_01','DS_Bicycle_01',...RIDER_CHOICES.map(r=>r.id)],assetConcurrency(),async id=>{assetMap.set(id,await loader.loadAsync(['DS_Man_01','DS_Hoodie_Woman_01','DS_Mascot_Suit_01','DS_Mascot_Hoodie_01','DS_Armored_Rider_01'].includes(id)?'/exports/rigged-heroes/'+id+'.glb':'/exports/glb/'+id+'/'+id+'_LOD'+(id==='DS_Man_01'?0:1)+'.glb'));preparationItemDone();});
  preparationStage(4,'Preparing companions…');assetMap.set('DS_Boerboel_01',await loader.loadAsync('/exports/polish/royale-equipment/royale-dog.glb'));companions=new RoyaleCompanions(scene,assetMap,terrain);
  preparationStage(5,'Tuning the wheels…');await loadAssetQueue(WHEELS.filter(w=>w.id!=='euc'),assetConcurrency(),async w=>{assetMap.set(w.asset,await loader.loadAsync('/exports/electric/'+w.asset+'.glb'));preparationItemDone();});
@@ -263,7 +269,7 @@ canvas.addEventListener('wheel',e=>{if(gameplayInputBlocked())return;e.preventDe
 const aimGain=(gain:number)=>combatLookGain(gain,sensitivity,adsSensitivity,aimMode(),(footAim.active?footView:viewMode)==='first',selectedScope,scopeSensitivity.value,combatPreferences.value,mouseCombat.canFire||held.has('fire')||held.has('fire-left')||!!navigator.getGamepads?.()[0]?.buttons[7]?.pressed);
 function syncFootAim(){footAim.sync(session?.prediction?.controller.poseValue??session?.state?.actors.find(a=>a.id===session.me)?.pose);}
 function look(dx:number,dy:number,gain:number,device='touch'){if(!dx&&!dy)return;syncFootAim();dx*=aimComfort.value.x;dy*=aimComfort.value.y;const g=aimGain(gain)*aimSlowdown(device),next=dragAim(aimYaw,aimPitch,dx,dy,g);if(footAim.active){footAim.turn(-dx*g);aimYaw=0;}else aimYaw=next.yaw;aimPitch=next.pitch;}
-function cancelAimPointer(){mouseCombat.reset();tap.delete('mouse-fire');localShotPending=false;shotPreview.reset();aimPointer=mousePointer=undefined;}
+function cancelAimPointer(){fpsControlFlow.reset();mouseCombat.reset();tap.delete('mouse-fire');localShotPending=false;shotPreview.reset();aimPointer=mousePointer=undefined;}
 const aimPad=el('aim-pad');
 for(const surface of [canvas,aimPad]){
  const accepts=(e:PointerEvent)=>surface===canvas||e.pointerType==='mouse';
@@ -319,19 +325,25 @@ for(const node of Array.from(el('touch').children)){
  resetPointers.push(up);for(const type of ['pointerup','pointercancel','lostpointercapture'])h.addEventListener(type,e=>{if((e as PointerEvent).pointerId!==pointer)return;if(type!=='pointerup'){tap.delete(act()!);if(act()==='fire'||act()==='fire-left'){localShotPending=false;shotPreview.reset();}if(act()==='aim'){touchAds=false;aimGesture.reset();}}up();});
 }
 el('touch').append(moreControls);
-function aimMode(){return touchAds||touchAim==='hold'&&held.has('aim')||navigator.getGamepads?.()[0]?.buttons[6]?.pressed?2:aimGesture.get(performance.now());}
+function rawAimMode(){return touchAds||touchAim==='hold'&&held.has('aim')||navigator.getGamepads?.()[0]?.buttons[6]?.pressed?2:aimGesture.get(performance.now());}
+function aimMode(){return combatPreferences.value.controlStyle==='burntwax'&&footAim.active&&fpsControlFlow.aimSuppressed?0:rawAimMode();}
 function command():Command{syncFootAim();let c=neutral(session.state?.round??'');const pad=navigator.getGamepads?.()[0];const axis=(n:number)=>deadZone(pad?.axes[n]??0,aimComfort.value.deadzone);
  const scopePressed=!!pad?.buttons[12]?.pressed;if(scopePressed&&!scopePadHeld)changeScope();scopePadHeld=scopePressed;
  c.throttle=T.MathUtils.clamp(throttle+Number(keys.has(bindings.forward)||keys.has('ArrowUp'))-Number(keys.has(bindings.brake)||keys.has('ArrowDown'))-axis(1),-1,1);
  c.steer=T.MathUtils.clamp(steer+Number(keys.has(bindings.right)||keys.has('ArrowRight'))-Number(keys.has(bindings.left)||keys.has('ArrowLeft'))+axis(0),-1,1);
  look(axis(2)*6,axis(3)*4.5,.004,'controller');const gyro=gyroscope.consume(1/60,!dialog.open&&!paused,aimMode()===2||viewMode==='first');const gyroGain=scopeSensitivity.gain(aimMode()===2?selectedScope:null,'gyro')/(aimMode()===2?scopeZoom(selectedScope):1);gyro.yaw*=gyroGain;gyro.pitch*=gyroGain;if(footAim.active){footAim.turn(-gyro.yaw);aimYaw=0;}else aimYaw=T.MathUtils.clamp(aimYaw-gyro.yaw,-1.25,1.25);aimPitch=T.MathUtils.clamp(aimPitch+gyro.pitch,-.65,.65);c.facingYaw=footAim.active?footAim.heading:null;c.aimYaw=aimYaw;c.aimPitch=aimPitch;
- c.fire=(mouseCombat.canFire||tap.has('mouse-fire')||held.has('fire')||held.has('fire-left')||tap.has('fire')||tap.has('fire-left'))||!!pad?.buttons[7]?.pressed;c.aimMode=aimMode();if(c.fire&&!footAim.active&&!c.aimMode&&viewMode!=='first'&&viewMode!=='chase')setCamera('chase');
+ c.fire=(mouseCombat.canFire||tap.has('mouse-fire')||held.has('fire')||held.has('fire-left')||tap.has('fire')||tap.has('fire-left'))||!!pad?.buttons[7]?.pressed;c.aimMode=rawAimMode();if(c.fire&&!footAim.active&&!c.aimMode&&viewMode!=='first'&&viewMode!=='chase')setCamera('chase');
  c.holster=tap.has('holster');if(c.holster){touchAds=false;aimGesture.reset();held.delete('aim');c.aimMode=0;}c.reload=tap.has('reload')||!!pad?.buttons[2]?.pressed;c.cycleMode=tap.has('cycleMode');c.lean=leanGesture.get(keys.has(bindings.leanLeft),keys.has(bindings.leanRight),held.has('lean-left'),held.has('lean-right'));c.crouch=stanceGesture.value===1;c.prone=stanceGesture.value===2;
  c.hop=tap.has('hop')||!!pad?.buttons[0]?.pressed;c.hopHeld=held.has('hop')||keys.has(bindings.hop)||!!pad?.buttons[0]?.pressed;c.dismount=footControls.consume();c.burst=footControls.run||held.has('burst')||keys.has(bindings.burst)||!!pad?.buttons[4]?.pressed;
  const brawling=!!session.state?.self?.combat.melee?.brawl;c.brawl=tap.has('brawl');c.light=brawling&&c.fire;c.heavy=brawling&&c.reload;if(brawling){c.fire=false;c.reload=false;c.aimMode=0;}c.evade=tap.has('evade')?(c.throttle<-.2?2:c.steer<-.1?-1:1):0;
  c.dogAttack=tap.has('dog-attack');c.dogRadar=tap.has('dog-radar');c.utility=tap.has('utility')||!!pad?.buttons[5]?.pressed;c.repair=tap.has('repair')||!!pad?.buttons[3]?.pressed;c.recover=tap.has('recover');c.swap=tap.has('swap');c.slot=slot;
  if(capture.active){capture.trigger(c.fire||c.light);c=photographyInput(c);}
  const self=session.state?.actors.find(a=>a.id===session.me),pose=session.prediction?.controller.poseValue??self?.pose;
+ const own=session.state?.self,ownWeapon=own?.loadout[own.slot];
+ if(own&&ownWeapon&&!capture.active&&aimComfort.value.autoReload&&weaponReady(own.combat,session.state?.tick??0)&&!brawling&&own.combat.magazine[ownWeapon]===0&&own.ammo[ownWeapon]>0&&own.combat.reloadStart<0)c.reload=true;
+ const fpsIntent=fpsControlFlow.update({enabled:combatPreferences.value.controlStyle==='burntwax'&&!capture.active&&!brawling,onFoot:pose?.footMode===2,moving:Math.hypot(c.throttle,c.steer)>.05,sprint:c.burst,aimMode:c.aimMode,fire:c.fire,reloading:c.reload||(own?.combat.reloadStart??-1)>=0,low:c.crouch||c.prone});
+ c.burst=fpsIntent.sprint;c.aimMode=fpsIntent.aimMode;c.fire=fpsIntent.fire;
+ canvas.dataset.fpsControls=combatPreferences.value.controlStyle;
  c.throttle=speedCruise.update(c.throttle,pose?.speed??0,DT,!!self?.alive&&!!pose&&!pose.footMode&&!session.state?.self?.controller.fields.crashed&&session.state?.phase==='active',c.dismount||c.recover);
  canvas.dataset.cruise=String(speedCruise.active);canvas.dataset.cruiseSpeed=String(speedCruise.targetSpeed);
  barrelBlocked=false;
@@ -340,7 +352,6 @@ function command():Command{syncFootAim();let c=neutral(session.state?.round??'')
   c.aimYaw=aim.aimYaw;c.aimPitch=aim.aimPitch;barrelBlocked=aim.blocked;aimDistance=aim.distance;
  }
  if(self&&session.state?.self){const me=session.state.self,w=me.loadout[me.slot],mag=me.combat.magazine[w];
-  if(!capture.active&&aimComfort.value.autoReload&&weaponReady(me.combat,session.state.tick)&&!brawling&&mag===0&&me.ammo[w]>0&&me.combat.reloadStart<0)c.reload=true;
   if(session.room){const preview=shotPreview.sample({round:session.state.round,tick:session.state.tick,counter:me.combat.shotCounter,fire:c.fire,allowed:weaponReady(me.combat,session.state.tick)&&!c.holster&&session.state.phase==='active'&&me.alive&&!brawling&&!c.reload&&me.combat.reloadStart<0&&!paused&&!dialog.open,mode:me.combat.fireMode,magazine:mag,interval:WEAPONS[w].interval,weapon:w},performance.now());if(preview){localShotPending=true;royaleAudio.previewShot(w);}}
  }
  tap.clear();return c;
@@ -406,7 +417,9 @@ function draw(now:number){
  for(const [id,a]of actors)if(!rendered.has(id)){a.nameplate.root.visible=false;a.view.root.visible=false;a.weapon.visible=false;a.shield.visible=false;}
 
  stage('riders');
- companions?.update(s.actors,s.roster,presentationTick,motionDelta,graphics.current.shadows===0,reducedMotion,s.phase==='results'?s.winner:undefined);canvas.dataset.companions=String(s.actors.filter(a=>a.alive).length);
+ const dogTick=watching?.tick??s.tick;
+ const dogDisplayTick=!replaying&&(session.room||watching)?session.remotePoses.tick(now)??dogTick-3:dogTick-3+alpha;
+ companions?.update(s.actors,s.roster,dogTick,motionDelta,graphics.current.shadows===0,reducedMotion,s.phase==='results'?s.winner:undefined,dogDisplayTick);canvas.dataset.companions=String(s.actors.filter(a=>a.alive).length);
  stage('dogs');
  const presentLoot=new Set(s.loot.map(item=>item.id));
  for(const loot of s.loot){
@@ -442,10 +455,10 @@ function draw(now:number){
  const desired=eyeView&&p.footMode?new T.Vector3(p.x,p.y+footEyeHeight(scale,p.footCrouch,p.footProne),p.z):eyeView?combatEye(sight,heading,pitch,scale,ads):
    activeMode==='chase'||activeMode==='shoulder'?combatChaseEye(at,heading,scale,combatPreferences.value.shoulder,activeMode==='shoulder'):
    at.clone().add(new T.Vector3(-Math.sin(angle)*profile.back+Math.cos(angle)*profile.side,profile.height,-Math.cos(angle)*profile.back-Math.sin(angle)*profile.side));
- const clearCombat=(eye:T.Vector3)=>retractCombatCamera(eye,at,(o,d,max)=>activeTerrain().raycast(o,d,max),activeTerrain().ground(eye.x,eye.z,p.y).height);
+ const clearCombat=(eye:T.Vector3)=>{retractCombatCamera(eye,at,(o,d,max)=>activeTerrain().raycast(o,d,max),activeTerrain().ground(eye.x,eye.z,p.y).height);eye.y=underpassCameraHeight(activeTerrain(),eye,eye.y,p.y,1.9);return eye;};
  if(activeMode==='chase'||activeMode==='shoulder')clearCombat(desired);else clearRideCamera(activeTerrain(),desired,at,p.y);
  followStableSun(sun,p,ROYALE_SUN);fill.position.set(p.x-12,p.y+8,p.z-13);fill.target.position.set(p.x,p.y+1,p.z);
- if(!combatBlock)scenery.update(p,now/1000);camera.position.copy(desired);
+ interactiveWater.update(p,paused||!!combatBlock);if(!combatBlock)scenery.update(p,now/1000);camera.position.copy(desired);
  camera.lookAt(eyeView||activeMode==='chase'||activeMode==='shoulder'?desired.clone().addScaledVector(forward,100):at);
  camera.fov=ads?scopedFov(profile.fov,selectedScope):activeMode==='first'?combatPreferences.value.firstFov:activeMode==='chase'?combatPreferences.value.thirdFov:activeMode==='shoulder'?Math.max(50,combatPreferences.value.thirdFov-10):profile.fov;cameraBlend.apply(camera,(watching?'spectate-'+focusId+'-':'')+(p.footMode?'foot-':'ride-')+activeMode,delta,reducedMotion||!cameraTransitionsEnabled());
  if(activeMode==='chase'||activeMode==='shoulder')clearCombat(camera.position);else clearRideCamera(activeTerrain(),camera.position,at,p.y);camera.updateProjectionMatrix();
@@ -457,7 +470,7 @@ function draw(now:number){
   if(!watching&&eyeView&&self.alive&&!replaying&&p.crashBlend<.05&&s.phase!=='results'){
    if(!firstPerson||firstPerson.skin!==self.skin){firstPerson?.dispose();firstPerson=new FirstPersonView(assetMap,equipmentLibrary,riderChoice(self.skin));scene.add(firstPerson.root);}
    mine.view.rider.visible=false;mine.weapon.visible=false;mine.rig.hideHandheld();
-   const presentation=firstPerson.update({...p,seated:0},self.combat,self.weapon,s.tick,renderAimYaw,aimPitch,camera,motionDelta,firing.has(self.id),ads,reducedMotion,activeTerrain(),s.self?.healingUntil||0);
+   const presentation=firstPerson.update({...p,seated:0},self.combat,self.weapon,s.tick,renderAimYaw,aimPitch,camera,motionDelta,firing.has(self.id),ads,reducedMotion,activeTerrain(),s.self?.healingUntil||0,combatPreferences.value.controlStyle==='burntwax');
    if(ads&&selectedScope)firstPerson.hide();canvas.dataset.fpsPresentation=JSON.stringify(presentation);
   }else canvas.dataset.fpsPresentation='world';
  }

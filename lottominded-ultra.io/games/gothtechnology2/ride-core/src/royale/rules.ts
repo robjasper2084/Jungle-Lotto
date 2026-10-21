@@ -17,6 +17,7 @@ export type {Weapon} from './combatProfiles.ts';
 import {WEAPONS,type Weapon} from './combatProfiles.ts';
 import {wheelProfile} from './wheelProfiles.ts';
 import {tacticalDestination,leadTarget} from './botTactics.ts';
+import {botWheelRecovery,recoverBotWheel} from './botWheelRecovery.ts';
 import {traceBallistic} from './ballisticSweep.ts';
 import {stanceBounds} from './stanceVolume.ts';
 import {initialSpawnNodes,recoveryNodes,spawnLabel,type SpawnNode} from './spawnNodes.ts';
@@ -63,7 +64,7 @@ export class RoyaleMatch{
  private impacts:SurfaceImpact[]=[];
  private replayHistory=new KillcamHistory();
  private awarded=new Map<string,number>();
- private brains=new Map<string,{think:number;enemy?:string;acquired:number;stuck:number;last:Vec3;backUntil:number}>();
+ private brains=new Map<string,{think:number;enemy?:string;acquired:number;stuck:number;last:Vec3;backUntil:number;wheel?:ReturnType<typeof botWheelRecovery>}>();
  private kernel?:RoyaleKernel;private roundStarts:SpawnNode[]=[];
  readonly series:MatchSeries;
  private spectators=new Map<string,string>();
@@ -109,6 +110,8 @@ export class RoyaleMatch{
  private botInput(a:Actor):Command{
  const p=a.pose,c=neutral(this.round,++a.lastSeq,this.tick),f=this.kernel?.field()??fieldAt(this.tick,this.seed,this.terrain.zones,this.terrain.fieldRadii);
  const index=this.actors.indexOf(a);let brain=this.brains.get(a.id);if(!brain){brain={think:this.tick,acquired:this.tick,stuck:0,last:{x:p.x,y:p.y,z:p.z},backUntil:0};this.brains.set(a.id,brain);}
+ const wheel=brain.wheel??=botWheelRecovery();
+ if(recoverBotWheel(a,c,wheel,this.terrain,this.tick)){brain.think=this.tick;brain.stuck=0;brain.backUntil=0;return c;}
  if(this.tick>=brain.think){brain.think=this.tick+18+index;
   const progress=Math.hypot(p.x-brain.last.x,p.z-brain.last.z);brain.stuck=progress<.15?brain.stuck+1:0;brain.last={x:p.x,y:p.y,z:p.z};
   if(brain.stuck>8){brain.backUntil=this.tick+40;brain.stuck=0;}
@@ -130,7 +133,7 @@ export class RoyaleMatch{
  c.steer=clamp(-turn*2,-1,1);c.throttle=Math.abs(turn)>1.2?(p.speed>2?-1:.25):Math.abs(turn)>.55?.4:.85;
  const visible=this.actors.find(b=>b.id===brain.enemy&&b.alive&&Math.hypot(b.pose.x-p.x,b.pose.z-p.z)<85&&this.terrain.line({x:p.x,y:p.y+1.3,z:p.z},{x:b.pose.x,y:b.pose.y+1.3,z:b.pose.z}));
  // Close encounters use the same dismount and free-heading controls as a human.
- if(!p.footMode&&visible&&Math.hypot(visible.pose.x-p.x,visible.pose.z-p.z)<34&&Math.abs(p.speed)<9)c.dismount=true;
+ if(!p.footMode&&this.tick>=wheel.stayMountedUntil&&visible&&Math.hypot(visible.pose.x-p.x,visible.pose.z-p.z)<34&&Math.abs(p.speed)<9)c.dismount=true;
  if(p.footMode===2){
   const targetYaw=visible?Math.atan2(visible.pose.x-p.x,visible.pose.z-p.z):Math.atan2(next.x-p.x,next.z-p.z);
   const facing=angle(p.headingY+clamp(angle(targetYaw-p.headingY),-.09,.09));c.facingYaw=facing;

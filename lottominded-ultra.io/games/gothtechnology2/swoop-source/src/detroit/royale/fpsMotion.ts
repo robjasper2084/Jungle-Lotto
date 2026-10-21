@@ -25,10 +25,11 @@ export class WeaponSwap {
 }
 export class FpsMotion {
  private age=1;private weapon='';private kick=0;private land=0;private air=false;private run=0;private aim=0;
- update(dt:number,weapon:string,shot:boolean,speed:number,air:boolean,ads:boolean,reduced:boolean,reload:ReturnType<typeof reloadPose>){
+ reset(){this.age=1;this.weapon='';this.kick=this.land=this.run=this.aim=0;this.air=false;}
+ update(dt:number,weapon:string,shot:boolean,speed:number,air:boolean,ads:boolean,reduced:boolean,reload:ReturnType<typeof reloadPose>,onFoot=true){
   dt=Math.max(0,Math.min(.1,dt));if(weapon!==this.weapon){this.weapon=weapon;this.age=0;}this.age+=dt;
   this.kick*=Math.exp(-20*dt);if(shot)this.kick=1;if(this.air&&!air)this.land=1;this.air=air;this.land*=Math.exp(-13*dt);
-  this.run+=((speed>3.2&&!ads&&!reload.active?1:0)-this.run)*(1-Math.exp(-12*dt));this.aim+=((ads?1:0)-this.aim)*(1-Math.exp(-20*dt));
+  this.run+=((onFoot&&speed>3.2&&!ads&&!reload.active&&!shot?1:0)-this.run)*(1-Math.exp(-12*dt));this.aim+=((ads?1:0)-this.aim)*(1-Math.exp(-20*dt));
   const motion=reduced?0:1;
   return {equip:(1-smooth(this.age/.24))*motion,kick:this.kick*motion,land:this.land*motion,run:this.run,aim:this.aim};
  }

@@ -59,3 +59,18 @@ test('camera stays above low sidewalk edges but below a real bridge',async()=>{
  const y=underpassCameraHeight(high,point,5,0);assert(y>3.5&&y<4,'underpass camera crossed the bridge');
  low.dispose();high.dispose();
 });
+
+test('mounted rider cannot enter pavement through the upper body',async()=>{
+ for(const height of [1.1,1.4,1.8]){
+  const terrain=await platform(height),rider=new RideController(terrain,{spawn:{position:{x:0,y:0,z:0},headingY:0}});
+  for(let i=0;i<240;i++)rider.step(1/120,{...NEUTRAL_ACTIONS,throttle:.35});
+  assert(rider.poseValue.z<1,`mounted rider entered the ${height}m pavement slab`);terrain.dispose();
+ }
+});
+test('mounted rider retains access to ordinary curbs and clear underpasses',async()=>{
+ for(const height of [.15,.3,4]){
+  const terrain=await platform(height),rider=new RideController(terrain,{spawn:{position:{x:0,y:0,z:0},headingY:0}});
+  for(let i=0;i<240;i++)rider.step(1/120,{...NEUTRAL_ACTIONS,throttle:.35});
+  assert(rider.poseValue.z>1,`blocked a legitimate ${height}m curb/underpass`);terrain.dispose();
+ }
+});
