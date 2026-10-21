@@ -1,15 +1,17 @@
 import {createGroundSample,type TerrainSampler} from './terrain.ts';
 import {footCycleDistance} from './onFootGait.ts';
 import {wheelPickupTiming,WHEEL_PICKUP_TOTAL} from './wheelPickupTiming.ts';
+import {msjLocomotionState,resetMsjLocomotion,stepMsjLocomotion} from './msjLocomotion.ts';
 
 export const FOOT_SPEED={walk:2.35,run:5.4,reverse:2.05,reverseRun:3.8} as const;
 export const footFields=()=>({footMode:0,footBlend:0,footPhase:0,footCycle:0,footTime:0,footMountTime:0,footJump:0,footCrouch:0,footProne:0,footStagger:0,parkX:0,parkY:0,parkZ:0,parkHeading:0});
 export type FootPose=ReturnType<typeof footFields>&{x:number;y:number;z:number;headingY:number;speed:number;airHeight:number;airBlend:number;velocityX:number;velocityZ:number;rollAngle:number;groundPitch:number;groundRoll:number;stopFoot:number};
-export const footState=()=>({mode:0,age:0,latch:false,jumpLatch:false,vy:0,turn:0,fromX:0,fromY:0,fromZ:0,fromHeading:0,toX:0,toY:0,toZ:0,phase:0,time:0,land:0,carryX:0,carryZ:0,stagger:0});
+export const footState=()=>({...msjLocomotionState(),legacyLocomotion:false,mode:0,age:0,latch:false,jumpLatch:false,vy:0,turn:0,fromX:0,fromY:0,fromZ:0,fromHeading:0,toX:0,toY:0,toZ:0,phase:0,time:0,land:0,carryX:0,carryZ:0,stagger:0});
 export type FootActions={throttle:number;steer:number;facingYaw?:number;hop?:boolean;hopHeld?:boolean;crouch?:boolean;prone?:boolean;run?:boolean;dismount?:boolean;movingDismount?:boolean;mountBlocked?:boolean;interruptMount?:boolean;evade?:number};
 /** Only an authoritative collision invokes this; actor and parked vehicle remain separate. */
 export function knockOffOnFoot(s:ReturnType<typeof footState>,p:FootPose){
  if(s.mode){s.stagger=Math.max(s.stagger,.7);return;}
+ resetMsjLocomotion(s);
  Object.assign(s,{mode:2,age:0,stagger:.8,carryX:p.velocityX*.55,carryZ:p.velocityZ*.55,vy:0});
  Object.assign(p,{footMode:2,footBlend:1,parkX:p.x,parkY:p.y-p.airHeight,parkZ:p.z,parkHeading:p.headingY,footStagger:1,speed:0});
 }
@@ -55,6 +57,7 @@ export function stepOnFoot(s:ReturnType<typeof footState>,p:FootPose,t:TerrainSa
  }else if(toggle&&s.mode===2&&!a.mountBlocked&&s.stagger<=0&&p.airHeight<.04&&Math.hypot(p.x-p.parkX,p.z-p.parkZ)<=1.3&&Math.abs(p.y-p.parkY)<.3&&clear(p.x,p.y,p.z,p.parkX,p.parkY,p.parkZ)){
   Object.assign(s,{mode:3,age:0,fromX:p.x,fromY:p.y,fromZ:p.z,fromHeading:p.headingY,toX:p.parkX,toY:p.parkY,toZ:p.parkZ,vy:0});
  }
+ if(s.mode!==2)resetMsjLocomotion(s);
  if(!s.mode){p.footMode=p.footBlend=p.footCrouch=p.footProne=p.footMountTime=0;return false;}
  s.time+=dt;p.footTime=s.time;p.footMode=s.mode;
  s.stagger=Math.max(0,s.stagger-dt);p.footStagger=clamp(s.stagger/.8,0,1);
@@ -90,16 +93,27 @@ export function stepOnFoot(s:ReturnType<typeof footState>,p:FootPose,t:TerrainSa
  let prone=!!a.prone&&!jump,crouch=!!a.crouch&&!prone&&!jump;
  if(!prone&&!crouch&&(p.footProne>.1||p.footCrouch>.1)&&t.raycastObstacle({x:p.x,y:p.y+.30,z:p.z},{x:0,y:1,z:0},1.4,.27)!==null){prone=p.footProne>.1;crouch=!prone;}
  p.footProne+=((prone?1:0)-p.footProne)*(1-Math.exp(-8*dt));p.footCrouch+=((crouch?1:0)-p.footCrouch)*(1-Math.exp(-10*dt));
- const fps=Number.isFinite(a.facingYaw),strafe=fps?-clamp(a.steer,-1,1):0,magnitude=Math.hypot(demand,strafe);
+ const steer=clamp(Number.isFinite(a.steer)?a.steer:0,-1,1);
+ const fps=Number.isFinite(a.facingYaw),strafe=fps?-steer:0,magnitude=Math.hypot(demand,strafe);
  if(fps){p.headingY=angle(a.facingYaw!);s.turn=0;}
  else{s.turn+=(clamp(Number.isFinite(a.steer)?a.steer:0,-1,1)*2.7-s.turn)*(1-Math.exp(-16*dt));p.headingY-=s.turn*dt;}
  const limit=prone||p.footProne>.3?(demand<0?.55:.75):crouch||p.footCrouch>.3?(demand<0?1.1:1.4):demand<0?(run?FOOT_SPEED.reverseRun:FOOT_SPEED.reverse):(run?FOOT_SPEED.run:FOOT_SPEED.walk);
  const drive=fps?Math.min(1,magnitude)*(demand<0?-1:1):demand;
- const target=drive*limit*(s.stagger>0?.25:1),braking=Math.abs(target)<Math.abs(p.speed)||target*p.speed<0;
- p.speed+=(target-p.speed)*(1-Math.exp(-(braking?15:9)*dt));if(Math.abs(p.speed)<.002)p.speed=0;
+ const movementLimit=limit*(s.stagger>0?.25:1),target=drive*movementLimit;
+ const forward=fps&&magnitude?Math.abs(target)*demand/magnitude:fps?0:target,lateral=fps&&magnitude?Math.abs(target)*strafe/magnitude:0;
+ const sin=Math.sin(p.headingY),cos=Math.cos(p.headingY);
+ stepMsjLocomotion(s,dt,sin*forward+cos*lateral,cos*forward-sin*lateral,movementLimit);
+ const along=s.msjVelocityX*sin+s.msjVelocityZ*cos;
+ if(s.legacyLocomotion){
+  // A legacy authority supplies no planar smoothing state. Predict its exact
+  // published motor until its next snapshot advertises the upgraded state.
+  const braking=Math.abs(target)<Math.abs(p.speed)||target*p.speed<0;
+  p.speed+=(target-p.speed)*(1-Math.exp(-(braking?15:9)*dt));if(Math.abs(p.speed)<.002)p.speed=0;
+  const f=fps&&magnitude?Math.abs(p.speed)*demand/magnitude:fps?0:p.speed,l=fps&&magnitude?Math.abs(p.speed)*strafe/magnitude:0;
+  s.msjVelocityX=sin*f+cos*l;s.msjVelocityZ=cos*f-sin*l;
+ }else p.speed=Math.hypot(s.msjVelocityX,s.msjVelocityZ)*(along<-.001?-1:1);
  const evade=a.evade||0,side=evade===-1?-1:evade===1?1:0,back=evade===2?-1:0;
- const forward=fps&&magnitude?Math.abs(p.speed)*demand/magnitude:fps?0:p.speed,lateral=fps&&magnitude?Math.abs(p.speed)*strafe/magnitude:0;
- const x=p.x+(Math.sin(p.headingY)*(forward+back*5)+Math.cos(p.headingY)*(lateral+side*5)+s.carryX)*dt,z=p.z+(Math.cos(p.headingY)*(forward+back*5)-Math.sin(p.headingY)*(lateral+side*5)+s.carryZ)*dt;
+ const x=p.x+(s.msjVelocityX+sin*back*5+cos*side*5+s.carryX)*dt,z=p.z+(s.msjVelocityZ+cos*back*5-sin*side*5+s.carryZ)*dt;
  s.carryX*=Math.exp(-4*dt);s.carryZ*=Math.exp(-4*dt);
  t.sampleGround(x,z,ground,p.y-p.airHeight);
  // Resolve the full move first; if blocked, retain the unblocked tangent.
@@ -118,7 +132,13 @@ export function stepOnFoot(s:ReturnType<typeof footState>,p:FootPose,t:TerrainSa
   let moved=false;
   if(Math.abs(x-p.x)>Math.abs(z-p.z)){moved=travel(x,p.z);moved=travel(p.x,z)||moved;}
   else{moved=travel(p.x,z);moved=travel(x,p.z)||moved;}
-  if(!moved)p.speed=0;
+  if(!moved){p.speed=0;resetMsjLocomotion(s);}
+  else if(!s.legacyLocomotion){
+   // Do not bank acceleration into a wall while moving along its tangent.
+   if(Math.abs(p.x-beforeX)<1e-8)s.msjInputX=s.msjVelocityX=0;
+   if(Math.abs(p.z-beforeZ)<1e-8)s.msjInputZ=s.msjVelocityZ=0;
+   p.speed=Math.sign(p.speed)*Math.min(Math.abs(p.speed),Math.hypot(p.x-beforeX,p.z-beforeZ)/dt);
+  }
  }
  t.sampleGround(p.x,p.z,ground,p.y-p.airHeight);
  if(jump&&p.airHeight<.02&&s.vy<=0&&p.footProne<.15&&p.footCrouch<.15){s.vy=4.4;s.land=0;}

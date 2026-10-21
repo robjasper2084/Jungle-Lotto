@@ -3,11 +3,11 @@ import type {Scope} from '../../../../ride-core/src/royale/scopes.ts';
 import {scopeZoom} from '../../../../ride-core/src/royale/scopes.ts';
 import type {ScopeSensitivity} from './scopeSensitivity.ts';
 
-export type CombatPreferences={firstFov:number;thirdFov:number;firstLook:number;thirdLook:number;shoulder:number};
+export type CombatPreferences={firstFov:number;thirdFov:number;firstLook:number;thirdLook:number;shoulder:number;controlStyle:'burntwax'|'classic'};
 export function readCombatPreferences(raw:unknown):CombatPreferences{
  const p=(raw&&typeof raw==='object'?raw:{}) as Partial<CombatPreferences>;
- const number=(key:keyof CombatPreferences,fallback:number,min:number,max:number)=>typeof p[key]==='number'&&Number.isFinite(p[key])?Math.max(min,Math.min(max,p[key]!)):fallback;
- return {firstFov:number('firstFov',76,55,90),thirdFov:number('thirdFov',68,55,90),firstLook:number('firstLook',1,.2,2),thirdLook:number('thirdLook',1,.2,2),shoulder:p.shoulder===-1?-1:1};
+ const number=(key:'firstFov'|'thirdFov'|'firstLook'|'thirdLook',fallback:number,min:number,max:number)=>typeof p[key]==='number'&&Number.isFinite(p[key])?Math.max(min,Math.min(max,p[key]!)):fallback;
+ return {firstFov:number('firstFov',76,55,90),thirdFov:number('thirdFov',68,55,90),firstLook:number('firstLook',1,.2,2),thirdLook:number('thirdLook',1,.2,2),shoulder:p.shoulder===-1?-1:1,controlStyle:p.controlStyle==='classic'?'classic':'burntwax'};
 }
 /** Each channel is independent: equipping an optic cannot slow unscoped turns. */
 export function combatLookGain(base:number,general:number,adsGain:number,mode:number,first:boolean,scope:Scope|null,values:ScopeSensitivity,p:CombatPreferences,firing=false){
@@ -36,6 +36,8 @@ export class CombatPreferencesControls {
  mount(parent:HTMLElement){
   const field=document.createElement('fieldset'),legend=document.createElement('legend');legend.textContent='Combat camera';field.append(legend);
   const save=()=>{try{localStorage.setItem(this.key,JSON.stringify(this.value));}catch{}};
+  const styleLabel=document.createElement('label'),style=document.createElement('select');styleLabel.textContent='On-foot combat controls';style.setAttribute('aria-label','On-foot combat controls');style.add(new Option('BurntWax-style · sprint / aim priority','burntwax'));style.add(new Option('Classic · aim always cancels sprint','classic'));style.value=this.value.controlStyle;style.onchange=()=>{this.value.controlStyle=style.value==='classic'?'classic':'burntwax';save();};styleLabel.append(style);field.append(styleLabel);
+  const guide=document.createElement('p');guide.textContent='BurntWax-style: sprint lowers sights; aim or fire stops sprinting. Reload lowers sights until ready. Your saved keys, touch layout and ADS preset still apply.';field.append(guide);
   for(const [key,title,min,max,step]of [['firstFov','First-person field of view',55,90,1],['thirdFov','Third-person field of view',55,90,1],['firstLook','First-person look speed',.2,2,.05],['thirdLook','Third-person look speed',.2,2,.05]] as const){
    const row=document.createElement('label'),input=document.createElement('input'),out=document.createElement('output');row.textContent=title;input.type='range';input.min=String(min);input.max=String(max);input.step=String(step);input.value=String(this.value[key]);input.setAttribute('aria-label',title);
    const refresh=()=>out.value=key.endsWith('Fov')?Math.round(this.value[key])+'°':Math.round(this.value[key]*100)+'%';input.oninput=()=>{this.value[key]=Number(input.value);refresh();save();};refresh();row.append(input,out);field.append(row);

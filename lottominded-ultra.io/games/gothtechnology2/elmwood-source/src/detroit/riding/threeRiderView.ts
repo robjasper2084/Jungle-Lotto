@@ -1,4 +1,5 @@
 import {applyOnFootRider} from '../../../../ride-core/src/onFootRider.ts';
+import {invalidateAnimatedShadow} from '../../../../ride-core/src/shadowBudget.ts';
 import {wheelPickupTiming} from '../../../../ride-core/src/wheelPickupTiming.ts';
 import {FingerPose} from '../../../../ride-core/src/fingerPose.ts';
 import {solveLimb as solve} from '../../../../ride-core/src/limbIK.ts';
@@ -73,6 +74,7 @@ export class ThreeRiderView {
     return target;
   }
   apply(p:RidePose){
+    invalidateAnimatedShadow(this.root);
     this.lights.update(p,typeof matchMedia!=='undefined'&&(matchMedia('(prefers-reduced-motion: reduce)').matches||document.documentElement.dataset.reducedMotion==='true'));
     this.armorKeychain?.update(p,typeof matchMedia!=='undefined'&&matchMedia('(prefers-reduced-motion: reduce)').matches);
     // A recovered/mounted pose must not inherit a previous fall's body or wheel

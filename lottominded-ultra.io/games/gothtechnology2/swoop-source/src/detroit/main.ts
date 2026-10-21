@@ -109,6 +109,7 @@ import {DogFollower} from './companion.ts';
 import {CompanionView} from './companionView.ts';
 import './style.css';
 import './lobby.css';
+import {InteractiveWater} from './interactiveWater.ts';
 import './touchPolish.css';
 import './mobileHud.css';
 import './arrivalHud.css';
@@ -152,6 +153,7 @@ const onlineView=new OnlineViewPreference(typeof localStorage==='undefined'?unde
 const sky=new RouteSky();scene.add(sky);
 const reducedAtmosphereMotion=matchMedia('(prefers-reduced-motion: reduce)'),atmosphereMotionOverride=new URLSearchParams(location.search).has('reducedMotion');
 const camera=new T.PerspectiveCamera(55,innerWidth/innerHeight,.08,1500);
+const interactiveWater=new InteractiveWater(canvas,camera);
 const pm=new T.PMREMGenerator(renderer);
 try{
 if(elmwood){
@@ -159,9 +161,9 @@ if(elmwood){
   scene.environment=pm.fromEquirectangular(hdr).texture;scene.environmentIntensity=.55;hdr.dispose();
 }else{const hdr=await new HDRLoader().loadAsync(new URL('../../art/nvidia/detroit-skylight.hdr',import.meta.url).href);scene.environment=pm.fromEquirectangular(hdr).texture;scene.environmentIntensity=.36;hdr.dispose();canvas.dataset.lighting='NVIDIA OptiX baked skylight';}
 }catch(error){console.warn('Skylight unavailable; using scene lights',error);canvas.dataset.lighting='Scene lights';}finally{pm.dispose();}
-const hemi=new T.HemisphereLight('#d3e9f6','#5e665b',elmwood?.95:.72),sun=new T.DirectionalLight('#fff0d7',elmwood?2.5:2.15);
+const hemi=new T.HemisphereLight('#d3e9f6','#667065',elmwood?.95:.86),sun=new T.DirectionalLight('#fff0d7',elmwood?2.5:1.95);
 sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);Object.assign(sun.shadow.camera,{left:-32,right:32,top:36,bottom:-30,near:.1,far:100});sun.shadow.normalBias=.035;sun.shadow.bias=-.00015;scene.add(hemi,sun,sun.target);
-const fill=new T.DirectionalLight('#c1d7ed',elmwood?.22:.18);scene.add(fill,fill.target);if(elmwood)scene.environmentIntensity=.4;
+const fill=new T.DirectionalLight('#c1d7ed',elmwood?.22:.26);scene.add(fill,fill.target);if(elmwood)scene.environmentIntensity=.4;
 const mapWorld=elmwood?new ElmwoodWorld():new DetroitWorld(),world=new GeoTerrain(mapWorld);if(!elmwood)mapWorld.randomizePeople();
 const cherryGround=createGroundSample();let nature:NatureWorld,natureAudio:NatureAudio;
 
@@ -367,7 +369,7 @@ function pause(){if(lottoShop?.appActive||split?.simulation.rules.done||!running
 function setCamera(m:string,user=false){if(user&&m!==cameraMode)practice?.action('camera');if(m==='first'&&cameraMode!==m){firstYaw=0;firstPitch=RIDER_EYE_PITCH;}cameraMode=m;$<HTMLSelectElement>('camera').value=m;canvas.focus();}
 function recenterCamera(){if(vr.active)return;clearCameraTouches();orbitYaw=0;orbitHeight=2.2;orbitDistance=5;follow.distance=4.6;firstYaw=0;firstPitch=RIDER_EYE_PITCH;follow.reset(current);setCamera('chase');}
 function cycleCamera(){const modes=['chase','first','front','side','orbit'];setCamera(modes[(modes.indexOf(cameraMode)+1)%modes.length],true);}
-function toggleLight(){night=!night;sky.setDusk(night);if(scenery&&'lighting' in scenery)scenery.lighting.setDusk(night);scene.background=new T.Color(night?DUSK_HAZE:DAY_HAZE);scene.fog=new T.Fog(night?DUSK_HAZE:DAY_HAZE,night?65:elmwood&&compactElmwood?65:130,elmwood&&compactElmwood?165:night?250:370);sun.intensity=night?1.55:elmwood?2.5:2.15;sun.color.set(night?'#ffd4a1':'#fff0d7');hemi.color.set(night?'#92bdd5':'#d3e9f6');hemi.groundColor.set(night?'#4b5553':'#5e665b');hemi.intensity=night?.80:elmwood?.95:.72;fill.color.set(night?'#86cddc':'#c1d7ed');fill.intensity=night?.30:elmwood?.22:.18;scene.environmentIntensity=night?.36:elmwood?.4:.36;graphics.apply();$('light').textContent=night?'Day':'Dusk';}
+function toggleLight(){night=!night;sky.setDusk(night);if(scenery&&'lighting' in scenery)scenery.lighting.setDusk(night);scene.background=new T.Color(night?DUSK_HAZE:DAY_HAZE);scene.fog=new T.Fog(night?DUSK_HAZE:DAY_HAZE,night?65:elmwood&&compactElmwood?65:130,elmwood&&compactElmwood?165:night?250:370);sun.intensity=night?1.55:elmwood?2.5:1.95;sun.color.set(night?'#ffd4a1':'#fff0d7');hemi.color.set(night?'#92bdd5':'#d3e9f6');hemi.groundColor.set(night?'#4b5553':'#667065');hemi.intensity=night?.80:elmwood?.95:.86;fill.color.set(night?'#86cddc':'#c1d7ed');fill.intensity=night?.30:elmwood?.22:.26;scene.environmentIntensity=night?.36:elmwood?.4:.36;graphics.apply();$('light').textContent=night?'Day':'Dusk';}
 function toggleAudio(){if(!muted&&rideAudio.state.context==='suspended'){unlockRideAudio();return;}muted=!muted;if(muted)commandBark.stop();try{localStorage.setItem('digital-static-ride-sound',muted?'off':'on');}catch{}unlockRideAudio();}
 $('spawn').replaceChildren();
 for(const [i,s]of SPOTS.entries()){
@@ -483,7 +485,7 @@ function startLandmarkMission(){
  reset(0);landmarkMission?.start();loop.startRun(undefined,selectedRider,actorData,current);beginRide();setCamera('chase');
  toast('Landmark mission · open Dog commands to Sit, then Come.');
 }
-graphics.mount($('lobbySettings'));onlineView.mount($('helpPanel'),()=>clearInput());onlineView.mount($('lobbySettings'),()=>clearInput());
+interactiveWater.settings($('lobbySettings'));graphics.mount($('lobbySettings'));onlineView.mount($('helpPanel'),()=>clearInput());onlineView.mount($('lobbySettings'),()=>clearInput());
 const lobbyLayout=document.createElement('button');lobbyLayout.textContent='Control settings';lobbyLayout.setAttribute('aria-controls','helpPanel');lobbyLayout.onclick=openControlSettings;$('lobbySettings').querySelector('h2')!.after(lobbyLayout);
 const cameraBlend=new CameraBlend();
 const easyRideToggle=document.createElement('input');easyRideToggle.type='checkbox';easyRideToggle.id='easy-free-ride';try{easyRideToggle.checked=localStorage.getItem('swoop-easy-ride')==='on';}catch{}
@@ -580,7 +582,7 @@ try{
   bootProgress(3);boot.assertActive();bootStage('preparing','Preparing the ride and controls…');
   if(!elmwood&&!qaVisualBaseline)ambience=new RouteAmbience(scene,world,effectPatches);
   if(!elmwood)buildFreestylePark(mapScene,mapWorld as DetroitWorld);
-  actorData=data;scenery=elmwood?await buildElmwood(mapScene,mapWorld as ElmwoodWorld,()=>compactElmwood||vr.active):await timeLoad('scenery-total',()=>buildScenery(mapScene,mapWorld,!qaVisualBaseline,toMap(SPOTS[selectedSpot].x,0,SPOTS[selectedSpot].z),graphics.applyAssets));setRider(selectedRider);if('jazz'in scenery)jazzVisit=new JazzVisit(scenery.jazz.clubs,()=>{const was=paused;clearInput();if(!paused)pause();return was;},was=>{clearInput();if(paused!==was)pause();canvas.focus();},()=>pose.footMode?'walk':'ride');traffic=new TrafficView(scene,data,world);photographers=new MapPhotographers(scene,data,world);dogView=new CompanionView(data,world);scene.add(dogView.root);
+  actorData=data;scenery=elmwood?await buildElmwood(mapScene,mapWorld as ElmwoodWorld,()=>compactElmwood||vr.active):await timeLoad('scenery-total',()=>buildScenery(mapScene,mapWorld,!qaVisualBaseline,toMap(SPOTS[selectedSpot].x,0,SPOTS[selectedSpot].z),graphics.applyAssets));interactiveWater.register(mapScene);setRider(selectedRider);if('jazz'in scenery)jazzVisit=new JazzVisit(scenery.jazz.clubs,()=>{const was=paused;clearInput();if(!paused)pause();return was;},was=>{clearInput();if(paused!==was)pause();canvas.focus();},()=>pose.footMode?'walk':'ride');traffic=new TrafficView(scene,data,world);photographers=new MapPhotographers(scene,data,world);dogView=new CompanionView(data,world);scene.add(dogView.root);
   setCompanion(dogEnabled);
   if(elmwood&&'waterGroup' in scenery&&!compactElmwood){
     // One reflection capture of the actual banks and trees, outside the frame loop.
@@ -636,7 +638,7 @@ function frameSplit(now:number,dt:number){
  hero.root.visible=false;dogView.root.visible=false;confirmation.render(false);riderLamp.update(dt,current,night,false);ambience?.update(room.simulation.rules.elapsed,room.simulation.riders.map(r=>r.pose));
  room.view.render(renderer,scene,dt,active&&!finished?Math.min(1,acc*120):1,active&&!finished,paused,visible,p=>{
   followStableSun(sun,p,night?DUSK_SUN:DAY_SUN);fill.position.set(p.x-12,p.y+8,p.z-13);fill.target.position.set(p.x,p.y+1,p.z);
-  if(!night){const roof=world.raycastObstacle({x:p.x,y:p.y+2.3,z:p.z},{x:0,y:1,z:0},7);fill.intensity=roof===null?.18:.45;}
+  if(!night){const roof=world.raycastObstacle({x:p.x,y:p.y+2.3,z:p.z},{x:0,y:1,z:0},7);fill.intensity=roof===null?.26:.45;}
   mackStudio?.update(p.x,p.z);
   for(const destination of [gallery,boutique])if(destination)destination.building.visible=Math.hypot(p.x-destination.building.position.x,p.z-destination.building.position.z)<180;
   const m=toMap(p.x,p.y,p.z);scenery.update(m.x,m.z,room.simulation.rules.elapsed);
@@ -661,6 +663,7 @@ function frame(now:number,xrFrame?:XRFrame){
   bikeRecover.hidden=!(ready&&running&&sim?.cycling&&!vr.active&&!film.playing&&$('menu').hidden);
   if(!ready||boot.stage==='error'||(document.hidden&&!vr.active)||(!running&&!$('startupPreview').hidden)){last=now;return;}
   if(!frameSchedule.shouldRender(now,(!running||paused)&&!film.playing&&!gallery?.active&&!boutique?.active,vr.active,jazzVisit?.active?10:graphics.current.fps))return;
+  interactiveWater.update(current,!running||paused||!!gallery?.active||!!boutique?.active);
   const rawFrameMs=Math.max(0,now-last),dt=Math.min(rawFrameMs/1000,.06);last=now;
   sky.tick(dt,scene.fog?.color,graphics.current.shadows===0,reducedAtmosphereMotion.matches||document.documentElement.dataset.reducedMotion==='true'||atmosphereMotionOverride,paused);if(now-hudAt>120)canvas.dataset.atmosphere=JSON.stringify(sky.status);
   nature.update(dt,current,!running||paused,graphics.current.shadows===0,matchMedia('(prefers-reduced-motion: reduce)').matches||document.documentElement.dataset.reducedMotion==='true');natureAudio.update(current,current.headingY,running&&!paused&&!film.playing&&!gallery?.active&&!boutique?.active);canvas.dataset.nature=JSON.stringify(nature.status);canvas.dataset.natureAudio=natureAudio.status;
@@ -764,7 +767,7 @@ function frame(now:number,xrFrame?:XRFrame){
   pennyShop?.update(pose.x,pose.z,shopVisible&&!cabinets?.playing);studioScreens?.update(pose.x,pose.z,shopVisible&&!cabinets?.playing);lottoShop?.update(pose.x,pose.z,shopVisible&&!cabinets?.playing);cabinets?.update(pose.x,pose.z,shopVisible,camera);
   jazzVisit?.update(pose.x,pose.z,shopVisible&&mode==='free'&&!challengeRun&&!race&&!cabinets?.playing);
   camera.userData.rideSightline=running&&!vr.active&&cameraMode!=='first'?(camera.userData.rideSightline??new T.Vector3()).set(pose.x,pose.y+1.1,pose.z):undefined;
-  if(!vr.active){gyroscope.applyCamera(camera,dt,running&&!paused&&!finished&&!split&&!jazzVisit?.active,cameraMode==='first');camera.updateProjectionMatrix();}followStableSun(sun,pose,night?DUSK_SUN:DAY_SUN);fill.position.set(pose.x-12,pose.y+8,pose.z-13);fill.target.position.copy(hero.root.position);if(!qaVisualBaseline&&!elmwood&&!night){const roof=world.raycastObstacle({x:pose.x,y:pose.y+2.3,z:pose.z},{x:0,y:1,z:0},7);fill.intensity=T.MathUtils.damp(fill.intensity,roof===null?.18:.45,5,dt);}
+  if(!vr.active){gyroscope.applyCamera(camera,dt,running&&!paused&&!finished&&!split&&!jazzVisit?.active,cameraMode==='first');camera.updateProjectionMatrix();}followStableSun(sun,pose,night?DUSK_SUN:DAY_SUN);fill.position.set(pose.x-12,pose.y+8,pose.z-13);fill.target.position.copy(hero.root.position);if(!qaVisualBaseline&&!elmwood&&!night){const roof=world.raycastObstacle({x:pose.x,y:pose.y+2.3,z:pose.z},{x:0,y:1,z:0},7);fill.intensity=T.MathUtils.damp(fill.intensity,roof===null?.26:.45,5,dt);}
   frameProfile.effects=performance.now()-frameCpuStarted;
   canvas.dataset.visibleChunks=String(scenery.update(toMap(pose.x,0,pose.z).x,toMap(pose.x,0,pose.z).z,clock));if(now-hudAt>120)canvas.dataset.environment=JSON.stringify({birds:'birds' in scenery?scenery.birds:null,foodTrucks:'foodTrucks' in scenery?scenery.foodTrucks:0,rails:'rails' in scenery?scenery.rails:0,landmarks:'landmarks' in scenery?scenery.landmarks:null,flowers:'flowers' in scenery?scenery.flowers:0,trees:scenery.trees,grassClumps:'grassClumps' in scenery?scenery.grassClumps:0,routeArt:'routeArt' in scenery?scenery.routeArt:null,generatedSkins:scenery.skins,treeVersion:elmwood?'elmwood-five-species-20260916':'curved-elm-maple-20260915',style:elmwood?'Five botanical meshes, photographic PBR and outdoor HDR lighting':'Higgsfield elm/maple foliage, tapered branches and bark',quality:compactElmwood||vr.active?'compact':'detailed'});renderer.render(scene,camera);studioCapture?.afterRender();if(finished)loop.capture(canvas);frames++;if(now-fpsAt>1000){fps=frames*1000/(now-fpsAt);frames=0;fpsAt=now;}
   frameProfile.render=performance.now()-frameCpuStarted;

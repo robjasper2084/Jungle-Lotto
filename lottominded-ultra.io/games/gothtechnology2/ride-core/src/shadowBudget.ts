@@ -1,7 +1,14 @@
-import type {Camera,Scene,WebGLRenderer} from 'three';
+import type {Camera,Object3D,Scene,WebGLRenderer} from 'three';
 
-/** Shadows may refresh more slowly than input/animation. Large camera moves and
- * explicit quality changes bypass the interval so teleports never keep old shadows. */
+const animatedScenes=new WeakSet<Scene>();
+/** A cached depth map belongs to its rendered pose. Reusing it after skinning
+ * makes the old silhouette sweep across the new body as flashing self-shadow. */
+export function invalidateAnimatedShadow(root:Object3D){
+ let node:Object3D|null=root;
+ while(node){if(!node.visible)return;if((node as Scene).isScene){animatedScenes.add(node as Scene);return;}node=node.parent;}
+}
+
+/** Cache static shadows only. Animated casters invalidate the map before render. */
 export class ShadowCadence {
  private at=-Infinity;private x=NaN;private y=NaN;private z=NaN;
  updates=0;skips=0;
@@ -19,11 +26,12 @@ export function installShadowBudget(renderer:WebGLRenderer,scene:Scene,canvas?:H
  renderer.shadowMap.autoUpdate=false;
  scene.onBeforeRender=function(r,s,c,...rest){
   original.call(this,r,s,c,...rest);
+  const animated=animatedScenes.delete(scene);
   if(renderer.xr.isPresenting){renderer.shadowMap.needsUpdate=renderer.shadowMap.enabled;return;}
   if(!renderer.shadowMap.enabled)return;
   const camera=c as Camera,now=performance.now();
-  renderer.shadowMap.needsUpdate=cadence.due(now,camera.position,30,renderer.shadowMap.needsUpdate);
-  if(canvas&&now-reportAt>1000){canvas.dataset.shadowBudget=JSON.stringify({updates:cadence.updates,skips:cadence.skips,hz:30});reportAt=now;}
+  renderer.shadowMap.needsUpdate=cadence.due(now,camera.position,30,renderer.shadowMap.needsUpdate||animated);
+  if(canvas&&now-reportAt>1000){canvas.dataset.shadowBudget=JSON.stringify({updates:cadence.updates,skips:cadence.skips,mode:animated?'pose-synchronized':'static-cache',staticHz:30});reportAt=now;}
  };
  return cadence;
 }

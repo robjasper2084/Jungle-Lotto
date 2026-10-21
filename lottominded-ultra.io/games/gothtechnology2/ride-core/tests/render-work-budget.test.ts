@@ -1,13 +1,22 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import {ShadowCadence,installShadowBudget} from '../src/shadowBudget.ts';
+import {ShadowCadence,installShadowBudget,invalidateAnimatedShadow} from '../src/shadowBudget.ts';
 import {acquireVisualMaterial} from '../src/sharedVisualMaterial.ts';
-test('60 FPS movement needs only 30 shadow refreshes, with immediate teleport and dirty refresh',()=>{
+test('static scenery keeps 30 Hz caching, with immediate teleport and dirty refresh',()=>{
  const budget=new ShadowCadence();for(let i=0;i<60;i++)budget.due(i*1000/60,{x:i*.1,y:2,z:0});
  assert.equal(budget.updates,30);assert.equal(budget.skips,30);
  assert(budget.due(1001,{x:50,y:2,z:0}));assert(!budget.due(1002,{x:50,y:2,z:0}));
  assert(budget.due(1003,{x:50,y:2,z:0},30,true));assert(budget.due(0,{x:50,y:2,z:0}));
+});
+
+test('animated rider and dog poses cannot receive a previous-frame shadow',()=>{
+ const scene=new T.Scene(),group=new T.Group(),rider=new T.Group(),dog=new T.Group(),camera=new T.PerspectiveCamera();scene.add(group,dog);group.add(rider);
+ const renderer={shadowMap:{enabled:true,autoUpdate:true,needsUpdate:false},xr:{isPresenting:false}} as T.WebGLRenderer;
+ installShadowBudget(renderer,scene);scene.onBeforeRender(renderer,scene,camera,null);
+ for(const actor of [rider,dog,rider,dog]){renderer.shadowMap.needsUpdate=false;invalidateAnimatedShadow(actor);scene.onBeforeRender(renderer,scene,camera,null);assert(renderer.shadowMap.needsUpdate);}
+ renderer.shadowMap.needsUpdate=false;group.visible=false;invalidateAnimatedShadow(rider);scene.onBeforeRender(renderer,scene,camera,null);assert(!renderer.shadowMap.needsUpdate,'hidden actors do not invalidate');
+ renderer.shadowMap.enabled=false;invalidateAnimatedShadow(dog);scene.onBeforeRender(renderer,scene,camera,null);assert(!renderer.shadowMap.needsUpdate,'Smooth still has shadows disabled');
 });
 test('shadow scheduling preserves prior scene hook and leaves XR refreshing',()=>{
  const scene=new T.Scene(),camera=new T.PerspectiveCamera();let called=0;scene.onBeforeRender=()=>called++;

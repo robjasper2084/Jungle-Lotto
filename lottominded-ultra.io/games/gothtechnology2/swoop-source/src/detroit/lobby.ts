@@ -1,3 +1,4 @@
+import {gameMenuHome} from './gameMenuHome.ts';
 import {makeRidePicker} from './ridePicker.ts';
 import {RACE_ROUTE} from './raceRules.ts';
 import {CHALLENGES} from './district.ts';
@@ -78,6 +79,8 @@ export function installLobby(elmwood:boolean,onRace:()=>void,onSplit:()=>void){
  chrome.querySelector('a')!.onclick=e=>{e.preventDefault();show('ride');};
  $('menuButton').addEventListener('click',()=>show(['race','split'].includes(mode.value)?mode.value:'ride'));
  show(['race','split'].includes(new URLSearchParams(location.search).get('tab')??'')?new URLSearchParams(location.search).get('tab')!:'ride');
+ const home=gameMenuHome(menu,{kind:'swoop',title:'Swoop',subtitle:'Detroit',tagline:'FIND YOUR LINE. OWN THE CUT.',description:'One wheel. Your city. Ride the riverfront, race the Cut, or explore with friends.',play:$('start') as HTMLButtonElement,resume:$('resumeRide') as HTMLButtonElement,configure:()=>{show('ride');customize.open=true;hero.focus();},settings:()=>{show('settings');$('lobbySettings').querySelector<HTMLButtonElement>('button')?.focus();},online:()=>{menu.querySelector<HTMLButtonElement>('[data-lobby-tab="online"]')?.click();}});
+ const menuObserver=new MutationObserver(()=>{if(!menu.hidden)home.show();});menuObserver.observe(menu,{attributes:true,attributeFilter:['hidden']});
  return {actions,moreItems,placeButtons,placeBody,finish(){
   // Late-created features keep their existing click handlers when grouped here.
   for(const button of [...tabs.querySelectorAll<HTMLButtonElement>(':scope > button')])if(!['ride','race','split','online'].includes(button.dataset.lobbyTab??'')){moreItems.append(button);button.addEventListener('click',()=>{more.dataset.active='true';});}

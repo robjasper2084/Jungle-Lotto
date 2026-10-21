@@ -1,4 +1,5 @@
 import {dogBalance} from './dogBalance.ts';
+import {invalidateAnimatedShadow} from '../../../ride-core/src/shadowBudget.ts';
 import * as T from 'three';
 import {clone} from 'three/addons/utils/SkeletonUtils.js';
 import type {GLTF} from './compressedGLTFLoader.ts';
@@ -81,6 +82,7 @@ export class CompanionView {
     head.rotateY(T.MathUtils.clamp(Math.atan2(Math.sin(yaw),Math.cos(yaw)),-.4,.4)*.45);
   }
   apply(p:DogPose&{power?:'pounce'|'radar'}){
+    invalidateAnimatedShadow(this.root);
     const lie=T.MathUtils.clamp(p.lie??0,0,1),sit=T.MathUtils.clamp(p.sit??0,0,1-lie),commanded=sit+lie;
     this.root.position.set(p.x,p.y,p.z);this.root.rotation.y=p.heading;
     // Quaternion crossfades cut across the tucked haunch arc. Give mixed poses
