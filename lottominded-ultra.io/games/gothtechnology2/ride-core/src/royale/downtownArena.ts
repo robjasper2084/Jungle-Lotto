@@ -4,7 +4,7 @@ import type {TagTerrain} from '../tag/fixture.ts';
 import type {Vec3} from '../terrain.ts';
 import {DOWNTOWN_FIELD_REVISION,downtownExtent,downtownRadii} from './downtownField.ts';
 import {scopeSites} from './scopes.ts';
-import {configuredSpawnNodes,configuredRecoveryNodes} from './spawnNodes.ts';
+import {configuredSpawnNodes,configuredRecoveryNodes,spawnCameraSpace} from './spawnNodes.ts';
 const distance=(a:Vec3,b:Vec3)=>Math.hypot(a.x-b.x,a.z-b.z);
 /** One shared district on the original Detroit map. The entire original map
  * remains scenery/collision; the field bounds the ten-minute round, not walls. */
@@ -33,8 +33,9 @@ export class DowntownArena extends AuthoredArena implements BattleTerrain {
    starts.push(next);
   }
   this.spawns=starts.map(p=>({position:{...p},headingY:distance(p,center)<1?-0.075:Math.atan2(center.x-p.x,center.z-p.z)}));
-  this.spawnNodes=configuredSpawnNodes(this.layout.nodes,t,p=>this.clear(p.x,p.z,1,p.y));
-  this.recoverySpawnNodes=configuredRecoveryNodes(this.layout.nodes,this.spawnNodes,fieldCenter,p=>this.clear(p.x,p.z,1,p.y));
+  const spawnSites=this.layout.nodes.filter(p=>spawnCameraSpace(this.sourcePosition(p)));
+  this.spawnNodes=configuredSpawnNodes(spawnSites,t,p=>this.clear(p.x,p.z,1,p.y));
+  this.recoverySpawnNodes=configuredRecoveryNodes(spawnSites,this.spawnNodes,fieldCenter,p=>this.clear(p.x,p.z,1,p.y));
   for(const start of starts){
    const near=sites.filter(p=>distance(p,start)>8&&distance(p,start)<35).sort((a,b)=>distance(a,start)-distance(b,start));
    let count=0;for(const p of near)if(this.supplies.every(q=>distance(p,q)>5)){this.supplies.push({...p});if(++count===2)break;}

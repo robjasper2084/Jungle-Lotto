@@ -46,8 +46,9 @@ import type {TreeSite} from './trees.ts';
 export async function buildScenery(scene:T.Scene,world:SceneryWorld,polish=true,start?:StreamPoint,onAssetsLoaded?:(root:T.Object3D)=>void){
   const slice=new WorkSlice();
   const buildingBounds=world.buildingMeshes.map(b=>{if(!b.geometry.boundingBox)b.geometry.computeBoundingBox();return b.geometry.boundingBox!;});
-  let streamedAssets=0;
-  const stream=new SpatialAssetStream(1,()=>{const loaded=stream.status.loaded;if(loaded!==streamedAssets){streamedAssets=loaded;onAssetsLoaded?.(scene);}});
+  // Prepare only newly loaded assets, before their first render. Scanning the
+  // entire downtown scene on every mural load/unload causes avoidable stalls.
+  const stream=new SpatialAssetStream(1);
   const loader=new GLTFLoader(),tl=new T.TextureLoader();
   const names=['brick','limestone','mural_heron','mural_detroit','mural_music'];
   const mats:Record<string,T.MeshStandardMaterial>={};
@@ -177,7 +178,7 @@ export async function buildScenery(scene:T.Scene,world:SceneryWorld,polish=true,
   }
   for(const r of GEO.ramps)postSign(r.name,r.at);
   registerFreightCollisions(world);
-  stream.add({id:'freight-yard',centers:freightCenters,async load(){const container=await loader.loadAsync('/exports/cut/DS_Cut_Freight_Container_01.glb');batchStaticGroup(container.scene);for(const p of freightCenters){const o=container.scene.clone(true);o.position.set(p.x,heightAt(p.x,p.z),p.z);o.rotation.y=p.heading;groupAt(p.x,p.z).add(o);}}});
+  stream.add({id:'freight-yard',centers:freightCenters,async load(){const container=await loader.loadAsync('/exports/cut/DS_Cut_Freight_Container_01.glb');onAssetsLoaded?.(container.scene);batchStaticGroup(container.scene);for(const p of freightCenters){const o=container.scene.clone(true);o.position.set(p.x,heightAt(p.x,p.z),p.z);o.rotation.y=p.heading;groupAt(p.x,p.z).add(o);}}});
   const wp=cutPoint(2052,-10),wg=groupAt(wp.x,wp.z);label(wg,'EASTERN MARKET / FREIGHT YARD',wp.x,heightAt(wp.x,wp.z)+3,wp.z,7,.8,wp.heading-Math.PI);for(const post of signSupports(wp.x,wp.z,wp.heading-Math.PI,7,heightAt(wp.x,wp.z)+3.2,heightAt))box(wg,post.x,post.y,post.z,.10,post.height,.10,steel);
   const architecture=await timeLoad('city',()=>buildCity(scene,world,groupAt,skins,stream));
   const streetFurniture=await timeLoad('street-furniture',()=>buildStreetFurniture(scene,world,groupAt));
@@ -192,9 +193,9 @@ export async function buildScenery(scene:T.Scene,world:SceneryWorld,polish=true,
   const landmarks=buildCutLandmarks(world,groupAt,label);
   const flowers=buildCutFlowers(scene,world);
   if(polish)polishSection(groupAt,mats.asphalt);
-  let routeArt:Awaited<ReturnType<typeof buildRouteArt>>|{billboards:number;murals:number}={billboards:0,murals:0};if(polish)stream.add({id:'route-art',centers:[1080,1600,1900,2300,2425].map(d=>cutPoint(d)),async load(){routeArt=await buildRouteArt(world,groupAt);world.step();}});
+  let routeArt:Awaited<ReturnType<typeof buildRouteArt>>|{billboards:number;murals:number}={billboards:0,murals:0};if(polish)stream.add({id:'route-art',centers:[1080,1600,1900,2300,2425].map(d=>cutPoint(d)),async load(){routeArt=await buildRouteArt(world,groupAt,onAssetsLoaded);world.step();}});
   buildTrailPaint(groupAt,world.chunks);
-  const cutMurals=polish?await buildCutMurals(world,groupAt,stream):{walls:0,ceilings:0};
+  const cutMurals=polish?await buildCutMurals(world,groupAt,stream,onAssetsLoaded):{walls:0,ceilings:0};
   // Consolidate static geometry by material inside each streamable tile.
   for(const g of groups){await slice.checkpoint();batchStaticGroup(g);}
   const grass=polish?await timeLoad('grass',()=>buildGrassField(scene,world,mats.grass)):undefined;

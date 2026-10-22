@@ -33,11 +33,11 @@ export class ElmwoodSessionInput {
   seats=Array.from({length:4},()=>new SeatInput());bindings:Binding[]=['wasd','arrows'];count=1;
   configure(bindings:Binding[]){this.clear();this.bindings=bindings;this.count=bindings.length;for(const s of this.seats)s.padId='';}
   clear(seat?:number){if(seat===undefined)this.seats.forEach(s=>s.clear());else this.seats[seat].clear();}
-  key(code:string,down:boolean,repeat=false){let handled=false;for(let i=0;i<this.count;i++){
+  key(code:string,down:boolean,repeat=false,recoveryOnly=false){let handled=false;for(let i=0;i<this.count;i++){
     const b=this.bindings[i];let action=b==='wasd'||b==='arrows'||b==='ijkl'||b==='numpad'?KEYSETS[b][code]:undefined;
     // Preserve the original single-player arrow-key fallback.
     if(this.count===1&&b==='wasd')action??=KEYSETS.arrows[code];
-    if(action){if(!down||!repeat)this.seats[i].set('keyboard',action,down);handled=true;}
+    if(action&&(!recoveryOnly||action==='recover')){if(!down||!repeat)this.seats[i].set('keyboard',action,down);handled=true;}
   }return handled;}
   touch(seat:number,action:Action,down:boolean,source='touch'){if(seat<this.count)this.seats[seat].set(source,action,down);}
   stick(seat:number,x:number,y:number){if(seat>=this.count)return;this.seats[seat].x=dead(x);this.seats[seat].y=dead(y);}

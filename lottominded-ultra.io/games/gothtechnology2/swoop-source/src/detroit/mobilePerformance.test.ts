@@ -4,8 +4,8 @@ import {budgetPixelRatio} from './renderBudget.ts';
 import {GRAPHICS_PRESETS,resolveGraphics,antialiasForDevice,parseGraphicsTuning,savedGraphicsTuning,presetAntialias} from './graphicsQuality.ts';
 import {FrameSchedule} from './frameSchedule.ts';
 import {CONTROL_IDS,defaultTouchPosition,controlRect} from './touchLayout.ts';
-test('Automatic uses High on capable desktops and Smooth on phones without changing manual preferences',()=>{
- assert.equal(resolveGraphics('auto'),'balanced');assert.equal(resolveGraphics('auto',8,4),'balanced');assert.equal(resolveGraphics('auto',8,8),'high');assert.equal(resolveGraphics('auto',12,undefined),'high');assert.equal(resolveGraphics('auto',4,4),'low');assert.equal(resolveGraphics('auto',12,8,false,'SwiftShader'),'low');assert.equal(resolveGraphics('auto',6,undefined,true),'low');assert.equal(resolveGraphics('auto',8,8,true),'low');assert.equal(resolveGraphics('auto',4,4,true),'low');assert.equal(resolveGraphics('high',2,2,true),'high');assert.equal(resolveGraphics('ultra',2,2),'ultra');
+test('Automatic starts Balanced on desktops and Smooth on phones without changing manual preferences',()=>{
+ assert.equal(resolveGraphics('auto'),'balanced');assert.equal(resolveGraphics('auto',8,4),'balanced');assert.equal(resolveGraphics('auto',8,8),'balanced');assert.equal(resolveGraphics('auto',12,undefined),'balanced');assert.equal(resolveGraphics('auto',4,4),'low');assert.equal(resolveGraphics('auto',12,8,false,'SwiftShader'),'low');assert.equal(resolveGraphics('auto',6,undefined,true),'low');assert.equal(resolveGraphics('auto',8,8,true),'low');assert.equal(resolveGraphics('auto',4,4,true),'low');assert.equal(resolveGraphics('high',2,2,true),'high');assert.equal(resolveGraphics('ultra',2,2),'ultra');
  assert.equal(GRAPHICS_PRESETS.low.shadows,0);assert.equal(GRAPHICS_PRESETS.low.fps,30);
 });
 test('automatic antialiasing avoids mobile MSAA cost while manual choices win',()=>{

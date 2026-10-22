@@ -1,7 +1,11 @@
 import type {Vec3} from '../terrain.ts';
 import type {BattleTerrain} from './battleTerrain.ts';
 export type SpawnNode={id:string;cluster:string;position:Vec3;headingY:number};
-export const SPAWN_SECTORS=[{id:'atwater',x:-72.5,z:-1180},{id:'chene',x:-211,z:-1625},{id:'cut',x:1100,z:-1360},{id:'mack',x:2460,z:-1430}] as const;
+export const SPAWN_SECTORS=[{id:'atwater',x:-72.5,z:-1180},{id:'chene',x:-115,z:-1759},{id:'cut',x:1100,z:-1360},{id:'mack',x:2460,z:-1430}] as const;
+/** Source-map metres: authored Aretha canopy footprint (OSM 60624913),
+ * expanded 12 m for the initial chase camera. Keep the venue walkable;
+ * only match/re-entry placement avoids its roof and support columns. */
+export function spawnCameraSpace(p:{x:number;z:number}){return !(p.x>=-263&&p.x<=-165&&p.z>=-1686&&p.z<=-1561);}
 const distance=(a:Vec3,b:Vec3)=>Math.hypot(a.x-b.x,a.z-b.z);
 export function shuffled<T>(values:readonly T[],seed:number){const a=[...values];let n=seed|0;for(let i=a.length-1;i>0;i--){n^=n<<13;n^=n>>>17;n^=n<<5;if(!n)n=1234567;const j=(n>>>0)%(i+1);[a[i],a[j]]=[a[j],a[i]];}return a;}
 export function configuredSpawnNodes(nodes:readonly Vec3[],t:{sx:number;tx:number;tz:number},clear:(p:Vec3)=>boolean):SpawnNode[]{

@@ -58,7 +58,7 @@ function sprayPaintMaterial(map:T.Texture){
  return material;
 }
 
-export async function buildCutMurals(world:SceneryWorld,groupAt:(x:number,z:number)=>T.Group,stream?:SpatialAssetStream){
+export async function buildCutMurals(world:SceneryWorld,groupAt:(x:number,z:number)=>T.Group,stream?:SpatialAssetStream,onAssetsLoaded?:(root:T.Object3D)=>void){
  const urls=[
   new URL('../../art/cut-murals/ivanmontoyamural.jpg',import.meta.url).href,
   new URL('../../art/cut-murals/sydneyjames2.jpg',import.meta.url).href,
@@ -79,10 +79,12 @@ export async function buildCutMurals(world:SceneryWorld,groupAt:(x:number,z:numb
   const load=async()=>{
    const map=await new T.TextureLoader().loadAsync(urls[index]);map.colorSpace=T.SRGBColorSpace;map.anisotropy=4;
    const material=spray?sprayPaintMaterial(map):new T.MeshStandardMaterial({map,roughness:1,side:T.DoubleSide,polygonOffset:true,polygonOffsetFactor:-1});
-   let mesh:T.Mesh;try{mesh=create(material);}catch(error){map.dispose();material.dispose();throw error;}loaded++;
+   let mesh:T.Mesh|undefined;try{mesh=create(material);onAssetsLoaded?.(mesh);}catch(error){mesh?.removeFromParent();mesh?.geometry.dispose();map.dispose();material.dispose();throw error;}loaded++;
+   // Budget this texture before yielding to the renderer: otherwise a tablet
+   // uploads the full image once, then uploads the resized image next frame.
    // A cached image also yields a frame before another mural starts loading.
    if(stream)await new Promise<void>(resolve=>requestAnimationFrame(()=>resolve()));
-   return()=>{mesh.removeFromParent();mesh.geometry.dispose();material.dispose();map.dispose();loaded--;};
+   const painted=mesh;return()=>{painted.removeFromParent();painted.geometry.dispose();material.dispose();map.dispose();loaded--;};
   };
   if(stream)stream.add({id,centers:[center],load});else jobs.push(load().then(()=>{}));
  };

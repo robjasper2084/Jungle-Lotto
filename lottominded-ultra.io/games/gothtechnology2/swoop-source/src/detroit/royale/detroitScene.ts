@@ -17,5 +17,7 @@ export async function buildDetroitArenaScene(scene:T.Scene,arena:DowntownArena,o
  scenery.lighting.setDusk(true);
  const polish=polishRiverfront(root,arena,scenery.materials);
  scenery.update(start.x,start.z,0);
- return {root,jazz:scenery.jazz,update(p:{x:number;y:number;z:number},time:number){const source=arena.sourcePosition(p);scenery.update(source.x,source.z,time);polish.update(source);}};
+ return {root,jazz:scenery.jazz,
+  warm(p:{x:number;y:number;z:number},radius:number){return scenery.stream.warm([arena.sourcePosition(p)],radius);},
+  update(p:{x:number;y:number;z:number},time:number){const source=arena.sourcePosition(p);scenery.update(source.x,source.z,time);polish.update(source);}};
 }

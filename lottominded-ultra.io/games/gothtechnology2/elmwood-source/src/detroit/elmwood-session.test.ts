@@ -9,6 +9,17 @@ import {readFileSync} from 'node:fs';
 import {bankHeight} from './elmwood-bank.ts';
 const pad=(index:number):Pad=>({index,id:'Test pad '+index,connected:true,axes:[0,0],buttons:Array.from({length:16},()=>({value:0,pressed:false}))});
 const flat:TerrainSampler={sampleGround(_x,_z,out){out.height=0;out.normal={x:0,y:1,z:0};out.surface='pavement';out.offCourse=false;return out;},raycast(){return null;},raycastObstacle(){return null;}};
+test('paused keyboard permits a deliberate recovery per rider without queuing movement',()=>{
+  const input=new ElmwoodSessionInput();input.configure(['wasd','arrows']);
+  assert.equal(input.key('KeyW',true,false,true),false);assert.equal(input.key('Enter',true,false,true),false);
+  assert.equal(input.key('KeyR',true,false,true),true);
+  const first=input.consume(0,0,1,false);assert(first.recover);assert.equal(first.actions.throttle,0);assert.equal(first.actions.hop,false);
+  assert.equal(input.consume(1,0,1,false).recover,false);
+  input.key('KeyR',true,true,true);assert.equal(input.consume(0,0,1,false).recover,false,'held key does not consume another recovery');
+  input.key('Backspace',true,false,true);assert(input.consume(1,0,1,false).recover);
+  input.clear();input.key('KeyW',true);assert.equal(input.consume(0,0,1).actions.throttle,1);
+});
+
 test('shared keyboard keeps two riders and edge actions independent',()=>{
   const i=new ElmwoodSessionInput();i.configure(['wasd','arrows']);i.key('KeyW',true);i.key('ArrowLeft',true);i.key('Enter',true);
   assert.equal(i.consume(0,0,1).actions.throttle,1);let p2=i.consume(1,0,1);assert.equal(p2.actions.throttle,0);assert.equal(p2.actions.steer,-1);assert.equal(p2.actions.hop,true);assert.equal(i.consume(1,0,1).actions.hop,false);

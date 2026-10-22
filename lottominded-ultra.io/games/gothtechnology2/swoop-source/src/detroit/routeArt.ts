@@ -32,7 +32,8 @@ function panelGeometry(w:number,h:number){
  // Parent map scene reflects X. Correct the printed artwork once at this boundary.
  for(let i=0;i<uv.count;i++)uv.setX(i,1-uv.getX(i));return g;
 }
-export async function buildRouteArt(world:SceneryWorld,groupAt:(x:number,z:number)=>T.Group){
+export async function buildRouteArt(world:SceneryWorld,groupAt:(x:number,z:number)=>T.Group,onAssetsLoaded?:(root:T.Object3D)=>void){
+ const add=(group:T.Group,mesh:T.Mesh)=>{onAssetsLoaded?.(mesh);group.add(mesh);};
  const urls=[
   new URL('../../art/route-campaign/lottomind-refined.png',import.meta.url).href,
   new URL('../../art/route-campaign/gothtechnology-refined.png',import.meta.url).href,
@@ -52,13 +53,13 @@ export async function buildRouteArt(world:SceneryWorld,groupAt:(x:number,z:numbe
   for(const solid of p.solids){
    const mesh=new T.Mesh(new T.BoxGeometry(solid.hx*2,solid.hy*2,solid.hz*2),frame);
    mesh.position.set(solid.x,solid.y,solid.z);mesh.rotation.y=solid.yaw??0;
-   mesh.name='Campaign '+solid.kind+' '+site.at;mesh.castShadow=mesh.receiveShadow=true;group.add(mesh);
+   mesh.name='Campaign '+solid.kind+' '+site.at;mesh.castShadow=mesh.receiveShadow=true;add(group,mesh);
    world.solids.push(solid);world.addBox(solid);
   }
   for(const yaw of [p.yaw,p.yaw+Math.PI]){
    const mesh=new T.Mesh(panelGeometry(WIDTH,HEIGHT),materials[site.art]);
    mesh.name=['Lotto Mind','GothTechnology','Detroit Dreams','Serengeti Galleries','Detroit Heart','Static Wave'][site.art]+' campaign '+site.at;
-   mesh.position.set(p.x+Math.sin(yaw)*.112,p.y,p.z+Math.cos(yaw)*.112);mesh.rotation.y=yaw;group.add(mesh);
+   mesh.position.set(p.x+Math.sin(yaw)*.112,p.y,p.z+Math.cos(yaw)*.112);mesh.rotation.y=yaw;add(group,mesh);
   }
   billboards++;
  }
@@ -70,7 +71,7 @@ export async function buildRouteArt(world:SceneryWorld,groupAt:(x:number,z:numbe
   const yaw=p.heading-Math.PI+(wall.offset>0?-Math.PI/2:Math.PI/2);
   const mesh=new T.Mesh(panelGeometry(w,h),materials[2]);mesh.name='Detroit Dreams painted wall '+at;
   mesh.position.set(p.x+Math.sin(yaw)*.195,heightAt(p.x,p.z)+wall.height/2,p.z+Math.cos(yaw)*.195);mesh.rotation.y=yaw;
-  groupAt(p.x,p.z).add(mesh);murals++;
+  add(groupAt(p.x,p.z),mesh);murals++;
  }
  // The original artwork stays intact on disk. The sign material keys out only
  // its dark fabric background, so the skyline/heart reads as a freestanding cutout.
@@ -83,12 +84,12 @@ export async function buildRouteArt(world:SceneryWorld,groupAt:(x:number,z:numbe
  const ground=Math.max(...[-7,0,7].map(d=>{const q=cutPoint(site.at+d,site.offset);return heightAt(q.x,q.z);})),base=ground+.3;
  const group=groupAt(p.x,p.z);
  // Closely spaced silhouette layers give the monumental field sign physical depth.
- for(const depth of [-.18,-.09,0,.09,.18]){const mesh=new T.Mesh(graphic(site.width,site.height),cutout);mesh.name='Detroit heart monumental field sign';mesh.position.set(p.x+Math.sin(yaw)*depth,base+site.height/2,p.z+Math.cos(yaw)*depth);mesh.rotation.y=yaw;group.add(mesh);}
- for(const u of [-5,0,5]){const x=p.x+Math.cos(yaw)*u,z=p.z-Math.sin(yaw)*u,y=heightAt(x,z),top=base+.55;const s:Solid={x,y:(top+y)/2,z,hx:.13,hy:(top-y)/2,hz:.13,yaw,kind:'art-sign-support'};const mesh=new T.Mesh(new T.BoxGeometry(.26,s.hy*2,.26),frame);mesh.position.set(x,s.y,z);mesh.castShadow=true;group.add(mesh);world.solids.push(s);world.addBox(s);}
+ for(const depth of [-.18,-.09,0,.09,.18]){const mesh=new T.Mesh(graphic(site.width,site.height),cutout);mesh.name='Detroit heart monumental field sign';mesh.position.set(p.x+Math.sin(yaw)*depth,base+site.height/2,p.z+Math.cos(yaw)*depth);mesh.rotation.y=yaw;add(group,mesh);}
+ for(const u of [-5,0,5]){const x=p.x+Math.cos(yaw)*u,z=p.z-Math.sin(yaw)*u,y=heightAt(x,z),top=base+.55;const s:Solid={x,y:(top+y)/2,z,hx:.13,hy:(top-y)/2,hz:.13,yaw,kind:'art-sign-support'};const mesh=new T.Mesh(new T.BoxGeometry(.26,s.hy*2,.26),frame);mesh.position.set(x,s.y,z);mesh.castShadow=true;add(group,mesh);world.solids.push(s);world.addBox(s);}
  const body:Solid={x:p.x,y:base+site.height/2,z:p.z,hx:7,hy:site.height/2,hz:.2,yaw,kind:'art-sign'};world.solids.push(body);world.addBox(body);
  // Adelaide's existing concrete wall carries the same artwork beneath the span.
  const wall=GEO.walls.find(w=>w.at===1860&&w.offset===9)!;
  const mp=cutPoint(wall.at+3.9,wall.offset),myaw=mp.heading-Math.PI-Math.PI/2,mh=wall.height-.18;
- const mural=new T.Mesh(graphic(mh*.67/.455,mh),art);mural.name='Detroit heart Adelaide overpass mural';mural.position.set(mp.x+Math.sin(myaw)*.201,heightAt(mp.x,mp.z)+wall.height/2,mp.z+Math.cos(myaw)*.201);mural.rotation.y=myaw;groupAt(mp.x,mp.z).add(mural);murals++;
+ const mural=new T.Mesh(graphic(mh*.67/.455,mh),art);mural.name='Detroit heart Adelaide overpass mural';mural.position.set(mp.x+Math.sin(myaw)*.201,heightAt(mp.x,mp.z)+wall.height/2,mp.z+Math.cos(myaw)*.201);mural.rotation.y=myaw;add(groupAt(mp.x,mp.z),mural);murals++;
  return{billboards,murals,photos,fieldSigns:1};
 }

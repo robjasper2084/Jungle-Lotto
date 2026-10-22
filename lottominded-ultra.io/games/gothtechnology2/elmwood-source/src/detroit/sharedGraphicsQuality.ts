@@ -28,7 +28,9 @@ export function resolveGraphics(value:string,cores=4,memory?:number,mobile=false
  // Start these large maps at Smooth; explicit quality choices above still win.
  if(mobile)return 'low';
  if(memory!==undefined&&memory<=4)return cores<=4?'low':'balanced';
- return cores>=6||/nvidia|geforce|radeon|intel.*arc|apple m[2-9]/i.test(gpu)?'high':'balanced';
+ // The first busy arena view must fit the budget before adaptation has samples.
+ // A GPU name or core count is not a measurement of this scene's render cost.
+ return 'balanced';
 }
 export function startupTextureBudget(){
  const mobile=typeof navigator!=='undefined'&&(/Android|iPhone|iPad|Mobile|OculusBrowser/i.test(navigator.userAgent)||navigator.maxTouchPoints>1&&/Macintosh/.test(navigator.userAgent));
@@ -44,7 +46,7 @@ export function createGraphicsQuality(renderer:T.WebGLRenderer,scene:T.Scene,can
  const gl=renderer.getContext(),debug=gl.getExtension('WEBGL_debug_renderer_info'),gpu=debug?String(gl.getParameter(debug.UNMASKED_RENDERER_WEBGL)):'';
  let autoTier:ReturnType<typeof resolveGraphics>|undefined;
  const resolved=()=>choice==='auto'&&autoTier?autoTier:resolveGraphics(choice,cores,memory,mobile,gpu);
- const preset=()=>{const p=GRAPHICS_PRESETS[resolved()];return {...p,fps:tuning.fps??p.fps,shadows:tuning.shadows??p.shadows,textureSize:tuning.textureSize??p.textureSize,distance:tuning.distance??p.distance};};
+ const preset=()=>{const p=GRAPHICS_PRESETS[resolved()];return {...p,fps:tuning.fps??p.fps,shadows:tuning.shadows??(choice==='auto'?0:p.shadows),textureSize:tuning.textureSize??p.textureSize,distance:tuning.distance??p.distance};};
  let current=preset();
  const fields:HTMLSelectElement[]=[],descriptions:HTMLElement[]=[],originalShadows=new WeakMap<T.Light,boolean>();
  const tuningFields:{key:keyof GraphicsTuning,input:HTMLSelectElement}[]=[],restartButtons:HTMLButtonElement[]=[];
@@ -57,9 +59,9 @@ export function createGraphicsQuality(renderer:T.WebGLRenderer,scene:T.Scene,can
   const seen=new Set<T.Material>(),anisotropy=Math.min(current.anisotropy,renderer.capabilities.getMaxAnisotropy());
   root.traverse(o=>{const mesh=o as T.Mesh;if(!mesh.isMesh)return;for(const material of Array.isArray(mesh.material)?mesh.material:[mesh.material]){if(seen.has(material))continue;seen.add(material);for(const value of Object.values(material)){const texture=value as T.Texture;if(texture?.isTexture&&!texture.isRenderTargetTexture&&texture.anisotropy!==anisotropy){texture.anisotropy=anisotropy;texture.needsUpdate=true;}}}});
  }
- function apply(){current=preset();if(choice==='auto'){current.distance=Math.max(140,Math.round(current.distance*adaptiveDetail));if(adaptiveDetail<.8)current.shadows=Math.min(current.shadows,1024);if(adaptiveDetail<.7)current.shadows=0;}resize();renderer.shadowMap.enabled=current.shadows>0;
+ function apply(refreshAssets=true){current=preset();if(choice==='auto'){current.distance=Math.max(140,Math.round(current.distance*adaptiveDetail));}resize();renderer.shadowMap.enabled=current.shadows>0;
   scene.traverse(o=>{const light=o as T.DirectionalLight;if(light.isLight&&light.shadow){if(!originalShadows.has(light))originalShadows.set(light,light.castShadow);light.castShadow=!!current.shadows&&!!originalShadows.get(light);const size=current.shadows||512;if(light.shadow.mapSize.x!==size){light.shadow.mapSize.set(size,size);light.shadow.map?.dispose();light.shadow.map=null;}}
-  });applyAssets(scene);
+  });if(refreshAssets)applyAssets(scene);
   if(scene.fog instanceof T.Fog){scene.fog.near=current.distance*.32;scene.fog.far=current.distance*1.4;}
   renderer.shadowMap.needsUpdate=true;document.documentElement.dataset.renderQuality=resolved()==='low'?'compact':'detailed';document.documentElement.dataset.drawDistance=String(current.distance);
   Object.assign(canvas.dataset,{qualityChoice:choice,quality:resolved(),frameLimit:String(current.fps),shadowSize:String(current.shadows),textureLimit:String(current.textureSize),pixelRatio:String(renderer.getPixelRatio()),antialias:String(gl.getContextAttributes()?.antialias),adaptiveDetail:String(adaptiveDetail),qualityReason:choice!=='auto'?'Manual selection':autoTier?'Adjusted for sustained slow frames':mobile?'Mobile device':resolved()==='high'?'Desktop hardware':'Hardware performance budget'});
@@ -70,6 +72,7 @@ export function createGraphicsQuality(renderer:T.WebGLRenderer,scene:T.Scene,can
   onApply?.();
  }
  function mount(parent:HTMLElement){const field=document.createElement('fieldset');field.className='touchSettings graphicsSettings';const legend=document.createElement('legend');legend.textContent='Graphics & performance';const label=document.createElement('label');label.textContent='Graphics preset';const select=document.createElement('select');select.setAttribute('aria-label','Graphics detail');select.add(new Option('Automatic · match this device','auto'));for(const [v,p]of Object.entries(GRAPHICS_PRESETS))select.add(new Option(p.label,v));select.value=choice;const description=document.createElement('p');description.setAttribute('role','status');select.onchange=()=>{choice=select.value as GraphicsChoice;tuning={};autoTier=undefined;resolutionScale=1;adaptiveDetail=1;try{localStorage.setItem('swoop-graphics-quality',choice);localStorage.removeItem(TUNING_KEY);}catch{}apply();};fields.push(select);descriptions.push(description);label.append(select);field.append(legend,label,description);
+  const stable30=document.createElement('button');stable30.type='button';stable30.textContent='Stable · 30 FPS target';stable30.onclick=()=>{choice='low';autoTier=undefined;resolutionScale=1;adaptiveDetail=1;tuning={fps:30,shadows:0,textureSize:512,distance:180,resolution:1};try{localStorage.setItem('swoop-graphics-quality',choice);localStorage.setItem(TUNING_KEY,JSON.stringify(tuning));}catch{}apply();};field.append(stable30);
   const smooth60=document.createElement('button');smooth60.type='button';smooth60.textContent='Smooth · 60 FPS target';smooth60.onclick=()=>{choice='low';autoTier=undefined;resolutionScale=1;adaptiveDetail=1;tuning={...tuning,fps:60,shadows:0,textureSize:512,distance:180,resolution:1};try{localStorage.setItem('swoop-graphics-quality',choice);localStorage.setItem(TUNING_KEY,JSON.stringify(tuning));}catch{}apply();};field.append(smooth60);
   const advanced=document.createElement('details');advanced.className='graphicsAdvanced';const summary=document.createElement('summary');summary.textContent='Advanced graphics controls';advanced.append(summary);
   const specs:[keyof GraphicsTuning,string,[string,string][]][]=[['resolution','Resolution',[['auto','Preset'],['0.5','50% · fastest'],['0.75','75% · faster'],['1','100%'],['1.25','125% · sharper'],['1.5','150% · sharpest']]],['fps','Frame-rate limit',[['auto','Preset'],['30','30 FPS'],['60','60 FPS'],['90','90 FPS'],['120','120 FPS']]],['shadows','Shadow detail',[['auto','Preset'],['0','Off'],['1024','Low'],['2048','High'],['4096','Ultra']]],['textureSize','Texture detail',[['auto','Preset'],['512','Smooth · 512px'],['1024','Balanced · 1024px'],['2048','HD · 2048px'],['4096','Ultra · 4096px']]],['distance','Viewing distance',[['auto','Preset'],['180','Short · 180m'],['300','Medium · 300m'],['460','Far · 460m'],['600','Extra far · 600m']]],['aa','Antialiasing',[['auto','Automatic'],['off','Off · faster'],['on','On · smoother edges (MSAA)']]]];
@@ -79,5 +82,5 @@ export function createGraphicsQuality(renderer:T.WebGLRenderer,scene:T.Scene,can
  window.addEventListener('storage',event=>{if(event.key!=='swoop-graphics-quality'&&event.key!==TUNING_KEY)return;
   try{const saved=localStorage.getItem('swoop-graphics-quality');choice=['auto','low','balanced','high','ultra'].includes(saved??'')?saved as GraphicsChoice:'auto';tuning=savedGraphicsTuning(choice,localStorage.getItem(TUNING_KEY));autoTier=undefined;resolutionScale=1;adaptiveDetail=1;apply();}catch{}
  });
- apply();return {apply,applyAssets,mount,resize,downgradeAuto(){if(choice!=='auto'||resolved()==='low')return false;autoTier=resolved()==='high'?'balanced':'low';resolutionScale=1;apply();return true;},setAdaptiveDetail(detail:number){const next=choice==='auto'?T.MathUtils.clamp(detail,.65,1):1;if(next!==adaptiveDetail){adaptiveDetail=next;apply();}},setResolutionScale(scale:number){resolutionScale=T.MathUtils.clamp(scale,.65,1);resize();},get choice(){return choice;},get current(){return current;}};
+ apply();return {apply,applyAssets,mount,resize,downgradeAuto(){if(choice!=='auto'||resolved()==='low')return false;autoTier=resolved()==='high'?'balanced':'low';resolutionScale=1;apply();return true;},setAdaptiveDetail(detail:number){const next=choice==='auto'?T.MathUtils.clamp(detail,.65,1):1;if(next!==adaptiveDetail){adaptiveDetail=next;apply(false);}},setResolutionScale(scale:number){resolutionScale=T.MathUtils.clamp(scale,.65,1);resize();},get choice(){return choice;},get current(){return current;}};
 }

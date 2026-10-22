@@ -14,6 +14,10 @@ import {makeElmwoodQuality} from './elmwood-quality.ts';
 import {startupAntialias} from './sharedGraphicsQuality.ts';
 import {AdaptiveQuality} from './sharedAdaptiveQuality.ts';
 import * as T from 'three';
+import {warmFirstView} from '../../../swoop-source/src/detroit/warmFirstView.ts';
+import {treeDetail,treeModel} from './elmwoodTreeDetail.ts';
+import {StartupFrames} from '../../../ride-core/src/startupFrames.ts';
+const startupFrames=new StartupFrames();let startupRiding=false;
 
 
 
@@ -130,6 +134,7 @@ const hemi=new T.HemisphereLight('#c9d4df','#414738',.60);scene.add(hemi);const 
 
 
 const quality=makeElmwoodQuality(renderer,sun,scene,canvas);
+const loadedTreeDetail=treeDetail(canvas.dataset.quality);canvas.dataset.treeDetail=loadedTreeDetail;
 const weather=makeElmwoodWeather(scene,camera,sun,hemi,renderer);
 
 
@@ -164,7 +169,7 @@ let treeTours:{sources:Record<string,string>;stops:Array<{species:string;tourSto
 let creekGarden:ReturnType<typeof makeElmwoodCreekGarden>|undefined;
 
 let environment:ReturnType<typeof makeElmwoodEnvironment>|undefined;
-let nature:NatureWorld|undefined,natureAudio:NatureAudio|undefined;
+let nature:NatureWorld|undefined,natureAudio:NatureAudio|undefined,natureReady:Promise<void>|undefined;
 
 
 
@@ -198,7 +203,7 @@ async function loadSource(id:string){
 
 
 
- const modelId=id==='hdrp-lab-car-black'&&!['high','ultra'].includes(canvas.dataset.quality??'')?id+'-lod1':id;
+ const modelId=id==='hdrp-lab-car-black'&&!['high','ultra'].includes(canvas.dataset.quality??'')?id+'-lod1':treeModel(id,loadedTreeDetail);
  const gltf=await loader.loadAsync(`/elmwood/models/${modelId==='flying-geese-study'?'flying-geese-baked':modelId}.glb`);
 
 
@@ -707,7 +712,7 @@ const ps=placements.filter(p=>p.asset===id),source=cache.get(id)!;source.updateM
  const cherrySites=elmwoodCherrySites(terrain,site.boundary);
  const cherryAnchors=cherrySites.map(p=>({...p,z:-p.north}));
  canvas.dataset.cherrySites=JSON.stringify(cherrySites);
- nature=new NatureWorld(world,cherryAnchors,(x,z)=>terrain.height(x,-z));void nature.load();
+ nature=new NatureWorld(world,cherryAnchors,(x,z)=>terrain.height(x,-z));natureReady=nature.load();
  const pond=landmarkPass!.pond.center,creekPoints=site.features.filter((f:{tags:Record<string,string>})=>f.tags.waterway==='stream').flatMap((f:{points:number[][]})=>f.points).map((p:number[])=>({x:p[0],z:-p[1]}));
  natureAudio=new NatureAudio([
   {file:'birdsong.mp3',points:cherryAnchors,radius:70,volume:.20},
@@ -757,7 +762,14 @@ const ps=placements.filter(p=>p.asset===id),source=cache.get(id)!;source.updateM
 
 
 
-rideControls=makeElmwoodRide(scene,camera,controls,canvas,notice,()=>{world.visible=true;library.visible=false;el<HTMLSelectElement>('mode').value='site';for(const o of el<HTMLSelectElement>('asset').options)o.disabled=false;},()=>environment?.birds.map(({state:b},i)=>({id:'bird-'+i,kind:b.kind,x:b.x,z:-b.north,radius:b.kind==='goose'?.38:.25,water:b.swimming}))??[]);
+rideControls=makeElmwoodRide(scene,camera,controls,canvas,notice,()=>{world.visible=true;library.visible=false;el<HTMLSelectElement>('mode').value='site';for(const o of el<HTMLSelectElement>('asset').options)o.disabled=false;},()=>environment?.birds.map(({state:b},i)=>({id:'bird-'+i,kind:b.kind,x:b.x,z:-b.north,radius:b.kind==='goose'?.38:.25,water:b.swimming}))??[],quality.applyAssets,async()=>{
+ rideControls?.update(0);
+ await Promise.all([natureReady,landmarkStream?.warm(rideControls?.streamPoints()??[],quality.current.distance+100).catch(e=>console.warn('Nearby Elmwood art unavailable',e))]);
+ quality.applyAssets(scene);
+ nature?.update(0,{x:Number(canvas.dataset.x)||0,z:Number(canvas.dataset.z)||0},true,quality.current.wind===false,true);
+ for(const tile of landscapeTiles)tile.visible=rideControls?.nearPlayers(tile.userData.center,quality.current.distance)??true;
+ await warmFirstView(renderer,scene,camera);startupFrames.reset();frameStats.resetWindow();lastFrame=performance.now();
+});
 
 
 
@@ -776,14 +788,15 @@ performanceToggle.onchange=()=>{performanceReadout.hidden=!performanceToggle.che
 
 el('date').after(performanceLabel,performanceReadout);
 
-const sceneryGate=new SpatialUpdateGate();const frameSchedule=new FrameSchedule();const waterOptions={reducedMotion:false,detail:1};const reducedWaterMotion=matchMedia('(prefers-reduced-motion: reduce)');const waterMotionOverride=new URLSearchParams(location.search).has('reducedMotion');const adaptiveQuality=new AdaptiveQuality();const started=performance.now();let lastFrame=started;const sunDirection=new T.Vector3();function animate(now:number){if(!renderer.xr.isPresenting&&(document.hidden||document.querySelector<HTMLDialogElement>('#elmwood-main-menu')?.open))return;if(!frameSchedule.shouldRender(now,canvas.dataset.riding==='true'&&canvas.dataset.paused==='true',renderer.xr.isPresenting,quality.current.fps))return;const cpuStarted=performance.now();const t=(now-started)/1000,dt=Math.min(.1,(now-lastFrame)/1000);const budgetActive=quality.choice==='auto'&&!renderer.xr.isPresenting&&!document.hidden&&canvas.dataset.riding==='true'&&canvas.dataset.paused!=='true'&&now-started>5000;if(!budgetActive&&quality.choice!=='auto')adaptiveQuality.reset();if(adaptiveQuality.sample(now-lastFrame,budgetActive,quality.current.fps)){quality.setAdaptiveDetail(adaptiveQuality.detail);quality.setResolutionScale(adaptiveQuality.scale);}canvas.dataset.resolutionScale=String(adaptiveQuality.scale);wind.value=quality.current.wind?t:0;vr.beforeFrame();const rideStarted=performance.now();rideControls?.update(dt);const rideMs=performance.now()-rideStarted;vr.afterFrame();if(landmarkStream&&!document.hidden){const points=canvas.dataset.riding==='true'?rideControls?.streamPoints()??[]:[controls.target];landmarkStream.update(points,quality.current.distance+100);canvas.dataset.streaming=JSON.stringify(landmarkStream.status);}const paused=canvas.dataset.riding==='true'&&canvas.dataset.paused==='true';sunDirection.copy(sun.position).sub(sun.target.position).normalize();waterOptions.reducedMotion=reducedWaterMotion.matches||waterMotionOverride;waterOptions.detail=canvas.dataset.quality==='low'?.35:canvas.dataset.quality==='balanced'?.7:1;weather.update(dt,sunDirection,world.visible,paused,waterOptions);canvas.dataset.waterTime=weather.uniforms.waterTime.value.toFixed(2);canvas.dataset.waterDetail=String(waterOptions.detail);sun.target.position.copy(controls.target);sun.position.copy(controls.target).addScaledVector(sunDirection,500);const chasing=environment?.update(dt,{x:Number(canvas.dataset.x)||0,north:-(Number(canvas.dataset.z)||0),active:canvas.dataset.riding==='true'},sunDirection.copy(sun.position).sub(sun.target.position),paused,weather.uniforms,rideControls?.dogThreats());nature?.update(dt,canvas.dataset.riding==='true'?{x:Number(canvas.dataset.x)||0,z:Number(canvas.dataset.z)||0}:controls.target,paused||canvas.dataset.riding!=='true',quality.current.wind===false,matchMedia('(prefers-reduced-motion: reduce)').matches||new URLSearchParams(location.search).has('reducedMotion'));natureAudio?.update({x:Number(canvas.dataset.x)||0,z:Number(canvas.dataset.z)||0},Number(canvas.dataset.heading)||0,canvas.dataset.riding==='true'&&!paused&&world.visible);canvas.dataset.nature=JSON.stringify(nature?.status);canvas.dataset.natureAudio=natureAudio?.status??'waiting';canvas.dataset.weather=weather.mode;canvas.dataset.atmosphere=JSON.stringify(environment?.sky.status);canvas.dataset.wetness=weather.uniforms.wet.value.toFixed(2);canvas.dataset.chasingBirds=String(chasing??0);canvas.dataset.fleeingBirds=String(environment?.birds.filter(b=>b.state.mode==='flee').length??0);lastFrame=now;if(controls.enabled&&(canvas.dataset.riding!=="true"||canvas.dataset.cameraMode!=="orbit"))controls.update();if(sceneryGate.due(Number(canvas.dataset.x)||0,Number(canvas.dataset.z)||0,t,String(quality.current.distance)+canvas.dataset.riding)){for(const tile of landscapeTiles){tile.visible=canvas.dataset.riding!=="true"||(rideControls?.nearPlayers(tile.userData.center,quality.current.distance)??true);}}
+const sceneryGate=new SpatialUpdateGate();const frameSchedule=new FrameSchedule();const waterOptions={reducedMotion:false,detail:1};const reducedWaterMotion=matchMedia('(prefers-reduced-motion: reduce)');const waterMotionOverride=new URLSearchParams(location.search).has('reducedMotion');const adaptiveQuality=new AdaptiveQuality();const started=performance.now();let lastFrame=started;const sunDirection=new T.Vector3();function animate(now:number){if(canvas.dataset.preparingRide==='true'||!renderer.xr.isPresenting&&(document.hidden||document.querySelector<HTMLDialogElement>('#elmwood-main-menu')?.open||document.getElementById('startupPreview')?.hidden===false)){startupFrames.pause();return;}if(!frameSchedule.shouldRender(now,canvas.dataset.riding==='true'&&canvas.dataset.paused==='true',renderer.xr.isPresenting,quality.current.fps))return;const cpuStarted=performance.now();const t=(now-started)/1000,dt=Math.min(.1,(now-lastFrame)/1000);const budgetActive=quality.choice==='auto'&&!renderer.xr.isPresenting&&!document.hidden&&canvas.dataset.riding==='true'&&canvas.dataset.paused!=='true'&&now-started>5000;if(!budgetActive&&quality.choice!=='auto')adaptiveQuality.reset();if(adaptiveQuality.sample(now-lastFrame,budgetActive,quality.current.fps)){quality.setAdaptiveDetail(adaptiveQuality.detail);quality.setResolutionScale(adaptiveQuality.scale);}canvas.dataset.resolutionScale=String(adaptiveQuality.scale);wind.value=quality.current.wind?t:0;vr.beforeFrame();const rideStarted=performance.now();rideControls?.update(dt);const rideMs=performance.now()-rideStarted;vr.afterFrame();if(landmarkStream&&!document.hidden){const points=canvas.dataset.riding==='true'?rideControls?.streamPoints()??[]:[controls.target];landmarkStream.update(points,quality.current.distance+100);canvas.dataset.streaming=JSON.stringify(landmarkStream.status);}const paused=canvas.dataset.riding==='true'&&canvas.dataset.paused==='true';sunDirection.copy(sun.position).sub(sun.target.position).normalize();waterOptions.reducedMotion=reducedWaterMotion.matches||waterMotionOverride;waterOptions.detail=canvas.dataset.quality==='low'?.35:canvas.dataset.quality==='balanced'?.7:1;weather.update(dt,sunDirection,world.visible,paused,waterOptions);canvas.dataset.waterTime=weather.uniforms.waterTime.value.toFixed(2);canvas.dataset.waterDetail=String(waterOptions.detail);sun.target.position.copy(controls.target);sun.position.copy(controls.target).addScaledVector(sunDirection,500);const chasing=environment?.update(dt,{x:Number(canvas.dataset.x)||0,north:-(Number(canvas.dataset.z)||0),active:canvas.dataset.riding==='true'},sunDirection.copy(sun.position).sub(sun.target.position),paused,weather.uniforms,rideControls?.dogThreats());nature?.update(dt,canvas.dataset.riding==='true'?{x:Number(canvas.dataset.x)||0,z:Number(canvas.dataset.z)||0}:controls.target,paused||canvas.dataset.riding!=='true',quality.current.wind===false,matchMedia('(prefers-reduced-motion: reduce)').matches||new URLSearchParams(location.search).has('reducedMotion'));natureAudio?.update({x:Number(canvas.dataset.x)||0,z:Number(canvas.dataset.z)||0},Number(canvas.dataset.heading)||0,canvas.dataset.riding==='true'&&!paused&&world.visible);canvas.dataset.nature=JSON.stringify(nature?.status);canvas.dataset.natureAudio=natureAudio?.status??'waiting';canvas.dataset.weather=weather.mode;canvas.dataset.atmosphere=JSON.stringify(environment?.sky.status);canvas.dataset.wetness=weather.uniforms.wet.value.toFixed(2);canvas.dataset.chasingBirds=String(chasing??0);canvas.dataset.fleeingBirds=String(environment?.birds.filter(b=>b.state.mode==='flee').length??0);lastFrame=now;if(controls.enabled&&(canvas.dataset.riding!=="true"||canvas.dataset.cameraMode!=="orbit"))controls.update();if(sceneryGate.due(Number(canvas.dataset.x)||0,Number(canvas.dataset.z)||0,t,String(quality.current.distance)+canvas.dataset.riding)){for(const tile of landscapeTiles){tile.visible=canvas.dataset.riding!=="true"||(rideControls?.nearPlayers(tile.userData.center,quality.current.distance)??true);}}
 
 
 
 interactiveWater.update(canvas.dataset.riding==='true'?{x:Number(canvas.dataset.x),y:Number(canvas.dataset.riderY),z:Number(canvas.dataset.z)}:undefined,paused);
 const drawStarted=performance.now();if(!rideControls?.render(renderer))renderer.render(scene,camera);const measured=frameStats.rendered(now,performance.now()-cpuStarted,rideMs,performance.now()-drawStarted);canvas.dataset.frames=String(frameStats.frames);
 
-if(measured){canvas.dataset.rideMsP95=frameStats.rideMsP95.toFixed(2);canvas.dataset.drawMsP95=frameStats.drawMsP95.toFixed(2);canvas.dataset.cpuMsP95=frameStats.cpuMsP95.toFixed(2);canvas.dataset.fps=frameStats.fps.toFixed(1);canvas.dataset.frameMsP95=frameStats.frameMsP95.toFixed(1);canvas.dataset.frameMsP99=frameStats.frameMsP99.toFixed(1);canvas.dataset.longFrames50=String(frameStats.longFrames50);canvas.dataset.longFrames100=String(frameStats.longFrames100);performanceReadout.textContent=frameStats.fps.toFixed(1)+' FPS · p95 '+frameStats.frameMsP95.toFixed(1)+' ms · '+renderer.info.render.calls+' draw calls';}canvas.dataset.drawCalls=String(renderer.info.render.calls);}renderer.setAnimationLoop(animate);addEventListener('resize',()=>{if(renderer.xr.isPresenting)return;camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();quality.resize();});
+const riding=canvas.dataset.riding==='true';if(riding&&!startupRiding)startupFrames.reset();startupRiding=riding;if(riding&&!paused)startupFrames.sample(now,performance.now()-cpuStarted,Number(canvas.dataset.players)||1);else startupFrames.pause();
+if(measured){canvas.dataset.startupFrames=JSON.stringify(startupFrames.report);canvas.dataset.triangles=String(renderer.info.render.triangles);canvas.dataset.textures=String(renderer.info.memory.textures);canvas.dataset.rideMsP95=frameStats.rideMsP95.toFixed(2);canvas.dataset.drawMsP95=frameStats.drawMsP95.toFixed(2);canvas.dataset.cpuMsP95=frameStats.cpuMsP95.toFixed(2);canvas.dataset.fps=frameStats.fps.toFixed(1);canvas.dataset.frameMsP95=frameStats.frameMsP95.toFixed(1);canvas.dataset.frameMsP99=frameStats.frameMsP99.toFixed(1);canvas.dataset.longFrames50=String(frameStats.longFrames50);canvas.dataset.longFrames100=String(frameStats.longFrames100);performanceReadout.textContent=frameStats.fps.toFixed(1)+' FPS · p95 '+frameStats.frameMsP95.toFixed(1)+' ms · '+renderer.info.render.calls+' draw calls';}canvas.dataset.drawCalls=String(renderer.info.render.calls);}renderer.setAnimationLoop(animate);addEventListener('resize',()=>{if(renderer.xr.isPresenting)return;camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();quality.resize();});
 
 
 
