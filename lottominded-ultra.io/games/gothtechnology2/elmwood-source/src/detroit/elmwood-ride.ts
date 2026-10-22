@@ -62,7 +62,7 @@ export function splitRects(w:number,h:number,count:number,layout:string){
   const vertical=layout==='stacked'||layout==='auto'&&h>w;
   return vertical?[{x:0,y:0,width:w,height:Math.floor(h/2)},{x:0,y:Math.floor(h/2),width:w,height:h-Math.floor(h/2)}]:[{x:0,y:0,width:Math.floor(w/2),height:h},{x:Math.floor(w/2),y:0,width:w-Math.floor(w/2),height:h}];
 }
-export function makeElmwoodRide(scene:T.Scene,camera:T.PerspectiveCamera,controls:OrbitControls,canvas:HTMLCanvasElement,status:(s:string)=>void,showSite:()=>void,birdTargets:()=>DogTarget[]=()=>[]) {
+export function makeElmwoodRide(scene:T.Scene,camera:T.PerspectiveCamera,controls:OrbitControls,canvas:HTMLCanvasElement,status:(s:string)=>void,showSite:()=>void,birdTargets:()=>DogTarget[]=()=>[],prepareAssets:(root:T.Object3D)=>void=()=>{},prepareView:()=>Promise<void>=async()=>{}) {
   const el=<E extends HTMLElement>(id:string)=>document.getElementById(id) as E;
   const button=el<HTMLButtonElement>('ride-start'),outfit=el<HTMLSelectElement>('ride-outfit'),cameraSelect=el<HTMLSelectElement>('ride-camera'),cameraButton=el<HTMLButtonElement>('ride-camera-next');
   const cameraQuick=document.createElement('button');cameraQuick.type='button';cameraQuick.style.pointerEvents='auto';cameraQuick.style.minHeight='44px';cameraQuick.textContent='Camera';cameraQuick.setAttribute('aria-label','Change camera view');cameraQuick.onclick=()=>cameraButton.click();document.querySelector('header')!.append(cameraQuick);
@@ -165,7 +165,7 @@ export function makeElmwoodRide(scene:T.Scene,camera:T.PerspectiveCamera,control
     if(terrain)return;if(initializing)return initializing;
     initializing=(async()=>{
       status('Loading your riders…');const [data,grid,site,placements,original]=await Promise.all([loadCircuitRiders(),fetch('/elmwood/terrain.json').then(r=>r.json()),fetch('/elmwood/site.json').then(r=>r.json()),fetch('/elmwood/placements.json').then(r=>r.json()),loadActors(['DS_Man_01','DS_EUC_01','DS_Pedestrian_01','DS_Cyclist_01','DS_Bicycle_01',...SWOOP_RIDERS.map(r=>r.id)])]);
-      for(const id of ["hoodie","suit"]){const source=data.get(id)!;original.set(id,{...source,animations:source.animations.filter(a=>a.name==="Idle")});}cycleAssets=original;const baseTerrain=new ElmwoodTerrain(grid,site.features,placements),mapTerrain=new ElmwoodTerrain(grid,site.features,layoutElmwoodDressing(baseTerrain,site.boundary,placements));await mapTerrain.init();terrain=mapTerrain;
+      for(const id of ["hoodie","suit"]){const source=data.get(id)!;original.set(id,{...source,animations:source.animations.filter(a=>a.name==="Idle")});}cycleAssets=original;for(const asset of new Set([...original.values(),...data.values()]))prepareAssets(asset.scene);const baseTerrain=new ElmwoodTerrain(grid,site.features,placements),mapTerrain=new ElmwoodTerrain(grid,site.features,layoutElmwoodDressing(baseTerrain,site.boundary,placements));await mapTerrain.init();terrain=mapTerrain;
       walkers=makeElmwoodWalkers(scene,terrain,original);walkers.root.visible=false;
       const creekLane=terrain.features.find(f=>f.id==='59197492')!;route=laneGates(creekLane.points);raceCourse=elmwoodRaceCourse(creekLane.points);raceLine=creekLane.points.map(p=>({x:p[0],z:-p[1]}));
       miniMap.setMap(terrain.features.filter(f=>['path','building'].includes(f.kind)||f.tags.water==='pond'||f.tags.waterway).map(f=>({points:f.points.map(p=>({x:p[0],y:-p[1]})),color:f.tags.water==='pond'||f.tags.waterway?'#2c6975':f.kind==='building'?'#8a8a75':f.id==='59197492'?'#b6be93':'#909e88',width:f.kind==='path'?4:2,fill:f.kind==='building'||f.tags.water==='pond'})),terrain.placements.filter(p=>p.layer==='mapped'&&['elmwood-chapel','elmwood-gatehouse','firemen-memorial'].includes(p.asset)).map(p=>({point:{x:p.position[0],y:-p.position[1]},text:p.asset.replace('elmwood-','').replaceAll('-',' ').toUpperCase()})));
@@ -186,7 +186,7 @@ export function makeElmwoodRide(scene:T.Scene,camera:T.PerspectiveCamera,control
   async function updateDogs(){
     try{
       if(dogSelect.value!=='off'&&terrain&&!dogAsset){
-        if(!dogLoading)dogLoading=new GLTFLoader().loadAsync(`${import.meta.env.BASE_URL}exports/glb/DS_Boerboel_01/DS_Boerboel_Elmwood.glb`).then(a=>{dogAsset=a;}).finally(()=>{dogLoading=undefined;});
+        if(!dogLoading)dogLoading=new GLTFLoader().loadAsync(`${import.meta.env.BASE_URL}exports/glb/DS_Boerboel_01/DS_Boerboel_Elmwood.glb`).then(a=>{prepareAssets(a.scene);dogAsset=a;}).finally(()=>{dogLoading=undefined;});
         await dogLoading;
       }
       if(!terrain)return;
@@ -194,16 +194,21 @@ export function makeElmwoodRide(scene:T.Scene,camera:T.PerspectiveCamera,control
     }catch(e){message.textContent='The companion could not load. Choose the option again to retry.';console.error(e);}
   }
   dogSelect.onchange=()=>{try{localStorage.setItem('elmwood-companion',dogSelect.value);}catch{}void updateDogs();};
+  function recoveryViewOpen(){return !document.hidden&&!document.body.classList.contains('controls-open')&&!document.querySelector('dialog[open]')&&!film.playing;}
+  function resumeAfterRecovery(){
+    if(paused&&recoveryViewOpen())pause(false);
+  }
   function resetSeat(i:number,recover=false){
     const s=seats[i];if(!s||!terrain)return;
     if(!recover)s.raceRecovery=undefined;
-    if(recover&&(s.raceRecovery||s.motion.sim.snapshot().fallPhase==='recovering'||countdown>0||s.run.limitedRecovery&&(s.run.finished||s.run.failed)))return;
+    if(recover&&(countdown>0||s.run.limitedRecovery&&(s.run.finished||s.run.failed)))return;
+    if(recover&&(s.raceRecovery||s.motion.sim.snapshot().fallPhase==='recovering')){resumeAfterRecovery();return;}
     if(recover&&s.run.limitedRecovery&&!s.run.recoveryStock.remaining){message.textContent='All 3 recoveries used · restart this session from the menu';return;}
     const recovery=recover?elmwoodRaceRecovery(s.run,s.motion.terrain,count===2?(i?-.65:.65):0):undefined;
     if(recover&&s.run.mode==='sprint'&&!s.run.finished&&!recovery){message.textContent='The earned checkpoint is blocked. Move the obstruction and try Recover again.';return;}
     if(recover&&!s.motion.cycling&&s.motion.sim.crashed){
       if(recovery){s.raceRecovery=recovery;s.run.elapsed+=5;}
-      community?.ride.recover();s.motion.update(1/120,{reset:true});if(s.run.limitedRecovery&&s.motion.sim.snapshot().fallPhase==='recovering')s.run.recoveryStock.consume();clearInput(i);if(!i)practice?.action('recover');return;
+      community?.ride.recover();s.motion.update(1/120,{reset:true});if(s.run.limitedRecovery&&s.motion.sim.snapshot().fallPhase==='recovering')s.run.recoveryStock.consume();clearInput(i);resumeAfterRecovery();if(!i)practice?.action('recover');return;
     }
     let spawn=s.spawn;
     if(recover){community?.ride.recover();const p=s.motion.pose,near=terrain.nearest(p.x,-p.z);spawn=recovery?{x:recovery.position.x,north:-recovery.position.z,heading:recovery.heading}:{x:near.x,north:near.north,heading:p.headingY};if(s.run.mode==='sprint')s.run.elapsed+=5;}
@@ -212,7 +217,7 @@ export function makeElmwoodRide(scene:T.Scene,camera:T.PerspectiveCamera,control
     s.motion.setProfile(s.hero.profile);s.motion.reset({x,y:terrain.sampleGround(x,z,sample).height,z},spawn.heading);s.lastCamera='';
     clearInput(i);s.dog?.reset(s.motion.pose);s.run.relocate(s.motion.pose);
     if(recover&&s.run.limitedRecovery)s.run.recoveryStock.consume();
-    if(recover&&!i)practice?.action('recover');
+    if(recover){resumeAfterRecovery();if(!i)practice?.action('recover');}
   }
   function startMode(){
     clearRace();practice=undefined;practicePanel.hidden=true;resultPanel.hidden=true;
@@ -254,13 +259,13 @@ export function makeElmwoodRide(scene:T.Scene,camera:T.PerspectiveCamera,control
     if(active){stop();status('Orbit review · choose a landmark or start another ride.');return;}
     count=Number(players.value);const error=setupError(inputs.slice(0,count).map(e=>e.value as Binding),pads());if(error){message.textContent=error;status(error);return;}
     if(count>2){try{await startLocalMany(mode.value as RunMode,count);}catch(e){stop();message.textContent='Your ride could not load. Please try again.';console.error(e);}return;}
-    const menu=document.querySelector<HTMLDialogElement>('#elmwood-main-menu'),wasOpen=!!menu?.open;menu?.close();const cinema=loadingCinema();cinema.status('Loading your rider and wheels…');button.disabled=true;music.unlock();void audio.enable(soundToggle.checked).catch(()=>{soundToggle.checked=false;message.textContent='Sound is unavailable in this browser.';});
+    const menu=document.querySelector<HTMLDialogElement>('#elmwood-main-menu'),wasOpen=!!menu?.open;menu?.close();const cinema=loadingCinema();canvas.dataset.preparingRide='true';cinema.status('Loading your rider and wheels…');button.disabled=true;music.unlock();void audio.enable(soundToggle.checked).catch(()=>{soundToggle.checked=false;message.textContent='Sound is unavailable in this browser.';});
     try{
       await initialize();await loadElectricAssets(cycleAssets!,vehicle.value,mode.value==='sprint');camera.getWorldDirection(direction);const spawn=chooseElmwoodSpawn(terrain!.segments,controls.target.x,-controls.target.z,direction);showSite();
       configure();orbitFov=camera.fov;controls.enableDamping=false;controls.update();controls.enabled=false;
       for(let i=0;i<count;i++){const s=seats[i];s.hero=s.riders.get(outfits[i].value)!;s.hero.root.visible=true;s.spawn={...spawn};}
-      active=true;paused=false;ambientPacks?.restart(undefined,seats[0].motion.pose);canvas.dataset.ambientPackStarts=JSON.stringify(ambientPacks?.starts);if(walkers)walkers.root.visible=true;Object.assign(canvas.dataset,{riding:'true',players:String(count),paused:'false'});button.textContent='Stop riding';document.body.classList.toggle('duo-riding',count===2);startMode();void updateDogs();touch.update();canvas.focus();
-    }catch(e){stop();status('Could not start the ride: '+String(e));console.error(e);}finally{cinema.finish();button.disabled=false;if(active)canvas.focus();else if(wasOpen&&!menu?.open)menu?.showModal();}
+      active=true;paused=false;ambientPacks?.restart(undefined,seats[0].motion.pose);canvas.dataset.ambientPackStarts=JSON.stringify(ambientPacks?.starts);if(walkers)walkers.root.visible=true;Object.assign(canvas.dataset,{riding:'true',players:String(count),paused:'false'});button.textContent='Stop riding';document.body.classList.toggle('duo-riding',count===2);startMode();await updateDogs();cinema.status('Preparing the first ride view…');await prepareView();clearInput();touch.update();canvas.focus();
+    }catch(e){stop();status('Could not start the ride: '+String(e));console.error(e);}finally{canvas.dataset.preparingRide='false';cinema.finish();button.disabled=false;if(active)canvas.focus();else if(wasOpen&&!menu?.open)menu?.showModal();}
   };
   button.onclick=()=>void toggleRide();
   async function startLocalMany(selected:RunMode,n:number){
@@ -294,14 +299,14 @@ export function makeElmwoodRide(scene:T.Scene,camera:T.PerspectiveCamera,control
   el<HTMLButtonElement>('session-map').onclick=()=>miniMap.open();soundToggle.onchange=()=>{void audio.enable(soundToggle.checked).catch(()=>{soundToggle.checked=false;message.textContent='Sound is unavailable in this browser.';});};
   canvas.addEventListener('elmwood-stick',((e:CustomEvent<{x:number;y:number}>)=>{if(active&&!paused)input.stick(0,e.detail.x,e.detail.y);}) as EventListener);
   canvas.addEventListener('elmwood-player-input',((e:CustomEvent<{seat:number;action?:Action;down?:boolean;x?:number;y?:number;source?:string}>)=>{
-    const d=e.detail;if(!active||paused||d.seat<0||d.seat>=count)return;if(d.action)input.touch(d.seat,d.action,!!d.down,d.source);else input.stick(d.seat,d.x??0,d.y??0);
+    const d=e.detail;if(!active||d.seat<0||d.seat>=count||paused&&(d.action!=='recover'||!recoveryViewOpen()))return;if(d.action)input.touch(d.seat,d.action,!!d.down,d.source);else input.stick(d.seat,d.x??0,d.y??0);
   }) as EventListener);
   addEventListener('keydown',e=>{
     if(film.playing){if(e.code==='Escape')film.stopReplay();return;}
     if(!active||elmwoodKeyboardBlocked(e.target,e.code))return;
     if(e.code==='KeyP'&&!e.repeat){e.preventDefault();pause();return;}if(e.code==='Escape'){stop();return;}
     if(e.code==='KeyM'&&!e.repeat){el<HTMLButtonElement>('session-map').click();return;}
-    if(paused)return;if(input.key(e.code,true,e.repeat))e.preventDefault();
+    if(paused&&!recoveryViewOpen())return;if(input.key(e.code,true,e.repeat,paused))e.preventDefault();
   });addEventListener('keyup',e=>{if(input.key(e.code,false)&&active&&!elmwoodKeyboardBlocked(e.target,e.code))e.preventDefault();});
   canvas.addEventListener('elmwood-toggle-pause',()=>pause(canvas.dataset.paused!=='true'));
   addEventListener('resize',()=>clearInput());addEventListener('orientationchange',()=>clearInput());addEventListener('blur',()=>pause(true));document.addEventListener('visibilitychange',()=>{if(document.hidden)pause(true);});canvas.addEventListener('webglcontextlost',()=>pause(true));
@@ -409,7 +414,7 @@ export function makeElmwoodRide(scene:T.Scene,camera:T.PerspectiveCamera,control
     film.capture(dt,!paused&&countdown<=0,active&&!vrMode&&!document.querySelector<HTMLDialogElement>('#elmwood-main-menu')?.open);
     audio.update(seats[0].motion.pose,!paused&&countdown<=0,seats[0].motion.cycling,seats[0].motion.terrain.sampleGround(seats[0].motion.pose.x,seats[0].motion.pose.z,audioSample).surface);music.update(dt,seats[0].run.mode==='tricks'?'style':'ride',!paused,seats[0].motion.pose.speed,seats[0].run.score,seats[0].motion.pose.warningLevel);
     const overlayHidden=vrMode||document.body.classList.contains('controls-open')||!!document.querySelector<HTMLDialogElement>('#elmwood-main-menu')?.open;
-    recovery.update(seats.slice(0,count).map(s=>s.motion.sim.crashed&&s.motion.pose.crashRecovery<=0),!overlayHidden&&!paused,seats.slice(0,count).map(s=>s.run.limitedRecovery?s.run.recoveryStock.remaining:undefined));
+    recovery.update(seats.slice(0,count).map(s=>s.motion.sim.crashed&&s.motion.pose.crashRecovery<=0),!overlayHidden,seats.slice(0,count).map(s=>s.run.limitedRecovery?s.run.recoveryStock.remaining:undefined));
     practicePanel.hidden=!practice||overlayHidden||paused;
     resultPanel.hidden=overlayHidden||!seats.slice(0,count).every(s=>s.run.finished||s.run.failed);
     if(!resultPanel.hidden){const text=seats.slice(0,count).map((s,i)=>(count===2?'Player '+(i+1)+': ':'')+s.run.label+(!i&&racePilots.length?' · '+canvas.dataset.racePlace+'/4 place':'')).join(' · ')+(best.textContent?' · '+best.textContent:'');if(resultPanel.querySelector('p')!.textContent!==text)resultPanel.querySelector('p')!.textContent=text;}

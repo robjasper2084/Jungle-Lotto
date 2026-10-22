@@ -236,7 +236,7 @@ let split:{simulation:SplitRaceSimulation;view:SplitRaceView;input:SplitRideInpu
 const splitPhotoAim=new Map<number,string>();
 function stopSplit(){if(!split)return;if(online.active&&!startingOnline)void online.leave(false);split.view.dispose();split.audio.forEach(a=>void a.dispose());split=undefined;splitPhotoAim.clear();document.body.classList.remove('splitPlaying','onlinePlaying');delete canvas.dataset.splitRace;delete canvas.dataset.online;renderer.setScissorTest(false);renderer.setViewport(0,0,innerWidth,innerHeight);hero.root.visible=true;dogView.root.visible=dogEnabled;}
 function stopRace(){miniMap?.hud.setRaceCourse(null);stopSplit();race?.dispose();race=undefined;document.body.classList.remove('racing');}
-function recoverSplit(index:number){if(!split||paused&&!online.active)return;if(split.simulation.recover(index)){split.input.clear(online.active?0:index);split.view.resetTouch(index);split.view.recovered(index);canvas.focus();}}
+function recoverSplit(index:number){if(!split)return;if(split.simulation.recover(index)){split.input.clear(online.active?0:index);split.view.resetTouch(index);split.view.recovered(index);resumeAfterRecovery();canvas.focus();}}
 function cruiseSplit(index:number){const slot=online.active?online.slot:index;if(!split||paused||finished||slot<0||split.simulation.rules.countdown>0||split.simulation.riders[slot].sim.crashed||split.simulation.rules.racers[slot].finish!==null)return;split.input.toggleCruise(index);canvas.focus();}
 function photoSplit(index:number){if(!split||paused&&!online.active)return;const rider=split.simulation.riders[index],run=rider.challenge;if(!run||run.challenge.kind!=='discovery')return;const target=district.targets.filter(t=>!run.photos.has(t.id)).sort((a,b)=>Math.hypot(a.x-rider.pose.x,a.z-rider.pose.z)-Math.hypot(b.x-rider.pose.x,b.z-rider.pose.z))[0];if(!target){rider.message='All photos collected. Follow the gates to Mack.';return;}if(splitPhotoAim.get(index)!==target.id){splitPhotoAim.set(index,target.id);split.view.framePhoto(index,target);rider.message='Framing '+target.name+' · stop and press Photo again';}else {const check=split.view.photoCheck(index,target);const saved=run.capture(target.id,check);rider.message=saved?'PHOTO SAVED · '+target.name:'Stop within 3–42 m with a clear view of '+target.name;if(saved){split.view.clearPhoto(index);splitPhotoAim.delete(index);}}canvas.focus();}
 function startSplit(){
@@ -300,20 +300,25 @@ function recoveryLabel(){return inputDevice==='gamepad'?'Recover · X / Square':
 
 const bikeRecover=document.createElement('button');bikeRecover.id='bike-recover';bikeRecover.type='button';bikeRecover.textContent='Recover bike · R';bikeRecover.style.minHeight='44px';bikeRecover.hidden=true;bikeRecover.onclick=queueRecovery;$('pause').after(bikeRecover);
 
+// A deliberate recovery tap also resumes a focus-paused ride. Focus returning
+// alone must never restart it, and open settings/menus still own the input.
+function resumeAfterRecovery(){
+ if(paused&&$('helpPanel').hidden&&$('mapPanel').hidden)pause();
+}
 function queueRecovery(){
  if(!ready||!running)return;
  community?.ride.recover();if(split){recoverSplit(0);return;}
  if(race&&finished){startRace(race.cyclingOpponents);return;}
- if(sim.snapshot().state==='recovering')return;
+ if(sim.snapshot().state==='recovering'){resumeAfterRecovery();return;}
   if(competitiveRecovery()&&!recoveryStock.remaining){toast('All 3 recoveries used · restart the race from the menu');return;}
- if(challengeRun&&!finished){const c=challengeRun,station=c.gateCount?c.challenge.gates[c.gateCount-1]+.5:c.challenge.start,p=routePosition(station);if(!sim.recover({position:{...p,y:world.sampleGround(p.x,p.z,ground).height},headingY:p.heading})){toast('Recovery space occupied · wait, then try again');return;}c.step(1/120,{station,offset:0,speed:0,grounded:true,crashed:false,roll:0,slip:0,traction:0,airHeight:0,recovered:true});if(competitiveRecovery())recoveryStock.consume();remount();toast('Recovered at checkpoint · continue to Mack Avenue');return;}
+ if(challengeRun&&!finished){const c=challengeRun,station=c.gateCount?c.challenge.gates[c.gateCount-1]+.5:c.challenge.start,p=routePosition(station);if(!sim.recover({position:{...p,y:world.sampleGround(p.x,p.z,ground).height},headingY:p.heading})){toast('Recovery space occupied · wait, then try again');return;}c.step(1/120,{station,offset:0,speed:0,grounded:true,crashed:false,roll:0,slip:0,traction:0,airHeight:0,recovered:true});if(competitiveRecovery())recoveryStock.consume();remount();resumeAfterRecovery();toast('Recovered at checkpoint · continue to Mack Avenue');return;}
  if(race){
   const r=race.rules.player,station=r.gate?RACE_ROUTE.gates[r.gate-1]+.5:RACE_ROUTE.start,p=routePosition(station);
   if(!sim.recover({position:{...p,y:world.sampleGround(p.x,p.z,ground,current.y).height},headingY:p.heading})){toast('Recovery space occupied · wait, then try again');return;}
   // Only rebase progress after placement succeeds. No gate award or clock rewind.
   race.rules.recover(selectedRider);
  }else if(!sim.recover()){toast('Recovery space occupied · wait, then try again');return;}
- if(competitiveRecovery())recoveryStock.consume();remount();practice?.action('recover');toast(race?'Recovered · race clock keeps running':paused?'Recovered · Resume when ready':'Recovered · release controls, then ride');
+ if(competitiveRecovery())recoveryStock.consume();remount();resumeAfterRecovery();practice?.action('recover');toast(race?'Recovered · race clock keeps running':paused?'Recovered · Resume when ready':'Recovered · release controls, then ride');
 }
 
 function reset(spot=selectedSpot,station?:number){

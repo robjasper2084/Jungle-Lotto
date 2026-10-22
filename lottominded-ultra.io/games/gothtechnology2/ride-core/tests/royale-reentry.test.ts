@@ -1,6 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';
 import {initializeEngine} from '../src/engine/runtime.ts';import {ArenaTerrain} from '../src/royale/arena.ts';import {DowntownArena} from '../src/royale/downtownArena.ts';import {TagTerrain} from '../src/tag/fixture.ts';
-import {RoyaleMatch,neutral,PROTECTION} from '../src/royale/rules.ts';import {initialSpawnNodes,recoveryNode} from '../src/royale/spawnNodes.ts';
+import {RoyaleMatch,neutral,PROTECTION} from '../src/royale/rules.ts';import {initialSpawnNodes,recoveryNode,spawnCameraSpace} from '../src/royale/spawnNodes.ts';
 import {loadHostFixture} from '../../love-tag-server/src/hostFixture.ts';import {fileURLToPath} from 'node:url';
 await initializeEngine(await readFile(new URL('../src/engine/breadflower.wasm',import.meta.url)));
 const terrain=await ArenaTerrain.create(),data=await loadHostFixture(process.env.ROYALE_FIXTURES??fileURLToPath(new URL('../../swoop-source/public/love-tag/',import.meta.url)),'swoop-detroit'),downtown=new DowntownArena(await TagTerrain.create(data.fixture,await data.physics()));
@@ -15,6 +15,12 @@ test('actual downtown has 12+ clear clustered nodes and unique seeded six/ten st
  for(const cluster of new Set(downtown.spawnNodes.map(n=>n.cluster))){const group=downtown.spawnNodes.filter(n=>n.cluster===cluster);assert(group.length>=3);for(const a of group){assert(downtown.clear(a.position.x,a.position.z,.8,a.position.y));for(const b of group)assert(Math.hypot(a.position.x-b.position.x,a.position.z-b.position.z)<=100);}}
  for(const count of [6,10]){const a=initialSpawnNodes(downtown.spawnNodes,count,1),b=initialSpawnNodes(downtown.spawnNodes,count,2);assert.equal(new Set(a.map(n=>n.id)).size,count);assert.notDeepEqual(a,b);}
  const m=new RoyaleMatch(downtown,true,10,true,true);for(let i=0;i<10;i++)m.add('p'+i,'Player');m.start('city',9);assert.equal(new Set(m.actors.map(a=>a.spawnNode)).size,10);m.dispose();
+});
+test('Chene starts and recovery sites leave room for the chase camera outside the canopy',()=>{
+ assert.equal(spawnCameraSpace({x:-211,z:-1625}),false);assert.equal(spawnCameraSpace({x:-115,z:-1759}),true);
+ for(const node of [...downtown.spawnNodes,...downtown.recoverySpawnNodes])assert(spawnCameraSpace(downtown.sourcePosition(node.position)),node.id+' is beneath the amphitheatre');
+ const chene=downtown.spawnNodes.filter(n=>n.cluster==='chene');assert(chene.length>=3);
+ for(const node of chene){const p=downtown.sourcePosition(node.position);assert(Math.hypot(p.x+115,p.z+1759)<120);}
 });
 test('safe recovery excludes eliminated/occupied nodes, danger zones and outside-field nodes',()=>{
  const nodes=downtown.spawnNodes,dead=nodes[0].position,field={...downtown.zones[0],radius:downtown.fieldRadii[0]};

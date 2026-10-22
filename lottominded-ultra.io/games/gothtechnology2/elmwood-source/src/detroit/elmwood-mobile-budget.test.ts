@@ -8,7 +8,7 @@ test('Android and Apple mobile auto budgets stay light regardless of reported CP
   assert.equal(GRAPHICS_PRESETS[tier].shadows,0);
   assert.equal(antialiasForDevice('auto',cores,memory,true),false);
  }
- assert.equal(resolveGraphics('auto',12,16,false,'NVIDIA GeForce'),'high');
+ assert.equal(resolveGraphics('auto',12,16,false,'NVIDIA GeForce'),'balanced');
 });
 test('explicit mobile quality and antialiasing preferences still win',()=>{
  for(const preset of ['low','balanced','high','ultra'])assert.equal(resolveGraphics(preset,4,4,true),preset);

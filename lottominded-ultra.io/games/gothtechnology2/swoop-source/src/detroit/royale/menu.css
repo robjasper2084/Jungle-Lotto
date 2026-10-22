@@ -1,0 +1,45 @@
+/* Static Royale: artwork-led combat menu; all interaction remains in the modal. */
+#lobby.royale-menu{--royale-accent:#81ecdb;--royale-muted:#b0c6c9;--royale-edge:#8abec333;background:#07121a!important}
+#lobby.royale-menu[open]{display:block}#lobby.royale-menu [hidden]{display:none!important}
+#lobby.royale-menu .lobby-art{inset:0 0 0 24%;background-position:70% center;opacity:.9}
+#lobby.royale-menu .lobby-content{width:min(57%,760px);min-width:0;padding:clamp(26px,5vh,60px) clamp(24px,4vw,64px) max(30px,env(safe-area-inset-bottom));background:linear-gradient(90deg,#07121af5 75%,#07121a00);min-height:calc(100dvh - 78px)}
+#lobby.royale-menu .lobby-world-caption{right:5vw;bottom:6vh}
+#lobby .royale-menu-nav{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:6px;min-height:72px;padding:10px clamp(18px,4vw,64px);background:#07121af5;border-bottom:1px solid var(--royale-edge);isolation:isolate}
+#lobby .royale-menu-brand{font:800 12px/1.2 'Bahnschrift','Segoe UI',sans-serif;letter-spacing:.14em;margin-right:auto;color:var(--royale-accent);white-space:nowrap}
+#lobby .royale-menu-nav button{background:transparent;border:0;border-bottom:2px solid transparent;border-radius:0;padding:12px 16px;font-size:12px;color:var(--royale-muted);white-space:nowrap}
+#lobby .royale-menu-nav button[aria-current]{color:#f2fff9;border-bottom-color:var(--royale-accent);background:#76e7d510}
+#lobby .royale-menu-exit{color:var(--royale-muted);text-decoration:none;font-size:11px;padding:14px 8px;margin-left:14px;min-height:44px;white-space:nowrap}
+#lobby .royale-home .lobby-heading{margin:0 0 25px;min-height:0}
+#lobby .royale-home h1{font-size:clamp(68px,8vw,112px);line-height:.88;letter-spacing:-.025em;margin:20px 0 24px}
+#lobby .royale-home .lobby-intro{font-size:14px;line-height:1.65;max-width:340px}
+#lobby.royale-menu:not([data-royale-phase=idle]) .royale-home h1{font-size:52px;line-height:1;margin-block:12px}
+#lobby.royale-menu:not([data-royale-phase=idle]) .royale-home h1 em{display:inline}
+#lobby.royale-menu:not([data-royale-phase=idle]) .royale-home .lobby-tagline,#lobby.royale-menu:not([data-royale-phase=idle]) .royale-home .lobby-intro{display:none}
+#lobby .royale-menu-facts{border-block:1px solid var(--royale-edge);padding:12px 0;color:var(--royale-accent);font:700 10px/1.7 'Segoe UI',sans-serif;letter-spacing:.12em;margin:0 0 22px}
+#lobby .royale-deploy{max-width:440px;min-height:58px;margin:0;font-size:17px;letter-spacing:.04em}
+#lobby .royale-menu-brief{font-size:12px;line-height:1.6;color:var(--royale-muted);margin:9px 0 19px}
+#lobby .royale-training{display:flex;gap:10px;max-width:440px}
+#lobby .royale-training button{flex:1;text-align:left;border:1px solid var(--royale-edge);background:#10232dd9;font-size:12px;line-height:1.5;min-height:54px;padding:12px}
+#lobby .royale-selection{display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--royale-edge);margin:28px 0 0;padding-top:16px;max-width:440px}
+#lobby .royale-selection-label{font-size:9px;color:var(--royale-accent);letter-spacing:.2em}
+#lobby .royale-selection strong{font-size:13px;font-weight:600}#lobby .royale-selection>span:last-child{font-size:11px;color:var(--royale-muted)}
+#lobby .royale-leave{margin-top:20px}#lobby .royale-leave button{font-size:12px;color:#c5d4d4;background:transparent}
+#lobby .royale-panel-title{font-size:34px;margin:0 0 26px}
+#lobby .royale-menu-panel:focus{outline:none}
+#lobby .royale-menu-panel:focus-visible{outline:2px solid var(--royale-accent);outline-offset:8px}
+#lobby .royale-menu-panel>details{border:0}#lobby .royale-menu-panel>details>summary{display:none}
+#lobby .royale-next-match{color:var(--royale-muted);font-size:12px;line-height:1.6;margin:0 0 20px}
+#lobby .royale-round-summary{background:#142832ed;border:1px solid var(--royale-edge);border-left:3px solid var(--royale-accent);padding:18px;margin:20px 0;font-size:13px;line-height:1.7}
+#lobby .royale-round-summary h2{font-size:18px;margin-bottom:10px}
+#lobby .royale-round-summary button{margin-top:14px;width:100%}
+#lobby.royale-menu #room{border:1px solid var(--royale-edge);padding:18px;background:#0c202be8;margin-top:20px}
+#lobby.royale-menu #message:not(:empty){background:#14252eef;border-left:2px solid #e7c977;padding:12px 15px;margin-top:20px;color:#eddda4;font-size:12px}
+#lobby.royale-menu .royale-controls-guide{margin-top:20px;border-top:1px solid var(--royale-edge)}
+#lobby.royale-menu #ride-settings>p{max-width:54ch}
+@media(min-width:1300px){#lobby.royale-menu .lobby-content{width:52%}}
+@media(max-width:900px){#lobby .royale-menu-brand{display:none}#lobby .royale-menu-nav{padding-inline:18px;gap:0}#lobby .royale-menu-nav button{padding-inline:12px}#lobby .royale-menu-exit{margin-left:auto}#lobby.royale-menu .lobby-content{width:65%}#lobby.royale-menu .lobby-world-caption{display:none}}
+@media(max-width:700px){#lobby.royale-menu .lobby-art{position:fixed;inset:0;height:100dvh;background-position:70% center;opacity:.45}#lobby.royale-menu .lobby-content{width:100%;padding:28px 22px max(24px,env(safe-area-inset-bottom));background:linear-gradient(90deg,#07121aec,#07121a96);min-height:calc(100dvh - 110px)}#lobby .royale-menu-nav{flex-wrap:wrap;padding:6px 12px 4px;min-height:100px;justify-content:space-between}#lobby .royale-menu-nav button{padding:12px 10px;font-size:11px;flex:1}#lobby .royale-menu-exit{order:-1;width:100%;padding:8px 10px;margin:0;min-height:36px}#lobby .royale-home h1{font-size:72px}#lobby .royale-home .lobby-tagline{max-width:none}#lobby .royale-menu-facts{font-size:9px;letter-spacing:.06em}#lobby .royale-deploy,#lobby .royale-training,#lobby .royale-selection{max-width:none}#lobby .royale-home .lobby-intro{max-width:310px}#lobby .royale-selection{margin-top:24px}}
+@media(max-width:350px){#lobby.royale-menu .lobby-content{padding-inline:16px}#lobby .royale-menu-nav{padding-inline:6px}#lobby .royale-menu-nav button{font-size:10px;padding-inline:8px}#lobby .royale-home h1{font-size:62px}}
+@media(max-width:420px){#lobby.royale-menu .lobby-fields{grid-template-columns:minmax(0,1fr)}#lobby .royale-menu-exit{min-height:44px}#lobby.royale-menu:not([data-royale-phase=idle]) .royale-home h1{font-size:42px}}
+@media(max-height:560px) and (min-width:701px){#lobby.royale-menu .lobby-content{width:72%;padding-top:24px}#lobby .royale-home h1{font-size:66px}#lobby .royale-home h1 em{display:block}#lobby .royale-home .lobby-heading{margin-bottom:14px}}
+@media(prefers-reduced-motion:reduce){#lobby.royale-menu *{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
