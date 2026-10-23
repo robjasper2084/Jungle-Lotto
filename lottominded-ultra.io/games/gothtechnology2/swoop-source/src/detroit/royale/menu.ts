@@ -37,10 +37,21 @@ export function createRoyaleMenu(root:HTMLDialogElement,readState:()=>RoyaleMenu
  // Only long instructions collapse; existing settings and binding nodes stay live.
  const guide=node('details','royale-controls-guide');guide.append(node('summary','','Controls guide'));
  for(const p of [...settings.children])if(p.tagName==='P')guide.append(p);settings.append(guide);
+ // Move existing controls, never clone them: listeners and saved values stay intact.
+ const setting=(id:string)=>settings.querySelector<HTMLElement>('#'+id)!;
+ const camera=setting('camera-settings');camera.querySelector('legend')!.textContent='Your view';
+ const groups=node('div','royale-settings-groups');camera.after(groups);
+ const fold=(title:string,items:HTMLElement[])=>{const d=node('details','royale-settings-group');d.append(node('summary','',title),...items);groups.append(d);return d;};
+ for(const f of [...camera.children])if(f.tagName==='FIELDSET')fold(f.querySelector('legend')?.textContent??'Camera options',[f as HTMLElement]);
+ const take=(ids:string[])=>ids.map(id=>setting(id)).filter(Boolean).map(e=>e.closest('label')??e) as HTMLElement[];
+ fold('Aim sensitivity & sights',take(['aim-sensitivity','ads-sensitivity','aim-preset']));
+ fold('Touch controls & layout',take(['touch-display','stick-mode','touch-lean','touch-aim','layout','button-size','reset-layout']));
+ const graphics=setting('graphics-settings');fold('Graphics & performance',[graphics]);
+ const intro=node('p','royale-settings-intro','Choose your riding and on-foot views. Open a group below to fine-tune your controls.');camera.before(intro);
  content.replaceChildren(...panels.values(),sourceActions,message);
  let current:RoyaleMenuPanel='home';
  for(const [id,p]of panels){p.id='royale-panel-'+id;p.tabIndex=-1;p.hidden=id!=='home';}
- function open(id:RoyaleMenuPanel='home',focus=true){current=id;root.dataset.royalePanel=id;for(const [key,p]of panels)p.hidden=key!==id;for(const [key,b]of tabs){if(key===id)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');}online.open=settings.open=true;root.scrollTop=0;sync();if(focus)(id==='home'?action:panels.get(id)!).focus({preventScroll:true});}
+ function open(id:RoyaleMenuPanel='home',focus=true){current=id;root.dataset.royalePanel=id;for(const [key,p]of panels)p.hidden=key!==id;for(const [key,b]of tabs){if(key===id)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');}online.open=settings.open=true;root.scrollTop=0;content.scrollTop=0;sync();if(focus)(id==='home'?action:panels.get(id)!).focus({preventScroll:true});}
  let summary='';
  function sync(){
   const state=readState(),choice=menuAction(state);

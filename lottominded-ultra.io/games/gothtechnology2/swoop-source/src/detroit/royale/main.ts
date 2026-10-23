@@ -1,3 +1,4 @@
+import {roundResults} from './roundResults.ts';
 import {CameraCapture,photographyInput} from './cameraCapture.ts';
 import {CruiseControl} from '../../../../ride-core/src/cruiseControl.ts';
 import {AimComfortUi} from './aimComfortUi.ts';
@@ -147,6 +148,8 @@ const nextRing=new FieldBoundary('#efc568',.75);scene.add(nextRing);
 let radarMap:RoyaleRadarMap|undefined;let shieldAsset:GLTF;let companions:RoyaleCompanions|undefined;
 const nameHead=new T.Vector3();
 const actors=new Map<string,{nameplate:PlayerNameplate;view:Hero;equipment:WeaponView;weapon:T.Group;shield:ShieldEffect;rig:CombatRig;wheelId:string;optic:T.Group;motion:RiderPresentation;contrast:OpponentContrast}>(),assetMap=new Map<string,GLTF>(),items=new Map<string,EquipmentView|ScopePickup>();
+import {RideGhostView} from '../../../../ride-core/src/rideGhostView.ts';
+const savedGhost=new RideGhostView('static-royale-downtown',scene,rig=>{const [skin,wheel]=rig.split(':');if(!assetMap.has(skin))return;const models=new Map(assetMap);models.set('DS_EUC_01',assetMap.get(wheelProfile(wheel).asset)!);return new Hero(models,activeTerrain(),riderChoice(skin));});el('ride-settings').append(savedGhost.panel);
 let scopeLibrary:ScopeLibrary,selectedScope:Scope|null=null,ownedScopeKey='',scopePadHeld=false;
 function changeScope(){selectedScope=cycleScope(session?.state?.self?.scopes??[],selectedScope);canvas.focus();}
 el('scope-select').onclick=changeScope;
@@ -168,7 +171,7 @@ const message=(s:string)=>el('message').textContent=s;
 const speedCruise=new CruiseControl();
 function release(){fpsControlFlow.reset();firstPerson?.resetMotion();speedCruise.reset();shotPreview.reset();localShotPending=false;footControls.clear();stanceGesture.reset();leanGesture.reset();touchAds=false;mouseCombat.reset();lookYaw=lookPitch=0;keys.clear();held.clear();tap.clear();steer=throttle=0;aimPointer=mousePointer=stickPointer=undefined;resetPointers.forEach(reset=>reset());session?.release();}
 function finishLayoutEditing(){if(layoutEditing)saveLayout();layoutEditing=false;el('touch').classList.remove('editing');el('layout-done').hidden=true;release();}
-function clearResults(){el('results').replaceChildren();el('rematch').hidden=true;}
+function clearResults(){if(el('results').childElementCount){el('results').replaceChildren();delete el('results').dataset.summary;}el('rematch').hidden=true;}
 let menuHome:ReturnType<typeof createRoyaleMenu>;
 function showMenu(panel?:RoyaleMenuPanel){if(document.pointerLockElement===canvas)document.exitPointerLock();release();finishLayoutEditing();paused=true;if(dialog.open)dialog.close();dialog.showModal();el('resume').hidden=!session?.state;el('quit').hidden=!session?.state;if(panel)menuHome?.open(panel);else menuHome?.show();}
 function resume(){void royaleAudio.unlock();finishLayoutEditing();paused=false;dialog.close();canvas.focus();loadLayout();}
@@ -400,7 +403,7 @@ function draw(now:number){
  const delta=equipmentTime?Math.min(.1,(now-equipmentTime)/1000):0;equipmentTime=now;
  const motionDelta=paused&&!session?.room?0:delta,reducedMotion=reducedEquipmentMotion.matches||document.documentElement.dataset.reducedMotion==='true'||query.has('reducedMotion');
  atmosphereSky.update(motionDelta,ROYALE_SUN,.42,0,graphics.current.shadows===0,reducedMotion,paused&&!session?.room,scene.fog?.color);if(telemetry)canvas.dataset.atmosphere=JSON.stringify(atmosphereSky.status);
- const replayFrame=deathReplay.sample(now);const replaying=!!replayFrame;const s=replayFrame?.state??session?.state;el('replay-status').hidden=!replaying;el('replay-status').querySelector('span')!.textContent=deathReplay.kind==='killer'?'Killer replay · attacker perspective':'Last-view replay · received positions only';el('replay-status').setAttribute('aria-label',deathReplay.kind==='killer'?'Killer replay':'Last-view replay');if(!s){matchFeedback.hide();for(const a of actors.values()){a.nameplate.root.visible=a.view.root.visible=a.weapon.visible=a.shield.visible=false;}companions?.dispose();jazzVisit?.stop();heartShots.reset();for(const m of items.values())m.root.visible=false;el('hud').hidden=el('reticle').hidden=el('scope-mask').hidden=true;return;}const rendered=new Set<string>();
+ const replayFrame=deathReplay.sample(now);const replaying=!!replayFrame;const s=replayFrame?.state??session?.state;el('replay-status').hidden=!replaying;el('replay-status').querySelector('span')!.textContent=deathReplay.kind==='killer'?'Killer replay · attacker perspective':'Last-view replay · received positions only';el('replay-status').setAttribute('aria-label',deathReplay.kind==='killer'?'Killer replay':'Last-view replay');if(!s){savedGhost.suspend();matchFeedback.hide();for(const a of actors.values()){a.nameplate.root.visible=a.view.root.visible=a.weapon.visible=a.shield.visible=false;}companions?.dispose();jazzVisit?.stop();heartShots.reset();for(const m of items.values())m.root.visible=false;el('hud').hidden=el('reticle').hidden=el('scope-mask').hidden=true;return;}const rendered=new Set<string>();
  if(!replaying&&practiceRange?.update(s,session.me,now)){matchFeedback.hit(now,'range');royaleAudio.rangeHit();}
  radarMap?.update(s,now,!combatBlock&&!dialog.open&&!!s.self?.alive);
  const watching=!replaying?s.spectating:undefined;const focusId=watching?.target||session.me;
@@ -444,6 +447,8 @@ function draw(now:number){
  const dogTick=watching?.tick??s.tick;
  const dogDisplayTick=!replaying&&(session.room||watching)?session.remotePoses.tick(now)??dogTick-3:dogTick-3+alpha;
  companions?.update(s.actors,s.roster,dogTick,motionDelta,graphics.current.shadows===0,reducedMotion,s.phase==='results'?s.winner:undefined,dogDisplayTick,p=>actorVisibility.visible(p,bikeObserver));canvas.dataset.companions=String(s.actors.filter(a=>a.alive).length);
+ const ghostSelf=s.actors.find(a=>a.id===s.self?.id);
+ savedGhost.update(motionDelta,ghostSelf?basePoses.get(ghostSelf.id)??ghostSelf.pose:undefined,(ghostSelf?.skin??'')+':'+(s.self?.wheelId??'euc'),!dialog.open&&!paused&&!replaying&&s.phase==='active',!!s.self?.alive&&s.phase==='active'&&!replaying);
  stage('dogs');
  const presentLoot=new Set(s.loot.map(item=>item.id));
  for(const loot of s.loot){
@@ -558,7 +563,7 @@ function draw(now:number){
   if(dialog.open)menuHome.sync();
   if(session.message)message(session.message);
   if(s.phase==='lobby'&&!dialog.open){showMenu();}if(s.phase==='deployment'&&dialog.open&&session.room){resume();}
-  if(s.phase==='results'){if(!dialog.open&&!replaying&&now-matchFeedback.resultsStarted>2600)showMenu();el('rematch').hidden=false;el<HTMLButtonElement>('rematch').disabled=!!session.room&&session.host!==session.me;el('rematch').textContent=session.room&&session.host!==session.me?'Waiting for host':s.series.complete?'New '+s.series.total+'-round match':'Next round '+(s.series.number+1)+' / '+s.series.total;el('results').textContent=(s.winner===session.me?'YOU WIN':s.winner?(s.roster.find(a=>a.id===s.winner)?.name??'Rider')+' WINS':'DRAW')+' · '+s.reason;const stats=s.results.find(r=>r.id===session.me);if(stats)el('results').textContent+=' — '+stats.kills+' eliminations · '+stats.damage+' damage · '+stats.distance+' m ridden';if(killedText)el('results').textContent+=' · '+killedText;el('results').textContent+=' — '+(s.series.complete?'Match complete':'Round '+s.series.number+' / '+s.series.total)+' · '+s.series.standings.map(r=>r.name+': '+r.wins+' wins').join(' · ');if(s.series.complete)el('results').textContent+=' — '+(s.series.winner?(s.series.standings.find(r=>r.id===s.series.winner)?.name??'Rider')+' wins the match':'Match tied');}
+  if(s.phase==='results'){if(!dialog.open&&!replaying&&now-matchFeedback.resultsStarted>2600)showMenu();el('rematch').hidden=false;el<HTMLButtonElement>('rematch').disabled=!!session.room&&session.host!==session.me;el('rematch').textContent=session.room&&session.host!==session.me?'Waiting for host':s.series.complete?'New '+s.series.total+'-round match':'Next round '+(s.series.number+1)+' / '+s.series.total;const stats=s.results.find(r=>r.id===session.me);roundResults(el('results'),{winner:s.winner===session.me?'YOU WIN':s.winner?(s.roster.find(a=>a.id===s.winner)?.name??'Rider')+' WINS':'DRAW',reason:s.reason,kills:stats?.kills??0,damage:stats?.damage??0,distance:stats?.distance??0,eliminatedBy:killedText,round:s.series.number,rounds:s.series.total,complete:s.series.complete,standings:s.series.standings,self:session.me,matchWinner:s.series.winner?(s.series.standings.find(r=>r.id===s.series.winner)?.name??'Rider')+' wins the match':'Match tied'});}
  }
 }
 window.addEventListener('resize',()=>{release();graphics.resize();camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();loadLayout();});

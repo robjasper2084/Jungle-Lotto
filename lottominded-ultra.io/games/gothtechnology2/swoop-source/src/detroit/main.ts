@@ -49,6 +49,7 @@ import {createGraphicsQuality,startupAntialias} from './graphicsQuality.ts';
 import {detroitMinimap} from './detroitMinimap.ts';
 import {DETROIT_RACE_COURSE} from './detroitRaceMap.ts';
 import {settingsPanel} from './settingsPanel.ts';
+import {RideGhostView} from '../../../ride-core/src/rideGhostView.ts';
 import {GameFilm} from './gameFilm.ts';
 import {StudioCapture} from './studioCapture.ts';
 import {StudioScreens} from './studioScreens.ts';
@@ -175,6 +176,9 @@ const mapScene=new T.Scene();scene.add(mapScene);mapScene.scale.x=-1;mapScene.po
 const updateMap=elmwood?createElmwoodMap():createRouteMap();
 const miniMap=elmwood?undefined:detroitMinimap(()=>{clearInput();if(running&&!paused)pause();},()=>canvas.focus());
 const film=new GameFilm('Swoop Detroit',canvas,()=>split?split.view.heroes.map(h=>({root:h.root,body:h.rider})):[{root:sim?.cycling&&bicycleView?bicycleView.root:hero.root,body:sim?.cycling&&bicycleView?bicycleView.rider:hero.rider},...(dogEnabled?[{root:dogView.root}]:[])],()=>{clearInput();if(running&&!paused)pause();loop.stopReplay(false);$('helpPanel').hidden=true;$('menu').hidden=true;});
+const savedGhost=new RideGhostView(elmwood?'elmwood-legacy':'swoop-detroit',scene,()=>{
+ if(!actorData)return;const assets=new Map(actorData),e=eucProfile(vehicle.value);if(e&&assets.has('Euc_'+e.id))assets.set('DS_EUC_01',assets.get('Euc_'+e.id)!);return new Hero(assets,world,selectedRider);
+});film.panel.append(savedGhost.panel);
 const studioCapture=elmwood?undefined:new StudioCapture(canvas,()=>{clearInput();canvas.focus();});
 const cabinets=elmwood?undefined:new ArcadeCabinets(canvas,()=>{clearInput();paused=true;$('paused').hidden=true;studioScreens?.update(current.x,current.z,false);},()=>{clearInput();paused=false;$('paused').hidden=true;canvas.focus();});
 let studioScreens:StudioScreens|undefined,lottoShop:Awaited<ReturnType<typeof buildLottoShop>>|undefined,pennyShop:Awaited<ReturnType<typeof buildPennyShop>>|undefined;
@@ -675,6 +679,7 @@ function frame(now:number,xrFrame?:XRFrame){
   if(!loadedAt)loadedAt=now;if(!document.hidden&&running&&!paused){interiorStream.update(split?split.simulation.riders.map(r=>r.pose):[current],650);canvas.dataset.interiorStreaming=JSON.stringify(interiorStream.status);}const budgetActive=graphics.choice==='auto'&&!document.hidden&&!vr.active&&running&&!paused&&now-loadedAt>5000;if(!budgetActive&&graphics.choice!=='auto')adaptiveQuality.reset();if(adaptiveQuality.sample(rawFrameMs,budgetActive,graphics.current.fps)){graphics.setAdaptiveDetail(adaptiveQuality.detail);graphics.setResolutionScale(adaptiveQuality.scale);document.documentElement.dataset.renderQuality=graphics.current.shadows===0||adaptiveQuality.scale<.85?'compact':'detailed';}if(now-hudAt>120)canvas.dataset.renderBudget=JSON.stringify({targetFPS:graphics.current.fps,quality:graphics.choice,resolutionScale:adaptiveQuality.scale,detail:adaptiveQuality.detail,pixelRatio:renderer.getPixelRatio(),xr:vr.active});for(const destination of [gallery,boutique])destination?.updateVisibility(split?split.simulation.riders.map(r=>r.pose):[current],camera);mackStudio?.update(current.x,current.z);if(running&&!paused&&!document.hidden&&!film.playing){frameTimes.push(rawFrameMs);if(frameTimes.length>480)frameTimes.shift();}
   if(film.playing||gallery?.active||boutique?.active||split){footControls.update(current,false);studioScreens?.update(current.x,current.z,false);lottoShop?.update(current.x,current.z,false);cabinets?.update(current.x,current.z,false,camera);}
   for(const destination of [gallery,boutique])destination?.animateVisitors((running&&!paused||gallery?.active||boutique?.active||film.playing)?dt:0);
+  if(split||film.playing||gallery?.active||boutique?.active)savedGhost.suspend();
   if(film.playing){studioCapture?.update(current.x,current.z,false,camera);film.render(dt,renderer,scene,camera,(focus,wanted)=>{const mapped=toMap(focus.x,focus.y,focus.z);scenery.update(mapped.x,mapped.z,clock);wanted.y=Math.max(wanted.y,world.sampleGround(wanted.x,wanted.z,ground).height+.5);followStableSun(sun,focus,night?DUSK_SUN:DAY_SUN);});return;}
   if(gallery?.active||boutique?.active){
     const destination=(gallery?.active?gallery:boutique)!;const walking=destination.update(document.hidden?0:dt,camera);
@@ -771,6 +776,7 @@ function frame(now:number,xrFrame?:XRFrame){
   if(shopVisible&&!paused&&!cabinets?.playing){const p=toMap(pose.x,pose.y,pose.z),room=studioCoordinates(p.x,p.z);if(Math.abs(room.u)<9.5&&room.v>-21&&room.v<-.5)welcomeGothTech('studio');else if(room.u>2.5&&room.u<21&&room.v>-.5&&room.v<17)welcomeGothTech('store');}
   pennyShop?.update(pose.x,pose.z,shopVisible&&!cabinets?.playing);studioScreens?.update(pose.x,pose.z,shopVisible&&!cabinets?.playing);lottoShop?.update(pose.x,pose.z,shopVisible&&!cabinets?.playing);cabinets?.update(pose.x,pose.z,shopVisible,camera);
   jazzVisit?.update(pose.x,pose.z,shopVisible&&mode==='free'&&!challengeRun&&!race&&!cabinets?.playing);
+  savedGhost.update(dt,pose,selectedRider+':'+vehicle.value,running&&!paused&&!finished&&!film.playing,running&&!split&&!sim.cycling&&!vr.active&&!jazzVisit?.active);
   camera.userData.rideSightline=running&&!vr.active&&cameraMode!=='first'?(camera.userData.rideSightline??new T.Vector3()).set(pose.x,pose.y+1.1,pose.z):undefined;
   if(!vr.active){gyroscope.applyCamera(camera,dt,running&&!paused&&!finished&&!split&&!jazzVisit?.active,cameraMode==='first');camera.updateProjectionMatrix();}followStableSun(sun,pose,night?DUSK_SUN:DAY_SUN);fill.position.set(pose.x-12,pose.y+8,pose.z-13);fill.target.position.copy(hero.root.position);if(!qaVisualBaseline&&!elmwood&&!night){const roof=world.raycastObstacle({x:pose.x,y:pose.y+2.3,z:pose.z},{x:0,y:1,z:0},7);fill.intensity=T.MathUtils.damp(fill.intensity,roof===null?.26:.45,5,dt);}
   frameProfile.effects=performance.now()-frameCpuStarted;

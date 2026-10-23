@@ -22,3 +22,9 @@ test('a blocked lane forms a spaced queue and clears when the obstruction leaves
  const starts=riders.map(r=>r.s);for(let i=0;i<1000;i++)traffic.update(.05,player);
  assert(riders.every((r,i)=>r.s-starts[i]>150),'traffic must resume after obstruction is removed');
 });
+
+test('off-camera packs keep circulating through both turnarounds',()=>{
+ const traffic=new AmbientCyclistTraffic(flat,points,523),riders=traffic.rides.flatMap(p=>p.riders),start=riders.map(r=>r.s);
+ for(let tick=0;tick<8000;tick++)traffic.update(.05,{x:10000,z:10000});
+ assert(riders.every((r,i)=>r.s-start[i]>1500),JSON.stringify(riders.map((r,i)=>({travel:r.s-start[i],speed:r.speed}))));
+});

@@ -11,7 +11,7 @@ import {RIDE_TUNING as tune,clamp,damp,angle,spring,advanceSpring,advanceDrive} 
 import type {RideTuning} from './rideDynamics.ts';
 
 export const NEUTRAL_ACTIONS={throttle:0,steer:0,crouch:false,hop:false,hopHeld:false,reset:false,trick:0};
-export type RideActions=typeof NEUTRAL_ACTIONS & {eyeControl?:boolean;facingYaw?:number;dismount?:boolean;run?:boolean;prone?:boolean;mountBlocked?:boolean;interruptMount?:boolean;evade?:number};
+export type RideActions=typeof NEUTRAL_ACTIONS & {eyeControl?:boolean;facingYaw?:number;dismount?:boolean;run?:boolean;prone?:boolean;mountBlocked?:boolean;interruptMount?:boolean;evade?:number;quickMount?:boolean};
 export function createPose(){return {
   ...footFields(),
   stopFoot:0,stopFootX:0,stopFootY:0,stopFootZ:0,warningLevel:0,beepPulse:0,scrape:0,scrapeSide:0,scrapeX:0,scrapeY:0,scrapeZ:0,scrapeHard:0,
@@ -215,7 +215,7 @@ export class RideController {
         const freeZ=Math.abs(oz)>1e-5&&mountedClearance(this.terrain,p,{x:0,y:0,z:oz},Math.abs(oz)+.34,.28,p.crouch)===null;
         const slideX=freeX&&(!freeZ||Math.abs(ox)>Math.abs(oz)),slideZ=freeZ&&!slideX;
         const normalSpeed=slideX?Math.abs(this.vz):slideZ?Math.abs(this.vx):Math.hypot(this.vx,this.vz);
-        if(normalSpeed>4.2)this.fall('collision');
+        if(normalSpeed>(input.quickMount?1.2:4.2))this.fall('collision');
         else if(slideX||slideZ){if(slideX){p.x+=ox*.75;this.vx*=.75;this.vz=0;}else{p.z+=oz*.75;this.vz*=.75;this.vx=0;}p.speed=this.vx*Math.sin(p.headingY)+this.vz*Math.cos(p.headingY);this.motor=0;}
         else{p.speed=this.vx=this.vz=this.motor=0;}}
       else{p.x+=dx;p.z+=dz;}

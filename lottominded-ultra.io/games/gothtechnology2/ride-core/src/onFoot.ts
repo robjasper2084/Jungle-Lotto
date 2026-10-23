@@ -7,7 +7,7 @@ export const FOOT_SPEED={walk:2.35,run:5.4,reverse:2.05,reverseRun:3.8} as const
 export const footFields=()=>({footMode:0,footBlend:0,footPhase:0,footCycle:0,footTime:0,footMountTime:0,footJump:0,footCrouch:0,footProne:0,footStagger:0,parkX:0,parkY:0,parkZ:0,parkHeading:0});
 export type FootPose=ReturnType<typeof footFields>&{x:number;y:number;z:number;headingY:number;speed:number;airHeight:number;airBlend:number;velocityX:number;velocityZ:number;rollAngle:number;groundPitch:number;groundRoll:number;stopFoot:number};
 export const footState=()=>({...msjLocomotionState(),legacyLocomotion:false,mode:0,age:0,latch:false,jumpLatch:false,vy:0,turn:0,fromX:0,fromY:0,fromZ:0,fromHeading:0,toX:0,toY:0,toZ:0,phase:0,time:0,land:0,carryX:0,carryZ:0,stagger:0});
-export type FootActions={throttle:number;steer:number;facingYaw?:number;hop?:boolean;hopHeld?:boolean;crouch?:boolean;prone?:boolean;run?:boolean;dismount?:boolean;movingDismount?:boolean;mountBlocked?:boolean;interruptMount?:boolean;evade?:number};
+export type FootActions={throttle:number;steer:number;facingYaw?:number;hop?:boolean;hopHeld?:boolean;crouch?:boolean;prone?:boolean;run?:boolean;dismount?:boolean;movingDismount?:boolean;mountBlocked?:boolean;interruptMount?:boolean;evade?:number;quickMount?:boolean};
 /** Only an authoritative collision invokes this; actor and parked vehicle remain separate. */
 export function knockOffOnFoot(s:ReturnType<typeof footState>,p:FootPose){
  if(s.mode){s.stagger=Math.max(s.stagger,.7);return;}
@@ -60,11 +60,13 @@ export function stepOnFoot(s:ReturnType<typeof footState>,p:FootPose,t:TerrainSa
  if(s.mode!==2)resetMsjLocomotion(s);
  if(!s.mode){p.footMode=p.footBlend=p.footCrouch=p.footProne=p.footMountTime=0;return false;}
  s.time+=dt;p.footTime=s.time;p.footMode=s.mode;
- s.stagger=Math.max(0,s.stagger-dt);p.footStagger=clamp(s.stagger/.8,0,1);
+ s.stagger=Math.max(0,s.stagger-dt*(a.quickMount?3:1));p.footStagger=clamp(s.stagger/.8,0,1);
  p.stopFoot=p.rollAngle=p.groundPitch=p.groundRoll=0;p.velocityX=p.velocityZ=0;
  if(s.mode===3&&(a.mountBlocked||a.interruptMount||crashed||s.stagger>0)){s.mode=p.footMode=2;p.footBlend=1;p.footMountTime=0;return true;}
  if(s.mode===3){
-  s.age+=dt;p.footMountTime=s.age;const timing=wheelPickupTiming(s.age);
+  // Host AI policy: immediately recover through the same pickup poses, at a
+  // brisk pace. This is never accepted as a client command or a teleport.
+  s.age+=dt*(a.quickMount?4:1);p.footMountTime=s.age;const timing=wheelPickupTiming(s.age);
   // Approach from the side on which the player is already standing. Keep the
   // parked wheel authoritative and fixed while the harvested reach is played.
   let dx=s.fromX-s.toX,dz=s.fromZ-s.toZ;
