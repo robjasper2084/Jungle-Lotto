@@ -24,3 +24,18 @@ test('completed on-foot fast path matches the full mounted-to-foot blend for eve
   }}finally{fast.dispose();full.dispose();}
  }
 });
+test('loading-time foot fitting preserves mounted poses and later walking for every hero',async()=>{
+ const assets=await heroAssets();
+ for(const {id}of RIDER_CHOICES){
+  const warm=new Hero(assets,undefined,id),cold=new Hero(assets,undefined,id);
+  const compare=()=>{for(let i=0;i<warm.bones.length;i++)assert(warm.bones[i].o.getWorldPosition(new T.Vector3()).distanceTo(cold.bones[i].o.getWorldPosition(new T.Vector3()))<1e-6,id+' '+warm.bones[i].o.name);assert(warm.vehicle.getWorldPosition(new T.Vector3()).distanceTo(cold.vehicle.getWorldPosition(new T.Vector3()))<1e-6,id+' wheel');};
+  try{
+   warm.prepareOnFoot();compare();
+   for(let i=0;i<4;i++){
+    const pose={...createPose(),x:4,z:-3,headingY:.4,footMode:2,footBlend:1,footTime:i/60,footCycle:i/60,speed:2,parkX:9,parkY:0,parkZ:-3};
+    warm.apply(pose);cold.apply(pose);compare();
+    warm.prepareOnFoot();compare(); // Repeated warm-up must not reset an active pose.
+   }
+  }finally{warm.dispose();cold.dispose();}
+ }
+});

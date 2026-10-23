@@ -34,7 +34,7 @@ export class FirstPersonView {
   this.root.name='First-person hands and weapon';this.root.add(this.hero.root,this.weapon.root,this.magazine);this.arms=new FpsArms(this.hero,this.root);this.root.visible=false;
  }
  pickup(tick:number){this.rig.pickup(tick);}
- resetMotion(){this.previousForward=undefined;this.previousTick=-1;this.sway.set(0,0);this.fpsSway.reset();this.motion.reset();}
+ resetMotion(){this.previousForward=undefined;this.previousTick=-1;this.sway.set(0,0);this.fpsSway.reset();this.motion.reset();this.swap.reset();}
  update(p:RidePose,state:CombatState,kind:Weapon,tick:number,yaw:number,pitch:number,camera:T.Camera,dt:number,shot:boolean,ads:boolean,reduced:boolean,terrain:TerrainSampler,healingUntil=0,burntwax=true){
   if(this.previousTick>=0&&(tick<this.previousTick||tick-this.previousTick>12))this.resetMotion();this.previousTick=tick;
   this.root.visible=true;this.root.scale.setScalar(1);this.root.position.set(0,0,0);this.root.quaternion.identity();this.root.updateMatrixWorld(true);

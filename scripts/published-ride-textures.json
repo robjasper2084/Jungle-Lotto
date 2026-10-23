@@ -1,0 +1,777 @@
+{
+  "base": "https://raw.githubusercontent.com/robjasper2084/Jungle-Lotto/247ad6b061e0dcf1028c08ecd5cc529b28f8acf6/lottominded-ultra.io/games/gothtechnology2/store/public/arcade/",
+  "files": [
+    {
+      "path": "swoop-detroit/shared-textures/01803f85039c25e4b0bfb462901b55f0475d818cd9343a203b2007bfe22a2097.jpg",
+      "sha256": "01803f85039c25e4b0bfb462901b55f0475d818cd9343a203b2007bfe22a2097"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/0482123eae9612af20c0606164ab43f25c40437f9e09bddd64583c395d4a9ef7.jpg",
+      "sha256": "0482123eae9612af20c0606164ab43f25c40437f9e09bddd64583c395d4a9ef7"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/05231dff01fad8136c4fe9f3252dd88037010e15674e251349ce6dde3b2c8cac.jpg",
+      "sha256": "05231dff01fad8136c4fe9f3252dd88037010e15674e251349ce6dde3b2c8cac"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/05c54970ee98a5552381fda11310f9344cdbb9b8ee9ad9d12b1e8d3141b2419f.jpg",
+      "sha256": "05c54970ee98a5552381fda11310f9344cdbb9b8ee9ad9d12b1e8d3141b2419f"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/0684899c3efa73c1bf34f8371b564d5a6151af6eaf96973dab701a3ab12e425f.jpg",
+      "sha256": "0684899c3efa73c1bf34f8371b564d5a6151af6eaf96973dab701a3ab12e425f"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/08eb2410a7a8762c4e155447a0eda405270c2ff1e9326a42c0236b247193a099.jpg",
+      "sha256": "08eb2410a7a8762c4e155447a0eda405270c2ff1e9326a42c0236b247193a099"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/09f80923ed0ef79a506fa9ed1436f76a98eecf17ba9c79fd630e2b16d0a8010e.webp",
+      "sha256": "d4b0a0079bf06cd9f1c083fb7f32ec3a56e2396f6d48de2d3ac36ea551443457"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/12a5edb6d79669597aae50f627c5ac95b24777d6926a99edd99626f3633cc63d.webp",
+      "sha256": "2f12d749e5466d407c78dd27dbc37a5d9734a5212c9fc5e17c7916e1bdf8951a"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/1b2811ede4714dfe96045efe9bf81de1c414f0ecf262be5bfb930b32684e35eb.webp",
+      "sha256": "d5d7f4b32c8fa69e0a9fd95e2a6dd026d8633cc852f892dbf27bb47c4ded95e1"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/1bda540ce383629c47ce2607cadd8141561454d784540455835436312bbd1f71.jpg",
+      "sha256": "1bda540ce383629c47ce2607cadd8141561454d784540455835436312bbd1f71"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/1f6fc606d971366bd4d5d85ead0846c7cbb215d8e008d612e1da7cb94e18bd0e.jpg",
+      "sha256": "1f6fc606d971366bd4d5d85ead0846c7cbb215d8e008d612e1da7cb94e18bd0e"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/23ff8d18343c853e02103df3d0d9a4fcc9d0b4f0e226934ecbed78d60fe0157a.jpg",
+      "sha256": "23ff8d18343c853e02103df3d0d9a4fcc9d0b4f0e226934ecbed78d60fe0157a"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/24830a51e4128eff7e97ff189ba43cee2d6be87db7dcdbf6fbc97cbd182b0388.webp",
+      "sha256": "51687143bf39ff845c7528bff402affaa276a9ebbddb0793078c0ab5ffc010a7"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/26fe1f93ade61bc4813a6b91fbdafc591e425c6ed6085a76d34c238802844b02.jpg",
+      "sha256": "26fe1f93ade61bc4813a6b91fbdafc591e425c6ed6085a76d34c238802844b02"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/27d27a5907355f6496464552137513457520d39ee65a1cdaef99c3e75494e026.webp",
+      "sha256": "bf5221d40d6a57214774293b54e2247dcfdf917edc95945a2df41ec26d4c2fd7"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/2cd34594143a028c65dc4ad8303a2ea267c5740cdffcd89b9a603682210815d2.jpg",
+      "sha256": "2cd34594143a028c65dc4ad8303a2ea267c5740cdffcd89b9a603682210815d2"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/3076734959d6ac37d3b012a45fecf2116ad453dced99d499a2295f464f810318.png",
+      "sha256": "3076734959d6ac37d3b012a45fecf2116ad453dced99d499a2295f464f810318"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/31089923528ce53dde465490d13565771ce824350e496ed8c5dcb52411332cc4.jpg",
+      "sha256": "31089923528ce53dde465490d13565771ce824350e496ed8c5dcb52411332cc4"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/31a65400e083dea38388166d68a16d897444c1532bc6567225effd10b5f75df1.webp",
+      "sha256": "ff9ea9df4fbfcc8cd7b8a758a6650e33ee046852d96754cb968ee20c36b28985"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/3a349023901129886d563d7ff64545d4b432ffb3b70ddfa122bc88a2967e7204.jpg",
+      "sha256": "3a349023901129886d563d7ff64545d4b432ffb3b70ddfa122bc88a2967e7204"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/3a4aab95649a0a04e87e001849d3e70edaf534b7da03b32404a5db5afbe3f64c.jpg",
+      "sha256": "3a4aab95649a0a04e87e001849d3e70edaf534b7da03b32404a5db5afbe3f64c"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/3a6fd9df42aa04481429f1e23efc7d90779267c91ecc44e957db11179166b246.jpg",
+      "sha256": "3a6fd9df42aa04481429f1e23efc7d90779267c91ecc44e957db11179166b246"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/3a73c668eee0337b10ccfc730a0453ef8ca86f3a8ab3114136ad92e8a17c8de6.jpg",
+      "sha256": "3a73c668eee0337b10ccfc730a0453ef8ca86f3a8ab3114136ad92e8a17c8de6"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/3eb32749f2744030d25fb9f4226623ea7d6363b343195a16e6deb614d43ce109.webp",
+      "sha256": "adbed6f5dba513f7eaae8f140d58e3c4b05fb1f12d5af6db0819d861f3887ae4"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/3f53b9a02c9f9c4727e83d60052bb34fc1db6fb7d373aab33a730e4311dfd217.webp",
+      "sha256": "3aa197cee69f19d684eff1b417f1ff648902240ee391bea2e02794b8888b3157"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/406b89a2c027100b1aacb11143963b6bbe87971d7b8eb7db0b369d63cd34565e.jpg",
+      "sha256": "406b89a2c027100b1aacb11143963b6bbe87971d7b8eb7db0b369d63cd34565e"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/42e1b4fae13d8aa31b36bde0bbd9492c54dce7735984e15d28042ac2915adab8.jpg",
+      "sha256": "42e1b4fae13d8aa31b36bde0bbd9492c54dce7735984e15d28042ac2915adab8"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/48a3242a8ac490a7bf09aab08242878a3e8a49efde008b23fb1cea4833f7a554.jpg",
+      "sha256": "48a3242a8ac490a7bf09aab08242878a3e8a49efde008b23fb1cea4833f7a554"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/49f8d1129db9aae53d9887a68b08eb58ee2bf35632e12d4209e659e5ab1bb670.webp",
+      "sha256": "14cdf1809b7aacb080b346f2a7f8dc05789e9be8468a27a7639a398fe97e2b80"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/4b2db907770b498172a7666fe8c15da1294394ab685fc27236145c4cc8d06328.jpg",
+      "sha256": "4b2db907770b498172a7666fe8c15da1294394ab685fc27236145c4cc8d06328"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/5147c64f6ba6957e9675a133b6247635bca1816b325376331d951548dc8f939c.jpg",
+      "sha256": "5147c64f6ba6957e9675a133b6247635bca1816b325376331d951548dc8f939c"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/5345573861272911ebec8a6676b9f621cf8941337450bb2b9576459232fa236c.jpg",
+      "sha256": "5345573861272911ebec8a6676b9f621cf8941337450bb2b9576459232fa236c"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/57cdd94b24381b521b6225e73a3edbc23efc3fae1a6df68394a3f0569a7d3178.jpg",
+      "sha256": "57cdd94b24381b521b6225e73a3edbc23efc3fae1a6df68394a3f0569a7d3178"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/5f848cf4ac6dfdf30db527f77ff46a5cc6ae86878edda53be7e3a8718ec749a2.jpg",
+      "sha256": "5f848cf4ac6dfdf30db527f77ff46a5cc6ae86878edda53be7e3a8718ec749a2"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/60af4b77baab436c777b96169c1ab9ee8e4dcb17776c66a1d7ab4a9e44dd7599.jpg",
+      "sha256": "60af4b77baab436c777b96169c1ab9ee8e4dcb17776c66a1d7ab4a9e44dd7599"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/62991a12571061aa9a87970882dec8fab394b0fd31c5a8ed66940bd3c45083e2.jpg",
+      "sha256": "62991a12571061aa9a87970882dec8fab394b0fd31c5a8ed66940bd3c45083e2"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/65986bc608b965ac430583caa5c5cb8f3b701a0b7e2bf522b213ba3ae006d61a.jpg",
+      "sha256": "65986bc608b965ac430583caa5c5cb8f3b701a0b7e2bf522b213ba3ae006d61a"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/6727d6ec7df6d08a4040aff45954bb5e69980746ac243d0adc7128c9c4e7d8a2.png",
+      "sha256": "6727d6ec7df6d08a4040aff45954bb5e69980746ac243d0adc7128c9c4e7d8a2"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/688d06882b2cf990869b807d4c88503fddced8c04be1a4725b9b1b2c87b42d76.jpg",
+      "sha256": "688d06882b2cf990869b807d4c88503fddced8c04be1a4725b9b1b2c87b42d76"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/697f8d8c869d11e28564320c79758982130515ef797c2d5faa183f6c0a7b01f3.jpg",
+      "sha256": "697f8d8c869d11e28564320c79758982130515ef797c2d5faa183f6c0a7b01f3"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/6c9f765ec8a7806892ae801915a2ef2ab404609aaf8386c436a754dfe593b4c7.jpg",
+      "sha256": "6c9f765ec8a7806892ae801915a2ef2ab404609aaf8386c436a754dfe593b4c7"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/7378fbdda81daae1cadd52c91e73dff79c53bb1861798276ce4354aa98683641.jpg",
+      "sha256": "7378fbdda81daae1cadd52c91e73dff79c53bb1861798276ce4354aa98683641"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/77ddc2eb18172000051b25983d850fb03e94c1a312ce5ad84bf22b52c367f940.jpg",
+      "sha256": "77ddc2eb18172000051b25983d850fb03e94c1a312ce5ad84bf22b52c367f940"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/77ffdcdaccea2a2e25b8aa4d027630971314e7e7485aadd90c637bb0e88da81b.jpg",
+      "sha256": "77ffdcdaccea2a2e25b8aa4d027630971314e7e7485aadd90c637bb0e88da81b"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/7809140d4a4f118762356a802308a79c8a3163d0a12115d8a55a0e5b3d612715.webp",
+      "sha256": "bb8819f6d9fbe2d7f7e305e1d55d616d7d1d3711449e80b2c301edb98222890e"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/7a8ba54859f4ca449bfcc6c9a676da3ba408f7d1fe6d215350aac77fe9936e7e.jpg",
+      "sha256": "7a8ba54859f4ca449bfcc6c9a676da3ba408f7d1fe6d215350aac77fe9936e7e"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/7ae95182df6bea7180a4662c483a9a0033de0508cd128e09f72735740e5261dc.jpg",
+      "sha256": "7ae95182df6bea7180a4662c483a9a0033de0508cd128e09f72735740e5261dc"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/7e6a47774eeff6e0abd332ed1bd51b35a5fd13f04edc068e31ca9199e2466358.jpg",
+      "sha256": "7e6a47774eeff6e0abd332ed1bd51b35a5fd13f04edc068e31ca9199e2466358"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/82eec5f47a86b98a95b208a903b64488b7be10084cc56b8258362b9405bcc94d.jpg",
+      "sha256": "82eec5f47a86b98a95b208a903b64488b7be10084cc56b8258362b9405bcc94d"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/82f0813ffb0341513c9649591fc94f486a1588364cc7c83b78d1f0ebe3afe3cd.jpg",
+      "sha256": "82f0813ffb0341513c9649591fc94f486a1588364cc7c83b78d1f0ebe3afe3cd"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/875ada2390ec11110e617438ee14a9f388b0b18ce865852d9caa682d474616a6.jpg",
+      "sha256": "875ada2390ec11110e617438ee14a9f388b0b18ce865852d9caa682d474616a6"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/8768259e02158e359806157505f6f576a3b941ed08ba25e4eb8897d55da4c6b1.jpg",
+      "sha256": "8768259e02158e359806157505f6f576a3b941ed08ba25e4eb8897d55da4c6b1"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/8b8094f9c79c8e86f92d781fd53774fb838046339b93875a08bba3e677860591.jpg",
+      "sha256": "8b8094f9c79c8e86f92d781fd53774fb838046339b93875a08bba3e677860591"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/8c7236c3ce1f31d18b6c9d7668b47e68014438ecdda9dcac8d9f9516ed5c487e.webp",
+      "sha256": "5b13d26927913402e7a2ed4efc53a6012f33bf8c0ec3333cb6b56db933e0d3c2"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/90c4922161db25b4272e987f0480bb54c7743923d78b3933cf9f7bd6b7e0668f.webp",
+      "sha256": "7931ba29329f076588789710cd3175a5686a0d1e82150b693dcbe4ddb5c72226"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/95d9cdd55b082e2530765e265d248e11c9ae6fd1e11633c9066b572900ec397d.jpg",
+      "sha256": "95d9cdd55b082e2530765e265d248e11c9ae6fd1e11633c9066b572900ec397d"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/96851501a7e3093c0e046ea4ba69c66f478fba2d44124b81cf6330e7542637cd.jpg",
+      "sha256": "96851501a7e3093c0e046ea4ba69c66f478fba2d44124b81cf6330e7542637cd"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/98464fdf31d55e6e5ab93f8b9432f34795ef814f0fd6bf5c8a843128c2994931.jpg",
+      "sha256": "98464fdf31d55e6e5ab93f8b9432f34795ef814f0fd6bf5c8a843128c2994931"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/9c635e3fa544becf0d00ad1fbd59afd17012a8e7918470c1baab682911eb4fcb.webp",
+      "sha256": "1453b49c7711dc34fe94b9755489fdcb549058eb6300284064dcf14e93bfefbe"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/9dc5accedea16154d73ef7331c1f8a7b2a797a108e8110fde025c7dc2a2c073c.jpg",
+      "sha256": "9dc5accedea16154d73ef7331c1f8a7b2a797a108e8110fde025c7dc2a2c073c"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/9fa142ce92c041fa2b10f18e963b09431b412c44d2fc18d3a116365b3bea070e.png",
+      "sha256": "9fa142ce92c041fa2b10f18e963b09431b412c44d2fc18d3a116365b3bea070e"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/9fad357d6e3fc447b2687cac3c95900b27c8ab853d155d41f0a0d3b2d8d9434c.jpg",
+      "sha256": "9fad357d6e3fc447b2687cac3c95900b27c8ab853d155d41f0a0d3b2d8d9434c"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/a5dc2e44a4c281807cb8febe969d8c1f202d606b3c86c9e57e18a993d0771c0f.jpg",
+      "sha256": "a5dc2e44a4c281807cb8febe969d8c1f202d606b3c86c9e57e18a993d0771c0f"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/a6a1da6caa2ecc9b3484def572efcc0a5af12a7a1f123ab15acbf5af93562e0c.jpg",
+      "sha256": "a6a1da6caa2ecc9b3484def572efcc0a5af12a7a1f123ab15acbf5af93562e0c"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/a6a4b69bda78201261647a11d56ec01f1ece8d393aec75ac80842ff706767fc1.jpg",
+      "sha256": "a6a4b69bda78201261647a11d56ec01f1ece8d393aec75ac80842ff706767fc1"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/a7319a0c318edc4d4a9200110884ac43d848aa9f79b21bbdb64a502ac980de7d.jpg",
+      "sha256": "a7319a0c318edc4d4a9200110884ac43d848aa9f79b21bbdb64a502ac980de7d"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/a843f85fb7e17825aa8e075e25d27072d68d203c27bd18b5014927bc1d1f75ce.jpg",
+      "sha256": "a843f85fb7e17825aa8e075e25d27072d68d203c27bd18b5014927bc1d1f75ce"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/a8e208c3eb0c7360ab2de6b2f73ae348e11bd9b6f20a1a2bdef9490a184f51b7.jpg",
+      "sha256": "a8e208c3eb0c7360ab2de6b2f73ae348e11bd9b6f20a1a2bdef9490a184f51b7"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/a8f7fddabedd4a85f28f1ebc3207f59fc0d20a984ac033c17c8314d5115469f5.jpg",
+      "sha256": "a8f7fddabedd4a85f28f1ebc3207f59fc0d20a984ac033c17c8314d5115469f5"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/a93a49bdb204b66dd0d8108f518679391ef134f03bc91b582b5ae5848eeda602.jpg",
+      "sha256": "a93a49bdb204b66dd0d8108f518679391ef134f03bc91b582b5ae5848eeda602"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/a95a91db46d7a183cbfff578edacba49a1fecebfa2869f9d64c16661a59780ae.jpg",
+      "sha256": "a95a91db46d7a183cbfff578edacba49a1fecebfa2869f9d64c16661a59780ae"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/ace73a1d43575d2ed20fdb5a3492210adf9a3c3a2e300a0130abcd51f08fd559.jpg",
+      "sha256": "ace73a1d43575d2ed20fdb5a3492210adf9a3c3a2e300a0130abcd51f08fd559"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/ad7010db30ba87e891aa105aaae7d2b217af5588ea0bd3dfebdc8a93a8173ef7.jpg",
+      "sha256": "ad7010db30ba87e891aa105aaae7d2b217af5588ea0bd3dfebdc8a93a8173ef7"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/b304d9fc61f24a03fc60fd4c93a9c68a073d6fb5b574ee1d166b097deac42b8c.jpg",
+      "sha256": "b304d9fc61f24a03fc60fd4c93a9c68a073d6fb5b574ee1d166b097deac42b8c"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/b52ae3dbac9b1a5a95c3a458dbd3e60c3b160f8f56057d5c66bdf7f9e5e2d838.webp",
+      "sha256": "a9ea8cc7093ddc519dbdf1de4e71e49489b1985d172bed3a41d525a6f3f62e4f"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/b766f286d2626e6e58f7854df5ca643cc839478e361f33c799646bc23a8debb5.webp",
+      "sha256": "817f7142a4179171c46940bce220391969d9e90f26e70d4f2e876b78667e302c"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/b8e455ad3041948158fdafe9a1e3035033a8949e9dc1139181588ee3219e9a2b.jpg",
+      "sha256": "b8e455ad3041948158fdafe9a1e3035033a8949e9dc1139181588ee3219e9a2b"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/b91dbfe8455a5efc60e43b9f0cc6f1efa3185a49d53ebc905f237afb871e2846.webp",
+      "sha256": "6c041ffaaf1611c4500ebafb1d7341c84cebb0b9d32153b92d8d130c896b0837"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/b9abe6358cc03d8245380afd86881007ba36b575017bb3e1d8d43f27152ea600.jpg",
+      "sha256": "b9abe6358cc03d8245380afd86881007ba36b575017bb3e1d8d43f27152ea600"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/b9b0956db6ff3ad7f135d3088e96fa4f9fa9a9ecf12c96f3d8739128c3efdd61.jpg",
+      "sha256": "b9b0956db6ff3ad7f135d3088e96fa4f9fa9a9ecf12c96f3d8739128c3efdd61"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/ba7f901aa5447ab49dc8e306d556362122b18d3bce372a545d51248d0a8d0bc9.jpg",
+      "sha256": "ba7f901aa5447ab49dc8e306d556362122b18d3bce372a545d51248d0a8d0bc9"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/bb78fec148b4f43f2dd22827b83899763c5556f277ac85df4a2239887bf8a352.jpg",
+      "sha256": "bb78fec148b4f43f2dd22827b83899763c5556f277ac85df4a2239887bf8a352"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/bf783a6cc78d96a11b41f09c56011ae625ea7268fbd5c7bb4270ec78b76515a0.jpg",
+      "sha256": "bf783a6cc78d96a11b41f09c56011ae625ea7268fbd5c7bb4270ec78b76515a0"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/c10f294087d026ad46428bc33e35997305c322021bbfd3982c2bb4ccd247ae55.webp",
+      "sha256": "37dce0ab99800576e2c1558c85d91638be63d461d5208dbb16bef55ee59de7a4"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/c3114662f5cb622decd1336038add9e711559276b9fae36b6d36dd40906e9c2a.jpg",
+      "sha256": "c3114662f5cb622decd1336038add9e711559276b9fae36b6d36dd40906e9c2a"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/c9a1d64d2059e7a95d1d4c1c2541e7778f37bf956082a170c36a4cbc6efdf4d3.jpg",
+      "sha256": "c9a1d64d2059e7a95d1d4c1c2541e7778f37bf956082a170c36a4cbc6efdf4d3"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/cbaaedfa51ed58be720f5ce5a54ec144bb6d8472221c83dae782a9e77c61c5eb.webp",
+      "sha256": "bb355c47274ba00e6f0f8e1463a821e9a867fec398347eedde240eb2372088af"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/ccb23d709ba05d1c0cf9fd3d83dfcfd0b516580435d80952eb8ffd3a98fdbd18.jpg",
+      "sha256": "ccb23d709ba05d1c0cf9fd3d83dfcfd0b516580435d80952eb8ffd3a98fdbd18"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/ccbb6d3a14df4a7abae5e6c0b923c044f7f3a1007b2e2bd79e89c152c1480455.jpg",
+      "sha256": "ccbb6d3a14df4a7abae5e6c0b923c044f7f3a1007b2e2bd79e89c152c1480455"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/cda0d2b2893aa0a76ca4868a3afd3d7c8ced89d62bbddb231c38262387847d16.jpg",
+      "sha256": "cda0d2b2893aa0a76ca4868a3afd3d7c8ced89d62bbddb231c38262387847d16"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/cea06d9607ed6fed80c6a7fd47e6917960ff8b21ccc1fa0c627ec8b15cc2076c.jpg",
+      "sha256": "cea06d9607ed6fed80c6a7fd47e6917960ff8b21ccc1fa0c627ec8b15cc2076c"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/cf0a5a0f6c88cc497e836fd164024b4d7323ce71ed2cb39bce561920ad3541de.jpg",
+      "sha256": "cf0a5a0f6c88cc497e836fd164024b4d7323ce71ed2cb39bce561920ad3541de"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/d065eafd74b1799975bcad6d5c2fd9a9bee0906298ffe2a9b887e3c6cf58197b.webp",
+      "sha256": "e14708b3f5c244872d5a7590dbf6cd82d609a16fea2362c99cc9c3605baf0647"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/d229338a7068b6c69bf19236f992f82b6153c54008948d8b5cbf5eacd9372e8e.jpg",
+      "sha256": "d229338a7068b6c69bf19236f992f82b6153c54008948d8b5cbf5eacd9372e8e"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/d7275c7855abb0f293b283723c773a69037ff1bf3e2c822ef2c43515121993d0.jpg",
+      "sha256": "d7275c7855abb0f293b283723c773a69037ff1bf3e2c822ef2c43515121993d0"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/d97536b2542d10af392fab598fb95132343c6de5eaa324a95febaf0d22faf528.jpg",
+      "sha256": "d97536b2542d10af392fab598fb95132343c6de5eaa324a95febaf0d22faf528"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/daf3b2ec11acc394fa645909a0822b71c40e11c55063cb9d3dc72a2ccdc53e43.jpg",
+      "sha256": "daf3b2ec11acc394fa645909a0822b71c40e11c55063cb9d3dc72a2ccdc53e43"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/dbeb8a9912fc95b937670b365665651e65fe3ebefa470df65220bee0cb15e753.jpg",
+      "sha256": "dbeb8a9912fc95b937670b365665651e65fe3ebefa470df65220bee0cb15e753"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/dc43f355888a163ca8c0ef759d18b796fa42c9442a97777e8ffccc626780b352.jpg",
+      "sha256": "dc43f355888a163ca8c0ef759d18b796fa42c9442a97777e8ffccc626780b352"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/df2bed024eae455233dd7f0b31bf0a608474fca8f286431ffe75c8663567e5a2.jpg",
+      "sha256": "df2bed024eae455233dd7f0b31bf0a608474fca8f286431ffe75c8663567e5a2"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/e154eb35304a0160e51c158d8c30ecd7bc99a85c4d76bfafa9d7af339d459d05.webp",
+      "sha256": "ad62008ae4e1d5cd788a51d776c929790435ac2750f0a68092590a2afd65d902"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/e43cf1432f829295265866709979ffadf1283ee7b890cf2a6e983ead284fc9b3.jpg",
+      "sha256": "e43cf1432f829295265866709979ffadf1283ee7b890cf2a6e983ead284fc9b3"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/e81e8c338c937ab9beab3f66dbeacc174ed4e4a1bf112a66b26a9e1c6f28ce26.jpg",
+      "sha256": "e81e8c338c937ab9beab3f66dbeacc174ed4e4a1bf112a66b26a9e1c6f28ce26"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/ee6af150b68e48dd28d4647319ffe7f82ce109695484b4cf265647c85c0daff6.jpg",
+      "sha256": "ee6af150b68e48dd28d4647319ffe7f82ce109695484b4cf265647c85c0daff6"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/f0277fec9753ab022105d9fae0ab9bd5a2b6d52a76d6238eea47bc3d371ffac4.jpg",
+      "sha256": "f0277fec9753ab022105d9fae0ab9bd5a2b6d52a76d6238eea47bc3d371ffac4"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/f9f5447a2bba37be279f4c413c296879e883f88cf86f2c79c9aaffe87df710a3.jpg",
+      "sha256": "f9f5447a2bba37be279f4c413c296879e883f88cf86f2c79c9aaffe87df710a3"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/fc432f390fab1681143746c305f71289442b0046dcc056c0a9f6b9baf495a7a0.jpg",
+      "sha256": "fc432f390fab1681143746c305f71289442b0046dcc056c0a9f6b9baf495a7a0"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/fcbb24d3637a233525ceaa5295e8372527d6885c7db7b2ce554f4319ec952df9.jpg",
+      "sha256": "fcbb24d3637a233525ceaa5295e8372527d6885c7db7b2ce554f4319ec952df9"
+    },
+    {
+      "path": "swoop-detroit/shared-textures/fdf1cbd5ca237fe2fff85335b5ee5e1a275a8f5c2b8149ca47bc44006da76184.jpg",
+      "sha256": "fdf1cbd5ca237fe2fff85335b5ee5e1a275a8f5c2b8149ca47bc44006da76184"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/03da6ca7d6544940ba5b1800eddc0a760fed9297c96688fd4edf0c2e5693ef9b.webp",
+      "sha256": "7df8585e77d9ec2a4656b4518d88d3a3ad8436e9e232d342a65b3d2bbda675fb"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/08afe42eafce6182c1219727cebc2f08265e53b55d01e137a665736e9ff462b1.webp",
+      "sha256": "78d8931dcb0f6c5790165a03e412a369f6cd9f5b1546df2459787d22875fabd2"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/0f65376fe7d76c2008e767c03dab269384e8a2f41b46c9b0962a2e8776cd2a8b.webp",
+      "sha256": "1a7ba140fda30b36ec1e60670faa3c709af4a8d23ba99a00293549c22be783a1"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/12a5edb6d79669597aae50f627c5ac95b24777d6926a99edd99626f3633cc63d.webp",
+      "sha256": "2f12d749e5466d407c78dd27dbc37a5d9734a5212c9fc5e17c7916e1bdf8951a"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/12f03377b2c4dd1a4316ba075889d194e548e349eabc4ae94b0b0bf2eb932d28.webp",
+      "sha256": "b5b5ccdc2637a0f0f33c0b0993459f0a5533d39e2117f788b0ac355eea08846e"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/16f2c782e4f132b6233b1189541fda4c64c2613530c0761347efced002546501.webp",
+      "sha256": "9b58a6e3af65599135e9803150571144202a2a00e878289fed58aadd6afd464a"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/1b2811ede4714dfe96045efe9bf81de1c414f0ecf262be5bfb930b32684e35eb.webp",
+      "sha256": "d5d7f4b32c8fa69e0a9fd95e2a6dd026d8633cc852f892dbf27bb47c4ded95e1"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/1bf6236e392ae22becc61dd5d7b843fa45d92a36f5d27724f92693c35239d3b9.webp",
+      "sha256": "794f77e94679ad5045ef563fc49c6b5f80ae3cf777c50e92bc73ac1ec29e77a5"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/1f397564a7741d87ed7d6f3d14626ed291eed0102b5520af9eba1c36100e69db.webp",
+      "sha256": "0ef9c695257494886e3df9e47e17b93a6cb904266207a0c4ea633666ff58334e"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/24830a51e4128eff7e97ff189ba43cee2d6be87db7dcdbf6fbc97cbd182b0388.webp",
+      "sha256": "51687143bf39ff845c7528bff402affaa276a9ebbddb0793078c0ab5ffc010a7"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/253ca171ea6e982db0e0f50aea7fcd3c3b812ff406913d14a71a247ea787ca0b.webp",
+      "sha256": "e2d141b20fa36252dbf561a675195950abdcf2cec2acaa836723428c34312562"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/29d098c9a5073e8ffa7f6cb8bb8f7629c504c315c634e7696f3670d44a3a56eb.webp",
+      "sha256": "59d7e4d3938a3e4f90cc7600c93c1f50496652be2f49c01da1b7957abf56e410"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/2b6b4fba4cf5ac5f9e9663b3576e26977f2c48bde701a8177ee10e1bf8453e05.webp",
+      "sha256": "5fb23175ce2757fdfad3c6e579ad878993374e53781b38f539cc1eb2317ed93f"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/2d3d57ca50eb066c5d335664463640ac6986a84350dc39bfef499521dc31f2fa.webp",
+      "sha256": "4737fe351801cb747aa7d22c87e12b05b6ce83059e66af01f4f3454ff1a376db"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/3076734959d6ac37d3b012a45fecf2116ad453dced99d499a2295f464f810318.png",
+      "sha256": "3076734959d6ac37d3b012a45fecf2116ad453dced99d499a2295f464f810318"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/31a65400e083dea38388166d68a16d897444c1532bc6567225effd10b5f75df1.webp",
+      "sha256": "ff9ea9df4fbfcc8cd7b8a758a6650e33ee046852d96754cb968ee20c36b28985"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/3338c4d1978ed37a704fbdb33ff67dc7ab7172283e8568d9a426bf91c4064b55.webp",
+      "sha256": "ce7fb7d9462bce5b621d8085af055c939108428fc972ed38bef583235eb8fc19"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/39b0a9386259a5bb4cab11655680ba560ce980b4be423197052c7c290aa65a41.webp",
+      "sha256": "d747864f95e4ef7fac5f95dcfcb3b6c899e0990130b90057c771bb12dc976b17"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/3c5e6ce495e5561b3e8044140202affbd21c94cc6a249bd11e194f70dc2aad1d.webp",
+      "sha256": "23f7c914ed5c28c8179cba17d06ff84bd7fc94292076d10051814b0283d3705d"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/3eb32749f2744030d25fb9f4226623ea7d6363b343195a16e6deb614d43ce109.webp",
+      "sha256": "adbed6f5dba513f7eaae8f140d58e3c4b05fb1f12d5af6db0819d861f3887ae4"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/3f53b9a02c9f9c4727e83d60052bb34fc1db6fb7d373aab33a730e4311dfd217.webp",
+      "sha256": "3aa197cee69f19d684eff1b417f1ff648902240ee391bea2e02794b8888b3157"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/40891a51094b0cf1913ea6532f9869d5bd5d6216edd14802b09aed6ef814d7dd.webp",
+      "sha256": "aecd14a2aadd0d78a4bbfc7e840d236f338fc2eabf0b3199d06cda26f65df7f8"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/41bb3cac1a4ee059300dc5ffc84d9c7efb7e88069277a24bc367f1bce97ce60d.webp",
+      "sha256": "396a82e5bf2a7b5abf6c908a9949528017fe0757b679b4d086956ddc3cac6116"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/49746e06ba0922c88ec491614daa5a392888f0644940bf0f22ccb075fdb7a871.webp",
+      "sha256": "338031d4f47f90f69474c929849ce4ef7bcea29c1b5de76a4fcf2d561d236671"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/4b0a2a754095fabc38f331f50db63820de2fa2ed0efdebc907dad37880d939e7.webp",
+      "sha256": "f68c9269d97214d8201fd0a1f1278f098ba9effa4a176649bb4627066d22cd79"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/5aea6e07531dce6de5720f11f9a7033144ffe5a32a494c6b1467fdb5f61ec24d.png",
+      "sha256": "5aea6e07531dce6de5720f11f9a7033144ffe5a32a494c6b1467fdb5f61ec24d"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/5f53de28bb9d508456b30fce16b58471a98cad27de855207d4b3d187fc9d0585.webp",
+      "sha256": "f6cc627fc61db3d5ae6ee12629b188b3bc4d5d70402566f69aa636a8358a41ec"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/62ea88813a6abb1864e8f611e54cd22f1a934ff84a0489556af1f107e95507a8.webp",
+      "sha256": "280b261839c1cb4a5efc9b4753b0b722e82c3f1fb976ec67d2cb8baabfa329ba"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/6727d6ec7df6d08a4040aff45954bb5e69980746ac243d0adc7128c9c4e7d8a2.png",
+      "sha256": "6727d6ec7df6d08a4040aff45954bb5e69980746ac243d0adc7128c9c4e7d8a2"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/6e57ede05143e4aea381c617191673885d3882b6b9fc2436cff4c2ccb54a32f4.png",
+      "sha256": "6e57ede05143e4aea381c617191673885d3882b6b9fc2436cff4c2ccb54a32f4"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/7333a7cbee7cc0cc62900f21ede26906ee65db29cb0d112f36fa0938ebbd88e4.webp",
+      "sha256": "1bfd9834d121f31a6f573f6679eb8e0e8c06e7471be6613be7e0e60146da9e48"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/73c6efe97b48963642b573360361b71870196663b083a93cb05c29711f50fd39.webp",
+      "sha256": "0bf3240564fc73446ec3837b7630481a780129466a69b417b84f8204128f3c83"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/759e803a3232f3b1e5faac5efd6d2d58da04e453a9d27714cfe59834bb84c9a8.webp",
+      "sha256": "06bdfa411cca433d6a2e935b0e539700cc34e19095520667a41fb9acd6090a16"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/77ba506f24ab7edc5252ae761964a69d39fb6cc50b57ef910ae4ed41e6851e44.webp",
+      "sha256": "15f8a290a8ea51fb1d6c579605d6e8e15761b0f609e0614cbe97cb1304a76938"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/7bcc74fb2e3a2e46777aa0eed618c2d8baca7da47b2ab743e2e689c59df1301f.webp",
+      "sha256": "13a84ab87b5be91738b15b7a895d52f354bd13be4d8a3d2d302b380a80e02298"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/7e94fd7a8b7d81a8a2a5717f844ef52b36383cc6aeee1c93d7e487e3a1a01eb1.png",
+      "sha256": "7e94fd7a8b7d81a8a2a5717f844ef52b36383cc6aeee1c93d7e487e3a1a01eb1"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/81723b51592c886c0f26157b88bdcc5eaecf8359e9b6825a5f6694d49bf6bb1e.webp",
+      "sha256": "e31990eec1bc25706428a20c119e4dec354d6780d2ea9efb12da3e0e7fd4f356"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/8768259e02158e359806157505f6f576a3b941ed08ba25e4eb8897d55da4c6b1.jpg",
+      "sha256": "8768259e02158e359806157505f6f576a3b941ed08ba25e4eb8897d55da4c6b1"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/8c2825916ee677433c74cb3c58735c97d74517aac9c948378d77390c410ea55f.webp",
+      "sha256": "c628e3e9d02bf2012c0ce855ae8e7bbdc28d51d1d0219b312f6ba2c68539c004"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/8c7236c3ce1f31d18b6c9d7668b47e68014438ecdda9dcac8d9f9516ed5c487e.webp",
+      "sha256": "5b13d26927913402e7a2ed4efc53a6012f33bf8c0ec3333cb6b56db933e0d3c2"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/8eedeec0d3d8884ac877f98ac929f33b9cd6c87ef9719e26f40db9047d929837.webp",
+      "sha256": "4fea8fe533a15b66ea957d2c061d16bb35b714994065aee3d04d83f268b0c440"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/909309dd3ae9626e20a33c84cfd5669fe1b945fb7994c2af76ab375bde93fab8.webp",
+      "sha256": "a903600a24f22b349ae5b419403fd7ed663ef43709c97b48d9781476afd56446"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/90c4922161db25b4272e987f0480bb54c7743923d78b3933cf9f7bd6b7e0668f.webp",
+      "sha256": "7931ba29329f076588789710cd3175a5686a0d1e82150b693dcbe4ddb5c72226"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/977737abce44c560870cb2d6c7fe40a95854f14271f4c775d95feced32956611.webp",
+      "sha256": "2a820ededad641e4c13ebaf8c4acb35f02125701ad68964be3700d8824ff1e81"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/9ad13a640cc564e4ea58d6c8de599af3e86519750042fcfc1a09cc80ee93af5e.webp",
+      "sha256": "2ed80cc1ca8de5f1de52e9d0d22bfce5f2b9f3ed4c945d2eb1f0e2aad8e9f1d4"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/9c635e3fa544becf0d00ad1fbd59afd17012a8e7918470c1baab682911eb4fcb.webp",
+      "sha256": "1453b49c7711dc34fe94b9755489fdcb549058eb6300284064dcf14e93bfefbe"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/9fa142ce92c041fa2b10f18e963b09431b412c44d2fc18d3a116365b3bea070e.png",
+      "sha256": "9fa142ce92c041fa2b10f18e963b09431b412c44d2fc18d3a116365b3bea070e"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/a5148c1ea064bfea74782d982cf9286acb93e3062ec97bd22faacc004e3d47cc.webp",
+      "sha256": "53cc9cfd8c603a4909f788a35fcbac1ebc1239b5a63d5b67f6b52f876bac47da"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/a668fcc2cd65ee8be0cf70a63dd44754a36929dab9ba176df81dc947812fd083.webp",
+      "sha256": "b814896b38218b6c7bdd1ccbcdf808481b63bb6089d37bde95f5679651584b96"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/a7ed1cef2cb9750590b1e5946737a5bc35a464bb7874f2c3f7f2b672f6ddc334.jpg",
+      "sha256": "a7ed1cef2cb9750590b1e5946737a5bc35a464bb7874f2c3f7f2b672f6ddc334"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/a843f85fb7e17825aa8e075e25d27072d68d203c27bd18b5014927bc1d1f75ce.jpg",
+      "sha256": "a843f85fb7e17825aa8e075e25d27072d68d203c27bd18b5014927bc1d1f75ce"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/a92dad1b0701299ada2677fe4b5b677aec15de54a0fcabd27b08eb771e14d587.webp",
+      "sha256": "b8b796cf16262b07edd47bfbae0fcd597a4b3e930738024206b1fa9b6f2f8075"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/ae517d7d49626ac470ddb1e5c7ee3c71a9fbe7e271f78858e7419a48e05d1b63.webp",
+      "sha256": "9a0fe6d39b0a5ede9f8f0bb7bf0263112833ba028b49e447e52a10d0dbc52e90"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/afb50cefbf48a5ac886ded07d4871c7d712dceab730ff30f0f14e8c0f90b0b55.webp",
+      "sha256": "43b5270c69cf9362d470ed9f6eb204c7461e46bcd742ae79e49abe649c87e77f"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/b304d9fc61f24a03fc60fd4c93a9c68a073d6fb5b574ee1d166b097deac42b8c.jpg",
+      "sha256": "b304d9fc61f24a03fc60fd4c93a9c68a073d6fb5b574ee1d166b097deac42b8c"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/b394ede2d499624e709a882ba4745cca5f65e78852c032c41f7c500dc7d48cb0.webp",
+      "sha256": "3952f5663fe905c823909342729315005135df186858cdda3c1ffec9ae54fed2"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/b69eb9a781b577075a4ff2e9a62d5984a151550b332525323ddc01aa4f7474cf.webp",
+      "sha256": "361f594434044582bb0df47590e49ebc7e8367a040a6a86509d73179f17e8f7e"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/b766f286d2626e6e58f7854df5ca643cc839478e361f33c799646bc23a8debb5.webp",
+      "sha256": "817f7142a4179171c46940bce220391969d9e90f26e70d4f2e876b78667e302c"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/bc07e474b450fba6ac6d932365065aac2330bbd82c1e9e552f844ae43f73a51f.webp",
+      "sha256": "ad670ebdf93608dc64558981df92e3f3a4833ded4442e76456e6d7bdc37553cf"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/bf07e16ec7c365969638e1b762b26d2752b78b5cc4f0c612fc6c2b5c1cb26dc0.webp",
+      "sha256": "f6684200ffea7d8d8963011c4d16d5710ef8d15f8f0301759182826edc002419"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/c0109ad4bbca3755a0bb43c1a0391687e49f65f8b047b22782b5029a543140c1.png",
+      "sha256": "c0109ad4bbca3755a0bb43c1a0391687e49f65f8b047b22782b5029a543140c1"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/c1f4b5c65b4da2bb0c8025a0a32c2101be5b5b91304be9f121bc5c49c3001263.webp",
+      "sha256": "9e3eb207807892997be1f10c7eee050d0a14e9c09d63c69826c916e1457d0b54"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/c2ce741ee4202e09bd88e02cdfa0fce16c34c5ff3ccf65540d919311dbc1b054.webp",
+      "sha256": "450ec838913a4db0406f5d02931da37c37fa1e9e450536ab2b9b0480f70d77d7"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/c446f0726779831fd05e6bb30c43d79363236c9f09ce93ff57a89c5cb6d6cf29.webp",
+      "sha256": "6c37edab76c71558676a435c0d6c2d9724c9e9ef618c41d4fe0bbde11d94990c"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/c49aa1e21c275fd33c9c245e4dc0e33846051ccf502757dad8b0536ab0b8bfdb.webp",
+      "sha256": "77386c2cf7fd17a059ec42b940feb67245c2c7c75dee93f0f488ab957dff5c3b"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/c95096d117395b42431d649cb8e9c13fd995dfd47b966b4451f3384d4701711c.webp",
+      "sha256": "59244a71a139748e2507826a2d0730417601e8efb1fed14f5c8d57f017ff2fb5"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/cb9c28abdabf114f8c2078b7200f7e04cb986ffcaa1f1257049e5611fe1d1216.webp",
+      "sha256": "d3519f4d1b282c7d673d7b3d4251de49b3c45ccaea943cdf0c819d687a8043bb"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/cf0fb539553de240e0732e44f0cda3a031b5f08439bcf848fd5c13d61fc74875.webp",
+      "sha256": "d87d980f5abc8d466d773822480f4db4b1d7993de99674b785f18bb13bdecd63"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/d065eafd74b1799975bcad6d5c2fd9a9bee0906298ffe2a9b887e3c6cf58197b.webp",
+      "sha256": "e14708b3f5c244872d5a7590dbf6cd82d609a16fea2362c99cc9c3605baf0647"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/d0d3b28527118392a2dcb9cf361d43efb8447bee70e43551a6f028870ed22d72.webp",
+      "sha256": "68d256305eaa4a97c7e2380069ba1fca61fb11cb856e5c033935cf2264c2a7e9"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/d2c9ed9c39e9b93ee8b67f7c47f80f20deafdf2e97f5a09f88671e21ade0af7b.webp",
+      "sha256": "60a3144b16ab3d253f74db97260c12dea00d847f4ff58504c27e12d8a9e717ac"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/da68d74a94fd5eb00916b0aa35db1fab5f22e77b0cb9daa1491cfa24bb8c3a0b.webp",
+      "sha256": "57c7a6881f05ce5757f463ecade6399a00a7fa416d353eb6171240abfc3290c1"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/dea5d1c1f96f909353159fa8360203fd330e8b4865f719aaa13f3cffbce0151d.webp",
+      "sha256": "85bd8b70aafda6ae442ba9e9a66bb1636f94f1da45b469d737f9b4bdda82d120"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/e154eb35304a0160e51c158d8c30ecd7bc99a85c4d76bfafa9d7af339d459d05.webp",
+      "sha256": "ad62008ae4e1d5cd788a51d776c929790435ac2750f0a68092590a2afd65d902"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/e96e0c7a6829985e090ca2c36b610ba7ee354d61930dcf393232035c47ba9e9f.webp",
+      "sha256": "68e6268e9f22b0c22c077a43b912a0daf08526e1068f3ce526c31c4315c979db"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/eac4bce6a2e9072f2852d519b7779b4bacaa5e625134532ee2f617afc29843ec.png",
+      "sha256": "eac4bce6a2e9072f2852d519b7779b4bacaa5e625134532ee2f617afc29843ec"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/eca71f509e2695405759b17a301554ab75e4ed8f12ac06df13d28da3358fbf77.png",
+      "sha256": "eca71f509e2695405759b17a301554ab75e4ed8f12ac06df13d28da3358fbf77"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/ecabe40240b0b7998504d80ba0ed7cd06bb607ecf4d7a8bbfc3cd431ddd4b9eb.webp",
+      "sha256": "c5d0f0d3bdd627fdc415929a93638fad8bd52e9be7a4a3b575057dc9275dc681"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/ed6009154bc1e7a8a6bc64db25f3279c7b2b31212a13db61c5313b0037025cda.png",
+      "sha256": "ed6009154bc1e7a8a6bc64db25f3279c7b2b31212a13db61c5313b0037025cda"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/eefb14b93abffe0a59a9a9ae38d1d89ba3383411f39f7e50f97bef3eff2bbcb8.webp",
+      "sha256": "e5c89bc5544d523c41dee8d0746282bbd2b82bf13a632eccc26dbfdddbdf0101"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/f13e187017c635645c8c48aa66a7589eb8a336210bdcbfbe576bbed78e3d13fb.webp",
+      "sha256": "231aad35fdd531bffeb368daf54314565fa3b088233bbc2b99eedd1f6b16ae53"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/f7fcc1a5b3c2395daba69d9c63a260efcc8926835cf180d9db8c8c30aff709e6.webp",
+      "sha256": "443adf1c691cd89b9a2f437115a57f216ed20709a638325b246faac0730b3c9a"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/f94ab6ee1ea2c7fe986230364cacd101a6b96e5aa39063e990973e19e974842a.webp",
+      "sha256": "c9596b28b6d4fd1eb38c0a24d06d21fa7ab49258963672939787706c8c42dc9e"
+    },
+    {
+      "path": "elmwood-explorer/shared-textures/f9f5447a2bba37be279f4c413c296879e883f88cf86f2c79c9aaffe87df710a3.jpg",
+      "sha256": "f9f5447a2bba37be279f4c413c296879e883f88cf86f2c79c9aaffe87df710a3"
+    }
+  ]
+}

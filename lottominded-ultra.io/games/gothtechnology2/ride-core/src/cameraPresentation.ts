@@ -1,6 +1,7 @@
 import {PerspectiveCamera,Quaternion,Vector3} from 'three';
 import {CAMERA_PROFILE} from './cameraProfile.ts';
 const key='digital-static-camera-transitions-v1';
+const eyeMode=(value:string)=>/(?:^|-)(?:first|ads)$/.test(value);
 export function cameraTransitionsEnabled(){try{return localStorage.getItem(key)!=='off';}catch{return true;}}
 export function mountCameraPreferences(parent:HTMLElement){
   const group=document.createElement('fieldset'),legend=document.createElement('legend'),label=document.createElement('label'),input=document.createElement('input'),note=document.createElement('p');
@@ -14,7 +15,9 @@ export class CameraBlend {
   private fromEye=new Vector3();private fromRotation=new Quaternion();private fromFov=55;
   reset(){this.mode='';}
   apply(camera:PerspectiveCamera,mode:string,dt:number,reduced=false){
-    const immediate=reduced||mode==='first'||mode==='ads'||this.mode==='first'||this.mode==='ads'||!this.mode||camera.position.distanceToSquared(this.eye)>900;
+    // Royale prefixes modes with ride/foot/spectator identity. Aiming must stay
+    // immediate for those keys too, including when leaving an eye-level view.
+    const immediate=reduced||eyeMode(mode)||eyeMode(this.mode)||!this.mode||camera.position.distanceToSquared(this.eye)>900;
     if(mode!==this.mode){this.fromEye.copy(this.eye);this.fromRotation.copy(this.rotation);this.fromFov=this.fov;this.elapsed=0;}
     if(immediate)this.elapsed=CAMERA_PROFILE.blendSeconds;
     this.elapsed=Math.min(CAMERA_PROFILE.blendSeconds,this.elapsed+Math.max(0,Math.min(.1,dt)));

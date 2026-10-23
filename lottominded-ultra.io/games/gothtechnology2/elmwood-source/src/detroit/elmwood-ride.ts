@@ -27,6 +27,7 @@ import {elmwoodRaceCourse} from './elmwoodRaceMap.ts';
 import {ElmwoodRacePilot,ElmwoodRacePack,elmwoodRaceOrder} from './elmwood-race.ts';
 import {settingsPanel,controlNodes} from './settingsPanel.ts';
 import {GameFilm} from './gameFilm.ts';
+import {RideGhostView} from '../../../ride-core/src/rideGhostView.ts';
 import type {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {createGroundSample as coreGroundSample,RIDECORE,SPECIAL_MOVES,NEUTRAL_ACTIONS,RidePractice,RIDER_EYE_PITCH} from '@digital-static/ridecore';
 import {RideAudio} from './riding/rideAudio.ts';
@@ -85,6 +86,8 @@ export function makeElmwoodRide(scene:T.Scene,camera:T.PerspectiveCamera,control
   const easy=document.createElement('input');easy.type='checkbox';easy.id='session-easy-ride';try{easy.checked=localStorage.getItem('elmwood-easy-ride')==='on';}catch{}const easyLabel=document.createElement('label');easyLabel.append(easy,document.createTextNode(' Easy free ride · gentler acceleration, about 24 km/h'));settings.append(easyLabel);easy.onchange=()=>{try{localStorage.setItem('elmwood-easy-ride',easy.checked?'on':'off');}catch{}};
   const vehicle=el<HTMLSelectElement>('session-vehicle'),bikeStyle=el<HTMLSelectElement>('session-bike-style');bikeStyle.replaceChildren(...BIKE_STYLES.map((s,i)=>new Option(s.name,String(i))));vehicleOptions(vehicle);const performanceCard=document.createElement('p');performanceCard.id='vehicle-performance';performanceCard.setAttribute('role','status');vehicle.after(performanceCard);performanceCard.textContent=vehicleSummary(vehicle.value);
   let ambientPacks:AmbientCyclistPacks|undefined;
+  let ghostFactory:(()=>ThreeRiderView|undefined)|undefined;
+  const savedGhost=new RideGhostView('elmwood-explorer',scene,()=>ghostFactory?.());
   let community:CyclingSession|undefined,cycleAssets:Map<string,GLTF>|undefined;
   const communityVisible=()=>active&&!practice&&count===1&&!vrMode&&seats[0]?.run.mode==='free';
   const players=el<HTMLSelectElement>('session-players'),layout=el<HTMLSelectElement>('session-layout'),mode=el<HTMLSelectElement>('session-mode'),trick=el<HTMLSelectElement>('session-trick'),dogSelect=el<HTMLSelectElement>('session-dog'),soundToggle=el<HTMLInputElement>('session-audio');
@@ -166,6 +169,7 @@ export function makeElmwoodRide(scene:T.Scene,camera:T.PerspectiveCamera,control
     initializing=(async()=>{
       status('Loading your riders…');const [data,grid,site,placements,original]=await Promise.all([loadCircuitRiders(),fetch('/elmwood/terrain.json').then(r=>r.json()),fetch('/elmwood/site.json').then(r=>r.json()),fetch('/elmwood/placements.json').then(r=>r.json()),loadActors(['DS_Man_01','DS_EUC_01','DS_Pedestrian_01','DS_Cyclist_01','DS_Bicycle_01',...SWOOP_RIDERS.map(r=>r.id)])]);
       for(const id of ["hoodie","suit"]){const source=data.get(id)!;original.set(id,{...source,animations:source.animations.filter(a=>a.name==="Idle")});}cycleAssets=original;for(const asset of new Set([...original.values(),...data.values()]))prepareAssets(asset.scene);const baseTerrain=new ElmwoodTerrain(grid,site.features,placements),mapTerrain=new ElmwoodTerrain(grid,site.features,layoutElmwoodDressing(baseTerrain,site.boundary,placements));await mapTerrain.init();terrain=mapTerrain;
+      ghostFactory=()=>{const id=outfits[0].value,e=eucProfile(vehicle.value);if(e&&original.has('Euc_'+e.id))return new ThreeRiderView(original.get(id==='original'?'DS_Man_01':id)!,original.get('Euc_'+e.id)!,seats[0].motion.terrain,seats[0].hero.profile);return createRideCoreRiders(original,data,seats[0].motion.terrain,{lazy:true}).get(id);};
       walkers=makeElmwoodWalkers(scene,terrain,original);walkers.root.visible=false;
       const creekLane=terrain.features.find(f=>f.id==='59197492')!;route=laneGates(creekLane.points);raceCourse=elmwoodRaceCourse(creekLane.points);raceLine=creekLane.points.map(p=>({x:p[0],z:-p[1]}));
       miniMap.setMap(terrain.features.filter(f=>['path','building'].includes(f.kind)||f.tags.water==='pond'||f.tags.waterway).map(f=>({points:f.points.map(p=>({x:p[0],y:-p[1]})),color:f.tags.water==='pond'||f.tags.waterway?'#2c6975':f.kind==='building'?'#8a8a75':f.id==='59197492'?'#b6be93':'#909e88',width:f.kind==='path'?4:2,fill:f.kind==='building'||f.tags.water==='pond'})),terrain.placements.filter(p=>p.layer==='mapped'&&['elmwood-chapel','elmwood-gatehouse','firemen-memorial'].includes(p.asset)).map(p=>({point:{x:p.position[0],y:-p.position[1]},text:p.asset.replace('elmwood-','').replaceAll('-',' ').toUpperCase()})));
@@ -352,7 +356,7 @@ export function makeElmwoodRide(scene:T.Scene,camera:T.PerspectiveCamera,control
     {name:'Graphics',nodes:[...settingsRoot.querySelectorAll('.graphicsSettings,.interactive-water-setting'),...controlNodes(settingsRoot,['#season','#weather','#time','#date','label:has(#dressing)'])]},
     {name:'Audio',nodes:controlNodes(settingsRoot,['#session-audio','#session-spirit-sound','#musicPanel'])},
     {name:'Gameplay',nodes:[settings,...controlNodes(settingsRoot,['#ride-outfit','#ride-camera','#ride-camera-next','#ride-start','#ride-reset'])]},
-    {name:'Replay',nodes:[film.panel]}
+    {name:'Replay',nodes:[film.panel,savedGhost.panel]}
   ],'Landmarks');
   document.body.classList.add('elmwood-tactical-ui');
   const royaleEntry=document.createElement('button');royaleEntry.textContent='Static Royale · Downtown Detroit';royaleEntry.onclick=()=>location.assign('../swoop-detroit/royale.html?from=elmwood'+(new URLSearchParams(location.search).get('engine')==='breadflower'?'&engine=breadflower':''));document.querySelector('#elmwood-main-menu .menu-actions')!.append(royaleEntry);
@@ -367,6 +371,7 @@ export function makeElmwoodRide(scene:T.Scene,camera:T.PerspectiveCamera,control
     returnCamera.hidden=!active||vrMode||film.playing||cameras[0].value==='chase';
     bikeRecover.hidden=!(active&&seats[0]?.motion.cycling&&!vrMode&&!film.playing&&!document.querySelector<HTMLDialogElement>('#elmwood-main-menu')?.open);
     filmDelta=dt;
+    if(onlineRide?.active||film.playing||!active||!terrain)savedGhost.suspend();
     if(onlineRide?.active){onlineRide.update(dt);const p=onlineRide.pose!;miniMap.update(onlineRide.positions.map(v=>({x:v.x,y:v.z,heading:Math.PI-p.headingY})),!onlineMenu.open);film.capture(dt,!onlineMenu.open&&!film.playing,!onlineMenu.open);audio.update(p,!onlineMenu.open);music.update(dt,'ride',!onlineMenu.open,p.speed,0,p.warningLevel);touch.update();return;}
     if(film.playing)return;
     if(!active||!terrain){ambientPacks?.update(0,{x:0,z:0},false);community?.ui.update(false);if(community)community.view.root.visible=false;film.capture(0,false,false);miniMap.update([],false);recovery.update([],false);return;}
@@ -411,6 +416,7 @@ export function makeElmwoodRide(scene:T.Scene,camera:T.PerspectiveCamera,control
     const appeared=spirits.update(dt,seats.slice(0,count).map(s=>s.motion.pose),terrain,paused||countdown>0,spiritToggle.checked,spiritSound.checked,reducedMotion.matches);
     if(appeared){const s=seats[spirits.events.active!.seat];s.run.message='A spirit passes…';s.run.messageTime=3.8;}
     Object.assign(canvas.dataset,{spiritEncounters:String(spirits.events.seen),spiritVisible:String(spirits.root.visible)});
+    savedGhost.update(dt,seats[0].motion.pose,outfits[0].value+':'+vehicle.value,!paused&&countdown<=0&&!film.playing,active&&!vrMode&&!seats[0].motion.cycling);
     film.capture(dt,!paused&&countdown<=0,active&&!vrMode&&!document.querySelector<HTMLDialogElement>('#elmwood-main-menu')?.open);
     audio.update(seats[0].motion.pose,!paused&&countdown<=0,seats[0].motion.cycling,seats[0].motion.terrain.sampleGround(seats[0].motion.pose.x,seats[0].motion.pose.z,audioSample).surface);music.update(dt,seats[0].run.mode==='tricks'?'style':'ride',!paused,seats[0].motion.pose.speed,seats[0].run.score,seats[0].motion.pose.warningLevel);
     const overlayHidden=vrMode||document.body.classList.contains('controls-open')||!!document.querySelector<HTMLDialogElement>('#elmwood-main-menu')?.open;

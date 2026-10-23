@@ -43,3 +43,41 @@
 @media(max-width:420px){#lobby.royale-menu .lobby-fields{grid-template-columns:minmax(0,1fr)}#lobby .royale-menu-exit{min-height:44px}#lobby.royale-menu:not([data-royale-phase=idle]) .royale-home h1{font-size:42px}}
 @media(max-height:560px) and (min-width:701px){#lobby.royale-menu .lobby-content{width:72%;padding-top:24px}#lobby .royale-home h1{font-size:66px}#lobby .royale-home h1 em{display:block}#lobby .royale-home .lobby-heading{margin-bottom:14px}}
 @media(prefers-reduced-motion:reduce){#lobby.royale-menu *{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+
+/* Readable result cards and compact settings, over the original Higgsfield art. */
+#lobby.royale-menu{scroll-padding-top:100px;color:#ecf7f8}
+#lobby.royale-menu .lobby-content{overflow:visible;box-sizing:border-box}
+#lobby .royale-menu-panel{scroll-margin-top:100px}
+#lobby .royale-round-summary{border-radius:14px;padding:20px 22px;margin:18px 0 20px;background:linear-gradient(135deg,#17333beF,#10232beF);box-shadow:0 10px 28px #0002}
+#lobby .royale-round-summary h2{text-transform:uppercase;font:700 10px/1.5 'Segoe UI',sans-serif;letter-spacing:.16em;color:var(--royale-muted);margin:0 0 12px}
+#lobby .royale-result-winner{display:block;font:800 clamp(23px,3vw,34px)/1.1 'Bahnschrift','Segoe UI',sans-serif;color:var(--royale-accent)}
+#lobby .royale-result-reason{font-size:12px;line-height:1.5;color:var(--royale-muted);margin:8px 0 12px}
+#lobby .royale-result-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:16px 0}
+#lobby .royale-result-stats>div{padding:12px 10px;background:#07182099;border:1px solid #89d9cd20;border-radius:8px;display:flex;flex-direction:column-reverse;gap:4px}
+#lobby .royale-result-stats dt{font-size:10px;color:var(--royale-muted)}#lobby .royale-result-stats dd{margin:0;font-size:23px;font-weight:700;white-space:nowrap}
+#lobby .royale-standings{border:0;border-top:1px solid var(--royale-edge);margin:12px 0 0;padding:0}
+#lobby .royale-standings summary{font-size:12px;min-height:44px;padding:12px 0;cursor:pointer}
+#lobby .royale-standings ol{padding:0;margin:0;list-style:none}#lobby .royale-standings li{display:flex;justify-content:space-between;gap:12px;padding:7px 10px;font-size:12px;border-bottom:1px solid #ffffff0c}
+#lobby .royale-standings li.is-you{color:var(--royale-accent);background:#75e3ce10}
+#lobby .royale-menu-panel button,#lobby .royale-menu-panel select,#lobby .royale-menu-panel input:not([type=checkbox]):not([type=range]){min-height:46px;border-radius:8px}
+#lobby .royale-deploy{width:100%;max-width:none;text-align:left;padding:17px 20px;border:1px solid #b1f9e6;box-shadow:0 8px 28px #50cfb512}
+#lobby .setup-heading{align-items:baseline;gap:12px;margin:0 0 12px}#lobby .setup-heading h2{font-size:34px;margin:0}#lobby .setup-heading>span{font-size:9px;letter-spacing:.12em}
+#lobby .lobby-setup .lobby-fields{gap:18px 14px;padding:20px;background:#102631c9;border:1px solid var(--royale-edge);border-radius:12px}
+#lobby .lobby-setup label{font-size:12px;color:#cedfdf;gap:7px}#lobby .lobby-setup select,#lobby .lobby-setup input{max-width:100%;box-sizing:border-box}
+#lobby .lobby-setup .check{padding:12px 0}#lobby .lobby-setup #practice{text-align:left;padding:16px 20px;font-size:16px}
+#lobby .lobby-practice-note{font-size:10px!important;line-height:1.6;gap:10px;flex-wrap:wrap}
+#lobby #ride-settings{padding:0;background:none}#lobby #camera-settings{margin:0 0 16px;padding:16px;background:#102631d9;border:1px solid var(--royale-edge);border-radius:12px;min-width:0}
+#lobby #camera-settings>legend{font-size:14px;padding:0 6px}#lobby #camera-settings label{font-size:12px;margin:10px 0;display:block}#lobby #camera-settings .note{font-size:11px;line-height:1.5}
+#lobby .royale-settings-intro{font-size:13px;line-height:1.6;color:var(--royale-muted);margin:-10px 0 24px}
+#lobby .royale-settings-groups{display:grid;gap:10px}
+#lobby .royale-settings-group{border:1px solid var(--royale-edge);border-radius:10px;background:#0d222ddd;margin:0;padding:0;overflow:hidden}
+#lobby .royale-settings-group>summary{display:list-item;cursor:pointer;padding:16px 18px;min-height:50px;font-size:13px;font-weight:650;color:#d8f0ed;box-sizing:border-box}
+#lobby .royale-settings-group[open]>summary{background:#71e1cc0d;color:var(--royale-accent);border-bottom:1px solid var(--royale-edge)}
+#lobby .royale-settings-group>fieldset{border:0;margin:0;padding:14px 18px;min-width:0}#lobby .royale-settings-group>fieldset>legend{display:none}
+#lobby .royale-settings-group>label,#lobby .royale-settings-group>button,#lobby .royale-settings-group>#graphics-settings{margin:14px 18px;max-width:calc(100% - 36px)}
+#lobby .royale-settings-group label{font-size:12px;line-height:1.5}#lobby .royale-settings-group p{font-size:12px;line-height:1.6;color:var(--royale-muted)}
+#lobby .royale-settings-group input[type=range]{accent-color:var(--royale-accent);min-height:32px;width:100%;margin:8px 0}
+#lobby #camera-settings input[type=range]{display:block;accent-color:var(--royale-accent);width:100%;min-height:32px;margin:8px 0}
+#lobby .royale-settings-group select{width:100%;max-width:100%}#lobby .royale-settings-group output{color:var(--royale-accent)}
+#lobby .royale-menu-panel :is(button,summary,select,input,a):focus-visible{outline:2px solid #98f8df;outline-offset:3px}
+@media(max-width:700px){#lobby.royale-menu{scroll-padding-top:120px}#lobby .royale-menu-panel{scroll-margin-top:120px}#lobby .lobby-setup .lobby-fields{padding:16px}#lobby .royale-round-summary{padding:16px}#lobby .royale-result-stats dd{font-size:20px}}

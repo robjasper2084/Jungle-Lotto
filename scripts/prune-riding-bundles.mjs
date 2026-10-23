@@ -15,7 +15,8 @@ export async function pruneRidingBundles(files, read = file => readFile(file.sou
   const keep = new Set(), queue = files.filter(file => !candidate(file) && text(file));
   while (queue.length) {
     const file = queue.pop(), content = file.content ?? await read(file);
-    for (const name of new Set(content.match(/[A-Za-z0-9_@-]+\.[A-Za-z0-9]+/g) ?? [])) {
+    // Vendor chunks can contain dots before the hash (e.g. hls.light-*.js).
+    for (const name of new Set(content.match(/[A-Za-z0-9_@.-]+\.[A-Za-z0-9]+/g) ?? [])) {
       for (const asset of byName.get(name) ?? []) {
         if (keep.has(asset)) continue;
         keep.add(asset);

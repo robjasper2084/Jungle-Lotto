@@ -22,6 +22,7 @@
     "check:launch-readiness": "node --env-file-if-exists=.env --experimental-transform-types scripts/check-launch-readiness.ts",
     "check:riding-assets": "node scripts/build-riding-games.mjs --preflight",
     "build:riding-games": "node scripts/build-riding-games.mjs",
+    "optimize:riding-assets": "node scripts/optimize-game-assets.mjs",
     "test:riding-maintenance": "node --experimental-transform-types --test scripts/game-package.test.mjs scripts/game-audio.test.mjs"
   },
   "devDependencies": {

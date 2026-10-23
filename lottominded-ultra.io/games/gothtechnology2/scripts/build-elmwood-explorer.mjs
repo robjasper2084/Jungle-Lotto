@@ -1,4 +1,5 @@
 import {buildMobileRiders} from './mobile-rider-assets.mjs';
+import {optimizeGameAssets} from './optimize-game-assets.mjs';
 import {reviewCorePlugin} from './review-core-plugin.mjs';
 import {readFile,writeFile,mkdir,readdir,stat} from 'node:fs/promises';
 import {copyFile,cp} from './review-asset-copy.mjs';
@@ -65,6 +66,7 @@ for(const file of files){const target=resolve(out,file),input=await readFile(res
 for(const file of licenses){const target=resolve(out,file.output);await mkdir(dirname(target),{recursive:true});await copyFile(file.input,target);}
 await writeFile(resolve(out,'SOURCE.md'),'Original Elmwood exploration scene supplied from euc-detroit-riverwalk at localhost:8198/elmwood.html. Includes the local landmark pass: official-plan pond, tree-lined mapped lanes and photo-informed entrance sign. EUC Thrills by VibezZzCoder (MIT), Digital Static adaptation and RideCore. Built using scripts/build-elmwood-explorer.mjs. Shared textures retain identical bytes. Store additions: portable paths, popup ready/pause API, reduced-motion wind, responsive settings and touch controls. Includes local free ride, challenge scores, split-screen riding and optional Boerboel companions. Scores have no cash value.\n');
 await buildMobileRiders(out);
+await optimizeGameAssets(out);
 console.log(JSON.stringify({files:files.size,textures:textures.size,megabytes:Math.round(total/1048576)}));
 }};
 }

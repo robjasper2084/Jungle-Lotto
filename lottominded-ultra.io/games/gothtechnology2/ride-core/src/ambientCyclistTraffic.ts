@@ -5,8 +5,9 @@ const clamp=(n:number,a:number,b:number)=>Math.max(a,Math.min(b,n));
 export const AMBIENT_CYCLIST_PACE=10.8;
 const FOLLOW_GAP=5.2;
 /** Stay on an existing mapped corridor, using opposite sides for the return leg. */
-export function cyclistCircuit(points:readonly RoutePoint[],offset=.8):RoutePoint[]{
+export function cyclistCircuit(points:readonly RoutePoint[],offset=1.5):RoutePoint[]{
  if(points.length<3)throw Error('Cyclists need a connected mapped route');
+ offset=Math.max(.6,Math.min(offset,...points.map(p=>(p.width??3)/2-.6)));
  const side=(i:number,sign:number)=>{const a=points[Math.max(0,i-1)],b=points[Math.min(points.length-1,i+1)],dx=b.x-a.x,dz=b.z-a.z,len=Math.hypot(dx,dz)||1;return {...points[i],x:points[i].x+dz/len*offset*sign,z:points[i].z-dx/len*offset*sign};};
  const out=points.map((_,i)=>side(i,1)),back=points.map((_,i)=>side(points.length-1-i,-1));
  const turn=(end:boolean)=>{const p=points[end?points.length-1:0],a=points[end?points.length-2:0],b=points[end?points.length-1:1],dx=b.x-a.x,dz=b.z-a.z,len=Math.hypot(dx,dz)||1,sign=end?1:-1;
@@ -75,7 +76,9 @@ export class AmbientCyclistTraffic {
     let wanted=Math.min(AMBIENT_CYCLIST_PACE+cohesion,Math.sqrt(4/Math.max(.035,bend/8)));
     const near=Math.hypot(current.x-observer.x,current.z-observer.z)<150;
     r.thinkIn-=.05;
-    if(near&&r.thinkIn<=0){r.thinkIn=.2;
+    // Braking runs off-camera too. A stopped distant pack must also be able
+    // to choose a passing lane, or it remains jammed until the player arrives.
+    if((near||r.speed<1)&&r.thinkIn<=0){r.thinkIn=near?.2:1;
      const clear=(offset:number)=>{
       const probe=this.at(r.s+Math.max(3,r.speed*.7),offset),dx=probe.x-current.x,dz=probe.z-current.z,d=Math.hypot(dx,dz)||1;
       if(this.terrain.sampleGround(probe.x,probe.z,this.probe,current.y).offCourse)return false;

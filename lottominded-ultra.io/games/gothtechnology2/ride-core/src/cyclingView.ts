@@ -2,6 +2,7 @@ import {acquireRiderTint} from './riderTintGeometry.ts';
 import {batchRigidChildren} from './rigidBatch.ts';
 import {acquireVisualMaterial} from './sharedVisualMaterial.ts';
 import {visibleSceneryMatrices} from './visibleMatrices.ts';
+import {WorkSlice} from './workSlice.ts';
 import * as T from 'three';
 import {clone} from 'three/addons/utils/SkeletonUtils.js';
 import type {GLTF} from 'three/addons/loaders/GLTFLoader.js';
@@ -128,6 +129,22 @@ export class CommunityView {
     this.root.name='Local community ride';visibleSceneryMatrices(this.root);this.motions=ride.riders.map((_,i)=>new CyclistMotion(i));this.views=new Array(ride.riders.length);
     this.markerMaterial=new T.MeshBasicMaterial({color:0xf2cf70,side:T.DoubleSide,transparent:true,opacity:.8,depthWrite:false});this.marker=new T.Mesh(new T.RingGeometry(1.1,1.25,32),this.markerMaterial);this.marker.rotation.x=-Math.PI/2;this.root.add(this.marker);
   }
+  private createView(i:number){
+    let view=this.views[i];
+    if(!view){view=new BicycleView(this.assets.get('DS_Bicycle_01')!,this.assets.get('DS_Cyclist_01')!,i,true);visibleSceneryMatrices(view.root);this.views[i]=view;this.root.add(view.root);}
+    return view;
+  }
+  /** Prepare the opening pack while the loading screen owns the frame budget.
+   * This fits models at the current pose; it never advances the traffic simulation. */
+  async warm(observer:{x:number;z:number},radius=140){
+    const slice=new WorkSlice();
+    for(const [i,r] of this.ride.riders.entries()){
+      if(Math.hypot(r.x-observer.x,r.z-observer.z)>=radius)continue;
+      const view=this.createView(i),motion=this.motions[i];
+      view.apply(motion.step(0,r),motion.steering,motion.pedals);
+      await slice.checkpoint();
+    }
+  }
   update(visible:boolean,dt=1/60,observer?:{x:number;z:number}){
     this.root.visible=visible&&this.ride.stage!=='cleanup';
     if(!this.root.visible){return;}
@@ -136,7 +153,7 @@ export class CommunityView {
       let view=this.views[i];
       // Keep a rider's fitted instance for subsequent passes. Build at most one
       // nearby rider per frame instead of twenty rigs during arena startup.
-      if(!view){if(distance>=140||created>=1)return;created++;view=new BicycleView(this.assets.get('DS_Bicycle_01')!,this.assets.get('DS_Cyclist_01')!,i,true);visibleSceneryMatrices(view.root);this.views[i]=view;this.root.add(view.root);}
+      if(!view){if(distance>=140||created>=1)return;created++;view=this.createView(i);}
       view.root.visible=distance<140;if(!view.root.visible)return;
       // Translation stays frame-smooth; only distant skeletal fitting runs less often.
       const motion=this.motions[i],pose=motion.step(dt,r);

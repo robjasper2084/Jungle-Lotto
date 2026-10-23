@@ -4,6 +4,7 @@ import {shareCinematicMedia} from './share-cinematic-media.mjs';
 import {shareGameClips} from './share-game-clips.mjs';
 import {optimizePagesImages} from './optimize-pages-images.mjs';
 import {shareRideTextures} from './share-ride-textures.mjs';
+import {sharePublishedRideTextures} from './share-published-ride-textures.mjs';
 import {compressRideModels} from './compress-ride-models.mjs';
 import {shareRideVehicles} from './share-ride-vehicles.mjs';
 import {shareRidingMedia} from './share-riding-media.mjs';
@@ -222,14 +223,15 @@ const publicBytes = await copyInBatches(artifactPlan.includedFiles);
 const sharedStoreBuild = await shareShadowOpsAssets(storeBuild, outputRoot);
 const copiedBytes = publicBytes + await copyGothtechnologyBuild(sharedStoreBuild, outputRoot);
 const rideTextureSharing = await shareRideTextures(outputRoot);
-const imageOptimization = await optimizePagesImages(outputRoot);
 const rideModelCompression = await compressRideModels(outputRoot);
 const rideVehicleSharing = await shareRideVehicles(outputRoot);
+const publishedRideTextures = await sharePublishedRideTextures(outputRoot);
+const imageOptimization = await optimizePagesImages(outputRoot);
 const ridingMediaSharing = await shareRidingMedia(outputRoot);
 const textureConversion = await losslessRidingTextures(outputRoot);
 const stageVideo = await shareUnityStage(outputRoot);
 const cityDataSharing = await shareCityData(outputRoot);
-const totalBytes = copiedBytes - rideTextureSharing.saved - imageOptimization.saved - rideModelCompression.saved - rideVehicleSharing.saved - ridingMediaSharing.saved - textureConversion.saved - stageVideo.saved - cityDataSharing.saved;
+const totalBytes = copiedBytes - rideTextureSharing.saved - publishedRideTextures.saved - imageOptimization.saved - rideModelCompression.saved - rideVehicleSharing.saved - ridingMediaSharing.saved - textureConversion.saved - stageVideo.saved - cityDataSharing.saved;
 
 for (const route of requiredRoutes) {
   const routeStats = await stat(outputPathFor(route)).catch(() => null);
@@ -258,6 +260,7 @@ const manifest = {
   omittedMediaMebibytes: Number((artifactPlan.omittedBytes / 1024 / 1024).toFixed(1)),
   imageOptimization,
   rideTextureSharing,
+  publishedRideTextures,
   rideModelCompression,
   rideVehicleSharing,
   ridingMediaSharing,

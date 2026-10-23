@@ -16,3 +16,19 @@ test('reload hand choreography follows actual ammunition commit and reduced moti
  assert.equal(reloadPose(combat,110).phase,'release');assert.equal(reloadPose(combat,130).phase,'replace');assert.equal(reloadPose(combat,150).phase,'insert');assert.equal(reloadPose(combat,160).phase,'readying');assert.equal(reloadPose(combat,190).lower,0);
  assert.equal(new FpsMotion().update(.016,'static',true,0,false,true,true,reloadPose(initialCombat(),0)).kick,0);
 });
+
+test('rapid weapon changes and reversing a swap preserve the current hand pose',()=>{
+ const swap=new WeaponSwap();swap.update(0,'static',false,false);
+ const before=swap.update(.08,'heart',false,false);
+ assert.deepEqual(swap.update(0,'bass',false,false),before);
+ assert.deepEqual(swap.update(0,'static',false,false),before);
+ const returning=swap.update(.02,'static',false,false);assert(returning.lower<before.lower&&returning.lower>0);
+ swap.update(.1,'bass',false,false);const raising=swap.update(.04,'bass',false,false);
+ assert.deepEqual(swap.update(0,'heart',false,false),raising);
+ swap.reset();assert.deepEqual(swap.update(0,'heart',false,false),{weapon:'heart',lower:0});
+});
+test('weapon swap duration is stable at 30, 60 and 120 FPS without losing a frame at the mesh change',()=>{
+ const results=[30,60,120].map(hz=>{const swap=new WeaponSwap();swap.update(0,'static',false,false);let pose;
+  for(let n=0;n<hz/5;n++)pose=swap.update(1/hz,'heart',false,false);return pose!;});
+ for(const p of results){assert.equal(p.weapon,'heart');assert(Math.abs(p.lower-results[0].lower)<1e-10);}
+});

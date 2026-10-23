@@ -12,6 +12,9 @@ export class HeartProjectiles extends T.Group{
   this.hearts=new T.InstancedMesh(geometry,new T.MeshStandardMaterial({color:'#ff72ac',emissive:'#ff235e',emissiveIntensity:1.4,metalness:.15,roughness:.25,transparent:true,opacity:.86,depthWrite:false}),capacity*7);
   this.sparks=new T.InstancedMesh(new T.OctahedronGeometry(1,0),new T.MeshBasicMaterial({color:'#ffd2e8',transparent:true,opacity:.72,depthWrite:false}),capacity*4);
   for(const mesh of [this.hearts,this.sparks]){mesh.frustumCulled=false;mesh.instanceMatrix.setUsage(T.DynamicDrawUsage);mesh.count=0;this.add(mesh);}
+  // Allocate the tint attribute before compileAsync. Adding it on the first
+  // trail changes the shader variant and forces compilation during combat.
+  this.sparks.setColorAt(0,new T.Color('white'));
  }
  update(shots:readonly Shot[],camera:T.Camera,time:number,reduced:boolean){
   const count=Math.min(shots.length,this.capacity),d=this.dummy;let particles=0,hearts=0;

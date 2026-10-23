@@ -13,14 +13,19 @@ export function footEyeHeight(scale:number,crouch:number,prone:number){return ((
 /** Lower the old weapon before replacing its geometry, then raise the new one.
  * Authoritative firing always wins over a cosmetic equip transition. */
 export class WeaponSwap {
- private shown='';private requested='';private age=1;
+ private shown='';private requested='';private lowered=0;
+ reset(){this.shown=this.requested='';this.lowered=0;}
  update(dt:number,weapon:string,firing:boolean,reduced:boolean){
-  if(!this.shown||firing||reduced){this.shown=this.requested=weapon;this.age=1;return {weapon,lower:0};}
-  if(weapon!==this.requested){this.requested=weapon;this.age=0;}
-  this.age+=Math.max(0,Math.min(.1,dt));
-  if(this.age>=.12)this.shown=this.requested;
-  const lower=this.age<.12?smooth(this.age/.12):1-smooth((this.age-.12)/.18);
-  return {weapon:this.shown,lower};
+  if(!this.shown||firing||reduced){this.shown=this.requested=weapon;this.lowered=0;return {weapon,lower:0};}
+  this.requested=weapon;let remaining=Number.isFinite(dt)?Math.max(0,Math.min(.1,dt)):0;
+  // Retarget from the current pose. Repeated weapon taps must not snap the
+  // hands back up or expose a replacement before the old weapon is lowered.
+  if(this.shown!==this.requested){const untilLowered=(1-this.lowered)*.12;
+   if(remaining<untilLowered){this.lowered+=remaining/.12;remaining=0;}
+   else{remaining-=untilLowered;this.lowered=1;this.shown=this.requested;}
+  }
+  if(this.shown===this.requested)this.lowered=Math.max(0,this.lowered-remaining/.18);
+  return {weapon:this.shown,lower:smooth(this.lowered)};
  }
 }
 export class FpsMotion {

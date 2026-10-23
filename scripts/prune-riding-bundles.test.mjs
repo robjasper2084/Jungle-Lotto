@@ -23,3 +23,15 @@ test('does not prune other games or non-hashed authored assets', async()=>{
  const files=[{path:'site/arcade/other/assets/old-12345678.js',content:'',bytes:1},{path:'site/arcade/swoop-detroit/assets/authored.png',bytes:2}];
  assert.deepEqual((await pruneRidingBundles(files)).files,files);
 });
+test('retains dotted vendor chunk names referenced by dynamic imports', async()=>{
+ const root='site/arcade/swoop-detroit/';
+ const files=[
+  {path:root+'index.html',content:'./assets/main-12345678.js',bytes:1},
+  {path:root+'assets/main-12345678.js',content:'import("./hls.light-Cm5ppQ94.js")',bytes:2},
+  {path:root+'assets/hls.light-Cm5ppQ94.js',content:'',bytes:3},
+  {path:root+'assets/hls.light-old12345.js',content:'',bytes:4},
+ ];
+ const result=await pruneRidingBundles(files);
+ assert.deepEqual(result.omitted.map(f=>f.path),[root+'assets/hls.light-old12345.js']);
+ assert.equal(result.saved,4);
+});

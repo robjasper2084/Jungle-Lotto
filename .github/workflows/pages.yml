@@ -86,7 +86,9 @@ jobs:
       - name: Validate Pages assembly
         run: node --test scripts/prune-riding-bundles.test.mjs scripts/share-cinematic-media.test.mjs scripts/share-game-clips.test.mjs scripts/gothtechnology-pages.test.mjs scripts/game-pages.test.mjs scripts/share-ride-vehicles.test.mjs scripts/share-riding-media.test.mjs scripts/optimize-pages-images.test.mjs scripts/lossless-riding-textures.test.mjs scripts/share-unity-stage.test.mjs scripts/share-city-data.test.mjs
       - name: Build lean Pages artifact
-        run: node scripts/build-pages-artifact.mjs
+        run: |
+          node --test scripts/share-published-ride-textures.test.mjs
+          node scripts/build-pages-artifact.mjs
       - name: Verify packaged arcade assets on desktop and mobile
         run: node scripts/gothtechnology-pages-browser.mjs
       - name: Upload artifact

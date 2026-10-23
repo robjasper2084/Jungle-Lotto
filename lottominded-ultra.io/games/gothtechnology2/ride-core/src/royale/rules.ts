@@ -45,7 +45,7 @@ export function move(a:Motion,c:Command,tick:number){
 
  a.controller.combatOnFoot=true;const melee=(a as Actor).combat?.melee;
  const blocked=!!melee&&melee.staggerUntil>tick;
- const input={...NEUTRAL_ACTIONS,interruptMount:c.fire||c.reload||c.light||c.heavy||c.repair||c.evade!==0,mountBlocked:(a as Actor).integrity<=15||blocked,evade:melee&&melee.evadeUntil>tick?melee.evadeDir:0,throttle:blocked?c.throttle*.25:c.throttle,steer:c.steer,facingYaw:c.facingYaw??undefined,crouch:c.crouch,prone:c.prone,hop:c.hop,hopHeld:c.hopHeld,dismount:c.dismount||c.prone&&!a.controller.poseValue.footMode&&Math.abs(a.controller.poseValue.speed)<=1,run:c.burst&&!c.fire&&c.aimMode===0&&!c.reload};
+ const input={...NEUTRAL_ACTIONS,quickMount:(a as Actor).bot===true,interruptMount:c.fire||c.reload||c.light||c.heavy||c.repair||c.evade!==0,mountBlocked:(a as Actor).integrity<=15||blocked,evade:melee&&melee.evadeUntil>tick?melee.evadeDir:0,throttle:blocked?c.throttle*.25:c.throttle,steer:c.steer,facingYaw:c.facingYaw??undefined,crouch:c.crouch,prone:c.prone,hop:c.hop,hopHeld:c.hopHeld,dismount:c.dismount||c.prone&&!a.controller.poseValue.footMode&&Math.abs(a.controller.poseValue.speed)<=1,run:c.burst&&!c.fire&&c.aimMode===0&&!c.reload};
  a.controller.step(DT/2,input);a.controller.step(DT/2,{...input,hop:false});
 }
 export type Elimination={tick:number;killer?:{id:string;name:string;bot:boolean};cause:'rider'|'field'|'disconnect'|'arena'};
