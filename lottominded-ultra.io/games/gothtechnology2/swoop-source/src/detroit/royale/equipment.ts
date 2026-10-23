@@ -89,6 +89,7 @@ export class WeaponView {
   private current?:EquipmentView;private equipAge=1;
   private repairPacks:HeldRepairPack[]=[];
   constructor(private library:EquipmentLibrary){}
+  get kind(){return this.current?.kind??'static';}
   createHeldRepair(){const pack=this.library.createHeldRepair();this.repairPacks.push(pack);return pack;}
   /** Socket targets include the currently evaluated equipment animation. */
   socket(local:readonly [number,number,number]){this.root.updateWorldMatrix(true,true);const prop=this.current?.root.getObjectByName('PRP_'+this.current.kind)??this.root;return prop.localToWorld(new T.Vector3(...local));}

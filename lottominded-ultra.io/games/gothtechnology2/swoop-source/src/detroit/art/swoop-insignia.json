@@ -1,0 +1,12 @@
+{
+  "asset": "swoop-insignia.webp",
+  "purpose": "Decorative Swoop Detroit main-menu insignia",
+  "provider": "Higgsfield",
+  "model": "gpt_image_2_5",
+  "jobId": "d598ed54-3691-4852-ac10-4383d393c236",
+  "status": "completed",
+  "created": "2026-10-23",
+  "creditEstimate": 0.5,
+  "delivery": "432px WebP, quality 86, 9598 bytes",
+  "prompt": "Design a premium futuristic game-brand insignia for SWOOP DETROIT, an electric unicycle street riding game in Detroit's Dequindre Cut. Asset only, no interface mockup. A single strong geometric wing-shaped S monogram carved from brushed dark titanium with luminous mint turquoise edge lighting, incorporating a subtle single-wheel circle and two sweeping parallel route lines. Sophisticated Detroit industrial automotive badge meets future electric street culture. Centered symmetrical composition, crisp silhouette, restrained cyan glow, ivory highlights. Deep nearly black navy background #06121b. No words, no letters other than the abstract S symbol, no extra logos, no characters, no purple, no generic sci-fi clutter. The badge should occupy the central 70 percent, with generous dark negative space. High-end game launch identity, beautifully lit product-mark illustration."
+}

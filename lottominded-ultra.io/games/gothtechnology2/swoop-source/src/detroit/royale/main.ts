@@ -177,6 +177,9 @@ function showMenu(panel?:RoyaleMenuPanel){if(document.pointerLockElement===canva
 function resume(){void royaleAudio.unlock();finishLayoutEditing();paused=false;dialog.close();canvas.focus();loadLayout();}
 const openSettings=()=>{showMenu('settings');el('camera-view').focus();};
 el('settings-open').onclick=openSettings;
+// Reach recovery with a mouse/keyboard even when the touch HUD is disabled.
+const recoverQuick=document.createElement('button');recoverQuick.id='recover-quick';recoverQuick.type='button';recoverQuick.textContent='Recover';recoverQuick.hidden=true;recoverQuick.style.minHeight='44px';el('hud').append(recoverQuick);
+recoverQuick.onclick=()=>{if(gameplayInputBlocked()||!session.state?.self?.alive)return;tap.add('recover');canvas.focus();};
 el('menu').onclick=()=>showMenu();el('resume').onclick=resume;dialog.addEventListener('cancel',e=>{e.preventDefault();if(menuHome.panel!=='home'){menuHome.show();return;}if(session?.state&&session.state.phase!=='lobby'&&session.state.phase!=='results')resume();});
 async function run(work:()=>void|Promise<void>){try{message('');await work();}catch(e){message((e as Error).message);}}
 function preparationItemDone(){const root=el('royale-startup');root.dataset.completed=String(Number(root.dataset.completed??0)+1);}
@@ -540,6 +543,10 @@ function draw(now:number){
   holsterButton.textContent=handling?(holstered?'Stowing…':'Drawing…'):holstered?'Draw':'Holster';holsterButton.disabled=handling;holsterButton.setAttribute('aria-pressed',String(holstered));
   if(holstered||handling)el('weapon').textContent=handling?(holstered?'Holstering weapon…':'Drawing weapon…'):'Weapon holstered · tap Draw or '+bindings.holster.replace('Digit','');
   const empty=!!w&&!brawling&&!holstered&&!handling&&me!.combat.magazine[w]===0;el('weapon').dataset.empty=String(empty);el('touch').querySelector<HTMLElement>('[data-action=reload]')!.dataset.needed=String(empty);if(empty&&me!.combat.reloadStart<0)el('weapon').textContent+=me!.ammo[w!]>0?' · Reload':' · Out of ammo';
+  recoverQuick.hidden=!me?.alive||replaying||!(me.controller.fields.crashed||self?.pose.footMode);
+  recoverQuick.disabled=(self?.pose.footStagger??0)>0||self?.pose.footMode===3;
+  recoverQuick.textContent=recoverQuick.disabled?'Getting back up…':'Recover · '+bindings.recover.replace(/^(Key|Digit)/,'');
+  recoverQuick.title='Get back up and remount when near your wheel';
   const scopeKeyLabel=bindings.scope.replace(/^(Key|Digit)/,'');const scopeLabel=selectedScope?SCOPES[selectedScope].label:'Iron sights';el('scope-select').textContent='Scope · '+scopeLabel+' · '+scopeKeyLabel;el<HTMLButtonElement>('scope-select').disabled=!owned.length;el<HTMLButtonElement>('scope-select').title=owned.length?'Switch collected scopes':'Find a scope and ride or walk over it';
   const scopeTouch=el('touch').querySelector<HTMLButtonElement>('[data-action=scope]')!;scopeTouch.textContent=selectedScope?SCOPES[selectedScope].zoom+'×':'Scope';scopeTouch.disabled=!owned.length;
   if(me&&!layoutEditing){

@@ -5,6 +5,7 @@ import {existsSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import * as T from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {MeshoptDecoder} from 'three/addons/libs/meshopt_decoder.module.js';
 import {applyOnFootRider} from '../src/onFootRider.ts';
 import {gaitScale} from '../src/footAnimation.ts';
 import {footFields} from '../src/onFoot.ts';
@@ -17,10 +18,10 @@ async function load(id:string){
  let json=JSON.stringify(j);while(Buffer.byteLength(json)%4)json+=' ';
  const bytes=Buffer.from(json),chunk=b.subarray(20+n),out=Buffer.alloc(20+bytes.length+chunk.length);
  out.writeUInt32LE(0x46546c67,0);out.writeUInt32LE(2,4);out.writeUInt32LE(out.length,8);out.writeUInt32LE(bytes.length,12);out.writeUInt32LE(0x4e4f534a,16);bytes.copy(out,20);chunk.copy(out,20+bytes.length);
- return new GLTFLoader().parseAsync(out.buffer.slice(out.byteOffset,out.byteOffset+out.byteLength),'');
+ return new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).parseAsync(out.buffer.slice(out.byteOffset,out.byteOffset+out.byteLength),'');
 }
 
-test('all five shipped heroes keep feet above ground and elbows bent through walk/run cycles',async t=>{
+for(const walkStyle of ['tactical','kimodo'] as const)test(`${walkStyle}: all five shipped heroes keep feet above ground and elbows bent through walk/run cycles`,async t=>{
  if(!process.env.HERO_ASSET_DIR&&!existsSync(base)){t.skip('Packaged hero assets required; set HERO_ASSET_DIR to the review exports/rigged-heroes directory.');return;}
  for(const id of ['DS_Armored_Rider_01','DS_Man_01','DS_Hoodie_Woman_01','DS_Mascot_Suit_01','DS_Mascot_Hoodie_01']){
   const asset=await load(id),root=new T.Group(),ground=new T.Group(),lean=new T.Group(),vehicle=new T.Group(),rider=asset.scene;
@@ -28,7 +29,7 @@ test('all five shipped heroes keep feet above ground and elbows bent through wal
   if(asset.animations[0]){const mixer=new T.AnimationMixer(rider);mixer.clipAction(asset.animations[0]).play();mixer.setTime(0);}
   const bones:{o:T.Object3D;p:T.Vector3;q:T.Quaternion}[]=[];
   rider.traverse(o=>{if((o as T.Bone).isBone)bones.push({o,p:o.position.clone(),q:o.quaternion.clone()});});
-  const rig={riderId:id,root,ground,lean,vehicle,rider,bones,mountHeight:.25,motionScale:id.includes('Mascot')?.48:1};
+  const rig={walkStyle,riderId:id,root,ground,lean,vehicle,rider,bones,mountHeight:.25,motionScale:id.includes('Mascot')?.48:1};
   root.updateMatrixWorld(true);
   const lengths=['Left','Right'].map(side=>{const a=rider.getObjectByName(side+'UpLeg')!.getWorldPosition(new T.Vector3()),b=rider.getObjectByName(side+'Leg')!.getWorldPosition(new T.Vector3()),c=rider.getObjectByName(side+'Foot')!.getWorldPosition(new T.Vector3());return a.distanceTo(b)+b.distanceTo(c);});
   const cycleScale=gaitScale((lengths[0]+lengths[1])/2);

@@ -2,7 +2,7 @@ import type {FootPose} from './onFoot.ts';
 const clamp=(v:number,a:number,b:number)=>Math.max(a,Math.min(b,v));
 /** Short-legged mascots keep a readable cadence rather than tripling the human
  * cycle. This affects presentation only; every hero retains the same move speed. */
-export const gaitScale=(legLength:number)=>Math.max(.72,legLength/.9);
+export const gaitScale=(legLength:number)=>Math.max(.88,legLength/.9);
 export const movementDirection=(p:Partial<FootPose>)=>{
  const h=p.headingY||0,x=p.velocityX||0,z=p.velocityZ||0;
  if(Math.hypot(x,z)<.02)return(p.speed||0)<0?Math.PI:0;

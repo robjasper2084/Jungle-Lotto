@@ -1,3 +1,4 @@
+import {recoveryHand} from '../../../ride-core/src/kimodoRecovery.ts';
 import {FingerPose} from '../../../ride-core/src/fingerPose.ts';
 import {invalidateAnimatedShadow} from '../../../ride-core/src/shadowBudget.ts';
 import {visibleSceneryMatrices} from '../../../ride-core/src/visibleMatrices.ts';
@@ -57,6 +58,7 @@ export class Hero {
   bones:{o:T.Object3D;p:T.Vector3;q:T.Quaternion}[]=[];legs:Limb[]=[];arms:Limb[]=[];
   private riderContact:CrashContact;private wheelContact:CrashContact;private terrain?:TerrainSampler;
   readonly riderId:RiderId;
+  readonly walkStyle:'tactical'|'kimodo';
   readonly wheelScale:number;readonly motionScale:number;readonly mountHeight:number;
   skateboarding=false;private skateContact?:CrashContact;private skateboard=new T.Group();private skateWheels:T.Mesh[]=[];
   private saddle:T.Mesh;private hairWind:HairWind;
@@ -65,8 +67,8 @@ export class Hero {
   readonly visibility:RiderVisibility;readonly vrEyeHeight:number;readonly mountedVolume:{radius:number;height:number};
   /** Fit the captured walk and soles during loading, not on the first dismount. */
   prepareOnFoot(){prepareOnFootRider(this);}
-  constructor(data:Map<string,GLTF>,terrain?:TerrainSampler,riderId:RiderId='DS_Man_01'){
-    this.terrain=terrain;this.riderId=riderId;
+  constructor(data:Map<string,GLTF>,terrain?:TerrainSampler,riderId:RiderId='DS_Man_01',walkStyle:'tactical'|'kimodo'='tactical'){
+    this.terrain=terrain;this.riderId=riderId;this.walkStyle=walkStyle;
     const mascot=riderId.startsWith('DS_Mascot_');this.wheelScale=mascot?.75:.86;this.motionScale=mascot?.48:1;this.mountHeight=.296*this.wheelScale;
     this.root.add(this.ground);this.ground.add(this.lean);
     this.vehicle=data.get('DS_EUC_01')!.scene.clone(true);this.rider=clone(data.get(riderId)!.scene);
@@ -236,6 +238,13 @@ export class Hero {
         protective.lerp(rest,p.crashSettle);
         target.lerp(protective,Math.min(1,p.crashBrace*1.7+p.crashRelease));
         armPole.lerp(bodyUp.negate().addScaledVector(bodyForward,.25),p.crashSettle);
+        if(p.crashRecovery>0){
+          const recovered=recoveryHand(p.crashRecovery,i,p.crashSide||1);
+          const push=shoulder.clone().addScaledVector(right,recovered.x*length).addScaledVector(worldUp,recovered.y*length).addScaledVector(forward,recovered.z*length);
+          push.y=Math.max(p.y-p.airHeight+.06*this.motionScale,push.y);
+          target.lerp(push,recovered.weight);
+          armPole.lerp(forward.clone().addScaledVector(right,side*.65),recovered.weight);
+        }
       }
       // Shared anatomical elbow plane. Imported A-poses have different bend
       // directions; transporting those was twisting the other heroes' sleeves.

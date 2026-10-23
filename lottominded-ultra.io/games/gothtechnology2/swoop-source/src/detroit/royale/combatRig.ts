@@ -20,7 +20,20 @@ export class CombatRig {
   interruptPickup(){this.pickupTick=-999;this.gestureWeight=0;}
   private repairProp:HeldRepairPack;private repairPack:T.Group;
   private backRest=new T.Quaternion();
-  constructor(readonly hero:Hero,readonly weapon:WeaponView){this.repairProp=weapon.createHeldRepair();this.repairPack=this.repairProp.root;hero.root.add(this.repairPack);(hero.chest??hero.rider).getWorldQuaternion(this.backRest).invert();}
+  constructor(readonly hero:Hero,readonly weapon:WeaponView,private readonly firstPerson=false){this.repairProp=weapon.createHeldRepair();this.repairPack=this.repairProp.root;hero.root.add(this.repairPack);(hero.chest??hero.rider).getWorldQuaternion(this.backRest).invert();}
+  private gripOffset(left:boolean){const wide=this.weapon.kind==='bass';return new T.Vector3(left?(wide?.22:.13):wide?-.20:-.11,-.035,left?-.035:-.085).multiplyScalar(this.hero.motionScale).applyQuaternion(this.weapon.root.quaternion);}
+  private handRotation(index:number,weaponRotation:T.Quaternion){
+    const limb=this.hero.arms[index],rotation=limb.rotation.clone();
+    if(this.firstPerson){
+      const finger=limb.foot.getObjectByName((index===0?'Left':'Right')+'HandMiddle1');
+      // Imported idle palms point down. A wrist at the grip with that idle
+      // orientation folds the fingers back inside the sleeve. Aim the palm
+      // along the handle/receiver before applying the authored finger curl.
+      if(finger){const palm=finger.position.clone().normalize().applyQuaternion(rotation);
+        rotation.premultiply(new T.Quaternion().setFromUnitVectors(palm,new T.Vector3(0,index===0?.18:-.42,1).normalize()));}
+    }
+    return rotation.premultiply(weaponRotation);
+  }
   apply(pose:RidePose,yaw:number,pitch:number,state:CombatState,tick:number,healingUntil=0){
     const h=this.hero,w=this.weapon.root,scale=h.motionScale;w.visible=true;this.repairPack.visible=false;
     if(pose.footMode===3){w.visible=false;this.interruptPickup();this.supportLocked=false;return;}
@@ -69,14 +82,16 @@ export class CombatRig {
     const outside=h.arms[0].upper.getWorldPosition(new T.Vector3()).sub(h.arms[1].upper.getWorldPosition(new T.Vector3()));outside.y=0;outside.normalize();
     const elbowPole=(side:number)=>outside.clone().multiplyScalar(side*.7).add(new T.Vector3(0,-.65,0)).add(new T.Vector3(0,0,-.15).applyQuaternion(rot));
     const dominant=this.weapon.socket(sockets.weapon_grip_R);
+    if(this.firstPerson)dominant.add(this.gripOffset(false));
     const gripRotation=w.getWorldQuaternion(new T.Quaternion());
-    solve(h.arms[1],dominant,elbowPole(-1),gripRotation.clone().multiply(h.arms[1].rotation));
+    solve(h.arms[1],dominant,elbowPole(-1),this.handRotation(1,gripRotation));
     h.root.updateWorldMatrix(true,true);
     const actual=h.arms[1].foot.getWorldPosition(new T.Vector3());this.errorR=actual.distanceTo(dominant);
     // Preserve a rigid grip even when a target exceeds the arm's natural reach.
     // The measured offset is exposed by the rig review; bones are never stretched.
     w.position.add(actual.sub(dominant));w.updateWorldMatrix(true,true);
     const support=this.weapon.socket(sockets.support_grip_L);
+    if(this.firstPerson)support.add(this.gripOffset(true));
     this.supportLocked=state.reloadStart<0;
     let target=support.clone();
     if(!this.supportLocked){
@@ -86,7 +101,7 @@ export class CombatRig {
       // After insertion the hand returns over the receiver to ready the weapon.
       if(reload.charge>0)target.lerp(this.weapon.socket(sockets.support_grip_L).add(new T.Vector3(0,.06,-.12).multiplyScalar(scale).applyQuaternion(rot)),reload.charge);
     }
-    solve(h.arms[0],target,elbowPole(1),gripRotation.clone().multiply(h.arms[0].rotation));
+    solve(h.arms[0],target,elbowPole(1),this.handRotation(0,gripRotation));
     const release=reloadPose(state,tick).magazine;
     h.fingers.apply('SupportGrip','WeaponGrip',release);
     h.root.updateWorldMatrix(true,true);this.errorL=h.arms[0].foot.getWorldPosition(new T.Vector3()).distanceTo(target);

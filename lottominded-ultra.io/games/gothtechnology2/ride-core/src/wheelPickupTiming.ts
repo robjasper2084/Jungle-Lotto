@@ -1,6 +1,6 @@
 import {sampleHeroAction} from './heroActions.ts';
-export const WHEEL_PICKUP_APPROACH=.3;
-export const WHEEL_PICKUP_DURATION=2.5;
+export const WHEEL_PICKUP_APPROACH=.20;
+export const WHEEL_PICKUP_DURATION=1.05;
 export const WHEEL_REMOUNT_DURATION=.65;
 export const WHEEL_PICKUP_TOTAL=WHEEL_PICKUP_APPROACH+WHEEL_PICKUP_DURATION+WHEEL_REMOUNT_DURATION;
 const clamp=(n:number)=>Math.max(0,Math.min(1,n));

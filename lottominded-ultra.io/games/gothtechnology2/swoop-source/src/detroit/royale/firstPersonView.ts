@@ -21,7 +21,7 @@ export class FirstPersonView {
  private forwardScratch=new T.Vector3();private rightScratch=new T.Vector3();private upScratch=new T.Vector3();private swayScratch=new T.Vector2();
  private magazine=new T.Mesh(new T.BoxGeometry(.055,.13,.085),new T.MeshStandardMaterial({color:'#293a3c',metalness:.65,roughness:.4}));
  constructor(data:Map<string,GLTF>,library:EquipmentLibrary,readonly skin:RiderId){
-  this.hero=new Hero(data,undefined,skin);this.weapon=new WeaponView(library);this.rig=new CombatRig(this.hero,this.weapon);
+  this.hero=new Hero(data,undefined,skin);this.weapon=new WeaponView(library);this.rig=new CombatRig(this.hero,this.weapon,true);
   // View-only materials preserve the world rider's clothing and shared assets.
   const copies=new Map<T.Material,T.Material>();
   this.hero.root.traverse(o=>{if(!(o instanceof T.Mesh))return;o.castShadow=false;

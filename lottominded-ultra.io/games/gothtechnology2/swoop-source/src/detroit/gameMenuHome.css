@@ -29,3 +29,55 @@
 .game-main-menu .game-menu-home button[hidden]{display:none!important}
 .game-main-menu .game-menu-home .game-menu-play{background:var(--menu-accent)!important;color:#102421!important;border-color:var(--menu-accent)!important}
 .game-main-menu .game-menu-home .game-menu-play:hover{background:#b6f2dc!important}
+
+/* Swoop's street-culture identity. Keep the other games' menu treatments separate. */
+#menu[data-game-theme=swoop][data-menu-home=true]::before{background-image:linear-gradient(90deg,#06121bf5 0%,#06121bd9 29%,#06121b35 55%,#06121b0a 100%),var(--lobby-art)}
+[data-game-theme=swoop] .game-menu-home{width:clamp(440px,39vw,630px);padding:clamp(24px,4vh,54px) clamp(28px,4vw,72px);background:linear-gradient(90deg,#06121bec,#06121ba6 78%,#06121b00);border-left:3px solid #75e2cf;justify-content:center;min-height:100dvh}
+[data-game-theme=swoop] .swoop-menu-identity{display:flex;align-items:center;gap:14px;margin:0 0 clamp(20px,4vh,46px);width:100%;border-bottom:1px solid #75e2cf33;padding-bottom:16px}
+[data-game-theme=swoop] .swoop-menu-identity img{width:108px;height:72px;object-fit:contain;mix-blend-mode:screen;flex:none;mask-image:radial-gradient(ellipse at center,#000 46%,transparent 75%)}
+[data-game-theme=swoop] .swoop-menu-identity p{margin:0;display:grid;gap:7px;font:700 10px/1.4 'Segoe UI',sans-serif;letter-spacing:.16em;color:#ecf6ee}
+[data-game-theme=swoop] .swoop-menu-identity p span{font-size:8px;font-weight:500;letter-spacing:.16em;color:#8cb8b7}
+[data-game-theme=swoop] .game-menu-home .game-menu-kicker{font-size:10px;letter-spacing:.2em;margin:0 0 14px}
+.game-main-menu[data-game-theme=swoop] .game-menu-home h1{font-size:clamp(68px,6.7vw,110px)!important;font-style:italic;letter-spacing:-.065em!important;line-height:.9!important;margin-bottom:20px!important}
+.game-main-menu[data-game-theme=swoop] .game-menu-home h1 span{font-style:normal;font-size:.43em;letter-spacing:.18em;line-height:1.45;margin-top:6px}
+[data-game-theme=swoop] .game-menu-home .game-menu-description{font-size:14px;line-height:1.65;margin-bottom:20px;max-width:350px;color:#c8d9da}
+[data-game-theme=swoop] .swoop-menu-route{display:flex;align-items:center;gap:12px;max-width:390px;margin:0 0 24px;font:600 9px/1.4 'Segoe UI',sans-serif;letter-spacing:.1em;color:#9dbbbb}
+[data-game-theme=swoop] .swoop-menu-route i{height:1px;flex:1;min-width:20px;background:linear-gradient(90deg,#75e2cf,#75e2cf33);position:relative}
+[data-game-theme=swoop] .swoop-menu-route i::before,[data-game-theme=swoop] .swoop-menu-route i::after{content:'';position:absolute;top:-2px;width:5px;height:5px;background:#75e2cf;transform:rotate(45deg)}
+[data-game-theme=swoop] .swoop-menu-route i::after{right:0;background:#497b7b}
+[data-game-theme=swoop] .game-menu-home nav{max-width:390px;gap:8px;width:100%}
+.game-main-menu[data-game-theme=swoop] .game-menu-home button{position:relative;min-height:52px;padding:15px 45px 15px 20px;background:linear-gradient(110deg,#122c37e6,#0b1c28d9);border-color:#91d2cb40;border-radius:3px 12px 3px 3px;font-size:14px;box-shadow:inset 2px 0 #75e2cf2e;transition:background .15s,border-color .15s,transform .15s}
+.game-main-menu[data-game-theme=swoop] .game-menu-home button::after{content:'↗';position:absolute;right:18px;top:50%;transform:translateY(-50%);font-size:18px;color:#75e2cf}
+.game-main-menu[data-game-theme=swoop] .game-menu-home button[data-menu-action=settings]::after{content:'+'}
+.game-main-menu[data-game-theme=swoop] .game-menu-home button[data-menu-action=friends]::after{content:'+'}
+.game-main-menu[data-game-theme=swoop] .game-menu-home .game-menu-play{min-height:64px;font-size:17px;letter-spacing:.03em;box-shadow:0 5px 24px #5edec31a,inset 0 1px #c3fff1}
+.game-main-menu[data-game-theme=swoop] .game-menu-home .game-menu-play::after{content:'→';color:#102421;font-size:25px}
+.game-main-menu[data-game-theme=swoop] .game-menu-home button:not(:disabled):hover{background:#20434beb;border-color:#a8fff0}
+[data-game-theme=swoop] .game-menu-worlds{margin-top:18px;gap:8px 22px;max-width:390px}
+.game-main-menu[data-game-theme=swoop] .game-menu-worlds a{font-size:11px;color:#adc7ca;text-decoration:none;border-bottom:1px solid #75e2cf33}
+.game-main-menu[data-game-theme=swoop] .game-menu-worlds a:hover{color:#b6fff0;border-color:#b6fff0}
+[data-game-theme=swoop] .game-menu-home .game-menu-note{max-width:390px;margin-top:20px;padding-top:14px;font-size:9px;letter-spacing:.22em}
+@media(min-width:1600px){[data-game-theme=swoop] .game-menu-home{width:600px;padding-left:80px;padding-right:60px}}
+@media(max-width:700px){
+ #menu[data-game-theme=swoop][data-menu-home=true]::before{background-position:66% center;background-image:linear-gradient(90deg,#06121bdc,#06121b69),var(--lobby-art)}
+ [data-game-theme=swoop] .game-menu-home{width:100%;padding:max(20px,env(safe-area-inset-top)) 26px max(24px,env(safe-area-inset-bottom));background:linear-gradient(90deg,#06121bd9,#06121b8c);border-left-width:2px;min-height:100dvh}
+ [data-game-theme=swoop] .swoop-menu-identity{margin-bottom:22px;padding-bottom:10px;gap:8px;max-width:390px}
+ [data-game-theme=swoop] .swoop-menu-identity img{width:84px;height:56px}
+ .game-main-menu[data-game-theme=swoop] .game-menu-home h1{font-size:72px!important}
+ [data-game-theme=swoop] .game-menu-home .game-menu-description{font-size:13px;max-width:320px;margin-bottom:16px}
+ [data-game-theme=swoop] .swoop-menu-route{margin-bottom:18px;font-size:8px}
+ [data-game-theme=swoop] .game-menu-worlds{margin-top:12px}
+ [data-game-theme=swoop] .game-menu-home .game-menu-note{margin-top:14px}
+}
+@media(max-height:600px) and (min-width:701px){
+ [data-game-theme=swoop] .game-menu-home{width:100%;display:grid;grid-template-columns:minmax(230px,1fr) minmax(260px,1fr);gap:12px 38px;min-height:100dvh;padding:22px 5vw;background:linear-gradient(90deg,#06121bf2,#06121bc7 65%,#06121b55);align-content:center}
+ [data-game-theme=swoop] .swoop-menu-identity{grid-column:1;grid-row:1;margin:0;padding-bottom:8px;gap:8px}
+ [data-game-theme=swoop] .swoop-menu-identity img{width:72px;height:48px}
+ [data-game-theme=swoop] .game-menu-home .game-menu-kicker{grid-column:1;grid-row:2;margin:0;font-size:9px}
+ .game-main-menu[data-game-theme=swoop] .game-menu-home h1{grid-column:1;grid-row:3;font-size:68px!important;margin:0!important}
+ [data-game-theme=swoop] .game-menu-home .game-menu-description{grid-column:1;grid-row:4;margin:0;font-size:12px}
+ [data-game-theme=swoop] .swoop-menu-route{grid-column:1;grid-row:5;margin:0}
+ [data-game-theme=swoop] .game-menu-home nav{grid-column:2;grid-row:1/5;align-self:center}
+ [data-game-theme=swoop] .game-menu-worlds{grid-column:2;grid-row:5;margin:0}
+ [data-game-theme=swoop] .game-menu-home .game-menu-note{display:none}
+}
