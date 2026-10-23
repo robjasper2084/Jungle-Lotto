@@ -25,6 +25,10 @@ export class RideGhostView{
   if(!available&&this.track)this.save();if(this.view)this.view.root.visible=available;
   if(!active||!p)return;
   if(this.track){this.track.step(dt,p);if(this.track.time>=GHOST_SECONDS)this.save();else if(this.track.time-this.uiAt>.5){this.uiAt=this.track.time;this.note.textContent='Recording ghost · '+Math.floor(this.track.time)+' / '+GHOST_SECONDS+' s';}}
-  if(this.view&&this.run){this.clock+=Math.max(0,dt);if(this.clock>this.run.frames.at(-1)![0]){this.hide();this.sync('Ghost finished. Play it again from Settings.');}else this.view.apply(sampleGhost(this.run,this.clock,this.pose));}
+  if(this.view&&this.run){this.clock+=Math.max(0,dt);if(this.clock>this.run.frames.at(-1)![0]){this.hide();this.sync('Ghost finished. Play it again from Settings.');}else {this.view.apply(sampleGhost(this.run,this.clock,this.pose));
+   // Two nearly identical rigs at the starting line shimmer through each other.
+   // Keep recording time moving, but reveal the ghost only after they separate.
+   this.view.root.visible=available&&Math.hypot(this.pose.x-p.x,this.pose.y-p.y,this.pose.z-p.z)>.8;
+  }}
  }
 }

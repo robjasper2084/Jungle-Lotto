@@ -448,7 +448,7 @@ function draw(now:number){
  const dogDisplayTick=!replaying&&(session.room||watching)?session.remotePoses.tick(now)??dogTick-3:dogTick-3+alpha;
  companions?.update(s.actors,s.roster,dogTick,motionDelta,graphics.current.shadows===0,reducedMotion,s.phase==='results'?s.winner:undefined,dogDisplayTick,p=>actorVisibility.visible(p,bikeObserver));canvas.dataset.companions=String(s.actors.filter(a=>a.alive).length);
  const ghostSelf=s.actors.find(a=>a.id===s.self?.id);
- savedGhost.update(motionDelta,ghostSelf?basePoses.get(ghostSelf.id)??ghostSelf.pose:undefined,(ghostSelf?.skin??'')+':'+(s.self?.wheelId??'euc'),!dialog.open&&!paused&&!replaying&&s.phase==='active',!!s.self?.alive&&s.phase==='active'&&!replaying);
+ savedGhost.update(motionDelta,ghostSelf?basePoses.get(ghostSelf.id)??ghostSelf.pose:undefined,(ghostSelf?.skin??'')+':'+(s.self?.wheelId??'euc'),!dialog.open&&!paused&&!replaying&&s.phase==='active',!!s.self?.alive&&s.phase==='active'&&!replaying&&!combatBlock&&!practiceRange);
  stage('dogs');
  const presentLoot=new Set(s.loot.map(item=>item.id));
  for(const loot of s.loot){
