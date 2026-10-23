@@ -66,7 +66,7 @@ export function stepOnFoot(s:ReturnType<typeof footState>,p:FootPose,t:TerrainSa
  if(s.mode===3){
   // Host AI policy: immediately recover through the same pickup poses, at a
   // brisk pace. This is never accepted as a client command or a teleport.
-  s.age+=dt*(a.quickMount?4:1);p.footMountTime=s.age;const timing=wheelPickupTiming(s.age);
+  s.age+=dt*(a.quickMount?2.6:1);p.footMountTime=s.age;const timing=wheelPickupTiming(s.age);
   // Approach from the side on which the player is already standing. Keep the
   // parked wheel authoritative and fixed while the harvested reach is played.
   let dx=s.fromX-s.toX,dz=s.fromZ-s.toZ;
@@ -84,7 +84,7 @@ export function stepOnFoot(s:ReturnType<typeof footState>,p:FootPose,t:TerrainSa
   return true;
  }
  if(s.mode===1){
-  s.age+=dt;const duration=a.movingDismount?.42:.7,f=ease(s.age/duration),x=s.fromX+(s.toX-s.fromX)*f,z=s.fromZ+(s.toZ-s.fromZ)*f;
+  s.age+=dt;const duration=a.movingDismount?.42:.55,f=ease(s.age/duration),x=s.fromX+(s.toX-s.fromX)*f,z=s.fromZ+(s.toZ-s.fromZ)*f;
   if(clear(p.x,p.y,p.z,x,s.toY,z)){p.x=x;p.z=z;}p.y=s.fromY+(s.toY-s.fromY)*f;
   p.headingY=s.fromHeading+angle(p.parkHeading-s.fromHeading)*f;p.footBlend=f;p.speed=p.airHeight=p.airBlend=p.footJump=0;
   if(s.age>=duration){s.mode=2;p.footMode=s.mode;p.footBlend=s.mode?1:0;}

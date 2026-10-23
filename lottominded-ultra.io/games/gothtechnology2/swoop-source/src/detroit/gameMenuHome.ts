@@ -19,6 +19,17 @@ export function gameMenuHome(root:HTMLElement,o:MenuHomeOptions){
  for(const [kind,label,url]of [['swoop','Swoop Detroit','../swoop-detroit/index.html'],['royale','Static Royale','../swoop-detroit/royale.html'],['elmwood','Elmwood Explorer','../elmwood-explorer/elmwood.html']])if(kind!==o.kind){const a=document.createElement('a');a.href=url;a.textContent=label+' ↗';links.append(a);}
  const note=document.createElement('p');note.className='game-menu-note';note.textContent=o.kind==='royale'?'3 ROUNDS / DOWNTOWN DETROIT':o.kind==='elmwood'?'QUIET LANES / YOUR OWN PACE':'DEQUINDRE CUT / ELECTRIC CULTURE';
  home.append(kicker,title,description,nav,links,note);
+ if(o.kind==='swoop'){
+  const identity=document.createElement('div');identity.className='swoop-menu-identity';
+  const emblem=document.createElement('img');emblem.src=new URL('./art/swoop-insignia.webp',import.meta.url).href;emblem.alt='';emblem.width=144;emblem.height=96;emblem.decoding='async';
+  const edition=document.createElement('p');edition.innerHTML='<strong>SWOOP / DETROIT</strong><span>ELECTRIC STREET CULTURE</span>';
+  identity.append(emblem,edition);home.prepend(identity);
+  const route=document.createElement('div');route.className='swoop-menu-route';route.setAttribute('aria-label','Explore the Detroit riverfront and Dequindre Cut');
+  route.innerHTML='<span>RIVERFRONT</span><i aria-hidden="true"></i><span>DEQUINDRE CUT</span>';description.after(route);
+  nav.classList.add('swoop-menu-actions');
+  for(const b of Array.from(nav.children) as HTMLButtonElement[])b.dataset.menuAction=b===play?'ride':b===resume?'resume':b.textContent==='Choose your ride'?'customize':b.textContent==='Play with friends'?'friends':'settings';
+  note.textContent='ONE WHEEL. YOUR CITY.';
+ }
  const back=document.createElement('button');back.className='game-menu-back';back.textContent='← Main menu';back.onclick=()=>{root.dataset.menuHome='true';root.scrollTop=0;play.focus({preventScroll:true});};root.prepend(back,home);root.dataset.menuHome='true';
  const sync=()=>{if(resume){resume.hidden=!!o.resume?.hidden||!!o.resume?.disabled;resume.classList.toggle('game-menu-play',!resume.hidden);play.classList.toggle('game-menu-play',resume.hidden);}play.disabled=o.play.disabled;if(o.play.disabled)play.textContent='Preparing your game…';else play.textContent=o.kind==='royale'?'Deploy · practice':o.play.textContent?.includes('race')?'Start race':'Start riding';};sync();
  if(o.resume)new MutationObserver(sync).observe(o.resume,{attributes:true,attributeFilter:['hidden','disabled']});

@@ -1,3 +1,4 @@
+import {recoverySample} from '../../../ride-core/src/kimodoRecovery.ts';
 import {fallPosture} from './fallPosture.ts';
 import type {RidePose} from './controller.ts';
 import {clamp} from './rideDynamics.ts';
@@ -85,14 +86,16 @@ export class FallMotion {
 /** Side roll -> supported kneel -> rise -> remount. Offsets remain at the resting
  * location for pedestrians; mounted recovery closes the last short step to the pedals. */
 export function getUpPose(rest:RidePose,progress:number,out:RidePose,mounted=false){
-  Object.assign(out,rest);const t=clamp(progress,0,1),kneel=ramp(t,0,.40),stand=ramp(t,.38,.86),mount=ramp(t,.78,1);
+  Object.assign(out,rest);const t=clamp(progress,0,1),entry=ramp(t,0,.16),kneel=ramp(t,0,.32),stand=recoverySample(t)[0],mount=ramp(t,.78,1);
+  if(t===0){out.crashRecovery=0;return;}
   const side=rest.crashSide||1;
-  out.crashRecovery=t;out.crashRoll=rest.crashRoll*(1-kneel);out.crashTumble=.42*kneel*(1-stand);
-  out.crashDrop=rest.crashDrop*(1-kneel)+.46*kneel*(1-stand);
-  out.crashLegTuck=(1-stand)*.82;out.crashRelease=mounted?1-mount:1;
+  out.crashRecovery=t;out.crashRoll=rest.crashRoll*(1-kneel);out.crashTumble=rest.crashTumble*(1-kneel)+.32*kneel*(1-stand);
+  out.crashDrop=(rest.crashDrop*(1-kneel)+.82*kneel)*(1-stand);
+  out.crashLegTuck=rest.crashLegTuck*(1-entry)+(1-stand)*.82*entry;out.crashRelease=mounted?1-mount:1;
   out.crashReach=.45*kneel*(1-stand);out.crashAbsorb=0;out.crashCurl=.40*(1-stand);out.crashHeadTuck=.45*(1-stand);
   out.crashSettle=1-stand;out.crashBrace=1-stand;out.crashContact=1-stand;out.crashBlend=1-mount;
   out.bodyPitch=.1+.25*(1-stand);out.bodyDrop=.08+.09*(1-stand);out.bodyTwist=side*.12*(1-stand);
   out.crashImpactPulse=0;out.wheelCrashPop=0;
+  for(const key of ['crashReach','crashAbsorb','crashCurl','crashHeadTuck','crashSettle','crashBrace','crashContact','crashBlend','bodyPitch','bodyDrop','bodyTwist'] as const)out[key]=rest[key]+(out[key]-rest[key])*entry;
   if(mounted){out.crashForward=rest.crashForward*(1-mount);out.crashLateral=rest.crashLateral*(1-mount);out.wheelCrashForward=rest.wheelCrashForward*(1-stand);out.wheelCrashLateral=rest.wheelCrashLateral*(1-stand);out.wheelCrashLean=rest.wheelCrashLean*(1-stand);out.wheelCrashSpin=rest.wheelCrashSpin*(1-stand);}
 }

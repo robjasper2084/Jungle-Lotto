@@ -5,7 +5,7 @@ import {Hero} from './actors.ts';
 import {heroAssets} from './heroTestAssets.ts';
 import {RIDER_CHOICES} from './riderChoices.ts';
 import {createPose} from './controller.ts';
-import {wheelPickupTiming} from '../../../ride-core/src/wheelPickupTiming.ts';
+import {wheelPickupTiming,WHEEL_PICKUP_APPROACH,WHEEL_PICKUP_DURATION} from '../../../ride-core/src/wheelPickupTiming.ts';
 test('supplied pickup clip fits all five heroes without foot sliding or stretched limbs',async t=>{
  const assets=await heroAssets();
  for(const {id} of RIDER_CHOICES){
@@ -15,7 +15,7 @@ test('supplied pickup clip fits all five heroes without foot sliding or stretche
   let drift=0,error=0,travel=0,errorPhase=0;
   const hip=h.rider.getObjectByName('Hips')!.getWorldPosition(new Vector3());
   for(let n=0;n<=150;n++){
-   p.footMountTime=.3+n/60;h.apply(p);
+   p.footMountTime=WHEEL_PICKUP_APPROACH+n/150*WHEEL_PICKUP_DURATION;h.apply(p);
    h.legs.forEach((l,i)=>drift=Math.max(drift,l.foot.getWorldPosition(new Vector3()).distanceTo(feet[i])));
    travel=Math.max(travel,h.rider.getObjectByName('Hips')!.getWorldPosition(new Vector3()).distanceTo(hip));
    const timing=wheelPickupTiming(p.footMountTime);
@@ -28,15 +28,15 @@ test('supplied pickup clip fits all five heroes without foot sliding or stretche
 });
 
 
-import {sampleBrotherWalk} from '../../../ride-core/src/brotherWalk.ts';
+import {sampleTacticalWalk} from '../../../ride-core/src/tacticalWalk.ts';
 import {gaitScale} from '../../../ride-core/src/footAnimation.ts';
-test('all five heroes retain the supplied walk arm directions instead of procedural swing',async()=>{
+test('all five heroes use the compact tactical arm directions',async()=>{
  const assets=await heroAssets();
  for(const {id} of RIDER_CHOICES){
   const h=new Hero(assets,undefined,id),p={...createPose(),footMode:2,footBlend:1,bodyPitch:0,speed:1.5,velocityZ:1.5};
   const leg=h.legs[0],length=leg.upper.getWorldPosition(new Vector3()).distanceTo(leg.knee.getWorldPosition(new Vector3()))+leg.knee.getWorldPosition(new Vector3()).distanceTo(leg.foot.getWorldPosition(new Vector3()));
   for(let n=0;n<40;n++){
-   const phase=n/40;Object.assign(p,{footCycle:phase*gaitScale(length),footPhase:phase,footTime:n/60});h.apply(p);const reference=sampleBrotherWalk(phase);
+   const phase=n/40;Object.assign(p,{footCycle:phase*gaitScale(length),footPhase:phase,footTime:n/60});h.apply(p);const reference=sampleTacticalWalk(phase);
    h.arms.forEach((arm,i)=>{
     const upper=arm.knee.getWorldPosition(new Vector3()).sub(arm.upper.getWorldPosition(new Vector3())).normalize(),lower=arm.foot.getWorldPosition(new Vector3()).sub(arm.knee.getWorldPosition(new Vector3())).normalize();
     assert(upper.angleTo(new Vector3().fromArray(reference,12+i*6))<.012,id+' upper arm differs from source '+upper.angleTo(new Vector3().fromArray(reference,12+i*6))+' at '+phase);

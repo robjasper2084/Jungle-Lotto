@@ -5,7 +5,7 @@ export function contextualActions(c:ActionContext):Record<string,boolean>{
   brawl:c.foot,evade:c.foot,holster:!c.brawling,
   'dog-attack':c.dogCharges>0,'dog-radar':c.dogCharges>0,
   scope:c.scopes>0&&!c.brawling,switch:c.weapons>1&&!c.brawling,
-  recover:c.crashed,swap:c.canSwap,
+  recover:c.crashed||c.foot,swap:c.canSwap,
   repair:c.healing||c.healthPacks>0&&c.health<100,
   utility:c.shields>0,
   // Core combat controls retain their positions and remain discoverable.

@@ -177,7 +177,7 @@ const updateMap=elmwood?createElmwoodMap():createRouteMap();
 const miniMap=elmwood?undefined:detroitMinimap(()=>{clearInput();if(running&&!paused)pause();},()=>canvas.focus());
 const film=new GameFilm('Swoop Detroit',canvas,()=>split?split.view.heroes.map(h=>({root:h.root,body:h.rider})):[{root:sim?.cycling&&bicycleView?bicycleView.root:hero.root,body:sim?.cycling&&bicycleView?bicycleView.rider:hero.rider},...(dogEnabled?[{root:dogView.root}]:[])],()=>{clearInput();if(running&&!paused)pause();loop.stopReplay(false);$('helpPanel').hidden=true;$('menu').hidden=true;});
 const savedGhost=new RideGhostView(elmwood?'elmwood-legacy':'swoop-detroit',scene,()=>{
- if(!actorData)return;const assets=new Map(actorData),e=eucProfile(vehicle.value);if(e&&assets.has('Euc_'+e.id))assets.set('DS_EUC_01',assets.get('Euc_'+e.id)!);return new Hero(assets,world,selectedRider);
+ if(!actorData)return;const assets=new Map(actorData),e=eucProfile(vehicle.value);if(e&&assets.has('Euc_'+e.id))assets.set('DS_EUC_01',assets.get('Euc_'+e.id)!);return new Hero(assets,world,selectedRider,'kimodo');
 });film.panel.append(savedGhost.panel);
 const studioCapture=elmwood?undefined:new StudioCapture(canvas,()=>{clearInput();canvas.focus();});
 const cabinets=elmwood?undefined:new ArcadeCabinets(canvas,()=>{clearInput();paused=true;$('paused').hidden=true;studioScreens?.update(current.x,current.z,false);},()=>{clearInput();paused=false;$('paused').hidden=true;canvas.focus();});
@@ -223,7 +223,7 @@ function setRider(value:string,remember=true){
   if(running&&(challengeRun||race||split)&&!finished){if($('menu').hidden){$<HTMLSelectElement>('heroSelect').value=selectedRider;toast('Open the menu to choose a different rider and start a new attempt.');return;}stopRace();challengeRun=undefined;district.setRun();running=false;$('resumeRide').hidden=true;}
   selectedRider=riderChoice(value);$<HTMLSelectElement>('heroSelect').value=selectedRider;
   $('riderQuick').textContent=RIDER_CHOICES.find(r=>r.id===selectedRider)!.label;
-  if(actorData){const board=hero?.skateboarding??false;hero?.dispose();const e=eucProfile(vehicle.value),rideAssets=new Map(actorData);if(e&&actorData.has('Euc_'+e.id))rideAssets.set('DS_EUC_01',actorData.get('Euc_'+e.id)!);hero=new Hero(rideAssets,world,selectedRider);hero.skateboarding=board;hero.apply(pose);if(jazzVisit?.active)hero.root.visible=false;scene.add(hero.root);if(sim){sim.wheelScale=hero.wheelScale;sim.mountedVolume=hero.mountedVolume;loop.startRun(undefined,selectedRider,actorData,current);}}
+  if(actorData){const board=hero?.skateboarding??false;hero?.dispose();const e=eucProfile(vehicle.value),rideAssets=new Map(actorData);if(e&&actorData.has('Euc_'+e.id))rideAssets.set('DS_EUC_01',actorData.get('Euc_'+e.id)!);hero=new Hero(rideAssets,world,selectedRider,'kimodo');hero.skateboarding=board;hero.apply(pose);if(jazzVisit?.active)hero.root.visible=false;scene.add(hero.root);if(sim){sim.wheelScale=hero.wheelScale;sim.mountedVolume=hero.mountedVolume;loop.startRun(undefined,selectedRider,actorData,current);}}
   canvas.dataset.hero=selectedRider;if(remember){wheelRider=selectedRider;try{localStorage.setItem('digital-static-rider',selectedRider);}catch{}}
 }
 const dog=new DogFollower(world),dogPose={...dog.current};let dogView:CompanionView;
@@ -669,7 +669,8 @@ function frameSplit(now:number,dt:number){
 }
 function frame(now:number,xrFrame?:XRFrame){
   const frameCpuStarted=performance.now(),frameProfile:Record<string,number>={};
-  bikeRecover.hidden=!(ready&&running&&sim?.cycling&&!vr.active&&!film.playing&&$('menu').hidden);
+  bikeRecover.hidden=!(ready&&running&&!finished&&!vr.active&&!film.playing&&$('menu').hidden);
+  bikeRecover.textContent=sim?.snapshot().state==='recovering'?'Getting up…':recoveryLabel();
   if(!ready||boot.stage==='error'||(document.hidden&&!vr.active)||(!running&&!$('startupPreview').hidden)){last=now;return;}
   if(!frameSchedule.shouldRender(now,(!running||paused)&&!film.playing&&!gallery?.active&&!boutique?.active,vr.active,jazzVisit?.active?10:graphics.current.fps))return;
   interactiveWater.update(current,!running||paused||!!gallery?.active||!!boutique?.active);

@@ -1,5 +1,7 @@
+import {recoveryHand} from './kimodoRecovery.ts';
 import {FingerPose} from './fingerPose.ts';
 import {applyOnFootRider} from './onFootRider.ts';
+import {wheelPickupTiming} from './wheelPickupTiming.ts';
 import {solveLimb as solve} from './limbIK.ts';
 import * as T from 'three';
 import type { GLTF } from 'three/addons/loaders/GLTFLoader.js';
@@ -163,6 +165,13 @@ export class ThreeRiderView {
         protective.lerp(rest,p.crashSettle);
         target.lerp(protective,Math.min(1,p.crashBrace*1.7+p.crashRelease));
         armPole.lerp(bodyUp.negate().addScaledVector(bodyForward,.25),p.crashSettle);
+        if(p.crashRecovery>0){
+          const recovered=recoveryHand(p.crashRecovery,i,p.crashSide||1);
+          const push=shoulder.clone().addScaledVector(right,recovered.x*length).addScaledVector(worldUp,recovered.y*length).addScaledVector(forward,recovered.z*length);
+          push.y=Math.max(p.y-p.airHeight+.06*this.motionScale,push.y);
+          target.lerp(push,recovered.weight);
+          armPole.lerp(forward.clone().addScaledVector(right,side*.65),recovered.weight);
+        }
       }
       solve(l,target,armPole,undefined,.975);
       // Bone reset preserved the authored hand-to-forearm orientation. Follow that
@@ -180,6 +189,6 @@ export class ThreeRiderView {
       this.riderContact.settle(this.rider,floor,this.terrain);
       this.root.updateMatrixWorld(true);
     }
-    applyOnFootRider(this,p);this.fingers.apply('Relaxed',p.footMode===3&&p.footMountTime>.75&&p.footMountTime<2.5?'SupportGrip':'Relaxed');
+    applyOnFootRider(this,p);this.fingers.apply('Relaxed',p.footMode===3&&wheelPickupTiming(p.footMountTime||0).grip>.5?'SupportGrip':'Relaxed');
   }
 }

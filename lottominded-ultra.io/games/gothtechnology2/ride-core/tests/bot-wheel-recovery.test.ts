@@ -28,7 +28,7 @@ for(const engine of [false,true])test(`knocked-off AI picks up and remounts prom
   if(!a.pose.footMode){mountedAt=m.tick;break;}
  }
  assert(pickupAt&&mountedAt);assert(mountedAt-start<75,'nearby wheel recovered immediately, in under 1.25 seconds');
- assert(mountedAt-pickupAt>=Math.floor(WHEEL_PICKUP_TOTAL*60/4)-2,'all pickup/remount phases retained at AI pace');
+ assert(mountedAt-pickupAt>=Math.floor(WHEEL_PICKUP_TOTAL*60/2.6)-2,'all pickup/remount phases retained at AI pace');
  const human=m.actors[0];human.controller.reset({position:{x:0,y:0,z:20},headingY:0});human.pose={...human.controller.poseValue};
  for(let i=0;i<60;i++){m.step();assert.equal(a.input.dismount,false,'do not immediately dismount again to engage a nearby enemy');}
  m.dispose();

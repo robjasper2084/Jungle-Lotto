@@ -1,0 +1,11 @@
+{
+  "provider": "Higgsfield",
+  "model": "gpt_image_2_5",
+  "job_id": "b6d560f9-606e-413a-9b5c-b4ef4a8c13b4",
+  "date": "2026-10-23",
+  "purpose": "Tileable tactical glove and sleeve base color. Applied only to the first-person clone.",
+  "quoted_credits": 0.5,
+  "output": "512x512 WebP quality 85",
+  "bytes": 91450,
+  "sha256": "2f4bc1669113a938994c76e8a653a4ed84a1bc872b84322d77f64ec076ed4142"
+}

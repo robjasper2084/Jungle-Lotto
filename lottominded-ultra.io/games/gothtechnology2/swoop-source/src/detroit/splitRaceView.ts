@@ -34,7 +34,7 @@ export class SplitRaceView {
  constructor(scene:T.Scene,simulation:SplitRaceSimulation,data:Awaited<ReturnType<typeof loadActors>>,bindings:readonly SplitBinding[],actions:{pause:()=>void;restart:()=>void;menu:()=>void;recover:(i:number)=>void;camera:(i:number)=>void;cruise:(i:number)=>void;photo?:(i:number)=>void;display?:()=>void;input?:SplitRideInput;onlineSlot?:number;bots?:readonly number[];splitView?:()=>boolean},patches:readonly EffectPatch[]=[],audio:readonly RideAudio[]=[]){
   this.simulation=simulation;this.bindings=bindings;this.ownerSlot=actions.onlineSlot;this.onlineSplit=actions.splitView;this.audio=audio;this.lamps=simulation.riders.map(()=>new RiderLamp(scene,simulation.terrain));
   this.poses=simulation.riders.map(()=>createPose());this.lastGates=simulation.riders.map(()=>0);this.first=simulation.riders.map(()=>false);this.cameras=simulation.riders.map(()=>new T.PerspectiveCamera(55,1,.08,1500));this.photoFocus=simulation.riders.map(()=>undefined);
-  this.heroes=simulation.riders.map(r=>{const h=new Hero(data,r.sim.terrain,r.id);r.sim.mountedVolume=h.mountedVolume;h.apply(r.pose);scene.add(h.root);return h;});
+  this.heroes=simulation.riders.map(r=>{const h=new Hero(data,r.sim.terrain,r.id,'kimodo');r.sim.mountedVolume=h.mountedVolume;h.apply(r.pose);scene.add(h.root);return h;});
   this.follows=simulation.riders.map(r=>{const f=new FollowCamera(simulation.terrain);f.reset(r.pose);return f;});
   this.effects=simulation.riders.map(()=>new ContactEffects(scene,simulation.terrain,patches));this.sparks=simulation.riders.map(()=>new PedalSparks(scene));scene.add(this.course);
   for(const [i,station]of RACE_ROUTE.gates.entries()){

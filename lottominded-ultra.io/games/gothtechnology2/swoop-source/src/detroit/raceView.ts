@@ -73,7 +73,7 @@ export class RivalRace {
   this.rules=new RaceRules(player);this.pilots=this.rules.racers.slice(1).map((r,i)=>new RacePilot(terrain,r.id,i,difficulty,()=>playerController?playerController.obstacles('human-player'):this.playerPose?[{id:'human-player',x:this.playerPose.x,y:this.playerPose.y,z:this.playerPose.z,radius:.52,height:2.2,kind:'rider',vx:this.playerPose.velocityX,vz:this.playerPose.velocityZ}]:[],cyclingOpponents,electric?EBIKES[(EBIKES.findIndex(p=>p.id===electric.id)+i+1)%4]:undefined,wheel?EUC_MODELS[(EUC_MODELS.findIndex(p=>p.id===wheel.id)+i+1)%4]:undefined));
 
 
-  this.heroes=this.pilots.map(p=>{const riderData=new Map(data);if(p.wheel)riderData.set('DS_EUC_01',data.get('Euc_'+p.wheel.id)!);const h=p.electric?new EbikeView(data.get('Ebike_'+p.electric.id)!,data.get('DS_Cyclist_01')!,p.electric,true):cyclingOpponents?new BicycleView(data.get('DS_Bicycle_01')!,data.get('DS_Cyclist_01')!,p.index+1,true):new Hero(riderData,terrain,p.id);if(h instanceof Hero)p.sim.mountedVolume=h.mountedVolume;h.apply(p.pose);scene.add(h.root);return h;});
+  this.heroes=this.pilots.map(p=>{const riderData=new Map(data);if(p.wheel)riderData.set('DS_EUC_01',data.get('Euc_'+p.wheel.id)!);const h=p.electric?new EbikeView(data.get('Ebike_'+p.electric.id)!,data.get('DS_Cyclist_01')!,p.electric,true):cyclingOpponents?new BicycleView(data.get('DS_Bicycle_01')!,data.get('DS_Cyclist_01')!,p.index+1,true):new Hero(riderData,terrain,p.id,'kimodo');if(h instanceof Hero)p.sim.mountedVolume=h.mountedVolume;h.apply(p.pose);scene.add(h.root);return h;});
 
 
 

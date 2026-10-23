@@ -1,5 +1,5 @@
 const smooth=(a:number,b:number,x:number)=>{const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t);};
-export const footCycleDistance=(speed:number)=>1.25+.40*smooth(1,2.35,Math.abs(speed))+1.35*smooth(2.35,5.4,Math.abs(speed));
+export const footCycleDistance=(speed:number)=>1.10+.30*smooth(1,2.35,Math.abs(speed))+1.60*smooth(2.35,5.4,Math.abs(speed));
 /** Distance matched contact: the planted ankle travels backwards at ground speed.
  * Low swing clearance keeps the current cadence without high stepping.
  * Smaller heroes use their own reach, rather than inheriting a human stride. */

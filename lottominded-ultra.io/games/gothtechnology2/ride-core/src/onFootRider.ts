@@ -1,23 +1,24 @@
 import {standingIdle} from './heroActions.ts';
 import {sampleUserAction,userFoot} from './userActions.ts';
-import {sampleBrotherWalk,brotherFoot,BROTHER_WALK} from './brotherWalk.ts';
+import {sampleTacticalWalk,tacticalFoot,TACTICAL_WALK} from './tacticalWalk.ts';
+import {sampleKimodoWalk,kimodoWalkFoot,KIMODO_WALK} from './kimodoWalk.ts';
 import * as T from 'three';
 import {DIRECTIONAL_MOTION} from './directionalMotionData.ts';
 import {TURN_MOTION} from './turnMotionData.ts';
 import {LOW_STANCE_MOTION} from './lowStanceMotionData.ts';
-import {WHEEL_TRANSITIONS} from './wheelTransitionData.ts';
 import {FootAnimation,gaitScale,crawlReach} from './footAnimation.ts';
 import {TACTICAL_MOTION} from './tacticalMotionData.ts';
 import {footGait,footBodyMotion} from './onFootGait.ts';
 import {solveLimb} from './limbIK.ts';
 import {WHEEL_PICKUP} from './wheelPickupData.ts';
 import {wheelPickupTiming} from './wheelPickupTiming.ts';
+import {KIMODO_WHEEL} from './kimodoWheelData.ts';
 import type {FootPose} from './onFoot.ts';
-type Rig={riderId?:string;root:T.Object3D;ground:T.Object3D;lean:T.Object3D;rider:T.Object3D;vehicle:T.Object3D;mountHeight:number;motionScale:number;bones:{o:T.Object3D;p:T.Vector3;q:T.Quaternion}[]};
+type Rig={walkStyle?:'tactical'|'kimodo';riderId?:string;root:T.Object3D;ground:T.Object3D;lean:T.Object3D;rider:T.Object3D;vehicle:T.Object3D;mountHeight:number;motionScale:number;bones:{o:T.Object3D;p:T.Vector3;q:T.Quaternion}[]};
 type Binding={bone:T.Object3D;offset:T.Quaternion;channel:number};
 type Leg={upper:T.Object3D;knee:T.Object3D;foot:T.Object3D;rest:T.Vector3;strideCenter:number;strideX:number;rotation:T.Quaternion;sole:T.Vector3[];length:number;upperLength:number;lowerLength:number};
 type Arm={upper:T.Object3D;knee:T.Object3D;foot:T.Object3D;palm?:T.Object3D;upperLength:number;lowerLength:number};
-type Fit={wheelHandle?:T.Vector3;transition?:Record<string,number[][]>;animation:FootAnimation;body:Binding[];neck?:Binding;legs:Leg[];arms:Arm[];bottom:number;legLength:number;jumpAt:number;jump:number;row?:number[];jumpFrom?:number[];lastTime?:number};
+type Fit={wheelHandle?:T.Vector3;animation:FootAnimation;body:Binding[];neck?:Binding;legs:Leg[];arms:Arm[];bottom:number;legLength:number;jumpAt:number;jump:number;row?:number[];jumpFrom?:number[];lastTime?:number};
 const rigs=new WeakMap<Rig,Fit>(),channels=[30,34,44,48,52,56,60,64],tau=Math.PI*2;
 const v=()=>new T.Vector3(),q=()=>new T.Quaternion();
 const quat=(row:number[],offset:number)=>q().fromArray(row,offset).normalize();
@@ -89,12 +90,7 @@ function fit(h:Rig):Fit{
   l.strideX=center+side*halfWidth;
  }
  const neckName=bone('neck')?'neck':bone('Neck')?'Neck':undefined;
- let riderId=h.riderId;
- if(!riderId)h.rider.traverse(o=>{if(riderId)return;const mesh=o as T.Mesh;
-  const names=[o.name,...(mesh.isMesh?(Array.isArray(mesh.material)?mesh.material:[mesh.material]).map(m=>m.name):[])];
-  riderId=Object.keys(WHEEL_TRANSITIONS).find(id=>names.some(n=>n.startsWith(id)));
- });
- return{transition:riderId?WHEEL_TRANSITIONS[riderId]:undefined,animation:new FootAnimation(),body,legs,arms,bottom,legLength:(legs[0].length+legs[1].length)/2,neck:neckName?bind(neckName,chestFrame,0):undefined,jumpAt:0,jump:0};
+ return{animation:new FootAnimation(),body,legs,arms,bottom,legLength:(legs[0].length+legs[1].length)/2,neck:neckName?bind(neckName,chestFrame,0):undefined,jumpAt:0,jump:0};
 }
 function standingBindPose(h:Rig){
  h.ground.position.y=0;h.ground.rotation.set(0,0,0);h.lean.rotation.set(0,0,0);h.rider.rotation.set(0,0,0);h.rider.position.set(0,0,0);
@@ -132,10 +128,11 @@ export function applyOnFootRider(h:Rig,pose:Partial<FootPose>&{crashBlend?:numbe
  let row=sample(name,clipPhase);
  // Retreat plays the same forward take backwards in time; do not mirror its limbs.
  const walkPhase=longitudinal<0?-phase:phase;
- const manny=sampleBrotherWalk(walkPhase),walkWeight=(longitudinal<0?1:1-T.MathUtils.smoothstep(speed,2.5,3.6))*Math.abs(longitudinal)*(1-turning)*(1-T.MathUtils.clamp(p.footProne||0,0,1))*(1-T.MathUtils.clamp(p.footCrouch||0,0,1));
+ const useKimodo=h.walkStyle==='kimodo',walkReference=useKimodo?KIMODO_WALK:TACTICAL_WALK;
+ const tactical=useKimodo?sampleKimodoWalk(walkPhase):sampleTacticalWalk(walkPhase),walkWeight=(longitudinal<0?1:1-T.MathUtils.smoothstep(speed,2.5,3.6))*Math.abs(longitudinal)*(1-turning)*(1-T.MathUtils.clamp(p.footProne||0,0,1))*(1-T.MathUtils.clamp(p.footCrouch||0,0,1));
  if(!p.footJump){
   row=mix(sample('idle',(p.footTime/TACTICAL_MOTION.idle.duration)%1),turning>.05?turnMotion(phase,data.animation.turn>0):directional(phase,direction),Math.max(turning*.5,T.MathUtils.smoothstep(speed,0,.85)));
-  for(let i=0;i<24;i++)row[i]=T.MathUtils.lerp(row[i],manny[i],walkWeight*T.MathUtils.smoothstep(speed,0,.85));
+  for(let i=0;i<24;i++)row[i]=T.MathUtils.lerp(row[i],tactical[i],walkWeight*T.MathUtils.smoothstep(speed,0,.85));
   row=mix(row,sample('jog',phase),T.MathUtils.smoothstep(speed,2.5,3.6)*Math.max(0,longitudinal));row=mix(row,sample('run',phase),T.MathUtils.smoothstep(speed,3.6,5.4)*Math.max(0,longitudinal));
  }
  const actionName=speed>3.2?'sprint_loop':'crouch_fwd_loop';
@@ -148,10 +145,10 @@ export function applyOnFootRider(h:Rig,pose:Partial<FootPose>&{crashBlend?:numbe
  const motion=footBodyMotion(phase,p.speed);
  const idle=standingIdle(p.footTime),idleWeight=(1-T.MathUtils.smoothstep(speed,0,.35))*(1-turning)*(p.footJump||p.footMode!==2?0:1)*(1-(p.footCrouch||0))*(1-(p.footProne||0));
  motion.bob+=idle[1]*idleWeight;motion.weight+=idle[0]*idleWeight;
- const faithfulWalk=walkWeight*T.MathUtils.smoothstep(speed,0,.85)*(p.footJump||p.footMode!==2?0:1);
- // The old procedural root and flattened arm arcs erased the user's take.
- motion.bob=T.MathUtils.lerp(motion.bob,manny[45]*.9/BROTHER_WALK.legLength,faithfulWalk);
- motion.weight=T.MathUtils.lerp(motion.weight,manny[44]*.9/BROTHER_WALK.legLength,faithfulWalk);
+ const tacticalWeight=walkWeight*T.MathUtils.smoothstep(speed,0,.85)*(p.footJump||p.footMode!==2?0:1);
+ // Retain the selected capture's weight transfer, fitted to each hero.
+ motion.bob=T.MathUtils.lerp(motion.bob,tactical[45]*.9/walkReference.legLength,tacticalWeight);
+ motion.weight=T.MathUtils.lerp(motion.weight,tactical[44]*.9/walkReference.legLength,tacticalWeight);
  const upright=(source:T.Quaternion,chest=false)=>{
   const e=new T.Euler().setFromQuaternion(source,'YXZ');
   // Preserve capture timing and follow-through instead of flattening the
@@ -166,30 +163,31 @@ export function applyOnFootRider(h:Rig,pose:Partial<FootPose>&{crashBlend?:numbe
  const hipFrame=(p.footJump?quat(row,30):upright(quat(row,30))).premultiply(posture),chestFrame=(p.footJump?quat(row,34):upright(quat(row,34),true)).premultiply(posture);
  hipFrame.slerp(q().setFromEuler(new T.Euler(idle[2]*.25,0,-idle[0]*.4)),idleWeight);
  chestFrame.slerp(q().setFromEuler(new T.Euler(idle[2],idle[3],idle[0]*.35)),idleWeight);
- hipFrame.slerp(quat(manny,30),faithfulWalk);chestFrame.slerp(quat(manny,34),faithfulWalk);
+ hipFrame.slerp(quat(tactical,30),tacticalWeight);chestFrame.slerp(quat(tactical,34),tacticalWeight);
  for(const b of data.body)worldRotation(b.bone,frame.clone().multiply(hipFrame.clone().slerp(chestFrame,b.channel/3)).multiply(b.offset));
  if(data.neck)worldRotation(data.neck.bone,frame.clone().multiply(posture.clone().slerp(chestFrame,.22)).multiply(data.neck.offset));
+ if(useKimodo&&data.neck&&tacticalWeight>0)worldRotation(data.neck.bone,data.neck.bone.getWorldQuaternion(q()).slerp(frame.clone().multiply(quat(tactical,47)).multiply(data.neck.offset),tacticalWeight));
  if(data.neck&&idleWeight>0)worldRotation(data.neck.bone,data.neck.bone.getWorldQuaternion(q()).premultiply(q().setFromAxisAngle(up,idle[4]*idleWeight)));
  if(data.neck&&prone>0)worldRotation(data.neck.bone,data.neck.bone.getWorldQuaternion(q()).premultiply(q().setFromAxisAngle(right,-.9*prone)));
  // Clavicles follow the captured chest; the arm socket must not be pinned to
  // a world-horizontal line while the rib cage rotates beneath it.
  for(const [i,side] of ['Left','Right'].entries()){
   const collar=h.rider.getObjectByName(side+'Shoulder'),arm=h.rider.getObjectByName(side+'Arm');
-  if(collar&&arm){const target=new T.Vector3().fromArray(row,38+i*3).lerp(new T.Vector3().fromArray(manny,38+i*3),faithfulWalk);
-   target.z*=T.MathUtils.lerp(.55,1,faithfulWalk);target.y=T.MathUtils.lerp(T.MathUtils.clamp(target.y,-.10,.10),target.y,faithfulWalk);target.normalize().applyQuaternion(frame);
+  if(collar&&arm){const target=new T.Vector3().fromArray(row,38+i*3).lerp(new T.Vector3().fromArray(tactical,38+i*3),tacticalWeight);
+   target.z*=T.MathUtils.lerp(.55,1,tacticalWeight);target.y=T.MathUtils.lerp(T.MathUtils.clamp(target.y,-.10,.10),target.y,tacticalWeight);target.normalize().applyQuaternion(frame);
    point(collar,arm,collar.getWorldPosition(v()).add(target));
   }
  }
  const effort=Math.max(turning*.5,T.MathUtils.smoothstep(speed,0,.85)),jog=T.MathUtils.smoothstep(speed,2.5,4.1),hips=data.body[0].bone,hip=hips.getWorldPosition(v());
- hip.addScaledVector(up,-data.bottom+(motion.bob-.05*effort*(1-jog)*(1-faithfulWalk))*scale*(1-prone)-.30*scale*crouch-.09*scale*stagger-.08*scale*evade);
+ hip.addScaledVector(up,-data.bottom+(motion.bob-.05*effort*(1-jog)*(1-tacticalWeight))*scale*(1-prone)-.30*scale*crouch-.09*scale*stagger-.08*scale*evade);
  hip.addScaledVector(right,motion.weight*scale*(1-prone)*(1-crouch*.5));
  hip.y=T.MathUtils.lerp(hip.y,h.root.getWorldPosition(v()).y+.26*scale+(h.motionScale<.7?.13:.03),prone);hip.addScaledVector(forward,-.30*scale*prone);
- hip.addScaledVector(forward,manny[46]*data.legLength/BROTHER_WALK.legLength*faithfulWalk);
+ hip.addScaledVector(forward,tactical[46]*data.legLength/walkReference.legLength*tacticalWeight);
  hips.position.copy(hips.parent!.worldToLocal(hip));h.root.updateMatrixWorld(true);
  if(!p.footJump||p.footJump===3){
   const strides=data.legs.map((_,i)=>{
    const stride=footGait(cycle+i*.5,Math.max(speed,turning),data!.legLength),clip=lowStance('crouch',cycle+i*.5);
-   const captured=brotherFoot(manny,i,data!.legLength);
+   const captured=useKimodo?kimodoWalkFoot(tactical,i,data!.legLength):tacticalFoot(tactical,i,data!.legLength);
    stride.z=T.MathUtils.lerp(stride.z,captured.z,walkWeight);stride.lift=T.MathUtils.lerp(stride.lift,captured.lift,walkWeight);stride.pitch=T.MathUtils.lerp(stride.pitch,captured.pitch,walkWeight);
    stride.z=T.MathUtils.lerp(stride.z,clip[0]*scale,crouch);
    stride.lift=T.MathUtils.lerp(stride.lift,clip[1]*scale,crouch);
@@ -215,7 +213,7 @@ export function applyOnFootRider(h:Rig,pose:Partial<FootPose>&{crashBlend?:numbe
   });
   // Retarget the pack's thigh/shin directions, not a generated walking pose.
   // The captured pose is fitted onto the real shoe soles and each hero's reach.
-  const captureWeight=effort*(1-prone)*(1-crouch)*(p.footJump?0:1);
+  const captureWeight=effort*(1-prone)*(1-crouch)*(p.footJump?0:1)*(useKimodo&&h.motionScale<.7?1-.2*walkWeight:1);
   if(captureWeight>0){
    const captured=data.legs.map((l,i)=>{
     const a=l.upper.getWorldPosition(v());
@@ -279,7 +277,7 @@ export function applyOnFootRider(h:Rig,pose:Partial<FootPose>&{crashBlend?:numbe
   bend.sub(a).setLength(l.upperLength).add(a);
   const hand=bend.clone().addScaledVector(up,-l.lowerLength*Math.cos(shoulder+relaxedElbow)*Math.cos(lowerSpread)).addScaledVector(forward,l.lowerLength*Math.sin(shoulder+relaxedElbow)*Math.cos(lowerSpread)).addScaledVector(right,side*l.lowerLength*Math.sin(lowerSpread));
   point(l.upper,l.knee,bend);point(l.knee,l.foot,hand);
-  const wrist=.035*effort*Math.sin((faithfulWalk>0?walkPhase:phase)*tau+i*Math.PI-.45)*(1-prone);
+  const wrist=.035*effort*Math.sin((tacticalWeight>0?walkPhase:phase)*tau+i*Math.PI-.45)*(1-prone);
   let handFrame=l.foot.getWorldQuaternion(q());
   if(l.palm&&!p.footJump&&effort>0&&prone<1){
    const wristPosition=l.foot.getWorldPosition(v()),palmAxis=l.palm.getWorldPosition(v()).sub(wristPosition);
@@ -295,13 +293,23 @@ export function applyOnFootRider(h:Rig,pose:Partial<FootPose>&{crashBlend?:numbe
    solveLimb(l,l.foot.getWorldPosition(v()).lerp(target,prone),right.clone().multiplyScalar(side).addScaledVector(forward,-.3),frame.clone().multiply(q().setFromAxisAngle(new T.Vector3(1,0,0),-Math.PI/2)));
   }
  });
- if(faithfulWalk>0){
+ if(tacticalWeight>0){
   data.arms.forEach((l,i)=>{
-   const channel=12+i*6,upper=new T.Vector3().fromArray(manny,channel).normalize().applyQuaternion(frame),lower=new T.Vector3().fromArray(manny,channel+3).normalize().applyQuaternion(frame);
-   const a=l.upper.getWorldPosition(v()),b=l.knee.getWorldPosition(v()).lerp(a.clone().addScaledVector(upper,l.upperLength),faithfulWalk);
+   const channel=12+i*6,upper=new T.Vector3().fromArray(tactical,channel).normalize().applyQuaternion(frame),lower=new T.Vector3().fromArray(tactical,channel+3).normalize().applyQuaternion(frame);
+   if(useKimodo&&h.motionScale<.7){
+    // The same adult take needs a softer elbow on the short mascot jacket.
+    const flex=upper.angleTo(lower);
+    if(flex>.65)lower.copy(upper.clone().applyQuaternion(q().slerp(q().setFromUnitVectors(upper,lower),.65/flex)));
+   }
+   const a=l.upper.getWorldPosition(v()),b=l.knee.getWorldPosition(v()).lerp(a.clone().addScaledVector(upper,l.upperLength),tacticalWeight);
    point(l.upper,l.knee,b);
-   const elbow=l.knee.getWorldPosition(v()),hand=l.foot.getWorldPosition(v()).lerp(elbow.clone().addScaledVector(lower,l.lowerLength),faithfulWalk);
+   const elbow=l.knee.getWorldPosition(v()),hand=l.foot.getWorldPosition(v()).lerp(elbow.clone().addScaledVector(lower,l.lowerLength),tacticalWeight);
    point(l.knee,l.foot,hand);
+   if(useKimodo&&l.palm){
+    // Refit the relaxed wrist after the captured elbow plane is applied.
+    const wrist=l.foot.getWorldPosition(v()),palm=l.palm.getWorldPosition(v()).sub(wrist),forearm=wrist.clone().sub(l.knee.getWorldPosition(v()));
+    if(palm.lengthSq()>1e-8&&forearm.lengthSq()>1e-8)worldRotation(l.foot,l.foot.getWorldQuaternion(q()).premultiply(q().setFromUnitVectors(palm.normalize(),forearm.normalize())));
+   }
   });
  }
  // Combat flinches must survive the locomotion mask, including when on foot.
@@ -310,13 +318,8 @@ export function applyOnFootRider(h:Rig,pose:Partial<FootPose>&{crashBlend?:numbe
   b.bone.quaternion.multiply(additive);b.bone.updateWorldMatrix(false,true);
  }
  if(mounted)h.bones.forEach((b,i)=>{const target=b.o.quaternion.clone(),position=b.o.position.clone();b.o.quaternion.copy(mounted[i].q).slerp(target,blend);b.o.position.copy(mounted[i].p).lerp(position,blend);});
- // Use the authored wheel-handling rotations during the step-off/step-on.
+ // Establish pedal-to-ground support before retargeting the Kimodo steps.
  // The controller still owns the parking position and transition duration.
- const transition=data.transition;
- if(transition&&(p.footMode===1||p.footMode===3)){
-  const phase=blend*(25-1),index=Math.floor(phase),weight=Math.sin(blend*Math.PI)**2*.72;
-  for(const b of h.bones){const rows=transition[b.o.name];if(rows){const target=q().fromArray(rows[index]).slerp(q().fromArray(rows[Math.min(index+1,24)]),phase-index);b.o.quaternion.slerp(target,weight);}}
- }
  h.rider.position.y=h.mountHeight*(1-blend);h.root.updateMatrixWorld(true);
  if(p.footMode===1||p.footMode===3){
   const soleFloor=Math.min(...data.legs.map(l=>l.foot.getWorldPosition(v()).y+Math.min(...l.sole.map(s=>s.y))))-h.root.getWorldPosition(v()).y;
@@ -325,6 +328,51 @@ export function applyOnFootRider(h:Rig,pose:Partial<FootPose>&{crashBlend?:numbe
  }
  h.vehicle.position.copy(h.lean.worldToLocal(new T.Vector3(p.parkX,p.parkY,p.parkZ)));h.vehicle.rotation.set(0,p.parkHeading-p.headingY,-.07*blend);h.root.updateMatrixWorld(true);
  if(p.footMode===3)applyWheelPickup(h,data,p);
+ if(p.footMode===1||p.footMode===3)applyKimodoWheel(h,data,p);
+}
+
+/** Kimodo supplies counterbalance and separate step timing. The existing rig's
+ * soles, limb lengths and pedal height supply contacts; simulation owns movement. */
+function applyKimodoWheel(h:Rig,data:Fit,p:FootPose){
+ const off=p.footMode===1,phase=off?p.footBlend:wheelPickupTiming(p.footMountTime||0).mount;
+ if(phase<=0||phase>=1)return;
+ const rows=KIMODO_WHEEL[off?'dismount':'mount'].samples,f=phase*(rows.length-1),i=Math.floor(f),j=Math.min(i+1,rows.length-1);
+ const row=rows[i].map((n,k)=>T.MathUtils.lerp(n,rows[j][k],f-i));
+ const weight=T.MathUtils.smoothstep(phase,0,.12)*(1-T.MathUtils.smoothstep(phase,.88,1));
+ const frame=q().setFromAxisAngle(new T.Vector3(0,1,0),p.parkHeading),right=new T.Vector3(1,0,0).applyQuaternion(frame),forward=new T.Vector3(0,0,1).applyQuaternion(frame);
+ const origin=new T.Vector3(p.parkX,p.parkY,p.parkZ),delta=new T.Vector3(p.x-p.parkX,0,p.z-p.parkZ),side=Math.sign(delta.dot(right))||1;
+ // The source steps off to its right (-X). Mirror anatomy for the other side.
+ const mirror=side>0,scale=Math.max(.25,data.legLength/.9);
+ for(const b of data.body){
+  const offset=b.channel<2?0:4,capture=q().fromArray(rows[i],offset).slerp(q().fromArray(rows[j],offset),f-i);
+  if(mirror){capture.y*=-1;capture.z*=-1;}
+  worldRotation(b.bone,b.bone.getWorldQuaternion(q()).slerp(frame.clone().multiply(capture).multiply(b.offset),weight*.65));
+ }
+ h.root.updateMatrixWorld(true);
+ const targets=data.legs.map((l,k)=>{
+  const source=mirror?1-k:k,u=row[20+source*2],lift=row[21+source*2]*scale;
+  const floor=-Math.min(...l.sole.map(s=>s.y))+.006;
+  const pedal=new T.Vector3(l.rest.x,floor+h.mountHeight,l.rest.z).applyQuaternion(frame).add(origin);
+  const standing=new T.Vector3(l.rest.x+(off?.68:.30)*side,floor,l.rest.z).applyQuaternion(frame).add(origin);
+  const target=(off?pedal.clone().lerp(standing,u):standing.clone().lerp(pedal,u));target.y+=lift;
+  return l.foot.getWorldPosition(v()).lerp(target,weight);
+ });
+ // Bend the knees rather than stretching a planted leg as weight transfers.
+ let lower=0;
+ data.legs.forEach((l,k)=>{const a=l.upper.getWorldPosition(v()),t=targets[k],reach=l.length*.985;
+  lower=Math.max(lower,a.y-t.y-Math.sqrt(Math.max(.0001,reach*reach-(a.x-t.x)**2-(a.z-t.z)**2)));
+ });
+ if(lower>0){const hips=data.body[0].bone,at=hips.getWorldPosition(v());at.y-=Math.min(lower,.32*scale);hips.position.copy(hips.parent!.worldToLocal(at));h.root.updateMatrixWorld(true);}
+ data.legs.forEach((l,k)=>solveLimb(l,targets[k],forward.clone().addScaledVector(right,(k===0?1:-1)*.16),frame.clone().multiply(l.rotation)));
+ data.arms.forEach((l,k)=>{
+  const source=mirror?1-k:k;
+  for(const [bone,child,offset]of [[l.upper,l.knee,8+source*6],[l.knee,l.foot,11+source*6]] as const){
+   const direction=new T.Vector3().fromArray(row,offset);if(mirror)direction.x*=-1;direction.normalize().applyQuaternion(frame);
+   const at=bone.getWorldPosition(v()),target=at.clone().addScaledVector(direction,at.distanceTo(child.getWorldPosition(v())));
+   point(bone,child,child.getWorldPosition(v()).lerp(target,weight*.82));
+  }
+ });
+ h.root.updateMatrixWorld(true);
 }
 
 /** Retarget the supplied farm_harvest capture. World-space contact IK preserves

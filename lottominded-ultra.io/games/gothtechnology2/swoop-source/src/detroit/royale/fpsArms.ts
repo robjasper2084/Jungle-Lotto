@@ -6,15 +6,27 @@ import type {Hero} from '../actors.ts';
 export class FpsArms {
  private masks:T.BufferGeometry[]=[];
  private sleeves:T.Mesh[]=[];private cuffs:T.Mesh[]=[];
- private sleeveGeometry=new T.CylinderGeometry(.053,.087,1,12,4);
- private cuffGeometry=new T.CylinderGeometry(.054,.059,.062,12);
+ private sleeveGeometry=new T.LatheGeometry([new T.Vector2(.064,-.5),new T.Vector2(.069,-.43),new T.Vector2(.063,-.2),new T.Vector2(.048,.28),new T.Vector2(.037,.46),new T.Vector2(.036,.5)],16);
+ private cuffGeometry=new T.CylinderGeometry(.039,.043,.038,16);
+ private texture?:T.Texture;
+ private gloveMaterials=new Map<T.Material,T.MeshStandardMaterial>();
  private cloth:T.MeshStandardMaterial;private cuffMaterial:T.MeshStandardMaterial;
  constructor(private hero:Hero,private root:T.Group){
   const hands=new Set<T.Object3D>();for(const side of ['Left','Right'])hero.rider.getObjectByName(side+'Hand')?.traverse(o=>hands.add(o));
   let sleeveColor=new T.Color('#344044');
+  if(typeof document!=='undefined'){
+   this.texture=new T.TextureLoader().load(new URL('./tactical-fabric.webp',import.meta.url).href);
+   this.texture.colorSpace=T.SRGBColorSpace;this.texture.wrapS=this.texture.wrapT=T.RepeatWrapping;this.texture.repeat.set(2,3);this.texture.anisotropy=4;
+  }
   hero.visibility.setFirstPerson(true);
   hero.rider.traverse(o=>{
    if(!(o instanceof T.Mesh))return;
+   if(this.texture){
+    const glove=(material:T.Material)=>{
+     if(!(material instanceof T.MeshStandardMaterial)||!/glove/i.test(material.name))return material;
+     let copy=this.gloveMaterials.get(material);if(!copy){copy=material.clone();copy.map=this.texture!;copy.color.set('#a7b4b4');copy.roughness=.82;copy.metalness=0;this.gloveMaterials.set(material,copy);}return copy;
+    };o.material=Array.isArray(o.material)?o.material.map(glove):glove(o.material);
+   }
    for(const material of Array.isArray(o.material)?o.material:[o.material])if(material instanceof T.MeshStandardMaterial&&/garment|nylon|suit|hoodie/i.test(material.name))sleeveColor=material.color.clone();
    if(!(o instanceof T.SkinnedMesh)){o.visible=o.visible&&hands.has(o);return;}
    const source=o.geometry,skin=source.getAttribute('skinIndex'),weight=source.getAttribute('skinWeight'),index=source.index;
@@ -28,9 +40,9 @@ export class FpsArms {
    }
    geometry.setIndex(indices);this.masks.push(geometry);o.geometry=geometry;o.visible=o.visible&&indices.length>0;
   });
-  this.cloth=new T.MeshStandardMaterial({color:sleeveColor,roughness:.88,metalness:0});
+  this.cloth=new T.MeshStandardMaterial({color:this.texture?new T.Color('#b4c4c4').lerp(sleeveColor,.12):sleeveColor,map:this.texture??null,roughness:.88,metalness:0});
   this.cuffMaterial=new T.MeshStandardMaterial({color:sleeveColor.clone().multiplyScalar(.66),roughness:.74});
-  for(let i=0;i<2;i++){const sleeve=new T.Mesh(this.sleeveGeometry,this.cloth),cuff=new T.Mesh(this.cuffGeometry,this.cuffMaterial);sleeve.name='First-person fitted sleeve';cuff.name='First-person wrist cuff';sleeve.receiveShadow=cuff.receiveShadow=true;root.add(sleeve,cuff);this.sleeves.push(sleeve);this.cuffs.push(cuff);}
+  for(let i=0;i<2;i++){const sleeve=new T.Mesh(this.sleeveGeometry,this.cloth),cuff=new T.Mesh(this.cuffGeometry,this.cuffMaterial);sleeve.name='First-person fitted sleeve';cuff.name='First-person wrist cuff';root.add(sleeve,cuff);this.sleeves.push(sleeve);this.cuffs.push(cuff);}
  }
  update(camera:T.Camera,scale:number,viewScale:number){
   const forward=new T.Vector3(0,0,-1).applyQuaternion(camera.quaternion),right=new T.Vector3(1,0,0).applyQuaternion(camera.quaternion),up=new T.Vector3(0,1,0).applyQuaternion(camera.quaternion);
@@ -38,10 +50,10 @@ export class FpsArms {
    const hand=this.hero.arms[i]?.foot,sleeve=this.sleeves[i],cuff=this.cuffs[i];sleeve.visible=cuff.visible=!!hand;if(!hand)continue;
    const wrist=this.root.worldToLocal(hand.getWorldPosition(new T.Vector3()));
    const elbow=this.root.worldToLocal(camera.position.clone().addScaledVector(right,(i===0?-.36:.38)*scale).addScaledVector(up,-.57*scale).addScaledVector(forward,-.06*scale));
-   const direction=wrist.clone().sub(elbow),length=direction.length();direction.normalize();
+   const direction=wrist.clone().sub(elbow),length=direction.length()-.018*scale/viewScale;direction.normalize();
    sleeve.position.copy(elbow).addScaledVector(direction,length/2);sleeve.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),direction);sleeve.scale.set(scale/viewScale,length,scale/viewScale);
    cuff.position.copy(wrist).addScaledVector(direction,-.025*scale/viewScale);cuff.quaternion.copy(sleeve.quaternion);cuff.scale.setScalar(scale/viewScale);
   }
  }
- dispose(){for(const geometry of this.masks)geometry.dispose();for(const mesh of [...this.sleeves,...this.cuffs])mesh.removeFromParent();this.sleeveGeometry.dispose();this.cuffGeometry.dispose();this.cloth.dispose();this.cuffMaterial.dispose();}
+ dispose(){for(const geometry of this.masks)geometry.dispose();for(const mesh of [...this.sleeves,...this.cuffs])mesh.removeFromParent();this.sleeveGeometry.dispose();this.cuffGeometry.dispose();this.cloth.dispose();this.cuffMaterial.dispose();for(const material of this.gloveMaterials.values())material.dispose();this.texture?.dispose();}
 }
