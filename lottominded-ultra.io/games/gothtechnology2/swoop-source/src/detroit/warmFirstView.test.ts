@@ -14,3 +14,16 @@ test('first-view preparation uploads visible textures once and waits for shaders
  assert.deepEqual(events,[texture,'compile']);
  complete();await work;assert.deepEqual(events,[texture,'compile','render']);
 });
+test('off-camera roster buffers are uploaded and all visibility/culling flags are restored',async()=>{
+ const scene=new T.Scene(),root=new T.Group(),mesh=new T.Mesh(new T.BoxGeometry(),new T.MeshBasicMaterial()),hidden=new T.Mesh();
+ root.visible=false;hidden.visible=false;mesh.frustumCulled=true;hidden.frustumCulled=false;root.add(mesh,hidden);scene.add(root);
+ const renderer={initTexture(){},async compileAsync(){},render(){assert(root.visible);assert.equal(mesh.frustumCulled,false);assert.equal(hidden.visible,false);}} as unknown as T.WebGLRenderer;
+ await warmFirstView(renderer,scene,new T.PerspectiveCamera(),[root]);
+ assert.equal(root.visible,false);assert.equal(mesh.frustumCulled,true);assert.equal(hidden.frustumCulled,false);assert.equal(hidden.visible,false);
+});
+test('failed shader preparation cannot leave hidden enemies visible',async()=>{
+ const scene=new T.Scene(),root=new T.Group(),mesh=new T.Mesh();root.visible=false;root.add(mesh);scene.add(root);
+ const renderer={initTexture(){},async compileAsync(){throw Error('context lost');}} as unknown as T.WebGLRenderer;
+ await assert.rejects(warmFirstView(renderer,scene,new T.PerspectiveCamera(),[root]),/context lost/);
+ assert.equal(root.visible,false);assert.equal(mesh.frustumCulled,true);
+});

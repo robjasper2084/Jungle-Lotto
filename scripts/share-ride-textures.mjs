@@ -1,13 +1,16 @@
 import { createHash } from 'node:crypto';
-import { readdir, readFile, writeFile, mkdir } from 'node:fs/promises';
+import { readdir, readFile, mkdir } from 'node:fs/promises';
 import { dirname, relative, resolve } from 'node:path';
+import {atomicGameAsset} from './atomic-game-asset.mjs';
 
-// Reuse identical Elmwood textures in the published Swoop models. Source models
-// and standalone previews stay intact; geometry, skinning and pixels are unchanged.
+// Reuse identical textures in generated game packages. Authoring models stay
+// intact; geometry, skinning and decoded pixels are unchanged.
 export function shareModelTextures(input, modelPath, textures) {
   if (input.readUInt32LE(0) !== 0x46546c67) throw new Error('Expected GLB');
   const jsonLength = input.readUInt32LE(12);
   const gltf = JSON.parse(input.toString('utf8', 20, 20 + jsonLength));
+  // A second packaging pass must not rewrite compressed buffer offsets.
+  if(gltf.buffers?.length!==1||(gltf.extensionsUsed??[]).some(x=>/meshopt|draco/i.test(x)))return input;
   const binary = input.subarray(28 + jsonLength);
   const removed = new Set();
   for (const image of gltf.images ?? []) {
@@ -62,9 +65,9 @@ export function shareModelTextures(input, modelPath, textures) {
   return result;
 }
 
-export async function shareRideTextures(outputRoot) {
-  const arcade = resolve(outputRoot, 'lottominded-ultra.io/games/gothtechnology2/arcade');
-  const canonical = resolve(arcade, 'elmwood-explorer/shared-textures');
+export async function shareRideTextures(outputRoot,options={}) {
+  const arcade = options.arcade??resolve(outputRoot, 'lottominded-ultra.io/games/gothtechnology2/arcade');
+  const canonical = options.canonical??resolve(arcade, 'elmwood-explorer/shared-textures');
   const textures = new Map();
   for (const entry of await readdir(canonical, { withFileTypes: true }).catch(() => [])) {
     if (!entry.isFile() || !/\.(png|jpg)$/.test(entry.name)) continue;
@@ -82,6 +85,7 @@ export async function shareRideTextures(outputRoot) {
       if(entry.isDirectory())await collect(path);
       else if(entry.name.endsWith('.glb')){
         const input=await readFile(path),n=input.readUInt32LE(12),gltf=JSON.parse(input.toString('utf8',20,20+n)),bin=input.subarray(28+n);
+        if(gltf.buffers?.length!==1||(gltf.extensionsUsed??[]).some(x=>/meshopt|draco/i.test(x)))continue;
         for(const image of gltf.images??[]){
           if(image.bufferView===undefined||!['image/png','image/jpeg'].includes(image.mimeType))continue;
           const view=gltf.bufferViews[image.bufferView],bytes=bin.subarray(view.byteOffset??0,(view.byteOffset??0)+view.byteLength),hash=createHash('sha256').update(bytes).digest('hex');
@@ -90,12 +94,12 @@ export async function shareRideTextures(outputRoot) {
       }
     }
   }
-  const products = ['swoop-detroit', 'elmwood-explorer', 'ride-the-cut'];
+  const products = options.products??['swoop-detroit', 'elmwood-explorer', 'ride-the-cut'];
   for (const product of products) await collect(resolve(arcade, product));
   let added=0;
   for(const [hash,image]of repeated)if(!textures.has(hash)){
     await mkdir(canonical,{recursive:true});const path=resolve(canonical,hash+(image.mime==='image/png'?'.png':'.jpg'));
-    await writeFile(path,image.bytes);textures.set(hash,{path,mime:image.mime});added+=image.bytes.length;
+    await atomicGameAsset(path,image.bytes);textures.set(hash,{path,mime:image.mime});added+=image.bytes.length;
   }
   let saved = -added, models = 0;
   async function walk(directory) {
@@ -106,7 +110,7 @@ export async function shareRideTextures(outputRoot) {
         const input = await readFile(path);
         const output = shareModelTextures(input, path, textures);
         if (output.length >= input.length) continue;
-        await writeFile(path, output);
+        await atomicGameAsset(path, output);
         saved += input.length - output.length;
         models++;
       }

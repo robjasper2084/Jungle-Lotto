@@ -96,14 +96,25 @@ function fit(h:Rig):Fit{
  });
  return{transition:riderId?WHEEL_TRANSITIONS[riderId]:undefined,animation:new FootAnimation(),body,legs,arms,bottom,legLength:(legs[0].length+legs[1].length)/2,neck:neckName?bind(neckName,chestFrame,0):undefined,jumpAt:0,jump:0};
 }
+function standingBindPose(h:Rig){
+ h.ground.position.y=0;h.ground.rotation.set(0,0,0);h.lean.rotation.set(0,0,0);h.rider.rotation.set(0,0,0);h.rider.position.set(0,0,0);
+ for(const b of h.bones){b.o.position.copy(b.p);b.o.quaternion.copy(b.q);}h.root.updateMatrixWorld(true);
+}
+/** Cache measurements without advancing gait history or changing the current pose. */
+export function prepareOnFootRider(h:Rig){
+ if(rigs.has(h))return;
+ const nodes=new Set([h.ground,h.lean,h.rider,...h.bones.map(b=>b.o)]);
+ const saved=[...nodes].map(o=>({o,p:o.position.clone(),q:o.quaternion.clone()}));
+ try{standingBindPose(h);rigs.set(h,fit(h));}
+ finally{for(const {o,p,q}of saved){o.position.copy(p);o.quaternion.copy(q);}h.root.updateMatrixWorld(true);}
+}
 /** Existing TacticalOnFoot clips drive body and limb timing.
  * Contact IK fits the captured pose to each hero without changing bone lengths. */
 export function applyOnFootRider(h:Rig,pose:Partial<FootPose>&{crashBlend?:number;bodyChestRoll?:number;bodyTwist?:number;bodyPitch?:number}){
  if(!(pose.footBlend!>0||pose.footMode!>0)||(pose.crashBlend||0)>0)return;
  const p=pose as FootPose,blend=T.MathUtils.clamp(p.footBlend,0,1);
  const mounted=blend<1?h.bones.map(b=>({q:b.o.quaternion.clone(),p:b.o.position.clone()})):undefined;
- h.ground.position.y=0;h.ground.rotation.set(0,0,0);h.lean.rotation.set(0,0,0);h.rider.rotation.set(0,0,0);h.rider.position.set(0,0,0);
- for(const b of h.bones){b.o.position.copy(b.p);b.o.quaternion.copy(b.q);}h.root.updateMatrixWorld(true);
+ standingBindPose(h);
  let data=rigs.get(h);if(!data){data=fit(h);rigs.set(h,data);}
  data.animation.update(p);
  const scale=Math.max(.2,data.legLength/.9),speed=data.animation.pace,cadence=gaitScale(data.legLength);

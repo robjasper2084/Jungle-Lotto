@@ -81,6 +81,7 @@ import {createGraphicsQuality,startupAntialias} from '../graphicsQuality.ts';
 import {warmFirstView} from '../warmFirstView.ts';
 import {ActorVisibility} from './actorVisibility.ts';
 import {StartupFrames} from '../../../../ride-core/src/startupFrames.ts';
+import {WorkSlice} from '../../../../ride-core/src/workSlice.ts';
 const actorVisibility=new ActorVisibility(),startupFrames=new StartupFrames();let preparingMatch=false,profileRound='';
 import {FrameSchedule} from '../frameSchedule.ts';
 import {AdaptiveQuality} from '../adaptiveQuality.ts';
@@ -188,7 +189,8 @@ async function prepare(){preparationStage(0,'Warming up the arena…');const hdr
  const mapTransform=terrain.terrain.fixture.transform;ambientPacks=new AmbientCyclistPacks(scene,assetMap,terrain,cyclistCircuit(Array.from({length:100},(_,i)=>{const p=cutPoint(60+i*(LENGTH-120)/99);return {x:(p.x-mapTransform.tx)/mapTransform.sx,z:p.z-mapTransform.tz,width:5};})));canvas.dataset.ambientPackSizes='10,10';canvas.dataset.ambientPackStarts=JSON.stringify(ambientPacks.starts);
  jazzVisit=new JazzVisit(scenery.jazz.clubs,()=>{const was=paused;paused=true;release();return was;},was=>{paused=was;release();canvas.focus();},()=>session.state?.actors.find(a=>a.id===session.me)?.pose.footMode?'walk':'ride',{toMap:(x,y,z)=>terrain.sourcePosition({x,y,z})});
  graphics.apply();message('Preparing the first arena view…');
- const start=terrain.spawns[0].position;scenery.update(start,0);camera.position.set(start.x,start.y+3,start.z+6);camera.lookAt(start.x,start.y+1,start.z);camera.updateProjectionMatrix();
+ // Build the immutable nearest-node index before the first nine AI route queries.
+ const start=terrain.spawns[0].position,navigationAt=performance.now();terrain.navigation.nearest(start);canvas.dataset.navigationWarmMs=String(Math.round(performance.now()-navigationAt));scenery.update(start,0);camera.position.set(start.x,start.y+3,start.z+6);camera.lookAt(start.x,start.y+1,start.z);camera.updateProjectionMatrix();
  await warmFirstView(renderer,scene,camera);
  preparationItemDone();loaded=true;loadedAt=performance.now();canvas.dataset.loadMs=String(Math.round(loadedAt));el<HTMLButtonElement>('practice').disabled=false;rangeButton.disabled=false;blockButton.disabled=false;el('practice').textContent='Practice with AI opponents →';message('Original Detroit arena ready. Choose six or ten riders; AI fills empty seats when enabled.');
  if(incomingInvitation){applyInvitation(incomingInvitation);menuHome.open('online',false);el('online-status').textContent='Your invitation is ready. Select Join game.';}
@@ -196,16 +198,24 @@ async function prepare(){preparationStage(0,'Warming up the arena…');const hdr
 function relayControls(){const relay=!!relayConfig&&el<HTMLInputElement>('use-relay').checked;el<HTMLInputElement>('endpoint').closest('label')!.hidden=relay;el<HTMLInputElement>('test-code').closest('label')!.hidden=!relay;const note=el('supabase-test').querySelector('.note');if(note)note.textContent=relay?'Temporary remote test. The host computer must remain on and the access code must be current.':'Direct local match server · no test access code needed.';}
 el<HTMLInputElement>('use-relay').onchange=relayControls;
 async function prepareMatchView(){
- preparingMatch=true;paused=true;release();message('Preparing riders, textures and shadows…');
+ preparingMatch=true;paused=true;release();const prepareStarted=performance.now();message('Preparing riders, textures and shadows…');
  try{
   const spawn=session.state?.actors.find(a=>a.id===session.me)?.pose;
   if(spawn&&!combatBlock&&!practiceRange){
    await scenery.warm(spawn,graphics.current.distance+100).catch(e=>console.warn('Nearby arena art unavailable',e));
    scenery.update(spawn,0);
   }
-  draw(performance.now());await warmFirstView(renderer,scene,camera);
+  // The roster contains cosmetic choices, not hidden enemy positions. Fit those
+  // rigs before deployment so an opponent entering the AOI cannot block a frame.
+  const slice=new WorkSlice(),warmActors:T.Object3D[]=[];
+  for(const rider of session.state?.roster??[]){const a=view(rider.id,rider.skin,rider.wheelId??'euc');a.view.prepareOnFoot();a.equipment.select('static');warmActors.push(a.view.root,a.weapon);await slice.checkpoint();}
+  draw(performance.now()); // Establish this round's pack locations before warming.
+  if(spawn&&!combatBlock&&!practiceRange)await ambientPacks?.warm(spawn);
+  draw(performance.now());
+  await warmFirstView(renderer,scene,camera,[...warmActors,...(!combatBlock&&!practiceRange?ambientPacks?.views.map(v=>v.root)??[]:[])]);
+  draw(performance.now());
  }
- finally{preparingMatch=false;last=performance.now();previousFrame=last;acc=0;startupFrames.reset();message('');}
+ finally{canvas.dataset.matchPrepareMs=String(Math.round(performance.now()-prepareStarted));preparingMatch=false;last=performance.now();previousFrame=last;acc=0;startupFrames.reset();message('');}
 }
 async function practice(training=false){if(preparingMatch)return;closeRange();if(training)practiceRange=new PracticeRangeView(scene,terrain);footAim.reset();aimYaw=aimPitch=lookYaw=lookPitch=0;void royaleAudio.unlock();clearResults();session.offline(skin.value,wheel.value,el<HTMLSelectElement>('match-size').value==='10'?10:6,el<HTMLInputElement>('bot-chase').checked,training?0:bots(),practiceRange?.layout.terrain);slot=0;await prepareMatchView();resume();}
 el('practice').onclick=()=>run(()=>practice());
@@ -376,7 +386,7 @@ const heartShots=new HeartProjectiles();scene.add(heartShots);
 let renderedLife='';
 function draw(now:number){
  let stageAt=profileCpu?performance.now():0;
- const stage=(name:string)=>{if(profileCpu){const at=performance.now();(drawStageSamples[name]??=[]).push(at-stageAt);stageAt=at;}};
+ const stage=(name:string)=>{if(profileCpu){const at=performance.now();drawStageLast[name]=at-stageAt;(drawStageSamples[name]??=[]).push(at-stageAt);stageAt=at;}};
  const telemetry=now-telemetryAt>200;if(telemetry)telemetryAt=now;
  session?.comms?.place(dialog.open?el('room'):undefined);
  const live=session?.state,life=live?.self?live.round+':'+live.self.spawnSerial:'';
@@ -399,9 +409,10 @@ function draw(now:number){
  const alpha=smooth?Math.min(1,acc/DT):1,basePoses=new Map<string,RidePose>();
  const previous=smooth&&session.previous?.round===s.round&&session.previous.tick===s.tick-1?session.previous:undefined;
  capture.update(!!s.self?.alive&&!dialog.open&&!paused&&!replaying);spectatorControls.hidden=!watching||dialog.open||replaying;spectatorLabel.textContent=watching?.target?'Watching '+(s.roster.find(r=>r.id===watching.target)?.name??'Rider')+' · 3s delay':'Preparing spectator view…';
- const bikeObserver=s.actors.find(a=>a.id===focusId)?.pose??terrain.spawns[0].position;ambientPacks?.update(delta,bikeObserver,!combatBlock&&!dialog.open,paused,s.actors.filter(a=>a.alive).map(a=>({id:a.id,...a.pose,radius:.65,height:1.8,kind:'rider' as const,vx:Math.sin(a.pose.headingY)*a.pose.speed,vz:Math.cos(a.pose.headingY)*a.pose.speed})));ambientPacks?.report(canvas,delta);
- royaleAudio.update(s,session.me,!dialog.open&&!paused&&!replaying,!!session.comms?.inputBlocked,Math.atan2(-camera.matrixWorld.elements[8],-camera.matrixWorld.elements[10]),activeTerrain());canvas.dataset.audio=JSON.stringify(royaleAudio.status);
+ const bikeObserver=s.actors.find(a=>a.id===focusId)?.pose??terrain.spawns[0].position;
  if(equipmentRound!==s.round){jazzVisit?.stop();equipmentRound=s.round;companions?.dispose();selectedScope=null;ownedScopeKey='';ambientPacks?.restart(undefined,bikeObserver);canvas.dataset.ambientPackStarts=JSON.stringify(ambientPacks?.starts);seenShots.clear();seenImpacts.clear();fallenAt.clear();shieldSerial=-1;for(const a of actors.values())a.motion=new RiderPresentation();impactEffect.reset();surfaceMarks.reset();deathReplay.reset();previousShotTick=-999;for(const item of items.values())item.dispose();items.clear();}
+ ambientPacks?.update(delta,bikeObserver,!combatBlock&&!dialog.open,paused,s.actors.filter(a=>a.alive).map(a=>({id:a.id,...a.pose,radius:.65,height:1.8,kind:'rider' as const,vx:Math.sin(a.pose.headingY)*a.pose.speed,vz:Math.cos(a.pose.headingY)*a.pose.speed})));ambientPacks?.report(canvas,delta);
+ royaleAudio.update(s,session.me,!dialog.open&&!paused&&!replaying,!!session.comms?.inputBlocked,Math.atan2(-camera.matrixWorld.elements[8],-camera.matrixWorld.elements[10]),activeTerrain());canvas.dataset.audio=JSON.stringify(royaleAudio.status);
  const owned=s.self?.scopes??[],scopeKey=owned.join(',');if(scopeKey!==ownedScopeKey){selectedScope=bestScope(owned);ownedScopeKey=scopeKey;}if(selectedScope&&!owned.includes(selectedScope))selectedScope=null;
  const firing=new Set<string>();if(localShotPending&&!replaying){firing.add(session.me);localShotPending=false;}
  matchFeedback.update(s,session.me,now,dialog.open||paused||replaying,reducedMotion);
@@ -409,8 +420,10 @@ function draw(now:number){
  // Local online presentation is immediate; confirmed damage and projectile simulation stay authoritative.
  if(s.self&&s.self.shotAt!==previousShotTick){if(s.self.shotAt>=0&&s.tick-s.self.shotAt<12&&(!session.room||shotPreview.confirm(s.self.combat.shotCounter,now)))firing.add(s.self.id);previousShotTick=s.self.shotAt;}
  stage('setup');actorVisibility.update(camera);
+ const riderCosts={create:0,pose:0,equipment:0,rig:0};let riderAt=0;
+ const riderPart=(part:keyof typeof riderCosts)=>{if(profileCpu){const at=performance.now();riderCosts[part]+=at-riderAt;riderAt=at;}};
  for(const projectile of s.projectiles){const key=projectile.owner+':'+projectile.shot;if(!seenShots.has(key)){seenShots.add(key);if(projectile.owner!==s.self?.id)firing.add(projectile.owner);}}
- for(const actor of s.actors){const a=view(actor.id,actor.skin,actor.wheelId??'euc');a.contrast.set(aimComfort.value.contrast&&actor.id!==session.me);if(!actor.alive&&!fallenAt.has(actor.id))fallenAt.set(actor.id,presentationTick);if(actor.alive)fallenAt.delete(actor.id);const falling=!actor.alive&&presentationTick-(fallenAt.get(actor.id)??presentationTick)<210;a.view.rider.visible=true;a.view.root.visible=actor.alive||falling;a.weapon.visible=actor.alive;a.shield.visible=actor.alive&&(actor.shieldActive||actor.protected||a.shield.reacting);a.shield.scale.setScalar(actor.protected&&!actor.shieldActive?.88:1);rendered.add(actor.id);let pose={...actor.pose};
+ for(const actor of s.actors){riderAt=profileCpu?performance.now():0;const a=view(actor.id,actor.skin,actor.wheelId??'euc');riderPart('create');a.contrast.set(aimComfort.value.contrast&&actor.id!==session.me);if(!actor.alive&&!fallenAt.has(actor.id))fallenAt.set(actor.id,presentationTick);if(actor.alive)fallenAt.delete(actor.id);const falling=!actor.alive&&presentationTick-(fallenAt.get(actor.id)??presentationTick)<210;a.view.rider.visible=true;a.view.root.visible=actor.alive||falling;a.weapon.visible=actor.alive;a.shield.visible=actor.alive&&(actor.shieldActive||actor.protected||a.shield.reacting);a.shield.scale.setScalar(actor.protected&&!actor.shieldActive?.88:1);rendered.add(actor.id);let pose={...actor.pose};
   if(!replaying&&actor.id===session.me&&session.room&&session.prediction)pose=interpolateRenderPose(smooth&&predictionFrame?.round===s.round?previousRenderPose(predictionFrame,actor):undefined,session.prediction.controller.poseValue,alpha);
   else if(!replaying&&(session.room||watching))pose=session.remotePoses.pose(actor.id,pose,actor.spawnSerial,now);
   else if(!replaying)pose=interpolateRenderPose(previousRenderPose(previous?.actors.find(a=>a.id===actor.id),actor),pose,alpha);
@@ -418,16 +431,16 @@ function draw(now:number){
   if(actor.id!==focusId&&!actorVisibility.visible(pose,bikeObserver)){a.view.root.visible=a.weapon.visible=a.shield.visible=a.nameplate.root.visible=false;continue;}
   const balancePose=watching?pose:!replaying&&actor.id===session.me&&session.room&&session.prediction?session.prediction.controller.poseValue:actor.pose;
   pose=a.motion.sample({...pose,seated:0},presentationTick,actor.alive,actor.spawnSerial,firing.has(actor.id),reducedMotion,s.phase==='results'&&s.winner===actor.id,motionDelta,balancePose);pose.stopFoot=0;a.view.apply({...pose,seated:0});a.view.visibility.setFirstPerson(!!replayFrame?.focus&&actor.id===replayFrame.focus);const yaw=actor.id===session.me&&!replaying?(footAim.active?footAim.relative(pose):aimYaw):actor.aimYaw,pitch=actor.id===session.me&&!replaying?aimPitch:actor.aimPitch;
-  a.optic.visible=!!(actor.id===session.me?selectedScope:actor.scope);a.equipment.select(actor.weapon);a.optic.position.fromArray(CAMERA_SIGHTS[actor.weapon]);if(firing.has(actor.id)&&a.equipment.fire(reducedMotion))equipmentShots++;a.equipment.update(motionDelta,reducedMotion);a.weapon.visible=actor.alive&&pose.crashBlend<.05&&s.phase!=='results';
-  if(firing.has(actor.id))a.rig.interruptPickup();
+  riderPart('pose');a.optic.visible=!!(actor.id===session.me?selectedScope:actor.scope);a.equipment.select(actor.weapon);a.optic.position.fromArray(CAMERA_SIGHTS[actor.weapon]);if(firing.has(actor.id)&&a.equipment.fire(reducedMotion))equipmentShots++;a.equipment.update(motionDelta,reducedMotion);a.weapon.visible=actor.alive&&pose.crashBlend<.05&&s.phase!=='results';
+  riderPart('equipment');if(firing.has(actor.id))a.rig.interruptPickup();
   if(actor.alive&&pose.crashBlend<.05&&s.phase!=='results')a.rig.apply({...pose,seated:0},yaw,pitch,actor.combat,presentationTick,(actor as typeof actor&{healingUntil?:number}).healingUntil||0);
-  if(actor.id===session.me)canvas.dataset.rig=JSON.stringify({rider:actor.skin,wheel:actor.wheelId,rightError:a.rig.errorR,leftError:a.rig.errorL,supportLocked:a.rig.supportLocked});
+  riderPart('rig');if(actor.id===session.me)canvas.dataset.rig=JSON.stringify({rider:actor.skin,wheel:actor.wheelId,rightError:a.rig.errorR,leftError:a.rig.errorL,supportLocked:a.rig.supportLocked});
   a.shield.position.set(pose.x,pose.y+1,pose.z);a.shield.rotation.y=pose.headingY-Math.PI/2;
   a.shield.update(motionDelta,reducedMotion,graphics.current.shadows===0,actor.shieldActive||actor.protected);
  }
  for(const [id,a]of actors)if(!rendered.has(id)){a.nameplate.root.visible=false;a.view.root.visible=false;a.weapon.visible=false;a.shield.visible=false;}
 
- stage('riders');
+ stage('riders');if(profileCpu)for(const [name,cost]of Object.entries(riderCosts)){drawStageLast['rider-'+name]=cost;(drawStageSamples['rider-'+name]??=[]).push(cost);}
  const dogTick=watching?.tick??s.tick;
  const dogDisplayTick=!replaying&&(session.room||watching)?session.remotePoses.tick(now)??dogTick-3:dogTick-3+alpha;
  companions?.update(s.actors,s.roster,dogTick,motionDelta,graphics.current.shadows===0,reducedMotion,s.phase==='results'?s.winner:undefined,dogDisplayTick,p=>actorVisibility.visible(p,bikeObserver));canvas.dataset.companions=String(s.actors.filter(a=>a.alive).length);
@@ -552,10 +565,13 @@ window.addEventListener('resize',()=>{release();graphics.resize();camera.aspect=
 camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();
 const schedule=new FrameSchedule(),adaptiveQuality=new AdaptiveQuality();let loadedAt=Infinity,frames=0,profileAt=performance.now(),samples:number[]=[],previousFrame=performance.now();
 const profileCpu=query.has('profile');let pendingSimulationMs=0,cpuSamples:{simulation:number;presentation:number;submission:number}[]=[];
- let drawStageSamples:Record<string,number[]>={};
+ let drawStageSamples:Record<string,number[]>={},drawStageLast:Record<string,number>={};
+ // Keep bounded, correlated opening spikes: a delayed callback belongs to the
+ // preceding submitted frame, not necessarily to the work about to run.
+ let openingTrace:unknown[]=[],previousWork:unknown;
 function loop(now:number){requestAnimationFrame(loop);const rawFrameMs=now-last,delta=Math.min(.15,rawFrameMs/1000);last=now;if(document.hidden){startupFrames.pause();return;}if(preparingMatch)return;
  if(!loaded||(!session?.state&&el<HTMLDialogElement>('royale-startup').open))return;
- const cpuStart=performance.now();
+ const cpuStart=performance.now();let simulationSteps=0;
  const idle=paused||dialog.open||layoutEditing||!session?.state||session.state.phase==='results';
  if(graphics.choice!=='auto')adaptiveQuality.reset();
  if(adaptiveQuality.sample(rawFrameMs,loaded&&!idle&&graphics.choice==='auto'&&now-loadedAt>5000,graphics.current.fps)){graphics.setAdaptiveDetail(adaptiveQuality.detail);graphics.setResolutionScale(adaptiveQuality.scale);}
@@ -567,16 +583,19 @@ function loop(now:number){requestAnimationFrame(loop);const rawFrameMs=now-last,
    const self=session.state.self;
    predictionFrame=session.room&&session.prediction&&self?{round:session.state.round,id:self.id,spawnSerial:self.spawnSerial,alive:self.alive,pose:{...session.prediction.controller.poseValue}}:undefined;
    session.step(dialog.open||paused||deathReplay.playing||capture.reviewing||session.comms?.inputBlocked?neutral(session.state.round):command());
-  }catch(error){paused=true;release();showMenu();message('The simulation stopped safely. Start a new practice or reconnect: '+(error as Error).message);break;}acc-=DT;
+  simulationSteps++;}catch(error){paused=true;release();showMenu();message('The simulation stopped safely. Start a new practice or reconnect: '+(error as Error).message);break;}acc-=DT;
  }}else acc=0;
  pendingSimulationMs+=performance.now()-cpuStart;
  if(!schedule.shouldRender(now,idle,false,graphics.current.fps))return;
  const viewStart=performance.now();draw(now);const submitStart=performance.now();renderer.render(scene,camera);capture.afterRender(now);
  if(profileCpu)cpuSamples.push({simulation:pendingSimulationMs,presentation:submitStart-viewStart,submission:performance.now()-submitStart});
- if(session?.state?.round!==profileRound){profileRound=session?.state?.round??'';startupFrames.reset();}
+ if(session?.state?.round!==profileRound){profileRound=session?.state?.round??'';startupFrames.reset();openingTrace=[];previousWork=undefined;}
+ if(profileCpu){const work={simulationSteps,rawFrameMs,simulation:pendingSimulationMs,presentation:submitStart-viewStart,submission:performance.now()-submitStart,stages:{...drawStageLast},actors:actors.size,visibleActors:session?.state?.actors.length??0,loot:items.size,programs:renderer.info.programs?.length,textures:renderer.info.memory.textures,geometries:renderer.info.memory.geometries,calls:renderer.info.render.calls};
+  if(!idle&&startupFrames.activeMs<30000&&now-previousFrame>40&&openingTrace.length<60)openingTrace.push({at:startupFrames.activeMs,gap:now-previousFrame,previous:previousWork,current:work});previousWork=idle?undefined:work;
+ }
  if(idle)startupFrames.pause();else startupFrames.sample(now,pendingSimulationMs+performance.now()-viewStart,session?.state?.remaining??0);pendingSimulationMs=0;
  samples.push(now-previousFrame);previousFrame=now;frames++;
- if(profileCpu&&now-profileAt>2000){const summary=(values:number[])=>{values.sort((a,b)=>a-b);return {p50:values[Math.floor(values.length*.5)],p95:values[Math.floor(values.length*.95)],max:values.at(-1)};};canvas.dataset.cpuProfile=JSON.stringify({simulationAndInputMs:summary(cpuSamples.map(s=>s.simulation)),presentationMs:summary(cpuSamples.map(s=>s.presentation)),renderSubmissionAndCaptureMs:summary(cpuSamples.map(s=>s.submission)),drawStages:Object.fromEntries(Object.entries(drawStageSamples).map(([key,values])=>[key,summary(values)])),gpuMs:null});cpuSamples=[];drawStageSamples={};}
+ if(profileCpu&&now-profileAt>2000){canvas.dataset.openingTrace=JSON.stringify(openingTrace);const summary=(values:number[])=>{values.sort((a,b)=>a-b);return {p50:values[Math.floor(values.length*.5)],p95:values[Math.floor(values.length*.95)],max:values.at(-1)};};canvas.dataset.cpuProfile=JSON.stringify({simulationAndInputMs:summary(cpuSamples.map(s=>s.simulation)),presentationMs:summary(cpuSamples.map(s=>s.presentation)),renderSubmissionAndCaptureMs:summary(cpuSamples.map(s=>s.submission)),drawStages:Object.fromEntries(Object.entries(drawStageSamples).map(([key,values])=>[key,summary(values)])),gpuMs:null});cpuSamples=[];drawStageSamples={};}
  if(now-profileAt>2000){canvas.dataset.startupFrames=JSON.stringify(startupFrames.report);samples.sort((a,b)=>a-b);if(session?.state?.engine){canvas.dataset.engineModule=session.state.engine.module;canvas.dataset.engineFrames=String(session.state.engineInputFrames);canvas.dataset.engineTick=String(session.state.tick);}canvas.dataset.profile=JSON.stringify({fps:frames*1000/(now-profileAt),p50:samples[Math.floor(samples.length*.5)],p95:samples[Math.floor(samples.length*.95)],p99:samples[Math.floor(samples.length*.99)],maxFrameMs:samples.at(-1),sampleFrames:samples.length,lateFrames:samples.filter(ms=>ms>1000/graphics.current.fps+2).length,calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures,actors:session?.state?.actors.length??0,aliveActors:session?.state?.actors.filter(a=>a.alive).length??0,lightBudget:lightingBudget.status,idle,scale:adaptiveQuality.scale,detail:adaptiveQuality.detail});frames=0;profileAt=now;samples=[];}
 }
 canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();release();paused=true;showMenu();message('Graphics paused. Reload the page to restore the arena.');});

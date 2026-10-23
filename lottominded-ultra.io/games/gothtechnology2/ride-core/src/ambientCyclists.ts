@@ -14,6 +14,7 @@ export class AmbientCyclistPacks {
   for(const [pack,ride]of this.rides.entries()){const view=new CommunityView(ride,assets);view.root.name='Cyclist pack '+(pack+1)+' · 10 riders';view.root.visible=false;scene.add(view.root);this.views.push(view);}
  }
  restart(seed?:number,observer?:{x:number;z:number}){this.traffic.restart(seed,observer);}
+ async warm(observer:{x:number;z:number}){for(const view of this.views)await view.warm(observer);}
  update(dt:number,observer:{x:number;z:number},visible:boolean,paused=false,contacts:readonly NavigationObstacle[]=[]){
   this.views.forEach(v=>v.root.visible=visible);if(!visible)return;
   this.traffic.update(dt,observer,paused,contacts);this.views.forEach(v=>v.update(true,paused?0:dt,observer));

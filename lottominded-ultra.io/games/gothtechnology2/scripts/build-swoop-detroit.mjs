@@ -1,4 +1,5 @@
 import {buildMobileRiders} from './mobile-rider-assets.mjs';
+import {optimizeGameAssets} from './optimize-game-assets.mjs';
 import {reviewCorePlugin} from './review-core-plugin.mjs';
 import {readFile,writeFile,mkdir,readdir,rename} from 'node:fs/promises';
 import {copyFile,cp} from './review-asset-copy.mjs';
@@ -93,6 +94,7 @@ await cp(resolve(source,'public/exports/nature'),resolve(out,'exports/nature'),{
 await cp(resolve(source,'public/audio/nature'),resolve(out,'audio/nature'),{recursive:true});
 await writeFile(resolve(out,'SOURCE.md'),'Digital Static Ride Detroit, supplied via Digital_Static_Street_Asset_Pack/integrations/digital-static-ride. Dequindre Cut with navigation to the separately packaged Elmwood Explorer; original riding, rider, dog, touch, controller and physics retained. Built by scripts/build-swoop-detroit.mjs from versioned swoop-source; original external asset pack remains unchanged. Store additions: portable assets, saved sound preference respected, reduced-motion scenery, shared discount-preview receipts for native earned scores. Reference geometry and placement remain approximate as disclosed by the game.\n');
 await buildMobileRiders(out);
+await optimizeGameAssets(out);
 console.log('Packaged Swoop Detroit: '+files.length+' assets');
 
 for(const file of licenses){const target=resolve(out,file.output);await mkdir(dirname(target),{recursive:true});await copyFile(file.input,target);}

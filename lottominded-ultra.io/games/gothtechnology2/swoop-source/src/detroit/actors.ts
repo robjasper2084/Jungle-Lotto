@@ -2,7 +2,7 @@ import {FingerPose} from '../../../ride-core/src/fingerPose.ts';
 import {invalidateAnimatedShadow} from '../../../ride-core/src/shadowBudget.ts';
 import {visibleSceneryMatrices} from '../../../ride-core/src/visibleMatrices.ts';
 import {wheelPickupTiming} from '../../../ride-core/src/wheelPickupTiming.ts';
-import {applyOnFootRider} from '../../../ride-core/src/onFootRider.ts';
+import {applyOnFootRider,prepareOnFootRider} from '../../../ride-core/src/onFootRider.ts';
 import {solveLimb as solve} from '../../../ride-core/src/limbIK.ts';
 import {BicycleView,CyclistMotion} from '@digital-static/ridecore/cycling-view';
 import {HairWind} from './windMotion.ts';
@@ -63,6 +63,8 @@ export class Hero {
   private armorKeychain?:ArmorKeychain;private helmetSkin?:HelmetSkinDecal;
   private surfaces:RiderSurfaces;
   readonly visibility:RiderVisibility;readonly vrEyeHeight:number;readonly mountedVolume:{radius:number;height:number};
+  /** Fit the captured walk and soles during loading, not on the first dismount. */
+  prepareOnFoot(){prepareOnFootRider(this);}
   constructor(data:Map<string,GLTF>,terrain?:TerrainSampler,riderId:RiderId='DS_Man_01'){
     this.terrain=terrain;this.riderId=riderId;
     const mascot=riderId.startsWith('DS_Mascot_');this.wheelScale=mascot?.75:.86;this.motionScale=mascot?.48:1;this.mountHeight=.296*this.wheelScale;

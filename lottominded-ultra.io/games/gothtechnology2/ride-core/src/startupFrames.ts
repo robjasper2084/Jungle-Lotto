@@ -4,6 +4,7 @@ export class StartupFrames {
  private last:number|undefined;private elapsed=0;private frames:number[]=[];private cpu:number[]=[];private actors=0;
  reset(){this.last=undefined;this.elapsed=0;this.frames=[];this.cpu=[];this.actors=0;}
  pause(){this.last=undefined;}
+ get activeMs(){return this.elapsed;}
  sample(now:number,cpu:number,actors=0){
   if(this.elapsed>=30000)return;
   if(this.last!==undefined){const gap=Math.max(0,now-this.last);this.elapsed+=gap;this.frames.push(gap);this.cpu.push(cpu);this.actors=Math.max(this.actors,actors);}
