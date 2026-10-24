@@ -23,7 +23,7 @@ export class CombatRig {
   private repairProp:HeldRepairPack;private repairPack:T.Group;
   private backRest=new T.Quaternion();
   constructor(readonly hero:Hero,readonly weapon:WeaponView,private readonly firstPerson=false){this.repairProp=weapon.createHeldRepair();this.repairPack=this.repairProp.root;hero.root.add(this.repairPack);(hero.chest??hero.rider).getWorldQuaternion(this.backRest).invert();}
-  private gripOffset(left:boolean){const wide=this.weapon.kind==='bass';return new T.Vector3(left?(wide?.26:.19):wide?-.25:-.18,-.035,left?-.035:-.085).multiplyScalar(this.hero.motionScale).applyQuaternion(this.weapon.root.quaternion);}
+  private gripOffset(left:boolean){const wide=this.weapon.kind==='bass';return new T.Vector3(left?(wide?.31:.24):wide?-.30:-.23,-.035,left?-.035:-.085).multiplyScalar(this.hero.motionScale).applyQuaternion(this.weapon.root.quaternion);}
   private handRotation(index:number,weaponRotation:T.Quaternion){
     const limb=this.hero.arms[index],rotation=limb.rotation.clone();
     if(this.firstPerson){
@@ -39,6 +39,8 @@ export class CombatRig {
   }
   apply(pose:RidePose,yaw:number,pitch:number,state:CombatState,tick:number,healingUntil=0){
     const h=this.hero,w=this.weapon.root,scale=h.motionScale;w.visible=true;this.repairPack.visible=false;
+    // Keep the captured support hands during falls and the middle of a laydown.
+    if(pose.crashBlend>0||(pose.footProne>.08&&pose.footProne<.92)){w.visible=false;this.interruptPickup();this.supportLocked=false;this.errorL=this.errorR=0;h.fingers.apply('Relaxed');return;}
     if(pose.footMode===3){w.visible=false;this.interruptPickup();this.supportLocked=false;return;}
     if(!h.arms[0]||!h.arms[1]){w.visible=false;return;}
     if(pose.footMode===2&&(state.melee?.evadeUntil??0)>tick){

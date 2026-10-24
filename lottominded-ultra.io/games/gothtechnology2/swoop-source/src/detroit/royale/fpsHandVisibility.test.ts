@@ -21,8 +21,9 @@ test('all production hero rigs retain first-person hands and wrist geometry',asy
   const arms=new FpsArms(h,root);let triangles=0,visible=0;
   h.rider.traverseVisible(o=>{if(o instanceof T.Mesh&&/ArticulatedGlove/.test(o.name)){
    const material=o.material as T.MeshStandardMaterial;
-   assert.notEqual(material,sourceGlove);assert.equal(material.map,null,'dark sleeve texture must not mask glove contours');
-   assert(material.color.r>.15&&material.color.g>.15&&material.color.b>.15,'gloves need readable diffuse contrast');
+   assert.equal(material,sourceGlove,'selected hero glove material must be retained');
+   assert(material.map,'selected hero texture must be retained');
+   assert.equal(material.color.getHexString(),'303030','do not replace every hero with gray gloves');
   }});
   assert(sourceGlove.map,'world glove material must be preserved');
   h.rider.traverseVisible(o=>{if(o instanceof T.Mesh){visible++;triangles+=(o.geometry.index?.count??o.geometry.getAttribute('position').count)/3;}});
@@ -62,7 +63,7 @@ test('production palms wrap the grips with exposed surfaces at normal and scoped
     // not merely contain hand bones behind the receiver.
     assert(exposed>=3,`${id} ${weapon} ${glove.name}: glove hidden by sleeve or weapon mode=${mode} ${JSON.stringify(blockers)} exposed=${exposed}`);
     const size=bounds.getSize(new T.Vector2());
-    assert(size.x>.025&&size.y>.04,`${id} ${weapon} ${glove.name} ${mode} ${baseFov}: exposed hand too small ${size.toArray()}`);
+    assert(size.x>.035&&size.y>.055,`${id} ${weapon} ${glove.name} ${mode} ${baseFov}: exposed hand too small ${size.toArray()}`);
    }
   }
   fp.dispose();

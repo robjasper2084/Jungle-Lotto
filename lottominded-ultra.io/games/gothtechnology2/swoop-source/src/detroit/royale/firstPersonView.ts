@@ -39,7 +39,7 @@ export class FirstPersonView {
  update(p:RidePose,state:CombatState,kind:Weapon,tick:number,yaw:number,pitch:number,camera:T.Camera,dt:number,shot:boolean,ads:boolean,reduced:boolean,terrain:TerrainSampler,healingUntil=0,burntwax=true,scoped=false){
   if(this.previousTick>=0&&(tick<this.previousTick||tick-this.previousTick>12))this.resetMotion();this.previousTick=tick;
   this.root.visible=true;this.root.matrixAutoUpdate=true;this.root.scale.setScalar(1);this.root.position.set(0,0,0);this.root.quaternion.identity();this.root.updateMatrixWorld(true);
-  this.hero.apply({...p,seated:0});this.hero.visibility.setFirstPerson(true);this.hero.vehicle.visible=false;
+  this.arms.reset();this.hero.apply({...p,seated:0});this.hero.visibility.setFirstPerson(true);this.hero.vehicle.visible=false;
   const equip=this.swap.update(dt,kind,shot,reduced);this.weapon.select(equip.weapon as Weapon);if(shot)this.rig.interruptPickup();if(shot)this.weapon.fire(reduced);this.weapon.update(dt,reduced);this.rig.apply({...p,seated:0},yaw,pitch,state,tick,healingUntil);
   const r=reloadPose(state,tick),m=this.motion.update(dt,kind,shot,Math.abs(p.speed),p.airHeight>.03,ads,reduced,r,p.footMode===2),scale=this.hero.motionScale;
   const rotation=camera.getWorldQuaternion(new T.Quaternion()),position=camera.getWorldPosition(new T.Vector3());
