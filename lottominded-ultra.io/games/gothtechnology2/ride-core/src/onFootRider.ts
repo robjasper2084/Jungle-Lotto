@@ -144,7 +144,8 @@ export function applyOnFootRider(h:Rig,pose:Partial<FootPose>&{crashBlend?:numbe
  for(let i=0;i<24;i++)row[i]=T.MathUtils.lerp(row[i],actionRow[i],actionWeight);
  const crouch=T.MathUtils.clamp(p.footCrouch||0,0,1),prone=T.MathUtils.clamp(p.footProne||0,0,1);
  const actionMask=(p.footJump||p.footMode!==2?0:1)*(1-prone);
- const sprintWeight=T.MathUtils.smoothstep(speed,2.7,5.0)*Math.max(0,longitudinal)*(1-crouch)*actionMask;
+ // Restore the upright walk/jog/run blend from release 9530b779.
+ const sprintWeight:number=0;
  const crouchWeight=crouch*actionMask,athleticWeight=Math.max(sprintWeight,crouchWeight);
  const duck=sampleAthletic('duck',crouch),low=sampleAthletic('crouch_walk',walkPhase);
  const lowMove=T.MathUtils.smoothstep(speed,0,.8)*Math.abs(longitudinal);
@@ -534,3 +535,4 @@ export function applyKimodoEvade(h:Rig,p:FootPose,phase:number,direction:number)
  for(const old of base){old.o.position.lerpVectors(old.p,old.o.position,weight);old.o.quaternion.copy(old.q.clone().slerp(old.o.quaternion,weight));}
  h.root.updateWorldMatrix(true,true);
 }
+
