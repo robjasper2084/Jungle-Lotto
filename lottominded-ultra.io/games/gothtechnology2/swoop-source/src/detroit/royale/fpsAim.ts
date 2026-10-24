@@ -2,13 +2,13 @@ import type {RidePose} from '../../../../ride-core/src/controller.ts';
 import type {BattleTerrain} from '../../../../ride-core/src/royale/battleTerrain.ts';
 import {weaponSocket} from '../../../../ride-core/src/royale/rules.ts';
 import {stanceBounds} from '../../../../ride-core/src/royale/stanceVolume.ts';
-import {footEyeHeight} from './fpsMotion.ts';
+import {combatFootEye} from '../../../../ride-core/src/royale/lean.ts';
 import type {Vec3} from '../../../../ride-core/src/terrain.ts';
 const angle=(v:number)=>Math.atan2(Math.sin(v),Math.cos(v));
 /** Trace the exact crosshair ray, then converge the authority's physical muzzle
  * on that point. No target attraction, damage prediction or through-cover aim. */
 export function fpsAim(p:RidePose,skin:string,yaw:number,pitch:number,blend:number,lean:number,terrain:BattleTerrain,others:readonly {pose:RidePose;skin:string;alive:boolean}[]=[],view?:{origin:Vec3;range:number;kickYaw:number;kickPitch:number;targets?:readonly {center:Vec3}[];targetHeading?:number}){
- const scale=skin.startsWith('DS_Mascot_')?.48:1,o=view?.origin??{x:p.x,y:p.y+footEyeHeight(scale,p.footCrouch,p.footProne),z:p.z},d={x:Math.sin(yaw)*Math.cos(pitch),y:Math.sin(pitch),z:Math.cos(yaw)*Math.cos(pitch)},range=view?.range??500;
+ const scale=skin.startsWith('DS_Mascot_')?.48:1,o=view?.origin??combatFootEye(p,scale,lean,terrain),d={x:Math.sin(yaw)*Math.cos(pitch),y:Math.sin(pitch),z:Math.cos(yaw)*Math.cos(pitch)},range=view?.range??500;
  let distance=terrain.raycast(o,d,range)??range;
  // Training boards are visual targets, not live actors or invented damage hits.
  if(view?.targets){const nx=Math.sin(view.targetHeading??0),nz=Math.cos(view.targetHeading??0),den=d.x*nx+d.z*nz;

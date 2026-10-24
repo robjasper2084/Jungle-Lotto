@@ -6,7 +6,7 @@ import {fileURLToPath} from 'node:url';
 import * as T from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {MeshoptDecoder} from 'three/addons/libs/meshopt_decoder.module.js';
-import {applyOnFootRider} from '../src/onFootRider.ts';
+import {applyOnFootRider,applyKimodoLean,applyKimodoRiding} from '../src/onFootRider.ts';
 import {gaitScale} from '../src/footAnimation.ts';
 import {footFields} from '../src/onFoot.ts';
 
@@ -41,7 +41,7 @@ for(const walkStyle of ['tactical','kimodo'] as const)test(`${walkStyle}: all fi
     const foot=rider.getObjectByName(side+'Foot')!.getWorldPosition(new T.Vector3());
     assert(foot.y>-.03,`${id}: ${side} foot below floor at ${speed}/${i}`);
     const a=rider.getObjectByName(side+'Arm')!.getWorldPosition(new T.Vector3()),b=rider.getObjectByName(side+'ForeArm')!.getWorldPosition(new T.Vector3()),c=rider.getObjectByName(side+'Hand')!.getWorldPosition(new T.Vector3());
-    const elbow=b.clone().sub(a).angleTo(c.clone().sub(b));assert(elbow>.15&&elbow<1.4,`${id}: rigid or overbent elbow ${elbow}`);
+    const elbow=b.clone().sub(a).angleTo(c.clone().sub(b));assert(elbow>.15&&elbow<(speed>3.2?2.45:1.4),`${id}: rigid or overbent elbow ${elbow}`);
    }
    for(const b of bones)assert([...b.o.quaternion.toArray(),...b.o.position.toArray()].every(Number.isFinite),id+' invalid bone transform');
   }
@@ -109,6 +109,40 @@ for(const walkStyle of ['tactical','kimodo'] as const)test(`${walkStyle}: all fi
    armAngles.push(Math.atan2(b.z-a.z,a.y-b.y));
   }
   assert(Math.max(...armAngles)-Math.min(...armAngles)>.05,`${id}: stationary jump has frozen upper arms`);
+ }
+});
+
+test('Kimodo athletic: every hero ducks and leans through hips, knees, chest and head with planted feet',async()=>{
+ for(const id of ['DS_Armored_Rider_01','DS_Man_01','DS_Hoodie_Woman_01','DS_Mascot_Suit_01','DS_Mascot_Hoodie_01']){
+  const asset=await load(id),root=new T.Group(),ground=new T.Group(),lean=new T.Group(),vehicle=new T.Group(),rider=asset.scene;
+  root.add(ground);ground.add(lean);lean.add(vehicle,rider);
+  if(asset.animations[0]){const mixer=new T.AnimationMixer(rider);mixer.clipAction(asset.animations[0]).play();mixer.setTime(0);}
+  const bones:{o:T.Object3D;p:T.Vector3;q:T.Quaternion}[]=[];rider.traverse(o=>{if((o as T.Bone).isBone)bones.push({o,p:o.position.clone(),q:o.quaternion.clone()});});
+  const rig={walkStyle:'kimodo' as const,root,ground,lean,vehicle,rider,bones,mountHeight:.25,motionScale:id.includes('Mascot')?.48:1};root.updateMatrixWorld(true);
+  const p={...footFields(),footMode:2,footBlend:1,x:0,y:0,z:0,headingY:0,speed:0,airHeight:0,airBlend:0,velocityX:0,velocityZ:0,rollAngle:0,groundPitch:0,groundRoll:0,stopFoot:0};
+  const at=(name:string)=>rider.getObjectByName(name)!.getWorldPosition(new T.Vector3());
+  applyOnFootRider(rig,p);const standing=at('Hips').y;
+  const heights:number[]=[];
+  for(let i=0;i<=30;i++){p.footCrouch=i/30;applyOnFootRider(rig,p);heights.push(at('Hips').y);}
+  assert(standing-heights.at(-1)!>.12*rig.motionScale,id+' duck is too shallow');
+  for(let i=1;i<heights.length;i++)assert(Math.abs(heights[i]-heights[i-1])<.08*rig.motionScale,id+' duck snaps');
+  for(const crouch of [0,1])for(const side of [-1,1]){
+   p.footCrouch=crouch;applyOnFootRider(rig,p);
+   const before=['LeftFoot','RightFoot','LeftLeg','RightLeg','Hips','Spine'].map(at);
+   applyKimodoLean(rig,side,p);const after=['LeftFoot','RightFoot','LeftLeg','RightLeg','Hips','Spine'].map(at);
+   for(let i=0;i<2;i++)assert(before[i].distanceTo(after[i])<.0001,id+' lean moved a planted foot');
+   assert((after[4].x-before[4].x)*-side>.015*rig.motionScale,id+' pelvis does not shift with lean');
+   assert(Math.max(before[2].distanceTo(after[2]),before[3].distanceTo(after[3]))>.008*rig.motionScale,id+' knees remain rigid during whole-body lean');
+   assert((after[5].x-before[5].x)*-side>.025*rig.motionScale,id+' chest does not follow lean');
+   for(const b of bones)assert([...b.o.quaternion.toArray(),...b.o.position.toArray()].every(Number.isFinite),id+' invalid lean');
+  }
+  p.footCrouch=0;
+  for(const rollAngle of [-.4,0,.4])for(const brakeAmount of [0,1]){
+   applyOnFootRider(rig,p);const feet=['LeftFoot','RightFoot'].map(at);
+   applyKimodoRiding(rig,{...p,footMode:0,footBlend:0,speed:12,rollAngle,riderPitch:brakeAmount?-.2:.25,brakeAmount});
+   for(let i=0;i<2;i++)assert(feet[i].distanceTo(at(i?'RightFoot':'LeftFoot'))<.0001,id+' riding capture lost pedal contact');
+   for(const b of bones)assert([...b.o.quaternion.toArray(),...b.o.position.toArray()].every(Number.isFinite),id+' invalid riding pose');
+  }
  }
 });
 

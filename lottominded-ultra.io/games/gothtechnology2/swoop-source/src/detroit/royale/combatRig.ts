@@ -1,4 +1,6 @@
+import {evadePhase} from '../../../../ride-core/src/royale/evade.ts';
 import {reloadPose} from './fpsMotion.ts';
+import {applyKimodoLean,applyKimodoEvade} from '../../../../ride-core/src/onFootRider.ts';
 import {weaponReadyAmount} from '../../../../ride-core/src/royale/holster.ts';
 import {cameraDrawPose} from '../../../../ride-core/src/royale/cameraDraw.ts';
 import * as T from 'three';
@@ -21,16 +23,17 @@ export class CombatRig {
   private repairProp:HeldRepairPack;private repairPack:T.Group;
   private backRest=new T.Quaternion();
   constructor(readonly hero:Hero,readonly weapon:WeaponView,private readonly firstPerson=false){this.repairProp=weapon.createHeldRepair();this.repairPack=this.repairProp.root;hero.root.add(this.repairPack);(hero.chest??hero.rider).getWorldQuaternion(this.backRest).invert();}
-  private gripOffset(left:boolean){const wide=this.weapon.kind==='bass';return new T.Vector3(left?(wide?.22:.13):wide?-.20:-.11,-.035,left?-.035:-.085).multiplyScalar(this.hero.motionScale).applyQuaternion(this.weapon.root.quaternion);}
+  private gripOffset(left:boolean){const wide=this.weapon.kind==='bass';return new T.Vector3(left?(wide?.26:.19):wide?-.25:-.18,-.035,left?-.035:-.085).multiplyScalar(this.hero.motionScale).applyQuaternion(this.weapon.root.quaternion);}
   private handRotation(index:number,weaponRotation:T.Quaternion){
     const limb=this.hero.arms[index],rotation=limb.rotation.clone();
     if(this.firstPerson){
       const finger=limb.foot.getObjectByName((index===0?'Left':'Right')+'HandMiddle1');
-      // Imported idle palms point down. A wrist at the grip with that idle
-      // orientation folds the fingers back inside the sleeve. Aim the palm
-      // along the handle/receiver before applying the authored finger curl.
+      // Lift the dominant palm around the handle; the support palm crosses
+      // under the receiver. Pointing both palms straight down the barrel only
+      // exposes the ends of the knuckles and reads as two empty sleeve tubes.
       if(finger){const palm=finger.position.clone().normalize().applyQuaternion(rotation);
-        rotation.premultiply(new T.Quaternion().setFromUnitVectors(palm,new T.Vector3(0,index===0?.18:-.42,1).normalize()));}
+        const gripDirection=index===0?new T.Vector3(-.65,.40,.65):new T.Vector3(.45,.75,.35);
+        rotation.premultiply(new T.Quaternion().setFromUnitVectors(palm,gripDirection.normalize()));}
     }
     return rotation.premultiply(weaponRotation);
   }
@@ -38,6 +41,12 @@ export class CombatRig {
     const h=this.hero,w=this.weapon.root,scale=h.motionScale;w.visible=true;this.repairPack.visible=false;
     if(pose.footMode===3){w.visible=false;this.interruptPickup();this.supportLocked=false;return;}
     if(!h.arms[0]||!h.arms[1]){w.visible=false;return;}
+    if(pose.footMode===2&&(state.melee?.evadeUntil??0)>tick){
+      applyKimodoEvade(h,pose,evadePhase(state.melee!.evadeUntil,tick),state.melee!.evadeDir);
+      w.visible=false;this.interruptPickup();this.supportLocked=false;this.errorL=this.errorR=0;h.fingers.apply('Relaxed');return;
+    }
+    if(pose.footVault>0){w.visible=false;this.interruptPickup();this.supportLocked=false;return;}
+    if(pose.footMode===2)applyKimodoLean(h,state.lean,pose);
     const ready=weaponReadyAmount(state,tick);
     if(ready<1&&!state.melee?.brawl&&healingUntil<=tick){this.applyHolster(pose,yaw,pitch,state,ready);return;}
     // Preserve Swoop's base pose and distribute the aim turn through the spine.
@@ -47,11 +56,11 @@ export class CombatRig {
     for(const [index,bone] of spine.entries()){
       const turn=T.MathUtils.clamp(torsoYaw/Math.max(1,spine.length),-.4,.4);
       const world=bone.getWorldQuaternion(new T.Quaternion()).premultiply(new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),turn));
-      // Blender-authored additive combat lean. Keep the hips/feet on Swoop's
-      // base pose, and let the existing authoritative lean blend drive it.
+      // Mounted riders retain the additive torso lean. On-foot riders already
+      // received the captured full-body lean and foot planting above.
       const lean=leanProfile.profiles.CombatLeanRight;
       const axis=new T.Vector3(Math.sin(pose.headingY),0,Math.cos(pose.headingY));
-      world.premultiply(new T.Quaternion().setFromAxisAngle(axis,T.MathUtils.clamp(state.lean,-1,1)*lean.radians*(lean.weights[index]??0)));
+      if(pose.footMode!==2)world.premultiply(new T.Quaternion().setFromAxisAngle(axis,T.MathUtils.clamp(state.lean,-1,1)*lean.radians*(lean.weights[index]??0)));
       bone.quaternion.copy(bone.parent!.getWorldQuaternion(new T.Quaternion()).invert().multiply(world));bone.updateWorldMatrix(false,true);
     }
     const socket=weaponSocket(pose,h.riderId,yaw,pitch,state.aimBlend,state.lean);
@@ -81,6 +90,22 @@ export class CombatRig {
     // The old fixed signs pulled both elbows inward through the torso.
     const outside=h.arms[0].upper.getWorldPosition(new T.Vector3()).sub(h.arms[1].upper.getWorldPosition(new T.Vector3()));outside.y=0;outside.normalize();
     const elbowPole=(side:number)=>outside.clone().multiplyScalar(side*.7).add(new T.Vector3(0,-.65,0)).add(new T.Vector3(0,0,-.15).applyQuaternion(rot));
+    if(pose.footMode===2&&Math.abs(state.lean)>.001&&state.reloadStart<0){
+      // Leaning changes both shoulder positions. Fit the visible weapon inside
+      // both arms' reach before solving either hand, preserving its orientation.
+      // This presentation offset does not alter the authoritative firing ray.
+      const reach=h.arms.map(l=>{const a=l.upper.getWorldPosition(new T.Vector3()),b=l.knee.getWorldPosition(new T.Vector3()),c=l.foot.getWorldPosition(new T.Vector3());return{shoulder:a,length:(a.distanceTo(b)+b.distanceTo(c))*.995};});
+      for(let pass=0;pass<6;pass++){
+        let adjusted=false;
+        for(const index of [1,0]){
+          const target=this.weapon.socket(index?sockets.weapon_grip_R:sockets.support_grip_L);
+          if(this.firstPerson)target.add(this.gripOffset(index===0));
+          const delta=target.sub(reach[index].shoulder),distance=delta.length();
+          if(distance>reach[index].length+.000001){w.position.add(delta.multiplyScalar(reach[index].length/distance-1));w.updateWorldMatrix(true,true);adjusted=true;}
+        }
+        if(!adjusted)break;
+      }
+    }
     const dominant=this.weapon.socket(sockets.weapon_grip_R);
     if(this.firstPerson)dominant.add(this.gripOffset(false));
     const gripRotation=w.getWorldQuaternion(new T.Quaternion());
@@ -140,7 +165,7 @@ export class CombatRig {
       const turn=T.MathUtils.clamp((T.MathUtils.clamp(yaw*.8,-1,1)*draw.swing+draw.twist)/Math.max(1,spine.length),-.4,.4);
       const world=bone.getWorldQuaternion(new T.Quaternion()).premultiply(new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),turn));
       const lean=leanProfile.profiles.CombatLeanRight,axis=new T.Vector3(Math.sin(pose.headingY),0,Math.cos(pose.headingY));
-      world.premultiply(new T.Quaternion().setFromAxisAngle(axis,T.MathUtils.clamp(state.lean,-1,1)*lean.radians*(lean.weights[index]??0)*draw.swing));
+      if(pose.footMode!==2)world.premultiply(new T.Quaternion().setFromAxisAngle(axis,T.MathUtils.clamp(state.lean,-1,1)*lean.radians*(lean.weights[index]??0)*draw.swing));
       bone.quaternion.copy(bone.parent!.getWorldQuaternion(new T.Quaternion()).invert().multiply(world));bone.updateWorldMatrix(false,true);
     }
     const socket=weaponSocket(pose,h.riderId,yaw*ready,pitch*ready,state.aimBlend*ready,state.lean*ready);

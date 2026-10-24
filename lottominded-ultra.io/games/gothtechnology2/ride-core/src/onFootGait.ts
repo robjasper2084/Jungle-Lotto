@@ -15,6 +15,22 @@ export function footGait(phase:number,speed:number,legLength:number){
  const s=u*u*(3-2*u)+tangent*u*(1-u)*(1-2*u);
  return{z:travel*(s-.5),lift:Math.min(.075+.12*jog,legLength*.24)*Math.sin(Math.PI*u)**1.3*(1+.20*jog*Math.cos(Math.PI*u)),pitch:toe*(1-smooth(0,.70,u))-heel*smooth(.70,1,u),contact:false};
 }
+/** Sprint feet spend less time reaching along the ground and recover beneath
+ * the hips; the planted portion still moves backwards at controller speed. */
+export function sprintGait(phase:number,speed:number,legLength:number){
+ const t=((phase%1)+1)%1,stance=.24,follow=.06;
+ const distance=footCycleDistance(speed)*Math.max(.2,legLength/.9),half=distance*stance*.5;
+ if(t<stance){const u=t/stance;return{z:half-distance*t,lift:0,pitch:-.05*(1-smooth(0,.20,u))+.30*smooth(.48,1,u),contact:true};}
+ // Short follow-through arcs preserve contact velocity without the long
+ // forward overshoot of a single cubic swing (which pulled the hips down).
+ const extra=distance*follow*.5,reach=half+extra;
+ let z:number;
+ if(t<stance+follow){const u=(t-stance)/follow;z=-half-distance*follow*(u-u*u*.5);}
+ else if(t>1-follow){const u=(t-(1-follow))/follow;z=reach-distance*follow*u*u*.5;}
+ else z=reach*(2*smooth(stance+follow,1-follow,t)-1);
+ const u=(t-stance)/(1-stance);
+ return{z,lift:Math.min(.195,legLength*.24)*Math.sin(Math.PI*u)**1.3*(1+.20*Math.cos(Math.PI*u)),pitch:.30*(1-smooth(0,.70,u))-.05*smooth(.70,1,u),contact:false};
+}
 
 /** Small root weight transfer. The retargeter retains captured torso rotations;
  * this helper supplies only the planted-body translation. */

@@ -3,7 +3,7 @@ import {FingerPose} from '../../../ride-core/src/fingerPose.ts';
 import {invalidateAnimatedShadow} from '../../../ride-core/src/shadowBudget.ts';
 import {visibleSceneryMatrices} from '../../../ride-core/src/visibleMatrices.ts';
 import {wheelPickupTiming} from '../../../ride-core/src/wheelPickupTiming.ts';
-import {applyOnFootRider,prepareOnFootRider} from '../../../ride-core/src/onFootRider.ts';
+import {applyOnFootRider,prepareOnFootRider,applyKimodoRiding} from '../../../ride-core/src/onFootRider.ts';
 import {solveLimb as solve} from '../../../ride-core/src/limbIK.ts';
 import {BicycleView,CyclistMotion} from '@digital-static/ridecore/cycling-view';
 import {HairWind} from './windMotion.ts';
@@ -277,6 +277,7 @@ export class Hero {
       this.riderContact.settle(this.rider,floor,this.terrain,.025,p.crashMotion?p.crashContact:0);
       this.root.updateMatrixWorld(true);
     }
+    if(!this.skateboarding)applyKimodoRiding(this,p);
     applyOnFootRider(this,p);this.fingers.apply('Relaxed',p.footMode===3&&wheelPickupTiming(p.footMountTime||0).grip>.5?'SupportGrip':'Relaxed');
   }
 }

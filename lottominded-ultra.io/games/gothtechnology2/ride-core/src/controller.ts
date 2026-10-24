@@ -11,7 +11,7 @@ import {RIDE_TUNING as tune,clamp,damp,angle,spring,advanceSpring,advanceDrive} 
 import type {RideTuning} from './rideDynamics.ts';
 
 export const NEUTRAL_ACTIONS={throttle:0,steer:0,crouch:false,hop:false,hopHeld:false,reset:false,trick:0};
-export type RideActions=typeof NEUTRAL_ACTIONS & {eyeControl?:boolean;facingYaw?:number;dismount?:boolean;run?:boolean;prone?:boolean;mountBlocked?:boolean;interruptMount?:boolean;evade?:number;quickMount?:boolean};
+export type RideActions=typeof NEUTRAL_ACTIONS & {eyeControl?:boolean;facingYaw?:number;dismount?:boolean;recover?:boolean;run?:boolean;prone?:boolean;lean?:number;mountBlocked?:boolean;interruptMount?:boolean;evade?:number;evadeSpeed?:number;evadeProgress?:number;vault?:boolean;quickMount?:boolean;stableAI?:boolean};
 export function createPose(){return {
   ...footFields(),
   stopFoot:0,stopFootX:0,stopFootY:0,stopFootZ:0,warningLevel:0,beepPulse:0,scrape:0,scrapeSide:0,scrapeX:0,scrapeY:0,scrapeZ:0,scrapeHard:0,
@@ -215,7 +215,9 @@ export class RideController {
         const freeZ=Math.abs(oz)>1e-5&&mountedClearance(this.terrain,p,{x:0,y:0,z:oz},Math.abs(oz)+.34,.28,p.crouch)===null;
         const slideX=freeX&&(!freeZ||Math.abs(ox)>Math.abs(oz)),slideZ=freeZ&&!slideX;
         const normalSpeed=slideX?Math.abs(this.vz):slideZ?Math.abs(this.vx):Math.hypot(this.vx,this.vz);
-        if(normalSpeed>(input.quickMount?1.2:4.2))this.fall('collision');
+        // AI tolerates ordinary bumps; only a hard, head-on solid impact knocks
+        // it off. Quick remount is animation pacing, never a crash threshold.
+        if(normalSpeed>(input.stableAI?8:4.2))this.fall('collision');
         else if(slideX||slideZ){if(slideX){p.x+=ox*.75;this.vx*=.75;this.vz=0;}else{p.z+=oz*.75;this.vz*=.75;this.vx=0;}p.speed=this.vx*Math.sin(p.headingY)+this.vz*Math.cos(p.headingY);this.motor=0;}
         else{p.speed=this.vx=this.vz=this.motor=0;}}
       else{p.x+=dx;p.z+=dz;}
@@ -240,8 +242,8 @@ export class RideController {
         const momentum=Math.hypot(this.vx,this.vz),alignment=momentum>.1?Math.cos(Math.atan2(this.vx,this.vz)-p.headingY):1;
         p.speed=momentum*(alignment<0?-1:1)*(.9+.1*Math.abs(alignment));p.landingCompression=clamp(this.lastLandingImpact/6,0,1);this.suspension.velocity-=this.lastLandingImpact*.26;
         this.lastLandingQuality=this.lastLandingImpact>tune.crashImpact?'crash':this.lastLandingImpact>6.5?'heavy':this.lastHopCharge>.45?'charged':'clean';
-        if(this.lastLandingImpact>tune.crashImpact)this.fall('hard landing');
-        else if(momentum*Math.sqrt(Math.max(0,1-alignment*alignment))>5.5){this.lastLandingQuality='crash';this.fall('sideways landing');}
+        if(!input.stableAI&&this.lastLandingImpact>tune.crashImpact)this.fall('hard landing');
+        else if(!input.stableAI&&momentum*Math.sqrt(Math.max(0,1-alignment*alignment))>5.5){this.lastLandingQuality='crash';this.fall('sideways landing');}
         this.tricks.land(this.lastLandingQuality);
       }
     }
@@ -284,7 +286,13 @@ export class RideController {
       const before=Math.abs(p.speed),after=Math.max(0,before-p.scrape*(p.scrapeHard?4.5:1.8)*dt),ratio=before?after/before:0;
       p.speed*=ratio;this.vx*=ratio;this.vz*=ratio;
     }
-    if(this.ground.offCourse)this.fall('trail boundary');
+    if(this.ground.offCourse){
+      if(input.stableAI){
+        // Keep navigation errors inside the arena without inventing a knock-off.
+        p.x=oldX;p.y=oldY;p.z=oldZ;p.speed=p.velocityX=p.velocityZ=0;this.vx=this.vz=this.motor=0;
+        this.terrain.sampleGround(p.x,p.z,this.ground,p.y);
+      }else this.fall('trail boundary');
+    }
     if(this.grounded&&!this.crashed&&Math.abs(p.rollAngle)<.12&&mountedClearance(this.terrain,p,{x:s,y:0,z:c},3,.35,p.crouch)===null)this.safe={position:{x:p.x,y:floor,z:p.z},headingY:p.headingY};
   }
   get poseValue():Readonly<RidePose>{return this.pose;}

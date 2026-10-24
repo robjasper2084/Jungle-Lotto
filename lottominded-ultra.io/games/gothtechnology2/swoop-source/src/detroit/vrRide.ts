@@ -1,11 +1,12 @@
 import * as T from 'three';
+import {XRHands} from '../../../ride-core/src/xrHands.ts';
 import type {RidePose} from './controller.ts';
 import {XRControllerInput,VRLeanDrive,vrHeading,vrOrigin,vrGazeSteer} from './xrInput.ts';
 
 type Hooks={ready:()=>boolean;enter:()=>void;exit:()=>void;pause:()=>void;unlockAudio:()=>void;message:(text:string)=>void};
 /** Headset pose stays physical: locomotion changes only the origin, never head pitch/roll. */
 export class VRRide {
- readonly rig=new T.Group();readonly input=new XRControllerInput();
+ readonly hands:XRHands;readonly rig=new T.Group();readonly input=new XRControllerInput();
  readonly button=document.createElement('button');readonly status=document.createElement('small');
  eyeHeight=1.75;hudEnabled=false;readonly hudButton=document.createElement('button');
  steeringMode:'controller'|'head'='controller';private gazeSteer=0;private gazeForward=new T.Vector3();private gazeRotation=new T.Quaternion();
@@ -19,7 +20,7 @@ export class VRRide {
   this.rig.name='RideCore VR origin';scene.add(this.rig);this.rig.add(camera);renderer.xr.enabled=true;renderer.xr.setReferenceSpaceType('local-floor');renderer.xr.setFramebufferScaleFactor(.8);
   this.panel.width=768;this.panel.height=256;this.context=this.panel.getContext('2d')!;this.texture=new T.CanvasTexture(this.panel);this.texture.colorSpace=T.SRGBColorSpace;
   this.hud=new T.Mesh(new T.PlaneGeometry(.60,.20),new T.MeshBasicMaterial({map:this.texture,transparent:true,depthTest:false,depthWrite:false}));this.hud.position.set(0,-.62,-1.25);this.hud.renderOrder=10000;camera.add(this.hud);this.hud.visible=false;
-  for(let i=0;i<2;i++){const grip=renderer.xr.getControllerGrip(i),handle=new T.Mesh(new T.CapsuleGeometry(.018,.08,3,6),new T.MeshStandardMaterial({color:i?'#d5be73':'#69bab0'}));handle.rotation.x=Math.PI/2;grip.add(handle);this.rig.add(grip);}
+  this.hands=new XRHands(renderer,this.rig);
   this.button.id='enterVR';this.button.textContent='Checking VR…';this.button.disabled=true;this.button.onclick=()=>void this.toggle();container.append(this.button);
   const label=document.createElement('label'),select=document.createElement('select');label.className='vrComfort';label.textContent='VR ride speed ';select.setAttribute('aria-label','VR ride speed');
   for(const [value,text]of [['comfort','Comfort · 22 km/h'],['full','Full riding speed']]){const o=document.createElement('option');o.value=value;o.textContent=text;select.append(o);}select.onchange=()=>{this.comfort=select.value==='comfort';};label.append(select);container.append(label);
@@ -60,7 +61,7 @@ export class VRRide {
   }catch(error){if(session)await session.end().catch(()=>{});this.status.textContent='VR did not start. '+(error instanceof Error?error.message:String(error));this.button.textContent='Try VR again';}
   finally{this.pending=false;this.button.disabled=false;}
  }
- private ended(){this.rig.position.set(0,0,0);this.rig.rotation.set(0,0,0);this.camera.position.set(0,0,0);this.camera.rotation.set(0,0,0);this.hud.visible=false;this.input.reset();this.renderer.shadowMap.enabled=this.savedShadows;this.button.textContent='Enter VR';this.button.disabled=false;this.status.textContent='VR ended. Resume the flat-screen ride or enter again.';this.hooks.exit();}
+ private ended(){this.hands.update(false);this.rig.position.set(0,0,0);this.rig.rotation.set(0,0,0);this.camera.position.set(0,0,0);this.camera.rotation.set(0,0,0);this.hud.visible=false;this.input.reset();this.renderer.shadowMap.enabled=this.savedShadows;this.button.textContent='Enter VR';this.button.disabled=false;this.status.textContent='VR ended. Resume the flat-screen ride or enter again.';this.hooks.exit();}
  poll(speed:number){const p=this.input.sample(Array.from(this.renderer.xr.getSession()?.inputSources??[]),speed);this.wands=p.wands;return p;}
  look(snap:number,recenter:boolean){if(recenter){this.viewYaw=0;this.recenterPending=true;this.initialized=false;this.gazeSteer=0;this.leanDrive.reset();}else this.viewYaw-=snap;}
  drive(controller:number,p:RidePose,dt:number,braking:boolean,frame?:XRFrame){
@@ -85,6 +86,7 @@ export class VRRide {
  }
  update(p:RidePose,paused:boolean,crashed:boolean,trick:string,trickActive:boolean,dt:number,frame?:XRFrame){
   if(!this.active)return;
+  this.hands.update(true);
   const reference=this.renderer.xr.getReferenceSpace(),view=frame&&reference?frame.getViewerPose(reference):null;
   if(view&&(this.recenterPending||this.calibratedRiderHeight!==this.eyeHeight)){this.calibratedHeight=view.transform.position.y;this.calibratedRiderHeight=this.eyeHeight;const t=view.transform;this.center={x:t.position.x,z:t.position.z};this.headYaw=new T.Euler().setFromQuaternion(new T.Quaternion(t.orientation.x,t.orientation.y,t.orientation.z,t.orientation.w),'YXZ').y;this.recenterPending=false;}
   if(!this.initialized){this.heading=p.headingY;this.initialized=true;}

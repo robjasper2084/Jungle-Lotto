@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {footGait,footBodyMotion,footCycleDistance} from '../src/onFootGait.ts';
+import {footGait,sprintGait,footBodyMotion,footCycleDistance} from '../src/onFootGait.ts';
 
 test('relaxed gait preserves ground contact and distance-matched steps for every hero size',()=>{
  for(const leg of [.45,.9,1.2])for(const speed of [0,1,2.35,3.6,5.4]){
@@ -38,5 +38,23 @@ test('grounded weight transfer remains restrained and settles at idle',()=>{
   const m=footBodyMotion(phase,speed);
   assert(Math.abs(m.bob)<.018&&Math.abs(m.weight)<.021,'weight transfer stays restrained');
   if(speed===0)assert.equal(Math.abs(m.weight)+Math.abs(m.bob),0);
+ }
+});
+
+test('sprint contacts flow into compact recovery without a long forward reach or a velocity snap',()=>{
+ for(const leg of [.28,.73,.9])for(const speed of [2.7,4.2,5.4]){
+  const distance=footCycleDistance(speed)*Math.max(.2,leg/.9),h=1e-6;
+  for(let i=0;i<1000;i++){
+   const a=sprintGait(i/1000,speed,leg),b=sprintGait((i+1)/1000,speed,leg);
+   assert(Math.abs(a.z)<=distance*.15+1e-10,'swing must stay within the fitted leg reach');
+   assert(a.lift>=0&&a.lift<leg*.25);
+   if(a.contact&&b.contact)assert(Math.abs((a.z-b.z)*1000-distance)<1e-8);
+   assert(Math.abs(a.z-b.z)<.01&&Math.abs(a.lift-b.lift)<.003);
+  }
+  for(const phase of [.24,.30,.94,1]){
+   const before=(sprintGait(phase,speed,leg).z-sprintGait(phase-h,speed,leg).z)/h;
+   const after=(sprintGait(phase+h,speed,leg).z-sprintGait(phase,speed,leg).z)/h;
+   assert(Math.abs(before-after)<.001,'sprint foot velocity must be continuous');
+  }
  }
 });

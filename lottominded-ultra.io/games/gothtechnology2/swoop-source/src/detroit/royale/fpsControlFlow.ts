@@ -1,7 +1,7 @@
 /** Browser adaptation of Burntwax's sprint/aim/shoot priority and reload states.
  * Consumes existing explicit button states; pointer coordinates are never inputs.
  * It shapes local intent only. The server still owns eligibility, ammo and hits. */
-export type FpsControlIntent={enabled:boolean;onFoot:boolean;moving:boolean;sprint:boolean;aimMode:number;fire:boolean;reloading:boolean;low:boolean};
+export type FpsControlIntent={enabled:boolean;onFoot:boolean;moving:boolean;sprint:boolean;aimMode:number;fire:boolean;reloading:boolean;low:boolean;lean?:number};
 export class FpsControlFlow {
  private sprint=false;private aim=false;private serial=0;
  private sprintOrder=0;private aimOrder=0;
@@ -14,7 +14,7 @@ export class FpsControlFlow {
   if(i.sprint&&!this.sprint)this.sprintOrder=++this.serial;
   if(i.aimMode>0&&!this.aim)this.aimOrder=++this.serial;
   this.sprint=i.sprint;this.aim=i.aimMode>0;
-  const sprintWins=i.sprint&&i.moving&&!i.low&&!i.reloading&&!i.fire&&this.sprintOrder>(this.aim?this.aimOrder:0);
+  const sprintWins=i.sprint&&i.moving&&!i.low&&!i.lean&&!i.reloading&&!i.fire&&this.sprintOrder>(this.aim?this.aimOrder:0);
   this.aimSuppressed=i.reloading||sprintWins;
   return {aimMode:this.aimSuppressed?0:i.aimMode,fire:i.reloading?false:i.fire,sprint:sprintWins};
  }

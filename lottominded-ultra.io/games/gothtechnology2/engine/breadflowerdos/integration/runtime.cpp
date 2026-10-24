@@ -66,7 +66,9 @@ void fire(State& s,int who){
  --a.ammo[weapon];--a.mag[weapon];a.shotAt=s.tick;++a.shots;int seq=++a.fireSerial;
  s.salvos[group]={1,who,seq,weapon,s.tick+w.life,{}};
  double yaw=a.heading+std::clamp(input(s,who,4)*1.25+a.kickYaw,-1.25,1.25),pitch=std::clamp(input(s,who,5)*.65+a.kickPitch,-.65,.65),reach=.52*a.scale;
- double prone=input(s,who,24),crouch=input(s,who,25),turn=input(s,who,4)*1.25*.6,side=-.02,forward=(a.scale<1?-.03:.14)+prone*.34;double gx=(std::cos(turn)*side+std::sin(turn)*forward+a.roll*.9+a.lean*.025)*a.scale,gy=((1.43+.12*a.aimBlend)*a.scale+(a.scale<1?.08:0)-input(s,who,22)*.296*(a.scale<1?.75:.86)-crouch*.34*a.scale)*(1-prone)+.40*a.scale*prone,gz=(-std::sin(turn)*side+std::cos(turn)*forward)*a.scale;
+ // Same screen-right lean frame as the camera and TypeScript muzzle helper.
+ double stanceLean=input(s,who,32)>.5?a.lean*input(s,who,33):0;
+ double prone=input(s,who,24),crouch=input(s,who,25),turn=input(s,who,4)*1.25*.6,side=-.02,forward=(a.scale<1?-.03:.14)+prone*.34;double gx=(std::cos(turn)*side+std::sin(turn)*forward+a.roll*.9+(input(s,who,22)>0?-.30*stanceLean:a.lean*.025))*a.scale,gy=((1.43+.12*a.aimBlend)*a.scale+(a.scale<1?.08:0)-input(s,who,22)*.296*(a.scale<1?.75:.86)-crouch*.34*a.scale)*(1-prone)+.40*a.scale*prone-.035*std::abs(stanceLean)*a.scale,gz=(-std::sin(turn)*side+std::cos(turn)*forward)*a.scale;
  double x=a.x+std::cos(a.heading)*gx+std::sin(a.heading)*gz+std::sin(yaw)*std::cos(pitch)*reach;
  double y=a.y+gy+std::sin(pitch)*reach;
  double z=a.z-std::sin(a.heading)*gx+std::cos(a.heading)*gz+std::cos(yaw)*std::cos(pitch)*reach;
@@ -100,16 +102,16 @@ void startMelee(State& s,int who,int heavy){
  a.meleeStart=s.tick;a.meleeEnd=s.tick+(heavy?42:28);a.meleeHitMask=0;++a.meleeSerial;a.protectedUntil=0;a.repairUntil=0;cancelReload(a);event(s,12,who);
 }
 void meleeRules(State& s,int who){
- auto& a=s.actors[who];bool toggle=input(s,who,28)>0,light=input(s,who,29)>0,heavy=input(s,who,30)>0;int evade=int(std::round(input(s,who,31)*2));
+ auto& a=s.actors[who];bool toggle=input(s,who,28)>0,light=input(s,who,29)>0,heavy=input(s,who,30)>0;int evade=int(std::round(input(s,who,31)*3));
  if(toggle&&!a.brawlHeld&&input(s,who,32)>.5){a.brawl=!a.brawl;a.meleeKind=0;a.meleeStart=-1;a.meleeEnd=0;a.queued=0;cancelReload(a);a.burstLeft=0;}
  a.brawlHeld=toggle;
  if(input(s,who,32)<.5){a.brawl=0;a.meleeKind=0;a.meleeStart=-1;a.meleeEnd=0;a.queued=0;}
  if(a.meleeEnd&&s.tick>=a.meleeEnd){a.meleeKind=0;a.meleeStart=-1;a.meleeEnd=0;int queued=a.queued;a.queued=0;if(queued)startMelee(s,who,queued==2);}
  if(s.phase==2){if(light&&!a.lightHeld)startMelee(s,who,0);if(heavy&&!a.heavyHeld)startMelee(s,who,1);
-  if(evade&&!a.evadeHeld&&input(s,who,32)>.5&&input(s,who,24)<.3&&a.staggerUntil<=s.tick&&a.evadeReady<=s.tick&&a.connected){a.evadeDir=std::clamp(evade,-1,2);a.evadeUntil=s.tick+15;a.evadeReady=s.tick+60;a.meleeKind=0;a.meleeStart=-1;a.meleeEnd=0;a.queued=0;a.protectedUntil=0;event(s,14,who);}
+  if(evade&&!a.evadeHeld&&input(s,who,32)>.5&&input(s,who,24)<.3&&a.staggerUntil<=s.tick&&a.evadeReady<=s.tick&&a.connected){a.evadeDir=std::clamp(evade,-1,3);a.evadeUntil=s.tick+96;a.evadeReady=s.tick+180;cancelReload(a);a.repairUntil=0;a.burstLeft=0;a.meleeKind=0;a.meleeStart=-1;a.meleeEnd=0;a.queued=0;a.protectedUntil=0;event(s,14,who);}
  }
  a.lightHeld=light;a.heavyHeld=heavy;a.evadeHeld=evade!=0;
- if(a.brawl||a.staggerUntil>s.tick)a.aimBlend=0;
+ if(a.brawl||a.staggerUntil>s.tick||a.evadeUntil>s.tick)a.aimBlend=0;
 }
 void rules(State& s){
  auto f=field(s);
@@ -120,7 +122,7 @@ void rules(State& s){
   int sel=a.commandSlot;if(sel!=a.slot&&a.loadout[sel]>=0){cancelReload(a);a.burstLeft=0;a.slot=sel;a.switchUntil=s.tick+24;}
   auto w=weapons[a.loadout[a.slot]];
   a.kickYaw*=std::exp(-w.recovery/60);a.kickPitch*=std::exp(-w.recovery/60);
-  double targetAim=a.brawl||a.staggerUntil>s.tick?0:input(s,who,18);a.aimBlend+=std::clamp(targetAim-a.aimBlend,-1.0/w.adsTicks,1.0/w.adsTicks);
+  double targetAim=a.brawl||a.staggerUntil>s.tick||a.evadeUntil>s.tick?0:input(s,who,18);a.aimBlend+=std::clamp(targetAim-a.aimBlend,-1.0/w.adsTicks,1.0/w.adsTicks);
   a.lean+=std::clamp(input(s,who,19)-a.lean,-.08,.08);
   bool held=input(s,who,8)>0,edge=held&&!a.fireHeld,reload=input(s,who,16)>0,mode=input(s,who,17)>0;
   if(held||reload||input(s,who,10)>0||input(s,who,26)>0||input(s,who,27)>0||input(s,who,18)>0||input(s,who,29)>0||input(s,who,30)>0||input(s,who,31)!=0)a.protectedUntil=0;
@@ -147,7 +149,7 @@ void rules(State& s){
   a.dogHeld=dog;a.radarHeld=radar;
   if(input(s,who,10)>0&&a.utility&&s.tick>=a.shieldUntil){--a.utility;a.shieldUntil=s.tick+150;event(s,2,who);}
   if(input(s,who,11)>0&&a.repairs&&!a.repairUntil){--a.repairs;a.repairUntil=s.tick+180;}
-  if(wants){a.repairUntil=0;fire(s,who);}
+  if(wants&&a.evadeUntil<=s.tick){a.repairUntil=0;fire(s,who);}
   if(a.repairUntil&&s.tick>=a.repairUntil){a.integrity=std::min(100.0,a.integrity+35);a.repairUntil=0;}
   if(s.tick-a.lastDamage>480)a.shield=std::min(50.0,a.shield+.05);
   if(std::hypot(a.x-f.x,a.z-f.z)>f.radius)hit(s,who,f.damage/60,-1,1);
@@ -211,7 +213,7 @@ void serialize(State& s,Stream& v){
   v.integer(a.reloadStart,-1,MatchDeadline);v.integer(a.reloadCommit,0,MatchDeadline+180);v.integer(a.reloadEnd,0,MatchDeadline+180);v.integer(a.reloadWeapon,-1,2);v.integer(a.reloadCommitted,0,1);
   v.integer(a.dogCharges,0,2);v.integer(a.dogUntil,0,MatchDeadline+1160);v.integer(a.dogReady,0,MatchDeadline+2160);v.integer(a.dogHit,0,1);v.integer(a.dogHeld,0,1);v.integer(a.radarUntil,0,MatchDeadline+180);v.integer(a.radarReady,0,MatchDeadline+1160);v.integer(a.radarHeld,0,1);
   v.integer(a.reentryUsed,0,3);v.integer(a.reentryUntil,0,MatchDeadline+2160);v.integer(a.protectedUntil,0,MatchDeadline+2160);
-  v.integer(a.brawl,0,1);v.integer(a.brawlHeld,0,1);v.integer(a.lightHeld,0,1);v.integer(a.heavyHeld,0,1);v.integer(a.evadeHeld,0,1);v.integer(a.meleeKind,0,4);v.integer(a.meleeStart,-1,MatchDeadline);v.integer(a.meleeEnd,0,MatchDeadline+180);v.integer(a.meleeSerial,0,100000);v.integer(a.meleeHitMask,0,1023);v.integer(a.combo,0,3);v.integer(a.comboUntil,0,MatchDeadline+180);v.integer(a.queued,0,2);v.integer(a.staggerUntil,0,MatchDeadline+180);v.integer(a.evadeUntil,0,MatchDeadline+180);v.integer(a.evadeReady,0,MatchDeadline+180);v.integer(a.evadeDir,-1,2);
+  v.integer(a.brawl,0,1);v.integer(a.brawlHeld,0,1);v.integer(a.lightHeld,0,1);v.integer(a.heavyHeld,0,1);v.integer(a.evadeHeld,0,1);v.integer(a.meleeKind,0,4);v.integer(a.meleeStart,-1,MatchDeadline);v.integer(a.meleeEnd,0,MatchDeadline+180);v.integer(a.meleeSerial,0,100000);v.integer(a.meleeHitMask,0,1023);v.integer(a.combo,0,3);v.integer(a.comboUntil,0,MatchDeadline+180);v.integer(a.queued,0,2);v.integer(a.staggerUntil,0,MatchDeadline+180);v.integer(a.evadeUntil,0,MatchDeadline+180);v.integer(a.evadeReady,0,MatchDeadline+180);v.integer(a.evadeDir,-1,3);
   v.number(a.vx,-100,100);v.number(a.vz,-100,100);v.number(a.roll,-2,2);v.number(a.air,0,1);v.number(a.rough,0,1);v.number(a.kickYaw,-.12,.12);v.number(a.kickPitch,0,.22);v.number(a.aimBlend,0,1);v.number(a.lean,-1,1);
   if(v.reading&&a.reloadStart>=0&&(a.reloadWeapon<0||a.reloadCommit<a.reloadStart||a.reloadEnd<a.reloadCommit))v.ok=false;
   if(v.reading&&a.present&&(a.loadout[0]<0||a.loadout[a.slot]<0||(!a.alive&&a.integrity>0)))v.ok=false;

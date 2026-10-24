@@ -7,8 +7,25 @@ import {ArenaTerrain} from '../src/royale/arena.ts';
 import {RoyaleMatch,neutral,PROTECTION} from '../src/royale/rules.ts';
 import {FootAim,wrapYaw} from '../../swoop-source/src/detroit/royale/footAim.ts';
 import type {TerrainSampler} from '../src/terrain.ts';
+import {RideController as SwoopController,createPose as swoopPose} from '../../swoop-source/src/detroit/controller.ts';
 const flat:TerrainSampler={sampleGround(_x,_z,out){return Object.assign(out,{height:0,normal:{x:0,y:1,z:0},surface:'pavement',offCourse:false});},raycast:()=>null,raycastObstacle:()=>null};
 function walker(){const c=new RideController(flat);c.step(1/120,{...NEUTRAL_ACTIONS,dismount:true});for(let i=0;i<100;i++)c.step(1/120,NEUTRAL_ACTIONS);return c;}
+test('normal Royale walking matches Swoop and Elmwood acceleration, turning, reversing and stopping',()=>{
+ const royale=walker(),elmwood=walker(),swoop=new SwoopController(flat),aim=new FootAim(),swoopView=swoopPose();
+ swoop.step(1/120,{...NEUTRAL_ACTIONS,dismount:true});for(let i=0;i<100;i++)swoop.step(1/120,NEUTRAL_ACTIONS);
+ for(let i=0;i<720;i++){
+  aim.sync(royale.poseValue);
+  const facingYaw=aim.commandYaw({aimMode:0,fire:false,lean:0,brawl:false});assert.equal(facingYaw,null);
+  const input={...NEUTRAL_ACTIONS,throttle:i<240?1:i<480?-.7:0,steer:i<120?0:i<400?.6:0,run:i>=120&&i<240};
+  royale.step(1/120,{...input,facingYaw:facingYaw??undefined});elmwood.step(1/120,input);swoop.step(1/120,input);
+  swoop.writePose(swoopView);
+  for(const pose of [elmwood.poseValue,swoopView])for(const key of ['x','z','headingY','speed','footCycle'] as const)assert(Math.abs(royale.poseValue[key]-pose[key])<1e-8,key+' differs from the shared walk');
+ }
+ aim.sync(royale.poseValue);assert(Math.abs(wrapYaw(aim.heading-royale.poseValue.headingY))<1e-8);
+ const idle={aimMode:0,fire:false,lean:0,brawl:false};
+ for(const combat of [{aimMode:2},{fire:true},{lean:1},{brawl:true}])assert.equal(aim.commandYaw({...idle,...combat}),aim.heading);
+ assert.equal(aim.commandYaw(idle),null,'releasing combat restores normal steering');
+});
 test('foot look crosses the yaw seam repeatedly and preserves the parked wheel',()=>{
  const c=walker(),aim=new FootAim(),p=c.poseValue,park=[p.parkX,p.parkY,p.parkZ];aim.sync(p);
  for(let i=0;i<400;i++){aim.turn(.09);c.step(1/120,{...NEUTRAL_ACTIONS,facingYaw:aim.heading});assert(Math.abs(wrapYaw(p.headingY-aim.heading))<1e-8);}

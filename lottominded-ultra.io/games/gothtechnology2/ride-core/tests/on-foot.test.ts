@@ -51,3 +51,13 @@ test('pickup keeps the wheel parked, resumes deterministically, and aborts on co
  a.step(1/120,{...NEUTRAL_ACTIONS,interruptMount:true});assert.equal(a.poseValue.footMode,2);assert.equal(a.poseValue.footMountTime,0);assert.deepEqual([a.poseValue.parkX,a.poseValue.parkY,a.poseValue.parkZ],park);
  step(1,{dismount:true});step(420);assert.equal(a.poseValue.footMode,0);
 });
+
+test('Recover during dismount queues pickup and restores movement; a wall still blocks remount',()=>{
+ let blocked=false;
+ const c=new RideController({...terrain,raycastObstacle:()=>blocked?0:null});
+ const step=(n:number,input={})=>{for(let i=0;i<n;i++)c.step(1/120,{...NEUTRAL_ACTIONS,...input});};
+ step(1,{dismount:true});step(1,{recover:true});step(480);
+ assert.equal(c.poseValue.footMode,0);step(120,{throttle:1});assert(c.poseValue.speed>1);
+ c.reset({position:{x:0,y:0,z:0},headingY:0});step(1,{dismount:true});step(100);
+ blocked=true;step(1,{recover:true});step(300);assert.equal(c.poseValue.footMode,2,'Recover must not remount through cover');
+});

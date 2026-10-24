@@ -47,8 +47,11 @@ export class SplitRideInput {
    const p=this.pads[i]=this.readers[i].sample(assigned?[assigned]:[],speeds[i]);pause ||= p.pause;
    const k=this.layout(i),active=binding.startsWith('pad:')?Math.abs(p.throttle)+Math.abs(p.steer)>.05||p.hopHeld||p.crouch:Object.values(k).some(c=>this.keys.has(c));
    const t=this.touch[i];this.ready[i]=this.gates[i].sample(dt,active||Math.abs(t.throttle)+Math.abs(t.steer)>.05||t.braking||t.hopHeld||t.crouch);
-   if(this.ready[i])for(const event of ['hop','recover','camera','trick','sit'] as const)this.pending[i][event] ||= p[event];
+   // A deliberate recovery edge must survive the neutral gate after a crash.
+   const recover=this.pending[i].recover||p.recover;
+   if(this.ready[i])for(const event of ['hop','camera','trick','sit'] as const)this.pending[i][event] ||= p[event];
    else this.pending[i]=this.empty();
+   this.pending[i].recover=recover;
   });
   return {pause,disconnected};
  }

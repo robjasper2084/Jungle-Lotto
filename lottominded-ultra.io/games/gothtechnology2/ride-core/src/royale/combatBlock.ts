@@ -6,17 +6,24 @@ export const COMBAT_BLOCK_BOXES:CombatBlockBox[]=[];
 const box=(x:number,y:number,z:number,w:number,h:number,d:number,kind:CombatBlockBox['kind']='brick')=>COMBAT_BLOCK_BOXES.push({x,y,z,w,h,d,kind});
 // Two walk-through shops, with 3 m doors at both ends and a central alley.
 for(const [x,z] of [[-12,1],[12,13]]){
- box(x-6,1.7,z,.35,3.4,14);box(x+6,1.7,z,.35,3.4,14);
+ // Real side-window openings: matching render/collision, clear indoor floor,
+ // a low sill and enough headroom to vault without entering solid scenery.
+ for(const side of [-1,1]){
+  for(const end of [-1,1])box(x+side*6,1.7,z+end*4.05,.35,3.4,5.9);
+  box(x+side*6,.39,z,.35,.78,2.2);box(x+side*6,3.26,z,.35,.28,2.2);
+ }
  for(const edge of [-7,7]){box(x-3.75,1.7,z+edge,4.5,3.4,.35);box(x+3.75,1.7,z+edge,4.5,3.4,.35);box(x,2.95,z+edge,3, .9,.35);}
  box(x,3.55,z,12.6,.3,14.6,'roof');
 }
 for(const [x,z]of [[-6,-17],[7,-8],[-7,24],[17,-21]]){box(x,.65,z,2.1,.8,4.6,'car');box(x,1.25,z,1.85,.65,2.15,'car');}
 for(const [x,z,w,d]of [[0,2,2.5,1],[-23,11,1,7],[22,29,7,1],[0,-25,3,1]])box(x,.65,z,w,1.3,d,'concrete');
+// Low metal service fence; the cap/posts are also physical, not just scenery.
+box(-7,.45,-25,4,.9,.14,'roof');for(const x of [-9,-5])box(x,.53,-25,.14,1.06,.2,'roof');
 for(const [x,z,w,d]of [[-29,0,.5,76],[29,0,.5,76],[0,-38,58,.5],[0,38,58,.5]])box(x,2,z,w,4,d,'concrete');
 /** Isolated local training geometry. Render meshes and collision share these boxes. */
 export class CombatBlockTerrain implements BattleTerrain {
  readonly training=true;
- readonly arenaIdentity={map:'detroit-combat-block',arena:'training-1',rules:'local-training',protocol:1,physics:'rapier',collision:'block-1'};
+ readonly arenaIdentity={map:'detroit-combat-block',arena:'training-2',rules:'local-training',protocol:1,physics:'rapier',collision:'block-2'};
  readonly spawns=[{x:0,z:-32},{x:-21,z:29},{x:21,z:30},{x:-23,z:-17},{x:21,z:0},{x:0,z:30}].map(p=>({position:{...p,y:0},headingY:Math.atan2(-p.x,-p.z)}));
  readonly zones=Array.from({length:5},()=>({x:0,z:0}));readonly fieldRadii=[150,140,130,120,110,0];
  readonly supplies=Array.from({length:14},(_,i)=>({x:-9+(i%7)*3,y:0,z:i<7?-29:31}));
