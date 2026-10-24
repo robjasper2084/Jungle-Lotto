@@ -35,3 +35,23 @@ test('waiting at the respawn prompt does not lock out movement or shooting on th
   assert(victim.shots>shots,'rider fires after respawn');
  }finally{session.leave();terrain.dispose();}
 });
+
+test('guest recovery prediction uses authoritative health and waits for legal remount',async()=>{
+ const terrain=await ArenaTerrain.create(),session=new RoyaleSession(terrain);
+ let match:NonNullable<RoyaleSession['match']>|undefined;
+ try{
+  session.offline('DS_Armored_Rider_01','euc',6,false,1);match=session.match!;
+  const rider=match.actors[0];rider.controller.reset({position:{x:0,y:0,z:0},headingY:0});rider.controller.combatOnFoot=true;rider.controller.knockOff();
+  for(let i=0;i<240;i++)rider.controller.step(1/120,{throttle:0,steer:0,hop:false,hopHeld:false,crouch:false,reset:false,trick:0});
+  rider.pose={...rider.controller.poseValue};assert.equal(rider.pose.footMode,2);
+  // Use a transport sink to exercise snapshot reconciliation and guest input,
+  // without joining a public room or claiming a real-network test.
+  session.match=undefined;session.room={send(){},leave(){}} as any;
+  rider.integrity=10;(session as any).accept(match.snapshot(session.me));
+  session.step({...neutral(match.round),recover:true});
+  assert.equal(session.prediction!.controller.poseValue.footMode,2,'critical health must not show a false pickup on the guest');
+  session.pending=[];rider.integrity=100;(session as any).accept(match.snapshot(session.me));
+  session.step({...neutral(match.round),recover:true});
+  assert.equal(session.prediction!.controller.poseValue.footMode,3,'healthy guest can predict the same legal pickup as the host');
+ }finally{session.leave();match?.dispose();terrain.dispose();}
+});

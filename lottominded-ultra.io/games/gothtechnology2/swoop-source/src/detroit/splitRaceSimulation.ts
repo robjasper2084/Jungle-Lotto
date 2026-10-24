@@ -22,6 +22,14 @@ export class SplitRaceSimulation {
  readonly terrain:TerrainSampler;
  readonly remoteFallPhase=new Map<number,string>();
  newCrashes:number[]=[];
+ private pendingRecovery=new Set<number>();
+ recoveryPending(index:number){return this.pendingRecovery.has(index);}
+ requestRecovery(index:number){
+  const r=this.riders[index];if(!r)return false;
+  if(r.sim.snapshot().state==='recovering')return true;
+  if(r.sim.crashed&&r.sim.snapshot().fallPhase!=='settled'&&!this.rules.done&&this.rules.countdown<=0&&this.rules.racers[index].finish===null){this.pendingRecovery.add(index);r.message='Recovery queued · getting up when the fall settles';return true;}
+  return this.recover(index);
+ }
  private pilots=new Map<number,RacePilot>();
  fillRivals(slots:readonly number[],difficulty:RaceDifficulty='expert'){
   if(this.sessionMode!=='race')return;
@@ -35,6 +43,8 @@ export class SplitRaceSimulation {
    const queries:TerrainSampler={
     sampleGround:(...a)=>terrain.sampleGround(...a),raycast:(...a)=>terrain.raycast(...a),raycastObstacle:(...a)=>terrain.raycastObstacle(...a),
     mountedClear:terrain.mountedClear?(...a)=>terrain.mountedClear!(...a):undefined,
+    waterAt:terrain.waterAt?(...a)=>terrain.waterAt!(...a):undefined,
+    reserveRecoverySpace:terrain.reserveRecoverySpace?(...a)=>terrain.reserveRecoverySpace!(...a):undefined,
     navigationObstacles:(x,z,radius)=>(terrain.navigationObstacles?.(x,z,radius)??[]).concat(this.riders.flatMap((r,j)=>j===i?[]:r.sim.obstacles('local-'+j)))
    };
    const offset=this.offset(i,ids.length),row=this.row(i,ids.length),centre=options.spawn,station=(options.challenge?.start??RACE_ROUTE.start)-row;
@@ -65,6 +75,7 @@ export class SplitRaceSimulation {
    else if(this.sessionMode==='free')Object.assign(this.rules.racers[i],{station:c.d,offset:c.u});
    if(this.rules.racers[i].finish!==null){if(r.challenge?.failed){r.flow.cancel();r.message='Attempt ended · '+r.challenge.reason;}else {r.flow.bank();r.message='Finished · waiting for the other riders';}}
   });
+  for(const i of this.pendingRecovery){const r=this.riders[i];if(!r.sim.crashed||r.sim.snapshot().fallPhase==='settled'){this.pendingRecovery.delete(i);this.recover(i);}}
   if(this.sessionMode==='challenge')this.rules.done=this.riders.every(r=>r.challenge?.done||r.challenge?.failed);
   if(this.rules.done)this.riders.forEach((r,i)=>{if(this.rules.racers[i].finish===null)r.flow.cancel();});
  }

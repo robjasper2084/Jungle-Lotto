@@ -14,7 +14,7 @@ test('directional cues follow the listener, attenuate and never reveal distant a
 test('audio waits for a gesture, reuses its motor, deduplicates cues, and mutes on pause',async()=>{
  let voices=0;const param=()=>({value:0,setValueAtTime(){},exponentialRampToValueAtTime(){},setTargetAtTime(){}});
  const node=()=>({gain:param(),frequency:param(),pan:param(),connect(other:unknown){return other;},disconnect(){},start(){},stop(){}});
- class Context {state='running';currentTime=1;sampleRate=48000;destination=node();createGain=node;createStereoPanner=node;createBiquadFilter=node;createOscillator(){voices++;return node();}createBufferSource(){voices++;return node();}createBuffer(){return{getChannelData:()=>new Float32Array(14400)};}async resume(){}async close(){}}
+ class Context {listener={setPosition(){},setOrientation(){}};state='running';currentTime=1;sampleRate=48000;destination=node();createGain=node;createStereoPanner=node;createBiquadFilter=node;createOscillator(){voices++;return node();}createBufferSource(){voices++;return node();}createBuffer(){return{getChannelData:()=>new Float32Array(14400)};}async resume(){}async close(){}}
  const original=Object.getOwnPropertyDescriptor(globalThis,'window');Object.defineProperty(globalThis,'window',{value:{AudioContext:Context},configurable:true});
  try{
   const audio=new RoyaleAudio();audio.music=false;assert.equal(audio.status.context,'not-created');assert.equal(voices,0);await audio.unlock();assert.equal(voices,1);

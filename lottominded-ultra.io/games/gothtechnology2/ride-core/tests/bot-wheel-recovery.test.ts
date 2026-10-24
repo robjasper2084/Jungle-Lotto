@@ -30,7 +30,7 @@ for(const engine of [false,true])test(`knocked-off AI picks up and remounts prom
  assert(pickupAt&&mountedAt);assert(mountedAt-start<75,'nearby wheel recovered immediately, in under 1.25 seconds');
  assert(mountedAt-pickupAt>=Math.floor(WHEEL_PICKUP_TOTAL*60/2.6)-2,'all pickup/remount phases retained at AI pace');
  const human=m.actors[0];human.controller.reset({position:{x:0,y:0,z:20},headingY:0});human.pose={...human.controller.poseValue};
- for(let i=0;i<60;i++){m.step();assert.equal(a.input.dismount,false,'do not immediately dismount again to engage a nearby enemy');}
+ for(let i=0;i<300;i++){m.step();assert.equal(a.input.dismount,false,'do not immediately dismount again to engage a nearby enemy');}
  m.dispose();
 });
 test('AI returns to a wheel separated by impact momentum and preserves deterministic host recovery',()=>{
@@ -55,10 +55,26 @@ test('voluntary dismount is not mistaken for a knock-off',()=>{
  assert.equal(recoverBotWheel(a,c,botWheelRecovery(),terrain,m.tick),false);m.dispose();
 });
 
-test('AI colliding with a building is knocked off, rather than riding against its wall',()=>{
- const rider=new RideController(terrain,{spawn:{position:{x:75,y:0,z:44},headingY:0}});rider.combatOnFoot=true;
+test('high-speed AI building impact knocks off and keeps the wheel outside solid geometry',()=>{
+ const rider=new RideController(terrain,{spawn:{position:{x:75,y:0,z:15},headingY:0}});rider.combatOnFoot=true;
  let fell=false;
- for(let i=0;i<360;i++){rider.step(1/120,{...NEUTRAL_ACTIONS,throttle:1,quickMount:true});if(rider.poseValue.footMode===2){fell=true;break;}}
+ for(let i=0;i<1200;i++){rider.step(1/120,{...NEUTRAL_ACTIONS,throttle:1,quickMount:true,stableAI:true});if(rider.poseValue.footMode===2){fell=true;break;}}
  assert(fell,'a direct building impact must visibly knock off the AI');assert(rider.poseValue.parkZ<53,'wheel remains outside the building');
+});
+test('ordinary AI wall contact stops safely without a knock-off',()=>{
+ const rider=new RideController(terrain,{spawn:{position:{x:75,y:0,z:50},headingY:0}});rider.combatOnFoot=true;
+ for(let i=0;i<420;i++){rider.step(1/120,{...NEUTRAL_ACTIONS,throttle:.4,quickMount:true,stableAI:true});assert.equal(rider.poseValue.footMode,0);assert(!rider.crashed);}
+ assert(rider.poseValue.z<53,'low speed contact cannot pass through cover');
+});
+for(const engine of [false,true])test(`AI resumes pursuing after recovery (engine=${engine})`,()=>{
+ const m=setup(engine),a=m.actors[1],human=m.actors[0];
+ human.controller.reset({position:{x:0,y:0,z:50},headingY:0});human.pose={...human.controller.poseValue};
+ a.controller.knockOff();a.pose={...a.controller.poseValue};let mounted=false,moving=false;
+ for(let i=0;i<240;i++){m.step();mounted ||= !a.pose.footMode;moving ||= mounted&&a.pose.speed>1&&a.input.throttle>0;}
+ assert(mounted&&moving,'recovered bot must actively pursue again');m.dispose();
+});
+test('AI stops at a navigation boundary without falling or crossing it',()=>{
+ const rider=new RideController({sampleGround(_x,z,out){return Object.assign(out,{height:0,normal:{x:0,y:1,z:0},surface:'pavement',offCourse:z>.5});},raycast:()=>null,raycastObstacle:()=>null});rider.combatOnFoot=true;
+ for(let i=0;i<600;i++){rider.step(1/120,{...NEUTRAL_ACTIONS,throttle:1,stableAI:true});assert.equal(rider.poseValue.footMode,0);assert(!rider.crashed);assert(rider.poseValue.z<=.5);}
 });
 test.after(()=>terrain.dispose());

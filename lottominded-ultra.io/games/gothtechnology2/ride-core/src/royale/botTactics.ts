@@ -1,6 +1,6 @@
 import type {Vec3} from '../terrain.ts';
 import type {BattleTerrain} from './battleTerrain.ts';
-export type BotGoal='rotate'|'cover'|'resupply'|'engage'|'search'|'patrol';
+export type BotGoal='rotate'|'cover'|'resupply'|'engage'|'search'|'patrol'|'flank';
 const gap=(a:{x:number;z:number},b:{x:number;z:number})=>Math.hypot(a.x-b.x,a.z-b.z);
 /** Only the caller's visible enemy / last seen memory is considered. */
 export function tacticalDestination(terrain:BattleTerrain,p:Vec3,field:{x:number;z:number;radius:number},enemy:Vec3|undefined,memory:Vec3|undefined,defend:boolean,supplies:readonly Vec3[],index:number,tick:number):{point:Vec3;mode:BotGoal}{
@@ -19,9 +19,10 @@ export function tacticalDestination(terrain:BattleTerrain,p:Vec3,field:{x:number
  if(!enemy&&supplies.length){const nearby=supplies.filter(q=>inside(q)&&gap(q,p)<60&&terrain.clear(q.x,q.z,.7,p.y)).sort((a,b)=>gap(a,p)-gap(b,p));if(nearby.length)return {point:nearby[0],mode:'resupply'};}
  if(enemy){
   // Keep spacing instead of driving directly into the opponent.
-  const d=gap(p,enemy),a=Math.atan2(p.x-enemy.x,p.z-enemy.z)+(index%2?1:-1)*.4;
+  const flank=index%3===1&&(tick+index*97)%720<240;
+  const d=gap(p,enemy),a=Math.atan2(p.x-enemy.x,p.z-enemy.z)+(index%2?1:-1)*(flank?1.15:.4);
   const q={x:enemy.x+Math.sin(a)*18,y:enemy.y,z:enemy.z+Math.cos(a)*18};
-  return {point:d<35&&inside(q)&&terrain.clear(q.x,q.z,.7,p.y)?q:enemy,mode:'engage'};
+  return {point:d<35&&inside(q)&&terrain.clear(q.x,q.z,.7,p.y)?q:enemy,mode:flank?'flank':'engage'};
  }
  if(memory)return {point:memory,mode:'search'};
  const phase=tick/1200+index*2.399,r=Math.min(100,field.radius*.55),x=field.x+Math.sin(phase)*r,z=field.z+Math.cos(phase)*r;

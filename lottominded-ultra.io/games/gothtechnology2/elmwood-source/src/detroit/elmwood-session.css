@@ -71,3 +71,4 @@
 @media(prefers-reduced-motion:reduce){#elmwood-main-menu button{transition:none;scroll-behavior:auto}}
 
 #view,[aria-label="Touch riding controls"] button,.duo-touch-pane button,.duo-stick-zone{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.duo-touch-pane button{z-index:1}

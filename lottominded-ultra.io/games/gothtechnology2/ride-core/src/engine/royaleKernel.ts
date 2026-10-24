@@ -1,4 +1,5 @@
 import {EngineContext,ENGINE_ID} from './runtime.ts';
+import {footLeanWeight} from '../royale/lean.ts';
 import type {MeleeState} from '../royale/melee.ts';
 import type {Actor,Command,Field,Loot,Projectile,Weapon} from '../royale/rules.ts';
 const weapons:Weapon[]=['static','heart','bass'];
@@ -7,10 +8,10 @@ const kernelLoot=(loot:Loot[])=>loot.filter(l=>kinds.includes(l.kind));
 const phases=['lobby','deployment','active','results'] as const;
 export function routeBattleInput(core:EngineContext,slot:number,c:Command){
  if(!Number.isSafeInteger(c.shot)||c.shot<0||c.shot>2147483647||!Number.isInteger(c.slot)||c.slot<0||c.slot>1)throw RangeError('Invalid engine command');
- core.frame(slot,[[0,c.steer],[3,c.throttle],[4,c.aimYaw/1.25],[5,c.aimPitch/.65],[8,+c.fire],[9,+c.hop],[14,+c.hopHeld],[10,+c.utility],[11,+c.repair],[12,+c.swap],[13,+c.burst],[15,+c.recover],[16,+c.reload],[17,+c.cycleMode],[18,c.aimMode/2],[19,c.lean],[20,+c.crouch],[21,+c.dismount],[23,+c.prone],[26,+c.dogAttack],[27,+c.dogRadar],[28,+c.brawl],[29,+c.light],[30,+c.heavy],[31,c.evade/2]]);
+ core.frame(slot,[[0,c.steer],[3,c.throttle],[4,c.aimYaw/1.25],[5,c.aimPitch/.65],[8,+c.fire],[9,+c.hop],[14,+c.hopHeld],[10,+c.utility],[11,+c.repair],[12,+c.swap],[13,+c.burst],[15,+c.recover],[16,+c.reload],[17,+c.cycleMode],[18,c.aimMode/2],[19,c.lean],[20,+c.crouch],[21,+c.dismount],[23,+c.prone],[26,+c.dogAttack],[27,+c.dogRadar],[28,+c.brawl],[29,+c.light],[30,+c.heavy],[31,c.evade/3]]);
  core.checked('command',slot,c.shot,c.slot);
  const get=(ch:number)=>core.get(slot,ch);
- return {...c,steer:get(0),throttle:get(3),aimYaw:get(4)*1.25,aimPitch:get(5)*.65,fire:!!get(8),hop:!!get(9),hopHeld:!!get(14),utility:!!get(10),repair:!!get(11),swap:!!get(12),burst:!!get(13),recover:!!get(15),reload:!!get(16),cycleMode:!!get(17),aimMode:Math.round(get(18)*2) as 0|1|2,lean:get(19),crouch:!!get(20),prone:!!get(23),dogAttack:!!get(26),dogRadar:!!get(27),dismount:!!get(21),brawl:!!get(28),light:!!get(29),heavy:!!get(30),evade:Math.round(get(31)*2)};
+ return {...c,steer:get(0),throttle:get(3),aimYaw:get(4)*1.25,aimPitch:get(5)*.65,fire:!!get(8),hop:!!get(9),hopHeld:!!get(14),utility:!!get(10),repair:!!get(11),swap:!!get(12),burst:!!get(13),recover:!!get(15),reload:!!get(16),cycleMode:!!get(17),aimMode:Math.round(get(18)*2) as 0|1|2,lean:get(19),crouch:!!get(20),prone:!!get(23),dogAttack:!!get(26),dogRadar:!!get(27),dismount:!!get(21),brawl:!!get(28),light:!!get(29),heavy:!!get(30),evade:Math.round(get(31)*3)};
 }
 export class RoyaleKernel{
  readonly core=new EngineContext();
@@ -27,7 +28,7 @@ export class RoyaleKernel{
  input(slot:number,c:Command){
   return routeBattleInput(this.core,slot,c);
  }
- pose(slot:number,a:Actor){const p=a.pose;this.core.checked('set',slot,32,+(p.footMode===2));for(const [ch,value]of [[22,p.footBlend],[24,p.footProne],[25,p.footCrouch]])this.core.checked('set',slot,ch,Math.max(0,Math.min(1,value||0)));this.core.checked('pose',slot,p.x,p.y,p.z,p.headingY,+a.controller.crashed,a.skin.startsWith('DS_Mascot_')?.48:1);this.core.checked('motion',slot,p.velocityX,p.velocityZ,Math.max(-2,Math.min(2,p.rollAngle)),Math.max(0,Math.min(1,p.airBlend)),Math.min(1,Math.abs(p.groundRoll)+Math.abs(p.groundPitch)));this.core.checked('connected',slot,+a.connected);}
+ pose(slot:number,a:Actor){const p=a.pose;this.core.checked('set',slot,32,+(p.footMode===2));this.core.checked('set',slot,33,footLeanWeight(p));for(const [ch,value]of [[22,p.footBlend],[24,p.footProne],[25,p.footCrouch]])this.core.checked('set',slot,ch,Math.max(0,Math.min(1,value||0)));this.core.checked('pose',slot,p.x,p.y,p.z,p.headingY,+a.controller.crashed,a.skin.startsWith('DS_Mascot_')?.48:1);this.core.checked('motion',slot,p.velocityX,p.velocityZ,Math.max(-2,Math.min(2,p.rollAngle)),Math.max(0,Math.min(1,p.airBlend)),Math.min(1,Math.abs(p.groundRoll)+Math.abs(p.groundPitch)));this.core.checked('connected',slot,+a.connected);}
  rules(){this.core.checked('rules');}
  projectiles(actors:Actor[]){
   const result:(Projectile&{index:number;serial:number})[]=[];

@@ -1,8 +1,10 @@
 import {roundResults} from './roundResults.ts';
+import {RoyaleVR} from './vrCombat.ts';
+import type {XRCombatInput} from './xrCombatInput.ts';
 import {CameraCapture,photographyInput} from './cameraCapture.ts';
 import {CruiseControl} from '../../../../ride-core/src/cruiseControl.ts';
 import {AimComfortUi} from './aimComfortUi.ts';
-import {aimFriction,SIMPLE_ACTIONS,ShotPreview} from './aimComfort.ts';
+import {aimFriction,SIMPLE_ACTIONS,ShotPreview,autoReloadAllowed} from './aimComfort.ts';
 import {OpponentContrast} from './opponentContrast.ts';
 import {makeHelmetSkinPicker} from '../helmetSkin.ts';
 import {PointLightBudget} from '@digital-static/ridecore';
@@ -14,7 +16,6 @@ const combatPreferences=new CombatPreferencesControls();
 const fpsControlFlow=new FpsControlFlow();
 let barrelBlocked=false,aimDistance=0;
 import {FirstPersonView} from './firstPersonView.ts';
-import {footEyeHeight} from './fpsMotion.ts';
 import {parseRoomInvitation,roomInvitationLink} from '../../../../ride-core/src/roomInvitation.ts';
 import {PlayerNameplate} from './playerNameplate.ts';
 import {eliminationLabel} from './playerIdentity.ts';
@@ -29,6 +30,7 @@ let practiceRange:PracticeRangeView|undefined;
 const activeTerrain=()=>combatBlock?.terrain??practiceRange?.layout.terrain??terrain;
 function closeRange(){if(combatBlock){session.leave();combatBlock.dispose();combatBlock=undefined;scenery.root.visible=true;companions?.dispose();companions=new RoyaleCompanions(scene,assetMap,terrain,graphics.applyAssets);clearActorViews();}practiceRange?.dispose();practiceRange=undefined;}
 import {FootAim} from './footAim.ts';
+import {pacedFootCommand} from './movementIntent.ts';
 const footAim=new FootAim();
 import {ScopeSensitivityControls} from './scopeSensitivity.ts';
 const scopeSensitivity=new ScopeSensitivityControls();
@@ -55,6 +57,7 @@ import {isScope,SCOPES,cycleScope,bestScope,scopeZoom,scopedFov,type Scope} from
 import {combatEye,dragAim,stickAxes} from './combatView.ts';
 import {FootControls} from '../../../../ride-core/src/onFootControls.ts';
 import {CameraBlend,mountCameraPreferences,cameraTransitionsEnabled} from '../../../../ride-core/src/cameraPresentation.ts';
+import {combatFootEye,footLeanOffset} from '../../../../ride-core/src/royale/lean.ts';
 import {CAMERA_PROFILE} from '../../../../ride-core/src/cameraProfile.ts';
 import {underpassCameraHeight,clearRideCamera} from '../cameraClearance.ts';
 import {loadEngineForPage,engineRequested} from '../../../../ride-core/src/engine/browser.ts';
@@ -64,6 +67,7 @@ import './lobby.css';
 import {InteractiveWater} from '../interactiveWater.ts';
 import {createRoyaleMenu,type RoyaleMenuPanel} from './menu.ts';
 import * as T from 'three';
+import {PedalSparks} from '../../../../ride-core/src/pedalSparks.ts';
 import {GLTFLoader} from '../compressedGLTFLoader.ts';
 import type {GLTF} from '../compressedGLTFLoader.ts';
 import {Hero} from '../actors.ts';
@@ -86,7 +90,12 @@ import {WorkSlice} from '../../../../ride-core/src/workSlice.ts';
 const actorVisibility=new ActorVisibility(),startupFrames=new StartupFrames();let preparingMatch=false,profileRound='';
 import {FrameSchedule} from '../frameSchedule.ts';
 import {AdaptiveQuality} from '../adaptiveQuality.ts';
-import {touchLayout} from './touchLayout.ts';
+import {SmokeView} from './smokeView.ts';
+import {evadeDirection} from '../../../../ride-core/src/royale/evade.ts';
+import {CombatReadout} from './combatReadout.ts';
+import {findVault} from '../../../../ride-core/src/royale/vault.ts';
+const vaultHint={tick:-Infinity,round:'',available:false};
+import {touchLayout,presetTouchLayout,type ControlPreset} from './touchLayout.ts';
 import {contextualActions} from './actionVisibility.ts';
 import {assetConcurrency,loadAssetQueue} from '../assetQueue.ts';
 import {EquipmentLibrary,WeaponView,CAMERA_SIGHTS,type EquipmentView} from './equipment.ts';
@@ -128,7 +137,7 @@ royaleAudio.mount(el('ride-settings'));mountCameraPreferences(el('camera-setting
 try{bindings=readBindings(JSON.parse(localStorage.getItem('royale-combat-bindings')??'null'));const preset=localStorage.getItem('royale-aim-preset');if(['classic','hold','toggle'].includes(preset??''))aimGesture.preset=preset as AimPreset;}catch{}
 el<HTMLSelectElement>('aim-preset').value=aimGesture.preset;el<HTMLSelectElement>('aim-preset').onchange=e=>{aimGesture.reset();aimGesture.preset=(e.target as HTMLSelectElement).value as AimPreset;try{localStorage.setItem('royale-aim-preset',aimGesture.preset);}catch{}};
 for(const key of Object.keys(bindings) as (keyof typeof bindings)[]){const label=document.createElement('label');label.textContent=key;const input=document.createElement('button');input.textContent=bindings[key];input.onclick=()=>{input.textContent='Press a key…';input.onkeydown=e=>{e.preventDefault();e.stopPropagation();bindings=readBindings({...bindings,[key]:e.code});try{localStorage.setItem('royale-combat-bindings',JSON.stringify(bindings));}catch{}for(const b of el('bindings').querySelectorAll('button'))b.textContent=bindings[b.dataset.binding as keyof typeof bindings];input.onkeydown=null;};};input.dataset.binding=key;label.append(input);el('bindings').append(label);}
-const scene=new T.Scene();const lightingBudget=new PointLightBudget(scene);scene.background=new T.Color(ROYALE_HAZE);scene.fog=new T.Fog(ROYALE_HAZE,280,1200);
+const scene=new T.Scene();const smokeView=new SmokeView();scene.add(smokeView);const combatReadout=new CombatReadout(el('hud'));const lightingBudget=new PointLightBudget(scene);scene.background=new T.Color(ROYALE_HAZE);scene.fog=new T.Fog(ROYALE_HAZE,280,1200);
 const camera=new T.PerspectiveCamera(62,1,.12,4200);camera.position.set(65,85,100);camera.lookAt(0,0,0);
 const capture=new CameraCapture(canvas,()=>{release();if(capture.active&&session?.state?.self?.combat.holster?.stowed)tap.add('holster');},()=>royaleAudio.capture());
 const spectatorControls=document.createElement('div');spectatorControls.id='spectator-controls';spectatorControls.hidden=true;const spectatorLabel=document.createElement('span');
@@ -147,14 +156,15 @@ const fieldRing=new FieldBoundary('#49adff',.9,true);scene.add(fieldRing);
 const nextRing=new FieldBoundary('#efc568',.75);scene.add(nextRing);
 let radarMap:RoyaleRadarMap|undefined;let shieldAsset:GLTF;let companions:RoyaleCompanions|undefined;
 const nameHead=new T.Vector3();
-const actors=new Map<string,{nameplate:PlayerNameplate;view:Hero;equipment:WeaponView;weapon:T.Group;shield:ShieldEffect;rig:CombatRig;wheelId:string;optic:T.Group;motion:RiderPresentation;contrast:OpponentContrast}>(),assetMap=new Map<string,GLTF>(),items=new Map<string,EquipmentView|ScopePickup>();
+const actors=new Map<string,{sparks:PedalSparks;nameplate:PlayerNameplate;view:Hero;equipment:WeaponView;weapon:T.Group;shield:ShieldEffect;rig:CombatRig;wheelId:string;optic:T.Group;motion:RiderPresentation;contrast:OpponentContrast}>(),assetMap=new Map<string,GLTF>(),items=new Map<string,EquipmentView|ScopePickup>();
 import {RideGhostView} from '../../../../ride-core/src/rideGhostView.ts';
-const savedGhost=new RideGhostView('static-royale-downtown',scene,rig=>{const [skin,wheel]=rig.split(':');if(!assetMap.has(skin))return;const models=new Map(assetMap);models.set('DS_EUC_01',assetMap.get(wheelProfile(wheel).asset)!);return new Hero(models,activeTerrain(),riderChoice(skin));});el('ride-settings').append(savedGhost.panel);
+const savedGhost=new RideGhostView('static-royale-downtown',scene,rig=>{const [skin,wheel]=rig.split(':');if(!assetMap.has(skin))return;const models=new Map(assetMap);models.set('DS_EUC_01',assetMap.get(wheelProfile(wheel).asset)!);return new Hero(models,activeTerrain(),riderChoice(skin),'kimodo');});el('ride-settings').append(savedGhost.panel);
 let scopeLibrary:ScopeLibrary,selectedScope:Scope|null=null,ownedScopeKey='',scopePadHeld=false;
 function changeScope(){selectedScope=cycleScope(session?.state?.self?.scopes??[],selectedScope);canvas.focus();}
 el('scope-select').onclick=changeScope;
 new ResizeObserver(()=>{document.documentElement.style.setProperty('--royale-hud-bottom',el('hud').getBoundingClientRect().bottom+'px');loadLayout();}).observe(el('hud'));
 let firstPerson:FirstPersonView|undefined;
+let vr:RoyaleVR|undefined,vrWeapon:WeaponView|undefined,vrPacket:ReturnType<XRCombatInput['sample']>|undefined;const vrEdges=new Set<string>();let vrAimBlocked=false;
 let equipmentLibrary:EquipmentLibrary,equipmentTime=0,equipmentRound='',equipmentShots=0,previousShotTick=-999;
 const seenShots=new Set<string>(),reducedEquipmentMotion=matchMedia('(prefers-reduced-motion: reduce)');
 let scenery:Awaited<ReturnType<typeof buildDetroitArenaScene>>;
@@ -169,7 +179,7 @@ function playDeathReplay(){release();deathReplay.start(performance.now());if(dea
 const keys=new Set<string>(),held=new Set<string>(),tap=new Set<string>();let throttle=0,steer=0,aimPointer:number|undefined,mousePointer:number|undefined,aimX=0,aimY=0,stickPointer:number|undefined;
 const message=(s:string)=>el('message').textContent=s;
 const speedCruise=new CruiseControl();
-function release(){fpsControlFlow.reset();firstPerson?.resetMotion();speedCruise.reset();shotPreview.reset();localShotPending=false;footControls.clear();stanceGesture.reset();leanGesture.reset();touchAds=false;mouseCombat.reset();lookYaw=lookPitch=0;keys.clear();held.clear();tap.clear();steer=throttle=0;aimPointer=mousePointer=stickPointer=undefined;resetPointers.forEach(reset=>reset());session?.release();}
+function release(){vrAimBlocked=false;vr?.input.reset();vrEdges.clear();vrPacket=undefined;fpsControlFlow.reset();firstPerson?.resetMotion();speedCruise.reset();shotPreview.reset();localShotPending=false;footControls.clear();stanceGesture.reset();leanGesture.reset();touchAds=false;mouseCombat.reset();lookYaw=lookPitch=0;keys.clear();held.clear();tap.clear();steer=throttle=0;aimPointer=mousePointer=stickPointer=undefined;resetPointers.forEach(reset=>reset());session?.release();}
 function finishLayoutEditing(){if(layoutEditing)saveLayout();layoutEditing=false;el('touch').classList.remove('editing');el('layout-done').hidden=true;release();}
 function clearResults(){if(el('results').childElementCount){el('results').replaceChildren();delete el('results').dataset.summary;}el('rematch').hidden=true;}
 let menuHome:ReturnType<typeof createRoyaleMenu>;
@@ -179,7 +189,18 @@ const openSettings=()=>{showMenu('settings');el('camera-view').focus();};
 el('settings-open').onclick=openSettings;
 // Reach recovery with a mouse/keyboard even when the touch HUD is disabled.
 const recoverQuick=document.createElement('button');recoverQuick.id='recover-quick';recoverQuick.type='button';recoverQuick.textContent='Recover';recoverQuick.hidden=true;recoverQuick.style.minHeight='44px';el('hud').append(recoverQuick);
-recoverQuick.onclick=()=>{if(gameplayInputBlocked()||!session.state?.self?.alive)return;tap.add('recover');canvas.focus();};
+const recoveryFeedback=document.createElement('span');recoveryFeedback.id='recovery-feedback';recoveryFeedback.setAttribute('role','status');recoveryFeedback.hidden=true;el('hud').append(recoveryFeedback);
+let recoveryFeedbackTimer:ReturnType<typeof setTimeout>|undefined;
+function recoveryNotice(text:string){clearTimeout(recoveryFeedbackTimer);recoveryFeedback.textContent=text;recoveryFeedback.hidden=false;recoveryFeedbackTimer=setTimeout(()=>{recoveryFeedback.hidden=true;},5000);}
+function requestRecovery(){
+ if(gameplayInputBlocked()||!session.state?.self?.alive)return;
+ const p=session.state.actors.find(a=>a.id===session.me)?.pose,health=session.state.self.integrity;
+ if(health<=15){recoveryNotice('Heal above 15 health before remounting.');return;}
+ if(p?.footMode===2&&Math.hypot(p.x-p.parkX,p.z-p.parkZ)>1.3)recoveryNotice('Return to your wheel · '+Math.ceil(Math.hypot(p.x-p.parkX,p.z-p.parkZ))+' m away.');
+ else recoveryNotice('Recovery requested · let the fall settle and keep your weapon idle.');
+ tap.add('recover');canvas.focus();
+}
+recoverQuick.onclick=requestRecovery;
 el('menu').onclick=()=>showMenu();el('resume').onclick=resume;dialog.addEventListener('cancel',e=>{e.preventDefault();if(menuHome.panel!=='home'){menuHome.show();return;}if(session?.state&&session.state.phase!=='lobby'&&session.state.phase!=='results')resume();});
 async function run(work:()=>void|Promise<void>){try{message('');await work();}catch(e){message((e as Error).message);}}
 function preparationItemDone(){const root=el('royale-startup');root.dataset.completed=String(Number(root.dataset.completed??0)+1);}
@@ -260,7 +281,7 @@ el('invite').onclick=()=>run(async()=>{
  try{await navigator.clipboard.writeText(link);status.textContent=local?'Invite copied. This preview link opens on this computer; other devices need the same hosted game build.':'Invite copied. Your friend can open it and select Join game.';}catch{field.focus();field.select();status.textContent='Copy the invitation above and send it to your friend.';}
 });
 void fetch('./royale-config.json').then(r=>r.ok?r.json():{}).then((c:{supabaseTest?:{endpoint:string;publishableKey:string};serverUrl?:string})=>{relayConfig=c.supabaseTest;el('supabase-test').hidden=!relayConfig;el<HTMLInputElement>('use-relay').checked=!['localhost','127.0.0.1'].includes(location.hostname);el<HTMLInputElement>('endpoint').value=c.serverUrl||(['localhost','127.0.0.1'].includes(location.hostname)?'http://127.0.0.1:8226':'');if(incomingInvitation?.testCode)applyInvitation(incomingInvitation);relayControls();}).catch(()=>{});
-function buttonAction(action:string){if(action==='crouch'||action==='prone'){stanceGesture.down(action==='crouch'?1:2);return;}if(action==='hop')stanceGesture.reset();if(action==='lean-left'||action==='lean-right'){leanGesture.down(action==='lean-left'?-1:1);return;}if(action==='scope'){changeScope();return;}if(action==='camera'){cycleCamera();return;}if(action==='fire-left'){tap.add('fire-left');return;}if(action==='aim'){if(touchAim==='toggle')touchAds=!touchAds;return;}if(action==='switch'){slot=1-slot;return;}tap.add(action);}
+function buttonAction(action:string){if(action==='recover'){requestRecovery();return;}if(action==='crouch'||action==='prone'){stanceGesture.down(action==='crouch'?1:2);return;}if(action==='hop')stanceGesture.reset();if(action==='lean-left'||action==='lean-right'){leanGesture.down(action==='lean-left'?-1:1);return;}if(action==='scope'){changeScope();return;}if(action==='camera'){cycleCamera();return;}if(action==='fire-left'){tap.add('fire-left');return;}if(action==='aim'){if(touchAim==='toggle')touchAds=!touchAds;return;}if(action==='switch'){slot=1-slot;return;}tap.add(action);}
 function gameplayInputBlocked(){return !loaded||!session?.state||dialog.open||paused||layoutEditing||deathReplay.playing||capture.reviewing||!!session.comms?.inputBlocked||document.hidden;}
 window.addEventListener('keydown',e=>{const target=e.target as HTMLElement;
  // Clicking an on-screen action leaves its button focused. Keep WASD working
@@ -269,7 +290,7 @@ window.addEventListener('keydown',e=>{const target=e.target as HTMLElement;
  if(e.code==='Escape'||e.code===bindings.loadout){e.preventDefault();showMenu();return;}
  if(gameplayInputBlocked())return;
  if([...Object.values(bindings),'ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Digit1','Digit2','Escape'].includes(e.code))e.preventDefault();
- if(!keys.has(e.code)){if(e.code===bindings.crouch)stanceGesture.down(1);if(e.code===bindings.prone)stanceGesture.down(2);if(e.code===bindings.hop)stanceGesture.reset();for(const [key,action] of [['holster','holster'],['hop','hop'],['utility','utility'],['repair','repair'],['recover','recover'],['reload','reload'],['pickup','swap'],['cycleMode','cycleMode'],['dogAttack','dog-attack'],['dogRadar','dog-radar'],['brawl','brawl'],['evade','evade']] as const)if(e.code===bindings[key])tap.add(action);if(e.code===bindings.captureMode)capture.setActive(!capture.active);if(e.code===bindings.captureRecord)capture.toggleRecording();if(e.code===bindings.camera)cycleCamera();if(e.code===bindings.scope)changeScope();}
+ if(!keys.has(e.code)){if(e.code===bindings.crouch)stanceGesture.down(1);if(e.code===bindings.prone)stanceGesture.down(2);if(e.code===bindings.hop)stanceGesture.reset();for(const [key,action] of [['holster','holster'],['hop','hop'],['utility','utility'],['repair','repair'],['recover','recover'],['reload','reload'],['pickup','swap'],['cycleMode','cycleMode'],['dogAttack','dog-attack'],['dogRadar','dog-radar'],['brawl','brawl'],['evade','evade'],['vault','vault'],['smoke','smoke']] as const)if(e.code===bindings[key]){if(action==='recover')requestRecovery();else tap.add(action);}if(e.code===bindings.captureMode)capture.setActive(!capture.active);if(e.code===bindings.captureRecord)capture.toggleRecording();if(e.code===bindings.camera)cycleCamera();if(e.code===bindings.scope)changeScope();}
  keys.add(e.code);if(e.code==='Digit1')slot=0;if(e.code==='Digit2')slot=1;
 });
 window.addEventListener('keyup',e=>keys.delete(e.code));window.addEventListener('blur',release);window.addEventListener('gamepaddisconnected',release);
@@ -285,7 +306,7 @@ for(const surface of [canvas,el('touch')])surface.addEventListener('contextmenu'
   const now=performance.now();if(now-assistChecked<50)return assistGain;assistChecked=now;assistGain=1;
   const self=session.state.actors.find(a=>a.id===session.me);if(!self)return 1;
   const pose=session.prediction?.controller.poseValue??self.pose,yaw=footAim.active?footAim.heading:pose.headingY+aimYaw,scale=self.skin.startsWith('DS_Mascot_')?.48:1;
-  const eye={x:pose.x,y:pose.y+footEyeHeight(scale,pose.footCrouch,pose.footProne),z:pose.z};
+  const eye=combatFootEye(pose,scale,self.combat.lean,activeTerrain());
   for(const a of session.state.actors){if(a.id===session.me||!a.alive)continue;const scale=a.skin.startsWith('DS_Mascot_')?.48:1,target={x:a.pose.x,y:a.pose.y+(a.pose.footProne>.5?.3:a.pose.footCrouch>.5?.8:1.2)*scale,z:a.pose.z},dx=target.x-eye.x,dy=target.y-eye.y,dz=target.z-eye.z,d=Math.hypot(dx,dy,dz);if(d<1||d>60)continue;
    const yawError=Math.atan2(Math.sin(Math.atan2(dx,dz)-yaw),Math.cos(Math.atan2(dx,dz)-yaw)),pitchError=Math.atan2(dy,Math.hypot(dx,dz))-aimPitch,offset=Math.hypot(yawError,pitchError);if(offset>.065)continue;
    const hit=activeTerrain().raycast(eye,{x:dx/d,y:dy/d,z:dz/d},d);assistGain=Math.min(assistGain,aimFriction(offset,d,aimComfort.value.assist,hit===null||hit>=d-.15,device));
@@ -315,13 +336,16 @@ for(const surface of [canvas,aimPad]){
 }
 // Release even if the pointer leaves the canvas or lands over a touch button.
 window.addEventListener('mouseup',e=>{if(gameplayInputBlocked())cancelAimPointer();else mouseCombat.handle(e,performance.now());});
+for(const [action,label]of [['vault','Vault'],['smoke','Smoke']] as const){const button=document.createElement('button');button.type='button';button.dataset.action=action;button.textContent=label;button.setAttribute('aria-label',label);el('touch').append(button);}
 const orientation=()=>innerWidth>innerHeight?'landscape':'portrait';
-const layoutKey=()=> 'static-royale-touch-'+orientation();
+let controlPreset:ControlPreset='custom';try{const saved=localStorage.getItem('royale-control-preset');if(['two','three','four'].includes(saved??''))controlPreset=saved as ControlPreset;}catch{}
+const layoutKey=()=> 'static-royale-touch-'+orientation()+(controlPreset==='custom'?'':'-'+controlPreset);
+const presetLabel=document.createElement('label'),presetSelect=document.createElement('select');presetLabel.textContent='Touch layout';presetSelect.setAttribute('aria-label','Touch layout preset');for(const [value,label]of [['custom','My saved layout'],['two','Two fingers'],['three','Three fingers'],['four','Four fingers']])presetSelect.add(new Option(label,value));presetSelect.value=controlPreset;presetLabel.append(presetSelect);el('camera-settings').append(presetLabel);presetSelect.onchange=()=>{controlPreset=presetSelect.value as ControlPreset;try{localStorage.setItem('royale-control-preset',controlPreset);}catch{}loadLayout();};
 function saveLayout(){const result:Record<string,{x:number;y:number}>={};for(const node of el('touch').children){const h=node as HTMLElement;if(h.dataset.customPosition){const r=h.getBoundingClientRect();result[h.id||h.dataset.action!]={x:r.left/innerWidth,y:r.top/innerHeight};}}try{localStorage.setItem(layoutKey(),JSON.stringify(result));}catch{}}
 function loadLayout(){
  let data:Record<string,{x:number;y:number}>={};try{data=JSON.parse(localStorage.getItem(layoutKey())??'{}')??{};}catch{}
  const touch=el('touch'),padding=getComputedStyle(touch),safe={left:parseFloat(padding.paddingLeft)||0,right:parseFloat(padding.paddingRight)||0,top:parseFloat(padding.paddingTop)||0,bottom:parseFloat(padding.paddingBottom)||0};
- const layout=touchLayout(innerWidth,innerHeight,Number(el<HTMLInputElement>('button-size').value),el('hud').getBoundingClientRect().bottom||188,safe);touch.style.setProperty('--touch-size',layout.size+'px');
+ const layout=controlPreset==='custom'?touchLayout(innerWidth,innerHeight,Number(el<HTMLInputElement>('button-size').value),el('hud').getBoundingClientRect().bottom||188,safe):presetTouchLayout(innerWidth,innerHeight,Number(el<HTMLInputElement>('button-size').value),controlPreset);touch.style.setProperty('--touch-size',layout.size+'px');
  for(const n of touch.children){const h=n as HTMLElement,id=h.id||h.dataset.action!,p=data[id],r=id==='move-pad'?layout.move:layout.buttons[id];h.style.left=h.style.top=h.style.right=h.style.bottom='';delete h.dataset.customPosition;
   if(r){h.style.left=r.x+'px';h.style.top=r.y+'px';h.style.width=r.width+'px';h.style.height=r.height+'px';h.style.right=h.style.bottom='auto';}
   if(p&&Number.isFinite(p.x)&&Number.isFinite(p.y)){const w=r?.width||innerWidth*.54,ht=r?.height||innerHeight*.4;h.style.left=Math.min(innerWidth-safe.right-w,Math.max(safe.left,p.x*innerWidth))+'px';h.style.top=Math.min(innerHeight-safe.bottom-ht,Math.max(safe.top,p.y*innerHeight))+'px';h.style.right=h.style.bottom='auto';h.dataset.customPosition='true';}
@@ -351,9 +375,24 @@ for(const node of Array.from(el('touch').children)){
  resetPointers.push(up);for(const type of ['pointerup','pointercancel','lostpointercapture'])h.addEventListener(type,e=>{if((e as PointerEvent).pointerId!==pointer)return;if(type!=='pointerup'){tap.delete(act()!);if(act()==='fire'||act()==='fire-left'){localShotPending=false;shotPreview.reset();}if(act()==='aim'){touchAds=false;aimGesture.reset();}}up();});
 }
 el('touch').append(moreControls);
-function rawAimMode(){return touchAds||touchAim==='hold'&&held.has('aim')||navigator.getGamepads?.()[0]?.buttons[6]?.pressed?2:aimGesture.get(performance.now());}
-function aimMode(){return combatPreferences.value.controlStyle==='burntwax'&&footAim.active&&fpsControlFlow.aimSuppressed?0:rawAimMode();}
-function command():Command{syncFootAim();let c=neutral(session.state?.round??'');const pad=navigator.getGamepads?.()[0];const axis=(n:number)=>deadZone(pad?.axes[n]??0,aimComfort.value.deadzone);
+function rawAimMode(){if(vr?.active)return vrPacket?.ads?2:0;return touchAds||touchAim==='hold'&&held.has('aim')||navigator.getGamepads?.()[0]?.buttons[6]?.pressed?2:aimGesture.get(performance.now());}
+function aimMode(){const p=session?.prediction?.controller.poseValue??session?.state?.actors.find(a=>a.id===session.me)?.pose;if((p?.footEvade??0)>0||(p?.footVault??0)>0)return 0;return combatPreferences.value.controlStyle==='burntwax'&&footAim.active&&fpsControlFlow.aimSuppressed?0:rawAimMode();}
+function vrCommand():Command{
+ const state=session.state,c=neutral(state?.round??''),me=state?.self,actor=state?.actors.find(a=>a.id===session.me),p=session.prediction?.controller.poseValue??actor?.pose,packet=vrPacket;
+ if(!vr?.active||!packet||!me?.alive||!p||!actor)return c;
+ const edge=(key:string)=>{const value=vrEdges.has(key);vrEdges.delete(key);return value;};
+ const aim=vr.aim(),wrap=(v:number)=>Math.atan2(Math.sin(v),Math.cos(v));
+ c.throttle=packet.brake?(Math.abs(p.speed)<.15?0:-Math.sign(p.speed)):packet.throttle;c.steer=packet.steer;c.fire=packet.fire;c.aimMode=packet.ads?2:0;c.crouch=packet.crouch;
+ c.repair=edge('heal');c.holster=edge('holster');if(edge('switch'))c.slot=(me.slot+1)%me.loadout.length;else c.slot=me.slot;c.reload=edge('reload');c.dismount=edge('mount');c.recover=edge('recover');c.hop=edge('hop');c.hopHeld=false;
+ // Controller aiming still goes through the authoritative physical muzzle and cover checks.
+ c.facingYaw=p.footMode===2?aim.yaw:null;vrAimBlocked=Math.abs(wrap(aim.yaw-(c.facingYaw??p.headingY)))>1.25||Math.abs(aim.pitch)>.65;if(vrAimBlocked)c.fire=false;c.aimYaw=T.MathUtils.clamp(wrap(aim.yaw-(c.facingYaw??p.headingY)),-1.25,1.25);c.aimPitch=T.MathUtils.clamp(aim.pitch,-.65,.65);
+ const w=WEAPONS[actor.weapon],facing={...p,headingY:c.facingYaw??p.headingY};
+ const converged=fpsAim(facing,actor.skin,facing.headingY+c.aimYaw,c.aimPitch,me.combat.aimBlend,0,activeTerrain(),state!.actors.filter(a=>a.id!==session.me),{origin:aim.position,range:Math.min(600,w.speed*w.life/60),kickYaw:0,kickPitch:0});
+ c.aimYaw=converged.aimYaw;c.aimPitch=converged.aimPitch;barrelBlocked=converged.blocked;aimDistance=converged.distance;aimYaw=c.aimYaw;aimPitch=c.aimPitch;
+ if(me.combat.melee?.brawl){c.brawl=true;c.fire=false;}
+ return c;
+}
+function command():Command{if(vr?.active)return vrCommand();syncFootAim();let c=neutral(session.state?.round??'');const pad=navigator.getGamepads?.()[0];const axis=(n:number)=>deadZone(pad?.axes[n]??0,aimComfort.value.deadzone);
  const scopePressed=!!pad?.buttons[12]?.pressed;if(scopePressed&&!scopePadHeld)changeScope();scopePadHeld=scopePressed;
  c.throttle=T.MathUtils.clamp(throttle+Number(keys.has(bindings.forward)||keys.has('ArrowUp'))-Number(keys.has(bindings.brake)||keys.has('ArrowDown'))-axis(1),-1,1);
  c.steer=T.MathUtils.clamp(steer+Number(keys.has(bindings.right)||keys.has('ArrowRight'))-Number(keys.has(bindings.left)||keys.has('ArrowLeft'))+axis(0),-1,1);
@@ -361,14 +400,17 @@ function command():Command{syncFootAim();let c=neutral(session.state?.round??'')
  c.fire=(mouseCombat.canFire||tap.has('mouse-fire')||held.has('fire')||held.has('fire-left')||tap.has('fire')||tap.has('fire-left'))||!!pad?.buttons[7]?.pressed;c.aimMode=rawAimMode();if(c.fire&&!footAim.active&&!c.aimMode&&viewMode!=='first'&&viewMode!=='chase')setCamera('chase');
  c.holster=tap.has('holster');if(c.holster){touchAds=false;aimGesture.reset();held.delete('aim');c.aimMode=0;}c.reload=tap.has('reload')||!!pad?.buttons[2]?.pressed;c.cycleMode=tap.has('cycleMode');c.lean=leanGesture.get(keys.has(bindings.leanLeft),keys.has(bindings.leanRight),held.has('lean-left'),held.has('lean-right'));c.crouch=stanceGesture.value===1;c.prone=stanceGesture.value===2;
  c.hop=tap.has('hop')||!!pad?.buttons[0]?.pressed;c.hopHeld=held.has('hop')||keys.has(bindings.hop)||!!pad?.buttons[0]?.pressed;c.dismount=footControls.consume();c.burst=footControls.run||held.has('burst')||keys.has(bindings.burst)||!!pad?.buttons[4]?.pressed;
- const brawling=!!session.state?.self?.combat.melee?.brawl;c.brawl=tap.has('brawl');c.light=brawling&&c.fire;c.heavy=brawling&&c.reload;if(brawling){c.fire=false;c.reload=false;c.aimMode=0;}c.evade=tap.has('evade')?(c.throttle<-.2?2:c.steer<-.1?-1:1):0;
+ const brawling=!!session.state?.self?.combat.melee?.brawl;c.brawl=tap.has('brawl');c.light=brawling&&c.fire;c.heavy=brawling&&c.reload;if(brawling){c.fire=false;c.reload=false;c.aimMode=0;}c.evade=tap.has('evade')?evadeDirection(c.throttle,c.steer):0;c.vault=tap.has('vault');c.smoke=tap.has('smoke');
  c.dogAttack=tap.has('dog-attack');c.dogRadar=tap.has('dog-radar');c.utility=tap.has('utility')||!!pad?.buttons[5]?.pressed;c.repair=tap.has('repair')||!!pad?.buttons[3]?.pressed;c.recover=tap.has('recover');c.swap=tap.has('swap');c.slot=slot;
  if(capture.active){capture.trigger(c.fire||c.light);c=photographyInput(c);}
  const self=session.state?.actors.find(a=>a.id===session.me),pose=session.prediction?.controller.poseValue??self?.pose;
  const own=session.state?.self,ownWeapon=own?.loadout[own.slot];
- if(own&&ownWeapon&&!capture.active&&aimComfort.value.autoReload&&weaponReady(own.combat,session.state?.tick??0)&&!brawling&&own.combat.magazine[ownWeapon]===0&&own.ammo[ownWeapon]>0&&own.combat.reloadStart<0)c.reload=true;
- const fpsIntent=fpsControlFlow.update({enabled:combatPreferences.value.controlStyle==='burntwax'&&!capture.active&&!brawling,onFoot:pose?.footMode===2,moving:Math.hypot(c.throttle,c.steer)>.05,sprint:c.burst,aimMode:c.aimMode,fire:c.fire,reloading:c.reload||(own?.combat.reloadStart??-1)>=0,low:c.crouch||c.prone});
- c.burst=fpsIntent.sprint;c.aimMode=fpsIntent.aimMode;c.fire=fpsIntent.fire;
+ c.facingYaw=footAim.commandYaw({aimMode:c.aimMode,fire:c.fire,lean:c.lean,brawl:brawling});
+ c=pacedFootCommand(c,{onFoot:pose?.footMode===2,brawling,reloading:(own?.combat.reloadStart??-1)>=0,keyboard:[bindings.forward,bindings.brake,bindings.left,bindings.right,'ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].some(k=>keys.has(k))});
+ if(own&&ownWeapon&&autoReloadAllowed(pose?.footMode,pose?.footStagger,c.recover)&&!capture.active&&aimComfort.value.autoReload&&weaponReady(own.combat,session.state?.tick??0)&&!brawling&&own.combat.magazine[ownWeapon]===0&&own.ammo[ownWeapon]>0&&own.combat.reloadStart<0)c.reload=true;
+ const fpsIntent=fpsControlFlow.update({enabled:combatPreferences.value.controlStyle==='burntwax'&&!capture.active&&!brawling,onFoot:pose?.footMode===2,moving:Math.hypot(c.throttle,c.steer)>.05,sprint:c.burst,aimMode:c.aimMode,fire:c.fire,reloading:c.reload||(own?.combat.reloadStart??-1)>=0,low:c.crouch||c.prone,lean:c.lean});
+ c.burst=fpsIntent.sprint&&(!pose?.footMode||!c.lean);c.aimMode=fpsIntent.aimMode;c.fire=fpsIntent.fire;
+ c.facingYaw=footAim.commandYaw({aimMode:c.aimMode,fire:c.fire,lean:c.lean,brawl:brawling});
  canvas.dataset.fpsControls=combatPreferences.value.controlStyle;
  c.throttle=speedCruise.update(c.throttle,pose?.speed??0,DT,!!self?.alive&&!!pose&&!pose.footMode&&!session.state?.self?.controller.fields.crashed&&session.state?.phase==='active',c.dismount||c.recover);
  canvas.dataset.cruise=String(speedCruise.active);canvas.dataset.cruiseSpeed=String(speedCruise.targetSpeed);
@@ -382,15 +424,15 @@ function command():Command{syncFootAim();let c=neutral(session.state?.round??'')
  }
  tap.clear();return c;
 }
-function clearActorViews(){for(const a of actors.values()){a.contrast.dispose();a.view.dispose();a.equipment.dispose();a.nameplate.dispose();a.shield.dispose();}actors.clear();}
-function view(id:string,choice:string,wheelId:string){let a=actors.get(id);if(a&&a.view.riderId===riderChoice(choice)&&a.wheelId===wheelId)return a;if(a){a.contrast.dispose();a.nameplate.dispose();a.view.dispose();a.equipment.dispose();a.shield.dispose();}
- const models=new Map(assetMap);models.set('DS_EUC_01',assetMap.get(wheelProfile(wheelId).asset)!);const hero=new Hero(models,activeTerrain(),riderChoice(choice)),equipment=new WeaponView(equipmentLibrary),weapon=equipment.root;scene.add(hero.root,weapon);
+function clearActorViews(){for(const a of actors.values()){a.sparks.dispose();a.contrast.dispose();a.view.dispose();a.equipment.dispose();a.nameplate.dispose();a.shield.dispose();}actors.clear();}
+function view(id:string,choice:string,wheelId:string){let a=actors.get(id);if(a&&a.view.riderId===riderChoice(choice)&&a.wheelId===wheelId)return a;if(a){a.sparks.dispose();a.contrast.dispose();a.nameplate.dispose();a.view.dispose();a.equipment.dispose();a.shield.dispose();}
+ const models=new Map(assetMap);models.set('DS_EUC_01',assetMap.get(wheelProfile(wheelId).asset)!);const hero=new Hero(models,activeTerrain(),riderChoice(choice),'kimodo'),equipment=new WeaponView(equipmentLibrary),weapon=equipment.root;scene.add(hero.root,weapon);
  const optic=scopeLibrary.model();optic.position.set(0,.105,.08);weapon.add(optic);
- const shield=new ShieldEffect(shieldAsset);scene.add(shield);const nameplate=new PlayerNameplate();scene.add(nameplate.root);a={nameplate,view:hero,equipment,weapon,shield,optic,rig:new CombatRig(hero,equipment),wheelId,motion:new RiderPresentation(),contrast:new OpponentContrast(hero.rider)};graphics.applyAssets(hero.root);graphics.applyAssets(weapon);graphics.applyAssets(shield);actors.set(id,a);return a;
+ const shield=new ShieldEffect(shieldAsset);scene.add(shield);const nameplate=new PlayerNameplate();scene.add(nameplate.root);a={sparks:new PedalSparks(scene),nameplate,view:hero,equipment,weapon,shield,optic,rig:new CombatRig(hero,equipment),wheelId,motion:new RiderPresentation(),contrast:new OpponentContrast(hero.rider)};graphics.applyAssets(hero.root);graphics.applyAssets(weapon);graphics.applyAssets(shield);actors.set(id,a);return a;
 }
 const heartShots=new HeartProjectiles();scene.add(heartShots);
 let renderedLife='';
-function draw(now:number){
+function draw(now:number,xrFrame?:XRFrame){
  let stageAt=profileCpu?performance.now():0;
  const stage=(name:string)=>{if(profileCpu){const at=performance.now();drawStageLast[name]=at-stageAt;(drawStageSamples[name]??=[]).push(at-stageAt);stageAt=at;}};
  const telemetry=now-telemetryAt>200;if(telemetry)telemetryAt=now;
@@ -406,7 +448,7 @@ function draw(now:number){
  const delta=equipmentTime?Math.min(.1,(now-equipmentTime)/1000):0;equipmentTime=now;
  const motionDelta=paused&&!session?.room?0:delta,reducedMotion=reducedEquipmentMotion.matches||document.documentElement.dataset.reducedMotion==='true'||query.has('reducedMotion');
  atmosphereSky.update(motionDelta,ROYALE_SUN,.42,0,graphics.current.shadows===0,reducedMotion,paused&&!session?.room,scene.fog?.color);if(telemetry)canvas.dataset.atmosphere=JSON.stringify(atmosphereSky.status);
- const replayFrame=deathReplay.sample(now);const replaying=!!replayFrame;const s=replayFrame?.state??session?.state;el('replay-status').hidden=!replaying;el('replay-status').querySelector('span')!.textContent=deathReplay.kind==='killer'?'Killer replay · attacker perspective':'Last-view replay · received positions only';el('replay-status').setAttribute('aria-label',deathReplay.kind==='killer'?'Killer replay':'Last-view replay');if(!s){savedGhost.suspend();matchFeedback.hide();for(const a of actors.values()){a.nameplate.root.visible=a.view.root.visible=a.weapon.visible=a.shield.visible=false;}companions?.dispose();jazzVisit?.stop();heartShots.reset();for(const m of items.values())m.root.visible=false;el('hud').hidden=el('reticle').hidden=el('scope-mask').hidden=true;return;}const rendered=new Set<string>();
+ const replayFrame=deathReplay.sample(now);const replaying=!!replayFrame;const s=replayFrame?.state??session?.state;el('replay-status').hidden=!replaying;el('replay-status').querySelector('span')!.textContent=deathReplay.kind==='killer'?'Killer replay · attacker perspective':'Last-view replay · received positions only';el('replay-status').setAttribute('aria-label',deathReplay.kind==='killer'?'Killer replay':'Last-view replay');if(!s){savedGhost.suspend();matchFeedback.hide();for(const a of actors.values()){a.sparks.reset();a.nameplate.root.visible=a.view.root.visible=a.weapon.visible=a.shield.visible=false;}companions?.dispose();jazzVisit?.stop();heartShots.reset();for(const m of items.values())m.root.visible=false;el('hud').hidden=el('reticle').hidden=el('scope-mask').hidden=true;return;}const rendered=new Set<string>();
  if(!replaying&&practiceRange?.update(s,session.me,now)){matchFeedback.hit(now,'range');royaleAudio.rangeHit();}
  radarMap?.update(s,now,!combatBlock&&!dialog.open&&!!s.self?.alive);
  const watching=!replaying?s.spectating:undefined;const focusId=watching?.target||session.me;
@@ -416,9 +458,10 @@ function draw(now:number){
  const previous=smooth&&session.previous?.round===s.round&&session.previous.tick===s.tick-1?session.previous:undefined;
  capture.update(!!s.self?.alive&&!dialog.open&&!paused&&!replaying);spectatorControls.hidden=!watching||dialog.open||replaying;spectatorLabel.textContent=watching?.target?'Watching '+(s.roster.find(r=>r.id===watching.target)?.name??'Rider')+' · 3s delay':'Preparing spectator view…';
  const bikeObserver=s.actors.find(a=>a.id===focusId)?.pose??terrain.spawns[0].position;
- if(equipmentRound!==s.round){jazzVisit?.stop();equipmentRound=s.round;companions?.dispose();selectedScope=null;ownedScopeKey='';ambientPacks?.restart(undefined,bikeObserver);canvas.dataset.ambientPackStarts=JSON.stringify(ambientPacks?.starts);seenShots.clear();seenImpacts.clear();fallenAt.clear();shieldSerial=-1;for(const a of actors.values())a.motion=new RiderPresentation();impactEffect.reset();surfaceMarks.reset();deathReplay.reset();previousShotTick=-999;for(const item of items.values())item.dispose();items.clear();}
+ if(equipmentRound!==s.round){jazzVisit?.stop();equipmentRound=s.round;companions?.dispose();selectedScope=null;ownedScopeKey='';ambientPacks?.restart(undefined,bikeObserver);canvas.dataset.ambientPackStarts=JSON.stringify(ambientPacks?.starts);seenShots.clear();seenImpacts.clear();fallenAt.clear();shieldSerial=-1;for(const a of actors.values()){a.motion=new RiderPresentation();a.sparks.reset();}impactEffect.reset();surfaceMarks.reset();deathReplay.reset();previousShotTick=-999;for(const item of items.values())item.dispose();items.clear();}
  ambientPacks?.update(delta,bikeObserver,!combatBlock&&!dialog.open,paused,s.actors.filter(a=>a.alive).map(a=>({id:a.id,...a.pose,radius:.65,height:1.8,kind:'rider' as const,vx:Math.sin(a.pose.headingY)*a.pose.speed,vz:Math.cos(a.pose.headingY)*a.pose.speed})));ambientPacks?.report(canvas,delta);
- royaleAudio.update(s,session.me,!dialog.open&&!paused&&!replaying,!!session.comms?.inputBlocked,Math.atan2(-camera.matrixWorld.elements[8],-camera.matrixWorld.elements[10]),activeTerrain());canvas.dataset.audio=JSON.stringify(royaleAudio.status);
+ smokeView.update(s.smokeClouds??[],s.tick,reducedMotion);combatReadout.update(s.self?.combat,s.self?.loadout[s.self.slot],s.tick);
+ royaleAudio.update({...s,actors:[...s.actors,...(s.soundSources??[]).filter(a=>!s.actors.some(b=>a.id===b.id))]},session.me,!dialog.open&&!paused&&!replaying,!!session.comms?.inputBlocked,Math.atan2(-camera.matrixWorld.elements[8],-camera.matrixWorld.elements[10]),activeTerrain());canvas.dataset.audio=JSON.stringify(royaleAudio.status);
  const owned=s.self?.scopes??[],scopeKey=owned.join(',');if(scopeKey!==ownedScopeKey){selectedScope=bestScope(owned);ownedScopeKey=scopeKey;}if(selectedScope&&!owned.includes(selectedScope))selectedScope=null;
  const firing=new Set<string>();if(localShotPending&&!replaying){firing.add(session.me);localShotPending=false;}
  matchFeedback.update(s,session.me,now,dialog.open||paused||replaying,reducedMotion);
@@ -434,9 +477,9 @@ function draw(now:number){
   else if(!replaying&&(session.room||watching))pose=session.remotePoses.pose(actor.id,pose,actor.spawnSerial,now);
   else if(!replaying)pose=interpolateRenderPose(previousRenderPose(previous?.actors.find(a=>a.id===actor.id),actor),pose,alpha);
   basePoses.set(actor.id,pose);
-  if(actor.id!==focusId&&!actorVisibility.visible(pose,bikeObserver)){a.view.root.visible=a.weapon.visible=a.shield.visible=a.nameplate.root.visible=false;continue;}
+  if(actor.id!==focusId&&!actorVisibility.visible(pose,bikeObserver)){a.view.root.visible=a.weapon.visible=a.shield.visible=a.nameplate.root.visible=false;a.sparks.reset();continue;}
   const balancePose=watching?pose:!replaying&&actor.id===session.me&&session.room&&session.prediction?session.prediction.controller.poseValue:actor.pose;
-  pose=a.motion.sample({...pose,seated:0},presentationTick,actor.alive,actor.spawnSerial,firing.has(actor.id),reducedMotion,s.phase==='results'&&s.winner===actor.id,motionDelta,balancePose);pose.stopFoot=0;a.view.apply({...pose,seated:0});a.view.visibility.setFirstPerson(!!replayFrame?.focus&&actor.id===replayFrame.focus);const yaw=actor.id===session.me&&!replaying?(footAim.active?footAim.relative(pose):aimYaw):actor.aimYaw,pitch=actor.id===session.me&&!replaying?aimPitch:actor.aimPitch;
+  pose=a.motion.sample({...pose,seated:0},presentationTick,actor.alive,actor.spawnSerial,firing.has(actor.id),reducedMotion,s.phase==='results'&&s.winner===actor.id,motionDelta,balancePose);pose.stopFoot=0;a.view.apply({...pose,seated:0});a.sparks.update(motionDelta,pose,actor.alive&&!dialog.open&&!paused&&!replaying&&s.phase!=='results',reducedMotion);a.view.visibility.setFirstPerson(!!replayFrame?.focus&&actor.id===replayFrame.focus);const yaw=actor.id===session.me&&!replaying?(footAim.active?footAim.relative(pose):aimYaw):actor.aimYaw,pitch=actor.id===session.me&&!replaying?aimPitch:actor.aimPitch;
   riderPart('pose');a.optic.visible=!!(actor.id===session.me?selectedScope:actor.scope);a.equipment.select(actor.weapon);a.optic.position.fromArray(CAMERA_SIGHTS[actor.weapon]);if(firing.has(actor.id)&&a.equipment.fire(reducedMotion))equipmentShots++;a.equipment.update(motionDelta,reducedMotion);a.weapon.visible=actor.alive&&pose.crashBlend<.05&&s.phase!=='results';
   riderPart('equipment');if(firing.has(actor.id))a.rig.interruptPickup();
   if(actor.alive&&pose.crashBlend<.05&&s.phase!=='results')a.rig.apply({...pose,seated:0},yaw,pitch,actor.combat,presentationTick,(actor as typeof actor&{healingUntil?:number}).healingUntil||0);
@@ -444,9 +487,10 @@ function draw(now:number){
   a.shield.position.set(pose.x,pose.y+1,pose.z);a.shield.rotation.y=pose.headingY-Math.PI/2;
   a.shield.update(motionDelta,reducedMotion,graphics.current.shadows===0,actor.shieldActive||actor.protected);
  }
- for(const [id,a]of actors)if(!rendered.has(id)){a.nameplate.root.visible=false;a.view.root.visible=false;a.weapon.visible=false;a.shield.visible=false;}
+ for(const [id,a]of actors)if(!rendered.has(id)){a.sparks.reset();a.nameplate.root.visible=false;a.view.root.visible=false;a.weapon.visible=false;a.shield.visible=false;}
 
- stage('riders');if(profileCpu)for(const [name,cost]of Object.entries(riderCosts)){drawStageLast['rider-'+name]=cost;(drawStageSamples['rider-'+name]??=[]).push(cost);}
+ if(telemetry)canvas.dataset.pedalSparks=String([...actors.values()].reduce((n,a)=>n+a.sparks.count,0));
+  stage('riders');if(profileCpu)for(const [name,cost]of Object.entries(riderCosts)){drawStageLast['rider-'+name]=cost;(drawStageSamples['rider-'+name]??=[]).push(cost);}
  const dogTick=watching?.tick??s.tick;
  const dogDisplayTick=!replaying&&(session.room||watching)?session.remotePoses.tick(now)??dogTick-3:dogTick-3+alpha;
  companions?.update(s.actors,s.roster,dogTick,motionDelta,graphics.current.shadows===0,reducedMotion,s.phase==='results'?s.winner:undefined,dogDisplayTick,p=>actorVisibility.visible(p,bikeObserver));canvas.dataset.companions=String(s.actors.filter(a=>a.alive).length);
@@ -484,29 +528,40 @@ function draw(now:number){
  const eyeView=ads||gameView==='first';
  const angle=activeMode==='orbit'?p.headingY+lookYaw+renderAimYaw:heading;
  const mine=actors.get(self.id),sight=mine?.equipment.sight()??at;
- const desired=eyeView&&p.footMode?new T.Vector3(p.x,p.y+footEyeHeight(scale,p.footCrouch,p.footProne),p.z):eyeView?combatEye(sight,heading,pitch,scale,ads):
+ const desired=eyeView&&p.footMode?new T.Vector3().copy(combatFootEye(p,scale,self.combat.lean,activeTerrain())):eyeView?combatEye(sight,heading,pitch,scale,ads):
    activeMode==='chase'||activeMode==='shoulder'?combatChaseEye(at,heading,scale,combatPreferences.value.shoulder,activeMode==='shoulder'):
    at.clone().add(new T.Vector3(-Math.sin(angle)*profile.back+Math.cos(angle)*profile.side,profile.height,-Math.cos(angle)*profile.back-Math.sin(angle)*profile.side));
  const clearCombat=(eye:T.Vector3)=>{retractCombatCamera(eye,at,(o,d,max)=>activeTerrain().raycast(o,d,max),activeTerrain().ground(eye.x,eye.z,p.y).height);eye.y=underpassCameraHeight(activeTerrain(),eye,eye.y,p.y,1.9);return eye;};
  if(activeMode==='chase'||activeMode==='shoulder')clearCombat(desired);else clearRideCamera(activeTerrain(),desired,at,p.y);
  followStableSun(sun,p,ROYALE_SUN);fill.position.set(p.x-12,p.y+8,p.z-13);fill.target.position.set(p.x,p.y+1,p.z);
- interactiveWater.update(p,paused||!!combatBlock);if(!combatBlock)scenery.update(p,now/1000);camera.position.copy(desired);
+ interactiveWater.update(p,paused||!!combatBlock);if(!combatBlock)scenery.update(p,now/1000);
+ if(!vr?.active){camera.position.copy(desired);
  camera.lookAt(eyeView||activeMode==='chase'||activeMode==='shoulder'?desired.clone().addScaledVector(forward,100):at);
+ if(eyeView&&p.footMode&&!reducedMotion)camera.rotateZ(-footLeanOffset(p,self.combat.lean).roll);
  camera.fov=ads?scopedFov(profile.fov,selectedScope):activeMode==='first'?combatPreferences.value.firstFov:activeMode==='chase'?combatPreferences.value.thirdFov:activeMode==='shoulder'?Math.max(50,combatPreferences.value.thirdFov-10):profile.fov;cameraBlend.apply(camera,(watching?'spectate-'+focusId+'-':'')+(p.footMode?'foot-':'ride-')+activeMode,delta,reducedMotion||!cameraTransitionsEnabled());
  if(activeMode==='chase'||activeMode==='shoulder')clearCombat(camera.position);else clearRideCamera(activeTerrain(),camera.position,at,p.y);camera.updateProjectionMatrix();
+ }else{const own=s.actors.find(a=>a.id===session.me),tracked=own?(basePoses.get(own.id)??own.pose):p;
+  vr.update(tracked,(own?.skin.startsWith('DS_Mascot_')?.84:1.7)+(tracked.footMode?0:.25),xrFrame);
+ }
  reticle.dataset.ads=String(ads);canvas.dataset.barrelBlocked=String(barrelBlocked);canvas.dataset.aimDistance=aimDistance.toFixed(1);
  const viewButton=el('touch').querySelector<HTMLButtonElement>('[data-action=camera]');if(viewButton){viewButton.textContent=gameView==='first'?'TPP':'FPP';viewButton.setAttribute('aria-label',gameView==='first'?'Switch to third person':'Switch to first person');}
  canvas.dataset.cameraMode=viewMode;canvas.dataset.cameraActive=activeMode;canvas.dataset.cameraFov=camera.fov.toFixed(2);
  if(telemetry)canvas.dataset.grounding=JSON.stringify({rider:{x:p.x,y:p.y,z:p.z},source:terrain.sourcePosition(p),floor:terrain.ground(p.x,p.z,p.y).height,park:{x:p.parkX,y:p.parkY,z:p.parkZ},dog:self.dog,camera:camera.position.toArray(),cameraFloor:terrain.ground(camera.position.x,camera.position.z,p.y).height});
- if(mine){mine.view.rider.visible=true;mine.view.visibility.setFirstPerson(eyeView);if(ads&&selectedScope)mine.weapon.visible=false;
-  if(!watching&&eyeView&&self.alive&&!replaying&&p.crashBlend<.05&&s.phase!=='results'){
+ if(mine){mine.view.rider.visible=true;mine.view.visibility.setFirstPerson(eyeView||!!vr?.active);if(ads&&selectedScope)mine.weapon.visible=false;
+  if(!vr?.active&&!watching&&eyeView&&self.alive&&!replaying&&p.crashBlend<.05&&s.phase!=='results'){
    if(!firstPerson||firstPerson.skin!==self.skin){firstPerson?.dispose();firstPerson=new FirstPersonView(assetMap,equipmentLibrary,riderChoice(self.skin));scene.add(firstPerson.root);}
    mine.view.rider.visible=false;mine.weapon.visible=false;mine.rig.hideHandheld();
-   const presentation=firstPerson.update({...p,seated:0},self.combat,self.weapon,s.tick,renderAimYaw,aimPitch,camera,motionDelta,firing.has(self.id),ads,reducedMotion,activeTerrain(),s.self?.healingUntil||0,combatPreferences.value.controlStyle==='burntwax');
-   if(ads&&selectedScope)firstPerson.hide();canvas.dataset.fpsPresentation=JSON.stringify(presentation);
+   const presentation=firstPerson.update({...p,seated:0},self.combat,self.weapon,s.tick,renderAimYaw,aimPitch,camera,motionDelta,firing.has(self.id),ads,reducedMotion,activeTerrain(),s.self?.healingUntil||0,combatPreferences.value.controlStyle==='burntwax',ads&&!!selectedScope);
+   canvas.dataset.fpsPresentation=JSON.stringify(presentation);
   }else canvas.dataset.fpsPresentation='world';
+  if(vr?.active){if(self.id===session.me){mine.view.rider.visible=false;mine.weapon.visible=false;mine.rig.hideHandheld();}
+   vrWeapon??=new WeaponView(equipmentLibrary);if(vrWeapon.root.parent!==vr.weaponMount)vr.weaponMount.add(vrWeapon.root);
+   vrWeapon.select(self.weapon);vrWeapon.root.rotation.y=Math.PI;vrWeapon.root.position.set(0,.075,-.06);
+   vrWeapon.root.visible=!watching&&self.alive&&weaponReady(self.combat,s.tick)&&p.footMode!==3;
+   if(firing.has(self.id))vrWeapon.fire(reducedMotion);vrWeapon.update(motionDelta,reducedMotion);canvas.dataset.fpsPresentation='tracked-vr-gloves';
+  }
  }
- el('scope-mask').hidden=!ads||!selectedScope||dialog.open||!self.alive;
+ el('scope-mask').hidden=!!vr?.active||!ads||!selectedScope||dialog.open||!self.alive;
  el('scope-magnification').textContent=selectedScope?SCOPES[selectedScope].label:'';
  if(telemetry)canvas.dataset.optics=JSON.stringify({selected:selectedScope,owned,zoom:ads?scopeZoom(selectedScope):1,available:s.loot.filter(l=>isScope(l.kind)).length});
  if(telemetry)canvas.dataset.aim=JSON.stringify({yaw:renderAimYaw,worldYaw:heading,freeFootAim:footAim.active,pitch:aimPitch,ads,steer,throttle,fire:mouseCombat.canFire||held.has('fire')||held.has('fire-left'),lean:self.combat.lean,crouch:p.footCrouch,prone:p.footProne,footMode:p.footMode});for(const direction of [-1,1]){const b=el('touch').querySelector<HTMLButtonElement>(direction<0?'[data-action=lean-left]':'[data-action=lean-right]');b?.setAttribute('aria-pressed',String(self.combat.lean*direction>.1));}
@@ -516,7 +571,7 @@ function draw(now:number){
  stage('cameraScenery');
 
  }
- if(replayFrame){camera.position.fromArray(replayFrame.camera.position);camera.quaternion.fromArray(replayFrame.camera.quaternion);camera.fov=replayFrame.camera.fov;camera.updateProjectionMatrix();}else deathReplay.observe(s,now,{position:camera.position.toArray(),quaternion:camera.quaternion.toArray(),fov:camera.fov});if(!replaying)deathReplay.installKillcam(session.killcam);
+ if(replayFrame&&!vr?.active){camera.position.fromArray(replayFrame.camera.position);camera.quaternion.fromArray(replayFrame.camera.quaternion);camera.fov=replayFrame.camera.fov;camera.updateProjectionMatrix();}else deathReplay.observe(s,now,{position:camera.position.toArray(),quaternion:camera.quaternion.toArray(),fov:camera.fov});if(!replaying)deathReplay.installKillcam(session.killcam);
  for(const actor of s.actors){const a=actors.get(actor.id)!;if(!session.room){a.nameplate.root.visible=false;continue;}const rider=s.roster.find(r=>r.id===actor.id);if(a.view.head)a.view.head.getWorldPosition(nameHead);else nameHead.set(actor.pose.x,actor.pose.y+1.8,actor.pose.z);a.nameplate.update(rider?.name??'Rider',!!rider?.bot,nameHead,camera,!!session.room&&!dialog.open&&a.view.root.visible&&actor.id!==(replayFrame?.focus??session.me));}
  const liveDeath=session.state?.self;const killedText=liveDeath&&!liveDeath.alive?eliminationLabel(liveDeath.elimination):'';
  el('eliminated-by').textContent=killedText;el('eliminated-by').hidden=!killedText;el('reentry-killer').textContent=killedText;
@@ -543,9 +598,9 @@ function draw(now:number){
   holsterButton.textContent=handling?(holstered?'Stowing…':'Drawing…'):holstered?'Draw':'Holster';holsterButton.disabled=handling;holsterButton.setAttribute('aria-pressed',String(holstered));
   if(holstered||handling)el('weapon').textContent=handling?(holstered?'Holstering weapon…':'Drawing weapon…'):'Weapon holstered · tap Draw or '+bindings.holster.replace('Digit','');
   const empty=!!w&&!brawling&&!holstered&&!handling&&me!.combat.magazine[w]===0;el('weapon').dataset.empty=String(empty);el('touch').querySelector<HTMLElement>('[data-action=reload]')!.dataset.needed=String(empty);if(empty&&me!.combat.reloadStart<0)el('weapon').textContent+=me!.ammo[w!]>0?' · Reload':' · Out of ammo';
-  recoverQuick.hidden=!me?.alive||replaying||!(me.controller.fields.crashed||self?.pose.footMode);
-  recoverQuick.disabled=(self?.pose.footStagger??0)>0||self?.pose.footMode===3;
-  recoverQuick.textContent=recoverQuick.disabled?'Getting back up…':'Recover · '+bindings.recover.replace(/^(Key|Digit)/,'');
+  recoverQuick.hidden=!me?.alive||replaying||!(me.controller.fields.crashed||(self?.pose.footStagger??0)>.1);
+  recoverQuick.disabled=self?.pose.footMode===3;
+  recoverQuick.textContent=recoverQuick.disabled?'Picking up wheel…':me&&me.integrity<=15?'Heal to remount':(self?.pose.footStagger??0)>0?'Recover · queue get-up':'Recover · '+bindings.recover.replace(/^(Key|Digit)/,'');
   recoverQuick.title='Get back up and remount when near your wheel';
   const scopeKeyLabel=bindings.scope.replace(/^(Key|Digit)/,'');const scopeLabel=selectedScope?SCOPES[selectedScope].label:'Iron sights';el('scope-select').textContent='Scope · '+scopeLabel+' · '+scopeKeyLabel;el<HTMLButtonElement>('scope-select').disabled=!owned.length;el<HTMLButtonElement>('scope-select').title=owned.length?'Switch collected scopes':'Find a scope and ride or walk over it';
   const scopeTouch=el('touch').querySelector<HTMLButtonElement>('[data-action=scope]')!;scopeTouch.textContent=selectedScope?SCOPES[selectedScope].zoom+'×':'Scope';scopeTouch.disabled=!owned.length;
@@ -553,7 +608,11 @@ function draw(now:number){
    const profile=w?WEAPONS[w]:undefined,magazine=w?me.combat.magazine[w]:0;
    const canSwap=!!self&&me.loadout.length>=2&&s.loot.some(l=>l.available&&(l.kind==='static'||l.kind==='heart'||l.kind==='bass')&&!me.loadout.includes(l.kind)&&Math.hypot(l.p.x-self.pose.x,l.p.z-self.pose.z)<=2.5);
    const reloadButton=el('touch').querySelector<HTMLButtonElement>('[data-action=reload]')!;reloadButton.disabled=!brawling&&(me.combat.reloadStart>=0||!w||magazine>=(profile?.magazine??0)||me.ammo[w]<=magazine);reloadButton.title=brawling?'Heavy melee attack':me.combat.reloadStart>=0?'Reloading':!w||me.ammo[w]<=magazine?'No reserve ammunition':magazine>=(profile?.magazine??0)?'Magazine full':'Reload weapon';
-   const visible=contextualActions({foot,brawling,crashed:!!me.controller.fields.crashed,dogCharges:me.dogPower.charges,scopes:owned.length,weapons:me.loadout.length,health:me.integrity,healthPacks:me.repairs,healing,shields:me.utility,canSwap,magazine,capacity:profile?.magazine??0,reserve:w?me.ammo[w]-magazine:0,reloading:me.combat.reloadStart>=0,fireModes:profile?.modes??0});
+   const vaultEligible=!!self&&foot&&!self.pose.footVault&&!self.pose.footEvade;
+   if(!vaultEligible){vaultHint.available=false;vaultHint.tick=-Infinity;}
+   else if(vaultHint.round!==s.round||s.tick<vaultHint.tick||s.tick-vaultHint.tick>=8){vaultHint.available=!!findVault(activeTerrain(),self!.pose);vaultHint.tick=s.tick;vaultHint.round=s.round;}
+   const canVault=vaultEligible&&vaultHint.available;const smokeButton=el('touch').querySelector<HTMLButtonElement>('[data-action=smoke]')!;smokeButton.textContent='Smoke · '+(me.smokeCharges??0);smokeButton.disabled=(me.smokeReady??0)>s.tick;
+   const visible=contextualActions({canVault,smokeCharges:me.smokeCharges??0,nearWheel:!!self&&Math.hypot(self.pose.x-self.pose.parkX,self.pose.z-self.pose.parkZ)<1.3,foot,brawling,crashed:!!me.controller.fields.crashed,dogCharges:me.dogPower.charges,scopes:owned.length,weapons:me.loadout.length,health:me.integrity,healthPacks:me.repairs,healing,shields:me.utility,canSwap,magazine,capacity:profile?.magazine??0,reserve:w?me.ammo[w]-magazine:0,reloading:me.combat.reloadStart>=0,fireModes:profile?.modes??0});
    for(const b of el('touch').querySelectorAll<HTMLButtonElement>('button[data-action]')){const action=b.dataset.action!;if(!b.classList.contains('active'))b.hidden=visible[action]===false||(aimComfort.value.simple&&!controlsExpanded&&!SIMPLE_ACTIONS.has(action));if(b.hidden){held.delete(action);tap.delete(action);}}
    el('scope-select').hidden=!visible.scope;el('touch').dataset.simple=String(aimComfort.value.simple);el('touch').dataset.expanded=String(controlsExpanded);moreControls.hidden=!aimComfort.value.simple;
   }
@@ -563,7 +622,7 @@ function draw(now:number){
   el('speed').textContent=self?(foot?'On foot':Math.round(Math.abs(self.pose.speed)*3.6)+' km/h'+(speedCruise.active?' · '+speedCruise.label:'')):'';
   el('field').textContent=(fieldStageAt(s.tick).closing?'Barrier closing · ':'Barrier holds · ')+Math.ceil(s.field.remaining)+'s · '+Math.round(s.field.radius)+'m → '+Math.round(s.field.nextRadius)+'m';
   el('reticle').hidden=!me?.alive||dialog.open||!!(selectedScope&&aimMode()===2)||(!footAim.active&&!aimMode()&&viewMode!=='chase'&&viewMode!=='first');el('touch').hidden=(!(touchDisplay==='on'||touchDisplay==='auto'&&matchMedia('(any-pointer:coarse)').matches)||dialog.open||replaying||!me?.alive)&&!layoutEditing;
-  el('hint').textContent=capture.active?'Camera mode · Photo / fire: shutter · '+bindings.captureRecord.replace('Key','')+': record · '+bindings.captureMode.replace('Key','')+': combat':layoutEditing?'Move controls, then open Menu to finish.':empty&&me!.combat.reloadStart<0?(me!.ammo[w!]>0?'Empty magazine · tap Reload or '+bindings.reload.replace(/^Key/,''):'Out of ammunition · find ammo or switch weapon'):!footAim.active&&Math.abs(aimYaw)>1.20?'Turn toward your target to aim farther.':replaying?(deathReplay.kind==='killer'?'Killer perspective · recorded by the server':'Last-view replay'):me&&!me.alive?me.reentry.eligible?'Eliminated · choose a respawn location':(deathReplay.kind==='killer'?'Eliminated · killer replay available':'Eliminated · last-view replay available'):s.phase==='deployment'?'Spawn protection · weapons unlock when the countdown ends':me&&Math.hypot((self?.pose.x??0)-s.field.x,(self?.pose.z??0)-s.field.z)>s.field.radius?'Outside the Static Field — ride toward the gold circle!':!el('touch').hidden?(foot?'Left stick: walk · right side: aim · Wheel: return to ride':speedCruise.active?speedCruise.label+' · pull down to cancel':'Left stick: push up twice for cruise · right side: aim'):foot?'WASD move · Shift sprint · R reload · 3 holster/draw · J return to wheel':'WASD ride · mouse aim · click fire · right click ADS · R reload · J get off/on';
+  el('hint').textContent=capture.active?'Camera mode · Photo / fire: shutter · '+bindings.captureRecord.replace('Key','')+': record · '+bindings.captureMode.replace('Key','')+': combat':layoutEditing?'Move controls, then open Menu to finish.':empty&&me!.combat.reloadStart<0?(me!.ammo[w!]>0?'Empty magazine · tap Reload or '+bindings.reload.replace(/^Key/,''):'Out of ammunition · find ammo or switch weapon'):!footAim.active&&Math.abs(aimYaw)>1.20?'Turn toward your target to aim farther.':replaying?(deathReplay.kind==='killer'?'Killer perspective · recorded by the server':'Last-view replay'):me&&!me.alive?me.reentry.eligible?'Eliminated · choose a respawn location':(deathReplay.kind==='killer'?'Eliminated · killer replay available':'Eliminated · last-view replay available'):s.phase==='deployment'?'Spawn protection · weapons unlock when the countdown ends':me&&Math.hypot((self?.pose.x??0)-s.field.x,(self?.pose.z??0)-s.field.z)>s.field.radius?'Outside the Static Field — ride toward the gold circle!':!el('touch').hidden?(foot?'Left stick: walk · right side: aim · Wheel: return to ride':speedCruise.active?speedCruise.label+' · pull down to cancel':'Left stick: push up twice for cruise · right side: aim'):foot?'WASD move · Shift sprint · L evade · Y vault · M smoke · Q/E lean · J wheel':'WASD ride · mouse aim · click fire · right click ADS · R reload · J get off/on';
   el('room').hidden=!session.room;el('roomcode').textContent='Room '+session.code+(session.botFill?' · AI fill on':' · '+s.size+' human seats · AI fill off');
   el('ready').hidden=session.ready.includes(session.me);const inRoom=!!session.room;el<HTMLInputElement>('code').closest('label')!.hidden=inRoom;el('create').hidden=el('join').hidden=inRoom;if(inRoom&&s.phase==='lobby')el('online-status').textContent='Room '+session.code+' · '+(session.ready.includes(session.me)?'You’re ready':'Preparing your rider…')+(session.host===session.me?' · Share invite, then Start match.':' · Waiting for the host to start.');
   el<HTMLButtonElement>('launch').disabled=session.host!==session.me;const rosterKey=s.roster.map(a=>a.id+':'+a.name+':'+a.connected+':'+session.ready.includes(a.id)).join('|');if(rosterKey!==rosterSignature){rosterSignature=rosterKey;el('roster').replaceChildren(...s.roster.map(a=>{const li=document.createElement('li');li.textContent=a.name+(a.bot?' · AI':session.ready.includes(a.id)?' · Ready':' · Loading / not ready')+(!a.connected?' · Disconnected':'');return li;}));}
@@ -581,12 +640,23 @@ const profileCpu=query.has('profile');let pendingSimulationMs=0,cpuSamples:{simu
  // Keep bounded, correlated opening spikes: a delayed callback belongs to the
  // preceding submitted frame, not necessarily to the work about to run.
  let openingTrace:unknown[]=[],previousWork:unknown;
-function loop(now:number){requestAnimationFrame(loop);const rawFrameMs=now-last,delta=Math.min(.15,rawFrameMs/1000);last=now;if(document.hidden){startupFrames.pause();return;}if(preparingMatch)return;
+function loop(now:number,xrFrame?:XRFrame){const rawFrameMs=now-last,delta=Math.min(.15,rawFrameMs/1000);last=now;if(document.hidden){startupFrames.pause();return;}if(preparingMatch){if(vr?.active)renderer.render(scene,camera);return;}
  if(!loaded||(!session?.state&&el<HTMLDialogElement>('royale-startup').open))return;
+ if(vr?.active){
+  const own=session?.state?.actors.find(a=>a.id===session.me),p=session?.prediction?.controller.poseValue??own?.pose;
+  if(p)vr.update(p,(own?.skin.startsWith('DS_Mascot_')?.84:1.7)+(p.footMode?0:.25),xrFrame);
+  vrPacket=vr.poll();for(const key of ['reload','mount','recover','hop','heal','holster','switch'] as const)if(vrPacket[key])vrEdges.add(key);
+  vr.snap(vrPacket.snap);
+  if(vrPacket.pause){if(paused||dialog.open)resume();else showMenu();}
+  if(vrEdges.has('reload')&&session?.state){
+   if(session.state.self?.reentry.eligible&&!el<HTMLButtonElement>('reentry-confirm').disabled){vrEdges.delete('reload');el('reentry-confirm').click();}
+   else if(session.state.phase==='results'){vrEdges.delete('reload');el('rematch').click();}
+  }
+ }
  const cpuStart=performance.now();let simulationSteps=0;
  const idle=paused||dialog.open||layoutEditing||!session?.state||session.state.phase==='results';
  if(graphics.choice!=='auto')adaptiveQuality.reset();
- if(adaptiveQuality.sample(rawFrameMs,loaded&&!idle&&graphics.choice==='auto'&&now-loadedAt>5000,graphics.current.fps)){graphics.setAdaptiveDetail(adaptiveQuality.detail);graphics.setResolutionScale(adaptiveQuality.scale);}
+ if(adaptiveQuality.sample(rawFrameMs,loaded&&!idle&&!vr?.active&&graphics.choice==='auto'&&now-loadedAt>5000,graphics.current.fps)){graphics.setAdaptiveDetail(adaptiveQuality.detail);graphics.setResolutionScale(adaptiveQuality.scale);}
  const connection=session?.connectionStatus(now);el('connection-status').hidden=!connection?.text||dialog.open;el('connection-text').textContent=connection?.text??'';canvas.dataset.connection=connection?.state??'offline';
  if(!session?.state||session.state.phase!=='results')clearResults();
  footControls.update(session?.prediction?.controller.poseValue??session?.state?.actors.find(a=>a.id===session.me)?.pose??{},loaded&&!dialog.open&&!!session?.state?.self?.alive,true,(session?.state?.self?.integrity??100)<=15);
@@ -598,8 +668,16 @@ function loop(now:number){requestAnimationFrame(loop);const rawFrameMs=now-last,
   simulationSteps++;}catch(error){paused=true;release();showMenu();message('The simulation stopped safely. Start a new practice or reconnect: '+(error as Error).message);break;}acc-=DT;
  }}else acc=0;
  pendingSimulationMs+=performance.now()-cpuStart;
- if(!schedule.shouldRender(now,idle,false,graphics.current.fps))return;
- const viewStart=performance.now();draw(now);const submitStart=performance.now();renderer.render(scene,camera);capture.afterRender(now);
+ if(!vr?.active&&!schedule.shouldRender(now,idle,false,graphics.current.fps))return;
+ const viewStart=performance.now();draw(now,xrFrame);
+ if(vr?.active){const me=session?.state?.self,w=me?.loadout[me.slot];vr.hudText([
+  paused||dialog.open?'PAUSED · Left Y resumes':session?.state?.phase==='results'?'ROUND COMPLETE · Right A continues':!me?.alive?me?.reentry.eligible?'ELIMINATED · Right A respawns':'ELIMINATED · waiting for next round':'STATIC ROYALE · '+(session?.state?.remaining??0)+' riders',
+  'Health '+Math.ceil(me?.integrity??0)+' · Ammo '+(w?me?.combat.magazine[w]:0),
+  vrAimBlocked?'Turn the wheel toward your target before firing':'Left stick move · Right trigger fire · Left trigger aim',
+  'Right A reload · B mount · Left X recover · Y pause',
+  'Left grip + A: heal / B: holster · Right stick click: weapon'
+ ]);}
+ const submitStart=performance.now();renderer.render(scene,camera);capture.afterRender(now);
  if(profileCpu)cpuSamples.push({simulation:pendingSimulationMs,presentation:submitStart-viewStart,submission:performance.now()-submitStart});
  if(session?.state?.round!==profileRound){profileRound=session?.state?.round??'';startupFrames.reset();openingTrace=[];previousWork=undefined;}
  if(profileCpu){const work={simulationSteps,rawFrameMs,simulation:pendingSimulationMs,presentation:submitStart-viewStart,submission:performance.now()-submitStart,stages:{...drawStageLast},actors:actors.size,visibleActors:session?.state?.actors.length??0,loot:items.size,programs:renderer.info.programs?.length,textures:renderer.info.memory.textures,geometries:renderer.info.memory.geometries,calls:renderer.info.render.calls};
@@ -611,8 +689,15 @@ function loop(now:number){requestAnimationFrame(loop);const rawFrameMs=now-last,
  if(now-profileAt>2000){canvas.dataset.startupFrames=JSON.stringify(startupFrames.report);samples.sort((a,b)=>a-b);if(session?.state?.engine){canvas.dataset.engineModule=session.state.engine.module;canvas.dataset.engineFrames=String(session.state.engineInputFrames);canvas.dataset.engineTick=String(session.state.tick);}canvas.dataset.profile=JSON.stringify({fps:frames*1000/(now-profileAt),p50:samples[Math.floor(samples.length*.5)],p95:samples[Math.floor(samples.length*.95)],p99:samples[Math.floor(samples.length*.99)],maxFrameMs:samples.at(-1),sampleFrames:samples.length,lateFrames:samples.filter(ms=>ms>1000/graphics.current.fps+2).length,calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures,actors:session?.state?.actors.length??0,aliveActors:session?.state?.actors.filter(a=>a.alive).length??0,lightBudget:lightingBudget.status,idle,scale:adaptiveQuality.scale,detail:adaptiveQuality.detail});frames=0;profileAt=now;samples=[];}
 }
 canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();release();paused=true;showMenu();message('Graphics paused. Reload the page to restore the arena.');});
-requestAnimationFrame(loop);void run(prepare);
-window.addEventListener('pagehide',()=>{capture.dispose();firstPerson?.dispose();royaleAudio.dispose();session?.leave();combatBlock?.dispose();practiceRange?.dispose();for(const a of actors.values()){a.contrast.dispose();a.nameplate.dispose();a.view.dispose();a.equipment.dispose();a.shield.dispose();}for(const item of items.values())item.dispose();equipmentLibrary?.dispose();scopeLibrary?.dispose();terrain?.terrain.dispose();fieldRing.dispose();nextRing.dispose();atmosphereSky.dispose();impactEffect.dispose();surfaceMarks.dispose();renderer.dispose();});
+vr=new RoyaleVR(renderer,scene,camera,el('camera-settings'),{
+ ready:()=>loaded&&!preparingMatch&&!!session?.state?.self?.alive,
+ unlock:()=>{void royaleAudio.unlock();},
+ enter:()=>{release();deathReplay.stop();cameraBlend.reset();resume();canvas.dataset.vr='immersive';},
+ exit:()=>{release();cameraBlend.reset();vrWeapon?.root.removeFromParent();delete canvas.dataset.vr;showMenu();},
+ pause:()=>{release();showMenu();}
+});
+renderer.setAnimationLoop(loop);void run(prepare);
+window.addEventListener('pagehide',()=>{renderer.setAnimationLoop(null);vr?.dispose();vrWeapon?.dispose();capture.dispose();firstPerson?.dispose();royaleAudio.dispose();session?.leave();combatBlock?.dispose();practiceRange?.dispose();for(const a of actors.values()){a.sparks.dispose();a.contrast.dispose();a.nameplate.dispose();a.view.dispose();a.equipment.dispose();a.shield.dispose();}for(const item of items.values())item.dispose();equipmentLibrary?.dispose();scopeLibrary?.dispose();terrain?.terrain.dispose();fieldRing.dispose();nextRing.dispose();atmosphereSky.dispose();impactEffect.dispose();surfaceMarks.dispose();renderer.dispose();});
 
 
 

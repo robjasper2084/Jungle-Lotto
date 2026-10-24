@@ -25,7 +25,7 @@ export class RideMotion {
   private previousCamera={...this.view};
   private currentCamera={...this.view};
   private accumulator=0;
-  private pendingHop=false;private pendingDismount=false;
+  private pendingHop=false;private pendingDismount=false;private pendingReset=false;
   private pendingTrick=0;
   readonly events:RideEvent[]=[];
   constructor(map:TerrainSampler,profile:RiderProfile=HUMAN_PROFILE){
@@ -44,7 +44,7 @@ export class RideMotion {
     Object.assign(this.core.current,footFields());Object.assign(this.pose,footFields());Object.assign(this.previous,footFields());
     this.accumulator=0;this.clearPendingInput();this.events.length=0;
   }
-  clearPendingInput(){this.pendingHop=false;this.pendingTrick=0;this.pendingDismount=false;this.engineInput.clear();}
+  clearPendingInput(){this.pendingReset=false;this.pendingHop=false;this.pendingTrick=0;this.pendingDismount=false;this.engineInput.clear();}
   render(alpha:number){
     lerpPose(this.previous,this.core.current,alpha,this.pose);
     interpolateFoot(this.previous,this.core.current as typeof this.pose,alpha,this.pose);
@@ -54,18 +54,20 @@ export class RideMotion {
     this.events.length=0;
     if(paused){this.clearPendingInput();return;}
     if(!Number.isFinite(dt)||dt<0)throw new RangeError('Frame time must be finite and non-negative');
-    this.pendingHop ||= !!actions.hop;this.pendingDismount ||= !!actions.dismount;
+    this.pendingReset ||= !!actions.reset;this.pendingHop ||= !!actions.hop;this.pendingDismount ||= !!actions.dismount;
     if(actions.trick)this.pendingTrick=actions.trick;
     this.accumulator+=Math.min(dt,.1);const step=1/RIDECORE.fixedHz;
     while(this.accumulator+1e-12>=step){
       copyPose(this.core.current,this.previous);Object.assign(this.previousCamera,this.currentCamera);
-      if(!this.cycling&&stepOnFoot(this.walking,this.core.current as typeof this.pose,this.terrain,step,{...NEUTRAL_ACTIONS,...actions,hop:this.pendingHop,dismount:this.pendingDismount},this.sim.crashed)){
+      const reset=this.pendingReset;this.pendingReset=false;
+      if(reset){this.walking=footState();Object.assign(this.core.current,footFields());this.pendingHop=false;this.pendingTrick=0;this.pendingDismount=false;}
+      if(!reset&&!this.cycling&&stepOnFoot(this.walking,this.core.current as typeof this.pose,this.terrain,step,{...NEUTRAL_ACTIONS,...actions,hop:this.pendingHop,dismount:this.pendingDismount},this.sim.crashed)){
         this.pendingHop=false;this.pendingTrick=0;this.pendingDismount=false;
         if(!this.walking.mode){const p={...this.core.current};this.core.reset({position:p,headingY:p.headingY});Object.assign(this.core.current,footFields());}
         this.follow.step(step,this.core.current);this.captureCamera();this.accumulator=Math.max(0,this.accumulator-step);continue;
       }
       this.pendingDismount=false;
-      const result=this.cycling?(this.bicycle.step(step,this.engineInput.route({...NEUTRAL_ACTIONS,...actions,hop:false,hopHeld:false,trick:0,crouch:false})),this.bicycle.writePose(this.core.current),{events:[] as RideEvent[]}):this.core.advance(step,this.engineInput.route({...actions,steer:eucProfile(this.vehicleId)?eucSteering(eucProfile(this.vehicleId)!,this.core.current.speed,actions.steer??0):actions.steer,hop:this.pendingHop,trick:this.pendingTrick}));this.pendingHop=false;this.pendingTrick=0;
+      const result=this.cycling?(this.bicycle.step(step,this.engineInput.route({...NEUTRAL_ACTIONS,...actions,reset,hop:false,hopHeld:false,trick:0,crouch:false})),this.bicycle.writePose(this.core.current),{events:[] as RideEvent[]}):this.core.advance(step,this.engineInput.route({...actions,reset,steer:eucProfile(this.vehicleId)?eucSteering(eucProfile(this.vehicleId)!,this.core.current.speed,actions.steer??0):actions.steer,hop:this.pendingHop,trick:this.pendingTrick}));this.pendingHop=false;this.pendingTrick=0;
       this.events.push(...result.events);
       for(const event of result.events)if(event.type==='landing')this.follow.landing(event.impact);
       this.follow.step(step,this.core.current);this.captureCamera();

@@ -1,4 +1,5 @@
 import type {CombatState} from '../../../../ride-core/src/royale/rules.ts';
+export {footEyeHeight} from '../../../../ride-core/src/royale/lean.ts';
 const clamp=(n:number)=>Math.max(0,Math.min(1,n));
 const smooth=(n:number)=>{n=clamp(n);return n*n*(3-2*n);};
 /** Reload cues follow authority timestamps, including the real ammunition commit. */
@@ -9,7 +10,6 @@ export function reloadPose(state:CombatState,tick:number){
  const magazine=before<.3?smooth(before/.3):before<.64?1:1-smooth((before-.64)/.36);
  return {active:true,lower:tick<commit?smooth(before/.18):1-smooth(after),magazine,charge:tick>=commit?Math.sin(Math.PI*after):0,phase:tick<commit?(before<.3?'release':before<.64?'replace':'insert'):'readying'};
 }
-export function footEyeHeight(scale:number,crouch:number,prone:number){return ((1.64-.42*clamp(crouch))*(1-clamp(prone))+.46*clamp(prone))*scale;}
 /** Lower the old weapon before replacing its geometry, then raise the new one.
  * Authoritative firing always wins over a cosmetic equip transition. */
 export class WeaponSwap {
@@ -28,12 +28,13 @@ export class WeaponSwap {
   return {weapon:this.shown,lower:smooth(this.lowered)};
  }
 }
+export const WEAPON_FEEL={static:{kick:.8,settle:22},heart:{kick:1.08,settle:16},bass:{kick:1.32,settle:12}} as const;
 export class FpsMotion {
  private age=1;private weapon='';private kick=0;private land=0;private air=false;private run=0;private aim=0;
  reset(){this.age=1;this.weapon='';this.kick=this.land=this.run=this.aim=0;this.air=false;}
  update(dt:number,weapon:string,shot:boolean,speed:number,air:boolean,ads:boolean,reduced:boolean,reload:ReturnType<typeof reloadPose>,onFoot=true){
   dt=Math.max(0,Math.min(.1,dt));if(weapon!==this.weapon){this.weapon=weapon;this.age=0;}this.age+=dt;
-  this.kick*=Math.exp(-20*dt);if(shot)this.kick=1;if(this.air&&!air)this.land=1;this.air=air;this.land*=Math.exp(-13*dt);
+  const feel=WEAPON_FEEL[weapon as keyof typeof WEAPON_FEEL]??WEAPON_FEEL.static;this.kick*=Math.exp(-feel.settle*dt);if(shot)this.kick=feel.kick;if(this.air&&!air)this.land=1;this.air=air;this.land*=Math.exp(-13*dt);
   this.run+=((onFoot&&speed>3.2&&!ads&&!reload.active&&!shot?1:0)-this.run)*(1-Math.exp(-12*dt));this.aim+=((ads?1:0)-this.aim)*(1-Math.exp(-20*dt));
   const motion=reduced?0:1;
   return {equip:(1-smooth(this.age/.24))*motion,kick:this.kick*motion,land:this.land*motion,run:this.run,aim:this.aim};

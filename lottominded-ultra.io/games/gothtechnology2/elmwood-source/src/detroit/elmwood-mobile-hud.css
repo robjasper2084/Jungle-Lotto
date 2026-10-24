@@ -70,6 +70,12 @@ body.layout-editing .community-panel,body.layout-editing .game-film-toolbar,body
  body:has(#view[data-riding="true"]) #ride-tools:not([open]){--tools-top:146px}
 }
 
+/* Leave room for the expanded on-foot stance controls. */
+body:has(.on-foot-controls[data-mode="2"]:not([hidden])) .session-hud[data-seat="0"]{left:196px!important;top:140px!important;max-width:176px}
+@media(max-width:750px) and (orientation:portrait){
+ body:has(.on-foot-controls[data-mode="2"]:not([hidden])) .session-hud[data-seat="0"]{left:auto!important;right:12px;top:250px!important;max-width:calc(100vw - 208px)}
+}
+
 /* Group ride belongs above the thumb controls, not between Brake and the stick. */
 @media(max-width:650px) and (orientation:portrait){
  body:has(#view[data-riding="true"]) .community-panel{left:max(12px,env(safe-area-inset-left));right:auto;top:calc(278px + env(safe-area-inset-top));bottom:auto;transform:none;max-height:calc(100dvh - 490px)}

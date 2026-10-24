@@ -67,3 +67,16 @@ test('Hammond cover joins the uphill ridge and the rider uses the authored bank 
   for(const y of [0,5,10,15,20])assert.ok(at(0,y)!-p.position[2]>3,`chamber cover stays continuous at ${y}m`);
   assert.equal(at(0,-6),undefined,'door approach stays open');assert.equal(at(30,5),undefined,'outside retains original terrain');
 });
+
+test('Recover between fixed ticks survives once and exits on-foot mode',()=>{
+ const r=new RideMotion(flat);r.update(1/120,{dismount:true});for(let i=0;i<90;i++)r.update(1/120,{});
+ assert.equal(r.pose.footMode,2);r.update(1/480,{reset:true});
+ for(let i=0;i<500;i++)r.update(1/120,{throttle:1});
+ assert.equal(r.pose.footMode,0);assert.ok(r.pose.speed>1,'new throttle works after recovery');
+});
+test('one recover tap on a fallen Elmwood rider completes instead of restarting each substep',()=>{
+ const r=new RideMotion(flat);r.core.controller.knockOff();
+ r.update(1/30,{reset:true});for(let i=0;i<300;i++)r.update(1/120,{});
+ assert.equal(r.sim.crashed,false);assert.equal(r.pose.crashRecovery,0);
+ r.update(1/120,{throttle:1});for(let i=0;i<60;i++)r.update(1/120,{throttle:1});assert.ok(r.pose.speed>0);
+});

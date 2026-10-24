@@ -46,7 +46,7 @@
 #touch button[data-action="fire-left"]{top:max(40%,calc(var(--royale-hud-bottom,284px) + 116px))}
 header,#hint{z-index:6}#touch{z-index:2}
 #scope-mask{position:fixed;inset:0;display:grid;place-items:center;pointer-events:none;z-index:1}
-#scope-mask[hidden]{display:none}.optic-circle{width:76vmin;height:76vmin;border:7px solid #10171c;border-radius:50%;position:relative;box-shadow:0 0 0 100vmax #02070ceb,inset 0 0 18px #07182070}
+#scope-mask[hidden]{display:none}.optic-circle{width:76vmin;height:76vmin;border:7px solid #10171c;border-radius:50%;position:relative;box-shadow:0 0 0 100vmax #02070c60,inset 0 0 18px #07182070}
 .optic-circle svg{width:100%;height:100%;stroke:#111b22;stroke-width:.35;fill:#ef645f;filter:drop-shadow(0 0 1px #ffffff)}
 #scope-magnification{position:absolute;bottom:9%;left:0;right:0;text-align:center;font-size:13px;color:#effff8;text-shadow:0 1px 3px #000}
 #hud{z-index:5}#scope-select{pointer-events:auto;padding:6px 10px;margin-top:5px;font-size:12px;text-align:left}#scope-status{max-width:230px;color:#a9f8e5;font-size:11px}

@@ -87,6 +87,10 @@ export class CombatBlockView {
    for(const side of [-1,1]){
     mesh(.45,.32,14.25,x+side*6,.16,z,dark);mesh(.48,.16,14.5,x+side*6,3.29,z,trim);
     mesh(.11,3.25,.13,x+side*6.23,1.65,z+5.8,mats.roof);
+    // Match the physical open side window. No glass or security bars cover it.
+    for(const edge of [-1,1])mesh(.45,2.4,.08,x+side*6,1.95,z+edge*1.15,trim);
+    mesh(.5,.06,2.3,x+side*6,.75,z,trim);mesh(.5,.06,2.3,x+side*6,3.16,z,trim);
+    sign('VAULT',x+side*6.19,.42,z,1.5,.25,'#a1e7d9',side*Math.PI/2);
     for(const edge of [-7,7]){
      mesh(4.5,.32,.45,x+side*3.75,.16,z+edge,dark);
      mesh(.15,2.5,.45,x+side*1.47,1.25,z+edge,mats.roof);
@@ -156,7 +160,7 @@ export class CombatBlockView {
    object.castShadow=!mat.transparent;object.receiveShadow=!mat.transparent;this.root.add(object);
   }
   this.root.userData.graphics={version:'detroit-materials-2',staticBatches:batches.size,contactShadows:true};
-  this.notice.className='combat-block-note';this.notice.textContent='COMBAT BLOCK · Local training · J: get off / on · R: reload';Object.assign(this.notice.style,{position:'fixed',bottom:'12px',left:'50%',transform:'translateX(-50%)',padding:'6px 12px',background:'#10272ce0',color:'#c8eee6',borderRadius:'6px',font:'11px system-ui',pointerEvents:'none',zIndex:'5',maxWidth:'70vw'});document.body.append(this.notice);
+  this.notice.className='combat-block-note';this.notice.textContent='COMBAT BLOCK · Y: vault low cover / open side windows · L: roll · M: smoke';Object.assign(this.notice.style,{position:'fixed',bottom:'12px',left:'50%',transform:'translateX(-50%)',padding:'6px 12px',background:'#10272ce0',color:'#c8eee6',borderRadius:'6px',font:'11px system-ui',pointerEvents:'none',zIndex:'5',maxWidth:'70vw'});document.body.append(this.notice);
  }
  dispose(){
   this.notice.remove();this.root.removeFromParent();const materials=new Set<T.Material>(),geometries=new Set<T.BufferGeometry>(),textures=new Set<T.Texture>();

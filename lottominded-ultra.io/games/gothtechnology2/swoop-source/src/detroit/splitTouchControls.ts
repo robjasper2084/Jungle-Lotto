@@ -23,5 +23,5 @@ export function mountSplitTouch(parent:HTMLElement,input:TouchRideInput,trick:()
  }
  const special=document.createElement('button');special.type='button';special.textContent='Trick';special.onclick=()=>{if(enabled)trick();};buttons.append(special);
  const reset=()=>{input.reset();const held=[...captures];captures.clear();for(const[id,node]of held){node.setAttribute('aria-pressed','false');if(node.hasPointerCapture(id))node.releasePointerCapture(id);}restore();draw();};
- return {root,reset,setEnabled(value:boolean){if(enabled&&!value)reset();enabled=value;for(const b of root.querySelectorAll<HTMLButtonElement>('button'))b.disabled=!value;},dispose(){reset();root.remove();}};
+ return {root,reset,setEnabled(value:boolean){if(enabled&&!value)reset();enabled=value;zone.style.pointerEvents=value?'auto':'none';for(const b of root.querySelectorAll<HTMLButtonElement>('button'))b.disabled=!value;},dispose(){reset();root.remove();}};
 }

@@ -1,5 +1,12 @@
 import {test} from 'node:test';import assert from 'node:assert/strict';
-import {aimFriction,readAimSettings,ShotPreview} from './aimComfort.ts';
+import {aimFriction,readAimSettings,ShotPreview,autoReloadAllowed} from './aimComfort.ts';
+
+test('automatic reload waits through recovery, stagger and pickup but resumes during normal movement',()=>{
+ assert.equal(autoReloadAllowed(2,0,true),false);
+ assert.equal(autoReloadAllowed(2,.4,false),false);
+ assert.equal(autoReloadAllowed(3,0,false),false);
+ for(const mode of [0,1,2])assert.equal(autoReloadAllowed(mode,0,false),true);
+});
 test('aim slowdown never assists mouse, occluded or distant opponents',()=>{for(const device of ['touch','controller']){assert.equal(aimFriction(0,20,.6,false,device),1);assert.equal(aimFriction(0,70,.6,true,device),1);assert.equal(aimFriction(.1,20,.6,true,device),1);}assert.equal(aimFriction(0,20,.6,true,'mouse'),1);assert.equal(aimFriction(0,20,0,true,'touch'),1);assert.equal(aimFriction(0,20,99,true,'touch'),.4);assert.ok(aimFriction(.03,20,.4,true,'controller')<1);});
 test('invalid persisted settings cannot corrupt aim or color CSS',()=>{const s=readAimSettings({x:NaN,y:10,deadzone:-1,assist:Infinity,reticleColor:'red;display:none',reticleSize:100});assert.equal(s.x,1);assert.equal(s.y,2);assert.equal(s.deadzone,.02);assert.equal(s.assist,.35);assert.equal(s.reticleColor,'#a3fff1');assert.equal(s.reticleSize,30);});
 const shot={round:'one',tick:10,counter:0,fire:true,allowed:true,mode:0,magazine:20,interval:9,weapon:'static'};

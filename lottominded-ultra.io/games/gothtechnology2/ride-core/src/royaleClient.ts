@@ -46,7 +46,7 @@ export class RoyaleSession{
   if(reentered&&s.self){this.seq=s.self.inputCursor??s.self.ack;this.shot=s.self.shotCursor??0;this.predictionInput?.clear();}
   if(!this.room||!s.self)return;
   if(!this.prediction)this.prediction={wheelId:s.self.wheelId,controller:new RideController(this.terrain,{tuning:BATTLE_HANDLING}),energy:100,burstUntil:0,burstLatch:false};
-  if(engineReady()&&!this.predictionInput)this.predictionInput=new EngineContext();this.prediction.controller.restoreState(s.self.controller);this.prediction.energy=s.self.energy;this.prediction.burstUntil=s.self.burstUntil;this.prediction.burstLatch=s.self.burstLatch;this.seq=Math.max(this.seq,s.self.ack,s.self.inputCursor??0);this.shot=Math.max(this.shot,s.self.shotCursor??0);
+  if(engineReady()&&!this.predictionInput)this.predictionInput=new EngineContext();this.prediction.controller.restoreState(s.self.controller);this.prediction.integrity=s.self.integrity;this.prediction.combat=s.self.combat;this.prediction.energy=s.self.energy;this.prediction.burstUntil=s.self.burstUntil;this.prediction.burstLatch=s.self.burstLatch;this.seq=Math.max(this.seq,s.self.ack,s.self.inputCursor??0);this.shot=Math.max(this.shot,s.self.shotCursor??0);
   this.pending=this.pending.filter(c=>c.round===s.round&&c.seq>s.self!.ack);
   for(let i=0;i<this.pending.length;i++)move(this.prediction,this.predictionInput?routeBattleInput(this.predictionInput,0,this.pending[i]):this.pending[i],s.tick+i+1);
  }

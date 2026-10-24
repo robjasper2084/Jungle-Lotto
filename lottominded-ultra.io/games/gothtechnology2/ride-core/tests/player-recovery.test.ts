@@ -18,4 +18,30 @@ for(const engine of [false,true])for(const skin of ['DS_Man_01','DS_Armored_Ride
  assert.equal(a.pose.footMode,0);assert.equal(a.reentryUsed,stock);assert.equal(a.integrity,health);assert.deepEqual([a.pose.x,a.pose.y,a.pose.z],park);
  m.dispose();
 });
+
+
+for(const engine of [false,true])test(`early Recover survives stagger without teleport or respawn (engine=${engine})`,()=>{
+ const m=new RoyaleMatch(terrain,engine);m.add('human','Human');m.add('other','Other');m.start('early',1);
+ for(let i=0;i<PROTECTION;i++)m.step();const a=m.actors[0];
+ a.controller.reset({position:{x:0,y:0,z:0},headingY:0});a.controller.combatOnFoot=true;a.controller.knockOff();a.pose={...a.controller.poseValue};
+ const health=a.integrity,stock=a.reentryUsed;let seq=0;
+ m.command(a.id,{...neutral(m.round,++seq,m.tick),recover:true});m.step();
+ assert.equal(a.pose.footMode,2,'must settle before mounting');
+ for(let i=0;i<240;i++){m.command(a.id,neutral(m.round,++seq,m.tick));m.step();}
+ assert.equal(a.pose.footMode,0);assert.equal(a.integrity,health);assert.equal(a.reentryUsed,stock);m.dispose();
+});
+test('critical health blocks queued recovery in the shared movement rules',()=>{
+ const m=new RoyaleMatch(terrain,false);m.add('human','Human');m.add('other','Other');m.start('blocked',1);
+ for(let i=0;i<PROTECTION;i++)m.step();const a=m.actors[0];a.controller.reset({position:{x:0,y:0,z:0},headingY:0});a.controller.combatOnFoot=true;a.controller.knockOff();a.pose={...a.controller.poseValue};a.integrity=10;
+ for(let i=0;i<240;i++){m.command(a.id,{...neutral(m.round,i+1,m.tick),recover:i===0});m.step();}
+ assert.equal(a.pose.footMode,2);assert.equal(a.integrity,10);assert.equal(a.reentryUsed,0);m.dispose();
+});
+for(const engine of [false,true])test(`distant wheel recovery does not teleport or consume respawns (engine=${engine})`,()=>{
+ const m=new RoyaleMatch(terrain,engine);m.add('human','Human');m.add('other','Other');m.start('distance',1);
+ for(let i=0;i<PROTECTION;i++)m.step();const a=m.actors[0];
+ a.controller.reset({position:{x:0,y:0,z:0},headingY:0});a.controller.combatOnFoot=true;a.controller.knockOff();
+ a.controller.poseValue.x=10;a.pose={...a.controller.poseValue};
+ for(let i=0;i<240;i++){m.command(a.id,{...neutral(m.round,i+1,m.tick),recover:i===0});m.step();}
+ assert.equal(a.pose.footMode,2);assert.equal(a.pose.parkX,0);assert.ok(a.pose.x>9);assert.equal(a.reentryUsed,0);m.dispose();
+});
 test.after(()=>terrain.dispose());

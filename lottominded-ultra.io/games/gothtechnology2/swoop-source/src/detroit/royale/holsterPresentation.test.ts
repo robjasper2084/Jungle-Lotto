@@ -17,7 +17,7 @@ test('all five heroes keep stowed barrels above ground through crouch/prone and 
  const library=new EquipmentLibrary(models,repairUse);
  for(const kind of ['static','heart','bass'] as Weapon[]){const model=library.create(kind);model.root.updateMatrixWorld(true);const sight=new T.Vector3(...CAMERA_SIGHTS[kind]),ray=new T.Raycaster(sight.clone().add(new T.Vector3(0,0,-.6)),new T.Vector3(0,0,1),0,1.5);assert.equal(ray.intersectObject(model.root,true).length,0,kind+' ADS clears the camera housing');model.dispose();}
  for(const {id}of RIDER_CHOICES){
-  const hero=new Hero(assets,undefined,id),weapon=new WeaponView(library),rig=new CombatRig(hero,weapon);
+  const hero=new Hero(assets,undefined,id,'kimodo'),weapon=new WeaponView(library),rig=new CombatRig(hero,weapon);
   const state=initialCombat();state.holster={stowed:true,from:0,to:0,start:0,end:0};
   // Verify actual hand transforms through both directions of the authored take.
   for(const reverse of [false,true])for(const footMode of [0,2]){
