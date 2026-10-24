@@ -23,16 +23,17 @@ export class CombatRig {
   private repairProp:HeldRepairPack;private repairPack:T.Group;
   private backRest=new T.Quaternion();
   constructor(readonly hero:Hero,readonly weapon:WeaponView,private readonly firstPerson=false){this.repairProp=weapon.createHeldRepair();this.repairPack=this.repairProp.root;hero.root.add(this.repairPack);(hero.chest??hero.rider).getWorldQuaternion(this.backRest).invert();}
-  private gripOffset(left:boolean){const wide=this.weapon.kind==='bass';return new T.Vector3(left?(wide?.22:.13):wide?-.20:-.11,-.035,left?-.035:-.085).multiplyScalar(this.hero.motionScale).applyQuaternion(this.weapon.root.quaternion);}
+  private gripOffset(left:boolean){const wide=this.weapon.kind==='bass';return new T.Vector3(left?(wide?.26:.19):wide?-.25:-.18,-.035,left?-.035:-.085).multiplyScalar(this.hero.motionScale).applyQuaternion(this.weapon.root.quaternion);}
   private handRotation(index:number,weaponRotation:T.Quaternion){
     const limb=this.hero.arms[index],rotation=limb.rotation.clone();
     if(this.firstPerson){
       const finger=limb.foot.getObjectByName((index===0?'Left':'Right')+'HandMiddle1');
-      // Imported idle palms point down. A wrist at the grip with that idle
-      // orientation folds the fingers back inside the sleeve. Aim the palm
-      // along the handle/receiver before applying the authored finger curl.
+      // Lift the dominant palm around the handle; the support palm crosses
+      // under the receiver. Pointing both palms straight down the barrel only
+      // exposes the ends of the knuckles and reads as two empty sleeve tubes.
       if(finger){const palm=finger.position.clone().normalize().applyQuaternion(rotation);
-        rotation.premultiply(new T.Quaternion().setFromUnitVectors(palm,new T.Vector3(0,index===0?.18:-.42,1).normalize()));}
+        const gripDirection=index===0?new T.Vector3(-.65,.40,.65):new T.Vector3(.45,.75,.35);
+        rotation.premultiply(new T.Quaternion().setFromUnitVectors(palm,gripDirection.normalize()));}
     }
     return rotation.premultiply(weaponRotation);
   }

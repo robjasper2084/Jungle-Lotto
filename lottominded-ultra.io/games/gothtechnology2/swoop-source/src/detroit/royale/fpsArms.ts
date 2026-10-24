@@ -21,10 +21,12 @@ export class FpsArms {
   hero.visibility.setFirstPerson(true);
   hero.rider.traverse(o=>{
    if(!(o instanceof T.Mesh))return;o.frustumCulled=false;
-   if(this.texture){
+   {
     const glove=(material:T.Material)=>{
      if(!(material instanceof T.MeshStandardMaterial)||!/glove/i.test(material.name))return material;
-     let copy=this.gloveMaterials.get(material);if(!copy){copy=material.clone();copy.map=this.texture!;copy.color.set('#a7b4b4');copy.roughness=.82;copy.metalness=0;this.gloveMaterials.set(material,copy);}return copy;
+     // Sleeve fabric is nearly black and hides the authored finger contours.
+     // Keep the glove leather separate, including before textures finish loading.
+     let copy=this.gloveMaterials.get(material);if(!copy){copy=material.clone();copy.map=null;copy.color.set('#788681');copy.roughness=.72;copy.metalness=0;this.gloveMaterials.set(material,copy);}return copy;
     };o.material=Array.isArray(o.material)?o.material.map(glove):glove(o.material);
    }
    for(const material of Array.isArray(o.material)?o.material:[o.material])if(material instanceof T.MeshStandardMaterial&&/garment|nylon|suit|hoodie/i.test(material.name))sleeveColor=material.color.clone();

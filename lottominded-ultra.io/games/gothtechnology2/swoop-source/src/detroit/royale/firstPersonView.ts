@@ -55,7 +55,7 @@ export class FirstPersonView {
   // Smaller presentation scale clears the lower corners without changing hitboxes or muzzle authority.
   // Magnify the world, not the hands. Counter the scope's projection in this
   // view-only rig and keep the held camera below the optical sight line.
-  const opticRatio=scoped?Math.tan(T.MathUtils.degToRad((camera as T.PerspectiveCamera).fov/2))/Math.tan(T.MathUtils.degToRad(76/2)):1;
+  const opticRatio=Math.tan(T.MathUtils.degToRad((camera as T.PerspectiveCamera).fov/2))/Math.tan(T.MathUtils.degToRad(76/2));
   const angularScale=scoped?.72:1;
   const wide=T.MathUtils.clamp((((camera as T.PerspectiveCamera).aspect??1)-.45)/.85,0,1),viewScale=(.64+.10*wide)*angularScale;
   const target=position.clone().addScaledVector(f,(.80+.01*m.aim-.11*blocked-.045*m.kick)*scale).addScaledVector(right,((1-m.aim)*.20*(.5+.5*wide)+m.run*.07+this.sway.x)*scale)
@@ -74,7 +74,7 @@ export class FirstPersonView {
   if(!healing)this.root.position.addScaledVector(up,-.72*(1-ready)*scale);
   if((ready<=0&&!healing)||p.footMode===3)this.root.visible=false;
   this.root.updateMatrixWorld(true);
-  if(scoped){
+  if(Math.abs(opticRatio-1)>.0001){
    // Compress only the view-plane axes. Uniform scaling changes perspective
    // and lets sleeves occlude fingers at 4x/8x. Keep depth and grip alignment.
    this.root.matrixAutoUpdate=false;
