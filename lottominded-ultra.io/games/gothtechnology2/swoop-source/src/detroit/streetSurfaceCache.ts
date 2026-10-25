@@ -6,9 +6,9 @@ export type StreetCache={version?:number;encoding?:string;revision:string;sectio
  * removes repeated polygon clipping at startup without reducing road detail. */
 export async function loadStreetSurfaceCache():Promise<StreetCache|null>{
  if(typeof document==='undefined')return null;
- try{let name='street-surfaces-indexed',response=await fetch('/exports/street-life/'+name+'.json');if(response.status===404){name='street-surfaces';response=await fetch('/exports/street-life/'+name+'.json');}if(!response.ok)return null;const meta=await response.json() as Omit<StreetCache,'positions'>;
+ try{let dataUrl='/exports/street-life/street-surfaces-indexed.bin.gz',response=await fetch('/exports/street-life/street-surfaces-indexed.json');if(response.status===404){dataUrl='/exports/street-life/street-surfaces.bin.gz';response=await fetch('/exports/street-life/street-surfaces.json');}if(!response.ok)return null;const meta=await response.json() as Omit<StreetCache,'positions'>;
   if(meta.revision!==STREET_CACHE_REVISION||!Number.isSafeInteger(meta.values)||meta.values>40_000_000||!Array.isArray(meta.tiles))return null;
-   const data=await fetch('/exports/street-life/'+name+'.bin.gz');if(!data.ok)return null;
+   const data=await fetch(dataUrl);if(!data.ok)return null;
   // Native streaming inflation keeps the large street mesh off the JS thread.
    const raw=typeof DecompressionStream!=='undefined'&&data.body?new Uint8Array(await new Response(data.body.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer()):gunzipSync(new Uint8Array(await data.arrayBuffer()));
    if(meta.version===2){
