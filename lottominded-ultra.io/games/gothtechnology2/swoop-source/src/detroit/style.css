@@ -155,3 +155,10 @@ body.playing #ridingOptions.expanded{left:50%;right:auto;transform:translateX(-5
 body.playing #ridingOptions.expanded>:is(select,p,label){grid-column:1/-1}
 body.playing #ridingOptions.expanded button{min-height:44px}
 body:has(#ridingOptions.expanded) .community-panel{visibility:hidden}
+
+/* Keep the map above the landscape hop/trick controls. */
+@media(max-height:540px) and (orientation:landscape){
+ body.playing .tactical-minimap:not(.royale-map) .tactical-map-open{height:58px;min-height:58px;overflow:hidden}
+ body.playing .tactical-minimap:not(.royale-map) .tactical-map-open canvas{height:58px;width:100%;object-fit:cover}
+ body.playing .tactical-minimap:not(.royale-map) .mini-map-legend,body.playing .tactical-minimap:not(.royale-map) .mini-map-zoom{display:none}
+}

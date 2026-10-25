@@ -21,6 +21,7 @@ import {WEAPONS,type Weapon} from './combatProfiles.ts';
 import {wheelProfile} from './wheelProfiles.ts';
 import {tacticalDestination,leadTarget} from './botTactics.ts';
 import {botWheelRecovery,recoverBotWheel} from './botWheelRecovery.ts';
+import {playerHitBot,playerCollidesWithBot} from './botKnockoff.ts';
 import {traceBallistic} from './ballisticSweep.ts';
 import {stanceBounds} from './stanceVolume.ts';
 import {initialSpawnNodes,recoveryNodes,spawnLabel,type SpawnNode} from './spawnNodes.ts';
@@ -153,7 +154,7 @@ export class RoyaleMatch{
  if(a.dogPower.charges&&visible){c.dogAttack=this.tick>=a.dogPower.ready;c.dogRadar=this.tick>=a.dogPower.radarReady;}return c;
  }
  step(){if(this.phase==='lobby'||this.phase==='results')return;if(this.kernel){this.stepEngine();this.recordRound();this.recordReplay();return;}this.tick++;if(this.tick>=PROTECTION)this.phase='active';
- const damage:{target:Actor;amount:number;owner?:Actor;bypass?:boolean}[]=[];
+ const damage:{target:Actor;amount:number;owner?:Actor;bypass?:boolean}[]=[],previousPoses=this.actors.map(a=>({...a.pose}));
  for(const a of this.actors){if(!a.alive)continue;
   if(!a.connected&&a.disconnectTick>=0&&this.tick-a.disconnectTick>=1200){damage.push({target:a,amount:999,bypass:true});continue;}
   let c=a.bot?this.botInput(a):a.queue.shift();if(c){a.input=c;a.ack=c.seq;}else c={...a.input,hop:false,utility:false,repair:false,recover:false,swap:false,reload:false,cycleMode:false,holster:false,brawl:false,light:false,heavy:false,evade:0,vault:false,smoke:false,dismount:false,dogAttack:false,dogRadar:false};
@@ -187,6 +188,7 @@ export class RoyaleMatch{
    item.available=false;this.events.push({tick:this.tick,kind:'pickup',actor:a.id});
   }
  }
+ this.playerContacts(previousPoses);
  for(const shot of this.projectiles){if(shot.expires<this.tick)continue;const spec=WEAPONS[shot.weapon],d={x:shot.v.x*DT,y:shot.v.y*DT,z:shot.v.z*DT},wall=this.terrain.sweep(shot.p,d,spec.radius);let first=wall??1.001,target:Actor|undefined;
   for(const a of this.actors){if(!a.alive||a.id===shot.owner)continue;const t=targetHit(shot.p,d,a,spec.radius);if(t!==null&&t<first){first=t;target=a;}}
   if(first<=1){shot.expires=-1;if(!target)this.surfaceImpact(shot,shot.p,d);if(target){
@@ -199,11 +201,24 @@ export class RoyaleMatch{
  if(this.tick%120===0){const active=new Set(this.projectiles.map(p=>p.owner+':'+p.shot+':'));for(const key of this.awarded.keys())if(![...active].some(prefix=>key.startsWith(prefix)))this.awarded.delete(key);}
  for(const hit of damage){const a=hit.target;a.lastDamage=this.tick;a.repairUntil=0;const shield=hit.bypass?0:Math.min(a.shield,hit.amount);a.shield-=shield;const injury=Math.min(a.integrity,hit.amount-shield);a.integrity=Math.max(0,a.integrity-injury);if(hit.owner){hit.owner.damage+=shield+injury;hit.owner.hits++;this.events.push({tick:this.tick,kind:'hit',actor:hit.owner.id,target:a.id});}}
  for(const a of this.actors)if(a.alive&&a.integrity<=0){a.alive=false;a.eliminatedAt=this.tick;const owner=damage.filter(d=>d.target===a&&d.owner).at(-1)?.owner;if(owner)owner.kills++;this.events.push({tick:this.tick,kind:'eliminated',actor:a.id});}
+ this.playerAttackKnockoffs(this.events);
  this.recordEliminations(this.events.filter(e=>e.tick===this.tick));
  if(this.phase==='active'){const live=this.actors.filter(a=>a.alive);if(live.length<=1&&(this.actors.length>1||!live.length))this.finish(live[0]?.id??null,live.length?'Last rider standing':'Simultaneous elimination');
  else if(this.tick>=PROTECTION+DEADLINE){for(const a of live){a.integrity=0;a.alive=false;a.eliminatedAt=this.tick;}this.finish(null,'Static Field deadline');}}
  this.collectScopes();
  if(this.events.length>32)this.events.splice(0,this.events.length-32);this.recordReplay();
+ }
+ private playerContacts(previous:RidePose[]){
+  const changed:number[]=[];if(this.phase!=='active')return changed;
+  for(const [i,player]of this.actors.entries())for(const [j,bot]of this.actors.entries()){
+   if(playerCollidesWithBot(player,bot,previous[i],previous[j],this.terrain,DT)&&playerHitBot(player,bot,this.tick,{speed:Math.hypot(player.pose.x-previous[i].x,player.pose.z-previous[i].z)/DT,vx:(player.pose.x-previous[i].x)/DT,vz:(player.pose.z-previous[i].z)/DT})){changed.push(j);this.events.push({tick:this.tick,kind:'player-knockoff',actor:player.id,target:bot.id});}
+  }
+  return changed;
+ }
+ private playerAttackKnockoffs(events:readonly {tick:number;kind:string;actor:string;target?:string}[]){
+  for(const event of events)if(event.tick===this.tick&&(event.kind==='hit'||event.kind==='melee-hit')){
+   playerHitBot(this.actors.find(a=>a.id===event.actor),this.actors.find(a=>a.id===event.target),this.tick);
+  }
  }
  private surfaceImpact(shot:Projectile,start:Vec3,delta:Vec3,floor=false){
   const length=Math.hypot(delta.x,delta.y,delta.z);if(length<1e-8)return;
@@ -274,6 +289,7 @@ export class RoyaleMatch{
    }
    this.tacticalInput(a,c);const previous=a.pose;move(a,c,this.tick);a.pose={...a.controller.poseValue};a.distance+=Math.hypot(a.pose.x-previous.x,a.pose.z-previous.z);k.pose(slot,a);
   }
+  for(const i of this.playerContacts(previousPoses))k.pose(i,this.actors[i]);
   k.rules();
   if(this.tick%3===0)for(const [owner,a]of this.actors.entries()){a.dogPower=k.power(owner);const target=advanceBattleDog(a.dog,a,a.dogPower,this.actors,this.terrain,this.tick);if(target){const index=this.actors.findIndex(r=>r.id===target);if(k.core.call("dog_contact",owner,index,a.dog.x,a.dog.y,a.dog.z)===1){const victim=this.actors[index];victim.controller.knockOff();victim.pose={...victim.controller.poseValue};a.dog.mode="pounce";}}}
   for(const [owner,a]of this.actors.entries()){
@@ -291,7 +307,7 @@ export class RoyaleMatch{
 
   }
   k.finish();k.sync(this.actors,this.loot);this.phase=k.phase;this.winner=k.winner<0?null:this.actors[k.winner].id;this.reason=k.reason;
-  this.projectiles=k.projectiles(this.actors);const confirmedEvents=k.events(this.actors);this.recordEliminations(confirmedEvents);this.events.push(...confirmedEvents);this.collectScopes();if(this.events.length>32)this.events.splice(0,this.events.length-32);
+  this.projectiles=k.projectiles(this.actors);const confirmedEvents=k.events(this.actors);this.playerAttackKnockoffs(confirmedEvents);this.recordEliminations(confirmedEvents);this.events.push(...confirmedEvents);this.collectScopes();if(this.events.length>32)this.events.splice(0,this.events.length-32);
   if(this.phase==='results')for(const a of this.actors){a.queue=[];a.input=neutral(this.round);}
  }
  /** Attachment collection runs on the same authoritative host as collision and the C++ match.

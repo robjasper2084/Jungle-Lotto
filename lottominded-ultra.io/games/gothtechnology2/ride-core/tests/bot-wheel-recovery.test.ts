@@ -7,6 +7,7 @@ import {RoyaleMatch,PROTECTION,neutral} from '../src/royale/rules.ts';
 import {botWheelRecovery,recoverBotWheel} from '../src/royale/botWheelRecovery.ts';
 import {WHEEL_PICKUP_TOTAL} from '../src/wheelPickupTiming.ts';
 import {RideController,NEUTRAL_ACTIONS} from '../src/controller.ts';
+import {playerHitBot,playerCollidesWithBot} from '../src/royale/botKnockoff.ts';
 await initializeEngine(await readFile(new URL('../src/engine/breadflower.wasm',import.meta.url)));
 const terrain=await ArenaTerrain.create();
 function setup(engine=true){
@@ -27,7 +28,7 @@ for(const engine of [false,true])test(`knocked-off AI picks up and remounts prom
   if(a.pose.footMode){assert.deepEqual([a.pose.parkX,a.pose.parkY,a.pose.parkZ],parked);assert(!a.input.fire&&!a.input.reload,'AI combat must not cancel pickup');}
   if(!a.pose.footMode){mountedAt=m.tick;break;}
  }
- assert(pickupAt&&mountedAt);assert(mountedAt-start<75,'nearby wheel recovered immediately, in under 1.25 seconds');
+ assert(pickupAt&&mountedAt);assert(mountedAt-start>=120&&mountedAt-start<216,'full fall and get-up play before the prompt pickup, within 3.6 seconds');
  assert(mountedAt-pickupAt>=Math.floor(WHEEL_PICKUP_TOTAL*60/2.6)-2,'all pickup/remount phases retained at AI pace');
  const human=m.actors[0];human.controller.reset({position:{x:0,y:0,z:20},headingY:0});human.pose={...human.controller.poseValue};
  for(let i=0;i<300;i++){m.step();assert.equal(a.input.dismount,false,'do not immediately dismount again to engage a nearby enemy');}
@@ -55,11 +56,58 @@ test('voluntary dismount is not mistaken for a knock-off',()=>{
  assert.equal(recoverBotWheel(a,c,botWheelRecovery(),terrain,m.tick),false);m.dispose();
 });
 
-test('high-speed AI building impact knocks off and keeps the wheel outside solid geometry',()=>{
+test('even a high-speed AI building impact stops mounted outside solid geometry',()=>{
  const rider=new RideController(terrain,{spawn:{position:{x:75,y:0,z:15},headingY:0}});rider.combatOnFoot=true;
- let fell=false;
- for(let i=0;i<1200;i++){rider.step(1/120,{...NEUTRAL_ACTIONS,throttle:1,quickMount:true,stableAI:true});if(rider.poseValue.footMode===2){fell=true;break;}}
- assert(fell,'a direct building impact must visibly knock off the AI');assert(rider.poseValue.parkZ<53,'wheel remains outside the building');
+ for(let i=0;i<1200;i++){rider.step(1/120,{...NEUTRAL_ACTIONS,throttle:1,quickMount:true,stableAI:true});assert.equal(rider.poseValue.footMode,0);assert(!rider.crashed);}
+ assert(rider.poseValue.z<53,'wheel remains outside the building');
+});
+
+test('the player still falls from a high-speed building impact',()=>{
+ const rider=new RideController(terrain,{spawn:{position:{x:75,y:0,z:15},headingY:0}});rider.combatOnFoot=true;
+ for(let i=0;i<1200&&!rider.poseValue.footMode;i++)rider.step(1/120,{...NEUTRAL_ACTIONS,throttle:1});
+ assert.equal(rider.poseValue.footMode,2);
+});
+
+for(const engine of [false,true])test(`a confirmed player shot knocks a living bot off (engine=${engine})`,()=>{
+ const m=setup(engine),[human,bot]=m.actors;
+ human.controller.reset({position:{x:0,y:0,z:0},headingY:0});human.pose={...human.controller.poseValue};
+ bot.controller.reset({position:{x:0,y:0,z:7},headingY:0});bot.pose={...bot.controller.poseValue};
+ assert(m.command(human.id,{...neutral(m.round,human.lastSeq+1,m.tick),fire:true,shot:1}));
+ for(let i=0;i<5;i++)m.step();
+ assert(human.hits>0);assert(bot.alive);assert.equal(bot.pose.footMode,2);assert(bot.pose.footStagger>0);m.dispose();
+});
+
+test('only a player hit knocks off bots; protection and an existing recovery are respected',()=>{
+ const m=setup(),[human,bot]=m.actors;
+ assert.equal(playerHitBot({...human,bot:true},bot,m.tick),false);
+ bot.protectedUntil=m.tick+1;assert.equal(playerHitBot(human,bot,m.tick),false);bot.protectedUntil=0;
+ assert(playerHitBot(human,bot,m.tick));const after={...bot.pose};
+ assert.equal(playerHitBot(human,bot,m.tick),false);assert.deepEqual(bot.pose,after);m.dispose();
+});
+
+test('swept player impacts catch fast crossings, but reject scenery, brushes and separate floors',()=>{
+ const m=setup(),[human,bot]=m.actors;
+ human.pose={...human.pose,x:0,y:0,z:1};bot.pose={...bot.pose,x:0,y:0,z:0};
+ const before={...human.pose,z:-1},botBefore={...bot.pose};
+ assert(playerCollidesWithBot(human,bot,before,botBefore,terrain,1/60));
+ assert(!playerCollidesWithBot({...human,bot:true},bot,before,botBefore,terrain,1/60));
+ assert(!playerCollidesWithBot(human,bot,{...before,z:.99},botBefore,terrain,1/60));
+ assert(!playerCollidesWithBot({...human,pose:{...human.pose,y:3}},bot,{...before,y:3},botBefore,terrain,1/60));
+ assert(!playerCollidesWithBot(human,bot,before,botBefore,{...terrain,line:()=>false} as unknown as ArenaTerrain,1/60));
+ m.dispose();
+});
+
+for(const engine of [false,true])test(`the match applies a player wheel impact and the bot recovers (engine=${engine})`,()=>{
+ const m=setup(engine),[human,bot]=m.actors;
+ human.controller.reset({position:{x:0,y:0,z:0},headingY:0});human.pose={...human.controller.poseValue};
+ bot.controller.reset({position:{x:0,y:0,z:4},headingY:0});bot.pose={...bot.controller.poseValue};
+ let hit=false;
+ for(let i=0;i<180&&!hit;i++){
+  assert(m.command(human.id,{...neutral(m.round,human.lastSeq+1,m.tick),throttle:1}));m.step();
+  hit=m.events.some(e=>e.kind==='player-knockoff'&&e.actor===human.id&&e.target===bot.id);
+ }
+ assert(hit,'host must turn a real player impact into a bot knock-off');assert.equal(bot.pose.footMode,2);
+ m.release(human.id);for(let i=0;i<360;i++)m.step();assert.equal(bot.pose.footMode,0);m.dispose();
 });
 test('ordinary AI wall contact stops safely without a knock-off',()=>{
  const rider=new RideController(terrain,{spawn:{position:{x:75,y:0,z:50},headingY:0}});rider.combatOnFoot=true;

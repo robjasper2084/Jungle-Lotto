@@ -1,3 +1,4 @@
+import {textureDownloadUrl} from './textureDownloadUrl.ts';
 import {makeRenderResize} from './renderResize.ts';
 import * as T from 'three';
 import {installShadowBudget} from '../../../ride-core/src/shadowBudget.ts';
@@ -38,6 +39,7 @@ export function startupTextureBudget(){
  const preset=GRAPHICS_PRESETS[resolveGraphics(choice,4,undefined,mobile)];return {mobile,maxSize:tuning.textureSize??preset.textureSize};
 }
 export function createGraphicsQuality(renderer:T.WebGLRenderer,scene:T.Scene,canvas:HTMLCanvasElement,onApply?:()=>void){
+ T.DefaultLoadingManager.setURLModifier(url=>textureDownloadUrl(new URL(url,location.href).href,startupTextureBudget().maxSize,location.href));
  installShadowBudget(renderer,scene,canvas);
  let choice:GraphicsChoice='auto';try{const saved=localStorage.getItem('swoop-graphics-quality');if(['auto','low','balanced','high','ultra'].includes(saved??''))choice=saved as GraphicsChoice;}catch{}
  let tuning:Partial<GraphicsTuning>={};try{tuning=savedGraphicsTuning(choice,localStorage.getItem(TUNING_KEY));}catch{}

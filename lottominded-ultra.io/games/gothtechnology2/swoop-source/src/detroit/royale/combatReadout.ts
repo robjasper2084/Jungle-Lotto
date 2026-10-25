@@ -1,8 +1,10 @@
 import type {CombatState,Weapon} from '../../../../ride-core/src/royale/rules.ts';
 import {WEAPONS} from '../../../../ride-core/src/royale/combatProfiles.ts';
+import {reloadPose} from './fpsMotion.ts';
 export function reloadReadout(c:CombatState,tick:number){
- if(c.reloadStart<0)return null;
- return{progress:Math.max(0,Math.min(1,(tick-c.reloadStart)/Math.max(1,c.reloadEnd-c.reloadStart))),remaining:Math.max(0,(c.reloadEnd-tick)/60),stage:tick<c.reloadCommit?'Loading magazine':'Readying weapon'};
+ const motion=reloadPose(c,tick);if(!motion.active)return null;
+ const stage=motion.phase==='release'?'Releasing magazine':motion.phase==='replace'?'Replacing magazine':motion.phase==='insert'?'Seating magazine':'Readying weapon';
+ return{progress:Math.max(0,Math.min(1,(tick-c.reloadStart)/Math.max(1,c.reloadEnd-c.reloadStart))),remaining:Math.max(0,(c.reloadEnd-tick)/60),stage};
 }
 /** Compact status text and a steady progress meter work with reduced motion. */
 export class CombatReadout{

@@ -1,4 +1,5 @@
 import {Quaternion,type Object3D,type AnimationClip} from 'three';
+import {templateFinger} from './templateActions.ts';
 export type HandPose='Relaxed'|'WeaponGrip'|'SupportGrip'|'MeleeFist'|'ReloadRelease';
 /** Play only finger rotations from the Blender-authored additive hand clips.
  * Body/arm IK owns every other joint, so holding a gun never freezes footwork. */
@@ -12,6 +13,15 @@ export class FingerPose {
   });
  }
  get jointCount(){return this.joints.length;}
+ /** Retarget the template's grip muscles to each glove's authored curl axis. */
+ applyTemplateGrip(){
+  for(const j of this.joints){if(j.side!=='Right'||!j.poses.WeaponGrip)continue;
+   const match=/Hand(Index|Middle|Ring|Pinky|Thumb)([123])$/.exec(j.bone.name);if(!match)continue;
+   const stretch=templateFinger(match[1],Number(match[2]));
+   const curl=Math.max(.25,Math.min(1.15,(1-stretch)*.68));
+   j.bone.quaternion.copy(j.poses.Relaxed??j.rest).slerp(j.poses.WeaponGrip,curl);
+  }
+ }
  apply(left:HandPose='Relaxed',right:HandPose=left,release=0){
   for(const j of this.joints){const pose=j.side==='Left'?left:right;j.bone.quaternion.copy(j.poses[pose]??j.rest);
    if(j.side==='Left'&&release>0&&j.poses.ReloadRelease)j.bone.quaternion.slerp(j.poses.ReloadRelease,Math.max(0,Math.min(1,release)));

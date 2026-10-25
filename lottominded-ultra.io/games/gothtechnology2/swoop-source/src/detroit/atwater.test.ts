@@ -13,7 +13,7 @@ test('default start is on mapped Atwater facing the georeferenced skyline',()=>{
 });
 test('forward fall braces before the shoulder rolls onto the ground',()=>{
  const p=createPose();p.speed=9;const fall=new FallMotion(p,'collision');fall.sample(fall.contactTime-.05,p);assert.ok(Math.abs(p.crashRoll)<.2);assert.ok(p.crashReach>.5);
- fall.sample(fall.contactTime+.8,p);assert.ok(Math.abs(p.crashRoll)>1.2);
+ fall.sample(fall.contactTime+.8,p);assert.equal(p.crashContact,1);assert.ok(Math.abs(p.crashRoll)>.25&&Math.abs(p.crashRoll)<.6,'grounded forward capture rolls onto the shoulder without the old procedural corkscrew');
 });
 
 test('Ze Mound is at the mapped west-harbor pin with visible collision terrain',()=>{

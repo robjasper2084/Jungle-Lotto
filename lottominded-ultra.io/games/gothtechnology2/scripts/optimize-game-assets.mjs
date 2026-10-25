@@ -1,3 +1,4 @@
+import {textureDownloadVariants} from './texture-download-variants.mjs';
 import {resolve,dirname,basename} from 'node:path';
 import {readdir,writeFile} from 'node:fs/promises';
 import {shareRideTextures} from '../../../../scripts/share-ride-textures.mjs';
@@ -13,6 +14,7 @@ export async function optimizeGameAssets(directory){
  const sharing=await shareRideTextures('',options);
  const textures=await losslessRidingTextures('',options);
  const geometry=await compressRideModels('',options);
+  if(basename(directory)==='swoop-detroit')await textureDownloadVariants(directory);
  const models=[];
  async function walk(dir,prefix=''){for(const e of await readdir(dir,{withFileTypes:true})){if(e.isSymbolicLink())throw Error('Unexpected symlink in game package');const path=prefix+e.name;if(e.isDirectory())await walk(resolve(dir,e.name),path+'/');else if(e.name.endsWith('.glb'))models.push(path);}}
  await walk(directory);await modelDependencies(directory,models);

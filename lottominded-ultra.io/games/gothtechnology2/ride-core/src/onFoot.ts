@@ -3,6 +3,7 @@ import {createGroundSample,type TerrainSampler} from './terrain.ts';
 import {footCycleDistance} from './onFootGait.ts';
 import {wheelPickupTiming,WHEEL_PICKUP_TOTAL} from './wheelPickupTiming.ts';
 import {msjLocomotionState,resetMsjLocomotion,stepMsjLocomotion} from './msjLocomotion.ts';
+import {stepPronePhase,proneTravelWeight} from './kimodoProneTiming.ts';
 
 export const FOOT_SPEED={walk:2.35,run:5.4,reverse:2.05,reverseRun:3.8} as const;
 export const footFields=()=>({footEvade:0,footEvadeDir:0,footVault:0,footMode:0,footBlend:0,footPhase:0,footCycle:0,footTime:0,footMountTime:0,footJump:0,footCrouch:0,footProne:0,footStagger:0,footLean:0,parkX:0,parkY:0,parkZ:0,parkHeading:0});
@@ -114,9 +115,9 @@ export function stepOnFoot(s:ReturnType<typeof footState>,p:FootPose,t:TerrainSa
  p.footVault=0;
  const beforeX=p.x,beforeZ=p.z,run=!!a.run,demand=clamp(Number.isFinite(a.throttle)?a.throttle:0,-1,1);
  const groundedAtStart=p.airHeight<.02&&s.vy<=0&&s.vy>-.5&&p.footJump!==1&&p.footJump!==2;
- let prone=!!a.prone&&!jump,crouch=!!a.crouch&&!prone&&!jump;
+ let prone=!!a.prone&&!jump&&(groundedAtStart||p.footProne>.01),crouch=!!a.crouch&&!prone&&!jump;
  if(!prone&&!crouch&&(p.footProne>.1||p.footCrouch>.1)&&t.raycastObstacle({x:p.x,y:p.y+.30,z:p.z},{x:0,y:1,z:0},1.4,.27)!==null){prone=p.footProne>.1;crouch=!prone;}
- p.footProne+=((prone?1:0)-p.footProne)*(1-Math.exp(-8*dt));p.footCrouch+=((crouch?1:0)-p.footCrouch)*(1-Math.exp(-10*dt));
+ p.footProne=stepPronePhase(p.footProne,prone,dt);p.footCrouch+=((crouch?1:0)-p.footCrouch)*(1-Math.exp(-10*dt));
  // A visual peek never moves the controller capsule. Limit its extent against
  // nearby walls, and release it during a jump, prone stance, or fast sprint.
  let lean=prone||jump||p.airHeight>.02?0:clamp(Number.isFinite(a.lean)?a.lean!:0,-1,1)*clamp((3.5-Math.abs(p.speed))/1.5,0,1);
@@ -134,12 +135,12 @@ export function stepOnFoot(s:ReturnType<typeof footState>,p:FootPose,t:TerrainSa
  else{s.turn+=(clamp(Number.isFinite(a.steer)?a.steer:0,-1,1)*2.7-s.turn)*(1-Math.exp(-16*dt));p.headingY-=s.turn*dt;}
  const limit=prone||p.footProne>.3?(demand<0?.55:.75):crouch||p.footCrouch>.3?(demand<0?1.1:1.4):demand<0?(run?FOOT_SPEED.reverseRun:FOOT_SPEED.reverse):(run?FOOT_SPEED.run:FOOT_SPEED.walk);
  const drive=fps?Math.min(1,magnitude)*(demand<0?-1:1):demand;
- const movementLimit=limit*(s.stagger>0?.25:1),target=drive*movementLimit;
+ const movementLimit=limit*(s.stagger>0?.25:1)*proneTravelWeight(p.footProne),target=drive*movementLimit;
  const forward=fps&&magnitude?Math.abs(target)*demand/magnitude:fps?0:target,lateral=fps&&magnitude?Math.abs(target)*strafe/magnitude:0;
  const sin=Math.sin(p.headingY),cos=Math.cos(p.headingY);
  // Changing walk/run intent eases velocity too. Only a low stance or stagger
  // needs an immediate speed cap; clamping to walk speed caused a stop-like jerk.
- const velocityLimit=prone||p.footProne>.3||crouch||p.footCrouch>.3||s.stagger>0?movementLimit:FOOT_SPEED.run;
+ const velocityLimit=prone||p.footProne>0||crouch||p.footCrouch>.3||s.stagger>0?movementLimit:FOOT_SPEED.run;
  stepMsjLocomotion(s,dt,sin*forward+cos*lateral,cos*forward-sin*lateral,velocityLimit);
  const along=s.msjVelocityX*sin+s.msjVelocityZ*cos;
  if(s.legacyLocomotion){

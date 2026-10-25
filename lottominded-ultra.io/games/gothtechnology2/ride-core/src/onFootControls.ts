@@ -6,7 +6,7 @@ export class FootControls{
  crouch=false;lean=0;private active=false;private leanKeys=new Set<string>();
  readonly duck=document.createElement('button');readonly left=document.createElement('button');readonly right=document.createElement('button');
  constructor(private options:{tactical?:boolean}={}){
-  this.root.className='on-foot-controls';this.root.hidden=true;
+  this.root.className='on-foot-controls';if(options.tactical)this.root.classList.add('tactical-foot-controls');this.root.hidden=true;
   this.root.style.cssText='position:fixed;left:max(12px,env(safe-area-inset-left));top:43%;z-index:65;max-width:170px;display:flex;flex-direction:column;gap:5px;color:white;text-shadow:0 1px 3px black';
   const style=document.createElement('style');style.textContent='.on-foot-controls[hidden]{display:none!important}.on-foot-controls button{min-height:44px;padding:8px 12px;border:1px solid #9dbdb3;border-radius:12px;background:#122d29e8;color:white;font:600 12px system-ui;touch-action:manipulation}.on-foot-controls small{font:11px system-ui;background:#122d29d9;border-radius:6px;padding:5px}';document.head.append(style);
   this.mount.type=this.sprint.type='button';this.mount.title='Get off / get on wheel · J';this.mount.onclick=()=>{this.pending=true;this.mount.blur();};this.sprint.onclick=()=>{this.run=!this.run;this.sprint.setAttribute('aria-pressed',String(this.run));this.sprint.blur();};
@@ -19,6 +19,18 @@ export class FootControls{
    this.left.onclick=()=>{this.lean=this.lean===-1?0:-1;this.left.blur();};
    this.right.onclick=()=>{this.lean=this.lean===1?0:1;this.right.blur();};
    this.root.insertBefore(this.duck,this.note);this.root.insertBefore(this.left,this.note);this.root.insertBefore(this.right,this.note);
+    const toggle=document.createElement('button');toggle.type='button';toggle.textContent='Movement';toggle.className='foot-more';toggle.setAttribute('aria-expanded','false');this.root.insertBefore(toggle,this.sprint);
+    this.root.dataset.expanded='false';toggle.onclick=()=>{const open=this.root.dataset.expanded!=='true';this.root.dataset.expanded=String(open);toggle.setAttribute('aria-expanded',String(open));toggle.textContent=open?'Close movement':'Movement';toggle.blur();};
+    const compact=document.createElement('style');compact.textContent=`
+    .tactical-foot-controls .foot-more{display:none}
+    @media(max-width:700px),(max-height:500px){
+     .tactical-foot-controls{top:200px!important;max-height:calc(100vh - 340px)!important;width:148px;max-width:calc(50vw - 24px)!important}
+     .tactical-foot-controls .foot-more{display:block}
+     .tactical-foot-controls[data-expanded=false]>:not(:first-child):not(.foot-more){display:none!important}
+     body:has(.tactical-foot-controls[data-expanded=true]) .community-panel{visibility:hidden}
+    }
+    @media(max-height:500px){.tactical-foot-controls{top:68px!important;left:156px!important;max-height:calc(100vh - 140px)!important}}
+    `;document.head.append(compact);
    addEventListener('keydown',e=>{
     if(!this.active||e.repeat||(e.target as HTMLElement)?.matches('input,textarea,select,button,[contenteditable]'))return;
     if(e.code==='KeyZ'){e.preventDefault();this.crouch=!this.crouch;}

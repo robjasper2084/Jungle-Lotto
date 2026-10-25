@@ -15,9 +15,8 @@ test('fitted FPS sleeves keep every rider finger rig and leave shared assets unt
   let visible=0;hero.rider.traverse(o=>{if(o instanceof T.SkinnedMesh&&o.visible)visible+=o.geometry.index!.count;});
   assert(visible>600,id+' must retain animated hand geometry');assert.equal(hero.fingers.jointCount,30);
   const camera=new T.PerspectiveCamera();camera.position.set(2,1.6,-4);camera.rotation.y=1.1;camera.updateMatrixWorld(true);arms.update(camera,hero.motionScale,.8);root.updateMatrixWorld(true);
-  const cuffs=root.children.filter(o=>o.name==='First-person wrist cuff');assert.equal(cuffs.length,2);
-  for(let i=0;i<2;i++)assert(cuffs[i].getWorldPosition(new T.Vector3()).distanceTo(hero.arms[i].foot.getWorldPosition(new T.Vector3()))<.04,'cuff stays at animated wrist');
-  for(const [g,count]of original)assert.equal(g.index!.count,count,'source mesh remains whole');
+  for(const arm of hero.arms){assert(arm.knee.getWorldPosition(new T.Vector3()).distanceTo(arm.foot.getWorldPosition(new T.Vector3()))>.05,'authored forearms remain visible and have length');assert(arm.foot.getWorldPosition(new T.Vector3()).toArray().every(Number.isFinite));}
+   for(const [g,count]of original)assert.equal(g.index!.count,count,'source mesh remains whole');
   arms.dispose();hero.dispose();
  }
 });

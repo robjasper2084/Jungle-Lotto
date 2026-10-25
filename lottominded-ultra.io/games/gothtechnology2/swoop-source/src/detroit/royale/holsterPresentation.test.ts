@@ -76,8 +76,13 @@ test('all five heroes keep stowed barrels above ground through crouch/prone and 
    assert(fp.root.visible,id+' hands view is active '+footMode);
    assert(view.rigRight<.0001,id+' dominant hand stays on grip');
    assert(view.rigLeft<.065*hero.motionScale,id+' support hand stays on weapon');
-   const sleeves=fp.root.children.filter(o=>o.name==='First-person fitted sleeve');
-   assert.equal(sleeves.filter(o=>o.visible).length,2,id+' both sleeves visible');
+   // Sleeves now use the selected rider's skinned forearms. Verify visible
+   // geometry influenced by both real bones rather than removed helper tubes.
+   for(const side of ['Left','Right']){let vertices=0;fp.root.traverseVisible(o=>{
+    if(!(o instanceof T.SkinnedMesh))return;const bone=o.skeleton.bones.findIndex(b=>b.name===side+'ForeArm');if(bone<0)return;
+    const skin=o.geometry.getAttribute('skinIndex'),weights=o.geometry.getAttribute('skinWeight'),indices=o.geometry.index;if(!skin||!weights||!indices)return;
+    for(let i=0;i<indices.count;i++){const vertex=indices.getX(i);for(let k=0;k<4;k++)if(skin.getComponent(vertex,k)===bone&&weights.getComponent(vertex,k)>.2){vertices++;break;}}
+   });assert(vertices>3,id+' '+side+' authored sleeve geometry visible');}
    if(!ads)for(const side of ['Left','Right']){
     const hand=fp.root.getObjectByName(side+'Hand')!.getWorldPosition(new T.Vector3()).project(camera);
     assert(Math.abs(hand.x)<.95&&hand.y>-.92&&hand.y<.4&&hand.z<1,id+' '+side+' grip stays on screen: '+hand.toArray());

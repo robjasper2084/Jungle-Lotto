@@ -1,5 +1,6 @@
 import {evadePhase} from '../../../../ride-core/src/royale/evade.ts';
 import {reloadPose} from './fpsMotion.ts';
+import {templateLook} from '../../../../ride-core/src/templateActions.ts';
 import {applyKimodoLean,applyKimodoEvade} from '../../../../ride-core/src/onFootRider.ts';
 import {weaponReadyAmount} from '../../../../ride-core/src/royale/holster.ts';
 import {cameraDrawPose} from '../../../../ride-core/src/royale/cameraDraw.ts';
@@ -54,7 +55,8 @@ export class CombatRig {
     // Preserve Swoop's base pose and distribute the aim turn through the spine.
     // A full turn on the top joint folds the jacket/armor around a fixed waist.
     const spine=h.spine.length?h.spine:h.chest?[h.chest]:[];
-    const torsoYaw=state.melee?.brawl?0:T.MathUtils.clamp(yaw*.8,-1,1);
+    const look=templateLook(yaw,pitch);
+    const torsoYaw=state.melee?.brawl?0:((look['UpperChest Twist Left-Right']??0)*.55+(look['Spine Twist Left-Right']??0)*.3);
     for(const [index,bone] of spine.entries()){
       const turn=T.MathUtils.clamp(torsoYaw/Math.max(1,spine.length),-.4,.4);
       const world=bone.getWorldQuaternion(new T.Quaternion()).premultiply(new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),turn));
@@ -62,12 +64,24 @@ export class CombatRig {
       // received the captured full-body lean and foot planting above.
       const lean=leanProfile.profiles.CombatLeanRight;
       const axis=new T.Vector3(Math.sin(pose.headingY),0,Math.cos(pose.headingY));
+      if(!state.melee?.brawl){const amount=((look['Spine Front-Back']??0)+(look['Chest Front-Back']??0)+(look['UpperChest Front-Back']??0))*.3/Math.max(1,spine.length);world.premultiply(new T.Quaternion().setFromAxisAngle(new T.Vector3(Math.cos(pose.headingY),0,-Math.sin(pose.headingY)),-amount));}
       if(pose.footMode!==2)world.premultiply(new T.Quaternion().setFromAxisAngle(axis,T.MathUtils.clamp(state.lean,-1,1)*lean.radians*(lean.weights[index]??0)));
       bone.quaternion.copy(bone.parent!.getWorldQuaternion(new T.Quaternion()).invert().multiply(world));bone.updateWorldMatrix(false,true);
+    }
+    // The template separates head look from locomotion. Keep the chosen walk
+    // and planted legs, while the neck/head share the remaining aim elevation.
+    if(!state.melee?.brawl){
+      const right=new T.Vector3(Math.cos(pose.headingY+yaw),0,-Math.sin(pose.headingY+yaw));
+      for(const [bone,name]of [[h.neck,'Neck'],[h.head,'Head']] as const){if(!bone)continue;
+        const nod=(look[name+' Nod Down-Up']??0)*(name==='Head'?.58:.42),turn=(look[name+' Turn Left-Right']??0)*(name==='Head'?.62:.35);
+        const world=bone.getWorldQuaternion(new T.Quaternion()).premultiply(new T.Quaternion().setFromAxisAngle(right,-nod)).premultiply(new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),turn));
+        bone.quaternion.copy(bone.parent!.getWorldQuaternion(new T.Quaternion()).invert().multiply(world));bone.updateWorldMatrix(false,true);
+      }
     }
     const socket=weaponSocket(pose,h.riderId,yaw,pitch,state.aimBlend,state.lean);
     w.position.set(socket.grip.x,socket.grip.y,socket.grip.z);
     w.rotation.set(-(pitch+state.kickPitch),pose.headingY+yaw+state.kickYaw,0,'YXZ');w.scale.setScalar(scale);
+    if(!this.firstPerson){const reload=reloadPose(state,tick);if(reload.active){w.rotateX(reload.pitch);w.rotateY(reload.yaw);w.rotateZ(-reload.cant);}}
     w.updateWorldMatrix(true,true);
     const healing=healingUntil>tick,pickupAge=(tick-this.pickupTick)/60;
     const gestureActive=healing||(pickupAge>=0&&pickupAge<.65&&state.reloadStart<0);
@@ -92,8 +106,8 @@ export class CombatRig {
     // The old fixed signs pulled both elbows inward through the torso.
     const outside=h.arms[0].upper.getWorldPosition(new T.Vector3()).sub(h.arms[1].upper.getWorldPosition(new T.Vector3()));outside.y=0;outside.normalize();
     const elbowPole=(side:number)=>outside.clone().multiplyScalar(side*.7).add(new T.Vector3(0,-.65,0)).add(new T.Vector3(0,0,-.15).applyQuaternion(rot));
-    if(pose.footMode===2&&Math.abs(state.lean)>.001&&state.reloadStart<0){
-      // Leaning changes both shoulder positions. Fit the visible weapon inside
+    if(state.reloadStart<0){
+      // Riding, aiming and leaning change shoulder reach. Fit the weapon inside
       // both arms' reach before solving either hand, preserving its orientation.
       // This presentation offset does not alter the authoritative firing ray.
       const reach=h.arms.map(l=>{const a=l.upper.getWorldPosition(new T.Vector3()),b=l.knee.getWorldPosition(new T.Vector3()),c=l.foot.getWorldPosition(new T.Vector3());return{shoulder:a,length:(a.distanceTo(b)+b.distanceTo(c))*.995};});
@@ -119,18 +133,18 @@ export class CombatRig {
     w.position.add(actual.sub(dominant));w.updateWorldMatrix(true,true);
     const support=this.weapon.socket(sockets.support_grip_L);
     if(this.firstPerson)support.add(this.gripOffset(true));
-    this.supportLocked=state.reloadStart<0;
+    this.supportLocked=!reloadPose(state,tick).active;
     let target=support.clone();
     if(!this.supportLocked){
       const reload=reloadPose(state,tick);
-      const mag=this.weapon.socket(sockets.magazine_socket).add(new T.Vector3(-.03-.065*reload.magazine,-.10-.22*reload.magazine,-.08).multiplyScalar(scale).applyQuaternion(rot));
-      target.lerp(mag,reload.lower);
-      // After insertion the hand returns over the receiver to ready the weapon.
-      if(reload.charge>0)target.lerp(this.weapon.socket(sockets.support_grip_L).add(new T.Vector3(0,.06,-.12).multiplyScalar(scale).applyQuaternion(rot)),reload.charge);
+      const hand=new T.Vector3().fromArray(reload.capture.hand);hand.x*=-1;
+      target.add(hand.multiplyScalar(scale).applyQuaternion(rot));
     }
     solve(h.arms[0],target,elbowPole(1),this.handRotation(0,gripRotation));
     const release=reloadPose(state,tick).magazine;
     h.fingers.apply('SupportGrip','WeaponGrip',release);
+    h.fingers.applyTemplateGrip();
+    this.weapon.reloadVisual(reloadPose(state,tick),!this.firstPerson);
     h.root.updateWorldMatrix(true,true);this.errorL=h.arms[0].foot.getWorldPosition(new T.Vector3()).distanceTo(target);
     // Solve the ready pose first, then blend the hands toward the action. Both
     // entry and exit retain the current stride and the real limb lengths.

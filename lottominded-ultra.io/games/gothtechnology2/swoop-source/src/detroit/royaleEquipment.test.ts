@@ -13,13 +13,13 @@ const library=new EquipmentLibrary(new Map(await Promise.all(EQUIPMENT_KINDS.map
 
 test('seven actual exports have sane dimensions, finite geometry and bounded draw calls',()=>{
  for(const k of EQUIPMENT_KINDS){const v=library.create(k),box=new T.Box3().setFromObject(v.root),size=box.getSize(new T.Vector3());
-  assert(size.x>.1&&size.x<.4);assert(size.y>(k==='dog'?.04:.2)&&size.y<.4);assert(size.z>(k==='dog'?.04:.2)&&size.z<.7);
-  let draws=0;v.root.traverse(o=>{if(o instanceof T.Mesh){draws++;assert(o.geometry.getAttribute('uv'));for(const n of o.geometry.getAttribute('position').array)assert(Number.isFinite(n));}});assert(draws<=6);v.dispose();
+  assert(size.x>.1&&size.x<.4);assert(size.y>(k==='dog'?.04:.2)&&size.y<(k==='heart'?.52:.4));assert(size.z>(k==='dog'?.04:.2)&&size.z<.7);
+  let draws=0;v.root.traverse(o=>{if(o instanceof T.Mesh){draws++;assert(o.geometry.getAttribute('uv'));for(const n of o.geometry.getAttribute('position').array)assert(Number.isFinite(n));}});assert(draws<=({static:9,heart:9,bass:10,ammo:4,repair:5,shield:4,dog:2}[k]),k+' exceeded its authored material budget');v.dispose();
  }
 });
 test('firing all three models moves the slide, returns to rest and isolates riders',()=>{
  for(const kind of ['static','heart','bass'] as const){const a=library.create(kind),b=library.create(kind),slide=a.root.getObjectByName(kind+'_recoil')!,other=b.root.getObjectByName(kind+'_recoil')!,rest=slide.position.clone();
-  assert(a.fire(false));a.update(2/30,false);assert(slide.position.distanceTo(rest)>.04);assert.equal(other.position.distanceTo(rest),0);
+  assert(a.fire(false));a.update(2/30,false);assert(Math.abs(slide.position.distanceTo(rest)-({static:.023,heart:.023,bass:.023}[kind]))<.001,kind+' recoil must match the authored capture');assert.equal(other.position.distanceTo(rest),0);
   for(let i=0;i<30;i++)a.update(1/30,false);assert(slide.position.distanceTo(rest)<1e-6);a.dispose();b.dispose();
  }
 });

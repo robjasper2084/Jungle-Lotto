@@ -6,7 +6,7 @@ test('compiled elimination records the actual attacker, keeps live/spectator vie
  let seq=0,shot=0;for(let i=0;i<PROTECTION+200;i++){const fire=i>PROTECTION&&i%10===0;assert(m.command('shooter',{...neutral(m.round,++seq,m.tick),fire,shot:fire?++shot:shot}));m.step();if(!m.actors[1].alive)break;}
  assert(!m.actors[1].alive,'victim should be eliminated by actual compiled shots');assert.equal(m.killcam('shooter'),undefined);assert.equal(m.killcam('spectator'),undefined);
  const replay=m.killcam('victim')!;assert(replay);assert.equal(replay.killer,'shooter');assert.equal(replay.victim,'victim');assert(replay.frames.length<=61);assert(replay.frames.some(f=>f.projectiles.some(p=>p.owner==='shooter')));
- assert(replay.frames.every(f=>!f.self&&!f.actors.some(a=>a.id==='hidden')&&f.loot.length===0));assert(!m.snapshot('victim').actors.some(a=>a.id==='shooter'));
+ assert(replay.frames.every(f=>!f.self&&!f.actors.some(a=>a.id==='hidden')&&f.loot.length===0));const spectator=m.snapshot('victim');assert.equal(spectator.spectating?.delay,3);assert(spectator.spectating!.tick!<=m.tick-180);assert(!spectator.actors.some(a=>a.id==='hidden'));
  for(let i=0;i<30;i++)m.step();assert.equal(m.killcam('victim')!.frames.at(-1)!.tick,replay.frames.at(-1)!.tick,'must remain historical');
  m.actors[1].alive=true;assert.equal(m.killcam('victim'),undefined);m.dispose();terrain.dispose();
 });

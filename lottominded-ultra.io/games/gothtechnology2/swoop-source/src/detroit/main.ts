@@ -1,3 +1,4 @@
+import {StableEnvironment} from './stableEnvironment.ts';
 import {CruiseControl} from '../../../ride-core/src/cruiseControl.ts';
 import {PointLightBudget} from '@digital-static/ridecore';
 import {renderCensus} from './renderCensus.ts';
@@ -157,7 +158,7 @@ const sky=new RouteSky();scene.add(sky);
 const reducedAtmosphereMotion=matchMedia('(prefers-reduced-motion: reduce)'),atmosphereMotionOverride=new URLSearchParams(location.search).has('reducedMotion');
 const camera=new T.PerspectiveCamera(55,innerWidth/innerHeight,.08,1500);
 const interactiveWater=new InteractiveWater(canvas,camera);
-const pm=new T.PMREMGenerator(renderer);
+const pm=new StableEnvironment(renderer);
 try{
 if(elmwood){
   const hdr=await new HDRLoader().loadAsync('/textures/elmwood-library/forest_grove_2k.hdr');
@@ -602,7 +603,7 @@ try{
     const target=new T.WebGLCubeRenderTarget(128,{type:T.HalfFloatType}),probe=new T.CubeCamera(.2,350,target);
     probe.position.set(pond.x,pond.y+.35,pond.z);scene.add(probe);scenery.waterGroup.visible=false;hero.root.visible=false;dogView.root.visible=false;
     sun.position.set(pond.x+22,pond.y+35,pond.z+24);sun.target.position.set(pond.x,pond.y,pond.z);scene.updateMatrixWorld(true);
-    probe.update(renderer,scene);const generator=new T.PMREMGenerator(renderer);scenery.waterMaterial.envMap=generator.fromCubemap(target.texture).texture;scenery.waterMaterial.needsUpdate=true;
+    probe.update(renderer,scene);const generator=new StableEnvironment(renderer);scenery.waterMaterial.envMap=generator.fromCubemap(target.texture).texture;scenery.waterMaterial.needsUpdate=true;
     generator.dispose();target.dispose();probe.removeFromParent();scenery.waterGroup.visible=true;hero.root.visible=true;dogView.root.visible=dogEnabled;
   }
   bootProgress(4);canvas.dataset.architecture=JSON.stringify(scenery.architecture);
