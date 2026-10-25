@@ -7,8 +7,8 @@ test('shipping five rider rigs retain two-hand contacts and pedal poses over mou
  const data=new Map([['DS_EUC_01',await model(assetPath('exports/glb/DS_EUC_01/DS_EUC_01_LOD1.glb'))]]);
  const library=new EquipmentLibrary(new Map(await Promise.all(EQUIPMENT_KINDS.map(async kind=>[kind,await model(new URL('../../public/exports/polish/royale-equipment/'+kind+'.glb',import.meta.url))] as const))));
  const report=[];
- for(const {id} of RIDER_CHOICES){data.set(id,await model(id==='DS_Armored_Rider_01'?new URL('../../public/exports/glb/'+id+'/'+id+'_LOD1.glb',import.meta.url):assetPath('exports/glb/'+id+'/'+id+'_LOD'+(id==='DS_Man_01'?0:1)+'.glb')));
-  const hero=new Hero(data,undefined,id),weapon=new WeaponView(library),rig=new CombatRig(hero,weapon);let right=0,left=0,footDrift=0,worst:any=null,leftWorst:any=null;
+ for(const {id} of RIDER_CHOICES){data.set(id,await model(new URL('../../public/exports/rigged-heroes/'+id+'.glb',import.meta.url)));
+  const hero=new Hero(data,undefined,id,'kimodo'),weapon=new WeaponView(library),rig=new CombatRig(hero,weapon);let right=0,left=0,footDrift=0,worst:any=null,leftWorst:any=null;
   for(const w of ['static','heart','bass'] as const)for(const aim of [0,.5,1])for(const yaw of [-1.25,0,1.25])for(const roll of [-.35,0,.35])for(const pitch of [-.65,0,.65]){
    const p=createPose();Object.assign(p,{x:10,y:0,z:20,headingY:.8,speed:20,rollAngle:roll,riderRoll:roll*.7,naturalMotion:1,stopFoot:0});hero.apply(p);
    const feet=hero.legs.map(l=>l.foot.getWorldPosition(new Vector3()));weapon.select(w);weapon.update(1/60,false);rig.apply(p,yaw,pitch,{...initialCombat(),aimBlend:aim,lean:Math.sign(roll)},260);
@@ -24,8 +24,8 @@ test('combat keeps the Swoop torso shape and elbows outside the chest at every a
  const data=new Map([['DS_EUC_01',await model(assetPath('exports/glb/DS_EUC_01/DS_EUC_01_LOD1.glb'))]]);
  const library=new EquipmentLibrary(new Map(await Promise.all(EQUIPMENT_KINDS.map(async kind=>[kind,await model(new URL('../../public/exports/polish/royale-equipment/'+kind+'.glb',import.meta.url))] as const))));
  for(const {id} of RIDER_CHOICES){
-  data.set(id,await model(id==='DS_Armored_Rider_01'?new URL('../../public/exports/glb/'+id+'/'+id+'_LOD1.glb',import.meta.url):assetPath('exports/glb/'+id+'/'+id+'_LOD'+(id==='DS_Man_01'?0:1)+'.glb')));
-  const hero=new Hero(data,undefined,id),weapon=new WeaponView(library),rig=new CombatRig(hero,weapon);
+  data.set(id,await model(new URL('../../public/exports/rigged-heroes/'+id+'.glb',import.meta.url)));
+  const hero=new Hero(data,undefined,id,'kimodo'),weapon=new WeaponView(library),rig=new CombatRig(hero,weapon);
   weapon.select('static');weapon.update(1,false);
   let worstSpine=0,insideElbow=0,worstSeam=0;
   const surfaces:{mesh:SkinnedMesh;edges:[number,number][];posed:Vector3[]}[]=[];

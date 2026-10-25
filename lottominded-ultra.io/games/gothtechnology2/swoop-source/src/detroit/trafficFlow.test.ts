@@ -16,8 +16,13 @@ test('pedestrians, bikes, scooters and skaters travel continuously in their orig
       assert.ok(Math.abs(distance-first.direction!*first.speed)<1e-8,'route progress reversed or stopped');
       // Inside-lane arc length is shorter than the centre spline around bends.
       assert.ok((b.x-a.x)*Math.sin(a.heading)+(b.z-a.z)*Math.cos(a.heading)>first.speed*.5,'actor faces against its travel');
-      const turn=Math.atan2(Math.sin(b.heading-a.heading),Math.cos(b.heading-a.heading));
-      assert.ok(Math.abs(turn)<.25,'sudden heading reversal');
+      // Measure frame continuity: a normal mapped bend can turn 24 degrees
+      // over a whole second without snapping or reversing the actor.
+      for(let frame=1;frame<=60;frame++){
+        const prev=trafficAt(id,time-1+(frame-1)/60),next=trafficAt(id,time-1+frame/60);
+        const turn=Math.atan2(Math.sin(next.heading-prev.heading),Math.cos(next.heading-prev.heading));
+        assert.ok(Math.abs(turn)<.025,'heading snaps within a frame');
+      }
     }
   }
   assert.deepEqual([...kinds].sort(),['cyclist','jogger','pedestrian','scooter','segway','skater']);

@@ -12,6 +12,7 @@ import {EquipmentLibrary,WeaponView} from './equipment.ts';
 import {CombatRig} from './combatRig.ts';
 import {FpsMotion,reloadPose,WeaponSwap} from './fpsMotion.ts';
 import {FpsWeaponSway} from './fpsControlFlow.ts';
+import {fpsBodyAction} from './fpsBattlePose.ts';
 import {footLeanOffset} from '../../../../ride-core/src/royale/lean.ts';
 /** A separate instance of the selected hero's skinned hands. The world actor,
  * authoritative muzzle and other players' poses are never moved by view animation. */
@@ -38,13 +39,16 @@ export class FirstPersonView {
  resetMotion(){this.previousForward=undefined;this.previousTick=-1;this.sway.set(0,0);this.fpsSway.reset();this.motion.reset();this.swap.reset();}
  update(p:RidePose,state:CombatState,kind:Weapon,tick:number,yaw:number,pitch:number,camera:T.Camera,dt:number,shot:boolean,ads:boolean,reduced:boolean,terrain:TerrainSampler,healingUntil=0,burntwax=true,scoped=false){
   if(this.previousTick>=0&&(tick<this.previousTick||tick-this.previousTick>12))this.resetMotion();this.previousTick=tick;
+  const bodyAction=fpsBodyAction(p,state,tick);
+  if(bodyAction){this.root.visible=false;this.resetMotion();return {action:bodyAction,reload:'ready',obstruction:0,rigRight:0,rigLeft:0,adsAmount:0};}
   this.root.visible=true;this.root.matrixAutoUpdate=true;this.root.scale.setScalar(1);this.root.position.set(0,0,0);this.root.quaternion.identity();this.root.updateMatrixWorld(true);
-  this.arms.reset();this.hero.apply({...p,seated:0});this.hero.visibility.setFirstPerson(true);this.hero.vehicle.visible=false;
+  this.arms.reset();this.hero.combatLocomotion=weaponReadyAmount(state,tick);this.hero.apply({...p,seated:0});this.hero.visibility.setFirstPerson(true);this.hero.vehicle.visible=false;
   const equip=this.swap.update(dt,kind,shot,reduced);this.weapon.select(equip.weapon as Weapon);if(shot)this.rig.interruptPickup();if(shot)this.weapon.fire(reduced);this.weapon.update(dt,reduced);this.rig.apply({...p,seated:0},yaw,pitch,state,tick,healingUntil);
-  const r=reloadPose(state,tick),m=this.motion.update(dt,kind,shot,Math.abs(p.speed),p.airHeight>.03,ads,reduced,r,p.footMode===2),scale=this.hero.motionScale;
+  const r=reloadPose(state,tick),scale=this.hero.motionScale;
   const rotation=camera.getWorldQuaternion(new T.Quaternion()),position=camera.getWorldPosition(new T.Vector3());
   const f=this.forwardScratch.set(0,0,-1).applyQuaternion(rotation),right=this.rightScratch.set(1,0,0).applyQuaternion(rotation),up=this.upScratch.set(0,1,0).applyQuaternion(rotation);
-  const obstacle=terrain.raycastObstacle(position,f,.95,.07),blocked=obstacle===null?0:T.MathUtils.clamp((.95-obstacle)/.6,0,1);
+  const obstacle=terrain.raycastObstacle(position,f,.95,.07),obstruction=obstacle===null?0:T.MathUtils.clamp((.95-obstacle)/.6,0,1);
+  const m=this.motion.update(dt,kind,shot,Math.abs(p.speed),p.airHeight>.03,ads,reduced,r,p.footMode===2,{blocked:obstruction,crouch:p.footCrouch,prone:p.footProne}),blocked=m.blocked;
   const bob=burntwax||reduced||ads||p.footMode!==2?0:Math.sin(p.footCycle*Math.PI*2)*Math.min(.012,Math.abs(p.speed)*.003);
   const previous=this.previousForward??f,weight=reduced?0:1-m.aim;
   const lagX=T.MathUtils.clamp(previous.dot(right)*.45,-.022,.022)*weight,lagY=T.MathUtils.clamp(previous.dot(up)*.35,-.016,.016)*weight;
@@ -58,15 +62,18 @@ export class FirstPersonView {
   const opticRatio=Math.tan(T.MathUtils.degToRad((camera as T.PerspectiveCamera).fov/2))/Math.tan(T.MathUtils.degToRad(76/2));
   const angularScale=scoped?.72:1;
   const wide=T.MathUtils.clamp((((camera as T.PerspectiveCamera).aspect??1)-.45)/.85,0,1),viewScale=(.64+.10*wide)*angularScale;
-  const target=position.clone().addScaledVector(f,(.80+.01*m.aim-.11*blocked-.045*m.kick)*scale).addScaledVector(right,((1-m.aim)*.20*(.5+.5*wide)+m.run*.07+this.sway.x)*scale)
+  const target=position.clone().addScaledVector(f,(.80+.01*m.aim-.11*blocked-m.recoilTravel-r.travel)*scale).addScaledVector(right,((1-m.aim)*.20*(.5+.5*wide)+m.run*.07+.035*r.lower+this.sway.x)*scale)
    .addScaledVector(up,(-(1-m.aim)*.15-.12*r.lower-.26*equip.lower-.14*m.run-.18*blocked-.035*m.land+bob+this.sway.y-(scoped?.20:0))*scale);
   const sight=healingUntil>tick?this.hero.arms[0].foot.getWorldPosition(new T.Vector3()).lerp(this.hero.arms[1].foot.getWorldPosition(new T.Vector3()),.5):this.weapon.sight();
   if(healingUntil>tick)target.addScaledVector(up,-.025*scale).addScaledVector(right,-.12*scale);
   const mag=this.weapon.socket(EQUIPMENT_SOCKETS.magazine_socket);
   // A small hip-view cant reveals the camera lens/receiver silhouette, then
   // settles squarely onto the optic. Hands and sockets move as one rigid frame.
-  const roll=-(r.lower*.18+m.run*.18+blocked*.24+(reduced?0:.065*(1-m.aim)))+(burntwax?sway.roll:0)+(reduced?0:footLeanOffset(p,state.lean).roll);this.root.quaternion.setFromAxisAngle(f,roll);
+  const roll=-(r.cant+m.sprintRoll+blocked*.24+(reduced?0:.045*(1-m.aim)))+(burntwax?sway.roll:0)+(reduced?0:footLeanOffset(p,state.lean).roll);this.root.quaternion.setFromAxisAngle(f,roll);
+  this.root.quaternion.premultiply(new T.Quaternion().setFromAxisAngle(right,r.pitch+m.sprintPitch-m.recoilPitch));
+  this.root.quaternion.premultiply(new T.Quaternion().setFromAxisAngle(up,r.yaw));
   this.root.scale.setScalar(viewScale);this.root.position.copy(target).sub(sight.clone().multiplyScalar(viewScale).applyQuaternion(this.root.quaternion));this.magazine.position.copy(mag).addScaledVector(up,-r.magazine*.22*scale).addScaledVector(right,-r.magazine*.065*scale);
+  this.magazine.position.copy(mag).add(new T.Vector3(-r.capture.magazine[0],r.capture.magazine[1],r.capture.magazine[2]).multiplyScalar(scale).applyQuaternion(this.weapon.root.quaternion));
   this.magazine.quaternion.copy(this.weapon.root.quaternion);this.magazine.scale.setScalar(scale);this.magazine.visible=r.active&&r.magazine>.02;
   this.root.updateMatrixWorld(true);this.arms.update(camera,scale*angularScale,viewScale,scoped?.20*scale:0);
   const ready=weaponReadyAmount(state,tick);
@@ -81,7 +88,7 @@ export class FirstPersonView {
    this.root.matrix.premultiply(camera.matrixWorld.clone().multiply(new T.Matrix4().makeScale(opticRatio,opticRatio,1)).multiply(camera.matrixWorldInverse));
    this.root.updateMatrixWorld(true);
   }
-  return {reload:r.phase,obstruction:blocked,rigRight:this.rig.errorR,rigLeft:this.rig.errorL};
+  return {action:healing?'heal':ready<1?'draw':equip.lower>.02?'equip':blocked>.65?'cover':m.action,reload:r.phase,obstruction:blocked,rigRight:this.rig.errorR,rigLeft:this.rig.errorL,adsAmount:m.aim};
  }
  hide(){this.root.visible=false;}
  dispose(){this.arms.dispose();this.hero.dispose();this.weapon.dispose();this.magazine.geometry.dispose();this.magazine.material.dispose();for(const m of this.materials)m.dispose();this.root.removeFromParent();}

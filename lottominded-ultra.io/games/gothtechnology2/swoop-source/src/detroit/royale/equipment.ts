@@ -1,4 +1,6 @@
 import * as T from 'three';
+import {templateWeapon,TEMPLATE_ACTIONS} from '../../../../ride-core/src/templateActions.ts';
+import {EQUIPMENT_SOCKETS} from '../../../../ride-core/src/royale/combatProfiles.ts';
 import type {GLTF, GLTFLoader} from '../compressedGLTFLoader.ts';
 import type {Weapon} from '../../../../ride-core/src/royale/rules.ts';
 
@@ -86,9 +88,11 @@ export class EquipmentView {
 /** Equip movement pivots at the authoritative hand socket, never moves the grip. */
 export class WeaponView {
   readonly root=new T.Group();private models=new Map<Weapon,EquipmentView>();
-  private current?:EquipmentView;private equipAge=1;
+  private current?:EquipmentView;private equipAge=1;private fireAge=Infinity;
+  private recoilRests=new WeakMap<T.Object3D,T.Vector3>();
+  private magazine=new T.Mesh(new T.BoxGeometry(.055,.13,.085),new T.MeshStandardMaterial({color:'#293a3c',metalness:.65,roughness:.4}));
   private repairPacks:HeldRepairPack[]=[];
-  constructor(private library:EquipmentLibrary){}
+  constructor(private library:EquipmentLibrary){this.magazine.name='Reload magazine';this.magazine.visible=false;this.root.add(this.magazine);}
   get kind(){return this.current?.kind??'static';}
   createHeldRepair(){const pack=this.library.createHeldRepair();this.repairPacks.push(pack);return pack;}
   /** Socket targets include the currently evaluated equipment animation. */
@@ -99,12 +103,27 @@ export class WeaponView {
     if(this.current){this.current.root.visible=false;this.current.action.stop();}
     let model=this.models.get(kind);
     if(!model){model=this.library.create(kind);this.models.set(kind,model);this.root.add(model.root);}
-    this.equipAge=this.current?0:1;this.current=model;model.root.visible=true;
+    this.equipAge=this.current?0:1;this.current=model;model.root.visible=true;this.fireAge=Infinity;
+    const receiver=model.root.getObjectByName(kind+'_recoil');if(receiver&&!this.recoilRests.has(receiver))this.recoilRests.set(receiver,receiver.position.clone());
   }
-  fire(reducedMotion:boolean){return this.current?.fire(reducedMotion)??false;}
+  fire(reducedMotion:boolean){if(!this.current||reducedMotion)return false;this.fireAge=0;return this.current.fire(reducedMotion);}
   update(delta:number,reducedMotion:boolean){
     this.equipAge+=delta;
-    if(this.current){this.current.root.rotation.x=reducedMotion?0:.5*Math.max(0,1-this.equipAge/.2)**2;this.current.update(delta,reducedMotion);}
+    this.fireAge+=Math.max(0,delta);
+    if(this.current){this.current.update(delta,reducedMotion);
+      const firing=!reducedMotion&&this.fireAge<TEMPLATE_ACTIONS['Pistol Fire'].duration;
+      const motion=templateWeapon(firing?'Pistol Fire':'Pistol Idle',this.fireAge);
+      this.current.root.rotation.set(-motion.rotation[0]+(reducedMotion?0:.5*Math.max(0,1-this.equipAge/.2)**2),-motion.rotation[1],motion.rotation[2],'YXZ');
+      this.current.root.position.set(-motion.position[0],motion.position[1],motion.position[2]);
+      this.receiverSlide(motion.slide);
+    }
   }
-  dispose(){for(const m of this.models.values())m.dispose();for(const pack of this.repairPacks)pack.dispose();this.repairPacks=[];this.root.removeFromParent();}
+  private receiverSlide(delta:number[]){const part=this.current?.root.getObjectByName(this.current.kind+'_recoil');if(part){const rest=this.recoilRests.get(part);if(rest)part.position.copy(rest).add(new T.Vector3(-delta[0],delta[1],delta[2]));}}
+  reloadVisual(reload:{active:boolean;magazine:number;capture:ReturnType<typeof templateWeapon>},worldView:boolean){
+    this.magazine.visible=worldView&&reload.active&&reload.magazine>.02;
+    if(!reload.active)return;
+    this.receiverSlide(reload.capture.slide);
+    this.magazine.position.copy(this.root.worldToLocal(this.socket(EQUIPMENT_SOCKETS.magazine_socket))).add(new T.Vector3(-reload.capture.magazine[0],reload.capture.magazine[1],reload.capture.magazine[2]));
+  }
+  dispose(){for(const m of this.models.values())m.dispose();for(const pack of this.repairPacks)pack.dispose();this.repairPacks=[];this.magazine.geometry.dispose();this.magazine.material.dispose();this.root.removeFromParent();}
 }

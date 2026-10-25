@@ -14,6 +14,6 @@ test('walls muffle cues, front/back differ, and elevation is preserved',()=>{
  assert.equal(open.elevation,3);assert(wall.occluded&&wall.gain<open.gain*.5&&wall.filter<open.filter);assert(environmentalCue(from,to,Math.PI).gain<open.gain);
 });
 test('reload meter tracks actual commit and each weapon has distinct reduced-motion-safe feedback',()=>{
- const c={...initialCombat(),reloadStart:10,reloadCommit:70,reloadEnd:100};assert.equal(reloadReadout(c,40)?.stage,'Loading magazine');assert.equal(reloadReadout(c,80)?.stage,'Readying weapon');assert.equal(reloadReadout(initialCombat(),40),null);
+ const c={...initialCombat(),reloadStart:10,reloadCommit:70,reloadEnd:100};assert.equal(reloadReadout(c,40)?.stage,'Replacing magazine');assert.equal(reloadReadout(c,80)?.stage,'Readying weapon');assert.equal(reloadReadout(initialCombat(),40),null);
  const reload=reloadPose(initialCombat(),0),kicks=['static','heart','bass'].map(w=>new FpsMotion().update(1/60,w,true,0,false,false,false,reload).kick);assert(kicks[0]<kicks[1]&&kicks[1]<kicks[2]);assert.equal(new FpsMotion().update(1/60,'bass',true,0,false,false,true,reload).kick,0);
 });

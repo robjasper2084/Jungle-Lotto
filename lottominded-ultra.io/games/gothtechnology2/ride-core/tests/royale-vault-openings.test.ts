@@ -24,7 +24,9 @@ test('actual training shop windows vault in both directions and recover to walki
   for(const [x,z] of [[-12,1],[12,13]])for(const side of [-1,1])for(const entering of [true,false]){
    const wall=x+side*6,dir=entering?-side:side,p={x:wall-dir*.95,y:0,z,headingY:dir*Math.PI/2};
    const plan=findVault(t,p);assert(plan,JSON.stringify(p));assert((plan.to.x-wall)*dir>.4);
-   const c=new RideController(t,{spawn:{position:p,headingY:p.headingY}});c.combatOnFoot=true;c.knockOff();for(let i=0;i<110;i++)c.step(1/120,NEUTRAL_ACTIONS);
+   const c=new RideController(t,{spawn:{position:p,headingY:p.headingY}});c.combatOnFoot=true;c.step(1/120,{...NEUTRAL_ACTIONS,dismount:true});for(let i=0;i<110;i++)c.step(1/120,NEUTRAL_ACTIONS);
+    // Test the validated walking approach, not the displaced endpoint of a crash.
+    Object.assign(c.poseValue,{x:p.x,y:p.y,z:p.z});
    c.step(1/120,{...NEUTRAL_ACTIONS,vault:true});assert(c.poseValue.footVault>0);
    for(let i=0;i<Math.ceil(VAULT_SECONDS*120)+5;i++)c.step(1/120,NEUTRAL_ACTIONS);
    assert.equal(c.poseValue.footVault,0);assert.equal(c.poseValue.footMode,2);assert(Math.abs(c.poseValue.y)<1e-6);

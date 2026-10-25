@@ -22,3 +22,9 @@
 @media(max-width:620px) and (min-height:481px){#touch[data-expanded=true] .combat-more{top:274px;bottom:auto}}
 @media(max-height:480px){.royale-map{width:120px!important}.royale-map canvas{width:120px!important;height:70px!important}.royale-map .map-actions{display:none}#touch[data-simple=true][data-expanded=false]:not(.editing) button[data-action=hop]:not([data-custom-position]){right:170px!important;bottom:146px!important}#touch[data-simple=true][data-expanded=false]:not(.editing) button[data-action=repair]:not([data-custom-position]){right:240px!important;bottom:146px!important}}
 @media(max-height:360px){.royale-map canvas{height:70px!important}}
+#touch .combat-tray{position:absolute;height:60px;padding:5px;display:grid;grid-template-columns:44px 1fr 44px 44px;gap:4px;background:#0b202bf2;border:1px solid #6b9c9e;border-radius:10px;pointer-events:auto;z-index:3}
+#touch .combat-tray-actions{display:grid;gap:4px;min-width:0}
+#touch .combat-tray button{position:static!important;inset:auto!important;width:100%!important;height:48px!important;min-height:44px;border-radius:7px;touch-action:manipulation}
+#touch .combat-tray button[data-tray-page-hidden=true]{display:none!important}
+#touch .combat-tray .tray-nav{font-size:12px}
+#touch .combat-tray .combat-more{min-width:44px;padding:2px;font-size:11px}

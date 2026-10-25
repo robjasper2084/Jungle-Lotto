@@ -1,4 +1,5 @@
 import {buildMobileRiders} from './mobile-rider-assets.mjs';
+import {indexStreetSurfaces} from './index-street-surfaces.mjs';
 import {optimizeGameAssets} from './optimize-game-assets.mjs';
 import {reviewCorePlugin} from './review-core-plugin.mjs';
 import {readFile,writeFile,mkdir,readdir,rename} from 'node:fs/promises';
@@ -66,6 +67,7 @@ await rename(resolve(out,'detroit.html'),resolve(out,'index.html'));
 }
 return {name:'swoop-detroit',entry:'index.html',source,soundtrackRoot:resolve(pack,'audio/swoop'),buildCode,async build(out){
 await buildCode(out);
+await indexStreetSurfaces(resolve(source,'public/exports/street-life'));
 for(const file of files){const target=resolve(out,file);await mkdir(dirname(target),{recursive:true});await copyFile(resolve(pack,file),target);}
 for(const file of sourceFiles){const target=resolve(out,file);await mkdir(dirname(target),{recursive:true});await copyFile(resolve(source,'public',file),target);}
 await cp(resolve(source,'public/exports/boutique'),resolve(out,'exports/boutique'),{recursive:true});

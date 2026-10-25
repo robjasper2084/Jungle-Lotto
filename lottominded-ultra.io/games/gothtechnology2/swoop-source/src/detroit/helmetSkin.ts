@@ -9,7 +9,7 @@ function map(){return texture??=new T.TextureLoader().loadAsync(decalUrl).then(t
 /** Fits the authored Night Sentinel shell and follows its head bone. */
 export class HelmetSkinDecal{
  readonly root=new T.Group();private material=new T.MeshStandardMaterial({alphaTest:.1,alphaToCoverage:true,roughness:1,metalness:0,depthWrite:true,side:T.FrontSide,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-4});private disposed=false;
- private update=()=>{this.root.visible=selected()==='ghoulies';};
+ private update=()=>{this.root.visible=!!this.material.map&&selected()==='ghoulies';};
  constructor(rider:T.Object3D){
   this.root.name='GothTech Ghoulies / helmet skin';rider.add(this.root);
   // Helmet center and radii come from build_armored_rider.py, converted to Y-up.
@@ -22,7 +22,7 @@ export class HelmetSkinDecal{
   }
   rider.updateWorldMatrix(true,true);(rider.getObjectByName('Head')??rider).attach(this.root);this.update();
   if(typeof window!=='undefined'){window.addEventListener(event,this.update);
-   void map().then(t=>{if(!this.disposed){this.material.map=t;this.material.needsUpdate=true;}}).catch(()=>{this.root.visible=false;});}
+   void map().then(t=>{if(!this.disposed){this.material.map=t;this.material.needsUpdate=true;this.update();}}).catch(()=>{this.root.visible=false;});}
  }
  dispose(){this.disposed=true;if(typeof window!=='undefined')window.removeEventListener(event,this.update);this.root.traverse(o=>{if(o instanceof T.Mesh)o.geometry.dispose();});this.material.dispose();this.root.removeFromParent();}
 }

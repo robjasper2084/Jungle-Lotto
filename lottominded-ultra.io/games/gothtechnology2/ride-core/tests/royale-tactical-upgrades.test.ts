@@ -13,7 +13,7 @@ import {EVADE_TICKS,evadeDirection} from '../src/royale/evade.ts';
 import type {TerrainSampler,Vec3} from '../src/terrain.ts';
 await initializeEngine(await readFile(new URL('../src/engine/breadflower.wasm',import.meta.url)));
 const arena=await ArenaTerrain.create();
-function setup(){const m=new RoyaleMatch(arena);for(let i=0;i<6;i++)m.add('r'+i,'Rider '+i);m.start('tactical',4);for(let i=0;i<PROTECTION;i++)m.step();m.actors.forEach((a,i)=>{a.controller.reset({position:{x:i?40+i*4:0,y:0,z:0},headingY:0});a.controller.combatOnFoot=true;a.controller.knockOff();a.pose={...a.controller.poseValue};});for(let i=0;i<60;i++)m.step();return m;}
+function setup(){const m=new RoyaleMatch(arena);for(let i=0;i<6;i++)m.add('r'+i,'Rider '+i);m.start('tactical',4);for(let i=0;i<PROTECTION;i++)m.step();m.actors.forEach((a,i)=>{a.controller.reset({position:{x:i?40+i*4:0,y:0,z:0},headingY:0});a.controller.combatOnFoot=true;a.controller.knockOff();a.pose={...a.controller.poseValue};});for(let i=0;i<150;i++)m.step();return m;}
 function send(m:RoyaleMatch,c:Partial<ReturnType<typeof neutral>>){const a=m.actors[0];assert(m.command(a.id,{...neutral(m.round,a.lastSeq+1,m.tick),...c}));m.step();}
 test('Kimodo evade retains provenance and a real low roll between standing endpoints',async()=>{
  const bytes=await readFile(new URL('../art/kimodo-evade/motion.npz',import.meta.url));assert.equal(createHash('sha256').update(bytes).digest('hex'),KIMODO_EVADE.sourceSha256);
@@ -47,7 +47,7 @@ function obstacle(height=.8,roof=false,drop=false):TerrainSampler{
 test('vault validates low cover, tall walls, ceilings and safe landing; replay resumes mid-vault',()=>{
  const p={x:0,y:0,z:0,headingY:0},t=obstacle(),plan=findVault(t,p);assert(plan);assert(plan.to.z>1.4);assert(vaultPosition(plan,.5).y>.9);
  assert.equal(findVault(obstacle(2.5),p),null);assert.equal(findVault(obstacle(.8,true),p),null);assert.equal(findVault(obstacle(.8,false,true),p),null);
- const c=new RideController(t,{spawn:{position:{x:0,y:0,z:0},headingY:0}});c.combatOnFoot=true;c.knockOff();for(let i=0;i<100;i++)c.step(1/120,NEUTRAL_ACTIONS);c.step(1/120,{...NEUTRAL_ACTIONS,vault:true});for(let i=0;i<35;i++)c.step(1/120,NEUTRAL_ACTIONS);assert(c.poseValue.footVault>0);
+ const c=new RideController(t,{spawn:{position:{x:0,y:0,z:0},headingY:0}});c.combatOnFoot=true;c.knockOff();for(let i=0;i<300;i++)c.step(1/120,NEUTRAL_ACTIONS);c.step(1/120,{...NEUTRAL_ACTIONS,vault:true});for(let i=0;i<35;i++)c.step(1/120,NEUTRAL_ACTIONS);assert(c.poseValue.footVault>0);
  const copy=new RideController(t);copy.restoreState(c.captureState());for(let i=0;i<100;i++){c.step(1/120,NEUTRAL_ACTIONS);copy.step(1/120,NEUTRAL_ACTIONS);}assert.deepEqual(copy.captureState(),c.captureState());assert.equal(c.poseValue.footVault,0);assert(c.poseValue.z>1.4);assert.equal(c.poseValue.y,0);
  const landing=smokeLanding(obstacle(2.5),p,0)!;assert(landing.z<.7,'smoke cannot be placed through a wall');
 });

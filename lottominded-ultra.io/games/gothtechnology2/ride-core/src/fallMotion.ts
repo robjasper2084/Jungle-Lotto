@@ -1,5 +1,6 @@
-import {recoverySample} from './kimodoRecovery.ts';
+import {recoverySample,recoveryWheel} from './kimodoRecovery.ts';
 import {fallPosture} from './fallPosture.ts';
+import {crashKind,crashProgress,crashSample,CRASH_KINDS,type CrashKind} from './kimodoCrash.ts';
 import type {RidePose} from './controller.ts';
 import {clamp} from './rideDynamics.ts';
 type ActorImpact={speed:number;vx:number;vz:number};
@@ -14,6 +15,7 @@ export function fallCameraOffset(p:RidePose){
 
 /** Authored crash phases, sampled at simulation time; existing collision stays authoritative. */
 export class FallMotion {
+  readonly kind:CrashKind;
   readonly initial:RidePose;readonly side:number;readonly direction:number;readonly severity:number;
   readonly forwardFall:boolean;readonly contactTime:number;age=0;
   readonly tireRadius:number;readonly forwardSpeed:number;readonly lateralSpeed:number;readonly slideSpeed:number;readonly settleTime:number;
@@ -24,11 +26,12 @@ export class FallMotion {
     const vx=impact?.vx??s*p.speed,vz=impact?.vz??c*p.speed;
     this.forwardSpeed=vx*s+vz*c;this.lateralSpeed=vx*c-vz*s;
     this.direction=this.forwardSpeed<-.1?-1:1;
+    this.kind=crashKind(reason,this.forwardSpeed,this.lateralSpeed,p.rollAngle);
     this.side=Math.abs(this.lateralSpeed)>.2?Math.sign(this.lateralSpeed):Math.sign(p.rollAngle)||Math.sign(p.slipAngle)||1;
     this.severity=clamp((impact?.speed??Math.abs(p.speed))/20,0,1);
     // Momentum is no longer capped at jogging speed above 43 km/h.
     this.slideSpeed=Math.min(12,Math.max(.8,Math.hypot(vx,vz)*.60));
-    this.forwardFall=reason==='collision'||(reason==='hard landing'&&Math.abs(p.rollAngle)<.25);
+    this.forwardFall=this.kind==='front'||this.kind==='landing';
     this.contactTime=.5+Math.min(.35,Math.sqrt(Math.max(0,p.airHeight)/9.81)*.5);
     this.settleTime=Math.max(1.8,this.contactTime+this.slideSpeed/7+.25);
   }
@@ -62,6 +65,14 @@ export class FallMotion {
     // Only then roll onto the shoulder; avoid a corkscrew while still airborne.
     const shoulder=ramp(t,contact+.12,Math.min(this.settleTime,contact+.85));
     p.crashRoll=-this.side*(this.forwardFall?.18*tip+1.32*shoulder:1.42*tip+.08*settle)-this.side*.035*pulse;
+    // Original Kimodo captures own the articulated body pose; collision and
+    // momentum above remain authoritative. Contact retiming avoids floating hands.
+    p.crashKind=CRASH_KINDS.indexOf(this.kind)+1;
+    p.crashTime=crashProgress(this.kind,t,contact,this.settleTime);
+    const captured=crashSample(p.crashKind,p.crashTime),capture=ramp(t,0,.18);
+    p.crashTumble+=(captured[0]-p.crashTumble)*capture;
+    p.crashRoll+=(captured[1]*this.side-p.crashRoll)*capture*(this.forwardFall?shoulder:1);
+    p.crashDrop+=(captured[2]+.20*settle-p.crashDrop)*capture*.75;
     p.wheelCrashLean=-this.side*1.48*ramp(t,.06,.65);
     p.wheelCrashSpin=this.side*(.25+.3*this.severity)*ramp(t,.12,.9);
     p.wheelCrashForward=forward*drift*.28;
@@ -86,16 +97,20 @@ export class FallMotion {
 /** Side roll -> supported kneel -> rise -> remount. Offsets remain at the resting
  * location for pedestrians; mounted recovery closes the last short step to the pedals. */
 export function getUpPose(rest:RidePose,progress:number,out:RidePose,mounted=false){
-  Object.assign(out,rest);const t=clamp(progress,0,1),entry=ramp(t,0,.16),kneel=ramp(t,0,.32),stand=recoverySample(t)[0],mount=ramp(t,.78,1);
+  Object.assign(out,rest);const t=clamp(progress,0,1),entry=ramp(t,0,.16),kneel=ramp(t,.02,.34),stand=recoverySample(t)[0],mount=ramp(t,.74,1);
   if(t===0){out.crashRecovery=0;return;}
   const side=rest.crashSide||1;
   out.crashRecovery=t;out.crashRoll=rest.crashRoll*(1-kneel);out.crashTumble=rest.crashTumble*(1-kneel)+.32*kneel*(1-stand);
-  out.crashDrop=(rest.crashDrop*(1-kneel)+.82*kneel)*(1-stand);
+  // Keep the pelvis near its resting height until the support hand is loaded.
+  // Raising to a shallow squat here forced the IK fit to drop it a second time.
+  out.crashDrop=(rest.crashDrop*(1-kneel)+1.02*kneel)*(1-stand);
   out.crashLegTuck=rest.crashLegTuck*(1-entry)+(1-stand)*.82*entry;out.crashRelease=mounted?1-mount:1;
   out.crashReach=.45*kneel*(1-stand);out.crashAbsorb=0;out.crashCurl=.40*(1-stand);out.crashHeadTuck=.45*(1-stand);
   out.crashSettle=1-stand;out.crashBrace=1-stand;out.crashContact=1-stand;out.crashBlend=1-mount;
-  out.bodyPitch=.1+.25*(1-stand);out.bodyDrop=.08+.09*(1-stand);out.bodyTwist=side*.12*(1-stand);
+  // Hinge over the planted boot/palm before straightening the hips. An upright
+  // chest here puts the ground beyond arm reach and looks like a levitating squat.
+  out.bodyPitch=.1+.65*(1-stand);out.bodyDrop=.08+.09*(1-stand);out.bodyTwist=side*.12*(1-stand);
   out.crashImpactPulse=0;out.wheelCrashPop=0;
   for(const key of ['crashReach','crashAbsorb','crashCurl','crashHeadTuck','crashSettle','crashBrace','crashContact','crashBlend','bodyPitch','bodyDrop','bodyTwist'] as const)out[key]=rest[key]+(out[key]-rest[key])*entry;
-  if(mounted){out.crashForward=rest.crashForward*(1-mount);out.crashLateral=rest.crashLateral*(1-mount);out.wheelCrashForward=rest.wheelCrashForward*(1-stand);out.wheelCrashLateral=rest.wheelCrashLateral*(1-stand);out.wheelCrashLean=rest.wheelCrashLean*(1-stand);out.wheelCrashSpin=rest.wheelCrashSpin*(1-stand);}
+  if(mounted){const lift=recoveryWheel(t).lift;out.crashForward=rest.crashForward*(1-mount);out.crashLateral=rest.crashLateral*(1-mount);out.wheelCrashForward=rest.wheelCrashForward*(1-lift);out.wheelCrashLateral=rest.wheelCrashLateral*(1-lift);out.wheelCrashLean=rest.wheelCrashLean*(1-lift);out.wheelCrashSpin=rest.wheelCrashSpin*(1-lift);}
 }

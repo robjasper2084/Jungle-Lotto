@@ -14,12 +14,14 @@ export function stanceTargets(p:RidePose){
   const compact=unit((p.speed-5)/10)*(1-back)*live;
   const race=unit((p.speed-10)/8)*(1-back)*(1-air)*(1-crouch)*live;
   const reachPulse=unit(p.balanceReach)*live;
-  const pitch=Math.max(-.3,Math.min(.93,.10+.52*p.riderPitch-p.wheelPitch+.64*crouch+.13*landing+.05*p.attack+.055*compact+.10*race));
-  const drop=.08+Math.max(-.025,Math.min(.31,.27*crouch+.03*forward+.075*back+.035*carve+.012*p.tractionUsage+.035*air+.15*landing+.03*anticipate-.045*extension+p.terrainBend+.02*compact+.035*race));
+  // Knees pre-load before a drop and absorb the contact while the chest hinges
+  // forward. This is articulation only; wheel suspension/handling stay physical.
+  const pitch=Math.max(-.3,Math.min(.93,.10+.52*p.riderPitch-p.wheelPitch+.64*crouch+.18*landing+.035*anticipate+.05*p.attack+.055*compact+.10*race));
+  const drop=.08+Math.max(-.025,Math.min(.31,.27*crouch+.03*forward+.075*back+.035*carve+.012*p.tractionUsage+.035*air+.18*landing+.055*anticipate-.045*extension+p.terrainBend+.02*compact+.035*race));
   const hands=[1,-1].map(side=>{
     const outside=side!==Math.sign(p.rollAngle),reach=carve*(outside?1:-.3);
-    return {x:side*(.036+.025*(forward+back)+.10*air+.065*carve*(outside?1:.15)*(1-.35*compact)+.04*landing+.04*reachPulse+.08*technical),
-      y:.015+.025*carve*(outside?1:-.25)+.13*air+.14*crouch+.08*compact+.045*race+.055*landing+.14*extension+.045*reachPulse+technical*(outside?.34:.12),
+    return {x:side*(.036+.025*(forward+back)+.10*air+.065*carve*(outside?1:.15)*(1-.35*compact)+.04*landing+.025*anticipate+.04*reachPulse+.08*technical),
+      y:.015+.045*carve*(outside?1:-.25)+.13*air+.14*crouch+.08*compact+.045*race+.075*landing+.035*anticipate+.14*extension+.045*reachPulse+technical*(outside?.34:.12),
       z:.060+.06*back-.035*forward+.22*crouch+.05*compact+.04*race+.10*reach+technical*(outside?.30:-.10)-.09*preload+.16*extension+.06*anticipate,
       wrist:Math.max(-.18,Math.min(.18,-.025-p.riderPitch*.13+side*p.rollVelocity*.025-.09*air-.06*extension))};
   });

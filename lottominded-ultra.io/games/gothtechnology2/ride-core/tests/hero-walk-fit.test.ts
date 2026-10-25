@@ -95,7 +95,8 @@ for(const walkStyle of ['tactical','kimodo'] as const)test(`${walkStyle}: all fi
   t.diagnostic(JSON.stringify({id,hipTravel,legLength}));
   assert(hipTravel<.10*legLength,`${id}: pelvis drops into a squat between steps (${hipTravel} m)`);
   assert(Math.max(...stepWidths)<pedalWidth*.92,`${id}: walking still uses the wide pedal stance`);
-  for(const hand of handTravel)assert(Math.max(...hand)-Math.min(...hand)>.20*(lengths[0]+lengths[1])/2,`${id}: arm swing is barely visible`);
+  t.diagnostic(JSON.stringify({id,walkStyle,handTravel:handTravel.map(hand=>Math.max(...hand)-Math.min(...hand)),legLength}));
+   for(const hand of handTravel)assert(Math.max(...hand)-Math.min(...hand)>.20*(lengths[0]+lengths[1])/2,`${id}: arm swing is barely visible`);
   for(let j=0;j<poses[0].length;j++){
    assert(poses[0][j].angleTo(poses[96][j])<.005,`${id}: joint pops at the walking loop seam`);
    for(let i=1;i<poses.length;i++)assert(poses[i-1][j].angleTo(poses[i][j])<.18,`${id}: abrupt joint ${j} change at phase ${i}/96: ${poses[i-1][j].angleTo(poses[i][j])}`);

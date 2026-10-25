@@ -19,7 +19,7 @@ export function createPose(){return {
   rollAngle:0,riderRoll:0,riderPitch:0,wheelPitch:0,suspensionOffset:0,
   crouch:0,tuck:0,attack:0,carveStance:0,technicalTurn:0,riderTurnTwist:0,riderLookYaw:0,
   reverseBlend:0,restFactor:0,airBlend:0,airHeight:0,wobble:0,wobbleSway:0,wobbleFight:0,wobbleYaw:0,wobbleRoll:0,
-  crashMotion:0,crashContact:0,crashReach:0,crashAbsorb:0,crashCurl:0,crashHeadTuck:0,crashStagger:0,crashSide:0,crashDirection:0,crashBrace:0,crashRelease:0,crashSettle:0,crashLegTuck:0,crashImpactPulse:0,wheelCrashForward:0,wheelCrashLateral:0,crashBlend:0,crashLateral:0,crashDrop:0,crashForward:0,crashTumble:0,crashRoll:0,
+  crashKind:0,crashTime:0,crashMotion:0,crashContact:0,crashReach:0,crashAbsorb:0,crashCurl:0,crashHeadTuck:0,crashStagger:0,crashSide:0,crashDirection:0,crashBrace:0,crashRelease:0,crashSettle:0,crashLegTuck:0,crashImpactPulse:0,wheelCrashForward:0,wheelCrashLateral:0,crashBlend:0,crashLateral:0,crashDrop:0,crashForward:0,crashTumble:0,crashRoll:0,
   wheelCrashPop:0,wheelCrashSpin:0,wheelCrashLean:0,crashRecovery:0,
   velocityX:0,velocityZ:0,yawRate:0,turnIntent:0,brakeAmount:0,landingCompression:0,
   takeoffExtension:0,landingAnticipation:0,bodyBob:0,motorLoad:0,tiltback:0,slipAngle:0,rollVelocity:0,
@@ -31,7 +31,7 @@ export function createPose(){return {
 };}
 export type RidePose=ReturnType<typeof createPose>;
 export function copyPose(from:RidePose,to:RidePose){Object.assign(to,from);}
-export function lerpPose(a:RidePose,b:RidePose,t:number,out:RidePose){const f=clamp(t,0,1);for(const key of Object.keys(a) as (keyof RidePose)[])out[key]=(a[key]??0)+((b[key]??0)-(a[key]??0))*f;interpolateFoot(a,b,f,out);}
+export function lerpPose(a:RidePose,b:RidePose,t:number,out:RidePose){const f=clamp(t,0,1);for(const key of Object.keys(a) as (keyof RidePose)[])out[key]=(a[key]??0)+((b[key]??0)-(a[key]??0))*f;interpolateFoot(a,b,f,out);out.crashKind=b.crashKind;}
 type Spawn={position:Vec3;headingY:number};
 
 /** Original Motion 4: jerk-limited motor, bank-led steering and articulated body at 120 Hz. */

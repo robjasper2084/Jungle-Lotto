@@ -1,7 +1,8 @@
+import {RideController as CombatController} from '../../../ride-core/src/controller.ts';
 import {SPECIAL_MOVES} from './specialMoves.ts';
 import {RideAudio} from './rideAudio.ts';
 import {PedalSparks} from './pedalSparks.ts';
-import {fallCameraOffset} from './fallMotion.ts';
+import {FallMotion,getUpPose,fallCameraOffset} from './fallMotion.ts';
 import * as T from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {Hero,loadActors} from './actors.ts';
@@ -10,6 +11,10 @@ import {RIDE_TUNING} from './rideDynamics.ts';
 import type {RideActions} from './controller.ts';
 import type {TerrainSampler} from './terrain.ts';
 import {RIDER_CHOICES,riderChoice} from './riderChoices.ts';
+import {GLTFLoader} from './compressedGLTFLoader.ts';
+import {EquipmentLibrary,WeaponView} from './royale/equipment.ts';
+import {CombatRig} from './royale/combatRig.ts';
+import {initialCombat} from '../../../ride-core/src/royale/rules.ts';
 const canvas=document.querySelector<HTMLCanvasElement>('#studio')!;
 const renderer=new T.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.6;
 const scene=new T.Scene();scene.background=new T.Color('#52615e');scene.fog=new T.Fog('#52615e',12,45);
@@ -21,24 +26,29 @@ const grid=new T.GridHelper(2000,1000,0x839e92,0x687971);grid.position.y=.002;sc
 const actorData=await loadActors();let selectedRider=riderChoice(null);
 try{selectedRider=riderChoice(localStorage.getItem('digital-static-rider'));}catch{}
 let hero=new Hero(actorData,undefined,selectedRider,'kimodo');scene.add(hero.root);document.querySelector<HTMLElement>('#loading')!.hidden=true;canvas.dataset.ready='true';
+const fpsEquipment=await EquipmentLibrary.load(new GLTFLoader(),new URL('./exports/polish/royale-equipment/',location.href)),fpsWeapon=new WeaponView(fpsEquipment);fpsWeapon.select('static');scene.add(fpsWeapon.root);fpsWeapon.root.visible=false;let fpsRig=new CombatRig(hero,fpsWeapon),fireCycle=-1;
 const riderSelect=document.querySelector<HTMLSelectElement>('#rider')!;
 for(const r of RIDER_CHOICES){const o=document.createElement('option');o.value=r.id;o.textContent=r.label;riderSelect.append(o);}riderSelect.value=selectedRider;
-riderSelect.onchange=()=>{selectedRider=riderChoice(riderSelect.value);hero.dispose();hero=new Hero(actorData,undefined,selectedRider,'kimodo');scene.add(hero.root);sim.wheelScale=hero.wheelScale;updateRiderActions();try{localStorage.setItem('digital-static-rider',selectedRider);}catch{}};
+riderSelect.onchange=()=>{selectedRider=riderChoice(riderSelect.value);hero.dispose();hero=new Hero(actorData,undefined,selectedRider,'kimodo');scene.add(hero.root);fpsRig=new CombatRig(hero,fpsWeapon);sim.wheelScale=hero.wheelScale;updateRiderActions();try{localStorage.setItem('digital-static-rider',selectedRider);}catch{}};
 let crashTest=false;
 const flat:TerrainSampler={sampleGround(_x,_z,out){out.height=0;out.surface='pavement';out.offCourse=false;Object.assign(out.normal,{x:0,y:1,z:0});return out;},raycast:()=>null,raycastObstacle:()=>crashTest?.2:null};
 const sim=new RideController(flat),current=createPose(),previous=createPose(),renderPose=createPose();
 const names:Record<string,string>={reverse:'Reverse • brake, release, ride back',pivot:'Slow turn • body pivot and forward knees',neutral:'Balance • relaxed knees',drive:'Accelerate • lean and drive',brake:'Brake • sit back and absorb',carve:'Carve • lean, counterbalance and look ahead',tuck:'Crouch • preload, then stand',air:'Hop / land • compress, extend, float, absorb'};
 for(const m of SPECIAL_MOVES){const name='trick'+m.id;names[name]=m.name+' · preload, balance, settle';const b=document.createElement('button');b.dataset.pose=name;b.textContent=m.name;document.querySelector('#play')!.before(b);}
 names.fall='Fall / recover • brace, separate, impact, slide';
-const footPreviews=['standingIdle','stroll','walk','run','backstep','strafeLeft','strafeRight','diagonal','crouchWalk','crawl','crawlBack','crawlSide','footHop','startStop','turnFoot','evade','stagger'];
+const footPreviews=['standingIdle','stroll','walk','run','backstep','strafeLeft','strafeRight','diagonal','crouchWalk','laydown','crawl','crawlBack','crawlSide','footHop','startStop','turnFoot','evade','stagger'];
 const entries=['neutral','drive','carve','brake','tuck','air','reverse','pivot','walk','run'],step=1/120,duration=6;
+for(const [id,label]of [['fpsIdle','FPS template · idle'],['fpsWalk','FPS template · walk'],['fpsRun','FPS template · run'],['fpsBack','FPS template · retreat'],['fpsJump','FPS template · jump / land'],['fpsAim','FPS template · aim'],['fpsReload','FPS template · reload'],['fpsFire','FPS template · fire']]){footPreviews.push(id);names[id]=label;const button=document.createElement('button');button.dataset.pose=id;button.textContent=label;document.querySelector('#play')!.before(button);}
 for(const [id,label] of [['standingIdle','Standing idle'],['stroll','Tactical walk'],['walk','Brisk walk'],['run','Run'],['backstep','Walk backwards'],['strafeLeft','Strafe left'],['strafeRight','Strafe right'],['diagonal','Diagonal steps'],['crouchWalk','Crouch walk'],['crawl','Prone crawl'],['startStop','Start / stop'],['turnFoot','Turn in place'],['mountFoot','Mount / dismount'],['evade','Side-step dodge'],['stagger','Stagger / recover'],['seat','Seated ride'],['stop','One-foot stop'],['scrape','Pedal scrape'],['beeps','Warning beeps']]){names[id]=label;const b=document.createElement('button');b.dataset.pose=id;b.textContent=label;document.querySelector('#play')!.before(b);}
 const rideAudio=new RideAudio(),sparks=new PedalSparks(scene),sound=document.createElement('button');sound.textContent='Sound off';sound.onclick=()=>{void rideAudio.enable(!rideAudio.enabled);sound.textContent=rideAudio.enabled?'Sound on':'Sound off';};document.querySelector('#play')!.before(sound);
-for(const [id,label]of [['crawlBack','Crawl backwards'],['crawlSide','Crawl sideways'],['footHop','Standing hop / land']]){names[id]=label;const b=document.createElement('button');b.dataset.pose=id;b.textContent=label;document.querySelector('#play')!.before(b);}
+for(const [id,label]of [['botKnockoff','Bot knockoff / recover'],['fallFront','Front impact'],['fallLeft','Left side spill'],['fallRight','Right side spill'],['fallBack','Backward fall'],['fallLanding','Hard landing'],['laydown','Tactical laydown / rise'],['crawlBack','Crawl backwards'],['crawlSide','Crawl sideways'],['footHop','Standing hop / land']]){names[id]=label;const b=document.createElement('button');b.dataset.pose=id;b.textContent=label;document.querySelector('#play')!.before(b);}
 let selected='carve',playing=true,paused=matchMedia('(prefers-reduced-motion: reduce)').matches,elapsed=0,acc=0,last=performance.now(),cameraLast=new T.Vector3(),studioView='side',playbackRate=1;
 orbit.addEventListener('start',()=>{studioView='orbit';document.querySelector<HTMLSelectElement>('#view')!.value='orbit';});
+let previewFall:FallMotion|undefined,combatPreview:CombatController|undefined;
 const timeline=document.querySelector<HTMLInputElement>('#timeline')!,pauseButton=document.querySelector<HTMLButtonElement>('#freeze')!;
 function inputs(t:number):RideActions{
+  if(selected.startsWith('fps'))return {...NEUTRAL_ACTIONS,throttle:selected==='fpsBack'?-1:['fpsWalk','fpsRun','fpsJump'].includes(selected)?1:0,run:selected==='fpsRun'||selected==='fpsJump',facingYaw:0,hop:selected==='fpsJump'&&t%2>.5&&t%2<.56};
+  if(selected==='laydown')return {...NEUTRAL_ACTIONS,prone:t>.5&&t<4};
   if(selected==='standingIdle')return {...NEUTRAL_ACTIONS};
   if(selected==='footHop')return {...NEUTRAL_ACTIONS,hop:t%2>.5&&t%2<.55};
   if(selected==='crawlBack'||selected==='crawlSide')return {...NEUTRAL_ACTIONS,prone:true,facingYaw:0,throttle:selected==='crawlBack'?-1:0,steer:selected==='crawlSide'?1:0};
@@ -62,14 +72,17 @@ function inputs(t:number):RideActions{
 }
 function resetSimulation(){
   sim.wheelScale=hero.wheelScale;
-  crashTest=false;
+  crashTest=false;previewFall=undefined;combatPreview=undefined;
   sim.reset({position:{x:0,y:0,z:0},headingY:0});
   if(footPreviews.includes(selected)){sim.step(step,{...NEUTRAL_ACTIONS,dismount:true});for(let i=0;i<90;i++)sim.step(step,NEUTRAL_ACTIONS);}
   if(['reverse','brake','carve','tuck','air','fall'].includes(selected))for(let i=0;i<200;i++)sim.step(step,{...NEUTRAL_ACTIONS,throttle:.65});
   if(selected.startsWith('trick')&&!['trick5','trick6'].includes(selected))for(let i=0;i<85;i++)sim.step(step,{...NEUTRAL_ACTIONS,throttle:.55});
   if(['scrape','beeps'].includes(selected))for(let i=0;i<1100;i++)sim.step(step,{...NEUTRAL_ACTIONS,throttle:.9});
   sparks.reset();
-  sim.writePose(current);copyPose(current,previous);copyPose(current,renderPose);elapsed=0;acc=0;
+  sim.writePose(current);
+  if(selected.startsWith('fall')&&selected!=='fall'){Object.assign(current,{headingY:0,speed:selected==='fallBack'?-6:8,rollAngle:selected==='fallLeft'?-.35:.35});previewFall=new FallMotion(current,selected==='fallLanding'?'hard landing':selected==='fallBack'||selected==='fallFront'?'collision':'sideways landing');}
+  if(selected==='botKnockoff'){combatPreview=new CombatController(flat);combatPreview.combatOnFoot=true;combatPreview.reset({position:{x:0,y:0,z:0},headingY:0});for(let i=0;i<160;i++)combatPreview.step(step,{...NEUTRAL_ACTIONS,throttle:.6,stableAI:true});Object.assign(current,combatPreview.poseValue);}
+  copyPose(current,previous);copyPose(current,renderPose);elapsed=0;acc=0;
   camera.position.sub(cameraLast);cameraLast.set(current.x,current.y,current.z);camera.position.add(cameraLast);orbit.target.copy(cameraLast).add(new T.Vector3(0,hero.motionScale<1?.65:1.05,0));orbit.update();
 }
 function choose(name:string){
@@ -78,7 +91,7 @@ function choose(name:string){
 }
 function updateRiderActions(){const mascot=selectedRider.startsWith('DS_Mascot_'),button=document.querySelector<HTMLButtonElement>('[data-pose="stop"]')!;button.disabled=mascot;button.title=mascot?'Mascots keep both feet on the pedals':'Plant one boot at a stop';if(mascot&&selected==='stop')choose('neutral');}
 // A short synthetic contact starts the preview; no invisible wall persists through the slide.
-function tick(){crashTest=selected==='fall'&&elapsed>=1&&elapsed<1.05;copyPose(current,previous);sim.step(step,inputs(elapsed));sim.writePose(current);elapsed+=step;}
+function tick(){crashTest=selected==='fall'&&elapsed>=1&&elapsed<1.05;copyPose(current,previous);sim.step(step,inputs(elapsed));sim.writePose(current);if(combatPreview){if(elapsed>=.65&&elapsed<.65+step)combatPreview.knockOff();combatPreview.step(step,{...NEUTRAL_ACTIONS,quickMount:true,stableAI:true,recover:elapsed>.65});Object.assign(current,combatPreview.poseValue);}if(previewFall){Object.assign(current,previewFall.initial);const age=Math.max(0,elapsed-.65);previewFall.sample(Math.min(age,3.5),current);current.speed=0;if(age>3.5)getUpPose({...current},Math.min(1,(age-3.5)/1.4),current,true);}elapsed+=step;}
 document.querySelectorAll<HTMLButtonElement>('[data-pose]').forEach(b=>b.onclick=()=>{playing=false;paused=false;pauseButton.textContent='Pause motion';document.querySelector('#play')!.textContent='Play sequence';choose(b.dataset.pose!);});
 document.querySelector<HTMLButtonElement>('#play')!.onclick=()=>{playing=!playing;paused=false;pauseButton.textContent='Pause motion';document.querySelector('#play')!.textContent=playing?'Stop sequence':'Play sequence';};
 pauseButton.onclick=()=>{paused=!paused;pauseButton.textContent=paused?'Resume motion':'Pause motion';rideAudio.update(renderPose,!paused);};
@@ -97,22 +110,30 @@ function frame(now:number){requestAnimationFrame(frame);const dt=Math.min(.06,(n
     lerpPose(previous,current,acc/step,renderPose);
   }else copyPose(current,renderPose);
   if(selected==='stagger')renderPose.footStagger=Math.max(0,1-(elapsed%2)/.8);
-  hero.apply(renderPose);
+  hero.combatLocomotion=selected.startsWith('fps')?1:0;hero.apply(renderPose);
+  fpsWeapon.root.visible=selected.startsWith('fps');
+  if(fpsWeapon.root.visible){const state=initialCombat(),tick=elapsed*60;
+   if(selected==='fpsReload')Object.assign(state,{reloadStart:0,reloadCommit:90,reloadEnd:183});
+   if(selected==='fpsAim')state.aimBlend=1;
+   const cycle=Math.floor(elapsed*2);if(selected==='fpsFire'&&cycle!==fireCycle){fpsWeapon.fire(matchMedia('(prefers-reduced-motion: reduce)').matches);fireCycle=cycle;}
+   fpsWeapon.update(paused?0:dt*playbackRate,matchMedia('(prefers-reduced-motion: reduce)').matches);
+   fpsRig.apply(renderPose,selected==='fpsAim'?Math.sin(elapsed)*1.5:0,selected==='fpsAim'?Math.sin(elapsed*.7)*1.25:0,state,tick);
+  }
   rideAudio.update(renderPose,!paused&&!document.hidden);sparks.update(dt*playbackRate,renderPose,!paused);
   canvas.dataset.rideFeedback=JSON.stringify({seated:renderPose.seated,stopFoot:renderPose.stopFoot,scrape:renderPose.scrape,warningLevel:renderPose.warningLevel,beepPulse:renderPose.beepPulse,audio:rideAudio.state});
   canvas.dataset.hero=selectedRider;canvas.dataset.trick=JSON.stringify(sim.tricks.snapshot());
   const fall=fallCameraOffset(renderPose);
   const position=new T.Vector3(renderPose.x+fall.x,renderPose.y+fall.y,renderPose.z+fall.z),delta=position.clone().sub(cameraLast);camera.position.add(delta);orbit.target.add(delta);cameraLast.copy(position);
   if(studioView!=='orbit'){
-    const a=renderPose.headingY+(studioView==='side'?Math.PI/2:studioView==='rear'?Math.PI:0);
-    camera.position.set(position.x+Math.sin(a)*(hero.motionScale<1?2.6:3.9),position.y+(hero.motionScale<1?1.15:1.7),position.z+Math.cos(a)*(hero.motionScale<1?2.6:3.9));orbit.target.copy(position).add(new T.Vector3(0,hero.motionScale<1?.65:1.05,0));
+    const a=renderPose.headingY+(studioView==='side'?Math.PI/2:studioView==='rear'?Math.PI:0),distance=Math.max(hero.motionScale<1?2.6:3.9,Math.hypot(renderPose.crashForward-renderPose.wheelCrashForward,renderPose.crashLateral-renderPose.wheelCrashLateral)*1.3+2.5);
+    camera.position.set(position.x+Math.sin(a)*distance,position.y+(hero.motionScale<1?1.15:1.7),position.z+Math.cos(a)*distance);orbit.target.copy(position).add(new T.Vector3(0,hero.motionScale<1?.65:1.05,0));
   }
   key.position.copy(position).add(new T.Vector3(4,6,5));key.target.position.copy(position);fill.position.copy(position).add(new T.Vector3(-3,3,-4));fill.target.position.copy(position);
   orbit.update();renderer.render(scene,camera);
   timeline.value=String(elapsed);
   const state=sim.snapshot(),feet=Math.max(...hero.legs.map((l,i)=>l.foot.getWorldPosition(new T.Vector3()).distanceTo(hero.footTarget(i,renderPose))));
   document.querySelector('#readout')!.textContent=Math.round(Math.abs(current.speed)*3.6)+' km/h · '+(current.footMode===2?(selected==='run'?'running':'walking'):state.state)+' · '+elapsed.toFixed(2)+' s';
-  Object.assign(canvas.dataset,{controller:RIDE_TUNING.version,pose:selected,footError:String(feet),speed:String(current.speed),fallPhase:state.fallPhase,phase:state.state,airHeight:String(current.airHeight),compression:String(current.landingCompression),roll:String(current.rollAngle),lean:String(current.riderPitch),hops:String(state.hops),landings:String(state.landings),paused:String(paused),weightShift:String(current.weightShift),traction:String(current.tractionUsage),yawRate:String(current.yawRate)});
+  Object.assign(canvas.dataset,{controller:RIDE_TUNING.version,pose:selected,footError:String(feet),speed:String(current.speed),fallKind:String(current.crashKind),fallPhase:previewFall?.phase??combatPreview?.snapshot().fallPhase??state.fallPhase,phase:state.state,airHeight:String(current.airHeight),compression:String(current.landingCompression),roll:String(current.rollAngle),lean:String(current.riderPitch),hops:String(state.hops),landings:String(state.landings),paused:String(paused),weightShift:String(current.weightShift),traction:String(current.tractionUsage),yawRate:String(current.yawRate)});
   Object.assign(canvas.dataset,{bodyDrop:String(current.bodyDrop),bodyPitch:String(current.bodyPitch),bodyTwist:String(current.bodyTwist),bodyLook:String(current.bodyLook),handL:String([current.handLX,current.handLY,current.handLZ]),handR:String([current.handRX,current.handRY,current.handRZ]),spineJoints:String(hero.spine.length),playbackRate:String(playbackRate),neckJoint:hero.neck?.name,shoulderJoints:String(hero.shoulders.length),hipYaw:String(current.bodyHipYaw),armBank:String(current.armBank),rigRevision:'anatomical-road-posture-v3'});
 }
 // Reserve the control panel's actual height so walking feet stay visible even
@@ -120,7 +141,7 @@ function frame(now:number){requestAnimationFrame(frame);const dt=Math.min(.06,(n
 const footer=document.querySelector<HTMLElement>('footer')!;footer.style.maxHeight='40dvh';footer.style.overflow='auto';
 const nav=footer.querySelector('nav')!,more=document.createElement('details'),summary=document.createElement('summary'),other=document.createElement('nav');
 summary.textContent='More movements';summary.style.cssText='cursor:pointer;padding:10px;';more.append(summary,other);nav.after(more);
-const preview=new Set(['stroll','walk','run','backstep']);
+const preview=new Set(['stroll','walk','run','backstep','fpsWalk','fpsRun','fpsReload']);
 for(const element of Array.from(nav.children))if(!['rider','view'].includes(element.id)&&!preview.has((element as HTMLElement).dataset.pose??''))other.append(element);
 function resizeStudio(){const height=Math.max(160,innerHeight-footer.getBoundingClientRect().height-36);camera.aspect=innerWidth/height;camera.updateProjectionMatrix();renderer.setSize(innerWidth,height);}
 new ResizeObserver(resizeStudio).observe(footer);resizeStudio();requestAnimationFrame(frame);window.addEventListener('resize',resizeStudio);

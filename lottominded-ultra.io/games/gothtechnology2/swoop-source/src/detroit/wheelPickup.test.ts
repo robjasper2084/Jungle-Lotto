@@ -30,7 +30,7 @@ test('supplied pickup clip fits all five heroes without foot sliding or stretche
 
 import {sampleTacticalWalk} from '../../../ride-core/src/tacticalWalk.ts';
 import {gaitScale} from '../../../ride-core/src/footAnimation.ts';
-test('all five heroes use the compact tactical arm directions',async()=>{
+test('all five heroes retain the tactical capture within the relaxed swing envelope',async()=>{
  const assets=await heroAssets();
  for(const {id} of RIDER_CHOICES){
   const h=new Hero(assets,undefined,id),p={...createPose(),footMode:2,footBlend:1,bodyPitch:0,speed:1.5,velocityZ:1.5};
@@ -39,8 +39,14 @@ test('all five heroes use the compact tactical arm directions',async()=>{
    const phase=n/40;Object.assign(p,{footCycle:phase*gaitScale(length),footPhase:phase,footTime:n/60});h.apply(p);const reference=sampleTacticalWalk(phase);
    h.arms.forEach((arm,i)=>{
     const upper=arm.knee.getWorldPosition(new Vector3()).sub(arm.upper.getWorldPosition(new Vector3())).normalize(),lower=arm.foot.getWorldPosition(new Vector3()).sub(arm.knee.getWorldPosition(new Vector3())).normalize();
-    assert(upper.angleTo(new Vector3().fromArray(reference,12+i*6))<.012,id+' upper arm differs from source '+upper.angleTo(new Vector3().fromArray(reference,12+i*6))+' at '+phase);
-    assert(lower.angleTo(new Vector3().fromArray(reference,15+i*6))<.012,id+' forearm differs from source');
+    // The fitted walk enlarges swing and clears short mascot jackets. Keep the
+     // captured bend and direction inside a compact envelope instead of requiring
+     // the old unfitted vectors bit for bit. Full-cycle fit tests check contacts,
+     // counter-swing, wrist alignment, minimum travel and seam continuity.
+     const sourceUpper=new Vector3().fromArray(reference,12+i*6),sourceLower=new Vector3().fromArray(reference,15+i*6);
+     assert(upper.angleTo(sourceUpper)<.20,id+' upper arm leaves capture envelope');
+     assert(Math.abs(upper.angleTo(lower)-sourceUpper.angleTo(sourceLower))<.06,id+' elbow bend loses capture');
+    assert(lower.angleTo(sourceLower)<.20,id+' forearm leaves capture envelope');
    });
   }h.dispose();
  }

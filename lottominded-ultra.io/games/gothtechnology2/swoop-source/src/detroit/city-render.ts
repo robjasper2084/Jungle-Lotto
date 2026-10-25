@@ -119,13 +119,17 @@ export async function buildCity(_scene:T.Scene,world:SceneryWorld,groupAt:(x:num
      }
    }
  }
- const surfaces:Array<[T.Group,Array<[T.Material,number[]|Float32Array]>]>=cached?cached.tiles.map(t=>[groupAt(t.x,t.z),[[cacheMaterials[t.material],cached.positions.subarray(t.offset,t.offset+t.count)]]]):[...paths].map(([g,bins])=>[g,[...bins]]);
+  // The old non-indexed ribbons already had flat triangle normals. Deriving
+  // those normals in the shader preserves the faces without a full normal buffer.
+  const streetMaterials=new Map<T.Material,T.Material>();
+  for(const material of Object.values(cacheMaterials)){const clone=(material as T.MeshStandardMaterial).clone();clone.flatShading=true;clone.onBeforeCompile=(shader,renderer)=>material.onBeforeCompile(shader,renderer);clone.customProgramCacheKey=()=>material.customProgramCacheKey()+'-flat-street';streetMaterials.set(material,clone);}
+  const surfaces:Array<[T.Group,Array<[T.Material,number[]|Float32Array,Uint32Array?]>]>=cached?cached.tiles.map(t=>[groupAt(t.x,t.z),[[cacheMaterials[t.material],cached.positions.subarray(t.offset,t.offset+t.count),cached.indices?.subarray(t.indexOffset!,t.indexOffset!+t.indexCount!)]]]):[...paths].map(([g,bins])=>[g,[...bins]]);
  if(cached){streetSections=cached.sections;streetTriangles=cached.triangles;}
- for(const[g,bins]of surfaces)for(const[material,positions]of bins){await slice.checkpoint();if(!material)throw Error('Unknown cached street material');const geo=new T.BufferGeometry();geo.userData.streetCacheMaterial=Object.keys(cacheMaterials).find(k=>cacheMaterials[k]===material);geo.setAttribute('position',positions instanceof Float32Array?new T.BufferAttribute(positions,3):new T.Float32BufferAttribute(positions,3));
+  for(const[g,bins]of surfaces)for(const[material,positions,indices]of bins){await slice.checkpoint();if(!material)throw Error('Unknown cached street material');const geo=new T.BufferGeometry();geo.userData.streetCacheMaterial=Object.keys(cacheMaterials).find(k=>cacheMaterials[k]===material);geo.setAttribute('position',positions instanceof Float32Array?new T.BufferAttribute(positions,3):new T.Float32BufferAttribute(positions,3));if(indices)geo.setIndex(new T.BufferAttribute(indices,1));
    // These ribbons can sit above the bank terrain and extend beyond the deck.
    // Share their exact surface with riding, dog paws, falls and camera queries.
-   if(material!==paint&&material!==whitePaint&&material!==seam)world.addRideSurface(geo.attributes.position.array as Float32Array);
-   const uv=new Float32Array(positions.length/3*2),scale=material===parkMat?1.1:material===sidewalk?4:2;for(let i=0;i<positions.length;i+=3){const u=i/3*2;uv[u]=positions[i]/scale-Math.floor(g.userData.center.x/scale);uv[u+1]=positions[i+2]/scale-Math.floor(g.userData.center.z/scale);}geo.setAttribute('uv',new T.BufferAttribute(uv,2));geo.computeVertexNormals();const m=new T.Mesh(geo,material);m.name=material===parkMat?'Milliken smooth park paths':material===sidewalk?'Concrete sidewalks':'Mapped street surface';m.receiveShadow=true;g.add(m);}
+    if(material!==paint&&material!==whitePaint&&material!==seam)world.addRideSurface(geo.attributes.position.array as Float32Array,false,indices);
+    const uv=new Float32Array(positions.length/3*2),scale=material===parkMat?1.1:material===sidewalk?4:2;for(let i=0;i<positions.length;i+=3){const u=i/3*2;uv[u]=positions[i]/scale-Math.floor(g.userData.center.x/scale);uv[u+1]=positions[i+2]/scale-Math.floor(g.userData.center.z/scale);}geo.setAttribute('uv',new T.BufferAttribute(uv,2));const m=new T.Mesh(geo,streetMaterials.get(material));m.name=material===parkMat?'Milliken smooth park paths':material===sidewalk?'Concrete sidewalks':'Mapped street surface';m.receiveShadow=true;g.add(m);}
  if(!world.buildingMeshes.length)return{blocks:0,landmarks:[] as string[],bridges:GEO.bridges.length,ramps:GEO.ramps.length,mapped:true,streetSections,streetTriangles,streetTiles:paths.size,cached:!!cached};
  const residential=new Map([[3,orleansMaterial(3)],[4,orleansMaterial(4)]]);
  const entranceIndex=new BuildingEntranceIndex(CITY.roads,CITY.buildings);

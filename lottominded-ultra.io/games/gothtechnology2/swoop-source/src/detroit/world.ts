@@ -267,8 +267,8 @@ export class DetroitWorld implements TerrainSampler{
     return collider;
   }
   /** Register the same upward triangles used to render a draped street or sidewalk. */
-  addRideSurface(vertices:Float32Array,solidFoundation=false){this.collisionDirty=true;
-    return this.physics.createCollider(RAPIER.ColliderDesc.trimesh(vertices,Uint32Array.from({length:vertices.length/3},(_,i)=>i)).setCollisionGroups(solidFoundation?0x0001ffff:0x0004ffff));
+  addRideSurface(vertices:Float32Array,solidFoundation=false,indices?:Uint32Array){this.collisionDirty=true;
+    return this.physics.createCollider(RAPIER.ColliderDesc.trimesh(vertices,indices??Uint32Array.from({length:vertices.length/3},(_,i)=>i)).setCollisionGroups(solidFoundation?0x0001ffff:0x0004ffff));
   }
   sampleGround(x:number,z:number,out:GroundSample,referenceY?:number){
     const hit=this.physics.castRayAndGetNormal(new RAPIER.Ray({x,y:60,z},{x:0,y:-1,z:0}),100,true,undefined,0xffff0001);
