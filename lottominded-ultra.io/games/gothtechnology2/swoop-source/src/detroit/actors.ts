@@ -71,6 +71,7 @@ export class Hero {
   readonly visibility:RiderVisibility;readonly vrEyeHeight:number;readonly mountedVolume:{radius:number;height:number};
   /** Fit the captured walk and soles during loading, not on the first dismount. */
   prepareOnFoot(){prepareOnFootRider(this);}
+  sampleFootGround(x:number,z:number,referenceY:number){return this.terrain?.sampleGround(x,z,createGroundSample(),referenceY);}
   constructor(data:Map<string,GLTF>,terrain?:TerrainSampler,riderId:RiderId='DS_Man_01',walkStyle:'tactical'|'kimodo'='tactical'){
     this.terrain=terrain;this.riderId=riderId;this.walkStyle=walkStyle;
     const mascot=riderId.startsWith('DS_Mascot_');this.wheelScale=mascot?.75:.86;this.motionScale=mascot?.48:1;this.mountHeight=.296*this.wheelScale;

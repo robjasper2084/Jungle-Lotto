@@ -1,6 +1,7 @@
 import type {GroundSample,ObstacleHit,TerrainSampler,Vec3} from '../terrain.ts';
 import {TagTerrain,type TagFixture} from '../tag/fixture.ts';
 import {TagNavigation} from '../tag/navigation.ts';
+import {GroundRoutes,groundTravelClear} from './groundRoute.ts';
 
 /** Static Royale's map contract uses the existing authored collision export.
  * The game keeps its original scenery and static snapshot. Small additional
@@ -71,9 +72,11 @@ export function authoredArenaLayout(fixture:TagFixture,clear:(p:Vec3)=>boolean):
 
 export class AuthoredArena implements TerrainSampler{
  readonly layout:AuthoredArenaLayout;readonly navigation:TagNavigation;
+ private readonly groundRoutes:GroundRoutes;
  readonly handshake;
  constructor(readonly terrain:TagTerrain){
   this.navigation=new TagNavigation(terrain.fixture,terrain);
+  this.groundRoutes=new GroundRoutes(this.navigation.nodes,this.navigation.edges,this);
   this.layout=authoredArenaLayout(terrain.fixture,p=>this.clear(p.x,p.z,.75,p.y));
   this.handshake=Object.freeze({map:this.layout.arena,arena:this.layout.revision,
    rules:'static-royale-1',protocol:1,physics:terrain.fixture.physicsVersion,collision:this.layout.collision});
@@ -92,9 +95,8 @@ export class AuthoredArena implements TerrainSampler{
  surfaceHit(o:Vec3,d:Vec3,max:number){return this.terrain.surfaceHit(o,d,max);}
  raycast(o:Vec3,d:Vec3,max:number){return this.terrain.raycast(o,d,max);}
  line(a:Vec3,b:Vec3,radius=.1){return this.sweep(a,{x:b.x-a.x,y:b.y-a.y,z:b.z-a.z},radius)===null;}
- route(from:Vec3,to:Vec3){const result=this.navigation.path(from,to);
-  return result.length>1||distance(from,to)<1?result:[];
- }
+ travelClear(from:Vec3,to:Vec3,radius=.32){return groundTravelClear(this,from,to,radius);}
+ route(from:Vec3,to:Vec3){return this.groundRoutes.path(from,to);}
  /** Coordinates for the existing map-scene root, not a duplicated map. */
  sourcePosition(p:Vec3){const t=this.terrain.fixture.transform;return {x:t.tx+t.sx*p.x,y:p.y+t.ty,z:p.z+t.tz};}
  // Lifetime belongs to the existing game or server's shared immutable map cache.

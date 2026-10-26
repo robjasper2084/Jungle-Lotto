@@ -1,5 +1,6 @@
 // Swoop route adapter: shared event rules with early narrowing and committed passing.
 import {createGroundSample,type TerrainSampler,type NavigationObstacle} from './terrain.ts';
+import {recoverRouteWall,newRouteRecovery,type RouteRecovery} from './routeRecovery.ts';
 export type RoutePoint={x:number;z:number;width?:number};
 const clamp=(n:number,a:number,b:number)=>Math.max(a,Math.min(b,n));
 export const COMMUNITY_PACE=11.3;
@@ -13,7 +14,7 @@ export class LaneRoute {
 }
 export type CommunityStage='assembling'|'rollout'|'riding'|'regroup'|'finishing'|'complete'|'cleanup'|'hangout';
 export type CommunityDestination={name:string;slots:{x:number;z:number;headingY:number;approach:{x:number;z:number}}[]};
-export type PackRider={id:string;s:number;speed:number;x:number;y:number;z:number;headingY:number;wheelSpin:number;pedalPhase:number;offset:number;blocked:boolean;thinkIn:number;targetOffset:number;passUntil?:number;parking?:boolean;parkLeg?:number;parked?:boolean};
+export type PackRider={id:string;s:number;speed:number;x:number;y:number;z:number;headingY:number;wheelSpin:number;pedalPhase:number;offset:number;blocked:boolean;thinkIn:number;targetOffset:number;passUntil?:number;parking?:boolean;parkLeg?:number;parked?:boolean;recovery?:RouteRecovery};
 /** One bounded pack, shared by spectators and participants. Progress uses mapped arc length. */
 export class CommunityRide {
   autoStart=false;
@@ -24,7 +25,7 @@ export class CommunityRide {
     for(let i=0;i<Math.min(12,Math.max(2,count));i++)this.riders.push({id:'community-'+i,s:4+(count-i-1)*3.4,speed:0,x:0,y:0,z:0,headingY:0,wheelSpin:0,pedalPhase:i*1.77,offset:.55,blocked:false,thinkIn:0,targetOffset:.55});
     for(let s=3;s<route.length-2;s+=8)this.gates.push(s);this.gates.push(route.length-2);this.restart();
   }
-  restart(){this.runId++;this.stage='assembling';this.joined=this.eligible=this.completed=this.regrouped=false;this.timer=0;this.elapsed=0;this.nextGate=0;this.participation=0;this.previousPlayer=undefined;this.message=this.destination?'Gathering · riding to '+this.destination.name+' in 5 seconds. Join nearby.':'Gathering · join nearby, on a bicycle or EUC.';this.riders.forEach((r,i)=>{r.s=4+(this.riders.length-i-1)*2.2;r.speed=0;r.blocked=false;r.offset=r.targetOffset=this.formationOffset(i,r.s);r.thinkIn=0;r.passUntil=0;r.parking=r.parked=false;r.parkLeg=0;this.place(r);});}
+  restart(){this.runId++;this.stage='assembling';this.joined=this.eligible=this.completed=this.regrouped=false;this.timer=0;this.elapsed=0;this.nextGate=0;this.participation=0;this.previousPlayer=undefined;this.message=this.destination?'Gathering · riding to '+this.destination.name+' in 5 seconds. Join nearby.':'Gathering · join nearby, on a bicycle or EUC.';this.riders.forEach((r,i)=>{r.s=4+(this.riders.length-i-1)*2.2;r.speed=0;r.blocked=false;r.offset=r.targetOffset=this.formationOffset(i,r.s);r.thinkIn=0;r.passUntil=0;r.parking=r.parked=false;r.parkLeg=0;r.recovery=undefined;this.place(r);});}
   private laneWidth(s:number,speed:number){return Math.min(...[0,5,Math.max(10,speed*2.5)].map(d=>this.route.at(s+d).width));}
   private formationOffset(index:number,s:number){
     if(this.laneWidth(s,this.pace)<3.8||s>this.route.length-32)return 0;
@@ -141,8 +142,13 @@ export class CommunityRide {
       const hit=d>.0001?this.terrain.raycastObstacle({x:r.x,y:r.y+.6,z:r.z},{x:(candidate.x-r.x)/d,y:0,z:(candidate.z-r.z)/d},d,.32):null;
       const blocks=(o:{x:number;y:number;z:number},radius:number)=>Math.abs(o.y-r.y)<2&&Math.hypot(candidate.x-o.x,candidate.z-o.z)<radius&&Math.hypot(candidate.x-o.x,candidate.z-o.z)<=Math.hypot(r.x-o.x,r.z-o.z)+1e-7;
       const packBlocked=this.riders.some(o=>o!==r&&blocks(o,1.25));
-      r.blocked=g.offCourse||g.surface==='grass'||(hit!==null&&hit<d)||packBlocked||obstacles.some(o=>!o.id.startsWith('community-')&&blocks(o,o.radius+.6));
-      if(r.blocked){r.speed=0;r.thinkIn=0;this.yieldSideways(r,dt,obstacles);}else{const heading=d>.001?Math.atan2(candidate.x-r.x,candidate.z-r.z):r.headingY;r.offset=nextOffset;r.s=Math.min(stop,r.s+r.speed*dt);this.place(r);r.headingY=heading;r.wheelSpin+=d/.34;if(r.speed>.15)r.pedalPhase+=r.speed*dt/(.34*2.5);}
+      r.blocked=!!r.recovery?.backing||g.offCourse||g.surface==='grass'||(hit!==null&&hit<d)||packBlocked||obstacles.some(o=>!o.id.startsWith('community-')&&blocks(o,o.radius+.6));
+      if(r.blocked){
+        r.speed=0;r.thinkIn=0;
+        const recovery=r.recovery??=newRouteRecovery(r.s),neighbors=[...obstacles,...this.riders.filter(o=>o!==r).map(o=>({id:o.id,x:o.x,y:o.y,z:o.z,radius:.65,height:1.8,kind:'cyclist',vx:0,vz:0}))];
+        const escape=(hit!==null||recovery.backing||recovery.backUsed)?recoverRouteWall(this.terrain,(s,o)=>this.route.at(s,o),r,recovery,dt,width/2-.55,neighbors,0):undefined;
+        if(escape){const travel=Math.hypot(escape.x-r.x,escape.z-r.z);Object.assign(r,escape);r.passUntil=r.s+12;r.wheelSpin+=travel/.34;}else if(!recovery.backing)this.yieldSideways(r,dt,obstacles);
+      }else{const heading=d>.001?Math.atan2(candidate.x-r.x,candidate.z-r.z):r.headingY;r.offset=nextOffset;r.s=Math.min(stop,r.s+r.speed*dt);this.place(r);r.headingY=heading;r.wheelSpin+=d/.34;if(r.speed>.15)r.pedalPhase+=r.speed*dt/(.34*2.5);if(r.recovery&&r.s>r.recovery.origin+.8)r.recovery=undefined;}
       if(this.destination&&r.s>=finish-.1){r.parking=true;r.speed=0;this.message='Arriving at GothTechnology · parking in the lot.';}
       if(!this.destination&&r.s>=finish-.1){r.parked=true;r.speed=0;}
     }

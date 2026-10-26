@@ -11,6 +11,7 @@ import {weaponSocket,type CombatState} from '../../../../ride-core/src/royale/ru
 import {EQUIPMENT_SOCKETS as sockets} from '../../../../ride-core/src/royale/combatProfiles.ts';
 import {WeaponView,type HeldRepairPack} from './equipment.ts';
 import leanProfile from './leanProfiles.json' with {type:'json'};
+import {FPS_HAND_SCALE} from './fpsArms.ts';
 import {meleeTargets} from '../../../../ride-core/src/royale/melee.ts';
 
 /** Base riding pose -> torso -> independent weapon frame -> dominant IK ->
@@ -24,7 +25,12 @@ export class CombatRig {
   private repairProp:HeldRepairPack;private repairPack:T.Group;
   private backRest=new T.Quaternion();
   constructor(readonly hero:Hero,readonly weapon:WeaponView,private readonly firstPerson=false){this.repairProp=weapon.createHeldRepair();this.repairPack=this.repairProp.root;hero.root.add(this.repairPack);(hero.chest??hero.rider).getWorldQuaternion(this.backRest).invert();}
-  private gripOffset(left:boolean){const wide=this.weapon.kind==='bass';return new T.Vector3(left?(wide?.31:.24):wide?-.30:-.23,-.035,left?-.035:-.085).multiplyScalar(this.hero.motionScale).applyQuaternion(this.weapon.root.quaternion);}
+  private gripOffset(left:boolean){const wide=this.weapon.kind==='bass';
+    // Fit the camera to the authored palms. These wrist offsets previously
+    // compensated for the FPS-only enlarged gloves, leaving normal hands apart.
+    const handFit=FPS_HAND_SCALE/(this.hero.riderId.startsWith('DS_Mascot_')?1.35:1.5);
+    return new T.Vector3(left?(wide?.31:.24):wide?-.30:-.23,-.035,left?-.035:-.085).multiplyScalar(this.hero.motionScale*handFit).applyQuaternion(this.weapon.root.quaternion);
+  }
   private handRotation(index:number,weaponRotation:T.Quaternion){
     const limb=this.hero.arms[index],rotation=limb.rotation.clone();
     if(this.firstPerson){
@@ -34,7 +40,17 @@ export class CombatRig {
       // exposes the ends of the knuckles and reads as two empty sleeve tubes.
       if(finger){const palm=finger.position.clone().normalize().applyQuaternion(rotation);
         const gripDirection=index===0?new T.Vector3(-.65,.40,.65):new T.Vector3(.45,.75,.35);
-        rotation.premultiply(new T.Quaternion().setFromUnitVectors(palm,gripDirection.normalize()));}
+        rotation.premultiply(new T.Quaternion().setFromUnitVectors(palm,gripDirection.normalize()));
+        // Resolve wrist roll as well as finger direction. Keep the back of the
+        // selected hero's glove toward the viewer and its curl around the prop.
+        const prefix=index===0?'Left':'Right',indexBase=limb.foot.getObjectByName(prefix+'HandIndex1'),pinky=limb.foot.getObjectByName(prefix+'HandPinky1');
+        if(indexBase&&pinky){
+          const across=indexBase.position.clone().sub(pinky.position).normalize().multiplyScalar(index===0?-1:1);
+          const dorsal=across.cross(finger.position.clone().normalize()).negate().normalize().applyQuaternion(rotation);
+          const target=new T.Vector3(index===0?.20:-.20,.12,-1);target.addScaledVector(gripDirection,-target.dot(gripDirection)).normalize();
+          rotation.premultiply(new T.Quaternion().setFromAxisAngle(gripDirection,Math.atan2(gripDirection.dot(dorsal.clone().cross(target)),dorsal.dot(target))));
+        }
+      }
     }
     return rotation.premultiply(weaponRotation);
   }

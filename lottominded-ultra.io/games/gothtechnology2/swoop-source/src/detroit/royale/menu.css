@@ -18,6 +18,8 @@
 #lobby .royale-menu-facts{border-block:1px solid var(--royale-edge);padding:12px 0;color:var(--royale-accent);font:700 10px/1.7 'Segoe UI',sans-serif;letter-spacing:.12em;margin:0 0 22px}
 #lobby .royale-deploy{max-width:440px;min-height:58px;margin:0;font-size:17px;letter-spacing:.04em}
 #lobby .royale-menu-brief{font-size:12px;line-height:1.6;color:var(--royale-muted);margin:9px 0 19px}
+#lobby .royale-replay-action{margin:0 0 20px}#lobby .royale-replay-action button{width:100%;text-align:left;background:#14343b;border-color:#81ecdb70}
+#lobby .lobby-world-caption strong{white-space:pre-line}
 #lobby .royale-training{display:flex;gap:10px;max-width:440px}
 #lobby .royale-training button{flex:1;text-align:left;border:1px solid var(--royale-edge);background:#10232dd9;font-size:12px;line-height:1.5;min-height:54px;padding:12px}
 #lobby .royale-selection{display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--royale-edge);margin:28px 0 0;padding-top:16px;max-width:440px}
@@ -57,8 +59,14 @@
 #lobby .royale-result-stats dt{font-size:10px;color:var(--royale-muted)}#lobby .royale-result-stats dd{margin:0;font-size:23px;font-weight:700;white-space:nowrap}
 #lobby .royale-standings{border:0;border-top:1px solid var(--royale-edge);margin:12px 0 0;padding:0}
 #lobby .royale-standings summary{font-size:12px;min-height:44px;padding:12px 0;cursor:pointer}
-#lobby .royale-standings ol{padding:0;margin:0;list-style:none}#lobby .royale-standings li{display:flex;justify-content:space-between;gap:12px;padding:7px 10px;font-size:12px;border-bottom:1px solid #ffffff0c}
-#lobby .royale-standings li.is-you{color:var(--royale-accent);background:#75e3ce10}
+#lobby .royale-standings-table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
+#lobby .royale-standings-table th,#lobby .royale-standings-table td{padding:9px 5px;border-bottom:1px solid #ffffff12;text-align:right;overflow-wrap:anywhere}
+#lobby .royale-standings-table th:first-child{width:46%;text-align:left}
+#lobby .royale-standings-table thead th{color:var(--royale-muted);font-size:10px;font-weight:600}
+#lobby .royale-standings-table tbody th{font-weight:500}
+#lobby .royale-standings-table .is-you{color:var(--royale-accent);background:#75e3ce10}
+#lobby .royale-standings-rule{font-size:11px;line-height:1.6;color:var(--royale-muted);margin:12px 0}
+#lobby .royale-match-winner{font-size:15px;font-weight:700;color:var(--royale-accent);margin:14px 0 5px;overflow-wrap:anywhere}
 #lobby .royale-menu-panel button,#lobby .royale-menu-panel select,#lobby .royale-menu-panel input:not([type=checkbox]):not([type=range]){min-height:46px;border-radius:8px}
 #lobby .royale-deploy{width:100%;max-width:none;text-align:left;padding:17px 20px;border:1px solid #b1f9e6;box-shadow:0 8px 28px #50cfb512}
 #lobby .setup-heading{align-items:baseline;gap:12px;margin:0 0 12px}#lobby .setup-heading h2{font-size:34px;margin:0}#lobby .setup-heading>span{font-size:9px;letter-spacing:.12em}
@@ -81,3 +89,4 @@
 #lobby .royale-settings-group select{width:100%;max-width:100%}#lobby .royale-settings-group output{color:var(--royale-accent)}
 #lobby .royale-menu-panel :is(button,summary,select,input,a):focus-visible{outline:2px solid #98f8df;outline-offset:3px}
 @media(max-width:700px){#lobby.royale-menu{scroll-padding-top:120px}#lobby .royale-menu-panel{scroll-margin-top:120px}#lobby .lobby-setup .lobby-fields{padding:16px}#lobby .royale-round-summary{padding:16px}#lobby .royale-result-stats dd{font-size:20px}}
+@media(max-width:420px){#lobby .royale-standings-table{font-size:11px}#lobby .royale-standings-table th,#lobby .royale-standings-table td{padding:8px 3px}#lobby .royale-standings-table th:first-child{width:43%}}

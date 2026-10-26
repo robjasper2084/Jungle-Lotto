@@ -148,7 +148,7 @@ void rules(State& s){
   if(radar&&!a.radarHeld&&a.dogCharges&&s.tick>=a.radarReady&&a.connected){a.radarUntil=s.tick+180;a.radarReady=s.tick+600;event(s,10,who);}
   a.dogHeld=dog;a.radarHeld=radar;
   if(input(s,who,10)>0&&a.utility&&s.tick>=a.shieldUntil){--a.utility;a.shieldUntil=s.tick+150;event(s,2,who);}
-  if(input(s,who,11)>0&&a.repairs&&!a.repairUntil){--a.repairs;a.repairUntil=s.tick+180;}
+  if(input(s,who,11)>0&&a.integrity<100&&a.repairs&&!a.repairUntil){--a.repairs;a.repairUntil=s.tick+180;}
   if(wants&&a.evadeUntil<=s.tick){a.repairUntil=0;fire(s,who);}
   if(a.repairUntil&&s.tick>=a.repairUntil){a.integrity=std::min(100.0,a.integrity+35);a.repairUntil=0;}
   if(s.tick-a.lastDamage>480)a.shield=std::min(50.0,a.shield+.05);

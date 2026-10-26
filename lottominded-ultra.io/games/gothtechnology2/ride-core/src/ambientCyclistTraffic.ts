@@ -1,5 +1,6 @@
 import {CommunityRide,LaneRoute,type RoutePoint} from './communityRide.ts';
 import {createGroundSample,type TerrainSampler,type NavigationObstacle} from './terrain.ts';
+import {recoverRouteWall,newRouteRecovery} from './routeRecovery.ts';
 type Position={x:number;y:number;z:number;headingY:number};
 const clamp=(n:number,a:number,b:number)=>Math.max(a,Math.min(b,n));
 export const AMBIENT_CYCLIST_PACE=10.8;
@@ -57,7 +58,7 @@ export class AmbientCyclistTraffic {
   this.rides.forEach((ride,p)=>ride.riders.forEach((r,i)=>{
    // Each circuit leg already has its own side of the trail. A second
    // two-abreast offset crossed the centre and met the returning pack head-on.
-   r.s=this.starts[p]-i*FOLLOW_GAP;r.offset=r.targetOffset=0;r.speed=AMBIENT_CYCLIST_PACE;r.blocked=false;r.passUntil=0;r.thinkIn=0;
+   r.s=this.starts[p]-i*FOLLOW_GAP;r.offset=r.targetOffset=0;r.speed=AMBIENT_CYCLIST_PACE;r.blocked=false;r.passUntil=0;r.thinkIn=0;r.recovery=undefined;
    let at=this.at(r.s,r.offset);let g=this.terrain.sampleGround(at.x,at.z,this.ground);
    if(g.offCourse){r.offset=r.targetOffset=0;at=this.at(r.s);g=this.terrain.sampleGround(at.x,at.z,this.ground);}
    Object.assign(r,at,{y:g.height});Object.assign(this.previous[p][i],r);Object.assign(this.current[p][i],r);
@@ -107,14 +108,17 @@ export class AmbientCyclistTraffic {
     let position=this.at(r.s+r.speed*.05,offset),g=this.terrain.sampleGround(position.x,position.z,this.ground,current.y);
     if(g.offCourse){offset=0;position=this.at(r.s+r.speed*.05);g=this.terrain.sampleGround(position.x,position.z,this.ground,current.y);r.targetOffset=0;}
     const distance=Math.hypot(position.x-current.x,position.z-current.z);
-    const hit=near&&distance>.001?this.terrain.raycastObstacle({x:current.x,y:current.y+.65,z:current.z},{x:(position.x-current.x)/distance,y:0,z:(position.z-current.z)/distance},distance,.3):null;
+    const hit=distance>.001?this.terrain.raycastObstacle({x:current.x,y:current.y+.65,z:current.z},{x:(position.x-current.x)/distance,y:0,z:(position.z-current.z)/distance},distance,.3):null;
     const crowded=near&&neighbors.some(o=>o.id!==r.id&&Math.abs(o.y-current.y)<2&&Math.hypot(position.x-o.x,position.z-o.z)<o.radius+.55&&Math.hypot(position.x-o.x,position.z-o.z)<Math.hypot(current.x-o.x,current.z-o.z));
-    if(!g.offCourse&&(hit===null||hit>=distance)&&!crowded){r.s+=r.speed*.05;r.offset=offset;Object.assign(current,position,{y:g.height});r.blocked=false;r.wheelSpin+=distance/.34;r.pedalPhase+=distance/(.34*2.5);}
+    if(!r.recovery?.backing&&!g.offCourse&&(hit===null||hit>=distance)&&!crowded){r.s+=r.speed*.05;r.offset=offset;Object.assign(current,position,{y:g.height});r.blocked=false;r.wheelSpin+=distance/.34;r.pedalPhase+=distance/(.34*2.5);if(r.recovery&&r.s>r.recovery.origin+.8)r.recovery=undefined;}
     else{
      r.speed=Math.max(0,r.speed-.6);r.blocked=true;r.passUntil=0;
      // A blocked forward sweep used to freeze lateral motion as well. Make a
      // bounded, collision-checked side step, then commit to that passing lane.
      const edge=this.at(r.s).width/2-.55,nearby=neighbors.filter(o=>o.id!==r.id&&!o.raycastSolid&&Math.abs(o.y-current.y)<2);
+     const recovery=r.recovery??=newRouteRecovery(r.s),escape=(hit!==null||recovery.backing||recovery.backUsed)?recoverRouteWall(this.terrain,(s,o)=>this.at(s,o),{...r,x:current.x,y:current.y,z:current.z},recovery,.05,edge,nearby):undefined;
+     if(escape){const travel=Math.hypot(escape.x-current.x,escape.z-current.z);r.s=escape.s;r.offset=escape.offset;r.targetOffset=escape.targetOffset;r.passUntil=r.s+12;Object.assign(current,{x:escape.x,y:escape.y,z:escape.z,headingY:escape.headingY});r.wheelSpin+=travel/.34;r.thinkIn=0;}
+     else{
      const space=(x:number,z:number)=>Math.min(4,...nearby.map(o=>Math.hypot(x-o.x,z-o.z)-o.radius-.55));
      const before=space(current.x,current.z);
      const options=[-1,1].map(sign=>{const offset=clamp(r.offset+sign*.07,-edge,edge);return{...this.at(r.s,offset),offset};}).sort((a,b)=>space(b.x,b.z)-space(a.x,a.z));
@@ -125,6 +129,7 @@ export class AmbientCyclistTraffic {
       if(hit!==null&&hit<d)continue;
       const direction=Math.sign(side.offset-r.offset);r.offset=side.offset;r.targetOffset=clamp(side.offset+direction*.6,-edge,edge);
       Object.assign(current,side,{y:ground.height});r.thinkIn=0;break;
+     }
      }
     }
     const own=neighbors.find(o=>o.id===r.id);if(own)Object.assign(own,current,{vx:Math.sin(current.headingY)*r.speed,vz:Math.cos(current.headingY)*r.speed});

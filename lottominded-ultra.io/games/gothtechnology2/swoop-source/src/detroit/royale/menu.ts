@@ -1,5 +1,6 @@
-import {menuAction,type RoyaleMenuState} from './menuState.ts';
+import {menuAction,menuPresentation,type RoyaleMenuState} from './menuState.ts';
 import './menu.css';
+import './tacticalReadout.css';
 export type RoyaleMenuPanel='home'|'loadout'|'online'|'settings';
 /** Reuses the actual controls and handlers: no second loadout or room state. */
 export function createRoyaleMenu(root:HTMLDialogElement,readState:()=>RoyaleMenuState){
@@ -24,10 +25,13 @@ export function createRoyaleMenu(root:HTMLDialogElement,readState:()=>RoyaleMenu
  const brief=node('p','royale-menu-brief');home.append(action,brief);
  const training=node('div','royale-training');training.setAttribute('aria-label','Training');
  training.append(find('practice-range'),find('combat-block'));home.append(training);
- const resultBlock=node('section','royale-round-summary');resultBlock.setAttribute('aria-label','Round results');resultBlock.append(node('h2','','Round results'),results,replay);home.append(resultBlock);
+ const resultBlock=node('section','royale-round-summary');resultBlock.setAttribute('aria-label','Round results');resultBlock.append(node('h2','','Round results'),results);home.append(resultBlock);
+ // Replays remain available after the re-entry window closes, before results.
+ const replayBlock=node('div','royale-replay-action');replayBlock.append(replay);home.append(replayBlock);
  const selection=node('section','royale-selection');selection.setAttribute('aria-label','Selected rider and wheel');
  const rider=node('strong',''),wheel=node('span',''),selectionLabel=node('span','royale-selection-label','YOUR LOADOUT');selection.append(selectionLabel,rider,wheel);home.append(selection);
  home.insertBefore(resultBlock,action);
+ home.insertBefore(replayBlock,brief.nextSibling);
  const leave=node('div','royale-leave');leave.append(quit);home.append(leave);
  const panels=new Map<RoyaleMenuPanel,HTMLElement>([['home',home],['loadout',setup]]);
  for(const [id,title,detail]of [['online','Play with friends',online],['settings','Settings',settings]] as const){const section=node('section','royale-menu-panel');const h=node('h2','royale-panel-title',title);section.append(h,detail);if(id==='online')section.append(room);panels.set(id,section);detail.open=true;}
@@ -59,14 +63,15 @@ export function createRoyaleMenu(root:HTMLDialogElement,readState:()=>RoyaleMenu
   if(action.textContent!==choice.label)action.textContent=choice.label;
   action.disabled=choice.disabled||(choice.action==='practice'&&practice.disabled);
   if(!state.phase&&practice.disabled)action.textContent='Preparing arena…';
-  training.hidden=!!state.phase;resultBlock.hidden=state.phase!=='results';quit.hidden=!state.phase;
+  training.hidden=!!state.phase;resultBlock.hidden=state.phase!=='results';replayBlock.hidden=replay.hidden;quit.hidden=!state.phase;
   practice.hidden=!!state.phase;const practiceNote=setup.querySelector<HTMLElement>('.lobby-practice-note');if(practiceNote)practiceNote.hidden=!!state.phase;
   const selectionTitle=state.phase?'NEXT MATCH LOADOUT':'YOUR LOADOUT';if(selectionLabel.textContent!==selectionTitle)selectionLabel.textContent=selectionTitle;
   const count=Number(find<HTMLSelectElement>('match-size').value),bots=Number(find<HTMLSelectElement>('bot-count').value),selectedBots=bots<0?count-1:Math.min(bots,count-1);
-  const factsText=state.phase?'ROUND '+state.round+' / '+state.rounds+' · '+(state.online?'ONLINE ROOM':'LOCAL PRACTICE'):'3 ROUNDS · 10 MINUTE FIELD · DOWNTOWN DETROIT';
-  if(facts.textContent!==factsText)facts.textContent=factsText;
-  const note=state.phase==='results'?(state.complete?state.rounds+' round'+(state.rounds===1?'':'s')+' complete. Start a new match when ready.':'Continue the match with your current rider and wheel.'):state.phase==='lobby'?'Share your invitation and ready up in Friends.':state.phase?(state.online?'Your online match continues while this menu is open.':'Local practice is paused. Return when you are ready.'):selectedBots===0?'Solo exploration · no AI opponents':`${count}-rider arena · you + ${selectedBots} AI opponent${selectedBots===1?'':'s'}`;
-  if(brief.textContent!==note)brief.textContent=note;
+  const copy=menuPresentation(state,selectedBots);
+  if(facts.textContent!==copy.facts)facts.textContent=copy.facts;
+  if(brief.textContent!==copy.brief)brief.textContent=copy.brief;
+  const caption=root.querySelector<HTMLElement>('.lobby-world-caption');
+  if(caption)for(const [selector,text]of [['span',copy.captionLabel],['strong',copy.captionTitle],['p',copy.captionDetail]]){const part=caption.querySelector(selector);if(part&&part.textContent!==text)part.textContent=text;}
   const label=(id:string)=>{const s=find<HTMLSelectElement>(id);return s.selectedOptions[0]?.textContent??'';};
   const key=label('skin')+'|'+label('wheel');if(key!==summary){summary=key;rider.textContent=label('skin');wheel.textContent=label('wheel');}
   // Invite/room errors remain visible in every section.
@@ -74,6 +79,7 @@ export function createRoyaleMenu(root:HTMLDialogElement,readState:()=>RoyaleMenu
  }
  root.addEventListener('change',sync);
  const observer=new MutationObserver(sync);for(const control of [practice,rematch,message])observer.observe(control,{attributes:true,attributeFilter:['disabled'],childList:true,subtree:true,characterData:true});
+ observer.observe(replay,{attributes:true,attributeFilter:['hidden']});
  open('home',false);
  return {open,show(){open(readState().phase==='lobby'?'online':'home');},sync,get panel(){return current;}};
 }
