@@ -20,6 +20,8 @@ export type {Weapon} from './combatProfiles.ts';
 import {WEAPONS,type Weapon} from './combatProfiles.ts';
 import {wheelProfile} from './wheelProfiles.ts';
 import {tacticalDestination,leadTarget} from './botTactics.ts';
+import {botObstacleRecovery,recoverBotObstacle,type BotObstacleRecovery} from '../botObstacleRecovery.ts';
+import {beginSimulationProfile,endSimulationProfile} from '../simulationProfile.ts';
 import {botWheelRecovery,recoverBotWheel} from './botWheelRecovery.ts';
 import {playerHitBot,playerCollidesWithBot} from './botKnockoff.ts';
 import {traceBallistic} from './ballisticSweep.ts';
@@ -41,6 +43,7 @@ export function weaponSocket(p:RidePose,skin:string,aimYaw:number,aimPitch:numbe
 }
 export type Motion={integrity?:number;combat?:CombatState;wheelId?:string;controller:RideController;energy:number;burstUntil:number;burstLatch:boolean};
 export function move(a:Motion,c:Command,tick:number){
+ const profileTime=beginSimulationProfile();try{
  if(!a.controller.poseValue.footMode&&c.burst&&!a.burstLatch&&a.energy>=40&&tick>=a.burstUntil){a.energy-=40;a.burstUntil=tick+36;}a.burstLatch=c.burst;
  const boosted=tick<a.burstUntil;a.energy=Math.min(100,a.energy+(boosted?0:DT*10));
  const profile=wheelProfile(a.wheelId);
@@ -51,6 +54,7 @@ export function move(a:Motion,c:Command,tick:number){
  const blocked=!!melee&&melee.staggerUntil>tick,evading=!!melee&&melee.evadeUntil>tick;
  const input={...NEUTRAL_ACTIONS,quickMount:(a as Actor).bot===true,stableAI:(a as Actor).bot===true,interruptMount:c.fire||c.reload||c.light||c.heavy||c.repair||c.evade!==0,mountBlocked:(a as Actor).integrity<=15||blocked,evade:evading?melee!.evadeDir:0,evadeProgress:evading?Math.max(.0001,evadePhase(melee!.evadeUntil,tick)):0,evadeSpeed:evading?evadeSpeed(evadePhase(melee!.evadeUntil,tick)):0,vault:c.vault&&!evading,throttle:evading?0:blocked?c.throttle*.25:c.throttle,steer:evading?0:c.steer,facingYaw:evading?a.controller.poseValue.headingY:c.facingYaw??undefined,crouch:c.crouch,prone:c.prone,hop:c.hop,hopHeld:c.hopHeld,recover:c.recover&&(a.integrity??100)>15,dismount:c.dismount||c.prone&&!a.controller.poseValue.footMode&&Math.abs(a.controller.poseValue.speed)<=1,run:c.burst&&!c.fire&&c.aimMode===0&&!c.reload};
  a.controller.step(DT/2,input);a.controller.step(DT/2,{...input,hop:false});
+ }finally{endSimulationProfile('movement',profileTime);}
 }
 export type Elimination={tick:number;killer?:{id:string;name:string;bot:boolean};cause:'rider'|'field'|'disconnect'|'arena'};
 export type Actor=Motion&{smokeCharges:number;smokeReady:number;elimination?:Elimination;reentryUsed:number;reentryUntil:number;protectedUntil:number;spawnNode:string;spawnSerial:number;dogPower:DogPower;dog:BattleDog;scopes:Scope[];combat:CombatState;id:string;name:string;skin:string;bot:boolean;connected:boolean;disconnectTick:number;integrity:number;shield:number;alive:boolean;lastDamage:number;lastSeq:number;ack:number;lastShot:number;lastInput:number;shotAt:number;slot:number;switchUntil:number;loadout:Weapon[];ammo:Record<Weapon,number>;utility:number;shieldUntil:number;repairs:number;repairUntil:number;queue:Command[];input:Command;kills:number;damage:number;shots:number;hits:number;distance:number;eliminatedAt:number;path:Vec3[];target?:Vec3;seenAt:number;aimAt:number;recoverTick:number;pose:RidePose};
@@ -69,7 +73,7 @@ export class RoyaleMatch{
  private impacts:SurfaceImpact[]=[];
  private replayHistory=new KillcamHistory();
  private awarded=new Map<string,number>();
- private brains=new Map<string,{think:number;enemy?:string;acquired:number;stuck:number;last:Vec3;backUntil:number;wheel?:ReturnType<typeof botWheelRecovery>}>();
+ private brains=new Map<string,{think:number;enemy?:string;acquired:number;stuck:number;last:Vec3;backUntil:number;wheel?:ReturnType<typeof botWheelRecovery>;obstacleRecovery?:BotObstacleRecovery}>();
  private kernel?:RoyaleKernel;private roundStarts:SpawnNode[]=[];
  readonly series:MatchSeries;
  private spectators=new Map<string,string>();
@@ -99,6 +103,11 @@ export class RoyaleMatch{
  for(const [i,site]of (this.terrain.optics??this.terrain.spawns.map(s=>({p:{x:s.position.x+Math.sin(s.headingY)*9,y:s.position.y,z:s.position.z+Math.cos(s.headingY)*9},kind:'scope2' as Scope}))).entries())this.loot.push({id:'optic-'+i,p:{...site.p},kind:site.kind,available:true});
  this.kernel?.dispose();this.kernel=this.engineEnabled?new RoyaleKernel(this.actors,seed,this.loot,this.terrain.zones,this.terrain.fieldRadii,this.reentry):undefined;
  }
+ async prepareNavigation(checkpoint:()=>Promise<unknown>=async()=>{}){
+  if(!this.terrain.travelClear)return;
+  const f=this.kernel?.field()??fieldAt(this.tick,this.seed,this.terrain.zones,this.terrain.fieldRadii),target={x:f.x,y:this.terrain.ground(f.x,f.z).height,z:f.z};
+  for(const actor of this.actors.filter(a=>a.bot&&a.alive)){await checkpoint();this.terrain.route(actor.pose,target);}
+ }
  command(id:string,value:unknown){const a=this.actors.find(a=>a.id===id);if(!a||a.bot||!a.connected||!a.alive||this.phase==='results'||!value||typeof value!=='object')return false;
  const c=value as Command;if(c.round!==this.round||!Number.isSafeInteger(c.seq)||c.seq<=a.lastSeq||c.seq>a.lastSeq+180||!Number.isInteger(c.tick)||Math.abs(c.tick-this.tick)>180||!Number.isSafeInteger(c.shot)||c.shot<0||c.shot>a.lastShot+600)return false;
  for(const k of ['throttle','steer','aimYaw','aimPitch','slot','aimMode','lean'] as const)if(!Number.isFinite(c[k]))return false;
@@ -113,6 +122,7 @@ export class RoyaleMatch{
  disconnect(id:string){const a=this.actors.find(a=>a.id===id);if(a){a.connected=false;a.disconnectTick=this.tick;this.release(id);}}
  reconnect(id:string){const a=this.actors.find(a=>a.id===id);if(a){a.connected=true;a.disconnectTick=-1;a.lastInput=this.tick;}}
  private botInput(a:Actor):Command{
+ const profileTime=beginSimulationProfile();try{
  const p=a.pose,c=neutral(this.round,++a.lastSeq,this.tick),f=this.kernel?.field()??fieldAt(this.tick,this.seed,this.terrain.zones,this.terrain.fieldRadii);
  const index=this.actors.indexOf(a);let brain=this.brains.get(a.id);if(!brain){brain={think:this.tick,acquired:this.tick,stuck:0,last:{x:p.x,y:p.y,z:p.z},backUntil:0};this.brains.set(a.id,brain);}
  const wheel=brain.wheel??=botWheelRecovery();
@@ -125,16 +135,16 @@ export class RoyaleMatch{
   const weapon=a.loadout[a.slot],defend=a.integrity<45||a.combat.reloadStart>=0||((this.tick+index*83)%420)>300;
   const supplies=this.loot.filter(l=>l.available&&(a.ammo[weapon]<20?l.kind==='ammo':a.integrity<65?l.kind==='repair':a.loadout.length<2?l.kind==='heart'||l.kind==='bass':false)).map(l=>l.p);
   const target=tacticalDestination(this.terrain,p,f,enemy?.pose,a.target,defend,supplies,index,this.tick).point;
-  a.path=this.terrain.route(p,target);a.aimAt=enemy?this.tick:0;
+  const route=this.terrain.route(p,target);if(route.length)a.path=route;a.aimAt=enemy?this.tick:0;
  }
- while(a.path.length&&Math.hypot(a.path[0].x-p.x,a.path[0].z-p.z)<(p.footMode?.9:5))a.path.shift();
+ while(a.path.length>1&&Math.hypot(a.path[0].x-p.x,a.path[0].z-p.z)<1.1&&Math.abs(a.path[0].y-p.y)<.5)a.path.shift();
  // A fresh grid route begins at the closest node, which can be behind the rider.
  // Skip visible intermediate nodes so replanning cannot pull a moving EUC back
  // around that node. Swept clearance keeps the shortcut outside solid cover.
- while(a.path.length>1&&this.terrain.line({x:p.x,y:p.y+.7,z:p.z},{...a.path[1],y:a.path[1].y+.7},p.footMode?.35:1.2))a.path.shift();
- const next=a.path[0]??{x:f.x,z:f.z},turn=angle(Math.atan2(next.x-p.x,next.z-p.z)-p.headingY);
+ if(this.tick%12===index%12)while(a.path.length>1&&Math.hypot(a.path[1].x-p.x,a.path[1].z-p.z)<28&&(this.terrain.travelClear?this.terrain.travelClear(p,a.path[1],.35):this.terrain.line({x:p.x,y:p.y+.7,z:p.z},{...a.path[1],y:a.path[1].y+.7},p.footMode?.35:1.2)))a.path.shift();
+ const next=a.path[0]??p,turn=angle(Math.atan2(next.x-p.x,next.z-p.z)-p.headingY);
  // RideCore's positive steering command decreases world heading.
- c.steer=clamp(-turn*2,-1,1);c.throttle=Math.abs(turn)>1.2?(p.speed>2?-1:.25):Math.abs(turn)>.55?.4:.85;
+ c.steer=clamp(-turn*2,-1,1);c.throttle=Math.hypot(next.x-p.x,next.z-p.z)<.8?0:Math.abs(turn)>1.2?(p.speed>2?-1:.25):Math.abs(turn)>.55?.4:.85;
  const visible=this.actors.find(b=>b.id===brain.enemy&&b.alive&&Math.hypot(b.pose.x-p.x,b.pose.z-p.z)<85&&this.sight({x:p.x,y:p.y+1.3,z:p.z},{x:b.pose.x,y:b.pose.y+1.3,z:b.pose.z}));
  // Bots pursue on their wheels. Only a knock-off starts wheel recovery;
  // proximity to a target must not send them back into a dismount loop.
@@ -151,7 +161,10 @@ export class RoyaleMatch{
  c.reload=this.engineEnabled&&a.combat.magazine[a.loadout[a.slot]]<(visible?1:5)&&a.combat.reloadStart<0;c.aimMode=visible?1:0;c.lean=visible&&p.footMode===2&&a.combat.reloadStart<0&&((this.tick+index*83)%420)<230?(index%2?.65:-.65):0;
  c.smoke=p.footMode===2&&!!visible&&a.integrity<35&&a.smokeCharges>0&&this.tick-a.lastDamage<120;
  c.recover=a.controller.crashed;c.repair=a.integrity<55&&this.tick-a.lastDamage>180;c.utility=a.shield<10&&this.tick-a.lastDamage<120;c.slot=a.slot;c.burst=Math.hypot(p.x-f.x,p.z-f.z)>f.radius;
+ const escape=recoverBotObstacle(this.terrain,p,a.path[0]??p,brain.obstacleRecovery??=botObstacleRecovery(),this.tick/60,1/60);
+ if(escape)Object.assign(c,escape,{fire:false,burst:false});
  if(a.dogPower.charges&&visible){c.dogAttack=this.tick>=a.dogPower.ready;c.dogRadar=this.tick>=a.dogPower.radarReady;}return c;
+ }finally{endSimulationProfile('botInput',profileTime);}
  }
  step(){if(this.phase==='lobby'||this.phase==='results')return;if(this.kernel){this.stepEngine();this.recordRound();this.recordReplay();return;}this.tick++;if(this.tick>=PROTECTION)this.phase='active';
  const damage:{target:Actor;amount:number;owner?:Actor;bypass?:boolean}[]=[],previousPoses=this.actors.map(a=>({...a.pose}));
@@ -172,7 +185,7 @@ export class RoyaleMatch{
   if(c.slot<a.loadout.length&&c.slot!==a.slot){a.slot=c.slot;a.switchUntil=this.tick+24;}
   if(this.phase!=='active')continue;
   if(c.utility&&a.utility>0&&this.tick>=a.shieldUntil){a.utility--;a.shieldUntil=this.tick+150;}
-  if(c.repair&&a.repairs>0&&!a.repairUntil){a.repairs--;a.repairUntil=this.tick+180;}
+  if(c.repair&&a.integrity<100&&a.repairs>0&&!a.repairUntil){a.repairs--;a.repairUntil=this.tick+180;}
   if(c.fire){a.repairUntil=0;this.fire(a,c);}
   if(a.repairUntil&&this.tick>=a.repairUntil){a.integrity=Math.min(100,a.integrity+35);a.repairUntil=0;}
   if(this.tick-a.lastDamage>480)a.shield=Math.min(50,a.shield+DT*3);
@@ -355,7 +368,7 @@ export class RoyaleMatch{
    victim.elimination={tick:death.tick,cause:killer?'rider':!victim.connected?'disconnect':Math.hypot(victim.pose.x-field.x,victim.pose.z-field.z)>field.radius||this.reason==='Static Field deadline'?'field':'arena',...(killer?{killer:{id:killer.id,name:killer.name,bot:killer.bot}}:{})};
   }
  }
- private actorView(a:Actor){return {healingUntil:a.repairUntil,id:a.id,skin:a.skin,wheelId:a.wheelId,spawnSerial:a.spawnSerial,protected:a.protectedUntil>this.tick,scope:bestScope(a.scopes),combat:structuredClone(a.combat),pose:{...a.pose},dog:{...structuredClone(a.dog),path:[],target:undefined,radar:a.dogPower.radarUntil>this.tick},aimYaw:a.input.aimYaw,aimPitch:a.input.aimPitch,alive:a.alive,shieldActive:a.shieldUntil>this.tick,weapon:a.loadout[a.slot]};}
+ private actorView(a:Actor){return {healingUntil:a.repairUntil,id:a.id,skin:a.skin,wheelId:a.wheelId,spawnSerial:a.spawnSerial,protected:a.protectedUntil>this.tick,scope:bestScope(a.scopes),combat:structuredClone(a.combat),pose:{...a.pose},dog:{...structuredClone(a.dog),path:[],target:undefined,radar:a.dogPower.radarUntil>this.tick},aimYaw:a.input.aimYaw,aimPitch:a.input.aimPitch,alive:a.alive,shield:a.shield,elimination:a.alive?undefined:a.elimination,shieldActive:a.shieldUntil>this.tick,weapon:a.loadout[a.slot]};}
  private recordReplay(){
   if(this.tick%6!==0&&!this.events.some(e=>e.tick===this.tick&&e.kind==='eliminated'))return;
   const view=this.snapshot();view.actors=this.actors.map(a=>this.actorView(a));view.projectiles=this.projectiles.map(s=>({...s,p:{...s.p},v:{...s.v}}));view.events=this.events.map(e=>({...e}));view.loot=[];view.results=[];
@@ -375,7 +388,7 @@ export class RoyaleMatch{
    engine:this.engineEnabled?ENGINE_ID:undefined,engineInputFrames:this.kernel?.core.call('frames')??0,
    roster:this.actors.map(a=>({id:a.id,name:a.name,bot:a.bot,skin:a.skin,wheelId:a.wheelId,alive:a.alive,connected:a.connected})),
    actors:focus?delayed!.actors.filter(a=>a.id===focus.id||watchVisible({...a.pose,y:a.pose.y+1.4})):this.actors.filter(visible).map(a=>this.actorView(a)),
-   self:me?{smokeCharges:me.smokeCharges,smokeReady:me.smokeReady,id:me.id,elimination:me.alive?undefined:me.elimination,spawnSerial:me.spawnSerial,reentry:{used:me.reentryUsed,remaining:this.reentry?Math.max(0,3-me.reentryUsed):0,choices:this.respawnChoices(me.id).slice(0,8).map(n=>({id:n.id,label:spawnLabel(n)})),until:me.reentryUntil,eligible:this.reentry&&this.phase==='active'&&me.connected&&!me.alive&&me.reentryUsed<3&&me.reentryUntil>this.tick,protectedUntil:me.protectedUntil},healingUntil:me.repairUntil,dogPower:{...me.dogPower},radar:me.dogPower.radarUntil>this.tick?this.actors.filter(a=>a!==me&&a.alive&&Math.hypot(a.pose.x-me.pose.x,a.pose.z-me.pose.z)<90).map(a=>({id:a.id,x:Math.round(a.pose.x/10)*10,z:Math.round(a.pose.z/10)*10})):[],wheelId:me.wheelId,scopes:[...me.scopes],combat:structuredClone(me.combat),integrity:me.integrity,shield:me.shield,energy:me.energy,burstUntil:me.burstUntil,burstLatch:me.burstLatch,controller:me.controller.captureState(),ack:me.ack,inputCursor:me.lastSeq,shotCursor:me.lastShot,slot:me.slot,loadout:[...me.loadout],ammo:{...me.ammo},utility:me.utility,repairs:me.repairs,alive:me.alive,shotAt:me.shotAt}:undefined,
+   self:me?{smokeCharges:me.smokeCharges,smokeReady:me.smokeReady,id:me.id,kills:me.kills,elimination:me.alive?undefined:me.elimination,spawnSerial:me.spawnSerial,reentry:{used:me.reentryUsed,remaining:this.reentry?Math.max(0,3-me.reentryUsed):0,choices:this.respawnChoices(me.id).slice(0,8).map(n=>({id:n.id,label:spawnLabel(n)})),until:me.reentryUntil,eligible:this.reentry&&this.phase==='active'&&me.connected&&!me.alive&&me.reentryUsed<3&&me.reentryUntil>this.tick,protectedUntil:me.protectedUntil},healingUntil:me.repairUntil,dogPower:{...me.dogPower},radar:me.dogPower.radarUntil>this.tick?this.actors.filter(a=>a!==me&&a.alive&&Math.hypot(a.pose.x-me.pose.x,a.pose.z-me.pose.z)<90).map(a=>({id:a.id,x:Math.round(a.pose.x/10)*10,z:Math.round(a.pose.z/10)*10})):[],wheelId:me.wheelId,scopes:[...me.scopes],combat:structuredClone(me.combat),integrity:me.integrity,shield:me.shield,energy:me.energy,burstUntil:me.burstUntil,burstLatch:me.burstLatch,controller:me.controller.captureState(),ack:me.ack,inputCursor:me.lastSeq,shotCursor:me.lastShot,slot:me.slot,loadout:[...me.loadout],ammo:{...me.ammo},utility:me.utility,repairs:me.repairs,alive:me.alive,shotAt:me.shotAt}:undefined,
    projectiles:focus?delayed!.projectiles.filter(s=>watchVisible(s.p)):!playing||me?.alive?this.projectiles.filter(s=>!me||Math.hypot(s.p.x-me.pose.x,s.p.z-me.pose.z)<(s.owner===me.id?500:150)&&this.terrain.line({x:me.pose.x,y:me.pose.y+1.4,z:me.pose.z},s.p)).map(s=>({...s,p:{...s.p},v:{...s.v}})):[],
    impacts:(focus?delayed!.impacts.filter(i=>watchVisible(i.p)):me?.alive?this.impacts.filter(i=>i.owner===viewer||Math.hypot(i.p.x-me.pose.x,i.p.z-me.pose.z)<100&&this.terrain.line({...me.pose,y:me.pose.y+1.4},{x:i.p.x+i.normal.x*.1,y:i.p.y+i.normal.y*.1,z:i.p.z+i.normal.z*.1})):[]).filter(i=>this.tick-i.tick<=(focus?480:300)).map(i=>({...i,p:{...i.p},normal:{...i.normal}})),
    loot:me?.alive||!playing?this.loot.filter(l=>l.available).map(l=>({...l,p:{...l.p}})):[],

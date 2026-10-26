@@ -19,7 +19,9 @@ import {WHEEL_PICKUP} from './wheelPickupData.ts';
 import {wheelPickupTiming} from './wheelPickupTiming.ts';
 import {KIMODO_WHEEL} from './kimodoWheelData.ts';
 import type {FootPose} from './onFoot.ts';
-type Rig={combatLocomotion?:number;walkStyle?:'tactical'|'kimodo';riderId?:string;root:T.Object3D;ground:T.Object3D;lean:T.Object3D;rider:T.Object3D;vehicle:T.Object3D;mountHeight:number;motionScale:number;bones:{o:T.Object3D;p:T.Vector3;q:T.Quaternion}[]};
+import type {GroundSample} from './terrain.ts';
+import {supportedFootHeight} from './footSupport.ts';
+type Rig={sampleFootGround?:(x:number,z:number,referenceY:number)=>GroundSample|undefined;combatLocomotion?:number;walkStyle?:'tactical'|'kimodo';riderId?:string;root:T.Object3D;ground:T.Object3D;lean:T.Object3D;rider:T.Object3D;vehicle:T.Object3D;mountHeight:number;motionScale:number;bones:{o:T.Object3D;p:T.Vector3;q:T.Quaternion}[]};
 type Binding={bone:T.Object3D;offset:T.Quaternion;channel:number};
 type Leg={upper:T.Object3D;knee:T.Object3D;foot:T.Object3D;rest:T.Vector3;strideCenter:number;strideX:number;rotation:T.Quaternion;sole:T.Vector3[];length:number;upperLength:number;lowerLength:number};
 type Arm={upper:T.Object3D;knee:T.Object3D;foot:T.Object3D;palm?:T.Object3D;upperLength:number;lowerLength:number};
@@ -275,7 +277,11 @@ export function applyOnFootRider(h:Rig,pose:Partial<FootPose>&{crashBlend?:numbe
    const pos=hips.getWorldPosition(v());pos.y-=floor*captureWeight;hips.position.copy(hips.parent!.worldToLocal(pos));h.root.updateMatrixWorld(true);
    captured.forEach((t,i)=>{t.y-=floor;targets[i].lerp(t,captureWeight);});
   }
-  let lower=0;data.legs.forEach((l,i)=>{const a=l.upper.getWorldPosition(v()),t=targets[i],reach=l.length*.985;
+   if(p.footMode===2&&!p.footJump&&prone<.1&&h.sampleFootGround){
+    const rootY=h.root.getWorldPosition(v()).y;
+    data.legs.forEach((l,i)=>{const t=targets[i];t.y=supportedFootHeight(t,l.upper.getWorldPosition(v()),h.sampleFootGround!(t.x,t.z,rootY),rootY,l.length,scale);});
+   }
+   let lower=0;data.legs.forEach((l,i)=>{const a=l.upper.getWorldPosition(v()),t=targets[i],reach=l.length*.985;
    const required=a.y-t.y-Math.sqrt(Math.max(.000001,reach*reach-(a.x-t.x)**2-(a.z-t.z)**2));
    // Smooth maximum stays above both reach constraints, avoiding a hard
    // pelvis velocity change when support transfers from one foot to the other.

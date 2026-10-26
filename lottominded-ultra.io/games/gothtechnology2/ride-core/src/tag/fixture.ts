@@ -59,16 +59,20 @@ export class TagTerrain implements TerrainSampler{
     return {height,normal};}
   sampleGround(x:number,z:number,out:GroundSample,referenceY?:number){const f=this.floor(x,z,referenceY);out.height=f.height;Object.assign(out.normal,f.normal);out.surface='pavement';out.offCourse=this.support?!this.supported(x,z):!this.legal({x,y:out.height,z});return out;}
   private point(p:Vec3){const t=this.fixture.transform;return {x:t.tx+t.sx*p.x,y:p.y+t.ty,z:p.z+t.tz};}
-  sweep(origin:Vec3,delta:Vec3,radius=0){const length=Math.hypot(delta.x,delta.y,delta.z);if(length<1e-9)return null;const t=this.fixture.transform;
+  sweep(origin:Vec3,delta:Vec3,radius=0,escapeContact=false){const length=Math.hypot(delta.x,delta.y,delta.z);if(length<1e-9)return null;const t=this.fixture.transform;
     const velocity={x:t.sx*delta.x/length,y:delta.y/length,z:delta.z/length};
     // Elevated pavement is still solid to bodies and shots. Ground sampling
     // chooses the floor below the feet; it cannot detect a slab through a torso.
-    const hit=this.physics.castShape(this.point(origin),{x:0,y:0,z:0,w:1},velocity,new R.Ball(Math.max(.001,radius)),0,length,true,undefined,this.fixture.groundRays?0xffff0006:undefined,undefined,undefined,c=>!this.retiredColliders.has(c.handle));
+    const hit=this.physics.castShape(this.point(origin),{x:0,y:0,z:0,w:1},velocity,new R.Ball(Math.max(.001,radius)),0,length,!escapeContact,undefined,this.fixture.groundRays?0xffff0006:undefined,undefined,undefined,c=>!this.retiredColliders.has(c.handle));
     const o=this.point(origin),d={x:delta.x*t.sx,y:delta.y,z:delta.z};
-    let first=hit?hit.time_of_impact/length:Infinity;for(const box of this.boxIndex.query(o,d,radius)){const prop=staticBoxSweep(o,d,radius,box);if(prop!==null)first=Math.min(first,prop);}return Number.isFinite(first)?first:null;}
+    let first=hit?hit.time_of_impact/length:Infinity;for(const box of this.boxIndex.query(o,d,radius)){const prop=staticBoxSweep(o,d,radius,box,escapeContact);if(prop!==null)first=Math.min(first,prop);}return Number.isFinite(first)?first:null;}
   raycastObstacle(origin:Vec3,direction:Vec3,max:number,halfWidth=0,_lateral?:Vec3,out?:ObstacleHit){
     const length=Math.hypot(direction.x,direction.y,direction.z);if(length<1e-9)return null;
-    const hit=this.sweep(origin,{x:direction.x/length*max,y:direction.y/length*max,z:direction.z/length*max},halfWidth);
+    // Body probes can touch a raised slab after the floor rises beneath them.
+    // Rapier still blocks motion into that contact, but lets it separate; a
+    // solid-at-start cast otherwise pins the rider even when backing downhill.
+    // Projectile/visibility sweeps retain solid-at-start collision.
+    const hit=this.sweep(origin,{x:direction.x/length*max,y:direction.y/length*max,z:direction.z/length*max},halfWidth,halfWidth>=.25);
     let distance=hit===null?null:hit*max;
     // Mounted wheel/body and navigation sweeps stop at unsupported terrain.
     // Heart-sized sweeps retain real scenery collision only, so water is not

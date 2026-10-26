@@ -15,4 +15,5 @@ export interface BattleTerrain extends TerrainSampler {
  sweep(origin:Vec3,delta:Vec3,radius?:number):number|null;
  line(a:Vec3,b:Vec3,radius?:number):boolean;
  route(from:Vec3,to:Vec3):Vec3[];
+ travelClear?(from:Vec3,to:Vec3,radius?:number):boolean;
 }

@@ -3,8 +3,12 @@ import type {BattleTerrain} from './battleTerrain.ts';
 export type BotGoal='rotate'|'cover'|'resupply'|'engage'|'search'|'patrol'|'flank';
 const gap=(a:{x:number;z:number},b:{x:number;z:number})=>Math.hypot(a.x-b.x,a.z-b.z);
 /** Only the caller's visible enemy / last seen memory is considered. */
-export function tacticalDestination(terrain:BattleTerrain,p:Vec3,field:{x:number;z:number;radius:number},enemy:Vec3|undefined,memory:Vec3|undefined,defend:boolean,supplies:readonly Vec3[],index:number,tick:number):{point:Vec3;mode:BotGoal}{
- const safe=Math.max(5,field.radius-25),inside=(q:Vec3)=>gap(q,field)<safe;
+export function tacticalDestination(terrain:BattleTerrain,p:Vec3,field:{x:number;z:number;radius:number;nextRadius?:number;remaining?:number},enemy:Vec3|undefined,memory:Vec3|undefined,defend:boolean,supplies:readonly Vec3[],index:number,tick:number):{point:Vec3;mode:BotGoal}{
+ // Begin long city rotations before the boundary catches the rider. Allow for
+ // road detours and braking rather than assuming maximum straight-line speed.
+ const travelSeconds=gap(p,field)/8+12,anticipate=field.nextRadius!==undefined&&field.remaining!==undefined&&field.remaining<travelSeconds;
+ const radius=anticipate?Math.min(field.radius,field.nextRadius!):field.radius;
+ const safe=Math.max(3,radius-Math.min(25,radius*.25)),inside=(q:Vec3)=>gap(q,field)<safe;
  if(!inside(p))return {point:{x:field.x,y:terrain.ground(field.x,field.z).height,z:field.z},mode:'rotate'};
  if(enemy&&defend){
   const away=Math.atan2(p.x-enemy.x,p.z-enemy.z),options=[];
@@ -24,8 +28,8 @@ export function tacticalDestination(terrain:BattleTerrain,p:Vec3,field:{x:number
   const q={x:enemy.x+Math.sin(a)*18,y:enemy.y,z:enemy.z+Math.cos(a)*18};
   return {point:d<35&&inside(q)&&terrain.clear(q.x,q.z,.7,p.y)?q:enemy,mode:flank?'flank':'engage'};
  }
- if(memory)return {point:memory,mode:'search'};
- const phase=tick/1200+index*2.399,r=Math.min(100,field.radius*.55),x=field.x+Math.sin(phase)*r,z=field.z+Math.cos(phase)*r;
+ if(memory&&inside(memory))return {point:memory,mode:'search'};
+ const phase=tick/1200+index*2.399,r=Math.min(65,safe*.6),x=field.x+Math.sin(phase)*r,z=field.z+Math.cos(phase)*r;
  return {point:{x,y:terrain.ground(x,z).height,z},mode:'patrol'};
 }
 /** Lead game projectiles; add drop compensation without removing aim error. */

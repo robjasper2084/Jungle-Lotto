@@ -42,7 +42,7 @@ export class FirstPersonView {
   const bodyAction=fpsBodyAction(p,state,tick);
   if(bodyAction){this.root.visible=false;this.resetMotion();return {action:bodyAction,reload:'ready',obstruction:0,rigRight:0,rigLeft:0,adsAmount:0};}
   this.root.visible=true;this.root.matrixAutoUpdate=true;this.root.scale.setScalar(1);this.root.position.set(0,0,0);this.root.quaternion.identity();this.root.updateMatrixWorld(true);
-  this.arms.reset();this.hero.combatLocomotion=weaponReadyAmount(state,tick);this.hero.apply({...p,seated:0});this.hero.visibility.setFirstPerson(true);this.hero.vehicle.visible=false;
+  this.arms.reset();this.hero.combatLocomotion=weaponReadyAmount(state,tick);this.hero.apply({...p,seated:0});this.hero.visibility.setFirstPerson(true,true);this.hero.vehicle.visible=false;
   const equip=this.swap.update(dt,kind,shot,reduced);this.weapon.select(equip.weapon as Weapon);if(shot)this.rig.interruptPickup();if(shot)this.weapon.fire(reduced);this.weapon.update(dt,reduced);this.rig.apply({...p,seated:0},yaw,pitch,state,tick,healingUntil);
   const r=reloadPose(state,tick),scale=this.hero.motionScale;
   const rotation=camera.getWorldQuaternion(new T.Quaternion()),position=camera.getWorldPosition(new T.Vector3());

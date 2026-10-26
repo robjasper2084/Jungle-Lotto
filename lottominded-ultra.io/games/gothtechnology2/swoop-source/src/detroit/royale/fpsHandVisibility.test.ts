@@ -38,7 +38,7 @@ test('production palms wrap the grips with exposed surfaces at normal and scoped
  const library=new EquipmentLibrary(models);
  for(const {id}of RIDER_CHOICES){
   data.set(id,await rigModel(new URL('../../../public/exports/rigged-heroes/'+id+'.glb',import.meta.url)));
-  const fp=new FirstPersonView(data,library,id),scale=id.includes('Mascot')?.48:1,camera=new T.PerspectiveCamera(76,16/9,.03,100);
+  const fp=new FirstPersonView(data,library,id),scale=id.includes('Mascot')?.48:1,camera=new T.PerspectiveCamera(76,16/9,.12,100);
   camera.position.set(0,1.64*scale,0);camera.lookAt(0,camera.position.y,100);camera.updateMatrixWorld();
   for(const weapon of ['static','heart','bass'] as const)for(const mode of ['hip','iron','scope2','scope4','scope8'] as const)for(const reduced of mode==='scope8'?[false,true]:[false])for(const baseFov of [52,76]){
    const ads=mode!=='hip',scope:Scope|null=mode==='hip'||mode==='iron'?null:mode;
@@ -52,7 +52,15 @@ test('production palms wrap the grips with exposed surfaces at normal and scoped
     assert(direction.z>.25&&direction.y>.25,`${id} ${weapon} ${side}: palm must rise around grip outside sleeve`);
     const screen=palm.clone().project(camera);assert(Math.abs(screen.x)<1&&Math.abs(screen.y)<1&&screen.z<1,`${id} ${weapon} ${side} ${mode}: hand outside view ${screen.toArray()}`);
    }
-   const visible:T.Mesh[]=[];fp.root.traverseVisible(o=>{if(o instanceof T.Mesh){visible.push(o);if(o instanceof T.SkinnedMesh){o.skeleton.update();o.computeBoundingSphere();}}});
+   // Bake this sampled pose once. Raycasting the skinned jacket for every
+   // glove vertex otherwise repeats the same skinning millions of times.
+   const visible:T.Mesh[]=[];fp.root.traverseVisible(o=>{if(o instanceof T.Mesh){
+    if(o instanceof T.SkinnedMesh)o.skeleton.update();
+    const geometry=o.geometry.clone(),positions=geometry.getAttribute('position'),vertex=new T.Vector3();
+    for(let i=0;i<positions.count;i++){o.getVertexPosition(i,vertex);positions.setXYZ(i,vertex.x,vertex.y,vertex.z);}
+    geometry.computeBoundingSphere();geometry.computeBoundingBox();
+    const posed=new T.Mesh(geometry,o.material);posed.name=o.name;posed.matrixWorld.copy(o.matrixWorld);visible.push(posed);
+   }});
    if(scope)assert.equal(new T.Raycaster(camera.position,camera.getWorldDirection(new T.Vector3()),0,3).intersectObjects(visible,false).length,0,`${id} ${weapon} ${scope}: hands or weapon obscure scope center`);
    for(const glove of visible.filter(o=>/ArticulatedGlove/.test(o.name))){
     const index=glove.geometry.index!;let exposed=0;const blockers:Record<string,number>={},bounds=new T.Box2();
@@ -63,8 +71,11 @@ test('production palms wrap the grips with exposed surfaces at normal and scoped
     // not merely contain hand bones behind the receiver.
     assert(exposed>=3,`${id} ${weapon} ${glove.name}: glove hidden by sleeve or weapon mode=${mode} ${JSON.stringify(blockers)} exposed=${exposed}`);
     const size=bounds.getSize(new T.Vector2());
-    assert(size.x>.035&&size.y>.055,`${id} ${weapon} ${glove.name} ${mode} ${baseFov}: exposed hand too small ${size.toArray()}`);
+    // Proportionate hands replace the old 1.5x enlargement. Keep enough exposed
+    // surface to read the grip without requiring oversized fingers again.
+    assert(size.x>.02&&size.y>.02,`${id} ${weapon} ${glove.name} ${mode} ${baseFov}: exposed hand too small ${size.toArray()}`);
    }
+   for(const mesh of visible)mesh.geometry.dispose();
   }
   fp.dispose();
  }

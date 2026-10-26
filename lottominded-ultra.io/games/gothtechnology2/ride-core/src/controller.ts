@@ -241,7 +241,13 @@ export class RideController {
         // contact knocks it off; the player's normal crash rules are unchanged.
         if(!input.stableAI&&normalSpeed>4.2)this.fall('collision');
         else if(slideX||slideZ){if(slideX){p.x+=ox*.75;this.vx*=.75;this.vz=0;}else{p.z+=oz*.75;this.vz*=.75;this.vx=0;}p.speed=this.vx*Math.sin(p.headingY)+this.vz*Math.cos(p.headingY);this.motor=0;}
-        else{p.speed=this.vx=this.vz=this.motor=0;}}
+        else{
+          // A downhill creep into a wall can be smaller than one motor-ramp
+          // step. Keep opposing torque so reverse can overcome that grade;
+          // force into the wall still stops, and contact never moves the body.
+          if(this.motor*p.speed>=0)this.motor=0;
+          p.speed=this.vx=this.vz=0;
+        }}
       else{p.x+=dx;p.z+=dz;}
     }
     this.terrain.sampleGround(p.x,p.z,this.ground,p.y);const floor=this.ground.height;

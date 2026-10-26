@@ -8,10 +8,11 @@ import {botWheelRecovery,recoverBotWheel} from '../src/royale/botWheelRecovery.t
 import {WHEEL_PICKUP_TOTAL} from '../src/wheelPickupTiming.ts';
 import {RideController,NEUTRAL_ACTIONS} from '../src/controller.ts';
 import {playerHitBot,playerCollidesWithBot} from '../src/royale/botKnockoff.ts';
+import {angle,clamp} from '../src/rideDynamics.ts';
 await initializeEngine(await readFile(new URL('../src/engine/breadflower.wasm',import.meta.url)));
 const terrain=await ArenaTerrain.create();
-function setup(engine=true){
- const m=new RoyaleMatch(terrain,engine);m.add('human','Human');m.add('bot','AI',true);m.start('recovery',1);
+function setup(engine=true,world=terrain){
+ const m=new RoyaleMatch(world,engine);m.add('human','Human');m.add('bot','AI',true);m.start('recovery',1);
  for(let i=0;i<PROTECTION;i++)m.step();
  for(const [i,a]of m.actors.entries()){
   a.controller.reset({position:{x:0,y:0,z:i?0:160},headingY:0});a.controller.combatOnFoot=true;a.pose={...a.controller.poseValue};
@@ -47,13 +48,34 @@ test('critical health, fresh stagger and obstructed paths cannot force a mount',
  let c=neutral(m.round);assert(recoverBotWheel(a,c,s,terrain,m.tick));assert(!c.dismount);
  a.pose.footStagger=0;a.integrity=15;c=neutral(m.round);recoverBotWheel(a,c,s,terrain,m.tick);assert(!c.dismount);assert(c.repair);
  a.integrity=100;a.pose.x=4;c=neutral(m.round);
- recoverBotWheel(a,c,s,{...terrain,line:()=>false,route:()=>[]} as unknown as ArenaTerrain,m.tick);
- assert(!c.dismount);assert.equal(c.throttle,0);assert.equal(c.steer,0);
+ const blocked=Object.assign(Object.create(terrain),{line:()=>false,raycastObstacle:()=>0,route:()=>[]}) as ArenaTerrain;
+ for(let i=0;i<120;i++){c=neutral(m.round);recoverBotWheel(a,c,s,blocked,m.tick+i);assert(!c.dismount&&!c.recover,'an obstructed wheel must not hold either pickup input');assert.equal(c.throttle,0);assert.equal(c.steer,0);}
  m.dispose();
 });
 test('voluntary dismount is not mistaken for a knock-off',()=>{
  const m=setup(),a=m.actors[1],c=neutral(m.round);a.pose.footMode=2;a.pose.footStagger=0;
  assert.equal(recoverBotWheel(a,c,botWheelRecovery(),terrain,m.tick),false);m.dispose();
+});
+
+test('a pickup rejected beside a wall walks to a safe side and remounts without a held-button stall',()=>{
+ const world=Object.create(terrain) as ArenaTerrain;
+ // The wheel is just far enough from this wall for a short sight ray to pass,
+ // but a direct pickup's endpoint/body margin must reject the approach.
+ world.sampleGround=(_x,_z,out)=>Object.assign(out,{height:0,normal:{x:0,y:1,z:0},surface:'pavement',offCourse:false});
+ world.raycastObstacle=(o,d,max,radius=0)=>{if(d.z>=0)return null;const hit=(-.4+radius-o.z)/d.z;return hit>=0&&hit<=max?hit:null;};
+ const controller=new RideController(world,{spawn:{position:{x:0,y:0,z:1},headingY:0}});controller.combatOnFoot=true;
+ const saved=controller.captureState();Object.assign(saved.fields.walking,{mode:2,latch:true,stagger:0});Object.assign(saved.fields.pose,{footMode:2,footBlend:1,parkX:0,parkY:0,parkZ:0});controller.restoreState(saved);
+ const m=setup(false),a=m.actors[1];a.controller=controller;a.pose={...controller.poseValue};
+ const state=botWheelRecovery();state.returning=true;let mounted=false,movedSideways=false,pickup=false,maxStep=0;
+ for(let i=0;i<420;i++){
+  a.pose={...controller.poseValue};const before={x:a.pose.x,z:a.pose.z},c=neutral(m.round);recoverBotWheel(a,c,state,world,1800+i);
+  if(!i){assert(!c.recover&&!c.dismount,'blocked direct pickup must become a walking approach');assert(Math.hypot(c.throttle,c.steer)>.5);}
+  const input={...NEUTRAL_ACTIONS,quickMount:true,stableAI:true,recover:c.recover,dismount:c.dismount,throttle:c.throttle,steer:c.steer,facingYaw:c.facingYaw??undefined};controller.step(1/120,input);controller.step(1/120,input);
+  const p=controller.poseValue;maxStep=Math.max(maxStep,Math.hypot(p.x-before.x,p.z-before.z));movedSideways ||= Math.abs(p.x)>.2;pickup ||= p.footMode===3;
+  assert(p.z>=-.13,'body must stay outside the wall');assert.deepEqual([p.parkX,p.parkY,p.parkZ],[0,0,0],'parked wheel must not be moved');
+  if(!p.footMode){mounted=true;break;}
+ }
+ assert(movedSideways&&pickup&&mounted,'safe-side approach must finish ordinary pickup/remount');assert(maxStep<.2,`recovery step ${maxStep} exceeds the ordinary brisk pickup`);m.dispose();
 });
 
 test('even a high-speed AI building impact stops mounted outside solid geometry',()=>{
@@ -97,13 +119,19 @@ test('swept player impacts catch fast crossings, but reject scenery, brushes and
  m.dispose();
 });
 
-for(const engine of [false,true])test(`the match applies a player wheel impact and the bot recovers (engine=${engine})`,()=>{
- const m=setup(engine),[human,bot]=m.actors;
+for(const engine of [false,true])test(`the match applies a player wheel impact to a parked bot and the bot recovers (engine=${engine})`,()=>{
+ // Keep the target parked so this contact/recovery regression is independent
+ // of tactical route choice; normal moving pursuit is covered below.
+ const world=Object.create(terrain) as ArenaTerrain;world.route=from=>[{...from}];
+ const m=setup(engine,world),[human,bot]=m.actors;
  human.controller.reset({position:{x:0,y:0,z:0},headingY:0});human.pose={...human.controller.poseValue};
  bot.controller.reset({position:{x:0,y:0,z:4},headingY:0});bot.pose={...bot.controller.poseValue};
  let hit=false;
- for(let i=0;i<180&&!hit;i++){
-  assert(m.command(human.id,{...neutral(m.round,human.lastSeq+1,m.tick),throttle:1}));m.step();
+ for(let i=0;i<360&&!hit;i++){
+  // Navigation may now take a different lane: deliberately intercept the real
+  // moving bot instead of assuming it stays on the player's initial heading.
+  const yaw=Math.atan2(bot.pose.x-human.pose.x,bot.pose.z-human.pose.z);
+  assert(m.command(human.id,{...neutral(m.round,human.lastSeq+1,m.tick),throttle:1,steer:clamp(-angle(yaw-human.pose.headingY)*2,-1,1)}));m.step();
   hit=m.events.some(e=>e.kind==='player-knockoff'&&e.actor===human.id&&e.target===bot.id);
  }
  assert(hit,'host must turn a real player impact into a bot knock-off');assert.equal(bot.pose.footMode,2);
