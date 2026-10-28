@@ -5,11 +5,12 @@ import type {Vec3} from '../terrain.ts';
 import {DOWNTOWN_FIELD_REVISION,downtownExtent,downtownRadii} from './downtownField.ts';
 import {scopeSites} from './scopes.ts';
 import {configuredSpawnNodes,configuredRecoveryNodes,spawnCameraSpace} from './spawnNodes.ts';
+import {dequindreEntrance} from '../dequindreEntrance.ts';
 const distance=(a:Vec3,b:Vec3)=>Math.hypot(a.x-b.x,a.z-b.z);
 /** One shared district on the original Detroit map. The entire original map
  * remains scenery/collision; the field bounds the ten-minute round, not walls. */
 export class DowntownArena extends AuthoredArena implements BattleTerrain {
- readonly spawns;readonly spawnNodes;readonly recoverySpawnNodes;readonly zones;readonly supplies:Vec3[]=[];readonly optics;readonly arenaIdentity;readonly fieldRadii;
+ readonly spawns;readonly spawnNodes;readonly playerStartNodes;readonly recoverySpawnNodes;readonly zones;readonly supplies:Vec3[]=[];readonly optics;readonly arenaIdentity;readonly fieldRadii;
  constructor(terrain:TagTerrain){
   super(terrain);
   if(terrain.fixture.product!=='swoop-detroit')throw Error('Royale requires the shared Detroit map.');
@@ -35,6 +36,14 @@ export class DowntownArena extends AuthoredArena implements BattleTerrain {
   this.spawns=starts.map(p=>({position:{...p},headingY:distance(p,center)<1?-0.075:Math.atan2(center.x-p.x,center.z-p.z)}));
   const spawnSites=this.layout.nodes.filter(p=>spawnCameraSpace(this.sourcePosition(p)));
   this.spawnNodes=configuredSpawnNodes(spawnSites,t,p=>this.clear(p.x,p.z,1,p.y));
+  // Every human begins at the Atwater entrance, with separate supported bays.
+  // Keep randomized downtown bots and danger-checked recovery nodes independent.
+  this.playerStartNodes=Array.from({length:10},(_,i)=>{
+   const p=dequindreEntrance(12+i*8),x=(p.x-t.tx)/t.sx,z=p.z-t.tz,ground=this.ground(x,z,-t.ty);
+   const position={x,y:ground.height,z};
+   if(!this.clear(x,z,1,ground.height)||ground.normal.y<.9)throw Error('Cut entrance start is obstructed: '+i);
+   return{id:'entrance-'+i,cluster:'entrance',position,headingY:-p.heading};
+  });
   this.recoverySpawnNodes=configuredRecoveryNodes(spawnSites,this.spawnNodes,fieldCenter,p=>this.clear(p.x,p.z,1,p.y));
   for(const start of starts){
    const near=sites.filter(p=>distance(p,start)>8&&distance(p,start)<35).sort((a,b)=>distance(a,start)-distance(b,start));
@@ -45,7 +54,7 @@ export class DowntownArena extends AuthoredArena implements BattleTerrain {
   for(const p of this.layout.nodes)if(this.supplies.length<260&&this.supplies.every(q=>distance(p,q)>50))this.supplies.push({...p});
   for(const node of this.spawnNodes){let count=0;for(const p of [...this.layout.nodes].filter(p=>distance(p,node.position)>8&&distance(p,node.position)<35).sort((a,b)=>distance(a,node.position)-distance(b,node.position)))if(this.supplies.every(q=>distance(p,q)>5)){this.supplies.push({...p});if(++count===2)break;}}
   this.optics=scopeSites(this.layout.nodes,this.spawns,fieldCenter,Math.min(...this.zones.map(z=>this.fieldRadii[0]-distance(z,fieldCenter))));
-  this.arenaIdentity={...this.handshake,arena:DOWNTOWN_FIELD_REVISION+'-recovery-2'};
+  this.arenaIdentity={...this.handshake,arena:DOWNTOWN_FIELD_REVISION+'-cut-start-3'};
  }
 }
 

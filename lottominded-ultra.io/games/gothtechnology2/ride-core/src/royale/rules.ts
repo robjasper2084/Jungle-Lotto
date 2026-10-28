@@ -26,7 +26,7 @@ import {botWheelRecovery,recoverBotWheel} from './botWheelRecovery.ts';
 import {playerHitBot,playerCollidesWithBot} from './botKnockoff.ts';
 import {traceBallistic} from './ballisticSweep.ts';
 import {stanceBounds} from './stanceVolume.ts';
-import {initialSpawnNodes,recoveryNodes,spawnLabel,type SpawnNode} from './spawnNodes.ts';
+import {matchSpawnNodes,recoveryNodes,spawnLabel,type SpawnNode} from './spawnNodes.ts';
 import {createBattleDog,advanceBattleDog,type DogPower,type BattleDog} from './dogPower.ts';
 import {initialMelee,meleeTrigger,sweepMelee,type MeleeState} from './melee.ts';
 import {isScope,canReachScope,bestScope,type Scope} from './scopes.ts';
@@ -97,7 +97,7 @@ export class RoyaleMatch{
  start(round:string,seed=1){if(!this.actors.length||this.actors.length>this.size||!['lobby','results'].includes(this.phase))throw Error('ALL_ROOM_RIDERS_REQUIRED');
  this.series.begin();this.smokeClouds=[];this.impacts=[];this.spectators.clear();this.spectatorFrames=[];
  this.replayHistory.reset();this.round=round;this.seed=seed;this.tick=0;this.phase='deployment';this.winner=null;this.reason='';this.events=[];this.projectiles=[];this.awarded.clear();this.brains.clear();
- const roster=this.actors.map(a=>({id:a.id,name:a.name,bot:a.bot,skin:a.skin,wheelId:a.wheelId,connected:a.connected}));this.roundStarts=this.terrain.spawnNodes?initialSpawnNodes(this.terrain.spawnNodes,roster.length,seed):[];this.actors=[];this.phase='lobby';for(const r of roster){const a=this.add(r.id,r.name,r.bot,r.skin,r.wheelId);a.connected=r.connected;a.input=neutral(round);a.disconnectTick=r.connected?-1:0;}this.phase='deployment';
+ const roster=this.actors.map(a=>({id:a.id,name:a.name,bot:a.bot,skin:a.skin,wheelId:a.wheelId,connected:a.connected}));this.roundStarts=this.terrain.spawnNodes?matchSpawnNodes(this.terrain.spawnNodes,roster,seed,this.terrain.playerStartNodes):[];this.actors=[];this.phase='lobby';for(const r of roster){const a=this.add(r.id,r.name,r.bot,r.skin,r.wheelId);a.connected=r.connected;a.input=neutral(round);a.disconnectTick=r.connected?-1:0;}this.phase='deployment';
  this.loot=this.terrain.supplies?this.terrain.supplies.map((p,i)=>({id:'district-'+i,p:{...p},kind:(['static','heart','bass','ammo','repair','shield','dog'] as const)[i%7],available:true} as Loot)):this.terrain.spawns.flatMap((s,i)=>{const x=s.position.x*.87,z=s.position.z*.87;return [{id:'weapon-'+i,p:{x,y:this.terrain.ground(x,z).height,z},kind:i%2?'heart':'bass',available:true},{id:'supply-'+i,p:{x:x+6,y:this.terrain.ground(x+6,z).height,z},kind:'ammo',available:true}] as Loot[];});
  for(const [i,p]of this.terrain.zones.entries())this.loot.push({id:'central-'+i,p:{...p,y:this.terrain.ground(p.x,p.z).height},kind:i%2?'repair':'shield',available:true});
  for(const [i,site]of (this.terrain.optics??this.terrain.spawns.map(s=>({p:{x:s.position.x+Math.sin(s.headingY)*9,y:s.position.y,z:s.position.z+Math.cos(s.headingY)*9},kind:'scope2' as Scope}))).entries())this.loot.push({id:'optic-'+i,p:{...site.p},kind:site.kind,available:true});

@@ -1,4 +1,5 @@
 import {MiniMapControls} from '../../../ride-core/src/miniMapControls.ts';
+import {MapInformation,nearbyMapPlaces} from '../../../ride-core/src/mapInformation.ts';
 import './tacticalHud.css';
 import {raceMapProgress,checkpointScreenPoint,fitRaceCourse,type RaceMapCourse} from './raceMap.ts';
 import {MapLayout} from './mapLayout.ts';
@@ -12,6 +13,7 @@ export class TacticalMap{
  private widget=document.createElement('div');
  readonly dialog=document.createElement('dialog');
  readonly layout:MapLayout;readonly visibility:MiniMapControls;
+  private fullInfo:MapInformation;
  private mini=document.createElement('canvas');private full=document.createElement('canvas');
  private caption=document.createElement('span');private note=document.createElement('p');
  private compass=document.createElement('div');private compassTrack=document.createElement('div');private bearing=document.createElement('strong');
@@ -35,6 +37,9 @@ export class TacticalMap{
   const footer=document.createElement('div');footer.className='map-actions';for(const [label,value] of [['Full area',1],['Near rider',3]] as const){const b=document.createElement('button');b.textContent=label;b.onclick=()=>{this.zoom=value;this.courseFit=false;this.draw();};footer.append(b);}
   this.courseButton.textContent='Race route';this.courseButton.hidden=true;this.courseButton.onclick=()=>{this.courseFit=true;this.draw();};footer.append(this.courseButton);
   this.note.className='map-route-note';this.dialog.append(header,this.full,this.note,footer);document.body.append(this.dialog);
+  this.fullInfo=new MapInformation(this.dialog,true);
+  const info=document.createElement('button');info.type='button';info.textContent='Map info';info.setAttribute('aria-haspopup','dialog');info.style.cssText='width:100%;min-height:44px;margin:0;border-radius:0;font:700 12px system-ui';this.widget.append(info);
+  info.onclick=()=>{this.open();this.fullInfo.root.open=true;this.fullInfo.root.querySelector('summary')?.focus();this.fullInfo.root.scrollIntoView({block:'end'});};
   this.button.onclick=()=>{pause();this.dialog.showModal();this.zoom=1;this.courseFit=!!this.race;this.draw();close.focus();};close.onclick=()=>this.dialog.close();this.dialog.onclose=()=>focus();
   this.dialog.addEventListener('keydown',e=>e.stopPropagation());this.dialog.addEventListener('pointerdown',e=>e.stopPropagation());
   this.widget.dataset.mapTitle=title;this.layout=new MapLayout(this.widget,title,pause);
@@ -66,6 +71,9 @@ export class TacticalMap{
   this.bearing.textContent=reading.direction+' '+String(reading.bearing).padStart(3,'0')+'°';
   const ticks=compassTicks(heading);ticks.forEach((t,i)=>{let tick=this.compassTicks[i];if(!tick){tick=document.createElement('b');this.compassTicks[i]=tick;this.compassTrack.append(tick);}tick.hidden=false;tick.style.left=t.position+'%';if(tick.textContent!==t.label)tick.textContent=t.label;tick.className=t.major?'major':'';});for(let i=ticks.length;i<this.compassTicks.length;i++)this.compassTicks[i].hidden=true;
   const p=this.markers[0]??{x:this.bounds.x+this.bounds.w/2,y:this.bounds.y+this.bounds.h/2};const range=this.zoomSteps[this.miniZoom];
+  const information=[this.caption.textContent??'',`${this.markers.length} rider${this.markers.length===1?'':'s'} shown · mini-map height ${range} m`];
+  const key='White arrow: you. Gold arrows: riders. Blue: water. Gray: paths. Cyan: race route. Gold numbered gate: next checkpoint.';
+  if(this.dialog.open)this.fullInfo.update(p,heading,this.labels,information,key);
   this.paint(this.mini,miniMapView(p,range,this.mini.width/this.mini.height),true);
   if(this.dialog.open){let b=this.bounds;
    if(this.courseFit&&this.race?.points.length)b=fitRaceCourse(this.race.points);
@@ -97,7 +105,11 @@ export class TacticalMap{
     c.textBaseline='alphabetic';
    }
   }
-  if(!mini&&!this.race){c.font='600 13px system-ui';c.textAlign='center';for(const l of this.labels){const p=point(l.point);c.fillStyle='#101f1ccc';const tw=c.measureText(l.text).width;c.fillRect(p.x-tw/2-4,p.y-16,tw+8,20);c.fillStyle='#eee7ce';c.fillText(l.text,p.x,p.y);}}
+  if(!this.race){c.font='600 '+(mini?17:13)+'px system-ui';c.textAlign='center';const occupied:{x:number;y:number;w:number}[]=[];
+   const labels=mini?nearbyMapPlaces(this.markers[0]??{x:0,y:0},this.labels,4):this.labels;
+   for(const l of labels){const p=point(l.point),tw=c.measureText(l.text).width;if(p.x<tw/2+8||p.x>w-tw/2-8||p.y<30||p.y>h-40||occupied.some(o=>Math.abs(o.y-p.y)<26&&Math.abs(o.x-p.x)<(o.w+tw)/2+8))continue;
+    occupied.push({x:p.x,y:p.y,w:tw});c.fillStyle='#101f1ce8';c.fillRect(p.x-tw/2-4,p.y-16,tw+8,22);c.fillStyle='#eee7ce';c.fillText(l.text,p.x,p.y);}
+  }
   for(const [i,m] of this.markers.entries()){const p=point(m);c.save();c.translate(p.x,p.y);if(i===0){c.strokeStyle='#76ffe2';c.lineWidth=3;c.beginPath();c.arc(0,0,17,0,Math.PI*2);c.stroke();}c.rotate(m.heading);c.fillStyle=m.color??(i?'#f5d078':'#ffffff');c.strokeStyle='#04151d';c.lineWidth=2;c.beginPath();c.moveTo(0,-13);c.lineTo(9,10);c.lineTo(0,5);c.lineTo(-9,10);c.closePath();c.fill();c.stroke();c.restore();}
   c.fillStyle='#d9e4d8';c.font='600 11px system-ui';c.textAlign='left';const metres=mini?50:Math.round(view.w/5/50)*50;const px=metres*scale;c.fillRect(12,h-20,px,2);c.fillText(metres+' m',12,h-27);if(!mini)c.fillText('N ↑',w-42,24);
  }
