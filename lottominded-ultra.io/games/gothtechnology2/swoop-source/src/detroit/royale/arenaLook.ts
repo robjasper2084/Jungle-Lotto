@@ -7,9 +7,7 @@ const district={x:-72.5,z:-1180};
 /** Royale-only dressing. All placement comes from existing, playable map geometry. */
 export function polishRiverfront(root:T.Scene,arena:DowntownArena,materials:Record<string,T.MeshStandardMaterial>){
  const transform=arena.terrain.fixture.transform;
- root.traverse(object=>{const mesh=object as T.Mesh;if(!mesh.isMesh)return;for(const material of Array.isArray(mesh.material)?mesh.material:[mesh.material]){
-  if(material.name==='Detroit depth water'){const water=material as T.MeshPhysicalMaterial;water.roughness=.19;water.clearcoat=.25;water.envMapIntensity=.9;water.color.set('#b6cdd3');}
- }});
+ // Keep the shared river material: a second clearcoat made the harbor appear white.
  for(const key of ['asphalt','grass','concrete']){
   const m=materials[key];if(!m)continue;
   if(key==='asphalt'){m.color.set('#626e76');m.roughness=.72;m.envMapIntensity=.5;}
