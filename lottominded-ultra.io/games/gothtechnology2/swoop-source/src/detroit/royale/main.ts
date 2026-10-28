@@ -1,4 +1,5 @@
 import {StableEnvironment} from '../stableEnvironment.ts';
+import {failStartup} from './startupFailure.ts';
 import {VisibleTouchLayout} from './controlPlacement.ts';
 import {roundResults} from './roundResults.ts';
 import {RoyaleVR} from './vrCombat.ts';
@@ -724,7 +725,7 @@ vr=new RoyaleVR(renderer,scene,camera,el('camera-settings'),{
  exit:()=>{release();cameraBlend.reset();vrWeapon?.root.removeFromParent();delete canvas.dataset.vr;showMenu();},
  pause:()=>{release();showMenu();}
 });
-renderer.setAnimationLoop(loop);void run(prepare);
+renderer.setAnimationLoop(loop);void prepare().catch(failStartup);
 window.addEventListener('pagehide',()=>{renderer.setAnimationLoop(null);vr?.dispose();vrWeapon?.dispose();capture.dispose();firstPerson?.dispose();royaleAudio.dispose();session?.leave();combatBlock?.dispose();practiceRange?.dispose();for(const a of actors.values()){a.sparks.dispose();a.contrast.dispose();a.nameplate.dispose();a.view.dispose();a.equipment.dispose();a.shield.dispose();}for(const item of items.values())item.dispose();equipmentLibrary?.dispose();scopeLibrary?.dispose();terrain?.terrain.dispose();fieldRing.dispose();nextRing.dispose();atmosphereSky.dispose();impactEffect.dispose();surfaceMarks.dispose();renderer.dispose();});
 
 

@@ -1,0 +1,1 @@
+function r(e=typeof location>"u"?"":location.search){return new URLSearchParams(e).get("safe")==="1"}function t(e){const a=new URL(e);return a.searchParams.set("safe","1"),a.href}export{r as i,t as s};
