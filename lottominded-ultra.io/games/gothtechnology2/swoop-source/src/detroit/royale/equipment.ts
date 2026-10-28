@@ -94,6 +94,7 @@ export class WeaponView {
   private repairPacks:HeldRepairPack[]=[];
   constructor(private library:EquipmentLibrary){this.magazine.name='Reload magazine';this.magazine.visible=false;this.root.add(this.magazine);}
   get kind(){return this.current?.kind??'static';}
+  get cameraBody(){return this.current?.root.getObjectByName('PRP_'+this.current.kind);}
   createHeldRepair(){const pack=this.library.createHeldRepair();this.repairPacks.push(pack);return pack;}
   /** Socket targets include the currently evaluated equipment animation. */
   socket(local:readonly [number,number,number]){this.root.updateWorldMatrix(true,true);const prop=this.current?.root.getObjectByName('PRP_'+this.current.kind)??this.root;return prop.localToWorld(new T.Vector3(...local));}

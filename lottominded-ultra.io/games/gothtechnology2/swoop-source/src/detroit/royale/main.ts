@@ -718,7 +718,10 @@ function loop(now:number,xrFrame?:XRFrame){const rawFrameMs=now-last,delta=Math.
   'Right A reload · B mount · Left X recover · Y pause',
   'Left grip + A: heal / B: holster · Right stick click: weapon'
  ]);}
-  const submitStart=performance.now();renderer.info.autoReset=false;renderer.info.reset();renderer.render(scene,camera);capture.afterRender(now);lcdViewfinder.render(renderer,capture.finder&&!vr?.active);
+  const submitStart=performance.now();renderer.info.autoReset=false;renderer.info.reset();
+  if(firstPerson){firstPerson.rearLcd.render(renderer,scene,camera,firstPerson.root,now,graphics.current.fps<=30);canvas.dataset.cameraRearLcd=JSON.stringify(firstPerson.rearLcd.status);}
+  else renderer.render(scene,camera);
+  capture.afterRender(now);lcdViewfinder.render(renderer,capture.finder&&!vr?.active);
   if(capture.finder)canvas.dataset.viewfinderCost=JSON.stringify(lcdViewfinder.status);
  if(profileCpu)cpuSamples.push({simulation:pendingSimulationMs,presentation:submitStart-viewStart,submission:performance.now()-submitStart});
  if(session?.state?.round!==profileRound){profileRound=session?.state?.round??'';startupFrames.reset();openingTrace=[];previousWork=undefined;}
