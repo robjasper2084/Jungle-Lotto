@@ -1,4 +1,5 @@
 import {makeRenderResize} from './renderResize.ts';
+import {isSafeStartup} from '../../../swoop-source/src/detroit/safeStartup.ts';
 import * as T from 'three';
 import {installShadowBudget} from '../../../ride-core/src/shadowBudget.ts';
 import {budgetPixelRatio,makeTextureBudget} from './renderBudget.ts';
@@ -20,7 +21,7 @@ export function savedGraphicsTuning(choice:string,raw:string|null){
 export const GRAPHICS_PRESETS={low:{label:'Smooth · phones / weak systems',pixelRatio:.8,minRatio:.5,shadows:0,distance:180,fps:30,textureSize:512,maxPixels:600000,anisotropy:1},balanced:{label:'Balanced',pixelRatio:1.25,minRatio:1,shadows:1024,distance:300,fps:60,textureSize:1024,maxPixels:1800000,anisotropy:4},high:{label:'HD · high detail',pixelRatio:2,minRatio:1.5,shadows:2048,distance:460,fps:60,textureSize:2048,maxPixels:6000000,anisotropy:8},ultra:{label:'Ultra · maximum detail',pixelRatio:2,minRatio:1.5,shadows:4096,distance:600,fps:60,textureSize:4096,maxPixels:8000000,anisotropy:16}} as const;
 export function antialiasForDevice(aa:string,cores=4,memory?:number,mobile=false){return aa==='on'||aa!=='off'&&!mobile&&cores>=4&&(memory===undefined||memory>=4);}
 export function presetAntialias(choice:string,aa?:string){return aa&&aa!=='auto'?aa:choice==='high'||choice==='ultra'?'on':'auto';}
-export function startupAntialias(){let aa='auto';try{aa=presetAntialias(localStorage.getItem('swoop-graphics-quality')??'auto',parseGraphicsTuning(localStorage.getItem(TUNING_KEY)).aa);}catch{}const mobile=/Android|iPhone|iPad|Mobile|OculusBrowser/i.test(navigator.userAgent)||navigator.maxTouchPoints>1&&/Macintosh/.test(navigator.userAgent);return antialiasForDevice(aa,navigator.hardwareConcurrency||4,(navigator as Navigator&{deviceMemory?:number}).deviceMemory,mobile);}
+export function startupAntialias(){if(isSafeStartup())return false;let aa='auto';try{aa=presetAntialias(localStorage.getItem('swoop-graphics-quality')??'auto',parseGraphicsTuning(localStorage.getItem(TUNING_KEY)).aa);}catch{}const mobile=/Android|iPhone|iPad|Mobile|OculusBrowser/i.test(navigator.userAgent)||navigator.maxTouchPoints>1&&/Macintosh/.test(navigator.userAgent);return antialiasForDevice(aa,navigator.hardwareConcurrency||4,(navigator as Navigator&{deviceMemory?:number}).deviceMemory,mobile);}
 export function resolveGraphics(value:string,cores=4,memory?:number,mobile=false,gpu=''){
  if(value==='low'||value==='balanced'||value==='high'||value==='ultra')return value;
  if(/swiftshader|llvmpipe|software|microsoft basic|mali-4|adreno [23]/i.test(gpu)||cores<=2||memory!==undefined&&memory<=2)return 'low';
@@ -35,12 +36,13 @@ export function resolveGraphics(value:string,cores=4,memory?:number,mobile=false
 export function startupTextureBudget(){
  const mobile=typeof navigator!=='undefined'&&(/Android|iPhone|iPad|Mobile|OculusBrowser/i.test(navigator.userAgent)||navigator.maxTouchPoints>1&&/Macintosh/.test(navigator.userAgent));
  let choice='auto',tuning:Partial<GraphicsTuning>={};try{choice=localStorage.getItem('swoop-graphics-quality')??'auto';tuning=savedGraphicsTuning(choice,localStorage.getItem(TUNING_KEY));}catch{}
- const preset=GRAPHICS_PRESETS[resolveGraphics(choice,4,undefined,mobile)];return {mobile,maxSize:tuning.textureSize??preset.textureSize};
+ const preset=GRAPHICS_PRESETS[resolveGraphics(choice,4,undefined,mobile)];return {mobile,maxSize:isSafeStartup()?512:tuning.textureSize??preset.textureSize};
 }
 export function createGraphicsQuality(renderer:T.WebGLRenderer,scene:T.Scene,canvas:HTMLCanvasElement,onApply?:()=>void){
  installShadowBudget(renderer,scene,canvas);
  let choice:GraphicsChoice='auto';try{const saved=localStorage.getItem('swoop-graphics-quality');if(['auto','low','balanced','high','ultra'].includes(saved??''))choice=saved as GraphicsChoice;}catch{}
  let tuning:Partial<GraphicsTuning>={};try{tuning=savedGraphicsTuning(choice,localStorage.getItem(TUNING_KEY));}catch{}
+ if(isSafeStartup()){choice='low';tuning={};}
  const cores=navigator.hardwareConcurrency||4,memory=(navigator as Navigator&{deviceMemory?:number}).deviceMemory;
  const mobile=/Android|iPhone|iPad|Mobile|OculusBrowser/i.test(navigator.userAgent)||navigator.maxTouchPoints>1&&/Macintosh/.test(navigator.userAgent);
  const gl=renderer.getContext(),debug=gl.getExtension('WEBGL_debug_renderer_info'),gpu=debug?String(gl.getParameter(debug.UNMASKED_RENDERER_WEBGL)):'';

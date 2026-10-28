@@ -1,4 +1,4 @@
-export {};
+import {isSafeStartup,safeStartupUrl} from '../safeStartup.ts';
 const startup=document.getElementById('royale-startup') as HTMLDialogElement;
 const film=document.getElementById('royale-startup-video') as HTMLVideoElement;
 const enter=document.getElementById('royale-startup-enter') as HTMLButtonElement;
@@ -7,6 +7,9 @@ const status=document.getElementById('royale-startup-status')!;
 const detail=document.getElementById('royale-startup-detail')!;
 const progress=document.getElementById('royale-startup-progress')!;
 const timing=document.getElementById('royale-startup-timing')!;
+const recovery=document.getElementById('royale-startup-recovery')!;
+(document.getElementById('royale-startup-safe') as HTMLAnchorElement).href=safeStartupUrl(location.href);
+document.getElementById('royale-startup-retry')!.onclick=()=>location.reload();
 let finishedAt:number|undefined;
 function syncTiming(){
   const seconds=Math.floor((finishedAt??performance.now())/1000);
@@ -23,10 +26,11 @@ film.muted=true;film.defaultMuted=true;
 startup.close();startup.showModal();enter.focus({preventScroll:true});
 function syncPlayback(){
   sound.hidden=reduced.matches;
-  if(!startup.open||document.hidden||reduced.matches){film.pause();if(reduced.matches){film.muted=true;sound.textContent='Sound off';sound.setAttribute('aria-pressed','false');film.currentTime=0;}return;}
+   if(!startup.open||document.hidden||reduced.matches||isSafeStartup()){film.pause();if(reduced.matches||isSafeStartup()){film.muted=true;sound.hidden=true;sound.textContent='Sound off';sound.setAttribute('aria-pressed','false');film.currentTime=0;}return;}
   void film.play().catch(()=>{film.poster&&film.setAttribute('data-playback','poster');});
 }
 function syncStatus(){
+   if(startup.dataset.error==='true'){film.pause();clearInterval(clock);return;}
   const ready=!practice.disabled;
   startup.dataset.ready=String(ready);
   // Completed work includes individual rider/wheel assets and arena setup tasks.
@@ -41,7 +45,8 @@ function syncStatus(){
   if(ready&&finishedAt===undefined){finishedAt=performance.now();clearInterval(clock);}
   syncTiming();
   status.textContent=ready?'Arena ready':'Preparing arena';
-  detail.textContent=ready?'Open the menu to choose your rider and match.':message.textContent||'Loading the streets of Detroit…';
+   detail.textContent=ready?'Open the menu to choose your rider and match.':message.textContent||'Loading the streets of Detroit…';
+   recovery.hidden=ready;
 }
 const observer=new MutationObserver(syncStatus);
 observer.observe(message,{childList:true,characterData:true,subtree:true});

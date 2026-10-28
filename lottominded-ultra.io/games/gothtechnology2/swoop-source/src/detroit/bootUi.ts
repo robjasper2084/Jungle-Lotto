@@ -2,7 +2,11 @@ import {loadingCinema} from './loadingCinema.ts';
 import './style.css';
 import './lobby.css';
 import {BootLifecycle} from './bootLifecycle.ts';
+import {safeStartupUrl} from './safeStartup.ts';
 export const boot=new BootLifecycle();
+// Background tabs can suspend downloads and timers on phones. Count active time.
+document.addEventListener('visibilitychange',()=>boot.progress());
+window.addEventListener('swoop-load-progress',()=>boot.progress());
 const cinema=loadingCinema();
 const node=(id:string)=>document.getElementById(id)!;
 document.getElementById('menu')!.style.setProperty('--lobby-art',`url("${new URL('../../public/art/swoop-rivals.webp',import.meta.url).href}")`);
@@ -31,7 +35,7 @@ export function renderBoot(){
   const firstError=node('bootError').hidden;
   node('bootError').hidden=false;node('bootErrorMessage').textContent=boot.message;
   node('bootErrorTitle').textContent=boot.message.startsWith('Graphics were interrupted')?'Your ride was interrupted':'Your ride hasn’t started yet';
-  node('bootDiagnostics').textContent=boot.detail;node('start').setAttribute('disabled','');
+  node('bootDiagnostics').textContent=boot.detail;node('bootErrorMessage').textContent=boot.message+(boot.detail?' '+boot.detail.split('\n')[0]:'');node('start').setAttribute('disabled','');
   node('world').dataset.ready='false';
   for(const child of document.body.children)if(child instanceof HTMLElement&&child!==node('bootError'))child.inert=true;
   if(firstError)node('bootRetry').focus();
@@ -45,6 +49,7 @@ export function failBoot(error:unknown,graphics=false){
 }
 export function bootProgress(completed:number){cinema.progress(completed,5);}
 export function bootStage(stage:'checking'|'loading'|'preparing',message:string){boot.advance(stage,message);renderBoot();}
-timer=setInterval(()=>{boot.tick();renderBoot();},1000);
+timer=setInterval(()=>{if(!document.hidden)boot.tick();renderBoot();},1000);
 node('bootRetry').onclick=()=>location.reload();
+(node('bootSafe') as HTMLAnchorElement).href=safeStartupUrl(location.href);
 bootStage('checking','Checking 3D graphics…');

@@ -5,7 +5,8 @@ import {surfacePolish,makeLaneMargins} from './surfacePolish.ts';
 import {loadEngineForPage} from '../../../ride-core/src/engine/browser.ts';
 await loadEngineForPage();
 import {FrameSchedule,frameSeconds} from './frameSchedule.ts';
-import {loadingCinema} from './loadingCinema.ts';
+import {loadingCinema,failLoading} from './loadingCinema.ts';
+import elmwoodSkylight from '../../art/nvidia/elmwood-skylight.hdr?url';
 const loadingCard=loadingCinema();
 import {SpatialAssetStream} from './spatialAssetStream.ts';
 
@@ -139,7 +140,7 @@ const weather=makeElmwoodWeather(scene,camera,sun,hemi,renderer);
 
 
 
-const pmrem=new T.PMREMGenerator(renderer);new HDRLoader().load(new URL('../../art/nvidia/elmwood-skylight.hdr',import.meta.url).href,hdr=>{const env=pmrem.fromEquirectangular(hdr);scene.environment=env.texture;canvas.dataset.lighting='NVIDIA OptiX baked skylight';hdr.dispose();pmrem.dispose();},undefined,e=>console.warn('Reflection environment unavailable',e));
+const pmrem=new T.PMREMGenerator(renderer);new HDRLoader().load(elmwoodSkylight,hdr=>{try{const env=pmrem.fromEquirectangular(hdr);scene.environment=env.texture;canvas.dataset.lighting='NVIDIA OptiX baked skylight';}finally{hdr.dispose();pmrem.dispose();}},undefined,e=>{pmrem.dispose();console.warn('Reflection environment unavailable',e);});
 
 
 
@@ -754,7 +755,7 @@ const ps=placements.filter(p=>p.asset===id),source=cache.get(id)!;source.updateM
 
 
 
-}catch(e){loadingCard.fail('Elmwood could not finish loading. Please retry.');el('error').textContent=String(e);notice('Loading failed — see the error panel.');console.error(e);}
+}catch(e){failLoading(e);el('error').textContent=String(e);notice('Loading failed — see the error panel.');}
 
 
 
