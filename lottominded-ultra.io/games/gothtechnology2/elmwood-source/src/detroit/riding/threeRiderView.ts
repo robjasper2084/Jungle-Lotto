@@ -1,3 +1,5 @@
+import {RiderWardrobe,baseRiderId} from '../../../../ride-core/src/riderWardrobe.ts';
+import {HeroDetail} from '../../../../ride-core/src/heroDetail.ts';
 import {applyOnFootRider,applyKimodoRiding} from '../../../../ride-core/src/onFootRider.ts';
 import {invalidateAnimatedShadow} from '../../../../ride-core/src/shadowBudget.ts';
 import {wheelPickupTiming} from '../../../../ride-core/src/wheelPickupTiming.ts';
@@ -21,6 +23,7 @@ const v=()=>new T.Vector3(),q=()=>new T.Quaternion();
 function rotateWorld(bone:T.Object3D|undefined,axis:T.Vector3,angle:number){if(!bone)return;const w=bone.getWorldQuaternion(q()).premultiply(q().setFromAxisAngle(axis,angle));bone.quaternion.copy(bone.parent!.getWorldQuaternion(q()).invert().multiply(w));bone.updateWorldMatrix(false,true);}
 function prepare(o:T.Object3D){o.traverse(n=>{const m=n as T.Mesh;if(m.isMesh){m.castShadow=true;m.receiveShadow=true;m.frustumCulled=!(m as T.SkinnedMesh).isSkinnedMesh;}});}
 export class ThreeRiderView {
+  private detail:HeroDetail;private wardrobe:RiderWardrobe;
   readonly walkStyle='kimodo' as const;
   readonly fingers:FingerPose;
   readonly lights:WheelLights;
@@ -56,10 +59,11 @@ export class ThreeRiderView {
     for(const l of this.legs){l.target.divideScalar(this.wheelScale);l.target.x=Math.sign(l.target.x)*profile.pedalHalfSpacing;}
     this.root.name='Digital Static RideCore • '+profile.id;
     if(this.hips)this.fallPivot.copy(this.rider.worldToLocal(this.hips.getWorldPosition(v())));
+    this.detail=new HeroDetail(this.rider);this.wardrobe=new RiderWardrobe(this.rider,profile.id);
     this.riderContact=new CrashContact(this.rider);this.wheelContact=new CrashContact(this.vehicle);
-    if(this.rider.getObjectByName('Armored_Rider_Surface')){this.armorKeychain=new ArmorKeychain(this.rider);this.helmetSkin=new HelmetSkinDecal(this.rider);}
+    if(baseRiderId(profile.id)===profile.id&&this.rider.getObjectByName('Armored_Rider_Surface')){this.armorKeychain=new ArmorKeychain(this.rider);this.helmetSkin=new HelmetSkinDecal(this.rider);}
   }
-  dispose(){this.lights.dispose();this.armorKeychain?.dispose();this.helmetSkin?.dispose();this.root.removeFromParent();this.rider.traverse(o=>{if((o as T.SkinnedMesh).isSkinnedMesh)(o as T.SkinnedMesh).skeleton.dispose();});}
+  dispose(){this.wardrobe.dispose();this.detail.dispose();this.lights.dispose();this.armorKeychain?.dispose();this.helmetSkin?.dispose();this.root.removeFromParent();this.rider.traverse(o=>{if((o as T.SkinnedMesh).isSkinnedMesh)(o as T.SkinnedMesh).skeleton.dispose();});}
   pedalTarget(l:Limb,suspensionOffset:number){return this.vehicle.localToWorld(l.target.clone().add(new T.Vector3(0,suspensionOffset,0)));}
   footTarget(index:number,p:RidePose){
     const target=this.pedalTarget(this.legs[index],p.suspensionOffset);
@@ -192,6 +196,6 @@ export class ThreeRiderView {
       this.root.updateMatrixWorld(true);
     }
     applyKimodoRiding(this,p);
-    applyOnFootRider(this,p);this.fingers.apply('Relaxed',p.footMode===3&&wheelPickupTiming(p.footMountTime||0).grip>.5?'SupportGrip':'Relaxed');
+    applyOnFootRider(this,p);this.fingers.apply('Relaxed',p.footMode===3&&wheelPickupTiming(p.footMountTime||0).grip>.5?'SupportGrip':'Relaxed');if(p.footMode===2)this.fingers.softenRun(p.speed);
   }
 }

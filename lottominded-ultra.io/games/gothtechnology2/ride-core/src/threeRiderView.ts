@@ -1,3 +1,4 @@
+import {HeroDetail} from './heroDetail.ts';
 import {crashLimb} from './kimodoCrash.ts';
 import {recoveryHand,recoveryFoot} from './kimodoRecovery.ts';
 import {FingerPose} from './fingerPose.ts';
@@ -20,6 +21,7 @@ const v=()=>new T.Vector3(),q=()=>new T.Quaternion();
 function rotateWorld(bone:T.Object3D|undefined,axis:T.Vector3,angle:number){if(!bone)return;const w=bone.getWorldQuaternion(q()).premultiply(q().setFromAxisAngle(axis,angle));bone.quaternion.copy(bone.parent!.getWorldQuaternion(q()).invert().multiply(w));bone.updateWorldMatrix(false,true);}
 function prepare(o:T.Object3D){o.traverse(n=>{const m=n as T.Mesh;if(m.isMesh){m.castShadow=true;m.receiveShadow=true;m.frustumCulled=!(m as T.SkinnedMesh).isSkinnedMesh;}});}
 export class ThreeRiderView {
+  private detail:HeroDetail;
   root=new T.Group();ground=new T.Group();lean=new T.Group();vehicle:T.Object3D;rider:T.Object3D;
   wheel?:T.Object3D;body?:T.Object3D;bodyRestY=0;hips?:T.Object3D;head?:T.Object3D;chest?:T.Object3D;
   spine:T.Object3D[]=[];neck?:T.Object3D;shoulders:T.Object3D[]=[];
@@ -54,10 +56,11 @@ export class ThreeRiderView {
     for(const l of this.legs){l.target.divideScalar(this.wheelScale);l.target.x=Math.sign(l.target.x)*profile.pedalHalfSpacing;}
     this.root.name='Digital Static RideCore • '+profile.id;
     if(this.hips)this.fallPivot.copy(this.rider.worldToLocal(this.hips.getWorldPosition(v())));
+    this.detail=new HeroDetail(this.rider);
     this.riderContact=new CrashContact(this.rider);this.wheelContact=new CrashContact(this.vehicle);
     this.fallenSupport=new FallenSupport(this.riderContact.probes,this);
   }
-  dispose(){this.root.removeFromParent();this.rider.traverse(o=>{if((o as T.SkinnedMesh).isSkinnedMesh)(o as T.SkinnedMesh).skeleton.dispose();});}
+  dispose(){this.detail.dispose();this.root.removeFromParent();this.rider.traverse(o=>{if((o as T.SkinnedMesh).isSkinnedMesh)(o as T.SkinnedMesh).skeleton.dispose();});}
   pedalTarget(l:Limb,suspensionOffset:number){return this.vehicle.localToWorld(l.target.clone().add(new T.Vector3(0,suspensionOffset,0)));}
   footTarget(index:number,p:RidePose){
     const target=this.pedalTarget(this.legs[index],p.suspensionOffset);
@@ -212,7 +215,7 @@ export class ThreeRiderView {
       this.fallenSupport.recover(this,p,this.terrain);
       this.root.updateMatrixWorld(true);
     }
-    applyOnFootRider(this,p);this.fingers.apply('Relaxed',p.footMode===3&&wheelPickupTiming(p.footMountTime||0).grip>.5?'SupportGrip':'Relaxed');
+    applyOnFootRider(this,p);this.fingers.apply('Relaxed',p.footMode===3&&wheelPickupTiming(p.footMountTime||0).grip>.5?'SupportGrip':'Relaxed');if(p.footMode===2)this.fingers.softenRun(p.speed);
     if(p.crashMotion&&p.crashBlend>0&&p.footMode===2&&p.crashRecovery>.55)this.fallenSupport.alignLegs(this,1-T.MathUtils.smoothstep(p.crashRecovery,.80,1));
   }
 }

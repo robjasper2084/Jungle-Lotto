@@ -1,5 +1,6 @@
 import type {BattleTerrain} from './battleTerrain.ts';import type {RidePose} from '../controller.ts';import type {DogPose} from '../companion.ts';
 import {gaitCadence} from '../dogGait.ts';
+import {yieldToTraffic} from '../dynamicClearance.ts';
 export type DogPower={charges:number;until:number;ready:number;radarUntil:number;radarReady:number};
 export type BattleDog=DogPose&{mode:'follow'|'chase'|'pounce'|'return';target?:string;activation:number;pounceUntil:number;replan:number;fallVelocity?:number;path:{x:number;y:number;z:number}[]};
 export function createBattleDog(p:RidePose,terrain?:BattleTerrain):BattleDog{
@@ -36,7 +37,9 @@ export function advanceBattleDog(d:BattleDog,owner:Rival,power:DogPower,rivals:r
  const wanted=at?Math.atan2(at.x-d.x,at.z-d.z):d.heading,turn=Math.atan2(Math.sin(wanted-d.heading),Math.cos(wanted-d.heading));
  d.turnRate=Math.max(-4,Math.min(4,turn/dt));d.heading+=d.turnRate*dt;if(Math.abs(turn)>.5)speed=Math.min(speed,4);
  d.speed+=(speed-d.speed)*(1-Math.exp(-8*dt));
- const step=Math.min(d.speed*dt,at?Math.hypot(at.x-d.x,at.z-d.z):0),x=d.x+Math.sin(d.heading)*step,z=d.z+Math.cos(d.heading)*step,g=terrain.ground(x,z,d.y);
+ const escape=yieldToTraffic(d,[owner,...rivals.filter(r=>r.id!==owner.id&&r.alive&&r.id!==target?.id)].map(r=>({x:r.pose.x,y:r.pose.y,z:r.pose.z,radius:.6,vx:Math.sin(r.pose.headingY)*r.pose.speed,vz:Math.cos(r.pose.headingY)*r.pose.speed})),dt,(x,z)=>{const g=terrain.ground(x,z,d.y);return !g.offCourse&&Math.abs(g.height-d.y)<.35&&terrain.clear(x,z,.27,d.y)&&terrain.line({x:d.x,y:d.y+.4,z:d.z},{x,y:g.height+.4,z},.27);});
+ const step=Math.min(d.speed*dt,at?Math.hypot(at.x-d.x,at.z-d.z):0),x=escape?.x??d.x+Math.sin(d.heading)*step,z=escape?.z??d.z+Math.cos(d.heading)*step,g=terrain.ground(x,z,d.y);
+ if(escape){d.speed=escape.speed;d.heading=escape.heading;d.replan=0;}
  if(Number.isFinite(g.height)&&Math.abs(g.height-d.y)<.35&&terrain.clear(x,z,.27,d.y)&&terrain.line({x:d.x,y:d.y+.35,z:d.z},{x,y:g.height+.35,z},.27)){d.x=x;d.z=z;d.y=g.height+.02;}else{d.speed=0;d.replan=0;}
  d.phase+=gaitCadence(d.speed)*dt;d.time+=dt;
  const contact=active&&target&&Math.hypot(target.pose.x-d.x,target.pose.z-d.z)<1.5&&Math.abs(target.pose.y-d.y)<1.2&&terrain.line({x:d.x,y:d.y+.3,z:d.z},{x:target.pose.x,y:target.pose.y+.3,z:target.pose.z},.2);

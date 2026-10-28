@@ -1,3 +1,4 @@
+import {baseRiderId} from '../../../../ride-core/src/riderWardrobe.ts';
 import {StableEnvironment} from '../stableEnvironment.ts';
 import {failStartup} from './startupFailure.ts';
 import {VisibleTouchLayout} from './controlPlacement.ts';
@@ -5,6 +6,8 @@ import {roundResults} from './roundResults.ts';
 import {RoyaleVR} from './vrCombat.ts';
 import type {XRCombatInput} from './xrCombatInput.ts';
 import {CameraCapture,photographyInput} from './cameraCapture.ts';
+import {LcdViewfinder} from './lcdViewfinder.ts';
+import {CircuitRace} from '../circuitRace.ts';
 import {CruiseControl} from '../../../../ride-core/src/cruiseControl.ts';
 import {AimComfortUi} from './aimComfortUi.ts';
 import {aimFriction,SIMPLE_ACTIONS,ShotPreview,autoReloadAllowed} from './aimComfort.ts';
@@ -118,6 +121,8 @@ if(engineRequested())back.href+=(back.href.includes('?')?'&':'?')+'engine=breadf
 const menuBack=el<HTMLAnchorElement>('return-menu');menuBack.href=back.href;menuBack.textContent=back.textContent;
 dialog.close();if(!el<HTMLDialogElement>('royale-startup').open)dialog.showModal();
 for(const r of RIDER_CHOICES)skin.add(new Option(r.label,r.id));skin.value=riderChoice(null);
+try{skin.value=riderChoice(localStorage.getItem('static-royale-rider'));}catch{}
+skin.addEventListener('change',()=>{try{localStorage.setItem('static-royale-rider',skin.value);}catch{}});
 const wheel=el<HTMLSelectElement>('wheel');for(const w of WHEELS)wheel.add(new Option(w.name+' · '+Math.round(w.topKph)+' km/h',w.id));
 const stanceGesture=new StanceGesture();const leanGesture=new LeanGesture();const aimGesture=new AimGesture();const mouseCombat=new MouseCombatInput(aimGesture);let touchAds=false,adsSensitivity=.65,touchDisplay='auto',touchAim='toggle',stickMode='floating';const resetPointers:Array<()=>void>=[];
 for(const [id,fallback] of [['ads-sensitivity','0.65'],['touch-display','auto'],['touch-aim','toggle'],['touch-lean','toggle'],['stick-mode','floating']]){const field=el<HTMLInputElement>(id);try{field.value=localStorage.getItem('royale-'+id+(id==='stick-mode'?'-v2':''))??fallback;}catch{field.value=fallback;}const apply=()=>{if(id==='ads-sensitivity')adsSensitivity=T.MathUtils.clamp(Number(field.value)||.65,.2,1.5);if(id==='touch-display')touchDisplay=field.value;if(id==='touch-aim'){touchAim=field.value;touchAds=false;}if(id==='touch-lean'){leanGesture.mode=field.value==='hold'?'hold':'toggle';leanGesture.reset();}if(id==='stick-mode')stickMode=field.value;};field.onchange=()=>{apply();try{localStorage.setItem('royale-'+id+(id==='stick-mode'?'-v2':''),field.value);}catch{}};apply();}
@@ -145,6 +150,7 @@ for(const key of Object.keys(bindings) as (keyof typeof bindings)[]){const label
 const scene=new T.Scene();const smokeView=new SmokeView();scene.add(smokeView);const combatReadout=new CombatReadout(el('hud'));const tacticalReadout=new TacticalReadout();const lightingBudget=new PointLightBudget(scene);scene.background=new T.Color(ROYALE_HAZE);scene.fog=new T.Fog(ROYALE_HAZE,280,1200);
 const camera=new T.PerspectiveCamera(62,1,.12,4200);camera.position.set(65,85,100);camera.lookAt(0,0,0);
 const capture=new CameraCapture(canvas,()=>{release();if(capture.active&&session?.state?.self?.combat.holster?.stowed)tap.add('holster');},()=>royaleAudio.capture());
+const lcdViewfinder=new LcdViewfinder();
 const spectatorControls=document.createElement('div');spectatorControls.id='spectator-controls';spectatorControls.hidden=true;spectatorControls.setAttribute('aria-label','Spectator controls');const spectatorLabel=document.createElement('span'),spectatorReplay=el<HTMLButtonElement>('spectator-replay');
 for(const [label,delta]of [['Previous rider',-1],['Next rider',1]] as const){const b=document.createElement('button');b.textContent=delta<0?'←':'→';b.dataset.spectatorStep=String(delta);b.setAttribute('aria-label',label);b.onclick=()=>{const s=session.state?.spectating;if(!s?.choices.length)return;session.watch(s.choices[(Math.max(0,s.choices.indexOf(s.target))+delta+s.choices.length)%s.choices.length]);};spectatorControls.append(b);if(delta<0)spectatorControls.append(spectatorLabel);}spectatorControls.append(spectatorReplay);document.body.append(spectatorControls);
 const interactiveWater=new InteractiveWater(canvas,camera);interactiveWater.settings(el('camera-settings'));
@@ -163,7 +169,7 @@ let radarMap:RoyaleRadarMap|undefined;let shieldAsset:GLTF;let companions:Royale
 const nameHead=new T.Vector3();
 const actors=new Map<string,{sparks:PedalSparks;nameplate:PlayerNameplate;view:Hero;equipment:WeaponView;weapon:T.Group;shield:ShieldEffect;rig:CombatRig;wheelId:string;optic:T.Group;motion:RiderPresentation;contrast:OpponentContrast}>(),assetMap=new Map<string,GLTF>(),items=new Map<string,EquipmentView|ScopePickup>();
 import {RideGhostView} from '../../../../ride-core/src/rideGhostView.ts';
-const savedGhost=new RideGhostView('static-royale-downtown',scene,rig=>{const [skin,wheel]=rig.split(':');if(!assetMap.has(skin))return;const models=new Map(assetMap);models.set('DS_EUC_01',assetMap.get(wheelProfile(wheel).asset)!);return new Hero(models,activeTerrain(),riderChoice(skin),'kimodo');});el('ride-settings').append(savedGhost.panel);
+const savedGhost=new RideGhostView('static-royale-downtown',scene,rig=>{const [skin,wheel]=rig.split(':');if(!assetMap.has(baseRiderId(skin)))return;const models=new Map(assetMap);models.set('DS_EUC_01',assetMap.get(wheelProfile(wheel).asset)!);return new Hero(models,activeTerrain(),riderChoice(skin),'kimodo');});el('ride-settings').append(savedGhost.panel);
 let scopeLibrary:ScopeLibrary,selectedScope:Scope|null=null,ownedScopeKey='',scopePadHeld=false;
 function changeScope(){selectedScope=cycleScope(session?.state?.self?.scopes??[],selectedScope);canvas.focus();}
 el('scope-select').onclick=changeScope;
@@ -175,6 +181,10 @@ const seenShots=new Set<string>(),reducedEquipmentMotion=matchMedia('(prefers-re
 let scenery:Awaited<ReturnType<typeof buildDetroitArenaScene>>;
 let ambientPacks:AmbientCyclistPacks|undefined;let jazzVisit:JazzVisit|undefined;
 let terrain:DowntownArena,session:RoyaleSession,loaded=false,acc=0,last=performance.now(),hudAt=0,paused=false,layoutEditing=false,aimYaw=0,aimPitch=0,slot=0;
+const circuitRace=new CircuitRace(scene,canvas,{name:'Static Royale',context:()=>String(activeTerrain()?.arenaIdentity.arena)+':'+session?.state?.round,focus:()=>canvas.focus(),entries:()=>{const p=session?.prediction?.controller.poseValue??session?.state?.actors.find(a=>a.id===session.me)?.pose;return p?[{id:session.me,name:'You',pose:p}]:[];},
+ points:()=>{const p=session?.state?.actors.find(a=>a.id===session.me)?.pose,t=activeTerrain();if(!p||!t)return [];const goals=t.zones.filter(q=>Math.hypot(q.x-p.x,q.z-p.z)>40&&Math.hypot(q.x-p.x,q.z-p.z)<220).sort((a,b)=>Math.hypot(a.x-p.x,a.z-p.z)-Math.hypot(b.x-p.x,b.z-p.z));for(const q of goals.slice(0,6)){const path=t.route(p,{...q,y:t.ground(q.x,q.z,p.y).height});if(path.length>1)return path;}return [];},
+ ground:(x,z,y)=>activeTerrain()?.ground(x,z,y).height??NaN,
+ clear:(a,b)=>{const t=activeTerrain();return !t.ground(b.x,b.z,a.y).offCourse&&t.clear(b.x,b.z,.4,b.y)&&t.line({...a,y:a.y+.6},{...b,y:b.y+.6},.4);}});
 let predictionFrame:{round:string;id:string;pose:RidePose;spawnSerial:number;alive:boolean}|undefined;
 const footControls=new FootControls();const deathReplay=new DeathReplay(),impactEffect=new ImpactEffect();const surfaceMarks=new SurfaceMarks();scene.add(impactEffect,surfaceMarks);const seenImpacts=new Set<string>(),fallenAt=new Map<string,number>();let hitFlashUntil=0;const matchFeedback=new MatchPresentation();let previousShield=50,shieldSerial=-1;
 const bots=()=>Math.min(Number(el<HTMLSelectElement>('bot-count').value),Number(el<HTMLSelectElement>('match-size').value)-1);
@@ -209,9 +219,9 @@ recoverQuick.onclick=requestRecovery;
 el('menu').onclick=()=>showMenu();el('resume').onclick=resume;dialog.addEventListener('cancel',e=>{e.preventDefault();if(menuHome.panel!=='home'){menuHome.show();return;}if(session?.state&&session.state.phase!=='lobby'&&session.state.phase!=='results')resume();});
 async function run(work:()=>void|Promise<void>){try{message('');await work();}catch(e){message((e as Error).message);}}
 function preparationItemDone(){const root=el('royale-startup');root.dataset.completed=String(Number(root.dataset.completed??0)+1);}
-function preparationStage(completed:number,label:string){const root=el('royale-startup');if(completed===0){root.dataset.total=String(10+3+RIDER_CHOICES.length+WHEELS.filter(w=>w.id!=='euc').length);root.dataset.completed='0';}else preparationItemDone();message(label);}
+function preparationStage(completed:number,label:string){const root=el('royale-startup');if(completed===0){root.dataset.total=String(10+3+new Set(RIDER_CHOICES.map(r=>baseRiderId(r.id))).size+WHEELS.filter(w=>w.id!=='euc').length);root.dataset.completed='0';}else preparationItemDone();message(label);}
 async function prepare(){preparationStage(0,'Warming up the arena…');const hdr=await new HDRLoader().loadAsync(new URL('../../../art/nvidia/detroit-skylight.hdr',import.meta.url).href),pm=new StableEnvironment(renderer);scene.environment=pm.fromEquirectangular(hdr).texture;scene.environmentIntensity=.35;hdr.dispose();pm.dispose();await loadEngineForPage(true);if(!engineReady())throw Error('Compiled arena could not load. Return to normal riding or retry.');preparationStage(1,'Loading the original Detroit map…');terrain=new DowntownArena(await TagTerrain.create(await loadFixture(new URL('./love-tag/swoop-detroit.json',location.href).href)));preparationStage(2,'Building the Detroit skyline…');session=new RoyaleSession(terrain);radarMap=new RoyaleRadarMap(terrain,el('camera-settings'));scenery=await buildDetroitArenaScene(scene,terrain,graphics.applyAssets);interactiveWater.register(scenery.root);canvas.dataset.riverfront=JSON.stringify(scenery.root.userData.riverfront);canvas.dataset.arena=terrain.arenaIdentity.arena;canvas.dataset.collision=terrain.arenaIdentity.collision;
- preparationStage(3,'Preparing riders…');const loader=new GLTFLoader();await loadAssetQueue(['DS_EUC_01','DS_Cyclist_01','DS_Bicycle_01',...RIDER_CHOICES.map(r=>r.id)],assetConcurrency(),async id=>{assetMap.set(id,await loader.loadAsync(['DS_Man_01','DS_Hoodie_Woman_01','DS_Mascot_Suit_01','DS_Mascot_Hoodie_01','DS_Armored_Rider_01'].includes(id)?'/exports/rigged-heroes/'+id+'.glb':'/exports/glb/'+id+'/'+id+'_LOD'+(id==='DS_Man_01'?0:1)+'.glb'));graphics.applyAssets(assetMap.get(id)!.scene);preparationItemDone();});
+ preparationStage(3,'Preparing riders…');const loader=new GLTFLoader();await loadAssetQueue(['DS_EUC_01','DS_Cyclist_01','DS_Bicycle_01',...new Set(RIDER_CHOICES.map(r=>baseRiderId(r.id)))],assetConcurrency(),async id=>{assetMap.set(id,await loader.loadAsync(['DS_Man_01','DS_Hoodie_Woman_01','DS_Mascot_Suit_01','DS_Mascot_Hoodie_01','DS_Armored_Rider_01'].includes(id)?'/exports/rigged-heroes/'+id+'.glb':'/exports/glb/'+id+'/'+id+'_LOD'+(id==='DS_Man_01'?0:1)+'.glb'));graphics.applyAssets(assetMap.get(id)!.scene);preparationItemDone();});
  preparationStage(4,'Preparing companions…');assetMap.set('DS_Boerboel_01',await loader.loadAsync('/exports/polish/royale-equipment/royale-dog.glb'));companions=new RoyaleCompanions(scene,assetMap,terrain,graphics.applyAssets);
  preparationStage(5,'Tuning the wheels…');await loadAssetQueue(WHEELS.filter(w=>w.id!=='euc'),assetConcurrency(),async w=>{assetMap.set(w.asset,await loader.loadAsync('/exports/electric/'+w.asset+'.glb'));preparationItemDone();});
  preparationStage(6,'Loading equipment…');equipmentLibrary=await EquipmentLibrary.load(loader,new URL('./exports/polish/royale-equipment/',location.href));canvas.dataset.equipment='Higgsfield-Blender-Unity:7-equipment-models;Blender-dog-power-clips';
@@ -547,7 +557,7 @@ function draw(now:number,xrFrame?:XRFrame){
  const scale=self.skin.startsWith('DS_Mascot_')?.48:1,socket=weaponSocket(p,self.skin,renderAimYaw,aimPitch,self.combat.aimBlend,self.combat.lean);
  const at=new T.Vector3(socket.grip.x,socket.grip.y+.10*scale,socket.grip.z),forward=new T.Vector3(Math.sin(heading)*Math.cos(pitch),Math.sin(pitch),Math.cos(heading)*Math.cos(pitch));
  const comfort=aimComfort.value,blocked=activeTerrain().raycast(socket.muzzle,forward,.9);coverWarning.hidden=blocked===null&&!barrelBlocked;reticle.dataset.blocked=String(blocked!==null||barrelBlocked);reticle.dataset.outline=String(comfort.outline);reticle.style.setProperty('--reticle-color',comfort.reticleColor);reticle.style.setProperty('--reticle-size',(comfort.reticleSize+(ads?0:Math.min(14,Math.abs(p.speed)*.5+WEAPONS[self.weapon].spread*180+Math.abs(self.combat.kickPitch)*220)))+'px');
- const gameView=watching?'chase':p.footMode?footView:viewMode;
+  const gameView=watching?'chase':capture.finder?'first':p.footMode?footView:viewMode;
  const activeMode=ads?'ads':mode===1&&gameView!=='first'?'shoulder':gameView;
  const profile=CAMERA_PROFILE.cameras.find(c=>c.mode===(activeMode==='shoulder'?'chase':activeMode))!;
  const eyeView=ads||gameView==='first';
@@ -564,7 +574,7 @@ function draw(now:number,xrFrame?:XRFrame){
  camera.lookAt(eyeView||activeMode==='chase'||activeMode==='shoulder'?desired.clone().addScaledVector(forward,100):at);
  if(eyeView&&p.footMode&&!reducedMotion)camera.rotateZ(-footLeanOffset(p,self.combat.lean).roll);
  camera.fov=ads?scopedFov(profile.fov,selectedScope):activeMode==='first'?combatPreferences.value.firstFov:activeMode==='chase'?combatPreferences.value.thirdFov:activeMode==='shoulder'?Math.max(50,combatPreferences.value.thirdFov-10):profile.fov;cameraBlend.apply(camera,(watching?'spectate-'+focusId+'-':'')+(p.footMode?'foot-':'ride-')+activeMode,delta,reducedMotion||!cameraTransitionsEnabled());
- if(activeMode==='chase'||activeMode==='shoulder')clearCombat(camera.position);else clearRideCamera(activeTerrain(),camera.position,at,p.y);camera.updateProjectionMatrix();
+  if(activeMode==='chase'||activeMode==='shoulder')clearCombat(camera.position);else clearRideCamera(activeTerrain(),camera.position,at,p.y);if(capture.finder)camera.fov=2*Math.atan(Math.tan(62*Math.PI/360)/capture.zoom)*180/Math.PI;camera.updateProjectionMatrix();
  }else{const own=s.actors.find(a=>a.id===session.me),tracked=own?(basePoses.get(own.id)??own.pose):p;
   vr.update(tracked,(own?.skin.startsWith('DS_Mascot_')?.84:1.7)+(tracked.footMode?0:.25),xrFrame);
  }
@@ -578,6 +588,7 @@ function draw(now:number,xrFrame?:XRFrame){
    mine.view.rider.visible=false;mine.weapon.visible=false;mine.rig.hideHandheld();
    const presentation=firstPerson.update({...p,seated:0},self.combat,self.weapon,s.tick,renderAimYaw,aimPitch,camera,motionDelta,firing.has(self.id),ads,reducedMotion,activeTerrain(),s.self?.healingUntil||0,combatPreferences.value.controlStyle==='burntwax',ads&&!!selectedScope);
    canvas.dataset.fpsPresentation=JSON.stringify(presentation);
+    if(capture.finder)firstPerson.root.visible=false;
   }else canvas.dataset.fpsPresentation='world';
   if(vr?.active){if(self.id===session.me){mine.view.rider.visible=false;mine.weapon.visible=false;mine.rig.hideHandheld();}
    vrWeapon??=new WeaponView(equipmentLibrary);if(vrWeapon.root.parent!==vr.weaponMount)vr.weaponMount.add(vrWeapon.root);
@@ -684,6 +695,7 @@ function loop(now:number,xrFrame?:XRFrame){const rawFrameMs=now-last,delta=Math.
  }
  const cpuStart=performance.now();let simulationSteps=0;
  const idle=paused||dialog.open||layoutEditing||!session?.state||session.state.phase==='results';
+  circuitRace.update(delta,!!session?.state?.self?.alive&&!dialog.open&&!capture.active&&!deathReplay.playing&&!vr?.active&&session.state.phase!=='results',idle||document.hidden);
  if(graphics.choice!=='auto')adaptiveQuality.reset();
  if(adaptiveQuality.sample(rawFrameMs,loaded&&!idle&&!vr?.active&&graphics.choice==='auto'&&now-loadedAt>5000,graphics.current.fps)){graphics.setAdaptiveDetail(adaptiveQuality.detail);graphics.setResolutionScale(adaptiveQuality.scale);}
  const connection=session?.connectionStatus(now);el('connection-status').hidden=!connection?.text||dialog.open;el('connection-text').textContent=connection?.text??'';canvas.dataset.connection=connection?.state??'offline';
@@ -706,7 +718,8 @@ function loop(now:number,xrFrame?:XRFrame){const rawFrameMs=now-last,delta=Math.
   'Right A reload · B mount · Left X recover · Y pause',
   'Left grip + A: heal / B: holster · Right stick click: weapon'
  ]);}
- const submitStart=performance.now();renderer.render(scene,camera);capture.afterRender(now);
+  const submitStart=performance.now();renderer.info.autoReset=false;renderer.info.reset();renderer.render(scene,camera);capture.afterRender(now);lcdViewfinder.render(renderer,capture.finder&&!vr?.active);
+  if(capture.finder)canvas.dataset.viewfinderCost=JSON.stringify(lcdViewfinder.status);
  if(profileCpu)cpuSamples.push({simulation:pendingSimulationMs,presentation:submitStart-viewStart,submission:performance.now()-submitStart});
  if(session?.state?.round!==profileRound){profileRound=session?.state?.round??'';startupFrames.reset();openingTrace=[];previousWork=undefined;}
  if(profileCpu){const work={simulationSteps,rawFrameMs,simulation:pendingSimulationMs,presentation:submitStart-viewStart,submission:performance.now()-submitStart,stages:{...drawStageLast},actors:actors.size,visibleActors:session?.state?.actors.length??0,loot:items.size,programs:renderer.info.programs?.length,textures:renderer.info.memory.textures,geometries:renderer.info.memory.geometries,calls:renderer.info.render.calls};

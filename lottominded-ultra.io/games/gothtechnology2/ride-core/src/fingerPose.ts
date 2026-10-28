@@ -13,6 +13,11 @@ export class FingerPose {
   });
  }
  get jointCount(){return this.joints.length;}
+  /** Relaxed runner hands: curl along each glove's authored finger axes. */
+  softenRun(speed:number){
+   const weight=Math.max(0,Math.min(1,(Math.abs(speed)-3.2)/2.2))*.72;
+   for(const j of this.joints)if(j.poses.MeleeFist)j.bone.quaternion.slerp(j.poses.MeleeFist,weight);
+  }
  /** Retarget the template's grip muscles to each glove's authored curl axis. */
  applyTemplateGrip(){
   for(const j of this.joints){if(j.side!=='Right'||!j.poses.WeaponGrip)continue;

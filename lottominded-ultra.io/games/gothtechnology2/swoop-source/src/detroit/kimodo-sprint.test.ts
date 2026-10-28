@@ -6,6 +6,8 @@ import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {MeshoptDecoder} from 'three/addons/libs/meshopt_decoder.module.js';
 import {Hero} from './actors.ts';
 import {createPose} from './controller.ts';
+import {WARDROBE_CHOICES} from '../../../ride-core/src/riderWardrobe.ts';
+import {referenceRunChannels} from '../../../ride-core/src/referenceRun.ts';
 
 const assets=new URL('../../../store/public/arcade/swoop-detroit/exports/',import.meta.url);
 async function model(path:string){
@@ -34,8 +36,27 @@ test('fitted sprint keeps every shipped rider level and gives both shoes equal r
   t.diagnostic(JSON.stringify({id,hipRange,maxFrameStep:step,footAsymmetry:asymmetry}));
   assert(hipRange<length*.06,id+' hips dip as the swing foot reaches forward');
   assert(step<length*.009,id+' support transfer snaps the pelvis');
+  const ankleStep=Math.max(...rows.slice(1).flatMap((r,i)=>[Math.abs(r.left-rows[i].left),Math.abs(r.right-rows[i].right)]));
+  assert(ankleStep<length*.04,id+' ankle recovery must interpolate without a pop');
   assert(asymmetry<.003,id+' unequal foot recovery reads as a limp');
   hero.dispose();
  }
+});
+
+test('outfit variants share a base asset, restore helmets after ADS, and keep the forward sprint',async()=>{
+ const data=new Map([['DS_EUC_01',await model('glb/DS_EUC_01/DS_EUC_01_LOD1.glb')],['DS_Armored_Rider_01',await model('rigged-heroes/DS_Armored_Rider_01.glb')]]);
+ for(const {id}of WARDROBE_CHOICES){
+  const hero=new Hero(data,undefined,id,'kimodo');
+  assert.equal(hero.rider.userData.wardrobe,id);
+  assert(hero.rider.userData.heroDetail.triangles<5000,'small accessory geometry budget');
+  const patches:any[]=[];hero.rider.traverse(o=>{if(o.name.includes('curved helmet badge'))patches.push(o);});
+  assert.equal(patches.length,3);hero.visibility.setFirstPerson(true);assert(patches.every(p=>!p.visible));hero.visibility.setFirstPerson(false);assert(patches.every(p=>p.visible));
+  const pose={...createPose(),footMode:2,footBlend:1,speed:5.4,velocityZ:5.4,footCycle:.4,footTime:2};
+  hero.apply(pose);const before=hero.legs.map(l=>l.foot.getWorldPosition(new Vector3()));
+  hero.combatLocomotion=1;hero.apply(pose);hero.legs.forEach((l,i)=>assert(l.foot.getWorldPosition(new Vector3()).distanceTo(before[i])<.001,'equipment must not replace forward sprint'));
+  hero.dispose();
+ }
+ assert.deepEqual(referenceRunChannels(0),referenceRunChannels(1));
+ assert(referenceRunChannels(.5)[1]>.4&&referenceRunChannels(.5)[1]<.6,'Blender lift channel must retain fractional heights');
 });
 

@@ -1,4 +1,5 @@
 import {menuAction,menuPresentation,type RoyaleMenuState} from './menuState.ts';
+import {makeWardrobePicker} from '../wardrobePicker.ts';
 import './menu.css';
 import './tacticalReadout.css';
 export type RoyaleMenuPanel='home'|'loadout'|'online'|'settings';
@@ -30,6 +31,7 @@ export function createRoyaleMenu(root:HTMLDialogElement,readState:()=>RoyaleMenu
  const replayBlock=node('div','royale-replay-action');replayBlock.append(replay);home.append(replayBlock);
  const selection=node('section','royale-selection');selection.setAttribute('aria-label','Selected rider and wheel');
  const rider=node('strong',''),wheel=node('span',''),selectionLabel=node('span','royale-selection-label','YOUR LOADOUT');selection.append(selectionLabel,rider,wheel);home.append(selection);
+ const wardrobe=makeWardrobePicker(find<HTMLSelectElement>('skin'));selection.before(wardrobe.root);
  home.insertBefore(resultBlock,action);
  home.insertBefore(replayBlock,brief.nextSibling);
  const leave=node('div','royale-leave');leave.append(quit);home.append(leave);
@@ -58,6 +60,7 @@ export function createRoyaleMenu(root:HTMLDialogElement,readState:()=>RoyaleMenu
  function open(id:RoyaleMenuPanel='home',focus=true){current=id;root.dataset.royalePanel=id;for(const [key,p]of panels)p.hidden=key!==id;for(const [key,b]of tabs){if(key===id)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');}online.open=settings.open=true;root.scrollTop=0;content.scrollTop=0;sync();if(focus)(id==='home'?action:panels.get(id)!).focus({preventScroll:true});}
  let summary='';
  function sync(){
+  wardrobe.update();
   const state=readState(),choice=menuAction(state);
   const phase=state.phase??'idle';if(root.dataset.royalePhase!==phase)root.dataset.royalePhase=phase;
   if(action.textContent!==choice.label)action.textContent=choice.label;

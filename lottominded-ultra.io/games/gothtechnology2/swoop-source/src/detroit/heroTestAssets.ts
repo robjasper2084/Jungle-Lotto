@@ -4,6 +4,7 @@ import {Vector3,Quaternion} from 'three';
 import {Hero} from './actors.ts';
 import {createPose} from './controller.ts';
 import {RIDER_CHOICES} from './riderChoices.ts';
+import {baseRiderId} from '../../../ride-core/src/riderWardrobe.ts';
 import {assetPath} from './testAssets.ts';
 export async function rigModel(path:string|URL){
  const b=await readFile(path),n=b.readUInt32LE(12),j=JSON.parse(b.subarray(20,20+n).toString());
@@ -15,7 +16,7 @@ export async function rigModel(path:string|URL){
 }
 export async function heroAssets(){
  const data=new Map([['DS_EUC_01',await rigModel(assetPath('exports/glb/DS_EUC_01/DS_EUC_01_LOD1.glb'))]]);
- for(const {id} of RIDER_CHOICES)data.set(id,await rigModel(id==='DS_Armored_Rider_01'?new URL('../../public/exports/glb/'+id+'/'+id+'_LOD1.glb',import.meta.url):assetPath('exports/glb/'+id+'/'+id+'_LOD'+(id==='DS_Man_01'?0:1)+'.glb')));
+ for(const id of new Set(RIDER_CHOICES.map(r=>baseRiderId(r.id))))data.set(id,await rigModel(id==='DS_Armored_Rider_01'?new URL('../../public/exports/glb/'+id+'/'+id+'_LOD1.glb',import.meta.url):assetPath('exports/glb/'+id+'/'+id+'_LOD'+(id==='DS_Man_01'?0:1)+'.glb')));
  return data;
 }
 export function jointPositions(h:Hero){

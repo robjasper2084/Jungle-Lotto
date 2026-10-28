@@ -1,6 +1,7 @@
 import {DogCompanion,type CompanionRider} from './companion.ts';
 import type {TerrainSampler} from '../simulation/world.ts';
 import {createGroundSample} from '../simulation/world.ts';
+import {yieldToTraffic} from '../../../ride-core/src/dynamicClearance.ts';
 export type DogCommand='follow'|'sit'|'down'|'stay'|'come'|'chase'|'bark';
 export type DogTarget={id:string;kind:'goose'|'duck'|'person';x:number;z:number;radius:number;water?:boolean};
 export function parseDogCommand(text:string):{command:DogCommand;target?:'birds'|'people'}|undefined{
@@ -18,6 +19,7 @@ export class ElmwoodCompanion extends DogCompanion {
   private waypoint?:{x:number;z:number};private routeClock=0;private routeAge=0;private trail:{x:number;z:number}[]=[];private holdDown=false;
   private idleTime=0;private wanderClock=0;private wanderStep=0;private wanderTarget?:{x:number;z:number};
   recoveries=0;sit=0;lie=0;excitement=0;barking=0;lookYaw=0;command:DogCommand='follow';chaseKind:'birds'|'people'='birds';note='Following';
+  yielding=false;yieldSeconds=0;
   constructor(map:TerrainSampler){super(map);this.map=map;}
   override reset(r:CompanionRider){super.reset(r);this.stalled=this.stopped=this.sit=this.lie=this.idleTime=this.wanderClock=0;this.wanderTarget=undefined;this.speedLimit=Infinity;this.command='follow';this.selected=undefined;this.waypoint=undefined;this.trail=[];this.holdDown=false;this.note='Following';}
   order(command:DogCommand,targets:readonly DogTarget[]=[],kind=this.chaseKind){
@@ -48,6 +50,14 @@ export class ElmwoodCompanion extends DogCompanion {
   }
   override update(r:CompanionRider,dt:number,targets:readonly DogTarget[]=[]){
     dt=Math.min(Math.max(dt,0),.06);if(!dt)return;
+    const escape=yieldToTraffic(this,[...this.avoidance,{x:r.x,y:r.y,z:r.z,radius:.6,vx:Math.sin(r.headingY)*r.speed,vz:Math.cos(r.headingY)*r.speed}],dt,(x,z)=>{
+      const g=this.map.sampleGround(x,z,this.sample);return !g.offCourse&&g.normal.y>.7&&Math.abs(g.height-this.y)<.3&&this.clearTo(x,z);
+    });
+    this.yielding=!!escape;
+    if(escape){
+      this.x=escape.x;this.z=escape.z;this.speed=escape.speed;this.heading+=Math.atan2(Math.sin(escape.heading-this.heading),Math.cos(escape.heading-this.heading))*Math.min(1,dt*10);
+      this.y=this.map.sampleGround(this.x,this.z,this.sample).height;this.sit*=Math.exp(-dt*12);this.lie*=Math.exp(-dt*12);this.yieldSeconds+=dt;this.note='Giving the rider room';return;
+    }
     this.barking=Math.max(0,this.barking-dt);this.excitement+=((this.barking>0||this.command==='chase'||Math.abs(r.speed)>1?.9:.16)-this.excitement)*(1-Math.exp(-dt*3));
     const watch=targets.find(t=>t.id===this.lookTarget),headAngle=watch&&this.barking>0?Math.atan2(watch.x-this.x,watch.z-this.z)-this.heading:0;this.lookYaw+=(Math.max(-.65,Math.min(.65,Math.atan2(Math.sin(headAngle),Math.cos(headAngle))))-this.lookYaw)*(1-Math.exp(-dt*6));
     const last=this.trail.at(-1);if(!last||Math.hypot(r.x-last.x,r.z-last.z)>1.5){this.trail.push({x:r.x,z:r.z});if(this.trail.length>60)this.trail.shift();}

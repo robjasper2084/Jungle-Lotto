@@ -1,8 +1,8 @@
 import type {TerrainSampler} from '../simulation/world.ts';
 import {createGroundSample} from '../simulation/world.ts';
 
-export type CompanionRider={x:number;z:number;headingY:number;speed:number};
-export type CompanionObstacle={x:number;z:number;radius:number;vx?:number;vz?:number};
+export type CompanionRider={x:number;y?:number;z:number;headingY:number;speed:number};
+export type CompanionObstacle={x:number;y?:number;z:number;radius:number;vx?:number;vz?:number};
 const clamp=(x:number,a:number,b:number)=>Math.max(a,Math.min(b,x));
 const angle=(x:number)=>Math.atan2(Math.sin(x),Math.cos(x));
 export class DogCompanion {

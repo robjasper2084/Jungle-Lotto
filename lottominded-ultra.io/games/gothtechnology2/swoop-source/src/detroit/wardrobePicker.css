@@ -1,0 +1,18 @@
+.wardrobe-picker{width:100%;max-width:390px;min-width:0;margin:0 0 20px;color:#edf5f1}
+.wardrobe-picker .wardrobe-title{margin:0 0 9px;font:700 11px/1.4 'Segoe UI',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--menu-accent,#8ee0d9)}
+.wardrobe-picker .wardrobe-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+:is(.game-main-menu[data-game-theme] .game-menu-home,.royale-menu) .wardrobe-picker .wardrobe-choice{--suit-color:#a3c64c;display:block;position:relative;min-width:0;min-height:57px;width:100%;margin:0;padding:10px 12px 10px 15px;border:1px solid #93b6ba55;border-left:3px solid var(--suit-color);border-radius:4px;background:#0b202bd9;color:#edf5f1;text-align:left;font:600 13px/1.35 'Segoe UI',sans-serif;letter-spacing:0;box-shadow:none;cursor:pointer;transform:none}
+.wardrobe-picker .wardrobe-choice[data-suit=DS_Detroit_Rider]{--suit-color:#df9f52!important}
+.wardrobe-picker .wardrobe-choice[data-suit=DS_Neural_Rider]{--suit-color:#6de1ef!important}
+.wardrobe-picker .wardrobe-choice[data-suit=DS_Vampire_Rider]{--suit-color:#f66b79!important}
+.wardrobe-picker .wardrobe-choice strong,.wardrobe-picker .wardrobe-choice small{display:block}
+.wardrobe-picker .wardrobe-choice small{margin-top:2px;font-size:10px;font-weight:400;color:#c3d4d7}
+:is(.game-main-menu[data-game-theme] .game-menu-home,.royale-menu) .wardrobe-picker .wardrobe-choice::after{content:none}
+:is(.game-main-menu[data-game-theme] .game-menu-home,.royale-menu) .wardrobe-picker .wardrobe-choice[aria-pressed=true]{background:#224148;border-color:var(--suit-color);box-shadow:inset 0 0 0 1px var(--suit-color)}
+:is(.game-main-menu[data-game-theme] .game-menu-home,.royale-menu) .wardrobe-picker .wardrobe-choice:not(:disabled):hover{background:#2b464e;transform:none}
+.wardrobe-picker .wardrobe-choice:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.wardrobe-picker .wardrobe-choice:disabled{opacity:.5;cursor:default}
+.wardrobe-picker .wardrobe-status{margin:8px 0 0;font:11px/1.5 'Segoe UI',sans-serif;color:#c3d4d7;overflow-wrap:anywhere}
+.royale-menu .wardrobe-picker{max-width:100%;margin-top:18px}
+@media(min-width:701px) and (max-height:600px){.game-menu-home .wardrobe-picker{grid-column:1;grid-row:6;margin:0}.royale-menu .wardrobe-choices{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce){.wardrobe-picker *{transition:none!important}}
