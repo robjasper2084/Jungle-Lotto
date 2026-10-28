@@ -40,7 +40,7 @@ function stoneMaterial(color:string,polished=false){
 
 
 
- const m=new T.MeshStandardMaterial({color,roughness:polished?.23:.87,metalness:polished?.12:0});
+  const m=new T.MeshStandardMaterial({color,roughness:polished?.23:.87,metalness:0});
 
 
 
@@ -52,7 +52,12 @@ function stoneMaterial(color:string,polished=false){
 
 
 
-  s.vertexShader=s.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nstoneP=(modelMatrix*vec4(position,1.)).xyz;');
+  s.vertexShader=s.vertexShader.replace('#include <project_vertex>',`#include <project_vertex>
+   vec4 stoneWorld=vec4(transformed,1.);
+   #ifdef USE_INSTANCING
+   stoneWorld=instanceMatrix*stoneWorld;
+   #endif
+   stoneP=(modelMatrix*stoneWorld).xyz;`);
 
 
 
@@ -64,11 +69,15 @@ function stoneMaterial(color:string,polished=false){
 
 
 
-   float grit=grain(stoneP*170.);float mottling=grain(stoneP*6.);diffuseColor.rgb*=.84+.26*grit+.10*mottling;`);
+   // Average subpixel grit instead of flashing between unrelated cells as the
+   // camera moves. Coarser mottling remains visible at normal riding distance.
+   float gritFootprint=max(length(dFdx(stoneP)),length(dFdy(stoneP)))*170.;
+   float grit=mix(grain(stoneP*170.),.5,smoothstep(.4,1.4,gritFootprint));
+   float mottling=grain(stoneP*6.);diffuseColor.rgb*=.84+.26*grit+.10*mottling;`);
 
 
 
- };m.customProgramCacheKey=()=> 'elmwood-mineral-grain';return m;
+  };m.customProgramCacheKey=()=> 'elmwood-mineral-grain-world-filtered-v2';return m;
 
 
 
@@ -243,7 +252,8 @@ export function makeElmwoodEnvironment(scene:T.Scene,world:T.Group,foundation:T.
 
 
 
- const rippleMaterial=new T.MeshBasicMaterial({color:'#c7e2dd',transparent:true,opacity:.16,depthWrite:false,side:T.DoubleSide});const ripples=Array.from({length:5},()=>{const r=mesh(fountain,new T.RingGeometry(.97,1,48),rippleMaterial.clone());r.rotation.x=-Math.PI/2;r.position.y=.045;r.castShadow=false;return r;});
+ // Fountain disturbances live in the water normal/displacement shader. Floating
+ // unlit ring meshes looked like white hoops and added five transparent draws.
 
 
 
@@ -377,7 +387,6 @@ export function makeElmwoodEnvironment(scene:T.Scene,world:T.Group,foundation:T.
 
 
 
-  ripples.forEach((r,i)=>{const phase=(fountainTime*.22+i/5)%1;r.scale.setScalar(.8+phase*4.5);(r.material as T.MeshBasicMaterial).opacity=Math.sin(phase*Math.PI)*.09;});
 
 
 

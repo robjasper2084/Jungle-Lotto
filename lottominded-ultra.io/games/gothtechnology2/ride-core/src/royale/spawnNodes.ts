@@ -23,6 +23,14 @@ export function initialSpawnNodes(nodes:readonly SpawnNode[],count:number,seed:n
  const clusters=shuffled([...new Set(nodes.map(n=>n.cluster))],seed),ordered=clusters.flatMap((c,i)=>shuffled(nodes.filter(n=>n.cluster===c),seed+i*7919));
  if(count>ordered.length)throw Error('Not enough distinct spawn nodes');return ordered.slice(0,count);
 }
+/** Assign human start bays on the authority, independent of roster order. */
+export function matchSpawnNodes(nodes:readonly SpawnNode[],roster:readonly {bot:boolean}[],seed:number,players:readonly SpawnNode[]=[]){
+ if(!players.length)return initialSpawnNodes(nodes,roster.length,seed);
+ const humanCount=roster.filter(p=>!p.bot).length;
+ if(humanCount>players.length)throw Error('Not enough Cut entrance bays');
+ const starts=players.slice(0,humanCount),bots=initialSpawnNodes(nodes.filter(n=>starts.every(p=>distance(p.position,n.position)>=12)),roster.length-humanCount,seed);
+ let human=0,bot=0;return roster.map(p=>p.bot?bots[bot++]:starts[human++]);
+}
 /** Extra predetermined recovery sites, spaced over the connected navigation
  * graph. Starting clusters remain unchanged; one enemy cannot block a sector. */
 export function configuredRecoveryNodes(nodes:readonly Vec3[],starts:readonly SpawnNode[],center:Vec3,clear:(p:Vec3)=>boolean):SpawnNode[]{
