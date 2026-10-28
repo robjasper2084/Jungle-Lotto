@@ -1,3 +1,4 @@
+import {baseRiderId} from '../../../ride-core/src/riderWardrobe.ts';
 import {test} from 'node:test';import assert from 'node:assert/strict';
 import {Vector3,SkinnedMesh} from 'three';import {rigModel} from './heroTestAssets.ts';
 import {assetPath} from './testAssets.ts';import {Hero} from './actors.ts';import {createPose} from './controller.ts';
@@ -5,7 +6,7 @@ import {RIDER_CHOICES} from './riderChoices.ts';
 test('all five exported heroes have weighted finger joints, changing grip geometry and intact first-person arms',async t=>{
  const data=new Map([['DS_EUC_01',await rigModel(assetPath('exports/glb/DS_EUC_01/DS_EUC_01_LOD1.glb'))]]);
  for(const {id} of RIDER_CHOICES){
-  data.set(id,await rigModel(new URL('../../public/exports/rigged-heroes/'+id+'.glb',import.meta.url)));
+  data.set(baseRiderId(id),await rigModel(new URL('../../public/exports/rigged-heroes/'+baseRiderId(id)+'.glb',import.meta.url)));
   const hero=new Hero(data,undefined,id),p={...createPose(),footMode:2,footBlend:1};hero.apply(p);
   assert.equal(hero.fingers.jointCount,30,id);const finger=hero.rider.getObjectByName('RightHandIndex3')!,hand=hero.rider.getObjectByName('RightHand')!;
   hero.root.updateMatrixWorld(true);const relaxed=finger.getWorldPosition(new Vector3()),wrist=hand.getWorldPosition(new Vector3());

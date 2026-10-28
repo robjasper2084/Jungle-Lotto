@@ -5,7 +5,7 @@ import {RoomChatPanel,RoomCommunications,cleanChatText,ChatRateGate} from '@digi
 import {ONLINE_CONFIG} from './onlineConfig.ts';
 import {NEUTRAL_ACTIONS,type RideActions} from '@digital-static/ridecore';
 import {ELMWOOD_CAMERAS} from './elmwood-camera.ts';
-import {RIDER_CHOICES} from './riderChoices.ts';
+import {RIDER_CHOICES,riderChoice} from './riderChoices.ts';
 const CHALLENGES=[{id:'tricks',title:'Two-minute trick session'},{id:'tour',title:'Creek lane discovery'}];
 import {roomActions,roomFrame,roomMatch,roomMember,roomRoster,fillRaceRoster,ROOM_PROTOCOL,type RoomMatch,type RoomMember,type RoomFrame} from './onlineProtocol.ts';
 
@@ -56,7 +56,7 @@ export class ElmwoodOnlineRooms{
   onlineBack.onclick=()=>{for(const node of [...menu.querySelector('.menu-inner')!.children])(node as HTMLElement).hidden=false;this.panel.hidden=true;document.querySelector<HTMLButtonElement>('#menu-resume')!.hidden=document.querySelector('canvas')?.getAttribute('data-riding')!=='true';tab.focus();};
   tab.onclick=()=>{menu.dispatchEvent(new Event('elmwood-prepare-online'));show();};
   menu.addEventListener('elmwood-show-online',show);
-  const riderLabel=document.createElement('label');riderLabel.textContent='YOUR RIDER';this.rider.setAttribute('aria-label','Your online rider');for(const r of RIDER_CHOICES)this.rider.add(new Option(r.label,r.id));this.rider.value='DS_Armored_Rider_01';inputLabel.after(riderLabel);riderLabel.append(this.rider);this.rider.onchange=()=>{if(this.connected&&!this.match)void this.channel?.track({id:this.self,rider:this.rider.value,joined:this.joined,host:this.isHost,map:this.map,protocol:ROOM_PROTOCOL,ready:this.ready()});};
+  const riderLabel=document.createElement('label');riderLabel.textContent='YOUR RIDER';this.rider.setAttribute('aria-label','Your online rider');for(const r of RIDER_CHOICES)this.rider.add(new Option(r.label,r.id));const riderSource=document.getElementById('ride-outfit') as HTMLSelectElement;const syncRider=()=>{if(this.match)return;this.rider.value=riderChoice(riderSource.value==='original'?'DS_Man_01':riderSource.value);this.rider.dispatchEvent(new Event('change'));};this.rider.value=riderChoice(riderSource.value==='original'?'DS_Man_01':riderSource.value);riderSource.addEventListener('change',syncRider);inputLabel.after(riderLabel);riderLabel.append(this.rider);this.rider.onchange=()=>{if(this.connected&&!this.match)void this.channel?.track({id:this.self,rider:this.rider.value,joined:this.joined,host:this.isHost,map:this.map,protocol:ROOM_PROTOCOL,ready:this.ready()});};
   const viewLabel=document.createElement('label');viewLabel.textContent='YOUR VIEW';const view=document.createElement('select');view.id='elmwood-online-view';view.setAttribute('aria-label','Online camera view');for(const [id,label]of [...ELMWOOD_CAMERAS,['split','Watch all riders · split screen']])view.add(new Option(label,id));viewLabel.append(view);options.append(viewLabel);
   this.hud.id='onlineHUD';this.hud.hidden=true;const quit=document.createElement('button');quit.textContent='Leave online match';quit.onclick=()=>void this.leave();this.hud.append(this.hudStatus,quit);document.body.append(this.hud);
   const invitation=parseRoomInvitation(location.href,32);if(invitation){this.codeInput.value=invitation.code;tab.click();this.status.textContent='Your invitation is ready. Select Join game.';join.focus();}

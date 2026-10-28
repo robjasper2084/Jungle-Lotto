@@ -1,3 +1,4 @@
+import {baseRiderId} from '../../../ride-core/src/riderWardrobe.ts';
 import {styleCyclist} from '@digital-static/ridecore/cycling-view';
 import {assetConcurrency,loadAssetQueue} from './assetQueue.ts';
 
@@ -57,7 +58,7 @@ export async function loadActors(ids=['DS_Man_01','DS_EUC_01','DS_Pedestrian_01'
 
   const loader=new GLTFLoader(),data=new Map<string,GLTF>();
 
-  await loadAssetQueue([...new Set(ids)],assetConcurrency(),async id=>{
+  await loadAssetQueue([...new Set(ids.map(baseRiderId))],assetConcurrency(),async id=>{
     if(['DS_Man_01','DS_Hoodie_Woman_01','DS_Mascot_Suit_01','DS_Mascot_Hoodie_01','DS_Armored_Rider_01'].includes(id)){data.set(id,await loader.loadAsync(`${import.meta.env.BASE_URL}exports/rigged-heroes/${id}.glb`));return;}
     const original=()=>loader.loadAsync(`${import.meta.env.BASE_URL}exports/glb/${id}/${id==='DS_EUC_01'?'DS_EUC_Compact':id+'_LOD'+(id==='DS_Man_01'?0:1)}.glb`);
     data.set(id,id==='DS_Bicycle_01'?await loader.loadAsync(`${import.meta.env.BASE_URL}exports/glb/DS_Bicycle_Styles/DS_Bicycle_Styles_LOD1.glb`).catch(original):await original());

@@ -1,3 +1,4 @@
+import {RiderWardrobe,baseRiderId} from '../../../ride-core/src/riderWardrobe.ts';
 import {crashLimb} from '../../../ride-core/src/kimodoCrash.ts';
 import {recoveryHand,recoveryFoot} from '../../../ride-core/src/kimodoRecovery.ts';
 import {FingerPose} from '../../../ride-core/src/fingerPose.ts';
@@ -29,6 +30,7 @@ import {assetConcurrency,loadAssetQueue} from './assetQueue.ts';
 import {ArmorKeychain} from './armorKeychain.ts';
 import {HelmetSkinDecal} from './helmetSkin.ts';
 import {RiderSurfaces} from './riderSurfaces.ts';
+import {HeroDetail} from '../../../ride-core/src/heroDetail.ts';
 import {WheelLights} from './wheelLights.ts';
 
 type Limb={upper:T.Object3D;knee:T.Object3D;foot:T.Object3D;target:T.Vector3;rotation:T.Quaternion;};
@@ -68,6 +70,7 @@ export class Hero {
   private saddle:T.Mesh;private hairWind:HairWind;
   private armorKeychain?:ArmorKeychain;private helmetSkin?:HelmetSkinDecal;
   private surfaces:RiderSurfaces;
+  private detail:HeroDetail;private wardrobe:RiderWardrobe;
   readonly visibility:RiderVisibility;readonly vrEyeHeight:number;readonly mountedVolume:{radius:number;height:number};
   /** Fit the captured walk and soles during loading, not on the first dismount. */
   prepareOnFoot(){prepareOnFootRider(this);}
@@ -76,14 +79,14 @@ export class Hero {
     this.terrain=terrain;this.riderId=riderId;this.walkStyle=walkStyle;
     const mascot=riderId.startsWith('DS_Mascot_');this.wheelScale=mascot?.75:.86;this.motionScale=mascot?.48:1;this.mountHeight=.296*this.wheelScale;
     this.root.add(this.ground);this.ground.add(this.lean);
-    this.vehicle=data.get('DS_EUC_01')!.scene.clone(true);this.rider=clone(data.get(riderId)!.scene);
+    this.vehicle=data.get('DS_EUC_01')!.scene.clone(true);this.rider=clone(data.get(baseRiderId(riderId))!.scene);
     this.surfaces=new RiderSurfaces(this.rider);
     this.hairWind=new HairWind(this.rider,riderId==='DS_Man_01');
     this.vehicle.scale.setScalar(this.wheelScale);this.rider.position.y=this.mountHeight;this.lean.add(this.vehicle,this.rider,this.skateboard);
     const deck=new T.Mesh(new T.BoxGeometry(.28,.045,.88),new T.MeshStandardMaterial({color:'#242a29',roughness:.95}));deck.position.y=.15;this.skateboard.add(deck);for(const end of [-1,1]){const tip=new T.Mesh(new T.BoxGeometry(.28,.045,.17),deck.material);tip.position.set(0,.18,end*.48);tip.rotation.x=end*-.32;this.skateboard.add(tip);}
     for(const z of [-.29,.29]){const truck=new T.Mesh(new T.BoxGeometry(.25,.05,.07),new T.MeshStandardMaterial({color:'#b4b8b9',metalness:.8,roughness:.3}));truck.position.set(0,.095,z);this.skateboard.add(truck);for(const x of [-.145,.145]){const wheel=new T.Mesh(new T.CylinderGeometry(.06,.06,.045,12),new T.MeshStandardMaterial({color:'#e4cf98',roughness:.7}));wheel.rotation.z=Math.PI/2;wheel.position.set(x,.06,z);this.skateboard.add(wheel);this.skateWheels.push(wheel);}}
     this.skateboard.visible=false;this.skateContact=new CrashContact(this.skateboard);
-    const clip=data.get(riderId)!.animations[0];if(clip){const m=new T.AnimationMixer(this.rider);m.clipAction(clip).play();m.setTime(0);}
+    const clip=data.get(baseRiderId(riderId))!.animations[0];if(clip){const m=new T.AnimationMixer(this.rider);m.clipAction(clip).play();m.setTime(0);}
     prepare(this.root);this.root.updateMatrixWorld(true);this.lights=new WheelLights(this.vehicle);
     this.wheel=this.vehicle.getObjectByName('Wheel_Pivot');this.body=this.vehicle.getObjectByName('Body_Suspension');this.bodyRestY=this.body?.position.y??0;this.hips=this.rider.getObjectByName('Hips');this.head=this.rider.getObjectByName('Head');
     // This asset names the spine from the chest DOWN. Bind in anatomical parent order.
@@ -93,7 +96,7 @@ export class Hero {
     this.shoulders=['LeftShoulder','RightShoulder'].map(name=>this.rider.getObjectByName(name)).filter((bone):bone is T.Object3D=>!!bone);
     if(this.wheel){const bounds=new T.Box3().setFromObject(this.wheel),size=bounds.getSize(v());this.axle.copy(this.lean.worldToLocal(bounds.getCenter(v())));this.tyreRadius=(size.y+size.z)/4;this.tyreHalfWidth=size.x/2;}
     this.rider.traverse(o=>{if((o as T.Bone).isBone)this.bones.push({o,p:o.position.clone(),q:o.quaternion.clone()});});
-    this.fingers=new FingerPose(this.rider,data.get(riderId)!.animations);
+    this.fingers=new FingerPose(this.rider,data.get(baseRiderId(riderId))!.animations);
     for(const side of ['Left','Right'])for(const arm of [false,true]){
       const upper=this.rider.getObjectByName(side+(arm?'Arm':'UpLeg')),knee=this.rider.getObjectByName(side+(arm?'ForeArm':'Leg')),foot=this.rider.getObjectByName(side+(arm?'Hand':'Foot'));
       if(upper&&knee&&foot)(arm?this.arms:this.legs).push({upper,knee,foot,target:this.lean.worldToLocal(foot.getWorldPosition(v())),rotation:this.lean.getWorldQuaternion(q()).invert().multiply(foot.getWorldQuaternion(q()))});
@@ -103,6 +106,7 @@ export class Hero {
     this.root.name='Digital Static â€¢ '+riderId+' on separate EUC';
     if(this.hips)this.fallPivot.copy(this.rider.worldToLocal(this.hips.getWorldPosition(v())));
     if(riderId==='DS_Armored_Rider_01'){this.armorKeychain=new ArmorKeychain(this.rider);this.helmetSkin=new HelmetSkinDecal(this.rider);}
+    this.detail=new HeroDetail(this.rider);this.wardrobe=new RiderWardrobe(this.rider,riderId);
     this.riderContact=new CrashContact(this.rider);this.wheelContact=new CrashContact(this.vehicle);
     this.fallenSupport=new FallenSupport(this.riderContact.probes,this);
     this.visibility=new RiderVisibility(this.rider,this.head);
@@ -110,7 +114,7 @@ export class Hero {
       this.apply({...initialMountedPose()});const box=new T.Box3().setFromObject(this.root,true);
       this.mountedVolume={radius:Math.max(.4,Math.abs(box.min.x),Math.abs(box.max.x),Math.abs(box.min.z),Math.abs(box.max.z))+.06,height:box.max.y+.08};
   }
-  dispose(){this.lights.dispose();this.armorKeychain?.dispose();this.helmetSkin?.dispose();this.skateboard.traverse(o=>{if(o instanceof T.Mesh){o.geometry.dispose();(o.material as T.Material).dispose();}});this.hairWind.dispose();this.saddle.geometry.dispose();(this.saddle.material as T.Material).dispose();this.visibility.dispose();this.surfaces.dispose();this.root.removeFromParent();this.rider.traverse(o=>{if((o as T.SkinnedMesh).isSkinnedMesh)(o as T.SkinnedMesh).skeleton.dispose();});}
+  dispose(){this.wardrobe.dispose();this.detail.dispose();this.lights.dispose();this.armorKeychain?.dispose();this.helmetSkin?.dispose();this.skateboard.traverse(o=>{if(o instanceof T.Mesh){o.geometry.dispose();(o.material as T.Material).dispose();}});this.hairWind.dispose();this.saddle.geometry.dispose();(this.saddle.material as T.Material).dispose();this.visibility.dispose();this.surfaces.dispose();this.root.removeFromParent();this.rider.traverse(o=>{if((o as T.SkinnedMesh).isSkinnedMesh)(o as T.SkinnedMesh).skeleton.dispose();});}
   pedalTarget(l:Limb,suspensionOffset:number){return this.vehicle.localToWorld(l.target.clone().add(new T.Vector3(0,suspensionOffset,0)));}
   footTarget(index:number,p:RidePose){
     const target=this.pedalTarget(this.legs[index],p.suspensionOffset);
@@ -162,7 +166,7 @@ export class Hero {
     // Transition blends, skateboard poses and falls still use the full path.
     if(p.footMode===2&&p.footBlend>=1&&p.crashBlend<=0&&!this.skateboarding){
       this.saddle.visible=false;this.vehicle.visible=true;this.skateboard.visible=false;
-      applyOnFootRider(this,p);this.fingers.apply('Relaxed','Relaxed');return;
+      applyOnFootRider(this,p);this.fingers.apply('Relaxed','Relaxed');this.fingers.softenRun(p.speed);return;
     }
     // Once released, posture belongs to the falling body, not the upright wheel.
     const bodyFrame=p.crashMotion?this.rider.matrixWorld:this.lean.matrixWorld;
@@ -302,7 +306,7 @@ export class Hero {
       this.root.updateMatrixWorld(true);
     }
     if(!this.skateboarding)applyKimodoRiding(this,p);
-    applyOnFootRider(this,p);this.fingers.apply('Relaxed',p.footMode===3&&wheelPickupTiming(p.footMountTime||0).grip>.5?'SupportGrip':'Relaxed');
+    applyOnFootRider(this,p);this.fingers.apply('Relaxed',p.footMode===3&&wheelPickupTiming(p.footMountTime||0).grip>.5?'SupportGrip':'Relaxed');if(p.footMode===2)this.fingers.softenRun(p.speed);
     if(p.crashMotion&&p.crashBlend>0&&p.footMode===2&&p.crashRecovery>.55)this.fallenSupport.alignLegs(this,1-T.MathUtils.smoothstep(p.crashRecovery,.80,1));
   }
 }

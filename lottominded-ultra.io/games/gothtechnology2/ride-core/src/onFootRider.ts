@@ -1,11 +1,12 @@
 import {sampleKimodoEvade,KIMODO_EVADE} from './kimodoEvade.ts';
+import {referenceSprint,referenceSprintFoot,referenceRunChannels} from './referenceRun.ts';
 import {sampleTemplate,templateLocomotion,blendTemplate,TEMPLATE_MOTION} from './templateMotion.ts';
 import {sampleKimodoProne,KIMODO_PRONE} from './kimodoProne.ts';
 import {standingIdle} from './heroActions.ts';
 import {sampleUserAction,userFoot} from './userActions.ts';
 import {sampleTacticalWalk,tacticalFoot,TACTICAL_WALK} from './tacticalWalk.ts';
 import {sampleKimodoWalk,kimodoWalkFoot,KIMODO_WALK} from './kimodoWalk.ts';
-import {sampleAthletic,sampleSmoothSprint,blendAthletic,athleticFoot,KIMODO_ATHLETIC} from './kimodoAthletic.ts';
+import {sampleAthletic,blendAthletic,athleticFoot,KIMODO_ATHLETIC} from './kimodoAthletic.ts';
 import {KIMODO_RIDING} from './kimodoRidingData.ts';
 import * as T from 'three';
 import {DIRECTIONAL_MOTION} from './directionalMotionData.ts';
@@ -13,7 +14,7 @@ import {TURN_MOTION} from './turnMotionData.ts';
 import {LOW_STANCE_MOTION} from './lowStanceMotionData.ts';
 import {FootAnimation,gaitScale,crawlReach} from './footAnimation.ts';
 import {TACTICAL_MOTION} from './tacticalMotionData.ts';
-import {footGait,sprintGait,footBodyMotion} from './onFootGait.ts';
+import {footGait,footBodyMotion} from './onFootGait.ts';
 import {solveLimb} from './limbIK.ts';
 import {WHEEL_PICKUP} from './wheelPickupData.ts';
 import {wheelPickupTiming} from './wheelPickupTiming.ts';
@@ -166,7 +167,7 @@ export function applyOnFootRider(h:Rig,pose:Partial<FootPose>&{crashBlend?:numbe
  const duck=sampleAthletic('duck',crouch),low=sampleAthletic('crouch_walk',walkPhase);
  const lowMove=T.MathUtils.smoothstep(speed,0,.8)*Math.abs(longitudinal);
  const lowRow=blendAthletic(duck,low,lowMove);
- const athletic=blendAthletic(sampleSmoothSprint(phase),lowRow,crouchWeight/Math.max(.00001,sprintWeight+crouchWeight));
+  const athletic=blendAthletic(referenceSprint(phase),lowRow,crouchWeight/Math.max(.00001,sprintWeight+crouchWeight));
  for(let i=0;i<24;i++)row[i]=T.MathUtils.lerp(row[i],athletic[i],athleticWeight);
  if(data.jumpFrom){const t=T.MathUtils.smoothstep(p.footTime-data.jumpAt,0,.12);row=mix(data.jumpFrom,row,t);if(t>=1)data.jumpFrom=undefined;}
  data.row=row;
@@ -179,7 +180,7 @@ export function applyOnFootRider(h:Rig,pose:Partial<FootPose>&{crashBlend?:numbe
  motion.bob=T.MathUtils.lerp(motion.bob,tactical[45]*.9/walkReference.legLength,tacticalWeight);
  motion.weight=T.MathUtils.lerp(motion.weight,tactical[44]*.9/walkReference.legLength,tacticalWeight);
  const athleticScale=data.legLength/KIMODO_ATHLETIC.clips.sprint.legLength;
- motion.bob=T.MathUtils.lerp(motion.bob,athletic[45]*.32*.9/KIMODO_ATHLETIC.clips.sprint.legLength,sprintWeight);
+  motion.bob=T.MathUtils.lerp(motion.bob,referenceRunChannels(phase)[8]*.5,sprintWeight);
  motion.weight=T.MathUtils.lerp(motion.weight,athletic[44]*.9/KIMODO_ATHLETIC.clips.sprint.legLength,sprintWeight);
  const upright=(source:T.Quaternion,chest=false)=>{
   const e=new T.Euler().setFromQuaternion(source,'YXZ');
@@ -240,7 +241,7 @@ export function applyOnFootRider(h:Rig,pose:Partial<FootPose>&{crashBlend?:numbe
    stride.z=T.MathUtils.lerp(stride.z,fresh.z,athleticWeight);stride.lift=T.MathUtils.lerp(stride.lift,fresh.lift,athleticWeight);stride.pitch=T.MathUtils.lerp(stride.pitch,fresh.pitch,athleticWeight);
    // Ground-matched sprint contacts let the knees absorb each landing. The
    // captured torso/arms remain; adult ankle reach must not drag the pelvis.
-   const run=sprintGait(cycle+i*.5,speed,data!.legLength);
+   const run=referenceSprintFoot(cycle+i*.5,speed,data!.legLength);
    stride.z=T.MathUtils.lerp(stride.z,run.z,sprintWeight);stride.lift=T.MathUtils.lerp(stride.lift,run.lift,sprintWeight);stride.pitch=T.MathUtils.lerp(stride.pitch,run.pitch,sprintWeight);return stride;
   });
   // Oversized mascot soles need less roll to keep the short-legged pelvis level.
@@ -563,7 +564,8 @@ function applyWheelPickup(h:Rig,data:Fit,p:FootPose){
 /** Imported template pose, fitted to anatomical frames instead of Unity bone names.
  * The masked layer never changes movement, collisions, or the holstered walk. */
 function applyTemplateCombat(h:Rig,data:Fit,p:FootPose,phase:number,speed:number,direction:number){
- const weight=T.MathUtils.clamp(h.combatLocomotion??0,0,1)*(1-T.MathUtils.clamp(p.footCrouch,0,1))*(1-T.MathUtils.clamp(p.footProne,0,1))*(p.footMode===2&&!p.footVault?1:0);
+ const forwardRun=p.footJump?0:T.MathUtils.smoothstep(speed,3.2,5.4)*Math.max(0,Math.cos(direction));
+ const weight=(1-forwardRun)*T.MathUtils.clamp(h.combatLocomotion??0,0,1)*(1-T.MathUtils.clamp(p.footCrouch,0,1))*(1-T.MathUtils.clamp(p.footProne,0,1))*(p.footMode===2&&!p.footVault?1:0);
  if(!weight)return;
  const time=p.footTime||0,jump=p.footJump||0;
  if(data.templateTime===undefined||time<data.templateTime||time-data.templateTime>.25){data.templateRow=data.templateFrom=undefined;data.templateJump=jump;data.templateAt=time;}

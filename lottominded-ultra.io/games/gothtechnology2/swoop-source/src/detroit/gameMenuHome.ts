@@ -1,5 +1,6 @@
 import './gameMenuHome.css';
-type MenuHomeOptions={kind:'swoop'|'royale'|'elmwood';title:string;subtitle:string;tagline:string;description:string;play:HTMLButtonElement;resume?:HTMLButtonElement;configure:()=>void;settings:()=>void;online?:()=>void};
+import {makeWardrobePicker} from './wardrobePicker.ts';
+type MenuHomeOptions={kind:'swoop'|'royale'|'elmwood';title:string;subtitle:string;tagline:string;description:string;play:HTMLButtonElement;resume?:HTMLButtonElement;rider?:HTMLSelectElement;configure:()=>void;settings:()=>void;online?:()=>void};
 /** A small front door to the existing setup; keeps every gameplay/settings handler intact. */
 export function gameMenuHome(root:HTMLElement,o:MenuHomeOptions){
  root.classList.add('game-main-menu');root.dataset.gameTheme=o.kind;
@@ -19,6 +20,7 @@ export function gameMenuHome(root:HTMLElement,o:MenuHomeOptions){
  for(const [kind,label,url]of [['swoop','Swoop Detroit','../swoop-detroit/index.html'],['royale','Static Royale','../swoop-detroit/royale.html'],['elmwood','Elmwood Explorer','../elmwood-explorer/elmwood.html']])if(kind!==o.kind){const a=document.createElement('a');a.href=url;a.textContent=label+' ↗';links.append(a);}
  const note=document.createElement('p');note.className='game-menu-note';note.textContent=o.kind==='royale'?'3 ROUNDS / DOWNTOWN DETROIT':o.kind==='elmwood'?'QUIET LANES / YOUR OWN PACE':'DEQUINDRE CUT / ELECTRIC CULTURE';
  home.append(kicker,title,description,nav,links,note);
+ const wardrobe=o.rider?makeWardrobePicker(o.rider):undefined;if(wardrobe)nav.before(wardrobe.root);
  if(o.kind==='swoop'){
   const identity=document.createElement('div');identity.className='swoop-menu-identity';
   const emblem=document.createElement('img');emblem.src=new URL('./art/swoop-insignia.webp',import.meta.url).href;emblem.alt='';emblem.width=144;emblem.height=96;emblem.decoding='async';
@@ -36,5 +38,5 @@ export function gameMenuHome(root:HTMLElement,o:MenuHomeOptions){
  new MutationObserver(sync).observe(o.play,{attributes:true,attributeFilter:['disabled'],childList:true,subtree:true,characterData:true});
  // Opening via an existing Settings/Online shortcut must reveal its destination.
  root.addEventListener('focusin',e=>{const target=e.target as HTMLElement;if(!home.contains(target)&&target!==back)root.dataset.menuHome='false';});
- return {show(){root.dataset.menuHome='true';root.scrollTop=0;play.focus({preventScroll:true});}};
+ return {show(){wardrobe?.update();root.dataset.menuHome='true';root.scrollTop=0;play.focus({preventScroll:true});}};
 }

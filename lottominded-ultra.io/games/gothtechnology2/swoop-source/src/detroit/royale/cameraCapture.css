@@ -16,3 +16,17 @@ body:has(#replay-status:not([hidden])) :is(#hint,.combat-block-note){visibility:
 @media(prefers-reduced-motion:reduce){#spectator-controls,#spectator-controls *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 @media(max-width:700px){#camera-capture{top:224px;left:auto;right:12px;transform:none;width:120px;max-width:120px}#camera-capture .capture-panel{padding:5px;gap:3px}#camera-capture button,#camera-capture a{padding:7px;font-size:11px}}
 @media(max-height:500px){header>span{visibility:hidden}#camera-capture{top:12px;left:50%;right:auto;transform:translateX(-50%);width:auto;max-width:120px}}
+#camera-capture button,#camera-capture a{min-height:44px;touch-action:manipulation}
+#camera-viewfinder{position:fixed;inset:max(110px,env(safe-area-inset-top)) 8% max(126px,env(safe-area-inset-bottom));z-index:6;pointer-events:none;border:10px solid #11191e;border-radius:24px;box-shadow:0 0 0 2px #52636a,0 0 0 8px #080e14cc,inset 0 0 24px #0008;color:#defff0;font:600 11px ui-monospace,monospace;text-shadow:0 1px 2px black}
+#camera-viewfinder[hidden]{display:none}
+#camera-viewfinder strong{position:absolute;left:12px;top:10px;letter-spacing:.12em;font-size:10px}.lcd-info{position:absolute;left:12px;bottom:10px}
+.lcd-focus{position:absolute;left:calc(50% - 30px);top:calc(50% - 23px);width:60px;height:46px;border:1px solid #d9fff0;opacity:.7}
+body.royale-viewfinder :is(#reticle,#range-coach,.tactical-readout,.combat-readout){visibility:hidden}
+body.royale-camera-mode #camera-capture{top:auto;bottom:max(12px,env(safe-area-inset-bottom));left:50%;right:auto;transform:translateX(-50%);width:min(560px,calc(100vw - 24px));max-width:none}
+body.royale-camera-mode #camera-capture .capture-panel{margin-top:4px;padding:5px;gap:4px}
+body.royale-camera-mode #hint{display:none}
+#camera-viewfinder{box-shadow:0 0 0 2px #52636a,0 0 0 8px #080e14cc,0 0 0 100vmax #060e1880,inset 0 0 24px #0008}
+body.royale-viewfinder #touch button:not([data-action=fire]):not([data-action=aim]){display:none!important}
+@media(max-width:700px){#camera-viewfinder{inset:170px 12px 270px;border-width:7px;border-radius:16px;min-height:90px}body.royale-camera-mode #camera-capture{bottom:max(8px,env(safe-area-inset-bottom));width:calc(100vw - 24px)}body.royale-camera-mode #camera-capture span{font-size:10px}}
+@media(max-height:500px){#camera-viewfinder{inset:70px 25% 100px;border-width:6px;min-height:60px}body.royale-camera-mode #camera-capture{width:54%;bottom:4px}body.royale-camera-mode #camera-capture>button{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%)}body.royale-camera-mode #camera-capture span{display:none}body.royale-camera-mode #camera-capture button,body.royale-camera-mode #camera-capture a{font-size:10px;padding:5px}}
+@media(max-width:700px) and (min-height:501px){body.royale-camera-mode #move-pad{top:auto!important;bottom:144px!important}body.royale-viewfinder .on-foot-controls{top:auto!important;bottom:180px!important;left:122px!important;right:auto!important;max-width:100px}}

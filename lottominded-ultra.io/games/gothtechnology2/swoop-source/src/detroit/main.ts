@@ -109,6 +109,8 @@ import { buildScenery } from './scenery.ts';
 import { loadActors,Hero,TrafficView } from './actors.ts';
 import {CHALLENGES,DistrictRun,photoAllowed,type Challenge} from './district.ts';
 import {DistrictView,routePosition} from './districtView.ts';
+import {CircuitRace} from './circuitRace.ts';
+import {baseRiderId} from '../../../ride-core/src/riderWardrobe.ts';
 import {DogFollower} from './companion.ts';
 import {CompanionView} from './companionView.ts';
 import './style.css';
@@ -237,8 +239,12 @@ let challengeRun:DistrictRun|undefined,photoPending=false;
 world.extraActors=()=>[...(communityActive()?community?.ride.obstacles()??[]:[]),...(race?.obstacles()??[]),...(running&&dogEnabled&&!split?[{id:'companion',x:dog.current.x,y:dog.current.y,z:dog.current.z,radius:.36,height:.85,kind:'dog',vx:Math.sin(dog.current.heading)*dog.current.speed,vz:Math.cos(dog.current.heading)*dog.current.speed}]:[])];
 mapWorld.crowdActors=()=>[...(running&&!split?ambientPacks?.obstacles().map(o=>({...o,...toMap(o.x,o.y,o.z),vx:-o.vx}))??[]:[]),...(communityActive()?community?.ride.obstacles().map(o=>({...o,...toMap(o.x,o.y,o.z),vx:-o.vx}))??[]:[]),...(running&&dogEnabled&&!split?[{id:'companion',...toMap(dog.current.x,dog.current.y,dog.current.z),radius:.36,height:.85,kind:'dog',vx:-Math.sin(dog.current.heading)*dog.current.speed,vz:Math.cos(dog.current.heading)*dog.current.speed}]:[])];
 let race:RivalRace|undefined;let practice:PracticeCoach|undefined;const encounterWarning=new EncounterWarning();
-const riderTerrain=world.withActorPassThrough(o=>ridingCompanion(o,communityActive()&&!!community?.ride.joined,!!race?.cyclingOpponents)||(o.kind==='dog'&&!!world.riderProtectionAt(current.x,current.z))).withActorRayPassThrough(isCharacter);
+const riderTerrain=world.withActorPassThrough(o=>ridingCompanion(o,communityActive()&&!!community?.ride.joined,!!race?.cyclingOpponents)||o.id==='companion').withActorRayPassThrough(isCharacter);
 const bikeInvitation=new BikeRaceInvitation(()=>startRace(true),()=>canvas.focus());
+const circuitRace=new CircuitRace(scene,canvas,{name:'Swoop Detroit',context:()=>String(selectedSpot)+':'+mode,focus:()=>canvas.focus(),entries:()=>split?split.simulation.riders.map((r,i)=>({id:'local-'+i,name:'Player '+(i+1),pose:r.pose})):[{id:'local-0',name:'You',pose:current}],
+ points:()=>{const m=toMap(current.x,current.y,current.z),s=cutCoords(m.x,m.z).d;return Array.from({length:17},(_,i)=>routePosition(Math.max(0,Math.min(LENGTH,s+i*10))));},
+ ground:(x,z,y)=>world.sampleGround(x,z,createGroundSample(),y).height,
+ clear:(a,b)=>{const dx=b.x-a.x,dz=b.z-a.z,n=Math.hypot(dx,dz),g=world.sampleGround(b.x,b.z,createGroundSample(),a.y);return !g.offCourse&&!world.waterAt?.(b.x,b.z,b.y)&&(!n||world.raycastObstacle({x:a.x,y:a.y+.6,z:a.z},{x:dx/n,y:0,z:dz/n},n,.4)===null);}});
 let split:{simulation:SplitRaceSimulation;view:SplitRaceView;input:SplitRideInput;audio:RideAudio[]}|undefined,startingOnline=false;
 const splitPhotoAim=new Map<number,string>();
 function stopSplit(){if(!split)return;if(online.active&&!startingOnline)void online.leave(false);split.view.dispose();split.audio.forEach(a=>void a.dispose());split=undefined;splitPhotoAim.clear();document.body.classList.remove('splitPlaying','onlinePlaying');delete canvas.dataset.splitRace;delete canvas.dataset.online;renderer.setScissorTest(false);renderer.setViewport(0,0,innerWidth,innerHeight);hero.root.visible=true;dogView.root.visible=dogEnabled;}
@@ -623,7 +629,7 @@ try{
   // startup movie and input are serviced before the first full render.
   await timeLoad('first-view',()=>warmFirstView(renderer,scene,camera));
   boot.assertActive();
-  if(!boot.finish(!!actorData.get(selectedRider),!!SPOTS[Number($<HTMLSelectElement>('spawn').value)],!!scenery,!!sim))throw new Error('Rider, start location, scene or controller is unavailable');
+  if(!boot.finish(!!actorData.get(baseRiderId(selectedRider)),!!SPOTS[Number($<HTMLSelectElement>('spawn').value)],!!scenery,!!sim))throw new Error('Rider, start location, scene or controller is unavailable');
   canvas.dataset.lighting='shared-cinematic-dusk';renderBoot();ready=true;loop.ready();canvas.dataset.ready='true';canvas.dataset.bootProfile=JSON.stringify(loadTimings);canvas.dataset.firstPlayableMs=String(Math.round(performance.now()-bootStarted));canvas.dataset.hero=selectedRider;canvas.dataset.controller=RIDE_TUNING.version;canvas.dataset.physics='Rapier terrain + Digital Static controller';canvas.dataset.routeLength=String(LENGTH);$('loading').hidden=true;$<HTMLButtonElement>('start').disabled=false;quickPractice.disabled=false;document.querySelectorAll<HTMLButtonElement>('.districtCard').forEach(b=>b.disabled=false);
   setCamera('front');
   if(new URLSearchParams(location.search).get('launch')==='quest')void vr.enterFromPackage();
@@ -679,6 +685,7 @@ function frame(now:number,xrFrame?:XRFrame){
   if(!frameSchedule.shouldRender(now,(!running||paused)&&!film.playing&&!gallery?.active&&!boutique?.active,vr.active,jazzVisit?.active?10:graphics.current.fps))return;
   interactiveWater.update(current,!running||paused||!!gallery?.active||!!boutique?.active);
   const rawFrameMs=Math.max(0,now-last),dt=Math.min(rawFrameMs/1000,.06);last=now;
+  circuitRace.update(dt,running&&!online.active&&!race&&!challengeRun&&!practice&&!film.playing&&!gallery?.active&&!boutique?.active&&!vr.active&&$('menu').hidden,paused||document.hidden);
   sky.tick(dt,scene.fog?.color,graphics.current.shadows===0,reducedAtmosphereMotion.matches||document.documentElement.dataset.reducedMotion==='true'||atmosphereMotionOverride,paused);if(now-hudAt>120)canvas.dataset.atmosphere=JSON.stringify(sky.status);
   nature.update(dt,current,!running||paused,graphics.current.shadows===0,matchMedia('(prefers-reduced-motion: reduce)').matches||document.documentElement.dataset.reducedMotion==='true');natureAudio.update(current,current.headingY,running&&!paused&&!film.playing&&!gallery?.active&&!boutique?.active);canvas.dataset.nature=JSON.stringify(nature.status);canvas.dataset.natureAudio=natureAudio.status;
   if(!loadedAt)loadedAt=now;if(!document.hidden&&running&&!paused){interiorStream.update(split?split.simulation.riders.map(r=>r.pose):[current],650);canvas.dataset.interiorStreaming=JSON.stringify(interiorStream.status);}const budgetActive=graphics.choice==='auto'&&!document.hidden&&!vr.active&&running&&!paused&&now-loadedAt>5000;if(!budgetActive&&graphics.choice!=='auto')adaptiveQuality.reset();if(adaptiveQuality.sample(rawFrameMs,budgetActive,graphics.current.fps)){graphics.setAdaptiveDetail(adaptiveQuality.detail);graphics.setResolutionScale(adaptiveQuality.scale);document.documentElement.dataset.renderQuality=graphics.current.shadows===0||adaptiveQuality.scale<.85?'compact':'detailed';}if(now-hudAt>120)canvas.dataset.renderBudget=JSON.stringify({targetFPS:graphics.current.fps,quality:graphics.choice,resolutionScale:adaptiveQuality.scale,detail:adaptiveQuality.detail,pixelRatio:renderer.getPixelRatio(),xr:vr.active});for(const destination of [gallery,boutique])destination?.updateVisibility(split?split.simulation.riders.map(r=>r.pose):[current],camera);mackStudio?.update(current.x,current.z);if(running&&!paused&&!document.hidden&&!film.playing){frameTimes.push(rawFrameMs);if(frameTimes.length>480)frameTimes.shift();}

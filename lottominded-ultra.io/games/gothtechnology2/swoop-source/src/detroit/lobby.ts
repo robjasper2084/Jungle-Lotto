@@ -41,7 +41,7 @@ export function installLobby(elmwood:boolean,onRace:()=>void,onSplit:()=>void){
  const garage=document.createElement('div');garage.id='lobbyGarage';garage.className='lobbyPanel';garage.innerHTML='<p class="eyebrow">YOUR OWN FREQUENCY</p><h2>Garage & soundtrack</h2>';
  garage.append($('rideGarage'),$('musicPanel'));garage.querySelectorAll('details').forEach(d=>d.open=true);
  deck.append(garage,settings);
- const footer=document.createElement('div');footer.className='lobbyFooter';footer.innerHTML='<span>ONE WHEEL. FIVE HEROES.</span><span>KEYBOARD / TOUCH / CONTROLLER / VR</span>';menu.append(footer);
+ const footer=document.createElement('div');footer.className='lobbyFooter';footer.innerHTML='<span>ONE WHEEL. YOUR STYLE.</span><span>KEYBOARD / TOUCH / CONTROLLER / VR</span>';menu.append(footer);
  const mode=$('mode') as HTMLSelectElement;mode.closest('label')!.hidden=true;
  const tabs=chrome.querySelector('nav')!;
  const more=document.createElement('details');more.className='lobbyMore';more.innerHTML='<summary>More <span aria-hidden="true">⌄</span></summary><div class="lobbyMoreItems"></div>';const moreItems=more.querySelector<HTMLElement>('.lobbyMoreItems')!;
@@ -79,7 +79,7 @@ export function installLobby(elmwood:boolean,onRace:()=>void,onSplit:()=>void){
  chrome.querySelector('a')!.onclick=e=>{e.preventDefault();show('ride');};
  $('menuButton').addEventListener('click',()=>show(['race','split'].includes(mode.value)?mode.value:'ride'));
  show(['race','split'].includes(new URLSearchParams(location.search).get('tab')??'')?new URLSearchParams(location.search).get('tab')!:'ride');
- const home=gameMenuHome(menu,{kind:'swoop',title:'Swoop',subtitle:'Detroit',tagline:'FIND YOUR LINE. OWN THE CUT.',description:'One wheel. Your city. Ride the riverfront, race the Cut, or explore with friends.',play:$('start') as HTMLButtonElement,resume:$('resumeRide') as HTMLButtonElement,configure:()=>{show('ride');customize.open=true;hero.focus();},settings:()=>{show('settings');$('lobbySettings').querySelector<HTMLButtonElement>('button')?.focus();},online:()=>{menu.querySelector<HTMLButtonElement>('[data-lobby-tab="online"]')?.click();}});
+ const home=gameMenuHome(menu,{kind:'swoop',title:'Swoop',subtitle:'Detroit',tagline:'FIND YOUR LINE. OWN THE CUT.',description:'One wheel. Your city. Ride the riverfront, race the Cut, or explore with friends.',rider:hero,play:$('start') as HTMLButtonElement,resume:$('resumeRide') as HTMLButtonElement,configure:()=>{show('ride');customize.open=true;hero.focus();},settings:()=>{show('settings');$('lobbySettings').querySelector<HTMLButtonElement>('button')?.focus();},online:()=>{menu.querySelector<HTMLButtonElement>('[data-lobby-tab="online"]')?.click();}});
  const menuObserver=new MutationObserver(()=>{if(!menu.hidden)home.show();});menuObserver.observe(menu,{attributes:true,attributeFilter:['hidden']});
  return {actions,moreItems,placeButtons,placeBody,finish(){
   // Late-created features keep their existing click handlers when grouped here.

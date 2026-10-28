@@ -5,6 +5,7 @@ import {gaitCadence} from './dogGait.ts';
 import {dogSteering,dogStepSpeed} from './dogSteering.ts';
 import {companionRoute} from './companionNavigation.ts';
 import type {DogJump} from './companionNavigation.ts';
+import {yieldToTraffic} from '../../../ride-core/src/dynamicClearance.ts';
 
 export type DogPose={sit?:number;lie?:number;barking?:number;x:number;y:number;z:number;heading:number;pitch:number;roll:number;speed:number;phase:number;time:number;turnRate:number;gaitSpeed?:number;lookYaw?:number;jumpHeight?:number;jumpProgress?:number;landing?:number};
 const clamp=(v:number,a:number,b:number)=>Math.max(a,Math.min(b,v));
@@ -20,7 +21,7 @@ export class DogFollower {
   private blockedFor=0;private escapeHeading?:number;private escapeTime=0;
   private flight?:DogJump;private passingSide=0;private passingId='';jumps=0;
   command='come';sit=0;lie=0;barking=0;private chaseGoal?:{x:number;z:number};private chaseSeconds=0;
-  private heldPose='stand';
+  private heldPose='stand';yielding=false;yieldSeconds=0;
   order(command:string,targets:readonly {x:number;z:number}[]=[]){
     if(['lay','lie','lay down','lie down'].includes(command.toLowerCase()))command='down';
     if(!['sit','down','stay','come','chase','bark'].includes(command))return 'Unknown dog command';
@@ -58,6 +59,18 @@ export class DogFollower {
     if(!(dt>0))return;
     const p=this.current;Object.assign(this.previous,p);
     this.barking=Math.max(0,this.barking-dt);p.barking=this.barking;
+    const traffic=[...(this.terrain.navigationObstacles?.(p.x,p.z,12)??[]).filter(o=>o.id!=='companion'),{x:hero.x,y:hero.y,z:hero.z,radius:.6,vx:Math.sin(hero.headingY)*hero.speed,vz:Math.cos(hero.headingY)*hero.speed}];
+    const escape=!this.flight&&yieldToTraffic(p,traffic,dt,(x,z)=>{
+      const g=this.terrain.sampleGround(x,z,createGroundSample(),p.y),dx=x-p.x,dz=z-p.z,len=Math.hypot(dx,dz);
+      return !g.offCourse&&g.normal.y>.7&&Math.abs(g.height-p.y)<.25&&!this.terrain.waterAt?.(x,z,p.y)&&(!len||this.terrain.raycastObstacle({x:p.x,y:p.y+.45,z:p.z},{x:dx/len,y:0,z:dz/len},len,.28)===null);
+    });
+    this.yielding=!!escape;
+    if(escape){
+      p.x=escape.x;p.z=escape.z;p.heading+=angle(escape.heading-p.heading)*Math.min(1,dt*10);p.speed=p.gaitSpeed=escape.speed;
+      this.sit*=Math.exp(-dt*12);this.lie*=Math.exp(-dt*12);p.sit=this.sit;p.lie=this.lie;
+      this.vx=Math.sin(escape.heading)*escape.speed;this.vz=Math.cos(escape.heading)*escape.speed;
+      p.time+=dt;p.phase+=gaitCadence(p.speed)*dt;this.yieldSeconds+=dt;this.heroX=hero.x;this.heroZ=hero.z;this.groundPose();return;
+    }
     this.sit+=((!this.flight&&this.heldPose==='sit'?1:0)-this.sit)*(1-Math.exp(-dt*5));this.lie+=((!this.flight&&this.heldPose==='down'?1:0)-this.lie)*(1-Math.exp(-dt*5));p.sit=this.sit;p.lie=this.lie;
     if(!this.flight&&['sit','down','stay'].includes(this.command)){p.speed=p.gaitSpeed=0;p.time+=dt;this.vx=this.vz=0;this.heroX=hero.x;this.heroZ=hero.z;this.groundPose();return;}
     if(this.command==='chase'&&(this.chaseSeconds+=dt)>12){this.command='come';this.chaseGoal=undefined;}

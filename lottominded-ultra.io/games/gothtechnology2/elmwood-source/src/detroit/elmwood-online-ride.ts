@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {baseRiderId} from '../../../ride-core/src/riderWardrobe.ts';
 import {PedalSparks} from '../../../ride-core/src/pedalSparks.ts';
 import {NEUTRAL_ACTIONS,lerpPose,copyPose,RIDER_EYE_PITCH,HUMAN_PROFILE,type RideActions} from '@digital-static/ridecore';
 import type {GLTF} from './compressedGLTFLoader.ts';
@@ -46,6 +47,8 @@ export class ElmwoodOnlineRide {
   let backgroundAt=performance.now();window.setInterval(()=>{const now=performance.now(),dt=Math.min(.1,(now-backgroundAt)/1000);backgroundAt=now;if(document.hidden&&this.active&&!this.local&&this.rooms.isHost)this.update(dt);},40);
  }
  get active(){return !!this.match;}
+ get circuitEntries(){return this.local&&this.match?.mode==='free'?this.riders.map((r,i)=>({id:'split-'+i,name:'Player '+(i+1),pose:r.motion.pose})):[];}
+ get circuitPaused(){return this.frozen;}
  get pose(){return this.riders[this.own]?.motion.pose;}
  get actors(){return this.riders.map(r=>({root:r.view.root,body:r.view.rider}));}
  get positions(){return this.riders.map(r=>({x:r.motion.pose.x,z:r.motion.pose.z}));}
@@ -66,7 +69,7 @@ export class ElmwoodOnlineRide {
   const base=runMode==='sprint'||runMode==='tour'?gates[0]:{x:spawn.x,z:-spawn.north};
   match.members.forEach((member,i)=>{
    const profile=SWOOP_RIDERS.find(r=>r.id===member.rider)?.profile??HUMAN_PROFILE,motion=new RideMotion(terrain,profile);motion.selectVehicle(wheel);motion.follow.calm=document.documentElement.dataset.reducedMotion==='true'||matchMedia('(prefers-reduced-motion: reduce)').matches;
-   const euc=eucProfile(wheel),view=new ThreeRiderView(assets.get(member.rider)!,assets.get(euc?'Euc_'+euc.id:'DS_EUC_01')??assets.get('DS_EUC_01')!,motion.terrain,profile);
+   const euc=eucProfile(wheel),view=new ThreeRiderView(assets.get(baseRiderId(member.rider))!,assets.get(euc?'Euc_'+euc.id:'DS_EUC_01')??assets.get('DS_EUC_01')!,motion.terrain,profile);
    const side=(i%2?1:-1)*.7,back=Math.floor(i/2)*2,x=base.x+Math.cos(heading)*side-Math.sin(heading)*back,z=base.z-Math.sin(heading)*side-Math.cos(heading)*back;
    motion.reset({x,y:terrain.height(x,-z),z},heading);const run=new ElmwoodRun(gates);run.reset(runMode,motion.pose);
    const bot=member.bot?new ElmwoodRacePilot(motion.terrain,line,gates,Math.max(0,i-1),false,match.difficulty??'expert',undefined,euc):undefined;

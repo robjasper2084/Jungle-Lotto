@@ -27,8 +27,8 @@ export class VisibleTouchLayout{
   if(touch.hidden||touch.classList.contains('editing')||touch.querySelector('.active'))return;
   const rect=(el:Element):Rect=>{const r=el.getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,height:r.height};};
   const visible=(el:Element)=>el.getClientRects().length>0;
-  const fixed=[...document.querySelectorAll('#hud,header,#camera-capture,.on-foot-controls,.royale-map,#move-pad')].filter(visible).map(rect);
-  const buttons=[...touch.querySelectorAll<HTMLButtonElement>('button:not(.tray-nav)')].filter(b=>!b.hidden);
+  const fixed=[...document.querySelectorAll('#hud,header,#camera-capture,.circuit-race,.on-foot-controls,.royale-map,#move-pad')].filter(visible).map(rect);
+  const buttons=[...touch.querySelectorAll<HTMLButtonElement>('button:not(.tray-nav)')].filter(b=>!b.hidden&&visible(b));
   const key=JSON.stringify([innerWidth,innerHeight,buttons.map(b=>b.dataset.action||b.className).sort(),fixed,touch.dataset.expanded]);if(key===this.key)return;
   this.restore();this.key=key;
   const pinned=buttons.filter(b=>b.dataset.customPosition);fixed.push(...pinned.map(rect));
