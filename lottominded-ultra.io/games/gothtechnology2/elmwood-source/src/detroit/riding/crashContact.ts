@@ -11,7 +11,7 @@ export class CrashContact {
   private point=new T.Vector3();
   constructor(root:T.Object3D){
     root.traverse(object=>{
-      const mesh=object as T.Mesh;if(!mesh.isMesh)return;
+      const mesh=object as T.Mesh;if(!mesh.isMesh||mesh.userData.presentationOnly)return;
       const position=mesh.geometry.attributes.position;if(!position)return;
       const joints=mesh.geometry.attributes.skinIndex,weights=mesh.geometry.attributes.skinWeight;
       const groups=new Map<number,{scores:number[];indices:number[]}>();
