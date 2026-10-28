@@ -14,9 +14,11 @@ import {FpsMotion,reloadPose,WeaponSwap} from './fpsMotion.ts';
 import {FpsWeaponSway} from './fpsControlFlow.ts';
 import {fpsBodyAction} from './fpsBattlePose.ts';
 import {footLeanOffset} from '../../../../ride-core/src/royale/lean.ts';
+import {CameraRearLcd} from './cameraRearLcd.ts';
 /** A separate instance of the selected hero's skinned hands. The world actor,
  * authoritative muzzle and other players' poses are never moved by view animation. */
 export class FirstPersonView {
+ readonly rearLcd=new CameraRearLcd();
  readonly root=new T.Group();private hero:Hero;private weapon:WeaponView;private rig:CombatRig;private motion=new FpsMotion();private swap=new WeaponSwap();
  private arms:FpsArms;private materials=new Set<T.Material>();private previousForward?:T.Vector3;private sway=new T.Vector2();
  private fpsSway=new FpsWeaponSway();private previousTick=-1;
@@ -42,6 +44,7 @@ export class FirstPersonView {
   this.root.visible=true;this.root.matrixAutoUpdate=true;this.root.scale.setScalar(1);this.root.position.set(0,0,0);this.root.quaternion.identity();this.root.updateMatrixWorld(true);
   this.arms.reset();this.hero.combatLocomotion=weaponReadyAmount(state,tick);this.hero.apply({...p,seated:0});this.hero.visibility.setFirstPerson(true,true);this.hero.vehicle.visible=false;
   const equip=this.swap.update(dt,kind,shot,reduced);this.weapon.select(equip.weapon as Weapon);if(shot)this.rig.interruptPickup();if(shot)this.weapon.fire(reduced);this.weapon.update(dt,reduced);this.rig.apply({...p,seated:0},yaw,pitch,state,tick,healingUntil);
+  this.rearLcd.mount(this.weapon.cameraBody,this.weapon.kind as Weapon);
   const r=reloadPose(state,tick),scale=this.hero.motionScale;
   const rotation=camera.getWorldQuaternion(new T.Quaternion()),position=camera.getWorldPosition(new T.Vector3());
   const f=this.forwardScratch.set(0,0,-1).applyQuaternion(rotation),right=this.rightScratch.set(1,0,0).applyQuaternion(rotation),up=this.upScratch.set(0,1,0).applyQuaternion(rotation);
@@ -89,5 +92,5 @@ export class FirstPersonView {
   return {action:healing?'heal':ready<1?'draw':equip.lower>.02?'equip':blocked>.65?'cover':m.action,reload:r.phase,obstruction:blocked,rigRight:this.rig.errorR,rigLeft:this.rig.errorL,adsAmount:m.aim};
  }
  hide(){this.root.visible=false;}
- dispose(){this.arms.dispose();this.hero.dispose();this.weapon.dispose();this.magazine.geometry.dispose();this.magazine.material.dispose();for(const m of this.materials)m.dispose();this.root.removeFromParent();}
+ dispose(){this.rearLcd.dispose();this.arms.dispose();this.hero.dispose();this.weapon.dispose();this.magazine.geometry.dispose();this.magazine.material.dispose();for(const m of this.materials)m.dispose();this.root.removeFromParent();}
 }
