@@ -45,6 +45,7 @@ for(const [id,label]of [['botKnockoff','Bot knockoff / recover'],['fallFront','F
 let selected='carve',playing=true,paused=matchMedia('(prefers-reduced-motion: reduce)').matches,elapsed=0,acc=0,last=performance.now(),cameraLast=new T.Vector3(),studioView='side',playbackRate=1;
 orbit.addEventListener('start',()=>{studioView='orbit';document.querySelector<HTMLSelectElement>('#view')!.value='orbit';});
 let previewFall:FallMotion|undefined,combatPreview:CombatController|undefined;
+const outfitView=document.createElement('option');outfitView.value='outfit';outfitView.textContent='Suit & helmet detail';document.querySelector<HTMLSelectElement>('#view')!.append(outfitView);
 const timeline=document.querySelector<HTMLInputElement>('#timeline')!,pauseButton=document.querySelector<HTMLButtonElement>('#freeze')!;
 function inputs(t:number):RideActions{
   if(selected.startsWith('fps'))return {...NEUTRAL_ACTIONS,throttle:selected==='fpsBack'?-1:['fpsWalk','fpsRun','fpsJump'].includes(selected)?1:0,run:selected==='fpsRun'||selected==='fpsJump',facingYaw:0,hop:selected==='fpsJump'&&t%2>.5&&t%2<.56};
@@ -125,8 +126,8 @@ function frame(now:number){requestAnimationFrame(frame);const dt=Math.min(.06,(n
   const fall=fallCameraOffset(renderPose);
   const position=new T.Vector3(renderPose.x+fall.x,renderPose.y+fall.y,renderPose.z+fall.z),delta=position.clone().sub(cameraLast);camera.position.add(delta);orbit.target.add(delta);cameraLast.copy(position);
   if(studioView!=='orbit'){
-    const a=renderPose.headingY+(studioView==='side'?Math.PI/2:studioView==='rear'?Math.PI:0),distance=Math.max(hero.motionScale<1?2.6:3.9,Math.hypot(renderPose.crashForward-renderPose.wheelCrashForward,renderPose.crashLateral-renderPose.wheelCrashLateral)*1.3+2.5);
-    camera.position.set(position.x+Math.sin(a)*distance,position.y+(hero.motionScale<1?1.15:1.7),position.z+Math.cos(a)*distance);orbit.target.copy(position).add(new T.Vector3(0,hero.motionScale<1?.65:1.05,0));
+    const a=renderPose.headingY+(studioView==='side'?Math.PI/2:studioView==='rear'?Math.PI:0),distance=Math.max(studioView==='outfit'?2.6:hero.motionScale<1?2.6:3.9,Math.hypot(renderPose.crashForward-renderPose.wheelCrashForward,renderPose.crashLateral-renderPose.wheelCrashLateral)*1.3+2.5);
+    camera.position.set(position.x+Math.sin(a)*distance,position.y+(studioView==='outfit'?1.15:hero.motionScale<1?1.15:1.7),position.z+Math.cos(a)*distance);orbit.target.copy(position).add(new T.Vector3(0,hero.motionScale<1?.65:1.05,0));
   }
   key.position.copy(position).add(new T.Vector3(4,6,5));key.target.position.copy(position);fill.position.copy(position).add(new T.Vector3(-3,3,-4));fill.target.position.copy(position);
   orbit.update();renderer.render(scene,camera);
