@@ -30,7 +30,7 @@ export async function buildWaterfront(scene:T.Scene,world:SceneryWorld,groupAt:(
  const plan=WATERFRONT.buildings.find(b=>b.id===ARETHA.osmId)!;
  for(let i=0;i<plan.points.length-1;i+=2){const [x,z]=plan.points[i];world.addBox({x,y:3.6,z,hx:.22,hy:3.6,hz:.22,kind:'canopy column'});}
  const waterTime={value:0};
- const metal=new T.MeshStandardMaterial({color:'#273e3d',metalness:.65,roughness:.42}),stone=new T.MeshStandardMaterial({color:'#aea99b',roughness:.92}),water=waterSurface(waterTime,'#304e46','#667e64'),wood=new T.MeshStandardMaterial({color:'#847660',roughness:.92});
+ const metal=new T.MeshStandardMaterial({color:'#273e3d',metalness:.65,roughness:.42}),stone=new T.MeshStandardMaterial({color:'#aea99b',roughness:.92}),water=waterSurface(waterTime,'#304e46','#667e64');
  function box(x:number,y:number,z:number,w:number,h:number,d:number,m:T.Material,angle=0,solid=false){const o=new T.Mesh(new T.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.rotation.y=angle;groupAt(x,z).add(o);if(solid)world.addBox({x,y,z,hx:w/2,hy:h/2,hz:d/2,yaw:angle,kind:'waterfront fixture'});return o;}
  function rail(a:number[],b:number[],height=1.12,railing=true,base?:number,access=true){for(const span of access?clearRailSpans(a,b,MAPPED_ACCESS):[{a,b}]){const dx=span.b[0]-span.a[0],dz=span.b[1]-span.a[1],len=Math.hypot(dx,dz),n=Math.ceil(len/3),ang=Math.atan2(-dz,dx);for(let i=0;i<n;i++){const t=(i+.5)/n,x=span.a[0]+dx*t,z=span.a[1]+dz*t,y=base??Math.max(0,heightAt(x,z));
   if(railing){const o=clone(2,x,y,z,ang);o.scale.x=len/n/3;}else{for(const h of [.14,height-.12])box(x,y+h,z,len/n,.045,.045,metal,ang);for(let k=0;k<8;k++){const u=(i+k/8)/n,px=span.a[0]+dx*u,pz=span.a[1]+dz*u;box(px,y+height/2,pz,.025,height,.025,metal);}}
@@ -44,7 +44,7 @@ export async function buildWaterfront(scene:T.Scene,world:SceneryWorld,groupAt:(
  for(const pond of WATERFRONT.ponds){const g=new T.ShapeGeometry(new T.Shape(pond.points.map(p=>new T.Vector2(p[0],-p[1]))));g.rotateX(-Math.PI/2);g.translate(0,-.18,0);waterDepths(g,()=>.6);const o=new T.Mesh(g,water);o.name='OSM pond '+pond.id;scene.add(o);}
  const fittings=harborFixtures();
  for(const p of fittings.pedestals)clone(3,p.x,DOCK_TOP,p.z,p.heading);
- for(const p of fittings.pilings){box(p.x,-.4,p.z,.22,3.3,.22,wood);box(p.x,1.29,p.z,.25,.09,.25,metal);}
+ // Piles, wet waterline bands, fenders and mooring ropes are batched by buildHarbor.
  for(const p of fittings.boats){const o=clone(4,p.x,-.20,p.z,p.heading);o.name='Original decorative harbor cruiser';world.addBox({x:p.x,y:.6,z:p.z,hx:1.65,hy:.85,hz:4.9,yaw:p.heading,kind:'moored boat'});}
  // Floating support underneath the two mapped principal piers.
  for(const [a,b] of [[[-185.829,-1383.747],[-107.324,-1390.462]],[[-174.769,-1339.387],[-103.78,-1345.496]]]){const l=Math.hypot(b[0]-a[0],b[1]-a[1]);box((a[0]+b[0])/2,-.18,(a[1]+b[1])/2,2.20,.34,l,metal,Math.atan2(b[0]-a[0],b[1]-a[1]));}
