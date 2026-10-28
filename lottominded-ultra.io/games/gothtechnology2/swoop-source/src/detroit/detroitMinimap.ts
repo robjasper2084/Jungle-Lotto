@@ -1,19 +1,15 @@
 import {TacticalMap,type MapLine} from './tacticalMap.ts';
-import {CITY,riverEdge,pointOnCut,CUT_METRES} from './geography.ts';
+import {CITY,riverEdge} from './geography.ts';
 import {northUp} from './routeMap.ts';
 import {routeToCut} from './cutNavigation.ts';
-import {MACK_STUDIO} from './mackStudioSite.ts';
-import {pennyMap} from './pennyShopSite.ts';
-import {MILLIKEN_BERM} from './millikenTerrain.ts';
+import {DETROIT_MAP_PLACES} from './detroitMapPlaces.ts';
 export function detroitMinimap(pause:()=>void,focus:()=>void){
  const hud=new TacticalMap('Dequindre Cut',pause,focus),lines:MapLine[]=[];
  const river=[];for(let z=-1900;z<500;z+=40)river.push(northUp(riverEdge(z),z));river.push(northUp(-1800,500),northUp(-1800,-1900));
  lines.push({points:river,color:'#1c5261',width:0,fill:true});
  for(const b of CITY.buildings)lines.push({points:b.points.map(p=>northUp(p[0],p[1])),color:'#53675c',width:0,fill:true});
  for(const r of CITY.roads)lines.push({points:r.points.map(p=>northUp(p[0],p[1])),color:r.name==='Dequindre Cut Greenway'?'#8fac87':['path','footway','cycleway','pedestrian'].includes(r.kind)?'#788773':'#a8aba0',width:r.width});
- const cut=pointOnCut(0),mack=pointOnCut(CUT_METRES);
- const penny=pennyMap(0,0);
- hud.setMap(lines,[{point:northUp(cut.x,cut.z),text:'CUT ENTRANCE'},{point:northUp(MILLIKEN_BERM.x,MILLIKEN_BERM.z),text:'ZE MOUND'},{point:northUp(mack.x,mack.z),text:'MACK'},{point:northUp(MACK_STUDIO.x,MACK_STUDIO.z),text:'GOTHTECH STUDIO'},{point:northUp(penny.x,penny.z),text:'PENNY EXCHANGE / LOTTOMIND'}]);
+ hud.setMap(lines,DETROIT_MAP_PLACES);
  hud.setTrail(CITY.roads.filter(r=>r.name==='Dequindre Cut Greenway').map(r=>r.points.map(p=>northUp(p[0],p[1]))),'Dequindre Cut');
  let last={x:Infinity,z:Infinity};
  return{hud,update(x:number,z:number,heading:number,visible:boolean,players:{x:number;z:number;heading:number;label:string;color:string}[]=[]){

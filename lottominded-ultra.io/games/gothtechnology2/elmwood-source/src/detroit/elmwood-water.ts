@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {waterNoise} from '../../../ride-core/src/waterNoise.ts';
 import {mergeVertices} from 'three/addons/utils/BufferGeometryUtils.js';
 import {segmentDistance} from './elmwood-details.ts';
 
@@ -6,18 +7,6 @@ type WaterUniforms={waterTime:{value:number};waterDetail:{value:number};rain:{va
 type Feature={id:string;points:number[][];tags:Record<string,string>};
 type Pond={center:number[];ring:number[][]};
 type WaterBed={surfaceGround(x:number,north:number):number;features:Feature[]};
-let noise:T.DataTexture|undefined;
-
-/** Small, seamless original noise texture. Mipmaps keep distant highlights from sparkling. */
-function waterNoise(){
- if(noise)return noise;
- const size=128,data=new Uint8Array(size*size*4);
- const hash=(x:number,y:number,seed:number)=>{let h=Math.imul(x,374761393)^Math.imul(y,668265263)^seed;h=Math.imul(h^(h>>>13),1274126177);return ((h^(h>>>16))>>>0)/4294967295;};
- const value=(x:number,y:number,cells:number,seed:number)=>{const px=x*cells/size,py=y*cells/size,ix=Math.floor(px),iy=Math.floor(py),a=px-ix,b=py-iy,s=a*a*(3-2*a),t=b*b*(3-2*b);return T.MathUtils.lerp(T.MathUtils.lerp(hash(ix%cells,iy%cells,seed),hash((ix+1)%cells,iy%cells,seed),s),T.MathUtils.lerp(hash(ix%cells,(iy+1)%cells,seed),hash((ix+1)%cells,(iy+1)%cells,seed),s),t);};
- for(let y=0;y<size;y++)for(let x=0;x<size;x++){const i=(y*size+x)*4;data[i]=Math.round(value(x,y,8,19)*255);data[i+1]=Math.round(value(x,y,16,73)*255);data[i+2]=Math.round(value(x,y,32,137)*255);data[i+3]=255;}
- noise=new T.DataTexture(data,size,size,T.RGBAFormat);noise.wrapS=noise.wrapT=T.RepeatWrapping;noise.minFilter=T.LinearMipmapLinearFilter;noise.magFilter=T.LinearFilter;noise.generateMipmaps=true;noise.needsUpdate=true;noise.name='Elmwood original water micro-ripples';return noise;
-}
-
 const surface=/* glsl */`
 uniform sampler2D waterNoise;
 uniform float waterTime,waterDetail,waterRain,waterWind,waterKind;
@@ -41,7 +30,7 @@ float waterHeight(vec2 p,vec4 info){
 /** Water is dielectric, with the existing HDR/light/fog path and no extra scene capture. */
 export function makeElmwoodWater(source:T.MeshStandardMaterial,u:WaterUniforms){
  const creek=/creek/i.test(source.name),kind={value:creek?1:0},fountain={value:new T.Vector2()};
- const m=new T.MeshPhysicalMaterial({name:source.name,color:'#ffffff',side:source.side,roughness:.18,metalness:0,ior:1.333,envMapIntensity:.68,clearcoat:.20,clearcoatRoughness:.26});
+ const m=new T.MeshPhysicalMaterial({name:source.name,color:'#ffffff',side:source.side,roughness:.12,metalness:0,ior:1.333,envMapIntensity:1,clearcoat:0});
  m.userData.elmwoodWater={kind,fountain};
  m.onBeforeCompile=s=>{
   Object.assign(s.uniforms,{waterNoise:{value:waterNoise()},waterTime:u.waterTime,waterDetail:u.waterDetail,waterRain:u.rain,waterWind:u.wind,waterKind:kind,waterFountain:fountain,waterDeep:{value:new T.Color(creek?'#284b42':'#204848')},waterShallow:{value:new T.Color('#5d7566')}});
@@ -59,7 +48,7 @@ export function makeElmwoodWater(source:T.MeshStandardMaterial,u:WaterUniforms){
    float shoreFoam=(1.-smoothstep(.04,.65,waterShore))*smoothstep(.48,.78,waterPattern)*(.08+.05*waterKind);
    diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.64,.72,.70),shoreFoam);`);
   s.fragmentShader=s.fragmentShader.replace('#include <roughnessmap_fragment>',`#include <roughnessmap_fragment>
-   roughnessFactor=clamp(.19+.09*waterKind+.045*waterWind+.06*(waterPattern-.5)+waterRain*.05,.18,.42);`);
+    roughnessFactor=clamp(.10+.065*waterKind+.04*waterWind+.04*(waterPattern-.5)+waterRain*.05,.10,.30);`);
   s.fragmentShader=s.fragmentShader.replace('#include <normal_fragment_maps>',`#include <normal_fragment_maps>
    float waterH=waterHeight(waterWorld.xz,waterData);
    vec3 waterX=dFdx(waterWorld),waterY=dFdy(waterWorld),waterUp=vec3(0.,1.,0.);
@@ -73,7 +62,7 @@ export function makeElmwoodWater(source:T.MeshStandardMaterial,u:WaterUniforms){
     clearcoatNormal=normal;
    #endif`);
  };
- m.customProgramCacheKey=()=> 'elmwood-depth-flow-water-v5';return m;
+  m.customProgramCacheKey=()=> 'elmwood-depth-flow-water-v6';return m;
 }
 
 /** Subdivide only water triangles; retain every authored shoreline and original water level. */

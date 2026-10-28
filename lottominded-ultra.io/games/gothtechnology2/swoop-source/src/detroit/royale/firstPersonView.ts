@@ -28,9 +28,7 @@ export class FirstPersonView {
   const copies=new Map<T.Material,T.Material>();
   this.hero.root.traverse(o=>{if(!(o instanceof T.Mesh))return;o.castShadow=false;
    const copy=(source:T.Material)=>{let material=copies.get(source);if(!material){material=source.clone();
-    if(material instanceof T.MeshStandardMaterial){material.aoMapIntensity=.5;material.envMapIntensity=.9;
-     if(/garment|nylon|rubber|glove/i.test(material.name))material.color.multiplyScalar(1.22);
-    }copies.set(source,material);this.materials.add(material);}return material;};
+     copies.set(source,material);this.materials.add(material);}return material;};
    o.material=Array.isArray(o.material)?o.material.map(copy):copy(o.material);
   });
   this.root.name='First-person hands and weapon';this.root.add(this.hero.root,this.weapon.root,this.magazine);this.arms=new FpsArms(this.hero,this.root);this.root.visible=false;
@@ -61,9 +59,9 @@ export class FirstPersonView {
   // view-only rig and keep the held camera below the optical sight line.
   const opticRatio=Math.tan(T.MathUtils.degToRad((camera as T.PerspectiveCamera).fov/2))/Math.tan(T.MathUtils.degToRad(76/2));
   const angularScale=scoped?.72:1;
-  const wide=T.MathUtils.clamp((((camera as T.PerspectiveCamera).aspect??1)-.45)/.85,0,1),viewScale=(.64+.10*wide)*angularScale;
+   const wide=T.MathUtils.clamp((((camera as T.PerspectiveCamera).aspect??1)-.45)/.85,0,1),viewScale=(.80+.14*wide)*angularScale;
   const target=position.clone().addScaledVector(f,(.80+.01*m.aim-.11*blocked-m.recoilTravel-r.travel)*scale).addScaledVector(right,((1-m.aim)*.20*(.5+.5*wide)+m.run*.07+.035*r.lower+this.sway.x)*scale)
-   .addScaledVector(up,(-(1-m.aim)*.15-.12*r.lower-.26*equip.lower-.14*m.run-.18*blocked-.035*m.land+bob+this.sway.y-(scoped?.20:0))*scale);
+    .addScaledVector(up,(-(1-m.aim)*.08-.12*r.lower-.26*equip.lower-.14*m.run-.18*blocked-.035*m.land+bob+this.sway.y-(scoped?.20:0))*scale);
   const sight=healingUntil>tick?this.hero.arms[0].foot.getWorldPosition(new T.Vector3()).lerp(this.hero.arms[1].foot.getWorldPosition(new T.Vector3()),.5):this.weapon.sight();
   if(healingUntil>tick)target.addScaledVector(up,-.025*scale).addScaledVector(right,-.12*scale);
   const mag=this.weapon.socket(EQUIPMENT_SOCKETS.magazine_socket);

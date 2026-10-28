@@ -2,6 +2,7 @@ import test from 'node:test';import assert from 'node:assert/strict';import {rea
 import {initializeEngine} from '../src/engine/runtime.ts';import {ArenaTerrain} from '../src/royale/arena.ts';import {DowntownArena} from '../src/royale/downtownArena.ts';import {TagTerrain} from '../src/tag/fixture.ts';
 import {RoyaleMatch,neutral,PROTECTION} from '../src/royale/rules.ts';import {initialSpawnNodes,recoveryNode,spawnCameraSpace} from '../src/royale/spawnNodes.ts';
 import {loadHostFixture} from '../../love-tag-server/src/hostFixture.ts';import {fileURLToPath} from 'node:url';
+import {dequindreEntrance} from '../src/dequindreEntrance.ts';
 await initializeEngine(await readFile(new URL('../src/engine/breadflower.wasm',import.meta.url)));
 const terrain=await ArenaTerrain.create(),data=await loadHostFixture(process.env.ROYALE_FIXTURES??fileURLToPath(new URL('../../swoop-source/public/love-tag/',import.meta.url)),'swoop-detroit'),downtown=new DowntownArena(await TagTerrain.create(data.fixture,await data.physics()));
 const advance=(m:RoyaleMatch,n:number)=>{for(let i=0;i<n;i++)m.step();};
@@ -21,6 +22,24 @@ test('Chene starts and recovery sites leave room for the chase camera outside th
  for(const node of [...downtown.spawnNodes,...downtown.recoverySpawnNodes])assert(spawnCameraSpace(downtown.sourcePosition(node.position)),node.id+' is beneath the amphitheatre');
  const chene=downtown.spawnNodes.filter(n=>n.cluster==='chene');assert(chene.length>=3);
  for(const node of chene){const p=downtown.sourcePosition(node.position);assert(Math.hypot(p.x+115,p.z+1759)<120);}
+});
+test('all human riders start in separate Cut entrance bays across seeds and rounds',()=>{
+ for(const size of [6,10] as const)for(const humans of [1,size]){
+  const m=new RoyaleMatch(downtown,true,size,true,true);
+  // Interleave humans/bots to verify this does not depend on host seat order.
+  for(let i=0;i<size;i++)m.add('entry'+i,'Rider',i< size-humans);
+  for(const seed of [1,37]){
+   if(m.phase!=='lobby')m.phase='results';m.start('entrance'+seed,seed);
+   const people=m.actors.filter(a=>!a.bot);
+   for(const [i,a]of people.entries()){
+    const expected=dequindreEntrance(12+i*8),actual=downtown.sourcePosition(a.pose);
+    assert(Math.hypot(actual.x-expected.x,actual.z-expected.z)<.01);
+    assert(Math.abs(a.pose.headingY+expected.heading)<.001);
+    assert(downtown.clear(a.pose.x,a.pose.z,1,a.pose.y));
+   }
+   for(const a of m.actors)for(const b of m.actors)if(a!==b)assert(Math.hypot(a.pose.x-b.pose.x,a.pose.z-b.pose.z)>=7);
+  }m.dispose();
+ }
 });
 test('safe recovery excludes eliminated/occupied nodes, danger zones and outside-field nodes',()=>{
  const nodes=downtown.spawnNodes,dead=nodes[0].position,field={...downtown.zones[0],radius:downtown.fieldRadii[0]};

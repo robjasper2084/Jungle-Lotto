@@ -4,6 +4,7 @@ export interface BattleTerrain extends TerrainSampler {
  readonly training?:boolean;
  readonly spawns: {position:Vec3;headingY:number}[];
  readonly spawnNodes?: readonly import('./spawnNodes.ts').SpawnNode[];
+  readonly playerStartNodes?: readonly import('./spawnNodes.ts').SpawnNode[];
  readonly recoverySpawnNodes?: readonly import('./spawnNodes.ts').SpawnNode[];
  readonly zones: {x:number;z:number}[];
  readonly supplies?: Vec3[];

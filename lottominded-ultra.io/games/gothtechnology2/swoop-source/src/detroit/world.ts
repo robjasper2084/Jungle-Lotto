@@ -23,6 +23,7 @@ import {actorBlocksMountedSpace,RECOVERY_SPACE_SECONDS} from './recovery.ts';
 import {CITY,CUT_METRES,pointOnCut,nearestCut,roadAt,riverEdge,nearestRiverPoint,inCity} from './geography.ts';
 import RAPIER from '@dimforge/rapier3d-compat';
 import {GEO,profileLevel,cutWidth,nearestRamp} from './geo-profile.ts';
+import {dequindreEntrance} from '../../../ride-core/src/dequindreEntrance.ts';
 import {geospatialMeshes,buildingEnvelope} from './geo-geometry.ts';
 import {CUT_TRAFFIC,TRAFFIC_RUNOUT,trafficPoint} from './trafficRoute.ts';
 export {CUT_TRAFFIC,TRAFFIC_RUNOUT} from './trafficRoute.ts';
@@ -48,7 +49,7 @@ export function cutPoint(d:number,u=0){return pointOnCut(d,u);}
 export function cutCoords(x:number,z:number){return nearestCut(x,z);}
 const muralArrival=studioMap(MACK_STUDIO.width/2+25,0);
 export const SPOTS=[
- {name:'Atwater Street / Renaissance Center view',x:-72.5,z:-1180,heading:.075},
+ {name:'Atwater / Dequindre Cut entrance',...dequindreEntrance()},
  {name:'Gratiot / geographic origin',...cutPoint(GEO.bridges.find(b=>b.name==='Gratiot Avenue')!.at),heading:pointOnCut(GEO.bridges.find(b=>b.name==='Gratiot Avenue')!.at).heading},
  {name:'Lafayette ramp',...cutPoint(GEO.ramps[0].at-15),heading:pointOnCut(GEO.ramps[0].at-15).heading},
  {name:'Chestnut overpass',...cutPoint(1438-20),heading:pointOnCut(1418).heading},
@@ -87,6 +88,7 @@ export function locationAt(x:number,z:number){
   if(studioLot(x,z))return 'GothTech Studio / 2000 Mack';
   if(Math.hypot(x-MILLIKEN_BERM.x,z-MILLIKEN_BERM.z)<80)return 'Ze Mound / Milliken State Park';
   const c=cutCoords(x,z);
+  if(c.d>=0&&c.d<30&&Math.abs(c.u)<12)return 'Atwater / Dequindre Cut entrance';
   if(c.d>30&&Math.abs(c.u)<100)return [...CUT_STATIONS].reverse().find(s=>c.d>=s.at)?.name??'Dequindre Cut';
   const street=roadAt(x,z);if(street?.name&&(x>160||street.name==='Atwater Street'))return street.name;
   if(z>170)return 'Hart Plaza';
