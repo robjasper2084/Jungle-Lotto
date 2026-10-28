@@ -1,5 +1,7 @@
 import * as T from 'three';
 import {wardrobeSurface} from './wardrobeSurface.ts';
+import {referenceRiderSuit} from './referenceRiderSuit.ts';
+import {wardrobeBody} from './wardrobeBody.ts';
 export const WARDROBE_CHOICES=[
  {id:'DS_Ghoulies_Rider',label:'Ghoulies · Cyborg green'},
  {id:'DS_Detroit_Rider',label:'Detroit · Skyline stitch'},
@@ -26,6 +28,8 @@ function texture(url:string){let pending=maps.get(url);if(!pending){pending=new 
 /** Stable outfit IDs travel through the existing player/AI roster protocol. */
 export class RiderWardrobe{
  private materials:T.Material[]=[];private patches:T.Mesh[]=[];private geometry:T.BufferGeometry[]=[];private disposed=false;
+ private referenceDetails?:ReturnType<typeof referenceRiderSuit>;
+ private suitBody?:ReturnType<typeof wardrobeBody>;
  constructor(rider:T.Object3D,id:string){
   const theme=themes[id];if(!theme)return;
   rider.updateWorldMatrix(true,true);
@@ -33,6 +37,7 @@ export class RiderWardrobe{
   const headY=rider.worldToLocal(head.getWorldPosition(new T.Vector3())).y;
   let fitKey:T.BufferGeometry|undefined;
   rider.traverse(o=>{const mesh=o as T.Mesh;if(mesh.isMesh&&!Array.isArray(mesh.material)&&mesh.material.name==='Black rubber padding')fitKey=mesh.geometry;});
+  this.suitBody=wardrobeBody(rider);
   const copies=new Map<T.Material,T.Material>();let badge:T.MeshStandardMaterial|undefined;
   rider.traverse(o=>{const mesh=o as T.Mesh;if(!mesh.isMesh)return;
    const style=(source:T.Material)=>{
@@ -55,7 +60,10 @@ export class RiderWardrobe{
     const padding=material.name==='Black rubber padding',original=material.color.clone(),posed=new T.Vector3();
     for(let i=0;i<p.count;i++){
      const x=p.getX(i),y=p.getY(i),z=p.getZ(i);color.copy(base);
-     if(id==='DS_Ghoulies_Rider'&&x<0)color.set('#535b5d');
+     if(id==='DS_Ghoulies_Rider'){
+      if(x<0)color.set('#535b5d');
+      else if(Math.sin(x*190+y*137)*Math.cos(z*173-y*43)>.72)color.set('#172622');
+     }
      if(id==='DS_Neural_Rider')color.set(Math.abs(x)>.09?'#aabdc6':'#405b72');
      if(id==='DS_Vampire_Rider'){
       const noise=Math.sin(x*67+Math.sin(y*43))*Math.cos(z*71-y*19);
@@ -67,6 +75,7 @@ export class RiderWardrobe{
     g.setAttribute('color',new T.Float32BufferAttribute(colors,3));mesh.geometry=g;this.geometry.push(g);material.color.set('#ffffff');material.vertexColors=true;
    }
   });
+  this.referenceDetails=referenceRiderSuit(rider,id,fitKey);
   let templates=fitKey?fittedArtwork.get(fitKey):undefined;
   if(!templates){templates=[];
   // Fit artwork to the actual posed helmet, including the underlying head.
@@ -86,7 +95,7 @@ export class RiderWardrobe{
   browGeometry.computeVertexNormals();templates.push({name:'fitted helmet forehead artwork',bone:'Head',geometry:browGeometry});
   helmet.dispose();
   // A front chest print makes the selected outfit readable in front-facing play.
-  // Sample the real vest rather than hiding a flat badge behind its raised panels.
+  // Fit to the cleared suit surface after removing the old cargo harness.
   const torso=wardrobeSurface(rider,m=>/garments|padding|nylon|protective shell/.test(m.name),1.23,1.53);
   const chestGeometry=new T.PlaneGeometry(.18,.18,12,12),chestPositions=chestGeometry.attributes.position,chestIndices:number[]=[],chestWeights:number[]=[];
   for(let i=0;i<chestPositions.count;i++){
@@ -100,6 +109,7 @@ export class RiderWardrobe{
   }
   const print=new T.MeshStandardMaterial({name:id+' / suit and helmet artwork',transparent:true,opacity:0,alphaTest:.12,roughness:.82,metalness:0,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-4});this.materials.push(print);
   for(const {name,bone,geometry,boneNames} of templates){
+   if(id==='DS_Ghoulies_Rider'&&name==='fitted chest artwork')continue;
    const patch=boneNames?.length?new T.SkinnedMesh(geometry.clone(),print):new T.Mesh(geometry.clone(),print);patch.name=id+' '+name;rider.add(patch);rider.updateWorldMatrix(true,true);
    if(patch instanceof T.SkinnedMesh){patch.bind(new T.Skeleton(boneNames!.map(name=>rider.getObjectByName(name) as T.Bone)));patch.frustumCulled=false;}
    else (rider.getObjectByName(bone)??rider).attach(patch);
@@ -116,5 +126,5 @@ export class RiderWardrobe{
   rider.userData.wardrobe=id;
   if(typeof document!=='undefined')void texture(matchMedia("(pointer:coarse)").matches||new URLSearchParams(location.search).get("safe")==="1"?theme.mobile:theme.image).then(map=>{if(this.disposed)return;print.map=map;print.opacity=1;print.transparent=false;print.needsUpdate=true;for(const p of this.patches)p.visible=true;if(badge){badge.map=map;badge.needsUpdate=true;}rider.userData.wardrobeArtwork='ready';}).catch(()=>{rider.userData.wardrobeArtwork='unavailable';});
  }
- dispose(){this.disposed=true;for(const p of this.patches){p.removeFromParent();p.geometry.dispose();if(p instanceof T.SkinnedMesh)p.skeleton.dispose();}for(const g of this.geometry)g.dispose();for(const m of this.materials)m.dispose();this.materials=[];this.patches=[];}
+  dispose(){this.disposed=true;this.referenceDetails?.dispose();for(const p of this.patches){p.removeFromParent();p.geometry.dispose();if(p instanceof T.SkinnedMesh)p.skeleton.dispose();}for(const g of this.geometry)g.dispose();this.suitBody?.dispose();for(const m of this.materials)m.dispose();this.materials=[];this.patches=[];}
 }
