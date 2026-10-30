@@ -73,6 +73,29 @@ test('legacy dev middleware preserves raw game modules, SDK and assets with quer
   assert.equal((await previewResponse(middleware,'/assets/not-present.webp')).res.statusCode,404);
   assert.equal((await previewResponse(middleware,'/assets/%2e%2e%2f%2e%2e%2fpackage.json')).res.statusCode,403);
 });
+test('arcade dev middleware serves Swoop directory entries, Static Royale and compressed maps',async()=>{
+  const base='/Jungle-Lotto/lottominded-ultra.io/games/gothtechnology2/',middleware=previewMiddleware(base);
+  const files=[
+    ['swoop-detroit/','swoop-detroit/index.html','text/html'],
+    ['swoop-detroit/index.html','swoop-detroit/index.html','text/html'],
+    ['swoop-detroit/royale.html','swoop-detroit/royale.html','text/html'],
+    ['swoop-detroit/love-tag/swoop-detroit.browser.json.gz','swoop-detroit/love-tag/swoop-detroit.browser.json.gz','application/gzip'],
+  ];
+  for(const prefix of [base,'/'])for(const [route,source,type] of files){
+    const result=await previewResponse(middleware,prefix+'arcade/'+route+'?regression=1');
+    assert.equal(result.passedThrough,false,route);
+    assert.equal(result.res.statusCode,200,route);
+    assert.equal(result.res.headers.get('content-type'),type);
+    assert.equal(result.res.headers.has('content-encoding'),false,'Compressed maps are decoded by the game, not HTTP.');
+    assert.deepEqual(result.body,await readFile(new URL('../../store/public/arcade/'+source,import.meta.url)));
+  }
+});
+test('arcade dev middleware rejects traversal and invalid paths',async()=>{
+  const middleware=previewMiddleware('/Jungle-Lotto/lottominded-ultra.io/games/gothtechnology2/');
+  assert.equal((await previewResponse(middleware,'/arcade/%2e%2e%2fpackage.json')).res.statusCode,403);
+  assert.equal((await previewResponse(middleware,'/arcade/%ZZ/index.html')).res.statusCode,400);
+  assert.equal((await previewResponse(middleware,'/arcade/not-a-game/')).res.statusCode,404);
+});
 test('money uses integer minor units across zero, two, and three-decimal currencies',()=>{
   assert.deepEqual(fromDecimal('79.10','USD'),{amount:7910,currency:'USD'});
   assert.deepEqual(fromDecimal('1800','JPY'),{amount:1800,currency:'JPY'});
