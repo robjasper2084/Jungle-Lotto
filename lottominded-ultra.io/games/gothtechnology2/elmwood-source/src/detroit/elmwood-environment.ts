@@ -117,7 +117,9 @@ export function makeElmwoodEnvironment(scene:T.Scene,world:T.Group,foundation:T.
 
 
 
- const sky=new NaturalSky();scene.add(sky);
+ // Elmwood's brighter daylight exposure needs less sky radiance than the
+ // downtown grade; otherwise ACES compresses the blue atmosphere to white.
+ const sky=new NaturalSky({radianceScale:.12});scene.add(sky);
 
  // Existing broad horizontal stripes came from stretched stone UVs. Replace that material with fine mineral grain.
 
@@ -147,6 +149,15 @@ export function makeElmwoodEnvironment(scene:T.Scene,world:T.Group,foundation:T.
 
 
 
+ // Small warm gate lanterns feed the existing fixed four-light budget.
+ // Fixtures are decorative; the mapped entrance and collision stay unchanged.
+ const lanternMaterial=new T.MeshStandardMaterial({color:'#fff0d1',emissive:'#ffd29a',emissiveIntensity:0,roughness:.45});
+ const gateLights:T.PointLight[]=[];
+ for(const side of [-1,1]){const px=side*(ELMWOOD_GATE.opening/2+.4);
+  box(gate,iron,.28,.42,.22,px,2.15,.48);
+  box(gate,lanternMaterial,.20,.30,.025,px,2.15,.60);
+  const light=new T.PointLight('#ffd6a1',0,12,2);light.position.set(px,2.15,.75);light.castShadow=false;gate.add(light);gateLights.push(light);
+ }
  for(const side of [-1,1]){const px=side*(ELMWOOD_GATE.opening/2+.4);box(gate,limestone,.8,2.8,.85,px,1.4);box(gate,limestone,1,.18,1,px,2.86);mesh(gate,new T.ConeGeometry(.35,.38,4),limestone,px,3.14).rotation.y=Math.PI/4;
 
 
@@ -370,6 +381,9 @@ export function makeElmwoodEnvironment(scene:T.Scene,world:T.Group,foundation:T.
 
 
 
+  const nightAmount=1-T.MathUtils.smoothstep(sunDirection.y/Math.max(.0001,sunDirection.length()),-.02,.16);
+  lanternMaterial.emissiveIntensity=nightAmount*1.15;
+  for(const light of gateLights)light.intensity=nightAmount*24;
   sky.visible=world.visible;sky.update(dt,sunDirection,weather?.cloud.value??.16,weather?.rain.value??0,(weather?.waterDetail?.value??1)<.5,weather?.airReduced?.value??false,paused,scene.fog?.color);
 
 

@@ -6,7 +6,7 @@ import type {BattleTerrain} from './battleTerrain.ts';
 export const botWheelRecovery=()=>({returning:false,replan:0,path:[] as Vec3[],approach:undefined as Vec3|undefined,stayMountedUntil:0});
 /** Host-owned intent only: use the ordinary foot collision, stagger, health and
  * pickup/remount checks. Never reset/teleport the actor or shorten its animation. */
-export function recoverBotWheel(a:Actor,c:Command,state:ReturnType<typeof botWheelRecovery>,terrain:BattleTerrain,tick:number){
+export function recoverBotWheel(a:Actor,c:Command,state:ReturnType<typeof botWheelRecovery>,terrain:BattleTerrain,tick:number,route:(from:Vec3,to:Vec3)=>Vec3[]|undefined=(a,b)=>terrain.route(a,b)){
  const p=a.pose;
  if(p.footMode&&p.footStagger>0&&!state.returning){state.returning=true;state.replan=0;state.path=[];state.approach=undefined;}
  if(state.returning&&!p.footMode){state.returning=false;state.path=[];state.approach=undefined;state.stayMountedUntil=tick+240;}
@@ -47,7 +47,7 @@ export function recoverBotWheel(a:Actor,c:Command,state:ReturnType<typeof botWhe
  let next:Vec3|undefined;
  if(clear(p,destination))next=destination;
  else{
-  if(tick>=state.replan||approachChanged){state.path=terrain.route(p,destination);state.replan=tick+30;}
+  if(tick>=state.replan||approachChanged){const nextRoute=route(p,destination);if(nextRoute)state.path=nextRoute;state.replan=tick+30;}
   while(state.path.length&&Math.hypot(state.path[0].x-p.x,state.path[0].z-p.z)<.65)state.path.shift();
   while(state.path.length>1&&clear(p,state.path[1]))state.path.shift();
   next=state.path[0];

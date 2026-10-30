@@ -52,7 +52,7 @@ test('mounted bots can build reverse torque away from downtown walls on a downhi
 test('real-map route warming and a cold route cache preserve the compiled host snapshot',async()=>{
  const a=new RoyaleMatch(terrain,true,6);a.add('human','Human');a.add('bot','Bot',true);a.start('restore-bank',2);
  const bot=a.actors[1];bot.controller.reset({position:bank,headingY:0});bot.pose={...bot.controller.poseValue};
- const before=a.captureEngineState();let yielded=0;await a.prepareNavigation(async()=>{yielded++;});assert.equal(yielded,1);assert.deepEqual(a.captureEngineState(),before);
+ const before=a.captureEngineState();let yielded=0;await a.prepareNavigation(async()=>{yielded++;});assert(yielded>=1&&yielded<=9,'warm-up must yield in bounded slices');const after=a.captureEngineState();assert.deepEqual({...after,navigation:undefined},{...before,navigation:undefined},'warming navigation must not advance physics, health or controls');
  for(let i=0;i<120;i++)a.step();
  const cold=new DowntownArena(terrain.terrain),b=new RoyaleMatch(cold,true,6);b.restoreEngineState(a.captureEngineState());
  let profile:ReturnType<typeof takeSimulationProfile>={};
@@ -60,4 +60,12 @@ test('real-map route warming and a cold route cache preserve the compiled host s
  assert((profile.movement?.calls??0)>0,'opt-in timings are available without changing host commands/state');
  assert.deepEqual(b.captureEngineState(),a.captureEngineState());a.dispose();b.dispose();
 });
+test('simulation warm-up cannot spend a live life, round, input or replay tick',async()=>{
+ const match=new RoyaleMatch(terrain,true,6,true,true);match.add('human','Human');match.add('bot','Bot',true);match.start('warm-isolation',2);
+ await match.prepareNavigation();const before=match.captureEngineState(),snapshot=match.snapshot('human');let yields=0;
+ await match.prepareSimulation(async()=>{yields++;});
+ assert.equal(yields,13);assert.deepEqual(match.captureEngineState(),before);assert.deepEqual(match.snapshot('human'),snapshot);assert.equal(match.killcam('human'),undefined);
+ match.step();const active=match.captureEngineState();await match.prepareSimulation(async()=>{throw Error('must not warm an active tick');});assert.deepEqual(match.captureEngineState(),active);match.dispose();
+});
+
 test.after(()=>terrain.terrain.dispose());

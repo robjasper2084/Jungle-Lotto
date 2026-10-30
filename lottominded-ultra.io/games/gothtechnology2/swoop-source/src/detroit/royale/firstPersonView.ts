@@ -57,14 +57,17 @@ export class FirstPersonView {
   if(burntwax)this.sway.set(sway.x,sway.y);else this.sway.lerp(this.swayScratch.set(lagX,lagY),1-Math.exp(-14*Math.min(.1,dt)));
   if(dt>0)(this.previousForward??=new T.Vector3()).copy(f);
   if(reduced)this.sway.set(0,0);
-  // Smaller presentation scale clears the lower corners without changing hitboxes or muzzle authority.
+  // Keep the complete selected-rider rig at a readable size, including mascot
+  // sleeves/gloves. Weapon and hands share this presentation scale so sockets
+  // stay attached; the world actor and authoritative muzzle are unchanged.
   // Magnify the world, not the hands. Counter the scope's projection in this
   // view-only rig and keep the held camera below the optical sight line.
   const opticRatio=Math.tan(T.MathUtils.degToRad((camera as T.PerspectiveCamera).fov/2))/Math.tan(T.MathUtils.degToRad(76/2));
-  const angularScale=scoped?.72:1;
-   const wide=T.MathUtils.clamp((((camera as T.PerspectiveCamera).aspect??1)-.45)/.85,0,1),viewScale=(.80+.14*wide)*angularScale;
-  const target=position.clone().addScaledVector(f,(.80+.01*m.aim-.11*blocked-m.recoilTravel-r.travel)*scale).addScaledVector(right,((1-m.aim)*.20*(.5+.5*wide)+m.run*.07+.035*r.lower+this.sway.x)*scale)
-    .addScaledVector(up,(-(1-m.aim)*.08-.12*r.lower-.26*equip.lower-.14*m.run-.18*blocked-.035*m.land+bob+this.sway.y-(scoped?.20:0))*scale);
+  const wide=T.MathUtils.clamp((((camera as T.PerspectiveCamera).aspect??1)-.45)/.85,0,1),viewScale=1.0+.10*wide;
+  // Tall/wide camera receivers need more working distance to keep both grips in view.
+  const viewDistance=kind==='heart'?.90:kind==='bass'?.86:.76;
+  const target=position.clone().addScaledVector(f,(viewDistance+.01*m.aim-.11*blocked-m.recoilTravel-r.travel)*scale).addScaledVector(right,((1-m.aim)*.20*(.5+.5*wide)+m.run*.07+.035*r.lower+this.sway.x)*scale)
+    .addScaledVector(up,(-(1-m.aim)*.06-.12*r.lower-.26*equip.lower-.14*m.run-.18*blocked-.035*m.land+bob+this.sway.y-(scoped?.035:0))*scale);
   const sight=healingUntil>tick?this.hero.arms[0].foot.getWorldPosition(new T.Vector3()).lerp(this.hero.arms[1].foot.getWorldPosition(new T.Vector3()),.5):this.weapon.sight();
   if(healingUntil>tick)target.addScaledVector(up,-.025*scale).addScaledVector(right,-.12*scale);
   const mag=this.weapon.socket(EQUIPMENT_SOCKETS.magazine_socket);
@@ -76,7 +79,7 @@ export class FirstPersonView {
   this.root.scale.setScalar(viewScale);this.root.position.copy(target).sub(sight.clone().multiplyScalar(viewScale).applyQuaternion(this.root.quaternion));this.magazine.position.copy(mag).addScaledVector(up,-r.magazine*.22*scale).addScaledVector(right,-r.magazine*.065*scale);
   this.magazine.position.copy(mag).add(new T.Vector3(-r.capture.magazine[0],r.capture.magazine[1],r.capture.magazine[2]).multiplyScalar(scale).applyQuaternion(this.weapon.root.quaternion));
   this.magazine.quaternion.copy(this.weapon.root.quaternion);this.magazine.scale.setScalar(scale);this.magazine.visible=r.active&&r.magazine>.02;
-  this.root.updateMatrixWorld(true);this.arms.update(camera,scale*angularScale,viewScale,scoped?.20*scale:0);
+  this.root.updateMatrixWorld(true);this.arms.update(camera,scale,viewScale,scoped?.035*scale:0);
   const ready=weaponReadyAmount(state,tick);
   const healing=healingUntil>tick;
   if(!healing)this.root.position.addScaledVector(up,-.72*(1-ready)*scale);

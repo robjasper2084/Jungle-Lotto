@@ -96,6 +96,7 @@ export class AuthoredArena implements TerrainSampler{
  raycast(o:Vec3,d:Vec3,max:number){return this.terrain.raycast(o,d,max);}
  line(a:Vec3,b:Vec3,radius=.1){return this.sweep(a,{x:b.x-a.x,y:b.y-a.y,z:b.z-a.z},radius)===null;}
  travelClear(from:Vec3,to:Vec3,radius=.32){return groundTravelClear(this,from,to,radius);}
+ createRoutePlanner(){return this.groundRoutes.createPlanner();}
  route(from:Vec3,to:Vec3){return this.groundRoutes.path(from,to);}
  /** Coordinates for the existing map-scene root, not a duplicated map. */
  sourcePosition(p:Vec3){const t=this.terrain.fixture.transform;return {x:t.tx+t.sx*p.x,y:p.y+t.ty,z:p.z+t.tz};}

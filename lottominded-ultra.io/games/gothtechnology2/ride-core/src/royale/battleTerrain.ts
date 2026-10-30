@@ -15,6 +15,7 @@ export interface BattleTerrain extends TerrainSampler {
  clear(x:number,z:number,radius?:number,referenceY?:number):boolean;
  sweep(origin:Vec3,delta:Vec3,radius?:number):number|null;
  line(a:Vec3,b:Vec3,radius?:number):boolean;
+ createRoutePlanner?():import('./groundRoute.ts').RoutePlanner;
  route(from:Vec3,to:Vec3):Vec3[];
  travelClear?(from:Vec3,to:Vec3,radius?:number):boolean;
 }
