@@ -26,7 +26,7 @@ export function makeElmwoodWeather(scene:T.Scene,camera:T.Camera,sun:T.Direction
  let mode:ElmwoodWeather='clear';const state={...WEATHER.clear} as Record<keyof typeof WEATHER.clear,number>;
  const count=900,a=new Float32Array(count*6),geo=new T.BufferGeometry();geo.setAttribute('position',new T.BufferAttribute(a,3));
  const rain=new T.LineSegments(geo,new T.LineBasicMaterial({color:'#bbd2d9',transparent:true,opacity:.28,depthWrite:false}));rain.frustumCulled=false;rain.name='Camera-local rain';scene.add(rain);
- const fog=new T.FogExp2('#bcc9c9',WEATHER.clear.fog),materials=new Set<T.MeshStandardMaterial>();
+ const fog=new T.FogExp2('#93b0c1',WEATHER.clear.fog),materials=new Set<T.MeshStandardMaterial>();
  const scratch=new T.Color(),direction=new T.Vector3();let elapsed=0,wetness=0;
  function attach(m:T.Material){
   if(!(m instanceof T.MeshStandardMaterial)||materials.has(m)||/water|leaf|glass/i.test(m.name))return;
@@ -52,7 +52,9 @@ export function makeElmwoodWeather(scene:T.Scene,camera:T.Camera,sun:T.Direction
   sun.intensity=Math.max(0,solar.y)*2.8*state.sun+day*gold*.55*state.sun;sun.color.set('#fff4df').lerp(scratch.set('#ffa267'),gold*.77);
   hemi.intensity=(.18+day*state.ambient*1.05);hemi.color.set('#c9d4df').lerp(scratch.set('#92bdd5'),gold*.65);hemi.groundColor.set('#5d6559');
   renderer.toneMappingExposure=.70+day*.23;scene.environmentIntensity=.06+day*(.25-state.cloud*.10);
-  fog.color.set('#b6c6cd').lerp(scratch.set('#4d697b'),gold*.55).lerp(scratch.set('#222b3a'),1-day);fog.density=state.fog;
+  // A blue-grey clear-air horizon retains separation from white cloud edges.
+  // Overcast weather still softens the horizon, without lifting all daylight.
+  fog.color.set('#93b0c1').lerp(scratch.set('#acb9c0'),state.cloud).lerp(scratch.set('#c4a17c'),gold*.70).lerp(scratch.set('#222b3a'),1-day);fog.density=state.fog;
   scene.fog=visible?fog:null;rain.visible=visible&&state.rain>.025;
   if(rain.visible&&!paused){
    const x=camera.position.x,y=camera.position.y,z=camera.position.z;camera.getWorldDirection(direction);

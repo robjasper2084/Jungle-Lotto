@@ -158,7 +158,7 @@ const renderer=new T.WebGLRenderer({canvas,antialias:startupAntialias()});render
 const atmosphereSky=new RouteSky();
 // Restrained Royale sky grade.
 atmosphereSky.material.fragmentShader=atmosphereSky.material.fragmentShader.replace('gl_FragColor = vec4( texColor, 1.0 );','texColor=mix(vec3(dot(texColor,vec3(.2126,.7152,.0722))),texColor,.74); gl_FragColor = vec4( texColor, 1.0 );');
-scene.add(atmosphereSky);const sky=new T.HemisphereLight('#c2d9e6','#5b6156',.94);scene.add(sky);const sun=new T.DirectionalLight('#fff0dc',1.8);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);Object.assign(sun.shadow.camera,{left:-32,right:32,top:36,bottom:-30,near:.1,far:100});sun.shadow.normalBias=.035;sun.shadow.bias=-.00015;scene.add(sun,sun.target);followStableSun(sun,{x:0,y:0,z:0},ROYALE_SUN);
+scene.add(atmosphereSky);const sky=new T.HemisphereLight('#a8bdcd','#5b6156',.86);scene.add(sky);const sun=new T.DirectionalLight('#ffcf93',1.65);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);Object.assign(sun.shadow.camera,{left:-32,right:32,top:36,bottom:-30,near:.1,far:100});sun.shadow.normalBias=.035;sun.shadow.bias=-.00015;scene.add(sun,sun.target);followStableSun(sun,{x:0,y:0,z:0},ROYALE_SUN);
 const graphics=createGraphicsQuality(renderer,scene,canvas);
 const fill=new T.DirectionalLight('#c7dceb',.30);fill.position.set(-12,8,-13);scene.add(fill,fill.target);
 graphics.mount(el('graphics-settings'));
@@ -478,7 +478,7 @@ function draw(now:number,xrFrame?:XRFrame){
  firstPerson?.hide();
  const delta=equipmentTime?Math.min(.1,(now-equipmentTime)/1000):0;equipmentTime=now;
  const motionDelta=paused&&!session?.room?0:delta,reducedMotion=reducedEquipmentMotion.matches||document.documentElement.dataset.reducedMotion==='true'||query.has('reducedMotion');
- atmosphereSky.update(motionDelta,ROYALE_SUN,.42,0,graphics.current.shadows===0,reducedMotion,paused&&!session?.room,scene.fog?.color);if(telemetry)canvas.dataset.atmosphere=JSON.stringify(atmosphereSky.status);
+ atmosphereSky.update(motionDelta,ROYALE_SUN,.18,0,graphics.current.shadows===0,reducedMotion,paused&&!session?.room,scene.fog?.color);if(telemetry)canvas.dataset.atmosphere=JSON.stringify(atmosphereSky.status);
  const replayFrame=deathReplay.sample(now);const replaying=!!replayFrame;const s=replayFrame?.state??session?.state;el('replay-status').hidden=!replaying;el('replay-status').querySelector('span')!.textContent=deathReplay.kind==='killer'?'Killer replay · attacker perspective':'Last-view replay · received positions only';el('replay-status').setAttribute('aria-label',deathReplay.kind==='killer'?'Killer replay':'Last-view replay');if(!s){savedGhost.suspend();matchFeedback.hide();tacticalReadout.hide();for(const a of actors.values()){a.sparks.reset();a.nameplate.root.visible=a.view.root.visible=a.weapon.visible=a.shield.visible=false;}companions?.dispose();jazzVisit?.stop();heartShots.reset();for(const m of items.values())m.root.visible=false;el('hud').hidden=el('reticle').hidden=el('scope-mask').hidden=true;return;}const rendered=new Set<string>();
  if(!replaying&&practiceRange?.update(s,session.me,now)){matchFeedback.hit(now,'range');royaleAudio.rangeHit();}
  radarMap?.update(s,now,!combatBlock&&!dialog.open&&!!s.self?.alive);

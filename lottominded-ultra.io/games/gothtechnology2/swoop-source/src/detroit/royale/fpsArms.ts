@@ -10,7 +10,9 @@ export class FpsArms {
  private limbs:{forearm:T.Object3D;hand:T.Object3D;scale:T.Vector3;handScale:T.Vector3;length:number}[]=[];
   constructor(private hero:Hero,private root:T.Group){
    const full=new Map<T.Mesh,T.BufferGeometry>();hero.rider.traverse(o=>{if(o instanceof T.Mesh)full.set(o,o.geometry);});
-  hero.visibility.setFirstPerson(true);
+  // Choose the same mode used by FirstPersonView before installing fitted
+  // sleeve masks; switching modes later would replace these geometries.
+  hero.visibility.setFirstPerson(true,true);
   for(const arm of hero.arms){const forearm=arm.knee,hand=arm.foot;
     this.anatomy.push(calibrateLimb(arm,new T.Vector3(0,0,1)));
    this.limbs.push({forearm,hand,scale:forearm.scale.clone(),handScale:hand.scale.clone(),length:hand.position.length()});

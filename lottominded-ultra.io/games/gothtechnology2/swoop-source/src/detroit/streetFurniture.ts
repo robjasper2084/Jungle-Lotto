@@ -7,9 +7,10 @@ import {GLTFLoader} from './compressedGLTFLoader.ts';
 import {heightAt} from './world.ts';
 import {streetFurnitureSites,type StreetAsset} from './streetFurnitureLayout.ts';
 
-export async function buildStreetFurniture(scene:T.Scene,world:SceneryWorld,groupAt:(x:number,z:number)=>T.Group){
- const names:StreetAsset[]=['street-lamp','camera-pole','hydrant','bench','waste-bin','bike-rack','drain-grate','utility-cover'];
- const slice=new WorkSlice(),loader=new GLTFLoader(),assets=await loadAssetQueue(names,assetConcurrency(),n=>loader.loadAsync('/exports/street-furniture/'+n+'.glb'));
+const names:StreetAsset[]=['street-lamp','camera-pole','hydrant','bench','waste-bin','bike-rack','drain-grate','utility-cover'];
+export function preloadStreetFurniture(){const loader=new GLTFLoader();return loadAssetQueue(names,assetConcurrency(),n=>loader.loadAsync('/exports/street-furniture/'+n+'.glb'));}
+export async function buildStreetFurniture(scene:T.Scene,world:SceneryWorld,groupAt:(x:number,z:number)=>T.Group,prepared?:Awaited<ReturnType<typeof preloadStreetFurniture>>){
+ const slice=new WorkSlice(),assets=prepared??await preloadStreetFurniture();
  const allowed=(x:number,z:number)=>world.chunks.some(c=>Math.abs(c.x-x)<=50&&Math.abs(c.z-z)<=50);
  const sites=streetFurnitureSites(allowed),lenses=new Set<T.MeshStandardMaterial>();
  world.step(); // The new draped sidewalks must be queryable before grounding assets.
@@ -30,10 +31,10 @@ export async function buildStreetFurniture(scene:T.Scene,world:SceneryWorld,grou
   if(footprint)world.addBox({x:s.x,y:y+footprint.hy,z:s.z,...footprint,yaw:s.heading,kind:s.asset});
  }
  const lamps=sites.filter(s=>s.asset==='street-lamp');
- const pool=Array.from({length:2},()=>{const light=new T.SpotLight('#fff0d2',0,25,.65,.75,2);light.castShadow=false;scene.add(light,light.target);return light;});
+ const pool=Array.from({length:2},()=>{const light=new T.SpotLight('#ffe0b8',0,25,.65,.85,2);light.castShadow=false;scene.add(light,light.target);return light;});
  let dusk=false,lastX=Infinity,lastZ=Infinity;
  return {counts,count:lamps.length,sites:sites.length,
-  setDusk(value:boolean){dusk=value;lastX=Infinity;for(const m of lenses)m.emissiveIntensity=value?1.4:0;if(!value)pool.forEach(l=>l.intensity=0);},
+  setDusk(value:boolean){dusk=value;lastX=Infinity;for(const m of lenses)m.emissiveIntensity=value?1.1:0;if(!value)pool.forEach(l=>l.intensity=0);},
   update(x:number,z:number){
    if(!dusk||Math.hypot(x-lastX,z-lastZ)<2)return;lastX=x;lastZ=z;
    const nearest=lamps.map(s=>({s,d:Math.hypot(s.x-x,s.z-z)})).sort((a,b)=>a.d-b.d).slice(0,pool.length);
