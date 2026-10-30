@@ -1,13 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import {gunzipSync} from 'node:zlib';
 import {FOOD_TRUCK_SITES,FOOD_CART_SITES,foodTruckSolids,truckFootprint,cartFootprint,VENDORS,atwaterCurb,LEGACY_TRUCK_SITES} from './foodTruckSites.ts';
 import {nearestCut} from './geography.ts';
 import {cutWidth} from './geo-profile.ts';
 import {roadwayClearance} from './roadsidePlacement.ts';
 import {dryStreetSite} from './dryStreetSite.ts';
 import {TagTerrain} from '../../../ride-core/src/tag/fixture.ts';
-const fixture=JSON.parse(fs.readFileSync(new URL('../../public/love-tag/swoop-detroit.json',import.meta.url),'utf8'));
+const fixture=JSON.parse(gunzipSync(fs.readFileSync(new URL('../../public/love-tag/swoop-detroit.json.gz',import.meta.url))).toString('utf8'));
 test('five additional trucks and RiverWalk carts stay on dry land and clear travel paths',()=>{
  assert.equal(FOOD_TRUCK_SITES.length,9);assert.equal(FOOD_TRUCK_SITES.filter(p=>p.vendor!=='sauce-pitt').length,5);assert.equal(FOOD_CART_SITES.filter(p=>p.name.startsWith('RiverWalk')).length,5);assert.equal(FOOD_CART_SITES.filter(p=>p.name.startsWith('Dequindre')).length,4);assert(FOOD_CART_SITES.filter(p=>p.name.startsWith('Atwater')).length>=3);assert.equal(FOOD_CART_SITES.filter(p=>p.name.startsWith('GothTech')).length,1);
  for(const site of FOOD_TRUCK_SITES){for(const p of truckFootprint(site))assert(dryStreetSite(p.x,p.z,.2));if(site.curbside){const curb=atwaterCurb(site)!;assert(Math.abs(curb.road.width/2-curb.distance-1.38-.30)<.02,'truck parks 30 cm from the Atwater curb');assert(curb.distance-1.38>=1,'centre lane stays open');}else for(const p of truckFootprint(site))assert(roadwayClearance(p)>3.2);}

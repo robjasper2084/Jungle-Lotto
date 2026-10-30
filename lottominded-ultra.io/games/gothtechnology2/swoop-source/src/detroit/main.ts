@@ -167,9 +167,9 @@ if(elmwood){
   scene.environment=pm.fromEquirectangular(hdr).texture;scene.environmentIntensity=.55;hdr.dispose();
 }else{const hdr=await new HDRLoader().loadAsync(new URL('../../art/nvidia/detroit-skylight.hdr',import.meta.url).href);scene.environment=pm.fromEquirectangular(hdr).texture;scene.environmentIntensity=.36;hdr.dispose();canvas.dataset.lighting='NVIDIA OptiX baked skylight';}
 }catch(error){console.warn('Skylight unavailable; using scene lights',error);canvas.dataset.lighting='Scene lights';}finally{pm.dispose();}
-const hemi=new T.HemisphereLight('#d3e9f6','#667065',elmwood?.95:.86),sun=new T.DirectionalLight('#fff0d7',elmwood?2.5:1.95);
+const hemi=new T.HemisphereLight('#d3e9f6','#66727d',elmwood?.95:1.02),sun=new T.DirectionalLight('#fff0dc',elmwood?2.5:1.95);
 sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);Object.assign(sun.shadow.camera,{left:-32,right:32,top:36,bottom:-30,near:.1,far:100});sun.shadow.normalBias=.035;sun.shadow.bias=-.00015;scene.add(hemi,sun,sun.target);
-const fill=new T.DirectionalLight('#c1d7ed',elmwood?.22:.26);scene.add(fill,fill.target);if(elmwood)scene.environmentIntensity=.4;
+const fill=new T.DirectionalLight('#c1d7ed',elmwood?.22:.34);scene.add(fill,fill.target);if(elmwood)scene.environmentIntensity=.4;
 const mapWorld=elmwood?new ElmwoodWorld():new DetroitWorld(),world=new GeoTerrain(mapWorld);if(!elmwood)mapWorld.randomizePeople();
 const cherryGround=createGroundSample();let nature:NatureWorld,natureAudio:NatureAudio;
 
@@ -388,7 +388,7 @@ function pause(){if(lottoShop?.appActive||split?.simulation.rules.done||!running
 function setCamera(m:string,user=false){if(user&&m!==cameraMode)practice?.action('camera');if(m==='first'&&cameraMode!==m){firstYaw=0;firstPitch=RIDER_EYE_PITCH;}cameraMode=m;$<HTMLSelectElement>('camera').value=m;canvas.focus();}
 function recenterCamera(){if(vr.active)return;clearCameraTouches();orbitYaw=0;orbitHeight=2.2;orbitDistance=5;follow.distance=4.6;firstYaw=0;firstPitch=RIDER_EYE_PITCH;follow.reset(current);setCamera('chase');}
 function cycleCamera(){const modes=['chase','first','front','side','orbit'];setCamera(modes[(modes.indexOf(cameraMode)+1)%modes.length],true);}
-function toggleLight(){night=!night;sky.setDusk(night);if(scenery&&'lighting' in scenery)scenery.lighting.setDusk(night);scene.background=new T.Color(night?DUSK_HAZE:DAY_HAZE);scene.fog=new T.Fog(night?DUSK_HAZE:DAY_HAZE,night?65:elmwood&&compactElmwood?65:130,elmwood&&compactElmwood?165:night?250:370);sun.intensity=night?1.55:elmwood?2.5:1.95;sun.color.set(night?'#ffd4a1':'#fff0d7');hemi.color.set(night?'#92bdd5':'#d3e9f6');hemi.groundColor.set(night?'#4b5553':'#667065');hemi.intensity=night?.80:elmwood?.95:.86;fill.color.set(night?'#86cddc':'#c1d7ed');fill.intensity=night?.30:elmwood?.22:.26;scene.environmentIntensity=night?.36:elmwood?.4:.36;graphics.apply();$('light').textContent=night?'Day':'Dusk';}
+function toggleLight(){night=!night;sky.setDusk(night);if(scenery&&'lighting' in scenery)scenery.lighting.setDusk(night);scene.background=new T.Color(night?DUSK_HAZE:DAY_HAZE);scene.fog=new T.Fog(night?DUSK_HAZE:DAY_HAZE,night?65:elmwood&&compactElmwood?65:130,elmwood&&compactElmwood?165:night?250:370);sun.intensity=night?1.55:elmwood?2.5:1.95;sun.color.set(night?'#ffd4a1':'#fff0dc');hemi.color.set(night?'#92bdd5':'#d3e9f6');hemi.groundColor.set(night?'#4b5553':'#66727d');hemi.intensity=night?.80:elmwood?.95:1.02;fill.color.set(night?'#86cddc':'#c1d7ed');fill.intensity=night?.30:elmwood?.22:.34;scene.environmentIntensity=night?.36:elmwood?.4:.36;graphics.apply();$('light').textContent=night?'Day':'Dusk';}
 function toggleAudio(){if(!muted&&rideAudio.state.context==='suspended'){unlockRideAudio();return;}muted=!muted;if(muted)commandBark.stop();try{localStorage.setItem('digital-static-ride-sound',muted?'off':'on');}catch{}unlockRideAudio();}
 $('spawn').replaceChildren();
 for(const [i,s]of SPOTS.entries()){

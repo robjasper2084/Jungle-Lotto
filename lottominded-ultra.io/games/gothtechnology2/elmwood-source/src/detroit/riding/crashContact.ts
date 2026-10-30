@@ -26,10 +26,12 @@ export class CrashContact {
       this.probes.push({mesh,indices:[...new Set([...groups.values()].flatMap(g=>g.indices))]});
     });
   }
-  settle(root:T.Object3D,floor:number,terrain?:TerrainSampler,margin=.025){
-    root.updateWorldMatrix(true,true);
+  settle(root:T.Object3D,floor:number,terrain?:TerrainSampler,margin=.025,contact=0){
+    // SkinnedMesh refreshes its attached bind inverse in updateMatrixWorld.
+    // updateWorldMatrix alone leaves probes in the previous root transform.
+    root.updateWorldMatrix(true,false);root.updateMatrixWorld(true);
     const groundCache=new Map<string,ReturnType<typeof createGroundSample>>();
-    let lift=0;
+    let lift=-Infinity;
     for(const {mesh,indices} of this.probes){
       if((mesh as T.SkinnedMesh).isSkinnedMesh)(mesh as T.SkinnedMesh).skeleton.update();
       for(const index of indices){
@@ -45,9 +47,11 @@ export class CrashContact {
         lift=Math.max(lift,height+margin-this.point.y);
       }
     }
-    if(lift>0){
+    if(!Number.isFinite(lift))return 0;
+    lift=lift>0?lift:lift*T.MathUtils.clamp(contact,0,1);
+    if(Math.abs(lift)>1e-9){
       const position=root.getWorldPosition(this.point);position.y+=lift;
-      root.position.copy(root.parent?root.parent.worldToLocal(position):position);root.updateWorldMatrix(false,true);
+      root.position.copy(root.parent?root.parent.worldToLocal(position):position);root.updateMatrixWorld(true);
     }
     return lift;
   }

@@ -1,3 +1,4 @@
+import {baseRiderId} from '../../../ride-core/src/riderWardrobe.ts';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
@@ -31,7 +32,7 @@ const hoodie=await mesh('DS_Hoodie_Woman_01',1);data.set('DS_Hoodie_Woman_01',ho
 
 test('on-foot tactical motion keeps all five skins continuous, wheels parked and bones rigid',async t=>{
  for(const {id} of RIDER_CHOICES){
-  if(!data.has(id))data.set(id,await mesh(id,1));
+  if(!data.has(baseRiderId(id)))data.set(baseRiderId(id),await mesh(baseRiderId(id),1));
   const hero=new Hero(data,undefined,id),limbs=[...hero.legs,...hero.arms];
   const lengths=limbs.map(l=>[l.upper.getWorldPosition(new Vector3()).distanceTo(l.knee.getWorldPosition(new Vector3())),l.knee.getWorldPosition(new Vector3()).distanceTo(l.foot.getWorldPosition(new Vector3()))]);
   let lowest=Infinity;
@@ -48,7 +49,7 @@ test('on-foot tactical motion keeps all five skins continuous, wheels parked and
 
 test('on-foot shoulders, torso and wrists move naturally without opening skin seams at any heading',async t=>{
  for(const {id} of RIDER_CHOICES){
-  if(!data.has(id))data.set(id,await mesh(id,1));const hero=new Hero(data,undefined,id);
+  if(!data.has(baseRiderId(id)))data.set(baseRiderId(id),await mesh(baseRiderId(id),1));const hero=new Hero(data,undefined,id);
   const surfaces:{mesh:SkinnedMesh;edges:[number,number][];posed:Vector3[]}[]=[];
   hero.rider.traverse(o=>{const m=o as SkinnedMesh;if(!m.isSkinnedMesh||!m.geometry.index)return;const p=m.geometry.attributes.position,index=m.geometry.index,edges:[number,number][]=[],a=new Vector3(),b=new Vector3();
    for(let i=0;i<index.count;i+=3)for(let k=0;k<3;k++){const u=index.getX(i+k),v=index.getX(i+(k+1)%3);a.fromBufferAttribute(p,u);b.fromBufferAttribute(p,v);if(a.distanceTo(b)<.004)edges.push([u,v]);}
@@ -70,7 +71,7 @@ test('on-foot shoulders, torso and wrists move naturally without opening skin se
 
 test('all five heroes retain limb lengths and continuous skin during riding and falls',async t=>{
  for(const {id} of RIDER_CHOICES){
-  if(!data.has(id))data.set(id,await mesh(id,1));
+  if(!data.has(baseRiderId(id)))data.set(baseRiderId(id),await mesh(baseRiderId(id),1));
   const hero=new Hero(data,undefined,id),limbs=[...hero.legs,...hero.arms];
   const lengths=limbs.map(l=>[l.upper.getWorldPosition(new Vector3()).distanceTo(l.knee.getWorldPosition(new Vector3())),l.knee.getWorldPosition(new Vector3()).distanceTo(l.foot.getWorldPosition(new Vector3()))]);
   const surfaces:{mesh:SkinnedMesh;edges:[number,number][];posed:Vector3[]}[]=[];
@@ -545,7 +546,7 @@ test('human recovery envelopes use the loaded mounted mesh dimensions',()=>{
 });
 
 test('two to four loaded mounted riders can launch independently in every room mode',async()=>{
- for(const {id} of RIDER_CHOICES)if(!data.has(id))data.set(id,await mesh(id,1));
+ for(const {id} of RIDER_CHOICES)if(!data.has(baseRiderId(id)))data.set(baseRiderId(id),await mesh(baseRiderId(id),1));
  const ids=RIDER_CHOICES.map(r=>r.id).slice(-4),heroes=ids.map(id=>new Hero(data,undefined,id));
  const flat:TerrainSampler={sampleGround(_x,_z,out){return Object.assign(out,createGroundSample());},raycast:()=>null,raycastObstacle:()=>null};
  const mapped=await new DetroitWorld().init();mapped.updateTraffic(0,1e8,1e8);mapped.step();

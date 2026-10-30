@@ -1,3 +1,7 @@
+import {FallenSupport} from '../../../../ride-core/src/fallenSupport.ts';
+import {crashLimb} from '../../../../ride-core/src/kimodoCrash.ts';
+import {recoveryHand,recoveryFoot} from '../../../../ride-core/src/kimodoRecovery.ts';
+import {createGroundSample} from '@digital-static/ridecore';
 import {RiderWardrobe,baseRiderId} from '../../../../ride-core/src/riderWardrobe.ts';
 import {HeroDetail} from '../../../../ride-core/src/heroDetail.ts';
 import {applyOnFootRider,applyKimodoRiding} from '../../../../ride-core/src/onFootRider.ts';
@@ -23,6 +27,7 @@ const v=()=>new T.Vector3(),q=()=>new T.Quaternion();
 function rotateWorld(bone:T.Object3D|undefined,axis:T.Vector3,angle:number){if(!bone)return;const w=bone.getWorldQuaternion(q()).premultiply(q().setFromAxisAngle(axis,angle));bone.quaternion.copy(bone.parent!.getWorldQuaternion(q()).invert().multiply(w));bone.updateWorldMatrix(false,true);}
 function prepare(o:T.Object3D){o.traverse(n=>{const m=n as T.Mesh;if(m.isMesh){m.castShadow=true;m.receiveShadow=true;m.frustumCulled=!(m as T.SkinnedMesh).isSkinnedMesh;}});}
 export class ThreeRiderView {
+  private fallenSupport:FallenSupport;
   private detail:HeroDetail;private wardrobe:RiderWardrobe;
   readonly walkStyle='kimodo' as const;
   readonly fingers:FingerPose;
@@ -61,6 +66,7 @@ export class ThreeRiderView {
     if(this.hips)this.fallPivot.copy(this.rider.worldToLocal(this.hips.getWorldPosition(v())));
     this.detail=new HeroDetail(this.rider);this.wardrobe=new RiderWardrobe(this.rider,profile.id);
     this.riderContact=new CrashContact(this.rider);this.wheelContact=new CrashContact(this.vehicle);
+    this.fallenSupport=new FallenSupport(this.riderContact.probes,this);
     if(baseRiderId(profile.id)===profile.id&&this.rider.getObjectByName('Armored_Rider_Surface')){this.armorKeychain=new ArmorKeychain(this.rider);this.helmetSkin=new HelmetSkinDecal(this.rider);}
   }
   dispose(){this.wardrobe.dispose();this.detail.dispose();this.lights.dispose();this.armorKeychain?.dispose();this.helmetSkin?.dispose();this.root.removeFromParent();this.rider.traverse(o=>{if((o as T.SkinnedMesh).isSkinnedMesh)(o as T.SkinnedMesh).skeleton.dispose();});}
@@ -96,7 +102,7 @@ export class ThreeRiderView {
     this.vehicle.position.set(p.wheelCrashLateral,p.wheelCrashPop,p.wheelCrashForward);this.vehicle.rotation.set(0,p.wobbleYaw+p.wheelCrashSpin,-p.wobbleRoll-p.wheelCrashLean);
     if(this.wheel)this.wheel.rotation.x=p.wheelSpin;
     if(this.body)this.body.position.y=this.bodyRestY+p.suspensionOffset;
-    this.rider.position.set(p.crashLateral,this.mountHeight+p.suspensionOffset*this.wheelScale-p.crashDrop,p.crashForward);
+    this.rider.position.set(p.crashLateral,this.mountHeight+p.suspensionOffset*this.wheelScale-p.crashDrop*(p.crashKind?this.motionScale:1),p.crashForward);
     this.rider.rotation.set(p.crashTumble,0,p.crashRoll);
     if(p.crashMotion){const pivot=this.fallPivot.clone().multiply(this.rider.scale);this.rider.position.add(pivot.clone().sub(pivot.applyEuler(this.rider.rotation)));}
     for(const b of this.bones){b.o.position.copy(b.p);b.o.quaternion.copy(b.q);}
@@ -129,7 +135,7 @@ export class ThreeRiderView {
     rotateWorld(this.chest,up,motion.chestYaw-motion.hipYaw);
     // Neck and head share the correction: no single-joint swivel at the base of the skull.
     const neckShare=this.neck?.65:0;
-    const neckPitch=p.crashMotion?.30*p.crashHeadTuck:motion.neck;
+    const neckPitch=p.crashMotion?.34*p.crashHeadTuck:motion.neck;
     rotateWorld(this.neck,right,neckPitch*neckShare);
     rotateWorld(this.neck,up,(motion.headYaw-motion.chestYaw)*.4);
     rotateWorld(this.neck,forward,motion.headRoll*neckShare);
@@ -146,14 +152,31 @@ export class ThreeRiderView {
       const side=i===0?1:-1,inside=side===Math.sign(p.rollAngle);
       const pole=forward.clone().applyAxisAngle(up,motion.hipYaw*.5).addScaledVector(right,inside?side*.45*motion.carve*(1-motion.technical):0);
       // Release the pedals progressively as the rider falls away from the machine.
-      const release=p.crashMotion?clamp((p.crashRelease-(i===0?0:.07))/(i===0?.88:.93),0,1):clamp(p.crashBlend*3,0,1);
+      const fallSide=p.crashSide||Math.sign(p.crashLateral)||1,lowerSide=side===fallSide;
+      let release=p.crashMotion?clamp((p.crashRelease-(lowerSide?0:.07))/(lowerSide?.88:.93),0,1):clamp(p.crashBlend*3,0,1);
       if(p.crashMotion){
         const bodyUp=new T.Vector3(0,1,0).transformDirection(this.rider.matrixWorld),bodyForward=new T.Vector3(0,0,1).transformDirection(this.rider.matrixWorld),bodyRight=new T.Vector3(1,0,0).transformDirection(this.rider.matrixWorld);
         const hip=l.upper.getWorldPosition(v()),length=hip.distanceTo(l.knee.getWorldPosition(v()))+l.knee.getWorldPosition(v()).distanceTo(l.foot.getWorldPosition(v()));
-        const bend=p.crashLegTuck*(side===(p.crashSide||1)?.72:1);
-        const free=hip.clone().addScaledVector(bodyUp,-length*(.92-.32*bend)).addScaledVector(bodyForward,(i===0?.21:.08)*bend).addScaledVector(bodyRight,side*.13*bend);
-        if(p.crashContact>.5)free.y=Math.max(p.y-p.airHeight+.06,free.y);
-        solve(l,target.lerp(free,release),bodyForward.addScaledVector(bodyRight,side*.2),rotation.clone().slerp(this.rider.getWorldQuaternion(q()).multiply(l.rotation),release));
+        const bend=p.crashLegTuck*(lowerSide?.72:1.12);
+        const free=hip.clone().addScaledVector(bodyUp,-length*(.92-.40*bend))
+          .addScaledVector(bodyForward,length*(lowerSide?.18:.34)*bend*(p.crashDirection||1))
+          .addScaledVector(bodyRight,side*length*.12*bend);
+        if(p.crashKind>0){const captured=crashLimb(p.crashKind,p.crashTime,i,p.crashSide||1,true),weight=p.crashRelease*(1-T.MathUtils.smoothstep(p.crashRecovery,0,.25));
+          const captureTarget=hip.clone().addScaledVector(bodyRight,captured.x*length).addScaledVector(bodyUp,captured.y*length).addScaledVector(bodyForward,captured.z*length);free.lerp(captureTarget,weight);}
+        if(p.crashRecovery>0){
+          const step=recoveryFoot(p.crashRecovery,i,p.crashSide||1);
+          const plant=this.root.localToWorld(new T.Vector3(p.crashLateral+side*.18*this.motionScale,-p.airHeight,p.crashForward+step.forward*this.motionScale));
+          if(this.terrain)plant.y=this.terrain.sampleGround(plant.x,plant.z,createGroundSample(),plant.y).height;
+          plant.y+=.075*this.motionScale;free.lerp(plant,step.plant);release=1-step.pedal;
+        }
+        // Let both boots relax onto the ground after the roll, rather than leaving
+        // the upper leg suspended in the sideways body frame.
+        const footFloor=this.terrain?this.terrain.sampleGround(free.x,free.z,createGroundSample(),p.y-p.airHeight).height:p.y-p.airHeight;
+        free.y=T.MathUtils.lerp(free.y,footFloor+.075*this.motionScale,p.crashSettle);
+        // Staggered knee recovery keeps the thighs apart and clears the departing wheel.
+        target.lerp(free,release);
+        const kneePole=p.crashRecovery>0?this.fallenSupport.recoveryPole(this,p.crashRecovery):target.clone().sub(hip).cross(bodyRight);
+        this.fallenSupport.solveLeg(l,target,kneePole,rotation.clone().slerp(this.rider.getWorldQuaternion(q()).multiply(l.rotation),release),.975,Math.PI-Math.PI/6*T.MathUtils.smoothstep(p.crashRecovery,0,.12));
       }else if(release<1)solve(l,target.lerp(l.foot.getWorldPosition(v()),release),pole,rotation);
     }
     for(let i=0;i<this.arms.length;i++){
@@ -176,8 +199,20 @@ export class ThreeRiderView {
         // After contact, fold the lower arm inward instead of balancing the whole body on fingertips.
         const rest=shoulder.clone().addScaledVector(bodyUp,-length*.30).addScaledVector(bodyForward,length*.25).addScaledVector(bodyRight,-side*length*.22);
         protective.lerp(rest,p.crashSettle);
+        if(p.crashKind>0){const captured=crashLimb(p.crashKind,p.crashTime,i,p.crashSide||1),weight=Math.min(1,p.crashRelease+.3)*(1-T.MathUtils.smoothstep(p.crashRecovery,0,.25));
+          const captureTarget=shoulder.clone().addScaledVector(bodyRight,captured.x*length).addScaledVector(bodyUp,captured.y*length).addScaledVector(bodyForward,captured.z*length);captureTarget.y=Math.max(p.y-p.airHeight+.045*this.motionScale,captureTarget.y);protective.lerp(captureTarget,weight);}
         target.lerp(protective,Math.min(1,p.crashBrace*1.7+p.crashRelease));
         armPole.lerp(bodyUp.negate().addScaledVector(bodyForward,.25),p.crashSettle);
+        if(p.crashRecovery>0){
+          const recovered=recoveryHand(p.crashRecovery,i,p.crashSide||1);
+          const push=shoulder.clone().addScaledVector(right,recovered.x*length).addScaledVector(worldUp,recovered.y*length).addScaledVector(forward,recovered.z*length);
+          const plant=this.root.localToWorld(new T.Vector3(p.crashLateral+side*.30*this.motionScale,-p.airHeight,p.crashForward+.25*this.motionScale));
+          if(this.terrain)plant.y=this.terrain.sampleGround(plant.x,plant.z,createGroundSample(),plant.y).height;
+          plant.y+=.065*this.motionScale;push.lerp(plant,recovered.plant);
+          push.y=Math.max(p.y-p.airHeight+.06*this.motionScale,push.y);
+          target.lerp(push,recovered.weight);
+          armPole.lerp(forward.clone().addScaledVector(right,side*.65),recovered.weight);
+        }
       }
       solve(l,target,armPole,undefined,.975);
       // Bone reset preserved the authored hand-to-forearm orientation. Follow that
@@ -191,11 +226,15 @@ export class ThreeRiderView {
     this.root.updateMatrixWorld(true);
     if(p.crashBlend>0){
       const floor=p.crashMotion?p.y-p.airHeight:p.y;
-      this.wheelContact.settle(this.vehicle,floor,this.terrain,.018);
-      this.riderContact.settle(this.rider,floor,this.terrain);
+      this.fingers.apply('Relaxed','Relaxed');
+      this.fallenSupport.apply(this,p,this.terrain);
+      this.wheelContact.settle(this.vehicle,floor,this.terrain,.018,p.crashContact);
+      this.riderContact.settle(this.rider,floor,this.terrain,.045,p.crashMotion?p.crashContact:0);
+      this.fallenSupport.recover(this,p,this.terrain);
       this.root.updateMatrixWorld(true);
     }
     applyKimodoRiding(this,p);
     applyOnFootRider(this,p);this.fingers.apply('Relaxed',p.footMode===3&&wheelPickupTiming(p.footMountTime||0).grip>.5?'SupportGrip':'Relaxed');if(p.footMode===2)this.fingers.softenRun(p.speed);
+    if(p.crashMotion&&p.crashBlend>0&&p.footMode===2&&p.crashRecovery>.55)this.fallenSupport.alignLegs(this,1-T.MathUtils.smoothstep(p.crashRecovery,.80,1));
   }
 }

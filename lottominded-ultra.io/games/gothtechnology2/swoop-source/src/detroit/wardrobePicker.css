@@ -16,3 +16,7 @@
 .royale-menu .wardrobe-picker{max-width:100%;margin-top:18px}
 @media(min-width:701px) and (max-height:600px){.game-menu-home .wardrobe-picker{grid-column:1;grid-row:6;margin:0}.royale-menu .wardrobe-choices{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(prefers-reduced-motion:reduce){.wardrobe-picker *{transition:none!important}}
+
+.wardrobe-inspect{margin-top:10px;min-height:44px;border:1px solid #98c9ce66;background:#152d38;color:#eaf7f6;border-radius:6px;padding:8px 16px;cursor:pointer}
+.wardrobe-preview{width:min(400px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;box-sizing:border-box;border:1px solid #8bcbd080;border-radius:12px;padding:20px;background:#10212c;color:#edf5f1;box-shadow:0 22px 80px #0009}
+.wardrobe-preview::backdrop{background:#07121dc9}.wardrobe-preview h2{font:700 20px/1.3 system-ui;margin:0 0 12px}.wardrobe-preview-stage{display:flex;justify-content:center;min-height:100px}.wardrobe-preview canvas{width:min(100%,320px);height:auto;border-radius:8px}.wardrobe-preview p{font:12px/1.5 system-ui;color:#c3d4d7}.wardrobe-preview-controls{display:flex;gap:8px;flex-wrap:wrap}.wardrobe-preview-controls button{flex:1;min-height:44px;border:1px solid #91b7bc77;border-radius:6px;background:#24404b;color:white;padding:8px;cursor:pointer}.wardrobe-preview button:focus-visible{outline:3px solid #96e8d4;outline-offset:2px}

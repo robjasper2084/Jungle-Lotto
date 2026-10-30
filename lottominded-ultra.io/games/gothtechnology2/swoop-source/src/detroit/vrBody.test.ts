@@ -6,6 +6,7 @@ import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {SkinnedMesh,Mesh,Vector3} from 'three';
 import {Hero} from './actors.ts';
 import {RIDER_CHOICES} from './riderChoices.ts';
+import {baseRiderId} from '../../../ride-core/src/riderWardrobe.ts';
 import {createPose} from './controller.ts';
 async function mesh(id:string,lod:number){
   const buf=await readFile(resolve('../../exports/glb',id,`${id}_LOD${lod}.glb`)),n=buf.readUInt32LE(12),j=JSON.parse(buf.subarray(20,20+n).toString());
@@ -16,7 +17,7 @@ async function mesh(id:string,lod:number){
 }
 const data=new Map([['DS_EUC_01',await mesh('DS_EUC_01',1)]]);
 for(const {id} of RIDER_CHOICES){
- data.set(id,await mesh(id,id==='DS_Man_01'?0:1));
+ const base=baseRiderId(id);data.set(base,await mesh(base,base==='DS_Man_01'?0:1));
  test(id+' keeps animated body and wheel in VR and restores the full head on exit',()=>{
   const hero=new Hero(data,undefined,id);hero.apply(createPose());
   const original=new Map<Mesh,Mesh['geometry']>();let before=0,after=0;

@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {surfaceFinish} from './surfaceFinish.ts';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 
@@ -17,7 +18,7 @@ export class HeroDetail {
     const material=(source as T.MeshPhysicalMaterial).clone();material.metalness=0;material.metalnessMap=null;
     material.roughness=glove?.69:source.name.startsWith('Dark riding')?.87:.78;
     if(material.isMeshPhysicalMaterial){material.specularColor.setRGB(1,1,1);material.specularIntensity=.4;}
-    surfaceCopies.set(source,material);this.materials.push(material);return material;
+    surfaceFinish(material,'cloth');surfaceCopies.set(source,material);this.materials.push(material);return material;
    };
    mesh.material=Array.isArray(mesh.material)?mesh.material.map(detail):detail(mesh.material);
   });
@@ -54,6 +55,9 @@ export class HeroDetail {
    if(foot&&toe){
     const center=foot.clone().lerp(toe,.55);center.y+=.025*scale;
     for(let i=0;i<3;i++)add(side+'Foot',center.clone().add(new T.Vector3(0,.003*scale,i*.018*scale)),size(.058,.006,.004),new T.Quaternion(),1);
+    // Short welt seams and a heel tab follow each foot, including crouch/ADS.
+    for(const sign of [-1,1])for(let i=0;i<5;i++)add(side+'Foot',center.clone().add(new T.Vector3(sign*.035*scale,-.018*scale,(i-2)*.022*scale)),size(.003,.003,.012),new T.Quaternion(),1);
+    add(side+'Foot',foot.clone().add(new T.Vector3(0,.045*scale,-.025*scale)),size(.025,.036,.008));
    }
   }
   // Place tailoring on the visible torso surface, not a guessed human chest depth.

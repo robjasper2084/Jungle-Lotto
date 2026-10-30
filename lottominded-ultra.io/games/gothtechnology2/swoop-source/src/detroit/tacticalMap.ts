@@ -35,10 +35,10 @@ export class TacticalMap{
   this.dialog.className='tactical-map-dialog';this.dialog.setAttribute('aria-label',title+' map');const header=document.createElement('div');header.className='tactical-map-heading';const name=document.createElement('h2');name.textContent=title;const close=document.createElement('button');close.textContent='Close map';header.append(name,close);
   this.full.width=840;this.full.height=700;this.full.setAttribute('role','img');this.full.setAttribute('aria-label','North-up map, your heading, and highlighted route');
   const footer=document.createElement('div');footer.className='map-actions';for(const [label,value] of [['Full area',1],['Near rider',3]] as const){const b=document.createElement('button');b.textContent=label;b.onclick=()=>{this.zoom=value;this.courseFit=false;this.draw();};footer.append(b);}
-  this.courseButton.textContent='Race route';this.courseButton.hidden=true;this.courseButton.onclick=()=>{this.courseFit=true;this.draw();};footer.append(this.courseButton);
+  this.courseButton.textContent='Race route';this.courseButton.hidden=true;this.courseButton.onclick=()=>{this.courseFit=true;this.draw();};footer.append(this.courseButton,miniTools);
   this.note.className='map-route-note';this.dialog.append(header,this.full,this.note,footer);document.body.append(this.dialog);
   this.fullInfo=new MapInformation(this.dialog,true);
-  const info=document.createElement('button');info.type='button';info.textContent='Map info';info.setAttribute('aria-haspopup','dialog');info.style.cssText='width:100%;min-height:44px;margin:0;border-radius:0;font:700 12px system-ui';this.widget.append(info);
+  const info=document.createElement('button');info.type='button';info.className='mini-map-info';info.textContent='Map info';info.setAttribute('aria-haspopup','dialog');info.style.cssText='width:100%;min-height:44px;margin:0;border-radius:0;font:700 12px system-ui';this.widget.append(info);
   info.onclick=()=>{this.open();this.fullInfo.root.open=true;this.fullInfo.root.querySelector('summary')?.focus();this.fullInfo.root.scrollIntoView({block:'end'});};
   this.button.onclick=()=>{pause();this.dialog.showModal();this.zoom=1;this.courseFit=!!this.race;this.draw();close.focus();};close.onclick=()=>this.dialog.close();this.dialog.onclose=()=>focus();
   this.dialog.addEventListener('keydown',e=>e.stopPropagation());this.dialog.addEventListener('pointerdown',e=>e.stopPropagation());

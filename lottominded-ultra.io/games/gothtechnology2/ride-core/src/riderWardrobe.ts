@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {surfaceFinish} from './surfaceFinish.ts';
 import {wardrobeSurface} from './wardrobeSurface.ts';
 import {referenceRiderSuit} from './referenceRiderSuit.ts';
 import {wardrobeBody} from './wardrobeBody.ts';
@@ -47,9 +48,12 @@ export class RiderWardrobe{
     if(/protective shell/.test(name))m.color.set(theme.shell);
     else if(/garments|nylon/.test(name)){m.color.set(theme.cloth);m.bumpMap=weave;m.bumpScale=.0007;m.roughness=.88;}
     else if(/safety trim/.test(name))m.color.set(theme.trim);
-    else if(/visor/.test(name))m.color.set(theme.visor);
+    else if(/visor/.test(name)){m.color.set(theme.visor);m.metalness=.72;m.roughness=.19;m.envMapIntensity=1.1;}
     else if(/titanium|fasteners/.test(name))m.color.set(theme.metal);
     else if(/Back plate/.test(name)){badge=m;m.color.set('#ffffff');m.metalness=.05;m.roughness=.82;}
+    if(/garments|nylon/.test(name))surfaceFinish(m,'cloth');
+    else if(/protective shell/.test(name))surfaceFinish(m,'shell');
+    else if(/titanium|fasteners/.test(name))surfaceFinish(m,'metal');
     copies.set(source,m);this.materials.push(m);return m;
    };mesh.material=Array.isArray(mesh.material)?mesh.material.map(style):style(mesh.material);
    // Theme-specific plate finishes follow the existing fitted armor geometry.

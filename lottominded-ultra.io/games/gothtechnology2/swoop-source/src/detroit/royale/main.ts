@@ -158,9 +158,9 @@ const renderer=new T.WebGLRenderer({canvas,antialias:startupAntialias()});render
 const atmosphereSky=new RouteSky();
 // Restrained Royale sky grade.
 atmosphereSky.material.fragmentShader=atmosphereSky.material.fragmentShader.replace('gl_FragColor = vec4( texColor, 1.0 );','texColor=mix(vec3(dot(texColor,vec3(.2126,.7152,.0722))),texColor,.74); gl_FragColor = vec4( texColor, 1.0 );');
-scene.add(atmosphereSky);const sky=new T.HemisphereLight('#c2d9e6','#5b6156',.94);scene.add(sky);const sun=new T.DirectionalLight('#fff0dc',1.8);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);Object.assign(sun.shadow.camera,{left:-32,right:32,top:36,bottom:-30,near:.1,far:100});sun.shadow.normalBias=.035;sun.shadow.bias=-.00015;scene.add(sun,sun.target);followStableSun(sun,{x:0,y:0,z:0},ROYALE_SUN);
+scene.add(atmosphereSky);const sky=new T.HemisphereLight('#d1e4f0','#66727d',1.05);scene.add(sky);const sun=new T.DirectionalLight('#fff0dc',1.8);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);Object.assign(sun.shadow.camera,{left:-32,right:32,top:36,bottom:-30,near:.1,far:100});sun.shadow.normalBias=.035;sun.shadow.bias=-.00015;scene.add(sun,sun.target);followStableSun(sun,{x:0,y:0,z:0},ROYALE_SUN);
 const graphics=createGraphicsQuality(renderer,scene,canvas);
-const fill=new T.DirectionalLight('#c7dceb',.30);fill.position.set(-12,8,-13);scene.add(fill,fill.target);
+const fill=new T.DirectionalLight('#c7dceb',.36);fill.position.set(-12,8,-13);scene.add(fill,fill.target);
 graphics.mount(el('graphics-settings'));
 
 const fieldRing=new FieldBoundary('#49adff',.9,true);scene.add(fieldRing);
@@ -695,7 +695,7 @@ function loop(now:number,xrFrame?:XRFrame){const rawFrameMs=now-last,delta=Math.
  }
  const cpuStart=performance.now();let simulationSteps=0;
  const idle=paused||dialog.open||layoutEditing||!session?.state||session.state.phase==='results';
-  circuitRace.update(delta,!!session?.state?.self?.alive&&!dialog.open&&!capture.active&&!deathReplay.playing&&!vr?.active&&session.state.phase!=='results',idle||document.hidden);
+  circuitRace.update(delta,!!session?.state?.self?.alive&&!practiceRange&&!dialog.open&&!capture.active&&!deathReplay.playing&&!vr?.active&&session.state.phase!=='results',idle||document.hidden);
  if(graphics.choice!=='auto')adaptiveQuality.reset();
  if(adaptiveQuality.sample(rawFrameMs,loaded&&!idle&&!vr?.active&&graphics.choice==='auto'&&now-loadedAt>5000,graphics.current.fps)){graphics.setAdaptiveDetail(adaptiveQuality.detail);graphics.setResolutionScale(adaptiveQuality.scale);}
  const connection=session?.connectionStatus(now);el('connection-status').hidden=!connection?.text||dialog.open;el('connection-text').textContent=connection?.text??'';canvas.dataset.connection=connection?.state??'offline';

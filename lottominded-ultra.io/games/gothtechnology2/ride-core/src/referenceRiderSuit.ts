@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {surfaceFinish} from './surfaceFinish.ts';
 import fitted from './referenceSuitGeometry.json' with {type:'json'};
 
 const palettes:Record<string,string[]>={
@@ -21,7 +22,7 @@ export function referenceRiderSuit(root:T.Object3D,id:string,_key?:T.BufferGeome
   const {finish,bones}=parts[i];
   const skeletonBones=bones.map(name=>root.getObjectByName(name) as T.Bone);
   if(skeletonBones.some(bone=>!bone?.isBone))continue;
-  const material=new T.MeshStandardMaterial({name:id+' / reference armor '+finish,color:palette[finish],roughness:finish===1?.38:.64,metalness:finish===1?.6:.18,side:T.DoubleSide});
+  const material=surfaceFinish(new T.MeshStandardMaterial({name:id+' / reference armor '+finish,color:palette[finish],roughness:finish===1?.34:.58,metalness:finish===1?.68:.12,side:T.DoubleSide}),finish===1?'metal':'shell');
   if(id==='DS_Neural_Rider'&&finish===2){material.emissive.set(palette[finish]);material.emissiveIntensity=.25;}
   if(id==='DS_Ghoulies_Rider'&&finish===3){material.emissive.set(palette[finish]);material.emissiveIntensity=.35;}
   const mesh=new T.SkinnedMesh(templates[i].clone(),material);mesh.name=id+' fitted reference armor '+finish;

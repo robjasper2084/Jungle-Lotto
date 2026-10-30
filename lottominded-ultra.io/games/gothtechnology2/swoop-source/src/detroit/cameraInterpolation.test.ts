@@ -10,3 +10,10 @@ test('render camera tracks the same fractional simulation frame as the rider thr
 test('recovery resets camera history and does not interpolate across a teleport',()=>{
  const p=createPose(),f=new FollowCamera(flat);f.reset(p);p.x=150;p.z=-80;f.reset(p);const frame=f.sample(0);assert.equal(frame.eye.x,f.eye.x);assert.equal(frame.target.z,-80);
 });
+test('speed changes ease the lens and custom follow distance survives recovery',()=>{
+ const p=createPose(),f=new FollowCamera(flat);f.distance=6;f.reset(p);assert.equal(f.eye.z,p.z-6);
+ p.speed=20;p.velocityZ=20;f.step(1/60,p);assert(f.fov<55.1,'one input frame must not kick the field of view');
+ for(let i=0;i<240;i++)f.step(1/60,p);assert(f.fov>63&&f.fov<=64);
+ p.speed=0;p.velocityZ=0;p.yawRate=100;f.step(1/60,p);assert(f.fov>63,'braking must not snap framing');assert(Number.isFinite(f.eye.x));
+ f.reset(p);assert.equal(f.fov,55);assert.equal(f.sample(0).eye.z,p.z-6);
+});

@@ -71,10 +71,13 @@ function fit(h:Rig):Fit{
  const inverse=h.root.getWorldQuaternion(q()).invert(),bone=(n:string)=>h.rider.getObjectByName(n)!;
  const position=(n:string)=>h.root.worldToLocal(bone(n).getWorldPosition(v()));
  const direction=(a:string,b:string)=>position(b).sub(position(a)).normalize();
- const hipFrame=basis(direction('RightUpLeg','LeftUpLeg'),direction('Hips','Spine02'));
- const chestFrame=basis(direction('RightArm','LeftArm'),direction('Spine02','Spine'));
+ // Legacy circuit mascots have Hips > Spine > Chest, while the production
+ // heroes use Hips > Spine02 > Spine01 > Spine. Fit each authored chain.
+ const bodyNames=bone('Spine02')?['Hips','Spine02','Spine01','Spine']:['Hips','Spine','Chest'];
+ const hipFrame=basis(direction('RightUpLeg','LeftUpLeg'),direction('Hips',bodyNames[1]));
+ const chestFrame=basis(direction('RightArm','LeftArm'),direction(bodyNames[1],bodyNames.at(-1)!));
  const bind=(name:string,reference:T.Quaternion,channel:number):Binding=>({bone:bone(name),channel,offset:reference.clone().invert().multiply(inverse.clone().multiply(bone(name).getWorldQuaternion(q())))});
- const body=['Hips','Spine02','Spine01','Spine'].map((n,i)=>bind(n,hipFrame.clone().slerp(chestFrame,i/3),i));
+ const body=bodyNames.map((n,i)=>{const channel=i*3/(bodyNames.length-1);return bind(n,hipFrame.clone().slerp(chestFrame,channel/3),channel);});
  const legs:Leg[]=[],arms:Arm[]=[];
  for(const side of ['Left','Right']){
   const upper=bone(side+'UpLeg'),knee=bone(side+'Leg'),foot=bone(side+'Foot');
