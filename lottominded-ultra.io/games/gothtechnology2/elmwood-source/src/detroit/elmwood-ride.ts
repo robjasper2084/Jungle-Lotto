@@ -379,7 +379,7 @@ export function makeElmwoodRide(scene:T.Scene,camera:T.PerspectiveCamera,control
     document.querySelector<HTMLDialogElement>('#elmwood-main-menu')?.close();
   },endVR(){vrMode=false;vrPacket=undefined;clearInput();pause(true);},pauseVR(){pause(true);},
   vrInput(packet:VRPacket){vrPacket=packet;if(packet.pause)pause();},vrPose(){return active?seats[0]?.motion.pose:undefined;},update(dt:number){
-    circuitRace.update(dt,(onlineRide?.active?!!onlineRide.circuitEntries.length:active&&!racePilots.length)&&!film.playing&&!vrMode&&!document.querySelector('dialog[open]')&&!document.body.classList.contains('controls-open'),(onlineRide?.active?onlineRide.circuitPaused:paused)||document.hidden);
+    circuitRace.update(dt,(onlineRide?.active?!!onlineRide.circuitEntries.length:active&&!racePilots.length)&&!film.playing&&!vrMode&&!document.querySelector('dialog[open]:not(.circuit-dialog)')&&!document.body.classList.contains('controls-open'),(onlineRide?.active?onlineRide.circuitPaused:paused)||document.hidden||!!document.querySelector('.circuit-dialog[open]'));
     const cameraToolbar=document.getElementById('elmwood-controls');if(cameraToolbar&&cameraQuick.parentElement!==cameraToolbar){cameraToolbar.append(cameraQuick,returnCamera);}
     returnCamera.hidden=!active||vrMode||film.playing||cameras[0].value==='chase';
     const recoverySeats=onlineRide?.active?onlineRide.recoveryStatus.length:count;

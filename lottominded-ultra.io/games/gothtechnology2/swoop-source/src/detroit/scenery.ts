@@ -2,7 +2,7 @@ import {SpatialUpdateGate,visibleSceneryMatrices} from '@digital-static/ridecore
 import {WorkSlice} from '../../../ride-core/src/workSlice.ts';
 import {buildJazzClubs} from './jazzClubs.ts';
 import type {SceneryWorld} from './sceneryWorld.ts';
-import {timeLoad} from './loadTiming.ts';
+import {timeLoad,startLoad} from './loadTiming.ts';
 import {foliageSightline} from './foliageSightline.ts';
 import {freightSites,registerFreightCollisions} from './tagSceneryCollisions.ts';
 import {SpatialAssetStream,type StreamPoint} from './spatialAssetStream.ts';
@@ -98,6 +98,7 @@ export async function buildScenery(scene:T.Scene,world:SceneryWorld,polish=true,
   }
   const surfaceMats=[mats.asphalt,mats.grass,mats.brick];
   const si=(s:SurfaceId)=>s==='grass'?1:s==='brick'?2:0;
+  const terrainDone=startLoad('terrain-visuals');
   for(const [index,c] of world.chunks.entries()){
     await slice.checkpoint();
     const g=groups[index],geo=new T.BufferGeometry();geo.setAttribute('position',new T.BufferAttribute(c.vertices,3));
@@ -124,6 +125,7 @@ export async function buildScenery(scene:T.Scene,world:SceneryWorld,polish=true,
     }
     if(trees.length){const batch=makeTreeBatch(trees,skins.bark,foliage,treeTime);batch.group.userData.center={x:c.x,z:c.z};g.add(batch.group);treeBatches.push(batch);}
   }
+  terrainDone();
   // Satellite reference shows tree groups around the beach and play loops.
   // Estimated planting sites stay clear of the actual mapped access ribbons.
   const parkTreeSites:TreeSite[]=[];
@@ -197,7 +199,8 @@ export async function buildScenery(scene:T.Scene,world:SceneryWorld,polish=true,
   buildTrailPaint(groupAt,world.chunks);
   const cutMurals=polish?await buildCutMurals(world,groupAt,stream,onAssetsLoaded):{walls:0,ceilings:0};
   // Consolidate static geometry by material inside each streamable tile.
-  for(const g of groups){await slice.checkpoint();batchStaticGroup(g);}
+  const batchesDone=startLoad('static-batches');
+  for(const g of groups){await slice.checkpoint();batchStaticGroup(g);}batchesDone();
   const grass=polish?await timeLoad('grass',()=>buildGrassField(scene,world,mats.grass)):undefined;
   if(start)await timeLoad('nearby-assets',()=>stream.warm([start],120));world.step();
   const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)'),mobile=matchMedia('(max-width:700px)'),motionOverride=new URLSearchParams(location.search).has('reducedMotion');

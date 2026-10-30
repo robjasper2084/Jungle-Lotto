@@ -1,17 +1,20 @@
 import type {SceneryWorld} from './sceneryWorld.ts';
+import {startLoad} from './loadTiming.ts';
+import {streetFurnitureForChunks} from './streetFurnitureCache.ts';
 import {WorkSlice} from '../../../ride-core/src/workSlice.ts';
 import {loadAssetQueue,assetConcurrency} from './assetQueue.ts';
 import {batchStaticGroup} from './static-batch.ts';
 import * as T from 'three';
 import {GLTFLoader} from './compressedGLTFLoader.ts';
 import {heightAt} from './world.ts';
-import {streetFurnitureSites,type StreetAsset} from './streetFurnitureLayout.ts';
+import type {StreetAsset} from './streetFurnitureLayout.ts';
 
 export async function buildStreetFurniture(scene:T.Scene,world:SceneryWorld,groupAt:(x:number,z:number)=>T.Group){
  const names:StreetAsset[]=['street-lamp','camera-pole','hydrant','bench','waste-bin','bike-rack','drain-grate','utility-cover'];
  const slice=new WorkSlice(),loader=new GLTFLoader(),assets=await loadAssetQueue(names,assetConcurrency(),n=>loader.loadAsync('/exports/street-furniture/'+n+'.glb'));
- const allowed=(x:number,z:number)=>world.chunks.some(c=>Math.abs(c.x-x)<=50&&Math.abs(c.z-z)<=50);
- const sites=streetFurnitureSites(allowed),lenses=new Set<T.MeshStandardMaterial>();
+ const layoutDone=startLoad('street-layout');
+ const sites=streetFurnitureForChunks(world.chunks),lenses=new Set<T.MeshStandardMaterial>();layoutDone();
+ const placementDone=startLoad('street-placement');
  world.step(); // The new draped sidewalks must be queryable before grounding assets.
  for(const asset of assets)asset.scene.traverse(o=>{if(!(o as T.Mesh).isMesh)return;const m=o as T.Mesh;m.castShadow=m.receiveShadow=true;for(const a of Array.isArray(m.material)?m.material:[m.material])if(a.name==='Street LED diffuser'){lenses.add(a as T.MeshStandardMaterial);(a as T.MeshStandardMaterial).emissiveIntensity=0;}});
  const counts=Object.fromEntries(names.map(n=>[n,0])) as Record<StreetAsset,number>;
@@ -29,7 +32,7 @@ export async function buildStreetFurniture(scene:T.Scene,world:SceneryWorld,grou
   const footprint=s.asset==='street-lamp'?{hx:.20,hy:3.8,hz:.20}:s.asset==='camera-pole'?{hx:.20,hy:2.9,hz:.20}:s.asset==='hydrant'?{hx:.28,hy:.44,hz:.28}:s.asset==='bench'?{hx:.87,hy:.5,hz:.36}:s.asset==='waste-bin'?{hx:.32,hy:.48,hz:.32}:s.asset==='bike-rack'?{hx:.9,hy:.45,hz:.34}:null;
   if(footprint)world.addBox({x:s.x,y:y+footprint.hy,z:s.z,...footprint,yaw:s.heading,kind:s.asset});
  }
- const lamps=sites.filter(s=>s.asset==='street-lamp');
+ placementDone();const lamps=sites.filter(s=>s.asset==='street-lamp');
  const pool=Array.from({length:2},()=>{const light=new T.SpotLight('#fff0d2',0,25,.65,.75,2);light.castShadow=false;scene.add(light,light.target);return light;});
  let dusk=false,lastX=Infinity,lastZ=Infinity;
  return {counts,count:lamps.length,sites:sites.length,

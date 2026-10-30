@@ -9,6 +9,12 @@ type Probe={mesh:Mesh;indices:number[]};
 type SupportedLimb=LimbChain&{rotation:Quaternion};
 type Rig={rider:Object3D;vehicle:Object3D;root:Object3D;legs:SupportedLimb[];arms:SupportedLimb[];motionScale:number;footTarget(index:number,p:RidePose):Vector3};
 
+/** Keep the impact clearance, then relax it for a small mascot's settled side
+ * pose. Full-size clearance otherwise lifts its already supported torso. */
+export function settledContactMargin(p:RidePose,scale:number){
+ return .045-(scale<.75&&p.crashKind===2?.01*MathUtils.smoothstep(p.crashSettle,.25,.65)*(1-MathUtils.smoothstep(p.crashRecovery,0,.2)):0);
+}
+
 /** Retarget the resting contact, after the captured impact. Ground the torso first:
  * a global correction after floor-targeted IK otherwise lifts every hand/boot. */
 export class FallenSupport {

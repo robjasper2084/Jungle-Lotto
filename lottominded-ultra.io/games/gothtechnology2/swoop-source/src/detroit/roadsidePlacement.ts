@@ -11,6 +11,12 @@ const roads=CITY.roads.flatMap(r=>r.points.slice(1).map((b,i)=>({a:r.points[i],b
 const cells=new Map<string,typeof roads>();
 for(const s of roads){const m=s.half+32;for(let x=Math.floor((Math.min(s.a[0],s.b[0])-m)/64);x<=Math.floor((Math.max(s.a[0],s.b[0])+m)/64);x++)for(let z=Math.floor((Math.min(s.a[1],s.b[1])-m)/64);z<=Math.floor((Math.max(s.a[1],s.b[1])+m)/64);z++){const key=x+','+z,list=cells.get(key)??[];list.push(s);cells.set(key,list);}}
 const buildings=CITY.buildings.map(b=>({points:b.points,minX:Math.min(...b.points.map(p=>p[0]))-.7,maxX:Math.max(...b.points.map(p=>p[0]))+.7,minZ:Math.min(...b.points.map(p=>p[1]))-.7,maxZ:Math.max(...b.points.map(p=>p[1]))+.7}));
+// A clearance search probes thousands of verge candidates. Index the expanded
+// footprints once instead of scanning every Detroit building at each probe.
+const buildingCells=new Map<string,typeof buildings>();
+for(const b of buildings)for(let x=Math.floor(b.minX/64);x<=Math.floor(b.maxX/64);x++)for(let z=Math.floor(b.minZ/64);z<=Math.floor(b.maxZ/64);z++){
+ const key=x+','+z,list=buildingCells.get(key)??[];list.push(b);buildingCells.set(key,list);
+}
 /** Aim the open +Z side of a bench at the road from its final placement.
  * A clearance search can move furniture across its original road segment. */
 export function nearestStreetPoint(p:Point,street?:string){
@@ -37,7 +43,7 @@ export function roadwayClearance(p:Point){
  return clearance;
 }
 function inBuilding(p:Point){
- return buildings.some(b=>{
+  return (buildingCells.get(Math.floor(p.x/64)+','+Math.floor(p.z/64))??[]).some(b=>{
   if(p.x<b.minX||p.x>b.maxX||p.z<b.minZ||p.z>b.maxZ)return false;
   let inside=false;
   for(let i=0,j=b.points.length-1;i<b.points.length;j=i++){
@@ -48,10 +54,10 @@ function inBuilding(p:Point){
   return inside;
  });
 }
-export function roadsidePoint(x:number,z:number,allowed:(x:number,z:number)=>boolean=()=>true){
+export function roadsidePoint(x:number,z:number,allowed:(x:number,z:number)=>boolean=()=>true,minimumClearance=1.15){
  // Keep original orientation/approach. Only move the post to the closest clear
  // verge, with enough room for the sign face as well as the post.
- const valid=(p:Point)=>allowed(p.x,p.z)&&dryStreetSite(p.x,p.z)&&roadwayClearance(p)>=1.15&&!inBuilding(p);
+  const valid=(p:Point)=>allowed(p.x,p.z)&&roadwayClearance(p)>=minimumClearance&&dryStreetSite(p.x,p.z)&&!inBuilding(p);
  if(valid({x,z}))return{x,z};
  for(let radius=.75;radius<=24;radius+=.75){
   const n=Math.max(16,Math.ceil(radius*8));

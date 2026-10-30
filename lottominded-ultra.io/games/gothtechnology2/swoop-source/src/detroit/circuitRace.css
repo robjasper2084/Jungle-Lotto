@@ -2,6 +2,16 @@
 .circuit-race[hidden],.circuit-race [hidden]{display:none!important}.circuit-race button{pointer-events:auto;min-height:44px;border:1px solid #89d9c799;border-radius:9px;background:#10232dee;color:#edfff8;padding:8px 12px;font:600 12px system-ui;touch-action:manipulation;cursor:pointer}
 .circuit-race output:not(:empty),.circuit-panel{display:block;background:#0b1729e8;border:1px solid #74bfb655;border-radius:10px;padding:8px;margin-top:5px;line-height:1.5}.circuit-panel{pointer-events:auto}.circuit-panel p{margin:0 0 8px}.circuit-panel button{margin:2px}.circuit-race button:focus-visible{outline:3px solid #ffe16c;outline-offset:2px}
 body.royale-camera-mode .circuit-race{display:none}
+.circuit-dialog{color:#effffa;background:#0b202b;border:1px solid #9ec8c466;border-radius:14px;width:min(350px,calc(100vw - 32px));max-height:calc(100dvh - 32px);box-sizing:border-box;padding:16px;overflow:auto;overscroll-behavior:contain;font:13px/1.5 system-ui;text-align:center}
+/* Race setup must remain legible even when the player's HUD is transparent. */
+body .circuit-dialog{background:#0b202b!important}
+body .circuit-dialog::backdrop{background:#031018cc!important}
+.circuit-dialog h2{margin:0 0 14px;font:700 20px system-ui}
+body .circuit-dialog .circuit-panel{padding:0;margin:0;border:0;background:transparent;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.circuit-dialog .circuit-panel p{grid-column:1/-1;margin:0 0 8px}
+body .circuit-dialog button{min-height:48px;width:100%;margin:0;border:1px solid #9ec8c466;border-radius:8px;color:inherit;background:#16393b;touch-action:manipulation;font:600 13px system-ui}
+.circuit-dialog output{display:block;margin-top:12px;color:#afc8c7}
+.circuit-dialog :focus-visible{outline:3px solid #75e2cf;outline-offset:2px}
 @media(max-width:700px){.circuit-race{top:172px;width:min(300px,calc(100vw - 24px))}.circuit-race output{font-size:11px}}
 @media(max-height:500px){.circuit-race{top:8px;left:50%;width:260px}.circuit-race output{font-size:10px}.circuit-panel{max-height:220px;overflow:auto}}
 @media(max-width:700px) and (min-height:501px){.circuit-race:has(.circuit-panel[hidden]):has(output:not(:empty)){display:grid;grid-template-columns:92px minmax(0,1fr);gap:6px;align-items:stretch}.circuit-race:has(.circuit-panel[hidden]) output:not(:empty){margin-top:0;padding:6px;font-size:10px;line-height:1.3;min-height:44px;box-sizing:border-box;display:grid;place-content:center}}

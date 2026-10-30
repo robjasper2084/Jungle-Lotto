@@ -55,10 +55,10 @@ test('settled fall skin rests on body support, without toes suspending the torso
   for(const hero of [new Hero(new Map([['DS_EUC_01',wheel],[id,rider]]),undefined,id,'kimodo'),new ThreeRiderView(rider,wheel,undefined,mascot?MASCOT_PROFILE:HUMAN_PROFILE),new ElmwoodRiderView(rider,wheel,undefined,mascot?MASCOT_PROFILE:HUMAN_PROFILE)]){
    for(const [reason,speed,bank] of [['collision',8,0],['collision',-8,0],['sideways landing',8,.35],['sideways landing',8,-.35],['hard landing',8,0]] as const){
     const entry={...createPose(),speed,rollAngle:bank},fall=new FallMotion(entry,reason),p=createPose();
-    for(const age of [.7,1.1,1.8]){fall.sample(age,p);hero.apply(p);const {minimum,torso}=skinContact(hero.rider);
+     for(const age of [.7,1.1,1.8]){fall.sample(age,p);hero.apply(p);const {minimum,torso,minimumPart}=skinContact(hero.rider);
      lowest=Math.min(lowest,minimum);if(age===1.8)highestRestingTorso=Math.max(highestRestingTorso,torso);
      assert(minimum>=0,`${id} ${hero.constructor.name} ${fall.kind} ${age}: visible skin below ground ${minimum}`);
-     if(age===1.8){assert(torso<(mascot?.205:.09),`${id} ${hero.constructor.name} ${fall.kind}: torso suspended ${torso}`);}
+      if(age===1.8){assert(torso<(mascot?.205:.09),`${id} ${hero.constructor.name} ${fall.kind} ${bank}: torso suspended ${torso}, support ${minimumPart} at ${minimum}, kind ${p.crashKind}, roll ${p.crashRoll}`);}
     }
    }hero.dispose();
   }t.diagnostic(JSON.stringify({id,lowest,highestRestingTorso,adapters:3}));
