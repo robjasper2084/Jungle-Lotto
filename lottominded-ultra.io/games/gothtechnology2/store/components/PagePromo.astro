@@ -1,0 +1,29 @@
+---
+import Icon from './Icon.astro';
+import { pagePromos } from '../content/page-promos';
+import { href } from '../utilities/paths';
+const { path } = Astro.props as { path: string };
+const promo = pagePromos[path];
+---
+{promo && <dialog id="timed-page-promo" class="page-promo" data-page-promo={promo.id} data-delay-ms={promo.delayMs} aria-labelledby="page-promo-title" aria-describedby="page-promo-description">
+  <div class="page-promo-heading"><p class="mono gold">{promo.kicker}</p><button class="icon-button" type="button" data-close-dialog aria-label={`Close ${promo.title} popup`} autofocus><Icon name="close"/></button></div>
+  <img class="page-promo-art" src={href(promo.image)} alt={promo.alt} width={promo.width} height={promo.height} loading="lazy" decoding="async"/>
+  <div class="page-promo-copy"><h2 id="page-promo-title">{promo.title}</h2><p id="page-promo-description">{promo.description}</p><div class="button-row"><a class="button" href={promo.url.startsWith('https://') ? promo.url : href(promo.url)}>{promo.action} <Icon name="play"/></a><button class="button secondary" type="button" data-close-dialog>Continue browsing</button></div></div>
+</dialog>}
+<script>
+  import { initPagePromos } from '../ui/page-promos';
+  initPagePromos();
+</script>
+<style>
+  .page-promo{width:min(900px,calc(100vw - 32px));max-width:none;max-height:calc(100dvh - 32px);padding:0;overflow:auto;border:1px solid var(--goth-gold);background:#080d0e;color:var(--goth-cream);animation:none;transition:none}
+  .page-promo::backdrop{background:#000d}
+  .page-promo-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 20px;border-bottom:1px solid var(--rule)}
+  .page-promo-heading p{font-size:11px;letter-spacing:.08em;margin:0}
+  .page-promo-heading button{min-width:44px;min-height:44px;flex-shrink:0}
+  .page-promo-art{display:block;width:100%;height:auto;background:#071317}
+  .page-promo-copy{padding:24px 28px 28px}
+  .page-promo-copy h2{font-size:clamp(32px,5vw,52px);line-height:1.1;margin:0 0 12px;color:var(--goth-gold-light)}
+  .page-promo-copy>p{font:16px/1.65 Arial,sans-serif;max-width:65ch;margin:0 0 22px}
+  .page-promo .button{min-height:44px}
+  @media(max-width:600px){.page-promo{width:calc(100vw - 20px);max-height:calc(100dvh - 20px)}.page-promo-heading{padding:8px 14px}.page-promo-copy{padding:20px}.page-promo .button-row{display:grid;grid-template-columns:1fr}.page-promo .button{width:100%}}
+</style>
