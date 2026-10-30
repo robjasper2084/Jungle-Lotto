@@ -1,4 +1,5 @@
 import './gameMenuHome.css';
+import './presentationHud.ts';
 import {makeWardrobePicker} from './wardrobePicker.ts';
 type MenuHomeOptions={kind:'swoop'|'royale'|'elmwood';title:string;subtitle:string;tagline:string;description:string;play:HTMLButtonElement;resume?:HTMLButtonElement;rider?:HTMLSelectElement;configure:()=>void;settings:()=>void;online?:()=>void};
 /** A small front door to the existing setup; keeps every gameplay/settings handler intact. */

@@ -1,0 +1,50 @@
+:root{--polish-ink:#eef8f5;--polish-muted:#afc8c7;--polish-accent:#75e2cf;--polish-glass:#0b202bdd;--polish-line:#9ec8c445;--tactical-accent:#75e2cf;--tactical-panel:#0b202bed;--tactical-line:#9ec8c445}
+body .presentation-tools{position:fixed;left:max(12px,env(safe-area-inset-left));bottom:calc(14px + env(safe-area-inset-bottom));z-index:76;color:var(--polish-ink);font:600 12px/1.4 'Segoe UI',sans-serif;background:var(--polish-glass);border:1px solid var(--polish-line);border-radius:9px;box-shadow:0 4px 20px #0003;max-width:calc(100vw - 24px)}
+.presentation-tools>summary{min-height:44px;min-width:88px;box-sizing:border-box;padding:12px 16px;cursor:pointer;list-style:none}.presentation-tools>summary::after{content:' +';color:var(--polish-accent);margin-left:14px}.presentation-tools[open]>summary::after{content:' −'}.presentation-tools>summary::-webkit-details-marker{display:none}
+.presentation-tools-content{width:min(300px,calc(100vw - 28px));max-height:min(55dvh,420px);overflow:auto;overscroll-behavior:contain;padding:0 10px 10px;box-sizing:border-box}
+body .presentation-tools .presentation-tools-content>:is(#ride-tools,.game-film-toolbar,.dogCommandTray,.dogActionHud,.nearby-tools){position:static!important;inset:auto!important;transform:none!important;width:100%!important;max-width:none!important;max-height:none!important;margin:0!important;border:0!important;border-bottom:1px solid var(--polish-line)!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;overflow:visible!important;visibility:visible!important;pointer-events:auto}
+body .presentation-tools .game-film-toolbar{display:flex;flex-wrap:wrap;padding:8px 0!important;gap:6px}body .presentation-tools .game-film-toolbar[hidden]{display:none!important}
+body .presentation-tools #ride-tools{padding:0!important}body .presentation-tools .dogCommandTray{padding:4px 0!important}body .presentation-tools .dogActionHud{padding:8px 0!important}
+body .presentation-tools :is(button,summary,select){min-height:44px;touch-action:manipulation}body .presentation-tools :focus-visible{outline:3px solid var(--polish-accent);outline-offset:2px}
+body:has(#world):not(.playing) .presentation-tools,body:has(dialog[open]) .presentation-tools,body.controls-open .presentation-tools,body.layout-editing .presentation-tools,body:has(#touch.editing) .presentation-tools,body:has(.tactical-settings:not([hidden])) .presentation-tools{display:none!important}
+body:has(#view:not([data-riding=true])) .presentation-tools{display:none!important}
+/* Map detail belongs in the full map. Preserve explicitly saved map sizes. */
+body .tactical-minimap{background:var(--polish-glass)!important;border-color:var(--polish-line)!important;border-radius:9px!important;box-shadow:0 5px 20px #0003}
+body .tactical-minimap .mini-map-legend,body .tactical-minimap .mini-map-zoom,body .tactical-minimap .mini-map-info{display:none}
+body .tactical-minimap:not([style*="width"]){width:184px!important}
+body .tactical-minimap .tactical-map-open canvas{max-height:120px;object-fit:cover}
+body .tactical-minimap>button{min-height:44px}
+body .tactical-minimap .mini-map-caption{padding:5px;font-size:10px}
+body .tactical-compass{border:0;background:linear-gradient(90deg,transparent,#0b202b99,transparent);width:min(230px,25vw)}
+body .bikeRaceInvitation{left:50%;top:calc(170px + env(safe-area-inset-top));bottom:auto;transform:translateX(-50%);width:min(340px,calc(100vw - 32px));padding:12px;background:#0b202bed;border:1px solid var(--polish-line);border-left:3px solid var(--polish-accent);border-radius:8px;max-height:33dvh}
+body .bikeRaceInvitation p{margin:6px 0 10px;font-size:12px}body .bikeRaceInvitation button{min-height:44px}
+body header nav button,body .cameraControls button{background:var(--polish-glass);border-color:var(--polish-line);border-radius:7px;font-weight:600;min-height:44px}
+body header>div{background:var(--polish-glass);border-left:2px solid var(--polish-accent)}
+body .speed{bottom:76px;font-variant-numeric:tabular-nums}body .speed b{font-weight:700;letter-spacing:-2px}
+body .circuit-race button,body .circuit-panel{background:var(--polish-glass);border-color:var(--polish-line)}
+/* Utilities collapse without touching player-customized action positions. */
+@media(max-width:650px){body .tactical-minimap:not([style*="width"]){width:142px!important}body .tactical-minimap .tactical-map-open canvas{max-height:90px}body .tactical-compass{width:calc(100vw - 185px);left:12px;transform:none}body .bikeRaceInvitation{top:240px;max-height:26dvh}body .presentation-tools-content{max-height:48dvh}body header nav{gap:3px}body header nav button{font-size:10px;padding:6px 8px}}
+@media(max-height:540px) and (orientation:landscape){body .presentation-tools{left:calc(50% - 46px);bottom:8px}body .presentation-tools[open]{left:12px;bottom:8px}body .presentation-tools-content{max-height:calc(100dvh - 100px)}body .bikeRaceInvitation{top:65px;width:300px;max-height:calc(100dvh - 155px)}body .tactical-minimap .tactical-map-open canvas{max-height:62px}}
+@media(prefers-reduced-motion:reduce){.presentation-tools *{animation:none!important;transition:none!important}}
+body .circuit-race>button{width:auto!important;min-width:88px}
+body:has(#view[data-riding=true]) #bike-recover{display:none!important}
+@media(max-width:650px){
+ body:has(#view[data-riding=true]) header{width:210px;max-width:calc(100vw - 165px);box-sizing:border-box}
+ body:has(#view[data-riding=true]) header h1{font-size:14px;line-height:1.3;margin:0 0 7px}
+ body #elmwood-controls{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;max-width:calc(100vw - 176px)!important;width:194px!important}
+ body #elmwood-controls button{min-width:0;padding:6px;font-size:11px;min-height:44px}
+ body #elmwood-controls button[hidden]{display:none!important}
+}
+/* Elmwood owns a separate HUD and map implementation. Reserve distinct lanes. */
+body.elmwood-tactical-ui .tactical-minimap>button[aria-haspopup=dialog]:not(.tactical-map-open){display:none}
+@media(max-width:650px){
+ body.elmwood-tactical-ui .session-hud[data-seat="0"]{top:184px!important;left:12px!important;max-width:180px}
+ body.elmwood-tactical-ui .on-foot-controls{top:245px!important;max-width:180px!important;max-height:29dvh!important}
+ body.elmwood-tactical-ui .tactical-compass{left:auto!important;right:12px!important;top:174px!important;width:142px!important;transform:none!important}
+ body.elmwood-tactical-ui .circuit-race{left:auto!important;right:12px!important;top:240px!important;transform:none!important}
+}
+@media(max-height:540px) and (orientation:landscape){
+ body.elmwood-tactical-ui .circuit-race{top:100px!important}
+ body.elmwood-tactical-ui .session-hud[data-seat="0"]{top:180px!important}
+ body.elmwood-tactical-ui #elmwood-controls{max-width:calc(100vw - 390px)!important}
+}

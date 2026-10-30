@@ -1,6 +1,7 @@
 import {menuAction,menuPresentation,type RoyaleMenuState} from './menuState.ts';
 import {makeWardrobePicker} from '../wardrobePicker.ts';
 import './menu.css';
+import '../presentationHud.ts';
 import './tacticalReadout.css';
 export type RoyaleMenuPanel='home'|'loadout'|'online'|'settings';
 /** Reuses the actual controls and handlers: no second loadout or room state. */

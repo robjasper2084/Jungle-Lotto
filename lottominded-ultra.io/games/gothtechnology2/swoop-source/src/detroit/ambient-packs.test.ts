@@ -1,6 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
+import {gunzipSync} from 'node:zlib';
 import {AmbientCyclistTraffic,cyclistCircuit} from '../../../ride-core/src/ambientCyclistTraffic.ts';
 import {DetroitWorld,LENGTH,cutPoint} from './world.ts';
 import {GeoTerrain} from './geo-terrain.ts';
@@ -25,7 +26,7 @@ test('Swoop: every member of both ten-rider packs completes the original mapped 
  t.diagnostic(JSON.stringify(run(traffic)));
 });
 test('Static Royale: both packs use the real arena transform and original collider map',async t=>{
- const fixture=JSON.parse(await readFile(new URL('../../public/love-tag/swoop-detroit.json',import.meta.url),'utf8'));
+ const fixture=JSON.parse(gunzipSync(await readFile(new URL('../../public/love-tag/swoop-detroit.json.gz',import.meta.url))).toString('utf8'));
  const source=await TagTerrain.create(fixture),arena=new DowntownArena(source);t.after(()=>source.dispose());const f=fixture.transform;
  const traffic=new AmbientCyclistTraffic(arena,cyclistCircuit(Array.from({length:100},(_,i)=>{const p=cutPoint(60+i*(LENGTH-120)/99);return {x:(p.x-f.tx)/f.sx,z:p.z-f.tz,width:5};})),523);
  t.diagnostic(JSON.stringify(run(traffic)));

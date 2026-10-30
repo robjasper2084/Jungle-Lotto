@@ -123,7 +123,7 @@ export class ThreeRiderView {
     rotateWorld(this.chest,up,motion.chestYaw-motion.hipYaw);
     // Neck and head share the correction: no single-joint swivel at the base of the skull.
     const neckShare=this.neck?.65:0;
-    const neckPitch=p.crashMotion?.30*p.crashHeadTuck:motion.neck;
+    const neckPitch=p.crashMotion?.34*p.crashHeadTuck:motion.neck;
     rotateWorld(this.neck,right,neckPitch*neckShare);
     rotateWorld(this.neck,up,(motion.headYaw-motion.chestYaw)*.4);
     rotateWorld(this.neck,forward,motion.headRoll*neckShare);
@@ -140,13 +140,15 @@ export class ThreeRiderView {
       const side=i===0?1:-1,inside=side===Math.sign(p.rollAngle);
       const pole=forward.clone().applyAxisAngle(up,motion.hipYaw*.5).addScaledVector(right,inside?side*.45*motion.carve*(1-motion.technical):0);
       // Release the pedals progressively as the rider falls away from the machine.
-      const lowerSide=side===(p.crashSide||Math.sign(p.crashLateral)||1);
+      const fallSide=p.crashSide||Math.sign(p.crashLateral)||1,lowerSide=side===fallSide;
       let release=p.crashMotion?clamp((p.crashRelease-(lowerSide?0:.07))/(lowerSide?.88:.93),0,1):clamp(p.crashBlend*3,0,1);
       if(p.crashMotion){
         const bodyUp=new T.Vector3(0,1,0).transformDirection(this.rider.matrixWorld),bodyForward=new T.Vector3(0,0,1).transformDirection(this.rider.matrixWorld),bodyRight=new T.Vector3(1,0,0).transformDirection(this.rider.matrixWorld);
         const hip=l.upper.getWorldPosition(v()),length=hip.distanceTo(l.knee.getWorldPosition(v()))+l.knee.getWorldPosition(v()).distanceTo(l.foot.getWorldPosition(v()));
-        const bend=p.crashLegTuck*(side===(p.crashSide||1)?.72:1);
-        const free=hip.clone().addScaledVector(bodyUp,-length*(.92-.32*bend)).addScaledVector(bodyForward,(i===0?.21:.08)*bend).addScaledVector(bodyRight,side*.13*bend);
+        const bend=p.crashLegTuck*(lowerSide?.72:1.12);
+        const free=hip.clone().addScaledVector(bodyUp,-length*(.92-.40*bend))
+          .addScaledVector(bodyForward,length*(lowerSide?.18:.34)*bend*(p.crashDirection||1))
+          .addScaledVector(bodyRight,side*length*.12*bend);
         if(p.crashKind>0){const captured=crashLimb(p.crashKind,p.crashTime,i,p.crashSide||1,true),weight=p.crashRelease*(1-T.MathUtils.smoothstep(p.crashRecovery,0,.25));
           const captureTarget=hip.clone().addScaledVector(bodyRight,captured.x*length).addScaledVector(bodyUp,captured.y*length).addScaledVector(bodyForward,captured.z*length);free.lerp(captureTarget,weight);}
         if(p.crashRecovery>0){
@@ -155,7 +157,11 @@ export class ThreeRiderView {
           if(this.terrain)plant.y=this.terrain.sampleGround(plant.x,plant.z,createGroundSample(),plant.y).height;
           plant.y+=.075*this.motionScale;free.lerp(plant,step.plant);release=1-step.pedal;
         }
-        if(p.crashContact>.5)free.y=Math.max(p.y-p.airHeight+.06,free.y);
+        // Let both boots relax onto the ground after the roll, rather than leaving
+        // the upper leg suspended in the sideways body frame.
+        const footFloor=this.terrain?this.terrain.sampleGround(free.x,free.z,createGroundSample(),p.y-p.airHeight).height:p.y-p.airHeight;
+        free.y=T.MathUtils.lerp(free.y,footFloor+.075*this.motionScale,p.crashSettle);
+        // Staggered knee recovery keeps the thighs apart and clears the departing wheel.
         target.lerp(free,release);
         const kneePole=p.crashRecovery>0?this.fallenSupport.recoveryPole(this,p.crashRecovery):target.clone().sub(hip).cross(bodyRight);
         this.fallenSupport.solveLeg(l,target,kneePole,rotation.clone().slerp(this.rider.getWorldQuaternion(q()).multiply(l.rotation),release),.975,Math.PI-Math.PI/6*T.MathUtils.smoothstep(p.crashRecovery,0,.12));
@@ -211,7 +217,7 @@ export class ThreeRiderView {
       this.fingers.apply('Relaxed','Relaxed');
       this.fallenSupport.apply(this,p,this.terrain);
       this.wheelContact.settle(this.vehicle,floor,this.terrain,.018,p.crashContact);
-      this.riderContact.settle(this.rider,floor,this.terrain,.025,p.crashMotion?p.crashContact:0);
+      this.riderContact.settle(this.rider,floor,this.terrain,.045,p.crashMotion?p.crashContact:0);
       this.fallenSupport.recover(this,p,this.terrain);
       this.root.updateMatrixWorld(true);
     }

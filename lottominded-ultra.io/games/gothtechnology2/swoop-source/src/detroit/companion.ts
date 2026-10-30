@@ -105,7 +105,9 @@ export class DogFollower {
     if(wanted>cap){vx*=cap/wanted;vz*=cap/wanted;}
     const obstacles=[...(this.terrain.navigationObstacles?.(p.x,p.z,Math.max(5,cap*1.5))??[]).filter(o=>o.id!=='companion'),...virtual];
     const stopped=Math.hypot(this.vx,this.vz)<.1;
-    const route=companionRoute(p.x,p.y,p.z,stopped?vx:this.vx,stopped?vz:this.vz,obstacles.filter(o=>o.id!=='hero-wheel'||this.mode!=='follow'),this.passingSide);
+    // Walk around a stopped wheel when changing formation sides. Following a
+    // moving wheel in a narrow lane must not request an unsafe overtaking arc.
+    const route=companionRoute(p.x,p.y,p.z,stopped?vx:this.vx,stopped?vz:this.vz,obstacles.filter(o=>o.id!=='hero-wheel'||this.mode!=='follow'||Math.abs(hero.speed)<.2),this.passingSide);
     if(route?.jump){
       const jump=route.jump,endX=p.x+jump.vx*jump.duration,endZ=p.z+jump.vz*jump.duration;
       const landing=this.terrain.sampleGround(endX,endZ,this.ground,p.y);

@@ -19,5 +19,7 @@ export function makeWardrobePicker(source:HTMLSelectElement){
   const text='Selected: '+(source.selectedOptions[0]?.textContent??'Choose a rider');if(status.textContent!==text)status.textContent=text;
  }
  source.addEventListener('change',update);new MutationObserver(update).observe(source,{attributes:true,attributeFilter:['disabled'],childList:true});
- root.append(title,choices,status);update();return {root,update};
+ const inspect=document.createElement('button');inspect.type='button';inspect.className='wardrobe-inspect';inspect.textContent='Inspect selected suit';
+ inspect.onclick=async()=>{inspect.disabled=true;try{const {inspectWardrobe}=await import('./wardrobePreview.ts');await inspectWardrobe(source.value,source.selectedOptions[0]?.textContent??'Suit');}finally{inspect.disabled=false;}};
+ root.append(title,choices,status,inspect);update();return {root,update};
 }

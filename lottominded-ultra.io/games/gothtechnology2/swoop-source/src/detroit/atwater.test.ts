@@ -1,13 +1,13 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {cityPoint} from './atwater.ts';
-import {SPOTS,locationAt,terrainChunks} from './world.ts';
+import {SPOTS,locationAt,terrainChunks,cutPoint} from './world.ts';
 import {roadAt} from './geography.ts';
 import {FallMotion} from './fallMotion.ts';
 import {createPose} from './controller.ts';
-test('default start is on mapped Atwater facing the georeferenced skyline',()=>{
- const p=SPOTS[0],skyline=cityPoint(42.3298,-83.0397);
- assert.equal(roadAt(p.x,p.z)?.name,'Atwater Street');assert.equal(locationAt(p.x,p.z),'Atwater Street');
+test('default start is at the mapped Atwater entrance facing into the Cut',()=>{
+ const p=SPOTS[0],skyline=cutPoint(100);
+ assert.equal(roadAt(p.x,p.z)?.name,'Dequindre Cut Greenway');assert.equal(locationAt(p.x,p.z),'Atwater / Dequindre Cut entrance');
  const bearing=Math.atan2(skyline.x-p.x,skyline.z-p.z);assert.ok(Math.abs(bearing-p.heading)<.2);
  const chunks=terrainChunks();for(let t=0;t<=1;t+=.1){const x=p.x+(skyline.x-p.x)*t,z=p.z+(skyline.z-p.z)*t;assert.ok(chunks.some(c=>Math.abs(c.x-x)<=50&&Math.abs(c.z-z)<=50),'riverfront corridor has missing ground');}
 });

@@ -2,6 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import {rigModel} from '../heroTestAssets.ts';
+import {baseRiderId} from '../../../../ride-core/src/riderWardrobe.ts';
 import {assetPath} from '../testAssets.ts';
 import {RIDER_CHOICES} from '../riderChoices.ts';
 import {Hero} from '../actors.ts';
@@ -11,11 +12,15 @@ import {EquipmentLibrary,EQUIPMENT_KINDS} from './equipment.ts';
 import {createPose} from '../controller.ts';
 import {initialCombat} from '../../../../ride-core/src/royale/rules.ts';
 import {scopedFov,type Scope} from '../../../../ride-core/src/royale/scopes.ts';
+async function productionAssets(){
+ const data=new Map([['DS_EUC_01',await rigModel(assetPath('exports/glb/DS_EUC_01/DS_EUC_01_LOD1.glb'))]]);
+ for(const id of new Set(RIDER_CHOICES.map(r=>baseRiderId(r.id))))data.set(id,await rigModel(new URL('../../../public/exports/rigged-heroes/'+id+'.glb',import.meta.url)));
+ return data;
+}
 test('all production hero rigs retain first-person hands and wrist geometry',async t=>{
- const wheel=await rigModel(assetPath('exports/glb/DS_EUC_01/DS_EUC_01_LOD1.glb'));
+ const data=await productionAssets();
  for(const {id}of RIDER_CHOICES){
-  const model=await rigModel(new URL('../../../public/exports/rigged-heroes/'+id+'.glb',import.meta.url));
-  const h=new Hero(new Map([['DS_EUC_01',wheel],[id,model]]),undefined,id),root=new T.Group();root.add(h.root);
+  const h=new Hero(data,undefined,id),root=new T.Group();root.add(h.root);
   const sourceGlove=new T.MeshStandardMaterial({name:'Articulated charcoal riding gloves',color:'#303030',map:new T.Texture()});
   h.rider.traverse(o=>{if(o instanceof T.Mesh&&/ArticulatedGlove/.test(o.name))o.material=sourceGlove;});
   const arms=new FpsArms(h,root);let triangles=0,visible=0;
@@ -33,11 +38,10 @@ test('all production hero rigs retain first-person hands and wrist geometry',asy
  }
 });
 test('production palms wrap the grips with exposed surfaces at normal and scoped field of view',async()=>{
- const data=new Map([['DS_EUC_01',await rigModel(assetPath('exports/glb/DS_EUC_01/DS_EUC_01_LOD1.glb'))]]),models=new Map();
+ const data=await productionAssets(),models=new Map();
  for(const kind of EQUIPMENT_KINDS)models.set(kind,await rigModel(new URL('../../../public/exports/polish/royale-equipment/'+kind+'.glb',import.meta.url)));
  const library=new EquipmentLibrary(models);
  for(const {id}of RIDER_CHOICES){
-  data.set(id,await rigModel(new URL('../../../public/exports/rigged-heroes/'+id+'.glb',import.meta.url)));
   const fp=new FirstPersonView(data,library,id),scale=id.includes('Mascot')?.48:1,camera=new T.PerspectiveCamera(76,16/9,.12,100);
   camera.position.set(0,1.64*scale,0);camera.lookAt(0,camera.position.y,100);camera.updateMatrixWorld();
   for(const weapon of ['static','heart','bass'] as const)for(const mode of ['hip','iron','scope2','scope4','scope8'] as const)for(const reduced of mode==='scope8'?[false,true]:[false])for(const baseFov of [52,76]){

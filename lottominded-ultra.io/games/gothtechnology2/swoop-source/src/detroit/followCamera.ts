@@ -19,15 +19,16 @@ export class FollowCamera {
   sample(alpha:number){const t=Math.max(0,Math.min(1,alpha));for(const k of axes){this.frame.eye[k]=this.previousEye[k]+(this.eye[k]-this.previousEye[k])*t;this.frame.target[k]=this.previousTarget[k]+(this.target[k]-this.previousTarget[k])*t;}this.frame.roll=this.previousRoll+(this.roll-this.previousRoll)*t;this.frame.fov=this.previousFov+(this.fov-this.previousFov)*t;return this.frame;}
   distance=4.3;calm=false;
   private ground=createGroundSample();
+  private framingSpeed=0;private turnLead=0;
   private eyeSpring={x:spring(),y:spring(),z:spring()};
   private targetSpring={x:spring(),y:spring(),z:spring()};
   private remoteAnchor?:Point;
   constructor(world:TerrainSampler){this.world=world;}
   reset(p:RidePose){
     this.remoteAnchor={x:p.x,y:p.y,z:p.z};
-    this.target={x:p.x,y:p.y+1.05,z:p.z};this.eye={x:p.x-Math.sin(p.headingY)*4.3,y:p.y+2.2,z:p.z-Math.cos(p.headingY)*4.3};
+    this.target={x:p.x,y:p.y+1.05,z:p.z};this.eye={x:p.x-Math.sin(p.headingY)*this.distance,y:p.y+2.2,z:p.z-Math.cos(p.headingY)*this.distance};
     this.eye.y=Math.min(underpassCameraHeight(this.world,p,this.eye.y),underpassCameraHeight(this.world,this.eye,this.eye.y,p.y));
-    this.impact=0;this.roll=0;this.fov=55;Object.assign(this.previousEye,this.eye);Object.assign(this.previousTarget,this.target);this.previousRoll=this.roll;this.previousFov=this.fov;
+    this.impact=0;this.roll=0;this.fov=55;this.framingSpeed=0;this.turnLead=0;Object.assign(this.previousEye,this.eye);Object.assign(this.previousTarget,this.target);this.previousRoll=this.roll;this.previousFov=this.fov;
     for(const k of axes){Object.assign(this.eyeSpring[k],{value:this.eye[k],velocity:0});Object.assign(this.targetSpring[k],{value:this.target[k],velocity:0});}
   }
   landing(impact:number){this.impact=Math.min(.14,impact*.013);}
@@ -47,11 +48,13 @@ export class FollowCamera {
   }
   step(dt:number,p:RidePose){
     Object.assign(this.previousEye,this.eye);Object.assign(this.previousTarget,this.target);this.previousRoll=this.roll;this.previousFov=this.fov;
-    const speed=Math.abs(p.speed),distance=this.distance+Math.min(2,speed*.1);
+    this.framingSpeed=damp(this.framingSpeed,Math.abs(p.speed),3.5,dt);
+    this.turnLead=damp(this.turnLead,Math.max(-.24,Math.min(.24,p.yawRate*.08)),7,dt);
+    const speed=this.framingSpeed,distance=this.distance+Math.min(2,speed*.1);
     // Keep the landing zone in view during an air rotation.
     const velocity=Math.hypot(p.velocityX,p.velocityZ);
     const travel=velocity>.3?Math.atan2(p.velocityX,p.velocityZ):p.headingY;
-    const heading=p.airBlend>.5?travel+(p.speed<0?Math.PI:0):p.headingY+p.yawRate*.1;
+    const heading=p.airBlend>.5?travel+(p.speed<0?Math.PI:0):p.headingY+this.turnLead;
     const s=Math.sin(heading),c=Math.cos(heading),lead=Math.min(1.8,speed*.09);
     const fall=fallCameraOffset(p);
     const desired={x:p.x+Math.sin(travel)*lead+fall.x,y:p.y+1.08-p.landingCompression*.04+fall.y,z:p.z+Math.cos(travel)*lead+fall.z};
@@ -68,7 +71,7 @@ export class FollowCamera {
     if(this.eye.y<floor){this.eye.y=floor;this.eyeSpring.y.value=floor;this.eyeSpring.y.velocity=Math.max(0,this.eyeSpring.y.velocity);}
     const ceiling=Math.min(underpassCameraHeight(this.world,p,this.eye.y),underpassCameraHeight(this.world,this.eye,this.eye.y,p.y));
     if(this.eye.y>ceiling){this.eye.y=ceiling;this.eyeSpring.y.value=ceiling;this.eyeSpring.y.velocity=Math.min(0,this.eyeSpring.y.velocity);}
-    this.fov=damp(this.fov,this.calm?55:55+Math.min(12,speed*.6),5,dt);
+    this.fov=damp(this.fov,this.calm?55:55+Math.min(9,speed*.45),5,dt);
     this.roll=damp(this.roll,this.calm?0:-p.rollAngle*.055,7,dt);
   }
 }

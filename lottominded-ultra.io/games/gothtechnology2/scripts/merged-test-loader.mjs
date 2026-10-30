@@ -13,6 +13,10 @@ registerHooks({
   if(specifier.startsWith('three/addons/'))return{url:new URL('three/examples/jsm/'+specifier.slice(13),dependency).href,shortCircuit:true};
   return next(specifier,ctx);
  },
- load(url,ctx,next){return url.endsWith('.css')?{format:'module',source:'export default {};',shortCircuit:true}:next(url,ctx);}
+ load(url,ctx,next){
+  if(url.endsWith('.css'))return{format:'module',source:'export default {};',shortCircuit:true};
+  if(/\.(webp|png|jpe?g|hdr)(\?.*)?$/.test(url))return{format:'module',source:'export default '+JSON.stringify(url)+';',shortCircuit:true};
+  return next(url,ctx);
+ }
 });
 globalThis.window=Object.assign(new EventTarget(),{crypto:globalThis.crypto,performance:globalThis.performance});
