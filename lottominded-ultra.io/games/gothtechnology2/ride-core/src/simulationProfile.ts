@@ -1,4 +1,4 @@
-export type SimulationProfileKey='movement'|'botInput'|'route'|'routeSearch'|'groundTravelClear'|'obstacleRecovery';
+export type SimulationProfileKey='movement'|'botInput'|'route'|'routeWork'|'routeSearch'|'groundTravelClear'|'obstacleRecovery';
 type Cost={calls:number;totalMs:number;maxMs:number};
 let enabled=false;
 let costs:Partial<Record<SimulationProfileKey,Cost>>={};

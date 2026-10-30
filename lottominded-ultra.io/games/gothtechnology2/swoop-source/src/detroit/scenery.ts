@@ -26,7 +26,7 @@ import {buildTrailPaint} from './trailPaint.ts';
 import {buildCutMurals} from './cutMurals.ts';
 import {polishSection} from './sectionPolish.ts';
 import {buildCity} from './city-render.ts';
-import {buildStreetFurniture} from './streetFurniture.ts';
+import {buildStreetFurniture,preloadStreetFurniture} from './streetFurniture.ts';
 import {grassTreeSite} from './treePlacement.ts';
 import {riverEdge,roadAt} from './geography.ts';
 import {AirAtmosphere} from '../../../ride-core/src/airAtmosphere.ts';
@@ -182,8 +182,13 @@ export async function buildScenery(scene:T.Scene,world:SceneryWorld,polish=true,
   registerFreightCollisions(world);
   stream.add({id:'freight-yard',centers:freightCenters,async load(){const container=await loader.loadAsync('/exports/cut/DS_Cut_Freight_Container_01.glb');onAssetsLoaded?.(container.scene);batchStaticGroup(container.scene);for(const p of freightCenters){const o=container.scene.clone(true);o.position.set(p.x,heightAt(p.x,p.z),p.z);o.rotation.y=p.heading;groupAt(p.x,p.z).add(o);}}});
   const wp=cutPoint(2052,-10),wg=groupAt(wp.x,wp.z);label(wg,'EASTERN MARKET / FREIGHT YARD',wp.x,heightAt(wp.x,wp.z)+3,wp.z,7,.8,wp.heading-Math.PI);for(const post of signSupports(wp.x,wp.z,wp.heading-Math.PI,7,heightAt(wp.x,wp.z)+3.2,heightAt))box(wg,post.x,post.y,post.z,.10,post.height,.10,steel);
-  const architecture=await timeLoad('city',()=>buildCity(scene,world,groupAt,skins,stream));
-  const streetFurniture=await timeLoad('street-furniture',()=>buildStreetFurniture(scene,world,groupAt));
+  // Download/decode prototypes alongside the city, but place them only after
+  // the city's sidewalks and collision are ready.
+  const [architecture,furnitureAssets]=await Promise.all([
+    timeLoad('city',()=>buildCity(scene,world,groupAt,skins,stream)),
+    timeLoad('street-furniture-assets',()=>preloadStreetFurniture())
+  ]);
+  const streetFurniture=await timeLoad('street-furniture',()=>buildStreetFurniture(scene,world,groupAt,furnitureAssets));
   await timeLoad('skyline',()=>buildAtwaterSkyline(scene));
   await timeLoad('milliken',()=>buildMillikenLandmarks(scene,world));
   const jazz=await timeLoad('jazz-clubs',()=>buildJazzClubs(scene,world,stream));

@@ -1,4 +1,5 @@
 import type {BattleTerrain} from './battleTerrain.ts';import type {RidePose} from '../controller.ts';import type {DogPose} from '../companion.ts';
+import type {Vec3} from '../terrain.ts';
 import {gaitCadence} from '../dogGait.ts';
 import {yieldToTraffic} from '../dynamicClearance.ts';
 export type DogPower={charges:number;until:number;ready:number;radarUntil:number;radarReady:number};
@@ -14,7 +15,7 @@ export function createBattleDog(p:RidePose,terrain?:BattleTerrain):BattleDog{
 type Rival={id:string;pose:RidePose;alive:boolean;input?:{aimYaw:number}};
 /** Fixed authority steps; swept ground routes and support checks forbid a dog
  * reaching through walls, jumping water, or teleporting to a moving opponent. */
-export function advanceBattleDog(d:BattleDog,owner:Rival,power:DogPower,rivals:readonly Rival[],terrain:BattleTerrain,tick:number){
+export function advanceBattleDog(d:BattleDog,owner:Rival,power:DogPower,rivals:readonly Rival[],terrain:BattleTerrain,tick:number,route:(from:Vec3,to:Vec3)=>Vec3[]|undefined=(a,b)=>terrain.route(a,b)){
  const dt=1/20,p=owner.pose,active=owner.alive&&power.until>tick;
  if(!owner.alive){d.speed=0;return;}
  // A blocked horizontal step must not freeze the dog in midair. Settle at its
@@ -29,7 +30,7 @@ export function advanceBattleDog(d:BattleDog,owner:Rival,power:DogPower,rivals:r
  if(active&&!target){target=rivals.filter(a=>{const turn=Math.atan2(a.pose.x-p.x,a.pose.z-p.z)-p.headingY-(owner.input?.aimYaw??0);return a.id!==owner.id&&a.alive&&Math.abs(Math.atan2(Math.sin(turn),Math.cos(turn)))<1.25&&Math.hypot(a.pose.x-d.x,a.pose.z-d.z)<90&&Math.abs(a.pose.y-d.y)<2&&terrain.line({x:d.x,y:d.y+.5,z:d.z},{x:a.pose.x,y:a.pose.y+.5,z:a.pose.z},.25);}).sort((a,b)=>Math.hypot(a.pose.x-d.x,a.pose.z-d.z)-Math.hypot(b.pose.x-d.x,b.pose.z-d.z))[0];d.target=target?.id;d.replan=0;}
  if(!active){d.target=undefined;target=undefined;}
  const goal=target?.pose??{x:p.x+Math.cos(p.headingY)*1.5-Math.sin(p.headingY)*.8,y:p.y,z:p.z-Math.sin(p.headingY)*1.5-Math.cos(p.headingY)*.8};
- if(tick>=d.replan){d.replan=tick+30;d.path=terrain.route(d,goal);}
+ if(tick>=d.replan){d.replan=tick+30;const nextRoute=route(d,goal);if(nextRoute)d.path=nextRoute;}
  while(d.path.length&&Math.hypot(d.path[0].x-d.x,d.path[0].z-d.z)<1.5)d.path.shift();
  const direct=terrain.line({x:d.x,y:d.y+.45,z:d.z},{x:goal.x,y:goal.y+.45,z:goal.z},.27),at=direct?goal:d.path[0];
  const gap=Math.hypot(goal.x-d.x,goal.z-d.z);d.mode=active&&target?'chase':gap>8?'return':'follow';
