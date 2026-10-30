@@ -13,6 +13,7 @@ import { launchOwner } from '../content/launch';
 import { launchAlertsConnected, launchAlertLabel } from '../state/launch-alert';
 import SignalDisplay from '../components/SignalDisplay.astro';
 import HomeCommercial from '../components/HomeCommercial.astro';
+import PagePromo from '../components/PagePromo.astro';
 import Icon from '../components/Icon.astro';
 import { href, canonical } from '../utilities/paths';
 import { config } from '../config';
@@ -68,6 +69,7 @@ const support = ['contact','faq','shipping','returns','privacy','terms','accessi
   <SignalDisplay/>
   <LaunchAlert/>
   <ExperienceSettings/>
+  <PagePromo path={path}/>
   {(path === '' || path === 'shop/') && <HomeCommercial/>}
   <script>import '../ui/app.ts';</script>
 </body></html>
