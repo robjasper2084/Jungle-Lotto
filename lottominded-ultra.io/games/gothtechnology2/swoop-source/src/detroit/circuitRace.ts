@@ -8,17 +8,28 @@ export class CircuitRace {
  private root=document.createElement('section');private launch=document.createElement('button');private panel=document.createElement('div');private status=document.createElement('output');private help=document.createElement('p');private cancel=document.createElement('button');private start=document.createElement('button');
  private marker=new T.Group();private ring:T.Mesh;private course:RacePoint[]=[];race?:LapRace;private clock=0;private hint='';
  private context='';
+ private dialog=document.createElement('dialog');
  constructor(scene:T.Scene,private canvas:HTMLCanvasElement,private host:CircuitHost){
   this.root.className='circuit-race';this.root.hidden=true;this.root.setAttribute('aria-label','Circuit race');this.launch.type='button';this.launch.textContent='Lap race';this.launch.setAttribute('aria-expanded','false');
   this.panel.hidden=true;this.panel.className='circuit-panel';this.start.type=this.cancel.type='button';this.start.textContent='Start 3 laps';this.cancel.textContent='Close';this.status.setAttribute('aria-live','polite');
   this.help.textContent='Three laps through ordered gates, out and back along a clear lane. Solo time trial or all local riders. Return to the start marker for the countdown.';
   this.panel.append(this.help,this.start,this.cancel);this.root.append(this.launch,this.panel,this.status);document.body.append(this.root);
-  this.launch.onclick=()=>{this.panel.hidden=!this.panel.hidden;this.launch.setAttribute('aria-expanded',String(!this.panel.hidden));if(!this.panel.hidden)this.preview();};
-  this.start.onclick=()=>{this.preview();if(this.course.length<3)return;this.race=new LapRace(this.course,this.host.entries());this.panel.hidden=true;this.launch.setAttribute('aria-expanded','false');this.launch.textContent='Race options';this.host.focus();};
+  this.dialog.className='circuit-dialog';this.dialog.setAttribute('aria-label','Lap race setup');const title=document.createElement('h2');title.textContent='Lap race';this.dialog.append(title);document.body.append(this.dialog);
+  this.dialog.addEventListener('cancel',e=>{e.preventDefault();this.reset();this.launch.focus();});
+  this.launch.onclick=()=>{
+   if(!this.panel.hidden){this.closePanel();return;}
+   this.panel.hidden=false;this.launch.setAttribute('aria-expanded','true');this.preview();
+   // Give setup its own space on Elmwood's compact HUD. Native modal focus
+   // also prevents touches and keyboard actions reaching controls underneath.
+   this.fitPanel();
+  };
+  this.start.onclick=()=>{this.preview();if(this.course.length<3)return;this.race=new LapRace(this.course,this.host.entries());this.closePanel();this.launch.textContent='Race options';this.host.focus();};
   this.cancel.onclick=()=>{this.reset();this.host.focus();};
   this.ring=new T.Mesh(new T.TorusGeometry(3.2,.07,6,40),new T.MeshBasicMaterial({color:0x70ffe0,depthTest:true}));this.marker.add(this.ring);
   const arrow=new T.Mesh(new T.ConeGeometry(.4,1,5),new T.MeshBasicMaterial({color:0xffd078}));arrow.position.y=4.2;arrow.rotation.z=Math.PI;this.marker.add(arrow);this.marker.visible=false;scene.add(this.marker);
  }
+ private closePanel(){if(this.dialog.open)this.dialog.close();this.panel.hidden=true;this.root.append(this.panel,this.status);this.launch.setAttribute('aria-expanded','false');}
+ private fitPanel(){if(!this.panel.hidden&&!this.dialog.open&&document.body.classList.contains('elmwood-tactical-ui')&&(innerWidth<=650||innerHeight<=540)){this.dialog.append(this.panel,this.status);this.dialog.showModal();}}
  private preview(){
   const entries=this.host.entries(),p=entries[0]?.pose;if(!p)return;
   const supplied=this.host.points();let best:RacePoint[]=[];
@@ -32,10 +43,10 @@ export class CircuitRace {
  update(dt:number,visible:boolean,paused:boolean){
   if(document.querySelector('.community-panel[open]:not([hidden])'))visible=false;
   const context=this.host.context?.()??this.host.name;if(context!==this.context){this.reset();this.context=context;}
-  this.root.hidden=!visible;this.marker.visible=visible&&!!this.race;
+  this.root.hidden=!visible;this.marker.visible=visible&&!!this.race;if(!visible&&this.dialog.open)this.closePanel();
   const entries=this.host.entries();if(this.race&&this.race.racers.some(r=>!entries.some(e=>e.id===r.id)))this.reset();this.race?.update(dt,entries,paused||!visible);
   this.clock+=dt;if(this.clock<.15)return;this.clock=0;
-  if(!visible)return;
+  if(!visible)return;this.fitPanel();
   if(innerWidth<700&&innerHeight>=500){const reserved=[...document.querySelectorAll('#hud,.session-hud,#elmwood-controls,.on-foot-controls,.community-panel')].filter(e=>e.getClientRects().length).map(e=>e.getBoundingClientRect().bottom).filter(y=>y<innerHeight*.65);this.root.style.top=Math.max(172,...reserved.map(y=>y+8))+'px';}else this.root.style.top='';
   const race=this.race;if(!race)return;
   const own=race.racers[0],p=entries.find(e=>e.id===own.id)?.pose;if(!p)return;
@@ -47,6 +58,6 @@ export class CircuitRace {
   if(own.finish===undefined)this.status.textContent=direction+' '+this.status.textContent;
   this.canvas.dataset.lapRace=JSON.stringify({map:this.host.name,stage:race.stage,lap:race.lap(own),laps:race.laps,next:own.next,gate,place:rank,entrants:race.racers.length,elapsed:race.elapsed,completed:own.completed,finish:own.finish??null,course:race.course});
  }
- reset(){this.race=undefined;this.marker.visible=false;this.panel.hidden=true;this.status.textContent='';this.hint='';this.launch.textContent='Lap race';this.launch.setAttribute('aria-expanded','false');delete this.canvas.dataset.lapRace;}
- dispose(){this.root.remove();this.marker.removeFromParent();this.marker.traverse(o=>{if(o instanceof T.Mesh){o.geometry.dispose();(o.material as T.Material).dispose();}});}
+ reset(){this.race=undefined;this.marker.visible=false;this.closePanel();this.status.textContent='';this.hint='';this.launch.textContent='Lap race';delete this.canvas.dataset.lapRace;}
+ dispose(){this.closePanel();this.dialog.remove();this.root.remove();this.marker.removeFromParent();this.marker.traverse(o=>{if(o instanceof T.Mesh){o.geometry.dispose();(o.material as T.Material).dispose();}});}
 }

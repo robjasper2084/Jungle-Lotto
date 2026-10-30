@@ -13,7 +13,7 @@ import {clamp} from './rideDynamics.ts';
 import {HUMAN_PROFILE,type RiderProfile} from './profiles.ts';
 import { riderMotion } from './riderMotion.ts';
 import {CrashContact} from './crashContact.ts';
-import {FallenSupport} from './fallenSupport.ts';
+import {FallenSupport,settledContactMargin} from './fallenSupport.ts';
 import {createGroundSample,type TerrainSampler} from './terrain.ts';
 
 type Limb={upper:T.Object3D;knee:T.Object3D;foot:T.Object3D;target:T.Vector3;rotation:T.Quaternion;};
@@ -217,7 +217,7 @@ export class ThreeRiderView {
       this.fingers.apply('Relaxed','Relaxed');
       this.fallenSupport.apply(this,p,this.terrain);
       this.wheelContact.settle(this.vehicle,floor,this.terrain,.018,p.crashContact);
-      this.riderContact.settle(this.rider,floor,this.terrain,.045,p.crashMotion?p.crashContact:0);
+      this.riderContact.settle(this.rider,floor,this.terrain,settledContactMargin(p,this.motionScale),p.crashMotion?p.crashContact:0);
       this.fallenSupport.recover(this,p,this.terrain);
       this.root.updateMatrixWorld(true);
     }
