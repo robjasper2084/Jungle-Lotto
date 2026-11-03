@@ -1,3 +1,4 @@
+import {clockLocal,floralClock} from './activitiesPlan.ts';
 import {inside,segment,ParkTerrain,type ParkMap,type Point} from './terrain.ts';
 export type Plant={id:string;x:number;y:number;z:number;scale:number;heightScale?:number;yaw:number;tint:number};
 export type NaturePlan={version:1;trees:Plant[];ground:Plant[];placementEvidence:string};
@@ -15,6 +16,7 @@ export function makeNaturePlan(map:ParkMap):NaturePlan{
  const gardens=map.areas.filter(a=>a.kind==='garden');
  const ringDistance=(x:number,z:number,p:Point[])=>Math.min(...p.slice(1).map((b,i)=>segment(x,z,p[i],b).d));
  function clear(x:number,z:number,margin:number){
+  const [cx,cz]=clockLocal(x,z);if((cx/(floralClock.hillWidth+margin))**2+((cz-floralClock.hillOffset)/(floralClock.hillDepth+margin))**2<1)return false;
   if(!inside(x,z,map.island)||!terrain.land(x,z)||terrain.bridge(x,z).active)return false;
   if(map.entranceSign&&Math.hypot(x-map.entranceSign.point[0],z-map.entranceSign.point[1])<14)return false;
   if((map.monuments||[]).some(m=>Math.hypot(x-m.x,z-m.z)<m.radius+margin+1))return false;

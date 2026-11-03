@@ -2,7 +2,7 @@ export type Surface='asphalt'|'grass'|'concrete'|'brick'|'bark'|'sand'|'limeston
 export function surfaceKind(name:string,object:string,metalness=0):Surface|null{
  const n=(name+' '+object).toLowerCase();
  // Optical, luminous, graphic and moving-water surfaces keep their dedicated materials.
- if(/meadow.grass.blades|glass|glaz|clear.panes|lens.coating|monitor|screen|lcd|record.led|running.light|brake.light|plate|michigan|sign|marking|stripe|letter|water|foam|sky|sun|beacon|light.pool|lamp|globe/.test(n))return null;
+ if(/court.paint|court.line|clock.dial|clock.hands|floral.clock.flowers|sports.rim|meadow.grass.blades|glass|glaz|clear.panes|lens.coating|monitor|screen|lcd|record.led|running.light|brake.light|plate|michigan|sign|marking|stripe|letter|water|foam|sky|sun|beacon|light.pool|lamp|globe/.test(n))return null;
  if(/boerboel|companion|dog/.test(n))return 'fur';
  if(/hero_head|hero_arms|fpvarms|skin.hand/.test(n))return 'skin';
  if(/higgsfield.hero|hero_body|hero_upperarms|dread|cloth|suit|fabric|cushion/.test(n))return 'cloth';

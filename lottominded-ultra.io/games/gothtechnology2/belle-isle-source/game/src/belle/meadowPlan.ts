@@ -1,3 +1,4 @@
+import {clockLocal,floralClock} from './activitiesPlan.ts';
 import {inside,segment,ParkTerrain,type ParkMap,type Point} from './terrain.ts';
 
 export const MEADOW_CELL=6;
@@ -30,6 +31,7 @@ export function makeMeadowPlan(map:ParkMap):MeadowPlan{
    if(!terrain.land(x,z,2)||terrain.bridge(x,z).active)continue;
    if(![-1,1].every(dx=>[-1,1].every(dz=>terrain.land(x+dx*half,z+dz*half,2))))continue;
    if(terrain.obstructed(x,z,margin+1))continue;
+   const [cx,cz]=clockLocal(x,z);if((cx/(floralClock.hillWidth+margin))**2+((cz-floralClock.hillOffset)/(floralClock.hillDepth+margin))**2<1)continue;
    if(map.entranceSign&&Math.hypot(x-map.entranceSign.point[0],z-map.entranceSign.point[1])<17)continue;
    const edges=buckets.get(Math.floor(x/bucketSize)+','+Math.floor(z/bucketSize))||[];
    if(edges.some(e=>segment(x,z,e.a,e.b).d<e.width+margin+1.1))continue;

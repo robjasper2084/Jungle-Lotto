@@ -36,7 +36,7 @@ export function applyRealisticMaterials(root:T.Object3D,context=''){
    // Clone only when one material covers different semantic parts of an actor.
    const key=material.uuid+kind;let m=clones.get(key);if(m)return m;
    m=material.clone();m.onBeforeCompile=material.onBeforeCompile;clones.set(key,m);done.add(m);
-   const [scale,blend,relief,roughness]=profiles[kind];
+   const [scale,blend,relief,roughness]=/ballfield infield/i.test(material.name)?[6,.25,.002,.98]:profiles[kind];
    if(!m.alphaTest&&!m.transparent&&['asphalt','grass','sand','gravel'].includes(kind)){m.map=null;m.normalMap=null;m.bumpMap=null;m.roughnessMap=null;}const oldCompile=m.onBeforeCompile,oldKey=material.customProgramCacheKey();
    m.roughness=kind==='metal'?Math.max(.24,Math.min(.6,m.roughness)):roughness;
    m.userData.realisticSurface=kind;
