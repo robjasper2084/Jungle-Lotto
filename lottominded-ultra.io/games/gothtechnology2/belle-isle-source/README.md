@@ -25,3 +25,11 @@ Third-party nature, sand and bird licenses remain beside their runtime assets. G
 ## Hoverbike lighting
 
 Open Lighting while riding. Choose any LED color, use K for six presets, or select Slow color cycle / LEDs off. L toggles the two white headlights; H toggles high beam. LEDs and headlights work independently. The chosen LED color and effect persist locally. Reduced Motion holds the selected LED color; pausing stops the cycle. Headlight beams illuminate nearby world geometry and characters, with no extra shadow maps.
+
+## Grass, mature trees and road clearance
+
+A bounded pool of curved, wind-animated grass blades adds short verge grass, rough meadow and woodland ground cover. The placement plan excludes roads, water, garden beds, sports and play areas. Reduced Motion stops blade wind. Tree heights are authored at roughly 14–32 m and match between close geometry and distant cards. These are visual/gameplay approximations, not a tree survey.
+
+444 drivable ways receive wider cruising allowances (ordinary roads at least 8.4 m, service roads 7.2 m, links 6.8 m). Existing wider roads, separate cycle-track width, pedestrian paths and bridge decks are retained. sourceWidth records the previous estimate. The shared pavement and curb plans use these same widths.
+
+REA inspected this project’s compiled JavaScript as inert text. No PUBG application or assets were reverse engineered or copied. Build nature placement with `node --experimental-strip-types tools/build-nature-plan.mjs`, then grass placement with `node --experimental-strip-types tools/build-meadow.mjs`.

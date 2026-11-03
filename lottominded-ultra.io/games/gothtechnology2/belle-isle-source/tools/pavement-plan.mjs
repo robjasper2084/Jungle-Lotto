@@ -5,7 +5,8 @@ export const surfaceKind=r=>['grass','gravel','fine_gravel','unpaved','dirt','gr
 export function corridorPolygons(points,width){
  const clean=points.filter((p,i)=>!i||Math.hypot(p[0]-points[i-1][0],p[1]-points[i-1][1])>.001);
  if(clean.length<2)return [];
- const sides=clean.map((p,i)=>{const a=clean[Math.max(0,i-1)],b=clean[Math.min(clean.length-1,i+1)],l=Math.hypot(p[0]-a[0],p[1]-a[1]),r=Math.hypot(b[0]-p[0],b[1]-p[1]);let ax=l?(p[1]-a[1])/l:(b[1]-p[1])/r,az=l?-(p[0]-a[0])/l:-(b[0]-p[0])/r,bx=r?(b[1]-p[1])/r:ax,bz=r?-(b[0]-p[0])/r:az;const n=Math.hypot(ax+bx,az+bz),nx=n?(ax+bx)/n:ax,nz=n?(az+bz)/n:az,m=Math.min(1.8,1/Math.max(.01,nx*bx+nz*bz));return [-1,1].map(s=>[p[0]+nx*width*.5*m*s,p[1]+nz*width*.5*m*s]);});
+ const closed=clean.length>2&&Math.hypot(clean[0][0]-clean.at(-1)[0],clean[0][1]-clean.at(-1)[1])<.001;
+ const sides=clean.map((p,i)=>{const a=clean[i===0&&closed?clean.length-2:Math.max(0,i-1)],b=clean[i===clean.length-1&&closed?1:Math.min(clean.length-1,i+1)],l=Math.hypot(p[0]-a[0],p[1]-a[1]),r=Math.hypot(b[0]-p[0],b[1]-p[1]);let ax=l?(p[1]-a[1])/l:(b[1]-p[1])/r,az=l?-(p[0]-a[0])/l:-(b[0]-p[0])/r,bx=r?(b[1]-p[1])/r:ax,bz=r?-(b[0]-p[0])/r:az;const n=Math.hypot(ax+bx,az+bz),nx=n?(ax+bx)/n:ax,nz=n?(az+bz)/n:az,m=Math.min(1.8,1/Math.max(.01,nx*bx+nz*bz));return [-1,1].map(s=>[p[0]+nx*width*.5*m*s,p[1]+nz*width*.5*m*s]);});
  const out=[];for(let i=1;i<sides.length;i++)out.push([[sides[i-1][0],sides[i][0],sides[i][1],sides[i-1][1],sides[i-1][0]]]);
  // Small round joins seal differently oriented endpoints without bulbous caps.
  for(const p of [clean[0],clean.at(-1)] ){const ring=Array.from({length:13},(_,i)=>[p[0]+Math.cos(i*Math.PI/6)*Math.min(.12,width*.04),p[1]+Math.sin(i*Math.PI/6)*Math.min(.12,width*.04)]);out.push([ring]);}

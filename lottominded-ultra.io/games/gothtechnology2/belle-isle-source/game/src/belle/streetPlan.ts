@@ -17,8 +17,9 @@ export function pathSamples(points:Point[],step:number){
 // Split solid strokes at source corners and share bounded miter endpoints.
 // A six-metre box centered on a bend otherwise jumps sideways into the next box.
 export function strokePieces(points:Point[],from:number,to:number,offset:number){
+ const closed=points.length>2&&Math.hypot(points[0][0]-points.at(-1)![0],points[0][1]-points.at(-1)![1])<.001;
  const shifted=points.map((p,i)=>{
-  const a=points[Math.max(0,i-1)],b=points[Math.min(points.length-1,i+1)];
+  const a=points[i===0&&closed?points.length-2:Math.max(0,i-1)],b=points[i===points.length-1&&closed?1:Math.min(points.length-1,i+1)];
   const before=Math.hypot(p[0]-a[0],p[1]-a[1]),after=Math.hypot(b[0]-p[0],b[1]-p[1]);
   const ax=before?(p[1]-a[1])/before:(b[1]-p[1])/(after||1),az=before?-(p[0]-a[0])/before:-(b[0]-p[0])/(after||1);
   const bx=after?(b[1]-p[1])/after:ax,bz=after?-(b[0]-p[0])/after:az;
@@ -72,7 +73,9 @@ export function createStreetPlan(data:ParkMap):StreetPlan{
    const run=(offset:number,w:number,l:number,material:StreetBox['material'],h=.012,dy=.084,road?:string)=>{
     for(const {a,b} of strokePieces(r.points,p.s-l/2,p.s+l/2,offset)){
      const length=Math.hypot(b[0]-a[0],b[1]-a[1]);if(length<.005)continue;
-     if(road&&[a,b,[(a[0]+b[0])/2,(a[1]+b[1])/2] as Point].some(q=>!curbClear(...q)||occupied(q[0],q[1],r.id,.45)))continue;
+     // Tight loops can overlap their own corridor after widening. Keep the entire
+     // curb outside that union as well as leaving gaps at other routes.
+     if(road&&[a,b,[(a[0]+b[0])/2,(a[1]+b[1])/2] as Point].some(q=>!curbClear(...q)||occupied(q[0],q[1],r.id,.45)||occupied(q[0],q[1],'',w/2-.02)))continue;
      add((a[0]+b[0])/2,(a[1]+b[1])/2,Math.atan2(b[0]-a[0],b[1]-a[1]),w,length,material,h,dy,road);
     }
    };

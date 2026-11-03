@@ -24,7 +24,7 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void){
   mesh.castShadow=shadow;mesh.receiveShadow=true;mesh.frustumCulled=false;
   mesh.instanceMatrix.setUsage(T.DynamicDrawUsage);scene.add(mesh);return mesh;
  }
- function matrix(p:Plant,hidden=false){dummy.position.set(p.x,p.y,p.z);dummy.rotation.set(0,p.yaw,0);dummy.scale.setScalar(hidden?0:p.scale);dummy.updateMatrix();return dummy.matrix;}
+ function matrix(p:Plant,hidden=false){dummy.position.set(p.x,p.y,p.z);dummy.rotation.set(0,p.yaw,0);dummy.scale.set(hidden?0:p.scale,hidden?0:p.scale*(p.heightScale??1),hidden?0:p.scale);dummy.updateMatrix();return dummy.matrix;}
  for(const entry of manifest.trees){
   const meshes:T.InstancedMesh[]=[];
   for(const name of entry.meshes||[]){const source=treeSource.scene.getObjectByName(name) as T.Mesh;
@@ -54,7 +54,8 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void){
  for(const source of [treeSource.scene,ground.scene])source.traverse(o=>{if((o as T.Mesh).isMesh)(o as T.Mesh).geometry.dispose();});
  let quality:keyof typeof natureBudget='automatic',lastX=Infinity,lastZ=Infinity;
  const stats={treeVariants:manifest.trees.length,groundVariants:manifest.ground.length,trees:plan.trees.length,ground:plan.ground.length,visibleTrees:0,visibleGround:0};
- function update(x:number,z:number){
+ function update(x:number,z:number,night=0){
+  for(const pool of pools)if(pool.far)(pool.far.material as T.MeshBasicMaterial).color.setScalar(1-night*.84);
   if(Math.hypot(x-lastX,z-lastZ)<6)return;
   lastX=x;lastZ=z;const budget=natureBudget[quality];
   const d=(p:Plant)=>(p.x-x)**2+(p.z-z)**2;

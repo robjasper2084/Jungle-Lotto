@@ -62,3 +62,9 @@ test('unnamed museum service road receives curbs without closing the plaza',()=>
  const plazas=data.areas.filter(a=>a.kind==='pedestrian');
  for(const b of curbs)assert(!plazas.some(a=>inside(b.x,b.z,a.points)&&!(a.holes||[]).some(h=>inside(b.x,b.z,h))),b.road);
 });
+
+test('closed road loops share the same offset seam without curbs crossing the road',()=>{
+ const path: [number,number][]=[[0,0],[0,20],[20,20],[20,0],[0,0]];
+ const all=strokePieces(path,0,80,4);assert.deepEqual(all[0].a,all.at(-1)!.b);
+ assert.deepEqual(all[0].a,[4,4]);
+});

@@ -1,5 +1,5 @@
 import {inside,segment,ParkTerrain,type ParkMap,type Point} from './terrain.ts';
-export type Plant={id:string;x:number;y:number;z:number;scale:number;yaw:number;tint:number};
+export type Plant={id:string;x:number;y:number;z:number;scale:number;heightScale?:number;yaw:number;tint:number};
 export type NaturePlan={version:1;trees:Plant[];ground:Plant[];placementEvidence:string};
 export const natureBudget={smooth:{trees:20,treeRadius:75,ground:160,groundRadius:35},automatic:{trees:36,treeRadius:105,ground:360,groundRadius:55},high:{trees:48,treeRadius:140,ground:560,groundRadius:75}};
 // Executed at build time. No polygon tests or thousands of route scans on a ride.
@@ -93,5 +93,6 @@ export function makeNaturePlan(map:ParkMap):NaturePlan{
    }
   }
  }
+ for(let i=0;i<trees.length;i++){const p=trees[i];p.scale=round(.86+rand()*.38);p.heightScale=round(1.16+rand()*.25);}
  return{version:1,trees,ground,placementEvidence:'Mapped woodland/garden/water polygons; plant species and exact positions approximated. Roads, landmarks, sports and play areas kept clear.'};
 }
