@@ -1,3 +1,4 @@
+import {realisticWaterNormal} from './realisticMaterials.ts';
 import * as T from 'three';
 import {KOI_POND_ID} from './waterFeatures.ts';
 import {inside,type ParkMap,type Point,type ParkTerrain} from './terrain.ts';
@@ -9,7 +10,7 @@ export function createWater(scene:T.Scene,renderer:T.WebGLRenderer,map:ParkMap,t
  const time={value:0},centre={value:new T.Vector2()},vehicle={value:new T.Vector4(0,0,0,0)},ripples={value:Array.from({length:12},()=>new T.Vector4(0,0,-100,0))};let active:Vehicle=null,lastRipple=0,cursor=0;
  const pixels=new Uint8Array(128*128*4);const field=(x:number,y:number)=>Math.sin(x*.147+y*.196+1.7*Math.sin(y*.098))+Math.sin(x*.294-y*.245+.8*Math.sin(x*.098))*.45+Math.sin(x*.687+y*.54)*.18;
  for(let y=0;y<128;y++)for(let x=0;x<128;x++){const i=(y*128+x)*4;pixels[i]=128+Math.round((field(x+1,y)-field(x-1,y))*70);pixels[i+1]=128+Math.round((field(x,y+1)-field(x,y-1))*70);pixels[i+2]=pixels[i+3]=255;}
- const normals=new T.DataTexture(pixels,128,128);normals.wrapS=normals.wrapT=T.RepeatWrapping;normals.magFilter=T.LinearFilter;normals.minFilter=T.LinearMipmapLinearFilter;normals.generateMipmaps=true;normals.needsUpdate=true;
+ const normals=realisticWaterNormal()??new T.DataTexture(pixels,128,128);normals.wrapS=normals.wrapT=T.RepeatWrapping;normals.magFilter=T.LinearFilter;normals.minFilter=T.LinearMipmapLinearFilter;normals.generateMipmaps=true;normals.needsUpdate=true;
  const uniformHeader='uniform vec3 riverSkyTint;uniform float riverTime;uniform sampler2D riverNormals;uniform vec2 riverCentre;uniform vec4 hoverWash;uniform vec4 riverRipples[12];varying vec3 riverWorld;';
  function material(kind:'near'|'far'|'lagoon'){
   const m=new T.MeshPhysicalMaterial({color:kind==='lagoon'?0x284b48:0x163e49,roughness:kind==='lagoon'?.23:.16,metalness:.12,envMapIntensity:1.15,clearcoat:.65,clearcoatRoughness:.12});

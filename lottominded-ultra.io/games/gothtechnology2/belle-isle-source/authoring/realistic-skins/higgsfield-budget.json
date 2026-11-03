@@ -1,0 +1,226 @@
+{
+  "approvedCredits": 200,
+  "spentOrSubmittedCredits": 121.75,
+  "referenceImages": {
+    "hero": "529b56fd-aa50-457f-bf4a-02fd9ccd3d46",
+    "bike": "90fc0fa5-349e-4a0b-9fa9-1b7fdfa23d25"
+  },
+  "referenceMedia": "ec8876db-edea-446e-9124-b02ddab4c496",
+  "date": "2026-11-02",
+  "modelJobs": {
+    "hero": "baa53265-c0b0-4ce0-a052-97ee6de22b89",
+    "bike": "ff06500f-b80f-427e-986d-d9c889ea8d2d",
+    "rig": "01121bf8-8a26-4f62-9b6e-5773fe5220a7"
+  },
+  "audioJobs": {
+    "rotor-loop": "74be32d4-4aef-4e63-96da-ca09d0f10221",
+    "takeoff": "f9d49192-d4b9-4e19-b74c-12b9d431fbef",
+    "landing": "ca276681-455d-4bbb-aaef-fce4a3301a3a",
+    "airbrake": "2a031ee9-e3d8-43b8-b1b5-f86919611d46"
+  },
+  "breakdown": {
+    "referenceImages": 6,
+    "texturedModels": 36,
+    "rig": 5,
+    "audio": 4.25
+  },
+  "accounting": "Quoted credits for submitted generation jobs; video-analysis jobs had no quoted charge.",
+  "skinPass": {
+    "date": "2026-11-03",
+    "jobs": [
+      {
+        "name": "hero",
+        "id": "b479feae-3ca1-4ad6-b2b1-273f2ac457d9",
+        "credits": 9.5,
+        "status": "failed"
+      },
+      {
+        "name": "bike",
+        "id": "6fc7139f-d7e1-4eef-9fd8-45d46349e933",
+        "credits": 9.5,
+        "status": "failed"
+      },
+      {
+        "name": "asphalt",
+        "id": "5da61d4d-d5a3-4669-b3b9-699bca8422ff",
+        "credits": 2,
+        "status": "nsfw"
+      },
+      {
+        "name": "grass",
+        "id": "4e3aba5d-6aa0-4d94-8fe1-fcf0d2893b3c",
+        "credits": 2,
+        "status": "completed"
+      },
+      {
+        "name": "concrete",
+        "id": "d728f100-710f-44e2-8f0a-3bd8c0415c00",
+        "credits": 2,
+        "status": "completed"
+      },
+      {
+        "name": "brick",
+        "id": "5f0b4d62-f5ed-455d-a353-2a318370b736",
+        "credits": 2,
+        "status": "completed"
+      },
+      {
+        "name": "bark",
+        "id": "3e19061c-077f-4812-b7e3-a9300b9e2933",
+        "credits": 2,
+        "status": "completed"
+      },
+      {
+        "name": "sand",
+        "id": "e2f9bdf2-964e-486e-820f-e3ef9aefe1f6",
+        "credits": 2,
+        "status": "failed"
+      },
+      {
+        "name": "limestone",
+        "id": "f953b466-b44b-46d6-9992-625d65a657d0",
+        "credits": 2,
+        "status": "failed"
+      },
+      {
+        "name": "wood",
+        "id": "8e203640-14b3-4ead-917d-0230f59866d0",
+        "credits": 2,
+        "status": "completed"
+      },
+      {
+        "name": "metal",
+        "id": "c71d3107-9e4f-4807-b6b0-a1288ee17b34",
+        "credits": 2,
+        "status": "failed"
+      },
+      {
+        "name": "rubber",
+        "id": "b906a499-901b-42f3-92b8-274fd0033708",
+        "credits": 2,
+        "status": "nsfw"
+      },
+      {
+        "name": "leaf",
+        "id": "ebb95db1-cbe6-4303-99a1-44c13ef75e86",
+        "credits": 2,
+        "status": "completed"
+      },
+      {
+        "name": "cloth",
+        "id": "c672cf5a-b7ba-463f-a134-2e7e52e2bc45",
+        "credits": 2,
+        "status": "completed"
+      },
+      {
+        "name": "dog",
+        "id": "c67654f7-59cc-4e35-973f-293099f01cac",
+        "credits": 9.5,
+        "status": "failed"
+      },
+      {
+        "name": "asphalt",
+        "id": "46c1bf28-e479-4930-bff9-29ce6c18fa70",
+        "credits": 1,
+        "status": "completed"
+      },
+      {
+        "name": "sand",
+        "id": "e2ee5605-a698-4279-a050-dc7caacb9c80",
+        "credits": 1,
+        "status": "completed"
+      },
+      {
+        "name": "limestone",
+        "id": "bab516db-b660-4272-8291-6f8fa2f97bc7",
+        "credits": 1,
+        "status": "completed"
+      },
+      {
+        "name": "metal",
+        "id": "01e8773f-b852-481d-95d4-6663e91fe965",
+        "credits": 1,
+        "status": "completed"
+      },
+      {
+        "name": "rubber",
+        "id": "6d58b62d-47dd-4381-9fa2-2fb323460920",
+        "credits": 1,
+        "status": "completed"
+      },
+      {
+        "name": "fur",
+        "id": "00778904-514e-409f-9ccb-6d0a67600f8e",
+        "credits": 1,
+        "status": "completed"
+      },
+      {
+        "name": "skin",
+        "id": "9ba406d8-44c2-4dc7-ab2e-1fdf15dce900",
+        "credits": 1,
+        "status": "completed"
+      },
+      {
+        "name": "water",
+        "id": "dbee56d2-f1fc-4584-bea4-e1ef809b1bd2",
+        "credits": 1,
+        "status": "completed"
+      },
+      {
+        "name": "gravel",
+        "id": "5bf0fcf7-4d62-429d-81cf-8f1ff0b415fa",
+        "credits": 1,
+        "status": "completed"
+      },
+      {
+        "name": "roof",
+        "id": "0426e081-752c-4d39-a022-42ce023d0d7f",
+        "credits": 1,
+        "status": "completed"
+      },
+      {
+        "name": "asphalt correction pro",
+        "id": "7e6db97e-e88e-4ea5-a298-497e40b1d0c6",
+        "credits": 2,
+        "status": "failed"
+      },
+      {
+        "name": "asphalt correction",
+        "id": "e7dc7d44-4a50-419e-ab06-f03d2f4c3cd9",
+        "credits": 1,
+        "status": "completed"
+      },
+      {
+        "name": "sand correction",
+        "id": "951ae647-1d77-457b-9eda-abaf08195667",
+        "credits": 1,
+        "status": "completed"
+      },
+      {
+        "name": "skin correction",
+        "id": "421f0841-a791-441a-b3e6-272e7c0a8223",
+        "credits": 1,
+        "status": "completed"
+      },
+      {
+        "name": "rubber correction",
+        "id": "4248aeb9-850d-46a2-9836-b91da57bf393",
+        "credits": 1,
+        "status": "completed"
+      },
+      {
+        "name": "limestone correction",
+        "id": "7b9cdbe9-4997-474a-80dc-8fbfab9076c1",
+        "credits": 1,
+        "status": "completed"
+      },
+      {
+        "name": "metal correction",
+        "id": "a043dec1-0c4c-461d-94f7-12afa6bee0d1",
+        "credits": 1,
+        "status": "completed"
+      }
+    ],
+    "accounting": "Conservative sum of all quoted submissions, including failed jobs; refunds not assumed."
+  }
+}

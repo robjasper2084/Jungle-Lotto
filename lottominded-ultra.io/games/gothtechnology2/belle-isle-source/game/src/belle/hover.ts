@@ -1,3 +1,4 @@
+import {applyRealisticMaterials} from './realisticMaterials.ts';
 import * as T from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {HoverAudio} from './hoverAudio.ts';
@@ -91,7 +92,7 @@ export class HoverRide {
      }
     }
    });
-   this.lighting=new HoverLighting(this.model.getObjectByName('HoverBikeRoot')??this.model,this.lights);this.model.visible=false;scene.add(this.model);
+   applyRealisticMaterials(this.model);this.lighting=new HoverLighting(this.model.getObjectByName('HoverBikeRoot')??this.model,this.lights);this.model.visible=false;scene.add(this.model);
   })().catch(e=>{this.loading=undefined;throw e;});
   await this.loading;
  }
