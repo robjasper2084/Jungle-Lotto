@@ -1,0 +1,6 @@
+CC0 1.0 Universal
+Author: mujtaba-io
+Source: https://opengameart.org/content/low-poly-3d-pigeon-model-rigged-animated-untextured
+License: https://creativecommons.org/publicdomain/zero/1.0/
+Verified from publisher page 2026-11-02.
+Derived model: repaired invalid legacy skin weights, removed reference-image planes and scratch objects, original low-cost feather materials, glTF Flight and Idle actions.

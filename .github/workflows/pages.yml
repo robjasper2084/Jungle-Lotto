@@ -39,6 +39,13 @@ jobs:
             lottominded-ultra.io/games/gothtechnology2/package-lock.json
             lottominded-ultra.io/games/lottomind-313-fortune-grid/package-lock.json
             lottominded-ultra.io/games/lottomind-jackpot-maze/source/package-lock.json
+      - name: Validate Belle Isle Explorer
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm ci
+          npm run check
+          npm test
+          npm run build
       - name: Install GothTechnology dependencies
         working-directory: lottominded-ultra.io/games/gothtechnology2
         run: npm ci

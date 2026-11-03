@@ -1,0 +1,161 @@
+{
+  "version": 1,
+  "trees": [
+    {
+      "id": "maple",
+      "sourcePreset": "small_maple",
+      "height": 16.041,
+      "triangles": 12799,
+      "meshes": [
+        "maple__leaves",
+        "maple__trunk"
+      ],
+      "cardSize": 17.645,
+      "cardCenter": [
+        -0.075,
+        8.0204,
+        -0.0625
+      ],
+      "card": "maple-far.png"
+    },
+    {
+      "id": "willow",
+      "sourcePreset": "weeping_willow",
+      "height": 16.743,
+      "triangles": 16026,
+      "meshes": [
+        "willow__leaves",
+        "willow__trunk"
+      ],
+      "cardSize": 18.4171,
+      "cardCenter": [
+        -0.2644,
+        8.3714,
+        -0.4595
+      ],
+      "card": "willow-far.png"
+    },
+    {
+      "id": "birch",
+      "sourcePreset": "white_birch",
+      "height": 18.34,
+      "triangles": 12399,
+      "meshes": [
+        "birch__leaves",
+        "birch__trunk"
+      ],
+      "cardSize": 20.1742,
+      "cardCenter": [
+        -0.0565,
+        9.1701,
+        -0.1427
+      ],
+      "card": "birch-far.png"
+    },
+    {
+      "id": "pine",
+      "sourcePreset": "small_pine",
+      "height": 14.641,
+      "triangles": 14799,
+      "meshes": [
+        "pine__leaves",
+        "pine__trunk"
+      ],
+      "cardSize": 16.105,
+      "cardCenter": [
+        -0.288,
+        7.3205,
+        0.085
+      ],
+      "card": "pine-far.png"
+    }
+  ],
+  "ground": [
+    {
+      "id": "rock_1",
+      "category": "rock",
+      "source": "rock_moss_set_01",
+      "triangles": 1499,
+      "height": 1.7736
+    },
+    {
+      "id": "rock_2",
+      "category": "rock",
+      "source": "rock_moss_set_01",
+      "triangles": 1500,
+      "height": 1.0978
+    },
+    {
+      "id": "rock_3",
+      "category": "rock",
+      "source": "rock_moss_set_01",
+      "triangles": 1500,
+      "height": 1.4808
+    },
+    {
+      "id": "grass_1",
+      "category": "grass",
+      "source": "grass_medium_01",
+      "triangles": 121,
+      "height": 0.3257
+    },
+    {
+      "id": "grass_2",
+      "category": "grass",
+      "source": "grass_medium_01",
+      "triangles": 659,
+      "height": 0.1989
+    },
+    {
+      "id": "grass_3",
+      "category": "grass",
+      "source": "grass_medium_01",
+      "triangles": 1011,
+      "height": 0.1353
+    },
+    {
+      "id": "dandelion_1",
+      "category": "dandelion",
+      "source": "dandelion_01",
+      "triangles": 629,
+      "height": 0.1598
+    },
+    {
+      "id": "dandelion_2",
+      "category": "dandelion",
+      "source": "dandelion_01",
+      "triangles": 619,
+      "height": 0.1123
+    },
+    {
+      "id": "dandelion_3",
+      "category": "dandelion",
+      "source": "dandelion_01",
+      "triangles": 326,
+      "height": 0.1015
+    },
+    {
+      "id": "periwinkle_1",
+      "category": "periwinkle",
+      "source": "periwinkle_plant",
+      "triangles": 372,
+      "height": 0.1598
+    },
+    {
+      "id": "periwinkle_2",
+      "category": "periwinkle",
+      "source": "periwinkle_plant",
+      "triangles": 694,
+      "height": 0.2059
+    },
+    {
+      "id": "periwinkle_3",
+      "category": "periwinkle",
+      "source": "periwinkle_plant",
+      "triangles": 927,
+      "height": 0.2649
+    }
+  ],
+  "units": "metres",
+  "generated": "2026-11-02"
+}
