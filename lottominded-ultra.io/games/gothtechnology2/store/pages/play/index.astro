@@ -4,10 +4,10 @@ import Icon from '../../components/Icon.astro';
 import {canonical, href} from '../../utilities/paths';
 import {DISCOUNT_TIERS} from '../../public/arcade/rewards.js';
 import {REWARD_GAMES} from '../../public/arcade/games.js';
-const allGames=[...REWARD_GAMES.map(game=>({...game,rewards:true})),{id:'elmwood-explorer',title:'Elmwood Explorer',path:'arcade/elmwood-explorer/elmwood.html',help:'Explore the grounds, ride the garden paths, and discover historic landmarks.',rewards:false}];
+const allGames=[{id:'belle-isle-explorer',title:'Belle Isle Explorer',path:'arcade/belle-isle-explorer/',help:'Cruise Belle Isle by hoverbike, photograph Detroit through interchangeable lenses, and bring your Boerboel companion.',rewards:false},...REWARD_GAMES.map(game=>({...game,rewards:true})),{id:'elmwood-explorer',title:'Elmwood Explorer',path:'arcade/elmwood-explorer/elmwood.html',help:'Explore the grounds, ride the garden paths, and discover historic landmarks.',rewards:false}];
 const rahbeeGameUrl = href('arcade/shadow-ops-canvas/?arcade=1');
 ---
-<Shell title="Play the Arcade" path="play/" description="Explore all eight GOTHTECHNOLOGY games: fighting, action, racing, and Detroit exploration. No purchase required.">
+<Shell title="Play the Arcade" path="play/" description="Explore GOTHTECHNOLOGY games: fighting, action, racing, and Detroit exploration. No purchase required.">
 <section class="play-shell">
 <div class="play-toolbar"><a class="text-link" href={href()}>← Back to Store</a><p id="game-connection" role="status">Launch when you are ready. The game loads only after a click.</p><a class="text-link" id="game-standalone-link" href={href('legacy-game/')} target="_blank" rel="noopener">Open standalone game ↗</a></div>
 <div class="game-reward"><p id="requested-character">Choose a fighter inside the game.</p><a class="text-link" id="game-collection-link" href={href('collections/combat-systems/')}>View game collection</a></div>

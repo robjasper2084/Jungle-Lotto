@@ -1,0 +1,3 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {ledColor,LED_COLORS} from './hoverLightingModel.ts';
+test('rider LED colors hold in solid and reduced-motion modes',()=>{for(const c of LED_COLORS){assert.equal(ledColor(c,'solid',9,false).getHexString(),c.slice(1));assert.equal(ledColor(c,'cycle',9,true).getHexString(),c.slice(1));}});
+test('color cycling changes smoothly and returns after eighteen seconds',()=>{const a=ledColor('#79dfff','cycle',0,false),b=ledColor('#79dfff','cycle',9,false);assert.notEqual(a.getHex(),b.getHex());assert.equal(a.getHex(),ledColor('#79dfff','cycle',18,false).getHex());});

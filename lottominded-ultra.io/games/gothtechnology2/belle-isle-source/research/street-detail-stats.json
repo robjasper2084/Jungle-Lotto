@@ -1,0 +1,12 @@
+{
+  "boxes": 45942,
+  "signs": 55,
+  "crossings": 62,
+  "roads": 459,
+  "buildMs": 2513.6113,
+  "notes": [
+    "Generated from mapped corridors; curb extents and sign positions are a reconstruction, not a survey.",
+    "Central Avenue direction arrows omitted pending confirmation of the 2026 segment boundaries.",
+    "Marked crossings use mapped OSM crossing nodes; facility boards are original game wayfinding."
+  ]
+}

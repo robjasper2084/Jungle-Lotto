@@ -28,6 +28,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Reserve disk space for Pages assembly
+        if: runner.environment == 'github-hosted'
+        run: |
+          # This browser-only job does not use the preinstalled Android or .NET SDKs.
+          # Keep the checkout, build inputs, and test artifacts intact.
+          df -h /
+          sudo rm -rf -- /usr/local/lib/android /usr/share/dotnet
+          df -h /
       - name: Checkout
         uses: actions/checkout@v4
       - name: Setup Node
@@ -39,6 +47,13 @@ jobs:
             lottominded-ultra.io/games/gothtechnology2/package-lock.json
             lottominded-ultra.io/games/lottomind-313-fortune-grid/package-lock.json
             lottominded-ultra.io/games/lottomind-jackpot-maze/source/package-lock.json
+      - name: Validate Belle Isle Explorer
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm ci
+          npm run check
+          npm test
+          npm run build
       - name: Install GothTechnology dependencies
         working-directory: lottominded-ultra.io/games/gothtechnology2
         run: npm ci
@@ -87,7 +102,7 @@ jobs:
         run: node --test scripts/prune-riding-bundles.test.mjs scripts/share-cinematic-media.test.mjs scripts/share-game-clips.test.mjs scripts/gothtechnology-pages.test.mjs scripts/game-pages.test.mjs scripts/share-ride-vehicles.test.mjs scripts/share-riding-media.test.mjs scripts/optimize-pages-images.test.mjs scripts/lossless-riding-textures.test.mjs scripts/share-unity-stage.test.mjs scripts/share-city-data.test.mjs
       - name: Build lean Pages artifact
         run: |
-          node --test scripts/share-published-ride-textures.test.mjs
+          node --test scripts/share-published-ride-textures.test.mjs scripts/share-belle-assets.test.mjs
           node scripts/build-pages-artifact.mjs
       - name: Verify packaged arcade assets on desktop and mobile
         run: node scripts/gothtechnology-pages-browser.mjs

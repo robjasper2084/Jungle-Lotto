@@ -1,0 +1,41 @@
+{
+  "date": "2026-11-03T10:17:04.473Z",
+  "reaEvidenceId": "ev_772558015ff288ac4bc73612e69dd578b79b114ddd3b6f16f847cd5229d49034",
+  "reaScope": "Inert static analysis of our compiled JavaScript; no PUBG code/assets inspected",
+  "tests": {
+    "typeScript": "pass",
+    "belleTests": 141,
+    "failed": 0,
+    "vite": "pass",
+    "storeBuild": "pass"
+  },
+  "geometry": {
+    "grassTufts": {
+      "smooth": 1400,
+      "automatic": 4600,
+      "high": 8200
+    },
+    "trianglesPerTuft": 56,
+    "treeHeightMetres": [
+      14,
+      32
+    ],
+    "widenedRoads": 444,
+    "pathsUnchanged": 742,
+    "bridgeWaysUnchanged": 63
+  },
+  "browser": {
+    "preview": "http://127.0.0.1:8303/",
+    "tested": [
+      "startup",
+      "guide travel",
+      "on-foot grass",
+      "first-person camera",
+      "high detail",
+      "reduced motion"
+    ],
+    "consoleErrors": 0,
+    "frameObservation": "Lake Okonoka automatic: median 16.7 ms, p95 16.9 ms on this desktop; not a device benchmark"
+  },
+  "deployment": "Pending latest commit CI and Pages deployment"
+}

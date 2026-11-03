@@ -1,0 +1,104 @@
+[
+  {
+    "name": "asphalt",
+    "source": "asphalt.png",
+    "dimensions": 1024,
+    "mean": 0.27629358377333413
+  },
+  {
+    "name": "grass",
+    "source": "grass.png",
+    "dimensions": 1024,
+    "mean": 0.4057761948591265
+  },
+  {
+    "name": "concrete",
+    "source": "concrete.png",
+    "dimensions": 1024,
+    "mean": 0.7019857599410528
+  },
+  {
+    "name": "brick",
+    "source": "brick.png",
+    "dimensions": 1024,
+    "mean": 0.4767696432920303
+  },
+  {
+    "name": "bark",
+    "source": "bark.png",
+    "dimensions": 1024,
+    "mean": 0.4293291199689708
+  },
+  {
+    "name": "sand",
+    "source": "sand.png",
+    "dimensions": 1024,
+    "mean": 0.7513191564432589
+  },
+  {
+    "name": "limestone",
+    "source": "limestone.png",
+    "dimensions": 1024,
+    "mean": 0.743787779909411
+  },
+  {
+    "name": "wood",
+    "source": "wood.png",
+    "dimensions": 1024,
+    "mean": 0.5446928682778491
+  },
+  {
+    "name": "metal",
+    "source": "metal.png",
+    "dimensions": 1024,
+    "mean": 0.6115539050862537
+  },
+  {
+    "name": "rubber",
+    "source": "rubber.png",
+    "dimensions": 1024,
+    "mean": 0.2056560285766303
+  },
+  {
+    "name": "leaf",
+    "source": "leaf.png",
+    "dimensions": 1024,
+    "mean": 0.539513018672821
+  },
+  {
+    "name": "cloth",
+    "source": "cloth.png",
+    "dimensions": 1024,
+    "mean": 0.4996927590672513
+  },
+  {
+    "name": "fur",
+    "source": "fur.png",
+    "dimensions": 1024,
+    "mean": 0.5202428924197164
+  },
+  {
+    "name": "skin",
+    "source": "skin.png",
+    "dimensions": 1024,
+    "mean": 0.49154863011965233
+  },
+  {
+    "name": "gravel",
+    "source": "gravel.png",
+    "dimensions": 1024,
+    "mean": 0.6145134839260485
+  },
+  {
+    "name": "roof",
+    "source": "roof.png",
+    "dimensions": 1024,
+    "mean": 0.32912068492033253
+  },
+  {
+    "name": "water",
+    "source": "water.png",
+    "dimensions": 512,
+    "mean": 0.43626915951485046
+  }
+]

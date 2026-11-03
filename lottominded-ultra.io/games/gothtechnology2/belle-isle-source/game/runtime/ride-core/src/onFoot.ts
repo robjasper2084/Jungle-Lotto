@@ -1,0 +1,200 @@
+import {findVault,vaultPosition,VAULT_SECONDS} from './royale/vault.ts';
+import {createGroundSample,type TerrainSampler} from './terrain.ts';
+import {footCycleDistance} from './onFootGait.ts';
+import {wheelPickupTiming,WHEEL_PICKUP_TOTAL} from './wheelPickupTiming.ts';
+import {msjLocomotionState,resetMsjLocomotion,stepMsjLocomotion} from './msjLocomotion.ts';
+import {stepPronePhase,proneTravelWeight} from './kimodoProneTiming.ts';
+
+export const FOOT_SPEED={walk:2.35,run:5.4,reverse:2.05,reverseRun:3.8} as const;
+export const footFields=()=>({footEvade:0,footEvadeDir:0,footVault:0,footMode:0,footBlend:0,footPhase:0,footCycle:0,footTime:0,footMountTime:0,footJump:0,footCrouch:0,footProne:0,footStagger:0,footLean:0,parkX:0,parkY:0,parkZ:0,parkHeading:0});
+export type FootPose=ReturnType<typeof footFields>&{x:number;y:number;z:number;headingY:number;speed:number;airHeight:number;airBlend:number;velocityX:number;velocityZ:number;rollAngle:number;groundPitch:number;groundRoll:number;stopFoot:number};
+export const footState=()=>({...msjLocomotionState(),legacyLocomotion:false,vaultAge:-1,vaultLift:0,vaultLatch:false,vaultFromX:0,vaultFromY:0,vaultFromZ:0,vaultToX:0,vaultToY:0,vaultToZ:0,recoverFor:0,mode:0,age:0,latch:false,jumpLatch:false,vy:0,turn:0,fromX:0,fromY:0,fromZ:0,fromHeading:0,toX:0,toY:0,toZ:0,phase:0,time:0,land:0,carryX:0,carryZ:0,stagger:0});
+export type FootActions={throttle:number;steer:number;facingYaw?:number;hop?:boolean;hopHeld?:boolean;crouch?:boolean;prone?:boolean;run?:boolean;lean?:number;dismount?:boolean;recover?:boolean;movingDismount?:boolean;mountBlocked?:boolean;interruptMount?:boolean;evade?:number;evadeSpeed?:number;evadeProgress?:number;vault?:boolean;quickMount?:boolean};
+/** Only an authoritative collision invokes this; actor and parked vehicle remain separate. */
+export function knockOffOnFoot(s:ReturnType<typeof footState>,p:FootPose){
+ if(s.mode){s.stagger=Math.max(s.stagger,.7);return;}
+ resetMsjLocomotion(s);
+ Object.assign(s,{mode:2,age:0,stagger:.8,carryX:p.velocityX*.55,carryZ:p.velocityZ*.55,vy:0});
+ Object.assign(p,{footMode:2,footBlend:1,parkX:p.x,parkY:p.y-p.airHeight,parkZ:p.z,parkHeading:p.headingY,footStagger:1,speed:0});
+}
+export function interpolateFoot(a:ReturnType<typeof footFields>,b:ReturnType<typeof footFields>,t:number,out:ReturnType<typeof footFields>){
+ out.footMode=b.footMode;out.footJump=b.footJump;
+ for(const key of ['parkX','parkY','parkZ','parkHeading'] as const)out[key]=b[key];
+ const phase=b.footPhase-a.footPhase;out.footPhase=(a.footPhase+(phase-Math.round(phase))*t+1)%1;
+ if(!b.footMode)out.footBlend=0;
+}
+const clamp=(n:number,a:number,b:number)=>Math.max(a,Math.min(b,n));
+const ease=(n:number)=>{n=clamp(n,0,1);return n*n*(3-2*n);};
+const angle=(n:number)=>Math.atan2(Math.sin(n),Math.cos(n));
+export function footLabel(p:Partial<FootPose>){
+ if(!p.footMode)return 'Get off wheel';
+ if(p.footMode===1)return 'Getting off…';if(p.footMode===3)return wheelPickupTiming(p.footMountTime||0).mount>0?'Getting on…':'Picking up wheel…';
+ const d=Math.hypot(p.x!-p.parkX!,p.z!-p.parkZ!);return d>1.3?'Wheel · '+Math.ceil(d)+' m':'Get on wheel';
+}
+/** Fixed-step, serializable movement. Only inputs cross the network; the authority
+ * chooses the parking spot, collision sweep, jump trajectory and mount distance. */
+export function stepOnFoot(s:ReturnType<typeof footState>,p:FootPose,t:TerrainSampler,dt:number,a:FootActions,crashed=false){
+ p.footEvade=a.evade?Math.max(.0001,a.evadeProgress??0):0;p.footEvadeDir=a.evade||0;
+ const vaultTap=!!a.vault&&!s.vaultLatch;s.vaultLatch=!!a.vault;
+ const toggle=!!a.dismount&&!s.latch;s.latch=!!a.dismount;
+ // A one-shot Recover during knock-off survives the short stagger. It never
+ // drives the rider, moves the parked wheel, or bypasses mount clearance.
+ s.recoverFor=Math.max(0,(s.recoverFor??0)-dt);
+ if(a.recover&&(s.mode===1||s.mode===2))s.recoverFor=2;
+ if(a.interruptMount||toggle||!s.mode||s.mode===3)s.recoverFor=0;
+ const jump=!!(a.hop||a.hopHeld)&&!s.jumpLatch;s.jumpLatch=!!(a.hop||a.hopHeld);
+ const ground=createGroundSample();
+ const clear=(x:number,y:number,z:number,nx:number,ny:number,nz:number)=>{
+  const dx=nx-x,dz=nz-z,d=Math.hypot(dx,dz);if(d<1e-7)return true;
+  // Overlapping sweeps cover the whole body; two spaced spheres left a gap
+  // through which a thin raised sidewalk could slice the rider's torso.
+  // Ground sampling permits steps up to .34 m. Keep the lowest standing/crouch
+  // sphere above that step band so a normal curb does not act like a wall.
+  const low=p.footProne>.5,heights=low?[.30,.5]:p.footCrouch>.5?[.62,.95]:[.62,1.1,1.58];
+  const offsets=low?[-.75,0,.65]:[0];
+  return offsets.every(offset=>heights.every(h=>{const hit=t.raycastObstacle({x:x+Math.sin(p.headingY)*offset,y:Math.min(y,ny)+h,z:z+Math.cos(p.headingY)*offset},{x:dx/d,y:0,z:dz/d},d+.3,.27);return hit===null||hit>d+.27;}));
+ };
+ if(toggle&&!s.mode&&!crashed&&(a.movingDismount||Math.abs(p.speed)<=1)&&(a.movingDismount||p.airHeight<.04)){
+  // Try both sides; never dismount inside a wall or over a drop.
+  for(const side of [1,-1]){
+   const x=p.x+Math.cos(p.headingY)*.68*side,z=p.z-Math.sin(p.headingY)*.68*side;
+   t.sampleGround(x,z,ground,p.y);
+   if(ground.offCourse||Math.abs(ground.height-(p.y-p.airHeight))>.3||!clear(p.x,p.y,p.z,x,ground.height,z))continue;
+   Object.assign(s,{mode:1,age:0,fromX:p.x,fromY:p.y,fromZ:p.z,fromHeading:p.headingY,toX:x,toY:ground.height,toZ:z,vy:0,carryX:a.movingDismount?p.velocityX*.55:0,carryZ:a.movingDismount?p.velocityZ*.55:0});
+   Object.assign(p,{parkX:p.x,parkY:p.y-p.airHeight,parkZ:p.z,parkHeading:p.headingY,speed:0});break;
+  }
+ }else if((toggle||s.recoverFor>0)&&s.mode===2&&!a.mountBlocked&&s.stagger<=0&&p.airHeight<.04&&Math.hypot(p.x-p.parkX,p.z-p.parkZ)<=1.3&&Math.abs(p.y-p.parkY)<.3&&clear(p.x,p.y,p.z,p.parkX,p.parkY,p.parkZ)){
+  Object.assign(s,{mode:3,recoverFor:0,age:0,fromX:p.x,fromY:p.y,fromZ:p.z,fromHeading:p.headingY,toX:p.parkX,toY:p.parkY,toZ:p.parkZ,vy:0});
+ }
+ if(s.mode!==2)resetMsjLocomotion(s);
+ if(s.mode!==2)p.footLean=0;
+ if(!s.mode){p.footMode=p.footBlend=p.footCrouch=p.footProne=p.footMountTime=0;return false;}
+ s.time+=dt;p.footTime=s.time;p.footMode=s.mode;
+ s.stagger=Math.max(0,s.stagger-dt*(a.quickMount?3:1));p.footStagger=clamp(s.stagger/.8,0,1);
+ p.stopFoot=p.rollAngle=p.groundPitch=p.groundRoll=0;p.velocityX=p.velocityZ=0;
+ if(s.mode===3&&(a.mountBlocked||a.interruptMount||crashed||s.stagger>0)){s.mode=p.footMode=2;p.footBlend=1;p.footMountTime=0;return true;}
+ if(s.mode===3){
+  // Host AI policy: immediately recover through the same pickup poses, at a
+  // brisk pace. This is never accepted as a client command or a teleport.
+  s.age+=dt*(a.quickMount?2.6:1);p.footMountTime=s.age;const timing=wheelPickupTiming(s.age);
+  // Approach from the side on which the player is already standing. Keep the
+  // parked wheel authoritative and fixed while the harvested reach is played.
+  let dx=s.fromX-s.toX,dz=s.fromZ-s.toZ;
+  if(Math.hypot(dx,dz)<.05){dx=Math.cos(p.parkHeading);dz=-Math.sin(p.parkHeading);}
+  const length=Math.hypot(dx,dz);
+  const ax=s.toX+dx/length*.30,az=s.toZ+dz/length*.30;
+  const x=(s.fromX+(ax-s.fromX)*timing.approach)*(1-timing.mount)+s.toX*timing.mount;
+  const z=(s.fromZ+(az-s.fromZ)*timing.approach)*(1-timing.mount)+s.toZ*timing.mount;
+  if(!clear(p.x,p.y,p.z,x,s.toY,z)){s.mode=p.footMode=2;p.footBlend=1;p.footMountTime=0;return true;}
+  p.x=x;p.z=z;p.y=s.fromY+(s.toY-s.fromY)*timing.approach;
+  const facing=Math.atan2(s.toX-ax,s.toZ-az),pickupFacing=s.fromHeading+angle(facing-s.fromHeading)*timing.approach;
+  p.headingY=pickupFacing+angle(p.parkHeading-pickupFacing)*timing.mount;p.footBlend=1-timing.mount;
+  p.speed=p.airHeight=p.airBlend=p.footJump=p.footCrouch=p.footProne=0;
+  if(s.age>=WHEEL_PICKUP_TOTAL){s.mode=p.footMode=0;p.footBlend=p.footMountTime=0;}
+  return true;
+ }
+ if(s.mode===1){
+  s.age+=dt;const duration=a.movingDismount?.42:.55,f=ease(s.age/duration),x=s.fromX+(s.toX-s.fromX)*f,z=s.fromZ+(s.toZ-s.fromZ)*f;
+  if(clear(p.x,p.y,p.z,x,s.toY,z)){p.x=x;p.z=z;}p.y=s.fromY+(s.toY-s.fromY)*f;
+  p.headingY=s.fromHeading+angle(p.parkHeading-s.fromHeading)*f;p.footBlend=f;p.speed=p.airHeight=p.airBlend=p.footJump=0;
+  if(s.age>=duration){s.mode=2;p.footMode=s.mode;p.footBlend=s.mode?1:0;}
+  return true;
+ }
+ p.footBlend=1;
+ if(vaultTap&&(s.vaultAge??-1)<0&&p.airHeight<.02&&s.stagger<=0&&!crashed&&!a.evade&&p.footProne<.1){
+  const plan=findVault(t,p);if(plan)Object.assign(s,{vaultAge:0,vaultLift:plan.lift,vaultFromX:plan.from.x,vaultFromY:plan.from.y,vaultFromZ:plan.from.z,vaultToX:plan.to.x,vaultToY:plan.to.y,vaultToZ:plan.to.z});
+ }
+ if((s.vaultAge??-1)>=0){
+  const oldX=p.x,oldZ=p.z;s.vaultAge+=dt;const phase=clamp(s.vaultAge/VAULT_SECONDS,0,1);
+  const at=vaultPosition({from:{x:s.vaultFromX,y:s.vaultFromY,z:s.vaultFromZ},to:{x:s.vaultToX,y:s.vaultToY,z:s.vaultToZ},lift:s.vaultLift},phase);
+  Object.assign(p,at);p.footVault=phase;p.footJump=phase<.5?1:2;p.footLean=0;p.footCrouch=0;p.footProne=0;p.speed=0;p.airHeight=Math.max(0,p.y-Math.min(s.vaultFromY,s.vaultToY));p.airBlend=1;
+  p.velocityX=(p.x-oldX)/dt;p.velocityZ=(p.z-oldZ)/dt;resetMsjLocomotion(s);s.vy=0;
+  if(phase>=1){s.vaultAge=-1;p.footVault=p.airBlend=p.airHeight=p.footJump=0;s.land=0;}
+  return true;
+ }
+ p.footVault=0;
+ const beforeX=p.x,beforeZ=p.z,run=!!a.run,demand=clamp(Number.isFinite(a.throttle)?a.throttle:0,-1,1);
+ const groundedAtStart=p.airHeight<.02&&s.vy<=0&&s.vy>-.5&&p.footJump!==1&&p.footJump!==2;
+ let prone=!!a.prone&&!jump&&(groundedAtStart||p.footProne>.01),crouch=!!a.crouch&&!prone&&!jump;
+ if(!prone&&!crouch&&(p.footProne>.1||p.footCrouch>.1)&&t.raycastObstacle({x:p.x,y:p.y+.30,z:p.z},{x:0,y:1,z:0},1.4,.27)!==null){prone=p.footProne>.1;crouch=!prone;}
+ p.footProne=stepPronePhase(p.footProne,prone,dt);p.footCrouch+=((crouch?1:0)-p.footCrouch)*(1-Math.exp(-10*dt));
+ // A visual peek never moves the controller capsule. Limit its extent against
+ // nearby walls, and release it during a jump, prone stance, or fast sprint.
+ let lean=prone||jump||p.airHeight>.02?0:clamp(Number.isFinite(a.lean)?a.lean!:0,-1,1)*clamp((3.5-Math.abs(p.speed))/1.5,0,1);
+ if(lean){
+  const side=-Math.sign(lean),direction={x:Math.cos(p.headingY)*side,y:0,z:-Math.sin(p.headingY)*side};
+  for(const height of [crouch?.75:1.15,crouch?1.1:1.65]){
+   const hit=t.raycastObstacle({x:p.x,y:p.y+height,z:p.z},direction,.45,.18);
+   if(hit!==null)lean*=clamp((hit-.18)/.35,0,1);
+  }
+ }
+ p.footLean=((p.footLean||0)+(lean-(p.footLean||0))*(1-Math.exp(-12*dt)));
+ const steer=clamp(Number.isFinite(a.steer)?a.steer:0,-1,1);
+ const fps=Number.isFinite(a.facingYaw),strafe=fps?-steer:0,magnitude=Math.hypot(demand,strafe);
+ if(fps){p.headingY=angle(a.facingYaw!);s.turn=0;}
+ else{s.turn+=(clamp(Number.isFinite(a.steer)?a.steer:0,-1,1)*2.7-s.turn)*(1-Math.exp(-16*dt));p.headingY-=s.turn*dt;}
+ const limit=prone||p.footProne>.3?(demand<0?.55:.75):crouch||p.footCrouch>.3?(demand<0?1.1:1.4):demand<0?(run?FOOT_SPEED.reverseRun:FOOT_SPEED.reverse):(run?FOOT_SPEED.run:FOOT_SPEED.walk);
+ const drive=fps?Math.min(1,magnitude)*(demand<0?-1:1):demand;
+ const movementLimit=limit*(s.stagger>0?.25:1)*proneTravelWeight(p.footProne),target=drive*movementLimit;
+ const forward=fps&&magnitude?Math.abs(target)*demand/magnitude:fps?0:target,lateral=fps&&magnitude?Math.abs(target)*strafe/magnitude:0;
+ const sin=Math.sin(p.headingY),cos=Math.cos(p.headingY);
+ // Changing walk/run intent eases velocity too. Only a low stance or stagger
+ // needs an immediate speed cap; clamping to walk speed caused a stop-like jerk.
+ const velocityLimit=prone||p.footProne>0||crouch||p.footCrouch>.3||s.stagger>0?movementLimit:FOOT_SPEED.run;
+ stepMsjLocomotion(s,dt,sin*forward+cos*lateral,cos*forward-sin*lateral,velocityLimit);
+ const along=s.msjVelocityX*sin+s.msjVelocityZ*cos;
+ if(s.legacyLocomotion){
+  // A legacy authority supplies no planar smoothing state. Predict its exact
+  // published motor until its next snapshot advertises the upgraded state.
+  const braking=Math.abs(target)<Math.abs(p.speed)||target*p.speed<0;
+  p.speed+=(target-p.speed)*(1-Math.exp(-(braking?15:9)*dt));if(Math.abs(p.speed)<.002)p.speed=0;
+  const f=fps&&magnitude?Math.abs(p.speed)*demand/magnitude:fps?0:p.speed,l=fps&&magnitude?Math.abs(p.speed)*strafe/magnitude:0;
+  s.msjVelocityX=sin*f+cos*l;s.msjVelocityZ=cos*f-sin*l;
+ }else p.speed=Math.hypot(s.msjVelocityX,s.msjVelocityZ)*(along<-.001?-1:1);
+ const evade=a.evade||0,side=evade===-1?-1:evade===1?1:0,back=evade===2?-1:evade===3?1:0,evadeSpeed=a.evadeSpeed??5;
+ const x=p.x+(s.msjVelocityX+sin*back*evadeSpeed+cos*side*evadeSpeed+s.carryX)*dt,z=p.z+(s.msjVelocityZ+cos*back*evadeSpeed-sin*side*evadeSpeed+s.carryZ)*dt;
+ s.carryX*=Math.exp(-4*dt);s.carryZ*=Math.exp(-4*dt);
+ t.sampleGround(x,z,ground,p.y-p.airHeight);
+ // Resolve the full move first; if blocked, retain the unblocked tangent.
+ // Every candidate uses the same body sweeps and floor/ceiling checks. This
+ // runs identically on the authority and predicting client.
+ const travel=(nx:number,nz:number)=>{
+  if(Math.hypot(nx-p.x,nz-p.z)<1e-8)return false;
+  t.sampleGround(nx,nz,ground,p.y-p.airHeight);
+  if(ground.offCourse||ground.height>p.y+.34||!clear(p.x,p.y,p.z,nx,p.y,nz))return false;
+  const rise=ground.height-p.y;
+  if(rise>.01){const height=p.footProne>.5?.55:p.footCrouch>.5?1.12:1.8;
+   if(t.raycastObstacle({x:nx,y:p.y+height-.2,z:nz},{x:0,y:1,z:0},rise+.2,.22)!==null)return false;}
+  p.x=nx;p.z=nz;return true;
+ };
+ if(!travel(x,z)){
+  let moved=false;
+  if(Math.abs(x-p.x)>Math.abs(z-p.z)){moved=travel(x,p.z);moved=travel(p.x,z)||moved;}
+  else{moved=travel(p.x,z);moved=travel(x,p.z)||moved;}
+  if(!moved){p.speed=0;resetMsjLocomotion(s);}
+  else if(!s.legacyLocomotion){
+   // Do not bank acceleration into a wall while moving along its tangent.
+   if(Math.abs(p.x-beforeX)<1e-8)s.msjInputX=s.msjVelocityX=0;
+   if(Math.abs(p.z-beforeZ)<1e-8)s.msjInputZ=s.msjVelocityZ=0;
+   p.speed=Math.sign(p.speed)*Math.min(Math.abs(p.speed),Math.hypot(p.x-beforeX,p.z-beforeZ)/dt);
+  }
+ }
+ t.sampleGround(p.x,p.z,ground,p.y-p.airHeight);
+ // A traversable curb is a supported step, not a tiny fall followed by the
+ // full jump-landing crouch. Real hops and drops beyond the step band keep gravity.
+ if(groundedAtStart&&!jump&&Math.abs(ground.height-p.y)<=.34){p.y=ground.height;s.vy=0;}
+ if(jump&&p.airHeight<.02&&s.vy<=0&&p.footProne<.15&&p.footCrouch<.15){s.vy=4.4;s.land=0;}
+ s.vy-=13*dt;const nextY=p.y+s.vy*dt;
+ if(s.vy>0&&t.raycastObstacle({x:p.x,y:p.y+1.55,z:p.z},{x:0,y:1,z:0},Math.max(.05,nextY-p.y+.2),.25)!==null)s.vy=0;
+ p.y=Math.max(ground.height,p.y+s.vy*dt);
+ if(p.y<=ground.height+.001){if(s.vy<-1)s.land=.22;s.vy=0;}
+ s.land=Math.max(0,s.land-dt);p.airHeight=Math.max(0,p.y-ground.height);p.airBlend=p.airHeight>.01?1:0;
+ p.footJump=p.airHeight>.01?(s.vy>0?1:2):s.land>0?3:0;
+ p.velocityX=(p.x-beforeX)/dt;p.velocityZ=(p.z-beforeZ)/dt;
+ // Continuous cycle count allows differently sized rigs to fit cadence without
+ // a discontinuity whenever the human-sized cycle wraps. Advance by actual travel.
+ const stride=footCycleDistance(p.speed);
+ s.phase+=Math.hypot(p.x-beforeX,p.z-beforeZ)/stride;
+ p.footCycle=s.phase;p.footPhase=s.phase%1;
+ return true;
+}
