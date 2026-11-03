@@ -28,6 +28,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Reserve disk space for Pages assembly
+        if: runner.environment == 'github-hosted'
+        run: |
+          # This browser-only job does not use the preinstalled Android or .NET SDKs.
+          # Keep the checkout, build inputs, and test artifacts intact.
+          df -h /
+          sudo rm -rf -- /usr/local/lib/android /usr/share/dotnet
+          df -h /
       - name: Checkout
         uses: actions/checkout@v4
       - name: Setup Node
