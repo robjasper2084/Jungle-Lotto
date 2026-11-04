@@ -1,20 +1,22 @@
 import {applyRealisticMaterials} from './realisticMaterials.ts';
 import * as T from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {CockpitLcd} from './cockpitLcd.ts';
 import {HoverAudio} from './hoverAudio.ts';
-import {HoverController} from './hoverController.ts';
+import {HoverController,type FlightObstacle} from './hoverController.ts';
 import {segment,type ParkTerrain} from './terrain.ts';
 import './hover.css';
 import {HoverLighting,LED_COLORS} from './hoverLighting.ts';
 type Pose={x:number;y:number;z:number;headingY:number};
-type Hooks={pose:()=>Pose;blocked:()=>boolean;entered:()=>void;exited:(p:{x:number;y:number;z:number;heading:number})=>void;touch:()=>boolean};
+type Hooks={pose:()=>Pose;blocked:()=>boolean;entered:()=>void;exited:(p:{x:number;y:number;z:number;heading:number})=>void;touch:()=>boolean;obstacle?:FlightObstacle};
 const keyCodes=['KeyW','KeyS','KeyA','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyE','KeyQ','Space','ShiftLeft','ShiftRight','KeyG','KeyF','KeyL','KeyH','KeyK','KeyR'];
 export class HoverRide {
  readonly sim:HoverController;
  riding=false;
- private model:T.Group|undefined;
+ private model:T.Group|undefined;private cockpit?:CockpitLcd;
  private loading:Promise<void>|undefined;
  private pressed=new Set<string>();
+ private stick={x:0,y:0,id:-1,cx:0,cy:0};private flightSelect!:HTMLSelectElement;
  private mixer:T.AnimationMixer|undefined;
  private steeringClip:T.AnimationClip|undefined;
  private steerBlend=0;
@@ -42,17 +44,18 @@ export class HoverRide {
  private altitude:HTMLElement;
  private mode:HTMLElement;
  private touchPad:HTMLElement;
- private stick={x:0,y:0,id:-1,cx:0,cy:0};
  constructor(scene:T.Scene,readonly terrain:ParkTerrain,private hooks:Hooks){
-  this.sim=new HoverController(terrain,terrain.map.spawn);
+  this.sim=new HoverController(terrain,terrain.map.spawn,hooks.obstacle);
   this.enterButton=document.createElement('button');this.enterButton.id='hover-enter';this.enterButton.textContent='Ride hoverbike · B';
   document.querySelector('header nav')!.prepend(this.enterButton);this.enterButton.onclick=()=>{if(this.riding)this.exit();else void this.mount(scene);};
   this.hud=document.createElement('section');this.hud.id='hover-hud';this.hud.hidden=true;this.hud.setAttribute('aria-label','Hoverbike controls');
-  this.hud.innerHTML='<div class="hover-title"><span>SWOOP / 2084</span><strong>HOVERBIKE</strong></div><div class="hover-instruments"><div><b id="hover-speed">0</b><span>KM/H</span></div><div><b id="hover-altitude">0.2</b><span>METRES AGL</span></div><output id="hover-mode">LANDED</output></div><p id="hover-notice" role="status">Take off to ride.</p><div class="hover-actions"><button data-hover="takeoff">Take off · G</button><button data-hover="lights" aria-pressed="true">Headlights · L</button><button data-hover="sound" aria-pressed="false">Sound off</button><button data-hover="reset">Recover · R</button><button data-hover="exit">Get off · F</button></div><details class="hover-lighting"><summary>Lighting</summary><div><label>LED color<input type="color" id="hover-led-color" value="#79dfff"></label><label>LED effect<select id="hover-led-mode"><option value="solid">Solid color</option><option value="cycle">Slow color cycle</option><option value="off">LEDs off</option></select></label><button data-hover="color">Next color · K</button><button data-hover="beam" aria-pressed="false">High beam · H</button></div></details><p class="hover-help">W / S speed · A / D steer · E / Q up / down · Space brake · Shift boost · V camera · drag to look</p><div class="hover-touch" aria-label="Hoverbike touch controls"><div id="hover-flight-stick" aria-label="Flight joystick" role="group"><span>MOVE</span><i></i></div><div class="hover-steer"><button data-hold="KeyA" aria-label="Steer left">←</button><button data-hold="KeyD" aria-label="Steer right">→</button></div><div class="hover-lift"><button data-hold="KeyE" aria-label="Ascend">↑ UP</button><button data-hold="KeyQ" aria-label="Descend">↓ DOWN</button></div><div class="hover-pedals"><button data-hold="Space">BRAKE</button><button data-hold="KeyS">REVERSE</button><button data-hold="KeyW" class="hover-throttle">THROTTLE</button></div></div>';
+  this.hud.innerHTML='<div class="hover-title"><span>SWOOP / 2084</span><strong>HOVERBIKE</strong></div><div class="hover-instruments"><div><b id="hover-speed">0</b><span>KM/H</span></div><div><b id="hover-altitude">0.2</b><span>METRES AGL</span></div><output id="hover-mode">LANDED</output></div><p id="hover-notice" role="status">Take off to ride.</p><div class="hover-actions"><button data-hover="takeoff">Take off · G</button><button data-hover="lights" aria-pressed="true">Headlights · L</button><button data-hover="sound" aria-pressed="false">Sound off</button><button data-hover="reset">Recover · R</button><button data-hover="exit">Get off · F</button></div><details class="hover-lighting"><summary>Flight & lighting</summary><div><label>Flight mode<select id="hover-flight-mode"><option value="drone">Drone · altitude hold</option><option value="classic">Classic · momentum</option></select></label><label>LED color<input type="color" id="hover-led-color" value="#79dfff"></label><label>LED effect<select id="hover-led-mode"><option value="solid">Solid color</option><option value="cycle">Slow color cycle</option><option value="off">LEDs off</option></select></label><button data-hover="color">Next color · K</button><button data-hover="beam" aria-pressed="false">High beam · H</button></div></details><p class="hover-help">W / S speed · A / D steer · E / Q up / down · Space brake · Shift boost · V camera · drag to look</p><div class="hover-touch" aria-label="Hoverbike touch controls"><div id="hover-flight-stick" aria-label="Flight joystick" role="group"><span>MOVE</span><i></i></div><div class="hover-steer"><button data-hold="ArrowLeft" aria-label="Turn left">←</button><button data-hold="ArrowRight" aria-label="Turn right">→</button></div><div class="hover-lift"><button data-hold="KeyE" aria-label="Ascend">↑ UP</button><button data-hold="KeyQ" aria-label="Descend">↓ DOWN</button></div><div class="hover-pedals"><button data-hold="Space">BRAKE</button><button data-hold="KeyS">REVERSE</button><button data-hold="KeyW" class="hover-throttle">THROTTLE</button></div></div>';
   document.body.append(this.hud);
   this.notice=this.hud.querySelector('#hover-notice')!;this.speed=this.hud.querySelector('#hover-speed')!;this.altitude=this.hud.querySelector('#hover-altitude')!;this.mode=this.hud.querySelector('#hover-mode')!;this.touchPad=this.hud.querySelector('.hover-touch')!;
-  this.bindFlightStick();
   this.soundButton();
+  this.flightSelect=this.hud.querySelector('#hover-flight-mode')!;let savedMode='drone';try{savedMode=localStorage.getItem('belle-flight-mode')||'drone';}catch{}this.sim.setMode(savedMode==='classic'?'classic':'drone');this.flightSelect.value=this.sim.mode;
+  this.flightSelect.onchange=()=>{this.clear();this.sim.setMode(this.flightSelect.value==='classic'?'classic':'drone');try{localStorage.setItem('belle-flight-mode',this.sim.mode);}catch{}this.refresh();};
+  this.bindFlightStick();
   this.ledInput=this.hud.querySelector('#hover-led-color')!;this.ledSelect=this.hud.querySelector('#hover-led-mode')!;
   try{const prefs=JSON.parse(localStorage.getItem('belle-hover-lighting')||'{}');if(/^#[0-9a-f]{6}$/i.test(prefs.color))this.ledColor=prefs.color;if(['solid','cycle','off'].includes(prefs.mode))this.ledMode=prefs.mode;}catch{}this.ledInput.value=this.ledColor;this.ledSelect.value=this.ledMode;
   this.ledInput.oninput=()=>{this.ledColor=this.ledInput.value;this.saveLighting();};this.ledSelect.onchange=()=>{this.ledMode=this.ledSelect.value;this.saveLighting();};
@@ -62,7 +65,7 @@ export class HoverRide {
   });
   this.hud.querySelectorAll<HTMLButtonElement>('[data-hold]').forEach(b=>{
    const key=b.dataset.hold!;
-   b.onpointerdown=e=>{if(this.hooks.blocked())return;e.preventDefault();b.setPointerCapture(e.pointerId);this.pressed.add(key);b.dataset.held='true';};
+   b.onpointerdown=e=>{if(this.hooks.blocked()||e.button!==0)return;e.preventDefault();b.setPointerCapture(e.pointerId);this.pressed.add(key);b.dataset.held='true';};
    const release=()=>{this.pressed.delete(key);delete b.dataset.held;};b.onpointerup=release;b.onpointercancel=release;b.onlostpointercapture=release;
   });
   window.addEventListener('keydown',e=>{
@@ -79,6 +82,7 @@ export class HoverRide {
   zone.onpointermove=move;const end=(e:PointerEvent)=>{if(e.pointerId!==this.stick.id)return;this.releaseStick();if(zone.hasPointerCapture(e.pointerId))zone.releasePointerCapture(e.pointerId);};zone.onpointerup=end;zone.onpointercancel=end;zone.onlostpointercapture=end;
  }
  get riderObject(){return this.hero;}
+ get previewVehicle(){return this.model?.getObjectByName('HoverBikeRoot');}
  captureAudio(){return this.sound.capture();}
  private async load(scene:T.Scene){
   if(this.model)return;
@@ -101,7 +105,7 @@ export class HoverRide {
      }
     }
    });
-   applyRealisticMaterials(this.model);this.lighting=new HoverLighting(this.model.getObjectByName('HoverBikeRoot')??this.model,this.lights);this.model.visible=false;scene.add(this.model);
+   applyRealisticMaterials(this.model);this.cockpit=new CockpitLcd(this.model.getObjectByName('HoverBikeRoot')??this.model);this.lighting=new HoverLighting(this.model.getObjectByName('HoverBikeRoot')??this.model,this.lights);this.model.visible=false;scene.add(this.model);
   })().catch(e=>{this.loading=undefined;throw e;});
   await this.loading;
  }
@@ -152,18 +156,21 @@ export class HoverRide {
  private say(message:string){this.notice.textContent=message;this.messageUntil=performance.now()+4500;}
  private refresh(){
   const p=this.sim.pose;
+  this.cockpit?.update({speed:p.speed,height:p.y-this.sim.floor(p.x,p.z),heading:p.heading,landed:this.sim.landed,landing:this.sim.clearance<.3,boost:this.pressed.has('ShiftLeft')||this.pressed.has('ShiftRight'),collision:this.sim.collision,lights:this.lightOn,drone:this.sim.mode==='drone'});
   this.speed.textContent=String(Math.round(Math.abs(p.speed)*3.6));
   this.altitude.textContent=Math.max(0,p.y-this.sim.floor(p.x,p.z)).toFixed(1);
-  this.mode.textContent=this.sim.landed?'LANDED':this.sim.clearance<.3?'LANDING':this.pressed.has('ShiftLeft')||this.pressed.has('ShiftRight')?'BOOST':'IN FLIGHT';
+  this.mode.textContent=this.sim.landed?'LANDED':this.sim.clearance<.3?'LANDING':this.pressed.has('ShiftLeft')||this.pressed.has('ShiftRight')?'BOOST':this.sim.mode==='drone'?'ALTITUDE HOLD':'IN FLIGHT';
   this.hud.querySelector('[data-hover="takeoff"]')!.textContent=this.sim.flying&&this.sim.clearance>.3?'Land · G':'Take off · G';
   this.touchPad.hidden=!this.hooks.touch();
+   this.hud.querySelector('.hover-help')!.textContent=this.sim.mode==='drone'?'W / S forward / back · A / D strafe · ← / → turn · E / Q height · release to hold · drag to look':'W / S speed · A / D steer · E / Q height · Space brake · Shift boost · drag to look';
   if(performance.now()>this.messageUntil)this.notice.textContent=this.sim.collision?'Obstacle ahead — steer clear.':this.sim.landed?'Ready for takeoff.':'Michigan 2084 · Explore the island';
  }
  update(dt:number,running:boolean,clock:number){
   if(!this.riding||!this.model)return;
   const has=(a:string,b?:string)=>this.pressed.has(a)||!!b&&this.pressed.has(b);
-  const steer=Number(has('KeyD','ArrowRight'))-Number(has('KeyA','ArrowLeft'));
-  if(running)this.sim.advance(dt,{throttle:Number(has('KeyW','ArrowUp'))-Number(has('KeyS','ArrowDown'))+this.stick.y,steer:steer+this.stick.x,lift:Number(has('KeyE'))-Number(has('KeyQ')),brake:has('Space'),boost:has('ShiftLeft','ShiftRight')});
+  const drone=this.sim.mode==='drone',horizontal=Number(has('KeyD'))-Number(has('KeyA'))+this.stick.x;
+  const steer=Number(has('ArrowRight'))-Number(has('ArrowLeft'))+(drone?0:horizontal);
+  if(running)this.sim.advance(dt,{throttle:Number(has('KeyW','ArrowUp'))-Number(has('KeyS','ArrowDown'))+this.stick.y,strafe:drone?horizontal:0,steer,lift:Number(has('KeyE'))-Number(has('KeyQ')),brake:has('Space'),boost:has('ShiftLeft','ShiftRight')});
   const p=this.sim.pose;this.model.position.set(p.x,p.y,p.z);
   this.model.rotation.set(p.pitch,p.heading,p.roll,'YXZ');
   if(running){
@@ -182,6 +189,7 @@ export class HoverRide {
  }
  camera(camera:T.PerspectiveCamera,first:boolean,yaw:number,pitch:number,dt:number,snap:boolean,photo=false){
   if(!this.riding)return;
+  this.cockpit?.setVisible(!photo);
   const p=this.sim.pose;this.cockpitHidden.forEach(o=>o.visible=!first);if(this.fpvArms)this.fpvArms.visible=first&&!photo;
   const angle=p.heading+yaw,forward=new T.Vector3(Math.sin(angle),0,Math.cos(angle));
   const look=new T.Vector3(p.x,p.y+1.15,p.z),desired=new T.Vector3();

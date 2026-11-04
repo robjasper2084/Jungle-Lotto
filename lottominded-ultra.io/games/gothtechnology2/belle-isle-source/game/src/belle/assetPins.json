@@ -1,12 +1,11 @@
 {
-  "commit": "ea1d7b3970688afa83e913a1bd3e195d25a3a898",
-  "base": "https://raw.githubusercontent.com/robjasper2084/Jungle-Lotto/ea1d7b3970688afa83e913a1bd3e195d25a3a898/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/",
+  "commit": "c31c49c7591c88377f6732d799ad6574c908edea",
+  "base": "https://raw.githubusercontent.com/robjasper2084/Jungle-Lotto/c31c49c7591c88377f6732d799ad6574c908edea/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/",
   "files": [
     {
       "path": "belle/landmarks.glb",
-      "bytes": 28153876,
-      "sha256": "55e3db65875542ac01250ee32c827b09502289f8317b997e222b315e203660cf",
-      "source": "belle/landmarks-delivery.glb"
+      "bytes": 47342524,
+      "sha256": "df19c8fed2b3b2c020aaa320d2aebcccbee4f58c7d8279894cde7b3eb860a729"
     },
     {
       "path": "belle/yacht-club.glb",
@@ -30,8 +29,8 @@
     },
     {
       "path": "belle/playgrounds.glb",
-      "bytes": 3077524,
-      "sha256": "a0b4ee5d55876694e40658680a466fbc5ecea17899705ce2ef4cfccc10e360f2"
+      "bytes": 3074116,
+      "sha256": "e886a096f1be813abb97bf41f2d730977c391ed148ba0756b315f35a24996c02"
     },
     {
       "path": "belle/nature/trees.glb",
@@ -45,8 +44,8 @@
     },
     {
       "path": "belle/detroit-skyline.glb",
-      "bytes": 2788944,
-      "sha256": "987a3366c0964856615cb14ac51c010a615da42a00fd7b06fd2480f8cafd30a1"
+      "bytes": 2357372,
+      "sha256": "d4e1e6517ff9874c32c6b30e0a378c5ab55a711e8afb2e229b5e1d6fb9dc9fc9"
     },
     {
       "path": "belle/environment/kloppenheim-06-2k.hdr",
@@ -55,8 +54,8 @@
     },
     {
       "path": "belle/vehicles/hero-hoverbike.glb",
-      "bytes": 8754060,
-      "sha256": "b32cd287c12410163d528f606c668a8fd3e4ba779194b8c74d90228886ba4ba7"
+      "bytes": 13414040,
+      "sha256": "a93c0ca27cb2d623fac3a2f64cdae35ab3f89253e8c178d04db6853b3d88fdd7"
     }
   ]
 }

@@ -19,3 +19,5 @@ test('moving past a lamp keeps its identity until it has faded out',()=>{
  for(let i=0;i<30;i++)pool.update(lamps,150,0,.05);
  assert.ok(pool.slots.every(s=>s.index>=5));assert.equal(new Set(pool.slots.map(s=>s.index)).size,4);
 });
+
+test('Ambassador approaches reach shore height beyond both suspension anchorages',()=>{assert.equal(plan.approachEnds.length,2);for(const end of plan.approachEnds){assert.ok(end.every(Number.isFinite));assert.ok(end[1]>=3&&end[1]<=3.5);assert.ok(Math.hypot(end[0]-plan.center[0],end[2]-plan.center[2])>plan.span/2+900);}assert.ok(plan.roadway.length>120);});

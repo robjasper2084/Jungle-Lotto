@@ -40,6 +40,3 @@ const binHeader=Buffer.alloc(8);binHeader.writeUInt32LE(length);binHeader.writeU
 const output=Buffer.concat([header,json,binHeader,...pieces]);await fs.writeFile(file,output);
 const report={inputBytes:input.length,outputBytes:output.length,savedPercent:100*(1-output.length/input.length),compressedViews:packed,losslessRoundtrip:true};
 await fs.writeFile(new URL('../qa/landmark-compression-20261103.json',import.meta.url),JSON.stringify(report,null,2));console.log(report);
-
-// Vite copies the repository's CDN delivery file as well; it is not a second runtime asset.
-await fs.unlink(new URL('../game/dist/belle/landmarks-delivery.glb',import.meta.url)).catch(error=>{if(error.code!=='ENOENT')throw error;});

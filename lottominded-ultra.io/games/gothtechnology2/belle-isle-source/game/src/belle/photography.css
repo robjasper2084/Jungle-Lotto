@@ -6,3 +6,8 @@
 .royale-camera-mode #enter-vr{display:none}
 
 body.on-hoverbike #companion-tray{bottom:190px}@media(max-width:700px){body.on-hoverbike #companion-tray{top:175px;bottom:auto;max-width:190px}}
+
+.capture-zoom{min-width:140px}.capture-zoom input{width:140px;accent-color:#8cddd1}.capture-zoom output{align-self:flex-end;letter-spacing:0;color:#edf6ed}
+.capture-options{flex-basis:100%;order:5}.capture-options summary{font-size:12px;cursor:pointer;text-align:center;padding:8px;color:#b7d9d1}.capture-options>div{display:flex;gap:20px;align-items:center;justify-content:center;padding:8px;border-top:1px solid #aec5c433}.capture-options input{accent-color:#8cddd1;width:150px}.capture-options button[aria-pressed=true]{background:#83cbbb;color:#0c2922}
+#camera-thirds-grid{position:fixed;inset:0;pointer-events:none;z-index:14}.thirds-grid:after,#camera-thirds-grid:after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent calc(33.333% - .5px),#ffffff55 33.333%,transparent calc(33.333% + .5px),transparent calc(66.667% - .5px),#ffffff55 66.667%,transparent calc(66.667% + .5px)),linear-gradient(0deg,transparent calc(33.333% - .5px),#ffffff55 33.333%,transparent calc(33.333% + .5px),transparent calc(66.667% - .5px),#ffffff55 66.667%,transparent calc(66.667% + .5px))}
+@media(max-width:700px){.capture-panel label.capture-zoom{flex:1 1 130px;min-width:130px}.capture-zoom input{width:100%}.capture-options>div{gap:10px;flex-wrap:wrap}.capture-options>div label{min-width:120px;flex:1}.capture-options input{width:100%}}
