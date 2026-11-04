@@ -14,6 +14,7 @@ export function makeNaturePlan(map:ParkMap):NaturePlan{
  const noPlants=map.areas.filter(a=>['pitch','track','pedestrian','playground','golf_course','swimming_pool','outdoor_seating','fitness_station','beach','marina'].includes(a.kind));
  const woods=map.areas.filter(a=>['wood','forest'].includes(a.kind));
  const gardens=map.areas.filter(a=>a.kind==='garden');
+ const inWood=(x:number,z:number)=>woods.some(a=>inside(x,z,a.points)&&!(a.holes||[]).some(h=>inside(x,z,h)));
  const ringDistance=(x:number,z:number,p:Point[])=>Math.min(...p.slice(1).map((b,i)=>segment(x,z,p[i],b).d));
  function clear(x:number,z:number,margin:number){
   const [cx,cz]=clockLocal(x,z);if((cx/(floralClock.hillWidth+margin))**2+((cz-floralClock.hillOffset)/(floralClock.hillDepth+margin))**2<1)return false;
@@ -28,7 +29,7 @@ export function makeNaturePlan(map:ParkMap):NaturePlan{
  for(let attempt=0;attempt<22000&&trees.length<1300;attempt++){
   const x=-450+rand()*4450,z=-750+rand()*2450;
   if(!clear(x,z,4))continue;
-  const woodland=woods.some(a=>inside(x,z,a.points));
+  const woodland=inWood(x,z);
   if(!woodland&&rand()>.26)continue;
   if(gardens.some(a=>inside(x,z,a.points)))continue;
   if(trees.some(t=>Math.hypot(t.x-x,t.z-z)<7))continue;
@@ -49,7 +50,7 @@ export function makeNaturePlan(map:ParkMap):NaturePlan{
  const okonoka=map.waterSources?.find(w=>w.id==='420959');
  for(const island of okonoka?.holes||[]){
   const xs=island.map(p=>p[0]),zs=island.map(p=>p[1]);let planted=0;
-  for(let attempt=0;attempt<400&&planted<18&&trees.length<1300;attempt++){
+  for(let attempt=0;attempt<400&&planted<18&&trees.length<1600;attempt++){
    const x=Math.min(...xs)+rand()*(Math.max(...xs)-Math.min(...xs)),z=Math.min(...zs)+rand()*(Math.max(...zs)-Math.min(...zs));
    if(!inside(x,z,island)||ringDistance(x,z,island)<2.5||!clear(x,z,4)||trees.some(t=>Math.hypot(t.x-x,t.z-z)<6))continue;
    trees.push(plant(rand()<.6?'willow':rand()<.6?'maple':'birch',x,z,.6+rand()*.32));planted++;
@@ -57,19 +58,29 @@ export function makeNaturePlan(map:ParkMap):NaturePlan{
  }
  // Supplied Blue Heron aerials show a wooded fringe, not a bare lawn bank.
  const heron=map.waterSources?.find(w=>w.id==='32613819');let heronTrees=0;
- if(heron)for(let attempt=0;attempt<1800&&heronTrees<55&&trees.length<1300;attempt++){
+ if(heron)for(let attempt=0;attempt<1800&&heronTrees<55&&trees.length<1600;attempt++){
   const edge=Math.floor(rand()*(heron.points.length-1)),a=heron.points[edge],b=heron.points[edge+1],t=rand(),angle=rand()*Math.PI*2,offset=5+rand()*22;
   const x=a[0]+(b[0]-a[0])*t+Math.cos(angle)*offset,z=a[1]+(b[1]-a[1])*t+Math.sin(angle)*offset;
   if(!clear(x,z,4)||ringDistance(x,z,heron.points)<3||trees.some(p=>Math.hypot(p.x-x,p.z-z)<8))continue;
   trees.push(plant(rand()<.6?'willow':'maple',x,z,.6+rand()*.35));heronTrees++;
  }
+ // Restore the mapped flatwoods canopy; the previous map omitted its multipolygon.
+ // Jittered, thinned cells leave irregular clearings and keep every route shoulder open.
+ for(const wood of woods){
+  const minX=Math.min(...wood.points.map(p=>p[0])),maxX=Math.max(...wood.points.map(p=>p[0])),minZ=Math.min(...wood.points.map(p=>p[1])),maxZ=Math.max(...wood.points.map(p=>p[1]));
+  for(let gx=minX;gx<maxX;gx+=13)for(let gz=minZ;gz<maxZ;gz+=13){
+   const x=gx+rand()*11,z=gz+rand()*11;if(rand()<.12||trees.length>=6500||!inWood(x,z)||!clear(x,z,4)||trees.some(t=>Math.hypot(t.x-x,t.z-z)<8))continue;
+   const wet=shore.some(e=>segment(x,z,e.a,e.b).d<24);
+   trees.push(plant(wet&&rand()<.55?'willow':rand()<.9?'maple':'birch',x,z,.8+rand()*.35));
+  }
+ }
  // Near-path meadow patches, not uniform flower rows. Measured lawn/wood polygons
  // constrain planting; individual plants/species are an artistic reconstruction.
- for(let attempt=0;attempt<15000&&ground.length<3800;attempt++){
+ for(let attempt=0;attempt<25000&&ground.length<6000;attempt++){
   const tree=trees[Math.floor(rand()*trees.length)];if(!tree)break;
   const a=rand()*Math.PI*2,r=2+rand()*22,x=tree.x+Math.cos(a)*r,z=tree.z+Math.sin(a)*r;
   if(!clear(x,z,1.4))continue;
-  const n=1+Math.floor(rand()*3),flower=rand()<.20;
+  const n=1+Math.floor(rand()*3),flower=rand()<.20&&!inWood(x,z);
   ground.push(plant((flower?'dandelion_':'grass_')+n,x,z,flower?1.2+rand()*1.3:1.7+rand()*1.4));
  }
  // Purple flowering groundcover is confined to planted garden areas. This is
@@ -96,5 +107,5 @@ export function makeNaturePlan(map:ParkMap):NaturePlan{
   }
  }
  for(let i=0;i<trees.length;i++){const p=trees[i];p.scale=round(.86+rand()*.38);p.heightScale=round(1.16+rand()*.25);}
- return{version:1,trees,ground,placementEvidence:'Mapped woodland/garden/water polygons; plant species and exact positions approximated. Roads, landmarks, sports and play areas kept clear.'};
+ return{version:1,trees,ground,placementEvidence:'Includes OSM Belle Isle Flatwoods multipolygon 17884436. Hardwood-dominated canopy density follows mapped woodland with route clearances; individual species and tree locations are approximate, not a tree census.'};
 }

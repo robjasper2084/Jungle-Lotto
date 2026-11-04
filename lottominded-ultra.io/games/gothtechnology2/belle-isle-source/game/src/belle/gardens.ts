@@ -1,10 +1,12 @@
 import * as T from 'three';
 import type {GardenPlan,GardenPlant} from './gardenPlan.ts';
+import {gardenBotany} from './gardenBotany.ts';
+import {OUDOLF_COLORS,type GardenForm} from './oudolf.ts';
 
 /** Small opaque meshes, shared by every plant; no alpha overdraw, animation,
  * individual scene objects or new image downloads. Tile culling bounds cost. */
 export async function addGardens(scene:T.Scene){
- const response=await fetch('./belle/nature/gardens.json');if(!response.ok)throw new Error('Garden planting '+response.status);
+ const response=await fetch('./belle/nature/gardens.json?v=oudolf-20261103');if(!response.ok)throw new Error('Garden planting '+response.status);
  const plan:GardenPlan=await response.json(),leaves:number[]=[],petals:number[]=[];
  const tri=(p:number[],a:number[],b:number[],c:number[])=>p.push(...a,...b,...c);
  // Low basal foliage joins neighbouring clumps into a planted border rather
@@ -32,17 +34,29 @@ export async function addGardens(scene:T.Scene){
  }
  function geometry(vertices:number[]){const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(vertices,3));g.computeVertexNormals();return g;}
  const leafG=geometry(leaves),petalG=geometry(petals),leafMat=new T.MeshStandardMaterial({color:0xffffff,roughness:1,side:T.DoubleSide}),petalMat=new T.MeshStandardMaterial({color:0xffffff,roughness:.91,side:T.DoubleSide});
- const groups=new Map<string,GardenPlant[]>(),tiles:{mesh:T.InstancedMesh;x:number;z:number}[]=[],dummy=new T.Object3D();
- for(const p of plan.plants){const key=Math.floor(p.x/48)+','+Math.floor(p.z/48);if(!groups.has(key))groups.set(key,[]);groups.get(key)!.push(p);}
+ const botanical=new Map<GardenForm,ReturnType<typeof gardenBotany>>();
+ const botanicalLeaf=leafMat.clone(),botanicalFlower=petalMat.clone();botanicalLeaf.vertexColors=true;botanicalFlower.vertexColors=true;
+ const groups=new Map<string,GardenPlant[]>(),tiles:{mesh:T.InstancedMesh;x:number;z:number;count:number;detailed:boolean}[]=[],dummy=new T.Object3D();
+ for(const p of plan.plants){const key=Math.floor(p.x/48)+','+Math.floor(p.z/48)+','+(p.form||'generic');if(!groups.has(key))groups.set(key,[]);groups.get(key)!.push(p);}
  const palette=[0xc8b2d4,0xe0cc95,0xb56b7e,0xdde0d2,0x8d83b3];
+ const leafColors:Record<GardenForm,number>={umbel:0x48663e,spire:0x3f632d,airy:0x54723a,grass:0x536b31,cone:0x3b602d};
+ let triangles=0;
  for(const [key,plants] of groups){
   const [tx,tz]=key.split(',').map(Number);
-  for(const [g,mat,flower] of [[leafG,leafMat,false],[petalG,petalMat,true]] as const){
+  const form=plants[0].form;
+  if(form&&!botanical.has(form))botanical.set(form,gardenBotany(form));
+  const bot=form?botanical.get(form):null;
+  // Uniform deterministic order lets distant tiles retain a representative
+  // subset of each drift, rather than losing whole rows when count is reduced.
+  const hash=(p:GardenPlant)=>Math.sin(p.x*12.9898+p.z*78.233)*43758.5453%1;
+  if(form)plants.sort((a,b)=>hash(a)-hash(b));
+  for(const [g,mat,flower] of [[bot?.leaf||leafG,bot?botanicalLeaf:leafMat,false],[bot?.flower||petalG,bot?botanicalFlower:petalMat,true]] as const){
    const mesh=new T.InstancedMesh(g,mat,plants.length);mesh.name=(flower?'Seasonal flowers ':'Garden foliage ')+key;mesh.receiveShadow=true;
-   plants.forEach((p,i)=>{dummy.position.set(p.x,p.y,p.z);dummy.rotation.y=p.yaw;dummy.scale.set(p.spread,p.height,p.spread);dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);const color=flower?new T.Color(palette[p.palette]):new T.Color().setHSL(.22+(i%4)*.012,.30,.22+(i%5)*.017);mesh.setColorAt(i,color);});
-   mesh.computeBoundingSphere();scene.add(mesh);tiles.push({mesh,x:tx*48+24,z:tz*48+24});
+   plants.forEach((p,i)=>{dummy.position.set(p.x,p.y,p.z);dummy.rotation.y=p.yaw;dummy.scale.set(p.spread,p.height,p.spread);dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);const color=flower?new T.Color(p.form?OUDOLF_COLORS[p.form]:palette[p.palette]):p.form?new T.Color(leafColors[p.form]).multiplyScalar(.84+(i%5)*.08):new T.Color().setHSL(.22+(i%4)*.012,.30,.22+(i%5)*.017);mesh.setColorAt(i,color);});
+   triangles+=plants.length*g.attributes.position.count/3;
+   mesh.computeBoundingSphere();scene.add(mesh);tiles.push({mesh,x:tx*48+24,z:tz*48+24,count:plants.length,detailed:!!form});
   }
  }
  let radius=220;
- return{stats:{clumps:plan.plants.length,flowers:plan.plants.length*3,triangles:plan.plants.length*(leaves.length+petals.length)/9,batches:tiles.length},setQuality(q:string){radius=q==='smooth'?145:q==='high'?280:220;},update(x:number,z:number){for(const tile of tiles)tile.mesh.visible=Math.hypot(tile.x-x,tile.z-z)<radius;}};
+ return{stats:{clumps:plan.plants.length,triangles,batches:tiles.length},setQuality(q:string){radius=q==='smooth'?145:q==='high'?280:220;},update(x:number,z:number){for(const tile of tiles){const distance=Math.hypot(tile.x-x,tile.z-z);tile.mesh.visible=distance<radius;tile.mesh.count=tile.detailed&&distance>105?Math.ceil(tile.count*.35):tile.count;}}};
 }

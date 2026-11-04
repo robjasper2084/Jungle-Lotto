@@ -1,3 +1,4 @@
+import {scottLayout} from './fountainLayout.ts';
 import type {ParkMap} from './terrain.ts';
 export const KOI_POND_ID='762688416';
 export const KOI_COUNT=12;
@@ -23,7 +24,8 @@ export function fountains(map:ParkMap):Fountain[]{return (map.monuments||[]).fil
  }else if(m.model==='barbour'){
   for(let i=0;i<4;i++){const a=i*Math.PI/2;add([Math.sin(a)*2.08,1.45,Math.cos(a)*2.08],[Math.sin(a)*3.7,.32,Math.cos(a)*3.7],.16,.037,.8);}
  }else add([0,1.18,.37],[0,1.08,-.17],.17,.012,.45);
- return{id:m.id,name:m.name,x:m.x,z:m.z,yaw:m.yaw,range:m.model==='scott_fountain'?95:m.model==='barbour'?32:7,volume:m.model==='temperance'?.22:.8,flows};
+ const layout=m.model==='scott_fountain'?scottLayout(map):null;if(layout)for(const f of flows){for(const a of [f.from,f.to]){a[0]*=layout.scale;a[2]*=layout.scale;}}
+ return{id:m.id,name:m.name,x:layout?.x??m.x,z:layout?.z??m.z,yaw:m.yaw,range:m.model==='scott_fountain'?95:m.model==='barbour'?32:7,volume:m.model==='temperance'?.22:.8,flows};
  });}
 /** Smooth distance rolloff; callers can mute interiors separately. */
 export function waterLevel(sources:Fountain[],x:number,z:number){let level=0;for(const s of sources){const d=Math.hypot(x-s.x,z-s.z),t=Math.max(0,1-d/s.range);level=Math.max(level,t*t*(3-2*t)*s.volume);}return level;}

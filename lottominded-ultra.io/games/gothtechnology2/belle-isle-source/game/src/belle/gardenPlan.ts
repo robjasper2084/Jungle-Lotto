@@ -1,11 +1,12 @@
 import {inside,segment,ParkTerrain,type ParkMap} from './terrain.ts';
 import {greenhouseLocal} from './conservatory.ts';
 import {roadIndex} from './streetPlan.ts';
+import {OUDOLF_BEDS,oudolfDrift,type GardenForm} from './oudolf.ts';
 
-export type GardenPlant={x:number;z:number;y:number;height:number;spread:number;yaw:number;palette:number;bed:string};
+export type GardenPlant={x:number;z:number;y:number;height:number;spread:number;yaw:number;palette:number;bed:string;form?:GardenForm};
 export type GardenPlan={version:1;plants:GardenPlant[];notes:string};
 // Kept offline: denser planting must not add polygon scans to the riding loop.
-export function makeGardenPlan(map:ParkMap):GardenPlan{
+function baselineGardenPlan(map:ParkMap):GardenPlan{
  const terrain=new ParkTerrain(map),occupied=roadIndex(map.roads),plants:GardenPlant[]=[];
  let seed=111022;const rand=()=>{seed=Math.imul(seed,1664525)+1013904223|0;return(seed>>>0)/4294967296;};
  const rounded=(n:number)=>Math.round(n*1000)/1000;
@@ -34,4 +35,26 @@ export function makeGardenPlan(map:ParkMap):GardenPlan{
  }
  if(plants.length>5000)throw new Error('Garden detail exceeds the fixed geometry budget: '+plants.length);
  return{version:1,plants,notes:'Mapped garden beds; clustered seasonal colour is a reconstruction, not a planting survey. Paths, lawns, water and monument bases remain clear.'};
+}
+
+// Preserve all non-Oudolf placements byte-for-byte; the denser garden uses its
+// own deterministic stream and never changes a neighbouring site's planting.
+export function makeGardenPlan(map:ParkMap):GardenPlan{
+ const base=baselineGardenPlan(map),plants=base.plants.filter(p=>!OUDOLF_BEDS.has(p.bed));
+ const terrain=new ParkTerrain(map),occupied=roadIndex(map.roads),round=(n:number)=>Math.round(n*1000)/1000;
+ for(const bed of map.areas.filter(a=>OUDOLF_BEDS.has(a.id))){
+  let seed=Number(bed.id)|0;const rand=()=>{seed=Math.imul(seed,1664525)+1013904223|0;return(seed>>>0)/4294967296;};
+  const xs=bed.points.map(p=>p[0]),zs=bed.points.map(p=>p[1]);
+  for(let x0=Math.min(...xs);x0<Math.max(...xs);x0+=.68)for(let z0=Math.min(...zs);z0<Math.max(...zs);z0+=.68){
+   const x=x0+(rand()-.5)*.46,z=z0+(rand()-.5)*.46;
+   if(!inside(x,z,bed.points)||(bed.holes||[]).some(h=>inside(x,z,h))||!terrain.land(x,z)||terrain.bridge(x,z).active)continue;
+   if(occupied(x,z,'',.8)||terrain.obstructed(x,z,1.2))continue;
+   if(bed.points.slice(1).some((p,i)=>segment(x,z,bed.points[i],p).d<.55))continue;
+   if((map.monuments||[]).some(m=>Math.hypot(x-m.x,z-m.z)<m.radius+1.5)||rand()>.97)continue;
+   const form=oudolfDrift(x,z,bed.id),height=({umbel:.79,spire:1.04,airy:1.12,grass:1.18,cone:.88})[form];
+   plants.push({x:round(x),z:round(z),y:round(terrain.height(x,z)+.035),height:round(height*(.82+rand()*.30)),spread:round(.88+rand()*.30),yaw:round(rand()*Math.PI*2),palette:['umbel','spire','airy','grass','cone'].indexOf(form),bed:bed.id,form});
+  }
+ }
+ if(plants.length>8000)throw new Error('Garden detail exceeds fixed budget: '+plants.length);
+ return{version:1,plants,notes:'Mapped beds and paths. Oudolf forms and summer drifts reconstructed from official garden references and supplied photo; not a botanical planting survey.'};
 }

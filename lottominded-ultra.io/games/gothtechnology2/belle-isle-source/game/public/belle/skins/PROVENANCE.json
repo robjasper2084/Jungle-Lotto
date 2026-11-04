@@ -201,5 +201,175 @@
       "credits": 1,
       "status": "completed"
     }
-  ]
+  ],
+  "missingSurfaces": {
+    "date": "2026-11-04",
+    "models": [
+      "Seedream 4.5",
+      "GPT Image 2.5"
+    ],
+    "newSurfaceFamilies": [
+      "marble",
+      "bronze",
+      "copper",
+      "ceramic",
+      "paint",
+      "granite",
+      "rope",
+      "feather",
+      "leather",
+      "cork",
+      "graphite",
+      "scales"
+    ],
+    "jobs": [
+      {
+        "index": 0,
+        "job_id": "9741bb8f-cbc7-4bb1-bba7-7e74d5addf6f",
+        "status": "completed",
+        "type": "image",
+        "model": "seedream_v4_5",
+        "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261104_092911_9741bb8f-cbc7-4bb1-bba7-7e74d5addf6f.png",
+        "credits": 1
+      },
+      {
+        "index": 1,
+        "job_id": "c625881a-c973-4c42-b004-ab85f634faea",
+        "status": "completed",
+        "type": "image",
+        "model": "seedream_v4_5",
+        "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261104_092910_c625881a-c973-4c42-b004-ab85f634faea.png",
+        "credits": 1
+      },
+      {
+        "index": 2,
+        "job_id": "6943c87f-243c-4a45-9d06-c1543672da21",
+        "status": "completed",
+        "type": "image",
+        "model": "seedream_v4_5",
+        "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261104_092910_6943c87f-243c-4a45-9d06-c1543672da21.png",
+        "credits": 1
+      },
+      {
+        "index": 3,
+        "job_id": "6b220af4-1ee5-4c33-ad49-64cf8ba9843e",
+        "status": "completed",
+        "type": "image",
+        "model": "seedream_v4_5",
+        "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261104_092911_6b220af4-1ee5-4c33-ad49-64cf8ba9843e.png",
+        "credits": 1
+      },
+      {
+        "index": 4,
+        "job_id": "c6d7abba-2c12-4ffc-90d0-61aee9401b09",
+        "status": "completed",
+        "type": "image",
+        "model": "seedream_v4_5",
+        "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261104_092910_c6d7abba-2c12-4ffc-90d0-61aee9401b09.png",
+        "credits": 1
+      },
+      {
+        "index": 5,
+        "job_id": "0bd7909a-b257-4ba9-bbd2-47b891dac3c7",
+        "status": "completed",
+        "type": "image",
+        "model": "seedream_v4_5",
+        "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261104_092910_0bd7909a-b257-4ba9-bbd2-47b891dac3c7.png",
+        "credits": 1
+      },
+      {
+        "index": 6,
+        "job_id": "f8705140-a36b-49a6-87b4-0599cba9a0c8",
+        "status": "completed",
+        "type": "image",
+        "model": "seedream_v4_5",
+        "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261104_092938_f8705140-a36b-49a6-87b4-0599cba9a0c8.png",
+        "credits": 1
+      },
+      {
+        "index": 7,
+        "job_id": "bb361032-b4c3-4d22-a109-321aff18ac2e",
+        "status": "completed",
+        "type": "image",
+        "model": "seedream_v4_5",
+        "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261104_092938_bb361032-b4c3-4d22-a109-321aff18ac2e.png",
+        "credits": 1
+      },
+      {
+        "index": 8,
+        "job_id": "3b28ca25-d6c8-4036-bc9c-26e180af8154",
+        "status": "completed",
+        "type": "image",
+        "model": "seedream_v4_5",
+        "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261104_092938_3b28ca25-d6c8-4036-bc9c-26e180af8154.png",
+        "credits": 1
+      },
+      {
+        "index": 9,
+        "job_id": "5589cc22-7a96-4a65-b1d1-f03230a631a1",
+        "status": "completed",
+        "type": "image",
+        "model": "seedream_v4_5",
+        "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261104_092938_5589cc22-7a96-4a65-b1d1-f03230a631a1.png",
+        "credits": 1
+      },
+      {
+        "index": 10,
+        "job_id": "2c198915-3fd3-4276-9771-c2d9b02056c9",
+        "status": "completed",
+        "type": "image",
+        "model": "seedream_v4_5",
+        "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261104_092938_2c198915-3fd3-4276-9771-c2d9b02056c9.png",
+        "credits": 1
+      },
+      {
+        "index": 11,
+        "job_id": "66cb5f94-e62a-4a27-85fa-89e3bd253a83",
+        "status": "completed",
+        "type": "image",
+        "model": "seedream_v4_5",
+        "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261104_092938_66cb5f94-e62a-4a27-85fa-89e3bd253a83.png",
+        "credits": 1
+      },
+      {
+        "index": 14,
+        "job_id": "8d5f91a0-61e7-45fd-bbd4-07b2c9f317a2",
+        "status": "completed",
+        "type": "image",
+        "model": "gpt_image_2_5",
+        "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261104_093426_8d5f91a0-61e7-45fd-bbd4-07b2c9f317a2.png",
+        "credits": 1
+      },
+      {
+        "index": 19,
+        "job_id": "7a960b92-dc88-4e94-b1df-2298ec6c1984",
+        "status": "completed",
+        "type": "image",
+        "model": "gpt_image_2_5",
+        "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261104_093426_7a960b92-dc88-4e94-b1df-2298ec6c1984.png",
+        "credits": 1
+      },
+      {
+        "index": 20,
+        "job_id": "643a3cce-03a8-48bf-adcc-c0cee520044f",
+        "status": "completed",
+        "type": "image",
+        "model": "gpt_image_2_5",
+        "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261104_093425_643a3cce-03a8-48bf-adcc-c0cee520044f.png",
+        "credits": 1
+      },
+      {
+        "index": 23,
+        "job_id": "f94df5e2-81fe-4621-ac32-e7e6fe934579",
+        "status": "completed",
+        "type": "image",
+        "model": "gpt_image_2_5",
+        "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261104_093426_f94df5e2-81fe-4621-ac32-e7e6fe934579.png",
+        "credits": 1
+      }
+    ],
+    "processing": "Selected material crops; suppressed low-frequency lighting; edge-blended repeat; 1024 color / 512 luminance-derived detail. Not measured PBR.",
+    "projectConservativeSubmittedCredits": 174.5,
+    "projectApprovedCredits": 200
+  }
 }

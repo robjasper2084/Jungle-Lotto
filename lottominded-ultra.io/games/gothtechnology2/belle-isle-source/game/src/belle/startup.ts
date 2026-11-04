@@ -1,8 +1,14 @@
 import './startup.css';
+import {createRideSetup} from './rideSetup.ts';
 import {sampleFlyover,FLYOVER_SHOT_SECONDS} from './flyover.ts';
 
 export function createStartup(){
  const screen=document.getElementById('welcome')!;
+ const setup=createRideSetup(screen);
+ const dock=document.createElement('div');dock.className='cinema-dock';screen.append(dock);
+ for(const selector of ['.ride-setup','.cinema-actions','#start-hint'])dock.append(screen.querySelector(selector)!);
+ const indicators=screen.querySelector('.cinema-views')!;indicators.innerHTML='<i class="is-current"></i><i></i><i></i><i></i>';
+ const friends=document.getElementById('welcome-friends') as HTMLButtonElement;let friendsDisabled=true;
  const start=document.getElementById('start') as HTMLButtonElement;
  const label=document.getElementById('start-label')!;
  const loading=document.getElementById('loading')!;
@@ -45,14 +51,18 @@ export function createStartup(){
  });
  updateStages();setMotion(motionOff);
  return {
+  get choice(){return setup.choice;},
+  setCamera:setup.setCamera,
+  preparing(){friendsDisabled=friends.disabled;friends.disabled=true;setup.disable(true);start.disabled=true;label.textContent='Preparing '+setup.name.toLowerCase()+'…';loading.textContent='Getting your selected ride ready.';},
+  retryRide(message:string){friends.disabled=friendsDisabled;setup.disable(false);start.disabled=false;label.textContent='Try starting again';loading.textContent=message;},
   status(message:string){
    loading.textContent=message;
    const nextStage=/first frame|shaders/i.test(message)?5:/rider/i.test(message)?4:/trees|rocks|flowers|gardens/i.test(message)?3:/landmark/i.test(message)?2:/sky|road|skyline/i.test(message)?1:0;
    stage=Math.max(stage,nextStage);updateStages();
   },
   ready(destinations:number){
-   ready=true;stage=5;screen.dataset.state='ready';loading.textContent=destinations+' places. One island. All yours.';
-   label.textContent='Start exploring';hint.innerHTML='<kbd>ENTER</kbd> to begin · touch and keyboard ready';
+   ready=true;stage=5;screen.dataset.state='ready';loading.textContent='Island ready · '+destinations+' places to explore';
+   label.textContent='Start exploring';hint.innerHTML='<kbd>ENTER</kbd> to begin · <kbd>V</kbd> switches FPP / TPP';
    start.disabled=false;next.disabled=false;updateStages();
   },
   camera(dt:number){
@@ -64,7 +74,7 @@ export function createStartup(){
    return shot;
   },
   leave(onComplete:()=>void){
-   if(!ready||leaving)return;leaving=true;screen.dataset.state='leaving';start.disabled=true;next.disabled=true;clearTimeout(leaveTimer);
+   if(!ready||leaving)return;leaving=true;setup.disable(true);screen.dataset.state='leaving';start.disabled=true;next.disabled=true;clearTimeout(leaveTimer);
    const finish=()=>{screen.hidden=true;document.body.classList.remove('at-start');if(!motionOff)document.body.classList.add('entering-ride');onComplete();setTimeout(()=>document.body.classList.remove('entering-ride'),1000);};
    if(motionOff)finish();else leaveTimer=setTimeout(finish,600);
   },

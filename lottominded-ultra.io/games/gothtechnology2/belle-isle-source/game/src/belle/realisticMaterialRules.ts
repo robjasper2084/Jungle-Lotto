@@ -1,8 +1,22 @@
-export type Surface='asphalt'|'grass'|'concrete'|'brick'|'bark'|'sand'|'limestone'|'wood'|'metal'|'rubber'|'leaf'|'cloth'|'fur'|'skin'|'gravel'|'roof';
+export type Surface='asphalt'|'grass'|'concrete'|'brick'|'bark'|'sand'|'limestone'|'wood'|'metal'|'rubber'|'leaf'|'cloth'|'fur'|'skin'|'gravel'|'roof'|'marble'|'bronze'|'copper'|'ceramic'|'paint'|'granite'|'rope'|'feather'|'leather'|'cork'|'graphite'|'scales';
 export function surfaceKind(name:string,object:string,metalness=0):Surface|null{
  const n=(name+' '+object).toLowerCase();
+ if(/fish.*scale/.test(n))return 'scales';
+ if(/feather|pigeon|waterfowl/.test(n))return 'feather';
  // Optical, luminous, graphic and moving-water surfaces keep their dedicated materials.
- if(/court.paint|court.line|clock.dial|clock.hands|floral.clock.flowers|sports.rim|meadow.grass.blades|glass|glaz|clear.panes|lens.coating|monitor|screen|lcd|record.led|running.light|brake.light|plate|michigan|sign|marking|stripe|letter|water|foam|sky|sun|beacon|light.pool|lamp|globe/.test(n))return null;
+ if(/mosaic.floor|aquarium.illuminated.habitat|court.paint|court.line|clock.dial|clock.hands|floral.clock.flowers|sports.rim|meadow.grass.blades|glass|glazing|clear.panes|lens.coating|monitor|screen|lcd|record.led|running.light|brake.light|plate|michigan|sign|marking|stripe|letter|water|foam|sky|sun|beacon|light.pool|lamp|globe/.test(n))return null;
+ if(/glazed.*tile|ceramic/.test(n))return 'ceramic';
+ if(/marble|scott.*carved/.test(n))return 'marble';
+ if(/granite|terrazzo/.test(n))return 'granite';
+ if(/bronze|patina.highlights/.test(n))return 'bronze';
+ if(/copper/.test(n))return 'copper';
+ if(/cork/.test(n))return 'cork';
+ if(/fish.*scale/.test(n))return 'scales';
+ if(/feather|pigeon|waterfowl/.test(n))return 'feather';
+ if(/rope/.test(n))return 'rope';
+ if(/leather/.test(n))return 'leather';
+ if(/graphite|carbon.fiber/.test(n))return 'graphite';
+ if(/paint|powder.coat|molded|fiberglass|plastic|freighter.hull/.test(n))return 'paint';
  if(/boerboel|companion|dog/.test(n))return 'fur';
  if(/hero_head|hero_arms|fpvarms|skin.hand/.test(n))return 'skin';
  if(/higgsfield.hero|hero_body|hero_upperarms|dread|cloth|suit|fabric|cushion/.test(n))return 'cloth';

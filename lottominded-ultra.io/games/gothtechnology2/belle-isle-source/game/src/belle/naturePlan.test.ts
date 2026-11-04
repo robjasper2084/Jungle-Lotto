@@ -14,7 +14,7 @@ test('nature placement preserves dry land and playable route shoulders',()=>{
  }
 });
 test('nature variants exist and expensive detail has a finite mobile budget',()=>{
- assert(plan.trees.length>500&&plan.trees.length<=1300);
+ assert(plan.trees.length>500&&plan.trees.length<=6500);
  for(const id of ['maple','willow','birch','pine'])assert(plan.trees.some(p=>p.id===id));
  for(const kind of ['rock_','grass_','dandelion_','periwinkle_'])assert(plan.ground.some(p=>p.id.startsWith(kind)));
  assert(natureBudget.smooth.trees<=20);assert(natureBudget.smooth.ground<=160);
@@ -29,3 +29,5 @@ test('new tree roots do not obstruct sports grounds, playgrounds or welcome sign
   if(map.entranceSign)assert(Math.hypot(p.x-map.entranceSign.point[0],p.z-map.entranceSign.point[1])>=14);
  }
 });
+
+test('flatwoods multipolygon restores a dense hardwood canopy beside the eastern trails',()=>{const woods=map.areas.filter(a=>a.id.startsWith('17884436-'));assert.ok(woods.length>=6);const forest=plan.trees.filter(t=>woods.some(w=>inside(t.x,t.z,w.points)&&!(w.holes||[]).some(h=>inside(t.x,t.z,h))));assert.ok(forest.length>2200);assert.ok(forest.filter(t=>t.id==='pine').length/forest.length<.05);});

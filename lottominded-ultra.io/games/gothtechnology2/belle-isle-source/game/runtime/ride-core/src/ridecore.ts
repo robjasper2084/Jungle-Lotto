@@ -13,8 +13,8 @@ export class RideCore {
   readonly current:RidePose=createPose();readonly previous:RidePose=createPose();readonly renderPose:RidePose=createPose();
   profile:RiderProfile;
   private accumulator=0;
-  private pending={hop:false,reset:false,trick:0};
-  private down={hop:false,reset:false,trick:0};
+  private pending={hop:false,reset:false,trick:0,dismount:false,recover:false};
+  private down={hop:false,reset:false,trick:0,dismount:false,recover:false};
   constructor(terrain:TerrainSampler,options:{profile?:RiderProfile;spawn?:RideSpawn}={}){
     this.profile=options.profile??HUMAN_PROFILE;
     this.controller=new RideController(terrain,options.spawn?{spawn:options.spawn}:undefined);
@@ -27,11 +27,11 @@ export class RideCore {
   }
   private capture(){this.controller.writePose(this.current);if(!this.profile.footDownStop)this.current.stopFoot=0;}
   reset(spawn?:RideSpawn){
-    this.controller.reset(spawn);this.accumulator=0;this.pending={hop:false,reset:false,trick:0};this.down={hop:false,reset:false,trick:0};
+    this.controller.reset(spawn);this.accumulator=0;this.pending={hop:false,reset:false,trick:0,dismount:false,recover:false};this.down={hop:false,reset:false,trick:0,dismount:false,recover:false};
     this.capture();copyPose(this.current,this.previous);copyPose(this.current,this.renderPose);
   }
   /** Input focus/session loss must not replay a queued edge on the next tick. */
-  clearPendingActions(){this.pending={hop:false,reset:false,trick:0};this.down={hop:false,reset:false,trick:0};}
+  clearPendingActions(){this.pending={hop:false,reset:false,trick:0,dismount:false,recover:false};this.down={hop:false,reset:false,trick:0,dismount:false,recover:false};}
   /** Seconds since last frame; call with held inputs. Edge actions survive sub-step frames. */
   advance(seconds:number,input:Partial<RideActions>={}){
     if(!Number.isFinite(seconds)||seconds<0)throw new RangeError('Frame time must be finite and non-negative');
@@ -39,13 +39,15 @@ export class RideCore {
     if(actions.hop&&!this.down.hop)this.pending.hop=true;
     if(actions.reset&&!this.down.reset)this.pending.reset=true;
     if(actions.trick&&actions.trick!==this.down.trick)this.pending.trick=actions.trick;
-    this.down={hop:actions.hop,reset:actions.reset,trick:actions.trick};
+    if(actions.dismount&&!this.down.dismount)this.pending.dismount=true;
+    if(actions.recover&&!this.down.recover)this.pending.recover=true;
+    this.down={hop:actions.hop,reset:actions.reset,trick:actions.trick,dismount:!!actions.dismount,recover:!!actions.recover};
     const droppedSeconds=Math.max(0,seconds-.25);this.accumulator+=Math.min(seconds,.25);
     const events:RideEvent[]=[];let steps=0;
     while(this.accumulator+1e-10>=STEP&&steps<30){
       copyPose(this.current,this.previous);const crashed=this.controller.crashed;
       this.controller.step(STEP,{...actions,...this.pending});
-      this.pending={hop:false,reset:false,trick:0};this.capture();
+      this.pending={hop:false,reset:false,trick:0,dismount:false,recover:false};this.capture();
       if(this.controller.tricks.event||this.controller.tricks.award)events.push({type:'trick',message:this.controller.tricks.event,points:this.controller.tricks.award});
       if(this.controller.touchedDown)events.push({type:'landing',impact:this.controller.lastLandingImpact,quality:this.controller.lastLandingQuality});
       if(!crashed&&this.controller.crashed)events.push({type:'crash',reason:this.controller.crashCause});
