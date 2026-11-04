@@ -107,3 +107,27 @@ test('real rider crosses the Blue Heron footbridge mounted and on foot in both d
 import {yachtWorld,yachtLocal} from './yachtClub.ts';
 test('real dismounted rider enters and leaves Yacht Club through both doors',()=>{const p=yachtWorld(-7.5,23),q=yachtWorld(-7.5,-25),yaw=Math.atan2(q.x-p.x,q.z-p.z);const c=new RideCore(terrain,{spawn:{position:{...p,y:2},headingY:yaw}});c.advance(1/60,{dismount:true});advance(c,2);for(const direction of[1,-1]){for(let n=0;n<60*55;n++){c.advance(1/60,{throttle:direction*.7,facingYaw:yaw});assert(!c.controller.crashed);const local=yachtLocal(c.current.x,c.current.z);if(direction===1?local.v< -25:local.v>23)break;}const l=yachtLocal(c.current.x,c.current.z);assert(direction===1?l.v< -25:l.v>23,'doorway failed '+JSON.stringify(l));}});
 test('real rider ascends and descends Yacht Club grand stair without twisting physics or losing support',()=>{const p=yachtWorld(-15,0),q=yachtWorld(-33,0),yaw=Math.atan2(q.x-p.x,q.z-p.z);const c=new RideCore(terrain,{spawn:{position:{...p,y:2},headingY:yaw}});c.advance(1/60,{dismount:true});advance(c,2);for(const direction of[1,-1]){for(let n=0;n<60*30;n++){c.advance(1/60,{throttle:direction*.65,facingYaw:yaw});assert(!c.controller.crashed);assert(c.current.airHeight<.03);const l=yachtLocal(c.current.x,c.current.z);if(direction===1?l.u< -32:l.u> -15)break;}const l=yachtLocal(c.current.x,c.current.z);assert(direction===1?l.u< -32:l.u> -15,'stair failed '+JSON.stringify(l));assert(Math.abs(c.current.y-(direction===1?5.4:2))<.03);}});
+
+import {prepareIslandRecovery,islandRecoveryPoint} from './recovery.ts';
+test('Recover clears the Flynn Pavilion obstruction without losing ride distance',()=>{
+ const lm=map.landmarks.find(l=>l.name==='Flynn Pavilion')!;assert(lm);
+ const c=new RideCore(terrain,{spawn:{position:{x:lm.x,y:2,z:lm.z},headingY:0}});
+ assert(terrain.obstructed(c.current.x,c.current.z,.4));
+ const distance=c.controller.snapshot().distanceTravelled;
+ assert(prepareIslandRecovery(c,terrain),'a clear recovery position should be found');
+ c.advance(1/60,{reset:true,recover:true});advance(c,.5);
+ assert.equal(c.controller.snapshot().distanceTravelled,distance);
+ assert(!terrain.obstructed(c.current.x,c.current.z,.8));assert(terrain.land(c.current.x,c.current.z));
+ const p={x:c.current.x,z:c.current.z};advance(c,1.5,{throttle:.35});assert(Math.hypot(c.current.x-p.x,c.current.z-p.z)>.5);
+});
+test('recovery keeps rider on bridge deck and retains the normal on-foot pickup',()=>{
+ const b=map.bridge,x=(b.a[0]+b.b[0])/2,z=(b.a[1]+b.b[1])/2,y=terrain.height(x,z);
+ const p=islandRecoveryPoint(terrain,x,y,z,0);assert(p);assert(p.position.y>9);
+ const c=create();c.advance(1/60,{dismount:true});advance(c,2);assert.equal(prepareIslandRecovery(c,terrain),false);
+ c.advance(1/60,{recover:true});advance(c,3);assert.equal(c.current.footMode,0);
+});
+test('dismount and recovery taps survive a frame shorter than a simulation tick',()=>{
+ const c=create();c.advance(.001,{dismount:true});advance(c,2);assert.equal(c.current.footMode,2);
+ c.advance(.001,{recover:true});advance(c,3);assert.equal(c.current.footMode,0);
+ c.advance(.001,{dismount:true});c.clearPendingActions();advance(c,2);assert.equal(c.current.footMode,0);
+});

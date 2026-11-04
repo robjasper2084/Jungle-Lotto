@@ -22,3 +22,21 @@ test('Yacht Club has its mapped dry islet in geometry and collision',()=>{
  assert(terrain.land(club.x,club.z));
  assert.equal(data.buildings.filter(b=>b.id===club.id).length,1);
 });
+
+
+test('camera can look across lagoon water without removing the rider water barrier',()=>{
+ const o={x:3870,y:3.55,z:-163};let boundaryDirections=0;
+ for(let i=0;i<24;i++){const a=i*Math.PI/12,d={x:Math.cos(a),y:.25,z:Math.sin(a)};const riderHit=terrain.raycastObstacle(o,d,6,.16),cameraHit=terrain.raycastCamera(o,d,6,.16);
+ if(riderHit!==null&&(cameraHit===null||cameraHit>riderHit+.3))boundaryDirections++;}
+ assert(boundaryDirections>0,'shore camera was pulled inward by a virtual water boundary');
+});
+test('camera still collides with a physical building wall',()=>{
+ const t=new ParkTerrain(data);t.boxes.push({minX:5000,maxX:5010,minZ:5000,maxZ:5010,height:10});
+ const hit=t.raycastCamera({x:4997,y:4,z:5005},{x:1,y:0,z:0},8,.16);assert(hit!==null&&hit>2&&hit<3);
+});
+
+test('cached terrain queries preserve island, water and footbridge boundaries',()=>{
+ const legacy=(x:number,z:number,y:number)=>{const under=terrain.bridge(x,z).active&&y<4;if((terrain.bridge(x,z).active&&!under)||inside(x,z,data.mainland))return true;if(!under&&terrain.decks.some(r=>r.points.slice(1).some((p,i)=>segment(x,z,r.points[i],p).d<=r.width*.5)))return true;return(inside(x,z,data.island)||(data.outerIslets||[]).some(i=>inside(x,z,i.points)))&&!data.water.some(w=>inside(x,z,w.points)&&!w.holes.some(h=>inside(x,z,h)));};
+ // Exclude the independently modelled Yacht Club decks, then compare exact legacy boundaries.
+ for(let x=-250;x<4500;x+=79)for(let z=-1800;z<2200;z+=83){if(x>2100&&x<2500&&z>-400&&z<50)continue;for(const y of[2,8])assert.equal(terrain.land(x,z,y),legacy(x,z,y),[x,z,y].join(','));}
+});

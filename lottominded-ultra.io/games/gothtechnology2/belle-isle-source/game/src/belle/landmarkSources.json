@@ -1,5 +1,383 @@
 [
   {
+    "id": "belle-tennis",
+    "name": "Athletic Complex · Tennis Courts",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://hypeathletics.org/belle-isle/",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Athletic%20Complex%20%C2%B7%20Tennis%20Courts%20Belle%20Isle%20Detroit%2042.3394630%2C-82.9821101",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3394630,-82.9821101&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3394630,-82.9821101",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "basketball-368854129",
+    "name": "Athletic Complex · Basketball East",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://hypeathletics.org/belle-isle/",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Athletic%20Complex%20%C2%B7%20Basketball%20East%20Belle%20Isle%20Detroit%2042.3399615%2C-82.9776675",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3399615,-82.9776675&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3399615,-82.9776675",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "basketball-368854130",
+    "name": "South Basketball Court",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://hypeathletics.org/belle-isle/",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=South%20Basketball%20Court%20Belle%20Isle%20Detroit%2042.3361555%2C-82.9828832",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3361555,-82.9828832&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3361555,-82.9828832",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "basketball-657743562",
+    "name": "Athletic Complex · Basketball West",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://hypeathletics.org/belle-isle/",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Athletic%20Complex%20%C2%B7%20Basketball%20West%20Belle%20Isle%20Detroit%2042.3399602%2C-82.9774464",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3399602,-82.9774464&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3399602,-82.9774464",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "baseball-107202872",
+    "name": "Baseball Diamond 1",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://hypeathletics.org/belle-isle/",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Baseball%20Diamond%201%20Belle%20Isle%20Detroit%2042.3377602%2C-82.9795619",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3377602,-82.9795619&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3377602,-82.9795619",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "baseball-107202891",
+    "name": "Baseball Diamond 2",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://hypeathletics.org/belle-isle/",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Baseball%20Diamond%202%20Belle%20Isle%20Detroit%2042.3382868%2C-82.9814055",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3382868,-82.9814055&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3382868,-82.9814055",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "baseball-107202902",
+    "name": "Baseball Diamond 3",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://hypeathletics.org/belle-isle/",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Baseball%20Diamond%203%20Belle%20Isle%20Detroit%2042.3389353%2C-82.9825915",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3389353,-82.9825915&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3389353,-82.9825915",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "baseball-107202904",
+    "name": "Baseball Diamond 4",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://hypeathletics.org/belle-isle/",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Baseball%20Diamond%204%20Belle%20Isle%20Detroit%2042.3388972%2C-82.9791557",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3388972,-82.9791557&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3388972,-82.9791557",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "baseball-107202913",
+    "name": "Baseball Diamond 5",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://hypeathletics.org/belle-isle/",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Baseball%20Diamond%205%20Belle%20Isle%20Detroit%2042.3380248%2C-82.9813478",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3380248,-82.9813478&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3380248,-82.9813478",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "belle-floral-clock",
+    "name": "Floral Clock Hill · Bridge Entrance",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://historicdetroit.org/buildings/floral-clock-at-water-works-park",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Floral%20Clock%20Hill%20%C2%B7%20Bridge%20Entrance%20Belle%20Isle%20Detroit%2042.3392144%2C-82.9960502",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3392144,-82.9960502&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3392144,-82.9960502",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "trail-497942918",
+    "name": "Nashua Trail · Trailhead",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Nashua%20Trail%20%C2%B7%20Trailhead%20Belle%20Isle%20Detroit%2042.3400556%2C-82.9692467",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3400556,-82.9692467&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3400556,-82.9692467",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "trail-1119933383",
+    "name": "Trout Lily Trail · Trailhead",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Trout%20Lily%20Trail%20%C2%B7%20Trailhead%20Belle%20Isle%20Detroit%2042.3466088%2C-82.9711959",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3466088,-82.9711959&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3466088,-82.9711959",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "trail-107208270",
+    "name": "Driker Trail · Trailhead",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Driker%20Trail%20%C2%B7%20Trailhead%20Belle%20Isle%20Detroit%2042.3491503%2C-82.9548045",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3491503,-82.9548045&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3491503,-82.9548045",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "trail-1445474346",
+    "name": "Ralph C. Wilson, Jr. Trail · Trailhead",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Ralph%20C.%20Wilson%2C%20Jr.%20Trail%20%C2%B7%20Trailhead%20Belle%20Isle%20Detroit%2042.3381949%2C-82.9969818",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3381949,-82.9969818&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3381949,-82.9969818",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
     "id": "107202881",
     "name": "Kids Row Playground",
     "sources": [
@@ -635,9 +1013,14 @@
     "name": "Giant Slide",
     "sources": [
       {
-        "label": "Landmark reference",
+        "label": "Selected reference photo",
         "url": "https://upload.wikimedia.org/wikipedia/commons/9/91/Belle_Isle_Park_slide.jpg",
-        "kind": "existing-source"
+        "kind": "inspected-photo"
+      },
+      {
+        "label": "Architectural photographs",
+        "url": "https://commons.wikimedia.org/wiki/File:Belle_Isle_Park_slide.jpg",
+        "kind": "inspected-photo-gallery"
       },
       {
         "label": "Google Maps & photos",
@@ -655,7 +1038,7 @@
         "kind": "street-view-coverage"
       }
     ],
-    "referenceDate": null
+    "referenceDate": "2015-08-01; Drew Tarvin, CC BY 2.0"
   },
   {
     "id": "macarthur-overlook",

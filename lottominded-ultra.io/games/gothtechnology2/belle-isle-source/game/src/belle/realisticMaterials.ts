@@ -7,6 +7,7 @@ export const realisticWaterNormal=()=>waterNormal;
 const done=new WeakSet<T.Material>();
 const profiles:Record<Surface,[number,number,number,number]>={
  // tiles per metre, pigment blend, relief, roughness
+ marble:[.28,.45,.003,.61],bronze:[.8,.32,.0018,.57],copper:[.75,.45,.001,.65],ceramic:[5,0,.0004,.24],paint:[6,0,.0005,.5],granite:[1.5,.25,.002,.66],rope:[10,0,.002,.87],feather:[18,0,.0006,.78],leather:[12,0,.001,.65],cork:[8,.4,.003,.84],graphite:[12,0,.0006,.32],scales:[12,0,.0005,.34],
  asphalt:[.65,.70,.018,.94],grass:[.55,.78,.025,.94],concrete:[.6,.32,.008,.87],
  brick:[.45,.50,.018,.84],bark:[1.1,.65,.03,.94],sand:[.8,.65,.012,.93],
  limestone:[.7,.35,.012,.83],wood:[1,.50,.01,.78],metal:[4,0,.0008,.36],
@@ -31,10 +32,16 @@ export function applyRealisticMaterials(root:T.Object3D,context=''){
   const original=Array.isArray(object.material)?object.material:[object.material];
   const updated=original.map(material=>{
    if(!(material instanceof T.MeshStandardMaterial)||done.has(material))return material;
+   // These overlays receive their texture asynchronously on the original material.
+   // Cloning before that load finishes leaves a permanent opaque white patch.
+   if(/decal|mascot charm/i.test(object.name))return material;
    const kind=surfaceKind(material.name,context+' '+object.name,material.metalness);if(!kind)return material;
    const textures=maps.get(kind);if(!textures)return material;
    // Clone only when one material covers different semantic parts of an actor.
-   const key=material.uuid+kind;let m=clones.get(key);if(m)return m;
+   const normal=object.geometry.getAttribute('normal');
+   let planar=!!normal&&!(object instanceof T.SkinnedMesh);
+   if(planar)for(let i=0;i<normal.count;i++)if(Math.abs(normal.getY(i))<.999){planar=false;break;}
+   const key=material.uuid+kind+(planar?'-planar':'');let m=clones.get(key);if(m)return m;
    m=material.clone();m.onBeforeCompile=material.onBeforeCompile;clones.set(key,m);done.add(m);
    const [scale,blend,relief,roughness]=/ballfield infield/i.test(material.name)?[6,.25,.002,.98]:profiles[kind];
    if(!m.alphaTest&&!m.transparent&&['asphalt','grass','sand','gravel'].includes(kind)){m.map=null;m.normalMap=null;m.bumpMap=null;m.roughnessMap=null;}const oldCompile=m.onBeforeCompile,oldKey=material.customProgramCacheKey();
@@ -47,7 +54,7 @@ export function applyRealisticMaterials(root:T.Object3D,context=''){
     shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nskinPosition=position;skinNormal=normal;');
     shader.fragmentShader=`varying vec3 skinPosition;varying vec3 skinNormal;uniform sampler2D skinColor;uniform sampler2D skinDetail;
 vec3 skinWeights(){vec3 w=pow(abs(normalize(skinNormal)),vec3(8.));return w/max(.0001,w.x+w.y+w.z);}
-vec3 sampleSkin(sampler2D tex,vec3 p){vec3 w=skinWeights();return texture2D(tex,p.zy).rgb*w.x+texture2D(tex,p.xz).rgb*w.y+texture2D(tex,p.xy).rgb*w.z;}
+vec3 sampleSkin(sampler2D tex,vec3 p){${planar?'return texture2D(tex,p.xz).rgb;':'vec3 w=skinWeights();return texture2D(tex,p.zy).rgb*w.x+texture2D(tex,p.xz).rgb*w.y+texture2D(tex,p.xy).rgb*w.z;'}}
 `+shader.fragmentShader;
     // Preserve camera colors, character likeness and foliage alpha. Add grain without relighting the atlas.
     shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>',`#include <map_fragment>
@@ -71,7 +78,7 @@ vec3 skinGrad=sign(skinDet)*(skinGradient.x*skinRx+skinGradient.y*skinRy);
 normal=normalize(abs(skinDet)*normal-skinGrad);
 `);
    };
-   m.customProgramCacheKey=()=>oldKey+'-higgsfield-surface-v1-'+kind;m.needsUpdate=true;return m;
+   m.customProgramCacheKey=()=>oldKey+'-higgsfield-surface-v2-'+kind+(planar?'-planar':'');m.needsUpdate=true;return m;
   });
   object.material=Array.isArray(object.material)?updated:updated[0];
  });

@@ -42,14 +42,16 @@ export class HoverRide {
  private altitude:HTMLElement;
  private mode:HTMLElement;
  private touchPad:HTMLElement;
+ private stick={x:0,y:0,id:-1,cx:0,cy:0};
  constructor(scene:T.Scene,readonly terrain:ParkTerrain,private hooks:Hooks){
   this.sim=new HoverController(terrain,terrain.map.spawn);
   this.enterButton=document.createElement('button');this.enterButton.id='hover-enter';this.enterButton.textContent='Ride hoverbike · B';
   document.querySelector('header nav')!.prepend(this.enterButton);this.enterButton.onclick=()=>{if(this.riding)this.exit();else void this.mount(scene);};
   this.hud=document.createElement('section');this.hud.id='hover-hud';this.hud.hidden=true;this.hud.setAttribute('aria-label','Hoverbike controls');
-  this.hud.innerHTML='<div class="hover-title"><span>SWOOP / 2084</span><strong>HOVERBIKE</strong></div><div class="hover-instruments"><div><b id="hover-speed">0</b><span>KM/H</span></div><div><b id="hover-altitude">0.2</b><span>METRES AGL</span></div><output id="hover-mode">LANDED</output></div><p id="hover-notice" role="status">Take off to ride.</p><div class="hover-actions"><button data-hover="takeoff">Take off · G</button><button data-hover="lights" aria-pressed="true">Headlights · L</button><button data-hover="sound" aria-pressed="false">Sound off</button><button data-hover="reset">Recover · R</button><button data-hover="exit">Get off · F</button></div><details class="hover-lighting"><summary>Lighting</summary><div><label>LED color<input type="color" id="hover-led-color" value="#79dfff"></label><label>LED effect<select id="hover-led-mode"><option value="solid">Solid color</option><option value="cycle">Slow color cycle</option><option value="off">LEDs off</option></select></label><button data-hover="color">Next color · K</button><button data-hover="beam" aria-pressed="false">High beam · H</button></div></details><p class="hover-help">W / S speed · A / D steer · E / Q up / down · Space brake · Shift boost · V camera · drag to look</p><div class="hover-touch" aria-label="Hoverbike touch controls"><div class="hover-steer"><button data-hold="KeyA" aria-label="Steer left">←</button><button data-hold="KeyD" aria-label="Steer right">→</button></div><div class="hover-lift"><button data-hold="KeyE" aria-label="Ascend">↑ UP</button><button data-hold="KeyQ" aria-label="Descend">↓ DOWN</button></div><div class="hover-pedals"><button data-hold="Space">BRAKE</button><button data-hold="KeyS">REVERSE</button><button data-hold="KeyW" class="hover-throttle">THROTTLE</button></div></div>';
+  this.hud.innerHTML='<div class="hover-title"><span>SWOOP / 2084</span><strong>HOVERBIKE</strong></div><div class="hover-instruments"><div><b id="hover-speed">0</b><span>KM/H</span></div><div><b id="hover-altitude">0.2</b><span>METRES AGL</span></div><output id="hover-mode">LANDED</output></div><p id="hover-notice" role="status">Take off to ride.</p><div class="hover-actions"><button data-hover="takeoff">Take off · G</button><button data-hover="lights" aria-pressed="true">Headlights · L</button><button data-hover="sound" aria-pressed="false">Sound off</button><button data-hover="reset">Recover · R</button><button data-hover="exit">Get off · F</button></div><details class="hover-lighting"><summary>Lighting</summary><div><label>LED color<input type="color" id="hover-led-color" value="#79dfff"></label><label>LED effect<select id="hover-led-mode"><option value="solid">Solid color</option><option value="cycle">Slow color cycle</option><option value="off">LEDs off</option></select></label><button data-hover="color">Next color · K</button><button data-hover="beam" aria-pressed="false">High beam · H</button></div></details><p class="hover-help">W / S speed · A / D steer · E / Q up / down · Space brake · Shift boost · V camera · drag to look</p><div class="hover-touch" aria-label="Hoverbike touch controls"><div id="hover-flight-stick" aria-label="Flight joystick" role="group"><span>MOVE</span><i></i></div><div class="hover-steer"><button data-hold="KeyA" aria-label="Steer left">←</button><button data-hold="KeyD" aria-label="Steer right">→</button></div><div class="hover-lift"><button data-hold="KeyE" aria-label="Ascend">↑ UP</button><button data-hold="KeyQ" aria-label="Descend">↓ DOWN</button></div><div class="hover-pedals"><button data-hold="Space">BRAKE</button><button data-hold="KeyS">REVERSE</button><button data-hold="KeyW" class="hover-throttle">THROTTLE</button></div></div>';
   document.body.append(this.hud);
   this.notice=this.hud.querySelector('#hover-notice')!;this.speed=this.hud.querySelector('#hover-speed')!;this.altitude=this.hud.querySelector('#hover-altitude')!;this.mode=this.hud.querySelector('#hover-mode')!;this.touchPad=this.hud.querySelector('.hover-touch')!;
+  this.bindFlightStick();
   this.soundButton();
   this.ledInput=this.hud.querySelector('#hover-led-color')!;this.ledSelect=this.hud.querySelector('#hover-led-mode')!;
   try{const prefs=JSON.parse(localStorage.getItem('belle-hover-lighting')||'{}');if(/^#[0-9a-f]{6}$/i.test(prefs.color))this.ledColor=prefs.color;if(['solid','cycle','off'].includes(prefs.mode))this.ledMode=prefs.mode;}catch{}this.ledInput.value=this.ledColor;this.ledSelect.value=this.ledMode;
@@ -68,6 +70,13 @@ export class HoverRide {
     e.preventDefault();if(this.riding)this.exit();else void this.mount(scene);
    }
   });
+ }
+ private releaseStick(){this.stick.x=this.stick.y=0;this.stick.id=-1;const pad=this.hud.querySelector<HTMLElement>('#hover-flight-stick');if(pad){pad.classList.remove('is-active');pad.style.removeProperty('left');pad.style.removeProperty('top');pad.style.removeProperty('position');const knob=pad.querySelector<HTMLElement>('i');if(knob)knob.style.transform='translate(-50%,-50%)';}}
+ private bindFlightStick(){
+  const pad=this.hud.querySelector<HTMLElement>('#hover-flight-stick')!,knob=pad.querySelector<HTMLElement>('i')!,holder=document.createElement('div'),zone=document.createElement('div');holder.className='hover-stick-holder';zone.id='hover-move-zone';pad.replaceWith(holder);holder.append(zone);zone.append(pad);
+  zone.onpointerdown=e=>{if(e.button!==0||this.hooks.blocked()||this.stick.id!==-1)return;e.preventDefault();const floating=document.body.dataset.joystickMode!=='fixed',r=pad.getBoundingClientRect(),z=zone.getBoundingClientRect();this.stick={x:0,y:0,id:e.pointerId,cx:floating?e.clientX:r.left+r.width/2,cy:floating?e.clientY:r.top+r.height/2};if(floating){pad.style.position='absolute';pad.style.left=(e.clientX-z.left-r.width/2)+'px';pad.style.top=(e.clientY-z.top-r.height/2)+'px';}pad.classList.add('is-active');zone.setPointerCapture(e.pointerId);move(e);};
+  const move=(e:PointerEvent)=>{if(e.pointerId!==this.stick.id)return;if(this.hooks.blocked()){this.releaseStick();return;}e.preventDefault();const radius=pad.getBoundingClientRect().width*.37;let x=(e.clientX-this.stick.cx)/radius,y=(this.stick.cy-e.clientY)/radius;const n=Math.max(1,Math.hypot(x,y));x/=n;y/=n;this.stick.x=Math.abs(x)<.08?0:x;this.stick.y=Math.abs(y)<.08?0:y;knob.style.transform='translate(calc(-50% + '+x*radius+'px),calc(-50% - '+y*radius+'px))';};
+  zone.onpointermove=move;const end=(e:PointerEvent)=>{if(e.pointerId!==this.stick.id)return;this.releaseStick();if(zone.hasPointerCapture(e.pointerId))zone.releasePointerCapture(e.pointerId);};zone.onpointerup=end;zone.onpointercancel=end;zone.onlostpointercapture=end;
  }
  get riderObject(){return this.hero;}
  captureAudio(){return this.sound.capture();}
@@ -105,7 +114,8 @@ export class HoverRide {
   const near=choices.find(p=>this.terrain.land(p.x,p.z)&&!this.terrain.obstructed(p.x,p.z,2));
   return near||this.terrain.map.spawn;
  }
- private async mount(scene:T.Scene){
+ async prepare(scene:T.Scene){await this.load(scene);}
+ async mount(scene:T.Scene){
   if(this.hooks.blocked()||this.enterButton.disabled)return;
   void this.sound.unlock();this.enterButton.disabled=true;this.enterButton.textContent='Preparing hoverbike…';
   try{
@@ -118,7 +128,7 @@ export class HoverRide {
   }catch(e){console.error('Hoverbike load failed',e);this.enterButton.textContent='Retry hoverbike';}
   finally{this.enterButton.disabled=false;if(this.model)this.enterButton.textContent=this.riding?'Get off hoverbike · B':'Ride hoverbike · B';}
  }
- clear(){this.pressed.clear();this.sim.stop();this.hud.querySelectorAll('[data-held]').forEach(b=>b.removeAttribute('data-held'));this.sound.silence();}
+ clear(){this.releaseStick();this.pressed.clear();this.sim.stop();this.hud.querySelectorAll('[data-held]').forEach(b=>b.removeAttribute('data-held'));this.sound.silence();}
  key(e:KeyboardEvent){
   if(!this.riding||!keyCodes.includes(e.code))return false;e.preventDefault();this.pressed.add(e.code);
   if(!e.repeat)switch(e.code){case'KeyG':this.toggleFlight();break;case'KeyF':this.exit();break;case'KeyL':this.toggleLights();break;case'KeyH':this.toggleBeam();break;case'KeyK':this.nextColor();break;case'KeyR':this.recover();break;}
@@ -153,7 +163,7 @@ export class HoverRide {
   if(!this.riding||!this.model)return;
   const has=(a:string,b?:string)=>this.pressed.has(a)||!!b&&this.pressed.has(b);
   const steer=Number(has('KeyD','ArrowRight'))-Number(has('KeyA','ArrowLeft'));
-  if(running)this.sim.advance(dt,{throttle:Number(has('KeyW','ArrowUp'))-Number(has('KeyS','ArrowDown')),steer,lift:Number(has('KeyE'))-Number(has('KeyQ')),brake:has('Space'),boost:has('ShiftLeft','ShiftRight')});
+  if(running)this.sim.advance(dt,{throttle:Number(has('KeyW','ArrowUp'))-Number(has('KeyS','ArrowDown'))+this.stick.y,steer:steer+this.stick.x,lift:Number(has('KeyE'))-Number(has('KeyQ')),brake:has('Space'),boost:has('ShiftLeft','ShiftRight')});
   const p=this.sim.pose;this.model.position.set(p.x,p.y,p.z);
   this.model.rotation.set(p.pitch,p.heading,p.roll,'YXZ');
   if(running){
@@ -175,11 +185,11 @@ export class HoverRide {
   const p=this.sim.pose;this.cockpitHidden.forEach(o=>o.visible=!first);if(this.fpvArms)this.fpvArms.visible=first&&!photo;
   const angle=p.heading+yaw,forward=new T.Vector3(Math.sin(angle),0,Math.cos(angle));
   const look=new T.Vector3(p.x,p.y+1.15,p.z),desired=new T.Vector3();
-  if(first){desired.set(p.x-Math.sin(p.heading)*.40,p.y+1.58,p.z-Math.cos(p.heading)*.40);look.copy(desired).addScaledVector(forward,12);look.y-=(photo?0:3.0)+pitch*8;}
+  if(first){desired.set(p.x-Math.sin(p.heading)*.40,p.y+1.58,p.z-Math.cos(p.heading)*.40);look.copy(desired).addScaledVector(forward,12);look.y-=Math.tan(Math.min(1.25,pitch+(photo?0:.12)))*12;}
   else{desired.copy(look).addScaledVector(forward,-5.4);desired.y+=2.2+pitch*3;desired.y=Math.max(desired.y,this.sim.floor(desired.x,desired.z)+.7);
    const dir=desired.clone().sub(look),length=dir.length();dir.normalize();const hit=this.terrain.raycastFlight(look,dir,length,.2);if(hit!==null)desired.copy(look).addScaledVector(dir,Math.max(.5,hit-.3));
   }
-  camera.position.lerp(desired,snap?1:1-Math.exp(-dt*9));camera.lookAt(look);
+  camera.position.lerp(desired,snap?1:1-Math.exp(-dt*9));if(!first)look.y+=Math.max(0,-pitch-.25)*6;camera.lookAt(look);
   if(camera.fov!==(first?72:63)){camera.fov=first?72:63;camera.updateProjectionMatrix();}
  }
 }

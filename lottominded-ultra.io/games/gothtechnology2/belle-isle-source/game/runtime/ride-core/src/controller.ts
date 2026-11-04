@@ -115,6 +115,8 @@ export class RideController {
     this.vx=this.vz=this.velocityY=this.motor=this.acceleration=0;this.grounded=true;this.tricks.cancel();
     if(age>=down+.9){for(const key of Object.keys(p) as (keyof RidePose)[])if(key.startsWith('crash')||key.startsWith('wheelCrash'))p[key]=0;this.walking.stagger=p.footStagger=0;this.combatFallAge=-1;this.fallMotion=undefined;this.recoveryRest=undefined;}
   }
+  /** Host-validated clear ground for the next recovery; ordinary reset keeps its original spawn. */
+  setRecoveryPoint(spawn:Spawn){this.safe={position:{...spawn.position},headingY:spawn.headingY};}
   private finishRecovery(){const counts={...this.counts},distance=this.distance,origin=this.spawn;this.reset(this.safe);this.spawn=origin;this.counts=counts;this.distance=distance;}
   private recover(){if(this.recoveryAge>=0)return;if(this.crashed){this.recoveryRest={...this.pose};this.recoveryAge=0;}else this.finishRecovery();}
   step(dt:number,input:RideActions){
