@@ -33,14 +33,14 @@ export function skyKeyBlend(hour:number){const h=wrapHour(hour);let i=0;while(i<
 export type CloudShape={coverage:number;density:number;stretch:number;scale:number;overcast:number};
 const SHAPES:Record<Exclude<CloudType,'changing'>,CloudShape>={
  clear:{coverage:.08,density:.28,stretch:1.2,scale:1,overcast:0},
- wispy:{coverage:.43,density:.54,stretch:5.8,scale:1.15,overcast:.04},
- scattered:{coverage:.48,density:.95,stretch:1.1,scale:1.5,overcast:.1},
- layered:{coverage:.67,density:.92,stretch:3.9,scale:.85,overcast:.35},
+ wispy:{coverage:.54,density:.66,stretch:5.8,scale:1.15,overcast:.04},
+ scattered:{coverage:.62,density:.95,stretch:1.1,scale:1.5,overcast:.1},
+ layered:{coverage:.73,density:.92,stretch:3.9,scale:.85,overcast:.35},
  overcast:{coverage:.91,density:1,stretch:1.5,scale:.65,overcast:.87}
 };
 export function cloudShape(type:CloudType,hour:number):CloudShape{
  if(type!=='changing')return {...SHAPES[type]};
- const order=['layered','wispy','clear','scattered','wispy','layered','overcast','layered'] as const;
+ const order=['layered','wispy','scattered','scattered','layered','layered','overcast','layered'] as const;
  const phase=wrapHour(hour)/3,index=Math.floor(phase),t=smooth(0,1,phase-index),a=SHAPES[order[index]],b=SHAPES[order[(index+1)%order.length]];
  return Object.fromEntries(Object.keys(a).map(k=>[k,a[k as keyof CloudShape]+(b[k as keyof CloudShape]-a[k as keyof CloudShape])*t])) as CloudShape;
 }

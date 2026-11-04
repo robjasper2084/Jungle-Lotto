@@ -1,6 +1,7 @@
 import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {WATERFOWL,waterfowlPose,type WaterfowlRoute} from './waterfowlPlan.ts';
+import canalResidents from './canalWaterfowl.json';
 
 /** Original small meshes; a single vertex-colour draw per bird, no asset download. */
 export function waterfowlGeometry(kind:WaterfowlRoute['plumage']){
@@ -29,16 +30,17 @@ export function waterfowlGeometry(kind:WaterfowlRoute['plumage']){
  const g=mergeGeometries(parts)!;parts.forEach(p=>p.dispose());g.computeBoundingSphere();return g;
 }
 export function addWaterfowl(scene:T.Scene){
- const group=new T.Group();group.name='Blue Heron Lagoon · four swans and two ducks';scene.add(group);
+ const group=new T.Group();group.name='Lagoon and canal swans and ducks';scene.add(group);
  const material=new T.MeshStandardMaterial({vertexColors:true,roughness:.72,metalness:0});
  const geometries=new Map<WaterfowlRoute['plumage'],T.BufferGeometry>();
  const wakeMaterial=new T.LineBasicMaterial({color:0xc1d7ce,transparent:true,opacity:.18,depthWrite:false});
- const birds=WATERFOWL.map((route,i)=>{
+ const routes=[...WATERFOWL,...canalResidents as WaterfowlRoute[]];
+ const birds=routes.map((route,i)=>{
   if(!geometries.has(route.plumage))geometries.set(route.plumage,waterfowlGeometry(route.plumage));
   const holder=new T.Group(),body=new T.Mesh(geometries.get(route.plumage),material);holder.add(body);body.receiveShadow=false;body.castShadow=false;body.name=route.species+' '+(i+1);group.add(holder);
   const size=route.species==='swan'?1:.5,points:T.Vector3[]=[];
   for(const s of [-1,1])for(let k=0;k<8;k++){const t=k/8,t2=(k+1)/8;points.push(new T.Vector3(s*(.15+t*.6)*size,.015,-(.32+t*1.9)*size),new T.Vector3(s*(.15+t2*.6)*size,.015,-(.32+t2*1.9)*size));}
   const wake=new T.LineSegments(new T.BufferGeometry().setFromPoints(points),wakeMaterial);holder.add(wake);return {holder,body,route};
  });
- return {stats:{swans:4,ducks:2,draws:12,triangles:birds.reduce((n,b)=>n+b.body.geometry.attributes.position.count/3,0)},update(time:number,x:number,z:number){group.visible=Math.hypot(x-3930,z+185)<300;if(!group.visible)return;for(const bird of birds){const p=waterfowlPose(bird.route,time);bird.holder.position.set(p.x,p.y,p.z);bird.holder.rotation.y=p.heading;bird.body.rotation.z=p.roll;}}};
+ return {stats:{swans:routes.filter(r=>r.species==='swan').length,ducks:routes.filter(r=>r.species==='duck').length,maxVisible:12,triangles:birds.reduce((n,b)=>n+b.body.geometry.attributes.position.count/3,0)},update(time:number,x:number,z:number){let visible=0;for(const bird of birds){bird.holder.visible=Math.hypot(x-bird.route.x,z-bird.route.z)<180&&visible<12;if(!bird.holder.visible)continue;visible++;const p=waterfowlPose(bird.route,time);bird.holder.position.set(p.x,p.y,p.z);bird.holder.rotation.y=p.heading;bird.body.rotation.z=p.roll;}}};
 }
