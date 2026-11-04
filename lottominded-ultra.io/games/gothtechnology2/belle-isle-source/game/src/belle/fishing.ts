@@ -13,7 +13,7 @@ export class Fishing{
   const material=(name:string,color:number,roughness=.55,metalness=0)=>new T.MeshStandardMaterial({name,color,roughness,metalness});
   const carbon=material('Fishing rod graphite',0x252b2e,.32),cork=material('Fishing cork handle',0xb79761,.82),metal=material('Fishing reel alloy',0x89979a,.28,.7);
   const cylinder=(radius:number,length:number,m:T.Material,z:number)=>{const mesh=new T.Mesh(new T.CylinderGeometry(radius*.65,radius,length,12),m);mesh.rotation.x=Math.PI/2;mesh.position.z=z;this.rod.add(mesh);return mesh;};
-  cylinder(.013,1.8,carbon,-.96);cylinder(.035,.42,cork,-.08);cylinder(.026,.12,metal,-.30);
+  cylinder(.0075,1.8,carbon,-.96);cylinder(.019,.36,cork,-.05);cylinder(.018,.08,metal,-.26);
   this.reelModel.group.position.set(0,-.13,-.20);this.rod.add(this.reelModel.group);
   for(let i=0;i<6;i++){const ring=new T.Mesh(new T.TorusGeometry(.018-i*.002,.003,5,12),metal);ring.position.set(0,-.018,-.45-i*.25);this.rod.add(ring);}
   const floatWhite=material('Fishing bobber painted white',0xf4f1df,.35),floatRed=material('Fishing bobber painted red',0xb9261c,.35);for(const [y,m]of [[.05,floatRed],[-.03,floatWhite]] as const){const ball=new T.Mesh(new T.SphereGeometry(.085,16,10),m);ball.scale.y=.7;ball.position.y=y;this.float.add(ball);}const mast=new T.Mesh(new T.CylinderGeometry(.008,.008,.22,6),floatRed);mast.position.y=.13;this.float.add(mast);
