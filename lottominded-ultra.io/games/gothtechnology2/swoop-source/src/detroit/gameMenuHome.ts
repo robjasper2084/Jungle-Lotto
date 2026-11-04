@@ -20,6 +20,7 @@ export function gameMenuHome(root:HTMLElement,o:MenuHomeOptions){
  const links=document.createElement('div');links.className='game-menu-worlds';links.setAttribute('aria-label','Other games');
  for(const [kind,label,url]of [['swoop','Swoop Detroit','../swoop-detroit/index.html'],['royale','Static Royale','../swoop-detroit/royale.html'],['elmwood','Elmwood Explorer','../elmwood-explorer/elmwood.html']])if(kind!==o.kind){const a=document.createElement('a');a.href=url;a.textContent=label+' ↗';links.append(a);}
  const note=document.createElement('p');note.className='game-menu-note';note.textContent=o.kind==='royale'?'3 ROUNDS / DOWNTOWN DETROIT':o.kind==='elmwood'?'QUIET LANES / YOUR OWN PACE':'DEQUINDRE CUT / ELECTRIC CULTURE';
+ if(o.kind==='swoop'){const belle=document.createElement('a');belle.href='../belle-isle-explorer/index.html';belle.textContent='Explore Belle Isle ↗';links.append(belle);}
  home.append(kicker,title,description,nav,links,note);
  const wardrobe=o.rider?makeWardrobePicker(o.rider):undefined;if(wardrobe)nav.before(wardrobe.root);
  if(o.kind==='swoop'){
