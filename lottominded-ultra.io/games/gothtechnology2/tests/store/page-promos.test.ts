@@ -28,11 +28,13 @@ function fakeClock() {
   };
 }
 
-test('only the three requested routes have timed introductions', () => {
-  assert.deepEqual(Object.keys(pagePromos), ['play/', 'lookbook/', 'lottomind/']);
+test('only the requested routes have timed introductions', () => {
+  assert.deepEqual(Object.keys(pagePromos), ['shop/', 'play/', 'lookbook/', 'lottomind/']);
   assert.deepEqual(Object.values(pagePromos).map(promo => [promo.id, promo.delayMs]), [
-    ['swoop-detroit', 5_000], ['static-royale', 20_000], ['lottomind-companion', 40_000],
+    ['belle-isle-explorer', 25_000], ['swoop-detroit', 5_000], ['static-royale', 20_000], ['lottomind-companion', 40_000],
   ]);
+  assert.deepEqual(Object.keys(pagePromos).filter(path => pagePromos[path].embed), ['shop/']);
+  assert.equal(pagePromos['shop/'].url, 'arcade/belle-isle-explorer/');
   assert.equal(pagePromos['play/'].url, 'arcade/swoop-detroit/');
   assert.equal(pagePromos['lookbook/'].url, 'arcade/swoop-detroit/royale.html');
   assert.equal(pagePromos['lottomind/'].url, 'https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/?route=companion');
@@ -85,23 +87,25 @@ test('cancellation also releases a postponed introduction', () => {
   assert.equal(clock.pending(), 0);
 });
 
-test('popup wiring starts after load, uses shared accessible dialogs, and never embeds or autoplays an app', async () => {
+test('popup wiring starts after load and requests the game only when its dialog opens', async () => {
   const component = await readFile(new URL('../../store/components/PagePromo.astro', import.meta.url), 'utf8');
   const controller = await readFile(new URL('../../store/ui/page-promos.ts', import.meta.url), 'utf8');
   assert.match(component, /aria-labelledby="page-promo-title" aria-describedby="page-promo-description"/);
   assert.match(component, /data-close-dialog aria-label=.*autofocus/);
   assert.match(component, /Continue browsing/);
   assert.match(component, /min-height:44px/);
-  assert.doesNotMatch(component, /<iframe|<video|<audio|autoplay|animation:[^n]/);
+  assert.doesNotMatch(component, /<iframe[^>]*\bsrc=|<video|<audio|autoplay|animation:[^n]/);
   assert.match(controller, /window\.addEventListener\('load', start/);
   assert.match(controller, /window\.addEventListener\('pagehide', dispose/);
   assert.match(controller, /document\.addEventListener\('store:game-launch', dispose/);
   assert.match(controller, /openDialog\(dialog\.id\)/);
+  assert.match(controller, /dialog\.addEventListener\('close', \(\) => frame\.remove\(\)/);
+  assert.doesNotMatch(controller, /autoplay/);
   assert.doesNotMatch(controller, /location\.(href|assign|replace)\s*[=(]|window\.open/);
 });
 
 test('all popup artwork and the current Elmwood loading image are packaged locally', async () => {
-  const assets = new Set([...Object.values(pagePromos).map(promo => promo.image), 'media/elmwood-loading-current.png']);
+  const assets = new Set([...Object.values(pagePromos).map(promo => promo.embed ? `${promo.url}index.html` : promo.image), 'media/elmwood-loading-current.png']);
   for (const path of assets) {
     const info = await stat(new URL(`../../store/public/${path}`, import.meta.url));
     assert.ok(info.isFile() && info.size > 0, path);
