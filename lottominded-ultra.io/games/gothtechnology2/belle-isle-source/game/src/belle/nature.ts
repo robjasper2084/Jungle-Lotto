@@ -55,7 +55,7 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void){
  let quality:keyof typeof natureBudget='automatic',lastX=Infinity,lastZ=Infinity;
  const stats={treeVariants:manifest.trees.length,groundVariants:manifest.ground.length,trees:plan.trees.length,ground:plan.ground.length,visibleTrees:0,visibleGround:0};
  function update(x:number,z:number,night=0){
-  for(const pool of pools)if(pool.far)(pool.far.material as T.MeshBasicMaterial).color.setScalar(1-night*.84);
+  for(const pool of pools)if(pool.far)(pool.far.material as T.MeshBasicMaterial).color.setScalar(1-night*.70);
   if(Math.hypot(x-lastX,z-lastZ)<6)return;
   lastX=x;lastZ=z;const budget=natureBudget[quality];
   const d=(p:Plant)=>(p.x-x)**2+(p.z-z)**2;

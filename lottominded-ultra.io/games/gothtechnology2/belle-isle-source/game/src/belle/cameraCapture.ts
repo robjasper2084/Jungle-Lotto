@@ -1,11 +1,13 @@
 import './photography.css';
-import {captureRect} from './photoMath.ts';
+import {captureRect,boundedZoom,shutterDelay} from './photoMath.ts';
 
 export const clipMime=(supports:(s:string)=>boolean)=>['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/webm;codecs=vp8,opus','video/mp4','video/webm'].find(supports)??'';
 
 /** One bounded local capture at a time; no uploads, voice recording or device permissions. */
 export class CameraCapture {
- viewfinder=true;zoom=1;private finderButton=document.createElement('button');private zoomButton=document.createElement('button');
+ viewfinder=true;zoom=1;exposure=0;private delay=0;private shutterAt=0;
+ private zoomInput=document.createElement('input');private zoomReadout=document.createElement('output');private grid=document.createElement('div');private gridOn=false;
+ private finderButton=document.createElement('button');
  private lcd=document.createElement('div');private lcdInfo=document.createElement('span');
  private layoutAt=0;
  get finder(){return this.active&&this.viewfinder;}
@@ -21,12 +23,18 @@ export class CameraCapture {
   this.root.id='camera-capture';this.root.hidden=true;this.root.setAttribute('aria-label','Camera · P');
   this.toggle.type='button';this.toggle.textContent='Take photos · P';this.toggle.setAttribute('aria-pressed','false');this.toggle.onclick=()=>this.setActive(!this.active);
   this.panel.className='capture-panel';this.panel.hidden=true;
-  this.finderButton.type=this.zoomButton.type='button';this.finderButton.textContent='Viewfinder';this.finderButton.setAttribute('aria-pressed','false');
+  this.finderButton.type='button';this.finderButton.textContent='Viewfinder';this.finderButton.setAttribute('aria-pressed','false');
   this.finderButton.onclick=()=>{this.viewfinder=!this.viewfinder;this.finderButton.setAttribute('aria-pressed',String(this.viewfinder));this.syncFinder();this.canvas.focus();};
-  this.zoomButton.textContent='Zoom 1×';this.zoomButton.setAttribute('aria-label','Viewfinder zoom');this.zoomButton.onclick=()=>{this.zoom=this.zoom===1?2:this.zoom===2?4:1;this.zoomButton.textContent='Zoom '+this.zoom+'×';this.canvas.focus();};
   this.lcd.id='camera-viewfinder';this.lcd.hidden=true;this.lcd.setAttribute('aria-hidden','true');
   const brand=document.createElement('strong');brand.textContent='STATIC / FIELD CAMERA';this.lcdInfo.className='lcd-info';const focus=document.createElement('i');focus.className='lcd-focus';this.lcd.append(brand,this.lcdInfo,focus);document.body.append(this.lcd);
-  this.panel.append(this.finderButton,this.zoomButton);
+  const zoomLabel=document.createElement('label');zoomLabel.className='capture-zoom';zoomLabel.textContent='ZOOM';this.zoomInput.type='range';this.zoomInput.min='1';this.zoomInput.max='4';this.zoomInput.step='.05';this.zoomInput.value='1';this.zoomInput.setAttribute('aria-label','Camera zoom');this.zoomReadout.textContent='1.00×';this.zoomInput.oninput=()=>this.setZoom(Number(this.zoomInput.value));zoomLabel.append(this.zoomInput,this.zoomReadout);
+  this.panel.append(this.finderButton,zoomLabel);
+  const options=document.createElement('details');options.className='capture-options';const summary=document.createElement('summary');summary.textContent='Camera settings';const controls=document.createElement('div');
+  const exposureLabel=document.createElement('label');exposureLabel.textContent='EXPOSURE';const ev=document.createElement('input'),evValue=document.createElement('output');ev.type='range';ev.min='-2';ev.max='2';ev.step='.25';ev.value='0';ev.setAttribute('aria-label','Exposure compensation');evValue.textContent='0 EV';ev.oninput=()=>{this.exposure=Number(ev.value);evValue.textContent=(this.exposure>0?'+':'')+this.exposure.toFixed(2)+' EV';};exposureLabel.append(ev,evValue);
+  const timerLabel=document.createElement('label');timerLabel.textContent='SELF TIMER';const timerChoice=document.createElement('select');timerChoice.setAttribute('aria-label','Photo self timer');for(const [v,t]of [['0','Off'],['3','3 seconds'],['10','10 seconds']])timerChoice.add(new Option(t,v));timerChoice.onchange=()=>{this.delay=shutterDelay(Number(timerChoice.value));this.cancelShutter();};timerLabel.append(timerChoice);
+  const gridButton=document.createElement('button');gridButton.type='button';gridButton.textContent='Thirds grid';gridButton.setAttribute('aria-pressed','false');gridButton.onclick=()=>{this.gridOn=!this.gridOn;gridButton.setAttribute('aria-pressed',String(this.gridOn));this.syncFinder();};controls.append(exposureLabel,timerLabel,gridButton);options.append(summary,controls);this.panel.append(options);
+  this.grid.id='camera-thirds-grid';this.grid.hidden=true;this.grid.setAttribute('aria-hidden','true');document.body.append(this.grid);
+  this.canvas.addEventListener('wheel',e=>{if(!this.active)return;e.preventDefault();this.setZoom(this.zoom+(e.deltaY<0?.1:-.1));},{passive:false});
   this.photo.type=this.record.type=this.share.type=this.review.type='button';
   this.photo.textContent='Photo';this.photo.onclick=()=>this.shutter();this.record.textContent='Record';this.record.onclick=()=>this.toggleRecording();
   this.save.textContent='Save';this.save.className='capture-save';this.share.textContent='Share';this.share.onclick=()=>void this.shareFile();
@@ -34,21 +42,24 @@ export class CameraCapture {
   this.save.hidden=this.share.hidden=this.review.hidden=true;this.panel.append(this.photo,this.record,this.save,this.share,this.review,this.status);this.root.append(this.toggle,this.panel);document.body.append(this.root);
   this.preview.className='capture-preview';const close=document.createElement('button');close.textContent='Back to game';close.onclick=()=>this.preview.close();this.preview.append(this.media,close);document.body.append(this.preview);
   this.preview.addEventListener('close',()=>{this.media.replaceChildren();this.canvas.focus();});
-  document.addEventListener('visibilitychange',()=>{if(document.hidden)this.stop();});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden){this.cancelShutter();this.stop();}});window.addEventListener('blur',()=>this.cancelShutter());
  }
- private syncFinder(){this.finderButton.setAttribute('aria-pressed',String(this.viewfinder));this.lcd.hidden=!this.finder;document.body.classList.toggle('royale-viewfinder',this.finder);this.zoomButton.hidden=!this.viewfinder;this.layoutAt=0;this.layoutFinder(performance.now()+300);}
+ private syncFinder(){this.finderButton.setAttribute('aria-pressed',String(this.viewfinder));this.lcd.hidden=!this.finder;document.body.classList.toggle('royale-viewfinder',this.finder);this.grid.hidden=!this.active||!this.gridOn||this.finder;this.lcd.classList.toggle('thirds-grid',this.gridOn);this.layoutAt=0;this.layoutFinder(performance.now()+300);}
  private layoutFinder(now:number){
   if(now-this.layoutAt<250)return;this.layoutAt=now;
   const f=captureRect(innerWidth,innerHeight);this.lcd.style.inset='auto';Object.assign(this.lcd.style,{left:f.x+'px',top:f.y+'px',width:f.w+'px',height:f.h+'px'});
  }
  frame(){if(!this.finder)return {x:0,y:0,w:this.canvas.width,h:this.canvas.height};const r=this.lcd.getBoundingClientRect(),border=parseFloat(getComputedStyle(this.lcd).borderLeftWidth)||0,c=this.canvas.getBoundingClientRect(),sx=this.canvas.width/c.width,sy=this.canvas.height/c.height;return{x:Math.max(0,Math.round((r.left+border-c.left)*sx)),y:Math.max(0,Math.round((r.top+border-c.top)*sy)),w:Math.max(2,Math.round((r.width-border*2)*sx)),h:Math.max(2,Math.round((r.height-border*2)*sy))};}
  private drawScene(context:CanvasRenderingContext2D){const f=this.frame();context.drawImage(this.canvas,f.x,f.y,f.w,f.h,0,0,context.canvas.width,context.canvas.height);}
- setActive(value:boolean){this.active=value&&this.available;document.body.classList.toggle('royale-camera-mode',this.active);this.syncFinder();this.shutterHeld=false;this.pendingPhoto=false;if(!this.active)this.stop();this.toggle.textContent=this.active?'Put camera away · P':'Take photos · P';this.toggle.setAttribute('aria-pressed',String(this.active));this.panel.hidden=!this.active;this.changed();this.canvas.focus();}
+ setZoom(value:number){this.zoom=boundedZoom(value);this.zoomInput.value=String(this.zoom);this.zoomReadout.textContent=this.zoom.toFixed(2)+'×';}
+ private cancelShutter(){if(this.shutterAt)this.status.textContent='Photo timer cancelled';this.shutterAt=0;}
+ setActive(value:boolean){this.cancelShutter();this.active=value&&this.available;document.body.classList.toggle('royale-camera-mode',this.active);this.syncFinder();this.shutterHeld=false;this.pendingPhoto=false;if(!this.active)this.stop();this.toggle.textContent=this.active?'Put camera away · P':'Take photos · P';this.toggle.setAttribute('aria-pressed',String(this.active));this.panel.hidden=!this.active;this.changed();this.canvas.focus();}
  update(available:boolean){this.available=available;this.root.hidden=!available;if(!available&&this.active)this.setActive(false);}
  trigger(pressed:boolean){if(pressed&&!this.shutterHeld)this.shutter();this.shutterHeld=pressed;}
- shutter(){if(this.active&&!this.pendingPhoto){this.pendingPhoto=true;this.status.textContent='Taking photo…';}}
+ shutter(){if(!this.active||this.pendingPhoto||this.shutterAt)return;if(this.delay){this.shutterAt=performance.now()+this.delay;this.status.textContent='Photo in '+this.delay/1000+'s';}else{this.pendingPhoto=true;this.status.textContent='Taking photo…';}}
  /** Called immediately after the WebGL render, before the drawing buffer is cleared. */
  afterRender(now:number){
+  if(this.shutterAt){if(now>=this.shutterAt){this.shutterAt=0;this.pendingPhoto=true;}else this.status.textContent='Photo in '+Math.ceil((this.shutterAt-now)/1000)+'s';}
   if(this.finder){this.layoutFinder(now);const f=this.frame();this.lcdInfo.textContent=(this.recorder?.state==='recording'?'● REC '+Math.floor((now-this.started)/1000)+'s':'LIVE')+' · '+this.zoom+'× · '+f.w+' × '+f.h;this.canvas.dataset.viewfinder='lcd';}else delete this.canvas.dataset.viewfinder;
   if(this.pendingPhoto){this.pendingPhoto=false;const photo=document.createElement('canvas'),f=this.frame();photo.width=f.w;photo.height=f.h;this.drawScene(photo.getContext('2d')!);photo.toBlob(blob=>{if(blob)this.finish(blob,'jpg');else this.status.textContent='Photo failed. Please try again.';photo.width=photo.height=0;},'image/jpeg',.92);}
   if(this.pendingRecord&&this.recorder){this.pendingRecord=false;this.drawScene(this.context!);this.recordPoster=this.recordingCanvas!.toDataURL('image/jpeg',.7);this.recorder.start(1000);this.started=now;this.timer=window.setTimeout(()=>this.stop(),60000);}
@@ -75,5 +86,5 @@ export class CameraCapture {
  private async shareFile(){if(!this.file)return;if(!navigator.canShare?.({files:[this.file]})){this.status.textContent='Tap Save, then upload the file in your social app.';return;}try{await navigator.share({title:'Belle Isle Explorer',files:[this.file]});this.status.textContent='Shared.';}catch(error){if((error as Error).name!=='AbortError')this.status.textContent='Share unavailable. Tap Save to keep your capture.';}}
  private showReview(){if(!this.file)return;const item=document.createElement(this.file.type.startsWith('video/')?'video':'img');item.src=this.url;if(item instanceof HTMLVideoElement){item.controls=true;item.playsInline=true;item.poster=this.poster;}else item.alt='Your in-game photo';this.media.replaceChildren(item);this.preview.showModal();}
  get reviewing(){return this.preview.open;}
- dispose(){this.stop();if(this.recorder)this.recorder.onstop=null;this.cleanRecording();if(this.url)URL.revokeObjectURL(this.url);document.body.classList.remove('royale-camera-mode','royale-viewfinder');this.lcd.remove();this.root.remove();this.preview.remove();}
+ dispose(){this.stop();if(this.recorder)this.recorder.onstop=null;this.cleanRecording();if(this.url)URL.revokeObjectURL(this.url);document.body.classList.remove('royale-camera-mode','royale-viewfinder');this.cancelShutter();this.grid.remove();this.lcd.remove();this.root.remove();this.preview.remove();}
 }

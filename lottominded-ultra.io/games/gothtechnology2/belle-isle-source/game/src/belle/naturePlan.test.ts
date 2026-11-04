@@ -31,3 +31,10 @@ test('new tree roots do not obstruct sports grounds, playgrounds or welcome sign
 });
 
 test('flatwoods multipolygon restores a dense hardwood canopy beside the eastern trails',()=>{const woods=map.areas.filter(a=>a.id.startsWith('17884436-'));assert.ok(woods.length>=6);const forest=plan.trees.filter(t=>woods.some(w=>inside(t.x,t.z,w.points)&&!(w.holes||[]).some(h=>inside(t.x,t.z,h))));assert.ok(forest.length>2200);assert.ok(forest.filter(t=>t.id==='pine').length/forest.length<.05);});
+
+test('Jefferson arrival has bounded mainland trees without new detail budgets',()=>{
+ const arrival=plan.trees.filter(p=>inside(p.x,p.z,map.mainland)&&Math.hypot(p.x-map.spawn.x,p.z-map.spawn.z)<500);
+ assert(arrival.length>=36&&arrival.length<=72);
+ assert(arrival.some(p=>Math.hypot(p.x-map.spawn.x,p.z-map.spawn.z)<70));
+ assert(natureBudget.automatic.trees===36);
+});

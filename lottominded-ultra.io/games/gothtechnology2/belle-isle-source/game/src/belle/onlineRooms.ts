@@ -7,7 +7,7 @@ import {parseRoomInvitation,roomInvitationLink} from '../../runtime/ride-core/sr
 import {BELLE_PROTOCOL,MAX_EXPLORERS,PLAYER_COLORS,cleanName,explorerRoster,ExplorerBuffer,networkSky,type Explorer,type ExplorerFrame} from './onlineProtocol.ts';
 import type {SkySettings} from './skyModel.ts';
 import './onlineRooms.css';
-type Hooks={clear:()=>void;ride:()=>void;sky:()=>SkySettings;syncSky:(s:SkySettings)=>void;localSky:()=>void;skyHost:(host:boolean)=>void;follow:(p:ExplorerFrame['pose'])=>void};
+type Hooks={race?:(sender:string,message:unknown)=>void;raceOpen?:()=>void;clear:()=>void;ride:()=>void;sky:()=>SkySettings;syncSky:(s:SkySettings)=>void;localSky:()=>void;skyHost:(host:boolean)=>void;follow:(p:ExplorerFrame['pose'])=>void};
 export class BelleOnlineRooms{
  readonly dialog=document.createElement('dialog');readonly self=crypto.randomUUID();
  readonly voice=new VoiceChat();readonly chat:RoomChatPanel;readonly comms:RoomCommunications;
@@ -28,12 +28,15 @@ export class BelleOnlineRooms{
   this.voice.root.querySelector('select[aria-label="Voice channel"]')?.setAttribute('aria-label','Voice channel');
   this.badge.id='room-status';this.badge.hidden=true;this.badge.onclick=()=>this.open();document.body.append(this.badge);
   for(const id of ['friends-open','welcome-friends']){const button=document.getElementById(id) as HTMLButtonElement;button.disabled=false;button.onclick=()=>this.open();}
+  const raceButton=document.createElement('button');raceButton.textContent='Race with this room';raceButton.onclick=()=>{this.close();this.hooks.raceOpen?.();};this.dialog.append(raceButton);
   this.timer=setInterval(()=>this.publish(),100);window.addEventListener('pagehide',()=>{void this.leave();});
   const invite=parseRoomInvitation(location.href,32);if(invite){this.codeInput.value=invite.code;this.status.textContent='Your invitation is ready. Choose your name, then Join room.';this.open();}this.refresh();
  }
  get inputBlocked(){return this.comms.inputBlocked;}
  get isHost(){return this.connected&&this.owner===this.self;}
  get online(){return this.connected;}
+ get hostId(){return this.owner;}
+ sendRace(data:unknown){this.send('race',data);}
  open(){this.hooks.clear();this.comms.place(this.dialog);if(!this.dialog.open)this.dialog.showModal();}
  private close(){this.dialog.close();this.hooks.clear();document.getElementById('game')?.focus();}
  private own():Explorer{return{id:this.self,name:cleanName(this.name.value)||'Explorer',joined:this.joined,protocol:BELLE_PROTOCOL,voice:this.voiceState};}
@@ -45,6 +48,7 @@ export class BelleOnlineRooms{
   try{this.client=new RealtimeClient(ONLINE_CONFIG.url+'/realtime/v1',{params:{apikey:ONLINE_CONFIG.key},heartbeatIntervalMs:10000});const channel=this.channel=this.client.channel('belle-isle:explorers:'+code,{config:{broadcast:{ack:false,self:false},presence:{key:this.self},private:false}});const current=()=>generation===this.generation&&this.channel===channel;
    channel.on('presence',{event:'sync'},()=>{if(current())this.presence();});
    channel.on('broadcast',{event:'pose'},({payload:e})=>{if(!current()||!this.valid(e))return;let b=this.buffers.get(e.sender);if(!b)this.buffers.set(e.sender,b=new ExplorerBuffer());b.push(e.data,performance.now());});
+   channel.on('broadcast',{event:'race'},({payload:e})=>{if(current()&&this.valid(e))this.hooks.race?.(e.sender,e.data);});
    channel.on('broadcast',{event:'sky'},({payload:e})=>{if(!current()||!this.valid(e)||e.sender!==this.owner||!Number.isSafeInteger(e.data?.seq)||e.data.seq<=this.lastClock)return;const sky=networkSky(e.data.settings);if(!sky)return;this.lastClock=e.data.seq;this.hooks.syncSky(sky);});
    channel.on('broadcast',{event:'chat'},({payload:e})=>{if(!current()||!this.valid(e)||e.data?.player!==e.sender||!this.messageGate.allow(e.sender,performance.now()))return;this.chat.receive({...e.data,name:this.members.find(m=>m.id===e.sender)!.name});});
    channel.on('broadcast',{event:'voice'},({payload:e})=>{if(current()&&this.valid(e))this.receiveVoice(e.sender,e.data);});

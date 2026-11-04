@@ -32,6 +32,6 @@ export function addStreetLighting(scene:T.Scene,map:ParkMap){
  });
  for(const mesh of[posts,feet,arms,shades,bulbs]){mesh.computeBoundingSphere();group.add(mesh);}
  const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(p,3));geometry.setAttribute('uv',new T.Float32BufferAttribute(uv,2));
- const pools=new T.Mesh(geometry,new T.ShaderMaterial({uniforms:{night},transparent:true,depthWrite:false,side:T.DoubleSide,blending:T.AdditiveBlending,vertexShader:'varying vec2 p;void main(){p=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',fragmentShader:'varying vec2 p;uniform float night;void main(){float d=length((p-.5)*2.);float a=pow(max(0.,1.-d*d),3.)*.10*night;gl_FragColor=vec4(.95,.72,.43,a);}'}));pools.name='Persistent streetlight illumination';group.add(pools);
+ const pools=new T.Mesh(geometry,new T.ShaderMaterial({uniforms:{night},transparent:true,depthWrite:false,side:T.DoubleSide,blending:T.AdditiveBlending,vertexShader:'varying vec2 p;void main(){p=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',fragmentShader:'varying vec2 p;uniform float night;void main(){float d=length((p-.5)*2.);float a=pow(max(0.,1.-d*d),3.)*.15*night;gl_FragColor=vec4(.95,.72,.43,a);}'}));pools.name='Persistent streetlight illumination';group.add(pools);
  return{lamps:heads,count:plan.length,setNight(value:number){night.value=value;bulbs.visible=value>.01;globeMaterial.color.setRGB(.7+value,.61+value*.8,.44+value*.6);}};
 }

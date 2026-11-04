@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 8301",
-    "build": "node --experimental-strip-types ../tools/build-beach.mjs && node --experimental-strip-types ../tools/build-nature-plan.mjs && node --experimental-strip-types ../tools/build-street-detail.mjs && node --experimental-strip-types ../tools/build-pavement.mjs && vite build && node ../tools/pack-landmarks.mjs",
+    "build": "node --experimental-strip-types ../tools/build-waterfowl.mjs && node --experimental-strip-types ../tools/build-beach.mjs && node --experimental-strip-types ../tools/build-nature-plan.mjs && node --experimental-strip-types ../tools/build-street-detail.mjs && node --experimental-strip-types ../tools/build-pavement.mjs && vite build && node ../tools/pack-landmarks.mjs",
     "check": "tsc --noEmit",
     "test": "node run-tests.mjs",
     "preview": "vite preview --host 127.0.0.1 --port 8301 --strictPort"

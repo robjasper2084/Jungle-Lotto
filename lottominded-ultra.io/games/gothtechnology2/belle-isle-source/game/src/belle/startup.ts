@@ -1,13 +1,19 @@
 import './startup.css';
+import type {Object3D} from 'three';
+import {createRidePreview} from './ridePreview.ts';
 import {createRideSetup} from './rideSetup.ts';
-import {sampleFlyover,FLYOVER_SHOT_SECONDS} from './flyover.ts';
+import {sampleFlyover,FLYOVER_SHOT_SECONDS,FLYOVER_SHOTS} from './flyover.ts';
 
 export function createStartup(){
  const screen=document.getElementById('welcome')!;
  const setup=createRideSetup(screen);
- const dock=document.createElement('div');dock.className='cinema-dock';screen.append(dock);
- for(const selector of ['.ride-setup','.cinema-actions','#start-hint'])dock.append(screen.querySelector(selector)!);
- const indicators=screen.querySelector('.cinema-views')!;indicators.innerHTML='<i class="is-current"></i><i></i><i></i><i></i>';
+ const picker=document.createElement('details');picker.className='cinema-ride-picker';picker.innerHTML='<summary>Choose your ride &amp; view</summary>';
+ const rideSetup=screen.querySelector('.ride-setup')!;rideSetup.before(picker);picker.append(rideSetup);
+ const done=document.createElement('button');done.type='button';done.className='ride-picker-done';done.textContent='Use this ride';rideSetup.append(done);done.onclick=()=>{picker.open=false;picker.querySelector('summary')?.focus();};
+ let preview:ReturnType<typeof createRidePreview>|undefined,sources:{wheel:Object3D,bike:()=>Promise<Object3D>}|undefined;
+ const refreshPreview=()=>{if(picker.open&&sources&&!preview){try{preview=createRidePreview(rideSetup as HTMLElement,sources.wheel,sources.bike);}catch{rideSetup.classList.add('preview-unavailable');}}preview?.setActive(picker.open);};
+ picker.addEventListener('toggle',refreshPreview);
+ const indicators=screen.querySelector('.cinema-views')!;indicators.innerHTML=FLYOVER_SHOTS.map((_,i)=>'<i'+(i===0?' class="is-current"':'')+'></i>').join('');
  const friends=document.getElementById('welcome-friends') as HTMLButtonElement;let friendsDisabled=true;
  const start=document.getElementById('start') as HTMLButtonElement;
  const label=document.getElementById('start-label')!;
@@ -44,6 +50,7 @@ export function createStartup(){
  document.getElementById('startup-controls-close')!.onclick=closeControls;
  document.addEventListener('keydown',e=>{
   if(screen.hidden||leaving)return;
+  if(e.code==='Escape'&&picker.open){picker.open=false;picker.querySelector('summary')?.focus();return;}
   if(e.code==='Escape'&&!panel.hidden){closeControls();return;}
   if(!ready||e.repeat||e.altKey||e.ctrlKey||e.metaKey)return;
   const target=e.target as HTMLElement|null;
@@ -52,6 +59,7 @@ export function createStartup(){
  updateStages();setMotion(motionOff);
  return {
   get choice(){return setup.choice;},
+  bindVehicles(wheel:Object3D,bike:()=>Promise<Object3D>){sources={wheel,bike};refreshPreview();},
   setCamera:setup.setCamera,
   preparing(){friendsDisabled=friends.disabled;friends.disabled=true;setup.disable(true);start.disabled=true;label.textContent='Preparing '+setup.name.toLowerCase()+'…';loading.textContent='Getting your selected ride ready.';},
   retryRide(message:string){friends.disabled=friendsDisabled;setup.disable(false);start.disabled=false;label.textContent='Try starting again';loading.textContent=message;},
@@ -65,16 +73,16 @@ export function createStartup(){
    label.textContent='Start exploring';hint.innerHTML='<kbd>ENTER</kbd> to begin · <kbd>V</kbd> switches FPP / TPP';
    start.disabled=false;next.disabled=false;updateStages();
   },
-  camera(dt:number){
+  camera(dt:number,aspect=16/9){
    if(!motionOff&&!leaving&&ready)seconds+=dt;
-   const shot=sampleFlyover(seconds);
+   const shot=sampleFlyover(seconds,aspect);
    screen.style.setProperty('--shot-shutter',String(motionOff?0:shot.shutter));
    screen.style.setProperty('--shot-progress',String(shot.progress));
    if(lastScene!==shot.index){lastScene=shot.index;document.getElementById('startup-scene')!.textContent=shot.name;views.forEach((v,i)=>v.classList.toggle('is-current',i===shot.index));}
    return shot;
   },
   leave(onComplete:()=>void){
-   if(!ready||leaving)return;leaving=true;setup.disable(true);screen.dataset.state='leaving';start.disabled=true;next.disabled=true;clearTimeout(leaveTimer);
+   if(!ready||leaving)return;leaving=true;preview?.dispose();preview=undefined;sources=undefined;picker.open=false;setup.disable(true);screen.dataset.state='leaving';start.disabled=true;next.disabled=true;clearTimeout(leaveTimer);
    const finish=()=>{screen.hidden=true;document.body.classList.remove('at-start');if(!motionOff)document.body.classList.add('entering-ride');onComplete();setTimeout(()=>document.body.classList.remove('entering-ride'),1000);};
    if(motionOff)finish();else leaveTimer=setTimeout(finish,600);
   },

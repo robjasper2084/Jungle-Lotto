@@ -1,3 +1,4 @@
+import {pathSamples} from './streetPlan.ts';
 import {clockLocal,floralClock} from './activitiesPlan.ts';
 import {inside,segment,ParkTerrain,type ParkMap,type Point} from './terrain.ts';
 export type Plant={id:string;x:number;y:number;z:number;scale:number;heightScale?:number;yaw:number;tint:number};
@@ -16,9 +17,9 @@ export function makeNaturePlan(map:ParkMap):NaturePlan{
  const gardens=map.areas.filter(a=>a.kind==='garden');
  const inWood=(x:number,z:number)=>woods.some(a=>inside(x,z,a.points)&&!(a.holes||[]).some(h=>inside(x,z,h)));
  const ringDistance=(x:number,z:number,p:Point[])=>Math.min(...p.slice(1).map((b,i)=>segment(x,z,p[i],b).d));
- function clear(x:number,z:number,margin:number){
+ function clear(x:number,z:number,margin:number,mainland=false){
   const [cx,cz]=clockLocal(x,z);if((cx/(floralClock.hillWidth+margin))**2+((cz-floralClock.hillOffset)/(floralClock.hillDepth+margin))**2<1)return false;
-  if(!inside(x,z,map.island)||!terrain.land(x,z)||terrain.bridge(x,z).active)return false;
+  if(!(mainland?inside(x,z,map.mainland):inside(x,z,map.island))||!terrain.land(x,z)||terrain.bridge(x,z).active)return false;
   if(map.entranceSign&&Math.hypot(x-map.entranceSign.point[0],z-map.entranceSign.point[1])<14)return false;
   if((map.monuments||[]).some(m=>Math.hypot(x-m.x,z-m.z)<m.radius+margin+1))return false;
   if(noPlants.some(a=>inside(x,z,a.points)))return false;
@@ -107,5 +108,24 @@ export function makeNaturePlan(map:ParkMap):NaturePlan{
   }
  }
  for(let i=0;i<trees.length;i++){const p=trees[i];p.scale=round(.86+rand()*.38);p.heightScale=round(1.16+rand()*.25);}
- return{version:1,trees,ground,placementEvidence:'Includes OSM Belle Isle Flatwoods multipolygon 17884436. Hardwood-dominated canopy density follows mapped woodland with route clearances; individual species and tree locations are approximate, not a tree census.'};
+ // Mainland arrival planting reuses the same tree/ground instance budgets.
+ // These are art-directed verge positions within mapped land, not a tree survey.
+ const approachTrees:Plant[]=[];
+ const approachRoads=map.roads.filter(r=>!r.foot&&!r.bridge&&/East Jefferson|East Grand Boulevard/.test(r.name));
+ for(const road of approachRoads)for(const sample of pathSamples(road.points,26))for(const side of [-1,1]){
+  const offset=road.width/2+8+rand()*4,x=sample.x+sample.dz*offset*side,z=sample.z-sample.dx*offset*side;
+  if(Math.hypot(x-map.spawn.x,z-map.spawn.z)>480||approachTrees.length>=64||!clear(x,z,4.5,true)||trees.some(t=>Math.hypot(t.x-x,t.z-z)<14))continue;
+  const p=plant(rand()<.8?'maple':'birch',x,z,.84+rand()*.18);p.heightScale=1.06+rand()*.12;trees.push(p);approachTrees.push(p);
+ }
+ // Small irregular groups fill the arrival lawns without planting intersection sightlines.
+ for(let attempt=0;attempt<800&&approachTrees.length<72;attempt++){
+  const x=map.spawn.x-250+rand()*500,z=map.spawn.z-180+rand()*400;
+  if(!clear(x,z,7,true)||trees.some(t=>Math.hypot(t.x-x,t.z-z)<18))continue;
+  const p=plant(rand()<.8?'maple':'birch',x,z,.82+rand()*.2);p.heightScale=1.08;trees.push(p);approachTrees.push(p);
+ }
+ for(const tree of approachTrees)for(let i=0;i<5;i++){
+  const angle=rand()*Math.PI*2,r=1.5+rand()*2.8,x=tree.x+Math.cos(angle)*r,z=tree.z+Math.sin(angle)*r;
+  if(clear(x,z,1.5,true))ground.push(plant((i===0?'dandelion_':'grass_')+(1+i%3),x,z,1.2+rand()*.6));
+ }
+ return{version:1,trees,ground,placementEvidence:'Includes OSM Belle Isle Flatwoods multipolygon 17884436 and route-cleared Jefferson arrival planting. Hardwood-dominated canopy density follows mapped woodland with route clearances; individual species and tree locations are approximate, not a tree census.'};
 }
