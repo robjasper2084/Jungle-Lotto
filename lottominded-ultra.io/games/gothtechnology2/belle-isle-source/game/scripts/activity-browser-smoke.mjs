@@ -96,10 +96,15 @@ async function runCase(configuration) {
     const context = await browser.newContext({viewport: setupViewport, deviceScaleFactor: 1, reducedMotion: configuration.reducedMotion, isMobile: !!configuration.mobile, hasTouch: !!configuration.mobile});
     page = await context.newPage();
     page.setDefaultTimeout(90_000);
-    page.on('pageerror', error => entry.errors.push(error.message));
+    page.on('pageerror', error => {
+      entry.errors.push(error.message);
+      log(`${configuration.name}: page error ${JSON.stringify(error.message)}`);
+    });
     page.on('console', message => {
-      entry.console.push({type: message.type(), text: message.text()});
-      if (message.type() === 'error') entry.errors.push(`console: ${message.text()}`);
+      const event = {at: new Date().toISOString(), type: message.type(), text: message.text(), location: message.location()};
+      entry.console.push(event);
+      if (event.type === 'error') entry.errors.push(`console: ${event.text}`);
+      if (event.type === 'error' || /context.*(?:lost|restored)/i.test(event.text)) log(`${configuration.name}: browser console ${JSON.stringify(event)}`);
     });
     page.on('response', response => { if (response.status() >= 400) entry.errors.push(`HTTP ${response.status()} ${response.url()}`); });
     page.on('requestfailed', request => {
