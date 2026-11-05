@@ -1,0 +1,242 @@
+[
+  {
+    "id": "DS_Man_01",
+    "action": "walk",
+    "duration": 1.25,
+    "footError": 0.0000013014589606936776,
+    "lowestSurface": -0.0007956330229949233,
+    "handStep": 0.04066549916737763
+  },
+  {
+    "id": "DS_Man_01",
+    "action": "jog",
+    "duration": 0.766667,
+    "footError": 0.000001607317527408971,
+    "lowestSurface": 0.00010096112447948629,
+    "handStep": 0.03801538512261122
+  },
+  {
+    "id": "DS_Man_01",
+    "action": "run",
+    "duration": 0.566667,
+    "footError": 0.0000016070374234469614,
+    "lowestSurface": 0.00010096112447948629,
+    "handStep": 0.04099665759920655
+  },
+  {
+    "id": "DS_Man_01",
+    "action": "door",
+    "duration": 0.933333,
+    "footError": 6.023614235576584e-7,
+    "lowestSurface": 0.0028851246290269904,
+    "handStep": 0.09438520594918945
+  },
+  {
+    "id": "DS_Man_01",
+    "action": "pickup",
+    "duration": 2.266667,
+    "footError": 6.239724167962606e-7,
+    "lowestSurface": 0.0028848829388141684,
+    "handStep": 0.13174852904793818
+  },
+  {
+    "id": "DS_Man_01",
+    "action": "reach",
+    "duration": 2,
+    "footError": 6.051085564507608e-7,
+    "lowestSurface": 0.0028848905356155764,
+    "handStep": 0.06244866951109695
+  },
+  {
+    "id": "DS_Hoodie_Woman_01",
+    "action": "walk",
+    "duration": 1.25,
+    "footError": 2.6874804597419032e-8,
+    "lowestSurface": 0.002999990629982914,
+    "handStep": 0.03619295920962847
+  },
+  {
+    "id": "DS_Hoodie_Woman_01",
+    "action": "jog",
+    "duration": 0.766667,
+    "footError": 3.288670268318938e-8,
+    "lowestSurface": 0.0029999891100061637,
+    "handStep": 0.03461100504920376
+  },
+  {
+    "id": "DS_Hoodie_Woman_01",
+    "action": "run",
+    "duration": 0.566667,
+    "footError": 3.2326937684895765e-8,
+    "lowestSurface": 0.002999990094653478,
+    "handStep": 0.0372414036000676
+  },
+  {
+    "id": "DS_Hoodie_Woman_01",
+    "action": "door",
+    "duration": 0.933333,
+    "footError": 2.356787649630637e-8,
+    "lowestSurface": 0.0029999981433905245,
+    "handStep": 0.08549209105179893
+  },
+  {
+    "id": "DS_Hoodie_Woman_01",
+    "action": "pickup",
+    "duration": 2.266667,
+    "footError": 2.3568850654965307e-8,
+    "lowestSurface": 0.0029999981427290983,
+    "handStep": 0.11912731373731074
+  },
+  {
+    "id": "DS_Hoodie_Woman_01",
+    "action": "reach",
+    "duration": 2,
+    "footError": 2.3568819978092293e-8,
+    "lowestSurface": 0.002999998142749902,
+    "handStep": 0.055733795691073285
+  },
+  {
+    "id": "DS_Mascot_Suit_01",
+    "action": "walk",
+    "duration": 1.25,
+    "footError": 1.3006255750545981e-8,
+    "lowestSurface": 0.0007941575921410781,
+    "handStep": 0.024343475370368253
+  },
+  {
+    "id": "DS_Mascot_Suit_01",
+    "action": "jog",
+    "duration": 0.766667,
+    "footError": 1.2897944458686356e-8,
+    "lowestSurface": 0.0027980565024768077,
+    "handStep": 0.024569276649798834
+  },
+  {
+    "id": "DS_Mascot_Suit_01",
+    "action": "run",
+    "duration": 0.566667,
+    "footError": 1.2902668473559334e-8,
+    "lowestSurface": 0.002762775062580645,
+    "handStep": 0.025942820213204567
+  },
+  {
+    "id": "DS_Mascot_Suit_01",
+    "action": "door",
+    "duration": 0.933333,
+    "footError": 1.1844985597990333e-8,
+    "lowestSurface": 0.0022282799079884866,
+    "handStep": 0.05689750840498372
+  },
+  {
+    "id": "DS_Mascot_Suit_01",
+    "action": "pickup",
+    "duration": 2.266667,
+    "footError": 1.1976296928144211e-8,
+    "lowestSurface": 0.0022077245240693464,
+    "handStep": 0.07959028466293351
+  },
+  {
+    "id": "DS_Mascot_Suit_01",
+    "action": "reach",
+    "duration": 2,
+    "footError": 1.1862026422049881e-8,
+    "lowestSurface": 0.0022252651162893437,
+    "handStep": 0.035784872236003795
+  },
+  {
+    "id": "DS_Mascot_Hoodie_01",
+    "action": "walk",
+    "duration": 1.25,
+    "footError": 4.422698498604223e-8,
+    "lowestSurface": -0.006612905507870777,
+    "handStep": 0.02139298170947159
+  },
+  {
+    "id": "DS_Mascot_Hoodie_01",
+    "action": "jog",
+    "duration": 0.766667,
+    "footError": 4.4765008062937446e-8,
+    "lowestSurface": 0.0014185221288683049,
+    "handStep": 0.022048936567470513
+  },
+  {
+    "id": "DS_Mascot_Hoodie_01",
+    "action": "run",
+    "duration": 0.566667,
+    "footError": 4.484661219022281e-8,
+    "lowestSurface": 0.0016310489347394358,
+    "handStep": 0.023126644017163103
+  },
+  {
+    "id": "DS_Mascot_Hoodie_01",
+    "action": "door",
+    "duration": 0.933333,
+    "footError": 4.34384418343866e-8,
+    "lowestSurface": 0.002763104882712996,
+    "handStep": 0.049756590504501805
+  },
+  {
+    "id": "DS_Mascot_Hoodie_01",
+    "action": "pickup",
+    "duration": 2.266667,
+    "footError": 4.3567016406660056e-8,
+    "lowestSurface": 0.00276272367059673,
+    "handStep": 0.0695940827834804
+  },
+  {
+    "id": "DS_Mascot_Hoodie_01",
+    "action": "reach",
+    "duration": 2,
+    "footError": 4.345562176579793e-8,
+    "lowestSurface": 0.0027627356488600756,
+    "handStep": 0.033016697913567344
+  },
+  {
+    "id": "DS_Armored_Rider_01",
+    "action": "walk",
+    "duration": 1.25,
+    "footError": 7.299486552484738e-8,
+    "lowestSurface": 0.002396486950659963,
+    "handStep": 0.03888385958200658
+  },
+  {
+    "id": "DS_Armored_Rider_01",
+    "action": "jog",
+    "duration": 0.766667,
+    "footError": 9.008433615003017e-8,
+    "lowestSurface": 0.0029272899474328015,
+    "handStep": 0.03695571574990311
+  },
+  {
+    "id": "DS_Armored_Rider_01",
+    "action": "run",
+    "duration": 0.566667,
+    "footError": 9.012056035728013e-8,
+    "lowestSurface": 0.0029272899474328015,
+    "handStep": 0.039840690765177725
+  },
+  {
+    "id": "DS_Armored_Rider_01",
+    "action": "door",
+    "duration": 0.933333,
+    "footError": 3.445361879644393e-8,
+    "lowestSurface": 0.0030000220684406873,
+    "handStep": 0.09177510734704353
+  },
+  {
+    "id": "DS_Armored_Rider_01",
+    "action": "pickup",
+    "duration": 2.266667,
+    "footError": 3.571296298402154e-8,
+    "lowestSurface": 0.003000022065037247,
+    "handStep": 0.12780714247486394
+  },
+  {
+    "id": "DS_Armored_Rider_01",
+    "action": "reach",
+    "duration": 2,
+    "footError": 3.461380612601828e-8,
+    "lowestSurface": 0.003000022065144313,
+    "handStep": 0.05974443159967547
+  }
+]
