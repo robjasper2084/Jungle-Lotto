@@ -1,0 +1,468 @@
+/** Real-input polish checks plus explicitly separate CSS-only layout fixtures. */
+import assert from 'node:assert/strict';
+import {createReadStream} from 'node:fs';
+import {mkdir, readFile, stat, writeFile} from 'node:fs/promises';
+import {createServer} from 'node:http';
+import {createRequire} from 'node:module';
+import {extname, resolve, sep} from 'node:path';
+
+const game = resolve(import.meta.dirname, '..');
+const root = resolve(game, 'dist');
+const output = resolve(process.env.BELLE_POLISH_BROWSER_OUTPUT || resolve(game, 'output/polish-browser'));
+const headless = process.env.BELLE_POLISH_BROWSER_HEADED !== '1';
+const selectedCase = process.env.BELLE_POLISH_BROWSER_CASE;
+const configurations = [
+  {name: 'desktop', viewport: {width: 1355, height: 721}, physicsViewport: {width: 960, height: 640}, mobile: false},
+  {name: 'phone', viewport: {width: 390, height: 844}, physicsViewport: {width: 390, height: 844}, mobile: true},
+];
+const selected = selectedCase === undefined ? configurations : configurations.filter(item => item.name === selectedCase);
+const limits = {caseMilliseconds: 35 * 60_000, actionMilliseconds: 90_000, offCourseMilliseconds: 300_000,
+  screenshotMilliseconds: 150_000, screenshotOuterMilliseconds: 155_000, closeMilliseconds: 30_000, gpuWatchdogSeconds: 60};
+await mkdir(output, {recursive: true});
+const lines = [];
+const log = message => { const line = new Date().toISOString() + ' ' + message; lines.push(line); console.log(line); };
+const report = {startedAt: new Date().toISOString(), head: process.env.GITHUB_SHA || null, passed: false,
+  selectedCase: selectedCase ?? null, selectedCases: selected.map(item => item.name), limits,
+  scope: 'Actual built-game controls, countdown input, restart, off-course guidance, audio opt-in and rendered scenes. CSS fixtures are separate synthetic layout checks.',
+  limitations: 'No human full-lap, physical-device performance or acoustic listening certification. First Sky gate audio is covered by source tests, not this bounded render smoke.',
+  manualScreenshotReviewRequired: true, cases: []};
+const mime = {'.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml',
+  '.glb': 'model/gltf-binary', '.mp3': 'audio/mpeg', '.wav': 'audio/wav'};
+const server = createServer(async (request, response) => {
+  try {
+    const pathname = decodeURIComponent(new URL(request.url, 'http://localhost').pathname);
+    if (pathname === '/favicon.ico') { response.writeHead(204).end(); return; }
+    let file = resolve(root, '.' + pathname);
+    if (file !== root && !file.startsWith(root + sep)) { response.writeHead(403).end(); return; }
+    if ((await stat(file)).isDirectory()) file = resolve(file, 'index.html');
+    const info = await stat(file);
+    response.writeHead(200, {'Content-Type': mime[extname(file)] || 'application/octet-stream', 'Content-Length': info.size, 'Cache-Control': 'no-store'});
+    if (request.method === 'HEAD') response.end();
+    else createReadStream(file).on('error', () => response.destroy()).pipe(response);
+  } catch { response.writeHead(404).end('Not found'); }
+});
+async function bounded(operation, milliseconds, label) {
+  let timer;
+  try {
+    return await Promise.race([operation, new Promise((_, reject) => { timer = setTimeout(() => reject(new Error(label + ' exceeded ' + milliseconds / 1000 + ' seconds')), milliseconds); })]);
+  } finally { clearTimeout(timer); }
+}
+const delay = milliseconds => new Promise(done => setTimeout(done, milliseconds));
+let chromium, expect, origin, shippedCss;
+
+async function runCase(configuration) {
+  const entry = {name: configuration.name, passed: false, viewport: configuration.viewport, physicsViewport: configuration.physicsViewport,
+    errors: [], console: [], failedRequests: [], screenshots: [], metrics: {}, cssFixtures: {scope: 'Synthetic insets/long timer text in an isolated document using the shipped CSS. No game state is seeded.', probes: []}};
+  report.cases.push(entry);
+  let browser, page, touch, deadline, timedOut = false, captureFailed = false, fixtureRecord;
+  const templates = {};
+  const tap = locator => configuration.mobile ? locator.tap() : locator.click();
+  const readTrial = () => page.locator('#trial-hud').evaluate(element => ({
+    at: performance.now(), status: element.dataset.status, elapsed: Number(element.dataset.elapsed), next: Number(element.dataset.next),
+    paused: element.dataset.paused, offCourse: element.dataset.offCourse, reducedMotion: element.dataset.reducedMotion,
+    time: element.querySelector('.trial-time')?.textContent,
+    speed: Number.parseFloat(document.querySelector(element.dataset.vehicle === 'hoverbike' ? '#hover-speed' : '#speed')?.textContent || '0'),
+  }));
+  const capture = async name => {
+    const file = configuration.name + '-' + name + '.png', began = Date.now();
+    const timing = {startedAt: new Date(began).toISOString(), viewport: page.viewportSize(), scope: fixtureRecord ? 'isolated CSS fixture' : 'real game', status: 'capturing'};
+    (entry.metrics.captures ??= {})[name] = timing;
+    log(configuration.name + ': capture ' + name + ' at ' + timing.viewport.width + 'x' + timing.viewport.height);
+    try {
+      await bounded(page.screenshot({path: resolve(output, file), timeout: limits.screenshotMilliseconds}), limits.screenshotOuterMilliseconds, 'Screenshot ' + name);
+      timing.status = 'saved'; entry.screenshots.push(file);
+    } catch (error) { timing.status = 'failed'; captureFailed = true; throw error; }
+    finally { timing.milliseconds = Date.now() - began; }
+  };
+  const bounds = async (selector, label = selector, safe = {top: 0, right: 0, bottom: 0, left: 0}, timer = false) => {
+    const value = await page.locator(selector).evaluate((element, inspectText) => {
+      const r = element.getBoundingClientRect(), style = getComputedStyle(element);
+      let text;
+      if (inspectText) {
+        const range = document.createRange(); range.selectNodeContents(element);
+        const t = range.getBoundingClientRect(); text = {left: t.left, right: t.right, top: t.top, bottom: t.bottom, rects: range.getClientRects().length};
+      }
+      return {left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height,
+        scrollWidth: element.scrollWidth, clientWidth: element.clientWidth, viewport: {width: innerWidth, height: innerHeight},
+        documentWidth: document.documentElement.scrollWidth, fontSize: style.fontSize, animation: style.animationName, text};
+    }, timer);
+    assert.ok(value.left >= safe.left - 1 && value.right <= value.viewport.width - safe.right + 1, label + ': horizontal safe bounds');
+    assert.ok(value.top >= safe.top - 1 && value.bottom <= value.viewport.height - safe.bottom + 1, label + ': vertical safe bounds');
+    assert.ok(value.scrollWidth <= value.clientWidth + 1, label + ': no horizontal content clipping');
+    assert.ok(value.documentWidth <= value.viewport.width + 1, label + ': document fits viewport');
+    if (value.text) {
+      assert.ok(value.text.left >= value.left - 1 && value.text.right <= value.right + 1, label + ': all timer digits fit');
+      assert.ok(value.text.top >= value.top - 2 && value.text.bottom <= value.bottom + 2, label + ': timer is not vertically clipped');
+    }
+    if (fixtureRecord) (fixtureRecord.bounds ??= {})[label] = value;
+    else entry.metrics[label] = value;
+    return value;
+  };
+  const target = async (selector, {button = true, quarters = button, enabled = true, safe} = {}) => {
+    const locator = page.locator(selector); await expect(locator).toBeVisible();
+    if (button && enabled) await expect(locator).toBeEnabled();
+    const box = await bounds(selector, selector, safe);
+    if (button) assert.ok(box.width >= 44 && box.height >= 44, selector + ': minimum 44px target');
+    const result = await locator.evaluate((element, quarters) => {
+      const r = element.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
+      const points = [{x, y}];
+      if (quarters) points.push({x: r.left + r.width / 4, y}, {x: r.right - r.width / 4, y}, {x, y: r.top + r.height / 4}, {x, y: r.bottom - r.height / 4});
+      return {x, y, points: points.map(point => { const hit = document.elementFromPoint(point.x, point.y); return {...point, receives: hit === element || element.contains(hit), covering: hit?.id || hit?.tagName}; })};
+    }, quarters);
+    for (const point of result.points) assert.ok(point.receives, selector + ': input is covered by ' + point.covering);
+    if (fixtureRecord) (fixtureRecord.hitTargets ??= {})[selector] = result.points;
+    else (entry.metrics.hitTargets ??= {})[selector] = result.points;
+    return {x: result.x, y: result.y};
+  };
+  const resize = async viewport => {
+    await page.setViewportSize(viewport);
+    await page.waitForFunction(size => {
+      const canvas = document.querySelector('#game');
+      return canvas && canvas.width === size.width && canvas.height === size.height;
+    }, viewport, {timeout: limits.actionMilliseconds});
+  };
+  const webgl = async () => {
+    const state = await page.locator('#game').evaluate(canvas => {
+      const context = canvas.getContext('webgl2');
+      return {live: !!context && !context.isContextLost(), width: canvas.width, height: canvas.height, version: context?.getParameter(context.VERSION)};
+    });
+    assert.equal(state.live, true, 'Real WebGL2 context must remain live'); return state;
+  };
+  const openMenu = async () => { await tap(page.locator('#tools-toggle')); await expect(page.locator('#ride-menu')).toBeVisible(); };
+  const openBoard = async () => { await openMenu(); await tap(page.locator('#trials-open')); await expect(page.locator('#trial-board')).toBeVisible(); };
+  const countdown = async label => {
+    await expect(page.locator('#trial-hud')).toHaveAttribute('data-status', 'countdown');
+    const state = await readTrial();
+    assert.equal(state.elapsed, 0, label + ': elapsed resets'); assert.equal(state.next, 0, label + ': gate resets');
+    assert.equal(state.offCourse, 'false', label + ': off-course resets'); assert.equal(state.time, '0:00.00');
+    assert.equal(state.speed, 0, label + ': no countdown movement');
+    await expect(page.locator('#game')).toBeFocused();
+    return state;
+  };
+  const begin = async (id, vehicle) => {
+    await tap(page.locator('#trial-tab-' + vehicle));
+    await tap(page.locator('[data-course="' + id + '"]'));
+    await expect(page.locator('#trial-hud')).toHaveAttribute('data-course', id);
+    return countdown('Course start');
+  };
+  const startHeld = async (vehicle, direction = 'forward') => {
+    const traceStart = await page.evaluate(() => window.__polishInput?.length || 0);
+    if (!configuration.mobile) {
+      const key = direction === 'right' ? 'd' : 'w';
+      await page.keyboard.down(key);
+      return {traceStart, expectedCode: direction === 'right' ? 'KeyD' : 'KeyW', release: () => page.keyboard.up(key)};
+    }
+    const selector = vehicle === 'hoverbike' ? '#hover-move-zone' : '#touch-zone';
+    const center = await target(selector, {button: false});
+    const moved = {x: center.x + (direction === 'right' ? 55 : 0), y: center.y - (direction === 'right' ? 0 : 55), id: 1};
+    await touch.send('Input.dispatchTouchEvent', {type: 'touchStart', touchPoints: [{...center, id: 1}]});
+    try { await touch.send('Input.dispatchTouchEvent', {type: 'touchMove', touchPoints: [moved]}); }
+    catch (error) { await touch.send('Input.dispatchTouchEvent', {type: 'touchEnd', touchPoints: []}); throw error; }
+    return {traceStart, expectedTarget: selector.slice(1), release: () => touch.send('Input.dispatchTouchEvent', {type: 'touchEnd', touchPoints: []})};
+  };
+  const bufferedGo = async (held, label) => {
+    const samples = [];
+    await expect.poll(async () => {
+      const state = await readTrial(); samples.push(state);
+      if (state.status === 'countdown') { assert.equal(state.speed, 0, label + ': movement frozen before GO'); assert.equal(state.elapsed, 0); }
+      assert.ok(['countdown', 'running'].includes(state.status), label + ': valid countdown/run');
+      return state.status === 'running' && state.speed > 0;
+    }, {timeout: limits.actionMilliseconds, intervals: [100, 250, 500, 1000]}).toBe(true);
+    const events = await page.evaluate(start => window.__polishInput.slice(start), held.traceStart);
+    const captured = events.some(event => event.trusted && event.status === 'countdown' &&
+      (held.expectedCode ? event.code === held.expectedCode : event.target === held.expectedTarget && event.type === 'pointerdown'));
+    assert.ok(captured, label + ': fresh trusted input arrived after prepare and before GO');
+    entry.metrics[label] = {samples, inputEvents: events, result: 'One continuous hold from countdown through observed movement; no release/re-press at GO'};
+  };
+  const idleAfterGo = async label => {
+    const samples = [];
+    await expect(page.locator('#trial-hud')).toHaveAttribute('data-status', 'running');
+    await expect.poll(async () => {
+      const state = await readTrial(); assert.equal(state.speed, 0, label + ': old input must stay cleared');
+      if (samples.at(-1)?.elapsed !== state.elapsed) samples.push(state);
+      return samples.filter(sample => sample.elapsed > 0).length;
+    }, {timeout: limits.actionMilliseconds, intervals: [500, 1000, 1500]}).toBeGreaterThanOrEqual(2);
+    entry.metrics[label] = samples;
+  };
+  const leave = async () => {
+    await tap(page.locator('#trial-exit')); await expect(page.locator('#trial-hud')).not.toBeVisible();
+    await expect(page.locator('body')).not.toHaveClass(/island-trial/);
+  };
+  const cueStyle = () => page.locator('#trial-hud .trial-direction, #trial-hud .trial-map-wrap').evaluateAll(elements =>
+    elements.map(element => ({className: element.className, animation: getComputedStyle(element).animationName, color: getComputedStyle(element).color, text: element.textContent})));
+
+  try {
+    browser = await chromium.launch({channel: 'chromium', headless, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--gpu-watchdog-timeout-seconds=' + limits.gpuWatchdogSeconds]});
+    entry.metrics.browserVersion = browser.version();
+    const context = await browser.newContext({viewport: {width: 390, height: 844}, deviceScaleFactor: 1, isMobile: configuration.mobile, hasTouch: true, reducedMotion: 'no-preference'});
+    page = await context.newPage(); touch = await context.newCDPSession(page); page.setDefaultTimeout(limits.actionMilliseconds);
+    // Read-only event trace proves when trusted input was delivered; it never changes the game.
+    await page.addInitScript(() => {
+      window.__polishInput = [];
+      for (const type of ['keydown', 'pointerdown', 'pointermove']) window.addEventListener(type, event => {
+        const hud = document.querySelector('#trial-hud');
+        if (!hud || hud.hidden) return;
+        window.__polishInput.push({type, trusted: event.isTrusted, code: event.code, repeat: event.repeat === true, target: event.target?.id,
+          status: hud.dataset.status, elapsed: Number(hud.dataset.elapsed), at: performance.now()});
+      }, {capture: true, passive: true});
+    });
+    page.on('pageerror', error => { entry.errors.push(error.message); log(configuration.name + ': page error ' + error.message); });
+    page.on('console', message => {
+      const item = {at: new Date().toISOString(), type: message.type(), text: message.text()};
+      entry.console.push(item);
+      if (item.type === 'error' || /(?:webgl|renderer).*context\s*(?:was\s*)?lost|context[_ -]?lost/i.test(item.text)) entry.errors.push(item.text);
+    });
+    page.on('response', response => { if (response.status() >= 400) entry.errors.push('HTTP ' + response.status() + ' ' + response.url()); });
+    page.on('requestfailed', request => {
+      const message = request.failure()?.errorText + ' ' + request.url(); entry.failedRequests.push(message);
+      if (!message.startsWith('net::ERR_ABORTED')) entry.errors.push(message);
+    });
+    await Promise.race([(async () => {
+      log(configuration.name + ': load game and configure through UI');
+      await page.goto(origin + '/', {waitUntil: 'domcontentloaded', timeout: 30_000});
+      await page.waitForFunction(() => ['ready', 'error'].includes(document.querySelector('#welcome')?.dataset.state), null, {timeout: 180_000});
+      await expect(page.locator('#welcome')).toHaveAttribute('data-state', 'ready');
+      if (await page.locator('#startup-motion').getAttribute('aria-pressed') !== 'true') await tap(page.locator('#startup-motion'));
+      await tap(page.locator('.cinema-ride-picker > summary'));
+      await tap(page.locator('.ride-options label').filter({hasText: 'One wheel'}));
+      await tap(page.getByRole('button', {name: 'Use this ride', exact: true}));
+      await tap(page.locator('#start')); await expect(page.locator('body')).not.toHaveClass(/at-start/);
+      await openMenu(); await tap(page.locator('#settings-open'));
+      await page.locator('#quality').selectOption('smooth'); await page.locator('#fps').selectOption('30');
+      await page.locator('#touch').check(); await page.locator('#motion').uncheck();
+      await tap(page.locator('[data-close="settings"]')); await resize(configuration.viewport);
+      entry.metrics.graphics = {quality: 'smooth', fpsTarget: 30, actualPerformanceCertified: false, touchControls: true};
+      entry.metrics.startupWebgl = await webgl();
+
+      log(configuration.name + ': inspect actual timed delivery HUD');
+      await openMenu(); await tap(page.locator('#activities-open'));
+      await tap(page.locator('#activity-tab-dispatch'));
+      const timedCard = page.locator('#activity-content .activity-card').filter({has: page.getByRole('heading', {name: 'Two-Stop Sweep', exact: true})});
+      await tap(timedCard.getByRole('button', {name: 'Start assignment', exact: true}));
+      await expect(page.locator('#activity-hud .activity-time')).toHaveText(/^\d+:\d{2}$/);
+      await bounds('#activity-hud', 'deliveryHud'); await bounds('.activity-time', 'deliveryTimer', undefined, true);
+      await target('#activity-action', {enabled: false});
+      templates.activity = await page.locator('#activity-hud').evaluate(element => element.outerHTML);
+      await capture('delivery-timer');
+      await tap(page.locator('#activity-hud').getByRole('button', {name: 'Journal · J', exact: true}));
+      await tap(page.locator('#activity-board').getByRole('button', {name: 'End activity', exact: true}));
+      await tap(page.locator('#activity-board').getByRole('button', {name: 'Back to island', exact: true}));
+
+      await resize(configuration.physicsViewport); await openBoard();
+      log(configuration.name + ': verify gate-sound opt-in control and preview status');
+      await expect(page.locator('#trial-sound-toggle')).toHaveAttribute('aria-pressed', 'false');
+      await expect(page.locator('#trial-sound-status')).toContainText('off');
+      await tap(page.locator('#trial-sound-toggle'));
+      await expect(page.locator('#trial-sound-toggle')).toHaveAttribute('aria-pressed', 'true');
+      await expect(page.locator('#trial-sound-status')).toContainText('Sky Circuit checkpoints and finish');
+      assert.equal(await page.evaluate(() => localStorage.getItem('belle-isle-gate-sounds-v1')), 'on');
+      await tap(page.locator('#trial-board').getByRole('button', {name: 'Back to island', exact: true}));
+      await openBoard(); await expect(page.locator('#trial-sound-toggle')).toHaveAttribute('aria-pressed', 'true');
+      await tap(page.locator('#trial-sound-toggle')); await expect(page.locator('#trial-sound-toggle')).toHaveAttribute('aria-pressed', 'false');
+      entry.metrics.gateSounds = {defaultOff: true, realGesturePreviewReady: true, persistedOnAndReopened: true, mutedAgain: true, acousticListening: 'not exercised', realGateCrossing: 'not exercised'};
+
+      log(configuration.name + ': hold fresh input through Cup countdown');
+      await begin('onewheel-island-cup-v1', 'onewheel');
+      let held = await startHeld('onewheel');
+      try {
+        await bufferedGo(held, 'initialCountdownHold');
+        log(configuration.name + ': R restart while original input remains held');
+        await page.keyboard.press('r'); await countdown('Held-input restart');
+        if (!configuration.mobile) {
+          // The OS can repeat an already-held key after restart clears gameplay input.
+          // A second trusted down without an up exercises that repeat explicitly.
+          const repeatStart = await page.evaluate(() => window.__polishInput.length);
+          await page.keyboard.down('w');
+          const repeats = await page.evaluate(start => window.__polishInput.slice(start), repeatStart);
+          assert.ok(repeats.some(event => event.trusted && event.code === 'KeyW' && event.repeat && event.status === 'countdown'), 'Old held W produced a trusted countdown repeat');
+          entry.metrics.heldRestartRepeat = repeats;
+        }
+        await idleAfterGo('restartClearsOldHold');
+      } finally { await held.release(); }
+      if (!configuration.mobile) {
+        await resize(configuration.viewport); await capture('wheel-ground-contact'); await resize(configuration.physicsViewport);
+        await tap(page.locator('#pause')); await expect(page.locator('#pause')).toBeFocused();
+        await expect(page.locator('#trial-hud')).toHaveAttribute('data-paused', 'true');
+        const paused = await readTrial(); await delay(700); assert.equal((await readTrial()).elapsed, paused.elapsed);
+        await page.keyboard.press('r');
+      } else await tap(page.locator('#trial-restart'));
+      await countdown(configuration.mobile ? 'Button restart' : 'Pause-focused R restart');
+      await expect(page.locator('#pause')).toHaveText('Pause');
+      held = await startHeld('onewheel');
+      try { await bufferedGo(held, 'restartedCountdownHold'); } finally { await held.release(); }
+      await leave();
+
+      if (!configuration.mobile) {
+        log(configuration.name + ': mount normal grounded hoverbike near Cup start');
+        await openMenu(); await tap(page.locator('#hover-enter'));
+        await expect(page.locator('body')).toHaveClass(/on-hoverbike/);
+        await expect(page.locator('#hover-mode')).toHaveText('LANDED');
+        const altitude = Number.parseFloat(await page.locator('#hover-altitude').textContent());
+        assert.ok(altitude >= 0 && altitude < 1, 'Normal hoverbike contact capture must remain low AGL');
+        entry.metrics.groundHoverAltitude = altitude;
+        await resize(configuration.viewport); await capture('hover-ground-contact');
+        await tap(page.locator('#hover-hud [data-hover="exit"]')); await expect(page.locator('body')).not.toHaveClass(/on-hoverbike/);
+        log(configuration.name + ': visit real Sunset Point guide viewpoint');
+        await openMenu(); await tap(page.locator('#map-open')); await page.locator('#guide-search').fill('Sunset Point');
+        const shore = page.locator('#landmarks .landmark').filter({has: page.getByRole('heading', {name: 'Sunset Point', exact: true})});
+        await expect(shore).toHaveCount(1); await tap(shore.getByRole('button', {name: 'Travel to path', exact: true}));
+        await expect(page.locator('#guide')).not.toBeVisible();
+        entry.metrics.shoreVisit = {card: 'Sunset Point', action: 'Travel to path', place: await page.locator('#place').textContent()};
+        await capture('shoreline-sunset-point'); await resize(configuration.physicsViewport);
+      }
+
+      log(configuration.name + ': real Sunset Halo strafe until off-course cue');
+      await openBoard(); await begin('sky-sunset-v1', 'hoverbike');
+      await expect(page.locator('#trial-hud')).toHaveAttribute('data-status', 'running');
+      await expect(page.locator('#hover-flight-mode')).toHaveValue('drone');
+      held = await startHeld('hoverbike', 'right');
+      try {
+        const began = Date.now();
+        await expect.poll(async () => {
+          const state = await readTrial(); assert.equal(state.status, 'running', 'Deviation must not invalidate the trial');
+          return state.offCourse;
+        }, {timeout: limits.offCourseMilliseconds, intervals: [500, 1000, 1500]}).toBe('true');
+        entry.metrics.offCourse = {milliseconds: Date.now() - began, input: configuration.mobile ? 'Trusted rightward joystick hold' : 'Held D', state: await readTrial()};
+      } finally { await held.release(); }
+      await expect(page.locator('#trial-hud .trial-direction')).toContainText('Off course');
+      const animated = await cueStyle(); assert.ok(animated.every(item => item.animation !== 'none'), 'Default off-course cue pulses');
+      await page.emulateMedia({reducedMotion: 'reduce'});
+      const systemReduced = await cueStyle(); assert.ok(systemReduced.every(item => item.animation === 'none'), 'OS reduced motion keeps a static cue');
+      await expect(page.locator('#trial-hud .trial-direction')).toContainText('Off course');
+      await page.emulateMedia({reducedMotion: 'no-preference'});
+      await openMenu(); await tap(page.locator('#settings-open')); await page.locator('#motion').check(); await tap(page.locator('[data-close="settings"]'));
+      await expect(page.locator('#trial-hud')).toHaveAttribute('data-reduced-motion', 'true');
+      const gameReduced = await cueStyle(); assert.ok(gameReduced.every(item => item.animation === 'none'), 'In-game reduced motion keeps a static cue');
+      entry.metrics.cueMotion = {animated, systemReduced, gameReduced};
+      await resize(configuration.viewport);
+      await bounds('#trial-hud', 'skyHud'); await bounds('#trial-hud .trial-time', 'skyTimer', undefined, true);
+      await target('#trial-restart'); await target('#trial-exit');
+      for (const key of ['ArrowLeft', 'ArrowRight', 'KeyE', 'KeyQ', 'Space']) await target('#hover-hud [data-hold="' + key + '"]');
+      if (configuration.mobile) await expect(page.locator('.hover-lighting')).not.toBeVisible();
+      else {
+        await tap(page.locator('.hover-lighting > summary')); await expect(page.locator('.hover-lighting')).toHaveAttribute('open', '');
+        const settings = await bounds('.hover-lighting', 'optionalFlightSettings'), hud = await bounds('#trial-hud', 'settingsTrialHud');
+        assert.ok(settings.left >= hud.right || settings.bottom <= hud.top || settings.top >= hud.bottom, 'Optional settings must not overlap the trial HUD');
+        await target('.hover-lighting > summary', {button: false});
+      }
+      await capture('sky-off-course');
+      templates.trial = await page.locator('#trial-hud').evaluate(element => element.outerHTML);
+      templates.hover = await page.locator('#hover-hud').evaluate(element => element.outerHTML);
+      if (configuration.mobile) {
+        await resize({width: 844, height: 390});
+        await bounds('#trial-hud', 'landscapeTrialHud'); await bounds('.trial-time', 'landscapeTimer', undefined, true);
+        for (const selector of ['#trial-restart', '#trial-exit', '#hover-hud [data-hold="ArrowLeft"]', '#hover-hud [data-hold="ArrowRight"]', '#hover-hud [data-hold="KeyE"]', '#hover-hud [data-hold="KeyQ"]', '#hover-hud [data-hold="Space"]']) await target(selector);
+        await expect(page.locator('.hover-lighting')).not.toBeVisible(); await capture('sky-landscape');
+      } else await tap(page.locator('.hover-lighting > summary'));
+      await tap(page.locator('#trial-restart')); await countdown('Off-course restart');
+      await expect(page.locator('#trial-hud')).toHaveAttribute('data-off-course', 'false');
+      await expect(page.locator('#trial-hud')).toHaveAttribute('data-status', 'running');
+      await expect(page.locator('#hover-speed')).toHaveText('0'); await leave();
+      entry.metrics.finalWebgl = await webgl();
+      assert.deepEqual(entry.errors, [], 'Runtime errors/context loss/missing assets fail real gameplay');
+      entry.realGameCompletedAt = new Date().toISOString();
+      try { await writeFile(resolve(output, configuration.name + '-game-dom.html'), await bounded(page.content(), 5_000, 'Real-game DOM diagnostic')); }
+      catch (error) { entry.realGameDomFailure = error.message; }
+
+      log(configuration.name + ': begin isolated CSS fixtures; real game is unloaded');
+      await page.goto('about:blank'); await page.setContent('<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>' + shippedCss + '</style></head><body><div id="fixture-root"></div><p id="fixture-label" style="position:fixed;bottom:2px;left:8px;right:8px;z-index:1000;margin:0;padding:4px;background:#000;color:white;font:10px/1.4 monospace;pointer-events:none">CSS FIXTURE · artificial safe insets and long timer text · no game simulation</p></body></html>');
+      const probes = [
+        {name: 'small-phone', width: 320, height: 568, safe: {top: 0, right: 0, bottom: 0, left: 0}},
+        {name: 'notched-small-phone', width: 320, height: 568, safe: {top: 44, right: 20, bottom: 34, left: 20}},
+        {name: 'short-phone-large-controls', width: 390, height: 568, safe: {top: 44, right: 0, bottom: 34, left: 0}, controlScale: 1.2},
+        {name: 'notched-phone', width: 390, height: 844, safe: {top: 59, right: 0, bottom: 34, left: 0}},
+        {name: 'notched-landscape', width: 844, height: 390, safe: {top: 0, right: 44, bottom: 21, left: 44}},
+        {name: 'short-landscape', width: 568, height: 320, safe: {top: 0, right: 24, bottom: 21, left: 24}, controlScale: 1.2},
+        {name: 'short-landscape-fixed-stick', width: 568, height: 320, safe: {top: 0, right: 24, bottom: 21, left: 24}, controlScale: 1.2, joystickMode: 'fixed', kinds: ['trial']},
+        {name: 'tablet', width: 1024, height: 768, safe: {top: 24, right: 0, bottom: 20, left: 0}},
+        {name: 'desktop', width: 1355, height: 721, safe: {top: 0, right: 0, bottom: 0, left: 0}},
+        {name: 'ultrawide', width: 2560, height: 1080, safe: {top: 0, right: 32, bottom: 0, left: 16}},
+      ];
+      for (const probe of probes) for (const kind of probe.kinds ?? ['trial', 'activity']) {
+        fixtureRecord = {name: probe.name, kind, viewport: {width: probe.width, height: probe.height}, safe: probe.safe, controlScale: probe.controlScale ?? 1, joystickMode: probe.joystickMode ?? 'floating'};
+        entry.cssFixtures.probes.push(fixtureRecord);
+        await page.setViewportSize({width: probe.width, height: probe.height}); await page.emulateMedia({reducedMotion: 'no-preference'});
+        await page.evaluate(({probe, kind, markup}) => {
+          document.body.className = kind === 'trial' ? 'island-trial on-hoverbike touch-controls' : 'touch-controls';
+          document.body.dataset.joystickMode = probe.joystickMode ?? 'floating';
+          document.body.style.setProperty('--control-scale', String(probe.controlScale ?? 1));
+          for (const side of ['top', 'right', 'bottom', 'left']) document.documentElement.style.setProperty('--island-safe-' + side, probe.safe[side] + 'px');
+          document.querySelector('#fixture-root').innerHTML = markup;
+          const hud = document.querySelector(kind === 'trial' ? '#trial-hud' : '#activity-hud');
+          hud.hidden = false;
+          const time = hud.querySelector(kind === 'trial' ? '.trial-time' : '.activity-time');
+          time.textContent = kind === 'trial' ? '9999:59.99' : '9999:59';
+          if (kind === 'trial') { hud.dataset.offCourse = 'true'; hud.dataset.reducedMotion = 'false'; }
+          document.querySelector('#fixture-label').textContent = 'CSS FIXTURE · ' + probe.name + ' · ' + kind + ' · artificial insets/long digits · no game';
+        }, {probe, kind, markup: templates[kind] + (kind === 'trial' ? templates.hover : '')});
+        const hudSelector = kind === 'trial' ? '#trial-hud' : '#activity-hud';
+        const timerSelector = kind === 'trial' ? '.trial-time' : '.activity-time';
+        const hud = await bounds(hudSelector, 'fixture:' + probe.name + ':' + kind + ':hud', probe.safe);
+        const timer = await bounds(timerSelector, 'fixture:' + probe.name + ':' + kind + ':timer', probe.safe, true);
+        for (const button of kind === 'trial' ? ['#trial-restart', '#trial-exit'] : ['#activity-action', '.activity-hud-actions button:last-child']) await target(button, {safe: probe.safe, enabled: false});
+        if (kind === 'trial') {
+          if (probe.joystickMode === 'fixed') await target('#hover-move-zone', {button: false, quarters: true, safe: probe.safe});
+          for (const key of ['ArrowLeft', 'ArrowRight', 'KeyE', 'KeyQ', 'Space']) await target('#hover-hud [data-hold="' + key + '"]', {safe: probe.safe});
+          for (const action of ['lights', 'sound']) await target('#hover-hud [data-hover="' + action + '"]', {safe: probe.safe});
+          if (probe.width > 600 && probe.height > 520) {
+            const settings = await bounds('.hover-lighting', 'fixture:flightSettings', probe.safe);
+            assert.ok(settings.left >= hud.right || settings.bottom <= hud.top || settings.top >= hud.bottom, 'Fixture flight settings stay separate from timer HUD');
+          }
+        }
+        const buttons = await page.locator(kind === 'trial' ? '.trial-hud-actions' : '.activity-hud-actions').evaluate(element => {
+          const r = element.getBoundingClientRect(); return {left: r.left, right: r.right, top: r.top, bottom: r.bottom};
+        });
+        if (kind === 'trial' && probe.width <= 600 && probe.height > 520) assert.ok(buttons.left - hud.right >= 28, 'Phone HUD retains a clear center corridor');
+        fixtureRecord.hud = hud; fixtureRecord.timer = timer;
+        if (configuration.mobile && probe.name === 'notched-small-phone') await capture('fixture-' + kind + '-long-timer');
+        if (kind === 'trial' && probe.name === 'notched-phone') {
+          await page.emulateMedia({reducedMotion: 'reduce'});
+          assert.ok((await cueStyle()).every(item => item.animation === 'none'), 'Fixture reduced-motion cue is static');
+        }
+      }
+      assert.equal(entry.cssFixtures.probes.length, probes.reduce((count, probe) => count + (probe.kinds?.length ?? 2), 0));
+      assert.deepEqual(entry.errors, [], 'Fixtures must not introduce runtime errors');
+      entry.passed = true; log(configuration.name + ': actual control, scene and isolated CSS checks passed');
+    })(), new Promise((_, reject) => { deadline = setTimeout(() => { timedOut = true; reject(new Error('Polish case exceeded the 35-minute bound')); }, limits.caseMilliseconds); })]);
+  } catch (error) {
+    entry.failure = error.stack || String(error); log(configuration.name + ': FAIL ' + error.message);
+    if (page && !timedOut && !captureFailed) { try { await capture('failure'); } catch {} }
+  } finally {
+    clearTimeout(deadline);
+    if (page && !timedOut && !captureFailed) {
+      try { await writeFile(resolve(output, configuration.name + '-dom.html'), await bounded(page.content(), 5_000, 'DOM diagnostic')); } catch (error) { entry.domFailure = error.message; }
+    }
+    let cleanupFailure;
+    if (browser) {
+      try { await bounded(browser.close(), limits.closeMilliseconds, 'Browser close'); }
+      catch (error) { cleanupFailure = error; entry.cleanupFailure = error.message; entry.passed = false; }
+    }
+    await writeFile(resolve(output, configuration.name + '-result.json'), JSON.stringify(entry, null, 2));
+    if (cleanupFailure) throw cleanupFailure;
+  }
+}
+
+try {
+  assert(selectedCase === undefined || selected.length === 1, 'BELLE_POLISH_BROWSER_CASE must be exactly desktop or phone when set');
+  const html = await readFile(resolve(root, 'index.html'), 'utf8');
+  const links = [...html.matchAll(/<link\b[^>]*>/g)].map(match => match[0]).filter(tag => /\brel=["']stylesheet["']/.test(tag));
+  const cssFiles = links.map(tag => tag.match(/\bhref=["']([^"']+)["']/)?.[1]).filter(Boolean);
+  assert.ok(cssFiles.length, 'Built stylesheet required for isolated layout probes');
+  shippedCss = (await Promise.all(cssFiles.map(file => readFile(resolve(root, '.' + new URL(file, 'http://localhost').pathname), 'utf8')))).join('\n');
+  process.env.PLAYWRIGHT_LEGACY_SCREENSHOT = '1';
+  const require = createRequire(resolve(game, '../../package.json'));
+  const playwright = require('@playwright/test'); chromium = playwright.chromium; expect = playwright.expect.configure({timeout: limits.actionMilliseconds});
+  report.playwrightVersion = require('@playwright/test/package.json').version;
+  await new Promise((done, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', done); });
+  origin = 'http://127.0.0.1:' + server.address().port;
+  for (const configuration of selected) await runCase(configuration);
+  report.passed = report.cases.length === selected.length && report.cases.every(entry => entry.passed);
+  if (!report.passed) process.exitCode = 1;
+} catch (error) { report.failure = error.stack || String(error); log('FAIL ' + error.message); process.exitCode = 1; }
+finally {
+  if (server.listening) { server.closeAllConnections(); await new Promise(done => server.close(done)); }
+  report.finishedAt = new Date().toISOString();
+  await writeFile(resolve(output, 'result.json'), JSON.stringify(report, null, 2));
+  await writeFile(resolve(output, 'run.log'), lines.join('\n') + '\n');
+}

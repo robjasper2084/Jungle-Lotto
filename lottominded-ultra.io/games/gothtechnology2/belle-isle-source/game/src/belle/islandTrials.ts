@@ -2,6 +2,8 @@ import * as T from 'three';
 import {trialCourses} from './trialCourses.ts';
 import {TrialRun, formatTrialTime, formatTrialSplit, type TrialCourse, type TrialPose, type TrialVehicle} from './trialRules.ts';
 import {TrialRecords} from './trialRecords.ts';
+import {TrialAudio} from './trialAudio.ts';
+import {trialDeviation} from './trialNavigation.ts';
 import type {ParkMap, ParkTerrain} from './terrain.ts';
 import './islandTrials.css';
 
@@ -9,6 +11,7 @@ type Hooks = {
   ready(): boolean;
   available(): boolean;
   running(): boolean;
+  reducedMotion(): boolean;
   clear(): void;
   prepare(course: TrialCourse, signal: AbortSignal): Promise<boolean>;
   leave(): void;
@@ -34,6 +37,7 @@ const signedAngle = (radians: number) => Math.atan2(Math.sin(radians), Math.cos(
 export class IslandTrials {
   readonly courses: TrialCourse[];
   private readonly records = new TrialRecords();
+  private readonly audio: TrialAudio;
   private current?: TrialCourse;
   private run?: TrialRun;
   private actor?: TrialPose;
@@ -55,6 +59,8 @@ export class IslandTrials {
   private readonly boardFeedback = node('p', 'trial-board-feedback');
   private readonly boardContent = node('div', 'trial-course-grid');
   private readonly boardCurrent = node('div', 'trial-current');
+  private readonly soundToggle = button('Gate sounds: off', () => { void this.audio.setEnabled(!this.audio.enabled); });
+  private readonly soundStatus = node('p', 'trial-note');
   private readonly boardClose = button('Back to island', () => this.board.close(), 'close');
   private readonly results = node('dialog');
   private readonly hud = node('section');
@@ -76,6 +82,7 @@ export class IslandTrials {
   private readonly mapBackgrounds = new Map<string, HTMLCanvasElement>();
 
   constructor(private scene: T.Scene, private data: ParkMap, private terrain: ParkTerrain, private canvas: HTMLCanvasElement, private hooks: Hooks) {
+    this.audio = new TrialAudio({changed: () => this.refreshSound()});
     try { this.courses = trialCourses(data, terrain); }
     catch (error) { this.courses = []; this.unavailable = error instanceof Error ? error.message : 'Courses could not load.'; }
     this.world.name = 'Island trial route';
@@ -102,7 +109,16 @@ export class IslandTrials {
 
   get active() { return !!this.current && (this.preparing || !!this.run); }
   get inputLocked() { return this.active && (this.preparing || this.skipNext || !this.lastRunning || this.run?.status !== 'running'); }
+  // A fresh held control may be captured during countdown, but cannot move the vehicle yet.
+  get inputCaptureLocked() { return this.active && (this.preparing || !this.run || this.run.status === 'finished' || this.run.status === 'invalid'); }
   get vehicle() { return this.current?.vehicle; }
+  captureAudio() { return this.audio.capture(); }
+
+  private refreshSound() {
+    this.soundToggle.textContent = `Gate sounds: ${this.audio.enabled ? 'on' : 'off'}`;
+    this.soundToggle.setAttribute('aria-pressed', String(this.audio.enabled));
+    this.soundStatus.textContent = this.audio.status;
+  }
 
   private createBoard() {
     this.board.id = 'trial-board'; this.board.setAttribute('aria-labelledby', 'trial-board-title');
@@ -122,8 +138,12 @@ export class IslandTrials {
       choices[next].click(); choices[next].focus();
     });
     this.boardContent.id = 'trial-course-list'; this.boardContent.setAttribute('role', 'tabpanel');
+    const sound = node('div', 'trial-sound-controls');
+    this.soundToggle.id = 'trial-sound-toggle'; this.soundToggle.setAttribute('aria-describedby', 'trial-sound-status');
+    this.soundStatus.id = 'trial-sound-status'; this.soundStatus.setAttribute('role', 'status');
+    sound.append(this.soundToggle, this.soundStatus); this.refreshSound();
     this.board.append(this.boardClose, node('span', 'trial-eyebrow', 'DIGITAL STATIC / BELLE ISLE'), this.boardTitle, this.boardIntro, this.boardFeedback, this.boardCurrent, tabs, this.boardContent,
-      node('p', 'trial-note', 'Pass each numbered gate in order. The clock starts after the countdown. Menus and background tabs pause the run. R or Restart returns you to the start. Personal bests stay in this browser.'));
+      sound, node('p', 'trial-note', 'Pass each numbered gate in order. The clock starts after the countdown. Menus and background tabs pause the run. R or Restart returns you to the start. Personal bests stay in this browser.'));
     this.board.addEventListener('close', () => { this.hooks.clear(); this.canvas.focus(); });
     this.board.addEventListener('keydown', event => event.stopPropagation());
     document.body.append(this.board);
@@ -194,11 +214,16 @@ export class IslandTrials {
 
   private async begin(course: TrialCourse) {
     if (!this.hooks.ready() || (!this.active && !this.hooks.available())) { this.toast('Return to exploration before starting a course.'); return; }
+    this.audio.silence();
+    if (course.vehicle === 'hoverbike') void this.audio.unlock();
     this.preparation?.abort();
+    clearTimeout(this.noticeTimer); this.notice.hidden = true;
     this.boardFeedback.hidden = true;
     const generation = ++this.generation, preparation = new AbortController(); this.preparation = preparation;
     this.current = course; this.run = undefined; this.preparing = true; this.completed = false; this.skipNext = true; this.lastRunning = false;
     this.previousNext = -1; this.previousStatus = ''; this.bestBefore = this.records.best(course);
+    this.lastUi = -Infinity; this.hud.dataset.offCourse = 'false';
+    this.live.textContent = `Preparing ${course.name}. The clock starts after your ride is ready.`;
     this.actor = spawnPose(course);
     if (this.board.open) this.board.close(); if (this.results.open) this.results.close();
     document.querySelector<HTMLDialogElement>('#ride-menu[open]')?.close();
@@ -240,6 +265,7 @@ export class IslandTrials {
 
   /** Focus and menu changes discard one interval while movement is held. Never calls clear(). */
   suspend(actor?: TrialPose) {
+    this.audio.silence();
     if (!this.active) return;
     if (actor) this.actor = {...actor};
     this.skipNext = true; this.lastRunning = false;
@@ -252,6 +278,8 @@ export class IslandTrials {
     if (!this.active) return;
     if (this.run) {
       const allowed = this.hooks.running();
+      const previousGate = this.run.next;
+      if (!allowed && this.lastRunning && this.run.status !== 'finished') this.audio.silence();
       if (this.skipNext || !allowed || !this.lastRunning) { this.run.suspend(actor); this.skipNext = false; }
       else this.run.step(seconds, actor, true);
       this.lastRunning = allowed;
@@ -260,15 +288,19 @@ export class IslandTrials {
         if (this.run.status === 'running') this.live.textContent = this.run.next === 0 ? 'Go! Ride through gate 1.' : `Checkpoint ${this.run.next} cleared. ${this.current!.gates.length - this.run.next} to go.`;
       }
       if (!this.completed && (this.run.status === 'finished' || this.run.status === 'invalid')) { this.completed = true; this.showResults(); }
+      // Results clear input before the final chime. Opening the results must not cut it off.
+      if (allowed && this.current?.vehicle === 'hoverbike' && this.run.next > previousGate) this.audio.checkpoint(this.run.status === 'finished');
     }
     if (now - this.lastUi >= 80 || this.preparing) { this.lastUi = now; this.refreshHud(); }
   }
 
   interrupt(message = '') {
     const wasActive = this.active;
+    this.audio.silence();
     this.preparation?.abort(); this.preparation = undefined; this.generation++;
     this.current = undefined; this.run = undefined; this.preparing = false; this.skipNext = false; this.lastRunning = false; this.completed = false;
     this.hud.hidden = true; this.world.visible = false; this.clearRoute();
+    this.hud.dataset.offCourse = 'false';
     document.body.classList.remove('island-trial'); delete document.body.dataset.trialVehicle;
     if (this.board.open) this.board.close(); if (this.results.open) this.results.close();
     if (wasActive) { this.hooks.clear(); this.hooks.leave(); }
@@ -280,6 +312,7 @@ export class IslandTrials {
     if (!course) return;
     const run = this.run, paused = !this.preparing && !this.hooks.running();
     this.hud.dataset.status = this.preparing ? 'preparing' : run?.status ?? 'idle';
+    this.hud.dataset.reducedMotion = String(this.hooks.reducedMotion());
     this.hud.dataset.next = String(run?.next ?? 0); this.hud.dataset.elapsed = String(run?.finish ?? run?.elapsed ?? 0); this.hud.dataset.course = course.id;
     this.hudSeries.textContent = seriesName(course.vehicle).toUpperCase(); this.hudTitle.textContent = course.name;
     this.hudTimer.textContent = formatTrialTime(run?.finish ?? run?.elapsed ?? 0);
@@ -287,16 +320,22 @@ export class IslandTrials {
     const next = run?.next ?? 0;
     this.hudProgress.textContent = run?.status === 'finished' ? `${course.gates.length} / ${course.gates.length} checkpoints` : `Gate ${Math.min(next + 1, course.gates.length)} / ${course.gates.length}`;
     const target = course.gates[Math.min(next, course.gates.length - 1)], actor = this.actor ?? spawnPose(course);
+    const wasOffCourse = this.hud.dataset.offCourse === 'true';
+    const offCourse = run?.status === 'running' && trialDeviation(course, actor, wasOffCourse).offCourse;
+    this.hud.dataset.offCourse = String(!!offCourse);
     if (target) {
       const dx = target.x - actor.x, dz = target.z - actor.z, distance = Math.hypot(dx, dz);
       const bearing = signedAngle(Math.atan2(dx, dz) - actor.heading);
       const direction = Math.abs(bearing) < .35 ? '↑ Ahead' : Math.abs(bearing) > 2.3 ? '↶ Turn around' : bearing < 0 ? '↗ Right' : '↖ Left';
-      this.hudDirection.textContent = `${direction} · ${Math.round(distance)} m to ${next === course.gates.length - 1 ? 'finish' : 'next gate'}`;
+      this.hudDirection.textContent = `${offCourse ? 'Off course · ' : ''}${direction} · ${Math.round(distance)} m to ${next === course.gates.length - 1 ? 'finish' : 'next gate'}`;
       if (course.vehicle === 'hoverbike') {
         const difference = target.y - actor.y;
         this.hudAltitude.textContent = Math.abs(difference) < Math.min(2, target.halfHeight * .5) ? 'Altitude on line · fly through the ring' : `${difference > 0 ? '↑ Climb' : '↓ Descend'} ${Math.ceil(Math.abs(difference))} m · ${difference > 0 ? 'E / UP' : 'Q / DOWN'}`;
       } else this.hudAltitude.textContent = 'Ride through the numbered arches in order';
     }
+    if (offCourse !== wasOffCourse && run?.status === 'running') this.live.textContent = offCourse
+      ? `Off course. Follow the route map and direction to gate ${next + 1}.`
+      : `Back on course. Continue to gate ${next + 1}.`;
     if (run?.status === 'invalid') this.hudDirection.textContent = run.reason || 'Restart to begin a fresh timed run.';
     const best = this.records.best(course); this.hudBest.textContent = best === null ? 'PERSONAL BEST —' : `PERSONAL BEST ${formatTrialTime(best)}`;
     this.hud.dataset.paused = String(paused); this.hud.dataset.vehicle = course.vehicle;

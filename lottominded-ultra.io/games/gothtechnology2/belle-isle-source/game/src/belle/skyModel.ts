@@ -14,6 +14,12 @@ export function sunDirection(hour:number):[number,number,number]{
  const a=(wrapHour(hour)-12)*Math.PI/12,s=Math.sin(a),c=Math.cos(a),x=-.883*s+.469*c*.30,y=.82*c,z=.469*s+.883*c*.30,length=Math.hypot(x,y,z);return [x/length,y/length,z/length];
 }
 export function smooth(a:number,b:number,x:number){const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t);}
+/** Keep the road and nearby gates clear while separating the far river skyline.
+ * Fog colour still comes from the live sky, including sunset and night. */
+export function islandHazeDensity(overcast:number,night=0){
+ const cover=Number.isFinite(overcast)?clamp(overcast,0,1):0,dark=Number.isFinite(night)?clamp(night,0,1):0;
+ return .00020+cover*.000045-dark*.00002;
+}
 export const SKY_KEYS=[
  {hour:0,top:'#071124',horizon:'#192636',warm:'#263440',cloud:'#253040',sun:'#c7daee'},
  {hour:5,top:'#101c34',horizon:'#334352',warm:'#8c5140',cloud:'#343c50',sun:'#f9a45c'},
