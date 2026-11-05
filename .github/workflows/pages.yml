@@ -74,7 +74,9 @@ jobs:
       - name: Verify Belle Isle activity visuals in the real game
         timeout-minutes: 20
         working-directory: lottominded-ultra.io/games/gothtechnology2
-        run: node belle-isle-source/game/scripts/activity-browser-smoke.mjs
+        env:
+          BELLE_ACTIVITY_BROWSER_HEADED: '1'
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node belle-isle-source/game/scripts/activity-browser-smoke.mjs
       - name: Upload Belle Isle visual review screenshots and diagnostics
         if: always()
         uses: actions/upload-artifact@v4

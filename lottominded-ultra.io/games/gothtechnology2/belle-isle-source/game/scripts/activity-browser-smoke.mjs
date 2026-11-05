@@ -12,7 +12,9 @@ const output = resolve(process.env.BELLE_ACTIVITY_BROWSER_OUTPUT || resolve(game
 await mkdir(output, {recursive: true});
 const lines = [];
 const log = message => { const line = `${new Date().toISOString()} ${message}`; lines.push(line); console.log(line); };
-const report = {startedAt: new Date().toISOString(), passed: false, manualScreenshotReviewRequired: true, scope: 'Real WebGL rendering and activity UI smoke; no full delivery run, physical-device or performance certification.', browserIsolation: 'Fresh Chromium process per case', browserRuntime: {channel: 'chromium', headless: true, implementation: 'Full Chromium unified headless'}, screenshotBackend: 'Playwright legacy screenshot; visible page, existing compositor surface', cases: []};
+const headless = process.env.BELLE_ACTIVITY_BROWSER_HEADED !== '1';
+const browserImplementation = headless ? 'Full Chromium unified headless' : 'Full Chromium windowed on the CI virtual display';
+const report = {startedAt: new Date().toISOString(), passed: false, manualScreenshotReviewRequired: true, scope: 'Real WebGL rendering and activity UI smoke; no full delivery run, physical-device or performance certification.', browserIsolation: 'Fresh Chromium process per case', browserRuntime: {channel: 'chromium', headless, implementation: browserImplementation}, screenshotBackend: 'Playwright legacy screenshot; visible page, existing compositor surface', cases: []};
 const mime = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp','.svg':'image/svg+xml','.glb':'model/gltf-binary','.mp3':'audio/mpeg','.wav':'audio/wav'};
 const server = createServer(async (request, response) => {
   try {
@@ -83,11 +85,11 @@ async function runCase(configuration) {
   try {
     // Each case owns a fresh GPU process as well as fresh storage. A timed-out
     // software render in one case must not starve the following cases.
-    // The explicit channel selects full Chromium's unified headless browser,
-    // whose compositor differs from the default separate headless-shell build.
-    // https://playwright.dev/docs/browsers#chromium-new-headless-mode
-    log(`${configuration.name}: launch fresh full Chromium in unified headless mode`);
-    browser = await chromium.launch({channel: 'chromium', headless: true, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader']});
+    // CI uses Playwright's supported headed/Xvfb setup so capture runs against
+    // a visible window surface. Local runs may retain unified headless mode.
+    // https://playwright.dev/docs/ci#running-headed
+    log(`${configuration.name}: launch fresh ${browserImplementation}`);
+    browser = await chromium.launch({channel: 'chromium', headless, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader']});
     entry.metrics.browserVersion = browser.version();
     // Bootstrap at the already verified small viewport, then use the game's real
     // graphics controls before resizing. The final CSS viewport is never reduced.
