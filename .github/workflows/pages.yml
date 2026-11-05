@@ -72,13 +72,14 @@ jobs:
         working-directory: lottominded-ultra.io/games/gothtechnology2
         run: npx playwright install --with-deps chromium
       - name: Verify Belle Isle activity visuals in the real game
+        if: github.event_name == 'pull_request'
         timeout-minutes: 70
         working-directory: lottominded-ultra.io/games/gothtechnology2
         env:
           BELLE_ACTIVITY_BROWSER_HEADED: '1'
         run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node belle-isle-source/game/scripts/activity-browser-smoke.mjs
       - name: Upload Belle Isle visual review screenshots and diagnostics
-        if: always()
+        if: always() && github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4
         with:
           name: belle-isle-activity-visual
