@@ -61,7 +61,7 @@ export class IslandTrials {
   private readonly boardCurrent = node('div', 'trial-current');
   private readonly soundToggle = button('Gate sounds: off', () => { void this.audio.setEnabled(!this.audio.enabled); });
   private readonly soundStatus = node('p', 'trial-note');
-  private readonly boardClose = button('Back to island', () => this.board.close(), 'close');
+  private readonly boardClose = button('Back to island', () => this.dismissBoard(), 'close');
   private readonly results = node('dialog');
   private readonly hud = node('section');
   private readonly hudSeries = node('span', 'trial-eyebrow');
@@ -91,7 +91,6 @@ export class IslandTrials {
     this.createBoard(); this.createHud();
     this.results.id = 'trial-results'; this.results.setAttribute('aria-labelledby', 'trial-results-title');
     this.results.addEventListener('cancel', event => { event.preventDefault(); this.interrupt(); });
-    this.results.addEventListener('close', () => { this.hooks.clear(); this.canvas.focus(); });
     this.results.addEventListener('keydown', event => {
       event.stopPropagation();
       if (event.code === 'KeyR' && !event.repeat && !event.ctrlKey && !event.altKey && !event.metaKey) { event.preventDefault(); this.restart(); }
@@ -144,9 +143,15 @@ export class IslandTrials {
     sound.append(this.soundToggle, this.soundStatus); this.refreshSound();
     this.board.append(this.boardClose, node('span', 'trial-eyebrow', 'DIGITAL STATIC / BELLE ISLE'), this.boardTitle, this.boardIntro, this.boardFeedback, this.boardCurrent, tabs, this.boardContent,
       sound, node('p', 'trial-note', 'Pass each numbered gate in order. The clock starts after the countdown. Menus and background tabs pause the run. R or Restart returns you to the start. Personal bests stay in this browser.'));
-    this.board.addEventListener('close', () => { this.hooks.clear(); this.canvas.focus(); });
+    this.board.addEventListener('cancel', event => { event.preventDefault(); this.dismissBoard(); });
     this.board.addEventListener('keydown', event => event.stopPropagation());
     document.body.append(this.board);
+  }
+
+  private dismissBoard() {
+    if (!this.board.open) return;
+    // A queued close event can arrive after the next run has captured fresh input.
+    this.hooks.clear(); this.board.close(); this.canvas.focus();
   }
 
   private createHud() {
@@ -295,15 +300,17 @@ export class IslandTrials {
   }
 
   interrupt(message = '') {
-    const wasActive = this.active;
+    const wasActive = this.active, hadDialog = this.board.open || this.results.open;
     this.audio.silence();
     this.preparation?.abort(); this.preparation = undefined; this.generation++;
     this.current = undefined; this.run = undefined; this.preparing = false; this.skipNext = false; this.lastRunning = false; this.completed = false;
     this.hud.hidden = true; this.world.visible = false; this.clearRoute();
     this.hud.dataset.offCourse = 'false';
     document.body.classList.remove('island-trial'); delete document.body.dataset.trialVehicle;
+    if (wasActive || hadDialog) this.hooks.clear();
     if (this.board.open) this.board.close(); if (this.results.open) this.results.close();
-    if (wasActive) { this.hooks.clear(); this.hooks.leave(); }
+    if (wasActive) this.hooks.leave();
+    else if (hadDialog) this.canvas.focus();
     if (message) this.toast(message);
   }
 

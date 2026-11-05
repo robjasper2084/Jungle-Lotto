@@ -57,7 +57,7 @@ async function runCase(configuration) {
   report.cases.push(entry);
   let browser, page, touch, deadline, timedOut = false, captureFailed = false, fixtureRecord, countdownWaiter;
   let countdownSequence = 0;
-  const activeHolds = new Set();
+  const activeHolds = new Set(), activeTriggers = new Set();
   const templates = {};
   const tap = locator => configuration.mobile ? locator.tap() : locator.click();
   const readTrial = () => page.evaluate(() => window.__polishTrialSnapshot());
@@ -135,27 +135,46 @@ async function runCase(configuration) {
     assert.equal(state.speed, 0, label + ': no countdown movement');
     assert.equal(state.focused, 'game', label + ': canvas receives fresh input');
   };
+  const buttonTrigger = async selector => {
+    await page.locator(selector).scrollIntoViewIfNeeded();
+    const point = await target(selector);
+    const end = () => configuration.mobile ? touch.send('Input.dispatchTouchEvent', {type: 'touchEnd', touchPoints: []}) : page.mouse.up();
+    let down = false;
+    const trigger = {description: 'Prequeued native button down/up ' + selector, point,
+      fire() {
+        down = true; activeTriggers.add(trigger);
+        const pressed = configuration.mobile ? touch.send('Input.dispatchTouchEvent', {type: 'touchStart', touchPoints: [{...point, id: 2}]}) : page.mouse.down();
+        const released = end().then(() => { down = false; activeTriggers.delete(trigger); });
+        return Promise.all([pressed, released]);
+      },
+      async release() { if (!down) return; await end(); down = false; activeTriggers.delete(trigger); }};
+    if (!configuration.mobile) await page.mouse.move(point.x, point.y);
+    return trigger;
+  };
+  const restartKeyTrigger = () => {
+    let down = false;
+    const trigger = {description: 'Native R keydown',
+      fire() { down = true; activeTriggers.add(trigger); return page.keyboard.down('r'); },
+      async release() { if (!down) return; await page.keyboard.up('r'); down = false; activeTriggers.delete(trigger); }};
+    return trigger;
+  };
   const duringCountdown = async (trigger, label, input) => {
     assert.equal(countdownWaiter, undefined, 'Only one countdown notification may be armed');
     let resolveReady, rejectReady;
     const ready = new Promise((resolve, reject) => { resolveReady = resolve; rejectReady = reject; });
-    const record = {label, input: input?.description ?? 'Observe only', armedAt: new Date().toISOString()};
+    const record = {label, trigger: trigger.description, triggerPoint: trigger.point, input: input?.description ?? 'Observe only', armedAt: new Date().toISOString()};
     (entry.metrics.countdownTransitions ??= []).push(record);
-    const waiter = {id: ++countdownSequence, cancelled: false, received: false, async receive(payload) {
+    const waiter = {id: ++countdownSequence, cancelled: false, received: false, receive(payload) {
       if (timedOut || countdownWaiter !== waiter || waiter.cancelled || waiter.received || payload.id !== waiter.id) return;
       waiter.received = true; record.notification = payload;
       try {
         assertCountdown(payload.state, label);
-        // No page reads between this DOM transition and the trusted input command.
-        if (input) { record.dispatchStartedAt = new Date().toISOString(); await input.press(); record.dispatchCompletedAt = new Date().toISOString(); }
-        if (waiter.cancelled) { if (input) await input.release(); return; }
-        resolveReady({traceStart: payload.traceStart, state: payload.state, expectedCode: input?.expectedCode,
-          expectedTarget: input?.expectedTarget, release: input?.release});
+        resolveReady(payload);
       } catch (error) { record.failure = error.stack || String(error); if (!waiter.cancelled) rejectReady(error); }
     }};
     countdownWaiter = waiter;
     try {
-      await page.evaluate(id => {
+      record.arm = await page.evaluate(id => {
         window.__polishCountdownArm?.observer.disconnect();
         const hud = document.querySelector('#trial-hud');
         if (!hud) throw new Error('Trial HUD is required before arming countdown');
@@ -172,17 +191,27 @@ async function runCase(configuration) {
         });
         window.__polishCountdownArm = {id, observer};
         observer.observe(hud, {attributes: true, attributeFilter: ['data-status', 'hidden']});
+        return {traceStart: window.__polishInput.length, state: window.__polishTrialSnapshot()};
       }, waiter.id);
-      const [, observed] = await bounded(Promise.all([trigger(), ready]), limits.actionMilliseconds, label + ' countdown transition');
-      return observed;
+      // Queue ordered native commands without waiting for a rendered-frame reply.
+      // The observer is proof only: early or late input still fails the event check.
+      record.triggerQueuedAt = new Date().toISOString();
+      const triggered = trigger.fire().then(() => { record.triggerCompletedAt = new Date().toISOString(); });
+      record.inputQueuedAt = input ? new Date().toISOString() : undefined;
+      const pressed = input ? input.press().then(() => { record.inputCompletedAt = new Date().toISOString(); }) : Promise.resolve();
+      const [,, observed] = await bounded(Promise.all([triggered, pressed, ready]), limits.actionMilliseconds, label + ' countdown transition');
+      return {traceStart: record.arm.traceStart, state: observed.state, expectedCode: input?.expectedCode,
+        expectedTarget: input?.expectedTarget, release: input?.release};
     } catch (error) {
       record.failure ??= error.stack || String(error);
       waiter.cancelled = true; if (countdownWaiter === waiter) countdownWaiter = undefined;
       if (input) { try { await bounded(input.release(), 5_000, label + ' input release'); } catch (releaseError) { record.releaseFailure = releaseError.message; } }
       throw error;
     } finally {
-      // Cancel the Node token before cleanup so a late binding cannot send input.
+      // Invalidate late proof notifications and release a native R/button press.
       waiter.cancelled = true; if (countdownWaiter === waiter) countdownWaiter = undefined;
+      try { await bounded(trigger.release(), 5_000, label + ' trigger release'); }
+      catch (error) { record.triggerReleaseFailure = error.message; }
       try { await bounded(page.evaluate(id => {
         if (window.__polishCountdownArm?.id !== id) return;
         window.__polishCountdownArm.observer.disconnect(); delete window.__polishCountdownArm;
@@ -192,7 +221,8 @@ async function runCase(configuration) {
   };
   const begin = async (id, vehicle, input) => {
     await tap(page.locator('#trial-tab-' + vehicle));
-    const observed = await duringCountdown(() => tap(page.locator('[data-course="' + id + '"]')), 'Course start ' + id, input);
+    const trigger = await buttonTrigger('[data-course="' + id + '"]');
+    const observed = await duringCountdown(trigger, 'Course start ' + id, input);
     assert.equal(observed.state.course, id, 'Requested course is ready');
     return observed;
   };
@@ -217,7 +247,7 @@ async function runCase(configuration) {
     const input = {description: configuration.mobile ? 'Trusted fixed joystick ' + direction + ' touchStart' : 'Trusted held ' + key.toUpperCase(),
       expectedCode: configuration.mobile ? undefined : direction === 'right' ? 'KeyD' : 'KeyW', expectedTarget: configuration.mobile ? selector.slice(1) : undefined,
       async press() { activeHolds.add(input); if (configuration.mobile) await touch.send('Input.dispatchTouchEvent', {type: 'touchStart', touchPoints: [{...point, id: 1}]}); else await page.keyboard.down(key); },
-      async release() { if (!activeHolds.delete(input)) return; if (configuration.mobile) await touch.send('Input.dispatchTouchEvent', {type: 'touchEnd', touchPoints: []}); else await page.keyboard.up(key); }};
+      async release() { if (!activeHolds.has(input)) return; if (configuration.mobile) await touch.send('Input.dispatchTouchEvent', {type: 'touchEnd', touchPoints: []}); else await page.keyboard.up(key); activeHolds.delete(input); }};
     return input;
   };
   const startHeld = async (vehicle, direction = 'forward') => {
@@ -345,10 +375,10 @@ async function runCase(configuration) {
       try {
         await bufferedGo(held, 'initialCountdownHold');
         log(configuration.name + ': R restart while original input remains held');
-        const restarted = await duringCountdown(() => page.keyboard.press('r'), 'Held-input restart', configuration.mobile ? undefined : wheelHold);
+        const restarted = await duringCountdown(restartKeyTrigger(), 'Held-input restart', configuration.mobile ? undefined : wheelHold);
         if (!configuration.mobile) {
           // The OS can repeat an already-held key after restart clears gameplay input.
-          // The armed callback sends a second down without an up during countdown.
+          // The native queue sends a second down without an up after the R event.
           const repeats = await page.evaluate(start => window.__polishInput.slice(start), restarted.traceStart);
           entry.metrics.heldRestartRepeat = repeats;
           assert.ok(repeats.some(event => event.trusted && event.code === 'KeyW' && event.repeat && event.status === 'countdown'), 'Old held W produced a trusted countdown repeat');
@@ -361,8 +391,8 @@ async function runCase(configuration) {
         await tap(page.locator('#pause')); await expect(page.locator('#pause')).toBeFocused();
         await expect(page.locator('#trial-hud')).toHaveAttribute('data-paused', 'true');
         const paused = await readTrial(); await delay(700); assert.equal((await readTrial()).elapsed, paused.elapsed);
-        restart = () => page.keyboard.press('r');
-      } else restart = () => tap(page.locator('#trial-restart'));
+        restart = restartKeyTrigger();
+      } else restart = await buttonTrigger('#trial-restart');
       held = await duringCountdown(restart, configuration.mobile ? 'Button restart' : 'Pause-focused R restart', wheelHold);
       try { await expect(page.locator('#pause')).toHaveText('Pause'); await bufferedGo(held, 'restartedCountdownHold'); }
       finally { await held.release(); }
@@ -430,7 +460,7 @@ async function runCase(configuration) {
         for (const selector of ['#trial-restart', '#trial-exit', '#hover-hud [data-hold="ArrowLeft"]', '#hover-hud [data-hold="ArrowRight"]', '#hover-hud [data-hold="KeyE"]', '#hover-hud [data-hold="KeyQ"]', '#hover-hud [data-hold="Space"]']) await target(selector);
         await expect(page.locator('.hover-lighting')).not.toBeVisible(); await capture('sky-landscape');
       } else await tap(page.locator('.hover-lighting > summary'));
-      await duringCountdown(() => tap(page.locator('#trial-restart')), 'Off-course restart');
+      await duringCountdown(await buttonTrigger('#trial-restart'), 'Off-course restart');
       await expect(page.locator('#trial-hud')).toHaveAttribute('data-off-course', 'false');
       await expect(page.locator('#trial-hud')).toHaveAttribute('data-status', 'running');
       await expect(page.locator('#hover-speed')).toHaveText('0'); await leave();
@@ -511,6 +541,10 @@ async function runCase(configuration) {
   } finally {
     clearTimeout(deadline);
     if (countdownWaiter) { countdownWaiter.cancelled = true; countdownWaiter = undefined; }
+    for (const trigger of [...activeTriggers]) {
+      try { await bounded(trigger.release(), 5_000, 'Final native trigger release'); }
+      catch (error) { (entry.triggerReleaseFailures ??= []).push(error.message); entry.passed = false; }
+    }
     for (const input of [...activeHolds]) {
       try { await bounded(input.release(), 5_000, 'Final held-input release'); }
       catch (error) { (entry.inputReleaseFailures ??= []).push(error.message); entry.passed = false; }

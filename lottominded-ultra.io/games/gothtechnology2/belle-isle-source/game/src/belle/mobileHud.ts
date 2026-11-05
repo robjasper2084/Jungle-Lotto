@@ -65,10 +65,14 @@ export function createMobileHud(h:Hooks){
  stickMode.onchange=()=>{save('belle-joystick-mode',stickMode.value);document.body.dataset.joystickMode=stickMode.value;h.clear();};
  get('reset-mobile').onclick=()=>{stickMode.value='floating';stickMode.onchange!(new Event('change'));resets.forEach(reset=>reset());spacing.value='standard';spacing.onchange!(new Event('change'));touch.checked=auto();try{localStorage.removeItem('belle-touch-controls');}catch{}syncTouch();};
  const menu=get<HTMLDialogElement>('ride-menu'),toggle=get('tools-toggle');
+ const closeMenu=()=>{if(!menu.open)return;h.clear();menu.close();toggle.setAttribute('aria-expanded','false');if(!document.querySelector('dialog[open]'))canvas.focus();};
  toggle.onclick=()=>{h.clear();menu.showModal();toggle.setAttribute('aria-expanded','true');};
- menu.addEventListener('close',()=>{toggle.setAttribute('aria-expanded','false');h.clear();canvas.focus();});
- menu.querySelector('nav')!.addEventListener('click',e=>{if((e.target as HTMLElement).closest('button'))menu.close();},true);
- menu.addEventListener('click',e=>{if(e.target===menu){const r=menu.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)menu.close();}});
+ menu.querySelector<HTMLButtonElement>('[data-close="ride-menu"]')!.onclick=closeMenu;
+ menu.addEventListener('cancel',e=>{e.preventDefault();closeMenu();});
+ // Close events can arrive after a tool has already started a new input session.
+ menu.addEventListener('close',()=>{toggle.setAttribute('aria-expanded',String(menu.open));});
+ menu.querySelector('nav')!.addEventListener('click',e=>{if((e.target as HTMLElement).closest('button'))closeMenu();},true);
+ menu.addEventListener('click',e=>{if(e.target===menu){const r=menu.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeMenu();}});
  get('photo-open').onclick=()=>document.querySelector<HTMLButtonElement>('#camera-capture>button')?.click();
  // Native dialogs and room panels must never leave a held steering/brake input behind.
  const observer=new MutationObserver(records=>{if(records.some(r=>r.type==='attributes'&&(r.target as HTMLDialogElement).open))h.clear();});
