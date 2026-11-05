@@ -86,6 +86,22 @@ body.island-trial.on-hoverbike.touch-controls .hover-steer button{min-width:44px
   body.island-trial.on-hoverbike.touch-controls .hover-steer{flex-direction:row;margin-left:10px;margin-bottom:0}
   body.island-trial.on-hoverbike.touch-controls .hover-steer button{width:44px;height:44px}
 }
+/* Keep the road and approaching gate visible between two compact phone panels. */
+@media(max-width:600px) and (min-height:521px){
+  #trial-hud{width:144px;max-width:calc(100vw - 140px);grid-template-columns:minmax(0,1fr);padding:8px;gap:0;background:#0a242be8}
+  #trial-hud .trial-eyebrow,#trial-hud .trial-best,#trial-hud[data-vehicle=onewheel] .trial-altitude{display:none}
+  #trial-hud h3{font-size:11px;line-height:1.3;margin:0 0 5px}
+  #trial-hud .trial-timing{flex-direction:column;align-items:flex-start;flex-wrap:nowrap;gap:2px}
+  #trial-hud .trial-time{font-size:24px;line-height:1.05}
+  #trial-hud .trial-state{font-size:8px;line-height:12px;max-width:none}
+  #trial-hud p{font-size:9px;line-height:13px;margin-top:3px}
+  #trial-hud .trial-progress{font-size:10px;line-height:14px}
+  #trial-hud .trial-map-wrap{position:fixed;top:94px;right:10px;width:96px;pointer-events:none}
+  #trial-hud .trial-map-wrap figcaption{display:none}
+  #trial-hud .trial-hud-actions{position:fixed;top:153px;right:10px;width:96px;flex-direction:column;gap:4px}
+  #trial-hud .trial-hud-actions button{flex:none;min-height:44px;height:44px;font-size:10px;padding:6px 7px}
+  #trial-hud .trial-hud-actions button:not(.trial-primary){background:#0a242bef}
+}
 @media(max-width:360px) and (min-height:521px){
   body.island-trial.on-hoverbike.touch-controls .hover-stick-holder,body.island-trial.on-hoverbike.touch-controls #hover-flight-stick{width:88px;height:88px}
 }

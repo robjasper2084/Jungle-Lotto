@@ -14,11 +14,17 @@ const lines = [];
 const log = message => { const line = `${new Date().toISOString()} ${message}`; lines.push(line); console.log(line); };
 const headless = process.env.BELLE_TRIAL_BROWSER_HEADED !== '1';
 const softwareGpuWatchdogSeconds = 60;
+const screenshotTimeoutMilliseconds = 150_000;
+const screenshotOuterMilliseconds = 155_000;
+const flightResponseMilliseconds = 180_000;
+const flightSettlingMilliseconds = 240_000;
+const caseTimeoutMilliseconds = 35 * 60_000;
 const report = {
   startedAt: new Date().toISOString(), passed: false, manualScreenshotReviewRequired: true,
   scope: 'Real WebGL trial menus, controls, movement, pause and restart smoke. Full course finishes, physical devices and performance are not certified by this script.',
   browserIsolation: 'Fresh Chromium process and storage per case',
   browserRuntime: {channel: 'chromium', headless, gpuWatchdogSeconds: softwareGpuWatchdogSeconds},
+  limits: {screenshotTimeoutMilliseconds, screenshotOuterMilliseconds, flightResponseMilliseconds, flightSettlingMilliseconds, caseTimeoutMilliseconds},
   screenshotBackend: 'Playwright legacy screenshot of the visible page', cases: [],
 };
 const mime = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp','.svg':'image/svg+xml','.glb':'model/gltf-binary','.mp3':'audio/mpeg','.wav':'audio/wav'};
@@ -62,11 +68,20 @@ async function runCase(configuration) {
 
   const screenshot = async name => {
     const filename = `${configuration.name}-${name}.png`;
+    const began = Date.now();
+    const timing = {startedAt: new Date(began).toISOString(), status: 'capturing'};
+    (entry.metrics.captureTimings ??= {})[name] = timing;
     log(`${configuration.name}: capture ${name} at ${page.viewportSize().width}×${page.viewportSize().height}`);
     try {
-      await bounded(page.screenshot({path: resolve(output, filename), timeout: 90_000}), 95_000, `${configuration.name}: screenshot ${name}`);
-    } catch (error) { screenshotFailed = true; entry.screenshotFailure = error.message; throw error; }
+      // The previous software run captured a frame in 88.7s, then reached the
+      // 90s capture limit without a context loss or browser crash. Keep a finite
+      // deadline with room for that observed cost; preserve the real viewport.
+      await bounded(page.screenshot({path: resolve(output, filename), timeout: screenshotTimeoutMilliseconds}), screenshotOuterMilliseconds, `${configuration.name}: screenshot ${name}`);
+      timing.status = 'saved';
+    } catch (error) { timing.status = 'failed'; screenshotFailed = true; entry.screenshotFailure = error.message; throw error; }
+    finally { timing.milliseconds = Date.now() - began; }
     entry.screenshots.push(filename);
+    log(`${configuration.name}: captured ${name} in ${timing.milliseconds}ms`);
   };
   const layout = async (selector, label = selector) => {
     const dimensions = await page.locator(selector).evaluate(element => {
@@ -118,6 +133,44 @@ async function runCase(configuration) {
     await page.locator('#game').focus();
     await page.keyboard.down(key);
     try { await during(); } finally { await page.keyboard.up(key); }
+  };
+  const readFlight = () => page.locator('#hover-hud').evaluate(element => {
+    const trial = document.querySelector('#trial-hud');
+    return {
+      observedAt: new Date().toISOString(), altitude: Number.parseFloat(element.querySelector('#hover-altitude')?.textContent ?? ''),
+      elapsed: Number(trial?.dataset.elapsed), status: trial?.dataset.status, paused: trial?.dataset.paused,
+      mode: element.querySelector('#hover-mode')?.textContent,
+      heldKeys: [...element.querySelectorAll('[data-held="true"]')].map(button => button.dataset.hold).filter(Boolean),
+      frameDiagnostic: document.querySelector('#profile')?.textContent,
+    };
+  });
+  const observeFlight = async (name, predicate, {timeout = flightResponseMilliseconds, heldKey} = {}) => {
+    const began = Date.now();
+    const diagnostic = {startedAt: new Date(began).toISOString(), timeoutMilliseconds: timeout, polls: 0, samples: []};
+    (entry.metrics.flightObservations ??= {})[name] = diagnostic;
+    let sample;
+    log(`${configuration.name}: observe flight ${name} with ${timeout / 1000}s bound`);
+    try {
+      await expect.poll(async () => {
+        sample = await readFlight(); diagnostic.polls++; diagnostic.last = sample;
+        assert.ok(Number.isFinite(sample.altitude) && Number.isFinite(sample.elapsed), `${name}: finite flight HUD readings required`);
+        assert.equal(sample.status, 'running', `${name}: trial must remain running`);
+        assert.equal(sample.paused, 'false', `${name}: trial must remain unpaused`);
+        assert.equal(sample.mode, 'ALTITUDE HOLD', `${name}: standardized flight mode must remain active`);
+        if (heldKey) assert.ok(sample.heldKeys.includes(heldKey), `${name}: real touch must remain held`);
+        if (diagnostic.samples.at(-1)?.elapsed !== sample.elapsed) {
+          diagnostic.samples.push(sample);
+          if (diagnostic.samples.length > 80) diagnostic.samples.shift();
+        }
+        return predicate(sample, diagnostic.samples);
+      }, {timeout, intervals: [500, 1000, 1500, 2000], message: `${name}: observe the real flight response`}).toBe(true);
+      diagnostic.passed = true;
+      return sample;
+    } catch (error) { diagnostic.passed = false; diagnostic.failure = error.message; throw error; }
+    finally {
+      diagnostic.milliseconds = Date.now() - began;
+      log(`${configuration.name}: flight ${name} ${diagnostic.passed ? 'passed' : 'failed'} after ${diagnostic.milliseconds}ms; ${diagnostic.samples.length} distinct HUD updates; last altitude ${sample?.altitude}; ${sample?.frameDiagnostic ?? 'no frame diagnostic'}`);
+    }
   };
   const webgl = async label => {
     entry.metrics[label] = await page.locator('#game').evaluate(canvas => {
@@ -286,11 +339,32 @@ async function runCase(configuration) {
           await holdTouch(`#hover-hud [data-hold="${key}"]`, async () => { await expect(page.locator(`#hover-hud [data-hold="${key}"]`)).toHaveAttribute('data-held', 'true'); });
           await expect(page.locator(`#hover-hud [data-hold="${key}"]`)).not.toHaveAttribute('data-held');
         }
-        const initialAltitude = await speed('#hover-altitude');
-        await holdTouch('#hover-hud [data-hold="KeyE"]', async () => { await expect.poll(() => speed('#hover-altitude')).toBeGreaterThan(initialAltitude + .1); });
-        const raisedAltitude = await speed('#hover-altitude');
-        await holdTouch('#hover-hud [data-hold="KeyQ"]', async () => { await expect.poll(() => speed('#hover-altitude')).toBeLessThan(raisedAltitude - .1); });
-        entry.metrics.hoverTouch = {initialAltitude, raisedAltitude, yawButtons: 'pressed and released through trusted touch input', throttleAndBrake: 'movement and braking observed'};
+        const motion = entry.metrics.hoverTouch = {initialAltitude: await speed('#hover-altitude'),
+          yawButtons: 'pressed and released through trusted touch input', throttleAndBrake: 'movement and braking observed'};
+        await holdTouch('#hover-hud [data-hold="KeyE"]', async () => {
+          await expect(page.locator('#hover-hud [data-hold="KeyE"]')).toHaveAttribute('data-held', 'true');
+          const raised = await observeFlight('ascent', sample => sample.altitude > motion.initialAltitude + .1, {heldKey: 'KeyE'});
+          motion.raisedAltitude = raised.altitude;
+        });
+        await expect(page.locator('#hover-hud [data-hold="KeyE"]')).not.toHaveAttribute('data-held');
+        // Lift changes target clearance; the spring-driven vertical velocity
+        // persists after release. At the observed ~6.5s software frames, each
+        // physics step is still capped at .05s and the altitude HUD updates only
+        // each .1 simulation seconds. Repeated reads of one rendered value do
+        // not prove settling: require distinct active-clock HUD updates first.
+        const settled = await observeFlight('neutral-after-ascent', (sample, samples) => {
+          assert.ok(!sample.heldKeys.includes('KeyE') && !sample.heldKeys.includes('KeyQ'), 'settling requires released lift controls');
+          if (samples.length < 8) return false;
+          const recent = samples.slice(-6).map(value => value.altitude);
+          return Math.max(...recent) - Math.min(...recent) <= .1 + 1e-9;
+        }, {timeout: flightSettlingMilliseconds});
+        motion.settledAltitude = settled.altitude;
+        await holdTouch('#hover-hud [data-hold="KeyQ"]', async () => {
+          await expect(page.locator('#hover-hud [data-hold="KeyQ"]')).toHaveAttribute('data-held', 'true');
+          const lowered = await observeFlight('descent', sample => sample.altitude < motion.settledAltitude - .1, {heldKey: 'KeyQ'});
+          motion.loweredAltitude = lowered.altitude;
+        });
+        await expect(page.locator('#hover-hud [data-hold="KeyQ"]')).not.toHaveAttribute('data-held');
       } else {
         await holdKey('w', observeHover);
         await holdKey('Space', async () => { await expect.poll(() => speed('#hover-speed')).toBeLessThanOrEqual(1); });
@@ -327,7 +401,7 @@ async function runCase(configuration) {
       assert.deepEqual(entry.errors, [], 'Browser errors, lost WebGL contexts or missing runtime assets fail this smoke');
       entry.passed = true;
       log(`${configuration.name}: trial controls, movement, pause, restart and leave passed`);
-    })(), new Promise((_, reject) => { deadline = setTimeout(() => { caseTimedOut = true; reject(new Error('Trial browser case exceeded the thirty-minute bound')); }, 1_800_000); })]);
+    })(), new Promise((_, reject) => { deadline = setTimeout(() => { caseTimedOut = true; reject(new Error('Trial browser case exceeded the thirty-five-minute bound')); }, caseTimeoutMilliseconds); })]);
   } catch (error) {
     entry.failure = error.stack || String(error);
     log(`${configuration.name}: FAIL ${error.message}`);

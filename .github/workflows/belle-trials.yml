@@ -18,7 +18,7 @@ jobs:
   trial-visual:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    timeout-minutes: 70
+    timeout-minutes: 90
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -41,7 +41,8 @@ jobs:
           npm ci
           npx playwright install --with-deps chromium
       - name: Verify course, restart and flight controls in the real game
-        timeout-minutes: 60
+        # Two 35-minute cases plus bounded failure captures and browser cleanup.
+        timeout-minutes: 80
         working-directory: lottominded-ultra.io/games/gothtechnology2
         env:
           BELLE_TRIAL_BROWSER_HEADED: '1'
