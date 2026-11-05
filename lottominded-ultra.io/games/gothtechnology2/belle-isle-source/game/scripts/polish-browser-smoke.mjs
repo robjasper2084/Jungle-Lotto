@@ -12,8 +12,8 @@ const output = resolve(process.env.BELLE_POLISH_BROWSER_OUTPUT || resolve(game, 
 const headless = process.env.BELLE_POLISH_BROWSER_HEADED !== '1';
 const selectedCase = process.env.BELLE_POLISH_BROWSER_CASE;
 const configurations = [
-  {name: 'desktop', viewport: {width: 1355, height: 721}, physicsViewport: {width: 960, height: 640}, mobile: false},
-  {name: 'phone', viewport: {width: 390, height: 844}, physicsViewport: {width: 390, height: 844}, mobile: true},
+  {name: 'desktop', viewport: {width: 1355, height: 721}, physicsViewport: {width: 640, height: 400}, mobile: false},
+  {name: 'phone', viewport: {width: 390, height: 844}, physicsViewport: {width: 320, height: 360}, mobile: true},
 ];
 const selected = selectedCase === undefined ? configurations : configurations.filter(item => item.name === selectedCase);
 const limits = {caseMilliseconds: 35 * 60_000, actionMilliseconds: 90_000, offCourseMilliseconds: 300_000,
@@ -162,13 +162,19 @@ async function runCase(configuration) {
     assert.equal(countdownWaiter, undefined, 'Only one countdown notification may be armed');
     let resolveReady, rejectReady;
     const ready = new Promise((resolve, reject) => { resolveReady = resolve; rejectReady = reject; });
-    const record = {label, trigger: trigger.description, triggerPoint: trigger.point, input: input?.description ?? 'Observe only', armedAt: new Date().toISOString()};
+    const record = {label, trigger: trigger.description, triggerPoint: trigger.point, input: input?.description ?? 'Observe only',
+      dispatch: input ? configuration.mobile ? 'After observed countdown' : 'Native prequeue' : 'Observe only', armedAt: new Date().toISOString()};
     (entry.metrics.countdownTransitions ??= []).push(record);
-    const waiter = {id: ++countdownSequence, cancelled: false, received: false, receive(payload) {
+    const waiter = {id: ++countdownSequence, cancelled: false, received: false, async receive(payload) {
       if (timedOut || countdownWaiter !== waiter || waiter.cancelled || waiter.received || payload.id !== waiter.id) return;
       waiter.received = true; record.notification = payload;
       try {
         assertCountdown(payload.state, label);
+        if (configuration.mobile && input) {
+          record.inputQueuedAt = new Date().toISOString();
+          await input.press(); record.inputCompletedAt = new Date().toISOString();
+          if (waiter.cancelled || timedOut) { await input.release(); return; }
+        }
         resolveReady(payload);
       } catch (error) { record.failure = error.stack || String(error); if (!waiter.cancelled) rejectReady(error); }
     }};
@@ -193,12 +199,15 @@ async function runCase(configuration) {
         observer.observe(hud, {attributes: true, attributeFilter: ['data-status', 'hidden']});
         return {traceStart: window.__polishInput.length, state: window.__polishTrialSnapshot()};
       }, waiter.id);
-      // Queue ordered native commands without waiting for a rendered-frame reply.
-      // The observer is proof only: early or late input still fails the event check.
+      // Desktop queues the held key with the native trigger. Phone waits for the
+      // observed countdown; the native event trace still decides whether it arrived in time.
       record.triggerQueuedAt = new Date().toISOString();
       const triggered = trigger.fire().then(() => { record.triggerCompletedAt = new Date().toISOString(); });
-      record.inputQueuedAt = input ? new Date().toISOString() : undefined;
-      const pressed = input ? input.press().then(() => { record.inputCompletedAt = new Date().toISOString(); }) : Promise.resolve();
+      let pressed = Promise.resolve();
+      if (input && !configuration.mobile) {
+        record.inputQueuedAt = new Date().toISOString();
+        pressed = input.press().then(() => { record.inputCompletedAt = new Date().toISOString(); });
+      }
       const [,, observed] = await bounded(Promise.all([triggered, pressed, ready]), limits.actionMilliseconds, label + ' countdown transition');
       return {traceStart: record.arm.traceStart, state: observed.state, expectedCode: input?.expectedCode,
         expectedTarget: input?.expectedTarget, release: input?.release};
@@ -257,7 +266,7 @@ async function runCase(configuration) {
   const bufferedGo = async (held, label) => {
     const samples = [held.state], record = {samples, inputEvents: []}; entry.metrics[label] = record;
     record.inputEvents = await page.evaluate(start => window.__polishInput.slice(start), held.traceStart);
-    const captured = record.inputEvents.some(event => event.trusted && event.status === 'countdown' &&
+    const captured = record.inputEvents.some(event => event.trusted && event.hudHidden === false && event.course === held.state.course && event.status === 'countdown' &&
       (held.expectedCode ? event.type === 'keydown' && event.code === held.expectedCode && !event.repeat : event.control === held.expectedTarget && event.type === 'pointerdown'));
     assert.ok(captured, label + ': fresh trusted input arrived after prepare and before GO');
     await expect.poll(async () => {
@@ -296,7 +305,7 @@ async function runCase(configuration) {
       window.__polishInput = []; window.__polishObserverErrors = [];
       window.__polishTrialSnapshot = () => {
         const hud = document.querySelector('#trial-hud'); if (!hud) return null;
-        return {at: performance.now(), status: hud.dataset.status, course: hud.dataset.course,
+        return {at: performance.now(), hudHidden: hud.hidden, status: hud.dataset.status, course: hud.dataset.course,
           elapsed: Number(hud.dataset.elapsed), next: Number(hud.dataset.next), paused: hud.dataset.paused,
           offCourse: hud.dataset.offCourse, reducedMotion: hud.dataset.reducedMotion, time: hud.querySelector('.trial-time')?.textContent,
           speed: Number.parseFloat(document.querySelector(hud.dataset.vehicle === 'hoverbike' ? '#hover-speed' : '#speed')?.textContent || '0'),
@@ -305,9 +314,11 @@ async function runCase(configuration) {
       };
       for (const type of ['keydown', 'keyup', 'pointerdown', 'pointermove', 'pointerup', 'pointercancel', 'lostpointercapture', 'blur', 'focus', 'visibilitychange', 'close']) window.addEventListener(type, event => {
         const hud = document.querySelector('#trial-hud');
-        if (!hud || hud.hidden) return;
+        if (!hud) return;
+        const button = event.target?.closest?.('button');
         window.__polishInput.push({...window.__polishTrialSnapshot(), type, trusted: event.isTrusted, code: event.code, repeat: event.repeat === true,
           target: event.target?.id || event.target?.nodeName, control: event.target?.closest?.('#touch-zone, #hover-move-zone')?.id,
+          button: button ? {id: button.id, text: button.textContent?.trim().slice(0, 100), course: button.dataset.course} : undefined,
           relatedTarget: event.relatedTarget?.id || event.relatedTarget?.nodeName, x: event.clientX, y: event.clientY});
       }, {capture: true, passive: true});
     });
@@ -381,7 +392,7 @@ async function runCase(configuration) {
           // The native queue sends a second down without an up after the R event.
           const repeats = await page.evaluate(start => window.__polishInput.slice(start), restarted.traceStart);
           entry.metrics.heldRestartRepeat = repeats;
-          assert.ok(repeats.some(event => event.trusted && event.code === 'KeyW' && event.repeat && event.status === 'countdown'), 'Old held W produced a trusted countdown repeat');
+          assert.ok(repeats.some(event => event.trusted && event.hudHidden === false && event.course === restarted.state.course && event.code === 'KeyW' && event.repeat && event.status === 'countdown'), 'Old held W produced a trusted countdown repeat');
         }
         await idleAfterGo('restartClearsOldHold');
       } finally { await held.release(); }
@@ -430,6 +441,7 @@ async function runCase(configuration) {
         }, {timeout: limits.offCourseMilliseconds, intervals: [500, 1000, 1500]}).toBe('true');
         entry.metrics.offCourse = {milliseconds: Date.now() - began, input: configuration.mobile ? 'Trusted rightward joystick hold' : 'Held D', state: await readTrial()};
       } finally { await held.release(); }
+      await resize(configuration.viewport);
       await expect(page.locator('#trial-hud .trial-direction')).toContainText('Off course');
       const animated = await cueStyle(); assert.ok(animated.every(item => item.animation !== 'none'), 'Default off-course cue pulses');
       await page.emulateMedia({reducedMotion: 'reduce'});
@@ -440,7 +452,6 @@ async function runCase(configuration) {
       await expect(page.locator('#trial-hud')).toHaveAttribute('data-reduced-motion', 'true');
       const gameReduced = await cueStyle(); assert.ok(gameReduced.every(item => item.animation === 'none'), 'In-game reduced motion keeps a static cue');
       entry.metrics.cueMotion = {animated, systemReduced, gameReduced};
-      await resize(configuration.viewport);
       await bounds('#trial-hud', 'skyHud'); await bounds('#trial-hud .trial-time', 'skyTimer', undefined, true);
       await target('#trial-restart'); await target('#trial-exit');
       for (const key of ['ArrowLeft', 'ArrowRight', 'KeyE', 'KeyQ', 'Space']) await target('#hover-hud [data-hold="' + key + '"]');

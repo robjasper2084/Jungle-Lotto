@@ -63,6 +63,8 @@ body.island-trial #navigation{display:none!important}
 body.island-trial #activity-hud{display:none!important}
 body.island-trial.on-hoverbike.touch-controls .hover-steer{position:relative;z-index:1;display:flex;pointer-events:auto;gap:6px;margin-left:10px;margin-right:auto}
 body.island-trial.on-hoverbike.touch-controls .hover-steer button{min-width:44px;min-height:44px;width:48px;height:48px;font-size:22px;padding:5px}
+/* Wide touch layouts use this footer row for yaw controls during a trial. */
+@media(min-width:601px) and (min-height:521px){body.island-trial.on-hoverbike.touch-controls .hover-title{display:none}}
 #welcome .cinema-actions .trial-welcome{min-width:0;padding:10px 0;background:none;color:#d6d6c1;font-weight:400;font-size:12px;border:0;margin:0}
 #trial-board :focus-visible,#trial-results :focus-visible,#trial-hud :focus-visible{outline:3px solid var(--trial-gold);outline-offset:3px}
 .trial-sound-controls{display:flex;align-items:center;flex-wrap:wrap;gap:10px 16px;margin-top:18px;padding:12px 14px;border:1px solid #9abfb940;border-radius:8px;background:#18323580}
