@@ -60,6 +60,96 @@ async function bounded(operation, milliseconds, label) {
     return await Promise.race([operation, new Promise((_, reject) => { timer = setTimeout(() => reject(new Error(`${label} exceeded ${milliseconds / 1000} seconds`)), milliseconds); })]);
   } finally { clearTimeout(timer); }
 }
+
+// Observe the real transition before the native action. A slow renderer can
+// finish the countdown before Playwright's click/tap promise returns.
+function installCountdownObserver(expected) {
+  if (window.__trialCountdownObservation) throw new Error('A countdown observer is already armed');
+  const hud = document.querySelector('#trial-hud');
+  if (!hud) throw new Error('Trial HUD is required before arming countdown');
+  const visible = element => !!element && !element.hidden && element.getClientRects().length > 0
+    && !['hidden', 'collapse'].includes(getComputedStyle(element).visibility);
+  const number = value => value === undefined || value === '' ? null : Number(value);
+  const snapshot = () => ({at: performance.now(), visible: visible(hud), visibility: document.visibilityState,
+    course: hud.dataset.course, vehicle: hud.dataset.vehicle, status: hud.dataset.status, paused: hud.dataset.paused,
+    next: number(hud.dataset.next), elapsed: number(hud.dataset.elapsed), timer: hud.querySelector('.trial-time')?.textContent?.trim()});
+  const evidence = {expected, armedAt: performance.now(), before: snapshot(), activation: null, countdown: null,
+    samples: [], samplesOmitted: 0, ignoredEvents: [], disconnected: false};
+  let stopped = false;
+  const stop = () => {
+    if (stopped) return;
+    stopped = true; observer.disconnect();
+    window.removeEventListener('click', activation, true);
+    window.removeEventListener('keydown', activation, true);
+    evidence.disconnected = true;
+  };
+  const activation = event => {
+    if (stopped || evidence.activation || event.type !== (expected.trigger === 'key' ? 'keydown' : 'click')) return;
+    const target = event.target instanceof Element ? event.target : null;
+    const button = target?.closest('button');
+    const state = snapshot();
+    const input = {at: performance.now(), type: event.type, trusted: event.isTrusted, code: event.code,
+      repeat: !!event.repeat, modified: !!(event.ctrlKey || event.altKey || event.metaKey), mouseButton: event.button,
+      target: target?.id, focused: document.activeElement?.id, buttonId: button?.id, buttonCourse: button?.dataset.course,
+      buttonInBoard: !!button?.closest('#trial-board'), buttonVisible: visible(button), buttonDisabled: !!button?.disabled, state};
+    const currentCourse = state.visible && state.course === expected.course && state.vehicle === expected.vehicle && state.status === 'running';
+    const intended = expected.trigger === 'key'
+      ? input.code === 'KeyR' && !input.repeat && !input.modified && input.target === 'game' && input.focused === 'game' && currentCourse
+      : input.mouseButton === 0 && input.buttonVisible && !input.buttonDisabled
+        && (expected.action === 'start' ? input.buttonInBoard && input.buttonCourse === expected.course
+          : input.buttonId === 'trial-restart' && currentCourse);
+    if (input.trusted && state.visibility === 'visible' && intended) evidence.activation = input;
+    else if (evidence.ignoredEvents.length < 12) evidence.ignoredEvents.push(input);
+  };
+  const observer = new MutationObserver(() => {
+    if (stopped || !evidence.activation) return;
+    const state = snapshot();
+    if (evidence.samples.length < 12) evidence.samples.push(state); else evidence.samplesOmitted++;
+    evidence.last = state;
+    if (state.course === expected.course && state.vehicle === expected.vehicle && state.status === 'countdown') {
+      evidence.countdown = state; stop();
+    }
+  });
+  window.__trialCountdownObservation = {id: expected.id, evidence, stop};
+  window.addEventListener('click', activation, true);
+  window.addEventListener('keydown', activation, true);
+  observer.observe(hud, {attributes: true, childList: true, characterData: true, subtree: true,
+    attributeFilter: ['hidden', 'data-course', 'data-vehicle', 'data-status', 'data-next', 'data-elapsed', 'data-paused']});
+  return {armedAt: evidence.armedAt, before: evidence.before};
+}
+
+function assertCountdownEvidence(evidence, expected, label) {
+  assert.ok(evidence, `${label}: countdown evidence is required`);
+  for (const key of ['id', 'action', 'trigger', 'course', 'vehicle']) assert.equal(evidence.expected[key], expected[key], `${label}: matching ${key}`);
+  const activation = evidence.activation;
+  assert.ok(activation, `${label}: matching native activation was not observed`);
+  assert.equal(activation.trusted, true, `${label}: activation must be trusted`);
+  assert.equal(activation.state.visibility, 'visible', `${label}: activation occurs on a visible page`);
+  assert.equal(activation.type, expected.trigger === 'key' ? 'keydown' : 'click', `${label}: expected native event`);
+  if (expected.trigger === 'key') {
+    assert.equal(activation.code, 'KeyR'); assert.equal(activation.repeat, false); assert.equal(activation.modified, false);
+    assert.equal(activation.target, 'game'); assert.equal(activation.focused, 'game');
+  } else {
+    assert.equal(activation.mouseButton, 0); assert.equal(activation.buttonVisible, true); assert.equal(activation.buttonDisabled, false);
+    if (expected.action === 'start') {
+      assert.equal(activation.buttonInBoard, true); assert.equal(activation.buttonCourse, expected.course);
+    } else assert.equal(activation.buttonId, 'trial-restart');
+  }
+  if (expected.action === 'restart') {
+    assert.equal(activation.state.visible, true); assert.equal(activation.state.course, expected.course);
+    assert.equal(activation.state.vehicle, expected.vehicle); assert.equal(activation.state.status, 'running');
+  }
+  const state = evidence.countdown;
+  assert.ok(state, `${label}: post-activation countdown was not observed`);
+  assert.ok(Number.isFinite(evidence.armedAt) && Number.isFinite(activation.at) && Number.isFinite(state.at)
+    && activation.at >= evidence.armedAt && state.at >= activation.at, `${label}: countdown follows the armed native activation`);
+  assert.equal(state.visible, true, `${label}: countdown HUD is visible`);
+  assert.equal(state.visibility, 'visible', `${label}: countdown page is visible`);
+  assert.equal(state.course, expected.course); assert.equal(state.vehicle, expected.vehicle);
+  assert.equal(state.status, 'countdown'); assert.equal(state.next, 0, `${label}: gate resets`);
+  assert.equal(state.elapsed, 0, `${label}: elapsed resets`); assert.equal(state.timer, '0:00.00', `${label}: timer resets`);
+}
+
 const delay = milliseconds => new Promise(done => setTimeout(done, milliseconds));
 
 let chromium;
@@ -72,11 +162,48 @@ async function runCase(configuration) {
     passed: false, errors: [], console: [], failedRequests: [], screenshots: [], metrics: {}, fullCourseCompletion: 'not exercised'};
   report.cases.push(entry);
   let browser, page, touchSession, deadline;
-  let screenshotFailed = false, caseTimedOut = false;
+  let screenshotFailed = false, caseTimedOut = false, observerCleanupFailed = false;
+  let countdownSequence = 0, countdownObservation;
   const tap = locator => configuration.mobile ? locator.tap() : locator.click();
   const hud = () => page.locator('#trial-hud');
   const elapsed = async () => Number(await hud().getAttribute('data-elapsed'));
   const speed = async selector => Number.parseFloat(await page.locator(selector).textContent());
+
+  const stopCountdownObservation = async observation => {
+    if (!observation) return;
+    try {
+      const evidence = await bounded(page.evaluate(id => {
+        const observation = window.__trialCountdownObservation;
+        if (!observation || observation.id !== id) return null;
+        observation.stop(); delete window.__trialCountdownObservation;
+        return observation.evidence;
+      }, observation.id), 5_000, 'Countdown observer cleanup');
+      if (evidence) observation.record.evidence = evidence;
+    } catch (error) {
+      observerCleanupFailed = true; observation.record.status = 'failed'; observation.record.cleanupFailure = error.message;
+      entry.countdownObserverCleanupFailure = error.message; throw error;
+    } finally { if (countdownObservation === observation) countdownObservation = undefined; }
+  };
+  const observeCountdown = async (request, trigger) => {
+    assert.equal(countdownObservation, undefined, 'Only one countdown observation may be armed');
+    const expected = {...request, id: ++countdownSequence};
+    const label = `${request.action} ${request.course}`;
+    const record = {label, expected, status: 'observing'};
+    (entry.metrics.countdownTransitions ??= []).push(record);
+    const observation = countdownObservation = {id: expected.id, record};
+    try {
+      record.arm = await page.evaluate(installCountdownObserver, expected);
+      record.triggerQueuedAt = new Date().toISOString();
+      await trigger(); record.triggerCompletedAt = new Date().toISOString();
+      await page.waitForFunction(id => window.__trialCountdownObservation?.id === id
+        && !!window.__trialCountdownObservation.evidence.countdown, expected.id, {timeout: 90_000});
+      record.evidence = await page.evaluate(() => window.__trialCountdownObservation?.evidence);
+      assertCountdownEvidence(record.evidence, expected, label);
+      record.status = 'passed';
+    } catch (error) {
+      record.status = 'failed'; record.failure = error.stack || String(error); throw error;
+    } finally { await stopCountdownObservation(observation); }
+  };
 
   const screenshot = async name => {
     const filename = `${configuration.name}-${name}.png`;
@@ -226,13 +353,11 @@ async function runCase(configuration) {
   };
   const startCourse = async (id, vehicle) => {
     log(`${configuration.name}: start ${id} through its course button`);
-    await tap(page.locator(`#trial-board button[data-course="${id}"]`));
+    await observeCountdown({action: 'start', trigger: 'button', course: id, vehicle},
+      () => tap(page.locator(`#trial-board button[data-course="${id}"]`)));
     await expect(hud()).toBeVisible();
     await expect(hud()).toHaveAttribute('data-course', id);
     await expect(hud()).toHaveAttribute('data-vehicle', vehicle);
-    await expect(hud()).toHaveAttribute('data-status', 'countdown');
-    await expect(hud()).toHaveAttribute('data-next', '0');
-    assert.equal(await elapsed(), 0);
     await expect(hud()).toHaveAttribute('data-status', 'running');
     await expect(page.locator('body')).toHaveClass(/island-trial/);
     await expect(hud()).toHaveAttribute('data-ghosts', 'on');
@@ -241,12 +366,11 @@ async function runCase(configuration) {
   };
   const restart = async keyboard => {
     log(`${configuration.name}: restart using ${keyboard ? 'R' : 'the visible button'}`);
-    if (keyboard) { await page.locator('#game').focus(); await page.keyboard.press('r'); }
-    else await tap(page.locator('#trial-restart'));
-    await expect(hud()).toHaveAttribute('data-status', 'countdown');
-    await expect(hud()).toHaveAttribute('data-next', '0');
-    assert.equal(await elapsed(), 0, 'restart must reset elapsed time');
-    await expect(page.locator('#trial-hud .trial-time')).toHaveText('0:00.00');
+    if (keyboard) await page.locator('#game').focus();
+    const current = await hud().evaluate(element => ({course: element.dataset.course, vehicle: element.dataset.vehicle}));
+    assert.ok(current.course && current.vehicle, 'Restart requires an active course identity');
+    await observeCountdown({action: 'restart', trigger: keyboard ? 'key' : 'button', ...current},
+      () => keyboard ? page.keyboard.press('r') : tap(page.locator('#trial-restart')));
     await expect(hud()).toHaveAttribute('data-status', 'running');
   };
   const freezeCheck = async menu => {
@@ -457,6 +581,10 @@ async function runCase(configuration) {
     if (page && !screenshotFailed && !caseTimedOut) { try { await screenshot('failure'); } catch {} }
   } finally {
     clearTimeout(deadline);
+    if (countdownObservation) {
+      try { await stopCountdownObservation(countdownObservation); }
+      catch { entry.passed = false; }
+    }
     if (page) {
       entry.lastUrl = page.url();
       if (!screenshotFailed && !caseTimedOut) {
@@ -470,7 +598,7 @@ async function runCase(configuration) {
       catch (error) { cleanupFailure = error; entry.cleanupFailure = error.message; entry.passed = false; }
     }
     // A timed-out body may finish while cleanup is awaited. Failures stay final.
-    entry.passed = entry.passed && !entry.failure && !caseTimedOut && !cleanupFailure;
+    entry.passed = entry.passed && !entry.failure && !caseTimedOut && !cleanupFailure && !observerCleanupFailed;
     await writeFile(resolve(output, `${configuration.name}-result.json`), JSON.stringify(entry, null, 2));
     if (cleanupFailure) throw cleanupFailure;
   }
@@ -489,7 +617,7 @@ try {
   await new Promise((done, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', done); });
   origin = `http://127.0.0.1:${server.address().port}`; report.origin = origin;
   for (const configuration of selectedConfigurations) await runCase(configuration);
-  report.passed = report.cases.length === selectedConfigurations.length && report.cases.every(entry => entry.passed && !entry.failure && !entry.cleanupFailure);
+  report.passed = report.cases.length === selectedConfigurations.length && report.cases.every(entry => entry.passed && !entry.failure && !entry.cleanupFailure && !entry.countdownObserverCleanupFailure);
   if (!report.passed) process.exitCode = 1;
 } catch (error) {
   report.failure = error.stack || String(error); log(`FAIL ${error.message}`); process.exitCode = 1;
