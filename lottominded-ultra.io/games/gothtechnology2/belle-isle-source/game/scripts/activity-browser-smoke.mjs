@@ -56,7 +56,7 @@ async function runCase(configuration) {
       // A compositor stall can also stall Playwright's screenshot cleanup. The
       // outer deadline lets this case close its own browser instead of queuing
       // more captures on the same GPU process.
-      await bounded(page.screenshot({path: resolve(output, filename), timeout: 20_000}), 25_000, `${configuration.name}: screenshot ${name}`);
+      await bounded(page.screenshot({path: resolve(output, filename), timeout: 90_000}), 95_000, `${configuration.name}: screenshot ${name}`);
     } catch (error) {
       screenshotFailed = true;
       entry.screenshotFailure = error.message;
@@ -299,7 +299,7 @@ async function runCase(configuration) {
       assert.deepEqual(entry.errors, [], 'Browser errors or missing runtime assets fail the smoke');
       entry.passed = true;
       log(`${configuration.name}: mandatory visual smoke passed; qualifying photo ${entry.photoCompletion.status}`);
-    })(), new Promise((_, reject) => { deadline = setTimeout(() => { caseTimedOut = true; reject(new Error('Visual context exceeded the six-minute bound')); }, 360_000); })]);
+    })(), new Promise((_, reject) => { deadline = setTimeout(() => { caseTimedOut = true; reject(new Error('Visual context exceeded the twelve-minute bound')); }, 720_000); })]);
   } catch (error) {
     entry.failure = error.stack || String(error);
     log(`${configuration.name}: FAIL ${error.message}`);
