@@ -1,6 +1,7 @@
 import {createRequire} from 'node:module';
-import {readdir,readFile,writeFile} from 'node:fs/promises';
+import {readdir,readFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
+import {atomicGameAsset} from './atomic-game-asset.mjs';
 const require=createRequire(new URL('../lottominded-ultra.io/games/gothtechnology2/package.json',import.meta.url));
 const {MeshoptEncoder,MeshoptDecoder}=require('meshoptimizer');
 const widths={5120:1,5121:1,5122:2,5123:2,5125:4,5126:4};
@@ -57,9 +58,9 @@ export async function compressRideModel(input){
  return result.length<input.length?result:input;
 }
 
-export async function compressRideModels(outputRoot){
- const arcade=resolve(outputRoot,'lottominded-ultra.io/games/gothtechnology2/arcade');let saved=0,models=0;
- async function walk(dir){for(const e of await readdir(dir,{withFileTypes:true}).catch(()=>[])){const path=resolve(dir,e.name);if(e.isDirectory())await walk(path);else if(e.name.endsWith('.glb')){const input=await readFile(path),output=await compressRideModel(input);if(output.length<input.length){await writeFile(path,output);saved+=input.length-output.length;models++;}}}}
- for(const game of ['swoop-detroit','elmwood-explorer'])await walk(resolve(arcade,game));
+export async function compressRideModels(outputRoot,options={}){
+ const arcade=options.arcade??resolve(outputRoot,'lottominded-ultra.io/games/gothtechnology2/arcade');let saved=0,models=0;
+ async function walk(dir){for(const e of await readdir(dir,{withFileTypes:true}).catch(()=>[])){const path=resolve(dir,e.name);if(e.isDirectory())await walk(path);else if(e.name.endsWith('.glb')){const input=await readFile(path),output=await compressRideModel(input);if(output.length<input.length){await atomicGameAsset(path,output);saved+=input.length-output.length;models++;}}}}
+ for(const game of options.products??['swoop-detroit','elmwood-explorer'])await walk(resolve(arcade,game));
  console.log(`Losslessly compressed ${models} ride models; saved ${(saved/1048576).toFixed(1)} MiB.`);return {saved,models};
 }

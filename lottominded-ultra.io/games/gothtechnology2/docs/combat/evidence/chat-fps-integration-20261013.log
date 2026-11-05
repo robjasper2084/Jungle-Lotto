@@ -1,0 +1,33 @@
+(node:7676) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ binary fixture preserves bytes, checks integrity and consumes the temporary buffer once (46.6781ms)
+✔ legacy package fallback only follows a missing manifest; server errors do not start another massive download (4.0071ms)
+(node:5000) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Map physics loaded from verified local cache.
+✔ a repeat load reuses verified compressed physics without a second large transfer (49.7793ms)
+Map physics loaded from verified local cache.
+✔ a corrupt cached map is evicted, downloaded once and verified again (7.7264ms)
+✔ denied storage leaves normal loading available (2.5926ms)
+✔ cache updates retain the other map and write only the requested byte view (0.8359ms)
+(node:41428) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ combat block doorways admit a body, brick blocks bullets, and navigation uses clear segments (117.0395ms)
+✔ diagonal walking slides along a wall, never enters it, and straight wall input stops (40.2271ms)
+✔ crosshair ray converges from physical muzzle on a close target (23.2164ms)
+✔ buffer smooths jitter, stops extrapolation, and never carries a previous life across respawn (0.5019ms)
+✔ reload cues follow ammunition commit and reduced motion suppresses cosmetic impulses (0.5442ms)
+✔ ICE messages reject arbitrary URLs and missing relay credentials (0.5289ms)
+✔ compiled combat bots dismount into close fights and use real ammunition (265.2079ms)
+(node:17924) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ voice signals cannot target a different room, channel or self (1.8824ms)
+✔ only bounded audio SDP and ICE pass; claimed sender is discarded (3.262ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 921.2906

@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-10T22:35:52.587Z",
+  "module": "cd0c0d595bb139d275dab145446e813706858634f122a4fea8a63d34075b796e",
+  "transport": "Supabase encrypted relay + local authoritative host",
+  "automatedClients": 1,
+  "physicalHumans": 0,
+  "fireAccepted": true,
+  "respawnForwarding": true,
+  "reconnectSameActor": true,
+  "noAmmoRefill": true,
+  "crossNetworkVoiceTest": false
+}

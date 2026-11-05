@@ -5,6 +5,7 @@ import {TagMatch,TAG_RULES,neutralCommand,sphereTOI} from '../src/tag/rules.ts';
 import type {TagFixture} from '../src/tag/fixture.ts';
 import type {TerrainSampler} from '../src/terrain.ts';
 import {TagNavigation} from '../src/tag/navigation.ts';
+import {resumeTagInput} from '../src/tag/inputCursor.ts';
 const fixture:TagFixture={version:1,product:'swoop-detroit',arena:'test',revision:'test',hash:'test',physicsVersion:'0.20.0',transform:{sx:1,tx:0,ty:0,tz:0},physics:'',grid:{x:-20,z:-20,width:81,height:81,spacing:.5,heights:Array(81*81).fill(0)},lanes:[{a:{x:0,y:0,z:-20},b:{x:0,y:0,z:20},width:12}],spawns:Array.from({length:8},(_,i)=>({position:{x:i%2?3:-3,y:0,z:i*3},headingY:0}))};
 const terrain:TerrainSampler={sampleGround(_x,_z,out){out.height=0;Object.assign(out.normal,{x:0,y:1,z:0});out.surface='pavement';out.offCourse=false;return out;},raycast(){return null;},raycastObstacle(){return null;}};
 test('bots cannot route toward the nearest rejected isolated map endpoint',()=>{
@@ -16,6 +17,18 @@ test('bots cannot route toward the nearest rejected isolated map endpoint',()=>{
 function match(rules:'classic'|'spread'='classic'){const m=new TagMatch(fixture,terrain,rules,'normal',1);for(let i=0;i<4;i++)m.addActor('p'+i,'Player '+i);m.start('round');return m;}
 function at(m:TagMatch,id:number,x:number,z:number,y=0){const a=m.actors[id];a.controller.reset({position:{x,y,z},headingY:0});const state=a.controller.captureState();state.fields.pose.y=y;a.controller.restoreState(state);a.previous={...a.controller.poseValue};}
 function advance(m:TagMatch,t:number){for(let i=0;i<Math.round(t*60);i++)m.step();}
+test('rejoined client moves and fires immediately after a long input history',()=>{
+ const m=match();advance(m,6.1);const a=m.actors[0];at(m,0,0,0);at(m,1,8,15);
+ for(let seq=1;seq<=4000;seq++)assert(m.command(a.id,neutralCommand(m.round,seq,m.tick)));
+ a.lastShotId=8000;
+ const cursor=resumeTagInput(m.snapshot(a.id).actors.find(p=>p.id===a.id)!.ack);
+ assert.equal(m.command(a.id,{...neutralCommand(m.round,1,m.tick),throttle:1}),false);
+ assert(m.command(a.id,{...neutralCommand(m.round,++cursor.seq,m.tick),throttle:1,fire:true,shot:++cursor.shot}));
+ m.step();assert.equal(a.ack,4001);assert.equal(a.ammo,2);assert(a.controller.poseValue.speed>0);
+ assert(m.events.some(e=>e.kind==='shot'&&e.actor===a.id));
+ m.start('rematch');assert.deepEqual(resumeTagInput(m.snapshot(a.id).actors[0].ack),{seq:0,shot:0});
+ assert.throws(()=>resumeTagInput(NaN));
+});
 test('snapshot JSON restore replays all controller state, airborne, springs and trick state',()=>{const a=new RideController(terrain,{tuning:{maxSpeed:10}}),b=new RideController(terrain,{tuning:{maxSpeed:10}});
   for(let i=0;i<100;i++)a.step(1/60,{...NEUTRAL_ACTIONS,throttle:1,steer:.2,hop:i===90});
   b.restoreState(JSON.parse(JSON.stringify(a.captureState())));for(let i=0;i<180;i++){const c={...NEUTRAL_ACTIONS,throttle:i<90?1:-1,steer:Math.sin(i*.02)*.4};a.step(1/60,c);b.step(1/60,c);}assert.deepEqual(b.captureState(),a.captureState());});

@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-10T00:19:44.205Z",
+  "url": "http://127.0.0.1:4191/arcade/swoop-detroit/royale.html?from=swoop&engine=breadflower",
+  "data": {
+    "engine": "{\"engine\":\"6b4d4e1f10dee9b1c8932db95f91b92e3eceb7db\",\"module\":\"ab9c12082c0be26d44bc9409a843d25ad7840373e427e16f06d1d0e1bf33420b\",\"bridgeAbi\":2,\"engineRules\":\"static-royale-cpp-1\"}",
+    "frames": "38562",
+    "profile": "{\"fps\":59.99900828085452,\"p95\":16.79999999998836,\"calls\":206,\"triangles\":133964}",
+    "results": "AI 4 WINS · Last rider standing — 0 eliminations · 0 damage · 36 m ridden",
+    "tick": "7122"
+  },
+  "errors": []
+}

@@ -44,6 +44,7 @@ for(const {surface,id,index,path,title} of [
   if(surface==='Play'){
    await expect(page.locator('#game-collection-link')).toBeHidden();
    await expect(page.locator('#requested-character')).toContainText('Controls screen');
+   await page.locator('#game-frame').scrollIntoViewIfNeeded();
   }else{
    await expect(page.locator('#underground-title')).toHaveText(title);
    await expect(page.locator('#underground-help')).toContainText(id==='static-wave'?'IJKL':'Controls screen');
@@ -51,7 +52,7 @@ for(const {surface,id,index,path,title} of [
   if(id==='static-wave'){
    await frame.getByRole('button',{name:'Start Sector 1',exact:true}).click();
    await frame.waitForFunction(()=>window.RahbeArcadeGame.getStats().seconds>=2);
-   await frame.locator('#bombAction').click();
+   await frame.locator('#bombAction:visible, .td-battle [data-control="bomb"]:visible').click();
   }else{
    await frame.getByRole('button',{name:'Solo Run',exact:true}).click();
    const skip=frame.getByRole('button',{name:'Skip Intro',exact:true});if(await skip.isVisible())await skip.click();

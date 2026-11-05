@@ -5,8 +5,8 @@ import { fileURLToPath } from 'node:url';
 import { linkedGameFile } from './linked-game-files.mjs';
 
 const root = resolve(import.meta.dirname, '..');
-const original = resolve(root, 'legacy-game/preserved-original-entry/index.html');
-const types = { '.js': 'text/javascript', '.mjs': 'text/javascript', '.json': 'application/json', '.webp': 'image/webp', '.jpg': 'image/jpeg', '.png': 'image/png', '.mp3': 'audio/mpeg', '.mp4': 'video/mp4', '.html': 'text/html' };
+const original = resolve(root, 'index.html');
+const types = { '.css': 'text/css', '.js': 'text/javascript', '.mjs': 'text/javascript', '.json': 'application/json', '.webp': 'image/webp', '.jpg': 'image/jpeg', '.png': 'image/png', '.mp3': 'audio/mpeg', '.mp4': 'video/mp4', '.html': 'text/html', '.gz': 'application/gzip', '.wasm': 'application/wasm', '.glb': 'model/gltf-binary' };
 export async function legacyEntry(base) {
   const html = await readFile(original, 'utf8');
   return html.replace('<head>', `<head>\n    <base href="${base}">
@@ -28,9 +28,17 @@ export function legacyIntegration() {
           res.setHeader('Content-Type', 'text/html; charset=utf-8'); res.end(await legacyEntry(base)); return;
         }
         let file;
-        try { file = linkedGameFile(pathname, base); }
+        try {
+          file = linkedGameFile(pathname, base);
+          if (!file && route.startsWith('/arcade/')) {
+            const arcadeRoot = resolve(root, 'store/public/arcade');
+            file = resolve(arcadeRoot, decodeURIComponent(route.slice('/arcade/'.length)));
+            if (route.endsWith('/')) file = resolve(file, 'index.html');
+            if (!file.startsWith(`${arcadeRoot}${sep}`)) { res.statusCode = 403; res.end(); return; }
+          }
+        }
         catch { res.statusCode = 400; res.end('Invalid game path.'); return; }
-        if (file) { /* Serve only the explicitly linked sibling games. */ }
+        if (file) { /* Serve packaged arcade files and explicitly linked sibling games. */ }
         else if (route === '/legacy-game/reward-sdk.js') file = resolve(root, '../../assets/js/lm-game-rewards-sdk.js');
         else if (route.startsWith('/src/') || route.startsWith('/assets/')) {
           file = resolve(root, decodeURIComponent(route.slice(1)));
@@ -44,7 +52,7 @@ export function legacyIntegration() {
     },
     'astro:build:done': async ({ dir }) => {
       const output = fileURLToPath(dir);
-      for (const folder of ['src', 'assets']) await cp(resolve(root, folder), resolve(output, folder), { recursive: true });
+      for (const folder of ['src', 'assets']) await cp(resolve(root, folder), resolve(output, folder), { recursive: true, filter: source => !/\.(?:ts|map)$/.test(source) });
       await mkdir(resolve(output, 'legacy-game'), { recursive: true });
       await writeFile(resolve(output, 'legacy-game/index.html'), await legacyEntry(base));
       await cp(resolve(root, '../../assets/js/lm-game-rewards-sdk.js'), resolve(output, 'legacy-game/reward-sdk.js'));

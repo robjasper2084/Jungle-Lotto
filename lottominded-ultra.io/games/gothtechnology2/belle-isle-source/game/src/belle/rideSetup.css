@@ -1,0 +1,20 @@
+.ride-setup{margin:0;min-width:0}.ride-setup fieldset{border:0;padding:0;margin:0;min-width:0}.ride-setup legend{padding:0;margin:0 0 10px;font:700 8px/1.4 Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#b8c4b8}.ride-options{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ride-setup label{position:relative;cursor:pointer;margin:0}.ride-setup input{position:absolute;width:1px;height:1px;opacity:0;margin:0}.ride-options label>span{display:grid;grid-template-columns:40px 1fr;align-items:center;gap:2px 9px;min-height:54px;padding:8px 10px;box-sizing:border-box;border:1px solid #c2ccba38;border-radius:2px;color:#bacac3;background:transparent;transition:border-color .2s,background .2s}.ride-options svg{grid-row:span 2;width:38px;height:28px;fill:none;stroke:currentColor;stroke-width:1.6}.ride-options strong{font:700 12px/1.3 Arial,sans-serif}.ride-options small{font:9px/1.4 Arial,sans-serif;color:#99afa6}.ride-setup input:checked+span{border-color:#d8be88;background:#c3b78c13;color:#fff0d2}.ride-setup input:focus-visible+span{outline:2px solid #f9ecc7;outline-offset:3px}.ride-setup fieldset:disabled{opacity:.55}.ride-setup .camera-choice{display:flex;gap:6px;align-items:center;margin-top:10px}.camera-choice legend{float:left;margin:0 12px 0 0;padding-top:8px}.camera-choice label>span{display:block;border:1px solid #c2ccba28;border-radius:2px;padding:7px 10px;font:700 9px/1.3 Arial,sans-serif;color:#b8c8c2}.camera-choice small{font-weight:400;margin-left:6px;color:#9eb1aa}@media(max-width:760px){.ride-options label>span{grid-template-columns:32px 1fr;padding:8px}.ride-options svg{width:30px}.ride-options small{display:none}.ride-options strong{font-size:12px}.camera-choice small{font-size:9px}.ride-setup .camera-choice{margin-top:9px}.ride-setup legend{font-size:8px;margin-bottom:8px}}@media(prefers-reduced-motion:reduce){.ride-setup *{transition:none!important}}
+.ride-options{position:relative}
+.ride-options label{z-index:1;min-width:0}
+.ride-preview-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
+.ride-options label>span{display:flex;flex-direction:column;align-items:flex-start;gap:5px;padding:10px 14px 15px;background:linear-gradient(155deg,#233b42a6,#0b1924a6);border-radius:7px;overflow:hidden}
+.ride-preview-slot{display:flex;align-items:center;justify-content:center;position:relative;width:100%;height:166px;pointer-events:none}
+.ride-preview-slot svg{width:72px;height:58px;opacity:.55}
+.ride-preview-slot:after{content:attr(data-status);position:absolute;bottom:12px;left:0;width:100%;text-align:center;font:10px Arial,sans-serif;color:#adc3c7}
+.preview-ready .ride-preview-slot svg,.preview-ready .ride-preview-slot:after{visibility:hidden}
+.ride-options strong{font-size:16px;line-height:1.4}
+.ride-options small{font-size:11px;display:block;line-height:1.5}
+.ride-options input:checked+span{border-color:#e1bd79;background:linear-gradient(155deg,#334e50,#172b32);box-shadow:inset 0 0 0 1px #e1bd7944}
+.ride-options input:checked+span:after{content:'SELECTED';position:absolute;top:10px;left:12px;font:700 8px Arial,sans-serif;letter-spacing:.12em;color:#f4d89f}
+.ride-setup .camera-choice{margin:18px 0;flex-wrap:wrap}
+.camera-choice label>span{padding:10px 14px;font-size:11px}
+#welcome.startup .ride-picker-done{min-height:44px;width:100%;margin:0;padding:10px 18px;border:1px solid #ddc08b;background:#ddc08b;color:#10232c;font:700 12px Arial,sans-serif;border-radius:4px}
+.cinema-ride-picker{width:min(590px,calc(100vw - 52px))}
+.cinema-ride-picker[open]{max-height:calc(100dvh - 100px);overflow:auto}
+@media(max-width:760px){.ride-preview-slot{height:135px}.ride-options label>span{padding:8px 10px 12px}.ride-options strong{font-size:14px}.ride-options small{display:block;font-size:10px}.ride-setup .camera-choice{margin:14px 0}.cinema-ride-picker[open]{max-height:calc(100dvh - 95px)}}
+@media(max-height:500px) and (min-width:600px){.ride-preview-slot{height:92px}.ride-options small{display:none}.cinema-ride-picker[open]{max-height:calc(100dvh - 50px)}}

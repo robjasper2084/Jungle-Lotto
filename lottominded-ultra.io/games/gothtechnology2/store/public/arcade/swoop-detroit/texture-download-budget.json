@@ -1,0 +1,9 @@
+{
+  "textures": 144,
+  "originalBytes": 97459929,
+  "variantBytes": {
+    "512": 7263572,
+    "1024": 20508950
+  },
+  "preserves": "Source textures and full-resolution package originals; derived variants selected by graphics budget"
+}

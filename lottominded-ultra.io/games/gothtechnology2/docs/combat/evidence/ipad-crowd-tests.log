@@ -1,0 +1,14 @@
+(node:41136) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ a person steps aside for a rider approaching from behind and resumes their route (2.9253ms)
+✔ people use visible raised pavement as their footing and keep moving across it (3744.3722ms)
+✔ walking and skating envelopes leave a visible gap without granting pass-through (0.6759ms)
+✔ the riding view uses one character sweep while retaining contact and recovery checks (3797.6742ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8366.062

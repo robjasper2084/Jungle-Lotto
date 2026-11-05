@@ -1,8 +1,17 @@
+import {replaceBelleBuild} from './belle-pages.mjs';
+import {shareBelleAssets} from './share-belle-assets.mjs';
+import {shareCityData} from './share-city-data.mjs';
+import {pruneRidingBundles} from './prune-riding-bundles.mjs';
+import {shareCinematicMedia} from './share-cinematic-media.mjs';
+import {shareGameClips} from './share-game-clips.mjs';
 import {optimizePagesImages} from './optimize-pages-images.mjs';
 import {shareRideTextures} from './share-ride-textures.mjs';
+import {sharePublishedRideTextures} from './share-published-ride-textures.mjs';
 import {compressRideModels} from './compress-ride-models.mjs';
 import {shareRideVehicles} from './share-ride-vehicles.mjs';
 import {shareRidingMedia} from './share-riding-media.mjs';
+import {losslessRidingTextures} from './lossless-riding-textures.mjs';
+import {shareUnityStage} from './share-unity-stage.mjs';
 import { execFileSync } from "node:child_process";
 import { copyFile, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { basename, dirname, extname, relative, resolve, sep } from "node:path";
@@ -201,7 +210,7 @@ const publicFiles = git(["ls-files", "-z", "--cached", "--others", "--exclude-st
 // This game's production subtree comes only from the compiled Astro build.
 // Retain its source in the reference scan so shared arcade media stays included.
 const sourceFiles = publicFiles.filter(file => !file.startsWith(gothtechnologyPath + "/"));
-const storeBuild = await readGothtechnologyBuild(repoRoot);
+const storeBuild = await shareGameClips(await shareCinematicMedia((await pruneRidingBundles(await replaceBelleBuild(repoRoot,await readGothtechnologyBuild(repoRoot)))).files));
 
 if (!sourceFiles.length) {
   throw new Error("No public source files were found for the Pages artifact.");
@@ -216,11 +225,16 @@ const publicBytes = await copyInBatches(artifactPlan.includedFiles);
 const sharedStoreBuild = await shareShadowOpsAssets(storeBuild, outputRoot);
 const copiedBytes = publicBytes + await copyGothtechnologyBuild(sharedStoreBuild, outputRoot);
 const rideTextureSharing = await shareRideTextures(outputRoot);
-const imageOptimization = await optimizePagesImages(outputRoot);
 const rideModelCompression = await compressRideModels(outputRoot);
 const rideVehicleSharing = await shareRideVehicles(outputRoot);
+const publishedRideTextures = await sharePublishedRideTextures(outputRoot);
+const imageOptimization = await optimizePagesImages(outputRoot);
 const ridingMediaSharing = await shareRidingMedia(outputRoot);
-const totalBytes = copiedBytes - rideTextureSharing.saved - imageOptimization.saved - rideModelCompression.saved - rideVehicleSharing.saved - ridingMediaSharing.saved;
+const textureConversion = await losslessRidingTextures(outputRoot);
+const stageVideo = await shareUnityStage(outputRoot);
+const cityDataSharing = await shareCityData(outputRoot);
+const belleAssets=await shareBelleAssets(outputRoot);
+const totalBytes = copiedBytes - belleAssets.saved - rideTextureSharing.saved - publishedRideTextures.saved - imageOptimization.saved - rideModelCompression.saved - rideVehicleSharing.saved - ridingMediaSharing.saved - textureConversion.saved - stageVideo.saved - cityDataSharing.saved;
 
 for (const route of requiredRoutes) {
   const routeStats = await stat(outputPathFor(route)).catch(() => null);
@@ -249,9 +263,14 @@ const manifest = {
   omittedMediaMebibytes: Number((artifactPlan.omittedBytes / 1024 / 1024).toFixed(1)),
   imageOptimization,
   rideTextureSharing,
+  publishedRideTextures,
   rideModelCompression,
   rideVehicleSharing,
   ridingMediaSharing,
+  textureConversion,
+  unityStageSharing: stageVideo,
+  cityDataSharing,
+  belleAssets,
   bytes: totalBytes,
   mebibytes: Number((totalBytes / 1024 / 1024).toFixed(1)),
   maxMebibytes: Number((maxBytes / 1024 / 1024).toFixed(1)),

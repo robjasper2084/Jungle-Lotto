@@ -1,0 +1,95 @@
+{
+  "package": "Alteruna Multiplayer FPS Template",
+  "source": "https://assetstore.unity.com/packages/templates/systems/multiplayer-fps-template-259143",
+  "packageSha256": "af629494186e7b2449fdc96d32c769e8b55b2898b1c94168abe0c3d6ca6f7b64",
+  "license": "Standard Unity Asset Store EULA as listed on Asset Store; retain all publisher rights. No SDK imported.",
+  "clips": [
+    {
+      "path": "Assets/AlterunaFPS/Animations/Avatar/Jump--InAir.anim.fbx",
+      "sha256": "99806ec74b51f36a591dabbfea7d2cc10b1d9a233c3bc2088b0764f96cbc5ade"
+    },
+    {
+      "path": "Assets/AlterunaFPS/Animations/Avatar/LookUp 40.anim",
+      "sha256": "c0a593cb032814aba90ac99439624fb655e406b76647cabbda5a81e79956e0b9"
+    },
+    {
+      "path": "Assets/AlterunaFPS/Animations/Avatar/Stand--Idle.anim.fbx",
+      "sha256": "22338f453bfd818ee35b6b4cf463c16f2257a7b61d4911ef9fffdbe342e36c6d"
+    },
+    {
+      "path": "Assets/AlterunaFPS/Animations/Avatar/Locomotion--Run_N.anim.fbx",
+      "sha256": "ab015b180e89496180a3e81a75160c9fe2b27095e6590d1f0125fcfa85bd787c"
+    },
+    {
+      "path": "Assets/AlterunaFPS/Animations/Avatar/LookDown 32.anim",
+      "sha256": "c0248fb9ef70898fef78bdc59d54b52d87bc807e7da2421fe81a1694c542eeae"
+    },
+    {
+      "path": "Assets/AlterunaFPS/Animations/Avatar/Locomotion--Walk_N_Land.anim.fbx",
+      "sha256": "5bf601e30e89e7601e1735a3c2ca165f370d90457e3b22ebfa366dc84ecffda5"
+    },
+    {
+      "path": "Assets/AlterunaFPS/Animations/Avatar/Locomotion--Run_N_Land.anim.fbx",
+      "sha256": "c6eb01346c8898a0256cfc27df52bba82c3b49703d19b23c2859e3e2285dcd60"
+    },
+    {
+      "path": "Assets/AlterunaFPS/Animations/Avatar/LookRight 40.anim",
+      "sha256": "2326088254d008ca9f3545aaba826f5cb47a53518310bab8513711376ad9baa2"
+    },
+    {
+      "path": "Assets/AlterunaFPS/Animations/Avatar/LookUp 82.733.anim",
+      "sha256": "1071108de19b19b1aa1b1714119e48d6c611a84d4bd29c9302d1614050036de4"
+    },
+    {
+      "path": "Assets/AlterunaFPS/Animations/Avatar/Locomotion--Walk_N.anim.fbx",
+      "sha256": "d5d9574fb98cc9d44e654d47ea6af766c3955e4c477d289644f25dbfb52cda92"
+    },
+    {
+      "path": "Assets/AlterunaFPS/Animations/Avatar/LookLeft 90.anim",
+      "sha256": "e2cb845f8883a0c62b65348c04d3941166cbb2574ef08a988c92fcda17187378"
+    },
+    {
+      "path": "Assets/AlterunaFPS/Animations/Avatar/LookRight 90.anim",
+      "sha256": "8950e0c4054c3251df384c87f7fa77f3ff648e8dd72def6471a15161805c9757"
+    },
+    {
+      "path": "Assets/AlterunaFPS/Animations/Avatar/Jump--Jump.anim.fbx",
+      "sha256": "78fa361c2443838db77abab4776e37dd4417ad80ce10fd504b261a57db54cb17"
+    },
+    {
+      "path": "Assets/AlterunaFPS/Animations/Avatar/Locomotion--Run_S.anim.fbx",
+      "sha256": "36bf882d36113820169653cfe90835664afdf3b6c5829226f9a46c3137dc85bf"
+    },
+    {
+      "path": "Assets/AlterunaFPS/Animations/Pistol/Pistol Reload.anim",
+      "sha256": "a1e43fbc275778a13cd3956af46410c3908479d576f86e08510186d420131c51"
+    },
+    {
+      "path": "Assets/AlterunaFPS/Animations/Pistol/Pistol Fire.anim",
+      "sha256": "da0212e3613a312255133c496048696c5c8fe734ce2faaa3753806f299a62264"
+    },
+    {
+      "path": "Assets/AlterunaFPS/Animations/Pistol/Pistol Idle.anim",
+      "sha256": "9c0965b3a3b42673e0f84531fb6a647a95e6b94135f03fbb697bd24d1d7fdeba"
+    },
+    {
+      "path": "Assets/AlterunaFPS/Animations/Avatar/LookDown 46.777.anim",
+      "sha256": "8201a34c18e0fb1d2f59f2645947cfc807585fd2977fd88b655ab1dbfcb4d4c8"
+    },
+    {
+      "path": "Assets/AlterunaFPS/Animations/Avatar/RightHandGunPose.anim",
+      "sha256": "d4d24136ba28a318195e9bf078b2dabbb778235c698dfba1fd53a822503f29c9"
+    },
+    {
+      "path": "Assets/AlterunaFPS/Animations/Avatar/LookLeft 40.anim",
+      "sha256": "d7b13b5ad749db6daeaa03b400c28db587a2ae961491037aa99199a78d17a41b"
+    }
+  ],
+  "conversion": {
+    "body": "Blender FBX importer; Unity metadata frame ranges; game basis (x,z,-y); root travel removed; loop endpoints blended; anatomical retarget and real shoe contact fitting.",
+    "actions": "Original Unity float/position/Euler Hermite curves. Look muscles fitted to rider joint limits. Gun grip fitted to glove curl axes. Weapon motion retargeted to existing equipment; original pistol-only hammer/trigger geometry has no equivalent on camera housings.",
+    "reload": "Authored 1.5 s insertion maps to authoritative reloadCommit. Total source length 3.05 s maps to reloadEnd.",
+    "sourceStorage": "Raw package and FBX files remain outside served game. Bundled motion data is used within the game only.",
+    "footCalibration": "Every FBX uses the same Stand--Idle anatomical foot neutral. Per-clip bind poses contain a lifted left foot and must not be used as ground neutral. Pitch is applied directly without Euler branch flips."
+  }
+}

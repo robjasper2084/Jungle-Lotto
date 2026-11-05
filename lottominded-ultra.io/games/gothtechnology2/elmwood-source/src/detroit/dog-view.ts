@@ -1,4 +1,6 @@
-import * as T from 'three';
+import * as T from 'three';
+import {invalidateAnimatedShadow} from '../../../ride-core/src/shadowBudget.ts';
+
 import type {GLTF} from './compressedGLTFLoader.ts';
 import {clone} from 'three/addons/utils/SkeletonUtils.js';
 import type {DogCompanion} from './companion.ts';
@@ -27,7 +29,9 @@ export class DogView {
     for(const kind of ['head','jaw']){const node=this.model.getObjectByName(kind);if(node)this.accents.push({node,base:node.quaternion.clone(),kind});}
     this.model.traverse(o=>{const mesh=o as T.SkinnedMesh;if(!mesh.isSkinnedMesh)return;const p=mesh.geometry.getAttribute('position');this.supports.push({mesh,indices:Array.from({length:p.count},(_,i)=>i).filter(i=>p.getY(i)<.7)});});
   }
-  update(dog:DogCompanion,dt:number){
+  update(dog:DogCompanion,dt:number){
+    invalidateAnimatedShadow(this.root);
+
     this.root.position.set(dog.x,dog.y+.018,dog.z);this.root.rotation.y=dog.heading;
     this.ground.rotation.set(dog.groundPitch,0,dog.groundRoll);
     const move=T.MathUtils.smoothstep(dog.speed,.05,.55),run=T.MathUtils.smoothstep(dog.speed,2.2,4.5);

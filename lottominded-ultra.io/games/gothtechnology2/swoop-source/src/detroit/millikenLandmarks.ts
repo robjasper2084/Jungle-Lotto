@@ -1,10 +1,11 @@
+import type {SceneryWorld} from './sceneryWorld.ts';
 import * as T from 'three';
 import {GLTFLoader} from './compressedGLTFLoader.ts';
 import {cityPoint} from './atwater.ts';
 import {MILLIKEN_BERM} from './millikenTerrain.ts';
-import {heightAt,type DetroitWorld} from './world.ts';
+import {heightAt} from './world.ts';
 export const LIGHTHOUSE_GPS={latitude:42.3322455,longitude:-83.0249708};
-export async function buildMillikenLandmarks(scene:T.Scene,world:DetroitWorld){
+export async function buildMillikenLandmarks(scene:T.Scene,world:SceneryWorld){
  const loader=new GLTFLoader(),[lighthouse,viewer]=await Promise.all(['milliken-lighthouse','milliken-viewer'].map(n=>loader.loadAsync('/exports/atwater/'+n+'.glb')));
  const p=cityPoint(LIGHTHOUSE_GPS.latitude,LIGHTHOUSE_GPS.longitude),root=lighthouse.scene;
  root.position.set(p.x,.1,p.z);root.name='Milliken lighthouse · Google Maps anchor';scene.add(root);

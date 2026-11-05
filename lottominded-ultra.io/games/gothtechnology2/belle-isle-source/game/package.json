@@ -1,0 +1,26 @@
+{
+  "name": "belle-isle-explorer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 8301",
+    "build": "node --experimental-strip-types ../tools/build-waterfowl.mjs && node --experimental-strip-types ../tools/build-beach.mjs && node --experimental-strip-types ../tools/build-nature-plan.mjs && node --experimental-strip-types ../tools/build-street-detail.mjs && node --experimental-strip-types ../tools/build-pavement.mjs && vite build && node ../tools/pack-landmarks.mjs",
+    "check": "tsc --noEmit",
+    "test": "node run-tests.mjs",
+    "preview": "vite preview --host 127.0.0.1 --port 8301 --strictPort"
+  },
+  "dependencies": {
+    "@supabase/realtime-js": "^2.117.2",
+    "fflate": "0.8.3",
+    "three": "0.185.1"
+  },
+  "devDependencies": {
+    "@types/node": "24.0.0",
+    "@types/three": "0.185.3",
+    "polygon-clipping": "0.15.7",
+    "typescript": "5.9.3",
+    "vite": "^7.0.0",
+    "meshoptimizer": "1.1.1"
+  }
+}

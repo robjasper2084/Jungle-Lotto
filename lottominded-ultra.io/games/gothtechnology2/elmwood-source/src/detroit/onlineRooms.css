@@ -5,3 +5,5 @@ body.onlinePlaying .tactical-minimap{top:132px}#onlineRooms input[type="checkbox
 #elmwood-online-scoreboard{position:fixed;left:12px;top:210px;z-index:27;max-width:min(280px,80vw);padding:12px;border:1px solid #61d8cd88;border-radius:8px;background:#091b27eb;color:#edfffc;font-size:12px;pointer-events:none}
 #elmwood-online-scoreboard p{margin:6px 0}#elmwood-main-menu #onlineRooms{max-width:580px}#elmwood-main-menu #onlineRooms h2{font-size:28px}
 @media(max-width:700px){#elmwood-online-scoreboard{top:180px;font-size:10px;padding:8px}}
+
+#onlineRooms .onlineJoinPrimary{background:#70e6d0;color:#07232a;border-color:#70e6d0;font-weight:800;flex:1}#onlineRooms .onlineRoomOptions{margin-top:18px;border-top:1px solid #56858f66;padding-top:12px}#onlineRooms .onlineRoomOptions summary{min-height:44px;cursor:pointer;display:flex;align-items:center;font-weight:700}#onlineRooms .onlineActions button{flex:1}#onlineRooms [role="status"]{padding:10px 0;overflow-wrap:anywhere}

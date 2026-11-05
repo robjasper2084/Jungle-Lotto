@@ -1,0 +1,15 @@
+{
+  "device": "2020 iPad Pro",
+  "browser": "Chrome",
+  "network": "Wi-Fi",
+  "source": "User report during live playtest",
+  "release": "cf1a8d48",
+  "loadSecondsReportedMin": 45,
+  "loadSecondsReportedMax": 120,
+  "stutter": "A few times",
+  "joystickResult": "Not yet reported",
+  "reloadOrCrash": "Not yet reported",
+  "additionalPlayerNetwork": "Not yet confirmed",
+  "fpsAndMemoryInstrumented": false,
+  "newBinaryLoaderRetested": false
+}

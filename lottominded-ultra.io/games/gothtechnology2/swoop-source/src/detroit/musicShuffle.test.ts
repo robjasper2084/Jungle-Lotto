@@ -1,6 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {MusicShuffle} from './musicShuffle.ts';
+test('requested opening track plays first without repeats in its shuffle cycle',()=>{const shuffle=new MusicShuffle(()=>.4),ids=['track-01','track-19','track-20'];assert.equal(shuffle.next('shuffle',ids,'track-19','track-19'),'track-19');const rest=[shuffle.next('shuffle',ids,'track-19'),shuffle.next('shuffle',ids)];assert.deepEqual(new Set(rest),new Set(['track-01','track-20']));});
 test('shuffle visits every track before repeating and avoids cycle-boundary repeats',()=>{
  const queue=new MusicShuffle(()=>.37),ids=['a','b','c','d'];let last='b';
  for(let cycle=0;cycle<5;cycle++){const heard=[];for(let i=0;i<ids.length;i++){const next=queue.next('all',ids,last)!;assert.notEqual(next,last);heard.push(next);last=next;}assert.deepEqual(heard.sort(),ids);}

@@ -7,7 +7,8 @@ export type BalanceInput={steer:number;speed:number;grounded:boolean;crouch:bool
  * contact trajectory. At walking pace a blended body pivot keeps tight turns usable.
  * No reference-game code or constants are used here. Units: metres, seconds, radians. */
 export class BalanceEngine {
-  constructor(private tuning:RideTuning=tune){}
+  private tuning:RideTuning;
+  constructor(tuning:RideTuning=tune){this.tuning=tuning;}
   private input=spring();
   private bank=spring();
   private yaw=0;

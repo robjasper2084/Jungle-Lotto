@@ -1,0 +1,103 @@
+{
+  "time": "2026-10-10T01:25:12.646Z",
+  "handshake": {
+    "map": "detroit-full-map",
+    "arena": "atwater-authored-1",
+    "rules": "static-royale-cpp-1",
+    "protocol": 2,
+    "physics": "rapier-0.20.0",
+    "collision": "8692124ce27f6b62ce39f669d5e53832a10a716862fddcc6b73518a4b1521329",
+    "engine": "6b4d4e1f10dee9b1c8932db95f91b92e3eceb7db",
+    "module": "0e029a5e3241d634280e1e1e696c270efebbd5e182e2e50ba2176cbbc1fcc137",
+    "bridgeAbi": 3,
+    "engineRules": "static-royale-cpp-1"
+  },
+  "checks": [
+    "six clear authored starts",
+    "five reachable field centers",
+    "12 supplies on actual ground",
+    "map mismatch rejected",
+    "seed 0 compiled field, ten-second ride, snapshot restore",
+    "seed 1 compiled field, ten-second ride, snapshot restore",
+    "seed 2 compiled field, ten-second ride, snapshot restore",
+    "seed 3 compiled field, ten-second ride, snapshot restore",
+    "seed 4 compiled field, ten-second ride, snapshot restore"
+  ],
+  "spawns": [
+    {
+      "position": {
+        "x": 1729.9716132754504,
+        "y": 5.318760000000001,
+        "z": 157.75377906587983
+      },
+      "headingY": -0.075
+    },
+    {
+      "position": {
+        "x": 1505.7091132754504,
+        "y": 5.318760000000001,
+        "z": 172.3562790658798
+      },
+      "headingY": 1.6358179657894871
+    },
+    {
+      "position": {
+        "x": 1819.6391132754504,
+        "y": 5.24176033569336,
+        "z": 363.4662790658798
+      },
+      "headingY": -2.7305364856771224
+    },
+    {
+      "position": {
+        "x": 1886.2191132754504,
+        "y": 5.318760000000001,
+        "z": -3.1637209341201924
+      },
+      "headingY": -0.7706750301530033
+    },
+    {
+      "position": {
+        "x": 1620.6791132754504,
+        "y": 5.318760000000001,
+        "z": -31.851720934120294
+      },
+      "headingY": 0.5229011793910089
+    },
+    {
+      "position": {
+        "x": 1619.4805418468789,
+        "y": 5.318760000000001,
+        "z": 346.50342192302264
+      },
+      "headingY": 2.611989340384829
+    }
+  ],
+  "zones": [
+    {
+      "x": 1729.9716132754504,
+      "y": 5.318760000000001,
+      "z": 157.75377906587983
+    },
+    {
+      "x": 1736.0441132754504,
+      "y": 5.318760000000001,
+      "z": 149.78627906587985
+    },
+    {
+      "x": 1734.4891132754503,
+      "y": 5.318760000000001,
+      "z": 167.30627906587983
+    },
+    {
+      "x": 1725,
+      "y": 5.318760000000001,
+      "z": 145
+    },
+    {
+      "x": 1720.0891132754505,
+      "y": 5.318760000000001,
+      "z": 167.37627906587977
+    }
+  ]
+}

@@ -189,3 +189,17 @@ final result: passed
 - In-app browser — Collections fourth signal resolves `keychain-observer-gold-arch-reference.webp` with the supplied-reference alternative text; all four card images loaded.
 - In-app browser — New Drop fourth signal still resolves `keychain-analog-mobster-cyan-arch-reference.webp`.
 - Responsive DOM — desktop and scaled-mobile passes reported document `scrollWidth === clientWidth`; the fourth Collections image loaded in both states.
+
+---
+
+# GOTHTECHNOLOGY first-load design QA
+
+- Visual source: `C:/Users/digit/AppData/Local/Temp/codex-clipboard-e2844953-225d-4a74-bdc0-6eb9bc9a99e8.png`, the user's opening-screen reference.
+- Desktop implementation screenshot: `output/store-browser/store-homepage-first-load--17217-ps-Explore-the-Drop-working-desktop/first-load-hero.png` (1440 x 900).
+- Mobile implementation screenshot: `output/store-browser/store-homepage-first-load--17217-ps-Explore-the-Drop-working-mobile/first-load-hero.png` (390 x 844).
+- Comparison: retained the existing black/gold cathedral artwork, centered cream heading, header, concept notice, primary actions, captions, and music/settings controls. Mobile uses the established portrait hoodie crop, stacked copy and controls, and compact navigation.
+- Correction: opening the old `#current-drop` URL now starts at the hero. Header/footer New Drop links open the homepage. The explicit Explore the Drop action still scrolls to the drop.
+- No responsive breakpoints or design tokens changed. Existing responsive and reduced-motion styles remain in use.
+- Disconnected launch-alert forms keep all controls disabled, including after a programmatic submit. They issue no POST request.
+- Verified in the Codex in-app browser and desktop/mobile browser regressions, including reduced motion.
+- Final visual result: passed.

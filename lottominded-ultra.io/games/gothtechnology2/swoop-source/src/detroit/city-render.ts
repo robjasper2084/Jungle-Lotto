@@ -1,3 +1,8 @@
+import {batchStaticGroup} from './static-batch.ts';
+import {WorkSlice} from '../../../ride-core/src/workSlice.ts';
+import {buildingFacade,alignBuildingFacade} from './buildingFacade.ts';
+import {BuildingEntranceIndex,createBuildingEntrance} from './buildingEntrances.ts';
+import type {SceneryWorld} from './sceneryWorld.ts';
 import type {SpatialAssetStream} from './spatialAssetStream.ts';
 import * as T from 'three';
 import {orleansFloors,orleansMaterial} from './orleansLanding.ts';
@@ -7,16 +12,17 @@ import {GLTFLoader} from './compressedGLTFLoader.ts';
 import {CITY,nearestCut} from './geography.ts';
 import {GEO,cutWidth} from './geo-profile.ts';
 import {hash} from './world.ts';
-import {drapeStreet,drapeJunction,streetElevation,streetSurfaceLift,streetVertexNormal,type StreetPoint} from './street-geometry.ts';
+import {drapeStreet,drapeJunction,streetElevation,streetSurfaceLift,streetVertexNormal,insideStreetFootprint,streetFootprint,type StreetPoint} from './street-geometry.ts';
 import {curbRise,hasStreetCurb} from './streetCurbs.ts';
 import {parallelStreetSidewalk} from './streetSidewalk.ts';
 import {streetJoinExclusions} from './streetJunctions.ts';
 import {heightAt} from './world.ts';
 import {clearStreetJunction,sidewalkHalfWidth,streetMarkingStyle} from './streetFurnitureLayout.ts';
-import type {DetroitWorld} from './world.ts';
+import {loadStreetSurfaceCache} from './streetSurfaceCache.ts';
 
 /** Mapped polygons own both visible structure and collision. Facades remain authored art. */
-export async function buildCity(_scene:T.Scene,world:DetroitWorld,groupAt:(x:number,z:number)=>T.Group,skins:Record<string,T.MeshStandardMaterial>,stream?:SpatialAssetStream){
+export async function buildCity(_scene:T.Scene,world:SceneryWorld,groupAt:(x:number,z:number)=>T.Group,skins:Record<string,T.MeshStandardMaterial>,stream?:SpatialAssetStream){
+ const slice=new WorkSlice();
  const loader=new T.TextureLoader();
  const maps=await Promise.all(['industrial_red','industrial_buff','storefront'].map(n=>loader.loadAsync('/textures/architecture/'+n+'.jpg')));
  maps.forEach(t=>{t.colorSpace=T.SRGBColorSpace;t.wrapS=t.wrapT=T.RepeatWrapping;t.anisotropy=8;});
@@ -30,6 +36,8 @@ export async function buildCity(_scene:T.Scene,world:DetroitWorld,groupAt:(x:num
  const paint=new T.MeshStandardMaterial({color:'#e8c75d',roughness:.88,polygonOffset:true,polygonOffsetFactor:-2});
  const whitePaint=new T.MeshStandardMaterial({color:'#ebece1',roughness:.92,polygonOffset:true,polygonOffsetFactor:-2});
  const seam=new T.MeshStandardMaterial({color:'#8b8982',roughness:1,polygonOffset:true,polygonOffsetFactor:-2});
+ const cacheMaterials:Record<string,T.Material>={road:roadMat,park:parkMat,parkEdge,sidewalk,curb,yellow:paint,white:whitePaint,seam};
+ const cached=await loadStreetSurfaceCache();
  const paths=new Map<T.Group,Map<T.Material,number[]>>();
  let streetTriangles=0,streetSections=0;
  function append(material:T.Material,pieces:ReturnType<typeof drapeStreet>){
@@ -44,7 +52,8 @@ export async function buildCity(_scene:T.Scene,world:DetroitWorld,groupAt:(x:num
    append(material,drapeStreet({a:{x:x0,z:z0},b:{x:x1,z:z1},half,offset,lift,maxSpan,...joins,exclude},world.chunks,elevation));
  }
  const junctions=new Set<string>();
- for(const road of CITY.roads)for(let i=1;i<road.points.length;i++){
+ if(!cached)for(const road of CITY.roads)for(let i=1;i<road.points.length;i++){
+   await slice.checkpoint();
    const a=road.points[i-1],b=road.points[i],dx=b[0]-a[0],dz=b[1]-a[1],length=Math.hypot(dx,dz),x=(a[0]+b[0])/2,z=(a[1]+b[1])/2;
    if(length<.2)continue;
    const walk=['cycleway','footway','path','pedestrian'].includes(road.kind),width=(road.name==='Dequindre Cut Greenway'?cutWidth(nearestCut(x,z).d):road.width)/2;
@@ -58,15 +67,19 @@ export async function buildCity(_scene:T.Scene,world:DetroitWorld,groupAt:(x:num
    const surface=valadeWalk?sidewalk:parkWalk?parkMat:concreteWalk?sidewalk:roadMat;
    const lift=streetSurfaceLift(road),joins={joinA:streetVertexNormal(road.points,i-1),joinB:streetVertexNormal(road.points,i)};
    const exclusions=streetJoinExclusions(road,a,b,width+4,heightAt);
+   const sidewalkApproach=!hasStreetCurb(road);
    const elevation=(px:number,pz:number,terrain:number)=>streetElevation(road,px,pz,terrain);
    // Thin flush aggregate border, batched underneath the entire path surface.
    if(parkWalk)strip(parkEdge,a[0],a[1],b[0],b[1],width+.14,0,elevation,.025,undefined,joins,exclusions);
-   strip(surface,a[0],a[1],b[0],b[1],width,0,elevation,lift,undefined,joins,walk?exclusions:undefined);
+   strip(surface,a[0],a[1],b[0],b[1],width,0,elevation,lift,undefined,joins,sidewalkApproach?exclusions:undefined);
    for(const p of [a,b]){
+     // A path or driveway stops at the sidewalk. A rounded cap centred
+     // inside that corridor can otherwise poke through into the opposite lawn.
+     if(sidewalkApproach&&exclusions.some(poly=>insideStreetFootprint({x:p[0],z:p[1]},poly)))continue;
      const key=`${p[0]},${p[1]},${width},${walk},${road.bridge},${concreteWalk},${parkWalk}`;
      if(junctions.has(key))continue;junctions.add(key);
      if(parkWalk)append(parkEdge,drapeJunction(p[0],p[1],width+.14,world.chunks,elevation,.025,exclusions));
-     append(surface,drapeJunction(p[0],p[1],width,world.chunks,elevation,lift,walk?exclusions:undefined));
+     append(surface,drapeJunction(p[0],p[1],width,world.chunks,elevation,lift,sidewalkApproach?exclusions:undefined));
    }
    if(hasStreetCurb(road)){
      for(const sign of [-1,1]){
@@ -95,30 +108,61 @@ export async function buildCity(_scene:T.Scene,world:DetroitWorld,groupAt:(x:num
         const end=Math.min(d+2,length),mid=(d+end)/2,px=a[0]+dx*mid/length,pz=a[1]+dz*mid/length;
         if(!clearStreetJunction(road,px,pz,3))continue;
         const x0=a[0]+dx*d/length,z0=a[1]+dz*d/length,x1=a[0]+dx*end/length,z1=a[1]+dz*end/length;
-        if(marking==='double-yellow')for(const offset of [-.10,.10])strip(paint,x0,z0,x1,z1,.055,offset,elevation,.047);
-        else if(Math.floor(d/2)%4<2)strip(paint,x0,z0,x1,z1,.06,0,elevation,.047);
-        for(const side of [-1,1])strip(whitePaint,x0,z0,x1,z1,.055,side*(width-.32),elevation,.048);
+        const mark=(material:T.Material,half:number,offset:number,lift:number)=>{
+          const boundary=streetFootprint({a:{x:a[0],z:a[1]},b:{x:b[0],z:b[1]},half,offset,lift,...joins});
+          append(material,drapeStreet({a:{x:x0,z:z0},b:{x:x1,z:z1},half,offset,lift,boundary,exclude:material===whitePaint?exclusions:undefined,joinA:d===0?joins.joinA:undefined,joinB:end===length?joins.joinB:undefined},world.chunks,elevation));
+        };
+        if(marking==='double-yellow')for(const offset of [-.10,.10])mark(paint,.055,offset,.047);
+        else if(Math.floor(d/2)%4<2)mark(paint,.06,0,.047);
+        for(const side of [-1,1])mark(whitePaint,.055,side*(width-.32),.048);
        }
      }
    }
  }
- for(const[g,bins]of paths)for(const[material,positions]of bins){const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(positions,3));
+  // The old non-indexed ribbons already had flat triangle normals. Deriving
+  // those normals in the shader preserves the faces without a full normal buffer.
+  const streetMaterials=new Map<T.Material,T.Material>();
+  for(const material of Object.values(cacheMaterials)){const clone=(material as T.MeshStandardMaterial).clone();clone.flatShading=true;clone.onBeforeCompile=(shader,renderer)=>material.onBeforeCompile(shader,renderer);clone.customProgramCacheKey=()=>material.customProgramCacheKey()+'-flat-street';streetMaterials.set(material,clone);}
+  const surfaces:Array<[T.Group,Array<[T.Material,number[]|Float32Array,Uint32Array?]>]>=cached?cached.tiles.map(t=>[groupAt(t.x,t.z),[[cacheMaterials[t.material],cached.positions.subarray(t.offset,t.offset+t.count),cached.indices?.subarray(t.indexOffset!,t.indexOffset!+t.indexCount!)]]]):[...paths].map(([g,bins])=>[g,[...bins]]);
+ if(cached){streetSections=cached.sections;streetTriangles=cached.triangles;}
+  for(const[g,bins]of surfaces)for(const[material,positions,indices]of bins){await slice.checkpoint();if(!material)throw Error('Unknown cached street material');const geo=new T.BufferGeometry();geo.userData.streetCacheMaterial=Object.keys(cacheMaterials).find(k=>cacheMaterials[k]===material);geo.setAttribute('position',positions instanceof Float32Array?new T.BufferAttribute(positions,3):new T.Float32BufferAttribute(positions,3));if(indices)geo.setIndex(new T.BufferAttribute(indices,1));
    // These ribbons can sit above the bank terrain and extend beyond the deck.
    // Share their exact surface with riding, dog paws, falls and camera queries.
-   if(material!==paint&&material!==whitePaint&&material!==seam)world.addRideSurface(geo.attributes.position.array as Float32Array);
-   const uv=[],scale=material===parkMat?1.1:material===sidewalk?4:2;for(let i=0;i<positions.length;i+=3)uv.push(positions[i]/scale-Math.floor(g.userData.center.x/scale),positions[i+2]/scale-Math.floor(g.userData.center.z/scale));geo.setAttribute('uv',new T.Float32BufferAttribute(uv,2));geo.computeVertexNormals();const m=new T.Mesh(geo,material);m.name=material===parkMat?'Milliken smooth park paths':material===sidewalk?'Concrete sidewalks':'Mapped street surface';m.receiveShadow=true;g.add(m);}
+    if(material!==paint&&material!==whitePaint&&material!==seam)world.addRideSurface(geo.attributes.position.array as Float32Array,false,indices);
+    const uv=new Float32Array(positions.length/3*2),scale=material===parkMat?1.1:material===sidewalk?4:2;for(let i=0;i<positions.length;i+=3){const u=i/3*2;uv[u]=positions[i]/scale-Math.floor(g.userData.center.x/scale);uv[u+1]=positions[i+2]/scale-Math.floor(g.userData.center.z/scale);}geo.setAttribute('uv',new T.BufferAttribute(uv,2));const m=new T.Mesh(geo,streetMaterials.get(material));m.name=material===parkMat?'Milliken smooth park paths':material===sidewalk?'Concrete sidewalks':'Mapped street surface';m.receiveShadow=true;g.add(m);}
+ if(!world.buildingMeshes.length)return{blocks:0,landmarks:[] as string[],bridges:GEO.bridges.length,ramps:GEO.ramps.length,mapped:true,streetSections,streetTriangles,streetTiles:paths.size,cached:!!cached};
  const residential=new Map([[3,orleansMaterial(3)],[4,orleansMaterial(4)]]);
+ const entranceIndex=new BuildingEntranceIndex(CITY.roads,CITY.buildings);
+ const entranceMaterials={stone:curb,door:facades[2],metal:new T.MeshStandardMaterial({color:'#172429',roughness:.76})};
+ let entrances=0;
  const landmarks:string[]=[];
  for(const{data:b,geometry:geo}of world.buildingMeshes){
+   await slice.checkpoint();
    if(b.id==='777936143')continue; // Original Blender Shed replaces generic facade, retaining footprint collision.
    geo.computeBoundingBox();const bounds=geo.boundingBox!,center=bounds.getCenter(new T.Vector3()),g=groupAt(center.x,center.z);
-   const pos=geo.getAttribute('position'),normal=geo.getAttribute('normal'),uv=geo.getAttribute('uv');
-   // Eight metre facade repeat preserves plausible door/window scale.
-   for(let i=0;i<pos.count;i++)uv.setXY(i,(Math.abs(normal.getX(i))>.5?pos.getZ(i):pos.getX(i))/8,pos.getY(i)/7.5);
+   const visual=buildingFacade(geo,b.points,heightAt),pos=visual.facade.getAttribute('position'),normal=visual.facade.getAttribute('normal'),uv=visual.facade.getAttribute('uv');
+   alignBuildingFacade(visual.facade,visual.base,visual.top);
    const floors=orleansFloors(b.id);
-   if(floors)for(let i=0;i<pos.count;i++)uv.setXY(i,(Math.abs(normal.getX(i))>.5?pos.getZ(i):pos.getX(i))/9.6,(pos.getY(i)-bounds.min.y)/(floors*3.3));
-   const side=floors?residential.get(floors)!:facades[Math.floor(hash(Number(b.id))*facades.length)];
-   const mesh=new T.Mesh(geo,[roof,side]);mesh.name='OSM '+b.id+' '+b.name;mesh.userData={osmId:b.id,source:'OSM footprint; facade and height require visual verification'};mesh.castShadow=mesh.receiveShadow=true;g.add(mesh);
+   if(floors)for(let i=0;i<pos.count;i++)uv.setXY(i,(Math.abs(normal.getX(i))>.5?pos.getZ(i):pos.getX(i))/9.6,(pos.getY(i)-visual.base)/(visual.top-visual.base));
+   // Tall blocks use window floors, never repeat ground-level shop doors on every storey.
+   const variant=Math.floor(hash(Number(b.id))*facades.length),shop=variant===2&&visual.top-visual.base<5;
+   if(shop)alignBuildingFacade(visual.facade,visual.base,visual.top,1,3.3,4);
+   const side=floors?residential.get(floors)!:facades[shop?2:variant%2];
+   const mesh=new T.Mesh(visual.facade,[roof,side]);mesh.name='OSM '+b.id+' '+b.name;mesh.userData={osmId:b.id,source:'OSM footprint; ground-aligned facade',facadeBase:visual.base};mesh.castShadow=mesh.receiveShadow=true;g.add(mesh);
+   if(visual.foundation){const foundation=new T.Mesh(visual.foundation,skins.concrete);foundation.name='Foundation '+b.id;foundation.castShadow=foundation.receiveShadow=true;g.add(foundation);}
+   // Upper-storey window materials must not remove the ground-floor doorway.
+   // Named/custom landmarks keep their authored entrances. Generic doors are
+   // visual closed doors; the existing building collision envelope stays intact.
+   if(b.id!=='59452104'&&b.id!=='59440457'){
+    const entry=entranceIndex.entrance(b,visual.top,heightAt);
+    if(entry){
+     // Include the rendered sidewalk/curb surface, which can sit above heightAt.
+     const ground={height:0,normal:{x:0,y:1,z:0},surface:'pavement' as const,offCourse:false};
+     const threshold=[-1.15,0,1.15].map(u=>{const x=entry.x+entry.nz*u+entry.nx*.3,z=entry.z-entry.nx*u+entry.nz*.3;return world.sampleGround(x,z,ground,heightAt(x,z)).height;});
+     entry.y=Math.max(entry.y,...threshold.map(y=>y+.04));entry.height=Math.min(entry.height,visual.top-entry.y-.2);
+     if(entry.height>=2.35){g.add(createBuildingEntrance(entry,entranceMaterials,b.id));entrances++;}
+    }
+   }
    // Cornice follows every polygon edge, including non-rectangular footprints.
    for(let i=1;i<b.points.length;i++){
      const a=b.points[i-1],c=b.points[i],len=Math.hypot(c[0]-a[0],c[1]-a[1]);if(len<.6)continue;
@@ -132,8 +176,8 @@ export async function buildCity(_scene:T.Scene,world:DetroitWorld,groupAt:(x:num
      // Detail stays inside the mapped envelope; the envelope is authoritative.
      const scale=Math.min((bounds.max.x-bounds.min.x)/size.x,(bounds.max.z-bounds.min.z)/size.z,.98);
      asset.scale.setScalar(scale);asset.position.set(center.x-(box.min.x+size.x/2)*scale,geo.userData.streetBase-box.min.y*scale,center.z-(box.min.z+size.z/2)*scale);
-     asset.traverse(o=>{if((o as T.Mesh).isMesh){o.castShadow=o.receiveShadow=true;}});g.add(asset);landmarks.push(id);};if(stream)stream.add({id:'architecture-'+id,centers:[{x:center.x,z:center.z}],load});else await load();
+     asset.traverse(o=>{if((o as T.Mesh).isMesh){o.castShadow=o.receiveShadow=true;}});batchStaticGroup(asset);g.add(asset);landmarks.push(id);};if(stream)stream.add({id:'architecture-'+id,centers:[{x:center.x,z:center.z}],load});else await load();
    }
  }
- return{blocks:world.buildingMeshes.length,landmarks,bridges:GEO.bridges.length,ramps:GEO.ramps.length,mapped:true,streetSections,streetTriangles,streetTiles:paths.size};
+ return{blocks:world.buildingMeshes.length,entrances,landmarks,bridges:GEO.bridges.length,ramps:GEO.ramps.length,mapped:true,streetSections,streetTriangles,streetTiles:cached?new Set(cached.tiles.map(t=>t.x+','+t.z)).size:paths.size,cached:!!cached};
 }

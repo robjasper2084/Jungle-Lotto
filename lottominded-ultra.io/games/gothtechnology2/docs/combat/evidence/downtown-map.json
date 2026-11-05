@@ -1,0 +1,114 @@
+{
+  "radii": [
+    1525,
+    1220,
+    762.5,
+    250,
+    16,
+    0
+  ],
+  "time": "2026-10-10T03:43:37.766Z",
+  "handshake": {
+    "map": "detroit-full-map",
+    "arena": "mack-chene-1",
+    "rules": "static-royale-cpp-2",
+    "protocol": 3,
+    "physics": "ridecore-mounted-2",
+    "collision": "8692124ce27f6b62ce39f669d5e53832a10a716862fddcc6b73518a4b1521329",
+    "engine": "6b4d4e1f10dee9b1c8932db95f91b92e3eceb7db",
+    "module": "2ac9a1d3a5fb5745e8b37e4411f2e17caadf82944ea0ec7b18ab00b075377136",
+    "bridgeAbi": 4,
+    "engineRules": "static-royale-cpp-2",
+    "combat": "1d6d1aa2f546ae983aae5680dbfc70b34085e72c25e452e4f68644c832f04e5b",
+    "wheels": "selected-wheel-2"
+  },
+  "checks": [
+    "Mack, Chene Park and Cut entrance inside all opening seeds",
+    "six clear authored starts",
+    "five reachable field centers",
+    "12 supplies on actual ground",
+    "map mismatch rejected",
+    "seed 0 compiled field, ten-second ride, snapshot restore",
+    "seed 1 compiled field, ten-second ride, snapshot restore",
+    "seed 2 compiled field, ten-second ride, snapshot restore",
+    "seed 3 compiled field, ten-second ride, snapshot restore",
+    "seed 4 compiled field, ten-second ride, snapshot restore"
+  ],
+  "spawns": [
+    {
+      "position": {
+        "x": 1729.9716132754504,
+        "y": 5.318760000000001,
+        "z": 157.75377906587983
+      },
+      "headingY": -0.075
+    },
+    {
+      "position": {
+        "x": 1505.7091132754504,
+        "y": 5.318760000000001,
+        "z": 172.3562790658798
+      },
+      "headingY": 1.6358179657894871
+    },
+    {
+      "position": {
+        "x": 1819.6391132754504,
+        "y": 5.24176033569336,
+        "z": 363.4662790658798
+      },
+      "headingY": -2.7305364856771224
+    },
+    {
+      "position": {
+        "x": 1886.2191132754504,
+        "y": 5.318760000000001,
+        "z": -3.1637209341201924
+      },
+      "headingY": -0.7706750301530033
+    },
+    {
+      "position": {
+        "x": 1620.6791132754504,
+        "y": 5.318760000000001,
+        "z": -31.851720934120294
+      },
+      "headingY": 0.5229011793910089
+    },
+    {
+      "position": {
+        "x": 1619.4805418468789,
+        "y": 5.318760000000001,
+        "z": 346.50342192302264
+      },
+      "headingY": 2.611989340384829
+    }
+  ],
+  "zones": [
+    {
+      "x": 515.5591132754503,
+      "y": 5.318760000000001,
+      "z": -175.2937209341203
+    },
+    {
+      "x": 515.7241132754502,
+      "y": 5.318760000000001,
+      "z": -165.2637209341201
+    },
+    {
+      "x": 503.8941132754503,
+      "y": 5.318760000000001,
+      "z": -175.33372093412027
+    },
+    {
+      "x": 528.0791132754503,
+      "y": 5.318760000000001,
+      "z": -175.25872093412022
+    },
+    {
+      "x": 508.4916132754504,
+      "y": 5.318760000000001,
+      "z": -185.75122093412028
+    }
+  ]
+}

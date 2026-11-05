@@ -1,0 +1,67 @@
+import {RemotePoseBuffer} from './royale/remotePoseBuffer.ts';
+import type {Killcam} from './royale/killcam.ts';
+import {EngineContext,engineReady} from './engine/runtime.ts';
+import {routeBattleInput} from './engine/royaleKernel.ts';
+import {Client,type Room} from '@colyseus/sdk';
+import {RelayRoom,type RelayConfig} from './royale/relayRoom.ts';
+import {RideController} from './controller.ts';
+import {RoomChatPanel,RoomCommunications} from './roomChat.ts';
+import {VoiceChat} from './voiceChat.ts';
+import {ConnectionHealth} from './royale/connectionHealth.ts';
+import type {BattleTerrain} from './royale/battleTerrain.ts';
+import {currentHandshake,compatible} from './royale/arena.ts';
+import {RoyaleMatch,move,BATTLE_HANDLING,type Command,type Motion,type RoyaleSnapshot} from './royale/rules.ts';
+export class RoyaleSession{
+ readonly remotePoses=new RemotePoseBuffer();
+ readonly voice=typeof document==='undefined'?undefined:new VoiceChat();
+ match?:RoyaleMatch;room?:Room|RelayRoom;state?:RoyaleSnapshot;previous?:RoyaleSnapshot;received=0;me='local';host='';code='';seq=0;shot=0;prediction?:Motion;pending:Command[]=[];ready:string[]=[];botFill=false;message='';relayConfig?:RelayConfig;
+ killcam?:Killcam;private replayRequest='';private replayParts=new Map<number,Killcam['frames']>();
+ private sdk?:Client;private round='';private disposed=false;private predictionInput?:EngineContext;private connection=new ConnectionHealth();
+ connectionStatus(now=performance.now()){return this.connection.status(now,this.pending.length);}
+ readonly chat=typeof document==='undefined'?undefined:new RoomChatPanel(text=>this.room?.send('chat',{text}),()=>this.release(),()=>!!this.room&&!this.disposed);readonly comms=this.chat&&this.voice?new RoomCommunications(this.chat,this.voice,()=>this.release()):undefined;
+ constructor(readonly terrain:BattleTerrain){}
+ offline(skin:string,wheelId='euc',size:6|10=6,botChase=true,botCount=-1,practiceTerrain?:BattleTerrain){this.leave();this.disposed=false;this.me='local';this.match=new RoyaleMatch(practiceTerrain??this.terrain,undefined,size,botChase,practiceTerrain?.training!==true);this.match.add(this.me,'You',false,skin,wheelId);for(let i=0;i<Math.min(size-1,botCount<0?size-1:Math.max(0,botCount));i++)this.match.add('ai-'+i,'AI '+(i+1),true,skin,wheelId);this.match.start(crypto.randomUUID(),crypto.getRandomValues(new Uint32Array(1))[0]&0x7fffffff);this.accept(this.match.snapshot(this.me));}
+ async online(endpoint:string,create:boolean,code:string,name:string,skin:string,botFill:boolean,spectate=false,wheelId='euc',matchSize:6|10=6,botChase=true,botCount=-1){
+  this.leave();this.disposed=false;const url=new URL(endpoint);if(!['https:','http:','wss:','ws:'].includes(url.protocol)||url.username||url.password)throw Error('Use the server HTTPS address.');
+  if(url.protocol==='http:'&&!['localhost','127.0.0.1'].includes(url.hostname))throw Error('Internet rooms need an HTTPS server.');
+  this.sdk=new Client(endpoint);const options={handshake:currentHandshake(this.terrain.arenaIdentity),name,skin,botFill,spectate,wheelId,matchSize,botChase,botCount};
+  if(create)this.bind(await this.sdk.create('static-royale',options),endpoint);
+  else{if(!/^[A-Fa-f0-9]{8}$/.test(code))throw Error('Enter the 8-character room code.');const base=endpoint.replace(/^ws/,'http').replace(/\/$/,'');const result=await fetch(base+'/v1/royale/'+code.toUpperCase());if(!result.ok)throw Error('Room not found or expired.');const data=await result.json();this.bind(await this.sdk.joinById(data.roomId,options),endpoint);}
+ }
+ async supabase(config:RelayConfig,create:boolean,code:string,name:string,skin:string,botFill:boolean,spectate=false,wheelId='euc',matchSize:6|10=6,botChase=true,botCount=-1){this.leave();this.disposed=false;this.relayConfig=config;const room=await RelayRoom.connect(config,{action:create?'create':'join',code:code.toUpperCase(),options:{handshake:currentHandshake(this.terrain.arenaIdentity),name,skin,botFill,spectate,wheelId,matchSize,botChase,botCount}});this.bind(room,config.endpoint);}
+ private bind(room:Room|RelayRoom,endpoint:string){this.room=room;this.pending=[];this.connection.bind();this.message='';const current=()=>!this.disposed&&this.room===room;this.me=room.sessionId;this.comms?.show(true);room.onMessage('chat',m=>{if(current())this.chat?.receive(m);});this.voice?.bind(this.me,{state:(enabled,channel)=>room.send('voice-state',{enabled,channel}),signal:signal=>room.send('voice-signal',signal)});room.onMessage('voice-ice',v=>{if(current())this.voice?.configureIce(v?.iceServers);});room.onMessage('voice-roster',members=>{if(current())this.voice?.setMembers(members);});room.onMessage('voice-signal',v=>{if(current())this.voice?.receive(v.from,v.signal);});room.onMessage('welcome',w=>{if(!current())return;if(!compatible(w.handshake,this.terrain.arenaIdentity)){this.leave();this.message='The server engine or map version does not match this game.';return;}this.host=w.host;this.code=w.code;this.botFill=w.botFill;this.message=w.spectator?'Spectating · 3-second delayed follow view.':'Room '+w.code;});
+  room.onMessage('killcam',replay=>{if(current()&&!this.state?.self?.alive&&replay.round===this.state?.round&&replay.serial===this.state?.self?.spawnSerial&&replay.victim===this.me&&Number.isInteger(replay.index)&&Number.isInteger(replay.count)&&replay.count>0&&replay.count<=11&&replay.index>=0&&replay.index<replay.count&&Array.isArray(replay.frames)&&replay.frames.length<=6){this.replayParts.set(replay.index,replay.frames);if(this.replayParts.size===replay.count)this.killcam={...replay,frames:Array.from({length:replay.count},(_,i)=>this.replayParts.get(i)??[]).flat()};}});room.onMessage('respawn',()=>{});room.onMessage('lobby',l=>{if(!current())return;this.host=l.host;this.ready=l.ready;this.botFill=l.botFill;});room.onMessage('snapshot',s=>{if(current())this.accept(s);});room.onMessage('notice',n=>{if(current())this.message=String(n);});room.onError((_code,message)=>{if(current())this.connection.fail(message||'Connection error. Open connection options to reconnect.');});room.onLeave(()=>{if(!current())return;this.voice?.disconnect();this.comms?.show(false);this.connection.fail();});
+  try{sessionStorage.setItem('static-royale-reconnect',JSON.stringify({endpoint,token:room.reconnectionToken}));}catch{}this.comms?.show(true);room.send('hello',{});
+ }
+ async reconnect(){const saved=JSON.parse(sessionStorage.getItem('static-royale-reconnect')??'null');if(!saved)throw Error('No reconnect session on this device.');this.disposed=false;this.connection.retry();try{if(this.relayConfig){this.bind(await RelayRoom.connect(this.relayConfig,{action:'reconnect',token:saved.token}),saved.endpoint);return;}this.sdk=new Client(saved.endpoint);this.bind(await this.sdk.reconnect(saved.token),saved.endpoint);}catch(error){this.connection.fail('Reconnect failed. Check the connection or leave and join a new room.');throw error;}}
+ requestReentry(accept:boolean,nodeId?:string){if(this.room)this.room.send('respawn',{accept,...(nodeId?{nodeId}:{})});else if(this.match){const result=this.match.requestReentry(this.me,accept,nodeId);this.message=result.reason;this.accept(this.match.snapshot(this.me));}}
+ watch(target:string){if(this.room)this.room.send('spectate',{target});else if(this.match){this.match.watch(this.me,target);this.accept(this.match.snapshot(this.me));}}
+ readyUp(){this.room?.send('ready',currentHandshake(this.terrain.arenaIdentity));}
+ start(){if(this.room)this.room.send(this.state?.phase==='results'?'rematch':'start',{});else if(this.match){this.match.start(crypto.randomUUID(),crypto.getRandomValues(new Uint32Array(1))[0]&0x7fffffff);this.accept(this.match.snapshot(this.me));}}
+ async prepareNavigation(checkpoint:()=>Promise<unknown>=async()=>{}){if(!this.room&&this.match){await this.match.prepareNavigation(checkpoint);await this.match.prepareSimulation(checkpoint);}}
+ release(){this.room?.send('release',{});this.match?.release(this.me);this.predictionInput?.clear();}
+ private accept(s:RoyaleSnapshot){if(this.disposed||this.room&&this.state?.round===s.round&&s.tick<this.state.tick)return;this.remotePoses.push(s.round+(s.spectating?':watch:'+s.spectating.target:':play'),s.spectating?(s.spectating.tick??Math.floor((s.tick-180)/6)*6):s.tick,s.actors,performance.now());const reentered=this.state?.self&&s.self&&this.state.self.spawnSerial!==s.self.spawnSerial;this.previous=reentered?undefined:this.state;if(reentered)this.pending=[];if(s.phase==='results'&&this.state?.phase!=='results'&&this.room&&s.self)this.readyUp();this.state=s;this.received=performance.now();if(s.self?.alive){this.killcam=undefined;this.replayRequest='';this.replayParts.clear();}else if(s.self){const key=s.round+':'+s.self.spawnSerial;if(this.replayRequest!==key){this.replayRequest=key;this.replayParts.clear();if(this.match)this.killcam=this.match.killcam(this.me);else this.room?.send('killcam',{});}}if(this.room)this.connection.snapshot(this.received);
+  if(s.round!==this.round){this.round=s.round;this.seq=0;this.shot=0;this.pending=[];}
+  // A respawn is an authoritative input boundary. Discard commands queued for
+  // the previous life, including counters advanced by older clients while dead.
+  if(reentered&&s.self){this.seq=s.self.inputCursor??s.self.ack;this.shot=s.self.shotCursor??0;this.predictionInput?.clear();}
+  if(!this.room||!s.self)return;
+  if(!this.prediction)this.prediction={wheelId:s.self.wheelId,controller:new RideController(this.terrain,{tuning:BATTLE_HANDLING}),energy:100,burstUntil:0,burstLatch:false};
+  if(engineReady()&&!this.predictionInput)this.predictionInput=new EngineContext();this.prediction.controller.restoreState(s.self.controller);this.prediction.integrity=s.self.integrity;this.prediction.combat=s.self.combat;this.prediction.energy=s.self.energy;this.prediction.burstUntil=s.self.burstUntil;this.prediction.burstLatch=s.self.burstLatch;this.seq=Math.max(this.seq,s.self.ack,s.self.inputCursor??0);this.shot=Math.max(this.shot,s.self.shotCursor??0);
+  this.pending=this.pending.filter(c=>c.round===s.round&&c.seq>s.self!.ack);
+  for(let i=0;i<this.pending.length;i++)move(this.prediction,this.predictionInput?routeBattleInput(this.predictionInput,0,this.pending[i]):this.pending[i],s.tick+i+1);
+ }
+ step(input:Command){if(!this.state||!['active','deployment'].includes(this.state.phase))return;
+  // Dead riders cannot submit commands. Keep offline opponents/the respawn
+  // timer running without spending sequence or shot numbers the server rejects.
+  if(!this.state.self?.alive){if(this.match){this.match.step();this.accept(this.match.snapshot(this.me));}return;}
+  if(this.room&&(this.pending.length>=150||this.connectionStatus().state==='disconnected'||this.connectionStatus().state==='reconnecting'))return;
+  const c={...input,round:this.state.round,seq:++this.seq,tick:this.state.tick};if(c.fire)c.shot=++this.shot;else c.shot=this.shot;
+  if(this.match){this.match.command(this.me,c);this.match.step();this.accept(this.match.snapshot(this.me));}
+  else if(this.room&&this.state.self?.alive){this.pending.push(c);this.room.send('input',c);if(this.prediction)move(this.prediction,this.predictionInput?routeBattleInput(this.predictionInput,0,c):c,this.state.tick+this.pending.length);}
+ }
+ leave(){this.remotePoses.reset();this.voice?.disconnect();this.disposed=true;this.room?.leave();this.room=undefined;this.match?.dispose();this.match=undefined;this.state=this.previous=undefined;this.prediction=undefined;this.predictionInput?.dispose();this.predictionInput=undefined;this.pending=[];this.round='';this.seq=this.shot=0;this.host=this.code='';this.ready=[];this.replayParts.clear();this.killcam=undefined;this.replayRequest='';this.connection.reset();this.message='';this.relayConfig=undefined;}
+}
+
+
+

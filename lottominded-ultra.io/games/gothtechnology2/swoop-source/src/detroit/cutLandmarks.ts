@@ -1,6 +1,7 @@
+import type {SceneryWorld} from './sceneryWorld.ts';
 import {signSupports} from './signSupports.ts';
 import * as T from 'three';
-import {cutPoint,heightAt,hash,type DetroitWorld} from './world.ts';
+import {cutPoint,heightAt,hash} from './world.ts';
 import {GEO,cutWidth,nearestRamp} from './geo-profile.ts';
 import {roadAt} from './geography.ts';
 
@@ -17,7 +18,7 @@ export const CUT_LANDMARKS=[
 type Label=(g:T.Group,text:string,x:number,y:number,z:number,w?:number,h?:number,ry?:number)=>void;
 /** The trail bench's open side is local +X; face the adjacent travel lane. */
 export function trailBenchHeading(d:number,u:number){const p=cutPoint(d,u),q=cutPoint(d);return Math.atan2(p.z-q.z,q.x-p.x);}
-export function buildCutLandmarks(world:DetroitWorld,groupAt:(x:number,z:number)=>T.Group,label:Label){
+export function buildCutLandmarks(world:SceneryWorld,groupAt:(x:number,z:number)=>T.Group,label:Label){
  const steel=new T.MeshStandardMaterial({color:'#263b39',metalness:.55,roughness:.45}),wood=new T.MeshStandardMaterial({color:'#806548',roughness:.88}),stone=new T.MeshStandardMaterial({color:'#afa694',roughness:.98}),red=new T.MeshStandardMaterial({color:'#b43e34',roughness:.65}),cream=new T.MeshStandardMaterial({color:'#d4d4bc',roughness:.85});
  const bulb=new T.MeshStandardMaterial({color:'#ffe2ac',emissive:'#efbc70',emissiveIntensity:.55});
  let fixtures=0;
@@ -78,11 +79,16 @@ export type FlowerSite={x:number;y:number;z:number;at:number;type:number;scale:n
 export function flowerSites(blocked:(x:number,z:number)=>boolean=()=>false):FlowerSite[]{
  const sites:FlowerSite[]=[];
  for(const [start,end,side]of [[350,420,1],[550,685,-1],[760,870,1],[970,1120,1],[1010,1140,-1],[1250,1390,1],[1550,1620,-1],[1650,1720,1],[1975,2010,1],[2290,2410,-1],[2440,2520,1]]){
-  for(let d=start;d<end;d+=.85)for(let band=0;band<5;band++){
-   const seed=d*57+band*89;if(hash(seed)<.2)continue;const at=d+hash(seed+4)*.6,u=side*(cutWidth(d)/2+1.5+band*.68+hash(seed+7)*.4),p=cutPoint(at,u),r=nearestRamp(p.x,p.z);
-   if(r.distance<r.width/2+1||GEO.bridges.some(b=>Math.abs(b.at-at)<12)||roadAt(p.x,p.z)||blocked(p.x,p.z))continue;
-   const type=band===4?3:Math.floor(at/13)%3;
-   sites.push({...p,at,y:heightAt(p.x,p.z)+.018,type,scale:.7+hash(seed+2)*.55,rotation:hash(seed+1)*Math.PI*2});
+  // Irregular islands, separated by open ground; no repeated longitudinal rows.
+  for(let centre=start;centre<end;){const seed=centre*57+side*89,radius=1.6+hash(seed+1)*2.8,across=2.2+hash(seed+2)*3.5,count=10+Math.floor(hash(seed+3)*23);
+   for(let i=0;i<count;i++){
+    const key=seed+i*117,angle=hash(key+4)*Math.PI*2,spread=Math.sqrt(hash(key+5));
+    const at=centre+Math.cos(angle)*radius*spread,u=side*(cutWidth(at)/2+across+Math.sin(angle)*Math.min(1.4,across-1.4)*spread),p=cutPoint(at,u),r=nearestRamp(p.x,p.z);
+    if(at<start||at>end||Math.abs(u)<cutWidth(at)/2+1.4||r.distance<r.width/2+1||GEO.bridges.some(b=>Math.abs(b.at-at)<12)||roadAt(p.x,p.z)||blocked(p.x,p.z))continue;
+    const type=hash(key+6)<.78?Math.floor(hash(seed+8)*4):Math.floor(hash(key+9)*4);
+    sites.push({...p,at,y:heightAt(p.x,p.z)+.018,type,scale:.48+hash(key+2)*.65+(1-spread)*.16,rotation:hash(key+1)*Math.PI*2});
+   }
+   centre+=radius*1.6+2.5+hash(seed+10)*6;
   }
  }
  return sites;
@@ -97,7 +103,7 @@ function flowerGeometry(type:number){
  }
  const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.setAttribute('color',new T.Float32BufferAttribute(colors,3));geometry.computeVertexNormals();return geometry;
 }
-export function buildCutFlowers(scene:T.Scene,world:DetroitWorld){
+export function buildCutFlowers(scene:T.Scene,world:SceneryWorld){
  const sites=flowerSites((x,z)=>world.solids.some(s=>Math.hypot(s.x-x,s.z-z)<Math.hypot(s.hx,s.hz)+.3)),groups:{group:T.Group;at:number}[]=[],mat=new T.MeshStandardMaterial({vertexColors:true,side:T.DoubleSide,roughness:.94}),geometries=[0,1,2,3].map(flowerGeometry),dummy=new T.Object3D();
  for(let start=300;start<2550;start+=50){const group=new T.Group();group.name='Dequindre flower drifts '+start;
   for(let type=0;type<4;type++){const list=sites.filter(p=>p.at>=start&&p.at<start+50&&p.type===type);if(!list.length)continue;const m=new T.InstancedMesh(geometries[type],mat,list.length);m.receiveShadow=true;for(const [i,p]of list.entries()){dummy.position.set(p.x,p.y,p.z);dummy.rotation.set(0,p.rotation,0);dummy.scale.setScalar(p.scale);dummy.updateMatrix();m.setMatrixAt(i,dummy.matrix);}m.computeBoundingSphere();group.add(m);}

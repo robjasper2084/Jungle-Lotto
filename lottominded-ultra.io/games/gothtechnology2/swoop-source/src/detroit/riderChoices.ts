@@ -1,4 +1,6 @@
+import {WARDROBE_CHOICES} from '../../../ride-core/src/riderWardrobe.ts';
 export const RIDER_CHOICES=[
+  ...WARDROBE_CHOICES,
   {id:'DS_Man_01',label:'Original suited man'},
   {id:'DS_Hoodie_Woman_01',label:'Woman · Detroit hoodie'},
   {id:'DS_Mascot_Suit_01',label:'Mascot · Pinstripe suit'},

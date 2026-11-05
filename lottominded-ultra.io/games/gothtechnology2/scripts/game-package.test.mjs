@@ -30,6 +30,13 @@ test('missing late asset or license fails preflight without changing an existing
   for(const dependency of ['exports/atwater/mack.glb','LICENSE.txt'])await assert.rejects(readableTree(resolve(root,dependency)),{code:'ENOENT'});
   assert.equal(await readFile(resolve(out,'game.js'),'utf8'),'old');
 });
+test('present entries cannot hide a missing transitive game module',async t=>{
+ const root=await fixture(t);await packageAt(root,'index.html','import "./shared.js";');
+ await writeFile(resolve(root,'shared.js'),'export {ride} from "./ride.js";');
+ await assert.rejects(validatePackage(root,'index.html'),{code:'ENOENT'});
+ await writeFile(resolve(root,'ride.js'),'export const ride=1;');
+ await validatePackage(root,'index.html');
+});
 test('nested entry validation rejects missing bundles; successful paired build retains both backups',async t=>{
   const root=await fixture(t),out=resolve(root,'bad');await packageAt(out,'elmwood.html','ok');await writeFile(resolve(out,'elmwood.html'),'<script src="./missing.js"></script>');
   await assert.rejects(validatePackage(out,'elmwood.html'),{code:'ENOENT'});

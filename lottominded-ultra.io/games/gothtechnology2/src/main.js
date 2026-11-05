@@ -2,6 +2,7 @@ import { FIGHTERS } from "./config/assets.js?v=galaxy-a16-performance-v1";
 import { COMMAND_LISTS, GAME_MODES, ROSTER_IDS } from "./config/content.js?v=galaxy-a16-performance-v1";
 import { GothTechnologyGame } from "./scenes/game.js?v=galaxy-a16-performance-v1";
 import { PHASE } from "./config/constants.js?v=galaxy-a16-performance-v1";
+import { createTouchDeck } from "./ui/touch-deck.js?v=galaxy-a16-performance-v1";
 
 const syncViewportHeight = () => {
   document.documentElement.style.setProperty("--app-height", `${window.innerHeight}px`);
@@ -74,6 +75,56 @@ const canvas = document.getElementById("game");
 if (window.__gothTechnologyGame?.stop) window.__gothTechnologyGame.stop();
 const game = new GothTechnologyGame(canvas);
 window.__gothTechnologyGame = game;
+const touchActions = [
+  ['lightPunch', 'Light punch', 'PUNCH'], ['heavyPunch', 'Heavy punch', 'HEAVY'],
+  ['lightKick', 'Light kick', 'KICK'], ['heavyKick', 'Heavy kick', 'H.KICK'],
+  ['special', 'Special move', 'SPECIAL'], ['super', 'Super move', 'SUPER'],
+  ['throw', 'Throw', 'THROW'], ['dash', 'Dash', 'DASH'], ['up', 'Jump', 'JUMP'],
+  ['down', 'Crouch', 'CROUCH'], ['assist1', 'Assist 1', 'ALLY 1'], ['assist2', 'Assist 2', 'ALLY 2'],
+  ['taunt', 'Taunt', 'TAUNT'], ['modifier', 'Modifier', 'MOD']
+].map(([id, label, short]) => ({ id: `p1.${id}`, label, short,
+  icon: ({ lightPunch: 'HandFist', heavyPunch: 'HandFist', lightKick: 'Footprints', heavyKick: 'Footprints', special: 'Zap', super: 'Flame', throw: 'Hand', dash: 'ChevronsRight', up: 'ArrowUp', down: 'ArrowDown', assist1: 'Users', assist2: 'Users', modifier: 'Shield' })[id] }));
+const combatControls = [
+  { id: 'move', label: 'MOVE', stick: true, x: 18, landscapeX: 9, y: 73, landscapeY: 72, size: 112 },
+  ...['lightPunch', 'heavyPunch', 'special', 'lightKick', 'heavyKick', 'super'].map((action, i) => ({
+    id: `attack-${i + 1}`, label: `Button ${i + 1}`, action: `p1.${action}`,
+    x: 65 + (i % 2) * 23, landscapeX: 83 + (i % 2) * 13, y: 30 + Math.floor(i / 2) * 27, size: i === 0 ? 60 : 52
+  })),
+  { id: 'jump', label: 'Jump button', action: 'p1.up', x: 47, landscapeX: 73, y: 27, landscapeY: 46, size: 48 },
+  { id: 'crouch', label: 'Crouch button', action: 'p1.down', x: 47, landscapeX: 73, y: 52, landscapeY: 73, size: 48 },
+  { id: 'dash', label: 'Dash button', action: 'p1.dash', x: 18, landscapeX: 17, y: 25, size: 48 }
+];
+const combatPresets = [
+  { id: 'thumbs', label: '2 fingers', controls: combatControls },
+  { id: 'claw3', label: '3 fingers', controls: combatControls.map(control => control.id === 'attack-1' ? { ...control, x: 18, y: 32, landscapeX: 20, landscapeY: 16 } : control.id === 'dash' ? { ...control, x: 65, y: 30, landscapeX: 83, landscapeY: 30 } : control) },
+  { id: 'claw4', label: '4 fingers', controls: combatControls.map(control => control.id === 'attack-1' ? { ...control, x: 18, y: 32, landscapeX: 20, landscapeY: 16 } : control.id === 'attack-2' ? { ...control, landscapeX: 69, landscapeY: 14 } : control.id === 'dash' ? { ...control, x: 65, y: 30, landscapeX: 83, landscapeY: 30 } : control) }
+];
+const stickHeld = new Set();
+const actionHeld = new Set();
+let touchEditPhase = null;
+const touchDeck = createTouchDeck({
+  host: document.body, storageKey: 'gothtechnology.touch.layout.v2', title: 'GothTechnology touch controls',
+  actions: touchActions, diagonal: true, style: 'battle', presets: combatPresets,
+  onMenu: () => { game.input.clear(); game.phase = game.phase === PHASE.PAUSE ? PHASE.FIGHT : PHASE.PAUSE; touchDeck.setActive(game.phase === PHASE.FIGHT); game.render(); game.announce(game.phase === PHASE.PAUSE ? 'Game paused' : 'Fight resumed'); },
+  controls: combatControls,
+  onPress: action => { actionHeld.add(action); game.input.press(action); },
+  onRelease: action => { actionHeld.delete(action); if (!stickHeld.has(action)) game.input.release(action); },
+  onMove: (_, directions) => {
+    const next = new Set(directions.map(direction => `p1.${direction}`));
+    for (const action of stickHeld) if (!next.has(action) && !actionHeld.has(action)) game.input.release(action);
+    for (const action of next) if (!stickHeld.has(action)) game.input.press(action);
+    stickHeld.clear(); next.forEach(action => stickHeld.add(action));
+  },
+  onEdit: editing => {
+    game.input.suspended = editing;
+    game.input.clear(); stickHeld.clear(); actionHeld.clear();
+    if (editing) { touchEditPhase = game.phase; if (game.phase === PHASE.FIGHT) game.phase = PHASE.PAUSE; }
+    else if (touchEditPhase === PHASE.FIGHT && game.phase === PHASE.PAUSE) game.phase = PHASE.FIGHT;
+    touchDeck.setActive(game.phase === PHASE.FIGHT);
+    game.lastAccessibleState = '';
+  }
+});
+document.getElementById('editTouchLayout')?.addEventListener('click', () => touchDeck.open());
 const gameStatus = document.getElementById("gameStatus");
 const accessibleActions = document.getElementById("accessibleActions");
 const commercialBreak = document.getElementById("commercialBreak");
@@ -485,6 +536,7 @@ const actionButton = (label, handler) => {
 const renderAccessibleActions = (state) => {
   if (!accessibleActions) return;
   document.body.dataset.phase = state.phase;
+  touchDeck.setActive(state.phase === PHASE.FIGHT);
   document.body.dataset.training = String(Boolean(state.training));
   document.body.dataset.highContrast = String(Boolean(game.settings.highContrast));
   document.body.dataset.touchLayout = game.settings.touchLayout || "classic";
@@ -678,6 +730,7 @@ resetBindings?.addEventListener("click", () => {
   setBindingStatus("Keyboard bindings reset to defaults");
 });
 resetTouchPositions?.addEventListener("click", () => {
+  touchDeck.reset();
   touchPositions = {};
   try {
     window.localStorage?.removeItem(TOUCH_POSITIONS_KEY);

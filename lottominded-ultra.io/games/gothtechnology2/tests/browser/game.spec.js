@@ -300,6 +300,36 @@ test("game grid selects and launches 2084 Static WAV", async ({ page }) => {
   await expect(page).toHaveTitle(/2084 Static Wave/i);
 });
 
+test("mobile portrait exposes readable title actions below the canvas", async ({ page }, testInfo) => {
+  test.skip(!testInfo.project.name.startsWith("mobile-"), "Portrait action deck is a mobile layout");
+  await page.goto(gameUrl);
+  await expect.poll(() => phase(page)).toBe("title");
+
+  const actions = page.locator("#accessibleActions");
+  await expect(actions).toBeVisible();
+  const metrics = await actions.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    const buttons = [...element.querySelectorAll("button")].map((button) => {
+      const buttonRect = button.getBoundingClientRect();
+      return { height: buttonRect.height, fontSize: parseFloat(getComputedStyle(button).fontSize) };
+    });
+    return {
+      width: rect.width,
+      bottom: rect.bottom,
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
+      overflow: document.documentElement.scrollWidth - window.innerWidth,
+      buttons
+    };
+  });
+  expect(metrics.width).toBeGreaterThanOrEqual(metrics.viewportWidth - 32);
+  expect(metrics.bottom).toBeLessThanOrEqual(metrics.viewportHeight + 2);
+  expect(metrics.overflow).toBeLessThanOrEqual(1);
+  expect(metrics.buttons.length).toBeGreaterThanOrEqual(6);
+  expect(Math.min(...metrics.buttons.map(({ height }) => height))).toBeGreaterThanOrEqual(44);
+  expect(Math.min(...metrics.buttons.map(({ fontSize }) => fontSize))).toBeGreaterThanOrEqual(13);
+});
+
 test("keyboard movement remaps, swaps conflicts, and persists", async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== "desktop-chromium", "Keyboard persistence needs one desktop browser pass");
   await page.goto(gameUrl);
@@ -1534,150 +1564,61 @@ test("real attacks connect and training exposes expanded frame data", async ({ p
   expect(hitResult.readout).toHaveProperty("comboScale");
 });
 
-test("mobile portrait keeps compact primary controls adjacent and collapses match tools", async ({ page }, testInfo) => {
+test("mobile portrait controls are reachable and configurable", async ({ page }, testInfo) => {
   test.setTimeout(120_000);
   test.skip(!testInfo.project.name.includes("mobile"), "Mobile layout check");
   await page.goto(gameUrl);
-  await expect.poll(() => phase(page)).toBe("title");
-  await expect(page.locator("#mobileControls")).toBeHidden();
   await enterTrainingFight(page);
-  await expect(page.locator("#mobileControls")).toBeVisible();
-  const layout = await page.evaluate(() => {
-    const canvas = document.getElementById("game").getBoundingClientRect();
-    const controls = document.getElementById("mobileControls").getBoundingClientRect();
-    return {
-      canvasWidth: canvas.width,
-      canvasHeight: canvas.height,
-      canvasTop: canvas.top,
-      gap: controls.top - canvas.bottom,
-      primaryButtons: document.querySelectorAll("#mobileControls .pad .touch:not(.blank), #mobileControls .buttons .touch").length,
-      toolsHidden: document.getElementById("mobileUtilityActions").hidden,
-      toolsExpanded: document.getElementById("mobileUtilityToggle").getAttribute("aria-expanded"),
-      controlsBottom: controls.bottom,
-      viewportHeight: innerHeight,
-      topSpace: canvas.top,
-      bottomSpace: innerHeight - controls.bottom,
-      controlsVisible: getComputedStyle(document.getElementById("mobileControls")).display !== "none"
-    };
-  });
-  expect(layout.controlsVisible).toBe(true);
-  const viewportWidth = page.viewportSize()?.width ?? 412;
-  expect(layout.canvasWidth).toBeGreaterThanOrEqual(Math.min(360, viewportWidth - 8));
-  expect(layout.canvasHeight).toBeGreaterThan(190);
-  expect(Math.abs(layout.topSpace - layout.bottomSpace)).toBeLessThan(100);
-  expect(layout.gap).toBeGreaterThanOrEqual(0);
-  expect(layout.gap).toBeLessThan(32);
-  expect(layout.primaryButtons).toBe(10);
-  expect(layout.toolsHidden).toBe(true);
-  expect(layout.toolsExpanded).toBe("false");
-  expect(layout.controlsBottom).toBeLessThanOrEqual(layout.viewportHeight + 2);
-  if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath("mobile-title.png") });
-  await page.getByRole("button", { name: "Open match tools" }).click();
-  await expect(page.locator("#mobileUtilityActions")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Open match tools" })).toHaveAttribute("aria-expanded", "true");
+  await expect(page.locator(".touch-deck")).toBeVisible();
+  await expect(page.locator(".touch-deck .td-action")).toHaveCount(9);
+  await expect.poll(() => page.evaluate(() => [...document.querySelectorAll(".touch-deck .td-control")].every(node => {
+    const r = node.getBoundingClientRect();
+    return r.width >= 48 && r.height >= 48 && r.left >= 0 && r.right <= innerWidth && r.bottom <= innerHeight;
+  }))).toBe(true);
+  await page.getByRole("button", { name: "Customize touch controls", exact: true }).click();
+  await expect(page.locator(".td-editor")).toBeVisible();
+  await page.getByLabel("Selected control", { exact: true }).selectOption("1");
+  await page.getByLabel("Assigned action", { exact: true }).selectOption("p1.throw");
+  await page.getByRole("button", { name: "Save layout", exact: true }).click();
+  await expect(page.locator(".touch-deck .td-action").first()).toHaveAttribute("aria-label", "Throw");
+  await expect.poll(() => phase(page)).toBe("fight");
 });
 
-test("mobile landscape keeps primary controls in side rails", async ({ page }, testInfo) => {
+test("mobile landscape controls leave the combat view clear", async ({ page }, testInfo) => {
   test.setTimeout(120_000);
   test.skip(!testInfo.project.name.includes("mobile"), "Mobile layout check");
   await page.setViewportSize({ width: 915, height: 412 });
   await page.goto(gameUrl);
-  await expect.poll(() => phase(page)).toBe("title");
-  await expect(page.locator("#mobileControls")).toBeHidden();
   await enterTrainingFight(page);
-  await expect(page.locator("#mobileControls")).toBeVisible();
   await expect.poll(() => page.evaluate(() => {
-    const canvas = document.getElementById("game").getBoundingClientRect();
-    const pad = document.querySelector("#mobileControls .pad").getBoundingClientRect();
-    const actions = document.querySelector("#mobileControls .buttons").getBoundingClientRect();
-    return Math.min(canvas.left - pad.right, actions.left - canvas.right);
-  })).toBeGreaterThanOrEqual(0);
-  const layout = await page.evaluate(() => {
-    const canvas = document.getElementById("game").getBoundingClientRect();
-    const controls = document.getElementById("mobileControls").getBoundingClientRect();
-    const pad = document.querySelector("#mobileControls .pad").getBoundingClientRect();
-    const actions = document.querySelector("#mobileControls .buttons").getBoundingClientRect();
-    const buttons = [...document.querySelectorAll("#mobileControls .pad .touch:not(.blank), #mobileControls .buttons .touch")].map((button) => button.getBoundingClientRect());
-    return {
-      gap: controls.top - canvas.bottom,
-      minButtonWidth: Math.min(...buttons.map((button) => button.width)),
-      minButtonHeight: Math.min(...buttons.map((button) => button.height)),
-      controlsBottom: controls.bottom,
-      viewportHeight: innerHeight,
-      canvasWidth: canvas.width,
-      canvasHeight: canvas.height,
-      leftGap: canvas.left - pad.right,
-      rightGap: actions.left - canvas.right
-    };
-  });
-  expect(layout.canvasWidth).toBeGreaterThan(580);
-  expect(layout.canvasHeight).toBeGreaterThan(320);
-  expect(layout.leftGap).toBeGreaterThanOrEqual(0);
-  expect(layout.rightGap).toBeGreaterThanOrEqual(0);
-  expect(layout.minButtonWidth).toBeGreaterThanOrEqual(44);
-  expect(layout.minButtonHeight).toBeGreaterThanOrEqual(44);
-  expect(layout.controlsBottom).toBeLessThanOrEqual(layout.viewportHeight);
-  if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath("mobile-landscape-title.png") });
+    const canvas = document.querySelector("#game").getBoundingClientRect();
+    const stick = document.querySelector(".td-stick").getBoundingClientRect();
+    const attacks = [...document.querySelectorAll(".td-action")].map(node => node.getBoundingClientRect());
+    const centerLeft = canvas.left + canvas.width * .3;
+    const centerRight = canvas.left + canvas.width * .7;
+    return [stick, ...attacks].every(rect => (rect.right <= centerLeft || rect.left >= centerRight) && rect.bottom <= innerHeight);
+  })).toBe(true);
 });
 
-test("mobile modifier supports simultaneous super input and movable controls", async ({ page }, testInfo) => {
+test("mobile control positions persist and reset after rotation", async ({ page }, testInfo) => {
   test.setTimeout(120_000);
-  test.skip(!testInfo.project.name.includes("mobile"), "Mobile multi-touch check");
+  test.skip(!testInfo.project.name.includes("mobile"), "Mobile layout recovery");
   await page.goto(gameUrl);
   await enterTrainingFight(page);
-  await page.evaluate(() => {
-    const modifier = document.querySelector('[data-touch="p1.modifier"]');
-    const heavyPunch = document.querySelector('[data-touch="p1.heavyPunch"]');
-    modifier.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, pointerId: 41, pointerType: "touch" }));
-    heavyPunch.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, pointerId: 42, pointerType: "touch" }));
-  });
-  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame.fighters[0].currentAttack?.name)).toBe("super");
-  await page.evaluate(() => {
-    for (const [selector, pointerId] of [['[data-touch="p1.modifier"]', 41], ['[data-touch="p1.heavyPunch"]', 42]]) {
-      document.querySelector(selector).dispatchEvent(new PointerEvent("pointerup", { bubbles: true, pointerId, pointerType: "touch" }));
-    }
-  });
-
-  const before = await page.locator("#padZone").evaluate((zone) => getComputedStyle(zone).transform);
-  const handle = page.locator("#movePad");
-  const box = await handle.boundingBox();
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-  await page.mouse.down();
-  await page.mouse.move(box.x + box.width / 2 + 32, box.y + box.height / 2 + 12);
-  await page.mouse.up();
-  const after = await page.locator("#padZone").evaluate((zone) => getComputedStyle(zone).transform);
-  expect(after).not.toBe(before);
-  expect(await page.evaluate(() => localStorage.getItem("gothtechnology.touch.positions.v1"))).toContain("padZone");
-});
-
-test("mobile control positions recover after reload, rotation, and reset", async ({ page }, testInfo) => {
-  test.setTimeout(120_000);
-  test.skip(!testInfo.project.name.includes("mobile"), "Mobile layout recovery check");
-  await page.goto(gameUrl);
-  await page.evaluate(() => localStorage.setItem("gothtechnology.touch.positions.v1", JSON.stringify({
-    padZone: { x: -999, y: 999 },
-    combatZone: { x: 999, y: -999 }
-  })));
+  await page.getByRole("button", { name: "Customize touch controls", exact: true }).click();
+  await page.getByRole("button", { name: "Left handed", exact: true }).click();
+  await page.getByRole("button", { name: "Save layout", exact: true }).click();
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("gothtechnology.touch.layout.v2")).portrait);
+  expect(saved[0].x).toBe(82);
   await page.reload();
   await enterTrainingFight(page);
-
-  const expectZonesInsideViewport = async () => {
-    await expect.poll(() => page.evaluate(() => [...document.querySelectorAll("#padZone, #combatZone")].every((zone) => {
-      const rect = zone.getBoundingClientRect();
-      return rect.left >= 7 && rect.top >= 7 && rect.right <= innerWidth - 7 && rect.bottom <= innerHeight - 7;
-    }))).toBe(true);
-  };
-
-  await expectZonesInsideViewport();
+  await expect.poll(() => page.locator(".td-stick").evaluate(node => node.getBoundingClientRect().left)).toBeGreaterThan(200);
   await page.setViewportSize({ width: 915, height: 412 });
-  await expectZonesInsideViewport();
-  await page.evaluate(() => document.getElementById("resetTouchPositions").click());
-  await expect.poll(() => page.evaluate(() => localStorage.getItem("gothtechnology.touch.positions.v1"))).toBeNull();
-  const offsets = await page.evaluate(() => ["padZone", "combatZone"].map((id) => {
-    const style = document.getElementById(id).style;
-    return [style.getPropertyValue("--zone-x"), style.getPropertyValue("--zone-y")];
-  }));
-  expect(offsets).toEqual([["0px", "0px"], ["0px", "0px"]]);
+  await expect.poll(() => page.locator(".td-stick").evaluate(node => node.getBoundingClientRect().left)).toBeLessThan(100);
+  await page.getByRole("button", { name: "Customize touch controls", exact: true }).click();
+  await page.getByRole("button", { name: "Reset", exact: true }).click();
+  await page.getByRole("button", { name: "Save layout", exact: true }).click();
+  await expect.poll(() => phase(page)).toBe("fight");
 });
 
 test("round end exposes a visible continuation control", async ({ page }) => {

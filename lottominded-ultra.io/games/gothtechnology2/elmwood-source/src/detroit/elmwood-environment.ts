@@ -4,7 +4,7 @@ import {loadElmwoodGoose} from './elmwood-goose.ts';
 
 
 
-import {Sky} from 'three/addons/objects/Sky.js';
+import {NaturalSky} from '../../../ride-core/src/naturalSky.ts';
 
 
 
@@ -40,7 +40,7 @@ function stoneMaterial(color:string,polished=false){
 
 
 
- const m=new T.MeshStandardMaterial({color,roughness:polished?.23:.87,metalness:polished?.12:0});
+  const m=new T.MeshStandardMaterial({color,roughness:polished?.23:.87,metalness:0});
 
 
 
@@ -52,7 +52,12 @@ function stoneMaterial(color:string,polished=false){
 
 
 
-  s.vertexShader=s.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nstoneP=(modelMatrix*vec4(position,1.)).xyz;');
+  s.vertexShader=s.vertexShader.replace('#include <project_vertex>',`#include <project_vertex>
+   vec4 stoneWorld=vec4(transformed,1.);
+   #ifdef USE_INSTANCING
+   stoneWorld=instanceMatrix*stoneWorld;
+   #endif
+   stoneP=(modelMatrix*stoneWorld).xyz;`);
 
 
 
@@ -64,11 +69,15 @@ function stoneMaterial(color:string,polished=false){
 
 
 
-   float grit=grain(stoneP*170.);float mottling=grain(stoneP*6.);diffuseColor.rgb*=.84+.26*grit+.10*mottling;`);
+   // Average subpixel grit instead of flashing between unrelated cells as the
+   // camera moves. Coarser mottling remains visible at normal riding distance.
+   float gritFootprint=max(length(dFdx(stoneP)),length(dFdy(stoneP)))*170.;
+   float grit=mix(grain(stoneP*170.),.5,smoothstep(.4,1.4,gritFootprint));
+   float mottling=grain(stoneP*6.);diffuseColor.rgb*=.84+.26*grit+.10*mottling;`);
 
 
 
- };m.customProgramCacheKey=()=> 'elmwood-mineral-grain';return m;
+  };m.customProgramCacheKey=()=> 'elmwood-mineral-grain-world-filtered-v2';return m;
 
 
 
@@ -108,25 +117,9 @@ export function makeElmwoodEnvironment(scene:T.Scene,world:T.Group,foundation:T.
 
 
 
- const sky=new Sky();sky.scale.setScalar(2200);scene.add(sky);const skyU=sky.material.uniforms;skyU.turbidity.value=3;skyU.rayleigh.value=1.55;skyU.mieCoefficient.value=.006;skyU.mieDirectionalG.value=.82;
-
-
-
- const clouds=new T.Mesh(new T.SphereGeometry(1700,24,12),new T.ShaderMaterial({side:T.BackSide,transparent:true,depthWrite:false,uniforms:{sunHeight:{value:.7},cloudCover:{value:.16},cloudTime:{value:0},rain:{value:0}},vertexShader:'varying vec3 d;void main(){d=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',fragmentShader:`varying vec3 d;uniform float sunHeight,cloudCover,cloudTime,rain;
-
-
-
- float n(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(n(i),n(i+vec2(1,0)),f.x),mix(n(i+vec2(0,1)),n(i+1.),f.x),f.y);}
-
-
-
- void main(){vec3 v=normalize(d);vec2 p=v.xz/max(.15,v.y)*3.+vec2(cloudTime*.006,cloudTime*.002);float q=noise(p)*.65+noise(p*2.1)*.25+noise(p*4.3)*.1;float a=smoothstep(.69-cloudCover*.53,.87-cloudCover*.49,q)*smoothstep(.03,.2,v.y)*(.42+cloudCover*.56);gl_FragColor=vec4(mix(vec3(.92,.68,.46),vec3(.97-rain*.48),smoothstep(.02,.5,sunHeight))*mix(.10,1.,smoothstep(-.08,.1,sunHeight)),a);}` }));clouds.renderOrder=1;scene.add(clouds);
-
-
-
-
-
-
+ // Elmwood's brighter daylight exposure needs less sky radiance than the
+ // downtown grade; otherwise ACES compresses the blue atmosphere to white.
+ const sky=new NaturalSky({radianceScale:.12});scene.add(sky);
 
  // Existing broad horizontal stripes came from stretched stone UVs. Replace that material with fine mineral grain.
 
@@ -156,6 +149,15 @@ export function makeElmwoodEnvironment(scene:T.Scene,world:T.Group,foundation:T.
 
 
 
+ // Small warm gate lanterns feed the existing fixed four-light budget.
+ // Fixtures are decorative; the mapped entrance and collision stay unchanged.
+ const lanternMaterial=new T.MeshStandardMaterial({color:'#fff0d1',emissive:'#ffd29a',emissiveIntensity:0,roughness:.45});
+ const gateLights:T.PointLight[]=[];
+ for(const side of [-1,1]){const px=side*(ELMWOOD_GATE.opening/2+.4);
+  box(gate,iron,.28,.42,.22,px,2.15,.48);
+  box(gate,lanternMaterial,.20,.30,.025,px,2.15,.60);
+  const light=new T.PointLight('#ffd6a1',0,12,2);light.position.set(px,2.15,.75);light.castShadow=false;gate.add(light);gateLights.push(light);
+ }
  for(const side of [-1,1]){const px=side*(ELMWOOD_GATE.opening/2+.4);box(gate,limestone,.8,2.8,.85,px,1.4);box(gate,limestone,1,.18,1,px,2.86);mesh(gate,new T.ConeGeometry(.35,.38,4),limestone,px,3.14).rotation.y=Math.PI/4;
 
 
@@ -261,7 +263,8 @@ export function makeElmwoodEnvironment(scene:T.Scene,world:T.Group,foundation:T.
 
 
 
- const rippleMaterial=new T.MeshBasicMaterial({color:'#c7e2dd',transparent:true,opacity:.16,depthWrite:false,side:T.DoubleSide});const ripples=Array.from({length:5},()=>{const r=mesh(fountain,new T.RingGeometry(.97,1,48),rippleMaterial.clone());r.rotation.x=-Math.PI/2;r.position.y=.045;r.castShadow=false;return r;});
+ // Fountain disturbances live in the water normal/displacement shader. Floating
+ // unlit ring meshes looked like white hoops and added five transparent draws.
 
 
 
@@ -374,15 +377,18 @@ export function makeElmwoodEnvironment(scene:T.Scene,world:T.Group,foundation:T.
 
 
 
- return {root,young,fountain,gate,birds,sky,update(dt:number,rider:WildlifeRider,sunDirection:T.Vector3,paused=false,weather?:{cloud:{value:number};time:{value:number};rain:{value:number};waterTime?:{value:number};waterDetail?:{value:number}},dogs:readonly WildlifeDog[]=[]){
+ return {root,young,fountain,gate,birds,sky,update(dt:number,rider:WildlifeRider,sunDirection:T.Vector3,paused=false,weather?:{cloud:{value:number};time:{value:number};rain:{value:number};waterTime?:{value:number};waterDetail?:{value:number};airReduced?:{value:boolean}},dogs:readonly WildlifeDog[]=[]){
 
 
 
-  sky.visible=world.visible;clouds.visible=world.visible;skyU.sunPosition.value.copy(sunDirection).normalize();(clouds.material as T.ShaderMaterial).uniforms.sunHeight.value=sunDirection.y/sunDirection.length();
+  const nightAmount=1-T.MathUtils.smoothstep(sunDirection.y/Math.max(.0001,sunDirection.length()),-.02,.16);
+  lanternMaterial.emissiveIntensity=nightAmount*1.15;
+  for(const light of gateLights)light.intensity=nightAmount*24;
+  sky.visible=world.visible;sky.update(dt,sunDirection,weather?.cloud.value??.16,weather?.rain.value??0,(weather?.waterDetail?.value??1)<.5,weather?.airReduced?.value??false,paused,scene.fog?.color);
 
 
 
-  if(weather){const u=(clouds.material as T.ShaderMaterial).uniforms;u.cloudCover.value=weather.cloud.value;u.cloudTime.value=weather.time.value;u.rain.value=weather.rain.value;skyU.turbidity.value=2.5+weather.cloud.value*7;skyU.rayleigh.value=1.6-weather.cloud.value*.5;}
+
 
 
 
@@ -395,7 +401,6 @@ export function makeElmwoodEnvironment(scene:T.Scene,world:T.Group,foundation:T.
 
 
 
-  ripples.forEach((r,i)=>{const phase=(fountainTime*.22+i/5)%1;r.scale.setScalar(.8+phase*4.5);(r.material as T.MeshBasicMaterial).opacity=Math.sin(phase*Math.PI)*.09;});
 
 
 

@@ -14,6 +14,12 @@ export function polishSection(groupAt:(x:number,z:number)=>T.Group,asphalt:T.Mes
  };
  for(let d=1758;d<1851;d+=2)for(const side of [-1,1])put(d,side*(cutWidth(d)/2+.11),.09+hash(d)*.05,2.01,edge,.024);
  for(const [d,u,w,l]of [[1768,-1,1.05,1.7],[1784,1.2,.85,2.2],[1817,-.8,.55,1.2],[1837,.95,.9,1.4]])put(d,u,w,l,repair,.048);
+ // Quiet pavement repairs and drainage at the riverfront approach, Lafayette,
+ // and the market. Sample the terrain; keep all detail below the tire envelope.
+ for(const start of [60,530,1050,1480]){
+  for(let i=0;i<3;i++)put(start+i*17,(i%2?1:-1)*1.05,.42+hash(start+i)*.5,1.1+hash(start+i*3),repair,.026);
+  for(const side of [-1,1]){const u=side*(cutWidth(start)/2-.3);put(start,u,.38,.66,steel,.033);for(let i=0;i<6;i++)put(start-.24+i*.09,u,.30,.023,edge,.035);}
+ }
  for(const d of [1763,1846])for(const side of [-1,1]){
   const u=side*(cutWidth(d)/2-.28);put(d,u,.4,.7,steel,.053);
   for(let i=0;i<7;i++)put(d-.27+i*.09,u,.32,.024,edge,.055);

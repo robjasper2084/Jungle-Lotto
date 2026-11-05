@@ -22,29 +22,39 @@ export function elmwoodSun(hour:number,date:string){
 }
 
 export function makeElmwoodWeather(scene:T.Scene,camera:T.Camera,sun:T.DirectionalLight,hemi:T.HemisphereLight,renderer:T.WebGLRenderer){
- const uniforms={time:{value:0},waterTime:{value:0},waterDetail:{value:1},cloud:{value:WEATHER.clear.cloud as number},rain:{value:0},wet:{value:0},wind:{value:.4}};
+ const uniforms={airReduced:{value:false},time:{value:0},waterTime:{value:0},waterDetail:{value:1},cloud:{value:WEATHER.clear.cloud as number},rain:{value:0},wet:{value:0},wind:{value:.4}};
  let mode:ElmwoodWeather='clear';const state={...WEATHER.clear} as Record<keyof typeof WEATHER.clear,number>;
  const count=900,a=new Float32Array(count*6),geo=new T.BufferGeometry();geo.setAttribute('position',new T.BufferAttribute(a,3));
  const rain=new T.LineSegments(geo,new T.LineBasicMaterial({color:'#bbd2d9',transparent:true,opacity:.28,depthWrite:false}));rain.frustumCulled=false;rain.name='Camera-local rain';scene.add(rain);
- const fog=new T.FogExp2('#bcc9c9',.00065),materials=new Set<T.MeshStandardMaterial>();
+ const fog=new T.FogExp2('#93b0c1',WEATHER.clear.fog),materials=new Set<T.MeshStandardMaterial>();
  const scratch=new T.Color(),direction=new T.Vector3();let elapsed=0,wetness=0;
  function attach(m:T.Material){
   if(!(m instanceof T.MeshStandardMaterial)||materials.has(m)||/water|leaf|glass/i.test(m.name))return;
   materials.add(m);const original=m.onBeforeCompile.bind(m),key=m.customProgramCacheKey(),lawn=/grass|foliage|shrub|stem|petal/i.test(m.name);
+  // The supplied grass ORM averages only .26 roughness. Its sky reflection
+  // made dry lawns look like blue-white frost, especially at grazing angles.
+  if(/grass/i.test(m.name))m.normalScale.multiplyScalar(.45);
   m.onBeforeCompile=(s,r)=>{original(s,r);s.uniforms.elmwoodWet=uniforms.wet;s.fragmentShader='uniform float elmwoodWet;\n'+s.fragmentShader;
-   s.fragmentShader=s.fragmentShader.replace('#include <roughnessmap_fragment>',`#include <roughnessmap_fragment>\nroughnessFactor=mix(roughnessFactor,max(${lawn?'.72':'.16'},roughnessFactor*.38),elmwoodWet);`);
-   s.fragmentShader=s.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\ndiffuseColor.rgb*=1.-elmwoodWet*.20;');};m.customProgramCacheKey=()=>key+'-weather-wet-v1';m.needsUpdate=true;
+   s.fragmentShader=s.fragmentShader.replace('#include <roughnessmap_fragment>',`#include <roughnessmap_fragment>\n${lawn?'roughnessFactor=max(.88,roughnessFactor);':''}\nroughnessFactor=mix(roughnessFactor,max(${lawn?'.72':'.16'},roughnessFactor*.38),elmwoodWet);`);
+   s.fragmentShader=s.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\ndiffuseColor.rgb*=1.-elmwoodWet*.20;');};
+  // Grass and pavement have matching texture defines but different wet/dry
+  // roughness. They must not reuse whichever shader happened to compile first.
+  m.customProgramCacheKey=()=>key+'-weather-wet-v3-'+(lawn?'lawn':'hard');m.needsUpdate=true;
  }
  return {uniforms,attach,set(value:ElmwoodWeather){if(value in WEATHER)mode=value;},get mode(){return mode;},
  update(dt:number,solar:T.Vector3,visible:boolean,paused=false,waterOptions={reducedMotion:false,detail:1}){
   if(!paused){elapsed+=dt;const blend=1-Math.exp(-dt*.7),target=WEATHER[mode];for(const k of Object.keys(state) as (keyof typeof state)[])state[k]+=(target[k as keyof typeof target]-state[k])*blend;wetness+=(state.wet-wetness)*(1-Math.exp(-dt*(state.wet>wetness?.15:.035)));}
-  if(!paused&&!waterOptions.reducedMotion)uniforms.waterTime.value+=dt;uniforms.waterDetail.value=waterOptions.detail;
+  if(!paused&&!waterOptions.reducedMotion)uniforms.waterTime.value+=dt;uniforms.waterDetail.value=waterOptions.detail;uniforms.airReduced.value=waterOptions.reducedMotion;
   uniforms.time.value=elapsed;uniforms.cloud.value=state.cloud;uniforms.rain.value=state.rain;uniforms.wet.value=wetness;uniforms.wind.value=state.wind;
   const day=T.MathUtils.smoothstep(solar.y,-.10,.20),gold=1-T.MathUtils.smoothstep(solar.y,.015,.40);
-  sun.intensity=Math.max(0,solar.y)*4.1*state.sun;sun.color.set('#fff4df').lerp(scratch.set('#ffa267'),gold*.77);
-  hemi.intensity=(.09+day*state.ambient);hemi.color.set('#bacde1').lerp(scratch.set('#d4b9a0'),gold*.3);hemi.groundColor.set('#414738');
-  renderer.toneMappingExposure=.72+day*.24;scene.environmentIntensity=.09+day*(.60-state.cloud*.21);
-  fog.color.set('#b6c6cd').lerp(scratch.set('#cbb497'),gold*.43).lerp(scratch.set('#222b3a'),1-day);fog.density=state.fog;
+  // Balance the baked skylight with the sun and hemisphere instead of adding
+  // three full-strength fills. Keep one weather-owned exposure at every hour.
+  sun.intensity=Math.max(0,solar.y)*2.8*state.sun+day*gold*.55*state.sun;sun.color.set('#fff4df').lerp(scratch.set('#ffa267'),gold*.77);
+  hemi.intensity=(.20+day*state.ambient*1.12);hemi.color.set('#c9d4df').lerp(scratch.set('#92bdd5'),gold*.65);hemi.groundColor.set('#606d71');
+  renderer.toneMappingExposure=.70+day*.23;scene.environmentIntensity=.06+day*(.25-state.cloud*.10);
+  // A blue-grey clear-air horizon retains separation from white cloud edges.
+  // Overcast weather still softens the horizon, without lifting all daylight.
+  fog.color.set('#93b0c1').lerp(scratch.set('#acb9c0'),state.cloud).lerp(scratch.set('#c4a17c'),gold*.70).lerp(scratch.set('#222b3a'),1-day);fog.density=state.fog;
   scene.fog=visible?fog:null;rain.visible=visible&&state.rain>.025;
   if(rain.visible&&!paused){
    const x=camera.position.x,y=camera.position.y,z=camera.position.z;camera.getWorldDirection(direction);

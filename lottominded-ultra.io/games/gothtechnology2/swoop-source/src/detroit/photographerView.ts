@@ -3,7 +3,7 @@ import {sampleMocap} from './installedMocap.ts';
 import * as T from 'three';
 import {clone} from 'three/addons/utils/SkeletonUtils.js';
 import type {GLTF} from './compressedGLTFLoader.ts';
-import {solve} from './actors.ts';
+import {solveLimb as solve} from '../../../ride-core/src/limbIK.ts';
 
 export const WALK_CYCLE_METRES=MOCAP_WALK_INFO.cycleMetres;
 export function walkingFoot(phase:number){
@@ -19,12 +19,8 @@ export class ElmwoodWalkerView{
   private legs:{upper:T.Object3D;knee:T.Object3D;foot:T.Object3D;target:T.Vector3;rotation:T.Quaternion;anchor:T.Vector3;stance:boolean}[]=[];
   private arms:{upper:T.Object3D;knee:T.Object3D;foot:T.Object3D;target:T.Vector3;rotation:T.Quaternion}[]=[];
   private movement=0;private idleTime=0;
-  private walkMixer:T.AnimationMixer;private walkDuration=2;
   constructor(asset:GLTF){
     this.model=clone(asset.scene);this.root.add(this.model,this.phone);
-    this.walkMixer=new T.AnimationMixer(this.model);
-    const walk=asset.animations.find(c=>/walk/i.test(c.name));
-    if(walk){this.walkDuration=walk.duration;const upperBody=walk.clone();upperBody.tracks=upperBody.tracks.filter(t=>/Arm|Hand|Shoulder|Spine|neck|Head|head/.test(t.name));this.walkMixer.clipAction(upperBody).play();this.walkMixer.setTime(walk.duration*.25);}
     this.root.updateMatrixWorld(true);
     this.model.traverse(node=>{if((node as T.Bone).isBone)this.bones.push({node,p:node.position.clone(),q:node.quaternion.clone(),s:node.scale.clone()});if((node as T.Mesh).isMesh){node.castShadow=true;node.frustumCulled=false;}});
     for(const side of ['Left','Right']){
@@ -41,9 +37,12 @@ export class ElmwoodWalkerView{
     this.phase=(this.phase+Math.max(0,distance)/WALK_CYCLE_METRES)%1;
     const moving=distance/dt>.025&&!photo;this.movement+=(Number(moving)-this.movement)*(1-Math.exp(-dt*9));this.photoBlend+=(Number(photo)-this.photoBlend)*(1-Math.exp(-dt*4));
     for(const b of this.bones){b.node.position.copy(b.p);b.node.quaternion.copy(b.q);b.node.scale.copy(b.s);}
-    // Use the same authored upper-body motion as Swoop, synchronized to travel.
-    this.walkMixer.setTime(this.phase*this.walkDuration);
-    const hips=this.model.getObjectByName('Hips')!;hips.position.y-=.035*this.movement;hips.position.y+=Math.sin(this.idleTime*1.6)*.003*(1-this.movement);
+    // Pose the torso once, before solving its attached limbs. Do not layer an
+    // absolute imported walk (including bone translations/scales) over this rig.
+    const hips=this.model.getObjectByName('Hips')!;
+    const hipWorld=hips.getWorldPosition(new T.Vector3());hipWorld.y-=.035*this.movement;hipWorld.y+=Math.sin(this.idleTime*1.6)*.003*(1-this.movement);
+    hips.position.copy(hips.parent!.worldToLocal(hipWorld));
+    mocapWalking(this.bones.map(b=>({o:b.node})),this.phase,this.movement*(1-this.photoBlend));
     this.root.updateMatrixWorld(true);const rotation=this.root.getWorldQuaternion(new T.Quaternion()),forward=new T.Vector3(0,0,1).applyQuaternion(rotation);
     this.legs.forEach((leg,i)=>{
       const step=walkingFoot(this.phase+i*.5),local=leg.target.clone();local.z+=step.z*this.movement;local.y+=step.lift*this.movement;
@@ -51,16 +50,34 @@ export class ElmwoodWalkerView{
       if(moving&&step.stance){if(!leg.stance||leg.anchor.distanceTo(wanted)>.35)leg.anchor.copy(wanted);wanted.copy(leg.anchor);}else leg.anchor.copy(wanted);
       leg.stance=moving&&step.stance;solve(leg,wanted,forward.clone(),rotation.clone().multiply(leg.rotation));
     });
+    const shoulders=this.arms.map(a=>this.root.worldToLocal(a.upper.getWorldPosition(new T.Vector3())));
+    const chest=shoulders[0].clone().add(shoulders[1]).multiplyScalar(.5);
+    const head=this.root.worldToLocal(this.model.getObjectByName('Head')!.getWorldPosition(new T.Vector3()));
+    const reach=this.arms.reduce((sum,a)=>sum+a.upper.getWorldPosition(new T.Vector3()).distanceTo(a.knee.getWorldPosition(new T.Vector3()))+a.knee.getWorldPosition(new T.Vector3()).distanceTo(a.foot.getWorldPosition(new T.Vector3())),0)/2;
+    const cameraTarget=new T.Vector3(chest.x,Math.min(head.y-.07,chest.y+reach*.22),chest.z+reach*.64);
+    this.phone.position.copy(cameraTarget);
+    this.phone.rotation.x=(1-this.photoBlend)*-.4;
+    this.phone.visible=this.photoBlend>.05;this.phone.updateWorldMatrix(true,true);
+    const recorded=sampleMocap('walk',this.phase);
     this.arms.forEach((arm,i)=>{
       const shoulder=this.root.worldToLocal(arm.upper.getWorldPosition(new T.Vector3())),length=arm.upper.getWorldPosition(new T.Vector3()).distanceTo(arm.knee.getWorldPosition(new T.Vector3()))+arm.knee.getWorldPosition(new T.Vector3()).distanceTo(arm.foot.getWorldPosition(new T.Vector3()));
-      const recorded=sampleMocap('walk',this.phase),shoulderAngle=recorded[i*4]*this.movement;
+      const shoulderAngle=recorded[i*4]*this.movement;
       const swing=-Math.sin(shoulderAngle)*length*.7;
       const hand=shoulder.clone().add(new T.Vector3(i?-.025:.025,-length*.94,.035-swing));
-      hand.lerp(new T.Vector3(i?-.056:.056,1.41,.34),this.photoBlend);
-      solve(arm,this.root.localToWorld(hand),new T.Vector3(i?-.5:.5,-1,.15).applyQuaternion(rotation),rotation.clone().multiply(arm.rotation));
+      const grip=this.root.worldToLocal(this.phone.localToWorld(new T.Vector3(i?-.056:.056,-.035,-.008)));
+      hand.lerp(grip,this.photoBlend);
+      solve(arm,this.root.localToWorld(hand),new T.Vector3(i?-.5:.5,-1,.15).applyQuaternion(rotation));
+      // In walking, the wrist follows the forearm. At the phone, turn the
+      // fingers upright rather than locking the wrist to its hanging pose.
+      const restDirection=arm.target.clone().sub(shoulders[i]).normalize();
+      const gripRotation=rotation.clone().multiply(new T.Quaternion().setFromUnitVectors(restDirection,new T.Vector3(0,1,.06).normalize())).multiply(arm.rotation);
+      const wrist=arm.foot.getWorldQuaternion(new T.Quaternion()).slerp(gripRotation,this.photoBlend);
+      arm.foot.quaternion.copy(arm.foot.parent!.getWorldQuaternion(new T.Quaternion()).invert().multiply(wrist));
     });
-    mocapWalking(this.bones.map(b=>({o:b.node})),this.phase,this.movement*(1-this.photoBlend));
-    this.phone.visible=this.photoBlend>.05;this.phone.position.set(0,T.MathUtils.lerp(.93,1.45,this.photoBlend),T.MathUtils.lerp(.15,.355,this.photoBlend));this.phone.rotation.x=(1-this.photoBlend)*-.4;
+    // Carry the device with the right hand during raising/lowering as well.
+    // Interpolating both the phone and hand targets doubled the first-frame drop.
+    const rightHand=this.root.worldToLocal(this.arms[1].foot.getWorldPosition(new T.Vector3()));
+    this.phone.position.copy(rightHand).sub(new T.Vector3(-.056,-.035,-.008).applyQuaternion(this.phone.quaternion));
     this.root.updateMatrixWorld(true);
   }
 }

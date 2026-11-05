@@ -13,11 +13,11 @@ export function gaitCadence(speed:number){
   const cycle=DOG_GAITS.reduce((sum,g,i)=>sum+(i?weights[i]*2*g.stride/g.duty:0),0)/moving;
   return speed/cycle;
 }
-export function pawContact(speed:number,phase:number,leg:number){
+export function pawContact(speed:number,phase:number,leg:number,blendWindow=.025){
   const weights=gaitWeights(speed);
   return DOG_GAITS.reduce((sum,g,i)=>{
     if(!i)return sum+weights[i];
     const t=((phase+g.offsets[leg])%1+1)%1;
-    return sum+weights[i]*smooth(t,0,.025)*(1-smooth(t,g.duty-.035,g.duty));
+    return sum+weights[i]*smooth(t,0,blendWindow)*(1-smooth(t,g.duty-blendWindow*1.4,g.duty));
   },0);
 }

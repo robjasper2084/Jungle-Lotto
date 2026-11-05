@@ -14,6 +14,7 @@ export class StudioCapture{
   this.panel.className='studio-capture';this.panel.hidden=true;this.panel.setAttribute('aria-label','Photo and video studio');
   const summary=document.createElement('summary');summary.textContent='Studio cameras + capture';const heading=document.createElement('strong');heading.textContent='GOTHTECH / PRODUCTION';
   this.view.setAttribute('aria-label','Studio camera');for(const [value,label]of [['ride','Ride camera'],['wide','Studio wide'],['stage','Green screen stage'],['edit','Editing + sound desk'],['makeup','Makeup + wardrobe'],['storefront','GothTech storefront'],['store','GothTech showroom'],['galleryfront','Serengeti storefront'],['gallery','Serengeti print shop'],['galleryphotos','Serengeti photo exhibition'],['lottofront','LottoMind storefront'],['pennyfront','Penny Auction storefront'],['cinema','Giant cinema wall'],['stream','Giant live stream wall'],['arcade','Studio arcade cabinets']])this.view.add(new Option(label,value));
+  this.view.add(new Option('Innovation Floor hoodie','innovation'));this.view.add(new Option('Innovation Floor rooftop','roofsign'));
   this.view.onchange=()=>this.focus();this.photo.textContent='Take studio photo';this.photo.onclick=()=>{this.photoPending=true;this.status.textContent='Taking photo…';this.focus();};this.photoLink.textContent='Download PNG photo';this.photoLink.hidden=true;this.preview.alt='Latest studio photo';this.preview.hidden=true;
   this.video.textContent='Record studio video';this.video.onclick=()=>this.recorder?.state==='recording'?this.stopVideo():this.startVideo();this.download.textContent='Download studio video';this.download.hidden=true;this.status.setAttribute('role','status');this.status.textContent='PNG photos · silent video · up to 30 seconds';
   this.clip.controls=true;this.clip.playsInline=true;this.clip.muted=true;this.clip.hidden=true;this.clip.setAttribute('aria-label','Latest studio video');
@@ -24,7 +25,7 @@ export class StudioCapture{
  update(x:number,z:number,visible:boolean,camera:T.PerspectiveCamera){
   const map=toMap(x,0,z),at=studioCoordinates(map.x,map.z);this.available=visible&&Math.hypot(map.x-MACK_STUDIO.x,map.z-MACK_STUDIO.z)<175;this.panel.hidden=!this.available;
   if(!this.available){this.view.value='ride';this.photoPending=false;this.stopVideo();return;}
-  const preset=STUDIO_VIEWS[this.view.value as keyof typeof STUDIO_VIEWS];
+  const preset=this.view.value==='roofsign'?{eye:[0,7.6,42],target:[0,7.52,19.6],horizontal:70}:STUDIO_VIEWS[this.view.value as keyof typeof STUDIO_VIEWS];
   if(this.view.value==='lottofront'||this.view.value==='pennyfront'){
    const mapAt=this.view.value==='lottofront'?lottoMap:pennyMap,eye=mapAt(0,23),target=mapAt(0,1);
    const a=toLocal(eye.x,LOTTO_SHOP.floor+3.2,eye.z),b=toLocal(target.x,LOTTO_SHOP.floor+2.2,target.z);

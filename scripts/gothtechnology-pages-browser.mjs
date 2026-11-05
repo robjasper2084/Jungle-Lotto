@@ -65,9 +65,9 @@ try{
     await fighter.waitForURL('**/opengw-levels/?arcade=1');
     await fighter.getByRole('button',{name:'Start Sector 1',exact:true}).click();
     await fighter.waitForFunction(()=>window.RahbeArcadeGame.getStats().seconds>=2);
-    await fighter.locator('#bombAction').click();
+    await fighter.locator('#bombAction:visible, .td-battle [data-control="bomb"]:visible').click();
     await fighter.waitForFunction(()=>window.RahbeArcadeGame.getStats().score>0);
-    await fighter.locator('#pauseAction').click();
+    await fighter.locator('#pauseAction:visible, .td-battle .td-menu:visible').click();
     await page.waitForFunction(()=>Object.values(JSON.parse(localStorage.getItem('gothtechnology.arcade.discount-preview.v2')).runs).some(run=>run.game==='static-wave'&&run.score>0));
     assert.equal(await page.locator('#underground-title').textContent(),'2084 Static WAV');
     await page.screenshot({path:resolve(output,name+'-packaged-static-wav.png')});

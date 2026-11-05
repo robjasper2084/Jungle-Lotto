@@ -8,7 +8,7 @@ import {BicycleView} from '@digital-static/ridecore/cycling-view';
 import {assetPath} from './testAssets.ts';
 import {createPose} from '@digital-static/ridecore';
 async function mesh(id:string,lod:number){
-  const buf=await readFile(id==='DS_Bicycle_Styles'?resolve('public/exports/glb',id,`${id}_LOD${lod}.glb`):assetPath('../../exports/glb',id,`${id}_LOD${lod}.glb`)),n=buf.readUInt32LE(12),j=JSON.parse(buf.subarray(20,20+n).toString());
+  const buf=await readFile(assetPath('exports/glb',id,`${id}_LOD${lod}.glb`)),n=buf.readUInt32LE(12),j=JSON.parse(buf.subarray(20,20+n).toString());
   // Headless geometry/skeleton test; omit texture decoding only. No source asset is modified.
   delete j.images;delete j.textures;delete j.materials;for(const m of j.meshes)for(const p of m.primitives)delete p.material;
   const json=Buffer.from(JSON.stringify(j)),length=Math.ceil(json.length/4)*4,jsonPad=Buffer.alloc(length,32);json.copy(jsonPad);const bin=buf.subarray(20+n),out=Buffer.alloc(20+length+bin.length);out.writeUInt32LE(0x46546c67,0);out.writeUInt32LE(2,4);out.writeUInt32LE(out.length,8);out.writeUInt32LE(length,12);out.writeUInt32LE(0x4e4f534a,16);jsonPad.copy(out,20);bin.copy(out,20+length);

@@ -1,5 +1,9 @@
 import R from '@dimforge/rapier3d-compat';
 import type {TerrainSampler,GroundSample,Vec3,ObstacleHit} from '../terrain.ts';
+import {staticBoxSweep} from '../staticBoxSweep.ts';
+import {StaticBoxIndex} from '../staticBoxIndex.ts';
+import {takeFixtureBytes,takeFixtureFormat} from '../fixtureBytes.ts';
+import {restoreColliderTransport} from '../colliderTransport.ts';
 let rapierReady:Promise<void>|undefined;
 async function ready(){try{R.version();return;}catch{}await (rapierReady??=R.init());}
 export type TagProduct='swoop-detroit'|'elmwood-explorer';
@@ -10,14 +14,30 @@ export type TagFixture={version:1;product:TagProduct;arena:string;revision:strin
   /** Optional full-map support mask, bit-packed row-major. Legacy fixtures use lanes. */
   walkable?:string;groundRays?:boolean;roam?:Vec3[];
   navigation?:{nodes:Vec3[];edges:[number,number,number][]};
+  staticBoxes?:{x:number;y:number;z:number;hx:number;hy:number;hz:number;yaw:number;kind:string}[];
+  /** Superseded authored props in the immutable base snapshot. */
+  retiredBoxes?:{x:number;y:number;z:number;hx:number;hy:number;hz:number}[];
+  /** Verified collider handles in this immutable snapshot only, for converted buildings. */
+  retiredColliderHandles?:number[];
   lanes:Lane[];spawns:{position:Vec3;headingY:number}[]};
 export const lanePoint=(p:Vec3,l:Lane)=>{const dx=l.b.x-l.a.x,dz=l.b.z-l.a.z,t=Math.max(0,Math.min(1,((p.x-l.a.x)*dx+(p.z-l.a.z)*dz)/(dx*dx+dz*dz||1)));
   return {x:l.a.x+t*dx,y:l.a.y+t*(l.b.y-l.a.y),z:l.a.z+t*dz};};
 /** Exported Rapier colliders and sampled map heights are identical on server and client. */
 export class TagTerrain implements TerrainSampler{
   private readonly support?:Uint8Array;
-  private constructor(readonly fixture:TagFixture,readonly physics:R.World){if(fixture.walkable)this.support=Uint8Array.from(atob(fixture.walkable),c=>c.charCodeAt(0));}
-  static async create(fixture:TagFixture,physicsBytes?:Uint8Array){await ready();let bytes=physicsBytes;if(!bytes){const binary=atob(fixture.physics);bytes=new Uint8Array(binary.length);for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);}return new TagTerrain(fixture,R.World.restoreSnapshot(bytes));}
+  private readonly retiredColliders=new Set<number>();
+  private readonly boxIndex:StaticBoxIndex;
+  private constructor(readonly fixture:TagFixture,readonly physics:R.World){this.boxIndex=new StaticBoxIndex(fixture.staticBoxes??[]);if(fixture.walkable)this.support=Uint8Array.from(atob(fixture.walkable),c=>c.charCodeAt(0));
+    for(const handle of fixture.retiredColliderHandles??[])if(physics.getCollider(handle))this.retiredColliders.add(handle);
+    if(fixture.retiredBoxes?.length)physics.forEachCollider(c=>{const p=c.translation(),matches=fixture.retiredBoxes!.filter(s=>Math.abs(s.x-p.x)<.025&&Math.abs(s.y-p.y)<.025&&Math.abs(s.z-p.z)<.025);if(!matches.length)return;
+      const shape=c.shape;if(shape.type!==R.ShapeType.Cuboid)return;const h=(shape as R.Cuboid).halfExtents;
+      if(matches.some(s=>Math.abs(s.hx-h.x)<.002&&Math.abs(s.hy-h.y)<.002&&Math.abs(s.hz-h.z)<.002))this.retiredColliders.add(c.handle);});}
+  static async create(fixture:TagFixture,physicsBytes?:Uint8Array){await ready();const format=takeFixtureFormat(fixture);let bytes=physicsBytes??takeFixtureBytes(fixture);if(!bytes){const binary=atob(fixture.physics);bytes=new Uint8Array(binary.length);for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);}
+    const rebuilt=format==='colliders-v1'?await restoreColliderTransport(bytes):undefined;
+    if(rebuilt)try{fixture={...fixture,retiredColliderHandles:fixture.retiredColliderHandles?.map(h=>{const next=rebuilt.handles.get(h);if(next===undefined)throw Error('Retired collider missing');return next;})};}catch(error){rebuilt.world.free();throw error;}
+    const terrain=new TagTerrain(fixture,rebuilt?.world??R.World.restoreSnapshot(bytes));
+    for(const s of fixture.staticBoxes??[])if(![s.x,s.y,s.z,s.hx,s.hy,s.hz,s.yaw].every(Number.isFinite)||Math.min(s.hx,s.hy,s.hz)<=0)throw Error('Invalid static prop collider');
+    return terrain;}
   height(x:number,z:number){const g=this.fixture.grid,u=Math.max(0,Math.min(g.width-1,(x-g.x)/g.spacing)),v=Math.max(0,Math.min(g.height-1,(z-g.z)/g.spacing));
     const i=Math.floor(u),j=Math.floor(v),a=u-i,b=v-j,i1=Math.min(i+1,g.width-1),j1=Math.min(j+1,g.height-1);
     return (g.heights[j*g.width+i]*(1-a)+g.heights[j*g.width+i1]*a)*(1-b)+(g.heights[j1*g.width+i]*(1-a)+g.heights[j1*g.width+i1]*a)*b;}
@@ -39,13 +59,20 @@ export class TagTerrain implements TerrainSampler{
     return {height,normal};}
   sampleGround(x:number,z:number,out:GroundSample,referenceY?:number){const f=this.floor(x,z,referenceY);out.height=f.height;Object.assign(out.normal,f.normal);out.surface='pavement';out.offCourse=this.support?!this.supported(x,z):!this.legal({x,y:out.height,z});return out;}
   private point(p:Vec3){const t=this.fixture.transform;return {x:t.tx+t.sx*p.x,y:p.y+t.ty,z:p.z+t.tz};}
-  sweep(origin:Vec3,delta:Vec3,radius=0){const length=Math.hypot(delta.x,delta.y,delta.z);if(length<1e-9)return null;const t=this.fixture.transform;
+  sweep(origin:Vec3,delta:Vec3,radius=0,escapeContact=false){const length=Math.hypot(delta.x,delta.y,delta.z);if(length<1e-9)return null;const t=this.fixture.transform;
     const velocity={x:t.sx*delta.x/length,y:delta.y/length,z:delta.z/length};
-    const hit=this.physics.castShape(this.point(origin),{x:0,y:0,z:0,w:1},velocity,new R.Ball(Math.max(.001,radius)),0,length,true,undefined,this.fixture.groundRays?0xffff0002:undefined);
-    return hit?hit.time_of_impact/length:null;}
+    // Elevated pavement is still solid to bodies and shots. Ground sampling
+    // chooses the floor below the feet; it cannot detect a slab through a torso.
+    const hit=this.physics.castShape(this.point(origin),{x:0,y:0,z:0,w:1},velocity,new R.Ball(Math.max(.001,radius)),0,length,!escapeContact,undefined,this.fixture.groundRays?0xffff0006:undefined,undefined,undefined,c=>!this.retiredColliders.has(c.handle));
+    const o=this.point(origin),d={x:delta.x*t.sx,y:delta.y,z:delta.z};
+    let first=hit?hit.time_of_impact/length:Infinity;for(const box of this.boxIndex.query(o,d,radius)){const prop=staticBoxSweep(o,d,radius,box,escapeContact);if(prop!==null)first=Math.min(first,prop);}return Number.isFinite(first)?first:null;}
   raycastObstacle(origin:Vec3,direction:Vec3,max:number,halfWidth=0,_lateral?:Vec3,out?:ObstacleHit){
     const length=Math.hypot(direction.x,direction.y,direction.z);if(length<1e-9)return null;
-    const hit=this.sweep(origin,{x:direction.x/length*max,y:direction.y/length*max,z:direction.z/length*max},halfWidth);
+    // Body probes can touch a raised slab after the floor rises beneath them.
+    // Rapier still blocks motion into that contact, but lets it separate; a
+    // solid-at-start cast otherwise pins the rider even when backing downhill.
+    // Projectile/visibility sweeps retain solid-at-start collision.
+    const hit=this.sweep(origin,{x:direction.x/length*max,y:direction.y/length*max,z:direction.z/length*max},halfWidth,halfWidth>=.25);
     let distance=hit===null?null:hit*max;
     // Mounted wheel/body and navigation sweeps stop at unsupported terrain.
     // Heart-sized sweeps retain real scenery collision only, so water is not
@@ -57,7 +84,20 @@ export class TagTerrain implements TerrainSampler{
     }
     if(distance===null)return null;if(out)Object.assign(out,{distance,halfExtentX:.5,halfExtentZ:.5});return distance;
   }
+  surfaceHit(origin:Vec3,direction:Vec3,max:number){
+    const t=this.fixture.transform,n=Math.hypot(direction.x,direction.y,direction.z)||1,o=this.point(origin),d={x:t.sx*direction.x/n,y:direction.y/n,z:direction.z/n};
+    const hit=this.physics.castRayAndGetNormal(new R.Ray(o,d),max,false,undefined,this.fixture.groundRays?0xffff0007:undefined,undefined,undefined,c=>!this.retiredColliders.has(c.handle));
+    let result=hit?{distance:hit.timeOfImpact,normal:{x:hit.normal.x*t.sx,y:hit.normal.y,z:hit.normal.z}}:null;
+    const segment={x:d.x*max,y:d.y*max,z:d.z*max};
+    for(const box of this.boxIndex.query(o,segment)){const f=staticBoxSweep(o,segment,0,box);if(f===null||result&&f*max>=result.distance)continue;
+      const c=Math.cos(box.yaw),s=Math.sin(box.yaw),x=o.x+d.x*f*max-box.x,z=o.z+d.z*f*max-box.z,local={x:c*x-s*z,y:o.y+d.y*f*max-box.y,z:s*x+c*z};
+      const axis=([['x',box.hx],['y',box.hy],['z',box.hz]] as Array<['x'|'y'|'z',number]>).sort((a,b)=>Math.abs(Math.abs(local[a[0]])-a[1])-Math.abs(Math.abs(local[b[0]])-b[1]))[0][0];
+      const normal={x:axis==='x'?Math.sign(local.x):0,y:axis==='y'?Math.sign(local.y):0,z:axis==='z'?Math.sign(local.z):0};result={distance:f*max,normal:{x:(c*normal.x+s*normal.z)*t.sx,y:normal.y,z:-s*normal.x+c*normal.z}};
+    }return result;
+  }
   raycast(origin:Vec3,direction:Vec3,max:number){const solid=this.raycastObstacle(origin,direction,max);const n=Math.hypot(direction.x,direction.y,direction.z)||1;
+    if(this.fixture.groundRays){const t=this.fixture.transform,hit=this.physics.castRay(new R.Ray(this.point(origin),{x:t.sx*direction.x/n,y:direction.y/n,z:direction.z/n}),max,true,undefined,0xffff0005);
+      return hit?Math.min(solid??max,hit.timeOfImpact):solid;}
     for(let d=0;d<(solid??max);d+=.08)if(origin.y+direction.y/n*d<this.height(origin.x+direction.x/n*d,origin.z+direction.z/n*d))return d;return solid;}
   dispose(){this.physics.free();}
 }

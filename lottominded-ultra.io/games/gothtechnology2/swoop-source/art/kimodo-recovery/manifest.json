@@ -1,0 +1,15 @@
+{
+  "generator": "NVIDIA Kimodo-SOMA-RP-v1.2",
+  "seed": 93,
+  "duration_seconds": 5,
+  "diffusion_steps": 100,
+  "source": "C:\\Users\\digit\\Documents\\phone\\output\\recovery-hands-20261023\\kimodo-recovery.npz",
+  "sha256": "aebfbfa5d2b74b5f038c3072d9db2586a3ff776f0e35dfef319c021d8a9dcd10",
+  "frames": [
+    60,
+    96
+  ],
+  "fps": 30,
+  "runtime": "Hip-rise curve and shoulder-relative hand directions, fitted by existing IK. Fall translation and wheel physics retained. Recovery uses existing game duration.",
+  "prompt": "A person falls gently onto one hip, rolls onto one side, plants a palm, then pushes up from one knee to stand steadily upright with both feet planted"
+}

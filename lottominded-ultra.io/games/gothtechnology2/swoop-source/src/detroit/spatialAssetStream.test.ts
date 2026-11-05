@@ -21,3 +21,13 @@ test('all split-screen players and multiple sites can request the same asset onc
  let count=0;const stream=new SpatialAssetStream();stream.add({id:'trees',centers:[{x:0,z:0},{x:1000,z:0}],load:async()=>{count++;}});
  stream.update([{x:500,z:0},{x:1100,z:0}],150);await tick();assert.equal(count,1);stream.update([{x:0,z:0}],150);await tick();assert.equal(count,1);
 });
+
+test('owned art unloads outside hysteresis, reloads on return and respects both split views',async()=>{
+ let loads=0,releases=0;const stream=new SpatialAssetStream(1);
+ stream.add({id:'mural',centers:[{x:0,z:0}],load:async()=>{loads++;return()=>{releases++;};}});
+ await stream.warm([{x:0,z:0}],100);
+ stream.update([{x:250,z:0}],100);assert.equal(releases,0);
+ await new Promise(r=>setTimeout(r,110));stream.update([{x:700,z:0},{x:10,z:0}],100);assert.equal(releases,0);
+ await new Promise(r=>setTimeout(r,110));stream.update([{x:700,z:0}],100);assert.equal(releases,1);assert.equal(stream.status.deferred,1);
+ await stream.warm([{x:0,z:0}],100);assert.equal(loads,2);assert.equal(stream.status.loaded,1);
+});

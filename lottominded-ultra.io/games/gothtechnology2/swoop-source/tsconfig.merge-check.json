@@ -1,0 +1,53 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@digital-static/ridecore/tag": [
+        "../ride-core/./dist/tag.d.ts"
+      ],
+      "@digital-static/ridecore/tag-client": [
+        "../ride-core/./dist/tagClient.d.ts"
+      ],
+      "@digital-static/ridecore/cycling": [
+        "../ride-core/./dist/cycling.d.ts"
+      ],
+      "@digital-static/ridecore/cycling-view": [
+        "../ride-core/./dist/cyclingView.d.ts"
+      ],
+      "@digital-static/ridecore/community-panel": [
+        "../ride-core/./dist/communityPanel.d.ts"
+      ],
+      "@digital-static/ridecore": [
+        "../ride-core/./dist/index.d.ts"
+      ],
+      "@digital-static/ridecore/three": [
+        "../ride-core/./dist/three.d.ts"
+      ],
+      "@digital-static/ridecore/audio": [
+        "../ride-core/./dist/rideAudio.d.ts"
+      ],
+      "@digital-static/ridecore/touch": [
+        "../ride-core/./dist/touchInput.d.ts"
+      ],
+      "@digital-static/ridecore/input": [
+        "../ride-core/./dist/input.d.ts"
+      ],
+      "@digital-static/ridecore/vr": [
+        "../ride-core/./dist/vrRide.d.ts"
+      ],
+      "@digital-static/ridecore/companion": [
+        "../ride-core/./dist/companion.d.ts"
+      ],
+      "@digital-static/ridecore/chat": [
+        "../ride-core/./dist/roomChat.d.ts"
+      ],
+      "@digital-static/ridecore/royale": [
+        "../ride-core/./dist/royale.d.ts"
+      ],
+      "@digital-static/ridecore/voice-protocol": [
+        "../ride-core/./dist/voiceProtocol.d.ts"
+      ]
+    },
+    "erasableSyntaxOnly": false
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "snapshotBytes": 218455249,
+  "transportBytes": 44529336,
+  "downloadBytes": 16358635,
+  "colliders": 2014,
+  "rebuildAndVerifyMs": 3013.2373000000007,
+  "raySamples": 65447,
+  "maxRayError": 0,
+  "geometry": "All vertex/index values and collider query properties identical",
+  "physics": "swoop-detroit.physics-c573f8d7a1f757c5.bin.gz",
+  "physicsHash": "c573f8d7a1f757c58d22a95f82d0c6017f7ae488cb4d594f829e2301bdf175dd",
+  "mapHash": "14410cf246bba2c9574ec503ed937980543eacfe2a7c7c8d9857584c465c7cdb"
+}

@@ -1,3 +1,9 @@
+import {SpatialUpdateGate,visibleSceneryMatrices} from '@digital-static/ridecore';
+import {WorkSlice} from '../../../ride-core/src/workSlice.ts';
+import {buildJazzClubs} from './jazzClubs.ts';
+import type {SceneryWorld} from './sceneryWorld.ts';
+import {timeLoad,startLoad} from './loadTiming.ts';
+import {foliageSightline} from './foliageSightline.ts';
 import {freightSites,registerFreightCollisions} from './tagSceneryCollisions.ts';
 import {SpatialAssetStream,type StreamPoint} from './spatialAssetStream.ts';
 import {signSupports} from './signSupports.ts';
@@ -20,41 +26,50 @@ import {buildTrailPaint} from './trailPaint.ts';
 import {buildCutMurals} from './cutMurals.ts';
 import {polishSection} from './sectionPolish.ts';
 import {buildCity} from './city-render.ts';
-import {buildStreetFurniture} from './streetFurniture.ts';
+import {buildStreetFurniture,preloadStreetFurniture} from './streetFurniture.ts';
 import {grassTreeSite} from './treePlacement.ts';
-import {riverEdge,pointOnCut,CUT_METRES,roadAt} from './geography.ts';
+import {riverEdge,roadAt} from './geography.ts';
+import {AirAtmosphere} from '../../../ride-core/src/airAtmosphere.ts';
+import {buildFoodTrucks} from './foodTrucks.ts';
+import {buildFieldSign,fieldSignSightline} from './fieldSign.ts';
+import {LivingBirdFlock} from '../../../ride-core/src/livingBirds.ts';
 import * as T from 'three';
 import {GLTFLoader} from './compressedGLTFLoader.ts';
 import {batchStaticGroup} from './static-batch.ts';
-import {DetroitWorld,CUT_STATIONS,hash,heightAt,surfaceAt,cutPoint,cutCoords} from './world.ts';
+import {CUT_STATIONS,hash,heightAt,surfaceAt,cutPoint,cutCoords} from './world.ts';
 import type {SurfaceId} from './terrain.ts';
 import {GEO,nearestRamp,profileLevel,cutWidth} from './geo-profile.ts';
 import {loadEnvironmentMaterials,surfaceUV} from './environmentMaterials.ts';
 import {makeTreeBatch,wind} from './trees.ts';
 import {roadwayClearance} from './roadsidePlacement.ts';
 import type {TreeSite} from './trees.ts';
-export async function buildScenery(scene:T.Scene,world:DetroitWorld,polish=true,start?:StreamPoint){
-  const stream=new SpatialAssetStream(2);
+export async function buildScenery(scene:T.Scene,world:SceneryWorld,polish=true,start?:StreamPoint,onAssetsLoaded?:(root:T.Object3D)=>void){
+  const slice=new WorkSlice();
+  const buildingBounds=world.buildingMeshes.map(b=>{if(!b.geometry.boundingBox)b.geometry.computeBoundingBox();return b.geometry.boundingBox!;});
+  // Prepare only newly loaded assets, before their first render. Scanning the
+  // entire downtown scene on every mural load/unload causes avoidable stalls.
+  const stream=new SpatialAssetStream(1);
   const loader=new GLTFLoader(),tl=new T.TextureLoader();
-  const names=['asphalt','grass','brick','concrete','limestone','mural_heron','mural_detroit','mural_music'];
+  const names=['brick','limestone','mural_heron','mural_detroit','mural_music'];
   const mats:Record<string,T.MeshStandardMaterial>={};
   await Promise.all(names.map(async n=>{
     const map=await tl.loadAsync('/textures/cut/'+n+'.jpg');
     map.colorSpace=T.SRGBColorSpace;map.wrapS=map.wrapT=T.RepeatWrapping;map.anisotropy=4;
     mats[n]=new T.MeshStandardMaterial({map,roughness:.94,side:n.startsWith('mural')?T.DoubleSide:T.FrontSide});
   }));
-  const skins=await loadEnvironmentMaterials();
-  for(const key of ['asphalt','grass','concrete']){mats[key].map?.dispose();mats[key].dispose();mats[key]=skins[key];}
+  const skins=await timeLoad('environment-materials',()=>loadEnvironmentMaterials());
+  // These three surfaces come from the environment library. Do not download
+  // and decode older duplicates only to discard them during startup.
+  for(const key of ['asphalt','grass','concrete'])mats[key]=skins[key];
   mats.grass.color.set('#78895b');
-  const treeTime={value:0},foliage=[skins.elm,skins.maple];for(const material of foliage)wind(material,treeTime);
+  const treeTime={value:0},foliage=[skins.elm,skins.maple];for(const material of foliage){wind(material,treeTime);foliageSightline(material);}
   const treeBatches:ReturnType<typeof makeTreeBatch>[]=[];
   const steel=new T.MeshStandardMaterial({color:'#263c3e',metalness:.55,roughness:.45});
-  const gold=new T.MeshStandardMaterial({color:'#e8c16e',roughness:.7});
-  const groups=world.chunks.map(c=>{const g=new T.Group();g.userData.center={x:c.x,z:c.z};scene.add(g);return g;});
+  const groups=world.chunks.map(c=>{const g=new T.Group();visibleSceneryMatrices(g);g.userData.center={x:c.x,z:c.z};scene.add(g);return g;});
   const groupIndex=new Map(world.chunks.map((c,i)=>[Math.floor(c.x/100)+','+Math.floor(c.z/100),groups[i]]));
   const groupAt=(x:number,z:number)=>{
     const key=Math.floor(x/100)+','+Math.floor(z/100);let g=groupIndex.get(key);
-    if(!g){g=new T.Group();g.userData.center={x:Math.floor(x/100)*100+50,z:Math.floor(z/100)*100+50};groups.push(g);groupIndex.set(key,g);scene.add(g);}
+    if(!g){g=new T.Group();visibleSceneryMatrices(g);g.userData.center={x:Math.floor(x/100)*100+50,z:Math.floor(z/100)*100+50};groups.push(g);groupIndex.set(key,g);scene.add(g);}
     return g;
   };
   function mapPlane(w:number,h:number){
@@ -83,7 +98,9 @@ export async function buildScenery(scene:T.Scene,world:DetroitWorld,polish=true,
   }
   const surfaceMats=[mats.asphalt,mats.grass,mats.brick];
   const si=(s:SurfaceId)=>s==='grass'?1:s==='brick'?2:0;
-  world.chunks.forEach((c,index)=>{
+  const terrainDone=startLoad('terrain-visuals');
+  for(const [index,c] of world.chunks.entries()){
+    await slice.checkpoint();
     const g=groups[index],geo=new T.BufferGeometry();geo.setAttribute('position',new T.BufferAttribute(c.vertices,3));
     const uv=new Float32Array(c.vertices.length/3*2);for(let i=0;i<c.vertices.length/3;i++){uv[i*2]=c.vertices[i*3]/2-Math.floor(c.x/2);uv[i*2+1]=c.vertices[i*3+2]/2-Math.floor(c.z/2);}
     geo.setAttribute('uv',new T.BufferAttribute(uv,2));const sorted:number[]=[];
@@ -99,15 +116,16 @@ export async function buildScenery(scene:T.Scene,world:DetroitWorld,polish=true,
     const corridor=cutCoords(c.x,c.z);
     const waterfrontTrees=inMillikenPark(c.x,c.z)||inValadePark(c.x,c.z);
     for(let i=0;i<(corridor.d>300&&Math.abs(corridor.u)<55?24:waterfrontTrees?12:3);i++){const x=c.x-46+hash(index*23+i)*92,z=c.z-46+hash(index*47+i)*92,cut=cutCoords(x,z);
-      if(!grassTreeSite(x,z)||inWaterfrontPond(x,z)||inValadeInlet(x,z)||inValadeBeach(x,z)||WATERFRONT.buildings.filter(b=>['60624913','105519122','777936143','777936147'].includes(b.id)).some(b=>polygonContains(b.points,x,z)))continue;
+      if(fieldSignSightline(x,z)||!grassTreeSite(x,z)||inWaterfrontPond(x,z)||inValadeInlet(x,z)||inValadeBeach(x,z)||WATERFRONT.buildings.filter(b=>['60624913','105519122','777936143','777936147'].includes(b.id)).some(b=>polygonContains(b.points,x,z)))continue;
       if(x<riverEdge(z)+8||roadAt(x,z)||surfaceAt(x,z)!=='grass'||Math.abs(cut.u)<12||world.solids.some(s=>Math.abs(s.x-x)<s.hx+4&&Math.abs(s.z-z)<s.hz+4))continue;
       if(Math.abs(cut.d-1600)<12&&cut.u<-8&&cut.u>-30)continue; // Keep the field artwork and its sightline clear.
-      if(nearestRamp(x,z).distance<5||world.buildingMeshes.some(b=>{b.geometry.computeBoundingBox();const q=b.geometry.boundingBox!;return x>q.min.x-4&&x<q.max.x+4&&z>q.min.z-4&&z<q.max.z+4;}))continue;
+      if(nearestRamp(x,z).distance<5||buildingBounds.some(q=>x>q.min.x-4&&x<q.max.x+4&&z>q.min.z-4&&z<q.max.z+4))continue;
       if(trees.some(t=>Math.hypot(t.x-x,t.z-z)<5))continue;
       trees.push({x,y:heightAt(x,z),z,h:6.5+hash(i+index)*5.5,seed:index*83+i});
     }
     if(trees.length){const batch=makeTreeBatch(trees,skins.bark,foliage,treeTime);batch.group.userData.center={x:c.x,z:c.z};g.add(batch.group);treeBatches.push(batch);}
-  });
+  }
+  terrainDone();
   // Satellite reference shows tree groups around the beach and play loops.
   // Estimated planting sites stay clear of the actual mapped access ribbons.
   const parkTreeSites:TreeSite[]=[];
@@ -129,11 +147,6 @@ export async function buildScenery(scene:T.Scene,world:DetroitWorld,polish=true,
     }
   }
   const freightCenters=freightSites();
-  for(let d=30;d<CUT_METRES;d+=8){
-    const p=cutPoint(d),g=groupAt(p.x,p.z),y=heightAt(p.x,p.z);
-    box(g,p.x,y+.049,p.z,.085,.006,3,gold,pointOnCut(d).heading-Math.PI);
-
-  }
   const lighting=buildCutLights(scene,groupAt);
   // Mapped deck outlines and their colliders share the exact same geometry.
   for(const item of world.geoMeshes){
@@ -145,7 +158,7 @@ export async function buildScenery(scene:T.Scene,world:DetroitWorld,polish=true,
   for(const [i,d]of [382,806,1262,1798,2006,2246].entries()){
     const wall=GEO.walls.reduce((best,w)=>Math.abs(w.at-d)<Math.abs(best.at-d)?w:best),p=cutPoint(wall.at+3.9,wall.offset),g=groupAt(p.x,p.z);
     if(nearestRamp(p.x,p.z).distance<5)continue;
-    const ry=p.heading-Math.PI+(wall.offset>0?-Math.PI/2:Math.PI/2),art=new T.Mesh(mapPlane(7.4,wall.height-.08),mats[names[5+i%3]]);
+    const ry=p.heading-Math.PI+(wall.offset>0?-Math.PI/2:Math.PI/2),art=new T.Mesh(mapPlane(7.4,wall.height-.08),mats[['mural_heron','mural_detroit','mural_music'][i%3]]);
     art.position.set(p.x+Math.sin(ry)*.19,heightAt(p.x,p.z)+wall.height/2,p.z+Math.cos(ry)*.19);art.rotation.y=ry;g.add(art);
   }
   function postSign(name:string,at:number,w=3.4){
@@ -167,37 +180,51 @@ export async function buildScenery(scene:T.Scene,world:DetroitWorld,polish=true,
   }
   for(const r of GEO.ramps)postSign(r.name,r.at);
   registerFreightCollisions(world);
-  stream.add({id:'freight-yard',centers:freightCenters,async load(){const container=await loader.loadAsync('/exports/cut/DS_Cut_Freight_Container_01.glb');for(const p of freightCenters){const o=container.scene.clone(true);o.position.set(p.x,heightAt(p.x,p.z),p.z);o.rotation.y=p.heading;groupAt(p.x,p.z).add(o);}}});
+  stream.add({id:'freight-yard',centers:freightCenters,async load(){const container=await loader.loadAsync('/exports/cut/DS_Cut_Freight_Container_01.glb');onAssetsLoaded?.(container.scene);batchStaticGroup(container.scene);for(const p of freightCenters){const o=container.scene.clone(true);o.position.set(p.x,heightAt(p.x,p.z),p.z);o.rotation.y=p.heading;groupAt(p.x,p.z).add(o);}}});
   const wp=cutPoint(2052,-10),wg=groupAt(wp.x,wp.z);label(wg,'EASTERN MARKET / FREIGHT YARD',wp.x,heightAt(wp.x,wp.z)+3,wp.z,7,.8,wp.heading-Math.PI);for(const post of signSupports(wp.x,wp.z,wp.heading-Math.PI,7,heightAt(wp.x,wp.z)+3.2,heightAt))box(wg,post.x,post.y,post.z,.10,post.height,.10,steel);
-  const architecture=await buildCity(scene,world,groupAt,skins,stream);
-  const streetFurniture=await buildStreetFurniture(scene,world,groupAt);
-  await buildAtwaterSkyline(scene);
-  await buildMillikenLandmarks(scene,world);
+  // Download/decode prototypes alongside the city, but place them only after
+  // the city's sidewalks and collision are ready.
+  const [architecture,furnitureAssets]=await Promise.all([
+    timeLoad('city',()=>buildCity(scene,world,groupAt,skins,stream)),
+    timeLoad('street-furniture-assets',()=>preloadStreetFurniture())
+  ]);
+  const streetFurniture=await timeLoad('street-furniture',()=>buildStreetFurniture(scene,world,groupAt,furnitureAssets));
+  await timeLoad('skyline',()=>buildAtwaterSkyline(scene));
+  await timeLoad('milliken',()=>buildMillikenLandmarks(scene,world));
+  const jazz=await timeLoad('jazz-clubs',()=>buildJazzClubs(scene,world,stream));
+  const foodTrucks=await timeLoad('food-trucks',()=>buildFoodTrucks(scene,world));const fieldSign=await timeLoad('field-sign',()=>buildFieldSign(scene,world));const air=new AirAtmosphere(scene);
   const riverfront=buildRiverfrontDetails(scene,world,groupAt);
-  const waterfront=await buildWaterfront(scene,world,groupAt);
-  const valade=await buildValade(scene,world,groupAt,skins);
+  const waterfront=await timeLoad('waterfront',()=>buildWaterfront(scene,world,groupAt));
+  const valade=await timeLoad('valade',()=>buildValade(scene,world,groupAt,skins));
   const rails=buildRouteRails(world,groupAt,heightAt);
   const landmarks=buildCutLandmarks(world,groupAt,label);
   const flowers=buildCutFlowers(scene,world);
   if(polish)polishSection(groupAt,mats.asphalt);
-  let routeArt:Awaited<ReturnType<typeof buildRouteArt>>|{billboards:number;murals:number}={billboards:0,murals:0};if(polish)stream.add({id:'route-art',centers:[1080,1600,1900,2425].map(d=>cutPoint(d)),async load(){routeArt=await buildRouteArt(world,groupAt);world.step();}});
-  if(polish)buildTrailPaint(groupAt);
-  let cutMurals={walls:0,ceilings:0};if(polish)stream.add({id:'cut-murals',centers:GEO.bridges.map(b=>cutPoint(b.at)),async load(){cutMurals=await buildCutMurals(world,groupAt);}});
+  let routeArt:Awaited<ReturnType<typeof buildRouteArt>>|{billboards:number;murals:number}={billboards:0,murals:0};if(polish)stream.add({id:'route-art',centers:[1080,1600,1900,2300,2425].map(d=>cutPoint(d)),async load(){routeArt=await buildRouteArt(world,groupAt,onAssetsLoaded);world.step();}});
+  buildTrailPaint(groupAt,world.chunks);
+  const cutMurals=polish?await buildCutMurals(world,groupAt,stream,onAssetsLoaded):{walls:0,ceilings:0};
   // Consolidate static geometry by material inside each streamable tile.
-  for(const g of groups)batchStaticGroup(g);
-  const grass=polish?await buildGrassField(scene,world,mats.grass):undefined;
-  if(start)await stream.warm([start],120);world.step();
-  const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)'),mobile=matchMedia('(max-width:700px)');
+  const batchesDone=startLoad('static-batches');
+  for(const g of groups){await slice.checkpoint();batchStaticGroup(g);}batchesDone();
+  const grass=polish?await timeLoad('grass',()=>buildGrassField(scene,world,mats.grass)):undefined;
+  if(start)await timeLoad('nearby-assets',()=>stream.warm([start],120));world.step();
+  const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)'),mobile=matchMedia('(max-width:700px)'),motionOverride=new URLSearchParams(location.search).has('reducedMotion');
+  const birds=new LivingBirdFlock(scene,[0,650,1400,2200].map(at=>{const p=cutPoint(at);return {x:p.x,y:heightAt(p.x,p.z)+8,z:p.z};}).concat([{x:-140,y:9,z:-1360},{x:-220,y:10,z:-1820}]));
+  void birds.load('/exports/nature/living-crow.glb');
+  const spatialGate=new SpatialUpdateGate();let visibleTiles=0;
   const trees=treeBatches.reduce((n,b)=>n+b.count,0);
   const allLighting={count:lighting.count+streetFurniture.count,setDusk(value:boolean){lighting.setDusk(value);streetFurniture.setDusk(value);}};
-  return {lighting:allLighting,streetFurniture:streetFurniture.counts,materials:mats,architecture,waterfront,valade,trees,stream,get routeArt(){return {...routeArt,cutMurals};},rails,landmarks,flowers:flowers.count,grassClumps:grass?.count??0,skins:8,update(x:number,z:number,time=0){
-    stream.update([{x,z}],(Number(document.documentElement.dataset.drawDistance)||360)+100);lighting.update(x,z);
-    streetFurniture.update(x,z);
-    riverfront.update(time);
-    treeTime.value=document.documentElement.dataset.renderQuality==='compact'?0:time;
-    flowers.update(x,z,document.documentElement.dataset.renderQuality==='compact');
-    grass?.update(x,z,time,document.documentElement.dataset.reducedMotion==='true'||reducedMotion.matches,mobile.matches||document.documentElement.dataset.renderQuality==='compact');
-    for(const b of treeBatches){const c=b.group.userData.center;b.update(Math.hypot(c.x-x,c.z-z));}
-    let visible=0;for(const g of groups){const c=g.userData.center;g.visible=Math.hypot(c.x-x,c.z-z)<(Number(document.documentElement.dataset.drawDistance)||360);if(g.visible)visible++;}return visible;
+  return {get birds(){return birds.status;},jazz,foodTrucks:foodTrucks.count,lighting:allLighting,streetFurniture:streetFurniture.counts,materials:mats,architecture,waterfront,valade,trees,stream,get routeArt(){return {...routeArt,cutMurals};},rails,landmarks,flowers:flowers.count,grassClumps:grass?.count??0,skins:8,update(x:number,z:number,time=0){
+    const spatial=spatialGate.due(x,z,time,(document.documentElement.dataset.drawDistance??'')+(document.documentElement.dataset.renderQuality??''));
+    if(spatial){stream.update([{x,z}],(Number(document.documentElement.dataset.drawDistance)||360)+100);lighting.update(x,z);
+    streetFurniture.update(x,z);jazz.update(x,z);}
+    const reduced=document.documentElement.dataset.reducedMotion==='true'||reducedMotion.matches||motionOverride,low=document.documentElement.dataset.renderQuality==='compact';
+    const waterTime=reduced?0:time;riverfront.update(waterTime);waterfront.update(waterTime);valade.update(waterTime);
+    birds.update(time,{x,z},low||mobile.matches,reduced);air.update(time,{x,y:heightAt(x,z),z},low||mobile.matches,reduced);foodTrucks.update(time,{x,z},low||mobile.matches,reduced);if(spatial)fieldSign.update(x,z,low);
+    treeTime.value=low||reduced?0:time;
+    if(spatial)flowers.update(x,z,document.documentElement.dataset.renderQuality==='compact');
+    grass?.update(x,z,time,reduced,mobile.matches||low);
+    if(spatial){for(const b of treeBatches){const c=b.group.userData.center;b.update(Math.hypot(c.x-x,c.z-z),low);}
+    let visible=0;for(const g of groups){const c=g.userData.center;g.visible=Math.hypot(c.x-x,c.z-z)<(Number(document.documentElement.dataset.drawDistance)||360);if(g.visible)visible++;}visibleTiles=visible;}return visibleTiles;
   }};
 }

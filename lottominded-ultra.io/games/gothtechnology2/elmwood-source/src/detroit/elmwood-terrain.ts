@@ -59,5 +59,16 @@ export class ElmwoodTerrain implements TerrainSampler{
  private baseHeight(x:number,north:number){const close=this.nearest(x,north),f=close.segment.feature;let h=this.ground(x,north);if(inRing(x,north,ELMWOOD_PARKING))return this.surfaceGround(x,north)+.046;const half=f.tags.bridge==='yes'&&f.tags.highway==='footway'?1.5:2;if(close.distance>half){const tile=this.curbTiles.get(Math.floor(x/10)+','+Math.floor(north/10));return h+(tile?.some(c=>curbContains(c,x,north))?.155:0);}if(f.tags.bridge==='yes')return this.decks.get(f.points[0].slice(0,2).join(','))!+.045;h=this.surfaceGround(x,north);for(const p of [f.points[0],f.points.at(-1)!]){const z=this.decks.get(p.slice(0,2).join(','));if(z!==undefined){const blend=Math.max(0,1-Math.hypot(x-p[0],north-p[1])/5);h=h*(1-blend)+z*blend;}}return h+.045;}
  sampleGround(x:number,z:number,out:GroundSample){out.height=this.height(x,-z);const dx=(this.height(x+.25,-z)-this.height(x-.25,-z))/.5,dz=(this.height(x,-z-.25)-this.height(x,-z+.25))/.5,len=Math.hypot(dx,1,dz);out.normal.x=-dx/len;out.normal.y=1/len;out.normal.z=-dz/len;out.surface=this.nearest(x,-z).distance<=2||inRing(x,-z,ELMWOOD_PARKING)?'pavement':'grass';const g=this.grid;out.offCourse=x<g.x0||x>g.x0+(g.width-1)*g.spacing||-z>g.y0||-z<g.y0-(g.height-1)*g.spacing||inElmwoodPond(x,-z,this.features);return out;}
  raycastObstacle(origin:Vec3,direction:Vec3,max:number,halfWidth=0,lateral?:Vec3,out?:ObstacleHit){let distance:number|null=null;for(const side of halfWidth?[0,-1,1]:[0]){const axis=lateral??{x:direction.z,y:0,z:-direction.x},o={x:origin.x+axis.x*halfWidth*side,y:origin.y+axis.y*halfWidth*side,z:origin.z+axis.z*halfWidth*side};const hit=this.physics.castRay(new R.Ray(o,direction),max,true);if(hit&&(distance===null||hit.timeOfImpact<distance))distance=hit.timeOfImpact;}if(distance!==null&&out){out.distance=distance;out.halfExtentX=.6;out.halfExtentZ=.5;}return distance;}
- raycast(origin:Vec3,direction:Vec3,max:number){const obstacle=this.raycastObstacle(origin,direction,max);let d=0;for(;d<(obstacle??max);d+=.25)if(origin.y+direction.y*d<this.height(origin.x+direction.x*d,-origin.z-direction.z*d))return d;return obstacle;}
+ raycast(origin:Vec3,direction:Vec3,max:number){
+  const obstacle=this.raycastObstacle(origin,direction,max);
+  // Upward roof checks used to repeat the same nearest-lane search 16–80 times.
+  if(Math.abs(direction.x)<1e-9&&Math.abs(direction.z)<1e-9){
+   const floor=this.height(origin.x,-origin.z);
+   if(origin.y<floor)return 0;
+   if(direction.y<0){const d=(floor-origin.y)/direction.y;return d<(obstacle??max)?d:obstacle;}
+   return obstacle;
+  }
+  for(let d=0;d<(obstacle??max);d+=.25)if(origin.y+direction.y*d<this.height(origin.x+direction.x*d,-origin.z-direction.z*d))return d;
+  return obstacle;
+ }
 }

@@ -1,0 +1,98 @@
+{
+  "revision": "finger-rigs-20261011",
+  "profiles": {
+    "Relaxed": [
+      0.18,
+      0.24,
+      0.16
+    ],
+    "WeaponGrip": [
+      0.68,
+      1.05,
+      0.65
+    ],
+    "SupportGrip": [
+      0.45,
+      0.85,
+      0.5
+    ],
+    "MeleeFist": [
+      1.2,
+      1.45,
+      1.0
+    ],
+    "ReloadRelease": [
+      0.12,
+      0.15,
+      0.1
+    ]
+  },
+  "heroes": [
+    {
+      "hero": "DS_Man_01",
+      "fingerJoints": 30,
+      "removedFusedVertices": 4167,
+      "animations": [
+        "EUC_Ride_Idle",
+        "Hand_Relaxed",
+        "Hand_WeaponGrip",
+        "Hand_SupportGrip",
+        "Hand_MeleeFist",
+        "Hand_ReloadRelease"
+      ],
+      "bytes": 11188172
+    },
+    {
+      "hero": "DS_Hoodie_Woman_01",
+      "fingerJoints": 30,
+      "removedFusedVertices": 1604,
+      "animations": [
+        "Hand_Relaxed",
+        "Hand_WeaponGrip",
+        "Hand_SupportGrip",
+        "Hand_MeleeFist",
+        "Hand_ReloadRelease"
+      ],
+      "bytes": 8751112
+    },
+    {
+      "hero": "DS_Mascot_Suit_01",
+      "fingerJoints": 30,
+      "removedFusedVertices": 2141,
+      "animations": [
+        "Hand_Relaxed",
+        "Hand_WeaponGrip",
+        "Hand_SupportGrip",
+        "Hand_MeleeFist",
+        "Hand_ReloadRelease"
+      ],
+      "bytes": 9044748
+    },
+    {
+      "hero": "DS_Mascot_Hoodie_01",
+      "fingerJoints": 30,
+      "removedFusedVertices": 879,
+      "animations": [
+        "Hand_Relaxed",
+        "Hand_WeaponGrip",
+        "Hand_SupportGrip",
+        "Hand_MeleeFist",
+        "Hand_ReloadRelease"
+      ],
+      "bytes": 8890524
+    },
+    {
+      "hero": "DS_Armored_Rider_01",
+      "fingerJoints": 30,
+      "removedFusedVertices": 3073,
+      "animations": [
+        "Hand_Relaxed",
+        "Hand_WeaponGrip",
+        "Hand_SupportGrip",
+        "Hand_MeleeFist",
+        "Hand_ReloadRelease"
+      ],
+      "bytes": 3775632
+    }
+  ]
+}

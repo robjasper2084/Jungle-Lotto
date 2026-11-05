@@ -1,0 +1,3 @@
+#pragma once
+// The inspected PlayerInput header includes cstdint but consumes no declarations from it.
+// This empty shim is ONLY for this audited freestanding input proof, not the engine as a whole.

@@ -1,0 +1,5 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {normalizeRideChoice,startupRideChoice,DEFAULT_RIDE} from './rideChoice.ts';
+test('fresh or corrupt ride preferences use the primary hoverbike and third-person camera',()=>{for(const v of [null,undefined,{},'hover',false,{vehicle:'boat',camera:'unknown'}])assert.deepEqual(normalizeRideChoice(v),DEFAULT_RIDE);});
+test('both vehicle and camera combinations survive saved preference restoration',()=>{for(const vehicle of ['onewheel','hoverbike'] as const)for(const camera of ['fpp','tpp'] as const){const choice={vehicle,camera};assert.deepEqual(normalizeRideChoice(JSON.parse(JSON.stringify(choice))),choice);}});
+
+test('every new visit selects hoverbike even after a saved one-wheel ride',()=>{assert.deepEqual(startupRideChoice({vehicle:'onewheel',camera:'fpp'}),{vehicle:'hoverbike',camera:'fpp'});});

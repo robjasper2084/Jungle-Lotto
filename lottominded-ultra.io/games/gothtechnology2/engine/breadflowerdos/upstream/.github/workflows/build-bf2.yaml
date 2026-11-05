@@ -1,0 +1,56 @@
+name: Build BreadFlowerDos
+
+on: [ push, pull_request ]
+
+jobs:
+    build-bf2:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@main
+              with:
+                fetch-depth: 0
+
+            - name: Set up clang
+              uses: egor-tensin/setup-clang@v1
+              with:
+                version: 20
+                platform: x64
+
+            - name: Setup CMake
+              uses: jwlawson/actions-setup-cmake@v2
+              with:
+                cmake-version: '4.0.x'
+
+            - name: Run clang-format
+              uses: DoozyX/clang-format-lint-action@v0.20
+              with:
+                clangFormatVersion: '20'
+                extensions: 'hpp,cpp'
+                source: 'src'
+                style: file
+                inplace: False
+
+            - name: Install pre-reqs
+              run: sudo apt update && sudo apt install lld
+
+            - name: Configure RefractorBF-BF2
+              run: mkdir build-2 && cd build-2 && cmake --no-warn-unused-cli -DBUILD_2142=OFF -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld" -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=lld" -G "Unix Makefiles" .. && cd ..
+
+            - name: Build RefractorBF-BF2
+              run: cmake --build build-2
+
+            - name: Configure RefractorBF-BF2142
+              run: mkdir build-2142 && cd build-2142 && cmake --no-warn-unused-cli -DBUILD_2142=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld" -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=lld" -G "Unix Makefiles" .. && cd ..
+
+            - name: Build RefractorBF-BF2142
+              run: cmake --build build-2142
+
+            - name: Upload Artifacts
+              uses: actions/upload-artifact@main
+              with:
+                name: BF2
+                path: |
+                  build-2/Refractor*
+                  build-2142/Refractor*
+                retention-days: 1

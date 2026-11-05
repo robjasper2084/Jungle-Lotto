@@ -1,12 +1,14 @@
+import {pathToFileURL} from 'node:url';import {assetPath} from '../../swoop-source/src/detroit/testAssets.ts';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import * as T from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-import {BicycleView} from '../dist/cyclingView.js';
+import {HANDLEBAR_WRIST_OFFSET} from '../src/handlebarGrip.ts';
+import {BicycleView} from '../src/cyclingView.ts';
 import {createPose} from '../src/controller.ts';
 // Exercise the shipped skeletons and mechanical nodes without needing a GPU or image decoder.
-async function asset(id:string,lod:number){const b=await readFile(new URL(`../../Digital_Static_Street_Asset_Pack/exports/glb/${id}/${id}_LOD${lod}.glb`,import.meta.url)),n=b.readUInt32LE(12),j=JSON.parse(b.toString('utf8',20,20+n));
+async function asset(id:string,lod:number){const root=process.env.BICYCLE_TEST_ASSETS??pathToFileURL(assetPath('exports/glb')+'/').href;const b=await readFile(new URL(`${id}/${id}_LOD${lod}.glb`,root)),n=b.readUInt32LE(12),j=JSON.parse(b.toString('utf8',20,20+n));
  delete j.images;delete j.textures;delete j.samplers;j.materials=(j.materials??[]).map((m:{name:string})=>({name:m.name}));
  let json=JSON.stringify(j);while(json.length%4)json+=' ';const chunk=b.subarray(20+n),out=Buffer.alloc(20+json.length+chunk.length);out.writeUInt32LE(0x46546c67,0);out.writeUInt32LE(2,4);out.writeUInt32LE(out.length,8);out.writeUInt32LE(json.length,12);out.writeUInt32LE(0x4e4f534a,16);out.write(json,20);chunk.copy(out,20+json.length);return new GLTFLoader().parseAsync(out.buffer.slice(out.byteOffset,out.byteOffset+out.byteLength),'');}
 test('both shipped human rigs can pedal without crossed legs or missing hand sockets',async()=>{
@@ -25,7 +27,7 @@ test('both shipped human rigs can pedal without crossed legs or missing hand soc
    for(const phase of [0,Math.PI/2,Math.PI,Math.PI*1.5]){view.apply(p,.2,phase);view.root.updateMatrixWorld(true);
      const left=view.rider.getObjectByName('LeftFoot')!.getWorldPosition(new T.Vector3()),right=view.rider.getObjectByName('RightFoot')!.getWorldPosition(new T.Vector3());
      assert.ok(left.x>0&&right.x<0,id+' legs crossed');assert.ok(Math.min(left.y,right.y)>-.03,id+' foot below road');
-     for(const [hand,grip] of [['LeftHand','Grip001'],['RightHand','Grip']])assert.ok(view.rider.getObjectByName(hand)!.getWorldPosition(new T.Vector3()).distanceTo(view.bike.getObjectByName(grip)!.getWorldPosition(new T.Vector3()))<.03,id+' '+hand+' '+view.rider.getObjectByName(hand)!.getWorldPosition(new T.Vector3()).toArray()+' target '+view.bike.getObjectByName(grip)!.getWorldPosition(new T.Vector3()).toArray());
+     for(const [hand,grip] of [['LeftHand','Grip001'],['RightHand','Grip']]){const barRotation=view.frame.getWorldQuaternion(new T.Quaternion()).multiply(new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),.2));const wrist=view.bike.getObjectByName(grip)!.getWorldPosition(new T.Vector3()).add(HANDLEBAR_WRIST_OFFSET.clone().applyQuaternion(barRotation));assert.ok(view.rider.getObjectByName(hand)!.getWorldPosition(new T.Vector3()).distanceTo(wrist)<.03,id+' wrist misses its grip');}
    }view.dispose();
  }}
 });

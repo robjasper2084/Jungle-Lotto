@@ -1,0 +1,3400 @@
+[
+  {
+    "id": "belle-tennis",
+    "name": "Athletic Complex · Tennis Courts",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://hypeathletics.org/belle-isle/",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Athletic%20Complex%20%C2%B7%20Tennis%20Courts%20Belle%20Isle%20Detroit%2042.3394630%2C-82.9821101",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3394630,-82.9821101&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3394630,-82.9821101",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "basketball-368854129",
+    "name": "Athletic Complex · Basketball East",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://hypeathletics.org/belle-isle/",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Athletic%20Complex%20%C2%B7%20Basketball%20East%20Belle%20Isle%20Detroit%2042.3399615%2C-82.9776675",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3399615,-82.9776675&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3399615,-82.9776675",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "basketball-368854130",
+    "name": "South Basketball Court",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://hypeathletics.org/belle-isle/",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=South%20Basketball%20Court%20Belle%20Isle%20Detroit%2042.3361555%2C-82.9828832",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3361555,-82.9828832&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3361555,-82.9828832",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "basketball-657743562",
+    "name": "Athletic Complex · Basketball West",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://hypeathletics.org/belle-isle/",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Athletic%20Complex%20%C2%B7%20Basketball%20West%20Belle%20Isle%20Detroit%2042.3399602%2C-82.9774464",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3399602,-82.9774464&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3399602,-82.9774464",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "baseball-107202872",
+    "name": "Baseball Diamond 1",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://hypeathletics.org/belle-isle/",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Baseball%20Diamond%201%20Belle%20Isle%20Detroit%2042.3377602%2C-82.9795619",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3377602,-82.9795619&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3377602,-82.9795619",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "baseball-107202891",
+    "name": "Baseball Diamond 2",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://hypeathletics.org/belle-isle/",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Baseball%20Diamond%202%20Belle%20Isle%20Detroit%2042.3382868%2C-82.9814055",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3382868,-82.9814055&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3382868,-82.9814055",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "baseball-107202902",
+    "name": "Baseball Diamond 3",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://hypeathletics.org/belle-isle/",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Baseball%20Diamond%203%20Belle%20Isle%20Detroit%2042.3389353%2C-82.9825915",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3389353,-82.9825915&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3389353,-82.9825915",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "baseball-107202904",
+    "name": "Baseball Diamond 4",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://hypeathletics.org/belle-isle/",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Baseball%20Diamond%204%20Belle%20Isle%20Detroit%2042.3388972%2C-82.9791557",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3388972,-82.9791557&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3388972,-82.9791557",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "baseball-107202913",
+    "name": "Baseball Diamond 5",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://hypeathletics.org/belle-isle/",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Baseball%20Diamond%205%20Belle%20Isle%20Detroit%2042.3380248%2C-82.9813478",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3380248,-82.9813478&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3380248,-82.9813478",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "belle-floral-clock",
+    "name": "Floral Clock Hill · Bridge Entrance",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://historicdetroit.org/buildings/floral-clock-at-water-works-park",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Floral%20Clock%20Hill%20%C2%B7%20Bridge%20Entrance%20Belle%20Isle%20Detroit%2042.3392144%2C-82.9960502",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3392144,-82.9960502&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3392144,-82.9960502",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "trail-497942918",
+    "name": "Nashua Trail · Trailhead",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Nashua%20Trail%20%C2%B7%20Trailhead%20Belle%20Isle%20Detroit%2042.3400556%2C-82.9692467",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3400556,-82.9692467&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3400556,-82.9692467",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "trail-1119933383",
+    "name": "Trout Lily Trail · Trailhead",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Trout%20Lily%20Trail%20%C2%B7%20Trailhead%20Belle%20Isle%20Detroit%2042.3466088%2C-82.9711959",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3466088,-82.9711959&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3466088,-82.9711959",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "trail-107208270",
+    "name": "Driker Trail · Trailhead",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Driker%20Trail%20%C2%B7%20Trailhead%20Belle%20Isle%20Detroit%2042.3491503%2C-82.9548045",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3491503,-82.9548045&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3491503,-82.9548045",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "trail-1445474346",
+    "name": "Ralph C. Wilson, Jr. Trail · Trailhead",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Ralph%20C.%20Wilson%2C%20Jr.%20Trail%20%C2%B7%20Trailhead%20Belle%20Isle%20Detroit%2042.3381949%2C-82.9969818",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3381949,-82.9969818&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3381949,-82.9969818",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "107202881",
+    "name": "Kids Row Playground",
+    "sources": [
+      {
+        "label": "Selected reference photo",
+        "url": "https://metrodetroitmommy.com/familywp/wp-content/uploads/2020/06/Belle-Isle-Detroit-Playground-3.jpg",
+        "kind": "inspected-photo"
+      },
+      {
+        "label": "Architectural photographs",
+        "url": "https://metrodetroitmommy.com/kids-row-playground-belle-isle/",
+        "kind": "inspected-photo-gallery"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Kids%20Row%20Playground%20Belle%20Isle%20Detroit%2042.3396764%2C-82.9840045",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3396764,-82.9840045&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3396764,-82.9840045",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": "2014 / article updated 2023"
+  },
+  {
+    "id": "658403731",
+    "name": "Oakway Playground · Sigma Gamma",
+    "sources": [
+      {
+        "label": "Selected reference photo",
+        "url": "https://metrodetroitmommy.com/familywp/wp-content/uploads/2018/06/Belle-Isle-ADA-Playground-1.jpg",
+        "kind": "inspected-photo"
+      },
+      {
+        "label": "Architectural photographs",
+        "url": "https://metrodetroitmommy.com/family-fun-belle-isle-ada-playground/",
+        "kind": "inspected-photo-gallery"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Oakway%20Playground%20%C2%B7%20Sigma%20Gamma%20Belle%20Isle%20Detroit%2042.3479319%2C-82.9650922",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3479319,-82.9650922&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3479319,-82.9650922",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": "2018 / article updated 2020"
+  },
+  {
+    "id": "4894381950",
+    "name": "Sunset Point",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.belleisleconservancy.org/explore?topic=attractions-landmarks&location=sunset-point&info=true",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Sunset%20Point%20Belle%20Isle%20Detroit%2042.3334028%2C-83.0040230",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3334028,-83.0040230&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3334028,-83.0040230",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "106948123",
+    "name": "Belle Isle Casino",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://www.historicdetroit.org/galleries/belle-isle-casino-photos",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Belle%20Isle%20Casino%20Belle%20Isle%20Detroit%2042.3345843%2C-82.9954837",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3345843,-82.9954837&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3345843,-82.9954837",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "106966327",
+    "name": "Flynn Pavilion",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://www.michiganmodern.org/modern-buildings/flynn-memorial-recreation-pavilion/",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Flynn%20Pavilion%20Belle%20Isle%20Detroit%2042.3345416%2C-82.9923149",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3345416,-82.9923149&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3345416,-82.9923149",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "106966337",
+    "name": "Remick Music Shell",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://historicdetroit.org/buildings/jerome-h-remick-band-shell",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Remick%20Music%20Shell%20Belle%20Isle%20Detroit%2042.3350951%2C-82.9903866",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3350951,-82.9903866&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3350951,-82.9903866",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "107205459",
+    "name": "Dossin Great Lakes Museum",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://www.detroithistorical.org/sites/default/files/pdfs/Dossin%20visitor%20guide%202023.pdf",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Dossin%20Great%20Lakes%20Museum%20Belle%20Isle%20Detroit%2042.3345255%2C-82.9854312",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3345255,-82.9854312&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3345255,-82.9854312",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "107227742",
+    "name": "Belle Isle Aquarium",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://www.historicdetroit.org/galleries/belle-isle-aquarium-photos",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Belle%20Isle%20Aquarium%20Belle%20Isle%20Detroit%2042.3363129%2C-82.9851740",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3363129,-82.9851740&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3363129,-82.9851740",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "107310050",
+    "name": "Anna Scripps Whitcomb Conservatory",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://historicdetroit.org/galleries/anna-scripps-whitcomb-conservatory-photos-post-restoration",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Anna%20Scripps%20Whitcomb%20Conservatory%20Belle%20Isle%20Detroit%2042.3362539%2C-82.9855496",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3362539,-82.9855496&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3362539,-82.9855496",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "659605208",
+    "name": "Nancy Brown Peace Carillon",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.gettyimages.com/detail/photo/beautiful-isle-carillon-royalty-free-image/133508262",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Nancy%20Brown%20Peace%20Carillon%20Belle%20Isle%20Detroit%2042.3352048%2C-82.9885143",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3352048,-82.9885143&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3352048,-82.9885143",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "9146545",
+    "name": "James Scott Memorial Fountain",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://historicdetroit.org/buildings/james-scott-memorial-fountain",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=James%20Scott%20Memorial%20Fountain%20Belle%20Isle%20Detroit%2042.3349154%2C-82.9996566",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3349154,-82.9996566&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3349154,-82.9996566",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "107208288",
+    "name": "William Livingstone Memorial Lighthouse",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://www.detroithistorical.org/learn/online-research/encyclopedia-of-detroit/livingstone-memorial-lighthouse",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=William%20Livingstone%20Memorial%20Lighthouse%20Belle%20Isle%20Detroit%2042.3470240%2C-82.9543021",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3470240,-82.9543021&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3470240,-82.9543021",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "264321737",
+    "name": "Detroit Yacht Club",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://www.dyc.com/about",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Detroit%20Yacht%20Club%20Belle%20Isle%20Detroit%2042.3488310%2C-82.9737153",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3488310,-82.9737153&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3488310,-82.9737153",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "368859182",
+    "name": "Belle Isle Nature Center",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://belleislenaturecenter.org/attraction/nature-play-area/",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Belle%20Isle%20Nature%20Center%20Belle%20Isle%20Detroit%2042.3468861%2C-82.9637428",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3468861,-82.9637428&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3468861,-82.9637428",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "509207568",
+    "name": "Belle Isle Golf Center Clubhouse",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://www.belleislegolf.com/photo-gallery/",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Belle%20Isle%20Golf%20Center%20Clubhouse%20Belle%20Isle%20Detroit%2042.3474290%2C-82.9628232",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3474290,-82.9628232&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3474290,-82.9628232",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "107192915",
+    "name": "Belle Isle Boat House",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://www.historicdetroit.org/buildings/detroit-boat-club-current",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Belle%20Isle%20Boat%20House%20Belle%20Isle%20Detroit%2042.3401942%2C-82.9937655",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3401942,-82.9937655&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3401942,-82.9937655",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "368854132",
+    "name": "Belle Isle Beach",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.belleisleconservancy.org/explore?topic=attractions-landmarks&location=belle-isle-beach&info=true",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Belle%20Isle%20Beach%20Belle%20Isle%20Detroit%2042.3444907%2C-82.9788337",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3444907,-82.9788337&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3444907,-82.9788337",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "882942799",
+    "name": "Oudolf Garden Detroit",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.belleisleconservancy.org/explore?topic=attractions-landmarks&location=oudolf-garden-detroit&info=true",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Oudolf%20Garden%20Detroit%20Belle%20Isle%20Detroit%2042.3357695%2C-82.9886593",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3357695,-82.9886593&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3357695,-82.9886593",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "51476983",
+    "name": "Lake Muskoday",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Lake%20Muskoday%20Belle%20Isle%20Detroit%2042.3477498%2C-82.9701964",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3477498,-82.9701964&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3477498,-82.9701964",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "32613819",
+    "name": "Blue Heron Lagoon",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://www.detroitriver.org/glri-projects/blue-heron-lagoon",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Blue%20Heron%20Lagoon%20Belle%20Isle%20Detroit%2042.3484170%2C-82.9544693",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3484170,-82.9544693&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3484170,-82.9544693",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "420959",
+    "name": "Lake Okonoka",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://www.detroitriver.org/glri-projects/lake-okonoka",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Lake%20Okonoka%20Belle%20Isle%20Detroit%2042.3404759%2C-82.9623696",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3404759,-82.9623696&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3404759,-82.9623696",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "420953",
+    "name": "Lake Tacoma",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Lake%20Tacoma%20Belle%20Isle%20Detroit%2042.3342298%2C-82.9913659",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3342298,-82.9913659&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3342298,-82.9913659",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "842521472",
+    "name": "Coast Guard Station",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Coast%20Guard%20Station%20Belle%20Isle%20Detroit%2042.3400334%2C-82.9607022",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3400334,-82.9607022&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3400334,-82.9607022",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "107202909",
+    "name": "Giant Slide",
+    "sources": [
+      {
+        "label": "Selected reference photo",
+        "url": "https://upload.wikimedia.org/wikipedia/commons/9/91/Belle_Isle_Park_slide.jpg",
+        "kind": "inspected-photo"
+      },
+      {
+        "label": "Architectural photographs",
+        "url": "https://commons.wikimedia.org/wiki/File:Belle_Isle_Park_slide.jpg",
+        "kind": "inspected-photo-gallery"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Giant%20Slide%20Belle%20Isle%20Detroit%2042.3387773%2C-82.9852098",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3387773,-82.9852098&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3387773,-82.9852098",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": "2015-08-01; Drew Tarvin, CC BY 2.0"
+  },
+  {
+    "id": "macarthur-overlook",
+    "name": "MacArthur Bridge overlook",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://historicbridges.org/bridges/browser/?bridgebrowser=other/belle/",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=MacArthur%20Bridge%20overlook%20Belle%20Isle%20Detroit%2042.3397294%2C-82.9957244",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3397294,-82.9957244&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3397294,-82.9957244",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "14042075065",
+    "name": "Major General Alpheus Starkey Williams",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://historicdetroit.org/buildings/alpheus-starkey-williams-monument",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Major%20General%20Alpheus%20Starkey%20Williams%20Belle%20Isle%20Detroit%2042.3394395%2C-82.9865883",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3394395,-82.9865883&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3394395,-82.9865883",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "3726954170",
+    "name": "James J. Brady Memorial",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://historicdetroit.org/buildings/james-j-brady-monument",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=James%20J.%20Brady%20Memorial%20Belle%20Isle%20Detroit%2042.3392066%2C-82.9877454",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3392066,-82.9877454&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3392066,-82.9877454",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "3728142602",
+    "name": "Johann Friedrich von Schiller",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://detroit1701.org/von%20Schiller%20Sculpture.html",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Johann%20Friedrich%20von%20Schiller%20Belle%20Isle%20Detroit%2042.3414333%2C-82.9802109",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3414333,-82.9802109&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3414333,-82.9802109",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "3728142603",
+    "name": "Dante Alighieri",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://www.si.edu/search?edan_q=Dante%20Belle%20Isle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Dante%20Alighieri%20Belle%20Isle%20Detroit%2042.3417484%2C-82.9804112",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3417484,-82.9804112&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3417484,-82.9804112",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "4894343389",
+    "name": "Civil War / Grand Army of the Republic Memorial",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://suvcw.org/sites/default/files/2023-07/MI_Detroit_Sculpture_Belle_Isle_Central_and_Muse_Rds_redacted.pdf",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Civil%20War%20%2F%20Grand%20Army%20of%20the%20Republic%20Memorial%20Belle%20Isle%20Detroit%2042.3366822%2C-82.9939529",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3366822,-82.9939529&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3366822,-82.9939529",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "4894343390",
+    "name": "Samuel Francis Smith Memorial Flagpole",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://detroit1701.org/Smith%20Flagpole.htm",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Samuel%20Francis%20Smith%20Memorial%20Flagpole%20Belle%20Isle%20Detroit%2042.3378721%2C-82.9763215",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3378721,-82.9763215&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3378721,-82.9763215",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "6160033107",
+    "name": "James Scott statue",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://historicdetroit.org/buildings/james-scott-memorial-fountain",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=James%20Scott%20statue%20Belle%20Isle%20Detroit%2042.3351576%2C-82.9989426",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3351576,-82.9989426&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3351576,-82.9989426",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "6164960177",
+    "name": "Edmund Fitzgerald anchor / Lost Mariners Memorial",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://www.detroit1967.org/exhibitions/outdoor-treasures",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Edmund%20Fitzgerald%20anchor%20%2F%20Lost%20Mariners%20Memorial%20Belle%20Isle%20Detroit%2042.3349577%2C-82.9848115",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3349577,-82.9848115&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3349577,-82.9848115",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "6169445606",
+    "name": "General O. M. Poe Memorial",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://suvcw.org/sites/default/files/2023-07/MI_Detroit_Missing_Vicksburg_Cannon_Belle_Isle_Casino_redacted_0.pdf",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=General%20O.%20M.%20Poe%20Memorial%20Belle%20Isle%20Detroit%2042.3373392%2C-82.9923227",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3373392,-82.9923227&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3373392,-82.9923227",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "6169445607",
+    "name": "Spanish-American War Memorial",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://detroit1701.org/Span-Amer.%20War.html",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Spanish-American%20War%20Memorial%20Belle%20Isle%20Detroit%2042.3376054%2C-82.9925332",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3376054,-82.9925332&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3376054,-82.9925332",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "6169445608",
+    "name": "Partners: A Newsboy and His Dog",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://historicdetroit.org/buildings/newsboys-fountain",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Partners%3A%20A%20Newsboy%20and%20His%20Dog%20Belle%20Isle%20Detroit%2042.3369598%2C-82.9942459",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3369598,-82.9942459&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3369598,-82.9942459",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "6169445676",
+    "name": "Levi L. Barbour Memorial / Leaping Gazelle Fountain",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://historicdetroit.org/buildings/levi-l-barbour-memorial-fountain",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Levi%20L.%20Barbour%20Memorial%20%2F%20Leaping%20Gazelle%20Fountain%20Belle%20Isle%20Detroit%2042.3359841%2C-82.9866984",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3359841,-82.9866984&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3359841,-82.9866984",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "6169445677",
+    "name": "Peacock Sundial",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://www.si.edu/object/peacock-sundial-sculpture%3Asiris_ari_362298",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Peacock%20Sundial%20Belle%20Isle%20Detroit%2042.3358267%2C-82.9873237",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3358267,-82.9873237&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3358267,-82.9873237",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "6169445729",
+    "name": "Japanese Tohro (Stone Lantern)",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://www.detroit.us.emb-japan.go.jp/itpr_en/Stonelantern.html",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Japanese%20Tohro%20(Stone%20Lantern)%20Belle%20Isle%20Detroit%2042.3361343%2C-82.9860432",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3361343,-82.9860432&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3361343,-82.9860432",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "6179290150",
+    "name": "International Peace Memorial",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://www.hmdb.org/m.asp?m=212336",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=International%20Peace%20Memorial%20Belle%20Isle%20Detroit%2042.3359460%2C-82.9888287",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3359460,-82.9888287&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3359460,-82.9888287",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "6179290151",
+    "name": "Children’s Temperance Fountain",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://franceswillardhouse.omeka.net/exhibits/show/temperance-fountains--a-legacy/michigan",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Children%E2%80%99s%20Temperance%20Fountain%20Belle%20Isle%20Detroit%2042.3360518%2C-82.9855249",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3360518,-82.9855249&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3360518,-82.9855249",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "7247925681",
+    "name": "Ransom Eli Olds historical marker",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://www.michigandnr.com/PUBLICATIONS/pdfs/ArcGISOnline/StoryMaps/mhc_historical_markers/pdfs/MHC821997007.pdf",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Ransom%20Eli%20Olds%20historical%20marker%20Belle%20Isle%20Detroit%2042.3372519%2C-82.9932045",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3372519,-82.9932045&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3372519,-82.9932045",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "10243027033",
+    "name": "One World … Under Michigan Stars",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://content.govdelivery.com/accounts/MIDNR/bulletins/30682ff",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=One%20World%20%E2%80%A6%20Under%20Michigan%20Stars%20Belle%20Isle%20Detroit%2042.3433682%2C-82.9588055",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3433682,-82.9588055&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3433682,-82.9588055",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "6164925213",
+    "name": "Atom Gazelle",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://detroit1701.org/Gazelle%2C%20Belle%20Isle.html",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Atom%20Gazelle%20Belle%20Isle%20Detroit%2042.3507431%2C-82.9696212",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3507431,-82.9696212&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3507431,-82.9696212",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "6179290148",
+    "name": "Untitled — Stanley Dolega",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://detroit1701.org/Untitled,%20Belle%20Isle.html",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Untitled%20%E2%80%94%20Stanley%20Dolega%20Belle%20Isle%20Detroit%2042.3337278%2C-83.0041283",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3337278,-83.0041283&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3337278,-83.0041283",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "koi-pond-lantern",
+    "name": "Koi Pond stone lantern",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://www.detroit.us.emb-japan.go.jp/itpr_en/Stonelantern.html",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Koi%20Pond%20stone%20lantern%20Belle%20Isle%20Detroit%2042.3365287%2C-82.9855092",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3365287,-82.9855092&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3365287,-82.9855092",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "507125654",
+    "name": "Belle Isle White House",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://www.historicdetroit.org/buildings/white-house",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Belle%20Isle%20White%20House%20Belle%20Isle%20Detroit%2042.3372770%2C-82.9845563",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3372770,-82.9845563&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3372770,-82.9845563",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "507290052",
+    "name": "Belle Isle former stable yard",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://www.michigan.gov/dnr/managing-resources/prd/bip-strategic-plan",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Belle%20Isle%20former%20stable%20yard%20Belle%20Isle%20Detroit%2042.3383244%2C-82.9843874",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3383244,-82.9843874&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3383244,-82.9843874",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "11390626964",
+    "name": "Belle Isle Park welcome sign",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Belle%20Isle%20Park%20welcome%20sign%20Belle%20Isle%20Detroit%2042.3467520%2C-83.0015405",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3467520,-83.0015405&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3467520,-83.0015405",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "10056327048",
+    "name": "Belle Isle Sunset Point",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Belle%20Isle%20Sunset%20Point%20Belle%20Isle%20Detroit%2042.3331082%2C-83.0049143",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3331082,-83.0049143&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3331082,-83.0049143",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "12832748248",
+    "name": "Wet-Mesic Flatwoods Forest",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Wet-Mesic%20Flatwoods%20Forest%20Belle%20Isle%20Detroit%2042.3446829%2C-82.9762594",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3446829,-82.9762594&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3446829,-82.9762594",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "107195387",
+    "name": "Sunset Point Restroom",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Sunset%20Point%20Restroom%20Belle%20Isle%20Detroit%2042.3337280%2C-83.0031151",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3337280,-83.0031151&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3337280,-83.0031151",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "107202856",
+    "name": "Athletic Shelter",
+    "sources": [
+      {
+        "label": "Selected reference photo",
+        "url": "https://storage.googleapis.com/historic-detroit-prod/uploads/photo/photo/25988/H6030783-Pano.jpg",
+        "kind": "inspected-photo"
+      },
+      {
+        "label": "Architectural photographs",
+        "url": "https://historicdetroit.org/galleries/athletic-pavilion-photos",
+        "kind": "inspected-photo-gallery"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Athletic%20Shelter%20Belle%20Isle%20Detroit%2042.3398248%2C-82.9802898",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3398248,-82.9802898&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3398248,-82.9802898",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": "2025-11-03"
+  },
+  {
+    "id": "107202862",
+    "name": "Stone Comfort Station",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Stone%20Comfort%20Station%20Belle%20Isle%20Detroit%2042.3367407%2C-82.9901113",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3367407,-82.9901113&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3367407,-82.9901113",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "107202864",
+    "name": "Shelter #4",
+    "sources": [
+      {
+        "label": "Selected reference photo",
+        "url": "https://www.midnr.com/Publications/pdfs/ArcGISOnline/StoryMaps/prd_belleIsle/images/belle%20isle%20shelters%20plus/BelleIsle-20140925-4974_CentralAve_Shelter04.jpg",
+        "kind": "inspected-photo"
+      },
+      {
+        "label": "Architectural photographs",
+        "url": "https://www.midnr.com/Publications/pdfs/ArcGISOnline/StoryMaps/prd_belleIsle/images/belle%20isle%20shelters%20plus/",
+        "kind": "inspected-photo-gallery"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Shelter%20%234%20Belle%20Isle%20Detroit%2042.3372115%2C-82.9902303",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3372115,-82.9902303&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3372115,-82.9902303",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": "2014-09-25"
+  },
+  {
+    "id": "107202866",
+    "name": "Shelter #6",
+    "sources": [
+      {
+        "label": "Selected reference photo",
+        "url": "https://www.midnr.com/Publications/pdfs/ArcGISOnline/StoryMaps/prd_belleIsle/images/belle%20isle%20shelters%20plus/BelleIsle-20140925-4989_CentralAve_Shelter06.jpg",
+        "kind": "inspected-photo"
+      },
+      {
+        "label": "Architectural photographs",
+        "url": "https://www.midnr.com/Publications/pdfs/ArcGISOnline/StoryMaps/prd_belleIsle/images/belle%20isle%20shelters%20plus/",
+        "kind": "inspected-photo-gallery"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Shelter%20%236%20Belle%20Isle%20Detroit%2042.3380992%2C-82.9876004",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3380992,-82.9876004&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3380992,-82.9876004",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": "2014-09-25"
+  },
+  {
+    "id": "107202876",
+    "name": "Shelter #2",
+    "sources": [
+      {
+        "label": "Selected reference photo",
+        "url": "https://www.midnr.com/Publications/pdfs/ArcGISOnline/StoryMaps/prd_belleIsle/images/belle%20isle%20shelters%20plus/BelleIsle-20140925-4951_Shadynook-Shelter02.jpg",
+        "kind": "inspected-photo"
+      },
+      {
+        "label": "Architectural photographs",
+        "url": "https://www.midnr.com/Publications/pdfs/ArcGISOnline/StoryMaps/prd_belleIsle/images/belle%20isle%20shelters%20plus/",
+        "kind": "inspected-photo-gallery"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Shelter%20%232%20Belle%20Isle%20Detroit%2042.3357736%2C-82.9933169",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3357736,-82.9933169&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3357736,-82.9933169",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": "2014-09-25"
+  },
+  {
+    "id": "107202892",
+    "name": "Kids Row Comfort Station",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Kids%20Row%20Comfort%20Station%20Belle%20Isle%20Detroit%2042.3394709%2C-82.9852077",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3394709,-82.9852077&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3394709,-82.9852077",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "107202908",
+    "name": "Shelter #3",
+    "sources": [
+      {
+        "label": "Selected reference photo",
+        "url": "https://www.midnr.com/Publications/pdfs/ArcGISOnline/StoryMaps/prd_belleIsle/images/belle%20isle%20shelters%20plus/BelleIsle-20140925-4962_LoiterWay_Shelter03.jpg",
+        "kind": "inspected-photo"
+      },
+      {
+        "label": "Architectural photographs",
+        "url": "https://www.midnr.com/Publications/pdfs/ArcGISOnline/StoryMaps/prd_belleIsle/images/belle%20isle%20shelters%20plus/",
+        "kind": "inspected-photo-gallery"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Shelter%20%233%20Belle%20Isle%20Detroit%2042.3357677%2C-82.9910834",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3357677,-82.9910834&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3357677,-82.9910834",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": "2014-09-25"
+  },
+  {
+    "id": "107205444",
+    "name": "Shelter #5",
+    "sources": [
+      {
+        "label": "Selected reference photo",
+        "url": "https://www.midnr.com/Publications/pdfs/ArcGISOnline/StoryMaps/prd_belleIsle/images/belle%20isle%20shelters%20plus/BelleIsle-20140925-4983_CentralAve_Shelter05.jpg",
+        "kind": "inspected-photo"
+      },
+      {
+        "label": "Architectural photographs",
+        "url": "https://www.midnr.com/Publications/pdfs/ArcGISOnline/StoryMaps/prd_belleIsle/images/belle%20isle%20shelters%20plus/",
+        "kind": "inspected-photo-gallery"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Shelter%20%235%20Belle%20Isle%20Detroit%2042.3394364%2C-82.9892469",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3394364,-82.9892469&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3394364,-82.9892469",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": "2014-09-25"
+  },
+  {
+    "id": "107205456",
+    "name": "Shelter #9",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Shelter%20%239%20Belle%20Isle%20Detroit%2042.3348652%2C-82.9832974",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3348652,-82.9832974&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3348652,-82.9832974",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "107205462",
+    "name": "Shelter #8",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Shelter%20%238%20Belle%20Isle%20Detroit%2042.3410862%2C-82.9853408",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3410862,-82.9853408&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3410862,-82.9853408",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "368854135",
+    "name": "Shelter #10",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Shelter%20%2310%20Belle%20Isle%20Detroit%2042.3410595%2C-82.9831828",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3410595,-82.9831828&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3410595,-82.9831828",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "368854136",
+    "name": "Shelter #11",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Shelter%20%2311%20Belle%20Isle%20Detroit%2042.3415373%2C-82.9817534",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3415373,-82.9817534&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3415373,-82.9817534",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "368854137",
+    "name": "Shelter #12",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Shelter%20%2312%20Belle%20Isle%20Detroit%2042.3420385%2C-82.9802426",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3420385,-82.9802426&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3420385,-82.9802426",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "368854142",
+    "name": "Historic Police Headquarters",
+    "sources": [
+      {
+        "label": "Selected reference photo",
+        "url": "https://storage.googleapis.com/historic-detroit-prod/uploads/photo/photo/5689/Y1050516sig.jpg",
+        "kind": "inspected-photo"
+      },
+      {
+        "label": "Architectural photographs",
+        "url": "https://historicdetroit.org/galleries/belle-isle-police-station-photos",
+        "kind": "inspected-photo-gallery"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Historic%20Police%20Headquarters%20Belle%20Isle%20Detroit%2042.3403985%2C-82.9866751",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3403985,-82.9866751&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3403985,-82.9866751",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": "Gallery includes 2025 photographs; selected older front photo undated"
+  },
+  {
+    "id": "368854143",
+    "name": "Oakway Refectory",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Oakway%20Refectory%20Belle%20Isle%20Detroit%2042.3440066%2C-82.9772123",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3440066,-82.9772123&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3440066,-82.9772123",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "368854145",
+    "name": "Beach House",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Beach%20House%20Belle%20Isle%20Detroit%2042.3440397%2C-82.9789124",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3440397,-82.9789124&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3440397,-82.9789124",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "368854147",
+    "name": "Bear Pit Comfort Station",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Bear%20Pit%20Comfort%20Station%20Belle%20Isle%20Detroit%2042.3398824%2C-82.9862245",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3398824,-82.9862245&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3398824,-82.9862245",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "507125655",
+    "name": "Golightly Annex",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Golightly%20Annex%20Belle%20Isle%20Detroit%2042.3372616%2C-82.9841662",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3372616,-82.9841662&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3372616,-82.9841662",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "507125666",
+    "name": "Harbor Master",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Harbor%20Master%20Belle%20Isle%20Detroit%2042.3395853%2C-82.9973282",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3395853,-82.9973282&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3395853,-82.9973282",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "507125668",
+    "name": "Belle Isle Pump Station",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Belle%20Isle%20Pump%20Station%20Belle%20Isle%20Detroit%2042.3389176%2C-82.9977322",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3389176,-82.9977322&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3389176,-82.9977322",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "507290048",
+    "name": "Century Barn",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Century%20Barn%20Belle%20Isle%20Detroit%2042.3370232%2C-82.9835236",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3370232,-82.9835236&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3370232,-82.9835236",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "507290050",
+    "name": "Drying Shed",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Drying%20Shed%20Belle%20Isle%20Detroit%2042.3387731%2C-82.9833787",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3387731,-82.9833787&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3387731,-82.9833787",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "658316512",
+    "name": "Shelter #1",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Shelter%20%231%20Belle%20Isle%20Detroit%2042.3373294%2C-82.9941991",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3373294,-82.9941991&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3373294,-82.9941991",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "927879992",
+    "name": "Food Truck Court",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Food%20Truck%20Court%20Belle%20Isle%20Detroit%2042.3443047%2C-82.9787629",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3443047,-82.9787629&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3443047,-82.9787629",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "10243027076",
+    "name": "Ralph Wilson Gateway & Trail",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Ralph%20Wilson%20Gateway%20%26%20Trail%20Belle%20Isle%20Detroit%2042.3429577%2C-82.9596302",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3429577,-82.9596302&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3429577,-82.9596302",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "10243083668",
+    "name": "Ralph C. Wilson Trail Map Kiosk",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Ralph%20C.%20Wilson%20Trail%20Map%20Kiosk%20Belle%20Isle%20Detroit%2042.3429409%2C-82.9597123",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3429409,-82.9597123&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3429409,-82.9597123",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "10941115874",
+    "name": "Rope Swing",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Rope%20Swing%20Belle%20Isle%20Detroit%2042.3490761%2C-82.9568400",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3490761,-82.9568400&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3490761,-82.9568400",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "11742931618",
+    "name": "Kayak Sandbar",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Kayak%20Sandbar%20Belle%20Isle%20Detroit%2042.3483852%2C-82.9547446",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3483852,-82.9547446&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3483852,-82.9547446",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "14040669253",
+    "name": "Covered Bridge",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Covered%20Bridge%20Belle%20Isle%20Detroit%2042.3465992%2C-82.9716666",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3465992,-82.9716666&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3465992,-82.9716666",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "14040681549",
+    "name": "Wet-Mesic Flatwoods Forest",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Wet-Mesic%20Flatwoods%20Forest%20Belle%20Isle%20Detroit%2042.3402026%2C-82.9692040",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3402026,-82.9692040&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3402026,-82.9692040",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "14040784064",
+    "name": "Nature Megaphone",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Nature%20Megaphone%20Belle%20Isle%20Detroit%2042.3465473%2C-82.9644450",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3465473,-82.9644450&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3465473,-82.9644450",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "14040784069",
+    "name": "Wet-Mesic Flatwoods Forest",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Wet-Mesic%20Flatwoods%20Forest%20Belle%20Isle%20Detroit%2042.3474374%2C-82.9655491",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3474374,-82.9655491&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3474374,-82.9655491",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "368854138",
+    "name": "Shelter #14",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Shelter%20%2314%20Belle%20Isle%20Detroit%2042.3393723%2C-82.9715659",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3393723,-82.9715659&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3393723,-82.9715659",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "368854139",
+    "name": "Shelter #15",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Shelter%20%2315%20Belle%20Isle%20Detroit%2042.3396393%2C-82.9702725",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3396393,-82.9702725&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3396393,-82.9702725",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "368854144",
+    "name": "Woodside Comfort Station",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Woodside%20Comfort%20Station%20Belle%20Isle%20Detroit%2042.3395742%2C-82.9697197",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3395742,-82.9697197&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3395742,-82.9697197",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "368859189",
+    "name": "Woodside Shelter",
+    "sources": [
+      {
+        "label": "Architectural photographs",
+        "url": "https://tourmkr.com/F1PKDoc8Xa/43649247p&143.9h&86.1t",
+        "kind": "inspected-photo-gallery"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Woodside%20Shelter%20Belle%20Isle%20Detroit%2042.3404179%2C-82.9675065",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3404179,-82.9675065&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3404179,-82.9675065",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": "Official DNR-linked Able Eyes tour; capture date not supplied"
+  },
+  {
+    "id": "513165063",
+    "name": "U.S. Coast Guard Station",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=U.S.%20Coast%20Guard%20Station%20Belle%20Isle%20Detroit%2042.3401291%2C-82.9603451",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3401291,-82.9603451&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3401291,-82.9603451",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "1119922103",
+    "name": "Shelter 17",
+    "sources": [
+      {
+        "label": "Architectural photographs",
+        "url": "https://tourmkr.com/F1PKDoc8Xa/43649249p&146.28h&85.51t",
+        "kind": "inspected-photo-gallery"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Shelter%2017%20Belle%20Isle%20Detroit%2042.3410154%2C-82.9662355",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3410154,-82.9662355&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3410154,-82.9662355",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": "Official DNR-linked Able Eyes tour; capture date not supplied"
+  },
+  {
+    "id": "1119922107",
+    "name": "Shelter 18",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Shelter%2018%20Belle%20Isle%20Detroit%2042.3436068%2C-82.9614995",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3436068,-82.9614995&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3436068,-82.9614995",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "368854140",
+    "name": "Shelter #19",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Shelter%20%2319%20Belle%20Isle%20Detroit%2042.3509635%2C-82.9687603",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3509635,-82.9687603&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3509635,-82.9687603",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "368854146",
+    "name": "Oxbow Comfort Station",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Oxbow%20Comfort%20Station%20Belle%20Isle%20Detroit%2042.3501336%2C-82.9675488",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3501336,-82.9675488&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3501336,-82.9675488",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "32613652",
+    "name": "Loop Canal",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Loop%20Canal%20Belle%20Isle%20Detroit%2042.3380146%2C-82.9966302",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3380146,-82.9966302&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3380146,-82.9966302",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "32613741",
+    "name": "Nashua Canal",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Nashua%20Canal%20Belle%20Isle%20Detroit%2042.3406431%2C-82.9763889",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3406431,-82.9763889&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3406431,-82.9763889",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "51495153",
+    "name": "Sylvan Canal",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Sylvan%20Canal%20Belle%20Isle%20Detroit%2042.3441723%2C-82.9757878",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3441723,-82.9757878&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3441723,-82.9757878",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "51495155",
+    "name": "Model Yacht Basin",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Model%20Yacht%20Basin%20Belle%20Isle%20Detroit%2042.3367932%2C-82.9769854",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3367932,-82.9769854&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3367932,-82.9769854",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "762688416",
+    "name": "Koi & Lily Pond",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://www.belleisleconservancy.org/explore",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Koi%20%26%20Lily%20Pond%20Belle%20Isle%20Detroit%2042.3365333%2C-82.9855117",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3365333,-82.9855117&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3365333,-82.9855117",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "107227702",
+    "name": "Conservatory Formal Gardens",
+    "sources": [
+      {
+        "label": "Landmark reference",
+        "url": "https://www.belleisleconservancy.org/explore",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Conservatory%20Formal%20Gardens%20Belle%20Isle%20Detroit%2042.3360373%2C-82.9864537",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3360373,-82.9864537&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3360373,-82.9864537",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "107230550",
+    "name": "Public restrooms",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Public%20restrooms%20Belle%20Isle%20Detroit%2042.3369244%2C-82.9864787",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3369244,-82.9864787&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3369244,-82.9864787",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "509325790",
+    "name": "Park service shed",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Park%20service%20shed%20Belle%20Isle%20Detroit%2042.3443909%2C-82.9784519",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3443909,-82.9784519&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3443909,-82.9784519",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "658324939",
+    "name": "Public restrooms",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Public%20restrooms%20Belle%20Isle%20Detroit%2042.3472434%2C-82.9753126",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3472434,-82.9753126&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3472434,-82.9753126",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "658930564",
+    "name": "Picnic shelter",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Picnic%20shelter%20Belle%20Isle%20Detroit%2042.3370057%2C-82.9863791",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3370057,-82.9863791&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3370057,-82.9863791",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "659866903",
+    "name": "Picnic shelter",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Picnic%20shelter%20Belle%20Isle%20Detroit%2042.3383093%2C-82.9855055",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3383093,-82.9855055&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3383093,-82.9855055",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "860335416",
+    "name": "Picnic shelter",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Picnic%20shelter%20Belle%20Isle%20Detroit%2042.3469354%2C-82.9750396",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3469354,-82.9750396&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3469354,-82.9750396",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "842521477",
+    "name": "Park service shed",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Park%20service%20shed%20Belle%20Isle%20Detroit%2042.3400653%2C-82.9613248",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3400653,-82.9613248&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3400653,-82.9613248",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "1115092596",
+    "name": "Park service shed",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Park%20service%20shed%20Belle%20Isle%20Detroit%2042.3403031%2C-82.9600432",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3403031,-82.9600432&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3403031,-82.9600432",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "1115092598",
+    "name": "Picnic shelter",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Picnic%20shelter%20Belle%20Isle%20Detroit%2042.3398385%2C-82.9606261",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3398385,-82.9606261&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3398385,-82.9606261",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "1119940208",
+    "name": "Picnic shelter",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Picnic%20shelter%20Belle%20Isle%20Detroit%2042.3428760%2C-82.9596657",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3428760,-82.9596657&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3428760,-82.9596657",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  },
+  {
+    "id": "1163961005",
+    "name": "Picnic shelter",
+    "sources": [
+      {
+        "label": "Park reference",
+        "url": "https://www.michigan.gov/recsearch/parks/belleisle",
+        "kind": "existing-source"
+      },
+      {
+        "label": "Google Maps & photos",
+        "url": "https://www.google.com/maps/search/?api=1&query=Picnic%20shelter%20Belle%20Isle%20Detroit%2042.3483463%2C-82.9743932",
+        "kind": "map-search"
+      },
+      {
+        "label": "Satellite map",
+        "url": "https://www.google.com/maps/@?api=1&map_action=map&center=42.3483463,-82.9743932&zoom=19&basemap=satellite",
+        "kind": "satellite"
+      },
+      {
+        "label": "Street View nearby",
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=42.3483463,-82.9743932",
+        "kind": "street-view-coverage"
+      }
+    ],
+    "referenceDate": null
+  }
+]

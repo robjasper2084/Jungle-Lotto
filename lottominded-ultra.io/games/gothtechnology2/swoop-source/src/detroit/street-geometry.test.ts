@@ -1,10 +1,37 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {drapeStreet,drapeJunction,streetSurfaceLift} from './street-geometry.ts';
+import {drapeStreet,drapeJunction,streetSurfaceLift,streetFootprint,streetVertexNormal} from './street-geometry.ts';
 import {terrainChunks} from './world.ts';
 import type {TerrainChunk} from './world.ts';
 import {CITY} from './geography.ts';
 const chunks=terrainChunks();
+
+test('all mapped road and sidewalk footprints remain convex at short bends',()=>{
+ let checked=0;
+ for(const road of CITY.roads)for(let i=1;i<road.points.length;i++){
+  const a=road.points[i-1],b=road.points[i];if(Math.hypot(b[0]-a[0],b[1]-a[1])<.2)continue;
+  for(const [half,offset] of [[road.width/2,0],[1.4,road.width/2+1.55],[1.4,-road.width/2-1.55]]){
+   const p=streetFootprint({a:{x:a[0],z:a[1]},b:{x:b[0],z:b[1]},half,offset,lift:0,joinA:streetVertexNormal(road.points,i-1),joinB:streetVertexNormal(road.points,i)});
+   for(let j=0;j<p.length;j++){
+    const v=p[j],q=p[(j+1)%p.length],w=p[(j+2)%p.length];
+    assert.ok(Number.isFinite(v.x)&&Number.isFinite(v.z));
+    assert.ok((q.x-v.x)*(w.z-q.z)-(q.z-v.z)*(w.x-q.x)>=-1e-7,`${road.name} ${road.id} segment ${i} folded corner`);
+   }
+   checked++;
+  }
+ }
+ assert.ok(checked>10000);
+});
+
+test('Atwater hairpin trims its folded inner edge instead of emitting reverse triangles',()=>{
+ const road=CITY.roads.find(r=>r.id==='8740420')!,i=road.points.findIndex(p=>p[0]===.55&&p[1]===101.03);
+ assert.ok(i>0);
+ const a=road.points[i-1],b=road.points[i];
+ const tile:TerrainChunk={x:50,z:150,vertices:new Float32Array([0,0,100,100,0,100,0,0,200,100,0,200]),indices:new Uint32Array([0,2,1,1,2,3]),surfaces:['grass','grass']};
+ const result=drapeStreet({a:{x:a[0],z:a[1]},b:{x:b[0],z:b[1]},half:road.width/2,offset:0,lift:.035,joinA:streetVertexNormal(road.points,i-1),joinB:streetVertexNormal(road.points,i)},[tile],()=>0);
+ assert.ok(result.length);
+ for(const {positions:p} of result)for(let j=0;j<p.length;j+=9)assert.ok((p[j+5]-p[j+2])*(p[j+6]-p[j])-(p[j+3]-p[j])*(p[j+8]-p[j+2])>0,'no inverted road faces');
+});
 test('the greenway remains asphalt through overlapping concrete pedestrian crossings',()=>{
  const cut=streetSurfaceLift({kind:'cycleway',name:'Dequindre Cut Greenway'});
  assert.ok(cut-streetSurfaceLift({kind:'footway'})>=.014,'separate depth keeps a concrete corner from cutting across the trail');

@@ -1,0 +1,26 @@
+{
+  "capturedAt": "2026-10-10T00:56:01.769Z",
+  "action": "Start offline AI practice, W held 3 seconds, F held 1 second",
+  "data": {
+    "canvas": {
+      "adaptiveDetail": "1",
+      "antialias": "true",
+      "engine": "three.js r185",
+      "engineFrames": "8490",
+      "engineModule": "41406a6bd53c5e3bd83095074ed04d256314670a8c25b61418bfd2d0f01a780f",
+      "engineTick": "1415",
+      "frameLimit": "60",
+      "pixelRatio": "1.5",
+      "profile": "{\"fps\":59.99100134979766,\"p95\":16.900000000001455,\"calls\":126,\"triangles\":133064}",
+      "quality": "high",
+      "qualityChoice": "auto",
+      "qualityReason": "Desktop hardware",
+      "shadowSize": "2048",
+      "textureLimit": "2048"
+    },
+    "hud": "6 RIDERS REMAINIntegrity 100 / Shield 50 / Flow 100Static Blaster · 79 shots · 1 repairsField 292m → 210m · 60s",
+    "identity": "{\"engine\":\"6b4d4e1f10dee9b1c8932db95f91b92e3eceb7db\",\"module\":\"41406a6bd53c5e3bd83095074ed04d256314670a8c25b61418bfd2d0f01a780f\",\"bridgeAbi\":2,\"engineRules\":\"static-royale-cpp-1\"}",
+    "url": "http://127.0.0.1:4191/arcade/swoop-detroit/royale.html?from=swoop&engine=breadflower"
+  },
+  "errors": []
+}

@@ -1,3 +1,5 @@
+import {mountedClearance} from './mountedClearance.ts';
+import {interpolateFoot,footFields,footState,stepOnFoot,knockOffOnFoot} from './onFoot.ts';
 import {FallMotion,getUpPose} from './fallMotion.ts';
 import {RideFeedback} from './rideFeedback.ts';
 import {SpecialMoves} from './specialMoves.ts';
@@ -9,14 +11,15 @@ import {RIDE_TUNING as tune,clamp,damp,angle,spring,advanceSpring,advanceDrive} 
 import type {RideTuning} from './rideDynamics.ts';
 
 export const NEUTRAL_ACTIONS={throttle:0,steer:0,crouch:false,hop:false,hopHeld:false,reset:false,trick:0};
-export type RideActions=typeof NEUTRAL_ACTIONS & {eyeControl?:boolean};
+export type RideActions=typeof NEUTRAL_ACTIONS & {eyeControl?:boolean;facingYaw?:number;dismount?:boolean;recover?:boolean;run?:boolean;prone?:boolean;lean?:number;mountBlocked?:boolean;interruptMount?:boolean;evade?:number;evadeSpeed?:number;evadeProgress?:number;vault?:boolean;quickMount?:boolean;stableAI?:boolean};
 export function createPose(){return {
+  ...footFields(),
   stopFoot:0,stopFootX:0,stopFootY:0,stopFootZ:0,warningLevel:0,beepPulse:0,scrape:0,scrapeSide:0,scrapeX:0,scrapeY:0,scrapeZ:0,scrapeHard:0,
   trickFoot:0,x:0,y:0,z:0,headingY:0,speed:0,wheelSpin:0,groundPitch:0,groundRoll:0,
   rollAngle:0,riderRoll:0,riderPitch:0,wheelPitch:0,suspensionOffset:0,
   crouch:0,tuck:0,attack:0,carveStance:0,technicalTurn:0,riderTurnTwist:0,riderLookYaw:0,
   reverseBlend:0,restFactor:0,airBlend:0,airHeight:0,wobble:0,wobbleSway:0,wobbleFight:0,wobbleYaw:0,wobbleRoll:0,
-  crashContact:0,crashReach:0,crashAbsorb:0,crashCurl:0,crashHeadTuck:0,crashStagger:0,crashSide:0,crashDirection:0,crashRecovery:0,crashMotion:0,crashBrace:0,crashRelease:0,crashSettle:0,crashLegTuck:0,crashImpactPulse:0,wheelCrashForward:0,wheelCrashLateral:0,crashBlend:0,crashLateral:0,crashDrop:0,crashForward:0,crashTumble:0,crashRoll:0,
+  crashKind:0,crashTime:0,crashContact:0,crashReach:0,crashAbsorb:0,crashCurl:0,crashHeadTuck:0,crashStagger:0,crashSide:0,crashDirection:0,crashRecovery:0,crashMotion:0,crashBrace:0,crashRelease:0,crashSettle:0,crashLegTuck:0,crashImpactPulse:0,wheelCrashForward:0,wheelCrashLateral:0,crashBlend:0,crashLateral:0,crashDrop:0,crashForward:0,crashTumble:0,crashRoll:0,
   wheelCrashPop:0,wheelCrashSpin:0,wheelCrashLean:0,
   velocityX:0,velocityZ:0,yawRate:0,turnIntent:0,brakeAmount:0,landingCompression:0,
   takeoffExtension:0,landingAnticipation:0,bodyBob:0,motorLoad:0,tiltback:0,slipAngle:0,rollVelocity:0,
@@ -28,11 +31,15 @@ export function createPose(){return {
 };}
 export type RidePose=ReturnType<typeof createPose>;
 export function copyPose(from:RidePose,to:RidePose){Object.assign(to,from);}
-export function lerpPose(a:RidePose,b:RidePose,t:number,out:RidePose){const f=clamp(t,0,1);for(const key of Object.keys(a) as (keyof RidePose)[])out[key]=a[key]+(b[key]-a[key])*f;}
+export function lerpPose(a:RidePose,b:RidePose,t:number,out:RidePose){const f=clamp(t,0,1);for(const key of Object.keys(a) as (keyof RidePose)[])out[key]=a[key]+(b[key]-a[key])*f;interpolateFoot(a,b,f,out);out.crashKind=b.crashKind;}
 type Spawn={position:Vec3;headingY:number};
 
 /** Original Motion 4: jerk-limited motor, bank-led steering and articulated body at 120 Hz. */
 export class RideController {
+  private walking=footState();
+  /** Selected-profile governor, opt-in for combat. Normal modes keep existing motor drag. */
+  regulatedSpeed=false;
+  combatOnFoot=false;
   private tuning:RideTuning=tune;
   terrain:TerrainSampler;
   wheelScale=.86;
@@ -47,7 +54,7 @@ export class RideController {
   readonly tricks=new SpecialMoves();
   private grounded=true;private groundAge=0;private hopQueue=0;private hopDown=false;
   private hopWindup=0;private pendingCharge=0;
-  private recoveryAge=-1;private recoveryRest:RidePose|undefined;private crashAge=0;private fallMotion:FallMotion|undefined;private flightYaw=0;private distance=0;private idlePhase=0;
+  private combatFallAge=-1;private recoveryAge=-1;private recoveryRest:RidePose|undefined;private crashAge=0;private fallMotion:FallMotion|undefined;private flightYaw=0;private distance=0;private idlePhase=0;
   private counts={hops:0,landings:0,crashes:0,spins:0};
   crashed=false;crashCause='';groundClearance=0;touchedDown=false;
   lastLandingImpact=0;lastLandingQuality='clean';lastHopCharge=0;
@@ -66,8 +73,12 @@ export class RideController {
     const decode=(v:any):any=>v&&typeof v==='object'?v.__undefined===true?undefined:v.__map?new Map(v.__map.map(([k,x]:[string,unknown])=>[k,decode(x)])):Array.isArray(v)?v.map(decode):Object.fromEntries(Object.entries(v).map(([k,x])=>[k,decode(x)])):v;
     const restore=(target:any,source:any)=>{for(const [k,v] of Object.entries(source)){const current=target[k];if(v&&typeof v==='object'&&!(v as any).__undefined&&!(v as any).__map&&current&&typeof current==='object'&&Object.getPrototypeOf(current)!==Object.prototype){restore(current,v);}else target[k]=decode(v);}};
     restore(this,fields);
+    // Keep prediction compatible with a still-running pre-MSJ authority. This
+    // is derived only from trusted snapshots, never from player commands.
+    if(fields.walking)this.walking.legacyLocomotion=fields.walking.legacyLocomotion??!Object.hasOwn(fields.walking,'msjVelocityX');
   }
   reset(spawn:Spawn=this.spawn){
+    this.walking=footState();
     this.spawn={position:{...spawn.position},headingY:spawn.headingY};this.safe=this.spawn;
     this.pose=createPose();Object.assign(this.pose,this.spawn.position,{headingY:spawn.headingY});
     this.pose.y=this.terrain.sampleGround(this.pose.x,this.pose.z,this.ground,this.pose.y).height;
@@ -75,18 +86,45 @@ export class RideController {
     this.balance=new BalanceEngine(this.tuning);this.pitch=spring();this.suspension=spring();this.hip=spring();this.arms=spring();
     this.naturalMotion=new NaturalMotionEngine();this.feedback=new RideFeedback();this.tricks.reset();
     this.stoppedFor=0;
-    this.hopWindup=this.pendingCharge=0;this.fallMotion=undefined;this.recoveryAge=-1;this.recoveryRest=undefined;
+    this.hopWindup=this.pendingCharge=0;this.fallMotion=undefined;this.combatFallAge=-1;this.recoveryAge=-1;this.recoveryRest=undefined;
     this.counts={hops:0,landings:0,crashes:0,spins:0};this.grounded=true;this.crashed=false;this.crashCause='';
     this.groundClearance=0;this.touchedDown=false;this.groundAge=0;this.hopQueue=0;this.hopDown=false;
     this.brakeLatch=false;this.reverseReady=false;this.lastLandingImpact=0;this.lastHopCharge=0;this.lastLandingQuality='clean';
   }
-  private fall(reason:string){if(this.crashed)return;this.crashed=true;this.crashCause=reason;this.counts.crashes++;this.crashAge=0;this.fallMotion=new FallMotion(this.pose,reason);this.charge=this.hopQueue=0;}
+  private fall(reason:string,impact?:{speed:number;vx:number;vz:number}){if(this.crashed||this.combatFallAge>=0)return;if(this.combatOnFoot){this.fallMotion=new FallMotion(this.pose,reason,.255,impact);this.combatFallAge=0;knockOffOnFoot(this.walking,this.pose);this.walking.carryX=this.walking.carryZ=0;this.crashCause=reason;this.counts.crashes++;this.charge=this.hopQueue=0;return;}this.crashed=true;this.crashCause=reason;this.counts.crashes++;this.crashAge=0;this.fallMotion=new FallMotion(this.pose,reason,.255,impact);this.charge=this.hopQueue=0;}
+  /** Host-selected contact; clients never submit a victim, pose or knock-off. */
+  knockOff(reason='dog power-up',impact?:{speed:number;vx:number;vz:number}){if(this.combatFallAge>=0)return false;if(this.combatOnFoot&&this.pose.footMode){knockOffOnFoot(this.walking,this.pose);return true;}if(!this.pose.footMode&&!this.crashed){this.fall(reason,impact);return true;}return false;}
+  /** Combat knock-offs share the full fall, then recover beside the parked wheel.
+   * The authoritative actor follows the swept body, rather than standing at the wheel. */
+  private stepCombatFall(dt:number,input:RideActions){
+    const p=this.pose,f=this.fallMotion!,i=f.initial;this.combatFallAge+=dt;
+    const down=f.settleTime/1.65,age=this.combatFallAge;
+    if(age<=down){
+      f.sample(age*1.65,p);
+      const distance=Math.hypot(p.crashLateral,p.crashForward),scale=distance>1.05?1.05/distance:1;
+      const dx=(p.crashLateral*Math.cos(i.headingY)+p.crashForward*Math.sin(i.headingY))*scale,dz=(-p.crashLateral*Math.sin(i.headingY)+p.crashForward*Math.cos(i.headingY))*scale,length=Math.hypot(dx,dz);
+      const hit=length>.001?this.terrain.raycastObstacle({x:i.x,y:i.y+.55,z:i.z},{x:dx/length,y:0,z:dz/length},length+.3,.27):null;
+      const clear=hit===null?1:clamp((hit-.3)/Math.max(.001,length),0,1);p.x=i.x+dx*clear;p.z=i.z+dz*clear;
+      p.crashLateral=p.crashForward=0;this.recoveryRest={...p};
+    }else getUpPose(this.recoveryRest!,clamp((age-down)/.9,0,1),p,false);
+    p.footMode=2;p.footBlend=1;p.footStagger=1;this.walking.stagger=.8;
+    p.y=this.terrain.sampleGround(p.x,p.z,this.ground,p.y).height;p.airHeight=p.airBlend=p.speed=p.velocityX=p.velocityZ=0;
+    p.headingY=i.headingY;p.parkX=i.x;p.parkY=i.y-i.airHeight;p.parkZ=i.z;p.parkHeading=i.headingY;
+    const dx=p.parkX-p.x,dz=p.parkZ-p.z;p.wheelCrashLateral=dx*Math.cos(p.headingY)-dz*Math.sin(p.headingY);p.wheelCrashForward=dx*Math.sin(p.headingY)+dz*Math.cos(p.headingY);
+    if(input.recover)this.walking.recoverFor=2;
+    this.vx=this.vz=this.velocityY=this.motor=this.acceleration=0;this.grounded=true;this.tricks.cancel();
+    if(age>=down+.9){for(const key of Object.keys(p) as (keyof RidePose)[])if(key.startsWith('crash')||key.startsWith('wheelCrash'))p[key]=0;this.walking.stagger=p.footStagger=0;this.combatFallAge=-1;this.fallMotion=undefined;this.recoveryRest=undefined;}
+  }
   private finishRecovery(){const counts={...this.counts},distance=this.distance,origin=this.spawn;this.reset(this.safe);this.spawn=origin;this.counts=counts;this.distance=distance;}
   private recover(){if(this.recoveryAge>=0)return;if(this.crashed){this.recoveryRest={...this.pose};this.recoveryAge=0;}else this.finishRecovery();}
   step(dt:number,input:RideActions){
     const tune=this.tuning;
     if(!Number.isFinite(dt)||dt<=0)return;dt=Math.min(dt,1/30);this.touchedDown=false;
-    if(input.reset){this.recover();return;}const p=this.pose;
+    if(this.combatFallAge>=0){this.stepCombatFall(dt,input);return;}
+    if(input.reset&&!(this.combatOnFoot&&this.pose.footMode)){this.walking=footState();this.pose.footMode=this.pose.footBlend=0;this.recover();return;}const p=this.pose;
+    if(stepOnFoot(this.walking,p,this.terrain,dt,{...input,movingDismount:this.combatOnFoot},this.crashed)){
+      this.vx=this.vz=this.velocityY=this.motor=this.acceleration=0;this.tricks.cancel();this.grounded=p.airHeight<.01;return;
+    }
     if(this.recoveryAge>=0){this.recoveryAge+=dt;getUpPose(this.recoveryRest!,this.recoveryAge/1.8,p,true);p.speed=0;if(this.recoveryAge>=1.8)this.finishRecovery();return;}
     const special=this.tricks.beginStep(input.trick||0,this.grounded,this.crashed,p.speed,p.rollAngle,input.steer,dt);
     input={...input,crouch:input.crouch||special.crouch,hop:this.tricks.active?special.hop:input.hop,hopHeld:this.tricks.active?false:input.hopHeld};
@@ -135,9 +173,12 @@ export class RideController {
     p.tiltback=damp(p.tiltback,clamp((absSpeed-18.5)/3,0,1),4,dt);
     const powerTaper=clamp((tune.maxSpeed-absSpeed)/6.5,0,1),force=this.motor*(braking||p.speed<0?1:powerTaper);
     const drag=p.speed*(rough?.5:.055)+p.speed*absSpeed*(input.crouch?.004:.006);
+    // Compensate level-road rolling/aero loss under positive demand. Slopes and
+    // rough terrain still limit speed; throttle release and braking never add force.
+    const regulation=this.regulatedSpeed&&!braking&&p.speed>=0&&!rough?drag*clamp(this.motor/tune.driveAcceleration,0,1):0;
     const hill=tune.gravity*(this.ground.normal.x*Math.sin(p.headingY)+this.ground.normal.z*Math.cos(p.headingY));
     if(this.grounded){
-      let speed=p.speed+(force-drag+hill)*dt;
+      let speed=p.speed+(force+regulation-drag+hill)*dt;
       if(this.brakeLatch&&speed<.04){speed=0;this.motor=0;}
       if(!throttle&&Math.abs(speed)<.025){speed=0;this.motor=0;}
       if(resting)speed=0;
@@ -183,25 +224,43 @@ export class RideController {
       this.grounded=false;this.groundAge=1;this.flightYaw=p.headingY;this.charge=this.hopQueue=0;this.counts.hops++;p.takeoffExtension=1;this.tricks.launch(this.velocityY);
     }
     const dx=this.vx*dt,dz=this.vz*dt,travel=Math.hypot(dx,dz);
+    // Keep an ordinary curb plus this tick's downhill grade in ground contact.
+    // Cap the slope allowance so a curb's steep edge cannot conceal a real ledge.
+    const curbDropAllowance=.28+clamp((this.ground.normal.x*dx+this.ground.normal.z*dz)/Math.max(.5,this.ground.normal.y),0,Math.min(.12,travel*.5));
     if(travel>1e-8){
-      const hit=this.terrain.raycastObstacle({x:p.x,y:p.y+.65,z:p.z},{x:dx,y:0,z:dz},travel+.32,.28);
+      const hit=mountedClearance(this.terrain,p,{x:dx,y:0,z:dz},travel+.32,.28,p.crouch);
       if(hit!==null){this.tricks.cancel();const clear=clamp(hit-.33,0,travel);p.x+=dx*clear/travel;p.z+=dz*clear/travel;
         // Small knocks stop the wheel. A free tangential axis lets a glancing
         // contact scrub speed along the obstacle instead of throwing the rider.
         const remaining=1-clear/travel,ox=dx*remaining,oz=dz*remaining;
-        const freeX=Math.abs(ox)>1e-5&&this.terrain.raycastObstacle({x:p.x,y:p.y+.65,z:p.z},{x:ox,y:0,z:0},Math.abs(ox)+.34,.28)===null;
-        const freeZ=Math.abs(oz)>1e-5&&this.terrain.raycastObstacle({x:p.x,y:p.y+.65,z:p.z},{x:0,y:0,z:oz},Math.abs(oz)+.34,.28)===null;
+        const freeX=Math.abs(ox)>1e-5&&mountedClearance(this.terrain,p,{x:ox,y:0,z:0},Math.abs(ox)+.34,.28,p.crouch)===null;
+        const freeZ=Math.abs(oz)>1e-5&&mountedClearance(this.terrain,p,{x:0,y:0,z:oz},Math.abs(oz)+.34,.28,p.crouch)===null;
         const slideX=freeX&&(!freeZ||Math.abs(ox)>Math.abs(oz)),slideZ=freeZ&&!slideX;
         const normalSpeed=slideX?Math.abs(this.vz):slideZ?Math.abs(this.vx):Math.hypot(this.vx,this.vz);
-        if(normalSpeed>4.2)this.fall('collision');
+        // AI stops/slides at scenery. Only host-confirmed combat or player
+        // contact knocks it off; the player's normal crash rules are unchanged.
+        if(!input.stableAI&&normalSpeed>4.2)this.fall('collision');
         else if(slideX||slideZ){if(slideX){p.x+=ox*.75;this.vx*=.75;this.vz=0;}else{p.z+=oz*.75;this.vz*=.75;this.vx=0;}p.speed=this.vx*Math.sin(p.headingY)+this.vz*Math.cos(p.headingY);this.motor=0;}
-        else{p.speed=this.vx=this.vz=this.motor=0;}}
+        else{
+          // A downhill creep into a wall can be smaller than one motor-ramp
+          // step. Keep opposing torque so reverse can overcome that grade;
+          // force into the wall still stops, and contact never moves the body.
+          if(this.motor*p.speed>=0)this.motor=0;
+          p.speed=this.vx=this.vz=0;
+        }}
       else{p.x+=dx;p.z+=dz;}
     }
     this.terrain.sampleGround(p.x,p.z,this.ground,p.y);const floor=this.ground.height;
     if(this.grounded){
-      if(oldY-floor>.07&&Math.abs(p.speed)>2){this.grounded=false;this.groundAge=0;this.flightYaw=p.headingY;this.velocityY=Math.max(0,this.velocityY);}
-      else{p.y=floor;this.velocityY=damp(this.velocityY,(floor-oldY)/dt,18,dt);}
+      // Hops have already released contact. Only substantial drops start a fall.
+      if(oldY-floor>curbDropAllowance&&Math.abs(p.speed)>2){this.grounded=false;this.groundAge=0;this.flightYaw=p.headingY;this.velocityY=Math.max(0,this.velocityY);}
+      else{
+        p.y=floor;
+        // Step height / dt turns a small curb into a huge launch impulse.
+        // Ground normals retain ramp momentum without that artificial kick.
+        const gradeVelocity=-(this.ground.normal.x*this.vx+this.ground.normal.z*this.vz)/Math.max(.5,this.ground.normal.y);
+        this.velocityY=damp(this.velocityY,clamp(gradeVelocity,-Math.abs(p.speed),Math.abs(p.speed)),18,dt);
+      }
     }
     if(!this.grounded){
       this.velocityY-=tune.gravity*dt;p.y+=this.velocityY*dt;
@@ -211,8 +270,8 @@ export class RideController {
         const momentum=Math.hypot(this.vx,this.vz),alignment=momentum>.1?Math.cos(Math.atan2(this.vx,this.vz)-p.headingY):1;
         p.speed=momentum*(alignment<0?-1:1)*(.9+.1*Math.abs(alignment));p.landingCompression=clamp(this.lastLandingImpact/6,0,1);this.suspension.velocity-=this.lastLandingImpact*.26;
         this.lastLandingQuality=this.lastLandingImpact>tune.crashImpact?'crash':this.lastLandingImpact>6.5?'heavy':this.lastHopCharge>.45?'charged':'clean';
-        if(this.lastLandingImpact>tune.crashImpact)this.fall('hard landing');
-        else if(momentum*Math.sqrt(Math.max(0,1-alignment*alignment))>5.5){this.lastLandingQuality='crash';this.fall('sideways landing');}
+        if(!input.stableAI&&this.lastLandingImpact>tune.crashImpact)this.fall('hard landing');
+        else if(!input.stableAI&&momentum*Math.sqrt(Math.max(0,1-alignment*alignment))>5.5){this.lastLandingQuality='crash';this.fall('sideways landing');}
         this.tricks.land(this.lastLandingQuality);
       }
     }
@@ -255,8 +314,14 @@ export class RideController {
       const before=Math.abs(p.speed),after=Math.max(0,before-p.scrape*(p.scrapeHard?4.5:1.8)*dt),ratio=before?after/before:0;
       p.speed*=ratio;this.vx*=ratio;this.vz*=ratio;
     }
-    if(this.ground.offCourse)this.fall('trail boundary');
-    if(this.grounded&&!this.crashed&&Math.abs(p.rollAngle)<.12&&this.terrain.raycastObstacle({x:p.x,y:p.y+.65,z:p.z},{x:s,y:0,z:c},3,.35)===null)this.safe={position:{x:p.x,y:floor,z:p.z},headingY:p.headingY};
+    if(this.ground.offCourse){
+      if(input.stableAI){
+        // Keep navigation errors inside the arena without inventing a knock-off.
+        p.x=oldX;p.y=oldY;p.z=oldZ;p.speed=p.velocityX=p.velocityZ=0;this.vx=this.vz=this.motor=0;
+        this.terrain.sampleGround(p.x,p.z,this.ground,p.y);
+      }else this.fall('trail boundary');
+    }
+    if(this.grounded&&!this.crashed&&Math.abs(p.rollAngle)<.12&&mountedClearance(this.terrain,p,{x:s,y:0,z:c},3,.35,p.crouch)===null)this.safe={position:{x:p.x,y:floor,z:p.z},headingY:p.headingY};
   }
   get poseValue():Readonly<RidePose>{return this.pose;}
   writePose(out:RidePose){copyPose(this.pose,out);}

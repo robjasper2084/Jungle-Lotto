@@ -1,0 +1,62 @@
+{
+  "commit": "ea1d7b3970688afa83e913a1bd3e195d25a3a898",
+  "base": "https://raw.githubusercontent.com/robjasper2084/Jungle-Lotto/ea1d7b3970688afa83e913a1bd3e195d25a3a898/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/",
+  "files": [
+    {
+      "path": "belle/landmarks.glb",
+      "bytes": 28153876,
+      "sha256": "55e3db65875542ac01250ee32c827b09502289f8317b997e222b315e203660cf",
+      "source": "belle/landmarks-delivery.glb"
+    },
+    {
+      "path": "belle/yacht-club.glb",
+      "bytes": 8144556,
+      "sha256": "47ddd0f03c1ed24fd2abb55e01cff4b43efd8fb35775d846b6c1bd5d320a1f12"
+    },
+    {
+      "path": "belle/historic-houses.glb",
+      "bytes": 3198320,
+      "sha256": "72199ae63e56ba228c42e212ac48612b62e26003fc166618d13462db5cb54df1"
+    },
+    {
+      "path": "belle/reference-architecture.glb",
+      "bytes": 1281660,
+      "sha256": "486257a051be2076b04cc8e91181528200332810cd80dc8454e802a37bccca6a"
+    },
+    {
+      "path": "belle/golf-center.glb",
+      "bytes": 871580,
+      "sha256": "924cdc27dac5c0918d31619ec2b98853d9db7eb4c2d388634321159bf31b4c0b"
+    },
+    {
+      "path": "belle/playgrounds.glb",
+      "bytes": 3077524,
+      "sha256": "a0b4ee5d55876694e40658680a466fbc5ecea17899705ce2ef4cfccc10e360f2"
+    },
+    {
+      "path": "belle/nature/trees.glb",
+      "bytes": 4607016,
+      "sha256": "2a7ef60cad15f2eb8322bc307e8ad53549eac0e2864aa0dc2e53c0994e0074b4"
+    },
+    {
+      "path": "belle/nature/groundcover.glb",
+      "bytes": 1876460,
+      "sha256": "f040bc4e3498f0d89c0cb6cfbe806260c84061c2e0388f1a8d227000e1d30154"
+    },
+    {
+      "path": "belle/detroit-skyline.glb",
+      "bytes": 2788944,
+      "sha256": "987a3366c0964856615cb14ac51c010a615da42a00fd7b06fd2480f8cafd30a1"
+    },
+    {
+      "path": "belle/environment/kloppenheim-06-2k.hdr",
+      "bytes": 4434394,
+      "sha256": "99451201586489ef3288c97bfac2a2ac232a5491c51a1faf0ec8ea39f3ccd533"
+    },
+    {
+      "path": "belle/vehicles/hero-hoverbike.glb",
+      "bytes": 8754060,
+      "sha256": "b32cd287c12410163d528f606c668a8fd3e4ba779194b8c74d90228886ba4ba7"
+    }
+  ]
+}

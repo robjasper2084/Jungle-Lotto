@@ -1,0 +1,1 @@
+PASS: upstream input round trips, all 6x64 channels, invalid inputs, slot isolation, and release/reset.

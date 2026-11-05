@@ -1,7 +1,7 @@
 import * as T from 'three';
 
 export type TreeSite={x:number;y:number;z:number;h:number;seed:number;crownScale?:number;lowCrown?:boolean};
-type Limb={a:T.Vector3;b:T.Vector3;r:number;tip:number};
+type Limb={a:T.Vector3;b:T.Vector3;r:number;tip:number;detail:number};
 type Spray={p:T.Vector3;size:number;rotation:T.Euler;species:number;tint:number;detail:boolean};
 const up=new T.Vector3(0,1,0);
 const hash=(v:number)=>Math.abs(Math.sin(v*127.1+311.7)*43758.5453)%1;
@@ -15,19 +15,19 @@ export function planTree(site:TreeSite){
   const lean=new T.Vector3((rand(3)-.5)*h*.09,0,(rand(4)-.5)*h*.09);
   const trunkAt=(t:number)=>base.clone().addScaledVector(lean,t*t).add(new T.Vector3(Math.sin(t*4+seed)*h*.013*t,h*t,Math.sin(t*3)*h*.01*t));
   const trunkRadius=(t:number)=>(.14+h*.013)*Math.pow(1-t,1.15)+.018;
-  const branch=(points:T.Vector3[],radius:number,steps:number)=>{
+  const branch=(points:T.Vector3[],radius:number,steps:number,detail=1)=>{
     const curve=new T.CatmullRomCurve3(points);let last=points[0];
     for(let k=1;k<=steps;k++){
       const t=k/steps,end=curve.getPoint(t),r=radius*Math.pow(1-(k-1)/steps,.85)+.005,tip=radius*Math.pow(1-t,.85)+.005;
-      limbs.push({a:last,b:end,r,tip});last=end;
+      limbs.push({a:last,b:end,r,tip,detail});last=end;
     }
     return curve;
   };
-  for(let k=0;k<9;k++)limbs.push({a:trunkAt(k*.105),b:trunkAt((k+1)*.105),r:trunkRadius(k*.105),tip:trunkRadius((k+1)*.105)});
+  for(let k=0;k<9;k++)limbs.push({a:trunkAt(k*.105),b:trunkAt((k+1)*.105),r:trunkRadius(k*.105),tip:trunkRadius((k+1)*.105),detail:0});
   // Short flared buttresses seat the trunk in the bank without a floating cylinder base.
   for(let k=0;k<5;k++){
     const angle=azimuth+k*1.256,root=base.clone().add(new T.Vector3(Math.sin(angle)*.48,.025,Math.cos(angle)*.48));
-    branch([trunkAt(.055),base.clone().lerp(root,.5).add(new T.Vector3(0,.17,0)),root],.045+h*.004,3);
+    branch([trunkAt(.055),base.clone().lerp(root,.5).add(new T.Vector3(0,.17,0)),root],.045+h*.004,3,0);
   }
   const count=11+Math.floor(rand(5)*3),width=(species===0?1.04:.92)*(site.crownScale??1);
   const addSpray=(p:T.Vector3,size:number,angle:number,n:number)=>{
@@ -45,7 +45,7 @@ export function planTree(site:TreeSite){
     for(let k=0;k<5;k++){
       const u=.36+k*.15,p=curve.getPoint(u),side=k%2===0?-1:1;
       const tip=p.clone().add(new T.Vector3(Math.sin(angle+side*.78)*h*(.075+rand(j*5+k+120)*.05),h*(.035+rand(j*5+k+150)*.055),Math.cos(angle+side*.78)*h*(.075+rand(j*5+k+120)*.05)));
-      const twig=branch([p,p.clone().lerp(tip,.55).add(new T.Vector3(0,.16,0)),tip],.017+h*.0013,3);
+      const twig=branch([p,p.clone().lerp(tip,.55).add(new T.Vector3(0,.16,0)),tip],.017+h*.0013,3,2);
       for(let m=0;m<2;m++){
         const q=twig.getPoint(.52+m*.43),size=(.94+rand(j*10+k*2+m+240)*.38)*(h/9.5)**.4;
         addSpray(q,size,angle+side*.7,j*61+k*9+m*4+350);
@@ -81,7 +81,7 @@ function taper(material:T.Material){
 }
 
 export function makeTreeBatch(sites:TreeSite[],bark:T.MeshStandardMaterial,foliage:T.MeshStandardMaterial[],time:{value:number}){
-  const plans=sites.map(planTree),limbs=plans.flatMap(p=>p.limbs),sprays=plans.flatMap(p=>p.sprays);
+  const plans=sites.map(planTree),limbs=plans.flatMap(p=>p.limbs).sort((a,b)=>a.detail-b.detail),sprays=plans.flatMap(p=>p.sprays),majorLimbs=limbs.filter(l=>l.detail<2).length,limbCount=limbs.length;
   const stemGeometry=new T.CylinderGeometry(1,1,1,9,1,true);
   stemGeometry.setAttribute('branchTaper',new T.InstancedBufferAttribute(new Float32Array(limbs.map(l=>l.tip/l.r)),1));
   stemGeometry.setAttribute('branchUv',new T.InstancedBufferAttribute(new Float32Array(limbs.flatMap(l=>[Math.max(.14,l.r*2*Math.PI/.8),l.a.distanceTo(l.b)/1.2])),2));
@@ -99,6 +99,7 @@ export function makeTreeBatch(sites:TreeSite[],bark:T.MeshStandardMaterial,folia
   // Curved cards break up flat reflections and remain readable from the front/orbit camera.
   for(let i=0;i<positions.count;i++){const x=positions.getX(i),y=positions.getY(i);positions.setZ(i,.12*(1-4*x*x)+.07*Math.sin(y*Math.PI));}
   leafGeometry.computeVertexNormals();
+  const farLeafGeometry=new T.PlaneGeometry(1,1);
   for(let species=0;species<foliage.length;species++)for(const near of [false,true]){
     const list=sprays.filter(p=>p.species===species&&p.detail===near);if(!list.length)continue;
     const material=foliage[species],mesh=new T.InstancedMesh(leafGeometry,material,list.length);
@@ -109,10 +110,11 @@ export function makeTreeBatch(sites:TreeSite[],bark:T.MeshStandardMaterial,folia
     leaves.push(mesh);if(near)detail.push(mesh);group.add(mesh);
   }
   group.userData.treeCount=sites.length;
-  return {group,stems,leaves,detail,count:sites.length,update(distance:number){
+  return {group,stems,leaves,detail,count:sites.length,update(distance:number,low=false){
     group.visible=distance<350;stems.castShadow=distance<95;
-    for(const mesh of leaves)mesh.castShadow=distance<95&&!detail.includes(mesh);
-    for(const mesh of detail)mesh.visible=distance<145;
+    stems.count=distance<(low?50:100)?limbCount:majorLimbs;
+    for(const mesh of leaves){mesh.castShadow=distance<95&&!detail.includes(mesh);mesh.geometry=distance<(low?50:100)?leafGeometry:farLeafGeometry;}
+    for(const mesh of detail)mesh.visible=distance<(low?55:145);
   }};
 }
 

@@ -78,6 +78,21 @@ test('catalog filters, sorting, no-results and product actions work',async({page
   await expect(page.locator('#cart-dialog')).toContainText('L / Obsidian');
 });
 
+test('homepage first load opens the hero and keeps Explore the Drop working',async({page},info)=>{
+  const errors=[];page.on('pageerror',error=>errors.push(error.message));
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.goto(base+'#current-drop');await ready(page);
+  await expect.poll(()=>page.evaluate(()=>({hash:location.hash,y:scrollY}))).toEqual({hash:'',y:0});
+  await expect(page.getByRole('heading',{level:1,name:'Equipment for the world after midnight'})).toBeInViewport();
+  await expect(page.locator('#arrival .cathedral-actions')).toBeInViewport();
+  await expect(page.locator('#arrival .hero-controls')).toBeInViewport();
+  await page.screenshot({path:info.outputPath('first-load-hero.png'),scale:'css'});
+  await page.getByRole('link',{name:'Explore the Drop',exact:true}).click();
+  await expect(page).toHaveURL(/#current-drop$/);
+  await expect.poll(()=>page.evaluate(()=>scrollY)).toBeGreaterThan(100);
+  expect(errors).toEqual([]);
+});
+
 test('homepage keeps the four core beats and links deeper world-building from navigation',async({page})=>{
   await page.goto(base);
   for(const selector of ['#current-drop','#featured','#character-vault','#enter-the-fight'])await expect(page.locator(selector)).toBeVisible();
@@ -314,7 +329,14 @@ test(surface+' commercial never interrupts an open launch loadout',async({page})
 
 test('disconnected newsletter is visibly unavailable and does not collect personal data',async({page})=>{
   const posts=[];page.on('request',r=>{if(r.method()==='POST')posts.push(r.url());});await page.goto(base);const notice=page.locator('.newsletter');
-  await expect(notice.getByRole('heading',{name:'Launch alerts coming soon'})).toBeVisible();await expect(notice).toContainText('Email signup isn’t available yet');await expect(notice.locator('form,input,button')).toHaveCount(0);expect(posts).toEqual([]);
+  await ready(page);
+  await expect(notice.getByRole('heading',{name:'Launch alerts coming soon'})).toBeVisible();await expect(notice).toContainText('Email signup isn’t available yet');await expect(notice.locator('form,input,button')).toHaveCount(0);
+  const form=page.locator('[data-subscription-form][data-subscription-connected="false"]');
+  const controls=form.locator('input,button');await expect(controls).toHaveCount(3);
+  for(const control of await controls.all())await expect(control).toBeDisabled();
+  expect(await form.evaluate(node=>node.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true})))).toBe(false);
+  for(const control of await controls.all())await expect(control).toBeDisabled();
+  expect(posts).toEqual([]);
 });
 
 test('game portal preserves the runtime, preselects a fighter and rejects forged messages',async({page},info)=>{

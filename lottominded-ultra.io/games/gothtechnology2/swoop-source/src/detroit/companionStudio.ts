@@ -13,9 +13,8 @@ const controls=new OrbitControls(camera,canvas);controls.target.set(0,.45,0);con
 scene.add(new T.HemisphereLight('#eef2e9','#53604c',2));const sun=new T.DirectionalLight('#ffe6c1',2.5);sun.position.set(2,5,2);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.bias=-.0001;sun.shadow.camera.left=sun.shadow.camera.bottom=-4;sun.shadow.camera.right=sun.shadow.camera.top=4;scene.add(sun,sun.target);
 const floor=new T.Mesh(new T.PlaneGeometry(100,100),new T.MeshStandardMaterial({color:'#71817a',roughness:1}));floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;scene.add(floor);
 const grid=new T.GridHelper(100,200,'#65776d','#85998d');grid.position.y=.002;scene.add(grid);
-const requestedLOD=Number(new URLSearchParams(location.search).get('lod')??1),lod=[0,1,2].includes(requestedLOD)?requestedLOD:1;
-const dog=new CompanionView(new Map([['DS_Boerboel_01',await new GLTFLoader().loadAsync(`/exports/glb/DS_Boerboel_01/DS_Boerboel_01_LOD${lod}.glb`)]]));scene.add(dog.root);
-canvas.dataset.lod=String(lod);
+const dog=new CompanionView(new Map([['DS_Boerboel_01',await new GLTFLoader().loadAsync('/exports/polish/DS_Boerboel_Polished.glb')]]));scene.add(dog.root);
+canvas.dataset.asset='DS_Boerboel_Polished';
 const pose={x:0,y:.015,z:0,heading:0,pitch:0,roll:0,speed:1,phase:0,time:0,turnRate:0,gaitSpeed:1,lookYaw:0};
 const speed=document.querySelector<HTMLInputElement>('#speed')!,phase=document.querySelector<HTMLInputElement>('#phase')!,play=document.querySelector<HTMLButtonElement>('#play')!;
 const turn=document.querySelector<HTMLSelectElement>('#turn')!;

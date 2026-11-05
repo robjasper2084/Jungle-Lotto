@@ -1,0 +1,18 @@
+{
+  "game": "elmwood-explorer",
+  "models": 86,
+  "sharing": {
+    "saved": -177,
+    "models": 5
+  },
+  "textures": {
+    "files": 69,
+    "saved": 36595586
+  },
+  "geometry": {
+    "saved": 70112168,
+    "models": 86
+  },
+  "savedBytes": 106707577,
+  "preserves": "Decoded texture pixels, dimensions, mesh and animation buffer bytes, rig hierarchy; originals retained in source"
+}

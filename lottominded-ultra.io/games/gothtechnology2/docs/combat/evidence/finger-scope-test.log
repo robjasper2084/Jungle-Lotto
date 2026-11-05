@@ -1,0 +1,19 @@
+(node:11680) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ all five exported heroes have weighted finger joints, changing grip geometry and intact first-person arms (691.9439ms)
+ℹ {"id":"DS_Man_01","fingerJoints":30,"weighted":1200,"firstPersonIndices":30825}
+ℹ {"id":"DS_Hoodie_Woman_01","fingerJoints":30,"weighted":1200,"firstPersonIndices":9375}
+ℹ {"id":"DS_Mascot_Suit_01","fingerJoints":30,"weighted":1200,"firstPersonIndices":8136}
+ℹ {"id":"DS_Mascot_Hoodie_01","fingerJoints":30,"weighted":1200,"firstPersonIndices":8220}
+ℹ {"id":"DS_Armored_Rider_01","fingerJoints":30,"weighted":1200,"firstPersonIndices":17502}
+(node:12424) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ partial saved scope settings preserve independent channels and recover invalid values (1.4541ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1617.8658

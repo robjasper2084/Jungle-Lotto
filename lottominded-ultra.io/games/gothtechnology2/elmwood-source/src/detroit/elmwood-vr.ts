@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {XRHands} from '../../../ride-core/src/xrHands.ts';
 import {NEUTRAL_ACTIONS,type RideActions} from '@digital-static/ridecore';
 export type VRPacket={actions:RideActions;recover:boolean;pause:boolean};
 type XRPad={handedness:string;gamepad?:{axes:readonly number[];buttons:readonly {pressed:boolean;value:number}[]}|null};
@@ -21,6 +22,7 @@ export class ElmwoodVRInput {
 type VRRide={startVR():Promise<void>;endVR():void;pauseVR():void;vrInput(packet:VRPacket):void;vrPose():{x:number;y:number;z:number;headingY:number}|undefined};
 export function makeElmwoodVR(scene:T.Scene,camera:T.PerspectiveCamera,renderer:T.WebGLRenderer,canvas:HTMLCanvasElement,ride:VRRide){
   const rig=new T.Group();rig.name='Elmwood headset tracking origin';scene.add(rig);
+  const hands=new XRHands(renderer,rig);
   const input=new ElmwoodVRInput(),buttons:HTMLButtonElement[]=[];let session:XRSession|undefined,starting=false;
   canvas.addEventListener('elmwood-clear-input',e=>{const seat=(e as CustomEvent<{seat?:number}>).detail?.seat;if(seat===undefined||seat===0)input.reset();});
   renderer.xr.enabled=true;renderer.xr.setReferenceSpaceType('local-floor');
@@ -31,7 +33,7 @@ export function makeElmwoodVR(scene:T.Scene,camera:T.PerspectiveCamera,renderer:
     if(!host)continue;const button=document.createElement('button');button.type='button';button.textContent='Checking VR…';button.disabled=true;button.style.minHeight='44px';button.setAttribute('aria-describedby',help.id);host.append(button);buttons.push(button);
   }
   function label(text:string,disabled=false){for(const b of buttons){b.textContent=text;b.disabled=disabled;}}
-  function cleanup(){session=undefined;input.reset();camera.removeFromParent();scene.add(camera);rig.position.set(0,0,0);rig.quaternion.identity();ride.endVR();delete canvas.dataset.vr;document.body.classList.remove('elmwood-vr-active');label('Enter VR');}
+  function cleanup(){hands.update(false);session=undefined;input.reset();camera.removeFromParent();scene.add(camera);rig.position.set(0,0,0);rig.quaternion.identity();ride.endVR();delete canvas.dataset.vr;document.body.classList.remove('elmwood-vr-active');label('Enter VR');}
   async function start(){
     if(session){await session.end();return;}if(starting)return;starting=true;label('Starting VR…',true);
     try{
@@ -51,7 +53,7 @@ export function makeElmwoodVR(scene:T.Scene,camera:T.PerspectiveCamera,renderer:
   else if(!navigator.xr){label('VR headset unavailable',true);}
   else void navigator.xr.isSessionSupported('immersive-vr').then(ok=>label(ok?'Enter VR':'VR headset not detected',!ok)).catch(()=>label('VR unavailable in this browser',true));
   return {
-    beforeFrame(){if(session&&renderer.xr.isPresenting)ride.vrInput(input.read(Array.from(session.inputSources)));},
+    beforeFrame(){hands.update(!!session&&renderer.xr.isPresenting);if(session&&renderer.xr.isPresenting)ride.vrInput(input.read(Array.from(session.inputSources)));},
     afterFrame(){if(!renderer.xr.isPresenting)return;const p=ride.vrPose();if(!p)return;rig.position.set(p.x,p.y+.25,p.z);rig.rotation.set(0,p.headingY+Math.PI,0);rig.updateMatrixWorld(true);},
   };
 }

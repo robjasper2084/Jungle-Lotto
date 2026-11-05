@@ -1,5 +1,12 @@
-import {FrameSchedule} from './frameSchedule.ts';
-import {loadingCinema} from './loadingCinema.ts';
+import {PointLightBudget} from '@digital-static/ridecore';
+import {SpatialUpdateGate,visibleSceneryMatrices} from '@digital-static/ridecore';
+import {foliageSightline} from './foliageSightline.ts';
+import {surfacePolish,makeLaneMargins} from './surfacePolish.ts';
+import {loadEngineForPage} from '../../../ride-core/src/engine/browser.ts';
+await loadEngineForPage();
+import {FrameSchedule,frameSeconds} from './frameSchedule.ts';
+import {loadingCinema,failLoading} from './loadingCinema.ts';
+import elmwoodSkylight from '../../art/nvidia/elmwood-skylight.hdr?url';
 const loadingCard=loadingCinema();
 import {SpatialAssetStream} from './spatialAssetStream.ts';
 
@@ -8,6 +15,10 @@ import {makeElmwoodQuality} from './elmwood-quality.ts';
 import {startupAntialias} from './sharedGraphicsQuality.ts';
 import {AdaptiveQuality} from './sharedAdaptiveQuality.ts';
 import * as T from 'three';
+import {warmFirstView} from '../../../swoop-source/src/detroit/warmFirstView.ts';
+import {TREE_LODS,treeDetail,treeModel} from './elmwoodTreeDetail.ts';
+import {StartupFrames} from '../../../ride-core/src/startupFrames.ts';
+const startupFrames=new StartupFrames();let startupRiding=false;
 
 
 
@@ -56,6 +67,7 @@ import {makeElmwoodEnvironment} from './elmwood-environment.ts';
 
 
 import {makeElmwoodWeather,makeElmwoodWater,elmwoodSun,validElmwoodDate,type ElmwoodWeather} from './elmwood-weather.ts';
+import {InteractiveWater} from '../../../swoop-source/src/detroit/interactiveWater.ts';
 import {configureElmwoodWater} from './elmwood-water.ts';
 
 
@@ -98,7 +110,7 @@ const el=<E extends HTMLElement>(id:string)=>document.getElementById(id) as E;
 
 
 
-const canvas=el<HTMLCanvasElement>('view'),renderer=new T.WebGLRenderer({canvas,antialias:startupAntialias(),powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setSize(Math.max(1,innerWidth),Math.max(1,innerHeight));renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1;
+const canvas=el<HTMLCanvasElement>('view'),renderer=new T.WebGLRenderer({canvas,antialias:startupAntialias(),powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setSize(Math.max(1,innerWidth),Math.max(1,innerHeight));renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.88;
 
 
 
@@ -106,7 +118,7 @@ const canvas=el<HTMLCanvasElement>('view'),renderer=new T.WebGLRenderer({canvas,
 
 
 
-const scene=new T.Scene();scene.background=new T.Color('#b4c5bb');scene.fog=new T.FogExp2('#b4c5bb',.0005);const camera=new T.PerspectiveCamera(47,innerWidth/innerHeight,.1,4000);camera.position.set(460,650,550);const controls=new OrbitControls(camera,canvas);controls.target.set(-150,0,-410);controls.enableDamping=true;controls.maxDistance=2200;controls.minDistance=1;controls.maxPolarAngle=Math.PI*.495;
+const scene=new T.Scene();new PointLightBudget(scene);scene.background=new T.Color('#b4c5bb');scene.fog=new T.FogExp2('#b4c5bb',.0005);const camera=new T.PerspectiveCamera(47,innerWidth/innerHeight,.1,4000);camera.position.set(460,650,550);const interactiveWater=new InteractiveWater(canvas,camera);interactiveWater.settings(document.querySelector('aside')!);const controls=new OrbitControls(camera,canvas);controls.target.set(-150,0,-410);controls.enableDamping=true;controls.maxDistance=2200;controls.minDistance=1;controls.maxPolarAngle=Math.PI*.495;
 
 
 
@@ -114,7 +126,7 @@ const scene=new T.Scene();scene.background=new T.Color('#b4c5bb');scene.fog=new 
 
 
 
-const hemi=new T.HemisphereLight('#dceaff','#495539',.8);scene.add(hemi);const sun=new T.DirectionalLight('#fff4df',3.2);scene.add(sun,sun.target);sun.castShadow=true;sun.shadow.mapSize.set(innerWidth<750?1024:2048,innerWidth<750?1024:2048);sun.shadow.bias=-.00015;sun.shadow.normalBias=.025;renderer.shadowMap.type=T.PCFShadowMap;
+const hemi=new T.HemisphereLight('#c9d4df','#414738',.60);scene.add(hemi);const sun=new T.DirectionalLight('#fff4df',2.3);scene.add(sun,sun.target);sun.castShadow=true;sun.shadow.mapSize.set(innerWidth<750?1024:2048,innerWidth<750?1024:2048);sun.shadow.bias=-.00015;sun.shadow.normalBias=.025;renderer.shadowMap.type=T.PCFShadowMap;
 
 
 
@@ -123,11 +135,12 @@ const hemi=new T.HemisphereLight('#dceaff','#495539',.8);scene.add(hemi);const s
 
 
 const quality=makeElmwoodQuality(renderer,sun,scene,canvas);
+const loadedTreeDetail=treeDetail(canvas.dataset.quality);canvas.dataset.treeDetail=loadedTreeDetail;
 const weather=makeElmwoodWeather(scene,camera,sun,hemi,renderer);
 
 
 
-const pmrem=new T.PMREMGenerator(renderer);new HDRLoader().load(new URL('../../art/nvidia/elmwood-skylight.hdr',import.meta.url).href,hdr=>{const env=pmrem.fromEquirectangular(hdr);scene.environment=env.texture;scene.environmentIntensity=.475;canvas.dataset.lighting='NVIDIA OptiX baked skylight';hdr.dispose();pmrem.dispose();},undefined,e=>console.warn('Reflection environment unavailable',e));
+const pmrem=new T.PMREMGenerator(renderer);new HDRLoader().load(elmwoodSkylight,hdr=>{try{const env=pmrem.fromEquirectangular(hdr);scene.environment=env.texture;canvas.dataset.lighting='NVIDIA OptiX baked skylight';}finally{hdr.dispose();pmrem.dispose();}},undefined,e=>{pmrem.dispose();console.warn('Reflection environment unavailable',e);});
 
 
 
@@ -157,7 +170,7 @@ let treeTours:{sources:Record<string,string>;stops:Array<{species:string;tourSto
 let creekGarden:ReturnType<typeof makeElmwoodCreekGarden>|undefined;
 
 let environment:ReturnType<typeof makeElmwoodEnvironment>|undefined;
-let nature:NatureWorld|undefined,natureAudio:NatureAudio|undefined;
+let nature:NatureWorld|undefined,natureAudio:NatureAudio|undefined,natureReady:Promise<void>|undefined;
 
 
 
@@ -191,7 +204,7 @@ async function loadSource(id:string){
 
 
 
- const modelId=id==='hdrp-lab-car-black'&&!['high','ultra'].includes(canvas.dataset.quality??'')?id+'-lod1':id;
+ const modelId=id==='hdrp-lab-car-black'&&!['high','ultra'].includes(canvas.dataset.quality??'')?id+'-lod1':treeModel(id,loadedTreeDetail);
  const gltf=await loader.loadAsync(`/elmwood/models/${modelId==='flying-geese-study'?'flying-geese-baked':modelId}.glb`);
 
 
@@ -216,7 +229,7 @@ async function loadSource(id:string){
 
 
 
-  const key=m.name.startsWith('leaf')?`${id}:${m.name}`:m.name;if(sharedMaterials.has(key))return sharedMaterials.get(key)!;
+  const species=id.replace(/_LOD1$/, '');const key=m.name.startsWith('leaf')?`${species}:${m.name}`:m.name;if(sharedMaterials.has(key))return sharedMaterials.get(key)!;
 
 
 
@@ -264,7 +277,7 @@ async function loadSource(id:string){
 
 
 
-  }weather.attach(m);sharedMaterials.set(key,m);return m;
+  }if(m instanceof T.MeshStandardMaterial){if(m.name.startsWith('leaf'))foliageSightline(m);surfacePolish(m);}weather.attach(m);sharedMaterials.set(key,m);return m;
 
 
 
@@ -544,7 +557,7 @@ async function choose(){
 
  }
 
- await landmarkStream?.ensure(id);const a=assets.find(x=>x.id===id)!;library.clear();const model=(await load(id)).clone(true);library.add(model);selection=model;el('detail').textContent=`${a.label} · ${a.triangles.toLocaleString()} triangles · ${a.dimensionsM.map(x=>x.toFixed(1)).join(' × ')} m. ${a.confidence.replace(/\.$/,'')}.`;if(library.visible)fit(model);else{const p=placements.find(x=>x.asset===id);if(p){const c=pos(p.position),davis=id==='davis-hillside-vault'||id==='hammond-bank-vault';controls.target.copy(c).add(new T.Vector3(0,id==='elmwood-park-bench' ? .5 : id==='firemen-memorial' ? 5.2 : davis?1.6:id==='hdrp-lab-car-black'?.7:3,0));const distance=davis?15:12;camera.position.copy(c).add(id==='elmwood-park-bench'?new T.Vector3(-4,2.3,3.5):id==='firemen-memorial'?new T.Vector3(-19,11,14):/crypt|mausoleum|vault/.test(id)?new T.Vector3(Math.sin(p.rotation)*distance+Math.cos(p.rotation)*3,davis?4.3:3.8,Math.cos(p.rotation)*distance-Math.sin(p.rotation)*3):id==='hdrp-lab-car-black'?new T.Vector3(Math.sin(p.rotation)*7+Math.cos(p.rotation)*4,2.6,Math.cos(p.rotation)*7-Math.sin(p.rotation)*4):new T.Vector3(19,6,27));}else el('detail').textContent+=' This asset has no verified site position. Switch to individual asset review.';}updateSun();
+ await landmarkStream?.ensure(id);const a=assets.find(x=>x.id===id)!;library.clear();const model=(await load(id)).clone(true);library.add(model);selection=model;el('detail').textContent=`${a.label} · ${a.triangles.toLocaleString()} triangles · ${a.dimensionsM.map(x=>x.toFixed(1)).join(' × ')} m. ${a.confidence.replace(/\.$/,'')}.`;if(library.visible)fit(model);else{const p=placements.find(x=>x.asset===id);if(p){const c=pos(p.position),davis=id==='davis-hillside-vault'||id==='hammond-bank-vault';controls.target.copy(c).add(new T.Vector3(0,id==='elmwood-park-bench' ? .5 : id==='firemen-memorial' ? 5.2 : davis?1.6:id==='hdrp-lab-car-black'?.7:3,0));const footprint=Math.max(a.dimensionsM[0],a.dimensionsM[1])*p.scale;const distance=davis?15:Math.max(12,footprint*.8+8);camera.position.copy(c).add(id==='elmwood-park-bench'?new T.Vector3(-4,2.3,3.5):id==='firemen-memorial'?new T.Vector3(-19,11,14):/crypt|mausoleum|vault/.test(id)?new T.Vector3(Math.sin(p.rotation)*distance+Math.cos(p.rotation)*3,davis?4.3:Math.max(3.8,a.dimensionsM[2]*p.scale*.7+2),Math.cos(p.rotation)*distance-Math.sin(p.rotation)*3):id==='hdrp-lab-car-black'?new T.Vector3(Math.sin(p.rotation)*7+Math.cos(p.rotation)*4,2.6,Math.cos(p.rotation)*7-Math.sin(p.rotation)*4):new T.Vector3(19,6,27));}else el('detail').textContent+=' This asset has no verified site position. Switch to individual asset review.';}updateSun();
 
 
 
@@ -616,7 +629,9 @@ try{
 
 
 
+ loadingCard.progress(1,5);loadingCard.status('Loading the Elmwood landscape…');
  const foundation=await load('elmwood-foundation');
+ loadingCard.progress(2,5);
 
  // Smooth shared terrain normals after the pond DEM edits; preserve the measured elevations.
 
@@ -648,11 +663,11 @@ try{
  landmarkStream=new SpatialAssetStream(2,()=>{canvas.dataset.streaming=JSON.stringify(landmarkStream!.status);});
  for(const id of ids){const ps=placements.filter(p=>p.asset===id);landmarkStream.add({id,centers:ps.map(p=>({x:p.position[0],z:-p.position[1]})),async load(){
   await load(id);
-const ps=placements.filter(p=>p.asset===id),source=cache.get(id)!;source.updateMatrixWorld(true);
+const ps=placements.filter(p=>p.asset===id),source=cache.get(id)!;source.updateMatrixWorld(true);quality.applyAssets(source);const distant=loadedTreeDetail==='full'&&TREE_LODS.has(id)?await load(id+'_LOD1'):undefined;if(distant){distant.updateMatrixWorld(true);quality.applyAssets(distant);}source.traverse(o=>{if(o instanceof T.Mesh)for(const m of Array.isArray(o.material)?o.material:[o.material])weather.attach(m);});let attachAt=performance.now();
 
 
 
-  if(ps[0].layer==='mapped'||ps[0].layer==='reference'){for(const p of ps){const clone=source.clone(true);clone.position.copy(pos(p.position));clone.rotation.set(p.pitch??0,p.rotation,p.roll??0,'YXZ');clone.scale.setScalar(p.scale);world.add(clone);}}
+  if(ps[0].layer==='mapped'||ps[0].layer==='reference'){for(const p of ps){const clone=source.clone(true);clone.position.copy(pos(p.position));clone.rotation.set(p.pitch??0,p.rotation,p.roll??0,'YXZ');clone.scale.setScalar(p.scale);world.add(clone);if(performance.now()-attachAt>5){await new Promise<void>(resolve=>setTimeout(resolve,0));attachAt=performance.now();}}}
 
 
 
@@ -660,15 +675,18 @@ const ps=placements.filter(p=>p.asset===id),source=cache.get(id)!;source.updateM
 
 
 
-   const tiles=new Map<string,Placement[]>();for(const p of ps){const key=Math.floor(p.position[0]/80)+','+Math.floor(p.position[1]/80);const bucket=tiles.get(key)??[];bucket.push(p);tiles.set(key,bucket);}
+   const tileSize=distant?40:80,tiles=new Map<string,Placement[]>();for(const p of ps){const key=Math.floor(p.position[0]/tileSize)+','+Math.floor(p.position[1]/tileSize);const bucket=tiles.get(key)??[];bucket.push(p);tiles.set(key,bucket);}
 
 
 
-   for(const [key,bucket] of tiles){const tile=new T.Group(),[x,north]=key.split(',').map(Number);tile.userData.center=new T.Vector3(x*80+40,0,-north*80-40);dressing.add(tile);landscapeTiles.push(tile);
+   for(const [key,bucket] of tiles){const tile=new T.Group(),[x,north]=key.split(',').map(Number);visibleSceneryMatrices(tile);tile.userData.center=new T.Vector3((x+.5)*tileSize,0,-(north+.5)*tileSize);dressing.add(tile);landscapeTiles.push(tile);
 
 
 
-    source.traverse(o=>{if(!(o instanceof T.Mesh))return;const inst=new T.InstancedMesh(o.geometry,o.material,bucket.length);inst.castShadow=true;inst.receiveShadow=true;const m=new T.Matrix4(),q=new T.Quaternion(),s=new T.Vector3();bucket.forEach((p,i)=>{q.setFromAxisAngle(new T.Vector3(0,1,0),p.rotation);s.setScalar(p.scale);m.compose(pos(p.position),q,s);m.multiply(o.matrixWorld);inst.setMatrixAt(i,m);});inst.instanceMatrix.needsUpdate=true;inst.computeBoundingSphere();tile.add(inst);});
+    const addInstances=(model:T.Group,group:T.Group,far=false)=>{model.traverse(o=>{if(!(o instanceof T.Mesh))return;for(const material of Array.isArray(o.material)?o.material:[o.material])if((material as T.MeshStandardMaterial).alphaTest>.2)foliageSightline(material);const inst=new T.InstancedMesh(o.geometry,o.material,bucket.length);inst.castShadow=!far;inst.receiveShadow=true;const m=new T.Matrix4(),q=new T.Quaternion(),s=new T.Vector3();bucket.forEach((p,i)=>{q.setFromAxisAngle(new T.Vector3(0,1,0),p.rotation);s.setScalar(p.scale);m.compose(pos(p.position),q,s);m.multiply(o.matrixWorld);inst.setMatrixAt(i,m);});inst.instanceMatrix.needsUpdate=true;inst.computeBoundingSphere();group.add(inst);});};
+    if(distant){const near=new T.Group(),far=new T.Group();tile.add(near,far);tile.userData.nearTrees=near;tile.userData.farTrees=far;addInstances(source,near);addInstances(distant,far,true);far.visible=false;}
+    else addInstances(source,tile);
+    if(performance.now()-attachAt>5){await new Promise<void>(resolve=>setTimeout(resolve,0));attachAt=performance.now();}
 
 
 
@@ -681,12 +699,16 @@ const ps=placements.filter(p=>p.asset===id),source=cache.get(id)!;source.updateM
 
 
 
-  world.traverse(o=>{if(o instanceof T.Mesh)for(const m of Array.isArray(o.material)?o.material:[o.material])weather.attach(m);});quality.apply();canvas.dataset.assetsLoaded=String(++loaded);
+  canvas.dataset.assetsLoaded=String(++loaded);
  }});}
  const entrance=placements.find(p=>p.asset==='elmwood-gatehouse');
- await landmarkStream.warm(entrance?[{x:entrance.position[0],z:-entrance.position[1]}]:[{x:-10,z:-55}],140);
+ // The foundation and entrance establish the playable site. Nearby trees and
+ // monuments stream through the existing queue instead of blocking the menu.
+ if(entrance)await landmarkStream.ensure(entrance.asset);
+ loadingCard.progress(3,5);loadingCard.status('Preparing paths, water and wildlife…');
  const terrain=new ElmwoodTerrain(grid,site.features,placements);
- const waterSetup=configureElmwoodWater(foundation,terrain,landmarkPass!.pond);canvas.dataset.waterMeshes=String(waterSetup.meshes);canvas.dataset.waterVertices=String(waterSetup.vertices);
+ world.add(makeLaneMargins(terrain));
+ const waterSetup=configureElmwoodWater(foundation,terrain,landmarkPass!.pond);interactiveWater.register(foundation);canvas.dataset.waterMeshes=String(waterSetup.meshes);canvas.dataset.waterVertices=String(waterSetup.vertices);
 
 
 
@@ -694,7 +716,7 @@ const ps=placements.filter(p=>p.asset===id),source=cache.get(id)!;source.updateM
  const cherrySites=elmwoodCherrySites(terrain,site.boundary);
  const cherryAnchors=cherrySites.map(p=>({...p,z:-p.north}));
  canvas.dataset.cherrySites=JSON.stringify(cherrySites);
- nature=new NatureWorld(world,cherryAnchors,(x,z)=>terrain.height(x,-z));void nature.load();
+ nature=new NatureWorld(world,cherryAnchors,(x,z)=>terrain.height(x,-z));natureReady=nature.load();
  const pond=landmarkPass!.pond.center,creekPoints=site.features.filter((f:{tags:Record<string,string>})=>f.tags.waterway==='stream').flatMap((f:{points:number[][]})=>f.points).map((p:number[])=>({x:p[0],z:-p[1]}));
  natureAudio=new NatureAudio([
   {file:'birdsong.mp3',points:cherryAnchors,radius:70,volume:.20},
@@ -728,7 +750,7 @@ const ps=placements.filter(p=>p.asset===id),source=cache.get(id)!;source.updateM
 
 
 
- stats=`USGS 1m source / 2m display · 41 mapped paths · ${assets.length} assets · ${placements.filter(p=>p.layer!=='mapped').length.toLocaleString()} estimated landscape instances`;notice(stats);await choose();el('detail').dataset.loaded='true';canvas.dataset.firstPlayableMs=String(Math.round(performance.now()-bootStarted));
+ stats=`USGS 1m source / 2m display · 41 mapped paths · ${assets.length} assets · ${placements.filter(p=>p.layer!=='mapped').length.toLocaleString()} estimated landscape instances`;notice(stats);await choose();loadingCard.progress(4,5);loadingCard.status('Preparing your controls…');el('detail').dataset.loaded='true';canvas.dataset.firstPlayableMs=String(Math.round(performance.now()-bootStarted));
 
 
 
@@ -736,7 +758,7 @@ const ps=placements.filter(p=>p.asset===id),source=cache.get(id)!;source.updateM
 
 
 
-}catch(e){el('error').textContent=String(e);notice('Loading failed — see the error panel.');console.error(e);}
+}catch(e){failLoading(e);el('error').textContent=String(e);notice('Loading failed — see the error panel.');}
 
 
 
@@ -744,7 +766,14 @@ const ps=placements.filter(p=>p.asset===id),source=cache.get(id)!;source.updateM
 
 
 
-rideControls=makeElmwoodRide(scene,camera,controls,canvas,notice,()=>{world.visible=true;library.visible=false;el<HTMLSelectElement>('mode').value='site';for(const o of el<HTMLSelectElement>('asset').options)o.disabled=false;},()=>environment?.birds.map(({state:b},i)=>({id:'bird-'+i,kind:b.kind,x:b.x,z:-b.north,radius:b.kind==='goose'?.38:.25,water:b.swimming}))??[],quality.mount);
+rideControls=makeElmwoodRide(scene,camera,controls,canvas,notice,()=>{world.visible=true;library.visible=false;el<HTMLSelectElement>('mode').value='site';for(const o of el<HTMLSelectElement>('asset').options)o.disabled=false;},()=>environment?.birds.map(({state:b},i)=>({id:'bird-'+i,kind:b.kind,x:b.x,z:-b.north,radius:b.kind==='goose'?.38:.25,water:b.swimming}))??[],quality.applyAssets,async()=>{
+ rideControls?.update(0);
+ await Promise.all([natureReady,landmarkStream?.warm(rideControls?.streamPoints()??[],quality.current.distance+100).catch(e=>console.warn('Nearby Elmwood art unavailable',e))]);
+ quality.applyAssets(scene);
+ nature?.update(0,{x:Number(canvas.dataset.x)||0,z:Number(canvas.dataset.z)||0},true,quality.current.wind===false,true);
+ for(const tile of landscapeTiles)tile.visible=rideControls?.nearPlayers(tile.userData.center,quality.current.distance)??true;
+ await warmFirstView(renderer,scene,camera);startupFrames.reset();frameStats.resetWindow();lastFrame=performance.now();
+});
 
 
 
@@ -763,17 +792,15 @@ performanceToggle.onchange=()=>{performanceReadout.hidden=!performanceToggle.che
 
 el('date').after(performanceLabel,performanceReadout);
 
-const frameSchedule=new FrameSchedule();const waterOptions={reducedMotion:false,detail:1};const reducedWaterMotion=matchMedia('(prefers-reduced-motion: reduce)');const waterMotionOverride=new URLSearchParams(location.search).has('reducedMotion');const adaptiveQuality=new AdaptiveQuality();const started=performance.now();let lastFrame=started;const sunDirection=new T.Vector3();function animate(now:number){if(!renderer.xr.isPresenting&&(document.hidden||document.querySelector<HTMLDialogElement>('#elmwood-main-menu')?.open))return;if(!frameSchedule.shouldRender(now,canvas.dataset.riding==='true'&&canvas.dataset.paused==='true',renderer.xr.isPresenting,quality.current.fps))return;const cpuStarted=performance.now();const t=(now-started)/1000,dt=Math.min(.1,(now-lastFrame)/1000);if(rideControls?.tagUpdate(dt)){
- const p=rideControls.tagFocus()??camera.position;landmarkStream?.update([p],quality.current.distance+100);
- for(const tile of landscapeTiles){const c=tile.userData.center;tile.visible=Math.hypot(c.x-p.x,c.z-p.z)<quality.current.distance+100;}
- if(adaptiveQuality.sample(now-lastFrame,quality.choice==='auto'&&now-started>5000,quality.current.fps)){quality.setAdaptiveDetail(adaptiveQuality.detail);quality.setResolutionScale(adaptiveQuality.scale);}
- sunDirection.copy(sun.position).sub(sun.target.position).normalize();sun.target.position.set(p.x,p.y,p.z);sun.position.copy(sun.target.position).addScaledVector(sunDirection,500);waterOptions.reducedMotion=reducedWaterMotion.matches||waterMotionOverride;waterOptions.detail=canvas.dataset.quality==='low'?.35:canvas.dataset.quality==='balanced'?.7:1;weather.update(dt,sunDirection,world.visible,false,waterOptions);canvas.dataset.waterTime=weather.uniforms.waterTime.value.toFixed(2);environment?.update(dt,{x:p.x,north:-p.z,active:true},sunDirection,false,weather.uniforms);nature?.update(dt,p,false,!quality.current.wind,waterOptions.reducedMotion);lastFrame=now;renderer.setScissorTest(false);renderer.setViewport(0,0,innerWidth,innerHeight);renderer.render(scene,camera);frameStats.rendered(now,performance.now()-cpuStarted);canvas.dataset.tagRender=JSON.stringify({focus:p,resolutionScale:adaptiveQuality.scale,drawCalls:renderer.info.render.calls,streaming:landmarkStream?.status});return;}const budgetActive=quality.choice==='auto'&&!renderer.xr.isPresenting&&!document.hidden&&canvas.dataset.riding==='true'&&canvas.dataset.paused!=='true'&&now-started>5000;if(!budgetActive&&quality.choice!=='auto')adaptiveQuality.reset();if(adaptiveQuality.sample(now-lastFrame,budgetActive,quality.current.fps)){quality.setAdaptiveDetail(adaptiveQuality.detail);quality.setResolutionScale(adaptiveQuality.scale);}canvas.dataset.resolutionScale=String(adaptiveQuality.scale);wind.value=quality.current.wind?t:0;vr.beforeFrame();const rideStarted=performance.now();rideControls?.update(dt);const rideMs=performance.now()-rideStarted;vr.afterFrame();if(landmarkStream&&!document.hidden){const points=canvas.dataset.riding==='true'?rideControls?.streamPoints()??[]:[controls.target];landmarkStream.update(points,quality.current.distance+100);canvas.dataset.streaming=JSON.stringify(landmarkStream.status);}const paused=canvas.dataset.riding==='true'&&canvas.dataset.paused==='true';sunDirection.copy(sun.position).sub(sun.target.position).normalize();waterOptions.reducedMotion=reducedWaterMotion.matches||waterMotionOverride;waterOptions.detail=canvas.dataset.quality==='low'?.35:canvas.dataset.quality==='balanced'?.7:1;weather.update(dt,sunDirection,world.visible,paused,waterOptions);canvas.dataset.waterTime=weather.uniforms.waterTime.value.toFixed(2);canvas.dataset.waterDetail=String(waterOptions.detail);sun.target.position.copy(controls.target);sun.position.copy(controls.target).addScaledVector(sunDirection,500);const chasing=environment?.update(dt,{x:Number(canvas.dataset.x)||0,north:-(Number(canvas.dataset.z)||0),active:canvas.dataset.riding==='true'},sunDirection.copy(sun.position).sub(sun.target.position),paused,weather.uniforms,rideControls?.dogThreats());nature?.update(dt,canvas.dataset.riding==='true'?{x:Number(canvas.dataset.x)||0,z:Number(canvas.dataset.z)||0}:controls.target,paused||canvas.dataset.riding!=='true',quality.current.wind===false,matchMedia('(prefers-reduced-motion: reduce)').matches||new URLSearchParams(location.search).has('reducedMotion'));natureAudio?.update({x:Number(canvas.dataset.x)||0,z:Number(canvas.dataset.z)||0},Number(canvas.dataset.heading)||0,canvas.dataset.riding==='true'&&!paused&&world.visible);canvas.dataset.nature=JSON.stringify(nature?.status);canvas.dataset.natureAudio=natureAudio?.status??'waiting';canvas.dataset.weather=weather.mode;canvas.dataset.wetness=weather.uniforms.wet.value.toFixed(2);canvas.dataset.chasingBirds=String(chasing??0);canvas.dataset.fleeingBirds=String(environment?.birds.filter(b=>b.state.mode==='flee').length??0);lastFrame=now;if(controls.enabled&&(canvas.dataset.riding!=="true"||canvas.dataset.cameraMode!=="orbit"))controls.update();for(const tile of landscapeTiles){tile.visible=canvas.dataset.riding!=="true"||(rideControls?.nearPlayers(tile.userData.center,quality.current.distance)??true);}
+const sceneryGate=new SpatialUpdateGate();const frameSchedule=new FrameSchedule();const waterOptions={reducedMotion:false,detail:1};const reducedWaterMotion=matchMedia('(prefers-reduced-motion: reduce)');const waterMotionOverride=new URLSearchParams(location.search).has('reducedMotion');const adaptiveQuality=new AdaptiveQuality();const started=performance.now();let lastFrame=started;const sunDirection=new T.Vector3();function animate(now:number){if(canvas.dataset.preparingRide==='true'||!renderer.xr.isPresenting&&(document.hidden||document.querySelector<HTMLDialogElement>('#elmwood-main-menu')?.open||document.getElementById('startupPreview')?.hidden===false)){startupFrames.pause();return;}if(!frameSchedule.shouldRender(now,canvas.dataset.riding==='true'&&canvas.dataset.paused==='true',renderer.xr.isPresenting,quality.current.fps))return;const cpuStarted=performance.now();const t=(now-started)/1000,dt=frameSeconds(now,lastFrame);const budgetActive=quality.choice==='auto'&&!renderer.xr.isPresenting&&!document.hidden&&canvas.dataset.riding==='true'&&canvas.dataset.paused!=='true'&&now-started>5000;if(!budgetActive&&quality.choice!=='auto')adaptiveQuality.reset();if(adaptiveQuality.sample(now-lastFrame,budgetActive,quality.current.fps)){quality.setAdaptiveDetail(adaptiveQuality.detail);quality.setResolutionScale(adaptiveQuality.scale);}canvas.dataset.resolutionScale=String(adaptiveQuality.scale);wind.value=quality.current.wind?t:0;vr.beforeFrame();const rideStarted=performance.now();rideControls?.update(dt);const rideMs=performance.now()-rideStarted;vr.afterFrame();if(landmarkStream&&!document.hidden){const points=canvas.dataset.riding==='true'?rideControls?.streamPoints()??[]:[controls.target];landmarkStream.update(points,quality.current.distance+100);canvas.dataset.streaming=JSON.stringify(landmarkStream.status);}const paused=canvas.dataset.riding==='true'&&canvas.dataset.paused==='true';sunDirection.copy(sun.position).sub(sun.target.position).normalize();waterOptions.reducedMotion=reducedWaterMotion.matches||waterMotionOverride;waterOptions.detail=canvas.dataset.quality==='low'?.35:canvas.dataset.quality==='balanced'?.7:1;weather.update(dt,sunDirection,world.visible,paused,waterOptions);canvas.dataset.waterTime=weather.uniforms.waterTime.value.toFixed(2);canvas.dataset.waterDetail=String(waterOptions.detail);sun.target.position.copy(controls.target);sun.position.copy(controls.target).addScaledVector(sunDirection,500);const chasing=environment?.update(dt,{x:Number(canvas.dataset.x)||0,north:-(Number(canvas.dataset.z)||0),active:canvas.dataset.riding==='true'},sunDirection.copy(sun.position).sub(sun.target.position),paused,weather.uniforms,rideControls?.dogThreats());nature?.update(dt,canvas.dataset.riding==='true'?{x:Number(canvas.dataset.x)||0,z:Number(canvas.dataset.z)||0}:controls.target,paused||canvas.dataset.riding!=='true',quality.current.wind===false,matchMedia('(prefers-reduced-motion: reduce)').matches||new URLSearchParams(location.search).has('reducedMotion'));natureAudio?.update({x:Number(canvas.dataset.x)||0,z:Number(canvas.dataset.z)||0},Number(canvas.dataset.heading)||0,canvas.dataset.riding==='true'&&!paused&&world.visible);canvas.dataset.nature=JSON.stringify(nature?.status);canvas.dataset.natureAudio=natureAudio?.status??'waiting';canvas.dataset.weather=weather.mode;canvas.dataset.atmosphere=JSON.stringify(environment?.sky.status);canvas.dataset.wetness=weather.uniforms.wet.value.toFixed(2);canvas.dataset.chasingBirds=String(chasing??0);canvas.dataset.fleeingBirds=String(environment?.birds.filter(b=>b.state.mode==='flee').length??0);lastFrame=Math.max(lastFrame,now);if(controls.enabled&&(canvas.dataset.riding!=="true"||canvas.dataset.cameraMode!=="orbit"))controls.update();if(sceneryGate.due(Number(canvas.dataset.x)||0,Number(canvas.dataset.z)||0,t,String(quality.current.distance)+canvas.dataset.riding)){for(const tile of landscapeTiles){tile.visible=canvas.dataset.riding!=="true"||(rideControls?.nearPlayers(tile.userData.center,quality.current.distance)??true);if(tile.userData.nearTrees){const near=canvas.dataset.riding!=="true"||(rideControls?.nearPlayers(tile.userData.center,tile.userData.nearTrees.visible?85:70)??true);tile.userData.nearTrees.visible=near;tile.userData.farTrees.visible=!near;}}canvas.dataset.treeLod=JSON.stringify({near:landscapeTiles.filter(t=>t.visible&&t.userData.nearTrees?.visible).length,far:landscapeTiles.filter(t=>t.visible&&t.userData.farTrees?.visible).length});}
 
 
 
+interactiveWater.update(canvas.dataset.riding==='true'?{x:Number(canvas.dataset.x),y:Number(canvas.dataset.riderY),z:Number(canvas.dataset.z)}:undefined,paused);
 const drawStarted=performance.now();if(!rideControls?.render(renderer))renderer.render(scene,camera);const measured=frameStats.rendered(now,performance.now()-cpuStarted,rideMs,performance.now()-drawStarted);canvas.dataset.frames=String(frameStats.frames);
 
-if(measured){canvas.dataset.rideMsP95=frameStats.rideMsP95.toFixed(2);canvas.dataset.drawMsP95=frameStats.drawMsP95.toFixed(2);canvas.dataset.cpuMsP95=frameStats.cpuMsP95.toFixed(2);canvas.dataset.fps=frameStats.fps.toFixed(1);canvas.dataset.frameMsP95=frameStats.frameMsP95.toFixed(1);canvas.dataset.frameMsP99=frameStats.frameMsP99.toFixed(1);performanceReadout.textContent=frameStats.fps.toFixed(1)+' FPS · p95 '+frameStats.frameMsP95.toFixed(1)+' ms · '+renderer.info.render.calls+' draw calls';}canvas.dataset.drawCalls=String(renderer.info.render.calls);}renderer.setAnimationLoop(animate);addEventListener('resize',()=>{if(renderer.xr.isPresenting)return;camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();quality.resize();});
+const riding=canvas.dataset.riding==='true';if(riding&&!startupRiding)startupFrames.reset();startupRiding=riding;if(riding&&!paused)startupFrames.sample(now,performance.now()-cpuStarted,Number(canvas.dataset.players)||1);else startupFrames.pause();
+if(measured){canvas.dataset.startupFrames=JSON.stringify(startupFrames.report);canvas.dataset.triangles=String(renderer.info.render.triangles);canvas.dataset.textures=String(renderer.info.memory.textures);canvas.dataset.rideMsP95=frameStats.rideMsP95.toFixed(2);canvas.dataset.drawMsP95=frameStats.drawMsP95.toFixed(2);canvas.dataset.cpuMsP95=frameStats.cpuMsP95.toFixed(2);canvas.dataset.fps=frameStats.fps.toFixed(1);canvas.dataset.frameMsP95=frameStats.frameMsP95.toFixed(1);canvas.dataset.frameMsP99=frameStats.frameMsP99.toFixed(1);canvas.dataset.longFrames50=String(frameStats.longFrames50);canvas.dataset.longFrames100=String(frameStats.longFrames100);performanceReadout.textContent=frameStats.fps.toFixed(1)+' FPS · p95 '+frameStats.frameMsP95.toFixed(1)+' ms · '+renderer.info.render.calls+' draw calls';}canvas.dataset.drawCalls=String(renderer.info.render.calls);}renderer.setAnimationLoop(animate);addEventListener('resize',()=>{if(renderer.xr.isPresenting)return;camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();quality.resize();});
 
 
 
@@ -791,4 +818,4 @@ if(measured){canvas.dataset.rideMsP95=frameStats.rideMsP95.toFixed(2);canvas.dat
 
 
 
-loadingCard.finish();
+if(el('detail').dataset.loaded==='true'&&rideControls)loadingCard.finish();

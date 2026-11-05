@@ -1,0 +1,14 @@
+{
+  "time": "2026-10-10T01:46:23.818Z",
+  "typecheck": "PASS (Swoop, RideCore, server)",
+  "engineTests": 9,
+  "legacyRulesTests": 14,
+  "cppNativeAsan": "PASS: downtown-native-asan.log",
+  "cppWasmUbsan": "PASS: downtown-wasm-ubsan.log",
+  "authoredMap": "PASS: downtown-map.json",
+  "sixSdkClients": "PASS: love-tag-server/evidence/engine-royale-local-20261009.json; zero human participants",
+  "fullLocalRound": "PASS: engine-network-round.json",
+  "physicalDevices": "NOT TESTED",
+  "sixHumans": "PENDING BY USER REQUEST",
+  "deployment": "NOT PERFORMED"
+}

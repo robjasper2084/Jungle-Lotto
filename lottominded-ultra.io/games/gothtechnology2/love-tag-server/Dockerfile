@@ -14,7 +14,7 @@ COPY love-tag-server/tsconfig*.json ./
 RUN npx tsc -p tsconfig.render.json && npm prune --omit=dev
 COPY love-tag-server/fixtures/*.json.gz ./fixtures/
 COPY love-tag-server/scripts/prepare-host-fixtures.mjs ./scripts/
-RUN node scripts/prepare-host-fixtures.mjs && rm fixtures/*.json.gz
+RUN node scripts/prepare-host-fixtures.mjs
 FROM node:24-bookworm-slim
 COPY --from=build /app /app
 WORKDIR /app/love-tag-server

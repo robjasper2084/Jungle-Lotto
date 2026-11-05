@@ -36,7 +36,7 @@ export class NaturalMotionEngine {
     // Keep this response separate from the faster eyes, spine and pelvis.
     p.armBank=move('armBank',clamp(Math.atan2(-p.lateralAcceleration,9.81),-.5,.5)*(1-p.airBlend),6);
     p.armSwing=move('armSwing',clamp(Math.atan2(-acceleration,9.81),-.25,.25)*(1-p.airBlend),5.5);
-    const shoulderLift=(.055*p.airBlend+.035*p.landingCompression+.06*p.takeoffExtension)*live;
+    const shoulderLift=(.008*Math.sin(this.idleTime*1.6)+.055*p.airBlend+.035*p.landingCompression+.06*p.takeoffExtension)*live;
     p.shoulderL=move('shoulderL',clamp(shoulderLift+p.rollVelocity*.045,-.07,.16),8);
     p.shoulderR=move('shoulderR',clamp(shoulderLift-p.rollVelocity*.045,-.07,.16),8);
     const hands=t.hands.map((h,i)=>{
@@ -47,9 +47,9 @@ export class NaturalMotionEngine {
       const cruising=clamp(Math.abs(p.speed)/6,0,1)*(1-clamp(Math.abs(p.turnIntent)*2,0,1))
         *(1-p.airBlend)*(1-clamp(Math.max(p.crouch,p.tuck),0,1))*live;
       const sway=Math.sin(this.idleTime*(i===0?1.35:1.12)+(i===0?0:1.7))*cruising;
-      const x=move(`hand${i}x`,h.x+counter+side*(breath*.002+sway*.007),7);
+      const x=move(`hand${i}x`,h.x+counter+side*(breath*.002+sway*.011),7);
       const y=move(`hand${i}y`,h.y+lift+breath*.003+Math.abs(sway)*.006,9);
-      const z=move(`hand${i}z`,h.z+foreaft-side*yawLag+breath*.002+sway*.018,6.5);
+      const z=move(`hand${i}z`,h.z+foreaft-side*yawLag+breath*.002+sway*.019,6.5);
       // Wrist flex trails both arm reach and apparent gravity, relative to the
       // forearm rather than holding a world-facing palm through a turn.
       const lag=clamp(-this.channels.get(`hand${i}z`)!.velocity*.10

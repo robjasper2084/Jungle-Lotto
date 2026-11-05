@@ -1,0 +1,15 @@
+-- The CXX compiler identification is GNU 14.2.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Configuring done (0.3s)
+-- Generating done (0.0s)
+-- Build files have been written to: /mnt/data/static_engine_merge_build
+[ 25%] Building CXX object CMakeFiles/static_input_bridge.dir/engine/src/input_bridge.cpp.o
+[ 50%] Linking CXX static library libstatic_input_bridge.a
+[ 50%] Built target static_input_bridge
+[ 75%] Building CXX object CMakeFiles/native_input_tests.dir/tests/native_test.cpp.o
+[100%] Linking CXX executable native_input_tests
+[100%] Built target native_input_tests

@@ -13,3 +13,12 @@ test('blocked earned checkpoints do not teleport a racer through scenery',()=>{
  const run=new ElmwoodRun(gates);run.reset('sprint',gates[0]);assert.equal(elmwoodRaceRecovery(run,{...map,raycastObstacle:()=>0}),undefined);
  assert(elmwoodRaceRecovery(run,map));run.finished=true;assert.equal(elmwoodRaceRecovery(run,map),undefined);run.finished=false;run.mode='free';assert.equal(elmwoodRaceRecovery(run,map),undefined);
 });
+
+
+test('only competitive Elmwood modes carry three recoveries and a new run resets the stock',()=>{
+ const run=new ElmwoodRun(gates);
+ for(const mode of ['free','tour'] as const){run.reset(mode,gates[0]);assert.equal(run.limitedRecovery,false);}
+ for(const mode of ['sprint','tricks'] as const){run.reset(mode,gates[0]);assert.equal(run.limitedRecovery,true);for(let i=0;i<3;i++)assert(run.recoveryStock.consume());assert.equal(run.recoveryStock.consume(),false);assert.equal(run.recoveryLabel,'0/3 recoveries');}
+ run.reset('sprint',gates[0]);assert.equal(run.recoveryStock.remaining,3);
+ const blocked=elmwoodRaceRecovery(run,{...map,raycastObstacle:()=>0});assert.equal(blocked,undefined);assert.equal(run.recoveryStock.remaining,3);
+});

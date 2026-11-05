@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import {buildCutMurals,CUT_MURALS,SUPPLIED_CUT_MURALS,muralBacking} from './cutMurals.ts';
-import {trailPaintSites} from './trailPaint.ts';
+import {trailPaintSites,trailPaintGeometry} from './trailPaint.ts';
 import {DETROIT_FIELD_SIGN} from './routeArt.ts';
 import {cutPoint,cutCoords,surfaceAt,type DetroitWorld,type Solid} from './world.ts';
 import {roadAt} from './geography.ts';
@@ -38,4 +38,13 @@ test('all original murals plus five blank-span additions keep solid walls outsid
   }
   for(const s of solids)for(const x of [-s.hx,s.hx])for(const z of [-s.hz,s.hz]){const yaw=s.yaw??0,q=cutCoords(s.x+Math.cos(yaw)*x+Math.sin(yaw)*z,s.z-Math.sin(yaw)*x+Math.cos(yaw)*z);assert.ok(Math.abs(q.u)>cutWidth(q.d)/2+1,'mural obstructs the trail');}
  }finally{T.TextureLoader.prototype.loadAsync=original;}
+});
+
+test('lane paint stays above the same greenway triangles through grades and every tile boundary',async()=>{
+ const world=new (await import('./world.ts')).DetroitWorld(),sites=trailPaintSites();let probes=0;
+ for(const site of sites){const p=cutPoint(site.at,site.offset),parts=trailPaintGeometry(world.chunks,site.type==='bike'?1.12:.68,1.65,p.x,p.z,p.heading+(site.reverse?Math.PI:0));assert.ok(parts.length>0,'missing symbol at '+site.at);
+  for(const part of parts){const a=part.geometry.attributes.position;for(let i=0;i<a.count;i+=3){const x=(a.getX(i)+a.getX(i+1)+a.getX(i+2))/3,z=(a.getZ(i)+a.getZ(i+1)+a.getZ(i+2))/3,y=(a.getY(i)+a.getY(i+1)+a.getY(i+2))/3;
+   const terrain=part.chunk,mesh=new T.Mesh(new T.BufferGeometry().setAttribute('position',new T.BufferAttribute(terrain.vertices,3)).setIndex(new T.BufferAttribute(terrain.indices,1)),new T.MeshBasicMaterial({side:T.DoubleSide}));mesh.updateMatrixWorld(true);const ray=new T.Raycaster(new T.Vector3(x,100,z),new T.Vector3(0,-1,0));const hit=ray.intersectObject(mesh)[0];assert.ok(hit);assert.ok(Math.abs(y-hit.point.y-.083)<.0001,'paint buried under road at '+site.at);mesh.geometry.dispose();(mesh.material as T.Material).dispose();probes++;}part.geometry.dispose();}
+ }
+ assert.ok(probes>200);
 });

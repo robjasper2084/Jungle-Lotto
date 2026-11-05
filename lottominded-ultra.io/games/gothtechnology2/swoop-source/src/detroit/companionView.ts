@@ -1,4 +1,5 @@
 import {dogBalance} from './dogBalance.ts';
+import {invalidateAnimatedShadow} from '../../../ride-core/src/shadowBudget.ts';
 import * as T from 'three';
 import {clone} from 'three/addons/utils/SkeletonUtils.js';
 import type {GLTF} from './compressedGLTFLoader.ts';
@@ -29,7 +30,8 @@ function plant(paw:Paw,target:T.Vector3,pole:T.Vector3,rotation:T.Quaternion){
   paw.foot.quaternion.copy(paw.foot.parent!.getWorldQuaternion(q()).invert().multiply(rotation));paw.foot.updateWorldMatrix(false,true);
 }
 export class CompanionView {
-  private commandActions:T.AnimationAction[]=[];
+  private materials=new Map<T.Material,T.Material>();private disposed=false;
+  private commandActions:T.AnimationAction[]=[];private powerActions=new Map<string,T.AnimationAction>();
   root=new T.Group();ground=new T.Group();model:T.Object3D;mixer:T.AnimationMixer;gait='idle';
   paws:Paw[]=[];private blendedSpeed=0;private lastTime=-1;private lastPosition=v();private sample=createGroundSample();
   private terrain?:TerrainSampler;
@@ -55,7 +57,23 @@ export class CompanionView {
       if(!ankle)throw new Error('Boerboel articulated gait asset required: missing '+prefix+'_ankle_'+side);
       this.paws.push({upper,lower,ankle,foot,restHeight:foot.getWorldPosition(v()).y,anchor:null,contact:0});
     }
-    this.model.traverse(o=>{if((o as T.Mesh).isMesh){o.castShadow=true;o.receiveShadow=true;o.frustumCulled=!(o as T.SkinnedMesh).isSkinnedMesh;}});
+    this.model.traverse(o=>{const mesh=o as T.Mesh;if(!mesh.isMesh)return;
+      // Keep the supplied coat artwork, but do not treat fur as reflective metal.
+      // Own only the materials: textures and geometry remain shared asset data.
+      const coat=(source:T.Material)=>{let material=this.materials.get(source);if(material)return material;
+        material=source.clone();if((material as T.MeshStandardMaterial).isMeshStandardMaterial){
+          const fur=material as T.MeshStandardMaterial;fur.metalness=0;fur.metalnessMap=null;
+          fur.roughness=.94;fur.roughnessMap=null;fur.normalScale.multiplyScalar(.5);
+        }this.materials.set(source,material);return material;};
+      mesh.material=Array.isArray(mesh.material)?mesh.material.map(coat):coat(mesh.material);
+      o.castShadow=true;o.receiveShadow=true;o.frustumCulled=!(o as T.SkinnedMesh).isSkinnedMesh;
+    });
+  }
+  dispose(){
+    if(this.disposed)return;this.disposed=true;this.mixer.stopAllAction();this.mixer.uncacheRoot(this.model);
+    const skeletons=new Set<T.Skeleton>();this.model.traverse(o=>{if((o as T.SkinnedMesh).isSkinnedMesh)skeletons.add((o as T.SkinnedMesh).skeleton);});
+    for(const skeleton of skeletons)skeleton.dispose();
+    for(const material of this.materials.values())material.dispose();this.materials.clear();this.root.removeFromParent();
   }
   reactToRider(hero:{x:number;z:number;speed:number},p:DogPose){
     if(p.speed>.5||Math.abs(hero.speed)>.3)return;
@@ -63,7 +81,8 @@ export class CompanionView {
     const yaw=Math.atan2(hero.x-p.x,hero.z-p.z)-p.heading;
     head.rotateY(T.MathUtils.clamp(Math.atan2(Math.sin(yaw),Math.cos(yaw)),-.4,.4)*.45);
   }
-  apply(p:DogPose){
+  apply(p:DogPose&{power?:'pounce'|'radar'}){
+    invalidateAnimatedShadow(this.root);
     const lie=T.MathUtils.clamp(p.lie??0,0,1),sit=T.MathUtils.clamp(p.sit??0,0,1-lie),commanded=sit+lie;
     this.root.position.set(p.x,p.y,p.z);this.root.rotation.y=p.heading;
     // Quaternion crossfades cut across the tucked haunch arc. Give mixed poses
@@ -83,6 +102,7 @@ export class CompanionView {
     // The mixer skips unchanged properties. Restore its previous output before
     // applying IK so repeated paused frames cannot accumulate bone corrections.
     for(const a of this.animated){a.bone.position.copy(a.position);a.bone.quaternion.copy(a.rotation);a.bone.scale.copy(a.scale);}
+    for(const [key,action]of this.powerActions){action.setEffectiveWeight(p.power===key?.65:0);action.time=(key==='pounce'?(p.jumpProgress??0):(p.time%1))*action.getClip().duration;}
     this.mixer.update(0);
     for(const a of this.animated){a.position.copy(a.bone.position);a.rotation.copy(a.bone.quaternion);a.scale.copy(a.bone.scale);}
     const balance=dogBalance(this.blendedSpeed,p.phase,p.turnRate||0,p.time,p.landing??0,p.lookYaw??0);
@@ -104,7 +124,9 @@ export class CompanionView {
     for(const [i,paw] of this.paws.entries()){
       if(commanded>.01){paw.anchor=null;continue;}
       const animated=paw.foot.getWorldPosition(v()),rotation=paw.foot.getWorldQuaternion(q());
-      const contact=jumping?0:pawContact(gaitSpeed,p.phase,i);paw.contact=contact;
+      // A two-percent phase ramp released a planted paw in one render frame.
+      // Ease the visual IK contact over several frames; simulation is unchanged.
+      const contact=jumping?0:pawContact(gaitSpeed,p.phase,i,.07);paw.contact=contact;
       if(contact<.05||gaitSpeed<.04)paw.anchor=null;
       if(!reset&&p.time>0&&gaitSpeed>.04&&contact>.75&&!paw.anchor)paw.anchor=animated.clone();
       // Release an unreachable planted foot after an emergency collision/recovery.
@@ -131,3 +153,4 @@ export class CompanionView {
     this.root.updateMatrixWorld(true);
   }
 }
+

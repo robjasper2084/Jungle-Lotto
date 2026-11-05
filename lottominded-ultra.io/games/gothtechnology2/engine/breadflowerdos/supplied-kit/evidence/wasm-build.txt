@@ -1,0 +1,1 @@
+Built isolated input proof: dist/breadflower-input.wasm

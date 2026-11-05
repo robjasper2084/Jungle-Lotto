@@ -1,6 +1,6 @@
 import * as T from 'three';
 import './helmetSkin.css';
-const decalUrl=new URL('../../art/helmet-ghoulies-20261004/ghoulies-decal.webp',import.meta.url).href;
+import decalUrl from '../../art/helmet-ghoulies-20261004/ghoulies-decal.webp?url';
 const key='digital-static-helmet-skin-v1',event='digital-static-helmet-skin';
 export type HelmetSkin='ghoulies'|'plain';
 function selected():HelmetSkin{try{return localStorage.getItem(key)==='plain'?'plain':'ghoulies';}catch{return 'ghoulies';}}

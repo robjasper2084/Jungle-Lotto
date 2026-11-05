@@ -25,8 +25,8 @@ export function stanceTargets(p:RidePose){
   });
   return {drop,shift:.105*forward-.17*back-.09*crouch-.035*landing-.025*compact,pitch,neck:-pitch*.78,
     lateral:(-p.turnIntent*.025*technical+p.weightShift*.8-p.hipSway)*live,
-    hipTilt:Math.sign(p.rollAngle)*carve*.07,hipYaw:-p.turnIntent*(.055+.08*technical)*live,
-    chestRoll:p.rollAngle*.12*live,headRoll:p.rollAngle*.46*live,
+    hipTilt:Math.sign(p.rollAngle)*carve*.095,hipYaw:-p.turnIntent*(.055+.08*technical)*live,
+    chestRoll:p.rollAngle*.20*live,headRoll:p.rollAngle*.46*live,
     armBank:0,armSwing:0,shoulders:[0,0],
     chestYaw:p.riderTurnTwist+.22*p.reverseBlend,headYaw:p.riderLookYaw+.55*p.reverseBlend,carve,technical,hands};
 }

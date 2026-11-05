@@ -26,7 +26,7 @@ test('two keyboards own separate throttle, steering, hop and recovery controls',
  input.clear(0);assert.equal(input.consume(0).throttle,0);assert.equal(input.consume(1).steer,-1,'a P1 crash cannot clear P2 controls');
 });
 test('per-player cruise cancels on braking or interruption without affecting the other rider',()=>{
- const input=new SplitRideInput(['wasd','arrows']);arm(input);input.toggleCruise(0);assert.ok(input.consume(0).throttle>0);assert.equal(input.consume(1).throttle,0);
+ const input=new SplitRideInput(['wasd','arrows']);arm(input);input.poll([],[7,9],1/120);input.toggleCruise(0);assert.equal(input.consume(0).throttle,0);input.poll([],[6,9],1/120);assert.ok(input.consume(0).throttle>0);assert.equal(input.consume(1).throttle,0);
  input.toggleCruise(1);input.handleKey('KeyS',true);assert.equal(input.consume(0).throttle,-1);assert.equal(input.cruising[0],false);assert.equal(input.cruising[1],true);
  input.clear(0);assert.equal(input.cruising[1],true);input.clear();arm(input);assert.deepEqual(input.cruising,[false,false]);assert.equal(input.consume(1).throttle,0);
 });
@@ -80,4 +80,15 @@ test('both local riders can complete the full route to Mack Avenue with the exis
   assert.ok(room.rules.racers.every(r=>r.finish!==null&&r.gate===RACE_ROUTE.gates.length),JSON.stringify(room.snapshot));assert.ok(room.riders.every(r=>!r.sim.crashed));assert.equal(room.rules.order[0].id,ids[0]);
   t.diagnostic(JSON.stringify(room.rules.racers.map(r=>({id:r.id,seconds:r.finish,gates:r.gate}))));
  }finally{mapped.physics.free();}
+});
+
+
+test('competitive recovery stock is per rider, denies a fourth return, and free roam stays unlimited',()=>{
+ const race=new SplitRaceSimulation(flat,ids);race.rules.countdown=0;
+ for(let i=0;i<3;i++){assert.equal(race.recover(0),true);assert.equal(race.recover(0),false,'in-progress recovery must not spend another return');for(let step=0;step<30;step++)race.step(1/120,[NEUTRAL_ACTIONS,NEUTRAL_ACTIONS]);}
+ assert.equal(race.recover(0),false);assert.equal(race.riders[0].stock.remaining,0);assert.equal(race.riders[1].stock.remaining,3);
+ const fresh=new SplitRaceSimulation(flat,ids);assert.equal(fresh.riders[0].stock.remaining,3);
+ const free=new SplitRaceSimulation(flat,ids,{mode:'free',spawn:{x:0,y:0,z:0,heading:0}});
+ for(let i=0;i<5;i++){assert.equal(free.recover(0),true);for(let step=0;step<30;step++)free.step(1/120,[NEUTRAL_ACTIONS,NEUTRAL_ACTIONS]);}
+ assert.equal(free.riders[0].stock.remaining,3);
 });

@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {surfaceFinish} from '../../../ride-core/src/surfaceFinish.ts';
 
 /** Original Higgsfield albedo; normal/roughness are image-derived, not measured scans. */
 export async function loadEnvironmentMaterials(){
@@ -12,6 +13,7 @@ export async function loadEnvironmentMaterials(){
     const strength=name==='bark'?.8:name==='grass'?.4:.32;
     materials[name]=new T.MeshStandardMaterial({map,normalMap,roughnessMap,normalScale:new T.Vector2(strength,strength),roughness:1,envMapIntensity:.35});
     materials[name].name='Higgsfield '+name;
+    if(name!=='bark')surfaceFinish(materials[name],'ground');
   }));
   materials.asphalt.color.set('#777c80');materials.bark.color.set('#bcb6a9');
   materials.sidewalk.color.set('#c4c1b8');materials.concrete.color.set('#b5b5af');

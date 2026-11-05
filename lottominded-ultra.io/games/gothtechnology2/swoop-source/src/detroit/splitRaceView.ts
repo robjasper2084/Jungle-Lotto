@@ -34,7 +34,7 @@ export class SplitRaceView {
  constructor(scene:T.Scene,simulation:SplitRaceSimulation,data:Awaited<ReturnType<typeof loadActors>>,bindings:readonly SplitBinding[],actions:{pause:()=>void;restart:()=>void;menu:()=>void;recover:(i:number)=>void;camera:(i:number)=>void;cruise:(i:number)=>void;photo?:(i:number)=>void;display?:()=>void;input?:SplitRideInput;onlineSlot?:number;bots?:readonly number[];splitView?:()=>boolean},patches:readonly EffectPatch[]=[],audio:readonly RideAudio[]=[]){
   this.simulation=simulation;this.bindings=bindings;this.ownerSlot=actions.onlineSlot;this.onlineSplit=actions.splitView;this.audio=audio;this.lamps=simulation.riders.map(()=>new RiderLamp(scene,simulation.terrain));
   this.poses=simulation.riders.map(()=>createPose());this.lastGates=simulation.riders.map(()=>0);this.first=simulation.riders.map(()=>false);this.cameras=simulation.riders.map(()=>new T.PerspectiveCamera(55,1,.08,1500));this.photoFocus=simulation.riders.map(()=>undefined);
-  this.heroes=simulation.riders.map(r=>{const h=new Hero(data,r.sim.terrain,r.id);r.sim.mountedVolume=h.mountedVolume;h.apply(r.pose);scene.add(h.root);return h;});
+  this.heroes=simulation.riders.map(r=>{const h=new Hero(data,r.sim.terrain,r.id,'kimodo');r.sim.mountedVolume=h.mountedVolume;h.apply(r.pose);scene.add(h.root);return h;});
   this.follows=simulation.riders.map(r=>{const f=new FollowCamera(simulation.terrain);f.reset(r.pose);return f;});
   this.effects=simulation.riders.map(()=>new ContactEffects(scene,simulation.terrain,patches));this.sparks=simulation.riders.map(()=>new PedalSparks(scene));scene.add(this.course);
   for(const [i,station]of RACE_ROUTE.gates.entries()){
@@ -62,6 +62,10 @@ export class SplitRaceView {
   this.results.querySelector('nav')!.append(button('Race again',actions.restart),button('Main menu',actions.menu));document.body.append(this.hud,this.results);
  }
  resetTouch(slot?:number){if(slot===undefined)this.pads.forEach(p=>p?.reset());else this.pads[slot]?.reset();}
+ /** Guests receive poses without executing the host's physics/afterStep loop. */
+ afterRemoteFrame(dt:number){
+  this.simulation.riders.forEach((r,i)=>this.follows[i].stepRemote(dt,r.pose));
+ }
  afterStep(dt:number){
   if(this.simulation.rules.countdown>0)return;
   this.simulation.riders.forEach((r,i)=>{
@@ -75,6 +79,7 @@ export class SplitRaceView {
  }
  recovered(i:number){this.follows[i].reset(this.simulation.riders[i].pose);this.first[i]=false;this.sparks[i].reset();this.effects[i].reset();this.cues[i].reset();}
  get feedback(){return this.effects.map((e,i)=>({...e.surface.model.state,confirmation:this.cues[i].model.text,lamp:this.lamps[i].intensity,audio:this.audio[i]?.state}));}
+ get cameraTracking(){return this.simulation.riders.map((r,i)=>({hero:r.id,slot:i,own:this.ownerSlot===i,mode:this.first[i]?'first':'chase',rider:{x:r.pose.x,y:r.pose.y,z:r.pose.z},eye:{...this.follows[i].eye},target:{...this.follows[i].target}}));}
  toggleCamera(i:number){this.photoFocus[i]=undefined;this.first[i]=!this.first[i];this.follows[i].reset(this.simulation.riders[i].pose);}
  clearPhoto(i:number){this.photoFocus[i]=undefined;}
  framePhoto(i:number,target:{x:number;y:number;z:number}){this.photoFocus[i]=new T.Vector3(target.x,target.y,target.z);}
@@ -93,9 +98,10 @@ export class SplitRaceView {
    panel.querySelector('.splitProgress')!.textContent=progress.finish!==null?`FINISHED · ${progress.finish.toFixed(2)} s`:progress.missed?'MISSED GATE · Recover to last checkpoint':`Gate ${Math.min(progress.gate+1,RACE_ROUTE.gates.length)}/${RACE_ROUTE.gates.length} · ${Math.max(0,Math.round(RACE_ROUTE.end-progress.station))} m`;
    if(this.simulation.sessionMode==='free')panel.querySelector('.splitProgress')!.textContent='FREE RIDE · Explore Detroit together';else if(r.challenge)panel.querySelector('.splitProgress')!.textContent=r.challenge.progress;else if(progress.finish===null&&RACE_ROUTE.gates[progress.gate]!==undefined)panel.querySelector('.splitProgress')!.textContent+=' / '+routeGuide(r.pose.x,r.pose.z,r.pose.headingY,routePosition(RACE_ROUTE.gates[progress.gate]));
    const fallPhase=this.simulation.remoteFallPhase.get(i)??r.sim.snapshot().fallPhase;
-   panel.querySelector('.splitNotice')!.textContent=connectionMessage|| (r.sim.crashed?`FALL · ${fallPhase==='settled'?'Recover when ready':'settling…'}`:paused?'Release controls before resuming':r.pose.warningLevel>.05?'SPEED WARNING · EASE OFF':r.pose.scrape>.05?'PEDAL SCRAPE':r.message);
+   const limited=this.simulation.sessionMode==='race'||this.simulation.sessionMode==='challenge'&&r.challenge?.challenge.kind!=='discovery';const recoverButton=panel.querySelector<HTMLButtonElement>('nav button');if(recoverButton){recoverButton.textContent=r.sim.snapshot().state==='recovering'||r.pose.crashRecovery>0?'Getting back up…':this.simulation.recoveryPending(i)?'Recovery queued…':limited?'Recover · '+r.stock.remaining+'/3':'Recover';recoverButton.disabled=limited&&!r.stock.remaining;}
+   panel.querySelector('.splitNotice')!.textContent=connectionMessage|| (this.simulation.recoveryPending(i)?'Recovery queued · wait for the fall to settle':r.sim.crashed?`FALL · ${fallPhase==='settled'?'Recover when ready':'tap Recover to queue getting up'}`:paused?'Release controls before resuming':r.pose.warningLevel>.05?'SPEED WARNING · EASE OFF':r.pose.scrape>.05?'PEDAL SCRAPE':r.message);
    panel.querySelector('.splitScore')!.textContent=`${r.flow.banked} BANKED`+(r.flow.pending?` · +${r.flow.pending} PENDING`:'');
-   const buttons=panel.querySelectorAll<HTMLButtonElement>('nav button');buttons[0].disabled=paused||rules.countdown>0||rules.done||progress.finish!==null||r.sim.crashed&&fallPhase!=='settled';
+   const buttons=panel.querySelectorAll<HTMLButtonElement>('nav button');buttons[0].disabled=rules.countdown>0||rules.done||progress.finish!==null||limited&&!r.stock.remaining||r.sim.snapshot().state==='recovering'||r.pose.crashRecovery>0;
    buttons[1].textContent=this.first[i]?'Camera · first person':'Camera · chase';
    buttons[2].disabled=paused||rules.countdown>0||rules.done||progress.finish!==null||r.sim.crashed;buttons[2].setAttribute('aria-pressed',String(cruising[i]));buttons[2].textContent=cruising[i]?'Cruise on · 24':'Cruise · 24';
   });

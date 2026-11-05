@@ -1,0 +1,10 @@
+import {writeFile,mkdir} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+import {WEAPONS,COMBAT_REVISION} from '../../../ride-core/src/royale/combatProfiles.ts';
+import {WHEELS} from '../../../ride-core/src/royale/wheelProfiles.ts';
+const keys=['damage','speed','radius','spread','interval','life','ammo','pellets','gravity','inherit','magazine','reloadCommit','reloadEnd','modes','burstCount','adsTicks','kickYaw','kickPitch','recovery'];
+const header='// Generated from combatProfiles.ts. Do not hand-edit.\nconstexpr Weapon weapons[]={\n'+Object.values(WEAPONS).map(w=>' {'+keys.map(k=>w[k]).join(',')+'}').join(',\n')+'\n};\n';
+await writeFile(new URL('../../../engine/breadflowerdos/integration/combat_profiles.hpp',import.meta.url),header);
+const hash=createHash('sha256').update(JSON.stringify({revision:COMBAT_REVISION,weapons:WEAPONS,wheels:WHEELS})).digest('hex');
+await writeFile(new URL('../../../ride-core/src/royale/combatIdentity.ts',import.meta.url),`// Generated balance hash for room compatibility.\nexport const COMBAT_HASH='${hash}';\n`);
+console.log('Combat profile hash',hash);

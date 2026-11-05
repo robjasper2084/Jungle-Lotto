@@ -1307,12 +1307,14 @@
         event.preventDefault();
 
         if (event.code === 'Space') {
+          if (event.repeat) return;
           paused = !paused;
           modeEl.textContent = paused ? 'paused' : 'manual';
           return;
         }
 
         if (event.code === 'KeyR') {
+          if (event.repeat) return;
           resetMatch(Math.random() > 0.5 ? 1 : -1);
           return;
         }
@@ -1326,7 +1328,14 @@
         keyboardActiveUntil = nowMs() + 2000;
       });
 
+      const clearHeldInput = () => {
+        keys.clear();
+        keyboardActiveUntil = 0;
+        pointerActiveUntil = 0;
+      };
+      window.addEventListener('blur', clearHeldInput);
       document.addEventListener('visibilitychange', () => {
+        if (document.hidden) clearHeldInput();
         lastTime = performance.now();
       });
 

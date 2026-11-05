@@ -27,6 +27,12 @@ export function initSubscriptions(products: Product[]) {
     const status = $('.form-status', form)!;
     const email = $<HTMLInputElement>('[name=email]', form)!;
     const button = $<HTMLButtonElement>('[type=submit]', form)!;
+    if (!launchAlertsConnected) {
+      $$<HTMLInputElement | HTMLButtonElement>('input,button', form).forEach(control => { control.disabled = true; });
+      status.textContent = disconnectedMessage;
+      form.addEventListener('submit', event => event.preventDefault());
+      return;
+    }
     form.addEventListener('submit', async event => {
       event.preventDefault();
       if (!form.reportValidity() || form.dataset.busy === 'true') return;
@@ -46,7 +52,7 @@ export function initSubscriptions(products: Product[]) {
       analytics.trackEvent(result.ok ? 'launch_alert_submit' : 'launch_alert_error', { count: interests.length });
       if (result.ok) form.reset();
       email.removeAttribute('aria-invalid');
-      form.dataset.busy = 'false'; button.disabled = false;
+      form.dataset.busy = 'false'; button.disabled = !launchAlertsConnected;
     });
     form.addEventListener('invalid', event => {
       const input = event.target as HTMLInputElement;

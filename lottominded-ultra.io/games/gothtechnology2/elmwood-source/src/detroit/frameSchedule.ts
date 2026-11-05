@@ -1,4 +1,9 @@
 /** Idle views refresh at 30 Hz; active riding and XR retain display refresh. */
+export function frameSeconds(now:number,previous:number){
+ // A queued RAF timestamp may precede performance.now() used after async warmup.
+ // Feed a neutral frame to physics, then resume from the next display callback.
+ return Number.isFinite(now)&&Number.isFinite(previous)?Math.max(0,Math.min(.1,(now-previous)/1000)):0;
+}
 export class FrameSchedule {
  private deadline=-Infinity;private interval=0;
  shouldRender(now:number,idle:boolean,xr:boolean,maxFps=Infinity){

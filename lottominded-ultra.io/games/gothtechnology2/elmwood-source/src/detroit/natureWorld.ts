@@ -1,3 +1,5 @@
+import {AirAtmosphere} from '../../../ride-core/src/airAtmosphere.ts';
+import {LivingBirdFlock} from '../../../ride-core/src/livingBirds.ts';
 import * as T from 'three';
 import {GLTFLoader} from './compressedGLTFLoader.ts';
 
@@ -14,15 +16,17 @@ export function birdFlight(age:number,index:number,scareUntil=0){
 
 /** Blender GLBs, shared geometry/materials, one instanced petal draw, bounded work. */
 export class NatureWorld {
- readonly root=new T.Group();loaded=false;error='';
+ private air:AirAtmosphere;private flock:LivingBirdFlock;readonly root=new T.Group();loaded=false;error='';
  private trees:T.Group[]=[];private birds:{root:T.Group;left?:T.Object3D;right?:T.Object3D;home:T.Vector3;index:number;scareUntil:number;cooldown:number;epoch:number;fleeStart:number}[]=[];
  private petals?:T.InstancedMesh;private elapsed=0;private scratch=new T.Object3D();
  readonly anchors:NatureAnchor[];private floor:(x:number,z:number)=>number;
  constructor(parent:T.Object3D,anchors:NatureAnchor[],floor:(x:number,z:number)=>number){
-  this.anchors=anchors;this.floor=floor;
+  this.anchors=anchors;this.floor=floor;this.air=new AirAtmosphere(parent);
+  this.flock=new LivingBirdFlock(parent,anchors.filter((_,i)=>i%3===0).slice(0,4).map(p=>({...p,y:p.y+7})));
   this.root.name='Cherry groves and songbirds';parent.add(this.root);
  }
  async load(){
+  void this.flock.load('/exports/nature/living-crow.glb');
   const loader=new GLTFLoader();
   try{
    const [a,b,bird,petal]=await Promise.all(['cherry-blossom-1','cherry-blossom-2','american-robin','cherry-petal'].map(n=>loader.loadAsync('/exports/nature/'+n+'.glb')));
@@ -39,7 +43,8 @@ export class NatureWorld {
   }catch(e){this.error=String(e);console.warn('Nature assets unavailable',e);}
  }
  update(dt:number,focus:{x:number;z:number},paused:boolean,low=false,reduced=false){
-  if(!this.loaded)return;if(!paused)this.elapsed+=Math.min(.1,Math.max(0,dt));
+  if(!paused)this.elapsed+=Math.min(.1,Math.max(0,dt));
+  this.flock.update(this.elapsed,focus,low,reduced);this.air.update(this.elapsed,{...focus,y:this.floor(focus.x,focus.z)},low,reduced);if(!this.loaded)return;
   const now=this.elapsed,distance=low?90:160;
   for(const tree of this.trees)tree.visible=Math.hypot(tree.position.x-focus.x,tree.position.z-focus.z)<distance;
   for(const b of this.birds){
@@ -65,5 +70,5 @@ export class NatureWorld {
   }
   petals.instanceMatrix.needsUpdate=true;
  }
- get status(){return {loaded:this.loaded,trees:this.trees.length,birds:this.birds.length,visibleBirds:this.birds.filter(b=>b.root.visible).length,petals:this.petals?.count??0,error:this.error};}
+ get status(){return {pluginBirds:this.flock.status,loaded:this.loaded,trees:this.trees.length,birds:this.birds.length,visibleBirds:this.birds.filter(b=>b.root.visible).length,petals:this.petals?.count??0,error:this.error};}
 }

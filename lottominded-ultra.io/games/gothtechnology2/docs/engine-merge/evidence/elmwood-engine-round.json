@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-10T00:25:54.986Z",
+  "url": "http://127.0.0.1:4191/arcade/swoop-detroit/royale.html?from=elmwood&engine=breadflower",
+  "data": {
+    "back": "http://127.0.0.1:4191/arcade/elmwood-explorer/elmwood.html?engine=breadflower",
+    "engine": "{\"engine\":\"6b4d4e1f10dee9b1c8932db95f91b92e3eceb7db\",\"module\":\"41406a6bd53c5e3bd83095074ed04d256314670a8c25b61418bfd2d0f01a780f\",\"bridgeAbi\":2,\"engineRules\":\"static-royale-cpp-1\"}",
+    "frames": "24318",
+    "hud": "6 RIDERS REMAINIntegrity 100 / Shield 50 / Flow 100Static Blaster · 76 shots · 1 repairsField 233m → 210m · 17s",
+    "profile": "{\"fps\":59.99900828085495,\"p95\":16.79999999998836,\"calls\":206,\"triangles\":133964}",
+    "tick": "4053"
+  },
+  "errors": []
+}

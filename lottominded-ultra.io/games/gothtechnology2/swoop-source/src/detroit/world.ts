@@ -1,10 +1,12 @@
+import {JAZZ_CLUBS,jazzGrade} from './jazzSites.ts';
+import {cityWalkRoutes,seedCityPeople,freshCrowdSeed,crowdRandom} from './cityWalkRoutes.ts';
 import {inHarbor,harborTerrainDetail} from './harbor.ts';
 import {inValadeInlet,inValadePark,valadeTerrainDetail} from './valadeSite.ts';
 import {HARBOR_GANGWAY} from './harborLayout.ts';
 import {ARETHA_ENTRANCE} from './arethaEntrance.ts';
 import {ARETHA,waterfrontCorridor,waterfrontBuildings,inWaterfrontPond} from './waterfrontSite.ts';
 import {parkContains} from './freestylePark.ts';
-import {MACK_STUDIO,studioGrade,studioLot} from './mackStudioSite.ts';
+import {MACK_STUDIO,studioGrade,studioLot,studioMap} from './mackStudioSite.ts';
 import {LOTTO_SHOP,lottoCoordinates,lottoGrade} from './lottoShopSite.ts';
 import {PENNY_SHOP,pennyGrade,pennyNear} from './pennyShopSite.ts';
 import {millikenHill,MILLIKEN_BERM} from './millikenTerrain.ts';
@@ -21,6 +23,7 @@ import {actorBlocksMountedSpace,RECOVERY_SPACE_SECONDS} from './recovery.ts';
 import {CITY,CUT_METRES,pointOnCut,nearestCut,roadAt,riverEdge,nearestRiverPoint,inCity} from './geography.ts';
 import RAPIER from '@dimforge/rapier3d-compat';
 import {GEO,profileLevel,cutWidth,nearestRamp} from './geo-profile.ts';
+import {dequindreEntrance} from '../../../ride-core/src/dequindreEntrance.ts';
 import {geospatialMeshes,buildingEnvelope} from './geo-geometry.ts';
 import {CUT_TRAFFIC,TRAFFIC_RUNOUT,trafficPoint} from './trafficRoute.ts';
 export {CUT_TRAFFIC,TRAFFIC_RUNOUT} from './trafficRoute.ts';
@@ -44,8 +47,9 @@ export const CUT_STATIONS=[
 ].sort((a,b)=>a.at-b.at);
 export function cutPoint(d:number,u=0){return pointOnCut(d,u);}
 export function cutCoords(x:number,z:number){return nearestCut(x,z);}
+const muralArrival=studioMap(MACK_STUDIO.width/2+25,0);
 export const SPOTS=[
- {name:'Atwater Street / Renaissance Center view',x:-72.5,z:-1180,heading:.075},
+ {name:'Atwater / Dequindre Cut entrance',...dequindreEntrance()},
  {name:'Gratiot / geographic origin',...cutPoint(GEO.bridges.find(b=>b.name==='Gratiot Avenue')!.at),heading:pointOnCut(GEO.bridges.find(b=>b.name==='Gratiot Avenue')!.at).heading},
  {name:'Lafayette ramp',...cutPoint(GEO.ramps[0].at-15),heading:pointOnCut(GEO.ramps[0].at-15).heading},
  {name:'Chestnut overpass',...cutPoint(1438-20),heading:pointOnCut(1418).heading},
@@ -57,7 +61,7 @@ export const SPOTS=[
  {name:'Flower banks',...cutPoint(1050),heading:pointOnCut(1050).heading},
  {name:'Woodbridge / Fit Park',...cutPoint(265),heading:pointOnCut(265).heading},
  {name:'MoGo / bike repair',...cutPoint(2130),heading:pointOnCut(2130).heading},
- {name:'Detroit heart / field sign',...cutPoint(1600),heading:pointOnCut(1600).heading+Math.PI/2},
+ {name:'Detroit heart / field sign',x:-73.5,z:-1176.6,heading:-Math.PI/2},
  {name:'Ze Mound overlook',x:MILLIKEN_BERM.x+42,z:MILLIKEN_BERM.z,heading:-Math.PI/2},
  {name:'Adelaide / Detroit mural',...cutPoint(1864),heading:pointOnCut(1864).heading-Math.PI/2},
  {name:'Atwater / Milliken Harbor docks',x:-95,z:-1385,heading:-Math.PI/2},
@@ -66,6 +70,7 @@ export const SPOTS=[
  {name:'The Aretha / riverfront canopy',x:-250,z:-1750,heading:.30},
  {name:'Chene Street / Atwater waterfront',x:-115,z:-1759,heading:Math.PI/2},
  {name:'Robert C. Valade Park / beach and The Shed',x:-131,z:-1799.4,heading:-2.29},
+ {name:'Innovation Floor / Cut-side mural',...muralArrival,heading:Math.atan2(MACK_STUDIO.x-muralArrival.x,MACK_STUDIO.z-muralArrival.z)},
 ];
 export const STATIONS=CUT_STATIONS;
 export const CHECKPOINTS=[
@@ -75,13 +80,15 @@ export const CHECKPOINTS=[
   {name:'Freight Yard',...cutPoint(2050)},{name:'Mack Avenue',...cutPoint(CUT_METRES-20)},
 ];
 export function locationAt(x:number,z:number){
-  if(inValadePark(x,z))return 'Robert C. Valade Park';
+  const club=JAZZ_CLUBS.find(s=>Math.hypot(x-s.x,z-s.z)<24);if(club)return club.name;
+  if(inValadePark(x,z)||Math.hypot(x+131,z+1799.4)<18)return 'Robert C. Valade Park';
   if(x<15&&z< -1510&&z> -1810)return ARETHA.name;
   if(pennyNear(x,z))return 'Penny Exchange / Mack Avenue';
   const lotto=lottoCoordinates(x,z);if(Math.abs(lotto.u)<9&&Math.abs(lotto.v)<14)return 'LottoMind Store / Mack Avenue';
   if(studioLot(x,z))return 'GothTech Studio / 2000 Mack';
   if(Math.hypot(x-MILLIKEN_BERM.x,z-MILLIKEN_BERM.z)<80)return 'Ze Mound / Milliken State Park';
   const c=cutCoords(x,z);
+  if(c.d>=0&&c.d<30&&Math.abs(c.u)<12)return 'Atwater / Dequindre Cut entrance';
   if(c.d>30&&Math.abs(c.u)<100)return [...CUT_STATIONS].reverse().find(s=>c.d>=s.at)?.name??'Dequindre Cut';
   const street=roadAt(x,z);if(street?.name&&(x>160||street.name==='Atwater Street'))return street.name;
   if(z>170)return 'Hart Plaza';
@@ -107,7 +114,7 @@ export function heightAt(x:number,z:number){
   // Campbell Terrace opens onto the path instead of sitting on the generic bank.
   if(c.u>3&&c.u<17&&Math.abs(c.d-930.563)<14){const f=(1-clamp((Math.abs(c.d-930.563)-9)/5,0,1))*(1-clamp((c.u-14)/3,0,1));h=h*(1-f)+floor*f;}
   const ramp=nearestRamp(x,z),blend=1-clamp((ramp.distance-ramp.width/2)/3,0,1);
-  return pennyGrade(x,z,lottoGrade(x,z,studioGrade(x,z,h*(1-blend)+ramp.height*blend)));
+  return jazzGrade(x,z,pennyGrade(x,z,lottoGrade(x,z,studioGrade(x,z,h*(1-blend)+ramp.height*blend))));
 }
 export function surfaceAt(x:number,z:number):SurfaceId{
   if(studioLot(x,z))return 'pavement';
@@ -169,7 +176,7 @@ export function trafficBounds(kind:TrafficState['kind']){
 export function trafficAt(id:number,time:number):TrafficState{
   const moving:TrafficState['kind'][]=['skater','segway','pedestrian','cyclist','jogger','scooter','jogger','pedestrian','scooter','pedestrian'];
   const kind=id%11===0?'barrier':id%7===0?'cone':moving[id%moving.length];
-  const speed=kind==='scooter'?4.2:kind==='cyclist'?3.4:kind==='segway'?2.6:kind==='skater'?2.9:kind==='jogger'?(id%3===0?3.8:2.65):kind==='pedestrian'?1.1:0;
+  const speed=kind==='scooter'?4.2:kind==='cyclist'?8.2:kind==='segway'?2.6:kind==='skater'?2.9:kind==='jogger'?(id%3===0?3.8:2.65):kind==='pedestrian'?1.1:0;
   const dir=id%2?1:-1,home=110+id*(CUT_TRAFFIC.length-220)/61;
   // One persistent direction per person. Complete the route, exit beyond its visible
   // end, then enter at the opposite end; never ping-pong inside a short patrol patch.
@@ -189,19 +196,24 @@ function trafficObstacle(t:TrafficState):NavigationObstacle{
 export const trafficNavigationRadius=(kind:TrafficState['kind'])=>['pedestrian','jogger'].includes(kind)?.32:['segway','skater'].includes(kind)?.46:kind==='scooter'?.4:Math.hypot(trafficBounds(kind).hx,trafficBounds(kind).hz);
 export class DetroitWorld implements TerrainSampler{
   physics!:RAPIER.World;
+  protected collisionDirty=true;
   chunks=terrainChunks();solids=worldSolids();
   geoMeshes=geospatialMeshes(heightAt);
-  buildingMeshes=waterfrontBuildings(CITY.buildings).filter(b=>![MACK_STUDIO.osmId,LOTTO_SHOP.osmId,PENNY_SHOP.osmId,ARETHA.osmId,'105519122','777936147'].includes(b.id)&&b.points.some(p=>this.chunks.some(c=>Math.abs(c.x-p[0])<50&&Math.abs(c.z-p[1])<50))).map(b=>({data:b,geometry:buildingEnvelope(b,heightAt)}));
+  buildingMeshes=waterfrontBuildings(CITY.buildings).filter(b=>![MACK_STUDIO.osmId,LOTTO_SHOP.osmId,PENNY_SHOP.osmId,ARETHA.osmId,'105519122','777936147',...JAZZ_CLUBS.map(s=>s.osmId)].includes(b.id)&&b.points.some(p=>this.chunks.some(c=>Math.abs(c.x-p[0])<50&&Math.abs(c.z-p[1])<50))).map(b=>({data:b,geometry:buildingEnvelope(b,heightAt)}));
   metadata=new Map<number,{hx:number;hz:number}>();
   rideIntent={speed:0,heading:0};rejectedEncounters=0;
   private recoverySpace:{position:Vec3;radius:number;height:number;remaining:number}|undefined;
   courseFeatures:CourseFeature[]=[];hazards:TrafficState[]=[];hazardSeed=0;crowdActors:()=>NavigationObstacle[]=()=>[];
-  private crowd:CrowdAgent[]=[];private crowdTime=-1;
+  private crowd:CrowdAgent[]=[];private crowdTime=-1;private crowdSeed=0;private cityCrowds:ReturnType<typeof seedCityPeople>=[];
+  private cityFooting:(x:number,z:number)=>number=heightAt;
+  randomizePeople(seed=freshCrowdSeed()){this.crowdSeed=seed;this.crowd=[];this.cityCrowds=[];this.crowdTime=-1;}
+  get peopleState(){return {seed:this.crowdSeed,routes:this.cityCrowds.map(g=>({name:g.name,count:g.agents.length})),positions:[...this.crowd,...this.cityCrowds.flatMap(g=>g.agents)].filter(a=>a.pace>0).map(a=>({id:a.id,x:a.x,z:a.z,speed:a.motionSpeed??a.speed}))};}
+  private crowdAgent(id:number){return this.crowd[id]??this.cityCrowds.flatMap(g=>g.agents).find(a=>a.id==='traffic-'+id);}
   protected trafficFalls=new Map<number,{fall:TrafficFall;entry:TrafficState;pace:number}>();
   protected fallClock=-1;
   receiveTrafficImpact(id:number,impact:ActorImpact){
     const entry=this.traffic.find(t=>t.id===id);if(!entry||entry.kind==='cone'||entry.kind==='barrier'||this.trafficFalls.has(id)||impact.speed<2.2)return;
-    const agent=this.crowd[id];this.trafficFalls.set(id,{fall:new TrafficFall(entry,impact),entry:{...entry},pace:agent?.pace??entry.speed});
+    const agent=this.crowdAgent(id);this.trafficFalls.set(id,{fall:new TrafficFall(entry,impact),entry:{...entry},pace:agent?.pace??entry.speed});
     if(agent){agent.incapacitated=true;agent.speed=agent.motionSpeed=0;}
   }
   protected advanceTrafficFalls(time:number,px:number,pz:number){
@@ -215,9 +227,9 @@ export class DetroitWorld implements TerrainSampler{
         return this.physics.castRay(new RAPIER.Ray(origin,{x:direction.x/n,y:direction.y/n,z:direction.z/n}),length,true,undefined,0xffff0006,this.trafficBodies.get(id))?.timeOfImpact??null;
       }};
       let remaining=elapsed;while(remaining>1e-8){const dt=Math.min(1/30,remaining);f.step(dt,terrain,canStand);remaining-=dt;}
-      const a=this.crowd[id];if(a){const at=f.position;a.x=at.x;a.y=at.y;a.z=at.z;a.radius=.85;}
+      const a=this.crowdAgent(id);if(a){const at=f.position;a.x=at.x;a.y=at.y;a.z=at.z;a.radius=.85;}
       if(f.done){
-        if(a){const at=f.position,route=cutCoords(at.x,at.z);a.distance=route.d;a.lane=route.u;a.x=at.x;a.z=at.z;a.y=this.sampleGround(at.x,at.z,{height:at.y,normal:{x:0,y:1,z:0},surface:'pavement',offCourse:false},at.y).height;a.incapacitated=false;a.speed=a.motionSpeed=0;a.pace=state.pace;a.radius=Math.hypot(trafficBounds(state.entry.kind).hx,trafficBounds(state.entry.kind).hz);a.passing=undefined;}
+        if(a){const at=f.position,group=this.cityCrowds.find(g=>g.agents.includes(a));if(group){let best=a.distance,error=Infinity;for(let delta=-8;delta<=8;delta+=.2){const q=group.path.point(a.distance+delta,a.lane),d=Math.hypot(q.x-at.x,q.z-at.z);if(d<error){error=d;best=a.distance+delta;}}a.distance=best;}else{const route=cutCoords(at.x,at.z);a.distance=route.d;a.lane=route.u;}a.x=at.x;a.z=at.z;a.y=this.sampleGround(at.x,at.z,{height:at.y,normal:{x:0,y:1,z:0},surface:'pavement',offCourse:false},at.y).height;a.incapacitated=false;a.speed=a.motionSpeed=0;a.pace=state.pace;a.radius=trafficNavigationRadius(state.entry.kind);a.passing=undefined;}
         this.onTrafficRecovered(id,f.position);this.trafficFalls.delete(id);
       }
     }
@@ -225,7 +237,7 @@ export class DetroitWorld implements TerrainSampler{
   protected onTrafficRecovered(_id:number,_position:Vec3){}
   protected applyTrafficFall(t:TrafficState){const f=this.trafficFalls.get(t.id);return f?{...f.entry,speed:0,fall:f.fall.pose,fallPhase:f.fall.phase}:t;}
   trafficBodies=new Map<number,RAPIER.Collider>();traffic:TrafficState[]=[];
-  setHazards(seed:number,start:number,features=false){
+  setHazards(seed:number,start:number,features=false){this.collisionDirty=true;
     this.courseFeatures=features?courseFeatures(seed):[];
     this.hazardSeed=seed;
     for(const [id,c] of this.trafficBodies)if(id>=1000){this.metadata.delete(c.handle);this.physics.removeCollider(c,true);this.trafficBodies.delete(id);}
@@ -238,8 +250,8 @@ export class DetroitWorld implements TerrainSampler{
     for(const m of [...this.geoMeshes.filter(m=>m.collision!==false),...this.buildingMeshes]){const p=m.geometry.attributes.position,index=m.geometry.index;this.addMesh(new Float32Array(p.array),index?new Uint32Array(index.array):Uint32Array.from({length:p.count},(_,i)=>i),'kind' in m&&(m.kind==='deck'||m.kind==='approach'));}
     this.updateTraffic(0,0,0);this.step();return this;
   }
-  addBox(s:Solid){const desc=RAPIER.ColliderDesc.cuboid(s.hx,s.hy,s.hz).setTranslation(s.x,s.y,s.z).setCollisionGroups(0x0002ffff);if(s.yaw)desc.setRotation({x:0,y:Math.sin(s.yaw/2),z:0,w:Math.cos(s.yaw/2)});const c=this.physics.createCollider(desc);this.metadata.set(c.handle,{hx:s.hx,hz:s.hz});return c;}
-  addMesh(vertices:Float32Array,indices:Uint32Array,rideable=false){
+  addBox(s:Solid){this.collisionDirty=true;const desc=RAPIER.ColliderDesc.cuboid(s.hx,s.hy,s.hz).setTranslation(s.x,s.y,s.z).setCollisionGroups(0x0002ffff);if(s.yaw)desc.setRotation({x:0,y:Math.sin(s.yaw/2),z:0,w:Math.cos(s.yaw/2)});const c=this.physics.createCollider(desc);this.metadata.set(c.handle,{hx:s.hx,hz:s.hz});return c;}
+  addMesh(vertices:Float32Array,indices:Uint32Array,rideable=false){this.collisionDirty=true;
     const collider=this.physics.createCollider(RAPIER.ColliderDesc.trimesh(vertices,indices).setCollisionGroups(0x0002ffff));
     if(rideable){
       // Separate upward faces: Rapier ray normals face the ray even on a slab's
@@ -257,8 +269,8 @@ export class DetroitWorld implements TerrainSampler{
     return collider;
   }
   /** Register the same upward triangles used to render a draped street or sidewalk. */
-  addRideSurface(vertices:Float32Array,solidFoundation=false){
-    return this.physics.createCollider(RAPIER.ColliderDesc.trimesh(vertices,Uint32Array.from({length:vertices.length/3},(_,i)=>i)).setCollisionGroups(solidFoundation?0x0001ffff:0x0004ffff));
+  addRideSurface(vertices:Float32Array,solidFoundation=false,indices?:Uint32Array){this.collisionDirty=true;
+    return this.physics.createCollider(RAPIER.ColliderDesc.trimesh(vertices,indices??Uint32Array.from({length:vertices.length/3},(_,i)=>i)).setCollisionGroups(solidFoundation?0x0001ffff:0x0004ffff));
   }
   sampleGround(x:number,z:number,out:GroundSample,referenceY?:number){
     const hit=this.physics.castRayAndGetNormal(new RAPIER.Ray({x,y:60,z},{x:0,y:-1,z:0}),100,true,undefined,0xffff0001);
@@ -284,10 +296,10 @@ export class DetroitWorld implements TerrainSampler{
     // sampleGround still selects a reachable dock/bridge above the water.
     return this.sampleGround(x,z,{height:0,normal:{x:0,y:1,z:0},surface:'pavement',offCourse:false},referenceY).height<(pond?-.18:-.25);
   }
-  navigationObstacles(x:number,z:number,radius:number):NavigationObstacle[]{
+  navigationObstacles(x:number,z:number,radius:number,includeSolids=true):NavigationObstacle[]{
     const result:NavigationObstacle[]=[];
     for(const t of this.traffic){const o=trafficObstacle(t);if(Math.hypot(o.x-x,o.z-z)<radius+o.radius)result.push({...o,onImpact:(impact:ActorImpact)=>this.receiveTrafficImpact(t.id,impact)});}
-    for(let i=0;i<this.solids.length;i++){const s=this.solids[i],r=Math.hypot(s.hx,s.hz);if(Math.hypot(s.x-x,s.z-z)<radius+r)result.push({id:'solid-'+i,x:s.x,y:s.y-s.hy,z:s.z,radius:r,height:s.hy*2,kind:s.kind,vx:0,vz:0,raycastSolid:true});}
+    if(includeSolids)for(let i=0;i<this.solids.length;i++){const s=this.solids[i],r=Math.hypot(s.hx,s.hz);if(Math.hypot(s.x-x,s.z-z)<radius+r)result.push({id:'solid-'+i,x:s.x,y:s.y-s.hy,z:s.z,radius:r,height:s.hy*2,kind:s.kind,vx:0,vz:0,raycastSolid:true});}
     return result;
   }
   raycast(origin:Vec3,direction:Vec3,maxDistance:number){
@@ -325,14 +337,29 @@ export class DetroitWorld implements TerrainSampler{
     return this.trafficBodies.has(t.id)||t.speed===0||!space||!actorBlocksMountedSpace(trafficObstacle(t),space.position,space,space.remaining);
   }
   updateTraffic(time:number,px:number,pz:number){
+    this.collisionDirty=true;
     this.advanceTrafficFalls(time,px,pz);
     this.traffic=[];const active=new Set<number>();
-    if(!this.crowd.length||time<this.crowdTime){this.crowd=Array.from({length:62},(_,id)=>{const t=trafficAt(id,time),b=trafficBounds(t.kind),width=cutWidth(clamp(t.routeDistance!,0,CUT_METRES));return {id:'traffic-'+id,kind:t.kind,distance:t.routeDistance!,lane:t.speed?t.direction!*Math.min(1.65,width/2-.65):width/2+1.2,direction:t.direction!,pace:t.speed,speed:t.speed,radius:trafficNavigationRadius(t.kind),height:b.hy*2,x:t.x,y:t.y,z:t.z,heading:t.heading};});this.crowdTime=time;}
+    if(!this.crowd.length||time<this.crowdTime){this.crowd=Array.from({length:62},(_,id)=>{const t=trafficAt(id,time+(this.crowdSeed?crowdRandom(this.crowdSeed+id)()*2000:0)),b=trafficBounds(t.kind),width=cutWidth(clamp(t.routeDistance!,0,CUT_METRES));return {id:'traffic-'+id,kind:t.kind,distance:t.routeDistance!,lane:t.speed?t.direction!*Math.min(1.65,width/2-.65):width/2+1.2,direction:t.direction!,pace:t.speed,speed:t.speed,radius:trafficNavigationRadius(t.kind),height:b.hy*2,x:t.x,y:t.y,z:t.z,heading:t.heading};});this.crowdTime=time;}
     const trafficHandles=new Set([...this.trafficBodies.values()].map(c=>c.handle));const visitorShape=new RAPIER.Cuboid(.3,.65,.3);
-    const crowdGround={height:0,normal:{x:0,y:1,z:0},surface:'pavement' as const,offCourse:false},footing=(x:number,z:number)=>this.sampleGround(x,z,crowdGround,heightAt(x,z)).height;
+    // Exact crowd queries are limited to a margin beyond the 115m activation radius.
+    const crowdGround={height:0,normal:{x:0,y:1,z:0},surface:'pavement' as const,offCourse:false},footing=(x:number,z:number)=>Math.hypot(x-px,z-pz)>180?heightAt(x,z):this.sampleGround(x,z,crowdGround,heightAt(x,z)).height;
+    this.cityFooting=footing;
+    const clear=(x:number,y:number,z:number)=>Number.isFinite(y)&&(Math.hypot(x-px,z-pz)>180||!this.physics.intersectionWithShape({x,y:y+.85,z},{x:0,y:0,z:0,w:1},visitorShape,undefined,0xffff0006,undefined,undefined,c=>!trafficHandles.has(c.handle)));
+    // Route closures must follow today's focus, not retain the initial spawn's
+    // query radius for the entire session as the rider travels down the Cut.
+    if(this.crowdSeed&&!this.cityCrowds.length)this.cityCrowds=seedCityPeople(cityWalkRoutes(),this.crowdSeed,(x,z)=>this.cityFooting(x,z),clear);
     let remaining=Math.max(0,Math.min(2,time-this.crowdTime));this.crowdTime=time;
-    while(remaining>1e-8){const step=Math.min(1/30,remaining);remaining-=step;advanceCrowd(this.crowd,step,{length:CUT_TRAFFIC.length,runout:TRAFFIC_RUNOUT,offsetSign:-1,point:(d,u)=>{const p=trafficPoint(d,u);return {...p,y:footing(p.x,p.z)};},width:d=>cutWidth(clamp(d,0,CUT_METRES))+1.6,walkable:(x,y,z)=>Math.abs(heightAt(x+.2,z)-heightAt(x-.2,z))<.2&&Math.abs(heightAt(x,z+.2)-heightAt(x,z-.2))<.2&&Number.isFinite(y)&&!this.physics.intersectionWithShape({x,y:y+.85,z},{x:0,y:0,z:0,w:1},visitorShape,undefined,0xffff0006,undefined,undefined,c=>!trafficHandles.has(c.handle))},[{id:'player',x:px,y:footing(px,pz),z:pz,radius:.52,height:2.2,kind:'rider',vx:Math.sin(this.rideIntent.heading)*this.rideIntent.speed,vz:Math.cos(this.rideIntent.heading)*this.rideIntent.speed},...this.hazards.map(trafficObstacle),...this.crowdActors()]);}
-    const candidates:TrafficState[]=this.crowd.map<TrafficState>((agent,id)=>this.applyTrafficFall({...trafficAt(id,time),x:agent.x,y:agent.y,z:agent.z,heading:agent.heading,speed:agent.motionSpeed??agent.speed,routeDistance:agent.distance})).concat(this.hazards);
+    // Every district observes the same player and external riders during this
+    // traffic tick; avoid rebuilding that snapshot and raycasting the player
+    // ground once per district (up to 17 times).
+    const external:NavigationObstacle[]=remaining>1e-8?[{id:'player',x:px,y:footing(px,pz),z:pz,radius:.52,height:2.2,kind:'rider',vx:Math.sin(this.rideIntent.heading)*this.rideIntent.speed,vz:Math.cos(this.rideIntent.heading)*this.rideIntent.speed},...this.crowdActors()]:[];
+    const cutExternal=external.concat(this.hazards.map(trafficObstacle));
+    while(remaining>1e-8){const step=Math.min(1/30,remaining);remaining-=step;
+      for(const g of this.cityCrowds){g.path.walkable=(x,y,z)=>Math.hypot(x-px,z-pz)>160||clear(x,y,z);advanceCrowd(g.agents,step,g.path,external);}
+      advanceCrowd(this.crowd,step,{length:CUT_TRAFFIC.length,runout:TRAFFIC_RUNOUT,offsetSign:-1,point:(d,u)=>{const p=trafficPoint(d,u);return {...p,y:footing(p.x,p.z)};},width:d=>cutWidth(clamp(d,0,CUT_METRES))+1.6,walkable:(x,y,z)=>Math.abs(heightAt(x+.2,z)-heightAt(x-.2,z))<.2&&Math.abs(heightAt(x,z+.2)-heightAt(x,z-.2))<.2&&clear(x,y,z)},cutExternal);
+    }
+    const candidates:TrafficState[]=this.crowd.map<TrafficState>((agent,id)=>this.applyTrafficFall({...trafficAt(id,time),x:agent.x,y:agent.y,z:agent.z,heading:agent.heading,speed:agent.motionSpeed??agent.speed,routeDistance:agent.distance})).concat(this.cityCrowds.flatMap(g=>g.agents.map(a=>this.applyTrafficFall({id:Number(a.id.slice(8)),kind:a.kind as TrafficState['kind'],x:a.x,y:a.y,z:a.z,heading:a.heading,speed:a.motionSpeed??a.speed,routeDistance:a.distance,direction:a.direction}))),this.hazards);
     for(const t of candidates){const id=t.id;if(id<1000&&Math.hypot(t.x-px,t.z-pz)>115)continue;
       if(!this.trafficMayActivate(t))continue;
       if(!this.trafficBodies.has(id)&&Math.abs(this.rideIntent.speed)>1){
@@ -348,9 +375,13 @@ export class DetroitWorld implements TerrainSampler{
     }
     for(const[id,c]of this.trafficBodies)if(!active.has(id)){this.metadata.delete(c.handle);this.physics.removeCollider(c,true);this.trafficBodies.delete(id);}
   }
-  step(){
+  step(onlyWhenChanged=false){
     if(this.recoverySpace){this.recoverySpace.remaining-=1/120;if(this.recoverySpace.remaining<=0)this.clearRecoverySpace();}
-    this.physics.timestep=1/120;this.physics.step();
+    // Rider/fall motion is custom, not Rapier rigid-body simulation. The main
+    // 120 Hz loop can reuse queries between the 30 Hz traffic updates. Explicit
+    // scenery/setup calls still always flush new or externally changed colliders.
+    if(onlyWhenChanged&&!this.collisionDirty&&this.physics.bodies.len()===0)return;
+    this.physics.timestep=1/120;this.physics.step();this.collisionDirty=false;
   }
 }
 export const RENCEN_TOWERS=[
@@ -358,3 +389,4 @@ export const RENCEN_TOWERS=[
   {x:114,z:1,r:19,h:159},{x:114,z:-97,r:19,h:159},
   {x:114,z:-180,r:18,h:103},{x:114,z:-235,r:18,h:103},
 ];
+

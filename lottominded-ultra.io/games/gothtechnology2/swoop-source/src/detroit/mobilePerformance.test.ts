@@ -1,15 +1,15 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {budgetPixelRatio} from './renderBudget.ts';
-import {GRAPHICS_PRESETS,resolveGraphics,antialiasForDevice,parseGraphicsTuning} from './graphicsQuality.ts';
+import {GRAPHICS_PRESETS,resolveGraphics,antialiasForDevice,parseGraphicsTuning,savedGraphicsTuning,presetAntialias} from './graphicsQuality.ts';
 import {FrameSchedule} from './frameSchedule.ts';
 import {CONTROL_IDS,defaultTouchPosition,controlRect} from './touchLayout.ts';
-test('Automatic uses High on capable desktops and lighter budgets on phones or weak hardware',()=>{
- assert.equal(resolveGraphics('auto'),'balanced');assert.equal(resolveGraphics('auto',8,4),'balanced');assert.equal(resolveGraphics('auto',8,8),'high');assert.equal(resolveGraphics('auto',12,undefined),'high');assert.equal(resolveGraphics('auto',4,4),'low');assert.equal(resolveGraphics('auto',12,8,false,'SwiftShader'),'low');assert.equal(resolveGraphics('auto',6,undefined,true),'balanced');assert.equal(resolveGraphics('auto',8,8,true),'high');assert.equal(resolveGraphics('auto',4,4,true),'low');assert.equal(resolveGraphics('high',2,2),'high');assert.equal(resolveGraphics('ultra',2,2),'ultra');
+test('Automatic starts Balanced on desktops and Smooth on phones without changing manual preferences',()=>{
+ assert.equal(resolveGraphics('auto'),'balanced');assert.equal(resolveGraphics('auto',8,4),'balanced');assert.equal(resolveGraphics('auto',8,8),'balanced');assert.equal(resolveGraphics('auto',12,undefined),'balanced');assert.equal(resolveGraphics('auto',4,4),'low');assert.equal(resolveGraphics('auto',12,8,false,'SwiftShader'),'low');assert.equal(resolveGraphics('auto',6,undefined,true),'low');assert.equal(resolveGraphics('auto',8,8,true),'low');assert.equal(resolveGraphics('auto',4,4,true),'low');assert.equal(resolveGraphics('high',2,2,true),'high');assert.equal(resolveGraphics('ultra',2,2),'ultra');
  assert.equal(GRAPHICS_PRESETS.low.shadows,0);assert.equal(GRAPHICS_PRESETS.low.fps,30);
 });
-test('automatic antialiasing enables capable desktops and high-end mobiles while manual choices win',()=>{
- assert.equal(antialiasForDevice('auto',12,undefined),true);assert.equal(antialiasForDevice('auto',2,2),false);assert.equal(antialiasForDevice('auto',8,8,true),true);assert.equal(antialiasForDevice('auto',4,4,true),false);assert.equal(antialiasForDevice('off',16,16),false);assert.equal(antialiasForDevice('on',2,2,true),true);
+test('automatic antialiasing avoids mobile MSAA cost while manual choices win',()=>{
+ assert.equal(antialiasForDevice('auto',12,undefined),true);assert.equal(antialiasForDevice('auto',2,2),false);assert.equal(antialiasForDevice('auto',8,8,true),false);assert.equal(antialiasForDevice('auto',4,4,true),false);assert.equal(antialiasForDevice('off',16,16),false);assert.equal(antialiasForDevice('on',2,2,true),true);
 });
 test('saved graphics controls reject corrupted or unsupported values',()=>{
  assert.deepEqual(parseGraphicsTuning('{"fps":120,"shadows":4096,"aa":"on","resolution":1.25}'),{resolution:1.25,fps:120,shadows:4096,aa:'on'});
@@ -28,4 +28,15 @@ test('default phone and tablet controls remain on screen without overlap',()=>{
   const circles=CONTROL_IDS.map(id=>{const size=id==='stick'?136:id==='hop'?80:64;const r=controlRect(defaultTouchPosition(id,w,h),size,size,w,h);assert.ok(r.width>=48);return {id,x:r.left+r.width/2,y:r.top+r.height/2,r:r.width/2};});
   for(let a=0;a<circles.length;a++)for(let b=a+1;b<circles.length;b++){const x=circles[a],y=circles[b];assert.ok(Math.hypot(x.x-y.x,x.y-y.y)>=x.r+y.r,`${w}x${h}: ${x.id} and ${y.id} overlap`);}
  }
+});
+
+test('Ultra restores its detail after the old Smooth shortcut',()=>{
+ const stale=JSON.stringify({fps:60,shadows:0,textureSize:512,distance:180,resolution:1});
+ assert.deepEqual(savedGraphicsTuning('ultra',stale),{});
+ assert.equal(savedGraphicsTuning('low',stale).textureSize,512);
+ assert.deepEqual(savedGraphicsTuning('high','{"fps":120,"textureSize":2048}'),{fps:120,textureSize:2048});
+});
+
+test('manual HD and Ultra request antialiasing on tablets unless explicitly disabled',()=>{
+ assert.equal(presetAntialias('ultra'),'on');assert.equal(presetAntialias('high','auto'),'on');assert.equal(presetAntialias('ultra','off'),'off');assert.equal(presetAntialias('auto'),'auto');
 });

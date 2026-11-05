@@ -1,0 +1,443 @@
+{
+  "at": "2026-10-10T01:43:34.345Z",
+  "repo": "C:/Users/digit/Documents/phone/_goth_swoop_release_20260916",
+  "revision": "1b6796a8b61b6e2be96ac316ecc90d8a43ea0454",
+  "branch": "upgrade-redesign",
+  "note": "Shared dirty checkout. Hashes identify reviewed source, not exclusive ownership or a commit. Authored-map scene and collision are integrated into the shared Royale route. No production promotion.",
+  "upstream": "6b4d4e1f10dee9b1c8932db95f91b92e3eceb7db",
+  "moduleHash": "0e029a5e3241d634280e1e1e696c270efebbd5e182e2e50ba2176cbbc1fcc137",
+  "files": [
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/engine/breadflowerdos/integration/build.ps1",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 1390,
+      "sha256": "9513f602008bd7021626e305771432f3f71bfef8c8a8e772a9de2a801f1c2e4e"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/engine/breadflowerdos/integration/native_test.cpp",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 4016,
+      "sha256": "02aff16fa8e9cd38a59c33106810443be586bb6e5309679c90b75128e9a0558c"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/engine/breadflowerdos/integration/runtime.cpp",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 18291,
+      "sha256": "0d1dcf2865f88dbae0e485d443f5d9920b553a373baca4098199228bfeb666fe"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/engine/breadflowerdos/UPSTREAM_SOURCE.json",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 36389,
+      "sha256": "ac1fe6b7b5e286df900a1085e307b0efbbd58ce90a902b49ffb7838ca493c96c"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/ride-core/src/engine/breadflower.wasm",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 247911,
+      "sha256": "0e029a5e3241d634280e1e1e696c270efebbd5e182e2e50ba2176cbbc1fcc137"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/ride-core/src/engine/browser.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 2445,
+      "sha256": "104d567b9fd7a49257ca0018d2196ff11dee29ea76023c3c1d095fe7bd3c5016"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/ride-core/src/engine/identity.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 301,
+      "sha256": "382dbe3cfc78650b7b3963ba4c85b3f1b64fe740da1712d050cc6129530089c7"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/ride-core/src/engine/royaleKernel.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 3996,
+      "sha256": "1116409b8711e18a737a083888396d2aac73059898ee732d236aaa75667953b6"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/ride-core/src/engine/runtime.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 3015,
+      "sha256": "869075d7bd545ddd8abedcf322f1bd712c5b7f92f1a0041dc630b7da8e800dc3"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/ride-core/src/royale/arena.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 6224,
+      "sha256": "2f2b9e22c3429306e79de2fc2affecf4664fbe910ed8ce30c5759e80412ae3b1"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/ride-core/src/royale/authoredArena.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 6368,
+      "sha256": "9b7c8f118580525cba66c6444fc3cef276fc0d060d7bd088bf5d02e422e8111c"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/ride-core/src/royale/battleTerrain.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 619,
+      "sha256": "bb90444fe9a04e8749d499e811db28dd755cab8d57fd4f1bc72fa68406f78518"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/ride-core/src/royale/downtownArena.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 2231,
+      "sha256": "9f6c06fc861cb8c0596b1a3c8762dbfcc1b430553f01f588f40c61cdd2bc5c54"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/ride-core/src/royale/relayCodec.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 539,
+      "sha256": "8908db5418ad91b1ad2d66db4a9cfd79e951ddf58f1fc6085c1edc43fdcf13a8"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/ride-core/src/royale/relayCrypto.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 1382,
+      "sha256": "06ca1e2a7a6fa1c57a8f8bd0401507891b96ffcb76bff7ae7debd4d159dffa2b"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/ride-core/src/royale/relayRoom.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 5253,
+      "sha256": "966a28a63f45e298db010c3c83225efd868a38760ef1063869aa9c168e0eb8eb"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/ride-core/src/royale/rules.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 24067,
+      "sha256": "dde5d0cd6b00e2802116b82e01bf6ff245d6e0c4c2a0832c484b6c1896721986"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/ride-core/src/royaleClient.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 6454,
+      "sha256": "9d570f210820becab30a81e3da9e3b5c9539c31028669ab01e89cf98352ceb6c"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/ride-core/src/controller.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 23791,
+      "sha256": "95b790f5f204847f1b1ae2961fd5ed6708143a54771b2f454c50a86316f19563"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/ride-core/src/balanceEngine.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 3088,
+      "sha256": "12445ba2de9269882906fe5c70009f96eb4e386f4541b5b87b4a60402dcd32b6"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/ride-core/src/rideDynamics.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 1596,
+      "sha256": "36f687fa19ad69aad6d2bb577c4c59637dd00ef46b5608fc402c64942f853c76"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/ride-core/tests/engine-royale.test.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 6056,
+      "sha256": "9c78f0d8b0c55c97f96c9b23560fd689eb510f57d74816cdd749370934e849c8"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/ride-core/tests/royale.test.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 6480,
+      "sha256": "f3e90d6ea6a20831aab7cd2054e17de03a2b49f247e67a91fc246e67ad8ac5ac"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/ride-core/package.json",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 2515,
+      "sha256": "59b3cbcd4738db3606e128aef6ed5041bb3c5c9c25eb00962e39367cf3c5472a"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/ride-core/package-lock.json",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 16097,
+      "sha256": "9609a057861a2564194ac027f82a28e0aa5e09279a8fc91a3465d18e29355f73"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/ride-core/scripts/copy-engine.mjs",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 258,
+      "sha256": "10d973074c1d6182ec68a76d1e1a9a26b9873ee68ee47ecd6ff3ca4d7af9b5ba"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/love-tag-server/src/BattleRoyaleRoom.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 6973,
+      "sha256": "845ea2258c97cd39d93c9435faa1d013161e4bea2e215b1ffa29b0f0d252a276"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/love-tag-server/src/royaleClock.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 880,
+      "sha256": "1139e58fbcb17fd8429351fe0311f07d0e3467017a142349ca08770bac9c28db"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/love-tag-server/src/server.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 965,
+      "sha256": "390a0a8192ec40c7fb63f2dc7ce2ee395c7c78f69149ec313a1198b033e4252a"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/love-tag-server/package.json",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 765,
+      "sha256": "64f53f2a3b87e9cfbdb36878e3f348a74c576bff1a81090cf372ab8758301e69"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/love-tag-server/package-lock.json",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 68787,
+      "sha256": "ca43f58df9e915845d453b20299b3dfe4e625f9b140d6963f26997d10b5e5273"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/love-tag-server/tests/engine-royale-online.mjs",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 5294,
+      "sha256": "21c7cd0a0280e6c0f3460121d81f8bbbebc204cc86b172ec3b1806ef7bd1e0b8"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/love-tag-server/tests/engine-royale-round.mjs",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 3803,
+      "sha256": "6f7484b04f503e6363cc1d924ec69ac3e42536ac1c37cf2b954a923561e0e033"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/love-tag-server/tests/royale-clock.mjs",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 887,
+      "sha256": "3922aa325910e2225d6a15e095c28422333c31939ff52bef38444fd91362bb03"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/royale/detroitScene.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 1388,
+      "sha256": "9bd1b7df28f33758f5bb2a110f6a9dae649f8d25d55a63e4c79c20f4c0ad8872"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/royale/main.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 22804,
+      "sha256": "588f6809f21735efa6fef9de412000900213f14f731b9b025d912ac3d410aa51"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/royale/style.css",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 4492,
+      "sha256": "fd8151101b8e830c129ea2630127591c7a3367179b486814e063f43fc1711c20"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/main.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 118800,
+      "sha256": "781ff0c580a0d9d0d7d2493efce1b0833e9a311e3522d0fe31d1b96738531a91"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/bicycleAdapter.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 2445,
+      "sha256": "a0c19273d520d2539e6e9a45482efb1b3dcf8301bba86d167107f45da39f13a2"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/swoop-source/royale.html",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 4091,
+      "sha256": "bf3b18995e9d9bde938e035158cbce282392de96e4253aa63b489ba79d126f01"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/swoop-source/package.json",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 696,
+      "sha256": "469e00e8b4155abce27ade9f69d43afa55a3b73fd857522af5e041e86c894a69"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/swoop-source/vite.config.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 909,
+      "sha256": "d8db23973c9da1883bf3642b43f57f7ee4c62b0fe5b3d5c279a5f90ba5cf16ed"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/sceneryWorld.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 510,
+      "sha256": "36e373eb987c3a9f050ac0eab3fd7d3ee9d4b694340a3d4e16fb80b5c32f1aab"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/scenery.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 16160,
+      "sha256": "c65376a871c5a08497d840f2ccf7194800774ed3564666271ba66f668deeb4a9"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/city-render.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 11293,
+      "sha256": "705021c936b5003b82b2173968f4ded7a015a2c5f2bafe5a51ba4ad925e69974"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/cutLandmarks.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 12898,
+      "sha256": "fd04c2dcca15e109e2a0f39fa0c79ce660998181ca7d39b51c62c24d259a0417"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/cutMurals.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 9811,
+      "sha256": "9092ef4bc72ec162a3b1278f3b62ac9563d84fc145b4a9b8ac4ee0bc8572f2be"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/grassField.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 8224,
+      "sha256": "10704fcfb3333fed352ed230ce3ae1b31751edb7d36dce0dc2b913590c7bccd6"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/harbor.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 2970,
+      "sha256": "bea69fc634433cf8d8d88ea11b941a9a352b3583d3ca20ecbcfea23ce6dc300c"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/millikenLandmarks.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 1524,
+      "sha256": "7d5e72bb450473f2f722f097239d63548bc43fa5319beb0584d75fc2237c2a1c"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/riverfrontDetails.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 7515,
+      "sha256": "170dff63f1ece7d248da0ee77e9ac26dbc2ea802db2719d5f3086d26c353f47f"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/routeArt.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 6623,
+      "sha256": "921561a0bbf1c4d6ae9fb9b6fa541b7d06c8d2f8902a5c5fe0b081b2e8f355af"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/routeRails.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 4401,
+      "sha256": "409748a614c2f3d7b240f444910b0f2dc6250650149851fca446360eda64f874"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/streetFurniture.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 3455,
+      "sha256": "39dd5be06df5a7e32e5126c68f58b4139d9385a7bb19da911f3b2561ad3ef3dc"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/tagSceneryCollisions.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 2770,
+      "sha256": "1d2f26c6506e3581aa7b28ebbb758a0b95a99706f9ac2537c898badc2f7ad7d2"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/valade.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 5770,
+      "sha256": "e261c9d3fb24c283e4ca0c03c67dbc8dcdfbd1a7fbff0a9b9cce53d4a4cde3db"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/waterfront.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 8726,
+      "sha256": "fcb8244e79076666232fad769de93f44b7162b44cd5cbf54236d59ef4940e790"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/love-tag-server/tests/downtown-fixture.mjs",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 451,
+      "sha256": "5c117da414594045192b182d02771c976616efce3e0efa5770e32718d20a78e1"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/love-tag-server/tests/downtown-royale.mjs",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 2355,
+      "sha256": "d2633623f858e7f9baf1083c4002b05079394c1fad840290e74af76fbf7020b6"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/elmwood-source/src/detroit/elmwood.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 37917,
+      "sha256": "ef9745eabf1aed1f3d525cd1406b6a409150bb25b451a515993bd88b343fc1bf"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/elmwood-source/src/detroit/ride-motion.ts",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 4760,
+      "sha256": "9018ddba552f433d462e5d64822bce56d92de1ca9525926df5f968e186541447"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/elmwood-source/elmwood.html",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 7912,
+      "sha256": "7b26f052b604b600caaa67ffbc57eaf86ab1bc919a238fa1295bd026ee8b0542"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/elmwood-source/package.json",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 1142,
+      "sha256": "e2f2df436ca206fe30e4c7174f270f2c675f4ea9897cd79427733d3e0dd4f5a3"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/scripts/build-swoop-detroit.mjs",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 11257,
+      "sha256": "f79893a9dafad52c240d66e65a0ad89baa053c7489e3b052f5f9ccf80194e8a4"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/scripts/build-elmwood-explorer.mjs",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 9168,
+      "sha256": "a483906216c3ed112b7c3572906dd15476fddaa53315702ac11728b85457954a"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/swoop-source/art/animation-polish/Unity/Assets/Editor/BreadflowerAssetReview.cs",
+      "scope": "local source snapshot; not a task ownership claim",
+      "bytes": 2892,
+      "sha256": "cb643445d7a6c4ef785a2a36e161b66ae18172c7e24e16dc97105245d2bac8c9"
+    },
+    {
+      "path": ".game-builds/build-engine-staging.mjs",
+      "scope": "isolated staging tools",
+      "bytes": 1533,
+      "sha256": "1cb39c4411d5f67e4dd162ddd5cba6c204eaad3dc12e95d6047c19b87c716805"
+    },
+    {
+      "path": ".game-builds/engine-review-server.mjs",
+      "scope": "isolated staging tools",
+      "bytes": 1068,
+      "sha256": "aec496d3f6935854bee5b8d18951be34eea65d5add9ce4dfa5f643144dc18006"
+    },
+    {
+      "path": "../Digital_Static_RideCore/src/controller.ts",
+      "scope": "linked original RideCore; preserved shared source",
+      "bytes": 23791,
+      "sha256": "95b790f5f204847f1b1ae2961fd5ed6708143a54771b2f454c50a86316f19563"
+    },
+    {
+      "path": "../Digital_Static_RideCore/src/balanceEngine.ts",
+      "scope": "linked original RideCore; preserved shared source",
+      "bytes": 3088,
+      "sha256": "12445ba2de9269882906fe5c70009f96eb4e386f4541b5b87b4a60402dcd32b6"
+    },
+    {
+      "path": "../Digital_Static_RideCore/src/rideDynamics.ts",
+      "scope": "linked original RideCore; preserved shared source",
+      "bytes": 1596,
+      "sha256": "36f687fa19ad69aad6d2bb577c4c59637dd00ef46b5608fc402c64942f853c76"
+    },
+    {
+      "path": "../Digital_Static_RideCore/package.json",
+      "scope": "linked original RideCore; preserved shared source",
+      "bytes": 2344,
+      "sha256": "4977fb347ca9b30aac03a5cf2db045b04da6f5c4e83b8fccfa946bab0769296b"
+    }
+  ]
+}

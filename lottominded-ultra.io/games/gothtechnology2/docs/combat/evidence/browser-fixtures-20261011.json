@@ -1,0 +1,24 @@
+[
+  {
+    "product": "swoop-detroit",
+    "canonicalDownload": 84299422,
+    "canonicalJson": 308914037,
+    "download": 60594089,
+    "physicsBytes": 218455249,
+    "metadataJson": 17640745,
+    "physicsHash": "178d8d52b4f2e37cf203dd60c2e525e90228388449bccb0ece77e21bbc2909bf",
+    "mapHash": "14410cf246bba2c9574ec503ed937980543eacfe2a7c7c8d9857584c465c7cdb",
+    "physicsFile": "swoop-detroit.physics-178d8d52b4f2e37c.bin.gz"
+  },
+  {
+    "product": "elmwood-explorer",
+    "canonicalDownload": 2697114,
+    "canonicalJson": 8274256,
+    "download": 2603986,
+    "physicsBytes": 1163549,
+    "metadataJson": 6723045,
+    "physicsHash": "0fd622652f2394ac1eb64dd43f9b0123c7f2c5d4cb00e8660bde925af469a38c",
+    "mapHash": "81394a54680a00577d94367d07f455cae77cd9cacbbfb4e8b20806a9bb50600b",
+    "physicsFile": "elmwood-explorer.physics-0fd622652f2394ac.bin.gz"
+  }
+]

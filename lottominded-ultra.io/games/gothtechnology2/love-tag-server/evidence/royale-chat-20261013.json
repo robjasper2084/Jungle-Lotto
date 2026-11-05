@@ -1,0 +1,9 @@
+{
+  "automatedClients": 3,
+  "physicalHumans": 0,
+  "lobbyChat": true,
+  "serverOwnedIdentity": true,
+  "separateRoomIsolation": true,
+  "lengthAndControlValidation": true,
+  "rateLimit": true
+}

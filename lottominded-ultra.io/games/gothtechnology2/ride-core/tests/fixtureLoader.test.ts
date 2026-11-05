@@ -15,7 +15,7 @@ test('compressed fixtures retain cache revisions and fragments on the gzip path'
         ['./map.json?v=revision#map','./map.json.gz?v=revision#map'],
       ]){
         let requested='';
-        globalThis.fetch=(async(url)=>{requested=String(url);return new Response(bytes);}) as typeof fetch;
+        globalThis.fetch=(async(url)=>{requested=String(url);return requested.includes('.browser.json.gz')?new Response('',{status:404}):new Response(bytes);}) as typeof fetch;
         assert.deepEqual(await loadFixture(input),fixture);
         assert.equal(requested,expected);
       }
@@ -26,8 +26,8 @@ test('compressed fixtures retain cache revisions and fragments on the gzip path'
 test('uncompressed fallback requests the original versioned fixture',async()=>{
   const originalFetch=globalThis.fetch,calls:string[]=[];
   try {
-    globalThis.fetch=(async(url)=>{calls.push(String(url));return calls.length===1?new Response('',{status:404}):Response.json({revision:'fallback'});}) as typeof fetch;
+    globalThis.fetch=(async(url)=>{calls.push(String(url));return calls.length<=2?new Response('',{status:404}):Response.json({revision:'fallback'});}) as typeof fetch;
     assert.deepEqual(await loadFixture('/map.json?v=2'),{revision:'fallback'});
-    assert.deepEqual(calls,['/map.json.gz?v=2','/map.json?v=2']);
+    assert.deepEqual(calls,['/map.browser.json.gz?v=2','/map.json.gz?v=2','/map.json?v=2']);
   }finally{globalThis.fetch=originalFetch;}
 });

@@ -9,6 +9,17 @@ import {readFileSync} from 'node:fs';
 import {bankHeight} from './elmwood-bank.ts';
 const pad=(index:number):Pad=>({index,id:'Test pad '+index,connected:true,axes:[0,0],buttons:Array.from({length:16},()=>({value:0,pressed:false}))});
 const flat:TerrainSampler={sampleGround(_x,_z,out){out.height=0;out.normal={x:0,y:1,z:0};out.surface='pavement';out.offCourse=false;return out;},raycast(){return null;},raycastObstacle(){return null;}};
+test('paused keyboard permits a deliberate recovery per rider without queuing movement',()=>{
+  const input=new ElmwoodSessionInput();input.configure(['wasd','arrows']);
+  assert.equal(input.key('KeyW',true,false,true),false);assert.equal(input.key('Enter',true,false,true),false);
+  assert.equal(input.key('KeyR',true,false,true),true);
+  const first=input.consume(0,0,1,false);assert(first.recover);assert.equal(first.actions.throttle,0);assert.equal(first.actions.hop,false);
+  assert.equal(input.consume(1,0,1,false).recover,false);
+  input.key('KeyR',true,true,true);assert.equal(input.consume(0,0,1,false).recover,false,'held key does not consume another recovery');
+  input.key('Backspace',true,false,true);assert(input.consume(1,0,1,false).recover);
+  input.clear();input.key('KeyW',true);assert.equal(input.consume(0,0,1).actions.throttle,1);
+});
+
 test('shared keyboard keeps two riders and edge actions independent',()=>{
   const i=new ElmwoodSessionInput();i.configure(['wasd','arrows']);i.key('KeyW',true);i.key('ArrowLeft',true);i.key('Enter',true);
   assert.equal(i.consume(0,0,1).actions.throttle,1);let p2=i.consume(1,0,1);assert.equal(p2.actions.throttle,0);assert.equal(p2.actions.steer,-1);assert.equal(p2.actions.hop,true);assert.equal(i.consume(1,0,1).actions.hop,false);
@@ -23,7 +34,7 @@ test('keyboard plus gamepad and simultaneous touch sources stay independent',()=
   i.configure(['touch','touch']);i.stick(0,.8,1);i.stick(1,-.6,.5);i.touch(1,'crouch',true,'finger1');i.touch(1,'crouch',true,'finger2');i.touch(1,'crouch',false,'finger1');assert.equal(i.consume(0,0,1).actions.throttle,1);assert.ok(i.consume(1,0,1).actions.steer<0);assert.equal(i.consume(1,0,1).actions.crouch,true);i.clear();assert.equal(i.consume(1,0,1).actions.crouch,false);
 });
 test('cruise cancels on brake and pause clears held controls',()=>{
-  const i=new ElmwoodSessionInput();i.key('KeyV',true);assert.ok(i.consume(0,0,1).actions.throttle>0);i.key('KeyS',true);assert.equal(i.consume(0,0,1).actions.throttle,-1);assert.equal(i.seats[0].cruise,false);i.clear();assert.equal(i.consume(0,0,1).actions.throttle,0);
+  const i=new ElmwoodSessionInput();i.key('KeyV',true);assert.equal(i.consume(0,8,1).actions.throttle,0);assert.ok(i.consume(0,7,1).actions.throttle>0);i.key('KeyS',true);assert.equal(i.consume(0,0,1).actions.throttle,-1);assert.equal(i.seats[0].cruise,false);i.clear();assert.equal(i.consume(0,0,1).actions.throttle,0);
 });
 for(const transition of ['pause','menu','blur','recovery'])test(`${transition} requires a new key press and cancels queued actions`,()=>{
   const i=new ElmwoodSessionInput();i.key('KeyW',true);i.key('Space',true);i.key('KeyV',true);
@@ -46,8 +57,8 @@ test('trick scores come from completed simulation events, and deadline closes th
 test('trick tap between fixed ticks survives exactly once',()=>{
   const r=new RideMotion(flat);r.update(1/480,{trick:1});let points=0;for(let n=0;n<600;n++){r.update(1/120,{trick:0});points+=r.events.filter(e=>e.type==='trick').reduce((n,e)=>n+e.points,0);}assert.equal(points,120);
 });
-test('a stuck dog regroups in under a second and stays near a moving rider',()=>{
-  let blocked=true;const dog=new ElmwoodCompanion({...flat,raycastObstacle(){return blocked?0:null;}}),r={x:0,z:0,headingY:0,speed:4};dog.reset(r);r.z=9;for(let n=0;n<60;n++)dog.update(r,1/60);assert.ok(dog.recoveries>=1);assert.ok(Math.hypot(dog.x-r.x,dog.z-r.z)<3);blocked=false;for(let n=0;n<600;n++){r.z+=7/60;r.speed=7;dog.update(r,1/60);}assert.ok(Math.hypot(dog.x-r.x,dog.z-r.z)<3);
+test('a nearby blocked dog waits, then regroups only when stranded and allowed',()=>{
+  let blocked=true;const dog=new ElmwoodCompanion({...flat,raycastObstacle(){return blocked?0:null;}}),r={x:0,z:0,headingY:0,speed:4};dog.reset(r);r.z=9;for(let n=0;n<60;n++)dog.update(r,1/60);assert.equal(dog.recoveries,0,'nearby obstacle must not trigger a visible teleport');dog.regroupAllowed=()=>false;r.z=20;for(let n=0;n<180;n++)dog.update(r,1/60);assert.equal(dog.recoveries,0,'visibility guard prevents regroup');dog.regroupAllowed=()=>true;dog.update(r,1/60);assert.equal(dog.recoveries,1);assert.ok(Math.hypot(dog.x-r.x,dog.z-r.z)<3);blocked=false;for(let n=0;n<600;n++){r.z+=7/60;r.speed=7;dog.update(r,1/60);}assert.ok(Math.hypot(dog.x-r.x,dog.z-r.z)<3);
 });
 test('Hammond cover joins the uphill ridge and the rider uses the authored bank height',()=>{
   const placements=JSON.parse(readFileSync(new URL('../../public/elmwood/placements.json',import.meta.url),'utf8'));
@@ -55,4 +66,17 @@ test('Hammond cover joins the uphill ridge and the rider uses the authored bank 
   const at=(x:number,y:number)=>bankHeight(p,p.position[0]+c*x-s*y,p.position[1]+s*x+c*y);
   for(const y of [0,5,10,15,20])assert.ok(at(0,y)!-p.position[2]>3,`chamber cover stays continuous at ${y}m`);
   assert.equal(at(0,-6),undefined,'door approach stays open');assert.equal(at(30,5),undefined,'outside retains original terrain');
+});
+
+test('Recover between fixed ticks survives once and exits on-foot mode',()=>{
+ const r=new RideMotion(flat);r.update(1/120,{dismount:true});for(let i=0;i<90;i++)r.update(1/120,{});
+ assert.equal(r.pose.footMode,2);r.update(1/480,{reset:true});
+ for(let i=0;i<500;i++)r.update(1/120,{throttle:1});
+ assert.equal(r.pose.footMode,0);assert.ok(r.pose.speed>1,'new throttle works after recovery');
+});
+test('one recover tap on a fallen Elmwood rider completes instead of restarting each substep',()=>{
+ const r=new RideMotion(flat);r.core.controller.knockOff();
+ r.update(1/30,{reset:true});for(let i=0;i<300;i++)r.update(1/120,{});
+ assert.equal(r.sim.crashed,false);assert.equal(r.pose.crashRecovery,0);
+ r.update(1/120,{throttle:1});for(let i=0;i<60;i++)r.update(1/120,{throttle:1});assert.ok(r.pose.speed>0);
 });

@@ -1,4 +1,5 @@
 import {registerRetailShell} from './tagSceneryCollisions.ts';
+import {visibleSceneryMatrices} from '@digital-static/ridecore';
 import * as T from 'three';
 import {GLTFLoader} from './compressedGLTFLoader.ts';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
@@ -7,11 +8,15 @@ import {toLocal,toMap} from './geo-profile.ts';
 import {heightAt,type DetroitWorld} from './world.ts';
 
 import {storefrontDetails} from './storefrontDetails.ts';
+import {addMackWallArt} from './mackWallArt.ts';
 /** A single shared exterior; retail rooms are supplied by GalleryVisit. */
 export async function buildMackStudio(scene:T.Scene,world:DetroitWorld){
- const group=new T.Group();group.name='2000 Mack · GothTech Studio / Pellerito building';scene.add(group);
+ const group=new T.Group();group.visible=false;visibleSceneryMatrices(group);group.name='2000 Mack · GothTech Studio / Pellerito building';scene.add(group);
  const centre=toLocal(MACK_STUDIO.x,MACK_STUDIO.floor,MACK_STUDIO.z),building=(await new GLTFLoader().loadAsync('/exports/atwater/mack-gothtech-studio.glb?v=cinema-left-wall-20261003')).scene;
  building.position.set(centre.x,centre.y,centre.z);building.rotation.y=MACK_STUDIO.heading;group.add(building);
+ const innovation=(await new GLTFLoader().loadAsync('/exports/boutique/innovation-floor-roof-sign.glb')).scene;
+ innovation.name='Innovation Floor · rooftop channel sign';innovation.position.set(0,6.17,19.6);building.add(innovation);
+ await addMackWallArt(building);
  // Restore the room's plain black slab beneath the later decorative floor skins.
  const floorSkins=new Set(['Lobby large format stone','Lobby walnut plank inlay','Studio sealed charcoal concrete']);
  const roomFloor=new T.MeshStandardMaterial({name:'Studio black floor',color:'#08090a',roughness:.86,metalness:0});

@@ -7,5 +7,5 @@ export default defineConfig({
     if(!id.includes('/node_modules/') && /\/euc-thrills-detroit\//i.test(id)) throw new Error('Unexpected source outside the independent ride project');
   }}],
   server:{host:'127.0.0.1',port:8196,strictPort:true,proxy:{'/audio':'http://127.0.0.1:8194','/exports':'http://127.0.0.1:8194','/textures':'http://127.0.0.1:8194'}},
-  build:{outDir:'dist',rollupOptions:{input:{game:resolve(import.meta.dirname,'detroit.html'),studio:resolve(import.meta.dirname,'rider-studio.html'),companion:resolve(import.meta.dirname,'companion-studio.html'),traffic:resolve(import.meta.dirname,'traffic-studio.html')}}}
+  build:{outDir:'dist',rollupOptions:{input:{royale:resolve(import.meta.dirname,'royale.html'),game:resolve(import.meta.dirname,'detroit.html'),studio:resolve(import.meta.dirname,'rider-studio.html'),companion:resolve(import.meta.dirname,'companion-studio.html'),traffic:resolve(import.meta.dirname,'traffic-studio.html')}}}
 });

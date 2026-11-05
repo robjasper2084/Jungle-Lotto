@@ -1,3 +1,12 @@
+import {RiderWardrobe,baseRiderId} from '../../../ride-core/src/riderWardrobe.ts';
+import {crashLimb} from '../../../ride-core/src/kimodoCrash.ts';
+import {recoveryHand,recoveryFoot} from '../../../ride-core/src/kimodoRecovery.ts';
+import {FingerPose} from '../../../ride-core/src/fingerPose.ts';
+import {invalidateAnimatedShadow} from '../../../ride-core/src/shadowBudget.ts';
+import {visibleSceneryMatrices} from '../../../ride-core/src/visibleMatrices.ts';
+import {wheelPickupTiming} from '../../../ride-core/src/wheelPickupTiming.ts';
+import {applyOnFootRider,prepareOnFootRider,applyKimodoRiding} from '../../../ride-core/src/onFootRider.ts';
+import {solveLimb as solve} from '../../../ride-core/src/limbIK.ts';
 import {BicycleView,CyclistMotion} from '@digital-static/ridecore/cycling-view';
 import {HairWind} from './windMotion.ts';
 import * as T from 'three';
@@ -10,6 +19,7 @@ import { clamp } from './world.ts';
 import { riderMotion } from './riderMotion.ts';
 import {MobilityRider} from './mobilityTraffic.ts';
 import {CrashContact} from './crashContact.ts';
+import {FallenSupport} from '../../../ride-core/src/fallenSupport.ts';
 import {RiderVisibility} from './riderVisibility.ts';
 import {FootTraffic} from './footTraffic.ts';
 import {HumanFallRig} from './humanFallRig.ts';
@@ -19,27 +29,16 @@ import {createGroundSample} from './terrain.ts';
 import {assetConcurrency,loadAssetQueue} from './assetQueue.ts';
 import {ArmorKeychain} from './armorKeychain.ts';
 import {HelmetSkinDecal} from './helmetSkin.ts';
-import {transportedBend} from './limbBend.ts';
+import {RiderSurfaces} from './riderSurfaces.ts';
+import {HeroDetail} from '../../../ride-core/src/heroDetail.ts';
 import {WheelLights} from './wheelLights.ts';
 
 type Limb={upper:T.Object3D;knee:T.Object3D;foot:T.Object3D;target:T.Vector3;rotation:T.Quaternion;};
 const v=()=>new T.Vector3(),q=()=>new T.Quaternion();
-function pointBone(bone:T.Object3D,child:T.Object3D,target:T.Vector3){
-  const p=bone.getWorldPosition(v()),from=child.getWorldPosition(v()).sub(p).normalize(),to=target.clone().sub(p).normalize();
-  const world=bone.getWorldQuaternion(q()).premultiply(q().setFromUnitVectors(from,to));
-  bone.quaternion.copy(bone.parent!.getWorldQuaternion(q()).invert().multiply(world));bone.updateWorldMatrix(false,true);
-}
-export function solve(l:Limb,target:T.Vector3,pole:T.Vector3,rotation?:T.Quaternion,reachFraction=1){
-  const a=l.upper.getWorldPosition(v()),b=l.knee.getWorldPosition(v()),c=l.foot.getWorldPosition(v());
-  const l1=a.distanceTo(b),l2=b.distanceTo(c),dir=target.clone().sub(a);
-  const d=clamp(dir.length(),Math.abs(l1-l2)+.0001,(l1+l2)*reachFraction-.0001);dir.normalize();
-  const reachableTarget=a.clone().addScaledVector(dir,d);
-  pole.addScaledVector(dir,-pole.dot(dir)).normalize();if(pole.lengthSq()<.01)pole.set(1,0,0);
-  const along=(l1*l1+d*d-l2*l2)/(2*d),bend=Math.sqrt(Math.max(0,l1*l1-along*along));
-  pointBone(l.upper,l.knee,a.clone().addScaledVector(dir,along).addScaledVector(pole,bend));pointBone(l.knee,l.foot,reachableTarget);
-  if(rotation)l.foot.quaternion.copy(l.foot.parent!.getWorldQuaternion(q()).invert().multiply(rotation));
-}
-function rotateWorld(bone:T.Object3D|undefined,axis:T.Vector3,angle:number){if(!bone)return;const w=bone.getWorldQuaternion(q()).premultiply(q().setFromAxisAngle(axis,angle));bone.quaternion.copy(bone.parent!.getWorldQuaternion(q()).invert().multiply(w));bone.updateWorldMatrix(false,true);}
+export {solveLimb as solve} from '../../../ride-core/src/limbIK.ts';
+// Bone queries update their ancestor path. Publish the whole skeleton at the
+// existing pose boundaries instead of traversing it after every torso joint.
+function rotateWorld(bone:T.Object3D|undefined,axis:T.Vector3,angle:number){if(!bone)return;const w=bone.getWorldQuaternion(q()).premultiply(q().setFromAxisAngle(axis,angle));bone.quaternion.copy(bone.parent!.getWorldQuaternion(q()).invert().multiply(w));bone.updateWorldMatrix(false,false);}
 function prepare(o:T.Object3D){o.traverse(n=>{const m=n as T.Mesh;if(m.isMesh){m.castShadow=true;m.receiveShadow=true;m.frustumCulled=!(m as T.SkinnedMesh).isSkinnedMesh;}});}
 export async function loadActors(){
   const loader=new GLTFLoader(),data=new Map<string,GLTF>();
@@ -47,6 +46,7 @@ export async function loadActors(){
   await loadAssetQueue(ids,assetConcurrency(),async id=>{
     if(id==='DS_Segway_01'||id==='DS_InlineSkate_01'){data.set(id,await loader.loadAsync(`/exports/mobility/${id}.glb`));return;}
     if(id.startsWith('SW_')){data.set(id,await loader.loadAsync(`/exports/scooter/${id}.glb`));return;}
+    if(['DS_Man_01','DS_Hoodie_Woman_01','DS_Mascot_Suit_01','DS_Mascot_Hoodie_01','DS_Armored_Rider_01'].includes(id)){data.set(id,await loader.loadAsync('/exports/rigged-heroes/'+id+'.glb'));return;}
     const original=()=>loader.loadAsync(`/exports/glb/${id}/${id}_LOD${id==='DS_Man_01'?0:1}.glb`);
     data.set(id,id==='DS_Boerboel_01'?await loader.loadAsync('/exports/polish/DS_Boerboel_Polished.glb'):id==='DS_Bicycle_01'?await loader.loadAsync('/exports/glb/DS_Bicycle_Styles/DS_Bicycle_Styles_LOD1.glb').catch(original):await original());
   });
@@ -58,25 +58,35 @@ export class Hero {
   wheel?:T.Object3D;body?:T.Object3D;bodyRestY=0;hips?:T.Object3D;head?:T.Object3D;chest?:T.Object3D;
   spine:T.Object3D[]=[];neck?:T.Object3D;shoulders:T.Object3D[]=[];
   private fallPivot=new T.Vector3();private axle=new T.Vector3();private tyreRadius=.255;private tyreHalfWidth=.07;
+  readonly fingers:FingerPose;
   bones:{o:T.Object3D;p:T.Vector3;q:T.Quaternion}[]=[];legs:Limb[]=[];arms:Limb[]=[];
   private riderContact:CrashContact;private wheelContact:CrashContact;private terrain?:TerrainSampler;
+  private fallenSupport:FallenSupport;
   readonly riderId:RiderId;
+  combatLocomotion=0;
+  readonly walkStyle:'tactical'|'kimodo';
   readonly wheelScale:number;readonly motionScale:number;readonly mountHeight:number;
   skateboarding=false;private skateContact?:CrashContact;private skateboard=new T.Group();private skateWheels:T.Mesh[]=[];
   private saddle:T.Mesh;private hairWind:HairWind;
   private armorKeychain?:ArmorKeychain;private helmetSkin?:HelmetSkinDecal;
+  private surfaces:RiderSurfaces;
+  private detail:HeroDetail;private wardrobe:RiderWardrobe;
   readonly visibility:RiderVisibility;readonly vrEyeHeight:number;readonly mountedVolume:{radius:number;height:number};
-  constructor(data:Map<string,GLTF>,terrain?:TerrainSampler,riderId:RiderId='DS_Man_01'){
-    this.terrain=terrain;this.riderId=riderId;
+  /** Fit the captured walk and soles during loading, not on the first dismount. */
+  prepareOnFoot(){prepareOnFootRider(this);}
+  sampleFootGround(x:number,z:number,referenceY:number){return this.terrain?.sampleGround(x,z,createGroundSample(),referenceY);}
+  constructor(data:Map<string,GLTF>,terrain?:TerrainSampler,riderId:RiderId='DS_Man_01',walkStyle:'tactical'|'kimodo'='tactical'){
+    this.terrain=terrain;this.riderId=riderId;this.walkStyle=walkStyle;
     const mascot=riderId.startsWith('DS_Mascot_');this.wheelScale=mascot?.75:.86;this.motionScale=mascot?.48:1;this.mountHeight=.296*this.wheelScale;
     this.root.add(this.ground);this.ground.add(this.lean);
-    this.vehicle=data.get('DS_EUC_01')!.scene.clone(true);this.rider=clone(data.get(riderId)!.scene);
+    this.vehicle=data.get('DS_EUC_01')!.scene.clone(true);this.rider=clone(data.get(baseRiderId(riderId))!.scene);
+    this.surfaces=new RiderSurfaces(this.rider);
     this.hairWind=new HairWind(this.rider,riderId==='DS_Man_01');
     this.vehicle.scale.setScalar(this.wheelScale);this.rider.position.y=this.mountHeight;this.lean.add(this.vehicle,this.rider,this.skateboard);
     const deck=new T.Mesh(new T.BoxGeometry(.28,.045,.88),new T.MeshStandardMaterial({color:'#242a29',roughness:.95}));deck.position.y=.15;this.skateboard.add(deck);for(const end of [-1,1]){const tip=new T.Mesh(new T.BoxGeometry(.28,.045,.17),deck.material);tip.position.set(0,.18,end*.48);tip.rotation.x=end*-.32;this.skateboard.add(tip);}
     for(const z of [-.29,.29]){const truck=new T.Mesh(new T.BoxGeometry(.25,.05,.07),new T.MeshStandardMaterial({color:'#b4b8b9',metalness:.8,roughness:.3}));truck.position.set(0,.095,z);this.skateboard.add(truck);for(const x of [-.145,.145]){const wheel=new T.Mesh(new T.CylinderGeometry(.06,.06,.045,12),new T.MeshStandardMaterial({color:'#e4cf98',roughness:.7}));wheel.rotation.z=Math.PI/2;wheel.position.set(x,.06,z);this.skateboard.add(wheel);this.skateWheels.push(wheel);}}
     this.skateboard.visible=false;this.skateContact=new CrashContact(this.skateboard);
-    const clip=data.get(riderId)!.animations[0];if(clip){const m=new T.AnimationMixer(this.rider);m.clipAction(clip).play();m.setTime(0);}
+    const clip=data.get(baseRiderId(riderId))!.animations[0];if(clip){const m=new T.AnimationMixer(this.rider);m.clipAction(clip).play();m.setTime(0);}
     prepare(this.root);this.root.updateMatrixWorld(true);this.lights=new WheelLights(this.vehicle);
     this.wheel=this.vehicle.getObjectByName('Wheel_Pivot');this.body=this.vehicle.getObjectByName('Body_Suspension');this.bodyRestY=this.body?.position.y??0;this.hips=this.rider.getObjectByName('Hips');this.head=this.rider.getObjectByName('Head');
     // This asset names the spine from the chest DOWN. Bind in anatomical parent order.
@@ -86,6 +96,7 @@ export class Hero {
     this.shoulders=['LeftShoulder','RightShoulder'].map(name=>this.rider.getObjectByName(name)).filter((bone):bone is T.Object3D=>!!bone);
     if(this.wheel){const bounds=new T.Box3().setFromObject(this.wheel),size=bounds.getSize(v());this.axle.copy(this.lean.worldToLocal(bounds.getCenter(v())));this.tyreRadius=(size.y+size.z)/4;this.tyreHalfWidth=size.x/2;}
     this.rider.traverse(o=>{if((o as T.Bone).isBone)this.bones.push({o,p:o.position.clone(),q:o.quaternion.clone()});});
+    this.fingers=new FingerPose(this.rider,data.get(baseRiderId(riderId))!.animations);
     for(const side of ['Left','Right'])for(const arm of [false,true]){
       const upper=this.rider.getObjectByName(side+(arm?'Arm':'UpLeg')),knee=this.rider.getObjectByName(side+(arm?'ForeArm':'Leg')),foot=this.rider.getObjectByName(side+(arm?'Hand':'Foot'));
       if(upper&&knee&&foot)(arm?this.arms:this.legs).push({upper,knee,foot,target:this.lean.worldToLocal(foot.getWorldPosition(v())),rotation:this.lean.getWorldQuaternion(q()).invert().multiply(foot.getWorldQuaternion(q()))});
@@ -94,14 +105,16 @@ export class Hero {
     this.saddle=new T.Mesh(new T.BoxGeometry(mascot?.23:.27,.055,mascot?.23:.29),new T.MeshStandardMaterial({color:0x202828,roughness:.85}));this.saddle.name='Seated riding saddle';this.saddle.position.set(0,mascot?.41:.76,mascot?-.19:-.065);this.saddle.visible=false;this.lean.add(this.saddle);
     this.root.name='Digital Static â€¢ '+riderId+' on separate EUC';
     if(this.hips)this.fallPivot.copy(this.rider.worldToLocal(this.hips.getWorldPosition(v())));
-    this.riderContact=new CrashContact(this.rider);this.wheelContact=new CrashContact(this.vehicle);
     if(riderId==='DS_Armored_Rider_01'){this.armorKeychain=new ArmorKeychain(this.rider);this.helmetSkin=new HelmetSkinDecal(this.rider);}
+    this.detail=new HeroDetail(this.rider);this.wardrobe=new RiderWardrobe(this.rider,riderId);
+    this.riderContact=new CrashContact(this.rider);this.wheelContact=new CrashContact(this.vehicle);
+    this.fallenSupport=new FallenSupport(this.riderContact.probes,this);
     this.visibility=new RiderVisibility(this.rider,this.head);
     this.vrEyeHeight=(this.head?.getWorldPosition(v()).y??1.75)+.065;
       this.apply({...initialMountedPose()});const box=new T.Box3().setFromObject(this.root,true);
       this.mountedVolume={radius:Math.max(.4,Math.abs(box.min.x),Math.abs(box.max.x),Math.abs(box.min.z),Math.abs(box.max.z))+.06,height:box.max.y+.08};
   }
-  dispose(){this.lights.dispose();this.armorKeychain?.dispose();this.helmetSkin?.dispose();this.skateboard.traverse(o=>{if(o instanceof T.Mesh){o.geometry.dispose();(o.material as T.Material).dispose();}});this.hairWind.dispose();this.saddle.geometry.dispose();(this.saddle.material as T.Material).dispose();this.visibility.dispose();this.root.removeFromParent();this.rider.traverse(o=>{if((o as T.SkinnedMesh).isSkinnedMesh)(o as T.SkinnedMesh).skeleton.dispose();});}
+  dispose(){this.wardrobe.dispose();this.detail.dispose();this.lights.dispose();this.armorKeychain?.dispose();this.helmetSkin?.dispose();this.skateboard.traverse(o=>{if(o instanceof T.Mesh){o.geometry.dispose();(o.material as T.Material).dispose();}});this.hairWind.dispose();this.saddle.geometry.dispose();(this.saddle.material as T.Material).dispose();this.visibility.dispose();this.surfaces.dispose();this.root.removeFromParent();this.rider.traverse(o=>{if((o as T.SkinnedMesh).isSkinnedMesh)(o as T.SkinnedMesh).skeleton.dispose();});}
   pedalTarget(l:Limb,suspensionOffset:number){return this.vehicle.localToWorld(l.target.clone().add(new T.Vector3(0,suspensionOffset,0)));}
   footTarget(index:number,p:RidePose){
     const target=this.pedalTarget(this.legs[index],p.suspensionOffset);
@@ -117,6 +130,7 @@ export class Hero {
     return target;
   }
   apply(p:RidePose){
+    invalidateAnimatedShadow(this.root);
     this.lights.update(p,typeof matchMedia!=='undefined'&&(matchMedia('(prefers-reduced-motion: reduce)').matches||document.documentElement.dataset.reducedMotion==='true'));
     this.armorKeychain?.update(p,typeof matchMedia!=='undefined'&&matchMedia('(prefers-reduced-motion: reduce)').matches);
     if(this.skateboarding&&p.crashBlend===0)p={...p,stopFoot:0,seated:0};
@@ -135,7 +149,7 @@ export class Hero {
     this.vehicle.position.set(p.wheelCrashLateral,p.wheelCrashPop,p.wheelCrashForward);this.vehicle.rotation.set(0,p.wobbleYaw+p.wheelCrashSpin,-p.wobbleRoll-p.wheelCrashLean);
     if(this.wheel)this.wheel.rotation.x=p.wheelSpin;
     if(this.body)this.body.position.y=this.bodyRestY+p.suspensionOffset;
-    this.rider.position.set(p.crashLateral,this.mountHeight+p.suspensionOffset*this.wheelScale-p.crashDrop,p.crashForward);
+    this.rider.position.set(p.crashLateral,this.mountHeight+p.suspensionOffset*this.wheelScale-p.crashDrop*(p.crashKind?this.motionScale:1),p.crashForward);
     this.rider.rotation.set(p.crashTumble,0,p.crashRoll);
     if(p.crashMotion){const pivot=this.fallPivot.clone().multiply(this.rider.scale);this.rider.position.add(pivot.clone().sub(pivot.applyEuler(this.rider.rotation)));}
     for(const b of this.bones){b.o.position.copy(b.p);b.o.quaternion.copy(b.q);}
@@ -147,6 +161,13 @@ export class Hero {
       this.ground.position.y=support-(this.lean.localToWorld(this.axle.clone()).y-p.y);this.root.updateMatrixWorld(true);
     }
     const hips=this.hips;if(!hips)return;
+    // A completed dismount resets every rider bone in applyOnFootRider. Avoid
+    // solving the mounted spine/arms/boots only to overwrite them immediately.
+    // Transition blends, skateboard poses and falls still use the full path.
+    if(p.footMode===2&&p.footBlend>=1&&p.crashBlend<=0&&!this.skateboarding){
+      this.saddle.visible=false;this.vehicle.visible=true;this.skateboard.visible=false;
+      applyOnFootRider(this,p);this.fingers.apply('Relaxed','Relaxed');this.fingers.softenRun(p.speed);return;
+    }
     // Once released, posture belongs to the falling body, not the upright wheel.
     const bodyFrame=p.crashMotion?this.rider.matrixWorld:this.lean.matrixWorld;
     const forward=new T.Vector3(0,0,1).transformDirection(bodyFrame),right=new T.Vector3(1,0,0).transformDirection(bodyFrame),up=new T.Vector3(0,1,0).transformDirection(bodyFrame);
@@ -189,7 +210,7 @@ export class Hero {
       const pole=forward.clone().applyAxisAngle(up,motion.hipYaw*.5).addScaledVector(right,side*(sit*.95+(inside?.45*motion.carve*(1-motion.technical)*(1-sit):0)));
       // Release the pedals progressively as the rider falls away from the machine.
       const fallSide=p.crashSide||Math.sign(p.crashLateral)||1,lowerSide=side===fallSide;
-      const release=p.crashMotion?clamp((p.crashRelease-(lowerSide?0:.07))/(lowerSide?.88:.93),0,1):clamp(p.crashBlend*3,0,1);
+      let release=p.crashMotion?clamp((p.crashRelease-(lowerSide?0:.07))/(lowerSide?.88:.93),0,1):clamp(p.crashBlend*3,0,1);
       if(p.crashMotion){
         const bodyUp=new T.Vector3(0,1,0).transformDirection(this.rider.matrixWorld),bodyForward=new T.Vector3(0,0,1).transformDirection(this.rider.matrixWorld),bodyRight=new T.Vector3(1,0,0).transformDirection(this.rider.matrixWorld);
         const hip=l.upper.getWorldPosition(v()),length=hip.distanceTo(l.knee.getWorldPosition(v()))+l.knee.getWorldPosition(v()).distanceTo(l.foot.getWorldPosition(v()));
@@ -197,12 +218,22 @@ export class Hero {
         const free=hip.clone().addScaledVector(bodyUp,-length*(.92-.40*bend))
           .addScaledVector(bodyForward,length*(lowerSide?.18:.34)*bend*(p.crashDirection||1))
           .addScaledVector(bodyRight,side*length*.12*bend);
+        if(p.crashKind>0){const captured=crashLimb(p.crashKind,p.crashTime,i,p.crashSide||1,true),weight=p.crashRelease*(1-T.MathUtils.smoothstep(p.crashRecovery,0,.25));
+          const captureTarget=hip.clone().addScaledVector(bodyRight,captured.x*length).addScaledVector(bodyUp,captured.y*length).addScaledVector(bodyForward,captured.z*length);free.lerp(captureTarget,weight);}
+        if(p.crashRecovery>0){
+          const step=recoveryFoot(p.crashRecovery,i,p.crashSide||1);
+          const plant=this.root.localToWorld(new T.Vector3(p.crashLateral+side*.18*this.motionScale,-p.airHeight,p.crashForward+step.forward*this.motionScale));
+          if(this.terrain)plant.y=this.terrain.sampleGround(plant.x,plant.z,createGroundSample(),plant.y).height;
+          plant.y+=.075*this.motionScale;free.lerp(plant,step.plant);release=1-step.pedal;
+        }
         // Let both boots relax onto the ground after the roll, rather than leaving
         // the upper leg suspended in the sideways body frame.
         const footFloor=this.terrain?this.terrain.sampleGround(free.x,free.z,createGroundSample(),p.y-p.airHeight).height:p.y-p.airHeight;
         free.y=T.MathUtils.lerp(free.y,footFloor+.075*this.motionScale,p.crashSettle);
         // Staggered knee recovery keeps the thighs apart and clears the departing wheel.
-        solve(l,target.lerp(free,release),bodyForward.addScaledVector(bodyRight,side*.2),rotation.clone().slerp(this.rider.getWorldQuaternion(q()).multiply(l.rotation),release));
+        target.lerp(free,release);
+        const kneePole=p.crashRecovery>0?this.fallenSupport.recoveryPole(this,p.crashRecovery):target.clone().sub(hip).cross(bodyRight);
+        this.fallenSupport.solveLeg(l,target,kneePole,rotation.clone().slerp(this.rider.getWorldQuaternion(q()).multiply(l.rotation),release),.975,Math.PI-Math.PI/6*T.MathUtils.smoothstep(p.crashRecovery,0,.12));
       }else if(release<1)solve(l,target.lerp(l.foot.getWorldPosition(v()),release),pole,rotation);
     }
     for(let i=0;i<this.arms.length;i++){
@@ -225,10 +256,24 @@ export class Hero {
         // After contact, fold the lower arm inward instead of balancing the whole body on fingertips.
         const rest=shoulder.clone().addScaledVector(bodyUp,-length*.30).addScaledVector(bodyForward,length*.25).addScaledVector(bodyRight,-side*length*.22);
         protective.lerp(rest,p.crashSettle);
+        if(p.crashKind>0){const captured=crashLimb(p.crashKind,p.crashTime,i,p.crashSide||1),weight=Math.min(1,p.crashRelease+.3)*(1-T.MathUtils.smoothstep(p.crashRecovery,0,.25));
+          const captureTarget=shoulder.clone().addScaledVector(bodyRight,captured.x*length).addScaledVector(bodyUp,captured.y*length).addScaledVector(bodyForward,captured.z*length);captureTarget.y=Math.max(p.y-p.airHeight+.045*this.motionScale,captureTarget.y);protective.lerp(captureTarget,weight);}
         target.lerp(protective,Math.min(1,p.crashBrace*1.7+p.crashRelease));
         armPole.lerp(bodyUp.negate().addScaledVector(bodyForward,.25),p.crashSettle);
+        if(p.crashRecovery>0){
+          const recovered=recoveryHand(p.crashRecovery,i,p.crashSide||1);
+          const push=shoulder.clone().addScaledVector(right,recovered.x*length).addScaledVector(worldUp,recovered.y*length).addScaledVector(forward,recovered.z*length);
+          const plant=this.root.localToWorld(new T.Vector3(p.crashLateral+side*.30*this.motionScale,-p.airHeight,p.crashForward+.25*this.motionScale));
+          if(this.terrain)plant.y=this.terrain.sampleGround(plant.x,plant.z,createGroundSample(),plant.y).height;
+          plant.y+=.065*this.motionScale;push.lerp(plant,recovered.plant);
+          push.y=Math.max(p.y-p.airHeight+.06*this.motionScale,push.y);
+          target.lerp(push,recovered.weight);
+          armPole.lerp(forward.clone().addScaledVector(right,side*.65),recovered.weight);
+        }
       }
-      solve(l,target,transportedBend(shoulder,elbow,hand,target,armPole),undefined,.975);
+      // Shared anatomical elbow plane. Imported A-poses have different bend
+      // directions; transporting those was twisting the other heroes' sleeves.
+      solve(l,target,armPole,undefined,.975);
       // Bone reset preserved the authored hand-to-forearm orientation. Follow that
       // frame completely, then add a small passive flex about its own lateral axis.
       // A world-down blend was still pulling against the elbow's balance movement.
@@ -253,30 +298,59 @@ export class Hero {
     this.root.updateMatrixWorld(true);
     if(p.crashBlend>0){
       const floor=p.crashMotion?p.y-p.airHeight:p.y;
-      if(this.skateboarding)this.skateContact?.settle(this.skateboard,floor,this.terrain,.018);else this.wheelContact.settle(this.vehicle,floor,this.terrain,.018);
+      this.fingers.apply('Relaxed','Relaxed');
+      this.fallenSupport.apply(this,p,this.terrain);
+      if(this.skateboarding)this.skateContact?.settle(this.skateboard,floor,this.terrain,.018);else this.wheelContact.settle(this.vehicle,floor,this.terrain,.018,p.crashContact);
       this.riderContact.settle(this.rider,floor,this.terrain,.025,p.crashMotion?p.crashContact:0);
+      this.fallenSupport.recover(this,p,this.terrain);
       this.root.updateMatrixWorld(true);
     }
+    if(!this.skateboarding)applyKimodoRiding(this,p);
+    applyOnFootRider(this,p);this.fingers.apply('Relaxed',p.footMode===3&&wheelPickupTiming(p.footMountTime||0).grip>.5?'SupportGrip':'Relaxed');if(p.footMode===2)this.fingers.softenRun(p.speed);
+    if(p.crashMotion&&p.crashBlend>0&&p.footMode===2&&p.crashRecovery>.55)this.fallenSupport.alignLegs(this,1-T.MathUtils.smoothstep(p.crashRecovery,.80,1));
   }
 }
 export class TrafficView {
   scene:T.Scene;data:Map<string,GLTF>;items=new Map<number,{root:T.Group;mixers:T.AnimationMixer[];pedalPhase:number;clipStart:number;clipDuration:number;animationAge?:number;mobility?:MobilityRider;foot?:FootTraffic;cycling?:BicycleView;motion?:CyclistMotion;fallRig?:HumanFallRig;disposeStyle?:()=>void}>();
+  private pool:{key:string;item:TrafficView['items'] extends Map<number,infer V>?V:never}[]=[];
+  private keys=new Map<number,string>();
+  private key(a:TrafficState){return a.kind+':'+(a.kind==='cyclist'?Math.abs((a.id*7)^(a.id>>>1))%6:a.kind==='pedestrian'||a.kind==='jogger'?Math.floor(a.id/2)%2:0);}
+  private release(item:TrafficView['pool'][number]['item']){item.root.removeFromParent();item.mixers.forEach(m=>{m.stopAllAction();m.uncacheRoot(m.getRoot());});item.mobility?.dispose();item.foot?.dispose();item.cycling?.dispose();item.disposeStyle?.();}
   constructor(scene:T.Scene,data:Map<string,GLTF>,readonly terrain?:TerrainSampler){this.scene=scene;this.data=data;}
-  update(actors:TrafficState[],dt:number,focus?:{x:number;z:number},drawDistance=300){const keep=new Set<number>();for(const a of actors){keep.add(a.id);let item=this.items.get(a.id);
+  update(actors:TrafficState[],dt:number,focus?:{x:number;z:number},drawDistance=300){
+    const source=new Map(actors.map(a=>[a.id,a]));
+    for(const [id,item]of this.items){const actor=source.get(id);if(actor&&(!focus||Math.hypot(actor.x-focus.x,actor.z-focus.z)<drawDistance+80))continue;
+      // Fallen rigs contain parent attachments; dispose those rather than
+      // handing a partially recovered skeleton to a different traffic actor.
+      if(item.fallRig)this.release(item);else{item.root.visible=false;item.animationAge=undefined;this.pool.push({key:this.keys.get(id)!,item});}
+      this.items.delete(id);this.keys.delete(id);
+    }
+    while(this.pool.length>8)this.release(this.pool.shift()!.item);
+    let created=0;for(const a of actors){let item=this.items.get(a.id);
+    const distance=focus?Math.hypot(a.x-focus.x,a.z-focus.z):0;
+    if(!item&&distance>=drawDistance)continue;
+    if(!item){const key=this.key(a),reuse=this.pool.findIndex(entry=>entry.key===key);
+      if(reuse>=0){item=this.pool.splice(reuse,1)[0].item;item.motion=item.cycling?new CyclistMotion(a.id):undefined;this.items.set(a.id,item);this.keys.set(a.id,key);}
+    }
+    if(!item&&focus&&created>=1)continue;
     if(!item){const root=new T.Group(),mixers:T.AnimationMixer[]=[];const add=(id:string,animate=false)=>{const d=this.data.get(id)!,o=animate?clone(d.scene):d.scene.clone(true);root.add(o);prepare(o);if(animate&&d.animations.length){const m=new T.AnimationMixer(o);m.clipAction(d.animations[0]).play();mixers.push(m);}};
+      created++;visibleSceneryMatrices(root);
       let mobility:MobilityRider|undefined,foot:FootTraffic|undefined,cycling:BicycleView|undefined,motion:CyclistMotion|undefined,disposeStyle:(()=>void)|undefined;
       if(a.kind==='segway'||a.kind==='skater'||a.kind==='scooter'){mobility=new MobilityRider(a.kind,this.data);mobility.phase=(a.id*.37)%1;root.add(mobility.root);}
       else if(a.kind==='pedestrian'||a.kind==='jogger'){foot=new FootTraffic(this.data.get(Math.floor(a.id/2)%2?'DS_Hoodie_Woman_01':'DS_Hoodie_Man_01')!,a.kind==='jogger');foot.phase=(a.id*.37)%1;root.add(foot.root);}
       else if(a.kind==='cyclist'){cycling=new BicycleView(this.data.get('DS_Bicycle_01')!,this.data.get('DS_Cyclist_01')!,Math.abs((a.id*7)^(a.id>>>1))%6,true);motion=new CyclistMotion(a.id);root.add(cycling.root);}else add(a.kind==='cone'?'DS_Hazard_Cone_01':'DS_Hazard_Barrier_01');
       const clip=this.data.get('DS_Cyclist_01')?.animations[0],clipStart=clip?Math.min(...clip.tracks.map(t=>t.times[0])):0;
-      item={root,mixers,pedalPhase:0,clipStart,clipDuration:(clip?.duration??2)-clipStart,mobility,foot,cycling,motion,disposeStyle};this.items.set(a.id,item);this.scene.add(root);
+      item={root,mixers,pedalPhase:0,clipStart,clipDuration:(clip?.duration??2)-clipStart,mobility,foot,cycling,motion,disposeStyle};this.items.set(a.id,item);this.keys.set(a.id,this.key(a));this.scene.add(root);
     }
     item.root.position.set(a.x,a.y,a.z);item.root.rotation.y=a.heading;
-    const distance=focus?Math.hypot(a.x-focus.x,a.z-focus.z):0;
     item.root.visible=distance<drawDistance;
-    const firstPose=item.animationAge===undefined;item.animationAge=(item.animationAge??0)+dt;
+    if(!item.root.visible){item.animationAge=undefined;continue;}
+    const firstPose=item.animationAge===undefined;item.animationAge=(item.animationAge??0)+Math.max(0,dt);
     // World collisions and actor positions still tick normally; only distant posing is paced.
-    if(!firstPose&&!a.fall&&distance>60&&item.animationAge<.1)continue;
+    const poseInterval=(distance>120?.2:.1)+((Math.abs(a.id*37)%100)/100)*.025;
+    if(!firstPose&&!a.fall&&distance>45&&item.animationAge<poseInterval)continue;
+    // Stagger the distant update interval, never subtract time from the gait.
+    // A negative reset starved nearby walkers of animation time at 60 Hz.
     const animationDt=item.animationAge;item.animationAge=0;
     if(a.fall){
       if(!item.fallRig){
@@ -295,6 +369,6 @@ export class TrafficView {
       const pose=item.motion.step(animationDt,{...a,headingY:a.heading});item.pedalPhase=item.motion.pedals;
       item.cycling.apply({...pose,x:0,y:0,z:0,headingY:0},item.motion.steering,item.motion.pedals);
     }else for(const m of item.mixers)m.update(animationDt);
-  }for(const[id,item]of this.items)if(!keep.has(id)){item.root.removeFromParent();item.mixers.forEach(m=>m.stopAllAction());item.mobility?.dispose();item.cycling?.dispose();item.disposeStyle?.();this.items.delete(id);}}
+  }}
 }
 

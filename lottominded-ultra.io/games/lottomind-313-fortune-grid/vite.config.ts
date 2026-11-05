@@ -9,8 +9,8 @@ export default defineConfig({
   base: "./",
   publicDir: resolve(packageRoot, "app/public"),
   build: {
-    outDir: resolve(packageRoot),
-    emptyOutDir: false,
+    outDir: resolve(packageRoot, "dist"),
+    emptyOutDir: true,
     assetsDir: "assets/build",
     rollupOptions: { output: { manualChunks: { three: ["three"] } } }
   }

@@ -1,3 +1,4 @@
+import {RecoveryStock} from '../../../ride-core/src/recoveryStock.ts';
 import {RideController,NEUTRAL_ACTIONS,createPose,copyPose,type RideActions} from './controller.ts';
 import {RaceRules,RACE_ROUTE} from './raceRules.ts';
 import {routePosition} from './districtView.ts';
@@ -16,11 +17,19 @@ import type {RaceDifficulty} from './raceRules.ts';
  */
 export class SplitRaceSimulation {
  readonly rules:RaceRules;
- readonly riders:{id:RiderId;sim:RideController;previous:ReturnType<typeof createPose>;pose:ReturnType<typeof createPose>;flow:FlowCombo;message:string;challenge?:DistrictRun}[]=[];
+ readonly riders:{stock:RecoveryStock;id:RiderId;sim:RideController;previous:ReturnType<typeof createPose>;pose:ReturnType<typeof createPose>;flow:FlowCombo;message:string;challenge?:DistrictRun}[]=[];
  readonly sessionMode:'free'|'race'|'challenge';
  readonly terrain:TerrainSampler;
  readonly remoteFallPhase=new Map<number,string>();
  newCrashes:number[]=[];
+ private pendingRecovery=new Set<number>();
+ recoveryPending(index:number){return this.pendingRecovery.has(index);}
+ requestRecovery(index:number){
+  const r=this.riders[index];if(!r)return false;
+  if(r.sim.snapshot().state==='recovering')return true;
+  if(r.sim.crashed&&r.sim.snapshot().fallPhase!=='settled'&&!this.rules.done&&this.rules.countdown<=0&&this.rules.racers[index].finish===null){this.pendingRecovery.add(index);r.message='Recovery queued · getting up when the fall settles';return true;}
+  return this.recover(index);
+ }
  private pilots=new Map<number,RacePilot>();
  fillRivals(slots:readonly number[],difficulty:RaceDifficulty='expert'){
   if(this.sessionMode!=='race')return;
@@ -34,6 +43,8 @@ export class SplitRaceSimulation {
    const queries:TerrainSampler={
     sampleGround:(...a)=>terrain.sampleGround(...a),raycast:(...a)=>terrain.raycast(...a),raycastObstacle:(...a)=>terrain.raycastObstacle(...a),
     mountedClear:terrain.mountedClear?(...a)=>terrain.mountedClear!(...a):undefined,
+    waterAt:terrain.waterAt?(...a)=>terrain.waterAt!(...a):undefined,
+    reserveRecoverySpace:terrain.reserveRecoverySpace?(...a)=>terrain.reserveRecoverySpace!(...a):undefined,
     navigationObstacles:(x,z,radius)=>(terrain.navigationObstacles?.(x,z,radius)??[]).concat(this.riders.flatMap((r,j)=>j===i?[]:r.sim.obstacles('local-'+j)))
    };
    const offset=this.offset(i,ids.length),row=this.row(i,ids.length),centre=options.spawn,station=(options.challenge?.start??RACE_ROUTE.start)-row;
@@ -41,7 +52,7 @@ export class SplitRaceSimulation {
    if(this.sessionMode==='free')p=freeRideLaunch(queries,p,this.riders.map(r=>r.pose));
    const sim=new RideController(queries,{spawn:{position:p,headingY:p.heading}});sim.wheelScale=id.startsWith('DS_Mascot_')?.75:.86;
    const pose=createPose(),previous=createPose();sim.writePose(pose);copyPose(pose,previous);
-   this.riders.push({id,sim,pose,previous,flow:new FlowCombo(),message:'',challenge:options.challenge?new DistrictRun(options.challenge):undefined});
+   this.riders.push({stock:new RecoveryStock(),id,sim,pose,previous,flow:new FlowCombo(),message:'',challenge:options.challenge?new DistrictRun(options.challenge):undefined});
    Object.assign(this.rules.racers[i],{station,previous:station,offset});
   });
  }
@@ -64,17 +75,22 @@ export class SplitRaceSimulation {
    else if(this.sessionMode==='free')Object.assign(this.rules.racers[i],{station:c.d,offset:c.u});
    if(this.rules.racers[i].finish!==null){if(r.challenge?.failed){r.flow.cancel();r.message='Attempt ended · '+r.challenge.reason;}else {r.flow.bank();r.message='Finished · waiting for the other riders';}}
   });
+  for(const i of this.pendingRecovery){const r=this.riders[i];if(!r.sim.crashed||r.sim.snapshot().fallPhase==='settled'){this.pendingRecovery.delete(i);this.recover(i);}}
   if(this.sessionMode==='challenge')this.rules.done=this.riders.every(r=>r.challenge?.done||r.challenge?.failed);
   if(this.rules.done)this.riders.forEach((r,i)=>{if(this.rules.racers[i].finish===null)r.flow.cancel();});
  }
  recover(index:number){
   const r=this.riders[index],progress=this.rules.racers[index];
+  if(!r||!progress||r.sim.snapshot().state==='recovering')return false;
+  const limited=this.sessionMode==='race'||this.sessionMode==='challenge'&&r.challenge?.challenge.kind!=='discovery';
+  if(limited&&!r.stock.remaining){r.message='All 3 recoveries used · restart from the menu';return false;}
   if(this.rules.done||progress.finish!==null||this.rules.countdown>0)return false;
   if(r.sim.crashed&&r.sim.snapshot().fallPhase!=='settled'){r.message='Let the fall settle, then recover';return false;}
   const gates=r.challenge?.challenge.gates??RACE_ROUTE.gates,station=progress.gate?gates[progress.gate-1]+.5:r.challenge?.challenge.start??RACE_ROUTE.start;
   const p=this.sessionMode==='free'?{x:r.pose.x,y:r.pose.y,z:r.pose.z,heading:r.pose.headingY}:routePosition(station+this.row(index),this.offset(index));p.y=this.terrain.sampleGround(p.x,p.z,createGroundSample(),r.pose.y).height;
   if(!r.sim.recover({position:p,headingY:p.heading})){r.message='Recovery space occupied · try again';return false;}
-  if(this.sessionMode==='race')this.rules.recover(r.id);r.sim.writePose(r.pose);copyPose(r.pose,r.previous);r.flow.cancel();r.message='Recovered · release controls, then ride';if(r.challenge){const c=cutCoords(toMap(r.pose.x,0,r.pose.z).x,toMap(r.pose.x,0,r.pose.z).z);r.challenge.step(1/120,{station:c.d,offset:c.u,speed:0,grounded:true,crashed:false,recovered:true,roll:0,slip:0,traction:0,airHeight:0});}return true;
+  if(limited)r.stock.consume();
+  if(this.sessionMode==='race')this.rules.recover(r.id);r.sim.writePose(r.pose);copyPose(r.pose,r.previous);r.flow.cancel();r.message='Recovered'+(limited?' · '+r.stock.remaining+'/3 recoveries left':'')+' · release controls, then ride';if(r.challenge){const c=cutCoords(toMap(r.pose.x,0,r.pose.z).x,toMap(r.pose.x,0,r.pose.z).z);r.challenge.step(1/120,{station:c.d,offset:c.u,speed:0,grounded:true,crashed:false,recovered:true,roll:0,slip:0,traction:0,airHeight:0});}return true;
  }
  get snapshot(){return {sessionMode:this.sessionMode,countdown:this.rules.countdown,elapsed:this.rules.elapsed,done:this.rules.done,racers:this.riders.map((r,i)=>({...this.rules.racers[i],position:{x:r.pose.x,y:r.pose.y,z:r.pose.z},speed:r.pose.speed,crashed:r.sim.crashed,fallPhase:r.sim.snapshot().fallPhase,banked:r.flow.banked,pending:r.flow.pending,hops:r.sim.snapshot().hops,challenge:r.challenge?{id:r.challenge.challenge.id,count:r.challenge.count,photos:[...r.challenge.photos],gate:r.challenge.gateCount,elapsed:r.challenge.elapsed,done:r.challenge.done,failed:r.challenge.failed}:undefined}))};}
 }

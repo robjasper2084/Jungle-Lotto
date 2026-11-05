@@ -1,0 +1,18 @@
+{
+  "game": "swoop-detroit",
+  "models": 108,
+  "sharing": {
+    "saved": 38550711,
+    "models": 47
+  },
+  "textures": {
+    "files": 20,
+    "saved": 18052100
+  },
+  "geometry": {
+    "saved": 43871340,
+    "models": 108
+  },
+  "savedBytes": 100474151,
+  "preserves": "Decoded texture pixels, dimensions, mesh and animation buffer bytes, rig hierarchy; originals retained in source"
+}

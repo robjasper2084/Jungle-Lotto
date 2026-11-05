@@ -1,0 +1,57 @@
+(node:14820) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ opposing packs keep circulating past a stationary player for several laps (797.2406ms)
+✔ a blocked lane forms a spaced queue and clears when the obstruction leaves (193.6765ms)
+(node:21440) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ starting a ride puts a pack within view without moving it again during play (7.2684ms)
+✔ roaming riders yield to a player in their lane (10.8158ms)
+✔ two random starts remain separate and repeatable for a given session seed (1.5387ms)
+✔ pausing freezes both simulation and interpolated cyclist poses (3.3911ms)
+✔ random starts shift the complete pack away from a solid obstacle (0.4333ms)
+✔ ambient routes close on existing lanes and allow ten articulated cyclists per pack (0.4346ms)
+(node:41576) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ relaxed gait preserves ground contact and distance-matched steps for every hero size (40.6196ms)
+(node:29000) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ standalone Elmwood adapter parks, walks, jumps and mounts; right steering is not inverted (53.1846ms)
+✔ Royale parks, walks, runs, jumps, returns and remounts without moving the wheel (28.6974ms)
+✔ Swoop parks, walks, runs, jumps, returns and remounts without moving the wheel (19.0265ms)
+✔ no dismount at speed or into blocked terrain; walking sweeps obstacles (8.6573ms)
+(node:36104) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ twenty cyclists clear a stopped rider on the mapped Wilkins trail (75076.5033ms)
+(node:42308) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ on-foot tactical motion keeps all five skins continuous, wheels parked and bones rigid (8017.1941ms)
+ℹ DS_Man_01 lowest skin -0.0060m
+ℹ DS_Hoodie_Woman_01 lowest skin 0.0060m
+ℹ DS_Mascot_Suit_01 lowest skin -0.0205m
+ℹ DS_Mascot_Hoodie_01 lowest skin -0.0283m
+ℹ DS_Armored_Rider_01 lowest skin 0.0053m
+✔ on-foot shoulders, torso and wrists move naturally without opening skin seams at any heading (8871.2435ms)
+ℹ DS_Man_01 moving torso/clavicles/wrists; maximum short skin edge 7.20mm
+ℹ DS_Hoodie_Woman_01 moving torso/clavicles/wrists; maximum short skin edge 6.50mm
+ℹ DS_Mascot_Suit_01 moving torso/clavicles/wrists; maximum short skin edge 19.67mm
+ℹ DS_Mascot_Hoodie_01 moving torso/clavicles/wrists; maximum short skin edge 14.77mm
+ℹ DS_Armored_Rider_01 moving torso/clavicles/wrists; maximum short skin edge 13.63mm
+✔ Boerboel has four loopable gaits, moving paws and a stationary root (39.1266ms)
+✔ Boerboel paws plant through walk, trot and run instead of skating with the root (162.0173ms)
+ℹ 1 m/s: worst planted-pad movement 0.00 mm/frame
+ℹ 3 m/s: worst planted-pad movement 0.00 mm/frame
+ℹ 6.67 m/s: worst planted-pad movement 0.00 mm/frame
+✔ Boerboel preserves body height and independent hocks through each full gait (60.2451ms)
+✔ the deformed Boerboel skin clears the floor through walk, trot and gallop (1542.6577ms)
+ℹ Lowest deformed vertex: -1.48 mm relative to the rig ground plane
+✔ distant cyclists receive a fitted first pose and retain pedal contact at reduced animation cadence (44.5634ms)
+✔ exported cyclist knees stay forward and feet follow opposite level pedals through a full revolution (52.6799ms)
+✔ stopped and paused cyclists do not keep pedaling (15.6463ms)
+ℹ tests 23
+ℹ suites 0
+ℹ pass 23
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 75969.4125

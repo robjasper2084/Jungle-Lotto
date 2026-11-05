@@ -41,3 +41,9 @@ test('distance detail never removes the whole crown and shadows use matching lea
   }
   batch.update(351);assert.equal(batch.group.visible,false);
 });
+test('distant trees retain every crown while reducing twig and leaf triangles',()=>{
+ const material=new T.MeshStandardMaterial(),b=makeTreeBatch([{x:0,y:0,z:0,h:9,seed:2},{x:20,y:0,z:0,h:10,seed:6}],material,[material,material],{value:0});
+ b.update(15,true);const closeBranches=b.stems.count,closeLeaves=b.leaves[0].geometry.index!.count;
+ b.update(90,true);assert.ok(b.stems.count<closeBranches/2);assert.equal(b.leaves[0].geometry.index!.count,closeLeaves/4);assert.ok(b.leaves.filter(m=>!b.detail.includes(m)).every(m=>m.visible&&m.count>0));
+ b.update(15,true);assert.equal(b.stems.count,closeBranches);assert.equal(b.leaves[0].geometry.index!.count,closeLeaves);
+});

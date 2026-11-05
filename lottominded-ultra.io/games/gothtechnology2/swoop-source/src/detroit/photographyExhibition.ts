@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {batchStaticGroup} from './static-batch.ts';
 import {SUPPLIED_PHOTOGRAPHY} from './suppliedPhotography.ts';
 let textures:Promise<T.Texture[]>|undefined;
 const originals=()=>textures??=Promise.all(SUPPLIED_PHOTOGRAPHY.map(async photo=>{
@@ -25,7 +26,7 @@ export async function addPhotographyExhibition(building:T.Object3D,room:'serenge
   const face=new T.Mesh(new T.PlaneGeometry(size.width,size.height),new T.MeshBasicMaterial({map:maps[i]}));face.name='Original photograph / full composition';face.position.z=.01;frame.add(face);
   for(const sign of [-1,1]){const upright=new T.Mesh(new T.BoxGeometry(.025,size.height+.05,.045),brass);upright.position.set(sign*(size.width+.025)/2,0,0);frame.add(upright);const bar=new T.Mesh(new T.BoxGeometry(size.width+.05,.025,.045),brass);bar.position.set(0,sign*(size.height+.025)/2,0);frame.add(bar);}
   exhibition.add(frame);
- });building.add(exhibition);return exhibition;
+ });batchStaticGroup(exhibition,{opaqueOnly:true});building.add(exhibition);return exhibition;
 }
 /** Display collection; actual auction prices and lots remain server-owned. */
 export function photographyCollection(){

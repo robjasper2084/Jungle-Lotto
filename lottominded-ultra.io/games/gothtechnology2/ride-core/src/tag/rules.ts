@@ -3,11 +3,13 @@ import {RIDE_TUNING,clamp,angle} from '../rideDynamics.ts';
 import type {Vec3,TerrainSampler} from '../terrain.ts';
 import {lanePoint,type TagFixture,type TagProduct} from './fixture.ts';
 import {TagNavigation} from './navigation.ts';
+import {GroundRoutes,groundTravelClear} from '../royale/groundRoute.ts';
+import {botObstacleRecovery,recoverBotObstacle,type BotObstacleRecovery} from '../botObstacleRecovery.ts';
 export const TAG_VERSION='heart-rush-1';
 export const TAG_RULES=Object.freeze({duration:180,countdown:3,headStart:3,lock:2,shotInterval:.7,speed:24,range:24,lifetime:1,radius:.14,capacity:3,regen:2,burstDuration:.6,burstCost:35,burstCooldown:3,burstDelay:1.25,burstRegen:10});
 export type TagRuleset='classic'|'spread';export type TagPhase='lobby'|'loading'|'countdown'|'head_start'|'active'|'results'|'disposing';
 export type TagCommand={round:string;seq:number;tick:number;throttle:number;steer:number;aimYaw:number;aimPitch:number;fire:boolean;shot:number;hop:boolean;burst:boolean;reset:boolean};
-export type TagActor={id:string;name:string;bot:boolean;dnf:boolean;connected:boolean;controller:RideController;previous:RidePose;role:'runner'|'it';epoch:number;lock:number;protectedUntil:number;ammo:number;regen:number;lastShot:number;lastShotId:number;ack:number;input:TagCommand;itTime:number;tags:number;resets:number;burst:number;burstEnd:number;burstReady:number;controlled:number;outside:number;crashAge:number;seen?:{id:string;position:Vec3;until:number};goal?:Vec3;decision:number;reaction:number;botHop:boolean;route:Vec3[];routeAge:number;progress:Vec3;stuck:number;explored:Set<string>};
+export type TagActor={id:string;name:string;bot:boolean;dnf:boolean;connected:boolean;controller:RideController;previous:RidePose;role:'runner'|'it';epoch:number;lock:number;protectedUntil:number;ammo:number;regen:number;lastShot:number;lastShotId:number;ack:number;input:TagCommand;itTime:number;tags:number;resets:number;burst:number;burstEnd:number;burstReady:number;controlled:number;outside:number;crashAge:number;seen?:{id:string;position:Vec3;until:number};goal?:Vec3;decision:number;reaction:number;botHop:boolean;route:Vec3[];routeAge:number;progress:Vec3;stuck:number;explored:Set<string>;obstacleRecovery?:BotObstacleRecovery};
 export type Heart={id:string;shooter:string;round:string;epoch:number;tick:number;from:Vec3;position:Vec3;velocity:Vec3;age:number};
 export type TagEvent={id:string;tick:number;kind:'shot'|'blocked'|'tag'|'reset'|'result';actor:string;target?:string};
 export type TagSnapshot={version:string;hash:string;product:TagProduct;arena:string;round:string;tick:number;phase:TagPhase;time:number;remaining:number;ruleset:TagRuleset;actors:{id:string;name:string;bot:boolean;connected:boolean;dnf:boolean;role:string;epoch:number;ammo:number;burst:number;lock:number;itTime:number;tags:number;resets:number;ack:number;pose:RidePose}[];hearts:Heart[];events:TagEvent[];winners:string[];owner?:{id:string;state:ReturnType<RideController['captureState']>}};
@@ -28,7 +30,11 @@ export function validCommand(c:TagCommand,actor:TagActor,round:string,tick:numbe
 /** Only this simulation resolves roles, ammunition, movement and results, offline or hosted. */
 export class TagMatch{
   actors:TagActor[]=[];hearts:Heart[]=[];events:TagEvent[]=[];winners:string[]=[];phase:TagPhase='lobby';tick=0;time=0;round='';remaining:number=TAG_RULES.duration;roundNumber=0;private eventSeq=0;private randomState=18321;readonly navigation:TagNavigation;
-  constructor(readonly fixture:TagFixture,readonly terrain:TerrainSampler & {sweep?(p:Vec3,d:Vec3,r:number):number|null;legal?(p:Vec3):boolean},readonly ruleset:TagRuleset='classic',readonly difficulty:'easy'|'normal'|'hard'|'expert'='normal',readonly duration:number=TAG_RULES.duration){this.navigation=new TagNavigation(fixture,terrain);}
+  private groundTerrain;private groundRoutes:GroundRoutes;
+  constructor(readonly fixture:TagFixture,readonly terrain:TerrainSampler & {sweep?(p:Vec3,d:Vec3,r:number):number|null;legal?(p:Vec3):boolean},readonly ruleset:TagRuleset='classic',readonly difficulty:'easy'|'normal'|'hard'|'expert'='normal',readonly duration:number=TAG_RULES.duration){this.navigation=new TagNavigation(fixture,terrain);
+   this.groundTerrain={sampleGround:terrain.sampleGround.bind(terrain),raycast:terrain.raycast.bind(terrain),raycastObstacle:terrain.raycastObstacle.bind(terrain),ground:(x:number,z:number,y?:number)=>terrain.sampleGround(x,z,{height:0,normal:{x:0,y:1,z:0},surface:'pavement',offCourse:false},y)};
+   this.groundRoutes=new GroundRoutes(this.navigation.nodes,this.navigation.edges,this.groundTerrain);
+  }
   private random(){this.randomState=(Math.imul(this.randomState,1664525)+1013904223)>>>0;return this.randomState/4294967296;}
   addActor(id:string,name:string,bot=false){
     if(this.actors.length>=8||this.actors.some(a=>a.id===id))throw Error('ROOM_FULL');
@@ -39,6 +45,7 @@ export class TagMatch{
   }
   start(round:string){if(this.actors.length<(this.ruleset==='spread'?4:2))throw Error('MORE_PLAYERS_NEEDED');this.phase='loading';this.round=round;this.roundNumber++;this.tick=0;this.time=0;this.remaining=this.duration;this.hearts=[];this.events=[];this.winners=[];
     this.actors=this.actors.filter(a=>!a.dnf);for(const [i,a]of this.actors.entries()){a.controller.reset(this.fixture.spawns[i%this.fixture.spawns.length]);Object.assign(a,{role:'runner',epoch:a.epoch+1,lock:0,protectedUntil:0,ammo:3,regen:0,lastShot:-1e6,lastShotId:0,ack:0,input:neutralCommand(round),itTime:0,tags:0,resets:0,burst:100,burstEnd:0,burstReady:0,controlled:0,outside:0,crashAge:0,decision:0,reaction:0,goal:undefined,seen:undefined,route:[],routeAge:0,progress:copy(a.controller.poseValue),stuck:0,explored:new Set<string>()});}
+    for(const actor of this.actors)actor.obstacleRecovery=undefined;
     this.actors[(this.roundNumber-1)%this.actors.length].role='it';this.phase='countdown';
   }
   command(id:string,c:TagCommand){const a=this.actors.find(a=>a.id===id&&!a.dnf);if(!a||a.bot||!validCommand(c,a,this.round,this.tick))return false;a.ack=c.seq;
@@ -72,14 +79,14 @@ export class TagMatch{
         if(a.seen&&this.time>=a.reaction&&a.role==='it')a.goal=copy(a.seen.position);
         else if(a.seen&&this.time>=a.reaction&&a.role==='runner')a.goal=copy([...choices].sort((u,v)=>Math.hypot(v.x-a.seen!.position.x,v.z-a.seen!.position.z)-Math.hypot(u.x-a.seen!.position.x,u.z-a.seen!.position.z))[0]??p);
         else if(!a.goal||a.stuck>2||Math.hypot(a.goal.x-p.x,a.goal.z-p.z)<3)a.goal=copy([...choices].sort((u,v)=>Math.hypot(v.x-p.x,v.z-p.z)-Math.hypot(u.x-p.x,u.z-p.z)).slice(0,8)[Math.floor(this.random()*Math.min(8,choices.length))]??p);
-        a.route=this.navigation.path(p,a.goal);a.routeAge=0;
+        const route=this.groundRoutes.path(p,a.goal);if(route.length)a.route=route;a.routeAge=0;
       }
     }
     if(this.tick%3!==0)return;
     while(a.route.length>1&&Math.hypot(a.route[0].x-p.x,a.route[0].z-p.z)<.9)a.route.shift();
     let goal=a.route[0]??a.goal??this.fixture.spawns[0].position;
     // Only visible targets on the same lane permit the short final interception.
-    if(a.role==='it'&&a.seen&&this.time>=a.reaction&&Math.hypot(a.seen.position.x-p.x,a.seen.position.z-p.z)<10&&this.navigation.clearPath(p,a.seen.position)&&this.terrain.legal?.(a.seen.position)!==false)goal=a.seen.position;
+    if(a.role==='it'&&a.seen&&this.time>=a.reaction&&Math.hypot(a.seen.position.x-p.x,a.seen.position.z-p.z)<10&&groundTravelClear(this.groundTerrain,p,a.seen.position)&&this.terrain.legal?.(a.seen.position)!==false)goal=a.seen.position;
     const nearest=this.fixture.walkable?undefined:this.fixture.lanes.map(l=>({l,q:lanePoint(p,l)})).sort((u,v)=>Math.hypot(u.q.x-p.x,u.q.z-p.z)-Math.hypot(v.q.x-p.x,v.q.z-p.z))[0];
     if(!this.fixture.walkable&&nearest&&Math.hypot(nearest.q.x-p.x,nearest.q.z-p.z)>nearest.l.width*.28){const dx=nearest.l.b.x-nearest.l.a.x,dz=nearest.l.b.z-nearest.l.a.z,length=Math.hypot(dx,dz),sign=(goal.x-nearest.q.x)*dx+(goal.z-nearest.q.z)*dz>=0?1:-1,look=Math.min(2.5,Math.hypot(goal.x-nearest.q.x,goal.z-nearest.q.z));goal=lanePoint({x:nearest.q.x+dx/length*look*sign,y:nearest.q.y,z:nearest.q.z+dz/length*look*sign},nearest.l);}
     const error=angle(Math.atan2(goal.x-p.x,goal.z-p.z)-p.headingY),wall=this.terrain.raycastObstacle({x:p.x,y:p.y+.8,z:p.z},{x:Math.sin(p.headingY),y:0,z:Math.cos(p.headingY)},Math.max(1.4,Math.abs(p.speed)*.65),.3)!==null;
@@ -99,6 +106,8 @@ export class TagMatch{
     const throttle=clamp((targetSpeed-p.speed)*.65+.1-hill/8,-.7,1);
     const desired=a.seen?clamp(angle(Math.atan2(a.seen.position.x-p.x,a.seen.position.z-p.z)-p.headingY),-1.35,1.35):0,rate={easy:1.1,normal:1.8,hard:2.5,expert:3.3}[this.difficulty],aim=a.input.aimYaw+clamp(desired-a.input.aimYaw,-rate*.05,rate*.05),pitch=a.seen?clamp(Math.atan2(a.seen.position.y-p.y,Math.hypot(a.seen.position.x-p.x,a.seen.position.z-p.z)), -.75,.75):0;
     a.input={...neutralCommand(this.round,a.ack+1,this.tick),throttle:wall?(a.stuck>1?-.45:0):throttle,steer:clamp(-error*1.8*(wall&&a.stuck>1?-1:1),-.72,.72),aimYaw:aim,aimPitch:pitch,fire:!!a.seen&&a.role==='it'&&this.time>=a.reaction&&Math.abs(desired-aim)<.12&&this.clear(this.center(p),{...a.seen.position,y:a.seen.position.y+1.05}),shot:a.lastShotId+1,burst:a.role==='runner'&&!!a.seen&&Math.abs(error)<.15&&!wall&&laneAhead&&targetSpeed>4};a.ack++;
+    const recovery=recoverBotObstacle(this.terrain,p,goal,a.obstacleRecovery??=botObstacleRecovery(),this.time,dt*3);
+    if(recovery){Object.assign(a.input,recovery,{fire:false,burst:false});a.routeAge=2;}
   }
   private fire(a:TagActor){
     const c=a.input;if(!c.fire||a.role!=='it'||a.lock>this.time||a.ammo<1||this.time-a.lastShot<TAG_RULES.shotInterval||c.shot<=a.lastShotId||a.controller.crashed)return;
@@ -117,7 +126,7 @@ export class TagMatch{
       if(c.burst&&a.burst>=35&&a.burstReady<=this.time&&a.controller.snapshot().grounded&&!a.controller.crashed){a.burst-=35;a.burstEnd=this.time+.6;a.burstReady=this.time+3;a.controlled=0;c.burst=false;}
       const base=this.fixture.product==='swoop-detroit'?10:8;a.controller.setHandling({maxSpeed:a.burstEnd>this.time?(base===10?13:10.5):base});
       if(c.reset){if(active)this.reset(a);c.reset=false;}
-      a.controller.step(dt,{...NEUTRAL_ACTIONS,throttle:c.throttle,steer:c.steer,hop:c.hop,hopHeld:c.hop});c.hop=false;
+      a.controller.step(dt,{...NEUTRAL_ACTIONS,stableAI:a.bot||!a.connected,throttle:c.throttle,steer:c.steer,hop:c.hop,hopHeld:c.hop});c.hop=false;
       if(a.controller.crashed){a.crashAge+=dt;if(a.crashAge>1.6)a.controller.step(dt,{...NEUTRAL_ACTIONS,reset:true});}else a.crashAge=0;
       a.controlled=a.controller.snapshot().grounded&&!a.controller.crashed&&a.controller.lastLandingImpact<5&&a.burstEnd<=this.time?a.controlled+dt:0;if(a.controlled>=1.25)a.burst=Math.min(100,a.burst+10*dt);
       a.outside=this.terrain.legal?.(a.controller.poseValue)===false?a.outside+dt:0;if(a.outside>=3&&active)this.reset(a);

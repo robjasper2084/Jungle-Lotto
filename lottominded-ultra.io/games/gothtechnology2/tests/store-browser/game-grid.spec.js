@@ -37,6 +37,7 @@ test('Game Grid shows Static WAV artwork and launches a playable sector', async 
   await expect(page.locator('#game-frame')).toHaveAttribute('title','2084 Static WAV game');
   await expect(page.locator('#requested-character')).toContainText('IJKL');
   await expect(page.locator('#game-collection-link')).toBeHidden();
+  await page.locator('#game-frame').scrollIntoViewIfNeeded();
   expect(await frame.evaluate(() => window.__staticWavAudio.muted)).toBe(false);
   await expect(frame.getByRole('button',{name:'Start Sector 1',exact:true})).toBeEnabled();
   await expect.poll(() => frame.locator('#marquee').evaluate(img => img.naturalWidth)).toBeGreaterThan(0);
@@ -51,11 +52,11 @@ test('Game Grid shows Static WAV artwork and launches a playable sector', async 
   await page.keyboard.up('KeyD');
   await page.keyboard.up('KeyI');
   await frame.waitForFunction(() => window.RahbeArcadeGame.getStats().seconds >= 2);
-  if (info.project.name === 'mobile') await frame.locator('#bombAction').tap();
-  else await frame.locator('#bombAction').click();
+  if (info.project.name === 'mobile') await frame.locator('#bombAction:visible, .td-battle [data-control="bomb"]:visible').tap();
+  else await frame.locator('#bombAction:visible, .td-battle [data-control="bomb"]:visible').click();
   await expect(frame.locator('#bombsValue')).toHaveText(String(bombs - 1));
   await expect.poll(() => frame.evaluate(() => window.RahbeArcadeGame.getStats().score)).toBeGreaterThan(0);
-  await frame.locator('#pauseAction').click();
+  await frame.locator('#pauseAction:visible, .td-battle .td-menu:visible').click();
   await expect(frame.locator('#shell')).toHaveAttribute('data-mode','paused');
   const receipt = await frame.evaluate(() => window.RahbeArcadeGame.getStats());
   await expect.poll(() => page.evaluate(() => Object.values(JSON.parse(localStorage.getItem('gothtechnology.arcade.discount-preview.v2') || '{"runs":{}}').runs).find(run => run.game === 'static-wave')?.score)).toBe(receipt.score);

@@ -19,22 +19,24 @@ const defaults:Record<string,TouchAction>={specialMove:'trick',brake:'brake',cro
 const names:Record<TouchAction,string>={brake:'Brake',crouch:'Crouch',jump:'Hold / hop',trick:'Trick',recover:'Recover'};
 export function bindTouchControls(input:TouchRideInput,enabled:()=>boolean,onTap:(action:'trick'|'recover')=>void=()=>{}){
  let floating=true;const bindings={...defaults};
- try{const saved=JSON.parse(localStorage.getItem('swoop-touch-layout')??'null');if(saved){floating=saved.floating!==false;for(const id of Object.keys(defaults))if(Object.hasOwn(names,saved.bindings?.[id]))bindings[id]=saved.bindings[id];}}catch{}
- const save=()=>{try{localStorage.setItem('swoop-touch-layout',JSON.stringify({floating,bindings}));}catch{}};
+ try{const saved=JSON.parse(localStorage.getItem('swoop-touch-layout')??'null');if(saved){floating=saved.floatVersion===2?saved.floating!==false:true;for(const id of Object.keys(defaults))if(Object.hasOwn(names,saved.bindings?.[id]))bindings[id]=saved.bindings[id];}}catch{}
+ const save=()=>{try{localStorage.setItem('swoop-touch-layout',JSON.stringify({floating,bindings,floatVersion:2}));}catch{}};
  const captures=new Map<number,HTMLElement>();
  const actions=new Map<number,TouchAction>();
  const stick=document.getElementById('stick')!,thumb=document.getElementById('stickThumb')!;
  const update=()=>{const radius=stick.clientWidth*.32;thumb.style.transform=`translate(calc(-50% + ${input.steer*radius}px),calc(-50% + ${-input.throttle*radius}px))`;};
- function move(e:PointerEvent){const r=stick.getBoundingClientRect();input.moveStick(e.pointerId,(e.clientX-r.left-r.width/2)/(r.width*.32),(r.top+r.height/2-e.clientY)/(r.height*.32));update();}
- stick.onpointerdown=e=>{if(!enabled()||!input.startStick(e.pointerId))return;e.preventDefault();stick.setPointerCapture(e.pointerId);captures.set(e.pointerId,stick);stick.classList.add('held');move(e);};stick.onpointermove=move;
- const restoreStick=()=>{stick.style.position='';stick.style.left='';stick.style.top='';document.dispatchEvent(new Event('swoop-restore-stick'));};
+ let origin:{x:number;y:number}|undefined;
+ function move(e:PointerEvent){const r=stick.getBoundingClientRect(),center=origin??{x:r.left+r.width/2,y:r.top+r.height/2};input.moveStick(e.pointerId,(e.clientX-center.x)/(r.width*.32),(center.y-e.clientY)/(r.height*.32));update();}
+ function floatAt(e:PointerEvent){origin={x:e.clientX,y:e.clientY};const radius=stick.clientWidth/2;Object.assign(stick.style,{position:'fixed',left:(e.clientX-radius)+'px',top:(e.clientY-radius)+'px',right:'auto',bottom:'auto'});}
+ function begin(e:PointerEvent){if(!enabled()||!input.startStick(e.pointerId))return; e.preventDefault();if(e.pointerType==='touch')document.dispatchEvent(new Event('swoop-touch-start'));if(floating&&e.pointerType==='touch')floatAt(e);stick.setPointerCapture(e.pointerId);captures.set(e.pointerId,stick);stick.classList.add('held');move(e);}
+ stick.onpointerdown=begin;stick.onpointermove=move;
+ const restoreStick=()=>{origin=undefined;stick.style.position='';stick.style.left='';stick.style.top='';document.dispatchEvent(new Event('swoop-restore-stick'));};
  const end=(e:PointerEvent)=>{if(captures.get(e.pointerId)!==stick)return;input.endStick(e.pointerId);captures.delete(e.pointerId);update();stick.classList.remove('held');restoreStick();};stick.onpointerup=stick.onpointercancel=stick.onlostpointercapture=end;
- document.getElementById('world')!.addEventListener('pointerdown',e=>{
+ document.addEventListener('pointerdown',e=>{
   const home=stick.getBoundingClientRect(),rightHanded=home.left+home.width/2>innerWidth/2;
-  if(e.pointerType!=='touch'||!floating||!enabled()||(rightHanded?e.clientX<innerWidth*.52:e.clientX>innerWidth*.48)||e.clientY<80||!input.startStick(e.pointerId))return;
-  e.preventDefault();e.stopImmediatePropagation();const radius=stick.clientWidth/2;
-  stick.style.position='fixed';stick.style.left=Math.max(8,Math.min(innerWidth-radius*2-8,e.clientX-radius))+'px';stick.style.top=Math.max(80,Math.min(innerHeight-radius*2-12,e.clientY-radius))+'px';
-  stick.setPointerCapture(e.pointerId);captures.set(e.pointerId,stick);stick.classList.add('held');move(e);
+  const target=e.target instanceof Element?e.target:null;
+  if(e.pointerType!=='touch'||!floating||!enabled()||(rightHanded?e.clientX<innerWidth*.5:e.clientX>innerWidth*.5)||e.clientY<64||target?.closest('button,a,input,select,textarea,summary,dialog,[role=dialog],.nearby-tools,#helpPanel,#menu,#mapPanel'))return;
+  begin(e);if(captures.get(e.pointerId)===stick)e.stopImmediatePropagation();
  },{capture:true});
  const render=()=>{for(const id of Object.keys(bindings)){const button=document.getElementById(id)!;button.dataset.touchAction=bindings[id];button.textContent=names[bindings[id]];button.setAttribute('aria-label',names[bindings[id]]);}};
  for(const id of Object.keys(bindings)){const button=document.getElementById(id)!;

@@ -1,4 +1,5 @@
 import {registerRetailShell} from './tagSceneryCollisions.ts';
+import {visibleSceneryMatrices} from '@digital-static/ridecore';
 import * as T from 'three';
 import {GLTFLoader} from './compressedGLTFLoader.ts';
 import {toLocal,toMap} from './geo-profile.ts';
@@ -8,7 +9,7 @@ import {storefrontDetails} from './storefrontDetails.ts';
 import {LottoAppDesk} from './lottoAppDesk.ts';
 import './lottoShop.css';
 export async function buildLottoShop(scene:T.Scene,world:DetroitWorld,focus:()=>void,appOpened:()=>void=focus,appClosed:()=>void=focus,beforeEnter:()=>Promise<void>=async()=>{}){
- const building=(await new GLTFLoader().loadAsync('/exports/atwater/lottomind-store.glb?v=street-entry-20261003')).scene;building.name='LottoMind Mack Avenue virtual store';const at=toLocal(LOTTO_SHOP.x,LOTTO_SHOP.floor,LOTTO_SHOP.z);building.position.set(at.x,at.y,at.z);building.rotation.y=LOTTO_SHOP.heading;scene.add(building);building.traverse(o=>{const mesh=o as T.Mesh;if(mesh.isMesh){mesh.receiveShadow=true;const materials=Array.isArray(mesh.material)?mesh.material:[mesh.material];mesh.castShadow=!materials.some(m=>m.transparent);}});
+ const building=(await new GLTFLoader().loadAsync('/exports/atwater/lottomind-store.glb?v=street-entry-20261003')).scene;building.visible=false;visibleSceneryMatrices(building);building.name='LottoMind Mack Avenue virtual store';const at=toLocal(LOTTO_SHOP.x,LOTTO_SHOP.floor,LOTTO_SHOP.z);building.position.set(at.x,at.y,at.z);building.rotation.y=LOTTO_SHOP.heading;scene.add(building);building.traverse(o=>{const mesh=o as T.Mesh;if(mesh.isMesh){mesh.receiveShadow=true;const materials=Array.isArray(mesh.material)?mesh.material:[mesh.material];mesh.castShadow=!materials.some(m=>m.transparent);}});
  registerRetailShell(world,'lotto');
  const glass=new T.MeshPhysicalMaterial({color:0xe5eee4,transparent:true,opacity:.10,roughness:.17,metalness:.10,depthWrite:false,side:T.DoubleSide});for(const u of [-4.05,4.05]){const pane=new T.Mesh(new T.PlaneGeometry(5.15,2.85),glass);pane.position.set(u,1.58,9.48);building.add(pane);}
  for(const u of [-3.5,3.5]){const light=new T.PointLight(0xffecd0,55,15,2);light.position.set(u,3.75,0);building.add(light);}

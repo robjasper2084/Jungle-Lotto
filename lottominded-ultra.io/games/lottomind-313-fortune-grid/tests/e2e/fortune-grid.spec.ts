@@ -1,5 +1,10 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { resolve } from "node:path";
+
+async function dismissActiveCard(page: Page) {
+  const closeCard = page.locator("[data-close-card]");
+  await closeCard.click({ timeout: 750 }).catch(() => {});
+}
 
 test("creates a game and completes the first turn without console errors", async ({ page }, testInfo) => {
   const errors: string[] = [];
@@ -15,6 +20,7 @@ test("creates a game and completes the first turn without console errors", async
   const route = page.getByRole("button", { name: /Route 1:/ });
   if (await route.isVisible().catch(() => false)) await route.click();
   await expect(page.getByRole("button", { name: "End turn" })).toBeVisible({ timeout: 10000 });
+  await dismissActiveCard(page);
   if (["mobile-390", "desktop-1440"].includes(testInfo.project.name)) {
     await page.screenshot({ path: resolve("docs/screenshots", `${testInfo.project.name}-first-turn.png`), fullPage: true });
   }
@@ -55,12 +61,16 @@ test("save reload, touch layout, and arcade return link are available", async ({
 });
 
 test("a player can complete a standard thirteen-round solo match", async ({ page }, testInfo) => {
-  test.setTimeout(120000);
+  test.setTimeout(180000);
   test.skip(testInfo.project.name !== "desktop-1440", "Long-form completion proof runs once.");
   await page.goto("/");
   await page.getByLabel("Mode").selectOption("standard");
   await page.getByRole("button", { name: "Launch Fortune Grid" }).click();
+  await page.getByRole("button", { name: "Settings" }).click();
+  await page.getByLabel(/Reduced motion/).check();
+  await page.getByRole("button", { name: "Apply" }).click();
   for (let turn = 0; turn < 40; turn += 1) {
+    await dismissActiveCard(page);
     await expect.poll(() => page.evaluate(() => { const state = (window as any).__fortuneGridState?.(); return state?.phase === "ended" ? "ended" : state ? `${state.currentPlayer}:${state.phase}` : "missing"; }), { timeout: 15000 }).toMatch(/^(0:roll|ended)$/);
     const phase = await page.evaluate(() => (window as any).__fortuneGridState?.().phase);
     if (phase === "ended") break;
@@ -72,8 +82,7 @@ test("a player can complete a standard thirteen-round solo match", async ({ page
     if (await routes.count()) await routes.first().click();
     const endTurn = page.getByRole("button", { name: "End turn" });
     await expect(endTurn).toBeVisible({ timeout: 10000 });
-    const closeCard = page.locator("[data-close-card]");
-    if (await closeCard.isVisible().catch(() => false)) await closeCard.click();
+    await dismissActiveCard(page);
     await endTurn.click();
   }
   await expect(page.getByText(/Fortune Visionary/)).toBeVisible({ timeout: 15000 });

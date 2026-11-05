@@ -1,0 +1,69 @@
+{
+  "generator": "NVIDIA Kimodo-SOMA-RP-v1.2",
+  "source": "C:\\Users\\digit\\Documents\\phone\\kimodo\\output\\euc_mount_dismount",
+  "source_sha256": "8f46e2a552c39c213001539adc55e1b59c34556e7f0d313cc30b72865aefdb7c",
+  "fitted_sha256": "aa4310c3885f33ea391c88e633480d8e5bd6b520caaed9a19d9a632b531e37e5",
+  "generation": {
+    "texts": [
+      "A person stands beside a stationary self-balancing electric unicycle, looks down, steadies it with one hand, and places the left foot on its low side pedal while the right foot remains planted on the ground.",
+      "The person shifts weight onto the left foot, pushes lightly off the ground with the right foot and brings it up onto the opposite side pedal, then stands upright with both feet parallel and knees softly bent, lifting the arms slightly to balance.",
+      "The person stands balanced on both pedals of a self-balancing electric unicycle, with feet close together, torso upright and knees slightly bent, arms relaxed out to the sides, then gently leans back to settle to a stationary stop.",
+      "From an upright balanced stance, the person transfers weight to the left foot, lowers the right foot sideways onto the ground, steadies the electric unicycle beside the left calf, then lifts the left foot off its pedal and stands on both feet beside it."
+    ],
+    "durations": [
+      2.0,
+      3.0,
+      2.0,
+      3.0
+    ],
+    "phase_names": [
+      "prepare",
+      "mount",
+      "balance_and_stop",
+      "dismount"
+    ],
+    "num_samples": 1,
+    "seed": 42,
+    "diffusion_steps": 100,
+    "cfg": {
+      "enabled": true,
+      "text_weight": 2.0,
+      "constraint_weight": 2.0
+    },
+    "negative_prompt": null,
+    "motion_model": "Kimodo-SOMA-RP-v1.2",
+    "fps": 30,
+    "description": "Standing electric-unicycle preparation, left-foot-first mount, balance, and right-foot-first dismount."
+  },
+  "fit": {
+    "source_motion": "motion.npz",
+    "method": "Kimodo upper-body motion with authored root trajectory and two-bone foot/hand IK",
+    "frames": 300,
+    "fps": 30,
+    "pedal_height_m": 0.21,
+    "wheel_bounds_m": [
+      [
+        -0.28,
+        0.000500023365020752,
+        -0.25438112020492554
+      ],
+      [
+        0.28,
+        0.76,
+        0.25450000166893005
+      ]
+    ],
+    "source_fk_max_error_m": 1.8911076349326095e-06,
+    "max_ankle_target_error_m": 1.3857523397220744e-06,
+    "max_full_grip_palm_error_m": 0.03872134891229949,
+    "max_bone_length_error_m": 1.0623335563619829e-05,
+    "wheel_fidelity": "reference-based approximation using an existing local EUC asset; not exact product CAD",
+    "source_wheel": "C:\\Users\\digit\\Documents\\phone\\Digital_Static_Quest_Hosting\\public\\exports\\glb\\DS_EUC_01\\DS_EUC_01_LOD1.glb",
+    "reference_file": "hf_20260914_171145_3dddc818-3785-46b2-bf63-53df8fd65e77.png",
+    "source_wheel_sha256": "ee06f55dcb5e1f5fab19851bafd0921434c258710461dced371ed3cc0ed5be9b",
+    "reference_sha256": "381638bf406f885314fadf764cd685d74e3c3cc45b077e6651352129afd41d37"
+  },
+  "bake": "41 samples per transition; anatomical body frames, arm directions, separate foot contact progression and clearance. Runtime IK fits hero bone lengths and actual pedal height.",
+  "runtime_bytes": 17838,
+  "new_generation": false
+}

@@ -15,6 +15,17 @@ async function glb(path:string){const b=await fs.readFile(new URL('../../public/
 const original=new Map([['DS_Man_01',await glb('exports/glb/DS_Man_01/DS_Man_01_LOD0.glb')],['DS_EUC_01',await glb('exports/glb/DS_EUC_01/DS_EUC_Compact.glb')]]);
 const circuit=new Map(await Promise.all(['hoodie','suit','euc'].map(async id=>[id,await glb('circuit-riders/models/circuit-'+id+'.glb')] as const)));
 const motion=new RideMotion(flat),riders=createRideCoreRiders(original,circuit,motion.terrain);
+test('lazy outfit selection constructs only chosen rigs and attaches each once',()=>{
+  const scene=new T.Scene(),created:ThreeRiderView[]=[];
+  const lazy=createRideCoreRiders(original,circuit,motion.terrain,{lazy:true,onCreate(view){created.push(view);view.root.visible=false;scene.add(view.root);}});
+  assert.equal(lazy.size,0);assert.equal(scene.children.length,0);
+  const selected=lazy.get('original')!;assert.equal(lazy.size,1);assert.equal(selected.root.parent,scene);assert.equal(selected.root.visible,false);
+  assert.equal(lazy.get('original'),selected);assert.equal(created.length,1);
+  assert.equal(lazy.get('not-an-outfit'),undefined);assert.equal(lazy.size,1);
+  const mascot=lazy.get('hoodie')!;assert.notEqual(mascot,selected);assert.equal(mascot.root.parent,scene);assert.equal(created.length,2);
+  assert.deepEqual([...lazy.keys()],['original','hoodie']);
+  lazy.set('custom-wheel',selected);assert.equal(lazy.get('custom-wheel'),selected);assert.equal(created.length,2);
+});
 for(const [id,rider] of riders){
   test(`${id}: RideCore view keeps the supplied boots on their wheel through crouch, acceleration and turning`,()=>{
     assert.ok(rider instanceof ThreeRiderView);motion.setProfile(rider.profile);motion.reset({x:0,y:0,z:0},.3);

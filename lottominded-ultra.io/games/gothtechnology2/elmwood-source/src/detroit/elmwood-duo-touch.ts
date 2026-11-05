@@ -36,7 +36,7 @@ export function makeDuoTouch(canvas:HTMLCanvasElement,rects:()=>Rect[],pause:()=
   function beginStick(seat:number,e:PointerEvent,target:HTMLElement){
     if([...sticks.values()].some(s=>s.seat===seat)||canvas.dataset.paused==='true')return;
     const r=rects()[seat],node=nodes.get(seat+'-stick')!,floating=el<HTMLSelectElement>('elmwood-stick-mode')?.value!=='fixed',b=bounds(seat,'stick');
-    const x=floating?clamp(e.clientX-r.x,58,r.width-58):b.x,y=floating?clamp(e.clientY-r.y,58,r.height-58):b.y;
+    const x=floating?e.clientX-r.x:b.x,y=floating?e.clientY-r.y:b.y;
     node.style.left=x+'px';node.style.top=y+'px';sticks.set(e.pointerId,{seat,x:x+r.x,y:y+r.y,node});target.setPointerCapture(e.pointerId);canvas.focus();move(e);
   }
   for(let seat=0;seat<4;seat++){
@@ -46,12 +46,12 @@ export function makeDuoTouch(canvas:HTMLCanvasElement,rects:()=>Rect[],pause:()=
       if(!seat)el<HTMLSelectElement>('duo-edit-control').add(new Option(id==='stick'?'Joystick':id,id));
       node.onpointerdown=e=>{e.preventDefault();e.stopPropagation();node.setPointerCapture(e.pointerId);
         if(editing){select(seat,id);const r=rects()[seat],b=bounds(seat,id);drag={seat,id,pointer:e.pointerId,dx:e.clientX-r.x-b.x,dy:e.clientY-r.y-b.y};return;}
-        if(canvas.dataset.paused==='true')return;if(id==='stick'){beginStick(seat,e,node);return;}
+        if(canvas.dataset.paused==='true'&&layout(seat)[id].action!=='recover')return;if(id==='stick'){beginStick(seat,e,node);return;}
         const action=layout(seat)[id].action;held.set(e.pointerId,{seat,action,node});node.setAttribute('aria-pressed','true');send({seat,action,down:true,source:'pointer-'+e.pointerId});canvas.focus();
       };
       node.onpointermove=move;node.onpointerup=node.onpointercancel=node.onlostpointercapture=e=>release(e.pointerId);
       node.onkeydown=e=>{if(!editing||!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.code))return;e.preventDefault();e.stopPropagation();select(seat,id);const p=layout(seat)[id],r=rects()[seat],step=e.shiftKey?20:5;p.x+=(e.code==='ArrowRight'?step:e.code==='ArrowLeft'?-step:0)/r.width;p.y+=(e.code==='ArrowDown'?step:e.code==='ArrowUp'?-step:0)/r.height;apply();};
-      node.onclick=e=>{if(editing){select(seat,id);return;}if(e.detail===0&&id!=='stick'&&canvas.dataset.paused!=='true'){const action=layout(seat)[id].action;send({seat,action,down:true,source:'accessible'});setTimeout(()=>send({seat,action,down:false,source:'accessible'}),100);}};
+      node.onclick=e=>{if(editing){select(seat,id);return;}if(e.detail===0&&id!=='stick'&&(canvas.dataset.paused!=='true'||layout(seat)[id].action==='recover')){const action=layout(seat)[id].action;send({seat,action,down:true,source:'accessible'});setTimeout(()=>send({seat,action,down:false,source:'accessible'}),100);}};
     }
   }
   for(const [v,l]of Object.entries(ACTIONS))el<HTMLSelectElement>('duo-edit-action').add(new Option(l,v));

@@ -1,0 +1,94 @@
+TAP version 13
+# Subtest: actual Wasm has no unresolved platform imports
+ok 1 - actual Wasm has no unresolved platform imports
+  ---
+  duration_ms: 1.605109
+  type: 'test'
+  ...
+# Subtest: six slots round-trip through real upstream C++ functions
+ok 2 - six slots round-trip through real upstream C++ functions
+  ---
+  duration_ms: 2.045419
+  type: 'test'
+  ...
+# Subtest: aim does not overwrite steering
+ok 3 - aim does not overwrite steering
+  ---
+  duration_ms: 0.237364
+  type: 'test'
+  ...
+# Subtest: all 64 channels work including high flag bit 63
+ok 4 - all 64 channels work including high flag bit 63
+  ---
+  duration_ms: 0.397241
+  type: 'test'
+  ...
+# Subtest: PINone=64 is rejected before engine array/shift access
+ok 5 - PINone=64 is rejected before engine array/shift access
+  ---
+  duration_ms: 0.612038
+  type: 'test'
+  ...
+# Subtest: invalid slot and fractional indices are rejected
+ok 6 - invalid slot and fractional indices are rejected
+  ---
+  duration_ms: 0.220539
+  type: 'test'
+  ...
+# Subtest: NaN infinity and out-of-range inputs are rejected
+ok 7 - NaN infinity and out-of-range inputs are rejected
+  ---
+  duration_ms: 0.228617
+  type: 'test'
+  ...
+# Subtest: clear releases flags and leaves another rider alone
+ok 8 - clear releases flags and leaves another rider alone
+  ---
+  duration_ms: 0.143045
+  type: 'test'
+  ...
+# Subtest: new frame omits and clears previous trigger
+ok 9 - new frame omits and clears previous trigger
+  ---
+  duration_ms: 0.447082
+  type: 'test'
+  ...
+# Subtest: invalid complete frame is rejected atomically
+ok 10 - invalid complete frame is rejected atomically
+  ---
+  duration_ms: 0.550699
+  type: 'test'
+  ...
+# Subtest: duplicate channels are rejected
+ok 11 - duplicate channels are rejected
+  ---
+  duration_ms: 0.227285
+  type: 'test'
+  ...
+# Subtest: two room instances have isolated mutable memory
+ok 12 - two room instances have isolated mutable memory
+  ---
+  duration_ms: 0.156108
+  type: 'test'
+  ...
+# Subtest: input snapshot restores only input, without shared JS array references
+ok 13 - input snapshot restores only input, without shared JS array references
+  ---
+  duration_ms: 0.240469
+  type: 'test'
+  ...
+# Subtest: raw Wasm export independently validates untrusted input
+ok 14 - raw Wasm export independently validates untrusted input
+  ---
+  duration_ms: 0.13166
+  type: 'test'
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 14
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 83.861958

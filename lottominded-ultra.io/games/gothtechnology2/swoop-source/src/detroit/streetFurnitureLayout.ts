@@ -1,6 +1,6 @@
 import {CITY} from './geography.ts';
 import {hasStreetCurb} from './streetCurbs.ts';
-import {roadsidePoint,roadwayClearance,segmentDistance,streetFacingHeading} from './roadsidePlacement.ts';
+import {roadsidePoint,segmentDistance,streetFacingHeading} from './roadsidePlacement.ts';
 import {dryStreetSite} from './dryStreetSite.ts';
 
 export type StreetAsset='street-lamp'|'camera-pole'|'hydrant'|'bench'|'waste-bin'|'bike-rack'|'drain-grate'|'utility-cover';
@@ -44,7 +44,7 @@ export function streetFurnitureSites(allowed:(x:number,z:number)=>boolean){
      const px=x+nx*side*offset,pz=z+nz*side*offset;
      // Tall furniture stays outside both the full sidewalk and all crossing paths.
      const minClearance=sidewalkHalfWidth(road)*2+.45;
-     const point=flush?{x:px,z:pz}:roadsidePoint(px,pz,(qx,qz)=>allowed(qx,qz)&&roadwayClearance({x:qx,z:qz})>=minClearance);
+     const point=flush?{x:px,z:pz}:roadsidePoint(px,pz,allowed,minClearance);
      if(!point||!allowed(point.x,point.z)||!dryStreetSite(point.x,point.z))continue;
      const heading=asset==='bench'?streetFacingHeading(point,road.name):flush?Math.atan2(ux,uz):Math.atan2(-nx*side,-nz*side);
      accept({asset,...point,heading,street:road.name,side},flush?6:asset==='street-lamp'?17:5);
