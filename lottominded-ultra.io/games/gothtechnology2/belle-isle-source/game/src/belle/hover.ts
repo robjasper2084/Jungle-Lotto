@@ -69,6 +69,7 @@ export class HoverRide {
    const release=()=>{this.pressed.delete(key);delete b.dataset.held;};b.onpointerup=release;b.onpointercancel=release;b.onlostpointercapture=release;
   });
   window.addEventListener('keydown',e=>{
+   if(e.defaultPrevented)return;
    if(e.code==='KeyB'&&!e.repeat&&!this.hooks.blocked()&&!(e.target as HTMLElement).matches('input,select,textarea')){
     e.preventDefault();if(this.riding)this.exit();else void this.mount(scene);
    }

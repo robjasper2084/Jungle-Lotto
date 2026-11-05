@@ -3,6 +3,16 @@ import {captureRect,boundedZoom,shutterDelay} from './photoMath.ts';
 
 export const clipMime=(supports:(s:string)=>boolean)=>['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/webm;codecs=vp8,opus','video/mp4','video/webm'].find(supports)??'';
 
+export type PhotoCaptureFrame=Readonly<{x:number;y:number;width:number;height:number;canvasWidth:number;canvasHeight:number;capturedAt:number}>;
+export type PhotoObserver<Snapshot>={snapshot:(frame:PhotoCaptureFrame)=>Snapshot;complete:(blob:Blob,snapshot:Snapshot,frame:PhotoCaptureFrame)=>void};
+
+/** Observers return plain, structured-cloneable metadata, never live scene objects. */
+function freezePhotoSnapshot<Snapshot>(value:Snapshot):Snapshot {
+ const snapshot=structuredClone(value),seen=new WeakSet<object>();
+ const freeze=(item:unknown)=>{if(!item||typeof item!=='object'||seen.has(item))return;seen.add(item);for(const child of Object.values(item))freeze(child);Object.freeze(item);};
+ freeze(snapshot);return snapshot;
+}
+
 /** One bounded local capture at a time; no uploads, voice recording or device permissions. */
 export class CameraCapture {
  viewfinder=true;zoom=1;exposure=0;private delay=0;private shutterAt=0;
@@ -19,6 +29,14 @@ export class CameraCapture {
  readonly panel=document.createElement('div');private photo=document.createElement('button');private record=document.createElement('button');
  private save=document.createElement('a');private share=document.createElement('button');private review=document.createElement('button');private status=document.createElement('span');
  private preview=document.createElement('dialog');private media=document.createElement('div');
+ private disposed=false;
+ private photoObservers=new Set<(frame:PhotoCaptureFrame)=>(blob:Blob)=>void>();
+ /** Snapshot runs synchronously after rendering; complete runs only for a successful still image. */
+ observePhotos<Snapshot>(observer:PhotoObserver<Snapshot>):()=>void {
+  const prepare=(frame:PhotoCaptureFrame)=>{const snapshot=freezePhotoSnapshot(observer.snapshot(frame));return(blob:Blob)=>{if(!this.disposed&&this.photoObservers.has(prepare))observer.complete(blob,snapshot,frame);};};
+  if(!this.disposed)this.photoObservers.add(prepare);
+  return()=>{this.photoObservers.delete(prepare);};
+ }
  constructor(private canvas:HTMLCanvasElement,private changed:()=>void,private audio:()=>{stream:MediaStream;release:()=>void}|undefined){
   this.root.id='camera-capture';this.root.hidden=true;this.root.setAttribute('aria-label','Camera · P');
   this.toggle.type='button';this.toggle.textContent='Take photos · P';this.toggle.setAttribute('aria-pressed','false');this.toggle.onclick=()=>this.setActive(!this.active);
@@ -50,7 +68,7 @@ export class CameraCapture {
   const f=captureRect(innerWidth,innerHeight);this.lcd.style.inset='auto';Object.assign(this.lcd.style,{left:f.x+'px',top:f.y+'px',width:f.w+'px',height:f.h+'px'});
  }
  frame(){if(!this.finder)return {x:0,y:0,w:this.canvas.width,h:this.canvas.height};const r=this.lcd.getBoundingClientRect(),border=parseFloat(getComputedStyle(this.lcd).borderLeftWidth)||0,c=this.canvas.getBoundingClientRect(),sx=this.canvas.width/c.width,sy=this.canvas.height/c.height;return{x:Math.max(0,Math.round((r.left+border-c.left)*sx)),y:Math.max(0,Math.round((r.top+border-c.top)*sy)),w:Math.max(2,Math.round((r.width-border*2)*sx)),h:Math.max(2,Math.round((r.height-border*2)*sy))};}
- private drawScene(context:CanvasRenderingContext2D){const f=this.frame();context.drawImage(this.canvas,f.x,f.y,f.w,f.h,0,0,context.canvas.width,context.canvas.height);}
+ private drawScene(context:CanvasRenderingContext2D,f=this.frame()){context.drawImage(this.canvas,f.x,f.y,f.w,f.h,0,0,context.canvas.width,context.canvas.height);}
  setZoom(value:number){this.zoom=boundedZoom(value);this.zoomInput.value=String(this.zoom);this.zoomReadout.textContent=this.zoom.toFixed(2)+'×';}
  private cancelShutter(){if(this.shutterAt)this.status.textContent='Photo timer cancelled';this.shutterAt=0;}
  setActive(value:boolean){this.cancelShutter();this.active=value&&this.available;document.body.classList.toggle('royale-camera-mode',this.active);this.syncFinder();this.shutterHeld=false;this.pendingPhoto=false;if(!this.active)this.stop();this.toggle.textContent=this.active?'Put camera away · P':'Take photos · P';this.toggle.setAttribute('aria-pressed',String(this.active));this.panel.hidden=!this.active;this.changed();this.canvas.focus();}
@@ -59,9 +77,26 @@ export class CameraCapture {
  shutter(){if(!this.active||this.pendingPhoto||this.shutterAt)return;if(this.delay){this.shutterAt=performance.now()+this.delay;this.status.textContent='Photo in '+this.delay/1000+'s';}else{this.pendingPhoto=true;this.status.textContent='Taking photo…';}}
  /** Called immediately after the WebGL render, before the drawing buffer is cleared. */
  afterRender(now:number){
+  if(this.disposed)return;
   if(this.shutterAt){if(now>=this.shutterAt){this.shutterAt=0;this.pendingPhoto=true;}else this.status.textContent='Photo in '+Math.ceil((this.shutterAt-now)/1000)+'s';}
   if(this.finder){this.layoutFinder(now);const f=this.frame();this.lcdInfo.textContent=(this.recorder?.state==='recording'?'● REC '+Math.floor((now-this.started)/1000)+'s':'LIVE')+' · '+this.zoom+'× · '+f.w+' × '+f.h;this.canvas.dataset.viewfinder='lcd';}else delete this.canvas.dataset.viewfinder;
-  if(this.pendingPhoto){this.pendingPhoto=false;const photo=document.createElement('canvas'),f=this.frame();photo.width=f.w;photo.height=f.h;this.drawScene(photo.getContext('2d')!);photo.toBlob(blob=>{if(blob)this.finish(blob,'jpg');else this.status.textContent='Photo failed. Please try again.';photo.width=photo.height=0;},'image/jpeg',.92);}
+  if(this.pendingPhoto){
+   this.pendingPhoto=false;const photo=document.createElement('canvas'),f=this.frame();photo.width=f.w;photo.height=f.h;
+   try{
+    const context=photo.getContext('2d');if(!context)throw new Error('Photo canvas unavailable');
+    this.drawScene(context,f);
+    const frame:PhotoCaptureFrame=Object.freeze({x:f.x,y:f.y,width:f.w,height:f.h,canvasWidth:this.canvas.width,canvasHeight:this.canvas.height,capturedAt:now});
+    const completions:((blob:Blob)=>void)[]=[];
+    for(const prepare of this.photoObservers){try{completions.push(prepare(frame));}catch{/* A scoring failure must not prevent saving the photo. */}}
+    photo.toBlob(blob=>{
+     try{
+      if(this.disposed)return;
+      if(blob&&blob.size){this.finish(blob,'jpg');for(const complete of completions){try{complete(blob);}catch{/* Keep the capture available if an observer fails. */}}}
+      else this.status.textContent='Photo failed. Please try again.';
+     }finally{photo.width=photo.height=0;}
+    },'image/jpeg',.92);
+   }catch{photo.width=photo.height=0;this.status.textContent='Photo failed. Please try again.';}
+  }
   if(this.pendingRecord&&this.recorder){this.pendingRecord=false;this.drawScene(this.context!);this.recordPoster=this.recordingCanvas!.toDataURL('image/jpeg',.7);this.recorder.start(1000);this.started=now;this.timer=window.setTimeout(()=>this.stop(),60000);}
   if(this.recorder?.state==='recording'&&now-this.drawn>=1000/24){this.drawn=now;this.drawScene(this.context!);this.status.textContent='● Recording '+Math.floor((now-this.started)/1000)+' / 60s · game sound';if(now-this.started>=60000)this.stop();}
  }
@@ -86,5 +121,5 @@ export class CameraCapture {
  private async shareFile(){if(!this.file)return;if(!navigator.canShare?.({files:[this.file]})){this.status.textContent='Tap Save, then upload the file in your social app.';return;}try{await navigator.share({title:'Belle Isle Explorer',files:[this.file]});this.status.textContent='Shared.';}catch(error){if((error as Error).name!=='AbortError')this.status.textContent='Share unavailable. Tap Save to keep your capture.';}}
  private showReview(){if(!this.file)return;const item=document.createElement(this.file.type.startsWith('video/')?'video':'img');item.src=this.url;if(item instanceof HTMLVideoElement){item.controls=true;item.playsInline=true;item.poster=this.poster;}else item.alt='Your in-game photo';this.media.replaceChildren(item);this.preview.showModal();}
  get reviewing(){return this.preview.open;}
- dispose(){this.stop();if(this.recorder)this.recorder.onstop=null;this.cleanRecording();if(this.url)URL.revokeObjectURL(this.url);document.body.classList.remove('royale-camera-mode','royale-viewfinder');this.cancelShutter();this.grid.remove();this.lcd.remove();this.root.remove();this.preview.remove();}
+ dispose(){this.disposed=true;this.photoObservers.clear();this.stop();if(this.recorder)this.recorder.onstop=null;this.cleanRecording();if(this.url)URL.revokeObjectURL(this.url);document.body.classList.remove('royale-camera-mode','royale-viewfinder');this.cancelShutter();this.grid.remove();this.lcd.remove();this.root.remove();this.preview.remove();}
 }
