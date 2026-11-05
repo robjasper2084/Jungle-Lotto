@@ -60,6 +60,7 @@ body.island-trial.on-hoverbike.touch-controls .hover-steer{position:relative;z-i
 body.island-trial.on-hoverbike.touch-controls .hover-steer button{min-width:44px;min-height:44px;width:48px;height:48px;font-size:22px;padding:5px}
 #welcome .cinema-actions .trial-welcome{min-width:0;padding:10px 0;background:none;color:#d6d6c1;font-weight:400;font-size:12px;border:0;margin:0}
 #trial-board :focus-visible,#trial-results :focus-visible,#trial-hud :focus-visible{outline:3px solid var(--trial-gold);outline-offset:3px}
+@media(max-width:600px),(max-height:520px){body.island-trial .hover-lighting{display:none}}
 @media(max-width:600px){
   #trial-board,#trial-results{padding:22px 18px;max-height:91dvh}
   .trial-course-grid{grid-template-columns:1fr}.trial-course-content{padding:18px}.trial-course-map{aspect-ratio:8/2.7}.trial-course-controls{min-height:0}

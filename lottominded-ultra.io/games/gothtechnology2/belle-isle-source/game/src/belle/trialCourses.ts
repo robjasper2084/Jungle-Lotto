@@ -29,7 +29,8 @@ function wheelCup(map:ParkMap,terrain:ParkTerrain):TrialCourse{
   const meters=(i+1)*routeLength/16;
   return{...along(path,meters),heading:direction(meters),radius:Math.min(3,(road.width-2)/2),halfHeight:1.5};
  });
- return{id:'onewheel-island-cup-v1',vehicle:'onewheel',name:'One-Wheel Island Cup',description:'One short lap of Fountain Drive. Stay on the road and pass all 16 checkpoints in order.',distance:routeLength,start:{...path[0],heading:direction(0)},gates,path,color:'#ffcb6f',maxSpeed:24};
+ // Center the first checkpoint in the starting view before the rider follows the bend.
+ return{id:'onewheel-island-cup-v1',vehicle:'onewheel',name:'One-Wheel Island Cup',description:'One short lap of Fountain Drive. Stay on the road and pass all 16 checkpoints in order.',distance:routeLength,start:{...path[0],heading:heading(path[0],gates[0])},gates,path,color:'#ffcb6f',maxSpeed:24};
 }
 
 function bridgeSkyline(map:ParkMap):TrialCourse{
