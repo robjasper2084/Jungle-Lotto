@@ -122,14 +122,22 @@ async function runCase(configuration) {
         await expect(page.locator('#startup-motion')).toHaveAttribute('aria-pressed', 'true');
         await expect(page.locator('#motion')).toBeChecked();
       }
-      // The automatic budget does not adapt during startup/menus or >250 ms
-      // software frames. Pause the flyover through its UI, start the default
-      // landed bike, and use Settings rather than modifying renderer state.
+      // Select the wheel through the real picker so the hover model and its
+      // extra scene lights are not mounted before the graphics controls work.
+      // Close the preview promptly; starting disposes its separate renderer.
       if (await page.locator('#startup-motion').getAttribute('aria-pressed') !== 'true') await tap(page.locator('#startup-motion'));
+      log(`${configuration.name}: choose One wheel through the startup picker`);
+      await tap(page.locator('.cinema-ride-picker > summary'));
+      await tap(page.locator('.ride-options label').filter({hasText: 'One wheel'}));
+      await expect(page.locator('input[name="startup-vehicle"][value="onewheel"]')).toBeChecked();
+      await expect(page.locator('#welcome')).toHaveAttribute('data-vehicle', 'onewheel');
+      await tap(page.getByRole('button', {name: 'Use this ride', exact: true}));
+      await expect(page.locator('.cinema-ride-picker')).not.toHaveAttribute('open');
       await tap(page.locator('#start'));
       await expect(page.locator('body')).not.toHaveClass(/at-start/, {timeout: 90_000});
-      await expect(page.locator('body')).toHaveClass(/on-hoverbike/, {timeout: 60_000});
-      await expect(page.locator('#hover-mode')).toHaveText('LANDED');
+      await expect(page.locator('body')).not.toHaveClass(/on-hoverbike/);
+      await expect(page.locator('.ride-preview-canvas')).toHaveCount(0);
+      log(`${configuration.name}: wheel started; select Smooth / 30 FPS through Settings`);
       await tap(page.locator('#tools-toggle'));
       await tap(page.locator('#settings-open'));
       await expect(page.locator('#settings')).toBeVisible();
@@ -138,14 +146,13 @@ async function runCase(configuration) {
       await expect(page.locator('#quality')).toHaveValue('smooth');
       await expect(page.locator('#fps')).toHaveValue('30');
       await tap(page.locator('[data-close="settings"]'));
-      // Dismount via the real control. Avoid opening the ride picker, which
-      // starts a second WebGL renderer merely to choose the initial vehicle.
-      await tap(page.locator('#hover-hud [data-hover="exit"]'));
-      await expect(page.locator('body')).not.toHaveClass(/on-hoverbike/);
+      // Preserve the existing on-foot Dispatch handoff/key-precedence scenario.
+      await tap(page.locator('#mount'));
+      await expect(page.locator('#ride-mode')).toHaveText('ON FOOT', {timeout: 30_000});
       await expect(page.locator('#hover-enter')).toHaveText('Ride hoverbike · B');
       await page.setViewportSize(configuration.viewport);
       await page.waitForFunction(({width, height}) => innerWidth === width && innerHeight === height && document.querySelector('#game')?.width === width && document.querySelector('#game')?.height === height, configuration.viewport);
-      entry.metrics.graphics = {quality: await page.locator('#quality').inputValue(), fps: await page.locator('#fps').inputValue(), initialRide: 'default hoverbike; dismounted through UI', flyoverPausedThroughUi: true};
+      entry.metrics.graphics = {quality: await page.locator('#quality').inputValue(), fps: await page.locator('#fps').inputValue(), initialRide: 'One wheel selected through startup picker; dismounted through UI', flyoverPausedThroughUi: true};
       entry.metrics.webgl = await page.locator('#game').evaluate(canvas => {
         const gl = canvas.getContext('webgl2');
         if (!gl || gl.isContextLost()) throw new Error('A live WebGL2 renderer is required after graphics setup.');
@@ -215,6 +222,43 @@ async function runCase(configuration) {
       entry.metrics.retryFeedback = await page.locator('#activity-hud > p').first().textContent();
       await screenshot('photo-retry-feedback');
       await tap(page.locator('#camera-capture > button'));
+
+      if (configuration.mobile) {
+        // Keep the genuine mobile action-layering regression mandatory, after
+        // the activity evidence is saved. The bike's first visible lights can
+        // require additional shader work on the software renderer.
+        log(`${configuration.name}: activity captures saved; begin real hover touch regression`);
+        await tap(page.locator('#activity-hud').getByRole('button', {name: 'Journal · J', exact: true}));
+        await tap(page.getByRole('button', {name: 'End activity', exact: true}));
+        await tap(page.locator('#activity-board').getByRole('button', {name: 'Back to island', exact: true}));
+        await expect(page.locator('#activity-hud')).not.toBeVisible();
+        await expect(page.locator('body')).toHaveClass(/touch-controls/);
+        await tap(page.locator('#tools-toggle'));
+        const mountedAt = Date.now();
+        entry.metrics.hoverTouch = {status: 'mounting', input: 'real touchscreen taps', allowanceSeconds: 90};
+        log(`${configuration.name}: mount hoverbike through Menu; allow up to 90s for first mount`);
+        await bounded((async () => {
+          await page.locator('#hover-enter').tap({timeout: 90_000});
+          await expect(page.locator('body')).toHaveClass(/on-hoverbike/, {timeout: 90_000});
+          await expect(page.locator('#hover-hud')).toBeVisible({timeout: 90_000});
+          await expect(page.locator('#hover-mode')).toHaveText('LANDED', {timeout: 90_000});
+        })(), 90_000, `${configuration.name}: first hover mount`);
+        entry.metrics.hoverTouch.mountMilliseconds = Date.now() - mountedAt;
+        entry.metrics.hoverTouch.status = 'dismounting';
+        const dismountedAt = Date.now();
+        log(`${configuration.name}: hover mounted in ${entry.metrics.hoverTouch.mountMilliseconds}ms; tap Get off with up to 90s for shader warmup`);
+        await bounded((async () => {
+          await page.locator('#hover-hud [data-hover="exit"]').tap({timeout: 90_000});
+          await expect(page.locator('body')).not.toHaveClass(/on-hoverbike/, {timeout: 90_000});
+          await expect(page.locator('#hover-hud')).not.toBeVisible({timeout: 90_000});
+          await expect(page.locator('#hover-enter')).toBeEnabled({timeout: 90_000});
+          await expect(page.locator('#hover-enter')).toHaveText('Ride hoverbike · B', {timeout: 90_000});
+          await expect(page.locator('#ride-mode')).toHaveText('ON FOOT', {timeout: 90_000});
+        })(), 90_000, `${configuration.name}: hover Get off touch regression`);
+        entry.metrics.hoverTouch.dismountMilliseconds = Date.now() - dismountedAt;
+        entry.metrics.hoverTouch.status = 'passed';
+        log(`${configuration.name}: real Get off tap passed in ${entry.metrics.hoverTouch.dismountMilliseconds}ms; on-foot state restored`);
+      }
 
       // One bounded, genuine desktop capture attempt using the existing guide.
       // Failure to qualify is reported honestly and does not fake completion coverage.
