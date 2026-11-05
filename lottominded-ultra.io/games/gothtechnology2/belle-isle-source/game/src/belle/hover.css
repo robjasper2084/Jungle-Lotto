@@ -3,7 +3,8 @@
 .hover-title{display:flex;flex-direction:column;gap:1px}.hover-title span{font-size:9px;letter-spacing:.25em;color:#e49b8e}.hover-title strong{font-size:19px;letter-spacing:.17em}
 .hover-instruments{display:flex;align-items:center;gap:24px;margin:9px 0}.hover-instruments>div{display:flex;align-items:baseline;gap:8px}.hover-instruments b{font-size:40px;line-height:1;font-variant-numeric:tabular-nums}.hover-instruments span{font-size:9px;letter-spacing:.1em}.hover-instruments output{font-size:10px;letter-spacing:.15em;border-left:2px solid #e67d69;padding-left:12px}
 #hover-notice{font-size:12px;margin:8px 0;min-height:18px;color:#f2d7ba}
-.hover-actions{position:absolute;right:0;bottom:32px;display:flex;gap:6px;pointer-events:auto}.hover-actions button{background:#171d21eb;border-color:#f3ddbe55;padding:8px 12px;font-size:12px}.hover-actions button:first-child{background:#892f36;border-color:#f7b6a3}.hover-actions button[aria-pressed=true]{border-color:#a1e9e2}
+/* Keep action buttons above the floating movement zone, including wrapped mobile rows. */
+.hover-actions{position:absolute;right:0;bottom:32px;display:flex;gap:6px;pointer-events:auto}.hover-actions button{position:relative;z-index:1;background:#171d21eb;border-color:#f3ddbe55;padding:8px 12px;font-size:12px}.hover-actions button:first-child{background:#892f36;border-color:#f7b6a3}.hover-actions button[aria-pressed=true]{border-color:#a1e9e2}
 .hover-help{font-size:10px;letter-spacing:.025em;margin:5px 0 0;color:#d7d9cf}
 body.on-hoverbike #ridehud,body.on-hoverbike #touch-zone{display:none!important}
 .hover-touch{position:absolute;left:0;right:0;bottom:155px;display:flex;justify-content:space-between;align-items:end;pointer-events:none}

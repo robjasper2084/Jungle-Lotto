@@ -12,7 +12,7 @@ const output = resolve(process.env.BELLE_ACTIVITY_BROWSER_OUTPUT || resolve(game
 await mkdir(output, {recursive: true});
 const lines = [];
 const log = message => { const line = `${new Date().toISOString()} ${message}`; lines.push(line); console.log(line); };
-const report = {startedAt: new Date().toISOString(), passed: false, manualScreenshotReviewRequired: true, scope: 'Real WebGL rendering and activity UI smoke; no full delivery run, physical-device or performance certification.', cases: []};
+const report = {startedAt: new Date().toISOString(), passed: false, manualScreenshotReviewRequired: true, scope: 'Real WebGL rendering and activity UI smoke; no full delivery run, physical-device or performance certification.', browserIsolation: 'Fresh Chromium process per case', screenshotBackend: 'Playwright legacy screenshot; visible page, existing compositor surface', cases: []};
 const mime = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp','.svg':'image/svg+xml','.glb':'model/gltf-binary','.mp3':'audio/mpeg','.wav':'audio/wav'};
 const server = createServer(async (request, response) => {
   try {
@@ -28,34 +28,38 @@ const server = createServer(async (request, response) => {
   } catch { response.writeHead(404).end('Not found'); }
 });
 
-let browser;
+async function bounded(operation, milliseconds, label) {
+  let timer;
+  try {
+    return await Promise.race([operation, new Promise((_, reject) => { timer = setTimeout(() => reject(new Error(`${label} exceeded ${milliseconds / 1000} seconds`)), milliseconds); })]);
+  } finally { clearTimeout(timer); }
+}
+
+let chromium;
 let expect;
 let origin;
 async function runCase(configuration) {
   const setupViewport = {width: 390, height: 844};
   const entry = {name: configuration.name, viewport: configuration.viewport, setupViewport, reducedMotion: configuration.reducedMotion, passed: false, errors: [], console: [], failedRequests: [], screenshots: [], metrics: {}, photoCompletion: {status: 'not exercised'}};
   report.cases.push(entry);
-  // Bootstrap at the already verified small viewport, then use the game's real
-  // graphics controls before resizing. The final CSS viewport is never reduced.
-  const context = await browser.newContext({viewport: setupViewport, deviceScaleFactor: 1, reducedMotion: configuration.reducedMotion, isMobile: !!configuration.mobile, hasTouch: !!configuration.mobile});
-  const page = await context.newPage();
-  page.setDefaultTimeout(25_000);
-  page.on('pageerror', error => entry.errors.push(error.message));
-  page.on('console', message => {
-    entry.console.push({type: message.type(), text: message.text()});
-    if (message.type() === 'error') entry.errors.push(`console: ${message.text()}`);
-  });
-  page.on('response', response => { if (response.status() >= 400) entry.errors.push(`HTTP ${response.status()} ${response.url()}`); });
-  page.on('requestfailed', request => {
-    const message = `${request.failure()?.errorText} ${request.url()}`;
-    entry.failedRequests.push(message);
-    if (!message.startsWith('net::ERR_ABORTED')) entry.errors.push(message);
-  });
+  let browser;
+  let page;
+  let screenshotFailed = false;
+  let caseTimedOut = false;
   const tap = locator => configuration.mobile ? locator.tap() : locator.click();
   const screenshot = async name => {
     const filename = `${configuration.name}-${name}.png`;
     log(`${configuration.name}: capture ${name} at ${page.viewportSize().width}×${page.viewportSize().height}`);
-    await page.screenshot({path: resolve(output, filename), timeout: 20_000});
+    try {
+      // A compositor stall can also stall Playwright's screenshot cleanup. The
+      // outer deadline lets this case close its own browser instead of queuing
+      // more captures on the same GPU process.
+      await bounded(page.screenshot({path: resolve(output, filename), timeout: 20_000}), 25_000, `${configuration.name}: screenshot ${name}`);
+    } catch (error) {
+      screenshotFailed = true;
+      entry.screenshotFailure = error.message;
+      throw error;
+    }
     entry.screenshots.push(filename);
     log(`${configuration.name}: captured ${name}`);
   };
@@ -77,6 +81,26 @@ async function runCase(configuration) {
   };
   let deadline;
   try {
+    // Each case owns a fresh GPU process as well as fresh storage. A timed-out
+    // software render in one case must not starve the following cases.
+    log(`${configuration.name}: launch fresh Chromium process`);
+    browser = await chromium.launch({headless: true, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader']});
+    // Bootstrap at the already verified small viewport, then use the game's real
+    // graphics controls before resizing. The final CSS viewport is never reduced.
+    const context = await browser.newContext({viewport: setupViewport, deviceScaleFactor: 1, reducedMotion: configuration.reducedMotion, isMobile: !!configuration.mobile, hasTouch: !!configuration.mobile});
+    page = await context.newPage();
+    page.setDefaultTimeout(25_000);
+    page.on('pageerror', error => entry.errors.push(error.message));
+    page.on('console', message => {
+      entry.console.push({type: message.type(), text: message.text()});
+      if (message.type() === 'error') entry.errors.push(`console: ${message.text()}`);
+    });
+    page.on('response', response => { if (response.status() >= 400) entry.errors.push(`HTTP ${response.status()} ${response.url()}`); });
+    page.on('requestfailed', request => {
+      const message = `${request.failure()?.errorText} ${request.url()}`;
+      entry.failedRequests.push(message);
+      if (!message.startsWith('net::ERR_ABORTED')) entry.errors.push(message);
+    });
     await Promise.race([(async () => {
       log(`${configuration.name}: load built game`);
       await page.goto(origin + '/', {waitUntil: 'domcontentloaded', timeout: 30_000});
@@ -225,29 +249,48 @@ async function runCase(configuration) {
       assert.deepEqual(entry.errors, [], 'Browser errors or missing runtime assets fail the smoke');
       entry.passed = true;
       log(`${configuration.name}: mandatory visual smoke passed; qualifying photo ${entry.photoCompletion.status}`);
-    })(), new Promise((_, reject) => { deadline = setTimeout(() => reject(new Error('Visual context exceeded the six-minute bound')), 360_000); })]);
+    })(), new Promise((_, reject) => { deadline = setTimeout(() => { caseTimedOut = true; reject(new Error('Visual context exceeded the six-minute bound')); }, 360_000); })]);
   } catch (error) {
     entry.failure = error.stack || String(error);
     log(`${configuration.name}: FAIL ${error.message}`);
-    try { await screenshot('failure'); } catch (captureError) { entry.screenshotFailure = captureError.message; }
+    if (page && !screenshotFailed && !caseTimedOut) {
+      try { await screenshot('failure'); } catch {}
+    }
   } finally {
     clearTimeout(deadline);
-    try { entry.lastUrl = page.url(); await writeFile(resolve(output, `${configuration.name}-dom.html`), await page.content()); } catch {}
-    await context.close();
+    if (page) {
+      entry.lastUrl = page.url();
+      if (!screenshotFailed && !caseTimedOut) {
+        try { await writeFile(resolve(output, `${configuration.name}-dom.html`), await bounded(page.content(), 5_000, `${configuration.name}: DOM diagnostic`)); }
+        catch (error) { entry.domCaptureFailure = error.message; }
+      } else entry.domCaptureSkipped = 'Close the stalled browser without queuing another renderer request.';
+    }
+    let cleanupFailure;
+    if (browser) {
+      try { await bounded(browser.close(), 15_000, `${configuration.name}: browser close`); }
+      catch (error) { cleanupFailure = error; entry.cleanupFailure = error.message; entry.passed = false; }
+    }
     await writeFile(resolve(output, `${configuration.name}-result.json`), JSON.stringify(entry, null, 2));
+    // Do not launch another GPU process if the preceding process could not close.
+    if (cleanupFailure) throw cleanupFailure;
   }
 }
 
 try {
   await stat(resolve(root, 'index.html'));
+  // Playwright 1.61.1 exposes this compatibility switch in chromiumSwitches.ts.
+  // It captures genuine visible-page pixels without requesting a new compositor
+  // surface for every screenshot. Set it before loading Playwright's defaults.
+  // https://github.com/microsoft/playwright/blob/v1.61.1/packages/playwright-core/src/server/chromium/chromiumSwitches.ts
+  process.env.PLAYWRIGHT_LEGACY_SCREENSHOT = '1';
   const require = createRequire(resolve(game, '../../package.json'));
   const playwright = require('@playwright/test');
+  chromium = playwright.chromium;
   expect = playwright.expect;
+  report.playwrightVersion = require('@playwright/test/package.json').version;
   await new Promise((done, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', done); });
   origin = `http://127.0.0.1:${server.address().port}`;
   report.origin = origin;
-  // Software WebGL is the ordinary graphics backend on the GitHub-hosted runner.
-  browser = await playwright.chromium.launch({headless: true, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader']});
   for (const configuration of [
     {name: 'desktop', viewport: {width: 1440, height: 960}, reducedMotion: 'no-preference'},
     {name: 'mobile', viewport: {width: 390, height: 844}, reducedMotion: 'no-preference', mobile: true},
@@ -260,7 +303,6 @@ try {
   log(`FAIL ${error.message}`);
   process.exitCode = 1;
 } finally {
-  if (browser) await browser.close();
   if (server.listening) { server.closeAllConnections(); await new Promise(done => server.close(done)); }
   report.finishedAt = new Date().toISOString();
   await writeFile(resolve(output, 'result.json'), JSON.stringify(report, null, 2));
