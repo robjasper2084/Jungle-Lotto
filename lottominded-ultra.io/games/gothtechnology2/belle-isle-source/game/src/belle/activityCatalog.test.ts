@@ -1,8 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync, existsSync} from 'node:fs';
-import {execFileSync} from 'node:child_process';
-import {fileURLToPath} from 'node:url';
+import {readFileSync} from 'node:fs';
 import * as T from 'three';
 import {ParkTerrain, inside, segment} from './terrain.ts';
 import type {ParkMap} from './terrain.ts';
@@ -13,12 +11,8 @@ import {
 } from './activityCatalog.ts';
 import {createDispatchContracts} from './dispatchRules.ts';
 
-// Use the actual shipped map, including in a sparse source checkout. git show is
-// read-only and only needed when public assets have not yet been materialized.
-const mapUrl = new URL('../../public/belle/map.json', import.meta.url);
-const data = JSON.parse(existsSync(mapUrl) ? readFileSync(mapUrl, 'utf8') : execFileSync('git', [
-  'show', 'origin/main:lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/map.json',
-], {cwd: fileURLToPath(new URL('../../', import.meta.url)), encoding: 'utf8', maxBuffer: 32 * 1024 * 1024})) as ParkMap;
+// The test runner uses the game directory for both source and bundled tests.
+const data = JSON.parse(readFileSync('public/belle/map.json', 'utf8')) as ParkMap;
 const terrain = new ParkTerrain(data);
 
 test('actual-map dispatch anchors stay on clear island paths at real terrain height', () => {

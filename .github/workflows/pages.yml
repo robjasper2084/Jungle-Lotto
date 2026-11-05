@@ -71,6 +71,18 @@ jobs:
       - name: Install browser for storefront regressions
         working-directory: lottominded-ultra.io/games/gothtechnology2
         run: npx playwright install --with-deps chromium
+      - name: Verify Belle Isle activity visuals in the real game
+        timeout-minutes: 20
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: node belle-isle-source/game/scripts/activity-browser-smoke.mjs
+      - name: Upload Belle Isle visual review screenshots and diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-isle-activity-visual
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/activity-browser
+          if-no-files-found: warn
+          retention-days: 14
       - name: Verify game portal, artwork and video controls
         working-directory: lottominded-ultra.io/games/gothtechnology2
         run: npm run test:store:browser -- --project=desktop --grep "game portal|homepage category tile|homepage signal row|collection signal columns|commercial|Lookbook films preview|inline film native controls|reduced motion and save-data|header music control|hero background|fragrance stays|fragrance concept stories|charm and knife preview|Original Artwork"

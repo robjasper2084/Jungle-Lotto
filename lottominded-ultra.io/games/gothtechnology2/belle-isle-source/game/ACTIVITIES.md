@@ -61,6 +61,8 @@ Validation on 2026-11-05: TypeScript check passed, all **266 tests** passed, and
 
 Final integration review corrected the shared **B** listener so a delivery handoff cannot also mount the hoverbike. An isolated event regression and 46 relevant tests passed after that change. The frame clock also resets on visibility changes so returning from a suspended background tab does not charge the hidden interval to a delivery.
 
-The connected browser could not reach the local preview and local browser execution was unavailable in this workspace. Desktop/mobile visual playtesting, reduced-motion behavior in a real browser, and measured delivery target tuning remain release checks; no full 3D playtest or frame-rate claim is made.
+The workspace's managed preview opens, but its browser cannot create a WebGL context. The Pages workflow therefore runs `scripts/activity-browser-smoke.mjs` against the newly built game on its existing browser runner. It requires a real WebGL scene and captures desktop, mobile, and reduced-motion journals, activity HUDs, camera mode, and actual capture feedback. The `belle-isle-activity-visual` artifact contains screenshots and JSON results for review before publication. An ordinary fountain photograph is recorded as completed only if it genuinely qualifies. This smoke does not certify full delivery playthroughs, physical-device performance, or measured delivery target tuning.
+
+The map catalog test reads the checked-out `public/belle/map.json` directly, so clean CI checkouts do not require an `origin/main` Git reference.
 
 The repository's Pages workflow rebuilds `game/dist` and overlays it into the published Belle Isle route. Source changes are sufficient; do not hand-edit the archived hashed bundles. Work stays on `upgrade-redesign`. Root `AGENTS.md` requires explicit approval before production publication.
