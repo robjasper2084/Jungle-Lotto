@@ -1,7 +1,7 @@
 /** Solo trial rules. Positions are metres and all clock values are seconds. */
 export type TrialVehicle = 'hoverbike' | 'onewheel';
 export type TrialPoint = {x: number; y: number; z: number};
-export type TrialPose = TrialPoint & {heading: number; vehicle: TrialVehicle; onFoot: boolean};
+export type TrialPose = TrialPoint & {heading: number; vehicle: TrialVehicle; onFoot: boolean; pitch?: number; roll?: number};
 export type TrialGate = TrialPoint & {heading: number; radius: number; halfHeight: number};
 export type TrialCourse = {
   id: string;
@@ -9,6 +9,10 @@ export type TrialCourse = {
   name: string;
   description: string;
   distance: number;
+  /** Featured whole-island circuits are separate from the original practice sprints. */
+  category?: 'island' | 'practice';
+  /** Authored guide pace, never a player record or claimed leaderboard time. */
+  targetSeconds?: number;
   start: TrialPoint & {heading: number};
   gates: TrialGate[];
   path: TrialPoint[];

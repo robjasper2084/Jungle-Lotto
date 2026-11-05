@@ -26,8 +26,8 @@ const countdownChecks = ['initialCountdownHold', 'restartedCountdownHold'];
 const report = {startedAt: new Date().toISOString(), head: process.env.GITHUB_SHA || null, passed: false,
   functionalPassed: false, verificationComplete: false, status: 'running', coverageGaps: [],
   selectedCase: selectedCase ?? null, selectedCases: selected.map(item => item.name), limits,
-  scope: 'Actual built-game controls, countdown input, restart, off-course guidance, audio opt-in and rendered scenes. Phone countdown buffering uses keyboard activation of real buttons with trusted joystick touch; other phone navigation uses touch. CSS fixtures are separate synthetic layout checks.',
-  limitations: 'No human full-lap, physical-device performance or acoustic listening certification. First Sky gate audio is covered by source tests, not this bounded render smoke.',
+  scope: 'Actual built-game controls, countdown input, restart, off-course guidance, reactive rider poses, audio opt-in and rendered scenes. Phone countdown buffering uses keyboard activation of real buttons with trusted joystick touch. Rider capture uses real forward/turn/ascend touch holds with native Enter on Pause; its screenshot is an explicitly paused native-input pose. Other phone navigation uses touch. CSS fixtures are separate synthetic layout checks.',
+  limitations: 'No human full-lap, physical-device performance or acoustic listening certification. First Sky gate audio and completed recorded-ghost replay are covered by source tests, not this bounded render smoke. Pace-guide observations report the actual mesh-visibility snapshot, not camera-frustum or pixel visibility; near/far fade or CI scheduling may prevent observation.',
   manualScreenshotReviewRequired: true, cases: []};
 const mime = {'.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml',
@@ -65,6 +65,64 @@ async function runCase(configuration) {
   const templates = {};
   const tap = locator => configuration.mobile ? locator.tap() : locator.click();
   const readTrial = () => page.evaluate(() => window.__polishTrialSnapshot());
+  const readRider = () => page.evaluate(() => window.__polishRiderSnapshot());
+  const validateRider = (state, label, mode) => {
+    assert.ok(state && !state.hidden, label + ': mounted rider HUD is visible');
+    assert.equal(state.visibility, 'visible', label + ': actual page remains visible');
+    assert.deepEqual(state.openDialogs, [], label + ': no dialog obscures the rider');
+    assert.equal(state.rig, 'anchored', label + ': all four shipped-skin contacts are calibrated');
+    if (mode) assert.equal(state.mode, mode, label + ': requested motion preference is applied');
+    for (const key of ['lean', 'pitch', 'compression', 'handError', 'footError']) assert.ok(Number.isFinite(state[key]), label + ': finite ' + key);
+    assert.ok(Math.abs(state.lean) <= .241 && Math.abs(state.pitch) <= .201 && state.compression >= 0 && state.compression <= .086, label + ': bounded torso reactions');
+    assert.ok(state.handError >= 0 && state.handError <= .02 && state.footError >= 0 && state.footError <= .02, label + ': palm/sole contacts stay within two centimetres');
+    assert.equal(state.ghostError, null, label + ': ghost view has a valid serialized snapshot');
+    assert.ok(Array.isArray(state.ghosts), label + ': ghost view snapshot is an array');
+    for (const ghost of state.ghosts) {
+      assert.ok(['pace', 'recorded'].includes(ghost.kind), label + ': named ghost kind');
+      for (const key of ['x', 'y', 'z', 'heading', 'pitch', 'roll', 'time', 'opacity']) assert.ok(Number.isFinite(ghost[key]), label + ': finite ghost ' + key);
+      assert.ok(ghost.opacity > 0 && ghost.opacity <= 1, label + ': only actually visible ghost meshes are reported');
+    }
+    return state;
+  };
+  const armRiderTrace = label => page.evaluate(label => {
+    window.__polishRiderObserver?.disconnect();
+    const hover = document.querySelector('#hover-hud'), trial = document.querySelector('#trial-hud');
+    if (!hover || !trial) throw new Error('Rider and trial HUDs are required for read-only pose observation');
+    const trace = {label, samples: [], omitted: 0, maximumSamples: 2000};
+    const record = () => {
+      const sample = window.__polishRiderSnapshot();
+      if (trace.samples.length < trace.maximumSamples) trace.samples.push(sample); else trace.omitted++;
+    };
+    const observer = new MutationObserver(record);
+    observer.observe(hover, {attributes: true, attributeFilter: ['hidden', 'data-rider-rig', 'data-rider-motion', 'data-rider-lean', 'data-rider-pitch', 'data-rider-compression', 'data-rider-hand-error', 'data-rider-foot-error']});
+    observer.observe(trial, {attributes: true, attributeFilter: ['hidden', 'data-status', 'data-paused', 'data-ghost-state']});
+    window.__polishRiderTrace = trace; window.__polishRiderObserver = observer; record();
+    return trace.samples[0];
+  }, label);
+  const takeRiderTrace = () => page.evaluate(() => {
+    window.__polishRiderObserver?.disconnect();
+    const trace = window.__polishRiderTrace;
+    if (!trace) throw new Error('No rider trace is armed');
+    return {...trace, final: window.__polishRiderSnapshot()};
+  });
+  const summarizeRider = async (trace, baseline, held, label, controls) => {
+    const events = await page.evaluate(start => window.__polishInput.slice(start), held.traceStart);
+    const delivered = controls.map(control => events.find(event => event.trusted && event.status === 'running' && event.paused === 'false' &&
+      event.course === baseline.course && event.hudHidden === false && event.visibility === 'visible' && event.openDialogs?.length === 0 &&
+      (configuration.mobile ? event.type === 'pointerdown' && (event.control === control || event.button?.hold === control) : event.type === 'keydown' && event.code === control)));
+    assert.ok(delivered.every(Boolean), label + ': each requested control received trusted running-state input');
+    const startedAt = Math.max(...delivered.map(event => event.at));
+    const samples = [...trace.samples, trace.final].filter(sample => sample && sample.at >= startedAt && sample.status === 'running' && sample.paused === 'false' && sample.course === baseline.course && !sample.hidden);
+    assert.ok(samples.length > 0, label + ': applied pose samples follow the native controls');
+    for (const sample of samples) validateRider(sample, label, 'reactive');
+    const axes = {};
+    for (const key of ['lean', 'pitch', 'compression']) {
+      const peak = samples.reduce((a, b) => Math.abs(a[key] - baseline[key]) >= Math.abs(b[key] - baseline[key]) ? a : b);
+      axes[key] = {maximumChange: Math.abs(peak[key] - baseline[key]), peak};
+    }
+    return {input: held.description, nativeControls: delivered, baseline, axes, trace, inputEvents: events,
+      contacts: {maximumHandError: Math.max(...samples.map(sample => sample.handError)), maximumFootError: Math.max(...samples.map(sample => sample.footError)), toleranceMetres: .02}};
+  };
   const capture = async name => {
     const file = configuration.name + '-' + name + '.png', began = Date.now();
     const timing = {startedAt: new Date(began).toISOString(), viewport: page.viewportSize(), scope: fixtureRecord ? 'isolated CSS fixture' : 'real game', status: 'capturing'};
@@ -253,6 +311,7 @@ async function runCase(configuration) {
   };
   const begin = async (id, vehicle, input) => {
     await tap(page.locator('#trial-tab-' + vehicle));
+    if (!await page.locator('[data-course="' + id + '"]').isVisible()) await tap(page.locator('#trial-practice > summary'));
     const trigger = await buttonTrigger('[data-course="' + id + '"]', {keyboard: configuration.mobile && !!input});
     const observed = await duringCountdown(trigger, 'Course start ' + id, input);
     assert.equal(observed.state.course, id, 'Requested course is ready');
@@ -276,7 +335,7 @@ async function runCase(configuration) {
       assert.ok(geometry.receives, 'Cached fixed-stick input point is covered by ' + geometry.covering);
       point = geometry.point;
     }
-    const input = {description: configuration.mobile ? 'Trusted fixed joystick ' + direction + ' touchStart' : 'Trusted held ' + key.toUpperCase(),
+    const input = {description: configuration.mobile ? 'Trusted fixed joystick ' + direction + ' touchStart' : 'Trusted held ' + key.toUpperCase(), point,
       expectedCode: configuration.mobile ? undefined : direction === 'right' ? 'KeyD' : 'KeyW', expectedTarget: configuration.mobile ? selector.slice(1) : undefined,
       async press() { activeHolds.add(input); if (configuration.mobile) await touch.send('Input.dispatchTouchEvent', {type: 'touchStart', touchPoints: [{...point, id: 1}]}); else await page.keyboard.down(key); },
       async release() { if (!activeHolds.has(input)) return; if (configuration.mobile) await touch.send('Input.dispatchTouchEvent', {type: 'touchEnd', touchPoints: []}); else await page.keyboard.up(key); activeHolds.delete(input); }};
@@ -284,6 +343,23 @@ async function runCase(configuration) {
   };
   const startHeld = async (vehicle, direction = 'forward') => {
     const input = await prepareHeld(vehicle, direction), traceStart = await page.evaluate(() => window.__polishInput.length);
+    await input.press(); return {...input, traceStart};
+  };
+  const startRiderControls = async () => {
+    const forward = await prepareHeld('hoverbike'), turn = await target('#hover-hud [data-hold="ArrowRight"]'), ascend = await target('#hover-hud [data-hold="KeyE"]');
+    const input = {description: configuration.mobile ? 'Trusted simultaneous forward joystick, turn-right and ascend touch holds; native Enter on Pause freezes the capture' : 'Trusted held W, ArrowRight and E; native Pause click freezes the capture',
+      async press() {
+        activeHolds.add(input);
+        if (configuration.mobile) await touch.send('Input.dispatchTouchEvent', {type: 'touchStart', touchPoints: [{...forward.point, id: 1}, {...turn, id: 3}, {...ascend, id: 4}]});
+        else await Promise.all([page.keyboard.down('w'), page.keyboard.down('ArrowRight'), page.keyboard.down('e')]);
+      },
+      async release() {
+        if (!activeHolds.has(input)) return;
+        if (configuration.mobile) await touch.send('Input.dispatchTouchEvent', {type: 'touchEnd', touchPoints: []});
+        else await Promise.all([page.keyboard.up('w'), page.keyboard.up('ArrowRight'), page.keyboard.up('e')]);
+        activeHolds.delete(input);
+      }};
+    const traceStart = await page.evaluate(() => window.__polishInput.length);
     await input.press(); return {...input, traceStart};
   };
   const bufferedGo = async (held, label) => {
@@ -346,13 +422,25 @@ async function runCase(configuration) {
           focused: document.activeElement?.id || document.activeElement?.tagName, visibility: document.visibilityState,
           openDialogs: [...document.querySelectorAll('dialog[open]')].map(dialog => dialog.id)};
       };
+      window.__polishRiderSnapshot = () => {
+        const hover = document.querySelector('#hover-hud'), trial = document.querySelector('#trial-hud');
+        if (!hover || !trial) return null;
+        const number = key => hover.dataset[key] === undefined || hover.dataset[key] === '' ? null : Number(hover.dataset[key]);
+        let ghosts = null, ghostError = null;
+        try { ghosts = JSON.parse(trial.dataset.ghostState ?? 'null'); } catch (error) { ghostError = String(error); }
+        return {at: performance.now(), hidden: hover.hidden, rig: hover.dataset.riderRig, mode: hover.dataset.riderMotion,
+          lean: number('riderLean'), pitch: number('riderPitch'), compression: number('riderCompression'), handError: number('riderHandError'), footError: number('riderFootError'),
+          course: trial.dataset.course, status: trial.dataset.status, paused: trial.dataset.paused, elapsed: Number(trial.dataset.elapsed),
+          visibility: document.visibilityState, openDialogs: [...document.querySelectorAll('dialog[open]')].map(dialog => dialog.id), systemReduced: matchMedia('(prefers-reduced-motion: reduce)').matches, gameReduced: document.querySelector('#motion')?.checked,
+          ghosts, ghostError, ghostTracks: Number(trial.dataset.ghostTracks), ghostVisible: Number(trial.dataset.ghostVisible), recordedGhost: trial.dataset.recordedGhost};
+      };
       for (const type of ['keydown', 'keyup', 'pointerdown', 'pointermove', 'pointerup', 'pointercancel', 'lostpointercapture', 'blur', 'focus', 'visibilitychange', 'close']) window.addEventListener(type, event => {
         const hud = document.querySelector('#trial-hud');
         if (!hud) return;
         const button = event.target?.closest?.('button');
         window.__polishInput.push({...window.__polishTrialSnapshot(), type, trusted: event.isTrusted, code: event.code, repeat: event.repeat === true,
           target: event.target?.id || event.target?.nodeName, pointerType: event.pointerType, control: event.target?.closest?.('#touch-zone, #hover-move-zone')?.id,
-          button: button ? {id: button.id, text: button.textContent?.trim().slice(0, 100), course: button.dataset.course} : undefined,
+          button: button ? {id: button.id, text: button.textContent?.trim().slice(0, 100), course: button.dataset.course, hold: button.dataset.hold} : undefined,
           relatedTarget: event.relatedTarget?.id || event.relatedTarget?.nodeName, x: event.clientX, y: event.clientY});
       }, {capture: true, passive: true});
     });
@@ -464,9 +552,13 @@ async function runCase(configuration) {
       }
 
       log(configuration.name + ': real Sunset Halo strafe until off-course cue');
-      await openBoard(); await begin('sky-sunset-v1', 'hoverbike');
+      await openBoard(); await armRiderTrace('Existing Sky strafe and early pace-guide observations'); await begin('sky-sunset-v1', 'hoverbike');
       await expect(page.locator('#trial-hud')).toHaveAttribute('data-status', 'running');
       await expect(page.locator('#hover-flight-mode')).toHaveValue('drone');
+      await expect(page.locator('#hover-hud')).toHaveAttribute('data-rider-rig', 'anchored');
+      await expect(page.locator('#hover-hud')).toHaveAttribute('data-rider-motion', 'reactive');
+      const riderBaseline = validateRider(await readRider(), 'Sky start', 'reactive');
+      entry.metrics.riderMotion = {scope: 'Read-only applied-pose HUD observations from actual native input. Source tests independently verify shipped skin/IK geometry.', strafe: null, preferences: {}};
       held = await startHeld('hoverbike', 'right');
       try {
         const began = Date.now();
@@ -475,16 +567,36 @@ async function runCase(configuration) {
           return state.offCourse;
         }, {timeout: limits.offCourseMilliseconds, intervals: [500, 1000, 1500]}).toBe('true');
         entry.metrics.offCourse = {milliseconds: Date.now() - began, input: configuration.mobile ? 'Trusted rightward joystick hold' : 'Held D', state: await readTrial()};
+        const riderTrace = await takeRiderTrace();
+        entry.metrics.riderMotion.strafe = await summarizeRider(riderTrace, riderBaseline, held, 'Native Sky strafe', [configuration.mobile ? 'hover-move-zone' : 'KeyD']);
+        assert.ok(entry.metrics.riderMotion.strafe.axes.lean.maximumChange >= .02, 'Native strafe produced a measured torso reaction during the hold');
+        const firstRunning = riderTrace.samples.find(sample => sample?.course === 'sky-sunset-v1' && sample.status === 'running' && !sample.hidden);
+        const visiblePace = riderTrace.samples.find(sample => sample?.course === 'sky-sunset-v1' && sample.status === 'running' && sample.ghosts?.some(ghost => ghost.kind === 'pace'));
+        entry.metrics.ghosts = {scope: 'Actual visible ghost-view snapshots read from HUD data; no state or replay is seeded.',
+          firstAfterGo: firstRunning ?? riderBaseline, firstVisiblePace: visiblePace ?? null,
+          paceObservation: visiblePace ? 'Observed the pace-guide mesh reported as visible by the actual game view; screen placement requires image review' : 'No visible pace-guide mesh observed in this window; near/far fade and CI scheduling remain possible',
+          recordedGhostReplay: 'Not exercised: no native full-course finish is performed'};
       } finally { await held.release(); }
       await resize(configuration.viewport);
       await expect(page.locator('#trial-hud .trial-direction')).toContainText('Off course');
       const animated = await cueStyle(); assert.ok(animated.every(item => item.animation !== 'none'), 'Default off-course cue pulses');
       await page.emulateMedia({reducedMotion: 'reduce'});
+      await expect(page.locator('#hover-hud')).toHaveAttribute('data-rider-motion', 'reduced');
+      const riderSystemReduced = validateRider(await readRider(), 'OS reduced rider motion', 'reduced');
+      assert.equal(riderSystemReduced.systemReduced, true); assert.equal(riderSystemReduced.gameReduced, false);
+      assert.ok(['lean', 'pitch', 'compression'].every(key => Math.abs(riderSystemReduced[key]) <= .0001), 'OS reduced motion removes secondary rider reactions');
+      entry.metrics.riderMotion.preferences.system = riderSystemReduced;
       const systemReduced = await cueStyle(); assert.ok(systemReduced.every(item => item.animation === 'none'), 'OS reduced motion keeps a static cue');
       await expect(page.locator('#trial-hud .trial-direction')).toContainText('Off course');
       await page.emulateMedia({reducedMotion: 'no-preference'});
+      await expect(page.locator('#hover-hud')).toHaveAttribute('data-rider-motion', 'reactive');
       await openMenu(); await tap(page.locator('#settings-open')); await page.locator('#motion').check(); await tap(page.locator('[data-close="settings"]'));
       await expect(page.locator('#trial-hud')).toHaveAttribute('data-reduced-motion', 'true');
+      await expect(page.locator('#hover-hud')).toHaveAttribute('data-rider-motion', 'reduced');
+      const riderGameReduced = validateRider(await readRider(), 'In-game reduced rider motion', 'reduced');
+      assert.equal(riderGameReduced.systemReduced, false); assert.equal(riderGameReduced.gameReduced, true);
+      assert.ok(['lean', 'pitch', 'compression'].every(key => Math.abs(riderGameReduced[key]) <= .0001), 'In-game reduced motion removes secondary rider reactions');
+      entry.metrics.riderMotion.preferences.game = riderGameReduced;
       const gameReduced = await cueStyle(); assert.ok(gameReduced.every(item => item.animation === 'none'), 'In-game reduced motion keeps a static cue');
       entry.metrics.cueMotion = {animated, systemReduced, gameReduced};
       await bounds('#trial-hud', 'skyHud'); await bounds('#trial-hud .trial-time', 'skyTimer', undefined, true);
@@ -510,7 +622,38 @@ async function runCase(configuration) {
       await duringCountdown(await buttonTrigger('#trial-restart'), 'Off-course restart');
       await expect(page.locator('#trial-hud')).toHaveAttribute('data-off-course', 'false');
       await expect(page.locator('#trial-hud')).toHaveAttribute('data-status', 'running');
-      await expect(page.locator('#hover-speed')).toHaveText('0'); await leave();
+      await expect(page.locator('#hover-speed')).toHaveText('0');
+      log(configuration.name + ': capture an actual reactive rider pose with native controls and Pause');
+      await openMenu(); await tap(page.locator('#settings-open')); await page.locator('#motion').uncheck(); await tap(page.locator('[data-close="settings"]'));
+      await expect(page.locator('#hover-hud')).toHaveAttribute('data-rider-motion', 'reactive'); await resize(configuration.physicsViewport);
+      const captureBaseline = validateRider(await armRiderTrace('Native forward/turn/ascend, then native Pause'), 'Rider capture baseline', 'reactive');
+      held = await startRiderControls();
+      try {
+        await expect.poll(async () => {
+          const state = validateRider(await readRider(), 'Native rider response', 'reactive');
+          assert.equal(state.status, 'running'); assert.equal(state.paused, 'false');
+          return Math.abs(state.lean - captureBaseline.lean);
+        }, {timeout: limits.actionMilliseconds, intervals: [250, 500, 1000]}).toBeGreaterThanOrEqual(.045);
+        if (configuration.mobile) { await page.locator('#pause').focus(); await page.keyboard.press('Enter'); }
+        else await tap(page.locator('#pause'));
+        await expect(page.locator('#trial-hud')).toHaveAttribute('data-paused', 'true');
+        await held.release();
+        const nativeTrace = await takeRiderTrace();
+        const captureProof = await summarizeRider(nativeTrace, captureBaseline, held, 'Native rider capture', configuration.mobile ? ['hover-move-zone', 'ArrowRight', 'KeyE'] : ['KeyW', 'ArrowRight', 'KeyE']);
+        assert.ok(captureProof.axes.lean.maximumChange >= .045, 'Native turning produced the rider pose used for capture');
+        await resize(configuration.viewport);
+        const frozen = validateRider(await readRider(), 'Paused native-input pose', 'reactive');
+        assert.equal(frozen.paused, 'true'); assert.ok(Math.abs(frozen.lean - captureBaseline.lean) >= .04, 'A visible torso reaction actually remains frozen');
+        const captureName = 'sky-rider-response-paused';
+        entry.metrics.riderMotion.capture = {...captureProof, scope: 'Actual paused native-input pose, not a live-motion or full-lap recording', frozen, captureName,
+          phoneInput: configuration.mobile ? 'Real simultaneous touch driving; native Enter activates the actual Pause button' : null};
+        await capture(captureName);
+        const after = validateRider(await readRider(), 'After paused rider capture', 'reactive');
+        assert.equal(after.paused, 'true'); assert.equal(after.elapsed, frozen.elapsed, 'Native Pause keeps the race clock fixed during capture');
+        for (const key of ['lean', 'pitch', 'compression']) assert.equal(after[key], frozen[key], 'Native Pause preserves captured rider ' + key);
+        entry.metrics.riderMotion.capture.after = after;
+      } finally { await held.release(); }
+      await tap(page.locator('#pause')); await expect(page.locator('#trial-hud')).toHaveAttribute('data-paused', 'false'); await leave();
       entry.metrics.finalWebgl = await webgl();
       assert.deepEqual(entry.errors, [], 'Runtime errors/context loss/missing assets fail real gameplay');
       entry.realGameCompletedAt = new Date().toISOString();
@@ -590,6 +733,10 @@ async function runCase(configuration) {
   } finally {
     clearTimeout(deadline);
     if (countdownWaiter) { countdownWaiter.cancelled = true; countdownWaiter = undefined; }
+    if (page && !timedOut) {
+      try { await bounded(page.evaluate(() => window.__polishRiderObserver?.disconnect()), 5_000, 'Rider observer cleanup'); }
+      catch (error) { entry.riderObserverCleanupFailure = error.message; cleanupFailed = true; }
+    }
     for (const trigger of [...activeTriggers]) {
       try { await bounded(trigger.release(), 5_000, 'Final native trigger release'); }
       catch (error) { (entry.triggerReleaseFailures ??= []).push(error.message); cleanupFailed = true; }

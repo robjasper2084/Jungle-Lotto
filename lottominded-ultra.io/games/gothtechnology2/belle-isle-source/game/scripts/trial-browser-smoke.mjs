@@ -202,6 +202,28 @@ async function runCase(configuration) {
     await expect(page.locator('#trial-board')).toBeVisible();
     await layout('#trial-board');
   };
+  const inspectCatalog = async vehicle => {
+    const cards = page.locator('#trial-course-list .trial-course');
+    await expect(cards).toHaveCount(vehicle === 'hoverbike' ? 4 : 3);
+    const featured = page.locator('#trial-course-list > .trial-course[data-category="island"]');
+    await expect(featured).toHaveCount(2);
+    const routes = await featured.evaluateAll(elements => elements.map(element => ({
+      id: element.querySelector('button[data-course]').dataset.course,
+      name: element.querySelector('h3').textContent,
+      metrics: element.querySelector('.trial-course-meta').textContent,
+      guide: element.querySelector('.trial-course-pace')?.textContent
+    })));
+    assert.equal(new Set(routes.map(route => route.id)).size, 2, 'Two independent full-island course identities');
+    for (const route of routes) {
+      assert.match(route.metrics, /FULL ISLAND · ONE LAP/);
+      assert.ok(Number(route.metrics.match(/([\d.]+) km/)?.[1]) >= 8, `${route.name} is a substantial full-island circuit`);
+      assert.match(route.guide, /Pace guide/);
+    }
+    (entry.metrics.courseCatalog ??= {})[vehicle] = routes;
+    await expect(page.locator('#trial-practice')).not.toHaveAttribute('open');
+    await expect(page.locator('#trial-practice > summary')).toContainText('Practice sprints');
+    return routes[0].id;
+  };
   const startCourse = async (id, vehicle) => {
     log(`${configuration.name}: start ${id} through its course button`);
     await tap(page.locator(`#trial-board button[data-course="${id}"]`));
@@ -213,6 +235,9 @@ async function runCase(configuration) {
     assert.equal(await elapsed(), 0);
     await expect(hud()).toHaveAttribute('data-status', 'running');
     await expect(page.locator('body')).toHaveClass(/island-trial/);
+    await expect(hud()).toHaveAttribute('data-ghosts', 'on');
+    await expect(hud()).toHaveAttribute('data-ghost-tracks', '1');
+    await expect(hud()).toHaveAttribute('data-recorded-ghost', 'none');
   };
   const restart = async keyboard => {
     log(`${configuration.name}: restart using ${keyboard ? 'R' : 'the visible button'}`);
@@ -231,9 +256,11 @@ async function runCase(configuration) {
     } else { await tap(page.locator('#pause')); await expect(page.locator('#pause')).toHaveText('Resume'); }
     await expect(hud()).toHaveAttribute('data-paused', 'true');
     const before = await elapsed();
+    const ghostsBefore = await hud().getAttribute('data-ghost-state');
     // This intentional observation interval proves the active clock is frozen.
     await delay(850);
     assert.equal(await elapsed(), before, `${menu ? 'menu' : 'pause'} must freeze trial time`);
+    assert.equal(await hud().getAttribute('data-ghost-state'), ghostsBefore, 'Visible ghost transforms freeze on the race clock');
     entry.metrics[menu ? 'menuPauseSeconds' : 'pauseSeconds'] = before;
     if (menu) {
       if (configuration.mobile) await tap(page.locator('[data-close="ride-menu"]'));
@@ -302,10 +329,16 @@ async function runCase(configuration) {
       entry.metrics.graphics = {quality: await page.locator('#quality').inputValue(), fps: await page.locator('#fps').inputValue(), initialRide: 'One wheel selected through startup picker'};
 
       await openBoard();
-      await expect(page.locator('#trial-course-list .trial-course')).toHaveCount(2);
-      await expect(page.locator('#trial-course-list .trial-course-record strong')).toHaveText(['Set the first time', 'Set the first time']);
+      await inspectCatalog('hoverbike');
+      await expect(page.locator('#trial-course-list .trial-course-record strong')).toHaveText(Array(4).fill('Set the first time'));
+      await expect(page.locator('#trial-ghost-toggle')).toHaveAttribute('aria-pressed', 'true');
+      await tap(page.locator('#trial-ghost-toggle'));
+      await expect(page.locator('#trial-ghost-toggle')).toHaveAttribute('aria-pressed', 'false');
+      assert.equal(await page.evaluate(() => localStorage.getItem('belle-isle-ghost-visibility-v1')), 'off');
+      await tap(page.locator('#trial-ghost-toggle'));
+      await expect(page.locator('#trial-ghost-toggle')).toHaveAttribute('aria-pressed', 'true');
+      await screenshot('sky-course-board');
       if (!configuration.mobile) {
-        await screenshot('sky-course-board');
         await page.locator('#trial-tab-hoverbike').focus();
         await page.keyboard.press('ArrowRight');
         await expect(page.locator('#trial-tab-onewheel')).toBeFocused();
@@ -314,8 +347,8 @@ async function runCase(configuration) {
         assert.equal(focus.animation, 'none'); assert.equal(focus.transition, '0s');
       } else await tap(page.locator('#trial-tab-onewheel'));
       await expect(page.locator('#trial-tab-onewheel')).toHaveAttribute('aria-selected', 'true');
-      await expect(page.locator('#trial-course-list .trial-course')).toHaveCount(1);
-      await startCourse('onewheel-island-cup-v1', 'onewheel');
+      const wheelCourse = await inspectCatalog('onewheel');
+      await startCourse(wheelCourse, 'onewheel');
       await expect(page.locator('body')).not.toHaveClass(/on-hoverbike/);
       await expect(page.locator('#mount')).toBeDisabled();
       const observeWheel = async () => { await expect.poll(() => speed('#speed')).toBeGreaterThan(0); entry.metrics.wheelMovingKmh = await speed('#speed'); };
@@ -334,8 +367,9 @@ async function runCase(configuration) {
 
       await openBoard();
       await tap(page.locator('#trial-tab-hoverbike'));
-      await expect(page.locator('#trial-course-list .trial-course')).toHaveCount(2);
-      await startCourse('sky-bridge-v1', 'hoverbike');
+      const skyCourse = await inspectCatalog('hoverbike');
+      await expect(page.locator('#trial-ghost-toggle')).toHaveAttribute('aria-pressed', 'true');
+      await startCourse(skyCourse, 'hoverbike');
       await expect(page.locator('body')).toHaveClass(/on-hoverbike/);
       await expect(page.locator('#hover-flight-mode')).toHaveValue('drone');
       await expect(page.locator('#hover-flight-mode')).toBeDisabled();
@@ -405,9 +439,12 @@ async function runCase(configuration) {
       await leave();
       await expect(page.locator('#hover-flight-mode')).toBeEnabled();
       await openBoard();
-      await expect(page.locator('#trial-course-list .trial-course-record strong')).toHaveText(['Set the first time', 'Set the first time']);
+      await expect(page.locator('#trial-course-list .trial-course-record strong')).toHaveText(Array(4).fill('Set the first time'));
+      await tap(page.locator('#trial-practice > summary'));
+      await expect(page.locator('#trial-board button[data-course="sky-bridge-v1"]')).toBeVisible();
+      await expect(page.locator('#trial-board button[data-course="sky-sunset-v1"]')).toBeVisible();
       await tap(page.locator('#trial-tab-onewheel'));
-      await expect(page.locator('#trial-course-list .trial-course-record strong')).toHaveText(['Set the first time']);
+      await expect(page.locator('#trial-course-list .trial-course-record strong')).toHaveText(Array(3).fill('Set the first time'));
       await tap(page.locator('#trial-board').getByRole('button', {name: 'Back to island', exact: true}));
       await webgl('finalWebgl');
       assert.deepEqual(entry.errors, [], 'Browser errors, lost WebGL contexts or missing runtime assets fail this smoke');
@@ -432,6 +469,8 @@ async function runCase(configuration) {
       try { await bounded(browser.close(), browserCloseMilliseconds, `${configuration.name}: browser close`); }
       catch (error) { cleanupFailure = error; entry.cleanupFailure = error.message; entry.passed = false; }
     }
+    // A timed-out body may finish while cleanup is awaited. Failures stay final.
+    entry.passed = entry.passed && !entry.failure && !caseTimedOut && !cleanupFailure;
     await writeFile(resolve(output, `${configuration.name}-result.json`), JSON.stringify(entry, null, 2));
     if (cleanupFailure) throw cleanupFailure;
   }
@@ -450,7 +489,7 @@ try {
   await new Promise((done, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', done); });
   origin = `http://127.0.0.1:${server.address().port}`; report.origin = origin;
   for (const configuration of selectedConfigurations) await runCase(configuration);
-  report.passed = report.cases.length === selectedConfigurations.length && report.cases.every(entry => entry.passed);
+  report.passed = report.cases.length === selectedConfigurations.length && report.cases.every(entry => entry.passed && !entry.failure && !entry.cleanupFailure);
   if (!report.passed) process.exitCode = 1;
 } catch (error) {
   report.failure = error.stack || String(error); log(`FAIL ${error.message}`); process.exitCode = 1;
