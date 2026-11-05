@@ -281,6 +281,7 @@ async function runCase(configuration) {
       mode: element.querySelector('#hover-mode')?.textContent,
       heldKeys: [...element.querySelectorAll('[data-held="true"]')].map(button => button.dataset.hold).filter(Boolean),
       frameDiagnostic: document.querySelector('#profile')?.textContent,
+      renderDiagnostics: {...document.querySelector('#profile')?.dataset},
     };
   });
   const observeFlight = async (name, predicate, {timeout = flightResponseMilliseconds, heldKey} = {}) => {
@@ -570,6 +571,37 @@ async function runCase(configuration) {
       await tap(page.locator('#trial-tab-onewheel'));
       await expect(page.locator('#trial-course-list .trial-course-record strong')).toHaveText(Array(3).fill('Set the first time'));
       await tap(page.locator('#trial-board').getByRole('button', {name: 'Back to island', exact: true}));
+      // Exercise the actual Automatic UI and observe its read-only feedback.
+      // This is software-rendered behavior evidence, not a device FPS benchmark.
+      await tap(page.locator('#tools-toggle'));
+      await tap(page.locator('#settings-open'));
+      await page.locator('#quality').selectOption('automatic');
+      await tap(page.locator('[data-close="settings"]'));
+      await page.locator('#game').focus();
+      await expect(page.locator('#profile')).toHaveAttribute('data-quality', 'automatic');
+      const automatic = {samples: [], actualPerformanceCertified: false};
+      entry.metrics.automaticGraphics = automatic;
+      const automaticBegan = Date.now();
+      while (Date.now() - automaticBegan < 60_000) {
+        const sample = await page.locator('#profile').evaluate(element => ({...element.dataset}));
+        if (automatic.samples.at(-1)?.activeFrames !== sample.activeFrames) automatic.samples.push(sample);
+        if (Number(sample.adaptiveScale) <= .75) {
+          assert.equal(sample.effectiveQuality, 'smooth', 'Automatic low resolution also applies the lighter world effects');
+          automatic.observedFallback = true;
+          break;
+        }
+        if (automatic.samples.length >= 12) break;
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+      assert(automatic.samples.length > 0, 'Automatic graphics feedback remains readable');
+      automatic.note = automatic.observedFallback ? 'Automatic selected lighter world effects under observed CI frame pressure.' : 'No low-budget transition observed within this bounded sample; deterministic pressure tests cover fallback.';
+      await tap(page.locator('#tools-toggle'));
+      await tap(page.locator('#settings-open'));
+      await page.locator('#quality').selectOption('smooth');
+      await tap(page.locator('[data-close="settings"]'));
+      await expect(page.locator('#profile')).toHaveAttribute('data-effective-quality', 'smooth');
+      entry.metrics.savedGraphics = await page.evaluate(() => JSON.parse(localStorage.getItem('belle-graphics-v1')));
+      assert.deepEqual(entry.metrics.savedGraphics, {quality: 'smooth', cap: 30});
       await webgl('finalWebgl');
       assert.deepEqual(entry.errors, [], 'Browser errors, lost WebGL contexts or missing runtime assets fail this smoke');
       entry.passed = true;

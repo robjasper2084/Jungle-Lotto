@@ -9,14 +9,14 @@ import './hover.css';
 import {HoverLighting,LED_COLORS} from './hoverLighting.ts';
 import {HoverRiderRig} from './hoverRiderMotion.ts';
 type Pose={x:number;y:number;z:number;headingY:number};
-type Hooks={pose:()=>Pose;blocked:()=>boolean;entered:()=>void;exited:(p:{x:number;y:number;z:number;heading:number})=>void;touch:()=>boolean;obstacle?:FlightObstacle;vehicleLocked?:()=>boolean;restartTrial?:()=>void};
+type Hooks={pose:()=>Pose;blocked:()=>boolean;entered:()=>void;exited:(p:{x:number;y:number;z:number;heading:number})=>void;touch:()=>boolean;obstacle?:FlightObstacle;vehicleLocked?:()=>boolean;restartTrial?:()=>void;prepareScene?:(model:T.Object3D,signal?:AbortSignal)=>Promise<void>};
 const keyCodes=['KeyW','KeyS','KeyA','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyE','KeyQ','Space','ShiftLeft','ShiftRight','KeyG','KeyF','KeyL','KeyH','KeyK','KeyR'];
 export class HoverRide {
  readonly sim:HoverController;
  riding=false;
  private model:T.Group|undefined;private cockpit?:CockpitLcd;
  private loading:Promise<void>|undefined;
- private mountGeneration=0;private savedFlightMode:FlightMode|undefined;
+ private mountGeneration=0;private mountAbort:AbortController|undefined;private savedFlightMode:FlightMode|undefined;
  private pressed=new Set<string>();
  private stick={x:0,y:0,id:-1,cx:0,cy:0};private flightSelect!:HTMLSelectElement;
  private rider:HoverRiderRig|undefined;
@@ -124,19 +124,19 @@ export class HoverRide {
   const near=choices.find(p=>this.terrain.land(p.x,p.z)&&!this.terrain.obstructed(p.x,p.z,2));
   return near||this.terrain.map.spawn;
  }
- async prepare(scene:T.Scene){await this.load(scene);}
+ async prepare(scene:T.Scene,forRide=false,signal?:AbortSignal){await this.load(scene);if(signal?.aborted)throw new DOMException('Ride preparation cancelled','AbortError');if(forRide&&this.model)await this.hooks.prepareScene?.(this.model,signal);}
  async mount(scene:T.Scene){
   if(this.hooks.blocked()||this.hooks.vehicleLocked?.()||this.enterButton.disabled)return;
-  const generation=++this.mountGeneration;
+  const generation=++this.mountGeneration;this.mountAbort?.abort();const preparation=this.mountAbort=new AbortController();
   void this.sound.unlock();this.enterButton.disabled=true;this.enterButton.textContent='Preparing hoverbike…';
   try{
-   await this.load(scene);
+   await this.prepare(scene,true,preparation.signal);
    if(generation!==this.mountGeneration||this.hooks.blocked()||this.hooks.vehicleLocked?.())return;
    const p=this.spawnNear(this.hooks.pose());this.sim.reset(p.x,p.z,p.heading);this.resetRider();
    this.riding=true;this.model!.visible=true;this.hero&&(this.hero.visible=true);
    document.body.classList.add('on-hoverbike');this.hud.hidden=false;this.hooks.entered();
    this.say('Press G to take off. E / Q changes height.');this.refresh();
-  }catch(e){console.error('Hoverbike load failed',e);this.enterButton.textContent='Retry hoverbike';}
+  }catch(e){if(!preparation.signal.aborted){console.error('Hoverbike load failed',e);this.enterButton.textContent='Retry hoverbike';}}
   finally{this.enterButton.disabled=!!this.hooks.vehicleLocked?.();if(this.model)this.enterButton.textContent=this.riding?'Get off hoverbike · B':'Ride hoverbike · B';}
  }
  /** prepare() loads assets first; this synchronous placement cannot outlive a cancelled start. */
@@ -177,7 +177,7 @@ export class HoverRide {
   if(!point){this.say('Land on clear ground before getting off. Press G to land.');return;}
   this.leaveForTravel();this.hooks.exited(point);
  }
- leaveForTravel(){++this.mountGeneration;this.endTrial();this.clear();this.riding=false;this.sim.land();this.hud.hidden=true;this.model&&(this.model.visible=false);document.body.classList.remove('on-hoverbike');this.enterButton.textContent='Ride hoverbike · B';}
+ leaveForTravel(){++this.mountGeneration;this.mountAbort?.abort();this.mountAbort=undefined;this.endTrial();this.clear();this.riding=false;this.sim.land();this.hud.hidden=true;this.model&&(this.model.visible=false);document.body.classList.remove('on-hoverbike');this.enterButton.textContent='Ride hoverbike · B';}
  private say(message:string){this.notice.textContent=message;this.messageUntil=performance.now()+4500;}
  private refresh(){
   const p=this.sim.pose;
