@@ -1,0 +1,57 @@
+name: Belle Isle time-trial review
+
+on:
+  pull_request:
+    paths:
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/**'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/tools/**'
+      - '.github/workflows/belle-trials.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: belle-trials-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  trial-visual:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            lottominded-ultra.io/games/gothtechnology2/package-lock.json
+            lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/package-lock.json
+      - name: Build Belle Isle time trials
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm ci
+          npm run build
+      - name: Install the existing browser test runtime
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Verify course, restart and flight controls in the real game
+        timeout-minutes: 60
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        env:
+          BELLE_TRIAL_BROWSER_HEADED: '1'
+          DEBUG: 'pw:browser'
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node belle-isle-source/game/scripts/trial-browser-smoke.mjs
+      - name: Upload time-trial visual review and diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-isle-trial-visual
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/trial-browser
+          if-no-files-found: warn
+          retention-days: 14
