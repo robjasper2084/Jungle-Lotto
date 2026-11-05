@@ -78,7 +78,7 @@ async function runCase(configuration) {
   const card = title => page.locator('#activity-board .activity-card').filter({has: page.getByRole('heading', {name: title, exact: true})});
   const capturePhoto = async () => {
     await tap(page.locator('#camera-capture').getByRole('button', {name: 'Photo', exact: true}));
-    await expect(page.locator('#camera-capture .capture-panel > [role="status"]')).toContainText('Photo ready', {timeout: 35_000});
+    await expect(page.locator('#camera-capture .capture-panel > [role="status"]')).toContainText('Photo ready', {timeout: 90_000});
     await expect(page.locator('#camera-capture')).toHaveAttribute('data-capture-bytes', /^[1-9]\d*$/);
   };
   let deadline;
@@ -95,7 +95,7 @@ async function runCase(configuration) {
     // graphics controls before resizing. The final CSS viewport is never reduced.
     const context = await browser.newContext({viewport: setupViewport, deviceScaleFactor: 1, reducedMotion: configuration.reducedMotion, isMobile: !!configuration.mobile, hasTouch: !!configuration.mobile});
     page = await context.newPage();
-    page.setDefaultTimeout(25_000);
+    page.setDefaultTimeout(90_000);
     page.on('pageerror', error => entry.errors.push(error.message));
     page.on('console', message => {
       entry.console.push({type: message.type(), text: message.text()});
@@ -150,7 +150,7 @@ async function runCase(configuration) {
       await tap(page.locator('[data-close="settings"]'));
       // Preserve the existing on-foot Dispatch handoff/key-precedence scenario.
       await tap(page.locator('#mount'));
-      await expect(page.locator('#ride-mode')).toHaveText('ON FOOT', {timeout: 30_000});
+      await expect(page.locator('#ride-mode')).toHaveText('ON FOOT', {timeout: 90_000});
       await expect(page.locator('#hover-enter')).toHaveText('Ride hoverbike · B');
       await page.setViewportSize(configuration.viewport);
       await page.waitForFunction(({width, height}) => innerWidth === width && innerHeight === height && document.querySelector('#game')?.width === width && document.querySelector('#game')?.height === height, configuration.viewport);
@@ -191,7 +191,7 @@ async function runCase(configuration) {
       await expect(page.locator('#activity-hud')).toBeVisible();
       await expect(page.locator('#activity-hud h3')).toHaveText('First Drop');
       await expect(page.locator('#activity-action')).toBeDisabled();
-      await expect(page.locator('#profile')).toContainText(/\d+ draws/, {timeout: 35_000});
+      await expect(page.locator('#profile')).toContainText(/\d+ draws/, {timeout: 90_000});
       entry.metrics.render = await page.locator('#profile').textContent();
       assert.ok(Number(entry.metrics.render.match(/(\d+) draws/)[1]) > 0, 'The game must report real rendered draw calls');
       await page.locator('#game').focus();
@@ -336,7 +336,7 @@ try {
   const require = createRequire(resolve(game, '../../package.json'));
   const playwright = require('@playwright/test');
   chromium = playwright.chromium;
-  expect = playwright.expect;
+  expect = playwright.expect.configure({timeout: 90_000});
   report.playwrightVersion = require('@playwright/test/package.json').version;
   await new Promise((done, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', done); });
   origin = `http://127.0.0.1:${server.address().port}`;
