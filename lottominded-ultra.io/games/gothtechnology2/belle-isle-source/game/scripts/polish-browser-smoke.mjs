@@ -55,15 +55,12 @@ async function runCase(configuration) {
   const entry = {name: configuration.name, passed: false, viewport: configuration.viewport, physicsViewport: configuration.physicsViewport,
     errors: [], console: [], failedRequests: [], screenshots: [], metrics: {}, cssFixtures: {scope: 'Synthetic insets/long timer text in an isolated document using the shipped CSS. No game state is seeded.', probes: []}};
   report.cases.push(entry);
-  let browser, page, touch, deadline, timedOut = false, captureFailed = false, fixtureRecord;
+  let browser, page, touch, deadline, timedOut = false, captureFailed = false, fixtureRecord, countdownWaiter;
+  let countdownSequence = 0;
+  const activeHolds = new Set();
   const templates = {};
   const tap = locator => configuration.mobile ? locator.tap() : locator.click();
-  const readTrial = () => page.locator('#trial-hud').evaluate(element => ({
-    at: performance.now(), status: element.dataset.status, elapsed: Number(element.dataset.elapsed), next: Number(element.dataset.next),
-    paused: element.dataset.paused, offCourse: element.dataset.offCourse, reducedMotion: element.dataset.reducedMotion,
-    time: element.querySelector('.trial-time')?.textContent,
-    speed: Number.parseFloat(document.querySelector(element.dataset.vehicle === 'hoverbike' ? '#hover-speed' : '#speed')?.textContent || '0'),
-  }));
+  const readTrial = () => page.evaluate(() => window.__polishTrialSnapshot());
   const capture = async name => {
     const file = configuration.name + '-' + name + '.png', began = Date.now();
     const timing = {startedAt: new Date(began).toISOString(), viewport: page.viewportSize(), scope: fixtureRecord ? 'isolated CSS fixture' : 'real game', status: 'capturing'};
@@ -131,59 +128,125 @@ async function runCase(configuration) {
   };
   const openMenu = async () => { await tap(page.locator('#tools-toggle')); await expect(page.locator('#ride-menu')).toBeVisible(); };
   const openBoard = async () => { await openMenu(); await tap(page.locator('#trials-open')); await expect(page.locator('#trial-board')).toBeVisible(); };
-  const countdown = async label => {
-    await expect(page.locator('#trial-hud')).toHaveAttribute('data-status', 'countdown');
-    const state = await readTrial();
+  const assertCountdown = (state, label) => {
+    assert.equal(state.status, 'countdown', label + ': preparation has ended');
     assert.equal(state.elapsed, 0, label + ': elapsed resets'); assert.equal(state.next, 0, label + ': gate resets');
     assert.equal(state.offCourse, 'false', label + ': off-course resets'); assert.equal(state.time, '0:00.00');
     assert.equal(state.speed, 0, label + ': no countdown movement');
-    await expect(page.locator('#game')).toBeFocused();
-    return state;
+    assert.equal(state.focused, 'game', label + ': canvas receives fresh input');
   };
-  const begin = async (id, vehicle) => {
+  const duringCountdown = async (trigger, label, input) => {
+    assert.equal(countdownWaiter, undefined, 'Only one countdown notification may be armed');
+    let resolveReady, rejectReady;
+    const ready = new Promise((resolve, reject) => { resolveReady = resolve; rejectReady = reject; });
+    const record = {label, input: input?.description ?? 'Observe only', armedAt: new Date().toISOString()};
+    (entry.metrics.countdownTransitions ??= []).push(record);
+    const waiter = {id: ++countdownSequence, cancelled: false, received: false, async receive(payload) {
+      if (timedOut || countdownWaiter !== waiter || waiter.cancelled || waiter.received || payload.id !== waiter.id) return;
+      waiter.received = true; record.notification = payload;
+      try {
+        assertCountdown(payload.state, label);
+        // No page reads between this DOM transition and the trusted input command.
+        if (input) { record.dispatchStartedAt = new Date().toISOString(); await input.press(); record.dispatchCompletedAt = new Date().toISOString(); }
+        if (waiter.cancelled) { if (input) await input.release(); return; }
+        resolveReady({traceStart: payload.traceStart, state: payload.state, expectedCode: input?.expectedCode,
+          expectedTarget: input?.expectedTarget, release: input?.release});
+      } catch (error) { record.failure = error.stack || String(error); if (!waiter.cancelled) rejectReady(error); }
+    }};
+    countdownWaiter = waiter;
+    try {
+      await page.evaluate(id => {
+        window.__polishCountdownArm?.observer.disconnect();
+        const hud = document.querySelector('#trial-hud');
+        if (!hud) throw new Error('Trial HUD is required before arming countdown');
+        let previous = hud.hidden ? 'hidden' : hud.dataset.status;
+        const observer = new MutationObserver(() => {
+          const status = hud.hidden ? 'hidden' : hud.dataset.status;
+          if (status === 'countdown' && previous !== 'countdown') {
+            observer.disconnect();
+            if (window.__polishCountdownArm?.id !== id) return;
+            const payload = {id, previous, state: window.__polishTrialSnapshot(), traceStart: window.__polishInput.length};
+            window.__polishCountdownReady(payload).catch(error => window.__polishObserverErrors.push(String(error)));
+          }
+          previous = status;
+        });
+        window.__polishCountdownArm = {id, observer};
+        observer.observe(hud, {attributes: true, attributeFilter: ['data-status', 'hidden']});
+      }, waiter.id);
+      const [, observed] = await bounded(Promise.all([trigger(), ready]), limits.actionMilliseconds, label + ' countdown transition');
+      return observed;
+    } catch (error) {
+      record.failure ??= error.stack || String(error);
+      waiter.cancelled = true; if (countdownWaiter === waiter) countdownWaiter = undefined;
+      if (input) { try { await bounded(input.release(), 5_000, label + ' input release'); } catch (releaseError) { record.releaseFailure = releaseError.message; } }
+      throw error;
+    } finally {
+      // Cancel the Node token before cleanup so a late binding cannot send input.
+      waiter.cancelled = true; if (countdownWaiter === waiter) countdownWaiter = undefined;
+      try { await bounded(page.evaluate(id => {
+        if (window.__polishCountdownArm?.id !== id) return;
+        window.__polishCountdownArm.observer.disconnect(); delete window.__polishCountdownArm;
+      }, waiter.id), 5_000, 'Countdown observer cleanup'); }
+      catch (error) { record.observerCleanupFailure = error.message; }
+    }
+  };
+  const begin = async (id, vehicle, input) => {
     await tap(page.locator('#trial-tab-' + vehicle));
-    await tap(page.locator('[data-course="' + id + '"]'));
-    await expect(page.locator('#trial-hud')).toHaveAttribute('data-course', id);
-    return countdown('Course start');
+    const observed = await duringCountdown(() => tap(page.locator('[data-course="' + id + '"]')), 'Course start ' + id, input);
+    assert.equal(observed.state.course, id, 'Requested course is ready');
+    return observed;
+  };
+  const prepareHeld = async (vehicle, direction = 'forward') => {
+    const key = direction === 'right' ? 'd' : 'w';
+    const selector = vehicle === 'hoverbike' ? '#hover-move-zone' : '#touch-zone';
+    let point;
+    if (configuration.mobile) {
+      await expect(page.locator('body')).toHaveAttribute('data-joystick-mode', 'fixed');
+      await target(selector, {button: false});
+      const pad = vehicle === 'hoverbike' ? '#hover-flight-stick' : '#stick';
+      const geometry = await page.locator(pad).evaluate((element, {selector, direction}) => {
+        const r = element.getBoundingClientRect(), zone = document.querySelector(selector);
+        const point = {x: r.left + r.width / 2 + (direction === 'right' ? r.width * .35 : 0), y: r.top + r.height / 2 - (direction === 'forward' ? r.height * .35 : 0)};
+        const hit = document.elementFromPoint(point.x, point.y);
+        return {point, pad: {left: r.left, top: r.top, width: r.width, height: r.height}, receives: hit === zone || zone.contains(hit), covering: hit?.id || hit?.tagName};
+      }, {selector, direction});
+      (entry.metrics.cachedInputTargets ??= {})[vehicle + ':' + direction] = geometry;
+      assert.ok(geometry.receives, 'Cached fixed-stick input point is covered by ' + geometry.covering);
+      point = geometry.point;
+    }
+    const input = {description: configuration.mobile ? 'Trusted fixed joystick ' + direction + ' touchStart' : 'Trusted held ' + key.toUpperCase(),
+      expectedCode: configuration.mobile ? undefined : direction === 'right' ? 'KeyD' : 'KeyW', expectedTarget: configuration.mobile ? selector.slice(1) : undefined,
+      async press() { activeHolds.add(input); if (configuration.mobile) await touch.send('Input.dispatchTouchEvent', {type: 'touchStart', touchPoints: [{...point, id: 1}]}); else await page.keyboard.down(key); },
+      async release() { if (!activeHolds.delete(input)) return; if (configuration.mobile) await touch.send('Input.dispatchTouchEvent', {type: 'touchEnd', touchPoints: []}); else await page.keyboard.up(key); }};
+    return input;
   };
   const startHeld = async (vehicle, direction = 'forward') => {
-    const traceStart = await page.evaluate(() => window.__polishInput?.length || 0);
-    if (!configuration.mobile) {
-      const key = direction === 'right' ? 'd' : 'w';
-      await page.keyboard.down(key);
-      return {traceStart, expectedCode: direction === 'right' ? 'KeyD' : 'KeyW', release: () => page.keyboard.up(key)};
-    }
-    const selector = vehicle === 'hoverbike' ? '#hover-move-zone' : '#touch-zone';
-    const center = await target(selector, {button: false});
-    const moved = {x: center.x + (direction === 'right' ? 55 : 0), y: center.y - (direction === 'right' ? 0 : 55), id: 1};
-    await touch.send('Input.dispatchTouchEvent', {type: 'touchStart', touchPoints: [{...center, id: 1}]});
-    try { await touch.send('Input.dispatchTouchEvent', {type: 'touchMove', touchPoints: [moved]}); }
-    catch (error) { await touch.send('Input.dispatchTouchEvent', {type: 'touchEnd', touchPoints: []}); throw error; }
-    return {traceStart, expectedTarget: selector.slice(1), release: () => touch.send('Input.dispatchTouchEvent', {type: 'touchEnd', touchPoints: []})};
+    const input = await prepareHeld(vehicle, direction), traceStart = await page.evaluate(() => window.__polishInput.length);
+    await input.press(); return {...input, traceStart};
   };
   const bufferedGo = async (held, label) => {
-    const samples = [];
+    const samples = [held.state], record = {samples, inputEvents: []}; entry.metrics[label] = record;
+    record.inputEvents = await page.evaluate(start => window.__polishInput.slice(start), held.traceStart);
+    const captured = record.inputEvents.some(event => event.trusted && event.status === 'countdown' &&
+      (held.expectedCode ? event.type === 'keydown' && event.code === held.expectedCode && !event.repeat : event.control === held.expectedTarget && event.type === 'pointerdown'));
+    assert.ok(captured, label + ': fresh trusted input arrived after prepare and before GO');
     await expect.poll(async () => {
       const state = await readTrial(); samples.push(state);
       if (state.status === 'countdown') { assert.equal(state.speed, 0, label + ': movement frozen before GO'); assert.equal(state.elapsed, 0); }
       assert.ok(['countdown', 'running'].includes(state.status), label + ': valid countdown/run');
       return state.status === 'running' && state.speed > 0;
     }, {timeout: limits.actionMilliseconds, intervals: [100, 250, 500, 1000]}).toBe(true);
-    const events = await page.evaluate(start => window.__polishInput.slice(start), held.traceStart);
-    const captured = events.some(event => event.trusted && event.status === 'countdown' &&
-      (held.expectedCode ? event.code === held.expectedCode : event.target === held.expectedTarget && event.type === 'pointerdown'));
-    assert.ok(captured, label + ': fresh trusted input arrived after prepare and before GO');
-    entry.metrics[label] = {samples, inputEvents: events, result: 'One continuous hold from countdown through observed movement; no release/re-press at GO'};
+    record.result = 'One continuous hold from countdown through observed movement; no release/re-press at GO';
   };
   const idleAfterGo = async label => {
-    const samples = [];
+    const samples = []; entry.metrics[label] = samples;
     await expect(page.locator('#trial-hud')).toHaveAttribute('data-status', 'running');
     await expect.poll(async () => {
-      const state = await readTrial(); assert.equal(state.speed, 0, label + ': old input must stay cleared');
+      const state = await readTrial();
       if (samples.at(-1)?.elapsed !== state.elapsed) samples.push(state);
+      assert.equal(state.speed, 0, label + ': old input must stay cleared');
       return samples.filter(sample => sample.elapsed > 0).length;
     }, {timeout: limits.actionMilliseconds, intervals: [500, 1000, 1500]}).toBeGreaterThanOrEqual(2);
-    entry.metrics[label] = samples;
   };
   const leave = async () => {
     await tap(page.locator('#trial-exit')); await expect(page.locator('#trial-hud')).not.toBeVisible();
@@ -197,14 +260,25 @@ async function runCase(configuration) {
     entry.metrics.browserVersion = browser.version();
     const context = await browser.newContext({viewport: {width: 390, height: 844}, deviceScaleFactor: 1, isMobile: configuration.mobile, hasTouch: true, reducedMotion: 'no-preference'});
     page = await context.newPage(); touch = await context.newCDPSession(page); page.setDefaultTimeout(limits.actionMilliseconds);
+    await page.exposeBinding('__polishCountdownReady', (_, payload) => countdownWaiter?.receive(payload));
     // Read-only event trace proves when trusted input was delivered; it never changes the game.
     await page.addInitScript(() => {
-      window.__polishInput = [];
-      for (const type of ['keydown', 'pointerdown', 'pointermove']) window.addEventListener(type, event => {
+      window.__polishInput = []; window.__polishObserverErrors = [];
+      window.__polishTrialSnapshot = () => {
+        const hud = document.querySelector('#trial-hud'); if (!hud) return null;
+        return {at: performance.now(), status: hud.dataset.status, course: hud.dataset.course,
+          elapsed: Number(hud.dataset.elapsed), next: Number(hud.dataset.next), paused: hud.dataset.paused,
+          offCourse: hud.dataset.offCourse, reducedMotion: hud.dataset.reducedMotion, time: hud.querySelector('.trial-time')?.textContent,
+          speed: Number.parseFloat(document.querySelector(hud.dataset.vehicle === 'hoverbike' ? '#hover-speed' : '#speed')?.textContent || '0'),
+          focused: document.activeElement?.id || document.activeElement?.tagName, visibility: document.visibilityState,
+          openDialogs: [...document.querySelectorAll('dialog[open]')].map(dialog => dialog.id)};
+      };
+      for (const type of ['keydown', 'keyup', 'pointerdown', 'pointermove', 'pointerup', 'pointercancel', 'lostpointercapture', 'blur', 'focus', 'visibilitychange', 'close']) window.addEventListener(type, event => {
         const hud = document.querySelector('#trial-hud');
         if (!hud || hud.hidden) return;
-        window.__polishInput.push({type, trusted: event.isTrusted, code: event.code, repeat: event.repeat === true, target: event.target?.id,
-          status: hud.dataset.status, elapsed: Number(hud.dataset.elapsed), at: performance.now()});
+        window.__polishInput.push({...window.__polishTrialSnapshot(), type, trusted: event.isTrusted, code: event.code, repeat: event.repeat === true,
+          target: event.target?.id || event.target?.nodeName, control: event.target?.closest?.('#touch-zone, #hover-move-zone')?.id,
+          relatedTarget: event.relatedTarget?.id || event.relatedTarget?.nodeName, x: event.clientX, y: event.clientY});
       }, {capture: true, passive: true});
     });
     page.on('pageerror', error => { entry.errors.push(error.message); log(configuration.name + ': page error ' + error.message); });
@@ -231,8 +305,10 @@ async function runCase(configuration) {
       await openMenu(); await tap(page.locator('#settings-open'));
       await page.locator('#quality').selectOption('smooth'); await page.locator('#fps').selectOption('30');
       await page.locator('#touch').check(); await page.locator('#motion').uncheck();
+      if (configuration.mobile) await page.locator('#joystick-mode').selectOption('fixed');
       await tap(page.locator('[data-close="settings"]')); await resize(configuration.viewport);
-      entry.metrics.graphics = {quality: 'smooth', fpsTarget: 30, actualPerformanceCertified: false, touchControls: true};
+      entry.metrics.graphics = {quality: 'smooth', fpsTarget: 30, actualPerformanceCertified: false, touchControls: true,
+        joystickMode: configuration.mobile ? 'fixed' : 'floating'};
       entry.metrics.startupWebgl = await webgl();
 
       log(configuration.name + ': inspect actual timed delivery HUD');
@@ -249,7 +325,9 @@ async function runCase(configuration) {
       await tap(page.locator('#activity-board').getByRole('button', {name: 'End activity', exact: true}));
       await tap(page.locator('#activity-board').getByRole('button', {name: 'Back to island', exact: true}));
 
-      await resize(configuration.physicsViewport); await openBoard();
+      await resize(configuration.physicsViewport);
+      const wheelHold = await prepareHeld('onewheel');
+      await openBoard();
       log(configuration.name + ': verify gate-sound opt-in control and preview status');
       await expect(page.locator('#trial-sound-toggle')).toHaveAttribute('aria-pressed', 'false');
       await expect(page.locator('#trial-sound-status')).toContainText('off');
@@ -263,34 +341,31 @@ async function runCase(configuration) {
       entry.metrics.gateSounds = {defaultOff: true, realGesturePreviewReady: true, persistedOnAndReopened: true, mutedAgain: true, acousticListening: 'not exercised', realGateCrossing: 'not exercised'};
 
       log(configuration.name + ': hold fresh input through Cup countdown');
-      await begin('onewheel-island-cup-v1', 'onewheel');
-      let held = await startHeld('onewheel');
+      let held = await begin('onewheel-island-cup-v1', 'onewheel', wheelHold);
       try {
         await bufferedGo(held, 'initialCountdownHold');
         log(configuration.name + ': R restart while original input remains held');
-        await page.keyboard.press('r'); await countdown('Held-input restart');
+        const restarted = await duringCountdown(() => page.keyboard.press('r'), 'Held-input restart', configuration.mobile ? undefined : wheelHold);
         if (!configuration.mobile) {
           // The OS can repeat an already-held key after restart clears gameplay input.
-          // A second trusted down without an up exercises that repeat explicitly.
-          const repeatStart = await page.evaluate(() => window.__polishInput.length);
-          await page.keyboard.down('w');
-          const repeats = await page.evaluate(start => window.__polishInput.slice(start), repeatStart);
-          assert.ok(repeats.some(event => event.trusted && event.code === 'KeyW' && event.repeat && event.status === 'countdown'), 'Old held W produced a trusted countdown repeat');
+          // The armed callback sends a second down without an up during countdown.
+          const repeats = await page.evaluate(start => window.__polishInput.slice(start), restarted.traceStart);
           entry.metrics.heldRestartRepeat = repeats;
+          assert.ok(repeats.some(event => event.trusted && event.code === 'KeyW' && event.repeat && event.status === 'countdown'), 'Old held W produced a trusted countdown repeat');
         }
         await idleAfterGo('restartClearsOldHold');
       } finally { await held.release(); }
+      let restart;
       if (!configuration.mobile) {
         await resize(configuration.viewport); await capture('wheel-ground-contact'); await resize(configuration.physicsViewport);
         await tap(page.locator('#pause')); await expect(page.locator('#pause')).toBeFocused();
         await expect(page.locator('#trial-hud')).toHaveAttribute('data-paused', 'true');
         const paused = await readTrial(); await delay(700); assert.equal((await readTrial()).elapsed, paused.elapsed);
-        await page.keyboard.press('r');
-      } else await tap(page.locator('#trial-restart'));
-      await countdown(configuration.mobile ? 'Button restart' : 'Pause-focused R restart');
-      await expect(page.locator('#pause')).toHaveText('Pause');
-      held = await startHeld('onewheel');
-      try { await bufferedGo(held, 'restartedCountdownHold'); } finally { await held.release(); }
+        restart = () => page.keyboard.press('r');
+      } else restart = () => tap(page.locator('#trial-restart'));
+      held = await duringCountdown(restart, configuration.mobile ? 'Button restart' : 'Pause-focused R restart', wheelHold);
+      try { await expect(page.locator('#pause')).toHaveText('Pause'); await bufferedGo(held, 'restartedCountdownHold'); }
+      finally { await held.release(); }
       await leave();
 
       if (!configuration.mobile) {
@@ -355,7 +430,7 @@ async function runCase(configuration) {
         for (const selector of ['#trial-restart', '#trial-exit', '#hover-hud [data-hold="ArrowLeft"]', '#hover-hud [data-hold="ArrowRight"]', '#hover-hud [data-hold="KeyE"]', '#hover-hud [data-hold="KeyQ"]', '#hover-hud [data-hold="Space"]']) await target(selector);
         await expect(page.locator('.hover-lighting')).not.toBeVisible(); await capture('sky-landscape');
       } else await tap(page.locator('.hover-lighting > summary'));
-      await tap(page.locator('#trial-restart')); await countdown('Off-course restart');
+      await duringCountdown(() => tap(page.locator('#trial-restart')), 'Off-course restart');
       await expect(page.locator('#trial-hud')).toHaveAttribute('data-off-course', 'false');
       await expect(page.locator('#trial-hud')).toHaveAttribute('data-status', 'running');
       await expect(page.locator('#hover-speed')).toHaveText('0'); await leave();
@@ -427,9 +502,19 @@ async function runCase(configuration) {
     })(), new Promise((_, reject) => { deadline = setTimeout(() => { timedOut = true; reject(new Error('Polish case exceeded the 35-minute bound')); }, limits.caseMilliseconds); })]);
   } catch (error) {
     entry.failure = error.stack || String(error); log(configuration.name + ': FAIL ' + error.message);
+    if (page && !timedOut) {
+      try { entry.metrics.failureTimeline = await bounded(page.evaluate(() => ({state: window.__polishTrialSnapshot?.(),
+        events: window.__polishInput, observerErrors: window.__polishObserverErrors})), 15_000, 'Failure input timeline'); }
+      catch (diagnosticError) { entry.failureTimelineError = diagnosticError.message; }
+    }
     if (page && !timedOut && !captureFailed) { try { await capture('failure'); } catch {} }
   } finally {
     clearTimeout(deadline);
+    if (countdownWaiter) { countdownWaiter.cancelled = true; countdownWaiter = undefined; }
+    for (const input of [...activeHolds]) {
+      try { await bounded(input.release(), 5_000, 'Final held-input release'); }
+      catch (error) { (entry.inputReleaseFailures ??= []).push(error.message); entry.passed = false; }
+    }
     if (page && !timedOut && !captureFailed) {
       try { await writeFile(resolve(output, configuration.name + '-dom.html'), await bounded(page.content(), 5_000, 'DOM diagnostic')); } catch (error) { entry.domFailure = error.message; }
     }
