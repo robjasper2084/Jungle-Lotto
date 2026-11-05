@@ -119,10 +119,13 @@ body.island-trial.on-hoverbike.touch-controls .hover-steer button{min-width:44px
   body.island-trial.on-hoverbike.touch-controls .hover-stick-holder,body.island-trial.on-hoverbike.touch-controls #hover-flight-stick{width:var(--trial-stick-size);height:var(--trial-stick-size)}
   body.island-trial.on-hoverbike.touch-controls .hover-lift button,body.island-trial.on-hoverbike.touch-controls .hover-pedals button{width:var(--trial-touch-button);height:var(--trial-touch-button);min-width:44px;min-height:44px}
 }
-/* Short screens keep one compact footer below the touch row and the race panels. */
-@media(max-width:600px) and (max-height:700px),(max-height:360px){
+/* Trial phones keep instruments and useful actions below the touch row. */
+@media(max-width:600px),(max-height:360px){
   body.island-trial.on-hoverbike .hover-title,body.island-trial.on-hoverbike .hover-help,body.island-trial.on-hoverbike #hover-notice{display:none}
   body.island-trial.on-hoverbike .hover-actions [data-hover=takeoff],body.island-trial.on-hoverbike .hover-actions [data-hover=exit],body.island-trial.on-hoverbike .hover-actions [data-hover=reset]{display:none}
+}
+/* Short screens keep one compact footer below the touch row and the race panels. */
+@media(max-width:600px) and (max-height:700px),(max-height:360px){
   body.island-trial.on-hoverbike .hover-instruments{gap:4px 6px;margin:5px 0}
   body.island-trial.on-hoverbike .hover-instruments>div{gap:5px}
   body.island-trial.on-hoverbike .hover-instruments b{font-size:22px}

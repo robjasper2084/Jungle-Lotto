@@ -23,7 +23,7 @@ const lines = [];
 const log = message => { const line = new Date().toISOString() + ' ' + message; lines.push(line); console.log(line); };
 const report = {startedAt: new Date().toISOString(), head: process.env.GITHUB_SHA || null, passed: false,
   selectedCase: selectedCase ?? null, selectedCases: selected.map(item => item.name), limits,
-  scope: 'Actual built-game controls, countdown input, restart, off-course guidance, audio opt-in and rendered scenes. CSS fixtures are separate synthetic layout checks.',
+  scope: 'Actual built-game controls, countdown input, restart, off-course guidance, audio opt-in and rendered scenes. Phone countdown buffering uses keyboard activation of real buttons with trusted joystick touch; other phone navigation uses touch. CSS fixtures are separate synthetic layout checks.',
   limitations: 'No human full-lap, physical-device performance or acoustic listening certification. First Sky gate audio is covered by source tests, not this bounded render smoke.',
   manualScreenshotReviewRequired: true, cases: []};
 const mime = {'.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
@@ -151,20 +151,26 @@ async function runCase(configuration) {
     assert.equal(state.speed, 0, label + ': no countdown movement');
     assert.equal(state.focused, 'game', label + ': canvas receives fresh input');
   };
-  const buttonTrigger = async selector => {
-    await page.locator(selector).scrollIntoViewIfNeeded();
+  const buttonTrigger = async (selector, {keyboard = false} = {}) => {
+    const locator = page.locator(selector);
+    await locator.scrollIntoViewIfNeeded();
     const point = await target(selector);
-    const end = () => configuration.mobile ? touch.send('Input.dispatchTouchEvent', {type: 'touchEnd', touchPoints: []}) : page.mouse.up();
+    const enter = {key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, modifiers: 0, location: 0};
+    const end = () => keyboard ? touch.send('Input.dispatchKeyEvent', {type: 'keyUp', ...enter}) :
+      configuration.mobile ? touch.send('Input.dispatchTouchEvent', {type: 'touchEnd', touchPoints: []}) : page.mouse.up();
     let down = false;
-    const trigger = {description: 'Prequeued native button down/up ' + selector, point,
+    const trigger = {description: (keyboard ? 'Native Enter down/up on focused button ' : 'Prequeued native button down/up ') + selector, point,
       fire() {
         down = true; activeTriggers.add(trigger);
-        const pressed = configuration.mobile ? touch.send('Input.dispatchTouchEvent', {type: 'touchStart', touchPoints: [{...point, id: 2}]}) : page.mouse.down();
+        // Match Playwright's Chromium Enter event, on the same CDP session as touch.
+        const pressed = keyboard ? touch.send('Input.dispatchKeyEvent', {type: 'keyDown', ...enter, text: '\r', unmodifiedText: '\r', autoRepeat: false}) :
+          configuration.mobile ? touch.send('Input.dispatchTouchEvent', {type: 'touchStart', touchPoints: [{...point, id: 2}]}) : page.mouse.down();
         const released = end().then(() => { down = false; activeTriggers.delete(trigger); });
         return Promise.all([pressed, released]);
       },
       async release() { if (!down) return; await end(); down = false; activeTriggers.delete(trigger); }};
-    if (!configuration.mobile) await page.mouse.move(point.x, point.y);
+    if (keyboard) { await locator.focus(); await expect(locator).toBeFocused(); }
+    else if (!configuration.mobile) await page.mouse.move(point.x, point.y);
     return trigger;
   };
   const restartKeyTrigger = () => {
@@ -179,18 +185,13 @@ async function runCase(configuration) {
     let resolveReady, rejectReady;
     const ready = new Promise((resolve, reject) => { resolveReady = resolve; rejectReady = reject; });
     const record = {label, trigger: trigger.description, triggerPoint: trigger.point, input: input?.description ?? 'Observe only',
-      dispatch: input ? configuration.mobile ? 'After observed countdown' : 'Native prequeue' : 'Observe only', armedAt: new Date().toISOString()};
+      dispatch: input ? configuration.mobile ? 'Same-session native Enter then touch prequeue' : 'Native prequeue' : 'Observe only', armedAt: new Date().toISOString()};
     (entry.metrics.countdownTransitions ??= []).push(record);
-    const waiter = {id: ++countdownSequence, cancelled: false, received: false, async receive(payload) {
+    const waiter = {id: ++countdownSequence, cancelled: false, received: false, receive(payload) {
       if (timedOut || countdownWaiter !== waiter || waiter.cancelled || waiter.received || payload.id !== waiter.id) return;
       waiter.received = true; record.notification = payload;
       try {
         assertCountdown(payload.state, label);
-        if (configuration.mobile && input) {
-          record.inputQueuedAt = new Date().toISOString();
-          await input.press(); record.inputCompletedAt = new Date().toISOString();
-          if (waiter.cancelled || timedOut) { await input.release(); return; }
-        }
         resolveReady(payload);
       } catch (error) { record.failure = error.stack || String(error); if (!waiter.cancelled) rejectReady(error); }
     }};
@@ -215,12 +216,13 @@ async function runCase(configuration) {
         observer.observe(hud, {attributes: true, attributeFilter: ['data-status', 'hidden']});
         return {traceStart: window.__polishInput.length, state: window.__polishTrialSnapshot()};
       }, waiter.id);
-      // Desktop queues the held key with the native trigger. Phone waits for the
-      // observed countdown; the native event trace still decides whether it arrived in time.
+      // Queue trigger and hold without a response round trip. On phone, Enter
+      // activates the focused button without the asynchronous touch-tap click path.
+      // The observer only records proof; the native event trace decides its phase.
       record.triggerQueuedAt = new Date().toISOString();
       const triggered = trigger.fire().then(() => { record.triggerCompletedAt = new Date().toISOString(); });
       let pressed = Promise.resolve();
-      if (input && !configuration.mobile) {
+      if (input) {
         record.inputQueuedAt = new Date().toISOString();
         pressed = input.press().then(() => { record.inputCompletedAt = new Date().toISOString(); });
       }
@@ -246,7 +248,7 @@ async function runCase(configuration) {
   };
   const begin = async (id, vehicle, input) => {
     await tap(page.locator('#trial-tab-' + vehicle));
-    const trigger = await buttonTrigger('[data-course="' + id + '"]');
+    const trigger = await buttonTrigger('[data-course="' + id + '"]', {keyboard: configuration.mobile && !!input});
     const observed = await duringCountdown(trigger, 'Course start ' + id, input);
     assert.equal(observed.state.course, id, 'Requested course is ready');
     return observed;
@@ -283,7 +285,8 @@ async function runCase(configuration) {
     const samples = [held.state], record = {samples, inputEvents: []}; entry.metrics[label] = record;
     record.inputEvents = await page.evaluate(start => window.__polishInput.slice(start), held.traceStart);
     const captured = record.inputEvents.some(event => event.trusted && event.hudHidden === false && event.course === held.state.course && event.status === 'countdown' &&
-      (held.expectedCode ? event.type === 'keydown' && event.code === held.expectedCode && !event.repeat : event.control === held.expectedTarget && event.type === 'pointerdown'));
+      (held.expectedCode ? event.type === 'keydown' && event.code === held.expectedCode && !event.repeat :
+        event.control === held.expectedTarget && event.type === 'pointerdown' && event.pointerType === 'touch'));
     assert.ok(captured, label + ': fresh trusted input arrived after prepare and before GO');
     await expect.poll(async () => {
       const state = await readTrial(); samples.push(state);
@@ -333,7 +336,7 @@ async function runCase(configuration) {
         if (!hud) return;
         const button = event.target?.closest?.('button');
         window.__polishInput.push({...window.__polishTrialSnapshot(), type, trusted: event.isTrusted, code: event.code, repeat: event.repeat === true,
-          target: event.target?.id || event.target?.nodeName, control: event.target?.closest?.('#touch-zone, #hover-move-zone')?.id,
+          target: event.target?.id || event.target?.nodeName, pointerType: event.pointerType, control: event.target?.closest?.('#touch-zone, #hover-move-zone')?.id,
           button: button ? {id: button.id, text: button.textContent?.trim().slice(0, 100), course: button.dataset.course} : undefined,
           relatedTarget: event.relatedTarget?.id || event.relatedTarget?.nodeName, x: event.clientX, y: event.clientY});
       }, {capture: true, passive: true});
@@ -420,7 +423,7 @@ async function runCase(configuration) {
         await expect(page.locator('#trial-hud')).toHaveAttribute('data-paused', 'true');
         const paused = await readTrial(); await delay(700); assert.equal((await readTrial()).elapsed, paused.elapsed);
         restart = restartKeyTrigger();
-      } else restart = await buttonTrigger('#trial-restart');
+      } else restart = await buttonTrigger('#trial-restart', {keyboard: true});
       held = await duringCountdown(restart, configuration.mobile ? 'Button restart' : 'Pause-focused R restart', wheelHold);
       try { await expect(page.locator('#pause')).toHaveText('Pause'); await bufferedGo(held, 'restartedCountdownHold'); }
       finally { await held.release(); }
