@@ -3,18 +3,19 @@ import * as T from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {CockpitLcd} from './cockpitLcd.ts';
 import {HoverAudio} from './hoverAudio.ts';
-import {HoverController,type FlightObstacle} from './hoverController.ts';
+import {HoverController,type FlightObstacle,type FlightMode} from './hoverController.ts';
 import {segment,type ParkTerrain} from './terrain.ts';
 import './hover.css';
 import {HoverLighting,LED_COLORS} from './hoverLighting.ts';
 type Pose={x:number;y:number;z:number;headingY:number};
-type Hooks={pose:()=>Pose;blocked:()=>boolean;entered:()=>void;exited:(p:{x:number;y:number;z:number;heading:number})=>void;touch:()=>boolean;obstacle?:FlightObstacle};
+type Hooks={pose:()=>Pose;blocked:()=>boolean;entered:()=>void;exited:(p:{x:number;y:number;z:number;heading:number})=>void;touch:()=>boolean;obstacle?:FlightObstacle;vehicleLocked?:()=>boolean;restartTrial?:()=>void};
 const keyCodes=['KeyW','KeyS','KeyA','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyE','KeyQ','Space','ShiftLeft','ShiftRight','KeyG','KeyF','KeyL','KeyH','KeyK','KeyR'];
 export class HoverRide {
  readonly sim:HoverController;
  riding=false;
  private model:T.Group|undefined;private cockpit?:CockpitLcd;
  private loading:Promise<void>|undefined;
+ private mountGeneration=0;private savedFlightMode:FlightMode|undefined;
  private pressed=new Set<string>();
  private stick={x:0,y:0,id:-1,cx:0,cy:0};private flightSelect!:HTMLSelectElement;
  private mixer:T.AnimationMixer|undefined;
@@ -54,12 +55,13 @@ export class HoverRide {
   this.notice=this.hud.querySelector('#hover-notice')!;this.speed=this.hud.querySelector('#hover-speed')!;this.altitude=this.hud.querySelector('#hover-altitude')!;this.mode=this.hud.querySelector('#hover-mode')!;this.touchPad=this.hud.querySelector('.hover-touch')!;
   this.soundButton();
   this.flightSelect=this.hud.querySelector('#hover-flight-mode')!;let savedMode='drone';try{savedMode=localStorage.getItem('belle-flight-mode')||'drone';}catch{}this.sim.setMode(savedMode==='classic'?'classic':'drone');this.flightSelect.value=this.sim.mode;
-  this.flightSelect.onchange=()=>{this.clear();this.sim.setMode(this.flightSelect.value==='classic'?'classic':'drone');try{localStorage.setItem('belle-flight-mode',this.sim.mode);}catch{}this.refresh();};
+  this.flightSelect.onchange=()=>{if(this.hooks.vehicleLocked?.()){this.flightSelect.value=this.sim.mode;return;}this.clear();this.sim.setMode(this.flightSelect.value==='classic'?'classic':'drone');try{localStorage.setItem('belle-flight-mode',this.sim.mode);}catch{}this.refresh();};
   this.bindFlightStick();
   this.ledInput=this.hud.querySelector('#hover-led-color')!;this.ledSelect=this.hud.querySelector('#hover-led-mode')!;
   try{const prefs=JSON.parse(localStorage.getItem('belle-hover-lighting')||'{}');if(/^#[0-9a-f]{6}$/i.test(prefs.color))this.ledColor=prefs.color;if(['solid','cycle','off'].includes(prefs.mode))this.ledMode=prefs.mode;}catch{}this.ledInput.value=this.ledColor;this.ledSelect.value=this.ledMode;
   this.ledInput.oninput=()=>{this.ledColor=this.ledInput.value;this.saveLighting();};this.ledSelect.onchange=()=>{this.ledMode=this.ledSelect.value;this.saveLighting();};
   this.hud.querySelectorAll<HTMLButtonElement>('[data-hover]').forEach(b=>b.onclick=()=>{
+   if(b.dataset.hover==='reset'&&this.hooks.vehicleLocked?.()){this.hooks.restartTrial?.();return;}
    if(this.hooks.blocked())return;
    switch(b.dataset.hover){case'takeoff':this.toggleFlight();break;case'lights':this.toggleLights();break;case'beam':this.toggleBeam();break;case'color':this.nextColor();break;case'sound':this.toggleSound();break;case'reset':this.recover();break;case'exit':this.exit();break;}
   });
@@ -121,18 +123,31 @@ export class HoverRide {
  }
  async prepare(scene:T.Scene){await this.load(scene);}
  async mount(scene:T.Scene){
-  if(this.hooks.blocked()||this.enterButton.disabled)return;
+  if(this.hooks.blocked()||this.hooks.vehicleLocked?.()||this.enterButton.disabled)return;
+  const generation=++this.mountGeneration;
   void this.sound.unlock();this.enterButton.disabled=true;this.enterButton.textContent='Preparing hoverbike…';
   try{
    await this.load(scene);
-   if(this.hooks.blocked())return;
+   if(generation!==this.mountGeneration||this.hooks.blocked()||this.hooks.vehicleLocked?.())return;
    const p=this.spawnNear(this.hooks.pose());this.sim.reset(p.x,p.z,p.heading);
    this.riding=true;this.model!.visible=true;this.hero&&(this.hero.visible=true);
    document.body.classList.add('on-hoverbike');this.hud.hidden=false;this.hooks.entered();
    this.say('Press G to take off. E / Q changes height.');this.refresh();
   }catch(e){console.error('Hoverbike load failed',e);this.enterButton.textContent='Retry hoverbike';}
-  finally{this.enterButton.disabled=false;if(this.model)this.enterButton.textContent=this.riding?'Get off hoverbike · B':'Ride hoverbike · B';}
+  finally{this.enterButton.disabled=!!this.hooks.vehicleLocked?.();if(this.model)this.enterButton.textContent=this.riding?'Get off hoverbike · B':'Ride hoverbike · B';}
  }
+ /** prepare() loads assets first; this synchronous placement cannot outlive a cancelled start. */
+ beginTrial(p:{x:number;y:number;z:number;heading:number}){
+  if(!this.model)return false;
+  ++this.mountGeneration;this.clear();
+  if(!this.sim.startFlight(p))return false;
+  this.savedFlightMode??=this.sim.mode;this.sim.setMode('drone');this.flightSelect.value='drone';
+  this.riding=true;this.model.visible=true;this.hero&&(this.hero.visible=true);
+  document.body.classList.add('on-hoverbike');this.hud.hidden=false;this.hooks.entered();
+  this.say('Sky Circuit · Drone flight · Follow the numbered rings.');this.refresh();
+  return true;
+ }
+ endTrial(){if(this.savedFlightMode!==undefined){this.sim.setMode(this.savedFlightMode);this.flightSelect.value=this.savedFlightMode;this.savedFlightMode=undefined;}this.refresh();}
  clear(){this.releaseStick();this.pressed.clear();this.sim.stop();this.hud.querySelectorAll('[data-held]').forEach(b=>b.removeAttribute('data-held'));this.sound.silence();}
  key(e:KeyboardEvent){
   if(!this.riding||!keyCodes.includes(e.code))return false;e.preventDefault();this.pressed.add(e.code);
@@ -140,23 +155,28 @@ export class HoverRide {
   return true;
  }
  keyUp(code:string){this.pressed.delete(code);}
- private toggleFlight(){void this.sound.unlock();if(this.sim.flying&&this.sim.clearance>.3){this.sim.land();this.say('Landing… wait for the skids to settle.');}else{this.sim.launch();this.say('Lift fans online. Ready to ride.');}}
+ private toggleFlight(){if(this.hooks.vehicleLocked?.())return;void this.sound.unlock();if(this.sim.flying&&this.sim.clearance>.3){this.sim.land();this.say('Landing… wait for the skids to settle.');}else{this.sim.launch();this.say('Lift fans online. Ready to ride.');}}
  private toggleLights(){this.lightOn=!this.lightOn;this.hud.querySelector('[data-hover="lights"]')!.setAttribute('aria-pressed',String(this.lightOn));}
  private saveLighting(){try{localStorage.setItem('belle-hover-lighting',JSON.stringify({color:this.ledColor,mode:this.ledMode}));}catch{}}
  private nextColor(){this.ledColor=LED_COLORS[(LED_COLORS.indexOf(this.ledColor)+1)%LED_COLORS.length];this.ledInput.value=this.ledColor;this.ledMode='solid';this.ledSelect.value='solid';this.saveLighting();}
  private toggleBeam(){this.highBeam=!this.highBeam;this.hud.querySelector('[data-hover="beam"]')!.setAttribute('aria-pressed',String(this.highBeam));}
  private soundButton(){const b=this.hud.querySelector('[data-hover="sound"]')!;b.textContent=this.sound.enabled?'Sound on':'Sound off';b.setAttribute('aria-pressed',String(this.sound.enabled));}
  private toggleSound(){this.sound.toggle();this.soundButton();}
- private recover(){this.clear();this.sim.reset();this.say('Recovered to the last landing spot.');}
+ private recover(){if(this.hooks.vehicleLocked?.()){this.hooks.restartTrial?.();return;}this.clear();this.sim.reset();this.say('Recovered to the last landing spot.');}
  exit(){
+  if(this.hooks.vehicleLocked?.())return;
   const point=this.sim.exitPoint();
   if(!point){this.say('Land on clear ground before getting off. Press G to land.');return;}
   this.leaveForTravel();this.hooks.exited(point);
  }
- leaveForTravel(){this.clear();this.riding=false;this.sim.land();this.hud.hidden=true;this.model&&(this.model.visible=false);document.body.classList.remove('on-hoverbike');this.enterButton.textContent='Ride hoverbike · B';}
+ leaveForTravel(){++this.mountGeneration;this.endTrial();this.clear();this.riding=false;this.sim.land();this.hud.hidden=true;this.model&&(this.model.visible=false);document.body.classList.remove('on-hoverbike');this.enterButton.textContent='Ride hoverbike · B';}
  private say(message:string){this.notice.textContent=message;this.messageUntil=performance.now()+4500;}
  private refresh(){
   const p=this.sim.pose;
+  const locked=!!this.hooks.vehicleLocked?.();this.flightSelect.disabled=locked;
+  this.hud.querySelector<HTMLButtonElement>('[data-hover="takeoff"]')!.disabled=locked;
+  this.hud.querySelector<HTMLButtonElement>('[data-hover="exit"]')!.disabled=locked;
+  this.hud.querySelector('[data-hover="reset"]')!.textContent=locked?'Restart · R':'Recover · R';
   this.cockpit?.update({speed:p.speed,height:p.y-this.sim.floor(p.x,p.z),heading:p.heading,landed:this.sim.landed,landing:this.sim.clearance<.3,boost:this.pressed.has('ShiftLeft')||this.pressed.has('ShiftRight'),collision:this.sim.collision,lights:this.lightOn,drone:this.sim.mode==='drone'});
   this.speed.textContent=String(Math.round(Math.abs(p.speed)*3.6));
   this.altitude.textContent=Math.max(0,p.y-this.sim.floor(p.x,p.z)).toFixed(1);

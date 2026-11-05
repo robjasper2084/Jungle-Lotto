@@ -33,6 +33,16 @@ export class HoverController {
     this.pose={x,z,heading,y:this.floor(x,z)+.18,speed:0,pitch:0,roll:0,lift:0,rpm:0};
   this.clearance=.18;this.flying=false;this.landed=true;this.stop();
   }
+  /** Start a flight course at its authored height, with no inherited momentum. */
+  startFlight(p:{x:number;y:number;z:number;heading:number}){
+    if(![p.x,p.y,p.z,p.heading].every(Number.isFinite))return false;
+    const clearance=p.y-this.floor(p.x,p.z);
+    if(clearance<1.4||clearance>36||Math.abs(p.x)>8000||Math.abs(p.z)>8000)return false;
+    this.reset(p.x,p.z,p.heading);
+    this.clearance=clearance;this.pose.y=p.y;this.pose.rpm=1;
+    this.flying=true;this.landed=false;this.collision=false;
+    return true;
+  }
   advance(seconds:number,input:HoverInput){
     const dt=clamp(Number.isFinite(seconds)?seconds:0,0,.12),steps=Math.max(1,Math.ceil(dt*120));
     this.collision=false;

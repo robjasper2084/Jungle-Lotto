@@ -34,3 +34,11 @@ test('map obstacle at chassis or rider height stops forward travel',()=>{
  const c=new HoverController(wall,{x:0,z:0,heading:0});c.launch();run(c,10,{...idle,throttle:1});
  assert(c.pose.z>10);assert(c.pose.z+1.3<=12.001);assert.equal(c.pose.speed,0);assert(c.collision);
 });
+test('course start resets momentum and holds its authored flight height',()=>{
+ const c=new HoverController(terrain,{x:0,z:1000,heading:0});c.setMode('drone');c.launch();run(c,3,{...idle,throttle:1,lift:1});
+ assert(c.pose.speed>0);
+ const start={x:0,y:30,z:1000,heading:Math.PI/2};
+ assert(c.startFlight(start));assert.equal(c.pose.speed,0);assert(c.flying);assert(!c.landed);
+ run(c,3);assert(Math.abs(c.pose.y-30)<.001);assert.equal(c.pose.x,0);assert.equal(c.pose.z,1000);
+ const before={...c.pose};assert(!c.startFlight({...start,y:100}));assert(!c.startFlight({...start,x:NaN}));assert.deepEqual(c.pose,before);
+});
