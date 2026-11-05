@@ -32,9 +32,12 @@ let browser;
 let expect;
 let origin;
 async function runCase(configuration) {
-  const entry = {name: configuration.name, viewport: configuration.viewport, reducedMotion: configuration.reducedMotion, passed: false, errors: [], console: [], failedRequests: [], screenshots: [], metrics: {}, photoCompletion: {status: 'not exercised'}};
+  const setupViewport = {width: 390, height: 844};
+  const entry = {name: configuration.name, viewport: configuration.viewport, setupViewport, reducedMotion: configuration.reducedMotion, passed: false, errors: [], console: [], failedRequests: [], screenshots: [], metrics: {}, photoCompletion: {status: 'not exercised'}};
   report.cases.push(entry);
-  const context = await browser.newContext({viewport: configuration.viewport, deviceScaleFactor: 1, reducedMotion: configuration.reducedMotion, isMobile: !!configuration.mobile, hasTouch: !!configuration.mobile});
+  // Bootstrap at the already verified small viewport, then use the game's real
+  // graphics controls before resizing. The final CSS viewport is never reduced.
+  const context = await browser.newContext({viewport: setupViewport, deviceScaleFactor: 1, reducedMotion: configuration.reducedMotion, isMobile: !!configuration.mobile, hasTouch: !!configuration.mobile});
   const page = await context.newPage();
   page.setDefaultTimeout(25_000);
   page.on('pageerror', error => entry.errors.push(error.message));
@@ -51,8 +54,10 @@ async function runCase(configuration) {
   const tap = locator => configuration.mobile ? locator.tap() : locator.click();
   const screenshot = async name => {
     const filename = `${configuration.name}-${name}.png`;
+    log(`${configuration.name}: capture ${name} at ${page.viewportSize().width}×${page.viewportSize().height}`);
     await page.screenshot({path: resolve(output, filename), timeout: 20_000});
     entry.screenshots.push(filename);
+    log(`${configuration.name}: captured ${name}`);
   };
   const layout = async selector => {
     const measurements = await page.locator(selector).evaluate(element => {
@@ -79,22 +84,48 @@ async function runCase(configuration) {
       await expect(page.locator('#welcome')).toHaveAttribute('data-state', 'ready');
       await expect(page.locator('.activity-welcome')).toHaveCount(2);
       await expect(page.getByRole('button', {name: 'Swoop Dispatch', exact: true})).toBeEnabled();
-      entry.metrics.webgl = await page.locator('#game').evaluate(canvas => {
+      entry.metrics.startupWebgl = await page.locator('#game').evaluate(canvas => {
         const gl = canvas.getContext('webgl2');
         if (!gl || gl.isContextLost()) throw new Error('A live WebGL2 renderer is required for the visual gate.');
         return {version: gl.getParameter(gl.VERSION), renderer: gl.getParameter(gl.RENDERER), width: canvas.width, height: canvas.height, cssWidth: innerWidth, cssHeight: innerHeight, devicePixelRatio};
       });
-      await screenshot('startup');
       if (configuration.reducedMotion === 'reduce') {
         await expect(page.locator('#welcome')).toHaveClass(/motion-off/);
         await expect(page.locator('#startup-motion')).toHaveAttribute('aria-pressed', 'true');
         await expect(page.locator('#motion')).toBeChecked();
       }
-      // Select the actual One wheel UI so B can be checked against an unmounted hoverbike.
-      await tap(page.locator('.cinema-ride-picker > summary'));
-      await tap(page.locator('.ride-options label').filter({has: page.locator('input[value="onewheel"]')}));
-      await tap(page.getByRole('button', {name: 'Use this ride', exact: true}));
-      await tap(page.getByRole('button', {name: 'Swoop Dispatch', exact: true}));
+      // The automatic budget does not adapt during startup/menus or >250 ms
+      // software frames. Pause the flyover through its UI, start the default
+      // landed bike, and use Settings rather than modifying renderer state.
+      if (await page.locator('#startup-motion').getAttribute('aria-pressed') !== 'true') await tap(page.locator('#startup-motion'));
+      await tap(page.locator('#start'));
+      await expect(page.locator('body')).not.toHaveClass(/at-start/, {timeout: 90_000});
+      await expect(page.locator('body')).toHaveClass(/on-hoverbike/, {timeout: 60_000});
+      await expect(page.locator('#hover-mode')).toHaveText('LANDED');
+      await tap(page.locator('#tools-toggle'));
+      await tap(page.locator('#settings-open'));
+      await expect(page.locator('#settings')).toBeVisible();
+      await page.locator('#quality').selectOption('smooth');
+      await page.locator('#fps').selectOption('30');
+      await expect(page.locator('#quality')).toHaveValue('smooth');
+      await expect(page.locator('#fps')).toHaveValue('30');
+      await tap(page.locator('[data-close="settings"]'));
+      // Dismount via the real control. Avoid opening the ride picker, which
+      // starts a second WebGL renderer merely to choose the initial vehicle.
+      await tap(page.locator('#hover-hud [data-hover="exit"]'));
+      await expect(page.locator('body')).not.toHaveClass(/on-hoverbike/);
+      await expect(page.locator('#hover-enter')).toHaveText('Ride hoverbike · B');
+      await page.setViewportSize(configuration.viewport);
+      await page.waitForFunction(({width, height}) => innerWidth === width && innerHeight === height && document.querySelector('#game')?.width === width && document.querySelector('#game')?.height === height, configuration.viewport);
+      entry.metrics.graphics = {quality: await page.locator('#quality').inputValue(), fps: await page.locator('#fps').inputValue(), initialRide: 'default hoverbike; dismounted through UI', flyoverPausedThroughUi: true};
+      entry.metrics.webgl = await page.locator('#game').evaluate(canvas => {
+        const gl = canvas.getContext('webgl2');
+        if (!gl || gl.isContextLost()) throw new Error('A live WebGL2 renderer is required after graphics setup.');
+        return {version: gl.getParameter(gl.VERSION), renderer: gl.getParameter(gl.RENDERER), width: canvas.width, height: canvas.height, cssWidth: innerWidth, cssHeight: innerHeight, devicePixelRatio};
+      });
+      log(`${configuration.name}: Smooth / 30 FPS selected through UI; final viewport ${configuration.viewport.width}×${configuration.viewport.height}`);
+      await tap(page.locator('#tools-toggle'));
+      await tap(page.locator('#activities-open'));
       await expect(page.locator('#activity-board')).toBeVisible();
       await expect(page.locator('#activity-board .activity-card')).toHaveCount(5);
       await layout('#activity-board');
