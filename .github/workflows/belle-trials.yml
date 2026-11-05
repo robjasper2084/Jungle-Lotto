@@ -18,7 +18,11 @@ jobs:
   trial-visual:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      matrix:
+        case: [desktop-reduced, phone]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -41,18 +45,19 @@ jobs:
           npm ci
           npx playwright install --with-deps chromium
       - name: Verify course, restart and flight controls in the real game
-        # Two 35-minute cases plus bounded failure captures and browser cleanup.
-        timeout-minutes: 80
+        # A 35-minute case plus bounded failure capture and browser cleanup.
+        timeout-minutes: 40
         working-directory: lottominded-ultra.io/games/gothtechnology2
         env:
           BELLE_TRIAL_BROWSER_HEADED: '1'
+          BELLE_TRIAL_BROWSER_CASE: ${{ matrix.case }}
           DEBUG: 'pw:browser'
         run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node belle-isle-source/game/scripts/trial-browser-smoke.mjs
       - name: Upload time-trial visual review and diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: belle-isle-trial-visual
+          name: belle-isle-trial-visual-${{ matrix.case }}
           path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/trial-browser
           if-no-files-found: warn
           retention-days: 14

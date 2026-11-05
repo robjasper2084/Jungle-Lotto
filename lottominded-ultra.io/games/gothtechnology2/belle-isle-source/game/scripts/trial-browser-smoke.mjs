@@ -19,12 +19,24 @@ const screenshotOuterMilliseconds = 155_000;
 const flightResponseMilliseconds = 180_000;
 const flightSettlingMilliseconds = 240_000;
 const caseTimeoutMilliseconds = 35 * 60_000;
+// Software Chromium exited normally after about 17s in CI; retain a finite
+// cleanup deadline with room for that observed shutdown cost.
+const browserCloseMilliseconds = 30_000;
+const caseSelection = process.env.BELLE_TRIAL_BROWSER_CASE;
+const configurations = [
+  {name: 'desktop-reduced', viewport: {width: 1440, height: 960}, reducedMotion: 'reduce'},
+  {name: 'phone', viewport: {width: 390, height: 844}, reducedMotion: 'no-preference', mobile: true},
+];
+const selectedConfigurations = caseSelection === undefined
+  ? configurations
+  : configurations.filter(configuration => configuration.name === caseSelection);
 const report = {
   startedAt: new Date().toISOString(), passed: false, manualScreenshotReviewRequired: true,
   scope: 'Real WebGL trial menus, controls, movement, pause and restart smoke. Full course finishes, physical devices and performance are not certified by this script.',
   browserIsolation: 'Fresh Chromium process and storage per case',
   browserRuntime: {channel: 'chromium', headless, gpuWatchdogSeconds: softwareGpuWatchdogSeconds},
-  limits: {screenshotTimeoutMilliseconds, screenshotOuterMilliseconds, flightResponseMilliseconds, flightSettlingMilliseconds, caseTimeoutMilliseconds},
+  caseSelection: caseSelection ?? null, selectedCases: selectedConfigurations.map(configuration => configuration.name),
+  limits: {screenshotTimeoutMilliseconds, screenshotOuterMilliseconds, flightResponseMilliseconds, flightSettlingMilliseconds, caseTimeoutMilliseconds, browserCloseMilliseconds},
   screenshotBackend: 'Playwright legacy screenshot of the visible page', cases: [],
 };
 const mime = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp','.svg':'image/svg+xml','.glb':'model/gltf-binary','.mp3':'audio/mpeg','.wav':'audio/wav'};
@@ -417,7 +429,7 @@ async function runCase(configuration) {
     }
     let cleanupFailure;
     if (browser) {
-      try { await bounded(browser.close(), 15_000, `${configuration.name}: browser close`); }
+      try { await bounded(browser.close(), browserCloseMilliseconds, `${configuration.name}: browser close`); }
       catch (error) { cleanupFailure = error; entry.cleanupFailure = error.message; entry.passed = false; }
     }
     await writeFile(resolve(output, `${configuration.name}-result.json`), JSON.stringify(entry, null, 2));
@@ -426,6 +438,8 @@ async function runCase(configuration) {
 }
 
 try {
+  assert(caseSelection === undefined || selectedConfigurations.length === 1,
+    'BELLE_TRIAL_BROWSER_CASE must be exactly desktop-reduced or phone when set');
   await stat(resolve(root, 'index.html'));
   process.env.PLAYWRIGHT_LEGACY_SCREENSHOT = '1';
   const require = createRequire(resolve(game, '../../package.json'));
@@ -435,11 +449,8 @@ try {
   report.playwrightVersion = require('@playwright/test/package.json').version;
   await new Promise((done, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', done); });
   origin = `http://127.0.0.1:${server.address().port}`; report.origin = origin;
-  for (const configuration of [
-    {name: 'desktop-reduced', viewport: {width: 1440, height: 960}, reducedMotion: 'reduce'},
-    {name: 'phone', viewport: {width: 390, height: 844}, reducedMotion: 'no-preference', mobile: true},
-  ]) await runCase(configuration);
-  report.passed = report.cases.length === 2 && report.cases.every(entry => entry.passed);
+  for (const configuration of selectedConfigurations) await runCase(configuration);
+  report.passed = report.cases.length === selectedConfigurations.length && report.cases.every(entry => entry.passed);
   if (!report.passed) process.exitCode = 1;
 } catch (error) {
   report.failure = error.stack || String(error); log(`FAIL ${error.message}`); process.exitCode = 1;
