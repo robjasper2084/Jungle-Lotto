@@ -88,13 +88,23 @@ async function runCase(configuration) {
     if (button) await expect(locator).toBeEnabled();
     const dimensions = await layout(selector, label);
     if (button) assert.ok(dimensions.width >= 44 && dimensions.height >= 44, `${label}: usable touch target`);
-    const hit = await locator.evaluate(element => {
+    const hit = await locator.evaluate((element, inspectQuarters) => {
       const r = element.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
-      const target = document.elementFromPoint(x, y);
-      return {x, y, receives: !!target && (target === element || element.contains(target)), covering: target?.id || target?.className || target?.tagName};
-    });
-    assert.ok(hit.receives, `${label}: covered by ${hit.covering}`);
-    return hit;
+      const points = [{name: 'center', x, y}];
+      if (inspectQuarters) points.push(
+        {name: 'left quarter', x: r.left + r.width / 4, y},
+        {name: 'right quarter', x: r.left + r.width * .75, y},
+        {name: 'top quarter', x, y: r.top + r.height / 4},
+        {name: 'bottom quarter', x, y: r.top + r.height * .75},
+      );
+      return {x, y, samples: points.map(point => {
+        const target = document.elementFromPoint(point.x, point.y);
+        return {...point, receives: !!target && (target === element || element.contains(target)), covering: target?.id || target?.className || target?.tagName};
+      })};
+    }, button);
+    entry.metrics[`${label}:hitTargets`] = hit.samples;
+    for (const sample of hit.samples) assert.ok(sample.receives, `${label}: ${sample.name} covered by ${sample.covering}`);
+    return {x: hit.x, y: hit.y};
   };
   const holdTouch = async (selector, during, {button = true, moveUp = false} = {}) => {
     const point = await touchTarget(selector, selector, button);
