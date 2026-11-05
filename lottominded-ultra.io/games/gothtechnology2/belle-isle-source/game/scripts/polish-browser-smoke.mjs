@@ -13,7 +13,7 @@ const headless = process.env.BELLE_POLISH_BROWSER_HEADED !== '1';
 const selectedCase = process.env.BELLE_POLISH_BROWSER_CASE;
 const configurations = [
   {name: 'desktop', viewport: {width: 1355, height: 721}, physicsViewport: {width: 640, height: 400}, mobile: false},
-  {name: 'phone', viewport: {width: 390, height: 844}, physicsViewport: {width: 320, height: 360}, mobile: true},
+  {name: 'phone', viewport: {width: 390, height: 844}, physicsViewport: {width: 390, height: 340}, mobile: true},
 ];
 const selected = selectedCase === undefined ? configurations : configurations.filter(item => item.name === selectedCase);
 const limits = {caseMilliseconds: 35 * 60_000, actionMilliseconds: 90_000, offCourseMilliseconds: 300_000,
@@ -113,11 +113,27 @@ async function runCase(configuration) {
     return {x: result.x, y: result.y};
   };
   const resize = async viewport => {
-    await page.setViewportSize(viewport);
-    await page.waitForFunction(size => {
-      const canvas = document.querySelector('#game');
-      return canvas && canvas.width === size.width && canvas.height === size.height;
-    }, viewport, {timeout: limits.actionMilliseconds});
+    const began = Date.now(), record = {requested: {...viewport}, startedAt: new Date(began).toISOString(), status: 'resizing'};
+    (entry.metrics.resizeTransitions ??= []).push(record);
+    try {
+      await page.setViewportSize(viewport);
+      await page.waitForFunction(size => {
+        const canvas = document.querySelector('#game');
+        return innerWidth === size.width && innerHeight === size.height &&
+          canvas && canvas.width === size.width && canvas.height === size.height;
+      }, viewport, {timeout: limits.actionMilliseconds});
+      record.status = 'passed';
+    } catch (error) { record.status = 'failed'; record.failure = error.message; throw error; }
+    finally {
+      try { record.actual = await bounded(page.evaluate(() => {
+        const canvas = document.querySelector('#game'), r = canvas?.getBoundingClientRect();
+        return {innerWidth, innerHeight, devicePixelRatio, documentWidth: document.documentElement.scrollWidth,
+          canvas: canvas ? {width: canvas.width, height: canvas.height} : null,
+          cssRect: r ? {left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width, height: r.height} : null};
+      }), 15_000, 'Resize viewport diagnostic'); }
+      catch (error) { record.diagnosticFailure = error.message; }
+      record.milliseconds = Date.now() - began;
+    }
   };
   const webgl = async () => {
     const state = await page.locator('#game').evaluate(canvas => {
@@ -366,6 +382,7 @@ async function runCase(configuration) {
       await tap(page.locator('#activity-board').getByRole('button', {name: 'End activity', exact: true}));
       await tap(page.locator('#activity-board').getByRole('button', {name: 'Back to island', exact: true}));
 
+      if (configuration.mobile) await resize({width: 320, height: 360});
       await resize(configuration.physicsViewport);
       const wheelHold = await prepareHeld('onewheel');
       await openBoard();
@@ -470,6 +487,7 @@ async function runCase(configuration) {
         await bounds('#trial-hud', 'landscapeTrialHud'); await bounds('.trial-time', 'landscapeTimer', undefined, true);
         for (const selector of ['#trial-restart', '#trial-exit', '#hover-hud [data-hold="ArrowLeft"]', '#hover-hud [data-hold="ArrowRight"]', '#hover-hud [data-hold="KeyE"]', '#hover-hud [data-hold="KeyQ"]', '#hover-hud [data-hold="Space"]']) await target(selector);
         await expect(page.locator('.hover-lighting')).not.toBeVisible(); await capture('sky-landscape');
+        await resize(configuration.viewport);
       } else await tap(page.locator('.hover-lighting > summary'));
       await duringCountdown(await buttonTrigger('#trial-restart'), 'Off-course restart');
       await expect(page.locator('#trial-hud')).toHaveAttribute('data-off-course', 'false');
