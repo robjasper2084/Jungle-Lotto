@@ -11,6 +11,15 @@ import {HoverRiderRig} from './hoverRiderMotion.ts';
 type Pose={x:number;y:number;z:number;headingY:number};
 type Hooks={pose:()=>Pose;blocked:()=>boolean;entered:()=>void;exited:(p:{x:number;y:number;z:number;heading:number})=>void;touch:()=>boolean;obstacle?:FlightObstacle;vehicleLocked?:()=>boolean;restartTrial?:()=>void;prepareScene?:(model:T.Object3D,signal?:AbortSignal)=>Promise<void>};
 const keyCodes=['KeyW','KeyS','KeyA','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyE','KeyQ','Space','ShiftLeft','ShiftRight','KeyG','KeyF','KeyL','KeyH','KeyK','KeyR'];
+/** A stalled optional 3D download must not trap Start forever. The original load may still complete and be reused on retry. */
+async function waitForRideModel<T>(loading:Promise<T>,timeoutMs:number):Promise<T>{
+ let timer:ReturnType<typeof setTimeout>|undefined;
+ try{
+  return await Promise.race([loading,new Promise<never>((_,reject)=>{
+   timer=setTimeout(()=>reject(new Error('Hoverbike model download timed out. Please retry or choose the one-wheel ride.')),timeoutMs);
+  })]);
+ }finally{if(timer!==undefined)clearTimeout(timer);}
+}
 export class HoverRide {
  readonly sim:HoverController;
  riding=false;
@@ -124,7 +133,7 @@ export class HoverRide {
   const near=choices.find(p=>this.terrain.land(p.x,p.z)&&!this.terrain.obstructed(p.x,p.z,2));
   return near||this.terrain.map.spawn;
  }
- async prepare(scene:T.Scene,forRide=false,signal?:AbortSignal){await this.load(scene);if(signal?.aborted)throw new DOMException('Ride preparation cancelled','AbortError');if(forRide&&this.model)await this.hooks.prepareScene?.(this.model,signal);}
+ async prepare(scene:T.Scene,forRide=false,signal?:AbortSignal){await waitForRideModel(this.load(scene),20000);if(signal?.aborted)throw new DOMException('Ride preparation cancelled','AbortError');if(forRide&&this.model)await this.hooks.prepareScene?.(this.model,signal);}
  async mount(scene:T.Scene){
   if(this.hooks.blocked()||this.hooks.vehicleLocked?.()||this.enterButton.disabled)return;
   const generation=++this.mountGeneration;this.mountAbort?.abort();const preparation=this.mountAbort=new AbortController();
