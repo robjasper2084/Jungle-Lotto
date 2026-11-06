@@ -1,0 +1,63 @@
+name: Belle Isle direct hoverbike startup
+
+on:
+  pull_request:
+    paths:
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/**'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/tools/**'
+      - 'scripts/belle-startup-browser-smoke.mjs'
+      - '.github/workflows/belle-startup.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: belle-startup-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  direct-start:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        case: [desktop, phone]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            lottominded-ultra.io/games/gothtechnology2/package-lock.json
+            lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/package-lock.json
+      - name: Build exact candidate
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm ci
+          npm run check
+          npm run build
+      - name: Install existing test runtime and Google Chrome
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install --with-deps chrome
+      - name: Check startup harness syntax
+        run: node --check scripts/belle-startup-browser-smoke.mjs
+      - name: Exercise direct hoverbike Start, takeoff, landing and remount
+        timeout-minutes: 30
+        env:
+          BELLE_STARTUP_BROWSER_HEADED: '1'
+          BELLE_STARTUP_BROWSER_CASE: ${{ matrix.case }}
+          BELLE_STARTUP_OUTPUT: ${{ runner.temp }}/belle-startup-${{ matrix.case }}
+          DEBUG: 'pw:browser'
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node scripts/belle-startup-browser-smoke.mjs
+      - name: Upload startup screenshots and diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-direct-start-${{ matrix.case }}
+          path: ${{ runner.temp }}/belle-startup-${{ matrix.case }}
+          if-no-files-found: warn
+          retention-days: 14
