@@ -1,7 +1,7 @@
 /** Solo trial rules. Positions are metres and all clock values are seconds. */
 export type TrialVehicle = 'hoverbike' | 'onewheel';
 export type TrialPoint = {x: number; y: number; z: number};
-export type TrialPose = TrialPoint & {heading: number; vehicle: TrialVehicle; onFoot: boolean};
+export type TrialPose = TrialPoint & {heading: number; vehicle: TrialVehicle; onFoot: boolean; pitch?: number; roll?: number};
 export type TrialGate = TrialPoint & {heading: number; radius: number; halfHeight: number};
 export type TrialCourse = {
   id: string;
@@ -9,6 +9,10 @@ export type TrialCourse = {
   name: string;
   description: string;
   distance: number;
+  /** Featured whole-island circuits are separate from the original practice sprints. */
+  category?: 'island' | 'practice';
+  /** Authored guide pace, never a player record or claimed leaderboard time. */
+  targetSeconds?: number;
   start: TrialPoint & {heading: number};
   gates: TrialGate[];
   path: TrialPoint[];
@@ -20,15 +24,18 @@ export type TrialStatus = 'countdown' | 'running' | 'finished' | 'invalid';
 const pointIsFinite = (point: TrialPoint) => [point.x, point.y, point.z].every(Number.isFinite);
 const copyPoint = (point: TrialPoint): TrialPoint => ({x: point.x, y: point.y, z: point.z});
 
+/** A small physical allowance outside the drawn Sky ring, in metres. */
+export const SKY_GATE_PADDING = .6;
+
 /**
  * Fraction of the segment that crosses the gate's forward plane inside its
  * lateral/vertical ellipse. Being near a gate, crossing backwards, or flying
  * above/below its opening does not count. Endpoints may both be outside it.
  */
-export function trialGateCrossing(from: TrialPoint, to: TrialPoint, gate: TrialGate): number | null {
+export function trialGateCrossing(from: TrialPoint, to: TrialPoint, gate: TrialGate, padding = 0): number | null {
   if (!pointIsFinite(from) || !pointIsFinite(to) || !pointIsFinite(gate)
     || ![gate.heading, gate.radius, gate.halfHeight].every(Number.isFinite)
-    || gate.radius <= 0 || gate.halfHeight <= 0) return null;
+    || gate.radius <= 0 || gate.halfHeight <= 0 || !Number.isFinite(padding) || padding < 0) return null;
   const nx = Math.sin(gate.heading), nz = Math.cos(gate.heading);
   const before = (from.x - gate.x) * nx + (from.z - gate.z) * nz;
   const after = (to.x - gate.x) * nx + (to.z - gate.z) * nz;
@@ -38,7 +45,7 @@ export function trialGateCrossing(from: TrialPoint, to: TrialPoint, gate: TrialG
   const y = from.y + (to.y - from.y) * fraction - gate.y;
   const z = from.z + (to.z - from.z) * fraction - gate.z;
   const lateral = x * nz - z * nx;
-  return (lateral / gate.radius) ** 2 + (y / gate.halfHeight) ** 2 <= 1 + 1e-9 ? fraction : null;
+  return (lateral / (gate.radius + padding)) ** 2 + (y / (gate.halfHeight + padding)) ** 2 <= 1 + 1e-9 ? fraction : null;
 }
 
 export class TrialRun {
@@ -126,7 +133,7 @@ export class TrialRun {
     if (!from) return;
     let lastFraction = -1;
     while (this.next < this.course.gates.length) {
-      const fraction = trialGateCrossing(from, pose, this.course.gates[this.next]);
+      const fraction = trialGateCrossing(from, pose, this.course.gates[this.next], this.course.vehicle === 'hoverbike' ? SKY_GATE_PADDING : 0);
       // A later gate crossed earlier on the segment cannot be awarded out of order.
       if (fraction === null || fraction + 1e-9 < lastFraction) break;
       lastFraction = fraction;

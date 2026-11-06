@@ -81,6 +81,7 @@ export class IslandActivities {
   private readonly hudTitle = node('h3');
   private readonly hudDetail = node('p');
   private readonly hudMeta = node('p', 'activity-hud-meta');
+  private readonly hudTime = node('output', 'activity-time');
   private readonly action = button('', () => this.interact(), 'activity-primary');
   private readonly notice = node('div');
   private noticeTimer = 0;
@@ -152,6 +153,8 @@ export class IslandActivities {
   }
   private createHud() {
     this.hud.id = 'activity-hud'; this.hud.hidden = true; this.hud.setAttribute('aria-label', 'Current activity');
+    // Keep the numeric readout from introducing a new live announcement every tick.
+    this.hudTime.setAttribute('aria-live', 'off');
     const actions = node('div', 'activity-hud-actions');
     this.action.id = 'activity-action';
     actions.append(this.action, button('Journal · J', () => this.open()));
@@ -286,7 +289,12 @@ export class IslandActivities {
       const verb = state.phase === 'pickup' ? 'Collect at' : state.phase === 'return' ? 'Return to' : 'Deliver to';
       this.hudDetail.textContent = target ? `${verb} ${target.name} · ${Math.round(Math.hypot(target.x - this.actor.x, target.z - this.actor.z))} m` : 'Shift complete';
       const pause = this.hooks.running() ? '' : ' · paused';
-      this.hudMeta.textContent = `${state.completedDropoffIds.length}/${state.contract.dropoffs.length || 1} stops · ${state.contract.softTimeLimitSeconds === null ? 'Take your time' : elapsed(state.elapsedSeconds)}${pause}`;
+      const progress = `${state.completedDropoffIds.length}/${state.contract.dropoffs.length || 1} stops · `;
+      if (state.contract.softTimeLimitSeconds === null) this.hudMeta.textContent = `${progress}Take your time${pause}`;
+      else {
+        this.hudTime.textContent = elapsed(state.elapsedSeconds);
+        this.hudMeta.replaceChildren(progress, this.hudTime, pause);
+      }
       const check = tryDispatchHandoff(state, this.actor);
       this.action.disabled = !this.hooks.running() || !check.event;
       this.action.textContent = check.reason === 'on-foot-required' ? 'Land & step off · F' : check.reason === 'slow-down' ? 'Stop to hand off' : check.reason === 'out-of-range' ? 'Follow the marker' : check.reason === 'wrong-height' ? 'Reach ground level' : state.phase === 'pickup' ? 'Collect parcel · B' : state.phase === 'return' ? 'Finish shift · B' : 'Deliver parcel · B';

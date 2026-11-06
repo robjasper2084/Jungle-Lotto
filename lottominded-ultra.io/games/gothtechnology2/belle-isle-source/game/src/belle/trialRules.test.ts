@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {TrialRun, trialGateCrossing, formatTrialTime, formatTrialSplit, type TrialCourse, type TrialGate, type TrialPose} from './trialRules.ts';
+import {TrialRun, trialGateCrossing, SKY_GATE_PADDING, formatTrialTime, formatTrialSplit, type TrialCourse, type TrialGate, type TrialPose} from './trialRules.ts';
 
 const gate = (z: number, overrides: Partial<TrialGate> = {}): TrialGate => ({x: 0, y: 5, z, heading: 0, radius: 2, halfHeight: 2, ...overrides});
 const pose = (z: number, overrides: Partial<TrialPose> = {}): TrialPose => ({x: 0, y: 5, z, heading: 0, vehicle: 'hoverbike', onFoot: false, ...overrides});
@@ -65,6 +65,32 @@ test('one fast segment may clear successive gates, but cannot skip or backfill r
   reversedOrder.step(3, pose(0));
   reversedOrder.step(1, pose(35));
   assert.equal(reversedOrder.next, 1, 'a gate crossed earlier on the segment is not backfilled');
+});
+
+test('Sky rim forgiveness is bounded and keeps swept direction, height and ellipse checks', () => {
+  const opening = gate(10, {radius: 9, halfHeight: 4});
+  const cross = (x: number, y: number) => trialGateCrossing(pose(0, {x, y}), pose(20, {x, y}), opening, SKY_GATE_PADDING);
+  close(cross(9.5, 5), .5);
+  close(cross(0, 9.5), .5);
+  assert.equal(cross(9.61, 5), null, 'a wide miss remains a miss');
+  assert.equal(cross(0, 9.61), null, 'vertical allowance is bounded');
+  assert.equal(cross(9.4, 9.4), null, 'expanded ellipse does not become a rectangular box');
+  assert.equal(trialGateCrossing(pose(20, {x: 9.5}), pose(0, {x: 9.5}), opening, SKY_GATE_PADDING), null);
+  assert.equal(trialGateCrossing(pose(9.9), pose(9.9), opening, SKY_GATE_PADDING), null);
+  assert.equal(trialGateCrossing(pose(0), pose(20), opening, NaN), null);
+});
+
+test('only aerial runs receive the rim allowance and later gates cannot replace a miss', () => {
+  for (const vehicle of ['hoverbike', 'onewheel'] as const) {
+    const start = pose(0, {x: 2.5, vehicle});
+    const run = new TrialRun(course({vehicle, start, gates: [gate(10)]}));
+    run.step(3, start); run.step(1, pose(20, {x: 2.5, vehicle}));
+    assert.equal(run.status, vehicle === 'hoverbike' ? 'finished' : 'running');
+  }
+  const start = pose(0, {x: 2.7});
+  const run = new TrialRun(course({start, gates: [gate(10), gate(20, {x: 2.7})]}));
+  run.step(3, start); run.step(1, pose(30, {x: 2.7}));
+  assert.equal(run.next, 0); assert.equal(run.finish, null);
 });
 
 test('interpolated splits and finish agree at 30 and 120 Hz, then remain frozen', () => {

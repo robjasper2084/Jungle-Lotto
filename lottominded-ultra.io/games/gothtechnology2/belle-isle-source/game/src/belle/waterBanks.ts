@@ -2,6 +2,7 @@ import * as T from 'three';
 import {inside,segment,type ParkMap,type Point,ParkTerrain} from './terrain.ts';
 import {roadIndex} from './streetPlan.ts';
 import {finishBank} from './surfaceFinish.ts';
+import {bankGrassGeometry,createShoreDetailPool} from './shoreDetail.ts';
 
 /** Bank detail follows the actual water polygon, including the islands within it.
  * These small visual slopes stay on the water side of the collision boundary. */
@@ -37,11 +38,8 @@ export function addWaterBanks(scene:T.Scene,map:ParkMap,terrain:ParkTerrain,grou
   const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(verts,3));g.computeVertexNormals();
   const material=new T.MeshStandardMaterial({color:verts===retaining?0x899083:0xffffff,roughness:.97,side:T.DoubleSide});if(verts===earth){const uv:number[]=[];for(let i=0;i<verts.length;i+=3)uv.push(verts[i]/4,verts[i+2]/4);g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));material.map=ground.map;material.normalMap=ground.normalMap;material.normalScale.set(.15,.15);}finishBank(material,1.05,2,verts===retaining);const mesh=new T.Mesh(g,material);mesh.name=name;mesh.receiveShadow=true;scene.add(mesh);
  }
- // One static, low-poly sedge batch, with gaps. No update loop or alpha shadows.
- const verts:number[]=[];for(let i=0;i<7;i++){const a=i*2.4,r=.1+(i%3)*.045,x=Math.cos(a)*r,z=Math.sin(a)*r,h=.65+(i%4)*.1;verts.push(x-.015,0,z,x+.015,0,z,x*1.8,h,z*1.8);}
- const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(verts,3));g.computeVertexNormals();
- const sedges=new T.InstancedMesh(g,new T.MeshStandardMaterial({color:0xffffff,roughness:1,side:T.DoubleSide}),reeds.length),dummy=new T.Object3D();
- reeds.forEach((r,i)=>{dummy.position.set(r.x,2,r.z);dummy.rotation.y=r.angle;dummy.scale.set(1,r.h,1);dummy.updateMatrix();sedges.setMatrixAt(i,dummy.matrix);sedges.setColorAt(i,new T.Color().setHSL(.18+rand()*.035,.25,.23+rand()*.1));});
- sedges.name='Irregular waterside sedge clusters';sedges.computeBoundingSphere();scene.add(sedges);
- return {bankVertices:(earth.length+retaining.length)/3,reeds:reeds.length};
+ const tint=new T.Color(),instances=reeds.map(r=>({x:r.x,y:terrain.height(r.x,r.z)+.012,z:r.z,yaw:r.angle,sx:1,sy:r.h,sz:1,color:tint.setHSL(.18+rand()*.035,.25,.23+rand()*.1).getHex()}));
+ const material=new T.MeshStandardMaterial({color:0xffffff,roughness:1,side:T.DoubleSide});material.name='Bank sedge grass';
+ const sedges=createShoreDetailPool(scene,bankGrassGeometry(),material,instances,'plants','Irregular waterside sedge clusters');
+ return {bankVertices:(earth.length+retaining.length)/3,reeds:reeds.length,stats:sedges.stats,setQuality:sedges.setQuality,update:sedges.update};
 }

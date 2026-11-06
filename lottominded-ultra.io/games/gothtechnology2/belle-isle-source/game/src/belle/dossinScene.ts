@@ -1,5 +1,6 @@
 import * as T from 'three';
 import {dossinLocal,type DossinLayout} from './dossin.ts';
+import type {LocalLightPool} from './localLighting.ts';
 /** Small original repeating material maps; no reference photography is shipped. */
 function surface(kind:'blue'|'floor'|'wood'){
  const c=document.createElement('canvas');c.width=c.height=512;const x=c.getContext('2d')!;
@@ -23,9 +24,8 @@ export function prepareDossinMaterials(root:T.Object3D){
   }
  });
 }
-export function addDossinLighting(scene:T.Scene,c:DossinLayout){
+export function addDossinLighting(scene:T.Scene,c:DossinLayout,localLights:LocalLightPool){
  const group=new T.Group();group.name='Dossin interior lighting';group.position.set(c.center[0],2,c.center[1]);group.rotation.y=c.yaw;scene.add(group);
- // Only three local, unshadowed lights; no new postprocessing or large textures.
- for(const [u,v] of [[-4,-12],[-1,8],[16,22]]){const light=new T.PointLight(0xffebce,9,25,1.5);light.position.set(u,3.45,-v);group.add(light);}
- return{update(x:number,z:number){const p=dossinLocal(c,x,z);group.visible=p.u> -40&&p.u<36&&p.v> -35&&p.v<40;}};
+ const lighting=localLights.registerInterior([[-4,-12],[-1,8],[16,22]].map(([u,v])=>({position:[u,3.45,-v],color:0xffebce,intensity:9,distance:25,decay:1.5})),group);
+ return{update(x:number,z:number){const p=dossinLocal(c,x,z);group.visible=p.u> -40&&p.u<36&&p.v> -35&&p.v<40;lighting.request(group.visible);}};
 }

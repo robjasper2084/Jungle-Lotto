@@ -1,5 +1,6 @@
 import * as T from 'three';
 import {aquariumLocal,type AquariumLayout} from './aquarium.ts';
+import type {LocalLightPool} from './localLighting.ts';
 // Original tile textures; reference photos are not redistributed in the game.
 function tiles(kind:'jade'|'black'|'floor'){
  const c=document.createElement('canvas');c.width=c.height=512;const ctx=c.getContext('2d')!;
@@ -29,7 +30,7 @@ export function prepareAquariumMaterials(root:T.Object3D){
   }
  });
 }
-export function addAquariumLife(scene:T.Scene,c:AquariumLayout){
+export function addAquariumLife(scene:T.Scene,c:AquariumLayout,localLights:LocalLightPool){
  const group=new T.Group();group.name='Aquarium fish and gallery lights';group.position.set(c.center[0],2,c.center[1]);group.rotation.y=c.yaw;scene.add(group);
  const habitats=[...c.tanks.map(t=>({u:t.u,v:t.v,ru:.83,rv:.86})),...[-1,1].flatMap(s=>[-1,1].map(t=>({u:s*1.1,v:t*1.1,ru:.57,rv:.57})))];
  const count=habitats.length*4,body=new T.InstancedMesh(new T.SphereGeometry(1,10,6),new T.MeshStandardMaterial({color:0x91b4aa,roughness:.48,metalness:.3,emissive:0x253d36,emissiveIntensity:.35}),count);
@@ -40,9 +41,9 @@ export function addAquariumLife(scene:T.Scene,c:AquariumLayout){
  eyes.instanceMatrix.setUsage(T.DynamicDrawUsage);fins.instanceMatrix.setUsage(T.DynamicDrawUsage);eyes.frustumCulled=fins.frustumCulled=false;group.add(eyes,fins);
  body.instanceMatrix.setUsage(T.DynamicDrawUsage);tails.instanceMatrix.setUsage(T.DynamicDrawUsage);group.add(body,tails);body.frustumCulled=tails.frustumCulled=false;
  const colors=[0x99b8ae,0xa99d69,0x728c89,0x72849b];for(let i=0;i<count;i++){body.setColorAt(i,new T.Color(colors[i%4]));tails.setColorAt(i,new T.Color(colors[i%4]));}
- for(const v of [-23,0,23]){const light=new T.PointLight(0xc4dbc6,8,32,1.6);light.position.set(0,4.6,-v);group.add(light);}
+ const lighting=localLights.registerInterior([-23,0,23].map(v=>({position:[0,4.6,-v],color:0xc4dbc6,intensity:8,distance:32,decay:1.6})),group);
  const dummy=new T.Object3D(),pos=new T.Vector3();let last=-1;
- return{update(time:number,x:number,z:number){const local=aquariumLocal(c,x,z);group.visible=Math.abs(local.u)<26&&Math.abs(local.v)<58;if(!group.visible||time-last<1/30)return;last=time;
+ return{update(time:number,x:number,z:number){const local=aquariumLocal(c,x,z);group.visible=Math.abs(local.u)<26&&Math.abs(local.v)<58;lighting.request(group.visible);if(!group.visible||time-last<1/30)return;last=time;
   for(let i=0;i<count;i++){const h=habitats[Math.floor(i/4)],phase=time*(.22+(i%3)*.035)+i*2.17,du=-Math.sin(phase)*h.ru,dv=Math.cos(phase)*h.rv,yaw=Math.atan2(dv,du),length=.19+(i%4)*.025;
    pos.set(h.u+Math.cos(phase)*h.ru,1.65+(i%4)*.18+Math.sin(phase*1.3)*.08,-h.v-Math.sin(phase)*h.rv);
    dummy.position.copy(pos);dummy.rotation.set(0,yaw,Math.sin(phase*.7)*.025);dummy.scale.set(length,.09,.065);dummy.updateMatrix();body.setMatrixAt(i,dummy.matrix);

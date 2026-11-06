@@ -60,6 +60,96 @@ async function bounded(operation, milliseconds, label) {
     return await Promise.race([operation, new Promise((_, reject) => { timer = setTimeout(() => reject(new Error(`${label} exceeded ${milliseconds / 1000} seconds`)), milliseconds); })]);
   } finally { clearTimeout(timer); }
 }
+
+// Observe the real transition before the native action. A slow renderer can
+// finish the countdown before Playwright's click/tap promise returns.
+function installCountdownObserver(expected) {
+  if (window.__trialCountdownObservation) throw new Error('A countdown observer is already armed');
+  const hud = document.querySelector('#trial-hud');
+  if (!hud) throw new Error('Trial HUD is required before arming countdown');
+  const visible = element => !!element && !element.hidden && element.getClientRects().length > 0
+    && !['hidden', 'collapse'].includes(getComputedStyle(element).visibility);
+  const number = value => value === undefined || value === '' ? null : Number(value);
+  const snapshot = () => ({at: performance.now(), visible: visible(hud), visibility: document.visibilityState,
+    course: hud.dataset.course, vehicle: hud.dataset.vehicle, status: hud.dataset.status, paused: hud.dataset.paused,
+    next: number(hud.dataset.next), elapsed: number(hud.dataset.elapsed), timer: hud.querySelector('.trial-time')?.textContent?.trim()});
+  const evidence = {expected, armedAt: performance.now(), before: snapshot(), activation: null, countdown: null,
+    samples: [], samplesOmitted: 0, ignoredEvents: [], disconnected: false};
+  let stopped = false;
+  const stop = () => {
+    if (stopped) return;
+    stopped = true; observer.disconnect();
+    window.removeEventListener('click', activation, true);
+    window.removeEventListener('keydown', activation, true);
+    evidence.disconnected = true;
+  };
+  const activation = event => {
+    if (stopped || evidence.activation || event.type !== (expected.trigger === 'key' ? 'keydown' : 'click')) return;
+    const target = event.target instanceof Element ? event.target : null;
+    const button = target?.closest('button');
+    const state = snapshot();
+    const input = {at: performance.now(), type: event.type, trusted: event.isTrusted, code: event.code,
+      repeat: !!event.repeat, modified: !!(event.ctrlKey || event.altKey || event.metaKey), mouseButton: event.button,
+      target: target?.id, focused: document.activeElement?.id, buttonId: button?.id, buttonCourse: button?.dataset.course,
+      buttonInBoard: !!button?.closest('#trial-board'), buttonVisible: visible(button), buttonDisabled: !!button?.disabled, state};
+    const currentCourse = state.visible && state.course === expected.course && state.vehicle === expected.vehicle && state.status === 'running';
+    const intended = expected.trigger === 'key'
+      ? input.code === 'KeyR' && !input.repeat && !input.modified && input.target === 'game' && input.focused === 'game' && currentCourse
+      : input.mouseButton === 0 && input.buttonVisible && !input.buttonDisabled
+        && (expected.action === 'start' ? input.buttonInBoard && input.buttonCourse === expected.course
+          : input.buttonId === 'trial-restart' && currentCourse);
+    if (input.trusted && state.visibility === 'visible' && intended) evidence.activation = input;
+    else if (evidence.ignoredEvents.length < 12) evidence.ignoredEvents.push(input);
+  };
+  const observer = new MutationObserver(() => {
+    if (stopped || !evidence.activation) return;
+    const state = snapshot();
+    if (evidence.samples.length < 12) evidence.samples.push(state); else evidence.samplesOmitted++;
+    evidence.last = state;
+    if (state.course === expected.course && state.vehicle === expected.vehicle && state.status === 'countdown') {
+      evidence.countdown = state; stop();
+    }
+  });
+  window.__trialCountdownObservation = {id: expected.id, evidence, stop};
+  window.addEventListener('click', activation, true);
+  window.addEventListener('keydown', activation, true);
+  observer.observe(hud, {attributes: true, childList: true, characterData: true, subtree: true,
+    attributeFilter: ['hidden', 'data-course', 'data-vehicle', 'data-status', 'data-next', 'data-elapsed', 'data-paused']});
+  return {armedAt: evidence.armedAt, before: evidence.before};
+}
+
+function assertCountdownEvidence(evidence, expected, label) {
+  assert.ok(evidence, `${label}: countdown evidence is required`);
+  for (const key of ['id', 'action', 'trigger', 'course', 'vehicle']) assert.equal(evidence.expected[key], expected[key], `${label}: matching ${key}`);
+  const activation = evidence.activation;
+  assert.ok(activation, `${label}: matching native activation was not observed`);
+  assert.equal(activation.trusted, true, `${label}: activation must be trusted`);
+  assert.equal(activation.state.visibility, 'visible', `${label}: activation occurs on a visible page`);
+  assert.equal(activation.type, expected.trigger === 'key' ? 'keydown' : 'click', `${label}: expected native event`);
+  if (expected.trigger === 'key') {
+    assert.equal(activation.code, 'KeyR'); assert.equal(activation.repeat, false); assert.equal(activation.modified, false);
+    assert.equal(activation.target, 'game'); assert.equal(activation.focused, 'game');
+  } else {
+    assert.equal(activation.mouseButton, 0); assert.equal(activation.buttonVisible, true); assert.equal(activation.buttonDisabled, false);
+    if (expected.action === 'start') {
+      assert.equal(activation.buttonInBoard, true); assert.equal(activation.buttonCourse, expected.course);
+    } else assert.equal(activation.buttonId, 'trial-restart');
+  }
+  if (expected.action === 'restart') {
+    assert.equal(activation.state.visible, true); assert.equal(activation.state.course, expected.course);
+    assert.equal(activation.state.vehicle, expected.vehicle); assert.equal(activation.state.status, 'running');
+  }
+  const state = evidence.countdown;
+  assert.ok(state, `${label}: post-activation countdown was not observed`);
+  assert.ok(Number.isFinite(evidence.armedAt) && Number.isFinite(activation.at) && Number.isFinite(state.at)
+    && activation.at >= evidence.armedAt && state.at >= activation.at, `${label}: countdown follows the armed native activation`);
+  assert.equal(state.visible, true, `${label}: countdown HUD is visible`);
+  assert.equal(state.visibility, 'visible', `${label}: countdown page is visible`);
+  assert.equal(state.course, expected.course); assert.equal(state.vehicle, expected.vehicle);
+  assert.equal(state.status, 'countdown'); assert.equal(state.next, 0, `${label}: gate resets`);
+  assert.equal(state.elapsed, 0, `${label}: elapsed resets`); assert.equal(state.timer, '0:00.00', `${label}: timer resets`);
+}
+
 const delay = milliseconds => new Promise(done => setTimeout(done, milliseconds));
 
 let chromium;
@@ -72,11 +162,48 @@ async function runCase(configuration) {
     passed: false, errors: [], console: [], failedRequests: [], screenshots: [], metrics: {}, fullCourseCompletion: 'not exercised'};
   report.cases.push(entry);
   let browser, page, touchSession, deadline;
-  let screenshotFailed = false, caseTimedOut = false;
+  let screenshotFailed = false, caseTimedOut = false, observerCleanupFailed = false;
+  let countdownSequence = 0, countdownObservation;
   const tap = locator => configuration.mobile ? locator.tap() : locator.click();
   const hud = () => page.locator('#trial-hud');
   const elapsed = async () => Number(await hud().getAttribute('data-elapsed'));
   const speed = async selector => Number.parseFloat(await page.locator(selector).textContent());
+
+  const stopCountdownObservation = async observation => {
+    if (!observation) return;
+    try {
+      const evidence = await bounded(page.evaluate(id => {
+        const observation = window.__trialCountdownObservation;
+        if (!observation || observation.id !== id) return null;
+        observation.stop(); delete window.__trialCountdownObservation;
+        return observation.evidence;
+      }, observation.id), 5_000, 'Countdown observer cleanup');
+      if (evidence) observation.record.evidence = evidence;
+    } catch (error) {
+      observerCleanupFailed = true; observation.record.status = 'failed'; observation.record.cleanupFailure = error.message;
+      entry.countdownObserverCleanupFailure = error.message; throw error;
+    } finally { if (countdownObservation === observation) countdownObservation = undefined; }
+  };
+  const observeCountdown = async (request, trigger) => {
+    assert.equal(countdownObservation, undefined, 'Only one countdown observation may be armed');
+    const expected = {...request, id: ++countdownSequence};
+    const label = `${request.action} ${request.course}`;
+    const record = {label, expected, status: 'observing'};
+    (entry.metrics.countdownTransitions ??= []).push(record);
+    const observation = countdownObservation = {id: expected.id, record};
+    try {
+      record.arm = await page.evaluate(installCountdownObserver, expected);
+      record.triggerQueuedAt = new Date().toISOString();
+      await trigger(); record.triggerCompletedAt = new Date().toISOString();
+      await page.waitForFunction(id => window.__trialCountdownObservation?.id === id
+        && !!window.__trialCountdownObservation.evidence.countdown, expected.id, {timeout: 90_000});
+      record.evidence = await page.evaluate(() => window.__trialCountdownObservation?.evidence);
+      assertCountdownEvidence(record.evidence, expected, label);
+      record.status = 'passed';
+    } catch (error) {
+      record.status = 'failed'; record.failure = error.stack || String(error); throw error;
+    } finally { await stopCountdownObservation(observation); }
+  };
 
   const screenshot = async name => {
     const filename = `${configuration.name}-${name}.png`;
@@ -154,6 +281,7 @@ async function runCase(configuration) {
       mode: element.querySelector('#hover-mode')?.textContent,
       heldKeys: [...element.querySelectorAll('[data-held="true"]')].map(button => button.dataset.hold).filter(Boolean),
       frameDiagnostic: document.querySelector('#profile')?.textContent,
+      renderDiagnostics: {...document.querySelector('#profile')?.dataset},
     };
   });
   const observeFlight = async (name, predicate, {timeout = flightResponseMilliseconds, heldKey} = {}) => {
@@ -202,26 +330,48 @@ async function runCase(configuration) {
     await expect(page.locator('#trial-board')).toBeVisible();
     await layout('#trial-board');
   };
+  const inspectCatalog = async vehicle => {
+    const cards = page.locator('#trial-course-list .trial-course');
+    await expect(cards).toHaveCount(vehicle === 'hoverbike' ? 4 : 3);
+    const featured = page.locator('#trial-course-list > .trial-course[data-category="island"]');
+    await expect(featured).toHaveCount(2);
+    const routes = await featured.evaluateAll(elements => elements.map(element => ({
+      id: element.querySelector('button[data-course]').dataset.course,
+      name: element.querySelector('h3').textContent,
+      metrics: element.querySelector('.trial-course-meta').textContent,
+      guide: element.querySelector('.trial-course-pace')?.textContent
+    })));
+    assert.equal(new Set(routes.map(route => route.id)).size, 2, 'Two independent full-island course identities');
+    for (const route of routes) {
+      assert.match(route.metrics, /FULL ISLAND · ONE LAP/);
+      assert.ok(Number(route.metrics.match(/([\d.]+) km/)?.[1]) >= 8, `${route.name} is a substantial full-island circuit`);
+      assert.match(route.guide, /Pace guide/);
+    }
+    (entry.metrics.courseCatalog ??= {})[vehicle] = routes;
+    await expect(page.locator('#trial-practice')).not.toHaveAttribute('open');
+    await expect(page.locator('#trial-practice > summary')).toContainText('Practice sprints');
+    return routes[0].id;
+  };
   const startCourse = async (id, vehicle) => {
     log(`${configuration.name}: start ${id} through its course button`);
-    await tap(page.locator(`#trial-board button[data-course="${id}"]`));
+    await observeCountdown({action: 'start', trigger: 'button', course: id, vehicle},
+      () => tap(page.locator(`#trial-board button[data-course="${id}"]`)));
     await expect(hud()).toBeVisible();
     await expect(hud()).toHaveAttribute('data-course', id);
     await expect(hud()).toHaveAttribute('data-vehicle', vehicle);
-    await expect(hud()).toHaveAttribute('data-status', 'countdown');
-    await expect(hud()).toHaveAttribute('data-next', '0');
-    assert.equal(await elapsed(), 0);
     await expect(hud()).toHaveAttribute('data-status', 'running');
     await expect(page.locator('body')).toHaveClass(/island-trial/);
+    await expect(hud()).toHaveAttribute('data-ghosts', 'on');
+    await expect(hud()).toHaveAttribute('data-ghost-tracks', '1');
+    await expect(hud()).toHaveAttribute('data-recorded-ghost', 'none');
   };
   const restart = async keyboard => {
     log(`${configuration.name}: restart using ${keyboard ? 'R' : 'the visible button'}`);
-    if (keyboard) { await page.locator('#game').focus(); await page.keyboard.press('r'); }
-    else await tap(page.locator('#trial-restart'));
-    await expect(hud()).toHaveAttribute('data-status', 'countdown');
-    await expect(hud()).toHaveAttribute('data-next', '0');
-    assert.equal(await elapsed(), 0, 'restart must reset elapsed time');
-    await expect(page.locator('#trial-hud .trial-time')).toHaveText('0:00.00');
+    if (keyboard) await page.locator('#game').focus();
+    const current = await hud().evaluate(element => ({course: element.dataset.course, vehicle: element.dataset.vehicle}));
+    assert.ok(current.course && current.vehicle, 'Restart requires an active course identity');
+    await observeCountdown({action: 'restart', trigger: keyboard ? 'key' : 'button', ...current},
+      () => keyboard ? page.keyboard.press('r') : tap(page.locator('#trial-restart')));
     await expect(hud()).toHaveAttribute('data-status', 'running');
   };
   const freezeCheck = async menu => {
@@ -231,9 +381,11 @@ async function runCase(configuration) {
     } else { await tap(page.locator('#pause')); await expect(page.locator('#pause')).toHaveText('Resume'); }
     await expect(hud()).toHaveAttribute('data-paused', 'true');
     const before = await elapsed();
+    const ghostsBefore = await hud().getAttribute('data-ghost-state');
     // This intentional observation interval proves the active clock is frozen.
     await delay(850);
     assert.equal(await elapsed(), before, `${menu ? 'menu' : 'pause'} must freeze trial time`);
+    assert.equal(await hud().getAttribute('data-ghost-state'), ghostsBefore, 'Visible ghost transforms freeze on the race clock');
     entry.metrics[menu ? 'menuPauseSeconds' : 'pauseSeconds'] = before;
     if (menu) {
       if (configuration.mobile) await tap(page.locator('[data-close="ride-menu"]'));
@@ -302,10 +454,16 @@ async function runCase(configuration) {
       entry.metrics.graphics = {quality: await page.locator('#quality').inputValue(), fps: await page.locator('#fps').inputValue(), initialRide: 'One wheel selected through startup picker'};
 
       await openBoard();
-      await expect(page.locator('#trial-course-list .trial-course')).toHaveCount(2);
-      await expect(page.locator('#trial-course-list .trial-course-record strong')).toHaveText(['Set the first time', 'Set the first time']);
+      await inspectCatalog('hoverbike');
+      await expect(page.locator('#trial-course-list .trial-course-record strong')).toHaveText(Array(4).fill('Set the first time'));
+      await expect(page.locator('#trial-ghost-toggle')).toHaveAttribute('aria-pressed', 'true');
+      await tap(page.locator('#trial-ghost-toggle'));
+      await expect(page.locator('#trial-ghost-toggle')).toHaveAttribute('aria-pressed', 'false');
+      assert.equal(await page.evaluate(() => localStorage.getItem('belle-isle-ghost-visibility-v1')), 'off');
+      await tap(page.locator('#trial-ghost-toggle'));
+      await expect(page.locator('#trial-ghost-toggle')).toHaveAttribute('aria-pressed', 'true');
+      await screenshot('sky-course-board');
       if (!configuration.mobile) {
-        await screenshot('sky-course-board');
         await page.locator('#trial-tab-hoverbike').focus();
         await page.keyboard.press('ArrowRight');
         await expect(page.locator('#trial-tab-onewheel')).toBeFocused();
@@ -314,8 +472,8 @@ async function runCase(configuration) {
         assert.equal(focus.animation, 'none'); assert.equal(focus.transition, '0s');
       } else await tap(page.locator('#trial-tab-onewheel'));
       await expect(page.locator('#trial-tab-onewheel')).toHaveAttribute('aria-selected', 'true');
-      await expect(page.locator('#trial-course-list .trial-course')).toHaveCount(1);
-      await startCourse('onewheel-island-cup-v1', 'onewheel');
+      const wheelCourse = await inspectCatalog('onewheel');
+      await startCourse(wheelCourse, 'onewheel');
       await expect(page.locator('body')).not.toHaveClass(/on-hoverbike/);
       await expect(page.locator('#mount')).toBeDisabled();
       const observeWheel = async () => { await expect.poll(() => speed('#speed')).toBeGreaterThan(0); entry.metrics.wheelMovingKmh = await speed('#speed'); };
@@ -334,8 +492,9 @@ async function runCase(configuration) {
 
       await openBoard();
       await tap(page.locator('#trial-tab-hoverbike'));
-      await expect(page.locator('#trial-course-list .trial-course')).toHaveCount(2);
-      await startCourse('sky-bridge-v1', 'hoverbike');
+      const skyCourse = await inspectCatalog('hoverbike');
+      await expect(page.locator('#trial-ghost-toggle')).toHaveAttribute('aria-pressed', 'true');
+      await startCourse(skyCourse, 'hoverbike');
       await expect(page.locator('body')).toHaveClass(/on-hoverbike/);
       await expect(page.locator('#hover-flight-mode')).toHaveValue('drone');
       await expect(page.locator('#hover-flight-mode')).toBeDisabled();
@@ -405,10 +564,44 @@ async function runCase(configuration) {
       await leave();
       await expect(page.locator('#hover-flight-mode')).toBeEnabled();
       await openBoard();
-      await expect(page.locator('#trial-course-list .trial-course-record strong')).toHaveText(['Set the first time', 'Set the first time']);
+      await expect(page.locator('#trial-course-list .trial-course-record strong')).toHaveText(Array(4).fill('Set the first time'));
+      await tap(page.locator('#trial-practice > summary'));
+      await expect(page.locator('#trial-board button[data-course="sky-bridge-v1"]')).toBeVisible();
+      await expect(page.locator('#trial-board button[data-course="sky-sunset-v1"]')).toBeVisible();
       await tap(page.locator('#trial-tab-onewheel'));
-      await expect(page.locator('#trial-course-list .trial-course-record strong')).toHaveText(['Set the first time']);
+      await expect(page.locator('#trial-course-list .trial-course-record strong')).toHaveText(Array(3).fill('Set the first time'));
       await tap(page.locator('#trial-board').getByRole('button', {name: 'Back to island', exact: true}));
+      // Exercise the actual Automatic UI and observe its read-only feedback.
+      // This is software-rendered behavior evidence, not a device FPS benchmark.
+      await tap(page.locator('#tools-toggle'));
+      await tap(page.locator('#settings-open'));
+      await page.locator('#quality').selectOption('automatic');
+      await tap(page.locator('[data-close="settings"]'));
+      await page.locator('#game').focus();
+      await expect(page.locator('#profile')).toHaveAttribute('data-quality', 'automatic');
+      const automatic = {samples: [], actualPerformanceCertified: false};
+      entry.metrics.automaticGraphics = automatic;
+      const automaticBegan = Date.now();
+      while (Date.now() - automaticBegan < 60_000) {
+        const sample = await page.locator('#profile').evaluate(element => ({...element.dataset}));
+        if (automatic.samples.at(-1)?.activeFrames !== sample.activeFrames) automatic.samples.push(sample);
+        if (Number(sample.adaptiveScale) <= .75) {
+          assert.equal(sample.effectiveQuality, 'smooth', 'Automatic low resolution also applies the lighter world effects');
+          automatic.observedFallback = true;
+          break;
+        }
+        if (automatic.samples.length >= 12) break;
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+      assert(automatic.samples.length > 0, 'Automatic graphics feedback remains readable');
+      automatic.note = automatic.observedFallback ? 'Automatic selected lighter world effects under observed CI frame pressure.' : 'No low-budget transition observed within this bounded sample; deterministic pressure tests cover fallback.';
+      await tap(page.locator('#tools-toggle'));
+      await tap(page.locator('#settings-open'));
+      await page.locator('#quality').selectOption('smooth');
+      await tap(page.locator('[data-close="settings"]'));
+      await expect(page.locator('#profile')).toHaveAttribute('data-effective-quality', 'smooth');
+      entry.metrics.savedGraphics = await page.evaluate(() => JSON.parse(localStorage.getItem('belle-graphics-v1')));
+      assert.deepEqual(entry.metrics.savedGraphics, {quality: 'smooth', cap: 30});
       await webgl('finalWebgl');
       assert.deepEqual(entry.errors, [], 'Browser errors, lost WebGL contexts or missing runtime assets fail this smoke');
       entry.passed = true;
@@ -420,6 +613,10 @@ async function runCase(configuration) {
     if (page && !screenshotFailed && !caseTimedOut) { try { await screenshot('failure'); } catch {} }
   } finally {
     clearTimeout(deadline);
+    if (countdownObservation) {
+      try { await stopCountdownObservation(countdownObservation); }
+      catch { entry.passed = false; }
+    }
     if (page) {
       entry.lastUrl = page.url();
       if (!screenshotFailed && !caseTimedOut) {
@@ -432,6 +629,8 @@ async function runCase(configuration) {
       try { await bounded(browser.close(), browserCloseMilliseconds, `${configuration.name}: browser close`); }
       catch (error) { cleanupFailure = error; entry.cleanupFailure = error.message; entry.passed = false; }
     }
+    // A timed-out body may finish while cleanup is awaited. Failures stay final.
+    entry.passed = entry.passed && !entry.failure && !caseTimedOut && !cleanupFailure && !observerCleanupFailed;
     await writeFile(resolve(output, `${configuration.name}-result.json`), JSON.stringify(entry, null, 2));
     if (cleanupFailure) throw cleanupFailure;
   }
@@ -450,7 +649,7 @@ try {
   await new Promise((done, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', done); });
   origin = `http://127.0.0.1:${server.address().port}`; report.origin = origin;
   for (const configuration of selectedConfigurations) await runCase(configuration);
-  report.passed = report.cases.length === selectedConfigurations.length && report.cases.every(entry => entry.passed);
+  report.passed = report.cases.length === selectedConfigurations.length && report.cases.every(entry => entry.passed && !entry.failure && !entry.cleanupFailure && !entry.countdownObserverCleanupFailure);
   if (!report.passed) process.exitCode = 1;
 } catch (error) {
   report.failure = error.stack || String(error); log(`FAIL ${error.message}`); process.exitCode = 1;

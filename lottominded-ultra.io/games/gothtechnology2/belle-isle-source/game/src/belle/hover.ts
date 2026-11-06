@@ -7,19 +7,21 @@ import {HoverController,type FlightObstacle,type FlightMode} from './hoverContro
 import {segment,type ParkTerrain} from './terrain.ts';
 import './hover.css';
 import {HoverLighting,LED_COLORS} from './hoverLighting.ts';
+import {HoverRiderRig} from './hoverRiderMotion.ts';
 type Pose={x:number;y:number;z:number;headingY:number};
-type Hooks={pose:()=>Pose;blocked:()=>boolean;entered:()=>void;exited:(p:{x:number;y:number;z:number;heading:number})=>void;touch:()=>boolean;obstacle?:FlightObstacle;vehicleLocked?:()=>boolean;restartTrial?:()=>void};
+type Hooks={pose:()=>Pose;blocked:()=>boolean;entered:()=>void;exited:(p:{x:number;y:number;z:number;heading:number})=>void;touch:()=>boolean;obstacle?:FlightObstacle;vehicleLocked?:()=>boolean;restartTrial?:()=>void;prepareScene?:(model:T.Object3D,signal?:AbortSignal)=>Promise<void>};
 const keyCodes=['KeyW','KeyS','KeyA','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyE','KeyQ','Space','ShiftLeft','ShiftRight','KeyG','KeyF','KeyL','KeyH','KeyK','KeyR'];
 export class HoverRide {
  readonly sim:HoverController;
  riding=false;
  private model:T.Group|undefined;private cockpit?:CockpitLcd;
  private loading:Promise<void>|undefined;
- private mountGeneration=0;private savedFlightMode:FlightMode|undefined;
+ private mountGeneration=0;private mountAbort:AbortController|undefined;private savedFlightMode:FlightMode|undefined;
  private pressed=new Set<string>();
  private stick={x:0,y:0,id:-1,cx:0,cy:0};private flightSelect!:HTMLSelectElement;
- private mixer:T.AnimationMixer|undefined;
- private steeringClip:T.AnimationClip|undefined;
+ private rider:HoverRiderRig|undefined;
+ private motionPreference=window.matchMedia('(prefers-reduced-motion: reduce)');
+ private motionCheckbox=document.querySelector<HTMLInputElement>('#motion');
  private steerBlend=0;
  private rotors:T.Object3D[]=[];
  private pods:{o:T.Object3D;q:T.Quaternion}[]=[];
@@ -31,8 +33,8 @@ export class HoverRide {
  private fpvArms:T.Object3D|undefined;
  private lights:T.MeshStandardMaterial[]=[];
  private brakes:T.MeshStandardMaterial[]=[];
- private rootQuat=new T.Quaternion();
  private localRotation=new T.Quaternion();
+ private localEuler=new T.Euler();private yAxis=new T.Vector3(0,1,0);private zAxis=new T.Vector3(0,0,1);
  private lightOn=true;private highBeam=false;private ledColor='#79dfff';private ledMode='solid';private lighting?:HoverLighting;private ledInput!:HTMLInputElement;private ledSelect!:HTMLSelectElement;
  private gearBlend=0;
  private messageUntil=0;
@@ -92,7 +94,7 @@ export class HoverRide {
   if(!this.loading)this.loading=(async()=>{
    const gltf=await new GLTFLoader().loadAsync('./belle/vehicles/hero-hoverbike.glb');
    this.model=gltf.scene;this.model.name='Playable hero and hoverbike';
-   this.steeringClip=gltf.animations.find(a=>a.name.includes('Ride_Steer'));if(this.steeringClip){this.mixer=new T.AnimationMixer(this.model);const action=this.mixer.clipAction(this.steeringClip);action.play();this.mixer.setTime(this.steeringClip.duration*.5);}
+   const seated=gltf.animations.find(a=>a.name.includes('Ride_Steer'));if(seated){const mixer=new T.AnimationMixer(this.model);mixer.clipAction(seated).play();mixer.setTime(seated.duration*.5);}
    this.model.traverse(o=>{
     if(o.name.startsWith('Rotor_'))this.rotors.push(o);
     if(/^Pod_(FL|FR|RL|RR)$/.test(o.name))this.pods.push({o,q:o.quaternion.clone()});
@@ -108,6 +110,7 @@ export class HoverRide {
      }
     }
    });
+   this.rider=HoverRiderRig.create(this.model);
    applyRealisticMaterials(this.model);this.cockpit=new CockpitLcd(this.model.getObjectByName('HoverBikeRoot')??this.model);this.lighting=new HoverLighting(this.model.getObjectByName('HoverBikeRoot')??this.model,this.lights);this.model.visible=false;scene.add(this.model);
   })().catch(e=>{this.loading=undefined;throw e;});
   await this.loading;
@@ -121,19 +124,19 @@ export class HoverRide {
   const near=choices.find(p=>this.terrain.land(p.x,p.z)&&!this.terrain.obstructed(p.x,p.z,2));
   return near||this.terrain.map.spawn;
  }
- async prepare(scene:T.Scene){await this.load(scene);}
+ async prepare(scene:T.Scene,forRide=false,signal?:AbortSignal){await this.load(scene);if(signal?.aborted)throw new DOMException('Ride preparation cancelled','AbortError');if(forRide&&this.model)await this.hooks.prepareScene?.(this.model,signal);}
  async mount(scene:T.Scene){
   if(this.hooks.blocked()||this.hooks.vehicleLocked?.()||this.enterButton.disabled)return;
-  const generation=++this.mountGeneration;
+  const generation=++this.mountGeneration;this.mountAbort?.abort();const preparation=this.mountAbort=new AbortController();
   void this.sound.unlock();this.enterButton.disabled=true;this.enterButton.textContent='Preparing hoverbike…';
   try{
-   await this.load(scene);
+   await this.prepare(scene,true,preparation.signal);
    if(generation!==this.mountGeneration||this.hooks.blocked()||this.hooks.vehicleLocked?.())return;
-   const p=this.spawnNear(this.hooks.pose());this.sim.reset(p.x,p.z,p.heading);
+   const p=this.spawnNear(this.hooks.pose());this.sim.reset(p.x,p.z,p.heading);this.resetRider();
    this.riding=true;this.model!.visible=true;this.hero&&(this.hero.visible=true);
    document.body.classList.add('on-hoverbike');this.hud.hidden=false;this.hooks.entered();
    this.say('Press G to take off. E / Q changes height.');this.refresh();
-  }catch(e){console.error('Hoverbike load failed',e);this.enterButton.textContent='Retry hoverbike';}
+  }catch(e){if(!preparation.signal.aborted){console.error('Hoverbike load failed',e);this.enterButton.textContent='Retry hoverbike';}}
   finally{this.enterButton.disabled=!!this.hooks.vehicleLocked?.();if(this.model)this.enterButton.textContent=this.riding?'Get off hoverbike · B':'Ride hoverbike · B';}
  }
  /** prepare() loads assets first; this synchronous placement cannot outlive a cancelled start. */
@@ -141,14 +144,19 @@ export class HoverRide {
   if(!this.model)return false;
   ++this.mountGeneration;this.clear();
   if(!this.sim.startFlight(p))return false;
-  this.savedFlightMode??=this.sim.mode;this.sim.setMode('drone');this.flightSelect.value='drone';
+  this.savedFlightMode??=this.sim.mode;this.sim.setMode('drone');this.flightSelect.value='drone';this.resetRider();
   this.riding=true;this.model.visible=true;this.hero&&(this.hero.visible=true);
   document.body.classList.add('on-hoverbike');this.hud.hidden=false;this.hooks.entered();
   this.say('Sky Circuit · Drone flight · Follow the numbered rings.');this.refresh();
   return true;
  }
  endTrial(){if(this.savedFlightMode!==undefined){this.sim.setMode(this.savedFlightMode);this.flightSelect.value=this.savedFlightMode;this.savedFlightMode=undefined;}this.refresh();}
- clear(){this.releaseStick();this.pressed.clear();this.sim.stop();this.hud.querySelectorAll('[data-held]').forEach(b=>b.removeAttribute('data-held'));this.sound.silence();}
+ clear(){this.releaseStick();this.pressed.clear();this.sim.stop();this.rider?.suspend();this.hud.querySelectorAll('[data-held]').forEach(b=>b.removeAttribute('data-held'));this.sound.silence();}
+ private resetRider(){
+  this.steerBlend=0;if(this.bars)this.bars.quaternion.copy(this.barsRest);
+  const p=this.sim.pose;if(this.model){this.model.position.set(p.x,p.y,p.z);this.model.rotation.set(p.pitch,p.heading,p.roll,'YXZ');}
+  this.rider?.reset(p,this.sim.landed);
+ }
  key(e:KeyboardEvent){
   if(!this.riding||!keyCodes.includes(e.code))return false;e.preventDefault();this.pressed.add(e.code);
   if(!e.repeat)switch(e.code){case'KeyG':this.toggleFlight();break;case'KeyF':this.exit();break;case'KeyL':this.toggleLights();break;case'KeyH':this.toggleBeam();break;case'KeyK':this.nextColor();break;case'KeyR':this.recover();break;}
@@ -162,14 +170,14 @@ export class HoverRide {
  private toggleBeam(){this.highBeam=!this.highBeam;this.hud.querySelector('[data-hover="beam"]')!.setAttribute('aria-pressed',String(this.highBeam));}
  private soundButton(){const b=this.hud.querySelector('[data-hover="sound"]')!;b.textContent=this.sound.enabled?'Sound on':'Sound off';b.setAttribute('aria-pressed',String(this.sound.enabled));}
  private toggleSound(){this.sound.toggle();this.soundButton();}
- private recover(){if(this.hooks.vehicleLocked?.()){this.hooks.restartTrial?.();return;}this.clear();this.sim.reset();this.say('Recovered to the last landing spot.');}
+ private recover(){if(this.hooks.vehicleLocked?.()){this.hooks.restartTrial?.();return;}this.clear();this.sim.reset();this.resetRider();this.say('Recovered to the last landing spot.');}
  exit(){
   if(this.hooks.vehicleLocked?.())return;
   const point=this.sim.exitPoint();
   if(!point){this.say('Land on clear ground before getting off. Press G to land.');return;}
   this.leaveForTravel();this.hooks.exited(point);
  }
- leaveForTravel(){++this.mountGeneration;this.endTrial();this.clear();this.riding=false;this.sim.land();this.hud.hidden=true;this.model&&(this.model.visible=false);document.body.classList.remove('on-hoverbike');this.enterButton.textContent='Ride hoverbike · B';}
+ leaveForTravel(){++this.mountGeneration;this.mountAbort?.abort();this.mountAbort=undefined;this.endTrial();this.clear();this.riding=false;this.sim.land();this.hud.hidden=true;this.model&&(this.model.visible=false);document.body.classList.remove('on-hoverbike');this.enterButton.textContent='Ride hoverbike · B';}
  private say(message:string){this.notice.textContent=message;this.messageUntil=performance.now()+4500;}
  private refresh(){
   const p=this.sim.pose;
@@ -183,6 +191,11 @@ export class HoverRide {
   this.mode.textContent=this.sim.landed?'LANDED':this.sim.clearance<.3?'LANDING':this.pressed.has('ShiftLeft')||this.pressed.has('ShiftRight')?'BOOST':this.sim.mode==='drone'?'ALTITUDE HOLD':'IN FLIGHT';
   this.hud.querySelector('[data-hover="takeoff"]')!.textContent=this.sim.flying&&this.sim.clearance>.3?'Land · G':'Take off · G';
   this.touchPad.hidden=!this.hooks.touch();
+  // Read-only applied-pose telemetry supports real-input regression captures.
+  // It does not expose controls or alter the player's scene or simulation.
+  const rider=this.rider?.diagnostics;this.hud.dataset.riderRig=rider?.contacts===4?'anchored':'unavailable';
+  this.hud.dataset.riderMotion=this.motionPreference.matches||this.motionCheckbox?.checked?'reduced':'reactive';
+  if(rider){this.hud.dataset.riderLean=rider.lean.toFixed(4);this.hud.dataset.riderPitch=rider.pitch.toFixed(4);this.hud.dataset.riderCompression=rider.compression.toFixed(4);this.hud.dataset.riderHandError=rider.handError.toFixed(5);this.hud.dataset.riderFootError=rider.footError.toFixed(5);}
    this.hud.querySelector('.hover-help')!.textContent=this.sim.mode==='drone'?'W / S forward / back · A / D strafe · ← / → turn · E / Q height · release to hold · drag to look':'W / S speed · A / D steer · E / Q height · Space brake · Shift boost · drag to look';
   if(performance.now()>this.messageUntil)this.notice.textContent=this.sim.collision?'Obstacle ahead — steer clear.':this.sim.landed?'Ready for takeoff.':'Michigan 2084 · Explore the island';
  }
@@ -190,20 +203,21 @@ export class HoverRide {
   if(!this.riding||!this.model)return;
   const has=(a:string,b?:string)=>this.pressed.has(a)||!!b&&this.pressed.has(b);
   const drone=this.sim.mode==='drone',horizontal=Number(has('KeyD'))-Number(has('KeyA'))+this.stick.x;
-  const steer=Number(has('ArrowRight'))-Number(has('ArrowLeft'))+(drone?0:horizontal);
+  const steer=T.MathUtils.clamp(Number(has('ArrowRight'))-Number(has('ArrowLeft'))+(drone?0:horizontal),-1,1);
   if(running)this.sim.advance(dt,{throttle:Number(has('KeyW','ArrowUp'))-Number(has('KeyS','ArrowDown'))+this.stick.y,strafe:drone?horizontal:0,steer,lift:Number(has('KeyE'))-Number(has('KeyQ')),brake:has('Space'),boost:has('ShiftLeft','ShiftRight')});
   const p=this.sim.pose;this.model.position.set(p.x,p.y,p.z);
   this.model.rotation.set(p.pitch,p.heading,p.roll,'YXZ');
   if(running){
    this.steerBlend=T.MathUtils.damp(this.steerBlend,steer,7,dt);
-   if(this.mixer&&this.steeringClip)this.mixer.setTime(this.steeringClip.duration*(.5-this.steerBlend*.49));
    this.rotors.forEach((r,i)=>r.rotateY(dt*p.rpm*(i%2?-1:1)*32));
-   this.pods.forEach(({o,q},i)=>o.quaternion.copy(q).multiply(this.localRotation.setFromEuler(new T.Euler(p.pitch*.4,0,steer*.08*(i%2?-1:1)))));
+   this.pods.forEach(({o,q},i)=>o.quaternion.copy(q).multiply(this.localRotation.setFromEuler(this.localEuler.set(p.pitch*.4,0,steer*.08*(i%2?-1:1)))));
    this.gearBlend=T.MathUtils.damp(this.gearBlend,this.sim.flying&&this.sim.clearance>.4?1:0,3,dt);
-   this.gear.forEach(({o,q},i)=>o.quaternion.copy(q).multiply(this.localRotation.setFromAxisAngle(new T.Vector3(0,0,1),this.gearBlend*(i?-.65:.65))));
-   if(this.bars)this.bars.quaternion.copy(this.barsRest).multiply(this.localRotation.setFromAxisAngle(new T.Vector3(0,1,0),-this.steerBlend*.18));
+   this.gear.forEach(({o,q},i)=>o.quaternion.copy(q).multiply(this.localRotation.setFromAxisAngle(this.zAxis,this.gearBlend*(i?-.65:.65))));
+   if(this.bars)this.bars.quaternion.copy(this.barsRest).multiply(this.localRotation.setFromAxisAngle(this.yAxis,-this.steerBlend*.18));
   }
-  this.lighting?.update(dt,running,this.ledColor,this.ledMode,this.lightOn,this.highBeam,document.querySelector<HTMLInputElement>('#motion')?.checked??false);
+  const reducedMotion=this.motionPreference.matches||this.motionCheckbox?.checked===true;
+  this.rider?.update(dt,p,this.sim.landed,this.steerBlend,running,reducedMotion);
+  this.lighting?.update(dt,running,this.ledColor,this.ledMode,this.lightOn,this.highBeam,reducedMotion);
   this.brakes.forEach(m=>m.emissiveIntensity=has('Space')?4:this.lightOn?.65:0);
   this.sound.update(p.rpm,p.speed,p.lift,this.sim.flying,this.sim.landed,has('Space'),running&&document.hasFocus());
   if(clock-this.lastUI>.1){this.lastUI=clock;this.refresh();}

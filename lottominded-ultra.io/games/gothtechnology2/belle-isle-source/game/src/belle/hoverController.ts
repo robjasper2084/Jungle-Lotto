@@ -8,6 +8,12 @@ export function flightAxis(value:number){const n=Number.isFinite(value)?Math.max
 export interface HoverPose {x:number;y:number;z:number;heading:number;speed:number;pitch:number;roll:number;lift:number;rpm:number}
 const clamp=(n:number,a:number,b:number)=>Math.max(a,Math.min(b,n));
 const approach=(n:number,target:number,d:number)=>n<target?Math.min(target,n+d):Math.max(target,n-d);
+const smoothstep=(value:number)=>{const t=clamp(value,0,1);return t*t*(3-2*t);};
+/** Keep yaw live during the first second, then soften fast turns without a release tail. */
+function steeringGain(takeoffSeconds:number,speed:number){
+ // 35% to full authority over 1 s; full below 8 m/s, then 55% at the 32 m/s boost cap.
+ return (.35+.65*smoothstep(takeoffSeconds))*(1-.45*smoothstep((speed-8)/24));
+}
 /** Stable terrain-following hover simulation, shared behaviour with the Unity controller. */
 export class HoverController {
  mode:FlightMode='classic';
@@ -19,6 +25,7 @@ export class HoverController {
   landed=true;
   collision=false;
   private verticalSpeed=0;
+  private takeoffAge=0;
   private lastSafe:{x:number;z:number;heading:number};
   readonly terrain:ParkTerrain;private obstacle?:FlightObstacle;
   constructor(terrain:ParkTerrain,spawn:{x:number;z:number;heading:number},obstacle?:FlightObstacle){this.obstacle=obstacle;
@@ -26,12 +33,12 @@ export class HoverController {
     this.pose={...spawn,y:this.floor(spawn.x,spawn.z)+.18,speed:0,pitch:0,roll:0,lift:0,rpm:0};
   }
   floor(x:number,z:number){return this.terrain.land(x,z)?this.terrain.height(x,z):this.terrain.map.water.some(w=>inside(x,z,w.points)&&!w.holes.some(h=>inside(x,z,h)))?1.05:0;}
-  launch(){this.flying=true;this.clearance=Math.max(1.4,this.clearance);this.landed=false;}
- land(){this.clearance=.18;this.stop();}
+  launch(){if(!this.flying||this.clearance<=.3)this.takeoffAge=0;this.flying=true;this.clearance=Math.max(1.4,this.clearance);this.landed=false;}
+ land(){this.clearance=.18;this.takeoffAge=0;this.stop();}
  stop(){this.pose.speed=0;this.forwardSpeed=0;this.sideSpeed=0;this.verticalSpeed=0;}
   reset(x=this.lastSafe.x,z=this.lastSafe.z,heading=this.lastSafe.heading){
     this.pose={x,z,heading,y:this.floor(x,z)+.18,speed:0,pitch:0,roll:0,lift:0,rpm:0};
-  this.clearance=.18;this.flying=false;this.landed=true;this.stop();
+  this.clearance=.18;this.takeoffAge=0;this.flying=false;this.landed=true;this.stop();
   }
   /** Start a flight course at its authored height, with no inherited momentum. */
   startFlight(p:{x:number;y:number;z:number;heading:number}){
@@ -40,7 +47,8 @@ export class HoverController {
     if(clearance<1.4||clearance>36||Math.abs(p.x)>8000||Math.abs(p.z)>8000)return false;
     this.reset(p.x,p.z,p.heading);
     this.clearance=clearance;this.pose.y=p.y;this.pose.rpm=1;
-    this.flying=true;this.landed=false;this.collision=false;
+    // A course starts already airborne; countdown and pause must not replay takeoff easing.
+    this.takeoffAge=1;this.flying=true;this.landed=false;this.collision=false;
     return true;
   }
   advance(seconds:number,input:HoverInput){
@@ -57,7 +65,7 @@ export class HoverController {
     this.verticalSpeed+=((desiredHeight-p.y)*15-this.verticalSpeed*7.8)*dt;
     p.y=Math.max(this.floor(p.x,p.z)+.15,p.y+this.verticalSpeed*dt);
     this.landed=this.clearance<.3&&Math.abs(p.y-this.floor(p.x,p.z)-.18)<.12&&Math.abs(this.verticalSpeed)<.25;
-    if(this.landed){this.flying=false;p.speed=0;this.lastSafe={x:p.x,z:p.z,heading:p.heading};}
+    if(this.landed){this.flying=false;this.takeoffAge=0;p.speed=0;this.lastSafe={x:p.x,z:p.z,heading:p.heading};}
     p.rpm=approach(p.rpm,this.flying?1+(input.boost?.45:0)+Math.abs(input.throttle)*.2:0,dt*(this.flying?.75:.5));
     let speed=p.speed,side=0;
     if(this.mode==='drone'){
@@ -73,7 +81,9 @@ export class HoverController {
       speed=approach(speed,0,(input.throttle===0?1.5:.7)*dt);
       speed=clamp(speed,-7,input.boost?32:21);
     }else speed=approach(speed,0,18*dt);
-    const steering=this.mode==='drone'?flightAxis(input.steer):clamp(input.steer,-1,1);
+    const lifting=this.flying&&this.clearance>.3;
+    const steering=(this.mode==='drone'?flightAxis(input.steer):clamp(input.steer,-1,1))*steeringGain(lifting?this.takeoffAge+dt*.5:1,Math.hypot(speed,side));
+    if(lifting)this.takeoffAge=Math.min(1,this.takeoffAge+dt);
     const heading=p.heading-steering*1.05*dt*(this.flying?1:0);
     const dx=(Math.sin(heading)*speed-Math.cos(heading)*side)*dt,dz=(Math.cos(heading)*speed+Math.sin(heading)*side)*dt,distance=Math.hypot(dx,dz);
     let blocked=false;

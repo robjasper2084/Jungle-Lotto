@@ -2,6 +2,10 @@ import * as T from 'three';
 import {trialCourses} from './trialCourses.ts';
 import {TrialRun, formatTrialTime, formatTrialSplit, type TrialCourse, type TrialPose, type TrialVehicle} from './trialRules.ts';
 import {TrialRecords} from './trialRecords.ts';
+import {TrialAudio} from './trialAudio.ts';
+import {trialDeviation} from './trialNavigation.ts';
+import {TrialGhostRecorder, TrialGhostStore, createTrialPaceGhost, sampleTrialGhost, createTrialGhostPose, type TrialGhostTrack} from './trialGhost.ts';
+import {TrialGhostView, TRIAL_GHOST_COLORS} from './trialGhostView.ts';
 import type {ParkMap, ParkTerrain} from './terrain.ts';
 import './islandTrials.css';
 
@@ -9,6 +13,7 @@ type Hooks = {
   ready(): boolean;
   available(): boolean;
   running(): boolean;
+  reducedMotion(): boolean;
   clear(): void;
   prepare(course: TrialCourse, signal: AbortSignal): Promise<boolean>;
   leave(): void;
@@ -29,11 +34,21 @@ const seriesName = (vehicle: TrialVehicle) => vehicle === 'hoverbike' ? 'Sky Cir
 const distanceLabel = (distance: number) => distance >= 1000 ? `${(distance / 1000).toFixed(2)} km` : `${Math.round(distance)} m`;
 const spawnPose = (course: TrialCourse): TrialPose => ({...course.start, vehicle: course.vehicle, onFoot: false});
 const signedAngle = (radians: number) => Math.atan2(Math.sin(radians), Math.cos(radians));
+const GHOST_VISIBILITY_KEY = 'belle-isle-ghost-visibility-v1';
+const initialGhostVisibility = () => { try { return localStorage.getItem(GHOST_VISIBILITY_KEY) !== 'off'; } catch { return true; } };
 
 /** Solo time trials use the normal island cameras and vehicle controls. */
 export class IslandTrials {
   readonly courses: TrialCourse[];
   private readonly records = new TrialRecords();
+  private readonly audio: TrialAudio;
+  private readonly ghostStore = new TrialGhostStore();
+  private readonly ghostView: TrialGhostView;
+  private ghostRecorder?: TrialGhostRecorder;
+  private recordedGhost: TrialGhostTrack | null = null;
+  private paceGhost: TrialGhostTrack | null = null;
+  private ghostsEnabled = initialGhostVisibility();
+  private readonly mapGhostPose = createTrialGhostPose();
   private current?: TrialCourse;
   private run?: TrialRun;
   private actor?: TrialPose;
@@ -55,7 +70,11 @@ export class IslandTrials {
   private readonly boardFeedback = node('p', 'trial-board-feedback');
   private readonly boardContent = node('div', 'trial-course-grid');
   private readonly boardCurrent = node('div', 'trial-current');
-  private readonly boardClose = button('Back to island', () => this.board.close(), 'close');
+  private readonly soundToggle = button('Gate sounds: off', () => { void this.audio.setEnabled(!this.audio.enabled); });
+  private readonly soundStatus = node('p', 'trial-note');
+  private readonly ghostToggle = button('Ghost riders: shown', () => this.toggleGhosts());
+  private readonly ghostStatus = node('p', 'trial-note');
+  private readonly boardClose = button('Back to island', () => this.dismissBoard(), 'close');
   private readonly results = node('dialog');
   private readonly hud = node('section');
   private readonly hudSeries = node('span', 'trial-eyebrow');
@@ -66,6 +85,10 @@ export class IslandTrials {
   private readonly hudDirection = node('p', 'trial-direction');
   private readonly hudAltitude = node('p', 'trial-altitude');
   private readonly hudBest = node('p', 'trial-best');
+  private readonly hudGhosts = node('p', 'trial-ghost-status');
+  private readonly hudPaceGhost = node('span', 'trial-ghost-pace', '● Guide');
+  private readonly hudRecordedGhost = node('span', 'trial-ghost-recorded', '● Recorded');
+  private readonly hudGhostNotice = node('span');
   private readonly hudMap = node('canvas', 'trial-hud-map');
   private readonly live = node('p', 'trial-sr-only');
   private readonly notice = node('div');
@@ -74,8 +97,11 @@ export class IslandTrials {
   private readonly world = new T.Group();
   private gateObjects: T.Group[] = [];
   private readonly mapBackgrounds = new Map<string, HTMLCanvasElement>();
+  private hudAtlas?: {courseId: string; canvas: HTMLCanvasElement};
 
   constructor(private scene: T.Scene, private data: ParkMap, private terrain: ParkTerrain, private canvas: HTMLCanvasElement, private hooks: Hooks) {
+    this.audio = new TrialAudio({changed: () => this.refreshSound()});
+    this.ghostView = new TrialGhostView(scene);
     try { this.courses = trialCourses(data, terrain); }
     catch (error) { this.courses = []; this.unavailable = error instanceof Error ? error.message : 'Courses could not load.'; }
     this.world.name = 'Island trial route';
@@ -84,7 +110,6 @@ export class IslandTrials {
     this.createBoard(); this.createHud();
     this.results.id = 'trial-results'; this.results.setAttribute('aria-labelledby', 'trial-results-title');
     this.results.addEventListener('cancel', event => { event.preventDefault(); this.interrupt(); });
-    this.results.addEventListener('close', () => { this.hooks.clear(); this.canvas.focus(); });
     this.results.addEventListener('keydown', event => {
       event.stopPropagation();
       if (event.code === 'KeyR' && !event.repeat && !event.ctrlKey && !event.altKey && !event.metaKey) { event.preventDefault(); this.restart(); }
@@ -102,7 +127,36 @@ export class IslandTrials {
 
   get active() { return !!this.current && (this.preparing || !!this.run); }
   get inputLocked() { return this.active && (this.preparing || this.skipNext || !this.lastRunning || this.run?.status !== 'running'); }
+  // A fresh held control may be captured during countdown, but cannot move the vehicle yet.
+  get inputCaptureLocked() { return this.active && (this.preparing || !this.run || this.run.status === 'finished' || this.run.status === 'invalid'); }
   get vehicle() { return this.current?.vehicle; }
+  captureAudio() { return this.audio.capture(); }
+
+  private refreshSound() {
+    this.soundToggle.textContent = `Gate sounds: ${this.audio.enabled ? 'on' : 'off'}`;
+    this.soundToggle.setAttribute('aria-pressed', String(this.audio.enabled));
+    this.soundStatus.textContent = this.audio.status;
+  }
+
+  private toggleGhosts() {
+    this.ghostsEnabled = !this.ghostsEnabled;
+    try { localStorage.setItem(GHOST_VISIBILITY_KEY, this.ghostsEnabled ? 'on' : 'off'); } catch { /* Visibility still works for this visit. */ }
+    this.refreshGhostSettings(); this.updateGhosts(); this.refreshHud();
+  }
+
+  private refreshGhostSettings() {
+    this.ghostToggle.textContent = `Ghost riders: ${this.ghostsEnabled ? 'shown' : 'hidden'}`;
+    this.ghostToggle.setAttribute('aria-pressed', String(this.ghostsEnabled));
+    this.ghostStatus.textContent = this.ghostsEnabled
+      ? 'Cyan: course pace guide. Violet: your best recorded finish. Completed runs stay in this browser.'
+      : 'Riders are hidden. Completed runs still update your local replay.';
+    if (!this.ghostStore.available) this.ghostStatus.textContent += ' Replays are available for this visit while browser storage is unavailable.';
+  }
+
+  private updateGhosts() {
+    const active = !!this.run && !this.preparing && (this.run.status === 'running' || this.run.status === 'countdown');
+    this.ghostView.update(this.run?.elapsed ?? 0, this.recordedGhost, this.paceGhost, this.actor ?? {x: 0, y: 0, z: 0}, this.ghostsEnabled && active);
+  }
 
   private createBoard() {
     this.board.id = 'trial-board'; this.board.setAttribute('aria-labelledby', 'trial-board-title');
@@ -122,11 +176,25 @@ export class IslandTrials {
       choices[next].click(); choices[next].focus();
     });
     this.boardContent.id = 'trial-course-list'; this.boardContent.setAttribute('role', 'tabpanel');
-    this.board.append(this.boardClose, node('span', 'trial-eyebrow', 'DIGITAL STATIC / BELLE ISLE'), this.boardTitle, this.boardIntro, this.boardFeedback, this.boardCurrent, tabs, this.boardContent,
-      node('p', 'trial-note', 'Pass each numbered gate in order. The clock starts after the countdown. Menus and background tabs pause the run. R or Restart returns you to the start. Personal bests stay in this browser.'));
-    this.board.addEventListener('close', () => { this.hooks.clear(); this.canvas.focus(); });
+    const sound = node('div', 'trial-sound-controls');
+    this.soundToggle.id = 'trial-sound-toggle'; this.soundToggle.setAttribute('aria-describedby', 'trial-sound-status');
+    this.soundStatus.id = 'trial-sound-status'; this.soundStatus.setAttribute('role', 'status');
+    sound.append(this.soundToggle, this.soundStatus); this.refreshSound();
+    const ghosts = node('div', 'trial-ghost-controls');
+    this.ghostToggle.id = 'trial-ghost-toggle'; this.ghostToggle.setAttribute('aria-describedby', 'trial-ghost-status');
+    this.ghostStatus.id = 'trial-ghost-status'; this.ghostStatus.setAttribute('role', 'status');
+    ghosts.append(this.ghostToggle, this.ghostStatus); this.refreshGhostSettings();
+    this.board.append(this.boardClose, node('span', 'trial-eyebrow', 'DIGITAL STATIC / BELLE ISLE'), this.boardTitle, this.boardIntro, this.boardFeedback, this.boardCurrent, tabs, ghosts, this.boardContent,
+      sound, node('p', 'trial-note', 'Pass each numbered gate in order. The clock starts after the countdown. Menus and background tabs pause the run. R or Restart returns you to the start. Personal bests stay in this browser.'));
+    this.board.addEventListener('cancel', event => { event.preventDefault(); this.dismissBoard(); });
     this.board.addEventListener('keydown', event => event.stopPropagation());
     document.body.append(this.board);
+  }
+
+  private dismissBoard() {
+    if (!this.board.open) return;
+    // A queued close event can arrive after the next run has captured fresh input.
+    this.hooks.clear(); this.board.close(); this.canvas.focus();
   }
 
   private createHud() {
@@ -135,11 +203,14 @@ export class IslandTrials {
     const timing = node('div', 'trial-timing');
     this.hudTimer.setAttribute('aria-label', 'Elapsed time'); this.hudTimer.setAttribute('aria-live', 'off');
     timing.append(this.hudTimer, this.hudStatus);
-    summary.append(this.hudSeries, this.hudTitle, timing, this.hudProgress, this.hudDirection, this.hudAltitude, this.hudBest);
+    this.hudGhosts.append(this.hudPaceGhost, this.hudRecordedGhost, this.hudGhostNotice);
+    this.hudGhosts.style.setProperty('--trial-pace-color', TRIAL_GHOST_COLORS.pace);
+    this.hudGhosts.style.setProperty('--trial-recorded-color', TRIAL_GHOST_COLORS.recorded);
+    summary.append(this.hudSeries, this.hudTitle, timing, this.hudProgress, this.hudDirection, this.hudAltitude, this.hudBest, this.hudGhosts);
     const map = node('figure', 'trial-map-wrap');
     this.hudMap.width = 360; this.hudMap.height = 200;
     this.hudMap.setAttribute('role', 'img'); this.hudMap.setAttribute('aria-label', 'Route map. The bright gate is next; the white arrow is your rider.');
-    map.append(this.hudMap, node('figcaption', '', 'YOUR ROUTE · NEXT GATE IN GOLD'));
+    map.append(this.hudMap, node('figcaption', '', 'LOCAL ROUTE · NEXT GATE IN GOLD'));
     const actions = node('div', 'trial-hud-actions');
     const restart = button('Restart · R', () => this.restart(), 'trial-primary'); restart.id = 'trial-restart';
     const exit = button('Leave race', () => this.interrupt()); exit.id = 'trial-exit';
@@ -158,10 +229,11 @@ export class IslandTrials {
   }
 
   private renderBoard() {
-    this.boardTitle.textContent = this.selected === 'hoverbike' ? 'The island. A little higher.' : 'One wheel. One clean run.';
+    this.refreshGhostSettings();
+    this.boardTitle.textContent = this.selected === 'hoverbike' ? 'The island. Every shoreline.' : 'One island. One full lap.';
     this.boardIntro.textContent = this.selected === 'hoverbike'
-      ? 'Launch into two dedicated hoverbike courses. Read the rings, hold your altitude, and chase a separate best time on each route.'
-      : 'A short checkpoint race built for the feel of the ride. Follow the arches, find a smooth line, then restart and improve your time.';
+      ? 'Fly a full circuit of Belle Isle. Choose your route and altitude profile, follow the numbered rings, and set a best time for the whole island.'
+      : 'Take the long way around Belle Isle. Choose a complete road circuit, read the numbered arches, and carry a clean line from shoreline to shoreline.';
     this.boardClose.textContent = this.active ? 'Back to race' : 'Back to island';
     for (const tab of this.board.querySelectorAll<HTMLButtonElement>('[data-vehicle]')) {
       const selected = tab.dataset.vehicle === this.selected; tab.setAttribute('aria-selected', String(selected)); tab.tabIndex = selected ? 0 : -1;
@@ -171,13 +243,16 @@ export class IslandTrials {
     if (this.current) this.boardCurrent.replaceChildren(node('span', '', `Current course: ${this.current.name}`), button('Leave race', () => { this.interrupt(); this.open(this.selected); }));
     this.boardContent.replaceChildren();
     const courses = this.courses.filter(course => course.vehicle === this.selected);
-    for (const course of courses) {
+    const featured = courses.filter(course => course.category !== 'practice');
+    const practice = courses.filter(course => course.category === 'practice');
+    const cardFor = (course: TrialCourse) => {
       const card = node('article', 'trial-course'); card.style.setProperty('--trial-course-color', course.color);
+      card.dataset.category = course.category ?? 'island';
       const preview = node('canvas', 'trial-course-map'); preview.width = 640; preview.height = 240;
       preview.setAttribute('role', 'img'); preview.setAttribute('aria-label', `${course.name}: ${distanceLabel(course.distance)}, ${course.gates.length} ordered checkpoints.`);
       this.drawCourseMap(preview, course);
       const content = node('div', 'trial-course-content');
-      const metrics = node('p', 'trial-course-meta', `${distanceLabel(course.distance)} / ${course.gates.length} GATES / ${course.vehicle === 'hoverbike' ? 'DRONE FLIGHT' : 'ONE WHEEL'}`);
+      const metrics = node('p', 'trial-course-meta', `${course.category === 'practice' ? 'PRACTICE SPRINT' : 'FULL ISLAND · ONE LAP'} / ${distanceLabel(course.distance)} / ${course.gates.length} GATES`);
       const best = this.records.best(course);
       const record = node('p', 'trial-course-record'); record.append(node('span', '', 'PERSONAL BEST'), node('strong', '', best === null ? 'Set the first time' : formatTrialTime(best)));
       const controls = course.vehicle === 'hoverbike'
@@ -185,8 +260,19 @@ export class IslandTrials {
         : 'WASD or arrows to ride · Space to hop · R to restart';
       const start = button(this.current?.id === course.id ? 'Restart course' : 'Ride this course', () => { void this.begin(course); }, 'trial-primary');
       start.dataset.course = course.id;
-      content.append(metrics, node('h3', '', course.name), node('p', 'trial-course-description', course.description), record, node('p', 'trial-course-controls', controls), start);
-      card.append(preview, content); this.boardContent.append(card);
+      content.append(metrics, node('h3', '', course.name), node('p', 'trial-course-description', course.description));
+      if (Number.isFinite(course.targetSeconds) && course.targetSeconds! > 0) content.append(node('p', 'trial-course-pace', `Pace guide · ${formatTrialTime(course.targetSeconds!)}`));
+      content.append(record, node('p', 'trial-course-controls', controls), start);
+      card.append(preview, content); return card;
+    };
+    for (const course of featured) this.boardContent.append(cardFor(course));
+    if (practice.length) {
+      const short = node('details', 'trial-practice'); short.id = 'trial-practice';
+      short.open = this.current?.category === 'practice';
+      short.append(node('summary', '', `Practice sprints · ${practice.length} short ${practice.length === 1 ? 'route' : 'routes'}`), node('p', 'trial-note', 'Short routes for learning the controls, gates and restart flow. Each keeps its own record.'));
+      const grid = node('div', 'trial-course-grid');
+      for (const course of practice) grid.append(cardFor(course));
+      short.append(grid); this.boardContent.append(short);
     }
     if (!courses.length) this.boardContent.append(node('p', 'trial-intro', this.unavailable || 'These courses are not available yet.'));
     if (!this.records.available) this.boardContent.append(node('p', 'trial-note', 'Browser storage is unavailable. Your best times will last for this visit.'));
@@ -194,11 +280,17 @@ export class IslandTrials {
 
   private async begin(course: TrialCourse) {
     if (!this.hooks.ready() || (!this.active && !this.hooks.available())) { this.toast('Return to exploration before starting a course.'); return; }
+    this.audio.silence();
+    if (course.vehicle === 'hoverbike') void this.audio.unlock();
     this.preparation?.abort();
+    clearTimeout(this.noticeTimer); this.notice.hidden = true;
     this.boardFeedback.hidden = true;
     const generation = ++this.generation, preparation = new AbortController(); this.preparation = preparation;
     this.current = course; this.run = undefined; this.preparing = true; this.completed = false; this.skipNext = true; this.lastRunning = false;
+    this.ghostRecorder = undefined; this.recordedGhost = this.paceGhost = null; this.ghostView.clear();
     this.previousNext = -1; this.previousStatus = ''; this.bestBefore = this.records.best(course);
+    this.lastUi = -Infinity; this.hud.dataset.offCourse = 'false';
+    this.live.textContent = `Preparing ${course.name}. The clock starts after your ride is ready.`;
     this.actor = spawnPose(course);
     if (this.board.open) this.board.close(); if (this.results.open) this.results.close();
     document.querySelector<HTMLDialogElement>('#ride-menu[open]')?.close();
@@ -210,6 +302,8 @@ export class IslandTrials {
       if (preparation.signal.aborted || generation !== this.generation) return;
       if (!ready) { this.failedStart(course.vehicle); return; }
       this.run = new TrialRun(course); this.run.restart(spawnPose(course)); this.preparing = false;
+      this.recordedGhost = this.ghostStore.best(course); this.paceGhost = createTrialPaceGhost(course);
+      this.ghostRecorder = new TrialGhostRecorder(course); this.ghostView.setCourse(course); this.updateGhosts();
       this.world.visible = true; this.syncGates(); this.refreshHud(); this.canvas.focus();
       this.live.textContent = `${course.name}. Get ready. Pass all ${course.gates.length} gates in order.`;
     } catch (error) {
@@ -240,6 +334,7 @@ export class IslandTrials {
 
   /** Focus and menu changes discard one interval while movement is held. Never calls clear(). */
   suspend(actor?: TrialPose) {
+    this.audio.silence();
     if (!this.active) return;
     if (actor) this.actor = {...actor};
     this.skipNext = true; this.lastRunning = false;
@@ -252,26 +347,37 @@ export class IslandTrials {
     if (!this.active) return;
     if (this.run) {
       const allowed = this.hooks.running();
+      const previousGate = this.run.next;
+      if (!allowed && this.lastRunning && this.run.status !== 'finished') this.audio.silence();
       if (this.skipNext || !allowed || !this.lastRunning) { this.run.suspend(actor); this.skipNext = false; }
       else this.run.step(seconds, actor, true);
       this.lastRunning = allowed;
+      if (allowed && this.run.status === 'running') this.ghostRecorder?.record(this.run.elapsed, actor);
       if (this.run.next !== this.previousNext || this.run.status !== this.previousStatus) {
         this.syncGates(); this.previousNext = this.run.next; this.previousStatus = this.run.status;
         if (this.run.status === 'running') this.live.textContent = this.run.next === 0 ? 'Go! Ride through gate 1.' : `Checkpoint ${this.run.next} cleared. ${this.current!.gates.length - this.run.next} to go.`;
       }
       if (!this.completed && (this.run.status === 'finished' || this.run.status === 'invalid')) { this.completed = true; this.showResults(); }
+      // Results clear input before the final chime. Opening the results must not cut it off.
+      if (allowed && this.current?.vehicle === 'hoverbike' && this.run.next > previousGate) this.audio.checkpoint(this.run.status === 'finished');
     }
+    this.updateGhosts();
     if (now - this.lastUi >= 80 || this.preparing) { this.lastUi = now; this.refreshHud(); }
   }
 
   interrupt(message = '') {
-    const wasActive = this.active;
+    const wasActive = this.active, hadDialog = this.board.open || this.results.open;
+    this.audio.silence();
     this.preparation?.abort(); this.preparation = undefined; this.generation++;
     this.current = undefined; this.run = undefined; this.preparing = false; this.skipNext = false; this.lastRunning = false; this.completed = false;
-    this.hud.hidden = true; this.world.visible = false; this.clearRoute();
+    this.ghostRecorder = undefined; this.recordedGhost = this.paceGhost = null; this.ghostView.clear();
+    this.hud.hidden = true; this.world.visible = false; this.clearRoute(); this.hudAtlas = undefined;
+    this.hud.dataset.offCourse = 'false';
     document.body.classList.remove('island-trial'); delete document.body.dataset.trialVehicle;
+    if (wasActive || hadDialog) this.hooks.clear();
     if (this.board.open) this.board.close(); if (this.results.open) this.results.close();
-    if (wasActive) { this.hooks.clear(); this.hooks.leave(); }
+    if (wasActive) this.hooks.leave();
+    else if (hadDialog) this.canvas.focus();
     if (message) this.toast(message);
   }
 
@@ -280,6 +386,7 @@ export class IslandTrials {
     if (!course) return;
     const run = this.run, paused = !this.preparing && !this.hooks.running();
     this.hud.dataset.status = this.preparing ? 'preparing' : run?.status ?? 'idle';
+    this.hud.dataset.reducedMotion = String(this.hooks.reducedMotion());
     this.hud.dataset.next = String(run?.next ?? 0); this.hud.dataset.elapsed = String(run?.finish ?? run?.elapsed ?? 0); this.hud.dataset.course = course.id;
     this.hudSeries.textContent = seriesName(course.vehicle).toUpperCase(); this.hudTitle.textContent = course.name;
     this.hudTimer.textContent = formatTrialTime(run?.finish ?? run?.elapsed ?? 0);
@@ -287,24 +394,48 @@ export class IslandTrials {
     const next = run?.next ?? 0;
     this.hudProgress.textContent = run?.status === 'finished' ? `${course.gates.length} / ${course.gates.length} checkpoints` : `Gate ${Math.min(next + 1, course.gates.length)} / ${course.gates.length}`;
     const target = course.gates[Math.min(next, course.gates.length - 1)], actor = this.actor ?? spawnPose(course);
+    const wasOffCourse = this.hud.dataset.offCourse === 'true';
+    const offCourse = run?.status === 'running' && trialDeviation(course, actor, wasOffCourse).offCourse;
+    this.hud.dataset.offCourse = String(!!offCourse);
     if (target) {
       const dx = target.x - actor.x, dz = target.z - actor.z, distance = Math.hypot(dx, dz);
       const bearing = signedAngle(Math.atan2(dx, dz) - actor.heading);
       const direction = Math.abs(bearing) < .35 ? '↑ Ahead' : Math.abs(bearing) > 2.3 ? '↶ Turn around' : bearing < 0 ? '↗ Right' : '↖ Left';
-      this.hudDirection.textContent = `${direction} · ${Math.round(distance)} m to ${next === course.gates.length - 1 ? 'finish' : 'next gate'}`;
+      this.hudDirection.textContent = `${offCourse ? 'Off course · ' : ''}${direction} · ${Math.round(distance)} m to ${next === course.gates.length - 1 ? 'finish' : 'next gate'}`;
       if (course.vehicle === 'hoverbike') {
         const difference = target.y - actor.y;
         this.hudAltitude.textContent = Math.abs(difference) < Math.min(2, target.halfHeight * .5) ? 'Altitude on line · fly through the ring' : `${difference > 0 ? '↑ Climb' : '↓ Descend'} ${Math.ceil(Math.abs(difference))} m · ${difference > 0 ? 'E / UP' : 'Q / DOWN'}`;
       } else this.hudAltitude.textContent = 'Ride through the numbered arches in order';
     }
+    if (offCourse !== wasOffCourse && run?.status === 'running') this.live.textContent = offCourse
+      ? `Off course. Follow the route map and direction to gate ${next + 1}.`
+      : `Back on course. Continue to gate ${next + 1}.`;
     if (run?.status === 'invalid') this.hudDirection.textContent = run.reason || 'Restart to begin a fresh timed run.';
     const best = this.records.best(course); this.hudBest.textContent = best === null ? 'PERSONAL BEST —' : `PERSONAL BEST ${formatTrialTime(best)}`;
+    const ghostTime = run?.elapsed ?? 0;
+    const ghostRaceActive = run?.status === 'running' || run?.status === 'countdown';
+    this.hudPaceGhost.hidden = !this.ghostsEnabled || !ghostRaceActive || !this.paceGhost || ghostTime > this.paceGhost.seconds;
+    this.hudRecordedGhost.hidden = !this.ghostsEnabled || !ghostRaceActive || !this.recordedGhost || ghostTime > this.recordedGhost.seconds;
+    this.hudGhostNotice.hidden = !this.hudPaceGhost.hidden || !this.hudRecordedGhost.hidden;
+    this.hudGhostNotice.textContent = !this.ghostsEnabled ? 'GHOSTS HIDDEN' : this.preparing ? 'GHOSTS GETTING READY' : !ghostRaceActive ? 'RACE ENDED' : this.paceGhost || this.recordedGhost ? 'GHOSTS FINISHED' : 'NO GHOST AVAILABLE';
+    const ghostLabels: string[] = [];
+    if (!this.hudPaceGhost.hidden) ghostLabels.push('Cyan pace guide');
+    if (!this.hudRecordedGhost.hidden) ghostLabels.push('Violet recorded ghost');
+    this.hudGhosts.setAttribute('aria-label', ghostLabels.join(' and ') || this.hudGhostNotice.textContent || 'Ghost riders');
+    this.hud.dataset.ghosts = this.ghostsEnabled ? 'on' : 'off';
+    this.hud.dataset.ghostVisible = String(this.ghostView.visibleCount);
+    this.hud.dataset.ghostTracks = String(Number(!!this.paceGhost) + Number(!!this.recordedGhost));
+    this.hud.dataset.recordedGhost = this.recordedGhost ? 'ready' : 'none';
+    this.hud.dataset.ghostState = JSON.stringify(this.ghostView.snapshot());
     this.hud.dataset.paused = String(paused); this.hud.dataset.vehicle = course.vehicle;
     this.drawCourseMap(this.hudMap, course, actor, next);
   }
 
   private showResults() {
     const course = this.current, run = this.run; if (!course || !run) return;
+    const replayTrack = run.status === 'finished' && this.actor ? this.ghostRecorder?.finish(run, this.actor) : null;
+    const ghostSaved = replayTrack ? this.ghostStore.save(replayTrack) : null;
+    this.ghostRecorder = undefined;
     this.hooks.clear();
     const valid = run.status === 'finished' && run.finish !== null;
     const saved = valid ? this.records.save(course, run.finish!, run.splits) : undefined;
@@ -325,10 +456,13 @@ export class IslandTrials {
       details.append(list); this.results.append(details);
     }
     if (valid && !saved?.saved) this.results.append(node('p', 'trial-note', 'Browser storage is unavailable. This best time is saved for the current visit only.'));
+    if (valid) this.results.append(node('p', 'trial-note', ghostSaved
+      ? `${ghostSaved.improved ? 'Your recorded ghost is ready for the next run.' : 'Your fastest recorded ghost is kept for the next run.'}${ghostSaved.saved ? '' : ' The replay is available for this visit only.'}`
+      : 'A complete replay was unavailable for this run. Your finish time is still recorded.'));
     this.results.append(actions);
     this.live.textContent = valid ? `Finished in ${formatTrialTime(run.finish)}. ${saved?.improved ? 'New personal best.' : ''}` : detail;
     if (!this.results.open) this.results.showModal();
-    this.refreshHud();
+    this.updateGhosts(); this.refreshHud();
   }
 
   private toast(text: string) {
@@ -389,13 +523,14 @@ export class IslandTrials {
     const points = [course.start, ...course.path, ...course.gates];
     let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
     for (const point of points) { minX = Math.min(minX, point.x); maxX = Math.max(maxX, point.x); minZ = Math.min(minZ, point.z); maxZ = Math.max(maxZ, point.z); }
+    if (course.category === 'island') for (const [x, z] of this.data.island) { minX = Math.min(minX, x); maxX = Math.max(maxX, x); minZ = Math.min(minZ, z); maxZ = Math.max(maxZ, z); }
     const rangeX = Math.max(90, maxX - minX), rangeZ = Math.max(90, maxZ - minZ);
     const scale = Math.min((width - 54) / rangeX, (height - 42) / rangeZ) * .92;
-    return {px: (x: number) => width / 2 + (x - (minX + maxX) / 2) * scale, pz: (z: number) => height / 2 + (z - (minZ + maxZ) / 2) * scale};
+    return {scale, px: (x: number) => width / 2 + (x - (minX + maxX) / 2) * scale, pz: (z: number) => height / 2 + (z - (minZ + maxZ) / 2) * scale};
   }
 
-  private mapBackground(course: TrialCourse, width: number, height: number) {
-    const key = `${course.id}:${width}:${height}`, cached = this.mapBackgrounds.get(key); if (cached) return cached;
+  private mapBackground(course: TrialCourse, width: number, height: number, cache = true) {
+    const key = `${course.id}:${width}:${height}`, cached = cache && this.mapBackgrounds.get(key); if (cached) return cached;
     const canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height;
     const context = canvas.getContext('2d'); if (!context) return canvas;
     const {px, pz} = this.mapFrame(course, width, height);
@@ -422,17 +557,39 @@ export class IslandTrials {
       }
     }
     context.fillStyle = '#f5d38d'; context.fillRect(px(course.start.x) - 3, pz(course.start.z) - 3, 6, 6);
-    context.font = 'bold 11px system-ui'; context.fillStyle = '#dce9df'; context.fillText('N ↑', 12, 19);
-    this.mapBackgrounds.set(key, canvas); return canvas;
+    if (cache) { context.font = 'bold 11px system-ui'; context.fillStyle = '#dce9df'; context.fillText('N ↑', 12, 19); }
+    if (cache) this.mapBackgrounds.set(key, canvas); return canvas;
   }
 
   private drawCourseMap(canvas: HTMLCanvasElement, course: TrialCourse, actor?: TrialPose, next?: number) {
     const context = canvas.getContext('2d'); if (!context) return;
-    const {width, height} = canvas, {px, pz} = this.mapFrame(course, width, height);
-    context.clearRect(0, 0, width, height); context.drawImage(this.mapBackground(course, width, height), 0, 0);
+    const {width, height} = canvas;
+    let {px, pz} = this.mapFrame(course, width, height);
+    context.clearRect(0, 0, width, height);
+    if (actor && course.category === 'island') {
+      // Long island circuits need nearby bends to stay readable. One reusable
+      // atlas supplies the local HUD crop; course cards retain the full loop.
+      if (this.hudAtlas?.courseId !== course.id) this.hudAtlas = {courseId: course.id, canvas: this.mapBackground(course, 1536, 768, false)};
+      const atlas = this.hudAtlas.canvas, source = this.mapFrame(course, atlas.width, atlas.height);
+      const spanZ = course.vehicle === 'hoverbike' ? 500 : 250, spanX = spanZ * width / height;
+      const centerX = actor.x + Math.sin(actor.heading) * spanZ * .12, centerZ = actor.z + Math.cos(actor.heading) * spanZ * .12;
+      px = x => width / 2 + (x - centerX) * width / spanX;
+      pz = z => height / 2 + (z - centerZ) * height / spanZ;
+      context.fillStyle = '#0b2932'; context.fillRect(0, 0, width, height);
+      context.drawImage(atlas, source.px(centerX) - spanX * source.scale / 2, source.pz(centerZ) - spanZ * source.scale / 2, spanX * source.scale, spanZ * source.scale, 0, 0, width, height);
+      context.font = 'bold 11px system-ui'; context.fillStyle = '#dce9df'; context.fillText('N ↑', 12, 19);
+    } else context.drawImage(this.mapBackground(course, width, height), 0, 0);
     if (next !== undefined && course.gates[next]) {
-      const target = course.gates[next], x = px(target.x), z = pz(target.z);
+      const target = course.gates[next], x = Math.max(9, Math.min(width - 9, px(target.x))), z = Math.max(9, Math.min(height - 9, pz(target.z)));
       context.strokeStyle = '#f5d38d'; context.fillStyle = '#10252e'; context.lineWidth = 3; context.beginPath(); context.arc(x, z, 7, 0, Math.PI * 2); context.fill(); context.stroke();
+    }
+    if (actor && this.ghostsEnabled && this.run && (this.run.status === 'running' || this.run.status === 'countdown')) {
+      for (const track of [this.paceGhost, this.recordedGhost]) {
+        const ghost = sampleTrialGhost(track, this.run.elapsed, this.mapGhostPose); if (!ghost || !track) continue;
+        const x = px(ghost.x), z = pz(ghost.z); if (x < 5 || z < 5 || x > width - 5 || z > height - 5) continue;
+        context.fillStyle = TRIAL_GHOST_COLORS[track.kind]; context.strokeStyle = '#071d23'; context.lineWidth = 1.5;
+        context.beginPath(); context.arc(x, z, 4, 0, Math.PI * 2); context.fill(); context.stroke();
+      }
     }
     if (actor) {
       const x = Math.max(9, Math.min(width - 9, px(actor.x))), z = Math.max(9, Math.min(height - 9, pz(actor.z)));

@@ -2,7 +2,7 @@ import * as T from 'three';
 import {STARTUP_SKIES,startupSkyLook,startupSun} from './startupSky.ts';
 import {moonDirection,meteorFrame} from './nightSky.ts';
 import {HDRLoader} from 'three/addons/loaders/HDRLoader.js';
-import {advanceHour,normalizeSky,skyKeyBlend,sunDirection,smooth,cloudShape,SKY_KEYS,type SkySettings} from './skyModel.ts';
+import {advanceHour,normalizeSky,skyKeyBlend,sunDirection,smooth,cloudShape,islandHazeDensity,SKY_KEYS,type SkySettings} from './skyModel.ts';
 
 // Layered cloud lighting in one background draw; no ray marching or runtime probe captures.
 function cloudTexture(){
@@ -126,7 +126,7 @@ vec2 face=abs(normal.x)>abs(normal.z)?cityWorld.zy:cityWorld.xy;vec2 cells=face/
   hemi.color.set('#c0cad7').lerp(tempColor.copy(uniforms.horizon.value).lerp(daylightAmbient,.55),day);hemi.groundColor.set('#727b83').lerp(tempColor.set('#665d4a'),day);hemi.intensity=1.18+day*.02;
   key.color.copy(uniforms.sunColor.value);key.intensity=.10+2.3*day*dim*smooth(-.01,.20,uniforms.sunDirection.value.y);lightDirection.copy(uniforms.sunDirection.value);if(lightDirection.y<0){lightDirection.fromArray(lunar);key.color.set('#c9dcf3');key.intensity=.72*night*(1-shape.overcast*.45);}
   key.position.set(x+lightDirection.x*180,lightDirection.y*180,z+lightDirection.z*180);key.target.position.set(x,0,z);key.castShadow=shadowQuality&&key.intensity>.12;
-  scene.environmentIntensity=(.28+day*.31)*dim;fogColor.copy(uniforms.horizon.value).lerp(uniforms.warm.value,.10*(1-day));(scene.fog as T.FogExp2).color.copy(fogColor);(scene.fog as T.FogExp2).density=.000055+shape.overcast*.000018;
+  scene.environmentIntensity=(.28+day*.31)*dim;fogColor.copy(uniforms.horizon.value).lerp(uniforms.warm.value,.10*(1-day));(scene.fog as T.FogExp2).color.copy(fogColor);(scene.fog as T.FogExp2).density=islandHazeDensity(shape.overcast,night);
   nightUniform.value=night;reflectionTint.copy(uniforms.horizon.value).lerp(uniforms.warm.value,.40*(1-smooth(.1,.65,uniforms.sunDirection.value.y))).multiplyScalar(1.8);reflectionTint.lerp(tempColor.setRGB(1,1,1),day*.25);reflectionTint.multiplyScalar(1/Math.max(.1,reflectionTint.r,reflectionTint.g,reflectionTint.b));
   lighting.reflection.copy(reflectionTint);lighting.light=.12+day*.88;lighting.night=night;return lighting;
  }
