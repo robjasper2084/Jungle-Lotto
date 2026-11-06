@@ -1,4 +1,37 @@
 /** Classifies observed native input; it never changes or advances the game. */
+// Self-contained so the same lifecycle is injected into the page and tested in
+// isolation. It only owns the harness observer; it never changes game state.
+export function createCountdownObserverLifecycle(owner) {
+  const key = '__polishCountdownArm';
+  const remove = (arm, source) => {
+    arm.observer.disconnect();
+    if (owner[key] !== arm) return {id: arm.id, source, status: 'superseded'};
+    delete owner[key];
+    if (owner[key] === arm) throw new Error('Countdown observer handle could not be removed');
+    return {id: arm.id, source, status: 'complete', observerDisconnected: true, ownedHandleRemoved: true};
+  };
+  return {
+    ready(arm, payload, notify) {
+      if (!arm || payload?.id !== arm.id) return false;
+      const observerCleanup = remove(arm, 'ready-callback');
+      if (observerCleanup.status !== 'complete') return false;
+      notify({...payload, observerCleanup});
+      return true;
+    },
+    cancel(id) {
+      const arm = owner[key];
+      if (!arm) return {id, source: 'abort-cleanup', status: 'absent'};
+      if (arm.id !== id) return {id, source: 'abort-cleanup', status: 'superseded'};
+      return remove(arm, 'abort-cleanup');
+    },
+  };
+}
+
+export function hasCountdownCleanupEvidence(evidence, id) {
+  return Number.isInteger(id) && id > 0 && evidence?.id === id && evidence.source === 'ready-callback' && evidence.status === 'complete' &&
+    evidence.observerDisconnected === true && evidence.ownedHandleRemoved === true;
+}
+
 export function classifyCountdownInput({mobile, events, state, expectedCode, expectedTarget}) {
   const ready = state?.hudHidden === false && state.status === 'countdown' &&
     typeof state.course === 'string' && state.course.length > 0 && Number.isFinite(state.at) &&

@@ -5,7 +5,7 @@ import {appendFile, mkdir, readFile, stat, writeFile} from 'node:fs/promises';
 import {createServer} from 'node:http';
 import {createRequire} from 'node:module';
 import {extname, resolve, sep} from 'node:path';
-import {classifyCountdownInput} from './polish-countdown-proof.mjs';
+import {classifyCountdownInput, createCountdownObserverLifecycle, hasCountdownCleanupEvidence} from './polish-countdown-proof.mjs';
 
 const game = resolve(import.meta.dirname, '..');
 const root = resolve(game, 'dist');
@@ -249,32 +249,36 @@ async function runCase(configuration) {
     const record = {label, trigger: trigger.description, triggerPoint: trigger.point, input: input?.description ?? 'Observe only',
       dispatch: input ? configuration.mobile ? 'Same-session native Enter then touch prequeue' : 'Native prequeue' : 'Observe only', armedAt: new Date().toISOString()};
     (entry.metrics.countdownTransitions ??= []).push(record);
-    const waiter = {id: ++countdownSequence, cancelled: false, received: false, receive(payload) {
+    const waiter = {id: ++countdownSequence, cancelled: false, received: false, cleanupComplete: false, receive(payload) {
       if (timedOut || countdownWaiter !== waiter || waiter.cancelled || waiter.received || payload.id !== waiter.id) return;
       waiter.received = true; record.notification = payload;
       try {
         assertCountdown(payload.state, label);
+        assert.equal(hasCountdownCleanupEvidence(payload.observerCleanup, waiter.id), true,
+          label + ': readiness notification follows owned observer cleanup');
+        record.observerCleanup = payload.observerCleanup; waiter.cleanupComplete = true;
         resolveReady(payload);
       } catch (error) { record.failure = error.stack || String(error); if (!waiter.cancelled) rejectReady(error); }
     }};
     countdownWaiter = waiter;
     try {
       record.arm = await page.evaluate(id => {
-        window.__polishCountdownArm?.observer.disconnect();
+        if (window.__polishCountdownArm) window.__polishCountdownLifecycle.cancel(window.__polishCountdownArm.id);
         const hud = document.querySelector('#trial-hud');
         if (!hud) throw new Error('Trial HUD is required before arming countdown');
         let previous = hud.hidden ? 'hidden' : hud.dataset.status;
+        const arm = {id};
         const observer = new MutationObserver(() => {
           const status = hud.hidden ? 'hidden' : hud.dataset.status;
           if (status === 'countdown' && previous !== 'countdown') {
-            observer.disconnect();
-            if (window.__polishCountdownArm?.id !== id) return;
             const payload = {id, previous, state: window.__polishTrialSnapshot(), traceStart: window.__polishInput.length};
-            window.__polishCountdownReady(payload).catch(error => window.__polishObserverErrors.push(String(error)));
+            window.__polishCountdownLifecycle.ready(arm, payload, ready => {
+              window.__polishCountdownReady(ready).catch(error => window.__polishObserverErrors.push(String(error)));
+            });
           }
           previous = status;
         });
-        window.__polishCountdownArm = {id, observer};
+        arm.observer = observer; window.__polishCountdownArm = arm;
         observer.observe(hud, {attributes: true, attributeFilter: ['data-status', 'hidden']});
         return {traceStart: window.__polishInput.length, state: window.__polishTrialSnapshot()};
       }, waiter.id);
@@ -302,11 +306,14 @@ async function runCase(configuration) {
       waiter.cancelled = true; if (countdownWaiter === waiter) countdownWaiter = undefined;
       try { await bounded(trigger.release(), 5_000, label + ' trigger release'); }
       catch (error) { record.triggerReleaseFailure = error.message; cleanupFailed = true; }
-      try { await bounded(page.evaluate(id => {
-        if (window.__polishCountdownArm?.id !== id) return;
-        window.__polishCountdownArm.observer.disconnect(); delete window.__polishCountdownArm;
-      }, waiter.id), 5_000, 'Countdown observer cleanup'); }
-      catch (error) { record.observerCleanupFailure = error.message; cleanupFailed = true; }
+      // Successful readiness already disconnected and deleted its own observer
+      // before notifying Node. Missing/aborted readiness still needs fatal,
+      // bounded cleanup; a replacement generation must never be removed.
+      if (!waiter.cleanupComplete) {
+        try { record.observerCleanup = await bounded(page.evaluate(id =>
+          window.__polishCountdownLifecycle.cancel(id), waiter.id), 5_000, 'Countdown observer cleanup'); }
+        catch (error) { record.observerCleanupFailure = error.message; cleanupFailed = true; }
+      }
     }
   };
   const begin = async (id, vehicle, input) => {
@@ -410,6 +417,7 @@ async function runCase(configuration) {
     const context = await browser.newContext({viewport: {width: 390, height: 844}, deviceScaleFactor: 1, isMobile: configuration.mobile, hasTouch: true, reducedMotion: 'no-preference'});
     page = await context.newPage(); touch = await context.newCDPSession(page); page.setDefaultTimeout(limits.actionMilliseconds);
     await page.exposeBinding('__polishCountdownReady', (_, payload) => countdownWaiter?.receive(payload));
+    await page.addInitScript({content: 'window.__polishCountdownLifecycle = (' + createCountdownObserverLifecycle.toString() + ')(window);'});
     // Read-only event trace proves when trusted input was delivered; it never changes the game.
     await page.addInitScript(() => {
       window.__polishInput = []; window.__polishObserverErrors = [];
