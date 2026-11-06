@@ -1,11 +1,20 @@
 /** Automatic mode adapts after sustained foreground pressure, including very slow frames. */
 export class FrameBudget {
- scale=1;private sum=0;private count=0;private slow=0;private severe=0;private good=0;private warmup=2;
- reset(){this.scale=1;this.sum=this.count=this.slow=this.severe=this.good=0;this.warmup=2;}
+ scale=1;private sum=0;private count=0;private slow=0;private severe=0;private critical=0;private good=0;private warmup=2;
+ reset(){this.scale=1;this.sum=this.count=this.slow=this.severe=this.critical=this.good=0;this.warmup=2;}
  sample(dt:number,cap:number,eligible:boolean){
   // Menus, background time and the first resumed frame interrupt both pressure
   // and recovery streaks. They must not join separate bursts into a downgrade.
-  if(!eligible||!Number.isFinite(dt)||dt<=0){this.sum=this.count=this.slow=this.severe=this.good=0;return false;}
+  if(!eligible||!Number.isFinite(dt)||dt<=0){this.sum=this.count=this.slow=this.severe=this.critical=this.good=0;return false;}
+  // Several consecutive second-long foreground frames need relief before
+  // warmup plus two ordinary windows can finish. A normal frame breaks this
+  // separate streak, so one or two loading hitches cannot trigger the fallback.
+  this.critical=dt>=1?this.critical+1:0;
+  if(this.critical>=3){
+   const changed=this.scale!==.65;this.scale=.65;
+   this.sum=this.count=this.slow=this.severe=this.critical=this.good=this.warmup=0;
+   return changed;
+  }
   // A severe foreground stall is pressure, not missing data. Bound its weight
   // so one load hitch cannot consume the warmup or several evidence windows.
   const contribution=Math.min(dt,.5);
