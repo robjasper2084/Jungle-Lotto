@@ -1,3 +1,4 @@
+import {waitForRideModel} from './rideModelWait.ts';
 import {applyRealisticMaterials} from './realisticMaterials.ts';
 import * as T from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
@@ -11,15 +12,6 @@ import {HoverRiderRig} from './hoverRiderMotion.ts';
 type Pose={x:number;y:number;z:number;headingY:number};
 type Hooks={pose:()=>Pose;blocked:()=>boolean;entered:()=>void;exited:(p:{x:number;y:number;z:number;heading:number})=>void;touch:()=>boolean;obstacle?:FlightObstacle;vehicleLocked?:()=>boolean;restartTrial?:()=>void;prepareScene?:(model:T.Object3D,signal?:AbortSignal)=>Promise<void>};
 const keyCodes=['KeyW','KeyS','KeyA','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyE','KeyQ','Space','ShiftLeft','ShiftRight','KeyG','KeyF','KeyL','KeyH','KeyK','KeyR'];
-/** A stalled optional 3D download must not trap Start forever. The original load may still complete and be reused on retry. */
-async function waitForRideModel<T>(loading:Promise<T>,timeoutMs:number):Promise<T>{
- let timer:ReturnType<typeof setTimeout>|undefined;
- try{
-  return await Promise.race([loading,new Promise<never>((_,reject)=>{
-   timer=setTimeout(()=>reject(new Error('Hoverbike model download timed out. Please retry or choose the one-wheel ride.')),timeoutMs);
-  })]);
- }finally{if(timer!==undefined)clearTimeout(timer);}
-}
 export class HoverRide {
  readonly sim:HoverController;
  riding=false;
@@ -133,10 +125,15 @@ export class HoverRide {
   const near=choices.find(p=>this.terrain.land(p.x,p.z)&&!this.terrain.obstructed(p.x,p.z,2));
   return near||this.terrain.map.spawn;
  }
- async prepare(scene:T.Scene,forRide=false,signal?:AbortSignal){await waitForRideModel(this.load(scene),20000);if(signal?.aborted)throw new DOMException('Ride preparation cancelled','AbortError');if(forRide&&this.model)await this.hooks.prepareScene?.(this.model,signal);}
+ async prepare(scene:T.Scene,forRide=false,signal?:AbortSignal){
+  if(signal?.aborted)throw new DOMException('Ride preparation cancelled','AbortError');
+  await waitForRideModel(this.load(scene),20000,signal);
+  if(signal?.aborted)throw new DOMException('Ride preparation cancelled','AbortError');
+  if(forRide&&this.model)await this.hooks.prepareScene?.(this.model,signal);
+ }
  async mount(scene:T.Scene){
-  if(this.hooks.blocked()||this.hooks.vehicleLocked?.()||this.enterButton.disabled)return;
-  const generation=++this.mountGeneration;this.mountAbort?.abort();const preparation=this.mountAbort=new AbortController();
+  if(this.hooks.blocked()||this.hooks.vehicleLocked?.()||this.enterButton.disabled||this.mountAbort)return;
+  const generation=++this.mountGeneration;const preparation=this.mountAbort=new AbortController();
   void this.sound.unlock();this.enterButton.disabled=true;this.enterButton.textContent='Preparing hoverbike…';
   try{
    await this.prepare(scene,true,preparation.signal);
@@ -145,8 +142,8 @@ export class HoverRide {
    this.riding=true;this.model!.visible=true;this.hero&&(this.hero.visible=true);
    document.body.classList.add('on-hoverbike');this.hud.hidden=false;this.hooks.entered();
    this.say('Press G to take off. E / Q changes height.');this.refresh();
-  }catch(e){if(!preparation.signal.aborted){console.error('Hoverbike load failed',e);this.enterButton.textContent='Retry hoverbike';}}
-  finally{this.enterButton.disabled=!!this.hooks.vehicleLocked?.();if(this.model)this.enterButton.textContent=this.riding?'Get off hoverbike · B':'Ride hoverbike · B';}
+  }catch(e){if(generation===this.mountGeneration&&!preparation.signal.aborted){console.error('Hoverbike load failed',e);this.enterButton.textContent='Retry hoverbike';}}
+  finally{if(generation===this.mountGeneration){this.mountAbort=undefined;this.enterButton.disabled=!!this.hooks.vehicleLocked?.();if(this.model)this.enterButton.textContent=this.riding?'Get off hoverbike · B':'Ride hoverbike · B';}}
  }
  /** prepare() loads assets first; this synchronous placement cannot outlive a cancelled start. */
  beginTrial(p:{x:number;y:number;z:number;heading:number}){
@@ -186,7 +183,7 @@ export class HoverRide {
   if(!point){this.say('Land on clear ground before getting off. Press G to land.');return;}
   this.leaveForTravel();this.hooks.exited(point);
  }
- leaveForTravel(){++this.mountGeneration;this.mountAbort?.abort();this.mountAbort=undefined;this.endTrial();this.clear();this.riding=false;this.sim.land();this.hud.hidden=true;this.model&&(this.model.visible=false);document.body.classList.remove('on-hoverbike');this.enterButton.textContent='Ride hoverbike · B';}
+ leaveForTravel(){++this.mountGeneration;this.mountAbort?.abort();this.mountAbort=undefined;this.endTrial();this.clear();this.riding=false;this.sim.land();this.hud.hidden=true;this.model&&(this.model.visible=false);document.body.classList.remove('on-hoverbike');this.enterButton.disabled=!!this.hooks.vehicleLocked?.();this.enterButton.textContent='Ride hoverbike · B';}
  private say(message:string){this.notice.textContent=message;this.messageUntil=performance.now()+4500;}
  private refresh(){
   const p=this.sim.pose;
