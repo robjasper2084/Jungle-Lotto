@@ -1,5 +1,10 @@
 import type {MusicTrack} from './belleAudioPolicy.ts';
 import {unit} from './belleAudioPolicy.ts';
+/** Only a verified Pages assembly opts into the existing same-origin Swoop copy.
+ * Local previews and portable standalone builds keep their local soundtrack. */
+export function belleMusicUrl(url:string,base:string|null|undefined=typeof document==='undefined'?null:document.querySelector('meta[name="belle-music-base"]')?.getAttribute('content')){
+ return base==='../swoop-detroit/'&&/^\.\/audio\/swoop\/track-\d{2}\.mp3$/.test(url)?base+url.slice(2):url;
+}
 export interface MusicElement {
  src:string;preload:string;volume:number;loop:boolean;currentTime:number;
  play():Promise<void>;pause():void;load():void;
@@ -27,7 +32,7 @@ export class BelleMusicPlayer {
   const index=this.tracks.findIndex(t=>t.id===track),changed=index>=0&&index!==this.index;
   const turnedOn=enabled&&!this.enabled;
   this.enabled=enabled;this.volume=unit(volume);
-  if(changed){this.stop();this.index=index;this.blocked=false;if(this.audio){this.audio.src=this.tracks[index].url;this.audio.load();}}
+  if(changed){this.stop();this.index=index;this.blocked=false;if(this.audio){this.audio.src=belleMusicUrl(this.tracks[index].url);this.audio.load();}}
   if(!enabled){this.stop();return;}
   if(this.audio)this.audio.volume=this.playing&&this.active?this.volume:0;
   if(changed||turnedOn)this.start(false);
@@ -45,7 +50,7 @@ export class BelleMusicPlayer {
  private start(prime:boolean){
   if(this.disposed||!this.enabled||!this.authorized||this.blocked||!this.tracks.length||this.pending||this.playing||(!this.active&&!prime))return;
   if(!this.audio){
-   try{this.audio=this.factory();this.audio.preload='none';this.audio.loop=false;this.audio.src=this.tracks[this.index].url;
+   try{this.audio=this.factory();this.audio.preload='none';this.audio.loop=false;this.audio.src=belleMusicUrl(this.tracks[this.index].url);
     this.audio.addEventListener('ended',this.ended);this.audio.addEventListener('error',this.failed);
    }catch{this.blocked=true;this.changed('Music is unavailable in this browser.');return;}
   }
@@ -73,7 +78,7 @@ export class BelleMusicPlayer {
   const track=this.tracks[(this.index+1)%this.tracks.length];
   // A one-track playlist still restarts through a new, handled play request.
   this.stop();this.index=(this.index+1)%this.tracks.length;this.blocked=false;
-  if(this.audio){this.audio.src=track.url;this.audio.currentTime=0;this.audio.load();}
+  if(this.audio){this.audio.src=belleMusicUrl(track.url);this.audio.currentTime=0;this.audio.load();}
   this.start(false);
  }
  get selected(){return this.tracks[this.index]?.id??'';}

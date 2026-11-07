@@ -59,14 +59,25 @@ const snapshot=()=>bounded(page.evaluate(()=>({
 async function shot(label){const file=name+'-'+label+'.png';await bounded(page.screenshot({path:resolve(output,file),timeout:150_000}),155_000,'screenshot '+label);report.screenshots.push(file);}
 async function holdForward(){
   if(!mobile){await page.locator('#game').focus();await page.keyboard.down('w');return async()=>page.keyboard.up('w');}
-  const control=page.locator('#hover-hud [data-hold="KeyW"]');await expect(control).toBeVisible();
-  const hit=await control.evaluate(button=>{
-    const r=button.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2,target=document.elementFromPoint(x,y);
-    return{x,y,receives:target===button||button.contains(target),width:r.width,height:r.height};
+  // The mobile HUD intentionally hides legacy W/S buttons. Use its actual
+  // floating/fixed joystick through native touch, never injected game inputs.
+  const control=page.locator('#hover-move-zone');await expect(control).toBeVisible();
+  const hit=await control.evaluate(zone=>{
+    const r=zone.getBoundingClientRect(),stick=document.querySelector('#hover-flight-stick').getBoundingClientRect();
+    const floating=document.body.dataset.joystickMode!=='fixed';
+    const x=floating?r.left+r.width*.5:stick.left+stick.width/2;
+    const y=floating?r.top+r.height*.28:stick.top+stick.height/2;
+    const endY=y-stick.width*.37*.85;
+    const receives=(px,py)=>{const target=document.elementFromPoint(px,py);return target===zone||zone.contains(target);};
+    return{x,y,endY,receives:receives(x,y)&&receives(x,endY),width:r.width,height:r.height};
   });
-  assert.ok(hit.receives&&hit.width>=44&&hit.height>=44,'Touchable, uncovered throttle target');
-  await touch.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:hit.x,y:hit.y,id:1}]});
-  return async()=>touch.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+  assert.ok(hit.receives&&hit.width>=44&&hit.height>=44,'Touchable, uncovered movement joystick');
+  const release=()=>touch.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+  try{
+    await touch.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:hit.x,y:hit.y,id:1}]});
+    await touch.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:hit.x,y:hit.endY,id:1}]});
+  }catch(error){await release().catch(()=>{});throw error;}
+  return release;
 }
 try{
   browser=await chromium.launch({channel:'chrome',headless:process.env.BELLE_STARTUP_BROWSER_HEADED!=='1',
@@ -118,7 +129,7 @@ try{
     const release=await holdForward();
     try{await expect.poll(async()=>Number.parseFloat(await page.locator('#hover-speed').textContent()),{timeout:120_000,intervals:[500,1000,2000]}).toBeGreaterThan(0);}
     finally{await bounded(release(),30_000,'release native movement input');}
-    checked(mobile?'touch throttle movement':'keyboard throttle movement',await snapshot());
+    checked(mobile?'touch joystick movement':'keyboard throttle movement',await snapshot());
     await expect.poll(async()=>Number.parseFloat(await page.locator('#hover-speed').textContent()),{timeout:120_000,intervals:[500,1000,2000]}).toBe(0);
     checked('neutral input holds position',await snapshot());await shot('airborne');
 
@@ -135,7 +146,10 @@ try{
       certification:'Software-rendered observations only; no hardware FPS or long-session guarantee.'};
 
     await tap(page.locator('#hover-hud [data-hover="takeoff"]'));
-    await expect(page.locator('#hover-mode')).toHaveText('LANDED',{timeout:240_000});
+    // SwiftShader previously advanced only ~24 frames (1.2 simulation seconds)
+    // within four wall-clock minutes. Keep the real landing assertion and all
+    // performance evidence, allowing more real frames without modifying dt.
+    await expect(page.locator('#hover-mode')).toHaveText('LANDED',{timeout:480_000});
     checked('landing returns to grounded state',await snapshot());await shot('landed');
     await tap(page.locator('#hover-hud [data-hover="exit"]'));
     await expect(page.locator('body')).not.toHaveClass(/on-hoverbike/);await expect(page.locator('#hover-enter')).toBeEnabled();
