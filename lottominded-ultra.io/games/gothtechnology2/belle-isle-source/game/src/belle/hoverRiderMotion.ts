@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {RiderPresence,articulationStrength} from './riderPresence.ts';
 import type {HoverPose} from './hoverController.ts';
 
 const clamp=(n:number,min:number,max:number)=>Math.max(min,Math.min(max,n));
@@ -76,6 +77,7 @@ function matchAnchors(a:T.Bone,b:T.Bone,first:T.Object3D,second:T.Object3D):[T.O
 /** Uses the shipped skin, gloves, boots and sockets; creates no replacement meshes or materials. */
 export class HoverRiderRig {
  readonly motion=new HoverRiderMotion();
+ private presence=new RiderPresence();
  readonly diagnostics:HoverRiderDiagnostics={lean:0,pitch:0,compression:0,headPitch:0,headRoll:0,look:0,handError:0,footError:0,contacts:0};
  private rests:BoneRest[];
  private model:T.Object3D;private parts:RigParts;
@@ -131,25 +133,38 @@ export class HoverRiderRig {
   if(foot)point.y=bounds.min.y+(bounds.max.y-bounds.min.y)*.05;
   chain.contact.copy(chain.end.worldToLocal(point));return true;
  }
- reset(p:HoverPose,landed:boolean){this.motion.reset(p,landed);this.apply(this.motion.pose);}
+ reset(p:HoverPose,landed:boolean){this.motion.reset(p,landed);this.presence.reset();this.apply(this.motion.pose,0);}
  suspend(){this.motion.suspend();}
- update(dt:number,p:HoverPose,landed:boolean,steer:number,running:boolean,reducedMotion:boolean){this.apply(this.motion.update(dt,p,landed,steer,running,reducedMotion));}
+ update(dt:number,p:HoverPose,landed:boolean,steer:number,running:boolean,reducedMotion:boolean){
+  const base=this.motion.update(dt,p,landed,steer,running,reducedMotion);
+  this.presence.update(dt,base,p,running,reducedMotion);
+  this.apply(base,1);
+  // Never stretch a limb to obtain a stronger pose. Keep the original IK as the fallback.
+  for(let attempt=0;attempt<2;attempt++){
+   const strength=articulationStrength(this.diagnostics.handError,this.diagnostics.footError,attempt);
+   if(strength===1)break;this.apply(base,strength);
+  }
+ }
  private rotate(bone:T.Bone,pitch:number,yaw:number,roll:number){bone.quaternion.multiply(this.q0.setFromEuler(this.rotation.set(pitch,yaw,roll,'YXZ')));}
- private apply(p:HoverRiderPose){
+ private apply(base:HoverRiderPose,strength=0){
+  const a=this.presence.pose;
+  const pitch=T.MathUtils.lerp(base.pitch,a.pitch,strength),compression=T.MathUtils.lerp(base.compression,a.compression,strength);
+  const hipLean=T.MathUtils.lerp(base.lean,a.hipLean,strength),chestLean=T.MathUtils.lerp(base.lean,a.chestLean,strength);
+  const headPitch=T.MathUtils.lerp(base.headPitch,a.headPitch,strength),headRoll=T.MathUtils.lerp(base.headRoll,a.headRoll,strength),look=T.MathUtils.lerp(base.look,a.look,strength);
   for(let i=0;i<this.rests.length;i++){const r=this.rests[i];r.bone.position.copy(r.position);r.bone.quaternion.copy(r.quaternion);r.bone.scale.copy(r.scale);}
   const {hips,spine,chest,head,arms,legs}=this.parts;
-  hips.position.x=this.hipsRest.x-p.lean*.06/this.hipsScale;
-  hips.position.y=this.hipsRest.y-p.compression/this.hipsScale;
-  hips.position.z=this.hipsRest.z+p.pitch*.03/this.hipsScale;
-  this.rotate(hips,0,0,p.lean*.08);
-  this.rotate(spine,p.pitch*.55,0,p.lean*.52);
-  this.rotate(chest,p.pitch*.45,0,p.lean*.40);
-  this.rotate(head,p.headPitch,p.look,p.headRoll);
+  hips.position.x=this.hipsRest.x-hipLean*(.06+.07*strength)/this.hipsScale;
+  hips.position.y=this.hipsRest.y-compression/this.hipsScale;
+  hips.position.z=this.hipsRest.z+pitch*.03/this.hipsScale;
+  this.rotate(hips,0,a.hipYaw*strength,hipLean*.08);
+  this.rotate(spine,pitch*.55,0,chestLean*.52);
+  this.rotate(chest,pitch*.45+a.breath*strength,(a.chestYaw-a.hipYaw)*strength,chestLean*.40);
+  this.rotate(head,headPitch,look,headRoll);
   this.model.updateMatrixWorld(true);
   let handError=0,footError=0;
   for(let i=0;i<2;i++)handError=Math.max(handError,this.solve(arms[i]));
   for(let i=0;i<2;i++)footError=Math.max(footError,this.solve(legs[i]));
-  const d=this.diagnostics;d.lean=p.lean;d.pitch=p.pitch;d.compression=p.compression;d.headPitch=p.headPitch;d.headRoll=p.headRoll;d.look=p.look;d.handError=handError;d.footError=footError;
+  const d=this.diagnostics;d.lean=hipLean*.08+chestLean*.92;d.pitch=pitch+a.breath*strength;d.compression=compression;d.headPitch=headPitch;d.headRoll=headRoll;d.look=look;d.handError=handError;d.footError=footError;
  }
  private setWorldQuaternion(bone:T.Bone,world:T.Quaternion){bone.parent!.getWorldQuaternion(this.q2).invert();bone.quaternion.copy(this.q2.multiply(world));bone.updateMatrixWorld(true);}
  private solve(chain:Limb){
