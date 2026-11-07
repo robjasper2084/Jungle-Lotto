@@ -1,0 +1,29 @@
+{
+  "sourceCommit": "db27045ef3d51758325a1e3eb7b407d90588ae48",
+  "sourceCatalog": "lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/soundtrackCatalog.ts",
+  "sourceRoot": "lottominded-ultra.io/games/gothtechnology2/store/public/arcade/swoop-detroit/audio/swoop",
+  "sourceTree": "1883d6027ff037d5921c4a98fda2869bd622bc26",
+  "identityMethod": "Git blob SHA-1; existing repository blobs reused verbatim. No new audio generation, transcoding or external downloads.",
+  "selection": "19 unique musical tracks from the existing Swoop catalog; duplicate entries and effect track-16 excluded. Reuse requested by repository owner; this provenance does not grant a new license.",
+  "tracks": [
+    {"file":"track-01.mp3","gitBlob":"ad24bc31bdd4fbb7f9127895678ff3aa31d12a75","bytes":3087090},
+    {"file":"track-02.mp3","gitBlob":"ca11874d438ff9724b094639adec55accb04f672","bytes":2613124},
+    {"file":"track-03.mp3","gitBlob":"4db3c2e0acd330d1048792360d0ed69a745ef68f","bytes":1200004},
+    {"file":"track-05.mp3","gitBlob":"35ad52234a2fc270b7b0eb92306834948a52dd9b","bytes":932928},
+    {"file":"track-06.mp3","gitBlob":"fd97414690dbafb7f9164621d2606611640018c2","bytes":1463319},
+    {"file":"track-07.mp3","gitBlob":"054c4d9c81d51940641512f8f9825e624ccee004","bytes":1039926},
+    {"file":"track-08.mp3","gitBlob":"8e2aabdeecb77caaed9f1286c406c07313c840f0","bytes":1108889},
+    {"file":"track-09.mp3","gitBlob":"e994f2744539dd658782b8157785a9a23116bd61","bytes":4897689},
+    {"file":"track-10.mp3","gitBlob":"e5b0d7d1a985cdb1b9648948e2018ed01f6a11fe","bytes":2861392},
+    {"file":"track-11.mp3","gitBlob":"d91f45bfd0b2ba5c2cd0c53ad6d17c2b57414264","bytes":420093},
+    {"file":"track-14.mp3","gitBlob":"cd682933f1bf6204e494b30b218417eac38caf62","bytes":1072527},
+    {"file":"track-15.mp3","gitBlob":"ac334dac41a6af9f6916a095f1ff890172dc451b","bytes":2294222},
+    {"file":"track-17.mp3","gitBlob":"e79896ae7e1bed4d9ceb6489d3edb713dfdc0932","bytes":1699466},
+    {"file":"track-18.mp3","gitBlob":"9cf80cf236578b40fc670b17dbfb5ae3fb088c40","bytes":2400383},
+    {"file":"track-19.mp3","gitBlob":"ba3c1c5712b8652f9ae53415a2897fd00bdee8ed","bytes":2765679},
+    {"file":"track-20.mp3","gitBlob":"6c28149c79a8f18ba87398c9ed121c21fe2c0373","bytes":2845092},
+    {"file":"track-21.mp3","gitBlob":"9c13f709d8f4f523d67d43e0939190f2f498217a","bytes":3304847},
+    {"file":"track-23.mp3","gitBlob":"6b5d51330d16b2dbeb3a0cc972b02ead84df7329","bytes":3026904},
+    {"file":"track-24.mp3","gitBlob":"6e17ec27cec31e6483c43cf67546abacc4481232","bytes":4631031}
+  ]
+}

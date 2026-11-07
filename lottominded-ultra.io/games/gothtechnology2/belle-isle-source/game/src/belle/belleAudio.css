@@ -1,0 +1,11 @@
+.belle-audio{margin:1rem 0;padding:1rem;border:1px solid currentColor;border-radius:.6rem;min-width:0}
+.belle-audio legend{font-weight:700;padding:0 .35rem}
+.belle-audio label{display:flex;align-items:center;flex-wrap:wrap;gap:.6rem;margin:.75rem 0;min-height:44px}
+.belle-audio p{font-size:.9rem;line-height:1.5}
+.belle-audio input[type=range]{flex:1 1 8rem;min-width:6rem;min-height:44px}
+.belle-audio input[type=checkbox]{width:24px;height:24px}
+.belle-audio select{width:100%;max-width:100%;min-height:44px}
+.belle-audio button{min-height:44px;white-space:normal}
+.belle-audio-actions{display:flex;gap:.5rem;flex-wrap:wrap}
+.belle-audio output{min-width:3.5ch;text-align:right}
+.belle-audio :focus-visible{outline:2px solid currentColor;outline-offset:3px}
