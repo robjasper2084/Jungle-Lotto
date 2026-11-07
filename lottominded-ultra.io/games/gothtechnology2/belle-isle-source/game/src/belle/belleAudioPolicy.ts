@@ -11,13 +11,14 @@ export interface AudioPreferences {
 }
 export const AUDIO_KEY='belle-isle-swoop-audio-v1';
 export const DEFAULT_AUDIO:Readonly<AudioPreferences>=Object.freeze({
- music:false,effects:false,warnings:false,musicVolume:.22,effectsVolume:.65,warningVolume:.6,track:'track-01'
+ music:true,effects:false,warnings:false,musicVolume:.34,effectsVolume:.65,warningVolume:.6,track:'track-01'
 });
 export const finite=(value:unknown,fallback=0):number=>typeof value==='number'&&Number.isFinite(value)?value:fallback;
 export const unit=(value:unknown,fallback=0):number=>Math.max(0,Math.min(1,finite(value,fallback)));
 export function audioPreferences(raw:unknown,trackIds:readonly string[]):AudioPreferences {
  const p=raw&&typeof raw==='object'?raw as Record<string,unknown>:{};
- return {music:p.music===true,effects:p.effects===true,warnings:p.warnings===true,
+ // Missing preferences use the ride-start music default; an explicit saved OFF wins.
+ return {music:p.music===undefined?DEFAULT_AUDIO.music:p.music===true,effects:p.effects===true,warnings:p.warnings===true,
  musicVolume:unit(p.musicVolume,DEFAULT_AUDIO.musicVolume),effectsVolume:unit(p.effectsVolume,DEFAULT_AUDIO.effectsVolume),warningVolume:unit(p.warningVolume,DEFAULT_AUDIO.warningVolume),
  track:typeof p.track==='string'&&trackIds.includes(p.track)?p.track:(trackIds[0]??'')};
 }
