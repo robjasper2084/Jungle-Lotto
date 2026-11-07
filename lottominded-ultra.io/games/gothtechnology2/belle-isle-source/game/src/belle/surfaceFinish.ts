@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {ASPHALT_PATCH_DETAIL} from './asphaltPolish.ts';
 
 // All asphalt uses the same world coordinates, including overlapping junction
 // ribbons. Route-relative wear would give those coplanar surfaces different
@@ -15,8 +16,9 @@ export function finishAsphalt(material:T.MeshStandardMaterial){
    float aggregate=fract(sin(dot(floor(q*92.),vec2(12.9898,78.233)))*43758.5453);
    float resolved=1.-smoothstep(.3,1.6,length(fwidth(q))*92.);
    diffuseColor.rgb*=mix(vec3(.76,.78,.77),vec3(.98,.96,.92),mottling)*mix(1.,mix(.78,1.14,aggregate),resolved);
+   ${ASPHALT_PATCH_DETAIL}
   `);
- };material.customProgramCacheKey=()=>'world-asphalt-weather-v2';
+ };material.customProgramCacheKey=()=>'world-asphalt-weather-v3';
 }
 
 /** Colour the exposed bank by elevation, not rows of flat-colour triangles. */

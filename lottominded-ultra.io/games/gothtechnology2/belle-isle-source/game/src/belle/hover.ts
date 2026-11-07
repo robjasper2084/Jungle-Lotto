@@ -1,4 +1,6 @@
 import {waitForRideModel} from './rideModelWait.ts';
+import {installHoverPresentation} from './visualPolishHud.ts';
+import {hoverHelpText} from './visualPolishPolicy.ts';
 import {applyRealisticMaterials} from './realisticMaterials.ts';
 import * as T from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
@@ -10,7 +12,7 @@ import './hover.css';
 import {HoverLighting,LED_COLORS} from './hoverLighting.ts';
 import {HoverRiderRig} from './hoverRiderMotion.ts';
 type Pose={x:number;y:number;z:number;headingY:number};
-type Hooks={pose:()=>Pose;blocked:()=>boolean;entered:()=>void;exited:(p:{x:number;y:number;z:number;heading:number})=>void;touch:()=>boolean;obstacle?:FlightObstacle;vehicleLocked?:()=>boolean;restartTrial?:()=>void;prepareScene?:(model:T.Object3D,signal?:AbortSignal)=>Promise<void>};
+type Hooks={pose:()=>Pose;blocked:()=>boolean;entered:()=>void;exited:(p:{x:number;y:number;z:number;heading:number})=>void;touch:()=>boolean;nightAmount?:()=>number;obstacle?:FlightObstacle;vehicleLocked?:()=>boolean;restartTrial?:()=>void;prepareScene?:(model:T.Object3D,signal?:AbortSignal)=>Promise<void>};
 const keyCodes=['KeyW','KeyS','KeyA','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyE','KeyQ','Space','ShiftLeft','ShiftRight','KeyG','KeyF','KeyL','KeyH','KeyK','KeyR'];
 export class HoverRide {
  readonly sim:HoverController;
@@ -56,7 +58,7 @@ export class HoverRide {
   this.hud.innerHTML='<div class="hover-title"><span>SWOOP / 2084</span><strong>HOVERBIKE</strong></div><div class="hover-instruments"><div><b id="hover-speed">0</b><span>KM/H</span></div><div><b id="hover-altitude">0.2</b><span>METRES AGL</span></div><output id="hover-mode">LANDED</output></div><p id="hover-notice" role="status">Take off to ride.</p><div class="hover-actions"><button data-hover="takeoff">Take off · G</button><button data-hover="lights" aria-pressed="true">Headlights · L</button><button data-hover="sound" aria-pressed="false">Sound off</button><button data-hover="reset">Recover · R</button><button data-hover="exit">Get off · F</button></div><details class="hover-lighting"><summary>Flight & lighting</summary><div><label>Flight mode<select id="hover-flight-mode"><option value="drone">Drone · altitude hold</option><option value="classic">Classic · momentum</option></select></label><label>LED color<input type="color" id="hover-led-color" value="#79dfff"></label><label>LED effect<select id="hover-led-mode"><option value="solid">Solid color</option><option value="cycle">Slow color cycle</option><option value="off">LEDs off</option></select></label><button data-hover="color">Next color · K</button><button data-hover="beam" aria-pressed="false">High beam · H</button></div></details><p class="hover-help">W / S speed · A / D steer · E / Q up / down · Space brake · Shift boost · V camera · drag to look</p><div class="hover-touch" aria-label="Hoverbike touch controls"><div id="hover-flight-stick" aria-label="Flight joystick" role="group"><span>MOVE</span><i></i></div><div class="hover-steer"><button data-hold="ArrowLeft" aria-label="Turn left">←</button><button data-hold="ArrowRight" aria-label="Turn right">→</button></div><div class="hover-lift"><button data-hold="KeyE" aria-label="Ascend">↑ UP</button><button data-hold="KeyQ" aria-label="Descend">↓ DOWN</button></div><div class="hover-pedals"><button data-hold="Space">BRAKE</button><button data-hold="KeyS">REVERSE</button><button data-hold="KeyW" class="hover-throttle">THROTTLE</button></div></div>';
   document.body.append(this.hud);
   this.notice=this.hud.querySelector('#hover-notice')!;this.speed=this.hud.querySelector('#hover-speed')!;this.altitude=this.hud.querySelector('#hover-altitude')!;this.mode=this.hud.querySelector('#hover-mode')!;this.touchPad=this.hud.querySelector('.hover-touch')!;
-  this.soundButton();
+  this.soundButton();installHoverPresentation(this.hud);
   this.flightSelect=this.hud.querySelector('#hover-flight-mode')!;let savedMode='drone';try{savedMode=localStorage.getItem('belle-flight-mode')||'drone';}catch{}this.sim.setMode(savedMode==='classic'?'classic':'drone');this.flightSelect.value=this.sim.mode;
   this.flightSelect.onchange=()=>{if(this.hooks.vehicleLocked?.()){this.flightSelect.value=this.sim.mode;return;}this.clear();this.sim.setMode(this.flightSelect.value==='classic'?'classic':'drone');try{localStorage.setItem('belle-flight-mode',this.sim.mode);}catch{}this.refresh();};
   this.bindFlightStick();
@@ -202,7 +204,7 @@ export class HoverRide {
   const rider=this.rider?.diagnostics;this.hud.dataset.riderRig=rider?.contacts===4?'anchored':'unavailable';
   this.hud.dataset.riderMotion=this.motionPreference.matches||this.motionCheckbox?.checked?'reduced':'reactive';
   if(rider){this.hud.dataset.riderLean=rider.lean.toFixed(4);this.hud.dataset.riderPitch=rider.pitch.toFixed(4);this.hud.dataset.riderCompression=rider.compression.toFixed(4);this.hud.dataset.riderHandError=rider.handError.toFixed(5);this.hud.dataset.riderFootError=rider.footError.toFixed(5);}
-   this.hud.querySelector('.hover-help')!.textContent=this.sim.mode==='drone'?'W / S forward / back · A / D strafe · ← / → turn · E / Q height · release to hold · drag to look':'W / S speed · A / D steer · E / Q height · Space brake · Shift boost · drag to look';
+   this.hud.querySelector('.hover-help')!.textContent=hoverHelpText(this.hooks.touch(),this.sim.mode==='drone');
   if(performance.now()>this.messageUntil)this.notice.textContent=this.sim.collision?'Obstacle ahead — steer clear.':this.sim.landed?'Ready for takeoff.':'Michigan 2084 · Explore the island';
  }
  update(dt:number,running:boolean,clock:number){
@@ -223,7 +225,7 @@ export class HoverRide {
   }
   const reducedMotion=this.motionPreference.matches||this.motionCheckbox?.checked===true;
   this.rider?.update(dt,p,this.sim.landed,this.steerBlend,running,reducedMotion);
-  this.lighting?.update(dt,running,this.ledColor,this.ledMode,this.lightOn,this.highBeam,reducedMotion);
+  this.lighting?.update(dt,running,this.ledColor,this.ledMode,this.lightOn,this.highBeam,reducedMotion,this.hooks.nightAmount?.()??1);
   this.brakes.forEach(m=>m.emissiveIntensity=has('Space')?4:this.lightOn?.65:0);
   this.sound.update(p.rpm,p.speed,p.lift,this.sim.flying,this.sim.landed,has('Space'),running&&document.hasFocus());
   if(clock-this.lastUI>.1){this.lastUI=clock;this.refresh();}

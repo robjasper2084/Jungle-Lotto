@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {skyFillIntensity} from './visualPolishPolicy.ts';
 import {STARTUP_SKIES,startupSkyLook,startupSun} from './startupSky.ts';
 import {moonDirection,meteorFrame} from './nightSky.ts';
 import {HDRLoader} from 'three/addons/loaders/HDRLoader.js';
@@ -123,7 +124,7 @@ vec2 face=abs(normal.x)>abs(normal.z)?cityWorld.zy:cityWorld.xy;vec2 cells=face/
   const lunar=moonDirection(visualHour),meteor=meteorFrame(skyClock,night,reduceMotion);uniforms.moonDirection.value.fromArray(lunar);uniforms.meteorHead.value.fromArray(meteor.head);uniforms.meteorTail.value.fromArray(meteor.tail);uniforms.meteorOpacity.value=meteor.opacity;
   uniforms.sunDirection.value.fromArray(direction);uniforms.daylight.value=day;uniforms.night.value=night;uniforms.coverage.value=shape.coverage;uniforms.density.value=shape.density;uniforms.stretch.value=shape.stretch;uniforms.cloudScale.value=shape.scale;uniforms.overcast.value=shape.overcast;uniforms.cloudTime.value=cloudClock;
   const dim=1-shape.overcast*.58;uniforms.zenith.value.lerp(tempColor.set('#6e7d8b'),shape.overcast*.3*day);uniforms.warm.value.multiplyScalar(1-shape.overcast*.23);
-  hemi.color.set('#c0cad7').lerp(tempColor.copy(uniforms.horizon.value).lerp(daylightAmbient,.55),day);hemi.groundColor.set('#727b83').lerp(tempColor.set('#665d4a'),day);hemi.intensity=1.18+day*.02;
+  hemi.color.set('#c0cad7').lerp(tempColor.copy(uniforms.horizon.value).lerp(daylightAmbient,.55),day);hemi.groundColor.set('#727b83').lerp(tempColor.set('#665d4a'),day);hemi.intensity=skyFillIntensity(day,shape.overcast);
   key.color.copy(uniforms.sunColor.value);key.intensity=.10+2.3*day*dim*smooth(-.01,.20,uniforms.sunDirection.value.y);lightDirection.copy(uniforms.sunDirection.value);if(lightDirection.y<0){lightDirection.fromArray(lunar);key.color.set('#c9dcf3');key.intensity=.72*night*(1-shape.overcast*.45);}
   key.position.set(x+lightDirection.x*180,lightDirection.y*180,z+lightDirection.z*180);key.target.position.set(x,0,z);key.castShadow=shadowQuality&&key.intensity>.12;
   scene.environmentIntensity=(.28+day*.31)*dim;fogColor.copy(uniforms.horizon.value).lerp(uniforms.warm.value,.10*(1-day));(scene.fog as T.FogExp2).color.copy(fogColor);(scene.fog as T.FogExp2).density=islandHazeDensity(shape.overcast,night);
