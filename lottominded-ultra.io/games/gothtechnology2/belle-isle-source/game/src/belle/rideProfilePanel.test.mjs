@@ -1,0 +1,15 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {fileURLToPath} from 'node:url';
+import {build} from 'esbuild';
+const {outputFiles}=await build({entryPoints:[fileURLToPath(new URL('./rideProfile.ts',import.meta.url))],bundle:true,write:false,platform:'node',format:'esm',logLevel:'error'});
+const {RideProfile}=await import('data:text/javascript;base64,'+Buffer.from(outputFiles[0].text).toString('base64'));
+// Isolated DOM ownership tests; real hit-testing remains in the Chrome smoke test.
+class Element {constructor(tag){this.tagName=tag;this.children=[];this.style={};this.hidden=false;this.open=false;this.attributes={};}append(child){this.children.push(child);child.parentElement=this;}setAttribute(k,v){this.attributes[k]=v;}}
+function fixture(hasSettings=true){const settings=new Element('dialog'),body=new Element('body');globalThis.document={hidden:false,createElement:t=>new Element(t),getElementById:id=>id==='settings'&&hasSettings?settings:null,addEventListener:()=>{},body};Object.assign(globalThis,{innerWidth:390,innerHeight:844,devicePixelRatio:1});const profile=new RideProfile(()=>({quality:'automatic'}));const panel=settings.children[0];return{profile,panel,settings,body};}
+test('diagnostics are nested in Settings instead of appended over the playfield',()=>{const f=fixture();assert.equal(f.panel.id,'ride-profile');assert.equal(f.panel.parentElement,f.settings);assert.equal(f.body.children.length,0);assert.doesNotMatch(f.panel.style.cssText,/position:fixed|z-index|bottom:/);});
+test('diagnostics retain accessible summary and non-submitting 44px capture button',()=>{const {panel}=fixture();const [summary,button]=panel.children;assert.match(summary.style.cssText,/min-height:44px/);assert.equal(button.type,'button');assert.equal(button.style.minHeight,'44px');});
+test('capture starts through the existing button and collapses only its own details',()=>{const {profile,panel}=fixture();panel.open=true;panel.children[1].onclick();assert.equal(profile.enabled,true);assert.equal(panel.open,false);assert.equal(panel.children[1].textContent,'Stop and show report');});
+test('stop preserves the complete report and responsive text area',()=>{const {profile,panel}=fixture();panel.children[1].onclick();profile.sample(.1,[1,2,3,4,5],12,120,5,3,0,0,2,'fixture',true);panel.children[1].onclick();assert.equal(profile.enabled,false);assert.equal(panel.open,true);const output=panel.children[2];assert.equal(output.hidden,false);assert.equal(output.readOnly,true);assert.match(output.style.cssText,/width:100%;max-width:100%/);const report=JSON.parse(output.value);assert.equal(report.frames,1);assert.equal(report.activeSeconds,.1);assert.deepEqual(report.settings,{quality:'automatic'});});
+test('a missing Settings host cannot introduce another blocking playfield overlay',()=>{const {body}=fixture(false);assert.equal(body.children.length,0);});
+test('sampling stays disabled until deliberate capture',()=>{const {profile}=fixture();profile.sample(10,[1,2,3,4,5],12,120,5,3,0,0,2,'fixture',true);assert.equal(profile.enabled,false);});

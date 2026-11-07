@@ -119,6 +119,8 @@ try{
     assert.match(started.bodyClass,/on-hoverbike/);assert.doesNotMatch(started.bodyClass,/at-start/);
     await expect(page.locator('#hover-hud')).toBeVisible();await expect(page.locator('#hover-enter')).toBeEnabled();
     await expect(page.locator('.ride-preview-canvas')).toHaveCount(0);
+    await expect(page.locator('#settings #ride-profile')).toHaveCount(1);
+    await expect(page.locator('#ride-profile')).toBeHidden();
     checked('direct hoverbike Start with trusted input',started);await shot('direct-start');
 
     await tap(page.locator('#hover-hud [data-hover="takeoff"]'));
@@ -153,7 +155,10 @@ try{
     checked('landing returns to grounded state',await snapshot());await shot('landed');
     await tap(page.locator('#hover-hud [data-hover="exit"]'));
     await expect(page.locator('body')).not.toHaveClass(/on-hoverbike/);await expect(page.locator('#hover-enter')).toBeEnabled();
-    await tap(page.locator('#hover-enter'));await expect(page.locator('body')).toHaveClass(/on-hoverbike/);
+    // The real remount control lives in the ride menu on desktop and phone.
+    await tap(page.locator('#tools-toggle'));await expect(page.locator('#ride-menu')).toBeVisible();
+    await tap(page.locator('#hover-enter'));await expect(page.locator('#ride-menu')).not.toBeVisible();
+    await expect(page.locator('body')).toHaveClass(/on-hoverbike/);
     await expect(page.locator('#hover-enter')).toBeEnabled();checked('dismount and cached remount',await snapshot());
     const webgl=await page.locator('#game').evaluate(canvas=>{const gl=canvas.getContext('webgl2');return{live:!!gl&&!gl.isContextLost(),width:canvas.width,height:canvas.height,renderer:gl?.getParameter(gl.RENDERER)};});
     assert.equal(webgl.live,true);checked('live final WebGL context',webgl);

@@ -6,10 +6,11 @@ export class RideProfile {
  private button=document.createElement('button'); private output=document.createElement('textarea');
  private stamp=0; private started='';
  constructor(private settings:()=>unknown){
-  this.panel.id='ride-profile';this.panel.style.cssText='position:fixed;bottom:66px;left:12px;z-index:40;max-width:min(440px,90vw);padding:8px;background:#0b242de8;color:#fff;font:12px system-ui';
-  this.label.textContent='Ride profile · ready';this.panel.append(this.label);
-  this.button.textContent='Start 10-minute capture';this.button.onclick=()=>this.running?this.finish():this.start();this.panel.append(this.button);
-  this.output.readOnly=true;this.output.setAttribute('aria-label','Ride profile report');this.output.style.cssText='display:block;width:400px;max-width:80vw;height:160px';this.output.hidden=true;this.panel.append(this.output);document.body.append(this.panel);
+  // Keep optional diagnostics in Settings, never above the riding/touch controls.
+  this.panel.id='ride-profile';this.panel.style.cssText='margin:12px 0;padding:12px;max-width:100%;background:#0b242de8;color:#fff;font:12px system-ui';
+  this.label.textContent='Ride profile · ready';this.label.style.cssText='min-height:44px;cursor:pointer';this.panel.append(this.label);
+  this.button.type='button';this.button.style.minHeight='44px';this.button.textContent='Start 10-minute capture';this.button.onclick=()=>this.running?this.finish():this.start();this.panel.append(this.button);
+  this.output.readOnly=true;this.output.setAttribute('aria-label','Ride profile report');this.output.style.cssText='display:block;box-sizing:border-box;width:100%;max-width:100%;height:160px';this.output.hidden=true;this.panel.append(this.output);document.getElementById('settings')?.append(this.panel);
   document.addEventListener('visibilitychange',()=>{if(this.running&&document.hidden)this.interruptions++;this.stats.breakPosition();});
  }
  get enabled(){return this.running;}
