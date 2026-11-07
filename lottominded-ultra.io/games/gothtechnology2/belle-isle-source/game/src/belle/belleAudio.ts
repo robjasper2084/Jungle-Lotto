@@ -11,7 +11,7 @@ export function createBelleAudio(){
  const effects=new BelleWheelAudio();let disposed=false,unlocked=false,lastSample=-Infinity;
  const panel=document.createElement('fieldset');panel.className='belle-audio';panel.id='belle-audio';
  panel.innerHTML=`<legend>Swoop Detroit audio</legend>
- <p>Music and effects start only after you enable them. Saved choices never autoplay on page load.</p>
+ <p>Music starts automatically at 34% when you begin riding. Your saved volume and mute choices take priority. Wheel effects and warning beeps remain optional.</p>
  <label><input id="belle-music" type="checkbox"> Music</label>
  <label>Music volume <input id="belle-music-volume" type="range" min="0" max="100" step="1"><output></output></label>
  <label>Track <select id="belle-track"></select></label>
@@ -22,7 +22,7 @@ export function createBelleAudio(){
  <label>Warning volume <input id="belle-warning-volume" type="range" min="0" max="100" step="1"><output></output></label>
  <button id="belle-audio-mute" type="button">Mute music and wheel audio</button>
  <p>Checkpoint and finish chimes keep their existing separate Gate sounds setting. Hoverbike engine and nature sound controls are unchanged.</p>
- <p id="belle-audio-status" role="status" aria-live="polite">Enable music or wheel sounds, then return to the ride.</p>`;
+ <p id="belle-audio-status" role="status" aria-live="polite">Press Start to ride with music. Use Music or Mute to turn it off.</p>`;
  const host=document.getElementById('settings');
  if(!host){console.warn('Belle audio settings dialog is unavailable. Riding remains usable.');return{update(_pose:WheelAudioPose,_state:{active:boolean;wheel:boolean},_now?:number){},silence(){},dispose(){}};}
  host.append(panel);

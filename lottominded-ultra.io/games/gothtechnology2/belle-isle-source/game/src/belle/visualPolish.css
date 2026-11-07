@@ -1,0 +1,29 @@
+/* Follow-up presentation pass. No hidden brake/lift/land/recover controls. */
+#hover-hud[data-visual-polish=v1] .hover-actions button{min-width:44px;min-height:44px}
+#hover-hud[data-visual-polish=v1] .hover-secondary-controls{display:flex;gap:8px;flex-wrap:wrap;flex-basis:100%}
+#hover-hud[data-visual-polish=v1] .hover-secondary-controls button{min-width:44px;min-height:44px}
+#hover-hud[data-visual-polish=v1] .hover-lighting summary{min-height:44px;box-sizing:border-box}
+#hover-hud[data-visual-polish=v1] :is(button,summary):focus-visible{outline:2px solid #b9f3e5;outline-offset:3px}
+#hover-hud[data-visual-polish=v1] .hover-help{line-height:1.5;max-width:95%;text-wrap:balance}
+.touch-controls #hover-hud[data-visual-polish=v1] .hover-title{display:none}
+.touch-controls #hover-hud[data-visual-polish=v1] .hover-instruments{display:flex;gap:8px 14px;margin:6px 0;max-width:100%;flex-wrap:wrap}
+.touch-controls #hover-hud[data-visual-polish=v1] .hover-instruments b{font-size:28px;line-height:1.1}
+.touch-controls #hover-hud[data-visual-polish=v1] .hover-instruments span{font-size:9px}
+.touch-controls #hover-hud[data-visual-polish=v1] .hover-actions{position:relative;z-index:2;inset:auto;display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;max-width:100%;justify-content:flex-start}
+.touch-controls #hover-hud[data-visual-polish=v1] .hover-actions button{min-height:44px;min-width:44px;font-size:11px;padding:8px 10px}
+.touch-controls #hover-hud[data-visual-polish=v1] .hover-help{font-size:10px;max-width:100%;margin:6px 0 0}
+.touch-controls #hover-hud[data-visual-polish=v1] .hover-lighting{max-height:calc(100dvh - var(--island-safe-top,0px) - var(--hover-safe-bottom,0px) - 220px);overflow:auto;overscroll-behavior:contain}
+@media(max-width:600px){
+ .touch-controls #navigation{width:124px}
+ .touch-controls #navigation.is-collapsed{width:96px}
+ .touch-controls #navigation p{font-size:9px}
+ .touch-controls #hover-hud[data-visual-polish=v1] .hover-instruments output{max-width:none;font-size:9px}
+ .touch-controls #hover-hud[data-visual-polish=v1] .hover-lighting{max-width:min(280px,calc(100dvw - var(--hover-safe-left,0px) - var(--hover-safe-right,0px) - 28px))}
+}
+@media(max-height:520px){
+ .touch-controls #hover-hud[data-visual-polish=v1] .hover-help{display:none}
+ .touch-controls #hover-hud[data-visual-polish=v1] .hover-instruments b{font-size:24px}
+ .touch-controls #hover-hud[data-visual-polish=v1] .hover-actions{position:absolute;right:0;bottom:0;left:auto;max-width:70%;justify-content:flex-end}
+ .touch-controls #hover-hud[data-visual-polish=v1] .hover-lighting{max-height:calc(100dvh - var(--island-safe-top,0px) - var(--hover-safe-bottom,0px) - 170px)}
+}
+@media(prefers-reduced-motion:reduce){#hover-hud[data-visual-polish=v1] *{scroll-behavior:auto}}

@@ -16,7 +16,7 @@ class FakeAudio{
  removeAttribute(n){if(n==='src')this.src='';}
 }
 function music(){const audio=new FakeAudio(),statuses=[];let creates=0;const player=new BelleMusicPlayer(BELLE_MUSIC,()=>{creates++;return audio;},s=>statuses.push(s));return{player,audio,statuses,get creates(){return creates;}};}
-test('default preferences are all silent',()=>assert.equal(DEFAULT_AUDIO.music||DEFAULT_AUDIO.effects||DEFAULT_AUDIO.warnings,false));
+test('music defaults on at 34 percent while wheel effects and warnings stay opt-in',()=>{assert.equal(DEFAULT_AUDIO.music,true);assert.equal(DEFAULT_AUDIO.musicVolume,.34);assert.equal(DEFAULT_AUDIO.effects,false);assert.equal(DEFAULT_AUDIO.warnings,false);});
 test('corrupt preferences use safe defaults',()=>assert.deepEqual(audioPreferences(null,['track-01']),DEFAULT_AUDIO));
 test('volumes clamp and unrecognized track never becomes a URL',()=>{const v=audioPreferences({music:'true',effects:true,musicVolume:2,effectsVolume:-3,warningVolume:NaN,track:'https://evil.invalid'},['track-01']);assert.equal(v.music,false);assert.equal(v.effects,true);assert.equal(v.musicVolume,1);assert.equal(v.effectsVolume,0);assert.equal(v.warningVolume,.6);assert.equal(v.track,'track-01');});
 test('inactive wheel is entirely silent',()=>assert.ok(zero(wheelAudioTargets(p,false,prefs))));
@@ -54,3 +54,47 @@ function fakeContext(){
 test('wheel context is lazy and a thousand frames allocate no new voices',async()=>{const f=fakeContext();let created=0;const a=new BelleWheelAudio(()=>{created++;return f.c;});a.update(p,true,prefs);assert.equal(created,0);await a.unlock();for(let i=0;i<1000;i++)a.update(p,true,prefs);assert.equal(created,1);assert.equal(f.metrics.oscillators,2);assert.equal(f.metrics.noises,1);await a.unlock();assert.equal(f.metrics.resumes,1);});
 test('wheel silence immediately zeros master and disposal stops every source once',async()=>{const f=fakeContext(),a=new BelleWheelAudio(()=>f.c);await a.unlock();a.update(p,true,prefs);assert.equal(f.gains[0].gain.value,1);a.silence();assert.equal(f.gains[0].gain.value,0);await a.dispose();await a.dispose();assert.equal(f.metrics.stopped,3);assert.equal(f.metrics.closes,1);});
 test('unavailable AudioContext does not crash the game',async()=>{const a=new BelleWheelAudio(()=>undefined);assert.equal(await a.unlock(),false);a.update(p,true,prefs);a.silence();await a.dispose();});
+
+// Default-on changes the preference, not browser authorization or mute ownership.
+test('missing and partial preferences inherit 34 percent ride-start music',()=>{
+ for(const raw of [null,undefined,{},42,'corrupt',[],{effects:true}]){
+  const value=audioPreferences(raw,['track-01']);
+  assert.equal(value.music,true);assert.equal(value.musicVolume,.34);
+ }
+});
+test('saved mute and zero volume survive the new default',()=>{
+ const muted=audioPreferences({music:false,musicVolume:0},['track-01']);
+ assert.equal(muted.music,false);assert.equal(muted.musicVolume,0);
+ const quieter=audioPreferences({music:true,musicVolume:.12,track:'track-02'},['track-01','track-02']);
+ assert.equal(quieter.musicVolume,.12);assert.equal(quieter.track,'track-02');
+});
+test('malformed explicit music values fail closed instead of forcing playback',()=>{
+ for(const value of [null,0,1,'true','false',[],{}])assert.equal(audioPreferences({music:value},['track-01']).music,false);
+});
+test('fresh defaults wait for a gesture, then play automatically at exactly 34 percent',async()=>{
+ const m=music(),defaults=audioPreferences(null,BELLE_MUSIC.map(t=>t.id));
+ m.player.configure(defaults.music,defaults.musicVolume,defaults.track);
+ m.player.setActive(true);assert.equal(m.creates,0);assert.equal(m.audio.plays,0);
+ m.player.unlock();await flush();assert.equal(m.player.state.playing,true);assert.equal(m.audio.volume,.34);
+});
+test('default-on Start primes silently during loading and plays when the ride activates',async()=>{
+ const m=music(),defaults=audioPreferences(null,BELLE_MUSIC.map(t=>t.id));
+ m.player.configure(defaults.music,defaults.musicVolume,defaults.track);
+ m.player.unlock();assert.equal(m.audio.volume,0);await flush();assert.equal(m.player.state.playing,false);
+ m.player.setActive(true);await flush();assert.equal(m.player.state.playing,true);assert.equal(m.audio.volume,.34);
+ m.player.setActive(false);assert.equal(m.audio.volume,0);
+ m.player.setActive(true);await flush();assert.equal(m.audio.volume,.34);assert.equal(m.creates,1);
+});
+test('persisted music OFF cannot be undone by Start or repeated ride updates',async()=>{
+ const m=music(),saved=audioPreferences({music:false,musicVolume:.34},['track-01']);
+ m.player.configure(saved.music,saved.musicVolume,saved.track);m.player.unlock();m.player.setActive(true);
+ for(let i=0;i<100;i++)m.player.setActive(true);await flush();assert.equal(m.audio.plays,0);assert.equal(m.creates,0);
+});
+test('default-on browser denial stays silent and a deliberate retry recovers at 34 percent',async()=>{
+ const m=music(),defaults=audioPreferences(null,['track-01']);
+ m.audio.queue.push(Promise.reject(new DOMException('User activation required','NotAllowedError')));
+ m.player.configure(defaults.music,defaults.musicVolume,defaults.track);m.player.setActive(true);m.player.unlock();
+ await flush();assert.equal(m.player.state.blocked,true);assert.equal(m.audio.volume,0);
+ for(let i=0;i<100;i++)m.player.setActive(true);assert.equal(m.audio.plays,1);
+ m.player.unlock();await flush();assert.equal(m.player.state.playing,true);assert.equal(m.audio.volume,.34);
+});

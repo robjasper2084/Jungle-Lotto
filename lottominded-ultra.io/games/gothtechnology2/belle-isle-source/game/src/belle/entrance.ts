@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {entranceShrubVariation} from './visualPolishPolicy.ts';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {roadIndex} from './streetPlan.ts';
 import type {ParkMap,ParkTerrain} from './terrain.ts';
@@ -41,7 +42,7 @@ export function addEntrance(scene:T.Scene,data:ParkMap,terrain:ParkTerrain){
   dummy.position.set(wx,terrain.height(wx,wz)+.03,wz);dummy.rotation.set(0,random()*6.28,0);const scale=.7+random()*.5;dummy.scale.setScalar(scale);dummy.updateMatrix();stems.setMatrixAt(count,dummy.matrix);blooms.setMatrixAt(count,dummy.matrix);const hue=random();blooms.setColorAt(count++,color.setHSL(hue<.83?.005:hue<.94?.13:.79,.72,.36+random()*.14));
  }
  stems.count=blooms.count=count;for(const mesh of[stems,blooms]){mesh.name='Jefferson entrance tulip bed';mesh.receiveShadow=true;mesh.computeBoundingSphere();scene.add(mesh);}
- const shrub=new T.InstancedMesh(new T.IcosahedronGeometry(1,1),new T.MeshStandardMaterial({color:0x607441,roughness:1}),36);let n=0;
- for(let i=0;i<36;i++){const lx=(i%12-5.5)*.63,lz=-.8+Math.floor(i/12)*.4,wx=x+co*lx+si*lz,wz=z-si*lx+co*lz;if(occupied(wx,wz,'',.55)||!terrain.land(wx,wz))continue;dummy.position.set(wx,terrain.height(wx,wz)+.32,wz);dummy.scale.set(.52,.36+random()*.13,.5);dummy.updateMatrix();shrub.setMatrixAt(n++,dummy.matrix);}
- shrub.count=n;shrub.name='Entrance evergreen border';shrub.computeBoundingSphere();scene.add(shrub);
+ const shrub=new T.InstancedMesh(new T.IcosahedronGeometry(1,1),new T.MeshStandardMaterial({color:0xffffff,roughness:1}),36);let n=0;
+ for(let i=0;i<36;i++){const v=entranceShrubVariation(i),lx=(i%12-5.5)*.63+v.x,lz=-.8+Math.floor(i/12)*.4+v.z,wx=x+co*lx+si*lz,wz=z-si*lx+co*lz;if(occupied(wx,wz,'',.65)||!terrain.land(wx,wz))continue;dummy.position.set(wx,terrain.height(wx,wz)+v.scaleY*.88,wz);dummy.rotation.set(0,v.yaw,0);dummy.scale.set(v.scaleX,v.scaleY,v.scaleZ);dummy.updateMatrix();shrub.setMatrixAt(n,dummy.matrix);shrub.setColorAt(n++,color.setHSL(v.hue,v.saturation,v.lightness));}
+ shrub.count=n;shrub.name='Entrance evergreen border';shrub.receiveShadow=true;shrub.instanceMatrix.needsUpdate=true;if(shrub.instanceColor)shrub.instanceColor.needsUpdate=true;shrub.computeBoundingSphere();scene.add(shrub);
 }
