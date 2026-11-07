@@ -1,3 +1,4 @@
+import {presentRider} from './riderPresentation.ts';
 import type {RidePose} from '@digital-static/ridecore';
 const unit=(n:number)=>Math.max(0,Math.min(1,n));
 /** Joint-space stance authored for the custom suit mesh and its measured leg reach. */
@@ -32,7 +33,7 @@ export function stanceTargets(p:RidePose){
 }
 
 /** The render adapter reads fixed-step body motion; hand-authored and crash poses still work. */
-export function riderMotion(p:RidePose){
+function baseRiderMotion(p:RidePose){
   const target=stanceTargets(p),mix=unit(p.naturalMotion)*(p.crashMotion?1:1-unit(p.crashBlend));
   const blend=(a:number,b:number)=>a+(b-a)*mix;
   const pitch=blend(target.pitch,p.bodyPitch);
@@ -44,3 +45,6 @@ export function riderMotion(p:RidePose){
     hands:target.hands.map((hand,i)=>({x:blend(hand.x,i===0?p.handLX:p.handRX),y:blend(hand.y,i===0?p.handLY:p.handRY),
       z:blend(hand.z,i===0?p.handLZ:p.handRZ),wrist:blend(hand.wrist,i===0?p.wristL:p.wristR)}))};
 }
+
+export type RiderMotionTarget=ReturnType<typeof baseRiderMotion>;
+export function riderMotion(p:RidePose){return presentRider(baseRiderMotion(p),p);}
