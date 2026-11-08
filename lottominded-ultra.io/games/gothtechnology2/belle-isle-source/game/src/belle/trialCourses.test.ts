@@ -64,7 +64,7 @@ test('historic Grand Prix uses a connected mapped 2.35-mile road lap with 14 gat
  for(const course of [qualifier,race]){
   for(const p of course.path){assert(terrain.land(p.x,p.z),course.id+' left the island');assert(Math.abs(p.y-terrain.height(p.x,p.z))<.06);}
   const run=new TrialRun(course);run.step(3,pose(course,course.start,course.start.heading));
-  let prev=course.start;for(let i=1;i<course.path.length&&run.status==='running';i++){
+  let prev:TrialPoint=course.start;for(let i=1;i<course.path.length&&run.status==='running';i++){
    const p=course.path[i],dist=Math.hypot(p.x-prev.x,p.y-prev.y,p.z-prev.z);
    if(dist>.000001)run.step(dist/8,pose(course,p,Math.atan2(p.x-prev.x,p.z-prev.z)));prev=p;
   }
