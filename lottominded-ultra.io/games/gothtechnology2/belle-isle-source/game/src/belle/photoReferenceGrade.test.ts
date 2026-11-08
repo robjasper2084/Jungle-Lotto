@@ -37,3 +37,20 @@ test('tree LOD scaling overlaps progressively and never exceeds distance limits'
 test('LOD invalid inputs do not generate invalid instance scales',()=>{
  assert.equal(treeLodBlend(NaN,75),0);assert.equal(treeLodBlend(1,NaN),0);assert.equal(treeLodBlend(1,75,Infinity),0);
 });
+
+import {readFileSync} from 'node:fs';
+const read=(name:string)=>readFileSync(new URL('./'+name,import.meta.url),'utf8');
+test('photo look is connected to actual sky, water and nature source without new render targets',()=>{
+ const sky=read('islandSky.ts'),water=read('water.ts'),nature=read('nature.ts'),world=read('world.ts');
+ assert(sky.includes('sunsetPhotoGrade(direction[1],shape.overcast,night)'));
+ assert(sky.includes('lighting.glint=photoLook.glint')&&sky.includes('lighting.golden=photoLook.foliage'));
+ assert(water.includes('riverSunReflection')&&water.includes('riverSunGlint'));
+ assert(world.includes('skyLight.sun,skyLight.glint')&&world.includes('nature.update(x,z,skyLight.night,skyLight.golden)'));
+ assert(nature.includes('treeLodBlend(')&&nature.includes('toneMapped:true'));
+});
+test('reference sky keeps all existing night effects and the same noise sampler count',()=>{
+ const sky=read('islandSky.ts');
+ assert(sky.includes('const fragment=\x60'));
+ for(const token of ['meteorOpacity','moonDirection','starUV','cloudNoise','toneMapping'])assert(sky.includes(token));
+ assert(!sky.includes('new T.WebGLRenderTarget('),'reference grade adds no extra render pass');
+});
