@@ -36,3 +36,17 @@ test('sky change retains stars/moon/meteors and tone mapping',()=>assert.equal(n
 test('sky detail adds no texture samples or uniforms',()=>{assert.equal((newFragment.match(/texture2D\(/g)||[]).length,(oldFragment.match(/texture2D\(/g)||[]).length);assert.equal((newFragment.match(/uniform /g)||[]).length,(oldFragment.match(/uniform /g)||[]).length);});
 test('sky integration keeps reduced motion and simulation clock',()=>{assert(skySource.includes('!titlePreview&&!reduceMotion'));assert(skySource.includes('cloudLightFactor(cloudClock'));assert(skySource.includes('fragmentShader:livingSkyFragment(fragment)'));});
 test('rider layer preserves final IK and bounded reach fallback',()=>{const s=readFileSync(new URL('./hoverRiderMotion.ts',import.meta.url),'utf8');assert(s.indexOf('this.rotate(chest,pitch')<s.indexOf('this.solve(arms[i])'));assert(s.includes('attempt<2'));assert(s.includes('this.apply(base,strength)'));});
+
+test('visible high-speed tuck is stronger than the idle pose while preserving the 0.19 radian rig bound',()=>{
+ const idle=run(60,3,{...base(),pitch:.065},{...vehicle(),speed:0});
+ const fast=run(60,3,{...base(),pitch:.065},{...vehicle(),speed:24});
+ assert(fast.pose.pitch>idle.pose.pitch+.035,'high-speed posture must be distinguishable from stationary pose');
+ assert(fast.pose.pitch<.19&&fast.pose.pitch>.12);
+});
+test('turning chest twists measurably before hips without touching vehicle telemetry',()=>{
+ const v=vehicle(),snapshot={...v},motion=run(60,1);
+ motion.update(1/60,{...base(),lean:.20,look:-.12},v,true,false);
+ assert(Math.abs(motion.pose.chestYaw)>Math.abs(motion.pose.hipYaw));
+ assert(Math.abs(motion.pose.chestYaw)<.07);
+ assert.deepEqual(v,snapshot);
+});
