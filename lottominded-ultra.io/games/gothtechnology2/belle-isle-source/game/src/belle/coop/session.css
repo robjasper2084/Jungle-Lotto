@@ -28,3 +28,16 @@ body.coop-playing > header,body.coop-playing #navigation,body.coop-playing #ride
 #coop-overlay[data-orientation=portrait] .coop-player-pane[data-seat="1"] .coop-player-info{top:8px}
 @media(max-height:540px) and (min-width:600px){.coop-player-info{top:74px;padding:4px 7px}.coop-player-info strong{font-size:11px}#coop-announcement{top:66px;font-size:10px}.coop-player-actions button{padding:6px;font-size:10px}}
 @media(prefers-reduced-motion:reduce){#coop-overlay *,#coop-setup *{animation:none!important;transition:none!important}}
+
+/* Isolate this mode from the solo game's unscoped header/nav rules. */
+#coop-setup .coop-lobby header{position:static;inset:auto;z-index:auto;pointer-events:auto;align-items:start}
+#coop-setup .coop-lobby header>div{max-width:none;padding:0;border:0;background:none;backdrop-filter:none}
+#coop-setup .coop-lobby .coop-mode{max-width:none}
+.coop-session-toolbar{width:max-content;flex-wrap:nowrap;justify-content:center;align-content:normal;flex-shrink:1}
+@media(max-width:700px){.coop-player-pane[data-seat="0"] .coop-player-info{top:96px}}
+@media(max-width:350px) and (orientation:portrait){
+ #coop-overlay:not([data-paused=true]) #coop-announcement{width:1px;height:1px;overflow:hidden;clip-path:inset(50%);padding:0}
+ .coop-player-pane[data-seat="0"] .coop-player-info{top:66px}
+ .coop-touch-stick{width:66px;height:66px;left:12px;bottom:76px}
+ .coop-touch-stick i{left:17px;top:17px}
+}
