@@ -81,6 +81,11 @@ const GARDEN_ROADS=[...PERIMETER_ROADS.slice(0,PERIMETER_ROADS.indexOf('54595546
  '8761197','42986437','551050169','334108440','657099911',
 ];
 
+/** 2019-inspired, continuously connected historic-road loop: 3.784 km.
+ * Actual route centerlines, NOT surveyed race walls or licensed turn positions. */
+const HISTORIC_GP_ROADS=["8745620","443360495","42986446","42986445","660010944","1330844392","334108441","681806102","681806104","660010946","8748402","660010948","657743560","8751758","1479298527","660010951","-42986452","-42986453","-8765430","-8769003","8761197","42986437","551050169","334108440","657099911"] as const;
+const HISTORIC_GP_MARKERS=[270,390,570,880,1000,2320,2530,2810,2990,3190,3340,3540,3680] as const;
+
 function roadLoop(map:ParkMap,ids:readonly string[]):Point[]{
  const points:Point[]=[];
  for(const token of ids){
@@ -130,6 +135,34 @@ function islandWheel(map:ParkMap,terrain:ParkTerrain,garden:boolean):TrialCourse
  };
 }
 
+/** The 2.35-mile mapped heritage route has 14 physical checkpoints. A race
+ * may require multiple logical laps; render only one copy of each physical gate. */
+function heritageGrandPrix(map:ParkMap,terrain:ParkTerrain,laps:1|3):TrialCourse{
+ const road=roadLoop(map,HISTORIC_GP_ROADS);
+ const lap=subdivide(road,6).map(([x,z])=>({x,y:terrain.height(x,z),z}));
+ const lapLength=length(lap);
+ if(Math.abs(lapLength-3784)>30)throw new Error('Grand Prix centerline changed; verify the historical road mapping');
+ const turnGate=(meters:number):TrialGate=>({
+  ...along(lap,meters),heading:heading(along(lap,meters-9),along(lap,meters+3)),radius:2.7,halfHeight:1.5
+ });
+ const lapGates=[...HISTORIC_GP_MARKERS.map(turnGate),{
+  ...lap[0],heading:heading(along(lap,lapLength-9),lap[0]),radius:2.7,halfHeight:1.5
+ }];
+ const path=[...lap];for(let i=1;i<laps;i++)path.push(...lap.slice(1));
+ const gates=Array.from({length:laps},()=>lapGates.map(g=>({...g}))).flat();
+ return {
+  id:laps===1?'onewheel-belle-heritage-qualifier-v1':'onewheel-belle-heritage-3lap-v1',
+  name:laps===1?'Belle Isle Grand Prix · Qualifying':'Belle Isle Grand Prix · 3 Laps',
+  category:'grandprix',vehicle:'onewheel',laps,gatesPerLap:14,
+  description:laps===1
+   ?'One timed lap of the mapped 2.35-mile heritage road loop, with 14 turn/checkpoint markers along Sunset, Strand, Picnic, Loiter, Muse, Central and Riverbank.'
+   :'Three full laps with sector splits, saved best time and ghost replay. A playable tribute to the historic Belle Isle course, not a surveyed INDYCAR or official event replica.',
+  distance:lapLength*laps,targetSeconds:240*laps,
+  start:{...lap[0],heading:heading(lap[0],lap[2])},gates,path,
+  color:laps===1?'#f5d38d':'#f08b72',maxSpeed:24
+ };
+}
+
 function hull(points:Point[]):Point[]{
  const sorted=[...new Map(points.map(p=>[`${p[0]},${p[1]}`,p])).values()].sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
  const cross=(a:Point,b:Point,c:Point)=>(b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]);
@@ -176,5 +209,5 @@ function islandSky(map:ParkMap,wide:boolean):TrialCourse{
 
 export function trialCourses(map:ParkMap,terrain:ParkTerrain):TrialCourse[]{
  const practice=[wheelCup(map,terrain),bridgeSkyline(map),sunsetHalo(map)].map(course=>({...course,category:'practice' as const,description:`Practice sprint. ${course.description}`,targetSeconds:Math.ceil(course.distance/(course.vehicle==='onewheel'?5.5:12)/5)*5}));
- return [islandWheel(map,terrain,false),islandWheel(map,terrain,true),islandSky(map,false),islandSky(map,true),...practice];
+ return [islandWheel(map,terrain,false),islandWheel(map,terrain,true),islandSky(map,false),islandSky(map,true),heritageGrandPrix(map,terrain,1),heritageGrandPrix(map,terrain,3),...practice];
 }
