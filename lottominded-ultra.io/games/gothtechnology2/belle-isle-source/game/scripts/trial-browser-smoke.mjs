@@ -332,7 +332,14 @@ async function runCase(configuration) {
   };
   const inspectCatalog = async vehicle => {
     const cards = page.locator('#trial-course-list .trial-course');
-    await expect(cards).toHaveCount(vehicle === 'hoverbike' ? 4 : 3);
+    await expect(cards).toHaveCount(vehicle === 'hoverbike' ? 4 : 5);
+    if (vehicle === 'onewheel') {
+      const gp = page.locator('#trial-course-list .trial-course[data-category="grandprix"]');
+      await expect(gp).toHaveCount(2);
+      const ids = await gp.locator('button[data-course]').evaluateAll(buttons => buttons.map(button => button.dataset.course));
+      assert.deepEqual(ids, ['onewheel-belle-heritage-qualifier-v1', 'onewheel-belle-heritage-3lap-v1']);
+      await expect(page.locator('.trial-heritage > summary')).toContainText('Grand Prix');
+    }
     const featured = page.locator('#trial-course-list > .trial-course[data-category="island"]');
     await expect(featured).toHaveCount(2);
     const routes = await featured.evaluateAll(elements => elements.map(element => ({
@@ -569,7 +576,10 @@ async function runCase(configuration) {
       await expect(page.locator('#trial-board button[data-course="sky-bridge-v1"]')).toBeVisible();
       await expect(page.locator('#trial-board button[data-course="sky-sunset-v1"]')).toBeVisible();
       await tap(page.locator('#trial-tab-onewheel'));
-      await expect(page.locator('#trial-course-list .trial-course-record strong')).toHaveText(Array(3).fill('Set the first time'));
+      await expect(page.locator('#trial-course-list .trial-course-record strong')).toHaveText(Array(5).fill('Set the first time'));
+       await expect(page.locator('#trial-course-list .trial-course[data-category="grandprix"]')).toHaveCount(2);
+       await expect(page.locator('#trial-course-list .trial-course[data-category="grandprix"] button[data-course="onewheel-belle-heritage-qualifier-v1"]')).toHaveCount(1);
+       await expect(page.locator('#trial-course-list .trial-course[data-category="grandprix"] button[data-course="onewheel-belle-heritage-3lap-v1"]')).toHaveCount(1);
       await tap(page.locator('#trial-board').getByRole('button', {name: 'Back to island', exact: true}));
       // Exercise the actual Automatic UI and observe its read-only feedback.
       // This is software-rendered behavior evidence, not a device FPS benchmark.

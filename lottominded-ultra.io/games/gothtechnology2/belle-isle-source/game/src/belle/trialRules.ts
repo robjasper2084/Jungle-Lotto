@@ -10,7 +10,10 @@ export type TrialCourse = {
   description: string;
   distance: number;
   /** Featured whole-island circuits are separate from the original practice sprints. */
-  category?: 'island' | 'practice';
+  category?: 'island' | 'practice' | 'grandprix';
+  /** Logical lap count versus the one physical set of track gates. */
+  laps?: number;
+  gatesPerLap?: number;
   /** Authored guide pace, never a player record or claimed leaderboard time. */
   targetSeconds?: number;
   start: TrialPoint & {heading: number};
@@ -63,6 +66,8 @@ export class TrialRun {
     if (!course.gates.length || !pointIsFinite(course.start) || !Number.isFinite(course.start.heading)
       || !Number.isFinite(course.maxSpeed) || course.maxSpeed <= 0
       || !['hoverbike', 'onewheel'].includes(course.vehicle)
+      || (course.laps !== undefined && (!Number.isInteger(course.laps) || course.laps < 1 || course.laps > 8))
+      || (course.gatesPerLap !== undefined && (!Number.isInteger(course.gatesPerLap) || course.gatesPerLap < 1 || course.gatesPerLap * (course.laps ?? 1) !== course.gates.length))
       || course.gates.some(gate => !pointIsFinite(gate)
         || ![gate.heading, gate.radius, gate.halfHeight].every(Number.isFinite)
         || gate.radius <= 0 || gate.halfHeight <= 0)) {

@@ -26,10 +26,13 @@ function samples(course:TrialCourse,visit:(p:TrialPoint,direction:{x:number;y:nu
  }
 }
 
-test('the catalog leads with four whole-island circuits and preserves three practice identities',()=>{
- assert.equal(courses.length,7);
- assert.equal(new Set(courses.map(c=>c.id)).size,7);
- const featured=courses.slice(0,4),practice=courses.slice(4);
+test('the catalog keeps four island circuits, two Grand Prix modes and three practice routes',()=>{
+ assert.equal(courses.length,9);
+ assert.equal(new Set(courses.map(c=>c.id)).size,9);
+ const featured=courses.slice(0,4),grandprix=courses.slice(4,6),practice=courses.slice(6);
+ assert.deepEqual(grandprix.map(c=>c.category),['grandprix','grandprix']);
+ assert.deepEqual(grandprix.map(c=>c.laps),[1,3]);
+ assert.deepEqual(grandprix.map(c=>c.gatesPerLap),[14,14]);
  assert(featured.every(c=>c.category==='island'));
  assert.equal(featured.filter(c=>c.vehicle==='onewheel').length,2);
  assert.equal(featured.filter(c=>c.vehicle==='hoverbike').length,2);
@@ -49,6 +52,27 @@ test('the catalog leads with four whole-island circuits and preserves three prac
   assert(Math.hypot(course.path.at(-1)!.x-course.start.x,course.path.at(-1)!.z-course.start.z)<.001,'route line closes the loop');
   assert(new TrialRun(course));
  }
+});
+
+test('historic Grand Prix uses a connected mapped 2.35-mile road lap with 14 gates, and a three-lap race',()=>{
+ const [qualifier,race]=courses.filter(c=>c.category==='grandprix');
+ assert.equal(qualifier.vehicle,'onewheel');assert.equal(race.vehicle,'onewheel');
+ assert(Math.abs(qualifier.distance-3784)<30,'qualifying lap is 2.35 miles');
+ assert(Math.abs(race.distance-qualifier.distance*3)<.01);
+ assert.deepEqual([qualifier.gates.length,race.gates.length],[14,42]);
+ assert.equal(race.path.length,(qualifier.path.length-1)*3+1);
+ for(const course of [qualifier,race]){
+  for(const p of course.path){assert(terrain.land(p.x,p.z),course.id+' left the island');assert(Math.abs(p.y-terrain.height(p.x,p.z))<.06);}
+  const run=new TrialRun(course);run.step(3,pose(course,course.start,course.start.heading));
+  let prev:TrialPoint=course.start;for(let i=1;i<course.path.length&&run.status==='running';i++){
+   const p=course.path[i],dist=Math.hypot(p.x-prev.x,p.y-prev.y,p.z-prev.z);
+   if(dist>.000001)run.step(dist/8,pose(course,p,Math.atan2(p.x-prev.x,p.z-prev.z)));prev=p;
+  }
+  assert.equal(run.status,'finished',course.id+' failed checkpoint '+run.next);
+  assert.equal(run.splits.length,course.gates.length);
+  for(let i=1;i<run.splits.length;i++)assert(run.splits[i]>run.splits[i-1]);
+ }
+ for(const i of [13,27,41])assert(Math.hypot(race.gates[i].x-race.start.x,race.gates[i].z-race.start.z)<.01,'lap closes at start/finish');
 });
 
 test('the long courses cover the whole island, with genuinely different routes and bounded checkpoint counts',()=>{

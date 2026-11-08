@@ -2,6 +2,7 @@ import * as T from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {natureBudget,type Plant,type NaturePlan} from './naturePlan.ts';
+import {treeLodBlend} from './photoReferenceGrade.ts';
 type Entry={id:string;meshes?:string[];cardSize?:number;cardCenter?:number[];card?:string;triangles:number};
 type Manifest={trees:Entry[];ground:Entry[]};
 type Pool={id:string;meshes:T.InstancedMesh[];far?:T.InstancedMesh;plants:Plant[]};
@@ -24,7 +25,7 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void){
   mesh.castShadow=shadow;mesh.receiveShadow=true;mesh.frustumCulled=false;
   mesh.instanceMatrix.setUsage(T.DynamicDrawUsage);scene.add(mesh);return mesh;
  }
- function matrix(p:Plant,hidden=false){dummy.position.set(p.x,p.y,p.z);dummy.rotation.set(0,p.yaw,0);dummy.scale.set(hidden?0:p.scale,hidden?0:p.scale*(p.heightScale??1),hidden?0:p.scale);dummy.updateMatrix();return dummy.matrix;}
+ function matrix(p:Plant,weight=1){const scale=p.scale*Math.max(0,Math.min(1,weight));dummy.position.set(p.x,p.y,p.z);dummy.rotation.set(0,p.yaw,0);dummy.scale.set(scale,scale*(p.heightScale??1),scale);dummy.updateMatrix();return dummy.matrix;}
  for(const entry of manifest.trees){
   const meshes:T.InstancedMesh[]=[];
   for(const name of entry.meshes||[]){const source=treeSource.scene.getObjectByName(name) as T.Mesh;
@@ -37,7 +38,7 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void){
   // These impostors were rendered offline in Blender, not on the user's GPU
   // while the match starts. Only one pair of cards per distant tree.
   const image=await textures.loadAsync(base+entry.card);image.colorSpace=T.SRGBColorSpace;
-  const far=new T.InstancedMesh(cards,new T.MeshBasicMaterial({map:image,alphaTest:.35,side:T.DoubleSide,toneMapped:false}),plants.length);
+  const far=new T.InstancedMesh(cards,new T.MeshBasicMaterial({map:image,alphaTest:.35,side:T.DoubleSide,toneMapped:true}),plants.length);
   far.name='Distant '+entry.id;plants.forEach((p,i)=>{far.setMatrixAt(i,matrix(p));far.setColorAt(i,tint.setScalar(p.tint));});far.computeBoundingSphere();scene.add(far);
   pools.push({id:entry.id,meshes,far,plants});
  }
@@ -54,8 +55,9 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void){
  for(const source of [treeSource.scene,ground.scene])source.traverse(o=>{if((o as T.Mesh).isMesh)(o as T.Mesh).geometry.dispose();});
  let quality:keyof typeof natureBudget='automatic',lastX=Infinity,lastZ=Infinity;
  const stats={treeVariants:manifest.trees.length,groundVariants:manifest.ground.length,trees:plan.trees.length,ground:plan.ground.length,visibleTrees:0,visibleGround:0};
- function update(x:number,z:number,night=0){
-  for(const pool of pools)if(pool.far)(pool.far.material as T.MeshBasicMaterial).color.setScalar(1-night*.70);
+ function update(x:number,z:number,night=0,golden=0){
+  const warm=Math.max(0,Math.min(1,golden));
+  for(const pool of pools)if(pool.far)(pool.far.material as T.MeshBasicMaterial).color.setRGB(1,1-.075*warm,1-.16*warm).multiplyScalar(1-night*.70);
   if(Math.hypot(x-lastX,z-lastZ)<6)return;
   lastX=x;lastZ=z;const budget=natureBudget[quality];
   const d=(p:Plant)=>(p.x-x)**2+(p.z-z)**2;
@@ -64,8 +66,8 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void){
   const selected=new Set([...nearTrees,...nearGround]);stats.visibleTrees=nearTrees.length;stats.visibleGround=nearGround.length;
   for(const pool of pools){
    const near=pool.plants.filter(p=>selected.has(p));
-   for(const mesh of pool.meshes){mesh.count=near.length;near.forEach((p,i)=>{mesh.setMatrixAt(i,matrix(p));mesh.setColorAt(i,tint.setScalar(p.tint));});mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;}
-   if(pool.far){pool.plants.forEach((p,i)=>pool.far!.setMatrixAt(i,matrix(p,selected.has(p))));pool.far.instanceMatrix.needsUpdate=true;}
+   for(const mesh of pool.meshes){mesh.count=near.length;near.forEach((p,i)=>{const blend=pool.far?treeLodBlend(Math.hypot(p.x-x,p.z-z),budget.treeRadius):1;mesh.setMatrixAt(i,matrix(p,blend));mesh.setColorAt(i,tint.setScalar(p.tint));});mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;}
+   if(pool.far){pool.plants.forEach((p,i)=>{const blend=selected.has(p)?treeLodBlend(Math.hypot(p.x-x,p.z-z),budget.treeRadius):0;pool.far!.setMatrixAt(i,matrix(p,1-blend));});pool.far.instanceMatrix.needsUpdate=true;}
   }
  }
  return{stats,update,setQuality(value:string){quality=value in natureBudget?value as keyof typeof natureBudget:'automatic';lastX=Infinity;}};
