@@ -230,7 +230,7 @@ export class IslandTrials {
 
   private renderBoard() {
     this.refreshGhostSettings();
-    this.boardTitle.textContent = this.selected === 'hoverbike' ? 'The island. Every shoreline.' : 'One island. One full lap.';
+    this.boardTitle.textContent = this.selected === 'hoverbike' ? 'The island. Every shoreline.' : 'One island. More ways to race.';
     this.boardIntro.textContent = this.selected === 'hoverbike'
       ? 'Fly a full circuit of Belle Isle. Choose your route and altitude profile, follow the numbered rings, and set a best time for the whole island.'
       : 'Take the long way around Belle Isle. Choose a complete road circuit, read the numbered arches, and carry a clean line from shoreline to shoreline.';
@@ -243,7 +243,8 @@ export class IslandTrials {
     if (this.current) this.boardCurrent.replaceChildren(node('span', '', `Current course: ${this.current.name}`), button('Leave race', () => { this.interrupt(); this.open(this.selected); }));
     this.boardContent.replaceChildren();
     const courses = this.courses.filter(course => course.vehicle === this.selected);
-    const featured = courses.filter(course => course.category !== 'practice');
+    const featured = courses.filter(course => course.category === 'island');
+    const historic = courses.filter(course => course.category === 'grandprix');
     const practice = courses.filter(course => course.category === 'practice');
     const cardFor = (course: TrialCourse) => {
       const card = node('article', 'trial-course'); card.style.setProperty('--trial-course-color', course.color);
@@ -252,7 +253,7 @@ export class IslandTrials {
       preview.setAttribute('role', 'img'); preview.setAttribute('aria-label', `${course.name}: ${distanceLabel(course.distance)}, ${course.gates.length} ordered checkpoints.`);
       this.drawCourseMap(preview, course);
       const content = node('div', 'trial-course-content');
-      const metrics = node('p', 'trial-course-meta', `${course.category === 'practice' ? 'PRACTICE SPRINT' : 'FULL ISLAND · ONE LAP'} / ${distanceLabel(course.distance)} / ${course.gates.length} GATES`);
+      const metrics = node('p', 'trial-course-meta', `${course.category === 'practice' ? 'PRACTICE SPRINT' : course.category === 'grandprix' ? (course.laps === 3 ? 'GRAND PRIX · 3 LAPS' : 'GRAND PRIX · QUALIFYING') : 'FULL ISLAND · ONE LAP'} / ${distanceLabel(course.distance)} / ${course.gates.length} GATES`);
       const best = this.records.best(course);
       const record = node('p', 'trial-course-record'); record.append(node('span', '', 'PERSONAL BEST'), node('strong', '', best === null ? 'Set the first time' : formatTrialTime(best)));
       const controls = course.vehicle === 'hoverbike'
@@ -266,6 +267,12 @@ export class IslandTrials {
       card.append(preview, content); return card;
     };
     for (const course of featured) this.boardContent.append(cardFor(course));
+    if (historic.length) {
+      const section = node('details', 'trial-heritage'); section.open = this.current?.category === 'grandprix';
+      section.append(node('summary', 'trial-section-heading', 'Belle Isle Grand Prix · Heritage circuit'), node('p', 'trial-note', 'The historic 3.784 km loop follows mapped public roads. 14 marker locations are approximate, not official turn surveys.'));
+      const grid = node('div', 'trial-course-grid');for(const course of historic)grid.append(cardFor(course));
+      section.append(grid);this.boardContent.append(section);
+    }
     if (practice.length) {
       const short = node('details', 'trial-practice'); short.id = 'trial-practice';
       short.open = this.current?.category === 'practice';
@@ -350,7 +357,7 @@ export class IslandTrials {
       const previousGate = this.run.next;
       if (!allowed && this.lastRunning && this.run.status !== 'finished') this.audio.silence();
       if (this.skipNext || !allowed || !this.lastRunning) { this.run.suspend(actor); this.skipNext = false; }
-      else this.run.step(seconds, actor, true);
+      else this.run.step(this.run.status === 'countdown' ? Math.min(seconds, .20) : seconds, actor, true);
       this.lastRunning = allowed;
       if (allowed && this.run.status === 'running') this.ghostRecorder?.record(this.run.elapsed, actor);
       if (this.run.next !== this.previousNext || this.run.status !== this.previousStatus) {
@@ -392,7 +399,10 @@ export class IslandTrials {
     this.hudTimer.textContent = formatTrialTime(run?.finish ?? run?.elapsed ?? 0);
     this.hudStatus.textContent = this.preparing ? 'GETTING READY' : paused && run?.status !== 'finished' && run?.status !== 'invalid' ? 'PAUSED' : run?.status === 'countdown' ? `${Math.max(1, Math.ceil(run.countdown))} · GET READY` : run?.status === 'finished' ? 'FINISHED' : run?.status === 'invalid' ? 'RUN ENDED' : 'RACING';
     const next = run?.next ?? 0;
-    this.hudProgress.textContent = run?.status === 'finished' ? `${course.gates.length} / ${course.gates.length} checkpoints` : `Gate ${Math.min(next + 1, course.gates.length)} / ${course.gates.length}`;
+    this.hudProgress.textContent = course.laps && course.laps > 1 && course.gatesPerLap
+      ? `Lap ${Math.min(course.laps, Math.floor(next / course.gatesPerLap) + 1)} / ${course.laps} · Gate ${run?.status === 'finished' ? course.gatesPerLap : next % course.gatesPerLap + 1} / ${course.gatesPerLap}`
+      : run?.status === 'finished' ? `${course.gates.length} / ${course.gates.length} checkpoints` : `Gate ${Math.min(next + 1, course.gates.length)} / ${course.gates.length}`;
+    this.hud.dataset.lap = String(course.gatesPerLap ? Math.min(course.laps ?? 1, Math.floor(next / course.gatesPerLap) + 1) : 1);
     const target = course.gates[Math.min(next, course.gates.length - 1)], actor = this.actor ?? spawnPose(course);
     const wasOffCourse = this.hud.dataset.offCourse === 'true';
     const offCourse = run?.status === 'running' && trialDeviation(course, actor, wasOffCourse).offCourse;
@@ -401,10 +411,14 @@ export class IslandTrials {
       const dx = target.x - actor.x, dz = target.z - actor.z, distance = Math.hypot(dx, dz);
       const bearing = signedAngle(Math.atan2(dx, dz) - actor.heading);
       const direction = Math.abs(bearing) < .35 ? '↑ Ahead' : Math.abs(bearing) > 2.3 ? '↶ Turn around' : bearing < 0 ? '↗ Right' : '↖ Left';
-      this.hudDirection.textContent = `${offCourse ? 'Off course · ' : ''}${direction} · ${Math.round(distance)} m to ${next === course.gates.length - 1 ? 'finish' : 'next gate'}`;
+      const fullDirection = `${offCourse ? 'Off course · ' : ''}${direction} · ${Math.round(distance)} m to ${next === course.gates.length - 1 ? 'finish' : 'next gate'}`;
+      this.hudDirection.textContent = innerWidth <= 600 ? `${offCourse ? 'Off course · ' : ''}${direction} · ${Math.round(distance)} m` : fullDirection;
+      this.hudDirection.setAttribute('aria-label',fullDirection);
       if (course.vehicle === 'hoverbike') {
         const difference = target.y - actor.y;
-        this.hudAltitude.textContent = Math.abs(difference) < Math.min(2, target.halfHeight * .5) ? 'Altitude on line · fly through the ring' : `${difference > 0 ? '↑ Climb' : '↓ Descend'} ${Math.ceil(Math.abs(difference))} m · ${difference > 0 ? 'E / UP' : 'Q / DOWN'}`;
+        const fullAltitude = Math.abs(difference) < Math.min(2, target.halfHeight * .5) ? 'Altitude on line · fly through the ring' : `${difference > 0 ? '↑ Climb' : '↓ Descend'} ${Math.ceil(Math.abs(difference))} m · ${difference > 0 ? 'E / UP' : 'Q / DOWN'}`;
+        this.hudAltitude.textContent = innerWidth <= 600 ? (Math.abs(difference) < Math.min(2, target.halfHeight * .5) ? 'Altitude OK' : `${difference > 0 ? '↑ Climb' : '↓ Descend'} ${Math.ceil(Math.abs(difference))} m`) : fullAltitude;
+        this.hudAltitude.setAttribute('aria-label',fullAltitude);
       } else this.hudAltitude.textContent = 'Ride through the numbered arches in order';
     }
     if (offCourse !== wasOffCourse && run?.status === 'running') this.live.textContent = offCourse
@@ -448,10 +462,12 @@ export class IslandTrials {
     actions.append(replay, button('Choose course', () => this.open(course.vehicle)), button('Keep exploring', () => this.interrupt()));
     this.results.replaceChildren(node('span', 'trial-eyebrow', seriesName(course.vehicle).toUpperCase()), title, score, node('p', 'trial-result-detail', detail), node('p', 'trial-result-comparison', comparison));
     if (valid && run.splits.length) {
-      const details = node('details', 'trial-splits'); details.append(node('summary', '', 'Checkpoint splits'));
+      const details = node('details', 'trial-splits'); details.append(node('summary', '', course.laps && course.laps > 1 ? 'Lap and checkpoint splits' : 'Checkpoint splits'));
       const list = node('ol');
       run.splits.forEach((time, index) => {
-        const row = node('li'); row.append(node('span', '', index === course.gates.length - 1 ? 'Finish' : `Gate ${index + 1}`), node('time', '', formatTrialTime(time))); list.append(row);
+        const row = node('li'); const perLap = course.gatesPerLap ?? course.gates.length;
+        const label = course.laps && course.laps > 1 ? ((index + 1) % perLap === 0 ? `Lap ${(index + 1) / perLap} · ${index === course.gates.length - 1 ? 'Finish' : 'Split'}` : `Lap ${Math.floor(index / perLap) + 1} · Turn ${(index % perLap) + 1}`) : index === course.gates.length - 1 ? 'Finish' : `Gate ${index + 1}`;
+        row.append(node('span', '', label), node('time', '', formatTrialTime(time))); list.append(row);
       });
       details.append(list); this.results.append(details);
     }
@@ -484,23 +500,24 @@ export class IslandTrials {
 
   private buildRoute(course: TrialCourse) {
     this.clearRoute();
-    const path = course.path.map(point => new T.Vector3(point.x, point.y + (course.vehicle === 'onewheel' ? .12 : 0), point.z));
+    const oneLapCount = course.laps && course.laps > 1 ? Math.floor((course.path.length - 1) / course.laps) + 1 : course.path.length;
+    const path = course.path.slice(0,oneLapCount).map(point => new T.Vector3(point.x, point.y + (course.vehicle === 'onewheel' ? .12 : 0), point.z));
     if (path.length > 1) {
       const line = new T.Line(new T.BufferGeometry().setFromPoints(path), new T.LineDashedMaterial({color: course.color, transparent: true, opacity: .45, dashSize: course.vehicle === 'hoverbike' ? 5 : 2.5, gapSize: course.vehicle === 'hoverbike' ? 5 : 2.5, depthWrite: false}));
       line.computeLineDistances(); this.world.add(line);
     }
-    for (const [index, gate] of course.gates.entries()) {
+    for (const [index, gate] of course.gates.slice(0,course.gatesPerLap??course.gates.length).entries()) {
       const group = new T.Group(); group.position.set(gate.x, gate.y, gate.z); group.rotation.y = gate.heading;
       const ground = course.vehicle === 'onewheel', height = ground ? Math.max(2.8, gate.halfHeight) : gate.halfHeight;
-      const ring = new T.Mesh(new T.TorusGeometry(gate.radius, ground ? .10 : .18, 6, ground ? 28 : 40, ground ? Math.PI : Math.PI * 2), new T.MeshBasicMaterial({color: index === course.gates.length - 1 ? '#f5d38d' : course.color, transparent: true, opacity: .9, depthWrite: false}));
+      const ring = new T.Mesh(new T.TorusGeometry(gate.radius, ground ? .10 : .18, 6, ground ? 28 : 40, ground ? Math.PI : Math.PI * 2), new T.MeshBasicMaterial({color: index === (course.gatesPerLap??course.gates.length) - 1 ? '#f5d38d' : course.color, transparent: true, opacity: .9, depthWrite: false}));
       ring.scale.y = height / gate.radius; if (ground) ring.position.y = .10;
       group.add(ring);
       const label = document.createElement('canvas'); label.width = 256; label.height = 120;
       const ctx = label.getContext('2d');
       if (ctx) {
-        ctx.fillStyle = '#092329e6'; ctx.fillRect(0, 0, 256, 120); ctx.strokeStyle = index === course.gates.length - 1 ? '#f5d38d' : course.color; ctx.lineWidth = 5; ctx.strokeRect(3, 3, 250, 114);
+        ctx.fillStyle = '#092329e6'; ctx.fillRect(0, 0, 256, 120); ctx.strokeStyle = index === (course.gatesPerLap??course.gates.length) - 1 ? '#f5d38d' : course.color; ctx.lineWidth = 5; ctx.strokeRect(3, 3, 250, 114);
         ctx.fillStyle = '#f5eddb'; ctx.textAlign = 'center'; ctx.font = 'bold 58px system-ui'; ctx.fillText(String(index + 1).padStart(2, '0'), 128, 65);
-        ctx.font = '17px system-ui'; ctx.fillText(index === course.gates.length - 1 ? 'FINISH' : 'CHECKPOINT', 128, 100);
+        ctx.font = '17px system-ui'; ctx.fillText(index === (course.gatesPerLap??course.gates.length) - 1 ? (course.laps && course.laps>1?'LAP / FINISH':'FINISH') : 'CHECKPOINT', 128, 100);
         const texture = new T.CanvasTexture(label); texture.colorSpace = T.SRGBColorSpace;
         const sprite = new T.Sprite(new T.SpriteMaterial({map: texture, transparent: true, depthWrite: false}));
         const width = ground ? 2.6 : 5; sprite.scale.set(width, width * 120 / 256, 1); sprite.position.y = height + (ground ? .85 : 1.5); group.add(sprite);
@@ -511,10 +528,12 @@ export class IslandTrials {
 
   private syncGates() {
     const next = this.run?.next ?? 0;
-    this.gateObjects.forEach((group, index) => {
-      group.visible = index >= next && index <= next + 2;
-      group.traverse(object => {
-        if ('material' in object && object.material instanceof T.Material) object.material.opacity = index === next ? 1 : index === next + 1 ? .42 : .22;
+    const cyclic=(this.current?.laps??1)>1,len=this.gateObjects.length;
+    this.gateObjects.forEach((group,index)=>{
+      const ahead=cyclic?(index-(next%len)+len)%len:index-next;
+      group.visible=ahead>=0&&ahead<=2;
+      group.traverse(object=>{
+        if('material' in object && object.material instanceof T.Material)object.material.opacity=ahead===0?1:ahead===1?.42:.22;
       });
     });
   }
@@ -547,10 +566,11 @@ export class IslandTrials {
       context.beginPath(); road.points.forEach(([x, z], index) => index ? context.lineTo(px(x), pz(z)) : context.moveTo(px(x), pz(z))); context.stroke();
     }
     context.lineJoin = 'round'; context.lineCap = 'round'; context.strokeStyle = '#061c23'; context.lineWidth = 7;
-    context.beginPath(); course.path.forEach((point, index) => index ? context.lineTo(px(point.x), pz(point.z)) : context.moveTo(px(point.x), pz(point.z))); context.stroke();
+    const mapPath = course.laps && course.laps>1 ? course.path.slice(0,Math.floor((course.path.length-1)/course.laps)+1) : course.path;
+    context.beginPath(); mapPath.forEach((point,index)=>index?context.lineTo(px(point.x),pz(point.z)):context.moveTo(px(point.x),pz(point.z))); context.stroke();
     context.strokeStyle = course.color; context.lineWidth = 3; context.stroke();
-    for (const [index, gate] of course.gates.entries()) {
-      context.fillStyle = '#e5e9d7'; context.beginPath(); context.arc(px(gate.x), pz(gate.z), index === course.gates.length - 1 ? 4 : 2.2, 0, Math.PI * 2); context.fill();
+    for (const [index, gate] of course.gates.slice(0,course.gatesPerLap??course.gates.length).entries()) {
+      context.fillStyle = '#e5e9d7'; context.beginPath(); context.arc(px(gate.x), pz(gate.z), index === (course.gatesPerLap??course.gates.length) - 1 ? 4 : 2.2, 0, Math.PI * 2); context.fill();
       if (index > 0 && index < course.gates.length - 1 && index % 3 === 0) {
         context.save(); context.translate(px(gate.x), pz(gate.z)); context.rotate(-gate.heading); context.fillStyle = course.color;
         context.beginPath(); context.moveTo(0, 6); context.lineTo(-3, -3); context.lineTo(3, -3); context.closePath(); context.fill(); context.restore();
@@ -601,7 +621,8 @@ export class IslandTrials {
   drawMap(context: CanvasRenderingContext2D, px: (x: number) => number, pz: (z: number) => number) {
     if (!this.active || !this.current) return;
     const course = this.current; context.save(); context.strokeStyle = course.color; context.lineWidth = 3;
-    context.beginPath(); course.path.forEach((point, index) => index ? context.lineTo(px(point.x), pz(point.z)) : context.moveTo(px(point.x), pz(point.z))); context.stroke();
+    const mapPath = course.laps && course.laps>1 ? course.path.slice(0,Math.floor((course.path.length-1)/course.laps)+1) : course.path;
+    context.beginPath(); mapPath.forEach((point,index)=>index?context.lineTo(px(point.x),pz(point.z)):context.moveTo(px(point.x),pz(point.z))); context.stroke();
     const target = course.gates[this.run?.next ?? 0];
     if (target) { context.strokeStyle = '#f5d38d'; context.beginPath(); context.arc(px(target.x), pz(target.z), 5, 0, Math.PI * 2); context.stroke(); }
     context.restore();
