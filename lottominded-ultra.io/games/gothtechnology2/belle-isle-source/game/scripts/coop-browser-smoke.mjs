@@ -60,10 +60,19 @@ async function run(){
  await expect.poll(async()=>moved(report.metrics.initial[0],await position(0))).toBeGreaterThan(.12);await page.keyboard.up('KeyS');
  report.metrics.afterP1=[await position(0),await position(1)];assert(moved(report.metrics.initial[1],report.metrics.afterP1[1])<.06,'P1 input must not move P2');
  note('Pause both and verify held input cannot move either');await page.keyboard.press('KeyP');await expect(page.locator('#coop-overlay')).toHaveAttribute('data-paused','true');
- const held=[await position(0),await position(1)];await page.keyboard.down('ArrowDown');await page.waitForTimeout(2000);assert(moved(held[0],await position(0))<.01&&moved(held[1],await position(1))<.01);await page.keyboard.up('ArrowDown');
+ const held=[await position(0),await position(1)];await page.keyboard.down('ArrowDown');await page.waitForTimeout(2000);assert(moved(held[0],await position(0))<.01&&moved(held[1],await position(1))<.01);
  await tap(page.locator('#coop-pause'));await expect(page.locator('#coop-overlay')).toHaveAttribute('data-paused','false');await page.locator('#game').focus();
  await expect.poll(async()=>Number(await page.locator('#coop-overlay').getAttribute('data-draw-calls'))).toBeGreaterThan(0);
- // Allow an actual neutral rendered frame before the next held input.
+ // Keep the physical key down across resume. Auto-repeat must not rearm movement.
+ const resumedFrame=Number(await page.locator('#coop-overlay').getAttribute('data-simulation-frames'));
+ await expect.poll(async()=>Number(await page.locator('#coop-overlay').getAttribute('data-simulation-frames'))).toBeGreaterThan(resumedFrame+1);
+ await page.keyboard.down('ArrowDown');
+ const repeatedFrame=Number(await page.locator('#coop-overlay').getAttribute('data-simulation-frames'));
+ await expect.poll(async()=>Number(await page.locator('#coop-overlay').getAttribute('data-simulation-frames'))).toBeGreaterThan(repeatedFrame+1);
+ assert(moved(held[1],await position(1))<.01,'Held key auto-repeat must not resume Player 2 without release');
+ await page.keyboard.up('ArrowDown');
+ report.metrics.neutralKeyboardRearm=true;
+ // Allow an actual neutral rendered frame before the next fresh input.
  const neutralFrame=Number(await page.locator('#coop-overlay').getAttribute('data-simulation-frames'));await expect.poll(async()=>Number(await page.locator('#coop-overlay').getAttribute('data-simulation-frames'))).toBeGreaterThan(neutralFrame+1);await page.keyboard.down('ArrowDown');await expect.poll(async()=>moved(held[1],await position(1))).toBeGreaterThan(.12);await page.keyboard.up('ArrowDown');
  report.metrics.afterP2=[await position(0),await position(1)];
  note('Separate camera and recovery controls');await tap(page.getByRole('button',{name:'Change Player 2 camera',exact:true}));await expect(page.locator('.coop-player-pane').nth(1)).toHaveAttribute('data-camera','first');await expect(page.locator('.coop-player-pane').nth(0)).toHaveAttribute('data-camera','third');
@@ -87,7 +96,9 @@ async function run(){
  assert.deepEqual(report.errors,[]);report.passed=true;note('Real co-op gameplay checks passed');
 }
 let failed;
-try{await bounded(run(),35*60_000,'Co-op real-game case');}catch(e){failed=e;report.failure=e.stack||String(e);report.passed=false;process.exitCode=1;note('FAIL '+e.message);}
+try{await bounded(run(),35*60_000,'Co-op real-game case');}catch(e){failed=e;report.failure=e.stack||String(e);report.passed=false;process.exitCode=1;note('FAIL '+e.message);
+ if(page)try{report.failureState=await bounded(page.evaluate(()=>({body:document.body.className,focus:document.activeElement?.id,visibility:document.visibilityState,hasFocus:document.hasFocus(),session:document.querySelector('#coop-overlay')?{...document.querySelector('#coop-overlay').dataset}:null,players:[...document.querySelectorAll('.coop-player-pane')].map(p=>({...p.dataset})),status:document.querySelector('#coop-announcement')?.textContent})),10000,'Failure-state inspection');}catch(diagnostic){report.diagnosticFailure=diagnostic.message;}
+}
 finally{
  if(browser)try{await bounded(browser.close(),30_000,'Browser cleanup');}catch(e){report.cleanupFailure=e.message;report.passed=false;process.exitCode=1;}
  if(server.listening){server.closeAllConnections();await new Promise(done=>server.close(done));}

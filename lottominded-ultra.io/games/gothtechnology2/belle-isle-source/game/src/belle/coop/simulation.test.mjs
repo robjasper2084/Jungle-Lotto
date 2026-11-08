@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {PairSimulation,peerRay,riderProfile} from './simulation.ts';
+import {PairSimulation,peerRay,riderProfile,coopFrameSeconds} from './simulation.ts';
 import {assignPlayer,defaultPair} from './coop.ts';
 const command=(extra={})=>({throttle:0,steer:0,hop:false,recover:false,interact:false,brake:false,...extra});
 const ground=()=>({sampleGround(x,z,out){Object.assign(out,{height:2,surface:'pavement',offCourse:false});out.normal={x:0,y:1,z:0};return out;},raycast(){return null;},raycastObstacle(){return null;},land(){return true;},height(){return 2;},obstructed(){return false;}});
@@ -53,4 +53,23 @@ test('head-on riders cannot pass through one another',()=>{
 });
 test('bad frame times fail rather than introducing NaNs or endless stepping',()=>{
  const s=sim();for(const v of [NaN,Infinity,-1])assert.throws(()=>s.advance(v,[command(),command()]));s.advance(50,[command({throttle:1}),command()]);assert(Number.isFinite(s.actors[0].current.x));
+});
+
+test('co-op fixed ticks use bounded wall time rather than the presentation-only dt cap',()=>{
+ assert.equal(coopFrameSeconds(.05,6000,1000),.25);
+ assert.equal(coopFrameSeconds(.016,1016,1000),.016);
+ assert.equal(coopFrameSeconds(.05,10000,0),.05);
+});
+test('pausing or an invalid/regressed clock cannot add catch-up simulation',()=>{
+ assert.equal(coopFrameSeconds(.05,10000,1000,true),0);
+ assert.equal(coopFrameSeconds(.05,1000,1100),0);
+ assert.equal(coopFrameSeconds(NaN,NaN,0),0);
+ assert.equal(coopFrameSeconds(.05,10000,0),.05);
+});
+test('slow renderer still advances both real controllers without an unbounded jump',()=>{
+ const s=sim({riderId:'DS_Man_01',vehicleId:'euc:city'});s.advance(.05,[command(),command()]);const before=s.actors.map(c=>({...c.current}));
+ for(let i=1;i<=8;i++)s.advance(coopFrameSeconds(.05,1000+i*15000,1000+(i-1)*15000),[command({throttle:-1}),command()]);
+ assert(Math.hypot(s.actors[0].current.x-before[0].x,s.actors[0].current.z-before[0].z)>.12);
+ assert(Math.hypot(s.actors[1].current.x-before[1].x,s.actors[1].current.z-before[1].z)<.01);
+ assert(Math.hypot(s.actors[0].current.x-before[0].x,s.actors[0].current.z-before[0].z)<6);
 });

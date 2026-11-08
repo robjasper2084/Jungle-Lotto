@@ -4,7 +4,7 @@ import type {RidePose} from '../../../runtime/ride-core/src/controller.ts';
 import {mountCoopLobby} from './lobby.ts';
 import {CoopInput,coopViewports,glViewport,preparePair,RIDERS,VEHICLES,type InputFrame,type Pad,type PlayerManifest,type Spawn,type Seat} from './coop.ts';
 import {CoopAssets,createRenderActor,type RenderActor} from './actors.ts';
-import {PairSimulation,type CoopTerrainSource} from './simulation.ts';
+import {PairSimulation,coopFrameSeconds,type CoopTerrainSource} from './simulation.ts';
 import './session.css';
 
 type Hooks={available:()=>boolean;anchor:()=>Spawn;activate:()=>Promise<void>|void;leave:()=>void;blocked:()=>boolean;prepare?:(root:T.Object3D,signal:AbortSignal)=>Promise<void>};
@@ -75,7 +75,7 @@ export class CoopSession{
    event.preventDefault();event.stopImmediatePropagation();if(!event.repeat&&!this.paused)this.cameraView(event.code==='KeyC'?0:1);return;
   }
   if(!MOVE_KEYS.has(event.code))return;
-  event.preventDefault();event.stopImmediatePropagation();if(!this.paused)this.keys.add(event.code);
+  event.preventDefault();event.stopImmediatePropagation();if(!this.paused&&(!event.repeat||this.keys.has(event.code)))this.keys.add(event.code);
  };
  private keyUp=(event:KeyboardEvent)=>{if(!this.active)return;this.keys.delete(event.code);if(MOVE_KEYS.has(event.code)){event.preventDefault();event.stopImmediatePropagation();}};
  private blur=()=>{if(this.active)this.setPaused(true,'Paused because the game lost focus. Release controls before resuming.');};
@@ -179,7 +179,7 @@ export class CoopSession{
    const out={throttle:T.MathUtils.clamp(raw.throttle+touch.throttle,-1,1),steer:T.MathUtils.clamp(raw.steer+touch.steer,-1,1),hop:raw.hop||touch.hop,recover:raw.recover||touch.recover,interact:raw.interact||touch.interact,brake:raw.brake||touch.brake};
    touch.hop=touch.recover=touch.interact=false;return out;
   }) as [InputFrame,InputFrame];
-  const poses=this.simulation.advance(seconds,inputs,suspended);this.overlay.dataset.simulationFrames=String(++this.updateCount);
+  const poses=this.simulation.advance(coopFrameSeconds(seconds,now,this.lastNow,suspended),inputs,suspended);this.overlay.dataset.simulationFrames=String(++this.updateCount);
   this.layout();
   for(const seat of [0,1] as const){
    const actor=this.actors[seat],p=poses[seat],peer=poses[1-seat];actor.view.apply(p);actor.view.root.visible=true;

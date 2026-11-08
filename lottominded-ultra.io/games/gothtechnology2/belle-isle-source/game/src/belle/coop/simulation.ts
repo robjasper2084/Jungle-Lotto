@@ -26,6 +26,18 @@ export function peerRay(origin:Vec3,direction:Vec3,maxDistance:number,peer:Vec3,
  return near>=0&&near<=maxDistance?near:null;
 }
 
+/** Preserve bounded simulation progress when rendering stalls, without pause catch-up.
+ * The outer island loop caps its presentation dt at 50ms. Co-op uses a separately
+ * bounded elapsed interval for its existing fixed-step schedule (at most 250ms).
+ */
+export function coopFrameSeconds(fallback:number,now:number,previous:number,paused=false){
+ if(paused)return 0;
+ const first=Number.isFinite(fallback)&&fallback>0?Math.min(.25,fallback):0;
+ if(!Number.isFinite(now)||!Number.isFinite(previous)||previous<=0)return first;
+ if(now<=previous)return 0;
+ return Math.min(.25,(now-previous)/1000);
+}
+
 export class PairSimulation{
  readonly actors:readonly [RideCore,RideCore];
  readonly manifests:readonly [PlayerManifest,PlayerManifest];
