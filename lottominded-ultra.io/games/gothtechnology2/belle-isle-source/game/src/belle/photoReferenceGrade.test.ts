@@ -1,6 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {BELLE_PHOTO_LOOKUP,sunsetPhotoGrade,treeLodBlend} from './photoReferenceGrade.ts';
-const keys=['warmth','glint','foliage','haze'];
+const keys=['warmth','glint','foliage','haze'] as const;
 test('golden hour peaks near low sun, daylight and night stay neutral',()=>{
  const golden=sunsetPhotoGrade(.09,0,0),high=sunsetPhotoGrade(.85,0,0),night=sunsetPhotoGrade(-.35,0,1);
  assert(golden.warmth>.95&&golden.glint>.95);
