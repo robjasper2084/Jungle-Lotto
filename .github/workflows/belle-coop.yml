@@ -55,7 +55,7 @@ jobs:
           inputs=[root/'AGENTS.md',game/'src',game/'runtime',game/'scripts',game/'node_modules',game.parent/'tools']
           inputs += [game/n for n in ['package.json','package-lock.json','tsconfig.json','vite.config.ts','run-tests.mjs','index.html']]
           inputs += [game/'public/belle/map.json',game/'public/exports/glb/DS_EUC_01']
-          swoop=game.parents[2]/'swoop-source'
+          swoop=game.parents[1]/'swoop-source'
           inputs += [swoop/'public/exports/rigged-heroes',swoop/'src/detroit/electricVehicles.ts',swoop/'src/detroit/riderChoices.ts']
           with tarfile.open(out/'source-inspection.tar.gz','w:gz') as archive:
               for path in inputs:
