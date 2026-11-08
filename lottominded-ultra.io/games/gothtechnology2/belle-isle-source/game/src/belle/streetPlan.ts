@@ -1,9 +1,10 @@
 import {ParkTerrain,segment,inside,type ParkMap,type Point} from './terrain.ts';
 import {greenhouseLocal} from './conservatory.ts';
+import {mappedCrossings,type MappedCrossing} from './mappedCrossings.ts';
 type Road=ParkMap['roads'][number];
 export type StreetBox={x:number;y:number;z:number;w:number;h:number;l:number;yaw:number;grade?:number;material:'white'|'yellow'|'curb'|'gutter'|'metal'|'green'|'tactile';road?:string};
 export type StreetSign={x:number;y:number;z:number;yaw:number;title:string;subtitle:string;kind:'park'|'street'|'stop'|'speed'|'crossing';w:number;h:number};
-export type StreetPlan={boxes:StreetBox[];signs:StreetSign[];stats:Record<string,number>;notes:string[]};
+export type StreetPlan={boxes:StreetBox[];signs:StreetSign[];stats:Record<string,number>;notes:string[];crossings?:MappedCrossing[]};
 export function pathSamples(points:Point[],step:number){
  const samples:{x:number;z:number;dx:number;dz:number;s:number}[]=[];let length=0,next=step*.5;
  for(let i=1;i<points.length;i++){
@@ -52,6 +53,7 @@ export function roadIndex(roads:Road[]){
 export function createStreetPlan(data:ParkMap):StreetPlan{
  const terrain=new ParkTerrain(data),occupied=roadIndex(data.roads),boxes:StreetBox[]=[],signs:StreetSign[]=[],usedSigns:Point[]=[];
  const roads=data.roads.filter(r=>!r.foot&&r.highway!=='corridor');
+ const resolvedCrossings=mappedCrossings(data);
  const add=(x:number,z:number,yaw:number,w:number,l:number,material:StreetBox['material'],h=.012,dy=.084,road?:string)=>{const dx=Math.sin(yaw)*l*.5,dz=Math.cos(yaw)*l*.5,grade=(terrain.height(x+dx,z+dz)-terrain.height(x-dx,z-dz))/l;boxes.push({x:+x.toFixed(3),z:+z.toFixed(3),y:+(terrain.height(x,z)+dy).toFixed(3),yaw:+yaw.toFixed(5),grade:+grade.toFixed(6),w,h,l,material,road});};
  const inDetailArea=(x:number,z:number)=>inside(x,z,data.island)||(data.outerIslets||[]).some(i=>inside(x,z,i.points))||Math.hypot(x,z)<850;
  const landClear=(x:number,z:number)=>inDetailArea(x,z)&&terrain.land(x,z)&&!data.buildings.some(b=>inside(x,z,b.points));
@@ -63,7 +65,7 @@ export function createStreetPlan(data:ParkMap):StreetPlan{
   signs.push({x,y:terrain.height(x,z)+2.4,z,yaw,title,subtitle,kind,w,h});usedSigns.push([x,z]);return true;
  }
  for(const r of roads){
-  if(r.bridge)continue;
+  if(r.bridge&&r.points.some(p=>terrain.bridge(...p).active))continue;
   const samples=pathSamples(r.points,6),total=samples.at(-1)?.s||0;
   // Do not guess arrows for Central Avenue: dated OSM conflicts with DNR's 2026 plan.
   const uncertainDirection=r.name==='Central Avenue';
@@ -80,7 +82,7 @@ export function createStreetPlan(data:ParkMap):StreetPlan{
     }
    };
    if(!inDetailArea(p.x,p.z)||terrain.bridge(p.x,p.z).active)continue;
-   const crossing=(data.traffic||[]).some(n=>n.kind==='crossing'&&n.markings!=='no'&&n.markings!=='unmarked'&&Math.hypot(n.p[0]-p.x,n.p[1]-p.z)<4);
+   const crossing=resolvedCrossings.some(n=>Math.hypot(n.point[0]-p.x,n.point[1]-p.z)<4);
    const clearCenter=!occupied(p.x,p.z,r.id,1.5)&&!crossing;
    const motorOffset=r.cycleTrack?-1.7:0;
    if(clearCenter&&r.width>=6&&!uncertainDirection&&r.highway!=='service'){
@@ -103,7 +105,7 @@ export function createStreetPlan(data:ParkMap):StreetPlan{
     // 15 cm curb with flush gaps at entrances/crossings; bridge curb is separate.
     const d=r.width/2+.16,cx=p.x+nx*d*side,cz=p.z+nz*d*side;
     const ends=[-3.2,0,3.2];
-    if(!crossing&&ends.every(e=>curbClear(cx+p.dx*e,cz+p.dz*e)&&!occupied(cx+p.dx*e,cz+p.dz*e,r.id,.45))){
+    if(!r.bridge&&!crossing&&ends.every(e=>curbClear(cx+p.dx*e,cz+p.dz*e)&&!occupied(cx+p.dx*e,cz+p.dz*e,r.id,.45))){
      run(d*side,.30,6,'curb',.15,.14,r.id);
      run((d-.38)*side,.43,6,'gutter',.012,.076);
      // Drains follow the gutter at generous intervals; no dynamic lights/shadows.
@@ -139,17 +141,11 @@ export function createStreetPlan(data:ParkMap):StreetPlan{
   }
  }
  // Mapped marked crossings only. Unmarked nodes do not acquire invented paint.
- const crossings:Point[]=[];
- for(const n of data.traffic||[]){
-  if(!inDetailArea(...n.p)||n.kind!=='crossing'||['no','unmarked',''].includes(n.markings)||crossings.some(p=>Math.hypot(n.p[0]-p[0],n.p[1]-p[1])<6))continue;
-  let nearest:{r:Road;a:Point;b:Point;d:number}|undefined;
-  for(const r of roads)for(let i=1;i<r.points.length;i++){
-   const d=segment(n.p[0],n.p[1],r.points[i-1],r.points[i]).d;if(!nearest||d<nearest.d)nearest={r,a:r.points[i-1],b:r.points[i],d};
-  }
-  if(!nearest||nearest.d>3||nearest.r.bridge)continue;
-  const {r,a,b}=nearest,len=Math.hypot(b[0]-a[0],b[1]-a[1]),dx=(b[0]-a[0])/len,dz=(b[1]-a[1])/len,yaw=Math.atan2(dx,dz),projection=segment(n.p[0],n.p[1],a,b).t,x=a[0]+(b[0]-a[0])*projection,z=a[1]+(b[1]-a[1])*projection;
-  if(terrain.bridge(x,z).active)continue;
-  crossings.push([x,z]);
+ const crossings:MappedCrossing[]=[];
+ for(const n of resolvedCrossings){
+  if(!inDetailArea(...n.point)||terrain.bridge(...n.point).active)continue;
+  const [x,z]=n.point,[dx,dz]=n.direction,yaw=Math.atan2(dx,dz),r={width:n.width};
+  crossings.push(n);
   for(let d=-r.width/2+.55;d<r.width/2-.3;d+=.95)add(x+dz*d,z-dx*d,yaw,.47,2.7,'white');
   for(const side of[-1,1]){
    const d=(r.width/2+.5)*side,cx=x+dz*d,cz=z-dx*d;
@@ -169,5 +165,5 @@ export function createStreetPlan(data:ParkMap):StreetPlan{
  // A welcome sign on the shoulder of the mainland approach.
  const b=data.bridge,dx=(b.b[0]-b.a[0])/b.length,dz=(b.b[1]-b.a[1])/b.length;
  if(!data.entranceSign)sign(b.a[0]-dx*120+dz*12,b.a[1]-dz*120-dx*12,Math.atan2(-dx,-dz),'BELLE ISLE','DETROIT RIVER · PARK ENTRANCE','park',3.8,1.35);
- return {boxes,signs,stats:{boxes:boxes.length,signs:signs.length,crossings:crossings.length,roads:roads.length},notes:['Generated from mapped corridors; curb extents and sign positions are a reconstruction, not a survey.','Central Avenue direction arrows omitted pending confirmation of the 2026 segment boundaries.','Marked crossings use mapped OSM crossing nodes; facility boards are original game wayfinding.']};
+ return {boxes,signs,crossings,stats:{boxes:boxes.length,signs:signs.length,crossings:crossings.length,roads:roads.length},notes:['Generated from mapped corridors; curb extents and sign positions are a reconstruction, not a survey.','Central Avenue direction arrows omitted pending confirmation of the 2026 segment boundaries.','Marked crossings follow mapped OSM nodes and connected crossing-footway intersections; no unmarked crossing is painted. Small bridge markings are preserved.']};
 }

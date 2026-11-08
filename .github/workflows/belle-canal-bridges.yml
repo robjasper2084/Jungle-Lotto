@@ -1,0 +1,52 @@
+name: Belle Isle canal-crossing review
+on:
+  pull_request:
+    paths:
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/**'
+      - '.github/workflows/belle-canal-bridges.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: belle-canal-crossings-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  crossing-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        device: [desktop, phone]
+    defaults:
+      run:
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install locked game dependencies
+        run: npm ci
+      - name: Full type check and registered regressions
+        run: |
+          npm run check
+          npm test
+      - name: Install existing browser runtime
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Render real mapped bridge geometry
+        env:
+          BELLE_BRIDGE_DEVICE: ${{ matrix.device }}
+          BRIDGE_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node --experimental-strip-types scripts/canal-bridges-browser-smoke.mjs
+      - name: Preserve geometry screenshots and diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-canal-crossings-${{ matrix.device }}
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/canal-bridges
+          if-no-files-found: warn
+          retention-days: 7
