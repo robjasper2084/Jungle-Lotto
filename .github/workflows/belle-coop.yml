@@ -1,0 +1,71 @@
+name: Belle Isle co-op review
+
+on:
+  push:
+    branches: [feature/coop-exploration-mode]
+  pull_request:
+    paths:
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/coop/**'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/coop-*'
+      - '.github/workflows/belle-coop.yml'
+
+permissions:
+  contents: read
+concurrency:
+  group: belle-coop-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  coop-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install locked game dependencies
+        run: npm ci
+      - name: Inspect all five actual Swoop rider models
+        run: |
+          mkdir -p output/coop
+          node --experimental-strip-types src/belle/coop/assetBridge.mjs "$GITHUB_WORKSPACE" > output/coop/rig-inspection.json
+      - name: Co-op contract tests
+        run: node --experimental-strip-types --test src/belle/coop/*.test.mjs
+      - name: Strict full-game check and regressions
+        run: |
+          npm run check
+          npm test
+      - name: Build the real island
+        run: npm run build
+      - name: Preserve source and real model inspection inputs
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import os, tarfile, json
+          root=Path(os.environ['GITHUB_WORKSPACE'])
+          game=Path.cwd()
+          out=game/'output/coop'
+          out.mkdir(parents=True,exist_ok=True)
+          inputs=[root/'AGENTS.md',game/'src',game/'runtime',game/'scripts',game/'node_modules',game.parent/'tools']
+          inputs += [game/n for n in ['package.json','package-lock.json','tsconfig.json','vite.config.ts','run-tests.mjs','index.html']]
+          inputs += [game/'public/belle/map.json',game/'public/exports/glb/DS_EUC_01']
+          swoop=game.parents[2]/'swoop-source'
+          inputs += [swoop/'public/exports/rigged-heroes',swoop/'src/detroit/electricVehicles.ts',swoop/'src/detroit/riderChoices.ts']
+          with tarfile.open(out/'source-inspection.tar.gz','w:gz') as archive:
+              for path in inputs:
+                  if path.exists(): archive.add(path,arcname=str(path.relative_to(root)),recursive=True)
+          (out/'provenance.json').write_text(json.dumps({'head':os.environ['GITHUB_SHA'],'run':os.environ['GITHUB_RUN_ID'],'purpose':'Co-op rig and integration diagnostics, not a deployed bundle'},indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: belle-coop-inspection-${{ github.run_id }}
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/coop
+          retention-days: 7
+          if-no-files-found: error
