@@ -332,7 +332,14 @@ async function runCase(configuration) {
   };
   const inspectCatalog = async vehicle => {
     const cards = page.locator('#trial-course-list .trial-course');
-    await expect(cards).toHaveCount(vehicle === 'hoverbike' ? 4 : 3);
+    await expect(cards).toHaveCount(vehicle === 'hoverbike' ? 4 : 5);
+    if (vehicle === 'onewheel') {
+      const gp = page.locator('#trial-course-list .trial-course[data-category="grandprix"]');
+      await expect(gp).toHaveCount(2);
+      const ids = await gp.locator('button[data-course]').evaluateAll(buttons => buttons.map(button => button.dataset.course));
+      assert.deepEqual(ids, ['onewheel-belle-heritage-qualifier-v1', 'onewheel-belle-heritage-3lap-v1']);
+      await expect(page.locator('.trial-heritage > summary')).toContainText('Grand Prix');
+    }
     const featured = page.locator('#trial-course-list > .trial-course[data-category="island"]');
     await expect(featured).toHaveCount(2);
     const routes = await featured.evaluateAll(elements => elements.map(element => ({

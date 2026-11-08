@@ -175,3 +175,9 @@ body.island-trial.on-hoverbike.touch-controls .hover-steer button{min-width:44px
  #trial-hud .trial-hud-actions button{height:44px;min-height:44px;min-width:44px;font-size:10px;white-space:normal}
 }
 @media(max-width:350px) and (max-height:600px){#trial-hud{width:112px;--trial-side-width:78px}#trial-hud .trial-direction{font-size:9px}}
+
+/* Photographic pass: narrow-timer audit regression.
+ * The 9999:59.99 synthetic fixture must fit at 320 px without shrinking touch targets. */
+@media(max-width:350px) and (min-height:521px){
+  #trial-hud .trial-time{font-size:14px;letter-spacing:-.075em;line-height:1.15;}
+}

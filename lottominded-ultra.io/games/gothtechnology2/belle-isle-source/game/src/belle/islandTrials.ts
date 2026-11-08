@@ -357,7 +357,7 @@ export class IslandTrials {
       const previousGate = this.run.next;
       if (!allowed && this.lastRunning && this.run.status !== 'finished') this.audio.silence();
       if (this.skipNext || !allowed || !this.lastRunning) { this.run.suspend(actor); this.skipNext = false; }
-      else this.run.step(this.run.status === 'countdown' ? Math.min(seconds, .20) : seconds, actor, true);
+      else this.run.step(seconds, actor, true);
       this.lastRunning = allowed;
       if (allowed && this.run.status === 'running') this.ghostRecorder?.record(this.run.elapsed, actor);
       if (this.run.next !== this.previousNext || this.run.status !== this.previousStatus) {
