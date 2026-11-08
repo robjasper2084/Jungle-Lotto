@@ -41,3 +41,5 @@ body.coop-playing > header,body.coop-playing #navigation,body.coop-playing #ride
  .coop-touch-stick{width:66px;height:66px;left:12px;bottom:76px}
  .coop-touch-stick i{left:17px;top:17px}
 }
+
+#welcome.startup #welcome-coop{min-width:0;min-height:44px;padding:8px 0;margin:0;border:0;border-bottom:1px solid #ffffff44;border-radius:0;background:transparent;color:#e2e6dc;font-size:11px;font-weight:400;grid-column:1/-1;justify-self:start}
