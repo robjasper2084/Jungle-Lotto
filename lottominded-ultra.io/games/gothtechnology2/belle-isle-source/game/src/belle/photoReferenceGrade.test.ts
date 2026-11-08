@@ -51,6 +51,6 @@ test('photo look is connected to actual sky, water and nature source without new
 test('reference sky keeps all existing night effects and the same noise sampler count',()=>{
  const sky=read('islandSky.ts');
  assert(sky.includes('const fragment=\x60'));
- for(const token of ['meteorOpacity','moonDirection','starUV','cloudNoise','toneMapping'])assert(sky.includes(token));
+ for(const token of ['meteorOpacity','moonDirection','starUV','cloudNoise','tonemapping_fragment'])assert(sky.includes(token));
  assert(!sky.includes('new T.WebGLRenderTarget('),'reference grade adds no extra render pass');
 });
