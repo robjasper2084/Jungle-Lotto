@@ -28,9 +28,9 @@ export const SKY_KEYS=[
  {hour:8,top:'#397fac',horizon:'#c3d5df',warm:'#e4e6df',cloud:'#e1e4e4',sun:'#fff0d8'},
  {hour:12,top:'#337eb1',horizon:'#bdd3e1',warm:'#ecedf0',cloud:'#eef1f3',sun:'#fff6e8'},
  {hour:15,top:'#4b89b1',horizon:'#cad4da',warm:'#f2e1c7',cloud:'#e4e2de',sun:'#ffe7c1'},
- {hour:16.7,top:'#416995',horizon:'#b4bfc8',warm:'#ffb95e',cloud:'#9daebf',sun:'#ffd69a'},
- {hour:17.6,top:'#364b69',horizon:'#9a8a88',warm:'#f58938',cloud:'#716e7c',sun:'#ffb164'},
- {hour:18.15,top:'#253650',horizon:'#665c6c',warm:'#d74d27',cloud:'#454657',sun:'#ff9051'},
+ {hour:16.7,top:'#6d9db8',horizon:'#d8e1e2',warm:'#f8cd9f',cloud:'#c1c7c6',sun:'#ffe2b5'},
+ {hour:17.6,top:'#63859f',horizon:'#ddcec0',warm:'#f3ac6a',cloud:'#aaa9a7',sun:'#ffe4b4'},
+ {hour:18.15,top:'#40536d',horizon:'#a58c85',warm:'#df7947',cloud:'#777c86',sun:'#ffc18a'},
  {hour:18.7,top:'#172840',horizon:'#384761',warm:'#75474a',cloud:'#343a50',sun:'#e7ad90'},
  {hour:19.6,top:'#0a1830',horizon:'#233449',warm:'#344354',cloud:'#293449',sun:'#c7daee'},
  {hour:24,top:'#071124',horizon:'#192636',warm:'#263440',cloud:'#253040',sun:'#c7daee'}
