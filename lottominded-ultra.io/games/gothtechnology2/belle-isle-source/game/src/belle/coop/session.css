@@ -1,0 +1,30 @@
+#coop-setup{max-width:min(1000px,96vw);max-height:94dvh;border:0;padding:0;background:transparent;color:#eaf3ec;overflow:auto}
+#coop-setup::backdrop{background:#061112c9}
+#coop-overlay{position:fixed;inset:0;z-index:24;pointer-events:none;color:#eff8ef;font:14px/1.4 system-ui,sans-serif}
+#coop-overlay[hidden]{display:none}
+body.coop-playing > header,body.coop-playing #navigation,body.coop-playing #ridehud,body.coop-playing #touch-zone,body.coop-playing #hover-hud,body.coop-playing #camera-capture,body.coop-playing #activity-hud,body.coop-playing #ride-menu,body.coop-playing #hint{display:none!important}
+.coop-session-toolbar{position:absolute;z-index:5;top:max(8px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);display:flex;gap:7px;align-items:center;padding:6px;background:#0b2222ed;border:1px solid #53766b;border-radius:12px;pointer-events:auto;max-width:calc(100vw - 16px)}
+.coop-session-toolbar button,.coop-player-actions button,.coop-touch-hop,.coop-touch-brake{border:1px solid #6d8c7f;border-radius:7px;min-height:44px;min-width:44px;background:#153d38ed;color:#eff8ef;padding:8px 12px;font:600 12px/1.25 system-ui;cursor:pointer}
+#coop-overlay :focus-visible{outline:3px solid #f7d19a;outline-offset:2px}
+.coop-session-title{font-size:10px;letter-spacing:.12em;padding:0 5px;white-space:nowrap}
+#coop-announcement{width:max-content;box-sizing:border-box;position:absolute;z-index:4;top:76px;left:50%;transform:translateX(-50%);max-width:min(600px,85vw);padding:5px 12px;border-radius:7px;text-align:center;background:#0a2520cc;font-size:12px}
+#coop-overlay[data-paused=true] #coop-announcement{top:45%;padding:18px;font-size:16px;background:#09221cf2}
+.coop-player-pane{position:absolute;overflow:hidden;box-sizing:border-box;border-right:1px solid #93cfaa88;pointer-events:none}
+.coop-player-pane[data-seat="1"]{border-left:1px solid #e6b47188}
+.coop-player-info{position:absolute;top:108px;left:12px;right:12px;width:max-content;max-width:calc(100% - 24px);background:#102926db;padding:8px 12px;border-radius:8px;pointer-events:none}
+.coop-player-info strong{display:block;font-size:12px;color:#9de6bb}
+.coop-player-pane[data-seat="1"] .coop-player-info strong{color:#f4ca86}
+.coop-player-status{display:block;font-size:11px;margin-top:3px}
+.coop-look{position:absolute;inset:0;pointer-events:auto;touch-action:none}
+.coop-player-actions{position:absolute;bottom:max(12px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);display:flex;gap:6px;pointer-events:auto;max-width:calc(100% - 16px);flex-wrap:wrap;justify-content:center}
+.coop-player-actions button{padding:8px 10px;white-space:nowrap}
+.coop-touch-stick{position:absolute;left:18px;bottom:80px;width:86px;height:86px;border:1px solid #b8e5cd8a;border-radius:50%;background:#153d384b;pointer-events:auto;touch-action:none;display:none}
+.coop-touch-stick i{position:absolute;left:27px;top:27px;width:30px;height:30px;border-radius:50%;background:#c7e7d5ac;pointer-events:none}
+.coop-touch-hop,.coop-touch-brake{position:absolute;right:18px;bottom:80px;pointer-events:auto;touch-action:none;display:none;width:66px}
+.coop-touch-brake{bottom:132px}
+@media(pointer:coarse){.coop-touch-stick,.coop-touch-hop,.coop-touch-brake{display:block}}
+@media(max-width:700px){.coop-session-title{display:none}.coop-session-toolbar{gap:4px;padding:4px}.coop-session-toolbar button{padding:7px 9px;font-size:11px;min-height:44px}.coop-player-info{padding:6px 8px;top:82px;left:8px;max-width:calc(100% - 16px)}#coop-announcement{top:67px;font-size:10px;padding:3px 7px;max-width:92vw}.coop-player-actions{gap:4px;bottom:6px}.coop-player-actions button{font-size:10px;padding:6px 8px}.coop-player-status{font-size:10px}}
+#coop-overlay[data-orientation=portrait] .coop-player-pane{border-right:0;border-bottom:1px solid #bdecc399}
+#coop-overlay[data-orientation=portrait] .coop-player-pane[data-seat="1"] .coop-player-info{top:8px}
+@media(max-height:540px) and (min-width:600px){.coop-player-info{top:74px;padding:4px 7px}.coop-player-info strong{font-size:11px}#coop-announcement{top:66px;font-size:10px}.coop-player-actions button{padding:6px;font-size:10px}}
+@media(prefers-reduced-motion:reduce){#coop-overlay *,#coop-setup *{animation:none!important;transition:none!important}}

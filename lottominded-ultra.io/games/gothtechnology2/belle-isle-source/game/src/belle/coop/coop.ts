@@ -151,7 +151,7 @@ export function findPairSpawns(anchor: Spawn, ground: Ground, radii: readonly [n
   for (let seat=0;seat<2;seat++) {
     const radius=radii[seat]; let picked: Spawn|undefined;
     for(let ring=0;ring<8&&!picked;ring++) for(let direction=0;direction<16&&!picked;direction++) {
-      const angle=anchor.heading+direction*Math.PI/8, distance=ring===0?0:2+ring*2;
+      const angle=anchor.heading+Math.PI/2+direction*Math.PI/8, distance=ring===0?0:2+ring*2;
       const x=anchor.x+Math.sin(angle)*distance,z=anchor.z+Math.cos(angle)*distance;
       if(found.some((p,i)=>Math.hypot(x-p.x,z-p.z)<radius+radii[i]+.8))continue;
       const center=ground(x,z); if(!center.land||center.blocked||!Number.isFinite(center.height))continue;
@@ -177,12 +177,12 @@ export type PreparedActor = { /** Unique per-player controller/view identity. */
  * Both actors must validate. Timeout/cancel/failure disposes all completed and late actors.
  * Never adds an animation loop, plays sound, or exposes half of a successful spawn.
  */
-export async function preparePair(manifests: readonly [PlayerManifest,PlayerManifest],
-  load:(manifest:PlayerManifest,signal:AbortSignal)=>Promise<PreparedActor>, signal:AbortSignal,
-  timeoutMs=20000): Promise<readonly [PreparedActor,PreparedActor]> {
+export async function preparePair<A extends PreparedActor>(manifests: readonly [PlayerManifest,PlayerManifest],
+  load:(manifest:PlayerManifest,signal:AbortSignal)=>Promise<A>, signal:AbortSignal,
+  timeoutMs=20000): Promise<readonly [A,A]> {
   if(!Number.isFinite(timeoutMs)||timeoutMs<1||timeoutMs>60000)throw new Error('Invalid prepare timeout.');
   if(manifests.length!==2||manifests[0].seat!==0||manifests[1].seat!==1)throw new Error('Invalid player manifest pair.');
-  const ctl=new AbortController(), loaded:PreparedActor[]=[], disposed=new Set<PreparedActor>();
+  const ctl=new AbortController(), loaded:A[]=[], disposed=new Set<PreparedActor>();
   const dispose=(actor:PreparedActor)=>{if(!disposed.has(actor)){disposed.add(actor);try{actor.dispose();}catch{/* Continue cleaning other actors. */}}};
   const cancel=()=>ctl.abort(signal.reason??new Error('Co-op preparation cancelled.'));
   signal.addEventListener('abort',cancel,{once:true}); if(signal.aborted)cancel();
@@ -202,7 +202,7 @@ export async function preparePair(manifests: readonly [PlayerManifest,PlayerMani
       return actor;
     })),aborted]);
     if(pair[0]===pair[1]||pair[0].identity===pair[1].identity)throw new Error('Players cannot share a mutable actor or skeleton.');
-    return pair as [PreparedActor,PreparedActor];
+    return [pair[0],pair[1]];
   } catch(error) { ctl.abort(error); for(const actor of loaded)dispose(actor); throw error;
   } finally { clearTimeout(timer);signal.removeEventListener('abort',cancel);ctl.signal.removeEventListener('abort',abort); }
 }

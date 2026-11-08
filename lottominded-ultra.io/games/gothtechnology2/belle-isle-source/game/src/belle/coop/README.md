@@ -1,54 +1,53 @@
-# Belle Isle: two-player co-op foundation
+# Belle Isle: local two-player exploration
 
-Status: **development foundation, not playable co-op and not deployed**. No production entry point, physics loop, network room, rendering configuration, payment/account service or approved release task is changed by these files.
+Status: **integrated candidate; actual island WebGL CI and merge review pending**. The existing solo entry, races, sky/music preferences and saved records remain. This feature lives on `feature/coop-exploration-mode` in PR139, separate from the already merged PR138 photographic release.
 
-The user explicitly requested `feature/coop-exploration-mode`; it is a separate follow-up branching from approved PR138 source `a7b8a5f7eeefd093e8a81524736530e7c0f317f9`. Do not merge this work into the immutable release candidate or infer publication permission from the approval of PR138. The feature branch is the task-specific exception to the repository's usual upgrade-redesign development destination.
+## What this candidate implements
 
-## Verified source locations
+- The live island title and ride menu expose **Explore together · 2 players** after startup is ready. Two independent player panes select five existing base Swoop heroes and classic/city/tour/trail/speed EUC profiles. The selected handling is applied through `eucHandling`, not just a different label. All profiles reuse the current EUC mesh.
+- Selected GLBs are fetched lazily from their immutable approved commit and checked against their Git blob hashes, embedded-resource rules and required skeleton bones. Duplicate hero selections share immutable asset data, not mutable skeletons, controller state or wheel-light material state.
+- Preparation is all-or-nothing with bounded deadlines and cancellation cleanup, existing shader warmup, real foot-contact validation and dry separated spawn footprints. Both actors are prepared before the session becomes visible.
+- Two real RideCore controllers run on one 120 Hz pair schedule. Each has its own input binding and live collision queries for the other player. Side-by-side spawn candidates, swept peer contact, recovery and on-foot transitions are independent.
+- Two cameras use the existing renderer through viewport/scissor passes. World visibility is updated immediately before each viewport, using that player's position. No second island, WebGL context or animation loop is created. Each viewport restores renderer state on exit, and first person hides only the owning rider for its pass.
+- Keyboard, assigned gamepad and per-view touch controls support independent movement. P/Escape pauses both; focus loss/controller changes pause and require neutral rearming. Each view has Camera, Recover, Ride/walk and Join partner. Returning to solo disposes co-op actors and restores the original solo actor and controls.
+- The existing music stream remains shared; co-op does not create duplicate audio engines. The old single-rider wheel effect channel is suppressed in co-op rather than played twice at incorrect locations.
 
-All paths below are relative to `lottominded-ultra.io/games/gothtechnology2/`:
+## Source mapping
 
-- Swoop base rider catalog: `swoop-source/src/detroit/riderChoices.ts`.
-- Existing rigged models and embedded clip metadata: `swoop-source/public/exports/rigged-heroes/` and its `manifest.json`.
-- EUC / electric-bike profile definitions: `swoop-source/src/detroit/electricVehicles.ts`.
-- Belle controllers and existing local races: `belle-isle-source/game/src/belle/racing.ts`, `raceInput.ts`, `hoverController.ts`, and `hover.ts`.
-- Belle's locally bundled RideCore and view adapter: `belle-isle-source/game/runtime/ride-core/src/` and `runtime/elmwood-source/src/detroit/riding/threeRiderView.ts`.
-- Existing network messages: `belle-isle-source/game/src/belle/onlineProtocol.ts`. Current ExplorerFrame contains pose/mode/seat, not the new selected asset identities. Do not pretend this foundation updates that transport.
+Relative to `lottominded-ultra.io/games/gothtechnology2/`:
 
-## Implemented
+- `swoop-source/src/detroit/riderChoices.ts`
+- `swoop-source/src/detroit/electricVehicles.ts`
+- `swoop-source/public/exports/rigged-heroes/manifest.json`
+- `belle-isle-source/game/runtime/ride-core/src/`
+- `belle-isle-source/game/runtime/elmwood-source/src/detroit/riding/threeRiderView.ts`
 
-`coop.ts` provides allowlisted per-player manifests, separate identities, five inspected base heroes, classic EUC plus city/tour/trail/speed profile IDs, versioned loadout-only persistence, ready-state invalidation, controller ownership, reconnect/pause neutral rearming, independent action edges, a bounded safe-spawn footprint search, landscape/portrait split rectangles and all-or-nothing asynchronous actor preparation with cancellation/timeout/late-resource cleanup.
+The five base model files at source commit `a7b8a5f7eeefd093e8a81524736530e7c0f317f9` were inspected against their exact blob identities and embedded animations in GitHub Actions. Their bytes are reused rather than adding duplicate models to the Pages bundle. This avoids increasing the existing package by approximately 40 MB. Client download still requires access to the approved raw GitHub URLs; CI serves the identical checked-out bytes for repeatable rig tests, not replacement fixtures.
 
-`lobby.ts` provides a real DOM component with independent player selectors, both-ready gating, conflict/unavailable-controller feedback, keyboard controls, responsive panes and reduced-motion handling. A host must supply `onBegin` to load/validate actors and transition its own world. It is **not imported by main.ts**. The optional `preview` mode explicitly identifies itself as a setup review, not a launched game.
+## Modules
 
-`assetBridge.mjs` inspects existing local Swoop GLBs, verifies their pinned Git blob identity, reads skin and clip metadata and checks the upstream manifest. It does not download/copy assets, alter rigs or claim valid Belle mount fitting. Actual model binaries were not available in this turn's isolated local test workspace, so full real-file inspection has NOT been run. Six bridge parser tests use synthetic GLB metadata.
+- `coop.ts`: allowlisted manifests, loadout persistence, readiness, keyboard/controller ownership, safe footprint search and cancellation-safe preparation.
+- `simulation.ts`: paired real RideCore schedule, chosen motor profiles, conservative peer contact and independent recovery.
+- `actors.ts`: hash-checked lazy GLB loading, cloned skinned rider views, actual fit validation and cleanup.
+- `lobby.ts`: accessible responsive player selections and readiness.
+- `session.ts` / `session.css`: real island launch/leave, per-player views/HUD/input and read-only diagnostics.
+- `assetBridge.mjs`: source binary inspection; never automatically re-rigs or modifies an asset.
+- `scripts/coop-browser-smoke.mjs`: actual built-island desktop/phone launch, two riders, separate input, pause, camera, recovery, native touch and return-to-solo checks. It never seeds scores or writes player poses.
 
-## Required integration before gameplay acceptance
+`preview.html` remains explicitly an offline lobby review; it is not a gameplay acceptance surface.
 
-1. Build one opt-in exploration coordinator owning exactly two actors. Reuse one island scene, one animation loop and one fixed-step simulation schedule. Instantiate distinct RideCore/controller state and correctly cloned skinned views. Apply the chosen Swoop physics profile via the actual `eucHandling` mapping; do not merely relabel the default wheel.
-2. Validate both characters' foot contact, bind transforms and animations on the actual island before committing either prepared actor. Copy/share immutable model data, never a mutable skeleton or mixer. Do not unconditionally re-rig already usable Swoop models.
-3. Connect `findPairSpawns` to actual `ParkTerrain.land`, `height` and full collision probes. Recheck occupancy when committing after an asynchronous load. It finds potential separation; it does not implement player-player collision or ongoing vehicle contact.
-4. Use the existing renderer with `setViewport`/`setScissor`, per-player cameras and restore renderer state afterward. Select vegetation/traffic visibility against BOTH cameras, not their midpoint alone. Preserve shared audio/listener ownership, device budgets, clear input on every modal/focus/disconnect transition, and reject unsupported split-screen XR.
-5. Refactor HoverRide's singleton IDs, DOM, sound and input before supporting two hoverbikes. Bicycle/e-bike models/adapters and wardrobe variants are deferred, not silently mapped onto the EUC. Cadillac is not an available asset.
-6. Online co-op requires a distinct room handshake containing validated roster IDs, revision, readiness and authenticated seat ownership, authoritative simulation/reconciliation where required, rejoin/leave policy, and tests across two actual clients. A second camera or `transportAvailable=true` is not a working networking implementation.
-7. Keep solo and race records, existing friends/voice behavior and persistent saves unchanged. Require actual in-game desktop/mobile screenshots, mixed-vehicle/character fit, controller disconnect tests, network ownership tests and measured two-player frame time before publishing.
+## Validation completed before this candidate was pushed
 
-## Commands
+- 52 focused Node tests passed: 35 foundation cases, six GLB parser cases, eleven paired real-controller simulation cases. These tests are now registered in the normal `npm test` runner, without removing earlier tests.
+- Strict full-game TypeScript checking passed locally using the repository's installed TypeScript 5.9.3.
+- All five actual GLBs passed CPU Three.js skeleton/foot-contact tests. Each has 54 bones, independent cloned skeletons and validated standing/turning/braking contact. This is not GPU rendering or hardware-FPS proof.
+- Five actual session DOM/CPU fixtures (desktop, phone, small phone, landscape and reduced motion) passed selection, per-player movement, pause, camera independence, renderer-state adapter calls, return-to-solo cleanup and 44px control/layout checks. The fixture used flat terrain and a fake renderer, so it is not evidence of two-player island rendering.
+- The earlier foundation CI passed real file inspection, original full game checks and build. It does NOT approve this new integrated candidate.
 
-From `belle-isle-source/game` (existing Node 22+ or Node 24):
+The new **Belle Isle co-op review** workflow runs desktop and phone real-game WebGL checks. Every current-head required workflow and its actual screenshots/reports must pass before merging. A pending or failed test is not a pass. Software Chromium does not certify physical-phone or hardware 30/60 FPS performance.
 
-```sh
-node --experimental-strip-types --test src/belle/coop/coop.test.mjs src/belle/coop/assetBridge.test.mjs
-node --experimental-strip-types src/belle/coop/assetBridge.mjs /absolute/path/to/Jungle-Lotto
-npx tsc --noEmit --strict --target ES2023 --module ESNext --moduleResolution bundler --lib ES2023,DOM --allowImportingTsExtensions src/belle/coop/coop.ts src/belle/coop/lobby.ts
-```
+## Explicit scope boundaries
 
-These are targeted commands; the existing repository's normal test runner was not edited. Wire the tests into that runner when the gameplay coordinator is integrated.
+This release is **local, same-device, two-player EUC exploration**. It does not implement a new online two-client co-op transport or authenticated loadout synchronization, two independent hoverbikes, bicycles/e-bikes, wardrobe variants, Cadillac, shared quests, split-screen XR, spatial two-rider audio, or competitive records. Existing online features remain separate. No Supabase/Stripe/account/reward contracts are changed. Do not describe missing online or mixed-vehicle functionality as completed.
 
-## Evidence from this implementation
-
-- 41/41 focused Node tests passed, including failure rollback, late disposal, input ownership and malformed asset data.
-- Strict TypeScript compilation of the two modules passed with TypeScript 5.8.3.
-- Existing local Chromium/Playwright exercised five offline DOM fixtures: desktop, phone, small phone, landscape and reduced motion. Independent selection, keyboard confirmation, gating, input conflicts, 44px targets and overflow checks passed.
-- Connected Browser only supports reading tabs in this conversation. Localhost navigation was administratively blocked; no network policy was changed. UI tests instead used in-memory DOM/script content and mock storage without any network navigation. Storage adapter behavior was unit-tested, but actual browser-localStorage reload persistence was not certified.
-- These screenshots are lobby fixtures, not rendered gameplay. No hardware FPS, real-game two-player session, physical controller, online transport, real-file GLB inspection or rig-fit certification is claimed.
+Production publication is a separate step from merging into the existing PR target `upgrade-redesign`. Do not claim public deployment from a staging merge or from historical PR138 checks.
