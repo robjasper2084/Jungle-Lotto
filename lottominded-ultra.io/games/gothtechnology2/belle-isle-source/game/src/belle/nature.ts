@@ -3,6 +3,7 @@ import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {natureBudget,type Plant,type NaturePlan} from './naturePlan.ts';
 import {canopyTint} from './sunsetCanopy.ts';
+import {prepareCanopyCoverage} from './canopyCoverage.ts';
 import {treeLodBlend} from './photoReferenceGrade.ts';
 type Entry={id:string;meshes?:string[];cardSize?:number;cardCenter?:number[];card?:string;triangles:number};
 type Manifest={trees:Entry[];ground:Entry[]};
@@ -21,6 +22,7 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void){
   for(const material of materials){const m=material as T.MeshStandardMaterial;
    m.side=T.DoubleSide;m.roughness=Math.max(.78,m.roughness);m.metalness=0;
    if(m.transparent||m.alphaTest>0){m.transparent=false;m.alphaTest=.45;m.depthWrite=true;}
+   if(shadow&&/leaves/i.test(source.name))prepareCanopyCoverage(m);
    if(m.map)m.map.anisotropy=4;
   }
   const mesh=new T.InstancedMesh(geometry,source.material,count);mesh.name=name;mesh.count=0;
@@ -41,6 +43,7 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void){
   // while the match starts. Only one pair of cards per distant tree.
   const image=await textures.loadAsync(base+entry.card);image.colorSpace=T.SRGBColorSpace;
   const far=new T.InstancedMesh(cards,new T.MeshBasicMaterial({map:image,alphaTest:.35,side:T.DoubleSide,toneMapped:true}),plants.length);
+  prepareCanopyCoverage(far.material as T.Material,true);
   far.name='Distant '+entry.id;plants.forEach((p,i)=>{far.setMatrixAt(i,matrix(p));far.setColorAt(i,plantTint(p));});far.computeBoundingSphere();scene.add(far);
   pools.push({id:entry.id,meshes,far,plants});
  }
