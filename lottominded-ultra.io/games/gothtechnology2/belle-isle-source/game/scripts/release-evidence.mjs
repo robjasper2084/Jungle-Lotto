@@ -1,5 +1,5 @@
 /** Release evidence on the real built game. No seeded race state or fake renderer.
- * The phone case uses trusted CDP touch-from-mouse emulation and the unchanged
+ * The phone case uses trusted CDP touchscreen input and the unchanged
  * countdown classifier. The graphics case overrides ONLY the review camera at
  * render time via Three's devtools observation hook; full game scene is retained.
  */
@@ -10,7 +10,7 @@ import {createServer} from 'node:http';
 import {createRequire} from 'node:module';
 import {extname,resolve,sep} from 'node:path';
 import {classifyCountdownInput} from './polish-countdown-proof.mjs';
-import {revealPracticeCourse} from './release-navigation.mjs';
+import {revealPracticeCourse,queueNativeCountdownTouch,receivedNativeTouch} from './release-navigation.mjs';
 const game=resolve(import.meta.dirname,'..'),root=resolve(game,'dist');
 const mode=process.env.BELLE_RELEASE_EVIDENCE;
 assert(['phone-timing','golden-reference'].includes(mode),'Select a named review case');
@@ -24,7 +24,7 @@ let browser,page,client;
 const require=createRequire(resolve(game,'../../package.json')),{chromium,expect:baseExpect}=require('@playwright/test'),expect=baseExpect.configure({timeout:90000});
 const shot=async name=>{log('Screenshot '+name);await page.screenshot({path:resolve(out,name+'.png'),timeout:150000});report.captures.push(name+'.png');};
 const enter={key:'Enter',code:'Enter',windowsVirtualKeyCode:13,nativeVirtualKeyCode:13,modifiers:0,location:0};
-const releaseTouch=()=>client.send('Input.emulateTouchFromMouseEvent',{type:'mouseReleased',x:120,y:240,button:'left',clickCount:1});
+const releaseTouch=()=>client.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
 const menu=async()=>{if(!await page.locator('#ride-menu').isVisible())await page.locator('#tools-toggle').click();await expect(page.locator('#ride-menu')).toBeVisible();};
 const nativeActivate=async selector=>{await page.locator(selector).focus();await expect(page.locator(selector)).toBeFocused();await Promise.all([client.send('Input.dispatchKeyEvent',{type:'keyDown',...enter,text:'\r',unmodifiedText:'\r',autoRepeat:false}),client.send('Input.dispatchKeyEvent',{type:'keyUp',...enter})]);};
 async function boot(){
@@ -82,18 +82,18 @@ async function phoneTiming(){
   await expect(page.locator(selector)).toBeVisible();await expect(page.locator(selector)).toBeEnabled();
   await page.locator(selector).scrollIntoViewIfNeeded();await page.locator(selector).focus();await expect(page.locator(selector)).toBeFocused();
   const before=await page.evaluate(()=>({events:window.__releaseInput.length,countdowns:window.__releaseCountdown.length}));
-  log('Native '+label+' then trusted touch-from-mouse hold');
+  log('Native '+label+' then acknowledged touchscreen hold');
   // Same-session queue, no response round-trip before the hold. This generates
   // trusted pointerType=touch through Chromium, not dispatchEvent or game setters.
-  await bounded(Promise.all([
-   client.send('Input.dispatchKeyEvent',{type:'keyDown',...enter,text:'\r',unmodifiedText:'\r',autoRepeat:false}),
-   client.send('Input.dispatchKeyEvent',{type:'keyUp',...enter}),
-   client.send('Input.emulateTouchFromMouseEvent',{type:'mousePressed',x:point.x,y:point.y,button:'left',clickCount:1})
-  ]),90000,label+' native queue');
+  await bounded(queueNativeCountdownTouch(client,enter,point),90000,label+' native queue');
+  // CDP command completion is not page receipt. Observe the actual trusted
+  // pointerdown before collecting evidence; the unchanged classifier still
+  // rejects late, early, wrong-target, paused or untrusted events.
+  await page.waitForFunction(receivedNativeTouch,before.events,{timeout:90000,polling:50});
   await expect.poll(()=>page.evaluate(n=>window.__releaseCountdown.length>n,before.countdowns)).toBe(true);
   const evidence=await page.evaluate(before=>({state:window.__releaseCountdown[before.countdowns],events:window.__releaseInput.slice(before.events)}),before);
   const classification=classifyCountdownInput({mobile:true,...evidence,expectedTarget:'touch-zone'});
-  report.checks[label]={...evidence,classification,transport:'CDP Input.emulateTouchFromMouseEvent; trusted browser pointerType=touch; no DOM event injection'};
+  report.checks[label]={...evidence,classification,transport:'CDP Input.dispatchTouchEvent; acknowledged trusted browser pointerType=touch; no DOM event injection'};
   assert.equal(classification.status,'passed',label+': real trusted touch must arrive DURING countdown, not after GO');
   assert.equal(classification.event.elapsed,0);assert.equal(classification.event.speed,0);assert.equal(classification.event.paused,'false');assert.deepEqual(classification.event.openDialogs,[]);
   const samples=[];await expect.poll(async()=>{const s=await read();samples.push(s);assert(['countdown','running'].includes(s.status));if(s.status==='countdown'){assert.equal(s.speed,0);assert.equal(s.elapsed,0);}return s.status==='running'&&s.speed>0;},{timeout:90000,intervals:[100,250,500,1000]}).toBe(true);
@@ -108,9 +108,9 @@ async function phoneTiming(){
   log('Restart while the native touch remains held');
   await page.keyboard.press('r');await expect(page.locator('#trial-hud')).toHaveAttribute('data-status','running');
   const states=[];await expect.poll(async()=>{const s=await read();assert.equal(s.speed,0,'Restart must clear old held touch');if(s.elapsed>0&&states.at(-1)?.elapsed!==s.elapsed)states.push(s);return states.length;},{timeout:90000,intervals:[500,1000,1500]}).toBeGreaterThanOrEqual(2);report.checks.staleHoldCleared=states;
-  await client.send('Input.emulateTouchFromMouseEvent',{type:'mouseReleased',x:point.x,y:point.y,button:'left',clickCount:1});
+  await releaseTouch();
   await hold('#trial-restart','restartedCountdownHold');
- }finally{await client.send('Input.emulateTouchFromMouseEvent',{type:'mouseReleased',x:point.x,y:point.y,button:'left',clickCount:1}).catch(e=>report.errors.push('touch cleanup '+e));}
+ }finally{await releaseTouch().catch(e=>report.errors.push('touch cleanup '+e));}
  await page.setViewportSize({width:390,height:844});await shot('phone-real-game');
  report.verificationComplete=true;report.checks.countdownVerified=2;
 }
@@ -119,8 +119,8 @@ async function goldenReference(){
  const card=page.locator('#landmarks .landmark').filter({has:page.getByRole('heading',{name:'Sunset Point',exact:true})});await expect(card).toHaveCount(1);await card.getByRole('button',{name:'Travel to path',exact:true}).click();await expect(page.locator('#guide')).not.toBeVisible();
  const map=JSON.parse(await readFile(resolve(root,'belle/map.json'),'utf8')),point=map.landmarks.find(p=>p.name==='Sunset Point');assert(point);
  // Estimated framing from the point and skyline anchors; not a survey-calibrated pose.
- const camera={position:[point.x+301.01,95,point.z-118.38],target:[point.x+118.01,2,point.z-92.38],verticalFov:66};
- report.reference={description:'User-provided square aerial Sunset Point photo: pale warm horizon, low sun, golden reflection, long tree shadows and curving park paths.',camera,coordinateFrame:'Existing map metre coordinates, Y up',cameraAccuracy:'Estimated aerial viewpoint; photograph has no calibrated camera metadata.',hour:17.6,clouds:'clear',cycle:false,viewport:{width:1000,height:1000},hardwarePerformanceCertified:false};
+ const camera={position:[point.x+220,85,point.z-35],target:[point.x+45,2,point.z-20],verticalFov:66};
+ report.reference={description:'User-provided square aerial Sunset Point photo: pale warm horizon, low sun, golden reflection, long tree shadows and curving park paths.',camera,coordinateFrame:'Existing map metre coordinates, Y up',cameraAccuracy:'Estimated closer aerial viewpoint over the park; photograph has no calibrated camera metadata. Only the final review camera is overridden; normal guide-visit world selection is retained.',hour:17.6,clouds:'clear',cycle:false,viewport:{width:1000,height:1000},hardwarePerformanceCertified:false};
  await page.setViewportSize(report.reference.viewport);
  for(const quality of ['smooth','high']){
   log('Configure documented 17:36 low-sun reference, '+quality);

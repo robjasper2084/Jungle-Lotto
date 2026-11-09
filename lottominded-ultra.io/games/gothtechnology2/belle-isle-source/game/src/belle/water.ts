@@ -44,6 +44,12 @@ float micro=1.-smoothstep(35.,650.,viewDistance);
 vec2 wave=(r1+r2*.48)*${kind==='lagoon'?'.065':'.15'}*(.18+.82*micro);
 // Sheltered inland lakes retain fine ripples, not the river's rolling swell.
 wave+=(cos(dot(p,vec2(.48,.34))-riverTime*1.3)*vec2(.036,.0255)+cos(dot(p,vec2(-.31,.63))-riverTime*1.06)*vec2(-.014,.028)+cos(dot(p,vec2(.14,-.19))-riverTime*.66)*vec2(.011,-.015))*${kind==='lagoon'?'.22':'(.06+.34*(1.-smoothstep(35.,220.,viewDistance)))'};
+${kind==='lagoon'?'':`// Filter subpixel normal detail instead of letting distant ripples form moire.
+// World-space derivatives keep the same finish on both connected river meshes.
+float riverFootprint=max(length(dFdx(p)),length(dFdy(p)));
+float riverNormalVisibility=(.025+.975*(1.-smoothstep(45.,360.,viewDistance)))*(1.-smoothstep(.35,2.5,riverFootprint));
+wave*=riverNormalVisibility;
+`}
 vec2 delta=p-hoverWash.xy;float radius=length(delta);float wash=hoverWash.z*exp(-radius*.42);wave+=delta/max(.1,radius)*sin(radius*6.-riverTime*9.)*wash*.22;
 float wakeFoam=0.;
 for(int i=0;i<12;i++){vec4 r=riverRipples[i];float age=riverTime-r.z;float dist=length(p-r.xy);float ring=dist-age*1.8;float envelope=exp(-abs(ring)*2.2)*max(0.,1.-age/5.)*r.w;wave+=(p-r.xy)/max(.1,dist)*cos(ring*8.)*envelope*.12;wakeFoam+=envelope*.16;}
@@ -64,7 +70,7 @@ diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.5,.66,.65),clamp(washFoam*.4+rippleF
  float riverSunAlignment=max(0.,dot(normalize(cameraPosition-riverWorld),riverSunReflection));
  float riverSunWide=pow(riverSunAlignment,42.);
  float riverSunCore=pow(riverSunAlignment,170.);
- float riverSunSparkle=.68+.32*sin(riverWorld.x*.73+riverTime*.87)*sin(riverWorld.z*.95-riverTime*.43);
+ float riverSunSparkle=.78+.22*clamp((r1.x+r2.y)*riverNormalVisibility,-1.,1.);
  totalEmissiveRadiance+=vec3(1.,.79,.52)*min(1.,riverSunGlint*(riverSunWide*.16+riverSunCore*.85)*riverSunSparkle);
 `);
    if(kind==='lagoon')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`#include <emissivemap_fragment>
@@ -81,7 +87,7 @@ diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.5,.66,.65),clamp(washFoam*.4+rippleF
  }
  totalEmissiveRadiance+=lightReflection*fountainNight*localPool;
  `);
-  };m.customProgramCacheKey=()=>kind+'-reactive-water-connected-ring-v8';return m;
+  };m.customProgramCacheKey=()=>kind+'-reactive-water-filtered-ring-v9';return m;
  }
  const ring=riverFarRing(),farGeometry=new T.BufferGeometry();farGeometry.setAttribute('position',new T.Float32BufferAttribute(ring.positions,3));farGeometry.setAttribute('uv',new T.Float32BufferAttribute(ring.uv,2));farGeometry.setIndex(ring.indices);farGeometry.computeVertexNormals();
  const far=new T.Mesh(farGeometry,material('far'));far.name='Detroit River distant water';scene.add(far);
