@@ -2,6 +2,7 @@ import * as T from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {natureBudget,type Plant,type NaturePlan} from './naturePlan.ts';
+import {canopyTint} from './sunsetCanopy.ts';
 import {treeLodBlend} from './photoReferenceGrade.ts';
 type Entry={id:string;meshes?:string[];cardSize?:number;cardCenter?:number[];card?:string;triangles:number};
 type Manifest={trees:Entry[];ground:Entry[]};
@@ -13,6 +14,7 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void){
  status('Loading varied trees');
  const treeSource=await loader.loadAsync(base+'trees.glb');treeSource.scene.updateMatrixWorld(true);
  const pools:Pool[]=[],dummy=new T.Object3D(),tint=new T.Color();
+ const plantTint=(p:Plant)=>tint.setRGB(...canopyTint(p.tint,p.canopyTone));
  function instance(source:T.Mesh,count:number,name:string,shadow:boolean){
   const geometry=source.geometry.clone().applyMatrix4(source.matrixWorld);
   const materials=Array.isArray(source.material)?source.material:[source.material];
@@ -39,7 +41,7 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void){
   // while the match starts. Only one pair of cards per distant tree.
   const image=await textures.loadAsync(base+entry.card);image.colorSpace=T.SRGBColorSpace;
   const far=new T.InstancedMesh(cards,new T.MeshBasicMaterial({map:image,alphaTest:.35,side:T.DoubleSide,toneMapped:true}),plants.length);
-  far.name='Distant '+entry.id;plants.forEach((p,i)=>{far.setMatrixAt(i,matrix(p));far.setColorAt(i,tint.setScalar(p.tint));});far.computeBoundingSphere();scene.add(far);
+  far.name='Distant '+entry.id;plants.forEach((p,i)=>{far.setMatrixAt(i,matrix(p));far.setColorAt(i,plantTint(p));});far.computeBoundingSphere();scene.add(far);
   pools.push({id:entry.id,meshes,far,plants});
  }
  // Ground cover is a separate, smaller stage. Source LOD2 models and shared
@@ -66,7 +68,7 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void){
   const selected=new Set([...nearTrees,...nearGround]);stats.visibleTrees=nearTrees.length;stats.visibleGround=nearGround.length;
   for(const pool of pools){
    const near=pool.plants.filter(p=>selected.has(p));
-   for(const mesh of pool.meshes){mesh.count=near.length;near.forEach((p,i)=>{const blend=pool.far?treeLodBlend(Math.hypot(p.x-x,p.z-z),budget.treeRadius):1;mesh.setMatrixAt(i,matrix(p,blend));mesh.setColorAt(i,tint.setScalar(p.tint));});mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;}
+   for(const mesh of pool.meshes){mesh.count=near.length;near.forEach((p,i)=>{const blend=pool.far?treeLodBlend(Math.hypot(p.x-x,p.z-z),budget.treeRadius):1;mesh.setMatrixAt(i,matrix(p,blend));mesh.setColorAt(i,plantTint(p));});mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;}
    if(pool.far){pool.plants.forEach((p,i)=>{const blend=selected.has(p)?treeLodBlend(Math.hypot(p.x-x,p.z-z),budget.treeRadius):0;pool.far!.setMatrixAt(i,matrix(p,1-blend));});pool.far.instanceMatrix.needsUpdate=true;}
   }
  }

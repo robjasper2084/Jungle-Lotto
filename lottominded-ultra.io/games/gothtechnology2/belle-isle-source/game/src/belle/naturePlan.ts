@@ -1,7 +1,8 @@
+import {makeSunsetCanopy} from './sunsetCanopy.ts';
 import {pathSamples} from './streetPlan.ts';
 import {clockLocal,floralClock} from './activitiesPlan.ts';
 import {inside,segment,ParkTerrain,type ParkMap,type Point} from './terrain.ts';
-export type Plant={id:string;x:number;y:number;z:number;scale:number;heightScale?:number;yaw:number;tint:number};
+export type Plant={id:string;x:number;y:number;z:number;scale:number;heightScale?:number;canopyTone?:number;yaw:number;tint:number};
 export type NaturePlan={version:1;trees:Plant[];ground:Plant[];placementEvidence:string};
 export const natureBudget={smooth:{trees:20,treeRadius:75,ground:160,groundRadius:35},automatic:{trees:36,treeRadius:105,ground:360,groundRadius:55},high:{trees:48,treeRadius:140,ground:560,groundRadius:75}};
 // Executed at build time. No polygon tests or thousands of route scans on a ride.
@@ -127,5 +128,7 @@ export function makeNaturePlan(map:ParkMap):NaturePlan{
   const angle=rand()*Math.PI*2,r=1.5+rand()*2.8,x=tree.x+Math.cos(angle)*r,z=tree.z+Math.sin(angle)*r;
   if(clear(x,z,1.5,true))ground.push(plant((i===0?'dandelion_':'grass_')+(1+i%3),x,z,1.2+rand()*.6));
  }
- return{version:1,trees,ground,placementEvidence:'Includes OSM Belle Isle Flatwoods multipolygon 17884436 and route-cleared Jefferson arrival planting. Hardwood-dominated canopy density follows mapped woodland with route clearances; individual species and tree locations are approximate, not a tree census.'};
+ // Independent appended planting cannot shift or replace existing island plants.
+ trees.push(...makeSunsetCanopy(map,trees,(x,z)=>clear(x,z,4.5)&&!shore.some(e=>segment(x,z,e.a,e.b).d<5),(x,z)=>terrain.height(x,z)));
+ return{version:1,trees,ground,placementEvidence:'Includes photo-guided Sunset Point hardwood groups (artistic positions, not surveyed trees), OSM Belle Isle Flatwoods multipolygon 17884436 and route-cleared Jefferson arrival planting. Hardwood-dominated canopy density follows mapped woodland with route clearances; individual species and tree locations are approximate, not a tree census.'};
 }

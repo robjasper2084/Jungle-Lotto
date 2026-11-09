@@ -17,7 +17,7 @@ export function createWater(scene:T.Scene,renderer:T.WebGLRenderer,map:ParkMap,t
  const normals=realisticWaterNormal()??new T.DataTexture(pixels,128,128);normals.wrapS=normals.wrapT=T.RepeatWrapping;normals.magFilter=T.LinearFilter;normals.minFilter=T.LinearMipmapLinearFilter;normals.generateMipmaps=true;normals.needsUpdate=true;
  const uniformHeader=FOUNTAIN_COLOR_UNIFORMS+'uniform float fountainNight;uniform vec2 fountainCentre;uniform vec3 riverSkyTint;uniform vec3 riverSunDirection;uniform float riverSunGlint;uniform float riverTime;uniform sampler2D riverNormals;uniform vec2 riverCentre;uniform vec4 hoverWash;uniform vec4 riverRipples[12];uniform vec4 shipWake[4];uniform vec4 shipShape[4];varying vec3 riverWorld;';
  function material(kind:'near'|'far'|'lagoon'){
-  const m=new T.MeshPhysicalMaterial({color:kind==='lagoon'?0x284b48:0x4e7889,roughness:kind==='lagoon'?.12:.20,metalness:kind==='lagoon'?.08:.035,envMapIntensity:1.15,clearcoat:.60,clearcoatRoughness:.15});
+  const m=new T.MeshPhysicalMaterial({color:kind==='lagoon'?0x284b48:0x50859f,roughness:kind==='lagoon'?.12:.28,metalness:kind==='lagoon'?.08:.035,envMapIntensity:kind==='lagoon'?1.15:.85,clearcoat:kind==='lagoon'?.60:0,clearcoatRoughness:.15});
   m.onBeforeCompile=shader=>{
    Object.assign(shader.uniforms,{...fountainLighting.uniforms,fountainNight,fountainCentre:{value:new T.Vector2(fountain.x,fountain.z)},riverSkyTint:reflectionTint,riverSunDirection,riverSunGlint,riverTime:time,riverNormals:{value:normals},riverCentre:centre,hoverWash:vehicle,riverRipples:ripples,shipWake,shipShape});
    shader.vertexShader='uniform float riverTime;uniform vec2 riverCentre;varying vec3 riverWorld;\n'+shader.vertexShader;
@@ -32,12 +32,17 @@ transformed.y+=(sin(dot(wp,vec2(.48,.34))-riverTime*1.3)*.075+sin(dot(wp,vec2(-.
    shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_maps>',`#include <normal_fragment_maps>
 vec2 p=riverWorld.xz;float viewDistance=length(cameraPosition-riverWorld);
 ${kind==='far'?'if(max(abs(p.x-riverCentre.x),abs(p.y-riverCentre.y))<195.)discard;':kind==='near'?'if(max(abs(p.x-riverCentre.x),abs(p.y-riverCentre.y))>=195.)discard;':''}
-vec2 r1=texture2D(riverNormals,p*.041+vec2(riverTime*.016,-riverTime*.011)).rg*2.-1.;
+${kind==='lagoon'?`vec2 r1=texture2D(riverNormals,p*.041+vec2(riverTime*.016,-riverTime*.011)).rg*2.-1.;
 vec2 r2=texture2D(riverNormals,vec2(p.y,-p.x)*.089+vec2(-riverTime*.012,riverTime*.008)).rg*2.-1.;
+`:`// Two existing normal samples, decorrelated in world space: no new samplers.
+vec2 warp=vec2(sin(dot(p,vec2(.011,.023))),sin(dot(p,vec2(-.019,.013))+1.7))*.55;
+vec2 r1=texture2D(riverNormals,mat2(.94,-.342,.342,.94)*p*.033+warp+vec2(riverTime*.016,-riverTime*.011)).rg*2.-1.;
+vec2 r2=texture2D(riverNormals,mat2(.55,.835,-.835,.55)*p*.071+warp.yx*.7+r1*.08+vec2(-riverTime*.012,riverTime*.008)).rg*2.-1.;
+`}
 float micro=1.-smoothstep(35.,650.,viewDistance);
-vec2 wave=(r1+r2*.48)*${kind==='lagoon'?'.065':'.26'}*(.18+.82*micro);
+vec2 wave=(r1+r2*.48)*${kind==='lagoon'?'.065':'.15'}*(.18+.82*micro);
 // Sheltered inland lakes retain fine ripples, not the river's rolling swell.
-wave+=(cos(dot(p,vec2(.48,.34))-riverTime*1.3)*vec2(.036,.0255)+cos(dot(p,vec2(-.31,.63))-riverTime*1.06)*vec2(-.014,.028)+cos(dot(p,vec2(.14,-.19))-riverTime*.66)*vec2(.011,-.015))*${kind==='lagoon'?'.22':'1.'};
+wave+=(cos(dot(p,vec2(.48,.34))-riverTime*1.3)*vec2(.036,.0255)+cos(dot(p,vec2(-.31,.63))-riverTime*1.06)*vec2(-.014,.028)+cos(dot(p,vec2(.14,-.19))-riverTime*.66)*vec2(.011,-.015))*${kind==='lagoon'?'.22':'.40'};
 vec2 delta=p-hoverWash.xy;float radius=length(delta);float wash=hoverWash.z*exp(-radius*.42);wave+=delta/max(.1,radius)*sin(radius*6.-riverTime*9.)*wash*.22;
 float wakeFoam=0.;
 for(int i=0;i<12;i++){vec4 r=riverRipples[i];float age=riverTime-r.z;float dist=length(p-r.xy);float ring=dist-age*1.8;float envelope=exp(-abs(ring)*2.2)*max(0.,1.-age/5.)*r.w;wave+=(p-r.xy)/max(.1,dist)*cos(ring*8.)*envelope*.12;wakeFoam+=envelope*.16;}
@@ -75,7 +80,7 @@ diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.5,.66,.65),clamp(washFoam*.4+rippleF
  }
  totalEmissiveRadiance+=lightReflection*fountainNight*localPool;
  `);
-  };m.customProgramCacheKey=()=>kind+'-reactive-water-vessel-fountain-cycle-v6';return m;
+  };m.customProgramCacheKey=()=>kind+'-reactive-water-vessel-fountain-cycle-v7';return m;
  }
  const far=new T.Mesh(new T.PlaneGeometry(18000,18000).rotateX(-Math.PI/2),material('far'));far.name='Detroit River distant water';scene.add(far);
  const near=new T.Mesh(new T.PlaneGeometry(400,400,128,128).rotateX(-Math.PI/2),material('near'));near.name='Detroit River rolling waves';near.frustumCulled=false;scene.add(near);

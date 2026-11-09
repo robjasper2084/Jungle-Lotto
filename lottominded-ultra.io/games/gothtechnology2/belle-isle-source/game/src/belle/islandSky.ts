@@ -1,7 +1,7 @@
 import * as T from 'three';
 import {yieldStartupTask} from './startupWork.ts';
 import {BroaderPresentation} from './broaderPresentation.ts';
-import {sunsetPhotoGrade} from './photoReferenceGrade.ts';
+import {sunsetPhotoGrade,photoShadowExtent} from './photoReferenceGrade.ts';
 import {livingSkyFragment,cloudLightFactor} from './skyAtmosphere.ts';
 import {SkyLife} from './skyLife.ts';
 import {skyFillIntensity} from './visualPolishPolicy.ts';
@@ -28,7 +28,7 @@ void main(){
  vec3 d=normalize(skyDirection);float h=max(0.,d.y),towardSun=pow(max(0.,dot(normalize(vec3(d.x,.001,d.z)),normalize(vec3(sunDirection.x,.001,sunDirection.z)))),3.);
  vec3 color=mix(horizon,zenith,pow(smoothstep(-.045,.85,d.y),.52));
  float dusk=1.-smoothstep(.04,.48,abs(sunDirection.y));
- color=mix(color,warm,towardSun*exp(-h*4.5)*(.18+.72*dusk));
+ color=mix(color,warm,towardSun*exp(-h*4.5)*(.10+.54*dusk));
  // Broad but bounded Mie scattering softens the solar horizon in the reference.
  // Reuses the existing sun vector; no new texture samples or fullscreen passes.
  float photoScatter=(1.-smoothstep(.11,.45,abs(sunDirection.y)))*smoothstep(-.055,.025,sunDirection.y);
@@ -133,19 +133,21 @@ vec2 face=abs(normal.x)>abs(normal.z)?cityWorld.zy:cityWorld.xy;vec2 cells=face/
   for(const [uniform,palette] of [['zenith','top'],['horizon','horizon'],['warm','warm'],['cloudColor','cloud'],['sunColor','sun']] as const){if(look)uniforms[uniform].value.copy(previewColors[STARTUP_SKIES.indexOf(look)][palette]);else uniforms[uniform].value.copy(paletteColors.get(blend.a)![palette]).lerp(paletteColors.get(blend.b)![palette],blend.t);}
   const photoLook=sunsetPhotoGrade(direction[1],shape.overcast,night);
   if(!look){
-   uniforms.horizon.value.lerp(referenceHorizon,photoLook.haze*.17);
-   uniforms.zenith.value.lerp(referenceZenith,photoLook.warmth*.08);
+   uniforms.horizon.value.lerp(referenceHorizon,photoLook.haze*.42);
+   uniforms.zenith.value.lerp(referenceZenith,photoLook.warmth*.28);
   }
   uniforms.startupRipples.value=look?.ripples??0;uniforms.startupSunset.value=look?.sunset??0;
   const lunar=moonDirection(visualHour),meteor=meteorFrame(skyClock,night,reduceMotion);uniforms.moonDirection.value.fromArray(lunar);uniforms.meteorHead.value.fromArray(meteor.head);uniforms.meteorTail.value.fromArray(meteor.tail);uniforms.meteorOpacity.value=meteor.opacity;
   uniforms.sunDirection.value.fromArray(direction);uniforms.daylight.value=day;uniforms.night.value=night;uniforms.coverage.value=shape.coverage;uniforms.density.value=shape.density;uniforms.stretch.value=shape.stretch;uniforms.cloudScale.value=shape.scale;uniforms.overcast.value=shape.overcast;uniforms.cloudTime.value=cloudClock;
   const dim=1-shape.overcast*.58;uniforms.zenith.value.lerp(tempColor.set('#6e7d8b'),shape.overcast*.3*day);uniforms.warm.value.multiplyScalar(1-shape.overcast*.23);
-  hemi.color.set('#c0cad7').lerp(tempColor.copy(uniforms.horizon.value).lerp(daylightAmbient,.55),day);hemi.groundColor.set('#727b83').lerp(tempColor.set('#665d4a'),day);hemi.intensity=skyFillIntensity(day,shape.overcast)*(1-photoLook.warmth*.055);
+  hemi.color.set('#c0cad7').lerp(tempColor.copy(uniforms.horizon.value).lerp(daylightAmbient,.55),day);hemi.groundColor.set('#727b83').lerp(tempColor.set('#665d4a'),day);hemi.intensity=skyFillIntensity(day,shape.overcast)*(1-photoLook.warmth*.20);
   key.color.copy(uniforms.sunColor.value);key.intensity=.10+2.3*day*dim*smooth(-.01,.20,uniforms.sunDirection.value.y);lightDirection.copy(uniforms.sunDirection.value);if(lightDirection.y<0){lightDirection.fromArray(lunar);key.color.set('#c9dcf3');key.intensity=.72*night*(1-shape.overcast*.45);}
-  key.intensity*=cloudLightFactor(cloudClock,shape.coverage,shape.overcast,day,reduceMotion)*(1+photoLook.warmth*.08);
+  key.intensity*=cloudLightFactor(cloudClock,shape.coverage,shape.overcast,day,reduceMotion)*(1+photoLook.warmth*.48);
   skyLife.update(skyClock,day,!titlePreview&&!reduceMotion,shadowQuality);
-  key.position.set(x+lightDirection.x*180,lightDirection.y*180,z+lightDirection.z*180);key.target.position.set(x,0,z);key.castShadow=shadowQuality&&key.intensity>.12;
-  scene.environmentIntensity=(.28+day*.31)*dim;fogColor.copy(uniforms.horizon.value).lerp(uniforms.warm.value,.10*(1-day));(scene.fog as T.FogExp2).color.copy(fogColor).lerp(referenceFog,photoLook.haze*.09);(scene.fog as T.FogExp2).density=islandHazeDensity(shape.overcast,night);
+  const extent=photoShadowExtent(eye.y),lightDistance=180+(extent-55)*1.5;
+  if(key.shadow.camera.right!==extent){Object.assign(key.shadow.camera,{left:-extent,right:extent,top:extent,bottom:-extent,far:450+(extent-55)*3});key.shadow.camera.updateProjectionMatrix();}
+  key.position.set(x+lightDirection.x*lightDistance,lightDirection.y*lightDistance,z+lightDirection.z*lightDistance);key.target.position.set(x,0,z);key.castShadow=shadowQuality&&key.intensity>.12;
+  scene.environmentIntensity=(.28+day*.31)*dim*(1-photoLook.warmth*.12);fogColor.copy(uniforms.horizon.value).lerp(uniforms.warm.value,.10*(1-day));(scene.fog as T.FogExp2).color.copy(fogColor).lerp(referenceFog,photoLook.haze*.09);(scene.fog as T.FogExp2).density=islandHazeDensity(shape.overcast,night);
   nightUniform.value=night;reflectionTint.copy(uniforms.horizon.value).lerp(uniforms.warm.value,.40*(1-smooth(.1,.65,uniforms.sunDirection.value.y))).multiplyScalar(1.8);reflectionTint.lerp(tempColor.setRGB(1,1,1),day*.25);reflectionTint.multiplyScalar(1/Math.max(.1,reflectionTint.r,reflectionTint.g,reflectionTint.b));
   broader.update(visualHour,shape.coverage,day,shape.overcast,uniforms.sunDirection.value,quality,titlePreview);
   lighting.reflection.copy(reflectionTint);lighting.light=.12+day*.88;lighting.night=night;
