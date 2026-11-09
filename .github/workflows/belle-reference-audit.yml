@@ -1,0 +1,40 @@
+name: Belle Isle PR141 reference evidence
+on:
+  push:
+    branches: ['review/belle-pr141-reference-a9b6b4d']
+permissions:
+  contents: read
+jobs:
+  reference-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install locked candidate dependencies
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: npm ci
+      - name: Check unchanged full-game TypeScript and all source regressions
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm run check
+          npm test
+      - name: Install existing browser test runtime
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Render candidate aerial views and visit actual game through native controls
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1440x1200x24" node scripts/belle-reference-candidate.mjs
+      - name: Preserve visual evidence and exact rendering harness
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr141-c44a974-reference-evidence
+          path: output/belle-reference-audit
+          if-no-files-found: warn
+          retention-days: 7
