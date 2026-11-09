@@ -6,6 +6,7 @@ export function initPagePromos() {
   if (!dialog) return;
   const delayMs = Number(dialog.dataset.delayMs);
   if (!Number.isFinite(delayMs) || delayMs < 0) return;
+  const frame = dialog.querySelector<HTMLIFrameElement>('iframe[data-promo-game]');
   const listeners = new AbortController();
   let cancel = () => {};
   const dispose = () => { cancel(); listeners.abort(); };
@@ -15,7 +16,18 @@ export function initPagePromos() {
         && !document.activeElement?.matches('input,textarea,select,[contenteditable="true"]')
         && !document.querySelector('[data-game-host] iframe')
         && ![...document.querySelectorAll<HTMLMediaElement>('video,audio')].some(media => media.controls && !media.paused && !media.muted),
-      show: () => { openDialog(dialog.id); dispose(); },
+      show: () => {
+        dispose();
+        openDialog(dialog.id);
+        if (!frame?.dataset.promoGame) return;
+        const loading = dialog.querySelector<HTMLElement>('.game-promo-loading');
+        frame.addEventListener('load', () => {
+          if (loading && frame.contentDocument?.URL !== 'about:blank') loading.hidden = true;
+        });
+        dialog.addEventListener('close', () => frame.remove(), { once: true });
+        frame.src = frame.dataset.promoGame;
+        document.dispatchEvent(new Event('store:game-launch'));
+      },
     });
   };
   // Opening a game or leaving the page cancels the pending introduction.

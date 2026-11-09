@@ -5,11 +5,20 @@ import { href } from '../utilities/paths';
 const { path } = Astro.props as { path: string };
 const promo = pagePromos[path];
 ---
-{promo && <dialog id="timed-page-promo" class="page-promo" data-page-promo={promo.id} data-delay-ms={promo.delayMs} aria-labelledby="page-promo-title" aria-describedby="page-promo-description">
+{promo && (promo.embed ? <dialog id="timed-page-promo" class="page-promo game-promo" data-page-promo={promo.id} data-delay-ms={promo.delayMs} aria-labelledby="page-promo-title">
+  <div class="page-promo-heading">
+    <h2 id="page-promo-title">{promo.title}</h2>
+    <button class="button secondary" type="button" data-close-dialog autofocus>Close game <Icon name="close" size={16}/></button>
+  </div>
+  <div class="game-promo-stage">
+    <p class="game-promo-loading" role="status">Loading {promo.title}…</p>
+    <iframe data-promo-game={href(promo.url)} title={`${promo.title} game`} allow="fullscreen; gamepad" tabindex="0"></iframe>
+  </div>
+</dialog> : <dialog id="timed-page-promo" class="page-promo" data-page-promo={promo.id} data-delay-ms={promo.delayMs} aria-labelledby="page-promo-title" aria-describedby="page-promo-description">
   <div class="page-promo-heading"><p class="mono gold">{promo.kicker}</p><button class="icon-button" type="button" data-close-dialog aria-label={`Close ${promo.title} popup`} autofocus><Icon name="close"/></button></div>
   <img class="page-promo-art" src={href(promo.image)} alt={promo.alt} width={promo.width} height={promo.height} loading="lazy" decoding="async"/>
   <div class="page-promo-copy"><h2 id="page-promo-title">{promo.title}</h2><p id="page-promo-description">{promo.description}</p><div class="button-row"><a class="button" href={promo.url.startsWith('https://') ? promo.url : href(promo.url)}>{promo.action} <Icon name="play"/></a><button class="button secondary" type="button" data-close-dialog>Continue browsing</button></div></div>
-</dialog>}
+</dialog>)}
 <script>
   import { initPagePromos } from '../ui/page-promos';
   initPagePromos();
@@ -25,5 +34,13 @@ const promo = pagePromos[path];
   .page-promo-copy h2{font-size:clamp(32px,5vw,52px);line-height:1.1;margin:0 0 12px;color:var(--goth-gold-light)}
   .page-promo-copy>p{font:16px/1.65 Arial,sans-serif;max-width:65ch;margin:0 0 22px}
   .page-promo .button{min-height:44px}
+  .game-promo{width:min(1280px,calc(100vw - 32px));height:min(880px,calc(100dvh - 32px));overflow:hidden}
+  .game-promo[open]{display:grid;grid-template-rows:auto minmax(0,1fr)}
+  .game-promo h2{margin:0;font:clamp(18px,2.5vw,26px)/1.2 var(--display);color:var(--goth-gold)}
+  .game-promo-stage{position:relative;min-height:0;background:#0b0c0e}
+  .game-promo-loading{position:absolute;inset:0;display:grid;place-items:center;margin:0;color:var(--goth-cream)}
+  .game-promo-loading[hidden]{display:none}
+  .game-promo-stage iframe{display:block;width:100%;height:100%;border:0}
   @media(max-width:600px){.page-promo{width:calc(100vw - 20px);max-height:calc(100dvh - 20px)}.page-promo-heading{padding:8px 14px}.page-promo-copy{padding:20px}.page-promo .button-row{display:grid;grid-template-columns:1fr}.page-promo .button{width:100%}}
+  @media(max-width:600px){.game-promo{height:calc(100dvh - 20px)}.game-promo .button{width:auto}}
 </style>
