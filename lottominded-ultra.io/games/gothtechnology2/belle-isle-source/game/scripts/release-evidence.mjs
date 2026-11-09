@@ -1,7 +1,7 @@
 /** Release evidence on the real built game. No seeded race state or fake renderer.
  * The phone case uses trusted CDP touchscreen input and the unchanged
  * countdown classifier. The graphics case overrides ONLY the review camera at
- * render time via Three's devtools observation hook; full game scene is retained.
+ * the normal camera-update boundary via Three's devtools observation hook; full game scene is retained.
  */
 import assert from 'node:assert/strict';
 import {createReadStream} from 'node:fs';
@@ -10,7 +10,7 @@ import {createServer} from 'node:http';
 import {createRequire} from 'node:module';
 import {extname,resolve,sep} from 'node:path';
 import {classifyCountdownInput} from './polish-countdown-proof.mjs';
-import {revealPracticeCourse,queueNativeCountdownTouch,receivedNativeTouch} from './release-navigation.mjs';
+import {revealPracticeCourse,nativeCountdownTouchAfterReady,receivedNativeTouch} from './release-navigation.mjs';
 const game=resolve(import.meta.dirname,'..'),root=resolve(game,'dist');
 const mode=process.env.BELLE_RELEASE_EVIDENCE;
 assert(['phone-timing','golden-reference'].includes(mode),'Select a named review case');
@@ -38,20 +38,35 @@ async function boot(){
  page.on('response',r=>{if(r.status()>=400)report.errors.push('HTTP '+r.status()+' '+r.url());});
  if(!phone)await context.addInitScript(()=>{
   const hub=new EventTarget();window.__THREE_DEVTOOLS__=hub;
-  const review=window.__referenceReview={enabled:false,frames:0,errors:[],last:null,frame:null};
+  const cameras=new Map();
+  const review=window.__referenceReview={enabled:false,frames:0,preparedFrames:0,errors:[],last:null,frame:null,stop(){this.enabled=false;for(const [camera,saved] of cameras){if(!saved.active)continue;saved.active=false;camera.position.copy(saved.position);camera.quaternion.copy(saved.quaternion);camera.fov=saved.fov;camera.aspect=saved.aspect;camera.updateProjectionMatrix();camera.updateMatrixWorld();}}};
+  function observeCamera(camera){
+   if(cameras.has(camera)||!camera.isPerspectiveCamera)return;
+   const originalLook=camera.lookAt;
+   const saved={active:false,position:camera.position.clone(),quaternion:camera.quaternion.clone(),fov:camera.fov,aspect:camera.aspect};cameras.set(camera,saved);
+   camera.lookAt=function(...args){
+    if(!review.enabled)return originalLook.apply(this,args);
+    if(!saved.active){originalLook.apply(this,args);saved.position.copy(this.position);saved.quaternion.copy(this.quaternion);saved.fov=this.fov;saved.aspect=this.aspect;saved.active=true;}
+    // Main calls lookAt BEFORE world.update. Lighting/shadow fit and water now
+    // receive the documented actual review camera, not a late render-only pose.
+    this.position.set(...review.camera.position);this.fov=review.camera.verticalFov;this.aspect=innerWidth/innerHeight;
+    const result=originalLook.call(this,...review.camera.target);this.updateProjectionMatrix();this.updateMatrixWorld();review.preparedFrames++;return result;
+   };
+  }
   hub.addEventListener('observe',event=>{
    const renderer=event.detail;if(!renderer?.isWebGLRenderer||renderer.domElement?.id!=='game')return;
    const original=renderer.render;
    renderer.render=function(scene,camera){
-    if(!review.enabled||renderer.getRenderTarget()!==null||!scene?.getObjectByName?.('Belle Isle changing sky'))return original.call(this,scene,camera);
-    const sky=scene.getObjectByName('Belle Isle changing sky'),saved={position:camera.position.clone(),quaternion:camera.quaternion.clone(),fov:camera.fov,aspect:camera.aspect,sky:sky.position.clone()};
+    const sky=scene?.getObjectByName?.('Belle Isle changing sky');
+    if(renderer.getRenderTarget()!==null||!sky)return original.call(this,scene,camera);
+    observeCamera(camera);
+    if(!review.enabled)return original.call(this,scene,camera);
     try{
-     camera.position.set(...review.camera.position);camera.lookAt(...review.camera.target);camera.fov=review.camera.verticalFov;camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();camera.updateMatrixWorld();sky.position.copy(camera.position);
      original.call(this,scene,camera);review.frames++;
-     const u=sky.material.uniforms,lights=[];scene.traverse(o=>{if(o.isDirectionalLight||o.isHemisphereLight)lights.push({type:o.type,intensity:o.intensity,color:o.color.toArray(),castShadow:o.castShadow});});
-     review.last={camera:{position:camera.position.toArray(),target:[...review.camera.target],verticalFov:camera.fov,aspect:camera.aspect},sky:{sun:u.sunDirection.value.toArray(),coverage:u.coverage.value,overcast:u.overcast.value,daylight:u.daylight.value,zenith:u.zenith.value.toArray(),horizon:u.horizon.value.toArray()},lights,fog:scene.fog?{density:scene.fog.density,color:scene.fog.color.toArray()}:null,exposure:renderer.toneMappingExposure,pixelRatio:renderer.getPixelRatio(),render:{...renderer.info.render},memory:{...renderer.info.memory},programs:renderer.info.programs?.length};
+     const u=sky.material.uniforms,lights=[],naturePools={};scene.traverse(o=>{if(o.isInstancedMesh&&o.name.startsWith('Nearby '))naturePools[o.name]=Math.max(naturePools[o.name]||0,o.count);if(o.isDirectionalLight||o.isHemisphereLight)lights.push({type:o.type,intensity:o.intensity,color:o.color.toArray(),castShadow:o.castShadow,shadow:o.isDirectionalLight?{left:o.shadow.camera.left,right:o.shadow.camera.right,top:o.shadow.camera.top,bottom:o.shadow.camera.bottom,far:o.shadow.camera.far}:null});});
+     review.last={camera:{position:camera.position.toArray(),target:[...review.camera.target],verticalFov:camera.fov,aspect:camera.aspect,preparedFrames:review.preparedFrames},sky:{sun:u.sunDirection.value.toArray(),coverage:u.coverage.value,overcast:u.overcast.value,daylight:u.daylight.value,zenith:u.zenith.value.toArray(),horizon:u.horizon.value.toArray()},lights,naturePools,fog:scene.fog?{density:scene.fog.density,color:scene.fog.color.toArray()}:null,exposure:renderer.toneMappingExposure,pixelRatio:renderer.getPixelRatio(),render:{...renderer.info.render},memory:{...renderer.info.memory},programs:renderer.info.programs?.length};
      if(review.capture){review.frame=renderer.domElement.toDataURL('image/png');review.capture=false;}
-    }catch(error){review.errors.push(String(error));throw error;}finally{camera.position.copy(saved.position);camera.quaternion.copy(saved.quaternion);camera.fov=saved.fov;camera.aspect=saved.aspect;camera.updateProjectionMatrix();camera.updateMatrixWorld();sky.position.copy(saved.sky);}
+    }catch(error){review.errors.push(String(error));throw error;}
    };
   });
  });
@@ -71,21 +86,26 @@ async function phoneTiming(){
  report.viewport={width:390,height:340};report.settings={quality:'smooth',targetFps:30,deviceScaleFactor:1,joystick:'fixed'};
  await page.evaluate(()=>{
   window.__releaseInput=[];window.__releaseCountdown=[];
-  window.__releaseSnapshot=()=>{const h=document.querySelector('#trial-hud');return{at:performance.now(),hudHidden:h.hidden,status:h.dataset.status,course:h.dataset.course,elapsed:Number(h.dataset.elapsed),next:Number(h.dataset.next),paused:h.dataset.paused,offCourse:h.dataset.offCourse,time:h.querySelector('.trial-time')?.textContent,speed:parseFloat(document.querySelector('#speed')?.textContent||'0'),focused:document.activeElement?.id,visibility:document.visibilityState,openDialogs:[...document.querySelectorAll('dialog[open]')].map(d=>d.id)};};
+  window.__releaseSnapshot=()=>{const h=document.querySelector('#trial-hud');return{at:performance.now(),hudHidden:h.hidden,status:h.dataset.status,course:h.dataset.course,elapsed:Number(h.dataset.elapsed),next:Number(h.dataset.next),paused:h.dataset.paused,offCourse:h.dataset.offCourse,time:h.querySelector('.trial-time')?.textContent,speed:parseFloat(document.querySelector('#speed')?.textContent||'0'),focused:document.activeElement?.id,visibility:document.visibilityState,openDialogs:[...document.querySelectorAll('dialog[open]')].map(d=>d.id),startPresentation:JSON.parse(h.dataset.startPresentation||'null')};};
   for(const type of ['pointerdown','pointermove','pointerup','pointercancel','keydown','keyup'])window.addEventListener(type,e=>window.__releaseInput.push({...window.__releaseSnapshot(),type,trusted:e.isTrusted,pointerType:e.pointerType,code:e.code,repeat:e.repeat,control:e.target.closest?.('#touch-zone')?.id,target:e.target.id}),true);
   const h=document.querySelector('#trial-hud');let previous=h.dataset.status;
   new MutationObserver(()=>{const s=window.__releaseSnapshot();if(!s.hudHidden&&s.status==='countdown'&&previous!=='countdown')window.__releaseCountdown.push(s);previous=s.status;}).observe(h,{attributes:true,attributeFilter:['data-status','hidden']});
  });
  const read=()=>page.evaluate(()=>window.__releaseSnapshot());
- const point=await page.locator('#stick').evaluate(el=>{const r=el.getBoundingClientRect(),p={x:Math.round(r.left+r.width/2),y:Math.round(r.top+r.height*.15)},hit=document.elementFromPoint(p.x,p.y);return{...p,control:hit?.closest?.('#touch-zone')?.id};});assert.equal(point.control,'touch-zone');
+
  async function hold(selector,label){
   await expect(page.locator(selector)).toBeVisible();await expect(page.locator(selector)).toBeEnabled();
   await page.locator(selector).scrollIntoViewIfNeeded();await page.locator(selector).focus();await expect(page.locator(selector)).toBeFocused();
   const before=await page.evaluate(()=>({events:window.__releaseInput.length,countdowns:window.__releaseCountdown.length}));
   log('Native '+label+' then acknowledged touchscreen hold');
-  // Same-session queue, no response round-trip before the hold. This generates
-  // trusted pointerType=touch through Chromium, not dispatchEvent or game setters.
-  await bounded(queueNativeCountdownTouch(client,enter,point),90000,label+' native queue');
+  // Observe the genuine render-ready countdown before a fresh native touch.
+  // The production start-screen handoff is identical on phones and desktops;
+  // the unchanged classifier still rejects delivery after the three-second window.
+  const point=await bounded(nativeCountdownTouchAfterReady(client,enter,async()=>{
+   await page.waitForFunction(n=>window.__releaseCountdown.length>n,before.countdowns,{timeout:90000,polling:50});
+   const point=await page.locator('#stick').evaluate(el=>{const r=el.getBoundingClientRect(),p={x:Math.round(r.left+r.width/2),y:Math.round(r.top+r.height*.15)},hit=document.elementFromPoint(p.x,p.y);return{...p,control:hit?.closest?.('#touch-zone')?.id};});
+   assert.equal(point.control,'touch-zone');return point;
+  }),90000,label+' native queue');
   // CDP command completion is not page receipt. Observe the actual trusted
   // pointerdown before collecting evidence; the unchanged classifier still
   // rejects late, early, wrong-target, paused or untrusted events.
@@ -93,8 +113,11 @@ async function phoneTiming(){
   await expect.poll(()=>page.evaluate(n=>window.__releaseCountdown.length>n,before.countdowns)).toBe(true);
   const evidence=await page.evaluate(before=>({state:window.__releaseCountdown[before.countdowns],events:window.__releaseInput.slice(before.events)}),before);
   const classification=classifyCountdownInput({mobile:true,...evidence,expectedTarget:'touch-zone'});
-  report.checks[label]={...evidence,classification,transport:'CDP Input.dispatchTouchEvent; acknowledged trusted browser pointerType=touch; no DOM event injection'};
+  report.checks[label]={...evidence,classification,point,transport:'CDP Input.dispatchTouchEvent; acknowledged trusted browser pointerType=touch; no DOM event injection'};
   assert.equal(classification.status,'passed',label+': real trusted touch must arrive DURING countdown, not after GO');
+  assert.equal(evidence.state.startPresentation?.state,'ready','actual starting-line frame must be ready');
+  assert(evidence.state.startPresentation.gpuReadyAtMs>=evidence.state.startPresentation.submittedAtMs);
+  assert(evidence.state.startPresentation.readyAtMs>=evidence.state.startPresentation.gpuReadyAtMs);
   assert.equal(classification.event.elapsed,0);assert.equal(classification.event.speed,0);assert.equal(classification.event.paused,'false');assert.deepEqual(classification.event.openDialogs,[]);
   const samples=[];await expect.poll(async()=>{const s=await read();samples.push(s);assert(['countdown','running'].includes(s.status));if(s.status==='countdown'){assert.equal(s.speed,0);assert.equal(s.elapsed,0);}return s.status==='running'&&s.speed>0;},{timeout:90000,intervals:[100,250,500,1000]}).toBe(true);
   const trace=await page.evaluate(start=>window.__releaseInput.slice(start),before.events);assert(!trace.some(e=>['pointerup','pointercancel'].includes(e.type)&&e.control==='touch-zone'),'Input hold must be uninterrupted through GO');
@@ -120,7 +143,7 @@ async function goldenReference(){
  const map=JSON.parse(await readFile(resolve(root,'belle/map.json'),'utf8')),point=map.landmarks.find(p=>p.name==='Sunset Point');assert(point);
  // Estimated framing from the point and skyline anchors; not a survey-calibrated pose.
  const camera={position:[point.x+220,85,point.z-35],target:[point.x+45,2,point.z-20],verticalFov:66};
- report.reference={description:'User-provided square aerial Sunset Point photo: pale warm horizon, low sun, golden reflection, long tree shadows and curving park paths.',camera,coordinateFrame:'Existing map metre coordinates, Y up',cameraAccuracy:'Estimated closer aerial viewpoint over the park; photograph has no calibrated camera metadata. Only the final review camera is overridden; normal guide-visit world selection is retained.',hour:17.6,clouds:'clear',cycle:false,viewport:{width:1000,height:1000},hardwarePerformanceCertified:false};
+ report.reference={description:'User-provided square aerial Sunset Point photo: pale warm horizon, low sun, golden reflection, long tree shadows and curving park paths.',camera,coordinateFrame:'Existing map metre coordinates, Y up',cameraAccuracy:'Estimated closer aerial viewpoint over the park; photograph has no calibrated camera metadata. The real review camera is applied before production lighting/water updates; production camera-based vegetation detail is retained; other guide-visit world selection remains player-based.',hour:17.6,clouds:'clear',cycle:false,viewport:{width:1000,height:1000},hardwarePerformanceCertified:false};
  await page.setViewportSize(report.reference.viewport);
  for(const quality of ['smooth','high']){
   log('Configure documented 17:36 low-sun reference, '+quality);
@@ -134,12 +157,15 @@ async function goldenReference(){
   await page.waitForFunction(()=>typeof window.__referenceReview.frame==='string',null,{timeout:150000});
   const capture=await page.evaluate(()=>({frame:window.__referenceReview.frame,last:window.__referenceReview.last,errors:window.__referenceReview.errors,settings:{quality:document.querySelector('#quality').value,hour:document.querySelector('#sky-hour').value,clouds:document.querySelector('#sky-clouds').value,cycle:document.querySelector('#sky-cycle').checked}}));
   assert.deepEqual(capture.errors,[]);assert.equal(capture.settings.quality,quality);assert.equal(capture.settings.cycle,false);assert.equal(capture.settings.clouds,'clear');assert(Math.abs(Number(capture.settings.hour)-17.6)<.02);
+  assert(capture.last.camera.preparedFrames>0,'review camera must reach the production world-update path');
+  assert.deepEqual(capture.last.camera.position,camera.position);
+  if(quality==='high')assert(capture.last.lights.some(light=>light.type==='DirectionalLight'&&light.castShadow&&light.shadow.right>55),'actual elevated-camera shadow fit required');
   assert(capture.last.sky.sun[1]>0&&capture.last.sky.sun[1]<.15,'Documented low sun required');assert(capture.last.render.calls>0);assert(capture.last.render.triangles>10000,'Actual island scene required');
   const image=Buffer.from(capture.frame.split(',')[1],'base64');assert(image.length>20000,'Nontrivial actual framebuffer capture required');
   await writeFile(resolve(out,'sunset-point-'+quality+'.png'),image);report.captures.push('sunset-point-'+quality+'.png');delete capture.frame;report.checks[quality]=capture;
   await shot('sunset-point-'+quality+'-with-ui');
  }
- await page.evaluate(()=>window.__referenceReview.enabled=false);
+ await page.evaluate(()=>window.__referenceReview.stop());
  report.visualReviewRequired=true;report.visualMatchCertified=false;
 }
 try{await bounded((async()=>{await boot();if(mode==='phone-timing')await phoneTiming();else await goldenReference();assert.deepEqual(report.errors,[]);report.passed=true;})(),35*60*1000,'Release evidence case');}

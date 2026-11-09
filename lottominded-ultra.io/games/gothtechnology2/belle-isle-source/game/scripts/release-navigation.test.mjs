@@ -66,3 +66,26 @@ test('normal-detail attenuation is finite, monotone and retains close views',()=
  assert.equal(visibility(1,.1),1);assert.equal(visibility(500,3),0);
  for(const footprint of [0,.1,.35,1,2,2.5,10]){let last=1;for(let d=0;d<1000;d++){const v=visibility(d,footprint);assert(Number.isFinite(v)&&v>=0&&v<=last+1e-12);last=v;}}
 });
+
+import {nativeCountdownTouchAfterReady} from './release-navigation.mjs';
+test('fresh native touchscreen contact waits for actual readiness, not a speculative start queue',async()=>{
+ const calls=[];let ready;const gate=new Promise(resolve=>ready=resolve);
+ const client={send:async(method,params)=>{calls.push({method,params});}};
+ const result=nativeCountdownTouchAfterReady(client,{key:'Enter'},async()=>{await gate;return {x:77,y:111};});
+ await Promise.resolve();assert.equal(calls.length,2);assert(calls.every(c=>c.method==='Input.dispatchKeyEvent'));
+ ready();const point=await result;assert.deepEqual(point,{x:77,y:111});assert.equal(calls.length,3);assert.equal(calls[2].params.type,'touchStart');
+});
+test('failed readiness or invalid current geometry cannot dispatch a misleading touch',async()=>{
+ for(const read of [async()=>{throw Error('not ready');},async()=>({x:NaN,y:20})]){
+  const calls=[];await assert.rejects(nativeCountdownTouchAfterReady({send:async(method)=>calls.push(method)},{},read));
+  assert.deepEqual(calls,['Input.dispatchKeyEvent','Input.dispatchKeyEvent']);
+ }
+});
+test('reference camera reaches normal world lighting before capture and restores after review',async()=>{
+ const s=await readFile(new URL('./release-evidence.mjs',import.meta.url),'utf8');
+ assert.match(s,/camera\.lookAt=function/);assert.match(s,/preparedFrames\+\+/);
+ assert.match(s,/light\.castShadow&&light\.shadow\.right>55/);
+ assert.match(s,/assert\.deepEqual\(capture\.last\.camera\.position,camera\.position\)/);
+ assert.match(s,/__referenceReview\.stop\(\)/);
+ assert.doesNotMatch(s,/sky\.position\.copy\(camera\.position\)/,'the harness must not fake sky/lighting placement');
+});

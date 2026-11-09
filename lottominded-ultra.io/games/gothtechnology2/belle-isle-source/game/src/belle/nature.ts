@@ -1,3 +1,4 @@
+import {NatureViewSelection} from './natureViewSelection.ts';
 import * as T from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
@@ -60,9 +61,7 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void){
  for(const source of [treeSource.scene,ground.scene])source.traverse(o=>{if((o as T.Mesh).isMesh)(o as T.Mesh).geometry.dispose();});
  let quality:keyof typeof natureBudget='automatic',lastX=Infinity,lastZ=Infinity;
  const stats={treeVariants:manifest.trees.length,groundVariants:manifest.ground.length,trees:plan.trees.length,ground:plan.ground.length,visibleTrees:0,visibleGround:0};
- function update(x:number,z:number,night=0,golden=0){
-  const warm=Math.max(0,Math.min(1,golden));
-  for(const pool of pools)if(pool.far)(pool.far.material as T.MeshBasicMaterial).color.setRGB(1,1-.075*warm,1-.16*warm).multiplyScalar(1-night*.70);
+ function select(x:number,z:number){
   if(Math.hypot(x-lastX,z-lastZ)<6)return;
   lastX=x;lastZ=z;const budget=natureBudget[quality];
   const d=(p:Plant)=>(p.x-x)**2+(p.z-z)**2;
@@ -74,6 +73,13 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void){
    for(const mesh of pool.meshes){mesh.count=near.length;near.forEach((p,i)=>{const blend=pool.far?treeLodBlend(Math.hypot(p.x-x,p.z-z),budget.treeRadius):1;mesh.setMatrixAt(i,matrix(p,blend));mesh.setColorAt(i,plantTint(p));});mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;}
    if(pool.far){pool.plants.forEach((p,i)=>{const blend=selected.has(p)?treeLodBlend(Math.hypot(p.x-x,p.z-z),budget.treeRadius):0;pool.far!.setMatrixAt(i,matrix(p,1-blend));});pool.far.instanceMatrix.needsUpdate=true;}
   }
+ }
+ const view=new NatureViewSelection(select),eye=new T.Vector3(),before=scene.onBeforeRender;
+ scene.onBeforeRender=(...args)=>{before.apply(scene,args);args[2].getWorldPosition(eye);view.render(eye.x,eye.z);};
+ function update(x:number,z:number,night=0,golden=0){
+  const warm=Math.max(0,Math.min(1,golden));
+  for(const pool of pools)if(pool.far)(pool.far.material as T.MeshBasicMaterial).color.setRGB(1,1-.075*warm,1-.16*warm).multiplyScalar(1-night*.70);
+  view.prepare(x,z);
  }
  return{stats,update,setQuality(value:string){quality=value in natureBudget?value as keyof typeof natureBudget:'automatic';lastX=Infinity;}};
 }
