@@ -26,7 +26,8 @@ test('new skins distinguish natural materials and retain optical glazing',()=>{
 
 test('near river and lagoons cannot receive the fallback concrete finish',()=>{
  for(const object of ['Detroit River rolling waves','Detroit River distant water','Lagoon · Lake Okonoka','Lagoon · Blue Heron','Koi pond · clear surface']){
-  for(const metalness of [0,.035,.08,.5])assert.equal(surfaceKind('',object,metalness),null,object);
+  // applyRealisticMaterials passes context+' '+object.name, including a leading space.
+  for(const label of [object,' '+object,object+' '])for(const metalness of [0,.035,.08,.5])assert.equal(surfaceKind('',label,metalness),null,label);
  }
  // Nearby architecture and the submerged gravel are not optical water.
  assert.equal(surfaceKind('Concrete','Lagoon bridge'), 'concrete');

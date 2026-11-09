@@ -3,7 +3,7 @@ export function surfaceKind(name:string,object:string,metalness=0):Surface|null{
  const n=(name+' '+object).toLowerCase();
  // These exact named optical meshes own their complete wave/pond shaders.
  // The near river lacks 'water' in its name and previously fell back to concrete.
- if(/^(Detroit River (rolling waves|distant water)|Lagoon · |Koi pond · clear surface)/i.test(object))return null;
+ if(/^(Detroit River (rolling waves|distant water)|Lagoon · |Koi pond · clear surface)/i.test(object.trim()))return null;
  if(/fish.*scale/.test(n))return 'scales';
  if(/feather|pigeon|waterfowl/.test(n))return 'feather';
  // Optical, luminous, graphic and moving-water surfaces keep their dedicated materials.
