@@ -36,6 +36,31 @@ test('reflection source is isolated and restores render state even on a failure'
   setRenderTarget:(t:T.WebGLRenderTarget|null)=>{actual=t;restored=t===target;},setViewport:()=>{},setScissor:()=>{},setScissorTest:()=>{},setClearColor:()=>{}} as unknown as T.WebGLRenderer;
  const sky=new T.ShaderMaterial({vertexShader:'void main(){}',fragmentShader:'void main(){}'}),r=new SkyReflections(scene,renderer,sky);
  const internals=r as unknown as {generator:{fromScene:()=>T.WebGLRenderTarget;dispose:()=>void}};internals.generator.fromScene=()=>{actual=null;throw Error('simulated renderer failure');};internals.generator.dispose=()=>{};
- const warn=console.warn;console.warn=()=>{};try{r.update(3,12,.6,'automatic',true);}finally{console.warn=warn;}
+ const warn=console.warn;console.warn=()=>{};try{r.prepare(3,12,.6,'automatic');}finally{console.warn=warn;}
  assert.ok(restored);assert.equal(scene.environment,fallback);assert.equal(renderer.xr.enabled,true);assert.equal(r.stats.disabled,true);r.dispose();assert.equal(listeners.size,0);
+});
+
+test('real reflection controller primes once, protects startup and rejects unstable refreshes',(t)=>{
+ let now=0;t.mock.method(performance,'now',()=>now);
+ const listeners=new Map<string,unknown>(),scene=new T.Scene(),fallback=new T.Texture();scene.environment=fallback;
+ const target=new T.WebGLRenderTarget();let actual:T.WebGLRenderTarget|null=target,restores=0,captures=0,disposed=0;
+ const renderer={xr:{enabled:true,isPresenting:false},toneMapping:T.ACESFilmicToneMapping,autoClear:false,
+  domElement:{addEventListener:(n:string,f:unknown)=>listeners.set(n,f),removeEventListener:(n:string)=>listeners.delete(n)},getContext:()=>({isContextLost:()=>false}),getRenderTarget:()=>actual,getActiveCubeFace:()=>2,getActiveMipmapLevel:()=>0,
+  getViewport:(v:T.Vector4)=>v.set(0,0,640,480),getScissor:(v:T.Vector4)=>v.set(1,2,3,4),getScissorTest:()=>true,getClearColor:(c:T.Color)=>c.set('#123456'),getClearAlpha:()=>.5,
+  setRenderTarget:(v:T.WebGLRenderTarget|null)=>{actual=v;if(v===target)restores++;},setViewport:()=>{},setScissor:()=>{},setScissorTest:()=>{},setClearColor:()=>{}} as unknown as T.WebGLRenderer;
+ const sky=new T.ShaderMaterial({vertexShader:'void main(){}',fragmentShader:'void main(){}'}),r=new SkyReflections(scene,renderer,sky);
+ const internals=r as unknown as {generator:{fromScene:(source:T.Scene)=>T.WebGLRenderTarget;dispose:()=>void}};
+ internals.generator.fromScene=source=>{assert.notEqual(source,scene);assert.equal(source.children.length,1);captures++;actual=null;const probe=new T.WebGLRenderTarget();probe.addEventListener('dispose',()=>disposed++);return probe;};internals.generator.dispose=()=>{};
+ try{
+  r.prepare(0,12,.6,'automatic');assert.equal(captures,1);assert.equal(restores,1);assert.notEqual(scene.environment,fallback);
+  r.prepare(0,12,.6,'automatic');assert.equal(captures,1,'repeated preparation reuses its valid probe');
+  for(let i=0;i<60;i++)r.observe(16,true);
+  now=29999;r.update(90,18,.9,'automatic',true);assert.equal(captures,1,'protection cannot expire a millisecond early');
+  now=30000;r.update(90,18,.9,'automatic',true);assert.equal(captures,2);assert.equal(disposed,1);assert.equal(restores,2);
+  r.observe(250,true);now=70000;r.update(180,20,.3,'automatic',true);assert.equal(captures,2,'slow frame breaks eligibility');
+  for(let i=0;i<30;i++)r.observe(16,true);
+  r.update(180,20,.3,'automatic',false);assert.equal(captures,2,'paused session cannot refresh');
+  r.protect();now=99999;r.update(180,20,.3,'automatic',true);assert.equal(captures,2,'new session renews protection');
+ }finally{r.dispose();target.dispose();fallback.dispose();sky.dispose();}
+ assert.equal(listeners.size,0);assert.equal(scene.environment,fallback);assert.equal(disposed,2);
 });
