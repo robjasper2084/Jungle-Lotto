@@ -10,6 +10,7 @@ import {createServer} from 'node:http';
 import {createRequire} from 'node:module';
 import {extname,resolve,sep} from 'node:path';
 import {classifyCountdownInput} from './polish-countdown-proof.mjs';
+import {revealPracticeCourse} from './release-navigation.mjs';
 const game=resolve(import.meta.dirname,'..'),root=resolve(game,'dist');
 const mode=process.env.BELLE_RELEASE_EVIDENCE;
 assert(['phone-timing','golden-reference'].includes(mode),'Select a named review case');
@@ -78,6 +79,7 @@ async function phoneTiming(){
  const read=()=>page.evaluate(()=>window.__releaseSnapshot());
  const point=await page.locator('#stick').evaluate(el=>{const r=el.getBoundingClientRect(),p={x:Math.round(r.left+r.width/2),y:Math.round(r.top+r.height*.15)},hit=document.elementFromPoint(p.x,p.y);return{...p,control:hit?.closest?.('#touch-zone')?.id};});assert.equal(point.control,'touch-zone');
  async function hold(selector,label){
+  await expect(page.locator(selector)).toBeVisible();await expect(page.locator(selector)).toBeEnabled();
   await page.locator(selector).scrollIntoViewIfNeeded();await page.locator(selector).focus();await expect(page.locator(selector)).toBeFocused();
   const before=await page.evaluate(()=>({events:window.__releaseInput.length,countdowns:window.__releaseCountdown.length}));
   log('Native '+label+' then trusted touch-from-mouse hold');
@@ -100,6 +102,8 @@ async function phoneTiming(){
  }
  try{
   await menu();await page.locator('#trials-open').click();await page.locator('#trial-tab-onewheel').click();
+  await revealPracticeCourse(page,expect,'[data-course="onewheel-island-cup-v1"]');
+  report.checks.practiceDisclosure={opened:true,transport:'Native touch on the existing summary; no forced DOM state'};
   await hold('[data-course="onewheel-island-cup-v1"]','initialCountdownHold');
   log('Restart while the native touch remains held');
   await page.keyboard.press('r');await expect(page.locator('#trial-hud')).toHaveAttribute('data-status','running');
@@ -114,7 +118,8 @@ async function goldenReference(){
  await menu();await page.locator('#map-open').click();await page.locator('#guide-search').fill('Sunset Point');
  const card=page.locator('#landmarks .landmark').filter({has:page.getByRole('heading',{name:'Sunset Point',exact:true})});await expect(card).toHaveCount(1);await card.getByRole('button',{name:'Travel to path',exact:true}).click();await expect(page.locator('#guide')).not.toBeVisible();
  const map=JSON.parse(await readFile(resolve(root,'belle/map.json'),'utf8')),point=map.landmarks.find(p=>p.name==='Sunset Point');assert(point);
- const camera={position:[point.x+387.01,145,point.z-91.38],target:[point.x+107.01,2,point.z+3.62],verticalFov:66};
+ // Estimated framing from the point and skyline anchors; not a survey-calibrated pose.
+ const camera={position:[point.x+301.01,95,point.z-118.38],target:[point.x+118.01,2,point.z-92.38],verticalFov:66};
  report.reference={description:'User-provided square aerial Sunset Point photo: pale warm horizon, low sun, golden reflection, long tree shadows and curving park paths.',camera,coordinateFrame:'Existing map metre coordinates, Y up',cameraAccuracy:'Estimated aerial viewpoint; photograph has no calibrated camera metadata.',hour:17.6,clouds:'clear',cycle:false,viewport:{width:1000,height:1000},hardwarePerformanceCertified:false};
  await page.setViewportSize(report.reference.viewport);
  for(const quality of ['smooth','high']){
