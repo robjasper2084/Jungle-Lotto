@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {readFileSync,writeFileSync} from 'node:fs';
+import {execFileSync} from 'node:child_process';
+const expected=process.env.BELLE_REFERENCE_SOURCE;
+assert.match(expected??'',/^[0-9a-f]{40}$/);
+assert.equal(execFileSync('git',['rev-parse','HEAD^1'],{encoding:'utf8'}).trim(),expected,'Review first parent must be the explicit candidate');
+const original=readFileSync('scripts/belle-reference-candidate.mjs','utf8');
+const before="const candidate='c44a9743ec2ea3f86d9c7eb09f600e663d7574e2';";
+assert.equal(original.split(before).length,2);
+const path='scripts/.belle-reference-pinned.runtime.mjs';
+writeFileSync(path,original.replace(before,"const candidate='"+expected+"';"));
+execFileSync(process.execPath,[path],{stdio:'inherit'});
