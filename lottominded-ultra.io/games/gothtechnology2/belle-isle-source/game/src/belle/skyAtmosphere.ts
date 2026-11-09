@@ -41,7 +41,7 @@ export function livingSkyFragment(source:string):string {
 `;
  return (source.slice(0,a)+clouds+source.slice(b))
   .replace(gradient,'vec3 color=mix(horizon,zenith,pow(smoothstep(-.025,.62,d.y),.56));')
-  .replace(warmth,'color=mix(color,warm,towardSun*exp(-h*6.8)*(.10+.72*dusk));');
+  .replace(warmth,'color=mix(color,warm,towardSun*exp(-h*6.8)*(.10+.54*dusk));');
 }
 /** Bounded directional-sun modulation. Not a spatially projected cloud-shadow map. */
 export function cloudLightFactor(seconds:number,coverage:number,overcast:number,daylight:number,reduced=false){

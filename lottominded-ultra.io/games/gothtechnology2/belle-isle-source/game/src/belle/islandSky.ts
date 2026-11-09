@@ -28,7 +28,7 @@ void main(){
  vec3 d=normalize(skyDirection);float h=max(0.,d.y),towardSun=pow(max(0.,dot(normalize(vec3(d.x,.001,d.z)),normalize(vec3(sunDirection.x,.001,sunDirection.z)))),3.);
  vec3 color=mix(horizon,zenith,pow(smoothstep(-.045,.85,d.y),.52));
  float dusk=1.-smoothstep(.04,.48,abs(sunDirection.y));
- color=mix(color,warm,towardSun*exp(-h*4.5)*(.10+.54*dusk));
+ color=mix(color,warm,towardSun*exp(-h*4.5)*(.18+.72*dusk));
  // Broad but bounded Mie scattering softens the solar horizon in the reference.
  // Reuses the existing sun vector; no new texture samples or fullscreen passes.
  float photoScatter=(1.-smoothstep(.11,.45,abs(sunDirection.y)))*smoothstep(-.055,.025,sunDirection.y);
