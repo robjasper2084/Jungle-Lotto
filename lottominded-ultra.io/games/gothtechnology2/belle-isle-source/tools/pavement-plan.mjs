@@ -1,4 +1,5 @@
 import pc from '../game/node_modules/polygon-clipping/dist/polygon-clipping.esm.js';
+import {ENCLOSED_SHELTERS} from '../game/src/belle/referenceSites.ts';
 // Reconcile overlapping OSM ways into one surface before triangulation. A plaza
 // owns its footpaths; a real carriageway owns crossings. No stacked flat ribbons.
 export const surfaceKind=r=>['grass','gravel','fine_gravel','unpaved','dirt','ground','compacted','sand'].includes(r.surface)?'gravel':r.surface==='wood'?'wood':['paving_stones','sett'].includes(r.surface)?'pavers':/concrete/.test(r.surface)?'concrete':'asphalt';
@@ -22,7 +23,9 @@ export function makePavementPlan(map,terrain){
   put(level+':'+priority+':'+kind,corridorPolygons(points,r.width));
  }
  for(const a of map.areas)if(a.kind==='pedestrian'&&a.points.length>3)put('ground:5:concrete',[[a.points,...a.holes||[]]]);
- const cutouts=(map.buildings||[]).filter(b=>b.points.length>3).map(b=>[b.points]);
+ // Match the terrain's open-shelter contract; do not erase a walkable path under a roof.
+ const openShelters=new Set((map.facilities?.sites??[]).filter(s=>s.kind==='shelter'&&!ENCLOSED_SHELTERS.has(s.id)).map(s=>s.id));
+ const cutouts=(map.buildings||[]).filter(b=>b.points.length>3&&!openShelters.has(b.id)).map(b=>[b.points]);
  const aquarium=map.aquarium,s=aquarium?.stairs;
  if(s){const world=(u,v)=>[aquarium.center[0]+Math.cos(aquarium.yaw)*u-Math.sin(aquarium.yaw)*v,aquarium.center[1]-Math.sin(aquarium.yaw)*u-Math.cos(aquarium.yaw)*v];const ring=[world(-s.width/2,s.outsideStart),world(s.width/2,s.outsideStart),world(s.width/2,s.insideEnd),world(-s.width/2,s.insideEnd)];ring.push(ring[0]);cutouts.push([ring]);}
  const exclusions=unionAll(cutouts),result=[];

@@ -15,3 +15,18 @@ test('sampled Belle Isle road and path junctions have a single ground material',
 });
 
 test('pavement stops at authored stairs and buildings instead of covering their floors',()=>{const map=JSON.parse(fs.readFileSync(new URL('../game/public/belle/map.json',import.meta.url))),c=map.aquarium,s=c.stairs,world=(u,v)=>[c.center[0]+Math.cos(c.yaw)*u-Math.sin(c.yaw)*v,c.center[1]-Math.sin(c.yaw)*u-Math.cos(c.yaw)*v],ring=[world(-s.width/2+.02,s.outsideStart+.02),world(s.width/2-.02,s.outsideStart+.02),world(s.width/2-.02,s.insideEnd-.02),world(-s.width/2+.02,s.insideEnd-.02)];ring.push(ring[0]);const p=plan(map);for(const part of p)assert.ok(area(pc.intersection(part.polygons,[ring]))<1e-7);});
+
+
+test('open picnic shelter retains its path but enclosed shelters still remove exterior paving',()=>{
+ const footprint=[[-4,-4],[4,-4],[4,4],[-4,4],[-4,-4]];
+ const source={roads:[road('path',[[-10,0],[10,0]],2,true,'concrete')],buildings:[{id:'open',points:footprint}],facilities:{sites:[{id:'open',kind:'shelter'}]}};
+ const open=plan(source);assert(area(pc.intersection(open[0].polygons,[footprint]))>15.9);
+ const enclosed=plan({...source,buildings:[{id:'107202856',points:footprint}],facilities:{sites:[{id:'107202856',kind:'shelter'}]}});
+ assert(area(pc.intersection(enclosed[0].polygons,[footprint]))<1e-7);
+});
+
+test('actual trail 1119933394 remains paved under the mapped open shelter',()=>{
+ const m=JSON.parse(fs.readFileSync(new URL('../game/public/belle/map.json',import.meta.url))),parts=plan(m);
+ const probe=[[[3462.6,435.8],[3463.0,435.8],[3463.0,436.2],[3462.6,436.2],[3462.6,435.8]]];
+ assert(parts.reduce((sum,p)=>sum+area(pc.intersection(p.polygons,probe)),0)>.159);
+});
