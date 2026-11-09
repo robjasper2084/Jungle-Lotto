@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {yieldStartupTask} from './startupWork.ts';
 import {BroaderPresentation} from './broaderPresentation.ts';
 import {sunsetPhotoGrade} from './photoReferenceGrade.ts';
 import {livingSkyFragment,cloudLightFactor} from './skyAtmosphere.ts';
@@ -150,5 +151,10 @@ vec2 face=abs(normal.x)>abs(normal.z)?cityWorld.zy:cityWorld.xy;vec2 cells=face/
   lighting.reflection.copy(reflectionTint);lighting.light=.12+day*.88;lighting.night=night;
   lighting.sun.copy(uniforms.sunDirection.value);lighting.glint=photoLook.glint;lighting.golden=photoLook.foliage;return lighting;
  }
- return {preview(value:boolean){titlePreview=value;},previewShot(index:number){previewIndex=index;},get renderHour(){return titlePreview?startupSkyLook(previewIndex).hour:hour;},nightAmount:nightUniform,configure,synchronize(next:SkySettings){settings=normalizeSky(next);hour=settings.hour;},tick,update,dressSkyline,setQuality(q:string){quality=q;shadowQuality=q!=='smooth';},get presentation(){return broader.stats;},dispose(){broader.dispose();},get settings(){return {...settings,hour};},get hour(){return hour;}};
+ async function prepareReflections(camera:T.Camera,x:number,z:number){
+  const preview=titlePreview;
+  try{titlePreview=false;update(camera,x,z);await yieldStartupTask();broader.prepareReflections(hour,uniforms.coverage.value,quality);}
+  finally{titlePreview=preview;update(camera,x,z);}
+ }
+ return {prepareReflections,protectStartup:()=>broader.protectStartup(),observeFrame:(ms:number,eligible:boolean)=>broader.observeFrame(ms,eligible),preview(value:boolean){titlePreview=value;},previewShot(index:number){previewIndex=index;},get renderHour(){return titlePreview?startupSkyLook(previewIndex).hour:hour;},nightAmount:nightUniform,configure,synchronize(next:SkySettings){settings=normalizeSky(next);hour=settings.hour;},tick,update,dressSkyline,setQuality(q:string){quality=q;shadowQuality=q!=='smooth';},get presentation(){return broader.stats;},dispose(){broader.dispose();},get settings(){return {...settings,hour};},get hour(){return hour;}};
 }

@@ -1,0 +1,5 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Belle Isle • Co-op lobby review</title><style>body{margin:0;padding:clamp(12px,4vw,40px);background:#071012}#review-note{font:14px/1.5 system-ui;color:#b8c8c3;max-width:1000px;margin:0 auto 16px}#output{font:13px/1.5 monospace;white-space:pre-wrap;overflow-wrap:anywhere;color:#b8c8c3;max-width:1000px;margin:20px auto}</style></head><body><p id="review-note">DEVELOPMENT PREVIEW — lobby and assignment logic only. No island, network session or new vehicle rig is running.</p><main id="root"></main><output id="output" aria-live="polite"></output><script type="module">
+import {mountCoopLobby} from './lobby.ts';
+let store;try{store=localStorage;}catch{}
+mountCoopLobby(document.querySelector('#root'),{store,preview:true,pads:()=>Array.from(navigator.getGamepads?.()??[]),onBegin:async players=>{document.querySelector('#output').textContent=players.map(p=>`P${p.seat+1}: ${p.riderId} / ${p.vehicleId} / ${p.binding}`).join('\n');}});
+</script></body></html>

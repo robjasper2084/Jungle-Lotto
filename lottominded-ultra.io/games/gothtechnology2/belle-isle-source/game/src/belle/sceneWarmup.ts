@@ -1,6 +1,8 @@
 import type {Camera,DirectionalLight,Object3D,Scene,WebGLRenderer} from 'three';
 
-type Compiler=Pick<WebGLRenderer,'compileAsync'>;
+import {warmObjectTextures} from './startupWork.ts';
+
+type Compiler=Pick<WebGLRenderer,'compileAsync'> & Partial<Pick<WebGLRenderer,'initTexture'>>;
 type Pending={promise:Promise<void>;signal?:AbortSignal;cancel:AbortController};
 const cancelled=(signal:AbortSignal)=>signal.reason instanceof Error?signal.reason:new DOMException('Ride preparation cancelled','AbortError');
 function readyOrCancelled<T>(ready:Promise<T>,signal:AbortSignal){
@@ -38,6 +40,8 @@ export class SceneWarmup {
    try{
     // Paint the existing Preparing label before shader submission begins.
     await readyOrCancelled(this.paint(),cancel.signal);
+    // Upload material textures under the loading lock, not in the first ridden frame.
+    await readyOrCancelled(warmObjectTextures(this.renderer,model??this.scene,cancel.signal),cancel.signal);
     for(const enabled of [false,true]){
      if(cancel.signal.aborted)throw cancelled(cancel.signal);
      for(const state of shadows)state.light.castShadow=enabled;

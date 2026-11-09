@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {startupPool,startupResource,warmTextureList} from './startupWork.ts';
 import {surfaceKind,type Surface} from './realisticMaterialRules.ts';
 type Maps={color:T.Texture;detail:T.Texture};
 const maps=new Map<Surface,Maps>();
@@ -16,11 +17,28 @@ const profiles:Record<Surface,[number,number,number,number]>={
 };
 let ready:Promise<void>|undefined;
 export function loadRealisticMaterials(renderer:T.WebGLRenderer){
- return ready??=(async()=>{const loader=new T.TextureLoader();await Promise.all((Object.keys(profiles) as Surface[]).map(async name=>{
-  const [color,detail]=await Promise.all(['color','detail'].map(suffix=>loader.loadAsync('./belle/skins/'+name+'-'+suffix+'.webp')));
-  for(const texture of [color,detail]){texture.wrapS=texture.wrapT=T.RepeatWrapping;texture.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());}
-  color.colorSpace=T.SRGBColorSpace;maps.set(name,{color,detail});
- }));waterNormal=await loader.loadAsync('./belle/skins/water-normal.webp');waterNormal.wrapS=waterNormal.wrapT=T.RepeatWrapping;waterNormal.anisotropy=4;})();
+ if(ready)return ready;
+ const task=(async()=>{
+  const loader=new T.TextureLoader(),controller=new AbortController(),owned=new Set<T.Texture>(),staged=new Map<Surface,Maps>();
+  const deadline=setTimeout(()=>controller.abort(new Error('Island surface preparation timed out. Reload to retry.')),60000);
+  const load=async(url:string)=>{const texture=await startupResource(loader.loadAsync(url),45000,'Surface texture',t=>t.dispose(),controller.signal);owned.add(texture);return texture;};
+  try{
+   // At most three pairs decode at once, rather than fifty-six simultaneous requests.
+   await startupPool(Object.keys(profiles) as Surface[],3,async name=>{
+    try{
+     const [color,detail]=await Promise.all(['color','detail'].map(suffix=>load('./belle/skins/'+name+'-'+suffix+'.webp')));
+     for(const texture of [color,detail]){texture.wrapS=texture.wrapT=T.RepeatWrapping;texture.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());}
+     color.colorSpace=T.SRGBColorSpace;
+     await warmTextureList(renderer,[color,detail],controller.signal);staged.set(name,{color,detail});
+    }catch(error){controller.abort(error);throw error;}
+   },controller.signal);
+   const water=await load('./belle/skins/water-normal.webp');water.wrapS=water.wrapT=T.RepeatWrapping;water.anisotropy=4;
+   await warmTextureList(renderer,[water],controller.signal);
+   for(const [name,textures] of staged)maps.set(name,textures);waterNormal=water;
+  }catch(error){controller.abort(error);for(const texture of owned)texture.dispose();throw error;}
+  finally{clearTimeout(deadline);}
+ })();
+ ready=task;void task.catch(()=>{if(ready===task)ready=undefined;});return task;
 }
 /** Photographic detail is projected in model space, so it does not slide while riding.
  * Existing albedo/alpha maps, articulated pivots, skins and custom shaders are retained.

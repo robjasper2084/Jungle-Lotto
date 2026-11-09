@@ -1,0 +1,9 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {createHash} from 'node:crypto';
+import {inspectGlb,inspectSwoopRoster} from './assetBridge.mjs';
+const glb=(json={asset:{version:'2.0'},nodes:[{skin:0,mesh:0},{name:'Hip'}],skins:[{joints:[1]}],animations:[{name:'EUC_Ride_Idle'}]})=>{const text=Buffer.from(JSON.stringify(json));const n=Math.ceil(text.length/4)*4,b=Buffer.alloc(20+n,32);b.write('glTF');b.writeUInt32LE(2,4);b.writeUInt32LE(b.length,8);b.writeUInt32LE(n,12);b.writeUInt32LE(0x4e4f534a,16);text.copy(b,20);return b;};
+test('GLB metadata preserves source clips without claiming retargeted animations',()=>{const r=inspectGlb(glb());assert.deepEqual(r.animations,['EUC_Ride_Idle']);assert.equal(r.skins,1);assert.equal(r.rigFit,'not validated in Belle Isle');});
+test('bridge verifies exact Git blob identity and refuses changed bytes',()=>{const b=glb(),sha=createHash('sha1').update(`blob ${b.length}\0`).update(b).digest('hex');assert.equal(inspectGlb(b,sha).blob,sha);assert.throws(()=>inspectGlb(b,'0'.repeat(40)),/changed/);});
+test('LFS pointers and malformed chunk lengths fail instead of becoming model assets',()=>{assert.throws(()=>inspectGlb(Buffer.from('version https://git-lfs.github.com/spec/v1')));const b=glb();b.writeUInt32LE(b.length+10,12);assert.throws(()=>inspectGlb(b),/chunk/);});
+test('missing skins and invalid joint references cannot be approved',()=>{assert.throws(()=>inspectGlb(glb({nodes:[],skins:[]})),/skinned/);assert.throws(()=>inspectGlb(glb({nodes:[{skin:0,mesh:0}],skins:[{joints:[5]}]})),/joint/);});
+test('a skin definition without an actual skinned mesh is not sufficient',()=>{assert.throws(()=>inspectGlb(glb({nodes:[{}],skins:[{joints:[0]}]})),/mesh/);});
+test('absent real source folder fails; it does not create substitute assets',async()=>{await assert.rejects(inspectSwoopRoster('/definitely-not-a-repository'),/ENOENT/);});
