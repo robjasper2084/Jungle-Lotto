@@ -1,0 +1,38 @@
+name: Verify published Belle Isle version
+
+on:
+  workflow_run:
+    workflows: ['Deploy GitHub Pages']
+    types: [completed]
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: belle-public-verification-${{ github.event.workflow_run.head_sha }}
+  cancel-in-progress: false
+jobs:
+  public-version:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_repository.full_name == 'robjasper2084/Jungle-Lotto'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out only the deployed production revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Verify actual public manifest and emitted game bundle hashes
+        env:
+          EXPECTED_MERGE_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: node scripts/belle-release-pages.mjs verify https://robjasper2084.github.io/Jungle-Lotto/ "$EXPECTED_MERGE_SHA"
+      - name: Preserve public HTTP and content-hash evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-public-version-${{ github.event.workflow_run.head_sha }}
+          path: belle-public-verification.json
+          if-no-files-found: warn
+          retention-days: 14

@@ -1,0 +1,57 @@
+name: Belle Isle release evidence
+
+on:
+  pull_request:
+    paths:
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/**'
+      - 'scripts/belle-release-pages*.mjs'
+      - '.github/workflows/belle-release-evidence.yml'
+      - '.github/workflows/belle-public-verification.yml'
+      - '.github/workflows/pages.yml'
+permissions:
+  contents: read
+concurrency:
+  group: belle-release-evidence-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      matrix:
+        case: [phone-timing, golden-reference]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Validate public bundle provenance tests
+        run: node --test scripts/belle-release-pages.test.mjs
+      - name: Build exact game candidate
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm ci
+          npm run check
+          npm run build
+          node --check scripts/release-evidence.mjs
+      - name: Install existing browser runtime
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Verify native countdown timing or documented golden-hour rendering
+        timeout-minutes: 40
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          BELLE_RELEASE_EVIDENCE: ${{ matrix.case }}
+          RELEASE_SOURCE_SHA: ${{ github.event.pull_request.head.sha }}
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node scripts/release-evidence.mjs
+      - name: Preserve exact-candidate acceptance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-release-evidence-${{ matrix.case }}
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/release-evidence
+          if-no-files-found: warn
+          retention-days: 14
