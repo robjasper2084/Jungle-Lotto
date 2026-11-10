@@ -1,3 +1,4 @@
+import {TrialStartPresentation} from './trialStartPresentation.ts';
 import * as T from 'three';
 import {trialCourses} from './trialCourses.ts';
 import {TrialRun, formatTrialTime, formatTrialSplit, type TrialCourse, type TrialPose, type TrialVehicle} from './trialRules.ts';
@@ -42,6 +43,7 @@ export class IslandTrials {
   readonly courses: TrialCourse[];
   private readonly records = new TrialRecords();
   private readonly audio: TrialAudio;
+  private readonly startPresentation: TrialStartPresentation;
   private readonly ghostStore = new TrialGhostStore();
   private readonly ghostView: TrialGhostView;
   private ghostRecorder?: TrialGhostRecorder;
@@ -102,6 +104,8 @@ export class IslandTrials {
   constructor(private scene: T.Scene, private data: ParkMap, private terrain: ParkTerrain, private canvas: HTMLCanvasElement, private hooks: Hooks) {
     this.audio = new TrialAudio({changed: () => this.refreshSound()});
     this.ghostView = new TrialGhostView(scene);
+    this.startPresentation = new TrialStartPresentation(scene, () => this.active && !this.preparing && this.run?.status === 'countdown');
+    window.addEventListener('pagehide', event => { if (!event.persisted) this.startPresentation.dispose(); });
     try { this.courses = trialCourses(data, terrain); }
     catch (error) { this.courses = []; this.unavailable = error instanceof Error ? error.message : 'Courses could not load.'; }
     this.world.name = 'Island trial route';
@@ -154,7 +158,7 @@ export class IslandTrials {
   }
 
   private updateGhosts() {
-    const active = !!this.run && !this.preparing && (this.run.status === 'running' || this.run.status === 'countdown');
+    const active = !!this.run && (this.run.status === 'running' || this.run.status === 'countdown');
     this.ghostView.update(this.run?.elapsed ?? 0, this.recordedGhost, this.paceGhost, this.actor ?? {x: 0, y: 0, z: 0}, this.ghostsEnabled && active);
   }
 
@@ -289,7 +293,7 @@ export class IslandTrials {
     if (!this.hooks.ready() || (!this.active && !this.hooks.available())) { this.toast('Return to exploration before starting a course.'); return; }
     this.audio.silence();
     if (course.vehicle === 'hoverbike') void this.audio.unlock();
-    this.preparation?.abort();
+    this.preparation?.abort(); this.startPresentation.release();
     clearTimeout(this.noticeTimer); this.notice.hidden = true;
     this.boardFeedback.hidden = true;
     const generation = ++this.generation, preparation = new AbortController(); this.preparation = preparation;
@@ -308,11 +312,18 @@ export class IslandTrials {
       const ready = await this.hooks.prepare(course, preparation.signal);
       if (preparation.signal.aborted || generation !== this.generation) return;
       if (!ready) { this.failedStart(course.vehicle); return; }
-      this.run = new TrialRun(course); this.run.restart(spawnPose(course)); this.preparing = false;
+      this.run = new TrialRun(course); this.run.restart(spawnPose(course));
       this.recordedGhost = this.ghostStore.best(course); this.paceGhost = createTrialPaceGhost(course);
       this.ghostRecorder = new TrialGhostRecorder(course); this.ghostView.setCourse(course); this.updateGhosts();
-      this.world.visible = true; this.syncGates(); this.refreshHud(); this.canvas.focus();
-      this.live.textContent = `${course.name}. Get ready. Pass all ${course.gates.length} gates in order.`;
+      this.world.visible = true; this.syncGates(); this.refreshHud();
+      // Course/vehicle/gates must have a completed real frame before countdown.
+      // Retain that starting-line view during countdown so native controls and
+      // the HTML clock cannot be starved by repeated GPU-heavy scene draws.
+      await this.startPresentation.prepare(preparation.signal);
+      if (preparation.signal.aborted || generation !== this.generation) return;
+      this.preparing = false; this.skipNext = true; this.lastRunning = false;
+      this.refreshHud(); this.canvas.focus();
+      this.live.textContent = `${course.name}. Starting-line view held during countdown. Get ready. Pass all ${course.gates.length} gates in order.`;
     } catch (error) {
       if (preparation.signal.aborted || generation !== this.generation) return;
       console.warn('Island trial preparation failed', error);
@@ -352,7 +363,7 @@ export class IslandTrials {
     this.actor = {...actor};
     this.launchers.forEach(launch => { launch.disabled = !this.hooks.ready(); });
     if (!this.active) return;
-    if (this.run) {
+    if (this.run && !this.preparing) {
       const allowed = this.hooks.running();
       const previousGate = this.run.next;
       if (!allowed && this.lastRunning && this.run.status !== 'finished') this.audio.silence();
@@ -375,7 +386,7 @@ export class IslandTrials {
   interrupt(message = '') {
     const wasActive = this.active, hadDialog = this.board.open || this.results.open;
     this.audio.silence();
-    this.preparation?.abort(); this.preparation = undefined; this.generation++;
+    this.preparation?.abort(); this.startPresentation.release(); this.preparation = undefined; this.generation++;
     this.current = undefined; this.run = undefined; this.preparing = false; this.skipNext = false; this.lastRunning = false; this.completed = false;
     this.ghostRecorder = undefined; this.recordedGhost = this.paceGhost = null; this.ghostView.clear();
     this.hud.hidden = true; this.world.visible = false; this.clearRoute(); this.hudAtlas = undefined;
@@ -394,6 +405,7 @@ export class IslandTrials {
     const run = this.run, paused = !this.preparing && !this.hooks.running();
     this.hud.dataset.status = this.preparing ? 'preparing' : run?.status ?? 'idle';
     this.hud.dataset.reducedMotion = String(this.hooks.reducedMotion());
+    this.hud.dataset.startPresentation = JSON.stringify(this.startPresentation.snapshot);
     this.hud.dataset.next = String(run?.next ?? 0); this.hud.dataset.elapsed = String(run?.finish ?? run?.elapsed ?? 0); this.hud.dataset.course = course.id;
     this.hudSeries.textContent = seriesName(course.vehicle).toUpperCase(); this.hudTitle.textContent = course.name;
     this.hudTimer.textContent = formatTrialTime(run?.finish ?? run?.elapsed ?? 0);
@@ -543,7 +555,7 @@ export class IslandTrials {
     let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
     for (const point of points) { minX = Math.min(minX, point.x); maxX = Math.max(maxX, point.x); minZ = Math.min(minZ, point.z); maxZ = Math.max(maxZ, point.z); }
     if (course.category === 'island') for (const [x, z] of this.data.island) { minX = Math.min(minX, x); maxX = Math.max(maxX, x); minZ = Math.min(minZ, z); maxZ = Math.max(maxZ, z); }
-    const rangeX = Math.max(90, maxX - minX), rangeZ = Math.max(90, maxZ - minZ);
+    const rangeX = Math.max(90, maxX - minX),rangeZ = Math.max(90, maxZ - minZ);
     const scale = Math.min((width - 54) / rangeX, (height - 42) / rangeZ) * .92;
     return {scale, px: (x: number) => width / 2 + (x - (minX + maxX) / 2) * scale, pz: (z: number) => height / 2 + (z - (minZ + maxZ) / 2) * scale};
   }

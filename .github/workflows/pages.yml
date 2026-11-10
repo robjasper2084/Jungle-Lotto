@@ -120,6 +120,10 @@ jobs:
         run: |
           node --test scripts/share-published-ride-textures.test.mjs scripts/share-belle-assets.test.mjs
           node scripts/build-pages-artifact.mjs
+      - name: Bind emitted Belle Isle bundles to the release manifest
+        run: |
+          node --test scripts/belle-release-pages.test.mjs
+          node scripts/belle-release-pages.mjs stamp _site
       - name: Verify packaged arcade assets on desktop and mobile
         run: node scripts/gothtechnology-pages-browser.mjs
       - name: Upload artifact

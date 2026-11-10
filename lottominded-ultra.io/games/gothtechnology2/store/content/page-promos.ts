@@ -1,10 +1,16 @@
 export type PagePromo = {
-  id: string; delayMs: number; title: string; kicker: string;
-  description: string; image: string; alt: string;
-  width: number; height: number; url: string; action: string;
-};
+  id: string; delayMs: number; title: string; url: string;
+} & ({
+  embed?: false;
+  kicker: string; description: string; image: string; alt: string;
+  width: number; height: number; action: string;
+} | { embed: true });
 
 export const pagePromos: Record<string, PagePromo> = {
+  'shop/': {
+    id: 'belle-isle-explorer', delayMs: 25_000, title: 'Belle Isle Explorer',
+    url: 'arcade/belle-isle-explorer/', embed: true,
+  },
   'play/': {
     id: 'swoop-detroit', delayMs: 5_000, title: 'Swoop Detroit',
     kicker: 'DIGITAL STATIC / DETROIT RIDING',

@@ -1,0 +1,64 @@
+name: Belle Isle co-op review
+
+on:
+  pull_request:
+    paths:
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/**'
+      - 'lottominded-ultra.io/games/gothtechnology2/swoop-source/public/exports/rigged-heroes/**'
+      - 'lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/electricVehicles.ts'
+      - '.github/workflows/belle-coop.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+concurrency:
+  group: belle-coop-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  coop-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        device: [desktop, phone]
+    defaults:
+      run:
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install locked game dependencies
+        run: npm ci
+      - name: Inspect all five actual Swoop rider models
+        run: |
+          mkdir -p output/coop
+          node --experimental-strip-types src/belle/coop/assetBridge.mjs "$GITHUB_WORKSPACE" > output/coop/rig-inspection.json
+      - name: Strict full-game check and all registered regressions
+        run: |
+          npm run check
+          npm test
+      - name: Build the real island
+        run: npm run build
+      - name: Install existing browser runtime
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Play two riders in the real island
+        env:
+          BELLE_COOP_DEVICE: ${{ matrix.device }}
+          COOP_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          DEBUG: pw:browser
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" node --experimental-strip-types scripts/coop-browser-smoke.mjs
+      - name: Preserve co-op gameplay screenshots and results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: belle-coop-gameplay-${{ matrix.device }}
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/coop
+          retention-days: 7
+          if-no-files-found: error

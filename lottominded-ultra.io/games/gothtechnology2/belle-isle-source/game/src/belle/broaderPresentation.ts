@@ -26,6 +26,9 @@ export class BroaderPresentation {
   this.aircraft.update(this.clock,day,!preview&&!this.reduced&&budget.aircraft);
   this.reflections.update(this.liveClock,hour,coverage,quality,!preview&&this.running);
  }
+ prepareReflections(hour:number,coverage:number,quality:string){this.reflections.prepare(this.liveClock,hour,coverage,quality);}
+ protectStartup(){this.reflections.protect();}
+ observeFrame(frameMs:number,eligible:boolean){this.reflections.observe(frameMs,eligible);}
  get stats(){return{atmosphere:this.atmosphere.stats,reflections:this.reflections.stats};}
  dispose(){if(this.disposed)return;this.disposed=true;window.removeEventListener('pagehide',this.hide);this.restoreRider();this.aircraft.dispose();this.atmosphere.dispose();this.reflections.dispose();}
 }

@@ -40,3 +40,10 @@ export function treeLodBlend(distance:number,radius:number,transition=24){
  if(!Number.isFinite(distance)||!Number.isFinite(radius)||radius<=0||!Number.isFinite(transition)||transition<=0)return 0;
  return ease((radius-Math.max(0,distance))/transition);
 }
+
+/** Same shadow-map resolution; widen only when the viewer is above ground.
+ * Quantized extent avoids projection churn from minor rider/camera motion. */
+export function photoShadowExtent(cameraY:number){
+ const height=Number.isFinite(cameraY)?Math.max(0,cameraY-10):0;
+ return Math.min(170,55+Math.floor(height*1.4/5)*5);
+}

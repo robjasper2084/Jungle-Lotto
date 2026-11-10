@@ -10,8 +10,9 @@ export function normalizeSky(value:Partial<SkySettings>|null):SkySettings{
 /** Only foreground, unpaused play advances the clock; never catch up after a stalled tab. */
 export function advanceHour(hour:number,seconds:number,settings:SkySettings,running:boolean){return wrapHour(hour+(settings.cycle&&running&&Number.isFinite(seconds)?clamp(seconds,0,.1)*24/(settings.dayMinutes*60):0));}
 export function clockLabel(hour:number){const minutes=Math.floor(wrapHour(hour)*60)%1440;return String(Math.floor(minutes/60)).padStart(2,'0')+':'+String(minutes%60).padStart(2,'0');}
+/** Art-directed skyline alignment, not an astronomical sun-position calculation. */
 export function sunDirection(hour:number):[number,number,number]{
- const a=(wrapHour(hour)-12)*Math.PI/12,s=Math.sin(a),c=Math.cos(a),x=-.883*s+.469*c*.30,y=.82*c,z=.469*s+.883*c*.30,length=Math.hypot(x,y,z);return [x/length,y/length,z/length];
+ const a=(wrapHour(hour)-12)*Math.PI/12,s=Math.sin(a),c=Math.cos(a),x=-.981627183447664*s+.190808995376545*c*.30,y=.82*c,z=.190808995376545*s+.981627183447664*c*.30,length=Math.hypot(x,y,z);return [x/length,y/length,z/length];
 }
 export function smooth(a:number,b:number,x:number){const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t);}
 /** Keep the road and nearby gates clear while separating the far river skyline.

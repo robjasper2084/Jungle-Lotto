@@ -1,7 +1,11 @@
+import {NatureViewSelection} from './natureViewSelection.ts';
 import * as T from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {natureBudget,type Plant,type NaturePlan} from './naturePlan.ts';
+import {canopyTint} from './sunsetCanopy.ts';
+import {prepareCanopyCoverage} from './canopyCoverage.ts';
+import {prepareVegetationLod,vegetationScale} from './vegetationLod.ts';
 import {treeLodBlend} from './photoReferenceGrade.ts';
 type Entry={id:string;meshes?:string[];cardSize?:number;cardCenter?:number[];card?:string;triangles:number};
 type Manifest={trees:Entry[];ground:Entry[]};
@@ -13,12 +17,16 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void){
  status('Loading varied trees');
  const treeSource=await loader.loadAsync(base+'trees.glb');treeSource.scene.updateMatrixWorld(true);
  const pools:Pool[]=[],dummy=new T.Object3D(),tint=new T.Color();
+ const plantTint=(p:Plant)=>tint.setRGB(...canopyTint(p.tint,p.canopyTone));
  function instance(source:T.Mesh,count:number,name:string,shadow:boolean){
   const geometry=source.geometry.clone().applyMatrix4(source.matrixWorld);
+  if(shadow)geometry.setAttribute('belleLodCoverage',new T.InstancedBufferAttribute(new Float32Array(count),1).setUsage(T.DynamicDrawUsage));
   const materials=Array.isArray(source.material)?source.material:[source.material];
   for(const material of materials){const m=material as T.MeshStandardMaterial;
    m.side=T.DoubleSide;m.roughness=Math.max(.78,m.roughness);m.metalness=0;
    if(m.transparent||m.alphaTest>0){m.transparent=false;m.alphaTest=.45;m.depthWrite=true;}
+   if(shadow&&/leaves/i.test(source.name))prepareCanopyCoverage(m);
+   if(shadow)prepareVegetationLod(m);
    if(m.map)m.map.anisotropy=4;
   }
   const mesh=new T.InstancedMesh(geometry,source.material,count);mesh.name=name;mesh.count=0;
@@ -39,7 +47,9 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void){
   // while the match starts. Only one pair of cards per distant tree.
   const image=await textures.loadAsync(base+entry.card);image.colorSpace=T.SRGBColorSpace;
   const far=new T.InstancedMesh(cards,new T.MeshBasicMaterial({map:image,alphaTest:.35,side:T.DoubleSide,toneMapped:true}),plants.length);
-  far.name='Distant '+entry.id;plants.forEach((p,i)=>{far.setMatrixAt(i,matrix(p));far.setColorAt(i,tint.setScalar(p.tint));});far.computeBoundingSphere();scene.add(far);
+  prepareCanopyCoverage(far.material as T.Material,true);prepareVegetationLod(far.material as T.Material,true);
+  cards.setAttribute('belleLodCoverage',new T.InstancedBufferAttribute(new Float32Array(plants.length).fill(1),1).setUsage(T.DynamicDrawUsage));
+  far.name='Distant '+entry.id;plants.forEach((p,i)=>{far.setMatrixAt(i,matrix(p));far.setColorAt(i,plantTint(p));});far.computeBoundingSphere();scene.add(far);
   pools.push({id:entry.id,meshes,far,plants});
  }
  // Ground cover is a separate, smaller stage. Source LOD2 models and shared
@@ -55,9 +65,7 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void){
  for(const source of [treeSource.scene,ground.scene])source.traverse(o=>{if((o as T.Mesh).isMesh)(o as T.Mesh).geometry.dispose();});
  let quality:keyof typeof natureBudget='automatic',lastX=Infinity,lastZ=Infinity;
  const stats={treeVariants:manifest.trees.length,groundVariants:manifest.ground.length,trees:plan.trees.length,ground:plan.ground.length,visibleTrees:0,visibleGround:0};
- function update(x:number,z:number,night=0,golden=0){
-  const warm=Math.max(0,Math.min(1,golden));
-  for(const pool of pools)if(pool.far)(pool.far.material as T.MeshBasicMaterial).color.setRGB(1,1-.075*warm,1-.16*warm).multiplyScalar(1-night*.70);
+ function select(x:number,z:number){
   if(Math.hypot(x-lastX,z-lastZ)<6)return;
   lastX=x;lastZ=z;const budget=natureBudget[quality];
   const d=(p:Plant)=>(p.x-x)**2+(p.z-z)**2;
@@ -66,9 +74,27 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void){
   const selected=new Set([...nearTrees,...nearGround]);stats.visibleTrees=nearTrees.length;stats.visibleGround=nearGround.length;
   for(const pool of pools){
    const near=pool.plants.filter(p=>selected.has(p));
-   for(const mesh of pool.meshes){mesh.count=near.length;near.forEach((p,i)=>{const blend=pool.far?treeLodBlend(Math.hypot(p.x-x,p.z-z),budget.treeRadius):1;mesh.setMatrixAt(i,matrix(p,blend));mesh.setColorAt(i,tint.setScalar(p.tint));});mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;}
-   if(pool.far){pool.plants.forEach((p,i)=>{const blend=selected.has(p)?treeLodBlend(Math.hypot(p.x-x,p.z-z),budget.treeRadius):0;pool.far!.setMatrixAt(i,matrix(p,1-blend));});pool.far.instanceMatrix.needsUpdate=true;}
+   for(const mesh of pool.meshes){
+    mesh.count=near.length;const coverage=mesh.geometry.getAttribute('belleLodCoverage') as T.InstancedBufferAttribute|undefined;
+    near.forEach((p,i)=>{const blend=pool.far?treeLodBlend(Math.hypot(p.x-x,p.z-z),budget.treeRadius):1;
+     mesh.setMatrixAt(i,matrix(p,vegetationScale(blend)));mesh.setColorAt(i,plantTint(p));coverage?.setX(i,blend);
+    });
+    mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;if(coverage)coverage.needsUpdate=true;
+   }
+   if(pool.far){
+    const coverage=pool.far.geometry.getAttribute('belleLodCoverage') as T.InstancedBufferAttribute;
+    pool.plants.forEach((p,i)=>{const blend=selected.has(p)?treeLodBlend(Math.hypot(p.x-x,p.z-z),budget.treeRadius):0;
+     pool.far!.setMatrixAt(i,matrix(p,vegetationScale(1-blend)));coverage.setX(i,1-blend);
+    });pool.far.instanceMatrix.needsUpdate=true;coverage.needsUpdate=true;
+   }
   }
+ }
+ const view=new NatureViewSelection(select),eye=new T.Vector3(),before=scene.onBeforeRender;
+ scene.onBeforeRender=(...args)=>{before.apply(scene,args);args[2].getWorldPosition(eye);view.render(eye.x,eye.z);};
+ function update(x:number,z:number,night=0,golden=0){
+  const warm=Math.max(0,Math.min(1,golden));
+  for(const pool of pools)if(pool.far)(pool.far.material as T.MeshBasicMaterial).color.setRGB(1,1-.075*warm,1-.16*warm).multiplyScalar(1-night*.70);
+  view.prepare(x,z);
  }
  return{stats,update,setQuality(value:string){quality=value in natureBudget?value as keyof typeof natureBudget:'automatic';lastX=Infinity;}};
 }

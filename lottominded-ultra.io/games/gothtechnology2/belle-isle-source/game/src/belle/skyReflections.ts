@@ -1,12 +1,13 @@
 import * as T from 'three';
 import {presentationBudget,reflectionRequired} from './presentationPolicy.ts';
+import {ReflectionStartupGate} from './startupWork.ts';
 /** A small, sky-only probe. Never captures the player, world or UI recursively. */
 export class SkyReflections {
  private scene:T.Scene;private renderer:T.WebGLRenderer;private generator:T.PMREMGenerator;
  private probeScene=new T.Scene();private probe:T.Mesh<T.SphereGeometry,T.ShaderMaterial>;
  private target:T.WebGLRenderTarget|undefined;private fallback:T.Texture|null;
  private last=-Infinity;private lastHour=0;private lastCoverage=0;private disabled=false;private disposed=false;
- private lastCost=0;private captures=0;
+ private lastCost=0;private captures=0;private startupGate=new ReflectionStartupGate();
  constructor(scene:T.Scene,renderer:T.WebGLRenderer,source:T.ShaderMaterial){
   this.scene=scene;this.renderer=renderer;this.fallback=scene.environment;this.generator=new T.PMREMGenerator(renderer);
   const material=source.clone();material.uniforms=source.uniforms;material.toneMapped=false;material.fog=false;
@@ -15,11 +16,23 @@ export class SkyReflections {
   this.probe=new T.Mesh(new T.SphereGeometry(10,16,12),material);this.probe.frustumCulled=false;this.probeScene.add(this.probe);
   renderer.domElement.addEventListener('webglcontextrestored',this.restored);
  }
- private restored=()=>{this.disabled=false;this.last=-Infinity;};
+ private restored=()=>{this.disabled=false;this.last=-Infinity;this.startupGate.protect(performance.now());};
+ observe(frameMs:number,eligible:boolean){this.startupGate.observe(frameMs,eligible);}
+ protect(){this.startupGate.protect(performance.now());}
+ prepare(clock:number,hour:number,coverage:number,quality:string){
+  if(this.disposed||this.disabled||this.target||this.renderer.xr.isPresenting||this.renderer.getContext().isContextLost())return;
+  // Synchronous GPU submission is deliberate here: loading screen is still locked.
+  this.capture(clock,hour,coverage,quality);this.protect();
+ }
  update(clock:number,hour:number,coverage:number,quality:string,active:boolean){
   if(this.disposed||this.disabled||!active||this.renderer.xr.isPresenting||this.renderer.getContext().isContextLost())return;
+  if(!this.startupGate.allowed(performance.now()))return;
   const budget=presentationBudget(quality),interval=this.lastCost>40?Math.max(120,budget.reflectionInterval):budget.reflectionInterval;
   if(!reflectionRequired(clock,this.last,hour,this.lastHour,coverage,this.lastCoverage,interval))return;
+  this.capture(clock,hour,coverage,quality);
+ }
+ private capture(clock:number,hour:number,coverage:number,quality:string){
+  const budget=presentationBudget(quality);
   const renderer=this.renderer,oldTarget=renderer.getRenderTarget(),face=renderer.getActiveCubeFace(),mip=renderer.getActiveMipmapLevel();
   const xr=renderer.xr.enabled,tone=renderer.toneMapping,autoClear=renderer.autoClear;
   const viewport=renderer.getViewport(new T.Vector4()),scissor=renderer.getScissor(new T.Vector4()),scissorTest=renderer.getScissorTest();
@@ -35,6 +48,6 @@ export class SkyReflections {
    renderer.setViewport(viewport);renderer.setScissor(scissor);renderer.setScissorTest(scissorTest);renderer.setClearColor(clear,alpha);
   }
  }
- get stats(){return{captures:this.captures,captureCpuMs:this.lastCost,usingFallback:!this.target,disabled:this.disabled};}
+ get stats(){return{captures:this.captures,captureCpuMs:this.lastCost,usingFallback:!this.target,disabled:this.disabled,startup:this.startupGate.stats};}
  dispose(){if(this.disposed)return;this.disposed=true;this.renderer.domElement.removeEventListener('webglcontextrestored',this.restored);if(this.scene.environment===this.target?.texture)this.scene.environment=this.fallback;this.target?.dispose();this.generator.dispose();this.probe.geometry.dispose();this.probe.material.dispose();}
 }
