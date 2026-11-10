@@ -54,15 +54,7 @@ test('coverage shading adds no texture samples or lighting passes',()=>{
  assert.equal((s.fragmentShader.match(/texture2D\(/g)||[]).length,before);
  assert(!s.fragmentShader.includes('sampler2D belle'));
 });
-test('actual instance path updates fade attributes and uses full-scale geometry for both representations',()=>{
- const s=read('nature.ts');
- assert(s.includes('matrix(p,vegetationScale(blend))'));
- assert(s.includes('matrix(p,vegetationScale(1-blend))'));
- assert(!s.includes('matrix(p,blend)')&&!s.includes('matrix(p,1-blend)'));
- assert(s.includes('coverage?.setX(i,blend)')&&s.includes('coverage.setX(i,1-blend)'));
- assert.equal((s.match(/setColorAt\(i,plantTint\(p\)\)/g)||[]).length,2);
- assert(s.includes('slice(0,budget.trees)')&&s.includes('slice(0,budget.ground)'));
-});
+test('full 3D seasonal instances retain authored scale through complementary LOD coverage',()=>{const s=read('nature.ts');assert(s.includes('far.setMatrixAt(i,matrix(p))'));assert(s.includes('mesh.setMatrixAt(i,matrix(p))'));assert(s.includes('1-treeBlend(distance,cutoff)'));assert(s.includes('slice(0,budget.trees)')&&s.includes('slice(0,budget.ground)'));assert(!s.includes('matrix(p,blend)'));});
 test('broad river waves retain resolvable slopes but vanish before subpixel aliasing',()=>{
  assert.equal(riverBandVisibility(0),1);assert(riverBandVisibility(.5)>.9);
  assert(riverBandVisibility(2)>.35);assert(riverBandVisibility(6)<.0002);

@@ -25,7 +25,6 @@ body.coop-playing > header,body.coop-playing #navigation,body.coop-playing #ride
 @media(pointer:coarse){.coop-touch-stick,.coop-touch-hop,.coop-touch-brake{display:block}}
 @media(max-width:700px){.coop-session-title{display:none}.coop-session-toolbar{gap:4px;padding:4px}.coop-session-toolbar button{padding:7px 9px;font-size:11px;min-height:44px}.coop-player-info{padding:6px 8px;top:82px;left:8px;max-width:calc(100% - 16px)}#coop-announcement{top:67px;font-size:10px;padding:3px 7px;max-width:92vw}.coop-player-actions{gap:4px;bottom:6px}.coop-player-actions button{font-size:10px;padding:6px 8px}.coop-player-status{font-size:10px}}
 #coop-overlay[data-orientation=portrait] .coop-player-pane{border-right:0;border-bottom:1px solid #bdecc399}
-#coop-overlay[data-orientation=portrait] .coop-player-pane[data-seat="1"] .coop-player-info{top:8px}
 @media(max-height:540px) and (min-width:600px){.coop-player-info{top:74px;padding:4px 7px}.coop-player-info strong{font-size:11px}#coop-announcement{top:66px;font-size:10px}.coop-player-actions button{padding:6px;font-size:10px}}
 @media(prefers-reduced-motion:reduce){#coop-overlay *,#coop-setup *{animation:none!important;transition:none!important}}
 
@@ -43,3 +42,20 @@ body.coop-playing > header,body.coop-playing #navigation,body.coop-playing #ride
 }
 
 #welcome.startup #welcome-coop{min-width:0;min-height:44px;padding:8px 0;margin:0;border:0;border-bottom:1px solid #ffffff44;border-radius:0;background:transparent;color:#e2e6dc;font-size:11px;font-weight:400;grid-column:1/-1;justify-self:start}
+
+/* Per-view controls stay inside their own split on touch and keyboard devices. */
+.coop-session-toolbar select{min-height:44px;max-width:120px;background:#153d38;color:#eff8ef;border:1px solid #6d8c7f;border-radius:7px}
+.coop-lift{position:absolute;right:92px;bottom:80px;display:flex;gap:4px;pointer-events:auto}.coop-lift[hidden]{display:none}.coop-lift button{min-width:44px;min-height:44px;color:#eff8ef;background:#153d38b8;border:1px solid #6d8c7f;border-radius:7px;touch-action:none}
+.coop-player-pane[data-touch=true] .coop-touch-stick,.coop-player-pane[data-touch=true] .coop-touch-hop,.coop-player-pane[data-touch=true] .coop-touch-brake{display:block}
+#coop-overlay[data-layout=horizontal] .coop-player-pane{border-bottom:1px solid #bdecc399}
+@media(max-width:900px){.coop-session-title{display:none}.coop-session-toolbar select{max-width:88px;font-size:11px}.coop-player-actions{gap:3px}.coop-player-actions button{font-size:10px;padding:4px 6px}.coop-lift{right:86px;bottom:78px;flex-direction:column}.coop-lift button{padding:2px}.coop-player-info strong{font-size:10px}.coop-player-status{font-size:9px}}
+
+/* Status cards follow viewport rows, including the second top-row player. */
+#coop-overlay .coop-player-pane[data-top-row=false] .coop-player-info{top:8px}
+.coop-player-pane[data-vehicle=hoverbike] .coop-touch-hop{display:block}
+@media(max-width:700px){#coop-overlay .coop-player-pane[data-top-row=true] .coop-player-info{top:96px}}
+
+/* Flight controls sit above the shared action row, even in half-width panes. */
+.coop-lift{right:92px;bottom:126px;flex-direction:column}
+.coop-player-pane[data-vehicle=hoverbike] .coop-touch-hop{bottom:126px}
+.coop-player-pane[data-vehicle=hoverbike] .coop-touch-brake{bottom:178px}

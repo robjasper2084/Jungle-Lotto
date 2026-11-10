@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {RIDERS,VEHICLES,parseSelection,assignPlayer,defaultPair,loadPair,savePair,PREF_KEY,setupErrors,CoopLobbyState,CoopInput,findPairSpawns,coopViewports,glViewport,preparePair} from './coop.ts';
+import {RIDERS,VEHICLES,parseSelection,assignPlayer,defaultPair,defaultSelection,loadLayout,loadPair,savePair,PREF_KEY,setupErrors,CoopLobbyState,CoopInput,findPairSpawns,coopViewports,glViewport,preparePair} from './coop.ts';
 const selection=(values={})=>({...defaultPair()[0],...values});
 const pad=(index=0,changes={})=>({index,id:'Pad '+index,connected:true,mapping:'standard',axes:[0,0],buttons:Array.from({length:4},()=>({pressed:false,value:0})),...changes});
 const ground=(x,z)=>({height:2,land:true,blocked:false});
@@ -8,17 +8,17 @@ const pair=()=>[assignPlayer(0,defaultPair()[0]),assignPlayer(1,defaultPair()[1]
 const memory=()=>{const data=new Map();return {getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,v),data};};
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 
-test('five inspected base heroes and five EUC profiles map without invented car or bike assets',()=>{
- assert.equal(RIDERS.length,5);assert.equal(VEHICLES.length,5);
+test('five inspected heroes, five EUCs and the existing hoverbike map to their controllers',()=>{
+ assert.equal(RIDERS.length,5);assert.equal(VEHICLES.length,6);
  for(const r of RIDERS)for(const v of VEHICLES){const m=assignPlayer(0,selection({riderId:r.id,vehicleId:v.id}));assert.equal(m.riderId,r.id);assert.equal(m.vehicleId,v.id);assert.match(m.rider.blob,/^[0-9a-f]{40}$/);assert(m.requiresRigValidation);}
 });
 test('unknown vehicles and path injection cannot become a player assignment',()=>{
- for(const vehicleId of ['Cadillac','hoverbike','bicycle','ebike:talaria','__proto__','https://evil.invalid/model.glb'])assert.equal(parseSelection(selection({vehicleId})),undefined);
- assert.throws(()=>assignPlayer(0,selection({riderId:'../../evil'})));assert.throws(()=>assignPlayer(3,selection()));
+ for(const vehicleId of ['Cadillac','bicycle','ebike:talaria','__proto__','https://evil.invalid/model.glb'])assert.equal(parseSelection(selection({vehicleId})),undefined);
+ assert.throws(()=>assignPlayer(0,selection({riderId:'../../evil'})));assert.throws(()=>assignPlayer(4,selection()));
 });
 test('model source comes from allowlist, not caller URL or physics override',()=>{
  const m=assignPlayer(0,{...selection(),rider:{sourcePath:'https://evil'},profileSource:'evil',controller:'teleport'});
- assert(m.rider.sourcePath.includes('swoop-source/public/exports/rigged-heroes/'));assert.equal(m.controller,'RideCore');assert(!m.profileSource.includes('evil'));
+ assert(m.rider.sourcePath.includes('swoop-source/public/exports/rigged-heroes/'));assert.equal(m.controller,'HoverController');assert(!m.profileSource.includes('evil'));
 });
 test('each player gets a distinct frozen manifest even for the same hero',()=>{
  const a=assignPlayer(0,selection()),b=assignPlayer(1,selection());assert.notEqual(a.entityId,b.entityId);assert.notEqual(a,b);assert.notEqual(a.rider,b.rider);assert(Object.isFrozen(a)&&Object.isFrozen(a.rider));
@@ -93,7 +93,7 @@ test('spawn search is bounded and fails safely when no land exists',()=>{
  let probes=0;assert.throws(()=>findPairSpawns({x:0,y:0,z:0,heading:0},()=>{probes++;return {height:0,land:false,blocked:false};}),/safe/);assert(probes<=128);
 });
 test('invalid footprint, missing coordinates and nonfinite ground cannot create spawn',()=>{
- assert.throws(()=>findPairSpawns({x:0,y:0,z:0,heading:NaN},ground));assert.throws(()=>findPairSpawns({x:0,y:0,z:0,heading:0},ground,[.75]));assert.throws(()=>findPairSpawns({x:0,y:0,z:0,heading:0},()=>({height:NaN,land:true,blocked:false})));
+ assert.throws(()=>findPairSpawns({x:0,y:0,z:0,heading:NaN},ground));assert.throws(()=>findPairSpawns({x:0,y:0,z:0,heading:0},ground,[0]));assert.throws(()=>findPairSpawns({x:0,y:0,z:0,heading:0},()=>({height:NaN,land:true,blocked:false})));
 });
 test('odd landscape and portrait pixels partition exactly without gaps',()=>{
  for(const [w,h] of [[1441,961],[391,845],[320,568]]){const r=coopViewports(w,h);assert.equal(r.reduce((s,r)=>s+r.width*r.height,0),w*h);assert.equal(r.length,2);for(const v of r){const gl=glViewport(v,h);assert(gl.y>=0&&gl.y+gl.height<=h);}}
@@ -122,4 +122,21 @@ test('external cancellation disposes an asset that finishes after cancellation',
 });
 test('forged manifest URLs are canonicalized before reaching the loader',async()=>{
  const m=pair().map(x=>({...x,rider:{sourcePath:'https://evil',blob:'fake'}}));const actors=await preparePair(m,async x=>{assert(!x.rider.sourcePath.includes('evil'));return {identity:{},validate:()=>true,dispose(){}};},new AbortController().signal);actors.forEach(a=>a.dispose());
+});
+
+test('four slots keep distinct identities and persisted independent vehicles',()=>{const l=new CoopLobbyState();l.resize(4);l.select(2,{...defaultSelection(2),vehicleId:'euc:trail'});let s=l.snapshot();s.players.forEach((_,i)=>l.setReady(i,true,s.revision));const m=l.manifests();assert.equal(new Set(m.map(x=>x.entityId)).size,4);assert.equal(m[2].controller,'RideCore');assert.equal(m[3].controller,'HoverController');const store=memory();savePair(store,s.players);assert.deepEqual(loadPair(store),s.players);l.resize(2);assert.throws(()=>l.setReady(3,true,l.snapshot().revision));});
+test('horizontal is default, vertical is saved, all 2-4 view layouts tile odd dimensions',()=>{assert.equal(loadLayout(),'horizontal');assert.equal(loadLayout({getItem:()=> 'vertical'}),'vertical');for(const layout of ['horizontal','vertical'])for(const n of [2,3,4])for(const [w,h] of [[1441,961],[391,845]]){const r=coopViewports(w,h,n,layout);assert.equal(r.length,n);assert.equal(r.reduce((a,p)=>a+p.width*p.height,0),w*h);for(let i=0;i<n;i++)for(let j=0;j<i;j++)assert(r[i].x>=r[j].x+r[j].width||r[j].x>=r[i].x+r[i].width||r[i].y>=r[j].y+r[j].height||r[j].y>=r[i].y+r[i].height);}});
+test('four mixed-footprint spawns are separate from every other player',()=>{const radii=[1.3,.66,1.3,.66],p=findPairSpawns({x:0,y:2,z:0,heading:0},ground,radii);for(let i=0;i<4;i++)for(let j=0;j<i;j++)assert(Math.hypot(p[i].x-p[j].x,p[i].z-p[j].z)>=radii[i]+radii[j]+.8);});
+test('lift keys need release after focus loss and belong to only their player',()=>{const a=new CoopInput('wasd'),b=new CoopInput('arrows');assert.equal(a.read(new Set(['KeyE']),[]).lift??0,0);a.read(new Set(),[]);b.read(new Set(),[]);assert.equal(a.read(new Set(['KeyE']),[]).lift,1);assert.equal(b.read(new Set(['KeyE']),[]).lift,0);a.reset();assert.equal(a.read(new Set(['KeyE']),[]).lift??0,0);});
+
+test('clutch and gear shifts remain player-local and require release after pause',()=>{
+ const a=new CoopInput('wasd'),b=new CoopInput('arrows');a.read(new Set(),[]);b.read(new Set(),[]);
+ const held=new Set(['KeyC','BracketRight']);assert.equal(a.read(held,[]).clutch,1);assert.equal(b.read(held,[]).clutch,0);assert.equal(a.read(held,[]).shift,0);
+ a.read(new Set(),[]);assert.equal(a.read(held,[]).shift,1);a.read(held,[],true);assert.equal(a.read(held,[]).clutch??0,0);
+ a.read(new Set(),[]);assert.equal(a.read(held,[]).clutch,1);const p2=b.read(new Set(['KeyO','Digit9']),[]);assert.equal(p2.clutch,1);assert.equal(p2.shift,-1);
+});
+test('controller clutch is analog and gear selection is one action per press',()=>{
+ const i=new CoopInput('pad:0');i.read(new Set(),[pad()]);const buttons=Array.from({length:16},(_,n)=>({pressed:n===15,value:n===6?.7:n===15?1:0}));
+ const first=i.read(new Set(),[pad(0,{buttons})]);assert.equal(first.clutch,.7);assert.equal(first.shift,1);assert.equal(i.read(new Set(),[pad(0,{buttons})]).shift,0);
+ i.reset();assert.equal(i.read(new Set(),[pad(0,{buttons})]).clutch??0,0);
 });

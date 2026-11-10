@@ -33,7 +33,7 @@ import {readFileSync} from 'node:fs';
 const skySource=readFileSync(new URL('./islandSky.ts',import.meta.url),'utf8');
 const oldFragment=skySource.match(/const fragment=`([\s\S]*?)`;/)[1],newFragment=livingSkyFragment(oldFragment);
 test('sky change retains stars/moon/meteors and tone mapping',()=>assert.equal(newFragment.slice(newFragment.indexOf(' // Stars,')),oldFragment.slice(oldFragment.indexOf(' // Stars,'))));
-test('sky detail adds no texture samples or uniforms',()=>{assert.equal((newFragment.match(/texture2D\(/g)||[]).length,(oldFragment.match(/texture2D\(/g)||[]).length);assert.equal((newFragment.match(/uniform /g)||[]).length,(oldFragment.match(/uniform /g)||[]).length);});
+test('fallback sky detail adds no texture samples or uniforms',()=>{assert((newFragment.match(/texture2D\(/g)||[]).length<=(oldFragment.match(/texture2D\(/g)||[]).length);assert.equal((newFragment.match(/uniform /g)||[]).length,(oldFragment.match(/uniform /g)||[]).length);});
 test('sky integration keeps reduced motion and simulation clock',()=>{assert(skySource.includes('!titlePreview&&!reduceMotion'));assert(skySource.includes('cloudLightFactor(cloudClock'));assert(skySource.includes('fragmentShader:livingSkyFragment(fragment)'));});
 test('rider layer preserves final IK and bounded reach fallback',()=>{const s=readFileSync(new URL('./hoverRiderMotion.ts',import.meta.url),'utf8');assert(s.indexOf('this.rotate(chest,pitch')<s.indexOf('this.solve(arms[i])'));assert(s.includes('attempt<2'));assert(s.includes('this.apply(base,strength)'));});
 

@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {GolfRound,GOLF_HOLES} from './golfPlan.ts';
+import {ParkTerrain,inside} from './terrain.ts';
+const map=JSON.parse(fs.readFileSync(new URL('../../public/belle/map.json',import.meta.url),'utf8'));
+test('all six tees and putting surfaces stay on mapped dry course land',()=>{const terrain=new ParkTerrain(map);const boundary=map.areas.find((a:any)=>a.id==='1545572580').points;for(const h of GOLF_HOLES){for(const p of [h.tee,h.cup,...Array.from({length:48},(_,i)=>[h.cup[0]+(h.green+1.2)*Math.cos(i*Math.PI/24),h.cup[1]+(h.green+1.2)*Math.sin(i*Math.PI/24)])]){assert.ok(inside(p[0],p[1],boundary),h.name+' boundary');assert.ok(terrain.land(p[0],p[1]),h.name+' dry land');assert.ok(!terrain.obstructed(p[0],p[1],.1),h.name+' obstruction');}}});
+test('a correctly paced putt drops and counts one stroke',()=>{const r=new GolfRound();r.power=(Math.sqrt(2*.48*r.distance)-.5)/7.8;r.strike();for(let i=0;i<1800&&r.phase==='moving';i++)r.tick(1/120);assert.equal(r.phase,'holed');assert.equal(r.score[0],1);assert.equal(r.strike(),false);assert.equal(r.next(),true);assert.equal(r.holeIndex,1);assert.equal(r.strokes,0);});
+test('fast putts pass the hole and pause freezes motion',()=>{const r=new GolfRound();r.power=.9;r.strike();const x=r.x,z=r.z;r.tick(.1,false);assert.equal(r.x,x);assert.equal(r.z,z);for(let i=0;i<240;i++)r.tick(1/120);assert.notEqual(r.phase,'holed');});
+test('wedge flight lands and settles, without frame-rate-dependent outcomes',()=>{const run=(dt:number)=>{const r=new GolfRound();r.startHole(1);r.power=.45;r.strike();let highest=0;for(let i=0;i<2000&&r.phase==='moving';i++){r.tick(dt);highest=Math.max(highest,r.y);}return{r,highest};};const a=run(1/30),b=run(1/120);assert.ok(a.highest>1);assert.notEqual(a.r.phase,'moving');assert.ok(Math.abs(a.r.x-b.r.x)<.01);assert.ok(Math.abs(a.r.z-b.r.z)<.01);});
+test('off-course rolling shot is penalized and returned to its safe lie',()=>{const r=new GolfRound((x,z)=>Math.hypot(x-GOLF_HOLES[0].tee[0],z-GOLF_HOLES[0].tee[1])<.2);r.strike();for(let i=0;i<200;i++)r.tick(1/120);assert.equal(r.phase,'aim');assert.equal(r.strokes,2);assert.deepEqual([r.x,r.z],r.hole.tee);});

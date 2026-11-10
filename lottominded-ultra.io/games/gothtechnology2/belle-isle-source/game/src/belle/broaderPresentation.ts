@@ -20,11 +20,11 @@ export class BroaderPresentation {
   const live=running&&!document.hidden&&document.hasFocus()&&document.getElementById('pause')?.textContent!=='Resume'&&!document.querySelector('dialog[open]');
   this.running=live;this.reduced=reduced;if(live&&Number.isFinite(seconds))this.liveClock+=Math.max(0,Math.min(.1,seconds));if(live&&!reduced&&Number.isFinite(seconds))this.clock+=Math.max(0,Math.min(.1,seconds));
  }
- update(hour:number,coverage:number,day:number,overcast:number,direction:T.Vector3,quality:string,preview:boolean){
+ update(hour:number,coverage:number,day:number,overcast:number,direction:T.Vector3,quality:string,preview:boolean,externalReflections=false){
   if(this.disposed)return;const xr=this.renderer.xr.isPresenting,budget=presentationBudget(quality,xr);
   this.atmosphere.update(this.clock,direction,coverage,day,overcast,quality,this.reduced,xr);
   this.aircraft.update(this.clock,day,!preview&&!this.reduced&&budget.aircraft);
-  this.reflections.update(this.liveClock,hour,coverage,quality,!preview&&this.running);
+  if(!externalReflections)this.reflections.update(this.liveClock,hour,coverage,quality,!preview&&this.running);
  }
  prepareReflections(hour:number,coverage:number,quality:string){this.reflections.prepare(this.liveClock,hour,coverage,quality);}
  protectStartup(){this.reflections.protect();}

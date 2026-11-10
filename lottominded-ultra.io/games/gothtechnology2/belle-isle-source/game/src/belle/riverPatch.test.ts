@@ -29,11 +29,11 @@ test('ring has no internal cracks, duplicate faces or center-covering triangles'
 test('invalid or oversized ring dimensions fail before geometry loops',()=>{
  for(const args of [[Infinity,128,9000],[0,128,9000],[400,0,9000],[400,1.5,9000],[400,257,9000],[400,128,200],[400,128,Infinity]])assert.throws(()=>riverFarRing(...args as [number,number,number]));
 });
-test('shipping river uses connected geometry with no fragment cut or added texture samples',async()=>{
+test('shipping river uses connected geometry with no fragment cut and one cached sky reflection sample',async()=>{
  const source=await readFile(new URL('./water.ts',import.meta.url),'utf8');
  assert.match(source,/riverFarRing\(\)/);assert.match(source,/far\.position\.copy\(near\.position\)/);
  assert.match(source,/PlaneGeometry\(RIVER_PATCH_SIZE,RIVER_PATCH_SIZE,RIVER_PATCH_SEGMENTS,RIVER_PATCH_SEGMENTS\)/);
- assert.doesNotMatch(source,/discard\s*;/);assert.equal((source.match(/texture2D\(/g)||[]).length,5);
+ assert.doesNotMatch(source,/discard\s*;/);assert.equal((source.match(/texture2D\(/g)||[]).length,6);
  assert.match(source,/smoothstep\(165\.,195\./);assert.match(source,/smoothstep\(35\.,220\.,viewDistance\)/);
 });
 test('art-directed low sun aligns near the skyline while retaining the day and night arc',()=>{

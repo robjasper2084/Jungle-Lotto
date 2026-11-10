@@ -107,5 +107,5 @@ test('camera-based nature selection preserves original pools, near-count caps an
  assert.match(s,/before\.apply\(scene,args\)/);assert.match(s,/view\.prepare\(x,z\)/);
  assert.match(s,/Math\.hypot\(x-lastX,z-lastZ\)<6/);
  assert.match(s,/slice\(0,budget\.trees\)/);assert.match(s,/slice\(0,budget\.ground\)/);
- assert.match(s,/treeLodBlend\(Math\.hypot\(p\.x-x,p\.z-z\),budget\.treeRadius\)/);
+ assert.match(s,/treeBlend\(Math\.sqrt\(d\(p\)\),cutoff\)/);
 });

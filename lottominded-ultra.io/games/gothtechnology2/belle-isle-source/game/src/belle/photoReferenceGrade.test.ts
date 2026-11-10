@@ -46,7 +46,7 @@ test('photo look is connected to actual sky, water and nature source without new
  assert(sky.includes('lighting.glint=photoLook.glint')&&sky.includes('lighting.golden=photoLook.foliage'));
  assert(water.includes('riverSunReflection')&&water.includes('riverSunGlint'));
  assert(world.includes('skyLight.sun,skyLight.glint')&&world.includes('nature.update(x,z,skyLight.night,skyLight.golden)'));
- assert(nature.includes('treeLodBlend(')&&nature.includes('toneMapped:true'));
+ assert((nature.includes('treeLodBlend(')||nature.includes('treeBlend('))&&nature.includes('toneMapped:true'));
 });
 test('reference sky keeps all existing night effects and the same noise sampler count',()=>{
  const sky=read('islandSky.ts');

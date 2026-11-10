@@ -1,0 +1,137 @@
+{
+  "source": "Mapped OpenStreetMap centerlines; railing patterns and materials interpreted from supplied November 10 photographs.",
+  "piers": [
+    {
+      "id": "264325541",
+      "name": "North Fishing Pier",
+      "points": [
+        [
+          1165.8,
+          596.84
+        ],
+        [
+          1250.38,
+          444.37
+        ]
+      ],
+      "width": 3.2,
+      "style": "globe"
+    },
+    {
+      "id": "1127402263",
+      "name": "South Fishing Pier",
+      "points": [
+        [
+          3230.17,
+          792.23
+        ],
+        [
+          3243.77,
+          835.85
+        ],
+        [
+          3078,
+          890.75
+        ]
+      ],
+      "width": 3.4,
+      "style": "marine"
+    }
+  ],
+  "bridges": [
+    {
+      "id": "107192934",
+      "points": [
+        [
+          695.32,
+          750.43
+        ],
+        [
+          700.6,
+          763.64
+        ]
+      ],
+      "width": 2.6,
+      "style": "ornate-red"
+    },
+    {
+      "id": "107192940",
+      "points": [
+        [
+          661.96,
+          767.35
+        ],
+        [
+          669.16,
+          785.12
+        ]
+      ],
+      "width": 2.6,
+      "style": "ornate-teal"
+    },
+    {
+      "id": "497942921",
+      "points": [
+        [
+          1957.1,
+          697.13
+        ],
+        [
+          1956.64,
+          711.97
+        ]
+      ],
+      "width": 2.6,
+      "style": "timber-red"
+    },
+    {
+      "id": "1162672765",
+      "points": [
+        [
+          2182.31,
+          581.72
+        ],
+        [
+          2174.1,
+          582.54
+        ]
+      ],
+      "width": 2.6,
+      "style": "timber-red"
+    },
+    {
+      "id": "509207545",
+      "points": [
+        [
+          2491.01,
+          15.95
+        ],
+        [
+          2475.1,
+          22.35
+        ],
+        [
+          2455.97,
+          30.06
+        ]
+      ],
+      "width": 2.6,
+      "style": "covered"
+    },
+    {
+      "id": "1301569761",
+      "points": [
+        [
+          2406.3,
+          617.49
+        ],
+        [
+          2399.54,
+          616.42
+        ]
+      ],
+      "width": 2.6,
+      "style": "timber-red"
+    }
+  ]
+}

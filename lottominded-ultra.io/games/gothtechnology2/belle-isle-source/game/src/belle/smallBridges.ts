@@ -2,7 +2,7 @@ import type {ParkMap,Point} from './terrain.ts';
 
 /** Mapped links, not an invented count of unique physical bridges. Parallel
  * sidewalks and consecutive boardwalk pieces retain their source way IDs. */
-export type SmallBridge={id:string;name:string;points:Point[];width:number;surface:string;foot:boolean;style:'iron'|'timber'|'concrete';source:string};
+export type SmallBridge={id:string;name:string;points:Point[];width:number;surface:string;foot:boolean;style:'iron'|'timber'|'concrete'|'brick';source:string};
 export type BridgePart={id:string;kind:'slab'|'rail';a:Point;b:Point;width:number;bottom:number;top:number;style:SmallBridge['style']};
 export type SmallBridgePlan={links:SmallBridge[];parts:BridgePart[];notes:readonly string[]};
 export const DEDICATED_BRIDGE_IDS=new Set(['58465724','660010940','660010941','515099309']);
@@ -28,7 +28,7 @@ export function makeSmallBridgePlan(map:ParkMap,height:(x:number,z:number)=>numb
   if(!Number.isFinite(r.width)||r.width<=0||r.width>40||r.points.some(p=>p.length!==2||!p.every(Number.isFinite)))throw Error('Invalid mapped bridge '+r.id);
   const length=r.points.slice(1).reduce((s,p,i)=>s+Math.hypot(p[0]-r.points[i][0],p[1]-r.points[i][1]),0);
   if(length<.1||length>250)continue; // Long river bridges keep their own authored system.
-  const style=r.surface==='wood'?'timber':r.id==='107196454'?'iron':!r.foot?'concrete':'iron';
+  const style=['60929039','755770242','755770243'].includes(r.id)?'brick':r.surface==='wood'?'timber':r.id==='107196454'?'iron':!r.foot?'concrete':'iron';
   const link:SmallBridge={id:r.id,name:r.name,points:r.points.map(p=>[...p]),width:r.width,surface:r.surface,foot:r.foot,style,source:'https://www.openstreetmap.org/way/'+r.id};links.push(link);
   for(let i=1;i<r.points.length;i++){
    const a=r.points[i-1],b=r.points[i],dx=b[0]-a[0],dz=b[1]-a[1],len=Math.hypot(dx,dz);if(len<.05)continue;
@@ -38,8 +38,8 @@ export function makeSmallBridgePlan(map:ParkMap,height:(x:number,z:number)=>numb
    parts.push({id:r.id,kind:'slab',a:[...a],b:[...b],width:r.width,bottom:floor-.30,top:floor,style});
    const nx=dz/len,nz=-dx/len,steps=Math.max(1,Math.ceil(len/1));
    for(const side of [-1,1]){
-    const offset=side*(r.width/2+.16);let start:Point|undefined,end:Point|undefined;
-    const flush=()=>{if(start&&end)parts.push({id:r.id,kind:'rail',a:start,b:end,width:.12,bottom:floor+.01,top:floor+1.08,style});start=end=undefined;};
+    const railWidth=style==='brick'?.60:.12,offset=side*(r.width/2+(style==='brick'?.40:.16));let start:Point|undefined,end:Point|undefined;
+    const flush=()=>{if(start&&end)parts.push({id:r.id,kind:'rail',a:start,b:end,width:railWidth,bottom:floor+.01,top:floor+1.08,style});start=end=undefined;};
     for(let j=0;j<steps;j++){
      const point=(t:number):Point=>[a[0]+dx*t+nx*offset,a[1]+dz*t+nz*offset],p=point(j/steps),q=point((j+1)/steps),mid=point((j+.5)/steps);
      if([p,mid,q].some(v=>occupied(v,r.id))){flush();continue;}

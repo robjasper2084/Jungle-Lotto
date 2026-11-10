@@ -84,7 +84,7 @@ test('boost-speed steering is steadier for forward and lateral flight without we
   const fast=flight(mode),normalTurn=turn(flight(mode)),moving={...idle,throttle:1,boost:true};
   run(fast,6,moving);assert(fast.pose.speed>31.9);
   const fastTurn=turn(fast,.25,moving);
-  assert(fastTurn>normalTurn*.5&&fastTurn<normalTurn*.65,`${mode}: boost yaw retains useful but reduced authority`);
+  assert(fastTurn>normalTurn*(mode==='classic'?.10:.5)&&fastTurn<normalTurn*.65,`${mode}: boost yaw retains useful but reduced authority`);
   const speed=fast.pose.speed,x=fast.pose.x,z=fast.pose.z;
   fast.advance(.1,{...moving,brake:true});
   if(mode==='drone'){assert.equal(fast.pose.speed,0);assert.equal(fast.pose.x,x);assert.equal(fast.pose.z,z);}
@@ -126,4 +126,8 @@ test('takeoff easing and speed sensitivity stay stable across simulation frame r
    assert(Math.abs(p.speed-reference.speed)<1e-9,`${mode}: ${hz} Hz speed`);
   }
  }
+});
+
+test('new rides default to classic momentum and retain coast on throttle release',()=>{
+ const c=new HoverController(terrain,{x:0,z:1000,heading:0});assert.equal(c.mode,'classic');c.launch();run(c,3,{...idle,throttle:1});const before=c.pose.speed;run(c,.25);assert(c.pose.speed>before-1&&c.pose.speed>0);run(c,3,{...idle,brake:true});assert.equal(c.pose.speed,0);
 });

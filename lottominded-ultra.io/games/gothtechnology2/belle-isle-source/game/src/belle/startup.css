@@ -91,3 +91,7 @@ body.at-start{background:#07141a}
 #welcome.startup #welcome-friends{min-width:0;min-height:44px;padding:8px 0;margin:0;border:0;border-bottom:1px solid #ffffff44;border-radius:0;background:transparent;color:#e2e6dc;font-size:11px;font-weight:400}#welcome.startup #welcome-friends:disabled{opacity:.4}.cinema-actions{flex-wrap:wrap;max-width:590px}
 @media(max-width:760px){.cinema-actions{display:grid;grid-template-columns:1fr 1fr;gap:0 22px}#welcome.startup #start{grid-column:1/-1}#welcome.startup #welcome-friends,#welcome.startup #startup-controls{justify-self:start}.cinema-ride-picker{top:calc(100% + 3px)}.cinema-location{left:auto;bottom:124px}.cinema-live{display:none}}
 @media(max-height:500px) and (min-width:600px){.cinema-actions{display:flex;max-width:580px;gap:18px}.cinema-ride-picker{left:330px;top:auto;bottom:0;width:min(360px,calc(100vw - 390px))}.cinema-ride-picker[open]{bottom:0}.cinema-location{display:none}}
+
+/* Keep settings readable beside the icon-only flyover controls on phones. */
+#welcome.startup .cinema-tools #welcome-settings{font-size:11px;min-width:64px;min-height:44px;padding:8px;border:1px solid #ffffff40;border-radius:4px;background:#07192388;}
+@media(max-width:400px){.cinema-tools{gap:4px}.cinema-brand{gap:4px;letter-spacing:0}}

@@ -49,7 +49,7 @@ export function createStartup(){
  controls.onclick=()=>{panel.hidden=!panel.hidden;controls.setAttribute('aria-expanded',String(!panel.hidden));};
  document.getElementById('startup-controls-close')!.onclick=closeControls;
  document.addEventListener('keydown',e=>{
-  if(screen.hidden||leaving)return;
+  if(screen.hidden||leaving||document.querySelector('dialog[open]'))return;
   if(e.code==='Escape'&&picker.open){picker.open=false;picker.querySelector('summary')?.focus();return;}
   if(e.code==='Escape'&&!panel.hidden){closeControls();return;}
   if(!ready||e.repeat||e.altKey||e.ctrlKey||e.metaKey)return;
@@ -82,9 +82,15 @@ export function createStartup(){
    return shot;
   },
   leave(onComplete:()=>void){
-   if(!ready||leaving)return;leaving=true;preview?.dispose();preview=undefined;sources=undefined;picker.open=false;setup.disable(true);screen.dataset.state='leaving';start.disabled=true;next.disabled=true;clearTimeout(leaveTimer);
+   if(!ready||leaving)return;leaving=true;preview?.dispose();preview=undefined;picker.open=false;setup.disable(true);screen.dataset.state='leaving';start.disabled=true;next.disabled=true;clearTimeout(leaveTimer);
    const finish=()=>{screen.hidden=true;document.body.classList.remove('at-start');if(!motionOff)document.body.classList.add('entering-ride');onComplete();setTimeout(()=>document.body.classList.remove('entering-ride'),1000);};
    if(motionOff)finish();else leaveTimer=setTimeout(finish,600);
+  },
+  show(){
+   clearTimeout(leaveTimer);leaving=false;screen.hidden=false;screen.dataset.state='ready';
+   document.body.classList.remove('entering-ride');document.body.classList.add('at-start');
+   setup.disable(false);start.disabled=false;next.disabled=false;friends.disabled=friendsDisabled;
+   label.textContent='Start exploring';loading.textContent='Choose your next ride.';start.focus();
   },
   error(message:string){
    screen.dataset.state='error';loading.textContent='Island could not load. '+message;

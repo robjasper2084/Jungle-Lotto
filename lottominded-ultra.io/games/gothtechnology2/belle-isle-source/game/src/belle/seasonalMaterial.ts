@@ -1,0 +1,8 @@
+import * as T from 'three';
+import {seasonLook} from './seasonModel.ts';
+export function seasonalMaterial(source:T.Material,leaf:boolean,far:boolean,evergreen:boolean,month:{value:number}){
+ const material=source.clone() as T.MeshStandardMaterial;material.side=T.DoubleSide;material.transparent=false;material.alphaTest=leaf?.38:0;material.roughness=.88;
+ const density={value:1},autumn={value:0},spring={value:0};
+ material.onBeforeCompile=s=>{Object.assign(s.uniforms,{leafDensity:density,autumn,spring});s.vertexShader='attribute float lodWeight;varying float treeWeight;varying vec3 localTreePos;\n'+s.vertexShader;s.vertexShader=s.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\ntreeWeight=lodWeight;localTreePos=position;');s.fragmentShader='varying float treeWeight;varying vec3 localTreePos;uniform float leafDensity,autumn,spring;\n'+s.fragmentShader;s.fragmentShader=s.fragmentShader.replace('#include <alphatest_fragment>', '#include <alphatest_fragment>\nfloat screenNoise=fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.5453);if('+ (far?'screenNoise<1.-treeWeight':'screenNoise>treeWeight') +')discard;'+(leaf?'float leafSeed=fract(sin(dot(floor(localTreePos*1.8),vec3(12.4,53.7,21.1)))*43758.54);if(leafSeed>leafDensity)discard;float luma=dot(diffuseColor.rgb,vec3(.2126,.7152,.0722));diffuseColor.rgb=mix(diffuseColor.rgb,vec3(luma*2.0,luma*.85,luma*.16),autumn*.92);diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(1.15,1.15,.72),spring*.4);':''));};material.customProgramCacheKey=()=> 'seasonal-tree-'+leaf+'-'+far;
+ return{material,update(){const look=seasonLook(month.value,evergreen);density.value=look.density;autumn.value=look.autumn;spring.value=look.spring;}};
+}
