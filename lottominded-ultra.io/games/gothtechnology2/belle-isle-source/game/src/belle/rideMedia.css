@@ -8,3 +8,9 @@ body.on-boat #touch-zone,body.on-boat #sprint{display:none!important}
 #ride-radio.cockpit-library{left:50%;top:50%;transform:translate(-50%,-50%);padding:0;max-width:calc(100vw - 32px)}#ride-radio.cockpit-library>button,#ride-radio.cockpit-library>.radio-track{display:none}#ride-radio.cockpit-library details[open]{position:relative;top:auto;left:auto;width:min(340px,calc(100vw - 56px));box-shadow:0 18px 80px #0008}
 
 .cockpit-radio-access{position:fixed;left:-10000px;width:1px;height:1px;overflow:hidden}.cockpit-radio-access:focus-within{left:50%;bottom:1rem;transform:translateX(-50%);width:min(92vw,42rem);height:auto;overflow:visible;display:flex;flex-wrap:wrap;justify-content:center;gap:.4rem;z-index:30;padding:.6rem;background:#092329;border:1px solid #83d4ce;border-radius:.6rem}.cockpit-radio-access button:focus-visible{outline:3px solid #efc981;outline-offset:2px}
+
+/* Short, mobile race viewports reserve the lower-left movement surface for
+   trusted joystick input. The floating radio previously covered the stick at
+   390×340 and stole touchStart; keep playback running and the cockpit library
+   available rather than letting an off-screen transport button intercept. */
+@media(max-height:520px){body.island-trial #ride-radio:not(.cockpit-library){display:none}}
