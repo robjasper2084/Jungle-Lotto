@@ -35,6 +35,10 @@ export class SceneWarmup {
    this.busy(true);
    const timeout=setTimeout(()=>cancel.abort(new Error('Graphics preparation took too long. Please try starting again.')),this.timeoutMs);
    const visible=model?.visible;
+   // Rider-only preparation must not recompile every island material. A model
+   // with lights changes the scene light topology and still needs the full scene.
+   let addsLights=false;model?.traverse?.(object=>{if((object as Object3D&{isLight?:boolean}).isLight)addsLights=true;});
+   const compileRoot=model&&!addsLights?model:this.scene;
    const shadows:{light:DirectionalLight;enabled:boolean}[]=[];
    this.scene.traverse(object=>{const light=object as DirectionalLight;if(light.isDirectionalLight)shadows.push({light,enabled:light.castShadow});});
    try{
@@ -47,7 +51,7 @@ export class SceneWarmup {
      for(const state of shadows)state.light.castShadow=enabled;
      // compileAsync collects synchronously, then awaits driver readiness.
      let ready:Promise<unknown>;
-     try{if(model)model.visible=true;ready=this.renderer.compileAsync(this.scene,this.camera);}
+     try{if(model)model.visible=true;ready=this.renderer.compileAsync(compileRoot,this.camera,this.scene);}
      finally{if(model)model.visible=visible!;}
      await readyOrCancelled(ready,cancel.signal);
      if(!shadows.length)break;

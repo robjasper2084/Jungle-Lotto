@@ -6,7 +6,7 @@ const shapes={onewheel:{x:.48,z:.76,height:2.2},hoverbike:{x:1.35,z:1.9,height:5
 
 /** One soft, terrain-aligned quad. It supplements nearby lighting without a
  * render target, texture download, new light or extra shadow-map pass. */
-export function createVehicleContactShadow(scene:T.Scene,terrain:Pick<TerrainSampler,'sampleGround'>){
+export function createVehicleContactShadow(scene:Pick<T.Object3D,'add'>,terrain:Pick<TerrainSampler,'sampleGround'>){
  const geometry=new T.PlaneGeometry(2,2).rotateX(-Math.PI/2);
  const material=new T.MeshBasicMaterial({color:0x14201f,transparent:true,opacity:.14,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1});
  material.onBeforeCompile=shader=>{

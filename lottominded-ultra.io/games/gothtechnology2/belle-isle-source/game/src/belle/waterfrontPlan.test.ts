@@ -1,0 +1,6 @@
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';
+import {ParkTerrain} from './terrain.ts';import layout from './waterfrontLayout.json' with {type:'json'};
+import {prepareWaterfrontMap} from './waterfrontPlan.ts';
+test('both fishing piers have dry, level, unobstructed walking centers and blocking rails',()=>{const map=JSON.parse(fs.readFileSync(new URL('../../public/belle/map.json',import.meta.url),'utf8'));prepareWaterfrontMap(map);const t=new ParkTerrain(map);for(const p of layout.piers)for(let i=1;i<p.points.length;i++){const a=p.points[i-1],b=p.points[i],dx=b[0]-a[0],dz=b[1]-a[1],l=Math.hypot(dx,dz);for(let k=2;k<19;k++){const x=a[0]+dx*k/20,z=a[1]+dz*k/20;assert.ok(t.land(x,z));assert.equal(t.height(x,z),2.04);assert.ok(!t.obstructed(x,z,.3));assert.ok(t.obstructed(x+dz/l*(p.width/2+.04),z-dx/l*(p.width/2+.04),.1));}}});
+
+test('pier ends are closed while the fishing stance remains clear',()=>{const t=new ParkTerrain(JSON.parse(fs.readFileSync(new URL('../../public/belle/map.json',import.meta.url),'utf8')));for(const p of layout.piers){const b=p.points.at(-1)!,a=p.points.at(-2)!,l=Math.hypot(b[0]-a[0],b[1]-a[1]);assert.ok(t.obstructed(b[0],b[1],.3));assert.ok(!t.obstructed(b[0]-(b[0]-a[0])/l*2.5,b[1]-(b[1]-a[1])/l*2.5,.3));}});

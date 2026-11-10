@@ -66,3 +66,12 @@ test('a queued cancelled caller cannot lock the scene and an unready driver time
  await Promise.all([failure,cancelled]);assert.deepEqual(busy,[true,false]);assert.equal(calls,1);
  ready=true;await warmup.prepare(bike);assert.equal(calls,3);assert.deepEqual(busy,[true,false,true,false]);
 });
+
+
+test('rider-only warmup compiles the new actors against existing lighting without recompiling the island',async()=>{
+ const {scene,camera}=fixture(),riders=new Group();riders.visible=false;scene.add(riders);
+ const calls:unknown[][]=[];const warmup=new SceneWarmup({compileAsync:async(...args)=>{calls.push(args);return scene;}},scene,camera,()=>{},async()=>{});
+ await warmup.prepare(riders);assert.equal(calls.length,2);
+ for(const [root,view,lighting] of calls){assert.equal(root,riders);assert.equal(view,camera);assert.equal(lighting,scene);}
+ assert.equal(riders.visible,false);
+});

@@ -34,8 +34,20 @@ export async function addGardens(scene:T.Scene){
  }
  function geometry(vertices:number[]){const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(vertices,3));g.computeVertexNormals();return g;}
  const leafG=geometry(leaves),petalG=geometry(petals),leafMat=new T.MeshStandardMaterial({color:0xffffff,roughness:1,side:T.DoubleSide}),petalMat=new T.MeshStandardMaterial({color:0xffffff,roughness:.91,side:T.DoubleSide});
+ const wind={value:0};
+ // Shared vertex displacement anchors roots and bends upper stems by centimetres.
+ for(const m of [leafMat,petalMat]){
+  m.onBeforeCompile=s=>{s.uniforms.gardenTime=wind;s.vertexShader='uniform float gardenTime;\n'+s.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
+   #ifdef USE_INSTANCING
+    float phase=instanceMatrix[3].x*.21+instanceMatrix[3].z*.17;
+    float sway=sin(gardenTime*.8+phase)*.026+sin(gardenTime*1.7+phase*1.9)*.009;
+    transformed.x+=sway*position.y*position.y;
+    transformed.z+=sway*.45*position.y;
+   #endif
+  `);};m.customProgramCacheKey=()=>'garden-soft-wind-v1';
+ }
  const botanical=new Map<GardenForm,ReturnType<typeof gardenBotany>>();
- const botanicalLeaf=leafMat.clone(),botanicalFlower=petalMat.clone();botanicalLeaf.vertexColors=true;botanicalFlower.vertexColors=true;
+ const botanicalLeaf=leafMat.clone(),botanicalFlower=petalMat.clone();botanicalLeaf.vertexColors=true;botanicalFlower.vertexColors=true;for(const [m,base]of [[botanicalLeaf,leafMat],[botanicalFlower,petalMat]]){m.onBeforeCompile=base.onBeforeCompile;m.customProgramCacheKey=base.customProgramCacheKey;}
  const groups=new Map<string,GardenPlant[]>(),tiles:{mesh:T.InstancedMesh;x:number;z:number;count:number;detailed:boolean}[]=[],dummy=new T.Object3D();
  for(const p of plan.plants){const key=Math.floor(p.x/48)+','+Math.floor(p.z/48)+','+(p.form||'generic');if(!groups.has(key))groups.set(key,[]);groups.get(key)!.push(p);}
  const palette=[0xc8b2d4,0xe0cc95,0xb56b7e,0xdde0d2,0x8d83b3];
@@ -58,5 +70,5 @@ export async function addGardens(scene:T.Scene){
   }
  }
  let radius=220;
- return{stats:{clumps:plan.plants.length,triangles,batches:tiles.length},setQuality(q:string){radius=q==='smooth'?145:q==='high'?280:220;},update(x:number,z:number){for(const tile of tiles){const distance=Math.hypot(tile.x-x,tile.z-z);tile.mesh.visible=distance<radius;tile.mesh.count=tile.detailed&&distance>105?Math.ceil(tile.count*.35):tile.count;}}};
+ return{animate(time:number){wind.value=time;},stats:{clumps:plan.plants.length,triangles,batches:tiles.length},setQuality(q:string){radius=q==='smooth'?145:q==='high'?280:220;},update(x:number,z:number){for(const tile of tiles){const distance=Math.hypot(tile.x-x,tile.z-z);tile.mesh.visible=distance<radius;tile.mesh.count=tile.detailed&&distance>105?Math.ceil(tile.count*.35):tile.count;}}};
 }

@@ -70,7 +70,7 @@ test('near and distant canopy share finite bounded tint, while original trees re
  }
  const warm=canopyTint(1,.75);assert(warm[0]>warm[1]&&warm[1]>warm[2]);
  const source=readFileSync(new URL('./nature.ts',import.meta.url),'utf8');
- assert.equal((source.match(/setColorAt\(i,plantTint\(p\)\)/g)||[]).length,2);
+ assert.equal((source.match(/setColorAt\(i,plantTint\(p\)\)/g)||[]).length,3);
 });
 test('aerial shadows widen gradually without increasing texture resolution or affecting ground views',()=>{
  for(const y of [-100,0,2,6,10,NaN,Infinity])assert.equal(photoShadowExtent(y),55);

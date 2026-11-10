@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import * as T from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {clone} from 'three/addons/utils/SkeletonUtils.js';
+import {HoverControls} from './hoverControls.ts';
 import {HoverController,type HoverInput} from './hoverController.ts';
 import type {ParkTerrain} from './terrain.ts';
 import {HoverRiderMotion,HoverRiderRig} from './hoverRiderMotion.ts';
@@ -123,16 +124,16 @@ const assetPromise=readAsset();
 async function actualRider(){
  const asset=await assetPromise,model=clone(asset.scene),mixer=new T.AnimationMixer(model),clip=asset.animations.find(c=>c.name.includes('Ride_Steer'))!;
  mixer.clipAction(clip).play();mixer.setTime(clip.duration*.5);model.updateMatrixWorld(true);
- const rig=HoverRiderRig.create(model);assert(rig);assert.equal(rig.diagnostics.contacts,4);
+ const rig=HoverRiderRig.create(model);assert(rig);const controls=new HoverControls(model);assert.equal(rig.diagnostics.contacts,4);
  const controller=new HoverController(terrain,{x:0,z:0,heading:0});controller.setMode('drone');assert(controller.startFlight({x:0,y:15,z:0,heading:0}));
  const bar=model.getObjectByName('HandlebarPivot')!,barRest=bar.quaternion.clone(),q=new T.Quaternion(),axis=new T.Vector3(0,1,0);let steer=0;
  const place=()=>{const p=controller.pose;model.position.set(p.x,p.y,p.z);model.rotation.set(p.pitch,p.heading,p.roll,'YXZ');};
  place();rig.reset(controller.pose,controller.landed);
  const step=(input:HoverInput,dt=1/60,running=true,reduced=false)=>{
   if(running){controller.advance(dt,input);steer=T.MathUtils.damp(steer,input.steer,7,dt);bar.quaternion.copy(barRest).multiply(q.setFromAxisAngle(axis,-steer*.18));}
-  place();rig.update(dt,controller.pose,controller.landed,steer,running,reduced);
+  place();controls.update(dt,controller.drive);rig.update(dt,controller.pose,controller.landed,steer,running,reduced);
  };
- return{rig,model,controller,step,bar,barRest,place};
+ return{rig,model,controller,step,bar,barRest,place,controls};
 }
 function bones(model:T.Object3D){const result:T.Bone[]=[];model.traverse(o=>{if((o as T.Bone).isBone)result.push(o as T.Bone);});return result;}
 function boneSnapshot(model:T.Object3D){return bones(model).flatMap(b=>[...b.position.toArray(),...b.quaternion.toArray(),...b.scale.toArray()]);}
@@ -179,4 +180,17 @@ test('actual rider pause, reduced motion and reset cannot accumulate bone drift 
 test('missing rider bones or supports fail gracefully without adding fake replacement geometry',()=>{
  const model=new T.Group(),child=new T.Mesh(new T.BoxGeometry(),new T.MeshBasicMaterial());model.add(child);
  assert.equal(HoverRiderRig.create(model),undefined);assert.equal(model.children.length,1);assert.equal(model.children[0],child);
+});
+
+
+test('shipped throttle and separate levers move independently without breaking hand anchors',async()=>{
+ const run=await actualRider(),neutral=run.model.getObjectByName('Grip_R')!.quaternion.clone();
+ for(let i=0;i<60;i++)run.step({...idle,throttle:1});
+ assert(run.controls.throttle.rotation.x<-.45);assert.equal(run.controls.clutch.rotation.y,0);assert.equal(run.controls.brake.rotation.y,0);
+ assert(run.model.getObjectByName('Grip_R')!.quaternion.angleTo(neutral)>.15);
+ for(let i=0;i<60;i++)run.step({...idle,clutch:1,brake:true});
+ assert(run.controls.clutch.rotation.y<-.4);assert(run.controls.brake.rotation.y>.4);assert(Math.abs(run.controls.throttle.rotation.x)<.001);assert(run.rig.diagnostics.handError<.008);
+ for(let i=0;i<60;i++)run.step(idle);
+ assert(Math.abs(run.controls.clutch.rotation.y)<.001);assert(Math.abs(run.controls.brake.rotation.y)<.001);
+ run.controls.dispose();
 });

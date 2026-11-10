@@ -15,6 +15,7 @@ function freezePhotoSnapshot<Snapshot>(value:Snapshot):Snapshot {
 
 /** One bounded local capture at a time; no uploads, voice recording or device permissions. */
 export class CameraCapture {
+ private rideCapture=false;private heroButton=document.createElement('button');private clipBar=document.createElement('div');
  viewfinder=true;zoom=1;exposure=0;private delay=0;private shutterAt=0;
  private zoomInput=document.createElement('input');private zoomReadout=document.createElement('output');private grid=document.createElement('div');private gridOn=false;
  private finderButton=document.createElement('button');
@@ -57,7 +58,7 @@ export class CameraCapture {
   this.photo.textContent='Photo';this.photo.onclick=()=>this.shutter();this.record.textContent='Record';this.record.onclick=()=>this.toggleRecording();
   this.save.textContent='Save';this.save.className='capture-save';this.share.textContent='Share';this.share.onclick=()=>void this.shareFile();
   this.review.textContent='Review';this.review.onclick=()=>this.showReview();this.status.setAttribute('role','status');this.status.textContent='Photos + 60-second clips · game sound only';
-  this.save.hidden=this.share.hidden=this.review.hidden=true;this.panel.append(this.photo,this.record,this.save,this.share,this.review,this.status);this.root.append(this.toggle,this.panel);document.body.append(this.root);
+  this.save.hidden=this.share.hidden=this.review.hidden=true;this.panel.append(this.photo,this.record,this.save,this.share,this.review,this.status);this.heroButton.id='hero-cam-record';this.heroButton.type='button';this.heroButton.textContent='Hero-Cam · O';this.heroButton.title='Record while riding or flying';this.heroButton.onclick=()=>this.toggleHero();this.clipBar.className='hero-clip-bar';this.root.append(this.toggle,this.heroButton,this.panel,this.clipBar);document.body.append(this.root);
   this.preview.className='capture-preview';const close=document.createElement('button');close.textContent='Back to game';close.onclick=()=>this.preview.close();this.preview.append(this.media,close);document.body.append(this.preview);
   this.preview.addEventListener('close',()=>{this.media.replaceChildren();this.canvas.focus();});
   document.addEventListener('visibilitychange',()=>{if(document.hidden){this.cancelShutter();this.stop();}});window.addEventListener('blur',()=>this.cancelShutter());
@@ -71,8 +72,8 @@ export class CameraCapture {
  private drawScene(context:CanvasRenderingContext2D,f=this.frame()){context.drawImage(this.canvas,f.x,f.y,f.w,f.h,0,0,context.canvas.width,context.canvas.height);}
  setZoom(value:number){this.zoom=boundedZoom(value);this.zoomInput.value=String(this.zoom);this.zoomReadout.textContent=this.zoom.toFixed(2)+'×';}
  private cancelShutter(){if(this.shutterAt)this.status.textContent='Photo timer cancelled';this.shutterAt=0;}
- setActive(value:boolean){this.cancelShutter();this.active=value&&this.available;document.body.classList.toggle('royale-camera-mode',this.active);this.syncFinder();this.shutterHeld=false;this.pendingPhoto=false;if(!this.active)this.stop();this.toggle.textContent=this.active?'Put camera away · P':'Take photos · P';this.toggle.setAttribute('aria-pressed',String(this.active));this.panel.hidden=!this.active;this.changed();this.canvas.focus();}
- update(available:boolean){this.available=available;this.root.hidden=!available;if(!available&&this.active)this.setActive(false);}
+ setActive(value:boolean){this.cancelShutter();this.active=value&&this.available;document.body.classList.toggle('royale-camera-mode',this.active);this.syncFinder();this.shutterHeld=false;this.pendingPhoto=false;if(!this.active&&!this.rideCapture)this.stop();this.toggle.textContent=this.active?'Put camera away · P':'Take photos · P';this.toggle.setAttribute('aria-pressed',String(this.active));this.panel.hidden=!this.active;this.changed();this.canvas.focus();}
+ update(available:boolean){this.available=available;this.root.hidden=!available;if(!available){if(this.active)this.setActive(false);this.stop();}}
  trigger(pressed:boolean){if(pressed&&!this.shutterHeld)this.shutter();this.shutterHeld=pressed;}
  shutter(){if(!this.active||this.pendingPhoto||this.shutterAt)return;if(this.delay){this.shutterAt=performance.now()+this.delay;this.status.textContent='Photo in '+this.delay/1000+'s';}else{this.pendingPhoto=true;this.status.textContent='Taking photo…';}}
  /** Called immediately after the WebGL render, before the drawing buffer is cleared. */
@@ -100,9 +101,10 @@ export class CameraCapture {
   if(this.pendingRecord&&this.recorder){this.pendingRecord=false;this.drawScene(this.context!);this.recordPoster=this.recordingCanvas!.toDataURL('image/jpeg',.7);this.recorder.start(1000);this.started=now;this.timer=window.setTimeout(()=>this.stop(),60000);}
   if(this.recorder?.state==='recording'&&now-this.drawn>=1000/24){this.drawn=now;this.drawScene(this.context!);this.status.textContent='● Recording '+Math.floor((now-this.started)/1000)+' / 60s · game sound';if(now-this.started>=60000)this.stop();}
  }
+ toggleHero(){if(!this.available)return;if(this.recorder){this.stop();return;}if(this.active)this.setActive(false);this.rideCapture=true;this.start();this.canvas.focus();}
  toggleRecording(){if(this.recorder)this.stop();else this.start();}
  private start(){
-  if(!this.active||this.recorder)return;
+  if((!this.active&&!this.rideCapture)||this.recorder)return;
   if(typeof MediaRecorder==='undefined'||!HTMLCanvasElement.prototype.captureStream){this.status.textContent='Video recording is unavailable in this browser. Photos still work.';return;}
   try{
    const stage=this.recordingCanvas=document.createElement('canvas'),f=this.frame(),scale=Math.min(1,1280/f.w,720/f.h);
@@ -112,14 +114,14 @@ export class CameraCapture {
    const recorder=this.recorder;recorder.ondataavailable=e=>{if(e.data.size){this.chunks.push(e.data);this.bytes+=e.data.size;if(this.bytes>=24*1024*1024)this.stop();}};
    recorder.onstop=()=>{const blob=new Blob(this.chunks,{type:recorder.mimeType});this.chunks=[];this.cleanRecording();if(blob.size)this.finish(blob,blob.type.includes('mp4')?'mp4':'webm');};
    recorder.onerror=()=>{this.stop();this.status.textContent='Recording stopped. You can retry or take a photo.';};
-   this.pendingRecord=true;this.record.textContent='Stop recording';this.record.setAttribute('aria-pressed','true');
+   this.heroButton.textContent='● Stop Hero-Cam · O';this.heroButton.setAttribute('aria-pressed','true');this.clipBar.append(this.status);this.pendingRecord=true;this.record.textContent='Stop recording';this.record.setAttribute('aria-pressed','true');
   }catch(error){this.cleanRecording();this.status.textContent='Video unavailable: '+(error as Error).message;}
  }
  stop(){if(this.recorder?.state==='recording')this.recorder.stop();else if(this.pendingRecord){this.pendingRecord=false;this.cleanRecording();}clearTimeout(this.timer);}
- private cleanRecording(){clearTimeout(this.timer);this.stream?.getTracks().forEach(t=>t.stop());this.audioRelease?.();this.audioRelease=undefined;this.stream=undefined;this.recorder=undefined;if(this.recordingCanvas)this.recordingCanvas.width=this.recordingCanvas.height=0;this.recordingCanvas=undefined;this.context=undefined;this.record.textContent='Record';this.record.setAttribute('aria-pressed','false');}
- private finish(blob:Blob,extension:string){if(this.url)URL.revokeObjectURL(this.url);this.poster=extension==='jpg'?'':this.recordPoster;this.file=new File([blob],'Belle-Isle-'+new Date().toISOString().replace(/[:.]/g,'-')+'.'+extension,{type:blob.type});this.url=URL.createObjectURL(this.file);this.save.href=this.url;this.save.download=this.file.name;this.save.hidden=this.share.hidden=this.review.hidden=false;this.status.textContent=(extension==='jpg'?'Photo':'Video')+' ready · Save or Share before taking another';this.root.dataset.captureType=blob.type;this.root.dataset.captureBytes=String(blob.size);}
+ private cleanRecording(){clearTimeout(this.timer);this.stream?.getTracks().forEach(t=>t.stop());this.audioRelease?.();this.audioRelease=undefined;this.stream=undefined;this.recorder=undefined;if(this.recordingCanvas)this.recordingCanvas.width=this.recordingCanvas.height=0;this.recordingCanvas=undefined;this.context=undefined;this.rideCapture=false;this.heroButton.textContent='Hero-Cam · O';this.heroButton.setAttribute('aria-pressed','false');this.record.textContent='Record';this.record.setAttribute('aria-pressed','false');}
+ private finish(blob:Blob,extension:string){if(this.url)URL.revokeObjectURL(this.url);this.poster=extension==='jpg'?'':this.recordPoster;this.file=new File([blob],'Belle-Isle-'+new Date().toISOString().replace(/[:.]/g,'-')+'.'+extension,{type:blob.type});this.url=URL.createObjectURL(this.file);this.save.href=this.url;this.save.download=this.file.name;this.save.hidden=this.share.hidden=this.review.hidden=false;this.status.textContent=(extension==='jpg'?'Photo':'Video')+' ready · Save to keep this replay';this.clipBar.append(this.save,this.review,this.share,this.status);this.root.dataset.captureType=blob.type;this.root.dataset.captureBytes=String(blob.size);}
  private async shareFile(){if(!this.file)return;if(!navigator.canShare?.({files:[this.file]})){this.status.textContent='Tap Save, then upload the file in your social app.';return;}try{await navigator.share({title:'Belle Isle Explorer',files:[this.file]});this.status.textContent='Shared.';}catch(error){if((error as Error).name!=='AbortError')this.status.textContent='Share unavailable. Tap Save to keep your capture.';}}
- private showReview(){if(!this.file)return;const item=document.createElement(this.file.type.startsWith('video/')?'video':'img');item.src=this.url;if(item instanceof HTMLVideoElement){item.controls=true;item.playsInline=true;item.poster=this.poster;}else item.alt='Your in-game photo';this.media.replaceChildren(item);this.preview.showModal();}
+ private showReview(){if(!this.file)return;const item=document.createElement(this.file.type.startsWith('video/')?'video':'img');item.src=this.url;if(item instanceof HTMLVideoElement){item.controls=true;item.playsInline=true;item.poster=this.poster;}else item.alt='Your in-game photo';this.media.replaceChildren(item);this.changed();this.preview.showModal();}
  get reviewing(){return this.preview.open;}
  dispose(){this.disposed=true;this.photoObservers.clear();this.stop();if(this.recorder)this.recorder.onstop=null;this.cleanRecording();if(this.url)URL.revokeObjectURL(this.url);document.body.classList.remove('royale-camera-mode','royale-viewfinder');this.cancelShutter();this.grid.remove();this.lcd.remove();this.root.remove();this.preview.remove();}
 }

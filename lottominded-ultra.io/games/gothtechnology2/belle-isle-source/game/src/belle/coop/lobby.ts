@@ -1,11 +1,11 @@
-import { RIDERS, VEHICLES, BINDINGS, CoopLobbyState, loadPair, savePair, setupErrors, type PreferenceStore, type Pad, type Seat, type PlayerManifest } from './coop.ts';
+import { RIDERS, VEHICLES, BINDINGS, CoopLobbyState, loadPair, savePair, setupErrors, defaultSelection, loadLayout, LAYOUT_KEY, type PreferenceStore, type Pad, type Seat, type PlayerManifest } from './coop.ts';
 
 export type CoopLobbyOptions = {
   store?: PreferenceStore;
   pads?: () => readonly (Pad|null)[];
   /** Preview must label its action honestly; it never claims a game has launched. */
   preview?: boolean;
-  onBegin: (players: readonly [PlayerManifest,PlayerManifest], signal: AbortSignal) => Promise<void>;
+  onBegin: (players: readonly PlayerManifest[], signal: AbortSignal) => Promise<void>;
   onClose?: () => void;
 };
 const css = `
@@ -22,22 +22,26 @@ const css = `
 /** Scoped, dependency-free lobby component. The host owns world/input suspension and rendering. */
 export function mountCoopLobby(host: HTMLElement, options: CoopLobbyOptions) {
   const model=new CoopLobbyState(loadPair(options.store));
-  const root=document.createElement('section');root.className='coop-lobby';root.setAttribute('aria-label','Two-player exploration setup');
+  const root=document.createElement('section');root.className='coop-lobby';root.setAttribute('aria-label','Two-to-four-player exploration setup');
   const style=document.createElement('style');style.textContent=css;root.append(style);
   const header=document.createElement('header'),intro=document.createElement('div');
   const kicker=document.createElement('div');kicker.className='coop-kicker';kicker.textContent='BELLE ISLE / EXPLORE TOGETHER';
-  const title=document.createElement('h1');title.textContent='Two riders. Your island.';
+  const title=document.createElement('h1');title.textContent='Your crew. Your island.';
   const mode=document.createElement('span');mode.className='coop-mode';mode.textContent='LOCAL CO-OP SETUP';
   intro.append(kicker,title);header.append(intro,mode);root.append(header);
-  const description=document.createElement('p');description.textContent='Choose each rider, wheel profile and controls independently. Both players confirm the same loadout before preparation begins.';root.append(description);
+  const description=document.createElement('p');description.textContent='Choose two to four riders. Mix hoverbikes and unicycles in the same island, with independent controls and cameras.';root.append(description);
+  const settings=document.createElement('div');settings.className='coop-panes';
+  const countLabel=document.createElement('label');countLabel.textContent='Players';const count=document.createElement('select');count.setAttribute('aria-label','Number of co-op players');for(const n of [2,3,4])count.add(new Option(n+' players',String(n)));count.value=String(model.snapshot().players.length);countLabel.append(count);
+  const layoutLabel=document.createElement('label');layoutLabel.textContent='Split-screen layout';const layout=document.createElement('select');layout.setAttribute('aria-label','Split-screen layout');layout.add(new Option('Horizontal · top and bottom','horizontal'));layout.add(new Option('Vertical · side by side','vertical'));layout.value=loadLayout(options.store);layout.onchange=()=>{try{options.store?.setItem(LAYOUT_KEY,layout.value);}catch{}};layoutLabel.append(layout);settings.append(countLabel,layoutLabel);root.append(settings);
+  count.onchange=()=>{model.resize(Number(count.value));savePair(options.store,model.snapshot().players);complete=false;refresh();};
   const panes=document.createElement('div');panes.className='coop-panes';root.append(panes);
   const fields:HTMLFieldSetElement[]=[],readyButtons:HTMLButtonElement[]=[],readyText:HTMLElement[]=[];
   const controls:{rider:HTMLSelectElement;vehicle:HTMLSelectElement;input:HTMLSelectElement}[]=[];
   let busy=false,closed=false,complete=false,controller:AbortController|undefined;
   const status=document.createElement('p');status.className='coop-status';status.setAttribute('role','status');status.setAttribute('aria-live','polite');
   const readPads=()=>options.pads?.()??[];
-  const bindingLabel=(id:string)=>id==='wasd'?'Keyboard · WASD':id==='arrows'?'Keyboard · Arrow keys':'Controller '+(Number(id.slice(4))+1);
-  for(const seat of [0,1] as const){
+  const bindingLabel=(id:string)=>id==='wasd'?'Keyboard · WASD':id==='arrows'?'Keyboard · Arrow keys':id.startsWith('touch:')?'Touch · Player '+(Number(id.slice(6))+1):'Controller '+(Number(id.slice(4))+1);
+  for(const seat of [0,1,2,3] as const){
     const field=document.createElement('fieldset');field.dataset.seat=String(seat);fields.push(field);
     const legend=document.createElement('legend');legend.textContent='Player '+(seat+1);field.append(legend);
     function select(name:string,items:readonly {id:string;label:string}[]){
@@ -45,31 +49,32 @@ export function mountCoopLobby(host: HTMLElement, options: CoopLobbyOptions) {
       el.setAttribute('aria-label',`Player ${seat+1} ${name}`);for(const item of items)el.add(new Option(item.label,item.id));field.append(label,el);return el;
     }
     const rider=select('rider',RIDERS),vehicle=select('vehicle',VEHICLES),input=select('input',BINDINGS.map(id=>({id,label:bindingLabel(id)})));
-    const c=model.snapshot().players[seat];rider.value=c.riderId;vehicle.value=c.vehicleId;input.value=c.binding;controls.push({rider,vehicle,input});
-    const change=()=>{complete=false;model.select(seat,{riderId:rider.value,vehicleId:vehicle.value,binding:input.value});const persisted=savePair(options.store,model.snapshot().players);refresh(persisted?'Loadout saved. Both players need to confirm again.':'Loadout updated for this visit; browser storage is unavailable.');};
+    const c=model.snapshot().players[seat]??defaultSelection(seat);rider.value=c.riderId;vehicle.value=c.vehicleId;input.value=c.binding;controls.push({rider,vehicle,input});
+    const change=()=>{complete=false;model.select(seat,{riderId:rider.value,vehicleId:vehicle.value,binding:input.value});const persisted=savePair(options.store,model.snapshot().players);refresh(persisted?'Loadout saved. All players need to confirm again.':'Loadout updated for this visit; browser storage is unavailable.');};
     rider.onchange=vehicle.onchange=input.onchange=change;
     const ready=document.createElement('button');ready.type='button';ready.className='coop-ready';ready.setAttribute('aria-pressed','false');
     ready.onclick=()=>{complete=false;const snapshot=model.snapshot(),errors=setupErrors(snapshot.players,'local',readPads());if(errors.length){refresh(errors.join(' '));return;}model.setReady(seat,!snapshot.ready[seat],snapshot.revision);refresh();};
     const state=document.createElement('span');state.className='coop-ready-state';readyText.push(state);readyButtons.push(ready);field.append(ready,state);panes.append(field);
   }
-  const footer=document.createElement('div');footer.className='coop-footer';const begin=document.createElement('button');begin.type='button';begin.className='coop-begin';begin.textContent=options.preview?'Review selected pair':'Explore together';
+  const footer=document.createElement('div');footer.className='coop-footer';const begin=document.createElement('button');begin.type='button';begin.className='coop-begin';begin.textContent=options.preview?'Review selected riders':'Explore together';
   const close=document.createElement('button');close.type='button';close.textContent='Close setup';footer.append(begin,close);root.append(footer,status);
   const details=document.createElement('details'),summary=document.createElement('summary'),note=document.createElement('p');summary.textContent='Controls and integration status';note.className='coop-note';
-  note.textContent='P1: WASD, Space hop, R recover, F ride/walk, C camera. P2: arrows, Enter hop, / recover, . ride/walk, comma camera. Controllers: left stick, A hop, X recover, Y ride/walk, B brake. P or Escape pauses both. Each view also has touch controls. Release controls after pause or reconnect. '+(options.preview?'This review does not start the island.':'Local co-op uses two independent riders in one island with separate views.')+' Wheel profiles use the existing EUC model with different motor and handling settings. Online rooms, hoverbikes, bicycles and wardrobe variants are separate modes, not enabled in this local release.';
+  note.textContent='P1: WASD, Space hop, R recover, F ride/walk, C camera. P2: arrows, Enter hop, / recover, . ride/walk, comma camera. Controllers: left stick, RB/LB altitude, A hop, X recover, Y ride/walk, B brake. P or Escape pauses everyone. Each view also has touch controls. Release controls after pause or reconnect. '+(options.preview?'This review does not start the island.':'Local co-op supports two to four riders and mixed vehicles in one island.')+' Wheel profiles use the existing EUC model with different motor and handling settings. Hoverbikes: Hop toggles takeoff/landing, E/Q or Page Up/Down changes altitude. Land before getting off. Online co-op uses Play with friends for up to four devices, each with its own ride choice.';
   details.append(summary,note);root.append(details);host.append(root);
   function refresh(message?:string){
     const snapshot=model.snapshot(),errors=setupErrors(snapshot.players,'local',readPads());
-    for(const seat of [0,1] as const){fields[seat].disabled=busy;readyButtons[seat].textContent=snapshot.ready[seat]?'Player '+(seat+1)+' ready ✓':'Confirm Player '+(seat+1);readyButtons[seat].setAttribute('aria-pressed',String(snapshot.ready[seat]));readyText[seat].textContent=snapshot.ready[seat]?'Confirmed for this loadout':'Choose your rider and controls.';}
+    count.disabled=layout.disabled=busy;
+    for(const seat of [0,1,2,3] as const){fields[seat].hidden=seat>=snapshot.players.length;if(fields[seat].hidden)continue;const c=snapshot.players[seat];controls[seat].rider.value=c.riderId;controls[seat].vehicle.value=c.vehicleId;controls[seat].input.value=c.binding;fields[seat].disabled=busy;readyButtons[seat].textContent=snapshot.ready[seat]?'Player '+(seat+1)+' ready ✓':'Confirm Player '+(seat+1);readyButtons[seat].setAttribute('aria-pressed',String(snapshot.ready[seat]));readyText[seat].textContent=snapshot.ready[seat]?'Confirmed for this loadout':'Choose your rider and controls.';}
     begin.disabled=busy||complete||errors.length>0||!snapshot.ready.every(Boolean);
-    status.textContent=errors.length?errors.join(' '):(message??(snapshot.ready.every(Boolean)?'Both players confirmed. Ready to prepare their separate actors.':'Waiting for both players to confirm.'));
+    status.textContent=errors.length?errors.join(' '):(message??(snapshot.ready.every(Boolean)?'All players confirmed. Ready to prepare their separate actors.':'Waiting for all players to confirm.'));
   }
   begin.onclick=async()=>{
     if(busy||closed||complete)return;const snapshot=model.snapshot(),errors=setupErrors(snapshot.players,'local',readPads());if(errors.length){refresh(errors.join(' '));return;}
-    try{const pair=model.manifests();busy=true;controller=new AbortController();refresh('Preparing the selected pair…');await options.onBegin(pair,controller.signal);if(!closed&&!controller.signal.aborted){complete=true;refresh(options.preview?'Both manifests validated. No game world has been started in this preview.':'Both actors prepared; the host controls scene activation.');if(!options.preview)dispose();}}
+    try{const pair=model.manifests();busy=true;controller=new AbortController();refresh('Preparing the selected riders…');await options.onBegin(pair,controller.signal);if(!closed&&!controller.signal.aborted){complete=true;refresh(options.preview?'All manifests validated. No game world has been started in this preview.':'All actors prepared; the host controls scene activation.');if(!options.preview)dispose();}}
     catch(error){if(!closed){model.invalidate();refresh(error instanceof Error?error.message:'Preparation failed. Try again.');}}
     finally{busy=false;if(!closed){const message=status.textContent??'';refresh(message);}}
   };
-  const onPadChange=()=>{complete=false;controller?.abort(new Error('Controller disconnected during preparation.'));model.invalidate();refresh('Controller connection changed. Release controls and confirm both players again.');};
+  const onPadChange=()=>{complete=false;controller?.abort(new Error('Controller disconnected during preparation.'));model.invalidate();refresh('Controller connection changed. Release controls and confirm all players again.');};
   window.addEventListener('gamepadconnected',onPadChange);window.addEventListener('gamepaddisconnected',onPadChange);
   const dispose=()=>{if(closed)return;closed=true;controller?.abort();window.removeEventListener('gamepadconnected',onPadChange);window.removeEventListener('gamepaddisconnected',onPadChange);root.remove();};
   close.onclick=()=>{dispose();options.onClose?.();};refresh();

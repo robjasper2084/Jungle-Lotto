@@ -2,10 +2,12 @@
 export function livingSkyFragment(source:string):string {
  const gradient='vec3 color=mix(horizon,zenith,pow(smoothstep(-.045,.85,d.y),.52));';
  const warmth='color=mix(color,warm,towardSun*exp(-h*4.5)*(.18+.72*dusk));';
- const begin=' if(d.y>-.02&&coverage>.001){',end=' // Stars, lunar terrain and brief meteors share the cloud occlusion.';
+ const traced=source.includes('if(volumeReady<.5&&d.y>-.02&&coverage>.001){');
+ const begin=traced?' if(volumeReady<.5&&d.y>-.02&&coverage>.001){':' if(d.y>-.02&&coverage>.001){';
+ const end=traced?' if(volumeReady>.5){':' // Stars, lunar terrain and brief meteors share the cloud occlusion.';
  const a=source.indexOf(begin),b=source.indexOf(end);
  if(!source.includes(gradient)||!source.includes(warmth)||a<0||b<=a)throw new Error('Living sky: source shader contract changed');
- const clouds=` if(d.y>-.02&&coverage>.001){
+ const clouds=` if(${traced?'volumeReady<.5&&':''}d.y>-.02&&coverage>.001){
   vec2 uv=d.xz/(max(.045,d.y)+.105)*.22*cloudScale;
   uv=mat2(.94,-.342,.342,.94)*uv;uv.x/=sqrt(max(stretch,.1));
   vec2 drift=vec2(cloudTime*.00028,cloudTime*.00011);

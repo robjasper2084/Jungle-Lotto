@@ -1,4 +1,4 @@
-/** Two-player exploration foundation. Does not start networking or mutate solo saves.
+/** Two-to-four-player exploration foundation. Does not start networking or mutate solo saves.
  * Catalog pinned to PR138 source a7b8a5f; all paths are repository paths, NOT fetch URLs.
  * Runtime must resolve/copy approved assets at build time and validate each cloned rig.
  */
@@ -12,38 +12,36 @@ export const RIDERS = [
   { id: 'DS_Armored_Rider_01', label: 'Night Sentinel', blob: '619941aed91149fcd7ebfd9446a7fd98a826300d' },
 ] as const;
 export const VEHICLES = [
+  { id: 'hoverbike', label: 'Hoverbike · flight', adapter: 'HoverController', profile: null },
   { id: 'euc', label: 'Classic electric unicycle', adapter: 'RideCore', profile: null },
   { id: 'euc:city', label: 'City 16', adapter: 'RideCore', profile: 'city' },
   { id: 'euc:tour', label: 'Touring 18', adapter: 'RideCore', profile: 'tour' },
   { id: 'euc:trail', label: 'Trail 16', adapter: 'RideCore', profile: 'trail' },
   { id: 'euc:speed', label: 'Speed 22', adapter: 'RideCore', profile: 'speed' },
 ] as const;
-// Existing HoverRide creates global singleton DOM/input/audio. It must be split into
-// per-player adapters before two simultaneous hoverbikes can safely be offered.
-export const DEFERRED_VEHICLES = ['hoverbike', 'bicycle', 'ebike:talaria', 'ebike:ultra', 'ebike:sr', 'ebike:varg'] as const;
+export const DEFERRED_VEHICLES = ['bicycle', 'ebike:talaria', 'ebike:ultra', 'ebike:sr', 'ebike:varg'] as const;
 export type RiderId = typeof RIDERS[number]['id'];
 export type VehicleId = typeof VEHICLES[number]['id'];
-export type Seat = 0 | 1;
-export type Binding = 'wasd' | 'arrows' | 'pad:0' | 'pad:1' | 'pad:2' | 'pad:3';
+export type Seat = 0 | 1 | 2 | 3;
+export type Binding = 'wasd' | 'arrows' | 'pad:0' | 'pad:1' | 'pad:2' | 'pad:3' | 'touch:0' | 'touch:1' | 'touch:2' | 'touch:3';
 export type Mode = 'local' | 'online';
 export type Selection = { riderId: RiderId; vehicleId: VehicleId; binding: Binding };
-export type Pair = [Selection, Selection];
-export const BINDINGS: readonly Binding[] = ['wasd', 'arrows', 'pad:0', 'pad:1', 'pad:2', 'pad:3'];
+export type Pair = Selection[];
+export const BINDINGS: readonly Binding[] = ['wasd', 'arrows', 'pad:0', 'pad:1', 'pad:2', 'pad:3', 'touch:0', 'touch:1', 'touch:2', 'touch:3'];
 const isRecord = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
-const seatIndex = (seat: number): Seat => { if (seat !== 0 && seat !== 1) throw new Error('Exactly two player slots are supported.'); return seat; };
+const seatIndex = (seat: number): Seat => { if (!Number.isInteger(seat) || seat < 0 || seat > 3) throw new Error('Use two to four player slots.'); return seat as Seat; };
 export function parseSelection(value: unknown): Selection | undefined {
   if (!isRecord(value)) return;
   const rider = RIDERS.find(r => r.id === value.riderId), vehicle = VEHICLES.find(v => v.id === value.vehicleId);
   if (!rider || !vehicle || !BINDINGS.includes(value.binding as Binding)) return;
   return { riderId: rider.id, vehicleId: vehicle.id, binding: value.binding as Binding };
 }
-export function defaultPair(): Pair {
-  return [{riderId:'DS_Armored_Rider_01',vehicleId:'euc',binding:'wasd'}, {riderId:'DS_Hoodie_Woman_01',vehicleId:'euc:tour',binding:'arrows'}];
-}
+export function defaultSelection(seat:Seat):Selection {return {riderId:RIDERS[[4,2,1,3][seat]].id,vehicleId:'hoverbike',binding:(['wasd','arrows','touch:2','touch:3'] as const)[seat]};}
+export function defaultPair(): Pair { return [defaultSelection(0),defaultSelection(1)]; }
 export type PlayerManifest = Readonly<{
-  version: 1; seat: Seat; entityId: 'coop-p1' | 'coop-p2'; riderId: RiderId; vehicleId: VehicleId; binding: Binding;
+  version: 1; seat: Seat; entityId: string; riderId: RiderId; vehicleId: VehicleId; binding: Binding;
   rider: Readonly<{ sourcePath: string; blob: string }>;
-  controller: 'RideCore'; physicsProfile: string | null;
+  controller: 'RideCore' | 'HoverController'; physicsProfile: string | null;
   profileSource: string; revision: string; requiresRigValidation: true;
 }>;
 /** IDs, not arbitrary URLs, cross the lobby/transport boundary. Never share a skeleton instance. */
@@ -51,9 +49,9 @@ export function assignPlayer(seat: Seat, value: unknown): PlayerManifest {
   seatIndex(seat); const choice = parseSelection(value);
   if (!choice) throw new Error('Unsupported rider, vehicle or input selection.');
   const rider = RIDERS.find(r => r.id === choice.riderId)!, vehicle = VEHICLES.find(v => v.id === choice.vehicleId)!;
-  return Object.freeze({version:1, seat, entityId:seat === 0 ? 'coop-p1' : 'coop-p2', ...choice,
+  return Object.freeze({version:1, seat, entityId:'coop-p'+(seat+1), ...choice,
     rider:Object.freeze({sourcePath:SOURCE_ROOT+'swoop-source/public/exports/rigged-heroes/'+rider.id+'.glb', blob:rider.blob}),
-    controller:'RideCore', physicsProfile:vehicle.profile,
+    controller:vehicle.adapter, physicsProfile:vehicle.profile,
     profileSource:SOURCE_ROOT+'swoop-source/src/detroit/electricVehicles.ts', revision:SOURCE_REVISION, requiresRigValidation:true});
 }
 export interface PreferenceStore { getItem(key: string): string | null; setItem(key: string, value: string): void }
@@ -62,29 +60,28 @@ export function loadPair(store?: PreferenceStore): Pair {
   const fallback = defaultPair();
   try {
     const value: unknown = JSON.parse(store?.getItem(PREF_KEY) ?? 'null');
-    if (!isRecord(value) || value.version !== 1 || !Array.isArray(value.players) || value.players.length !== 2) return fallback;
-    const a = parseSelection(value.players[0]), b = parseSelection(value.players[1]);
-    return [a ?? fallback[0], b ?? fallback[1]];
+    if (!isRecord(value) || value.version !== 1 || !Array.isArray(value.players) || value.players.length < 2 || value.players.length > 4) return fallback;
+    return value.players.map((p,i)=>parseSelection(p) ?? defaultSelection(i as Seat));
   } catch { return fallback; }
 }
 /** Preferences only: never save readiness, room credentials, remote IDs, poses or progress. */
 export function savePair(store: PreferenceStore | undefined, pair: Pair): boolean {
   try {
-    const players = pair.map(parseSelection); if (players.length !== 2 || players.some(p => !p) || !store) return false;
+    const players = pair.map(parseSelection); if ((players.length < 2 || players.length > 4) || players.some(p => !p) || !store) return false;
     store.setItem(PREF_KEY, JSON.stringify({version:1, players})); return true;
   } catch { return false; }
 }
 export type Pad = { index: number; id: string; connected: boolean; mapping: string; axes: readonly number[]; buttons: readonly {pressed: boolean; value: number}[] };
 export function setupErrors(pair: Pair, mode: Mode, pads: readonly (Pad | null)[], transportAvailable = false): string[] {
   const errors: string[] = [];
-  if (!Array.isArray(pair) || pair.length !== 2 || pair.some(p => !parseSelection(p))) return ['Two valid player selections are required.'];
+  if (!Array.isArray(pair) || (pair.length < 2 || pair.length > 4) || pair.some(p => !parseSelection(p))) return ['Two to four valid player selections are required.'];
   if (mode !== 'local' && mode !== 'online') return ['Unsupported session mode.'];
   if (mode === 'online') {
     // Remote choices/readiness need authenticated membership and a versioned room handshake.
     if (!transportAvailable) errors.push('Online co-op transport is not connected; local split-screen is not online multiplayer.');
     return errors;
   }
-  if (pair[0].binding === pair[1].binding) errors.push('Each player needs a different keyboard layout or controller.');
+  if (new Set(pair.map(p=>p.binding)).size !== pair.length) errors.push('Each player needs a different keyboard layout or controller.');
   for (const [i, p] of pair.entries()) if (p.binding.startsWith('pad:')) {
     const index = Number(p.binding.slice(4)), pad = pads.find(p => p?.index === index);
     if (!pad?.connected || pad.mapping !== 'standard') errors.push(`Player ${i+1}: connect a standard-mapped controller in slot ${index+1}.`);
@@ -92,27 +89,28 @@ export function setupErrors(pair: Pair, mode: Mode, pads: readonly (Pad | null)[
   return errors;
 }
 export class CoopLobbyState {
-  private pair: Pair; private revision = 0; private ready: [boolean, boolean] = [false, false];
+  private pair: Pair; private revision = 0; private ready: boolean[] = [];
   constructor(pair: Pair = defaultPair()) {
-    const a = parseSelection(pair[0]), b = parseSelection(pair[1]);
-    if (pair.length !== 2 || !a || !b) throw new Error('Invalid two-player loadout.'); this.pair = [a,b];
+    if (pair.length < 2 || pair.length > 4 || pair.some(p=>!parseSelection(p))) throw new Error('Invalid co-op loadout.'); this.pair = pair.map(p=>({...p})); this.ready = pair.map(()=>false);
   }
-  snapshot() { return {revision:this.revision, players:this.pair.map(p=>({...p})) as Pair, ready:[...this.ready] as [boolean,boolean]}; }
+  resize(count:number) { if (![2,3,4].includes(count)) throw new Error("Use two to four players."); this.pair=Array.from({length:count},(_,i)=>this.pair[i]??defaultSelection(i as Seat)); this.invalidate(); }
+  snapshot() { return {revision:this.revision, players:this.pair.map(p=>({...p})) as Pair, ready:[...this.ready]}; }
   select(seat: Seat, value: unknown) {
     const next = parseSelection(value); if (!next) throw new Error('Invalid player selection.');
-    this.pair[seatIndex(seat)] = next; this.revision++; this.ready = [false,false];
+    if (seatIndex(seat) >= this.pair.length) throw new Error("Player slot is not active.");
+    this.pair[seat] = next; this.revision++; this.ready = this.pair.map(()=>false);
   }
   setReady(seat: Seat, value: boolean, revision: number) {
-    seatIndex(seat); if (revision !== this.revision || typeof value !== 'boolean') return false;
+    if (seatIndex(seat) >= this.pair.length) throw new Error("Player slot is not active."); if (revision !== this.revision || typeof value !== 'boolean') return false;
     this.ready[seat] = value; return true;
   }
-  invalidate() { this.ready = [false,false]; this.revision++; }
+  invalidate() { this.ready = this.pair.map(()=>false); this.revision++; }
   manifests() {
-    if (!this.ready.every(Boolean)) throw new Error('Both players must confirm the current loadout.');
-    return [assignPlayer(0,this.pair[0]),assignPlayer(1,this.pair[1])] as const;
+    if (!this.ready.every(Boolean)) throw new Error('All players must confirm the current loadout.');
+    return this.pair.map((p,i)=>assignPlayer(i as Seat,p));
   }
 }
-export type InputFrame = { throttle:number; steer:number; hop:boolean; recover:boolean; interact:boolean; brake:boolean };
+export type InputFrame = { throttle:number; steer:number; hop:boolean; recover:boolean; interact:boolean; brake:boolean; lift?:number;clutch?:number;shift?:number };
 const zero = (): InputFrame => ({throttle:0,steer:0,hop:false,recover:false,interact:false,brake:false});
 const MAP = {wasd:['KeyW','KeyS','KeyA','KeyD','Space','KeyR','KeyF','ShiftLeft'],arrows:['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Enter','Slash','Period','ShiftRight']} as const;
 const analog = (value: number) => !Number.isFinite(value) || Math.abs(value) <= .14 ? 0 : Math.sign(value)*Math.min(1,(Math.abs(value)-.14)/.86);
@@ -127,28 +125,32 @@ export class CoopInput {
     let raw = zero();
     if (this.binding === 'wasd' || this.binding === 'arrows') {
       const m = MAP[this.binding]; raw={throttle:Number(keys.has(m[0]))-Number(keys.has(m[1])),steer:Number(keys.has(m[3]))-Number(keys.has(m[2])),hop:keys.has(m[4]),recover:keys.has(m[5]),interact:keys.has(m[6]),brake:keys.has(m[7])};
-    } else {
+    } else if (!this.binding.startsWith('touch:')) {
       const pad = pads.find(p=>p?.index===Number(this.binding.slice(4)));
       if (!pad?.connected || pad.mapping !== 'standard' || pad.axes.length < 2 || !Number.isFinite(pad.axes[0]) || !Number.isFinite(pad.axes[1])) { this.reset(); return zero(); }
       if (this.padIdentity !== pad.id) { this.reset(); this.padIdentity=pad.id; }
       const press=(i:number)=>pad.buttons[i]?.pressed===true;
-      raw={throttle:(-analog(pad.axes[1])||0),steer:analog(pad.axes[0]),hop:press(0),recover:press(2),interact:press(3),brake:press(1)};
+      raw={throttle:(-analog(pad.axes[1])||0),steer:analog(pad.axes[0]),hop:press(0),recover:press(2),interact:press(3),brake:press(1),lift:Number(press(5))-Number(press(4)),clutch:pad.buttons[6]?.value??0,shift:Number(press(15))-Number(press(14))};
     }
+    if(this.binding==='wasd') raw.lift=Number(keys.has('KeyE'))-Number(keys.has('KeyQ'));
+    if(this.binding==='arrows') raw.lift=Number(keys.has('PageUp'))-Number(keys.has('PageDown'));
+    if(this.binding==='wasd'){raw.clutch=Number(keys.has('KeyC'));raw.shift=Number(keys.has('BracketRight'))-Number(keys.has('BracketLeft'));}
+    if(this.binding==='arrows'){raw.clutch=Number(keys.has('KeyO'));raw.shift=Number(keys.has('Digit0'))-Number(keys.has('Digit9'));}
     const neutral = (this.binding==='wasd'||this.binding==='arrows')
-      ? MAP[this.binding].every(code=>!keys.has(code))
+      ? MAP[this.binding].every(code=>!keys.has(code)) && !raw.lift && !raw.clutch && !raw.shift
       : Object.values(raw).every(v=>v===0 || v===false);
     if (!this.armed) { if (neutral) this.armed=true; return zero(); }
-    const result={...raw,hop:raw.hop&&!this.previous.hop,recover:raw.recover&&!this.previous.recover,interact:raw.interact&&!this.previous.interact};
+    const result={...raw,shift:raw.shift&&raw.shift!==this.previous.shift?raw.shift:0,hop:raw.hop&&!this.previous.hop,recover:raw.recover&&!this.previous.recover,interact:raw.interact&&!this.previous.interact};
     this.previous=raw; return result;
   }
 }
 export type Spawn = {x:number;y:number;z:number;heading:number};
 export type Ground = (x:number,z:number)=>{height:number;land:boolean;blocked:boolean};
 /** Bounded footprint probes. Throws rather than spawning over water or in a wall. */
-export function findPairSpawns(anchor: Spawn, ground: Ground, radii: readonly [number,number] = [.75,.75]): [Spawn,Spawn] {
-  if (![anchor.x,anchor.y,anchor.z,anchor.heading].every(Number.isFinite) || radii.length!==2 || radii.some(r=>!Number.isFinite(r)||r<=0||r>5)) throw new Error('Invalid spawn request.');
+export function findPairSpawns(anchor: Spawn, ground: Ground, radii: readonly number[] = [.75,.75]): Spawn[] {
+  if (![anchor.x,anchor.y,anchor.z,anchor.heading].every(Number.isFinite) || (radii.length<1||radii.length>4) || radii.some(r=>!Number.isFinite(r)||r<=0||r>5)) throw new Error('Invalid spawn request.');
   const found: Spawn[]=[];
-  for (let seat=0;seat<2;seat++) {
+  for (let seat=0;seat<radii.length;seat++) {
     const radius=radii[seat]; let picked: Spawn|undefined;
     for(let ring=0;ring<8&&!picked;ring++) for(let direction=0;direction<16&&!picked;direction++) {
       const angle=anchor.heading+Math.PI/2+direction*Math.PI/8, distance=ring===0?0:2+ring*2;
@@ -162,14 +164,19 @@ export function findPairSpawns(anchor: Spawn, ground: Ground, radii: readonly [n
     if(!picked)throw new Error(`No safe non-overlapping spawn for Player ${seat+1}.`);
     found.push(picked);
   }
-  return found as [Spawn,Spawn];
+  return found;
 }
 export type Rect = {x:number;y:number;width:number;height:number};
 /** Pixel-perfect CSS view rectangles; renderer adapter converts top-left y to GL y. */
-export function coopViewports(width:number,height:number): [Rect,Rect] {
-  if(!Number.isSafeInteger(width)||!Number.isSafeInteger(height)||width<2||height<2)throw new Error('Invalid viewport size.');
-  if(width>=height){const w=Math.floor(width/2);return[{x:0,y:0,width:w,height},{x:w,y:0,width:width-w,height}];}
-  const h=Math.floor(height/2);return[{x:0,y:0,width,height:h},{x:0,y:h,width,height:height-h}];
+export type SplitLayout='horizontal'|'vertical';
+export const LAYOUT_KEY='belle-coop-layout-v1';
+export function loadLayout(store?:PreferenceStore):SplitLayout {try{return store?.getItem(LAYOUT_KEY)==='vertical'?'vertical':'horizontal';}catch{return 'horizontal';}}
+export function coopViewports(width:number,height:number,count=2,layout:SplitLayout='horizontal'): Rect[] {
+ if(!Number.isSafeInteger(width)||!Number.isSafeInteger(height)||width<4||height<4||![2,3,4].includes(count))throw new Error('Invalid viewport size.');
+ const w=Math.floor(width/2),h=Math.floor(height/2);
+ if(count===2)return layout==='vertical'?[{x:0,y:0,width:w,height},{x:w,y:0,width:width-w,height}]:[{x:0,y:0,width,height:h},{x:0,y:h,width,height:height-h}];
+ if(count===3)return layout==='vertical'?[{x:0,y:0,width:w,height},{x:w,y:0,width:width-w,height:h},{x:w,y:h,width:width-w,height:height-h}]:[{x:0,y:0,width,height:h},{x:0,y:h,width:w,height:height-h},{x:w,y:h,width:width-w,height:height-h}];
+ return [{x:0,y:0,width:w,height:h},{x:w,y:0,width:width-w,height:h},{x:0,y:h,width:w,height:height-h},{x:w,y:h,width:width-w,height:height-h}];
 }
 export function glViewport(rect:Rect,totalHeight:number): Rect { return {...rect,y:totalHeight-rect.y-rect.height}; }
 export type PreparedActor = { /** Unique per-player controller/view identity. */ identity: object; validate:()=>boolean; dispose:()=>void };
@@ -177,11 +184,11 @@ export type PreparedActor = { /** Unique per-player controller/view identity. */
  * Both actors must validate. Timeout/cancel/failure disposes all completed and late actors.
  * Never adds an animation loop, plays sound, or exposes half of a successful spawn.
  */
-export async function preparePair<A extends PreparedActor>(manifests: readonly [PlayerManifest,PlayerManifest],
+export async function preparePair<A extends PreparedActor>(manifests: readonly PlayerManifest[],
   load:(manifest:PlayerManifest,signal:AbortSignal)=>Promise<A>, signal:AbortSignal,
-  timeoutMs=20000): Promise<readonly [A,A]> {
+  timeoutMs=20000): Promise<readonly A[]> {
   if(!Number.isFinite(timeoutMs)||timeoutMs<1||timeoutMs>60000)throw new Error('Invalid prepare timeout.');
-  if(manifests.length!==2||manifests[0].seat!==0||manifests[1].seat!==1)throw new Error('Invalid player manifest pair.');
+  if(manifests.length<2||manifests.length>4||manifests.some((m,i)=>m.seat!==i))throw new Error('Invalid player manifest pair.');
   const ctl=new AbortController(), loaded:A[]=[], disposed=new Set<PreparedActor>();
   const dispose=(actor:PreparedActor)=>{if(!disposed.has(actor)){disposed.add(actor);try{actor.dispose();}catch{/* Continue cleaning other actors. */}}};
   const cancel=()=>ctl.abort(signal.reason??new Error('Co-op preparation cancelled.'));
@@ -194,15 +201,15 @@ export async function preparePair<A extends PreparedActor>(manifests: readonly [
   ctl.signal.addEventListener('abort',abort,{once:true});if(ctl.signal.aborted)abort();
   try {
     if(ctl.signal.aborted)throw ctl.signal.reason;
-    const canonical=[assignPlayer(0,manifests[0]),assignPlayer(1,manifests[1])] as const;
+    const canonical=manifests.map((m,i)=>assignPlayer(i as Seat,m));
     const pair=await Promise.race([Promise.all(canonical.map(async manifest=>{
       const actor=await load(manifest,ctl.signal);
       if(ctl.signal.aborted){dispose(actor);throw ctl.signal.reason;}
       loaded.push(actor);if(!actor.validate())throw new Error(`Player ${manifest.seat+1} rig or mount validation failed.`);
       return actor;
     })),aborted]);
-    if(pair[0]===pair[1]||pair[0].identity===pair[1].identity)throw new Error('Players cannot share a mutable actor or skeleton.');
-    return [pair[0],pair[1]];
+    if(new Set(pair).size!==pair.length||new Set(pair.map(a=>a.identity)).size!==pair.length)throw new Error('Players cannot share a mutable actor or skeleton.');
+    return pair;
   } catch(error) { ctl.abort(error); for(const actor of loaded)dispose(actor); throw error;
   } finally { clearTimeout(timer);signal.removeEventListener('abort',cancel);ctl.signal.removeEventListener('abort',abort); }
 }

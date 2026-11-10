@@ -1,3 +1,4 @@
+import {skyRadiance} from './volumetricSky.ts';
 import {RIVER_BROAD_NORMALS} from './riverSurfaceDetail.ts';
 import {riverFarRing,RIVER_PATCH_SIZE,RIVER_PATCH_SEGMENTS} from './riverPatch.ts';
 import {createFountainLighting,FOUNTAIN_COLOR_UNIFORMS} from './fountainLighting.ts';
@@ -17,11 +18,11 @@ export function createWater(scene:T.Scene,renderer:T.WebGLRenderer,map:ParkMap,t
  const pixels=new Uint8Array(128*128*4);const field=(x:number,y:number)=>Math.sin(x*.147+y*.196+1.7*Math.sin(y*.098))+Math.sin(x*.294-y*.245+.8*Math.sin(x*.098))*.45+Math.sin(x*.687+y*.54)*.18;
  for(let y=0;y<128;y++)for(let x=0;x<128;x++){const i=(y*128+x)*4;pixels[i]=128+Math.round((field(x+1,y)-field(x-1,y))*70);pixels[i+1]=128+Math.round((field(x,y+1)-field(x,y-1))*70);pixels[i+2]=pixels[i+3]=255;}
  const normals=realisticWaterNormal()??new T.DataTexture(pixels,128,128);normals.wrapS=normals.wrapT=T.RepeatWrapping;normals.magFilter=T.LinearFilter;normals.minFilter=T.LinearMipmapLinearFilter;normals.generateMipmaps=true;normals.needsUpdate=true;
- const uniformHeader=FOUNTAIN_COLOR_UNIFORMS+'uniform float fountainNight;uniform vec2 fountainCentre;uniform vec3 riverSkyTint;uniform vec3 riverSunDirection;uniform float riverSunGlint;uniform float riverTime;uniform sampler2D riverNormals;uniform vec2 riverCentre;uniform vec4 hoverWash;uniform vec4 riverRipples[12];uniform vec4 shipWake[4];uniform vec4 shipShape[4];varying vec3 riverWorld;';
+ const uniformHeader='uniform sampler2D tracedSky;uniform float tracedSkyReady;'+FOUNTAIN_COLOR_UNIFORMS+'uniform float fountainNight;uniform vec2 fountainCentre;uniform vec3 riverSkyTint;uniform vec3 riverSunDirection;uniform float riverSunGlint;uniform float riverTime;uniform sampler2D riverNormals;uniform vec2 riverCentre;uniform vec4 hoverWash;uniform vec4 riverRipples[12];uniform vec4 shipWake[4];uniform vec4 shipShape[4];varying vec3 riverWorld;';
  function material(kind:'near'|'far'|'lagoon'){
   const m=new T.MeshPhysicalMaterial({color:kind==='lagoon'?0x284b48:0x50859f,roughness:kind==='lagoon'?.12:.28,metalness:kind==='lagoon'?.08:.035,envMapIntensity:kind==='lagoon'?1.15:.85,clearcoat:kind==='lagoon'?.60:0,clearcoatRoughness:.15});
   m.onBeforeCompile=shader=>{
-   Object.assign(shader.uniforms,{...fountainLighting.uniforms,fountainNight,fountainCentre:{value:new T.Vector2(fountain.x,fountain.z)},riverSkyTint:reflectionTint,riverSunDirection,riverSunGlint,riverTime:time,riverNormals:{value:normals},riverCentre:centre,hoverWash:vehicle,riverRipples:ripples,shipWake,shipShape});
+   Object.assign(shader.uniforms,{tracedSky:skyRadiance.texture,tracedSkyReady:skyRadiance.ready,...fountainLighting.uniforms,fountainNight,fountainCentre:{value:new T.Vector2(fountain.x,fountain.z)},riverSkyTint:reflectionTint,riverSunDirection,riverSunGlint,riverTime:time,riverNormals:{value:normals},riverCentre:centre,hoverWash:vehicle,riverRipples:ripples,shipWake,shipShape});
    shader.vertexShader='uniform float riverTime;uniform vec2 riverCentre;varying vec3 riverWorld;\n'+shader.vertexShader;
    if(kind==='near')shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
 vec2 wp=(modelMatrix*vec4(transformed,1.)).xz;
@@ -30,7 +31,7 @@ transformed.y+=(sin(dot(wp,vec2(.48,.34))-riverTime*1.3)*.075+sin(dot(wp,vec2(-.
 `);
    shader.vertexShader=shader.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nriverWorld=(modelMatrix*vec4(transformed,1.)).xyz;');
    shader.fragmentShader=uniformHeader+'\n'+shader.fragmentShader;
-   shader.fragmentShader=shader.fragmentShader.replace('#include <lights_fragment_end>','#include <lights_fragment_end>\nreflectedLight.indirectSpecular*=riverSkyTint;');
+   shader.fragmentShader=shader.fragmentShader.replace('#include <lights_fragment_end>',"#include <lights_fragment_end>\nreflectedLight.indirectSpecular*=riverSkyTint;\nif(tracedSkyReady>.5){\n vec3 worldN=inverseTransformDirection(normal,viewMatrix);\n vec3 ray=reflect(normalize(riverWorld-cameraPosition),worldN);\n vec2 skyUV=vec2(atan(ray.z,ray.x)*.15915494+.5,asin(clamp(ray.y,-1.,1.))*.318309886+.5);\n vec3 sky=texture2D(tracedSky,skyUV).rgb;\n float fresnel=.025+.975*pow(1.-max(0.,dot(normalize(cameraPosition-riverWorld),worldN)),5.);\n reflectedLight.indirectSpecular=mix(reflectedLight.indirectSpecular,sky*fresnel,.82);\n}");
    shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_maps>',`#include <normal_fragment_maps>
 vec2 p=riverWorld.xz;float viewDistance=length(cameraPosition-riverWorld);
 // Near and far geometry meet on shared boundary vertices; no fragment-cut seam.

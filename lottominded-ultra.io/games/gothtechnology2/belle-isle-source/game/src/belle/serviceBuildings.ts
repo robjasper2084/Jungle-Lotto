@@ -1,3 +1,4 @@
+import {addPondServiceBuildings,POND_SERVICE_IDS} from './pondServiceBuildings.ts';
 import * as T from 'three';
 import {CUSTOM_ARCHITECTURE_IDS} from './referenceSites.ts';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
@@ -6,6 +7,7 @@ import {inside,segment,type ParkMap} from './terrain.ts';
 /** Secondary buildings retain mapped footprints/heights. Facade treatments are
  * approximate until measured elevation photography is available. */
 export function addServiceBuildings(scene:T.Scene,map:ParkMap,night={value:0}){
+ addPondServiceBuildings(scene,map);
  const custom=new Set(map.landmarks.map(l=>l.id)),beachIds=new Set(['368854145','927879992','509325790','509325814']);
  const brick=new T.MeshStandardMaterial({color:0xb29e7f,roughness:.94});
  brick.onBeforeCompile=shader=>{
@@ -43,7 +45,7 @@ export function addServiceBuildings(scene:T.Scene,map:ParkMap,night={value:0}){
  const add=(g:T.BufferGeometry,m:T.Material)=>{if(!groups.has(m))groups.set(m,[]);groups.get(m)!.push(g.index?g.toNonIndexed():g);if(g.index)g.dispose();};
  const box=(x:number,y:number,z:number,w:number,h:number,d:number,yaw:number,m:T.Material)=>{const g=new T.BoxGeometry(w,h,d);g.rotateY(yaw);g.translate(x,y,z);add(g,m);};
  for(const b of map.buildings){
-  if(b.id==='513165063'||custom.has(b.id)||CUSTOM_ARCHITECTURE_IDS.has(b.id)||map.dossin?.ids.includes(b.id))continue;
+  if(b.id==='513165063'||POND_SERVICE_IDS.has(b.id)||custom.has(b.id)||CUSTOM_ARCHITECTURE_IDS.has(b.id)||map.dossin?.ids.includes(b.id))continue;
   const facility=map.facilities?.sites.find(s=>s.id===b.id);if(facility?.kind==='shelter')continue;
   const approach=b.points.some(p=>Math.hypot(p[0]-map.spawn.x,p[1]-map.spawn.z)<500);
   const detailed=beachIds.has(b.id)||!!facility||approach,edges=b.points.slice(1).map((q,i)=>{const p=b.points[i],dx=q[0]-p[0],dz=q[1]-p[1],length=Math.hypot(dx,dz),x=(p[0]+q[0])/2,z=(p[1]+q[1])/2;let nx=dz/length,nz=-dx/length;if(inside(x+nx*.1,z+nz*.1,b.points)){nx=-nx;nz=-nz;}return{p,q,x,z,dx,dz,length,nx,nz,yaw:-Math.atan2(dz,dx)};}).filter(e=>e.length>.1);

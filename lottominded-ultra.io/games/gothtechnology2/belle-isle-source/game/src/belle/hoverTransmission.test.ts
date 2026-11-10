@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {HoverTransmission} from './hoverTransmission.ts';
+import {HoverController} from './hoverController.ts';
+import {ParkTerrain,type ParkMap} from './terrain.ts';
+import fs from 'node:fs';
+const map=JSON.parse(fs.readFileSync(new URL('../../public/belle/map.json',import.meta.url),'utf8')) as ParkMap;
+const terrain=new ParkTerrain(map),idle={throttle:0,steer:0,lift:0,brake:false,boost:false};
+test('manual shifts require disengaging clutch in flight, including neutral',()=>{const d=new HoverTransmission();assert(!d.select(1,false));d.sample(1,1,false);assert(d.select(1,false));assert.equal(d.ratio,.38);d.sample(1,0,false);assert(!d.select(0,false));assert.equal(d.gear,1);assert(d.select(0,true));assert.equal(d.sample(1,0,false),0);});
+test('brake overrides throttle, clutch is proportional and clearing drops held controls',()=>{const d=new HoverTransmission();assert.equal(d.sample(1,.5,false),.5);assert.equal(d.sample(1,0,true),0);d.clear();assert.equal(d.throttle+d.brake+d.clutch,0);});
+test('gears cap drive speed independently for each player',()=>{const a=new HoverController(terrain,{x:0,z:1000,heading:0}),b=new HoverController(terrain,{x:0,z:1000,heading:0});a.setMode('drone');b.setMode('drone');a.drive.select(1,true);b.drive.select(3,true);a.launch();b.launch();for(let i=0;i<300;i++){a.advance(1/60,{...idle,throttle:1});b.advance(1/60,{...idle,throttle:1});}assert(Math.abs(a.pose.speed-7.98)<.01);assert.equal(b.pose.speed,21);});
+test('clutch and neutral retain altitude hold and brake stops propulsion',()=>{const c=new HoverController(terrain,{x:0,z:1000,heading:0});c.setMode('drone');c.launch();for(let i=0;i<240;i++)c.advance(1/60,{...idle,throttle:1});const y=c.pose.y;c.advance(1/60,{...idle,throttle:1,clutch:1});assert.equal(c.pose.speed,0);assert(Math.abs(c.pose.y-y)<.01);assert(c.drive.select(0,false));for(let i=0;i<60;i++)c.advance(1/60,{...idle,throttle:1});assert.equal(c.pose.speed,0);assert(Math.abs(c.pose.y-y)<.01);c.drive.select('auto',true);c.advance(1/60,{...idle,throttle:1,brake:true});assert.equal(c.pose.speed,0);});
