@@ -123,6 +123,15 @@ try{
     await expect(page.locator('#ride-profile')).toBeHidden();
     checked('direct hoverbike Start with trusted input',started);await shot('direct-start');
 
+    // Fresh profiles preserve the player's Classic preference. The direct
+    // altitude-hold exercise must select Drone with actual visible controls,
+    // rather than assume it was the default or alter saved preferences.
+    await tap(page.locator('#hover-hud .hover-lighting > summary'));
+    await expect(page.locator('#hover-flight-mode')).toBeEnabled();
+    await page.locator('#hover-flight-mode').selectOption('drone');
+    await expect(page.locator('#hover-flight-mode')).toHaveValue('drone');
+    checked('Drone altitude hold selected via UI',await snapshot());
+
     await tap(page.locator('#hover-hud [data-hover="takeoff"]'));
     await expect.poll(async()=>Number.parseFloat(await page.locator('#hover-altitude').textContent()),{timeout:180_000,intervals:[500,1000,2000]}).toBeGreaterThan(.8);
     await expect(page.locator('#hover-mode')).toHaveText('ALTITUDE HOLD');
