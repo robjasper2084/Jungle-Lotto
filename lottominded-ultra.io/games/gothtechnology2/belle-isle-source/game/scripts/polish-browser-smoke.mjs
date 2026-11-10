@@ -1,5 +1,6 @@
 /** Real-input polish checks plus explicitly separate CSS-only layout fixtures. */
 import assert from 'node:assert/strict';
+import {dispatchAfterReadyCountdown} from './polish-ready-dispatch.mjs';
 import {createReadStream} from 'node:fs';
 import {appendFile, mkdir, readFile, stat, writeFile} from 'node:fs/promises';
 import {createServer} from 'node:http';
@@ -247,7 +248,7 @@ async function runCase(configuration) {
     let resolveReady, rejectReady;
     const ready = new Promise((resolve, reject) => { resolveReady = resolve; rejectReady = reject; });
     const record = {label, trigger: trigger.description, triggerPoint: trigger.point, input: input?.description ?? 'Observe only',
-      dispatch: input ? configuration.mobile ? 'Same-session native Enter then touch prequeue' : 'Native prequeue' : 'Observe only', armedAt: new Date().toISOString()};
+      dispatch: input ? 'Native input after observed render-ready countdown' : 'Observe only', armedAt: new Date().toISOString()};
     (entry.metrics.countdownTransitions ??= []).push(record);
     const waiter = {id: ++countdownSequence, cancelled: false, received: false, cleanupComplete: false, receive(payload) {
       if (timedOut || countdownWaiter !== waiter || waiter.cancelled || waiter.received || payload.id !== waiter.id) return;
@@ -282,17 +283,20 @@ async function runCase(configuration) {
         observer.observe(hud, {attributes: true, attributeFilter: ['data-status', 'hidden']});
         return {traceStart: window.__polishInput.length, state: window.__polishTrialSnapshot()};
       }, waiter.id);
-      // Queue trigger and hold without a response round trip. On phone, Enter
-      // activates the focused button without the asynchronous touch-tap click path.
-      // The observer only records proof; the native event trace decides its phase.
+      // Native input must follow the real render-ready countdown. Preparation
+      // may now span GPU/compositor frames; prequeued input is correctly cleared.
       record.triggerQueuedAt = new Date().toISOString();
       const triggered = trigger.fire().then(() => { record.triggerCompletedAt = new Date().toISOString(); });
-      let pressed = Promise.resolve();
-      if (input) {
-        record.inputQueuedAt = new Date().toISOString();
-        pressed = input.press().then(() => { record.inputCompletedAt = new Date().toISOString(); });
-      }
-      const [,, observed] = await bounded(Promise.all([triggered, pressed, ready]), limits.actionMilliseconds, label + ' countdown transition');
+      const observed = await bounded(dispatchAfterReadyCountdown({
+        triggered, ready,
+        current: () => !timedOut && countdownWaiter === waiter && !waiter.cancelled,
+        refresh: input ? () => input.refreshTarget?.() : undefined,
+        press: input ? async () => {
+          record.inputQueuedAt = new Date().toISOString();
+          await input.press();
+          record.inputCompletedAt = new Date().toISOString();
+        } : undefined,
+      }), limits.actionMilliseconds, label + ' countdown transition');
       return {traceStart: record.arm.traceStart, transitionIndex: entry.metrics.countdownTransitions.length - 1,
         state: observed.state, expectedCode: input?.expectedCode,
         expectedTarget: input?.expectedTarget, release: input?.release};
@@ -344,6 +348,19 @@ async function runCase(configuration) {
     }
     const input = {description: configuration.mobile ? 'Trusted fixed joystick ' + direction + ' touchStart' : 'Trusted held ' + key.toUpperCase(), point,
       expectedCode: configuration.mobile ? undefined : direction === 'right' ? 'KeyD' : 'KeyW', expectedTarget: configuration.mobile ? selector.slice(1) : undefined,
+      async refreshTarget() {
+        if (!configuration.mobile) return;
+        const pad = vehicle === 'hoverbike' ? '#hover-flight-stick' : '#stick';
+        const geometry = await page.locator(pad).evaluate((element, {selector, direction}) => {
+          const r = element.getBoundingClientRect(), zone = document.querySelector(selector);
+          const point = {x: r.left + r.width / 2 + (direction === 'right' ? r.width * .35 : 0), y: r.top + r.height / 2 - (direction === 'forward' ? r.height * .35 : 0)};
+          const hit = document.elementFromPoint(point.x, point.y);
+          return {point, receives: !!zone && (hit === zone || zone.contains(hit)), covering: hit?.id || hit?.tagName};
+        }, {selector, direction});
+        assert.ok(geometry.receives, 'Ready-countdown input point is covered by ' + geometry.covering);
+        point = geometry.point; input.point = point;
+        (entry.metrics.readyInputTargets ??= {})[vehicle + ':' + direction] = geometry;
+      },
       async press() { activeHolds.add(input); if (configuration.mobile) await touch.send('Input.dispatchTouchEvent', {type: 'touchStart', touchPoints: [{...point, id: 1}]}); else await page.keyboard.down(key); },
       async release() { if (!activeHolds.has(input)) return; if (configuration.mobile) await touch.send('Input.dispatchTouchEvent', {type: 'touchEnd', touchPoints: []}); else await page.keyboard.up(key); activeHolds.delete(input); }};
     return input;

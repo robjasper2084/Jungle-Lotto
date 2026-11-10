@@ -5,6 +5,7 @@ import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {natureBudget,type Plant,type NaturePlan} from './naturePlan.ts';
 import {canopyTint} from './sunsetCanopy.ts';
 import {prepareCanopyCoverage} from './canopyCoverage.ts';
+import {prepareVegetationLod,vegetationScale} from './vegetationLod.ts';
 import {treeLodBlend} from './photoReferenceGrade.ts';
 type Entry={id:string;meshes?:string[];cardSize?:number;cardCenter?:number[];card?:string;triangles:number};
 type Manifest={trees:Entry[];ground:Entry[]};
@@ -19,11 +20,13 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void){
  const plantTint=(p:Plant)=>tint.setRGB(...canopyTint(p.tint,p.canopyTone));
  function instance(source:T.Mesh,count:number,name:string,shadow:boolean){
   const geometry=source.geometry.clone().applyMatrix4(source.matrixWorld);
+  if(shadow)geometry.setAttribute('belleLodCoverage',new T.InstancedBufferAttribute(new Float32Array(count),1).setUsage(T.DynamicDrawUsage));
   const materials=Array.isArray(source.material)?source.material:[source.material];
   for(const material of materials){const m=material as T.MeshStandardMaterial;
    m.side=T.DoubleSide;m.roughness=Math.max(.78,m.roughness);m.metalness=0;
    if(m.transparent||m.alphaTest>0){m.transparent=false;m.alphaTest=.45;m.depthWrite=true;}
    if(shadow&&/leaves/i.test(source.name))prepareCanopyCoverage(m);
+   if(shadow)prepareVegetationLod(m);
    if(m.map)m.map.anisotropy=4;
   }
   const mesh=new T.InstancedMesh(geometry,source.material,count);mesh.name=name;mesh.count=0;
@@ -44,7 +47,8 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void){
   // while the match starts. Only one pair of cards per distant tree.
   const image=await textures.loadAsync(base+entry.card);image.colorSpace=T.SRGBColorSpace;
   const far=new T.InstancedMesh(cards,new T.MeshBasicMaterial({map:image,alphaTest:.35,side:T.DoubleSide,toneMapped:true}),plants.length);
-  prepareCanopyCoverage(far.material as T.Material,true);
+  prepareCanopyCoverage(far.material as T.Material,true);prepareVegetationLod(far.material as T.Material,true);
+  cards.setAttribute('belleLodCoverage',new T.InstancedBufferAttribute(new Float32Array(plants.length).fill(1),1).setUsage(T.DynamicDrawUsage));
   far.name='Distant '+entry.id;plants.forEach((p,i)=>{far.setMatrixAt(i,matrix(p));far.setColorAt(i,plantTint(p));});far.computeBoundingSphere();scene.add(far);
   pools.push({id:entry.id,meshes,far,plants});
  }
@@ -70,8 +74,19 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void){
   const selected=new Set([...nearTrees,...nearGround]);stats.visibleTrees=nearTrees.length;stats.visibleGround=nearGround.length;
   for(const pool of pools){
    const near=pool.plants.filter(p=>selected.has(p));
-   for(const mesh of pool.meshes){mesh.count=near.length;near.forEach((p,i)=>{const blend=pool.far?treeLodBlend(Math.hypot(p.x-x,p.z-z),budget.treeRadius):1;mesh.setMatrixAt(i,matrix(p,blend));mesh.setColorAt(i,plantTint(p));});mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;}
-   if(pool.far){pool.plants.forEach((p,i)=>{const blend=selected.has(p)?treeLodBlend(Math.hypot(p.x-x,p.z-z),budget.treeRadius):0;pool.far!.setMatrixAt(i,matrix(p,1-blend));});pool.far.instanceMatrix.needsUpdate=true;}
+   for(const mesh of pool.meshes){
+    mesh.count=near.length;const coverage=mesh.geometry.getAttribute('belleLodCoverage') as T.InstancedBufferAttribute|undefined;
+    near.forEach((p,i)=>{const blend=pool.far?treeLodBlend(Math.hypot(p.x-x,p.z-z),budget.treeRadius):1;
+     mesh.setMatrixAt(i,matrix(p,vegetationScale(blend)));mesh.setColorAt(i,plantTint(p));coverage?.setX(i,blend);
+    });
+    mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;if(coverage)coverage.needsUpdate=true;
+   }
+   if(pool.far){
+    const coverage=pool.far.geometry.getAttribute('belleLodCoverage') as T.InstancedBufferAttribute;
+    pool.plants.forEach((p,i)=>{const blend=selected.has(p)?treeLodBlend(Math.hypot(p.x-x,p.z-z),budget.treeRadius):0;
+     pool.far!.setMatrixAt(i,matrix(p,vegetationScale(1-blend)));coverage.setX(i,1-blend);
+    });pool.far.instanceMatrix.needsUpdate=true;coverage.needsUpdate=true;
+   }
   }
  }
  const view=new NatureViewSelection(select),eye=new T.Vector3(),before=scene.onBeforeRender;

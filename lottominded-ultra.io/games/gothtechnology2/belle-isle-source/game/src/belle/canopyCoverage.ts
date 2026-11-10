@@ -4,10 +4,14 @@ const prepared=new WeakSet<Material>();
  * Bounded autumn pigment uses the existing instance tint; original neutral trees
  * stay neutral. No new geometry, texture sample, light or animation loop. */
 export function prepareCanopyCoverage(material:Material,far=false){
+ material.transparent=false;material.depthWrite=true;
+ // Thin real leaf atlases need a lower cutout threshold than full-crown cards.
+ // Keep zero-alpha background clipped and retain MSAA edge coverage.
+ material.alphaTest=far?.25:.12;material.alphaToCoverage=true;
+ // Shared source leaf materials are normalized by each instance builder.
+ // Reapply the coverage policy even when the shader hook is already installed.
  if(prepared.has(material))return;
  prepared.add(material);
- material.transparent=false;material.depthWrite=true;
- material.alphaTest=far?.25:.30;material.alphaToCoverage=true;
  const previous=material.onBeforeCompile,key=material.customProgramCacheKey.call(material);
  material.onBeforeCompile=(shader,renderer)=>{
   previous.call(material,shader,renderer);
@@ -21,6 +25,6 @@ export function prepareCanopyCoverage(material:Material,far=false){
 #endif
 `);
  };
- material.customProgramCacheKey=()=>key+'|belle-canopy-coverage-v1';
+ material.customProgramCacheKey=()=>key+'|belle-canopy-coverage-v2';
  material.needsUpdate=true;
 }
