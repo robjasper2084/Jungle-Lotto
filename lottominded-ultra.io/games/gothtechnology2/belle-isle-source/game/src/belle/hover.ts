@@ -221,6 +221,8 @@ installHoverPresentation(this.hud);
   const target=this.hud.querySelector('#hover-cruise-target')!,label=locked?speedMph(this.sim.cruiseSpeed!)+' MPH':'Cruise off';if(target.textContent!==label)target.textContent=label;
   this.altitude.textContent=Math.max(0,p.y-this.sim.floor(p.x,p.z)).toFixed(1);
   this.mode.textContent=this.sim.landed?'LANDED':this.sim.clearance<.3?'LANDING':this.sim.boostActive?'BOOST':locked?'CRUISE':this.sim.mode==='drone'?'ALTITUDE HOLD':'IN FLIGHT';
+  // Lock the visible flight-mode selector while Sky Circuit owns the vehicle.
+  this.flightSelect.disabled=!!this.hooks.vehicleLocked?.();
   this.hud.querySelector('[data-hover="takeoff"]')!.textContent=this.sim.flying&&this.sim.clearance>.3?'Land · G':'Take off · G';
   this.touchPad.hidden=!this.hooks.touch();
   this.hud.querySelector('#hover-drive')!.textContent=gearLabel(this.sim.drive.gear);
