@@ -92,3 +92,12 @@ test('reused leaf material cannot have its calibrated cutoff reset by another in
  m.alphaTest=.45;prepareCanopyCoverage(m);assert.equal(m.alphaTest,.12);assert.equal(m.customProgramCacheKey(),key);
  const s=shader();m.onBeforeCompile(s,{} as T.WebGLRenderer);assert.equal((s.fragmentShader.match(/float belleAutumn=/g)||[]).length,1);
 });
+
+
+test('reference river slopes are restrained and decorrelated instead of strong regular cross-hatching',()=>{
+ const bound=Math.hypot(.0045,.0024)+Math.hypot(.0012,.0031);
+ assert(bound<Math.tan(Math.PI/360),'added broad slopes stay below half a degree');
+ for(const token of ['2.2*sin(','.9*sin(','1.8*sin(','.7*sin(','riverPatch=.65+.35*sin','wave+=riverBroad*riverPatch'])assert(RIVER_BROAD_NORMALS.includes(token));
+ assert(!RIVER_BROAD_NORMALS.includes('vec2(.016,.011)'));
+ assert(!RIVER_BROAD_NORMALS.includes('vec2(-.009,.018)'));
+});
