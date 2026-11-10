@@ -40,15 +40,17 @@ test('canopy coverage preserves atlases and composes the original material hook 
  for(const far of [false,true]){
   const map=new T.Texture(),material=far?new T.MeshBasicMaterial({map,alphaTest:.35}):new T.MeshStandardMaterial({map,alphaTest:.45});
   let calls=0;material.onBeforeCompile=s=>{calls++;s.fragmentShader='// original leaf shader\n'+s.fragmentShader;};material.customProgramCacheKey=()=> 'original-atlas';
-  prepareCanopyCoverage(material,far);prepareCanopyCoverage(material,far);
-  assert.equal(material.map,map);assert.equal(material.transparent,false);assert.equal(material.depthWrite,true);assert.equal(material.alphaToCoverage,true);assert.equal(material.alphaTest,far?.25:.30);
+  prepareCanopyCoverage(material,far);
+  // A second source instance may normalize the shared atlas cutoff again.
+  material.alphaTest=.45;prepareCanopyCoverage(material,far);
+  assert.equal(material.map,map);assert.equal(material.transparent,false);assert.equal(material.depthWrite,true);assert.equal(material.alphaToCoverage,true);assert.equal(material.alphaTest,far?.25:.12);
   const lib=far?T.ShaderLib.basic:T.ShaderLib.standard;const shader={vertexShader:lib.vertexShader,fragmentShader:lib.fragmentShader,uniforms:{}} as Parameters<T.Material['onBeforeCompile']>[0];
   material.onBeforeCompile(shader,{} as T.WebGLRenderer);
   assert.equal(calls,1);assert(shader.fragmentShader.includes('// original leaf shader'));
   assert.equal((shader.fragmentShader.match(/float belleAutumn=/g)||[]).length,1);
   assert(shader.fragmentShader.includes('#include <alphatest_fragment>'));
   assert.equal((shader.fragmentShader.match(/texture2D/g)||[]).length,(lib.fragmentShader.match(/texture2D/g)||[]).length);
-  assert.equal(material.customProgramCacheKey(),'original-atlas|belle-canopy-coverage-v1');
+  assert.equal(material.customProgramCacheKey(),'original-atlas|belle-canopy-coverage-v2');
   material.dispose();map.dispose();
  }
 });
