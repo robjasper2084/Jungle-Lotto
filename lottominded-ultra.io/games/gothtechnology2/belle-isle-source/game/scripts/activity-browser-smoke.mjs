@@ -237,7 +237,7 @@ async function runCase(configuration) {
       await expect(page.locator('#activity-hud')).toContainText('0/1 photos');
       entry.metrics.retryFeedback = await page.locator('#activity-hud > p').first().textContent();
       await screenshot('photo-retry-feedback');
-      await tap(page.locator('#camera-capture > button'));
+      await tap(page.locator('#camera-capture').getByRole('button', {name: 'Put camera away · P', exact: true}));
 
       if (configuration.mobile) {
         // Keep the genuine mobile action-layering regression mandatory, after
