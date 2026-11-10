@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {WorldQuality} from './worldQuality.ts';
+import {WorldQuality,dynamicShadowsEnabled} from './worldQuality.ts';
 import type {EnvironmentQuality} from './environmentDetail.ts';
 
 function fixture(){
@@ -44,4 +44,20 @@ test('selecting Automatic again clears the previous degraded budget once',()=>{
  assert.equal(f.quality.scale,1);assert.equal(f.quality.effective,'automatic');
  assert.deepEqual(f.details,['automatic','smooth','automatic']);
  f.quality.setQuality('automatic');assert.equal(f.details.length,3);assert.equal(f.pixels.length,3);
+});
+
+test('Smooth avoids software-heavy dynamic shadows without losing High and Automatic lighting',()=>{
+ assert.equal(dynamicShadowsEnabled('smooth'),false);
+ assert.equal(dynamicShadowsEnabled('high'),true);
+ assert.equal(dynamicShadowsEnabled('automatic'),true);
+ const f=fixture();
+ f.quality.setQuality('smooth');
+ assert.equal(dynamicShadowsEnabled(f.quality.effective),false);
+ assert.equal(f.pixels.at(-1),1,'the source frame retains its full authored pixel ratio');
+ f.quality.setQuality('high');
+ assert.equal(dynamicShadowsEnabled(f.quality.effective),true);
+ f.quality.setQuality('automatic');f.quality.setBudget(.7);
+ assert.equal(dynamicShadowsEnabled(f.quality.effective),false,'automatic may enter Smooth under sustained load');
+ f.quality.setBudget(.9);
+ assert.equal(dynamicShadowsEnabled(f.quality.effective),true);
 });
