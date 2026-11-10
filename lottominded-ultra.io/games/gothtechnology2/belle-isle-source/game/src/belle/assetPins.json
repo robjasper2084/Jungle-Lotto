@@ -1,11 +1,11 @@
 {
-  "commit": "ea1d7b3970688afa83e913a1bd3e195d25a3a898",
-  "base": "https://raw.githubusercontent.com/robjasper2084/Jungle-Lotto/ea1d7b3970688afa83e913a1bd3e195d25a3a898/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/",
+  "commit": "ca1f6b42059ee526af4b851289ddafbd050e56d3",
+  "base": "https://raw.githubusercontent.com/robjasper2084/Jungle-Lotto/ca1f6b42059ee526af4b851289ddafbd050e56d3/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/",
   "files": [
     {
       "path": "belle/landmarks.glb",
-      "bytes": 28153876,
-      "sha256": "55e3db65875542ac01250ee32c827b09502289f8317b997e222b315e203660cf",
+      "bytes": 30417032,
+      "sha256": "99bd8f7a8c1a5553bf78c0ab1e99cb771c275ca39fc6808c7fab07d8d899d3ba",
       "source": "belle/landmarks-delivery.glb"
     },
     {
@@ -15,8 +15,8 @@
     },
     {
       "path": "belle/historic-houses.glb",
-      "bytes": 3198320,
-      "sha256": "72199ae63e56ba228c42e212ac48612b62e26003fc166618d13462db5cb54df1"
+      "bytes": 3323960,
+      "sha256": "261b12bd908d37472323adaf0ec5e760ed1c55103881f28b217496edf2a8305d"
     },
     {
       "path": "belle/reference-architecture.glb",
