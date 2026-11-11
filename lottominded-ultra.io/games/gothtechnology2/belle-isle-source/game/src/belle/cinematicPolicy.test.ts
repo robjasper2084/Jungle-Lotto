@@ -41,3 +41,40 @@ test('health page and its modules are explicitly included in production asset co
   for(const name of ['deployment-health.html','deployment-health.mjs','release-health-model.mjs']) assert.ok(config.includes("'"+name+"'"));
   assert.match(config,/for\(const item of assets\)await copyAsset\(item\)/);
 });
+
+
+// Lightweight render-contract fixtures; no claim that these compile on a GPU.
+import {CinematicTerrain} from './cinematicTerrain.ts';
+import type * as T from 'three';
+function lawnFixture(name='Park lawn') {
+  let visits=0;
+  const compile:T.Material['onBeforeCompile']=shader=>{visits++;shader.fragmentShader='varying vec2 terrainXZ;\n'+shader.fragmentShader;};
+  const key=()=>name+'-original';
+  const material={name,onBeforeCompile:compile,customProgramCacheKey:key,needsUpdate:false} as unknown as T.Material;
+  const listeners=new Set<(event:{child:T.Object3D})=>void>();
+  const mesh={isMesh:true,material} as unknown as T.Object3D;
+  const root={traverse:(visit:(o:T.Object3D)=>void)=>visit(mesh)} as unknown as T.Object3D;
+  const scene={
+    addEventListener:(_name:string,fn:(event:{child:T.Object3D})=>void)=>listeners.add(fn),
+    removeEventListener:(_name:string,fn:(event:{child:T.Object3D})=>void)=>listeners.delete(fn),
+    traverse:(visit:(o:T.Object3D)=>void)=>root.traverse(visit)
+  } as unknown as T.Scene;
+  const shader=()=>({vertexShader:'',fragmentShader:'#include <map_fragment>',uniforms:{}} as Parameters<T.Material['onBeforeCompile']>[0]);
+  return {scene,root,material,listeners,compile,key,shader,visits:()=>visits};
+}
+test('lawn detail composes once and caches a stable original program identity',async()=>{
+  const f=lawnFixture(),detail=new CinematicTerrain(f.scene);await Promise.resolve();
+  for(const added of f.listeners)added({child:f.root});await Promise.resolve();
+  const shader=f.shader();f.material.onBeforeCompile(shader,{} as T.WebGLRenderer);
+  assert.equal(f.visits(),1);assert.equal((shader.fragmentShader.match(/belleLawnFootprint=/g)||[]).length,1);
+  assert.equal(f.material.customProgramCacheKey(),'Park lawn-original|belle-lawn-detail-v1');
+  detail.dispose();assert.equal(f.material.onBeforeCompile,f.compile);assert.equal(f.material.customProgramCacheKey,f.key);assert.equal(f.listeners.size,0);
+});
+test('non-lawn materials are not decorated',async()=>{
+  const f=lawnFixture('Conservatory glass'),detail=new CinematicTerrain(f.scene);await Promise.resolve();
+  assert.equal(f.material.onBeforeCompile,f.compile);assert.equal(f.material.needsUpdate,false);detail.dispose();
+});
+test('disposing before queued scene work prevents late mutation',async()=>{
+  const f=lawnFixture(),detail=new CinematicTerrain(f.scene);detail.dispose();await Promise.resolve();
+  assert.equal(f.material.onBeforeCompile,f.compile);assert.equal(f.material.needsUpdate,false);assert.equal(f.listeners.size,0);
+});

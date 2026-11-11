@@ -1,10 +1,11 @@
-import * as T from 'three';
+import type * as T from 'three';
 import {LAWN_DETAIL} from './cinematicPolicy.ts';
 /** Dresses existing lawn materials. No new textures, meshes or frame callbacks. */
 export class CinematicTerrain {
   private originals = new Map<T.Material, {compile: T.Material['onBeforeCompile']; key: T.Material['customProgramCacheKey']}>();
   private pending = new Set<T.Object3D>(); private queued = false; private disposed = false;
-  constructor(private scene: T.Scene) { scene.addEventListener('childadded', this.added); this.enqueue(scene); }
+  private scene: T.Scene;
+  constructor(scene: T.Scene) { this.scene = scene; scene.addEventListener('childadded', this.added); this.enqueue(scene); }
   private added = (event: {child: T.Object3D}) => this.enqueue(event.child);
   private enqueue(root: T.Object3D) {
     this.pending.add(root); if (this.queued) return; this.queued = true;
@@ -14,7 +15,7 @@ export class CinematicTerrain {
         const mesh = object as T.Mesh; if (!mesh.isMesh) return;
         for (const material of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) {
           if (material.name !== 'Park lawn' || this.originals.has(material)) continue;
-          const compile = material.onBeforeCompile, key = material.customProgramCacheKey;
+          const compile = material.onBeforeCompile, key = material.customProgramCacheKey, identity = key.call(material);
           this.originals.set(material, {compile, key});
           material.onBeforeCompile = (shader, renderer) => {
             compile.call(material, shader, renderer);
@@ -22,7 +23,7 @@ export class CinematicTerrain {
               shader.fragmentShader = shader.fragmentShader.replace('#include <map_fragment>', '#include <map_fragment>\n' + LAWN_DETAIL);
             }
           };
-          material.customProgramCacheKey = () => key.call(material) + '|belle-lawn-detail-v1';
+          material.customProgramCacheKey = () => identity + '|belle-lawn-detail-v1';
           material.needsUpdate = true;
         }
       });
