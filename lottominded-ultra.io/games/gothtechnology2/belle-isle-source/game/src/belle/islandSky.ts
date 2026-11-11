@@ -4,6 +4,7 @@ import {dressDetroitSkyline} from './skylineMaterials.ts';
 import * as T from 'three';
 import {yieldStartupTask} from './startupWork.ts';
 import {BroaderPresentation} from './broaderPresentation.ts';
+import {tracedSkyEnabled} from './presentationPolicy.ts';
 import {sunsetPhotoGrade,photoShadowExtent} from './photoReferenceGrade.ts';
 import {livingSkyFragment,cloudLightFactor} from './skyAtmosphere.ts';
 import {SkyLife} from './skyLife.ts';
@@ -128,12 +129,11 @@ export async function createIslandSky(scene:T.Scene,renderer:T.WebGLRenderer,sta
  // The initial HDR remains a fallback; bounded sky-only probes follow live weather.
  try{status('Preparing sky reflections');const hdr=await new HDRLoader().setDataType(T.HalfFloatType).loadAsync('./belle/environment/kloppenheim-06-2k.hdr');hdr.mapping=T.EquirectangularReflectionMapping;const generator=new T.PMREMGenerator(renderer),probe=generator.fromEquirectangular(hdr);scene.environment=probe.texture;generator.dispose();hdr.dispose();}catch(e){console.warn('Sky reflection probe unavailable',e);}
  const broader=new BroaderPresentation(scene,renderer,sky.material,uniforms.cloudNoise.value);
- const volume=new VolumetricSky(renderer,scene);let tracedSelected=true;try{tracedSelected=localStorage.getItem('belle-sky-renderer')!=='layered';}catch{}
-  // Smooth retains the visible layered sky while avoiding expensive traced
-  // volume/PMREM render passes on software and low-end GPUs. The user's
-  // explicit renderer choice is restored for Automatic/High.
-  const applyVolumePolicy=()=>{volume.enabled=tracedSelected&&quality!=='smooth';if(!volume.enabled)skyRadiance.ready.value=0;};
-  applyVolumePolicy();
+ const volume=new VolumetricSky(renderer,scene);let tracedSelected=true;
+ try{tracedSelected=localStorage.getItem('belle-sky-renderer')!=='layered';}catch{}
+ // Smooth avoids traced panorama GPU passes; higher modes restore saved preference.
+ const applyVolumePolicy=()=>{volume.enabled=tracedSelected&&quality!=='smooth';if(!volume.enabled)skyRadiance.ready.value=0;};
+ applyVolumePolicy();
  const skyQuality=document.createElement('label');skyQuality.textContent='Sky rendering';const skySelect=document.createElement('select');skySelect.id='sky-renderer';skySelect.setAttribute('aria-label','Sky rendering');skySelect.add(new Option('Cinematic · traced cloud lighting','traced'));skySelect.add(new Option('Layered · lower GPU use','layered'));skySelect.value=tracedSelected?'traced':'layered';skyQuality.append(skySelect);document.getElementById('sky-clouds')?.closest('fieldset')?.append(skyQuality);if(!skyQuality.isConnected)document.getElementById('settings')?.append(skyQuality);skySelect.onchange=()=>{tracedSelected=skySelect.value==='traced';applyVolumePolicy();try{localStorage.setItem('belle-sky-renderer',skySelect.value);}catch{}};
 
  const paletteColors=new Map(SKY_KEYS.map(k=>[k,Object.fromEntries(['top','horizon','warm','cloud','sun'].map(p=>[p,new T.Color(k[p as 'top'])])) as Record<string,T.Color>]));
@@ -170,16 +170,25 @@ vec2 face=abs(normal.x)>abs(normal.z)?cityWorld.zy:cityWorld.xy;vec2 cells=face/
   key.position.set(x+lightDirection.x*lightDistance,lightDirection.y*lightDistance,z+lightDirection.z*lightDistance);key.target.position.set(x,0,z);key.castShadow=shadowQuality&&key.intensity>.12;
   scene.environmentIntensity=(.28+day*.31)*dim*(1-photoLook.warmth*.12);fogColor.copy(uniforms.horizon.value).lerp(uniforms.warm.value,.10*(1-day));(scene.fog as T.FogExp2).color.copy(fogColor).lerp(referenceFog,photoLook.haze*.09);(scene.fog as T.FogExp2).density=islandHazeDensity(shape.overcast,night);
   nightUniform.value=night;reflectionTint.copy(uniforms.horizon.value).lerp(uniforms.warm.value,.40*(1-smooth(.1,.65,uniforms.sunDirection.value.y))).multiplyScalar(1.8);reflectionTint.lerp(tempColor.setRGB(1,1,1),day*.25);reflectionTint.multiplyScalar(1/Math.max(.1,reflectionTint.r,reflectionTint.g,reflectionTint.b));
-  if(lastVolumeFrame!==skyFrame){lastVolumeFrame=skyFrame;volume.update({sun:uniforms.sunDirection.value,zenith:uniforms.zenith.value,horizon:uniforms.horizon.value,warm:uniforms.warm.value,sunColor:uniforms.sunColor.value,coverage:shape.coverage,density:shape.density,stretch:shape.stretch,scale:shape.scale,time:cloudClock,night});}
-  broader.update(visualHour,shape.coverage,day,shape.overcast,uniforms.sunDirection.value,quality,titlePreview,volume.enabled);
+  // Smooth is the low-GPU tier: do not submit costly 64-step traced cloud
+  // panoramas into the same GPU queue as the real starting-line frame.
+  // The layered sky remains fully rendered; Automatic/High honor the user's
+  // explicit traced-versus-layered setting, without changing render deadlines.
+  const traced=tracedSkyEnabled(volume.enabled,quality);
+  if(lastVolumeFrame!==skyFrame){
+   lastVolumeFrame=skyFrame;
+   if(traced)volume.update({sun:uniforms.sunDirection.value,zenith:uniforms.zenith.value,horizon:uniforms.horizon.value,warm:uniforms.warm.value,sunColor:uniforms.sunColor.value,coverage:shape.coverage,density:shape.density,stretch:shape.stretch,scale:shape.scale,time:cloudClock,night});
+   else skyRadiance.ready.value=0;
+  }
+  broader.update(visualHour,shape.coverage,day,shape.overcast,uniforms.sunDirection.value,quality,titlePreview,traced);
   lighting.reflection.copy(reflectionTint);lighting.light=.12+day*.88;lighting.night=night;
   lighting.sun.copy(uniforms.sunDirection.value);lighting.glint=photoLook.glint;lighting.golden=photoLook.foliage;return lighting;
  }
  async function prepareReflections(camera:T.Camera,x:number,z:number){
   const preview=titlePreview;
-  try{titlePreview=false;update(camera,x,z);await yieldStartupTask();if(!volume.enabled)broader.prepareReflections(hour,uniforms.coverage.value,quality);}
+  try{titlePreview=false;update(camera,x,z);await yieldStartupTask();if(!tracedSkyEnabled(volume.enabled,quality))broader.prepareReflections(hour,uniforms.coverage.value,quality);}
   finally{titlePreview=preview;update(camera,x,z);}
 
  }
- return {prepareReflections,protectStartup:()=>broader.protectStartup(),observeFrame:(ms:number,eligible:boolean)=>broader.observeFrame(ms,eligible),preview(value:boolean){titlePreview=value;},previewShot(index:number){previewIndex=index;},get renderHour(){return titlePreview?startupSkyLook(previewIndex).hour:hour;},nightAmount:nightUniform,configure,synchronize(next:SkySettings){settings=normalizeSky(next);hour=settings.hour;},tick,update,dressSkyline,setQuality(q:string){quality=q;shadowQuality=q!=='smooth';applyVolumePolicy();},get presentation(){return broader.stats;},dispose(){volume.dispose();broader.dispose();},get settings(){return {...settings,hour};},get hour(){return hour;}};
+ return {prepareReflections,protectStartup:()=>broader.protectStartup(),observeFrame:(ms:number,eligible:boolean)=>broader.observeFrame(ms,eligible),preview(value:boolean){titlePreview=value;},previewShot(index:number){previewIndex=index;},get renderHour(){return titlePreview?startupSkyLook(previewIndex).hour:hour;},nightAmount:nightUniform,configure,synchronize(next:SkySettings){settings=normalizeSky(next);hour=settings.hour;},tick,update,dressSkyline,setQuality(q:string){quality=q;shadowQuality=q!=='smooth';applyVolumePolicy();skySelect.title=q==='smooth'?'Smooth uses layered clouds to keep GPU rendering responsive; choose Automatic or High for traced skies.':'';},get presentation(){return broader.stats;},dispose(){volume.dispose();broader.dispose();},get settings(){return {...settings,hour};},get hour(){return hour;}};
 }

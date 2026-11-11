@@ -46,3 +46,9 @@ The maze-chase rules use familiar arcade conventions, while the code, Detroit en
 ## Disclaimer
 
 For entertainment purposes only. LottoMind does not predict or guarantee lottery results. Play responsibly.
+
+## Canonical media (no duplicate source/public files)
+
+All 42 game media assets (17.25 MiB) now live only in the published sibling `../assets/` directory. The source project does **not** commit second copies in `source/public/assets/`.
+
+NPM's `predev`, `pretest`, `prebuild`, and `prevalidate:assets` lifecycle commands verify every canonical Git-blob checksum and stage the required assets in the ignored `.generated-public/assets/` directory. Vite uses that generated public directory without changing game asset URLs, PWA caching, or the production game files. Run the normal `npm run build`, `npm test`, or `npm run validate:assets` from `source/`; no manual copy is required. If the canonical media changes intentionally, update the pinned manifest and its tests with the new hashes. The staging command refuses missing, modified, or mismatched files before changing its output.

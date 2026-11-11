@@ -6,6 +6,8 @@ export type PresentationQuality='smooth'|'automatic'|'high';
 const SMOOTH_BUDGET=Object.freeze({reflectionSize:32,reflectionInterval:120,cloudStrength:.10,wind:.45,aircraft:false});
 const DETAIL_BUDGET=Object.freeze({reflectionSize:64,reflectionInterval:45,cloudStrength:.22,wind:1,aircraft:true});
 export function presentationBudget(q:string,xr=false){return q==='smooth'||xr?SMOOTH_BUDGET:DETAIL_BUDGET;}
+/** In Smooth, preserve real layered clouds without costly traced panorama GPU work. */
+export function tracedSkyEnabled(requested:boolean,q:string):boolean{return requested&&q!=='smooth';}
 export function fogColumn(cameraHeight:number,fragmentHeight:number){
  const a=clamp(cameraHeight,0,10000),b=clamp(fragmentHeight,0,10000);
  // Simpson integration of exponential density along the view ray.

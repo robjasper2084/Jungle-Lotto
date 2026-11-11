@@ -8,6 +8,9 @@ export default defineConfig({
   // Keep production assets relative so the same build works on localhost and
   // under the GitHub Pages repository prefix.
   base: './',
+  // Regenerate this ignored public directory from the canonical published assets.
+  // The 42 binary originals are not stored twice in Git.
+  publicDir: '.generated-public',
   define: {
     FEATURE_SOUND: 'undefined',
     global: 'globalThis',
