@@ -14,3 +14,8 @@ body.on-boat #touch-zone,body.on-boat #sprint{display:none!important}
    390×340 and stole touchStart; keep playback running and the cockpit library
    available rather than letting an off-screen transport button intercept. */
 @media(max-height:520px){body.island-trial #ride-radio:not(.cockpit-library){display:none}}
+
+/* A short race viewport puts Restart directly under the floating Hero-Cam.
+ * Camera capture is not part of an active race; free the real touch target
+ * without hiding it from normal exploring or photo quests. */
+@media(max-height:520px){body.island-trial #camera-capture{display:none!important}}
