@@ -14,3 +14,15 @@ test('beach visual pass is connected to the built world and real browser capture
  assert(browser.includes("screenshot('belle-isle-beach-waterline')"));
  assert(browser.includes("name: 'Belle Isle Beach'"));
 });
+
+test('loading UI paints before the expensive game bundle and error remains retryable',()=>{
+ const entry=read('entry.ts');
+ const html=fs.readFileSync(new URL('../../index.html',import.meta.url),'utf8');
+ assert(html.includes('src="/src/belle/entry.ts"'));
+ assert(entry.includes("import('./main.ts')")&&entry.includes("requestAnimationFrame("));
+ assert(entry.includes('location.reload()')&&entry.includes('document.hidden'));
+ const css=read('startup.css');
+ assert(css.includes('[data-state="loading"] .island-trace{animation:none;filter:none'));
+ const ui=read('startup.ts');assert(ui.includes('lastShutter')&&ui.includes('lastProgress'));
+ assert(ui.includes('setTimeout(finish,260)'));
+});
