@@ -93,8 +93,13 @@ diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.5,.66,.65),clamp(washFoam*.4+rippleF
   };m.customProgramCacheKey=()=>kind+'-reactive-water-multiscale-ring-v10';return m;
  }
  const ring=riverFarRing(),farGeometry=new T.BufferGeometry();farGeometry.setAttribute('position',new T.Float32BufferAttribute(ring.positions,3));farGeometry.setAttribute('uv',new T.Float32BufferAttribute(ring.uv,2));farGeometry.setIndex(ring.indices);farGeometry.computeVertexNormals();
- const far=new T.Mesh(farGeometry,material('far'));far.name='Detroit River distant water';scene.add(far);
- const near=new T.Mesh(new T.PlaneGeometry(RIVER_PATCH_SIZE,RIVER_PATCH_SIZE,RIVER_PATCH_SEGMENTS,RIVER_PATCH_SEGMENTS).rotateX(-Math.PI/2),material('near'));near.name='Detroit River rolling waves';near.frustumCulled=false;scene.add(near);
+ // Smooth mode keeps the same visible river geometry without GPU-heavy
+ // multiscale normal/reflection shaders at low-end software render rates.
+ // High/Automatic retain the original reactive surfaces and water effects.
+ const farShader=material('far'),nearShader=material('near');
+ const calmWater=new T.MeshBasicMaterial({color:0x355f6b,depthWrite:true});
+ const far:T.Mesh=new T.Mesh(farGeometry,farShader);far.name='Detroit River distant water';scene.add(far);
+ const near:T.Mesh=new T.Mesh(new T.PlaneGeometry(RIVER_PATCH_SIZE,RIVER_PATCH_SIZE,RIVER_PATCH_SEGMENTS,RIVER_PATCH_SEGMENTS).rotateX(-Math.PI/2),nearShader);near.name='Detroit River rolling waves';near.frustumCulled=false;scene.add(near);
  const lagoon=material('lagoon');const koiPond=map.waterSources?.find(w=>w.id===KOI_POND_ID);const isKoi=(w:ParkMap['water'][number])=>!!koiPond&&inside(1336,1149,w.points);const pond=material('lagoon');pond.transparent=true;pond.opacity=.42;pond.depthWrite=false;pond.color.set(0x75958a);pond.roughness=.18;
  for(const w of map.water){const koi=isKoi(w),mesh=new T.Mesh(polygon(w.points,1.05,w.holes),koi?pond:lagoon);mesh.name=koi?'Koi pond · clear surface':'Lagoon · '+w.name;scene.add(mesh);if(koi){const bed=new T.Mesh(polygon(w.points,.2,w.holes),new T.MeshStandardMaterial({color:0x685f47,roughness:.95}));bed.name='Koi pond gravel bed';scene.add(bed);}}
 
@@ -112,7 +117,12 @@ diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.5,.66,.65),clamp(washFoam*.4+rippleF
  return {setShipWakes(wakes:ShipWake[]){for(let i=0;i<4;i++){const w=wakes[i];if(w){shipWake.value[i].set(w.x,w.z,w.dx,w.dz);shipShape.value[i].set(w.length,w.width,w.power,0);}else shipShape.value[i].set(0,0,0,0);}},setFountainNight(n:number){fountainNight.value=n;},setLighting(tint:T.Color,light:number,sun?:T.Vector3,glint=0){reflectionTint.value.copy(tint);skyLight.value=light;
   if(sun&&sun.lengthSq()>.000001)riverSunDirection.value.copy(sun).normalize();
   riverSunGlint.value=Number.isFinite(glint)?T.MathUtils.clamp(glint,0,1):0;
- },setVehicle(p:Vehicle){active=p;},setQuality(q:string){near.visible=true;foam.visible=q!=='smooth';},update(t:number,camera:T.Camera){time.value=t;fountainLighting.update(t);const eye=new T.Vector3();camera.getWorldPosition(eye);near.position.set(Math.round(eye.x/2)*2,0,Math.round(eye.z/2)*2);far.position.copy(near.position);centre.value.set(near.position.x,near.position.z);
+ },setVehicle(p:Vehicle){active=p;},setQuality(q:string){const lightweight=q==='smooth';near.visible=true;foam.visible=!lightweight;
+   // Switch the material, never the geometry: shape, collisions and actual
+   // water boundary remain consistent with the other graphics tiers.
+   near.material=lightweight?calmWater:nearShader;
+   far.material=lightweight?calmWater:farShader;
+  },update(t:number,camera:T.Camera){time.value=t;fountainLighting.update(t);const eye=new T.Vector3();camera.getWorldPosition(eye);near.position.set(Math.round(eye.x/2)*2,0,Math.round(eye.z/2)*2);far.position.copy(near.position);centre.value.set(near.position.x,near.position.z);
    if(active&&!terrain.land(active.x,active.z)){const level=waterLevel(map,active.x,active.z),power=active.rpm*Math.max(0,1-Math.max(0,active.y-level)/7);vehicle.value.set(active.x,active.z,power,level);if(power>.05&&t-lastRipple>.32){ripples.value[cursor].set(active.x,active.z,t,power);cursor=(cursor+1)%12;lastRipple=t;}}else vehicle.value.z=0;
   }};
 }
