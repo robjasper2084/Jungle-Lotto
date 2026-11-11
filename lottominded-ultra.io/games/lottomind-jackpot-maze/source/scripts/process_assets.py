@@ -2,7 +2,10 @@ from pathlib import Path
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
-UI = ROOT / 'public' / 'assets' / 'ui'
+# The published sibling assets directory is the sole canonical media source.
+# Never recreate the deleted 17.25 MiB source/public duplicate tree.
+PUBLISHED = ROOT.parent
+UI = PUBLISHED / 'assets' / 'ui'
 ICONS = UI / 'icons'
 ICONS.mkdir(parents=True, exist_ok=True)
 
@@ -37,7 +40,8 @@ sign.thumbnail((512, 160), Image.Resampling.LANCZOS)
 sign.save(UI / 'detroit-street-sign-blank.webp', 'WEBP', lossless=True, method=6)
 
 source_environments = ROOT / 'source-assets' / 'environments'
-runtime_environments = ROOT / 'public' / 'assets' / 'environments'
+runtime_environments = PUBLISHED / 'assets' / 'environments'
+runtime_environments.mkdir(parents=True, exist_ok=True)
 for source in source_environments.glob('*.png'):
     image = Image.open(source).convert('RGB')
     image.thumbnail((1600, 900), Image.Resampling.LANCZOS)
