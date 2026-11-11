@@ -19,3 +19,9 @@ body.on-boat #touch-zone,body.on-boat #sprint{display:none!important}
  * Camera capture is not part of an active race; free the real touch target
  * without hiding it from normal exploring or photo quests. */
 @media(max-height:520px){body.island-trial #camera-capture{display:none!important}}
+
+/* Photo/dispatch missions need their actions above decorative ride radio and
+ * Hero-Cam progress text. Radio playback continues; controls reappear on exit. */
+body:has(#activity-hud:not([hidden])) #ride-radio:not(.cockpit-library){display:none!important}
+#camera-capture .hero-clip-bar{pointer-events:none}
+#camera-capture .hero-clip-bar :is(button,a,input,select){pointer-events:auto}
