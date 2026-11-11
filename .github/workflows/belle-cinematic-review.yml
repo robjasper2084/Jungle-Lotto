@@ -1,0 +1,36 @@
+name: Belle Isle cinematic review
+on:
+  push:
+    branches: [feature/belle-cinematic-polish-20261111]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: belle-cinematic-review-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  source-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Package editable source for isolated review
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import pathlib, subprocess, tarfile
+          paths = subprocess.check_output(['git', 'ls-files', '-z']).decode().split('\0')
+          prefixes = ('lottominded-ultra.io/games/gothtechnology2/belle-isle-source/', 'lottominded-ultra.io/games/gothtechnology2/scripts/', 'lottominded-ultra.io/games/lottomind-jackpot-maze/source/', '.github/workflows/', 'scripts/')
+          suffixes = {'.ts', '.tsx', '.js', '.mjs', '.cjs', '.json', '.html', '.css', '.md', '.yml', '.yaml'}
+          with tarfile.open('/tmp/belle-editable-source.tar.gz', 'w:gz') as archive:
+              for name in paths:
+                  p = pathlib.Path(name)
+                  if p.is_file() and (name.startswith(prefixes) or name in ('AGENTS.md', 'package.json', 'package-lock.json')) and p.suffix in suffixes and p.stat().st_size < 4000000:
+                      archive.add(p, arcname=name, recursive=False)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: belle-editable-source
+          path: /tmp/belle-editable-source.tar.gz
+          retention-days: 1
+          if-no-files-found: error
