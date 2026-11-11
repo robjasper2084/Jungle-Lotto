@@ -282,6 +282,17 @@ async function runCase(configuration) {
         entry.photoCompletion = {status: 'not verified', reason: 'A single ordinary guide/viewpoint capture is attempted; no full route simulation.'};
         await tap(page.locator('#tools-toggle'));
         await tap(page.locator('#map-open'));
+        // Real built-scene screenshot for side-by-side review against the
+        // Conservancy/DNR shoreline photographs. No external image is shipped.
+        await page.locator('#guide-search').fill('Belle Isle Beach');
+        const beachPlace = page.locator('#landmarks .landmark').filter({has: page.getByRole('heading', {name: 'Belle Isle Beach', exact: true})});
+        await tap(beachPlace.getByRole('button', {name: 'Travel to path', exact: true}));
+        await expect(page.locator('#guide')).not.toBeVisible();
+        await screenshot('belle-isle-beach-waterline');
+        entry.metrics.beachAudit = {source: 'Actual built-game camera and navigated beach; manual photo comparison required',
+          reference: 'https://www.belleisleconservancy.org/explore',capture: 'belle-isle-beach-waterline'};
+        await tap(page.locator('#tools-toggle'));
+        await tap(page.locator('#map-open'));
         await page.locator('#guide-search').fill('James Scott Memorial Fountain');
         const landmark = page.locator('#landmarks .landmark').filter({has: page.getByRole('heading', {name: 'James Scott Memorial Fountain', exact: true})});
         await tap(landmark.getByRole('button', {name: 'Travel to path', exact: true}));
