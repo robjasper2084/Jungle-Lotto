@@ -46,6 +46,21 @@ export async function shareRidingMedia(root){
   const nature=names.map(name=>({a:resolve(swoop,'exports/nature',name+'.glb'),b:resolve(elmwood,'exports/nature',name+'.glb')}));
   if((await Promise.all(nature.map(p=>matchingModel(p.a,p.b,root)))).every(Boolean))
     await rewriteAndRemove(elmwood,'./exports/nature/','../swoop-detroit/exports/nature/',nature.map(p=>p.b));
+  // Both games ship the same fully rigged five heroes in two exact GLB variants.
+  // Share only verified identical model+external-texture bytes; retain each game's
+  // distinct rig manifests and the original standalone/source distributions.
+  // A missing/changed model leaves both published copies intact.
+  const riggedNames=['DS_Man_01','DS_Hoodie_Woman_01','DS_Mascot_Suit_01','DS_Mascot_Hoodie_01','DS_Armored_Rider_01'];
+  const rigged= ['', 'mobile-512-20261017/'].flatMap(variant=>riggedNames.map(name=>({
+    a:resolve(swoop,'exports/rigged-heroes',variant,name+'.glb'),
+    b:resolve(elmwood,'exports/rigged-heroes',variant,name+'.glb'),
+  })));
+  const riggedMatch=await Promise.all(rigged.map(async pair=>{
+    const exists=await Promise.all([pair.a,pair.b].map(p=>readFile(p).then(()=>true,()=>false)));
+    return exists.every(Boolean)&&matchingModel(pair.a,pair.b,root);
+  }));
+  if(riggedMatch.every(Boolean))
+    await rewriteAndRemove(swoop,'./exports/rigged-heroes/','../elmwood-explorer/exports/rigged-heroes/',rigged.map(p=>p.a));
   const movie=resolve(swoop,'exports/polish/detroit-commercial.mp4'),canonical=resolve(pack,'assets/commercials/detroit-commercial-01.mp4');
   if((await readFile(movie)).equals(await readFile(canonical)))
     await rewriteAndRemove(swoop,'./exports/polish/detroit-commercial.mp4','../../assets/commercials/detroit-commercial-01.mp4',[movie]);

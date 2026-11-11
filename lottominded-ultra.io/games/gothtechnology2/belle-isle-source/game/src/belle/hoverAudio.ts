@@ -19,7 +19,22 @@ export class HoverAudio {
   if(flying&&!this.lastFlying)this.play('takeoff',.48);if(landed&&!this.lastLanded)this.play('landing',.55);if(brake&&!this.lastBrake&&Math.abs(speed)>2)this.play('airbrake',.32);this.lastFlying=flying;this.lastLanded=landed;this.lastBrake=brake;
   if(!this.context||!this.master)return;const t=this.context.currentTime;this.master.gain.setTargetAtTime(this.enabled&&running?.7:0,t,.08);this.motor?.gain.setTargetAtTime(Math.min(1,rpm)*(.25+Math.abs(speed)*.007+Math.abs(lift)*.009),t,.2);this.rotor?.playbackRate.setTargetAtTime(.68+rpm*.28+Math.abs(speed)*.008,t,.15);this.wind?.gain.setTargetAtTime(Math.min(.2,Math.abs(speed)*.006),t,.3);
  }
- setVoice(enabled:boolean){this.voiceEnabled=enabled;localStorage.setItem('belle-hazard-voice',enabled?'on':'off');}
+ setVoice(enabled:boolean){this.voiceEnabled=enabled;localStorage.setItem('belle-hazard-voice',enabled?'on':'off');if(!enabled&&this.utterance&&'speechSynthesis' in window){speechSynthesis.cancel();this.utterance=undefined;}}
+ /** Browser-native, interruptible JARVS alerts. No network, speech download or
+  * extra audio buffers. Only urgent contact announcements preempt speech. */
+ announce(text:string,priority:'info'|'warning'|'critical'='info'){
+  if(!this.enabled||!this.voiceEnabled||!('speechSynthesis' in window)||typeof SpeechSynthesisUtterance==='undefined')return;
+  if(!text||text.length>150)return;
+  if(speechSynthesis.speaking){
+   if(priority!=='critical')return;
+   speechSynthesis.cancel();
+  }
+  const voice=new SpeechSynthesisUtterance(text);
+  voice.rate=1.08;voice.volume=.68;
+  voice.onend=()=>{if(this.utterance===voice)this.utterance=undefined;};
+  voice.onerror=()=>{if(this.utterance===voice)this.utterance=undefined;};
+  this.utterance=voice;speechSynthesis.speak(voice);
+ }
  private speak(text:string){const clip=text.startsWith('Contact')?'impact-warning':'hazard-warning';if(this.voiceEnabled&&this.buffers.has(clip)){this.play(clip,.85);return;}if(!this.voiceEnabled||!('speechSynthesis' in window)||speechSynthesis.speaking)return;const voice=new SpeechSynthesisUtterance(text);voice.rate=1.08;voice.volume=.7;this.utterance=voice;speechSynthesis.speak(voice);}
  warn(impact:number,hazard:boolean){if(!this.enabled)return;const now=performance.now();if(impact>.65&&now-this.lastImpact>2000){this.lastImpact=now;this.lastWarning=now;this.play('airbrake',Math.min(.5,.15+impact*.01));this.speak('Contact. Stabilizing.');}else if(hazard&&now-this.lastWarning>6500){this.lastWarning=now;this.speak('Caution. Obstacle ahead.');}}
  capture(){const c=this.context,master=this.master;if(!c||!master)return;const output=c.createMediaStreamDestination();master.connect(output);return{stream:output.stream,release:()=>{master.disconnect(output);output.stream.getTracks().forEach(t=>t.stop());}};}
