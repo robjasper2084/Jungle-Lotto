@@ -38,7 +38,7 @@ test('tampered canonical bytes refuse staging before modifying existing output',
 test('unsafe traversal, repeated files and incomplete manifests are refused',async t=>{
   const f=await sandbox(t);
   for(const replacement of [{...f.manifest,files:[{...f.manifest.files[0],path:'assets/../outside'}]},
-    {...f.manifest,files:[...f.manifest.files,...f.manifest.files[0]]},
+    {...f.manifest,files:[...f.manifest.files,f.manifest.files[0]]},
     {...f.manifest,bytes:0}]){
     await assert.rejects(stagePublicAssets({manifest:replacement,canonicalRoot:f.canonical,outputRoot:f.output}));
   }
