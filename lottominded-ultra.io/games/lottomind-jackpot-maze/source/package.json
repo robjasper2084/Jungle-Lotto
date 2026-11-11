@@ -4,11 +4,15 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "predev": "node scripts/stage-public-assets.mjs",
     "dev": "vite",
+    "prebuild": "node scripts/stage-public-assets.mjs",
     "build": "tsc -b && vite build",
-    "test": "vitest run",
+    "pretest": "node scripts/stage-public-assets.mjs",
+    "test": "node --test scripts/stage-public-assets.test.mjs && vitest run",
     "test:watch": "vitest",
     "preview": "vite preview",
+    "prevalidate:assets": "node scripts/stage-public-assets.mjs",
     "validate:assets": "node scripts/validate-assets.mjs"
   },
   "dependencies": {

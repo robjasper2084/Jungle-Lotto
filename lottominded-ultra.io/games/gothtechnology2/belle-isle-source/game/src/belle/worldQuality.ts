@@ -1,5 +1,12 @@
 import {environmentQuality,type EnvironmentQuality} from './environmentDetail.ts';
 
+/** Smooth mode keeps inexpensive grounded contact shadows, but avoids an
+ * additional world-sized dynamic shadow-map render on software/low-end GPUs.
+ * High and Automatic retain the original dynamic-lighting policy. */
+export function dynamicShadowsEnabled(quality:EnvironmentQuality):boolean{
+ return quality!=='smooth';
+}
+
 /** Resolution can adapt without rebuilding unchanged detail pools. The dead
  * band keeps a recovering device from switching detail at every scale step. */
 export class WorldQuality {

@@ -79,8 +79,12 @@ async function runCase(configuration) {
   const card = title => page.locator('#activity-board .activity-card').filter({has: page.getByRole('heading', {name: title, exact: true})});
   const capturePhoto = async () => {
     await tap(page.locator('#camera-capture').getByRole('button', {name: 'Photo', exact: true}));
-    await expect(page.locator('#camera-capture .capture-panel > [role="status"]')).toContainText('Photo ready', {timeout: 90_000});
+    // On successful capture, CameraCapture.finish() moves the status from
+    // the bottom controls into the persistent Save/Share bar. Check the camera
+    // root, and continue requiring a real encoded image and download control.
+    await expect(page.locator('#camera-capture [role="status"]')).toContainText('Photo ready', {timeout: 90_000});
     await expect(page.locator('#camera-capture')).toHaveAttribute('data-capture-bytes', /^[1-9]\d*$/);
+    await expect(page.locator('#camera-capture .capture-save')).toBeVisible();
   };
   let deadline;
   try {
@@ -233,7 +237,7 @@ async function runCase(configuration) {
       await expect(page.locator('#activity-hud')).toContainText('0/1 photos');
       entry.metrics.retryFeedback = await page.locator('#activity-hud > p').first().textContent();
       await screenshot('photo-retry-feedback');
-      await tap(page.locator('#camera-capture > button'));
+      await tap(page.locator('#camera-capture').getByRole('button', {name: 'Put camera away · P', exact: true}));
 
       if (configuration.mobile) {
         // Keep the genuine mobile action-layering regression mandatory, after

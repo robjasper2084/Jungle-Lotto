@@ -38,3 +38,9 @@ body.on-hoverbike #ridehud,body.on-hoverbike #touch-zone{display:none!important}
 @media(max-width:600px){.hover-energy{grid-template-columns:50px 25px}.hover-energy meter{width:50px}.hover-instruments{flex-wrap:wrap;gap:10px}.hover-actions{max-width:100%}}
 .hover-cruise{position:absolute;right:0;bottom:164px;display:flex;align-items:center;gap:7px;pointer-events:auto;font-size:12px}.hover-cruise button{min-width:44px;min-height:44px;background:#142d32ed;border:1px solid #9cc9c488;padding:8px 12px;touch-action:manipulation}.hover-cruise button[aria-pressed=true]{background:#aedec9;color:#0b2729;border-color:#d1f5df}.hover-cruise #hover-cruise-adjust{display:flex;align-items:center;gap:4px;border:1px solid #8eafa666;border-radius:7px;background:#0e252be8}.hover-cruise #hover-cruise-adjust[hidden]{display:none}.hover-cruise output{min-width:64px;text-align:center;font-variant-numeric:tabular-nums;font-size:12px;color:#d2f1df}.hover-cruise #hover-cruise-adjust button{border:0;background:transparent;font-size:22px;padding:4px 8px}
 @media(max-width:600px) and (min-height:521px){.hover-cruise{bottom:calc(190px + 124px * var(--control-scale,1))}.hover-instruments{max-width:205px}.hover-cruise button{font-size:11px}}@media(max-height:520px){.hover-cruise{bottom:146px}.hover-cruise button{font-size:11px}}
+
+/* In compact landscape mode Boost previously sat across the actual right
+ * steering target (390x340). Move only Boost into the clear right-hand lane. */
+@media(max-width:600px) and (max-height:520px){
+ body.on-hoverbike #hover-boost{position:fixed;right:8px;left:auto;top:calc(var(--island-safe-top,0px) + 8px);bottom:auto;z-index:8}
+}

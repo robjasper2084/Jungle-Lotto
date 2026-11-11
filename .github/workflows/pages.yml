@@ -22,7 +22,9 @@ permissions:
 
 concurrency:
   group: pages-${{ github.ref }}
-  cancel-in-progress: true
+  # Let long-running PR validation finish even if another PR build is queued.
+  # Keep newer main/dispatch deployments able to cancel obsolete production runs.
+  cancel-in-progress: ${{ github.event_name != 'pull_request' }}
 
 jobs:
   build:

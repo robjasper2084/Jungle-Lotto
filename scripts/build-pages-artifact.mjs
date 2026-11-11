@@ -1,4 +1,5 @@
 import {replaceBelleBuild} from './belle-pages.mjs';
+import {isServerOnlySource,isDevelopmentOnlySource} from './pages-public-scope.mjs';
 import {shareBelleAssets} from './share-belle-assets.mjs';
 import {shareCityData} from './share-city-data.mjs';
 import {pruneRidingBundles} from './prune-riding-bundles.mjs';
@@ -89,7 +90,11 @@ function git(args) {
 }
 
 function isPublicFile(file) {
-  return rootFiles.has(file) || publicRoots.some((root) => file.startsWith(root));
+  // The compiled GothTechnology build already replaces its source subtree;
+  // omit authoring workspaces and duplicate Jackpot Maze source/public media too.
+  // The published game routes, audio, models and client maps remain untouched.
+  return !isServerOnlySource(file) && !isDevelopmentOnlySource(file) &&
+    (rootFiles.has(file) || publicRoots.some((root) => file.startsWith(root)));
 }
 
 function outputPathFor(file) {

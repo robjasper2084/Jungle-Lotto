@@ -1,0 +1,218 @@
+{
+  "version": 1,
+  "source": "canonical published Jackpot Maze assets in ../assets/",
+  "count": 42,
+  "bytes": 18089713,
+  "files": [
+    {
+      "path": "assets/audio/digital-static-menu-96.mp3",
+      "bytes": 1732339,
+      "sha": "bea4a0c54ac21b5f08f9a52ce0d578276e2754f8"
+    },
+    {
+      "path": "assets/audio/untitled-14-gameplay-96.mp3",
+      "bytes": 2077139,
+      "sha": "987a424d556c8bf3a4af5a23cba3060375c46d6a"
+    },
+    {
+      "path": "assets/bonuses/cash-bonus.webp",
+      "bytes": 73058,
+      "sha": "5dfee7d68f08b05ff88758a75da8eb0b7706e8ed"
+    },
+    {
+      "path": "assets/bonuses/lottery-ticket-bonus.webp",
+      "bytes": 159890,
+      "sha": "abc4ce5b47a711402dd29adf5cbcd23e30a1034a"
+    },
+    {
+      "path": "assets/bonuses/scratch-off-bonus.webp",
+      "bytes": 202884,
+      "sha": "10ea605971b806a45646e9cb9e66ec5b76e03798"
+    },
+    {
+      "path": "assets/environments/world-1-detroit-city.webp",
+      "bytes": 279380,
+      "sha": "0f9bc81ea1e23abcdaba91718afbf9f0ed507ce8"
+    },
+    {
+      "path": "assets/environments/world-1-neon-number-city.webp",
+      "bytes": 263270,
+      "sha": "2c73ed21a7e10eb87a4647f0fb2a23476896957a"
+    },
+    {
+      "path": "assets/environments/world-2-dream-oracle-temple.webp",
+      "bytes": 273764,
+      "sha": "cfbc9f943587fd2e66172c52e81e88e4d02342fd"
+    },
+    {
+      "path": "assets/environments/world-3-jackpot-vault.webp",
+      "bytes": 262930,
+      "sha": "cb0d07037fa7af02f5320951d4766ec8182213b5"
+    },
+    {
+      "path": "assets/heroes/player2-dog-atlas.webp",
+      "bytes": 848010,
+      "sha": "9a6a3e658ddd9d1ed09ba4b51a40f225ef577d89"
+    },
+    {
+      "path": "assets/heroes/player2-dog-reference.webp",
+      "bytes": 36862,
+      "sha": "a8d70a2817694c7300b818e0feab0416f4d91846"
+    },
+    {
+      "path": "assets/mascot/mascot-atlas.webp",
+      "bytes": 315812,
+      "sha": "c08c64fd4f295d210e051f7c3883b95bf40987b3"
+    },
+    {
+      "path": "assets/mascot/mascot-reference.webp",
+      "bytes": 67138,
+      "sha": "7de4378886252684b6d65182ab01797c770806d3"
+    },
+    {
+      "path": "assets/ui/detroit-street-sign-blank.webp",
+      "bytes": 54508,
+      "sha": "60667bed57907fd1d753d082aa0fd9ab77b5e417"
+    },
+    {
+      "path": "assets/ui/icon-192.png",
+      "bytes": 39045,
+      "sha": "5768d5a5f7e0f73d4b5d61553b4799207b3c63f5"
+    },
+    {
+      "path": "assets/ui/icon-512.png",
+      "bytes": 242274,
+      "sha": "a0dc19c076dfa4cb7d0e1570cfe1e5b03e922cb4"
+    },
+    {
+      "path": "assets/ui/icons/777-rush.png",
+      "bytes": 56861,
+      "sha": "8904eb6f487cfc26b594775f707897a05a3c0c97"
+    },
+    {
+      "path": "assets/ui/icons/checkpoint.png",
+      "bytes": 40223,
+      "sha": "461fb4d31248a48362744f4de6488efa129c2dba"
+    },
+    {
+      "path": "assets/ui/icons/clarity-heart.png",
+      "bytes": 52449,
+      "sha": "1c3af1a1aa3295dde9ade3f4554cacc805384dee"
+    },
+    {
+      "path": "assets/ui/icons/dream-oracle.png",
+      "bytes": 57959,
+      "sha": "ecafa1a9f1486355ba13b942646d97f5c6ab6ee1"
+    },
+    {
+      "path": "assets/ui/icons/gold-coin.png",
+      "bytes": 58568,
+      "sha": "f49bfc04c78262002f30305052d1d8f7fbb6964d"
+    },
+    {
+      "path": "assets/ui/icons/gold-mind-shield.png",
+      "bytes": 53749,
+      "sha": "d7435cd6fd2a76dc1d03bc053d0c3bf017c38398"
+    },
+    {
+      "path": "assets/ui/icons/hazard-trap.png",
+      "bytes": 56116,
+      "sha": "ad26157f8d99cd606d65499a3211b252f3973484"
+    },
+    {
+      "path": "assets/ui/icons/karma-mirror.png",
+      "bytes": 60474,
+      "sha": "e6eb620c8bd95ebeac436a069b112f1c11f0cae1"
+    },
+    {
+      "path": "assets/ui/icons/lottery-ticket.png",
+      "bytes": 36057,
+      "sha": "d6fccc5471f15a1725ba412c02cb8aaa2928f5b8"
+    },
+    {
+      "path": "assets/ui/icons/lucky-clover.png",
+      "bytes": 54121,
+      "sha": "e55974cdd900543d02133d13a671dc0d497b1210"
+    },
+    {
+      "path": "assets/ui/icons/mega-ball.png",
+      "bytes": 51305,
+      "sha": "5ab2d205a0f8f4691a20be1ec1508fc53651ca7a"
+    },
+    {
+      "path": "assets/ui/icons/mind-coin.png",
+      "bytes": 125335,
+      "sha": "8317a1d3ac6f700a49cbc41ccaeca860394b867e"
+    },
+    {
+      "path": "assets/ui/icons/number-orb.png",
+      "bytes": 52286,
+      "sha": "eb10703224d94070bc2b5b78e91332c84db392df"
+    },
+    {
+      "path": "assets/ui/icons/powerball.png",
+      "bytes": 38218,
+      "sha": "cb84e8204d0251302907d42a87a8c62b4cf1ad38"
+    },
+    {
+      "path": "assets/ui/icons/soul-ticket.png",
+      "bytes": 58165,
+      "sha": "515df07172154ca024319a8c300b63db366ada9a"
+    },
+    {
+      "path": "assets/ui/icons/tax-refund.png",
+      "bytes": 45488,
+      "sha": "c7040aa47b0f6cf37c4ed120a96a21f581943427"
+    },
+    {
+      "path": "assets/ui/icons/vault-key.png",
+      "bytes": 32741,
+      "sha": "34945380645f63839393cccab1ea3b22d1cb55da"
+    },
+    {
+      "path": "assets/ui/lottomind-jackpot-maze-title-card-gpt2.webp",
+      "bytes": 357508,
+      "sha": "d1cd11247701de9ea35b91c28451412e5fd289e2"
+    },
+    {
+      "path": "assets/ui/lottomind-jackpot-maze-title-card-mascot-3d-v2.webp",
+      "bytes": 358494,
+      "sha": "b6954f467460f847202ff7ef17c74bcbab1d8cdc"
+    },
+    {
+      "path": "assets/video/detroit-commercial-01-poster.webp",
+      "bytes": 38080,
+      "sha": "abaf6e3c89000879450d38cd7024c890bfbd5cf7"
+    },
+    {
+      "path": "assets/video/detroit-commercial-01.mp4",
+      "bytes": 3114498,
+      "sha": "425b8ef9abaf93ecffa06750dfe7c70dea5afdf4"
+    },
+    {
+      "path": "assets/video/detroit-commercial-02-poster.webp",
+      "bytes": 46688,
+      "sha": "51e9b584681f84c7a24f0414b32307700a2f088a"
+    },
+    {
+      "path": "assets/video/detroit-commercial-02.mp4",
+      "bytes": 5529973,
+      "sha": "ad093a4b9130dcd298472239ed45a7a44f7446e6"
+    },
+    {
+      "path": "assets/villains/envy-crew-strip.webp",
+      "bytes": 178874,
+      "sha": "39474f0e99dabbe09486cb2c3ea48f419e080330"
+    },
+    {
+      "path": "assets/villains/jackpot-patrol-strip.webp",
+      "bytes": 246626,
+      "sha": "19abb8992312ac68659581299c0b196a334164a5"
+    },
+    {
+      "path": "assets/villains/villains-atlas.webp",
+      "bytes": 360554,
+      "sha": "647c9d9b0da031065b7a70f137850cddc71dc8b4"
+    }
+  ]
+}

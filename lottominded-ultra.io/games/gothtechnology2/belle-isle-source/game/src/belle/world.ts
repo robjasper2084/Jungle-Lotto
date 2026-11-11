@@ -3,7 +3,7 @@ import {landmarkDisplayRange} from './landmarkRange.ts';
 import {addWaterfront} from './waterfrontScene.ts';
 import {LandmarkDetail} from './landmarkDetail.ts';
 import {addCoastGuard} from './coastGuard.ts';
-import {WorldQuality} from './worldQuality.ts';
+import {WorldQuality,dynamicShadowsEnabled} from './worldQuality.ts';
 import {LocalLightPool} from './localLighting.ts';
 import {createRiverTraffic} from './riverTraffic.ts';
 import {addWoodlandFloor} from './woodland.ts';
@@ -122,6 +122,15 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
  // Static architecture transforms are fixed after the fountain is placed.
  for(const staticRoot of [landmarks.scene,skyline.scene,historic.scene]){staticRoot.updateMatrixWorld(true);staticRoot.traverse(o=>{o.matrixAutoUpdate=false;o.matrixWorldAutoUpdate=false;});}
  const quality=new WorldQuality(q=>{
+  // Smooth is the intentional lower-cost mode. Rendering all dynamic shadow
+  // maps at once held the real 1440px starting-line frame beyond the GPU
+  // readiness gate on software Chromium. Keep the scene, buildings, textures,
+  // water, contact-shadow meshes and authentic readiness test unchanged.
+  const dynamicShadows=dynamicShadowsEnabled(q);
+  if(renderer.shadowMap.enabled!==dynamicShadows){
+   renderer.shadowMap.enabled=dynamicShadows;
+   renderer.shadowMap.needsUpdate=true;
+  }
   water.setQuality(q);islandSky.setQuality(q);birds.setQuality(q);gulls.setQuality(q);
   nature.setQuality(q);meadow.setQuality(q);gardens.setQuality(q);shoreDetails.setQuality(q);waterBanks.setQuality(q);contactShadow.setQuality(q);
   lastX=Infinity;
