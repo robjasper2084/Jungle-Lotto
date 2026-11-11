@@ -15,6 +15,7 @@ import {DRIVE_GEARS,gearLabel,type DriveGear} from './hoverTransmission.ts';
 import {CockpitLcd} from './cockpitLcd.ts';
 import {HoverAudio} from './hoverAudio.ts';
 import {HoverController,type FlightObstacle,type FlightMode} from './hoverController.ts';
+import {JarvsAvionics} from './jarvsAvionics.ts';
 import {segment,type ParkTerrain} from './terrain.ts';
 import './hover.css';
 import {HoverLighting,LED_COLORS} from './hoverLighting.ts';
@@ -54,6 +55,8 @@ export class HoverRide {
  private messageUntil=0;
  private lastUI=0;
  private sound=new HoverAudio();
+ private readonly jarvs:JarvsAvionics;
+ private jarvsDisplay!:HTMLElement;
  private enterButton:HTMLButtonElement;
  private hud:HTMLElement;
  private notice:HTMLElement;
@@ -63,13 +66,33 @@ export class HoverRide {
  private touchPad:HTMLElement;
  constructor(scene:T.Scene,readonly terrain:ParkTerrain,private hooks:Hooks){
   this.sim=new HoverController(terrain,terrain.map.spawn,hooks.obstacle);
+  // Reuses existing world geometry and traffic raycasts, sampled at most 4Hz.
+  // No AI model, extra camera, network call, or startup work is introduced.
+  this.jarvs=new JarvsAvionics({
+   floor:(x,z)=>this.sim.floor(x,z),
+   obstacle:(origin,direction,distance)=>{
+    const terrainHit=this.terrain.raycastFlight(origin,direction,distance,1.02);
+    const trafficHit=this.hooks.obstacle?.(origin,direction,distance,1.02);
+    if(terrainHit===null)return trafficHit??null;
+    return trafficHit===null||trafficHit===undefined?terrainHit:Math.min(terrainHit,trafficHit);
+   }
+  });
   this.enterButton=document.createElement('button');this.enterButton.id='hover-enter';this.enterButton.textContent='Ride hoverbike · B';
   document.querySelector('header nav')!.prepend(this.enterButton);this.enterButton.onclick=()=>{if(this.riding)this.exit();else void this.mount(scene);};
   this.hud=document.createElement('section');this.hud.id='hover-hud';this.hud.hidden=true;this.hud.setAttribute('aria-label','Hoverbike controls');
   this.hud.innerHTML='<div class="hover-title"><span>SWOOP / 2084</span><strong>HOVERBIKE</strong></div><div class="hover-instruments"><div><b id="hover-speed">0</b><span>MPH</span></div><div><b id="hover-altitude">0.2</b><span>METRES AGL</span></div><output id="hover-mode">LANDED</output><output id="hover-drive" aria-label="Drive gear">AUTO</output><div class="hover-energy"><label for="hover-energy">FAN ENERGY</label><meter id="hover-energy" min="0" max="1" value="1"></meter><span id="hover-energy-text">100%</span></div></div><p id="hover-notice" role="status">Take off to ride.</p><div class="hover-actions"><button data-hold="ShiftLeft" id="hover-boost" aria-label="Hold for speed boost (Shift)" aria-pressed="false">BOOST · Shift</button><button data-hover="takeoff">Take off · G</button><button data-hover="lights" aria-pressed="true">Headlights · L</button><button data-hover="sound" aria-pressed="false">Sound off</button><button data-hover="reset">Recover · R</button><button data-hover="exit">Get off · F</button></div><div class="hover-cruise" role="group" aria-label="Cruise speed lock"><button data-hover="cruise" id="hover-cruise" aria-pressed="false" title="Lock current speed; brake to cancel">Lock speed · X</button><div id="hover-cruise-adjust" hidden><button data-hover="cruise-down" aria-label="Decrease cruise speed by 5 mph">−</button><output id="hover-cruise-target" aria-live="polite">Cruise off</output><button data-hover="cruise-up" aria-label="Increase cruise speed by 5 mph">+</button></div></div><details class="hover-lighting"><summary>Flight & lighting</summary><div><label>Flight mode<select id="hover-flight-mode"><option value="drone">Drone · altitude hold</option><option value="classic">Classic · momentum</option></select></label><label>Drive gear<select id="hover-drive-gear"><option value="auto">Automatic</option><option value="0">Neutral</option><option value="1">1 · Precision</option><option value="2">2 · Cruise</option><option value="3">3 · Sport</option></select></label><p class="hover-drive-help">Hold clutch C to shift with [ / ]. Neutral cuts drive; hover stays active.</p><button data-hold="KeyC" aria-label="Hold clutch">Clutch · C</button><label>LED color<input type="color" id="hover-led-color" value="#79dfff"></label><label>LED effect<select id="hover-led-mode"><option value="solid">Solid color</option><option value="cycle">Slow color cycle</option><option value="off">LEDs off</option></select></label><button data-hover="color">Next color · K</button><button data-hover="beam" aria-pressed="false">High beam · H</button></div></details><p class="hover-help">W / S speed · A / D steer · E / Q up / down · Space brake · X lock speed · − / = adjust · Shift boost · V camera · drag to look</p><div class="hover-touch" aria-label="Hoverbike touch controls"><div id="hover-flight-stick" aria-label="Flight joystick" role="group"><span>MOVE</span><i></i></div><div class="hover-steer"><button data-hold="ArrowLeft" aria-label="Turn left">←</button><button data-hold="ArrowRight" aria-label="Turn right">→</button></div><div class="hover-lift"><button data-hold="KeyE" aria-label="Ascend">↑ UP</button><button data-hold="KeyQ" aria-label="Descend">↓ DOWN</button></div><div class="hover-pedals"><button data-hold="Space">BRAKE</button><button data-hold="KeyS">REVERSE</button><button data-hold="KeyW" class="hover-throttle">THROTTLE</button></div></div>';
   document.body.append(this.hud);
+  this.jarvsDisplay=document.createElement('aside');
+  this.jarvsDisplay.id='jarvs-avionics';
+  this.jarvsDisplay.setAttribute('aria-label','JARVS flight avionics');
+  this.jarvsDisplay.innerHTML='<strong>JARVS</strong><output id="jarvs-readiness" aria-label="JARVS readiness">STANDBY</output><output id="jarvs-radar" aria-label="Forward hazard scan">RADAR STANDBY</output><span id="jarvs-advice">Standing by</span><small id="jarvs-context">SENSORS OFF</small>';
+  this.hud.querySelector('.hover-instruments')!.after(this.jarvsDisplay);
   this.notice=this.hud.querySelector('#hover-notice')!;this.speed=this.hud.querySelector('#hover-speed')!;this.altitude=this.hud.querySelector('#hover-altitude')!;this.mode=this.hud.querySelector('#hover-mode')!;this.touchPad=this.hud.querySelector('.hover-touch')!;
     this.soundButton();const voiceLabel=document.createElement('label'),voiceToggle=document.createElement('input');voiceLabel.textContent='Spoken hazard warnings';voiceToggle.type='checkbox';voiceToggle.checked=this.sound.voiceEnabled;voiceToggle.onchange=()=>this.sound.setVoice(voiceToggle.checked);voiceLabel.append(voiceToggle);this.hud.querySelector('.hover-lighting>div')!.append(voiceLabel);
+  const assistLabel=document.createElement('label'),assistToggle=document.createElement('input');
+  assistLabel.textContent='JARVS clearance assist · optional';assistToggle.id='jarvs-assist';assistToggle.type='checkbox';
+  assistToggle.checked=false;assistToggle.onchange=()=>{this.jarvs.assistEnabled=assistToggle.checked;};
+  assistLabel.append(assistToggle);this.hud.querySelector('.hover-lighting>div')!.append(assistLabel);
 installHoverPresentation(this.hud);
   this.flightSelect=this.hud.querySelector('#hover-flight-mode')!;let savedMode='classic';try{savedMode=localStorage.getItem('belle-flight-mode')||'classic';}catch{}this.sim.setMode(savedMode==='drone'?'drone':'classic');this.flightSelect.value=this.sim.mode;
   this.flightSelect.onchange=()=>{if(this.hooks.vehicleLocked?.()){this.flightSelect.value=this.sim.mode;return;}this.clear();this.sim.setMode(this.flightSelect.value==='classic'?'classic':'drone');try{localStorage.setItem('belle-flight-mode',this.sim.mode);}catch{}this.refresh();};
@@ -165,7 +188,7 @@ installHoverPresentation(this.hud);
  /** prepare() loads assets first; this synchronous placement cannot outlive a cancelled start. */
  beginTrial(p:{x:number;y:number;z:number;heading:number}){
   if(!this.model)return false;
-  ++this.mountGeneration;this.clear();
+  ++this.mountGeneration;this.clear();this.jarvs.reset();
   if(!this.sim.startFlight(p))return false;
   this.savedFlightMode??=this.sim.mode;this.savedDriveGear??=this.sim.drive.gear;this.sim.drive.gear='auto';this.driveSelect.value='auto';this.sim.setMode('drone');this.flightSelect.value='drone';this.resetRider();
   this.riding=true;this.model.visible=true;this.hero&&(this.hero.visible=true);
@@ -208,11 +231,17 @@ installHoverPresentation(this.hud);
   if(!point){this.say('Land on clear ground before getting off. Press G to land.');return;}
   this.leaveForTravel();this.hooks.exited(point);
  }
- leaveForTravel(){++this.mountGeneration;this.mountAbort?.abort();this.mountAbort=undefined;this.endTrial();this.clear();this.riding=false;this.sim.land();this.hud.hidden=true;this.model&&(this.model.visible=false);document.body.classList.remove('on-hoverbike');this.enterButton.disabled=!!this.hooks.vehicleLocked?.();this.enterButton.textContent='Ride hoverbike · B';}
+ leaveForTravel(){++this.mountGeneration;this.mountAbort?.abort();this.mountAbort=undefined;this.endTrial();this.clear();this.riding=false;this.sim.land();this.jarvs.reset();this.hud.hidden=true;this.model&&(this.model.visible=false);document.body.classList.remove('on-hoverbike');this.enterButton.disabled=!!this.hooks.vehicleLocked?.();this.enterButton.textContent='Ride hoverbike · B';}
  private say(message:string){this.notice.textContent=message;this.messageUntil=performance.now()+4500;}
  private refresh(){
-  const p=this.sim.pose;
-  this.cockpit?.update({speed:p.speed,height:p.y-this.sim.floor(p.x,p.z),heading:p.heading,landed:this.sim.landed,landing:this.sim.clearance<.3,boost:this.sim.boostActive,collision:this.sim.collision,lights:this.lightOn,drone:this.sim.mode==='drone',cruiseSpeed:this.sim.cruiseSpeed,gear:this.sim.drive.gear,clutch:this.sim.drive.clutch,throttle:this.sim.drive.throttle,brake:this.sim.drive.brake});
+  const p=this.sim.pose,jarvs=this.jarvs.snapshot;
+  this.jarvsDisplay.dataset.status=jarvs.status;
+  this.jarvsDisplay.dataset.intensity=jarvs.intensity;
+  this.jarvsDisplay.querySelector('#jarvs-readiness')!.textContent=jarvs.status;
+  this.jarvsDisplay.querySelector('#jarvs-radar')!.textContent=jarvs.radarMeters===null?'RADAR CLEAR':'RADAR '+Math.round(jarvs.radarMeters)+'m';
+  this.jarvsDisplay.querySelector('#jarvs-advice')!.textContent=jarvs.advice;
+  this.jarvsDisplay.querySelector('#jarvs-context')!.textContent=jarvs.signalLock?'SIGNAL LOCK · '+jarvs.memoryCells+' ROUTE CELLS':'SENSORS STANDBY';
+  this.cockpit?.update({speed:p.speed,height:p.y-this.sim.floor(p.x,p.z),heading:p.heading,landed:this.sim.landed,landing:this.sim.clearance<.3,boost:this.sim.boostActive,collision:this.sim.collision,lights:this.lightOn,drone:this.sim.mode==='drone',cruiseSpeed:this.sim.cruiseSpeed,gear:this.sim.drive.gear,clutch:this.sim.drive.clutch,throttle:this.sim.drive.throttle,brake:this.sim.drive.brake,jarvs:{status:jarvs.status,signalLock:jarvs.signalLock}});
   this.hud.querySelector<HTMLMeterElement>('#hover-energy')!.value=this.sim.boostEnergy;this.hud.querySelector('#hover-energy-text')!.textContent=Math.round(this.sim.boostEnergy*100)+'%';this.hud.querySelector('#hover-boost')!.setAttribute('aria-pressed',String(this.sim.boostActive));
   this.speed.textContent=String(speedMph(p.speed));
   const locked=this.sim.cruiseSpeed!==null,lockButton=this.hud.querySelector<HTMLButtonElement>('#hover-cruise')!;
@@ -242,8 +271,14 @@ installHoverPresentation(this.hud);
   const has=(a:string,b?:string)=>this.pressed.has(a)||!!b&&this.pressed.has(b);
   const drone=this.sim.mode==='drone',horizontal=Number(has('KeyD'))-Number(has('KeyA'))+this.stick.x;
   const steer=T.MathUtils.clamp(Number(has('ArrowRight'))-Number(has('ArrowLeft'))+(drone?0:horizontal),-1,1);
-  if(running)this.sim.advance(dt,{throttle:Number(has('KeyW','ArrowUp'))-Number(has('KeyS','ArrowDown'))+this.stick.y,strafe:drone?horizontal:0,steer,lift:Number(has('KeyE'))-Number(has('KeyQ')),brake:has('Space'),clutch:Number(has('KeyC')),boost:has('ShiftLeft','ShiftRight')});
-  const p=this.sim.pose;this.model.position.set(p.x,p.y,p.z);
+  const pilotLift=Number(has('KeyE'))-Number(has('KeyQ'));
+  const lift=this.jarvs.assistLift(pilotLift,this.sim.mode,!!this.hooks.vehicleLocked?.());
+  if(running)this.sim.advance(dt,{throttle:Number(has('KeyW','ArrowUp'))-Number(has('KeyS','ArrowDown'))+this.stick.y,strafe:drone?horizontal:0,steer,lift,brake:has('Space'),clutch:Number(has('KeyC')),boost:has('ShiftLeft','ShiftRight')});
+  const p=this.sim.pose;
+  const avionics=this.jarvs.update({now:performance.now(),x:p.x,y:p.y,z:p.z,heading:p.heading,speed:p.speed,
+   clearance:this.sim.clearance,flying:this.sim.flying,landed:this.sim.landed,collision:this.sim.collision,hazard:this.sim.hazard,
+   mode:this.sim.mode,blocked:!running||this.hooks.blocked(),racing:!!this.hooks.vehicleLocked?.()});
+  if(running&&avionics.announcement)this.sound.announce(avionics.announcement.text,avionics.announcement.priority);this.model.position.set(p.x,p.y,p.z);
   this.model.rotation.set(p.pitch,p.heading,p.roll,'YXZ');
   if(running){
    this.steerBlend=T.MathUtils.damp(this.steerBlend,steer,7,dt);
