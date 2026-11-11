@@ -52,3 +52,43 @@ test('missing loader matches and referenced maps are preserved',()=>fixture(asyn
   assert.ok((await stat(resolve(swoop,'love-tag/elmwood-explorer.json.gz'))).isFile());
   assert.ok((await stat(resolve(swoop,'exports/polish/detroit-commercial.mp4'))).isFile());
 }));
+
+test('identical rigged hero variants share canonical models without losing per-game manifests',()=>fixture(async({root,swoop,elmwood})=>{
+  const names=['DS_Man_01','DS_Hoodie_Woman_01','DS_Mascot_Suit_01','DS_Mascot_Hoodie_01','DS_Armored_Rider_01'];
+  const variants=['','mobile-512-20261017/'];
+  for(const game of [swoop,elmwood])for(const variant of variants){
+    const directory=resolve(game,'exports/rigged-heroes',variant);
+    await mkdir(directory,{recursive:true});
+    await writeFile(resolve(directory,'tree.png'),'identical rig pixels');
+    for(const name of names)await writeFile(resolve(directory,name+'.glb'),model());
+    await writeFile(resolve(directory,'manifest.json'),game===swoop?'swoop rig manifest':'elmwood rig manifest');
+  }
+  const original=await readFile(resolve(elmwood,'exports/rigged-heroes/DS_Man_01.glb'));
+  await writeFile(resolve(swoop,'assets/game.js'),
+    'film("./exports/polish/detroit-commercial.mp4");load("./exports/rigged-heroes/"+variant+name+".glb")');
+  const result=await shareRidingMedia(root);
+  assert.equal(result.files,16,'four nature models, film, map, ten rigged hero GLBs');
+  assert.deepEqual(await readFile(resolve(elmwood,'exports/rigged-heroes/DS_Man_01.glb')),original);
+  assert.match(await readFile(resolve(swoop,'assets/game.js'),'utf8'),/\.\.\/elmwood-explorer\/exports\/rigged-heroes\//);
+  for(const variant of variants)for(const name of names){
+    assert.equal(await stat(resolve(swoop,'exports/rigged-heroes',variant,name+'.glb')).catch(()=>null),null);
+    assert.ok((await stat(resolve(elmwood,'exports/rigged-heroes',variant,name+'.glb'))).isFile());
+  }
+  assert.equal(await readFile(resolve(swoop,'exports/rigged-heroes/mobile-512-20261017/manifest.json'),'utf8'),'swoop rig manifest');
+  assert.equal(await readFile(resolve(elmwood,'exports/rigged-heroes/mobile-512-20261017/manifest.json'),'utf8'),'elmwood rig manifest');
+}));
+
+test('rigged sharing fails closed on changed model bytes',()=>fixture(async({root,swoop,elmwood})=>{
+  const names=['DS_Man_01','DS_Hoodie_Woman_01','DS_Mascot_Suit_01','DS_Mascot_Hoodie_01','DS_Armored_Rider_01'];
+  for(const game of [swoop,elmwood])for(const variant of ['','mobile-512-20261017/']){
+    const directory=resolve(game,'exports/rigged-heroes',variant);
+    await mkdir(directory,{recursive:true});
+    await writeFile(resolve(directory,'tree.png'),'same');
+    for(const name of names)await writeFile(resolve(directory,name+'.glb'),model());
+  }
+  await writeFile(resolve(swoop,'exports/rigged-heroes/DS_Man_01.glb'),Buffer.from('not a matching model'));
+  await writeFile(resolve(swoop,'assets/game.js'),'load("./exports/rigged-heroes/"+name+".glb")');
+  await shareRidingMedia(root);
+  assert.ok((await stat(resolve(swoop,'exports/rigged-heroes/DS_Hoodie_Woman_01.glb'))).isFile());
+  assert.equal(await readFile(resolve(swoop,'assets/game.js'),'utf8'),'load("./exports/rigged-heroes/"+name+".glb")');
+}));
