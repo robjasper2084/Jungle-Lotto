@@ -62,3 +62,7 @@ body.royale-camera-mode #activity-hud .activity-hud-actions{margin-top:5px}
 @media(max-height:500px){#activity-hud{--activity-top:calc(var(--island-safe-top) + 68px);width:min(230px,calc(var(--activity-usable-width) - 32px));padding:8px 10px}#activity-hud p{margin:2px 0}#activity-hud h3{font-size:12px}.activity-hud-actions{margin-top:4px}.activity-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#activity-board,#activity-results{max-height:calc(100dvh - var(--island-safe-top) - var(--island-safe-bottom) - 20px)}body.royale-camera-mode #activity-hud{--activity-top:calc(var(--island-safe-top) + 58px);width:min(230px,calc(var(--activity-usable-width) - 32px))}}
 @supports(font-size:1cqi){#activity-hud .activity-hud-meta{container-type:inline-size}.activity-time{font-size:clamp(15px,11cqi,24px)}}
 @media(prefers-reduced-motion:reduce){#activity-board *,#activity-hud *,#activity-results *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* Photo controls and the activity panel can coexist without an invisible
+ * camera caption intercepting the Journal and dispatch action hit targets. */
+#activity-hud:not([hidden]){z-index:26}
