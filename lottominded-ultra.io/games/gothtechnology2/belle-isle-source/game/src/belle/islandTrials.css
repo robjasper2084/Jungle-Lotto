@@ -36,7 +36,7 @@
 .trial-primary:hover{background:#b2f0e1;color:#0a2a2d}
 .trial-current{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-left:2px solid var(--trial-gold);background:#233e3c;font-size:12px;margin:18px 0}
 .trial-current button{font-size:11px;flex:none}
-#trial-hud{--trial-edge:14px;--trial-top:calc(var(--island-safe-top) + 96px);--trial-usable-width:calc(100dvw - var(--island-safe-left) - var(--island-safe-right));position:fixed;z-index:18;left:calc(var(--island-safe-left) + var(--trial-edge));top:var(--trial-top);width:350px;max-width:calc(var(--trial-usable-width) - var(--trial-edge)*2);max-height:calc(100dvh - var(--trial-top) - var(--island-safe-bottom) - var(--trial-edge));overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding:14px;border:1px solid #9abfb956;border-left:3px solid var(--trial-river);border-radius:0 9px 9px 0;background:#0a242bec;color:var(--trial-paper);box-shadow:0 7px 24px #0004;display:grid;grid-template-columns:minmax(0,1fr) 120px;gap:10px 12px}
+#trial-hud{box-sizing:border-box;--trial-edge:14px;--trial-top:calc(var(--island-safe-top) + 96px);--trial-usable-width:calc(100dvw - var(--island-safe-left) - var(--island-safe-right));position:fixed;z-index:18;left:calc(var(--island-safe-left) + var(--trial-edge));top:var(--trial-top);width:350px;max-width:calc(var(--trial-usable-width) - var(--trial-edge)*2);max-height:calc(100dvh - var(--trial-top) - var(--island-safe-bottom) - var(--trial-edge));overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding:14px;border:1px solid #9abfb956;border-left:3px solid var(--trial-river);border-radius:0 9px 9px 0;background:#0a242bec;color:var(--trial-paper);box-shadow:0 7px 24px #0004;display:grid;grid-template-columns:minmax(0,1fr) 120px;gap:10px 12px}
 .trial-hud-summary{min-width:0}
 #trial-hud h3{font-size:14px;font-weight:600;line-height:1.35;margin:4px 0 8px}
 .trial-timing{display:flex;flex-direction:column;gap:3px;min-width:0;max-width:100%}
@@ -180,4 +180,13 @@ body.island-trial.on-hoverbike.touch-controls .hover-steer button{min-width:44px
  * The 9999:59.99 synthetic fixture must fit at 320 px without shrinking touch targets. */
 @media(max-width:350px) and (min-height:521px){
   #trial-hud .trial-time{font-size:14px;letter-spacing:-.075em;line-height:1.15;}
+}
+
+/* Real 320×568 fixture: border and padding must fit the safe-height budget.
+ * Avoid intrinsic long-label overflow while retaining full timer and 44px taps. */
+@media(max-width:350px) and (min-height:521px){
+ #trial-hud{box-sizing:border-box;max-height:calc(100dvh - var(--trial-top) - var(--island-safe-bottom) - 10px);overflow-wrap:anywhere}
+ #trial-hud .trial-hud-summary,#trial-hud .trial-timing{min-width:0;width:100%;max-width:100%}
+ #trial-hud .trial-time{font-size:clamp(12px,3.9vw,14px);letter-spacing:-.08em;max-width:100%}
+ #trial-hud h3,#trial-hud .trial-state,#trial-hud p{max-width:100%;overflow-wrap:anywhere}
 }
