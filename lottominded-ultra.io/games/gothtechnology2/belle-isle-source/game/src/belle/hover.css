@@ -38,3 +38,19 @@ body.on-hoverbike #ridehud,body.on-hoverbike #touch-zone{display:none!important}
 @media(max-width:600px){.hover-energy{grid-template-columns:50px 25px}.hover-energy meter{width:50px}.hover-instruments{flex-wrap:wrap;gap:10px}.hover-actions{max-width:100%}}
 .hover-cruise{position:absolute;right:0;bottom:164px;display:flex;align-items:center;gap:7px;pointer-events:auto;font-size:12px}.hover-cruise button{min-width:44px;min-height:44px;background:#142d32ed;border:1px solid #9cc9c488;padding:8px 12px;touch-action:manipulation}.hover-cruise button[aria-pressed=true]{background:#aedec9;color:#0b2729;border-color:#d1f5df}.hover-cruise #hover-cruise-adjust{display:flex;align-items:center;gap:4px;border:1px solid #8eafa666;border-radius:7px;background:#0e252be8}.hover-cruise #hover-cruise-adjust[hidden]{display:none}.hover-cruise output{min-width:64px;text-align:center;font-variant-numeric:tabular-nums;font-size:12px;color:#d2f1df}.hover-cruise #hover-cruise-adjust button{border:0;background:transparent;font-size:22px;padding:4px 8px}
 @media(max-width:600px) and (min-height:521px){.hover-cruise{bottom:calc(190px + 124px * var(--control-scale,1))}.hover-instruments{max-width:205px}.hover-cruise button{font-size:11px}}@media(max-height:520px){.hover-cruise{bottom:146px}.hover-cruise button{font-size:11px}}
+
+/* JARVS: text-only avionics in the existing HUD, no second WebGL camera. */
+#jarvs-avionics{display:flex;align-items:center;flex-wrap:wrap;gap:5px 10px;max-width:min(600px,100%);margin:5px 0;padding:7px 9px;border:1px solid #73c9d47a;border-radius:6px;background:#0b2531dd;color:#c8eaf0;font:600 10px/1.35 system-ui;pointer-events:none}
+#jarvs-avionics strong{letter-spacing:.18em;color:#93e1dd}
+#jarvs-readiness{font:700 11px monospace;color:#a3e8d3}
+#jarvs-radar{min-width:88px;font:700 11px monospace;color:#cee9b4}
+#jarvs-advice{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px}
+#jarvs-context{font-size:9px;letter-spacing:.06em;color:#a5cbd1}
+#jarvs-avionics[data-status=CAUTION]{border-color:#f5cb7c}
+#jarvs-avionics[data-status=CAUTION] #jarvs-readiness,#jarvs-avionics[data-status=CRITICAL] #jarvs-readiness{color:#ffd18d}
+#jarvs-avionics[data-status=CRITICAL]{border-color:#ff7769}
+#jarvs-avionics[data-intensity=high] #jarvs-radar{min-width:132px;font-size:13px;color:#fff2b4}
+#jarvs-avionics[data-intensity=high] #jarvs-context{display:none}
+@media(max-height:520px){#jarvs-avionics{font-size:9px;max-width:min(340px,55vw);padding:4px 7px;gap:4px}#jarvs-advice,#jarvs-context{display:none}}
+@media(max-width:600px) and (min-height:521px){#jarvs-avionics{max-width:calc(100vw - 30px);gap:4px 7px;padding:5px 8px}#jarvs-advice{max-width:160px}}
+@media(prefers-reduced-motion:reduce){#jarvs-avionics{transition:none;animation:none}}
