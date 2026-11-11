@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {presentationBudget,fogColumn,reflectionRequired,aircraftFrame,RIDER_CLIPS,sampleRiderClip,articulateEuc,windMask,type EucMotion} from './presentationPolicy.ts';
+import {presentationBudget,tracedSkyEnabled,fogColumn,reflectionRequired,aircraftFrame,RIDER_CLIPS,sampleRiderClip,articulateEuc,windMask,type EucMotion} from './presentationPolicy.ts';
 import {atmosphereShader,windVertex,HEIGHT_FOG} from './atmosphereShaders.ts';
 const motion=():EucMotion=>({pitch:.12,drop:.1,shift:0,lateral:0,hipTilt:0,hipYaw:0,chestRoll:0,chestYaw:0,headRoll:0,headYaw:0,neck:0,shoulders:[0,0],hands:[{x:.05,y:.1,z:.1,wrist:0},{x:-.05,y:.1,z:.1,wrist:0}]});
 test('Smooth and XR bound optional rendering',()=>{for(const budget of [presentationBudget('smooth'),presentationBudget('high',true)]){assert.equal(budget.aircraft,false);assert.equal(budget.reflectionSize,32);assert.ok(budget.cloudStrength<=.1);}assert.ok(presentationBudget('high').reflectionSize<=128);});
@@ -28,3 +28,12 @@ test('height fog retains the normal linear-fog fallback',()=>{assert.match(HEIGH
 test('world projection supports instanced and batched meshes',()=>{const s=atmosphereShader('#include <worldpos_vertex>','#include <fog_fragment>');assert.match(s.vertex,/instanceMatrix\*belleWorld/);assert.match(s.vertex,/batchingMatrix\*belleWorld/);});
 test('unknown custom shaders are not rewritten',()=>{const s=atmosphereShader('void main(){}','void main(){}');assert.equal(s.applied,false);assert.equal(s.fragment,'void main(){}');});
 test('wind happens before skinning and is available to depth passes',()=>{const s=windVertex('#include <begin_vertex>\n#include <skinning_vertex>');assert.ok(s.indexOf('transformed.x+=')<s.indexOf('#include <skinning_vertex>'));assert.ok(!s.includes('objectNormal'));});
+
+test('Smooth renders the layered sky without submitting GPU-heavy traced panoramas',()=>{
+ assert.equal(tracedSkyEnabled(true,'smooth'),false);
+ assert.equal(tracedSkyEnabled(false,'smooth'),false);
+ for(const mode of ['automatic','high']){
+  assert.equal(tracedSkyEnabled(true,mode),true);
+  assert.equal(tracedSkyEnabled(false,mode),false);
+ }
+});
