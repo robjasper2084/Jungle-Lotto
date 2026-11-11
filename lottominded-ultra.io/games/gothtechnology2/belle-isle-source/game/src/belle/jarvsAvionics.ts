@@ -35,7 +35,8 @@ export class JarvsAvionics {
  assistEnabled=false;
  readonly maxCells=64;
  readonly scanIntervalMs=250;
- constructor(private readonly environment:JarvsEnvironment){}
+ private readonly environment:JarvsEnvironment;
+ constructor(environment:JarvsEnvironment){this.environment=environment;}
  reset(){this.cells.clear();this.lastScan=-Infinity;this.lastVoice=-Infinity;this.lastStatus='STANDBY';this.view=neutral();}
  get snapshot():JarvsReading{return {...this.view};}
  private cell(x:number,z:number){return Math.floor(x/40)+':'+Math.floor(z/40);}
@@ -75,7 +76,7 @@ export class JarvsAvionics {
   const predictedRise=Math.max(rise,remembered?.rise??0);
   const climb=predictedRise>1.2&&s.clearance<predictedRise+2;
   const warning=s.collision||s.hazard||close;
-  const risk=s.collision?1:warning?.85:climb?.48:0;
+  const risk=s.collision?1:warning?0.85:climb?0.48:0;
   this.remember(currentKey,risk,rise);
   const status:JarvsStatus=s.collision?'CRITICAL':warning||climb?'CAUTION':'SCANNING';
   const high=Math.abs(s.speed)>=14||s.collision;
