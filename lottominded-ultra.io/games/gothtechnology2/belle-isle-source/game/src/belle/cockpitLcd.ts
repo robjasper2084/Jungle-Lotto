@@ -27,6 +27,12 @@ export class CockpitLcd{
  update(input:CockpitInput){
   const p=cockpitTelemetry(input),c=this.context;c.fillStyle='#071a20';c.fillRect(0,0,512,384);
   c.strokeStyle='#35606c';c.lineWidth=2;c.strokeRect(8,8,496,368);c.fillStyle='#7bc9d7';c.font='bold 19px monospace';c.fillText('SWOOP / 2084',24,37);c.textAlign='right';c.fillStyle=p.warning?'#ffb36d':'#a5ecbc';c.fillText(p.warning||p.mode,488,37);c.textAlign='left';
+  if(input.jarvs){
+   c.textAlign='right';c.font='bold 12px monospace';
+   c.fillStyle=input.jarvs.status==='CRITICAL'?'#ffab85':input.jarvs.status==='CAUTION'?'#ffd783':'#9ceaca';
+   c.fillText('JARVS '+(input.jarvs.signalLock?input.jarvs.status:'STANDBY'),486,58);
+   c.textAlign='left';
+  }
   c.fillStyle='#edfaf8';c.font='bold 99px monospace';c.fillText(String(p.speed).padStart(2,'0'),22,143);c.font='17px monospace';c.fillStyle='#87b9c6';c.fillText('MPH',30,168);
   c.fillStyle='#edfaf8';c.font='bold 37px monospace';c.fillText(p.height+' m',282,104);c.font='15px monospace';c.fillStyle='#87b9c6';c.fillText('ABOVE GROUND',284,128);c.fillStyle='#d5efea';c.font='bold 26px monospace';c.fillText(p.compass+' '+String(p.bearing).padStart(3,'0')+'°',282,173);
   c.fillStyle='#163c45';c.fillRect(23,188,466,2);c.font='18px monospace';c.fillStyle=p.lights?'#87dfec':'#789398';c.fillText('GEAR '+p.gear,24,218);c.fillStyle='#365059';c.fillRect(24,231,150,6);c.fillStyle='#7ee3cb';c.fillRect(24,231,150*p.throttle,6);c.textAlign='right';c.fillStyle='#d4dbc0';c.fillText(p.driveState==='DRIVE'?(input.boost?'BOOST':(p.lights?'LIGHTS ON':'LIGHTS OFF')):p.driveState,486,224);c.textAlign='left';const radio=this.radio?.snapshot();c.fillStyle='#163c45';c.fillRect(23,244,466,2);c.font='bold 15px monospace';c.fillStyle='#84cad1';c.fillText('RIDE RADIO',24,269);c.textAlign='right';c.fillText(radio?.playing?'PLAYING':'STANDBY',488,269);c.textAlign='left';c.fillStyle='#edf4ed';c.font='19px monospace';c.fillText((radio?.title||'Add your soundtrack').slice(0,32),24,299);
