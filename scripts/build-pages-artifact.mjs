@@ -1,5 +1,5 @@
 import {replaceBelleBuild} from './belle-pages.mjs';
-import {isServerOnlySource} from './pages-public-scope.mjs';
+import {isServerOnlySource,isDevelopmentOnlySource} from './pages-public-scope.mjs';
 import {shareBelleAssets} from './share-belle-assets.mjs';
 import {shareCityData} from './share-city-data.mjs';
 import {pruneRidingBundles} from './prune-riding-bundles.mjs';
@@ -90,10 +90,10 @@ function git(args) {
 }
 
 function isPublicFile(file) {
-  // This is a static site, not a host for the separately deployed LOVE TAG
-  // Node service. Its fixture blobs alone exceeded the Pages margin by ~91 MiB.
-  // Keep the actual arcade clients and their public map files unchanged.
-  return !isServerOnlySource(file) &&
+  // The compiled GothTechnology build already replaces its source subtree;
+  // omit authoring workspaces and duplicate Jackpot Maze source/public media too.
+  // The published game routes, audio, models and client maps remain untouched.
+  return !isServerOnlySource(file) && !isDevelopmentOnlySource(file) &&
     (rootFiles.has(file) || publicRoots.some((root) => file.startsWith(root)));
 }
 
