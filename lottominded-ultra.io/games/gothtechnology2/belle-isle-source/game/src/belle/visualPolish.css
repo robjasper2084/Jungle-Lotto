@@ -27,3 +27,29 @@
  .touch-controls #hover-hud[data-visual-polish=v1] .hover-lighting{max-height:calc(100dvh - var(--island-safe-top,0px) - var(--hover-safe-bottom,0px) - 170px)}
 }
 @media(prefers-reduced-motion:reduce){#hover-hud[data-visual-polish=v1] *{scroll-behavior:auto}}
+
+/* Cinematic layout: existing hit targets, safety alerts and compact-phone rules win. */
+body[data-hud-preset]{--cinematic-panel:rgba(7,24,31,.87);--cinematic-edge:rgba(153,224,224,.38)}
+body[data-hud-preset] :is(.location-chip,#navigation,#trial-hud,#jarvs-avionics){background-color:var(--cinematic-panel);border-color:var(--cinematic-edge)}
+body[data-hud-preset] :is(#hover-speed,#hover-altitude,.trial-time,#speed){font-variant-numeric:tabular-nums;letter-spacing:-.035em}
+body[data-hud-preset] :is(button,summary,select,a):focus-visible{outline:2px solid #b3fff0;outline-offset:3px}
+#cinematic-settings{border:1px solid #9edbd04d;border-radius:10px;padding:16px;display:grid;gap:10px}
+#cinematic-settings :is(select,button){min-height:44px;width:100%}
+#cinematic-settings p{font:400 12px/1.6 system-ui,sans-serif;color:#c9dbda;margin:0}
+#cinematic-settings a{font:600 12px/1.5 system-ui,sans-serif;color:#b2f0e3;overflow-wrap:anywhere;padding:6px 0}
+body[data-hud-preset=cinematic]:not(.island-trial) :is(.location-chip,#navigation,#hint,.hover-title,.hover-help){display:none}
+body[data-hud-preset=racing] .hover-help,body[data-hud-preset].island-trial .hover-help{display:none}
+body[data-hud-preset] #trial-hud .trial-direction{font-weight:700;color:#d6fff5}
+body[data-hud-preset] #trial-hud[data-off-course=true] .trial-direction{color:#ffdb8b}
+body[data-hud-preset] #jarvs-avionics[data-status=CRITICAL]{border-color:#ff9582;background-color:#351b20}
+@media(min-width:900px) and (min-height:600px){
+ body[data-hud-preset] .location-chip{width:190px;padding:9px 12px;border-radius:8px}
+ body[data-hud-preset] .location-chip strong{font:700 15px/1.2 system-ui,sans-serif;letter-spacing:.10em}
+ body[data-hud-preset] .location-chip small{font-size:10px}
+ body[data-hud-preset] #hover-hud .hover-title{display:none}
+ body[data-hud-preset] #hover-hud .hover-instruments b{font-size:32px}
+ body[data-hud-preset] #hover-hud .hover-help{max-width:600px;font-size:11px}
+ body[data-hud-preset][data-presentation-quality=high] :is(.location-chip,#navigation){backdrop-filter:blur(6px)}
+}
+body[data-presentation-motion=reduced] :is(.location-chip,#navigation){backdrop-filter:none!important}
+@media(prefers-reduced-motion:reduce){body[data-hud-preset] :is(button,.location-chip,#navigation){animation:none!important;transition:none!important;backdrop-filter:none!important}}

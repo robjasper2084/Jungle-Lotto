@@ -16,14 +16,14 @@ export class RiderPresence {
   if(this.ready&&Math.hypot(vehicle.x-this.x,vehicle.y-this.y,vehicle.z-this.z)>8)this.reset();
   this.x=vehicle.x;this.y=vehicle.y;this.z=vehicle.z;this.ready=true;this.time+=dt;
   // Exponential response separates pelvis, chest and head without a physics spring.
-  const cruise=bounded((Math.abs(vehicle.speed)-5)/19,0,1),turn=bounded(base.look*1.55,-.21,.21);
+  const cruise=bounded((Math.abs(vehicle.speed)-5)/19,0,1),turn=bounded(base.look*1.65,-.21,.21);
   s.lean=bounded(base.lean,-.24,.24);
-  s.pitch=bounded(base.pitch*1.35+cruise*.045,-.10,.19);
+  s.pitch=bounded(base.pitch*1.38+cruise*.048,-.10,.19);
   s.compression=bounded(base.compression*1.15,0,.082);
   s.hipLean=follow(s.hipLean,s.lean,4.5,dt);
   s.chestLean=follow(s.chestLean,s.lean,12,dt);
   s.hipYaw=follow(s.hipYaw,turn*.12,4.5,dt);
-  s.chestYaw=follow(s.chestYaw,turn*.29,9,dt);
+  s.chestYaw=follow(s.chestYaw,turn*.31,9,dt);
   s.look=follow(s.look,turn-s.chestYaw,15,dt);
   // A 4 mm-equivalent chest breath, not camera shake or artificial vehicle wobble.
   s.breath=Math.sin(this.time*1.6)*.004*(1-cruise*.65)*Math.min(1,this.time);

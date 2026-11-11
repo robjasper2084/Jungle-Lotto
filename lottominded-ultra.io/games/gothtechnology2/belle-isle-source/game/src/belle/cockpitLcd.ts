@@ -1,3 +1,4 @@
+import {cockpitScale} from './cinematicPolicy.ts';
 import type {CockpitRadio,CockpitRadioAction} from './cockpitRadio.ts';
 import * as T from 'three';
 import {cockpitTelemetry,type CockpitInput} from './cockpitTelemetry.ts';
@@ -22,7 +23,7 @@ export class CockpitLcd{
   document.addEventListener('pointerup',e=>{if(this.pressed<0)return;const i=hit(e),pressed=this.pressed;this.pressed=-1;e.preventDefault();e.stopImmediatePropagation();if(i===pressed)radio.command((['previous','toggle','next','quieter','louder','library'] as CockpitRadioAction[])[i]);},true);
   document.addEventListener('pointercancel',()=>{this.pressed=-1;},true);
  }
- setInteraction(camera:T.Camera,enabled:boolean){this.view=camera;this.interactive=enabled;if(this.access)this.access.hidden=!enabled;}
+ setInteraction(camera:T.Camera,enabled:boolean){const scale=cockpitScale(document.body.dataset.cockpitDensity==='compact',innerWidth);if(this.root.scale.x!==scale)this.root.scale.setScalar(scale);this.view=camera;this.interactive=enabled;if(this.access)this.access.hidden=!enabled;}
  setVisible(visible:boolean){this.root.visible=visible;this.brackets.visible=visible;}
  update(input:CockpitInput){
   const p=cockpitTelemetry(input),c=this.context;c.fillStyle='#071a20';c.fillRect(0,0,512,384);
