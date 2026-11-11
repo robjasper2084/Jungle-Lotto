@@ -58,5 +58,5 @@ body.on-hoverbike #ridehud,body.on-hoverbike #touch-zone{display:none!important}
 /* In compact landscape mode Boost previously sat across the actual right
  * steering target (390x340). Move only Boost into the clear right-hand lane. */
 @media(max-width:600px) and (max-height:520px){
- body.on-hoverbike #hover-boost{position:fixed;right:8px;left:auto;bottom:94px;z-index:8}
+ body.on-hoverbike #hover-boost{position:fixed;right:8px;left:auto;top:calc(var(--island-safe-top,0px) + 8px);bottom:auto;z-index:8}
 }
