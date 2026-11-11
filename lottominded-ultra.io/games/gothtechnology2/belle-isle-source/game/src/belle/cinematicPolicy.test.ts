@@ -35,3 +35,9 @@ test('cinematic layout does not hide race guidance or critical controls', () => 
   const hideRules=css.match(/[^{}]+\{[^{}]*display:none[^{}]*\}/g)||[];
   for (const rule of hideRules.filter(r=>r.includes('data-hud-preset'))) assert.doesNotMatch(rule,/#trial-hud|#hover-boost|hover-actions|hover-touch|#pause|#settings-open/);
 });
+
+test('health page and its modules are explicitly included in production asset copying', () => {
+  const config=readFileSync(new URL('../../vite.config.ts',import.meta.url),'utf8');
+  for(const name of ['deployment-health.html','deployment-health.mjs','release-health-model.mjs']) assert.ok(config.includes("'"+name+"'"));
+  assert.match(config,/for\(const item of assets\)await copyAsset\(item\)/);
+});

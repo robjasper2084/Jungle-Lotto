@@ -21,6 +21,9 @@ jobs:
         case: [desktop, compact-landscape, small-phone]
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -41,6 +44,7 @@ jobs:
       - name: Check real game presentation and capture screenshots
         timeout-minutes: 18
         env:
+          EXPECTED_MERGE_SHA: ${{ github.event.pull_request.head.sha }}
           BELLE_GAME_URL: http://127.0.0.1:8301/
           BELLE_CINEMATIC_CASE: ${{ matrix.case }}
           BELLE_CINEMATIC_OUTPUT: artifacts/belle-cinematic
