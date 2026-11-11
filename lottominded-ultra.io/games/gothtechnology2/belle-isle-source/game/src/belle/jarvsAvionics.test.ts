@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {JarvsAvionics,type JarvsInput} from './jarvsAvionics.ts';
 
 const flight=(now=10000,extra:Partial<JarvsInput>={}):JarvsInput=>({
- now,x:0,y:12,z:0,heading:0,speed:9,clearance:10,
+ now,x:0,y:12,z:0,heading:0,speed:9,clearance:4,
  flying:true,landed:false,collision:false,hazard:false,
  mode:'drone',blocked:false,racing:false,...extra,
 });
