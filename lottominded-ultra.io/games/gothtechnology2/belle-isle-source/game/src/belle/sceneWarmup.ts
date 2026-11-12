@@ -1,5 +1,6 @@
 import type {Camera,DirectionalLight,Object3D,Scene,WebGLRenderer} from 'three';
 
+import {installGpuFramePacing} from './gpuFramePacing.ts';
 import {warmObjectTextures} from './startupWork.ts';
 
 type Compiler=Pick<WebGLRenderer,'compileAsync'> & Partial<Pick<WebGLRenderer,'initTexture'>>;
@@ -21,7 +22,7 @@ export class SceneWarmup {
  private pending=new Map<string,Pending>();
  private tail:Promise<void>=Promise.resolve();
  private renderer:Compiler;private scene:Scene;private camera:Camera;private busy:(value:boolean)=>void;private paint:()=>Promise<void>;private timeoutMs:number;
- constructor(renderer:Compiler,scene:Scene,camera:Camera,busy:(value:boolean)=>void,paint:()=>Promise<void>=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))),timeoutMs=45_000){this.renderer=renderer;this.scene=scene;this.camera=camera;this.busy=busy;this.paint=paint;this.timeoutMs=timeoutMs;}
+ constructor(renderer:Compiler,scene:Scene,camera:Camera,busy:(value:boolean)=>void,paint:()=>Promise<void>=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))),timeoutMs=45_000){installGpuFramePacing(renderer);this.renderer=renderer;this.scene=scene;this.camera=camera;this.busy=busy;this.paint=paint;this.timeoutMs=timeoutMs;}
  prepare(model?:Object3D,signal?:AbortSignal){
   if(signal?.aborted)return Promise.reject(cancelled(signal));
   const key=model?.uuid??'island';
