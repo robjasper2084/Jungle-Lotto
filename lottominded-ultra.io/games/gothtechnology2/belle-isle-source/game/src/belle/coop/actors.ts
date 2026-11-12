@@ -1,6 +1,7 @@
 import {batchRigidChildren} from './batchRigid.ts';
 import {HoverControls} from '../hoverControls.ts';
 import * as T from 'three';
+import {DefaultLoadingManager} from 'three';
 import {createVehicleContactShadow} from '../contactShadow.ts';
 import {clone as cloneSkeleton} from 'three/addons/utils/SkeletonUtils.js';
 import {solveLimb} from '../../../runtime/ride-core/src/limbIK.ts';
@@ -39,7 +40,9 @@ export class CoopAssets{
  private assets=new Set<GLTF>();
  private closed=false;
  private hoverTask?:Promise<GLTF>;
- async hover(signal:AbortSignal){if(!this.hoverTask)this.hoverTask=(async()=>{const response=await fetch('./belle/vehicles/hero-hoverbike.glb',{signal});if(!response.ok)throw new Error('Hoverbike could not load.');const asset=await new GLTFLoader().parseAsync(await response.arrayBuffer(),'');if(this.closed||signal.aborted){freeSource(asset);throw new Error('Hoverbike preparation cancelled.');}this.assets.add(asset);return asset;})();return this.hoverTask;}
+ async hover(signal:AbortSignal){if(!this.hoverTask)this.hoverTask=(async()=>{const url=DefaultLoadingManager.resolveURL(new URL('./belle/vehicles/hero-hoverbike.glb',document.baseURI).href);
+   const response=await fetch(url,{signal,credentials:'omit'});
+   if(!response.ok)throw new Error('Hoverbike could not load (HTTP '+response.status+').');const asset=await new GLTFLoader().parseAsync(await response.arrayBuffer(),'');if(this.closed||signal.aborted){freeSource(asset);throw new Error('Hoverbike preparation cancelled.');}this.assets.add(asset);return asset;})();return this.hoverTask;}
  async rider(manifest:PlayerManifest,signal:AbortSignal):Promise<GLTF>{
   if(this.closed||signal.aborted)throw signal.reason??new Error('Rider preparation cancelled.');
   let task=this.cache.get(manifest.riderId);

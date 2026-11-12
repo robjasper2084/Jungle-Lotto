@@ -8,6 +8,7 @@ import {createServer} from 'node:http';
 import {createRequire} from 'node:module';
 import {extname,resolve,sep} from 'node:path';
 import {RIDERS,SOURCE_REVISION,SOURCE_ROOT} from '../src/belle/coop/coop.ts';
+import {verifyDualHover} from './coop-hover-browser.mjs';
 const game=resolve(import.meta.dirname,'..'),root=resolve(game,'dist'),out=resolve(game,'output/coop');
 await mkdir(out,{recursive:true});
 const name=process.env.BELLE_COOP_DEVICE||'desktop',mobile=name==='phone',viewport=mobile?{width:390,height:844}:{width:960,height:640};
@@ -93,7 +94,12 @@ async function run(){
  if(!await page.locator('#coop-open').isVisible())await tap(page.locator('#tools-toggle'));await tap(page.locator('#coop-open'));
  await expect(page.getByLabel('Player 1 rider',{exact:true})).toHaveValue('DS_Man_01');await expect(page.getByLabel('Player 2 vehicle',{exact:true})).toHaveValue('euc:tour');await expect(page.getByRole('button',{name:'Explore together',exact:true})).toBeDisabled();
  await tap(page.getByRole('button',{name:'Close setup',exact:true}));await expect(page.locator('#coop-setup')).not.toBeVisible();
- assert.deepEqual(report.errors,[]);report.passed=true;note('Real co-op gameplay checks passed');
+ assert.deepEqual(report.errors,[]);
+ // Preserve the entire EUC suite, then require the production-path hover suite.
+ await bounded(context.close(),30_000,'EUC context cleanup');
+ await verifyDualHover({browser,origin,game,out,name,mobile,viewport,expect,bounded,note,parent:report});
+ assert.equal(report.dualHover.passed,true);
+ report.passed=true;note('Real co-op gameplay checks passed');
 }
 let failed;
 try{await bounded(run(),35*60_000,'Co-op real-game case');}catch(e){failed=e;report.failure=e.stack||String(e);report.passed=false;process.exitCode=1;note('FAIL '+e.message);
