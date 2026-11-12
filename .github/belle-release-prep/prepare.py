@@ -1,7 +1,7 @@
 """One-shot, pinned preparation of Git objects. NEVER updates refs or deploys.
 The caller separately verifies the resulting commits before advancing PR branches.
 """
-import base64, datetime, hashlib, json, os, pathlib, re, shutil, subprocess, time, traceback, urllib.request
+import base64, datetime, hashlib, json, os, pathlib, re, shutil, subprocess, time, traceback, urllib.request, urllib.parse
 REPO='robjasper2084/Jungle-Lotto'
 PINS={147:'d6d70c765b5c6fb274efd27bc45c471c5d5b377a',148:'d5608b6dd17d339db68ea3d6bab4c3cbf2db150a',149:'7a60e56025a1de9d331b3e70e3a1402d893f6476'}
 GAME='lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/'
@@ -130,7 +130,7 @@ def publish_objects(label,base,parents):
 def main():
     assert os.environ['GITHUB_REPOSITORY']==REPO
     start=git('rev-parse','HEAD');assert start==os.environ['GITHUB_SHA']
-    assert git('rev-parse','HEAD^')==PINS[149],'Preparation parent moved'
+    assert git('rev-parse','HEAD^')=='9ab17355e6434586f7fd28138d57217edb83ac02' and git('rev-parse','HEAD~2')==PINS[149],'Preparation parents moved'
     templates={name:pathlib.Path(PACK+name).read_text() for name in ['loaded-stylesheets.mjs','loaded-stylesheets.test.mjs','cinematicCloning.test.mjs']}
     for number,pinned in PINS.items():
         pr=api('/pulls/'+str(number));expected=start if number==149 else pinned
@@ -158,7 +158,26 @@ def main():
         old=read_at(ref,RUNNER)
         names=re.findall(r"'([^']+\.test\.(?:ts|mjs))'",old)
         assert all("'"+name+"'" in runner for name in names),'An original test was removed'
-    test('pr149',[GAME+'scripts/loaded-stylesheets.test.mjs',BELLE+'cinematicCloning.test.mjs'])
+    # Fix the real favicon request rather than filtering a 404 from browser logs.
+    html=pathlib.Path(GAME+'index.html');source=html.read_text()
+    assert not re.search(r'rel=[\"\'](?:shortcut )?icon[\"\']',source,re.I),'Existing icon needs review'
+    svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#102a30"/><path d="M9 7h8a5 5 0 0 1 0 10H9V7m0 10h9a4 4 0 0 1 0 8H9V7" fill="none" stroke="#9ceadd" stroke-width="3" stroke-linejoin="round"/></svg>'
+    icon='<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,'+urllib.parse.quote(svg,safe='')+'">\n'
+    html.write_text(one(source,'</head>',icon+'</head>'))
+    icon_test=r"""import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+test('entry declares a self-contained SVG icon without an origin-root request',()=>{
+ const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+ const match=html.match(/<link rel="icon" type="image\/svg\+xml" href="data:image\/svg\+xml,([^"]+)">/);
+ assert.ok(match,'Real entry must declare its icon');
+ const svg=decodeURIComponent(match[1]);assert.match(svg,/<svg/);assert.doesNotMatch(svg,/<script|https?:\/\/(?!www.w3.org)/);
+ assert.ok(html.indexOf(match[0])<html.indexOf('</head>'));
+});
+"""
+    pathlib.Path(GAME+'scripts/favicon-source.test.mjs').write_text(icon_test)
+    register('scripts/favicon-source.test.mjs')
+    test('pr149',[GAME+'scripts/loaded-stylesheets.test.mjs',BELLE+'cinematicCloning.test.mjs',GAME+'scripts/favicon-source.test.mjs'])
     shutil.rmtree(PACK);pathlib.Path(WORKFLOW).unlink()
     c=publish_objects('pr149',start,[start,b])
     assert api('/git/ref/heads/main')['object']['sha']==main_sha,'Production ref changed externally'
