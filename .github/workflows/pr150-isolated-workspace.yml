@@ -1,0 +1,138 @@
+name: PR150 isolated workspace - not release approval
+
+on:
+  push:
+    branches: [diagnostics/pr150-workspace-20261112]
+    paths: [.github/workflows/pr150-isolated-workspace.yml]
+
+# Repository writes use the owner's connected tool, not dependency-install scripts.
+# This runner cannot publish Pages, merge, or push repository changes.
+permissions:
+  contents: read
+
+concurrency:
+  group: pr150-isolated-workspace-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  provision-and-observe:
+    if: github.repository == 'robjasper2084/Jungle-Lotto'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PUBLIC_COMMERCE_MODE: demo
+      PUBLIC_LAUNCH_APPROVED: 'false'
+    steps:
+      - name: Full checkout of the unchanged PR150 source
+        uses: actions/checkout@v4
+        with:
+          ref: f3f83347da08377c491beacff9b51eac55d69bef
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify source and record production drift without rebasing
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/pr150-evidence"
+          test "$(git rev-parse HEAD)" = f3f83347da08377c491beacff9b51eac55d69bef
+          test "$(git rev-parse origin/feature/belle-idle-hover-20261111)" = f3f83347da08377c491beacff9b51eac55d69bef
+          test -z "$(git status --porcelain)"
+          test "$(git rev-parse --is-shallow-repository)" = false
+          test "$(git hash-object lottominded-ultra.io/games/gothtechnology2/tests/store-browser/game-grid.spec.js)" = 6cd1929e400d4e42d52833a478d495b6f1b67bd0
+          git switch -c feature/belle-idle-hover-20261111
+          git branch main origin/main
+          python3 - <<'PY'
+          import json, os, pathlib, subprocess, tempfile
+          def git(*args):
+              return subprocess.check_output(['git', *args], text=True).strip()
+          with tempfile.NamedTemporaryFile(dir='.', prefix='.pr150-write-check-', delete=True) as probe:
+              probe.write(b'workspace write verified\n')
+              probe.flush()
+          data = {
+              'purpose': 'isolated provisioning and unchanged historical baseline; not release validation',
+              'head': git('rev-parse', 'HEAD'),
+              'tree': git('rev-parse', 'HEAD^{tree}'),
+              'branch': git('branch', '--show-current'),
+              'main': git('rev-parse', 'main'),
+              'heldBase': 'd546de77fb304ebb3e113c676ff9d322c0535105',
+              'trackedFiles': len(subprocess.check_output(['git', 'ls-files', '-z']).split(b'\0')) - 1,
+              'fullHistory': git('rev-parse', '--is-shallow-repository') == 'false',
+              'workingTreeWritable': True,
+              'heldPatchApplied': False,
+              'productionWrites': False,
+          }
+          data['baseDrift'] = data['main'] != data['heldBase']
+          pathlib.Path(os.environ['RUNNER_TEMP'], 'pr150-evidence', 'checkout.json').write_text(json.dumps(data, indent=2) + '\n')
+          print(json.dumps(data, indent=2))
+          if data['baseDrift']:
+              print('::warning::Production has advanced. Held patch installer and all repair/merge/deploy steps remain blocked. Only the unchanged historical test is observed here.')
+          PY
+
+      - name: Use repository CI Node version
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Verify npm registry access
+        shell: bash
+        run: |
+          set -euo pipefail
+          { node --version; npm --version; npm ping; } 2>&1 | tee "$RUNNER_TEMP/pr150-evidence/npm-access.log"
+
+      - name: Install locked Belle Isle dependencies
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: npm ci
+
+      - name: Install locked GothTechnology dependencies
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: npm ci
+
+      - name: Install locked Fortune Grid dependencies
+        working-directory: lottominded-ultra.io/games/lottomind-313-fortune-grid
+        run: npm ci
+
+      - name: Install locked Jackpot Maze dependencies
+        working-directory: lottominded-ultra.io/games/lottomind-jackpot-maze/source
+        run: npm ci
+
+      - name: Install configured browser engines
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: npx --no-install playwright install --with-deps chromium webkit
+
+      - name: Verify provisioned checkout remains unchanged
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)"
+          printf '%s\n' 'Full writable source checkout, Node 24, all four locked dependency roots, Chromium and WebKit provisioned.' > "$RUNNER_TEMP/pr150-evidence/provisioned.txt"
+          printf '%s\n' 'No full-suite pass, repair, merge, or deployment is claimed.' >> "$RUNNER_TEMP/pr150-evidence/provisioned.txt"
+          cat "$RUNNER_TEMP/pr150-evidence/provisioned.txt"
+
+      - name: Build unchanged Belle Isle baseline
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: npm run build
+
+      - name: Build unchanged storefront baseline
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: npm run build
+
+      - name: Observe original mobile spec once with retained trace
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git hash-object tests/store-browser/game-grid.spec.js)" = 6cd1929e400d4e42d52833a478d495b6f1b67bd0
+          npm run test:store:browser -- tests/store-browser/game-grid.spec.js --project=mobile --trace=on --retries=0 2>&1 | tee "$RUNNER_TEMP/pr150-evidence/original-mobile-spec.log"
+
+      - name: Retain setup evidence and original browser trace on success or failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr150-isolated-workspace-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/pr150-evidence/
+            lottominded-ultra.io/games/gothtechnology2/output/store-browser/
+            lottominded-ultra.io/games/gothtechnology2/output/store-test-results.json
+          if-no-files-found: error
+          retention-days: 14
