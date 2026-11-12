@@ -190,3 +190,23 @@ body.island-trial.on-hoverbike.touch-controls .hover-steer button{min-width:44px
  #trial-hud .trial-time{font-size:clamp(12px,3.9vw,14px);letter-spacing:-.08em;max-width:100%}
  #trial-hud h3,#trial-hud .trial-state,#trial-hud p{max-width:100%;overflow-wrap:anywhere}
 }
+
+/* Keep the narrow portrait trial panel inside the physical safe rectangle.
+ * Text may wrap, but timer digits remain on one line and targets stay 44px. */
+@media(max-width:350px) and (min-height:521px){
+  #trial-hud{
+    box-sizing:border-box;
+    width:min(112px,calc(var(--trial-usable-width) - 20px));
+    min-width:0;
+    min-height:0;
+    max-height:max(0px,calc(100dvh - var(--trial-top) - var(--island-safe-bottom) - var(--trial-edge)));
+    overflow-y:auto;
+    overflow-x:hidden;
+    grid-template-columns:minmax(0,1fr);
+    align-content:start;
+    overflow-wrap:anywhere;
+  }
+  #trial-hud .trial-hud-summary,#trial-hud .trial-timing,#trial-hud h3,#trial-hud p,#trial-hud .trial-state{min-width:0;max-width:100%;}
+  #trial-hud .trial-time{font-size:12px;letter-spacing:-.085em;white-space:nowrap;}
+  #trial-hud .trial-direction,#trial-hud .trial-altitude{overflow-wrap:anywhere;white-space:normal;}
+}
