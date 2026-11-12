@@ -1,0 +1,35 @@
+name: Prepare guarded Belle Isle integration
+on:
+  push:
+    branches: [feature/belle-cinematic-polish-20261111]
+    paths: ['.github/belle-release-prep/**', '.github/workflows/belle-release-prepare.yml']
+permissions:
+  contents: write
+concurrency:
+  group: belle-guarded-release-preparation
+  cancel-in-progress: false
+jobs:
+  prepare:
+    if: github.repository == 'robjasper2084/Jungle-Lotto'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Prepare exact-source repairs and integration objects without moving any ref
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 .github/belle-release-prep/prepare.py
+      - name: Preserve proposed commits, source diffs and focused test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-guarded-integration-preparation
+          path: /tmp/belle-release-prepared
+          if-no-files-found: error
+          retention-days: 14
