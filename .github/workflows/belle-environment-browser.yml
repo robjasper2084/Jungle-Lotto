@@ -7,6 +7,7 @@ on:
       - '.diagnostics/environment-refine.py'
       - '.diagnostics/environment-network-proof.py'
       - '.diagnostics/environment-delivery-proof*'
+      - '.diagnostics/environment-hdr-proof*'
       - '.github/workflows/belle-environment-browser.yml'
   workflow_dispatch:
 permissions:
@@ -39,11 +40,12 @@ jobs:
       - name: Apply identical scoped candidate only in candidate cases
         if: matrix.variant == 'candidate'
         run: python diagnostic/.diagnostics/environment-update.py
-      - name: Apply proved material correction and read-only network observation
+      - name: Apply proved material correction and read-only asset delivery observation
         run: |
           python diagnostic/.diagnostics/environment-refine.py ${{ matrix.variant }}
-          node --test diagnostic/.diagnostics/environment-delivery-proof.test.mjs
           python diagnostic/.diagnostics/environment-network-proof.py
+          python diagnostic/.diagnostics/environment-hdr-proof.py
+          node --test diagnostic/.diagnostics/environment-delivery-proof.test.mjs diagnostic/.diagnostics/environment-hdr-proof.test.mjs
       - name: Build actual baseline or candidate game
         working-directory: work/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
         run: |
