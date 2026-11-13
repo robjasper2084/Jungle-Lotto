@@ -1,3 +1,4 @@
+import {HoverIdleMotion,idleHoverInputActive} from './hoverIdleMotion.ts';
 import type {CockpitRadio} from './cockpitRadio.ts';
 import {waitForRideModel} from './rideModelWait.ts';
 import {installHoverPresentation} from './visualPolishHud.ts';
@@ -38,6 +39,7 @@ export class HoverRide {
  private motionPreference=window.matchMedia('(prefers-reduced-motion: reduce)');
  private motionCheckbox=document.querySelector<HTMLInputElement>('#motion');
  private steerBlend=0;
+ private idleHover=new HoverIdleMotion();private idleFirstPerson=true;
  private rotors:T.Object3D[]=[];
  private pods:{o:T.Object3D;q:T.Quaternion}[]=[];
  private gear:{o:T.Object3D;q:T.Quaternion}[]=[];
@@ -197,8 +199,9 @@ installHoverPresentation(this.hud);
   return true;
  }
  endTrial(){if(this.savedDriveGear!==undefined){this.sim.drive.gear=this.savedDriveGear;this.driveSelect.value=String(this.savedDriveGear);this.savedDriveGear=undefined;}if(this.savedFlightMode!==undefined){this.sim.setMode(this.savedFlightMode);this.flightSelect.value=this.savedFlightMode;this.savedFlightMode=undefined;}this.refresh();}
- clear(){this.releaseStick();this.pressed.clear();this.sim.stop();this.rider?.suspend();this.hud.querySelectorAll('[data-held]').forEach(b=>b.removeAttribute('data-held'));this.sound.silence();}
+ clear(){this.releaseStick();this.pressed.clear();this.sim.stop();this.rider?.suspend();this.idleHover.suspend();this.hud.querySelectorAll('[data-held]').forEach(b=>b.removeAttribute('data-held'));this.sound.silence();}
  private resetRider(){
+  this.idleHover.reset();
   this.steerBlend=0;if(this.bars)this.bars.quaternion.copy(this.barsRest);
   const p=this.sim.pose;if(this.model){this.model.position.set(p.x,p.y,p.z);this.model.rotation.set(p.pitch,p.heading,p.roll,'YXZ');}
   this.rider?.reset(p,this.sim.landed);
@@ -231,7 +234,7 @@ installHoverPresentation(this.hud);
   if(!point){this.say('Land on clear ground before getting off. Press G to land.');return;}
   this.leaveForTravel();this.hooks.exited(point);
  }
- leaveForTravel(){++this.mountGeneration;this.mountAbort?.abort();this.mountAbort=undefined;this.endTrial();this.clear();this.riding=false;this.sim.land();this.jarvs.reset();this.hud.hidden=true;this.model&&(this.model.visible=false);document.body.classList.remove('on-hoverbike');this.enterButton.disabled=!!this.hooks.vehicleLocked?.();this.enterButton.textContent='Ride hoverbike · B';}
+ leaveForTravel(){++this.mountGeneration;this.mountAbort?.abort();this.mountAbort=undefined;this.endTrial();this.clear();this.riding=false;this.idleHover.reset();this.sim.land();this.jarvs.reset();this.hud.hidden=true;this.model&&(this.model.visible=false);document.body.classList.remove('on-hoverbike');this.enterButton.disabled=!!this.hooks.vehicleLocked?.();this.enterButton.textContent='Ride hoverbike · B';}
  private say(message:string){this.notice.textContent=message;this.messageUntil=performance.now()+4500;}
  private refresh(){
   const p=this.sim.pose,jarvs=this.jarvs.snapshot;
@@ -262,6 +265,7 @@ installHoverPresentation(this.hud);
   // It does not expose controls or alter the player's scene or simulation.
   const rider=this.rider?.diagnostics;this.hud.dataset.riderRig=rider?.contacts===4?'anchored':'unavailable';
   this.hud.dataset.riderMotion=this.motionPreference.matches||this.motionCheckbox?.checked?'reduced':'reactive';
+  this.hud.dataset.idleHoverY=this.idleHover.offsetY.toFixed(5);this.hud.dataset.idleHoverWeight=this.idleHover.strength.toFixed(4);this.hud.dataset.idleHoverEligible=String(this.idleHover.isIdle);
   if(rider){this.hud.dataset.riderLean=rider.lean.toFixed(4);this.hud.dataset.riderPitch=rider.pitch.toFixed(4);this.hud.dataset.riderCompression=rider.compression.toFixed(4);this.hud.dataset.riderHandError=rider.handError.toFixed(5);this.hud.dataset.riderFootError=rider.footError.toFixed(5);}
    this.hud.querySelector('.hover-help')!.textContent=this.sim.mode==='drone'?'W / S forward / back · A / D strafe · ← / → turn · E / Q height · position hold on release · Space brake · X lock speed · − / = adjust · Shift boost':'W / S speed · A / D steer · E / Q height · Space brake · X lock speed · − / = adjust · Shift boost · drag to look';
   if(performance.now()>this.messageUntil)this.notice.textContent=this.sim.collision?'Contact — brake and steer clear.':this.sim.hazard?'Caution · obstacle ahead':this.sim.landed?'Ready for takeoff.':'Michigan 2084 · Explore the island';
@@ -278,7 +282,18 @@ installHoverPresentation(this.hud);
   const avionics=this.jarvs.update({now:performance.now(),x:p.x,y:p.y,z:p.z,heading:p.heading,speed:p.speed,
    clearance:this.sim.clearance,flying:this.sim.flying,landed:this.sim.landed,collision:this.sim.collision,hazard:this.sim.hazard,
    mode:this.sim.mode,blocked:!running||this.hooks.blocked(),racing:!!this.hooks.vehicleLocked?.()});
-  if(running&&avionics.announcement)this.sound.announce(avionics.announcement.text,avionics.announcement.priority);this.model.position.set(p.x,p.y,p.z);
+  if(running&&avionics.announcement)this.sound.announce(avionics.announcement.text,avionics.announcement.priority);
+  const reducedMotion=this.motionPreference.matches||this.motionCheckbox?.checked===true;
+  const idleY=this.idleHover.update(dt,p,{
+   flying:this.sim.flying,landed:this.sim.landed,landing:this.sim.clearance<=.3,
+   collision:this.sim.collision,hazard:this.sim.hazard,racing:!!this.hooks.vehicleLocked?.(),
+   running:running&&!this.hooks.blocked()&&!document.hidden&&document.hasFocus(),reducedMotion,
+   inputActive:idleHoverInputActive(this.pressed,this.stick,lift,this.sim.cruiseSpeed!==null,this.sim.boostActive),
+   height:this.sim.flying&&!this.sim.landed?p.y-this.sim.floor(p.x,p.z):0,firstPerson:this.idleFirstPerson,
+  });
+  // Move the entire render hierarchy (bike, rider, grips, LCD) from the authoritative pose.
+  // Never accumulate onto the last render transform or feed visual Y back into simulation.
+  this.model.position.set(p.x,p.y+idleY,p.z);
   this.model.rotation.set(p.pitch,p.heading,p.roll,'YXZ');
   if(running){
    this.steerBlend=T.MathUtils.damp(this.steerBlend,steer,7,dt);
@@ -289,7 +304,6 @@ installHoverPresentation(this.hud);
    if(this.bars)this.bars.quaternion.copy(this.barsRest).multiply(this.localRotation.setFromAxisAngle(this.yAxis,-this.steerBlend*.18));
   }
   this.controls?.update(dt,this.sim.drive);this.fittedArms?.update(dt,this.sim.throttleDemand);
-  const reducedMotion=this.motionPreference.matches||this.motionCheckbox?.checked===true;
   this.rider?.update(dt,p,this.sim.landed,this.steerBlend,running,reducedMotion);
   this.lighting?.update(dt,running,this.ledColor,this.ledMode,this.lightOn,this.highBeam,reducedMotion,this.hooks.nightAmount?.()??1);
   this.brakes.forEach(m=>m.emissiveIntensity=has('Space')?4:this.lightOn?.65:0);
@@ -299,6 +313,7 @@ installHoverPresentation(this.hud);
  }
  camera(camera:T.PerspectiveCamera,first:boolean,yaw:number,pitch:number,dt:number,snap:boolean,photo=false,reduced=false){
   if(!this.riding)return;
+  this.idleFirstPerson=first; // Camera remains anchored to physics; only model heave is attenuated.
   this.cockpit?.setVisible(!photo);this.cockpit?.setInteraction(camera,first&&!photo&&this.riding&&!this.hooks.blocked());
   const p=this.sim.pose;this.cockpitHidden.forEach(o=>o.visible=!first);if(this.fpvArms)this.fpvArms.visible=false;this.fittedArms?.setVisible(first&&!photo);
   const angle=p.heading+yaw,forward=new T.Vector3(Math.sin(angle),0,Math.cos(angle));
