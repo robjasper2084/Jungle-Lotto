@@ -2,6 +2,8 @@ import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {WATERFOWL,waterfowlPose,type WaterfowlRoute} from './waterfowlPlan.ts';
 import canalResidents from './canalWaterfowl.json';
+import {LAKE_SWANS,avianFlightHeight} from './avianPopulationPlan.ts';
+import {createBirdImpostor} from './birdImpostor.ts';
 
 /** Original small meshes; a single vertex-colour draw per bird, no asset download. */
 export function waterfowlGeometry(kind:WaterfowlRoute['plumage']){
@@ -34,13 +36,45 @@ export function addWaterfowl(scene:T.Scene){
  const material=new T.MeshStandardMaterial({vertexColors:true,roughness:.72,metalness:0});
  const geometries=new Map<WaterfowlRoute['plumage'],T.BufferGeometry>();
  const wakeMaterial=new T.LineBasicMaterial({color:0xc1d7ce,transparent:true,opacity:.18,depthWrite:false});
- const routes=[...WATERFOWL,...canalResidents as WaterfowlRoute[]];
+ const routes:WaterfowlRoute[]=[...WATERFOWL,...canalResidents as WaterfowlRoute[],...LAKE_SWANS];
  const birds=routes.map((route,i)=>{
   if(!geometries.has(route.plumage))geometries.set(route.plumage,waterfowlGeometry(route.plumage));
-  const holder=new T.Group(),body=new T.Mesh(geometries.get(route.plumage),material);holder.add(body);body.receiveShadow=false;body.castShadow=false;body.name=route.species+' '+(i+1);group.add(holder);
+  const holder=new T.Group(),body=new T.Mesh(geometries.get(route.plumage),material);body.scale.setScalar(route.species==='swan'?.93+(i%4)*.035:.98+(i%3)*.035);holder.add(body);body.receiveShadow=false;body.castShadow=false;body.name=route.species+' '+(i+1);group.add(holder);
   const size=route.species==='swan'?1:.5,points:T.Vector3[]=[];
   for(const s of [-1,1])for(let k=0;k<8;k++){const t=k/8,t2=(k+1)/8;points.push(new T.Vector3(s*(.15+t*.6)*size,.015,-(.32+t*1.9)*size),new T.Vector3(s*(.15+t2*.6)*size,.015,-(.32+t2*1.9)*size));}
-  const wake=new T.LineSegments(new T.BufferGeometry().setFromPoints(points),wakeMaterial);holder.add(wake);return {holder,body,route};
+  const wake=new T.LineSegments(new T.BufferGeometry().setFromPoints(points),wakeMaterial);holder.add(wake);return {holder,body,wake,route,lastTakeoff:-Infinity};
  });
- return {stats:{swans:routes.filter(r=>r.species==='swan').length,ducks:routes.filter(r=>r.species==='duck').length,maxVisible:12,triangles:birds.reduce((n,b)=>n+b.body.geometry.attributes.position.count/3,0)},update(time:number,x:number,z:number){let visible=0;for(const bird of birds){bird.holder.visible=Math.hypot(x-bird.route.x,z-bird.route.z)<180&&visible<12;if(!bird.holder.visible)continue;visible++;const p=waterfowlPose(bird.route,time);bird.holder.position.set(p.x,p.y,p.z);bird.holder.rotation.y=p.heading;bird.body.rotation.z=p.roll;}}};
+ const farSwans=createBirdImpostor(scene,'swan',16),farDucks=createBirdImpostor(scene,'duck',12);
+ let lastUpdate=-Infinity,nearLimit=9,farLimit=12;
+ const stats={swans:routes.filter(r=>r.species==='swan').length,lakeSwans:LAKE_SWANS.length,ducks:routes.filter(r=>r.species==='duck').length,maxVisible:nearLimit,visible:0,billboards:0,triangles:birds.reduce((n,b)=>n+b.body.geometry.attributes.position.count/3,0),updateIntervalMs:125};
+ return{stats,
+  setQuality(quality:string){nearLimit=quality==='smooth'?5:quality==='high'?12:9;farLimit=quality==='smooth'?6:quality==='high'?12:10;stats.maxVisible=nearLimit;lastUpdate=-Infinity;},
+  update(time:number,x:number,z:number){
+   if(!Number.isFinite(time)||time-lastUpdate<.125)return;lastUpdate=time;
+   const candidates=birds.map(bird=>({bird,distance:Math.hypot(x-bird.route.x,z-bird.route.z)})).sort((a,b)=>a.distance-b.distance);
+   let close=0,farS=0,farD=0;
+   for(const {bird,distance} of candidates){
+    bird.holder.visible=false;
+    if(distance<100&&close<nearLimit){
+     if(distance<22&&time-bird.lastTakeoff>19)bird.lastTakeoff=time;
+     const p=waterfowlPose(bird.route,time);
+     bird.holder.position.set(p.x,p.y+avianFlightHeight(time-bird.lastTakeoff,'swan'),p.z);
+     bird.holder.rotation.y=p.heading;bird.body.rotation.z=p.roll;
+     bird.wake.visible=distance<42&&time-bird.lastTakeoff>4.5;
+     bird.holder.visible=true;close++;
+    }else if(distance>=100&&distance<250){
+     const far=bird.route.species==='swan'?farSwans:farDucks;
+     const index=bird.route.species==='swan'?farS:farD;
+     const max=bird.route.species==='swan'?16:12;
+     if(index>=farLimit||index>=max)continue;
+     const p=waterfowlPose(bird.route,time),swan=bird.route.species==='swan';
+     far.place(index,p.x,p.y+(swan?.9:.5),p.z,swan?2:1,swan?2:1,x,z);
+     if(swan)farS++;else farD++;
+    }
+   }
+   farSwans.finish(farS);farDucks.finish(farD);
+   stats.visible=close;stats.billboards=farS+farD;
+  }
+ };
+
 }
