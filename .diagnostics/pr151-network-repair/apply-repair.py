@@ -12,13 +12,8 @@ t=before.decode()
 def replace(old,new):
  global t
  assert t.count(old)==1,(old[:90],t.count(old));t=t.replace(old,new,1)
-replace("import {createReadStream} from 'node:fs';", "import {createCoopStaticServer} from './coop-static-server.mjs';\nimport {recordRequestFailure} from './visual-review-evidence.mjs';")
-replace("import {appendFile, mkdir, readFile, stat, writeFile} from 'node:fs/promises';", "import {appendFile, mkdir, readFile, writeFile} from 'node:fs/promises';")
-replace("import {createServer} from 'node:http';\n",'')
-replace("import {extname, resolve, sep} from 'node:path';", "import {resolve} from 'node:path';")
-a=t.index('const mime = ');b=t.index('\nasync function bounded',a)
-assert 'Cache-Control' in t[a:b] and "'no-store'" in t[a:b]
-t=t[:a]+"// Reuse the reviewed streaming server: revalidate every request, never no-store.\nconst server = createCoopStaticServer(root);"+t[b:]
+replace("import {dispatchAfterReadyCountdown} from './polish-ready-dispatch.mjs';", "import {dispatchAfterReadyCountdown} from './polish-ready-dispatch.mjs';\nimport {recordRequestFailure} from './visual-review-evidence.mjs';")
+replace("'Cache-Control': 'no-store'", "'Cache-Control': 'no-cache, max-age=0, must-revalidate'")
 replace("let countdownSequence = 0;", "let requestPhase = 'gameplay';\n  let countdownSequence = 0;")
 replace("      const message = request.failure()?.errorText + ' ' + request.url(); entry.failedRequests.push(message);\n      if (!message.startsWith('net::ERR_ABORTED')) entry.errors.push(message);", "      log(`${configuration.name}: ${requestPhase} request failed ${recordRequestFailure(entry, request, requestPhase)}`);")
 replace("entry.realGameCompletedAt = new Date().toISOString();", "requestPhase = 'fixtures';\n      entry.realGameCompletedAt = new Date().toISOString();")

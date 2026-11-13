@@ -6,10 +6,13 @@ import {recordRequestFailure} from './visual-review-evidence.mjs';
 
 const source=await readFile(new URL('./polish-browser-smoke.mjs',import.meta.url),'utf8');
 
-test('polish uses the reviewed revalidating server instead of a duplicate no-store fixture',()=>{
- assert.match(source,/import \{createCoopStaticServer\} from '\.\/coop-static-server\.mjs'/);
- assert.match(source,/const server = createCoopStaticServer\(root\);/);
- assert.doesNotMatch(source,/createServer\(|'Cache-Control'\s*:/);
+test('polish revalidates streamed assets without changing existing response metadata',()=>{
+ assert.match(source,/'Cache-Control': 'no-cache, max-age=0, must-revalidate'/);
+ assert.doesNotMatch(source,/'Cache-Control': 'no-store'/);
+ assert.match(source,/'Content-Length': info.size/);
+ assert.match(source,/'.glb': 'model\/gltf-binary'/);
+ assert.match(source,/'.mp3': 'audio\/mpeg'/);
+ assert.match(source,/'.wav': 'audio\/wav'/);
 });
 
 test('polish records every native request failure without an abort exemption',()=>{
