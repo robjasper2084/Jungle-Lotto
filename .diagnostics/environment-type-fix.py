@@ -1,0 +1,8 @@
+import os,json,hashlib,pathlib,subprocess
+root=pathlib.Path(os.environ['GITHUB_WORKSPACE'])/'work';out=root/'environment-validation';proof=json.loads((out/'candidate-source.json').read_text());assert (out/'candidate-tree.txt').read_text().strip()=='643dcce96a2423c147e9737794113d88ece43ec5'
+for f in proof['files']:assert hashlib.sha256((root/f['path']).read_bytes()).hexdigest()==f['afterSha256'],f['path']
+s=root/'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle'
+p=s/'gardenMazeScene.ts';t=p.read_text();old="const p=greenhouseWorld(c,u,v);dummy.position.set(p.x,y,p.z);";assert t.count(old)==1;t=t.replace(old,"const worldPoint=greenhouseWorld(c,u,v);dummy.position.set(worldPoint.x,y,worldPoint.z);",1);p.write_text(t)
+p=s/'environmentPresentation.test.ts';t=p.read_text();old='assert.equal(texture.image.width,128);';assert t.count(old)==1;t=t.replace(old,'assert(texture instanceof T.DataTexture);assert.equal(texture.image.width,128);',1);p.write_text(t)
+for f in proof['files']:f['afterSha256']=hashlib.sha256((root/f['path']).read_bytes()).hexdigest()
+proof.pop('fullRegisteredSuitesPassed',None);proof.pop('renderedEnvironmentAcceptance',None);(out/'candidate-source.json').write_text(json.dumps(proof,indent=2));subprocess.run(['git','add','--',*[f['path'] for f in proof['files']]],cwd=root,check=True);tree=subprocess.check_output(['git','write-tree'],cwd=root,text=True).strip();(out/'candidate-tree.txt').write_text(tree+'\n');(out/'candidate.patch').write_bytes(subprocess.check_output(['git','diff','--cached','--binary'],cwd=root));print('STRICT TYPE REPAIR CANDIDATE TREE',tree)
