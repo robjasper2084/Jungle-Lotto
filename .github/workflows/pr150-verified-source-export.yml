@@ -1,0 +1,66 @@
+name: PR150 verified source export - no validation or release
+on:
+  push:
+    branches: [diagnostics/pr150-workspace-20261112]
+    paths: [.github/workflows/pr150-verified-source-export.yml]
+permissions:
+  contents: read
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: f3f83347da08377c491beacff9b51eac55d69bef
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Recreate and verify the exact previously tested tree without rerunning tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, pathlib, subprocess
+          head='f3f83347da08377c491beacff9b51eac55d69bef'
+          main='e5b2b05538e811956ce18f5fcf3a84e327f98f66'
+          base='d546de77fb304ebb3e113c676ff9d322c0535105'
+          expected='bdd7bbb02d85bf4022d0e4be85c1b20e87fabc14'
+          prefix='lottominded-ultra.io/games/gothtechnology2/belle-isle-source/'
+          runner=prefix+'game/run-tests.mjs'
+          def git(*args): return subprocess.check_output(['git',*args],text=True).strip()
+          def blob(ref,path): return subprocess.check_output(['git','show',ref+':'+path])
+          assert git('rev-parse','HEAD')==head
+          assert git('rev-parse','origin/main')==main
+          assert git('rev-parse','origin/feature/belle-idle-hover-20261111')==head
+          assert not git('status','--porcelain')
+          merge=subprocess.run(['git','-c','user.name=PR150 source export','-c','user.email=export@example.invalid','merge','--no-commit','--no-ff',main],text=True,capture_output=True)
+          conflicts=set(git('diff','--name-only','--diff-filter=U').splitlines())
+          assert conflicts=={runner}, 'Unexpected reconciliation conflicts: '+repr(conflicts)
+          insertion=b"'src/belle/hoverIdleMotion.test.ts',"
+          anchor=b"'--test',"
+          original=blob(base,runner); feature=blob(head,runner); production=blob(main,runner)
+          assert feature==original.replace(anchor,anchor+insertion,1)
+          assert production.count(anchor)==1 and insertion not in production
+          pathlib.Path(runner).write_bytes(production.replace(anchor,anchor+insertion,1))
+          subprocess.run(['git','add','--',runner],check=True)
+          subprocess.run(['git','diff','--cached','--check'],check=True)
+          assert git('write-tree')==expected, 'Source differs from already-tested tree'
+          paths=git('diff','--cached','--name-only',main).splitlines()
+          assert len(paths)==5
+          out=pathlib.Path(os.environ['RUNNER_TEMP'])/'pr150-tested-source'
+          out.mkdir()
+          entries=[]
+          for path in paths:
+              data=blob('',path); dest=out/'candidate'/path;dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(data)
+              entries.append({'path':path,'blob':git('rev-parse',':'+path),'bytes':len(data)})
+          manifest={'head':head,'main':main,'tree':expected,'validationRun':43354416940,'purpose':'Exact previously tested source export only; no new tests, commit, push or deployment','files':entries}
+          (out/'provenance.json').write_text(json.dumps(manifest,indent=2)+'\n')
+          (out/'reconciliation.patch').write_text(subprocess.check_output(['git','diff','--cached',main],text=True))
+          print(json.dumps(manifest,indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pr150-tested-source-${{ github.run_id }}
+          path: ${{ runner.temp }}/pr150-tested-source/
+          if-no-files-found: error
+          retention-days: 14
