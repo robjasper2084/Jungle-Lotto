@@ -1,0 +1,75 @@
+name: Belle environment real-browser comparison
+on:
+  push:
+    branches: [diagnostics/belle-environment-20261113]
+    paths:
+      - '.diagnostics/environment-browser.mjs'
+      - '.github/workflows/belle-environment-browser.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  observe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 95
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [baseline, candidate]
+        device: [desktop, phone]
+    steps:
+      - name: Reserve checkout disk
+        run: sudo rm -rf -- /usr/local/lib/android /usr/share/dotnet
+      - uses: actions/checkout@v4
+        with:
+          path: diagnostic
+          sparse-checkout: .diagnostics
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          path: work
+          ref: 4a2b67d0b10beafb7c999f11985e45a4e45adb94
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Apply identical scoped candidate only in candidate cases
+        if: matrix.variant == 'candidate'
+        run: python diagnostic/.diagnostics/environment-update.py
+      - name: Build actual baseline or candidate game
+        working-directory: work/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm ci
+          npm run check
+          npm run build
+      - name: Install the existing browser runtime
+        working-directory: work/lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Real native-input and WebGL observations with unchanged GPU deadline
+        timeout-minutes: 75
+        env:
+          BELLE_ENVIRONMENT_VARIANT: ${{ matrix.variant }}
+          BELLE_ENVIRONMENT_DEVICE: ${{ matrix.device }}
+          PLAYWRIGHT_LEGACY_SCREENSHOT: '1'
+        run: |
+          export BELLE_GAME_ROOT="$GITHUB_WORKSPACE/work/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game"
+          export BELLE_ENVIRONMENT_OUTPUT="$GITHUB_WORKSPACE/work/environment-browser/${{ matrix.variant }}-${{ matrix.device }}"
+          if [ -f work/environment-validation/candidate-tree.txt ]; then
+            export BELLE_SOURCE_TREE="$(cat work/environment-validation/candidate-tree.txt)"
+          else
+            export BELLE_SOURCE_TREE="$(git -C work rev-parse 'HEAD^{tree}')"
+          fi
+          node --check diagnostic/.diagnostics/environment-browser.mjs
+          xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node diagnostic/.diagnostics/environment-browser.mjs
+      - name: Preserve actual screenshot, trace and provenance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-environment-${{ matrix.variant }}-${{ matrix.device }}-${{ github.run_id }}
+          path: |
+            work/environment-browser/
+            work/environment-validation/
+          retention-days: 7
+          if-no-files-found: warn
