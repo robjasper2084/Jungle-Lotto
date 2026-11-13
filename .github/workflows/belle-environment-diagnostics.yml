@@ -1,0 +1,74 @@
+name: Belle environment source diagnostics
+on:
+  push:
+    branches: [diagnostics/belle-environment-20261113]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Reserve checkout disk
+        run: |
+          sudo rm -rf -- /usr/local/lib/android /usr/share/dotnet
+          df -h /
+      - uses: actions/checkout@v4
+        with:
+          ref: 4a2b67d0b10beafb7c999f11985e45a4e45adb94
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Export exact production source and asset structure without modifying it
+        shell: python
+        run: |
+          import hashlib,json,pathlib,struct,subprocess,tarfile
+          root=pathlib.Path.cwd()
+          expected='4a2b67d0b10beafb7c999f11985e45a4e45adb94'
+          sha=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
+          tree=subprocess.check_output(['git','rev-parse','HEAD^{tree}'],text=True).strip()
+          assert sha==expected and tree=='bdd7bbb02d85bf4022d0e4be85c1b20e87fabc14'
+          out=root/'environment-diagnostics'
+          out.mkdir()
+          paths=subprocess.check_output(['git','ls-files','-z']).decode().split('\0')
+          suffixes={'.ts','.tsx','.js','.mjs','.cjs','.json','.md','.html','.css','.py','.yml','.yaml','.txt','.toml','.sh','.glsl','.vert','.frag'}
+          selected=[]
+          inventory=[]
+          assets=[]
+          for name in paths:
+            if not name: continue
+            p=root/name
+            if not p.is_file(): continue
+            size=p.stat().st_size
+            inventory.append({'path':name,'bytes':size})
+            relevant=('belle-isle-source/' in name or name.startswith('scripts/') or name.startswith('.github/') or name.startswith('docs/') or name=='AGENTS.md' or p.name=='AGENTS.md' or p.name in {'package.json','package-lock.json'})
+            if relevant and p.suffix in suffixes and size<15000000: selected.append(p)
+            if ('belle-isle-source/' in name or '/belle/' in name) and p.suffix=='.glb':
+              try:
+                with p.open('rb') as f:
+                  h=f.read(20)
+                  magic,version,total,length,kind=struct.unpack('<5I',h)
+                  assert magic==0x46546c67 and kind==0x4e4f534a
+                  doc=json.loads(f.read(length))
+                assets.append({'path':name,'bytes':size,'json':doc})
+              except Exception as e: assets.append({'path':name,'error':str(e)})
+          hashes=[]
+          with tarfile.open(out/'production-source.tar.gz','w:gz') as archive:
+            for p in sorted(selected):
+              name=str(p.relative_to(root))
+              archive.add(p,arcname=name,recursive=False)
+              hashes.append({'path':name,'bytes':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()})
+          (out/'source-provenance.json').write_text(json.dumps({'commit':sha,'tree':tree,'files':hashes},indent=2))
+          (out/'repository-files.json').write_text(json.dumps(inventory,indent=2))
+          (out/'belle-glb-structure.json').write_text(json.dumps(assets))
+          result=subprocess.run(['git','grep','-n','-i','-E','greenhouse|conservatory|labyrinth|hedge.?maze|gardenWalls','HEAD','--','*.ts','*.js','*.mjs','*.py','*.md','*.json'],text=True,capture_output=True)
+          (out/'maze-source-matches.txt').write_text(result.stdout)
+          print(json.dumps({'commit':sha,'tree':tree,'sourceFiles':len(selected),'glbStructures':len(assets),'exportBytes':(out/'production-source.tar.gz').stat().st_size}))
+          assert subprocess.check_output(['git','diff','--name-only'],text=True).strip()==''
+      - name: Preserve source diagnostics, not test or release evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-environment-source-4a2b67d0b10beafb7c999f11985e45a4e45adb94
+          path: environment-diagnostics/
+          retention-days: 7
+          if-no-files-found: error
