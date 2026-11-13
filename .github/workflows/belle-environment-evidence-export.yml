@@ -1,0 +1,78 @@
+name: Belle environment verified evidence export
+on:
+  push:
+    branches: [diagnostics/belle-environment-20261113]
+    paths: ['.github/workflows/belle-environment-evidence-export.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  export-verified-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Export small exact-source evidence from completed full validation, not new testing
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: python
+        run: |
+          import os,json,hashlib,pathlib,urllib.request,urllib.error,urllib.parse,zipfile,tarfile,io,re
+          repo='robjasper2084/Jungle-Lotto';run_id=43512467464;artifact_id=14080540931
+          head='35f425078b1ec4fe4008c4c03dcb7d395d8dc1b6'
+          digest='a6c6caf7bf6e737f06026744dd4189f2d318e695d571a3ee0105ff7e2e057b91'
+          size=692497235
+          api='https://api.github.com/repos/'+repo
+          headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}
+          def get(path):
+            with urllib.request.urlopen(urllib.request.Request(api+path,headers=headers),timeout=60) as r:return json.load(r)
+          run=get('/actions/runs/'+str(run_id));artifact=get('/actions/artifacts/'+str(artifact_id))
+          assert run['head_sha']==head and run['head_branch']=='diagnostics/belle-environment-20261113'
+          assert run['status']=='completed' and run['conclusion']=='success' and run['run_attempt']==1
+          assert run['path']=='.github/workflows/belle-environment-validation.yml'
+          assert artifact['workflow_run']['id']==run_id and artifact['workflow_run']['head_sha']==head
+          assert artifact['size_in_bytes']==size and artifact['digest']=='sha256:'+digest and not artifact['expired']
+          jobs=get('/actions/runs/'+str(run_id)+'/jobs?per_page=100')
+          assert jobs['total_count']==1 and len(jobs['jobs'])==1 and jobs['jobs'][0]['conclusion']=='success'
+          assert all(step['conclusion']=='success' for step in jobs['jobs'][0]['steps'])
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+            def redirect_request(self,*args):return None
+          try:
+            urllib.request.build_opener(NoRedirect).open(urllib.request.Request(api+'/actions/artifacts/'+str(artifact_id)+'/zip',headers=headers),timeout=60)
+            raise AssertionError('Expected signed artifact redirect')
+          except urllib.error.HTTPError as error:
+            assert error.code in (301,302,303,307,308)
+            url=error.headers['Location']
+          parsed=urllib.parse.urlparse(url)
+          assert parsed.scheme=='https' and (parsed.hostname.endswith('.blob.core.windows.net') or parsed.hostname.endswith('.actions.githubusercontent.com'))
+          archive=pathlib.Path('full-validation.zip');h=hashlib.sha256();count=0
+          with urllib.request.urlopen(url,timeout=120) as response,archive.open('wb') as output:
+            while chunk:=response.read(4*1024*1024):
+              count+=len(chunk);assert count<=size;h.update(chunk);output.write(chunk)
+          assert count==size and h.hexdigest()==digest
+          out=pathlib.Path('verified-environment-evidence');out.mkdir()
+          names=['candidate-source.json','candidate-tree.txt','candidate.patch','proposed-source.tar.gz','belle-check.log','belle-tests.log','belle-build.log','store.log','shared-browser.log','fortune-grid.log','jackpot-maze.log','store-test-results.json']
+          with zipfile.ZipFile(archive) as z:
+            for name in names:
+              matches=[n for n in z.namelist() if n==name]
+              assert len(matches)==1,name
+              assert z.getinfo(name).file_size<20000000,name
+              (out/name).write_bytes(z.read(name))
+          proof=json.loads((out/'candidate-source.json').read_text());tree=(out/'candidate-tree.txt').read_text().strip()
+          assert proof['base']=='4a2b67d0b10beafb7c999f11985e45a4e45adb94' and proof['baseTree']=='bdd7bbb02d85bf4022d0e4be85c1b20e87fabc14'
+          assert proof['fullRegisteredSuitesPassed'] is True and len(proof['files'])==17 and re.fullmatch('[a-f0-9]{40}',tree)
+          with tarfile.open(out/'proposed-source.tar.gz','r:gz') as tar:
+            members={m.name:m for m in tar.getmembers() if m.isfile()}
+            assert set(members)=={f['path'] for f in proof['files']}
+            for f in proof['files']:
+              assert f['path'].startswith('lottominded-ultra.io/games/gothtechnology2/belle-isle-source/')
+              assert hashlib.sha256(tar.extractfile(members[f['path']]).read()).hexdigest()==f['afterSha256']
+          (out/'origin.json').write_text(json.dumps({'repository':repo,'run':run_id,'runHead':head,'artifact':artifact_id,'artifactBytes':size,'artifactSha256':digest,'testedTree':tree,'base':proof['base'],'exportOnly':True,'renderedAcceptanceNotEstablishedByThisExport':True,'runMetadata':run,'jobs':jobs,'artifactMetadata':artifact},indent=2))
+          print(json.dumps({'validatedRun':run_id,'testedTree':tree,'files':len(proof['files']),'exportBytes':sum(p.stat().st_size for p in out.iterdir()),'newTestsExecuted':False}))
+      - name: Preserve verified source and compact original test evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-environment-verified-source-43512467464
+          path: verified-environment-evidence/
+          retention-days: 7
+          if-no-files-found: error
