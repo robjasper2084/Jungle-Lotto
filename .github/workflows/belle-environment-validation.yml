@@ -5,6 +5,10 @@ on:
     paths:
       - '.diagnostics/environment-update.py'
       - '.diagnostics/environment-refine.py'
+      - '.diagnostics/environment-density-fix.py'
+      - '.diagnostics/environment-density-tests.txt'
+      - '.diagnostics/mazeHedgeTexture.ts'
+      - '.diagnostics/vegetationVolume.dense.ts'
       - '.diagnostics/environment-tests/**'
       - '.github/workflows/belle-environment-validation.yml'
   workflow_dispatch:
@@ -76,30 +80,34 @@ jobs:
         shell: python
         run: |
           import pathlib,json,hashlib,os
-          root=pathlib.Path(os.environ['GITHUB_WORKSPACE'])/'work'
-          proof=root/'environment-validation/candidate-source.json'
-          data=json.loads(proof.read_text())
+          root=pathlib.Path(os.environ['GITHUB_WORKSPACE'])/'work';proof=root/'environment-validation/candidate-source.json';data=json.loads(proof.read_text())
+          assert len(data['files'])==18
           for f in data['files']: assert hashlib.sha256((root/f['path']).read_bytes()).hexdigest()==f['afterSha256'],f['path']
           data['fullRegisteredSuitesPassed']=True
           data['renderedEnvironmentAcceptance']='NOT YET VERIFIED'
           proof.write_text(json.dumps(data,indent=2))
-      - name: Preserve exact source, test logs and any failure evidence
+      - name: Preserve compact exact source and original test report
         if: always()
         shell: python
         run: |
           import pathlib,json,tarfile,os,shutil
-          root=pathlib.Path(os.environ['GITHUB_WORKSPACE'])/'work';out=root/'environment-validation';out.mkdir(exist_ok=True)
-          proof=out/'candidate-source.json'
+          root=pathlib.Path(os.environ['GITHUB_WORKSPACE'])/'work';out=root/'environment-validation';out.mkdir(exist_ok=True);proof=out/'candidate-source.json'
           if proof.exists():
             with tarfile.open(out/'proposed-source.tar.gz','w:gz') as a:
               for f in json.loads(proof.read_text())['files']: a.add(root/f['path'],arcname=f['path'])
-          store=root/'lottominded-ultra.io/games/gothtechnology2'
-          for name in ['output/store-browser','output/store-test-results.json']:
-            p=store/name
-            if p.is_dir(): shutil.copytree(p,out/p.name,dirs_exist_ok=True)
-            elif p.is_file(): shutil.copy2(p,out/p.name)
-      - uses: actions/upload-artifact@v4
+          report=root/'lottominded-ultra.io/games/gothtechnology2/output/store-test-results.json'
+          if report.is_file():shutil.copy2(report,out/report.name)
+      - name: Preserve complete unmodified shared-browser traces separately
         if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-environment-shared-browser-traces-${{ github.run_id }}
+          path: work/lottominded-ultra.io/games/gothtechnology2/output/store-browser/
+          retention-days: 7
+          if-no-files-found: warn
+      - name: Preserve compact exact-source validation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
           name: belle-environment-full-validation-${{ github.run_id }}
           path: work/environment-validation/
