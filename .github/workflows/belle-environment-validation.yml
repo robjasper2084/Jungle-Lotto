@@ -4,6 +4,7 @@ on:
     branches: [diagnostics/belle-environment-20261113]
     paths:
       - '.diagnostics/environment-update.py'
+      - '.diagnostics/environment-refine.py'
       - '.diagnostics/environment-tests/**'
       - '.github/workflows/belle-environment-validation.yml'
   workflow_dispatch:
@@ -33,7 +34,9 @@ jobs:
         with:
           node-version: 24
       - name: Apply scoped candidate only in the writable validation checkout
-        run: python diagnostic/.diagnostics/environment-update.py
+        run: |
+          python diagnostic/.diagnostics/environment-update.py
+          python diagnostic/.diagnostics/environment-refine.py candidate
       - name: Full strict Belle check, all registered tests and production build
         working-directory: work/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
         run: |
@@ -90,9 +93,11 @@ jobs:
           if proof.exists():
             with tarfile.open(out/'proposed-source.tar.gz','w:gz') as a:
               for f in json.loads(proof.read_text())['files']: a.add(root/f['path'],arcname=f['path'])
-          for name in ['test-results','playwright-report']:
-            p=root/'lottominded-ultra.io/games/gothtechnology2'/name
-            if p.exists(): shutil.copytree(p,out/name,dirs_exist_ok=True)
+          store=root/'lottominded-ultra.io/games/gothtechnology2'
+          for name in ['output/store-browser','output/store-test-results.json']:
+            p=store/name
+            if p.is_dir(): shutil.copytree(p,out/p.name,dirs_exist_ok=True)
+            elif p.is_file(): shutil.copy2(p,out/p.name)
       - uses: actions/upload-artifact@v4
         if: always()
         with:
