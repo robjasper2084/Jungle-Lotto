@@ -1,0 +1,109 @@
+name: PR150 bomb input observation - not release validation
+on:
+  push:
+    branches: [diagnostics/pr150-workspace-20261112]
+    paths: [.github/workflows/pr150-bomb-observation.yml]
+permissions:
+  contents: read
+jobs:
+  observe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        cpu: [1, 4]
+    env:
+      PUBLIC_COMMERCE_MODE: demo
+      PUBLIC_LAUNCH_APPROVED: 'false'
+      DIAGNOSTIC_CPU_RATE: ${{ matrix.cpu }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: f3f83347da08377c491beacff9b51eac55d69bef
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Provision unchanged baseline
+        run: |
+          npm --prefix lottominded-ultra.io/games/gothtechnology2 ci
+          npm --prefix lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game ci
+          npm --prefix lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game run build
+          npm --prefix lottominded-ultra.io/games/gothtechnology2 run build
+      - name: Install locked Chromium
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: npx --no-install playwright install --with-deps chromium
+      - name: Install temporary read-only observer preserving all original test actions and assertions
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/pr150-bomb-observation"
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib, re, subprocess
+          p=pathlib.Path('tests/store-browser/game-grid.spec.js')
+          original=p.read_text()
+          assert subprocess.check_output(['git','hash-object',str(p)],text=True).strip()=='6cd1929e400d4e42d52833a478d495b6f1b67bd0'
+          pathlib.Path(os.environ['RUNNER_TEMP'],'pr150-bomb-observation','original-game-grid.spec.js').write_text(original)
+          observer='''
+          const cpuRate = Number(process.env.DIAGNOSTIC_CPU_RATE);
+          if (cpuRate !== 1 && cpuRate !== 4) throw Error('Unexpected diagnostic condition');
+          const session = await page.context().newCDPSession(page);
+          await session.send('Emulation.setCPUThrottlingRate', {rate:cpuRate});
+          await page.addInitScript(() => {
+            const records=[]; let dropped=0, frames=0, raf=0;
+            const describe=node=>node instanceof Element ? {tag:node.tagName,id:node.id,control:node.closest('[data-control]')?.getAttribute('data-control'),action:node.closest('[data-action]')?.getAttribute('data-action')} : null;
+            const sample=()=>({at:performance.now(),observerRaf:frames,hidden:document.hidden,focused:document.hasFocus(),mode:document.querySelector('#shell')?.dataset.mode,bombs:document.querySelector('#bombsValue')?.textContent,lives:document.querySelector('#livesValue')?.textContent,active:describe(document.activeElement),stats:window.RahbeArcadeGame?.getStats?.()});
+            const record=extra=>{if(!location.pathname.includes('/opengw-levels/'))return;if(records.length>=240){records.shift();dropped++;}records.push({...sample(),...extra});};
+            for(const event of ['pointerdown','pointerup','pointercancel','click','keydown','keyup'])document.addEventListener(event,e=>{const hit=Number.isFinite(e.clientX)?document.elementFromPoint(e.clientX,e.clientY):null;record({kind:'input',event,trusted:e.isTrusted,pointerType:e.pointerType,code:e.code,target:describe(e.target),hit:describe(hit)});},{capture:true,passive:true});
+            for(const event of ['blur','focus'])window.addEventListener(event,()=>record({kind:'lifecycle',event}),{passive:true});
+            document.addEventListener('visibilitychange',()=>record({kind:'lifecycle',event:'visibilitychange'}),{passive:true});
+            const tick=()=>{frames++;raf=requestAnimationFrame(tick);};raf=requestAnimationFrame(tick);
+            const interval=setInterval(()=>record({kind:'sample'}),100);
+            window.__pr150ReadOnlyBombObservation=()=>({schema:1,scope:'Read-only observer RAF is not GPU or simulation proof',url:location.href,final:sample(),dropped,records});
+            window.addEventListener('pagehide',()=>{clearInterval(interval);cancelAnimationFrame(raf);},{once:true});
+          });
+          try {
+          '''
+          anchor='  await page.goto(base + \'play/\');'
+          assert original.count(anchor)==1
+          result=original.replace(anchor,observer+'\n'+anchor,1)
+          tail='''
+          } finally {
+            const report={source:'f3f83347da08377c491beacff9b51eac55d69bef',condition:cpuRate===1?'normal':'4x diagnostic CPU throttling',repeatIndex:info.repeatEachIndex,status:info.status,scope:'Diagnostic baseline only; no release pass or gameplay fix',frames:[]};
+            for (const observedFrame of page.frames()) {
+              if (!observedFrame.url().includes('/opengw-levels/')) continue;
+              try { report.frames.push(await observedFrame.evaluate(()=>window.__pr150ReadOnlyBombObservation?.()??null)); }
+              catch(error) { report.frames.push({error:String(error)}); }
+            }
+            await info.attach('bomb-input-observation',{body:Buffer.from(JSON.stringify(report,null,2)),contentType:'application/json'});
+            console.log('PR150_BOMB_OBSERVATION '+JSON.stringify(report));
+          }
+          '''
+          assert result.endswith('});\n')
+          result=result[:-4]+tail+'});\n'
+          behavioral=lambda text:[l.strip() for l in text.splitlines() if re.search(r'expect\(|expect\.poll|test\.setTimeout|\.tap\(|\.click\(|waitForTimeout|waitForFunction|keyboard\.',l)]
+          assert behavioral(result)==behavioral(original), 'Original behavior or deadline changed'
+          p.write_text(result)
+          pathlib.Path(os.environ['RUNNER_TEMP'],'pr150-bomb-observation','instrumented-game-grid.spec.js').write_text(result)
+          PY
+          node --check tests/store-browser/game-grid.spec.js
+      - name: Fixed three observations - no retries or synthetic gameplay
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run test:store:browser -- tests/store-browser/game-grid.spec.js --project=mobile --trace=on --retries=0 --repeat-each=3 2>&1 | tee "$RUNNER_TEMP/pr150-bomb-observation/observations.log"
+      - name: Preserve every result including failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr150-bomb-observation-${{ matrix.cpu }}-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/pr150-bomb-observation/
+            lottominded-ultra.io/games/gothtechnology2/output/store-browser/
+            lottominded-ultra.io/games/gothtechnology2/output/store-test-results.json
+          if-no-files-found: error
+          retention-days: 14
