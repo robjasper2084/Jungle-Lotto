@@ -1,0 +1,70 @@
+name: Belle environment native desktop input evidence
+on:
+  push:
+    branches: [diagnostics/belle-environment-20261113]
+    paths: ['.diagnostics/environment-desktop-input.py', '.github/workflows/belle-environment-desktop-input.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  desktop-native-input:
+    runs-on: ubuntu-latest
+    timeout-minutes: 95
+    steps:
+      - name: Reserve checkout disk
+        run: sudo rm -rf -- /usr/local/lib/android /usr/share/dotnet
+      - uses: actions/checkout@v4
+        with:
+          path: diagnostic
+          sparse-checkout: .diagnostics
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          path: work
+          ref: 4a2b67d0b10beafb7c999f11985e45a4e45adb94
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Reproduce the exact fully validated candidate and diagnostic observations
+        run: |
+          python diagnostic/.diagnostics/environment-update.py
+          python diagnostic/.diagnostics/environment-refine.py candidate
+          test "$(cat work/environment-validation/candidate-tree.txt)" = a14fcd53f238a40153dc39f4514e365deea20a1a
+          python diagnostic/.diagnostics/environment-network-proof.py
+          python diagnostic/.diagnostics/environment-hdr-proof.py
+          python diagnostic/.diagnostics/environment-desktop-input.py
+          node --test diagnostic/.diagnostics/environment-delivery-proof.test.mjs diagnostic/.diagnostics/environment-hdr-proof.test.mjs
+      - name: Build actual game without changed rendering or simulation behavior
+        working-directory: work/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm ci
+          npm run check
+          npm run build
+      - name: Install the existing browser runtime
+        working-directory: work/lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Full-size visuals and compact-window native desktop maze traversal
+        timeout-minutes: 75
+        env:
+          BELLE_ENVIRONMENT_VARIANT: candidate
+          BELLE_ENVIRONMENT_DEVICE: desktop
+          PLAYWRIGHT_LEGACY_SCREENSHOT: '1'
+        run: |
+          export BELLE_GAME_ROOT="$GITHUB_WORKSPACE/work/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game"
+          export BELLE_ENVIRONMENT_OUTPUT="$GITHUB_WORKSPACE/work/environment-browser/candidate-desktop-input"
+          export BELLE_SOURCE_TREE="$(cat work/environment-validation/candidate-tree.txt)"
+          node --check diagnostic/.diagnostics/environment-browser.mjs
+          xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node diagnostic/.diagnostics/environment-browser.mjs
+      - name: Preserve actual screenshots, trusted-input trace and exact-source proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-environment-desktop-native-${{ github.run_id }}
+          path: |
+            work/environment-browser/
+            work/environment-validation/
+          retention-days: 7
+          if-no-files-found: warn
