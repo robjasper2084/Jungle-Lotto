@@ -1,0 +1,37 @@
+name: Belle exact source transfer diagnostic
+on:
+  push:
+    branches: [diagnostics/belle-environment-20261113]
+    paths: ['.github/workflows/belle-source-transfer-diagnostic.yml']
+permissions:
+  contents: read
+jobs:
+  compare-unattached-blob:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Compare unattached transfer object with previously validated main source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: python
+        run: |
+          import os,json,base64,hashlib,urllib.request,difflib
+          api='https://api.github.com/repos/robjasper2084/Jungle-Lotto/'
+          headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json'}
+          def get(path):
+            with urllib.request.urlopen(urllib.request.Request(api+path,headers=headers),timeout=30) as r:return json.load(r)
+          source=get('contents/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/main.ts?ref=4a2b67d0b10beafb7c999f11985e45a4e45adb94')
+          text=base64.b64decode(source['content']).decode()
+          edits=[('import {Golf}',"import {GARDEN_MAZE,mazeArrival,mazeLandmark,withinMazeGarden} from './gardenMaze.ts';\nimport {Golf}"),('prepareCoastGuardMap(data);for(const p of activityLandmarks())','prepareCoastGuardMap(data);if(data.conservatory&&!data.landmarks.some(l=>l.id===GARDEN_MAZE.id))data.landmarks.push(mazeLandmark(data.conservatory));for(const p of activityLandmarks())'),('vrPlaces.push({label:lm.name,go:()=>travel.click()});',"if(lm.id===GARDEN_MAZE.id&&data.conservatory){const note=document.createElement('p');note.textContent=GARDEN_MAZE.description;c.append(note);const walk=document.createElement('button');walk.textContent='Walk to maze entrance';walk.onclick=()=>{const p=mazeArrival(data.conservatory!);if(!terrain.land(p.x,p.z)||terrain.obstructed(p.x,p.z,.8))return;destination=lm;jump(p.x,p.z,p.heading);core.advance(1/60,{dismount:true});first=true;cameraPitch=.03;syncViewLabel();el<HTMLDialogElement>('guide').close();if(!active)start.click();canvas.focus();};c.append(walk);}vrPlaces.push({label:lm.name,go:()=>travel.click()});"),("el('place').textContent=yachtRoom","el('place').textContent=withinMazeGarden(data.conservatory,pose.x,pose.z)?'Conservatory Garden Maze':yachtRoom")]
+          for old,new in edits:
+            assert text.count(old)==1,old
+            text=text.replace(old,new,1)
+          expected=text.encode();assert hashlib.sha1(b'blob '+str(len(expected)).encode()+b'\0'+expected).hexdigest()=='3139ac0add45d51caddc099567f0d957ed91c313'
+          actual=base64.b64decode(get('git/blobs/33e1ca1ebe61f13c77d27dacf31be5c3ed991519')['content']).decode()
+          print(json.dumps({'expectedBytes':len(expected),'actualBytes':len(actual.encode()),'expectedLines':len(text.splitlines()),'actualLines':len(actual.splitlines()),'match':text==actual}))
+          assert len(text.splitlines())==len(actual.splitlines()),'Use line diff before character comparison'
+          for line,(a,b) in enumerate(zip(text.splitlines(),actual.splitlines()),1):
+            if a==b:continue
+            for tag,i,j,k,l in difflib.SequenceMatcher(None,a,b,autojunk=False).get_opcodes():
+              if tag=='equal':continue
+              print(json.dumps({'line':line,'operation':tag,'expected':a[i:j],'actual':b[k:l],'expectedContext':a[max(0,i-80):j+80],'actualContext':b[max(0,k-80):l+80]}))
