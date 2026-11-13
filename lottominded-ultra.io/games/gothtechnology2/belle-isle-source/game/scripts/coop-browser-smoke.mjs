@@ -2,19 +2,18 @@
  * Software Chrome proves functional rendering, not physical-phone/controller FPS.
  */
 import assert from 'node:assert/strict';
-import {createReadStream} from 'node:fs';
-import {readFile,mkdir,stat,writeFile} from 'node:fs/promises';
-import {createServer} from 'node:http';
+import {readFile,mkdir,writeFile} from 'node:fs/promises';
 import {createRequire} from 'node:module';
-import {extname,resolve,sep} from 'node:path';
+import {resolve} from 'node:path';
 import {RIDERS,SOURCE_REVISION,SOURCE_ROOT} from '../src/belle/coop/coop.ts';
+import {verifyDualHover} from './coop-hover-browser.mjs';
+import {createCoopStaticServer} from './coop-static-server.mjs';
 const game=resolve(import.meta.dirname,'..'),root=resolve(game,'dist'),out=resolve(game,'output/coop');
 await mkdir(out,{recursive:true});
 const name=process.env.BELLE_COOP_DEVICE||'desktop',mobile=name==='phone',viewport=mobile?{width:390,height:844}:{width:960,height:640};
 const report={head:process.env.GITHUB_SHA,source:process.env.COOP_SOURCE_SHA,run:process.env.GITHUB_RUN_ID,device:name,viewport,passed:false,scope:'Actual built island, two real Swoop models and separate controllers. Software-rendered Chrome; no physical device or hardware FPS certification.',errors:[],warnings:[],screenshots:[],assetSources:[],metrics:{}};
 const log=[];const note=s=>{const t=new Date().toISOString()+' '+s;log.push(t);console.log(t);};
-const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.png':'image/png','.webp':'image/webp','.jpg':'image/jpeg','.glb':'model/gltf-binary','.mp3':'audio/mpeg','.wav':'audio/wav'};
-const server=createServer(async(req,res)=>{try{let path=resolve(root,'.'+decodeURIComponent(new URL(req.url,'http://localhost').pathname));if(path!==root&&!path.startsWith(root+sep))throw Error('Invalid path');if((await stat(path)).isDirectory())path=resolve(path,'index.html');const info=await stat(path);res.writeHead(200,{'Content-Type':mime[extname(path)]||'application/octet-stream','Content-Length':info.size,'Cache-Control':'no-store'});if(req.method==='HEAD')res.end();else createReadStream(path).on('error',()=>res.destroy()).pipe(res);}catch{res.writeHead(req.url==='/favicon.ico'?204:404).end();}});
+const server=createCoopStaticServer(root);
 let browser,page;
 const bounded=async(p,ms,label)=>{let t;try{return await Promise.race([p,new Promise((_,no)=>{t=setTimeout(()=>no(Error(label+' timed out')),ms);})]);}finally{clearTimeout(t);}};
 async function run(){
@@ -93,7 +92,12 @@ async function run(){
  if(!await page.locator('#coop-open').isVisible())await tap(page.locator('#tools-toggle'));await tap(page.locator('#coop-open'));
  await expect(page.getByLabel('Player 1 rider',{exact:true})).toHaveValue('DS_Man_01');await expect(page.getByLabel('Player 2 vehicle',{exact:true})).toHaveValue('euc:tour');await expect(page.getByRole('button',{name:'Explore together',exact:true})).toBeDisabled();
  await tap(page.getByRole('button',{name:'Close setup',exact:true}));await expect(page.locator('#coop-setup')).not.toBeVisible();
- assert.deepEqual(report.errors,[]);report.passed=true;note('Real co-op gameplay checks passed');
+ assert.deepEqual(report.errors,[]);
+ // Preserve the entire EUC suite, then require the production-path hover suite.
+ await bounded(context.close(),30_000,'EUC context cleanup');
+ await verifyDualHover({browser,origin,game,out,name,mobile,viewport,expect,bounded,note,parent:report});
+ assert.equal(report.dualHover.passed,true);
+ report.passed=true;note('Real co-op gameplay checks passed');
 }
 let failed;
 try{await bounded(run(),35*60_000,'Co-op real-game case');}catch(e){failed=e;report.failure=e.stack||String(e);report.passed=false;process.exitCode=1;note('FAIL '+e.message);

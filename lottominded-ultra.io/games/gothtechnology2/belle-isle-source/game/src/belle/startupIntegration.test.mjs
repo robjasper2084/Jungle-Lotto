@@ -4,3 +4,15 @@ test('combined game retains co-op and production canal infrastructure',()=>{cons
 test('reflection prime runs before shader preparation and initial-gameplay protection is explicit',()=>{const main=read('main.ts');assert(main.indexOf('world.sky.prepareReflections(')<main.indexOf('await sceneWarmup.prepare();'));assert(main.includes("startupMetrics.begin('coop')"));assert(main.includes("startupMetrics.begin('solo')"));assert(main.includes('world.sky.protectStartup()'));assert(main.includes('world.sky.observeFrame(elapsed*1000'));});
 test('no background shader or geometry job is scheduled by the runtime after Ready',()=>{assert(!read('startupWork.ts').includes('requestIdleCallback'));assert(!read('smallBridgeScene.ts').includes('setInterval'));assert(read('world.ts').includes('await addSmallBridgesStaged'));});
 test('texture phase is capped and skin textures are uploaded before publication to the scene',()=>{const s=read('realisticMaterials.ts');assert(s.includes('startupPool(Object.keys(profiles) as Surface[],3'));assert(s.indexOf('await warmTextureList(renderer,[color,detail]')<s.indexOf('staged.set(name'));assert(s.includes('for(const texture of owned)texture.dispose()'));});
+
+test('loading UI paints before the expensive game bundle and error remains retryable',()=>{
+ const entry=read('entry.ts');
+ const html=fs.readFileSync(new URL('../../index.html',import.meta.url),'utf8');
+ assert(html.includes('src="/src/belle/entry.ts"'));
+ assert(entry.includes("import('./main.ts')")&&entry.includes("requestAnimationFrame("));
+ assert(entry.includes('location.reload()')&&entry.includes('document.hidden'));
+ const css=read('startup.css');
+ assert(css.includes('[data-state="loading"] .island-trace{animation:none;filter:none'));
+ const ui=read('startup.ts');assert(ui.includes('lastShutter')&&ui.includes('lastProgress'));
+ assert(ui.includes('setTimeout(finish,260)'));
+});
