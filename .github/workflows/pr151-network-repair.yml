@@ -1,0 +1,131 @@
+name: PR151 strict network repair validation
+on:
+  push:
+    branches: [diagnostics/pr151-network-repair-20261113]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  full-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 110
+    steps:
+      - name: Reserve full checkout disk
+        run: sudo rm -rf -- /usr/local/lib/android /usr/share/dotnet
+      - uses: actions/checkout@v4
+        with:
+          path: diagnostic
+          sparse-checkout: .diagnostics/pr151-network-repair
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          path: work
+          ref: 279af528be739ce3f348093b30eff8d1f6dd354b
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Prepare exact narrowly scoped repair in writable checkout
+        run: python diagnostic/.diagnostics/pr151-network-repair/apply-repair.py
+      - name: Strict full-game check, every registered test and build
+        working-directory: work/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          set -o pipefail
+          npm ci
+          node --check scripts/polish-browser-smoke.mjs
+          { npm run check && npm test && npm run build; } 2>&1 | tee "$GITHUB_WORKSPACE/work/pr151-repair/belle.log"
+      - name: Full storefront strict check, store and unit tests and build
+        working-directory: work/lottominded-ultra.io/games/gothtechnology2
+        env:
+          PUBLIC_COMMERCE_MODE: demo
+          PUBLIC_LAUNCH_APPROVED: 'false'
+        run: |
+          set -o pipefail
+          npm ci
+          { npm run check:store && npm run test:store && npm run check && npm run test:unit && npm run build; } 2>&1 | tee "$GITHUB_WORKSPACE/work/pr151-repair/store.log"
+      - name: Original desktop and phone shared reward regressions, no retries
+        working-directory: work/lottominded-ultra.io/games/gothtechnology2
+        run: |
+          set -o pipefail
+          npx playwright install --with-deps chromium
+          npm run test:store:browser -- --project=desktop --project=mobile --grep 'shared game reward|Underground discount|Game Grid|C-Files removed' --retries=0 --trace=on 2>&1 | tee "$GITHUB_WORKSPACE/work/pr151-repair/shared-browser.log"
+      - name: Fortune Grid complete check, tests and build
+        working-directory: work/lottominded-ultra.io/games/lottomind-313-fortune-grid
+        run: |
+          set -o pipefail
+          npm ci
+          npm run check 2>&1 | tee "$GITHUB_WORKSPACE/work/pr151-repair/fortune.log"
+      - name: Jackpot Maze complete staging, tests and build
+        working-directory: work/lottominded-ultra.io/games/lottomind-jackpot-maze/source
+        run: |
+          set -o pipefail
+          npm ci
+          { npm test && npm run build; } 2>&1 | tee "$GITHUB_WORKSPACE/work/pr151-repair/jackpot.log"
+      - name: Recheck exact repaired source after full validation
+        run: python diagnostic/.diagnostics/pr151-network-repair/provenance.py full-suites-passed
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pr151-network-full-${{ github.run_id }}
+          path: work/pr151-repair/
+          if-no-files-found: error
+          retention-days: 14
+  real-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      matrix:
+        case: [desktop, phone]
+    steps:
+      - name: Reserve full checkout disk
+        run: sudo rm -rf -- /usr/local/lib/android /usr/share/dotnet
+      - uses: actions/checkout@v4
+        with:
+          path: diagnostic
+          sparse-checkout: .diagnostics/pr151-network-repair
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          path: work
+          ref: 279af528be739ce3f348093b30eff8d1f6dd354b
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Prepare the identical narrow repair
+        run: python diagnostic/.diagnostics/pr151-network-repair/apply-repair.py
+      - name: Strict check and build actual candidate
+        working-directory: work/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm ci
+          npm run check
+          node --test scripts/polish-network-evidence.test.mjs scripts/coop-static-server.test.mjs
+          npm run build
+      - name: Install existing real-browser runtime
+        working-directory: work/lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Record post-build source and generated output separately
+        run: python diagnostic/.diagnostics/pr151-network-repair/provenance.py before
+      - name: Full original native-input polish scenario, every request failure fatal
+        timeout-minutes: 40
+        working-directory: work/lottominded-ultra.io/games/gothtechnology2
+        env:
+          BELLE_POLISH_BROWSER_HEADED: '1'
+          BELLE_POLISH_BROWSER_CASE: ${{ matrix.case }}
+          GITHUB_SHA: 279af528be739ce3f348093b30eff8d1f6dd354b
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node belle-isle-source/game/scripts/polish-browser-smoke.mjs
+      - name: Verify all tracked bytes unchanged by browser execution
+        if: always()
+        run: python diagnostic/.diagnostics/pr151-network-repair/provenance.py browser-source-verified
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pr151-network-${{ matrix.case }}-${{ github.run_id }}
+          path: |
+            work/pr151-repair/
+            work/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/polish-browser/
+          if-no-files-found: error
+          retention-days: 14
