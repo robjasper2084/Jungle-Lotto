@@ -20,7 +20,12 @@ export function beachHeight(profiles:BeachProfile[],x:number,z:number){
   if(!contains(x,z,p.points)&&Math.min(wet,dry)>.025)continue;
   // Taper the grade in narrow corners instead of producing a sharp trench.
   const breadth=wet+dry,grade=smooth(2,12,breadth);
-  return 2-1.88*grade*(1-smooth(0,1,wet/Math.max(.001,breadth)));
+  const slope=2-1.88*grade*(1-smooth(0,1,wet/Math.max(.001,breadth)));
+  // Very shallow sediment undulations disappear at both mapped boundaries,
+  // so tyre/foot support and the rendered surface stay aligned without moving
+  // existing park paths, the waterline or adjacent building foundations.
+  const ripple=.014*Math.sin(x*.19+z*.075)*Math.sin(z*.17-x*.045)*smooth(.8,3,wet)*smooth(.8,3,dry);
+  return Math.max(.12,Math.min(2,slope+ripple));
  }
  return 2;
 }

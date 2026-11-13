@@ -1,5 +1,6 @@
 /** Real built-game trial smoke. Uses visible controls and trusted input; never seeds a run or record. */
 import assert from 'node:assert/strict';
+import {recordRequestFailure} from './visual-review-evidence.mjs';
 import {createReadStream} from 'node:fs';
 import {mkdir, stat, writeFile} from 'node:fs/promises';
 import {createServer} from 'node:http';
@@ -48,7 +49,7 @@ const server = createServer(async (request, response) => {
     if (file !== root && !file.startsWith(root + sep)) { response.writeHead(403).end(); return; }
     if ((await stat(file)).isDirectory()) file = resolve(file, 'index.html');
     const info = await stat(file);
-    response.writeHead(200, {'Content-Type': mime[extname(file)] || 'application/octet-stream', 'Content-Length': info.size, 'Cache-Control': 'no-store'});
+    response.writeHead(200, {'Content-Type': mime[extname(file)] || 'application/octet-stream', 'Content-Length': info.size, 'Cache-Control': 'no-cache, max-age=0, must-revalidate'});
     if (request.method === 'HEAD') response.end();
     else createReadStream(file).on('error', () => response.destroy()).pipe(response);
   } catch { response.writeHead(404).end('Not found'); }
@@ -161,6 +162,9 @@ async function runCase(configuration) {
   const entry = {name: configuration.name, viewport: configuration.viewport, setupViewport, reducedMotion: configuration.reducedMotion,
     passed: false, errors: [], console: [], failedRequests: [], screenshots: [], metrics: {}, fullCourseCompletion: 'not exercised'};
   report.cases.push(entry);
+  let requestPhase = 'gameplay';
+  entry.source = process.env.GITHUB_SHA;
+  entry.run = process.env.GITHUB_RUN_ID;
   let browser, page, touchSession, deadline;
   let screenshotFailed = false, caseTimedOut = false, observerCleanupFailed = false;
   let countdownSequence = 0, countdownObservation;
@@ -426,9 +430,7 @@ async function runCase(configuration) {
     });
     page.on('response', response => { if (response.status() >= 400) entry.errors.push(`HTTP ${response.status()} ${response.url()}`); });
     page.on('requestfailed', request => {
-      const message = `${request.failure()?.errorText} ${request.url()}`;
-      entry.failedRequests.push(message);
-      if (!message.startsWith('net::ERR_ABORTED')) entry.errors.push(message);
+      log(`${configuration.name}: ${requestPhase} request failed ${recordRequestFailure(entry, request, requestPhase)}`);
     });
     await Promise.race([(async () => {
       log(`${configuration.name}: load real built game and configure graphics through UI`);
@@ -635,12 +637,13 @@ async function runCase(configuration) {
       } else entry.domCaptureSkipped = 'Close the stalled browser without another renderer request.';
     }
     let cleanupFailure;
+    requestPhase = 'cleanup';
     if (browser) {
       try { await bounded(browser.close(), browserCloseMilliseconds, `${configuration.name}: browser close`); }
       catch (error) { cleanupFailure = error; entry.cleanupFailure = error.message; entry.passed = false; }
     }
     // A timed-out body may finish while cleanup is awaited. Failures stay final.
-    entry.passed = entry.passed && !entry.failure && !caseTimedOut && !cleanupFailure && !observerCleanupFailed;
+    entry.passed = entry.passed && !entry.failure && !caseTimedOut && !cleanupFailure && !observerCleanupFailed && entry.errors.length === 0;
     await writeFile(resolve(output, `${configuration.name}-result.json`), JSON.stringify(entry, null, 2));
     if (cleanupFailure) throw cleanupFailure;
   }

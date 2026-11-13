@@ -5,6 +5,16 @@ test('reflection prime runs before shader preparation and initial-gameplay prote
 test('no background shader or geometry job is scheduled by the runtime after Ready',()=>{assert(!read('startupWork.ts').includes('requestIdleCallback'));assert(!read('smallBridgeScene.ts').includes('setInterval'));assert(read('world.ts').includes('await addSmallBridgesStaged'));});
 test('texture phase is capped and skin textures are uploaded before publication to the scene',()=>{const s=read('realisticMaterials.ts');assert(s.includes('startupPool(Object.keys(profiles) as Surface[],3'));assert(s.indexOf('await warmTextureList(renderer,[color,detail]')<s.indexOf('staged.set(name'));assert(s.includes('for(const texture of owned)texture.dispose()'));});
 
+test('beach visual pass is connected to the built world and real browser capture',()=>{
+ const world=read('world.ts'),sand=read('beach.ts');
+ const browser=fs.readFileSync(new URL('../../scripts/activity-browser-smoke.mjs',import.meta.url),'utf8');
+ assert(world.includes('beachStats.setQuality(q)')&&world.includes('beachStats.update(x,z)'));
+ assert(sand.includes('planBeachDetails(terrain.beaches,terrain'));
+ assert(sand.includes('maxExtraDraws:3'));
+ assert(browser.includes("screenshot('belle-isle-beach-waterline')"));
+ assert(browser.includes("name: 'Belle Isle Beach'"));
+});
+
 test('loading UI paints before the expensive game bundle and error remains retryable',()=>{
  const entry=read('entry.ts');
  const html=fs.readFileSync(new URL('../../index.html',import.meta.url),'utf8');

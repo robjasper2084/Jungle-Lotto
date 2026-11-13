@@ -1,5 +1,6 @@
 /** Real built-game visual smoke. Uses only visible controls; never seeds scores or scene state. */
 import assert from 'node:assert/strict';
+import {recordRequestFailure, prepareBeachWaterline} from './visual-review-evidence.mjs';
 import {createReadStream} from 'node:fs';
 import {mkdir, stat, writeFile} from 'node:fs/promises';
 import {createServer} from 'node:http';
@@ -25,7 +26,7 @@ const server = createServer(async (request, response) => {
     if (file !== root && !file.startsWith(root + sep)) { response.writeHead(403).end(); return; }
     if ((await stat(file)).isDirectory()) file = resolve(file, 'index.html');
     const info = await stat(file);
-    response.writeHead(200, {'Content-Type': mime[extname(file)] || 'application/octet-stream', 'Content-Length': info.size, 'Cache-Control': 'no-store'});
+    response.writeHead(200, {'Content-Type': mime[extname(file)] || 'application/octet-stream', 'Content-Length': info.size, 'Cache-Control': 'no-cache, max-age=0, must-revalidate'});
     if (request.method === 'HEAD') response.end();
     else createReadStream(file).on('error', () => response.destroy()).pipe(response);
   } catch { response.writeHead(404).end('Not found'); }
@@ -45,6 +46,9 @@ async function runCase(configuration) {
   const setupViewport = {width: 390, height: 844};
   const entry = {name: configuration.name, viewport: configuration.viewport, setupViewport, reducedMotion: configuration.reducedMotion, passed: false, errors: [], console: [], failedRequests: [], screenshots: [], metrics: {}, photoCompletion: {status: 'not exercised'}};
   report.cases.push(entry);
+  let requestPhase = 'gameplay';
+  entry.source = process.env.GITHUB_SHA;
+  entry.run = process.env.GITHUB_RUN_ID;
   let browser;
   let page;
   let screenshotFailed = false;
@@ -117,9 +121,7 @@ async function runCase(configuration) {
     });
     page.on('response', response => { if (response.status() >= 400) entry.errors.push(`HTTP ${response.status()} ${response.url()}`); });
     page.on('requestfailed', request => {
-      const message = `${request.failure()?.errorText} ${request.url()}`;
-      entry.failedRequests.push(message);
-      if (!message.startsWith('net::ERR_ABORTED')) entry.errors.push(message);
+      log(`${configuration.name}: ${requestPhase} request failed ${recordRequestFailure(entry, request, requestPhase)}`);
     });
     await Promise.race([(async () => {
       log(`${configuration.name}: load built game`);
@@ -282,6 +284,21 @@ async function runCase(configuration) {
         entry.photoCompletion = {status: 'not verified', reason: 'A single ordinary guide/viewpoint capture is attempted; no full route simulation.'};
         await tap(page.locator('#tools-toggle'));
         await tap(page.locator('#map-open'));
+        // Real built-scene screenshot for side-by-side review against the
+        // Conservancy/DNR shoreline photographs. No external image is shipped.
+        await page.locator('#guide-search').fill('Belle Isle Beach');
+        const beachPlace = page.locator('#landmarks .landmark').filter({has: page.getByRole('heading', {name: 'Belle Isle Beach', exact: true})});
+        await tap(beachPlace.getByRole('button', {name: 'Travel to path', exact: true}));
+        await expect(page.locator('#guide')).not.toBeVisible();
+        // Path travel is retained above; capture only after the public shoreline
+        // action, actual Beach/on-foot/FPP HUD, fresh frame and GPU completion.
+        entry.metrics.beachAudit = await prepareBeachWaterline({page, tap, expect, bounded});
+        await screenshot('belle-isle-beach-waterline');
+        await expect(page.locator('#place')).toHaveText('Belle Isle Beach');
+        Object.assign(entry.metrics.beachAudit, {source: 'Actual built-game shoreline arrival and camera; manual photo comparison required',
+          reference: 'https://www.belleisleconservancy.org/explore',capture: 'belle-isle-beach-waterline'});
+        await tap(page.locator('#tools-toggle'));
+        await tap(page.locator('#map-open'));
         await page.locator('#guide-search').fill('James Scott Memorial Fountain');
         const landmark = page.locator('#landmarks .landmark').filter({has: page.getByRole('heading', {name: 'James Scott Memorial Fountain', exact: true})});
         await tap(landmark.getByRole('button', {name: 'Travel to path', exact: true}));
@@ -330,10 +347,12 @@ async function runCase(configuration) {
       } else entry.domCaptureSkipped = 'Close the stalled browser without queuing another renderer request.';
     }
     let cleanupFailure;
+    requestPhase = 'cleanup';
     if (browser) {
       try { await bounded(browser.close(), 15_000, `${configuration.name}: browser close`); }
       catch (error) { cleanupFailure = error; entry.cleanupFailure = error.message; entry.passed = false; }
     }
+    entry.passed = entry.passed && !entry.failure && !caseTimedOut && !cleanupFailure && entry.errors.length === 0;
     await writeFile(resolve(output, `${configuration.name}-result.json`), JSON.stringify(entry, null, 2));
     // Do not launch another GPU process if the preceding process could not close.
     if (cleanupFailure) throw cleanupFailure;
