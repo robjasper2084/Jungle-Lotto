@@ -5,6 +5,8 @@ on:
     paths:
       - '.diagnostics/environment-browser.mjs'
       - '.diagnostics/environment-refine.py'
+      - '.diagnostics/environment-network-proof.py'
+      - '.diagnostics/environment-delivery-proof*'
       - '.github/workflows/belle-environment-browser.yml'
   workflow_dispatch:
 permissions:
@@ -38,7 +40,10 @@ jobs:
         if: matrix.variant == 'candidate'
         run: python diagnostic/.diagnostics/environment-update.py
       - name: Apply proved material correction and read-only network observation
-        run: python diagnostic/.diagnostics/environment-refine.py ${{ matrix.variant }}
+        run: |
+          python diagnostic/.diagnostics/environment-refine.py ${{ matrix.variant }}
+          node --test diagnostic/.diagnostics/environment-delivery-proof.test.mjs
+          python diagnostic/.diagnostics/environment-network-proof.py
       - name: Build actual baseline or candidate game
         working-directory: work/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
         run: |
