@@ -20,7 +20,7 @@ a=t.index('const mime = ');b=t.index('\nasync function bounded',a)
 assert 'Cache-Control' in t[a:b] and "'no-store'" in t[a:b]
 t=t[:a]+"// Reuse the reviewed streaming server: revalidate every request, never no-store.\nconst server = createCoopStaticServer(root);"+t[b:]
 replace("let countdownSequence = 0;", "let requestPhase = 'gameplay';\n  let countdownSequence = 0;")
-replace("      const message = `${request.failure()?.errorText} ${request.url()}`;\n      entry.failedRequests.push(message);\n      if (!message.startsWith('net::ERR_ABORTED')) entry.errors.push(message);", "      log(`${configuration.name}: ${requestPhase} request failed ${recordRequestFailure(entry, request, requestPhase)}`);")
+replace("      const message = request.failure()?.errorText + ' ' + request.url(); entry.failedRequests.push(message);\n      if (!message.startsWith('net::ERR_ABORTED')) entry.errors.push(message);", "      log(`${configuration.name}: ${requestPhase} request failed ${recordRequestFailure(entry, request, requestPhase)}`);")
 replace("entry.realGameCompletedAt = new Date().toISOString();", "requestPhase = 'fixtures';\n      entry.realGameCompletedAt = new Date().toISOString();")
 replace("    clearTimeout(deadline);\n    if (countdownWaiter)", "    requestPhase = 'cleanup';\n    clearTimeout(deadline);\n    if (countdownWaiter)")
 replace("entry.functionalPassed = entry.functionalPassed && !entry.failure && !timedOut && !cleanupFailed;", "entry.functionalPassed = entry.functionalPassed && !entry.failure && !timedOut && !cleanupFailed && entry.errors.length === 0;")
