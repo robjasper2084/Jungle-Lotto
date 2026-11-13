@@ -1,0 +1,154 @@
+name: PR150 reconciliation diagnostics - no publication
+on:
+  push:
+    branches: [diagnostics/pr150-workspace-20261112]
+    paths: [.github/workflows/pr150-reconcile-validation.yml]
+permissions:
+  contents: read
+concurrency:
+  group: pr150-reconciliation-diagnostics
+  cancel-in-progress: false
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PUBLIC_COMMERCE_MODE: demo
+      PUBLIC_LAUNCH_APPROVED: 'false'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: f3f83347da08377c491beacff9b51eac55d69bef
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Prepare guarded uncommitted reconciliation with current production
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/pr150-reconcile/source"
+          python3 - <<'PY'
+          import collections, json, os, pathlib, re, subprocess
+          HEAD='f3f83347da08377c491beacff9b51eac55d69bef'
+          MAIN='e5b2b05538e811956ce18f5fcf3a84e327f98f66'
+          BASE='d546de77fb304ebb3e113c676ff9d322c0535105'
+          root='lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/'
+          evidence=pathlib.Path(os.environ['RUNNER_TEMP'])/'pr150-reconcile'
+          def git(*args): return subprocess.check_output(['git',*args],text=True).strip()
+          def contents(ref,path): return subprocess.check_output(['git','show',ref+':'+path])
+          assert git('rev-parse','HEAD')==HEAD
+          assert git('rev-parse','origin/feature/belle-idle-hover-20261111')==HEAD
+          assert git('rev-parse','origin/main')==MAIN, 'Production advanced; do not silently repin.'
+          assert not git('status','--porcelain')
+          assert git('merge-base',HEAD,MAIN)==BASE
+          original_paths=set(git('diff','--name-only',BASE,HEAD).splitlines())
+          assert len(original_paths)==5
+          # Export actual input/game source for independent diagnosis, never secrets or dependencies.
+          paths=git('ls-tree','-r','--name-only',HEAD).splitlines()
+          selected=[p for p in paths if (p.startswith('lottominded-ultra.io/games/opengw-levels/src/') or p.startswith('lottominded-ultra.io/games/gothtechnology2/tests/store-browser/') or p.startswith('lottominded-ultra.io/games/gothtechnology2/src/ui/')) and p.endswith(('.js','.mjs','.ts','.css'))]
+          selected+=['AGENTS.md','lottominded-ultra.io/games/gothtechnology2/playwright.store.config.mjs','lottominded-ultra.io/games/gothtechnology2/scripts/serve-store.mjs']
+          for p in selected:
+              out=evidence/'source'/p; out.parent.mkdir(parents=True,exist_ok=True); out.write_bytes(contents(HEAD,p))
+          result=subprocess.run(['git','-c','user.name=PR150 validation','-c','user.email=validation@example.invalid','merge','--no-commit','--no-ff',MAIN],text=True,capture_output=True)
+          (evidence/'merge.log').write_text(result.stdout+result.stderr)
+          conflicts=set(git('diff','--name-only','--diff-filter=U').splitlines())
+          (evidence/'conflicts.json').write_text(json.dumps(sorted(conflicts),indent=2))
+          runner=root+'run-tests.mjs'
+          assert conflicts <= {runner}, 'Unexpected conflict; inspect before resolving: '+repr(conflicts)
+          if runner in conflicts:
+              base=contents(BASE,runner).decode(); head=contents(HEAD,runner).decode(); main=contents(MAIN,runner).decode()
+              addition="'src/belle/hoverIdleMotion.test.ts',"
+              anchor="'--test',"
+              assert base.count(anchor)==1 and main.count(anchor)==1
+              assert head==base.replace(anchor,anchor+addition,1), 'PR runner change differs from the reviewed one-test addition.'
+              assert addition not in main
+              combined=main.replace(anchor,anchor+addition,1)
+              tokens=lambda value: collections.Counter(re.findall(r"'([^']+\.test\.(?:ts|mjs|js))'",value))
+              assert not (tokens(main)-tokens(combined)) and not (tokens(head)-tokens(combined))
+              pathlib.Path(runner).write_text(combined)
+              subprocess.run(['git','add','--',runner],check=True)
+          assert not git('diff','--name-only','--diff-filter=U')
+          subprocess.run(['git','diff','--cached','--check'],check=True)
+          changed=set(git('diff','--cached','--name-only',MAIN).splitlines())
+          assert changed==original_paths, 'Reconciliation introduced an out-of-scope file: '+repr(changed^original_paths)
+          for p in changed-{runner,root+'src/belle/hover.ts'}:
+              assert contents('',p)==contents(HEAD,p), 'Feature-only file changed during reconciliation: '+p
+          # Keep every production file outside the five original feature files unchanged.
+          tree=git('write-tree')
+          entries=[]
+          for p in sorted(changed):
+              data=contents('',p); out=evidence/'candidate'/p; out.parent.mkdir(parents=True,exist_ok=True);out.write_bytes(data)
+              entries.append({'path':p,'blob':git('rev-parse',':'+p),'bytes':len(data)})
+          report={'sourceHead':HEAD,'productionBase':MAIN,'commonBase':BASE,'candidateTree':tree,'resolvedConflicts':sorted(conflicts),'changedFromProduction':entries,'releaseApproved':False,'committed':False,'pushed':False}
+          (evidence/'reconciliation.json').write_text(json.dumps(report,indent=2)+'\n')
+          (evidence/'reconciliation.patch').write_text(subprocess.check_output(['git','diff','--cached',MAIN],text=True))
+          print(json.dumps(report,indent=2))
+          PY
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install locked dependency roots
+        shell: bash
+        run: |
+          set -euo pipefail
+          for path in lottominded-ultra.io/games/gothtechnology2 lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game lottominded-ultra.io/games/lottomind-313-fortune-grid lottominded-ultra.io/games/lottomind-jackpot-maze/source; do
+            npm --prefix "$path" ci
+          done
+      - name: Full registered Belle Isle typecheck tests and build
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        shell: bash
+        run: |
+          set -euo pipefail
+          { npm run check; npm test; npm run build; } 2>&1 | tee "$RUNNER_TEMP/pr150-reconcile/belle-full-suite.log"
+      - name: Full registered storefront checks tests and build
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        shell: bash
+        run: |
+          set -euo pipefail
+          { npm run check:store; npm run test:store; npm run check; npm run test:unit; npm run build; } 2>&1 | tee "$RUNNER_TEMP/pr150-reconcile/store-full-suite.log"
+      - name: Fortune Grid and Jackpot Maze complete configured validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            npm --prefix lottominded-ultra.io/games/lottomind-313-fortune-grid run check
+            npm --prefix lottominded-ultra.io/games/lottomind-jackpot-maze/source test
+            npm --prefix lottominded-ultra.io/games/lottomind-jackpot-maze/source run build
+          } 2>&1 | tee "$RUNNER_TEMP/pr150-reconcile/grid-maze-validation.log"
+      - name: Install original browser runtime
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: npx --no-install playwright install --with-deps chromium
+      - name: Original failing browser cohort once without retries or assertion changes
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git hash-object tests/store-browser/game-grid.spec.js)" = 6cd1929e400d4e42d52833a478d495b6f1b67bd0
+          npm run test:store:browser -- --project=desktop --project=mobile --grep "shared game reward|Underground discount|Game Grid|C-Files removed" --trace=on --retries=0 2>&1 | tee "$RUNNER_TEMP/pr150-reconcile/original-cohort.log"
+      - name: Confirm tested input tree and complete evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, pathlib, subprocess
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])/'pr150-reconcile'
+          report=json.loads((root/'reconciliation.json').read_text())
+          for item in report['changedFromProduction']:
+              blob=subprocess.check_output(['git','hash-object',item['path']],text=True).strip()
+              assert blob==item['blob'], 'Validation changed candidate source: '+item['path']
+          report['registeredSourceSuitesPassed']=True
+          report['originalBrowserCohortPassed']=True
+          report['mandatorySevenReleaseWorkflowsStillRequired']=True
+          (root/'validated.json').write_text(json.dumps(report,indent=2)+'\n')
+          print(json.dumps(report,indent=2))
+          PY
+      - name: Retain reconciliation, real source, full logs and browser traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr150-reconciliation-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/pr150-reconcile/
+            lottominded-ultra.io/games/gothtechnology2/output/store-browser/
+            lottominded-ultra.io/games/gothtechnology2/output/store-test-results.json
+          if-no-files-found: error
+          retention-days: 14
