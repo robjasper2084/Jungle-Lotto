@@ -1,0 +1,102 @@
+name: Belle environment full pre-push validation
+on:
+  push:
+    branches: [diagnostics/belle-environment-20261113]
+    paths:
+      - '.diagnostics/environment-update.py'
+      - '.diagnostics/environment-tests/**'
+      - '.github/workflows/belle-environment-validation.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  full-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 110
+    steps:
+      - name: Reserve writable checkout disk
+        run: |
+          sudo rm -rf -- /usr/local/lib/android /usr/share/dotnet
+          df -h /
+      - uses: actions/checkout@v4
+        with:
+          path: diagnostic
+          sparse-checkout: .diagnostics
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: 4a2b67d0b10beafb7c999f11985e45a4e45adb94
+          path: work
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Apply scoped candidate only in the writable validation checkout
+        run: python diagnostic/.diagnostics/environment-update.py
+      - name: Full strict Belle check, all registered tests and production build
+        working-directory: work/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          set -o pipefail
+          npm ci
+          npm run check 2>&1 | tee "$GITHUB_WORKSPACE/work/environment-validation/belle-check.log"
+          npm test 2>&1 | tee "$GITHUB_WORKSPACE/work/environment-validation/belle-tests.log"
+          npm run build 2>&1 | tee "$GITHUB_WORKSPACE/work/environment-validation/belle-build.log"
+      - name: Full storefront strict check, store and unit tests, assets and build
+        working-directory: work/lottominded-ultra.io/games/gothtechnology2
+        env:
+          PUBLIC_COMMERCE_MODE: demo
+          PUBLIC_LAUNCH_APPROVED: 'false'
+        run: |
+          set -o pipefail
+          npm ci
+          { npm run check:store && npm run test:store && npm run check && npm run test:unit && npm run build; } 2>&1 | tee "$GITHUB_WORKSPACE/work/environment-validation/store.log"
+      - name: Original shared-reward and Game Grid desktop and phone regressions
+        working-directory: work/lottominded-ultra.io/games/gothtechnology2
+        run: |
+          set -o pipefail
+          npx playwright install --with-deps chromium
+          npm run test:store:browser -- --project=desktop --project=mobile --grep 'shared game reward|Underground discount|Game Grid|C-Files removed' --retries=0 --trace=on 2>&1 | tee "$GITHUB_WORKSPACE/work/environment-validation/shared-browser.log"
+      - name: Full Fortune Grid strict check, tests and build
+        working-directory: work/lottominded-ultra.io/games/lottomind-313-fortune-grid
+        run: |
+          set -o pipefail
+          npm ci
+          npm run check 2>&1 | tee "$GITHUB_WORKSPACE/work/environment-validation/fortune-grid.log"
+      - name: Full Jackpot Maze staging, registered tests and build
+        working-directory: work/lottominded-ultra.io/games/lottomind-jackpot-maze/source
+        run: |
+          set -o pipefail
+          npm ci
+          { npm test && npm run build; } 2>&1 | tee "$GITHUB_WORKSPACE/work/environment-validation/jackpot-maze.log"
+      - name: Recheck exact source hashes after validation
+        shell: python
+        run: |
+          import pathlib,json,hashlib,os
+          root=pathlib.Path(os.environ['GITHUB_WORKSPACE'])/'work'
+          proof=root/'environment-validation/candidate-source.json'
+          data=json.loads(proof.read_text())
+          for f in data['files']: assert hashlib.sha256((root/f['path']).read_bytes()).hexdigest()==f['afterSha256'],f['path']
+          data['fullRegisteredSuitesPassed']=True
+          data['renderedEnvironmentAcceptance']='NOT YET VERIFIED'
+          proof.write_text(json.dumps(data,indent=2))
+      - name: Preserve exact source, test logs and any failure evidence
+        if: always()
+        shell: python
+        run: |
+          import pathlib,json,tarfile,os,shutil
+          root=pathlib.Path(os.environ['GITHUB_WORKSPACE'])/'work';out=root/'environment-validation';out.mkdir(exist_ok=True)
+          proof=out/'candidate-source.json'
+          if proof.exists():
+            with tarfile.open(out/'proposed-source.tar.gz','w:gz') as a:
+              for f in json.loads(proof.read_text())['files']: a.add(root/f['path'],arcname=f['path'])
+          for name in ['test-results','playwright-report']:
+            p=root/'lottominded-ultra.io/games/gothtechnology2'/name
+            if p.exists(): shutil.copytree(p,out/name,dirs_exist_ok=True)
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: belle-environment-full-validation-${{ github.run_id }}
+          path: work/environment-validation/
+          retention-days: 7
+          if-no-files-found: error
