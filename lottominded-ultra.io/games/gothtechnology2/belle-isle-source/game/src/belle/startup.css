@@ -99,3 +99,24 @@ body.at-start{background:#07141a}
 /* Keep settings readable beside the icon-only flyover controls on phones. */
 #welcome.startup .cinema-tools #welcome-settings{font-size:11px;min-width:64px;min-height:44px;padding:8px;border:1px solid #ffffff40;border-radius:4px;background:#07192388;}
 @media(max-width:400px){.cinema-tools{gap:4px}.cinema-brand{gap:4px;letter-spacing:0}}
+
+/* Compact startup input safety: decorative title content never covers flyover
+ * controls. Keep actual ride-picker and CTA targets interactive. */
+#welcome.startup .cinema-top{z-index:9}
+#welcome.startup .cinema-title{pointer-events:none}
+#welcome.startup .cinema-title :is(button,summary,a,label,input,select){pointer-events:auto}
+@media(max-width:600px) and (max-height:500px){
+ #welcome.startup .cinema-title{
+   top:78px;bottom:54px;left:24px;right:24px;
+   overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;
+   padding:0 3px 12px 0;scrollbar-width:thin;pointer-events:auto;
+ }
+ #welcome.startup .cinema-title :is(.cinema-kicker,h1,.cinema-description){display:none}
+ #welcome.startup .cinema-actions{margin:0;gap:6px 12px;align-items:flex-start}
+ #welcome.startup #start{min-height:44px}
+ #welcome.startup .cinema-ride-picker,
+ #welcome.startup .cinema-ride-picker[open]{
+   position:relative;left:auto;top:auto;bottom:auto;width:100%;margin-top:6px;
+ }
+ #welcome.startup .cinema-ride-picker>summary{min-height:44px}
+}
