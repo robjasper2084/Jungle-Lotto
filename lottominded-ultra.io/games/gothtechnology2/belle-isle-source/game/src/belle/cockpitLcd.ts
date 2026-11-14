@@ -1,3 +1,4 @@
+import {cockpitScale} from './cinematicPolicy.ts';
 import type {CockpitRadio,CockpitRadioAction} from './cockpitRadio.ts';
 import * as T from 'three';
 import {cockpitTelemetry,jarvsLcdReading,type CockpitInput} from './cockpitTelemetry.ts';
@@ -24,7 +25,7 @@ export class CockpitLcd{
   document.addEventListener('pointercancel',()=>{this.pressed=-1;},true);
  }
  private togglePage(){this.lcdPage=this.lcdPage==='jarvs'?'radio':'jarvs';if(this.screenToggle)this.screenToggle.textContent=this.lcdPage==='jarvs'?'Show radio display':'Show JARVS display';if(this.lastInput)this.update(this.lastInput);}
- setInteraction(camera:T.Camera,enabled:boolean){this.view=camera;this.interactive=enabled;if(this.access)this.access.hidden=!enabled;}
+ setInteraction(camera:T.Camera,enabled:boolean){const scale=cockpitScale(document.body.dataset.cockpitDensity==='compact',innerWidth);if(this.root.scale.x!==scale)this.root.scale.setScalar(scale);this.view=camera;this.interactive=enabled;if(this.access)this.access.hidden=!enabled;}
  setVisible(visible:boolean){this.root.visible=visible;this.brackets.visible=visible;}
  update(input:CockpitInput){
   this.lastInput=input;const p=cockpitTelemetry(input),c=this.context;c.fillStyle='#071a20';c.fillRect(0,0,512,384);

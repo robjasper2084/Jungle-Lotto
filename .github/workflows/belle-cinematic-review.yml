@@ -1,0 +1,65 @@
+name: Belle Isle cinematic review
+on:
+  pull_request:
+    paths:
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/**'
+      - 'scripts/belle-cinematic-browser-smoke.mjs'
+      - 'scripts/belle-production-jobs*'
+      - '.github/workflows/belle-cinematic-review.yml'
+permissions:
+  contents: read
+concurrency:
+  group: belle-cinematic-review-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  cinematic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        case: [desktop, compact-landscape, small-phone]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Test exact deploy proof and public-byte verifier
+        run: node --test scripts/belle-production-jobs.test.mjs scripts/belle-release-pages.test.mjs
+      - name: Check, test and build candidate
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm ci
+          npm run check
+          npm test
+          npm run build
+      - name: Install browser test runtime
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install --with-deps chrome
+      - name: Check real game presentation and capture screenshots
+        timeout-minutes: 18
+        env:
+          EXPECTED_MERGE_SHA: ${{ github.event.pull_request.head.sha }}
+          BELLE_GAME_URL: http://127.0.0.1:8301/
+          BELLE_CINEMATIC_CASE: ${{ matrix.case }}
+          BELLE_CINEMATIC_OUTPUT: artifacts/belle-cinematic
+          BELLE_BROWSER_HEADED: '1'
+        run: |
+          npm --prefix lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game run preview > /tmp/belle-preview.log 2>&1 &
+          SERVER=$!
+          trap 'kill "$SERVER" 2>/dev/null || true' EXIT
+          for i in $(seq 1 30); do curl --fail --silent http://127.0.0.1:8301/ > /dev/null && break; sleep 1; done
+          xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node scripts/belle-cinematic-browser-smoke.mjs
+      - name: Preserve actual screenshots, trace and failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-cinematic-${{ matrix.case }}
+          path: artifacts/belle-cinematic
+          if-no-files-found: warn
+          retention-days: 14

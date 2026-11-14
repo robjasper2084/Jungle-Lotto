@@ -40,8 +40,19 @@ export async function stagePublicAssets({manifest,canonicalRoot,outputRoot}){
   }
   return {count:staged.length,bytes:total};
 }
+export function manifestDiagnostics(manifest){
+  return {version:manifest?.version,count:manifest?.count,bytes:manifest?.bytes,
+    filesType:Array.isArray(manifest?.files)?'array':typeof manifest?.files,files:manifest?.files??null};
+}
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
-  const manifest=JSON.parse(await readFile(new URL('./public-assets.manifest.json',import.meta.url),'utf8'));
-  const result=await stagePublicAssets({manifest,canonicalRoot:resolve(sourceRoot,'..'),outputRoot:resolve(sourceRoot,'.generated-public')});
-  console.log('Staged '+result.count+' verified Jackpot Maze media files ('+(result.bytes/1048576).toFixed(2)+' MiB) from canonical published assets.');
+  let manifest;
+  try{
+    manifest=JSON.parse(await readFile(new URL('./public-assets.manifest.json',import.meta.url),'utf8'));
+    const result=await stagePublicAssets({manifest,canonicalRoot:resolve(sourceRoot,'..'),outputRoot:resolve(sourceRoot,'.generated-public')});
+    console.log('Staged '+result.count+' verified Jackpot Maze media files ('+(result.bytes/1048576).toFixed(2)+' MiB) from canonical published assets.');
+  }catch(error){
+    // Public media metadata only. Do not normalize invalid files or continue staging.
+    console.error('Jackpot Maze canonical manifest diagnostics:',JSON.stringify(manifestDiagnostics(manifest),null,2));
+    throw error;
+  }
 }
