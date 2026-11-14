@@ -25,9 +25,9 @@ else{
   const jsonBytes=bytes.subarray(20,20+view.getUint32(12,true));
   const json=JSON.parse(new TextDecoder().decode(jsonBytes));
   const names=(json.animations??[]).map(a=>a.name);
-  if(!names.includes(name))throw Error('Missing expected animation '+name);
+  if(!names.includes(name.replace(/\.glb$/, '')))throw Error('Missing expected animation '+name);
   if(!json.nodes?.length||!json.scenes?.length)throw Error('GLB lacks scene: '+name);
-  files.push({name,bytes,sha256:createHash('sha256').update(bytes).digest('hex'),size:bytes.byteLength,animation:name});
+  files.push({name,bytes,sha256:createHash('sha256').update(bytes).digest('hex'),size:bytes.byteLength,animation:name.replace(/\.glb$/, '')});
  }
  await mkdir(destination,{recursive:true});
  // All archives must validate before any destination files are replaced.

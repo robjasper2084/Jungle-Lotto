@@ -13,3 +13,15 @@ test('unbound external script cannot become an approved production bundle',async
 test('manifest traversal and duplicate entries are rejected',async t=>{const site=await fixture(t);await stampBelleRelease(site);const file=resolve(site,'pages-artifact-manifest.json'),m=JSON.parse(await readFile(file));m.belleGame.files[0].path=GAME_PATH+'../secrets.js';await writeFile(file,JSON.stringify(m));await assert.rejects(verifyBelleRelease(BASE,SHA,{fetcher:network(site)}),/Invalid bundle/);});
 test('HTTP failure is not mistaken for a valid game response',async()=>{await assert.rejects(verifyBelleRelease(BASE,SHA,{fetcher:async()=>new Response('not found',{status:404})}),/HTTP 404/);});
 test('verification requires full expected commit and HTTPS',async()=>{await assert.rejects(verifyBelleRelease(BASE,'abc'),/exact production/);await assert.rejects(verifyBelleRelease('http://example.test/',SHA),/HTTPS/);});
+
+test('CORLEO UI cannot ship without its ten models, whose public bytes are verified',async t=>{
+ const site=await fixture(t),js=resolve(site,GAME_PATH,'assets/main-abc.js');
+ await writeFile(js,(await readFile(js,'utf8'))+';console.log("corleo-enter")');
+ await assert.rejects(stampBelleRelease(site),/CORLEO runtime asset missing/);
+ const folder=resolve(site,GAME_PATH,'belle/vehicles/corleo');await mkdir(folder,{recursive:true});
+ for(const style of ['Professional','Maverick'])for(const action of ['MOUNT','RUN','CRAWL','JUMP','DISMOUNT'])await writeFile(resolve(folder,'CORLEO_'+style+'_'+action+'.glb'),'model bytes');
+ await writeFile(resolve(folder,'manifest.json'),'{}');
+ const stamped=await stampBelleRelease(site);assert.equal(stamped.files.filter(f=>f.path.endsWith('.glb')).length,10);
+ const result=await verifyBelleRelease(BASE,SHA,{fetcher:network(site)});assert.equal(result.verifiedFiles.length,14);
+ await assert.rejects(verifyBelleRelease(BASE,SHA,{fetcher:network(site,(p,b)=>p.endsWith('.glb')?Buffer.from('old model'):b)}),/bundle differs/);
+});

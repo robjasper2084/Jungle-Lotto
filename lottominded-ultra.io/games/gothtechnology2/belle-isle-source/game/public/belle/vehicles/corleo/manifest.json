@@ -1,0 +1,67 @@
+{
+  "schema": "corleo-anim-v1",
+  "source": "Animation_Library.zip",
+  "disclaimer": "Kinematic prototype animations, not verified Kawasaki hardware performance",
+  "files": [
+    {
+      "name": "CORLEO_Professional_MOUNT.glb",
+      "sha256": "8f8e1802fe26bf3b694fa15f7cc2ea23300c5a84411995b0d960ad0f5d116db3",
+      "size": 3464036,
+      "animation": "CORLEO_Professional_MOUNT"
+    },
+    {
+      "name": "CORLEO_Professional_RUN.glb",
+      "sha256": "2eb8709ff018d68ce75d04d57c40234a02b095d43239ffb7c444b71564de5f55",
+      "size": 3240152,
+      "animation": "CORLEO_Professional_RUN"
+    },
+    {
+      "name": "CORLEO_Professional_CRAWL.glb",
+      "sha256": "72aee08c93abf465ab46eb5194b554c902fb09e4a511699ea45026d6461c9e81",
+      "size": 3218036,
+      "animation": "CORLEO_Professional_CRAWL"
+    },
+    {
+      "name": "CORLEO_Professional_JUMP.glb",
+      "sha256": "b0cc9bb69541c467d2a7c23cd8dfab87eca483cee2a8aef5763b9a1281f739f6",
+      "size": 3247184,
+      "animation": "CORLEO_Professional_JUMP"
+    },
+    {
+      "name": "CORLEO_Professional_DISMOUNT.glb",
+      "sha256": "16b5dc4faf245e1f8a3fab7273ac32b44a7c8afd218d520492e4e0e0aa6ef9b7",
+      "size": 3464040,
+      "animation": "CORLEO_Professional_DISMOUNT"
+    },
+    {
+      "name": "CORLEO_Maverick_MOUNT.glb",
+      "sha256": "43e4c6d4981491cd189a5a698048381fb0e22e9ba7ee7cca4704ba643ac81c10",
+      "size": 3391044,
+      "animation": "CORLEO_Maverick_MOUNT"
+    },
+    {
+      "name": "CORLEO_Maverick_RUN.glb",
+      "sha256": "942d1f1966d955291dc70bf79754982fa2327fba2c64034d0320ee336f1342d2",
+      "size": 3167160,
+      "animation": "CORLEO_Maverick_RUN"
+    },
+    {
+      "name": "CORLEO_Maverick_CRAWL.glb",
+      "sha256": "681066e19a963ba317176b1482d3335f3ab46e112d610f343e287ccf9ab46a21",
+      "size": 3145044,
+      "animation": "CORLEO_Maverick_CRAWL"
+    },
+    {
+      "name": "CORLEO_Maverick_JUMP.glb",
+      "sha256": "07ea775395c894c93cec4cba2186058bc1cde8764aca7930fe1b6cae4b4e849b",
+      "size": 3174196,
+      "animation": "CORLEO_Maverick_JUMP"
+    },
+    {
+      "name": "CORLEO_Maverick_DISMOUNT.glb",
+      "sha256": "583393697f987da01c320a057f28b5d73481c55ee7bccd0335019bfba9ceddd9",
+      "size": 3391048,
+      "animation": "CORLEO_Maverick_DISMOUNT"
+    }
+  ]
+}
