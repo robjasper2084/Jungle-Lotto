@@ -1,5 +1,6 @@
 import {PointerTrack,HeldControls,stickAxes} from './mobileInput.ts';
 import './mobileHud.css';
+import {installHudCustomization} from './hudLayoutRuntime.ts';
 
 type Hooks={blocked:()=>boolean;movementBlocked:()=>boolean;clear:()=>void;move:(steer:number,throttle:number)=>void;look:(x:number,y:number)=>void;hop:()=>void};
 const get=<E extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(id) as E;
@@ -8,24 +9,25 @@ const save=(key:string,value:string)=>{try{localStorage.setItem(key,value);}catc
 const number=(key:string,fallback:number,min:number,max:number)=>{const saved=read(key),n=saved===null?fallback:Number(saved);return Number.isFinite(n)?Math.max(min,Math.min(max,n)):fallback;};
 
 export function createMobileHud(h:Hooks){
+ let layouts:ReturnType<typeof installHudCustomization>|undefined;
  const zone=get('touch-zone'),stick=get('stick'),canvas=get<HTMLCanvasElement>('game');
  const movement=new PointerTrack(),look=new PointerTrack(),held=new HeldControls();
  const stickMode=get<HTMLSelectElement>('joystick-mode');stickMode.value=read('belle-joystick-mode')==='fixed'?'fixed':'floating';document.body.dataset.joystickMode=stickMode.value;zone.setAttribute('aria-label',stickMode.value==='floating'?'Floating movement area':'Fixed movement joystick');
- const captured=new Map<number,HTMLElement>();let originX=0,originY=0,running=false;
+ const captured=new Map<number,HTMLElement>();let originX=0,originY=0,moveRadius=45,running=false;
  const capture=(element:HTMLElement,id:number)=>{element.setPointerCapture(id);captured.set(id,element);};
  const releaseCapture=(id:number)=>{const owner=captured.get(id);captured.delete(id);if(owner?.hasPointerCapture(id))owner.releasePointerCapture(id);};
  function resetStick(){stick.style.removeProperty('left');stick.style.removeProperty('top');stick.style.removeProperty('bottom');stick.firstElementChild!.removeAttribute('style');stick.classList.remove('is-active');h.move(0,0);}
  function syncHeld(){for(const action of ['hop','brake'])get(action).classList.toggle('is-held',held.has(action));}
- function clear(){movement.clear();look.clear();held.clear();running=false;get('sprint').setAttribute('aria-pressed','false');resetStick();syncHeld();for(const id of [...captured.keys()])releaseCapture(id);}
+ function clear(){layouts?.neutralize();movement.clear();look.clear();held.clear();running=false;get('sprint').setAttribute('aria-pressed','false');resetStick();syncHeld();for(const id of [...captured.keys()])releaseCapture(id);}
  zone.onpointerdown=e=>{
   if(e.button!==0||h.blocked()||h.movementBlocked()||!movement.begin(e.pointerId,e.clientX,e.clientY))return;
-  e.preventDefault();const rect=zone.getBoundingClientRect(),r=stick.getBoundingClientRect(),floating=stickMode.value==='floating';originX=floating?e.clientX:r.left+r.width/2;originY=floating?e.clientY:r.top+r.height/2;capture(zone,e.pointerId);
+  e.preventDefault();const rect=zone.getBoundingClientRect(),r=stick.getBoundingClientRect(),floating=stickMode.value==='floating';originX=floating?e.clientX:r.left+r.width/2;originY=floating?e.clientY:r.top+r.height/2;moveRadius=r.width*.37;capture(zone,e.pointerId);
   if(floating){stick.style.left=(originX-rect.left-r.width/2)+'px';stick.style.top=(originY-rect.top-r.height/2)+'px';stick.style.bottom='auto';}stick.classList.add('is-active');const axes=stickAxes(e.clientX-originX,e.clientY-originY,r.width*.37);h.move(axes.steer,axes.throttle);
  };
  zone.onpointermove=e=>{
   if(movement.id!==e.pointerId)return;
   if(h.blocked()||h.movementBlocked()){clear();return;}
-  const radius=stick.getBoundingClientRect().width*.37,axes=stickAxes(e.clientX-originX,e.clientY-originY,radius);
+  const radius=moveRadius,axes=stickAxes(e.clientX-originX,e.clientY-originY,radius);
   h.move(axes.steer,axes.throttle);
   (stick.firstElementChild as HTMLElement).style.transform='translate('+axes.steer*radius*.68+'px,'+(-axes.throttle*radius*.68)+'px)';
  };
@@ -77,7 +79,9 @@ export function createMobileHud(h:Hooks){
  // Native dialogs and room panels must never leave a held steering/brake input behind.
  const observer=new MutationObserver(records=>{if(records.some(r=>r.type==='attributes'&&(r.target as HTMLDialogElement).open))h.clear();});
  for(const dialog of document.querySelectorAll('dialog'))observer.observe(dialog,{attributes:true,attributeFilter:['open']});
+ layouts=installHudCustomization({clear:()=>h.clear()});
  return {clear,held, get running(){return running;},mode(onFoot:boolean){
+  layouts?.mode(onFoot);
   get('mount-label').textContent=onFoot?'Ride':'Dismount';get('mount').setAttribute('aria-label',onFoot?'Get on wheel (F)':'Get off wheel (F)');
   get('sprint').hidden=!onFoot||!touch.checked;get('brake-label').textContent=onFoot?'Stop':'Brake';get('ride-mode').textContent=onFoot?'ON FOOT':'EUC';
  },collectTools(){const companion=get('companion-tray');if(companion)menu.querySelector('nav')!.append(companion);}};

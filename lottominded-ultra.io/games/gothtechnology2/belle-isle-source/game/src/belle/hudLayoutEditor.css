@@ -1,0 +1,41 @@
+/* Screen-space editing only: no WebGL passes, backdrop blur or copied game artwork. */
+#belle-hud-editor{--hud-editor-ink:#edf8f5;--hud-editor-surface:#102b31;--hud-editor-accent:#9ceadd;box-sizing:border-box;position:fixed;inset:0;width:100dvw;max-width:none;height:100dvh;max-height:none;margin:0;padding:max(12px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));background:#081b22f7;color:var(--hud-editor-ink);border:0;font:14px/1.45 system-ui,sans-serif;overscroll-behavior:contain}
+#belle-hud-editor[open]{display:flex;flex-direction:column;gap:10px}#belle-hud-editor::backdrop{background:#001014aa}
+#belle-hud-editor *{box-sizing:border-box}#belle-hud-editor>header{position:static;display:flex;align-items:center;gap:10px;flex:none;pointer-events:auto}
+#belle-hud-editor h2{font:650 20px/1.15 system-ui,sans-serif;letter-spacing:.02em;margin:0 auto 0 0}
+#belle-hud-editor :is(button,select,input){font:inherit;min-height:44px;min-width:44px;border-radius:7px;border:1px solid #8cc7c66b;background:#15333b;color:var(--hud-editor-ink);padding:9px;touch-action:manipulation}
+#belle-hud-editor :is(button,select,input):focus-visible{outline:3px solid var(--hud-editor-accent);outline-offset:2px}
+#belle-hud-editor button:disabled{opacity:.5}#belle-hud-editor .hud-editor-save{background:var(--hud-editor-accent);color:#062725;font-weight:750}
+#belle-hud-editor .hud-editor-content{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:18px;min-height:0;flex:1;overflow:auto;align-items:start;touch-action:pan-y}
+#belle-hud-editor .hud-editor-panel{display:grid;gap:12px;padding:0 4px 14px 0;min-width:0}
+#belle-hud-editor label{display:grid;grid-template-columns:minmax(0,1fr) minmax(60px,115px);gap:8px;align-items:center;margin:0;font-size:12px}#belle-hud-editor label:has(select),#belle-hud-editor label:has(input[type=text]){grid-template-columns:1fr}
+#belle-hud-editor input[type=number]{width:100%}#belle-hud-editor input[type=checkbox]{justify-self:end;width:44px;height:44px;accent-color:var(--hud-editor-accent)}
+#belle-hud-editor .hud-editor-preview{min-width:0;position:sticky;top:0}#belle-hud-editor .hud-editor-preview-label{margin:0 0 8px;font-size:12px;color:#b2cfca}
+#belle-hud-editor .hud-editor-stage{position:relative;width:min(100%,calc(66vh * var(--hud-preview-ratio,1)));max-width:100%;margin:auto;background:#102a32;border:1px solid #8bbab44f;border-radius:8px;overflow:hidden;touch-action:none}
+#belle-hud-editor .hud-editor-guard{position:absolute;top:0;bottom:0;pointer-events:none;background:#addfd610;border-left:1px dashed #bddbd844;border-right:1px dashed #bddbd844}
+#belle-hud-editor .hud-editor-handle{position:absolute;min-width:44px;min-height:44px;overflow:hidden;text-overflow:ellipsis;background:#244c56d9;border:1px solid #a5d9d99c;border-radius:8px;padding:3px;font-size:11px;font-weight:650;touch-action:none;user-select:none}
+#belle-hud-editor .hud-editor-handle[aria-pressed=true]{background:#9ceadd;color:#07232b;border:2px solid white;z-index:2}#belle-hud-editor .hud-editor-handle-hidden{border-style:dashed;background:#173840;color:#acc3c4}
+#belle-hud-editor .hud-editor-button-row{display:flex;flex-wrap:wrap;gap:7px}#belle-hud-editor .hud-editor-button-row button{flex:1;font-size:12px}
+#belle-hud-editor .hud-editor-status{font-size:12px;flex:none;color:#b9d8d2;min-height:18px}#belle-hud-editor .hud-editor-errors{font-size:12px;color:#ffd1b0;margin:0}#belle-hud-editor .hud-editor-hint{font-size:12px;color:#b2cfca;margin:0}
+@media(max-width:700px){#belle-hud-editor .hud-editor-content{grid-template-columns:1fr}#belle-hud-editor .hud-editor-preview{position:static}#belle-hud-editor .hud-editor-stage{width:100%;max-height:none}#belle-hud-editor h2{font-size:16px}#belle-hud-editor>header{gap:6px}#belle-hud-editor>header button{font-size:12px;padding:7px}}
+@media(max-height:400px) and (min-width:701px){#belle-hud-editor .hud-editor-stage{width:min(100%,calc(55vh * var(--hud-preview-ratio,1)))}#belle-hud-editor .hud-editor-status{display:none}}
+.belle-hud-settings-button{min-width:44px;min-height:44px}.belle-hud-notice{position:fixed;left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right));top:max(8px,env(safe-area-inset-top));max-width:620px;padding:9px 12px;background:#102b31f5;color:#edf8f5;border:1px solid #9ceadd66;border-radius:6px;z-index:40;font:12px/1.4 system-ui;pointer-events:none}.belle-hud-notice:empty{display:none}
+.belle-hud-safe-probe{position:fixed;inset:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+/* The class is applied only to existing controls. No active buttons are cloned. */
+.belle-hud-control:not([data-hud-stick]),body[data-joystick-mode=fixed] .belle-hud-control[data-hud-stick],body:not([data-joystick-mode=fixed]) .belle-hud-control[data-hud-stick]:not(.is-active){position:fixed!important;left:var(--hud-x)!important;top:var(--hud-y)!important;right:auto!important;bottom:auto!important;margin:0!important;transform:scale(var(--hud-scale,1))!important;transform-origin:top left!important;z-index:9!important}
+.belle-hud-control{background-color:rgb(10 32 39 / var(--hud-alpha,.6))!important;transition:none!important}
+.belle-hud-control[data-hud-box=button],.belle-hud-control[data-hud-stick]{width:var(--hud-width)!important;height:var(--hud-height)!important;max-width:none!important;max-height:none!important;min-width:44px;min-height:44px}
+.belle-hud-control[data-hud-box=group]{width:var(--hud-width)!important;max-width:none!important}
+.belle-hud-control :is(button,summary,select){min-height:44px;min-width:44px}
+.belle-hud-control[data-hud-user-hidden=true]{display:none!important}
+.belle-hud-control:is(.is-held,[data-held],[aria-pressed=true]){border-color:#c7fff3!important;box-shadow:0 0 0 2px #9ceadd60!important;background-color:#285b60!important}
+[data-hud-move-zone]{position:fixed!important;left:var(--hud-zone-left)!important;top:var(--hud-zone-top)!important;width:var(--hud-zone-width)!important;height:var(--hud-zone-height)!important;right:auto!important;bottom:auto!important}
+.coop-look[data-hud-look-zone]{left:var(--hud-look-left)!important;width:var(--hud-look-width)!important;right:auto!important}
+@media(prefers-reduced-motion:reduce){#belle-hud-editor *{animation:none!important;transition:none!important}}
+
+.belle-hud-control[data-hud-stick]{pointer-events:auto!important}
+/* Existing co-op action rows are translated; fixed children must use the screen,
+   not that transformed row, as their containing block. Other sessions are untouched. */
+.coop-player-actions:has(>.belle-hud-control){transform:none!important;left:0!important;right:0!important;top:0!important;bottom:0!important;pointer-events:none!important}
+.coop-player-actions>.belle-hud-control{pointer-events:auto!important}
+.coop-session-toolbar:has(#coop-hud-customize){flex-wrap:wrap;max-width:calc(100vw - 16px)}
