@@ -1,0 +1,51 @@
+name: Belle native media evidence
+on:
+  push:
+    branches: [diagnostics/belle-native-media-20261114]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-media:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [no-validator, strong-revalidate, strong-fresh]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: diagnostic
+          sparse-checkout: .diagnostics/belle-integration
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          path: work
+          ref: be392dcf43d564eeb9fb33e8d9dc85856fd07143
+          sparse-checkout: |
+            lottominded-ultra.io/games/gothtechnology2/package.json
+            lottominded-ultra.io/games/gothtechnology2/package-lock.json
+            lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/audio/swoop
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install the locked existing browser runtime
+        working-directory: work/lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Observe actual native media with byte-identical range responses
+        env:
+          MEDIA_CASE: ${{ matrix.mode }}
+        run: xvfb-run --auto-servernum node diagnostic/.diagnostics/belle-integration/native-media-evidence.mjs
+      - name: Preserve raw observations including failures, not release acceptance
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-native-media-${{ matrix.mode }}-${{ github.run_id }}
+          path: work/native-media-evidence/
+          if-no-files-found: error
+          retention-days: 14
