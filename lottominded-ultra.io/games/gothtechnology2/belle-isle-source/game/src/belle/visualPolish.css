@@ -115,7 +115,9 @@ body[data-presentation-motion=reduced] :is(.location-chip,#navigation){backdrop-
 }
 @media(max-height:520px){
  body.island-trial.on-hoverbike.touch-controls[data-joystick-mode=fixed] #trial-hud{--trial-top:calc(var(--island-safe-top,0px) + 78px)}
- body.on-hoverbike.touch-controls #jarvs-avionics:not(.belle-hud-control){box-sizing:border-box;max-width:calc(40dvw - 30px)}
+ /* The action row occupies the right 70%; reserve its entire lane even when
+  * Linux font metrics keep the six buttons on one row. */
+ body.on-hoverbike.touch-controls #jarvs-avionics:not(.belle-hud-control){box-sizing:border-box;max-width:calc(30dvw - 40px)}
 }
 @media(min-width:401px) and (max-height:520px){
  body.on-hoverbike.touch-controls:not(.island-trial):not(.royale-camera-mode) #camera-capture{top:calc(var(--island-safe-top,0px) + 125px)}
