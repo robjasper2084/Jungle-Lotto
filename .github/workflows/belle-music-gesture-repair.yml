@@ -29,10 +29,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - name: Restore failing combined source and apply narrow lifecycle fix
+      - name: Restore failing combined source and apply narrow lifecycle and cache fixes
         run: |
           python diagnostic/.diagnostics/belle-integration/apply.py
           python diagnostic/.diagnostics/belle-integration/fix-music-gesture.py
+          python diagnostic/.diagnostics/belle-integration/fix-preview-cache.py
       - name: Strict check, ALL registered tests and real build
         working-directory: work/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
         run: |
