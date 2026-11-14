@@ -5,7 +5,8 @@ import {stripTypeScriptTypes} from 'node:module';
 const source=await readFile(new URL('../vite.config.ts',import.meta.url),'utf8');
 // Execute the actual configuration/hook with only Vite's identity wrapper replaced.
 // This is a config unit test, not a full Vite build or GPU test.
-const js=stripTypeScriptTypes(source).replace("import { defineConfig } from 'vite';",'const defineConfig=value=>value;').replace("import {defineConfig} from 'vite';",'const defineConfig=value=>value;');
+const js=stripTypeScriptTypes(source).replace("import { defineConfig } from 'vite';",'const defineConfig=value=>value;').replace("import {defineConfig} from 'vite';",'const defineConfig=value=>value;')
+ .replace(/from (['"])(\.[^'"]+)\1/g,(_match,quote,specifier)=>'from '+quote+new URL(specifier,new URL('../vite.config.ts',import.meta.url)).href+quote);
 assert.ok(!/from ['"]vite['"]/.test(js),'Only the Vite wrapper is substituted');
 const config=(await import('data:text/javascript;base64,'+Buffer.from(js).toString('base64'))).default;
 const build=config({command:'build'});
@@ -15,8 +16,15 @@ test('actual HTML transform declares a real relative SVG icon',()=>{
  assert.deepEqual(tags,[{tag:'link',attrs:{rel:'icon',type:'image/svg+xml',href:'./favicon.svg'},injectTo:'head'}]);
 });
 test('same explicit icon is available during development',()=>{
- assert.deepEqual(config({command:'serve'}).plugins[0].transformIndexHtml(),build.plugins[0].transformIndexHtml());
+ const runtime=settings=>settings.plugins.find(plugin=>plugin.name==='belle-runtime-assets');
+ assert.deepEqual(runtime(config({command:'serve'})).transformIndexHtml(),runtime(build).transformIndexHtml());
  assert.equal(config({command:'serve'}).publicDir,'public');assert.equal(build.publicDir,false);
+});
+
+test('configuration loads the real preview media adapter alongside the asset plugin',()=>{
+ const media=build.plugins.find(plugin=>plugin.name==='belle-preview-media-revalidation');
+ assert.equal(typeof media.configurePreviewServer,'function');
+ assert.deepEqual(Object.keys(media).sort(),['configurePreviewServer','name']);
 });
 test('new document files are copied without removing vehicle or world assets',()=>{
  for(const file of ['favicon.svg','deployment-health.html','deployment-health.mjs','release-health-model.mjs','belle/vehicles/hero-hoverbike.glb','belle/nature/cherry.glb','belle/map.json','belle/beach-surface.bin','exports/rigged-heroes/DS_Armored_Rider_01.glb'])assert.ok(source.includes(`'${file}'`)||source.includes(`"${file}"`),file);
