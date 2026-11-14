@@ -67,6 +67,7 @@ async function verifyFlightLayout(label){
   const rect=el=>{if(el.id==='hover-notice'){const range=document.createRange();range.selectNodeContents(el);return range.getBoundingClientRect();}return el.getBoundingClientRect();};
   const overlaps=[],intersects=(a,b)=>{const x=rect(a),y=rect(b);return Math.min(x.right,y.right)-Math.max(x.left,y.left)>1&&Math.min(x.bottom,y.bottom)-Math.max(x.top,y.top)>1;};
   for(const panel of panels)for(const control of controls)if(!panel.contains(control)&&intersects(panel,control))overlaps.push([name(panel),name(control)]);
+  for(const hud of visible('#trial-hud'))for(const reading of visible('.hover-instruments>*'))if(intersects(hud,reading))overlaps.push([name(hud),name(reading)]);
   for(let i=0;i<controls.length;i++)for(let j=i+1;j<controls.length;j++)if(!controls[i].contains(controls[j])&&!controls[j].contains(controls[i])&&intersects(controls[i],controls[j]))overlaps.push([name(controls[i]),name(controls[j])]);
   return{viewport:{width:innerWidth,height:innerHeight},overlaps,controls:controls.map(name),panels:panels.map(name)};
  });
