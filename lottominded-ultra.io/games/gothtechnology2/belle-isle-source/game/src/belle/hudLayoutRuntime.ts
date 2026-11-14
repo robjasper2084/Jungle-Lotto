@@ -1,7 +1,7 @@
 import {clone,profileOf,contains,layoutProblems,normalizedPosition,placementRect,type ControlId,type HudLayout,type Rect,type HudMode} from './hudLayoutModel.ts';
 import {availableHudStorage,loadHudArchive,saveHudArchive,legacyHudPreferences} from './hudLayoutStore.ts';
 import {mountHudLayoutEditor,type HudEditScope} from './hudLayoutEditor.ts';
-import {backgroundTouchRole,TouchOwnership,type TouchRole} from './touchZones.ts';
+import {backgroundTouchRole,customMovementZone,TouchOwnership,type TouchRole} from './touchZones.ts';
 type Spec={id:ControlId;selector:string;label:string;kind:'button'|'stick'|'group'|'info';essential:boolean};
 type Binding={element:HTMLElement;spec:Spec;width:number;height:number};
 type Scope=HudEditScope&{root:HTMLElement;bindings:Binding[];layout:HudLayout};
@@ -60,21 +60,26 @@ export function installHudCustomization(hooks:{clear:()=>void}){
   }
   return result.filter(s=>s.controls.length&&s.view.width>0&&s.view.height>0);
  }
- function configureZones(s:Scope){
-  const l=s.layout,right=l.handedness==='left',width=s.view.width*(1-l.centerGuardFraction)/2,left=s.view.left+(right?s.view.width-width:0);
+ function configureZones(s:Scope,customApplied:boolean){
+  const l=s.layout,right=l.handedness==='left',width=s.view.width*(1-l.centerGuardFraction)/2;
   if(s.key.startsWith('solo:')){
-   const zone=q(s.key.includes(':hover:')?'#hover-move-zone':'#touch-zone');if(zone){zones.add(zone);zone.dataset.hudMoveZone='true';zone.style.setProperty('--hud-zone-left',left+'px');zone.style.setProperty('--hud-zone-top',s.view.top+s.view.height*.48+'px');zone.style.setProperty('--hud-zone-width',width+'px');zone.style.setProperty('--hud-zone-height',s.view.height*.52+'px');}
+   // Unedited and fallback layouts retain the authored responsive hit surfaces.
+   // Moving their parent shifts a fixed stick and can steal flight/radio targets.
+   const hover=s.key.includes(':hover:'),zone=q(hover?'#hover-move-zone':'#touch-zone'),stick=q(hover?'#hover-flight-stick':'#stick');
+   const fixed=document.body.dataset.joystickMode==='fixed';
+   const area=customMovementZone(customApplied,s.view,l.handedness,l.centerGuardFraction,fixed&&stick?rect(stick.getBoundingClientRect()):undefined,fixed);
+   if(zone&&area){zones.add(zone);zone.dataset.hudMoveZone='true';zone.style.setProperty('--hud-zone-left',area.left+'px');zone.style.setProperty('--hud-zone-top',area.top+'px');zone.style.setProperty('--hud-zone-width',area.width+'px');zone.style.setProperty('--hud-zone-height',area.height+'px');}
   }else{
    const look=q('.coop-look',s.root);if(look){const r=s.root.getBoundingClientRect(),lookLeft=s.view.left+(right?0:s.view.width-width);zones.add(look);look.dataset.hudLookZone='true';look.style.setProperty('--hud-look-left',lookLeft-r.left+'px');look.style.setProperty('--hud-look-width',width+'px');}
   }
  }
  function apply(){
   if(disposed||editor.isOpen)return;scopes=collect();signature=signatureNow();
-  for(const s of scopes){const custom=profileOf(archive).layouts[s.key];
+  for(const s of scopes){const custom=profileOf(archive).layouts[s.key];let customApplied=false;
    if(custom){const issues=layoutProblems(s.layout,s.controls,s.view);if(issues.length){s.layout=clone(s.baseline);const warning=s.key+issues.join('|');if(warning!==lastFallback){lastFallback=warning;announce('Custom HUD does not fit this view. Built-in controls are in use; saved settings are unchanged. Open Customize HUD to adjust.');}}
-    else for(const b of s.bindings){const p=s.layout.controls[b.spec.id];if(!p)continue;const r=placementRect(p,s.controls.find(g=>g.id===b.spec.id)!,s.view),e=b.element;managed.add(e);e.classList.add('belle-hud-control');e.dataset.hudControl=b.spec.id;e.dataset.hudBox=b.spec.kind;if(b.spec.kind==='stick')e.dataset.hudStick='true';if(p.hidden&&!b.spec.essential)e.dataset.hudUserHidden='true';for(const [name,value]of Object.entries({'--hud-x':r.left+'px','--hud-y':r.top+'px','--hud-width':b.width+'px','--hud-height':b.height+'px','--hud-scale':String(p.scale),'--hud-alpha':String(p.opacity)}))e.style.setProperty(name,value);}
+    else{customApplied=true;for(const b of s.bindings){const p=s.layout.controls[b.spec.id];if(!p)continue;const r=placementRect(p,s.controls.find(g=>g.id===b.spec.id)!,s.view),e=b.element;managed.add(e);e.classList.add('belle-hud-control');e.dataset.hudControl=b.spec.id;e.dataset.hudBox=b.spec.kind;if(b.spec.kind==='stick')e.dataset.hudStick='true';if(p.hidden&&!b.spec.essential)e.dataset.hudUserHidden='true';for(const [name,value]of Object.entries({'--hud-x':r.left+'px','--hud-y':r.top+'px','--hud-width':b.width+'px','--hud-height':b.height+'px','--hud-scale':String(p.scale),'--hud-alpha':String(p.opacity)}))e.style.setProperty(name,value);}}
    }
-   configureZones(s);
+   configureZones(s,customApplied);
   }
   attachCoopButton();
  }

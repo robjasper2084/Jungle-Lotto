@@ -22,3 +22,19 @@ export class TouchOwnership{
  get size(){return this.owners.size;}
  clear(){this.generation++;this.owners.clear();}
 }
+
+/** Only saved, validated layouts may replace an authored movement surface.
+ * A fixed stick owns its real rendered footprint, never an invisible half-screen.
+ * Floating input keeps its independent start region; explicit controls win hits.
+ */
+export function customMovementZone(customApplied:boolean,view:Rect,hand:Handedness,guard:number,stick:Rect|undefined,fixed:boolean):Rect|undefined{
+ if(!customApplied)return undefined;
+ const finiteRect=(r:Rect)=>[r.left,r.top,r.width,r.height].every(Number.isFinite)&&r.width>0&&r.height>0;
+ if(!finiteRect(view)||!['left','right'].includes(hand)||!Number.isFinite(guard)||guard<0||guard>.24)throw new Error('Invalid movement viewport');
+ if(fixed){
+  if(!stick||!finiteRect(stick)||stick.width<44||stick.height<44||stick.left<view.left-.5||stick.top<view.top-.5||stick.left+stick.width>view.left+view.width+.5||stick.top+stick.height>view.top+view.height+.5)throw new Error('Fixed joystick must fit its safe viewport');
+  return {...stick};
+ }
+ const width=view.width*(1-guard)/2;
+ return {left:view.left+(hand==='left'?view.width-width:0),top:view.top+view.height*.48,width,height:view.height*.52};
+}

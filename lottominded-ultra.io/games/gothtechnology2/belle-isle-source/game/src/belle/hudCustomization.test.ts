@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {clone,emptyArchive,validateArchive,importArchive,profileOf,placementRect,normalizedPosition,layoutProblems,presetLayout,validContext,controlInContext,HudHistory,MAX_IMPORT_BYTES,type HudLayout,type ControlGeometry} from './hudLayoutModel.ts';
 import {loadHudArchive,saveHudArchive,legacyHudPreferences} from './hudLayoutStore.ts';
-import {TouchOwnership,backgroundTouchRole} from './touchZones.ts';
+import {TouchOwnership,backgroundTouchRole,customMovementZone} from './touchZones.ts';
 const view={left:10,top:20,width:300,height:500};
 const geometries:ControlGeometry[]=[{id:'stick',label:'Move',width:110,height:110,interactive:true,essential:true},{id:'brake',label:'Brake',width:60,height:60,interactive:true,essential:true},{id:'map',label:'Map',width:100,height:70,interactive:true,essential:false,minScale:1}];
 const layout:HudLayout={handedness:'right',centerGuardFraction:.08,controls:{stick:{u:0,v:1,scale:1,opacity:.6,hidden:false},brake:{u:1,v:1,scale:1,opacity:.8,hidden:false},map:{u:1,v:0,scale:1,opacity:.9,hidden:false}}};
@@ -36,3 +36,11 @@ test('release/cancel is idempotent and owner snapshots are immutable',()=>{const
 test('center guard only classifies starts, left-handed mirrors roles not signs',()=>{assert.equal(backgroundTouchRole(view,160,100),'ignored');assert.equal(backgroundTouchRole(view,30,100),'move');assert.equal(backgroundTouchRole(view,280,100),'look');assert.equal(backgroundTouchRole(view,30,100,'left'),'look');assert.equal(backgroundTouchRole(view,280,100,'left'),'move');});
 test('zero-width guard restores the boundary without a dead band',()=>{assert.equal(backgroundTouchRole(view,160,100,'right',0),'look');assert.equal(backgroundTouchRole(view,159.9,100,'right',0),'move');});
 test('coordinates outside the player viewport never control their partner',()=>{assert.equal(backgroundTouchRole(view,9,100),'ignored');assert.equal(backgroundTouchRole(view,310,100),'ignored');assert.equal(backgroundTouchRole(view,100,520),'ignored');assert.equal(backgroundTouchRole(view,NaN,100),'ignored');});
+
+// Regressions from PR152's real phone/landscape hit-target failures.
+for(const fixed of [true,false])test('unedited/fallback '+(fixed?'fixed':'floating')+' retains authored CSS geometry',()=>{assert.equal(customMovementZone(false,view,'right',.08,{left:24,top:390,width:116,height:116},fixed),undefined);});
+test('custom fixed joystick owns its scaled footprint, not the entire left half',()=>{const stick={left:24,top:200,width:60,height:60};assert.deepEqual(customMovementZone(true,view,'right',.08,stick,true),stick);assert.deepEqual(customMovementZone(true,view,'left',.24,stick,true),stick);});
+test('fixed movement footprint is an immutable copy',()=>{const stick={left:24,top:200,width:60,height:60},zone=customMovementZone(true,view,'right',.08,stick,true)!;zone.left=100;assert.equal(stick.left,24);});
+for(const stick of [undefined,{left:24,top:200,width:43,height:60},{left:0,top:200,width:60,height:60},{left:290,top:200,width:60,height:60},{left:24,top:500,width:60,height:60}])test('invalid saved fixed footprint is never widened into a fallback '+JSON.stringify(stick),()=>assert.throws(()=>customMovementZone(true,view,'right',.08,stick,true),/safe viewport/));
+test('custom floating regions respect handedness and the center guard',()=>{const a=customMovementZone(true,view,'right',.08,undefined,false)!,b=customMovementZone(true,view,'left',.08,undefined,false)!;assert.equal(a.left,view.left);assert.equal(a.width,138);assert.equal(b.left+b.width,view.left+view.width);assert.equal(b.left-(a.left+a.width),24);assert.equal(a.top+a.height,view.top+view.height);});
+test('new movement geometry does not reclassify an existing owner',()=>{const owner=new TouchOwnership();owner.begin(1,'solo','move');customMovementZone(true,view,'left',.24,undefined,false);assert.equal(owner.begin(1,'other','look').role,'move');});
