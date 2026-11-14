@@ -40,7 +40,7 @@ try{
   const auditLayout=async preset=>{
    const result=await page.evaluate(()=>{
     const visible=selector=>[...document.querySelectorAll(selector)].filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.height>0&&getComputedStyle(el).visibility!=='hidden';});
-    const controls=visible('.hover-touch button,.hover-actions button,.hover-cruise button,#hero-cam-record,#view,#pause,#tools-toggle,#ride-radio>details>summary');
+    const controls=visible('.hover-touch button,.hover-actions button,.hover-cruise button,#hero-cam-record,#view,#pause,#tools-toggle,#ride-radio>details>summary'+(document.body.dataset.joystickMode==='fixed'?',#hover-move-zone':''));
     const label=el=>el.id||el.getAttribute('aria-label')||el.textContent.trim();
     const obscured=controls.filter(el=>{const r=el.getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return r.width<44||r.height<44||r.x<0||r.y<0||r.right>innerWidth||r.bottom>innerHeight||!(hit===el||el.contains(hit));}).map(label);
     const overlaps=[];
@@ -102,6 +102,12 @@ try{
     assert(hit.width>=44&&hit.height>=44&&hit.inside&&hit.hit,'Accessible unobstructed '+id+' at '+entry.name);
    }
    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'No page-width overflow');await auditLayout('cinematic');await shot('cinematic-sunset');
+   if(mobile){
+    await tap(page.locator('#tools-toggle'));await tap(page.locator('#settings-open'));await page.locator('#joystick-mode').selectOption('fixed');await tap(page.locator('#settings [data-close="settings"]'));
+    await auditLayout('cinematic-fixed-joystick');
+    const fixedPoints=await page.locator('#hover-move-zone').evaluate(zone=>{const r=zone.getBoundingClientRect();return [[.5,.5],[.25,.5],[.75,.5],[.5,.25],[.5,.75]].map(([u,v])=>{const hit=document.elementFromPoint(r.x+r.width*u,r.y+r.height*v);return hit===zone||zone.contains(hit);});});
+    assert(fixedPoints.every(Boolean),'Fixed joystick must receive native input across its movement area');await shot('fixed-joystick');
+   }
    // Pause and resume through real UI; no timeline or input-state substitution.
    await tap(page.locator('#pause'));await expect(page.locator('#pause')).toHaveText('Resume');await tap(page.locator('#pause'));await expect(page.locator('#pause')).toHaveText('Pause');
    assert.deepEqual(evidence.errors,[],'No unexpected console, asset or context errors');assert.deepEqual(evidence.failedRequests,[],'No aborted or failed requests');evidence.functionalPassed=true;

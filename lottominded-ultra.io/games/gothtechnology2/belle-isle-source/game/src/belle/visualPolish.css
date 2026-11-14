@@ -69,23 +69,37 @@ body[data-presentation-motion=reduced] :is(.location-chip,#navigation){backdrop-
  body[data-hud-preset]:not(.coop-playing):not(.island-trial) #ride-radio:not(.cockpit-library):not(.belle-hud-control){top:calc(var(--island-safe-top,0px) + 180px)}
 }
 @media(max-width:400px){
- body[data-hud-preset].touch-controls #hover-hud[data-visual-polish=v1] .hover-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
- body[data-hud-preset].touch-controls #hover-hud[data-visual-polish=v1] .hover-actions button:not(.belle-hud-control){min-width:44px;min-height:44px;padding:6px 5px;font-size:11px;line-height:1.15;white-space:normal}
- body[data-hud-preset].touch-controls #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:136px;max-width:calc(100% - 140px);gap:2px 8px}
- body[data-hud-preset].touch-controls #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control)>div:not(.hover-energy){flex-direction:column;align-items:flex-start;gap:2px}
- body[data-hud-preset].touch-controls #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control)>div:not(.hover-energy)>span{white-space:nowrap}
- body[data-hud-preset].touch-controls #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) :is(span,output){letter-spacing:0}
- body[data-hud-preset].touch-controls #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) output{padding-left:4px}
- body[data-hud-preset].touch-controls #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) .hover-energy{grid-column:1/-1}
- body[data-hud-preset].touch-controls #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) .hover-energy label{margin:0}
- body[data-hud-preset].touch-controls #hover-hud[data-visual-polish=v1] .hover-help{display:none}
+ body[data-hud-preset].touch-controls:not(.island-trial) #hover-hud[data-visual-polish=v1] .hover-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+ body[data-hud-preset].touch-controls:not(.island-trial) #hover-hud[data-visual-polish=v1] .hover-actions button:not(.belle-hud-control){min-width:44px;min-height:44px;padding:6px 5px;font-size:11px;line-height:1.15;white-space:normal}
+ body[data-hud-preset].touch-controls:not(.island-trial) #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:136px;max-width:calc(100% - 140px);gap:2px 8px}
+ body[data-hud-preset].touch-controls:not(.island-trial) #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control)>div:not(.hover-energy){flex-direction:column;align-items:flex-start;gap:2px}
+ body[data-hud-preset].touch-controls:not(.island-trial) #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control)>div:not(.hover-energy)>span{white-space:nowrap}
+ body[data-hud-preset].touch-controls:not(.island-trial) #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) :is(span,output){letter-spacing:0}
+ body[data-hud-preset].touch-controls:not(.island-trial) #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) output{padding-left:4px}
+ body[data-hud-preset].touch-controls:not(.island-trial) #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) .hover-energy{grid-column:1/-1}
+ body[data-hud-preset].touch-controls:not(.island-trial) #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) .hover-energy label{margin:0}
+ body[data-hud-preset].touch-controls:not(.island-trial) #hover-hud[data-visual-polish=v1] .hover-help{display:none}
+}
+/* A visible fixed joystick needs its own lane; floating mode has no resting pad.
+ * Reuse the location-chip space for critical readings on compact solo flights. */
+@media(max-width:400px),(max-height:520px){
+ body.on-hoverbike.touch-controls[data-joystick-mode=fixed]:not(.island-trial):has(.hover-instruments:not(.belle-hud-control)) .location-chip{visibility:hidden}
+ body.on-hoverbike.touch-controls[data-joystick-mode=fixed]:not(.island-trial) .quick-tools{margin-left:auto}
+ body.on-hoverbike.touch-controls[data-joystick-mode=fixed]:not(.island-trial) #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control){position:fixed;top:calc(var(--island-safe-top,0px) + 4px);left:calc(var(--hover-safe-left,0px) + 10px);display:grid;width:min(192px,calc(100dvw - var(--hover-safe-left,0px) - var(--hover-safe-right,0px) - 198px));max-width:none;margin:0;padding:1px 4px;background:var(--cinematic-panel);border-radius:6px;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px 8px}
+ body.on-hoverbike.touch-controls[data-joystick-mode=fixed]:not(.island-trial) #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) b{font-size:22px}
+ body.on-hoverbike.touch-controls[data-joystick-mode=fixed]:not(.island-trial) #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) :is(span,output){font-size:8px}
+ body.on-hoverbike.touch-controls[data-joystick-mode=fixed]:not(.island-trial) #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) .hover-energy{grid-column:1/-1;width:100%;grid-template-columns:42px minmax(0,1fr) 24px;gap:3px!important}
+ body.on-hoverbike.touch-controls[data-joystick-mode=fixed]:not(.island-trial) #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) .hover-energy label{grid-column:auto;margin:0;font-size:7px;letter-spacing:0}
+ body.on-hoverbike.touch-controls[data-joystick-mode=fixed]:not(.island-trial) #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) .hover-energy meter{width:100%}
 }
 @media(max-width:400px) and (max-height:520px){
- body[data-hud-preset].touch-controls #hover-hud .hover-touch{bottom:100px}
- body[data-hud-preset].touch-controls #hover-hud .hover-cruise:not(.belle-hud-control){bottom:158px}
- body[data-hud-preset].touch-controls #hover-boost:not(.belle-hud-control){top:calc(var(--island-safe-top,0px) + 125px);left:50%;right:auto;transform:translateX(-50%)}
- body[data-hud-preset].touch-controls #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control){width:108px;grid-template-columns:44px minmax(0,1fr)}
- body[data-hud-preset].touch-controls #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) b{font-size:22px}
- body[data-hud-preset].touch-controls #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) :is(span,output){font-size:8px}
- body[data-hud-preset].touch-controls #jarvs-avionics:not(.belle-hud-control){box-sizing:border-box;max-width:108px}
+ body[data-hud-preset].touch-controls:not(.island-trial) #hover-hud .hover-touch{bottom:100px}
+ body[data-hud-preset].touch-controls:not(.island-trial) #hover-hud .hover-cruise:not(.belle-hud-control){bottom:158px}
+ body[data-hud-preset].touch-controls:not(.island-trial) #hover-boost:not(.belle-hud-control){top:calc(var(--island-safe-top,0px) + 125px);left:50%;right:auto;transform:translateX(-50%)}
+ body[data-hud-preset].touch-controls:not(.island-trial) #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control){width:108px;grid-template-columns:44px minmax(0,1fr)}
+ body[data-hud-preset].touch-controls:not(.island-trial) #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) b{font-size:22px}
+ body[data-hud-preset].touch-controls:not(.island-trial) #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) :is(span,output){font-size:8px}
+ body[data-hud-preset].touch-controls:not(.island-trial) #jarvs-avionics:not(.belle-hud-control){box-sizing:border-box;max-width:108px}
+ body.on-hoverbike.touch-controls[data-joystick-mode=fixed]:not(.island-trial) .hover-stick-holder:has(#hover-flight-stick:not(.belle-hud-control)){position:relative;top:16px;width:calc(64px * var(--control-scale,1));height:calc(64px * var(--control-scale,1))}
+ body.on-hoverbike.touch-controls[data-joystick-mode=fixed]:not(.island-trial) #hover-flight-stick:not(.belle-hud-control){width:calc(64px * var(--control-scale,1));height:calc(64px * var(--control-scale,1))}
 }

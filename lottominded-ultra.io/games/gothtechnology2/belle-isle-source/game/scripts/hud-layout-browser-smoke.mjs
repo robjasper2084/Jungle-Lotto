@@ -9,6 +9,9 @@ import {createNativeTouchSequence} from './native-touch-sequence.mjs';
 const game=resolve(import.meta.dirname,'..'),out=resolve(game,'output/hud-layout'),root=resolve(game,'dist');
 const choice=process.env.BELLE_HUD_CASE||'phone';
 assert(['phone','desktop'].includes(choice));
+// Keep CI's headed Chromium default; allow the installed Chrome for local QA.
+const browserChannel=process.env.BELLE_HUD_BROWSER_CHANNEL||'chromium';
+assert(['chromium','chrome'].includes(browserChannel));
 const require=createRequire(resolve(game,'../../package.json')),{chromium,expect:baseExpect}=require('@playwright/test'),expect=baseExpect.configure({timeout:90000});
 const report={source:process.env.HUD_SOURCE_SHA??null,checkout:process.env.GITHUB_SHA??null,run:process.env.GITHUB_RUN_ID??null,case:choice,passed:false,phase:'setup',errors:[],failedRequests:[],requestFailureDetails:[],captures:[],checks:{},limitations:'Actual built island, native browser input and software WebGL. Not physical-device FPS/endurance certification. This new smoke supplements, never replaces, the original seven gates.'};
 await mkdir(out,{recursive:true});
@@ -112,7 +115,7 @@ async function verifyPortraitRaceRadio(){
 }
 async function run(){
  await new Promise((yes,no)=>{server.once('error',no);server.listen(0,'127.0.0.1',yes);});report.origin='http://127.0.0.1:'+server.address().port;
- browser=await chromium.launch({channel:'chromium',headless:false,args:['--use-angle=swiftshader','--enable-unsafe-swiftshader','--gpu-watchdog-timeout-seconds=60']});report.browser=browser.version();
+ browser=await chromium.launch({channel:browserChannel,headless:process.env.BELLE_HUD_HEADED==='0',args:['--use-angle=swiftshader','--enable-unsafe-swiftshader','--gpu-watchdog-timeout-seconds=60']});report.browser=browser.version();
  const context=await browser.newContext({viewport:{width:640,height:400},hasTouch:true,isMobile:choice==='phone',deviceScaleFactor:1});page=await context.newPage();client=await context.newCDPSession(page);touchSequence=createNativeTouchSequence((method,params)=>client.send(method,params));page.setDefaultTimeout(90000);
  page.on('pageerror',e=>report.errors.push(e.message));page.on('console',m=>{if(m.type()==='error'||/context.*lost/i.test(m.text()))report.errors.push(m.text());});page.on('response',r=>{if(r.status()>=400)report.errors.push('HTTP '+r.status()+' '+r.url());});
  page.on('requestfailed',r=>{const d={timestamp:new Date().toISOString(),phase:report.phase,type:r.resourceType(),url:r.url(),error:r.failure()?.errorText??'Unknown request failure'};report.requestFailureDetails.push(d);report.failedRequests.push(d.error+' '+d.url);report.errors.push('requestfailed: '+d.error+' '+d.url);});
