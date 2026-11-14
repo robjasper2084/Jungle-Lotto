@@ -96,7 +96,7 @@ bpy.ops.mesh.primitive_torus_add(major_radius=.16,minor_radius=.018,major_segmen
 for a in [math.pi/2,7*math.pi/6,11*math.pi/6]:
  o=tube('Wheel spoke',[(0,.73,1),(.14*math.cos(a),.73+.14*math.sin(a),1)],.013,silver);o.parent=helm;o.matrix_parent_inverse=helm.matrix_world.inverted()
 for name,loc in [('Driver_Eye',(0,1.18,.20)),('Driver_Hip',(0,.59,.38))]:bpy.ops.object.empty_add(type='PLAIN_AXES',location=p(loc));bpy.context.object.name=name
-for side,color,label in [(-1,(.9,.02,.02),'Nav_Port'),(1,(.01,.8,.25),'Nav_Starboard')]:box(label,(side*1.52,.67,1.8),(.07,.04,.08),mat(label,color),.01)
+for side,color,label in [(1,(.9,.02,.02),'Nav_Port'),(-1,(.01,.8,.25),'Nav_Starboard')]:box(label,(side*1.52,.67,1.8),(.07,.04,.08),mat(label,color),.01)
 for o in list(bpy.context.scene.objects):
  if o.type=='CURVE':
   bpy.ops.object.select_all(action='DESELECT');o.select_set(True);bpy.context.view_layer.objects.active=o;bpy.ops.object.convert(target='MESH')

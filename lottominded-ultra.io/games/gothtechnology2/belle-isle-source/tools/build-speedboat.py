@@ -98,7 +98,7 @@ bpy.ops.mesh.primitive_torus_add(major_radius=.18,minor_radius=.018,major_segmen
 for a in [math.pi/2,7*math.pi/6,11*math.pi/6]:
  o=rod('Wheel spoke',[(-.40,.94,-.30),(-.40+math.cos(a)*.16,.94+math.sin(a)*.16,-.30)],.012,silver);o.parent=helm;o.matrix_parent_inverse=helm.matrix_world.inverted()
 # Small red/green navigation lenses; emissive materials are driven at runtime.
-for side,color,label in [(-1,(.9,.02,.02),'Nav_Port'),(1,(.01,.8,.25),'Nav_Starboard')]:
+for side,color,label in [(1,(.9,.02,.02),'Nav_Port'),(-1,(.01,.8,.25),'Nav_Starboard')]:
  o=box(label,(side*.88,.98,.5),(.08,.035,.07),material(label,color,0,.25),.012)
 for name,p in [('Driver_Eye',(-.40,1.50,-1.46)),('Driver_Hip',(-.40,.79,-1.36))]:
  bpy.ops.object.empty_add(type='PLAIN_AXES',location=point(p));bpy.context.object.name=name
