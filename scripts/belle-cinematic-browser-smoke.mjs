@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
 import {recordRequestFailure} from '../lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/visual-review-evidence.mjs';
-import {recordEvidenceError,observeEvidence,cleanupCinematicCase,finalizeCinematicCase,finalizeCinematicReport} from '../lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/cinematic-review-evidence.mjs';
+import {recordEvidenceError,observeEvidence,cleanupCinematicCase,finalizeCinematicCase,finalizeCinematicReport,waitForCinematicFlightFrame} from '../lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/cinematic-review-evidence.mjs';
 import {createRequire} from 'node:module';
 import {mkdir,readFile,writeFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
@@ -53,7 +53,13 @@ try{
    await expect(page.locator('body')).toHaveClass(/on-hoverbike/,{timeout:150000});await expect(page.locator('body')).not.toHaveClass(/at-start/);
    await expect(page.locator('#hover-hud')).toBeVisible();
    // Observe actual renderer submissions, not just the existence of a canvas.
-   await expect.poll(()=>page.evaluate(()=>window.__belleStartupProfile?.().windows.reduce((n,w)=>n+w.frames,0)||0),{timeout:90000}).toBeGreaterThan(2);
+   const postMount=await page.evaluate(()=>window.__belleStartupProfile?.().submittedFrames);
+   assert(Number.isSafeInteger(postMount)&&postMount>=0,'Missing actual post-render submission counter');
+   const submissions=()=>page.evaluate(()=>window.__belleStartupProfile?.().submittedFrames);
+   await expect.poll(submissions,{timeout:90000}).toBeGreaterThan(postMount+2);
+   const gpu=await page.locator('#game').evaluate(waitForCinematicFlightFrame);
+   evidence.frameAudit={postMount,submissions:await submissions(),gpu};
+   assert(evidence.frameAudit.submissions>postMount+2&&gpu.gpuCompletedAt>=gpu.gpuSubmittedAt&&gpu.paintOpportunities===2,'Fresh GPU-completed cinematic frame evidence required');
    evidence.rendering=await page.evaluate(()=>{const c=document.querySelector('#game'),gl=c.getContext('webgl2');return{live:!!gl&&!gl.isContextLost(),width:c.width,height:c.height,profile:window.__belleStartupProfile?.()};});
    assert(evidence.rendering.live&&evidence.rendering.width>0&&evidence.rendering.height>0);await shot('exploration');
    await tap(page.locator('#tools-toggle'));await tap(page.locator('#settings-open'));
