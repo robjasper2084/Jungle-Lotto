@@ -19,7 +19,10 @@ for name in paths:
   t=p.read_text();needle="'--test',";assert t.count(needle)==1 and "'src/belle/rideRadioDock.test.ts'" not in t
   p.write_text(t.replace(needle,needle+"'src/belle/rideRadioDock.test.ts',",1));continue
  if name.endswith('hudLayoutEditor.css'):
-  base=show(old,name);assert incoming.startswith(base);current=p.read_bytes();assert current.startswith(base)
+  # The successor only appends CSS; the combined version also contains earlier
+  # reviewed edits within the old prefix. Keep those exact bytes, not old CSS.
+  base=show(old,name);assert incoming.startswith(base);current=p.read_bytes()
+  assert digest(current)==next(f['sha256'] for f in proof['files'] if f['path']==name)
   p.write_bytes(current+incoming[len(base):]);continue
  if name.endswith('hud-layout-browser-smoke.mjs'):
   t=p.read_text();new=incoming.decode();start=new.index('/** Native race/menu regression:');end=new.index('async function run(){',start)
