@@ -1,0 +1,72 @@
+name: Belle full-game media cause comparison
+on:
+  push:
+    branches: [diagnostics/belle-fullgame-media-20261114]
+permissions:
+  contents: read
+jobs:
+  full-game:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [baseline, preload-auto, cache-fresh]
+    steps:
+      - name: Reserve checkout disk
+        run: sudo rm -rf -- /usr/local/lib/android /usr/share/dotnet
+      - uses: actions/checkout@v4
+        with:
+          path: diagnostic
+          sparse-checkout: .diagnostics/belle-integration
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          path: work
+          ref: e0d069cdaac4bce7deb0f410fc153a1bf0a5ba14
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Restore exact failing combined source
+        run: python diagnostic/.diagnostics/belle-integration/apply.py
+      - name: Add passive media observation and one controlled variable
+        env:
+          MEDIA_VARIANT: ${{ matrix.variant }}
+        run: python diagnostic/.diagnostics/belle-integration/fullgame-media-apply.py
+      - name: Check and build real game
+        working-directory: work/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm ci
+          npm run check
+          npm run build
+      - name: Install existing browser runtime and same Chrome channel
+        working-directory: work/lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium chrome
+      - name: Full desktop cinematic workflow with every original assertion
+        timeout-minutes: 18
+        working-directory: work
+        env:
+          EXPECTED_MERGE_SHA: 62a6e3f39d297f4f3e0cdd0150377b0f064021d2
+          BELLE_GAME_URL: http://127.0.0.1:8301/
+          BELLE_CINEMATIC_CASE: desktop
+          BELLE_CINEMATIC_OUTPUT: artifacts/belle-cinematic
+          BELLE_BROWSER_HEADED: '1'
+        run: |
+          npm --prefix lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game run preview > integration-evidence/preview.log 2>&1 &
+          SERVER=$!
+          trap 'kill "$SERVER" 2>/dev/null || true' EXIT
+          for i in $(seq 1 30); do curl --fail --silent http://127.0.0.1:8301/ > /dev/null && break; sleep 1; done
+          xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node scripts/belle-cinematic-browser-smoke.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: belle-fullgame-media-${{ matrix.variant }}-${{ github.run_id }}
+          path: |
+            work/integration-evidence/
+            work/artifacts/belle-cinematic/
+          if-no-files-found: error
+          retention-days: 14
