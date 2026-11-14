@@ -37,6 +37,15 @@ body[data-hud-preset] :is(button,summary,select,a):focus-visible{outline:2px sol
 #cinematic-settings :is(select,button){min-height:44px;width:100%}
 #cinematic-settings p{font:400 12px/1.6 system-ui,sans-serif;color:#c9dbda;margin:0}
 #cinematic-settings a{font:600 12px/1.5 system-ui,sans-serif;color:#b2f0e3;overflow-wrap:anywhere;padding:6px 0}
+/* Fieldsets otherwise preserve their controls' min-content width on phones. */
+#settings fieldset{min-width:0;max-width:100%}
+@media(max-width:480px){
+ #settings label:has(select){display:grid;grid-template-columns:minmax(0,1fr)}
+ #settings select{min-width:0;width:100%;max-width:100%}
+ #settings label:has(input[type=range]){display:grid;grid-template-columns:minmax(0,1fr) auto}
+ #settings input[type=range]{grid-column:1/-1;min-width:0;width:100%;max-width:100%}
+ #settings input[type=checkbox]{flex-shrink:0}
+}
 body[data-hud-preset=cinematic]:not(.island-trial) :is(.location-chip,#navigation,#hint,.hover-title,.hover-help){display:none}
 body[data-hud-preset=racing] .hover-help,body[data-hud-preset].island-trial .hover-help{display:none}
 body[data-hud-preset] #trial-hud .trial-direction{font-weight:700;color:#d6fff5}

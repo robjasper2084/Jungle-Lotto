@@ -85,7 +85,15 @@ try{
    for(const preset of ['racing','cinematic','exploration']){await page.locator('#hud-preset').selectOption(preset);await expect(page.locator('body')).toHaveAttribute('data-hud-preset',preset);}
    await tap(page.locator('#belle-sunset'));await expect(page.locator('#sky-clouds')).toHaveValue('wispy');await expect(page.locator('#sky-speed')).toHaveValue('60');await expect(page.locator('#sky-cycle')).toBeChecked();
    await page.locator('#motion').check();await expect(page.locator('body')).toHaveAttribute('data-presentation-motion','reduced');
-   await page.locator('#hud-preset').selectOption('cinematic');await shot('settings');
+   await page.locator('#hud-preset').selectOption('cinematic');
+   evidence.settingsAudit=await page.locator('#settings').evaluate(dialog=>{
+    const bounds=dialog.getBoundingClientRect(),left=bounds.left+dialog.clientLeft,right=left+dialog.clientWidth;
+    const clipped=[...dialog.querySelectorAll('fieldset,button,select,input')].filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&(r.left<left-1||r.right>right+1);}).map(el=>el.id||el.className||el.tagName);
+    return {horizontalOverflow:dialog.scrollWidth>dialog.clientWidth+1,clipped};
+   });
+   assert.deepEqual(evidence.settingsAudit,{horizontalOverflow:false,clipped:[]},'Settings controls must fit the dialog at '+entry.name);
+   await page.locator('#settings .mobile-settings').scrollIntoViewIfNeeded();await shot('mobile-settings');
+   await page.locator('#settings [data-close="settings"]').scrollIntoViewIfNeeded();await shot('settings');
    await tap(page.locator('#settings [data-close="settings"]'));
    await expect(page.locator('#pause')).toBeVisible();await expect(page.locator('#tools-toggle')).toBeVisible();await expect(page.locator('#hover-hud')).toBeVisible();
    await expect(page.locator('.location-chip')).toBeHidden();await expect(page.locator('#navigation')).toBeHidden();
