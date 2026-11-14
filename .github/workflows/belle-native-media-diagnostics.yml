@@ -37,10 +37,10 @@ jobs:
         run: |
           npm ci
           npx playwright install --with-deps chromium
-      - name: Observe actual native media with byte-identical range responses
+      - name: Observe the SAME Chrome157 as the failed cinematic review
         env:
           MEDIA_CASE: ${{ matrix.mode }}
-        run: xvfb-run --auto-servernum node diagnostic/.diagnostics/belle-integration/native-media-evidence.mjs
+        run: xvfb-run --auto-servernum node diagnostic/.diagnostics/belle-integration/native-media-chrome.mjs
       - name: Preserve raw observations including failures, not release acceptance
         if: always()
         uses: actions/upload-artifact@v4
