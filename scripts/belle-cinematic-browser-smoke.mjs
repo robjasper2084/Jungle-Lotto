@@ -1,3 +1,4 @@
+import {observeCurrentRendering} from '../lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/cinematic-render-proof.mjs';
 /** Actual shipped-game smoke. Trusted UI only; no seeded race state or patched simulation. */
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
@@ -53,7 +54,11 @@ try{
    await expect(page.locator('body')).toHaveClass(/on-hoverbike/,{timeout:150000});await expect(page.locator('body')).not.toHaveClass(/at-start/);
    await expect(page.locator('#hover-hud')).toBeVisible();
    // Observe actual renderer submissions, not just the existence of a canvas.
-   await expect.poll(()=>page.evaluate(()=>window.__belleStartupProfile?.().windows.reduce((n,w)=>n+w.frames,0)||0),{timeout:90000}).toBeGreaterThan(2);
+   // Startup profile windows are immutable after startup; use live eligible render
+    // progression and a real GPU fence instead of a stale startup-only counter.
+    await page.bringToFront();await page.locator('#game').focus();
+    await page.waitForFunction(()=>document.hasFocus()&&!document.hidden,null,{timeout:45000});
+    evidence.currentFrames=await observeCurrentRendering(page);
    evidence.rendering=await page.evaluate(()=>{const c=document.querySelector('#game'),gl=c.getContext('webgl2');return{live:!!gl&&!gl.isContextLost(),width:c.width,height:c.height,profile:window.__belleStartupProfile?.()};});
    assert(evidence.rendering.live&&evidence.rendering.width>0&&evidence.rendering.height>0);await shot('exploration');
    await tap(page.locator('#tools-toggle'));await tap(page.locator('#settings-open'));
