@@ -1,0 +1,184 @@
+name: Belle cinematic and HUD combined validation
+on:
+  push:
+    branches: [diagnostics/belle-integration-149-152-20261113]
+    paths:
+      - '.diagnostics/belle-integration/**'
+      - '.github/workflows/belle-integration-validation.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  full-suites:
+    runs-on: ubuntu-latest
+    timeout-minutes: 110
+    steps:
+      - name: Reserve checkout disk
+        run: sudo rm -rf -- /usr/local/lib/android /usr/share/dotnet
+      - uses: actions/checkout@v4
+        with:
+          path: diagnostic
+          sparse-checkout: .diagnostics/belle-integration
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          path: work
+          ref: e0d069cdaac4bce7deb0f410fc153a1bf0a5ba14
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Apply exact combined source and demonstrated repairs
+        run: python diagnostic/.diagnostics/belle-integration/apply.py
+      - name: Strict full Belle check, every registered test and production build
+        working-directory: work/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          set -o pipefail
+          npm ci
+          { npm run check && npm test && npm run build; } 2>&1 | tee "$GITHUB_WORKSPACE/work/integration-evidence/belle.log"
+      - name: Exact production proof and public bundle verifier tests
+        working-directory: work
+        run: |
+          set -o pipefail
+          node --test scripts/belle-production-jobs.test.mjs scripts/belle-release-pages.test.mjs 2>&1 | tee integration-evidence/release-proof.log
+      - name: Full storefront checks, registered store and unit tests and build
+        working-directory: work/lottominded-ultra.io/games/gothtechnology2
+        env:
+          PUBLIC_COMMERCE_MODE: demo
+          PUBLIC_LAUNCH_APPROVED: 'false'
+        run: |
+          set -o pipefail
+          npm ci
+          { npm run check:store && npm run test:store && npm run check && npm run test:unit && npm run build; } 2>&1 | tee "$GITHUB_WORKSPACE/work/integration-evidence/store.log"
+      - name: Original desktop and phone shared reward and Game Grid regressions
+        working-directory: work/lottominded-ultra.io/games/gothtechnology2
+        run: |
+          set -o pipefail
+          npx playwright install --with-deps chromium
+          npm run test:store:browser -- --project=desktop --project=mobile --grep 'shared game reward|Underground discount|Game Grid|C-Files removed' --retries=0 --trace=on 2>&1 | tee "$GITHUB_WORKSPACE/work/integration-evidence/shared-browser.log"
+      - name: Fortune Grid complete check, tests and build
+        working-directory: work/lottominded-ultra.io/games/lottomind-313-fortune-grid
+        run: |
+          set -o pipefail
+          npm ci
+          npm run check 2>&1 | tee "$GITHUB_WORKSPACE/work/integration-evidence/fortune.log"
+      - name: Jackpot Maze complete staging, tests and build
+        working-directory: work/lottominded-ultra.io/games/lottomind-jackpot-maze/source
+        run: |
+          set -o pipefail
+          npm ci
+          { npm test && npm run build; } 2>&1 | tee "$GITHUB_WORKSPACE/work/integration-evidence/jackpot.log"
+      - name: Recheck exact source after full suites
+        run: python diagnostic/.diagnostics/belle-integration/verify.py full-suites-passed
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: belle-integration-full-${{ github.run_id }}
+          path: work/integration-evidence/
+          if-no-files-found: error
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: belle-integration-shared-browser-failure-${{ github.run_id }}
+          path: work/lottominded-ultra.io/games/gothtechnology2/output/store-browser/
+          if-no-files-found: ignore
+          retention-days: 14
+  actual-browsers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - suite: hud
+            case: desktop
+          - suite: hud
+            case: phone
+          - suite: cinematic
+            case: desktop
+          - suite: cinematic
+            case: compact-landscape
+          - suite: cinematic
+            case: small-phone
+          - suite: polish
+            case: desktop
+          - suite: polish
+            case: phone
+    steps:
+      - name: Reserve checkout disk
+        run: sudo rm -rf -- /usr/local/lib/android /usr/share/dotnet
+      - uses: actions/checkout@v4
+        with:
+          path: diagnostic
+          sparse-checkout: .diagnostics/belle-integration
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          path: work
+          ref: e0d069cdaac4bce7deb0f410fc153a1bf0a5ba14
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Apply identical combined source and demonstrated repairs
+        run: python diagnostic/.diagnostics/belle-integration/apply.py
+      - name: Strict check and actual candidate build
+        working-directory: work/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm ci
+          npm run check
+          npm run build
+          node --check scripts/hud-layout-browser-smoke.mjs
+      - name: Install locked existing browser runtime
+        working-directory: work/lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium chrome
+      - name: Real cinematic and sunset acceptance, original deadlines
+        if: matrix.suite == 'cinematic'
+        timeout-minutes: 18
+        working-directory: work
+        env:
+          EXPECTED_MERGE_SHA: e0d069cdaac4bce7deb0f410fc153a1bf0a5ba14
+          BELLE_GAME_URL: http://127.0.0.1:8301/
+          BELLE_CINEMATIC_CASE: ${{ matrix.case }}
+          BELLE_CINEMATIC_OUTPUT: artifacts/belle-cinematic
+          BELLE_BROWSER_HEADED: '1'
+        run: |
+          npm --prefix lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game run preview > integration-evidence/preview.log 2>&1 &
+          SERVER=$!
+          trap 'kill "$SERVER" 2>/dev/null || true' EXIT
+          for i in $(seq 1 30); do curl --fail --silent http://127.0.0.1:8301/ > /dev/null && break; sleep 1; done
+          xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node scripts/belle-cinematic-browser-smoke.mjs
+      - name: Full original native HUD editor and touch acceptance
+        if: matrix.suite == 'hud'
+        timeout-minutes: 40
+        working-directory: work/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          BELLE_HUD_CASE: ${{ matrix.case }}
+          HUD_SOURCE_SHA: e0d069cdaac4bce7deb0f410fc153a1bf0a5ba14
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node scripts/hud-layout-browser-smoke.mjs
+      - name: Full original native polish regression, all errors fatal
+        if: matrix.suite == 'polish'
+        timeout-minutes: 40
+        working-directory: work/lottominded-ultra.io/games/gothtechnology2
+        env:
+          BELLE_POLISH_BROWSER_HEADED: '1'
+          BELLE_POLISH_BROWSER_CASE: ${{ matrix.case }}
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node belle-isle-source/game/scripts/polish-browser-smoke.mjs
+      - name: Verify exact source after native browser acceptance
+        run: python diagnostic/.diagnostics/belle-integration/verify.py browser-passed
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: belle-integration-${{ matrix.suite }}-${{ matrix.case }}-${{ github.run_id }}
+          path: |
+            work/integration-evidence/
+            work/artifacts/belle-cinematic/
+            work/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/hud-layout/
+            work/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/polish-browser/
+          if-no-files-found: error
+          retention-days: 14
