@@ -23,7 +23,8 @@ export async function addBeach(scene:T.Scene,data:ParkMap,terrain:ParkTerrain){
    float ridges=.5+.25*sin(s.x*.29+sin(s.y*.21)*1.8)+.25*sin(s.y*.47-s.x*.16);
    float detail=1.-smoothstep(.25,1.5,length(fwidth(s))*95.);
    float grain=fract(sin(dot(floor(s*87.),vec2(12.9898,78.233)))*43758.5453);
-   float sediment=mix(1.,.85+.28*grain,detail);
+   float strand=.5+.5*sin(s.x*.065+s.y*.11+sin(s.y*.037)*2.);
+   float sediment=mix(1.,.85+.28*grain,detail)*(.96+.04*strand);
    diffuseColor.rgb*=mix(vec3(.48,.49,.46),vec3(.97,.94,.86),1.-damp)
                        *(.88+.17*ridges)*sediment;
   `).replace('#include <roughnessmap_fragment>',`#include <roughnessmap_fragment>
@@ -31,7 +32,7 @@ export async function addBeach(scene:T.Scene,data:ParkMap,terrain:ParkTerrain){
    // grains stay diffuse, reducing flicker in the flyover and on small screens.
    roughnessFactor=clamp(mix(.28,max(.78,roughnessFactor),1.-damp),.25,1.);
   `);
- };sand.customProgramCacheKey=()=>'belle-curved-wet-sand-v3';
+ };sand.customProgramCacheKey=()=>'belle-curved-wet-sand-v4';
  const mesh=new T.Mesh(g,sand);mesh.name='Mapped beach · sloping dry sand and wet shore';mesh.receiveShadow=true;scene.add(mesh);
  // Keep the actual public swim strand open. Pebbles collect near the water,
  // sparse grass and driftwood on the landward margin, not across riding paths.

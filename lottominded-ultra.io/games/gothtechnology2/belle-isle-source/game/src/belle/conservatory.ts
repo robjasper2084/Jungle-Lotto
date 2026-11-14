@@ -2,10 +2,11 @@ export type ConservatoryLayout={id:string;center:number[];yaw:number;outline:num
 export function greenhouseWorld(c:ConservatoryLayout,u:number,v:number){return{x:c.center[0]+Math.cos(c.yaw)*u-Math.sin(c.yaw)*v,z:c.center[1]-Math.sin(c.yaw)*u-Math.cos(c.yaw)*v};}
 export function greenhouseLocal(c:ConservatoryLayout,x:number,z:number){const dx=x-c.center[0],dz=z-c.center[1];return{u:dx*Math.cos(c.yaw)-dz*Math.sin(c.yaw),v:-dx*Math.sin(c.yaw)-dz*Math.cos(c.yaw)};}
 function distance(u:number,v:number,a:number[],b:number[]){const x=b[0]-a[0],y=b[1]-a[1],l=x*x+y*y,t=l?Math.max(0,Math.min(1,((u-a[0])*x+(v-a[1])*y)/l)):0;return Math.hypot(u-a[0]-x*t,v-a[1]-y*t);}
+import {conservatoryFurnitureBlocked} from './conservatoryGardenPlan.ts';
 export function greenhouseBlocked(c:ConservatoryLayout,x:number,z:number,margin=.4){
  const {u,v}=greenhouseLocal(c,x,z);if(Math.abs(u)>26+margin||Math.abs(v)>45+margin)return false;
  if(c.walls.some(w=>distance(u,v,w.a,w.b)<.14+margin)||(c.gardenWalls||[]).some(w=>distance(u,v,w.a,w.b)<.06+margin))return true;
- return c.beds.some(b=>((u-b.u)/(b.rx+.16+margin))**2+((v-b.v)/(b.ry+.16+margin))**2<1);
+ return conservatoryFurnitureBlocked(u,v,margin)||c.beds.some(b=>((u-b.u)/(b.rx+.16+margin))**2+((v-b.v)/(b.ry+.16+margin))**2<1);
 }
 export function greenhouseInside(c:ConservatoryLayout,x:number,z:number){
  const {u,v}=greenhouseLocal(c,x,z);let inside=false;

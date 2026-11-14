@@ -21,3 +21,9 @@ test('afternoon changing clouds separate the upper sky rather than defaulting to
  assert(now.coverage<overcast.coverage);assert(now.overcast<overcast.overcast*.60);
  const dusk=skyKeyBlend(16.7);assert.equal(dusk.a.hour,16.7);assert.notEqual(dusk.a.top,dusk.a.horizon);
 });
+test('sun follows the projected map cardinal axes',()=>{
+ const dawn=sunDirection(6),noon=sunDirection(12),evening=sunDirection(18);
+ assert(dawn[0]>.999&&Math.abs(dawn[2])<1e-8);
+ assert(evening[0]<-.999&&Math.abs(evening[2])<1e-8);
+ assert(Math.abs(noon[0])<1e-8&&noon[2]>0);
+});
