@@ -69,6 +69,47 @@ async function nativeInput(){
  await touch('touchEnd',{});await expect(page.locator('#stick')).not.toHaveClass(/is-active/);
  const events=await page.evaluate(()=>window.__hudInputProof);assert(events.some(e=>e.type==='pointerup'&&e.target==='brake'&&e.trusted));assert(events.filter(e=>e.type==='pointerdown'&&e.trusted).length>=3);report.checks.nativeMultiTouch=events;
 }
+/** Native race/menu regression: radio must not cover Restart after a portrait resize. */
+async function verifyPortraitRaceRadio(){
+ phase('portrait-race-radio');
+ await tap(page.locator('#tools-toggle'));await tap(page.locator('#trials-open'));
+ await tap(page.locator('#trial-tab-hoverbike'));
+ if(await page.locator('#trial-practice').getAttribute('open')===null)await tap(page.locator('#trial-practice>summary'));
+ await tap(page.locator('[data-course="sky-sunset-v1"]'));
+ await expect(page.locator('#trial-hud')).toHaveAttribute('data-status','running');
+ const saved=await page.evaluate(()=>localStorage.getItem('belle-hud-layouts-v1'));
+ report.checks.portraitRaceRadio=[];
+ for(const viewport of [{width:390,height:844},{width:320,height:568}]){
+  await page.setViewportSize(viewport);await page.waitForFunction(s=>innerWidth===s.width&&innerHeight===s.height,viewport);
+  await expect(page.locator('#ride-menu #ride-radio')).toHaveCount(1);
+  await expect(page.locator('#ride-radio')).not.toBeVisible();
+  await verifyHitTarget('#trial-restart',undefined,'portrait-radio-restart-'+viewport.width);
+  await verifyHitTarget('#trial-exit',undefined,'portrait-radio-exit-'+viewport.width);
+  const proof=await paint();await capture('portrait-race-radio-'+viewport.width);
+  await tap(page.locator('#tools-toggle'));await expect(page.locator('#ride-menu')).toBeVisible();
+  const summary=page.locator('#ride-menu #ride-radio summary');await summary.scrollIntoViewIfNeeded();
+  await verifyHitTarget('#ride-menu #ride-radio summary',undefined,'race-radio-menu-'+viewport.width);
+  if(await page.locator('#ride-radio details').getAttribute('open')===null)await tap(summary);
+  await expect(page.getByLabel('Import MP3 or WAV music',{exact:true})).toBeVisible();
+  await tap(summary);await expect(page.locator('#ride-radio details')).not.toHaveAttribute('open');
+  const next=page.getByRole('button',{name:'Next track',exact:true});await next.scrollIntoViewIfNeeded();await tap(next);
+  await expect(page.locator('#ride-menu')).toBeVisible();
+  await tap(page.locator('[data-close="ride-menu"]'));await expect(page.locator('#ride-menu')).not.toBeVisible();
+  await verifyHitTarget('#trial-restart',undefined,'portrait-radio-after-menu-'+viewport.width);
+  const before=await page.locator('#trial-hud').getAttribute('data-start-presentation');
+  await tap(page.locator('#trial-restart'));
+  await expect.poll(()=>page.locator('#trial-hud').getAttribute('data-start-presentation')).not.toBe(before);
+  await expect(page.locator('#trial-hud')).toHaveAttribute('data-status','running');
+  const restart=JSON.parse(await page.locator('#trial-hud').getAttribute('data-start-presentation'));
+  assert.equal(restart.state,'ready');assert(restart.readyAtMs>=restart.gpuReadyAtMs&&restart.gpuReadyAtMs>=restart.submittedAtMs);
+  assert(restart.readyAtMs-restart.submittedAtMs<45000,'restart retains the existing GPU-readiness contract');
+  assert.equal(await page.evaluate(()=>localStorage.getItem('belle-hud-layouts-v1')),saved,'race/menu changes never overwrite saved HUD');
+  report.checks.portraitRaceRadio.push({viewport,proof,restart,radioAccessibleInTools:true,restartReceivesNativeInput:true});
+ }
+ await tap(page.locator('#trial-exit'));await expect(page.locator('body')).not.toHaveClass(/island-trial/);
+ await expect(page.locator('body>#ride-radio')).toHaveCount(1);
+ await expect(page.locator('#ride-radio')).not.toHaveClass(/race-menu-radio/);
+}
 async function run(){
  await new Promise((yes,no)=>{server.once('error',no);server.listen(0,'127.0.0.1',yes);});report.origin='http://127.0.0.1:'+server.address().port;
  browser=await chromium.launch({channel:'chromium',headless:false,args:['--use-angle=swiftshader','--enable-unsafe-swiftshader','--gpu-watchdog-timeout-seconds=60']});report.browser=browser.version();
@@ -98,6 +139,7 @@ async function run(){
  phase('coop-editor');if(!await page.locator('#coop-open').isVisible())await tap(page.locator('#tools-toggle'));await tap(page.locator('#coop-open'));await page.getByLabel('Player 1 rider',{exact:true}).selectOption('DS_Man_01');await page.getByLabel('Player 2 rider',{exact:true}).selectOption('DS_Hoodie_Woman_01');await page.getByLabel('Player 1 vehicle',{exact:true}).selectOption('euc:city');await page.getByLabel('Player 2 vehicle',{exact:true}).selectOption('euc:tour');await tap(page.getByRole('button',{name:'Confirm Player 1',exact:true}));await tap(page.getByRole('button',{name:'Confirm Player 2',exact:true}));await tap(page.getByRole('button',{name:'Explore together',exact:true}));await expect(page.locator('#coop-overlay')).toHaveAttribute('data-rendered-views','2');
  await tap(page.locator('#coop-hud-customize'));await expect(page.locator('#belle-hud-editor')).toBeVisible();await expect(page.locator('#coop-overlay')).toHaveAttribute('data-paused','true');await expect(page.getByLabel('Player and mode',{exact:true}).locator('option')).toHaveCount(2);await page.getByLabel('Player and mode',{exact:true}).selectOption('1');await page.getByLabel('Select control',{exact:true}).selectOption('coop-camera');await page.getByLabel('Background opacity (%)',{exact:true}).fill('75');await page.getByLabel('Background opacity (%)',{exact:true}).press('Tab');await expect(page.locator('#belle-hud-save')).toBeEnabled();await capture('coop-editor');await tap(page.locator('#belle-hud-save'));await expect(page.locator('#coop-overlay')).toHaveAttribute('data-paused','false');
  const coopArchive=JSON.parse(await page.evaluate(()=>localStorage.getItem('belle-hud-layouts-v1'))),keys=Object.keys(coopArchive.profiles[0].layouts);assert(keys.some(k=>k.startsWith('coop-2-')&&k.includes('-p2:')));assert(!keys.some(k=>k.startsWith('coop-2-')&&k.includes('-p1:')));report.checks.coopPlayerProfileIsolation=keys;await capture('coop-custom');await tap(page.getByRole('button',{name:'Return to solo',exact:true}));await expect(page.locator('body')).not.toHaveClass(/coop-playing/);
+ await verifyPortraitRaceRadio();
  phase('finished');assert.deepEqual(report.errors,[]);assert.deepEqual(report.failedRequests,[]);report.functionalPassed=true;
 }
 try{await bounded(run(),35*60000,'HUD case');}catch(error){report.errors.push(error.stack??String(error));if(page)try{await capture('failure');}catch(e){report.errors.push('failure screenshot: '+e);}}

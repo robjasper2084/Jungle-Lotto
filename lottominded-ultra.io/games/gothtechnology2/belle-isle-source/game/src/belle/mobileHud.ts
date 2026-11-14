@@ -1,3 +1,4 @@
+import {closesRideMenu} from './rideRadioDock.ts';
 import {PointerTrack,HeldControls,stickAxes} from './mobileInput.ts';
 import './mobileHud.css';
 import {installHudCustomization} from './hudLayoutRuntime.ts';
@@ -73,7 +74,7 @@ export function createMobileHud(h:Hooks){
  menu.addEventListener('cancel',e=>{e.preventDefault();closeMenu();});
  // Close events can arrive after a tool has already started a new input session.
  menu.addEventListener('close',()=>{toggle.setAttribute('aria-expanded',String(menu.open));});
- menu.querySelector('nav')!.addEventListener('click',e=>{if((e.target as HTMLElement).closest('button'))closeMenu();},true);
+ menu.querySelector('nav')!.addEventListener('click',e=>{if(e.target instanceof Element&&closesRideMenu(e.target))closeMenu();},true);
  menu.addEventListener('click',e=>{if(e.target===menu){const r=menu.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeMenu();}});
  get('photo-open').onclick=()=>document.querySelector<HTMLButtonElement>('#camera-capture>button')?.click();
  // Native dialogs and room panels must never leave a held steering/brake input behind.

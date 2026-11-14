@@ -38,7 +38,7 @@ export function installHudCustomization(hooks:{clear:()=>void}){
  }
  function makeScope(root:HTMLElement,key:string,label:string,specs:Spec[],view:Rect):Scope{
   const bindings:Binding[]=[],controls:HudEditScope['controls']=[],baseline:HudLayout={handedness:'right',centerGuardFraction:.08,controls:{}};
-  for(const s of specs){const e=q(s.selector,root);if(!e||!visible(e))continue;const r=rect(e.getBoundingClientRect());if(r.width<=0||r.height<=0)continue;
+  for(const s of specs){const e=q(s.selector,root);if(!e||e.closest('dialog')||!visible(e))continue;const r=rect(e.getBoundingClientRect());if(r.width<=0||r.height<=0)continue;
    // Closed details are measured as their summary; no hidden menu item is manufactured.
    const interactive=s.kind!=='info',minScale=s.kind==='group'?1:interactive?Math.max(44/r.width,44/r.height):.5;
    bindings.push({element:e,spec:s,width:r.width,height:r.height});controls.push({id:s.id,label:s.label,width:r.width,height:r.height,interactive,essential:s.essential,minScale});

@@ -58,3 +58,17 @@
  body:not(.coop-playing) #ride-radio:not(.cockpit-library):not(.belle-hud-control):has(details[open]){left:max(12px,var(--island-safe-left,env(safe-area-inset-left,0px)));width:min(340px,calc(100dvw - 24px));max-height:calc(100dvh - var(--island-safe-top,env(safe-area-inset-top,0px)) - var(--island-safe-bottom,env(safe-area-inset-bottom,0px)) - 80px);overflow:auto;overscroll-behavior:contain;flex-wrap:wrap;padding:4px}
  body:not(.coop-playing) #ride-radio:not(.cockpit-library)>details[open]{position:static;box-sizing:border-box;width:100%;max-width:100%;padding:8px;flex-basis:100%}
 }
+
+/* In a race, optional radio lives inside Tools rather than across Restart.
+   Override fixed custom placements/compact rules only while actually docked;
+   do not rewrite stored profiles, hide playback, or raise overlay z-indices. */
+body.island-trial #ride-menu #ride-radio.race-menu-radio:not([hidden]){display:flex!important;position:static!important;inset:auto!important;transform:none!important;width:100%!important;max-width:100%!important;min-width:0!important;max-height:none!important;height:auto!important;margin:0!important;grid-column:1/-1;flex-wrap:wrap;padding:8px;gap:6px;box-sizing:border-box;backdrop-filter:none;z-index:auto!important;pointer-events:auto}
+body.island-trial #ride-menu #ride-radio.race-menu-radio>details{flex:1 0 100%;width:100%;min-width:0}
+body.island-trial #ride-menu #ride-radio.race-menu-radio>details[open]{position:static;inset:auto;box-sizing:border-box;width:100%;max-width:100%;padding:8px}
+body.island-trial #ride-menu #ride-radio.race-menu-radio>:is(button,.radio-track){display:block}
+body.island-trial #ride-menu #ride-radio.race-menu-radio :is(button,summary,select,input){box-sizing:border-box;min-width:44px;min-height:44px;max-width:100%}
+body.island-trial #ride-menu #ride-radio.race-menu-radio .radio-track{flex:1 1 80px;min-width:0}
+/* The Hero-Cam wrapper contains empty/status space, not a drag surface. Only
+   actual controls may consume input; do not blanket-disable recording tools. */
+#camera-capture{pointer-events:none}
+#camera-capture :is(button,a,input,select,textarea,label,summary,video[controls]){pointer-events:auto}
