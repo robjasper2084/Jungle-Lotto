@@ -81,16 +81,44 @@ body[data-presentation-motion=reduced] :is(.location-chip,#navigation){backdrop-
  body[data-hud-preset].touch-controls:not(.island-trial) #hover-hud[data-visual-polish=v1] .hover-help{display:none}
 }
 /* A visible fixed joystick needs its own lane; floating mode has no resting pad.
- * Reuse the location-chip space for critical readings on compact solo flights. */
+ * Reuse the location-chip space for critical readings on compact flights. */
 @media(max-width:400px),(max-height:520px){
- body.on-hoverbike.touch-controls[data-joystick-mode=fixed]:not(.island-trial):has(.hover-instruments:not(.belle-hud-control)) .location-chip{visibility:hidden}
- body.on-hoverbike.touch-controls[data-joystick-mode=fixed]:not(.island-trial) .quick-tools{margin-left:auto}
- body.on-hoverbike.touch-controls[data-joystick-mode=fixed]:not(.island-trial) #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control){position:fixed;top:calc(var(--island-safe-top,0px) + 4px);left:calc(var(--hover-safe-left,0px) + 10px);display:grid;width:min(192px,calc(100dvw - var(--hover-safe-left,0px) - var(--hover-safe-right,0px) - 198px));max-width:none;margin:0;padding:1px 4px;background:var(--cinematic-panel);border-radius:6px;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px 8px}
- body.on-hoverbike.touch-controls[data-joystick-mode=fixed]:not(.island-trial) #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) b{font-size:22px}
- body.on-hoverbike.touch-controls[data-joystick-mode=fixed]:not(.island-trial) #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) :is(span,output){font-size:8px}
- body.on-hoverbike.touch-controls[data-joystick-mode=fixed]:not(.island-trial) #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) .hover-energy{grid-column:1/-1;width:100%;grid-template-columns:42px minmax(0,1fr) 24px;gap:3px!important}
- body.on-hoverbike.touch-controls[data-joystick-mode=fixed]:not(.island-trial) #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) .hover-energy label{grid-column:auto;margin:0;font-size:7px;letter-spacing:0}
- body.on-hoverbike.touch-controls[data-joystick-mode=fixed]:not(.island-trial) #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) .hover-energy meter{width:100%}
+ body.on-hoverbike.touch-controls[data-joystick-mode=fixed]:has(.hover-instruments:not(.belle-hud-control)) .location-chip{visibility:hidden}
+ body.on-hoverbike.touch-controls[data-joystick-mode=fixed] .quick-tools{margin-left:auto}
+ body.on-hoverbike.touch-controls[data-joystick-mode=fixed] #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control){position:fixed;top:calc(var(--island-safe-top,0px) + 4px);left:calc(var(--hover-safe-left,0px) + 10px);display:grid;width:min(192px,calc(100dvw - var(--hover-safe-left,0px) - var(--hover-safe-right,0px) - 198px));max-width:none;margin:0;padding:1px 4px;background:var(--cinematic-panel);border-radius:6px;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px 8px}
+ body.on-hoverbike.touch-controls[data-joystick-mode=fixed] #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) b{font-size:22px}
+ body.on-hoverbike.touch-controls[data-joystick-mode=fixed] #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) :is(span,output){font-size:8px}
+ body.on-hoverbike.touch-controls[data-joystick-mode=fixed] #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) .hover-energy{grid-column:1/-1;width:100%;grid-template-columns:42px minmax(0,1fr) 24px;gap:3px!important}
+ body.on-hoverbike.touch-controls[data-joystick-mode=fixed] #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) .hover-energy label{grid-column:auto;margin:0;font-size:7px;letter-spacing:0}
+ body.on-hoverbike.touch-controls[data-joystick-mode=fixed] #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) .hover-energy meter{width:100%}
+ body.on-hoverbike.touch-controls[data-joystick-mode=fixed] #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control)>div:not(.hover-energy){flex-direction:column;align-items:flex-start;gap:2px}
+ body.on-hoverbike.touch-controls[data-joystick-mode=fixed] #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control)>div:not(.hover-energy)>span{white-space:nowrap}
+ body.on-hoverbike.touch-controls[data-joystick-mode=fixed] #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) output{font-size:7px;letter-spacing:0;white-space:nowrap;padding-left:4px}
+}
+@media(max-width:600px) and (min-height:521px){
+ body.island-trial.on-hoverbike:not(.royale-camera-mode) #camera-capture{top:calc(var(--island-safe-top,0px) + 280px)}
+}
+@media(max-width:600px) and (min-height:521px) and (max-height:700px){
+ body.island-trial.on-hoverbike.touch-controls #hover-hud .hover-cruise:not(.belle-hud-control){position:fixed;top:calc(var(--island-safe-top,0px) + 280px);right:calc(var(--hover-safe-right,0px) + 15px);bottom:auto}
+}
+@media(max-width:400px) and (max-height:520px){
+ body.island-trial.on-hoverbike.touch-controls[data-joystick-mode=fixed] #trial-hud{--trial-top:calc(var(--island-safe-top,0px) + 78px)}
+ body.island-trial.on-hoverbike.touch-controls #trial-hud{--trial-side-width:78px;width:112px;grid-template-columns:minmax(0,1fr);padding:8px;gap:0}
+ body.island-trial.on-hoverbike.touch-controls .trial-hud-summary{display:block}
+ body.island-trial.on-hoverbike.touch-controls #trial-hud h3{white-space:normal;margin-bottom:5px}
+ body.island-trial.on-hoverbike.touch-controls #trial-hud .trial-timing{flex-direction:column;align-items:flex-start;gap:2px}
+ body.island-trial.on-hoverbike.touch-controls #trial-hud p{white-space:normal;margin-top:3px}
+ body.island-trial.on-hoverbike.touch-controls #trial-hud .trial-map-wrap{position:fixed;top:var(--trial-top);right:calc(var(--island-safe-right,0px) + 10px);width:var(--trial-side-width)}
+ body.island-trial.on-hoverbike.touch-controls #trial-hud .trial-hud-actions{position:fixed;top:calc(var(--trial-top) + 50px);right:calc(var(--island-safe-right,0px) + 10px);width:var(--trial-side-width);flex-direction:column;gap:4px}
+ body.island-trial.on-hoverbike.touch-controls #trial-hud .trial-hud-actions button{flex:none;height:44px;min-height:44px;padding:6px 7px}
+ body.island-trial.on-hoverbike.touch-controls #hover-hud .hover-cruise:not(.belle-hud-control){position:fixed;left:calc(var(--hover-safe-left,0px) + 130px);right:auto;top:calc(var(--island-safe-top,0px) + 82px);bottom:auto;width:calc(100dvw - var(--hover-safe-left,0px) - var(--hover-safe-right,0px) - 228px);min-width:80px;padding:6px;font-size:10px}
+ body.island-trial.on-hoverbike.touch-controls #hover-boost:not(.belle-hud-control){position:fixed;left:calc(var(--hover-safe-left,0px) + 130px);right:auto;top:calc(var(--island-safe-top,0px) + 134px);bottom:auto;width:calc(100dvw - var(--hover-safe-left,0px) - var(--hover-safe-right,0px) - 228px);min-width:80px;padding:6px;font-size:10px;transform:none}
+}
+@media(max-height:520px){
+ body.island-trial.on-hoverbike.touch-controls #jarvs-avionics:not(.belle-hud-control){box-sizing:border-box;max-width:calc(40dvw - 30px)}
+}
+@media(min-width:401px) and (max-height:520px){
+ body.on-hoverbike.touch-controls:not(.island-trial):not(.royale-camera-mode) #camera-capture{top:calc(var(--island-safe-top,0px) + 125px)}
 }
 @media(max-width:400px) and (max-height:520px){
  body[data-hud-preset].touch-controls:not(.island-trial) #hover-hud .hover-touch{bottom:100px}
