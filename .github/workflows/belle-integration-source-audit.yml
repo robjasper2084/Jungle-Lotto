@@ -1,0 +1,91 @@
+name: Belle cinematic and HUD integration source audit
+on:
+  push:
+    branches: [diagnostics/belle-integration-149-152-20261113]
+    paths: ['.github/workflows/belle-integration-source-audit.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Reserve checkout disk
+        run: sudo rm -rf -- /usr/local/lib/android /usr/share/dotnet
+      - uses: actions/checkout@v4
+        with:
+          ref: be392dcf43d564eeb9fb33e8d9dc85856fd07143
+          fetch-depth: 0
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /AGENTS.md
+            /**/AGENTS.md
+            /.github/
+            /scripts/
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/*.mjs
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/*.ts
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/*.html
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/*.css
+          persist-credentials: false
+      - name: Inspect exact refs and merge conflicts without publishing
+        shell: python
+        run: |
+          import subprocess,pathlib,json,hashlib,tarfile,io
+          root=pathlib.Path.cwd();out=root/'integration-source';out.mkdir()
+          pins={'production':'be392dcf43d564eeb9fb33e8d9dc85856fd07143','cinematic':'04fe6bed163d0273c1c043ca64021d6bb6aeac17','hud':'e0d069cdaac4bce7deb0f410fc153a1bf0a5ba14'}
+          def git(*args,check=True):return subprocess.run(['git',*args],check=check,capture_output=True)
+          assert git('rev-parse','HEAD').stdout.decode().strip()==pins['production']
+          assert git('rev-parse','HEAD^{tree}').stdout.decode().strip()=='697c14600c85b11323e019ceefcc5770ff9b9719'
+          for label,sha in pins.items():git('fetch','--no-tags','--filter=blob:none','origin',sha)
+          prefix='lottominded-ultra.io/games/gothtechnology2/belle-isle-source/'
+          suffixes={'.ts','.tsx','.js','.mjs','.cjs','.json','.html','.css','.md','.yml','.yaml','.py','.glsl','.vert','.frag','.sh'}
+          metadata={'pins':pins,'sourceOnly':True,'testsExecuted':False,'trees':{},'mergeBases':{},'files':{}}
+          with tarfile.open(out/'sources.tar.gz','w:gz') as archive:
+            for label,sha in pins.items():
+              metadata['trees'][label]=git('rev-parse',sha+'^{tree}').stdout.decode().strip()
+              selected=[]
+              for name in git('ls-tree','-r','--name-only',sha).stdout.decode().splitlines():
+                p=pathlib.PurePosixPath(name)
+                relevant=name.startswith(prefix) or name.startswith('scripts/') or name.startswith('.github/') or p.name=='AGENTS.md' or name in ['package.json','lottominded-ultra.io/games/gothtechnology2/package.json','lottominded-ultra.io/games/gothtechnology2/package-lock.json']
+                if not relevant or p.suffix not in suffixes:continue
+                data=git('show',sha+':'+name).stdout
+                if len(data)>15000000:continue
+                info=tarfile.TarInfo(label+'/'+name);info.size=len(data);archive.addfile(info,io.BytesIO(data));selected.append({'path':name,'bytes':len(data),'sha256':hashlib.sha256(data).hexdigest()})
+              metadata['files'][label]=selected
+            for label in ['cinematic','hud']:
+              base=git('merge-base',pins['production'],pins[label]).stdout.decode().strip();metadata['mergeBases'][label]=base
+              (out/(label+'-original.diff')).write_bytes(git('diff',base,pins[label]).stdout)
+          # HUD includes the current production repair; require ancestry rather
+          # than silently choosing an alternative baseline.
+          assert git('merge-base','--is-ancestor',pins['production'],pins['hud'],check=False).returncode==0
+          git('checkout','--detach',pins['hud'])
+          git('config','user.name','Belle integration source audit');git('config','user.email','audit@localhost')
+          result=git('merge','--no-commit','--no-ff',pins['cinematic'],check=False)
+          assert result.returncode in (0,1),result.stderr.decode()
+          (out/'merge-output.txt').write_bytes(result.stdout+result.stderr)
+          conflicts=git('diff','--name-only','--diff-filter=U').stdout.decode().splitlines();metadata['conflicts']=conflicts
+          with tarfile.open(out/'merge-worktree.tar.gz','w:gz') as archive:
+            names=set(git('diff','--name-only',pins['production']).stdout.decode().splitlines())
+            for name in sorted(names):
+              p=root/name
+              if p.is_file():archive.add(p,arcname=name,recursive=False)
+            for name in conflicts:
+              for stage in [1,2,3]:
+                r=git('show',':'+str(stage)+':'+name,check=False)
+                if r.returncode==0:
+                  info=tarfile.TarInfo('.merge-stages/'+str(stage)+'/'+name);info.size=len(r.stdout);archive.addfile(info,io.BytesIO(r.stdout))
+          if not conflicts:metadata['prospectiveTree']=git('write-tree').stdout.decode().strip()
+          (out/'provenance.json').write_text(json.dumps(metadata,indent=2))
+          print(json.dumps({k:v for k,v in metadata.items() if k!='files'},indent=2))
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: belle-integration-source-149-152
+          path: integration-source/
+          retention-days: 14
+          if-no-files-found: error
