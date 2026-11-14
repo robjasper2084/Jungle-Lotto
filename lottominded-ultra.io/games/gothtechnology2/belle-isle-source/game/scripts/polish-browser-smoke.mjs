@@ -1,6 +1,7 @@
 /** Real-input polish checks plus explicitly separate CSS-only layout fixtures. */
 import assert from 'node:assert/strict';
 import {dispatchAfterReadyCountdown} from './polish-ready-dispatch.mjs';
+import {recordRequestFailure} from './visual-review-evidence.mjs';
 import {createReadStream} from 'node:fs';
 import {appendFile, mkdir, readFile, stat, writeFile} from 'node:fs/promises';
 import {createServer} from 'node:http';
@@ -41,7 +42,7 @@ const server = createServer(async (request, response) => {
     if (file !== root && !file.startsWith(root + sep)) { response.writeHead(403).end(); return; }
     if ((await stat(file)).isDirectory()) file = resolve(file, 'index.html');
     const info = await stat(file);
-    response.writeHead(200, {'Content-Type': mime[extname(file)] || 'application/octet-stream', 'Content-Length': info.size, 'Cache-Control': 'no-store'});
+    response.writeHead(200, {'Content-Type': mime[extname(file)] || 'application/octet-stream', 'Content-Length': info.size, 'Cache-Control': 'no-cache, max-age=0, must-revalidate'});
     if (request.method === 'HEAD') response.end();
     else createReadStream(file).on('error', () => response.destroy()).pipe(response);
   } catch { response.writeHead(404).end('Not found'); }
@@ -61,6 +62,7 @@ async function runCase(configuration) {
     errors: [], console: [], failedRequests: [], screenshots: [], metrics: {}, cssFixtures: {scope: 'Synthetic insets/long timer text in an isolated document using the shipped CSS. No game state is seeded.', probes: []}};
   report.cases.push(entry);
   let browser, page, touch, deadline, timedOut = false, captureFailed = false, cleanupFailed = false, fixtureRecord, countdownWaiter;
+  let requestPhase = 'gameplay';
   let countdownSequence = 0;
   const activeHolds = new Set(), activeTriggers = new Set();
   const templates = {};
@@ -477,8 +479,7 @@ async function runCase(configuration) {
     });
     page.on('response', response => { if (response.status() >= 400) entry.errors.push('HTTP ' + response.status() + ' ' + response.url()); });
     page.on('requestfailed', request => {
-      const message = request.failure()?.errorText + ' ' + request.url(); entry.failedRequests.push(message);
-      if (!message.startsWith('net::ERR_ABORTED')) entry.errors.push(message);
+      log(`${configuration.name}: ${requestPhase} request failed ${recordRequestFailure(entry, request, requestPhase)}`);
     });
     await Promise.race([(async () => {
       log(configuration.name + ': load game and configure through UI');
@@ -681,6 +682,7 @@ async function runCase(configuration) {
       await tap(page.locator('#pause')); await expect(page.locator('#trial-hud')).toHaveAttribute('data-paused', 'false'); await leave();
       entry.metrics.finalWebgl = await webgl();
       assert.deepEqual(entry.errors, [], 'Runtime errors/context loss/missing assets fail real gameplay');
+      requestPhase = 'fixtures';
       entry.realGameCompletedAt = new Date().toISOString();
       try { await writeFile(resolve(output, configuration.name + '-game-dom.html'), await bounded(page.content(), 5_000, 'Real-game DOM diagnostic')); }
       catch (error) { entry.realGameDomFailure = error.message; }
@@ -756,6 +758,7 @@ async function runCase(configuration) {
     }
     if (page && !timedOut && !captureFailed) { try { await capture('failure'); } catch {} }
   } finally {
+    requestPhase = 'cleanup';
     clearTimeout(deadline);
     if (countdownWaiter) { countdownWaiter.cancelled = true; countdownWaiter = undefined; }
     if (page && !timedOut) {
@@ -779,7 +782,7 @@ async function runCase(configuration) {
       catch (error) { cleanupFailure = error; entry.cleanupFailure = error.message; cleanupFailed = true; }
     }
     entry.cleanupFailed = cleanupFailed;
-    entry.functionalPassed = entry.functionalPassed && !entry.failure && !timedOut && !cleanupFailed;
+    entry.functionalPassed = entry.functionalPassed && !entry.failure && !timedOut && !cleanupFailed && entry.errors.length === 0;
     entry.verificationComplete = entry.functionalPassed && countdownChecks.every(label => entry.metrics[label]?.timing?.status === 'passed');
     entry.passed = entry.verificationComplete;
     entry.status = entry.functionalPassed ? entry.verificationComplete ? 'passed' : 'inconclusive' : 'failed';
