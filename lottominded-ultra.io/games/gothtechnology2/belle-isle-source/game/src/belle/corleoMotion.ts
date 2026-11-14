@@ -1,12 +1,13 @@
 /** CORLEO game tuning — prototype values, not manufacturer specifications. */
 export const CORLEO_TUNING = Object.freeze({
   mountingSaddleMetres: 0.8,
-  trotMetresPerSecond: 1.23,
-  runMetresPerSecond: 1.7835,
+  trotMetresPerSecond: 25 * 0.44704,
+  runMetresPerSecond: 160 * 0.44704,
   crawlMetresPerSecond: 0.36,
   turnRadiansPerSecond: 1.4,
-  accelerationMetresPerSecondSquared: 2.1,
-  brakingMetresPerSecondSquared: 3.5,
+  accelerationMetresPerSecondSquared: 4.5,
+  runAccelerationMetresPerSecondSquared: 12,
+  brakingMetresPerSecondSquared: 18,
   jumpVelocityMetresPerSecond: 3.2,
   gravityMetresPerSecondSquared: 9.81
 });
@@ -32,12 +33,20 @@ export class CorleoMotion {
   if(!step)return p;
   const throttle=clamp(input.throttle,-1,1),steer=clamp(input.steer,-1,1);
   const crawl=!!input.crawl,run=!!input.run&&!crawl;
-  const desired=throttle*(crawl?CORLEO_TUNING.crawlMetresPerSecond:run?CORLEO_TUNING.runMetresPerSecond:CORLEO_TUNING.trotMetresPerSecond);
-  const delta=clamp(desired-p.speed,-(Math.abs(throttle)<.01?CORLEO_TUNING.brakingMetresPerSecondSquared:CORLEO_TUNING.accelerationMetresPerSecondSquared)*step,CORLEO_TUNING.accelerationMetresPerSecondSquared*step);
+  const desired=throttle*(crawl?CORLEO_TUNING.crawlMetresPerSecond:run&&throttle>0?CORLEO_TUNING.runMetresPerSecond:CORLEO_TUNING.trotMetresPerSecond);
+  const braking=Math.abs(desired)<Math.abs(p.speed)||desired*p.speed<0;
+  const rate=braking?CORLEO_TUNING.brakingMetresPerSecondSquared:run?CORLEO_TUNING.runAccelerationMetresPerSecondSquared:CORLEO_TUNING.accelerationMetresPerSecondSquared;
+  const delta=clamp(desired-p.speed,-rate*step,rate*step);
   p.speed+=delta;
-  p.heading+=steer*step*CORLEO_TUNING.turnRadiansPerSecond*(.35+Math.min(1,Math.abs(p.speed)/.6)*.65);
-  const x=p.x+Math.sin(p.heading)*p.speed*step,z=p.z+Math.cos(p.heading)*p.speed*step;
-  if(!blocked(x,z)){p.x=x;p.z=z;}else p.speed=0;
+  p.heading+=steer*step*CORLEO_TUNING.turnRadiansPerSecond*(.35+Math.min(1,Math.abs(p.speed)/.6)*.65)/(1+Math.abs(p.speed)/18);
+  // Check the entire travelled segment: a 160 mph frame can cover 3.58 m.
+  // End-point-only collision would skip narrow walls and shore boundaries.
+  const distance=p.speed*step,segments=Math.max(1,Math.ceil(Math.abs(distance)/.25));
+  const dx=Math.sin(p.heading)*distance/segments,dz=Math.cos(p.heading)*distance/segments;
+  for(let i=0;i<segments;i++){
+   const x=p.x+dx,z=p.z+dz;
+   if(blocked(x,z)){p.speed=0;break;}p.x=x;p.z=z;
+  }
   const ground=terrainHeight(p.x,p.z);
   if(input.jump&&p.airMetres===0&&!crawl){p.verticalSpeed=CORLEO_TUNING.jumpVelocityMetresPerSecond;p.airMetres=.001;}
   if(p.airMetres>0){

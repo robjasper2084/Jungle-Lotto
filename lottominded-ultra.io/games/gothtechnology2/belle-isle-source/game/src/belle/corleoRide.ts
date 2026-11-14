@@ -166,7 +166,7 @@ export class CorleoRide {
   if(!enabled){this.clear();return;}
   const delta=Math.min(.05,Math.max(0,dt));
   const cycle=this.activeAction?this.actions.get(this.activeAction):undefined;
-  if(this.mode==='riding'&&cycle&&this.activeAction!=='JUMP')cycle.setEffectiveTimeScale(Math.abs(this.pose.speed)/(this.activeAction==='CRAWL'?.22:1.7835));
+  if(this.mode==='riding'&&cycle&&this.activeAction!=='JUMP')cycle.setEffectiveTimeScale(Math.min(2.5,Math.abs(this.pose.speed)/(this.activeAction==='CRAWL'?.22:1.7835)));
   this.mixer.update(delta);
   if(this.mode==='mounting'||this.mode==='dismounting'){
    const old=this.activeAction?this.actions.get(this.activeAction):undefined;
