@@ -1,0 +1,72 @@
+name: Belle music gesture repair acceptance
+on:
+  push:
+    branches: [diagnostics/belle-music-gesture-repair-20261114]
+permissions:
+  contents: read
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        case: [desktop, small-phone, compact-landscape]
+    steps:
+      - name: Reserve checkout disk
+        run: sudo rm -rf -- /usr/local/lib/android /usr/share/dotnet
+      - uses: actions/checkout@v4
+        with:
+          path: diagnostic
+          sparse-checkout: .diagnostics/belle-integration
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          path: work
+          ref: e0d069cdaac4bce7deb0f410fc153a1bf0a5ba14
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Restore failing combined source and apply narrow lifecycle fix
+        run: |
+          python diagnostic/.diagnostics/belle-integration/apply.py
+          python diagnostic/.diagnostics/belle-integration/fix-music-gesture.py
+      - name: Strict check, ALL registered tests and real build
+        working-directory: work/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          set -o pipefail
+          npm ci
+          { npm run check && npm test && npm run build; } 2>&1 | tee "$GITHUB_WORKSPACE/work/integration-evidence/belle-repair.log"
+      - name: Install existing browser runtime
+        working-directory: work/lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium chrome
+      - name: Unmodified full cinematic acceptance, no request exemptions
+        timeout-minutes: 18
+        working-directory: work
+        env:
+          EXPECTED_MERGE_SHA: ${{ github.sha }}
+          BELLE_GAME_URL: http://127.0.0.1:8301/
+          BELLE_CINEMATIC_CASE: ${{ matrix.case }}
+          BELLE_CINEMATIC_OUTPUT: artifacts/belle-cinematic
+          BELLE_BROWSER_HEADED: '1'
+        run: |
+          npm --prefix lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game run preview > integration-evidence/preview.log 2>&1 &
+          SERVER=$!
+          trap 'kill "$SERVER" 2>/dev/null || true' EXIT
+          for i in $(seq 1 30); do curl --fail --silent http://127.0.0.1:8301/ > /dev/null && break; sleep 1; done
+          xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node scripts/belle-cinematic-browser-smoke.mjs
+      - name: Verify exact tested source after native acceptance
+        run: python diagnostic/.diagnostics/belle-integration/verify.py music-gesture-browser-passed
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: belle-music-gesture-${{ matrix.case }}-${{ github.run_id }}
+          path: |
+            work/integration-evidence/
+            work/artifacts/belle-cinematic/
+          if-no-files-found: error
+          retention-days: 14
