@@ -5,7 +5,7 @@ function fixture({mounted=true,failed=false,lost=false}={}){
  const keys=['document','requestAnimationFrame','cancelAnimationFrame'];
  const saved=keys.map(k=>globalThis[k]);
  let paints=0,deleted=0;
- globalThis.document={visibilityState:'visible',body:{classList:{contains:n=>n==='on-hoverbike'?!mounted:false}},getElementById:id=>id==='hover-hud'?{hidden:false}:null,querySelector:()=>null};
+ globalThis.document={visibilityState:'visible',body:{classList:{contains:n=>n==='on-hoverbike'?mounted:false}},getElementById:id=>id==='hover-hud'?{hidden:false}:null,querySelector:()=>null};
  globalThis.requestAnimationFrame=fn=>setImmediate(()=>{paints++;fn();});
  globalThis.cancelAnimationFrame=id=>clearImmediate(id);
  const gl={SYNC_GPU_COMMANDS_COMPLETE:1,CONDITION_SATISFIED:2,WAIT_FAILED:3,TIMEOUT_EXPIRED:4,ALREADY_SIGNALED:5,isContextLost:()=>lost,clientWaitSync:()=>failed?3:2,fenceSync:()=>({}),deleteSync:()=>deleted++,flush:()=>{}};
