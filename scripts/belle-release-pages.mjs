@@ -16,7 +16,7 @@ export async function stampBelleRelease(site){
   const path=resolve(dir,entry.name),s=await lstat(path);if(s.isSymbolicLink())throw Error('Published game must not contain a symlink');
   if(s.isDirectory()){await visit(path);continue;}
   const name=relative(root,path).split(sep).join('/');
-  if(!s.isFile()||!(/\.(js|css)$/i.test(name)||name===GAME_PATH+'index.html'||name.startsWith(GAME_PATH+'belle/vehicles/corleo/')&&/\.(glb|json)$/.test(name)))continue;
+  if(!s.isFile()||!(/\.(js|css)$/i.test(name)||name===GAME_PATH+'index.html'||name.startsWith(GAME_PATH+'belle/vehicles/corleo/')&&/\.(glb\.gz|json)$/.test(name)))continue;
   if(!safePath(name)||s.size>32*1024*1024)throw Error('Unsafe/oversized game bundle '+name);
   const bytes=await readFile(path);files.push({path:name,bytes:bytes.length,sha256:hash(bytes)});
  }}
@@ -34,7 +34,7 @@ export async function stampBelleRelease(site){
  if(Object.values(signatures).some(v=>!v))throw Error('Required co-op/startup code absent from actual emitted bundles');
  if(js.includes('corleo-enter')){
   for(const style of ['Professional','Maverick'])for(const action of ['MOUNT','RUN','CRAWL','JUMP','DISMOUNT']){
-   const asset=GAME_PATH+'belle/vehicles/corleo/CORLEO_'+style+'_'+action+'.glb';
+   const asset=GAME_PATH+'belle/vehicles/corleo/CORLEO_'+style+'_'+action+'.glb.gz';
    if(!files.some(file=>file.path===asset))throw Error('CORLEO runtime asset missing: '+asset);
   }
  }

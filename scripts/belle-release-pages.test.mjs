@@ -19,9 +19,9 @@ test('CORLEO UI cannot ship without its ten models, whose public bytes are verif
  await writeFile(js,(await readFile(js,'utf8'))+';console.log("corleo-enter")');
  await assert.rejects(stampBelleRelease(site),/CORLEO runtime asset missing/);
  const folder=resolve(site,GAME_PATH,'belle/vehicles/corleo');await mkdir(folder,{recursive:true});
- for(const style of ['Professional','Maverick'])for(const action of ['MOUNT','RUN','CRAWL','JUMP','DISMOUNT'])await writeFile(resolve(folder,'CORLEO_'+style+'_'+action+'.glb'),'model bytes');
+ for(const style of ['Professional','Maverick'])for(const action of ['MOUNT','RUN','CRAWL','JUMP','DISMOUNT'])await writeFile(resolve(folder,'CORLEO_'+style+'_'+action+'.glb.gz'),'model bytes');
  await writeFile(resolve(folder,'manifest.json'),'{}');
- const stamped=await stampBelleRelease(site);assert.equal(stamped.files.filter(f=>f.path.endsWith('.glb')).length,10);
+ const stamped=await stampBelleRelease(site);assert.equal(stamped.files.filter(f=>f.path.endsWith('.glb.gz')).length,10);
  const result=await verifyBelleRelease(BASE,SHA,{fetcher:network(site)});assert.equal(result.verifiedFiles.length,14);
- await assert.rejects(verifyBelleRelease(BASE,SHA,{fetcher:network(site,(p,b)=>p.endsWith('.glb')?Buffer.from('old model'):b)}),/bundle differs/);
+ await assert.rejects(verifyBelleRelease(BASE,SHA,{fetcher:network(site,(p,b)=>p.endsWith('.glb.gz')?Buffer.from('old model'):b)}),/bundle differs/);
 });

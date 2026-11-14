@@ -6,7 +6,7 @@ import {readFile,mkdir,writeFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import {dirname,resolve,join} from 'node:path';
-import {unzipSync} from 'fflate';
+import {unzipSync,gzipSync,gunzipSync} from 'fflate';
 const actions=['MOUNT','RUN','CRAWL','JUMP','DISMOUNT'];
 const variants=['Professional','Maverick'];
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
@@ -27,15 +27,17 @@ else{
   const names=(json.animations??[]).map(a=>a.name);
   if(!names.includes(name.replace(/\.glb$/, '')))throw Error('Missing expected animation '+name);
   if(!json.nodes?.length||!json.scenes?.length)throw Error('GLB lacks scene: '+name);
-  files.push({name,bytes,sha256:createHash('sha256').update(bytes).digest('hex'),size:bytes.byteLength,animation:name.replace(/\.glb$/, '')});
+  const sha256=createHash('sha256').update(bytes).digest('hex'),compressed=gzipSync(bytes,{level:9,mtime:0});
+  if(createHash('sha256').update(gunzipSync(compressed)).digest('hex')!==sha256)throw Error('Compression roundtrip failed: '+name);
+  files.push({name,bytes,compressed,sha256,size:bytes.byteLength,animation:name.replace(/\.glb$/, ''),packed:{name:name+'.gz',encoding:'gzip',size:compressed.byteLength,sha256:createHash('sha256').update(compressed).digest('hex')}});
  }
  await mkdir(destination,{recursive:true});
  // All archives must validate before any destination files are replaced.
- for(const file of files)await writeFile(join(destination,file.name),file.bytes);
+ for(const file of files){await writeFile(join(destination,file.name),file.bytes);await writeFile(join(destination,file.packed.name),file.compressed);}
  await writeFile(join(destination,'manifest.json'),JSON.stringify({
   schema:'corleo-anim-v1',source:'Animation_Library.zip',
   disclaimer:'Kinematic prototype animations, not verified Kawasaki hardware performance',
-  files:files.map(({name,sha256,size,animation})=>({name,sha256,size,animation}))
+  files:files.map(({name,sha256,size,animation,packed})=>({name,sha256,size,animation,packed}))
  },null,2)+'\n');
  console.log('Staged '+files.length+' verified CORLEO GLBs into '+destination);
 }

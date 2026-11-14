@@ -4,16 +4,21 @@ import {readFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import * as T from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {gunzipSync} from 'fflate';
 import {inPlaceCorleoClip,disposeCorleoModel} from './corleoAnimation.ts';
 
 test('all ten shipped CORLEO clips match provenance and remain in place',async()=>{
  const directory=new URL('../../public/belle/vehicles/corleo/',import.meta.url);
  const manifest=JSON.parse(await readFile(new URL('manifest.json',directory),'utf8'));
  assert.equal(manifest.files.length,10);
+ let shippedBytes=0;
  for(const file of manifest.files){
   const bytes=await readFile(new URL(file.name,directory));
   assert.equal(bytes.length,file.size);assert.equal(createHash('sha256').update(bytes).digest('hex'),file.sha256);
-  const gltf=await new GLTFLoader().parseAsync(Uint8Array.from(bytes).buffer,'');
+  const packed=await readFile(new URL(file.packed.name,directory));shippedBytes+=packed.length;
+  assert.equal(packed.length,file.packed.size);assert.equal(createHash('sha256').update(packed).digest('hex'),file.packed.sha256);
+  const restored=gunzipSync(packed);assert.deepEqual(Buffer.from(restored),bytes,'delivered model must restore the exact original GLB');
+  const gltf=await new GLTFLoader().parseAsync(Uint8Array.from(restored).buffer,'');
   const source=gltf.animations.find(c=>c.name===file.animation);assert.ok(source,file.name);
   const original=source.tracks.find(t=>t.name==='CR_Root.position');assert.ok(original);
   const saved=original.values.slice();
@@ -27,4 +32,5 @@ test('all ten shipped CORLEO clips match provenance and remain in place',async()
   if(file.name.includes('_JUMP'))for(let i=1;i<positions.values.length;i+=3)assert.ok(Math.abs(positions.values[i]-1.62)<.00001,'physics owns jump height');
   mixer.stopAllAction();disposeCorleoModel(gltf.scene);
  }
+ assert.ok(shippedBytes<8*1024*1024,'CORLEO delivery must stay inside the remaining Pages budget');
 });

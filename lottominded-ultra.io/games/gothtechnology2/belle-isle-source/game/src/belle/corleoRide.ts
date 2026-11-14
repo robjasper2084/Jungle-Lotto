@@ -5,6 +5,7 @@
 import * as T from 'three';
 import './corleo.css';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {gunzipSync} from 'fflate';
 import {CorleoMotion,type CorleoStyle} from './corleoMotion.ts';
 import {inPlaceCorleoClip,disposeCorleoModel} from './corleoAnimation.ts';
 import type {ParkTerrain} from './terrain.ts';
@@ -12,7 +13,7 @@ import type {ParkTerrain} from './terrain.ts';
 export const CORLEO_ACTIONS=['MOUNT','RUN','CRAWL','JUMP','DISMOUNT'] as const;
 export type CorleoAction=typeof CORLEO_ACTIONS[number];
 export const corleoAssetPath=(style:CorleoStyle,action:CorleoAction)=>
- './belle/vehicles/corleo/CORLEO_'+style+'_'+action+'.glb';
+ './belle/vehicles/corleo/CORLEO_'+style+'_'+action+'.glb.gz';
 
 type Hooks={
  pose:()=>{x:number;y:number;z:number;headingY:number};
@@ -78,7 +79,13 @@ export class CorleoRide {
  get pose(){return this.motion.pose;}
  private async file(action:CorleoAction){
   const path=corleoAssetPath(this.style,action);
-  const gltf=await this.loader.loadAsync(path);
+  const response=await fetch(path);
+  if(!response.ok)throw Error('CORLEO model HTTP '+response.status);
+  const delivered=new Uint8Array(await response.arrayBuffer());
+  // Some servers decode Content-Encoding themselves; GitHub Pages serves .gz
+  // as a file. Support both without changing the original GLB bytes.
+  const bytes=delivered[0]===0x1f&&delivered[1]===0x8b?gunzipSync(delivered):delivered;
+  const gltf=await this.loader.parseAsync(Uint8Array.from(bytes).buffer,new URL('.',new URL(path,location.href)).href);
   const clip=gltf.animations.find(c=>c.name==='CORLEO_'+this.style+'_'+action);
   if(!clip)throw Error('CORLEO animation missing in '+path);
   return{gltf,clip};

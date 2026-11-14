@@ -7,61 +7,121 @@
       "name": "CORLEO_Professional_MOUNT.glb",
       "sha256": "8f8e1802fe26bf3b694fa15f7cc2ea23300c5a84411995b0d960ad0f5d116db3",
       "size": 3464036,
-      "animation": "CORLEO_Professional_MOUNT"
+      "animation": "CORLEO_Professional_MOUNT",
+      "packed": {
+        "name": "CORLEO_Professional_MOUNT.glb.gz",
+        "encoding": "gzip",
+        "size": 694743,
+        "sha256": "0523bb76d8254bf99e55c1669af695b4e9bf445047f3adbc04cae9ccb7f5ae0d"
+      }
     },
     {
       "name": "CORLEO_Professional_RUN.glb",
       "sha256": "2eb8709ff018d68ce75d04d57c40234a02b095d43239ffb7c444b71564de5f55",
       "size": 3240152,
-      "animation": "CORLEO_Professional_RUN"
+      "animation": "CORLEO_Professional_RUN",
+      "packed": {
+        "name": "CORLEO_Professional_RUN.glb.gz",
+        "encoding": "gzip",
+        "size": 636122,
+        "sha256": "fad3ce663e743df2718d6ad4239413f7f82c8ac116195cb2cc2a5bbd1d5252d6"
+      }
     },
     {
       "name": "CORLEO_Professional_CRAWL.glb",
       "sha256": "72aee08c93abf465ab46eb5194b554c902fb09e4a511699ea45026d6461c9e81",
       "size": 3218036,
-      "animation": "CORLEO_Professional_CRAWL"
+      "animation": "CORLEO_Professional_CRAWL",
+      "packed": {
+        "name": "CORLEO_Professional_CRAWL.glb.gz",
+        "encoding": "gzip",
+        "size": 638461,
+        "sha256": "2b865928c604966a494b939672d82e340be151451794c9e63e42db14bceb9d55"
+      }
     },
     {
       "name": "CORLEO_Professional_JUMP.glb",
       "sha256": "b0cc9bb69541c467d2a7c23cd8dfab87eca483cee2a8aef5763b9a1281f739f6",
       "size": 3247184,
-      "animation": "CORLEO_Professional_JUMP"
+      "animation": "CORLEO_Professional_JUMP",
+      "packed": {
+        "name": "CORLEO_Professional_JUMP.glb.gz",
+        "encoding": "gzip",
+        "size": 637787,
+        "sha256": "af64fc932e114cc121f72d837b1280ae848cefc236638db253bf68ecf0c5ef28"
+      }
     },
     {
       "name": "CORLEO_Professional_DISMOUNT.glb",
       "sha256": "16b5dc4faf245e1f8a3fab7273ac32b44a7c8afd218d520492e4e0e0aa6ef9b7",
       "size": 3464040,
-      "animation": "CORLEO_Professional_DISMOUNT"
+      "animation": "CORLEO_Professional_DISMOUNT",
+      "packed": {
+        "name": "CORLEO_Professional_DISMOUNT.glb.gz",
+        "encoding": "gzip",
+        "size": 698418,
+        "sha256": "47c95e706978a54d00e16657083831eaabd46048787eb7a9229a44b91d66224f"
+      }
     },
     {
       "name": "CORLEO_Maverick_MOUNT.glb",
       "sha256": "43e4c6d4981491cd189a5a698048381fb0e22e9ba7ee7cca4704ba643ac81c10",
       "size": 3391044,
-      "animation": "CORLEO_Maverick_MOUNT"
+      "animation": "CORLEO_Maverick_MOUNT",
+      "packed": {
+        "name": "CORLEO_Maverick_MOUNT.glb.gz",
+        "encoding": "gzip",
+        "size": 684923,
+        "sha256": "a0009d636a11db6280931fdcde63b7ff56f9faa4e27ee711e997582ccc725308"
+      }
     },
     {
       "name": "CORLEO_Maverick_RUN.glb",
       "sha256": "942d1f1966d955291dc70bf79754982fa2327fba2c64034d0320ee336f1342d2",
       "size": 3167160,
-      "animation": "CORLEO_Maverick_RUN"
+      "animation": "CORLEO_Maverick_RUN",
+      "packed": {
+        "name": "CORLEO_Maverick_RUN.glb.gz",
+        "encoding": "gzip",
+        "size": 625134,
+        "sha256": "72668bb83ca50caea8a6132198a417a05eced209c28692b3344a76e7117148c1"
+      }
     },
     {
       "name": "CORLEO_Maverick_CRAWL.glb",
       "sha256": "681066e19a963ba317176b1482d3335f3ab46e112d610f343e287ccf9ab46a21",
       "size": 3145044,
-      "animation": "CORLEO_Maverick_CRAWL"
+      "animation": "CORLEO_Maverick_CRAWL",
+      "packed": {
+        "name": "CORLEO_Maverick_CRAWL.glb.gz",
+        "encoding": "gzip",
+        "size": 627657,
+        "sha256": "5f605fd7930c7ee9409231e1957c0a72aa7cda346adfd8e2757bde7354d93b56"
+      }
     },
     {
       "name": "CORLEO_Maverick_JUMP.glb",
       "sha256": "07ea775395c894c93cec4cba2186058bc1cde8764aca7930fe1b6cae4b4e849b",
       "size": 3174196,
-      "animation": "CORLEO_Maverick_JUMP"
+      "animation": "CORLEO_Maverick_JUMP",
+      "packed": {
+        "name": "CORLEO_Maverick_JUMP.glb.gz",
+        "encoding": "gzip",
+        "size": 626881,
+        "sha256": "634a976c0586e3b2e0444ec59ea3adc486bf2c1e01bcd6c296a3e7e17dfa4127"
+      }
     },
     {
       "name": "CORLEO_Maverick_DISMOUNT.glb",
       "sha256": "583393697f987da01c320a057f28b5d73481c55ee7bccd0335019bfba9ceddd9",
       "size": 3391048,
-      "animation": "CORLEO_Maverick_DISMOUNT"
+      "animation": "CORLEO_Maverick_DISMOUNT",
+      "packed": {
+        "name": "CORLEO_Maverick_DISMOUNT.glb.gz",
+        "encoding": "gzip",
+        "size": 688364,
+        "sha256": "0624eb5dd5d74990b815622a7a00f2ee49677a2ae627859cec3cec9f4eac7778"
+      }
     }
   ]
 }
