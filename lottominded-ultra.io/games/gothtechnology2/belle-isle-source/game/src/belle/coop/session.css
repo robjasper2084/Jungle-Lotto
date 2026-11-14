@@ -59,3 +59,27 @@ body.coop-playing > header,body.coop-playing #navigation,body.coop-playing #ride
 .coop-lift{right:92px;bottom:126px;flex-direction:column}
 .coop-player-pane[data-vehicle=hoverbike] .coop-touch-hop{bottom:126px}
 .coop-player-pane[data-vehicle=hoverbike] .coop-touch-brake{bottom:178px}
+
+/* Co-op transmission controls must not inherit the solo hover stylesheet's
+ * 36px button minimum. Keep the disclosure and every gear/clutch target 44px. */
+#coop-overlay .coop-drive{max-width:100%;min-width:0}
+#coop-overlay .coop-drive summary,#coop-overlay .coop-drive button{box-sizing:border-box;min-width:44px;min-height:44px;max-width:100%}
+#coop-overlay .coop-drive summary{padding:10px 6px;overflow-wrap:anywhere}
+#coop-overlay .coop-drive button{margin:4px 0 0;padding:6px;white-space:normal;overflow-wrap:anywhere}
+/* Expanded controls wrap inside their own player pane. On short split views
+ * the card scrolls instead of shrinking targets or clipping its last row. */
+#coop-overlay .coop-player-info:has(.coop-drive[open]){
+ --coop-drive-bottom:max(8px,var(--island-safe-bottom,env(safe-area-inset-bottom,0px)));
+ --coop-drive-top:8px;
+ top:var(--coop-drive-top);left:max(8px,var(--island-safe-left,env(safe-area-inset-left,0px)));right:max(8px,var(--island-safe-right,env(safe-area-inset-right,0px)));
+ width:auto;max-width:none;max-height:calc(100% - var(--coop-drive-top) - var(--coop-drive-bottom));
+ overflow:auto;overscroll-behavior:contain;pointer-events:auto;z-index:3;
+}
+#coop-overlay .coop-player-pane[data-top-row=true] .coop-player-info:has(.coop-drive[open]){
+ --coop-drive-top:min(max(108px,calc(var(--island-safe-top,env(safe-area-inset-top,0px)) + 96px)),max(8px,calc(100% - var(--coop-drive-bottom) - 64px)));
+}
+@media(max-width:700px){
+ #coop-overlay .coop-player-pane[data-top-row=true] .coop-player-info:has(.coop-drive[open]){
+  --coop-drive-top:min(max(96px,calc(var(--island-safe-top,env(safe-area-inset-top,0px)) + 84px)),max(8px,calc(100% - var(--coop-drive-bottom) - 64px)));
+ }
+}

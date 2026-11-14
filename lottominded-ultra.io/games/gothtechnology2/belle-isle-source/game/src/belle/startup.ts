@@ -23,7 +23,7 @@ export function createStartup(){
  const motion=document.getElementById('startup-motion') as HTMLButtonElement;
  const next=document.getElementById('startup-next') as HTMLButtonElement;
  const media=window.matchMedia('(prefers-reduced-motion: reduce)');
- let motionOff=media.matches,stage=0,ready=false,leaving=false,seconds=1,lastScene=-1;
+ let motionOff=media.matches,stage=0,ready=false,leaving=false,seconds=1,lastScene=-1,lastShutter=NaN,lastProgress=NaN;
  let leaveTimer:ReturnType<typeof setTimeout>|undefined;
  const items=Array.from(screen.querySelectorAll<HTMLElement>('[data-stage]'));
  const views=Array.from(screen.querySelectorAll<HTMLElement>('.cinema-views i'));
@@ -76,15 +76,18 @@ export function createStartup(){
   camera(dt:number,aspect=16/9){
    if(!motionOff&&!leaving&&ready)seconds+=dt;
    const shot=sampleFlyover(seconds,aspect);
-   screen.style.setProperty('--shot-shutter',String(motionOff?0:shot.shutter));
-   screen.style.setProperty('--shot-progress',String(shot.progress));
+   // Avoid two style invalidations per 3D preview frame for subpixel changes.
+   const shutter=Math.round((motionOff?0:shot.shutter)*100)/100;
+   const progress=Math.round(shot.progress*100)/100;
+   if(shutter!==lastShutter){lastShutter=shutter;screen.style.setProperty('--shot-shutter',String(shutter));}
+   if(progress!==lastProgress){lastProgress=progress;screen.style.setProperty('--shot-progress',String(progress));}
    if(lastScene!==shot.index){lastScene=shot.index;document.getElementById('startup-scene')!.textContent=shot.name;views.forEach((v,i)=>v.classList.toggle('is-current',i===shot.index));}
    return shot;
   },
   leave(onComplete:()=>void){
    if(!ready||leaving)return;leaving=true;preview?.dispose();preview=undefined;picker.open=false;setup.disable(true);screen.dataset.state='leaving';start.disabled=true;next.disabled=true;clearTimeout(leaveTimer);
    const finish=()=>{screen.hidden=true;document.body.classList.remove('at-start');if(!motionOff)document.body.classList.add('entering-ride');onComplete();setTimeout(()=>document.body.classList.remove('entering-ride'),1000);};
-   if(motionOff)finish();else leaveTimer=setTimeout(finish,600);
+   if(motionOff)finish();else leaveTimer=setTimeout(finish,260);
   },
   show(){
    clearTimeout(leaveTimer);leaving=false;screen.hidden=false;screen.dataset.state='ready';

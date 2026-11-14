@@ -1,5 +1,9 @@
 /** Actual shipped-game smoke. Trusted UI only; no seeded race state or patched simulation. */
 import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
+import {recordRequestFailure} from '../lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/visual-review-evidence.mjs';
+import {recordEvidenceError,observeEvidence,cleanupCinematicCase,finalizeCinematicCase,finalizeCinematicReport} from '../lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/cinematic-review-evidence.mjs';
 import {createRequire} from 'node:module';
 import {mkdir,readFile,writeFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
@@ -14,11 +18,13 @@ const local=target.protocol==='http:'&&target.hostname==='127.0.0.1';
 assert(local||target.href===new URL(GAME_PATH,base).href,'Only the actual production game or local build is allowed');
 const sha=process.env.EXPECTED_MERGE_SHA||process.env.GITHUB_SHA;
 assert.match(sha||'',/^[0-9a-f]{40}$/,'Exact tested commit is required');
+const checkout=execFileSync('git',['rev-parse','HEAD'],{cwd:repository,encoding:'utf8'}).trim();
+assert.equal(checkout,sha,'Reported source must be the actual checkout');
 const output=resolve(process.env.BELLE_CINEMATIC_OUTPUT||'artifacts/belle-cinematic');await mkdir(output,{recursive:true});
 const selected=process.env.BELLE_CINEMATIC_CASE||'all';
 const cases=[{name:'desktop',width:1440,height:960},{name:'compact-landscape',width:390,height:340},{name:'small-phone',width:320,height:568}].filter(c=>selected==='all'||c.name===selected);
 assert(cases.length>0,'Unknown browser case');
-const report={commit:sha,game:target.href,startedAt:new Date().toISOString(),passed:false,liveVerified:false,scope:local?'Candidate build, not production publication':'Actual public build and browser',hardwarePerformanceCertified:false,manualScreenshotReviewRequired:true,cases:[]};
+const report={commit:sha,checkout,runId:process.env.GITHUB_RUN_ID??null,runAttempt:process.env.GITHUB_RUN_ATTEMPT??null,errors:[],game:target.href,startedAt:new Date().toISOString(),passed:false,liveVerified:false,scope:local?'Candidate build, not production publication':'Actual public build and browser',hardwarePerformanceCertified:false,manualScreenshotReviewRequired:true,cases:[]};
 let browser;
 try{
  if(!local){report.deployment=JSON.parse(await readFile('belle-production-jobs.json','utf8'));assert.equal(report.deployment.passed,true);assert.equal(report.deployment.commit,sha);report.publicBytes=await verifyBelleRelease(base,sha);}
@@ -27,13 +33,14 @@ try{
  for(const entry of cases){
   const mobile=entry.width<600,context=await browser.newContext({viewport:{width:entry.width,height:entry.height},deviceScaleFactor:1,hasTouch:mobile,isMobile:mobile,serviceWorkers:'block'});
   const page=await context.newPage();page.setDefaultTimeout(45000);await context.tracing.start({screenshots:true,snapshots:true});
-  const evidence={...entry,passed:false,errors:[],screenshots:[]};report.cases.push(evidence);
+  const evidence={...entry,source:checkout,passed:false,functionalPassed:false,errors:[],failedRequests:[],cleanupFailed:false,screenshots:[],screenshotEvidence:[]};report.cases.push(evidence);
+  let phase='gameplay';
   const tap=locator=>mobile?locator.tap():locator.click();
-  const shot=async name=>{const file=entry.name+'-'+name+'.png';await page.screenshot({path:resolve(output,file),timeout:90000});evidence.screenshots.push(file);};
-  page.on('pageerror',error=>evidence.errors.push(error.message));
-  page.on('console',message=>{if(message.type()==='error'||/context\s*(?:was\s*)?lost/i.test(message.text()))evidence.errors.push(message.text());});
-  page.on('response',response=>{if(response.status()>=400)evidence.errors.push('HTTP '+response.status()+' '+response.url());});
-  page.on('requestfailed',request=>{if(request.failure()?.errorText!=='net::ERR_ABORTED')evidence.errors.push(request.failure()?.errorText+' '+request.url());});
+  const shot=async name=>{const file=entry.name+'-'+name+'.png';await page.screenshot({path:resolve(output,file),timeout:90000});evidence.screenshots.push(file);const bytes=await readFile(resolve(output,file));evidence.screenshotEvidence.push({file,bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex'),at:new Date().toISOString(),source:checkout,runId:report.runId});};
+  page.on('pageerror',error=>observeEvidence(evidence,phase,()=>evidence.errors.push(error.message)));
+  page.on('console',message=>observeEvidence(evidence,phase,()=>{if(message.type()==='error'||/context\s*(?:was\s*)?lost/i.test(message.text()))evidence.errors.push(message.text());}));
+  page.on('response',response=>observeEvidence(evidence,phase,()=>{if(response.status()>=400)evidence.errors.push('HTTP '+response.status()+' '+response.url());}));
+  page.on('requestfailed',request=>observeEvidence(evidence,phase,()=>recordRequestFailure(evidence,request,phase)));
   try{
    await page.goto(target.href+'?profile=1&verify='+sha,{waitUntil:'domcontentloaded',timeout:45000});
    await page.waitForFunction(()=>['ready','error'].includes(document.querySelector('#welcome')?.dataset.state),null,{timeout:180000});
@@ -67,13 +74,16 @@ try{
    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'No page-width overflow');await shot('cinematic-sunset');
    // Pause and resume through real UI; no timeline or input-state substitution.
    await tap(page.locator('#pause'));await expect(page.locator('#pause')).toHaveText('Resume');await tap(page.locator('#pause'));await expect(page.locator('#pause')).toHaveText('Pause');
-   assert.deepEqual(evidence.errors,[],'No unexpected console, asset or context errors');evidence.passed=true;
-  }catch(error){evidence.failure=error.stack||String(error);try{await shot('failure');}catch{}throw error;}
-  finally{await context.tracing.stop({path:resolve(output,entry.name+'-trace.zip')});await context.close();}
+   assert.deepEqual(evidence.errors,[],'No unexpected console, asset or context errors');assert.deepEqual(evidence.failedRequests,[],'No aborted or failed requests');evidence.functionalPassed=true;
+  }catch(error){evidence.failure=error.stack||String(error);phase='failure-capture';try{await shot('failure');}catch(captureError){recordEvidenceError(evidence,'failure-screenshot',captureError);}throw error;}
+  finally{phase='cleanup';await cleanupCinematicCase(evidence,()=>context.tracing.stop({path:resolve(output,entry.name+'-trace.zip')}),()=>context.close());}
+  assert.equal(finalizeCinematicCase(evidence),true,'Cinematic case must remain clean through context cleanup');
  }
  if(!local){report.publicBytes=await verifyBelleRelease(base,sha);report.liveVerified=liveVerified({deployment:report.deployment,publicBytes:report.publicBytes,browser:{passed:report.cases.every(c=>c.passed),commit:sha}},sha);assert.equal(report.liveVerified,true);}
  report.passed=report.cases.every(c=>c.passed);
 }catch(error){report.failure=error.stack||String(error);process.exitCode=1;}
 finally{
- if(browser)await browser.close();report.finishedAt=new Date().toISOString();await writeFile(resolve(output,'report.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({passed:report.passed,liveVerified:report.liveVerified,commit:sha,cases:report.cases.map(c=>({name:c.name,passed:c.passed})),failure:report.failure},null,2));
+ try{if(browser)await browser.close();}catch(error){report.errors.push('cleanup:browser '+(error.stack||String(error)));}
+ if(!finalizeCinematicReport(report,cases.length))process.exitCode=1;
+ report.finishedAt=new Date().toISOString();await writeFile(resolve(output,'report.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({passed:report.passed,liveVerified:report.liveVerified,commit:sha,cases:report.cases.map(c=>({name:c.name,passed:c.passed})),failure:report.failure},null,2));
 }

@@ -1,8 +1,10 @@
+import {syncRaceRadioDock} from './rideRadioDock.ts';
 import type {CockpitRadioAction} from './cockpitRadio.ts';
 import './rideMedia.css';
 type Track={name:string;url:string};
 /** Local files only. A compressor limits the music bus before output and capture. */
 export class RideRadio {
+ private raceDocked=false;private menu=document.querySelector<HTMLElement>('#ride-menu nav');
  private cockpit=false;private libraryOpen=false;private details!:HTMLDetailsElement;private tracks:Track[]=[];private index=0;private player=new Audio();private context?:AudioContext;private output?:GainNode;private suspended=false;private wasPlaying=false;
  private root=document.createElement('section');private play=document.createElement('button');private title=document.createElement('span');private list=document.createElement('select');private volume=document.createElement('input');private status=document.createElement('span');
  constructor(private canvas:HTMLCanvasElement){
@@ -16,7 +18,7 @@ export class RideRadio {
   const remove=document.createElement('button');remove.textContent='Remove track';remove.onclick=()=>{if(!this.tracks.length)return;this.player.pause();URL.revokeObjectURL(this.tracks.splice(this.index,1)[0].url);this.index=Math.min(this.index,Math.max(0,this.tracks.length-1));this.player.removeAttribute('src');this.syncList();};
   const volumeLabel=document.createElement('label');volumeLabel.textContent='Volume';this.volume.type='range';this.volume.min='0';this.volume.max='1';this.volume.step='.02';this.volume.value=localStorage.getItem('belle-radio-volume')||'.45';this.volume.setAttribute('aria-label','Radio volume');this.volume.oninput=()=>{localStorage.setItem('belle-radio-volume',this.volume.value);this.level();};volumeLabel.append(this.volume);
   const note=document.createElement('small');note.textContent='Local MP3 / WAV · files stay on this device. Re-add your playlist after a reload.';
-  const close=document.createElement('button');close.textContent='Back to cockpit';close.onclick=()=>{this.libraryOpen=false;details.open=false;this.root.hidden=this.cockpit;this.canvas.focus();};details.append(summary,label,this.list,remove,volumeLabel,note,this.status,close);details.ontoggle=()=>{if(!details.open){this.libraryOpen=false;if(this.cockpit)this.root.hidden=true;}};this.root.append(details,prev,this.play,next,this.title);document.body.append(this.root);
+  const close=document.createElement('button');close.textContent='Back to cockpit';close.onclick=()=>{this.libraryOpen=false;details.open=false;this.root.hidden=this.cockpit&&!this.raceDocked;this.canvas.focus();};details.append(summary,label,this.list,remove,volumeLabel,note,this.status,close);details.ontoggle=()=>{if(!details.open){this.libraryOpen=false;if(this.cockpit&&!this.raceDocked)this.root.hidden=true;}};this.root.append(details,prev,this.play,next,this.title);document.body.append(this.root);
   this.player.onended=()=>this.select(this.index+1,true);this.player.onplay=this.player.onpause=()=>{this.play.textContent=this.player.paused?'Play':'Pause';this.play.setAttribute('aria-pressed',String(!this.player.paused));};this.player.onerror=()=>{this.status.textContent='This file could not play. Choose another MP3 or WAV.';};
   document.addEventListener('visibilitychange',()=>{if(document.hidden)this.setSuspended(true);});
   window.addEventListener('pagehide',()=>this.dispose());
@@ -28,8 +30,13 @@ export class RideRadio {
  private select(index:number,autoplay=!this.player.paused){if(!this.tracks.length)return;this.index=(index+this.tracks.length)%this.tracks.length;this.player.src=this.tracks[this.index].url;this.syncList();if(autoplay)void this.toggle();}
  private setSuspended(value:boolean){if(value===this.suspended)return;this.suspended=value;if(value){this.wasPlaying=!this.player.paused;this.player.pause();}else if(this.wasPlaying){this.wasPlaying=false;void this.toggle();}}
  snapshot(){return{title:this.tracks[this.index]?.name||'Add your soundtrack',playing:!this.player.paused,volume:Number(this.volume.value),count:this.tracks.length};}
- command(action:CockpitRadioAction){if(action==='library'){this.libraryOpen=true;this.root.hidden=false;this.details.open=true;}else if(action==='toggle')void this.toggle();else if(action==='previous'||action==='next')this.select(this.index+(action==='next'?1:-1));else{this.volume.value=String(Math.max(0,Math.min(1,Number(this.volume.value)+(action==='louder'?.1:-.1))));localStorage.setItem('belle-radio-volume',this.volume.value);this.level();}}
- update(visible:boolean,paused:boolean,hazard=false,cockpit=false){this.cockpit=cockpit;this.root.classList.toggle('cockpit-library',cockpit);this.root.hidden=!visible||(cockpit&&!this.libraryOpen);this.setSuspended(!visible||paused||document.hidden);this.level(hazard?.3:1);}
+ command(action:CockpitRadioAction){if(action==='library'){this.libraryOpen=true;this.present(true);this.details.open=true;}else if(action==='toggle')void this.toggle();else if(action==='previous'||action==='next')this.select(this.index+(action==='next'?1:-1));else{this.volume.value=String(Math.max(0,Math.min(1,Number(this.volume.value)+(action==='louder'?.1:-.1))));localStorage.setItem('belle-radio-volume',this.volume.value);this.level();}}
+ private present(visible:boolean){
+  this.raceDocked=syncRaceRadioDock(this.root,this.menu,document.body.classList.contains('island-trial'),this.libraryOpen);
+  this.root.classList.toggle('cockpit-library',this.cockpit&&!this.raceDocked);
+  this.root.hidden=!visible||(this.cockpit&&!this.libraryOpen&&!this.raceDocked);
+ }
+ update(visible:boolean,paused:boolean,hazard=false,cockpit=false){this.cockpit=cockpit;this.present(visible);this.setSuspended(!visible||paused||document.hidden);this.level(hazard?.3:1);}
  capture(){if(!this.context||!this.output)return;const out=this.context.createMediaStreamDestination();this.output.connect(out);return{stream:out.stream,release:()=>{this.output?.disconnect(out);out.stream.getTracks().forEach(t=>t.stop());}};}
  dispose(){this.player.pause();this.player.removeAttribute('src');this.tracks.forEach(t=>URL.revokeObjectURL(t.url));this.tracks=[];void this.context?.close();}
 }

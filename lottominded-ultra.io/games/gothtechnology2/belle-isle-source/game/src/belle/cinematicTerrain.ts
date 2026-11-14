@@ -19,11 +19,13 @@ export class CinematicTerrain {
           this.originals.set(material, {compile, key});
           material.onBeforeCompile = (shader, renderer) => {
             compile.call(material, shader, renderer);
-            if (shader.fragmentShader.includes('varying vec2 terrainXZ;')) {
+            // A realistic-material clone can inherit this hook before being discovered again.
+            // Compose the inherited hook first, then inject our exact block only once.
+            if (shader.fragmentShader.includes('varying vec2 terrainXZ;') && !shader.fragmentShader.includes(LAWN_DETAIL)) {
               shader.fragmentShader = shader.fragmentShader.replace('#include <map_fragment>', '#include <map_fragment>\n' + LAWN_DETAIL);
             }
           };
-          material.customProgramCacheKey = () => identity + '|belle-lawn-detail-v1';
+          material.customProgramCacheKey = () => identity.split('|').includes('belle-lawn-detail-v1') ? identity : identity + '|belle-lawn-detail-v1';
           material.needsUpdate = true;
         }
       });

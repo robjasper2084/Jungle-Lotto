@@ -6,6 +6,10 @@ body.at-start{background:#07141a}
 #welcome.startup:before{background:linear-gradient(90deg,#06141bec 0%,#08191e91 34%,transparent 75%),linear-gradient(0deg,#06131cf5 0%,#06131c33 36%,transparent 68%,#06131c99 100%);}
 #welcome.startup:after{background:#07141a;opacity:1;transition:opacity 1.5s ease;}
 #welcome.startup[data-state="ready"]:after{opacity:0;}
+/* The giant island-outline path uses a GPU filter plus animated stroke. Keep
+ * loading responsive while the 3D engine decodes meshes and uploads textures. */
+#welcome.startup[data-state="loading"] .island-trace{animation:none;filter:none;stroke-dashoffset:0}
+#welcome.startup[data-state="loading"]:after{transition:none}
 .cinema-shade{position:absolute;inset:0;box-shadow:inset 0 32px #071016,inset 0 -32px #071016,inset 0 0 130px #07131d55;pointer-events:none;z-index:2;}
 .cinema-shutter{position:absolute;inset:0;z-index:-2;background:#03090c;opacity:var(--shot-shutter);pointer-events:none;}
 .cinema-loading-art{position:absolute;left:44%;right:4%;top:18%;height:50%;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:38px;opacity:.9;transition:opacity 1s ease;pointer-events:none;}
@@ -65,11 +69,11 @@ body.at-start{background:#07141a}
 #welcome.startup .startup-controls-panel p{font-size:11px;color:#d6dfce;line-height:1.8;margin:12px 0;}
 .startup-controls-panel kbd{font:10px Arial,sans-serif;border:1px solid #a2ac9544;border-radius:2px;padding:3px 5px;margin-right:3px;}
 #welcome.startup button:focus-visible{outline:2px solid #fff5dc;outline-offset:5px;}
-#welcome.startup[data-state="leaving"]:after{z-index:7;opacity:1;transition:opacity .55s ease;}
+#welcome.startup[data-state="leaving"]:after{z-index:7;opacity:1;transition:opacity .26s ease;}
 #welcome.startup[data-state="leaving"] .cinema-title,#welcome.startup[data-state="leaving"] .cinema-top,#welcome.startup[data-state="leaving"] .cinema-bottom,#welcome.startup[data-state="leaving"] .cinema-location{opacity:0;transition:opacity .25s;pointer-events:none;}
 #welcome.startup[data-state="error"] #start{color:#f8e7c5;border-color:#e5bc79;}
 #welcome.startup.motion-off *,#welcome.startup.motion-off *:after,#welcome.startup.motion-off:after{animation:none!important;transition:none!important;}
-.entering-ride #game{animation:ride-fade-in .8s ease-out both;}
+.entering-ride #game{animation:ride-fade-in .4s ease-out both;}
 @keyframes cinema-title-in{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 @keyframes cinema-breathe{50%{opacity:.25}}
 @keyframes cinema-loading{from{transform:scaleX(.1);opacity:.4}50%{opacity:1}to{transform:scaleX(1);opacity:.3}}
