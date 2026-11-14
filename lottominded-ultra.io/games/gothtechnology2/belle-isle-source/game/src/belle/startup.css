@@ -99,3 +99,6 @@ body.at-start{background:#07141a}
 /* Keep settings readable beside the icon-only flyover controls on phones. */
 #welcome.startup .cinema-tools #welcome-settings{font-size:11px;min-width:64px;min-height:44px;padding:8px;border:1px solid #ffffff40;border-radius:4px;background:#07192388;}
 @media(max-width:400px){.cinema-tools{gap:4px}.cinema-brand{gap:4px;letter-spacing:0}}
+
+/* Cinematic startup toolbar input priority */
+@media(max-width:760px){#welcome.startup .cinema-top{z-index:7}}

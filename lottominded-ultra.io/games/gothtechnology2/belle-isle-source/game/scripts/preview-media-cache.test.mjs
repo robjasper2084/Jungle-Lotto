@@ -17,7 +17,7 @@ async function fixture(t){
 }
 test('actual preview plugin makes completed soundtrack bytes privately reusable for ten minutes',async t=>{
  const {get,bytes}=await fixture(t),r=await get({headers:{Range:'bytes=0-'}});
- assert.equal(r.status,206);assert.equal(r.headers['cache-control'],'private, max-age=600');assert.equal(r.headers['accept-ranges'],'bytes');assert.equal(r.headers['content-range'],`bytes 0-${bytes.length-1}/${bytes.length}`);assert.equal(r.headers.etag,undefined);assert.equal(r.headers['last-modified'],undefined);assert.deepEqual(r.body,bytes);
+ assert.equal(r.status,206);assert.equal(r.headers['cache-control'],'private, max-age=600');assert.equal(r.headers['accept-ranges'],'bytes');assert.equal(r.headers['content-range'],`bytes 0-${bytes.length-1}/${bytes.length}`);assert.match(r.headers.etag,/^\"[a-f0-9]{64}\"$/);assert.equal(r.headers['last-modified'],undefined);assert.deepEqual(r.body,bytes);
 });
 test('preview cache policy never substitutes an empty 304 for a conditional resumed range',async t=>{
  const {get,bytes}=await fixture(t),r=await get({headers:{Range:'bytes=512-1023','If-None-Match':'"obsolete"','If-Modified-Since':'Sat, 14 Nov 2026 03:24:55 GMT'}});
@@ -37,3 +37,5 @@ test('cache configuration is bounded and cannot inject response headers',()=>{
 test('missing soundtrack remains a hard 404 under preview caching',async t=>{
  const {get}=await fixture(t);const r=await get({path:'/audio/swoop/track-99.mp3'});assert.equal(r.status,404);assert.equal(r.body.length,0);
 });
+
+test('cache validator binds each real range to the exact current sound bytes',async t=>{const {get,bytes,file}=await fixture(t),full=await get({headers:{Range:'bytes=0-'}});assert.equal(full.status,206);assert.match(full.headers.etag,/^\"[a-f0-9]{64}\"$/);const partial=await get({headers:{Range:'bytes=2048-','If-Range':full.headers.etag}});assert.equal(partial.status,206);assert.deepEqual(partial.body,bytes.subarray(2048));assert.equal(partial.headers.etag,full.headers.etag);const altered=Buffer.from(bytes);altered[0]^=1;await writeFile(file,altered);const changed=await get({headers:{Range:'bytes=2048-','If-Range':full.headers.etag}});assert.equal(changed.status,200);assert.deepEqual(changed.body,altered);assert.notEqual(changed.headers.etag,full.headers.etag);});

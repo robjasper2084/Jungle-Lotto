@@ -5,8 +5,13 @@ import {stripTypeScriptTypes} from 'node:module';
 const source=await readFile(new URL('../vite.config.ts',import.meta.url),'utf8');
 // Execute the actual configuration/hook with only Vite's identity wrapper replaced.
 // This is a config unit test, not a full Vite build or GPU test.
-const js=stripTypeScriptTypes(source).replace("import { defineConfig } from 'vite';",'const defineConfig=value=>value;').replace("import {defineConfig} from 'vite';",'const defineConfig=value=>value;');
-assert.ok(!/from ['"]vite['"]/.test(js),'Only the Vite wrapper is substituted');
+// Data URLs cannot resolve relative module imports. Inline the ACTUAL preview
+// implementation (not a stub) before exercising the unchanged config hooks.
+const preview=await readFile(new URL('./preview-media-server.mjs',import.meta.url),'utf8');
+assert.match(source,/import \{previewMediaPlugin\} from '\.\/scripts\/preview-media-server\.mjs'/);
+const configSource=source.replace("import {previewMediaPlugin} from './scripts/preview-media-server.mjs';",'');
+const js=preview+'\n'+stripTypeScriptTypes(configSource).replace("import { defineConfig } from 'vite';",'const defineConfig=value=>value;').replace("import {defineConfig} from 'vite';",'const defineConfig=value=>value;');
+assert.ok(!/from ['"]vite['"]/.test(js),'Vite identity wrapper is replaced, while actual preview and asset plugins are exercised');
 const config=(await import('data:text/javascript;base64,'+Buffer.from(js).toString('base64'))).default;
 const build=config({command:'build'});
 test('actual HTML transform declares a real relative SVG icon',()=>{
@@ -15,7 +20,7 @@ test('actual HTML transform declares a real relative SVG icon',()=>{
  assert.deepEqual(tags,[{tag:'link',attrs:{rel:'icon',type:'image/svg+xml',href:'./favicon.svg'},injectTo:'head'}]);
 });
 test('same explicit icon is available during development',()=>{
- assert.deepEqual(config({command:'serve'}).plugins[0].transformIndexHtml(),build.plugins[0].transformIndexHtml());
+ assert.deepEqual(config({command:'serve'}).plugins.find(p=>p.name==='belle-runtime-assets').transformIndexHtml(),build.plugins.find(p=>p.name==='belle-runtime-assets').transformIndexHtml());
  assert.equal(config({command:'serve'}).publicDir,'public');assert.equal(build.publicDir,false);
 });
 test('new document files are copied without removing vehicle or world assets',()=>{
@@ -33,3 +38,5 @@ test('asset copy still rejects traversal and preserves external GLB dependencies
  assert.match(source,/if\(!source.startsWith\(path.resolve\('public'\)\+path.sep\)\)throw Error/);
  assert.match(source,/await fs.copyFile\(source,dest\)/);assert.match(source,/decodeURI\(ref.uri\)/);assert.match(source,/asset-manifest.json/);
 });
+
+test('preview media adapter is present but never changes build assets',()=>{const x=build.plugins.filter(p=>p.name==='belle-preview-media-revalidation');assert.equal(x.length,1);assert.equal(typeof x[0].configurePreviewServer,'function');assert.equal(typeof x[0].closeBundle,'undefined');});
