@@ -53,3 +53,26 @@ body[data-hud-preset] #jarvs-avionics[data-status=CRITICAL]{border-color:#ff9582
 }
 body[data-presentation-motion=reduced] :is(.location-chip,#navigation){backdrop-filter:none!important}
 @media(prefers-reduced-motion:reduce){body[data-hud-preset] :is(button,.location-chip,#navigation){animation:none!important;transition:none!important;backdrop-filter:none!important}}
+
+/* Reserve the right thumb lane on the smallest default HUDs. Saved custom
+ * placements retain their own validated geometry. */
+@media(min-width:401px) and (min-height:521px){
+ body[data-hud-preset]:not(.coop-playing):not(.island-trial) #ride-radio:not(.cockpit-library):not(.belle-hud-control){top:calc(var(--island-safe-top,0px) + 180px)}
+}
+@media(max-width:400px){
+ body[data-hud-preset].touch-controls #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:136px;max-width:calc(100% - 140px);gap:2px 8px}
+ body[data-hud-preset].touch-controls #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control)>div:not(.hover-energy){flex-direction:column;align-items:flex-start;gap:2px}
+ body[data-hud-preset].touch-controls #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) :is(span,output){letter-spacing:0}
+ body[data-hud-preset].touch-controls #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) output{padding-left:4px}
+ body[data-hud-preset].touch-controls #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) .hover-energy{grid-column:1/-1}
+ body[data-hud-preset].touch-controls #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) .hover-energy label{margin:0}
+ body[data-hud-preset].touch-controls #hover-hud[data-visual-polish=v1] .hover-help{display:none}
+}
+@media(max-width:400px) and (max-height:520px){
+ body[data-hud-preset].touch-controls #hover-hud .hover-touch{bottom:100px}
+ body[data-hud-preset].touch-controls #hover-hud .hover-cruise:not(.belle-hud-control){bottom:164px}
+ body[data-hud-preset].touch-controls #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control){width:108px}
+ body[data-hud-preset].touch-controls #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) b{font-size:22px}
+ body[data-hud-preset].touch-controls #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) :is(span,output){font-size:8px}
+ body[data-hud-preset].touch-controls #jarvs-avionics:not(.belle-hud-control){box-sizing:border-box;max-width:108px}
+}

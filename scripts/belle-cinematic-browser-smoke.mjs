@@ -37,6 +37,20 @@ try{
   let phase='gameplay';
   const tap=locator=>mobile?locator.tap():locator.click();
   const shot=async name=>{const file=entry.name+'-'+name+'.png';await page.screenshot({path:resolve(output,file),timeout:90000});evidence.screenshots.push(file);const bytes=await readFile(resolve(output,file));evidence.screenshotEvidence.push({file,bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex'),at:new Date().toISOString(),source:checkout,runId:report.runId});};
+  const auditLayout=async preset=>{
+   const result=await page.evaluate(()=>{
+    const visible=selector=>[...document.querySelectorAll(selector)].filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.height>0&&getComputedStyle(el).visibility!=='hidden';});
+    const controls=visible('.hover-touch button,.hover-actions button,.hover-cruise button,#hero-cam-record');
+    const label=el=>el.id||el.getAttribute('aria-label')||el.textContent.trim();
+    const obscured=controls.filter(el=>{const r=el.getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return r.width<44||r.height<44||r.x<0||r.y<0||r.right>innerWidth||r.bottom>innerHeight||!(hit===el||el.contains(hit));}).map(label);
+    const overlaps=[];
+    for(const panel of visible('.hover-instruments,#jarvs-avionics,#ride-radio'))for(const control of controls){const a=panel.getBoundingClientRect(),b=control.getBoundingClientRect();if(Math.min(a.right,b.right)-Math.max(a.left,b.left)>1&&Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>1)overlaps.push([label(panel),label(control)]);}
+    for(let i=0;i<controls.length;i++)for(let j=i+1;j<controls.length;j++){const a=controls[i].getBoundingClientRect(),b=controls[j].getBoundingClientRect();if(Math.min(a.right,b.right)-Math.max(a.left,b.left)>1&&Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>1)overlaps.push([label(controls[i]),label(controls[j])]);}
+    return {obscured,overlaps};
+   });
+   (evidence.layoutAudit??={})[preset]=result;
+   assert.deepEqual(result,{obscured:[],overlaps:[]},'Flight status and radio must leave 44px controls clear at '+entry.name+' '+preset);
+  };
   page.on('pageerror',error=>observeEvidence(evidence,phase,()=>evidence.errors.push(error.message)));
   page.on('console',message=>observeEvidence(evidence,phase,()=>{if(message.type()==='error'||/context\s*(?:was\s*)?lost/i.test(message.text()))evidence.errors.push(message.text());}));
   page.on('response',response=>observeEvidence(evidence,phase,()=>{if(response.status()>=400)evidence.errors.push('HTTP '+response.status()+' '+response.url());}));
@@ -61,7 +75,7 @@ try{
    evidence.frameAudit={postMount,submissions:await submissions(),gpu};
    assert(evidence.frameAudit.submissions>postMount+2&&gpu.gpuCompletedAt>=gpu.gpuSubmittedAt&&gpu.paintOpportunities===2,'Fresh GPU-completed cinematic frame evidence required');
    evidence.rendering=await page.evaluate(()=>{const c=document.querySelector('#game'),gl=c.getContext('webgl2');return{live:!!gl&&!gl.isContextLost(),width:c.width,height:c.height,profile:window.__belleStartupProfile?.()};});
-   assert(evidence.rendering.live&&evidence.rendering.width>0&&evidence.rendering.height>0);await shot('exploration');
+   assert(evidence.rendering.live&&evidence.rendering.width>0&&evidence.rendering.height>0);await auditLayout('exploration');await shot('exploration');
    await tap(page.locator('#tools-toggle'));await tap(page.locator('#settings-open'));
    await expect(page.locator('#cinematic-settings')).toBeVisible();await expect(page.locator('#compact-cockpit')).toBeChecked();
    await page.locator('#compact-cockpit').uncheck();await expect(page.locator('body')).toHaveAttribute('data-cockpit-density','full');
@@ -77,7 +91,7 @@ try{
     const hit=await page.locator('#'+id).evaluate(el=>{const r=el.getBoundingClientRect(),at=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return{width:r.width,height:r.height,inside:r.x>=0&&r.y>=0&&r.right<=innerWidth&&r.bottom<=innerHeight,hit:at===el||el.contains(at)};});
     assert(hit.width>=44&&hit.height>=44&&hit.inside&&hit.hit,'Accessible unobstructed '+id+' at '+entry.name);
    }
-   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'No page-width overflow');await shot('cinematic-sunset');
+   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'No page-width overflow');await auditLayout('cinematic');await shot('cinematic-sunset');
    // Pause and resume through real UI; no timeline or input-state substitution.
    await tap(page.locator('#pause'));await expect(page.locator('#pause')).toHaveText('Resume');await tap(page.locator('#pause'));await expect(page.locator('#pause')).toHaveText('Pause');
    assert.deepEqual(evidence.errors,[],'No unexpected console, asset or context errors');assert.deepEqual(evidence.failedRequests,[],'No aborted or failed requests');evidence.functionalPassed=true;
