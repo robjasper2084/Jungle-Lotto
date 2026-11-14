@@ -40,7 +40,10 @@ export class BelleMusicPlayer {
  /** Called synchronously by a real click/key gesture. Prime silently when in a menu. */
  unlock(){
   if(this.disposed||!this.enabled||!this.tracks.length)return;
-  this.authorized=true;this.blocked=false;this.start(true);
+  // Global click/key listeners also see settings interactions. Once permission
+  // is primed, leave paused media alone; only a denied/error state needs re-priming.
+  const prime=!this.authorized||this.blocked;
+  this.authorized=true;this.blocked=false;this.start(prime);
  }
  setActive(value:boolean){
   if(this.disposed||this.active===value)return;
