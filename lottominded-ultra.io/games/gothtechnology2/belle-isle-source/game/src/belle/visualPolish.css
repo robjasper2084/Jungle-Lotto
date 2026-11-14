@@ -60,6 +60,8 @@ body[data-presentation-motion=reduced] :is(.location-chip,#navigation){backdrop-
  body[data-hud-preset]:not(.coop-playing):not(.island-trial) #ride-radio:not(.cockpit-library):not(.belle-hud-control){top:calc(var(--island-safe-top,0px) + 180px)}
 }
 @media(max-width:400px){
+ body[data-hud-preset].touch-controls #hover-hud[data-visual-polish=v1] .hover-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+ body[data-hud-preset].touch-controls #hover-hud[data-visual-polish=v1] .hover-actions button:not(.belle-hud-control){min-width:44px;min-height:44px;padding:6px 5px;font-size:11px;line-height:1.15;white-space:normal}
  body[data-hud-preset].touch-controls #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:136px;max-width:calc(100% - 140px);gap:2px 8px}
  body[data-hud-preset].touch-controls #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control)>div:not(.hover-energy){flex-direction:column;align-items:flex-start;gap:2px}
  body[data-hud-preset].touch-controls #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) :is(span,output){letter-spacing:0}
@@ -70,7 +72,8 @@ body[data-presentation-motion=reduced] :is(.location-chip,#navigation){backdrop-
 }
 @media(max-width:400px) and (max-height:520px){
  body[data-hud-preset].touch-controls #hover-hud .hover-touch{bottom:100px}
- body[data-hud-preset].touch-controls #hover-hud .hover-cruise:not(.belle-hud-control){bottom:164px}
+ body[data-hud-preset].touch-controls #hover-hud .hover-cruise:not(.belle-hud-control){bottom:158px}
+ body[data-hud-preset].touch-controls #hover-boost:not(.belle-hud-control){top:calc(var(--island-safe-top,0px) + 125px);left:50%;right:auto;transform:translateX(-50%)}
  body[data-hud-preset].touch-controls #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control){width:108px}
  body[data-hud-preset].touch-controls #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) b{font-size:22px}
  body[data-hud-preset].touch-controls #hover-hud[data-visual-polish=v1] .hover-instruments:not(.belle-hud-control) :is(span,output){font-size:8px}

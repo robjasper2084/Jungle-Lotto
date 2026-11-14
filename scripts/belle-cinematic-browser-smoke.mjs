@@ -40,13 +40,13 @@ try{
   const auditLayout=async preset=>{
    const result=await page.evaluate(()=>{
     const visible=selector=>[...document.querySelectorAll(selector)].filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.height>0&&getComputedStyle(el).visibility!=='hidden';});
-    const controls=visible('.hover-touch button,.hover-actions button,.hover-cruise button,#hero-cam-record');
+    const controls=visible('.hover-touch button,.hover-actions button,.hover-cruise button,#hero-cam-record,#view,#pause,#tools-toggle,#ride-radio>details>summary');
     const label=el=>el.id||el.getAttribute('aria-label')||el.textContent.trim();
     const obscured=controls.filter(el=>{const r=el.getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return r.width<44||r.height<44||r.x<0||r.y<0||r.right>innerWidth||r.bottom>innerHeight||!(hit===el||el.contains(hit));}).map(label);
     const overlaps=[];
     // Instrument children contain the visible readings; their transparent,
     // pointer-inert full-width layout wrapper is not an obscuring panel.
-    for(const panel of visible('.hover-instruments > *,#jarvs-avionics,#ride-radio'))for(const control of controls){const a=panel.getBoundingClientRect(),b=control.getBoundingClientRect();if(Math.min(a.right,b.right)-Math.max(a.left,b.left)>1&&Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>1)overlaps.push([label(panel),label(control)]);}
+    for(const panel of visible('.hover-instruments > *,#jarvs-avionics,#ride-radio,#navigation,.location-chip'))for(const control of controls){if(panel.contains(control))continue;const a=panel.getBoundingClientRect(),b=control.getBoundingClientRect();if(Math.min(a.right,b.right)-Math.max(a.left,b.left)>1&&Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>1)overlaps.push([label(panel),label(control)]);}
     for(let i=0;i<controls.length;i++)for(let j=i+1;j<controls.length;j++){const a=controls[i].getBoundingClientRect(),b=controls[j].getBoundingClientRect();if(Math.min(a.right,b.right)-Math.max(a.left,b.left)>1&&Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>1)overlaps.push([label(controls[i]),label(controls[j])]);}
     return {obscured,overlaps};
    });
