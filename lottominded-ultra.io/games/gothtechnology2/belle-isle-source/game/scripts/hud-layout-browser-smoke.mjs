@@ -62,8 +62,10 @@ async function verifyFlightLayout(label){
   const visible=selector=>[...document.querySelectorAll(selector)].filter(el=>{const r=el.getBoundingClientRect(),style=getComputedStyle(el);return r.width>0&&r.height>0&&style.visibility!=='hidden'&&style.display!=='none';});
   const name=el=>el.id||el.className||el.textContent.trim();
   const controls=visible('#hover-move-zone,#hero-cam-record,#hover-cruise,.hover-touch button,#hover-hud .hover-actions button,.trial-hud-actions button,#hover-hud .hover-lighting>summary,.quick-tools>button');
-  const panels=visible('.trial-hud-summary,.trial-map-wrap,.hover-instruments>*,#jarvs-avionics');
-  const overlaps=[],intersects=(a,b)=>{const x=a.getBoundingClientRect(),y=b.getBoundingClientRect();return Math.min(x.right,y.right)-Math.max(x.left,y.left)>1&&Math.min(x.bottom,y.bottom)-Math.max(x.top,y.top)>1;};
+  const panels=visible('.trial-hud-summary,.trial-map-wrap,.hover-instruments>*,#jarvs-avionics,#hover-notice');
+  // The unpainted notice paragraph spans the HUD; measure its visible text.
+  const rect=el=>{if(el.id==='hover-notice'){const range=document.createRange();range.selectNodeContents(el);return range.getBoundingClientRect();}return el.getBoundingClientRect();};
+  const overlaps=[],intersects=(a,b)=>{const x=rect(a),y=rect(b);return Math.min(x.right,y.right)-Math.max(x.left,y.left)>1&&Math.min(x.bottom,y.bottom)-Math.max(x.top,y.top)>1;};
   for(const panel of panels)for(const control of controls)if(!panel.contains(control)&&intersects(panel,control))overlaps.push([name(panel),name(control)]);
   for(let i=0;i<controls.length;i++)for(let j=i+1;j<controls.length;j++)if(!controls[i].contains(controls[j])&&!controls[j].contains(controls[i])&&intersects(controls[i],controls[j]))overlaps.push([name(controls[i]),name(controls[j])]);
   return{viewport:{width:innerWidth,height:innerHeight},overlaps,controls:controls.map(name),panels:panels.map(name)};
