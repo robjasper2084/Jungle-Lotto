@@ -13,6 +13,10 @@ export const RIDERS = [
 ] as const;
 export const VEHICLES = [
   { id: 'hoverbike', label: 'Hoverbike · flight', adapter: 'HoverController', profile: null },
+  { id: 'jetson', label: 'Jetson ONE · Professional', adapter: 'HoverController', profile: null },
+  { id: 'jetson:maverick', label: 'Jetson ONE · Maverick', adapter: 'HoverController', profile: null },
+  { id: 'corleo', label: 'CORLEO robot horse · Professional', adapter: 'CorleoController', profile: null },
+  { id: 'corleo:maverick', label: 'CORLEO robot horse · Maverick', adapter: 'CorleoController', profile: null },
   { id: 'euc', label: 'Classic electric unicycle', adapter: 'RideCore', profile: null },
   { id: 'euc:city', label: 'City 16', adapter: 'RideCore', profile: 'city' },
   { id: 'euc:tour', label: 'Touring 18', adapter: 'RideCore', profile: 'tour' },
@@ -41,7 +45,7 @@ export function defaultPair(): Pair { return [defaultSelection(0),defaultSelecti
 export type PlayerManifest = Readonly<{
   version: 1; seat: Seat; entityId: string; riderId: RiderId; vehicleId: VehicleId; binding: Binding;
   rider: Readonly<{ sourcePath: string; blob: string }>;
-  controller: 'RideCore' | 'HoverController'; physicsProfile: string | null;
+  controller: 'RideCore' | 'HoverController' | 'CorleoController'; physicsProfile: string | null;
   profileSource: string; revision: string; requiresRigValidation: true;
 }>;
 /** IDs, not arbitrary URLs, cross the lobby/transport boundary. Never share a skeleton instance. */

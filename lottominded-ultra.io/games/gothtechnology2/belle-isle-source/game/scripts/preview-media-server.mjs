@@ -16,8 +16,8 @@ export function previewMediaMiddleware(directory,{cacheSeconds=0}={}){
   if(!/^\/audio\/swoop\/track-\d{2}\.mp3$/.test(path))return next();
   if(request.method!=='GET'&&request.method!=='HEAD'){response.writeHead(405,{Allow:'GET, HEAD','Content-Length':'0'}).end();return;}
   void (async()=>{
-   const file=resolve(root,'.'+path),resolved=await realpath(file);
-   if(!resolved.startsWith(root+sep)){response.writeHead(403,{'Content-Length':'0'}).end();return;}
+   const file=resolve(root,'.'+path),[resolved,canonicalRoot]=await Promise.all([realpath(file),realpath(root)]);
+   if(!resolved.startsWith(canonicalRoot+sep)){response.writeHead(403,{'Content-Length':'0'}).end();return;}
    const info=await stat(resolved);if(!info.isFile())throw Error('Not a file');
    const headers={'Content-Type':'audio/mpeg','Accept-Ranges':'bytes','Cache-Control':cacheControl};
    // No ETag or Last-Modified is published: old conditional validators cannot

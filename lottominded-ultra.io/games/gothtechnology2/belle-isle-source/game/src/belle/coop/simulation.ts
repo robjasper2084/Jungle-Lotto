@@ -1,5 +1,7 @@
 import {DRIVE_GEARS} from '../hoverTransmission.ts';
 import {HoverController} from '../hoverController.ts';
+import {CorleoController} from '../vehicles/corleoController.ts';
+import {CORLEO_RADIUS} from '../vehicles/corleoFit.ts';
 import type {ParkTerrain} from '../terrain.ts';
 import {RideCore} from '../../../runtime/ride-core/src/ridecore.ts';
 import type {RidePose} from '../../../runtime/ride-core/src/controller.ts';
@@ -52,16 +54,17 @@ export class PairSimulation{
  private readonly grounds:TerrainSampler[];
  readonly hovers:(HoverController|undefined)[];
  readonly mounted:boolean[];
- radius(seat:number){return this.manifests[seat].vehicleId==='hoverbike'?1.3:COOP_RADIUS;}
+ braking(seat:number){return !!this.pending[seat]?.brake;}
+ radius(seat:number){return this.manifests[seat].controller==='CorleoController'?CORLEO_RADIUS:this.manifests[seat].controller!=='RideCore'?1.4:COOP_RADIUS;}
  constructor(terrain:CoopTerrainSource,manifests:readonly PlayerManifest[],anchor:Spawn){
   if(manifests.length<2||manifests.length>4||manifests.some((m,i)=>m.seat!==i))throw new Error('Use two to four ordered player manifests.');
   this.terrain=terrain;this.manifests=manifests;
-  const ground:Ground=(x,z)=>({height:terrain.height(x,z),land:terrain.land(x,z),blocked:terrain.obstructed(x,z,Math.max(...manifests.map(m=>m.vehicleId==='hoverbike'?1.3:COOP_RADIUS)))});
-  this.initial=findPairSpawns(anchor,ground,manifests.map((m)=>m.vehicleId==='hoverbike'?1.3:COOP_RADIUS));
+  const ground:Ground=(x,z)=>({height:terrain.height(x,z),land:terrain.land(x,z),blocked:terrain.obstructed(x,z,Math.max(...manifests.map((_,i)=>this.radius(i))))});
+  this.initial=findPairSpawns(anchor,ground,manifests.map((_,i)=>this.radius(i)));
   this.snapshots=this.initial.map(p=>({x:p.x,y:p.y,z:p.z}));
   this.grounds=manifests.map((_,i)=>this.playerTerrain(i));
   this.pending=manifests.map(()=>neutral());this.mounted=manifests.map(()=>true);
-  this.hovers=manifests.map((m,i)=>m.vehicleId==='hoverbike'?new HoverController(terrain as ParkTerrain,this.initial[i],(o,d,max,half)=>{let best:number|null=null;this.snapshots.forEach((p,j)=>{if(j===i)return;const hit=peerRay(o,d,max,p,this.radius(j)+half);if(hit!==null&&(best===null||hit<best))best=hit;});return best;}):undefined);
+  this.hovers=manifests.map((m,i)=>m.controller!=='RideCore'?new (m.controller==='CorleoController'?CorleoController:HoverController)(terrain as ParkTerrain,this.initial[i],(o,d,max,half)=>{let best:number|null=null;this.snapshots.forEach((p,j)=>{if(j===i)return;const hit=peerRay(o,d,max,p,this.radius(j)+half);if(hit!==null&&(best===null||hit<best))best=hit;});return best;}):undefined);
   for(const hover of this.hovers)hover?.setMode('classic');
   this.actors=manifests.map((m,i)=>{
    const s=this.initial[i],core=new RideCore(this.grounds[i],{profile:riderProfile(m.riderId),spawn:{position:{x:s.x,y:s.y,z:s.z},headingY:s.heading}});

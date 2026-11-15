@@ -1,4 +1,7 @@
 #hover-enter{border-color:#e9645e88;color:#fff0e3;background:#541b23d9}
+/* Ground mounts share the accessible movement/brake controls, with no flight actions. */
+#hover-hud[data-vehicle=corleo] :is([data-hover=takeoff],#hover-boost,.hover-cruise,.hover-lift,.hover-energy,#jarvs-avionics,label:has(#hover-flight-mode)){display:none!important}
+#hover-hud[data-vehicle=corleo] .hover-instruments>div:has(#hover-altitude){display:none}
 #hover-hud{--hover-safe-left:var(--island-safe-left,env(safe-area-inset-left,0px));--hover-safe-right:var(--island-safe-right,env(safe-area-inset-right,0px));--hover-safe-bottom:var(--island-safe-bottom,env(safe-area-inset-bottom,0px));position:absolute;inset:auto calc(var(--hover-safe-right) + 24px) calc(var(--hover-safe-bottom) + 22px) calc(var(--hover-safe-left) + 24px);z-index:4;pointer-events:none;color:#f2eee7;text-shadow:0 2px 10px #0008}
 .hover-title{display:flex;flex-direction:column;gap:1px}.hover-title span{font-size:9px;letter-spacing:.25em;color:#e49b8e}.hover-title strong{font-size:19px;letter-spacing:.17em}
 .hover-instruments{display:flex;align-items:center;flex-wrap:wrap;gap:6px 24px;max-width:100%;margin:9px 0}.hover-instruments>div{display:flex;align-items:baseline;gap:8px}.hover-instruments b{font-size:40px;line-height:1;font-variant-numeric:tabular-nums}.hover-instruments span{font-size:9px;letter-spacing:.1em}.hover-instruments output{font-size:10px;letter-spacing:.15em;border-left:2px solid #e67d69;padding-left:12px}

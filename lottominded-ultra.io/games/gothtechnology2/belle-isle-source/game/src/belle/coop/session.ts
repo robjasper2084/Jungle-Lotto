@@ -7,6 +7,8 @@ import {mountCoopLobby} from './lobby.ts';
 import {CoopInput,coopViewports,glViewport,preparePair,loadLayout,LAYOUT_KEY,type SplitLayout,RIDERS,VEHICLES,type InputFrame,type Pad,type PlayerManifest,type Spawn,type Seat} from './coop.ts';
 import {CoopAssets,createRenderActor,type RenderActor} from './actors.ts';
 import {PairSimulation,coopFrameSeconds,type CoopTerrainSource} from './simulation.ts';
+import {createVehicleModel} from '../vehicles/models.ts';
+import {coopAuthoredChoice} from '../vehicles/choices.ts';
 import './session.css';
 
 type Hooks={available:()=>boolean;anchor:()=>Spawn;activate:()=>Promise<void>|void;leave:()=>void;blocked:()=>boolean;prepare?:(root:T.Object3D,signal:AbortSignal)=>Promise<void>};
@@ -107,7 +109,7 @@ export class CoopSession{
   const assets=new CoopAssets();let actors:RenderActor[]=[];let staging:T.Group|undefined;
   try{
    const simulation=new PairSimulation(this.terrain,manifests,this.hooks.anchor());
-   const prepared=await preparePair(manifests,async(m,signal)=>createRenderActor(m,await assets.rider(m,signal),this.wheel,simulation,m.vehicleId==='hoverbike'?await assets.hover(signal):undefined),ctl.signal,60_000);
+   const prepared=await preparePair(manifests,async(m,signal)=>{const rider=await assets.rider(m,signal),choice=coopAuthoredChoice(m.vehicleId);const model=choice?await createVehicleModel(choice,signal):undefined;try{return createRenderActor(m,rider,this.wheel,simulation,m.vehicleId==='hoverbike'?await assets.hover(signal):undefined,model);}catch(error){model?.dispose();throw error;}},ctl.signal,60_000);
    actors=[...prepared];
    // SceneWarmup needs the candidate in the existing scene. It stays invisible outside
    // synchronous program collection; the main render loop suspends during preparation.
@@ -150,8 +152,8 @@ export class CoopSession{
    look.onpointerdown=e=>{if(!canInput()||e.button!==0||p.lookPointer!==null)return;document.getElementById('game')?.focus();p.lookPointer=e.pointerId;p.last=[e.clientX,e.clientY];look.setPointerCapture(e.pointerId);};
    look.onpointermove=e=>{if(p.lookPointer!==e.pointerId||!canInput())return;actor.yaw-=(e.clientX-p.last[0])*.004;actor.pitch=T.MathUtils.clamp(actor.pitch+(e.clientY-p.last[1])*.003,-.4,.85);p.last=[e.clientX,e.clientY];};
    const releaseLook=(e:PointerEvent)=>{if(p.lookPointer===e.pointerId)p.lookPointer=null;};look.onpointerup=look.onpointercancel=look.onlostpointercapture=releaseLook;
-   const hover=actor.manifest.vehicleId==='hoverbike';
-   const hop=button(hover?'Takeoff / land':'Hop',()=>{if(canInput())p.input.hop=true;});hop.className='coop-touch-hop';hop.setAttribute('aria-label','Player '+(seat+1)+(hover?' takeoff or land':' hop'));root.dataset.vehicle=actor.manifest.vehicleId;
+   const hover=actor.manifest.controller==='HoverController';
+   const hop=button(hover?'Takeoff / land':'Hop',()=>{if(canInput())p.input.hop=true;});hop.className='coop-touch-hop';hop.setAttribute('aria-label','Player '+(seat+1)+(hover?' takeoff or land':' hop'));root.dataset.vehicle=actor.manifest.vehicleId;hop.hidden=actor.manifest.controller==='CorleoController';
    const brake=button('Brake',()=>{});brake.className='coop-touch-brake';brake.setAttribute('aria-label','Player '+(seat+1)+' brake');
    brake.onpointerdown=e=>{if(!canInput()||e.button!==0)return;e.preventDefault();p.input.brake=true;brake.setPointerCapture(e.pointerId);};brake.onpointerup=brake.onpointercancel=brake.onlostpointercapture=()=>p.input.brake=false;
    const lift=document.createElement('div');lift.className='coop-lift';lift.hidden=!hover;
@@ -196,10 +198,10 @@ export class CoopSession{
   const poses=this.simulation.advance(coopFrameSeconds(seconds,now,this.lastNow,suspended),inputs,suspended);this.overlay.dataset.simulationFrames=String(++this.updateCount);
   this.layout();this.collectDiagnostics=now-this.lastDiagnostics>=250;if(this.collectDiagnostics)this.lastDiagnostics=now;
   for(const seat of this.actors.map((_,i)=>i as Seat)){
-   const actor=this.actors[seat],p=poses[seat],peer=poses[(seat+1)%poses.length];actor.apply(suspended?0:seconds);actor.view.root.visible=true;
+   const actor=this.actors[seat],p=poses[seat],peer=poses[(seat+1)%poses.length];actor.apply(suspended?0:seconds);
    const yaw=p.headingY+actor.yaw,eyeHeight=p.footBlend>.5?1.55:1.7;
    this.cameraTarget.set(p.x,p.y+(actor.firstPerson?eyeHeight:1.3),p.z);
-   if(actor.firstPerson){this.cameraEye.copy(this.cameraTarget);this.cameraTarget.add(new T.Vector3(Math.sin(yaw)*15,-Math.tan(actor.pitch)*15,Math.cos(yaw)*15));}
+   if(actor.firstPerson){const mountedModel=this.simulation.mounted[seat]?actor.vehicleModel:undefined;if(mountedModel)mountedModel.eye(this.cameraTarget);this.cameraEye.copy(this.cameraTarget);const cockpitPitch=mountedModel?(mountedModel.choice.vehicle==='corleo'?.35:.12):0;this.cameraTarget.add(new T.Vector3(Math.sin(yaw)*15,-Math.tan(Math.min(1.25,actor.pitch+cockpitPitch))*15,Math.cos(yaw)*15));}
    else{
     this.cameraEye.copy(this.cameraTarget).add(new T.Vector3(-Math.sin(yaw)*4.5,1.5+actor.pitch*2,-Math.cos(yaw)*4.5));
     this.cameraEye.y=Math.max(this.cameraEye.y,this.terrain.height(this.cameraEye.x,this.cameraEye.z,p.y)+.6);
@@ -211,7 +213,7 @@ export class CoopSession{
    if(this.collectDiagnostics){const pane=this.panes[seat];pane.root.dataset.rider=actor.manifest.riderId;pane.root.dataset.vehicle=actor.manifest.vehicleId;
    pane.root.dataset.x=p.x.toFixed(3);pane.root.dataset.y=p.y.toFixed(3);pane.root.dataset.z=p.z.toFixed(3);pane.root.dataset.speed=p.speed.toFixed(3);pane.root.dataset.footError=actor.footError().toFixed(5);
    pane.root.dataset.camera=actor.firstPerson?'first':'third';pane.root.dataset.crashBlend=String(p.crashBlend);pane.root.dataset.footBlend=String(p.footBlend);
-   pane.status.textContent=Math.round(Math.abs(p.speed)*3.6)+' km/h · '+VEHICLES.find(v=>v.id===actor.manifest.vehicleId)!.label+' · Partner '+Math.round(Math.hypot(p.x-peer.x,p.z-peer.z))+' m'+(this.simulation.hovers[seat]?this.simulation.mounted[seat]?(this.simulation.hovers[seat]!.landed?' · Landed · Takeoff to ride':' · Flying'):' · On foot · Return to bike':'');}
+   pane.status.textContent=Math.round(Math.abs(p.speed)*3.6)+' km/h · '+VEHICLES.find(v=>v.id===actor.manifest.vehicleId)!.label+' · Partner '+Math.round(Math.hypot(p.x-peer.x,p.z-peer.z))+' m'+(this.simulation.hovers[seat]?this.simulation.mounted[seat]?(actor.manifest.controller==='CorleoController'?' · Ground ride':this.simulation.hovers[seat]!.landed?' · Landed · Takeoff to ride':' · Flying'):' · On foot · Return to bike':'');}
   }
   if(!suspended&&this.lastNow){this.frames.push(now-this.lastNow);if(this.frames.length>300)this.frames.shift();}this.lastNow=suspended?0:now;
   return poses[0];
@@ -229,7 +231,7 @@ export class CoopSession{
    renderer.setScissorTest(true);renderer.autoClear=true;
    for(const seat of this.actors.map((_,i)=>i as Seat)){
     const actor=this.actors[seat],p=this.simulation.actors[seat].renderPose,r=glViewport(rects[seat],innerHeight);
-    for(const a of this.actors)a.view.rider.visible=a!==actor||!actor.firstPerson;
+    for(const a of this.actors)a.setFirstPerson(a===actor&&actor.firstPerson);
     renderer.setViewport(r.x,r.y,r.width,r.height);renderer.setScissor(r.x,r.y,r.width,r.height);
     // Per-view culling/light choices happen immediately before each view is drawn.
     // Simulation and time are owned by the one outer loop; never advance them here.
@@ -237,7 +239,7 @@ export class CoopSession{
     if(this.actors.length>=3)world.beginSplitView?.();
     const renderStart=performance.now();const matrixStart=renderStart;this.scene.updateMatrixWorld();matrixMs+=performance.now()-matrixStart;const matrixAuto=this.scene.matrixWorldAutoUpdate;this.scene.matrixWorldAutoUpdate=false;try{renderer.render(this.scene,actor.camera);}finally{this.scene.matrixWorldAutoUpdate=matrixAuto;world.endSplitView?.();}renderMs+=performance.now()-renderStart;this.draws[seat]=renderer.info.render.calls;triangles+=renderer.info.render.triangles;
    }
-  }finally{world.endSplitView?.();world.splitDetail?.(false);if(finishCensus)this.overlay.dataset.drawGroups=JSON.stringify(finishCensus());this.actors.forEach((a,i)=>a.view.rider.visible=oldVisible[i]);renderer.autoClear=auto;renderer.shadowMap.enabled=shadows;renderer.setScissorTest(scissor);renderer.setScissor(this.savedScissor);renderer.setViewport(this.savedViewport);}
+  }finally{world.endSplitView?.();world.splitDetail?.(false);if(finishCensus)this.overlay.dataset.drawGroups=JSON.stringify(finishCensus());this.actors.forEach((a,i)=>{a.setFirstPerson(false);a.view.rider.visible=oldVisible[i];});renderer.autoClear=auto;renderer.shadowMap.enabled=shadows;renderer.setScissorTest(scissor);renderer.setScissor(this.savedScissor);renderer.setViewport(this.savedViewport);}
   if(this.collectDiagnostics&&this.frames.length){const sorted=this.frames.slice().sort((a,b)=>a-b);this.overlay.dataset.medianFrameMs=sorted[Math.floor(sorted.length*.5)].toFixed(2);this.overlay.dataset.p95FrameMs=sorted[Math.floor(sorted.length*.95)].toFixed(2);}
   if(this.collectDiagnostics){this.overlay.dataset.triangles=String(triangles);this.overlay.dataset.worldMs=worldMs.toFixed(2);this.overlay.dataset.renderMs=renderMs.toFixed(2);this.overlay.dataset.matrixMs=matrixMs.toFixed(2);this.overlay.dataset.shadows=this.actors.length>=3?'contact':'mapped';}
   this.overlay.dataset.drawCalls=String(this.draws.reduce((a,b)=>a+b,0));this.overlay.dataset.renderedViews=String(this.actors.length);
