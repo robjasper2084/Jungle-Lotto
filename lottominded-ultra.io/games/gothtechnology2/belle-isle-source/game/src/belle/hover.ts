@@ -25,12 +25,14 @@ import {createVehicleModel,type VehicleModel} from './vehicles/models.ts';
 import {authoredChoice,authoredName,type AuthoredChoice} from './vehicles/choices.ts';
 import {CorleoController} from './vehicles/corleoController.ts';
 import type {RideChoice} from './rideChoice.ts';
+import {VehicleHeadlamp} from './vehicles/headlamp.ts';
 type Pose={x:number;y:number;z:number;headingY:number};
 type Hooks={pose:()=>Pose;blocked:()=>boolean;entered:()=>void;exited:(p:{x:number;y:number;z:number;heading:number})=>void;touch:()=>boolean;nightAmount?:()=>number;obstacle?:FlightObstacle;vehicleLocked?:()=>boolean;restartTrial?:()=>void;prepareScene?:(model:T.Object3D,signal?:AbortSignal)=>Promise<void>};
 const keyCodes=['KeyW','KeyS','KeyA','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyE','KeyQ','Space','ShiftLeft','ShiftRight','KeyG','KeyF','KeyL','KeyH','KeyK','KeyR','KeyC','BracketLeft','BracketRight','KeyX','Minus','Equal'];
 export class HoverRide {
  sim:HoverController;
  private authored?:VehicleModel;
+ private readonly authoredHeadlamp:VehicleHeadlamp;
  private selected?:AuthoredChoice;
  get vehicle(){return this.selected?.vehicle??'hoverbike';}
  get selection(){return this.selected?{...this.selected}:{vehicle:'hoverbike' as const,pilot:undefined,livery:undefined};}
@@ -39,7 +41,7 @@ export class HoverRide {
  async selectVehicle(choice:RideChoice,scene:T.Scene,signal?:AbortSignal){
   const selected=authoredChoice(choice);if(JSON.stringify(selected)===JSON.stringify(this.selected))return;
   if(signal?.aborted)throw signal.reason;
-  const next=selected?await createVehicleModel(selected,signal,'beam'):undefined;
+  const next=selected?await createVehicleModel(selected,signal):undefined;
   if(signal?.aborted){next?.dispose();throw signal.reason;}
   this.leaveForTravel();this.authored?.dispose();this.authored=next;this.selected=selected;
   if(next){next.root.visible=false;scene.add(next.root);}
@@ -90,6 +92,7 @@ export class HoverRide {
  private mode:HTMLElement;
  private touchPad:HTMLElement;
  constructor(scene:T.Scene,readonly terrain:ParkTerrain,private hooks:Hooks){
+  this.authoredHeadlamp=new VehicleHeadlamp(scene);
   this.sim=new HoverController(terrain,terrain.map.spawn,hooks.obstacle);
   // Reuses existing world geometry and traffic raycasts, sampled at most 4Hz.
   // No AI model, extra camera, network call, or startup work is introduced.
@@ -259,7 +262,7 @@ installHoverPresentation(this.hud);
   if(!point){this.say('Land on clear ground before getting off. Press G to land.');return;}
   this.leaveForTravel();this.hooks.exited(point);
  }
- leaveForTravel(){++this.mountGeneration;this.mountAbort?.abort();this.mountAbort=undefined;this.endTrial();this.clear();this.riding=false;this.idleHover.reset();this.sim.land();this.jarvs.reset();this.hud.hidden=true;if(this.visualModel)this.visualModel.visible=false;document.body.classList.remove('on-hoverbike');this.enterButton.disabled=!!this.hooks.vehicleLocked?.();this.enterButton.textContent='Ride '+this.rideLabel+' · B';}
+ leaveForTravel(){++this.mountGeneration;this.mountAbort?.abort();this.mountAbort=undefined;this.endTrial();this.clear();this.riding=false;this.authoredHeadlamp.off();this.idleHover.reset();this.sim.land();this.jarvs.reset();this.hud.hidden=true;if(this.visualModel)this.visualModel.visible=false;document.body.classList.remove('on-hoverbike');this.enterButton.disabled=!!this.hooks.vehicleLocked?.();this.enterButton.textContent='Ride '+this.rideLabel+' · B';}
  private say(message:string){this.notice.textContent=message;this.messageUntil=performance.now()+4500;}
  private refresh(){
   const p=this.sim.pose,jarvs=this.jarvs.snapshot;
@@ -324,6 +327,7 @@ installHoverPresentation(this.hud);
   this.visualModel.position.set(p.x,p.y+idleY,p.z);
   this.visualModel.rotation.set(p.pitch,p.heading,p.roll,'YXZ');
   this.authored?.update(p,dt,running,this.sim.throttleDemand,this.sim.boostEnergy,this.lightOn,has('Space'));
+  if(this.authored)this.authoredHeadlamp.update(this.authored.root,this.vehicle==='corleo',this.lightOn,this.highBeam,this.hooks.nightAmount?.()??1);
   if(running&&!this.authored){
    this.steerBlend=T.MathUtils.damp(this.steerBlend,steer,7,dt);
    this.rotors.forEach((r,i)=>r.rotateY(dt*p.rpm*(i%2?-1:1)*32));

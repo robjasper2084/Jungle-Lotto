@@ -8,6 +8,7 @@ import {clone} from 'three/addons/utils/SkeletonUtils.js';
 import {corleoGaitClips} from './corleoMotion.ts';
 import {fitCorleoRider} from './corleoFit.ts';
 import {CorleoController} from './corleoController.ts';
+import {VehicleHeadlamp} from './headlamp.ts';
 import {normalizeRideChoice} from '../rideChoice.ts';
 import {assignPlayer,defaultSelection} from '../coop/coop.ts';
 import {ExplorerBuffer,explorerFrame} from '../onlineProtocol.ts';
@@ -15,6 +16,15 @@ import {createPose} from '../../../runtime/ride-core/src/controller.ts';
 import type {ParkTerrain} from '../terrain.ts';
 const neutral={throttle:0,steer:0,lift:0,boost:false,brake:false};
 const flat={map:{water:[]},height:()=>0,land:(_x:number,z:number)=>z<20,obstructed:()=>false,bridge:()=>({active:false}),raycastFlight:()=>null,raycastObstacle:()=>null,raycast:()=>null,sampleGround:(_x:number,_z:number,out:any)=>Object.assign(out,{height:0,normal:{x:0,y:1,z:0},surface:'asphalt'}),navigationObstacles:()=>[]} as unknown as ParkTerrain;
+test('vehicle switching and headlights keep the pre-warmed scene light count fixed',()=>{
+ const scene=new T.Scene(),lamp=new VehicleHeadlamp(scene),corleo=new T.Group(),jetson=new T.Group();corleo.position.set(3,2,8);jetson.position.set(-4,6,10);jetson.rotation.y=Math.PI/2;
+ const topology=()=>{const lights:T.Object3D[]=[];scene.traverseVisible(o=>{if((o as T.Light).isLight)lights.push(o);});return lights;};
+ const initial=topology();assert.equal(initial.length,1);assert.equal(lamp.light.intensity,0);
+ lamp.update(corleo,true,true,false,1);assert(lamp.light.intensity>0);assert(lamp.light.target.position.z>corleo.position.z);
+ lamp.off();assert.equal(lamp.light.intensity,0);assert.deepEqual(topology(),initial);
+ lamp.update(jetson,false,true,true,1);assert(lamp.light.target.position.x>jetson.position.x);assert.deepEqual(topology(),initial);
+ lamp.update(jetson,false,false,false,0);assert.equal(lamp.light.intensity,0);assert.deepEqual(topology(),initial);
+});
 function run(c:CorleoController,n:number,input=neutral,hz=60){for(let i=0;i<n*hz;i++)c.advance(1/hz,input);}
 test('authored vehicle files match the original package receipts',()=>{
  const receipt=JSON.parse(fs.readFileSync('public/belle/vehicles/authored-packages.json','utf8'));

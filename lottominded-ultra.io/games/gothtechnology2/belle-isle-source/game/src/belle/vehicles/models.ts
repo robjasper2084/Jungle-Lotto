@@ -27,17 +27,17 @@ async function asset(file:keyof typeof files){
  })();cache.set(file,task);task.catch(()=>cache.delete(file));}return task;
 }
 export type VehicleModel={root:T.Group;rider:T.Object3D;choice:AuthoredChoice;eye:(out:T.Vector3)=>T.Vector3;firstPerson:(value:boolean)=>void;update:(pose:HoverPose,dt:number,running:boolean,power:number,energy:number,lights?:boolean,brake?:boolean)=>void;dispose:()=>void};
-export async function createVehicleModel(choice:AuthoredChoice,signal?:AbortSignal,lighting:'beam'|'emissive'='emissive'):Promise<VehicleModel>{
+export async function createVehicleModel(choice:AuthoredChoice,signal?:AbortSignal):Promise<VehicleModel>{
  const check=()=>{if(signal?.aborted)throw signal.reason??new DOMException('Vehicle preparation cancelled','AbortError');};check();
  const source=await asset(choice.vehicle==='jetson'?'jetson-one.glb':`corleo-${choice.pilot}.glb`);check();
  const model=clone(source.scene),root=new T.Group();root.name=choice.vehicle+' · '+choice.pilot;root.userData.vehicleChoice={...choice};root.add(model);
  const materials=new Map<T.Material,T.Material>(),skeletons=new Set<T.Skeleton>();
- // Only the local solo vehicle projects a beam. Remote arrivals and previews
- // use emissive lamps so adding a player cannot recompile every island material
- // with a new scene-light count.
- const beam=lighting==='beam'?new T.SpotLight(0xcdeaff,35,24,.45,.65,1):undefined;
- if(beam){beam.position.set(0,choice.vehicle==='corleo'?1.8*CORLEO_SCALE:.8,.8);beam.target.position.set(0,0,20);root.add(beam,beam.target);}
- model.traverse(o=>{const mesh=o as T.Mesh;if((o as T.Light).isLight)o.visible=false;if((o as T.SkinnedMesh).isSkinnedMesh)skeletons.add((o as T.SkinnedMesh).skeleton);if(!mesh.isMesh)return;mesh.castShadow=false;mesh.receiveShadow=true;const own=(m:T.Material)=>{let c=materials.get(m);if(!c){c=m.clone();materials.set(m,c);}return c;};mesh.material=Array.isArray(mesh.material)?mesh.material.map(own):own(mesh.material);});
+ // The solo controller owns one pre-warmed scene light. Showcase lights are
+ // removed from these instances so neither selection nor remote arrivals can
+ // change the island's light topology or force a full-scene shader rebuild.
+ const showcaseLights:T.Object3D[]=[];
+ model.traverse(o=>{const mesh=o as T.Mesh;if((o as T.Light).isLight)showcaseLights.push(o);if((o as T.SkinnedMesh).isSkinnedMesh)skeletons.add((o as T.SkinnedMesh).skeleton);if(!mesh.isMesh)return;mesh.castShadow=false;mesh.receiveShadow=true;const own=(m:T.Material)=>{let c=materials.get(m);if(!c){c=m.clone();materials.set(m,c);}return c;};mesh.material=Array.isArray(mesh.material)?mesh.material.map(own):own(mesh.material);});
+ showcaseLights.forEach(light=>light.removeFromParent());
  let variants:JetsonVariantSystem|undefined,cockpit:JetsonCockpitController|undefined,mixer:T.AnimationMixer|undefined,batches:ReturnType<typeof batchRigidChildren>|undefined;
  let disposed=false,displayClock=0;let rider:T.Object3D=model,head:T.Object3D|undefined;const heads:T.Object3D[]=[];
  const dispose=()=>{if(disposed)return;disposed=true;root.removeFromParent();mixer?.stopAllAction();mixer?.uncacheRoot(model);batches?.dispose();variants?.dispose();cockpit?.dispose();for(const s of skeletons)s.dispose();for(const m of materials.values())m.dispose();};
@@ -71,7 +71,7 @@ export async function createVehicleModel(choice:AuthoredChoice,signal?:AbortSign
      cockpit.update({pitch:-p.pitch*3,roll:p.roll*3,yaw:0,power:Math.max(0,Math.min(1,p.rpm*.75+power*.2)),battery_level:energy,attitude_pitch_deg:p.pitch*180/Math.PI,attitude_roll_deg:p.roll*180/Math.PI,flight_mode:p.rpm>.1?1:0},delta);cockpit.context=context;variants?.update(delta);
     }
     if(mixer){const speed=Math.abs(p.speed),walk=Math.min(1,speed/.35),trot=Math.max(0,Math.min(1,(speed-.8)/1.1));const weights=[1-walk,walk*(1-trot),walk*trot];actions.forEach((a,i)=>{a.setEffectiveWeight(weights[i]);a.setEffectiveTimeScale(i===0?1:Math.max(.15,speed/((i===1?.85:1.23)*CORLEO_SCALE))*(p.speed<0?-1:1));});mixer.update(delta);fit?.update();}
-    if(beam)beam.intensity=lights?35:0;lamps.forEach(({material,intensity})=>material.emissiveIntensity=lights?intensity:0);
+    lamps.forEach(({material,intensity})=>material.emissiveIntensity=lights?intensity:0);
     dashboard?.(p,power,lights,brake);
    },dispose};
  }catch(error){dispose();throw error;}
