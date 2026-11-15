@@ -4,7 +4,7 @@ import {NatureViewSelection} from './natureViewSelection.ts';
 import type {ParkTerrain} from './terrain.ts';
 import {seasonalMaterial} from './seasonalMaterial.ts';
 import {treeBlend,seasonLook} from './seasonModel.ts';
-import {SUNSET_REFERENCE,inSunsetGarden} from './sunsetReferencePolicy.ts';
+import {REFERENCE_STYLE,inSunsetGarden} from './sunsetReferencePolicy.ts';
 import * as T from 'three';
 import {trunkRootHeight,replacedByCherry,cherryTreeSite} from './treeGrounding.ts';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
@@ -16,10 +16,10 @@ type Pool={id:string;meshes:T.InstancedMesh[];far?:T.InstancedMesh[];card?:T.Ins
 export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:ParkTerrain){
  const base='./belle/nature/',loader=new GLTFLoader(),textures=new T.TextureLoader();
  const json=async(name:string)=>{const r=await fetch(base+name);if(!r.ok)throw Error('Nature asset '+name+': '+r.status);return r.json();};
- const manifest:Manifest=await json('manifest.json'),plan:NaturePlan=await json('placements.json');if(SUNSET_REFERENCE)plan.trees=plan.trees.filter(p=>!inSunsetGarden(p.x,p.z));
+ const manifest:Manifest=await json('manifest.json'),plan:NaturePlan=await json('placements.json');if(REFERENCE_STYLE)plan.trees=plan.trees.filter(p=>!inSunsetGarden(p.x,p.z));
  status('Loading varied trees');
  const treeSource=await loader.loadAsync(base+'seasonal-trees.glb');treeSource.scene.updateMatrixWorld(true);
- if(SUNSET_REFERENCE)for(const entry of manifest.trees)for(const low of [false,true]){
+ if(REFERENCE_STYLE)for(const entry of manifest.trees)for(const low of [false,true]){
   const tree=referenceTree(entry.id,low,(entry.cardCenter?.[1]??8)*2);
   for(const part of ['trunk','leaves'] as const){const source=treeSource.scene.getObjectByName(entry.id+'__'+part+(low?'__lod':'')) as T.Mesh;if(!source)continue;source.geometry.dispose();source.geometry=tree[part];source.material=part==='trunk'?tree.bark:tree.foliage;source.matrixWorld.identity();}
  }
@@ -48,7 +48,7 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
    const source=treeSource.scene.getObjectByName(entry.id+'__'+part+(low?'__lod':'')) as T.Mesh;
    if(!source)throw Error('Missing seasonal tree '+entry.id+part);
    const mesh=instance(source,low?plants.length:natureBudget.high.trees,(low?'Distant ':'Nearby ')+entry.id+' '+part,!low,rootOffset);
-   const season=seasonalMaterial(Array.isArray(source.material)?source.material[0]:source.material,part==='leaves',low,entry.id==='pine',month);if(SUNSET_REFERENCE&&part==='leaves'){const compile=season.material.onBeforeCompile;season.material.onBeforeCompile=(shader,renderer)=>{compile(shader,renderer);shader.fragmentShader=shader.fragmentShader.replace('autumn*.92','autumn*.62');};season.material.customProgramCacheKey=()=> 'reference-seasonal-'+low+'-'+entry.id;}seasons.push(season);mesh.material=season.material;
+   const season=seasonalMaterial(Array.isArray(source.material)?source.material[0]:source.material,part==='leaves',low,entry.id==='pine',month);if(REFERENCE_STYLE&&part==='leaves'){const compile=season.material.onBeforeCompile;season.material.onBeforeCompile=(shader,renderer)=>{compile(shader,renderer);shader.fragmentShader=shader.fragmentShader.replace('autumn*.92','autumn*.62');};season.material.customProgramCacheKey=()=> 'reference-seasonal-'+low+'-'+entry.id;}seasons.push(season);mesh.material=season.material;
    mesh.geometry.setAttribute('lodWeight',new T.InstancedBufferAttribute(new Float32Array(low?plants.length:natureBudget.high.trees),1));(low?far:meshes).push(mesh);
   }
   for(const p of plants)terrain?.flightSolids.add({x:p.x,z:p.z,bottom:p.y,top:p.y+Math.max(4,(entry.cardCenter?.[1]??8)*1.3*p.scale),radius:.28*p.scale,kind:'tree'});

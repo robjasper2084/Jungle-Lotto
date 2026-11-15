@@ -1,4 +1,4 @@
-import {SUNSET_REFERENCE} from './sunsetReferencePolicy.ts';
+import {REFERENCE_STYLE} from './sunsetReferencePolicy.ts';
 import {VolumetricSky,skyRadiance} from './volumetricSky.ts';
 import {dressDetroitSkyline} from './skylineMaterials.ts';
 
@@ -146,7 +146,7 @@ export async function createIslandSky(scene:T.Scene,renderer:T.WebGLRenderer,sta
  // Natural atmospheric colors; the anime materials elsewhere keep their own finish.
  const referenceColors={zenith:new T.Color('#397fb5'),horizon:new T.Color('#9dbdd1'),warm:new T.Color('#eed3ae'),cloudColor:new T.Color('#e5edf3'),sunColor:new T.Color('#fff1dc')};
  const nightUniform={value:0},skyLife=new SkyLife(scene);
- function dressSkyline(root:T.Object3D){if(SUNSET_REFERENCE){dressDetroitSkyline(root,nightUniform);return;}const seen=new Set<T.Material>();root.traverse(o=>{if(!(o as T.Mesh).isMesh)return;const mesh=o as T.Mesh;for(const m of(Array.isArray(mesh.material)?mesh.material:[mesh.material]) as T.MeshStandardMaterial[]){if(seen.has(m)||m.name!=='Detroit reflective blue glass')continue;seen.add(m);m.onBeforeCompile=shader=>{shader.uniforms.cityNight=nightUniform;shader.vertexShader='varying vec3 cityWorld;\n'+shader.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\ncityWorld=(modelMatrix*vec4(transformed,1.)).xyz;');shader.fragmentShader='varying vec3 cityWorld;uniform float cityNight;\n'+shader.fragmentShader.replace('#include <emissivemap_fragment>',`#include <emissivemap_fragment>
+ function dressSkyline(root:T.Object3D){if(REFERENCE_STYLE){dressDetroitSkyline(root,nightUniform);return;}const seen=new Set<T.Material>();root.traverse(o=>{if(!(o as T.Mesh).isMesh)return;const mesh=o as T.Mesh;for(const m of(Array.isArray(mesh.material)?mesh.material:[mesh.material]) as T.MeshStandardMaterial[]){if(seen.has(m)||m.name!=='Detroit reflective blue glass')continue;seen.add(m);m.onBeforeCompile=shader=>{shader.uniforms.cityNight=nightUniform;shader.vertexShader='varying vec3 cityWorld;\n'+shader.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\ncityWorld=(modelMatrix*vec4(transformed,1.)).xyz;');shader.fragmentShader='varying vec3 cityWorld;uniform float cityNight;\n'+shader.fragmentShader.replace('#include <emissivemap_fragment>',`#include <emissivemap_fragment>
 vec2 face=abs(normal.x)>abs(normal.z)?cityWorld.zy:cityWorld.xy;vec2 cells=face/vec2(2.1,3.6);vec2 p=fract(cells);float seed=fract(sin(dot(floor(cells),vec2(12.9898,78.233)))*43758.5453);float windows=step(.7,seed)*smoothstep(.08,.19,p.x)*(1.-smoothstep(.76,.9,p.x))*smoothstep(.17,.3,p.y)*(1.-smoothstep(.68,.8,p.y));totalEmissiveRadiance+=vec3(.95,.62,.27)*windows*cityNight*1.3;
 `);};m.customProgramCacheKey=()=>'detroit-night-windows-v1';m.needsUpdate=true;}});}
  function configure(next:Partial<SkySettings>){settings=normalizeSky({...settings,hour,...next});hour=settings.hour;try{localStorage.setItem('belle-isle-sky-v1',JSON.stringify(settings));}catch{/* storage may be unavailable */}}
@@ -161,7 +161,7 @@ vec2 face=abs(normal.x)>abs(normal.z)?cityWorld.zy:cityWorld.xy;vec2 cells=face/
   }
   uniforms.startupRipples.value=look?.ripples??0;uniforms.startupSunset.value=look?.sunset??(.65*(1-smooth(.04,.28,Math.abs(direction[1]))));
 
-  if(SUNSET_REFERENCE&&!look){const strength=smooth(-.025,.18,direction[1])*(1-shape.overcast*.85);for(const key of ['zenith','horizon','warm','cloudColor','sunColor'] as const)uniforms[key].value.lerp(referenceColors[key],strength*.85);uniforms.startupSunset.value*=.20;}
+  if(REFERENCE_STYLE&&!look){const strength=smooth(-.025,.18,direction[1])*(1-shape.overcast*.85);for(const key of ['zenith','horizon','warm','cloudColor','sunColor'] as const)uniforms[key].value.lerp(referenceColors[key],strength*.85);uniforms.startupSunset.value*=.20;}
   const lunar=moonDirection(visualHour),meteor=meteorFrame(skyClock,night,reduceMotion);uniforms.moonDirection.value.fromArray(lunar);uniforms.meteorHead.value.fromArray(meteor.head);uniforms.meteorTail.value.fromArray(meteor.tail);uniforms.meteorOpacity.value=meteor.opacity;
   uniforms.sunDirection.value.fromArray(direction);uniforms.daylight.value=day;uniforms.night.value=night;uniforms.coverage.value=shape.coverage;uniforms.density.value=shape.density;uniforms.stretch.value=shape.stretch;uniforms.cloudScale.value=shape.scale;uniforms.overcast.value=shape.overcast;uniforms.cloudTime.value=cloudClock;
   const dim=1-shape.overcast*.58;uniforms.zenith.value.lerp(tempColor.set('#6e7d8b'),shape.overcast*.3*day);uniforms.warm.value.multiplyScalar(1-shape.overcast*.23);

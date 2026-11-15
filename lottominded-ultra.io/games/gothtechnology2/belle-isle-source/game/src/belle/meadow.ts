@@ -1,4 +1,4 @@
-import {SUNSET_REFERENCE} from './sunsetReferencePolicy.ts';
+import {REFERENCE_STYLE} from './sunsetReferencePolicy.ts';
 import * as T from 'three';
 import {meadowBudget,meadowRandom,type MeadowPlan} from './meadowPlan.ts';
 
@@ -56,7 +56,7 @@ export async function addMeadow(scene:T.Scene){
     if(Math.hypot(px-x,pz-z)>budget.radius)continue;
     const patch=.5+.5*Math.sin(px*.15+Math.cos(pz*.13));
     const h=zone===0?.13+meadowRandom(cx,cz,i*5+2)*.25:zone===2?.22+meadowRandom(cx,cz,i*5+2)*.34:.28+meadowRandom(cx,cz,i*5+2)*.50;
-    dummy.position.set(px,ground-.018,pz);dummy.rotation.set(0,meadowRandom(cx,cz,i*5+3)*Math.PI*2,0);dummy.scale.set(.85+patch*.45,h*(.78+patch*.22)*(SUNSET_REFERENCE?(zone===2?.80:.45+patch*.20):1),.85+patch*.45);dummy.updateMatrix();mesh.setMatrixAt(count,dummy.matrix);
+    dummy.position.set(px,ground-.018,pz);dummy.rotation.set(0,meadowRandom(cx,cz,i*5+3)*Math.PI*2,0);dummy.scale.set(.85+patch*.45,h*(.78+patch*.22)*(REFERENCE_STYLE?(zone===2?.80:.45+patch*.20):1),.85+patch*.45);dummy.updateMatrix();mesh.setMatrixAt(count,dummy.matrix);
     color.setHSL(.20+meadowRandom(cx,cz,i*5+4)*.035,.18+patch*.13,.61+meadowRandom(cx,cz,i*5+2)*.22);mesh.setColorAt(count,color);count++;
    }
   }

@@ -15,3 +15,11 @@
 @media(max-width:650px) and (min-height:521px){body.sunset-reference:not(.island-trial) #camera-capture{top:230px;left:14px}body.sunset-reference[data-hud-preset]:not(.coop-playing):not(.island-trial) #ride-radio:not(.cockpit-library):not(.belle-hud-control){top:282px;left:14px;right:auto}body.sunset-reference #camera-capture>#hero-cam-record{min-height:44px}}
 body.sunset-reference.island-trial #camera-capture{top:96px!important;right:24px;left:auto!important}
 @media(max-width:650px) and (min-height:521px){body.sunset-reference.island-trial #camera-capture{top:252px!important;left:14px!important;right:auto}}
+
+/* Normal play has no review toolbar occupying the upper controls. */
+@media(max-width:650px) and (min-height:521px){
+ body.sunset-reference:not(.sunset-local-preview):not(.island-trial) #reference-hud{top:86px}
+ body.sunset-reference:not(.sunset-local-preview):not(.island-trial) .hover-lighting{top:86px!important}
+ body.sunset-reference:not(.sunset-local-preview):not(.island-trial) #camera-capture{top:138px}
+ body.sunset-reference:not(.sunset-local-preview)[data-hud-preset]:not(.coop-playing):not(.island-trial) #ride-radio:not(.cockpit-library):not(.belle-hud-control){top:190px}
+}

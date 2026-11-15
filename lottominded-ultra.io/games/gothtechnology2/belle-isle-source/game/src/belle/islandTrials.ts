@@ -1,4 +1,4 @@
-import {SUNSET_REFERENCE} from './sunsetReferencePolicy.ts';
+import {REFERENCE_STYLE} from './sunsetReferencePolicy.ts';
 import {referenceGate,referenceRoute} from './referenceRace.ts';
 import {TrialStartPresentation} from './trialStartPresentation.ts';
 import * as T from 'three';
@@ -520,22 +520,22 @@ export class IslandTrials {
       const line = new T.Line(new T.BufferGeometry().setFromPoints(path), new T.LineDashedMaterial({color: course.color, transparent: true, opacity: .45, dashSize: course.vehicle === 'hoverbike' ? 5 : 2.5, gapSize: course.vehicle === 'hoverbike' ? 5 : 2.5, depthWrite: false}));
       line.computeLineDistances(); this.world.add(line);
     }
-    if(SUNSET_REFERENCE)this.world.add(referenceRoute(course.path.slice(0,oneLapCount),course.vehicle==='onewheel'));
+    if(REFERENCE_STYLE)this.world.add(referenceRoute(course.path.slice(0,oneLapCount),course.vehicle==='onewheel'));
     for (const [index, gate] of course.gates.slice(0,course.gatesPerLap??course.gates.length).entries()) {
       const group = new T.Group(); group.position.set(gate.x, gate.y, gate.z); group.rotation.y = gate.heading;
       const ground = course.vehicle === 'onewheel', height = ground ? Math.max(2.8, gate.halfHeight) : gate.halfHeight;
       const ring = new T.Mesh(new T.TorusGeometry(gate.radius, ground ? .10 : .18, 6, ground ? 28 : 40, ground ? Math.PI : Math.PI * 2), new T.MeshBasicMaterial({color: index === (course.gatesPerLap??course.gates.length) - 1 ? '#f5d38d' : course.color, transparent: true, opacity: .9, depthWrite: false}));
       ring.scale.y = height / gate.radius; if (ground) ring.position.y = .10;
-      if(SUNSET_REFERENCE){ring.geometry.dispose();ring.material.dispose();group.add(referenceGate(gate.radius,height,ground));}else group.add(ring);
+      if(REFERENCE_STYLE){ring.geometry.dispose();ring.material.dispose();group.add(referenceGate(gate.radius,height,ground));}else group.add(ring);
       const label = document.createElement('canvas'); label.width = 256; label.height = 120;
       const ctx = label.getContext('2d');
       if (ctx) {
-        ctx.fillStyle = SUNSET_REFERENCE?'#161e2bf5':'#092329e6'; ctx.fillRect(0, 0, 256, 120); ctx.strokeStyle = index === (course.gatesPerLap??course.gates.length) - 1 ? '#f5d38d' : course.color; ctx.lineWidth = 5; ctx.strokeRect(3, 3, 250, 114);
+        ctx.fillStyle = REFERENCE_STYLE?'#161e2bf5':'#092329e6'; ctx.fillRect(0, 0, 256, 120); ctx.strokeStyle = index === (course.gatesPerLap??course.gates.length) - 1 ? '#f5d38d' : course.color; ctx.lineWidth = 5; ctx.strokeRect(3, 3, 250, 114);
         ctx.fillStyle = '#f5eddb'; ctx.textAlign = 'center'; ctx.font = 'bold 58px system-ui'; ctx.fillText(String(index + 1).padStart(2, '0'), 128, 65);
         ctx.font = '17px system-ui'; ctx.fillText(index === (course.gatesPerLap??course.gates.length) - 1 ? (course.laps && course.laps>1?'LAP / FINISH':'FINISH') : 'CHECKPOINT', 128, 100);
         const texture = new T.CanvasTexture(label); texture.colorSpace = T.SRGBColorSpace;
         const sprite = new T.Sprite(new T.SpriteMaterial({map: texture, transparent: true, depthWrite: false}));
-        const width = SUNSET_REFERENCE?(ground?3.8:7):(ground?2.6:5); sprite.scale.set(width, width * 120 / 256, 1); sprite.position.y = height + (ground ? .85 : 1.5); group.add(sprite);
+        const width = REFERENCE_STYLE?(ground?3.8:7):(ground?2.6:5); sprite.scale.set(width, width * 120 / 256, 1); sprite.position.y = height + (ground ? .85 : 1.5); group.add(sprite);
       }
       this.gateObjects.push(group); this.world.add(group);
     }

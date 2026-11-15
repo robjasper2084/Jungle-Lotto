@@ -1,4 +1,6 @@
 import type {ParkMap} from './terrain.ts';
+/** Approved art direction ships on the normal game URL; review cameras remain opt-in. */
+export const REFERENCE_STYLE=true;
 export const SUNSET_REFERENCE=typeof location!=='undefined'&&new URLSearchParams(location.search).get('sunset')==='reference';
 export const SUNSET_POINT={x:-187.01,z:1491.38};
 export const SUNSET_GARDEN={x:-20,z:1450,radius:340};
@@ -12,8 +14,18 @@ export function referenceSpawn(map:ParkMap,target={x:44,z:1497}){
   if(d<distance){distance=d;let heading=Math.atan2(dx,dz);if(dx*(-3127-x)+dz*(1983-z)<0)heading+=Math.PI;best={x,z,heading};}
  }}return best;
 }
+export function seedReferencePreferences(storage:Pick<Storage,'getItem'|'setItem'>,preview=false){
+ const defaults:Record<string,string>={
+  'belle-season-month':'10',
+  'belle-sky-renderer':'layered',
+  'belle-isle-sky-v1':JSON.stringify({hour:16.45,cycle:false,dayMinutes:60,clouds:'scattered'}),
+  'belle-presentation-v1':JSON.stringify({preset:'cinematic',compact:true})
+ };
+ if(preview){defaults['belle-graphics-v1']=JSON.stringify({quality:'high',cap:60});defaults['belle-flight-mode']='drone';}
+ for(const [key,value]of Object.entries(defaults))if(preview||storage.getItem(key)===null)storage.setItem(key,value);
+}
 export function prepareReferencePreferences(){
- if(!SUNSET_REFERENCE)return;
- try{localStorage.setItem('belle-season-month','10');localStorage.setItem('belle-graphics-v1',JSON.stringify({quality:'high',cap:60}));localStorage.setItem('belle-sky-renderer','layered');localStorage.setItem('belle-isle-sky-v1',JSON.stringify({hour:16.45,cycle:false,dayMinutes:60,clouds:'scattered'}));localStorage.setItem('belle-presentation-v1',JSON.stringify({preset:'cinematic',compact:true}));localStorage.setItem('belle-flight-mode','drone');}catch{}
+ try{seedReferencePreferences(localStorage,SUNSET_REFERENCE);}catch{}
  document.body.classList.add('sunset-reference');
+ document.body.classList.toggle('sunset-local-preview',SUNSET_REFERENCE);
 }
