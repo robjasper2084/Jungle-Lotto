@@ -37,7 +37,7 @@ export class HoverRide {
  get vehicle(){return this.selected?.vehicle??'hoverbike';}
  get selection(){return this.selected?{...this.selected}:{vehicle:'hoverbike' as const,pilot:undefined,livery:undefined};}
  private get visualModel(){return this.authored?.root??this.model;}
- private get rideLabel(){return this.selected?authoredName(this.selected.vehicle):'Hoverbike';}
+ private get rideLabel(){return this.selected?authoredName(this.selected.vehicle):'hoverbike';}
  async selectVehicle(choice:RideChoice,scene:T.Scene,signal?:AbortSignal){
   const selected=authoredChoice(choice);if(JSON.stringify(selected)===JSON.stringify(this.selected))return;
   if(signal?.aborted)throw signal.reason;
