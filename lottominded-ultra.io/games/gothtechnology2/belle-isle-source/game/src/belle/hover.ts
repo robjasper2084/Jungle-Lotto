@@ -1,4 +1,6 @@
 import {HoverIdleMotion,idleHoverInputActive} from './hoverIdleMotion.ts';
+import {SUNSET_REFERENCE} from './sunsetReferencePolicy.ts';
+import {animeRider,glowVehicle} from './referenceActors.ts';
 import type {CockpitRadio} from './cockpitRadio.ts';
 import {waitForRideModel} from './rideModelWait.ts';
 import {installHoverPresentation} from './visualPolishHud.ts';
@@ -153,7 +155,7 @@ installHoverPresentation(this.hud);
     }
    });
    this.fittedArms=new HoverFirstPerson(this.model.getObjectByName('HoverBikeRoot')??this.model);this.rider=HoverRiderRig.create(this.model);this.controls=new HoverControls(this.model);
-   applyRealisticMaterials(this.model);await attachMichiganPlate(this.model);this.cockpit=new CockpitLcd(this.model.getObjectByName('HoverBikeRoot')??this.model);if(this.radio&&this.radioCanvas)this.cockpit.connectRadio(this.radio,this.radioCanvas);this.lighting=new HoverLighting(this.model.getObjectByName('HoverBikeRoot')??this.model,this.lights);this.model.visible=false;scene.add(this.model);
+   applyRealisticMaterials(this.model);await attachMichiganPlate(this.model);this.cockpit=new CockpitLcd(this.model.getObjectByName('HoverBikeRoot')??this.model);if(this.radio&&this.radioCanvas)this.cockpit.connectRadio(this.radio,this.radioCanvas);this.lighting=new HoverLighting(this.model.getObjectByName('HoverBikeRoot')??this.model,this.lights);if(SUNSET_REFERENCE){if(this.hero)animeRider(this.hero);glowVehicle(this.model.getObjectByName('HoverBikeRoot')??this.model,'hover');}this.model.visible=false;scene.add(this.model);
 
   })().catch(e=>{this.loading=undefined;throw e;});
   await this.loading;

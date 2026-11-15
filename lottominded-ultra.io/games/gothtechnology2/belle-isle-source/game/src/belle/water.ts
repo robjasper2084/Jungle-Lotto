@@ -1,3 +1,4 @@
+import {SUNSET_REFERENCE} from './sunsetReferencePolicy.ts';
 import {skyRadiance} from './volumetricSky.ts';
 import {RIVER_BROAD_NORMALS} from './riverSurfaceDetail.ts';
 import {riverFarRing,RIVER_PATCH_SIZE,RIVER_PATCH_SEGMENTS} from './riverPatch.ts';
@@ -21,6 +22,7 @@ export function createWater(scene:T.Scene,renderer:T.WebGLRenderer,map:ParkMap,t
  const uniformHeader='uniform sampler2D tracedSky;uniform float tracedSkyReady;'+FOUNTAIN_COLOR_UNIFORMS+'uniform float fountainNight;uniform vec2 fountainCentre;uniform vec3 riverSkyTint;uniform vec3 riverSunDirection;uniform float riverSunGlint;uniform float riverTime;uniform sampler2D riverNormals;uniform vec2 riverCentre;uniform vec4 hoverWash;uniform vec4 riverRipples[12];uniform vec4 shipWake[4];uniform vec4 shipShape[4];varying vec3 riverWorld;';
  function material(kind:'near'|'far'|'lagoon'){
   const m=new T.MeshPhysicalMaterial({color:kind==='lagoon'?0x284b48:0x50859f,roughness:kind==='lagoon'?.12:.28,metalness:kind==='lagoon'?.08:.035,envMapIntensity:kind==='lagoon'?1.15:.85,clearcoat:kind==='lagoon'?.60:0,clearcoatRoughness:.15});
+  if(SUNSET_REFERENCE){m.color.setHex(kind==='lagoon'?0x335c61:0x2c5966);m.roughness=.20;m.metalness=.015;m.envMapIntensity=.9;m.clearcoat=kind==='lagoon'?.25:0;}
   m.onBeforeCompile=shader=>{
    Object.assign(shader.uniforms,{tracedSky:skyRadiance.texture,tracedSkyReady:skyRadiance.ready,...fountainLighting.uniforms,fountainNight,fountainCentre:{value:new T.Vector2(fountain.x,fountain.z)},riverSkyTint:reflectionTint,riverSunDirection,riverSunGlint,riverTime:time,riverNormals:{value:normals},riverCentre:centre,hoverWash:vehicle,riverRipples:ripples,shipWake,shipShape});
    shader.vertexShader='uniform float riverTime;uniform vec2 riverCentre;varying vec3 riverWorld;\n'+shader.vertexShader;
@@ -52,6 +54,7 @@ float riverFootprint=max(length(dFdx(p)),length(dFdy(p)));
 float riverNormalVisibility=(.025+.975*(1.-smoothstep(45.,360.,viewDistance)))*(1.-smoothstep(.35,2.5,riverFootprint));
 wave*=riverNormalVisibility;
 ${RIVER_BROAD_NORMALS}
+${SUNSET_REFERENCE?`float referenceNormalFade=(1.-smoothstep(140.,850.,viewDistance))*(1.-smoothstep(.2,2.,riverFootprint));wave+=(r1+r2*.48)*.035*referenceNormalFade;`:''}
 `}
 vec2 delta=p-hoverWash.xy;float radius=length(delta);float wash=hoverWash.z*exp(-radius*.42);wave+=delta/max(.1,radius)*sin(radius*6.-riverTime*9.)*wash*.22;
 float wakeFoam=0.;
@@ -71,10 +74,11 @@ diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.5,.66,.65),clamp(washFoam*.4+rippleF
  // Uses the already-calculated water normal wave and no additional textures.
  vec3 riverSunReflection=reflect(-normalize(riverSunDirection),normalize(vec3(wave.x*.65,1.,wave.y*.65)));
  float riverSunAlignment=max(0.,dot(normalize(cameraPosition-riverWorld),riverSunReflection));
- float riverSunWide=pow(riverSunAlignment,42.);
- float riverSunCore=pow(riverSunAlignment,170.);
+ float riverSunWide=pow(riverSunAlignment,${SUNSET_REFERENCE?'95.':'42.'});
+ float riverSunCore=pow(riverSunAlignment,${SUNSET_REFERENCE?'420.':'170.'});
  float riverSunSparkle=.78+.22*clamp((r1.x+r2.y)*riverNormalVisibility,-1.,1.);
  totalEmissiveRadiance+=vec3(1.,.79,.52)*min(1.,riverSunGlint*(riverSunWide*.16+riverSunCore*.85)*riverSunSparkle);
+
 `);
    if(kind==='lagoon')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`#include <emissivemap_fragment>
  // Reflected lamps lie on the sight line to virtual light sources beneath the water plane.
@@ -116,7 +120,7 @@ diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.5,.66,.65),clamp(washFoam*.4+rippleF
  const foam=new T.Mesh(geo,new T.ShaderMaterial({uniforms:{time,skyLight},transparent:true,depthWrite:false,side:T.DoubleSide,vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',fragmentShader:'uniform float skyLight;uniform float time;varying vec2 vUv;void main(){float wave=sin(vUv.x*.63-time*.8)*.15+sin(vUv.x*1.77+time*.4)*.08;float band=exp(-pow((vUv.y-(.25+.13*sin(time*.9+vUv.x*.09)+wave))/.16,2.));float flecks=smoothstep(-.3,.7,sin(vUv.x*8.+sin(vUv.y*22.+time))*sin(vUv.x*3.1-vUv.y*15.-time));float alpha=band*flecks*.42*(1.-smoothstep(.7,1.,vUv.y));gl_FragColor=vec4(vec3(.64,.75,.72)*skyLight,alpha);\n#include <tonemapping_fragment>\n#include <colorspace_fragment>\n}'}));foam.name='Moving shoreline foam';scene.add(foam);
  return {setShipWakes(wakes:ShipWake[]){for(let i=0;i<4;i++){const w=wakes[i];if(w){shipWake.value[i].set(w.x,w.z,w.dx,w.dz);shipShape.value[i].set(w.length,w.width,w.power,0);}else shipShape.value[i].set(0,0,0,0);}},setFountainNight(n:number){fountainNight.value=n;},setLighting(tint:T.Color,light:number,sun?:T.Vector3,glint=0){reflectionTint.value.copy(tint);skyLight.value=light;
   if(sun&&sun.lengthSq()>.000001)riverSunDirection.value.copy(sun).normalize();
-  riverSunGlint.value=Number.isFinite(glint)?T.MathUtils.clamp(glint,0,1):0;
+  riverSunGlint.value=Number.isFinite(glint)?T.MathUtils.clamp(glint,0,1)*(SUNSET_REFERENCE?.35:1):0;
  },setVehicle(p:Vehicle){active=p;},setQuality(q:string){const lightweight=q==='smooth';near.visible=true;foam.visible=!lightweight;
    // Switch the material, never the geometry: shape, collisions and actual
    // water boundary remain consistent with the other graphics tiers.
