@@ -22,7 +22,7 @@ test('loading UI paints before the expensive game bundle and error remains retry
  assert(entry.includes("import('./main.ts')")&&entry.includes("requestAnimationFrame("));
  assert(entry.includes('location.reload()')&&entry.includes('document.hidden'));
  const css=read('startup.css');
- assert(css.includes('[data-state="loading"] .island-trace{animation:none;filter:none'));
+ assert.doesNotMatch(css,/\bstroke-dashoffset\s*:|\.island-trace(?:-sweep)?\s*\{[^}]*\bfilter\s*:/);
  const ui=read('startup.ts');assert(ui.includes('lastShutter')&&ui.includes('lastProgress'));
  assert(ui.includes('setTimeout(finish,260)'));
 });
