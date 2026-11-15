@@ -11,7 +11,7 @@ export function createBelleAudio(){
  const effects=new BelleWheelAudio();let disposed=false,unlocked=false,lastSample=-Infinity;
  const panel=document.createElement('fieldset');panel.className='belle-audio';panel.id='belle-audio';
  panel.innerHTML=`<legend>Swoop Detroit audio</legend>
- <p>Music starts automatically at 34% when you begin riding. Your saved volume and mute choices take priority. Wheel effects and warning beeps remain optional.</p>
+ <p>Music starts automatically at 34% when you begin riding. Your saved volume and mute choices take priority. Vehicle effects and warning beeps remain optional.</p>
  <label><input id="belle-music" type="checkbox"> Music</label>
  <label>Music volume <input id="belle-music-volume" type="range" min="0" max="100" step="1"><output></output></label>
  <label>Track <select id="belle-track"></select></label>
@@ -20,7 +20,7 @@ export function createBelleAudio(){
  <label>Vehicle effects volume <input id="belle-effects-volume" type="range" min="0" max="100" step="1"><output></output></label>
  <label><input id="belle-warnings" type="checkbox"> Wheel warning beeps</label>
  <label>Warning volume <input id="belle-warning-volume" type="range" min="0" max="100" step="1"><output></output></label>
- <button id="belle-audio-mute" type="button">Mute music and wheel audio</button>
+ <button id="belle-audio-mute" type="button">Mute music and vehicle audio</button>
  <p>Checkpoint and finish chimes keep their existing separate Gate sounds setting. Hoverbike engine and nature sound controls are unchanged.</p>
  <p id="belle-audio-status" role="status" aria-live="polite">Press Start to ride with music. Use Music or Mute to turn it off.</p>`;
  const host=document.getElementById('settings');
@@ -51,7 +51,7 @@ export function createBelleAudio(){
  track.addEventListener('change',event=>{prefs={...prefs,track:track.value};synchronize();save();if(event.isTrusted)unlock();});
  get('belle-music-next').addEventListener('click',event=>{music.next();prefs={...prefs,track:music.selected};synchronize();save();if(event.isTrusted)unlock();});
  get('belle-music-retry').addEventListener('click',event=>{if(event.isTrusted)unlock();});
- get('belle-audio-mute').addEventListener('click',()=>{prefs={...prefs,music:false,effects:false,warnings:false};synchronize();effects.silence();save();status.textContent='Music, wheel effects and warning beeps muted.';});
+ get('belle-audio-mute').addEventListener('click',()=>{prefs={...prefs,music:false,effects:false,warnings:false};synchronize();effects.silence();save();status.textContent='Music, vehicle effects and warning beeps muted.';});
  const gesture=(event:Event)=>{if(event.isTrusted&&!(event instanceof KeyboardEvent&&event.repeat))unlock();};
  const suspend=()=>{music.setActive(false);effects.silence();lastSample=-Infinity;};
  const visibility=()=>{if(document.hidden)suspend();};

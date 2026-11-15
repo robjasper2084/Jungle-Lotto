@@ -2,7 +2,8 @@ import * as T from 'three';
 import {WakeHistory} from './boatEffectsState.ts';
 import {riverWaveGLSL} from './riverWaves.ts';
 import type {BoatController} from './boatController.ts';
-/** One transparent draw; 1016 triangles maximum, no render target. */
+/** One transparent draw; 1016 triangles maximum, no render target.
+ * Foam rides above the coarse river triangles to avoid intersection cut lines. */
 export class BoatWake{
  readonly history=new WakeHistory();
  private position=new Float32Array(128*5*3);private uv=new Float32Array(128*5*2);private alpha=new Float32Array(128*5);
@@ -27,7 +28,7 @@ export class BoatWake{
   for(let i=0;i<h.count;i++){
    const s=h.at(i)!,age=h.time-s.time,prev=h.at(i-1),next=h.at(i+1),width=s.width+age*1.1;
    const connected=(!prev||prev.chain===s.chain)&&(!next||next.chain===s.chain);
-   for(let side=0;side<5;side++){const n=i*5+side,k=n*3,offset=(side/4-.5)*width;this.position[k]=s.x+s.dz*offset;this.position[k+1]=.035;this.position[k+2]=s.z-s.dx*offset;this.uv[n*2]=side/4;this.uv[n*2+1]=s.distance;this.alpha[n]=connected?s.power*Math.pow(1-age/h.lifetime,2)*Math.min(1,i/3):0;}
+   for(let side=0;side<5;side++){const n=i*5+side,k=n*3,offset=(side/4-.5)*width;this.position[k]=s.x+s.dz*offset;this.position[k+1]=.14;this.position[k+2]=s.z-s.dx*offset;this.uv[n*2]=side/4;this.uv[n*2+1]=s.distance;this.alpha[n]=connected?s.power*Math.pow(1-age/h.lifetime,2)*Math.min(1,i/3):0;}
   }
   this.geometry.setDrawRange(0,Math.max(0,h.count-1)*24);for(const attr of ['position','uv','opacity'])this.geometry.getAttribute(attr).needsUpdate=true;
   this.material.uniforms.time.value=h.time;this.material.uniforms.riverTime.value=waterTime;this.material.uniforms.light.value=light;this.mesh.visible=h.count>1;
