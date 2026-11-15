@@ -1,0 +1,6 @@
+body.corleo-riding #ridehud{display:none!important}
+#corleo-hud button{min-width:44px;min-height:44px;touch-action:none}
+#corleo-hud p{margin:8px 0}
+#corleo-hud small{font-size:11px;letter-spacing:normal;line-height:1.4}
+#corleo-hud{bottom:max(12px,env(safe-area-inset-bottom))!important}
+@media(max-width:600px){#corleo-hud{left:12px;right:12px!important;max-width:none!important;padding:9px!important}#corleo-hud small{display:none}#corleo-hud strong,#corleo-hud p{display:inline-block;margin:0 12px 4px 0}#corleo-hud [data-corleo]{font-size:10px;padding:8px}#corleo-hud [data-hold]{flex:1}}
