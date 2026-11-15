@@ -56,10 +56,16 @@ export class PairSimulation{
  readonly mounted:boolean[];
  braking(seat:number){return !!this.pending[seat]?.brake;}
  radius(seat:number){return this.manifests[seat].controller==='CorleoController'?CORLEO_RADIUS:this.manifests[seat].controller!=='RideCore'?1.4:COOP_RADIUS;}
+ private spawnBlocked(x:number,z:number,radius:number,airborne:boolean){
+  // Ground footprints omit registered tree trunks and overhead flight solids.
+  // Reserve rider height plus the normal takeoff rise for flying vehicles.
+  return this.terrain.obstructed(x,z,radius)||this.terrain.raycastObstacle({x,y:this.terrain.height(x,z)+.25,z},{x:0,y:1,z:0},airborne?3.4:2.1,radius)!==null;
+ }
  constructor(terrain:CoopTerrainSource,manifests:readonly PlayerManifest[],anchor:Spawn){
   if(manifests.length<2||manifests.length>4||manifests.some((m,i)=>m.seat!==i))throw new Error('Use two to four ordered player manifests.');
   this.terrain=terrain;this.manifests=manifests;
-  const ground:Ground=(x,z)=>({height:terrain.height(x,z),land:terrain.land(x,z),blocked:terrain.obstructed(x,z,Math.max(...manifests.map((_,i)=>this.radius(i))))});
+  const radius=Math.max(...manifests.map((_,i)=>this.radius(i))),airborne=manifests.some(m=>m.controller==='HoverController');
+  const ground:Ground=(x,z)=>({height:terrain.height(x,z),land:terrain.land(x,z),blocked:this.spawnBlocked(x,z,radius,airborne)});
   this.initial=findPairSpawns(anchor,ground,manifests.map((_,i)=>this.radius(i)));
   this.snapshots=this.initial.map(p=>({x:p.x,y:p.y,z:p.z}));
   this.grounds=manifests.map((_,i)=>this.playerTerrain(i));
@@ -99,7 +105,7 @@ export class PairSimulation{
  recover(seat:Seat,near?:Spawn){
   const core=this.actors[seat],own=core.current;
   const anchor=near??{x:own.x,y:own.y,z:own.z,heading:own.headingY};
-  const ground:Ground=(x,z)=>({height:this.terrain.height(x,z),land:this.terrain.land(x,z),blocked:this.terrain.obstructed(x,z,this.radius(seat))||this.actors.some((a,i)=>i!==seat&&Math.hypot(x-a.current.x,z-a.current.z)<this.radius(seat)+this.radius(i)+.8)});
+  const ground:Ground=(x,z)=>({height:this.terrain.height(x,z),land:this.terrain.land(x,z),blocked:this.spawnBlocked(x,z,this.radius(seat),this.manifests[seat].controller==='HoverController')||this.actors.some((a,i)=>i!==seat&&Math.hypot(x-a.current.x,z-a.current.z)<this.radius(seat)+this.radius(i)+.8)});
   let safe:Spawn;
   try{safe=findPairSpawns(anchor,ground,[this.radius(seat)])[0];}
   catch{safe=findPairSpawns(this.initial[seat],ground,[this.radius(seat)])[0];}

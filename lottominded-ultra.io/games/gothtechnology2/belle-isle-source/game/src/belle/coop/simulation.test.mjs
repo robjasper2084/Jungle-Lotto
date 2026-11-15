@@ -75,6 +75,15 @@ test('slow renderer still advances both real controllers without an unbounded ju
 });
 
 const mixed=()=>new PairSimulation(ground(),Array.from({length:4},(_,i)=>assignPlayer(i,{...defaultSelection(i),vehicleId:i%2?'euc':'hoverbike'})),{x:10,y:2,z:10,heading:0});
+
+test('mixed vehicle spawning and recovery avoid tree and low ceiling solids omitted by ground footprints',()=>{
+ const terrain=ground(),blocked=(o,d,max,half)=>Math.hypot(o.x-14,o.z-10)<half+1&&o.y+max>=5?Math.max(0,5-o.y):null;
+ terrain.raycastObstacle=blocked;terrain.raycastFlight=blocked;
+ const s=new PairSimulation(terrain,manifest({vehicleId:'corleo'},{vehicleId:'jetson'}),{x:10,y:2,z:10,heading:0});
+ assert(Math.hypot(s.initial[1].x-14,s.initial[1].z-10)>2.4);
+ const recovered=s.recover(1,{x:14,y:2,z:10,heading:0});assert(Math.hypot(recovered.x-14,recovered.z-10)>2.4);
+ s.advance(1/60,[command(),command({hop:true})]);for(let i=0;i<240;i++)s.advance(1/120,[command(),command()]);assert(s.hovers[1].flying);assert(s.hovers[1].pose.y>3);
+});
 test('four players can fly and ride simultaneously without moving idle partners',()=>{const s=mixed(),before=s.actors.map(c=>({...c.current}));s.advance(1/60,[command({hop:true}),command(),command(),command()]);for(let i=0;i<240;i++)s.advance(1/120,[command({throttle:1}),command({throttle:1}),command(),command()]);assert(s.hovers[0].flying);assert(s.actors[0].current.y>3);assert(Math.hypot(s.actors[0].current.x-before[0].x,s.actors[0].current.z-before[0].z)>1);assert(Math.hypot(s.actors[1].current.x-before[1].x,s.actors[1].current.z-before[1].z)>.5);for(const i of [2,3])assert(Math.hypot(s.actors[i].current.x-before[i].x,s.actors[i].current.z-before[i].z)<.01);});
 test('recover resets only that hoverbike, clears its queued takeoff and respects all peers',()=>{const s=mixed();s.advance(.02,[command({hop:true}),command(),command(),command()]);const peers=s.actors.slice(1).map(a=>({...a.current}));s.advance(.02,[command({recover:true,hop:true,throttle:1}),command(),command(),command()]);assert.equal(s.hovers[0].flying,false);assert.equal(s.hovers[0].pose.speed,0);for(let i=1;i<4;i++){assert.equal(s.actors[i].current.x,peers[i-1].x);assert(Math.hypot(s.actors[0].current.x-s.actors[i].current.x,s.actors[0].current.z-s.actors[i].current.z)>2);}});
 test('landed hover dismount and remount preserve partner vehicles',()=>{const s=mixed();s.advance(.02,[command({interact:true}),command(),command(),command()]);assert.equal(s.mounted[0],false);for(let i=0;i<60;i++)s.advance(1/120,[command(),command(),command(),command()]);s.advance(.02,[command({interact:true}),command(),command(),command()]);assert.equal(s.mounted[0],true);assert.equal(s.hovers[2].landed,true);assert.equal(s.actors[1].current.footBlend,0);});
