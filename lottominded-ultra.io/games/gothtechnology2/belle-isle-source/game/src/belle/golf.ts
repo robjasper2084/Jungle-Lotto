@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {applyRealisticMaterials} from './realisticMaterials.ts';
 import {GolfRound,GOLF_HOLES} from './golfPlan.ts';
 import type {GolfHole} from './golfPlan.ts';
 import './golf.css';
@@ -8,16 +9,16 @@ export class Golf {
  active=false;round=new GolfRound();private group=new T.Group();private ball:T.Mesh;private club=new T.Group();private marker:T.Mesh;private line:T.Line;private panel=document.createElement('section');private prompt=document.createElement('button');private menu=document.createElement('button');private status:HTMLElement;private power:HTMLInputElement;private aim:HTMLInputElement;private clubSelect:HTMLSelectElement;private hit:HTMLButtonElement;private nextButton:HTMLButtonElement;private result:HTMLElement;private scoreText:HTMLElement;private originAim=0;private swing=0;private time=0;private previousPhase='';private snapCamera=true;
  constructor(scene:T.Scene,private hooks:Hooks){
   this.group.name='Six-hole chip and putt';scene.add(this.group);
-  const grass=new T.MeshStandardMaterial({color:0x527540,roughness:1});const fringe=new T.MeshStandardMaterial({color:0x355b2c,roughness:1});const sand=new T.MeshStandardMaterial({color:0xb6a57d,roughness:1});
+  const grass=new T.MeshStandardMaterial({name:'Golf green turf',color:0x527540,roughness:1});const fringe=new T.MeshStandardMaterial({name:'Golf fringe grass',color:0x355b2c,roughness:1});const sand=new T.MeshStandardMaterial({name:'Golf bunker sand',color:0xb6a57d,roughness:1});
   const turf=document.createElement('canvas');turf.width=turf.height=256;const tc=turf.getContext('2d')!;const pixels=tc.createImageData(256,256);let seed=2084;for(let i=0;i<256*256;i++){seed=(Math.imul(seed,1664525)+1013904223)>>>0;const v=205+(seed%42);pixels.data.set([v,v,v,255],i*4);}tc.putImageData(pixels,0,0);const texture=new T.CanvasTexture(turf);texture.wrapS=texture.wrapT=T.RepeatWrapping;texture.repeat.set(26,26);texture.anisotropy=4;grass.map=texture;grass.bumpMap=texture;grass.bumpScale=.002;fringe.map=texture;sand.map=texture;
   for(const [i,h]of GOLF_HOLES.entries()){
    for(const [radius,mat,y]of [[h.green+1.2,fringe,2.025],[h.green,grass,2.035],[3.5,sand,2.04]] as const){const g=new T.CircleGeometry(radius,64);g.rotateX(-Math.PI/2);const m=new T.Mesh(g,mat);m.position.set(...(mat===sand?[h.sand[0],y,h.sand[1]]:[h.cup[0],y,h.cup[1]]) as [number,number,number]);m.receiveShadow=true;this.group.add(m);}
    const cup=new T.Mesh(new T.CylinderGeometry(.055,.055,.015,24),new T.MeshBasicMaterial({color:0x111a12}));cup.position.set(h.cup[0],2.048,h.cup[1]);this.group.add(cup);
-   const pole=new T.Mesh(new T.CylinderGeometry(.012,.012,1.8,8),new T.MeshStandardMaterial({color:0xece9d6}));pole.position.set(h.cup[0],2.95,h.cup[1]);this.group.add(pole);
-   const flag=new T.Mesh(new T.PlaneGeometry(.45,.26),new T.MeshStandardMaterial({color:0xd4ae66,side:T.DoubleSide}));flag.position.set(h.cup[0]+.225,3.7,h.cup[1]);this.group.add(flag);
+   const pole=new T.Mesh(new T.CylinderGeometry(.012,.012,1.8,8),new T.MeshStandardMaterial({name:'Golf painted pole',color:0xece9d6}));pole.position.set(h.cup[0],2.95,h.cup[1]);this.group.add(pole);
+   const flag=new T.Mesh(new T.PlaneGeometry(.45,.26),new T.MeshStandardMaterial({name:'Golf flag cloth',color:0xd4ae66,side:T.DoubleSide}));flag.position.set(h.cup[0]+.225,3.7,h.cup[1]);this.group.add(flag);
    const canvas=document.createElement('canvas');canvas.width=128;canvas.height=128;const c=canvas.getContext('2d')!;c.fillStyle='#16372c';c.fillRect(0,0,128,128);c.fillStyle='#eee8d5';c.font='bold 72px system-ui';c.textAlign='center';c.fillText(String(i+1),64,92);const label=new T.Mesh(new T.PlaneGeometry(.48,.48),new T.MeshBasicMaterial({map:new T.CanvasTexture(canvas),side:T.DoubleSide}));label.position.set(h.tee[0]+1.5,2.5,h.tee[1]);this.group.add(label);
   }
-  this.ball=new T.Mesh(new T.SphereGeometry(.024,24,16),new T.MeshStandardMaterial({color:0xf3efe0,roughness:.4}));this.ball.castShadow=true;this.group.add(this.ball);
+  this.ball=new T.Mesh(new T.SphereGeometry(.024,24,16),new T.MeshStandardMaterial({name:'Golf ball molded cover',color:0xf3efe0,roughness:.4}));this.ball.castShadow=true;this.group.add(this.ball);
   const shaft=new T.Mesh(new T.CylinderGeometry(.008,.009,.85,8),new T.MeshStandardMaterial({color:0xa1aaad,metalness:.8,roughness:.2}));shaft.position.y=.45;shaft.rotation.z=-.18;this.club.add(shaft);const head=new T.Mesh(new T.BoxGeometry(.18,.045,.055),new T.MeshStandardMaterial({color:0x657075,metalness:.8,roughness:.3}));head.position.y=.025;this.club.add(head);this.group.add(this.club);
   this.marker=new T.Mesh(new T.RingGeometry(.15,.19,32),new T.MeshBasicMaterial({color:0xf6db9f,side:T.DoubleSide,depthWrite:false}));this.marker.rotation.x=-Math.PI/2;this.group.add(this.marker);
   this.line=new T.Line(new T.BufferGeometry().setFromPoints([new T.Vector3(),new T.Vector3()]),new T.LineDashedMaterial({color:0xf1d49a,dashSize:.15,gapSize:.1}));this.group.add(this.line);
@@ -26,7 +27,7 @@ export class Golf {
   this.panel.querySelector<HTMLButtonElement>('[data-action="exit"]')!.onclick=()=>this.stop();this.hit.onclick=()=>this.strike();this.nextButton.onclick=()=>{if(!this.hooks.allowed())return;if(this.round.finished){this.round=new GolfRound(this.hooks.playable);}else this.round.next();this.hooks.travel(this.round.hole);this.address();};
   this.power.oninput=()=>{this.round.power=Number(this.power.value)/100;this.refresh();};this.aim.oninput=()=>{this.round.aim=this.originAim+Number(this.aim.value)*Math.PI/180;this.refresh();};this.clubSelect.onchange=()=>{this.round.club=this.clubSelect.value as 'putter'|'wedge';this.refresh();};
   this.menu.textContent='Chip & putt';this.menu.id='golf-open';this.menu.onclick=()=>{document.querySelectorAll<HTMLDialogElement>('dialog[open]').forEach(d=>d.close());this.begin();};document.getElementById('friends-open')?.parentElement?.append(this.menu);
-  this.prompt.className='golf-prompt';this.prompt.textContent='Play chip & putt · G';this.prompt.hidden=true;this.prompt.onclick=()=>this.begin();document.body.append(this.prompt);this.group.visible=false;
+  this.prompt.className='golf-prompt';this.prompt.textContent='Play chip & putt · G';this.prompt.hidden=true;this.prompt.onclick=()=>this.begin();document.body.append(this.prompt);this.group.visible=false;applyRealisticMaterials(this.group);
  }
  get nearby(){return !this.prompt.hidden;}
  begin(){if(!this.hooks.allowed()||this.active)return;this.round=new GolfRound(this.hooks.playable);this.hooks.travel(this.round.hole);this.active=true;document.body.classList.add('golf-active');this.panel.hidden=false;this.prompt.hidden=true;this.address();this.hit.focus();}

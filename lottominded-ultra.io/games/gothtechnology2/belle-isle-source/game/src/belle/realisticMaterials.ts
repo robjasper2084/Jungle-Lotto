@@ -100,4 +100,5 @@ normal=normalize(abs(skinDet)*normal-skinGrad);
   });
   object.material=Array.isArray(object.material)?updated:updated[0];
  });
+ return [...clones.values()];
 }

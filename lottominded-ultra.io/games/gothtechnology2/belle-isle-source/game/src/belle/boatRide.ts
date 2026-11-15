@@ -4,6 +4,7 @@ import {solveLimb} from '../../runtime/ride-core/src/limbIK.ts';
 import {BoatController} from './boatController.ts';
 import {BoatCockpit} from './boatCockpit.ts';
 import {BoatSpray} from './boatSpray.ts';
+import {applyRealisticMaterials} from './realisticMaterials.ts';
 import {BOAT_PROFILES,type BoatKind} from './boatProfiles.ts';
 import {speedMph} from './speedUnits.ts';
 import type {ParkTerrain} from './terrain.ts';
@@ -27,7 +28,7 @@ function prepareBoat(group:T.Object3D,hero:T.Object3D){
   }
  }
  group.updateMatrixWorld(true);group.visible=false;
- const lamps=['Nav_Port','Nav_Starboard'].map(required);return{group,rider,wheel,eye,lamps,cockpit:new BoatCockpit(panel)};
+ const lamps=['Nav_Port','Nav_Starboard'].map(required),cockpit=new BoatCockpit(panel);applyRealisticMaterials(group,'boat');return{group,rider,wheel,eye,lamps,cockpit};
 }
 export class BoatRide{
  riding=false;private kind:BoatKind='hydroplane';private sims:Record<BoatKind,BoatController>;private boats:Record<BoatKind,ReturnType<typeof prepareBoat>>;

@@ -1,6 +1,10 @@
 export type Surface='asphalt'|'grass'|'concrete'|'brick'|'bark'|'sand'|'limestone'|'wood'|'metal'|'rubber'|'leaf'|'cloth'|'fur'|'skin'|'gravel'|'roof'|'marble'|'bronze'|'copper'|'ceramic'|'paint'|'granite'|'rope'|'feather'|'leather'|'cork'|'graphite'|'scales';
 export function surfaceKind(name:string,object:string,metalness=0):Surface|null{
  const n=(name+' '+object).toLowerCase();
+ if(/nav_(port|starboard)|cockpit[ _]display|reactive (instrument|display)/.test(n))return null;
+ if(/marine upholstery/.test(n))return 'leather';
+ if(/hydro racing red/.test(n))return 'paint';
+ if(/hydro cockpit charcoal/.test(n))return 'rubber';
  // These exact named optical meshes own their complete wave/pond shaders.
  // The near river lacks 'water' in its name and previously fell back to concrete.
  if(/^(Detroit River (rolling waves|distant water)|Lagoon · |Koi pond · clear surface)/i.test(object.trim()))return null;

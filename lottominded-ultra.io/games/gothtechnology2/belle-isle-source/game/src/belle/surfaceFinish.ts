@@ -13,9 +13,8 @@ export function finishAsphalt(material:T.MeshStandardMaterial){
    diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.11,.12,.12),.26);
    vec2 q=asphaltXZ;
    float mottling=.5+.28*sin(q.x*.29+sin(q.y*.37))+.22*sin(q.y*.53-q.x*.17);
-   float aggregate=fract(sin(dot(floor(q*92.),vec2(12.9898,78.233)))*43758.5453);
-   float resolved=1.-smoothstep(.3,1.6,length(fwidth(q))*92.);
-   diffuseColor.rgb*=mix(vec3(.76,.78,.77),vec3(.98,.96,.92),mottling)*mix(1.,mix(.78,1.14,aggregate),resolved);
+   // Filtered Higgsfield maps supply aggregate without sine-hash banding.
+   diffuseColor.rgb*=mix(vec3(.76,.78,.77),vec3(.98,.96,.92),mottling);
    ${ASPHALT_PATCH_DETAIL}
   `);
   shader.fragmentShader=shader.fragmentShader.replace('#include <roughnessmap_fragment>',`#include <roughnessmap_fragment>
@@ -23,7 +22,7 @@ export function finishAsphalt(material:T.MeshStandardMaterial){
     float asphaltRoughnessNoise=fract(sin(dot(floor(asphaltXZ*.64),vec2(13.91,47.23)))*43758.5453);
     roughnessFactor=clamp(roughnessFactor+(asphaltRoughnessNoise-.5)*.075,.78,1.);
   `);
- };material.customProgramCacheKey=()=>'world-asphalt-weather-v4';
+ };material.customProgramCacheKey=()=>'world-asphalt-weather-v5';
 }
 
 /** Colour the exposed bank by elevation, not rows of flat-colour triangles. */
@@ -37,10 +36,8 @@ export function finishBank(material:T.MeshStandardMaterial,waterLevel:number,top
    float turf=smoothstep(${(top-waterLevel-.65).toFixed(3)},${(top-waterLevel-.12).toFixed(3)},height);
    vec3 earth=mix(vec3(.18,.23,.23),vec3(.58,.54,.43),dry);
    ${stone?'earth=mix(vec3(.35,.40,.36),vec3(.87,.86,.79),dry);':'earth=mix(earth,vec3(.55,.61,.39),turf);'}
-   float grain=fract(sin(dot(floor(bankWorld.xz*55.),vec2(12.9898,78.233)))*43758.5453);
-   float detail=1.-smoothstep(.35,1.8,length(fwidth(bankWorld.xz))*55.);
    float wetEdge=1.-smoothstep(.035,.22,height);
-   diffuseColor.rgb*=earth*(.92+.12*noise)*mix(1.,mix(.83,1.15,grain),detail)*(1.-wetEdge*.12);
+   diffuseColor.rgb*=earth*(.92+.12*noise)*(1.-wetEdge*.12);
   `);
- };material.customProgramCacheKey=()=>['bank-wet-edge-v2',waterLevel,top,stone].join('-');
+ };material.customProgramCacheKey=()=>['bank-wet-edge-v3',waterLevel,top,stone].join('-');
 }

@@ -1,0 +1,167 @@
+{
+  "version": 1,
+  "date": "2026-11-14",
+  "scope": "Entire Belle Isle world; preserve geometry, original character identity, sign readability, cockpit instruments and optical transparency.",
+  "provider": "Higgsfield",
+  "status": "completed-prepared-and-integrated",
+  "approvedNewCredits": 500,
+  "quotedCreditsPerImage": 1,
+  "maximumProposedCredits": 29,
+  "params": {
+    "model": "gpt_image_2_6",
+    "quality": "medium",
+    "resolution": "2k",
+    "aspect_ratio": "1:1",
+    "count": 1,
+    "output_format": "png",
+    "background": "opaque"
+  },
+  "runtime": "1024 square color, 512 square derived detail per existing surface family; water image used only as a height source for an authored normal. Not scanned PBR.",
+  "materials": [
+    {
+      "index": 0,
+      "name": "asphalt",
+      "prompt": "Create a photorealistic seamless repeatable game material texture, square 2048 by 2048, orthographic straight-on surface filling every pixel. Opposite edges must tile continuously. Flat diffuse albedo under completely even neutral illumination, no baked shadows, no ambient occlusion, no directional brightness gradient, no perspective, no border, no text or watermark. Natural realistic material detail at a consistent moderate scale. Fine weathered charcoal asphalt aggregate, subtle hairline wear, no road markings, no large cracks."
+    },
+    {
+      "index": 1,
+      "name": "grass",
+      "prompt": "Create a photorealistic seamless repeatable game material texture, square 2048 by 2048, orthographic straight-on surface filling every pixel. Opposite edges must tile continuously. Flat diffuse albedo under completely even neutral illumination, no baked shadows, no ambient occlusion, no directional brightness gradient, no perspective, no border, no text or watermark. Natural realistic material detail at a consistent moderate scale. Dense short mixed meadow grass and fine olive green ground texture, irregular natural blades seen straight down, no dirt path."
+    },
+    {
+      "index": 2,
+      "name": "concrete",
+      "prompt": "Create a photorealistic seamless repeatable game material texture, square 2048 by 2048, orthographic straight-on surface filling every pixel. Opposite edges must tile continuously. Flat diffuse albedo under completely even neutral illumination, no baked shadows, no ambient occlusion, no directional brightness gradient, no perspective, no border, no text or watermark. Natural realistic material detail at a consistent moderate scale. Aged pale warm gray cast concrete with small pores, faint mineral mottling and restrained wear, no joints or writing."
+    },
+    {
+      "index": 3,
+      "name": "brick",
+      "prompt": "Create a photorealistic seamless repeatable game material texture, square 2048 by 2048, orthographic straight-on surface filling every pixel. Opposite edges must tile continuously. Flat diffuse albedo under completely even neutral illumination, no baked shadows, no ambient occlusion, no directional brightness gradient, no perspective, no border, no text or watermark. Natural realistic material detail at a consistent moderate scale. Detroit historic warm reddish brown clay bricks in running bond with pale lime mortar, consistent real-scale units, no graffiti."
+    },
+    {
+      "index": 4,
+      "name": "bark",
+      "prompt": "Create a photorealistic seamless repeatable game material texture, square 2048 by 2048, orthographic straight-on surface filling every pixel. Opposite edges must tile continuously. Flat diffuse albedo under completely even neutral illumination, no baked shadows, no ambient occlusion, no directional brightness gradient, no perspective, no border, no text or watermark. Natural realistic material detail at a consistent moderate scale. Mature temperate tree bark, vertically oriented irregular fine fissures, warm gray brown tones, flat bark surface only."
+    },
+    {
+      "index": 5,
+      "name": "sand",
+      "prompt": "Create a photorealistic seamless repeatable game material texture, square 2048 by 2048, orthographic straight-on surface filling every pixel. Opposite edges must tile continuously. Flat diffuse albedo under completely even neutral illumination, no baked shadows, no ambient occlusion, no directional brightness gradient, no perspective, no border, no text or watermark. Natural realistic material detail at a consistent moderate scale. Belle Isle shoreline fine pale beige freshwater sand with sparse darker mineral grains, faint small ripples, no shells or footprints."
+    },
+    {
+      "index": 6,
+      "name": "limestone",
+      "prompt": "Create a photorealistic seamless repeatable game material texture, square 2048 by 2048, orthographic straight-on surface filling every pixel. Opposite edges must tile continuously. Flat diffuse albedo under completely even neutral illumination, no baked shadows, no ambient occlusion, no directional brightness gradient, no perspective, no border, no text or watermark. Natural realistic material detail at a consistent moderate scale. Historic light warm cream limestone face with subtle sediment and fine weathering, no block seams or carved decoration."
+    },
+    {
+      "index": 7,
+      "name": "wood",
+      "prompt": "Create a photorealistic seamless repeatable game material texture, square 2048 by 2048, orthographic straight-on surface filling every pixel. Opposite edges must tile continuously. Flat diffuse albedo under completely even neutral illumination, no baked shadows, no ambient occlusion, no directional brightness gradient, no perspective, no border, no text or watermark. Natural realistic material detail at a consistent moderate scale. Weathered outdoor hardwood, straight longitudinal grain, muted natural brown gray tones, fine pores, no plank edges or knots dominating."
+    },
+    {
+      "index": 8,
+      "name": "metal",
+      "prompt": "Create a photorealistic seamless repeatable game material texture, square 2048 by 2048, orthographic straight-on surface filling every pixel. Opposite edges must tile continuously. Flat diffuse albedo under completely even neutral illumination, no baked shadows, no ambient occlusion, no directional brightness gradient, no perspective, no border, no text or watermark. Natural realistic material detail at a consistent moderate scale. Neutral silver brushed aluminum, delicate straight microscopic brushing, even restrained contrast, no reflections or objects."
+    },
+    {
+      "index": 9,
+      "name": "rubber",
+      "prompt": "Create a photorealistic seamless repeatable game material texture, square 2048 by 2048, orthographic straight-on surface filling every pixel. Opposite edges must tile continuously. Flat diffuse albedo under completely even neutral illumination, no baked shadows, no ambient occlusion, no directional brightness gradient, no perspective, no border, no text or watermark. Natural realistic material detail at a consistent moderate scale. Matte dark charcoal marine and tire rubber, fine even molded grain, no tread pattern, no logos, no highlights."
+    },
+    {
+      "index": 10,
+      "name": "leaf",
+      "prompt": "Create a photorealistic seamless repeatable game material texture, square 2048 by 2048, orthographic straight-on surface filling every pixel. Opposite edges must tile continuously. Flat diffuse albedo under completely even neutral illumination, no baked shadows, no ambient occlusion, no directional brightness gradient, no perspective, no border, no text or watermark. Natural realistic material detail at a consistent moderate scale. Flat continuous muted green leaf tissue with fine branching veins, botanical microtexture only, no leaf silhouettes or background."
+    },
+    {
+      "index": 11,
+      "name": "cloth",
+      "prompt": "Create a photorealistic seamless repeatable game material texture, square 2048 by 2048, orthographic straight-on surface filling every pixel. Opposite edges must tile continuously. Flat diffuse albedo under completely even neutral illumination, no baked shadows, no ambient occlusion, no directional brightness gradient, no perspective, no border, no text or watermark. Natural realistic material detail at a consistent moderate scale. Neutral medium gray tightly woven technical fabric, fine realistic perpendicular threads, no folds or garment edges."
+    },
+    {
+      "index": 12,
+      "name": "fur",
+      "prompt": "Create a photorealistic seamless repeatable game material texture, square 2048 by 2048, orthographic straight-on surface filling every pixel. Opposite edges must tile continuously. Flat diffuse albedo under completely even neutral illumination, no baked shadows, no ambient occlusion, no directional brightness gradient, no perspective, no border, no text or watermark. Natural realistic material detail at a consistent moderate scale. Short dense neutral gray animal fur microtexture, fine natural fibers, consistent direction, no animal anatomy."
+    },
+    {
+      "index": 13,
+      "name": "skin",
+      "prompt": "Create a photorealistic seamless repeatable game material texture, square 2048 by 2048, orthographic straight-on surface filling every pixel. Opposite edges must tile continuously. Flat diffuse albedo under completely even neutral illumination, no baked shadows, no ambient occlusion, no directional brightness gradient, no perspective, no border, no text or watermark. Natural realistic material detail at a consistent moderate scale. Neutral midtone skin microtexture, fine pores only, no face, body, hair, marks or anatomy, even albedo."
+    },
+    {
+      "index": 14,
+      "name": "gravel",
+      "prompt": "Create a photorealistic seamless repeatable game material texture, square 2048 by 2048, orthographic straight-on surface filling every pixel. Opposite edges must tile continuously. Flat diffuse albedo under completely even neutral illumination, no baked shadows, no ambient occlusion, no directional brightness gradient, no perspective, no border, no text or watermark. Natural realistic material detail at a consistent moderate scale. Small natural gray brown gravel and mineral soil granules densely covering the frame, modest size variation, no larger objects."
+    },
+    {
+      "index": 15,
+      "name": "roof",
+      "prompt": "Create a photorealistic seamless repeatable game material texture, square 2048 by 2048, orthographic straight-on surface filling every pixel. Opposite edges must tile continuously. Flat diffuse albedo under completely even neutral illumination, no baked shadows, no ambient occlusion, no directional brightness gradient, no perspective, no border, no text or watermark. Natural realistic material detail at a consistent moderate scale. Muted weathered reddish brown terracotta roof surface with subtle mineral staining, regular fine texture, no roof silhouette."
+    },
+    {
+      "index": 16,
+      "name": "marble",
+      "prompt": "Create a photorealistic seamless repeatable game material texture, square 2048 by 2048, orthographic straight-on surface filling every pixel. Opposite edges must tile continuously. Flat diffuse albedo under completely even neutral illumination, no baked shadows, no ambient occlusion, no directional brightness gradient, no perspective, no border, no text or watermark. Natural realistic material detail at a consistent moderate scale. Pale ivory marble with restrained thin gray veining, low contrast across the entire tile, no large diagonal feature."
+    },
+    {
+      "index": 17,
+      "name": "bronze",
+      "prompt": "Create a photorealistic seamless repeatable game material texture, square 2048 by 2048, orthographic straight-on surface filling every pixel. Opposite edges must tile continuously. Flat diffuse albedo under completely even neutral illumination, no baked shadows, no ambient occlusion, no directional brightness gradient, no perspective, no border, no text or watermark. Natural realistic material detail at a consistent moderate scale. Aged neutral bronze surface with restrained irregular oxide patina and fine casting pores, no statue or relief."
+    },
+    {
+      "index": 18,
+      "name": "copper",
+      "prompt": "Create a photorealistic seamless repeatable game material texture, square 2048 by 2048, orthographic straight-on surface filling every pixel. Opposite edges must tile continuously. Flat diffuse albedo under completely even neutral illumination, no baked shadows, no ambient occlusion, no directional brightness gradient, no perspective, no border, no text or watermark. Natural realistic material detail at a consistent moderate scale. Weathered copper with fine muted verdigris mottling and sparse exposed copper undertones, low contrast, no sheet seams."
+    },
+    {
+      "index": 19,
+      "name": "ceramic",
+      "prompt": "Create a photorealistic seamless repeatable game material texture, square 2048 by 2048, orthographic straight-on surface filling every pixel. Opposite edges must tile continuously. Flat diffuse albedo under completely even neutral illumination, no baked shadows, no ambient occlusion, no directional brightness gradient, no perspective, no border, no text or watermark. Natural realistic material detail at a consistent moderate scale. Neutral pale gray ceramic glaze microtexture with very fine irregularity, no grout lines or specular glare."
+    },
+    {
+      "index": 20,
+      "name": "paint",
+      "prompt": "Create a photorealistic seamless repeatable game material texture, square 2048 by 2048, orthographic straight-on surface filling every pixel. Opposite edges must tile continuously. Flat diffuse albedo under completely even neutral illumination, no baked shadows, no ambient occlusion, no directional brightness gradient, no perspective, no border, no text or watermark. Natural realistic material detail at a consistent moderate scale. Neutral midgray marine polyurethane paint, extremely fine orange-peel microtexture and sparse shallow wear, no scratches dominating."
+    },
+    {
+      "index": 21,
+      "name": "granite",
+      "prompt": "Create a photorealistic seamless repeatable game material texture, square 2048 by 2048, orthographic straight-on surface filling every pixel. Opposite edges must tile continuously. Flat diffuse albedo under completely even neutral illumination, no baked shadows, no ambient occlusion, no directional brightness gradient, no perspective, no border, no text or watermark. Natural realistic material detail at a consistent moderate scale. Fine grain light gray granite with restrained black mica and feldspar speckles, natural uniform mineral density."
+    },
+    {
+      "index": 22,
+      "name": "rope",
+      "prompt": "Create a photorealistic seamless repeatable game material texture, square 2048 by 2048, orthographic straight-on surface filling every pixel. Opposite edges must tile continuously. Flat diffuse albedo under completely even neutral illumination, no baked shadows, no ambient occlusion, no directional brightness gradient, no perspective, no border, no text or watermark. Natural realistic material detail at a consistent moderate scale. Neutral gray braided rope fiber microtexture as a flat repeating interlaced strand pattern, no rope outline or knots."
+    },
+    {
+      "index": 23,
+      "name": "feather",
+      "prompt": "Create a photorealistic seamless repeatable game material texture, square 2048 by 2048, orthographic straight-on surface filling every pixel. Opposite edges must tile continuously. Flat diffuse albedo under completely even neutral illumination, no baked shadows, no ambient occlusion, no directional brightness gradient, no perspective, no border, no text or watermark. Natural realistic material detail at a consistent moderate scale. Neutral gray fine overlapping feather barb microtexture, subtle orderly fibers, no bird or feather silhouette."
+    },
+    {
+      "index": 24,
+      "name": "leather",
+      "prompt": "Create a photorealistic seamless repeatable game material texture, square 2048 by 2048, orthographic straight-on surface filling every pixel. Opposite edges must tile continuously. Flat diffuse albedo under completely even neutral illumination, no baked shadows, no ambient occlusion, no directional brightness gradient, no perspective, no border, no text or watermark. Natural realistic material detail at a consistent moderate scale. Neutral charcoal marine upholstery leather grain, finely pebbled surface, no stitching, folds or seat outlines."
+    },
+    {
+      "index": 25,
+      "name": "cork",
+      "prompt": "Create a photorealistic seamless repeatable game material texture, square 2048 by 2048, orthographic straight-on surface filling every pixel. Opposite edges must tile continuously. Flat diffuse albedo under completely even neutral illumination, no baked shadows, no ambient occlusion, no directional brightness gradient, no perspective, no border, no text or watermark. Natural realistic material detail at a consistent moderate scale. Natural fine tan cork granules, small pores and subtle warm color variation, no seams, lettering or objects."
+    },
+    {
+      "index": 26,
+      "name": "graphite",
+      "prompt": "Create a photorealistic seamless repeatable game material texture, square 2048 by 2048, orthographic straight-on surface filling every pixel. Opposite edges must tile continuously. Flat diffuse albedo under completely even neutral illumination, no baked shadows, no ambient occlusion, no directional brightness gradient, no perspective, no border, no text or watermark. Natural realistic material detail at a consistent moderate scale. Dark neutral graphite carbon composite weave, subtle 2x2 twill, restrained contrast, no reflections, emblems or object edges."
+    },
+    {
+      "index": 27,
+      "name": "scales",
+      "prompt": "Create a photorealistic seamless repeatable game material texture, square 2048 by 2048, orthographic straight-on surface filling every pixel. Opposite edges must tile continuously. Flat diffuse albedo under completely even neutral illumination, no baked shadows, no ambient occlusion, no directional brightness gradient, no perspective, no border, no text or watermark. Natural realistic material detail at a consistent moderate scale. Neutral gray tiny overlapping fish-scale microtexture with fine consistent scale spacing, no fish anatomy or iridescent lighting."
+    },
+    {
+      "index": 28,
+      "name": "water",
+      "prompt": "Create a photorealistic seamless repeatable game material texture, square 2048 by 2048, orthographic straight-on surface filling every pixel. Opposite edges must tile continuously. Flat diffuse albedo under completely even neutral illumination, no baked shadows, no ambient occlusion, no directional brightness gradient, no perspective, no border, no text or watermark. Natural realistic material detail at a consistent moderate scale. Grayscale height-source texture of gentle freshwater wind ripples, evenly distributed low-amplitude intersecting waves, no foam, horizon, reflections or directional lighting."
+    }
+  ]
+}
