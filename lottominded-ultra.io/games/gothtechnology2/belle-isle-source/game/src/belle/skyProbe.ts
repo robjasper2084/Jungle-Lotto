@@ -24,6 +24,6 @@ export function boundedSkyProbe(source:T.DataTexture,width=SKY_PROBE_WIDTH,heigh
   }
  }
  const result=new T.DataTexture(pixels,width,height,T.RGBAFormat,T.HalfFloatType);
- result.colorSpace=source.colorSpace;result.mapping=T.EquirectangularReflectionMapping;
+ result.colorSpace=source.colorSpace;result.flipY=source.flipY;result.mapping=T.EquirectangularReflectionMapping;
  result.minFilter=result.magFilter=T.LinearFilter;result.needsUpdate=true;return result;
 }
