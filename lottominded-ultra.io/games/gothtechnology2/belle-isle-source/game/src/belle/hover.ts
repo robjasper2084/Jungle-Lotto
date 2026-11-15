@@ -3,7 +3,6 @@ import {REFERENCE_STYLE} from './sunsetReferencePolicy.ts';
 import {animeRider,glowVehicle} from './referenceActors.ts';
 import type {CockpitRadio} from './cockpitRadio.ts';
 import {waitForRideModel} from './rideModelWait.ts';
-import type {ShadowWarmup} from './sceneWarmup.ts';
 import {installHoverPresentation} from './visualPolishHud.ts';
 import {hoverHelpText} from './visualPolishPolicy.ts';
 import {attachMichiganPlate} from './michiganPlate.ts';
@@ -30,7 +29,7 @@ import {CorleoController} from './vehicles/corleoController.ts';
 import type {RideChoice} from './rideChoice.ts';
 import {VehicleHeadlamp} from './vehicles/headlamp.ts';
 type Pose={x:number;y:number;z:number;headingY:number};
-type Hooks={pose:()=>Pose;blocked:()=>boolean;entered:()=>void;exited:(p:{x:number;y:number;z:number;heading:number})=>void;touch:()=>boolean;nightAmount?:()=>number;obstacle?:FlightObstacle;vehicleLocked?:()=>boolean;restartTrial?:()=>void;prepareScene?:(model:T.Object3D,shadows:ShadowWarmup,signal?:AbortSignal)=>Promise<void>};
+type Hooks={pose:()=>Pose;blocked:()=>boolean;entered:()=>void;exited:(p:{x:number;y:number;z:number;heading:number})=>void;touch:()=>boolean;nightAmount?:()=>number;obstacle?:FlightObstacle;vehicleLocked?:()=>boolean;restartTrial?:()=>void;prepareScene?:(model:T.Object3D,signal?:AbortSignal)=>Promise<void>};
 const keyCodes=['KeyW','KeyS','KeyA','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyE','KeyQ','Space','ShiftLeft','ShiftRight','KeyG','KeyJ','KeyF','KeyL','KeyH','KeyK','KeyR','KeyC','BracketLeft','BracketRight','KeyX','Minus','Equal'];
 export class HoverRide {
  sim:HoverController;
@@ -199,18 +198,18 @@ installHoverPresentation(this.hud);
   const near=choices.find(p=>this.terrain.land(p.x,p.z)&&!this.terrain.obstructed(p.x,p.z,2));
   return near||this.terrain.map.spawn;
  }
- async prepare(scene:T.Scene,shadows:ShadowWarmup,signal?:AbortSignal){
+ async prepare(scene:T.Scene,forRide=false,signal?:AbortSignal){
   if(signal?.aborted)throw new DOMException('Ride preparation cancelled','AbortError');
   if(!this.authored)await waitForRideModel(this.load(scene),20000,signal);
   if(signal?.aborted)throw new DOMException('Ride preparation cancelled','AbortError');
-  if(this.visualModel)await this.hooks.prepareScene?.(this.visualModel,shadows,signal);
+  if(forRide&&this.visualModel)await this.hooks.prepareScene?.(this.visualModel,signal);
  }
  async mount(scene:T.Scene){
   if(this.hooks.blocked()||this.hooks.vehicleLocked?.()||this.enterButton.disabled||this.mountAbort)return;
   const generation=++this.mountGeneration;const preparation=this.mountAbort=new AbortController();
   void this.sound.unlock();this.enterButton.disabled=true;this.enterButton.textContent='Preparing '+this.rideLabel+'…';
   try{
-   await this.prepare(scene,'both',preparation.signal);
+   await this.prepare(scene,true,preparation.signal);
    if(generation!==this.mountGeneration||this.hooks.blocked()||this.hooks.vehicleLocked?.())return;
    const p=this.spawnNear(this.hooks.pose());this.sim.reset(p.x,p.z,p.heading);this.resetRider();
    this.riding=true;this.visualModel!.visible=true;this.hero&&(this.hero.visible=true);
