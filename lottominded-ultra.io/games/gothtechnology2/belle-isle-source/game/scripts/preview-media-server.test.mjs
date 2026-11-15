@@ -28,6 +28,15 @@ for(const range of ['bytes=1024-','bytes=9-2','bytes=-0','bytes=9999999999999999
 for(const range of ['items=0-1','bytes=0-1,4-5','bytes=bad'])test('unsupported range falls back to intact whole file: '+range,async t=>{const {get,bytes}=await fixture(t),r=await get({headers:{Range:range}});assert.equal(r.status,200);assert.deepEqual(r.body,bytes);});
 test('If-Range without a matching published validator returns a full representation',async t=>{const {get,bytes}=await fixture(t),r=await get({headers:{Range:'bytes=0-9','If-Range':'"old"'}});assert.equal(r.status,200);assert.deepEqual(r.body,bytes);});
 test('HEAD has full metadata and no body',async t=>{const {get}=await fixture(t),r=await get({method:'HEAD',headers:{Range:'bytes=0-9'}});assert.equal(r.status,200);assert.equal(r.headers['content-length'],'1024');assert.equal(r.body.length,0);});
+test('Windows root spelling and canonical file spelling can differ without rejecting valid media',{skip:process.platform!=='win32'},async t=>{
+ const {root,bytes}=await fixture(t);
+ const result=await new Promise((yes,no)=>{
+  const chunks=[];
+  const server=createServer((req,res)=>previewMediaMiddleware(root.toUpperCase())(req,res,()=>res.writeHead(418).end()));
+  t.after(async()=>{server.closeAllConnections();await new Promise(r=>server.close(r));});
+  server.listen(0,'127.0.0.1',()=>{const req=request({hostname:'127.0.0.1',port:server.address().port,path:'/audio/swoop/track-01.mp3'},res=>{res.on('data',b=>chunks.push(b));res.on('end',()=>yes({status:res.statusCode,body:Buffer.concat(chunks)}));});req.on('error',no);req.end();});server.on('error',no);
+ });assert.equal(result.status,200);assert.deepEqual(result.body,bytes);
+});
 test('missing media is not substituted or silently successful',async t=>{const {get}=await fixture(t);assert.equal((await get({path:'/audio/swoop/track-99.mp3'})).status,404);});
 test('unrelated game files and encoded traversal never enter the media handler',async t=>{const {get}=await fixture(t);for(const path of ['/assets/main.js','/audio/swoop/%2e%2e/track-01.mp3','/audio/swoop/secret.mp3'])assert.equal((await get({path})).status,418);});
 test('write methods are rejected without mutating files',async t=>{const {get,bytes}=await fixture(t);assert.equal((await get({method:'POST'})).status,405);assert.deepEqual((await get()).body,bytes);});

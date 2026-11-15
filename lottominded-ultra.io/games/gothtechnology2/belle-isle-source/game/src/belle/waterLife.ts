@@ -35,17 +35,17 @@ export function addKoi(scene:T.Scene){
 export function addFountainFlow(scene:T.Scene,map:ParkMap,architecture:T.Object3D){
  const time={value:0},night={value:0},lighting=createFountainLighting();const scott=addScottDetails(scene,map,architecture,night,time,lighting);const stream=new T.MeshStandardMaterial({color:0xbedde0,roughness:.16,metalness:.12,transparent:true,opacity:.65,depthWrite:false});
  stream.onBeforeCompile=shader=>{Object.assign(shader.uniforms,lighting.uniforms);shader.uniforms.flowTime=time;shader.uniforms.flowNight=night;shader.vertexShader='varying vec2 flowUV;varying vec3 flowWorld;\n'+shader.vertexShader.replace('#include <uv_vertex>','#include <uv_vertex>\nflowUV=uv;').replace('#include <begin_vertex>','#include <begin_vertex>\nflowWorld=(modelMatrix*vec4(transformed,1.)).xyz;');shader.fragmentShader=FOUNTAIN_COLOR_UNIFORMS+'uniform float flowTime;uniform float flowNight;varying vec2 flowUV;varying vec3 flowWorld;\n'+shader.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\nfloat fleck=.5+.5*sin(flowUV.x*110.-flowTime*19.);diffuseColor.rgb*=.75+fleck*.4;diffuseColor.a*=.5+fleck*.5;').replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\nfloat closeScott=1.-smoothstep(75.,100.,length(flowWorld.xz-vec2('+scott.layout.x+','+scott.layout.z+')));vec3 lit=mix(fountainPrimary,fountainSecondary,.5+.5*sin(flowWorld.y*.8));totalEmissiveRadiance+=lit*flowNight*closeScott*.65;');};stream.customProgramCacheKey=()=>'fountain-running-stream-cycle-v2';
- const basin=new T.MeshStandardMaterial({color:0x416d68,metalness:.16,roughness:.22});
+ const basin=new T.MeshPhysicalMaterial({color:0x416d68,metalness:0,roughness:.22,clearcoat:.35,clearcoatRoughness:.08});
  basin.onBeforeCompile=shader=>{Object.assign(shader.uniforms,{...lighting.uniforms,flowTime:time,flowNight:night,scottCentre:{value:new T.Vector2(scott.layout.x,scott.layout.z)}});shader.vertexShader='varying vec3 basinP;\n'+shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nbasinP=(modelMatrix*vec4(transformed,1.)).xyz;');shader.fragmentShader=FOUNTAIN_COLOR_UNIFORMS+'uniform float flowTime;uniform float flowNight;uniform vec2 scottCentre;varying vec3 basinP;\n'+shader.fragmentShader.replace('#include <normal_fragment_maps>','#include <normal_fragment_maps>\nvec2 rip=vec2(sin(basinP.x*4.+flowTime*2.6),cos(basinP.z*4.7-flowTime*2.));normal=normalize(normal+vec3(rip.x*.045,rip.y*.045,0.));').replace('#include <emissivemap_fragment>',`#include <emissivemap_fragment>
  vec2 q=basinP.xz-scottCentre;float r=length(q),a=atan(q.x,q.y);float nearScott=1.-smoothstep(75.,100.,r);
- float caustic=pow(.5+.5*sin(basinP.x*3.+sin(basinP.z*2.3+flowTime*.8)+flowTime),8.)*pow(.5+.5*cos(basinP.z*2.7-flowTime*.7),2.);
+ float caustic=pow(.5+.5*sin(basinP.x*3.+sin(basinP.z*2.3+flowTime*.8)+flowTime),8.)*pow(.5+.5*cos(basinP.z*2.7-flowTime*.7),2.)*(1.-smoothstep(.15,.65,length(fwidth(basinP.xz))));
  diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.35,.49,.35),nearScott*(1.-flowNight)*.6);
  totalEmissiveRadiance+=vec3(.16,.22,.13)*caustic*(1.-flowNight)*nearScott;
  vec3 c=mix(fountainPrimary,fountainSecondary,.5+.5*sin(a*2.+.9));
  float poolLight=.045+.30*pow(.5+.5*cos(a*8.+sin(r*2.-flowTime)*.15),18.)*exp(-abs(r-14.)*.12);
  if(r>20.)poolLight=.12+.13*pow(.5+.5*sin(r*.85+sin(basinP.x*6.+flowTime)*.15),12.);
  totalEmissiveRadiance+=c*poolLight*flowNight*nearScott;
- `);};basin.customProgramCacheKey=()=>'fountain-basin-caustic-uplight-cycle-v3';scott.water.material=basin;
+ `);};basin.customProgramCacheKey=()=>'fountain-basin-caustic-uplight-cycle-v4';scott.water.material=basin;
 
  architecture.traverse(o=>{const mesh=o as T.Mesh;if(!mesh.isMesh)return;const ms=Array.isArray(mesh.material)?mesh.material:[mesh.material];if(ms.some(m=>m.name==='Fountain falling water')){mesh.visible=false;mesh.userData.staticSprayReplaced=true;}if(ms.some(m=>m.name==='Fountain water')){mesh.material=basin;mesh.castShadow=false;}});
  const sprayMaterial=new T.PointsMaterial({color:0xd8eeeb,size:.055,transparent:true,opacity:.65,depthWrite:false,sizeAttenuation:true});

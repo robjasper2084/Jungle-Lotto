@@ -47,6 +47,13 @@ export function planBeachDetails(profiles:readonly BeachProfile[],ground:BeachDe
     }else if(kind==='grass'){
      const size=.85+random()*.8;
      grasses.push({x:px,y:y+.014,z:pz,yaw,sx:size,sy:.45+random()*.38,sz:size,color:grassColors[Math.floor(random()*grassColors.length)]});
+     // Patchy landward colonies, with individually checked satellite clumps.
+     // Preserve the total instance budget and the open swim strand.
+     for(let c=0;c<2&&grasses.length<BEACH_DETAIL_CAPS.grasses;c++){
+      const cx=px+tx*(c?1:-1)*(.65+random()*.75),cz=pz+tz*(c?1:-1)*(.65+random()*.75);
+      if(!inside(cx,cz,profile.points)||!ground.land(cx,cz)||roadBlocked(cx,cz,1.5)||ground.obstructed(cx,cz,.5))continue;
+      grasses.push({x:cx,y:ground.height(cx,cz)+.014,z:cz,yaw:yaw+c,sx:size*.72,sy:.3+random()*.3,sz:size*.72,color:grassColors[(c+1)%grassColors.length]});
+     }
     }else{
      const size=1.0+random()*1.7;
      driftwood.push({x:px,y:y+.09,z:pz,yaw,sx:size,sy:.23+random()*.13,sz:.22+random()*.14,color:woodColors[Math.floor(random()*woodColors.length)]});
