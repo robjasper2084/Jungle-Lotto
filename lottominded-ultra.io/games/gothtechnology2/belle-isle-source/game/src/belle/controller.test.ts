@@ -1,7 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import {RideCore} from '../../runtime/ride-core/src/ridecore.ts';import {ParkTerrain,type ParkMap} from './terrain.ts';
 const map=JSON.parse(fs.readFileSync(process.cwd()+'/public/belle/map.json','utf8')) as ParkMap;const terrain=new ParkTerrain(map);function create(){return new RideCore(terrain,{spawn:{position:{x:0,y:2,z:0},headingY:map.spawn.heading}});}function advance(core:RideCore,seconds:number,input:any={}){for(let i=0;i<seconds*60;i++)core.advance(1/60,input);}
 test('rider accelerates from Jefferson without a false collision',()=>{const c=create();advance(c,4,{throttle:.6});assert(c.current.speed>2);assert(!c.controller.crashed);assert(Math.hypot(c.current.x,c.current.z)>5);});
-test('dismount, walk and recover beside parked wheel work',()=>{const c=create();c.advance(1/60,{dismount:true});advance(c,2);assert.equal(c.current.footMode,2);assert(c.current.footBlend>.9);advance(c,2,{recover:true});advance(c,2);assert.equal(c.current.footMode,0);assert(!c.controller.crashed);});
+test('dismount, walk and recover beside parked wheel work',()=>{const c=create();c.advance(1/60,{dismount:true});assert.equal(c.current.footMode,1);advance(c,2);assert.equal(c.current.footMode,2);assert(c.current.footBlend>.9);advance(c,2,{recover:true});advance(c,2);assert.equal(c.current.footMode,0);assert(!c.controller.crashed);});
 test('mounted fall recovers through the reset action used by Recover',()=>{const c=create();assert(c.controller.knockOff('validation'));advance(c,3);assert(c.controller.crashed);c.advance(1/60,{reset:true,recover:true});advance(c,3);assert(!c.controller.crashed);assert.equal(c.current.footMode,0);advance(c,2,{throttle:.5});assert(c.current.speed>1);for(const value of Object.values(c.current))assert(Number.isFinite(value));});
 test('rider traverses both graded approaches and the full bridge without a false fall',()=>{
  const b=map.bridge,ux=(b.b[0]-b.a[0])/b.length,uz=(b.b[1]-b.a[1])/b.length;
@@ -28,9 +28,16 @@ test('actual dismounted rider walks through the greenhouse threshold',()=>{
  assert(greenhouseLocal(cfg,c.current.x,c.current.z).u<-20,'rider must also leave through the same doorway');assert(!c.controller.crashed);
 });
 
-test('rider walks down the graded beach without a false fall or lost support',()=>{
- const c=new RideCore(terrain,{spawn:{position:{x:1949,y:terrain.height(1949,184),z:184},headingY:Math.atan2(-.9,-.43)}});
- c.advance(1/60,{dismount:true});advance(c,2);const start={x:c.current.x,z:c.current.z,y:c.current.y};
+test('beach travel arrives immediately on foot and the rider walks down the graded beach',()=>{
+ const x=1949,z=184;
+ const c=new RideCore(terrain,{spawn:{position:{x,y:terrain.height(x,z),z},headingY:Math.atan2(-3127-x,1983-z)}});
+ const {pose}=c.advance(1/60,{dismount:true,instantDismount:true});
+ assert.equal(pose.footMode,2);
+ assert.equal(pose.footBlend,1);
+ assert.equal(pose.parkX,x);
+ assert.equal(pose.parkZ,z);
+ assert(Math.abs(Math.hypot(pose.x-x,pose.z-z)-.68)<.001);
+ const start={x:c.current.x,z:c.current.z,y:c.current.y};
  advance(c,4,{throttle:.5});assert(Math.hypot(c.current.x-start.x,c.current.z-start.z)>2);assert(c.current.y<start.y);assert(!c.controller.crashed);assert(terrain.land(c.current.x,c.current.z));assert(Number.isFinite(c.current.y));
 });
 
