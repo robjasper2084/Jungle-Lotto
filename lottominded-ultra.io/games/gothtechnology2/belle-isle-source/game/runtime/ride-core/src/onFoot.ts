@@ -9,7 +9,7 @@ export const FOOT_SPEED={walk:2.35,run:5.4,reverse:2.05,reverseRun:3.8} as const
 export const footFields=()=>({footEvade:0,footEvadeDir:0,footVault:0,footMode:0,footBlend:0,footPhase:0,footCycle:0,footTime:0,footMountTime:0,footJump:0,footCrouch:0,footProne:0,footStagger:0,footLean:0,parkX:0,parkY:0,parkZ:0,parkHeading:0});
 export type FootPose=ReturnType<typeof footFields>&{x:number;y:number;z:number;headingY:number;speed:number;airHeight:number;airBlend:number;velocityX:number;velocityZ:number;rollAngle:number;groundPitch:number;groundRoll:number;stopFoot:number};
 export const footState=()=>({...msjLocomotionState(),legacyLocomotion:false,vaultAge:-1,vaultLift:0,vaultLatch:false,vaultFromX:0,vaultFromY:0,vaultFromZ:0,vaultToX:0,vaultToY:0,vaultToZ:0,recoverFor:0,mode:0,age:0,latch:false,jumpLatch:false,vy:0,turn:0,fromX:0,fromY:0,fromZ:0,fromHeading:0,toX:0,toY:0,toZ:0,phase:0,time:0,land:0,carryX:0,carryZ:0,stagger:0});
-export type FootActions={throttle:number;steer:number;facingYaw?:number;hop?:boolean;hopHeld?:boolean;crouch?:boolean;prone?:boolean;run?:boolean;lean?:number;dismount?:boolean;recover?:boolean;movingDismount?:boolean;mountBlocked?:boolean;interruptMount?:boolean;evade?:number;evadeSpeed?:number;evadeProgress?:number;vault?:boolean;quickMount?:boolean};
+export type FootActions={throttle:number;steer:number;facingYaw?:number;hop?:boolean;hopHeld?:boolean;crouch?:boolean;prone?:boolean;run?:boolean;lean?:number;dismount?:boolean;instantDismount?:boolean;recover?:boolean;movingDismount?:boolean;mountBlocked?:boolean;interruptMount?:boolean;evade?:number;evadeSpeed?:number;evadeProgress?:number;vault?:boolean;quickMount?:boolean};
 /** Only an authoritative collision invokes this; actor and parked vehicle remain separate. */
 export function knockOffOnFoot(s:ReturnType<typeof footState>,p:FootPose){
  if(s.mode){s.stagger=Math.max(s.stagger,.7);return;}
@@ -94,7 +94,10 @@ export function stepOnFoot(s:ReturnType<typeof footState>,p:FootPose,t:TerrainSa
   return true;
  }
  if(s.mode===1){
-  s.age+=dt;const duration=a.movingDismount?.42:.55,f=ease(s.age/duration),x=s.fromX+(s.toX-s.fromX)*f,z=s.fromZ+(s.toZ-s.fromZ)*f;
+  const duration=a.movingDismount?.42:.55;
+  // An on-foot guide arrival skips the animation after selecting a clear side.
+  s.age=a.instantDismount&&toggle?duration:s.age+dt;
+  const f=ease(s.age/duration),x=s.fromX+(s.toX-s.fromX)*f,z=s.fromZ+(s.toZ-s.fromZ)*f;
   if(clear(p.x,p.y,p.z,x,s.toY,z)){p.x=x;p.z=z;}p.y=s.fromY+(s.toY-s.fromY)*f;
   p.headingY=s.fromHeading+angle(p.parkHeading-s.fromHeading)*f;p.footBlend=f;p.speed=p.airHeight=p.airBlend=p.footJump=0;
   if(s.age>=duration){s.mode=2;p.footMode=s.mode;p.footBlend=s.mode?1:0;}

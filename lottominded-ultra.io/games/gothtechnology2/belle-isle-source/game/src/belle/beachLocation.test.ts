@@ -48,13 +48,13 @@ test('real map identifies the existing public Beach entry and leaves the bridge 
  assert.equal(locate(1949,184),'Belle Isle Beach');
  assert.equal(locate(0,0),undefined);
 });
-test('public Beach action selects first person and HUD resolution uses actual pose',()=>{
+test('public Beach action arrives on foot in first person and HUD resolution uses actual pose',()=>{
  const main=readFileSync(new URL('./main.ts',import.meta.url),'utf8');
  const start=main.indexOf("if(lm.id==='368854132')");
  assert.ok(start>=0);
  const action=main.slice(start,main.indexOf('c.append(enter);}',start));
  assert.match(action,/jump\(1949,184,/);
- assert.match(action,/core\.advance\(1\/60,\{dismount:true,instantDismount:true\}\);chooseView\(true\);/, 'Beach travel must instantly dismount before selecting first-person view');
+ assert.match(action,/core\.advance\(1\/60,\{dismount:true,instantDismount:true\}\);chooseView\(true\);/);
  assert.match(main,/const beachPlace=createBeachLocator\(data\.areas\)/);
  assert.match(main,/beachPlace\(pose\.x,pose\.z\)\?\?nearest\.name/);
  assert.ok(!action.includes("el('place').textContent="),'arrival must not force a HUD label');
