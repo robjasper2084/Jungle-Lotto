@@ -1,5 +1,7 @@
 import {gearLabel} from '../hoverTransmission.ts';
 import {sampleDrawGroups} from './renderProfile.ts';
+import {placeCoopCamera} from './cameraRig.ts';
+import {cockpitPresentationState} from '../vehicles/cockpitPresentation.ts';
 import * as T from 'three';
 import type {GLTF} from 'three/addons/loaders/GLTFLoader.js';
 import type {RidePose} from '../../../runtime/ride-core/src/controller.ts';
@@ -209,11 +211,11 @@ export class CoopSession{
     if(hit!==null)this.cameraEye.copy(this.cameraTarget).addScaledVector(delta,Math.max(.2,hit-.2));
    }
    const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches||document.querySelector<HTMLInputElement>('#motion')?.checked;
-   actor.camera.position.lerp(this.cameraEye,actor.snap||reduced?1:1-Math.exp(-seconds*12));actor.camera.lookAt(this.cameraTarget);actor.snap=false;
+   placeCoopCamera(actor.camera,this.cameraEye,this.cameraTarget,seconds,actor.firstPerson,actor.snap,!!reduced,Boolean(this.simulation.mounted[seat]&&actor.vehicleModel));actor.snap=false;
    if(this.collectDiagnostics){const pane=this.panes[seat];pane.root.dataset.rider=actor.manifest.riderId;pane.root.dataset.vehicle=actor.manifest.vehicleId;
    pane.root.dataset.x=p.x.toFixed(3);pane.root.dataset.y=p.y.toFixed(3);pane.root.dataset.z=p.z.toFixed(3);pane.root.dataset.heading=String(p.headingY);pane.root.dataset.speed=p.speed.toFixed(3);pane.root.dataset.footError=actor.footError().toFixed(5);
    pane.root.dataset.corleoAction=this.simulation.hovers[seat]?.pose.corleoAction??'';pane.root.dataset.corleoTime=String(this.simulation.hovers[seat]?.pose.corleoTime??0);
-   pane.root.dataset.camera=actor.firstPerson?'first':'third';pane.root.dataset.crashBlend=String(p.crashBlend);pane.root.dataset.footBlend=String(p.footBlend);
+   pane.root.dataset.camera=actor.firstPerson?'first':'third';pane.root.dataset.crashBlend=String(p.crashBlend);pane.root.dataset.footBlend=String(p.footBlend);if(actor.firstPerson&&actor.vehicleModel)pane.root.dataset.cameraEyeOffset=actor.camera.position.distanceTo(this.cameraEye).toFixed(5);else delete pane.root.dataset.cameraEyeOffset;
    pane.status.textContent=Math.round(Math.abs(p.speed)*3.6)+' km/h · '+VEHICLES.find(v=>v.id===actor.manifest.vehicleId)!.label+' · Partner '+Math.round(Math.hypot(p.x-peer.x,p.z-peer.z))+' m'+(this.simulation.hovers[seat]?this.simulation.mounted[seat]?(actor.manifest.controller==='CorleoController'?' · Ground ride':this.simulation.hovers[seat]!.landed?' · Landed · Takeoff to ride':' · Flying'):' · On foot · Return to bike':'');}
   }
   if(!suspended&&this.lastNow){this.frames.push(now-this.lastNow);if(this.frames.length>300)this.frames.shift();}this.lastNow=suspended?0:now;
@@ -233,6 +235,14 @@ export class CoopSession{
    for(const seat of this.actors.map((_,i)=>i as Seat)){
     const actor=this.actors[seat],p=this.simulation.actors[seat].renderPose,r=glViewport(rects[seat],innerHeight);
     for(const a of this.actors)a.setFirstPerson(a===actor&&actor.firstPerson);
+     // Sample real cockpit attachment and layer visibility in the camera pass,
+     // not while another rider's pilot/head visibility is being restored.
+     if(this.collectDiagnostics&&actor.vehicleModel?.choice.vehicle==='jetson'){
+      const state=cockpitPresentationState(actor.vehicleModel.root,actor.camera),pane=this.panes[seat].root;
+      pane.dataset.cockpitAttached=String(state.attached);
+      pane.dataset.cockpitVisible=String(state.visible);
+      pane.dataset.cockpitLayerCompatible=String(state.compatible);
+     }
     renderer.setViewport(r.x,r.y,r.width,r.height);renderer.setScissor(r.x,r.y,r.width,r.height);
     // Per-view culling/light choices happen immediately before each view is drawn.
     // Simulation and time are owned by the one outer loop; never advance them here.
