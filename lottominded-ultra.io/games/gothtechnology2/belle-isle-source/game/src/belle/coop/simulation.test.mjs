@@ -1,10 +1,25 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {PairSimulation,peerRay,riderProfile,coopFrameSeconds} from './simulation.ts';
-import {assignPlayer,defaultPair,defaultSelection} from './coop.ts';
+import {assignPlayer,defaultPair,defaultSelection,CoopInput} from './coop.ts';
 const command=(extra={})=>({throttle:0,steer:0,hop:false,recover:false,interact:false,brake:false,...extra});
 const ground=()=>({sampleGround(x,z,out){Object.assign(out,{height:2,surface:'pavement',offCourse:false});out.normal={x:0,y:1,z:0};return out;},raycast(){return null;},raycastObstacle(){return null;},raycastFlight(){return null;},map:{water:[]},land(){return true;},height(){return 2;},obstructed(){return false;}});
 const manifest=(a={},b={})=>{const p=defaultPair();return[assignPlayer(0,{...p[0],vehicleId:'euc',...a}),assignPlayer(1,{...p[1],riderId:'DS_Hoodie_Woman_01',vehicleId:'euc',...b})];};
 const sim=(a={},b={})=>new PairSimulation(ground(),manifest(a,b),{x:10,y:2,z:10,heading:0});
+
+test('both CORLEO seats steer toward their own left and right keyboard inputs',()=>{
+ for(const seat of [0,1])for(const right of [false,true]){
+  const s=sim({vehicleId:'corleo'},{vehicleId:'corleo:maverick'}),input=new CoopInput(seat?'arrows':'wasd');
+  input.read(new Set(),[]);
+  for(let i=0;i<13*120;i++)s.advance(1/120,[command(),command()]);
+  const before={...s.actors[seat].current},other={...s.actors[1-seat].current};
+  const keys=new Set(seat?['ArrowUp',right?'ArrowRight':'ArrowLeft']:['KeyW',right?'KeyD':'KeyA']);
+  for(let i=0;i<120;i++){const commands=[command(),command()];commands[seat]=input.read(keys,[]);s.advance(1/120,commands);}
+  const after=s.actors[seat].current;
+  const lateral=-(after.x-before.x)*Math.cos(before.headingY)+(after.z-before.z)*Math.sin(before.headingY);
+  assert(lateral*(right?1:-1)>.2,'selected rider turned to the wrong side');
+  assert.equal(s.actors[1-seat].current.x,other.x);assert.equal(s.actors[1-seat].current.z,other.z);
+ }
+});
 test('two actual RideCore controllers and separately selected fit profiles',()=>{
  const s=sim({riderId:'DS_Mascot_Suit_01'},{});assert.notEqual(s.actors[0],s.actors[1]);assert.notEqual(s.actors[0].controller,s.actors[1].controller);
  assert.equal(s.actors[0].profile.motionScale,.48);assert.equal(s.actors[1].profile.motionScale,1);

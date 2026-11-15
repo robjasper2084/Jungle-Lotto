@@ -38,7 +38,8 @@ export class CorleoMotion {
   const rate=braking?CORLEO_TUNING.brakingMetresPerSecondSquared:run?CORLEO_TUNING.runAccelerationMetresPerSecondSquared:CORLEO_TUNING.accelerationMetresPerSecondSquared;
   const delta=clamp(desired-p.speed,-rate*step,rate*step);
   p.speed+=delta;
-  p.heading+=steer*step*CORLEO_TUNING.turnRadiansPerSecond*(.35+Math.min(1,Math.abs(p.speed)/.6)*.65)/(1+Math.abs(p.speed)/18);
+  // Match the shared controls: positive steer is right in the +Z-forward world.
+  p.heading-=steer*step*CORLEO_TUNING.turnRadiansPerSecond*(.35+Math.min(1,Math.abs(p.speed)/.6)*.65)/(1+Math.abs(p.speed)/18);
   // Check the entire travelled segment: a 160 mph frame can cover 3.58 m.
   // End-point-only collision would skip narrow walls and shore boundaries.
   const distance=p.speed*step,segments=Math.max(1,Math.ceil(Math.abs(distance)/.25));

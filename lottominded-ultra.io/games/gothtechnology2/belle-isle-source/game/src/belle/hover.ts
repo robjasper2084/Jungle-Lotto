@@ -284,7 +284,7 @@ installHoverPresentation(this.hud);
   this.altitude.textContent=Math.max(0,p.y-this.sim.floor(p.x,p.z)).toFixed(1);
   this.mode.textContent=this.sim.landed?'LANDED':this.sim.clearance<.3?'LANDING':this.sim.boostActive?'BOOST':locked?'CRUISE':this.sim.mode==='drone'?'ALTITUDE HOLD':'IN FLIGHT';
   if(this.vehicle==='corleo'){this.mode.textContent=p.corleoAction??'IDLE';this.hud.dataset.corleoAction=p.corleoAction??'IDLE';this.hud.dataset.corleoTime=String(p.corleoTime??0);this.hud.querySelector('[data-hover="crawl"]')?.setAttribute('aria-pressed',String((this.sim as CorleoController).crawl));}
-  Object.assign(this.hud.dataset,{vehicle:this.vehicle,pilot:this.selected?.pilot??'sentinel',x:String(p.x),y:String(p.y),z:String(p.z),speed:String(p.speed)});
+  Object.assign(this.hud.dataset,{vehicle:this.vehicle,pilot:this.selected?.pilot??'sentinel',x:String(p.x),y:String(p.y),z:String(p.z),heading:String(p.heading),speed:String(p.speed)});
   // Lock the visible flight-mode selector while Sky Circuit owns the vehicle.
   const trialVehicleLocked=!!this.hooks.vehicleLocked?.();
   this.flightSelect.disabled=trialVehicleLocked;

@@ -211,7 +211,7 @@ export class CoopSession{
    const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches||document.querySelector<HTMLInputElement>('#motion')?.checked;
    actor.camera.position.lerp(this.cameraEye,actor.snap||reduced?1:1-Math.exp(-seconds*12));actor.camera.lookAt(this.cameraTarget);actor.snap=false;
    if(this.collectDiagnostics){const pane=this.panes[seat];pane.root.dataset.rider=actor.manifest.riderId;pane.root.dataset.vehicle=actor.manifest.vehicleId;
-   pane.root.dataset.x=p.x.toFixed(3);pane.root.dataset.y=p.y.toFixed(3);pane.root.dataset.z=p.z.toFixed(3);pane.root.dataset.speed=p.speed.toFixed(3);pane.root.dataset.footError=actor.footError().toFixed(5);
+   pane.root.dataset.x=p.x.toFixed(3);pane.root.dataset.y=p.y.toFixed(3);pane.root.dataset.z=p.z.toFixed(3);pane.root.dataset.heading=String(p.headingY);pane.root.dataset.speed=p.speed.toFixed(3);pane.root.dataset.footError=actor.footError().toFixed(5);
    pane.root.dataset.corleoAction=this.simulation.hovers[seat]?.pose.corleoAction??'';pane.root.dataset.corleoTime=String(this.simulation.hovers[seat]?.pose.corleoTime??0);
    pane.root.dataset.camera=actor.firstPerson?'first':'third';pane.root.dataset.crashBlend=String(p.crashBlend);pane.root.dataset.footBlend=String(p.footBlend);
    pane.status.textContent=Math.round(Math.abs(p.speed)*3.6)+' km/h · '+VEHICLES.find(v=>v.id===actor.manifest.vehicleId)!.label+' · Partner '+Math.round(Math.hypot(p.x-peer.x,p.z-peer.z))+' m'+(this.simulation.hovers[seat]?this.simulation.mounted[seat]?(actor.manifest.controller==='CorleoController'?' · Ground ride':this.simulation.hovers[seat]!.landed?' · Landed · Takeoff to ride':' · Flying'):' · On foot · Return to bike':'');}
