@@ -1,9 +1,10 @@
 import * as T from 'three';
 import type {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {playgrounds} from './playgrounds.ts';
+import {loadStartupModel} from './startupAssets.ts';
 import {batchPlaygroundMeshes} from './playgroundBatch.ts';
 export async function addPlaygrounds(scene:T.Scene,loader:GLTFLoader){
- const asset=await loader.loadAsync('./belle/playgrounds.glb'),root=asset.scene;root.updateMatrixWorld(true);
+ const asset=await loadStartupModel(loader,'./belle/playgrounds.glb'),root=asset.scene;root.updateMatrixWorld(true);
  const groups=playgrounds.map(site=>({site,objects:[] as T.Mesh[]}));let triangles=0;
  root.traverse(object=>{const mesh=object as T.Mesh;if(!mesh.isMesh)return;
   mesh.castShadow=true;mesh.receiveShadow=true;mesh.geometry.computeBoundingSphere();
