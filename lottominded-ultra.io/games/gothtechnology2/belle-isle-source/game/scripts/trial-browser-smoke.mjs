@@ -613,7 +613,7 @@ async function runCase(configuration) {
       await tap(page.locator('[data-close="settings"]'));
       await expect(page.locator('#profile')).toHaveAttribute('data-effective-quality', 'smooth');
       entry.metrics.savedGraphics = await page.evaluate(() => JSON.parse(localStorage.getItem('belle-graphics-v1')));
-      assert.deepEqual(entry.metrics.savedGraphics, {quality: 'smooth', cap: 30});
+      assert.deepEqual(entry.metrics.savedGraphics, {quality: 'smooth', cap: 30, antiAliasing: 'automatic'});
       await webgl('finalWebgl');
       assert.deepEqual(entry.errors, [], 'Browser errors, lost WebGL contexts or missing runtime assets fail this smoke');
       entry.passed = true;

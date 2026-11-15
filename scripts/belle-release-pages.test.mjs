@@ -1,6 +1,8 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {mkdtemp,mkdir,writeFile,readFile,rm} from 'node:fs/promises';import {tmpdir} from 'node:os';import {resolve} from 'node:path';
+import {mkdtemp,mkdir,writeFile,readFile,rm} from 'node:fs/promises';import {tmpdir} from 'node:os';import {dirname,resolve} from 'node:path';
 import {GAME_PATH,stampBelleRelease,verifyBelleRelease} from './belle-release-pages.mjs';
+import startupAssets from '../lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/startupAssets.json' with {type:'json'};
+import {gzipSync} from 'node:zlib';
 const SHA='a'.repeat(40),BASE='https://example.test/Jungle-Lotto/';
 async function fixture(t){const site=await mkdtemp(resolve(tmpdir(),'belle-release-'));t.after(()=>rm(site,{recursive:true,force:true}));await mkdir(resolve(site,GAME_PATH,'assets'),{recursive:true});await writeFile(resolve(site,'pages-artifact-manifest.json'),JSON.stringify({commit:SHA}));await writeFile(resolve(site,GAME_PATH,'index.html'),'<title>Belle Isle</title><script type="module" src="./assets/main-abc.js"></script>');await writeFile(resolve(site,GAME_PATH,'assets/main-abc.js'),'console.log("coop-open","coop-overlay","__belleStartupProfile");');await writeFile(resolve(site,GAME_PATH,'assets/main.css'),'body{margin:0}');return site;}
 function network(site,alter=()=>{}){return async(url)=>{const path=decodeURIComponent(new URL(url).pathname.slice('/Jungle-Lotto/'.length));let bytes=await readFile(resolve(site,path));bytes=alter(path,bytes)??bytes;return new Response(bytes,{status:200});};}
@@ -26,3 +28,18 @@ test('CORLEO UI cannot ship without its ten models, whose public bytes are verif
  await assert.rejects(verifyBelleRelease(BASE,SHA,{fetcher:network(site,(p,b)=>p.endsWith('.glb.gz')?Buffer.from('old model'):b)}),/bundle differs/);
 });
 test('release proof binds deployment health HTML and ES modules too',async t=>{const site=await fixture(t);await writeFile(resolve(site,GAME_PATH,'deployment-health.html'),'<script type="module" src="./health.mjs"></script>');await writeFile(resolve(site,GAME_PATH,'health.mjs'),'export const health=1;');const release=await stampBelleRelease(site);assert.equal(release.files.length,5);assert(release.files.some(f=>f.path.endsWith('health.mjs')));assert.equal((await verifyBelleRelease(BASE,SHA,{fetcher:network(site)})).verifiedFiles.length,5);await assert.rejects(verifyBelleRelease(BASE,SHA,{fetcher:network(site,(p,b)=>p.endsWith('health.mjs')?Buffer.from('old'):b)}),/bundle differs/);});
+
+test('release verifies the compressed startup assets required by the built game',async t=>{
+ const site=await fixture(t),js=resolve(site,GAME_PATH,'assets/main-abc.js');
+ await writeFile(js,(await readFile(js,'utf8'))+';console.log("Startup asset unavailable: ");');
+ await assert.rejects(stampBelleRelease(site),/Packed startup asset missing/);
+ for(const path of startupAssets){
+  const file=resolve(site,GAME_PATH,path+'.gz');
+  await mkdir(dirname(file),{recursive:true});
+  await writeFile(file,gzipSync(Buffer.from(path)));
+ }
+ const release=await stampBelleRelease(site);
+ assert.equal(release.files.length,3+startupAssets.length);
+ assert.equal((await verifyBelleRelease(BASE,SHA,{fetcher:network(site)})).verifiedFiles.length,release.files.length);
+ await assert.rejects(verifyBelleRelease(BASE,SHA,{fetcher:network(site,(p,b)=>p.endsWith('landmarks.glb.gz')?Buffer.from('old'):b)}),/bundle differs/);
+});

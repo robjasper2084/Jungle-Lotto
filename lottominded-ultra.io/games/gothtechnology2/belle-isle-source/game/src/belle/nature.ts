@@ -8,6 +8,7 @@ import {REFERENCE_STYLE,inSunsetGarden} from './sunsetReferencePolicy.ts';
 import * as T from 'three';
 import {trunkRootHeight,replacedByCherry,cherryTreeSite} from './treeGrounding.ts';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {loadStartupModel} from './startupAssets.ts';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {natureBudget,type Plant,type NaturePlan} from './naturePlan.ts';
 type Entry={id:string;meshes?:string[];cardSize?:number;cardCenter?:number[];card?:string;triangles:number};
@@ -18,7 +19,7 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
  const json=async(name:string)=>{const r=await fetch(base+name);if(!r.ok)throw Error('Nature asset '+name+': '+r.status);return r.json();};
  const manifest:Manifest=await json('manifest.json'),plan:NaturePlan=await json('placements.json');if(REFERENCE_STYLE)plan.trees=plan.trees.filter(p=>!inSunsetGarden(p.x,p.z));
  status('Loading varied trees');
- const treeSource=await loader.loadAsync(base+'seasonal-trees.glb');treeSource.scene.updateMatrixWorld(true);
+ const treeSource=await loadStartupModel(loader,base+'seasonal-trees.glb');treeSource.scene.updateMatrixWorld(true);
  if(REFERENCE_STYLE)for(const entry of manifest.trees)for(const low of [false,true]){
   const tree=referenceTree(entry.id,low,(entry.cardCenter?.[1]??8)*2);
   for(const part of ['trunk','leaves'] as const){const source=treeSource.scene.getObjectByName(entry.id+'__'+part+(low?'__lod':'')) as T.Mesh;if(!source)continue;source.geometry.dispose();source.geometry=tree[part];source.material=part==='trunk'?tree.bark:tree.foliage;source.matrixWorld.identity();}
@@ -71,7 +72,7 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
  // Source objects never enter the scene. Pool geometries are the only copies
  // retained; textures and materials stay shared between instances.
  for(const source of [treeSource.scene,ground.scene])source.traverse(o=>{if((o as T.Mesh).isMesh)(o as T.Mesh).geometry.dispose();});
- const cherry=await loader.loadAsync(base+'cherry.glb?v=blossom-20261110');cherry.scene.name='Peacock Sundial flowering cherry';cherry.scene.position.set(cherryTreeSite.x,cherryTreeSite.y,cherryTreeSite.z);cherry.scene.traverse(o=>{if(o instanceof T.Mesh){o.castShadow=true;o.receiveShadow=true;const m=o.material as T.MeshStandardMaterial;if(/blossom|leaf/.test(m.name))m.side=T.DoubleSide;}});scene.add(cherry.scene);
+ const cherry=await loadStartupModel(loader,base+'cherry.glb?v=blossom-20261110');cherry.scene.name='Peacock Sundial flowering cherry';cherry.scene.position.set(cherryTreeSite.x,cherryTreeSite.y,cherryTreeSite.z);cherry.scene.traverse(o=>{if(o instanceof T.Mesh){o.castShadow=true;o.receiveShadow=true;const m=o.material as T.MeshStandardMaterial;if(/blossom|leaf/.test(m.name))m.side=T.DoubleSide;}});scene.add(cherry.scene);
  const calendar=document.createElement('label');calendar.textContent='Island season';const monthSelect=document.createElement('select');monthSelect.id='season-month';monthSelect.setAttribute('aria-label','Island season month');['January','February','March','April','May','June','July','August','September','October','November','December'].forEach((name,i)=>monthSelect.add(new Option(name,String(i+1))));monthSelect.value=String(month.value);calendar.append(monthSelect);document.querySelector('#settings .settings-body')?.append(calendar);if(!calendar.isConnected)document.getElementById('settings')?.append(calendar);monthSelect.onchange=()=>{month.value=Number(monthSelect.value);localStorage.setItem('belle-season-month',String(month.value));lastX=Infinity;};
  let quality:keyof typeof natureBudget='automatic',lastX=Infinity,lastZ=Infinity,splitDetail=false,lastSplit=false,lastMonth=-1;
  const stats={treeVariants:manifest.trees.length,groundVariants:manifest.ground.length,trees:plan.trees.length,ground:plan.ground.length,visibleTrees:0,visibleGround:0};
