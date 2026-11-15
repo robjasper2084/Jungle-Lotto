@@ -2,6 +2,7 @@ import * as T from 'three';
 import {GLTFLoader,type GLTF} from 'three/addons/loaders/GLTFLoader.js';
 import {clone} from 'three/addons/utils/SkeletonUtils.js';
 import {batchRigidChildren} from '../coop/batchRigid.ts';
+import {isCockpitPresentationMesh} from './cockpitPresentation.ts';
 import {JetsonCockpitController} from './vendor/JetsonCockpitController.js';
 import {JetsonVariantSystem} from './vendor/JetsonVariantSystem.js';
 import {corleoGaitClips} from './corleoMotion.ts';
@@ -62,7 +63,10 @@ export async function createVehicleModel(choice:AuthoredChoice,signal?:AbortSign
   model.traverse(o=>{if(o.userData.first_person_hidden)heads.push(o);if((o as T.Bone).isBone&&/head$/i.test(o.name))head=o;});
   // Preserve cockpit targets, head visibility, skeletons, and all animated nodes.
   const animated=new Set(source.animations.flatMap(a=>a.tracks.map(t=>t.name.split('.')[0])));model.traverse(o=>{if(/CTRL|Socket|Attach|Display|Screen|Rotor|Pilot|Head|Helmet|CR_HUD|FixedGrip|StirrupPlate/i.test(o.name)||o.userData.first_person_hidden)animated.add(o.name);});
-  corleoActions?.animatedNodes.forEach(name=>animated.add(name));batches=batchRigidChildren(model,animated);
+  corleoActions?.animatedNodes.forEach(name=>animated.add(name));
+   // The live Jetson dashboard and cockpit controls must remain attached: the
+   // cockpit controller retains their original node references for updates.
+   batches=batchRigidChildren(model,animated,choice.vehicle==='jetson'?(mesh)=>isCockpitPresentationMesh(mesh,model):undefined);
   const lamps=[...materials.values()].filter((m):m is T.MeshStandardMaterial=>m instanceof T.MeshStandardMaterial&&/Front white position lamp|CR_Headlamp|CR_RearLamp/.test(m.name)).map(material=>({material,intensity:material.emissiveIntensity}));
   root.updateMatrixWorld(true);
   return {root,rider,choice:{...choice},eye(out){root.updateMatrixWorld(true);return head?head.getWorldPosition(out).add(new T.Vector3(0,.07,0)):out.set(root.position.x,root.position.y+(choice.vehicle==='corleo'?2.1:1.25),root.position.z);},
