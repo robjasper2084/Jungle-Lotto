@@ -1,4 +1,4 @@
-import {AUDIO_KEY,audioPreferences,type AudioPreferences,type WheelAudioPose} from './belleAudioPolicy.ts';
+import {AUDIO_KEY,audioPreferences,type AudioPreferences,type WheelAudioPose,type BoatAudioPose} from './belleAudioPolicy.ts';
 import {BelleMusicPlayer} from './belleMusicPlayer.ts';
 import {BelleWheelAudio} from './belleWheelAudio.ts';
 import {BELLE_MUSIC} from './belleMusicCatalog.ts';
@@ -16,15 +16,15 @@ export function createBelleAudio(){
  <label>Music volume <input id="belle-music-volume" type="range" min="0" max="100" step="1"><output></output></label>
  <label>Track <select id="belle-track"></select></label>
  <div class="belle-audio-actions"><button id="belle-music-next" type="button">Next track</button><button id="belle-music-retry" type="button">Retry music</button></div>
- <label><input id="belle-effects" type="checkbox"> Wheel motor, wind, braking and contact scrapes</label>
- <label>Wheel effects volume <input id="belle-effects-volume" type="range" min="0" max="100" step="1"><output></output></label>
+ <label><input id="belle-effects" type="checkbox"> Vehicle motor, boat jets, wind and contact sounds</label>
+ <label>Vehicle effects volume <input id="belle-effects-volume" type="range" min="0" max="100" step="1"><output></output></label>
  <label><input id="belle-warnings" type="checkbox"> Wheel warning beeps</label>
  <label>Warning volume <input id="belle-warning-volume" type="range" min="0" max="100" step="1"><output></output></label>
  <button id="belle-audio-mute" type="button">Mute music and wheel audio</button>
  <p>Checkpoint and finish chimes keep their existing separate Gate sounds setting. Hoverbike engine and nature sound controls are unchanged.</p>
  <p id="belle-audio-status" role="status" aria-live="polite">Press Start to ride with music. Use Music or Mute to turn it off.</p>`;
  const host=document.getElementById('settings');
- if(!host){console.warn('Belle audio settings dialog is unavailable. Riding remains usable.');return{update(_pose:WheelAudioPose,_state:{active:boolean;wheel:boolean},_now?:number){},silence(){},dispose(){}};}
+ if(!host){console.warn('Belle audio settings dialog is unavailable. Riding remains usable.');return{update(_pose:WheelAudioPose,_state:{active:boolean;wheel:boolean;boat?:BoatAudioPose},_now?:number){},silence(){},dispose(){}};}
  host.append(panel);
  const get=<T extends HTMLElement>(id:string)=>panel.querySelector<T>('#'+id)!;
  const status=get('belle-audio-status'),track=get<HTMLSelectElement>('belle-track');
@@ -60,13 +60,13 @@ export function createBelleAudio(){
  window.addEventListener('blur',suspend);window.addEventListener('pagehide',suspend);document.addEventListener('visibilitychange',visibility);
  synchronize();
  return {
-  update(pose:WheelAudioPose,state:{active:boolean;wheel:boolean},now=performance.now()){
+  update(pose:WheelAudioPose,state:{active:boolean;wheel:boolean;boat?:BoatAudioPose},now=performance.now()){
    if(disposed)return;
    const active=state.active&&unlocked&&!document.hidden&&document.hasFocus();
    music.setActive(active);
    if(!active){effects.silence();return;}
    if(now-lastSample<1000/30)return;lastSample=now;
-   effects.update(pose,state.wheel,prefs);
+   effects.update(pose,state.wheel,prefs,state.boat);
   },
   silence:suspend,
   dispose(){if(disposed)return;disposed=true;suspend();music.dispose();void effects.dispose();

@@ -97,10 +97,12 @@ for a in [math.pi/2,7*math.pi/6,11*math.pi/6]:
  o=tube('Wheel spoke',[(0,.73,1),(.14*math.cos(a),.73+.14*math.sin(a),1)],.013,silver);o.parent=helm;o.matrix_parent_inverse=helm.matrix_world.inverted()
 for name,loc in [('Driver_Eye',(0,1.18,.20)),('Driver_Hip',(0,.59,.38))]:bpy.ops.object.empty_add(type='PLAIN_AXES',location=p(loc));bpy.context.object.name=name
 for side,color,label in [(1,(.9,.02,.02),'Nav_Port'),(-1,(.01,.8,.25),'Nav_Starboard')]:box(label,(side*1.52,.67,1.8),(.07,.04,.08),mat(label,color),.01)
+exec(open(os.path.join(os.path.dirname(__file__),'boat-racing-details.py'),encoding='utf-8').read())
+orange=racing_details(True,black,red,silver,tube,box)
 for o in list(bpy.context.scene.objects):
  if o.type=='CURVE':
   bpy.ops.object.select_all(action='DESELECT');o.select_set(True);bpy.context.view_layer.objects.active=o;bpy.ops.object.convert(target='MESH')
-for material in [black,red,rubber,silver]:
+for material in [black,red,rubber,silver,orange]:
  objs=[o for o in bpy.context.scene.objects if o.type=='MESH' and not o.parent and len(o.data.materials)==1 and o.data.materials[0]==material]
  if objs:
   bpy.ops.object.select_all(action='DESELECT')

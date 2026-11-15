@@ -102,12 +102,14 @@ for side,color,label in [(1,(.9,.02,.02),'Nav_Port'),(-1,(.01,.8,.25),'Nav_Starb
  o=box(label,(side*.88,.98,.5),(.08,.035,.07),material(label,color,0,.25),.012)
 for name,p in [('Driver_Eye',(-.40,1.50,-1.46)),('Driver_Hip',(-.40,.79,-1.36))]:
  bpy.ops.object.empty_add(type='PLAIN_AXES',location=point(p));bpy.context.object.name=name
+exec(open(os.path.join(os.path.dirname(__file__),'boat-racing-details.py'),encoding='utf-8').read())
+orange=racing_details(False,black,red,silver,rod,box)
 # Merge static pieces by material, retaining named controls and anchors.
 dynamic={'Cockpit_Display','Nav_Port','Nav_Starboard'}
 for o in list(bpy.context.scene.objects):
  if o.type=='CURVE':
   bpy.ops.object.select_all(action='DESELECT');o.select_set(True);bpy.context.view_layer.objects.active=o;bpy.ops.object.convert(target='MESH')
-for mat in [black,red,rubber,silver,glass]:
+for mat in [black,red,rubber,silver,glass,orange]:
  objs=[o for o in bpy.context.scene.objects if o.type=='MESH' and not o.parent and o.name not in dynamic and len(o.data.materials)==1 and o.data.materials[0]==mat]
  if objs:
   bpy.ops.object.select_all(action='DESELECT')
