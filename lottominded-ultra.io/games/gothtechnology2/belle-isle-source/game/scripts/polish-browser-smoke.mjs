@@ -63,6 +63,8 @@ async function runCase(configuration) {
   report.cases.push(entry);
   let browser, page, touch, deadline, timedOut = false, captureFailed = false, cleanupFailed = false, fixtureRecord, countdownWaiter;
   let requestPhase = 'gameplay';
+  // Track actual in-flight game traffic; a fixture navigation must not silently abort a valid asset.
+  const inflightRequests = new Set();
   let countdownSequence = 0;
   const activeHolds = new Set(), activeTriggers = new Set();
   const templates = {};
@@ -478,7 +480,10 @@ async function runCase(configuration) {
       if (item.type === 'error' || /(?:webgl|renderer).*context\s*(?:was\s*)?lost|context[_ -]?lost/i.test(item.text)) entry.errors.push(item.text);
     });
     page.on('response', response => { if (response.status() >= 400) entry.errors.push('HTTP ' + response.status() + ' ' + response.url()); });
+    page.on('request', request => { inflightRequests.add(request); });
+    page.on('requestfinished', request => { inflightRequests.delete(request); });
     page.on('requestfailed', request => {
+      inflightRequests.delete(request);
       log(`${configuration.name}: ${requestPhase} request failed ${recordRequestFailure(entry, request, requestPhase)}`);
     });
     await Promise.race([(async () => {
@@ -686,12 +691,26 @@ async function runCase(configuration) {
       await tap(page.locator('#pause')); await expect(page.locator('#trial-hud')).toHaveAttribute('data-paused', 'false'); await leave();
       entry.metrics.finalWebgl = await webgl();
       assert.deepEqual(entry.errors, [], 'Runtime errors/context loss/missing assets fail real gameplay');
-      requestPhase = 'fixtures';
       entry.realGameCompletedAt = new Date().toISOString();
       try { await writeFile(resolve(output, configuration.name + '-game-dom.html'), await bounded(page.content(), 5_000, 'Real-game DOM diagnostic')); }
       catch (error) { entry.realGameDomFailure = error.message; }
-
-      log(configuration.name + ': begin isolated CSS fixtures; real game is unloaded');
+      // Let finite asset/media transfers finish on the actual game page before unloading it.
+      // This is a strict gate, not an ERR_ABORTED exemption: any failure still reaches
+      // recordRequestFailure, and a stalled request fails rather than being ignored.
+      const drainStarted = Date.now();
+      await bounded((async () => {
+        while (true) {
+          if (inflightRequests.size === 0) {
+            await delay(1_000); // require a quiet interval, not a momentary empty queue
+            if (inflightRequests.size === 0) return;
+          } else await delay(250);
+        }
+      })(), 90_000, 'Game asset requests to finish before CSS fixture navigation: ' +
+        [...inflightRequests].map(request => request.url()).join(', '));
+      assert.deepEqual(entry.errors, [], 'Request failures while draining real-game assets');
+      entry.metrics.gameNetworkDrain = {milliseconds: Date.now() - drainStarted, pendingRequests: inflightRequests.size};
+      requestPhase = 'fixtures';
+      log(configuration.name + ': begin isolated CSS fixtures; all game requests finished before navigation');
       await page.goto('about:blank'); await page.setContent('<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>' + shippedCss + '</style></head><body><div id="fixture-root"></div><p id="fixture-label" style="position:fixed;bottom:2px;left:8px;right:8px;z-index:1000;margin:0;padding:4px;background:#000;color:white;font:10px/1.4 monospace;pointer-events:none">CSS FIXTURE · artificial safe insets and long timer text · no game simulation</p></body></html>');
       const probes = [
         {name: 'small-phone', width: 320, height: 568, safe: {top: 0, right: 0, bottom: 0, left: 0}},
