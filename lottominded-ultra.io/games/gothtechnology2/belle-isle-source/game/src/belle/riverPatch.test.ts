@@ -36,10 +36,11 @@ test('shipping river uses connected geometry with no fragment cut and one cached
  assert.doesNotMatch(source,/discard\s*;/);assert.equal((source.match(/texture2D\(/g)||[]).length,6);
  assert.match(source,/smoothstep\(165\.,195\./);assert.match(source,/smoothstep\(35\.,220\.,viewDistance\)/);
 });
-test('art-directed low sun aligns near the skyline while retaining the day and night arc',()=>{
- const [x,y,z]=sunDirection(17.6),direction=[-3127-114,1983-1373],length=Math.hypot(...direction);
- const cosine=(x*direction[0]+z*direction[1])/(Math.hypot(x,z)*length);
- assert(cosine>Math.cos(5*Math.PI/180));assert(y>0&&y<.15);
+test('low evening sun faces map west while retaining the day and night arc',()=>{
+ // The photo integration anchors lighting to map cardinal directions instead
+ // of aiming at the RenCen from one particular camera position.
+ const [x,y,z]=sunDirection(17.6);
+ assert(x<-.99&&z>0&&z<.05);assert(y>0&&y<.15);
  assert(sunDirection(7)[0]>0);assert(sunDirection(12)[1]>.9);assert(sunDirection(0)[1]<-.9);
  for(let h=0;h<=24;h+=.025){const v=sunDirection(h);assert(v.every(Number.isFinite));assert(Math.abs(Math.hypot(...v)-1)<1e-12);}
  assert.deepEqual(sunDirection(24),sunDirection(0));assert.deepEqual(DEFAULT_SKY,{hour:16.7,cycle:true,dayMinutes:20,clouds:'changing'});

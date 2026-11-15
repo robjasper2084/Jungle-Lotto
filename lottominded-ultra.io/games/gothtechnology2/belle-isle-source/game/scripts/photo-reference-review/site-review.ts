@@ -1,0 +1,30 @@
+import * as T from 'three';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {MeshoptDecoder} from 'three/addons/libs/meshopt_decoder.module.js';
+import {RGBELoader} from 'three/addons/loaders/RGBELoader.js';
+import {ParkTerrain} from '../../src/belle/terrain.ts';
+import {addSmallBridges} from '../../src/belle/smallBridgeScene.ts';
+import {addPlaygrounds} from '../../src/belle/playgroundScene.ts';
+import {addBeach} from '../../src/belle/beach.ts';
+import {addFountainFlow} from '../../src/belle/waterLife.ts';
+import {createWater} from '../../src/belle/water.ts';
+import {loadRealisticMaterials,applyRealisticMaterials} from '../../src/belle/realisticMaterials.ts';
+import {applyPhotoReferenceSurfaces} from '../../src/belle/photoReferenceSurfaces.ts';
+import {sunDirection} from '../../src/belle/skyModel.ts';
+const renderer=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setSize(innerWidth,innerHeight);renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;document.body.append(renderer.domElement);
+const scene=new T.Scene();scene.background=new T.Color(0xbad6e9);scene.add(new T.HemisphereLight(0xe8f4ff,0x5d6049,2));const sun=new T.DirectionalLight(0xfff3d6,2.1);scene.add(sun,sun.target);
+const env=await new RGBELoader().loadAsync('/belle/environment/kloppenheim-06-2k.hdr');env.mapping=T.EquirectangularReflectionMapping;scene.environment=env;scene.environmentIntensity=.45;
+await loadRealisticMaterials(renderer);
+const map=await fetch('/belle/map.json').then(r=>r.json()),terrain=new ParkTerrain(map),loader=new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
+function poly(points:number[][],y:number,holes:number[][][]=[]){const shape=new T.Shape(points.map(p=>new T.Vector2(p[0],-p[1])));for(const h of holes)shape.holes.push(new T.Path(h.map(p=>new T.Vector2(p[0],-p[1]))));const g=new T.ShapeGeometry(shape);g.rotateX(-Math.PI/2);g.translate(0,y,0);return g;}
+scene.add(new T.Mesh(poly(map.island,2,[...map.water.map(w=>w.points),...map.areas.filter(a=>a.kind==='beach').map(a=>a.points)]),new T.MeshStandardMaterial({color:0x82956a,roughness:1})));
+const gltf=await loader.loadAsync('/belle/landmarks.glb');scene.add(gltf.scene);gltf.scene.traverse(o=>{if(!(o instanceof T.Mesh))return;for(const m of Array.isArray(o.material)?o.material:[o.material])if(m.name==='Casino buff masonry'){m.color.setRGB(.72,.66,.53);m.bumpMap=m.map;m.bumpScale=.012;}});
+const bridges=addSmallBridges(scene,terrain.smallBridges.plan),playgrounds=await addPlaygrounds(scene,loader),beach=await addBeach(scene,map,terrain),water=createWater(scene,renderer,map,terrain,poly),flow=addFountainFlow(scene,map,gltf.scene);
+applyRealisticMaterials(scene);applyPhotoReferenceSurfaces(scene);
+const camera=new T.PerspectiveCamera(62,innerWidth/innerHeight,.1,6000);
+const views={bridge:{from:[641,3.8,1357],to:[622,2.5,1347]},bridgeWide:{from:[659,8,1379],to:[584,5,1354]},casino:{from:[539,4.2,1415],to:[516,9,1360]},playground:{from:[1427.88,4.1,825.29],to:[1452,4.2,789]},beach:{from:[1860,6,300],to:[1890,1,236]},fountain:{from:[222,7,1343],to:[199.34,5,1310.53]}};
+window.review=(name='bridge',hour=12)=>{
+ const v=views[name];camera.position.set(...v.from);camera.lookAt(...v.to);camera.updateMatrixWorld();sun.target.position.set(...v.to);sun.position.copy(sun.target.position).add(new T.Vector3(...sunDirection(hour)).multiplyScalar(200));sun.updateMatrixWorld();sun.target.updateMatrixWorld();sun.color.set(hour>17?0xffc48b:0xfff3d6);sun.intensity=hour>17?1.2:2.1;
+ gltf.scene.traverse(o=>{if(!(o instanceof T.Mesh))return;o.geometry.computeBoundingSphere();const c=o.geometry.boundingSphere.center.clone().applyMatrix4(o.matrixWorld);o.visible=!o.userData.staticSprayReplaced&&c.distanceTo(camera.position)<210;});
+ playgrounds.update(v.from[0],v.from[2]);beach.update(v.from[0],v.from[2]);water.update(12,camera);flow.update(12+hour,v.from[0],v.from[2],hour>17?.6:0);renderer.render(scene,camera);document.querySelector('#label').textContent=name+' · '+hour+':00 · production components / isolated lighting';return{draws:renderer.info.render.calls,triangles:renderer.info.render.triangles,bridges:bridges.stats};
+};window.review();window.READY=true;
