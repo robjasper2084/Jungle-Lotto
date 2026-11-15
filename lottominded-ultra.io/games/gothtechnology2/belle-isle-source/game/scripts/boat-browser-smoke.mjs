@@ -25,7 +25,7 @@ try{
   await page.keyboard.down('w');await expect.poll(speed).toBeGreaterThan(8);const before=Number(await page.locator('#boat-hud').getAttribute('data-heading'));await page.keyboard.down('d');await expect.poll(async()=>Math.abs(Number(await page.locator('#boat-hud').getAttribute('data-heading'))-before)).toBeGreaterThan(.015);await page.keyboard.up('d');await page.keyboard.up('w');
   assert(Number(await page.locator('#boat-hud').getAttribute('data-power'))>0);await page.keyboard.down('Space');await expect.poll(speed).toBeLessThan(.2);await page.keyboard.up('Space');
   await page.keyboard.press('v');await expect(page.locator('#boat-hud')).toHaveAttribute('data-view','cockpit');await capture(kind+'-cockpit');
-  await tap('#pause');await expect(page.locator('#pause')).toHaveText('Resume');const stopped=await speed();await page.keyboard.down('w');await page.waitForTimeout(600);await page.keyboard.up('w');assert.equal(await speed(),stopped);await tap('#pause');
+  await tap('#pause');await expect(page.locator('#pause')).toHaveText('Resume');await expect.poll(speed).toBe(0);const stopped=await speed();await page.keyboard.down('w');await page.waitForTimeout(600);await page.keyboard.up('w');assert.equal(await speed(),stopped);await tap('#pause');
   await tap('#boat-exit');await expect(page.locator('body')).not.toHaveClass(/on-boat/);report.checks.push({kind,throttle:true,steering:true,brake:true,cockpit:true,pause:true,shoreReturn:true});
  }
  await page.setViewportSize({width:390,height:844});await settings();await page.locator('#touch').check();await tap('[data-close="settings"]');await menu();await tap('#boat-enter');
