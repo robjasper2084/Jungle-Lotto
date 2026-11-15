@@ -6,6 +6,7 @@ import {makeSunsetCanopy,canopyTint,SUNSET_CANOPY_LIMIT} from './sunsetCanopy.ts
 import {makeNaturePlan,natureBudget,type NaturePlan} from './naturePlan.ts';
 import {ParkTerrain,inside,segment,type ParkMap} from './terrain.ts';
 import {photoShadowExtent,sunsetPhotoGrade} from './photoReferenceGrade.ts';
+import {directionalShadowResolution} from './worldPerformancePolicy.ts';
 import {createWater} from './water.ts';
 import {connectSkySettings} from './skySettings.ts';
 import type {SkySettings} from './skyModel.ts';
@@ -78,8 +79,12 @@ test('aerial shadows widen gradually without increasing texture resolution or af
  assert.equal(photoShadowExtent(1e6),170);
  let previous=55;for(let y=0;y<250;y+=.1){const v=photoShadowExtent(y);assert(v>=previous&&v<=170);previous=v;}
  const source=readFileSync(new URL('./islandSky.ts',import.meta.url),'utf8');
- assert(source.includes('key.shadow.mapSize.set(2048,2048)'));
- assert.equal((source.match(/new T.DirectionalLight\(/g)||[]).length,1);
+ assert(source.includes('key.shadow.mapSize.set(1024,1024)'), 'startup begins at the low-cost 1024px shadow tier');
+ assert(source.includes('directionalShadowResolution(q as WorldPerformanceTier)'), 'quality selection sets the final shadow-map budget');
+ assert.equal(directionalShadowResolution('high'),1536,'High mode retains detailed close-range shadows with fewer texels');
+ assert.equal(directionalShadowResolution('automatic'),1024);
+ assert.equal(directionalShadowResolution('smooth'),1024);
+ assert.equal((source.match(/new T.DirectionalLight\\(/g)||[]).length,1);
 });
 test('photo lighting retains the original neutral day/night envelope',()=>{
  assert.equal(sunsetPhotoGrade(-.4,0,1).warmth,0);
