@@ -48,7 +48,7 @@ test('shared triplanar surface shaders keep local-space vertices and source tran
  objects[0].position.x=-5;objects[1].position.x=5;objects.forEach(m=>scene.add(m));
  const site={objects};
  assert.equal(batchPlaygroundMeshes(scene,[site]).batches,1);
- const batched=site.objects[0] as T.BatchedMesh;
+ const batched=site.objects[0] as unknown as T.BatchedMesh;
  assert.equal(batched.material,material);
  assert.equal(batched.geometry.attributes.position.getX(0),objects[0].geometry.attributes.position.getX(0));
  const matrix=new T.Matrix4();batched.getMatrixAt(1,matrix);
