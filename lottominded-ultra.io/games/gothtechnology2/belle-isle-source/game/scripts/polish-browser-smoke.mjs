@@ -652,6 +652,10 @@ async function runCase(configuration) {
       log(configuration.name + ': capture an actual reactive rider pose with native controls and Pause');
       await openMenu(); await tap(page.locator('#settings-open')); await page.locator('#motion').uncheck(); await tap(page.locator('[data-close="settings"]'));
       await expect(page.locator('#hover-hud')).toHaveAttribute('data-rider-motion', 'reactive'); await resize(configuration.physicsViewport);
+      // Closing Settings resumes on the next rendered simulation update. Wait for
+      // that observed state before dispatching the native holds we later audit.
+      await expect(page.locator('#trial-hud')).toHaveAttribute('data-paused', 'false');
+      await expect(page.locator('#trial-hud')).toHaveAttribute('data-status', 'running');
       const captureBaseline = validateRider(await armRiderTrace('Native forward/turn/ascend, then native Pause'), 'Rider capture baseline', 'reactive');
       held = await startRiderControls();
       try {

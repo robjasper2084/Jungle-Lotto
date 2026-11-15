@@ -40,6 +40,13 @@ export function wheelAudioTargets(p:WheelAudioPose,active:boolean,prefs:AudioPre
  };
 }
 export interface MusicTrack {id:string;title:string;url:string;group:string;duration:number}
+export interface BoatAudioPose {throttle:number;powerPercent:number;speed:number;hydroplane:boolean}
+/** Same saved effects permission/volume as wheel audio; stationary idle is silent. */
+export function boatAudioTargets(p:BoatAudioPose,active:boolean,prefs:AudioPreferences){
+ const power=unit(p.throttle)*unit(p.powerPercent/100),speed=unit(Math.abs(finite(p.speed))/45),gain=active&&prefs.effects?prefs.effectsVolume:0;
+ return {motorHz:(p.hydroplane?140:65)+power*(p.hydroplane?460:180),motorGain:power*.028*gain,
+  windHz:250+power*1700,windGain:(power*.035+speed*.012)*gain,brakeGain:0,scrapeGain:0,scrapeHz:450,beepGain:0};
+}
 export function musicCatalog(raw:readonly Record<string,unknown>[]):MusicTrack[] {
  const urls=new Set<string>();
  return raw.flatMap(t=>{

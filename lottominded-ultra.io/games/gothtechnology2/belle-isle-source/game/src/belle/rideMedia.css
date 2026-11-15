@@ -25,3 +25,11 @@ body.on-boat #touch-zone,body.on-boat #sprint{display:none!important}
 body:has(#activity-hud:not([hidden])) #ride-radio:not(.cockpit-library){display:none!important}
 #camera-capture .hero-clip-bar{pointer-events:none}
 #camera-capture .hero-clip-bar :is(button,a,input,select){pointer-events:auto}
+#boat-telemetry{font-size:12px;font-variant-numeric:tabular-nums;color:#c0e7e6;margin:0 0 6px;max-width:100%;overflow-wrap:anywhere}
+#boat-name{display:inline-block;color:#ff9b97;border-left:3px solid #e32932;padding-left:8px;letter-spacing:.07em;font-size:12px}
+#boat-hud output{color:#e3fcff}
+#boat-hud .boat-buttons button{border-color:#a74d53;background:#1b1118ee}
+#boat-hud .boat-buttons button:active,#boat-hud .boat-buttons button:focus-visible{border-color:#ff7770;background:#4a1820}
+#boat-hud .boat-buttons button{min-height:44px;min-width:44px;touch-action:none}
+@media(max-width:600px){#boat-hud{left:10px;right:10px;bottom:max(8px,env(safe-area-inset-bottom))}#boat-telemetry{font-size:10px}#boat-hud .boat-buttons{gap:4px}#boat-hud .boat-buttons button{padding:6px 8px;font-size:11px}}
+@media(prefers-reduced-motion:reduce){#boat-hud *{animation:none!important;transition:none!important}}

@@ -1,4 +1,5 @@
 import {batchRigidChildren} from './batchRigid.ts';
+import {applyRealisticMaterials} from '../realisticMaterials.ts';
 import {HoverControls} from '../hoverControls.ts';
 import * as T from 'three';
 import {DefaultLoadingManager} from 'three';
@@ -76,6 +77,7 @@ export function createRenderActor(manifest:PlayerManifest,rider:GLTF,wheel:GLTF,
  const contact=createVehicleContactShadow(root,simulation.terrain);contact.setQuality('smooth');
  const hover=hoverAsset?cloneSkeleton(hoverAsset.scene):undefined;
  if(hover){hover.name='Co-op hoverbike '+(manifest.seat+1);hover.getObjectByName('HeroRoot')?.removeFromParent();hover.traverse(o=>{if(o.name==='Hero_FPVArms')o.visible=false;});hover.scale.multiplyScalar(view.motionScale);root.add(hover);}
+ for(const material of applyRealisticMaterials(root))ownedMaterials.add(material);
  const controls=hover?new HoverControls(hover):undefined;
  const batches=hover?batchRigidChildren(hover,new Set(hoverAsset?.animations.flatMap(a=>a.tracks.map(t=>t.name.split('.')[0])))):undefined;
  const rotors:T.Object3D[]=[];hover?.traverse(o=>{if(o.name.startsWith('Rotor_'))rotors.push(o);});

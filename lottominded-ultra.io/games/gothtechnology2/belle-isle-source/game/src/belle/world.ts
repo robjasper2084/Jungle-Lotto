@@ -61,19 +61,16 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
  // Surface skins are ready before world creation. Do not fetch the discarded PNG fallback atlases.
  const grass=mat(0x8f9b7e);grass.onBeforeCompile=shader=>{shader.vertexShader='varying vec2 terrainXZ;\n'+shader.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nterrainXZ=(modelMatrix*vec4(transformed,1.)).xz;');shader.fragmentShader='varying vec2 terrainXZ;\n'+shader.fragmentShader.replace('#include <map_fragment>','#include <map_fragment>\nfloat meadowVariation=.5+.25*sin(terrainXZ.x*.037+sin(terrainXZ.y*.043)*2.)+.25*sin(terrainXZ.y*.077+terrainXZ.x*.019);diffuseColor.rgb*=mix(vec3(.72,.79,.62),vec3(1.05,1.04,.91),meadowVariation);');};const pavement=mat(0x979b99);finishAsphalt(pavement);const pathMat=mat(0x948f81),concrete=mat(0xbebdb2),sand=mat(0xc3b28c);
  grass.name='Park lawn';pavement.name='Island asphalt';pathMat.name='Concrete pathways';concrete.name='Poured concrete';sand.name='Beach sand';
- // Metre-scale aggregate and broad weathering keep untextured paths from reading
- // as uniformly colored ribbons. Fade subpixel grain instead of sparkling.
+ // The Higgsfield maps provide filtered aggregate. Keep broad weathering only;
+ // the old high-frequency sine hash produced visible diagonal bands on paths.
  for(const m of [pathMat,concrete]){
   m.onBeforeCompile=shader=>{
    shader.vertexShader='varying vec2 pavingXZ;\n'+shader.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\npavingXZ=(modelMatrix*vec4(transformed,1.)).xz;');
    shader.fragmentShader='varying vec2 pavingXZ;\n'+shader.fragmentShader.replace('#include <map_fragment>',`#include <map_fragment>
-    vec2 aggregateCell=floor(pavingXZ*75.);
-    float aggregate=fract(sin(dot(aggregateCell,vec2(12.9898,78.233)))*43758.5453);
-    float fineDetail=1.-smoothstep(.4,1.8,length(fwidth(pavingXZ))*75.);
     float weather=.94+.045*sin(pavingXZ.x*.85+sin(pavingXZ.y*.47))+.025*sin(pavingXZ.y*3.1);
-    diffuseColor.rgb*=weather*mix(1.,mix(.80,1.12,aggregate),fineDetail);
+    diffuseColor.rgb*=weather;
    `);
-  };m.customProgramCacheKey=()=>'paving-aggregate-v1';
+  };m.customProgramCacheKey=()=>'paving-weather-v2';
  }
 
  const groundPatches:T.Mesh[]=[];
