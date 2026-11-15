@@ -54,7 +54,7 @@ test('public Beach action selects first person and HUD resolution uses actual po
  assert.ok(start>=0);
  const action=main.slice(start,main.indexOf('c.append(enter);}',start));
  assert.match(action,/jump\(1949,184,/);
- assert.match(action,/core\.advance\(1\/60,\{dismount:true\}\);chooseView\(true\);/);
+ assert.match(action,/core\.advance\(1\/60,\{dismount:true,instantDismount:true\}\);chooseView\(true\);/,'Beach arrival must immediately finish dismount before first-person view');
  assert.match(main,/const beachPlace=createBeachLocator\(data\.areas\)/);
  assert.match(main,/beachPlace\(pose\.x,pose\.z\)\?\?nearest\.name/);
  assert.ok(!action.includes("el('place').textContent="),'arrival must not force a HUD label');
