@@ -93,7 +93,7 @@ hud=createMobileHud({blocked:inputCaptureBlocked,movementBlocked:()=>!!photo?.ac
 const release=()=>hud?.clear();
 el<HTMLInputElement>('motion').checked=reduced;el<HTMLInputElement>('motion').onchange=e=>reduced=(e.target as HTMLInputElement).checked;
 const graphics=el<HTMLSelectElement>('quality'),frameLimit=el<HTMLSelectElement>('fps');
-graphics.value='high';try{const saved=JSON.parse(localStorage.getItem('belle-graphics-v1')||'null');if(saved&&['automatic','smooth','high'].includes(saved.quality))graphics.value=saved.quality;if(saved&&(saved.cap===30||saved.cap===60)){cap=saved.cap;frameLimit.value=String(cap);}}catch{/* Keep the default settings when storage is unavailable. */}
+graphics.value='automatic';try{const saved=JSON.parse(localStorage.getItem('belle-graphics-v1')||'null');if(saved&&['automatic','smooth','high'].includes(saved.quality))graphics.value=saved.quality;if(saved&&(saved.cap===30||saved.cap===60)){cap=saved.cap;frameLimit.value=String(cap);}}catch{/* Keep the default settings when storage is unavailable. */}
 const saveGraphics=()=>{try{localStorage.setItem('belle-graphics-v1',JSON.stringify({quality:graphics.value,cap}));}catch{/* The current session still uses the selected graphics. */}};
 graphics.onchange=saveGraphics;
 frameLimit.onchange=()=>{cap=Number(frameLimit.value);saveGraphics();};
