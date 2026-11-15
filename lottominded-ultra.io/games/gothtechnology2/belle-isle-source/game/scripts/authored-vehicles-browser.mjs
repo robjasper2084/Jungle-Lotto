@@ -58,6 +58,18 @@ try{
  report.checks.coopSteering=await steering(a,async()=>(await poses())[0]);
  phase('local-corleo-actions');await a.locator('#game').focus();await a.keyboard.down('q');try{await expect(a.locator('.coop-player-pane').nth(0)).toHaveAttribute('data-corleo-action','CRAWL');assert.equal(await a.locator('.coop-player-pane').nth(2).getAttribute('data-corleo-action'),'IDLE');await screenshot(a,'local-corleo-crawl',false);}finally{await a.keyboard.up('q');}const p1Ground=(await poses())[0].y;await a.keyboard.press('Space');await expect.poll(async()=>(await poses())[0].y).toBeGreaterThan(p1Ground+.15);await expect.poll(async()=>(await poses())[0].y).toBeLessThan(p1Ground+.03);await a.keyboard.down('e');await a.keyboard.down('w');try{await expect.poll(async()=>(await poses())[0].speed).toBeGreaterThan(7);await expect(a.locator('.coop-player-pane').nth(0)).toHaveAttribute('data-corleo-action','RUN');}finally{await a.keyboard.up('w');await a.keyboard.up('e');}await a.keyboard.down('ShiftLeft');try{await expect.poll(async()=>Math.abs((await poses())[0].speed)).toBeLessThan(.1);}finally{await a.keyboard.up('ShiftLeft');}report.checks.coopCorleoActions=true;
  phase('local-player-two-takeoff');const p2Ground=(await poses())[1].y;await a.locator('#game').focus();await a.keyboard.down('Enter');try{await expect.poll(async()=>(await poses())[1].y).toBeGreaterThan(p2Ground+.6);}finally{await a.keyboard.up('Enter');}report.checks.coop={before,after,final:await poses(),views:await a.locator('#coop-overlay').getAttribute('data-rendered-views')};assert.equal(report.checks.coop.views,'4');await screenshot(a,'local-four-player',false);
+  phase('local-jetson-cockpit-first-person');await a.getByRole('button',{name:'Change Player 2 camera',exact:true}).click();
+  const jetsonPane=a.locator('.coop-player-pane').nth(1);
+  await expect(jetsonPane).toHaveAttribute('data-camera','first');
+  await expect(jetsonPane).toHaveAttribute('data-cockpit-attached','true');
+  await expect(jetsonPane).toHaveAttribute('data-cockpit-visible','true');
+  await expect(jetsonPane).toHaveAttribute('data-cockpit-layer-compatible','true');
+  await expect.poll(async()=>Number(await jetsonPane.getAttribute('data-camera-eye-offset'))).toBeLessThan(.01);
+  report.checks.coopJetsonCockpit=await jetsonPane.evaluate(node=>({
+   attached:node.dataset.cockpitAttached,visible:node.dataset.cockpitVisible,
+   layerCompatible:node.dataset.cockpitLayerCompatible,eyeOffsetMeters:Number(node.dataset.cameraEyeOffset)
+  }));
+  await screenshot(a,'local-four-player-jetson-fpv-cockpit',false);
  assert.deepEqual(report.errors,[]);assert.deepEqual(report.requests,[]);report.passed=true;
 }catch(error){report.errors.push(error.stack??String(error));process.exitCode=1;for(const [i,page]of pages.entries())if(!page.isClosed())try{await screenshot(page,'failure-'+i,false);}catch(e){report.errors.push('Failure screenshot: '+e.message);}}
 finally{closing=true;for(const client of [browser,peerBrowser])try{await client?.close();}catch(e){report.errors.push('Browser cleanup: '+e.message);}try{await new Promise((resolve,reject)=>server.close(error=>error?reject(error):resolve()));}catch(e){report.errors.push('Server cleanup: '+e.message);}report.passed=report.passed&&!report.errors.length&&!report.requests.length;report.finishedAt=new Date().toISOString();await writeFile(resolve(out,'report.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));if(!report.passed)process.exitCode=1;}
