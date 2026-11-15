@@ -9,17 +9,23 @@
 #reference-hud .reference-map{position:relative;padding:0;width:156px;height:156px;min-height:44px;overflow:hidden;border:2px solid #ebca8eb0;border-radius:50%;background:#22333c;box-shadow:0 4px 25px #08101b66;pointer-events:auto;cursor:pointer}
 #reference-hud canvas{width:100%;height:100%;display:block;opacity:.94}#reference-hud .reference-map span{position:absolute;top:7px;left:50%;transform:translateX(-50%);font:10px monospace;color:#fff5dc;background:#15202bd9;border-radius:7px;padding:3px 6px}#reference-hud .reference-map small{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);font-size:9px;color:#f8f0dd;background:#172432d9;border-radius:6px;padding:3px 7px;white-space:nowrap}#reference-hud button:focus-visible{outline:3px solid #8cffff;outline-offset:4px}
 .reference-readout{text-align:center;width:100%;padding:9px 12px;box-sizing:border-box;border-radius:12px;background:linear-gradient(135deg,#142331e8,#1e2438d9);border:1px solid #e6cfa733}.reference-speed{font-size:32px;font-weight:600;font-variant-numeric:tabular-nums;display:block;line-height:1.1}.reference-speed small{font-size:9px;letter-spacing:1px;color:#d5cdb8}.reference-place{display:block;font-weight:500;font-size:12px;margin-top:6px}.reference-objective{display:block;color:#d5d2c4;font-size:10px;margin-top:4px;line-height:1.4}
-.sunset-reference:not(.island-trial) .hover-instruments>div:first-child{display:none}.sunset-reference #navigation,.sunset-reference .location-chip{display:none}.sunset-reference .hover-title{display:none}.sunset-reference .hover-instruments{gap:8px 16px}.sunset-reference #trial-hud{width:300px;border-radius:12px;border:1px solid #e6c68d77;grid-template-columns:minmax(0,1fr) 90px;background:#142331ec}.sunset-reference .trial-hud-map{width:90px;height:90px;border-radius:50%;border:2px solid #ddc79888}.sunset-reference #trial-hud h3{font-size:13px}.sunset-reference #trial-hud .trial-time{font-size:34px}.sunset-reference #trial-hud .trial-note{font-size:10px}
-@media(max-width:650px){#sunset-preview{top:65px;flex-direction:column;gap:3px;width:calc(100vw - 30px);box-sizing:border-box;padding:5px 7px}#sunset-preview>div{display:flex;align-items:center;gap:12px}#sunset-preview select{width:190px;min-height:44px;font-size:12px}#sunset-preview nav{gap:5px}#sunset-preview button{padding:7px 10px}#reference-hud{right:12px;top:180px;width:132px;gap:6px}#reference-hud .reference-map{width:108px;height:108px}.reference-speed{font-size:27px}.reference-readout{padding:7px}.reference-place{font-size:10px}.reference-objective{font-size:9px}.sunset-reference .hover-lighting{top:180px!important;max-width:calc(100vw - 165px)!important}.sunset-reference #trial-hud{top:70px;width:calc(100vw - 28px);grid-template-columns:minmax(0,1fr) 90px;max-height:38dvh}.sunset-reference.island-trial .hover-lighting{top:auto!important;bottom:290px!important}}
-@media(max-height:520px){#sunset-preview{top:8px;left:auto;right:12px;transform:none;max-width:calc(100vw - 210px);width:auto;flex-direction:row}#sunset-preview small{display:none}#sunset-preview select{width:130px}#reference-hud{top:74px;right:12px;width:125px}#reference-hud .reference-map{width:88px;height:88px}.reference-objective{display:none}.sunset-reference #trial-hud{top:70px;max-height:55dvh}.sunset-reference .hover-lighting{top:auto!important;bottom:74px!important;max-width:230px!important}}
-@media(max-width:650px) and (min-height:521px){body.sunset-reference:not(.island-trial) #camera-capture{top:230px;left:14px}body.sunset-reference[data-hud-preset]:not(.coop-playing):not(.island-trial) #ride-radio:not(.cockpit-library):not(.belle-hud-control){top:282px;left:14px;right:auto}body.sunset-reference #camera-capture>#hero-cam-record{min-height:44px}}
-body.sunset-reference.island-trial #camera-capture{top:96px!important;right:24px;left:auto!important}
-@media(max-width:650px) and (min-height:521px){body.sunset-reference.island-trial #camera-capture{top:252px!important;left:14px!important;right:auto}}
 
-/* Normal play has no review toolbar occupying the upper controls. */
-@media(max-width:650px) and (min-height:521px){
- body.sunset-reference:not(.sunset-local-preview):not(.island-trial) #reference-hud{top:86px}
- body.sunset-reference:not(.sunset-local-preview):not(.island-trial) .hover-lighting{top:86px!important}
- body.sunset-reference:not(.sunset-local-preview):not(.island-trial) #camera-capture{top:138px}
- body.sunset-reference:not(.sunset-local-preview)[data-hud-preset]:not(.coop-playing):not(.island-trial) #ride-radio:not(.cockpit-library):not(.belle-hud-control){top:190px}
+/* Keep the native responsive control lanes and HUD-editor positioning intact. */
+.sunset-reference #trial-hud{border-radius:12px;border:1px solid #e6c68d77;background:#142331ec}
+.sunset-reference .trial-hud-map{border-radius:50%;border:2px solid #ddc79888;box-sizing:border-box}
+@media(min-height:521px){
+ .sunset-reference:has(#reference-hud:not([hidden]):not(.reference-competition)) #navigation,
+ .sunset-reference:has(#reference-hud:not([hidden]):not(.reference-competition)) .location-chip,
+ .sunset-reference:has(#reference-hud:not([hidden]):not(.reference-competition)) .hover-instruments>div:first-child{display:none}
+}
+@media(max-width:650px){
+ #sunset-preview{top:65px;flex-direction:column;gap:3px;width:calc(100vw - 30px);box-sizing:border-box;padding:5px 7px}
+ #sunset-preview>div{display:flex;align-items:center;gap:12px}#sunset-preview select{width:190px;min-height:44px;font-size:12px}#sunset-preview nav{gap:5px}#sunset-preview button{padding:7px 10px}
+ #reference-hud{right:12px;top:86px;width:132px;gap:6px}#reference-hud .reference-map{width:108px;height:108px}.reference-speed{font-size:27px}.reference-readout{padding:7px}.reference-place{font-size:10px}.reference-objective{font-size:9px}
+ body.sunset-local-preview #reference-hud{top:180px}
+}
+@media(max-height:520px){
+ #sunset-preview{top:8px;left:auto;right:12px;transform:none;max-width:calc(100vw - 210px);width:auto;flex-direction:row}#sunset-preview small{display:none}#sunset-preview select{width:130px}
+ /* Use the native compact navigation when vertical space is needed for flight and touch. */
+ #reference-hud{display:none}
 }

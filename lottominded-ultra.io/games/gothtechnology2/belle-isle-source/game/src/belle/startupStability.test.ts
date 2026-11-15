@@ -7,7 +7,13 @@ const texture=()=>{const t=new Texture({width:2,height:2});return t;};
 test('asset pool caps concurrency at three pairs and preserves order',async()=>{let active=0,peak=0;const out=await startupPool(Array.from({length:28},(_,i)=>i),3,async n=>{active++;peak=Math.max(peak,active);await sleep(1);active--;return n*2;});assert.equal(peak,3);assert.deepEqual(out,Array.from({length:28},(_,i)=>i*2));});
 test('pool stops dispatch on first failure and waits for issued operations',async()=>{let started=0,done=0;await assert.rejects(startupPool([0,1,2,3,4,5],2,async n=>{started++;if(n===0)throw Error('load failed');await sleep(5);done++;return n;}),/load failed/);assert(started<=2);assert.equal(done,1);});
 test('pool rejects invalid limits and pre-cancel without starting work',async()=>{let calls=0;const c=new AbortController();c.abort();await assert.rejects(startupPool([1],3,async()=>{calls++;},c.signal));assert.equal(calls,0);await assert.rejects(startupPool([1],0,async()=>1));});
-test('resource deadline disposes late completion instead of publishing stale data',async()=>{let dispose=0;await assert.rejects(startupResource(sleep(20).then(()=>1),5,'texture',()=>dispose++),/deadline/);await sleep(25);assert.equal(dispose,1);});
+test('resource deadline disposes late completion instead of publishing stale data',async()=>{
+ let dispose=0,complete!:(value:number)=>void;
+ const pending=new Promise<number>(resolve=>{complete=resolve;});
+ await assert.rejects(startupResource(pending,5,'texture',()=>dispose++),/deadline/);
+ // Resolve only after the deadline has fired; host load cannot reverse two timers.
+ assert.equal(dispose,0);complete(1);await Promise.resolve();assert.equal(dispose,1);
+});
 test('cancelled resource disposes late data and settles promptly',async()=>{let disposal=0;const c=new AbortController();const p=startupResource(sleep(15).then(()=>1),100,'test',()=>disposal++,c.signal);c.abort(new Error('closed'));await assert.rejects(p,/closed/);await sleep(20);assert.equal(disposal,1);});
 test('successful resource belongs to caller and is not later disposed by timeout',async()=>{let disposal=0;assert.equal(await startupResource(Promise.resolve(4),10,'test',()=>disposal++),4);await sleep(15);assert.equal(disposal,0);});
 test('texture warmup deduplicates references and yields every two submissions',async()=>{const textures=[texture(),texture(),texture(),texture(),texture()];let count=0,yields=0,max=0,batch=0;const renderer={initTexture:()=>{count++;max=Math.max(max,++batch);}};const result=await warmTextureList(renderer,[...textures,textures[0]],undefined,async()=>{yields++;batch=0;});assert.equal(result,5);assert.equal(count,5);assert.equal(yields,2);assert(max<=2);});
