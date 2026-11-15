@@ -39,8 +39,11 @@ export function fitCorleoRider(model:Object3D){
  });
  model.scale.multiplyScalar(CORLEO_SCALE);
  mount.scale.multiplyScalar(1/CORLEO_SCALE);
- const update=()=>{
+ const fittedMountScale=mount.scale.clone();
+ const update=(contactsEnabled=true)=>{
+  mount.scale.copy(fittedMountScale);
   model.updateWorldMatrix(true,true);
+  if(!contactsEnabled)return;
   const bodyRotation=body.getWorldQuaternion(new Quaternion());
   for(const contact of contacts){
    const rotation=contact.socket.getWorldQuaternion(contact.worldRotation);

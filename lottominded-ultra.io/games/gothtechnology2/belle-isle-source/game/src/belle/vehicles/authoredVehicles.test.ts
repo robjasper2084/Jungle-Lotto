@@ -13,6 +13,9 @@ import {normalizeRideChoice} from '../rideChoice.ts';
 import {assignPlayer,defaultSelection} from '../coop/coop.ts';
 import {ExplorerBuffer,explorerFrame} from '../onlineProtocol.ts';
 import {createPose} from '../../../runtime/ride-core/src/controller.ts';
+import {createCorleoActions} from './corleoActions.ts';
+import {inPlaceCorleoClip} from '../corleoAnimation.ts';
+import {CORLEO_TRANSITION_SECONDS} from './corleoState.ts';
 import type {ParkTerrain} from '../terrain.ts';
 const neutral={throttle:0,steer:0,lift:0,boost:false,brake:false};
 const flat={map:{water:[]},height:()=>0,land:(_x:number,z:number)=>z<20,obstructed:()=>false,bridge:()=>({active:false}),raycastFlight:()=>null,raycastObstacle:()=>null,raycast:()=>null,sampleGround:(_x:number,_z:number,out:any)=>Object.assign(out,{height:0,normal:{x:0,y:1,z:0},surface:'asphalt'}),navigationObstacles:()=>[]} as unknown as ParkTerrain;
@@ -40,8 +43,32 @@ test('network preserves model and pilot, rejects URLs, and snaps on vehicle chan
  const buffer=new ExplorerBuffer();buffer.push(frame,100);buffer.push({...frame,seq:2,vehicle:'corleo',pose:{...frame.pose,x:5}},200);assert.equal(buffer.sample(201)?.vehicle,'corleo');assert.equal(buffer.sample(201)?.pose.x,5);
 });
 test('CORLEO follows ground input, brakes, reverses, and never takes flight',()=>{
- const c=new CorleoController(flat,{x:0,z:0,heading:0});c.launch();run(c,3,{...neutral,throttle:1,lift:1});assert(c.pose.z>1);assert.equal(c.flying,false);assert(Math.abs(c.pose.y-.18)<.03);assert(c.pose.speed<=4.2);
+ const c=new CorleoController(flat,{x:0,z:0,heading:0});c.launch();run(c,3,{...neutral,throttle:1,lift:1});assert(c.pose.z>1);assert.equal(c.flying,false);assert(Math.abs(c.pose.y-.18)<.03);assert(c.pose.speed<=25*.44704);
  run(c,2,{...neutral,brake:true});assert(Math.abs(c.pose.speed)<.1);const z=c.pose.z;run(c,3,{...neutral,throttle:-1});assert(c.pose.z<z);assert(c.exitPoint()===null);run(c,2,{...neutral,brake:true});assert(c.exitPoint());
+});
+test('one CORLEO controller owns mount, crawl, jump, 160 mph running and dismount',()=>{
+ const ground={...flat,land:()=>true} as unknown as ParkTerrain,c=new CorleoController(ground,{x:0,z:0,heading:0});
+ c.beginMount();run(c,CORLEO_TRANSITION_SECONDS-1,{...neutral,throttle:1,boost:true});assert.equal(c.pose.z,0);assert.equal(c.pose.corleoAction,'MOUNT');run(c,1.1);assert(!c.transitioning);
+ run(c,7,{...neutral,throttle:1,boost:true});assert(Math.abs(c.pose.speed-160*.44704)<1e-4);assert.equal(c.pose.corleoAction,'RUN');
+ run(c,5,{...neutral,brake:true});assert.equal(c.pose.speed,0);c.toggleCrawl();run(c,2,{...neutral,throttle:1});assert.equal(c.pose.corleoAction,'CRAWL');assert(c.pose.speed<=.36);c.launch();c.advance(.05,{...neutral,throttle:1});assert.equal(c.motion.pose.airMetres,0,'crawl suppresses jump');
+ c.toggleCrawl();c.launch();c.advance(.05,neutral);assert(c.motion.pose.airMetres>0);assert.equal(c.pose.corleoAction,'JUMP');assert.equal(c.beginDismount(),false,'cannot dismount in midair');run(c,1);assert.equal(c.motion.pose.airMetres,0);assert(c.beginDismount());const z=c.pose.z;run(c,CORLEO_TRANSITION_SECONDS+.1,{...neutral,throttle:1});assert.equal(c.pose.z,z);assert(c.dismountReady);assert(c.exitPoint());
+});
+test('CORLEO action packets are bounded and retain their actual animation phase',()=>{
+ const frame={seq:1,pose:createPose(),mode:'hover',seat:0,active:true,vehicle:'corleo',pilot:'professional',corleoAction:'CRAWL',corleoTime:.7};assert.deepEqual(explorerFrame(frame),frame);
+ for(const invalid of [{vehicle:'jetson'},{corleoAction:'OTHER'},{corleoTime:NaN},{corleoTime:-1},{corleoTime:61},{corleoTime:undefined}])assert.equal(explorerFrame({...frame,...invalid}),undefined);
+});
+test('all action clips animate the fitted shared CORLEO without missing targets or changed rider scale',async()=>{
+ for(const pilot of ['professional','maverick'] as const){
+  const parse=async(file:string)=>{const b=fs.readFileSync(file);return new GLTFLoader().parseAsync(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength),'');};
+  const source=await parse(`public/belle/vehicles/corleo-${pilot}.glb`),model=clone(source.scene),bind=new T.AnimationMixer(model);bind.clipAction(corleoGaitClips(source.animations[0]).idle).play();bind.update(0);const fit=fitCorleoRider(model);bind.stopAllAction();bind.uncacheRoot(model);
+  const clips:any={};for(const action of ['MOUNT','RUN','CRAWL','JUMP','DISMOUNT']){const asset=await parse(`public/belle/vehicles/corleo/CORLEO_${pilot==='professional'?'Professional':'Maverick'}_${action}.glb`);clips[action]=inPlaceCorleoClip(asset.animations[0],action==='JUMP');}
+  const animator=createCorleoActions(model,source.animations[0],clips),mount=model.getObjectByName('CR_RiderMount')!,scale=mount.scale.clone();
+  for(const action of ['IDLE','WALK','RUN','CRAWL','JUMP','MOUNT','DISMOUNT'] as const){for(let frame=0;frame<30;frame++){
+   const pose={x:0,y:.18,z:0,heading:0,speed:action==='CRAWL'?.36:2,pitch:0,roll:0,lift:0,rpm:0,corleoAction:action,corleoTime:frame/30*(action==='MOUNT'||action==='DISMOUNT'?12:.6)};
+   const contact=animator.update(pose);fit.update(contact);assert.deepEqual(mount.scale,scale);model.traverse(o=>assert(o.position.toArray().every(Number.isFinite)));
+   if(contact)for(const c of fit.contacts)assert(c.chain.foot.getWorldPosition(new T.Vector3()).distanceTo(c.target)<.02,`${pilot} ${action} fitted contact`);
+  }}animator.mixer.stopAllAction();animator.mixer.uncacheRoot(model);
+ }
 });
 test('CORLEO rejects water and other-player collisions with its full footprint',()=>{
  const c=new CorleoController(flat,{x:0,z:17,heading:0});run(c,8,{...neutral,throttle:1});assert(c.pose.z<20);assert(c.pose.y>=.15);

@@ -5,8 +5,9 @@ import {batchRigidChildren} from '../coop/batchRigid.ts';
 import {JetsonCockpitController} from './vendor/JetsonCockpitController.js';
 import {JetsonVariantSystem} from './vendor/JetsonVariantSystem.js';
 import {corleoGaitClips} from './corleoMotion.ts';
+import {createCorleoActions,loadCorleoActions} from './corleoActions.ts';
 import {corleoDashboard} from './corleoDashboard.ts';
-import {fitCorleoRider,CORLEO_SCALE} from './corleoFit.ts';
+import {fitCorleoRider} from './corleoFit.ts';
 import type {AuthoredChoice} from './choices.ts';
 import type {HoverPose} from '../hoverController.ts';
 const files={
@@ -42,7 +43,7 @@ export async function createVehicleModel(choice:AuthoredChoice,signal?:AbortSign
  let disposed=false,displayClock=0;let rider:T.Object3D=model,head:T.Object3D|undefined;const heads:T.Object3D[]=[];
  const dispose=()=>{if(disposed)return;disposed=true;root.removeFromParent();mixer?.stopAllAction();mixer?.uncacheRoot(model);batches?.dispose();variants?.dispose();cockpit?.dispose();for(const s of skeletons)s.dispose();for(const m of materials.values())m.dispose();};
  try{
-  let actions:T.AnimationAction[]=[],dashboard:ReturnType<typeof corleoDashboard>|undefined,fit:ReturnType<typeof fitCorleoRider>|undefined;
+  let actions:T.AnimationAction[]=[],corleoActions:ReturnType<typeof createCorleoActions>|undefined,dashboard:ReturnType<typeof corleoDashboard>|undefined,fit:ReturnType<typeof fitCorleoRider>|undefined;
   if(choice.vehicle==='jetson'){
    cockpit=new JetsonCockpitController(T,model,{PilotID:choice.pilot,LiveryID:choice.livery});
    variants=new JetsonVariantSystem(T,model,{PilotID:choice.pilot,LiveryID:choice.livery,cloneSkinned:clone,cockpitController:cockpit,loadPilot:(id:string)=>asset(id==='maverick'?'pilot-maverick.glb':'pilot-professional.glb')});await variants.ready;check();
@@ -54,23 +55,26 @@ export async function createVehicleModel(choice:AuthoredChoice,signal?:AbortSign
    mixer=new T.AnimationMixer(model);actions=Object.values(corleoGaitClips(clip)).map(c=>mixer!.clipAction(c).play());actions.forEach((a,i)=>a.setEffectiveWeight(i===0?1:0));mixer.update(0);
    const armature=model.getObjectByName(`CR_${choice.pilot==='professional'?'Professional':'Maverick'}_Pilot_Armature`);if(!armature?.parent)throw Error('CORLEO pilot rig is missing');rider=armature.parent;
    fit=fitCorleoRider(model);
+   mixer.stopAllAction();mixer.uncacheRoot(model);
+   corleoActions=createCorleoActions(model,clip,await loadCorleoActions(choice.pilot));check();mixer=corleoActions.mixer;
    dashboard=corleoDashboard(model);
   }
   model.traverse(o=>{if(o.userData.first_person_hidden)heads.push(o);if((o as T.Bone).isBone&&/head$/i.test(o.name))head=o;});
   // Preserve cockpit targets, head visibility, skeletons, and all animated nodes.
   const animated=new Set(source.animations.flatMap(a=>a.tracks.map(t=>t.name.split('.')[0])));model.traverse(o=>{if(/CTRL|Socket|Attach|Display|Screen|Rotor|Pilot|Head|Helmet|CR_HUD|FixedGrip|StirrupPlate/i.test(o.name)||o.userData.first_person_hidden)animated.add(o.name);});
-  batches=batchRigidChildren(model,animated);
+  corleoActions?.animatedNodes.forEach(name=>animated.add(name));batches=batchRigidChildren(model,animated);
   const lamps=[...materials.values()].filter((m):m is T.MeshStandardMaterial=>m instanceof T.MeshStandardMaterial&&/Front white position lamp|CR_Headlamp|CR_RearLamp/.test(m.name)).map(material=>({material,intensity:material.emissiveIntensity}));
   root.updateMatrixWorld(true);
   return {root,rider,choice:{...choice},eye(out){root.updateMatrixWorld(true);return head?head.getWorldPosition(out).add(new T.Vector3(0,.07,0)):out.set(root.position.x,root.position.y+(choice.vehicle==='corleo'?2.1:1.25),root.position.z);},
    firstPerson(value){variants?.setFirstPerson(value);heads.forEach(o=>o.visible=!value);},
    update(p,dt,running,power,energy,lights=true,brake=false){
+    root.userData.corleoAction=p.corleoAction;root.userData.corleoTime=p.corleoTime;
     root.position.set(p.x,p.y-(choice.vehicle==='corleo'?.18:0),p.z);root.rotation.set(p.pitch,p.heading,p.roll,'YXZ');
     const delta=running?Math.min(.1,Math.max(0,dt)):0;
     if(cockpit){displayClock+=delta;const context=cockpit.context;if(displayClock<.1)cockpit.context=null;else displayClock%=.1;
      cockpit.update({pitch:-p.pitch*3,roll:p.roll*3,yaw:0,power:Math.max(0,Math.min(1,p.rpm*.75+power*.2)),battery_level:energy,attitude_pitch_deg:p.pitch*180/Math.PI,attitude_roll_deg:p.roll*180/Math.PI,flight_mode:p.rpm>.1?1:0},delta);cockpit.context=context;variants?.update(delta);
     }
-    if(mixer){const speed=Math.abs(p.speed),walk=Math.min(1,speed/.35),trot=Math.max(0,Math.min(1,(speed-.8)/1.1));const weights=[1-walk,walk*(1-trot),walk*trot];actions.forEach((a,i)=>{a.setEffectiveWeight(weights[i]);a.setEffectiveTimeScale(i===0?1:Math.max(.15,speed/((i===1?.85:1.23)*CORLEO_SCALE))*(p.speed<0?-1:1));});mixer.update(delta);fit?.update();}
+    if(corleoActions)fit?.update(corleoActions.update(p));
     lamps.forEach(({material,intensity})=>material.emissiveIntensity=lights?intensity:0);
     dashboard?.(p,power,lights,brake);
    },dispose};

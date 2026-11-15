@@ -2,12 +2,13 @@ import {HoverTransmission} from './hoverTransmission.ts';
 import {inside} from './terrain.ts';
 import type {ParkTerrain} from './terrain.ts';
 import {HOVER_TOP_SPEED,mphToMps,speedMph} from './speedUnits.ts';
-export interface HoverInput {throttle:number;steer:number;strafe?:number;lift:number;brake:boolean;boost:boolean;clutch?:number}
+import type {CorleoAnimationState} from './vehicles/corleoState.ts';
+export interface HoverInput {throttle:number;steer:number;strafe?:number;lift:number;brake:boolean;boost:boolean;clutch?:number;jump?:boolean;crawl?:boolean}
 export type FlightObstacle=(o:{x:number;y:number;z:number},d:{x:number;y:number;z:number},max:number,half:number)=>number|null;
 export type FlightMode='classic'|'drone';
 /** Neutral dead band and exponential response preserve delicate stick movement. */
 export function flightAxis(value:number){const n=Number.isFinite(value)?Math.max(-1,Math.min(1,value)):0,a=Math.max(0,(Math.abs(n)-.06)/.94);return Math.sign(n)*(.35*a+.65*a*a*a);}
-export interface HoverPose {x:number;y:number;z:number;heading:number;speed:number;pitch:number;roll:number;lift:number;rpm:number}
+export interface HoverPose extends CorleoAnimationState {x:number;y:number;z:number;heading:number;speed:number;pitch:number;roll:number;lift:number;rpm:number}
 const clamp=(n:number,a:number,b:number)=>Math.max(a,Math.min(b,n));
 const approach=(n:number,target:number,d:number)=>n<target?Math.min(target,n+d):Math.max(target,n-d);
 /** Fixed-step fan flight. World-space momentum survives heading changes. */

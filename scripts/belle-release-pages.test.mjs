@@ -16,7 +16,7 @@ test('verification requires full expected commit and HTTPS',async()=>{await asse
 
 test('CORLEO UI cannot ship without its ten models, whose public bytes are verified',async t=>{
  const site=await fixture(t),js=resolve(site,GAME_PATH,'assets/main-abc.js');
- await writeFile(js,(await readFile(js,'utf8'))+';console.log("corleo-enter")');
+ await writeFile(js,(await readFile(js,'utf8'))+';console.log("corleo-actions")');
  await assert.rejects(stampBelleRelease(site),/CORLEO runtime asset missing/);
  const folder=resolve(site,GAME_PATH,'belle/vehicles/corleo');await mkdir(folder,{recursive:true});
  for(const style of ['Professional','Maverick'])for(const action of ['MOUNT','RUN','CRAWL','JUMP','DISMOUNT'])await writeFile(resolve(folder,'CORLEO_'+style+'_'+action+'.glb.gz'),'model bytes');

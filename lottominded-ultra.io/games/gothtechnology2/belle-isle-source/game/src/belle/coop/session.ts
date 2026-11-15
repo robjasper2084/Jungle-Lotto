@@ -152,12 +152,12 @@ export class CoopSession{
    look.onpointerdown=e=>{if(!canInput()||e.button!==0||p.lookPointer!==null)return;document.getElementById('game')?.focus();p.lookPointer=e.pointerId;p.last=[e.clientX,e.clientY];look.setPointerCapture(e.pointerId);};
    look.onpointermove=e=>{if(p.lookPointer!==e.pointerId||!canInput())return;actor.yaw-=(e.clientX-p.last[0])*.004;actor.pitch=T.MathUtils.clamp(actor.pitch+(e.clientY-p.last[1])*.003,-.4,.85);p.last=[e.clientX,e.clientY];};
    const releaseLook=(e:PointerEvent)=>{if(p.lookPointer===e.pointerId)p.lookPointer=null;};look.onpointerup=look.onpointercancel=look.onlostpointercapture=releaseLook;
-   const hover=actor.manifest.controller==='HoverController';
-   const hop=button(hover?'Takeoff / land':'Hop',()=>{if(canInput())p.input.hop=true;});hop.className='coop-touch-hop';hop.setAttribute('aria-label','Player '+(seat+1)+(hover?' takeoff or land':' hop'));root.dataset.vehicle=actor.manifest.vehicleId;hop.hidden=actor.manifest.controller==='CorleoController';
+   const hover=actor.manifest.controller==='HoverController',corleo=actor.manifest.controller==='CorleoController';
+   const hop=button(hover?'Takeoff / land':corleo?'Jump':'Hop',()=>{if(canInput())p.input.hop=true;});hop.className='coop-touch-hop';hop.setAttribute('aria-label','Player '+(seat+1)+(hover?' takeoff or land':corleo?' jump':' hop'));root.dataset.vehicle=actor.manifest.vehicleId;
    const brake=button('Brake',()=>{});brake.className='coop-touch-brake';brake.setAttribute('aria-label','Player '+(seat+1)+' brake');
    brake.onpointerdown=e=>{if(!canInput()||e.button!==0)return;e.preventDefault();p.input.brake=true;brake.setPointerCapture(e.pointerId);};brake.onpointerup=brake.onpointercancel=brake.onlostpointercapture=()=>p.input.brake=false;
-   const lift=document.createElement('div');lift.className='coop-lift';lift.hidden=!hover;
-   for(const [name,value] of [['Up',1],['Down',-1]] as const){const b=button(name,()=>{});b.setAttribute('aria-label','Player '+(seat+1)+' '+name.toLowerCase());b.onpointerdown=e=>{if(!canInput()||e.button!==0)return;e.preventDefault();p.input.lift=value;b.setPointerCapture(e.pointerId);};b.onpointerup=b.onpointercancel=b.onlostpointercapture=()=>p.input.lift=0;lift.append(b);}
+   const lift=document.createElement('div');lift.className='coop-lift';lift.hidden=!hover&&!corleo;
+   for(const [direction,value] of [['Up',1],['Down',-1]] as const){const name=corleo?(value>0?'Run':'Crawl'):direction,b=button(name,()=>{});b.setAttribute('aria-label','Player '+(seat+1)+' '+name.toLowerCase());b.onpointerdown=e=>{if(!canInput()||e.button!==0)return;e.preventDefault();p.input.lift=value;b.setPointerCapture(e.pointerId);};b.onpointerup=b.onpointercancel=b.onlostpointercapture=()=>p.input.lift=0;lift.append(b);}
    if(hover){
     const drive=document.createElement('details');drive.className='coop-drive';const summary=document.createElement('summary');summary.textContent='Gear AUTO';const clutch=button('Hold clutch',()=>{});clutch.setAttribute('aria-label','Player '+(seat+1)+' clutch');clutch.onpointerdown=e=>{if(!canInput()||e.button!==0)return;e.preventDefault();p.input.clutch=1;clutch.setPointerCapture(e.pointerId);};clutch.onpointerup=clutch.onpointercancel=clutch.onlostpointercapture=()=>p.input.clutch=0;
     drive.append(summary,clutch);for(const [label,direction] of [['Gear −',-1],['Gear +',1]] as const){const b=button(label,()=>{if(canInput())p.input.shift=direction;});b.setAttribute('aria-label','Player '+(seat+1)+' '+label);drive.append(b);}info.append(drive);
@@ -212,6 +212,7 @@ export class CoopSession{
    actor.camera.position.lerp(this.cameraEye,actor.snap||reduced?1:1-Math.exp(-seconds*12));actor.camera.lookAt(this.cameraTarget);actor.snap=false;
    if(this.collectDiagnostics){const pane=this.panes[seat];pane.root.dataset.rider=actor.manifest.riderId;pane.root.dataset.vehicle=actor.manifest.vehicleId;
    pane.root.dataset.x=p.x.toFixed(3);pane.root.dataset.y=p.y.toFixed(3);pane.root.dataset.z=p.z.toFixed(3);pane.root.dataset.speed=p.speed.toFixed(3);pane.root.dataset.footError=actor.footError().toFixed(5);
+   pane.root.dataset.corleoAction=this.simulation.hovers[seat]?.pose.corleoAction??'';pane.root.dataset.corleoTime=String(this.simulation.hovers[seat]?.pose.corleoTime??0);
    pane.root.dataset.camera=actor.firstPerson?'first':'third';pane.root.dataset.crashBlend=String(p.crashBlend);pane.root.dataset.footBlend=String(p.footBlend);
    pane.status.textContent=Math.round(Math.abs(p.speed)*3.6)+' km/h · '+VEHICLES.find(v=>v.id===actor.manifest.vehicleId)!.label+' · Partner '+Math.round(Math.hypot(p.x-peer.x,p.z-peer.z))+' m'+(this.simulation.hovers[seat]?this.simulation.mounted[seat]?(actor.manifest.controller==='CorleoController'?' · Ground ride':this.simulation.hovers[seat]!.landed?' · Landed · Takeoff to ride':' · Flying'):' · On foot · Return to bike':'');}
   }

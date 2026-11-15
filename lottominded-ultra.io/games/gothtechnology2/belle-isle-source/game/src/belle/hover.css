@@ -1,4 +1,8 @@
 #hover-enter{border-color:#e9645e88;color:#fff0e3;background:#541b23d9}
+.corleo-actions{display:none}
+#hover-hud[data-vehicle=corleo] .corleo-actions{display:flex;gap:6px}
+#hover-hud[data-vehicle=corleo] .hover-actions{flex-wrap:wrap;max-width:100%}
+#hover-hud[data-vehicle=corleo] :is(label:has(#hover-drive-gear),.hover-drive-help,[data-hold=KeyC],#hover-drive){display:none}
 /* Ground mounts share the accessible movement/brake controls, with no flight actions. */
 #hover-hud[data-vehicle=corleo] :is([data-hover=takeoff],#hover-boost,.hover-cruise,.hover-lift,.hover-energy,#jarvs-avionics,label:has(#hover-flight-mode)){display:none!important}
 #hover-hud[data-vehicle=corleo] .hover-instruments>div:has(#hover-altitude){display:none}

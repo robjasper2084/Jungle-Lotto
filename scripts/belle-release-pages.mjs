@@ -32,7 +32,7 @@ export async function stampBelleRelease(site){
  let js='';for(const f of files.filter(f=>f.path.endsWith('.js')))js+=await readFile(resolve(root,f.path),'utf8');
  const signatures={localCoop:js.includes('coop-open')&&js.includes('coop-overlay'),startupProfile:js.includes('__belleStartupProfile')};
  if(Object.values(signatures).some(v=>!v))throw Error('Required co-op/startup code absent from actual emitted bundles');
- if(js.includes('corleo-enter')){
+ if(js.includes('corleo-enter')||js.includes('corleo-actions')){
   for(const style of ['Professional','Maverick'])for(const action of ['MOUNT','RUN','CRAWL','JUMP','DISMOUNT']){
    const asset=GAME_PATH+'belle/vehicles/corleo/CORLEO_'+style+'_'+action+'.glb.gz';
    if(!files.some(file=>file.path===asset))throw Error('CORLEO runtime asset missing: '+asset);

@@ -1,10 +1,11 @@
 import {createPose,lerpPose,type RidePose} from '../../runtime/ride-core/src/controller.ts';
 import {CLOUD_TYPES,type SkySettings} from './skyModel.ts';
+import {CORLEO_ACTIONS,type CorleoAnimationState} from './vehicles/corleoState.ts';
 export const BELLE_PROTOCOL='belle-isle-explore-v2';
 export const MAX_EXPLORERS=4;
 export const PLAYER_COLORS=['#62e0d1','#ffc66d','#adabff','#fb91ab'] as const;
 export type Explorer={id:string;name:string;joined:number;protocol:typeof BELLE_PROTOCOL;voice:false|'all'|'squad-a'|'squad-b'};
-export type ExplorerFrame={seq:number;pose:RidePose;mode:'ride'|'hover'|'slide';seat:number;active:boolean;vehicle?:'onewheel'|'hoverbike'|'jetson'|'corleo';pilot?:'professional'|'maverick';livery?:'industrial'|'sport_red'|'sport_blue';lights?:boolean;brake?:boolean;energy?:number};
+export type ExplorerFrame=CorleoAnimationState&{seq:number;pose:RidePose;mode:'ride'|'hover'|'slide';seat:number;active:boolean;vehicle?:'onewheel'|'hoverbike'|'jetson'|'corleo';pilot?:'professional'|'maverick';livery?:'industrial'|'sport_red'|'sport_blue';lights?:boolean;brake?:boolean;energy?:number};
 const poseKeys=Object.keys(createPose()) as (keyof RidePose)[];
 export function cleanName(v:unknown){return typeof v==='string'?v.replace(/[\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069<>]/g,'').trim().slice(0,24):'';}
 export function explorer(v:any):Explorer|undefined{if(!v||v.protocol!==BELLE_PROTOCOL||typeof v.id!=='string'||!/^[-a-f0-9]{36}$/.test(v.id)||!cleanName(v.name)||!Number.isSafeInteger(v.joined)||v.joined<0||v.joined>Date.now()+60000||![false,'all','squad-a','squad-b'].includes(v.voice))return;return{id:v.id,name:cleanName(v.name),joined:v.joined,protocol:BELLE_PROTOCOL,voice:v.voice};}
@@ -16,9 +17,10 @@ export function explorerFrame(v:any,last=-1):ExplorerFrame|undefined{
  if(v.vehicle!==undefined&&!['onewheel','hoverbike','jetson','corleo'].includes(v.vehicle))return;
  if(v.pilot!==undefined&&!['professional','maverick'].includes(v.pilot))return;
  if(v.livery!==undefined&&!['industrial','sport_red','sport_blue'].includes(v.livery))return;
+ if(v.corleoAction!==undefined||v.corleoTime!==undefined){if(v.vehicle!=='corleo'||!CORLEO_ACTIONS.includes(v.corleoAction)||!Number.isFinite(v.corleoTime)||v.corleoTime<0||v.corleoTime>60)return;}
  if(v.lights!==undefined&&typeof v.lights!=='boolean'||v.brake!==undefined&&typeof v.brake!=='boolean'||v.energy!==undefined&&(!Number.isFinite(v.energy)||v.energy<0||v.energy>1))return;
  const selection=v.vehicle===undefined?{}:{vehicle:v.vehicle,...(v.pilot===undefined?{}:{pilot:v.pilot}),...(v.livery===undefined?{}:{livery:v.livery})};
- const telemetry=Object.fromEntries(['lights','brake','energy'].filter(k=>v[k]!==undefined).map(k=>[k,v[k]]));
+ const telemetry=Object.fromEntries(['lights','brake','energy','corleoAction','corleoTime'].filter(k=>v[k]!==undefined).map(k=>[k,v[k]]));
  return {seq:v.seq,pose:Object.fromEntries(poseKeys.map(k=>[k,v.pose[k]])) as RidePose,mode:v.mode,seat:v.seat,active:v.active,...selection,...telemetry};
 }
 export function networkSky(v:any):SkySettings|undefined{if(!v||!Number.isFinite(v.hour)||v.hour<0||v.hour>=24||typeof v.cycle!=='boolean'||![10,20,60].includes(v.dayMinutes)||!CLOUD_TYPES.includes(v.clouds))return;return{hour:v.hour,cycle:v.cycle,dayMinutes:v.dayMinutes,clouds:v.clouds};}

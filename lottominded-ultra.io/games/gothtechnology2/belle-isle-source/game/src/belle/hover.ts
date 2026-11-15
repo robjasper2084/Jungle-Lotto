@@ -28,7 +28,7 @@ import type {RideChoice} from './rideChoice.ts';
 import {VehicleHeadlamp} from './vehicles/headlamp.ts';
 type Pose={x:number;y:number;z:number;headingY:number};
 type Hooks={pose:()=>Pose;blocked:()=>boolean;entered:()=>void;exited:(p:{x:number;y:number;z:number;heading:number})=>void;touch:()=>boolean;nightAmount?:()=>number;obstacle?:FlightObstacle;vehicleLocked?:()=>boolean;restartTrial?:()=>void;prepareScene?:(model:T.Object3D,signal?:AbortSignal)=>Promise<void>};
-const keyCodes=['KeyW','KeyS','KeyA','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyE','KeyQ','Space','ShiftLeft','ShiftRight','KeyG','KeyF','KeyL','KeyH','KeyK','KeyR','KeyC','BracketLeft','BracketRight','KeyX','Minus','Equal'];
+const keyCodes=['KeyW','KeyS','KeyA','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyE','KeyQ','Space','ShiftLeft','ShiftRight','KeyG','KeyJ','KeyF','KeyL','KeyH','KeyK','KeyR','KeyC','BracketLeft','BracketRight','KeyX','Minus','Equal'];
 export class HoverRide {
  sim:HoverController;
  private authored?:VehicleModel;
@@ -126,6 +126,7 @@ installHoverPresentation(this.hud);
   this.flightSelect.onchange=()=>{if(this.hooks.vehicleLocked?.()){this.flightSelect.value=this.sim.mode;return;}this.clear();this.sim.setMode(this.flightSelect.value==='classic'?'classic':'drone');try{localStorage.setItem('belle-flight-mode',this.sim.mode);}catch{}this.refresh();};
   this.driveSelect=this.hud.querySelector('#hover-drive-gear')!;this.driveSelect.onchange=()=>this.selectGear(this.driveSelect.value==='auto'?'auto':Number(this.driveSelect.value) as DriveGear);
 
+  const corleoControls=document.createElement('div');corleoControls.className='corleo-actions';corleoControls.innerHTML='<button type="button" data-hold="ShiftLeft">RUN · Shift</button><button type="button" data-hover="crawl" aria-pressed="false">CRAWL · C</button><button type="button" data-hover="jump">JUMP · J</button>';this.hud.querySelector('.hover-actions')?.append(corleoControls);
   this.bindFlightStick();
   this.ledInput=this.hud.querySelector('#hover-led-color')!;this.ledSelect=this.hud.querySelector('#hover-led-mode')!;
   try{const prefs=JSON.parse(localStorage.getItem('belle-hover-lighting')||'{}');if(/^#[0-9a-f]{6}$/i.test(prefs.color))this.ledColor=prefs.color;if(['solid','cycle','off'].includes(prefs.mode))this.ledMode=prefs.mode;}catch{}this.ledInput.value=this.ledColor;this.ledSelect.value=this.ledMode;
@@ -133,7 +134,7 @@ installHoverPresentation(this.hud);
   this.hud.querySelectorAll<HTMLButtonElement>('[data-hover]').forEach(b=>b.onclick=()=>{
    if(b.dataset.hover==='reset'&&this.hooks.vehicleLocked?.()){this.hooks.restartTrial?.();return;}
    if(this.hooks.blocked())return;
-   switch(b.dataset.hover){case'cruise':this.toggleCruise();break;case'cruise-down':this.sim.adjustCruise(-5);this.refresh();break;case'cruise-up':this.sim.adjustCruise(5);this.refresh();break;case'takeoff':this.toggleFlight();break;case'lights':this.toggleLights();break;case'beam':this.toggleBeam();break;case'color':this.nextColor();break;case'sound':this.toggleSound();break;case'reset':this.recover();break;case'exit':this.exit();break;}
+   switch(b.dataset.hover){case'crawl':if(this.sim instanceof CorleoController)this.sim.toggleCrawl();break;case'jump':if(this.sim instanceof CorleoController)this.sim.launch();break;case'cruise':this.toggleCruise();break;case'cruise-down':this.sim.adjustCruise(-5);this.refresh();break;case'cruise-up':this.sim.adjustCruise(5);this.refresh();break;case'takeoff':this.toggleFlight();break;case'lights':this.toggleLights();break;case'beam':this.toggleBeam();break;case'color':this.nextColor();break;case'sound':this.toggleSound();break;case'reset':this.recover();break;case'exit':this.exit();break;}
   });
   this.hud.querySelectorAll<HTMLButtonElement>('[data-hold]').forEach(b=>{
    const key=b.dataset.hold!;
@@ -155,7 +156,7 @@ installHoverPresentation(this.hud);
   zone.onpointermove=move;const end=(e:PointerEvent)=>{if(e.pointerId!==this.stick.id)return;this.releaseStick();if(zone.hasPointerCapture(e.pointerId))zone.releasePointerCapture(e.pointerId);};zone.onpointerup=end;zone.onpointercancel=end;zone.onlostpointercapture=end;
  }
  get riderObject(){return this.authored?.rider??this.hero;}
- get vehicleTelemetry(){return {lights:this.lightOn,brake:this.pressed.has('Space'),energy:this.sim.boostEnergy};}
+ get vehicleTelemetry(){return {lights:this.lightOn,brake:this.pressed.has('Space'),energy:this.sim.boostEnergy,...(this.sim instanceof CorleoController?{corleoAction:this.sim.pose.corleoAction,corleoTime:this.sim.pose.corleoTime}:{})};}
  get previewVehicle(){return this.model?.getObjectByName('HoverBikeRoot');}
  async preparePreview(scene:T.Scene){await waitForRideModel(this.load(scene),20000);return this.previewVehicle;}
  captureAudio(){return this.sound.capture();}
@@ -210,8 +211,8 @@ installHoverPresentation(this.hud);
    if(generation!==this.mountGeneration||this.hooks.blocked()||this.hooks.vehicleLocked?.())return;
    const p=this.spawnNear(this.hooks.pose());this.sim.reset(p.x,p.z,p.heading);this.resetRider();
    this.riding=true;this.visualModel!.visible=true;this.hero&&(this.hero.visible=true);
-   document.body.classList.add('on-hoverbike');this.hud.hidden=false;this.hooks.entered();
-   this.say(this.vehicle==='corleo'?'W / S walk or reverse · A / D steer · Space brake.':'Press G to take off. E / Q changes height.');this.refresh();
+   document.body.classList.add('on-hoverbike');this.hud.hidden=false;this.hooks.entered();if(this.sim instanceof CorleoController)this.sim.beginMount();
+   this.say(this.vehicle==='corleo'?'Mounting CORLEO · W/S move, Shift run, C crawl, J jump, Space brake.':'Press G to take off. E / Q changes height.');this.refresh();
   }catch(e){if(generation===this.mountGeneration&&!preparation.signal.aborted){console.error('Hoverbike load failed',e);this.enterButton.textContent='Retry hoverbike';}}
   finally{if(generation===this.mountGeneration){this.mountAbort=undefined;this.enterButton.disabled=!!this.hooks.vehicleLocked?.();if(this.visualModel)this.enterButton.textContent=(this.riding?'Get off ':'Ride ')+this.rideLabel+' · B';}}
  }
@@ -236,7 +237,7 @@ installHoverPresentation(this.hud);
  }
  key(e:KeyboardEvent){
   if(!this.riding||!keyCodes.includes(e.code))return false;e.preventDefault();this.pressed.add(e.code);
-  if(!e.repeat)switch(e.code){case'KeyX':this.toggleCruise();break;case'Minus':this.sim.adjustCruise(-5);break;case'Equal':this.sim.adjustCruise(5);break;case'KeyG':this.toggleFlight();break;case'KeyF':this.exit();break;case'KeyL':this.toggleLights();break;case'KeyH':this.toggleBeam();break;case'KeyK':this.nextColor();break;case'KeyR':this.recover();break;case'BracketLeft':this.shiftGear(-1);break;case'BracketRight':this.shiftGear(1);break;}
+  if(!e.repeat)switch(e.code){case'KeyC':if(this.sim instanceof CorleoController)this.sim.toggleCrawl();break;case'KeyJ':if(this.sim instanceof CorleoController)this.sim.launch();break;case'KeyX':this.toggleCruise();break;case'Minus':this.sim.adjustCruise(-5);break;case'Equal':this.sim.adjustCruise(5);break;case'KeyG':this.toggleFlight();break;case'KeyF':this.exit();break;case'KeyL':this.toggleLights();break;case'KeyH':this.toggleBeam();break;case'KeyK':this.nextColor();break;case'KeyR':this.recover();break;case'BracketLeft':this.shiftGear(-1);break;case'BracketRight':this.shiftGear(1);break;}
   return true;
  }
  keyUp(code:string){this.pressed.delete(code);}
@@ -258,6 +259,7 @@ installHoverPresentation(this.hud);
  private recover(){if(this.hooks.vehicleLocked?.()){this.hooks.restartTrial?.();return;}this.clear();this.sim.reset();this.resetRider();this.say('Recovered to the last landing spot.');}
  exit(){
   if(this.hooks.vehicleLocked?.())return;
+  if(this.sim instanceof CorleoController){if(this.sim.beginDismount())this.say('Dismounting CORLEO…');else this.say('Stop on clear ground before dismounting.');return;}
   const point=this.sim.exitPoint();
   if(!point){this.say('Land on clear ground before getting off. Press G to land.');return;}
   this.leaveForTravel();this.hooks.exited(point);
@@ -281,7 +283,7 @@ installHoverPresentation(this.hud);
   const target=this.hud.querySelector('#hover-cruise-target')!,label=locked?speedMph(this.sim.cruiseSpeed!)+' MPH':'Cruise off';if(target.textContent!==label)target.textContent=label;
   this.altitude.textContent=Math.max(0,p.y-this.sim.floor(p.x,p.z)).toFixed(1);
   this.mode.textContent=this.sim.landed?'LANDED':this.sim.clearance<.3?'LANDING':this.sim.boostActive?'BOOST':locked?'CRUISE':this.sim.mode==='drone'?'ALTITUDE HOLD':'IN FLIGHT';
-  if(this.vehicle==='corleo')this.mode.textContent=Math.abs(p.speed)<.1?'STANDING':Math.abs(p.speed)>1.2?'TROT':'WALK';
+  if(this.vehicle==='corleo'){this.mode.textContent=p.corleoAction??'IDLE';this.hud.dataset.corleoAction=p.corleoAction??'IDLE';this.hud.dataset.corleoTime=String(p.corleoTime??0);this.hud.querySelector('[data-hover="crawl"]')?.setAttribute('aria-pressed',String((this.sim as CorleoController).crawl));}
   Object.assign(this.hud.dataset,{vehicle:this.vehicle,pilot:this.selected?.pilot??'sentinel',x:String(p.x),y:String(p.y),z:String(p.z),speed:String(p.speed)});
   // Lock the visible flight-mode selector while Sky Circuit owns the vehicle.
   const trialVehicleLocked=!!this.hooks.vehicleLocked?.();
@@ -298,7 +300,7 @@ installHoverPresentation(this.hud);
   this.hud.dataset.idleHoverY=this.idleHover.offsetY.toFixed(5);this.hud.dataset.idleHoverWeight=this.idleHover.strength.toFixed(4);this.hud.dataset.idleHoverEligible=String(this.idleHover.isIdle);
   if(rider){this.hud.dataset.riderLean=rider.lean.toFixed(4);this.hud.dataset.riderPitch=rider.pitch.toFixed(4);this.hud.dataset.riderCompression=rider.compression.toFixed(4);this.hud.dataset.riderHandError=rider.handError.toFixed(5);this.hud.dataset.riderFootError=rider.footError.toFixed(5);}else{for(const key of ['riderLean','riderPitch','riderCompression','riderHandError','riderFootError'])delete this.hud.dataset[key];}
    this.hud.querySelector('.hover-help')!.textContent=this.sim.mode==='drone'?'W / S forward / back · A / D strafe · ← / → turn · E / Q height · position hold on release · Space brake · X lock speed · − / = adjust · Shift boost':'W / S speed · A / D steer · E / Q height · Space brake · X lock speed · − / = adjust · Shift boost · drag to look';
-  if(this.vehicle==='corleo')this.hud.querySelector('.hover-help')!.textContent='W / S forward and reverse · A / D steer · Space brake · V camera · F get off';
+  if(this.vehicle==='corleo')this.hud.querySelector('.hover-help')!.textContent='W/S move · A/D steer · Shift run · C crawl · J jump · Space brake · V camera · F dismount';
   if(performance.now()>this.messageUntil)this.notice.textContent=this.vehicle==='corleo'?(this.sim.collision?'Contact · brake and steer clear.':'CORLEO · Explore on foot or ride the island.'):this.sim.collision?'Contact — brake and steer clear.':this.sim.hazard?'Caution · obstacle ahead':this.sim.landed?'Ready for takeoff.':'Michigan 2084 · Explore the island';
  }
  update(dt:number,running:boolean,clock:number){
@@ -309,6 +311,7 @@ installHoverPresentation(this.hud);
   const pilotLift=Number(has('KeyE'))-Number(has('KeyQ'));
   const lift=this.jarvs.assistLift(pilotLift,this.sim.mode,!!this.hooks.vehicleLocked?.());
   if(running)this.sim.advance(dt,{throttle:Number(has('KeyW','ArrowUp'))-Number(has('KeyS','ArrowDown'))+this.stick.y,strafe:drone?horizontal:0,steer,lift,brake:has('Space'),clutch:Number(has('KeyC')),boost:has('ShiftLeft','ShiftRight')});
+  if(this.sim instanceof CorleoController&&this.sim.dismountReady){const point=this.sim.exitPoint();if(point){this.leaveForTravel();this.hooks.exited(point);return;}}
   const p=this.sim.pose;
   const avionics=this.jarvs.update({now:performance.now(),x:p.x,y:p.y,z:p.z,heading:p.heading,speed:p.speed,
    clearance:this.sim.clearance,flying:this.sim.flying,landed:this.sim.landed,collision:this.sim.collision,hazard:this.sim.hazard,
