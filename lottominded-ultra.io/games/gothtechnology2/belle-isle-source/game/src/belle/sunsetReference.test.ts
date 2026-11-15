@@ -84,7 +84,7 @@ test('aerial shadows widen gradually without increasing texture resolution or af
  assert.equal(directionalShadowResolution('high'),1536,'High mode retains detailed close-range shadows with fewer texels');
  assert.equal(directionalShadowResolution('automatic'),1024);
  assert.equal(directionalShadowResolution('smooth'),1024);
- assert.equal((source.match(/new T.DirectionalLight\\(/g)||[]).length,1);
+ assert.equal((source.match(/new T.DirectionalLight\(/g)||[]).length,1);
 });
 test('photo lighting retains the original neutral day/night envelope',()=>{
  assert.equal(sunsetPhotoGrade(-.4,0,1).warmth,0);
