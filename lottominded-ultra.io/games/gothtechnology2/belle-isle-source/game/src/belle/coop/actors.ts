@@ -10,6 +10,7 @@ import {GLTFLoader,type GLTF} from 'three/addons/loaders/GLTFLoader.js';
 import {ThreeRiderView} from '../../../runtime/elmwood-source/src/detroit/riding/threeRiderView.ts';
 import {riderProfile,PairSimulation} from './simulation.ts';
 import {assignPlayer,SOURCE_REVISION,type PlayerManifest,type PreparedActor} from './coop.ts';
+import type {VehicleModel} from '../vehicles/models.ts';
 
 const REQUIRED_BONES=['Hips','Head','LeftUpLeg','LeftLeg','LeftFoot','RightUpLeg','RightLeg','RightFoot','LeftArm','LeftForeArm','LeftHand','RightArm','RightForeArm','RightHand'];
 export function riderSourceURL(manifest:PlayerManifest){
@@ -63,8 +64,8 @@ export class CoopAssets{
  }
  dispose(){this.closed=true;for(const asset of this.assets)freeSource(asset);this.assets.clear();this.cache.clear();}
 }
-export type RenderActor=PreparedActor&{manifest:PlayerManifest;view:ThreeRiderView;root:T.Group;apply:(seconds:number)=>void;camera:T.PerspectiveCamera;firstPerson:boolean;yaw:number;pitch:number;snap:boolean;footError:()=>number};
-export function createRenderActor(manifest:PlayerManifest,rider:GLTF,wheel:GLTF,simulation:PairSimulation,hoverAsset?:GLTF):RenderActor{
+export type RenderActor=PreparedActor&{manifest:PlayerManifest;view:ThreeRiderView;root:T.Group;apply:(seconds:number)=>void;camera:T.PerspectiveCamera;firstPerson:boolean;yaw:number;pitch:number;snap:boolean;footError:()=>number;setFirstPerson:(value:boolean)=>void;vehicleModel?:VehicleModel};
+export function createRenderActor(manifest:PlayerManifest,rider:GLTF,wheel:GLTF,simulation:PairSimulation,hoverAsset?:GLTF,vehicleModel?:VehicleModel):RenderActor{
  const ownedMaterials=new Set<T.Material>();
  // Vehicle lights mutate material values; isolate materials but reuse immutable mesh data.
  const vehicle=wheel.scene.clone(true);
@@ -74,6 +75,7 @@ export function createRenderActor(manifest:PlayerManifest,rider:GLTF,wheel:GLTF,
  view.root.name='Co-op Player '+(manifest.seat+1)+' · '+manifest.riderId;view.root.userData.coopSeat=manifest.seat;
  view.apply(core.renderPose);view.root.updateMatrixWorld(true);
  const root=new T.Group();root.name=view.root.name;root.add(view.root);
+ if(vehicleModel)root.add(vehicleModel.root);
  const contact=createVehicleContactShadow(root,simulation.terrain);contact.setQuality('smooth');
  const hover=hoverAsset?cloneSkeleton(hoverAsset.scene):undefined;
  if(hover){hover.name='Co-op hoverbike '+(manifest.seat+1);hover.getObjectByName('HeroRoot')?.removeFromParent();hover.traverse(o=>{if(o.name==='Hero_FPVArms')o.visible=false;});hover.scale.multiplyScalar(view.motionScale);root.add(hover);}
@@ -90,6 +92,7 @@ export function createRenderActor(manifest:PlayerManifest,rider:GLTF,wheel:GLTF,
  const apply=(seconds:number)=>{
   view.apply(core.renderPose);
   const groundPose=core.renderPose;contact.update({x:groundPose.x,y:groundPose.y,z:groundPose.z,heading:groundPose.headingY,vehicle:hover&&simulation.mounted[manifest.seat]?'hoverbike':'onewheel'});
+  if(vehicleModel){const mounted=simulation.mounted[manifest.seat],flight=simulation.hovers[manifest.seat]!;view.root.visible=!mounted;vehicleModel.root.visible=true;vehicleModel.rider.visible=mounted;vehicleModel.update(flight.pose,seconds,mounted,flight.throttleDemand,flight.boostEnergy,true,simulation.braking(manifest.seat));return;}
   if(!hover)return;
   const flight=simulation.hovers[manifest.seat]!,p=flight.pose;
   controls?.update(seconds,flight.drive);
@@ -106,10 +109,10 @@ export function createRenderActor(manifest:PlayerManifest,rider:GLTF,wheel:GLTF,
   view.root.updateMatrixWorld(true);
  };
  let disposed=false;
- const actor:RenderActor={manifest,identity:view.rider,view,root,apply,camera:new T.PerspectiveCamera(62,1,.08,22000),firstPerson:false,yaw:0,pitch:.12,snap:true,
+ const actor:RenderActor={manifest,identity:vehicleModel?.root??view.rider,view,root,apply,vehicleModel,setFirstPerson(value){view.rider.visible=!value;vehicleModel?.firstPerson(value&&simulation.mounted[manifest.seat]);},camera:new T.PerspectiveCamera(62,1,.08,22000),firstPerson:false,yaw:0,pitch:.12,snap:true,
   footError:()=>Math.max(...view.legs.map((l,i)=>l.foot.getWorldPosition(new T.Vector3()).distanceTo(view.footTarget(i,core.renderPose)))),
-  validate:()=>view.legs.length===2&&view.arms.length===2&&view.bones.length>=24&&Number.isFinite(actor.footError())&&(hoverAsset?!!seatAnchor&&grips.every(Boolean)&&feet.every(Boolean):actor.footError()<.12),
-  dispose:()=>{if(disposed)return;disposed=true;root.removeFromParent();batches?.dispose();controls?.dispose();contact.dispose();view.dispose();for(const m of ownedMaterials)m.dispose();}
+  validate:()=>view.legs.length===2&&view.arms.length===2&&view.bones.length>=24&&Number.isFinite(actor.footError())&&(vehicleModel?!!vehicleModel.rider:hoverAsset?!!seatAnchor&&grips.every(Boolean)&&feet.every(Boolean):actor.footError()<.12),
+  dispose:()=>{if(disposed)return;disposed=true;root.removeFromParent();vehicleModel?.dispose();batches?.dispose();controls?.dispose();contact.dispose();view.dispose();for(const m of ownedMaterials)m.dispose();}
  };
  return actor;
 }

@@ -1,4 +1,6 @@
 import * as T from 'three';
+import {clone} from 'three/addons/utils/SkeletonUtils.js';
+import {createVehicleModel,type VehicleModel} from './vehicles/models.ts';
 
 /** One small renderer for both cards. Geometry/textures are borrowed, never disposed. */
 export function createRidePreview(host:HTMLElement,wheel:T.Object3D,loadBike:()=>Promise<T.Object3D>){
@@ -7,6 +9,7 @@ export function createRidePreview(host:HTMLElement,wheel:T.Object3D,loadBike:()=
  let alive=true,active=false,frame=0,last=0,angle=0,wake:(()=>void)|undefined;
  let ownedContext:WebGL2RenderingContext|null=null;
  let ownedRenderer:T.WebGLRenderer|undefined,ownedGeometry:T.CylinderGeometry|undefined,ownedMaterial:T.MeshStandardMaterial|undefined;
+ const ownedVehicles:VehicleModel[]=[],ownedSkeletons=new Set<T.Skeleton>();
  const dispose=()=>{
   if(!alive)return;alive=false;active=false;
   // Initialization can fail before a disposer is returned. Release each owned
@@ -18,6 +21,8 @@ export function createRidePreview(host:HTMLElement,wheel:T.Object3D,loadBike:()=
    ()=>ownedRenderer?.dispose(),
    ()=>{const context=ownedContext;ownedContext=null;context?.getExtension('WEBGL_lose_context')?.loseContext();},
    ()=>ownedGeometry?.dispose(),()=>ownedMaterial?.dispose(),
+   ()=>ownedVehicles.forEach(v=>v.dispose()),
+   ()=>ownedSkeletons.forEach(s=>s.dispose()),
    ()=>row.querySelectorAll('label').forEach(label=>label.classList.remove('preview-ready')),
    ()=>canvas.remove(),
   ])try{release();}catch{/* Best effort after context loss; preserve the initialization error. */}
@@ -32,12 +37,13 @@ export function createRidePreview(host:HTMLElement,wheel:T.Object3D,loadBike:()=
  if(!context)throw new Error('Ride preview unavailable: a WebGL2 context could not be created.');
  const renderer=ownedRenderer=new T.WebGLRenderer({canvas,context,...attributes});
  renderer.setPixelRatio(1);renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.25;
- const scenes=[new T.Scene(),new T.Scene()],models:T.Group[]=[];
+ const scenes=Array.from(row.querySelectorAll('label'),()=>new T.Scene()),models:T.Group[]=[];
  const camera=new T.PerspectiveCamera(34,1,.01,30);camera.position.set(3.6,2.0,4.8);camera.lookAt(0,.85,0);
  const stageGeometry=ownedGeometry=new T.CylinderGeometry(1.45,1.5,.035,48),stageMaterial=ownedMaterial=new T.MeshStandardMaterial({color:0x24434b,roughness:.85});
  scenes.forEach(scene=>{scene.add(new T.HemisphereLight(0xe5f6ff,0x50646b,3));const key=new T.DirectionalLight(0xffe3b8,4);key.position.set(2,5,4);scene.add(key);const rim=new T.DirectionalLight(0x88dcff,3);rim.position.set(-3,2,-2);scene.add(rim);const stage=new T.Mesh(stageGeometry,stageMaterial);stage.position.y=-.04;scene.add(stage);});
  function add(source:T.Object3D,index:number){
-  const copy=source.clone(true);copy.visible=true;
+  const copy=clone(source);copy.visible=true;
+  copy.traverse(o=>{if((o as T.SkinnedMesh).isSkinnedMesh)ownedSkeletons.add((o as T.SkinnedMesh).skeleton);});
   const remove:T.Object3D[]=[];copy.traverse(o=>{if((o as T.Light).isLight||/LCD|Headlight|ground glow|^Hero/i.test(o.name))remove.push(o);if((o as T.Mesh).isMesh){o.castShadow=false;o.receiveShadow=false;}});remove.forEach(o=>o.removeFromParent());
   // Preserve the asset's local scale/orientation, normalize its world-sized bounds once.
   copy.updateMatrixWorld(true);const bounds=new T.Box3().setFromObject(copy),size=bounds.getSize(new T.Vector3()),center=bounds.getCenter(new T.Vector3());
@@ -60,6 +66,7 @@ export function createRidePreview(host:HTMLElement,wheel:T.Object3D,loadBike:()=
  wake=()=>{if(active&&!frame&&!document.hidden&&alive){last=performance.now()-50;frame=requestAnimationFrame(draw);}};
  document.addEventListener('visibilitychange',wake);
  void loadBike().then(bike=>{if(alive)add(bike,1);}).catch(()=>{if(alive){const label=row.querySelectorAll('label')[1];label.classList.add('preview-unavailable');label.querySelector('.ride-preview-slot')?.setAttribute('data-status','Preview unavailable');}});
+ for(const [index,vehicle]of [[2,'jetson'],[3,'corleo']] as const)void createVehicleModel({vehicle,pilot:'professional',livery:'industrial'}).then(model=>{if(!alive){model.dispose();return;}ownedVehicles.push(model);add(model.root,index);}).catch(()=>{if(alive)row.querySelectorAll('label')[index].querySelector('.ride-preview-slot')?.setAttribute('data-status','Preview unavailable');});
  return {setActive(value:boolean){if(!alive)return;active=value;if(!value){cancelAnimationFrame(frame);frame=0;}else wake?.();},dispose};
  }catch(error){dispose();throw error;}
 }

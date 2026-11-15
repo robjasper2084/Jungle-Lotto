@@ -1,0 +1,11 @@
+{
+  "commit": "6e8613866bdd15b1abce148de403c4c75f9fcee1",
+  "base": "https://raw.githubusercontent.com/robjasper2084/Jungle-Lotto/6e8613866bdd15b1abce148de403c4c75f9fcee1/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/",
+  "files": [
+    {"path":"belle/vehicles/jetson-one.glb","bytes":3959972,"sha256":"ff1430525309ce62224c765d755bd77907df78bb9ea2207501ace7d17f7063af"},
+    {"path":"belle/vehicles/pilot-professional.glb","bytes":1059404,"sha256":"679c53bacd02a366dcd011eb634bbb13fac97535eca455a1762c94e4465bfd37"},
+    {"path":"belle/vehicles/pilot-maverick.glb","bytes":987900,"sha256":"48a260626075859ee44de93f3b1beaf42dad62627ebda479d6cbc7356c180c6e"},
+    {"path":"belle/vehicles/corleo-professional.glb","bytes":3924176,"sha256":"eb403561533a708ae203d3d4b668519b7dd4eec6c9adbc4e347613b87de52dd7"},
+    {"path":"belle/vehicles/corleo-maverick.glb","bytes":3851164,"sha256":"eb1e40edbacd44053ae6ede7a53e91c0b0682bb12fc240b97af5aa14b79d0c49"}
+  ]
+}

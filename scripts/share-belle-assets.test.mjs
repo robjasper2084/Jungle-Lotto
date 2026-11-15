@@ -5,3 +5,15 @@ test('changed models or absent runtime resolver fail before removal',async()=>{c
 
 // Included by the existing Pages assembly test command.
 import './share-belle-music.test.mjs';
+
+test('independent immutable vehicle pins share exact bytes without changing original asset URLs',async()=>{const f=await fixture();try{
+ const bytes=Buffer.from('authored vehicle bytes'),commit='b'.repeat(40),base='https://raw.githubusercontent.com/robjasper2084/Jungle-Lotto/'+commit+'/public/';
+ const vehicles={commit,base,files:[{path:'belle/vehicle.glb',bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex')}]};
+ await writeFile(join(f.game,'belle/vehicle.glb'),bytes);await writeFile(join(f.game,'assets/app.js'),JSON.stringify([f.pins.base,base]));
+ const result=await shareBelleAssets('',{game:f.game,pinSets:[f.pins,vehicles]});assert.equal(result.saved,f.bytes.length+bytes.length);assert.deepEqual(result.sources,[f.pins.base,base]);assert.equal(result.source,f.pins.base);await assert.rejects(readFile(join(f.game,'belle/model.glb')));await assert.rejects(readFile(join(f.game,'belle/vehicle.glb')));
+ }finally{await rm(f.game,{recursive:true,force:true});}});
+test('a bad later pin group cannot remove any already-verified artifact models',async()=>{const f=await fixture();try{
+ const commit='b'.repeat(40),base='https://raw.githubusercontent.com/robjasper2084/Jungle-Lotto/'+commit+'/public/',vehicles={commit,base,files:[{path:'belle/vehicle.glb',bytes:f.bytes.length,sha256:f.pins.files[0].sha256}]};
+ await writeFile(join(f.game,'belle/vehicle.glb'),'changed');await writeFile(join(f.game,'assets/app.js'),JSON.stringify([f.pins.base,base]));await assert.rejects(shareBelleAssets('',{game:f.game,pinSets:[f.pins,vehicles]}),/changed/);assert.deepEqual(await readFile(join(f.game,'belle/model.glb')),f.bytes);assert.equal(await readFile(join(f.game,'belle/vehicle.glb'),'utf8'),'changed');
+ await writeFile(join(f.game,'belle/vehicle.glb'),f.bytes);await writeFile(join(f.game,'assets/app.js'),f.pins.base);await assert.rejects(shareBelleAssets('',{game:f.game,pinSets:[f.pins,vehicles]}),/resolver/);assert.deepEqual(await readFile(join(f.game,'belle/model.glb')),f.bytes);
+ }finally{await rm(f.game,{recursive:true,force:true});}});
