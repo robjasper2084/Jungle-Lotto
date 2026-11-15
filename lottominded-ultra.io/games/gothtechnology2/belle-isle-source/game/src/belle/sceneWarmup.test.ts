@@ -24,6 +24,27 @@ test('concurrent mount preparation is shared, stays locked until driver readines
  finish(scene);await first;assert.deepEqual(busy,[true,false]);assert.equal(sun.castShadow,true);
 });
 
+test('a trial warms its active shadow configuration and a later mount prepares the missing variant',async()=>{
+ const {scene,sun,bike,camera}=fixture();
+ const shadowMap={enabled:false} as Pick<import('three').WebGLRenderer,'shadowMap'>['shadowMap'];
+ const states:boolean[][]=[];
+ const warmup=new SceneWarmup({shadowMap,compileAsync:async()=>{
+  states.push([shadowMap.enabled,sun.castShadow]);return scene;
+ }},scene,camera,()=>{},async()=>{});
+ sun.castShadow=false;
+ await warmup.prepare(bike,undefined,'current');
+ await warmup.prepare(bike,undefined,'current');
+ assert.deepEqual(states,[[false,false]]);
+ await warmup.prepare(bike);
+ assert.deepEqual(states,[[false,false],[false,true]]);
+ assert.equal(sun.castShadow,false);
+ assert.equal(bike.visible,false);
+ shadowMap.enabled=true;
+ sun.castShadow=true;
+ await warmup.prepare(bike,undefined,'current');
+ assert.deepEqual(states,[[false,false],[false,true],[true,true]]);
+});
+
 test('failed compilation restores light and visibility state and permits an honest retry',async()=>{
  const {scene,sun,bike,camera}=fixture();sun.castShadow=false;const busy:boolean[]=[];let fail=true,calls=0;
  const warmup=new SceneWarmup({compileAsync:async()=>{calls++;if(fail)throw Error('shader setup failed');return scene;}},scene,camera,v=>busy.push(v),async()=>{});
