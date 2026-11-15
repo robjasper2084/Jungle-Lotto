@@ -8,6 +8,7 @@ import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {gunzipSync} from 'fflate';
 import {CorleoMotion,type CorleoStyle} from './corleoMotion.ts';
 import {inPlaceCorleoClip,disposeCorleoModel} from './corleoAnimation.ts';
+import {applyRealisticMaterials} from './realisticMaterials.ts';
 import type {ParkTerrain} from './terrain.ts';
 
 export const CORLEO_ACTIONS=['MOUNT','RUN','CRAWL','JUMP','DISMOUNT'] as const;
@@ -141,6 +142,12 @@ export class CorleoRide {
    this.root.position.set(p.x,this.terrain.height(p.x,p.z),p.z);
    this.root.rotation.y=p.headingY;
    this.root.traverse(object=>{if(object instanceof T.Mesh){object.castShadow=false;object.receiveShadow=true;}if(object instanceof T.Light)object.visible=false;});
+   // Keep the immutable authored GLB and its optics; own the runtime material clones.
+   const originals=new Set<T.Material>();
+   this.root.traverse(object=>{if(object instanceof T.Mesh)for(const material of Array.isArray(object.material)?object.material:[object.material])originals.add(material);});
+   applyRealisticMaterials(this.root,'CORLEO');
+   this.root.traverse(object=>{if(object instanceof T.Mesh)for(const material of Array.isArray(object.material)?object.material:[object.material])originals.delete(material);});
+   originals.forEach(material=>material.dispose());
    this.scene.add(this.root);
    this.riding=true;document.body.classList.add('corleo-riding');this.mode='mounting';this.hud.hidden=false;this.hooks.entered();
    this.status('Mounting — movement enabled after the sequence');

@@ -1,4 +1,4 @@
-import {wheelAudioTargets,type AudioPreferences,type WheelAudioPose} from './belleAudioPolicy.ts';
+import {wheelAudioTargets,boatAudioTargets,type BoatAudioPose,type AudioPreferences,type WheelAudioPose} from './belleAudioPolicy.ts';
 /** Original Swoop synthesis: sine motor, 1560 Hz warning, filtered metal scrape.
  * Resource count is constant during riding; no effects are allocated per frame. */
 export class BelleWheelAudio {
@@ -42,10 +42,10 @@ export class BelleWheelAudio {
    return false;
   }
  }
- update(p:WheelAudioPose,active:boolean,prefs:AudioPreferences){
+ update(p:WheelAudioPose,active:boolean,prefs:AudioPreferences,boat?:BoatAudioPose){
   const c=this.context;if(!c||!this.ready||this.disposed)return;
-  const t=c.currentTime,v=wheelAudioTargets(p,active,prefs);
-  this.master!.gain.setTargetAtTime(active?1:0,t,.012);
+  const t=c.currentTime,v=boat?boatAudioTargets(boat,true,prefs):wheelAudioTargets(p,active,prefs);
+  this.master!.gain.setTargetAtTime(active||boat?1:0,t,.012);
   this.motor!.frequency.setTargetAtTime(v.motorHz,t,.08);this.motorGain!.gain.setTargetAtTime(v.motorGain,t,.08);
   this.wind!.gain.setTargetAtTime(v.windGain,t,.14);this.windFilter!.frequency.setTargetAtTime(v.windHz,t,.14);
   this.beep!.gain.setTargetAtTime(v.beepGain,t,.004);
