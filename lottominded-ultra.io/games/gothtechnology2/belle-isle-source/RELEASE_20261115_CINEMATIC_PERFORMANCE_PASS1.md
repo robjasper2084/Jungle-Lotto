@@ -20,8 +20,8 @@ No new bloom, grading, particles, physics algorithms or race balancing.
 
 ### 3. Draw-call reduction
 - Consolidate only eligible, opaque, non-animated playground meshes with the same actual material, render state, geometry attribute layout and playground site.
-- Bake world transforms before joining. Keep each playground's visibility culling independent. Preserve shadow/culling settings and all collision/physics logic.
-- Skip transparent, skinned, instanced, morphing, custom-shader and unsupported geometry; keep originals when merging is unavailable.
+- Use Three.js BatchedMesh so every source retains its own world transform and local-space texture coordinates. Keep each playground's visibility culling independent. Preserve shadow/culling settings and all collision/physics logic.
+- Skip transparent, skinned, instanced, morphing, unsupported geometry and unrecognized custom shaders; allow known triplanar surfaces, and keep originals when batching is unavailable.
 - Expose `world.stats.playgrounds.batching` for per-candidate baseline comparison.
 
 ## Acceptance and rollback
