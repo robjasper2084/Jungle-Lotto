@@ -154,7 +154,7 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
  async function prepareApproach<A extends {update:(x:number,z:number)=>void}>(
   stage:T.Group,camera:T.Camera,load:()=>Promise<A>,postMaterials?:(model:A)=>void
  ){
-  const model=await load();applyRealisticMaterials(stage);
+  const model=await load();applyRealisticMaterials(stage);applyPhotoReferenceSurfaces(stage);
   postMaterials?.(model);
   await warmObjectTextures(renderer,stage);
   await renderer.compileAsync(stage,camera,scene);
