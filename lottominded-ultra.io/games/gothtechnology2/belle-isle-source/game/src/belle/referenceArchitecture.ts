@@ -2,7 +2,7 @@ import * as T from 'three';
 import type {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import layout from './referenceArchitecture.json' with {type:'json'};
 export const REFERENCE_BUILDING_IDS=new Set(['107202856','368854142']);
-export const REFERENCE_BUILDING_CENTRES:readonly (readonly [number,number])[]=layout.filter(l=>REFERENCE_BUILDING_IDS.has(l.id)).map(l=>[l.center[0],l.center[1]]);
+export const REFERENCE_BUILDING_CENTRES:readonly (readonly [number,number])[]=layout.filter(l=>REFERENCE_BUILDING_IDS.has(l.id)).map(l=>[l.center[0],l.center[1]] as const);
 export async function addReferenceArchitecture(scene:T.Scene,loader:GLTFLoader){
  const {scene:group}=await loader.loadAsync('./belle/reference-architecture.glb');
  group.updateMatrixWorld(true);
