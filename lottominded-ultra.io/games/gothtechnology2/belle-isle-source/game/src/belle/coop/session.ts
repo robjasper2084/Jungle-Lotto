@@ -82,7 +82,7 @@ export class CoopSession{
    event.preventDefault();event.stopImmediatePropagation();if(!event.repeat&&!this.paused)this.cameraView(event.code==='KeyC'?0:1);return;
   }
   if(!MOVE_KEYS.has(event.code))return;
-  event.preventDefault();event.stopImmediatePropagation();if(!this.paused&&(!event.repeat||this.keys.has(event.code)))this.keys.add(event.code);
+  event.preventDefault();event.stopImmediatePropagation();if(!this.paused&&(!event.repeat||this.keys.has(event.code))){this.keys.add(event.code);if(!event.repeat)for(const reader of this.readers??[])reader.keyDown(event.code);}
  };
  private keyUp=(event:KeyboardEvent)=>{if(!this.active)return;this.keys.delete(event.code);if(MOVE_KEYS.has(event.code)){event.preventDefault();event.stopImmediatePropagation();}};
  private blur=()=>{if(this.active)this.setPaused(true,'Paused because the game lost focus. Release controls before resuming.');};

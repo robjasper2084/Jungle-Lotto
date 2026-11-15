@@ -156,7 +156,7 @@ installHoverPresentation(this.hud);
   zone.onpointermove=move;const end=(e:PointerEvent)=>{if(e.pointerId!==this.stick.id)return;this.releaseStick();if(zone.hasPointerCapture(e.pointerId))zone.releasePointerCapture(e.pointerId);};zone.onpointerup=end;zone.onpointercancel=end;zone.onlostpointercapture=end;
  }
  get riderObject(){return this.authored?.rider??this.hero;}
- get vehicleTelemetry(){return {lights:this.lightOn,brake:this.pressed.has('Space'),energy:this.sim.boostEnergy,...(this.sim instanceof CorleoController?{corleoAction:this.sim.pose.corleoAction,corleoTime:this.sim.pose.corleoTime}:{})};}
+ get vehicleTelemetry(){return {lights:this.lightOn,brake:this.pressed.has('Space'),energy:this.sim.boostEnergy,...(this.sim instanceof CorleoController?{corleoAction:this.sim.pose.corleoAction,corleoTime:this.sim.pose.corleoTime,corleoPhase:this.sim.pose.corleoPhase}:{})};}
  get previewVehicle(){return this.model?.getObjectByName('HoverBikeRoot');}
  async preparePreview(scene:T.Scene){await waitForRideModel(this.load(scene),20000);return this.previewVehicle;}
  captureAudio(){return this.sound.capture();}

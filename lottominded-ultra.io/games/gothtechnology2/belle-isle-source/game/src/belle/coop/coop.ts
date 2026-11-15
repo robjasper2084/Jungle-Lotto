@@ -121,9 +121,14 @@ const analog = (value: number) => !Number.isFinite(value) || Math.abs(value) <= 
 /** Per-player controls. A lost pad NEVER migrates the other pad into its seat. */
 export class CoopInput {
   private armed = false; private padIdentity: string | undefined; private previous = zero();
+  private taps = {hop:false,recover:false,interact:false};
   readonly binding: Binding;
   constructor(binding: Binding) { if (!BINDINGS.includes(binding)) throw new Error('Unknown binding.'); this.binding=binding; }
-  reset() { this.armed=false; this.previous=zero(); this.padIdentity=undefined; }
+  reset() { this.armed=false; this.previous=zero(); this.padIdentity=undefined;this.taps={hop:false,recover:false,interact:false}; }
+  keyDown(code:string){
+    if(!this.armed||(this.binding!=='wasd'&&this.binding!=='arrows'))return;
+    const keys=MAP[this.binding];for(const [i,action]of (['hop','recover','interact'] as const).entries())if(code===keys[i+4]&&!this.previous[action])this.taps[action]=true;
+  }
   read(keys: ReadonlySet<string>, pads: readonly (Pad|null)[], blocked = false): InputFrame {
     if (blocked) { this.reset(); return zero(); }
     let raw = zero();
@@ -144,7 +149,8 @@ export class CoopInput {
       ? MAP[this.binding].every(code=>!keys.has(code)) && !raw.lift && !raw.clutch && !raw.shift
       : Object.values(raw).every(v=>v===0 || v===false);
     if (!this.armed) { if (neutral) this.armed=true; return zero(); }
-    const result={...raw,shift:raw.shift&&raw.shift!==this.previous.shift?raw.shift:0,hop:raw.hop&&!this.previous.hop,recover:raw.recover&&!this.previous.recover,interact:raw.interact&&!this.previous.interact};
+    const result={...raw,shift:raw.shift&&raw.shift!==this.previous.shift?raw.shift:0,hop:this.taps.hop||raw.hop&&!this.previous.hop,recover:this.taps.recover||raw.recover&&!this.previous.recover,interact:this.taps.interact||raw.interact&&!this.previous.interact};
+    this.taps={hop:false,recover:false,interact:false};
     this.previous=raw; return result;
   }
 }

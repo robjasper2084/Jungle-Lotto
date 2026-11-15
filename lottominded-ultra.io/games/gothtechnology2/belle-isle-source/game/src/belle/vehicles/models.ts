@@ -68,13 +68,13 @@ export async function createVehicleModel(choice:AuthoredChoice,signal?:AbortSign
   return {root,rider,choice:{...choice},eye(out){root.updateMatrixWorld(true);return head?head.getWorldPosition(out).add(new T.Vector3(0,.07,0)):out.set(root.position.x,root.position.y+(choice.vehicle==='corleo'?2.1:1.25),root.position.z);},
    firstPerson(value){variants?.setFirstPerson(value);heads.forEach(o=>o.visible=!value);},
    update(p,dt,running,power,energy,lights=true,brake=false){
-    root.userData.corleoAction=p.corleoAction;root.userData.corleoTime=p.corleoTime;
+    root.userData.corleoAction=p.corleoAction;root.userData.corleoTime=p.corleoTime;root.userData.corleoPhase=p.corleoPhase;
     root.position.set(p.x,p.y-(choice.vehicle==='corleo'?.18:0),p.z);root.rotation.set(p.pitch,p.heading,p.roll,'YXZ');
     const delta=running?Math.min(.1,Math.max(0,dt)):0;
     if(cockpit){displayClock+=delta;const context=cockpit.context;if(displayClock<.1)cockpit.context=null;else displayClock%=.1;
      cockpit.update({pitch:-p.pitch*3,roll:p.roll*3,yaw:0,power:Math.max(0,Math.min(1,p.rpm*.75+power*.2)),battery_level:energy,attitude_pitch_deg:p.pitch*180/Math.PI,attitude_roll_deg:p.roll*180/Math.PI,flight_mode:p.rpm>.1?1:0},delta);cockpit.context=context;variants?.update(delta);
     }
-    if(corleoActions)fit?.update(corleoActions.update(p));
+    if(corleoActions)fit?.update(corleoActions.update(p,delta));
     lamps.forEach(({material,intensity})=>material.emissiveIntensity=lights?intensity:0);
     dashboard?.(p,power,lights,brake);
    },dispose};

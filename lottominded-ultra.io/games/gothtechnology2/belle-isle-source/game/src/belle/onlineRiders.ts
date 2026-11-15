@@ -28,7 +28,7 @@ export class OnlineRiders{
    if(choice){
     r.view.root.visible=false;if(r.hover)r.hover.visible=false;
     if(!r.model&&!r.loading&&now>=(r.retryAt??0)){r.loading=true;const remote=r,generation=r.generation;void createVehicleModel(choice).then(async model=>{if(remote.closed||remote.generation!==generation){model.dispose();return;}try{await this.prepare(model.root);}catch(error){model.dispose();throw error;}if(remote.closed||remote.generation!==generation){model.dispose();return;}remote.model=model;remote.loading=false;this.scene.add(model.root);}).catch(error=>{if(remote.closed||remote.generation!==generation)return;remote.loading=false;remote.retryAt=performance.now()+10000;console.error('Remote vehicle failed to load',error);});}
-    if(r.model){r.model.root.visible=true;r.model.update({x:p.x,y:p.y,z:p.z,heading:p.headingY,pitch:p.groundPitch,roll:p.groundRoll,speed:p.speed,lift:0,corleoAction:sample.corleoAction,corleoTime:sample.corleoTime,rpm:choice.vehicle==='jetson'?Math.min(1,Math.max(0,(p.y-this.terrain.height(p.x,p.z))/.8)):0},Math.min(.1,(now-r.last)/1000),true,Math.min(1,Math.abs(p.speed)/21),sample.energy??1,sample.lights??true,sample.brake??false);}r.last=now;continue;
+    if(r.model){r.model.root.visible=true;r.model.update({x:p.x,y:p.y,z:p.z,heading:p.headingY,pitch:p.groundPitch,roll:p.groundRoll,speed:p.speed,lift:0,corleoAction:sample.corleoAction,corleoTime:sample.corleoTime,corleoPhase:sample.corleoPhase,rpm:choice.vehicle==='jetson'?Math.min(1,Math.max(0,(p.y-this.terrain.height(p.x,p.z))/.8)):0},Math.min(.1,(now-r.last)/1000),true,Math.min(1,Math.abs(p.speed)/21),sample.energy??1,sample.lights??true,sample.brake??false);}r.last=now;continue;
    }
    if(sample.mode==='hover'){
     if(!this.hoverAsset&&!this.hoverLoading)this.hoverLoading=new GLTFLoader().loadAsync('./belle/vehicles/hero-hoverbike.glb').then(asset=>{this.hoverAsset=asset;}).catch(()=>{});
@@ -37,6 +37,6 @@ export class OnlineRiders{
    }
    if(distance>140&&now-r.last<100)continue;r.last=now;r.view.apply(p);if(sample.mode==='slide'&&sample.seat>0)applySlideSeat(r.view,p.headingY,sample.seat);
   }
-  if(now-this.lastDiagnostics>250){this.lastDiagnostics=now;const profile=document.getElementById('profile');if(profile)profile.dataset.onlineModels=JSON.stringify([...this.riders].map(([id,r])=>({id,choice:r.model?.choice,visible:r.model?.root.visible??false,position:r.model?.root.position.toArray(),instance:r.model?.root.uuid,corleoAction:r.model?.root.userData.corleoAction,corleoTime:r.model?.root.userData.corleoTime})));}
+  if(now-this.lastDiagnostics>250){this.lastDiagnostics=now;const profile=document.getElementById('profile');if(profile)profile.dataset.onlineModels=JSON.stringify([...this.riders].map(([id,r])=>({id,choice:r.model?.choice,visible:r.model?.root.visible??false,position:r.model?.root.position.toArray(),instance:r.model?.root.uuid,corleoAction:r.model?.root.userData.corleoAction,corleoTime:r.model?.root.userData.corleoTime,corleoPhase:r.model?.root.userData.corleoPhase})));}
  }
 }

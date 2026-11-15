@@ -7,6 +7,12 @@ const ground=(x,z)=>({height:2,land:true,blocked:false});
 const pair=()=>[assignPlayer(0,defaultPair()[0]),assignPlayer(1,defaultPair()[1])];
 const memory=()=>{const data=new Map();return {getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,v),data};};
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
+test('quick keyboard actions survive between render frames without repeating or leaking after pause',()=>{
+ const a=new CoopInput('wasd'),b=new CoopInput('arrows');a.read(new Set(),[]);b.read(new Set(),[]);
+ a.keyDown('Space');b.keyDown('Space');assert.equal(a.read(new Set(),[]).hop,true);assert.equal(b.read(new Set(),[]).hop,false);assert.equal(a.read(new Set(),[]).hop,false);
+ a.keyDown('Space');a.reset();a.read(new Set(),[]);assert.equal(a.read(new Set(),[]).hop,false);
+ b.keyDown('Period');assert.equal(b.read(new Set(),[]).interact,true);assert.equal(b.read(new Set(),[]).interact,false);
+});
 
 test('five heroes, five EUCs, hoverbike and four fitted vehicle choices map to their controllers',()=>{
  assert.equal(RIDERS.length,5);assert.equal(VEHICLES.length,10);

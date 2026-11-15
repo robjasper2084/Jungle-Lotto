@@ -16,6 +16,7 @@ import {createPose} from '../../../runtime/ride-core/src/controller.ts';
 import {createCorleoActions} from './corleoActions.ts';
 import {inPlaceCorleoClip} from '../corleoAnimation.ts';
 import {CORLEO_TRANSITION_SECONDS} from './corleoState.ts';
+import {HORSE_LEGS,horseStride,horseGait,horseCadence} from './corleoHorseGait.ts';
 import type {ParkTerrain} from '../terrain.ts';
 const neutral={throttle:0,steer:0,lift:0,boost:false,brake:false};
 const flat={map:{water:[]},height:()=>0,land:(_x:number,z:number)=>z<20,obstructed:()=>false,bridge:()=>({active:false}),raycastFlight:()=>null,raycastObstacle:()=>null,raycast:()=>null,sampleGround:(_x:number,_z:number,out:any)=>Object.assign(out,{height:0,normal:{x:0,y:1,z:0},surface:'asphalt'}),navigationObstacles:()=>[]} as unknown as ParkTerrain;
@@ -63,13 +64,30 @@ test('all action clips animate the fitted shared CORLEO without missing targets 
   const source=await parse(`public/belle/vehicles/corleo-${pilot}.glb`),model=clone(source.scene),bind=new T.AnimationMixer(model);bind.clipAction(corleoGaitClips(source.animations[0]).idle).play();bind.update(0);const fit=fitCorleoRider(model);bind.stopAllAction();bind.uncacheRoot(model);
   const clips:any={};for(const action of ['MOUNT','RUN','CRAWL','JUMP','DISMOUNT']){const asset=await parse(`public/belle/vehicles/corleo/CORLEO_${pilot==='professional'?'Professional':'Maverick'}_${action}.glb`);clips[action]=inPlaceCorleoClip(asset.animations[0],action==='JUMP');}
   const animator=createCorleoActions(model,source.animations[0],clips),mount=model.getObjectByName('CR_RiderMount')!,scale=mount.scale.clone();
-  for(const action of ['IDLE','WALK','RUN','CRAWL','JUMP','MOUNT','DISMOUNT'] as const){for(let frame=0;frame<30;frame++){
-   const pose={x:0,y:.18,z:0,heading:0,speed:action==='CRAWL'?.36:2,pitch:0,roll:0,lift:0,rpm:0,corleoAction:action,corleoTime:frame/30*(action==='MOUNT'||action==='DISMOUNT'?12:.6)};
+  for(const action of ['IDLE','WALK','TROT','RUN','CRAWL','JUMP','MOUNT','DISMOUNT'] as const){for(let frame=0;frame<30;frame++){
+   const pose={x:0,y:.18,z:0,heading:0,speed:action==='CRAWL'?.36:2,pitch:0,roll:0,lift:0,rpm:0,corleoAction:action,corleoPhase:frame/30,corleoTime:frame/30*(action==='MOUNT'||action==='DISMOUNT'?12:.6)};
    const contact=animator.update(pose);fit.update(contact);assert.deepEqual(mount.scale,scale);model.traverse(o=>assert(o.position.toArray().every(Number.isFinite)));
    if(contact)for(const c of fit.contacts)assert(c.chain.foot.getWorldPosition(new T.Vector3()).distanceTo(c.target)<.02,`${pilot} ${action} fitted contact`);
    else for(const c of fit.contacts.filter(c=>c.socket.name.includes('Stirrup')))assert(c.chain.foot.getWorldPosition(new T.Vector3()).y>=.077,`${pilot} ${action} frame ${frame}: boot stays above road`);
+   if(['IDLE','WALK','TROT','RUN'].includes(action))for(const leg of HORSE_LEGS)assert(model.getObjectByName('CR_'+leg+'_Foot')!.getWorldPosition(new T.Vector3()).y>=.09,`${pilot} ${action}: hoof penetrated road`);
   }}animator.mixer.stopAllAction();animator.mixer.uncacheRoot(model);
  }
+});
+test('horse locomotion has distinct walk footfalls, diagonal trot and gallop suspension',()=>{
+ assert.equal(horseGait(0),'IDLE');assert.equal(horseGait(1),'WALK');assert.equal(horseGait(4),'TROT');assert.equal(horseGait(9),'RUN');
+ let trotAir=false,gallopAir=false,distinctGallop=false;
+ for(let i=0;i<200;i++){
+  const walk=horseStride('WALK',i/200).feet,trot=horseStride('TROT',i/200).feet,run=horseStride('RUN',i/200).feet;
+  assert(walk.filter(f=>f.stance).length>=2,'walk always supported');
+  assert.equal(trot[0].stance,trot[3].stance);assert.equal(trot[1].stance,trot[2].stance);
+  trotAir||=trot.every(f=>!f.stance);gallopAir||=run.every(f=>!f.stance);distinctGallop||=run[0].stance!==run[3].stance;
+  for(const f of [...walk,...trot,...run])assert(f.y>=.15&&Number.isFinite(f.z));
+ }
+ assert(trotAir&&gallopAir&&distinctGallop);assert.equal(horseCadence(0,'WALK'),0);assert(horseCadence(71.5,'RUN')<=3.1);
+ const c=new CorleoController({...flat,land:()=>true} as unknown as ParkTerrain,{x:0,z:0,heading:0});run(c,1,{...neutral,throttle:1});const phase=c.pose.corleoPhase;assert(phase!>0&&phase!<1);c.advance(0,neutral);assert.equal(c.pose.corleoPhase,phase);
+ const frame={seq:1,pose:createPose(),mode:'hover',seat:0,active:true,vehicle:'corleo',pilot:'professional',corleoAction:'TROT',corleoTime:.5,corleoPhase:.9};assert.deepEqual(explorerFrame(frame),frame);
+ for(const bad of [-1,1,NaN,Infinity])assert.equal(explorerFrame({...frame,corleoPhase:bad}),undefined);
+ const buffer=new ExplorerBuffer();buffer.push({...frame,corleoPhase:.95},100);buffer.push({...frame,seq:2,corleoPhase:.05},200);const wrapped=buffer.sample(280)!.corleoPhase!;assert(Math.min(wrapped,1-wrapped)<1e-8,'stride interpolates through cycle boundary instead of backwards');
 });
 test('CORLEO rejects water and other-player collisions with its full footprint',()=>{
  const c=new CorleoController(flat,{x:0,z:17,heading:0});run(c,8,{...neutral,throttle:1});assert(c.pose.z<20);assert(c.pose.y>=.15);

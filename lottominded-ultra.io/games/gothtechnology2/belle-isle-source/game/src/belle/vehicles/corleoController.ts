@@ -3,6 +3,7 @@ import {CorleoMotion} from '../corleoMotion.ts';
 import type {ParkTerrain} from '../terrain.ts';
 import {CORLEO_RADIUS,CORLEO_SCALE} from './corleoFit.ts';
 import {CORLEO_TRANSITION_SECONDS,type CorleoAction} from './corleoState.ts';
+import {horseGait,horseCadence} from './corleoHorseGait.ts';
 /** One grounded controller for solo, online presentation and every co-op seat. */
 export class CorleoController extends HoverController{
  readonly motion:CorleoMotion;
@@ -28,7 +29,7 @@ export class CorleoController extends HoverController{
  override toggleCruise(){return false;}
  override stop(){super.stop();if(this.motion){this.motion.pose.speed=0;this.landed=this.motion.pose.airMetres<.01;}this.jumpQueued=false;}
  override reset(x=this.safe.x,z=this.safe.z,heading=this.safe.heading){
-  super.reset(x,z,heading);this.motion?.reset({x,y:this.terrain.height(x,z),z,heading});this.transition=null;this.transitionTime=0;this.exitReady=false;this.crawl=false;this.action('IDLE',0);
+  super.reset(x,z,heading);this.motion?.reset({x,y:this.terrain.height(x,z),z,heading});this.transition=null;this.transitionTime=0;this.exitReady=false;this.crawl=false;this.pose.corleoPhase=0;this.action('IDLE',0);
  }
  private action(action:CorleoAction,seconds:number){if(this.pose.corleoAction!==action)this.pose.corleoTime=0;this.pose.corleoAction=action;this.pose.corleoTime=Math.min(60,(this.pose.corleoTime??0)+seconds);}
  override advance(seconds:number,input:HoverInput){
@@ -58,7 +59,8 @@ export class CorleoController extends HoverController{
   const p=this.motion.pose;
   Object.assign(this.pose,{x:p.x,y:p.y+.18,z:p.z,heading:p.heading,speed:p.speed,pitch:0,roll:0,lift:p.verticalSpeed,rpm:0});
   this.flying=false;this.landed=p.airMetres<.01&&Math.abs(p.speed)<.1;this.clearance=.18+p.airMetres;this.boostActive=input.boost&&!crawl&&Math.abs(p.speed)>.1;this.throttleDemand=Math.max(0,demand);this.hazard=this.collision;this.impactSpeed=this.collision?Math.abs(beforeSpeed):0;
-  const action:CorleoAction=p.airMetres>0?'JUMP':crawl?'CRAWL':Math.abs(p.speed)<.045?'IDLE':input.boost?'RUN':'WALK';
+  const gait=horseGait(p.speed),action:CorleoAction=p.airMetres>0?'JUMP':crawl?'CRAWL':gait;
+  if(!crawl&&p.airMetres===0)this.pose.corleoPhase=((this.pose.corleoPhase??0)+horseCadence(p.speed,gait)*dt)%1;
   if(this.pose.corleoAction===action&&(this.pose.corleoTime??0)>30)this.pose.corleoTime=0;
   this.action(action,dt);
   if(!this.collision&&p.airMetres===0)this.safe={x:p.x,z:p.z,heading:p.heading};return this.pose;
