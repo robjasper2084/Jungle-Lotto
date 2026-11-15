@@ -15,6 +15,7 @@ import {IslandTrials} from './islandTrials.ts';
 import type {TrialPose} from './trialRules.ts';
 import {IslandActivities} from './islandActivities.ts';
 import {FrameBudget,sceneFrameCap} from './frameBudget.ts';
+import {readAntiAliasingMode,enableHardwareAntialiasing} from './antiAliasingPolicy.ts';
 import {prepareCoastGuardMap} from './coastGuard.ts';
 import coastGuardLayout from './coastGuardLayout.json' with {type:'json'};
 import {Fishing} from './fishing.ts';
@@ -92,9 +93,28 @@ const zone=el('touch-zone'),touch=el<HTMLInputElement>('touch');
 hud=createMobileHud({blocked:inputCaptureBlocked,movementBlocked:()=>!!photo?.active||!!hover?.riding||!!slide?.active,clear,move:(x,y)=>{steer=x;throttle=y;},look:(x,y)=>{cameraYaw-=x*.003;cameraPitch=Math.max(-1.25,Math.min(1.1,cameraPitch+y*.002));},hop:()=>{if(!blocked())hop=true;}});
 const release=()=>hud?.clear();
 el<HTMLInputElement>('motion').checked=reduced;el<HTMLInputElement>('motion').onchange=e=>reduced=(e.target as HTMLInputElement).checked;
-const graphics=el<HTMLSelectElement>('quality'),frameLimit=el<HTMLSelectElement>('fps');
-graphics.value='high';try{const saved=JSON.parse(localStorage.getItem('belle-graphics-v1')||'null');if(saved&&['automatic','smooth','high'].includes(saved.quality))graphics.value=saved.quality;if(saved&&(saved.cap===30||saved.cap===60)){cap=saved.cap;frameLimit.value=String(cap);}}catch{/* Keep the default settings when storage is unavailable. */}
-const saveGraphics=()=>{try{localStorage.setItem('belle-graphics-v1',JSON.stringify({quality:graphics.value,cap}));}catch{/* The current session still uses the selected graphics. */}};
+const graphics=el<HTMLSelectElement>('quality'),frameLimit=el<HTMLSelectElement>('fps'),aaSelect=el<HTMLSelectElement>('anti-aliasing');
+graphics.value='high';aaSelect.value='automatic';try{const saved=JSON.parse(localStorage.getItem('belle-graphics-v1')||'null');if(saved&&['automatic','smooth','high'].includes(saved.quality))graphics.value=saved.quality;if(saved&&(saved.cap===30||saved.cap===60)){cap=saved.cap;frameLimit.value=String(cap);}aaSelect.value=readAntiAliasingMode(saved?.antiAliasing);}catch{/* Keep the default settings when storage is unavailable. */}
+let appliedAaMode=readAntiAliasingMode(aaSelect.value);
+const aaDevice={coarsePointer:matchMedia('(pointer:coarse)').matches,deviceMemoryGB:(navigator as Navigator&{deviceMemory?:number}).deviceMemory,logicalCores:navigator.hardwareConcurrency};
+const requestedMsaa=enableHardwareAntialiasing(appliedAaMode,aaDevice);
+let actualMsaa:boolean|undefined;
+const aaStatus=el<HTMLElement>('aa-status'),aaApply=el<HTMLButtonElement>('aa-apply');
+const saveGraphics=()=>{try{localStorage.setItem('belle-graphics-v1',JSON.stringify({quality:graphics.value,cap,antiAliasing:appliedAaMode}));}catch{/* The current session still uses the selected graphics. */}};
+const syncAaStatus=()=>{
+ const selected=readAntiAliasingMode(aaSelect.value),pending=selected!==appliedAaMode,active=actualMsaa??requestedMsaa;
+ aaApply.hidden=!pending;
+ const fallback=requestedMsaa&&!active?' (not supported by this browser/GPU)':'';
+ aaStatus.textContent=(active?'Hardware edge smoothing on':'Hardware edge smoothing off')+fallback+'. '+(pending?'Apply the selection'+(enableHardwareAntialiasing(selected,aaDevice)!==requestedMsaa?' to reload the scene.':'.'):(appliedAaMode==='automatic'?'Auto limits GPU work on touch or low-power devices.':'Setting saved.'));
+};
+aaSelect.onchange=syncAaStatus;
+aaApply.onclick=()=>{
+ const selected=readAntiAliasingMode(aaSelect.value),reload=enableHardwareAntialiasing(selected,aaDevice)!==requestedMsaa;
+ appliedAaMode=selected;saveGraphics();
+ if(reload){location.reload();return;}
+ syncAaStatus();
+};
+syncAaStatus();
 graphics.onchange=saveGraphics;
 frameLimit.onchange=()=>{cap=Number(frameLimit.value);saveGraphics();};
 const opacity=el<HTMLInputElement>('opacity');
@@ -105,7 +125,7 @@ let savedMapChoice:string|null=null;try{savedMapChoice=localStorage.getItem('bel
 let mapCollapsed=initiallyCollapsedMap(savedMapChoice,touch.checked,innerWidth);
 const syncMap=()=>{el('minimap').hidden=mapCollapsed;el('navigation').classList.toggle('is-collapsed',mapCollapsed);el('minimap-hide').textContent=mapCollapsed?'Show map':'Hide map';el('minimap-hide').setAttribute('aria-expanded',String(!mapCollapsed));};
 el('minimap-hide').onclick=()=>{mapCollapsed=!mapCollapsed;syncMap();try{localStorage.setItem('belle-map-collapsed',String(mapCollapsed));}catch{}};syncMap();
-async function boot(){const response=await fetch('./belle/map.json');if(!response.ok)throw Error('Map unavailable');const data=await response.json() as ParkMap;alignScottMap(data);prepareCoastGuardMap(data);if(SUNSET_REFERENCE)data.spawn=referenceSpawn(data);const beachPlace=createBeachLocator(data.areas);for(const p of activityLandmarks())if(!data.landmarks.some(l=>l.id===p.id))data.landmarks.push(p);for(const p of playgroundLandmarks)if(!data.landmarks.some(l=>l.id===p.id))data.landmarks.push(p);status('Preparing terrain and canal crossings');await yieldStartupTask();const terrain=new ParkTerrain(data);await yieldStartupTask();const natureAudio=new NatureAudio(fountains(data),text=>el('nature-audio-status').textContent=text,[data.island,...data.water.map(w=>w.points)]);const natureToggle=el<HTMLInputElement>('nature-sound'),natureVolume=el<HTMLInputElement>('nature-volume'),birdVolume=el<HTMLInputElement>('bird-volume');natureToggle.checked=natureAudio.enabled;natureVolume.value=String(natureAudio.volume);birdVolume.value=String(natureAudio.birdVolume);const audioSettings=()=>natureAudio.configure(natureToggle.checked,Number(natureVolume.value),Number(birdVolume.value));natureToggle.onchange=audioSettings;natureVolume.oninput=audioSettings;birdVolume.oninput=audioSettings;el('nature-preview').onclick=()=>natureAudio.preview();const scene=new T.Scene(),camera=new T.PerspectiveCamera(60,innerWidth/innerHeight,.08,22000);const renderer=new T.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.25));renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.85;renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;
+async function boot(){const response=await fetch('./belle/map.json');if(!response.ok)throw Error('Map unavailable');const data=await response.json() as ParkMap;alignScottMap(data);prepareCoastGuardMap(data);if(SUNSET_REFERENCE)data.spawn=referenceSpawn(data);const beachPlace=createBeachLocator(data.areas);for(const p of activityLandmarks())if(!data.landmarks.some(l=>l.id===p.id))data.landmarks.push(p);for(const p of playgroundLandmarks)if(!data.landmarks.some(l=>l.id===p.id))data.landmarks.push(p);status('Preparing terrain and canal crossings');await yieldStartupTask();const terrain=new ParkTerrain(data);await yieldStartupTask();const natureAudio=new NatureAudio(fountains(data),text=>el('nature-audio-status').textContent=text,[data.island,...data.water.map(w=>w.points)]);const natureToggle=el<HTMLInputElement>('nature-sound'),natureVolume=el<HTMLInputElement>('nature-volume'),birdVolume=el<HTMLInputElement>('bird-volume');natureToggle.checked=natureAudio.enabled;natureVolume.value=String(natureAudio.volume);birdVolume.value=String(natureAudio.birdVolume);const audioSettings=()=>natureAudio.configure(natureToggle.checked,Number(natureVolume.value),Number(birdVolume.value));natureToggle.onchange=audioSettings;natureVolume.oninput=audioSettings;birdVolume.oninput=audioSettings;el('nature-preview').onclick=()=>natureAudio.preview();const scene=new T.Scene(),camera=new T.PerspectiveCamera(60,innerWidth/innerHeight,.08,22000);const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreference:'high-performance'});actualMsaa=!!renderer.getContext().getContextAttributes()?.antialias;syncAaStatus();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.25));renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.85;renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;
  const core=new RideCore(terrain,{spawn:{position:{x:data.spawn.x,y:2,z:data.spawn.z},headingY:data.spawn.heading}});clearSimulationInput=()=>core.clearPendingActions();const loader=new GLTFLoader();const world=await createWorld(scene,renderer,data,terrain,status);world.sky.preview(!SUNSET_REFERENCE);const refreshSkySettings=connectSkySettings(world.sky);const sunsetPreview=SUNSET_REFERENCE?createSunsetPreview(camera,()=>hover,()=>active&&!trials?.active&&!race?.active&&!coop?.active&&!photo?.active,()=>{clear();cameraYaw=0;cameraPitch=.1;snap=true;},data.spawn,data):undefined;status('Preparing your rider');const rider=await loader.loadAsync('./exports/rigged-heroes/DS_Armored_Rider_01.glb'),wheel=await loader.loadAsync('./exports/glb/DS_EUC_01/DS_EUC_01_LOD1.glb');const hero=new ThreeRiderView(rider,wheel,terrain,{...HUMAN_PROFILE,id:'DS_Armored_Rider_01'});scene.add(hero.root);applyRealisticMaterials(hero.root,'actor');if(REFERENCE_STYLE){animeRider(hero.rider);glowVehicle(hero.vehicle,'wheel');}hero.apply(core.current);
  const remoteRiders=new OnlineRiders(scene,terrain,rider,wheel,async model=>{await warmObjectTextures(renderer,model);await renderer.compileAsync(model,camera,scene);});
  let savedSoloSky:typeof world.sky.settings|undefined;
