@@ -1,9 +1,10 @@
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import * as T from 'three';
 import layout from './waterfrontLayout.json';
+import {loadStartupModel} from './startupAssets.ts';
 import type {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 export async function addWaterfront(scene:T.Scene,loader:GLTFLoader){
- const [asset,lights]=await Promise.all([loader.loadAsync('./belle/waterfront-detail.glb'),fetch('./belle/waterfront-lamps.json').then(r=>{if(!r.ok)throw Error('Waterfront lighting missing');return r.json();})]);
+ const [asset,lights]=await Promise.all([loadStartupModel(loader,'./belle/waterfront-detail.glb'),fetch('./belle/waterfront-lamps.json').then(r=>{if(!r.ok)throw Error('Waterfront lighting missing');return r.json();})]);
  const clubRails:T.Object3D[]=[];asset.scene.traverse(o=>{if(/Waterfront_1071929(34|40).*enamel/.test(o.name))clubRails.push(o);});for(const o of clubRails)o.removeFromParent();
  // The real club approach bridges have pale masonry balustrades.
  const railMaterial=new T.MeshStandardMaterial({name:'Boat Club bridge ivory balustrade',color:0xd2cfc2,roughness:.86});
