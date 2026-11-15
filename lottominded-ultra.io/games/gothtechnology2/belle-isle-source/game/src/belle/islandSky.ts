@@ -1,5 +1,6 @@
 import {VolumetricSky,skyRadiance} from './volumetricSky.ts';
 import {dressDetroitSkyline} from './skylineMaterials.ts';
+import {boundedSkyProbe} from './skyProbe.ts';
 
 import * as T from 'three';
 import {yieldStartupTask} from './startupWork.ts';
@@ -127,7 +128,12 @@ export async function createIslandSky(scene:T.Scene,renderer:T.WebGLRenderer,sta
 
  const hemi=new T.HemisphereLight(0xd5e8f8,0x63513a,1.3),key=new T.DirectionalLight(0xffdfb0,2.1);key.castShadow=true;key.shadow.mapSize.set(2048,2048);Object.assign(key.shadow.camera,{left:-55,right:55,top:55,bottom:-55,near:.1,far:450});key.shadow.bias=-.0003;key.shadow.normalBias=.035;scene.add(hemi,key,key.target);scene.fog=new T.FogExp2(0xb8c4c9,.00007);
  // The initial HDR remains a fallback; bounded sky-only probes follow live weather.
- try{status('Preparing sky reflections');const hdr=await new HDRLoader().setDataType(T.HalfFloatType).loadAsync('./belle/environment/kloppenheim-06-2k.hdr');hdr.mapping=T.EquirectangularReflectionMapping;const generator=new T.PMREMGenerator(renderer),probe=generator.fromEquirectangular(hdr);scene.environment=probe.texture;generator.dispose();hdr.dispose();}catch(e){console.warn('Sky reflection probe unavailable',e);}
+ try{
+  status('Preparing sky reflections');const hdr=await new HDRLoader().setDataType(T.HalfFloatType).loadAsync('./belle/environment/kloppenheim-06-2k.hdr');
+  let bounded:T.DataTexture|undefined,generator:T.PMREMGenerator|undefined;
+  try{bounded=boundedSkyProbe(hdr);generator=new T.PMREMGenerator(renderer);scene.environment=generator.fromEquirectangular(bounded).texture;}
+  finally{generator?.dispose();bounded?.dispose();hdr.dispose();}
+ }catch(e){console.warn('Sky reflection probe unavailable',e);}
  const broader=new BroaderPresentation(scene,renderer,sky.material,uniforms.cloudNoise.value);
  const volume=new VolumetricSky(renderer,scene);let tracedSelected=true;
  try{tracedSelected=localStorage.getItem('belle-sky-renderer')!=='layered';}catch{}
