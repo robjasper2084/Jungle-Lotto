@@ -1,9 +1,9 @@
 import * as T from 'three';
-import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 
-/** Static, opaque playground pieces only; do not alter collision or animations.
- * Group by actual material identity AND site so distant playgrounds still cull.
- * All geometry is baked in world space before the original meshes are detached.
+/** Batch only fixed opaque playground meshes with identical material/render state.
+ * BatchedMesh retains each source's local vertices and a separate world matrix:
+ * the triplanar surface shaders must NOT be baked into world-space geometry.
+ * Sites stay independent to retain their original per-playground distance culling.
  */
 export function batchPlaygroundMeshes(scene:T.Scene,sites:readonly {objects:T.Mesh[]}[]){
  const sourceMeshes=sites.reduce((sum,site)=>sum+site.objects.length,0);
@@ -14,11 +14,11 @@ export function batchPlaygroundMeshes(scene:T.Scene,sites:readonly {objects:T.Me
    mesh.updateWorldMatrix(true,false);
    const m=mesh.material,g=mesh.geometry;
    if(!(m instanceof T.MeshStandardMaterial)||m.transparent||m.opacity!==1||m.alphaTest>0||
-      m.onBeforeCompile!==T.Material.prototype.onBeforeCompile||!mesh.parent||
-      mesh.children.length||!(mesh as T.SkinnedMesh).isSkinnedMesh||
-      (mesh as T.InstancedMesh).isInstancedMesh||Object.values(g.morphAttributes).some(a=>a.length)||
-      g.groups.length>1||!g.attributes.position||!g.attributes.normal||
-      mesh.matrixWorld.determinant()<=0)continue;
+      (!m.userData.realisticSurface&&m.onBeforeCompile!==T.Material.prototype.onBeforeCompile)||
+      !mesh.parent||mesh.children.length||(mesh as T.SkinnedMesh).isSkinnedMesh||
+      (mesh as T.InstancedMesh).isInstancedMesh||(mesh as T.BatchedMesh).isBatchedMesh||
+      Object.values(g.morphAttributes).some(a=>a.length)||g.groups.length>1||
+      !g.attributes.position||!g.attributes.normal||mesh.matrixWorld.determinant()<=0)continue;
    const attributes=Object.entries(g.attributes).sort(([a],[b])=>a.localeCompare(b))
      .map(([name,a])=>[name,a.itemSize,a.normalized,a.array.constructor.name]);
    const key=[m.uuid,mesh.castShadow,mesh.receiveShadow,mesh.renderOrder,mesh.layers.mask,
@@ -29,18 +29,30 @@ export function batchPlaygroundMeshes(scene:T.Scene,sites:readonly {objects:T.Me
   const replacements=new Map<T.Mesh,T.Mesh>();
   for(const sources of candidates.values()){
    if(sources.length<2)continue;
-   const geometries=sources.map(mesh=>mesh.geometry.clone().applyMatrix4(mesh.matrixWorld));
-   let merged:T.BufferGeometry|null=null;
-   try{merged=mergeGeometries(geometries,false);}
-   finally{for(const geometry of geometries)geometry.dispose();}
-   if(!merged)continue;
-   merged.computeBoundingSphere();merged.computeBoundingBox();
-   const first=sources[0],joined=new T.Mesh(merged,first.material);
-   joined.name='Belle Isle static playground batch';
-   joined.castShadow=first.castShadow;joined.receiveShadow=first.receiveShadow;
-   joined.renderOrder=first.renderOrder;joined.layers.mask=first.layers.mask;
-   scene.add(joined);
-   for(const mesh of sources){replacements.set(mesh,joined);mesh.removeFromParent();}
+   const first=sources[0],materials=first.material as T.MeshStandardMaterial;
+   const geometries=[...new Set(sources.map(mesh=>mesh.geometry))];
+   const vertices=geometries.reduce((n,g)=>n+g.attributes.position.count,0);
+   const indices=geometries.reduce((n,g)=>n+(g.index?.count??0),0);
+   let batch:T.BatchedMesh|undefined;
+   try{
+    batch=new T.BatchedMesh(sources.length,vertices,indices,materials);
+    const ids=new Map<T.BufferGeometry,number>();
+    for(const g of geometries)ids.set(g,batch.addGeometry(g));
+    for(const source of sources){
+     const id=batch.addInstance(ids.get(source.geometry)!);
+     batch.setMatrixAt(id,source.matrixWorld);
+    }
+    batch.name='Belle Isle static playground batch';
+    batch.castShadow=first.castShadow;batch.receiveShadow=first.receiveShadow;
+    batch.renderOrder=first.renderOrder;batch.layers.mask=first.layers.mask;
+    batch.perObjectFrustumCulled=true;batch.sortObjects=false;
+    batch.computeBoundingBox();batch.computeBoundingSphere();
+    scene.add(batch);
+   }catch(error){
+    batch?.dispose();console.warn('Playground batch unavailable; using original meshes.',error);
+    continue;
+   }
+   for(const mesh of sources){replacements.set(mesh,batch);mesh.removeFromParent();}
    batches++;joinedSources+=sources.length;
   }
   if(replacements.size){
