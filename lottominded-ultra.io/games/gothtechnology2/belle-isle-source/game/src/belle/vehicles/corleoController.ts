@@ -3,7 +3,7 @@ import {CorleoMotion} from '../corleoMotion.ts';
 import type {ParkTerrain} from '../terrain.ts';
 import {CORLEO_RADIUS,CORLEO_SCALE} from './corleoFit.ts';
 import {CORLEO_TRANSITION_SECONDS,type CorleoAction} from './corleoState.ts';
-import {horseGait,horseCadence} from './corleoHorseGait.ts';
+import {corleoGaitForSpeed,corleoCadence} from './corleoGait.ts';
 /** One grounded controller for solo, online presentation and every co-op seat. */
 export class CorleoController extends HoverController{
  readonly motion:CorleoMotion;
@@ -59,8 +59,8 @@ export class CorleoController extends HoverController{
   const p=this.motion.pose;
   Object.assign(this.pose,{x:p.x,y:p.y+.18,z:p.z,heading:p.heading,speed:p.speed,pitch:0,roll:0,lift:p.verticalSpeed,rpm:0});
   this.flying=false;this.landed=p.airMetres<.01&&Math.abs(p.speed)<.1;this.clearance=.18+p.airMetres;this.boostActive=input.boost&&!crawl&&Math.abs(p.speed)>.1;this.throttleDemand=Math.max(0,demand);this.hazard=this.collision;this.impactSpeed=this.collision?Math.abs(beforeSpeed):0;
-  const gait=horseGait(p.speed),action:CorleoAction=p.airMetres>0?'JUMP':crawl?'CRAWL':gait;
-  if(!crawl&&p.airMetres===0)this.pose.corleoPhase=((this.pose.corleoPhase??0)+horseCadence(p.speed,gait)*dt)%1;
+  const gait=corleoGaitForSpeed(p.speed),action:CorleoAction=p.airMetres>0?'JUMP':crawl?'CRAWL':gait;
+  if(!crawl&&p.airMetres===0)this.pose.corleoPhase=((this.pose.corleoPhase??0)+corleoCadence(p.speed,gait)*dt)%1;
   if(this.pose.corleoAction===action&&(this.pose.corleoTime??0)>30)this.pose.corleoTime=0;
   this.action(action,dt);
   if(!this.collision&&p.airMetres===0)this.safe={x:p.x,z:p.z,heading:p.heading};return this.pose;

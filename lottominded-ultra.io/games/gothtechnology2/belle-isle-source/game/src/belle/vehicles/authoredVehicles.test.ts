@@ -16,7 +16,7 @@ import {createPose} from '../../../runtime/ride-core/src/controller.ts';
 import {createCorleoActions} from './corleoActions.ts';
 import {inPlaceCorleoClip} from '../corleoAnimation.ts';
 import {CORLEO_TRANSITION_SECONDS} from './corleoState.ts';
-import {HORSE_LEGS,HORSE_GAITS,horseStride,horseGait,horseCadence} from './corleoHorseGait.ts';
+import {CORLEO_LEGS,CORLEO_GAITS,sampleCorleoStride,corleoGaitForSpeed,corleoCadence} from './corleoGait.ts';
 import type {ParkTerrain} from '../terrain.ts';
 const neutral={throttle:0,steer:0,lift:0,boost:false,brake:false};
 const flat={map:{water:[]},height:()=>0,land:(_x:number,z:number)=>z<20,obstructed:()=>false,bridge:()=>({active:false}),raycastFlight:()=>null,raycastObstacle:()=>null,raycast:()=>null,sampleGround:(_x:number,_z:number,out:any)=>Object.assign(out,{height:0,normal:{x:0,y:1,z:0},surface:'asphalt'}),navigationObstacles:()=>[]} as unknown as ParkTerrain;
@@ -69,26 +69,30 @@ test('all action clips animate the fitted shared CORLEO without missing targets 
    const contact=animator.update(pose);fit.update(contact);assert.deepEqual(mount.scale,scale);model.traverse(o=>assert(o.position.toArray().every(Number.isFinite)));
    if(contact)for(const c of fit.contacts)assert(c.chain.foot.getWorldPosition(new T.Vector3()).distanceTo(c.target)<.02,`${pilot} ${action} fitted contact`);
    else for(const c of fit.contacts.filter(c=>c.socket.name.includes('Stirrup')))assert(c.chain.foot.getWorldPosition(new T.Vector3()).y>=.077,`${pilot} ${action} frame ${frame}: boot stays above road`);
-   if(['IDLE','WALK','TROT','RUN'].includes(action))for(const leg of HORSE_LEGS)assert(model.getObjectByName('CR_'+leg+'_Foot')!.getWorldPosition(new T.Vector3()).y>=.09,`${pilot} ${action}: hoof penetrated road`);
+   if(['IDLE','WALK','TROT','RUN'].includes(action))for(const leg of CORLEO_LEGS)assert(model.getObjectByName('CR_'+leg+'_Foot')!.getWorldPosition(new T.Vector3()).y>=.09,`${pilot} ${action}: hoof penetrated road`);
   }}animator.mixer.stopAllAction();animator.mixer.uncacheRoot(model);
  }
 });
-test('horse walk and trot transition to a cheetah sprint with two distinct flight phases',()=>{
- assert.equal(horseGait(0),'IDLE');assert.equal(horseGait(1),'WALK');assert.equal(horseGait(4),'TROT');assert.equal(horseGait(9),'RUN');
+test('cheetah walk and trot transition to a rotary sprint with two distinct flight phases',()=>{
+ assert.equal(corleoGaitForSpeed(0),'IDLE');assert.equal(corleoGaitForSpeed(1),'WALK');assert.equal(corleoGaitForSpeed(4),'TROT');assert.equal(corleoGaitForSpeed(9),'RUN');
  let trotAir=false,gallopAir=false,distinctGallop=false;
  for(let i=0;i<200;i++){
-  const walk=horseStride('WALK',i/200).feet,trot=horseStride('TROT',i/200).feet,run=horseStride('RUN',i/200).feet;
+  const walk=sampleCorleoStride('WALK',i/200).feet,trot=sampleCorleoStride('TROT',i/200).feet,run=sampleCorleoStride('RUN',i/200).feet;
   assert(walk.filter(f=>f.stance).length>=2,'walk always supported');
   assert.equal(trot[0].stance,trot[3].stance);assert.equal(trot[1].stance,trot[2].stance);
   trotAir||=trot.every(f=>!f.stance);gallopAir||=run.every(f=>!f.stance);distinctGallop||=run[0].stance!==run[3].stance;
   for(const f of [...walk,...trot,...run])assert(f.y>=.15&&Number.isFinite(f.z));
  }
- assert(trotAir&&gallopAir&&distinctGallop);assert.equal(horseCadence(0,'WALK'),0);assert(horseCadence(71.5,'RUN')<=3.1);
- const gathered=horseStride('RUN',.38),extended=horseStride('RUN',.88);
+ assert(trotAir&&gallopAir&&distinctGallop);assert.equal(corleoCadence(0,'WALK'),0);assert(corleoCadence(71.5,'RUN')<=3.1);
+ const walking=Array.from({length:100},(_,i)=>sampleCorleoStride('WALK',i/100)),trotting=Array.from({length:100},(_,i)=>sampleCorleoStride('TROT',i/100));
+ assert(Math.max(...walking.flatMap(p=>p.feet.map(f=>f.y)))<.30,'low foot recovery at a walk');
+ assert(Math.max(...trotting.map(p=>p.height))-Math.min(...trotting.map(p=>p.height))<.05,'trot keeps the chassis steady');
+ assert(walking.some(p=>p.feet[0].shoulder>.06)&&walking.some(p=>p.feet[0].shoulder<-.06),'shoulders travel with the walking stride');
+ const gathered=sampleCorleoStride('RUN',.38),extended=sampleCorleoStride('RUN',.88);
  assert(gathered.feet.every(f=>!f.stance)&&extended.feet.every(f=>!f.stance),'both gathered and extended suspension');
- const span=(pose:ReturnType<typeof horseStride>)=>Math.max(...pose.feet.map(f=>f.z))-Math.min(...pose.feet.map(f=>f.z));assert(span(extended)>span(gathered)+2,'sprint reaches out, then folds underneath');
+ const span=(pose:ReturnType<typeof sampleCorleoStride>)=>Math.max(...pose.feet.map(f=>f.z))-Math.min(...pose.feet.map(f=>f.z));assert(span(extended)>span(gathered)+2,'sprint reaches out, then folds underneath');
  assert(gathered.rearPitch<-.2&&extended.rearPitch>.2,'rear chassis flexes through the sprint');
- assert.deepEqual(HORSE_LEGS.map((id,i)=>({id,start:HORSE_GAITS.RUN.offset[i]})).sort((a,b)=>a.start-b.start).map(f=>f.id),['FR','FL','RL','RR']);
+ assert.deepEqual(CORLEO_LEGS.map((id,i)=>({id,start:CORLEO_GAITS.RUN.offset[i]})).sort((a,b)=>a.start-b.start).map(f=>f.id),['FR','FL','RL','RR']);
  const c=new CorleoController({...flat,land:()=>true} as unknown as ParkTerrain,{x:0,z:0,heading:0});run(c,1,{...neutral,throttle:1});const phase=c.pose.corleoPhase;assert(phase!>0&&phase!<1);c.advance(0,neutral);assert.equal(c.pose.corleoPhase,phase);
  const frame={seq:1,pose:createPose(),mode:'hover',seat:0,active:true,vehicle:'corleo',pilot:'professional',corleoAction:'TROT',corleoTime:.5,corleoPhase:.9};assert.deepEqual(explorerFrame(frame),frame);
  for(const bad of [-1,1,NaN,Infinity])assert.equal(explorerFrame({...frame,corleoPhase:bad}),undefined);
