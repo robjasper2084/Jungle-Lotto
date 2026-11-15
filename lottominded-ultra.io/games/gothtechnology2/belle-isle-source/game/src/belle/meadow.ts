@@ -1,11 +1,12 @@
 import {REFERENCE_STYLE} from './sunsetReferencePolicy.ts';
 import * as T from 'three';
+import {loadStartupBytes} from './startupAssets.ts';
 import {meadowBudget,meadowRandom,type MeadowPlan} from './meadowPlan.ts';
 
 /** Stream a fixed pool of real blade geometry around the rider; no runtime map scans. */
 export async function addMeadow(scene:T.Scene){
- const response=await fetch('./belle/nature/meadow.json');if(!response.ok)throw Error('Meadow unavailable');
- const plan=await response.json() as MeadowPlan,cells=new Map(plan.cells.map(c=>[c[0]*65536+c[1],c]));
+ const bytes=await loadStartupBytes('./belle/nature/meadow.json');
+ const plan=JSON.parse(new TextDecoder().decode(bytes)) as MeadowPlan,cells=new Map(plan.cells.map(c=>[c[0]*65536+c[1],c]));
  const positions:number[]=[],normals:number[]=[],colors:number[]=[],indices:number[]=[];
  // Narrow curved ribbons, with varied bends and visible grass tips instead of flat cards.
  for(let blade=0;blade<14;blade++){
