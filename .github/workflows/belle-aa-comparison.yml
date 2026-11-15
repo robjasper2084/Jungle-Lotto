@@ -30,6 +30,9 @@ jobs:
           npm ci
           npm run check
           npm run build
+      - name: Verify A/B benchmark script parses
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: node --check scripts/aa-browser-comparison.mjs
       - name: Install existing Playwright browser
         working-directory: lottominded-ultra.io/games/gothtechnology2
         run: |
