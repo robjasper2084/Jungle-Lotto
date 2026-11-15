@@ -1,4 +1,4 @@
-import {AUDIO_KEY,audioPreferences,type AudioPreferences,type WheelAudioPose} from './belleAudioPolicy.ts';
+import {AUDIO_KEY,audioPreferences,type AudioPreferences,type WheelAudioPose,type BoatAudioPose} from './belleAudioPolicy.ts';
 import {BelleMusicPlayer} from './belleMusicPlayer.ts';
 import {BelleWheelAudio} from './belleWheelAudio.ts';
 import {BELLE_MUSIC} from './belleMusicCatalog.ts';
@@ -11,20 +11,20 @@ export function createBelleAudio(){
  const effects=new BelleWheelAudio();let disposed=false,unlocked=false,lastSample=-Infinity;
  const panel=document.createElement('fieldset');panel.className='belle-audio';panel.id='belle-audio';
  panel.innerHTML=`<legend>Swoop Detroit audio</legend>
- <p>Music starts automatically at 34% when you begin riding. Your saved volume and mute choices take priority. Wheel effects and warning beeps remain optional.</p>
+ <p>Music starts automatically at 34% when you begin riding. Your saved volume and mute choices take priority. Vehicle effects and warning beeps remain optional.</p>
  <label><input id="belle-music" type="checkbox"> Music</label>
  <label>Music volume <input id="belle-music-volume" type="range" min="0" max="100" step="1"><output></output></label>
  <label>Track <select id="belle-track"></select></label>
  <div class="belle-audio-actions"><button id="belle-music-next" type="button">Next track</button><button id="belle-music-retry" type="button">Retry music</button></div>
- <label><input id="belle-effects" type="checkbox"> Wheel motor, wind, braking and contact scrapes</label>
- <label>Wheel effects volume <input id="belle-effects-volume" type="range" min="0" max="100" step="1"><output></output></label>
+ <label><input id="belle-effects" type="checkbox"> Vehicle motor, boat jets, wind and contact sounds</label>
+ <label>Vehicle effects volume <input id="belle-effects-volume" type="range" min="0" max="100" step="1"><output></output></label>
  <label><input id="belle-warnings" type="checkbox"> Wheel warning beeps</label>
  <label>Warning volume <input id="belle-warning-volume" type="range" min="0" max="100" step="1"><output></output></label>
- <button id="belle-audio-mute" type="button">Mute music and wheel audio</button>
+ <button id="belle-audio-mute" type="button">Mute music and vehicle audio</button>
  <p>Checkpoint and finish chimes keep their existing separate Gate sounds setting. Hoverbike engine and nature sound controls are unchanged.</p>
  <p id="belle-audio-status" role="status" aria-live="polite">Press Start to ride with music. Use Music or Mute to turn it off.</p>`;
  const host=document.getElementById('settings');
- if(!host){console.warn('Belle audio settings dialog is unavailable. Riding remains usable.');return{update(_pose:WheelAudioPose,_state:{active:boolean;wheel:boolean},_now?:number){},silence(){},dispose(){}};}
+ if(!host){console.warn('Belle audio settings dialog is unavailable. Riding remains usable.');return{update(_pose:WheelAudioPose,_state:{active:boolean;wheel:boolean;boat?:BoatAudioPose},_now?:number){},silence(){},dispose(){}};}
  host.append(panel);
  const get=<T extends HTMLElement>(id:string)=>panel.querySelector<T>('#'+id)!;
  const status=get('belle-audio-status'),track=get<HTMLSelectElement>('belle-track');
@@ -51,7 +51,7 @@ export function createBelleAudio(){
  track.addEventListener('change',event=>{prefs={...prefs,track:track.value};synchronize();save();if(event.isTrusted)unlock();});
  get('belle-music-next').addEventListener('click',event=>{music.next();prefs={...prefs,track:music.selected};synchronize();save();if(event.isTrusted)unlock();});
  get('belle-music-retry').addEventListener('click',event=>{if(event.isTrusted)unlock();});
- get('belle-audio-mute').addEventListener('click',()=>{prefs={...prefs,music:false,effects:false,warnings:false};synchronize();effects.silence();save();status.textContent='Music, wheel effects and warning beeps muted.';});
+ get('belle-audio-mute').addEventListener('click',()=>{prefs={...prefs,music:false,effects:false,warnings:false};synchronize();effects.silence();save();status.textContent='Music, vehicle effects and warning beeps muted.';});
  const gesture=(event:Event)=>{if(event.isTrusted&&!(event instanceof KeyboardEvent&&event.repeat))unlock();};
  const suspend=()=>{music.setActive(false);effects.silence();lastSample=-Infinity;};
  const visibility=()=>{if(document.hidden)suspend();};
@@ -60,13 +60,13 @@ export function createBelleAudio(){
  window.addEventListener('blur',suspend);window.addEventListener('pagehide',suspend);document.addEventListener('visibilitychange',visibility);
  synchronize();
  return {
-  update(pose:WheelAudioPose,state:{active:boolean;wheel:boolean},now=performance.now()){
+  update(pose:WheelAudioPose,state:{active:boolean;wheel:boolean;boat?:BoatAudioPose},now=performance.now()){
    if(disposed)return;
    const active=state.active&&unlocked&&!document.hidden&&document.hasFocus();
    music.setActive(active);
    if(!active){effects.silence();return;}
    if(now-lastSample<1000/30)return;lastSample=now;
-   effects.update(pose,state.wheel,prefs);
+   effects.update(pose,state.wheel,prefs,state.boat);
   },
   silence:suspend,
   dispose(){if(disposed)return;disposed=true;suspend();music.dispose();void effects.dispose();

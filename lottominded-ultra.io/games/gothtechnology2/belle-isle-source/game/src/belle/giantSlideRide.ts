@@ -1,4 +1,5 @@
 import {applySlideSeat} from './slideSeat.ts';
+import {applyRealisticMaterials} from './realisticMaterials.ts';
 import * as T from 'three';
 import {GiantSlideMotion,SLIDE_ENTRY,slideLocal,stairHeight,GIANT_SLIDE} from './giantSlide.ts';
 import {footState} from '../../runtime/ride-core/src/onFoot.ts';
@@ -10,9 +11,9 @@ export class GiantSlideRide {
  readonly motion=new GiantSlideMotion();readonly button=document.createElement('button');
  private state:ReturnType<RideCore['controller']['captureState']>|undefined;
  private pose:RidePose=createPose();private park={x:0,y:0,z:0,heading:0};
- private sack=new T.Mesh(new T.BoxGeometry(.60,.035,1.05),new T.MeshStandardMaterial({color:0x927754,roughness:1}));
+ private sack=new T.Mesh(new T.BoxGeometry(.60,.035,1.05),new T.MeshStandardMaterial({name:'Giant slide woven cloth',color:0x927754,roughness:1}));
  constructor(private core:RideCore,private hero:ThreeRiderView,scene:T.Scene,private changed:()=>void){
-  this.button.id='giant-slide-action';this.button.type='button';this.button.hidden=true;document.getElementById('ridehud')!.append(this.button);this.button.onclick=()=>this.interact();this.sack.visible=false;this.sack.name='Giant Slide riding mat';scene.add(this.sack);
+  this.button.id='giant-slide-action';this.button.type='button';this.button.hidden=true;document.getElementById('ridehud')!.append(this.button);this.button.onclick=()=>this.interact();this.sack.visible=false;this.sack.name='Giant Slide riding mat';scene.add(this.sack);applyRealisticMaterials(this.sack);
  }
  get active(){return this.state!==undefined;}
  interact(){

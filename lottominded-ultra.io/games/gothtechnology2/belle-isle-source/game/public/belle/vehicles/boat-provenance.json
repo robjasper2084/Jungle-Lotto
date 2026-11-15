@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "assets": [
+    "speedboat.glb",
+    "hydroplane.glb"
+  ],
+  "source": {
+    "provider": "Higgsfield / Tripo H3.1 image-to-3D",
+    "job": "50440919-153c-4412-8dca-ba5347fe6a8d",
+    "reference": "User-supplied black/red offshore boat photograph",
+    "result": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261114_223049_50440919-153c-4412-8dca-ba5347fe6a8d.glb",
+    "approvedCredits": 9,
+    "generationCount": 1,
+    "requestedFaces": 16000
+  },
+  "authoring": "Blender 5.2.1 LTS. Retained generated hull geometry, removed reconstructed water, rebuilt hull chines and cockpit. Hydroplane derivative replaces outboards with a turbine body, sponsons, canopy, canard and rear wing. Original designs without team/manufacturer branding. LottoMind 2084 revision: Blender-authored metallic lettering, matte black carbon-fiber hulls and red panels/trim per final user correction; paired Jet_Port and Jet_Starboard anchors. Existing approved Higgsfield world maps reused; no additional generation.",
+  "coordinates": "Metres, +Y up, +Z bow. Driver_Eye, Driver_Hip, Helm_Wheel and Cockpit_Display are authored anchors.",
+  "research": [
+    {
+      "url": "https://h1unlimited.com/hydro-101/",
+      "used": "28–32 ft length, 12–14.5 ft beam, 6750 lb minimum, three-point running, enclosed cockpit, N2 percentage instrumentation and turbine architecture."
+    },
+    {
+      "url": "https://h1unlimited.com/about-h1/",
+      "used": "Approximately 3000 horsepower for turbine Unlimited hydroplanes."
+    },
+    {
+      "url": "https://www.mercuryracing.com/engines/r-series/300.html",
+      "used": "300 hp/224 kW per outboard, 600 idle rpm and 5800–6400 full-throttle rpm."
+    }
+  ],
+  "simulation": "Research-informed game profiles. Drag, acceleration, steering, turbine shaft rpm, engine spool, torque and trim are modeled assumptions, not manufacturer measurements. Hydroplane N2 is normalized modeled spool. Reverse and brake are explicit exploration assists. G readout uses modeled vertical and cornering acceleration. No CORLEO/Python/hardware telemetry is claimed.",
+  "runtime": "Only selected boat visible. 1024x256 live dashboard at 10Hz. Smoothed wheel with arm IK. River-matched heave, 256 hull-spray points, 128 wake samples / 1016 triangles / 9-second lifetime. Four local shader-warped additive cyan/purple exhaust planes and 64 particles. No full-scene refraction or bloom render target. Reduced-motion support. Optional synthesized jet sound reuses existing effects graph and saved volume/mute."
+}

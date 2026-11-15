@@ -1,0 +1,81 @@
+{
+  "approvedCredits": 500,
+  "quotedPerImage": 1,
+  "quotedSubmittedCredits": 6,
+  "pilotIndices": [
+    0,
+    3,
+    6,
+    16,
+    26,
+    28
+  ],
+  "jobs": [
+    {
+      "index": 0,
+      "job_id": "3a34e5ae-8758-49ff-8caf-dadd0799bf87",
+      "status": "pending"
+    },
+    {
+      "index": 3,
+      "job_id": "74722ed9-0bff-42bc-90b6-a9ba3aafbf6e",
+      "status": "pending"
+    },
+    {
+      "index": 6,
+      "job_id": "d99e5545-d095-4354-affe-c66b5f2a03c3",
+      "status": "pending"
+    },
+    {
+      "index": 16,
+      "job_id": "a4466b1e-23b1-45d3-a430-8244e85411f1",
+      "status": "pending"
+    },
+    {
+      "index": 26,
+      "job_id": "3b1a5422-4c79-4b16-a4fd-b9c1042d5285",
+      "status": "pending"
+    },
+    {
+      "index": 28,
+      "job_id": "3b7861ab-6bac-4651-bee3-82dfd1479eea",
+      "status": "pending"
+    }
+  ],
+  "generationResponse": {
+    "jobs": [
+      {
+        "index": 0,
+        "job_id": "3a34e5ae-8758-49ff-8caf-dadd0799bf87",
+        "status": "pending"
+      },
+      {
+        "index": 3,
+        "job_id": "74722ed9-0bff-42bc-90b6-a9ba3aafbf6e",
+        "status": "pending"
+      },
+      {
+        "index": 6,
+        "job_id": "d99e5545-d095-4354-affe-c66b5f2a03c3",
+        "status": "pending"
+      },
+      {
+        "index": 16,
+        "job_id": "a4466b1e-23b1-45d3-a430-8244e85411f1",
+        "status": "pending"
+      },
+      {
+        "index": 26,
+        "job_id": "3b1a5422-4c79-4b16-a4fd-b9c1042d5285",
+        "status": "pending"
+      },
+      {
+        "index": 28,
+        "job_id": "3b7861ab-6bac-4651-bee3-82dfd1479eea",
+        "status": "pending"
+      }
+    ],
+    "submitted_count": 6,
+    "failed_count": 0
+  }
+}

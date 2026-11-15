@@ -1,4 +1,5 @@
 import {skyRadiance} from './volumetricSky.ts';
+import {riverWaveGLSL} from './riverWaves.ts';
 import {RIVER_BROAD_NORMALS} from './riverSurfaceDetail.ts';
 import {riverFarRing,RIVER_PATCH_SIZE,RIVER_PATCH_SEGMENTS} from './riverPatch.ts';
 import {createFountainLighting,FOUNTAIN_COLOR_UNIFORMS} from './fountainLighting.ts';
@@ -27,7 +28,7 @@ export function createWater(scene:T.Scene,renderer:T.WebGLRenderer,map:ParkMap,t
    if(kind==='near')shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
 vec2 wp=(modelMatrix*vec4(transformed,1.)).xz;
 float edge=1.-smoothstep(165.,195.,max(abs(wp.x-riverCentre.x),abs(wp.y-riverCentre.y)));
-transformed.y+=(sin(dot(wp,vec2(.48,.34))-riverTime*1.3)*.075+sin(dot(wp,vec2(-.31,.63))-riverTime*1.06)*.045+sin(dot(wp,vec2(.14,-.19))-riverTime*.66)*.08)*edge;
+transformed.y+=(${riverWaveGLSL})*edge;
 `);
    shader.vertexShader=shader.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nriverWorld=(modelMatrix*vec4(transformed,1.)).xyz;');
    shader.fragmentShader=uniformHeader+'\n'+shader.fragmentShader;
