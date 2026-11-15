@@ -46,6 +46,10 @@ test('actor details remain distinct from architecture and road finishes',()=>{
  assert.equal(surfaceKind('Weathered red brick','Casino'),'brick');
  assert.equal(surfaceKind('PH Bark Brown 02','Nearby maple'),'bark');
 });
+test('CORLEO keeps authored optics and applies distinct rider and chassis finishes',()=>{
+ for(const name of ['CR_DisplayPrintedLabels','CR_DisplayLime','CR_DisplayDigits','CR_InstrumentAmber','CR_InstrumentCyan','CR_Headlamp','CR_RearLamp','Pilot_Visor','Pilot_Accent_Light'])assert.equal(surfaceKind(name,'CORLEO',.7),null,name);
+ for(const [name,kind] of [['CR_GraphiteCeramic','graphite'],['CR_OchreSaddle','leather'],['CR_HoofRubber','rubber'],['Pilot_Boot_Sole','rubber'],['Pilot_Fabric','cloth'],['Pilot_FlexPanels','cloth'],['Pilot_Armor','paint'],['Pilot_Helmet','paint'],['Pilot_Accent','paint'],['CR_LimeAccent','paint'],['Pilot_Hardware','metal']])assert.equal(surfaceKind(name,'CORLEO'),kind,name);
+});
 test('new skins distinguish natural materials and retain optical glazing',()=>{
  for(const [name,kind]of [['Monument white marble','marble'],['Monument aged bronze','bronze'],['Aquarium exterior copper roof','copper'],['Aquarium jade glazed tile','ceramic'],['Station white painted cladding','paint'],['Fishing cork handle','cork'],['Fishing rod graphite','graphite'],['Freshwater fish scales','scales'],['Pigeon ash feathers','feather'],['Climbing rope','rope'],['Black seat leather','leather']])assert.equal(surfaceKind(name,''),kind,name);
  assert.equal(surfaceKind('Station reflective glazing',''),null);
