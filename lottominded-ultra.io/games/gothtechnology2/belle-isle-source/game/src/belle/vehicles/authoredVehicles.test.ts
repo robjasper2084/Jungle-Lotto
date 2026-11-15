@@ -16,7 +16,7 @@ import {createPose} from '../../../runtime/ride-core/src/controller.ts';
 import {createCorleoActions} from './corleoActions.ts';
 import {inPlaceCorleoClip} from '../corleoAnimation.ts';
 import {CORLEO_TRANSITION_SECONDS} from './corleoState.ts';
-import {HORSE_LEGS,horseStride,horseGait,horseCadence} from './corleoHorseGait.ts';
+import {HORSE_LEGS,HORSE_GAITS,horseStride,horseGait,horseCadence} from './corleoHorseGait.ts';
 import type {ParkTerrain} from '../terrain.ts';
 const neutral={throttle:0,steer:0,lift:0,boost:false,brake:false};
 const flat={map:{water:[]},height:()=>0,land:(_x:number,z:number)=>z<20,obstructed:()=>false,bridge:()=>({active:false}),raycastFlight:()=>null,raycastObstacle:()=>null,raycast:()=>null,sampleGround:(_x:number,_z:number,out:any)=>Object.assign(out,{height:0,normal:{x:0,y:1,z:0},surface:'asphalt'}),navigationObstacles:()=>[]} as unknown as ParkTerrain;
@@ -73,7 +73,7 @@ test('all action clips animate the fitted shared CORLEO without missing targets 
   }}animator.mixer.stopAllAction();animator.mixer.uncacheRoot(model);
  }
 });
-test('horse locomotion has distinct walk footfalls, diagonal trot and gallop suspension',()=>{
+test('horse walk and trot transition to a cheetah sprint with two distinct flight phases',()=>{
  assert.equal(horseGait(0),'IDLE');assert.equal(horseGait(1),'WALK');assert.equal(horseGait(4),'TROT');assert.equal(horseGait(9),'RUN');
  let trotAir=false,gallopAir=false,distinctGallop=false;
  for(let i=0;i<200;i++){
@@ -84,6 +84,11 @@ test('horse locomotion has distinct walk footfalls, diagonal trot and gallop sus
   for(const f of [...walk,...trot,...run])assert(f.y>=.15&&Number.isFinite(f.z));
  }
  assert(trotAir&&gallopAir&&distinctGallop);assert.equal(horseCadence(0,'WALK'),0);assert(horseCadence(71.5,'RUN')<=3.1);
+ const gathered=horseStride('RUN',.38),extended=horseStride('RUN',.88);
+ assert(gathered.feet.every(f=>!f.stance)&&extended.feet.every(f=>!f.stance),'both gathered and extended suspension');
+ const span=(pose:ReturnType<typeof horseStride>)=>Math.max(...pose.feet.map(f=>f.z))-Math.min(...pose.feet.map(f=>f.z));assert(span(extended)>span(gathered)+2,'sprint reaches out, then folds underneath');
+ assert(gathered.rearPitch<-.2&&extended.rearPitch>.2,'rear chassis flexes through the sprint');
+ assert.deepEqual(HORSE_LEGS.map((id,i)=>({id,start:HORSE_GAITS.RUN.offset[i]})).sort((a,b)=>a.start-b.start).map(f=>f.id),['FR','FL','RL','RR']);
  const c=new CorleoController({...flat,land:()=>true} as unknown as ParkTerrain,{x:0,z:0,heading:0});run(c,1,{...neutral,throttle:1});const phase=c.pose.corleoPhase;assert(phase!>0&&phase!<1);c.advance(0,neutral);assert.equal(c.pose.corleoPhase,phase);
  const frame={seq:1,pose:createPose(),mode:'hover',seat:0,active:true,vehicle:'corleo',pilot:'professional',corleoAction:'TROT',corleoTime:.5,corleoPhase:.9};assert.deepEqual(explorerFrame(frame),frame);
  for(const bad of [-1,1,NaN,Infinity])assert.equal(explorerFrame({...frame,corleoPhase:bad}),undefined);
