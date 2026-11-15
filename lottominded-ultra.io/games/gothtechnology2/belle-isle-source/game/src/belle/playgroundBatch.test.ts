@@ -15,7 +15,7 @@ test('playground batching retains each original world transform, material and sh
  const result=batchPlaygroundMeshes(scene,[site]);
  assert.deepEqual(result,{sourceMeshes:2,renderMeshes:1,joinedSources:2,batches:1});
  assert.equal(a.parent,null);assert.equal(b.parent,null);
- const batched=site.objects[0] as T.BatchedMesh;
+ const batched=site.objects[0] as unknown as T.BatchedMesh;
  assert.equal(batched.isBatchedMesh,true);
  assert.equal(batched.material,material);assert.equal(batched.castShadow,true);assert.equal(batched.receiveShadow,true);
  assert.equal(batched.parent,scene);
