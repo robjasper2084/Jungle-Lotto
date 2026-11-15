@@ -7,6 +7,7 @@ on:
     branches: [main]
 permissions:
   contents: read
+  actions: read
 concurrency:
   group: belle-public-verification-${{ github.event.workflow_run.head_sha }}
   cancel-in-progress: false
@@ -14,7 +15,7 @@ jobs:
   public-version:
     if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_repository.full_name == 'robjasper2084/Jungle-Lotto'
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
     steps:
       - name: Check out only the deployed production revision
         uses: actions/checkout@v4
@@ -24,15 +25,35 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
+      - name: Verify the actual completed production build and deploy steps
+        env:
+          EXPECTED_MERGE_SHA: ${{ github.event.workflow_run.head_sha }}
+          PAGES_RUN_ID: ${{ github.event.workflow_run.id }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/belle-production-jobs.mjs "$EXPECTED_MERGE_SHA" "$PAGES_RUN_ID"
       - name: Verify actual public manifest and emitted game bundle hashes
         env:
           EXPECTED_MERGE_SHA: ${{ github.event.workflow_run.head_sha }}
         run: node scripts/belle-release-pages.mjs verify https://robjasper2084.github.io/Jungle-Lotto/ "$EXPECTED_MERGE_SHA"
-      - name: Preserve public HTTP and content-hash evidence
+      - name: Install the existing browser runtime
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install --with-deps chrome
+      - name: Open the actual public game in fresh desktop and phone browsers
+        timeout-minutes: 25
+        env:
+          EXPECTED_MERGE_SHA: ${{ github.event.workflow_run.head_sha }}
+          BELLE_BROWSER_HEADED: '1'
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node scripts/belle-cinematic-browser-smoke.mjs
+      - name: Preserve public job, byte-hash and browser evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: belle-public-version-${{ github.event.workflow_run.head_sha }}
-          path: belle-public-verification.json
+          path: |
+            belle-production-jobs.json
+            belle-public-verification.json
+            artifacts/belle-cinematic
           if-no-files-found: warn
           retention-days: 14

@@ -1,3 +1,4 @@
+import {installCinematicPresentation} from './cinematicPresentation.ts';
 import {clockLabel,type SkySettings,type CloudType} from './skyModel.ts';
 export function connectSkySettings(sky:{settings:SkySettings;hour:number;configure(next:Partial<SkySettings>):void}){
  const input=<T extends HTMLElement>(id:string)=>document.getElementById(id) as T;
@@ -8,5 +9,5 @@ export function connectSkySettings(sky:{settings:SkySettings;hour:number;configu
  const choose=(value:number)=>{sky.configure({hour:value,cycle:false});cycle.checked=false;hour.value=String(sky.hour);label.value=clockLabel(sky.hour);};
  hour.oninput=()=>{choose(Number(hour.value));preset.value='';};
  preset.onchange=()=>{if(preset.value){choose(Number(preset.value));if(preset.value==='17.55'){sky.configure({clouds:'clear'});clouds.value='clear';}}};
- cycle.onchange=()=>sky.configure({cycle:cycle.checked});speed.onchange=()=>sky.configure({dayMinutes:Number(speed.value)});clouds.onchange=()=>sky.configure({clouds:clouds.value as CloudType});refresh();return refresh;
+ cycle.onchange=()=>sky.configure({cycle:cycle.checked});speed.onchange=()=>sky.configure({dayMinutes:Number(speed.value)});clouds.onchange=()=>sky.configure({clouds:clouds.value as CloudType});refresh();installCinematicPresentation(sky);return refresh;
 }

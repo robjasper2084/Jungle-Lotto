@@ -32,7 +32,7 @@ export class BelleMusicPlayer {
   const index=this.tracks.findIndex(t=>t.id===track),changed=index>=0&&index!==this.index;
   const turnedOn=enabled&&!this.enabled;
   this.enabled=enabled;this.volume=unit(volume);
-  if(changed){this.stop();this.index=index;this.blocked=false;if(this.audio){this.audio.src=belleMusicUrl(this.tracks[index].url);this.audio.load();}}
+  if(changed){this.stop();this.index=index;this.blocked=false;if(this.audio){this.audio.preload='none';this.audio.src=belleMusicUrl(this.tracks[index].url);this.audio.load();}}
   if(!enabled){this.stop();return;}
   if(this.audio)this.audio.volume=this.playing&&this.active?this.volume:0;
   if(changed||turnedOn)this.start(false);
@@ -40,7 +40,10 @@ export class BelleMusicPlayer {
  /** Called synchronously by a real click/key gesture. Prime silently when in a menu. */
  unlock(){
   if(this.disposed||!this.enabled||!this.tracks.length)return;
-  this.authorized=true;this.blocked=false;this.start(true);
+  // Global click/key listeners also see settings interactions. Once permission
+  // is primed, leave paused media alone; only a denied/error state needs re-priming.
+  const prime=!this.authorized||this.blocked;
+  this.authorized=true;this.blocked=false;this.start(prime);
  }
  setActive(value:boolean){
   if(this.disposed||this.active===value)return;
@@ -59,26 +62,33 @@ export class BelleMusicPlayer {
   let result:Promise<void>;
   try{result=audio.play();}catch(error){result=Promise.reject(error);}
   void result.then(()=>{
-   if(generation!==this.generation){if(!this.enabled||!this.active||this.disposed)audio.pause();return;}
+   if(generation!==this.generation){if(!this.enabled||!this.active||this.disposed)this.pause(audio);return;}
    this.pending=false;
-   if(!this.enabled||!this.active||this.disposed){audio.pause();audio.volume=0;this.playing=false;return;}
+   if(!this.enabled||!this.active||this.disposed){this.pause(audio);this.playing=false;return;}
    this.playing=true;audio.volume=this.volume;this.changed('Playing: '+this.tracks[this.index].title);
   },()=>{
    if(generation!==this.generation)return;
-   this.pending=false;this.playing=false;audio.pause();audio.volume=0;this.blocked=true;
+   this.pending=false;this.playing=false;this.blocked=true;this.pause(audio);
    this.changed('Music needs a fresh click. Use Retry music.');
   });
  }
+ private pause(audio:MusicElement){
+  // After authorization, let the ONE selected track finish buffering while
+  // paused. preload=none lets native media suspend a resumed Range request.
+  // Other tracks stay lazy; mute, errors and disposal stop this buffering hint.
+  audio.preload=this.authorized&&this.enabled&&!this.blocked&&!this.disposed?'auto':'none';
+  audio.volume=0;audio.pause();
+ }
  private stop(){
   this.generation++;this.pending=false;this.playing=false;
-  if(this.audio){this.audio.volume=0;this.audio.pause();}
+  if(this.audio)this.pause(this.audio);
  }
  next(){
   if(this.disposed||!this.tracks.length)return;
   const track=this.tracks[(this.index+1)%this.tracks.length];
   // A one-track playlist still restarts through a new, handled play request.
   this.stop();this.index=(this.index+1)%this.tracks.length;this.blocked=false;
-  if(this.audio){this.audio.src=belleMusicUrl(track.url);this.audio.currentTime=0;this.audio.load();}
+  if(this.audio){this.audio.preload='none';this.audio.src=belleMusicUrl(track.url);this.audio.currentTime=0;this.audio.load();}
   this.start(false);
  }
  get selected(){return this.tracks[this.index]?.id??'';}

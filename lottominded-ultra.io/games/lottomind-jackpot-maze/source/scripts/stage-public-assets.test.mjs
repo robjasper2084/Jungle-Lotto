@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {mkdtemp,mkdir,readFile,rm,writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
-import {gitBlobSha,stagePublicAssets} from './stage-public-assets.mjs';
+import {gitBlobSha,stagePublicAssets,manifestDiagnostics} from './stage-public-assets.mjs';
 const manifest=JSON.parse(await readFile(new URL('./public-assets.manifest.json',import.meta.url),'utf8'));
 function item(path,bytes){return {path,bytes:bytes.length,sha:gitBlobSha(bytes)};}
 async function sandbox(t){
@@ -42,4 +42,17 @@ test('unsafe traversal, repeated files and incomplete manifests are refused',asy
     {...f.manifest,bytes:0}]){
     await assert.rejects(stagePublicAssets({manifest:replacement,canonicalRoot:f.canonical,outputRoot:f.output}));
   }
+});
+
+test('malformed files fail without erasing existing output',async t=>{
+  const f=await sandbox(t);await mkdir(f.output,{recursive:true});await writeFile(join(f.output,'keep.txt'),'keep');
+  for(const files of [undefined,null,{},[],[null],[42]]){
+    await assert.rejects(stagePublicAssets({manifest:{...f.manifest,files},canonicalRoot:f.canonical,outputRoot:f.output}));
+    assert.equal(await readFile(join(f.output,'keep.txt'),'utf8'),'keep');
+  }
+});
+test('diagnostics preserve complete public file metadata without modifying it',()=>{
+  const before=JSON.stringify(manifest);const report=manifestDiagnostics(manifest);
+  assert.equal(report.filesType,'array');assert.deepEqual(report.files,manifest.files);assert.equal(JSON.stringify(manifest),before);
+  assert.deepEqual(manifestDiagnostics(undefined),{version:undefined,count:undefined,bytes:undefined,filesType:'undefined',files:null});
 });

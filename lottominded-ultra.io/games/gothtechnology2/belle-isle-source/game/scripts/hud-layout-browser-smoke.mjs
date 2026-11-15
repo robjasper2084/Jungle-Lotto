@@ -9,6 +9,9 @@ import {createNativeTouchSequence} from './native-touch-sequence.mjs';
 const game=resolve(import.meta.dirname,'..'),out=resolve(game,'output/hud-layout'),root=resolve(game,'dist');
 const choice=process.env.BELLE_HUD_CASE||'phone';
 assert(['phone','desktop'].includes(choice));
+// Keep CI's headed Chromium default; allow the installed Chrome for local QA.
+const browserChannel=process.env.BELLE_HUD_BROWSER_CHANNEL||'chromium';
+assert(['chromium','chrome'].includes(browserChannel));
 const require=createRequire(resolve(game,'../../package.json')),{chromium,expect:baseExpect}=require('@playwright/test'),expect=baseExpect.configure({timeout:90000});
 const report={source:process.env.HUD_SOURCE_SHA??null,checkout:process.env.GITHUB_SHA??null,run:process.env.GITHUB_RUN_ID??null,case:choice,passed:false,phase:'setup',errors:[],failedRequests:[],requestFailureDetails:[],captures:[],checks:{},limitations:'Actual built island, native browser input and software WebGL. Not physical-device FPS/endurance certification. This new smoke supplements, never replaces, the original seven gates.'};
 await mkdir(out,{recursive:true});
@@ -53,6 +56,24 @@ async function verifyHitTarget(selector,ownerSelector=selector,label=selector,fo
  (report.checks.hitTargets??={})[label]=proof;return proof;
 }
 async function touch(type,points){await touchSequence.dispatch(type,Object.entries(points).map(([id,p])=>({id:Number(id),x:p.x,y:p.y,radiusX:2,radiusY:2,force:1})));}
+/** Visible controls must also leave flight readings and race information readable. */
+async function verifyFlightLayout(label){
+ const proof=await page.evaluate(()=>{
+  const visible=selector=>[...document.querySelectorAll(selector)].filter(el=>{const r=el.getBoundingClientRect(),style=getComputedStyle(el);return r.width>0&&r.height>0&&style.visibility!=='hidden'&&style.display!=='none';});
+  const name=el=>el.id||el.className||el.textContent.trim();
+  const controls=visible('#hover-move-zone,#hero-cam-record,#hover-cruise,.hover-touch button,#hover-hud .hover-actions button,.trial-hud-actions button,#hover-hud .hover-lighting>summary,.quick-tools>button');
+  const panels=visible('.trial-hud-summary,.trial-map-wrap,.hover-instruments>*,#jarvs-avionics,#hover-notice');
+  // The unpainted notice paragraph spans the HUD; measure its visible text.
+  const rect=el=>{if(el.id==='hover-notice'){const range=document.createRange();range.selectNodeContents(el);return range.getBoundingClientRect();}return el.getBoundingClientRect();};
+  const overlaps=[],intersects=(a,b)=>{const x=rect(a),y=rect(b);return Math.min(x.right,y.right)-Math.max(x.left,y.left)>1&&Math.min(x.bottom,y.bottom)-Math.max(x.top,y.top)>1;};
+  for(const panel of panels)for(const control of controls)if(!panel.contains(control)&&intersects(panel,control))overlaps.push([name(panel),name(control)]);
+  for(const hud of visible('#trial-hud'))for(const reading of visible('.hover-instruments>*'))if(intersects(hud,reading))overlaps.push([name(hud),name(reading)]);
+  for(let i=0;i<controls.length;i++)for(let j=i+1;j<controls.length;j++)if(!controls[i].contains(controls[j])&&!controls[j].contains(controls[i])&&intersects(controls[i],controls[j]))overlaps.push([name(controls[i]),name(controls[j])]);
+  return{viewport:{width:innerWidth,height:innerHeight},overlaps,controls:controls.map(name),panels:panels.map(name)};
+ });
+ (report.checks.flightLayouts??={})[label]=proof;assert.deepEqual(proof.overlaps,[],label+': controls cover each other or flight/race information');
+ for(const selector of ['#hero-cam-record','#hover-cruise','#hover-boost'])if(await page.locator(selector).isVisible())await verifyHitTarget(selector,undefined,label+'-'+selector.slice(1));
+}
 async function nativeInput(){
  // This observer records real browser receipt only; it never writes game state.
  await page.evaluate(()=>{window.__hudInputProof=[];for(const type of ['pointerdown','pointermove','pointerup','pointercancel'])window.addEventListener(type,e=>window.__hudInputProof.push({type,trusted:e.isTrusted,id:e.pointerId,target:e.target.closest?.('button,#touch-zone,#game')?.id,x:e.clientX,y:e.clientY}),true);});
@@ -85,6 +106,7 @@ async function verifyPortraitRaceRadio(){
   await expect(page.locator('#ride-radio')).not.toBeVisible();
   await verifyHitTarget('#trial-restart',undefined,'portrait-radio-restart-'+viewport.width);
   await verifyHitTarget('#trial-exit',undefined,'portrait-radio-exit-'+viewport.width);
+  await verifyFlightLayout('portrait-race-'+viewport.width);
   const proof=await paint();await capture('portrait-race-radio-'+viewport.width);
   await tap(page.locator('#tools-toggle'));await expect(page.locator('#ride-menu')).toBeVisible();
   const summary=page.locator('#ride-menu #ride-radio summary');await summary.scrollIntoViewIfNeeded();
@@ -106,13 +128,21 @@ async function verifyPortraitRaceRadio(){
   assert.equal(await page.evaluate(()=>localStorage.getItem('belle-hud-layouts-v1')),saved,'race/menu changes never overwrite saved HUD');
   report.checks.portraitRaceRadio.push({viewport,proof,restart,radioAccessibleInTools:true,restartReceivesNativeInput:true});
  }
+ for(const viewport of [{width:390,height:340},{width:844,height:390}]){
+  await page.setViewportSize(viewport);await page.waitForFunction(s=>innerWidth===s.width&&innerHeight===s.height,viewport);
+  await verifyFlightLayout('compact-race-'+viewport.width);
+  await verifyHitTarget('#hover-move-zone','#hover-move-zone','race-flight-zone-'+viewport.width,true);
+  await verifyHitTarget('#trial-restart',undefined,'compact-race-restart-'+viewport.width);
+  await verifyHitTarget('#trial-exit',undefined,'compact-race-exit-'+viewport.width);
+  await paint();await capture('compact-race-'+viewport.width+'x'+viewport.height);
+ }
  await tap(page.locator('#trial-exit'));await expect(page.locator('body')).not.toHaveClass(/island-trial/);
  await expect(page.locator('body>#ride-radio')).toHaveCount(1);
  await expect(page.locator('#ride-radio')).not.toHaveClass(/race-menu-radio/);
 }
 async function run(){
  await new Promise((yes,no)=>{server.once('error',no);server.listen(0,'127.0.0.1',yes);});report.origin='http://127.0.0.1:'+server.address().port;
- browser=await chromium.launch({channel:'chromium',headless:false,args:['--use-angle=swiftshader','--enable-unsafe-swiftshader','--gpu-watchdog-timeout-seconds=60']});report.browser=browser.version();
+ browser=await chromium.launch({channel:browserChannel,headless:process.env.BELLE_HUD_HEADED==='0',args:['--use-angle=swiftshader','--enable-unsafe-swiftshader','--gpu-watchdog-timeout-seconds=60']});report.browser=browser.version();
  const context=await browser.newContext({viewport:{width:640,height:400},hasTouch:true,isMobile:choice==='phone',deviceScaleFactor:1});page=await context.newPage();client=await context.newCDPSession(page);touchSequence=createNativeTouchSequence((method,params)=>client.send(method,params));page.setDefaultTimeout(90000);
  page.on('pageerror',e=>report.errors.push(e.message));page.on('console',m=>{if(m.type()==='error'||/context.*lost/i.test(m.text()))report.errors.push(m.text());});page.on('response',r=>{if(r.status()>=400)report.errors.push('HTTP '+r.status()+' '+r.url());});
  page.on('requestfailed',r=>{const d={timestamp:new Date().toISOString(),phase:report.phase,type:r.resourceType(),url:r.url(),error:r.failure()?.errorText??'Unknown request failure'};report.requestFailureDetails.push(d);report.failedRequests.push(d.error+' '+d.url);report.errors.push('requestfailed: '+d.error+' '+d.url);});
@@ -133,6 +163,7 @@ async function run(){
   phase('default-flight-hit-targets-'+viewport.width+'x'+viewport.height);await page.setViewportSize(viewport);await page.waitForFunction(s=>innerWidth===s.width&&innerHeight===s.height,viewport);
   await verifyHitTarget('#hover-move-zone','#hover-move-zone','flight-zone-'+viewport.width);
   for(const key of ['KeyE','KeyQ','Space'])await verifyHitTarget('#hover-hud [data-hold="'+key+'"]',undefined,'flight-'+viewport.width+'-'+key);
+  await verifyFlightLayout('default-flight-'+viewport.width);
   (report.checks.flightPaint??={})[viewport.width]=await paint();await capture('default-flight-'+viewport.width+'x'+viewport.height);
  }
  await page.setViewportSize(size);await page.waitForFunction(s=>innerWidth===s.width&&innerHeight===s.height,size);phase('hover-editor');await openEditor();assert.match(await page.getByLabel('Player and mode',{exact:true}).innerText(),/hover/);const hoverIds=await page.getByLabel('Select control',{exact:true}).locator('option').evaluateAll(es=>es.map(e=>e.value));for(const id of ['hover-stick','hover-brake','hover-up','hover-down','jarvs'])assert(hoverIds.includes(id));report.checks.hoverEditorControls=hoverIds;await capture('hover-editor');await tap(page.locator('#belle-hud-cancel'));await tap(page.locator('[data-close="settings"]'));await tap(page.locator('[data-hover="exit"]'));await expect(page.locator('body')).not.toHaveClass(/on-hoverbike/);
