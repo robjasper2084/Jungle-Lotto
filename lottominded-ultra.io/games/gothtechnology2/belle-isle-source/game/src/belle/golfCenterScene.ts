@@ -1,6 +1,7 @@
 import * as T from 'three';
 import type {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import layout from './golfCenterLayout.json' with {type:'json'};
+export const GOLF_CENTER_POSITION:readonly [number,number]=[layout.center[0],layout.center[1]];
 
 /** Static, material-batched landmark. No new per-frame actors or dynamic lights. */
 export async function addGolfCenter(scene:T.Scene,loader:GLTFLoader){
