@@ -67,6 +67,7 @@ test('all action clips animate the fitted shared CORLEO without missing targets 
    const pose={x:0,y:.18,z:0,heading:0,speed:action==='CRAWL'?.36:2,pitch:0,roll:0,lift:0,rpm:0,corleoAction:action,corleoTime:frame/30*(action==='MOUNT'||action==='DISMOUNT'?12:.6)};
    const contact=animator.update(pose);fit.update(contact);assert.deepEqual(mount.scale,scale);model.traverse(o=>assert(o.position.toArray().every(Number.isFinite)));
    if(contact)for(const c of fit.contacts)assert(c.chain.foot.getWorldPosition(new T.Vector3()).distanceTo(c.target)<.02,`${pilot} ${action} fitted contact`);
+   else for(const c of fit.contacts.filter(c=>c.socket.name.includes('Stirrup')))assert(c.chain.foot.getWorldPosition(new T.Vector3()).y>=.077,`${pilot} ${action} frame ${frame}: boot stays above road`);
   }}animator.mixer.stopAllAction();animator.mixer.uncacheRoot(model);
  }
 });
