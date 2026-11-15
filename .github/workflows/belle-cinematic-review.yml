@@ -14,7 +14,7 @@ concurrency:
 jobs:
   cinematic:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
@@ -57,7 +57,7 @@ jobs:
           xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node scripts/belle-cinematic-browser-smoke.mjs
       - name: Drive both boats and verify cockpit and touch controls
         if: matrix.case == 'desktop'
-        timeout-minutes: 12
+        timeout-minutes: 18
         working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
         run: node scripts/boat-browser-smoke.mjs
       - name: Preserve boat gameplay screenshots and results

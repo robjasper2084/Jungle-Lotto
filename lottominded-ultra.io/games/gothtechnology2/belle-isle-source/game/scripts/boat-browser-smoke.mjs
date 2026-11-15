@@ -22,7 +22,10 @@ try{
  for(const [kind,selector]of [['hydroplane','#boat-enter'],['offshore','#speedboat-enter']]){
   console.log('Boarding',kind);await menu();await tap(selector);await expect(page.locator('body')).toHaveAttribute('data-boat-kind',kind);await expect(page.locator('#boat-hud')).toBeVisible();
   if(await page.locator('#boat-hud').getAttribute('data-view')==='cockpit')await page.keyboard.press('v');await capture(kind+'-chase');
-  await page.keyboard.down('w');await expect.poll(speed).toBeGreaterThan(8);const before=Number(await page.locator('#boat-hud').getAttribute('data-heading'));await page.keyboard.down('d');await expect.poll(async()=>Math.abs(Number(await page.locator('#boat-hud').getAttribute('data-heading'))-before)).toBeGreaterThan(.015);await page.keyboard.up('d');await page.keyboard.up('w');
+  // Software WebGL may deliver fewer than two frames per second. The simulation
+  // deliberately caps each frame's physics time, so allow bounded wall-clock
+  // headroom while retaining the same speed threshold and real held-key input.
+  const accelerationStart=Date.now();await page.keyboard.down('w');await expect.poll(speed,{timeout:240000}).toBeGreaterThan(8);report.checks.push({kind,accelerationWallMs:Date.now()-accelerationStart,speedAfterThrottle:await speed()});const before=Number(await page.locator('#boat-hud').getAttribute('data-heading'));await page.keyboard.down('d');await expect.poll(async()=>Math.abs(Number(await page.locator('#boat-hud').getAttribute('data-heading'))-before)).toBeGreaterThan(.015);await page.keyboard.up('d');await page.keyboard.up('w');
   assert(Number(await page.locator('#boat-hud').getAttribute('data-power'))>0);await page.keyboard.down('Space');await expect.poll(speed).toBeLessThan(.2);await page.keyboard.up('Space');
   await page.keyboard.press('v');await expect(page.locator('#boat-hud')).toHaveAttribute('data-view','cockpit');await capture(kind+'-cockpit');
   await tap('#pause');await expect(page.locator('#pause')).toHaveText('Resume');await expect.poll(speed).toBe(0);const stopped=await speed();await page.keyboard.down('w');await page.waitForTimeout(600);await page.keyboard.up('w');assert.equal(await speed(),stopped);await tap('#pause');
