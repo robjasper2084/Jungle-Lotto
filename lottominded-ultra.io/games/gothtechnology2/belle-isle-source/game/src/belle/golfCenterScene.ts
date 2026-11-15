@@ -4,7 +4,7 @@ import layout from './golfCenterLayout.json' with {type:'json'};
 export const GOLF_CENTER_POSITION:readonly [number,number]=[layout.center[0],layout.center[1]];
 
 /** Static, material-batched landmark. No new per-frame actors or dynamic lights. */
-export async function addGolfCenter(scene:T.Scene,loader:GLTFLoader){
+export async function addGolfCenter(scene:T.Object3D,loader:GLTFLoader){
  const {scene:group}=await loader.loadAsync('./belle/golf-center.glb');
  group.name='Belle Isle Golf Center · clubhouse and open range';
  let meshes=0,triangles=0;
