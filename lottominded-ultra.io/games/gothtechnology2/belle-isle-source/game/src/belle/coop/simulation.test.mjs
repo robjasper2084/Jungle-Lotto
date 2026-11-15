@@ -1,10 +1,25 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {PairSimulation,peerRay,riderProfile,coopFrameSeconds} from './simulation.ts';
-import {assignPlayer,defaultPair,defaultSelection} from './coop.ts';
+import {assignPlayer,defaultPair,defaultSelection,CoopInput} from './coop.ts';
 const command=(extra={})=>({throttle:0,steer:0,hop:false,recover:false,interact:false,brake:false,...extra});
 const ground=()=>({sampleGround(x,z,out){Object.assign(out,{height:2,surface:'pavement',offCourse:false});out.normal={x:0,y:1,z:0};return out;},raycast(){return null;},raycastObstacle(){return null;},raycastFlight(){return null;},map:{water:[]},land(){return true;},height(){return 2;},obstructed(){return false;}});
 const manifest=(a={},b={})=>{const p=defaultPair();return[assignPlayer(0,{...p[0],vehicleId:'euc',...a}),assignPlayer(1,{...p[1],riderId:'DS_Hoodie_Woman_01',vehicleId:'euc',...b})];};
 const sim=(a={},b={})=>new PairSimulation(ground(),manifest(a,b),{x:10,y:2,z:10,heading:0});
+
+test('both CORLEO seats steer toward their own left and right keyboard inputs',()=>{
+ for(const seat of [0,1])for(const right of [false,true]){
+  const s=sim({vehicleId:'corleo'},{vehicleId:'corleo:maverick'}),input=new CoopInput(seat?'arrows':'wasd');
+  input.read(new Set(),[]);
+  for(let i=0;i<13*120;i++)s.advance(1/120,[command(),command()]);
+  const before={...s.actors[seat].current},other={...s.actors[1-seat].current};
+  const keys=new Set(seat?['ArrowUp',right?'ArrowRight':'ArrowLeft']:['KeyW',right?'KeyD':'KeyA']);
+  for(let i=0;i<120;i++){const commands=[command(),command()];commands[seat]=input.read(keys,[]);s.advance(1/120,commands);}
+  const after=s.actors[seat].current;
+  const lateral=-(after.x-before.x)*Math.cos(before.headingY)+(after.z-before.z)*Math.sin(before.headingY);
+  assert(lateral*(right?1:-1)>.2,'selected rider turned to the wrong side');
+  assert.equal(s.actors[1-seat].current.x,other.x);assert.equal(s.actors[1-seat].current.z,other.z);
+ }
+});
 test('two actual RideCore controllers and separately selected fit profiles',()=>{
  const s=sim({riderId:'DS_Mascot_Suit_01'},{});assert.notEqual(s.actors[0],s.actors[1]);assert.notEqual(s.actors[0].controller,s.actors[1].controller);
  assert.equal(s.actors[0].profile.motionScale,.48);assert.equal(s.actors[1].profile.motionScale,1);
@@ -75,6 +90,15 @@ test('slow renderer still advances both real controllers without an unbounded ju
 });
 
 const mixed=()=>new PairSimulation(ground(),Array.from({length:4},(_,i)=>assignPlayer(i,{...defaultSelection(i),vehicleId:i%2?'euc':'hoverbike'})),{x:10,y:2,z:10,heading:0});
+
+test('mixed vehicle spawning and recovery avoid tree and low ceiling solids omitted by ground footprints',()=>{
+ const terrain=ground(),blocked=(o,d,max,half)=>Math.hypot(o.x-14,o.z-10)<half+1&&o.y+max>=5?Math.max(0,5-o.y):null;
+ terrain.raycastObstacle=blocked;terrain.raycastFlight=blocked;
+ const s=new PairSimulation(terrain,manifest({vehicleId:'corleo'},{vehicleId:'jetson'}),{x:10,y:2,z:10,heading:0});
+ assert(Math.hypot(s.initial[1].x-14,s.initial[1].z-10)>2.4);
+ const recovered=s.recover(1,{x:14,y:2,z:10,heading:0});assert(Math.hypot(recovered.x-14,recovered.z-10)>2.4);
+ s.advance(1/60,[command(),command({hop:true})]);for(let i=0;i<240;i++)s.advance(1/120,[command(),command()]);assert(s.hovers[1].flying);assert(s.hovers[1].pose.y>3);
+});
 test('four players can fly and ride simultaneously without moving idle partners',()=>{const s=mixed(),before=s.actors.map(c=>({...c.current}));s.advance(1/60,[command({hop:true}),command(),command(),command()]);for(let i=0;i<240;i++)s.advance(1/120,[command({throttle:1}),command({throttle:1}),command(),command()]);assert(s.hovers[0].flying);assert(s.actors[0].current.y>3);assert(Math.hypot(s.actors[0].current.x-before[0].x,s.actors[0].current.z-before[0].z)>1);assert(Math.hypot(s.actors[1].current.x-before[1].x,s.actors[1].current.z-before[1].z)>.5);for(const i of [2,3])assert(Math.hypot(s.actors[i].current.x-before[i].x,s.actors[i].current.z-before[i].z)<.01);});
 test('recover resets only that hoverbike, clears its queued takeoff and respects all peers',()=>{const s=mixed();s.advance(.02,[command({hop:true}),command(),command(),command()]);const peers=s.actors.slice(1).map(a=>({...a.current}));s.advance(.02,[command({recover:true,hop:true,throttle:1}),command(),command(),command()]);assert.equal(s.hovers[0].flying,false);assert.equal(s.hovers[0].pose.speed,0);for(let i=1;i<4;i++){assert.equal(s.actors[i].current.x,peers[i-1].x);assert(Math.hypot(s.actors[0].current.x-s.actors[i].current.x,s.actors[0].current.z-s.actors[i].current.z)>2);}});
 test('landed hover dismount and remount preserve partner vehicles',()=>{const s=mixed();s.advance(.02,[command({interact:true}),command(),command(),command()]);assert.equal(s.mounted[0],false);for(let i=0;i<60;i++)s.advance(1/120,[command(),command(),command(),command()]);s.advance(.02,[command({interact:true}),command(),command(),command()]);assert.equal(s.mounted[0],true);assert.equal(s.hovers[2].landed,true);assert.equal(s.actors[1].current.footBlend,0);});

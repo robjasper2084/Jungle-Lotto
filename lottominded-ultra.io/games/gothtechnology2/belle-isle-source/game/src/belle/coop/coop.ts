@@ -13,6 +13,10 @@ export const RIDERS = [
 ] as const;
 export const VEHICLES = [
   { id: 'hoverbike', label: 'Hoverbike · flight', adapter: 'HoverController', profile: null },
+  { id: 'jetson', label: 'Jetson ONE · Professional', adapter: 'HoverController', profile: null },
+  { id: 'jetson:maverick', label: 'Jetson ONE · Maverick', adapter: 'HoverController', profile: null },
+  { id: 'corleo', label: 'CORLEO robot horse · Professional', adapter: 'CorleoController', profile: null },
+  { id: 'corleo:maverick', label: 'CORLEO robot horse · Maverick', adapter: 'CorleoController', profile: null },
   { id: 'euc', label: 'Classic electric unicycle', adapter: 'RideCore', profile: null },
   { id: 'euc:city', label: 'City 16', adapter: 'RideCore', profile: 'city' },
   { id: 'euc:tour', label: 'Touring 18', adapter: 'RideCore', profile: 'tour' },
@@ -41,7 +45,7 @@ export function defaultPair(): Pair { return [defaultSelection(0),defaultSelecti
 export type PlayerManifest = Readonly<{
   version: 1; seat: Seat; entityId: string; riderId: RiderId; vehicleId: VehicleId; binding: Binding;
   rider: Readonly<{ sourcePath: string; blob: string }>;
-  controller: 'RideCore' | 'HoverController'; physicsProfile: string | null;
+  controller: 'RideCore' | 'HoverController' | 'CorleoController'; physicsProfile: string | null;
   profileSource: string; revision: string; requiresRigValidation: true;
 }>;
 /** IDs, not arbitrary URLs, cross the lobby/transport boundary. Never share a skeleton instance. */
@@ -117,9 +121,14 @@ const analog = (value: number) => !Number.isFinite(value) || Math.abs(value) <= 
 /** Per-player controls. A lost pad NEVER migrates the other pad into its seat. */
 export class CoopInput {
   private armed = false; private padIdentity: string | undefined; private previous = zero();
+  private taps = {hop:false,recover:false,interact:false};
   readonly binding: Binding;
   constructor(binding: Binding) { if (!BINDINGS.includes(binding)) throw new Error('Unknown binding.'); this.binding=binding; }
-  reset() { this.armed=false; this.previous=zero(); this.padIdentity=undefined; }
+  reset() { this.armed=false; this.previous=zero(); this.padIdentity=undefined;this.taps={hop:false,recover:false,interact:false}; }
+  keyDown(code:string){
+    if(!this.armed||(this.binding!=='wasd'&&this.binding!=='arrows'))return;
+    const keys=MAP[this.binding];for(const [i,action]of (['hop','recover','interact'] as const).entries())if(code===keys[i+4]&&!this.previous[action])this.taps[action]=true;
+  }
   read(keys: ReadonlySet<string>, pads: readonly (Pad|null)[], blocked = false): InputFrame {
     if (blocked) { this.reset(); return zero(); }
     let raw = zero();
@@ -140,7 +149,8 @@ export class CoopInput {
       ? MAP[this.binding].every(code=>!keys.has(code)) && !raw.lift && !raw.clutch && !raw.shift
       : Object.values(raw).every(v=>v===0 || v===false);
     if (!this.armed) { if (neutral) this.armed=true; return zero(); }
-    const result={...raw,shift:raw.shift&&raw.shift!==this.previous.shift?raw.shift:0,hop:raw.hop&&!this.previous.hop,recover:raw.recover&&!this.previous.recover,interact:raw.interact&&!this.previous.interact};
+    const result={...raw,shift:raw.shift&&raw.shift!==this.previous.shift?raw.shift:0,hop:this.taps.hop||raw.hop&&!this.previous.hop,recover:this.taps.recover||raw.recover&&!this.previous.recover,interact:this.taps.interact||raw.interact&&!this.previous.interact};
+    this.taps={hop:false,recover:false,interact:false};
     this.previous=raw; return result;
   }
 }

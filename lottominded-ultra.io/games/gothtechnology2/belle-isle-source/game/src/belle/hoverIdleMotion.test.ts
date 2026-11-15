@@ -124,7 +124,7 @@ test('real HoverController trajectory is identical with the visual feature enabl
 });
 test('HoverRide applies absolute visual Y to the shared model, never to flight pose',()=>{
  const source=readFileSync(new URL('./hover.ts',import.meta.url),'utf8');
- assert.match(source,/this\.model\.position\.set\(p\.x,p\.y\+idleY,p\.z\)/);
+ assert.match(source,/this\.visualModel\.position\.set\(p\.x,p\.y\+idleY,p\.z\)/);
  assert.doesNotMatch(source,/p\.y\s*\+=\s*idleY|pose\.y\s*\+=\s*idleY|position\.y\s*\+=\s*idleY/);
  assert.match(source,/this\.idleHover\.update\(dt,p/);assert.match(source,/!document\.hidden&&document\.hasFocus\(\)/);
  assert.match(source,/racing:!!this\.hooks\.vehicleLocked\?\.\(\)/);

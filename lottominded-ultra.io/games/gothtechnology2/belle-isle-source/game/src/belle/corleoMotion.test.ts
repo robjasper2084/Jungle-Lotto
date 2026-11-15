@@ -2,6 +2,18 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {CorleoMotion,CORLEO_TUNING} from './corleoMotion.ts';
 
+test('right and left steering turn toward the rider-relative side at every heading',()=>{
+ for(const heading of [0,Math.PI/2,-2.4])for(const steer of [-1,1]){
+  const m=new CorleoMotion({x:0,y:0,z:0,heading});
+  for(let i=0;i<20;i++)m.tick(.05,{throttle:1,steer},()=>0,()=>false);
+  // With forward +Z, the rider's right is -X, rotated by the spawn heading.
+  const right=-m.pose.x*Math.cos(heading)+m.pose.z*Math.sin(heading);
+  const forward=m.pose.x*Math.sin(heading)+m.pose.z*Math.cos(heading);
+  assert(right*steer>.2,'steering must move toward the selected side');
+  assert(forward>1,'turning must preserve forward travel');
+ }
+});
+
 test('walking reaches 25 mph and running reaches 160 mph without overshoot',()=>{
  for(const [run,mph] of [[false,25],[true,160]] as const){
   const m=new CorleoMotion({x:0,y:0,z:0,heading:0});

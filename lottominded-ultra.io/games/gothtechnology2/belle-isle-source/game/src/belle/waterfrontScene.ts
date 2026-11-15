@@ -1,8 +1,13 @@
+import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import * as T from 'three';
 import layout from './waterfrontLayout.json';
 import type {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 export async function addWaterfront(scene:T.Scene,loader:GLTFLoader){
  const [asset,lights]=await Promise.all([loader.loadAsync('./belle/waterfront-detail.glb'),fetch('./belle/waterfront-lamps.json').then(r=>{if(!r.ok)throw Error('Waterfront lighting missing');return r.json();})]);
+ const clubRails:T.Object3D[]=[];asset.scene.traverse(o=>{if(/Waterfront_1071929(34|40).*enamel/.test(o.name))clubRails.push(o);});for(const o of clubRails)o.removeFromParent();
+ // The real club approach bridges have pale masonry balustrades.
+ const railMaterial=new T.MeshStandardMaterial({name:'Boat Club bridge ivory balustrade',color:0xd2cfc2,roughness:.86});
+ for(const b of layout.bridges.filter(b=>['107192934','107192940'].includes(b.id))){const a=b.points[0],z=b.points[1],dx=z[0]-a[0],dz=z[1]-a[1],length=Math.hypot(dx,dz),yaw=Math.atan2(dx,dz),g=new T.Group();g.name='Boat Club mapped approach balustrade';g.position.set((a[0]+z[0])/2,2,(a[1]+z[1])/2);g.rotation.y=yaw;for(const side of [-1,1]){for(const y of [.13,1.0]){const rail=new T.Mesh(new T.BoxGeometry(.16,.15,length),railMaterial);rail.position.set(side*1.22,y,0);g.add(rail);}for(let v=-length/2;v<=length/2;v+=.46){const post=new T.Mesh(new T.BoxGeometry(.10,.78,.1),railMaterial);post.position.set(side*1.22,.56,v);g.add(post);}}g.updateMatrixWorld(true);const geometries=g.children.map(o=>(o as T.Mesh).geometry.clone().applyMatrix4(o.matrixWorld));const mesh=new T.Mesh(mergeGeometries(geometries)!,railMaterial);mesh.name=g.name;asset.scene.add(mesh);geometries.forEach(geo=>geo.dispose());g.children.forEach(o=>(o as T.Mesh).geometry.dispose());}
  asset.scene.updateMatrixWorld(true);
  const meshes:{mesh:T.Mesh;center:T.Vector3;radius:number}[]=[],bulbs=new Set<T.MeshStandardMaterial>();
  asset.scene.traverse(o=>{const m=o as T.Mesh;if(!m.isMesh)return;m.receiveShadow=true;m.castShadow=false;m.geometry.computeBoundingSphere();meshes.push({mesh:m,center:m.geometry.boundingSphere!.center.clone().applyMatrix4(m.matrixWorld),radius:m.geometry.boundingSphere!.radius});for(const mat of (Array.isArray(m.material)?m.material:[m.material]) as T.MeshStandardMaterial[]){mat.side=T.DoubleSide;if(mat.name==='Pier warm lamp lenses'){bulbs.add(mat);mat.toneMapped=false;}if(mat.map&&/Higgsfield/.test(mat.name)){mat.bumpMap=mat.map;mat.bumpScale=.008;}}});scene.add(asset.scene);
