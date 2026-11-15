@@ -1,7 +1,7 @@
 import * as T from 'three';
-/** Island-wide pigment and low-frequency turf variation retain existing pavement textures. */
+/** Tint turf and walkways. Roads keep the asphalt finish shared by the island and bridge. */
 export function dressSunsetGround(scene:T.Scene){
- const targets:Record<string,number>={'Park lawn':0xb6c96d,'Park grass bank':0xb6c96d,'Island asphalt':0x3f4858,'Concrete pathways':0xbca78d,'Concrete pavers':0xbca78d};
+ const targets:Record<string,number>={'Park lawn':0xb6c96d,'Park grass bank':0xb6c96d,'Concrete pathways':0xbca78d,'Concrete pavers':0xbca78d};
  const done=new Set<T.Material>();
  scene.traverse(o=>{if(!(o instanceof T.Mesh))return;for(const m of(Array.isArray(o.material)?o.material:[o.material])){
   if(!(m instanceof T.MeshStandardMaterial)||done.has(m)||!targets[m.name])continue;done.add(m);
