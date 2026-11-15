@@ -95,14 +95,14 @@ test('river layers share uncoated water normals while lagoons retain their optic
  const far=scene.getObjectByName('Detroit River distant water') as T.Mesh<T.BufferGeometry,T.MeshPhysicalMaterial>;
  const lagoon=scene.children.find(o=>o.name.startsWith('Lagoon · ')) as T.Mesh<T.BufferGeometry,T.MeshPhysicalMaterial>;
  for(const mesh of [near,far]){
-  assert.equal(mesh.material.clearcoat,0);assert.equal(mesh.material.roughness,.28);
+  assert.equal(mesh.material.clearcoat,0);assert.equal(mesh.material.roughness,.20);
   const shader={vertexShader:T.ShaderLib.physical.vertexShader,fragmentShader:T.ShaderLib.physical.fragmentShader,uniforms:{}} as Parameters<T.Material['onBeforeCompile']>[0];
   mesh.material.onBeforeCompile(shader,{} as T.WebGLRenderer);
   assert(shader.fragmentShader.includes('vec2 warp=')&&shader.fragmentShader.includes('warp.yx*.7+r1*.08'));
   assert.equal((shader.fragmentShader.match(/texture2D\(riverNormals/g)||[]).length,3,'still two normal layers plus existing wash sample');
   for(const token of ['riverSunReflection','riverRipples[12]','shipWake[4]','hoverWash'])assert(shader.fragmentShader.includes(token));
  }
- assert.equal(lagoon.material.clearcoat,.60);assert.equal(lagoon.material.roughness,.12);
+ assert.equal(lagoon.material.clearcoat,.25);assert.equal(lagoon.material.roughness,.20);
  const shader={vertexShader:T.ShaderLib.physical.vertexShader,fragmentShader:T.ShaderLib.physical.fragmentShader,uniforms:{}} as Parameters<T.Material['onBeforeCompile']>[0];
  lagoon.material.onBeforeCompile(shader,{} as T.WebGLRenderer);
  assert(!shader.fragmentShader.includes('vec2 warp='));assert(shader.fragmentShader.includes('fountainNight'));

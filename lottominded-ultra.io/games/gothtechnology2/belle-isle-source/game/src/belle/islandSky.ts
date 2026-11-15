@@ -1,3 +1,4 @@
+import {REFERENCE_STYLE} from './sunsetReferencePolicy.ts';
 import {VolumetricSky,skyRadiance} from './volumetricSky.ts';
 import {dressDetroitSkyline} from './skylineMaterials.ts';
 import {boundedSkyProbe} from './skyProbe.ts';
@@ -124,7 +125,7 @@ export async function createIslandSky(scene:T.Scene,renderer:T.WebGLRenderer,sta
  let settings=normalizeSky(null);try{settings=normalizeSky(JSON.parse(localStorage.getItem('belle-isle-sky-v1')||'null'));}catch{/* defaults */}
  let skyFrame=0,lastVolumeFrame=-1;let titlePreview=false,previewIndex=0;let hour=settings.hour,cloudClock=0,skyClock=0,reduceMotion=false,shadowQuality=true,quality='automatic';
  const uniforms={volumeRadiance:skyRadiance.texture,volumeReady:skyRadiance.ready,startupRipples:{value:0},startupSunset:{value:0},zenith:{value:new T.Color()},horizon:{value:new T.Color()},warm:{value:new T.Color()},cloudColor:{value:new T.Color()},sunColor:{value:new T.Color()},sunDirection:{value:new T.Vector3()},moonDirection:{value:new T.Vector3()},meteorHead:{value:new T.Vector3()},meteorTail:{value:new T.Vector3()},meteorOpacity:{value:0},cloudNoise:{value:cloudTexture()},cloudTime:{value:0},coverage:{value:0},density:{value:0},stretch:{value:1},cloudScale:{value:1},overcast:{value:0},daylight:{value:1},night:{value:0}};
- const sky=new T.Mesh(new T.SphereGeometry(1,32,16),new T.ShaderMaterial({uniforms,side:T.BackSide,depthWrite:false,depthTest:false,vertexShader:'varying vec3 skyDirection;void main(){skyDirection=position;vec4 p=projectionMatrix*modelViewMatrix*vec4(position,1.);gl_Position=p.xyww;}',fragmentShader:livingSkyFragment(fragment)}));sky.name='Belle Isle changing sky';sky.scale.setScalar(9000);sky.frustumCulled=false;sky.renderOrder=-100;scene.add(sky);scene.background=null;
+ const sky=new T.Mesh(new T.SphereGeometry(1,32,16),new T.ShaderMaterial({uniforms,side:T.BackSide,depthWrite:false,depthTest:false,vertexShader:'varying vec3 skyDirection;void main(){skyDirection=position;vec4 p=projectionMatrix*modelViewMatrix*vec4(position,1.);gl_Position=p.xyww;}',fragmentShader:livingSkyFragment(fragment)}));sky.material.toneMapped=true;sky.name='Belle Isle changing sky';sky.scale.setScalar(9000);sky.frustumCulled=false;sky.renderOrder=-100;scene.add(sky);scene.background=null;
 
  const hemi=new T.HemisphereLight(0xd5e8f8,0x63513a,1.3),key=new T.DirectionalLight(0xffdfb0,2.1);key.castShadow=true;key.shadow.mapSize.set(2048,2048);Object.assign(key.shadow.camera,{left:-55,right:55,top:55,bottom:-55,near:.1,far:450});key.shadow.bias=-.0003;key.shadow.normalBias=.035;scene.add(hemi,key,key.target);scene.fog=new T.FogExp2(0xb8c4c9,.00007);
  // The initial HDR remains a fallback; bounded sky-only probes follow live weather.
@@ -148,6 +149,8 @@ export async function createIslandSky(scene:T.Scene,renderer:T.WebGLRenderer,sta
  const daylightAmbient=new T.Color('#d8e8f5');
  const eye=new T.Vector3(),lightDirection=new T.Vector3(),tempColor=new T.Color(),fogColor=new T.Color(),reflectionTint=new T.Color();
  const referenceHorizon=new T.Color('#dcded7'),referenceZenith=new T.Color('#8daec2'),referenceFog=new T.Color('#d8d4c5');
+ // Natural atmospheric colors; the anime materials elsewhere keep their own finish.
+ const referenceColors={zenith:new T.Color('#397fb5'),horizon:new T.Color('#9dbdd1'),warm:new T.Color('#eed3ae'),cloudColor:new T.Color('#e5edf3'),sunColor:new T.Color('#fff1dc')};
  const nightUniform={value:0},skyLife=new SkyLife(scene);
  function dressSkyline(root:T.Object3D){dressDetroitSkyline(root,nightUniform);}
  function configure(next:Partial<SkySettings>){settings=normalizeSky({...settings,hour,...next});hour=settings.hour;try{localStorage.setItem('belle-isle-sky-v1',JSON.stringify(settings));}catch{/* storage may be unavailable */}}
@@ -162,6 +165,7 @@ export async function createIslandSky(scene:T.Scene,renderer:T.WebGLRenderer,sta
   }
   uniforms.startupRipples.value=look?.ripples??0;uniforms.startupSunset.value=look?.sunset??(.65*(1-smooth(.04,.28,Math.abs(direction[1]))));
 
+  if(REFERENCE_STYLE&&!look){const strength=smooth(-.025,.18,direction[1])*(1-shape.overcast*.85);for(const key of ['zenith','horizon','warm','cloudColor','sunColor'] as const)uniforms[key].value.lerp(referenceColors[key],strength*.85);uniforms.startupSunset.value*=.20;}
   const lunar=moonDirection(visualHour),meteor=meteorFrame(skyClock,night,reduceMotion);uniforms.moonDirection.value.fromArray(lunar);uniforms.meteorHead.value.fromArray(meteor.head);uniforms.meteorTail.value.fromArray(meteor.tail);uniforms.meteorOpacity.value=meteor.opacity;
   uniforms.sunDirection.value.fromArray(direction);uniforms.daylight.value=day;uniforms.night.value=night;uniforms.coverage.value=shape.coverage;uniforms.density.value=shape.density;uniforms.stretch.value=shape.stretch;uniforms.cloudScale.value=shape.scale;uniforms.overcast.value=shape.overcast;uniforms.cloudTime.value=cloudClock;
   const dim=1-shape.overcast*.58;uniforms.zenith.value.lerp(tempColor.set('#6e7d8b'),shape.overcast*.3*day);uniforms.warm.value.multiplyScalar(1-shape.overcast*.23);
