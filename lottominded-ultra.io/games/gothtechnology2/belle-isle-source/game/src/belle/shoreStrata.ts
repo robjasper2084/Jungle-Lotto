@@ -81,10 +81,10 @@ export function addShoreStrata(scene:T.Scene,map:ParkMap,terrain:ParkTerrain){
  const data=buildShoreStrata(map,terrain),g=new T.BufferGeometry();
  g.setAttribute('position',new T.Float32BufferAttribute(data.positions,3));
  g.setAttribute('color',new T.Float32BufferAttribute(data.colors,3));
- g.setAttribute('uv',new T.Float32BufferAttribute(data.uv,2));g.setIndex(data.indices);g.computeVertexNormals();
+ g.setAttribute('uv',new T.Float32BufferAttribute(data.uv,2));g.setAttribute('sedimentCoord',new T.Float32BufferAttribute(data.uv,2));g.setIndex(data.indices);g.computeVertexNormals();
  const material=new T.MeshStandardMaterial({name:'Mapped shoreline sediment strata',color:0xffffff,roughness:.92,metalness:0,vertexColors:true,side:T.DoubleSide});
  material.onBeforeCompile=shader=>{
-  shader.vertexShader='varying vec2 sedimentUV;varying vec2 sedimentXZ;\n'+shader.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nsedimentXZ=(modelMatrix*vec4(transformed,1.)).xz;sedimentUV=uv;');
+  shader.vertexShader='attribute vec2 sedimentCoord;varying vec2 sedimentUV;varying vec2 sedimentXZ;\n'+shader.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nsedimentXZ=(modelMatrix*vec4(transformed,1.)).xz;sedimentUV=sedimentCoord;');
   shader.fragmentShader='varying vec2 sedimentUV;varying vec2 sedimentXZ;\n'+shader.fragmentShader.replace('#include <map_fragment>',`#include <map_fragment>
    // Muted mineral banding, dissolved sediment and fine shoreline granules.
    float s=.5+.25*sin(sedimentXZ.x*1.43+sin(sedimentXZ.y*.41))+.25*sin(sedimentXZ.y*2.27);
