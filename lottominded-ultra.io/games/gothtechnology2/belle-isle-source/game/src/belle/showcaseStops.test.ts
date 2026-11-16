@@ -5,7 +5,8 @@ import source from './showcaseStops.json' with {type:'json'};
 import type {ParkMap} from './terrain.ts';
 import {resolveShowcaseStops,SHOWCASE_ROUTE_ID} from './showcaseStops.ts';
 
-const park=map as ParkMap;
+// Imported JSON widens coordinate tuples to number[]; the source is validated by the tests below.
+const park=map as unknown as ParkMap;
 test('showcase resolves exactly three real map destinations in route order',()=>{
  const stops=resolveShowcaseStops(park);
  assert.equal(SHOWCASE_ROUTE_ID,'belle-showcase-bridge-wooded-canals-blue-heron');
