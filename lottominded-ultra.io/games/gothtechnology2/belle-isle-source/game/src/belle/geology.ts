@@ -40,7 +40,7 @@ export function planBoulders(map:ParkMap,terrain:Pick<ParkTerrain,'land'|'height
  const rings=[map.island,...(map.outerIslets||[]).map(i=>i.points)];
  for(let i=0;i<500&&rocks.length<MAX_BOULDERS;i++){
   const ring=rings[Math.floor(rand()*rings.length)];
-  if(!a||!b)continue;
+  if(ring.length<3)continue;
   // Prefer actual adjacent shoreline segments over long chords.
   const j=Math.floor(rand()*(ring.length-1)),p=ring[j],q=ring[j+1],dx=q[0]-p[0],dz=q[1]-p[1],len=Math.hypot(dx,dz);
   if(len<1)continue;
