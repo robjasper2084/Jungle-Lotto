@@ -30,7 +30,7 @@ export function planShoreClutter(data:ParkMap,terrain:ParkTerrain){
    for(let k=0;k<count;k++){
     const offset=.65+random()*3.15,along=(random()-.5)*4.5,size=style.minRadius+random()*(style.maxRadius-style.minRadius);
     const rx=x+nx*offset*outward+tx*along,rz=z+nz*offset*outward+tz*along;
-    if(occupied(rx,rz,'',size*.7+.35)||terrain.obstructed(rx,rz,size*.5))continue;
+    if(sandy(rx,rz)||terrain.bridge(rx,rz).active||occupied(rx,rz,'',size*.7+.35)||terrain.obstructed(rx,rz,size*.5))continue;
     const y=(closed?riverBankHeight(offset,terrain.height(x+tx*along,z+tz*along)):-.22)-size*.12;
     const [h,s,l]=stoneHSL(stoneCharacter(random(),y<.65),random());
     stones.push({x:rx,z:rz,y,yaw:random()*Math.PI*2,sx:size*(1.12+random()*.48),sy:size*(.50+random()*.28),sz:size*(.88+random()*.4),color:tint.setHSL(h,s,l).getHex()});
@@ -38,7 +38,7 @@ export function planShoreClutter(data:ParkMap,terrain:ParkTerrain){
    if(closed&&style.driftwoodChance>0&&random()<style.driftwoodChance){
     const along=(random()-.5)*3.5,inland=1.2+random()*2.4;
     const px=x-nx*inland*outward+tx*along,pz=z-nz*inland*outward+tz*along;
-    if(terrain.land(px,pz)&&!occupied(px,pz,'',2.4)&&!terrain.obstructed(px,pz,.4)){
+    if(!sandy(px,pz)&&terrain.land(px,pz)&&!terrain.bridge(px,pz).active&&!occupied(px,pz,'',2.4)&&!terrain.obstructed(px,pz,.4)){
      driftwood.push({x:px,y:terrain.height(px,pz)+.09,z:pz,yaw:random()*Math.PI*2,sx:.65+random()*1.4,sy:.85+random()*.6,sz:.75+random()*.45,color:tint.setHSL(.085,.14,.25+random()*.16).getHex()});
     }
    }
