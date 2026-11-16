@@ -117,5 +117,5 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
  }
  const view=new NatureViewSelection(select),eye=new T.Vector3(),before=scene.onBeforeRender;
  scene.onBeforeRender=(...args)=>{before.apply(scene,args);args[2].getWorldPosition(eye);view.render(eye.x,eye.z);};
- return{stats,update,setSplitDetail(value:boolean){splitDetail=value;},setQuality(value:string){quality=value in natureBudget?value as keyof typeof natureBudget:'automatic';lastX=Infinity;}};
+ return{stats,treeSites:plan.trees as readonly Plant[],update,setSplitDetail(value:boolean){splitDetail=value;},setQuality(value:string){quality=value in natureBudget?value as keyof typeof natureBudget:'automatic';lastX=Infinity;}};
 }
