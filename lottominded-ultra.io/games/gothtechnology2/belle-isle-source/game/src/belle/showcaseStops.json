@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "id": "belle-showcase-bridge-wooded-canals-blue-heron",
+  "description": "MacArthur Bridge → Wooded Canals (Sylvan Canal) → Blue Heron Lagoon. Visual quality review, not a racing route or guided autopilot.",
+  "stops": [
+    {
+      "id": "macarthur-bridge",
+      "destinationId": "macarthur-overlook",
+      "name": "MacArthur Bridge",
+      "destinationName": "MacArthur Bridge overlook",
+      "focus": "Weathered arch concrete, steel rails, embankment stone and sun-facing structure",
+      "reference": "https://historicdetroit.org/buildings/douglas-macarthur-bridge"
+    },
+    {
+      "id": "wooded-canals",
+      "destinationId": "51495153",
+      "name": "Wooded Canals · Sylvan Canal",
+      "destinationName": "Sylvan Canal",
+      "focus": "Full canopy, exposed roots, mossy ground, calm shaded water and clear trail margins",
+      "reference": "https://www.michigan.gov/recsearch/parks/belleisle"
+    },
+    {
+      "id": "blue-heron-lagoon",
+      "destinationId": "32613819",
+      "name": "Blue Heron Lagoon",
+      "destinationName": "Blue Heron Lagoon",
+      "focus": "Restored wetland edge, reeds, limestone riprap, lagoon mud, fallen wood and inlet footbridge",
+      "reference": "https://www.detroitriver.org/glri-projects/blue-heron-lagoon"
+    }
+  ]
+}
