@@ -1,6 +1,7 @@
 import {gearLabel} from '../hoverTransmission.ts';
 import {sampleDrawGroups} from './renderProfile.ts';
 import {placeCoopCamera} from './cameraRig.ts';
+import {coopMappedShadows} from '../worldPerformancePolicy.ts';
 import {cockpitPresentationState} from '../vehicles/cockpitPresentation.ts';
 import * as T from 'three';
 import type {GLTF} from 'three/addons/loaders/GLTFLoader.js';
@@ -226,10 +227,11 @@ export class CoopSession{
   renderer.getScissor(this.savedScissor);renderer.getViewport(this.savedViewport);const scissor=renderer.getScissorTest(),auto=renderer.autoClear,shadows=renderer.shadowMap.enabled;
   let worldMs=0,renderMs=0,matrixMs=0,triangles=0;const censusTime=performance.now();const finishCensus=this.collectDiagnostics&&new URLSearchParams(location.search).has('profile')&&censusTime-this.lastCensus>5000?sampleDrawGroups(this.scene):undefined;if(finishCensus)this.lastCensus=censusTime;
   const oldVisible=this.actors.map(a=>a.view.rider.visible),rects=coopViewports(innerWidth,innerHeight,this.actors.length,this.layoutChoice);
+  const mappedShadows=coopMappedShadows(this.actors.length,matchMedia('(pointer: coarse)').matches);
   try{
-   // Three or four views use the terrain-aligned contact shadows on each rider.
-   // Avoid repeated directional shadow-map passes for three or four views.
-   if(this.actors.length>=3)renderer.shadowMap.enabled=false;
+   // Phones and 3–4 view layouts use existing contact shadows. Avoid
+   // submitting repeated directional shadow maps for tiny split viewports.
+   if(!mappedShadows)renderer.shadowMap.enabled=false;
    world.splitDetail?.(this.actors.length>=3);
    renderer.setScissorTest(true);renderer.autoClear=true;
    for(const seat of this.actors.map((_,i)=>i as Seat)){
@@ -252,7 +254,7 @@ export class CoopSession{
    }
   }finally{world.endSplitView?.();world.splitDetail?.(false);if(finishCensus)this.overlay.dataset.drawGroups=JSON.stringify(finishCensus());this.actors.forEach((a,i)=>{a.setFirstPerson(false);a.view.rider.visible=oldVisible[i];});renderer.autoClear=auto;renderer.shadowMap.enabled=shadows;renderer.setScissorTest(scissor);renderer.setScissor(this.savedScissor);renderer.setViewport(this.savedViewport);}
   if(this.collectDiagnostics&&this.frames.length){const sorted=this.frames.slice().sort((a,b)=>a-b);this.overlay.dataset.medianFrameMs=sorted[Math.floor(sorted.length*.5)].toFixed(2);this.overlay.dataset.p95FrameMs=sorted[Math.floor(sorted.length*.95)].toFixed(2);}
-  if(this.collectDiagnostics){this.overlay.dataset.triangles=String(triangles);this.overlay.dataset.worldMs=worldMs.toFixed(2);this.overlay.dataset.renderMs=renderMs.toFixed(2);this.overlay.dataset.matrixMs=matrixMs.toFixed(2);this.overlay.dataset.shadows=this.actors.length>=3?'contact':'mapped';}
+  if(this.collectDiagnostics){this.overlay.dataset.triangles=String(triangles);this.overlay.dataset.worldMs=worldMs.toFixed(2);this.overlay.dataset.renderMs=renderMs.toFixed(2);this.overlay.dataset.matrixMs=matrixMs.toFixed(2);this.overlay.dataset.shadows=mappedShadows?'mapped':'contact';}
   this.overlay.dataset.drawCalls=String(this.draws.reduce((a,b)=>a+b,0));this.overlay.dataset.renderedViews=String(this.actors.length);
  }
  private releaseActors(){for(const actor of this.actors)actor.dispose();this.actors=[];this.assets?.dispose();this.assets=undefined;this.simulation=undefined;this.readers=undefined;}
