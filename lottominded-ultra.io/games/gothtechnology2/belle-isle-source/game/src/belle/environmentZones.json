@@ -1,0 +1,107 @@
+{
+  "version": 1,
+  "id": "belle-four-zone-visual-audit",
+  "note": "Four thematic environmental review zones, NOT equal-area geographic quadrants or road/race boundaries.",
+  "zones": [
+    {
+      "id": "western-gateway",
+      "name": "Western Gateway",
+      "theme": "Bridge engineering, civic landscapes, paved arrival surfaces",
+      "surfaceTypes": [
+        "aged-concrete",
+        "rusted-iron",
+        "pavement",
+        "fountain-water"
+      ],
+      "stops": [
+        {
+          "id": "macarthur",
+          "destinationId": "macarthur-overlook",
+          "destinationName": "MacArthur Bridge overlook",
+          "focus": "Arch silhouettes, concrete weathering, rusted railings, protected bank clearance"
+        },
+        {
+          "id": "scott-fountain",
+          "destinationId": "9146545",
+          "destinationName": "James Scott Memorial Fountain",
+          "focus": "Masonry, carved statuary, reflective water and close-up pavement detail"
+        }
+      ]
+    },
+    {
+      "id": "central-forest",
+      "name": "Central Forest & Wetlands",
+      "theme": "Flatwoods canopy, shaded canals, wetland biodiversity",
+      "surfaceTypes": [
+        "forest-soil",
+        "canopy",
+        "roots",
+        "shallow-lagoon"
+      ],
+      "stops": [
+        {
+          "id": "nashua-canal",
+          "destinationId": "32613741",
+          "destinationName": "Nashua Canal",
+          "focus": "A genuine water view alongside the Flatwoods, canopy LODs and dry footpath"
+        },
+        {
+          "id": "blue-heron",
+          "destinationId": "32613819",
+          "destinationName": "Blue Heron Lagoon",
+          "focus": "Natural lagoon shore, reeds, driftwood, mud, rock and footbridge clearance"
+        }
+      ]
+    },
+    {
+      "id": "northern-shoreline",
+      "name": "Northern Shoreline & Memorial",
+      "theme": "Open-water skyline, riprap, maritime structures",
+      "surfaceTypes": [
+        "river-bank",
+        "water",
+        "limestone",
+        "weathered-stone"
+      ],
+      "stops": [
+        {
+          "id": "livingstone-lighthouse",
+          "destinationId": "107208288",
+          "destinationName": "William Livingstone Memorial Lighthouse",
+          "focus": "Lighthouse masonry, natural shoreline transitions and uninterrupted waterfront view"
+        },
+        {
+          "id": "coastguard-waterfront",
+          "destinationId": "842521472",
+          "destinationName": "Coast Guard Station",
+          "focus": "Open-water horizon, protected built edge and shoreline rock placement"
+        }
+      ]
+    },
+    {
+      "id": "eastern-recreation",
+      "name": "Recreation & Waterfront",
+      "theme": "Beach grading, boating structures, recreational paths",
+      "surfaceTypes": [
+        "beach-sand",
+        "wet-sand",
+        "marina",
+        "boardwalk"
+      ],
+      "stops": [
+        {
+          "id": "belle-beach",
+          "destinationId": "368854132",
+          "destinationName": "Belle Isle Beach",
+          "focus": "Dry/wet-sand transition, shoreline collision and unobstructed recreation area"
+        },
+        {
+          "id": "yacht-club",
+          "destinationId": "264321737",
+          "destinationName": "Detroit Yacht Club",
+          "focus": "Marina piers, textured masonry, vehicle-path clearance and water detail"
+        }
+      ]
+    }
+  ]
+}
