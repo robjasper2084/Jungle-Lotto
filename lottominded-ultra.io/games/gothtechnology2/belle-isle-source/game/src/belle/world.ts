@@ -59,6 +59,7 @@ import {addConservatoryGarden} from './conservatoryGarden.ts';
 import {addOudolfDetails} from './oudolfScene.ts';
 import {addPavement} from './pavement.ts';
 import {finishAsphalt,finishBank} from './surfaceFinish.ts';
+import {pathWeatherFragment,type PathSurface} from './pathWeather.ts';
 import {addEntrance} from './entrance.ts';
 import {addWaterBanks} from './waterBanks.ts';
 import {ParkTerrain,inside,segment,type Point,type ParkMap} from './terrain.ts';
@@ -93,11 +94,12 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
  const water=createWater(scene,renderer,data,terrain,poly);const koi=addKoi(scene);const waterfowl=addWaterfowl(scene);const gulls=addGulls(scene);const shoreBirds=addShoreBirds(scene,terrain);
  const gravel=mat(0x8d846c),wood=mat(0x81745b),pavers=pathMat.clone();
  gravel.name='Park gravel';wood.name='Timber boardwalk';pavers.name='Concrete pavers';
- function surfaceDetail(m:T.MeshStandardMaterial,kind:string){const base=m.onBeforeCompile;m.onBeforeCompile=(shader,r)=>{base(shader,r);shader.vertexShader='varying vec2 corridor;\n'+shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\ncorridor=(modelMatrix*vec4(transformed,1.)).xz;');shader.fragmentShader='varying vec2 corridor;\n'+shader.fragmentShader.replace('#include <map_fragment>',`#include <map_fragment>
+ function surfaceDetail(m:T.MeshStandardMaterial,kind:PathSurface){const base=m.onBeforeCompile;m.onBeforeCompile=(shader,r)=>{base(shader,r);shader.vertexShader='varying vec2 corridor;\n'+shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\ncorridor=(modelMatrix*vec4(transformed,1.)).xz;');shader.fragmentShader='varying vec2 corridor;\n'+shader.fragmentShader.replace('#include <map_fragment>',`#include <map_fragment>
  vec2 q=corridor;float seam=1.;
  ${kind==='wood'?`float edge=min(fract(q.y/.19),1.-fract(q.y/.19))*.19;seam=mix(.57,1.,smoothstep(0.,.008+fwidth(q.y),edge));seam*=.93+.06*sin(q.x*48.+sin(q.y*12.));`:kind==='pavers'?`vec2 cell=vec2(q.x+mod(floor(q.y/.22),2.)*.11,q.y)/.22;vec2 e=min(fract(cell),1.-fract(cell))*.22;seam=mix(.67,1.,smoothstep(0.,.006+length(fwidth(q)),min(e.x,e.y)));`:kind==='concrete'?`vec2 cell=q/2.4;vec2 edge=min(fract(cell),1.-fract(cell))*2.4;seam=mix(.87,1.,smoothstep(0.,.004+length(fwidth(q)),min(edge.x,edge.y)));`:`float grain=fract(sin(dot(floor(q*36.),vec2(12.89,78.23)))*43758.54);seam=mix(1.,.82+grain*.3,1.-smoothstep(.4,1.8,length(fwidth(q))*36.));`}
  if(length(q)<.000001)seam=1.;diffuseColor.rgb*=seam;
- `);};m.customProgramCacheKey=()=>kind+'-joined-pavement-detail-v2';}
+ ${pathWeatherFragment(kind)}
+ `);};m.customProgramCacheKey=()=>kind+'-joined-pavement-detail-v3';}
  surfaceDetail(pathMat,'concrete');surfaceDetail(pavers,'pavers');surfaceDetail(wood,'wood');surfaceDetail(gravel,'gravel');
  await addPavement(scene,{asphalt:pavement,concrete:pathMat,gravel,wood,pavers});
  const bridgePts:Point[]=Array.from({length:151},(_,i)=>[data.bridge.a[0]+(data.bridge.b[0]-data.bridge.a[0])*i/150,data.bridge.a[1]+(data.bridge.b[1]-data.bridge.a[1])*i/150]);const deckY=(x:number,z:number)=>6+4*Math.sin(Math.PI*T.MathUtils.clamp(terrain.bridge(x,z).t,0,1));add(road(bridgePts,26,(x,z)=>deckY(x,z)+.015),concrete);add(road(bridgePts,20,(x,z)=>deckY(x,z)+.06),pavement);
