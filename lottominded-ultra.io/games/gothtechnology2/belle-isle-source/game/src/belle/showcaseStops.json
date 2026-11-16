@@ -1,7 +1,7 @@
 {
   "version": 1,
   "id": "belle-showcase-bridge-wooded-canals-blue-heron",
-  "description": "MacArthur Bridge → Wooded Canals (Sylvan Canal) → Blue Heron Lagoon. Visual quality review, not a racing route or guided autopilot.",
+  "description": "MacArthur Bridge → Wooded Canals (Nashua Canal) → Blue Heron Lagoon. Visual quality review, not a racing route or guided autopilot.",
   "stops": [
     {
       "id": "macarthur-bridge",
@@ -13,10 +13,10 @@
     },
     {
       "id": "wooded-canals",
-      "destinationId": "51495153",
-      "name": "Wooded Canals · Sylvan Canal",
-      "destinationName": "Sylvan Canal",
-      "focus": "Full canopy, exposed roots, mossy ground, calm shaded water and clear trail margins",
+      "destinationId": "32613741",
+      "name": "Wooded Canals · Nashua Canal",
+      "destinationName": "Nashua Canal",
+      "focus": "Flatwoods canopy, exposed roots, shaded narrow lagoon, natural stones and clear trail margins",
       "reference": "https://www.michigan.gov/recsearch/parks/belleisle"
     },
     {

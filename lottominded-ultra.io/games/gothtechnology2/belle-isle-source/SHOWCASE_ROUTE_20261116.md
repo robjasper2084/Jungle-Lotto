@@ -1,12 +1,12 @@
 # Belle Isle Explorer — three-stop visual-quality showcase
 **Stage:** combined, unmerged review candidate (PR #172 visual layers + PR #173 Blender asset tooling).
-**Route:** MacArthur Bridge → Sylvan Canal / Wooded Canals → Blue Heron Lagoon.
+**Route:** MacArthur Bridge → Nashua Canal / Wooded Canals → Blue Heron Lagoon.
 **Reference:** Michigan DNR park map, Historic Detroit MacArthur Bridge, Friends of the Detroit River Blue Heron Lagoon restoration.
 
 ## Scope and behavior
 - Adds a dedicated three-stop section to the Island Guide. Each button invokes the **existing** landmark Travel handler, so it does not change ride physics, street/path geometry, collision, camera code, map coordinates, quality selection, or flight controls.
 - Resolves map IDs by strict name and coordinate checks; refuses to substitute a different location when a POI is missing.
-- MacArthur = `macarthur-overlook`; Wooded Canals = mapped `Sylvan Canal` POI `51495153`; Blue Heron = `32613819` and the explicit lagoon habitat view.
+- MacArthur = `macarthur-overlook`; Wooded Canals = mapped `Nashua Canal` POI `32613741`; Blue Heron = `32613819` and the explicit lagoon habitat view.
 - The inherited PR #172 supplies weathered bridge surfaces, varied canopies, canal roots, geology LOD and shoreline sediment. PR #173 adds Blender GLB preflight tooling. **New Blender-exported models and external photographic texture maps are not shipped by this patch.**
 
 ## Visual evidence
