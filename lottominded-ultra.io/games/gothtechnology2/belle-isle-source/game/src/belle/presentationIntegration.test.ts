@@ -64,3 +64,25 @@ test('real reflection controller primes once, protects startup and rejects unsta
  }finally{r.dispose();target.dispose();fallback.dispose();sky.dispose();}
  assert.equal(listeners.size,0);assert.equal(scene.environment,fallback);assert.equal(disposed,2);
 });
+
+test('instanced near foliage sways only in high quality, with matching depth and distance passes',async()=>{
+ const scene=new T.Scene(),a=new WorldAtmosphere(scene,new T.Texture()),material=new T.MeshStandardMaterial({alphaTest:.3});
+ const mesh=new T.InstancedMesh(new T.BoxGeometry(2,6,2),material,2);
+ mesh.name='Nearby oak leaves';scene.add(mesh);await Promise.resolve();
+ assert.equal(a.stats.windMeshes,1);assert.equal(mesh.isInstancedMesh,true);
+ assert.notEqual(mesh.material,material);
+ assert(mesh.customDepthMaterial&&mesh.customDistanceMaterial);
+ const s=materialShader();(mesh.material as T.Material).onBeforeCompile(s,{} as T.WebGLRenderer);
+ assert.match(s.vertexShader,/bellePin=clamp/);
+ const depth={vertexShader:T.ShaderLib.depth.vertexShader,fragmentShader:T.ShaderLib.depth.fragmentShader,uniforms:{}} as Parameters<T.Material['onBeforeCompile']>[0];
+ mesh.customDepthMaterial!.onBeforeCompile(depth,{} as T.WebGLRenderer);
+ assert.match(depth.vertexShader,/bellePin=clamp/);
+ a.update(2,new T.Vector3(0,.5,1),.6,1,.1,'high',false,false);
+ assert(s.uniforms.belleWindAmount.value>0);
+ assert(s.uniforms.belleAirStrength.value>0);
+ a.update(3,new T.Vector3(0,.5,1),.6,1,.1,'smooth',false,false);
+ assert.equal(s.uniforms.belleWindAmount.value,0);assert.equal(s.uniforms.belleAirStrength.value,0);
+ a.update(4,new T.Vector3(0,.5,1),.6,1,.1,'high',true,false);
+ assert.equal(s.uniforms.belleWindAmount.value,0);
+ a.dispose();assert.equal(mesh.material,material);assert.equal(mesh.customDepthMaterial,undefined);
+});
