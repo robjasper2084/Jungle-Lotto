@@ -1,0 +1,79 @@
+name: Belle Isle matched environment gallery
+
+on:
+  pull_request:
+    paths:
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/**'
+      - '.github/workflows/belle-environment-gallery.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: belle-environment-gallery-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  typecheck-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Check all project types and deterministic behavior
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm ci
+          npm run check
+          npm test
+  gallery:
+    needs: typecheck-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    strategy:
+      fail-fast: false
+      matrix:
+        device: [desktop, phone]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Build PR candidate
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm ci
+          npm run build
+      - name: Install browser test runtime
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install --with-deps chrome
+      - name: Capture four candidate sites at noon and sunset
+        timeout-minutes: 30
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          ENV_GALLERY_DEVICE: ${{ matrix.device }}
+          ENV_GALLERY_VARIANT: candidate
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node scripts/environment-gallery.mjs
+      - name: Capture matching published baseline (comparison only)
+        if: always()
+        continue-on-error: true
+        timeout-minutes: 20
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          ENV_GALLERY_DEVICE: ${{ matrix.device }}
+          ENV_GALLERY_VARIANT: baseline
+          ENV_GALLERY_URL: https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/games/gothtechnology2/arcade/belle-isle-explorer/
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node scripts/environment-gallery.mjs
+      - name: Preserve real browser image pairs and reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-matched-environment-${{ matrix.device }}
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/environment-gallery
+          if-no-files-found: warn
+          retention-days: 14
