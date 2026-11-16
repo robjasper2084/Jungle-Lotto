@@ -26,8 +26,8 @@ export function finishBridgeMaterial(material:T.MeshStandardMaterial,type:Bridge
  const oldCompile=material.onBeforeCompile,oldKey=material.customProgramCacheKey();
  material.onBeforeCompile=(shader,renderer)=>{
   oldCompile(shader,renderer);
-  shader.vertexShader='varying vec3 bridgeWorld;\\n'+shader.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\\nbridgeWorld=(modelMatrix*vec4(transformed,1.)).xyz;');
-  shader.fragmentShader='varying vec3 bridgeWorld;\\n'+shader.fragmentShader.replace('#include <map_fragment>','#include <map_fragment>\\n'+bridgeFinishFragment(type));
+  shader.vertexShader='varying vec3 bridgeWorld;\n'+shader.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nbridgeWorld=(modelMatrix*vec4(transformed,1.)).xyz;');
+  shader.fragmentShader='varying vec3 bridgeWorld;\n'+shader.fragmentShader.replace('#include <map_fragment>','#include <map_fragment>\n'+bridgeFinishFragment(type));
  };
  material.customProgramCacheKey=()=>oldKey+'-belle-bridge-weather-v1-'+type;
  material.roughness=type==='aged-concrete'?.91:type==='weathered-red-iron'?.75:.82;
