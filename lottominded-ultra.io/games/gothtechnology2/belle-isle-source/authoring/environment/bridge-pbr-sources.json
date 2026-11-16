@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "provider": "Poly Haven",
+  "license": "CC0",
+  "resolution": "1k",
+  "source": "https://polyhaven.com/our-api",
+  "runtimeNetworkCalls": false,
+  "purpose": "Authoring-side bridge material calibration only. No new GLB or texture is shipped by this manifest.",
+  "materials": [
+    {
+      "name": "aged-concrete",
+      "slug": "concrete_slab_wall",
+      "page": "https://polyhaven.com/a/concrete_slab_wall",
+      "target": "MacArthur bridge concrete piers, deck edge, and abutments",
+      "maxSizeMiB": 12
+    },
+    {
+      "name": "aged-iron",
+      "slug": "rust_coarse_01",
+      "page": "https://polyhaven.com/a/rust_coarse_01",
+      "target": "Red pedestrian bridge and weathered steel fixtures; preserve painted red base color",
+      "maxSizeMiB": 12
+    }
+  ]
+}

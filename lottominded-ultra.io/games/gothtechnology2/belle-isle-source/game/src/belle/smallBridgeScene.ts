@@ -3,12 +3,14 @@ import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import type {SmallBridgePlan} from './smallBridges.ts';
 import {yieldStartupTask} from './startupWork.ts';
 import {CASINO_FOOTBRIDGES,casinoBridgeRail} from './casinoBridgeDetail.ts';
+import {finishBridgeMaterial} from './bridgeMaterialFinish.ts';
 
 /** Structural geometry never uses optional foliage/detail LOD. Fixed material
  * batches are frustum-culled by tile for BOTH solo and split-screen cameras. */
 function* buildSmallBridges(scene:T.Scene,plan:SmallBridgePlan){
  const root=new T.Group();root.name='Mapped canal bridges and raised trail links';
  const materials={stone:new T.MeshStandardMaterial({name:'Canal bridge limestone',color:0x9e9e91,roughness:.88}),red:new T.MeshStandardMaterial({name:'Casino bridge red cast iron',color:0xa72820,roughness:.54,metalness:.32,side:T.DoubleSide}),iron:new T.MeshStandardMaterial({color:0x5a4a43,roughness:.7,metalness:.25}),timber:new T.MeshStandardMaterial({color:0x74634b,roughness:.92}),brick:new T.MeshStandardMaterial({color:0x9d5e43,roughness:.93})};
+ finishBridgeMaterial(materials.stone,'aged-concrete');finishBridgeMaterial(materials.red,'weathered-red-iron');finishBridgeMaterial(materials.iron,'rusted-steel');
  materials.brick.onBeforeCompile=shader=>{
   shader.vertexShader='varying vec3 bridgePos;\n'+shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nbridgePos=position;');
   shader.fragmentShader='varying vec3 bridgePos;\n'+shader.fragmentShader.replace('#include <map_fragment>',[

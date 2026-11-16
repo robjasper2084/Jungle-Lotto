@@ -1,0 +1,21 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {buildShoreStrata,SHORE_STRATA_MAX_EDGES} from './shoreStrata.ts';
+import {ParkTerrain,type ParkMap} from './terrain.ts';
+import {readFileSync} from 'node:fs';
+const map:ParkMap=JSON.parse(readFileSync(new URL('../../public/belle/map.json',import.meta.url),'utf8'));
+test('layered sediment stays visual-only and has bounded river/lagoon geometry',()=>{
+ const terrain=new ParkTerrain(map),before=JSON.stringify(map);
+ const result=buildShoreStrata(map,terrain);
+ assert.equal(JSON.stringify(map),before);
+ assert(result.stats.edges>100);
+ assert(result.stats.edges<=SHORE_STRATA_MAX_EDGES);
+ assert(result.stats.lagoonEdges>0);
+ assert(result.stats.sandyEdges>0);
+ assert.equal(result.positions.length,result.colors.length);
+ assert.equal(result.positions.length/3*2,result.uv.length);
+ assert.equal(result.indices.length,result.stats.triangles*3);
+ assert(result.positions.every(Number.isFinite));
+ assert(result.colors.every(x=>x>=0&&x<=1&&Number.isFinite(x)));
+ assert(result.indices.every(i=>i>=0&&i<result.positions.length/3));
+});

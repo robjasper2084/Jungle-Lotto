@@ -26,8 +26,27 @@ export type ParkMap={lagoonHabitat?:{id:string;view:Point;look:Point;description
 type Bounds={minX:number;maxX:number;minZ:number;maxZ:number};
 function bounds(points:Point[],padding=0):Bounds{let minX=Infinity,maxX=-Infinity,minZ=Infinity,maxZ=-Infinity;for(const [x,z]of points){minX=Math.min(minX,x);maxX=Math.max(maxX,x);minZ=Math.min(minZ,z);maxZ=Math.max(maxZ,z);}return{minX:minX-padding,maxX:maxX+padding,minZ:minZ-padding,maxZ:maxZ+padding};}
 function inBounds(b:Bounds,x:number,z:number){return x>=b.minX&&x<=b.maxX&&z>=b.minZ&&z<=b.maxZ;}
+export type BoulderCollision={x:number;z:number;bottom:number;top:number;radius:number};
 export class ParkTerrain implements TerrainSampler{
  readonly flightSolids=new FlightSolids();
+ private readonly boulderCells=new Map<string,BoulderCollision[]>();
+ /** Static mineral obstacles are always physical, regardless of graphics tier. */
+ registerBoulders(boulders:readonly BoulderCollision[]){
+  for(const b of boulders){
+   if(![b.x,b.z,b.bottom,b.top,b.radius].every(Number.isFinite)||b.radius<=0||b.top<=b.bottom)throw Error('Invalid rock collider');
+   const key=Math.floor(b.x/32)+','+Math.floor(b.z/32),list=this.boulderCells.get(key)||[];
+   if(list.some(p=>p.x===b.x&&p.z===b.z))continue;
+   list.push(b);this.boulderCells.set(key,list);
+   this.flightSolids.add({...b,kind:'rock'});
+  }
+ }
+ private boulderBlocked(x:number,z:number,margin=0){
+  const ix=Math.floor(x/32),iz=Math.floor(z/32),pad=Math.ceil((Math.max(0,margin)+2.5)/32);
+  for(let i=ix-pad;i<=ix+pad;i++)for(let j=iz-pad;j<=iz+pad;j++){
+   for(const b of this.boulderCells.get(i+','+j)||[])if(Math.hypot(x-b.x,z-b.z)<b.radius+margin)return true;
+  }
+  return false;
+ }
  private polygonBounds=new WeakMap<Point[],Bounds>();
  private deckSegments:{a:Point;b:Point;radius:number;bounds:Bounds}[]=[];
  private contains(x:number,z:number,p:Point[]){let b=this.polygonBounds.get(p);if(!b){b=bounds(p);this.polygonBounds.set(p,b);}return inBounds(b,x,z)&&inside(x,z,p);}
@@ -40,7 +59,7 @@ export class ParkTerrain implements TerrainSampler{
  readonly decks:{points:Point[];width:number}[]=[];
  map:ParkMap;
  readonly monuments:MonumentSolid[];
- obstructed(x:number,z:number,margin=0){return this.smallBridges.blocked(x,z,margin)||this.activityCollision.blocked(x,z,margin)||playgroundBlocked(x,z,margin)||yachtBlocked(x,z,margin)||lagoonBridgeBlocked(this.lagoonRails,x,z,margin)||this.facilities.blocked(x,z,margin)||(this.map.dossin&&dossinBlocked(this.map.dossin,x,z,margin))||(this.map.aquarium&&aquariumBlocked(this.map.aquarium,x,z,margin))||(this.map.conservatory&&greenhouseBlocked(this.map.conservatory,x,z,margin))||this.boxes.some(b=>x>b.minX-margin&&x<b.maxX+margin&&z>b.minZ-margin&&z<b.maxZ+margin&&(!b.points||inside(x,z,b.points)||b.points.some((p,j)=>j>0&&segment(x,z,b.points![j-1],p).d<=margin)))||this.monuments.some(m=>Math.hypot(x-m.x,z-m.z)<m.radius+margin); }
+ obstructed(x:number,z:number,margin=0){return this.boulderBlocked(x,z,margin)||this.smallBridges.blocked(x,z,margin)||this.activityCollision.blocked(x,z,margin)||playgroundBlocked(x,z,margin)||yachtBlocked(x,z,margin)||lagoonBridgeBlocked(this.lagoonRails,x,z,margin)||this.facilities.blocked(x,z,margin)||(this.map.dossin&&dossinBlocked(this.map.dossin,x,z,margin))||(this.map.aquarium&&aquariumBlocked(this.map.aquarium,x,z,margin))||(this.map.conservatory&&greenhouseBlocked(this.map.conservatory,x,z,margin))||this.boxes.some(b=>x>b.minX-margin&&x<b.maxX+margin&&z>b.minZ-margin&&z<b.maxZ+margin&&(!b.points||inside(x,z,b.points)||b.points.some((p,j)=>j>0&&segment(x,z,b.points![j-1],p).d<=margin)))||this.monuments.some(m=>Math.hypot(x-m.x,z-m.z)<m.radius+margin); }
  constructor(map:ParkMap){this.map=map;this.activityCollision=new FacilityCollision({...map,facilities:activityFacilities()});this.lagoonRails=[...lagoonBridges(map),...waterfrontRails];this.facilities=new FacilityCollision(map);this.beaches=makeBeachProfiles(map);this.monuments=monumentSolids(map.monuments||[]);this.smallBridges=new SmallBridgeCollision(makeSmallBridgePlan(map,(x,z)=>this.height(x,z)));this.decks=map.roads.filter(r=>r.bridge||r.points.some(p=>map.water.some(w=>inside(p[0],p[1],w.points)&&!w.holes.some(h=>inside(p[0],p[1],h))))); for(const r of this.decks)for(let i=1;i<r.points.length;i++)this.deckSegments.push({a:r.points[i-1],b:r.points[i],radius:r.width*.5,bounds:bounds([r.points[i-1],r.points[i]],r.width*.5)}); for(const b of map.buildings){if(map.facilities?.sites.some(s=>s.id===b.id&&s.kind==='shelter')&&!ENCLOSED_SHELTERS.has(b.id))continue;if(b.id===YACHT.id||map.dossin?.ids.includes(b.id)||b.id===map.conservatory?.id||b.id===map.aquarium?.id)continue;const xs=b.points.map(p=>p[0]),zs=b.points.map(p=>p[1]);this.boxes.push({minX:Math.min(...xs),maxX:Math.max(...xs),minZ:Math.min(...zs),maxZ:Math.max(...zs),height:REFERENCE_HEIGHTS[b.id]??b.height,points:b.points});}}
  boxes:{minX:number;maxX:number;minZ:number;maxZ:number;height:number;points?:Point[]}[]=[];
  bridge(x:number,z:number){const b=this.map.bridge,dx=b.b[0]-b.a[0],dz=b.b[1]-b.a[1],t=((x-b.a[0])*dx+(z-b.a[1])*dz)/(b.length*b.length),side=((x-b.a[0])*dz-(z-b.a[1])*dx)/b.length;return{t,side,active:t>=-1e-7&&t<=1+1e-7&&Math.abs(side)<=13.05};}
