@@ -10,6 +10,7 @@ blender -b --python tools/blender-belle-environment.py -- \
 """
 import argparse
 import hashlib
+import shutil
 import json
 import math
 import sys
@@ -126,26 +127,33 @@ def copies_for_lod(objects, index,mode,concrete,iron):
     return products
 
 def export_lod(objects,target):
+    # Blender's core exporter does not guarantee Meshopt support; use the
+    # bundled glTF material exporter, then explicit offline glTF-Transform CLI.
     bpy.ops.object.select_all(action='DESELECT')
     for obj in objects:obj.select_set(True)
     bpy.context.view_layer.objects.active=objects[0]
     op=bpy.ops.export_scene.gltf
     available={p.identifier for p in op.get_rna_type().properties}
-    opts={'filepath':str(target),'export_format':'GLB'}
-    # Meshopt is wired into this game's GLTFLoader, but Draco is not.
-    if 'export_meshopt_compression_enable' not in available:
-        raise RuntimeError('Exporter does not support Meshopt. Use compatible Blender glTF exporter; never silently switch to Draco.')
-    opts['export_meshopt_compression_enable']=True
-    if 'export_meshopt_extension' in available:
-        opts['export_meshopt_extension']='EXT_meshopt_compression'
-    if 'use_selection' in available: opts['use_selection']=True
-    elif 'export_selected' in available: opts['export_selected']=True
-    else: raise RuntimeError('Cannot reliably export selection without including physics and reference images')
+    opts={'filepath':str(target.with_name(target.stem+'-uncompressed.glb')),'export_format':'GLB'}
+    if 'use_selection' in available:opts['use_selection']=True
+    elif 'export_selected' in available:opts['export_selected']=True
+    else:raise RuntimeError('Exporter lacks selected-object scope; abort to protect collision objects')
     if 'export_apply' in available:opts['export_apply']=True
     if 'export_yup' in available:opts['export_yup']=True
     op(**opts)
+    temp=Path(opts['filepath'])
+    cli=shutil.which('gltf-transform')
+    if cli is None:
+        raise RuntimeError('Install @gltf-transform/cli locally and put gltf-transform on PATH to encode EXT_meshopt_compression; never publish the uncompressed intermediate.')
+    import subprocess
+    subprocess.run([cli,'optimize',str(temp),str(target),'--compress','meshopt'],check=True,timeout=180)
     data=target.read_bytes()
     if data[:4]!=b'glTF':raise RuntimeError('Output is not a GLB: '+str(target))
+    header=json.loads(data[20:20+int.from_bytes(data[12:16],'little')].decode('utf8'))
+    if 'EXT_meshopt_compression' not in (
+       header.get('extensionsRequired',[])+header.get('extensionsUsed',[])
+    ):raise RuntimeError('Compressed meshopt extension missing in GLB')
+    temp.unlink(missing_ok=True)
     return {'filename':target.name,'bytes':len(data),'sha256':hashlib.sha256(data).hexdigest(),
       'triangles':sum(len(poly.vertices)-2 for obj in objects for poly in obj.data.polygons),
       'renderObjects':len(objects)}
