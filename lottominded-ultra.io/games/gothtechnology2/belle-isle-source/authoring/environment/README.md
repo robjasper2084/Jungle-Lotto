@@ -19,6 +19,9 @@ From `lottominded-ultra.io/games/gothtechnology2/belle-isle-source/`:
 # Cache 1K color, OpenGL normal and ARM maps (AO R, roughness G, metalness B).
 python3 tools/fetch-belle-pbr.py --manifest authoring/environment/bridge-pbr-sources.json --out authoring/environment/cache
 
+# Install the standalone compressor for the game’s Meshopt loader.
+npm install --global @gltf-transform/cli
+
 # Use Blender 5.2+ with its glTF 2.0 exporter; supply a local editable
 # world/bridge .blend or selected authored .glb (neither is downloaded here).
 blender -b --python tools/blender-belle-environment.py --   --source /path/to/Belle_Isle_World.blend   --cache authoring/environment/cache   --output game/output/environment   --refs /path/to/local/reference-photos   --mode bridge
@@ -44,7 +47,7 @@ Output resides in `game/output/environment/` and `game/output/environment-galler
 - **GScatter (optional):** weight-paint narrow strips along mapped woodland canals and use its placement/collision restrictions to develop tree/root groups. Export a compact set of source meshes and canonical coordinates; keep distributed trees in the game's existing instancing system, not a monolithic scatter mesh.
 - **Node Wrangler (optional):** convenient for authoring a Shader Editor Gradient → Color Ramp and mixing Principled PBR surfaces, but Blender shader nodes do **not automatically export** Three.js custom water/refraction shader logic. Implement river/lagoon depth controls in `game/src/belle/water.ts` after verified geometry and performance data. The current Koi pond already has partially transparent water; other lagoons still need separately validated depth/bed layers.
 - **Auto-LOD plugin (optional):** do not depend on any one plugin or unverified tool version. The included exporter generates standalone LOD0, LOD1, LOD2 meshes via Blender Decimate *Collapse*. Use *Planar/Dissolve* for hard-surface panels only; it can destroy organic rock silhouettes.
-- **Compression:** This game configures `GLTFLoader.setMeshoptDecoder`. The exporter therefore **requires Meshopt**, and **rejects silent fallback to Draco**, which would require new runtime DRACOLoader setup. Generated materials use the OpenGL +Y normal convention and 1K color/ARM maps. Exported LODs are independent; a runtime distance selector must load one tier, never all three concurrently.
+- **Compression:** This game configures `GLTFLoader.setMeshoptDecoder`. The authoring exporter uses offline **glTF-Transform CLI** with Meshopt and **rejects silent fallback to Draco**, which would require new runtime DRACOLoader setup. Generated materials use the OpenGL +Y normal convention and 1K color/ARM maps. Exported LODs are independent; a runtime distance selector must load one tier, never all three concurrently.
 
 ### Atlas baking and ambient occlusion
 A shared **ORM packed map** already carries AO (R), roughness (G) and metalness (B). For static bridge hardware, a single UV atlas can be baked *after* UV islands have been inspected for stretching/seam overlap; don't force UVs for long bridge decks into a small atlas. Blender and glTF can represent PBR maps, but AO textures alone don't replace accurate shadowing/SSAO or a lightmap. Any baked AO must be evaluated in game with its intended UV set. The current pipeline retains two source material families; a final merged draw-call atlas is **not yet validated**.
