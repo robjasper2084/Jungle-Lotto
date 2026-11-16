@@ -48,7 +48,7 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
  const trees=new Set(['maple','birch','willow','pine']);
  function growth(p:Plant){let g=canopyCache.get(p);if(!g){g=canopyProfile(p);canopyCache.set(p,g);}return g;}
  function plantTint(p:Plant){const c=canopyTint(p.tint,p.canopyTone),tone=trees.has(p.id)?growth(p).tint:1;return tint.setRGB(c[0]*tone,c[1]*tone,c[2]*tone);}
- function matrix(p:Plant,hidden=false){dummy.position.set(p.x,p.y,p.z);dummy.rotation.set(0,p.yaw,0);const g=trees.has(p.id)?growth(p):null;dummy.scale.set(hidden?0:p.scale*(g?.width??1),hidden?0:p.scale*(p.heightScale??1)*(g?.height??1),hidden?0:p.scale*(g?.width??1));dummy.updateMatrix();return dummy.matrix;}
+ function matrix(p:Plant,hidden=false){dummy.position.set(p.x,p.y,p.z);const leaning=p.id==='willow'||p.id==='birch';const tilt=leaning?.035*Math.sin(p.x*.017+p.z*.013):0;dummy.rotation.set(tilt,p.yaw,tilt*.63);const g=trees.has(p.id)?growth(p):null;const spread=leaning?1.07:1;dummy.scale.set(hidden?0:p.scale*(g?.width??1)*spread,hidden?0:p.scale*(p.heightScale??1)*(g?.height??1),hidden?0:p.scale*(g?.width??1)*spread);dummy.updateMatrix();return dummy.matrix;}
  for(const entry of manifest.trees){
   const plants=plan.trees.filter(p=>p.id===entry.id&&!replacedByCherry(p));
   const trunk=treeSource.getObjectByName(entry.id+'__trunk') as T.Mesh;
