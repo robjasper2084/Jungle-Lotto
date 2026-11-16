@@ -22,7 +22,8 @@ test('Blender Python entrypoints parse and use the existing Meshopt runtime',()=
   ...files.map(file=>resolve(root,'tools',file))],{encoding:'utf8',timeout:20000});
  assert.equal(check.status,0,check.stderr||check.error?.message);
  const blender=readFileSync(resolve(root,'tools/blender-belle-environment.py'),'utf8');
- assert(blender.includes('export_meshopt_compression_enable'));
+ assert(blender.includes("gltf-transform"));
+ assert(blender.includes("'--compress','meshopt'"));
  assert(!blender.includes("export_draco_mesh_compression_enable']=True"));
  assert(blender.includes('export_apply'));
  assert(blender.includes("render_only"));
