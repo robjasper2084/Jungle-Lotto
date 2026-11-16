@@ -5,7 +5,7 @@ import * as T from 'three';
  * the triplanar surface shaders must NOT be baked into world-space geometry.
  * Sites stay independent to retain their original per-playground distance culling.
  */
-export function batchPlaygroundMeshes(scene:T.Scene,sites:readonly {objects:T.Mesh[]}[]){
+export function batchPlaygroundMeshes(scene:T.Object3D,sites:readonly {objects:T.Mesh[]}[]){
  const sourceMeshes=sites.reduce((sum,site)=>sum+site.objects.length,0);
  let batches=0,joinedSources=0;
  for(const site of sites){

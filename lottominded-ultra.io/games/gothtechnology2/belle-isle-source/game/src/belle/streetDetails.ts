@@ -1,5 +1,6 @@
 import * as T from 'three';
 import type {StreetPlan,StreetBox} from './streetPlan.ts';
+import {CURB_PROFILE} from './curbProfile.ts';
 
 // Build once from the offline plan. Group by material AND 256 m tile so the
 // renderer can discard distant detail without per-frame object traversal.
@@ -28,7 +29,7 @@ export function addStreetDetails(scene:T.Scene,plan:StreetPlan){
  }
  const unit=new T.BoxGeometry(1,1,1).toNonIndexed();
  // Chamfer the upper edges rather than making curb runs look like sharp blocks.
- const section=new T.Shape();section.moveTo(-.5,-.5);section.lineTo(.5,-.5);section.lineTo(.5,.3);section.lineTo(.4,.5);section.lineTo(-.4,.5);section.lineTo(-.5,.3);section.closePath();
+ const section=new T.Shape();CURB_PROFILE.forEach(([x,y],i)=>i?section.lineTo(x,y):section.moveTo(x,y));section.closePath();
  const curbUnit=new T.ExtrudeGeometry(section,{depth:1,bevelEnabled:false,steps:1});curbUnit.translate(0,0,-.5);
  const groups=new Map<string,{p:number[];n:number[];m:StreetBox['material']}>();
  for(const b of plan.boxes){

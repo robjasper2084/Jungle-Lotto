@@ -3,8 +3,32 @@ import {ENCLOSED_SHELTERS} from '../game/src/belle/referenceSites.ts';
 // Reconcile overlapping OSM ways into one surface before triangulation. A plaza
 // owns its footpaths; a real carriageway owns crossings. No stacked flat ribbons.
 export const surfaceKind=r=>['grass','gravel','fine_gravel','unpaved','dirt','ground','compacted','sand'].includes(r.surface)?'gravel':r.surface==='wood'?'wood':['paving_stones','sett'].includes(r.surface)?'pavers':/concrete/.test(r.surface)?'concrete':'asphalt';
-export function corridorPolygons(points,width){
+/** Visual-only corner fillets. Original OSM ways still govern physics, crossing
+ * clearance and race routes. Closed rings retain their surveyed join. */
+export function smoothCorridorPoints(points,width){
  const clean=points.filter((p,i)=>!i||Math.hypot(p[0]-points[i-1][0],p[1]-points[i-1][1])>.001);
+ if(clean.length<3||Math.hypot(clean[0][0]-clean.at(-1)[0],clean[0][1]-clean.at(-1)[1])<.001)return clean;
+ const out=[clean[0]];
+ for(let i=1;i<clean.length-1;i++){
+  const a=clean[i-1],b=clean[i],c=clean[i+1],dx=b[0]-a[0],dz=b[1]-a[1],ex=c[0]-b[0],ez=c[1]-b[1];
+  const before=Math.hypot(dx,dz),after=Math.hypot(ex,ez);
+  if(before<.01||after<.01){out.push(b);continue;}
+  const ax=dx/before,az=dz/before,bx=ex/after,bz=ez/after,turn=Math.abs(ax*bz-az*bx),dot=ax*bx+az*bz;
+  if(turn<.4||dot<-.3){out.push(b);continue;}
+  const trim=Math.min(1.25,width*.20,before*.15,after*.15);
+  if(trim<.12){out.push(b);continue;}
+  const start=[b[0]-ax*trim,b[1]-az*trim],end=[b[0]+bx*trim,b[1]+bz*trim];
+  out.push(start);
+  for(const t of [1/3,2/3]){
+   const s=1-t;out.push([s*s*start[0]+2*s*t*b[0]+t*t*end[0],s*s*start[1]+2*s*t*b[1]+t*t*end[1]]);
+  }
+  out.push(end);
+ }
+ out.push(clean.at(-1));
+ return out;
+}
+export function corridorPolygons(points,width){
+ const clean=smoothCorridorPoints(points,width);
  if(clean.length<2)return [];
  const closed=clean.length>2&&Math.hypot(clean[0][0]-clean.at(-1)[0],clean[0][1]-clean.at(-1)[1])<.001;
  const sides=clean.map((p,i)=>{const a=clean[i===0&&closed?clean.length-2:Math.max(0,i-1)],b=clean[i===clean.length-1&&closed?1:Math.min(clean.length-1,i+1)],l=Math.hypot(p[0]-a[0],p[1]-a[1]),r=Math.hypot(b[0]-p[0],b[1]-p[1]);let ax=l?(p[1]-a[1])/l:(b[1]-p[1])/r,az=l?-(p[0]-a[0])/l:-(b[0]-p[0])/r,bx=r?(b[1]-p[1])/r:ax,bz=r?-(b[0]-p[0])/r:az;const n=Math.hypot(ax+bx,az+bz),nx=n?(ax+bx)/n:ax,nz=n?(az+bz)/n:az,m=Math.min(1.8,1/Math.max(.01,nx*bx+nz*bz));return [-1,1].map(s=>[p[0]+nx*width*.5*m*s,p[1]+nz*width*.5*m*s]);});

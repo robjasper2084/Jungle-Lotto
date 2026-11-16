@@ -1,0 +1,33 @@
+/** Render-only budgets: no collision, gameplay, or route rules change. */
+export type WorldPerformanceTier='smooth'|'automatic'|'high';
+
+/** Fewer shadow texels on high quality; the 110m caster budget keeps
+ * near-rider shadows while avoiding irrelevant geometry submissions.
+ * Smooth retains contact shadows instead of a directional shadow map. */
+export function directionalShadowResolution(quality:WorldPerformanceTier):number{
+ return quality==='high'?1536:1024;
+}
+export function directionalCasterEligible(quality:WorldPerformanceTier,distance:number,radius:number,authored:boolean):boolean{
+ if(!authored||quality==='smooth'||!Number.isFinite(distance)||!Number.isFinite(radius))return false;
+ const reach=quality==='high'?110:85;
+ return distance<=reach+Math.max(0,radius);
+}
+
+/** Co-op's 2–4 viewports have different culling, but share a single
+ * world clock. Gate only position-independent work, not per-eye scenery. */
+export class WorldFrameWork{
+ private lastClock:number|undefined;
+ begin(clock:number):boolean{
+  if(!Number.isFinite(clock))return true;
+  if(this.lastClock===clock)return false;
+  this.lastClock=clock;
+  return true;
+ }
+ reset(){this.lastClock=undefined;}
+}
+
+/** One or two desktop co-op cameras retain mapped shadows. On coarse
+ * pointer devices, use the already-present contact shadows for every pane. */
+export function coopMappedShadows(viewCount:number,coarsePointer:boolean):boolean{
+ return viewCount<3&&!coarsePointer;
+}
