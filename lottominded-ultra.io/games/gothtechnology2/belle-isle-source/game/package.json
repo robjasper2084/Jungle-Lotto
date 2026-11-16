@@ -9,7 +9,8 @@
     "check": "tsc --noEmit",
     "test": "node run-tests.mjs && node --test ../tools/validate-belle-asset-pack.test.mjs",
     "preview": "vite preview --host 127.0.0.1 --port 8301 --strictPort",
-    "validate:blender-assets": "node ../tools/validate-belle-asset-pack.mjs"
+    "validate:blender-assets": "node ../tools/validate-belle-asset-pack.mjs",
+    "audit:environment-zones": "node ../tools/audit-island-zone-assets.mjs"
   },
   "dependencies": {
     "@supabase/realtime-js": "^2.117.2",

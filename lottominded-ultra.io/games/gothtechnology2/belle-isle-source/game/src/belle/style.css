@@ -25,3 +25,18 @@ header{z-index:10} #welcome{padding-top:115px}
 #showcase-stops li button{width:100%;min-height:44px;white-space:normal;overflow-wrap:anywhere}
 #showcase-stops li button:focus-visible{outline:3px solid #e6d7a2;outline-offset:2px}
 @media(max-width:420px){#showcase-route{padding:10px}#showcase-stops{grid-template-columns:1fr}}
+
+/* Four-zone environmental review guide, separate from the existing HUD. */
+#island-zone-coverage{margin:16px 0;padding:14px;border:1px solid #99b2a16b;border-radius:12px;background:rgba(12,31,29,.72)}
+#island-zone-coverage h3{font-size:1rem;color:#e7d5a0;margin:0 0 8px}
+#island-zone-coverage>p{font-size:.86rem;color:#c4d9d1;line-height:1.5}
+#environment-zones{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.environment-zone{min-width:0;border:1px solid #8aa99a66;border-radius:10px;padding:12px}
+.environment-zone h4{font-size:.94rem;margin:0 0 8px;color:#f3f4e4}
+.environment-zone p{color:#c4d5c9;font-size:.8rem;line-height:1.4;margin:0 0 9px}
+.environment-zone ol{list-style:none;margin:0;padding:0;display:grid;gap:9px}
+.environment-zone li{min-width:0}
+.environment-zone button{display:block;width:100%;min-height:44px;white-space:normal;overflow-wrap:anywhere;text-align:center}
+.environment-zone small{display:block;font-size:.75rem;line-height:1.3;color:#bfd2c3;margin-top:5px}
+.environment-zone button:focus-visible{outline:3px solid #e6d7a2;outline-offset:2px}
+@media(max-width:600px){#environment-zones{grid-template-columns:1fr}#island-zone-coverage{padding:10px}}
