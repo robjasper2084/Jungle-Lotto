@@ -15,7 +15,8 @@ const {chromium,expect:rawExpect}=require('@playwright/test');
 const expect=rawExpect.configure({timeout:150000});
 const device=process.env.ENV_GALLERY_DEVICE==='phone'?'phone':'desktop';
 const viewport=device==='phone'?{width:390,height:844}:{width:1440,height:900};
-const output=resolve(game,'output/environment-gallery',device);
+const variant=process.env.ENV_GALLERY_VARIANT==='baseline'?'baseline':'candidate';
+const output=resolve(game,'output/environment-gallery',variant,device);
 const sites=[
  {id:'macarthur',name:'MacArthur Bridge',search:/MacArthur Bridge overlook/i,
   note:'Concrete arches, protected riprap and bridge clearances'},
@@ -28,7 +29,7 @@ const sites=[
 ];
 const lights=[{id:'high-noon',value:'12'},{id:'sunset',value:'17.8'}];
 await mkdir(output,{recursive:true});
-const report={head:process.env.GITHUB_SHA||null,device,viewport,
+const report={head:process.env.GITHUB_SHA||null,variant,device,viewport,
  source:'real built browser game; guide Travel action; Chrome SwiftShader',
  limitations:['Not physical-device FPS certification','Travel cameras may not frame the intended bridge exactly','Reference photos are not bundled or distributed'],
  passed:false,visits:[],errors:[],failedRequests:[],coverageGaps:[]};
@@ -126,6 +127,6 @@ const cards=sites.map(site=>'<section><h2>'+safe(site.name)+'</h2><p>'+safe(site
  const a=report.visits.find(x=>x.id===site.id&&x.light===light.id);
  return '<figure><figcaption>'+safe(light.id)+' · '+safe(a?.destination||'NOT CAPTURED')+'</figcaption>'+(a?.screenshot?'<img src="'+a.screenshot+'" alt="'+safe(site.name)+' at '+safe(light.id)+'">':'<p>Missing genuine browser capture</p>')+'</figure>';
 }).join('')+'</section>').join('');
-await writeFile(resolve(output,'index.html'),'<!doctype html><meta charset="utf-8"><title>Belle Isle Environment Reference Gallery</title><style>body{background:#171c22;color:#eee;font:16px system-ui;margin:24px}main{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:20px}section{border:1px solid #38404a;padding:18px}img{max-width:100%;height:auto}figure{margin:8px 0}p{color:#b9c1c8}</style><h1>Environment Gallery — '+safe(device)+'</h1><p>True game captures, not proof of real-device FPS. Compare your locally held reference photos beside these frames. Red-bridge identity remains provisional until visually confirmed.</p><main>'+cards+'</main>','utf8');
+await writeFile(resolve(output,'index.html'),'<!doctype html><meta charset="utf-8"><title>Belle Isle Environment Reference Gallery</title><style>body{background:#171c22;color:#eee;font:16px system-ui;margin:24px}main{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:20px}section{border:1px solid #38404a;padding:18px}img{max-width:100%;height:auto}figure{margin:8px 0}p{color:#b9c1c8}</style><h1>Environment Gallery — '+safe(variant)+' · '+safe(device)+'</h1><p>True game captures, not proof of real-device FPS. Compare your locally held reference photos beside these frames. Red-bridge identity remains provisional until visually confirmed.</p><main>'+cards+'</main>','utf8');
 console.log(JSON.stringify({passed:report.passed,device,completed:report.visits.filter(x=>x.passed).length,missing:report.coverageGaps,errors:report.errors.slice(0,8)}));
 if(!report.passed)process.exitCode=1;

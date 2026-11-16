@@ -76,10 +76,10 @@ export function addShoreDetails(scene:T.Scene,data:ParkMap,terrain:ParkTerrain,g
  });
  if(walls.length){const g=mergeGeometries(walls)!;walls.forEach(g=>g.dispose());const m=new T.Mesh(g,concrete);m.name='Mapped Detroit seawall';m.receiveShadow=true;scene.add(m);}
  const rock=new T.IcosahedronGeometry(1,1),rockMaterial=new T.MeshStandardMaterial({color:0xffffff,roughness:.94,flatShading:true});rockMaterial.name='Weathered shoreline stone';
- rockMaterial.onBeforeCompile=s=>{s.vertexShader='varying vec3 rockWorld;\n'+s.vertexShader;s.vertexShader=s.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nvec4 rw=vec4(transformed,1.);\n#ifdef USE_INSTANCING\nrw=instanceMatrix*rw;\n#endif\nrockWorld=(modelMatrix*rw).xyz;');s.fragmentShader='varying vec3 rockWorld;\n'+s.fragmentShader;s.fragmentShader=s.fragmentShader.replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\nfloat wet=1.-smoothstep(.05,.65,rockWorld.y);diffuseColor.rgb*=1.-wet*.35;roughnessFactor=mix(roughnessFactor,.32,wet);');};
+ rockMaterial.onBeforeCompile=s=>{s.vertexShader='varying vec3 rockWorld;\n'+s.vertexShader;s.vertexShader=s.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nvec4 rw=vec4(transformed,1.);\n#ifdef USE_INSTANCING\nrw=instanceMatrix*rw;\n#endif\nrockWorld=(modelMatrix*rw).xyz;');s.fragmentShader='varying vec3 rockWorld;\n'+s.fragmentShader;s.fragmentShader=s.fragmentShader.replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\nfloat wet=1.-smoothstep(.07,.72,rockWorld.y);float mineral=.91+.09*sin(rockWorld.x*8.2+rockWorld.z*3.7);diffuseColor.rgb*=mineral*(1.-wet*.31);roughnessFactor=mix(roughnessFactor,.36,wet);');};
 
  const vertices=rock.attributes.position;
- for(let i=0;i<vertices.count;i++){const x=vertices.getX(i),y=vertices.getY(i),z=vertices.getZ(i),r=.91+.09*Math.sin(x*8.1+y*4.7+z*6.3);vertices.setXYZ(i,x*r,y*r,z*r);}rock.computeVertexNormals();
+ for(let i=0;i<vertices.count;i++){const x=vertices.getX(i),y=vertices.getY(i),z=vertices.getZ(i),r=.84+.15*Math.sin(x*8.1+y*4.7+z*6.3);vertices.setXYZ(i,x*r,y*r*.85,z*r);}rock.computeVertexNormals();
  const plantMaterial=new T.MeshStandardMaterial({color:0xffffff,roughness:1,side:T.DoubleSide});plantMaterial.name='Shore bank grass';
  const stones=createShoreDetailPool(scene,rock,rockMaterial,plan.stones,'rocks','Shoreline riprap');
  const plants=createShoreDetailPool(scene,bankGrassGeometry(),plantMaterial,plan.plants,'plants','Low riverbank grass');
