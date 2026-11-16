@@ -1,6 +1,7 @@
 import * as T from 'three';
 import {inside,type ParkMap,type ParkTerrain,type Point} from './terrain.ts';
 import {roadIndex} from './streetPlan.ts';
+import {selectGeology,type GeologyTier} from './geologyLod.ts';
 
 export type Boulder={x:number;z:number;y:number;radius:number;height:number;yaw:number;shape:number;hue:number};
 export const MAX_BOULDERS=90;
@@ -51,8 +52,10 @@ export function planBoulders(map:ParkMap,terrain:Pick<ParkTerrain,'land'|'height
  }
  return rocks.slice(0,MAX_BOULDERS);
 }
-function rockGeometry(shape:number){
- const g=new T.IcosahedronGeometry(1,shape===0?1:2),v=g.attributes.position;
+function rockGeometry(shape:number,detail:'near'|'far'){
+ // Coarse twenty-face far silhouettes prevent dense rock detail on the
+ // starting-line GPU; near boulders retain their original angular geometry.
+ const g=new T.IcosahedronGeometry(1,detail==='far'?0:shape===0?1:2),v=g.attributes.position;
  for(let i=0;i<v.count;i++){
   const x=v.getX(i),y=v.getY(i),z=v.getZ(i);
   const irregular=1+.11*Math.sin(x*6.7+y*3.1+shape)+.07*Math.cos(z*9.3-x*4.7+shape);
@@ -61,11 +64,12 @@ function rockGeometry(shape:number){
  g.computeVertexNormals();g.computeBoundingBox();return g;
 }
 export function addGeology(scene:T.Scene,map:ParkMap,terrain:ParkTerrain){
- const boulders=planBoulders(map,terrain),geometries=[0,1,2].map(rockGeometry),meshes:T.InstancedMesh[]=[];
+ const boulders=planBoulders(map,terrain),pools:{shape:number;detail:'near'|'far';mesh:T.InstancedMesh}[]=[];
+ const dummy=new T.Object3D(),color=new T.Color();
  let triangles=0;
  for(let shape=0;shape<3;shape++){
-  const members=boulders.filter(b=>b.shape===shape),g=geometries[shape],m=new T.MeshStandardMaterial({name:'Natural lake-and-flatwoods rock',color:0xa5a49a,metalness:0,roughness:.94});
-  m.onBeforeCompile=shader=>{
+  const material=new T.MeshStandardMaterial({name:'Natural lake-and-flatwoods rock',color:0xa5a49a,metalness:0,roughness:.94});
+  material.onBeforeCompile=shader=>{
    shader.vertexShader='varying vec3 mineralWorld;\n'+shader.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nvec4 mineralLocal=vec4(transformed,1.);\n#ifdef USE_INSTANCING\nmineralLocal=instanceMatrix*mineralLocal;\n#endif\nmineralWorld=(modelMatrix*mineralLocal).xyz;');
    shader.fragmentShader='varying vec3 mineralWorld;\n'+shader.fragmentShader.replace('#include <map_fragment>',`#include <map_fragment>
     float fracture=.5+.25*sin(mineralWorld.x*3.3+mineralWorld.z*1.5)+.25*sin(mineralWorld.z*4.4-mineralWorld.y*2.9);
@@ -73,18 +77,39 @@ export function addGeology(scene:T.Scene,map:ParkMap,terrain:ParkTerrain){
     diffuseColor.rgb*=mix(vec3(.94,.96,.93),vec3(.78,.84,.70),lichen);
     diffuseColor.rgb*=.91+.12*fracture;
    `);
-  };m.customProgramCacheKey=()=> 'belle-mineral-weather-v1';
-  const inst=new T.InstancedMesh(g,m,members.length),dummy=new T.Object3D(),color=new T.Color();
-  inst.name='Clustered mapped mineral boulders '+shape;inst.castShadow=false;inst.receiveShadow=true;inst.frustumCulled=false;
-  members.forEach((b,i)=>{
-   dummy.position.set(b.x,b.y+b.height*.32,b.z);dummy.rotation.set(0,b.yaw,0);dummy.scale.set(b.radius,b.height,b.radius);dummy.updateMatrix();
-   inst.setMatrixAt(i,dummy.matrix);inst.setColorAt(i,color.setHSL(.09+b.hue*.045,.065+b.hue*.05,.70+b.hue*.12));
-  });
-  inst.instanceMatrix.needsUpdate=true;inst.computeBoundingSphere();scene.add(inst);meshes.push(inst);
-  triangles+=(g.index?.count??g.attributes.position.count)/3*members.length;
+  };material.customProgramCacheKey=()=> 'belle-mineral-weather-v1';
+  for(const detail of ['near','far'] as const){
+   const g=rockGeometry(shape,detail),mesh=new T.InstancedMesh(g,material,boulders.length);
+   mesh.name='Clustered mapped mineral boulders '+shape+' '+detail;
+   mesh.castShadow=false;mesh.receiveShadow=true;mesh.frustumCulled=false;mesh.count=0;mesh.visible=false;
+   mesh.instanceMatrix.setUsage(T.DynamicDrawUsage);
+   scene.add(mesh);pools.push({shape,detail,mesh});
+   triangles+=(g.index?.count??g.attributes.position.count)/3*boulders.filter(b=>b.shape===shape).length;
+  }
  }
- // Physics is registered independently of quality and render distance.
- // The model footprint sits in mapped inland/shore focal points, never on a route.
+ // Physics remains at full fidelity even for hidden/distant graphics.
  terrain.registerBoulders(boulders.map(b=>({x:b.x,z:b.z,bottom:b.y,top:b.y+b.height*.98,radius:b.radius*.78})));
- return {stats:{boulders:boulders.length,drawCalls:meshes.length,triangles,colliders:boulders.length},boulders};
+ let quality:GeologyTier='automatic',lastX=Infinity,lastZ=Infinity;
+ const stats={boulders:boulders.length,drawCalls:pools.length,activeDrawCalls:0,visibleNear:0,visibleFar:0,triangles,colliders:boulders.length};
+ function update(x:number,z:number){
+  if(Math.hypot(x-lastX,z-lastZ)<6)return;
+  lastX=x;lastZ=z;
+  const selected=selectGeology(boulders,x,z,quality);
+  stats.visibleNear=selected.near.length;stats.visibleFar=selected.far.length;stats.activeDrawCalls=0;
+  for(const {shape,detail,mesh}of pools){
+   const rocks=(detail==='near'?selected.near:selected.far).filter(b=>b.shape===shape);
+   mesh.count=rocks.length;mesh.visible=mesh.count>0;
+   if(mesh.visible)stats.activeDrawCalls++;
+   rocks.forEach((b,i)=>{
+    dummy.position.set(b.x,b.y+b.height*.32,b.z);dummy.rotation.set(0,b.yaw,0);
+    dummy.scale.set(b.radius,b.height,b.radius);dummy.updateMatrix();
+    mesh.setMatrixAt(i,dummy.matrix);
+    mesh.setColorAt(i,color.setHSL(.09+b.hue*.045,.065+b.hue*.05,.70+b.hue*.12));
+   });
+   if(mesh.count){mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;}
+  }
+ }
+ return {stats,boulders,update,setQuality(value:string){
+  quality=value==='high'||value==='smooth'?value:'automatic';lastX=Infinity;
+ }};
 }
