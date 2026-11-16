@@ -1,6 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';
 import pc from '../game/node_modules/polygon-clipping/dist/polygon-clipping.esm.js';
-import {makePavementPlan,corridorPolygons,unionAll} from './pavement-plan.mjs';
+import {makePavementPlan,corridorPolygons,smoothCorridorPoints,unionAll} from './pavement-plan.mjs';
 const terrain={bridge:()=>({active:false})},road=(id,points,width,foot=false,surface='asphalt')=>({id,points,width,foot,surface}),area=polys=>polys.reduce((s,p)=>s+p.reduce((a,r,i)=>a+(i?-1:1)*Math.abs(r.reduce((v,q,j)=>{const n=r[(j+1)%r.length];return v+q[0]*n[1]-q[1]*n[0];},0)/2),0),0);
 const plan=m=>makePavementPlan({roads:[],areas:[],...m},terrain);
 test('a museum corridor remains pedestrian concrete rather than a six-metre asphalt strip',()=>{const p=plan({roads:[{...road('corridor',[[0,0],[12,0]],6.3),highway:'corridor',surfaceEvidence:'Material inferred from route type'}]});assert.equal(p.length,1);assert.equal(p[0].kind,'concrete');assert.ok(area(p[0].polygons)<33);});
@@ -29,4 +29,18 @@ test('actual trail 1119933394 remains paved under the mapped open shelter',()=>{
  const m=JSON.parse(fs.readFileSync(new URL('../game/public/belle/map.json',import.meta.url))),parts=plan(m);
  const probe=[[[3462.6,435.8],[3463.0,435.8],[3463.0,436.2],[3462.6,436.2],[3462.6,435.8]]];
  assert(parts.reduce((sum,p)=>sum+area(pc.intersection(p.polygons,probe)),0)>.159);
+});
+
+test('visual road fillets round the rendering at a bend but do not rewrite mapped points',()=>{
+ const original=[[0,0],[0,12],[12,12]],before=structuredClone(original),visual=smoothCorridorPoints(original,6);
+ assert.deepEqual(original,before);assert.deepEqual(visual[0],original[0]);assert.deepEqual(visual.at(-1),original.at(-1));
+ assert(visual.length>original.length);
+ assert(visual.some(p=>p[0]>0&&p[0]<1&&p[1]>11&&p[1]<12));
+ for(const p of visual)assert(p.every(Number.isFinite));
+});
+test('closed loops, hairpins and straight road endpoints retain their original shape',()=>{
+ const closed=[[0,0],[0,20],[20,20],[20,0],[0,0]],tight=[[0,0],[0,10],[.1,0]];
+ assert.deepEqual(smoothCorridorPoints(closed,6),closed);
+ assert.deepEqual(smoothCorridorPoints(tight,6),tight);
+ assert.deepEqual(smoothCorridorPoints([[0,0],[0,12]],8),[[0,0],[0,12]]);
 });

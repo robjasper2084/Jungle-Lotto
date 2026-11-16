@@ -16,7 +16,7 @@ export const WORLD_FRAGMENT=`
 varying vec3 belleAtmosphereWorld;
 uniform sampler2D belleCloudNoise;
 uniform vec3 belleSunDirection;
-uniform float belleCloudTime,belleCloudCoverage,belleCloudStrength;
+uniform float belleCloudTime,belleCloudCoverage,belleCloudStrength,belleAirStrength;
 float belleCloudShade(){
  if(belleCloudStrength<.0001||belleSunDirection.y<.08)return 1.0;
  vec2 projected=belleAtmosphereWorld.xz+belleSunDirection.xz*(900.0-belleAtmosphereWorld.y)/max(.18,belleSunDirection.y);
@@ -38,7 +38,15 @@ export const HEIGHT_FOG=`
  #else
   float fogFactor=smoothstep(fogNear,fogFar,vFogDepth);
  #endif
- gl_FragColor.rgb=mix(gl_FragColor.rgb,fogColor,fogFactor);
+ vec3 belleAerialColor=fogColor;
+ if(belleAirStrength>.0001&&belleSunDirection.y>.01){
+  vec3 belleViewRay=normalize(belleAtmosphereWorld-cameraPosition);
+  float belleForward=max(0.0,dot(belleViewRay,normalize(belleSunDirection)));
+  float bellePhase=belleForward*belleForward;
+  bellePhase*=bellePhase;
+  belleAerialColor=mix(fogColor,vec3(.91,.73,.54),min(.25,belleAirStrength)*bellePhase);
+ }
+ gl_FragColor.rgb=mix(gl_FragColor.rgb,belleAerialColor,fogFactor);
 #endif
 `;
 export function atmosphereShader(vertex:string,fragment:string,directionalChunk=''){
@@ -66,7 +74,10 @@ float belleDZ=belleWindAmount*.55*(-2.0*belleNM*belleND*cos(belleNP*.79)-3.95*be
 objectNormal.y-=belleDX*objectNormal.x+belleDZ*objectNormal.z;
 objectNormal=normalize(objectNormal);
 `;
-export function windVertex(vertex:string){
+/** Crown mode anchors foliage at its trunk rather than moving its lower leaves. */
+export function windVertex(vertex:string,crown=false){
  if(!vertex.includes('#include <begin_vertex>'))return vertex;
- return WIND_HEADER+vertex.replace('#include <begin_vertex>','#include <begin_vertex>\n'+WIND_VERTEX).replace('#include <beginnormal_vertex>','#include <beginnormal_vertex>\n'+WIND_NORMAL);
+ const vertexWind=crown?WIND_VERTEX.replace('bellePin=1.0-clamp','bellePin=clamp'):WIND_VERTEX;
+ const normalWind=crown?WIND_NORMAL.replace('belleNM=1.0-clamp','belleNM=clamp').replace('-2.0*belleNM*belleND*sin','2.0*belleNM*belleND*sin').replace('-2.0*belleNM*belleND*cos','2.0*belleNM*belleND*cos'):WIND_NORMAL;
+ return WIND_HEADER+vertex.replace('#include <begin_vertex>','#include <begin_vertex>\n'+vertexWind).replace('#include <beginnormal_vertex>','#include <beginnormal_vertex>\n'+normalWind);
 }

@@ -37,3 +37,14 @@ test('Smooth renders the layered sky without submitting GPU-heavy traced panoram
   assert.equal(tracedSkyEnabled(false,mode),false);
  }
 });
+
+test('nearby crown wind anchors lower foliage and supports matched shadow geometry',()=>{
+ const shader=windVertex('#include <beginnormal_vertex>\n#include <begin_vertex>',true);
+ assert.match(shader,/bellePin=clamp/);assert.match(shader,/belleNM=clamp/);
+ assert.match(shader,/belleDX=belleWindAmount\*\(2\.0\*belleNM/);
+});
+test('atmospheric light shafts are limited to existing fog shading and optional quality gate',()=>{
+ assert.match(HEIGHT_FOG,/belleAirStrength/);
+ assert.match(HEIGHT_FOG,/belleForward/);
+ assert.match(HEIGHT_FOG,/belleAerialColor/);
+});
