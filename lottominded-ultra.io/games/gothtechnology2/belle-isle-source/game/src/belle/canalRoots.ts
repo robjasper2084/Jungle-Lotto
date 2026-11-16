@@ -8,11 +8,25 @@ export const ROOT_LIMITS={smooth:{count:36,range:135},automatic:{count:88,range:
  * physics or moved into mapped drive/trail corridors or beach sand. */
 export function planCanalRoots(map:ParkMap,terrain:Pick<ParkTerrain,'land'|'height'|'obstructed'>,trees:readonly Plant[]):RootSite[]{
  const occupied=roadIndex(map.roads),shore=map.water.filter(w=>w.points.length>2);
+ // Each tree tests only nearby 32 m shoreline cells; avoid rebuilding a
+ // flat-map of every water edge for thousands of tree instances at startup.
+ const cell=32,pad=13,grid=new Map<string,{a:[number,number];b:[number,number]}[]>();
+ for(const w of shore)for(let i=1;i<w.points.length;i++){
+  const b=w.points[i],prev=w.points[i-1];
+  for(let x=Math.floor((Math.min(prev[0],b[0])-pad)/cell);x<=Math.floor((Math.max(prev[0],b[0])+pad)/cell);x++)
+   for(let z=Math.floor((Math.min(prev[1],b[1])-pad)/cell);z<=Math.floor((Math.max(prev[1],b[1])+pad)/cell);z++){
+    const key=x+','+z,items=grid.get(key)||[];items.push({a:prev,b});grid.set(key,items);
+   }
+ }
  const beach=map.areas.filter(a=>a.kind==='beach'),roots:RootSite[]=[];
  for(const tree of trees){
   if(!['willow','maple','birch'].includes(tree.id)||roots.length>=170)continue;
-  const nearest=shore.flatMap(w=>w.points.slice(1).map((b,i)=>({edge:segment(tree.x,tree.z,w.points[i],b),a:w.points[i],b})))
-   .filter(s=>s.edge.d<=13).sort((a,b)=>a.edge.d-b.edge.d)[0];
+  let nearest:{edge:ReturnType<typeof segment>;a:[number,number];b:[number,number]}|undefined;
+  const candidates=grid.get(Math.floor(tree.x/cell)+','+Math.floor(tree.z/cell))||[];
+  for(const {a,b} of candidates){
+   const edge=segment(tree.x,tree.z,a,b);
+   if(edge.d<=pad&&(!nearest||edge.d<nearest.edge.d))nearest={edge,a,b};
+  }
   if(!nearest||nearest.edge.d<1.3||nearest.edge.d>13)continue;
   if(beach.some(a=>inside(tree.x,tree.z,a.points)))continue;
   const dx=nearest.b[0]-nearest.a[0],dz=nearest.b[1]-nearest.a[1],len=Math.hypot(dx,dz);
