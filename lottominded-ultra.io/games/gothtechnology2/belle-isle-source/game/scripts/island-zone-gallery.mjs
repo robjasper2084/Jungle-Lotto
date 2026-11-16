@@ -1,7 +1,7 @@
 /** Belle Isle eight-site × cloud/lighting environment gallery.
  * Runs on the real built 3D game via the public Island Guide and real GPU fences.
  * Never seeds location/camera state or claims physical hardware performance.
- * From game/: node scripts/environment-gallery.mjs
+ * From game/: node scripts/island-zone-gallery.mjs
  * ENV_GALLERY_DEVICE=phone or desktop; reference photos remain local/optional.
  */
 import assert from 'node:assert/strict';
@@ -29,7 +29,7 @@ const qualities=quick?[device==='phone'?'smooth':'high']:['smooth','automatic','
 const lights=[
  {id:'clear-noon',value:'12',clouds:'clear'},
  {id:'overcast-sunset',value:'17.8',clouds:'overcast'},
- ...(quick?[]:[{id:'scattered-afternoon',value:'15',clouds:'scattered'},{id:'layered-dusk',value:'18.5',clouds:'layered'}])
+ ...(quick?[]:[{id:'scattered-afternoon',value:'16.7',clouds:'scattered'},{id:'layered-dusk',value:'18.5',clouds:'layered'}])
 ];
 const lightsFor=site=>quick?[lights[site.conditionIndex%2]]:lights;
 await mkdir(output,{recursive:true});

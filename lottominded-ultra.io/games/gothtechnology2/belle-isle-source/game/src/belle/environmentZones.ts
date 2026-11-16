@@ -3,7 +3,7 @@ import type {Landmark,ParkMap} from './terrain.ts';
 
 export const ENVIRONMENT_ZONE_ID=zones.id;
 export const ENVIRONMENT_ZONE_NAMES=zones.zones.map(zone=>zone.name);
-export type EnvironmentZone=typeof zones.zones[number] & {stops:Array<(typeof zones.zones)[number]['stops'][number] & {destination:Landmark}>};
+export type EnvironmentZone=Omit<(typeof zones.zones)[number],'stops'> & {stops:Array<(typeof zones.zones)[number]['stops'][number] & {destination:Landmark}>};
 /** Only uses existing map places; no synthetic coordinates, races, path or physics edits. */
 export function resolveEnvironmentZones(map:Pick<ParkMap,'landmarks'|'pois'>):EnvironmentZone[]{
  const destinations=[...map.landmarks,...map.pois] as Landmark[];
