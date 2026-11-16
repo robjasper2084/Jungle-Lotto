@@ -21,8 +21,10 @@ function pushEdge(out:Strip,a:Point,b:Point,nx:number,nz:number,top:number,kind:
    const y=lerp(top,level,off/bankWidth)+.019;
    out.positions.push(x+nx*off,y,z+nz*off);
    const wet=off/bankWidth,marsh=kind==='lagoon';
-   const dry=sandy?[.69,.60,.43]:marsh?[.44,.42,.30]:[.41,.39,.29];
-   const mud=sandy?[.35,.34,.27]:marsh?[.27,.29,.24]:[.29,.31,.26];
+   // Photo-guided bank zones: warm swim sand, olive wetland sediment,
+   // and cool-grey limestone below riprap on the open Detroit River.
+   const dry=sandy?[.74,.66,.52]:marsh?[.44,.42,.31]:[.51,.50,.46];
+   const mud=sandy?[.48,.43,.34]:marsh?[.27,.30,.26]:[.30,.35,.33];
    const blend=Math.min(1,Math.max(0,(wet-.23)/.7));
    out.colors.push(lerp(dry[0],mud[0],blend),lerp(dry[1],mud[1],blend),lerp(dry[2],mud[2],blend));
    out.uv.push(u*.15,wet);
