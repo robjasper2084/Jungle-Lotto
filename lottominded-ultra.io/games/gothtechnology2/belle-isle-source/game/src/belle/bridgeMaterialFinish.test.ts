@@ -16,3 +16,13 @@ test('bridge material styles remain muted and use no additional textures or pass
   assert(material.roughness>=.7);
  }
 });
+
+test('bridge weathering GLSL cannot collide with shared PBR fragment locals',()=>{
+ for(const kind of ['aged-concrete','rusted-steel','weathered-red-iron'] as const){
+  const fragment=bridgeFinishFragment(kind);
+  assert(fragment.startsWith('{\n')&&fragment.endsWith('}\n'));
+  assert.match(fragment,/float belleBridgeGrain=/);
+  assert.match(fragment,/float belleBridgePitted=/);
+  assert.doesNotMatch(fragment,/\bfloat (?:grain|pitted|antialias)=/);
+ }
+});
