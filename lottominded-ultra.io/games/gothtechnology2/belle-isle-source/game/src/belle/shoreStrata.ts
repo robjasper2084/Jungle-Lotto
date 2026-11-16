@@ -14,7 +14,7 @@ function lerp(a:number,b:number,t:number){return a+(b-a)*t;}
 function pushEdge(out:Strip,a:Point,b:Point,nx:number,nz:number,top:number,kind:Band,sandy:boolean,along:number){
  const length=Math.hypot(b[0]-a[0],b[1]-a[1]),bankWidth=kind==='river'?4:1.2,level=kind==='river'?-.1:.92;
  const chosen=offsets[kind],base=out.positions.length/3;
- for(const [end,x,z,u] of [[0,a[0],a[1],along],[1,b[0],b[1],along+length]]){
+ for(const [x,z,u] of [[a[0],a[1],along],[b[0],b[1],along+length]]){
   for(const off of chosen){
    // Use the same linear bank grade as the river/lagoon meshes, with a tiny
    // uplift to prevent Z fighting. No visual change to physical ground height.
