@@ -12,3 +12,16 @@ header{z-index:10} #welcome{padding-top:115px}
 .sky-settings{margin:24px 0;padding:18px;border:1px solid #8fae9b66;border-radius:8px}.sky-settings legend{font-weight:700;padding:0 8px}.sky-settings p{font-size:12px;color:#b9cbc4}.sky-settings label:first-of-type{display:grid;grid-template-columns:1fr auto;gap:8px}.sky-settings input[type=range]{grid-column:1 / -1;width:100%;accent-color:#d2d9b5}.sky-settings output{font-variant-numeric:tabular-nums;color:#e5d6a2}.sky-settings select{max-width:62%}
 
 #giant-slide-action{position:fixed;left:50%;bottom:max(92px,env(safe-area-inset-bottom));transform:translateX(-50%);background:rgba(18,59,56,.90);border:1px solid #e2cd85;z-index:12;min-height:48px;max-width:86vw;padding:12px 22px}#giant-slide-action:disabled{opacity:.85;color:#eef3e5}
+
+/* Three-stop environmental review guide, scoped to existing Island Guide UI. */
+#showcase-route{margin:18px 0;padding:15px;border:1px solid #b5a77099;border-radius:12px;background:rgba(17,39,36,.72)}
+#showcase-route h3{margin:0 0 8px;font-size:1rem;color:#e6d7a2}
+#showcase-route>p{margin:0 0 12px;font-size:.88rem;color:#c8dbd3;line-height:1.55}
+#showcase-stops{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:10px;list-style:none;margin:0;padding:0;counter-reset:belle-stop}
+#showcase-stops li{counter-increment:belle-stop;border:1px solid #9aaf9855;border-radius:8px;padding:12px;min-width:0}
+#showcase-stops li strong:before{content:counter(belle-stop) ". ";color:#e6d7a2}
+#showcase-stops li strong{color:#f1f4e8;font-size:.9rem}
+#showcase-stops li p{color:#c4d3cc;font-size:.8rem;line-height:1.45;margin:8px 0}
+#showcase-stops li button{width:100%;min-height:44px;white-space:normal;overflow-wrap:anywhere}
+#showcase-stops li button:focus-visible{outline:3px solid #e6d7a2;outline-offset:2px}
+@media(max-width:420px){#showcase-route{padding:10px}#showcase-stops{grid-template-columns:1fr}}
