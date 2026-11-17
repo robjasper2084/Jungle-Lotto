@@ -48,7 +48,7 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
  const canalCrowns=new WeakMap<Plant,number>();
  const crownOverlap=(p:Plant)=>{let factor=canalCrowns.get(p);if(factor===undefined){
   const distance=riparianFocus.reduce((nearest,q)=>Math.min(nearest,Math.hypot(p.x-q.x,p.z-q.z)),Infinity);
-  factor=1+(p.id==='willow'||p.id==='maple'||p.id==='birch'?.10*Math.max(0,1-distance/145):0);
+  factor=1+((p.id==='willow'||p.id==='maple'||p.id==='birch') ? .10*Math.max(0,1-distance/145) : 0);
   canalCrowns.set(p,factor);
  }return factor;};
  const canopyCache=new WeakMap<Plant,ReturnType<typeof canopyProfile>>();
