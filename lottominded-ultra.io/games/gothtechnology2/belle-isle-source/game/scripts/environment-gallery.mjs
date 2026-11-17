@@ -27,7 +27,11 @@ const sites=[
  {id:'swimming-beach',name:'Swimming Beach',search:/Belle Isle Beach/i,
   note:'Open sandy beach with wet margin, no new rock collisions'},
 ];
-const lights=[{id:'high-noon',value:'12'},{id:'sunset',value:'17.8'}];
+// CI runs each genuine lighting pass independently, retaining both required
+// lighting cases on desktop and phone without sharing a long-lived GPU context.
+const selectedLight=process.env.ENV_GALLERY_LIGHT||'all';
+assert.ok(['all','high-noon','sunset'].includes(selectedLight),'Unknown environment gallery lighting selection');
+const lights=[{id:'high-noon',value:'12'},{id:'sunset',value:'17.8'}].filter(l=>selectedLight==='all'||l.id===selectedLight);
 await mkdir(output,{recursive:true});
 const report={head:process.env.GITHUB_SHA||null,variant,device,viewport,
  source:'real built browser game; guide Travel action; Chrome SwiftShader',
@@ -114,7 +118,7 @@ try{
    report.visits.push(entry);
   }
  }
- report.passed=report.visits.length===8&&report.visits.every(v=>v.passed)&&!report.errors.length&&!report.failedRequests.length;
+ report.passed=report.visits.length===sites.length*lights.length&&report.visits.every(v=>v.passed)&&!report.errors.length&&!report.failedRequests.length;
 }catch(error){
  report.errors.push(error.stack||String(error));
 }finally{
