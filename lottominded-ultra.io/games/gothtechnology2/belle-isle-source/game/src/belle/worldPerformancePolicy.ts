@@ -23,7 +23,13 @@ export type WorldPerformanceTier='smooth'|'automatic'|'high';
 /** Fewer shadow texels on high quality; the 110m caster budget keeps
  * near-rider shadows while avoiding irrelevant geometry submissions.
  * Smooth retains contact shadows instead of a directional shadow map. */
-export function directionalShadowResolution(quality:WorldPerformanceTier):number{
+/** Software WebGL cannot sustain large shadow-texture raster passes at dense bridges.
+ * Native GPU quality remains unchanged; the software renderer retains real mapped shadows. */
+export function softwareWebGLRenderer(description:string):boolean{
+ return /swiftshader|llvmpipe|softpipe|software rasterizer/i.test(description);
+}
+export function directionalShadowResolution(quality:WorldPerformanceTier,software=false):number{
+ if(software&&quality!=='smooth')return 768;
  return quality==='high'?1536:1024;
 }
 export function directionalCasterEligible(quality:WorldPerformanceTier,distance:number,radius:number,authored:boolean):boolean{
