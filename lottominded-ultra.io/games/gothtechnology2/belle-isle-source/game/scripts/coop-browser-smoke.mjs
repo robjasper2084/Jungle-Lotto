@@ -11,7 +11,9 @@ import {createCoopStaticServer} from './coop-static-server.mjs';
 const game=resolve(import.meta.dirname,'..'),root=resolve(game,'dist'),out=resolve(game,'output/coop');
 await mkdir(out,{recursive:true});
 const name=process.env.BELLE_COOP_DEVICE||'desktop',mobile=name==='phone',viewport=mobile?{width:390,height:844}:{width:960,height:640};
-const report={head:process.env.GITHUB_SHA,source:process.env.COOP_SOURCE_SHA,run:process.env.GITHUB_RUN_ID,device:name,viewport,passed:false,scope:'Actual built island, two real Swoop models and separate controllers. Software-rendered Chrome; no physical device or hardware FPS certification.',errors:[],warnings:[],screenshots:[],assetSources:[],metrics:{}};
+const suite=process.env.BELLE_COOP_SUITE||'all';
+assert(['all','euc','hover'].includes(suite),'Unknown co-op validation suite');
+const report={head:process.env.GITHUB_SHA,source:process.env.COOP_SOURCE_SHA,run:process.env.GITHUB_RUN_ID,device:name,suite,viewport,passed:false,scope:'Actual built island, two real Swoop models and separate controllers. Software-rendered Chrome; no physical device or hardware FPS certification.',errors:[],warnings:[],screenshots:[],assetSources:[],metrics:{}};
 const log=[];const note=s=>{const t=new Date().toISOString()+' '+s;log.push(t);console.log(t);};
 const server=createCoopStaticServer(root);
 let browser,page;
@@ -23,6 +25,12 @@ async function run(){
  await new Promise((ok,no)=>{server.once('error',no);server.listen(0,'127.0.0.1',ok);});
  const origin='http://127.0.0.1:'+server.address().port;report.origin=origin;
  browser=await chromium.launch({channel:'chromium',headless:false,args:['--use-angle=swiftshader','--enable-unsafe-swiftshader','--gpu-watchdog-timeout-seconds=60']});
+ if(suite==='hover'){
+  await verifyDualHover({browser,origin,game,out,name,mobile,viewport,expect,bounded,note,parent:report});
+  assert.equal(report.dualHover.passed,true);
+  report.passed=true;note('Real standalone dual-hoverbike checks passed');
+  return;
+ }
  const context=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:mobile,hasTouch:mobile,reducedMotion:'reduce'});
  // Serve ONLY the exact allowlisted, integrity-checked GLBs from their checked-out
  // source. This avoids treating CDN timing as a rig test; no replacement models.
@@ -95,9 +103,11 @@ async function run(){
  assert.deepEqual(report.errors,[]);
  // Preserve the entire EUC suite, then require the production-path hover suite.
  await bounded(context.close(),30_000,'EUC context cleanup');
- await verifyDualHover({browser,origin,game,out,name,mobile,viewport,expect,bounded,note,parent:report});
- assert.equal(report.dualHover.passed,true);
- report.passed=true;note('Real co-op gameplay checks passed');
+ if(suite!=='euc'){
+  await verifyDualHover({browser,origin,game,out,name,mobile,viewport,expect,bounded,note,parent:report});
+  assert.equal(report.dualHover.passed,true);
+ }
+ report.passed=true;note('Real co-op gameplay checks passed: '+suite);
 }
 let failed;
 try{await bounded(run(),35*60_000,'Co-op real-game case');}catch(e){failed=e;report.failure=e.stack||String(e);report.passed=false;process.exitCode=1;note('FAIL '+e.message);
@@ -106,5 +116,6 @@ try{await bounded(run(),35*60_000,'Co-op real-game case');}catch(e){failed=e;rep
 finally{
  if(browser)try{await bounded(browser.close(),30_000,'Browser cleanup');}catch(e){report.cleanupFailure=e.message;report.passed=false;process.exitCode=1;}
  if(server.listening){server.closeAllConnections();await new Promise(done=>server.close(done));}
- report.finishedAt=new Date().toISOString();await writeFile(resolve(out,name+'-gameplay.json'),JSON.stringify(report,null,2));await writeFile(resolve(out,name+'-gameplay.log'),log.join('\n')+'\n');
+ report.finishedAt=new Date().toISOString();const suffix=suite==='all'?'':'-'+suite;
+ await writeFile(resolve(out,name+'-gameplay'+suffix+'.json'),JSON.stringify(report,null,2));await writeFile(resolve(out,name+'-gameplay'+suffix+'.log'),log.join('\n')+'\n');
 }

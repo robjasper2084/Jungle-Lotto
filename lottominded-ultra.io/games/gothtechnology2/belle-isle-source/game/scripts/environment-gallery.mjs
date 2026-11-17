@@ -105,7 +105,7 @@ async function openActiveRidePage(){
  return page;
 }
 try{
- const launch=()=>chromium.launch({channel:'chrome',headless:true,args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+ const launch=()=>chromium.launch({channel:'chromium',headless:true,args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']});
  browser=await launch();
  for(const light of lights){
   let page;
