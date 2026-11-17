@@ -1,0 +1,57 @@
+name: Belle Isle sustained riding profile
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/belle-sustained-profile.yml'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: belle-sustained-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  profile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        device: [desktop, phone]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Build exact candidate and validate harness
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm ci
+          npm run check
+          npm test
+          node --check scripts/sustained-ride-profile.mjs
+          npm run build
+      - name: Install browser runtime
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install --with-deps chrome
+      - name: Ride real game for 90 seconds and collect foreground metrics
+        timeout-minutes: 25
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          BELLE_PROFILE_DEVICE: ${{ matrix.device }}
+          BELLE_PROFILE_SECONDS: '90'
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node scripts/sustained-ride-profile.mjs
+      - name: Upload p50 p95 p99 and memory/load measurements
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-sustained-profile-${{ matrix.device }}
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/sustained-profile/${{ matrix.device }}
+          if-no-files-found: warn
+          retention-days: 14

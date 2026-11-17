@@ -75,7 +75,7 @@ jobs:
         run: |
           npm ci
           npm run build
-          npm --prefix ../../../ ci
+          npm --prefix ../.. ci
       - name: Capture real original guide locations without invented baseline controls
         if: always()
         continue-on-error: true

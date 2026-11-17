@@ -141,7 +141,8 @@ try{
   }
  }
  report.passed=!!report.intro?.passed&&report.visits.length===sites.length*lights.length&&report.visits.every(v=>v.passed)&&!report.errors.length&&!report.failedRequests.length;
- report.pairingComplete=variant!=='baseline'&&report.passed;
+ // Every photographic pairing still needs an actual camera-equivalence review.
+ report.pairingComplete=false;
  report.comparableSites=report.visits.filter(v=>v.passed&&v.comparable).map(v=>v.id);
 }catch(error){
  report.errors.push(error.stack||String(error));
