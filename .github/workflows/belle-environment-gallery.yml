@@ -61,7 +61,22 @@ jobs:
           ENV_GALLERY_LIGHT: ${{ matrix.light }}
           ENV_GALLERY_VARIANT: candidate
         run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node scripts/environment-gallery.mjs
-      - name: Capture matching published baseline (comparison only)
+      - name: Checkout the exact unmodified base revision for comparable-source capture
+        if: always()
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha || 'main' }}
+          path: comparison-baseline
+          persist-credentials: false
+      - name: Build published-source baseline locally to avoid remote transient 503
+        if: always()
+        timeout-minutes: 30
+        working-directory: comparison-baseline/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm ci
+          npm run build
+          npm --prefix ../../../ ci
+      - name: Capture real original guide locations without invented baseline controls
         if: always()
         continue-on-error: true
         timeout-minutes: 20
@@ -70,7 +85,8 @@ jobs:
           ENV_GALLERY_DEVICE: ${{ matrix.device }}
           ENV_GALLERY_LIGHT: ${{ matrix.light }}
           ENV_GALLERY_VARIANT: baseline
-          ENV_GALLERY_URL: https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/games/gothtechnology2/arcade/belle-isle-explorer/
+          ENV_GALLERY_BASE_SHA: ${{ github.event.pull_request.base.sha || 'main' }}
+          ENV_GALLERY_BUILD_DIR: ${{ github.workspace }}/comparison-baseline/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist
         run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node scripts/environment-gallery.mjs
       - name: Preserve real browser image pairs and reports
         if: always()
