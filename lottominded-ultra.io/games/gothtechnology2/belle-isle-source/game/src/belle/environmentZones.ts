@@ -14,7 +14,12 @@ export function resolveEnvironmentZones(map:Pick<ParkMap,'landmarks'|'pois'>):En
    if(seen.has(stop.destinationId))throw Error('Duplicate environment zone destination '+stop.destinationId);
    seen.add(stop.destinationId);
    const destination=destinations.find(entry=>entry.id===stop.destinationId);
-   if(!destination||destination.name!==stop.destinationName||
+   // The mapped Coast Guard landmark is renamed by prepareCoastGuardMap()
+   // before the Island Guide is built. Accept only explicitly documented
+   // source/runtime names, never an arbitrary substitute or invented position.
+   const sourceName='sourceName' in stop?stop.sourceName:undefined;
+   const names=[stop.destinationName,sourceName];
+   if(!destination||!names.includes(destination.name)||
        !Number.isFinite(destination.x)||!Number.isFinite(destination.z))throw Error('Unmapped environment zone stop: '+stop.destinationName);
    return {...stop,destination};
   })

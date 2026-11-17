@@ -73,8 +73,9 @@
         {
           "id": "coastguard-waterfront",
           "destinationId": "842521472",
-          "destinationName": "Coast Guard Station",
-          "focus": "Open-water horizon, protected built edge and shoreline rock placement"
+          "destinationName": "U.S. Coast Guard Station Belle Isle",
+          "focus": "Open-water horizon, protected built edge and shoreline rock placement",
+          "sourceName": "Coast Guard Station"
         }
       ]
     },

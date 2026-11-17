@@ -28,3 +28,16 @@ test('the four-zone review cannot silently create new movement or route geometry
  resolveEnvironmentZones(map);
  assert.equal(JSON.stringify({roads:map.roads,bridge:map.bridge,water:map.water,spawn:map.spawn}),before);
 });
+
+test('Coast Guard mapped and runtime display names both resolve by stable ID',()=>{
+ const zone=resolveEnvironmentZones(map)[2];
+ assert.equal(zone.stops[1].destination.id,'842521472');
+ assert.equal(zone.stops[1].destination.name,'Coast Guard Station');
+ const amended={...map,landmarks:map.landmarks.map(l=>l.id==='842521472'?
+   {...l,name:'U.S. Coast Guard Station Belle Isle'}:l)};
+ const ready=resolveEnvironmentZones(amended);
+ assert.equal(ready[2].stops[1].destination.name,'U.S. Coast Guard Station Belle Isle');
+ const wrong={...map,landmarks:map.landmarks.map(l=>l.id==='842521472'?
+   {...l,name:'Unrelated Coast Guard Alias'}:l)};
+ assert.throws(()=>resolveEnvironmentZones(wrong),/Unmapped environment zone stop/);
+});
