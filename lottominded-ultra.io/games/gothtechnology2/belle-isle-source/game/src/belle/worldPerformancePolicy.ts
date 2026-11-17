@@ -4,7 +4,8 @@
  * Clock values are simulation seconds; resets cover a sky/quality transition. */
 export class ShadowMapCadence {
  private last=-Infinity;
- constructor(private readonly interval=1/10){}
+ private readonly interval:number;
+ constructor(interval=1/10){this.interval=interval;}
  shouldRefresh(clock:number):boolean{
   if(!Number.isFinite(clock))return true;
   if(clock<this.last||clock-this.last>=this.interval){
