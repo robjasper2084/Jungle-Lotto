@@ -83,8 +83,10 @@ async function travel(page,site){
  await expect(page.locator('#guide')).not.toBeVisible();
  return found;
 }
-try{
- browser=await chromium.launch({channel:'chrome',headless:true,args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+// Each lighting pass still captures all four real guide destinations with the
+// same WebGL frame/fence assertions. Recreate the SwiftShader page halfway
+// through to release its accumulated GPU resources before the third stop.
+async function openActiveRidePage(){
  const page=await browser.newPage({viewport,deviceScaleFactor:1,isMobile:device==='phone',hasTouch:device==='phone',reducedMotion:'reduce'});
  page.setDefaultTimeout(150000);
  page.on('pageerror',error=>report.errors.push(error.message));
@@ -100,22 +102,38 @@ try{
  await page.getByRole('button',{name:'Use this ride',exact:true}).click();
  await page.locator('#start').click();
  await expect(page.locator('body')).not.toHaveClass(/at-start/);
+ return page;
+}
+try{
+ browser=await chromium.launch({channel:'chrome',headless:true,args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']});
  for(const light of lights){
-  await configureSky(page,light.value);
-  for(const site of sites){
-   const entry={id:site.id,site:site.name,light:light.id,expectedReference:site.note,passed:false};
-   try{
-    entry.destination=await travel(page,site);
-    const frame=await painted(page);
-    const file=site.id+'-'+light.id+'.png';
-    await page.screenshot({path:resolve(output,file),timeout:180000});
-    entry.passed=true;entry.screenshot=file;entry.frame=frame;
-    entry.place=await page.locator('#place').textContent();
-    entry.profile=await page.locator('#profile').textContent();
-   }catch(error){
-    entry.failure=String(error);report.coverageGaps.push(site.id+' '+light.id+': '+error);
+  let page;
+  try{
+   page=await openActiveRidePage();
+   await configureSky(page,light.value);
+   for(let i=0;i<sites.length;i++){
+    if(i===2){
+     await page.close();
+     page=await openActiveRidePage();
+     await configureSky(page,light.value);
+    }
+    const site=sites[i];
+    const entry={id:site.id,site:site.name,light:light.id,expectedReference:site.note,passed:false};
+    try{
+     entry.destination=await travel(page,site);
+     const frame=await painted(page);
+     const file=site.id+'-'+light.id+'.png';
+     await page.screenshot({path:resolve(output,file),timeout:180000});
+     entry.passed=true;entry.screenshot=file;entry.frame=frame;
+     entry.place=await page.locator('#place').textContent();
+     entry.profile=await page.locator('#profile').textContent();
+    }catch(error){
+     entry.failure=String(error);report.coverageGaps.push(site.id+' '+light.id+': '+error);
+    }
+    report.visits.push(entry);
    }
-   report.visits.push(entry);
+  }finally{
+   if(page)await page.close();
   }
  }
  report.passed=report.visits.length===sites.length*lights.length&&report.visits.every(v=>v.passed)&&!report.errors.length&&!report.failedRequests.length;
