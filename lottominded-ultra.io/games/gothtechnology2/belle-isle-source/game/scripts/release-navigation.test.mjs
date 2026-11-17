@@ -57,7 +57,14 @@ test('river filtering adds no textures, leaves wakes after filtering and does no
  assert.match(s,/max\(length\(dFdx\(p\)\),length\(dFdy\(p\)\)\)/);
  assert(s.indexOf('wave*=riverNormalVisibility')<s.indexOf('vec2 delta=p-hoverWash'));
  assert.equal((s.match(/texture2D\(riverNormals/g)||[]).length,5,'two lagoon and two river normal layers plus original wash');
- assert.match(s,/riverSunSparkle=\.78\+\.22\*clamp\(\(r1\.x\+r2\.y\)\*riverNormalVisibility,-1\.,1\.\)/);
+ // The solar trail now lives in a shared shader helper. Validate that it
+ // consumes the pre-filtered normals and adds no new water texture samplers.
+ assert.match(s,/riverPhotoGlintGLSL\(REFERENCE_STYLE\)/);
+ const glint=await readFile(new URL('../src/belle/riverSurfaceDetail.ts',import.meta.url),'utf8');
+ assert.match(glint,/riverSunSparkle=clamp/);
+ assert.match(glint,/riverNormalVisibility/);
+ assert.match(glint,/fwidth\(belleGlintPhase\)/);
+ assert.doesNotMatch(glint,/sampler2D|texture2D|gl_FragColor/);
  assert.match(s,/kind==='lagoon'\?\.60:0/);assert.match(s,/riverFarRing\(\)/);
 });
 test('normal-detail attenuation is finite, monotone and retains close views',()=>{
