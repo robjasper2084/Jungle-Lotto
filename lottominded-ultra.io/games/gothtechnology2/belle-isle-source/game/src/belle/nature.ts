@@ -2,6 +2,7 @@ import {referenceTree} from './referenceTrees.ts';
 import {canopyTint} from './sunsetCanopy.ts';
 import {canopyProfile} from './habitatPolicy.ts';
 import {NatureViewSelection} from './natureViewSelection.ts';
+import {NatureSpatialIndex} from './natureSpatialIndex.ts';
 import type {ParkTerrain} from './terrain.ts';
 import {seasonalMaterial} from './seasonalMaterial.ts';
 import {treeBlend,seasonLook} from './seasonModel.ts';
@@ -19,6 +20,9 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
  const base='./belle/nature/',loader=new GLTFLoader(),textures=new T.TextureLoader();
  const json=async(name:string)=>{const r=await fetch(base+name);if(!r.ok)throw Error('Nature asset '+name+': '+r.status);return r.json();};
  const manifest:Manifest=await json('manifest.json'),plan:NaturePlan=await json('placements.json');if(REFERENCE_STYLE)plan.trees=plan.trees.filter(p=>!inSunsetGarden(p.x,p.z));
+ // Created once; exact source positions and original encounter order remain.
+ const treeIndex=new NatureSpatialIndex(plan.trees.filter(p=>!replacedByCherry(p)));
+ const groundIndex=new NatureSpatialIndex(plan.ground);
  status('Loading varied trees');
  const treeSource=REFERENCE_STYLE?new T.Group():(await loadStartupModel(loader,base+'seasonal-trees.glb')).scene;
  if(REFERENCE_STYLE)for(const entry of manifest.trees)for(const low of [false,true]){
@@ -96,8 +100,8 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
   lastSplit=cardsActive;
   lastX=x;lastZ=z;const budget=natureBudget[quality];
   const d=(p:Plant)=>(p.x-x)**2+(p.z-z)**2;
-  const nearTrees=plan.trees.filter(p=>!replacedByCherry(p)&&d(p)<budget.treeRadius**2).sort((a,b)=>d(a)-d(b)).slice(0,budget.trees);
-  const nearGround=plan.ground.filter(p=>d(p)<(p.id.startsWith('rock')?budget.groundRadius*1.65:budget.groundRadius)**2).sort((a,b)=>d(a)-d(b)).slice(0,budget.ground);
+  const nearTrees=treeIndex.within(x,z,budget.treeRadius).sort((a,b)=>d(a)-d(b)).slice(0,budget.trees);
+  const nearGround=groundIndex.within(x,z,budget.groundRadius*1.65).filter(p=>d(p)<(p.id.startsWith('rock')?budget.groundRadius*1.65:budget.groundRadius)**2).sort((a,b)=>d(a)-d(b)).slice(0,budget.ground);
   const selected=new Set([...nearTrees,...nearGround]);const cutoff=nearTrees.length>=budget.trees?Math.min(budget.treeRadius,Math.sqrt(d(nearTrees[nearTrees.length-1]))):budget.treeRadius;stats.visibleTrees=nearTrees.length;stats.visibleGround=nearGround.length;
   for(const pool of pools){
    const near=pool.plants.filter(p=>selected.has(p));
