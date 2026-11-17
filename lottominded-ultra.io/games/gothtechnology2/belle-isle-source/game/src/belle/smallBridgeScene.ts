@@ -4,6 +4,7 @@ import type {SmallBridgePlan} from './smallBridges.ts';
 import {yieldStartupTask} from './startupWork.ts';
 import {CASINO_FOOTBRIDGES,casinoBridgeRail} from './casinoBridgeDetail.ts';
 import {finishBridgeMaterial} from './bridgeMaterialFinish.ts';
+import {localPerformanceProbe} from './performanceProbe.ts';
 
 /** Structural geometry never uses optional foliage/detail LOD. Fixed material
  * batches are frustum-culled by tile for BOTH solo and split-screen cameras. */
@@ -42,7 +43,7 @@ function* buildSmallBridges(scene:T.Scene,plan:SmallBridgePlan){
   if(CASINO_FOOTBRIDGES.has(p.id)){
    const key=Math.floor(x/256)+','+Math.floor(z/256)+',red';
    if(!batches.has(key))batches.set(key,{kind:'red',geometry:[]});
-   casinoBridgeRail(p,g=>batches.get(key)!.geometry.push(g));continue;
+   casinoBridgeRail(p,g=>batches.get(key)!.geometry.push(g),localPerformanceProbe());continue;
   }
   if(p.style==='brick'){
    const h=p.top-p.bottom;

@@ -1,5 +1,6 @@
 import * as T from 'three';
 import {inside,type ParkMap} from './terrain.ts';
+import {localPerformanceProbe} from './performanceProbe.ts';
 /** Low-cost reflected tree tint in sheltered mapped canals, not a full probe.
  * One bounded transparent ribbon, no external textures or physics changes. */
 export const CANAL_REFLECTION_EDGE_LIMIT=900;
@@ -47,6 +48,6 @@ export function addCanalReflections(scene:T.Scene,map:ParkMap){
  const mesh=new T.Mesh(geometry,material);mesh.name='Soft reflected greenery along mapped wooded canals';
  mesh.castShadow=false;mesh.receiveShadow=false;mesh.renderOrder=3;scene.add(mesh);
  let quality='automatic';const stats={edges:plan.edges,triangles:plan.edges*2,maxDraws:1};
- return{stats,setQuality(value:string){quality=value;mesh.visible=quality!=='smooth'&&plan.edges>0;},
+ return{stats,setQuality(value:string){quality=value;mesh.visible=!localPerformanceProbe()&&quality!=='smooth'&&plan.edges>0;},
   update(time:number){clock.value=time;}};
 }

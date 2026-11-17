@@ -6,7 +6,7 @@ import {CASINO_WAY_MAPPED_ID} from './casinoBridgeView.ts';
  * interpretation; the surveyed path endpoints and rail envelope stay authoritative. */
 export const CASINO_FOOTBRIDGES=new Set(['106948146','42986441']);
 type Part=SmallBridgePlan['parts'][number];
-export function casinoBridgeRail(p:Part,add:(g:T.BufferGeometry)=>void){
+export function casinoBridgeRail(p:Part,add:(g:T.BufferGeometry)=>void,diagnosticReduction=false){
  const dx=p.b[0]-p.a[0],dz=p.b[1]-p.a[1],length=Math.hypot(dx,dz),yaw=Math.atan2(dx,dz),h=p.top-p.bottom;
  const place=(g:T.BufferGeometry)=>{g.rotateY(yaw);g.translate(p.a[0],p.bottom,p.a[1]);add(g);};
  const box=(z:number,y:number,w:number,height:number,len:number)=>place(new T.BoxGeometry(w,height,len).translate(0,y,z));
@@ -32,7 +32,7 @@ export function casinoBridgeRail(p:Part,add:(g:T.BufferGeometry)=>void){
    }
    const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(v,3));g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));g.setIndex(index);g.computeVertexNormals();place(g);
   };
-  if(p.id===CASINO_WAY_MAPPED_ID){
+  if(p.id===CASINO_WAY_MAPPED_ID&&!diagnosticReduction){
    // Retain the dominant sweeping loop and two tighter Victorian scrolls
    // for the historically located crossing. Remove redundant side curls:
    // the ornamental silhouette survives while respecting the full 59-way

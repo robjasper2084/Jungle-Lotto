@@ -52,6 +52,7 @@ import {BelleVR} from './vr.ts';
 import {aquariumWorld,aquariumInside,aquariumRoom,aquariumRay} from './aquarium.ts';
 import {createStartup} from './startup.ts';
 import {createFirstRideObjective} from './firstRideObjective.ts';
+import {localPerformanceProbe} from './performanceProbe.ts';
 import {planCasinoWayViews,CASINO_WAY_REFERENCE} from './casinoBridgeView.ts';
 import './firstRideObjective.css';
 import {greenhouseWorld,greenhouseInside,greenhouseRoom} from './conservatory.ts';
@@ -70,6 +71,7 @@ window.addEventListener('pagehide',()=>startupMetrics.dispose(),{once:true});
 const status=(s:string)=>{startupMetrics.stage(s);startup.status(s);};const belleAudio=createBelleAudio();
 let renderFocused=document.hasFocus();window.addEventListener('focus',()=>{renderFocused=true;trials?.suspend();});window.addEventListener('blur',()=>{renderFocused=false;});
 el('profile').hidden=!new URLSearchParams(location.search).has('profile');
+if(localPerformanceProbe()){const diagnostic=document.createElement('div');diagnostic.id='performance-probe-warning';diagnostic.textContent='REDUCED SCENE DIAGNOSTIC — NOT RELEASE QUALITY';diagnostic.style.cssText='position:fixed;z-index:10000;left:8px;bottom:8px;font:700 11px system-ui;padding:8px;background:#1a1614ee;color:#ffce92;border:1px solid #e4b573;pointer-events:none';document.body.append(diagnostic);}
 let scenePreparing=false,resetFrameClock=false;
 let active=false,paused=false,first=startup.choice.camera==='fpp',cap=60,reduced=matchMedia('(prefers-reduced-motion:reduce)').matches;const keys=new Set<string>();let throttle=0,steer=0,hop=false,recover=false,mount=false;let cameraYaw=0,cameraPitch=.1;
 function chooseView(value:boolean){first=value;cameraYaw=0;startup.setCamera(first?'fpp':'tpp');syncViewLabel();}
@@ -312,7 +314,7 @@ async function boot(){const response=await fetch('./belle/map.json');if(!respons
   enter:()=>{trials?.interrupt();activities?.interrupt('Activities are available in the desktop and touch views. Your records are saved.');fishing?.stop();slide?.cancel();photo?.close();hover?.leaveForTravel();boat?.leave();savedFirst=first;savedQuality=el<HTMLSelectElement>('quality').value;clear();release();document.querySelectorAll<HTMLDialogElement>('dialog[open]').forEach(d=>d.close());paused=false;first=true;zone.hidden=true;world.setQuality('smooth');previous=performance.now();},
   exit:()=>{clear();release();first=savedFirst;paused=true;el('pause').textContent='Resume';world.setQuality(savedQuality);if(savedQuality==='automatic')world.setBudget(frameBudget.scale);zone.hidden=!touch.checked;hero.rider.visible=true;snap=true;previous=performance.now();cameraYaw=0;cameraPitch=.1;camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);canvas.focus();}
  });
- const rideProfile=new URLSearchParams(location.search).has('profile')?new RideProfile(()=>({quality:graphics.value,effectiveQuality:world.quality.effective,cap,shadowMappingSupported:renderer.shadowMap.enabled,pixelRatio:renderer.getPixelRatio(),adaptiveScale:frameBudget.scale,world:world.stats})):null;
+ const rideProfile=new URLSearchParams(location.search).has('profile')?new RideProfile(()=>({quality:graphics.value,effectiveQuality:world.quality.effective,cap,shadowMappingSupported:renderer.shadowMap.enabled,pixelRatio:renderer.getPixelRatio(),adaptiveScale:frameBudget.scale,world:world.stats,diagnosticReduction:localPerformanceProbe()})):null;
  let previous=performance.now(),lastUI=0,lastRender=0,clock=0,lastMeasurementEligible=false,activeFrames=0,stalledFrames=0,severeFrames=0,longestFrameMs=0;const samples:number[]=[];const target=new T.Vector3(),desired=new T.Vector3(),forward=new T.Vector3();function frame(now:number,xrFrame?:XRFrame){if(scenePreparing||(document.hidden&&!vr?.active)){previous=now;lastMeasurementEligible=false;return;}if(resetFrameClock){previous=now;lastMeasurementEligible=false;resetFrameClock=false;}const overlay=paused||!!document.querySelector('dialog[open]');const frameCap=sceneFrameCap(cap,active,overlay,renderFocused);if(!vr?.active&&now-lastRender<1000/frameCap-.8)return;const measureFrame=active&&!overlay&&renderFocused;const eligibleFrame=measureFrame&&lastMeasurementEligible;lastMeasurementEligible=measureFrame;const cpuStart=performance.now();const elapsed=(now-previous)/1000;previous=now;lastRender=now;clock+=Math.min(elapsed,.1);const dt=Math.min(elapsed,.05);world.sky.observeFrame(elapsed*1000,eligibleFrame&&!coop?.paused);const budgetChanged=graphics.value==='automatic'&&!vr?.active&&frameBudget.sample(elapsed,cap,eligibleFrame);world.sky.tick(dt,!!online?.online||(active&&!paused&&!coop?.paused&&!document.querySelector('dialog[open]')&&(!vr?.active||!vr.suspended)),reduced);
  coop?.refreshAvailability();
  if(coop?.active){

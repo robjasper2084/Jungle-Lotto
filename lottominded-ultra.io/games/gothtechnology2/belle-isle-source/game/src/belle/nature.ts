@@ -12,6 +12,7 @@ import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {loadStartupModel} from './startupAssets.ts';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {natureBudget,type Plant,type NaturePlan} from './naturePlan.ts';
+import {localPerformanceProbe,PERF_PROBE_REDUCTIONS} from './performanceProbe.ts';
 type Entry={id:string;meshes?:string[];cardSize?:number;cardCenter?:number[];card?:string;triangles:number};
 type Manifest={trees:Entry[];ground:Entry[]};
 type Pool={id:string;meshes:T.InstancedMesh[];far?:T.InstancedMesh[];card?:T.InstancedMesh;plants:Plant[]};
@@ -92,16 +93,17 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
  for(const source of [treeSource,ground.scene])source.traverse(o=>{if((o as T.Mesh).isMesh)(o as T.Mesh).geometry.dispose();});
  const cherry=await loadStartupModel(loader,base+'cherry.glb?v=blossom-20261110');cherry.scene.name='Peacock Sundial flowering cherry';cherry.scene.position.set(cherryTreeSite.x,cherryTreeSite.y,cherryTreeSite.z);cherry.scene.traverse(o=>{if(o instanceof T.Mesh){o.castShadow=true;o.receiveShadow=true;const m=o.material as T.MeshStandardMaterial;if(/blossom|leaf/.test(m.name))m.side=T.DoubleSide;}});scene.add(cherry.scene);
  const calendar=document.createElement('label');calendar.textContent='Island season';const monthSelect=document.createElement('select');monthSelect.id='season-month';monthSelect.setAttribute('aria-label','Island season month');['January','February','March','April','May','June','July','August','September','October','November','December'].forEach((name,i)=>monthSelect.add(new Option(name,String(i+1))));monthSelect.value=String(month.value);calendar.append(monthSelect);document.querySelector('#settings .settings-body')?.append(calendar);if(!calendar.isConnected)document.getElementById('settings')?.append(calendar);monthSelect.onchange=()=>{month.value=Number(monthSelect.value);localStorage.setItem('belle-season-month',String(month.value));lastX=Infinity;};
+ const diagnostic=localPerformanceProbe();
  let quality:keyof typeof natureBudget='automatic',lastX=Infinity,lastZ=Infinity,splitDetail=false,lastSplit=false,lastMonth=-1;
  const stats={treeVariants:manifest.trees.length,groundVariants:manifest.ground.length,trees:plan.trees.length,ground:plan.ground.length,visibleTrees:0,visibleGround:0};
  function select(x:number,z:number){
   cherry.scene.visible=Math.hypot(x-cherryTreeSite.x,z-cherryTreeSite.z)<900;
   // Offline summer impostors retain the full canopy silhouette in smaller panes.
   // Other seasons keep the seasonal geometry so bare branches are not replaced by leaves.
-  const cardsActive=splitDetail&&month.value>=6&&month.value<=9;
+  const cardsActive=!diagnostic&&splitDetail&&month.value>=6&&month.value<=9;
   if(Math.hypot(x-lastX,z-lastZ)<6&&lastSplit===cardsActive)return;
   lastSplit=cardsActive;
-  lastX=x;lastZ=z;const budget=natureBudget[quality];
+  lastX=x;lastZ=z;const budget=diagnostic?{...natureBudget.smooth,trees:PERF_PROBE_REDUCTIONS.nearTrees,treeRadius:PERF_PROBE_REDUCTIONS.treeRadius,ground:PERF_PROBE_REDUCTIONS.ground,groundRadius:PERF_PROBE_REDUCTIONS.groundRadius}:natureBudget[quality];
   const d=(p:Plant)=>(p.x-x)**2+(p.z-z)**2;
   const nearTrees=plan.trees.filter(p=>!replacedByCherry(p)&&d(p)<budget.treeRadius**2).sort((a,b)=>d(a)-d(b)).slice(0,budget.trees);
   const nearGround=plan.ground.filter(p=>d(p)<(p.id.startsWith('rock')?budget.groundRadius*1.65:budget.groundRadius)**2).sort((a,b)=>d(a)-d(b)).slice(0,budget.ground);
@@ -109,7 +111,7 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
   for(const pool of pools){
    const near=pool.plants.filter(p=>selected.has(p));
    for(const mesh of pool.meshes){mesh.count=near.length;near.forEach((p,i)=>{mesh.setMatrixAt(i,matrix(p,false,!!mesh.userData.seasonalLeaf));mesh.setColorAt(i,plantTint(p));});mesh.instanceMatrix.needsUpdate=true;const weights=mesh.geometry.getAttribute('lodWeight') as T.InstancedBufferAttribute|undefined;if(weights){near.forEach((p,i)=>weights.setX(i,treeBlend(Math.sqrt(d(p)),cutoff)));weights.needsUpdate=true;}const canopy=mesh.geometry.getAttribute('canopyDensity') as T.InstancedBufferAttribute|undefined;if(canopy){near.forEach((p,i)=>canopy.setX(i,growth(p).density));canopy.needsUpdate=true;}if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;}
-   if(pool.far)for(const far of pool.far){const visible=pool.plants.filter(p=>d(p)<(cardsActive?145:quality==='smooth'?850:1300)**2&&(!selected.has(p)||treeBlend(Math.sqrt(d(p)),cutoff)<1));far.count=visible.length;const weights=far.geometry.getAttribute('lodWeight') as T.InstancedBufferAttribute;visible.forEach((p,i)=>{far.setMatrixAt(i,matrix(p,false,!!far.userData.seasonalLeaf));far.setColorAt(i,plantTint(p));const distance=Math.sqrt(d(p));weights.setX(i,(selected.has(p)?1-treeBlend(distance,cutoff):1)*(cardsActive?Math.max(0,Math.min(1,(145-distance)/50)):1));});weights.needsUpdate=true;const canopy=far.geometry.getAttribute('canopyDensity') as T.InstancedBufferAttribute|undefined;if(canopy){visible.forEach((p,i)=>canopy.setX(i,growth(p).density));canopy.needsUpdate=true;}far.instanceMatrix.needsUpdate=true;if(far.instanceColor)far.instanceColor.needsUpdate=true;}
+   if(pool.far)for(const far of pool.far){const visible=pool.plants.filter(p=>d(p)<(diagnostic?PERF_PROBE_REDUCTIONS.farRange:cardsActive?145:quality==='smooth'?850:1300)**2&&(!selected.has(p)||treeBlend(Math.sqrt(d(p)),cutoff)<1));far.count=visible.length;const weights=far.geometry.getAttribute('lodWeight') as T.InstancedBufferAttribute;visible.forEach((p,i)=>{far.setMatrixAt(i,matrix(p,false,!!far.userData.seasonalLeaf));far.setColorAt(i,plantTint(p));const distance=Math.sqrt(d(p));weights.setX(i,(selected.has(p)?1-treeBlend(distance,cutoff):1)*(cardsActive?Math.max(0,Math.min(1,(145-distance)/50)):1));});weights.needsUpdate=true;const canopy=far.geometry.getAttribute('canopyDensity') as T.InstancedBufferAttribute|undefined;if(canopy){visible.forEach((p,i)=>canopy.setX(i,growth(p).density));canopy.needsUpdate=true;}far.instanceMatrix.needsUpdate=true;if(far.instanceColor)far.instanceColor.needsUpdate=true;}
    if(pool.card){pool.card.visible=cardsActive;if(cardsActive){const weights=pool.card.geometry.getAttribute('lodWeight') as T.InstancedBufferAttribute;pool.plants.forEach((p,i)=>weights.setX(i,Math.max(0,Math.min(1,(Math.sqrt(d(p))-95)/50))));weights.needsUpdate=true;}}
   }
  }

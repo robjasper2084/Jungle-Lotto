@@ -3,6 +3,7 @@ import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {inside,segment,type ParkMap,type ParkTerrain} from './terrain.ts';
 import {roadIndex} from './streetPlan.ts';
 import {CASINO_FOOTBRIDGES} from './casinoBridgeDetail.ts';
+import {localPerformanceProbe,PERF_PROBE_REDUCTIONS} from './performanceProbe.ts';
 
 export type CanalPiece={x:number;y:number;z:number;yaw:number;scale:number;color:number};
 export const CANAL_DETAIL_LIMITS={
@@ -83,6 +84,7 @@ export function addLivingCanals(scene:T.Scene,map:ParkMap,terrain:ParkTerrain){
  const branches=new T.InstancedMesh(fallenBranchGeometry(),branchMaterial,Math.max(1,plan.branches.length));
  for(const mesh of [reeds,branches]){mesh.count=0;mesh.visible=false;mesh.frustumCulled=false;mesh.castShadow=false;mesh.receiveShadow=true;mesh.instanceMatrix.setUsage(T.DynamicDrawUsage);scene.add(mesh);}
  reeds.name='Sheltered canal reeds and sedges';branches.name='Dry fallen branches along wooded canals';
+ const diagnostic=localPerformanceProbe();
  let quality:keyof typeof CANAL_DETAIL_LIMITS='automatic',lastX=Infinity,lastZ=Infinity;
  const stats={reeds:plan.reeds.length,branches:plan.branches.length,redBridgeAnchors:plan.redBridgeAnchors,visibleReeds:0,visibleBranches:0,maxDraws:2};
  function fill(mesh:T.InstancedMesh,sites:CanalPiece[],limit:number,range:number,x:number,z:number){
@@ -102,7 +104,7 @@ export function addLivingCanals(scene:T.Scene,map:ParkMap,terrain:ParkTerrain){
    wind.value=time;
    if(Math.hypot(x-lastX,z-lastZ)<7)return;
    lastX=x;lastZ=z;
-   const b=CANAL_DETAIL_LIMITS[quality];
+   const b=diagnostic?{...CANAL_DETAIL_LIMITS.smooth,reeds:PERF_PROBE_REDUCTIONS.reeds,branches:PERF_PROBE_REDUCTIONS.branches}:CANAL_DETAIL_LIMITS[quality];
    stats.visibleReeds=fill(reeds,plan.reeds,b.reeds,b.range,x,z);
    stats.visibleBranches=fill(branches,plan.branches,b.branches,b.range,x,z);
   }
