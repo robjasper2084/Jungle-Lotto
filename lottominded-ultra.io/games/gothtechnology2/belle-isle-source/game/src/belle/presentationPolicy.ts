@@ -8,6 +8,14 @@ const DETAIL_BUDGET=Object.freeze({reflectionSize:64,reflectionInterval:45,cloud
 export function presentationBudget(q:string,xr=false){return q==='smooth'||xr?SMOOTH_BUDGET:DETAIL_BUDGET;}
 /** In Smooth, preserve real layered clouds without costly traced panorama GPU work. */
 export function tracedSkyEnabled(requested:boolean,q:string):boolean{return requested&&q!=='smooth';}
+/** Software WebGL is often CPU-bound by traced panorama shaders even in High.
+ * Prefer the existing real-time layered clouds on such devices by default.
+ * A user's saved sky selection always wins; physical GPU quality is unchanged. */
+export function defaultTracedSky(rendererDescription:string,savedPreference:string|null):boolean{
+ if(savedPreference==='traced')return true;
+ if(savedPreference==='layered')return false;
+ return !/(swiftshader|llvmpipe|softpipe|software rasterizer)/i.test(rendererDescription);
+}
 export function fogColumn(cameraHeight:number,fragmentHeight:number){
  const a=clamp(cameraHeight,0,10000),b=clamp(fragmentHeight,0,10000);
  // Simpson integration of exponential density along the view ray.
