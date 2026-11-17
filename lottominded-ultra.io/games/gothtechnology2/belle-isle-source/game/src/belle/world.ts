@@ -17,6 +17,7 @@ import {applyRealisticMaterials,loadRealisticMaterials} from './realisticMateria
 import {applyPhotoReferenceSurfaces} from './photoReferenceSurfaces.ts';
 import {addStreetLighting} from './streetLighting.ts';
 import {addBridgeLighting} from './bridgeLighting.ts';
+import {finishBridgeMaterial} from './bridgeMaterialFinish.ts';
 import {sunDirection,smooth} from './skyModel.ts';
 import {visibleWithHysteresis} from './environmentDetail.ts';
 import {createVehicleContactShadow,type ContactShadowPose} from './contactShadow.ts';
@@ -91,6 +92,7 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
   };m.customProgramCacheKey=()=>'paving-weather-v2';
  }
 
+ const bridgeConcrete=concrete.clone();bridgeConcrete.name='MacArthur aged concrete';finishBridgeMaterial(bridgeConcrete,'aged-concrete');
  const groundPatches:T.Mesh[]=[];
  function add(g:T.BufferGeometry,m:T.Material|T.Material[]){const mesh=new T.Mesh(g,m);mesh.receiveShadow=true;scene.add(mesh);groundPatches.push(mesh);return mesh;}
  const dryLand:Point[][][]=await fetch('./belle/beach-land.json').then(r=>r.json());for(const p of dryLand)add(poly(p[0],2,p.slice(1)),grass);const beachStats=await addBeach(scene,data,terrain);
@@ -107,7 +109,7 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
  `);};m.customProgramCacheKey=()=>kind+'-joined-pavement-detail-v3';}
  surfaceDetail(pathMat,'concrete');surfaceDetail(pavers,'pavers');surfaceDetail(wood,'wood');surfaceDetail(gravel,'gravel');
  await addPavement(scene,{asphalt:pavement,concrete:pathMat,gravel,wood,pavers});
- const bridgePts:Point[]=Array.from({length:151},(_,i)=>[data.bridge.a[0]+(data.bridge.b[0]-data.bridge.a[0])*i/150,data.bridge.a[1]+(data.bridge.b[1]-data.bridge.a[1])*i/150]);const deckY=(x:number,z:number)=>6+4*Math.sin(Math.PI*T.MathUtils.clamp(terrain.bridge(x,z).t,0,1));add(road(bridgePts,26,(x,z)=>deckY(x,z)+.015),concrete);add(road(bridgePts,20,(x,z)=>deckY(x,z)+.06),pavement);
+ const bridgePts:Point[]=Array.from({length:151},(_,i)=>[data.bridge.a[0]+(data.bridge.b[0]-data.bridge.a[0])*i/150,data.bridge.a[1]+(data.bridge.b[1]-data.bridge.a[1])*i/150]);const deckY=(x:number,z:number)=>6+4*Math.sin(Math.PI*T.MathUtils.clamp(terrain.bridge(x,z).t,0,1));add(road(bridgePts,26,(x,z)=>deckY(x,z)+.015),bridgeConcrete);add(road(bridgePts,20,(x,z)=>deckY(x,z)+.06),pavement);
  for(const a of data.areas){if(a.points.length<4)continue;if(a.kind==='pitch')add(poly(a.points,2.012),mat(0x728260));if(a.kind==='garden'){const soil=grass.clone();soil.color.set(a.id==='107227702'?0x8f9b7e:0x8d8062);soil.onBeforeCompile=grass.onBeforeCompile;add(poly(a.points,2.012,a.holes),soil);}}
  const lagoonBridge=addLagoonBridge(scene,data);await yieldStartupTask();const smallBridges=await addSmallBridgesStaged(scene,terrain.smallBridges.plan);await yieldStartupTask();
  addServiceBuildings(scene,data,islandSky.nightAmount);const facilities=addParkFacilities(scene,data);

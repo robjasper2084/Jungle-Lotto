@@ -18,3 +18,16 @@ wave+=riverBroad*riverPatch;
 export function riverBandVisibility(radiansPerPixel:number){
  return Number.isFinite(radiansPerPixel)&&radiansPerPixel>=0?Math.exp(-.25*radiansPerPixel*radiansPerPixel):0;
 }
+
+/** Sunset river suntrail: existing normal fields only, footprint-filtered and energy-bounded. */
+export function riverPhotoGlintGLSL(reference=false):string{
+ return [
+  'float riverSunWide=pow(riverSunAlignment,'+(reference?'105.':'58.')+');',
+  'float riverSunCore=pow(riverSunAlignment,'+(reference?'430.':'230.')+');',
+  'float belleGlintPhase=dot(p,vec2(.64,-.29))+riverTime*1.15;',
+  'float belleGlintFilter=1.-smoothstep(.38,1.45,fwidth(belleGlintPhase));',
+  'float riverSunSparkle=clamp(.79+.16*sin(belleGlintPhase+wave.x*3.)*belleGlintFilter+.13*(r1.x-r2.y)*riverNormalVisibility,.58,1.07);',
+  'float belleGlintEnergy=min(.78,riverSunGlint*(riverSunWide*.23+riverSunCore*.56)*riverSunSparkle);',
+  'totalEmissiveRadiance+=vec3(.98,.83,.65)*belleGlintEnergy;'
+ ].join('\n');
+}
