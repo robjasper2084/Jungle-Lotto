@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {WorldFrameWork,coopMappedShadows,directionalCasterEligible,directionalShadowResolution,ShadowMapCadence} from './worldPerformancePolicy.ts';
+import {WorldFrameWork,coopMappedShadows,directionalCasterEligible,directionalShadowResolution,softwareWebGLRenderer,ShadowMapCadence} from './worldPerformancePolicy.ts';
 
 test('high and automatic preserve nearby landmark shadows but reject distant casters',()=>{
  assert.equal(directionalShadowResolution('high'),1536);
@@ -45,4 +45,16 @@ test('shadow cadence preserves full-resolution first refresh and skips redundant
  assert.equal(cadence.shouldRefresh(.26),true,'quality or sky changes refresh immediately');
  assert.equal(cadence.shouldRefresh(.01),true,'clock rewinds must also refresh');
  assert.equal(cadence.shouldRefresh(NaN),true,'invalid frame time must never hide shadows');
+});
+
+
+test('software WebGL retains real mapped shadows with smaller GPU submissions, while physical hardware keeps quality maps',()=>{
+ assert.equal(softwareWebGLRenderer('ANGLE (Google, Vulkan SwiftShader Device (Subzero))'),true);
+ assert.equal(softwareWebGLRenderer('Mesa llvmpipe (LLVM 19)'),true);
+ assert.equal(softwareWebGLRenderer('NVIDIA GeForce RTX 4070'),false);
+ for(const mode of ['high','automatic'] as const){
+  assert.equal(directionalShadowResolution(mode,true),768);
+  assert.equal(directionalShadowResolution(mode,false),mode==='high'?1536:1024);
+ }
+ assert.equal(directionalShadowResolution('smooth',true),1024);
 });
