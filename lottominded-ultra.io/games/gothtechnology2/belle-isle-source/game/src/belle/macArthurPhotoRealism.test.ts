@@ -37,7 +37,7 @@ test('photographic guide views map to actual inland canals and a Casino footbrid
  assert(map.pois.some((p:{name:string})=>p.name==='Sylvan Canal'));
  const guide=readFileSync(new URL('./main.ts',import.meta.url),'utf8');
  const gallery=readFileSync(new URL('../../scripts/environment-gallery.mjs',import.meta.url),'utf8');
- for(const key of ['Casino red pedestrian bridge','Sylvan Canal · wooded banks','scenicRoute('])assert(guide.includes(key));
+ for(const key of ['Casino Way Bridge · bank side','Sylvan Canal · wooded banks','scenicRoute('])assert(guide.includes(key));
  assert(gallery.includes('Walk onto the beach')&&gallery.includes('Visit red bridge')&&gallery.includes('Visit canal view'));
  assert(!gallery.includes('Covered Bridge guide destination is provisional'));
 });

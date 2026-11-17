@@ -22,8 +22,8 @@ const sites=[
   note:'Concrete arches, protected riprap and bridge clearances'},
  {id:'wooded-canal',name:'Wooded Canal',search:/Sylvan Canal · wooded banks/i,action:/Visit canal view/i,
   note:'Real mapped Sylvan Canal view; verify waterside foliage and wetland bank'},
- {id:'red-pedestrian-bridge',name:'Red Pedestrian Bridge',search:/Casino red pedestrian bridge/i,action:/Visit red bridge/i,
-  note:'Mapped Casino red footbridge, not the distant Covered Bridge'},
+ {id:'red-pedestrian-bridge',name:'Red Pedestrian Bridge',search:/Casino Way Bridge · bank side/i,action:/Visit red bridge/i,
+  note:'Historically located Casino Way crossing, photographed from a collision-safe bank-side view'},
  {id:'swimming-beach',name:'Swimming Beach',search:/Belle Isle Beach/i,action:/Walk onto the beach/i,
   note:'Actual on-foot swimming beach view, not a service-building path'},
 ];

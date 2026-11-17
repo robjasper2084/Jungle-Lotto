@@ -52,6 +52,7 @@ import {BelleVR} from './vr.ts';
 import {aquariumWorld,aquariumInside,aquariumRoom,aquariumRay} from './aquarium.ts';
 import {createStartup} from './startup.ts';
 import {createFirstRideObjective} from './firstRideObjective.ts';
+import {planCasinoWayViews,CASINO_WAY_REFERENCE} from './casinoBridgeView.ts';
 import './firstRideObjective.css';
 import {greenhouseWorld,greenhouseInside,greenhouseRoom} from './conservatory.ts';
 import * as T from 'three';import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';import {RideCore} from '../../runtime/ride-core/src/ridecore.ts';import {HUMAN_PROFILE} from '../../runtime/ride-core/src/profiles.ts';import {ThreeRiderView} from '../../runtime/elmwood-source/src/detroit/riding/threeRiderView.ts';import {createWorld} from './world.ts';import {ParkTerrain,inside,type Landmark,type ParkMap} from './terrain.ts';import './style.css';
@@ -219,8 +220,8 @@ async function boot(){const response=await fetch('./belle/map.json');if(!respons
     .sort((a,b)=>Math.abs(a.d-23)-Math.abs(b.d-23));
    return candidates[0]?.p;
   };
-  const scenicCard=(name:string,description:string,x:number,z:number,buttonName:string)=>{
-   const p=scenicRoute(x,z);if(!p)return;
+  const scenicCard=(name:string,description:string,x:number,z:number,buttonName:string,view?:{x:number;z:number})=>{
+   const p=view?[view.x,view.z] as [number,number]:scenicRoute(x,z);if(!p)return;
    const card=document.createElement('article');card.className='landmark';card.dataset.kind='trail';
    card.dataset.search=name.toLowerCase();
    const title=document.createElement('h3');title.textContent=name;
@@ -236,10 +237,12 @@ async function boot(){const response=await fetch('./belle/map.json');if(!respons
    };
    card.append(title,note,visit);el('landmarks').append(card);
   };
-  const casinoBridgeRoad=data.roads.find(r=>r.id==='42986441'&&r.bridge&&r.points.length>=2);
-  if(casinoBridgeRoad){
-   const a=casinoBridgeRoad.points[0],b=casinoBridgeRoad.points[casinoBridgeRoad.points.length-1];
-   scenicCard('Casino red pedestrian bridge','Follow the shaded approach to the real mapped red footbridge.',(a[0]+b[0])/2,(a[1]+b[1])/2,'Visit red bridge');
+  const casinoViews=planCasinoWayViews(data,terrain);
+  if(casinoViews?.side){const v=casinoViews.side;
+   scenicCard('Casino Way Bridge · bank side','See the historic ornamental ironwork across the canal. Historical source: '+CASINO_WAY_REFERENCE.source,v.lookX,v.lookZ,'Visit red bridge',v);
+  }
+  if(casinoViews?.context){const v=casinoViews.context;
+   scenicCard('Casino Way Bridge · Casino context','Wider bank view of the mapped bridge and nearby Belle Isle Casino.',v.lookX,v.lookZ,'Visit Casino context',v);
   }
   const sylvanCanal=data.pois.find(p=>p.name==='Sylvan Canal');
   if(sylvanCanal)scenicCard('Sylvan Canal · wooded banks','Look across a sheltered wooded canal, with roots, wetland planting and reflections.',sylvanCanal.x,sylvanCanal.z,'Visit canal view');
