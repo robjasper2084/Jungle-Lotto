@@ -17,17 +17,18 @@ concurrency:
 jobs:
   profile:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 50
     strategy:
       fail-fast: false
       matrix:
         device: [desktop, phone]
+        mode: [full, diagnostic]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - name: Build exact candidate and validate harness
+      - name: Check test and build exact candidate
         working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
         run: |
           npm ci
@@ -35,23 +36,24 @@ jobs:
           npm test
           node --check scripts/sustained-ride-profile.mjs
           npm run build
-      - name: Install browser runtime
+      - name: Install Chrome browser runtime
         working-directory: lottominded-ultra.io/games/gothtechnology2
         run: |
           npm ci
           npx playwright install --with-deps chrome
-      - name: Ride real game for 90 seconds and collect foreground metrics
-        timeout-minutes: 25
+      - name: Hold real input and sample 90-second foreground ride
+        timeout-minutes: 28
         working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
         env:
           BELLE_PROFILE_DEVICE: ${{ matrix.device }}
+          BELLE_PROFILE_MODE: ${{ matrix.mode }}
           BELLE_PROFILE_SECONDS: '90'
         run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node scripts/sustained-ride-profile.mjs
-      - name: Upload p50 p95 p99 and memory/load measurements
+      - name: Archive actual full or diagnostic evidence separately
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: belle-sustained-profile-${{ matrix.device }}
-          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/sustained-profile/${{ matrix.device }}
+          name: belle-sustained-profile-${{ matrix.mode }}-${{ matrix.device }}
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/sustained-profile/${{ matrix.mode }}/${{ matrix.device }}
           if-no-files-found: warn
           retention-days: 14
