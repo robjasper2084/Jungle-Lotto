@@ -1,0 +1,11 @@
+/* Optional compact HUD; critical ride inputs and the speed display stay visible. */
+body.belle-hud-focus #minimap,
+body.belle-hud-focus #minimap-hide,
+body.belle-hud-focus #hint {display:none!important}
+body.belle-hud-focus #navigation {width:min(220px,calc(100vw - 28px))}
+body.belle-hud-focus #navigation p {margin:6px 0;padding:6px 12px}
+body.belle-hud-focus #ridehud .speed-readout {opacity:.92}
+@media(max-width:700px){
+ body.belle-hud-focus #navigation {width:min(180px,calc(100vw - 24px))}
+ body.belle-hud-focus #ridehud .speed-readout {transform:scale(.9);transform-origin:left bottom}
+}
