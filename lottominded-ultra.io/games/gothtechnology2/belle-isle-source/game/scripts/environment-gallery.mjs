@@ -105,7 +105,8 @@ async function openActiveRidePage(){
  return page;
 }
 try{
- browser=await chromium.launch({channel:'chrome',headless:true,args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+ const launch=()=>chromium.launch({channel:'chrome',headless:true,args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+ browser=await launch();
  for(const light of lights){
   let page;
   try{
@@ -114,6 +115,8 @@ try{
    for(let i=0;i<sites.length;i++){
     if(i===2){
      await page.close();
+     await browser.close();
+     browser=await launch();
      page=await openActiveRidePage();
      await configureSky(page,light.value);
     }
