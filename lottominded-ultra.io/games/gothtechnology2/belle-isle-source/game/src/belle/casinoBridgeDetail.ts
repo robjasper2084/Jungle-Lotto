@@ -32,17 +32,22 @@ export function casinoBridgeRail(p:Part,add:(g:T.BufferGeometry)=>void){
    }
    const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(v,3));g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));g.setIndex(index);g.computeVertexNormals();place(g);
   };
-  curve(Array.from({length:13},(_,j)=>{const a=j*Math.PI/6;return new T.Vector3(0,h*.51+Math.sin(a)*h*.31,mid+Math.cos(a)*step*.23);}),.019,12);
-  for(const sign of [-1,1])curve(Array.from({length:10},(_,j)=>{const a=j/9*Math.PI*1.65,r=.17*(1-j/12);return new T.Vector3(0,h*.51+Math.sin(a)*r,mid+sign*(step*.39+Math.cos(a)*r));}),.016);
   if(p.id===CASINO_WAY_MAPPED_ID){
-   // Interlocking Victorian scrolls, contained entirely within the original
-   // post spacing and rail height. Not a claim of exact cast-iron replication.
+   // Retain the dominant sweeping loop and two tighter Victorian scrolls
+   // for the historically located crossing. Remove redundant side curls:
+   // the ornamental silhouette survives while respecting the full 59-way
+   // geometry budget and existing, unchanged collision envelopes.
+   curve(Array.from({length:13},(_,j)=>{const a=j*Math.PI/6;return new T.Vector3(0,h*.51+Math.sin(a)*h*.31,mid+Math.cos(a)*step*.23);}),.019,12);
    const r=Math.min(.21,h*.23,step*.17);
    for(const sign of [-1,1]){
     const spiral=Array.from({length:15},(_,j)=>{const u=j/14,a=u*Math.PI*2.8,rad=r*(1-u*.66);
      return new T.Vector3(0,h*(sign<0?.39:.63)+Math.sin(a)*rad,mid+sign*step*.20+Math.cos(a)*rad);});
     curve(spiral,.024,14);
    }
+  }else{
+   // The nearby generic Park path bridge keeps its original uncomplicated
+   // looped infill, not the historically specific Casino ironwork.
+   curve(Array.from({length:9},(_,j)=>{const a=j*Math.PI/4;return new T.Vector3(0,h*.51+Math.sin(a)*h*.31,mid+Math.cos(a)*step*.23);}),.019,8);
   }
  }
 }
