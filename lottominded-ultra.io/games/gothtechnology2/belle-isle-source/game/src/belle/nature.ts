@@ -44,11 +44,18 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
   mesh.castShadow=shadow;mesh.userData.seasonalLeaf=/leaves/.test(name);mesh.receiveShadow=true;mesh.frustumCulled=false;
   mesh.instanceMatrix.setUsage(T.DynamicDrawUsage);scene.add(mesh);return mesh;
  }
+ const riparianFocus=terrain?.map.pois.filter(p=>/^(Sylvan|Nashua|Loop) Canal$/.test(p.name)).map(p=>({x:p.x,z:p.z}))??[];
+ const canalCrowns=new WeakMap<Plant,number>();
+ const crownOverlap=(p:Plant)=>{let factor=canalCrowns.get(p);if(factor===undefined){
+  const distance=riparianFocus.reduce((nearest,q)=>Math.min(nearest,Math.hypot(p.x-q.x,p.z-q.z)),Infinity);
+  factor=1+(p.id==='willow'||p.id==='maple'||p.id==='birch'?.10*Math.max(0,1-distance/145):0);
+  canalCrowns.set(p,factor);
+ }return factor;};
  const canopyCache=new WeakMap<Plant,ReturnType<typeof canopyProfile>>();
  const trees=new Set(['maple','birch','willow','pine']);
  function growth(p:Plant){let g=canopyCache.get(p);if(!g){g=canopyProfile(p);canopyCache.set(p,g);}return g;}
  function plantTint(p:Plant){const c=canopyTint(p.tint,p.canopyTone),tone=trees.has(p.id)?growth(p).tint:1;return tint.setRGB(c[0]*tone,c[1]*tone,c[2]*tone);}
- function matrix(p:Plant,hidden=false,crown=false){dummy.position.set(p.x,p.y,p.z);const leaning=p.id==='willow'||p.id==='birch';const tilt=leaning?.035*Math.sin(p.x*.017+p.z*.013):0;dummy.rotation.set(tilt,p.yaw,tilt*.63);const g=trees.has(p.id)?growth(p):null;const spread=(leaning?1.06:1)*(crown?1.09:1);dummy.scale.set(hidden?0:p.scale*(g?.width??1)*spread,hidden?0:p.scale*(p.heightScale??1)*(g?.height??1),hidden?0:p.scale*(g?.width??1)*spread);dummy.updateMatrix();return dummy.matrix;}
+ function matrix(p:Plant,hidden=false,crown=false){dummy.position.set(p.x,p.y,p.z);const leaning=p.id==='willow'||p.id==='birch';const tilt=leaning?.035*Math.sin(p.x*.017+p.z*.013):0;dummy.rotation.set(tilt,p.yaw,tilt*.63);const g=trees.has(p.id)?growth(p):null;const spread=(leaning?1.06:1)*(crown?1.09*crownOverlap(p):1);dummy.scale.set(hidden?0:p.scale*(g?.width??1)*spread,hidden?0:p.scale*(p.heightScale??1)*(g?.height??1),hidden?0:p.scale*(g?.width??1)*spread);dummy.updateMatrix();return dummy.matrix;}
  for(const entry of manifest.trees){
   const plants=plan.trees.filter(p=>p.id===entry.id&&!replacedByCherry(p));
   const trunk=treeSource.getObjectByName(entry.id+'__trunk') as T.Mesh;

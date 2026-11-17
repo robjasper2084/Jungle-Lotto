@@ -17,6 +17,7 @@ const MAX_REEDS=640,MAX_BRANCHES=140;
 export function planLivingCanals(map:ParkMap,terrain:Pick<ParkTerrain,'land'|'height'|'obstructed'|'bridge'|'smallBridges'>){
  const reeds:CanalPiece[]=[],branches:CanalPiece[]=[];
  const occupied=roadIndex(map.roads),beaches=map.areas.filter(a=>a.kind==='beach');
+ const canalFocus=map.pois.filter(p=>/^(Sylvan|Nashua|Loop) Canal$/.test(p.name)).map(p=>({x:p.x,z:p.z}));
  const red=terrain.smallBridges.plan.parts.filter(p=>p.kind==='slab'&&CASINO_FOOTBRIDGES.has(p.id))
    .map(p=>({x:(p.a[0]+p.b[0])*.5,z:(p.a[1]+p.b[1])*.5}));
  let seed=827341;const rand=()=>{seed=(Math.imul(seed,1664525)+1013904223)|0;return(seed>>>0)/4294967296;};
@@ -33,12 +34,13 @@ export function planLivingCanals(map:ParkMap,terrain:Pick<ParkTerrain,'land'|'he
      const offset=1.3+rand()*1.4,px=x+nx*side*offset,pz=z+nz*side*offset;
      if(!terrain.land(px,pz)||terrain.bridge(px,pz).active||beach(px,pz)||occupied(px,pz,'',2.6)||terrain.obstructed(px,pz,.55))continue;
      const redApproach=red.some(p=>(p.x-px)**2+(p.z-pz)**2<95*95);
-     if(reeds.length<MAX_REEDS&&rand()<(redApproach?.92:.52)){
-      const scale=.68+rand()*.65;
+     const woodedCanal=canalFocus.some(p=>(p.x-px)**2+(p.z-pz)**2<145*145);
+     if(reeds.length<MAX_REEDS&&rand()<(redApproach?.92:woodedCanal?.80:.52)){
+      const scale=woodedCanal?.83+rand()*.65:.68+rand()*.65;
       reeds.push({x:px,y:terrain.height(px,pz)+.015,z:pz,yaw:rand()*Math.PI*2,scale,
        color:new T.Color().setHSL(.19+rand()*.075,.32+rand()*.12,.25+rand()*.14).getHex()});
      }
-     if(branches.length>=MAX_BRANCHES||rand()>(redApproach?.095:.035))continue;
+     if(branches.length>=MAX_BRANCHES||rand()>(redApproach?.095:woodedCanal?.075:.035))continue;
      const inland=3.8+rand()*2.4,bx=x+nx*side*inland,bz=z+nz*side*inland;
      if(!terrain.land(bx,bz)||terrain.bridge(bx,bz).active||beach(bx,bz)||occupied(bx,bz,'',3.4)||terrain.obstructed(bx,bz,.9))continue;
      branches.push({x:bx,y:terrain.height(bx,bz)+.11,z:bz,yaw:rand()*Math.PI*2,scale:.62+rand()*.75,

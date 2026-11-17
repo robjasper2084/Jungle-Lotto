@@ -1,5 +1,6 @@
 import * as T from 'three';
 import type {SmallBridgePlan} from './smallBridges.ts';
+import {CASINO_WAY_MAPPED_ID} from './casinoBridgeView.ts';
 
 /** The two mapped footbridges beside the Casino. Photo proportions are an
  * interpretation; the surveyed path endpoints and rail envelope stay authoritative. */
@@ -19,7 +20,9 @@ export function casinoBridgeRail(p:Part,add:(g:T.BufferGeometry)=>void){
  for(let i=0;i<panels;i++){
   const mid=(i+.5)*step;
   // Thin cast-iron strips retain an opaque silhouette from either bank.
-  // Fine oval, simpler small scrolls: both bridges retain the original budget.
+  // Photo-guided ironwork. The historically located Casino Way crossing gains
+  // secondary interlaced volutes inside the same merged, non-colliding mesh.
+  // The other generic mapped path keeps the original rail detail and identity.
   const curve=(points:T.Vector3[],radius=.019,segments=8)=>{
    const path=new T.CatmullRomCurve3(points),v:number[]=[],uv:number[]=[],index:number[]=[];
    for(let j=0;j<=segments;j++){
@@ -31,5 +34,15 @@ export function casinoBridgeRail(p:Part,add:(g:T.BufferGeometry)=>void){
   };
   curve(Array.from({length:13},(_,j)=>{const a=j*Math.PI/6;return new T.Vector3(0,h*.51+Math.sin(a)*h*.31,mid+Math.cos(a)*step*.23);}),.019,12);
   for(const sign of [-1,1])curve(Array.from({length:10},(_,j)=>{const a=j/9*Math.PI*1.65,r=.17*(1-j/12);return new T.Vector3(0,h*.51+Math.sin(a)*r,mid+sign*(step*.39+Math.cos(a)*r));}),.016);
+  if(p.id===CASINO_WAY_MAPPED_ID){
+   // Interlocking Victorian scrolls, contained entirely within the original
+   // post spacing and rail height. Not a claim of exact cast-iron replication.
+   const r=Math.min(.21,h*.23,step*.17);
+   for(const sign of [-1,1]){
+    const spiral=Array.from({length:15},(_,j)=>{const u=j/14,a=u*Math.PI*2.8,rad=r*(1-u*.66);
+     return new T.Vector3(0,h*(sign<0?.39:.63)+Math.sin(a)*rad,mid+sign*step*.20+Math.cos(a)*rad);});
+    curve(spiral,.024,14);
+   }
+  }
  }
 }
