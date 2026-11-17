@@ -1,4 +1,22 @@
 /** Render-only budgets: no collision, gameplay, or route rules change. */
+/** Limit redundant directional shadow-map submissions while retaining full
+ * map resolution, every caster, and the original world geometry.
+ * Clock values are simulation seconds; resets cover a sky/quality transition. */
+export class ShadowMapCadence {
+ private last=-Infinity;
+ constructor(private readonly interval=1/10){}
+ shouldRefresh(clock:number):boolean{
+  if(!Number.isFinite(clock))return true;
+  if(clock<this.last||clock-this.last>=this.interval){
+   this.last=clock;
+   return true;
+  }
+  return false;
+ }
+ reset(){this.last=-Infinity;}
+}
+
+
 export type WorldPerformanceTier='smooth'|'automatic'|'high';
 
 /** Fewer shadow texels on high quality; the 110m caster budget keeps
