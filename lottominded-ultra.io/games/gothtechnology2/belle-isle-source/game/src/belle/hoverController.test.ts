@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {HoverController,type FlightMode,type HoverInput} from './hoverController.ts';
+import {HoverController,MODE_CLASSIC,MODE_ATTITUDE_HOLD,resolveFlightModePreference,type FlightMode,type HoverInput} from './hoverController.ts';
 import {ParkTerrain,type ParkMap} from './terrain.ts';
 const data=JSON.parse(fs.readFileSync(new URL('../../public/belle/map.json',import.meta.url),'utf8')) as ParkMap;
 const terrain=new ParkTerrain(data);
@@ -130,4 +130,22 @@ test('takeoff easing and speed sensitivity stay stable across simulation frame r
 
 test('new rides default to classic momentum and retain coast on throttle release',()=>{
  const c=new HoverController(terrain,{x:0,z:1000,heading:0});assert.equal(c.mode,'classic');c.launch();run(c,3,{...idle,throttle:1});const before=c.pose.speed;run(c,.25);assert(c.pose.speed>before-1&&c.pose.speed>0);run(c,3,{...idle,brake:true});assert.equal(c.pose.speed,0);
+});
+
+test('Classic is the system-wide first-ride flight default, never implicit altitude hold',()=>{
+ assert.equal(MODE_CLASSIC,'classic');
+ assert.equal(MODE_ATTITUDE_HOLD,'drone');
+ for(const value of [null,undefined,'','attitude_hold','ATTITUDE_HOLD','unexpected'])
+  assert.equal(resolveFlightModePreference(value),MODE_CLASSIC);
+ assert.equal(resolveFlightModePreference('classic'),MODE_CLASSIC);
+ assert.equal(resolveFlightModePreference('drone'),MODE_ATTITUDE_HOLD);
+ const c=new HoverController(terrain,{x:0,z:1000,heading:0});
+ assert.equal(c.mode,MODE_CLASSIC);
+ assert(c.startFlight({x:0,y:30,z:1000,heading:0}));
+ assert.equal(c.mode,MODE_CLASSIC,'course placement must not inject altitude hold');
+ assert(c.flying&&!c.landed&&c.pose.y>=29.9);
+ c.setMode(resolveFlightModePreference('drone'));
+ assert.equal(c.mode,MODE_ATTITUDE_HOLD,'explicit saved preference remains available outside trials');
+ c.setMode(MODE_CLASSIC);
+ assert.equal(c.mode,MODE_CLASSIC,'Sky Circuit must be able to override a saved hold mode');
 });
