@@ -208,6 +208,41 @@ async function boot(){const response=await fetch('./belle/map.json');if(!respons
  });
 
  hud?.collectTools();
+
+  // Two mapped, safe-view sightseeing cards make the visually distinctive
+  // red casino crossings and a real wooded canal accessible to players.
+  // No scene/collision coordinate is fabricated: anchors come from map roads
+  // and named OSM waterway points; cameras arrive on existing land paths.
+  const scenicRoute=(x:number,z:number)=>{
+   const candidates=routepoints.map(p=>({p,d:Math.hypot(p[0]-x,p[1]-z)}))
+    .filter(v=>v.d>=13&&v.d<=48&&!terrain.obstructed(v.p[0],v.p[1],1.2))
+    .sort((a,b)=>Math.abs(a.d-23)-Math.abs(b.d-23));
+   return candidates[0]?.p;
+  };
+  const scenicCard=(name:string,description:string,x:number,z:number,buttonName:string)=>{
+   const p=scenicRoute(x,z);if(!p)return;
+   const card=document.createElement('article');card.className='landmark';card.dataset.kind='trail';
+   card.dataset.search=name.toLowerCase();
+   const title=document.createElement('h3');title.textContent=name;
+   const note=document.createElement('p');note.textContent=description;
+   const visit=document.createElement('button');visit.type='button';visit.textContent=buttonName;
+   visit.onclick=()=>{
+    if(!terrain.land(p[0],p[1])||terrain.obstructed(p[0],p[1],1.2))return;
+    destination=undefined;
+    jump(p[0],p[1],Math.atan2(x-p[0],z-p[1]));
+    core.advance(1/60,{dismount:true,instantDismount:true});
+    first=true;cameraPitch=.035;el<HTMLDialogElement>('guide').close();
+    if(!active)start.click();
+   };
+   card.append(title,note,visit);el('landmarks').append(card);
+  };
+  const casinoBridgeRoad=data.roads.find(r=>r.id==='42986441'&&r.bridge&&r.points.length>=2);
+  if(casinoBridgeRoad){
+   const a=casinoBridgeRoad.points[0],b=casinoBridgeRoad.points[casinoBridgeRoad.points.length-1];
+   scenicCard('Casino red pedestrian bridge','Follow the shaded approach to the real mapped red footbridge.',(a[0]+b[0])/2,(a[1]+b[1])/2,'Visit red bridge');
+  }
+  const sylvanCanal=data.pois.find(p=>p.name==='Sylvan Canal');
+  if(sylvanCanal)scenicCard('Sylvan Canal · wooded banks','Look across a sheltered wooded canal, with roots, wetland planting and reflections.',sylvanCanal.x,sylvanCanal.z,'Visit canal view');
  const bridgeCard=document.createElement('article');bridgeCard.className='landmark';bridgeCard.dataset.kind='attraction';bridgeCard.dataset.search='ambassador bridge sunset point photography overlook';bridgeCard.innerHTML='<h3>Ambassador Bridge overlook</h3><p>Look downriver from Sunset Point. Try the 85 mm or 135 mm lens, then switch to dusk for the bridge lights.</p><button type="button">Visit bridge overlook</button>';bridgeCard.querySelector('button')!.onclick=()=>{jump(bridgeOverlook.x,bridgeOverlook.z,bridgeOverlook.heading);core.advance(1/60,{dismount:true});first=true;cameraPitch=-.012;el<HTMLDialogElement>('guide').close();if(!active)start.click();};el('landmarks').append(bridgeCard);
  el('restart').onclick=()=>{destination=undefined;first=false;jump(data.spawn.x,data.spawn.z,data.spawn.heading);el<HTMLDialogElement>('settings').close();};
  async function visitYachtClub(landmark:Landmark,button:HTMLButtonElement){

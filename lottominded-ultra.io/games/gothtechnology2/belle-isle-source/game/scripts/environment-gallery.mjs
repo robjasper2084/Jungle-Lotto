@@ -20,12 +20,12 @@ const output=resolve(game,'output/environment-gallery',variant,device);
 const sites=[
  {id:'macarthur',name:'MacArthur Bridge',search:/MacArthur Bridge overlook/i,
   note:'Concrete arches, protected riprap and bridge clearances'},
- {id:'wooded-canal',name:'Wooded Canal',search:/Wet-Mesic Flatwoods Forest/i,
-  note:'Mapped forest travel destination; canal-water framing requires manual validation'},
- {id:'red-pedestrian-bridge',name:'Red Pedestrian Bridge',search:/Covered Bridge/i,
-  note:'Covered Bridge guide destination is provisional; confirm red bridge identity in screenshots'},
- {id:'swimming-beach',name:'Swimming Beach',search:/Belle Isle Beach/i,
-  note:'Open sandy beach with wet margin, no new rock collisions'},
+ {id:'wooded-canal',name:'Wooded Canal',search:/Sylvan Canal · wooded banks/i,action:/Visit canal view/i,
+  note:'Real mapped Sylvan Canal view; verify waterside foliage and wetland bank'},
+ {id:'red-pedestrian-bridge',name:'Red Pedestrian Bridge',search:/Casino red pedestrian bridge/i,action:/Visit red bridge/i,
+  note:'Mapped Casino red footbridge, not the distant Covered Bridge'},
+ {id:'swimming-beach',name:'Swimming Beach',search:/Belle Isle Beach/i,action:/Walk onto the beach/i,
+  note:'Actual on-foot swimming beach view, not a service-building path'},
 ];
 // CI runs each genuine lighting pass independently, retaining both required
 // lighting cases on desktop and phone without sharing a long-lived GPU context.
@@ -82,7 +82,7 @@ async function travel(page,site){
  const card=page.locator('#landmarks .landmark').filter({has:page.locator('h3').filter({hasText:site.search})}).first();
  await expect(card).toBeVisible();
  const found=await card.locator('h3').innerText();
- await card.getByRole('button',{name:/Travel/}).click();
+ await card.getByRole('button',{name:site.action||/Travel/}).click();
  await expect(page.locator('#guide')).not.toBeVisible();
  return found;
 }

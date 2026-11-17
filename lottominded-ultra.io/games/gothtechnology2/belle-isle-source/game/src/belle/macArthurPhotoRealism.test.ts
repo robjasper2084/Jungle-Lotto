@@ -29,3 +29,15 @@ test('source integrates tree-only crown scaling, river filtering and photo bridg
  assert(read('water.ts').includes('riverPhotoGlintGLSL(REFERENCE_STYLE)'));
  assert(read('world.ts').includes("finishBridgeMaterial(bridgeConcrete,'aged-concrete')"));
 });
+
+test('photographic guide views map to actual inland canals and a Casino footbridge',()=>{
+ const map=JSON.parse(readFileSync(new URL('../../public/belle/map.json',import.meta.url),'utf8'));
+ const red=map.roads.find((road:{id:string;bridge?:boolean})=>road.id==='42986441');
+ assert(red?.bridge&&red.points.length>1);
+ assert(map.pois.some((p:{name:string})=>p.name==='Sylvan Canal'));
+ const guide=readFileSync(new URL('./main.ts',import.meta.url),'utf8');
+ const gallery=readFileSync(new URL('../../scripts/environment-gallery.mjs',import.meta.url),'utf8');
+ for(const key of ['Casino red pedestrian bridge','Sylvan Canal · wooded banks','scenicRoute('])assert(guide.includes(key));
+ assert(gallery.includes('Walk onto the beach')&&gallery.includes('Visit red bridge')&&gallery.includes('Visit canal view'));
+ assert(!gallery.includes('Covered Bridge guide destination is provisional'));
+});
