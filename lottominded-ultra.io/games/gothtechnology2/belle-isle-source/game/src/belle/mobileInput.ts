@@ -10,7 +10,9 @@ export function stickAxes(x:number,y:number,radius=45){
  if(!Number.isFinite(x)||!Number.isFinite(y))return {steer:0,throttle:0};
  const d=Math.hypot(x,y),dead=radius*.09;
  if(d<=dead)return {steer:0,throttle:0};
- const strength=Math.min(1,(d-dead)/(radius-dead));
+ // Gentle curve increases initial thumb response while keeping full stick
+ // at exactly 1 and retaining the existing deadzone and radial clamp.
+ const strength=Math.pow(Math.min(1,(d-dead)/(radius-dead)),.92);
  return {steer:x/d*strength,throttle:-y/d*strength};
 }
 export function brakeThrottle(speed:number){return Math.abs(speed)<.12?0:-Math.sign(speed);}
