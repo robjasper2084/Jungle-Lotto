@@ -25,9 +25,10 @@ try{
  page.on('console',msg=>{if(msg.type()==='error')report.errors.push(msg.text());});
  page.on('response',r=>{if(r.status()>=400)report.errors.push('HTTP '+r.status()+' '+r.url());});
  page.on('requestfailed',r=>report.failedRequests.push((r.failure()?.errorText||'failed')+' '+r.url()));
+ const navigationStarted=Date.now();
  await page.goto('http://127.0.0.1:'+server.address().port+'/?profile=1',{waitUntil:'domcontentloaded'});
  await expect(page.locator('#welcome')).toHaveAttribute('data-state','ready');
- report.firstPlayableMs=Date.now()-begin;
+ report.firstPlayableMs=Date.now()-navigationStarted;
  await page.locator('.cinema-ride-picker > summary').click();
  await page.locator('.ride-options label').filter({hasText:'One wheel'}).click();
  await page.getByRole('button',{name:'Use this ride',exact:true}).click();
