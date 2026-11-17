@@ -5,7 +5,7 @@
  background:rgba(10,29,32,.80);border:1px solid rgba(157,229,216,.42);
  border-radius:12px;box-shadow:0 3px 12px rgba(0,0,0,.18);
  backdrop-filter:blur(7px);color:#edf8f4;font:12px/1.35 system-ui,sans-serif;
- pointer-events:auto;
+ pointer-events:none;
 }
 #first-ride-objective strong{color:#a7ffdf;font-size:10px;letter-spacing:.08em;white-space:nowrap}
 #first-ride-objective span{min-width:0;overflow:hidden;text-overflow:ellipsis}
@@ -13,3 +13,10 @@
  padding:6px 9px;min-height:44px;cursor:pointer;flex-shrink:0}
 @media(max-width:520px){#first-ride-objective:not([hidden]){top:max(52px,env(safe-area-inset-top,0px) + 44px);left:12px;right:12px;transform:none;max-width:none;flex-wrap:wrap}#first-ride-objective strong{flex-basis:100%}}
 @media(prefers-reduced-motion:reduce){#first-ride-objective{backdrop-filter:none}}
+
+/* A first-ride prompt is optional. Never let its banner intercept the real
+ * cockpit, radio, touch steering or co-op buttons at small viewports. The
+ * existing destination readout continues to guide the player during flight. */
+body.on-hoverbike #first-ride-objective:not([hidden]),
+body.coop-playing #first-ride-objective:not([hidden]){display:none}
+@media(max-height:520px){#first-ride-objective:not([hidden]){display:none}}
