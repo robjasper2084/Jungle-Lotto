@@ -105,7 +105,7 @@ try{
  report.frameQualityAccepted=stats.metrics?.frameMs?.p95<=50&&stats.over250ms===0;
  const keyReceived=report.input.keydowns>=1&&!report.input.heartbeatError;
  report.passed=keyReceived&&stats.frames>=8&&stats.metrics?.frameMs?.p95!==null&&
-  (mode==='diagnostic'||stats.distanceMetres>=3)&&!report.errors.length&&!report.failedRequests.length;
+  stats.movingSeconds>=5&&stats.distanceMetres>=3&&!report.errors.length&&!report.failedRequests.length;
  report.classification=stats.frames<8?'insufficient-rendered-frames':!keyReceived?'input-not-delivered':
   stats.distanceMetres<3?'render-starved-or-blocked-motion':report.frameQualityAccepted?'frame-budget-met':'stalls-detected';
  // A reduced-scene or software-browser success is never release approval.
