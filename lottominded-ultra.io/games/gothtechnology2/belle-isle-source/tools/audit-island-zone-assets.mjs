@@ -9,8 +9,16 @@ const root=resolve(import.meta.dirname,'..'),read=async p=>JSON.parse(await read
 const map=await read('game/public/belle/map.json');
 const nature=await read('game/public/belle/nature/placements.json');
 const treeManifest=await read('game/public/belle/nature/manifest.json');
-const destination=(id,name)=>[...map.landmarks,...map.pois].find(p=>p.id===id&&p.name===name);
-const locations=zones.zones.flatMap(zone=>zone.stops.map(stop=>({zone:zone.id,stop:stop.id,point:destination(stop.destinationId,stop.destinationName)})));
+// Resolve by the immutable source map ID and one of the explicitly documented
+// source/runtime names. The public map retains "Coast Guard Station" while boot
+// renames it to "U.S. Coast Guard Station Belle Isle". Never silently use a
+// different POI or invent coordinates when a name does not match.
+const destination=stop=>{
+ const point=[...map.landmarks,...map.pois].find(p=>p.id===stop.destinationId);
+ const acceptable=[stop.destinationName,stop.sourceName].filter(Boolean);
+ return point&&acceptable.includes(point.name)?point:undefined;
+};
+const locations=zones.zones.flatMap(zone=>zone.stops.map(stop=>({zone:zone.id,stop:stop.id,point:destination(stop)})));
 if(locations.some(s=>!s.point))throw Error('Zone audit requires all 8 mapped destinations');
 const counters=Object.fromEntries(zones.zones.map(z=>[z.id,{trees:0,groundcover:0,treeVariants:{},groundVariants:{}}]));
 const assign=(items,label,variantKey)=>{
