@@ -19,3 +19,10 @@ test('historic bank-side and Casino-context views are deterministic and collisio
  }
  assert(v.side!.distance<75);assert(v.context!.casinoAngle<=40);
 });
+
+test('the gallery captures both historic side rails and a separate Casino context in the actual game',()=>{
+ const gallery=readFileSync(new URL('../../scripts/environment-gallery.mjs',import.meta.url),'utf8');
+ assert(gallery.includes('Casino Way Bridge · bank side'));
+ assert(gallery.includes('Casino Way Bridge · Casino context'));
+ assert(gallery.includes('Visit Casino context'));
+});

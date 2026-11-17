@@ -22,6 +22,7 @@ const output=resolve(game,'output/environment-gallery',variant,device);
 const baselineFallback={
  'wooded-canal':{search:/Nashua Canal/i,action:/Travel/},
  'red-pedestrian-bridge':{search:/Belle Isle Casino/i,action:/Travel/},
+ 'casino-context':{search:/Belle Isle Casino/i,action:/Travel/},
  'swimming-beach':{search:/Belle Isle Beach/i,action:/Walk onto the beach/}
 };
 const sites=[
@@ -31,6 +32,8 @@ const sites=[
   note:'Real mapped Sylvan Canal view; verify waterside foliage and wetland bank'},
  {id:'red-pedestrian-bridge',name:'Red Pedestrian Bridge',search:/Casino Way Bridge · bank side/i,action:/Visit red bridge/i,
   note:'Historically located Casino Way crossing, photographed from a collision-safe bank-side view'},
+ {id:'casino-context',name:'Casino bridge / Casino context',search:/Casino Way Bridge · Casino context/i,action:/Visit Casino context/i,
+  note:'Collision-safe wider bank view with the historic crossing and Casino architecture in the same real scene'},
  {id:'swimming-beach',name:'Swimming Beach',search:/Belle Isle Beach/i,action:/Walk onto the beach/i,
   note:'Actual on-foot swimming beach view, not a service-building path'},
 ];
