@@ -1,0 +1,19 @@
+{
+  "status": "recommended_not_downloaded",
+  "assets": [
+    {
+      "name": "Concrete",
+      "url": "https://polyhaven.com/a/concrete",
+      "license": "CC0-1.0",
+      "role": "MacArthur Bridge weathered concrete and shoreline structures",
+      "proposed_max_resolution": 2048
+    },
+    {
+      "name": "Rusty Metal Sheet",
+      "url": "https://polyhaven.com/a/rusty_metal_sheet",
+      "license": "CC0-1.0",
+      "role": "bridge railing and steel wear",
+      "proposed_max_resolution": 2048
+    }
+  ]
+}
