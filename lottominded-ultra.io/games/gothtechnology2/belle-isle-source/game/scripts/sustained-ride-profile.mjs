@@ -72,7 +72,9 @@ try{
   await expect(page.locator('#settings')).toBeVisible();
  }
  await settings();
- await page.locator('#quality').selectOption(mode==='diagnostic'||device==='phone'?'smooth':'high');
+ // Keep the actual quality tier identical between FULL and DIAGNOSTIC on each viewport.
+ // Only localhost perfProbe reductions may differ; never attribute a High→Smooth change to scene reduction.
+ await page.locator('#quality').selectOption(device==='phone'?'smooth':'high');
  if(mode==='diagnostic')await expect(page.locator('#performance-probe-warning')).toBeVisible();
  else await expect(page.locator('#performance-probe-warning')).toHaveCount(0);
  const panel=page.locator('#ride-profile');

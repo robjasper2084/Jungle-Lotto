@@ -1,6 +1,8 @@
 # Performance probe and release separation
 
-The full lane preserves production geometry and user quality settings (High desktop, Smooth phone viewport).
+The FULL lane preserves production geometry and user quality settings (High desktop, Smooth phone viewport).
+The DIAGNOSTIC lane uses the *same* selected quality for the matching device/viewport. Only the localhost-only scene-reduction switch differs.
+Compare modes only within the same actual GPU renderer, same viewport, matching quality, and equivalent ride route; keep release acceptance separate.
 The diagnostic lane explicitly requests perfProbe=1 on a localhost URL. It limits visible trees, removes nearby ground-cover instances,
 hides decorative reeds/branches, suppresses the new canal reflection overlay, and draws lower-detail Casino ornamental railings.
 It displays a persistent on-screen REDUCED SCENE DIAGNOSTIC — NOT RELEASE QUALITY banner.
