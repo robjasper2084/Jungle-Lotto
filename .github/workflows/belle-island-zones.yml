@@ -1,0 +1,59 @@
+name: Belle Isle four-zone environmental coverage
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/belle-island-zones.yml'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/environmentZones*'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/shorelineCollisionStress*'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/zonePerformancePolicy*'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/main.ts'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/island-zone-gallery.mjs'
+permissions:
+  contents: read
+concurrency:
+  group: belle-island-zones-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  zones:
+    strategy:
+      fail-fast: false
+      matrix:
+        device: [desktop, phone]
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Validate and build exact source
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm ci
+          npm run check
+          npm test
+          npm run audit:environment-zones
+          npm run build
+      - name: Install browser runtime
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Capture all eight player-camera environments
+        timeout-minutes: 85
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          ENV_GALLERY_DEVICE: ${{ matrix.device }}
+          ENV_GALLERY_BROWSER: chromium
+          ENV_GALLERY_QUICK: '1'
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node scripts/island-zone-gallery.mjs
+      - name: Upload camera evidence and placement inventory
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-environment-zones-${{ matrix.device }}
+          path: |
+            lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/island-zone-gallery/${{ matrix.device }}
+            lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/island-zones/distribution.json
+          if-no-files-found: warn
+          retention-days: 14
