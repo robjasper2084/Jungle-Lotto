@@ -26,3 +26,9 @@ test('bridge weathering GLSL cannot collide with shared PBR fragment locals',()=
   assert.doesNotMatch(fragment,/\bfloat (?:grain|pitted|antialias)=/);
  }
 });
+
+test('bridge soffit darkening is material-only and keeps geometry unchanged',()=>{
+ const code=bridgeFinishFragment('aged-concrete');
+ assert.match(code,/smoothstep\(1\.2,5\.8,bridgeWorld\.y\)/);
+ assert.doesNotMatch(code,/sampler2D|texture2D/);
+});
