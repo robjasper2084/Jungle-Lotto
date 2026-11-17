@@ -37,6 +37,7 @@ jobs:
       fail-fast: false
       matrix:
         device: [desktop, phone]
+        light: [high-noon, sunset]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -57,6 +58,7 @@ jobs:
         working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
         env:
           ENV_GALLERY_DEVICE: ${{ matrix.device }}
+          ENV_GALLERY_LIGHT: ${{ matrix.light }}
           ENV_GALLERY_VARIANT: candidate
         run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node scripts/environment-gallery.mjs
       - name: Capture matching published baseline (comparison only)
@@ -66,6 +68,7 @@ jobs:
         working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
         env:
           ENV_GALLERY_DEVICE: ${{ matrix.device }}
+          ENV_GALLERY_LIGHT: ${{ matrix.light }}
           ENV_GALLERY_VARIANT: baseline
           ENV_GALLERY_URL: https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/games/gothtechnology2/arcade/belle-isle-explorer/
         run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node scripts/environment-gallery.mjs
@@ -73,7 +76,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: belle-matched-environment-${{ matrix.device }}
+          name: belle-matched-environment-${{ matrix.device }}-${{ matrix.light }}
           path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/environment-gallery
           if-no-files-found: warn
           retention-days: 14
