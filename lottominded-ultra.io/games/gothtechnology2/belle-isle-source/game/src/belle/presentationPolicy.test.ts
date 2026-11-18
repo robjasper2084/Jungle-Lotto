@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {presentationBudget,tracedSkyEnabled,fogColumn,reflectionRequired,aircraftFrame,RIDER_CLIPS,sampleRiderClip,articulateEuc,windMask,type EucMotion} from './presentationPolicy.ts';
+import {presentationBudget,tracedSkyEnabled,defaultTracedSky,fogColumn,reflectionRequired,aircraftFrame,RIDER_CLIPS,sampleRiderClip,articulateEuc,windMask,type EucMotion} from './presentationPolicy.ts';
 import {atmosphereShader,windVertex,HEIGHT_FOG} from './atmosphereShaders.ts';
 const motion=():EucMotion=>({pitch:.12,drop:.1,shift:0,lateral:0,hipTilt:0,hipYaw:0,chestRoll:0,chestYaw:0,headRoll:0,headYaw:0,neck:0,shoulders:[0,0],hands:[{x:.05,y:.1,z:.1,wrist:0},{x:-.05,y:.1,z:.1,wrist:0}]});
 test('Smooth and XR bound optional rendering',()=>{for(const budget of [presentationBudget('smooth'),presentationBudget('high',true)]){assert.equal(budget.aircraft,false);assert.equal(budget.reflectionSize,32);assert.ok(budget.cloudStrength<=.1);}assert.ok(presentationBudget('high').reflectionSize<=128);});
@@ -47,4 +47,14 @@ test('atmospheric light shafts are limited to existing fog shading and optional 
  assert.match(HEIGHT_FOG,/belleAirStrength/);
  assert.match(HEIGHT_FOG,/belleForward/);
  assert.match(HEIGHT_FOG,/belleAerialColor/);
+});
+
+// Adaptive source policy leaves every GPU-frame/fence and screenshot assertion intact.
+test('software WebGL defaults to layered clouds while respecting explicit sky selections',()=>{
+ assert.equal(defaultTracedSky('ANGLE (Google, Vulkan SwiftShader Device (Subzero))',null),false);
+ assert.equal(defaultTracedSky('Mesa llvmpipe (LLVM 19)',null),false);
+ assert.equal(defaultTracedSky('Software Rasterizer',null),false);
+ assert.equal(defaultTracedSky('NVIDIA GeForce RTX 4070',null),true);
+ assert.equal(defaultTracedSky('ANGLE (Google, SwiftShader)','traced'),true);
+ assert.equal(defaultTracedSky('NVIDIA GeForce RTX 4070','layered'),false);
 });

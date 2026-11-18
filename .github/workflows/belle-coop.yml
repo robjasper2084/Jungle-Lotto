@@ -53,7 +53,11 @@ jobs:
           BELLE_COOP_DEVICE: ${{ matrix.device }}
           COOP_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
           DEBUG: pw:browser
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" node --experimental-strip-types scripts/coop-browser-smoke.mjs
+        run: |
+          # Fresh Chromium processes for both complete suites; every original
+          # game/control/asset assertion still runs, with its own 35-minute cap.
+          BELLE_COOP_SUITE=euc xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" node --experimental-strip-types scripts/coop-browser-smoke.mjs
+          BELLE_COOP_SUITE=hover xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" node --experimental-strip-types scripts/coop-browser-smoke.mjs
       - name: Preserve co-op gameplay screenshots and results
         uses: actions/upload-artifact@v4
         if: always()

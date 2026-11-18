@@ -4,10 +4,10 @@ import {dressDetroitSkyline} from './skylineMaterials.ts';
 import {boundedSkyProbe} from './skyProbe.ts';
 
 import * as T from 'three';
-import {directionalShadowResolution,type WorldPerformanceTier} from './worldPerformancePolicy.ts';
+import {directionalShadowResolution,softwareWebGLRenderer,type WorldPerformanceTier} from './worldPerformancePolicy.ts';
 import {yieldStartupTask} from './startupWork.ts';
 import {BroaderPresentation} from './broaderPresentation.ts';
-import {tracedSkyEnabled} from './presentationPolicy.ts';
+import {defaultTracedSky,tracedSkyEnabled} from './presentationPolicy.ts';
 import {sunsetPhotoGrade,photoShadowExtent} from './photoReferenceGrade.ts';
 import {livingSkyFragment,cloudLightFactor} from './skyAtmosphere.ts';
 import {SkyLife} from './skyLife.ts';
@@ -137,8 +137,13 @@ export async function createIslandSky(scene:T.Scene,renderer:T.WebGLRenderer,sta
   finally{generator?.dispose();bounded?.dispose();hdr.dispose();}
  }catch(e){console.warn('Sky reflection probe unavailable',e);}
  const broader=new BroaderPresentation(scene,renderer,sky.material,uniforms.cloudNoise.value);
- const volume=new VolumetricSky(renderer,scene);let tracedSelected=true;
- try{tracedSelected=localStorage.getItem('belle-sky-renderer')!=='layered';}catch{}
+ const volume=new VolumetricSky(renderer,scene);let tracedSelected=true,softwareShadow=false;
+ try{
+  const gl=renderer.getContext(),debug=gl.getExtension('WEBGL_debug_renderer_info');
+  const gpu=String(gl.getParameter(debug?debug.UNMASKED_RENDERER_WEBGL:gl.RENDERER)||'');
+  softwareShadow=softwareWebGLRenderer(gpu);
+  tracedSelected=defaultTracedSky(gpu,localStorage.getItem('belle-sky-renderer'));
+ }catch{/* Preserve cinematic default if driver detection or storage fails */}
  // Smooth avoids traced panorama GPU passes; higher modes restore saved preference.
  const applyVolumePolicy=()=>{volume.enabled=tracedSelected&&quality!=='smooth';if(!volume.enabled)skyRadiance.ready.value=0;};
  applyVolumePolicy();
@@ -199,5 +204,5 @@ export async function createIslandSky(scene:T.Scene,renderer:T.WebGLRenderer,sta
   finally{titlePreview=preview;update(camera,x,z);}
 
  }
- return {prepareReflections,protectStartup:()=>broader.protectStartup(),observeFrame:(ms:number,eligible:boolean)=>broader.observeFrame(ms,eligible),preview(value:boolean){titlePreview=value;},previewShot(index:number){previewIndex=index;},get renderHour(){return titlePreview?startupSkyLook(previewIndex).hour:hour;},nightAmount:nightUniform,configure,synchronize(next:SkySettings){settings=normalizeSky(next);hour=settings.hour;},tick,update,dressSkyline,setQuality(q:string){quality=q;shadowQuality=q!=='smooth';const resolution=directionalShadowResolution(q as WorldPerformanceTier);if(key.shadow.mapSize.x!==resolution){key.shadow.mapSize.set(resolution,resolution);key.shadow.map?.setSize(resolution,resolution);key.shadow.needsUpdate=true;}lastVolumeFrame=-1;applyVolumePolicy();skySelect.title=q==='smooth'?'Smooth uses layered clouds to keep GPU rendering responsive; choose Automatic or High for traced skies.':'';},get presentation(){return broader.stats;},dispose(){volume.dispose();broader.dispose();},get settings(){return {...settings,hour};},get hour(){return hour;}};
+ return {prepareReflections,protectStartup:()=>broader.protectStartup(),observeFrame:(ms:number,eligible:boolean)=>broader.observeFrame(ms,eligible),preview(value:boolean){titlePreview=value;},previewShot(index:number){previewIndex=index;},get renderHour(){return titlePreview?startupSkyLook(previewIndex).hour:hour;},nightAmount:nightUniform,configure,synchronize(next:SkySettings){settings=normalizeSky(next);hour=settings.hour;},tick,update,dressSkyline,setQuality(q:string){quality=q;shadowQuality=q!=='smooth';const resolution=softwareShadow?directionalShadowResolution(q as WorldPerformanceTier,true):directionalShadowResolution(q as WorldPerformanceTier);if(key.shadow.mapSize.x!==resolution){key.shadow.mapSize.set(resolution,resolution);key.shadow.map?.setSize(resolution,resolution);key.shadow.needsUpdate=true;}lastVolumeFrame=-1;applyVolumePolicy();skySelect.title=q==='smooth'?'Smooth uses layered clouds to keep GPU rendering responsive; choose Automatic or High for traced skies.':'';},get presentation(){return broader.stats;},dispose(){volume.dispose();broader.dispose();},get settings(){return {...settings,hour};},get hour(){return hour;}};
 }
