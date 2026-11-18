@@ -8,7 +8,7 @@ import {addWaterfront} from './waterfrontScene.ts';
 import {LandmarkDetail} from './landmarkDetail.ts';
 import {addCoastGuard} from './coastGuard.ts';
 import {WorldQuality,dynamicShadowsEnabled} from './worldQuality.ts';
-import {WorldFrameWork,ShadowMapCadence,directionalCasterEligible,ScenePreparationQueue} from './worldPerformancePolicy.ts';
+import {WorldFrameWork,ShadowMapCadence,directionalCasterEligible,ScenePreparationQueue,softwareWebGLRenderer,deferredSceneryRadius} from './worldPerformancePolicy.ts';
 import {LocalLightPool} from './localLighting.ts';
 import {createRiverTraffic} from './riverTraffic.ts';
 import {addWoodlandFloor} from './woodland.ts';
@@ -173,12 +173,17 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
    return model;
   });
  }
- const golfCenterDetail=createApproachDetail(scene,[GOLF_CENTER_POSITION],1000,
+ // Software WebGL stalls when offscreen golf and playground GLBs compile beside
+ // the Covered Bridge. Defer only those optional details until they approach
+ // their actual visibility range; hardware GPU prefetch distances stay intact.
+ const gl=renderer.getContext(),gpuInfo=gl.getExtension('WEBGL_debug_renderer_info');
+ const softwareScenery=softwareWebGLRenderer(String(gl.getParameter(gpuInfo?.UNMASKED_RENDERER_WEBGL??gl.RENDERER)||''));
+ const golfCenterDetail=createApproachDetail(scene,[GOLF_CENTER_POSITION],deferredSceneryRadius(700,1000,softwareScenery,20),
   (stage,camera)=>prepareApproach(stage,camera,()=>addGolfCenter(stage,loader)),
   model=>Object.assign(golfStats,model.stats,{loaded:true}));
  const referenceArchitectureDetail=createApproachDetail(scene,REFERENCE_BUILDING_CENTRES,950,
   (stage,camera)=>prepareApproach(stage,camera,()=>addReferenceArchitecture(stage,loader)));
- const playgroundDetail=createApproachDetail(scene,playgrounds.map(site=>[site.center[0],site.center[1]] as const),760,
+ const playgroundDetail=createApproachDetail(scene,playgrounds.map(site=>[site.center[0],site.center[1]] as const),deferredSceneryRadius(420,760,softwareScenery,100),
   (stage,camera)=>prepareApproach(stage,camera,()=>addPlaygrounds(stage,loader),
    model=>{playgroundStats.batching=model.batch();}),
   model=>Object.assign(playgroundStats,model.stats,{loaded:true}));

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {WorldFrameWork,coopMappedShadows,directionalCasterEligible,directionalShadowResolution,softwareWebGLRenderer,ShadowMapCadence,ScenePreparationQueue} from './worldPerformancePolicy.ts';
+import {WorldFrameWork,coopMappedShadows,directionalCasterEligible,directionalShadowResolution,softwareWebGLRenderer,ShadowMapCadence,ScenePreparationQueue,deferredSceneryRadius} from './worldPerformancePolicy.ts';
 
 test('high and automatic preserve nearby landmark shadows but reject distant casters',()=>{
  assert.equal(directionalShadowResolution('high'),1536);
@@ -78,4 +78,18 @@ test('failed optional preparation leaves the lane available for subsequent scene
  const lane=new ScenePreparationQueue();
  await assert.rejects(lane.run(async()=>{throw Error('optional mesh unavailable');}),/optional mesh unavailable/);
  assert.equal(await lane.run(async()=>42),42);
+});
+
+test('software prefetch keeps all visible scenery while avoiding unnecessary Covered Bridge warmups',()=>{
+ assert.equal(deferredSceneryRadius(700,1000,false,20),1000,'native GPU preserves golf prefetch');
+ assert.equal(deferredSceneryRadius(420,760,false,100),760,'native GPU preserves playground prefetch');
+ const golf=deferredSceneryRadius(700,1000,true,20);
+ const play=deferredSceneryRadius(420,760,true,100);
+ assert.equal(golf,720);
+ assert.equal(play,520);
+ assert.ok(golf>700&&play>420,'software detail is prepared before it becomes visible');
+ // Mapped Covered Bridge (2475.1,22.35) must not trigger distant optional
+ // golf (3199.19,-67.75) and Oakway playground (3016,-126) shader warmups.
+ assert.ok(Math.hypot(3199.191677670181-2475.1,-67.74931744497917-22.35)>golf);
+ assert.ok(Math.hypot(3016-2475.1,-126-22.35)>play);
 });
