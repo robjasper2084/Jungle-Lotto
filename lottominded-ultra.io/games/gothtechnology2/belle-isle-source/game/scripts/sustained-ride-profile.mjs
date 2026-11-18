@@ -16,7 +16,7 @@ const report={sourceHead:process.env.GITHUB_SHA||null,device,viewport,requestedS
  renderBackend:null,rendererFallback:null,actualGpu:null,input:null,classification:null,
  hardware:'GitHub Actions Chrome; phone viewport is NOT physical iOS/Android hardware',
  acceptanceScope:mode==='diagnostic'?'REDUCED SCENE DIAGNOSTIC ONLY; not release quality':'FULL CURRENT GAME; still not device certification',
- passed:false,frameQualityAccepted:false,releasePerformanceVerified:false,firstPlayableMs:null,profile:null,memory:null,errors:[],failedRequests:[],elapsedWallMs:null};
+ passed:false,frameQualityAccepted:false,releasePerformanceVerified:false,welcomeReadyMs:null,rideStartedMs:null,firstPlayableMs:null,profileWindowCaveat:'Capture includes UI/report-extraction time after releasing W; not a clean ride-only sampling window',profile:null,memory:null,errors:[],failedRequests:[],elapsedWallMs:null};
 const server=createCoopStaticServer(resolve(game,'dist'));
 await new Promise(ok=>server.listen(0,'127.0.0.1',ok));
 const begin=Date.now();let browser;
@@ -53,7 +53,7 @@ try{
  const navigationStarted=Date.now();
  await page.goto('http://127.0.0.1:'+server.address().port+'/?profile=1'+(mode==='diagnostic'?'&perfProbe=1':''),{waitUntil:'domcontentloaded'});
  await expect(page.locator('#welcome')).toHaveAttribute('data-state','ready');
- report.firstPlayableMs=Date.now()-navigationStarted;
+ report.welcomeReadyMs=Date.now()-navigationStarted;
  report.actualGpu=await page.locator('#game').evaluate(canvas=>{
   const gl=canvas.getContext('webgl2');if(!gl||gl.isContextLost())throw Error('Game WebGL2 unavailable');
   const ext=gl.getExtension('WEBGL_debug_renderer_info');return {
@@ -66,6 +66,9 @@ try{
  await page.getByRole('button',{name:'Use this ride',exact:true}).click();
  await page.locator('#start').click();
  await expect(page.locator('body')).not.toHaveClass(/at-start/);
+ report.rideStartedMs=Date.now()-navigationStarted;
+ // Welcome/ride start are not proof of the first input-responsive rendered frame.
+ // firstPlayableMs remains null pending genuine frame-coupled input evidence.
  async function settings(){
   if(!await page.locator('#ride-menu').isVisible())await page.locator('#tools-toggle').click();
   await page.locator('#settings-open').click();
