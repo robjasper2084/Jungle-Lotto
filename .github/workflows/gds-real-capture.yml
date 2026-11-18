@@ -1,0 +1,97 @@
+name: Greater Detroit real-game before-after capture
+
+on:
+  pull_request:
+    paths:
+      - 'lottominded-ultra.io/games/gothtechnology2/greater-detroit-graphics/**'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/main.ts'
+      - 'lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/main.ts'
+      - 'lottominded-ultra.io/games/gothtechnology2/elmwood-source/src/detroit/elmwood.ts'
+      - '.github/workflows/gds-real-capture.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    name: real-game-visuals (${{ matrix.district }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        district: [belle, swoop, elmwood]
+    steps:
+      - name: Checkout actual candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Set up Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Prepare RideCore for source builds
+        if: matrix.district != 'belle'
+        working-directory: lottominded-ultra.io/games/gothtechnology2/ride-core
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run build
+          # No external checkout link: file:../ride-core is the committed dependency.
+      - name: Install and build Belle Isle source
+        if: matrix.district == 'belle'
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run check
+          npm run build
+      - name: Compile Swoop source for actual in-game render
+        if: matrix.district == 'swoop'
+        working-directory: lottominded-ultra.io/games/gothtechnology2/swoop-source
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          node --input-type=module -e "import {build} from 'vite'; import {resolve} from 'node:path'; await build({root:process.cwd(),configFile:false,base:'./',publicDir:false,build:{outDir:resolve('../.gds-builds/swoop'),emptyOutDir:true,target:'es2022',rollupOptions:{input:resolve('detroit.html')}}})"
+          test -s ../.gds-builds/swoop/detroit.html
+      - name: Prepare Swoop code imports for Elmwood
+        if: matrix.district == 'elmwood'
+        working-directory: lottominded-ultra.io/games/gothtechnology2/swoop-source
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+      - name: Compile Elmwood source for actual in-game render
+        if: matrix.district == 'elmwood'
+        working-directory: lottominded-ultra.io/games/gothtechnology2/elmwood-source
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          node --input-type=module -e "import {build} from 'vite'; import {resolve} from 'node:path'; await build({root:process.cwd(),configFile:false,base:'./',publicDir:false,build:{outDir:resolve('../.gds-builds/elmwood'),emptyOutDir:true,target:'es2022',rollupOptions:{input:resolve('elmwood.html')}}})"
+          test -s ../.gds-builds/elmwood/elmwood.html
+      - name: Install browser dependencies
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Capture actual rendered game scenes
+        working-directory: lottominded-ultra.io/games/gothtechnology2/greater-detroit-graphics
+        env:
+          GDS_GAME: ${{ matrix.district }}
+          GDS_CANDIDATE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          GDS_CAPTURE_OUTPUT: ${{ github.workspace }}/output/gds-captures/${{ matrix.district }}
+        run: node scripts/captureVisualEvidence.mjs
+      - name: Upload real capture results, even when validation fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gds-visual-${{ matrix.district }}-${{ github.run_id }}
+          path: output/gds-captures/${{ matrix.district }}
+          if-no-files-found: warn
+          retention-days: 14

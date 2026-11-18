@@ -8,7 +8,7 @@ export async function loadEnvironmentMaterials(){
   await Promise.all(['asphalt','sidewalk','bark','grass','concrete'].map(async name=>{
     const directory=name==='bark'?'/textures/trees/':'/textures/realistic/';
     const [map,normalMap,roughnessMap]=await Promise.all(['.jpg','_normal.jpg','_roughness.jpg'].map(s=>loader.loadAsync(directory+name+s)));
-    map.colorSpace=T.SRGBColorSpace;
+    map.colorSpace=T.SRGBColorSpace;normalMap.colorSpace=T.NoColorSpace;roughnessMap.colorSpace=T.NoColorSpace;
     for(const t of [map,normalMap,roughnessMap]){t.wrapS=t.wrapT=T.RepeatWrapping;t.anisotropy=8;}
     const strength=name==='bark'?.8:name==='grass'?.4:.32;
     materials[name]=new T.MeshStandardMaterial({map,normalMap,roughnessMap,normalScale:new T.Vector2(strength,strength),roughness:1,envMapIntensity:.35});
