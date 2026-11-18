@@ -61,3 +61,19 @@ test('Smooth avoids software-heavy dynamic shadows without losing High and Autom
  f.quality.setBudget(.9);
  assert.equal(dynamicShadowsEnabled(f.quality.effective),true);
 });
+
+// SwiftShader keeps genuine High world geometry, materials and GPU proof.
+test('software High retains scene detail with a bounded framebuffer; hardware High stays full',()=>{
+ const details:EnvironmentQuality[]=[],pixels:number[]=[];
+ const software=new WorldQuality(q=>details.push(q),n=>pixels.push(n),()=>2,true);
+ software.setQuality('high');
+ assert.equal(software.effective,'high');
+ assert.deepEqual(details,['high']);
+ assert.deepEqual(pixels,[.7]);
+ software.setQuality('automatic');assert.equal(pixels.at(-1),.85);
+ software.setQuality('smooth');assert.equal(pixels.at(-1),1);
+ const nativePixels:number[]=[];
+ const hardware=new WorldQuality(()=>{},n=>nativePixels.push(n),()=>2,false);
+ hardware.setQuality('high');hardware.setQuality('automatic');
+ assert.deepEqual(nativePixels,[1.5,1.25]);
+});
