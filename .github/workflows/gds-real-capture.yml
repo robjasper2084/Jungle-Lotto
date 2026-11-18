@@ -40,7 +40,7 @@ jobs:
           set -euo pipefail
           npm ci
           npm run build
-          ln -s "$PWD" "$GITHUB_WORKSPACE/../Digital_Static_RideCore"
+          # No external checkout link: file:../ride-core is the committed dependency.
       - name: Install and build Belle Isle source
         if: matrix.district == 'belle'
         working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
@@ -56,7 +56,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
           npm ci
           node --input-type=module -e "import {build} from 'vite'; import {resolve} from 'node:path'; await build({root:process.cwd(),configFile:false,base:'./',publicDir:false,build:{outDir:resolve('../.gds-builds/swoop'),emptyOutDir:true,target:'es2022',rollupOptions:{input:resolve('detroit.html')}}})"
           test -s ../.gds-builds/swoop/detroit.html
@@ -66,7 +65,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
           npm ci
       - name: Compile Elmwood source for actual in-game render
         if: matrix.district == 'elmwood'
