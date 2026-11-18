@@ -23,7 +23,7 @@ export function geographicSun(date: string, solarHour: number, latitude = DETROI
     throw new RangeError('Invalid solar date, time, or latitude');
   }
   const ms = Date.parse(date + 'T12:00:00Z');
-  const day = Math.floor((ms - Date.UTC(new Date(ms).getUTCFullYear(), 0, 0)) / 86400000);
+  const day = (ms - Date.UTC(new Date(ms).getUTCFullYear(), 0, 0)) / 86400000;
   const lat = latitude * rad;
   const dec = (23.44 * rad) * Math.sin(2 * Math.PI * (284 + day) / 365);
   const hourAngle = (solarHour - 12) * Math.PI / 12;
