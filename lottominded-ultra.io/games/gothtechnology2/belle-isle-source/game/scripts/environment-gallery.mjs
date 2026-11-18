@@ -48,7 +48,7 @@ const report={head:process.env.GITHUB_SHA||null,variant,device,viewport,
  baselineHead:process.env.ENV_GALLERY_BASE_SHA||null,
  comparisonLimitations:variant==='baseline'?['Nashua Canal and Casino are historic-guide contextual substitutes, NOT the same camera as the PR new views. Do not compute a matched four-site gain.']:[],
  limitations:['Not physical-device FPS certification','Travel cameras may not frame the intended bridge exactly','Reference photos are not bundled or distributed'],
- passed:false,intro:null,visits:[],errors:[],failedRequests:[],coverageGaps:[]};
+ passed:false,intro:null,actualMacArthurRailFinish:null,railFinishAccepted:null,visits:[],errors:[],failedRequests:[],coverageGaps:[]};
 const server=createCoopStaticServer(process.env.ENV_GALLERY_BUILD_DIR?resolve(process.env.ENV_GALLERY_BUILD_DIR):resolve(game,'dist'));
 await new Promise(ok=>server.listen(0,'127.0.0.1',ok));
 let browser;
@@ -109,6 +109,15 @@ try{
  page.on('requestfailed',request=>report.failedRequests.push((request.failure()?.errorText||'network failure')+' '+request.url()));
  await page.goto(origin,{waitUntil:'domcontentloaded'});
  await expect(page.locator('#welcome')).toHaveAttribute('data-state','ready');
+ if(variant==='candidate'){
+  const profile=page.locator('#profile');
+  const rawMeshes=await profile.getAttribute('data-macarthur-rail-meshes');
+  const rawMaterials=await profile.getAttribute('data-macarthur-rail-materials');
+  const railMeshes=rawMeshes===null?null:Number(rawMeshes),railMaterials=rawMaterials===null?null:Number(rawMaterials);
+  report.actualMacArthurRailFinish={meshes:railMeshes,materials:railMaterials,source:'actual loaded landmarks.glb after material pass'};
+  report.railFinishAccepted=Number.isInteger(railMeshes)&&railMeshes>0&&Number.isInteger(railMaterials)&&railMaterials>0;
+  if(!report.railFinishAccepted)report.coverageGaps.push('Loaded MacArthur railing material match is zero or unreported; inspect real GLB mesh labels');
+ }
  const motion=page.locator('#startup-motion');
  if(await motion.getAttribute('aria-pressed')!=='true')await motion.click();
  // Reduced motion holds the first geographic flyover at a fixed camera position.
@@ -143,7 +152,7 @@ try{
    report.visits.push(entry);
   }
  }
- report.passed=!!report.intro?.passed&&report.visits.length===sites.length*lights.length&&report.visits.every(v=>v.passed)&&!report.errors.length&&!report.failedRequests.length;
+ report.passed=!!report.intro?.passed&&report.visits.length===sites.length*lights.length&&report.visits.every(v=>v.passed)&&!report.errors.length&&!report.failedRequests.length&&(variant==='baseline'||report.railFinishAccepted===true);
  // Every photographic pairing still needs an actual camera-equivalence review.
  report.pairingComplete=false;
  report.comparableSites=report.visits.filter(v=>v.passed&&v.comparable).map(v=>v.id);

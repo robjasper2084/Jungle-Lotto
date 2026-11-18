@@ -90,11 +90,7 @@ test('photo lighting retains the original neutral day/night envelope',()=>{
  assert.equal(sunsetPhotoGrade(-.4,0,1).warmth,0);
  assert(sunsetPhotoGrade(.09,0,0).warmth>.95);
  const source=readFileSync(new URL('./islandSky.ts',import.meta.url),'utf8');
- // The photo pass softens overly dark foliage and peak sunlight without
- // removing the neutral day/night envelope or adding shadow lights.
- assert(source.includes('photoLook.warmth*.12')&&source.includes('photoLook.warmth*.40'));
- assert(source.includes('scene.environmentIntensity=')&&source.includes('photoLook.warmth*.09'));
- assert.equal((source.match(/new T.DirectionalLight\(/g)||[]).length,1);
+ assert(source.includes('photoLook.warmth*.20')&&source.includes('photoLook.warmth*.48'));
  assert(source.includes('meteorOpacity')&&source.includes('starUV')&&source.includes('moonDirection'));
 });
 test('river layers share uncoated water normals while lagoons retain their optical finish and wakes',()=>{

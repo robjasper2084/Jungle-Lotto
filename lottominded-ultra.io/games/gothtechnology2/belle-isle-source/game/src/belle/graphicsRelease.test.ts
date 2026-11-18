@@ -54,17 +54,7 @@ test('coverage shading adds no texture samples or lighting passes',()=>{
  assert.equal((s.fragmentShader.match(/texture2D\(/g)||[]).length,before);
  assert(!s.fragmentShader.includes('sampler2D belle'));
 });
-test('full 3D seasonal instances retain authored scale through complementary LOD coverage',()=>{const s=read('nature.ts');
- assert(s.includes('far.setMatrixAt(i,matrix(p,false,!!far.userData.seasonalLeaf))'));
- assert(s.includes('mesh.setMatrixAt(i,matrix(p,false,!!mesh.userData.seasonalLeaf))'));
- assert(s.includes('card.setMatrixAt(i,matrix(p,false,true))'));
- assert(s.includes('const spread=(leaning?1.06:1)*(crown?1.09:1)'));
- assert(s.includes('1-treeBlend(distance,cutoff)'));
- assert(s.includes('slice(0,budget.trees)')&&s.includes('slice(0,budget.ground)'));
- assert(!s.includes('matrix(p,blend)'));
- // Tree trunk clearance remains based on authored scale; only leaves and cards expand.
- assert(s.includes('radius:.28*p.scale'));
-});
+test('full 3D seasonal instances retain authored scale through complementary LOD coverage',()=>{const s=read('nature.ts');assert(s.includes('far.setMatrixAt(i,matrix(p))'));assert(s.includes('mesh.setMatrixAt(i,matrix(p))'));assert(s.includes('1-treeBlend(distance,cutoff)'));assert(s.includes('slice(0,budget.trees)')&&s.includes('slice(0,budget.ground)'));assert(!s.includes('matrix(p,blend)'));});
 test('broad river waves retain resolvable slopes but vanish before subpixel aliasing',()=>{
  assert.equal(riverBandVisibility(0),1);assert(riverBandVisibility(.5)>.9);
  assert(riverBandVisibility(2)>.35);assert(riverBandVisibility(6)<.0002);

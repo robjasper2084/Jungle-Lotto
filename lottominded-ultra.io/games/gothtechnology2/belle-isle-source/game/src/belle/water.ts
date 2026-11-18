@@ -75,6 +75,7 @@ diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.5,.66,.65),clamp(washFoam*.4+rippleF
  // Uses the already-calculated water normal wave and no additional textures.
  vec3 riverSunReflection=reflect(-normalize(riverSunDirection),normalize(vec3(wave.x*.65,1.,wave.y*.65)));
  float riverSunAlignment=max(0.,dot(normalize(cameraPosition-riverWorld),riverSunReflection));
+ float riverSunSparkle=.78+.22*clamp((r1.x+r2.y)*riverNormalVisibility,-1.,1.);
  ${riverPhotoGlintGLSL(REFERENCE_STYLE)}
 
 `);

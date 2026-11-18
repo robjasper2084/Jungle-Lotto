@@ -24,7 +24,14 @@ test('filtered river sun reflection has no new sampler or render pass',()=>{
 });
 test('source integrates tree-only crown scaling, river filtering and photo bridge deck',()=>{
  const read=(f:string)=>readFileSync(new URL('./'+f,import.meta.url),'utf8');
- assert(read('nature.ts').includes('matrix(p,false,!!mesh.userData.seasonalLeaf)'));
+ assert(read('nature.ts').includes('if(mesh.userData.seasonalLeaf)mesh.setMatrixAt(i,matrix(p,false,true));else mesh.setMatrixAt(i,matrix(p))'));
+ assert(read('nature.ts').includes('if(far.userData.seasonalLeaf)far.setMatrixAt(i,matrix(p,false,true));else far.setMatrixAt(i,matrix(p))'));
+ assert(read('nature.ts').includes('const g=crown&&trees.has(p.id)?growth(p):null'));
+ assert(read('water.ts').includes('float riverSunSparkle=.78+.22*clamp((r1.x+r2.y)*riverNormalVisibility,-1.,1.)'));
+ assert(read('islandSky.ts').includes('scene.environmentIntensity=')&&read('islandSky.ts').includes('photoLook.warmth*.09'));
+ assert(read('world.ts').includes('bridgeRailFinish=finishMacArthurRailings(landmarks.scene)'));
+ assert(read('main.ts').includes('dataset.macarthurRailMeshes'));
+ assert(readFileSync(new URL('../../scripts/environment-gallery.mjs',import.meta.url),'utf8').includes('railFinishAccepted'));
  assert(read('seasonalMaterial.ts').includes('alphaToCoverage=leaf'));
  assert(read('water.ts').includes('riverPhotoGlintGLSL(REFERENCE_STYLE)'));
  assert(read('world.ts').includes("finishBridgeMaterial(bridgeConcrete,'aged-concrete')"));
