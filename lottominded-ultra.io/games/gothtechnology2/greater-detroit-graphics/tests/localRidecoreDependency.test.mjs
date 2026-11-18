@@ -28,7 +28,7 @@ for(const district of ['swoop','elmwood']){
 }
 test('CI requires reproducible npm ci with no lock regeneration or external directory link',()=>{
  for(const filename of ['gds-source-builds.yml','gds-real-capture.yml']){
-  const s=readFileSync(resolve(root,'../../../../.github/workflows',filename),'utf8');
+  const s=readFileSync(resolve(root,'../../../.github/workflows',filename),'utf8');
   assert.doesNotMatch(s,/npm install --package-lock-only/);
   assert.doesNotMatch(s,/ln -s/);
   assert.match(s,/npm ci/);
