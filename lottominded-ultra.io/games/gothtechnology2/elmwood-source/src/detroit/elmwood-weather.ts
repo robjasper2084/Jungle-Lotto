@@ -1,3 +1,4 @@
+import {districtSun,DETROIT_REFERENCE} from '../../../greater-detroit-graphics/src/visualStandard.ts';
 import * as T from 'three';
 export {makeElmwoodWater} from './elmwood-water.ts';
 
@@ -14,11 +15,10 @@ export function validElmwoodDate(value:string){
  return /^\d{4}-\d{2}-\d{2}$/.test(value)&&Number.isFinite(d.getTime())&&d.toISOString().slice(0,10)===value;
 }
 export function elmwoodSun(hour:number,date:string){
- if(!validElmwoodDate(date))date='2026-09-15';
+ if(!validElmwoodDate(date))date=DETROIT_REFERENCE.date;
  if(!Number.isFinite(hour))hour=14;
- const d=new Date(date+'T12:00:00Z'),day=(d.getTime()-Date.UTC(d.getUTCFullYear(),0,0))/86400000;
- const lat=42.3450366*Math.PI/180,decl=23.44*Math.PI/180*Math.sin(2*Math.PI*(284+day)/365),ha=(hour-12)*Math.PI/12;
- return {x:-Math.cos(decl)*Math.sin(ha),y:Math.sin(lat)*Math.sin(decl)+Math.cos(lat)*Math.cos(decl)*Math.cos(ha),z:-(Math.cos(lat)*Math.sin(decl)-Math.sin(lat)*Math.cos(decl)*Math.cos(ha))};
+ // Keep the date picker while using the same geographic basis as the other districts.
+ return districtSun('elmwood',date,((hour%24)+24)%24);
 }
 
 export function makeElmwoodWeather(scene:T.Scene,camera:T.Camera,sun:T.DirectionalLight,hemi:T.HemisphereLight,renderer:T.WebGLRenderer){
