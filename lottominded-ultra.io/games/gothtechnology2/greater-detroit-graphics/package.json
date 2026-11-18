@@ -1,1 +1,9 @@
-{"name":"greater-detroit-graphics-standard","private":true,"type":"module","scripts":{"test":"node --experimental-transform-types --test tests/*.test.mjs","check":"tsc --noEmit"}}
+{
+  "name": "greater-detroit-graphics-standard",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --experimental-strip-types --test tests/*.test.mjs",
+    "check": "tsc --noEmit"
+  }
+}

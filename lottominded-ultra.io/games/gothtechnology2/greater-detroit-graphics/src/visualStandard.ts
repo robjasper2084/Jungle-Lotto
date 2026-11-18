@@ -105,7 +105,11 @@ export function lodTransition(distance:number,near:number,far:number) {
 /** Pure telemetry utility. Does not claim to measure GPU time. */
 export class FrameSampleWindow {
   private values:number[]=[];
-  constructor(private readonly capacity=300){if(!Number.isInteger(capacity)||capacity<5||capacity>6000)throw new RangeError('Invalid telemetry size');}
+  private readonly capacity:number;
+  constructor(capacity=300){
+    if(!Number.isInteger(capacity)||capacity<5||capacity>6000)throw new RangeError('Invalid telemetry size');
+    this.capacity=capacity;
+  }
   sample(frameMs:number){if(!finite(frameMs)||frameMs<=0)return;this.values.push(frameMs);if(this.values.length>this.capacity)this.values.shift();}
   get report(){const a=[...this.values].sort((x,y)=>x-y),avg=this.values.reduce((s,n)=>s+n,0)/Math.max(1,this.values.length);
     return Object.freeze({samples:a.length,meanFrameMs:avg,p95FrameMs:a.length?a[Math.min(a.length-1,Math.ceil(a.length*.95)-1)]:0,estimatedFPS:avg?1000/avg:0});}
