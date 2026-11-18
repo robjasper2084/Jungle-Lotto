@@ -35,7 +35,13 @@ export function planShallows(map:ParkMap){
     index.push(s,s+1,s+2,s+1,s+3,s+2);edges++;
     if(stones.length<115&&rand()<.12){
      const bx=x+ox*(1.8+rand()*3),bz=z+oz*(1.8+rand()*3);
-     if(wet(w,bx,bz))stones.push({x:bx,y:.67+rand()*.19,z:bz,size:.18+rand()*.41,yaw:rand()*Math.PI*2});
+     if(wet(w,bx,bz)){
+      // Ground the stone partly in the sediment plane (y=.22). Even the
+      // largest vertical radius remains below the lagoon surface (y=1.05).
+      // Consume the same three seeded values; retain XY positions, sizes and yaw.
+      const embed=.45+rand()*.25,size=.18+rand()*.41;
+      stones.push({x:bx,y:.22+size*.73*embed,z:bz,size,yaw:rand()*Math.PI*2});
+     }
     }
    }
    along+=length;
