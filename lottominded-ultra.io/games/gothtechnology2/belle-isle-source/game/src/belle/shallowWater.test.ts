@@ -18,7 +18,8 @@ test('shallow lagoon detail stays bounded, deterministic and inside actual water
 });
 
 test('render-order and transparency keep submerged stones visible through High/Automatic water',()=>{
- const scene=new T.Scene();
+ const scene=new T.Scene(),p=planShallows(map).stones[0],camera=new T.PerspectiveCamera();
+ camera.position.set(p.x,2,p.z);
  const water=createWater(scene,{} as T.WebGLRenderer,map,new ParkTerrain(map),
   ()=>new T.PlaneGeometry(1,1).rotateX(-Math.PI/2));
  const lagoon=scene.children.find(x=>x.name.startsWith('Lagoon · ')) as T.Mesh<T.BufferGeometry,T.MeshPhysicalMaterial>;
@@ -27,7 +28,7 @@ test('render-order and transparency keep submerged stones visible through High/A
  const edge=scene.getObjectByName('Lagoon shallow-depth and ripple gradient') as T.Mesh<T.BufferGeometry,T.ShaderMaterial>;
  assert(lagoon&&bed&&stones&&edge,'real lagoon layers must exist');
  for(const tier of ['automatic','high']){
-  water.setQuality(tier);const p=planShallows(map).stones[0];water.update(p.x,p.z,tier==='high'?1:2);
+  water.setQuality(tier);water.update(tier==='high'?1:2,camera);
   assert(lagoon.material.transparent&&lagoon.material.depthWrite===false);
   assert(lagoon.material.depthTest&&lagoon.material.opacity>0&&lagoon.material.opacity<1);
   assert.equal(bed.visible,true);assert.equal(bed.material.transparent,false);
@@ -36,7 +37,7 @@ test('render-order and transparency keep submerged stones visible through High/A
   assert(edge.renderOrder>lagoon.renderOrder,'shallow ripple must be drawn after lagoon refraction');
  }
  water.setQuality('smooth');
- const p=planShallows(map).stones[0];water.update(p.x,p.z,3);
+ water.update(3,camera);
  assert.equal(lagoon.material.transparent,false);
  assert.equal(lagoon.material.depthWrite,true);
  assert.equal(bed.visible,false);assert.equal(edge.visible,false);
