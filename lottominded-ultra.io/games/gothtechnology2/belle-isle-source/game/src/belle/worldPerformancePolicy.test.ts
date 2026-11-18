@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {WorldFrameWork,coopMappedShadows,directionalCasterEligible,directionalShadowResolution,softwareWebGLRenderer,ShadowMapCadence} from './worldPerformancePolicy.ts';
+import {WorldFrameWork,coopMappedShadows,directionalCasterEligible,directionalShadowResolution,softwareWebGLRenderer,ShadowMapCadence,ScenePreparationQueue} from './worldPerformancePolicy.ts';
 
 test('high and automatic preserve nearby landmark shadows but reject distant casters',()=>{
  assert.equal(directionalShadowResolution('high'),1536);
@@ -57,4 +57,25 @@ test('software WebGL retains real mapped shadows with smaller GPU submissions, w
   assert.equal(directionalShadowResolution(mode,false),mode==='high'?1536:1024);
  }
  assert.equal(directionalShadowResolution('smooth',true),1024);
+});
+
+test('optional scene preparation serializes texture and shader GPU work without omitting nearby assets',async()=>{
+ const lane=new ScenePreparationQueue();let active=0,maximum=0;
+ const order:string[]=[];let release!:(value?:void)=>void;
+ const hold=new Promise<void>(resolve=>{release=resolve;});
+ const first=lane.run(async()=>{active++;maximum=Math.max(maximum,active);order.push('yacht-start');await hold;active--;order.push('yacht-done');return 1;});
+ const second=lane.run(async()=>{active++;maximum=Math.max(maximum,active);order.push('golf');active--;return 2;});
+ const third=lane.run(async()=>{active++;maximum=Math.max(maximum,active);order.push('playgrounds');active--;return 3;});
+ await Promise.resolve();
+ assert.deepEqual(order,['yacht-start']);
+ release();
+ assert.deepEqual(await Promise.all([first,second,third]),[1,2,3]);
+ assert.equal(maximum,1);
+ assert.deepEqual(order,['yacht-start','yacht-done','golf','playgrounds']);
+});
+
+test('failed optional preparation leaves the lane available for subsequent scenery',async()=>{
+ const lane=new ScenePreparationQueue();
+ await assert.rejects(lane.run(async()=>{throw Error('optional mesh unavailable');}),/optional mesh unavailable/);
+ assert.equal(await lane.run(async()=>42),42);
 });

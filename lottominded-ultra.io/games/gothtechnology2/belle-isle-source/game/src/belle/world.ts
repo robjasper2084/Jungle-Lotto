@@ -8,7 +8,7 @@ import {addWaterfront} from './waterfrontScene.ts';
 import {LandmarkDetail} from './landmarkDetail.ts';
 import {addCoastGuard} from './coastGuard.ts';
 import {WorldQuality,dynamicShadowsEnabled} from './worldQuality.ts';
-import {WorldFrameWork,ShadowMapCadence,directionalCasterEligible} from './worldPerformancePolicy.ts';
+import {WorldFrameWork,ShadowMapCadence,directionalCasterEligible,ScenePreparationQueue} from './worldPerformancePolicy.ts';
 import {LocalLightPool} from './localLighting.ts';
 import {createRiverTraffic} from './riverTraffic.ts';
 import {addWoodlandFloor} from './woodland.ts';
@@ -118,13 +118,17 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
  // Remove only the old solid Yacht Club shell; every other landmark remains intact.
  const oldBoatClub:T.Object3D[]=[];landmarks.scene.traverse(o=>{if(o.name.startsWith('107192915_'))oldBoatClub.push(o);});for(const o of oldBoatClub)o.removeFromParent();addBoatClub(scene,terrain,islandSky.nightAmount);
  const oldYacht:T.Object3D[]=[];landmarks.scene.traverse(o=>{if(o.name.startsWith('264321737_'))oldYacht.push(o);});for(const o of oldYacht)o.removeFromParent();
+ // Only one optional large landmark may decode, upload textures and compile shaders
+ // at a time. The Covered Bridge lies inside the Yacht Club, golf and
+ // playground prefetch radii; simultaneous warmups starved SwiftShader frames.
+ const sceneryPreparation=new ScenePreparationQueue();
  const yachtStats={boats:YACHT.boats.length,piers:YACHT.piers.length,triangles:0,meshes:0};
  let yachtClub:Awaited<ReturnType<typeof addYachtClub>>|undefined;
  let yachtTask:Promise<void>|undefined,attemptedYachtApproach=false;
  function prepareYachtClub(camera?:T.Camera){
   if(yachtClub)return Promise.resolve();
   if(yachtTask)return yachtTask;
-  const task=(async()=>{
+  const task=sceneryPreparation.run(async()=>{
    const root=new T.Group();
    const detail=await addYachtClub(root,loader,localLights);
    if(camera){
@@ -135,7 +139,7 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
    scene.add(root);
    yachtClub=detail;
    Object.assign(yachtStats,detail.stats);
-  })();
+  });
   yachtTask=task;
   void task.then(()=>{yachtTask=undefined;},()=>{yachtTask=undefined;});
   return task;
@@ -161,11 +165,13 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
  async function prepareApproach<A extends {update:(x:number,z:number)=>void}>(
   stage:T.Group,camera:T.Camera,load:()=>Promise<A>,postMaterials?:(model:A)=>void
  ){
-  const model=await load();applyRealisticMaterials(stage);applyPhotoReferenceSurfaces(stage);
-  postMaterials?.(model);
-  await warmObjectTextures(renderer,stage);
-  await renderer.compileAsync(stage,camera,scene);
-  return model;
+  return sceneryPreparation.run(async()=>{
+   const model=await load();applyRealisticMaterials(stage);applyPhotoReferenceSurfaces(stage);
+   postMaterials?.(model);
+   await warmObjectTextures(renderer,stage);
+   await renderer.compileAsync(stage,camera,scene);
+   return model;
+  });
  }
  const golfCenterDetail=createApproachDetail(scene,[GOLF_CENTER_POSITION],1000,
   (stage,camera)=>prepareApproach(stage,camera,()=>addGolfCenter(stage,loader)),

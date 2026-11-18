@@ -56,3 +56,15 @@ export class WorldFrameWork{
 export function coopMappedShadows(viewCount:number,coarsePointer:boolean):boolean{
  return viewCount<3&&!coarsePointer;
 }
+
+/** Large optional landmark preparation must not compete for texture uploads or
+ * shader compilation in the same travel frame. Work is never dropped; failures
+ * release the lane so the remaining nearby scenery can still prepare. */
+export class ScenePreparationQueue {
+ private tail:Promise<void>=Promise.resolve();
+ run<T>(prepare:()=>Promise<T>):Promise<T>{
+  const active=this.tail.then(prepare);
+  this.tail=active.then(()=>undefined,()=>undefined);
+  return active;
+ }
+}
