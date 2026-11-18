@@ -118,7 +118,8 @@ const canvas=el<HTMLCanvasElement>('view'),renderer=new T.WebGLRenderer({canvas,
 
 
 
-const scene=new T.Scene();new PointLightBudget(scene);scene.background=new T.Color('#b4c5bb');scene.fog=new T.FogExp2('#b4c5bb',.0005);const camera=new T.PerspectiveCamera(47,innerWidth/innerHeight,.1,4000);camera.position.set(460,650,550);const interactiveWater=new InteractiveWater(canvas,camera);interactiveWater.settings(document.querySelector('aside')!);const controls=new OrbitControls(camera,canvas);controls.target.set(-150,0,-410);controls.enableDamping=true;controls.maxDistance=2200;controls.minDistance=1;controls.maxPolarAngle=Math.PI*.495;
+const scene=new T.Scene();new PointLightBudget(scene);scene.background=new T.Color('#b4c5bb');scene.fog=new T.FogExp2('#b4c5bb',.0005);const camera=new T.PerspectiveCamera(47,innerWidth/innerHeight,.1,4000);
+if(new URLSearchParams(location.search).has('gds-capture'))Object.defineProperty(window,'__gdsCamera',{value:()=>{const heading=camera.getWorldDirection(new T.Vector3());return {position:camera.position.toArray(),direction:heading.toArray(),fovDegrees:camera.fov};},configurable:false});camera.position.set(460,650,550);const interactiveWater=new InteractiveWater(canvas,camera);interactiveWater.settings(document.querySelector('aside')!);const controls=new OrbitControls(camera,canvas);controls.target.set(-150,0,-410);controls.enableDamping=true;controls.maxDistance=2200;controls.minDistance=1;controls.maxPolarAngle=Math.PI*.495;
 
 
 

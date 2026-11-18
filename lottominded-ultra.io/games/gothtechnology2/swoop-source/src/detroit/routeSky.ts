@@ -6,7 +6,7 @@ export const DAY_SUN=new T.Vector3(22,35,24).normalize();
 // Keep the legacy DUSK export for the existing day/low-sun toggle.
 export const DUSK_SUN=new T.Vector3(18,4.5,44).normalize();
 const calibrated=(hour:number)=>{const p=districtSun('swoop-detroit',DETROIT_REFERENCE.date,hour);return new T.Vector3(p.x,p.y,p.z).normalize();};
-const SHARED_DAY_SUN=calibrated(14),SHARED_DUSK_SUN=calibrated(17.5);
+const SHARED_DAY_SUN=calibrated(16.7),SHARED_DUSK_SUN=calibrated(17.5);
 export const DAY_HAZE='#b6c8ce',DUSK_HAZE='#c4a17c';
 /** Sky, sun shadows and horizon haze use the same daylight direction. */
 export class RouteSky extends NaturalSky {

@@ -159,6 +159,7 @@ const onlineView=new OnlineViewPreference(typeof localStorage==='undefined'?unde
 const sky=new RouteSky();sky.setSharedSolarCalibration(new URLSearchParams(location.search).has('gds-photo'));scene.add(sky);
 const reducedAtmosphereMotion=matchMedia('(prefers-reduced-motion: reduce)'),atmosphereMotionOverride=new URLSearchParams(location.search).has('reducedMotion');
 const camera=new T.PerspectiveCamera(55,innerWidth/innerHeight,.08,1500);
+if(new URLSearchParams(location.search).has('gds-capture'))Object.defineProperty(window,'__gdsCamera',{value:()=>{const heading=camera.getWorldDirection(new T.Vector3());return {position:camera.position.toArray(),direction:heading.toArray(),fovDegrees:camera.fov};},configurable:false});
 const interactiveWater=new InteractiveWater(canvas,camera);
 const pm=new StableEnvironment(renderer);
 try{
