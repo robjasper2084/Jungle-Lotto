@@ -50,7 +50,7 @@ const server=createServer(async(req,res)=>{
 });
 await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(0,'127.0.0.1',resolve);});
 const port=server.address().port;
-const report={game,head:process.env.GITHUB_SHA||null,candidateRoot:candidate,baseline:'authored default lighting',after:'same source assets + ?gds-photo opt-in solar calibration',
+const report={game,head:process.env.GDS_CANDIDATE_SHA||null,candidateRoot:candidate,baseline:'authored default lighting',after:'same source assets + ?gds-photo opt-in solar calibration',
  scope:'Actual WebGL2 canvas from source-built games. No synthetic scene, no modified camera, no physical-device/FPS or cross-district traversal proof.',
  browser:null,passed:false,cases:[],errors:[],missingAssets:missing,mediaFallbacks:warnings,comparison:null};
 const config={
@@ -73,8 +73,7 @@ async function capture(label,photo){
   await page.goto('http://127.0.0.1:'+port+'/'+entry+q,{waitUntil:'domcontentloaded',timeout:45000});
   await page.waitForFunction(config.ready,null,{timeout:180000});
   if(game==='elmwood'){
-   await page.locator('#time').fill('16.7');
-   await page.locator('#time').dispatchEvent('change');
+   await page.locator('#time').evaluate(input=>{input.value='16.7';input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));});
   }else{
    await page.locator(config.start).click({timeout:90000});
    if(game==='swoop')await page.waitForFunction(()=>document.body.classList.contains('playing'),null,{timeout:90000});
