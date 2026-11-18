@@ -55,7 +55,7 @@ export type PbrSourceKind = 'scan' | 'photo-derived' | 'procedural';
 export type MapRole = 'baseColor' | 'normal' | 'roughness' | 'metalness' | 'occlusion';
 export interface SurfaceAsset {
   district:District; name:string; sourceKind:PbrSourceKind; source:string; license:string;
-  /** Content hash of the source image, not a URL, title or guessed checksum. */
+  /** Source-image SHA-256 supplied by asset owner; syntax is checked, bytes are NOT hashed here. */
   sourceSha256:string; dielectric:boolean;
   maps:Partial<Record<MapRole,string>>;
 }
@@ -66,7 +66,7 @@ export function auditSurfaceAsset(asset:SurfaceAsset):readonly string[] {
   if (!asset.name.trim()) errors.push('Missing material name');
   if (!['scan','photo-derived','procedural'].includes(asset.sourceKind)) errors.push('Unknown source kind');
   if (!asset.source.trim() || !asset.license.trim()) errors.push('Missing asset provenance or license');
-  if (!SHA256.test(asset.sourceSha256)) errors.push('Missing verified SHA-256 of source');
+  if (!SHA256.test(asset.sourceSha256)) errors.push('Missing well-formed source SHA-256');
   for (const slot of ['baseColor','normal','roughness'] as const) if (!asset.maps[slot]) errors.push('Missing '+slot+' map');
   if (asset.dielectric && asset.maps.metalness) errors.push('Dielectric surface should not use a metallic map');
   return Object.freeze(errors);
@@ -86,7 +86,7 @@ export type DeviceContext=Readonly<{
 export function cinematicEffects(device:DeviceContext) {
   if (!['desktop','mobile','xr'].includes(device.view)||!['mobile','balanced','cinematic'].includes(device.tier)||!Number.isInteger(device.views)||device.views<1||!finite(device.riverDistanceM)||device.riverDistanceM<0||device.measuredFrameMs!==undefined&&(!finite(device.measuredFrameMs)||device.measuredFrameMs<0)) throw new RangeError('Invalid graphics context');
   const cinematic=device.view==='desktop'&&device.tier==='cinematic'&&device.views===1;
-  const frameOk=device.measuredFrameMs===undefined||device.measuredFrameMs<15;
+  const frameOk=device.measuredFrameMs!==undefined&&device.measuredFrameMs>0&&device.measuredFrameMs<15;
   const planar=cinematic&&frameOk&&device.planarPassAvailable&&device.visibleRiver&&device.riverDistanceM<=220;
   return Object.freeze({
     planar,ssr:cinematic&&frameOk&&device.ssrPassAvailable,localVolumetrics:cinematic&&frameOk&&device.volumePassAvailable,
