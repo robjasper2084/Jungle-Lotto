@@ -75,6 +75,14 @@ async function capture(label,photo){
   if(game==='elmwood'){
    await page.locator('#time').evaluate(input=>{input.value='16.7';input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));});
   }else{
+   if(game==='belle'){
+    // Reuse the already-tested real Belle startup interactions. Never bypass
+    // the selection gate or seed rider state through an in-page test hook.
+    const picker=page.locator('.cinema-ride-picker > summary');
+    await picker.click({timeout:30000});
+    await page.locator('.ride-options label').filter({hasText:'One wheel'}).click({timeout:30000});
+    await page.getByRole('button',{name:'Use this ride',exact:true}).click({timeout:30000});
+   }
    await page.locator(config.start).click({timeout:90000});
    if(game==='swoop')await page.waitForFunction(()=>document.body.classList.contains('playing'),null,{timeout:90000});
    if(game==='belle')await page.waitForFunction(()=>document.querySelector('#ridehud')?.hidden===false,null,{timeout:90000});
