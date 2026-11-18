@@ -124,6 +124,15 @@ try{
     const entry={id:site.id,site:site.name,light:light.id,expectedReference:site.note,passed:false};
     try{
      entry.destination=await travel(page,site);
+     // After the new-browser boundary, a modal Guide click can leave the page
+     // without keyboard/animation focus. Restore foreground browser focus
+     // through genuine Playwright UI actions, not injected frames or poses.
+     await page.bringToFront();
+     await page.locator('#game').focus();
+     entry.focus=await page.evaluate(()=>({focused:document.hasFocus(),
+      visibility:document.visibilityState,activeElement:document.activeElement?.id||null}));
+     if(!entry.focus.focused||entry.focus.visibility!=='visible')
+      throw Error('Real gallery page is not foreground after Guide Travel: '+JSON.stringify(entry.focus));
      const frame=await painted(page);
      const file=site.id+'-'+light.id+'.png';
      await page.screenshot({path:resolve(output,file),timeout:180000});
@@ -131,7 +140,21 @@ try{
      entry.place=await page.locator('#place').textContent();
      entry.profile=await page.locator('#profile').textContent();
     }catch(error){
-     entry.failure=String(error);report.coverageGaps.push(site.id+' '+light.id+': '+error);
+     entry.failure=String(error);
+     // Keep a factual, separate stall receipt. No screenshot is counted as
+     // captured unless the original >2-frame + GPU-fence proof succeeds.
+     try{
+      entry.failureState=await page.evaluate(()=>{
+       const p=document.getElementById('profile'),gl=document.getElementById('game')?.getContext('webgl2');
+       const ext=gl?.getExtension('WEBGL_debug_renderer_info');
+       return {focused:document.hasFocus(),visibility:document.visibilityState,
+        activeElement:document.activeElement?.id||null,frames:p?.dataset.activeFrames||null,
+        frameP95Ms:p?.dataset.frameP95Ms||null,quality:p?.dataset.quality||null,
+        renderer:gl?String(gl.getParameter(ext?.UNMASKED_RENDERER_WEBGL??gl.RENDERER)):null,
+        contextLost:gl?.isContextLost()??null};
+      });
+     }catch(diagError){entry.failureStateError=String(diagError);}
+     report.coverageGaps.push(site.id+' '+light.id+': '+error);
     }
     report.visits.push(entry);
    }
