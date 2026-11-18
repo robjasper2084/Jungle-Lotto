@@ -12,6 +12,12 @@ export class RideProfile {
   this.button.type='button';this.button.style.minHeight='44px';this.button.textContent='Start 10-minute capture';this.button.onclick=()=>this.running?this.finish():this.start();this.panel.append(this.button);
   this.output.readOnly=true;this.output.setAttribute('aria-label','Ride profile report');this.output.style.cssText='display:block;box-sizing:border-box;width:100%;max-width:100%;height:160px';this.output.hidden=true;this.panel.append(this.output);document.getElementById('settings')?.append(this.panel);
   document.addEventListener('visibilitychange',()=>{if(this.running&&document.hidden)this.interruptions++;this.stats.breakPosition();});
+  // Browser-only measurement boundary, never enabled on hosted production.
+  // Genuine trusted release ends the FULL or DIAGNOSTIC local sample BEFORE opening Settings.
+  const localBrowserProfile=typeof location!=='undefined'&&['localhost','127.0.0.1','[::1]'].includes(location.hostname)&&new URLSearchParams(location.search).get('profile')==='1';
+  if(localBrowserProfile)document.addEventListener('keyup',event=>{
+   if(this.running&&event.isTrusted&&event.code==='KeyW')this.finish('trusted-W-keyup');
+  },true);
  }
  get enabled(){return this.running;}
  start(){this.running=true;this.stats=new RideProfileStats();this.interruptions=0;this.stamp=0;this.started=new Date().toISOString();this.output.hidden=true;this.button.textContent='Stop and show report';this.panel.open=false;}
@@ -21,9 +27,9 @@ export class RideProfile {
   if(this.stats.activeSeconds-this.stamp>.5){this.stamp=this.stats.activeSeconds;this.label.textContent='Ride profile · '+Math.floor(this.stats.movingSeconds)+'/600 s riding · '+Math.floor(this.stats.activeSeconds)+' s active';}
   if(this.stats.movingSeconds>=600)this.finish();
  }
- finish(){
+ finish(stopReason='manual'){
   this.running=false;this.button.textContent='Start 10-minute capture';
-  const report={version:3,started:this.started,...this.stats.report(),visibilityInterruptions:this.interruptions,settings:this.settings(),viewport:[innerWidth,innerHeight,devicePixelRatio],resources:performance.getEntriesByType('resource').map(e=>{const r=e as PerformanceResourceTiming;return {name:r.name.split('/').at(-1)?.split('?')[0],durationMs:r.duration,transferBytes:r.transferSize,decodedBytes:r.decodedBodySize};}).filter(r=>r.decodedBytes>250000).slice(0,100),note:'Eligible foreground frame intervals include long stalls; menu, paused, hidden and first-resume intervals are excluded. CPU phase durations are not GPU timings; worldAndActivityCpuMs includes world, audio and activity updates. Moving seconds use observed speed. Counts, means and maxima cover all accepted frames; percentiles use up to the first 150000 samples, slowFrames retains up to the 100 worst located stalls, and resources lists up to 100 large transfers.'};
+  const report={version:3,started:this.started,stopReason,...this.stats.report(),visibilityInterruptions:this.interruptions,settings:this.settings(),viewport:[innerWidth,innerHeight,devicePixelRatio],resources:performance.getEntriesByType('resource').map(e=>{const r=e as PerformanceResourceTiming;return {name:r.name.split('/').at(-1)?.split('?')[0],durationMs:r.duration,transferBytes:r.transferSize,decodedBytes:r.decodedBodySize};}).filter(r=>r.decodedBytes>250000).slice(0,100),note:'Eligible foreground frame intervals include long stalls; menu, paused, hidden and first-resume intervals are excluded. CPU phase durations are not GPU timings; worldAndActivityCpuMs includes world, audio and activity updates. Moving seconds use observed speed. Counts, means and maxima cover all accepted frames; percentiles use up to the first 150000 samples, slowFrames retains up to the 100 worst located stalls, and resources lists up to 100 large transfers.'};
   this.output.value=JSON.stringify(report,null,2);this.output.hidden=false;this.panel.open=true;this.label.textContent='Ride profile · '+Math.round(this.stats.activeSeconds)+' s captured';
  }
 }

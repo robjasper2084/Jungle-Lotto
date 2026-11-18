@@ -16,7 +16,7 @@ const report={sourceHead:process.env.GITHUB_SHA||null,device,viewport,requestedS
  renderBackend:null,rendererFallback:null,actualGpu:null,input:null,classification:null,
  hardware:'GitHub Actions Chrome; phone viewport is NOT physical iOS/Android hardware',
  acceptanceScope:mode==='diagnostic'?'REDUCED SCENE DIAGNOSTIC ONLY; not release quality':'FULL CURRENT GAME; still not device certification',
- passed:false,frameQualityAccepted:false,releasePerformanceVerified:false,welcomeReadyMs:null,rideStartedMs:null,firstPlayableMs:null,profileWindowCaveat:'Capture includes UI/report-extraction time after releasing W; not a clean ride-only sampling window',profile:null,memory:null,browserSchedulerProbe:null,cdpCpuProbe:null,probeErrors:[],errors:[],failedRequests:[],elapsedWallMs:null};
+ passed:false,frameQualityAccepted:false,releasePerformanceVerified:false,welcomeReadyMs:null,rideStartedMs:null,firstPlayableMs:null,profileWindowCaveat:'Local browser capture ends at genuine trusted W-keyup before Settings/report extraction; NOT physical-device certification',profile:null,memory:null,browserSchedulerProbe:null,cdpCpuProbe:null,probeErrors:[],errors:[],failedRequests:[],elapsedWallMs:null};
 const server=createCoopStaticServer(resolve(game,'dist'));
 await new Promise(ok=>server.listen(0,'127.0.0.1',ok));
 const begin=Date.now();let browser;
@@ -41,10 +41,11 @@ try{
  }
  if(!page)throw Error('No real WebGL2 backend available: '+lastBackendError);
  page.setDefaultTimeout(180000);
- await page.addInitScript(()=>{const receipts={keydowns:0,repeats:0,blurs:0};
+ await page.addInitScript(()=>{const receipts={keydowns:0,keyups:0,repeats:0,blurs:0};
   window.__belleInputReceipts=receipts;
   window.addEventListener('keydown',event=>{if(event.code==='KeyW'&&event.isTrusted){receipts.keydowns++;if(event.repeat)receipts.repeats++;}},true);
   window.addEventListener('blur',()=>receipts.blurs++,true);
+  window.addEventListener('keyup',event=>{if(event.code==='KeyW'&&event.isTrusted)receipts.keyups++;},true);
   // Browser-only compositor callback observations: no extra game or GPU draws.
   const browserClock={rafCallbacks:0,gaps:[],over250ms:0,maxGapMs:0};let lastRaf=null;
   browserClock.reset=()=>{browserClock.rafCallbacks=0;browserClock.gaps=[];browserClock.over250ms=0;browserClock.maxGapMs=0;lastRaf=null;};
@@ -147,9 +148,11 @@ try{
  }catch(error){report.probeErrors.push('CDP ending counters: '+String(error));}
  try{await cdp?.detach();}catch{/* observer cleanup cannot waive test results */}
  await settings();
- await panel.locator('summary').click();
- await panel.getByRole('button',{name:'Stop and show report'}).click();
+ // Local RideProfile finishes on real W-keyup; keyboard input and GPU frames are unmodified.
+ await expect(panel.locator('button')).toHaveText('Start 10-minute capture');
+ if(!await panel.evaluate(node=>node.open))await panel.locator('summary').click();
  report.profile=JSON.parse(await panel.locator('textarea').inputValue());
+ if(report.profile.stopReason!=='trusted-W-keyup')throw Error('Capture did not end on real trusted keyboard release');
  report.memory=await page.evaluate(()=>({
   jsHeap:performance.memory?{usedBytes:performance.memory.usedJSHeapSize,limitBytes:performance.memory.jsHeapSizeLimit}:null,
   userAgent:navigator.userAgent,deviceMemoryGB:navigator.deviceMemory??null,
@@ -159,7 +162,7 @@ try{
  await page.screenshot({path:resolve(output,'riding-end.png'),timeout:180000});
  const stats=report.profile;
  report.frameQualityAccepted=stats.metrics?.frameMs?.p95<=50&&stats.over250ms===0;
- const keyReceived=report.input.keydowns>=1&&!report.input.heartbeatError;
+ const keyReceived=report.input.keydowns>=1&&report.input.keyups>=1&&!report.input.heartbeatError;
  report.passed=keyReceived&&stats.frames>=8&&stats.metrics?.frameMs?.p95!==null&&
   stats.movingSeconds>=5&&stats.distanceMetres>=3&&report.frameQualityAccepted&&!report.errors.length&&!report.failedRequests.length;
  report.classification=stats.frames<8?'insufficient-rendered-frames':!keyReceived?'input-not-delivered':
