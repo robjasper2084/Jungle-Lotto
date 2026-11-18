@@ -142,3 +142,9 @@ body[data-presentation-motion=reduced] :is(.location-chip,#navigation){backdrop-
 @media(max-width:350px) and (max-height:520px){
  body.island-trial.on-hoverbike.touch-controls #jarvs-avionics[data-intensity=high] #jarvs-radar{min-width:0;font-size:9px}
 }
+
+/* Fast flight under an authored HUD preset: 40% less decorative backing.
+   Ink, hit targets, dialogs, and CRITICAL avionics stay fully legible. */
+body.on-hoverbike[data-hud-preset]:not(.coop-playing) :is(.location-chip,#navigation,#jarvs-avionics:not([data-status=CRITICAL])){
+ background-color:rgb(7 24 31 / var(--belle-flight-hud-alpha,.87));
+}

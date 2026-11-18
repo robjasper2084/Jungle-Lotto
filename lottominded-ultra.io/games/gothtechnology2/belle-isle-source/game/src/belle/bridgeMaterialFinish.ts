@@ -10,7 +10,8 @@ export function bridgeFinishFragment(type:BridgeFinish):string{
  if(type==='aged-concrete')return common+
   'float waterStain=1.-smoothstep(.2,2.3,bridgeWorld.y);\n'
   +'float chalk=smoothstep(.5,.83,belleBridgePitted);\n'
-  +'diffuseColor.rgb*=vec3(.93,.95,.93)*(.88+.16*belleBridgePitted-.09*waterStain-.08*(1.-smoothstep(1.2,5.8,bridgeWorld.y)));\n'
+  +'float belleMineralStreak=smoothstep(.68,.94,.5+.5*sin(bridgeWorld.x*.73+sin(bridgeWorld.z*.21)*1.9))*(1.-smoothstep(3.,9.,bridgeWorld.y));\n'
+  +'diffuseColor.rgb*=vec3(.93,.95,.93)*(.88+.16*belleBridgePitted-.09*waterStain-.08*(1.-smoothstep(1.2,5.8,bridgeWorld.y))-.055*belleMineralStreak);\n'
   +'diffuseColor.rgb*=1.+(belleBridgeGrain-.5)*.05*belleBridgeAA;\n'
   +'diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.54,.56,.52),chalk*.08);\n}\n';
  if(type==='weathered-red-iron')return common+
@@ -29,7 +30,7 @@ export function finishBridgeMaterial(material:T.MeshStandardMaterial,type:Bridge
   shader.vertexShader='varying vec3 bridgeWorld;\n'+shader.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nbridgeWorld=(modelMatrix*vec4(transformed,1.)).xyz;');
   shader.fragmentShader='varying vec3 bridgeWorld;\n'+shader.fragmentShader.replace('#include <map_fragment>','#include <map_fragment>\n'+bridgeFinishFragment(type));
  };
- material.customProgramCacheKey=()=>oldKey+'-belle-bridge-weather-v1-'+type;
+ material.customProgramCacheKey=()=>oldKey+'-belle-bridge-weather-v2-'+type;
  material.roughness=type==='aged-concrete'?.91:type==='weathered-red-iron'?.75:.82;
  material.needsUpdate=true;
  return material;

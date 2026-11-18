@@ -1,7 +1,7 @@
 import {REFERENCE_STYLE} from './sunsetReferencePolicy.ts';
 import {skyRadiance} from './volumetricSky.ts';
 import {riverWaveGLSL} from './riverWaves.ts';
-import {RIVER_BROAD_NORMALS} from './riverSurfaceDetail.ts';
+import {RIVER_BROAD_NORMALS,riverPhotoGlintGLSL} from './riverSurfaceDetail.ts';
 import {riverFarRing,RIVER_PATCH_SIZE,RIVER_PATCH_SEGMENTS} from './riverPatch.ts';
 import {createFountainLighting,FOUNTAIN_COLOR_UNIFORMS} from './fountainLighting.ts';
 import type {ShipWake} from './riverTraffic.ts';
@@ -75,10 +75,8 @@ diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.5,.66,.65),clamp(washFoam*.4+rippleF
  // Uses the already-calculated water normal wave and no additional textures.
  vec3 riverSunReflection=reflect(-normalize(riverSunDirection),normalize(vec3(wave.x*.65,1.,wave.y*.65)));
  float riverSunAlignment=max(0.,dot(normalize(cameraPosition-riverWorld),riverSunReflection));
- float riverSunWide=pow(riverSunAlignment,${REFERENCE_STYLE?'95.':'42.'});
- float riverSunCore=pow(riverSunAlignment,${REFERENCE_STYLE?'420.':'170.'});
  float riverSunSparkle=.78+.22*clamp((r1.x+r2.y)*riverNormalVisibility,-1.,1.);
- totalEmissiveRadiance+=vec3(1.,.79,.52)*min(1.,riverSunGlint*(riverSunWide*.16+riverSunCore*.85)*riverSunSparkle);
+ ${riverPhotoGlintGLSL(REFERENCE_STYLE)}
 
 `);
    if(kind==='lagoon')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`#include <emissivemap_fragment>

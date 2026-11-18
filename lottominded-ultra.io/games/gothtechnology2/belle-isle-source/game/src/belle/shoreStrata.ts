@@ -24,7 +24,7 @@ function pushEdge(out:Strip,a:Point,b:Point,nx:number,nz:number,top:number,kind:
    // Photo-guided bank zones: warm swim sand, olive wetland sediment,
    // and cool-grey limestone below riprap on the open Detroit River.
    const dry=sandy?[.74,.66,.52]:marsh?[.44,.42,.31]:[.51,.50,.46];
-   const mud=sandy?[.48,.43,.34]:marsh?[.27,.30,.26]:[.30,.35,.33];
+   const mud=sandy?[.48,.43,.34]:marsh?[.25,.29,.24]:[.30,.35,.33];
    const blend=Math.min(1,Math.max(0,(wet-.23)/.7));
    out.colors.push(lerp(dry[0],mud[0],blend),lerp(dry[1],mud[1],blend),lerp(dry[2],mud[2],blend));
    out.uv.push(u*.15,wet);
@@ -96,7 +96,9 @@ export function addShoreStrata(scene:T.Scene,map:ParkMap,terrain:ParkTerrain){
   `);
   shader.fragmentShader=shader.fragmentShader.replace('#include <roughnessmap_fragment>',`#include <roughnessmap_fragment>
     float damp=smoothstep(.42,.93,sedimentUV.y);
-    roughnessFactor=mix(roughnessFactor,.64,damp*.55);
+    roughnessFactor=mix(roughnessFactor,.52,damp*.62);
+    // Shaded damp leaf sediment, not a uniform flat gray or separate pass.
+    diffuseColor.rgb*=mix(vec3(1.),vec3(.81,.94,.81),damp*.22);
   `);
  };
  material.customProgramCacheKey=()=> 'shore-sediment-strata-v1';
