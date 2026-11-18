@@ -32,7 +32,7 @@ test('source integrates tree-only crown scaling, river filtering and photo bridg
 
 test('photographic guide views map to actual inland canals and a Casino footbridge',()=>{
  const map=JSON.parse(readFileSync(new URL('../../public/belle/map.json',import.meta.url),'utf8'));
- const red=map.roads.find((road:{id:string;bridge?:boolean})=>road.id==='42986441');
+ const red=map.roads.find((road:{id:string;bridge?:boolean})=>road.id==='106948146');
  assert(red?.bridge&&red.points.length>1);
  assert(map.pois.some((p:{name:string})=>p.name==='Sylvan Canal'));
  const guide=readFileSync(new URL('./main.ts',import.meta.url),'utf8');
