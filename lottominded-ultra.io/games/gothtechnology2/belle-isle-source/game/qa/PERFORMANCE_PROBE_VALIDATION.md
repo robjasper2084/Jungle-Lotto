@@ -23,3 +23,14 @@ and first-playable wall time separately for each lane. Do not label a frame-star
 Full acceptance still requires actual desktop and mobile-device measurements for 10 minutes, a camera-matched baseline on
 the same GPU/quality/route, no serious freezes, and full-fidelity before/after screenshots with bridge and foliage detail.
 All original cinematic, collision, co-op, screenshot and build workflows remain required and unmodified.
+
+## Independent browser scheduling and CPU evidence
+A local sustained-ride profile additionally records an independent browser `requestAnimationFrame` callback count/gaps,
+`PerformanceObserver` main-thread long tasks and Chrome DevTools `Performance.getMetrics` CPU counters.
+The independent callback count is **NOT game-rendered frames**; browser long-task/TaskDuration counters are
+**NOT GPU time or physical-device hardware benchmarks**. Profiled FULL and reduced DIAGNOSTIC remain
+separate, with the original real gameplay inputs and strict acceptance unchanged.
+Compare callback opportunities with the game's valid active-frame count and main-thread seconds with real elapsed
+wall time to distinguish event-loop contention from compositor/driver pressure. Neither observation alone
+proves GPU fence completion or main-thread starvation. No fake frames, scene/physics changes, test threshold
+reductions or production release claims are permitted.

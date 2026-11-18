@@ -16,7 +16,7 @@ const report={sourceHead:process.env.GITHUB_SHA||null,device,viewport,requestedS
  renderBackend:null,rendererFallback:null,actualGpu:null,input:null,classification:null,
  hardware:'GitHub Actions Chrome; phone viewport is NOT physical iOS/Android hardware',
  acceptanceScope:mode==='diagnostic'?'REDUCED SCENE DIAGNOSTIC ONLY; not release quality':'FULL CURRENT GAME; still not device certification',
- passed:false,frameQualityAccepted:false,releasePerformanceVerified:false,welcomeReadyMs:null,rideStartedMs:null,firstPlayableMs:null,profileWindowCaveat:'Capture includes UI/report-extraction time after releasing W; not a clean ride-only sampling window',profile:null,memory:null,errors:[],failedRequests:[],elapsedWallMs:null};
+ passed:false,frameQualityAccepted:false,releasePerformanceVerified:false,welcomeReadyMs:null,rideStartedMs:null,firstPlayableMs:null,profileWindowCaveat:'Capture includes UI/report-extraction time after releasing W; not a clean ride-only sampling window',profile:null,memory:null,browserSchedulerProbe:null,cdpCpuProbe:null,probeErrors:[],errors:[],failedRequests:[],elapsedWallMs:null};
 const server=createCoopStaticServer(resolve(game,'dist'));
 await new Promise(ok=>server.listen(0,'127.0.0.1',ok));
 const begin=Date.now();let browser;
@@ -45,6 +45,30 @@ try{
   window.__belleInputReceipts=receipts;
   window.addEventListener('keydown',event=>{if(event.code==='KeyW'&&event.isTrusted){receipts.keydowns++;if(event.repeat)receipts.repeats++;}},true);
   window.addEventListener('blur',()=>receipts.blurs++,true);
+  // Browser-only compositor callback observations: no extra game or GPU draws.
+  const browserClock={rafCallbacks:0,gaps:[],over250ms:0,maxGapMs:0};let lastRaf=null;
+  browserClock.reset=()=>{browserClock.rafCallbacks=0;browserClock.gaps=[];browserClock.over250ms=0;browserClock.maxGapMs=0;lastRaf=null;};
+  browserClock.snapshot=()=>({rafCallbacks:browserClock.rafCallbacks,over250ms:browserClock.over250ms,
+   maxGapMs:browserClock.maxGapMs,lastGapsMs:browserClock.gaps.slice(),
+   caveat:'Independent browser requestAnimationFrame callbacks, NOT game draws or actual GPU-present timings'});
+  window.__belleBrowserClock=browserClock;
+  function browserTick(now){
+   if(lastRaf!==null){const gap=Math.max(0,now-lastRaf);browserClock.maxGapMs=Math.max(browserClock.maxGapMs,gap);
+    if(gap>250)browserClock.over250ms++;
+    if(browserClock.gaps.length>=128)browserClock.gaps.shift();browserClock.gaps.push(gap);
+   }
+   lastRaf=now;browserClock.rafCallbacks++;requestAnimationFrame(browserTick);
+  }
+  requestAnimationFrame(browserTick);
+  const longTasks={count:0,over250ms:0,maxMs:0,totalMs:0};
+  longTasks.reset=()=>{longTasks.count=longTasks.over250ms=longTasks.maxMs=longTasks.totalMs=0;};
+  longTasks.snapshot=()=>({count:longTasks.count,over250ms:longTasks.over250ms,maxMs:longTasks.maxMs,totalMs:longTasks.totalMs,
+   caveat:'Browser long tasks are main-thread, NOT GPU queue execution'});
+  window.__belleLongTasks=longTasks;
+  try{new PerformanceObserver(list=>{for(const task of list.getEntries()){
+   longTasks.count++;longTasks.totalMs+=task.duration;longTasks.maxMs=Math.max(longTasks.maxMs,task.duration);
+   if(task.duration>250)longTasks.over250ms++;
+  }}).observe({type:'longtask'});}catch{/* availability is not invented */}
  });
  page.on('pageerror',err=>report.errors.push(err.message));
  page.on('console',msg=>{if(msg.type()==='error')report.errors.push(msg.text());});
@@ -86,6 +110,15 @@ try{
  await panel.getByRole('button',{name:'Start 10-minute capture'}).click();
  await page.locator('[data-close="settings"]').click();
  await page.locator('#game').focus();
+ let cdp=null,initialCounters=null,rideProbeStart=Date.now();
+ try{
+  cdp=await page.context().newCDPSession(page);
+  await cdp.send('Performance.enable');
+  initialCounters=(await cdp.send('Performance.getMetrics')).metrics;
+ }catch(error){report.probeErrors.push('CDP initial counters: '+String(error));}
+ try{await page.evaluate(()=>{window.__belleBrowserClock?.reset?.();window.__belleLongTasks?.reset?.();});}
+ catch(error){report.probeErrors.push('Browser probe reset: '+String(error));}
+ rideProbeStart=Date.now();
  let reassertions=0,inFlight=false,heartbeatError=null,pendingHeartbeat=Promise.resolve();
  await page.keyboard.down('w');
  // This timer is outside the game event loop: reassert real input, never pose.
@@ -95,6 +128,24 @@ try{
  },450);
  try{await page.waitForTimeout(seconds*1000);}finally{clearInterval(heartbeat);await pendingHeartbeat;await page.keyboard.up('w');}
  report.input={...(await page.evaluate(()=>window.__belleInputReceipts||{keydowns:0,repeats:0,blurs:0})),reassertions,heartbeatError};
+ try{report.browserSchedulerProbe=await page.evaluate(()=>({
+  clock:window.__belleBrowserClock?.snapshot?.()??null,
+  longTasks:window.__belleLongTasks?.snapshot?.()??null
+ }));}catch(error){report.probeErrors.push('Browser scheduler snapshot: '+String(error));}
+ try{
+  if(cdp&&initialCounters){
+   const subsequent=(await cdp.send('Performance.getMetrics')).metrics;
+   const before=Object.fromEntries(initialCounters.map(x=>[x.name,x.value]));
+   const after=Object.fromEntries(subsequent.map(x=>[x.name,x.value]));
+   const durations=['TaskDuration','ScriptDuration','LayoutDuration','RecalcStyleDuration','V8CompileDuration'];
+   report.cdpCpuProbe={wallSeconds:(Date.now()-rideProbeStart)/1000,
+    durationsSeconds:Object.fromEntries(durations.filter(k=>Number.isFinite(before[k])&&Number.isFinite(after[k]))
+     .map(k=>[k,Math.max(0,after[k]-before[k])])),
+    endJsHeapUsedBytes:after.JSHeapUsedSize??null,
+    caveat:'Chrome DevTools main-thread counters during attempted ride, NOT GPU time or VRAM'};
+  }
+ }catch(error){report.probeErrors.push('CDP ending counters: '+String(error));}
+ try{await cdp?.detach();}catch{/* observer cleanup cannot waive test results */}
  await settings();
  await panel.locator('summary').click();
  await panel.getByRole('button',{name:'Stop and show report'}).click();
