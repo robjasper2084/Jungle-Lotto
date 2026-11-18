@@ -83,14 +83,14 @@ try{
  await panel.getByRole('button',{name:'Start 10-minute capture'}).click();
  await page.locator('[data-close="settings"]').click();
  await page.locator('#game').focus();
- let reassertions=0,inFlight=false,heartbeatError=null;
+ let reassertions=0,inFlight=false,heartbeatError=null,pendingHeartbeat=Promise.resolve();
  await page.keyboard.down('w');
  // This timer is outside the game event loop: reassert real input, never pose.
  const heartbeat=setInterval(()=>{
   if(inFlight)return;inFlight=true;
-  void page.keyboard.down('w').then(()=>reassertions++,error=>{heartbeatError=String(error);}).finally(()=>{inFlight=false;});
+  pendingHeartbeat=page.keyboard.down('w').then(()=>reassertions++,error=>{heartbeatError=String(error);}).finally(()=>{inFlight=false;});
  },450);
- try{await page.waitForTimeout(seconds*1000);}finally{clearInterval(heartbeat);await page.keyboard.up('w');}
+ try{await page.waitForTimeout(seconds*1000);}finally{clearInterval(heartbeat);await pendingHeartbeat;await page.keyboard.up('w');}
  report.input={...(await page.evaluate(()=>window.__belleInputReceipts||{keydowns:0,repeats:0,blurs:0})),reassertions,heartbeatError};
  await settings();
  await panel.locator('summary').click();
@@ -107,7 +107,7 @@ try{
  report.frameQualityAccepted=stats.metrics?.frameMs?.p95<=50&&stats.over250ms===0;
  const keyReceived=report.input.keydowns>=1&&!report.input.heartbeatError;
  report.passed=keyReceived&&stats.frames>=8&&stats.metrics?.frameMs?.p95!==null&&
-  stats.movingSeconds>=5&&stats.distanceMetres>=3&&!report.errors.length&&!report.failedRequests.length;
+  stats.movingSeconds>=5&&stats.distanceMetres>=3&&report.frameQualityAccepted&&!report.errors.length&&!report.failedRequests.length;
  report.classification=stats.frames<8?'insufficient-rendered-frames':!keyReceived?'input-not-delivered':
   stats.distanceMetres<3?'render-starved-or-blocked-motion':report.frameQualityAccepted?'frame-budget-met':'stalls-detected';
  // A reduced-scene or software-browser success is never release approval.
