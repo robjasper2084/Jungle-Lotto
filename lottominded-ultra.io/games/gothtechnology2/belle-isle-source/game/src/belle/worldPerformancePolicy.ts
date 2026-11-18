@@ -68,3 +68,10 @@ export class ScenePreparationQueue {
   return active;
  }
 }
+
+/** Keep hardware prefetch unchanged. On software WebGL, do not compile heavy
+ * offscreen presentation GLBs hundreds of metres before they are visible.
+ * Actual display distances, meshes, textures and collisions are unaffected. */
+export function deferredSceneryRadius(visibleRange:number,prefetchRange:number,software:boolean,lead:number):number{
+ return software?Math.min(prefetchRange,visibleRange+lead):prefetchRange;
+}
