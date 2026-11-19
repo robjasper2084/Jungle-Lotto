@@ -1,5 +1,5 @@
 import {DRIVE_GEARS} from '../hoverTransmission.ts';
-import {HoverController} from '../hoverController.ts';
+import {HoverController,MODE_CLASSIC} from '../hoverController.ts';
 import {CorleoController} from '../vehicles/corleoController.ts';
 import {CORLEO_RADIUS} from '../vehicles/corleoFit.ts';
 import type {ParkTerrain} from '../terrain.ts';
@@ -71,7 +71,7 @@ export class PairSimulation{
   this.grounds=manifests.map((_,i)=>this.playerTerrain(i));
   this.pending=manifests.map(()=>neutral());this.mounted=manifests.map(()=>true);
   this.hovers=manifests.map((m,i)=>m.controller!=='RideCore'?new (m.controller==='CorleoController'?CorleoController:HoverController)(terrain as ParkTerrain,this.initial[i],(o,d,max,half)=>{let best:number|null=null;this.snapshots.forEach((p,j)=>{if(j===i)return;const hit=peerRay(o,d,max,p,this.radius(j)+half);if(hit!==null&&(best===null||hit<best))best=hit;});return best;}):undefined);
-  for(const hover of this.hovers){hover?.setMode('classic');if(hover instanceof CorleoController)hover.beginMount();}
+  for(const hover of this.hovers){hover?.setMode(MODE_CLASSIC);if(hover instanceof CorleoController)hover.beginMount();}
   this.actors=manifests.map((m,i)=>{
    const s=this.initial[i],core=new RideCore(this.grounds[i],{profile:riderProfile(m.riderId),spawn:{position:{x:s.x,y:s.y,z:s.z},headingY:s.heading}});
    const handling=eucProfile(m.vehicleId);if(handling)core.controller.setHandling(eucHandling(handling));

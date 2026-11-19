@@ -123,13 +123,18 @@ try{
     await expect(page.locator('#ride-profile')).toBeHidden();
     checked('direct hoverbike Start with trusted input',started);await shot('direct-start');
 
-    // Fresh profiles preserve the player's Classic preference. The direct
-    // altitude-hold exercise must select Drone with actual visible controls,
+    // Verify Classic is the real initial HUD flight schema before the user
+    // explicitly requests Drone altitude hold with visible controls.
+    await expect(page.locator('#hover-flight-mode')).toHaveValue('classic');
+    await expect(page.locator('#hover-hud')).toHaveAttribute('data-flight-mode','classic');
+    checked('Classic default on first HUD load',await snapshot());
+    // The subsequent altitude-hold exercise must select Drone with actual visible controls,
     // rather than assume it was the default or alter saved preferences.
     await tap(page.locator('#hover-hud .hover-lighting > summary'));
     await expect(page.locator('#hover-flight-mode')).toBeEnabled();
     await page.locator('#hover-flight-mode').selectOption('drone');
     await expect(page.locator('#hover-flight-mode')).toHaveValue('drone');
+    await expect(page.locator('#hover-hud')).toHaveAttribute('data-flight-mode','drone');
     checked('Drone altitude hold selected via UI',await snapshot());
 
     await tap(page.locator('#hover-hud [data-hover="takeoff"]'));

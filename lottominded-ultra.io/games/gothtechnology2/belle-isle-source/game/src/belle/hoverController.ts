@@ -6,6 +6,14 @@ import type {CorleoAnimationState} from './vehicles/corleoState.ts';
 export interface HoverInput {throttle:number;steer:number;strafe?:number;lift:number;brake:boolean;boost:boolean;clutch?:number;jump?:boolean;crawl?:boolean}
 export type FlightObstacle=(o:{x:number;y:number;z:number},d:{x:number;y:number;z:number},max:number,half:number)=>number|null;
 export type FlightMode='classic'|'drone';
+/** Canonical flight defaults. "Drone" is the user-selectable altitude-hold
+ * scheme, not an implicit startup or Sky Circuit override. */
+export const MODE_CLASSIC:FlightMode='classic';
+export const MODE_ATTITUDE_HOLD:FlightMode='drone';
+/** Only a previously saved, explicit Drone selection opts out of Classic. */
+export function resolveFlightModePreference(saved:string|null|undefined):FlightMode{
+ return saved===MODE_ATTITUDE_HOLD?MODE_ATTITUDE_HOLD:MODE_CLASSIC;
+}
 /** Neutral dead band and exponential response preserve delicate stick movement. */
 export function flightAxis(value:number){const n=Number.isFinite(value)?Math.max(-1,Math.min(1,value)):0,a=Math.max(0,(Math.abs(n)-.06)/.94);return Math.sign(n)*(.35*a+.65*a*a*a);}
 export interface HoverPose extends CorleoAnimationState {x:number;y:number;z:number;heading:number;speed:number;pitch:number;roll:number;lift:number;rpm:number}
@@ -13,7 +21,7 @@ const clamp=(n:number,a:number,b:number)=>Math.max(a,Math.min(b,n));
 const approach=(n:number,target:number,d:number)=>n<target?Math.min(target,n+d):Math.max(target,n-d);
 /** Fixed-step fan flight. World-space momentum survives heading changes. */
 export class HoverController {
- mode:FlightMode='classic';readonly drive=new HoverTransmission();
+ mode:FlightMode=MODE_CLASSIC;readonly drive=new HoverTransmission();
  private takeoffAge=0;private droneForward=0;private droneSide=0;private vx=0;private vz=0;private yawRate=0;
  boostEnergy=1;boostActive=false;private boostLocked=false;private rechargeDelay=0;
  cruiseSpeed:number|null=null;
