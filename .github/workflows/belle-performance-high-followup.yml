@@ -1,0 +1,100 @@
+name: Belle Isle High Loop comparison with common Traced sky
+
+on:
+  push:
+    branches: [qa/belle-performance-comparison-20261121]
+    paths:
+      - '.github/performance-high-followup/**'
+      - '.github/workflows/belle-performance-high-followup.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: belle-performance-high-followup-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  paired-benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - pr: '175'
+            candidate: 'a595ed97ec2ea970aedeb24695c1252c8abb3a0d'
+          - pr: '176'
+            candidate: '68943261e040a880eadb0e156d55638ccd91c86d'
+    steps:
+      - name: Check out the measurement harness only
+        uses: actions/checkout@v4
+        with:
+          path: harness
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/performance-high-followup/
+      - name: Check out the unchanged release candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.candidate }}
+          path: candidate
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/
+            /lottominded-ultra.io/games/gothtechnology2/swoop-source/src/
+            /lottominded-ultra.io/games/gothtechnology2/package.json
+            /lottominded-ultra.io/games/gothtechnology2/package-lock.json
+            /scripts/belle-release-pages.mjs
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Verify source identity and harness syntax
+        run: |
+          test "$(git -C candidate rev-parse HEAD)" = "${{ matrix.candidate }}"
+          node --check harness/.github/performance-high-followup/paired-performance.mjs
+      - name: Build the exact candidate
+        working-directory: candidate/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm ci
+          npm run check
+          npm run build
+      - name: Install the same browser runtime for both versions
+        working-directory: candidate/lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Verify the bytes currently served by production
+        working-directory: candidate
+        run: node scripts/belle-release-pages.mjs verify https://robjasper2084.github.io/Jungle-Lotto/ 71aa47004e8c7d9ff3ea2b49f771a0078f74b067
+      - name: Compare High Loop with common Traced sky and verified paused boundaries
+        timeout-minutes: 100
+        env:
+          CANDIDATE_GAME: ${{ github.workspace }}/candidate/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+          CANDIDATE_SHA: ${{ matrix.candidate }}
+          LIVE_SHA: 71aa47004e8c7d9ff3ea2b49f771a0078f74b067
+          LIVE_URL: https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/games/gothtechnology2/arcade/belle-isle-explorer/
+          LIVE_MANIFEST_URL: https://robjasper2084.github.io/Jungle-Lotto/pages-artifact-manifest.json
+          BENCH_DEVICE: desktop
+          BENCH_QUALITY: high
+          BENCH_DPR: '0.7'
+          BENCH_ORDER: baseline,candidate,candidate,baseline
+          BENCH_CACHE: '1'
+          BENCH_MIN_SECONDS: '120'
+          BENCH_MIN_FRAMES: '30'
+          BENCH_MAX_SECONDS: '900'
+          BENCH_OUTPUT: ${{ github.workspace }}/comparison-output
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node harness/.github/performance-high-followup/paired-performance.mjs
+      - name: Preserve every run, measurement, error and screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-paired-performance-high-followup-pr${{ matrix.pr }}-desktop-high
+          path: |
+            comparison-output/
+            candidate/belle-public-verification.json
+          if-no-files-found: warn
+          retention-days: 14
