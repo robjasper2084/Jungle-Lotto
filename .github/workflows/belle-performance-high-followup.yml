@@ -1,4 +1,4 @@
-name: Belle Isle High Loop comparison with common Traced sky
+name: Belle Isle High Loop comparison with common Layered sky
 
 on:
   push:
@@ -13,7 +13,7 @@ permissions:
 
 concurrency:
   group: belle-performance-high-followup-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   paired-benchmark:
@@ -70,7 +70,7 @@ jobs:
       - name: Verify the bytes currently served by production
         working-directory: candidate
         run: node scripts/belle-release-pages.mjs verify https://robjasper2084.github.io/Jungle-Lotto/ 71aa47004e8c7d9ff3ea2b49f771a0078f74b067
-      - name: Compare High Loop with common Traced sky and verified paused boundaries
+      - name: Compare High Loop with common Layered sky and verified paused boundaries
         timeout-minutes: 100
         env:
           CANDIDATE_GAME: ${{ github.workspace }}/candidate/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
