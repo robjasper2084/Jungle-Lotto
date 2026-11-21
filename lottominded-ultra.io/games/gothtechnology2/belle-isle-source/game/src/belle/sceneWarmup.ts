@@ -59,7 +59,9 @@ export class SceneWarmup {
     // Paint the existing Preparing label before shader submission begins.
     await readyOrCancelled(this.paint(),cancel.signal);
     // Upload material textures under the loading lock, not in the first ridden frame.
-    await readyOrCancelled(warmObjectTextures(this.renderer,model??compileRoot,cancel.signal),cancel.signal);
+    // A Guide trip can immediately expose a previously hidden island sector.
+    // Upload its textures here while still compiling only the active shader set.
+    await readyOrCancelled(warmObjectTextures(this.renderer,model??this.scene,cancel.signal),cancel.signal);
     // Smooth has no shadow-map pass. A later prepare in a mapped mode
     // gets a distinct cache entry and still warms both lighting variants.
     for(const enabled of mappedShadows?[false,true]:[false]){

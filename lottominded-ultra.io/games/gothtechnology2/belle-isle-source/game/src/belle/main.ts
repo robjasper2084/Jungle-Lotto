@@ -318,7 +318,36 @@ async function boot(){const response=await fetch('./belle/map.json');if(!respons
  const filterGuide=()=>{const query=el<HTMLInputElement>('guide-search').value.trim().toLowerCase(),kind=el<HTMLSelectElement>('guide-category').value;let shown=0;document.querySelectorAll<HTMLElement>('#landmarks .landmark').forEach(c=>{c.hidden=!(c.dataset.search!.includes(query)&&(kind==='all'||c.dataset.kind===kind));if(!c.hidden)shown++;});el('guide-count').textContent=shown+' places';};el('guide-search').oninput=filterGuide;el('guide-category').onchange=filterGuide;filterGuide();
  const firstRide=createFirstRideObjective(destinations,data.spawn,target=>{if(destination===target)destination=undefined;});
  const referenceHud=REFERENCE_STYLE?createReferenceHud(data):undefined;
- const minimap=el<HTMLCanvasElement>('minimap'),ctx=minimap.getContext('2d')!;const px=(x:number)=>(x+600)/4700*420,pz=(z:number)=>(z+700)/2700*290;function drawMap(x:number,z:number,heading:number){ctx.clearRect(0,0,420,290);ctx.globalAlpha=Number(opacity.value);ctx.fillStyle='#143f47';ctx.fillRect(0,0,420,290);function polygon(points:[number,number][],color:string){ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(px(p[0]),pz(p[1])):ctx.moveTo(px(p[0]),pz(p[1])));ctx.closePath();ctx.fillStyle=color;ctx.fill();}polygon(data.island,'#506b4b');for(const i of data.outerIslets||[])polygon(i.points,'#506b4b');for(const w of data.water){polygon(w.points,'#214951');for(const h of w.holes)polygon(h,'#506b4b');}ctx.strokeStyle='#b8c3a3';ctx.lineWidth=1;for(const r of data.roads){if(r.foot)continue;ctx.beginPath();r.points.forEach((p,i)=>i?ctx.lineTo(px(p[0]),pz(p[1])):ctx.moveTo(px(p[0]),pz(p[1])));ctx.stroke();}ctx.strokeStyle='#c3c98e';ctx.lineWidth=.65;ctx.setLineDash([2,2]);for(const r of data.roads){if(!r.foot||!['path','track','cycleway'].includes(r.highway||''))continue;ctx.beginPath();r.points.forEach((p,i)=>i?ctx.lineTo(px(p[0]),pz(p[1])):ctx.moveTo(px(p[0]),pz(p[1])));ctx.stroke();}ctx.setLineDash([]);ctx.globalAlpha=1;for(const l of data.landmarks){ctx.fillStyle=l===destination?'#ffd98b':l.kind==='monument'?'#96e7dc':'#e8deaa';ctx.beginPath();ctx.arc(px(l.x),pz(l.z),l===destination?4:2,0,Math.PI*2);ctx.fill();}for(const [i,m]of (online?.members??[]).entries()){if(m.id===online?.self)continue;const p=online?.buffers.get(m.id)?.sample(performance.now());if(!p)continue;ctx.fillStyle=PLAYER_COLORS[i];ctx.strokeStyle='#10252c';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(px(p.pose.x),pz(p.pose.z),4,0,Math.PI*2);ctx.fill();ctx.stroke();}race?.drawMap(ctx,px,pz);activities?.drawMap(ctx,px,pz);ctx.save();ctx.translate(px(x),pz(z));ctx.rotate(-heading);ctx.fillStyle='#a5fff0';ctx.beginPath();ctx.moveTo(0,7);ctx.lineTo(-4,-4);ctx.lineTo(4,-4);ctx.fill();ctx.restore();ctx.fillStyle='#f2f4e6';ctx.font='12px system-ui';ctx.fillText('N ↑',10,18);}
+ const minimap=el<HTMLCanvasElement>('minimap'),navigation=el('navigation'),ctx=minimap.getContext('2d')!;
+ const px=(x:number)=>(x+600)/4700*420,pz=(z:number)=>(z+700)/2700*290;
+ const mapLayer=document.createElement('canvas');mapLayer.width=minimap.width;mapLayer.height=minimap.height;
+ const baseCtx=mapLayer.getContext('2d')!;
+ let mapLayerOpacity=-1;
+ function drawMapLayer(alpha:number){
+  baseCtx.clearRect(0,0,mapLayer.width,mapLayer.height);baseCtx.globalAlpha=alpha;
+  baseCtx.fillStyle='#143f47';baseCtx.fillRect(0,0,420,290);
+  function path(points:[number,number][]){
+   baseCtx.beginPath();points.forEach((p,i)=>i?baseCtx.lineTo(px(p[0]),pz(p[1])):baseCtx.moveTo(px(p[0]),pz(p[1])));
+  }
+  function polygon(points:[number,number][],color:string){
+   path(points);baseCtx.closePath();baseCtx.fillStyle=color;baseCtx.fill();
+  }
+  polygon(data.island,'#506b4b');
+  for(const i of data.outerIslets||[])polygon(i.points,'#506b4b');
+  for(const w of data.water){polygon(w.points,'#214951');for(const h of w.holes)polygon(h,'#506b4b');}
+  baseCtx.strokeStyle='#b8c3a3';baseCtx.lineWidth=1;
+  for(const r of data.roads){if(!r.foot){path(r.points);baseCtx.stroke();}}
+  baseCtx.strokeStyle='#c3c98e';baseCtx.lineWidth=.65;baseCtx.setLineDash([2,2]);
+  for(const r of data.roads){if(r.foot&&['path','track','cycleway'].includes(r.highway||'')){path(r.points);baseCtx.stroke();}}
+  baseCtx.setLineDash([]);mapLayerOpacity=alpha;
+ }
+ function drawMap(x:number,z:number,heading:number){
+  if(navigation.hidden||minimap.hidden)return;
+  const alpha=Number(opacity.value);
+  if(mapLayerOpacity!==alpha)drawMapLayer(alpha);
+  ctx.clearRect(0,0,420,290);ctx.drawImage(mapLayer,0,0);
+  ctx.strokeStyle='#c3c98e';ctx.lineWidth=.65;
+  for(const l of data.landmarks){ctx.fillStyle=l===destination?'#ffd98b':l.kind==='monument'?'#96e7dc':'#e8deaa';ctx.beginPath();ctx.arc(px(l.x),pz(l.z),l===destination?4:2,0,Math.PI*2);ctx.fill();}for(const [i,m]of (online?.members??[]).entries()){if(m.id===online?.self)continue;const p=online?.buffers.get(m.id)?.sample(performance.now());if(!p)continue;ctx.fillStyle=PLAYER_COLORS[i];ctx.strokeStyle='#10252c';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(px(p.pose.x),pz(p.pose.z),4,0,Math.PI*2);ctx.fill();ctx.stroke();}race?.drawMap(ctx,px,pz);activities?.drawMap(ctx,px,pz);ctx.save();ctx.translate(px(x),pz(z));ctx.rotate(-heading);ctx.fillStyle='#a5fff0';ctx.beginPath();ctx.moveTo(0,7);ctx.lineTo(-4,-4);ctx.lineTo(4,-4);ctx.fill();ctx.restore();ctx.fillStyle='#f2f4e6';ctx.font='12px system-ui';ctx.fillText('N ↑',10,18);}
  status('Preparing stable sky reflections');await world.sky.prepareReflections(camera,core.current.x,core.current.z);status('Warming up island lighting');await sceneWarmup.prepare();status('Preparing the first frame');let prepared=false,starting=false;start.onclick=async()=>{if(starting||!prepared)return;starting=true;const choice=startup.choice;natureAudio.unlock();clear();startup.preparing();try{if(choice.vehicle!=='onewheel'){await hover!.selectVehicle(choice,scene);await hover!.prepare(scene,true);}startup.leave(()=>{world.sky.preview(false);world.sky.protectStartup();startupMetrics.begin('solo');active=true;paused=false;destination??=firstRide.begin(destination);chooseView(choice.camera==='fpp');el('ridehud').hidden=false;el('navigation').hidden=false;zone.hidden=!touch.checked;snap=true;canvas.focus();vr?.refresh();if(choice.vehicle!=='onewheel')void hover!.mount(scene).finally(()=>{starting=false;});else starting=false;});}catch(error){starting=false;startup.retryRide('Your ride could not load. Try again, or choose the other vehicle.');console.warn('Selected ride preparation failed',error);}};
  let savedFirst=false,savedQuality='automatic';
  vr=new BelleVR(renderer,scene,camera,terrain,{

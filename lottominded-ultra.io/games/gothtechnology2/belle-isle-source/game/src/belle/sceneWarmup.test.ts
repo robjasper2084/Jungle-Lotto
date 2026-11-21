@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {DirectionalLight,Group,Mesh,PerspectiveCamera,PointLight,Scene,SpotLight,type Object3D} from 'three';
+import {DirectionalLight,Group,Mesh,MeshBasicMaterial,PerspectiveCamera,PointLight,Scene,SpotLight,Texture,type Object3D} from 'three';
 import {SceneWarmup} from './sceneWarmup.ts';
 
 function fixture(){const scene=new Scene(),sun=new DirectionalLight();sun.castShadow=true;scene.add(sun,...Array.from({length:4},()=>new PointLight()));const bike=new Group();bike.visible=false;bike.add(new PointLight(),new SpotLight(),new SpotLight());scene.add(bike);return{scene,sun,bike,camera:new PerspectiveCamera()};}
@@ -19,8 +19,9 @@ test('contact-only warmup skips mapped shadows and permits a later mapped warmup
 
 test('Smooth prepares active drawables against the actual island lights, with a separate preparation for a hidden ride',async()=>{
  const {scene,bike,camera}=fixture(),island=new Mesh(),detail=new Mesh(),wrongLayer=new Mesh();
+ const map=new Texture(),uploads:Texture[]=[];detail.material=new MeshBasicMaterial({map});
  wrongLayer.layers.set(2);scene.add(island,wrongLayer);bike.add(detail);
- const renderer={shadowMap:{enabled:false},compileAsync:async(root:Object3D,view:PerspectiveCamera,target:Scene)=>{
+ const renderer={shadowMap:{enabled:false},initTexture:(t:Texture)=>{uploads.push(t);},compileAsync:async(root:Object3D,view:PerspectiveCamera,target:Scene)=>{
   assert.equal(view,camera);assert.equal(target,scene);
   const objects:Object3D[]=[];root.traverse(o=>objects.push(o));
   if(!bike.visible){
@@ -31,7 +32,8 @@ test('Smooth prepares active drawables against the actual island lights, with a 
   return scene;
  }};
  const warmup=new SceneWarmup(renderer as unknown as ConstructorParameters<typeof SceneWarmup>[0],scene,camera,()=>{},async()=>{});
- await warmup.prepare();await warmup.prepare(bike);
+ await warmup.prepare();assert.deepEqual(uploads,[map]);
+ await warmup.prepare(bike);assert.deepEqual(uploads,[map]);
  assert.equal(detail.parent,bike);assert.equal(bike.visible,false);assert.equal(island.parent,scene);
 });
 
