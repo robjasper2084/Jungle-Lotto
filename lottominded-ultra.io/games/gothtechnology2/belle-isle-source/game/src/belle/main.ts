@@ -56,6 +56,7 @@ import {aquariumWorld,aquariumInside,aquariumRoom,aquariumRay} from './aquarium.
 import {createStartup} from './startup.ts';
 import {createFirstRideObjective} from './firstRideObjective.ts';
 import {planCasinoWayViews,CASINO_WAY_REFERENCE} from './casinoBridgeView.ts';
+import {planShallowWaterInspection} from './shallowWaterInspection.ts';
 import './firstRideObjective.css';
 import {greenhouseWorld,greenhouseInside,greenhouseRoom} from './conservatory.ts';
 import * as T from 'three';import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';import {RideCore} from '../../runtime/ride-core/src/ridecore.ts';import {HUMAN_PROFILE} from '../../runtime/ride-core/src/profiles.ts';import {ThreeRiderView} from '../../runtime/elmwood-source/src/detroit/riding/threeRiderView.ts';import {createWorld} from './world.ts';import {ParkTerrain,inside,type Landmark,type ParkMap} from './terrain.ts';import './style.css';
@@ -229,7 +230,7 @@ async function boot(){const response=await fetch('./belle/map.json');if(!respons
    .sort((a,b)=>Math.abs(a.d-23)-Math.abs(b.d-23));
   return candidates[0]?.p;
  };
- const scenicCard=(name:string,description:string,x:number,z:number,buttonName:string,view?:{x:number;z:number})=>{
+ const scenicCard=(name:string,description:string,x:number,z:number,buttonName:string,view?:{x:number;z:number;pitch?:number})=>{
   const p=view?[view.x,view.z] as [number,number]:scenicRoute(x,z);if(!p)return;
   const card=document.createElement('article');card.className='landmark';card.dataset.kind='trail';card.dataset.search=name.toLowerCase();
   const title=document.createElement('h3');title.textContent=name;
@@ -240,7 +241,7 @@ async function boot(){const response=await fetch('./belle/map.json');if(!respons
    destination=undefined;
    jump(p[0],p[1],Math.atan2(x-p[0],z-p[1]));
    core.advance(1/60,{dismount:true,instantDismount:true});
-   first=true;cameraPitch=.035;el<HTMLDialogElement>('guide').close();
+   first=true;cameraPitch=view?.pitch??.035;el<HTMLDialogElement>('guide').close();
    if(!active)start.click();
   };
   card.append(title,note,visit);el('landmarks').append(card);
@@ -254,6 +255,10 @@ async function boot(){const response=await fetch('./belle/map.json');if(!respons
  }
  const sylvanCanal=data.pois.find(p=>p.name==='Sylvan Canal');
  if(sylvanCanal)scenicCard('Sylvan Canal · wooded banks','Real mapped wooded canal and water edge.',sylvanCanal.x,sylvanCanal.z,'Visit canal view');
+ const shallowView=planShallowWaterInspection(data,terrain);
+ if(shallowView)scenicCard('Lagoon · submerged stone bed',
+  'Look down from the mapped dry bank at submerged limestone, lagoon sediment and shallow-water transparency.',
+  shallowView.lookX,shallowView.lookZ,'Inspect shallow water',shallowView);
  const bridgeCard=document.createElement('article');bridgeCard.className='landmark';bridgeCard.dataset.kind='attraction';bridgeCard.dataset.search='ambassador bridge sunset point photography overlook';bridgeCard.innerHTML='<h3>Ambassador Bridge overlook</h3><p>Look downriver from Sunset Point. Try the 85 mm or 135 mm lens, then switch to dusk for the bridge lights.</p><button type="button">Visit bridge overlook</button>';bridgeCard.querySelector('button')!.onclick=()=>{jump(bridgeOverlook.x,bridgeOverlook.z,bridgeOverlook.heading);core.advance(1/60,{dismount:true});first=true;cameraPitch=-.012;el<HTMLDialogElement>('guide').close();if(!active)start.click();};el('landmarks').append(bridgeCard);
  el('restart').onclick=()=>{destination=undefined;first=false;jump(data.spawn.x,data.spawn.z,data.spawn.heading);el<HTMLDialogElement>('settings').close();};
  async function visitYachtClub(landmark:Landmark,button:HTMLButtonElement){
