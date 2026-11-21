@@ -41,7 +41,7 @@ assert.match(liveSha||'',/^[a-f0-9]{40}$/,'LIVE_SHA required');
 const manifestUrl=process.env.LIVE_MANIFEST_URL||'https://robjasper2084.github.io/Jungle-Lotto/pages-artifact-manifest.json';
 const sites=[{id:'submerged-stones',name:'Loop Canal',button:'Travel to path',expectedPose:{x:411.71,z:960.79,y:2,headingY:.5055174780416892,lookX:421.23,lookZ:977.99,pitch:.1,yawOffset:0,source:'Existing shared Guide nearest-path selection; metadata only, never injected'}}];
 await mkdir(output,{recursive:true});
-const report={version:1,studyId:'high-loop-common-layered-followup',observerBoundaryPolicy:'A real Pause, observed paused HUD callback and GPU fence precede Start. Start occurs paused, then real Resume. Memory and WebGL/ResourceTiming snapshots occur before Start and after real Pause plus Stop; active capture contains only bounded profiler, focus and visibility polling plus necessary Pause input checks.',createdAt:new Date().toISOString(),candidateSha,liveSha,liveUrl:liveUrl.href,manifestUrl,device,quality,dpr,viewport,order,skyRenderer:'layered',skyRendererScope:'Shared prepareReferencePreferences initialization seeds Layered in both fresh contexts. The existing UI explicitly selects Layered again for Guide views and steady-state captures after startup loading observations.',
+const report={version:1,protocolRevision:2,studyId:'high-loop-common-layered-followup-v2',observerBoundaryPolicy:'A real Pause, two consecutive equal paused HUD counter writes and GPU fence precede Start; every observed post-Pause write, including initial settling changes, is retained. Start occurs paused, then real Resume. Memory and WebGL/ResourceTiming snapshots occur before Start and after real Pause plus Stop; active capture contains only bounded profiler, focus and visibility polling plus necessary Pause input checks.',createdAt:new Date().toISOString(),candidateSha,liveSha,liveUrl:liveUrl.href,manifestUrl,device,quality,dpr,viewport,order,skyRenderer:'layered',skyRendererScope:'Shared prepareReferencePreferences initialization seeds Layered in both fresh contexts. The existing UI explicitly selects Layered again for Guide views and steady-state captures after startup loading observations.',
  host:{platform:platform(),release:release(),arch:arch(),cpuModel:cpus()[0]?.model||null,logicalCpus:cpus().length,totalMemoryBytes:totalmem()},
  sampling:{minSeconds,minFrames,maxSeconds},cacheEnabled,passed:false,performanceApproved:false,physicalDeviceVerified:false,
  methodology:'High Loop Canal follow-up with the existing Layered sky option explicitly selected in both versions, a longer sample bound and guarded trusted pointer navigation. Fresh Chromium process per run; same host/browser/viewport/requested quality/AA policy; real shared Guide and FPP; real UI starts, pauses, and stops the built-in profiler. Source shadow policies still differ, so shadow quality is not equalized.',
@@ -99,24 +99,38 @@ async function painted(page){
  await expect.poll(async()=>Number(await page.locator('#profile').getAttribute('data-active-frames')),{timeout:300000,intervals:[1000,2500,5000]}).toBeGreaterThan(first+2);
  return {first,after:Number(await page.locator('#profile').getAttribute('data-active-frames')),...await gpuFence(page)};
 }
-async function pausedCallbackProof(page){
- const proof=await deadline(page.evaluate(()=>new Promise((ok,bad)=>{
-  const hud=document.querySelector('#profile'),pause=document.querySelector('#pause');
-  if(!hud||pause?.textContent?.trim()!=='Resume')return bad(Error('Real Pause must precede paused-callback observation'));
-  const activeFrames=Number(hud.dataset.activeFrames),started=performance.now();let timer;
-  const observer=new MutationObserver(records=>{
-   if(!records.some(r=>r.attributeName==='data-active-frames'))return;
-   observer.disconnect();clearTimeout(timer);
-   const after=Number(hud.dataset.activeFrames);
-   if(pause.textContent?.trim()!=='Resume'||after!==activeFrames)return bad(Error('Paused HUD callback changed the active-frame count or Pause state'));
-   ok({source:'Existing #profile data-active-frames attribute write after real Pause',activeFramesBefore:activeFrames,activeFramesAfter:after,observedAttributeMutation:true,observerDisconnected:true,elapsedMs:performance.now()-started});
+async function pausedCallbackProof(page,row){
+ const proof=await deadline(page.evaluate(()=>new Promise(ok=>{
+  const hud=document.querySelector('#profile'),pause=document.querySelector('#pause'),started=performance.now(),observations=[];
+  const initialActiveFrames=Number(hud?.dataset.activeFrames);let timer,observer,previousCounter=initialActiveFrames,previousWrite=null,stableWrites=0;
+  const state=()=>({pauseText:pause?.textContent?.trim(),focused:document.hasFocus(),visibility:document.visibilityState});
+  const finish=(passed,error)=>{
+   observer?.disconnect();clearTimeout(timer);
+   ok({source:'Existing #profile data-active-frames attribute writes after real Pause',passed,error,initialActiveFrames,settledActiveFrames:previousCounter,requiredStableWrites:2,stableWrites,observations,observedAttributeMutation:observations.length>0,observerDisconnected:true,elapsedMs:performance.now()-started});
+  };
+  const initialState=state();
+  if(!hud||!Number.isInteger(initialActiveFrames)||initialActiveFrames<0||initialState.pauseText!=='Resume'||!initialState.focused||initialState.visibility!=='visible')return finish(false,'Real Pause, a valid counter and foreground visibility must precede observation');
+  observer=new MutationObserver(records=>{
+   const writes=records.filter(r=>r.attributeName==='data-active-frames');
+   for(let i=0;i<writes.length;i++){
+    // oldValue on the following mutation preserves intermediate values in a batch.
+    const counter=Number(i+1<writes.length?writes[i+1].oldValue:hud.dataset.activeFrames),currentState=state();
+    observations.push({write:observations.length+1,elapsedMs:performance.now()-started,activeFrames:counter,previousObservedCounter:previousCounter,unchangedFromPreviousWrite:previousWrite!==null&&counter===previousWrite,...currentState});
+    if(currentState.pauseText!=='Resume'||!currentState.focused||currentState.visibility!=='visible')return finish(false,'Paused callback lost Pause state or foreground visibility');
+    if(!Number.isInteger(counter)||counter<previousCounter)return finish(false,'Paused HUD counter was invalid or non-monotonic');
+    stableWrites=counter===previousWrite?stableWrites+1:1;previousWrite=counter;previousCounter=counter;
+   }
+   if(stableWrites>=2)return finish(true);
   });
-  observer.observe(hud,{attributes:true,attributeFilter:['data-active-frames']});
-  timer=setTimeout(()=>{observer.disconnect();bad(Error('No genuine paused HUD callback within 180s'));},180000);
+  observer.observe(hud,{attributes:true,attributeOldValue:true,attributeFilter:['data-active-frames']});
+  timer=setTimeout(()=>finish(false,'No pair of consecutive equal paused HUD writes within 180s'),180000);
  })),200000,'Paused callback proof');
- const fence=await gpuFence(page);await expect(page.locator('#pause')).toHaveText('Resume');
- assert.equal(Number(await page.locator('#profile').getAttribute('data-active-frames')),proof.activeFramesBefore,'Active counter changed before paused frame completed');
- return {...proof,fence,confirmedBeforeProfilerStart:true};
+ row.preCapturePauseProof=proof;assert.ok(proof.passed,'Paused callback proof failed: '+JSON.stringify(proof));
+ proof.fence=await gpuFence(page);
+ proof.postFence=await page.evaluate(()=>({activeFrames:Number(document.querySelector('#profile')?.dataset.activeFrames),pauseText:document.querySelector('#pause')?.textContent?.trim(),focused:document.hasFocus(),visibility:document.visibilityState}));
+ assert.equal(proof.postFence.activeFrames,proof.settledActiveFrames,'Active counter changed after the stable paused writes and GPU fence');
+ assert.ok(proof.postFence.pauseText==='Resume'&&proof.postFence.focused&&proof.postFence.visibility==='visible','Pause or foreground state changed before profiler Start');
+ proof.confirmedBeforeProfilerStart=true;return proof;
 }
 const pageRuns=new WeakMap();
 async function controlGeometry(locator){return locator.evaluate(el=>{
@@ -186,7 +200,18 @@ async function travel(page,site){
 async function profileButton(page,name){
  await settings(page);const panel=page.locator('#ride-profile');
  if(await panel.getAttribute('open')===null)await clickControl(page,panel.locator('summary'),'Open profiler panel',()=>expect(panel).toHaveAttribute('open',/.*/));
- await clickControl(page,panel.getByRole('button',{name,exact:true}),name,()=>name.startsWith('Start')?expect(panel.getByRole('button',{name:'Stop and show report',exact:true})).toBeVisible():expect(panel.locator('textarea')).toBeVisible());
+ await clickControl(page,panel.getByRole('button',{name,exact:true}),name,async()=>{
+  // Shared RideProfile.start() changes the button text and intentionally closes details.
+  if(name.startsWith('Start'))await Promise.all([
+   expect(panel).not.toHaveAttribute('open',/.*/,{timeout:60000}),
+   expect(panel.locator('button')).toHaveCount(1,{timeout:60000}),
+   expect(panel.locator('button')).toHaveText('Stop and show report',{timeout:60000}),
+  ]);
+  else await Promise.all([
+   expect(panel).toHaveAttribute('open',/.*/,{timeout:60000}),
+   expect(panel.locator('textarea')).toBeVisible({timeout:60000}),
+  ]);
+ });
 }
 async function memory(cdp,browserCdp){
  const result={available:false,gpuVramBytes:null};
@@ -260,7 +285,7 @@ async function oneRun(variant,index,prime=false){
    if(prime){row.passed=true;continue;}
    run.stage=site.id+'-pause-before-profile';await expect(page.locator('#pause')).toHaveText('Pause');
    await clickControl(page,page.locator('#pause'),'Pause before capture setup',()=>expect(page.locator('#pause')).toHaveText('Resume'));
-   run.stage=site.id+'-paused-callback-proof';row.preCapturePauseProof=await pausedCallbackProof(page);console.log(JSON.stringify({event:'paused-start-proof',at:new Date().toISOString(),run:run.id,site:site.id,proof:row.preCapturePauseProof}));
+   run.stage=site.id+'-paused-callback-proof';await pausedCallbackProof(page,row);console.log(JSON.stringify({event:'paused-start-proof',at:new Date().toISOString(),run:run.id,site:site.id,proof:row.preCapturePauseProof}));
    run.stage=site.id+'-before-capture-observation';row.memoryBefore=await memory(cdp,browserCdp);row.before=await snapshot(page);await expect(page.locator('#pause')).toHaveText('Resume');
    await writeFile(join(runDir,'report.json'),JSON.stringify(run,null,2)+'\n');
    run.stage=site.id+'-profile-start';await profileButton(page,'Start 10-minute capture');await expect(page.locator('#pause')).toHaveText('Resume');await closeSettings(page);await expect(page.locator('#pause')).toHaveText('Resume');
@@ -327,12 +352,19 @@ try{
  report.publicBefore=await manifestCheck();
  if(cacheEnabled)for(const variant of ['baseline','candidate'])report.priming.push(await oneRun(variant,report.priming.length+1,true));
  if(report.priming.some(r=>!r.passed))throw Error('Asset priming failed; measured comparison not started');
- for(let i=0;i<order.length;i++){report.runs.push(await oneRun(order[i],i+1));await writeFile(join(output,'report.json'),JSON.stringify(report,null,2)+'\n');}
+ for(let i=0;i<order.length;i++){
+  const run=await oneRun(order[i],i+1);report.runs.push(run);await writeFile(join(output,'report.json'),JSON.stringify(report,null,2)+'\n');
+  if((run.errors.length||run.failedRequests.length)&&!run.sites.some(s=>s.rideProfile)){
+   report.stoppedEarly={run:run.id,reason:'Run error before any ride profile was captured; remaining ABBA runs were not attempted.',noPerformanceProfileCaptured:true};
+   throw Error('Measurement setup failed in '+run.id+' before a ride profile was captured');
+  }
+ }
  const bases=report.runs.filter(r=>r.variant==='baseline'),candidates=report.runs.filter(r=>r.variant==='candidate');
  for(let i=0;i<Math.min(bases.length,candidates.length);i++)report.comparisons.push(pairComparison(bases[i],candidates[i]));
- report.publicAfter=await manifestCheck();report.passed=report.runs.length===order.length&&report.runs.every(r=>r.passed)&&report.comparisons.length>0&&report.comparisons.every(p=>p.comparable);
+ report.passed=report.runs.length===order.length&&report.runs.every(r=>r.passed)&&report.comparisons.length>0&&report.comparisons.every(p=>p.comparable);
 }catch(error){report.errors.push(error.stack||String(error));}
 finally{
+ try{report.publicAfter=await manifestCheck();}catch(error){report.passed=false;report.errors.push(error.stack||String(error));}
  report.finishedAt=new Date().toISOString();report.cacheInventory=Object.fromEntries(Object.entries(caches).map(([variant,cache])=>[variant,{entries:cache.size,bytes:[...cache.values()].reduce((a,e)=>a+e.body.length,0),files:[...cache.values()].map(e=>({url:e.url,range:e.range,status:e.status,bytes:e.body.length,sha256:e.sha256}))}]));
  await writeFile(join(output,'report.json'),JSON.stringify(report,null,2)+'\n');await new Promise(ok=>{server.close(ok);server.closeAllConnections?.();});
 }
