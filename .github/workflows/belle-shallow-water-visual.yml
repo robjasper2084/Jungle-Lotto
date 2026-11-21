@@ -1,0 +1,62 @@
+name: Belle Isle shallow-water real-game visual acceptance
+on:
+  pull_request:
+    paths:
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/**'
+      - '.github/workflows/belle-shallow-water-visual.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: belle-shallow-visual-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  real-game-shoal-closeup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - device: desktop
+            quality: high
+          - device: desktop
+            quality: automatic
+          - device: phone
+            quality: smooth
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Check and build exact source (never published baseline)
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm ci
+          npm run check
+          npm test
+          node --check scripts/shallow-water-visual-acceptance.mjs
+          npm run build
+      - name: Install actual Chromium runtime
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Travel through real Guide, complete GPU fence and screenshot
+        timeout-minutes: 30
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          BELLE_PR_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+          SHALLOW_VIS_DEVICE: ${{ matrix.device }}
+          SHALLOW_VIS_QUALITY: ${{ matrix.quality }}
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node scripts/shallow-water-visual-acceptance.mjs
+      - name: Archive genuine screenshot or preserved failure report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-shallow-real-game-${{ matrix.device }}-${{ matrix.quality }}
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/shallow-water-visual/${{ matrix.device }}-${{ matrix.quality }}
+          if-no-files-found: warn
+          retention-days: 14
