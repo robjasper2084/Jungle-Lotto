@@ -61,27 +61,30 @@ export function applyRealisticMaterials(root:T.Object3D,context=''){
    if(planar)for(let i=0;i<normal.count;i++)if(Math.abs(normal.getY(i))<.999){planar=false;break;}
    const key=material.uuid+kind+(planar?'-planar':'');let m=clones.get(key);if(m)return m;
    m=material.clone();m.onBeforeCompile=material.onBeforeCompile;clones.set(key,m);done.add(m);
-   const [scale,blend,relief,roughness]=/ballfield infield/i.test(material.name)?[6,.25,.002,.98]:profiles[kind];
+   const infield=/ballfield infield/i.test(material.name);
+   const [scale,blend,relief,roughness]=infield?[6,.25,.002,.98]:profiles[kind];
    if(!m.alphaTest&&!m.transparent&&['asphalt','grass','sand','gravel'].includes(kind)){m.map=null;m.normalMap=null;m.bumpMap=null;m.roughnessMap=null;}const oldCompile=m.onBeforeCompile,oldKey=material.customProgramCacheKey();
    m.roughness=context==='boat'&&kind==='graphite'?.45:kind==='metal'?Math.max(.24,Math.min(.6,m.roughness)):roughness;
    m.userData.realisticSurface=kind;
+   m.userData.realisticProfile=infield?'infield-'+kind:kind;
+   const surfaceParams=new T.Vector3(scale,blend,relief);
    m.onBeforeCompile=(shader,renderer)=>{
     oldCompile(shader,renderer);
-    Object.assign(shader.uniforms,{skinColor:{value:textures.color},skinDetail:{value:textures.detail}});
+    Object.assign(shader.uniforms,{skinColor:{value:textures.color},skinDetail:{value:textures.detail},skinParams:{value:surfaceParams}});
     shader.vertexShader='varying vec3 skinPosition;varying vec3 skinNormal;\n'+shader.vertexShader;
     shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nskinPosition=position;skinNormal=normal;');
-    shader.fragmentShader=`varying vec3 skinPosition;varying vec3 skinNormal;uniform sampler2D skinColor;uniform sampler2D skinDetail;
+    shader.fragmentShader=`varying vec3 skinPosition;varying vec3 skinNormal;uniform sampler2D skinColor;uniform sampler2D skinDetail;uniform vec3 skinParams;
 vec3 skinWeights(){vec3 w=pow(abs(normalize(skinNormal)),vec3(8.));return w/max(.0001,w.x+w.y+w.z);}
 vec3 sampleSkin(sampler2D tex,vec3 p){${planar?'return texture2D(tex,p.xz).rgb;':'vec3 w=skinWeights();return texture2D(tex,p.zy).rgb*w.x+texture2D(tex,p.xz).rgb*w.y+texture2D(tex,p.xy).rgb*w.z;'}}
 `+shader.fragmentShader;
     // Preserve camera colors, character likeness and foliage alpha. Add grain without relighting the atlas.
     shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>',`#include <map_fragment>
-vec3 skinP=skinPosition*${scale.toFixed(4)};
+vec3 skinP=skinPosition*skinParams.x;
 vec3 skinC=sampleSkin(skinColor,skinP);vec3 skinD=sampleSkin(skinDetail,skinP);
 float skinFade=1.-smoothstep(.08,.65,max(length(dFdx(skinP)),length(dFdy(skinP))));
 float skinGrain=mix(1.,.85+skinD.g*.30,skinFade);
 diffuseColor.rgb*=skinGrain;
-${blend>0?`diffuseColor.rgb=mix(diffuseColor.rgb,skinC*diffuse,${blend.toFixed(3)}*skinFade);`:''}
+${blend>0?'diffuseColor.rgb=mix(diffuseColor.rgb,skinC*diffuse,skinParams.y*skinFade);':''}
 `);
     shader.fragmentShader=shader.fragmentShader.replace('#include <roughnessmap_fragment>',`#include <roughnessmap_fragment>
 roughnessFactor=clamp(roughnessFactor+(skinD.r-.5)*.16*skinFade,.08,1.);
@@ -91,12 +94,12 @@ roughnessFactor=clamp(roughnessFactor+(skinD.r-.5)*.16*skinFade,.08,1.);
 vec3 skinDx=dFdx(-vViewPosition),skinDy=dFdy(-vViewPosition);
 vec3 skinRx=cross(skinDy,normal),skinRy=cross(normal,skinDx);
 float skinDet=dot(skinDx,skinRx);
-vec2 skinGradient=vec2(dFdx(skinD.g),dFdy(skinD.g))*${relief.toFixed(6)}*skinFade;
+vec2 skinGradient=vec2(dFdx(skinD.g),dFdy(skinD.g))*skinParams.z*skinFade;
 vec3 skinGrad=sign(skinDet)*(skinGradient.x*skinRx+skinGradient.y*skinRy);
 normal=normalize(abs(skinDet)*normal-skinGrad);
 `);
    };
-   m.customProgramCacheKey=()=>oldKey+'-higgsfield-surface-v2-'+kind+(planar?'-planar':'');m.needsUpdate=true;return m;
+   m.customProgramCacheKey=()=>oldKey+'-higgsfield-surface-v3'+(planar?'-planar':'-triplanar')+(blend>0?'-pigment':'-detail');m.needsUpdate=true;return m;
   });
   object.material=Array.isArray(object.material)?updated:updated[0];
  });

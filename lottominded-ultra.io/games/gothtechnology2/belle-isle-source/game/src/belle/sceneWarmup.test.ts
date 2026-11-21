@@ -6,6 +6,17 @@ import {SceneWarmup} from './sceneWarmup.ts';
 function fixture(){const scene=new Scene(),sun=new DirectionalLight();sun.castShadow=true;scene.add(sun,...Array.from({length:4},()=>new PointLight()));const bike=new Group();bike.visible=false;bike.add(new PointLight(),new SpotLight(),new SpotLight());scene.add(bike);return{scene,sun,bike,camera:new PerspectiveCamera()};}
 function topology(scene:Scene){let points=0,spots=0,shadows=0;scene.traverseVisible(o=>{if(o instanceof PointLight)points++;if(o instanceof SpotLight)spots++;if(o instanceof DirectionalLight&&o.castShadow)shadows++;});return{points,spots,shadows};}
 
+test('contact-only warmup skips mapped shadows and permits a later mapped warmup',async()=>{
+ const {scene,sun,camera}=fixture(),calls:boolean[]=[];
+ const renderer={shadowMap:{enabled:false},compileAsync:async()=>{calls.push(sun.castShadow);return scene;}};
+ const warmup=new SceneWarmup(renderer as unknown as ConstructorParameters<typeof SceneWarmup>[0],scene,camera,()=>{},async()=>{});
+ await warmup.prepare();await warmup.prepare();
+ assert.deepEqual(calls,[false]);assert.equal(sun.castShadow,true);
+ renderer.shadowMap.enabled=true;
+ await warmup.prepare();await warmup.prepare();
+ assert.deepEqual(calls,[false,false,true]);
+});
+
 test('island and mounted bike warm both shadow variants without drawing or leaving bike visible',async()=>{
  const {scene,sun,bike,camera}=fixture(),calls:ReturnType<typeof topology>[]=[],busy:boolean[]=[];let paints=0;
  const warmup=new SceneWarmup({compileAsync:async()=>{calls.push(topology(scene));return scene;}},scene,camera,v=>busy.push(v),async()=>{paints++;assert.equal(bike.visible,false);});

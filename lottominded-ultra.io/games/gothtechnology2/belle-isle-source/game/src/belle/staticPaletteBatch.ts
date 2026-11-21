@@ -17,7 +17,9 @@ export class StaticPaletteBatch {
    mesh.updateWorldMatrix(true,false);
    const json=m.toJSON() as unknown as Record<string,unknown>;for(const key of ['uuid','name','color','vertexColors','metadata','userData'])delete json[key];
    const attributes=Object.entries(g.attributes).sort(([a],[b])=>a.localeCompare(b)).map(([name,a])=>[name,a.itemSize,a.normalized,a.array.constructor.name]);
-   const key=[mesh.castShadow,mesh.receiveShadow,mesh.renderOrder,mesh.layers.mask,!!g.index,JSON.stringify(attributes),JSON.stringify(json),m.customProgramCacheKey()].join('|');
+   // Shared GPU programs can still bind different surface textures and uniforms.
+   const surface=m.userData.realisticProfile??m.userData.realisticSurface;
+   const key=[mesh.castShadow,mesh.receiveShadow,mesh.renderOrder,mesh.layers.mask,!!g.index,JSON.stringify(attributes),JSON.stringify(json),m.customProgramCacheKey(),surface].join('|');
    const group=groups.get(key);if(group)group.push(mesh);else groups.set(key,[mesh]);
   }
   for(const sources of groups.values()){

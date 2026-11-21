@@ -1,9 +1,8 @@
 import type {Camera,DirectionalLight,Object3D,Scene,WebGLRenderer} from 'three';
 
-import {installGpuFramePacing} from './gpuFramePacing.ts';
 import {warmObjectTextures} from './startupWork.ts';
 
-type Compiler=Pick<WebGLRenderer,'compileAsync'> & Partial<Pick<WebGLRenderer,'initTexture'>>;
+type Compiler=Pick<WebGLRenderer,'compileAsync'> & Partial<Pick<WebGLRenderer,'initTexture'|'shadowMap'>>;
 type Pending={promise:Promise<void>;signal?:AbortSignal;cancel:AbortController};
 const cancelled=(signal:AbortSignal)=>signal.reason instanceof Error?signal.reason:new DOMException('Ride preparation cancelled','AbortError');
 function readyOrCancelled<T>(ready:Promise<T>,signal:AbortSignal){
@@ -22,10 +21,11 @@ export class SceneWarmup {
  private pending=new Map<string,Pending>();
  private tail:Promise<void>=Promise.resolve();
  private renderer:Compiler;private scene:Scene;private camera:Camera;private busy:(value:boolean)=>void;private paint:()=>Promise<void>;private timeoutMs:number;
- constructor(renderer:Compiler,scene:Scene,camera:Camera,busy:(value:boolean)=>void,paint:()=>Promise<void>=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))),timeoutMs=45_000){installGpuFramePacing(renderer);this.renderer=renderer;this.scene=scene;this.camera=camera;this.busy=busy;this.paint=paint;this.timeoutMs=timeoutMs;}
+ constructor(renderer:Compiler,scene:Scene,camera:Camera,busy:(value:boolean)=>void,paint:()=>Promise<void>=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))),timeoutMs=45_000){this.renderer=renderer;this.scene=scene;this.camera=camera;this.busy=busy;this.paint=paint;this.timeoutMs=timeoutMs;}
  prepare(model?:Object3D,signal?:AbortSignal){
   if(signal?.aborted)return Promise.reject(cancelled(signal));
-  const key=model?.uuid??'island';
+  const mappedShadows=this.renderer.shadowMap?.enabled!==false;
+  const key=(model?.uuid??'island')+(mappedShadows?'-mapped':'-contact');
   if(this.completed.has(key))return Promise.resolve();
   const existing=this.pending.get(key);if(existing&&existing.signal===signal&&!existing.cancel.signal.aborted)return existing.promise;
   const cancel=new AbortController(),abort=()=>cancel.abort(signal?.reason);
@@ -47,7 +47,9 @@ export class SceneWarmup {
     await readyOrCancelled(this.paint(),cancel.signal);
     // Upload material textures under the loading lock, not in the first ridden frame.
     await readyOrCancelled(warmObjectTextures(this.renderer,model??this.scene,cancel.signal),cancel.signal);
-    for(const enabled of [false,true]){
+    // Smooth has no shadow-map pass. A later prepare in a mapped mode
+    // gets a distinct cache entry and still warms both lighting variants.
+    for(const enabled of mappedShadows?[false,true]:[false]){
      if(cancel.signal.aborted)throw cancelled(cancel.signal);
      for(const state of shadows)state.light.castShadow=enabled;
      // compileAsync collects synchronously, then awaits driver readiness.
