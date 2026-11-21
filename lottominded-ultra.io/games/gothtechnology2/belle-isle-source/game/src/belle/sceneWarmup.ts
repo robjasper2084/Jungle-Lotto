@@ -1,9 +1,22 @@
-import type {Camera,DirectionalLight,Object3D,Scene,WebGLRenderer} from 'three';
+import {Group,type Camera,type DirectionalLight,type Object3D,type Scene,type WebGLRenderer} from 'three';
 
 import {warmObjectTextures} from './startupWork.ts';
 
 type Compiler=Pick<WebGLRenderer,'compileAsync'> & Partial<Pick<WebGLRenderer,'initTexture'|'shadowMap'>>;
 type Pending={promise:Promise<void>;signal?:AbortSignal;cancel:AbortController};
+/** compileAsync normally visits even invisible geometry. Supply Smooth's active
+ * drawables while the real target scene continues to provide all the lighting.
+ * No game object is cloned, reparented or removed from the scene. */
+class SmoothWarmupRoot extends Group {
+ private drawables:Object3D[]=[];
+ constructor(scene:Scene,camera:Camera){
+  super();
+  scene.traverseVisible(object=>{
+   if('material' in object && object.layers.test(camera.layers))this.drawables.push(object);
+  });
+ }
+ override traverse(callback:(object:Object3D)=>void){for(const object of this.drawables)callback(object);}
+}
 const cancelled=(signal:AbortSignal)=>signal.reason instanceof Error?signal.reason:new DOMException('Ride preparation cancelled','AbortError');
 function readyOrCancelled<T>(ready:Promise<T>,signal:AbortSignal){
  return new Promise<T>((resolve,reject)=>{
@@ -39,14 +52,14 @@ export class SceneWarmup {
    // Rider-only preparation must not recompile every island material. A model
    // with lights changes the scene light topology and still needs the full scene.
    let addsLights=false;model?.traverse?.(object=>{if((object as Object3D&{isLight?:boolean}).isLight)addsLights=true;});
-   const compileRoot=model&&!addsLights?model:this.scene;
+   const compileRoot=!model&&!mappedShadows?new SmoothWarmupRoot(this.scene,this.camera):model&&!addsLights?model:this.scene;
    const shadows:{light:DirectionalLight;enabled:boolean}[]=[];
    this.scene.traverse(object=>{const light=object as DirectionalLight;if(light.isDirectionalLight)shadows.push({light,enabled:light.castShadow});});
    try{
     // Paint the existing Preparing label before shader submission begins.
     await readyOrCancelled(this.paint(),cancel.signal);
     // Upload material textures under the loading lock, not in the first ridden frame.
-    await readyOrCancelled(warmObjectTextures(this.renderer,model??this.scene,cancel.signal),cancel.signal);
+    await readyOrCancelled(warmObjectTextures(this.renderer,model??compileRoot,cancel.signal),cancel.signal);
     // Smooth has no shadow-map pass. A later prepare in a mapped mode
     // gets a distinct cache entry and still warms both lighting variants.
     for(const enabled of mappedShadows?[false,true]:[false]){

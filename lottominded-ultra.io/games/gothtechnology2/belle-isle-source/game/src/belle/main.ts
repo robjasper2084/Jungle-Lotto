@@ -138,11 +138,12 @@ async function boot(){const response=await fetch('./belle/map.json');if(!respons
  // The renderer's ACTUAL WebGL backend, not a user-agent/viewport guess,
  // governs whether decorative preview canvases should consume a second GPU.
  const gameGl=renderer.getContext(),gpuDebug=gameGl.getExtension('WEBGL_debug_renderer_info');
- const softwareStartup=softwareWebGLRenderer(String(gameGl.getParameter(gpuDebug?.UNMASKED_RENDERER_WEBGL??gameGl.RENDERER)));
+ const gpuName=String(gameGl.getParameter(gpuDebug?.UNMASKED_RENDERER_WEBGL??gameGl.RENDERER));
+ const softwareStartup=softwareWebGLRenderer(gpuName);
  startup.setSoftwarePreview(softwareStartup);
-  // Guard SwiftShader against accumulating unfinished GPU frames; keep
-  // native hardware and XR presentation paths unchanged.
-  if(softwareStartup)installGpuFramePacing(renderer);
+ // Use the published single-outstanding-frame policy on Apple GPUs as well.
+ // The gate preserves real frame timestamps and bypasses XR.
+ if(softwareStartup || /\bApple\b/i.test(gpuName))installGpuFramePacing(renderer);
  actualMsaa=!!renderer.getContext().getContextAttributes()?.antialias;syncAaStatus();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.25));renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.85;renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;
  const core=new RideCore(terrain,{spawn:{position:{x:data.spawn.x,y:2,z:data.spawn.z},headingY:data.spawn.heading}});clearSimulationInput=()=>core.clearPendingActions();const loader=new GLTFLoader();const world=await createWorld(scene,renderer,data,terrain,status);world.sky.preview(!SUNSET_REFERENCE);const refreshSkySettings=connectSkySettings(world.sky);const sunsetPreview=SUNSET_REFERENCE?createSunsetPreview(camera,()=>hover,()=>active&&!trials?.active&&!race?.active&&!coop?.active&&!photo?.active,()=>{clear();cameraYaw=0;cameraPitch=.1;snap=true;},data.spawn,data):undefined;status('Preparing your rider');const rider=await loader.loadAsync('./exports/rigged-heroes/DS_Armored_Rider_01.glb'),wheel=await loader.loadAsync('./exports/glb/DS_EUC_01/DS_EUC_01_LOD1.glb');const hero=new ThreeRiderView(rider,wheel,terrain,{...HUMAN_PROFILE,id:'DS_Armored_Rider_01'});scene.add(hero.root);applyRealisticMaterials(hero.root,'actor');if(REFERENCE_STYLE){animeRider(hero.rider);glowVehicle(hero.vehicle,'wheel');}hero.apply(core.current);
  const remoteRiders=new OnlineRiders(scene,terrain,rider,wheel,async model=>{await warmObjectTextures(renderer,model);await renderer.compileAsync(model,camera,scene);});

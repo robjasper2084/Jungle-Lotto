@@ -1,9 +1,10 @@
 import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
-import {segment,type ParkMap,type ParkTerrain} from './terrain.ts';
+import type {ParkMap,ParkTerrain} from './terrain.ts';
+import {roadIndex} from './streetPlan.ts';
 import {inSunsetGarden,SUNSET_GARDEN} from './sunsetReferencePolicy.ts';
 /** Original bounded scenery, kept clear of mapped roads, paths and buildings. */
-export function addSunsetGarden(scene:T.Scene,map:ParkMap,terrain:ParkTerrain,options?:{name:string;x:number;z:number;radius:number;trees:number;seed:number;shore:boolean}){
+export function addSunsetGarden(scene:T.Scene,map:ParkMap,terrain:ParkTerrain,options?:{name:string;x:number;z:number;radius:number;trees:number;seed:number;shore:boolean},occupied=roadIndex(map.roads,true)){
  const center=options??SUNSET_GARDEN,inside=(x:number,z:number)=>Math.hypot(x-center.x,z-center.z)<center.radius&&(!options||!inSunsetGarden(x,z));
  const root=new T.Group();root.name=(options?.name??'Sunset Point')+' reference garden';scene.add(root);
  let seed=options?.seed??209584;const rand=()=>{seed=Math.imul(seed,1664525)+1013904223|0;return(seed>>>0)/4294967296;};
@@ -16,8 +17,7 @@ export function addSunsetGarden(scene:T.Scene,map:ParkMap,terrain:ParkTerrain,op
  const mesh=(parent:T.Object3D,g:T.BufferGeometry,m:T.Material,p:T.Vector3)=>{const o=new T.Mesh(g,m);o.position.copy(p);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o;};
  function rod(a:T.Vector3,b:T.Vector3,r1:number,r2:number,m=bark,parent:T.Object3D=staticParts){const o=mesh(parent,new T.CylinderGeometry(r2,r1,a.distanceTo(b),7),m,a.clone().add(b).multiplyScalar(.5));o.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),b.clone().sub(a).normalize());return o;}
  const roads=map.roads.flatMap(r=>r.points.slice(1).map((b,i)=>({a:r.points[i],b,width:r.width,foot:r.foot})));
- const pathDistance=(x:number,z:number)=>roads.reduce((n,r)=>Math.min(n,segment(x,z,r.a,r.b).d-r.width*.5),Infinity);
- const clear=(x:number,z:number,pad=3)=>terrain.land(x,z)&&!terrain.obstructed(x,z,1.6)&&pathDistance(x,z)>pad;
+ const clear=(x:number,z:number,pad=3)=>terrain.land(x,z)&&!terrain.obstructed(x,z,1.6)&&!occupied(x,z,null,pad);
  const sites:{x:number;z:number;h:number;r:number}[]=[];
  for(let i=0;i<6000&&sites.length<(options?.trees??95);i++){
   const x=-170+rand()*490,z=1220+rand()*450;

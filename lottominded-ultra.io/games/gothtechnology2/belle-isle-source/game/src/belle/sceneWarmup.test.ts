@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {DirectionalLight,Group,PerspectiveCamera,PointLight,Scene,SpotLight} from 'three';
+import {DirectionalLight,Group,Mesh,PerspectiveCamera,PointLight,Scene,SpotLight,type Object3D} from 'three';
 import {SceneWarmup} from './sceneWarmup.ts';
 
 function fixture(){const scene=new Scene(),sun=new DirectionalLight();sun.castShadow=true;scene.add(sun,...Array.from({length:4},()=>new PointLight()));const bike=new Group();bike.visible=false;bike.add(new PointLight(),new SpotLight(),new SpotLight());scene.add(bike);return{scene,sun,bike,camera:new PerspectiveCamera()};}
@@ -15,6 +15,24 @@ test('contact-only warmup skips mapped shadows and permits a later mapped warmup
  renderer.shadowMap.enabled=true;
  await warmup.prepare();await warmup.prepare();
  assert.deepEqual(calls,[false,false,true]);
+});
+
+test('Smooth prepares active drawables against the actual island lights, with a separate preparation for a hidden ride',async()=>{
+ const {scene,bike,camera}=fixture(),island=new Mesh(),detail=new Mesh(),wrongLayer=new Mesh();
+ wrongLayer.layers.set(2);scene.add(island,wrongLayer);bike.add(detail);
+ const renderer={shadowMap:{enabled:false},compileAsync:async(root:Object3D,view:PerspectiveCamera,target:Scene)=>{
+  assert.equal(view,camera);assert.equal(target,scene);
+  const objects:Object3D[]=[];root.traverse(o=>objects.push(o));
+  if(!bike.visible){
+   assert.deepEqual(objects,[island]);
+   const lights:Object3D[]=[];root.traverseVisible(o=>{if('isLight' in o)lights.push(o);});
+   assert.equal(lights.length,0);
+  }else assert(objects.includes(detail));
+  return scene;
+ }};
+ const warmup=new SceneWarmup(renderer as unknown as ConstructorParameters<typeof SceneWarmup>[0],scene,camera,()=>{},async()=>{});
+ await warmup.prepare();await warmup.prepare(bike);
+ assert.equal(detail.parent,bike);assert.equal(bike.visible,false);assert.equal(island.parent,scene);
 });
 
 test('island and mounted bike warm both shadow variants without drawing or leaving bike visible',async()=>{

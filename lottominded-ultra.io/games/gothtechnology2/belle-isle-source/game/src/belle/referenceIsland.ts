@@ -1,6 +1,7 @@
 import * as T from 'three';
 import type {ParkMap,ParkTerrain} from './terrain.ts';
 import {addSunsetGarden} from './sunsetGarden.ts';
+import {roadIndex} from './streetPlan.ts';
 export const REFERENCE_PLACES=[
  {name:'Sunset Point',x:44,z:1497,radius:340},
  {name:'Fountain & Casino',x:440,z:1300,radius:250},
@@ -11,6 +12,7 @@ export const REFERENCE_PLACES=[
  {name:'Blue Heron Lagoon',x:3740,z:-180,radius:260}
 ] as const;
 export function addReferenceIsland(scene:T.Scene,map:ParkMap,terrain:ParkTerrain){
- const gardens=[addSunsetGarden(scene,map,terrain),...REFERENCE_PLACES.slice(1).map((place,i)=>addSunsetGarden(scene,map,terrain,{...place,trees:0,seed:209585+i,shore:place.name!=='Belle Isle Beach'}))];
+ const occupied=roadIndex(map.roads,true);
+ const gardens=[addSunsetGarden(scene,map,terrain,undefined,occupied),...REFERENCE_PLACES.slice(1).map((place,i)=>addSunsetGarden(scene,map,terrain,{...place,trees:0,seed:209585+i,shore:place.name!=='Belle Isle Beach'},occupied))];
  return{setQuality(q:string){gardens.forEach(g=>g.setQuality(q));},update(x:number,z:number){gardens.forEach(g=>g.update(x,z));},stats:gardens.map(g=>g.stats)};
 }
