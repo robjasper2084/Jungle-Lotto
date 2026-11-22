@@ -25,20 +25,27 @@ const cancelled=(signal:AbortSignal)=>signal.reason instanceof Error?signal.reas
 /** Three's compileAsync polls each material's current program. A second
  * lighting setup would replace that pointer. Keep the actual GL handles from
  * both submissions so the driver can compile both sets before we wait. */
-async function prepareIslandPrograms(renderer:Compiler,scene:Scene,camera:Camera,lights:DirectionalLight[],signal:AbortSignal){
+async function prepareIslandPrograms(renderer:Compiler,scene:Scene,camera:Camera,lights:DirectionalLight[],signal:AbortSignal,onStage:(message:string)=>void){
  const gl=renderer.getContext?.();
  const extension=gl?.getExtension?.('KHR_parallel_shader_compile');
  if(!gl||!extension||!renderer.compile||!renderer.info?.programs)return false;
  const pending=new Set<WebGLProgram>();
  for(const castShadow of [false,true]){
   if(signal.aborted)throw cancelled(signal);
+  onStage('submitting island shaders '+(castShadow?'with shadows':'without shadows'));
   for(const light of lights)light.castShadow=castShadow;
   renderer.compile(scene,camera,scene);
   for(const linked of renderer.info.programs)pending.add(linked.program as WebGLProgram);
   gl.flush();
   await yieldStartupTask();
  }
+ const total=pending.size;
+ let reported=-1;
  while(pending.size){
+  if(reported!==pending.size){
+   reported=pending.size;
+   onStage('waiting for island shaders ('+(total-pending.size)+' of '+total+' programs verified)');
+  }
   if(signal.aborted)throw cancelled(signal);
   if(gl.isContextLost())throw new Error('WebGL context lost during island preparation');
   for(const program of pending){
@@ -70,6 +77,15 @@ export class SceneWarmup {
  private tail:Promise<void>=Promise.resolve();
  private renderer:Compiler;private scene:Scene;private camera:Camera;private busy:(value:boolean)=>void;private paint:()=>Promise<void>;private timeoutMs:number;
  constructor(renderer:Compiler,scene:Scene,camera:Camera,busy:(value:boolean)=>void,paint:()=>Promise<void>=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))),timeoutMs=45_000){this.renderer=renderer;this.scene=scene;this.camera=camera;this.busy=busy;this.paint=paint;this.timeoutMs=timeoutMs;}
+ /** Submit the mapped island's current programs while the rider assets load.
+  * No light or model visibility is changed. prepare() still validates the
+  * complete scene, including actors, both lighting states and textures. */
+ primeIsland(){
+  const gl=this.renderer.getContext?.();
+  if(!this.renderer.compile||!this.renderer.shadowMap?.enabled||!gl||gl.isContextLost()||!gl.getExtension('KHR_parallel_shader_compile'))return;
+  this.renderer.compile(this.scene,this.camera,this.scene);
+  gl.flush();
+ }
  prepare(model?:Object3D,signal?:AbortSignal){
   if(signal?.aborted)return Promise.reject(cancelled(signal));
   const mappedShadows=this.renderer.shadowMap?.enabled!==false;
@@ -101,8 +117,7 @@ export class SceneWarmup {
     await readyOrCancelled(warmObjectTextures(this.renderer,model??this.scene,cancel.signal),cancel.signal);
     // Smooth has no shadow-map pass. A later prepare in a mapped mode
     // gets a distinct cache entry and still warms both lighting variants.
-    stage='compiling island lighting with and without shadows';
-    const islandReady=!model&&mappedShadows&&shadows.length>0&&await prepareIslandPrograms(this.renderer,this.scene,this.camera,shadows.map(state=>state.light),cancel.signal);
+    const islandReady=!model&&mappedShadows&&shadows.length>0&&await prepareIslandPrograms(this.renderer,this.scene,this.camera,shadows.map(state=>state.light),cancel.signal,message=>{stage=message;});
     for(const enabled of islandReady?[]:mappedShadows?[false,true]:[false]){
      if(cancel.signal.aborted)throw cancelled(cancel.signal);
      for(const state of shadows)state.light.castShadow=enabled;

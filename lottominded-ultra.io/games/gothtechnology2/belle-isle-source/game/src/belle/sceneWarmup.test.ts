@@ -34,6 +34,29 @@ test('an unlinked island program fails preparation and allows a fresh attempt',a
  linked=true;await warmup.prepare();assert.equal(sun.castShadow,false);
 });
 
+test('early mapped submission keeps the current lights and still validates both final variants with late actors',async()=>{
+ const {scene,sun,bike,camera}=fixture(),late=new Mesh(),seen:boolean[]=[],busy:boolean[]=[];
+ let primes=0,flushes=0;
+ const renderer={shadowMap:{enabled:true},getContext:()=>({
+  isContextLost:()=>false,getExtension:()=>({}),flush(){flushes++;}
+ }),compile(root:Object3D,view:PerspectiveCamera,target:Scene){
+  assert.equal(root,scene);assert.equal(view,camera);assert.equal(target,scene);
+  assert.equal(sun.castShadow,true);assert.equal(bike.visible,false);assert.equal(root.getObjectById(late.id),undefined);primes++;
+ },async compileAsync(root:Object3D){assert.equal(root.getObjectById(late.id),late);seen.push(sun.castShadow);return scene;}};
+ const warmup=new SceneWarmup(renderer as unknown as ConstructorParameters<typeof SceneWarmup>[0],scene,camera,v=>busy.push(v),async()=>{});
+ warmup.primeIsland();assert.equal(primes,1);assert.equal(flushes,1);assert.deepEqual(busy,[]);
+ scene.add(late);await warmup.prepare();assert.deepEqual(seen,[false,true]);assert.deepEqual(busy,[true,false]);
+ assert.equal(sun.castShadow,true);assert.equal(bike.visible,false);
+});
+
+test('early preparation does not submit a full hidden island for Smooth or a synchronous-only backend',()=>{
+ const {scene,camera}=fixture();let ext:object|null={},lost=false;
+ const renderer={shadowMap:{enabled:false},getContext:()=>({isContextLost:()=>lost,getExtension:()=>ext}),
+  compile(){throw Error('unexpected early submission');},compileAsync:async()=>scene};
+ const warmup=new SceneWarmup(renderer as unknown as ConstructorParameters<typeof SceneWarmup>[0],scene,camera,()=>{});
+ warmup.primeIsland();renderer.shadowMap.enabled=true;ext=null;warmup.primeIsland();ext={};lost=true;warmup.primeIsland();
+});
+
 function fixture(){const scene=new Scene(),sun=new DirectionalLight();sun.castShadow=true;scene.add(sun,...Array.from({length:4},()=>new PointLight()));const bike=new Group();bike.visible=false;bike.add(new PointLight(),new SpotLight(),new SpotLight());scene.add(bike);return{scene,sun,bike,camera:new PerspectiveCamera()};}
 function topology(scene:Scene){let points=0,spots=0,shadows=0;scene.traverseVisible(o=>{if(o instanceof PointLight)points++;if(o instanceof SpotLight)spots++;if(o instanceof DirectionalLight&&o.castShadow)shadows++;});return{points,spots,shadows};}
 
