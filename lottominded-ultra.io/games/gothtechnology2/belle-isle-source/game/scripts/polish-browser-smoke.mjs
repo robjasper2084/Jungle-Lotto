@@ -369,10 +369,6 @@ async function runCase(configuration) {
       async release() { if (!activeHolds.has(input)) return; if (configuration.mobile) await touch.send('Input.dispatchTouchEvent', {type: 'touchEnd', touchPoints: []}); else await page.keyboard.up(key); activeHolds.delete(input); }};
     return input;
   };
-  const startHeld = async (vehicle, direction = 'forward') => {
-    const input = await prepareHeld(vehicle, direction), traceStart = await page.evaluate(() => window.__polishInput.length);
-    await input.press(); return {...input, traceStart};
-  };
   const startRiderControls = async () => {
     const forward = await prepareHeld('hoverbike'), turn = await target('#hover-hud [data-hold="ArrowRight"]'), ascend = await target('#hover-hud [data-hold="KeyE"]');
     const input = {description: configuration.mobile ? 'Trusted simultaneous forward joystick, turn-right and ascend touch holds; native Enter on Pause freezes the capture' : 'Trusted held W, ArrowRight and E; native Pause click freezes the capture',
@@ -582,25 +578,25 @@ async function runCase(configuration) {
         await capture('shoreline-sunset-point'); await resize(configuration.physicsViewport);
       }
 
-      log(configuration.name + ': real Sunset Halo strafe until off-course cue');
-      await openBoard(); await armRiderTrace('Existing Sky strafe and early pace-guide observations'); await begin('sky-sunset-v1', 'hoverbike');
+      log(configuration.name + ': real Classic flight turn and climb until off-course cue');
+      await openBoard(); await armRiderTrace('Classic flight turn and early pace-guide observations'); await begin('sky-sunset-v1', 'hoverbike');
       await expect(page.locator('#trial-hud')).toHaveAttribute('data-status', 'running');
       await expect(page.locator('#hover-flight-mode')).toHaveValue('classic');
       await expect(page.locator('#hover-hud')).toHaveAttribute('data-rider-rig', 'anchored');
       await expect(page.locator('#hover-hud')).toHaveAttribute('data-rider-motion', 'reactive');
       const riderBaseline = validateRider(await readRider(), 'Sky start', 'reactive');
-      entry.metrics.riderMotion = {scope: 'Read-only applied-pose HUD observations from actual native input. Source tests independently verify shipped skin/IK geometry.', strafe: null, preferences: {}};
-      held = await startHeld('hoverbike', 'right');
+      entry.metrics.riderMotion = {scope: 'Read-only applied-pose HUD observations from actual native input. Source tests independently verify shipped skin/IK geometry.', turn: null, preferences: {}};
+      held = await startRiderControls();
       try {
         const began = Date.now();
         await expect.poll(async () => {
           const state = await readTrial(); assert.equal(state.status, 'running', 'Deviation must not invalidate the trial');
           return state.offCourse;
         }, {timeout: limits.offCourseMilliseconds, intervals: [500, 1000, 1500]}).toBe('true');
-        entry.metrics.offCourse = {milliseconds: Date.now() - began, input: configuration.mobile ? 'Trusted rightward joystick hold' : 'Held D', state: await readTrial()};
+        entry.metrics.offCourse = {milliseconds: Date.now() - began, input: held.description, state: await readTrial()};
         const riderTrace = await takeRiderTrace();
-        entry.metrics.riderMotion.strafe = await summarizeRider(riderTrace, riderBaseline, held, 'Native Sky strafe', [configuration.mobile ? 'hover-move-zone' : 'KeyD']);
-        assert.ok(entry.metrics.riderMotion.strafe.axes.lean.maximumChange >= .02, 'Native strafe produced a measured torso reaction during the hold');
+        entry.metrics.riderMotion.turn = await summarizeRider(riderTrace, riderBaseline, held, 'Native Classic flight turn', [configuration.mobile ? 'hover-move-zone' : 'KeyW', 'ArrowRight', 'KeyE']);
+        assert.ok(entry.metrics.riderMotion.turn.axes.lean.maximumChange >= .02, 'Native powered turn produced a measured torso reaction during the hold');
         const firstRunning = riderTrace.samples.find(sample => sample?.course === 'sky-sunset-v1' && sample.status === 'running' && !sample.hidden);
         const visiblePace = riderTrace.samples.find(sample => sample?.course === 'sky-sunset-v1' && sample.status === 'running' && sample.ghosts?.some(ghost => ghost.kind === 'pace'));
         entry.metrics.ghosts = {scope: 'Actual visible ghost-view snapshots read from HUD data; no state or replay is seeded.',
