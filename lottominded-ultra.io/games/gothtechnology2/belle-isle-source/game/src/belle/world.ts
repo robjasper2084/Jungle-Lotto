@@ -8,7 +8,7 @@ import {addWaterfront} from './waterfrontScene.ts';
 import {LandmarkDetail} from './landmarkDetail.ts';
 import {addCoastGuard} from './coastGuard.ts';
 import {WorldQuality,dynamicShadowsEnabled} from './worldQuality.ts';
-import {WorldFrameWork,directionalCasterEligible} from './worldPerformancePolicy.ts';
+import {WorldFrameWork,ShadowMapCadence,directionalCasterEligible,ScenePreparationQueue,softwareWebGLRenderer,deferredSceneryRadius} from './worldPerformancePolicy.ts';
 import {LocalLightPool} from './localLighting.ts';
 import {createRiverTraffic} from './riverTraffic.ts';
 import {addWoodlandFloor} from './woodland.ts';
@@ -118,13 +118,17 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
  // Remove only the old solid Yacht Club shell; every other landmark remains intact.
  const oldBoatClub:T.Object3D[]=[];landmarks.scene.traverse(o=>{if(o.name.startsWith('107192915_'))oldBoatClub.push(o);});for(const o of oldBoatClub)o.removeFromParent();addBoatClub(scene,terrain,islandSky.nightAmount);
  const oldYacht:T.Object3D[]=[];landmarks.scene.traverse(o=>{if(o.name.startsWith('264321737_'))oldYacht.push(o);});for(const o of oldYacht)o.removeFromParent();
+ // Only one optional large landmark may decode, upload textures and compile shaders
+ // at a time. The Covered Bridge lies inside the Yacht Club, golf and
+ // playground prefetch radii; simultaneous warmups starved SwiftShader frames.
+ const sceneryPreparation=new ScenePreparationQueue();
  const yachtStats={boats:YACHT.boats.length,piers:YACHT.piers.length,triangles:0,meshes:0};
  let yachtClub:Awaited<ReturnType<typeof addYachtClub>>|undefined;
  let yachtTask:Promise<void>|undefined,attemptedYachtApproach=false;
  function prepareYachtClub(camera?:T.Camera){
   if(yachtClub)return Promise.resolve();
   if(yachtTask)return yachtTask;
-  const task=(async()=>{
+  const task=sceneryPreparation.run(async()=>{
    const root=new T.Group();
    const detail=await addYachtClub(root,loader,localLights);
    if(camera){
@@ -135,7 +139,7 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
    scene.add(root);
    yachtClub=detail;
    Object.assign(yachtStats,detail.stats);
-  })();
+  });
   yachtTask=task;
   void task.then(()=>{yachtTask=undefined;},()=>{yachtTask=undefined;});
   return task;
@@ -161,18 +165,25 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
  async function prepareApproach<A extends {update:(x:number,z:number)=>void}>(
   stage:T.Group,camera:T.Camera,load:()=>Promise<A>,postMaterials?:(model:A)=>void
  ){
-  const model=await load();applyRealisticMaterials(stage);applyPhotoReferenceSurfaces(stage);
-  postMaterials?.(model);
-  await warmObjectTextures(renderer,stage);
-  await renderer.compileAsync(stage,camera,scene);
-  return model;
+  return sceneryPreparation.run(async()=>{
+   const model=await load();applyRealisticMaterials(stage);applyPhotoReferenceSurfaces(stage);
+   postMaterials?.(model);
+   await warmObjectTextures(renderer,stage);
+   await renderer.compileAsync(stage,camera,scene);
+   return model;
+  });
  }
- const golfCenterDetail=createApproachDetail(scene,[GOLF_CENTER_POSITION],1000,
+ // Software WebGL stalls when offscreen golf and playground GLBs compile beside
+ // the Covered Bridge. Defer only those optional details until they approach
+ // their actual visibility range; hardware GPU prefetch distances stay intact.
+ const gl=renderer.getContext(),gpuInfo=gl.getExtension('WEBGL_debug_renderer_info');
+ const softwareScenery=softwareWebGLRenderer(String(gl.getParameter(gpuInfo?.UNMASKED_RENDERER_WEBGL??gl.RENDERER)||''));
+ const golfCenterDetail=createApproachDetail(scene,[GOLF_CENTER_POSITION],deferredSceneryRadius(700,1000,softwareScenery,20),
   (stage,camera)=>prepareApproach(stage,camera,()=>addGolfCenter(stage,loader)),
   model=>Object.assign(golfStats,model.stats,{loaded:true}));
  const referenceArchitectureDetail=createApproachDetail(scene,REFERENCE_BUILDING_CENTRES,950,
   (stage,camera)=>prepareApproach(stage,camera,()=>addReferenceArchitecture(stage,loader)));
- const playgroundDetail=createApproachDetail(scene,playgrounds.map(site=>[site.center[0],site.center[1]] as const),760,
+ const playgroundDetail=createApproachDetail(scene,playgrounds.map(site=>[site.center[0],site.center[1]] as const),deferredSceneryRadius(420,760,softwareScenery,100),
   (stage,camera)=>prepareApproach(stage,camera,()=>addPlaygrounds(stage,loader),
    model=>{playgroundStats.batching=model.batch();}),
   model=>Object.assign(playgroundStats,model.stats,{loaded:true}));
@@ -197,6 +208,10 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
  const landmarkDetail=new LandmarkDetail(landmarks);
  // Static architecture transforms are fixed after the fountain is placed.
  for(const staticRoot of [landmarks.scene,skyline.scene,historic.scene]){staticRoot.updateMatrixWorld(true);staticRoot.traverse(o=>{o.matrixAutoUpdate=false;o.matrixWorldAutoUpdate=false;});}
+ // Keep full quality shadow maps, but avoid redrawing identical static shadows at 60 Hz.
+ const shadowCadence=new ShadowMapCadence();
+ renderer.shadowMap.autoUpdate=false;
+ renderer.shadowMap.needsUpdate=true;
  const quality=new WorldQuality(q=>{
   // Smooth is the intentional lower-cost mode. Rendering all dynamic shadow
   // maps at once held the real 1440px starting-line frame beyond the GPU
@@ -207,12 +222,13 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
    renderer.shadowMap.enabled=dynamicShadows;
    renderer.shadowMap.needsUpdate=true;
   }
+  shadowCadence.reset();renderer.shadowMap.needsUpdate=true;
   water.setQuality(q);islandSky.setQuality(q);geology.setQuality(q);canalRoots.setQuality(q);livingCanals.setQuality(q);birds.setQuality(q);gulls.setQuality(q);waterfowl.setQuality(q);shoreBirds.setQuality(q);
   referenceGarden?.setQuality(q);nature.setQuality(q);meadow.setQuality(q);gardens.setQuality(q);shoreDetails.setQuality(q);beachStats.setQuality(q);waterBanks.setQuality(q);contactShadow.setQuality(q);
   lastX=Infinity;
- },ratio=>renderer.setPixelRatio(ratio));
+ },ratio=>renderer.setPixelRatio(ratio),()=>devicePixelRatio,softwareScenery);
  const sharedFrameWork=new WorldFrameWork();
  let playerWake:{x:number;z:number;dx:number;dz:number;length:number;width:number;power:number}|null=null;
- return {prepareYachtClub,boatWake:(wake:typeof playerWake)=>{playerWake=wake;},prepareSplitDetail:()=>landmarkDetail.prepare(),splitBatchRoot:()=>landmarkDetail.batchRoot,beginSplitView:()=>landmarkDetail.beginView(),endSplitView:()=>landmarkDetail.endView(),splitDetail:(enabled:boolean)=>{landmarkDetail.setActive(enabled);nature.setSplitDetail(enabled);},sky:islandSky,trafficRay:traffic.raycast,waterVehicle:water.setVehicle,contactVehicle(pose:ContactShadowPose|null){contactShadow.update(pose);},quality,setBudget(scale:number){quality.setBudget(scale);},setQuality(q:string){quality.setQuality(q);},update(time:number,x:number,z:number,camera:T.Camera,running=true,allowDeferred=true){const firstWorldView=sharedFrameWork.begin(time);referenceGarden?.update(x,z);localLights.beginFrame(x,z);conservatoryGarden.update(x,z);updateYachtClub(x,z,camera,running&&allowDeferred);golfCenterDetail.update(x,z,camera,running&&allowDeferred);referenceArchitectureDetail.update(x,z,camera,running&&allowDeferred);playgroundDetail.update(x,z,camera,running&&allowDeferred);const skyLight=islandSky.update(camera,x,z);if(REFERENCE_STYLE&&scene.fog instanceof T.FogExp2)scene.fog.density=.00012;const lampNight=1-smooth(-.12,.08,sunDirection(islandSky.renderHour)[1]);if(firstWorldView){coastGuard.update(time,lampNight);bridgeLights.setNight(lampNight);streetLights.setNight(lampNight);water.setLighting(skyLight.reflection,skyLight.light,skyLight.sun,skyLight.glint);water.setFountainNight(lampNight);}bridgeLights.update(time,x,z);water.setShipWakes([...(playerWake?[playerWake]:[]),...traffic.update(time,x,z,lampNight,skyLight.light,running)].slice(0,4));water.update(time,camera);waterfront.update(x,z,lampNight);koi.update(time,x,z);waterfowl.update(time,x,z);shoreBirds.update(time,x,z);fountainFlow.update(time,x,z,lampNight);birds.update(time,x,z);gulls.update(time,x,z);activities.update(islandSky.hour,x,z);nature.update(x,z,skyLight.night,skyLight.golden);shoreDetails.update(x,z);beachStats.update(x,z);if(firstWorldView){shoreDetails.animate(time,skyLight.light);gardens.animate(time);}waterBanks.update(x,z);geology.update(x,z);canalRoots.update(x,z);livingCanals.update(x,z,time);meadow.update(time,x,z,camera.position.y-1.5);aquariumLife?.update(time,x,z);dossinLighting?.update(x,z);localLights.update();if(Math.hypot(x-lastX,z-lastZ)>30){lastX=x;lastZ=z;historic.scene.visible=visibleWithHysteresis(Math.hypot(x-1428,z-1000),900,historic.scene.visible,50);lakeHabitat.update(x,z);lagoonBridge.visible=visibleWithHysteresis(Math.hypot(x-3950,z+200),600,lagoonBridge.visible,40);facilities.update(x,z);streetStats.update(x,z);gardens.update(x,z);oudolf.update(x,z);for(const item of landmarkDraws){const distance=Math.hypot(item.center.x-x,item.center.z-z);item.mesh.visible=!item.mesh.userData.staticSprayReplaced&&(/MacArthur/.test(item.mesh.name)||visibleWithHysteresis(distance,item.range+item.radius,item.mesh.visible,item.range<200?14:45));item.mesh.castShadow=directionalCasterEligible(quality.effective,Math.max(0,distance-(item.mesh.castShadow?12:0)),item.radius,item.shadow);}}},stats:{water:{shallow:water.shallowStats},groundBatch,conservatoryGarden:conservatoryGarden.stats,splitLandmarks:landmarkDetail.stats,smallBridges:smallBridges.stats,traffic:traffic.stats,waterfowl:waterfowl.stats,gulls:gulls.stats,shoreBirds:shoreBirds.stats,activities:activities.stats,meadow:meadow.stats,playgrounds:playgroundStats,golfCenter:golfStats,yachtClub:yachtStats,koi:koi.stats,fountains:fountainFlow.stats,lakeHabitat:lakeHabitat.stats,birds:birds.stats,facilities:facilities.stats,beaches:{triangles:beachStats.triangles,detail:beachStats.stats},shore:{...shoreDetails.stats,lagoonSedges:waterBanks.stats,strata:shoreStrata.stats},geology:geology.stats,canalRoots:canalRoots.stats,livingCanals:livingCanals.stats,gardens:gardens.stats,street:streetStats,nature:nature.stats,trees:nature.stats.trees,landmarks:data.landmarks.length,roads:data.roads.length}};
+ return {prepareYachtClub,boatWake:(wake:typeof playerWake)=>{playerWake=wake;},prepareSplitDetail:()=>landmarkDetail.prepare(),splitBatchRoot:()=>landmarkDetail.batchRoot,beginSplitView:()=>landmarkDetail.beginView(),endSplitView:()=>landmarkDetail.endView(),splitDetail:(enabled:boolean)=>{landmarkDetail.setActive(enabled);nature.setSplitDetail(enabled);},sky:islandSky,trafficRay:traffic.raycast,waterVehicle:water.setVehicle,contactVehicle(pose:ContactShadowPose|null){contactShadow.update(pose);},quality,setBudget(scale:number){quality.setBudget(scale);},setQuality(q:string){quality.setQuality(q);},update(time:number,x:number,z:number,camera:T.Camera,running=true,allowDeferred=true){const firstWorldView=sharedFrameWork.begin(time);if(renderer.shadowMap.enabled&&shadowCadence.shouldRefresh(time))renderer.shadowMap.needsUpdate=true;referenceGarden?.update(x,z);localLights.beginFrame(x,z);conservatoryGarden.update(x,z);updateYachtClub(x,z,camera,running&&allowDeferred);golfCenterDetail.update(x,z,camera,running&&allowDeferred);referenceArchitectureDetail.update(x,z,camera,running&&allowDeferred);playgroundDetail.update(x,z,camera,running&&allowDeferred);const skyLight=islandSky.update(camera,x,z);if(REFERENCE_STYLE&&scene.fog instanceof T.FogExp2)scene.fog.density=.00012;const lampNight=1-smooth(-.12,.08,sunDirection(islandSky.renderHour)[1]);if(firstWorldView){coastGuard.update(time,lampNight);bridgeLights.setNight(lampNight);streetLights.setNight(lampNight);water.setLighting(skyLight.reflection,skyLight.light,skyLight.sun,skyLight.glint);water.setFountainNight(lampNight);}bridgeLights.update(time,x,z);water.setShipWakes([...(playerWake?[playerWake]:[]),...traffic.update(time,x,z,lampNight,skyLight.light,running)].slice(0,4));water.update(time,camera);waterfront.update(x,z,lampNight);koi.update(time,x,z);waterfowl.update(time,x,z);shoreBirds.update(time,x,z);fountainFlow.update(time,x,z,lampNight);birds.update(time,x,z);gulls.update(time,x,z);activities.update(islandSky.hour,x,z);nature.update(x,z,skyLight.night,skyLight.golden);shoreDetails.update(x,z);beachStats.update(x,z);if(firstWorldView){shoreDetails.animate(time,skyLight.light);gardens.animate(time);}waterBanks.update(x,z);geology.update(x,z);canalRoots.update(x,z);livingCanals.update(x,z,time);meadow.update(time,x,z,camera.position.y-1.5);aquariumLife?.update(time,x,z);dossinLighting?.update(x,z);localLights.update();if(Math.hypot(x-lastX,z-lastZ)>30){lastX=x;lastZ=z;historic.scene.visible=visibleWithHysteresis(Math.hypot(x-1428,z-1000),900,historic.scene.visible,50);lakeHabitat.update(x,z);lagoonBridge.visible=visibleWithHysteresis(Math.hypot(x-3950,z+200),600,lagoonBridge.visible,40);facilities.update(x,z);streetStats.update(x,z);gardens.update(x,z);oudolf.update(x,z);for(const item of landmarkDraws){const distance=Math.hypot(item.center.x-x,item.center.z-z);item.mesh.visible=!item.mesh.userData.staticSprayReplaced&&(/MacArthur/.test(item.mesh.name)||visibleWithHysteresis(distance,item.range+item.radius,item.mesh.visible,item.range<200?14:45));item.mesh.castShadow=directionalCasterEligible(quality.effective,Math.max(0,distance-(item.mesh.castShadow?12:0)),item.radius,item.shadow);}}},stats:{water:{shallow:water.shallowStats},groundBatch,conservatoryGarden:conservatoryGarden.stats,splitLandmarks:landmarkDetail.stats,smallBridges:smallBridges.stats,traffic:traffic.stats,waterfowl:waterfowl.stats,gulls:gulls.stats,shoreBirds:shoreBirds.stats,activities:activities.stats,meadow:meadow.stats,playgrounds:playgroundStats,golfCenter:golfStats,yachtClub:yachtStats,koi:koi.stats,fountains:fountainFlow.stats,lakeHabitat:lakeHabitat.stats,birds:birds.stats,facilities:facilities.stats,beaches:{triangles:beachStats.triangles,detail:beachStats.stats},shore:{...shoreDetails.stats,lagoonSedges:waterBanks.stats,strata:shoreStrata.stats},geology:geology.stats,canalRoots:canalRoots.stats,livingCanals:livingCanals.stats,gardens:gardens.stats,street:streetStats,nature:nature.stats,trees:nature.stats.trees,landmarks:data.landmarks.length,roads:data.roads.length}};
 
 }

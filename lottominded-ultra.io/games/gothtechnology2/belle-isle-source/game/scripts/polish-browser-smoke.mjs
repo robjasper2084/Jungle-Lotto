@@ -585,7 +585,7 @@ async function runCase(configuration) {
       log(configuration.name + ': real Sunset Halo strafe until off-course cue');
       await openBoard(); await armRiderTrace('Existing Sky strafe and early pace-guide observations'); await begin('sky-sunset-v1', 'hoverbike');
       await expect(page.locator('#trial-hud')).toHaveAttribute('data-status', 'running');
-      await expect(page.locator('#hover-flight-mode')).toHaveValue('drone');
+      await expect(page.locator('#hover-flight-mode')).toHaveValue('classic');
       await expect(page.locator('#hover-hud')).toHaveAttribute('data-rider-rig', 'anchored');
       await expect(page.locator('#hover-hud')).toHaveAttribute('data-rider-motion', 'reactive');
       const riderBaseline = validateRider(await readRider(), 'Sky start', 'reactive');

@@ -112,6 +112,7 @@ try{
     await tap(page.locator('.ride-options label').filter({has:page.locator('input[value="hoverbike"]')}));
     await expect(page.locator('input[name="startup-vehicle"][value="hoverbike"]')).toBeChecked();
     await tap(page.getByRole('button',{name:'Use this ride',exact:true}));
+    const launchQuality=await page.locator('#profile').getAttribute('data-effective-quality');
     await tap(page.locator('#start'));
     await page.waitForFunction(()=>document.body.classList.contains('on-hoverbike')||document.querySelector('#start-label')?.textContent==='Try starting again',null,{timeout:150_000});
     const started=await snapshot();
@@ -166,12 +167,24 @@ try{
     // within four wall-clock minutes. Keep the real landing assertion and all
     // performance evidence, allowing more real frames without modifying dt.
     await expect(page.locator('#hover-mode')).toHaveText('LANDED',{timeout:480_000});
-    checked('landing returns to grounded state',await snapshot());await shot('landed');
-    await tap(page.locator('#hover-hud [data-hover="exit"]'));
-    await expect(page.locator('body')).not.toHaveClass(/on-hoverbike/);await expect(page.locator('#hover-enter')).toBeEnabled();
-    // The real remount control lives in the ride menu on desktop and phone.
-    await tap(page.locator('#tools-toggle'));await expect(page.locator('#ride-menu')).toBeVisible();
-    await tap(page.locator('#hover-enter'));await expect(page.locator('#ride-menu')).not.toBeVisible();
+    const landed=await snapshot();checked('landing returns to grounded state',landed);await shot('landed');
+    async function remountFromMenu(){
+      await tap(page.locator('#hover-hud [data-hover="exit"]'));
+      await expect(page.locator('body')).not.toHaveClass(/on-hoverbike/);
+      await expect(page.locator('#hover-enter')).toBeEnabled();
+      await tap(page.locator('#tools-toggle'));await expect(page.locator('#ride-menu')).toBeVisible();
+      await tap(page.locator('#hover-enter'));await expect(page.locator('#ride-menu')).not.toBeVisible();
+    }
+    // The model's prepared shaders are keyed by mapped versus contact shadows.
+    // When Automatic changes that policy in flight, exercise the first preparation
+    // within SceneWarmup's deadline, then measure a genuine cached remount.
+    const landingQuality=landed.graphics.effectiveQuality;
+    if(launchQuality && landingQuality && (launchQuality==='smooth')!==(landingQuality==='smooth')){
+      await remountFromMenu();
+      await expect(page.locator('body')).toHaveClass(/on-hoverbike/,{timeout:45_000});
+      checked('remount after shadow policy change',{launchQuality,landingQuality});
+    }
+    await remountFromMenu();
     await expect(page.locator('body')).toHaveClass(/on-hoverbike/);
     await expect(page.locator('#hover-enter')).toBeEnabled();checked('dismount and cached remount',await snapshot());
     const webgl=await page.locator('#game').evaluate(canvas=>{const gl=canvas.getContext('webgl2');return{live:!!gl&&!gl.isContextLost(),width:canvas.width,height:canvas.height,renderer:gl?.getParameter(gl.RENDERER)};});

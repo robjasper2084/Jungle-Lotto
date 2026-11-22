@@ -39,7 +39,7 @@ export function strokePieces(points:Point[],from:number,to:number,offset:number)
 }
 // Index all corridors once during the offline build. Side furniture must clear
 // the UNION of road/path corridors, not just the route it belongs to.
-export function roadIndex(roads:Road[]){
+export function roadIndex(roads:Road[],includeBoundary=false){
  const grid=new Map<string,{a:Point;b:Point;r:Road}[]>(),cell=32;
  for(const r of roads)for(let i=1;i<r.points.length;i++){
   const a=r.points[i-1],b=r.points[i],pad=r.width/2+5;
@@ -48,7 +48,11 @@ export function roadIndex(roads:Road[]){
     const k=x+','+z;if(!grid.has(k))grid.set(k,[]);grid.get(k)!.push({a,b,r});
    }
  }
- return (x:number,z:number,ignore='',margin=0)=> (grid.get(Math.floor(x/cell)+','+Math.floor(z/cell))||[]).some(s=>s.r.id!==ignore&&segment(x,z,s.a,s.b).d<s.r.width/2+margin);
+ return (x:number,z:number,ignore:string|null='',margin=0)=> (grid.get(Math.floor(x/cell)+','+Math.floor(z/cell))||[]).some(s=>{
+  if(s.r.id===ignore)return false;
+  const distance=segment(x,z,s.a,s.b).d;
+  return includeBoundary?distance-s.r.width/2<=margin:distance<s.r.width/2+margin;
+ });
 }
 export function createStreetPlan(data:ParkMap):StreetPlan{
  const terrain=new ParkTerrain(data),occupied=roadIndex(data.roads),boxes:StreetBox[]=[],signs:StreetSign[]=[],usedSigns:Point[]=[];

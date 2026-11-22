@@ -1,11 +1,23 @@
 /* Optional compact HUD; critical ride inputs and the speed display stay visible. */
 body.belle-hud-focus #minimap,
 body.belle-hud-focus #minimap-hide,
+body.belle-hud-focus #reference-hud .reference-map,
+body.belle-hud-focus #look-hint,
 body.belle-hud-focus #hint {display:none!important}
 body.belle-hud-focus #navigation {width:min(220px,calc(100vw - 28px))}
 body.belle-hud-focus #navigation p {margin:6px 0;padding:6px 12px}
 body.belle-hud-focus #ridehud .speed-readout {opacity:.92}
+/* Short viewports use native navigation in place of the circular map. */
+@media(max-height:520px){
+ body.belle-hud-focus:not(.island-trial) #navigation:not([hidden]) {display:block;width:fit-content;max-width:38vw;pointer-events:none}
+ body.belle-hud-focus #navigation #destination {display:block;margin:0;padding:4px 8px}
+}
 @media(max-width:700px){
  body.belle-hud-focus #navigation {width:min(180px,calc(100vw - 24px))}
  body.belle-hud-focus #ridehud .speed-readout {transform:scale(.9);transform-origin:left bottom}
+}
+@media(max-width:520px) and (max-height:400px){
+ body.belle-hud-focus.touch-controls #ridehud .speed-readout {
+  position:fixed;top:max(64px,calc(env(safe-area-inset-top) + 60px));bottom:auto;left:var(--hud-edge)
+ }
 }

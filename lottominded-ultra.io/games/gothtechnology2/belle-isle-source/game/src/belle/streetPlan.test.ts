@@ -3,6 +3,13 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {pathSamples,strokePieces,createStreetPlan,roadIndex} from './streetPlan.ts';
 import {CURB_PROFILE} from './curbProfile.ts';
+test('garden clearance includes the exact edge while street placement keeps its open boundary',()=>{
+ const road={id:'walk',width:4,points:[[0,0],[0,64]]} as Parameters<typeof roadIndex>[0][number];
+ const garden=roadIndex([road],true),street=roadIndex([road]);
+ assert.equal(garden(5.5,32,'',3.5),true);
+ assert.equal(garden(5.501,32,'',3.5),false);
+ assert.equal(street(5.5,32,'',3.5),false);
+});
 import {ParkTerrain,inside,type ParkMap} from './terrain.ts';
 test('road sample spacing continues across source segments without bunching',()=>{
  const a=pathSamples([[0,0],[0,1],[0,2],[0,18]],6);

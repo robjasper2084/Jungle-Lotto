@@ -65,6 +65,7 @@ export function applyRealisticMaterials(root:T.Object3D,context=''){
    if(!m.alphaTest&&!m.transparent&&['asphalt','grass','sand','gravel'].includes(kind)){m.map=null;m.normalMap=null;m.bumpMap=null;m.roughnessMap=null;}const oldCompile=m.onBeforeCompile,oldKey=material.customProgramCacheKey();
    m.roughness=context==='boat'&&kind==='graphite'?.45:kind==='metal'?Math.max(.24,Math.min(.6,m.roughness)):roughness;
    m.userData.realisticSurface=kind;
+   m.userData.realisticProfile=/ballfield infield/i.test(material.name)?'infield-'+kind:kind;
    m.onBeforeCompile=(shader,renderer)=>{
     oldCompile(shader,renderer);
     Object.assign(shader.uniforms,{skinColor:{value:textures.color},skinDetail:{value:textures.detail}});
@@ -96,7 +97,7 @@ vec3 skinGrad=sign(skinDet)*(skinGradient.x*skinRx+skinGradient.y*skinRy);
 normal=normalize(abs(skinDet)*normal-skinGrad);
 `);
    };
-   m.customProgramCacheKey=()=>oldKey+'-higgsfield-surface-v2-'+kind+(planar?'-planar':'');m.needsUpdate=true;return m;
+   m.customProgramCacheKey=()=>oldKey+'-higgsfield-surface-v2-'+m.userData.realisticProfile+(planar?'-planar':'');m.needsUpdate=true;return m;
   });
   object.material=Array.isArray(object.material)?updated:updated[0];
  });
