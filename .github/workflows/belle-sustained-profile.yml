@@ -1,5 +1,15 @@
-name: Belle Isle hosted display calibration
-on: workflow_dispatch
+name: Belle Isle independent GPU completion diagnostic
+on:
+  workflow_dispatch:
+    inputs:
+      source_run:
+        description: Run supplying the built game artifact
+        required: true
+        default: '45082699467'
+      source_sha:
+        description: Exact source head recorded by that run
+        required: true
+        default: 'b46c612250c0756b9fab8c85f5d964301a459b77'
 permissions:
   contents: read
   actions: read
@@ -23,11 +33,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
+      - name: Verify artifact source
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ inputs.source_run }}
+          EXPECTED_SHA: ${{ inputs.source_sha }}
+        run: |
+          [[ "$RUN_ID" =~ ^[0-9]+$ && "$EXPECTED_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID" --jq .head_sha)" == "$EXPECTED_SHA" ]]
       - uses: actions/download-artifact@v4
         with:
           name: sustained-profile-game
           path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist
-          run-id: 45081223796
+          run-id: ${{ inputs.source_run }}
           github-token: ${{ github.token }}
       - name: Install the same Chrome runtime
         working-directory: lottominded-ultra.io/games/gothtechnology2
@@ -41,10 +59,12 @@ jobs:
           BELLE_PROFILE_MODE: full
           BELLE_PROFILE_SECONDS: '90'
           BELLE_DISPLAY: ${{ matrix.display }}
+          BELLE_SOURCE_RUN: ${{ inputs.source_run }}
+          BELLE_SOURCE_SHA: ${{ inputs.source_sha }}
         run: node scripts/sustained-ride-profile.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: object-costs-${{ matrix.host }}-${{ matrix.device }}
+          name: delivery-${{ matrix.host }}-${{ matrix.device }}
           path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/sustained-profile/full/${{ matrix.device }}
           retention-days: 7

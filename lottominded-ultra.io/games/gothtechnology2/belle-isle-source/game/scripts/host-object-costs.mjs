@@ -5,6 +5,7 @@ export function installObserver(){
  window.__THREE_DEVTOOLS__=events;
  const renderers=new Set();
  events.addEventListener('observe',e=>{if(typeof e.detail?.renderBufferDirect==='function')renderers.add(e.detail);});
+ window.__hostGameRenderer=()=>[...renderers].find(r=>r.domElement===document.querySelector('#game'));
  window.__objectCostSample=async function(){
   const renderer=[...renderers].find(r=>r.domElement===document.querySelector('#game'));
   if(!renderer)throw Error('Game renderer was not observed: '+[...renderers].map(r=>r.domElement?.id));

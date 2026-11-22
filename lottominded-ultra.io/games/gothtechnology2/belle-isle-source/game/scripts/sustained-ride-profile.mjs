@@ -3,8 +3,9 @@ import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {createCoopStaticServer} from './coop-static-server.mjs';
-import {calibrate,measurePrograms} from './host-display-calibration.mjs';
+import {calibrate} from './host-display-calibration.mjs';
 import {installObserver} from './host-object-costs.mjs';
+import {installFrameDelivery,beginDisplayTrace} from './host-frame-delivery.mjs';
 const game=resolve(import.meta.dirname,'..'),require=createRequire(resolve(game,'../../package.json'));
 const {chromium,expect:rawExpect}=require('@playwright/test');
 const expect=rawExpect.configure({timeout:180000});
@@ -14,7 +15,7 @@ const seconds=Math.max(30,Math.min(600,Number(process.env.BELLE_PROFILE_SECONDS)
 const mode=process.env.BELLE_PROFILE_MODE==='diagnostic'?'diagnostic':'full';
 const output=resolve(game,'output/sustained-profile',mode,device);
 await mkdir(output,{recursive:true});
-const report={sourceHead:process.env.GITHUB_SHA||null,device,viewport,requestedSeconds:seconds,mode,
+const report={sourceHead:process.env.BELLE_SOURCE_SHA||null,sourceRun:process.env.BELLE_SOURCE_RUN||null,diagnosticHead:process.env.GITHUB_SHA||null,device,viewport,requestedSeconds:seconds,mode,
  renderBackend:null,rendererFallback:null,actualGpu:null,input:null,classification:null,
  hardware:'Chrome '+process.platform+' '+process.arch+'; phone viewport is emulated',
  acceptanceScope:mode==='diagnostic'?'REDUCED SCENE DIAGNOSTIC ONLY; not release quality':'FULL CURRENT GAME; still not device certification',
@@ -57,6 +58,7 @@ try{
  page.setDefaultTimeout(180000);
  await page.bringToFront();
  await page.addInitScript(installObserver);
+ await page.addInitScript(installFrameDelivery);
  // Boot with this lane's actual settings so startup prepares the same shaders
  // that the 90-second ride will exercise. Settings also verifies the selection.
  const quality=device==='phone'?'smooth':'high';
@@ -165,20 +167,26 @@ try{
  catch(error){report.probeErrors.push('Browser probe reset: '+String(error));}
  rideProbeStart=Date.now();
  let reassertions=0,inFlight=false,heartbeatError=null,pendingHeartbeat=Promise.resolve();
+ await page.evaluate(ms=>window.__startFrameDelivery(ms),seconds*1000);
  await page.keyboard.down('w');
  // This timer is outside the game event loop: reassert real input, never pose.
  const heartbeat=setInterval(()=>{
   if(inFlight)return;inFlight=true;
   pendingHeartbeat=page.keyboard.down('w').then(()=>reassertions++,error=>{heartbeatError=String(error);}).finally(()=>{inFlight=false;});
  },450);
+ const traced=(async()=>{
+  if(!cdp)return;
+  await page.waitForTimeout(Math.max(0,rideProbeStart+Math.min(39,seconds/2)*1000-Date.now()));
+  const stop=await beginDisplayTrace(cdp,page);
+  await page.waitForTimeout(6000);
+  return await stop();
+ })().catch(error=>{report.probeErrors.push('Display tracing: '+String(error));return null;});
  try{
-  for(const second of [8,36,70]){
-   await page.waitForTimeout(Math.max(0,rideProbeStart+second*1000-Date.now()));
-   const costs=await page.evaluate(()=>window.__objectCostSample());
-   await writeFile(resolve(output,'object-costs-'+second+'.json'),JSON.stringify(costs));
-  }
   await page.waitForTimeout(Math.max(0,rideProbeStart+seconds*1000-Date.now()));
  }finally{clearInterval(heartbeat);await pendingHeartbeat;await page.keyboard.up('w');}
+ const delivery=await page.evaluate(()=>window.__finishFrameDelivery());
+ await writeFile(resolve(output,'delivery.json'),JSON.stringify(delivery));
+ const trace=await traced;if(trace)await writeFile(resolve(output,'display-trace.json'),JSON.stringify(trace));
  report.input={...(await page.evaluate(()=>window.__belleInputReceipts||{keydowns:0,repeats:0,blurs:0})),reassertions,heartbeatError};
  try{report.browserSchedulerProbe=await page.evaluate(()=>({
   clock:window.__belleBrowserClock?.snapshot?.()??null,
@@ -220,10 +228,6 @@ try{
   stats.distanceMetres<3?'render-starved-or-blocked-motion':report.frameQualityAccepted?'frame-budget-met':'stalls-detected';
  // A reduced-scene or software-browser success is never release approval.
  report.releasePerformanceVerified=false;
- try{await writeFile(resolve(output,'programs.json'),JSON.stringify(await measurePrograms(page),null,2));}
- catch(error){report.probeErrors.push('Post-ride GPU timings: '+String(error));}
- try{await writeFile(resolve(output,'matched-world.json'),JSON.stringify(await page.evaluate(()=>window.__matchedWorldCosts())));}
- catch(error){report.probeErrors.push('Matched-camera timing: '+String(error));}
 }catch(error){
  report.errors.push(String(error?.stack||error));
  if(page)report.startupAtFailure=await page.evaluate(()=>({
