@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
 import {assetPath} from './testAssets.ts';
-import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {GLTFLoader} from './compressedGLTFLoader.ts';
 import {Vector3} from 'three';
 import {EbikeController} from './ebikeController.ts';
 import {EbikeView} from './electricVehicleView.ts';

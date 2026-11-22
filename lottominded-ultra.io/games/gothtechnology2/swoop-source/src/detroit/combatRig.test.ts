@@ -1,5 +1,5 @@
 import {test} from 'node:test';import assert from 'node:assert/strict';
-import {readFile,writeFile} from 'node:fs/promises';import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';import {Vector3,SkinnedMesh} from 'three';
+import {readFile,writeFile} from 'node:fs/promises';import {GLTFLoader} from './compressedGLTFLoader.ts';import {Vector3,SkinnedMesh} from 'three';
 import {Hero} from './actors.ts';import {createPose} from './controller.ts';import {RIDER_CHOICES} from './riderChoices.ts';import {assetPath} from './testAssets.ts';
 import {CombatRig} from './royale/combatRig.ts';import {EquipmentLibrary,WeaponView,EQUIPMENT_KINDS} from './royale/equipment.ts';import {initialCombat} from '../../../ride-core/src/royale/rules.ts';
 import {baseRiderId} from '../../../ride-core/src/riderWardrobe.ts';

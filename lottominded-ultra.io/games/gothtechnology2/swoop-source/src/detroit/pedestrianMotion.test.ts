@@ -1,14 +1,12 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {readFile} from 'node:fs/promises';
-import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-import {Scene,Texture,Vector3} from 'three';
+import {rigModel} from './heroTestAssets.ts';
+import {Scene,Vector3} from 'three';
 import {assetPath} from './testAssets.ts';
 import {FootTraffic,footStride,gaitTiming} from './footTraffic.ts';
 import {TrafficView} from './actors.ts';
 import {ElmwoodWalkerView} from './photographerView.ts';
-const loader=new GLTFLoader();loader.register(()=>({name:'headless',loadTexture:()=>Promise.resolve(new Texture())}));
-async function asset(id:string){const b=await readFile(assetPath(`exports/glb/${id}/${id}_LOD1.glb`));return loader.parseAsync(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength),'');}
+function asset(id:string){return rigModel(assetPath(`exports/glb/${id}/${id}_LOD1.glb`),true);}
 const hoodie=await asset('DS_Hoodie_Man_01');
 test('slowing pedestrians keep the planted foot still in world space',()=>{
   for(const jog of [false,true])for(const speed of [.25,.65,1.1,2.65]){

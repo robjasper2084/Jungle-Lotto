@@ -106,7 +106,19 @@ async function capture(label,photo){
    return {camera,canvas:{width:canvas.width,height:canvas.height},time:document.querySelector('#sky-hour')?.value??document.querySelector('#time')?.value??null,ready:document.querySelector('#world')?.dataset.ready??document.querySelector('#detail')?.dataset.loaded??document.querySelector('#welcome')?.dataset.state};
   },config.canvas);
   const file=resolve(output,label+'.png');
-  await page.locator(config.canvas).screenshot({path:file,timeout:120000,animations:'disabled'});
+  const canvas=page.locator(config.canvas);
+  if(game==='elmwood'){
+   // The scenic camera keeps rendering after the menu closes. Capture the
+   // compositor's actual canvas rectangle without waiting for two stable RAFs.
+   const clip=await canvas.boundingBox(),viewport=page.viewportSize();
+   if(!clip||!viewport||clip.width<=0||clip.height<=0||clip.x<0||clip.y<0||
+      clip.x+clip.width>viewport.width+1||clip.y+clip.height>viewport.height+1){
+    throw Error('Elmwood canvas is outside the capture viewport');
+   }
+   await page.screenshot({path:file,clip,timeout:120000});
+  }else{
+   await canvas.screenshot({path:file,timeout:120000,animations:'disabled'});
+  }
   const bytes=await readFile(file);
   if(bytes.length<12000)throw Error('Rendered screenshot too small for review');
   item.screenshot={file:label+'.png',bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex')};

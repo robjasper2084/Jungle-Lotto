@@ -3,7 +3,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {assetPath as resolve} from './testAssets.ts';
-import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {GLTFLoader} from './compressedGLTFLoader.ts';
 import {Vector3,Scene,SkinnedMesh,Mesh} from 'three';
 function rendered(o:any):boolean{return o.visible!==false&&(!o.parent||rendered(o.parent));}
 import {Hero,TrafficView} from './actors.ts';
