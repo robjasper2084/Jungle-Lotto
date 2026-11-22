@@ -349,7 +349,13 @@ async function runCase(configuration) {
     let cleanupFailure;
     requestPhase = 'cleanup';
     if (browser) {
-      try { await bounded(browser.close(), 15_000, `${configuration.name}: browser close`); }
+      try {
+        // Dispose the live WebGL page first. The costly SwiftShader renderer
+        // otherwise continues drawing while Chromium waits to shut down.
+        // Keep both cleanup deadlines strict and preserve all visual checks.
+        if (page && !page.isClosed()) await bounded(page.close({runBeforeUnload:false}), 10_000, `${configuration.name}: page close`);
+        await bounded(browser.close(), 15_000, `${configuration.name}: browser close`);
+      }
       catch (error) { cleanupFailure = error; entry.cleanupFailure = error.message; entry.passed = false; }
     }
     entry.passed = entry.passed && !entry.failure && !caseTimedOut && !cleanupFailure && entry.errors.length === 0;

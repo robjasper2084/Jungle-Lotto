@@ -6,7 +6,7 @@ export function finishMacArthurRailings(root:T.Object3D){
  const cache=new WeakMap<T.MeshStandardMaterial,T.MeshStandardMaterial>();
  const stats={meshes:0,newMaterials:0};
  root.traverse(object=>{
-  if(!(object instanceof T.Mesh)||!/macarthur|mac arthur/i.test(object.name)||!/rail|balustrade|guard/i.test(object.name))return;
+  if(!(object instanceof T.Mesh)||!/macarthur|mac arthur/i.test(object.name)||!/rail|balustrade|guard|crash[ _-]+barrier/i.test(object.name))return;
   const original=Array.isArray(object.material)?object.material:[object.material];
   const processed=original.map(material=>{
    if(!(material instanceof T.MeshStandardMaterial)||material.userData.macArthurRailFinish||/lamp|light|glass|emissive/i.test(material.name))return material;

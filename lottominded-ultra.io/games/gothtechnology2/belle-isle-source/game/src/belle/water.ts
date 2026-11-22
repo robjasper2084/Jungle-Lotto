@@ -7,6 +7,7 @@ import {createFountainLighting,FOUNTAIN_COLOR_UNIFORMS} from './fountainLighting
 import type {ShipWake} from './riverTraffic.ts';
 import {scottLayout} from './fountainLayout.ts';
 import {realisticWaterNormal} from './realisticMaterials.ts';
+import {addShallowWater} from './shallowWater.ts';
 import * as T from 'three';
 import {KOI_POND_ID} from './waterFeatures.ts';
 import {inside,type ParkMap,type Point,type ParkTerrain} from './terrain.ts';
@@ -106,6 +107,7 @@ diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.5,.66,.65),clamp(washFoam*.4+rippleF
  const lagoon=material('lagoon');const koiPond=map.waterSources?.find(w=>w.id===KOI_POND_ID);const isKoi=(w:ParkMap['water'][number])=>!!koiPond&&inside(1336,1149,w.points);const pond=material('lagoon');pond.transparent=true;pond.opacity=.42;pond.depthWrite=false;pond.color.set(0x75958a);pond.roughness=.18;
  for(const w of map.water){const koi=isKoi(w),mesh=new T.Mesh(polygon(w.points,1.05,w.holes),koi?pond:lagoon);mesh.name=koi?'Koi pond · clear surface':'Lagoon · '+w.name;scene.add(mesh);if(koi){const bed=new T.Mesh(polygon(w.points,.2,w.holes),new T.MeshStandardMaterial({color:0x685f47,roughness:.95}));bed.name='Koi pond gravel bed';scene.add(bed);}}
 
+ const shallow=addShallowWater(scene,map,polygon);
  // Separate shallow foam ribbons use the actual mapped shoreline, including islands in ponds.
  const positions:number[]=[],uv:number[]=[],indices:number[]=[];
  function shore(points:Point[],level:number,waterInside:boolean){
@@ -117,15 +119,16 @@ diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.5,.66,.65),clamp(washFoam*.4+rippleF
  shore(map.island,0,false);shore(map.mainland,0,false);for(const i of map.outerIslets||[])shore(i.points,0,false);for(const w of map.water){if(isKoi(w))continue;shore(w.points,1.05,true);for(const h of w.holes)shore(h,1.05,false);}
  const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(positions,3));geo.setAttribute('uv',new T.Float32BufferAttribute(uv,2));geo.setIndex(indices);
  const foam=new T.Mesh(geo,new T.ShaderMaterial({uniforms:{time,skyLight},transparent:true,depthWrite:false,side:T.DoubleSide,vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',fragmentShader:'uniform float skyLight;uniform float time;varying vec2 vUv;void main(){float wave=sin(vUv.x*.63-time*.8)*.15+sin(vUv.x*1.77+time*.4)*.08;float band=exp(-pow((vUv.y-(.25+.13*sin(time*.9+vUv.x*.09)+wave))/.16,2.));float flecks=smoothstep(-.3,.7,sin(vUv.x*8.+sin(vUv.y*22.+time))*sin(vUv.x*3.1-vUv.y*15.-time));float alpha=band*flecks*.42*(1.-smoothstep(.7,1.,vUv.y));gl_FragColor=vec4(vec3(.64,.75,.72)*skyLight,alpha);\n#include <tonemapping_fragment>\n#include <colorspace_fragment>\n}'}));foam.name='Moving shoreline foam';scene.add(foam);
- return {setShipWakes(wakes:ShipWake[]){for(let i=0;i<4;i++){const w=wakes[i];if(w){shipWake.value[i].set(w.x,w.z,w.dx,w.dz);shipShape.value[i].set(w.length,w.width,w.power,0);}else shipShape.value[i].set(0,0,0,0);}},setFountainNight(n:number){fountainNight.value=n;},setLighting(tint:T.Color,light:number,sun?:T.Vector3,glint=0){reflectionTint.value.copy(tint);skyLight.value=light;
+ return {shallowStats:shallow.stats,setShipWakes(wakes:ShipWake[]){for(let i=0;i<4;i++){const w=wakes[i];if(w){shipWake.value[i].set(w.x,w.z,w.dx,w.dz);shipShape.value[i].set(w.length,w.width,w.power,0);}else shipShape.value[i].set(0,0,0,0);}},setFountainNight(n:number){fountainNight.value=n;},setLighting(tint:T.Color,light:number,sun?:T.Vector3,glint=0){reflectionTint.value.copy(tint);skyLight.value=light;
   if(sun&&sun.lengthSq()>.000001)riverSunDirection.value.copy(sun).normalize();
   riverSunGlint.value=Number.isFinite(glint)?T.MathUtils.clamp(glint,0,1)*(REFERENCE_STYLE?.35:1):0;
- },setVehicle(p:Vehicle){active=p;},setQuality(q:string){const lightweight=q==='smooth';near.visible=true;foam.visible=!lightweight;
+ },setVehicle(p:Vehicle){active=p;},setQuality(q:string){const lightweight=q==='smooth';near.visible=true;foam.visible=!lightweight;shallow.setQuality(q);
+   lagoon.transparent=!lightweight;lagoon.depthWrite=lightweight;lagoon.opacity=lightweight?1:.76;lagoon.needsUpdate=true;
    // Switch the material, never the geometry: shape, collisions and actual
    // water boundary remain consistent with the other graphics tiers.
    near.material=lightweight?calmWater:nearShader;
    far.material=lightweight?calmWater:farShader;
-  },update(t:number,camera:T.Camera){time.value=t;fountainLighting.update(t);const eye=new T.Vector3();camera.getWorldPosition(eye);near.position.set(Math.round(eye.x/2)*2,0,Math.round(eye.z/2)*2);far.position.copy(near.position);centre.value.set(near.position.x,near.position.z);
+  },update(t:number,camera:T.Camera){time.value=t;fountainLighting.update(t);const eye=new T.Vector3();camera.getWorldPosition(eye);near.position.set(Math.round(eye.x/2)*2,0,Math.round(eye.z/2)*2);far.position.copy(near.position);centre.value.set(near.position.x,near.position.z);shallow.update(eye.x,eye.z,t);
    if(active&&!terrain.land(active.x,active.z)){const level=waterLevel(map,active.x,active.z),power=active.rpm*Math.max(0,1-Math.max(0,active.y-level)/7);vehicle.value.set(active.x,active.z,power,level);if(power>.05&&t-lastRipple>.32){ripples.value[cursor].set(active.x,active.z,t,power);cursor=(cursor+1)%12;lastRipple=t;}}else vehicle.value.z=0;
   }};
 }

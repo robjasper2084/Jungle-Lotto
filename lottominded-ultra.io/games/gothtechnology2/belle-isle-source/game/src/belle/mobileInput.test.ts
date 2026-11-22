@@ -35,3 +35,11 @@ test('brake opposes both travel directions and stops accelerating at rest',()=>{
  assert.equal(brakeThrottle(12),-1);assert.equal(brakeThrottle(-5),1);
  assert.equal(brakeThrottle(.04),0);assert.equal(brakeThrottle(0),0);
 });
+
+test('low-range touch response is progressive without boosting maximum speed',()=>{
+ const low=stickAxes(0,-12,45).throttle;
+ const mid=stickAxes(0,-23,45).throttle;
+ assert(low>0&&mid>low&&mid<1);
+ assert(mid>(23-45*.09)/(45-45*.09),'gentle response boosts precision near neutral');
+ assert.equal(stickAxes(0,-45,45).throttle,1);
+});

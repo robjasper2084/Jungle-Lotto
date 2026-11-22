@@ -99,7 +99,11 @@ export class VolumetricSky {
   if(this.row===0){this.uniforms.sun.value.copy(frame.sun);for(const key of ['zenith','horizon','warm','sunColor'] as const)this.uniforms[key].value.copy(frame[key]);for(const key of ['coverage','density','stretch','night'] as const)this.uniforms[key].value=frame[key];this.uniforms.cloudScale.value=frame.scale;this.uniforms.cloudTime.value=frame.time;this.lastSun.copy(frame.sun);this.lastCoverage=frame.coverage;}
   const r=this.renderer,target=r.getRenderTarget(),scissorTest=r.getScissorTest(),auto=r.autoClear,xr=r.xr.enabled;r.getViewport(this.viewport);r.getScissor(this.scissor);r.xr.enabled=false;r.autoClear=false;
   try{
-   r.setRenderTarget(this.targets[this.back]);r.setViewport(0,0,2048,1024);r.setScissor(0,this.row,2048,8);r.setScissorTest(true);r.render(this.scene,this.camera);this.row+=8;
+   r.setRenderTarget(this.targets[this.back]);r.setViewport(0,0,2048,1024);// Preserve the full 2048×1024 panorama and all 64×6 lighting samples,
+   // but bound a single in-flight software-GPU submission to two rows.
+   // Desktop High at the sunset bridge otherwise stalls on the real GPU fence.
+   const stripRows=2;
+   r.setScissor(0,this.row,2048,stripRows);r.setScissorTest(true);r.render(this.scene,this.camera);this.row+=stripRows;
    if(this.row>=1024){
     this.complete=true;skyRadiance.texture.value=this.targets[this.back].texture;skyRadiance.ready.value=1;this.back=1-this.back;this.row=0;
     // Filter only a small probe, at a bounded cadence; never render the world six times.

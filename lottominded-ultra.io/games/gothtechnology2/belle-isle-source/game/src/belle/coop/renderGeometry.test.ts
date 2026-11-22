@@ -17,3 +17,14 @@ test('hidden landmark ancestors cannot be resurrected by a palette batch',()=>{c
 test('distant interior detail culling retains building shells and nearby furnishings',()=>{assert.equal(landmarkDisplayRange('107310050_Conservatory_orchid_ivory'),240);assert.equal(landmarkDisplayRange('107227742_Aquarium_black_glazed_tile'),180);assert.equal(landmarkDisplayRange('107310050_Botanical_label_ivory'),240);assert.equal(landmarkDisplayRange('107227742_Aquarium_exterior_copper_roof'),1800);assert.equal(landmarkDisplayRange('107310050_Conservatory_clear_panes'),1800);assert.equal(landmarkDisplayRange('MacArthur_Higgsfield_warm_limestone'),1800);});
 
 test('multi-draw retains source transforms and geometry when a distant sibling is hidden',()=>{const scene=new T.Scene(),mat=new T.MeshStandardMaterial(),geo=new T.BoxGeometry(),a=new T.Mesh(geo,mat),b=new T.Mesh(geo,mat);a.position.set(10,2,30);b.position.set(2000,3,4000);scene.add(a,b);scene.updateMatrixWorld(true);const batch=new StaticPaletteBatch([a,b]),mesh=batch.root.children[0] as T.BatchedMesh;assert.equal(batch.stats.batches,1);assert.deepEqual(mesh.getMatrixAt(1,new T.Matrix4()),b.matrixWorld);assert.equal(mesh.geometry.attributes.position.count,geo.attributes.position.count);b.visible=false;batch.beginView();assert.equal(mesh.getVisibleAt(0),true);assert.equal(mesh.getVisibleAt(1),false);batch.endView();assert.equal(a.visible,true);assert.equal(b.visible,false);let disposed=false;geo.addEventListener('dispose',()=>disposed=true);batch.dispose();assert.equal(disposed,false);assert.equal(a.geometry,geo);});
+test('palette batches keep material bindings separate when two finishes share a GPU program',()=>{
+ const make=(finish:string)=>{
+  const material=new T.MeshStandardMaterial();
+  material.userData.realisticSurface='grass';
+  material.userData.realisticProfile=finish;
+  material.customProgramCacheKey=()=>'shared-program';
+  return new T.Mesh(new T.BoxGeometry(),material);
+ };
+ const batch=new StaticPaletteBatch([make('grass'),make('grass'),make('infield-grass'),make('infield-grass')]);
+ assert.equal(batch.stats.batches,2);
+});

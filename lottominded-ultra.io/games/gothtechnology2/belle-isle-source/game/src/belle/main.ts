@@ -2,6 +2,7 @@ import {animeRider,glowVehicle} from './referenceActors.ts';
 import {Golf} from './golf.ts';
 import './rideMedia.css';
 import {yieldStartupTask,warmObjectTextures} from './startupWork.ts';
+import {prepareOnFootRider} from '../../runtime/ride-core/src/onFootRider.ts';
 import {StartupTelemetry} from './startupTelemetry.ts';
 import {CoopSession} from './coop/session.ts';
 import {createBelleAudio} from './belleAudio.ts';
@@ -16,6 +17,9 @@ import {IslandTrials} from './islandTrials.ts';
 import type {TrialPose} from './trialRules.ts';
 import {IslandActivities} from './islandActivities.ts';
 import {FrameBudget,sceneFrameCap} from './frameBudget.ts';
+import {softwareWebGLRenderer} from './worldPerformancePolicy.ts';
+import {pauseSoftwareStartupScene} from './startupRenderPolicy.ts';
+import {installGpuFramePacing} from './gpuFramePacing.ts';
 import {readAntiAliasingMode,enableHardwareAntialiasing} from './antiAliasingPolicy.ts';
 import {prepareCoastGuardMap} from './coastGuard.ts';
 import coastGuardLayout from './coastGuardLayout.json' with {type:'json'};
@@ -55,6 +59,7 @@ import {createStartup} from './startup.ts';
 import {createFirstRideObjective} from './firstRideObjective.ts';
 import {localPerformanceProbe} from './performanceProbe.ts';
 import {planCasinoWayViews,CASINO_WAY_REFERENCE} from './casinoBridgeView.ts';
+import {planShallowWaterInspection} from './shallowWaterInspection.ts';
 import './firstRideObjective.css';
 import {greenhouseWorld,greenhouseInside,greenhouseRoom} from './conservatory.ts';
 import * as T from 'three';import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';import {RideCore} from '../../runtime/ride-core/src/ridecore.ts';import {HUMAN_PROFILE} from '../../runtime/ride-core/src/profiles.ts';import {ThreeRiderView} from '../../runtime/elmwood-source/src/detroit/riding/threeRiderView.ts';import {createWorld} from './world.ts';import {ParkTerrain,inside,type Landmark,type ParkMap} from './terrain.ts';import './style.css';
@@ -133,8 +138,21 @@ let savedMapChoice:string|null=null;try{savedMapChoice=localStorage.getItem('bel
 let mapCollapsed=initiallyCollapsedMap(savedMapChoice,touch.checked,innerWidth);
 const syncMap=()=>{el('minimap').hidden=mapCollapsed;el('navigation').classList.toggle('is-collapsed',mapCollapsed);el('minimap-hide').textContent=mapCollapsed?'Show map':'Hide map';el('minimap-hide').setAttribute('aria-expanded',String(!mapCollapsed));};
 el('minimap-hide').onclick=()=>{mapCollapsed=!mapCollapsed;syncMap();try{localStorage.setItem('belle-map-collapsed',String(mapCollapsed));}catch{}};syncMap();
-async function boot(){const response=await fetch('./belle/map.json');if(!response.ok)throw Error('Map unavailable');const data=await response.json() as ParkMap;alignScottMap(data);prepareCoastGuardMap(data);if(SUNSET_REFERENCE)data.spawn=referenceSpawn(data);const beachPlace=createBeachLocator(data.areas);for(const p of activityLandmarks())if(!data.landmarks.some(l=>l.id===p.id))data.landmarks.push(p);for(const p of playgroundLandmarks)if(!data.landmarks.some(l=>l.id===p.id))data.landmarks.push(p);status('Preparing terrain and canal crossings');await yieldStartupTask();const terrain=new ParkTerrain(data);await yieldStartupTask();const natureAudio=new NatureAudio(fountains(data),text=>el('nature-audio-status').textContent=text,[data.island,...data.water.map(w=>w.points)]);const natureToggle=el<HTMLInputElement>('nature-sound'),natureVolume=el<HTMLInputElement>('nature-volume'),birdVolume=el<HTMLInputElement>('bird-volume');natureToggle.checked=natureAudio.enabled;natureVolume.value=String(natureAudio.volume);birdVolume.value=String(natureAudio.birdVolume);const audioSettings=()=>natureAudio.configure(natureToggle.checked,Number(natureVolume.value),Number(birdVolume.value));natureToggle.onchange=audioSettings;natureVolume.oninput=audioSettings;birdVolume.oninput=audioSettings;el('nature-preview').onclick=()=>natureAudio.preview();const scene=new T.Scene(),camera=new T.PerspectiveCamera(60,innerWidth/innerHeight,.08,22000);const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreference:'high-performance'});actualMsaa=!!renderer.getContext().getContextAttributes()?.antialias;syncAaStatus();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.25));renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.85;renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;
+async function boot(){const response=await fetch('./belle/map.json');if(!response.ok)throw Error('Map unavailable');const data=await response.json() as ParkMap;alignScottMap(data);prepareCoastGuardMap(data);if(SUNSET_REFERENCE)data.spawn=referenceSpawn(data);const beachPlace=createBeachLocator(data.areas);for(const p of activityLandmarks())if(!data.landmarks.some(l=>l.id===p.id))data.landmarks.push(p);for(const p of playgroundLandmarks)if(!data.landmarks.some(l=>l.id===p.id))data.landmarks.push(p);status('Preparing terrain and canal crossings');await yieldStartupTask();const terrain=new ParkTerrain(data);await yieldStartupTask();const natureAudio=new NatureAudio(fountains(data),text=>el('nature-audio-status').textContent=text,[data.island,...data.water.map(w=>w.points)]);const natureToggle=el<HTMLInputElement>('nature-sound'),natureVolume=el<HTMLInputElement>('nature-volume'),birdVolume=el<HTMLInputElement>('bird-volume');natureToggle.checked=natureAudio.enabled;natureVolume.value=String(natureAudio.volume);birdVolume.value=String(natureAudio.birdVolume);const audioSettings=()=>natureAudio.configure(natureToggle.checked,Number(natureVolume.value),Number(birdVolume.value));natureToggle.onchange=audioSettings;natureVolume.oninput=audioSettings;birdVolume.oninput=audioSettings;el('nature-preview').onclick=()=>natureAudio.preview();const scene=new T.Scene(),camera=new T.PerspectiveCamera(60,innerWidth/innerHeight,.08,22000);const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreference:'high-performance'});
+ // The renderer's ACTUAL WebGL backend, not a user-agent/viewport guess,
+ // governs whether decorative preview canvases should consume a second GPU.
+ const gameGl=renderer.getContext(),gpuDebug=gameGl.getExtension('WEBGL_debug_renderer_info');
+ const gpuName=String(gameGl.getParameter(gpuDebug?.UNMASKED_RENDERER_WEBGL??gameGl.RENDERER));
+ const softwareStartup=softwareWebGLRenderer(gpuName);
+ startup.setSoftwarePreview(softwareStartup);
+ // Use the published single-outstanding-frame policy on Apple GPUs as well.
+ // The gate preserves real frame timestamps and bypasses XR.
+ if(softwareStartup || /\bApple\b/i.test(gpuName))installGpuFramePacing(renderer);
+ actualMsaa=!!renderer.getContext().getContextAttributes()?.antialias;syncAaStatus();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.25));renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.85;renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;
  const core=new RideCore(terrain,{spawn:{position:{x:data.spawn.x,y:2,z:data.spawn.z},headingY:data.spawn.heading}});clearSimulationInput=()=>core.clearPendingActions();const loader=new GLTFLoader();const world=await createWorld(scene,renderer,data,terrain,status);el('profile').dataset.macarthurRailMeshes=String(world.stats.bridgeRailFinish.meshes);el('profile').dataset.macarthurRailMaterials=String(world.stats.bridgeRailFinish.newMaterials);world.sky.preview(!SUNSET_REFERENCE);const refreshSkySettings=connectSkySettings(world.sky);const sunsetPreview=SUNSET_REFERENCE?createSunsetPreview(camera,()=>hover,()=>active&&!trials?.active&&!race?.active&&!coop?.active&&!photo?.active,()=>{clear();cameraYaw=0;cameraPitch=.1;snap=true;},data.spawn,data):undefined;status('Preparing your rider');const rider=await loader.loadAsync('./exports/rigged-heroes/DS_Armored_Rider_01.glb'),wheel=await loader.loadAsync('./exports/glb/DS_EUC_01/DS_EUC_01_LOD1.glb');const hero=new ThreeRiderView(rider,wheel,terrain,{...HUMAN_PROFILE,id:'DS_Armored_Rider_01'});scene.add(hero.root);applyRealisticMaterials(hero.root,'actor');if(REFERENCE_STYLE){animeRider(hero.rider);glowVehicle(hero.vehicle,'wheel');}hero.apply(core.current);
+ // The first acceleration uses the fitted riding rig, including its skinned
+ // boot soles. Prepare it once while the loading screen owns the frame.
+ status('Fitting your rider');await yieldStartupTask();prepareOnFootRider(hero);
  const remoteRiders=new OnlineRiders(scene,terrain,rider,wheel,async model=>{await warmObjectTextures(renderer,model);await renderer.compileAsync(model,camera,scene);});
  let savedSoloSky:typeof world.sky.settings|undefined;
  void import('./onlineRooms.ts').then(({BelleOnlineRooms})=>{online=new BelleOnlineRooms({race:(sender,message)=>race?.receive(sender,message),raceOpen:()=>race?.open(),clear:()=>{clear();release();core.clearPendingActions();},ride:()=>{if(!active)start.click();},sky:()=>world.sky.settings,syncSky:s=>{savedSoloSky??=world.sky.settings;world.sky.synchronize(s);},localSky:()=>{if(savedSoloSky){world.sky.configure(savedSoloSky);savedSoloSky=undefined;}},skyHost:host=>{document.querySelectorAll<HTMLInputElement|HTMLSelectElement>('.sky-settings input,.sky-settings select').forEach(e=>e.disabled=!host);el('sky-room-note').textContent=online?.online?(host?'You control the shared room sky.':'Time and clouds follow the room host.'):'Time pauses with solo play. Online rooms share the host’s sky.';},follow:p=>{for(const d of [4,7,11,18])for(let a=0;a<Math.PI*2;a+=Math.PI/4){const x=p.x+Math.sin(a)*d,z=p.z+Math.cos(a)*d;if(terrain.land(x,z)&&!terrain.obstructed(x,z,1.5)){jump(x,z,Math.atan2(p.x-x,p.z-z));return;}}}});}).catch(error=>{console.warn('Multiplayer unavailable',error);for(const id of ['friends-open','welcome-friends'])el(id).textContent='Multiplayer unavailable · reload';});
@@ -212,43 +230,43 @@ async function boot(){const response=await fetch('./belle/map.json');if(!respons
  });
 
  hud?.collectTools();
-
-  // Two mapped, safe-view sightseeing cards make the visually distinctive
-  // red casino crossings and a real wooded canal accessible to players.
-  // No scene/collision coordinate is fabricated: anchors come from map roads
-  // and named OSM waterway points; cameras arrive on existing land paths.
-  const scenicRoute=(x:number,z:number)=>{
-   const candidates=routepoints.map(p=>({p,d:Math.hypot(p[0]-x,p[1]-z)}))
-    .filter(v=>v.d>=13&&v.d<=48&&!terrain.obstructed(v.p[0],v.p[1],1.2))
-    .sort((a,b)=>Math.abs(a.d-23)-Math.abs(b.d-23));
-   return candidates[0]?.p;
+ // Mapped Guide views only: camera locations are derived from existing dry
+ // bank/paths, never synthetic bridge geometry or rewritten collision data.
+ const scenicRoute=(x:number,z:number)=>{
+  const candidates=routepoints.map(p=>({p,d:Math.hypot(p[0]-x,p[1]-z)}))
+   .filter(v=>v.d>=13&&v.d<=48&&!terrain.obstructed(v.p[0],v.p[1],1.2))
+   .sort((a,b)=>Math.abs(a.d-23)-Math.abs(b.d-23));
+  return candidates[0]?.p;
+ };
+ const scenicCard=(name:string,description:string,x:number,z:number,buttonName:string,view?:{x:number;z:number;pitch?:number})=>{
+  const p=view?[view.x,view.z] as [number,number]:scenicRoute(x,z);if(!p)return;
+  const card=document.createElement('article');card.className='landmark';card.dataset.kind='trail';card.dataset.search=name.toLowerCase();
+  const title=document.createElement('h3');title.textContent=name;
+  const note=document.createElement('p');note.textContent=description;
+  const visit=document.createElement('button');visit.type='button';visit.textContent=buttonName;
+  visit.onclick=()=>{
+   if(!terrain.land(p[0],p[1])||terrain.obstructed(p[0],p[1],1.2))return;
+   destination=undefined;
+   jump(p[0],p[1],Math.atan2(x-p[0],z-p[1]));
+   core.advance(1/60,{dismount:true,instantDismount:true});
+   first=true;cameraPitch=view?.pitch??.035;el<HTMLDialogElement>('guide').close();
+   if(!active)start.click();
   };
-  const scenicCard=(name:string,description:string,x:number,z:number,buttonName:string,view?:{x:number;z:number})=>{
-   const p=view?[view.x,view.z] as [number,number]:scenicRoute(x,z);if(!p)return;
-   const card=document.createElement('article');card.className='landmark';card.dataset.kind='trail';
-   card.dataset.search=name.toLowerCase();
-   const title=document.createElement('h3');title.textContent=name;
-   const note=document.createElement('p');note.textContent=description;
-   const visit=document.createElement('button');visit.type='button';visit.textContent=buttonName;
-   visit.onclick=()=>{
-    if(!terrain.land(p[0],p[1])||terrain.obstructed(p[0],p[1],1.2))return;
-    destination=undefined;
-    jump(p[0],p[1],Math.atan2(x-p[0],z-p[1]));
-    core.advance(1/60,{dismount:true,instantDismount:true});
-    first=true;cameraPitch=.035;el<HTMLDialogElement>('guide').close();
-    if(!active)start.click();
-   };
-   card.append(title,note,visit);el('landmarks').append(card);
-  };
-  const casinoViews=planCasinoWayViews(data,terrain);
-  if(casinoViews?.side){const v=casinoViews.side;
-   scenicCard('Casino Way Bridge · bank side','See the historic ornamental ironwork across the canal. Historical source: '+CASINO_WAY_REFERENCE.source,v.lookX,v.lookZ,'Visit red bridge',v);
-  }
-  if(casinoViews?.context){const v=casinoViews.context;
-   scenicCard('Casino Way Bridge · Casino context','Wider bank view of the mapped bridge and nearby Belle Isle Casino.',v.lookX,v.lookZ,'Visit Casino context',v);
-  }
-  const sylvanCanal=data.pois.find(p=>p.name==='Sylvan Canal');
-  if(sylvanCanal)scenicCard('Sylvan Canal · wooded banks','Look across a sheltered wooded canal, with roots, wetland planting and reflections.',sylvanCanal.x,sylvanCanal.z,'Visit canal view');
+  card.append(title,note,visit);el('landmarks').append(card);
+ };
+ const casinoViews=planCasinoWayViews(data,terrain);
+ if(casinoViews?.side){const v=casinoViews.side;
+  scenicCard('Casino Way Bridge · bank side','Historic red bridge railing from a dry bank. Source: '+CASINO_WAY_REFERENCE.source,v.lookX,v.lookZ,'Visit red bridge',v);
+ }
+ if(casinoViews?.context){const v=casinoViews.context;
+  scenicCard('Casino Way Bridge · Casino context','Separate wider mapped bridge and Casino context view.',v.lookX,v.lookZ,'Visit Casino context',v);
+ }
+ const sylvanCanal=data.pois.find(p=>p.name==='Sylvan Canal');
+ if(sylvanCanal)scenicCard('Sylvan Canal · wooded banks','Real mapped wooded canal and water edge.',sylvanCanal.x,sylvanCanal.z,'Visit canal view');
+ const shallowView=planShallowWaterInspection(data,terrain);
+ if(shallowView)scenicCard('Lagoon · submerged stone bed',
+  'Look down from the mapped dry bank at submerged limestone, lagoon sediment and shallow-water transparency.',
+  shallowView.lookX,shallowView.lookZ,'Inspect shallow water',shallowView);
  const bridgeCard=document.createElement('article');bridgeCard.className='landmark';bridgeCard.dataset.kind='attraction';bridgeCard.dataset.search='ambassador bridge sunset point photography overlook';bridgeCard.innerHTML='<h3>Ambassador Bridge overlook</h3><p>Look downriver from Sunset Point. Try the 85 mm or 135 mm lens, then switch to dusk for the bridge lights.</p><button type="button">Visit bridge overlook</button>';bridgeCard.querySelector('button')!.onclick=()=>{jump(bridgeOverlook.x,bridgeOverlook.z,bridgeOverlook.heading);core.advance(1/60,{dismount:true});first=true;cameraPitch=-.012;el<HTMLDialogElement>('guide').close();if(!active)start.click();};el('landmarks').append(bridgeCard);
  el('restart').onclick=()=>{destination=undefined;first=false;jump(data.spawn.x,data.spawn.z,data.spawn.heading);el<HTMLDialogElement>('settings').close();};
  async function visitYachtClub(landmark:Landmark,button:HTMLButtonElement){
@@ -307,7 +325,36 @@ async function boot(){const response=await fetch('./belle/map.json');if(!respons
  const filterGuide=()=>{const query=el<HTMLInputElement>('guide-search').value.trim().toLowerCase(),kind=el<HTMLSelectElement>('guide-category').value;let shown=0;document.querySelectorAll<HTMLElement>('#landmarks .landmark').forEach(c=>{c.hidden=!(c.dataset.search!.includes(query)&&(kind==='all'||c.dataset.kind===kind));if(!c.hidden)shown++;});el('guide-count').textContent=shown+' places';};el('guide-search').oninput=filterGuide;el('guide-category').onchange=filterGuide;filterGuide();
  const firstRide=createFirstRideObjective(destinations,data.spawn,target=>{if(destination===target)destination=undefined;});
  const referenceHud=REFERENCE_STYLE?createReferenceHud(data):undefined;
- const minimap=el<HTMLCanvasElement>('minimap'),ctx=minimap.getContext('2d')!;const px=(x:number)=>(x+600)/4700*420,pz=(z:number)=>(z+700)/2700*290;function drawMap(x:number,z:number,heading:number){ctx.clearRect(0,0,420,290);ctx.globalAlpha=Number(opacity.value);ctx.fillStyle='#143f47';ctx.fillRect(0,0,420,290);function polygon(points:[number,number][],color:string){ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(px(p[0]),pz(p[1])):ctx.moveTo(px(p[0]),pz(p[1])));ctx.closePath();ctx.fillStyle=color;ctx.fill();}polygon(data.island,'#506b4b');for(const i of data.outerIslets||[])polygon(i.points,'#506b4b');for(const w of data.water){polygon(w.points,'#214951');for(const h of w.holes)polygon(h,'#506b4b');}ctx.strokeStyle='#b8c3a3';ctx.lineWidth=1;for(const r of data.roads){if(r.foot)continue;ctx.beginPath();r.points.forEach((p,i)=>i?ctx.lineTo(px(p[0]),pz(p[1])):ctx.moveTo(px(p[0]),pz(p[1])));ctx.stroke();}ctx.strokeStyle='#c3c98e';ctx.lineWidth=.65;ctx.setLineDash([2,2]);for(const r of data.roads){if(!r.foot||!['path','track','cycleway'].includes(r.highway||''))continue;ctx.beginPath();r.points.forEach((p,i)=>i?ctx.lineTo(px(p[0]),pz(p[1])):ctx.moveTo(px(p[0]),pz(p[1])));ctx.stroke();}ctx.setLineDash([]);ctx.globalAlpha=1;for(const l of data.landmarks){ctx.fillStyle=l===destination?'#ffd98b':l.kind==='monument'?'#96e7dc':'#e8deaa';ctx.beginPath();ctx.arc(px(l.x),pz(l.z),l===destination?4:2,0,Math.PI*2);ctx.fill();}for(const [i,m]of (online?.members??[]).entries()){if(m.id===online?.self)continue;const p=online?.buffers.get(m.id)?.sample(performance.now());if(!p)continue;ctx.fillStyle=PLAYER_COLORS[i];ctx.strokeStyle='#10252c';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(px(p.pose.x),pz(p.pose.z),4,0,Math.PI*2);ctx.fill();ctx.stroke();}race?.drawMap(ctx,px,pz);activities?.drawMap(ctx,px,pz);ctx.save();ctx.translate(px(x),pz(z));ctx.rotate(-heading);ctx.fillStyle='#a5fff0';ctx.beginPath();ctx.moveTo(0,7);ctx.lineTo(-4,-4);ctx.lineTo(4,-4);ctx.fill();ctx.restore();ctx.fillStyle='#f2f4e6';ctx.font='12px system-ui';ctx.fillText('N ↑',10,18);}
+ const minimap=el<HTMLCanvasElement>('minimap'),navigation=el('navigation'),ctx=minimap.getContext('2d')!;
+ const px=(x:number)=>(x+600)/4700*420,pz=(z:number)=>(z+700)/2700*290;
+ const mapLayer=document.createElement('canvas');mapLayer.width=minimap.width;mapLayer.height=minimap.height;
+ const baseCtx=mapLayer.getContext('2d')!;
+ let mapLayerOpacity=-1;
+ function drawMapLayer(alpha:number){
+  baseCtx.clearRect(0,0,mapLayer.width,mapLayer.height);baseCtx.globalAlpha=alpha;
+  baseCtx.fillStyle='#143f47';baseCtx.fillRect(0,0,420,290);
+  function path(points:[number,number][]){
+   baseCtx.beginPath();points.forEach((p,i)=>i?baseCtx.lineTo(px(p[0]),pz(p[1])):baseCtx.moveTo(px(p[0]),pz(p[1])));
+  }
+  function polygon(points:[number,number][],color:string){
+   path(points);baseCtx.closePath();baseCtx.fillStyle=color;baseCtx.fill();
+  }
+  polygon(data.island,'#506b4b');
+  for(const i of data.outerIslets||[])polygon(i.points,'#506b4b');
+  for(const w of data.water){polygon(w.points,'#214951');for(const h of w.holes)polygon(h,'#506b4b');}
+  baseCtx.strokeStyle='#b8c3a3';baseCtx.lineWidth=1;
+  for(const r of data.roads){if(!r.foot){path(r.points);baseCtx.stroke();}}
+  baseCtx.strokeStyle='#c3c98e';baseCtx.lineWidth=.65;baseCtx.setLineDash([2,2]);
+  for(const r of data.roads){if(r.foot&&['path','track','cycleway'].includes(r.highway||'')){path(r.points);baseCtx.stroke();}}
+  baseCtx.setLineDash([]);mapLayerOpacity=alpha;
+ }
+ function drawMap(x:number,z:number,heading:number){
+  if(navigation.hidden||minimap.hidden)return;
+  const alpha=Number(opacity.value);
+  if(mapLayerOpacity!==alpha)drawMapLayer(alpha);
+  ctx.clearRect(0,0,420,290);ctx.drawImage(mapLayer,0,0);
+  ctx.strokeStyle='#c3c98e';ctx.lineWidth=.65;
+  for(const l of data.landmarks){ctx.fillStyle=l===destination?'#ffd98b':l.kind==='monument'?'#96e7dc':'#e8deaa';ctx.beginPath();ctx.arc(px(l.x),pz(l.z),l===destination?4:2,0,Math.PI*2);ctx.fill();}for(const [i,m]of (online?.members??[]).entries()){if(m.id===online?.self)continue;const p=online?.buffers.get(m.id)?.sample(performance.now());if(!p)continue;ctx.fillStyle=PLAYER_COLORS[i];ctx.strokeStyle='#10252c';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(px(p.pose.x),pz(p.pose.z),4,0,Math.PI*2);ctx.fill();ctx.stroke();}race?.drawMap(ctx,px,pz);activities?.drawMap(ctx,px,pz);ctx.save();ctx.translate(px(x),pz(z));ctx.rotate(-heading);ctx.fillStyle='#a5fff0';ctx.beginPath();ctx.moveTo(0,7);ctx.lineTo(-4,-4);ctx.lineTo(4,-4);ctx.fill();ctx.restore();ctx.fillStyle='#f2f4e6';ctx.font='12px system-ui';ctx.fillText('N ↑',10,18);}
  status('Preparing stable sky reflections');await world.sky.prepareReflections(camera,core.current.x,core.current.z);status('Warming up island lighting');await sceneWarmup.prepare();status('Preparing the first frame');let prepared=false,starting=false;start.onclick=async()=>{if(starting||!prepared)return;starting=true;const choice=startup.choice;natureAudio.unlock();clear();startup.preparing();try{if(choice.vehicle!=='onewheel'){await hover!.selectVehicle(choice,scene);await hover!.prepare(scene,true);}startup.leave(()=>{world.sky.preview(false);world.sky.protectStartup();startupMetrics.begin('solo');active=true;paused=false;destination??=firstRide.begin(destination);chooseView(choice.camera==='fpp');el('ridehud').hidden=false;el('navigation').hidden=false;zone.hidden=!touch.checked;snap=true;canvas.focus();vr?.refresh();if(choice.vehicle!=='onewheel')void hover!.mount(scene).finally(()=>{starting=false;});else starting=false;});}catch(error){starting=false;startup.retryRide('Your ride could not load. Try again, or choose the other vehicle.');console.warn('Selected ride preparation failed',error);}};
  let savedFirst=false,savedQuality='automatic';
  vr=new BelleVR(renderer,scene,camera,terrain,{
@@ -316,7 +363,15 @@ async function boot(){const response=await fetch('./belle/map.json');if(!respons
   exit:()=>{clear();release();first=savedFirst;paused=true;el('pause').textContent='Resume';world.setQuality(savedQuality);if(savedQuality==='automatic')world.setBudget(frameBudget.scale);zone.hidden=!touch.checked;hero.rider.visible=true;snap=true;previous=performance.now();cameraYaw=0;cameraPitch=.1;camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);canvas.focus();}
  });
  const rideProfile=new URLSearchParams(location.search).has('profile')?new RideProfile(()=>({quality:graphics.value,effectiveQuality:world.quality.effective,cap,shadowMappingSupported:renderer.shadowMap.enabled,pixelRatio:renderer.getPixelRatio(),adaptiveScale:frameBudget.scale,world:world.stats,diagnosticReduction:localPerformanceProbe()})):null;
- let previous=performance.now(),lastUI=0,lastRender=0,clock=0,lastMeasurementEligible=false,activeFrames=0,stalledFrames=0,severeFrames=0,longestFrameMs=0;const samples:number[]=[];const target=new T.Vector3(),desired=new T.Vector3(),forward=new T.Vector3();function frame(now:number,xrFrame?:XRFrame){if(scenePreparing||(document.hidden&&!vr?.active)){previous=now;lastMeasurementEligible=false;return;}if(resetFrameClock){previous=now;lastMeasurementEligible=false;resetFrameClock=false;}const overlay=paused||!!document.querySelector('dialog[open]');const frameCap=sceneFrameCap(cap,active,overlay,renderFocused);if(!vr?.active&&now-lastRender<1000/frameCap-.8)return;const measureFrame=active&&!overlay&&renderFocused;const eligibleFrame=measureFrame&&lastMeasurementEligible;lastMeasurementEligible=measureFrame;const cpuStart=performance.now();const elapsed=(now-previous)/1000;previous=now;lastRender=now;clock+=Math.min(elapsed,.1);const dt=Math.min(elapsed,.05);world.sky.observeFrame(elapsed*1000,eligibleFrame&&!coop?.paused);const budgetChanged=graphics.value==='automatic'&&!vr?.active&&frameBudget.sample(elapsed,cap,eligibleFrame);world.sky.tick(dt,!!online?.online||(active&&!paused&&!coop?.paused&&!document.querySelector('dialog[open]')&&(!vr?.active||!vr.suspended)),reduced);
+ let previous=performance.now(),lastUI=0,lastRender=0,clock=0,lastMeasurementEligible=false,activeFrames=0,stalledFrames=0,severeFrames=0,longestFrameMs=0;const samples:number[]=[];const target=new T.Vector3(),desired=new T.Vector3(),forward=new T.Vector3();function frame(now:number,xrFrame?:XRFrame){
+ // The authentic MacArthur start frame must be rendered first. Once ready,
+ // the software WebGL island freezes behind the open ride picker. Leaving
+ // the picker instantly resumes the normal, unmodified world renderer.
+ // This is never active in flight, XR, or hardware-accelerated browsers.
+ if(pauseSoftwareStartupScene(softwareStartup,prepared,active,document.querySelector<HTMLDetailsElement>('.cinema-ride-picker')?.open===true,!!vr?.active)){
+  previous=now;lastMeasurementEligible=false;return;
+ }
+ if(scenePreparing||(document.hidden&&!vr?.active)){previous=now;lastMeasurementEligible=false;return;}if(resetFrameClock){previous=now;lastMeasurementEligible=false;resetFrameClock=false;}const overlay=paused||!!document.querySelector('dialog[open]');const frameCap=sceneFrameCap(cap,active,overlay,renderFocused);if(!vr?.active&&now-lastRender<1000/frameCap-.8)return;const measureFrame=active&&!overlay&&renderFocused;const eligibleFrame=measureFrame&&lastMeasurementEligible;lastMeasurementEligible=measureFrame;const cpuStart=performance.now();const elapsed=(now-previous)/1000;previous=now;lastRender=now;clock+=Math.min(elapsed,.1);const dt=Math.min(elapsed,.05);world.sky.observeFrame(elapsed*1000,eligibleFrame&&!coop?.paused);const budgetChanged=graphics.value==='automatic'&&!vr?.active&&frameBudget.sample(elapsed,cap,eligibleFrame);world.sky.tick(dt,!!online?.online||(active&&!paused&&!coop?.paused&&!document.querySelector('dialog[open]')&&(!vr?.active||!vr.suspended)),reduced);
  coop?.refreshAvailability();
  if(coop?.active){
   if(budgetChanged)world.setBudget(frameBudget.scale);
