@@ -3,6 +3,7 @@ import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {createCoopStaticServer} from './coop-static-server.mjs';
+import {calibrate,measurePrograms} from './host-display-calibration.mjs';
 const game=resolve(import.meta.dirname,'..'),require=createRequire(resolve(game,'../../package.json'));
 const {chromium,expect:rawExpect}=require('@playwright/test');
 const expect=rawExpect.configure({timeout:180000});
@@ -27,7 +28,9 @@ try{
  let lastBackendError;
  for(const candidate of candidates){
   try{
-   browser=await chromium.launch({channel:'chrome',headless:true,args:candidate.args});
+   browser=await chromium.launch({channel:'chrome',headless:process.env.BELLE_DISPLAY!=='window',args:candidate.args});
+   const calibrated=await calibrate(browser,viewport);
+   await writeFile(resolve(output,'display.json'),JSON.stringify(calibrated,null,2));
    const probe=await browser.newPage();
    const available=await probe.evaluate(()=>{
     const gl=document.createElement('canvas').getContext('webgl2');
@@ -208,6 +211,8 @@ try{
   stats.distanceMetres<3?'render-starved-or-blocked-motion':report.frameQualityAccepted?'frame-budget-met':'stalls-detected';
  // A reduced-scene or software-browser success is never release approval.
  report.releasePerformanceVerified=false;
+ try{await writeFile(resolve(output,'programs.json'),JSON.stringify(await measurePrograms(page),null,2));}
+ catch(error){report.probeErrors.push('Post-ride GPU timings: '+String(error));}
 }catch(error){
  report.errors.push(String(error?.stack||error));
  if(page)report.startupAtFailure=await page.evaluate(()=>({

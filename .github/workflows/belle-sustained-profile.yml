@@ -1,51 +1,17 @@
-name: Belle Isle sustained riding profile
-
-on:
-  pull_request:
-    paths:
-      - '.github/workflows/belle-sustained-profile.yml'
-      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/**'
-  workflow_dispatch:
-
+name: Belle Isle hosted display calibration
+on: workflow_dispatch
 permissions:
   contents: read
-
-concurrency:
-  group: belle-sustained-${{ github.ref }}
-  cancel-in-progress: true
-
+  actions: read
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-      - name: Check test and build exact candidate
-        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
-        run: |
-          npm ci
-          npm run check
-          npm test
-          node --check scripts/sustained-ride-profile.mjs
-          npm run build
-      - uses: actions/upload-artifact@v4
-        with:
-          name: sustained-profile-game
-          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist/
-          if-no-files-found: error
-          retention-days: 1
-  profile:
-    needs: build
+  compare:
     runs-on: macos-15
-    timeout-minutes: 35
+    timeout-minutes: 22
     strategy:
       fail-fast: false
       matrix:
+        display: [window, headless]
         device: [desktop, phone]
-        mode: [full, diagnostic]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -60,24 +26,24 @@ jobs:
         with:
           name: sustained-profile-game
           path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist
-      - name: Install Chrome browser runtime
+          run-id: 45064600992
+          github-token: ${{ github.token }}
+      - name: Install the same Chrome runtime
         working-directory: lottominded-ultra.io/games/gothtechnology2
         run: |
           npm ci
           npx playwright install chrome
-      - name: Hold real input and sample 90-second foreground ride
-        timeout-minutes: 28
+      - name: Measure the display and ride the unchanged game
         working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
         env:
           BELLE_PROFILE_DEVICE: ${{ matrix.device }}
-          BELLE_PROFILE_MODE: ${{ matrix.mode }}
+          BELLE_PROFILE_MODE: full
           BELLE_PROFILE_SECONDS: '90'
+          BELLE_DISPLAY: ${{ matrix.display }}
         run: node scripts/sustained-ride-profile.mjs
-      - name: Archive actual full or diagnostic evidence separately
+      - uses: actions/upload-artifact@v4
         if: always()
-        uses: actions/upload-artifact@v4
         with:
-          name: belle-sustained-profile-${{ matrix.mode }}-${{ matrix.device }}
-          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/sustained-profile/${{ matrix.mode }}/${{ matrix.device }}
-          if-no-files-found: warn
-          retention-days: 14
+          name: calibration-${{ matrix.display }}-${{ matrix.device }}
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/sustained-profile/full/${{ matrix.device }}
+          retention-days: 7
