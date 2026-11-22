@@ -86,6 +86,7 @@ function fit(h:Rig):Fit{
   arms.push({upper:a,knee:b,foot:c,palm:bone(side+'HandMiddle1'),upperLength:a.getWorldPosition(v()).distanceTo(b.getWorldPosition(v())),lowerLength:b.getWorldPosition(v()).distanceTo(c.getWorldPosition(v()))});
  }
  // Measure the real shoes once per model; do not scan vertices in the animation loop.
+ h.root.updateWorldMatrix(true,false);
  const worldToRig=h.root.matrixWorld.clone().invert(),vertex=new T.Vector3();
  const soleCeiling=bottom+.12*Math.max(.45,h.motionScale);
  h.rider.traverse(o=>{const m=o as T.Mesh;if(!m.isMesh)return;for(let i=0;i<m.geometry.attributes.position.count;i++){

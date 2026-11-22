@@ -30,4 +30,6 @@ test('the gallery captures both historic side rails and a separate Casino contex
  assert(gallery.includes('action:/Walk onto the beach/'));
  assert(!gallery.includes('search:/Covered Bridge/i'));
  assert(!gallery.includes('search:/Wet-Mesic Flatwoods Forest/i'));
+ assert(gallery.includes('Casino Way Bridge · Casino context'));
+ assert(gallery.includes('Visit Casino context'));
 });

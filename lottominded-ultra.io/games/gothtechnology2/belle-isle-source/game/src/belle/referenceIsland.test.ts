@@ -10,12 +10,12 @@ import {referenceGate,referenceRoute} from './referenceRace.ts';
 import {referenceTree} from './referenceTrees.ts';
 import type {Solid} from './flightCollision.ts';
 const map:ParkMap=JSON.parse(readFileSync(new URL('../../public/belle/map.json',import.meta.url),'utf8'));
-test('all preview locations use navigable roads and new park fittings leave travel lanes clear',()=>{
+test('all preview locations use navigable roads and new park fittings leave travel lanes clear',async()=>{
  const terrain=new ParkTerrain(map),solids:Solid[]=[],add=terrain.flightSolids.add.bind(terrain.flightSolids);terrain.flightSolids.add=s=>{solids.push(s);add(s);};
  const routes=map.roads.flatMap(r=>r.points.slice(1).map((b,i)=>({a:r.points[i],b,w:r.width})));
  for(const [i,place]of REFERENCE_PLACES.entries()){
   const p=referenceSpawn(map,place);assert(terrain.land(p.x,p.z),place.name+' spawn on land');assert(!terrain.obstructed(p.x,p.z,1.5),place.name+' spawn clear');
-  if(!i)continue;const garden=addSunsetGarden(new T.Scene(),map,terrain,{...place,trees:0,seed:209585+i-1,shore:place.name!=='Belle Isle Beach'});assert(garden.stats.lamps>0,place.name+' has detailed shoulders');assert.equal(garden.stats.trees,0);if(place.name==='Belle Isle Beach')assert.equal(garden.stats.rocks,0,'sandy beach retains its shoreline');
+  if(!i)continue;const garden=await addSunsetGarden(new T.Scene(),map,terrain,{...place,trees:0,seed:209585+i-1,shore:place.name!=='Belle Isle Beach'});assert(garden.stats.lamps>0,place.name+' has detailed shoulders');assert.equal(garden.stats.trees,0);if(place.name==='Belle Isle Beach')assert.equal(garden.stats.rocks,0,'sandy beach retains its shoreline');
  }
  for(const s of solids){const clearance=Math.min(...routes.map(r=>segment(s.x,s.z,r.a,r.b).d-r.w*.5));assert(clearance>s.radius+.15,`${s.kind} overlaps lane at ${s.x},${s.z}`);}
 });

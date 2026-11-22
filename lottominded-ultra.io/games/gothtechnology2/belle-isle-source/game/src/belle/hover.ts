@@ -57,6 +57,8 @@ export class HoverRide {
  private fittedArms?:HoverFirstPerson;private radio?:CockpitRadio;private radioCanvas?:HTMLCanvasElement;
  setRadio(radio:CockpitRadio,canvas:HTMLCanvasElement){this.radio=radio;this.radioCanvas=canvas;this.cockpit?.connectRadio(radio,canvas);}
  private model:T.Group|undefined;private cockpit?:CockpitLcd;private controls?:HoverControls;private driveSelect!:HTMLSelectElement;
+ /** Read-only lifetime LCD work counts for capture-boundary snapshots. */
+ get cockpitDisplayDiagnostics(){return this.cockpit?.diagnostics??null;}
  private loading:Promise<void>|undefined;
  private mountGeneration=0;private mountAbort:AbortController|undefined;private savedDriveGear?:DriveGear;
  private savedFlightMode:FlightMode|undefined;

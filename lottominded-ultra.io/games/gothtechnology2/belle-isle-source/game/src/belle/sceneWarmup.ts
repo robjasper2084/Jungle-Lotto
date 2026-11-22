@@ -1,6 +1,6 @@
 import {Group,type Camera,type DirectionalLight,type Object3D,type Scene,type WebGLRenderer} from 'three';
 
-import {warmObjectTextures} from './startupWork.ts';
+import {warmObjectTextures,yieldStartupTask} from './startupWork.ts';
 
 type Compiler=Pick<WebGLRenderer,'compileAsync'> & Partial<Pick<WebGLRenderer,'initTexture'|'shadowMap'>>;
 type Pending={promise:Promise<void>;signal?:AbortSignal;cancel:AbortController};
@@ -8,12 +8,16 @@ type Pending={promise:Promise<void>;signal?:AbortSignal;cancel:AbortController};
  * drawables while the real target scene continues to provide all the lighting.
  * No game object is cloned, reparented or removed from the scene. */
 class SmoothWarmupRoot extends Group {
- private drawables:Object3D[]=[];
- constructor(scene:Scene,camera:Camera){
-  super();
+ private drawables:Object3D[];
+ constructor(drawables:Object3D[]){super();this.drawables=drawables;}
+ static batches(scene:Scene,camera:Camera){
+  const drawables:Object3D[]=[];
   scene.traverseVisible(object=>{
-   if('material' in object && object.layers.test(camera.layers))this.drawables.push(object);
+   if('material' in object && object.layers.test(camera.layers))drawables.push(object);
   });
+  const batches:SmoothWarmupRoot[]=[];
+  for(let i=0;i<Math.max(1,drawables.length);i+=64)batches.push(new SmoothWarmupRoot(drawables.slice(i,i+64)));
+  return batches;
  }
  override traverse(callback:(object:Object3D)=>void){for(const object of this.drawables)callback(object);}
 }
@@ -52,7 +56,7 @@ export class SceneWarmup {
    // Rider-only preparation must not recompile every island material. A model
    // with lights changes the scene light topology and still needs the full scene.
    let addsLights=false;model?.traverse?.(object=>{if((object as Object3D&{isLight?:boolean}).isLight)addsLights=true;});
-   const compileRoot=!model&&!mappedShadows?new SmoothWarmupRoot(this.scene,this.camera):model&&!addsLights?model:this.scene;
+   const compileRoots=!model&&!mappedShadows?SmoothWarmupRoot.batches(this.scene,this.camera):[model&&!addsLights?model:this.scene];
    const shadows:{light:DirectionalLight;enabled:boolean}[]=[];
    this.scene.traverse(object=>{const light=object as DirectionalLight;if(light.isDirectionalLight)shadows.push({light,enabled:light.castShadow});});
    try{
@@ -68,10 +72,14 @@ export class SceneWarmup {
      if(cancel.signal.aborted)throw cancelled(cancel.signal);
      for(const state of shadows)state.light.castShadow=enabled;
      // compileAsync collects synchronously, then awaits driver readiness.
-     let ready:Promise<unknown>;
-     try{if(model)model.visible=true;ready=this.renderer.compileAsync(compileRoot,this.camera,this.scene);}
-     finally{if(model)model.visible=visible!;}
-     await readyOrCancelled(ready,cancel.signal);
+     for(const [i,root] of compileRoots.entries()){
+      if(i>0)await readyOrCancelled(yieldStartupTask(),cancel.signal);
+      if(cancel.signal.aborted)throw cancelled(cancel.signal);
+      let ready:Promise<unknown>;
+      try{if(model)model.visible=true;ready=this.renderer.compileAsync(root,this.camera,this.scene);}
+      finally{if(model)model.visible=visible!;}
+      await readyOrCancelled(ready,cancel.signal);
+     }
      if(!shadows.length)break;
     }
     if(cancel.signal.aborted)throw cancelled(cancel.signal);

@@ -24,7 +24,15 @@ import {WheelLights} from '../wheelLights.ts';
 
 type Limb={upper:T.Object3D;knee:T.Object3D;foot:T.Object3D;target:T.Vector3;rotation:T.Quaternion;};
 const v=()=>new T.Vector3(),q=()=>new T.Quaternion();
-function rotateWorld(bone:T.Object3D|undefined,axis:T.Vector3,angle:number){if(!bone)return;const w=bone.getWorldQuaternion(q()).premultiply(q().setFromAxisAngle(axis,angle));bone.quaternion.copy(bone.parent!.getWorldQuaternion(q()).invert().multiply(w));bone.updateWorldMatrix(false,true);}
+function rotateWorld(bone:T.Object3D|undefined,axis:T.Vector3,angle:number){
+  if(!bone)return;
+  const w=bone.getWorldQuaternion(q()).premultiply(q().setFromAxisAngle(axis,angle));
+  bone.quaternion.copy(bone.parent!.getWorldQuaternion(q()).invert().multiply(w));
+  // Following world queries refresh their own ancestor paths. Publish all
+  // descendants in the completed pose's root update instead of traversing
+  // both legs and every finger after each small torso rotation.
+  bone.updateWorldMatrix(false,false);
+}
 function prepare(o:T.Object3D){o.traverse(n=>{const m=n as T.Mesh;if(m.isMesh){m.castShadow=true;m.receiveShadow=true;m.frustumCulled=!(m as T.SkinnedMesh).isSkinnedMesh;}});}
 export class ThreeRiderView {
   private readonly reducedMotionQuery=typeof matchMedia==='function'?matchMedia('(prefers-reduced-motion: reduce)'):undefined;

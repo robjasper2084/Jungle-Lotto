@@ -46,7 +46,9 @@ export class Photography {
  close(){this.capture.stop();if(this.active)this.capture.setActive(false);}
  update(camera:T.PerspectiveCamera,available:boolean,hero:T.Object3D,now:number){
   this.capture.update(available);this.rig.visible=this.active&&!this.capture.finder;this.carried.visible=!this.active&&available&&hero.visible&&(()=>{let o:T.Object3D|null=hero;while(o){if(!o.visible)return false;o=o.parent;}return true;})();
-  if(this.carried.visible){hero.updateWorldMatrix(true,true);const hand=hero.getObjectByName('RightHand')??hero.getObjectByName('Hand_R');if(hand){this.carried.position.copy(hand.getWorldPosition(new T.Vector3()));this.carried.quaternion.copy(hero.getWorldQuaternion(new T.Quaternion()));this.carried.position.y-=.08;}else this.carried.visible=false;}
+  // These world getters refresh the hand's ancestors; unrelated bones and
+  // meshes do not need another full traversal just to place the carried camera.
+  if(this.carried.visible){const hand=hero.getObjectByName('RightHand')??hero.getObjectByName('Hand_R');if(hand){this.carried.position.copy(hand.getWorldPosition(new T.Vector3()));this.carried.quaternion.copy(hero.getWorldQuaternion(new T.Quaternion()));this.carried.position.y-=.08;}else this.carried.visible=false;}
   if(!this.active)return;
   if(hero.uuid!==this.actorId)this.prepareArms(hero);
   const frame=this.capture.frame();camera.fov=lensFov(this.mm,this.capture.zoom,this.canvas.height,this.capture.finder?frame.h:this.canvas.height);camera.updateProjectionMatrix();
