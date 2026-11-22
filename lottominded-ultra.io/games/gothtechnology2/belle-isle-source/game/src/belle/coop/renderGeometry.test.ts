@@ -1,4 +1,30 @@
 import test from 'node:test';import assert from 'node:assert/strict';import * as T from 'three';import {batchRigidChildren} from './batchRigid.ts';import {detailGeometry,indexHash} from '../landmarkDetail.ts';
+import {cullMacArthurSpans} from '../macArthurSpanCulling.ts';
+test('bridge spans keep intersecting triangles, authored face IDs and full shadow geometry',()=>{
+ const root=new T.Scene(),source=new T.BufferGeometry(),positions:number[]=[];
+ // Interleave both ends in authored order, then a long triangle whose centroid
+ // falls outside the photo frustum but whose tip is visible inside it.
+ for(const z of [-200,200,-120,120])positions.push(-1,-1,z,1,-1,z,0,1,z);
+ positions.push(-1,-1,-150,1,-1,-150,0,1,190);
+ source.setAttribute('position',new T.Float32BufferAttribute(positions,3));
+ source.setIndex(Array.from({length:15},(_,i)=>i));
+ const material=new T.MeshBasicMaterial({side:T.DoubleSide});
+ const bridge=new T.Mesh(source,material);bridge.name='MacArthur_Painted_steel';root.add(bridge);
+ cullMacArthurSpans(root);
+ const display=bridge.geometry;assert.notEqual(display,source);assert.equal(display.attributes.position,source.attributes.position);
+ const renderer={xr:{isPresenting:false},getRenderTarget:()=>null} as unknown as T.WebGLRenderer;
+ const camera=new T.PerspectiveCamera(25,1,.1,70);camera.position.set(0,0,220);camera.lookAt(0,0,150);camera.updateMatrixWorld();
+ const group=null as unknown as T.Group;
+ bridge.onBeforeRender(renderer,root,camera,display,material,group);
+ const visible=Array.from(display.index!.array).slice(display.drawRange.start,display.drawRange.start+display.drawRange.count);
+ assert.ok(visible.includes(3)&&visible.includes(12));assert.ok(!visible.includes(0));assert.ok(visible.length<source.index!.count);
+ const ray=new T.Raycaster(new T.Vector3(0,0,-190),new T.Vector3(0,0,-1));
+ assert.equal(ray.intersectObject(bridge)[0]?.faceIndex,0);assert.equal(bridge.geometry,display);
+ bridge.onAfterRender(renderer,root,camera,display,material,group);
+ assert.equal(display.drawRange.count,Infinity);assert.equal(display.index!.count,source.index!.count);
+ const reflection={xr:{isPresenting:false},getRenderTarget:()=>({})} as unknown as T.WebGLRenderer;
+ bridge.onBeforeRender(reflection,root,camera,display,material,group);assert.equal(display.drawRange.count,Infinity);
+});
 test('rigid batches preserve parent motion, material boundaries and animated pieces',()=>{const root=new T.Group(),rotor=new T.Group(),mat=new T.MeshBasicMaterial(),other=new T.MeshBasicMaterial();root.add(rotor);const a=new T.Mesh(new T.BoxGeometry(),mat),b=new T.Mesh(new T.BoxGeometry(),mat),lever=new T.Mesh(new T.BoxGeometry(),mat),glass=new T.Mesh(new T.BoxGeometry(),other);a.position.x=2;b.position.x=-2;lever.name='lever';rotor.add(a,b,lever,glass);const expected=new T.Box3().expandByObject(a).expandByObject(b);const result=batchRigidChildren(root,new Set(['lever']));assert.equal(result.before,2);assert.equal(result.after,1);assert.equal(lever.parent,rotor);assert.equal(glass.parent,rotor);const batch=rotor.children.find(o=>o.name.startsWith('Rigid batch ·'))!;assert.deepEqual(new T.Box3().setFromObject(batch),expected);rotor.position.x=10;root.updateMatrixWorld(true);assert.equal(new T.Box3().setFromObject(batch).min.x,expected.min.x+10);result.dispose();});
 test('skinning, hidden parts and child sockets never merge',()=>{const root=new T.Group(),mat=new T.MeshBasicMaterial();const skin=new T.SkinnedMesh(new T.BoxGeometry(),mat),hidden=new T.Mesh(new T.BoxGeometry(),mat),socket=new T.Mesh(new T.BoxGeometry(),mat);hidden.visible=false;socket.add(new T.Object3D());root.add(skin,hidden,socket);assert.equal(batchRigidChildren(root).before,0);assert.equal(root.children.length,3);});
 test('landmark detail preserves attributes and rejects stale or out-of-range indices',()=>{const g=new T.BoxGeometry(),idx=new Uint32Array(g.index!.array),entry={mesh:0,primitive:0,vertices:g.getAttribute('position').count,originalCount:idx.length,hash:indexHash(idx),count:6,offset:0,length:0};const low=detailGeometry(g,entry,idx.slice(0,6))!;assert.ok(low);assert.equal(low.getAttribute('position'),g.getAttribute('position'));assert.equal(low.getAttribute('normal'),g.getAttribute('normal'));assert.equal(g.index!.count,36);assert.equal(detailGeometry(g,{...entry,hash:0},idx.slice(0,6)),null);assert.equal(detailGeometry(g,entry,new Uint32Array([999,0,1,2,3,4])),null);});

@@ -6,6 +6,7 @@ import {batchStaticGround} from './staticGroundBatch.ts';
 import {landmarkDisplayRange} from './landmarkRange.ts';
 import {addWaterfront} from './waterfrontScene.ts';
 import {LandmarkDetail} from './landmarkDetail.ts';
+import {cullMacArthurSpans} from './macArthurSpanCulling.ts';
 import {addCoastGuard} from './coastGuard.ts';
 import {WorldQuality,dynamicShadowsEnabled} from './worldQuality.ts';
 import {WorldFrameWork,ShadowMapCadence,directionalCasterEligible,ScenePreparationQueue,softwareWebGLRenderer,deferredSceneryRadius,islandRenderOrder} from './worldPerformancePolicy.ts';
@@ -220,6 +221,7 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
  });
  const landmarkDetail=new LandmarkDetail(landmarks);
  await landmarkDetail.prepareDistant(scene);
+ cullMacArthurSpans(landmarks.scene);
  // Static architecture transforms are fixed after the fountain is placed.
  for(const staticRoot of [landmarks.scene,skyline.scene,historic.scene]){staticRoot.updateMatrixWorld(true);staticRoot.traverse(o=>{o.matrixAutoUpdate=false;o.matrixWorldAutoUpdate=false;});}
  // Keep full quality shadow maps, but avoid redrawing identical static shadows at 60 Hz.
