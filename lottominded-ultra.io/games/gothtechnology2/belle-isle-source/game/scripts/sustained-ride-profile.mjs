@@ -21,8 +21,9 @@ const server=createCoopStaticServer(resolve(game,'dist'));
 await new Promise(ok=>server.listen(0,'127.0.0.1',ok));
 const begin=Date.now();let browser,page;
 try{
- const candidates=process.platform==='darwin'?[{name:'angle-metal',args:['--enable-gpu','--use-gl=angle','--use-angle=metal']}]:
-  [{name:'angle-gl',args:['--use-gl=angle','--use-angle=gl']},
+ const native=process.platform==='darwin'?'metal':process.platform==='win32'?'d3d11':'gl';
+ const hardware={name:'angle-'+native,args:['--enable-gpu','--use-gl=angle','--use-angle='+native]};
+ const candidates=process.platform==='darwin'?[hardware]:[hardware,
   {name:'swiftshader-fallback',args:['--use-gl=angle','--use-angle=swiftshader-webgl','--enable-unsafe-swiftshader']}];
  let lastBackendError;
  for(const candidate of candidates){
@@ -45,10 +46,11 @@ try{
     throw Error('Metal renderer unavailable: '+available);
    report.renderBackend=candidate.name;
    page=await browser.newPage({viewport,deviceScaleFactor:1,isMobile:device==='phone',hasTouch:device==='phone',reducedMotion:'reduce'});
+   await page.bringToFront();
    break;
   }catch(error){
    lastBackendError=String(error);await browser?.close().catch(()=>{});browser=undefined;
-   if(candidate.name==='angle-gl')report.rendererFallback=lastBackendError;
+   if(candidate===candidates[0])report.rendererFallback=lastBackendError;
   }
  }
  if(!page)throw Error('No real WebGL2 backend available: '+lastBackendError);

@@ -29,7 +29,7 @@ export function createShoreDetailPool(scene:T.Scene,geometry:T.BufferGeometry,ma
   `);
  };material.customProgramCacheKey=()=>oldKey+'-shore-distance-settle-v1';
  const capacity=SHORE_BUDGETS.high[kind],mesh=new T.InstancedMesh(geometry,material,capacity),dummy=new T.Object3D(),tint=new T.Color();
- prepareColoredDetailPool(mesh);
+ if(instances.length)prepareColoredDetailPool(mesh);
  mesh.name=name;mesh.count=0;mesh.visible=false;mesh.frustumCulled=false;mesh.receiveShadow=kind==='rocks';mesh.instanceMatrix.setUsage(T.DynamicDrawUsage);scene.add(mesh);
  let quality:EnvironmentQuality='automatic',lastX=Infinity,lastZ=Infinity,selected=new Set<number>();
  const stats={total:instances.length,visible:0,limit:0,range:0,maxDraws:1};

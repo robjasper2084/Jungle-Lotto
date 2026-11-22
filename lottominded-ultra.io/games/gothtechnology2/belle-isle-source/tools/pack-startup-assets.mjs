@@ -14,7 +14,9 @@ let originalBytes = 0, packedBytes = 0, publishedBytesRemoved = 0;
 for (const path of paths) {
   if (!manifest.has(path)) throw Error('Startup asset missing from the build: ' + path);
   const input = await readFile(new URL(path, dist));
-  const packed = gzipSync(input);
+  // Highest gzip compression effort; the existing exact gunzip roundtrip below
+  // proves GLB buffers, images and other startup asset bytes are unchanged.
+  const packed = gzipSync(input, {level: 9});
   assert.deepEqual(gunzipSync(packed), input, 'Startup asset lossless roundtrip: ' + path);
   await writeFile(new URL(path + '.gz', dist), packed);
   manifest.add(path + '.gz');

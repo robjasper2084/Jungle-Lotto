@@ -49,14 +49,29 @@ export const HEIGHT_FOG=`
  gl_FragColor.rgb=mix(gl_FragColor.rgb,belleAerialColor,fogFactor);
 #endif
 `;
-export function atmosphereShader(vertex:string,fragment:string,directionalChunk=''){
+// The fixed light pool does not cast point shadows. A real WebGL2 loop can
+// index its uniform structs directly, so keep one copy of the physical
+// lighting calculation in the shader. Shadow samplers still use Three's
+// statically indexed implementation whenever a point shadow is present.
+const unrolledPointLights=/#pragma unroll_loop_start\s+for \( int i = 0; i < NUM_POINT_LIGHTS; i \+\+ \) \{[\s\S]*?#pragma unroll_loop_end/;
+const pooledPointLights=`
+ for (int i = 0; i < NUM_POINT_LIGHTS; ++i) {
+  if (pointLights[i].color == vec3(0.0)) continue;
+  getPointLightInfo(pointLights[i], geometryPosition, directLight);
+  if (directLight.visible) {
+   RE_Direct(directLight, geometryPosition, geometryNormal, geometryViewDir, geometryClearcoatNormal, material, reflectedLight);
+  }
+ }
+`;
+export function atmosphereShader(vertex:string,fragment:string,directionalChunk='',usePointPool=false){
  if(!vertex.includes('#include <worldpos_vertex>'))return {vertex,fragment,applied:false};
  // The four permanent road and interior light slots are often black. The
  // uniform guard skips their attenuation, shadow and BRDF work together.
  // Three expands this loop once per slot, preserving all active light paths.
  const localLights=directionalChunk.replace(/(pointLight = pointLights\[ i \];)([\s\S]*?RE_Direct\( directLight,[^;]+;)/,
   '$1\n if (pointLight.color != vec3(0.0)) {\n$2\n }');
- const directional=localLights.replace(/getDirectionalLightInfo\(\s*directionalLight,\s*directLight\s*\);/g,'$&\n directLight.color*=belleCloudShade();');
+ let directional=localLights.replace(/getDirectionalLightInfo\(\s*directionalLight,\s*directLight\s*\);/g,'$&\n directLight.color*=belleCloudShade();');
+ if(usePointPool)directional=directional.replace(unrolledPointLights,pooledPointLights);
  if(directional!==directionalChunk)fragment=fragment.replace('#include <lights_fragment_begin>',directional);
  return {vertex:WORLD_VERTEX+vertex.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\n'+WORLD_POSITION),
   fragment:WORLD_FRAGMENT+fragment.replace('#include <fog_fragment>',HEIGHT_FOG),applied:true};
