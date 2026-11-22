@@ -1,12 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {getEventListeners} from 'node:events';
-import type {Camera,Object3D,Scene,WebGLRenderer} from 'three';
+import {DirectionalLight,type Camera,type Object3D,type Scene,type WebGLRenderer} from 'three';
 import {SceneWarmup} from './sceneWarmup.ts';
 
 // Structural fixtures exercise preparation ownership, not actual GPU performance.
 function fixture(){
- const light={isDirectionalLight:true,castShadow:true};
+ const light=new DirectionalLight();light.castShadow=true;
  const scene={traverse(visit:(object:unknown)=>void){visit(light);}} as unknown as Scene;
  const model={uuid:'recovery-bike',visible:false} as Object3D;
  return{light,scene,model,camera:{} as Camera};
