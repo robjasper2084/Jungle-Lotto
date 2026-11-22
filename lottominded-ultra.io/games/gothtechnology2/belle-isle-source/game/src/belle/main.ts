@@ -73,6 +73,7 @@ import * as T from 'three';import {GLTFLoader} from 'three/addons/loaders/GLTFLo
 import {createBeachLocator} from './beachLocation.ts';
 import {createMobileHud} from './mobileHud.ts';
 import {brakeThrottle} from './mobileInput.ts';
+import {batchArmoredInk} from './riderInkBatch.ts';
 import {initiallyCollapsedMap} from './visualPolishPolicy.ts';
 import './visualPolish.css';
 prepareReferencePreferences();
@@ -175,6 +176,7 @@ async function boot(){const response=await fetch('./belle/map.json');if(!respons
  // The first acceleration uses the fitted riding rig, including its skinned
  // boot soles. Prepare it once while the loading screen owns the frame.
  status('Fitting your rider');await yieldStartupTask();prepareOnFootRider(hero);
+ if(REFERENCE_STYLE)batchArmoredInk(hero.rider,hero.root);
  const remoteRiders=new OnlineRiders(scene,terrain,rider,wheel,async model=>{await warmObjectTextures(renderer,model);await renderer.compileAsync(model,camera,scene);});
  let savedSoloSky:typeof world.sky.settings|undefined;
  void import('./onlineRooms.ts').then(({BelleOnlineRooms})=>{online=new BelleOnlineRooms({race:(sender,message)=>race?.receive(sender,message),raceOpen:()=>race?.open(),clear:()=>{clear();release();core.clearPendingActions();},ride:()=>{if(!active)start.click();},sky:()=>world.sky.settings,syncSky:s=>{savedSoloSky??=world.sky.settings;world.sky.synchronize(s);},localSky:()=>{if(savedSoloSky){world.sky.configure(savedSoloSky);savedSoloSky=undefined;}},skyHost:host=>{document.querySelectorAll<HTMLInputElement|HTMLSelectElement>('.sky-settings input,.sky-settings select').forEach(e=>e.disabled=!host);el('sky-room-note').textContent=online?.online?(host?'You control the shared room sky.':'Time and clouds follow the room host.'):'Time pauses with solo play. Online rooms share the host’s sky.';},follow:p=>{for(const d of [4,7,11,18])for(let a=0;a<Math.PI*2;a+=Math.PI/4){const x=p.x+Math.sin(a)*d,z=p.z+Math.cos(a)*d;if(terrain.land(x,z)&&!terrain.obstructed(x,z,1.5)){jump(x,z,Math.atan2(p.x-x,p.z-z));return;}}}});}).catch(error=>{console.warn('Multiplayer unavailable',error);for(const id of ['friends-open','welcome-friends'])el(id).textContent='Multiplayer unavailable · reload';});
