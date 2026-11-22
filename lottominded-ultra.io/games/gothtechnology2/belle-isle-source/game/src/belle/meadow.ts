@@ -1,5 +1,6 @@
 import {REFERENCE_STYLE} from './sunsetReferencePolicy.ts';
 import * as T from 'three';
+import {uploadInstancePrefix} from './instanceUpload.ts';
 import {loadStartupBytes} from './startupAssets.ts';
 import {meadowBudget,meadowRandom,type MeadowPlan} from './meadowPlan.ts';
 
@@ -39,7 +40,7 @@ export async function addMeadow(scene:T.Scene){
  transformed.y*=meadowFade*(1.-meadowBend*.55);`);
  };
  material.customProgramCacheKey=()=> 'meadow-blades-v1';
- const mesh=new T.InstancedMesh(geometry,material,meadowBudget.high.tufts);mesh.name='Living meadow grass';mesh.frustumCulled=false;mesh.castShadow=false;mesh.receiveShadow=true;mesh.count=0;mesh.instanceMatrix.setUsage(T.DynamicDrawUsage);scene.add(mesh);
+ const mesh=new T.InstancedMesh(geometry,material,meadowBudget.high.tufts);mesh.name='Living meadow grass';mesh.frustumCulled=false;mesh.castShadow=false;mesh.receiveShadow=true;mesh.count=0;mesh.setColorAt(0,new T.Color(0xffffff));mesh.instanceMatrix.setUsage(T.DynamicDrawUsage);scene.add(mesh);
  const dummy=new T.Object3D(),color=new T.Color();let quality:keyof typeof meadowBudget='automatic',lastX=Infinity,lastZ=Infinity;
  let reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;const motion=document.getElementById('motion') as HTMLInputElement|null;motion?.addEventListener('change',()=>reduced=motion.checked);
  const stats={cells:plan.cells.length,tufts:0,trianglesPerTuft:56};
@@ -61,7 +62,7 @@ export async function addMeadow(scene:T.Scene){
     color.setHSL(.20+meadowRandom(cx,cz,i*5+4)*.035,.18+patch*.13,.61+meadowRandom(cx,cz,i*5+2)*.22);mesh.setColorAt(count,color);count++;
    }
   }
-  range.value=Math.max(12,edge);mesh.count=count;stats.tufts=count;mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;
+  range.value=Math.max(12,edge);mesh.count=count;stats.tufts=count;uploadInstancePrefix(mesh.instanceMatrix,count);uploadInstancePrefix(mesh.instanceColor,count);
  }
  return{stats,update,setQuality(value:string){quality=value in meadowBudget?value as keyof typeof meadowBudget:'automatic';lastX=Infinity;}};
 }

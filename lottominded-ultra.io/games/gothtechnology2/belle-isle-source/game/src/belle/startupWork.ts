@@ -55,8 +55,11 @@ export async function warmTextureList(renderer:TextureInitializer,textures:Itera
 export async function warmObjectTextures(renderer:TextureInitializer,root:Object3D,signal?:AbortSignal){
  if(!renderer.initTexture)return 0;
  const textures=new Set<Texture>();const add=(v:unknown)=>{if(v&&typeof v==='object'&&(v as Texture).isTexture)textures.add(v as Texture);};
+ const inspected=new Set<object>();
  root.traverse(object=>{const material=(object as Object3D&{material?:object|object[]}).material;
-  for(const m of material?(Array.isArray(material)?material:[material]):[]){for(const value of Object.values(m))add(value);
+  for(const m of material?(Array.isArray(material)?material:[material]):[]){
+   if(inspected.has(m))continue;inspected.add(m);
+   for(const value of Object.values(m))add(value);
    const uniforms=(m as {uniforms?:Record<string,{value:unknown}>}).uniforms;
    for(const uniform of Object.values(uniforms??{})){const value=uniform.value;if(Array.isArray(value))value.forEach(add);else add(value);}
   }

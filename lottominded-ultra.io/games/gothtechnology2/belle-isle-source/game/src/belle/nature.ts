@@ -7,6 +7,7 @@ import {seasonalMaterial} from './seasonalMaterial.ts';
 import {treeBlend,seasonLook} from './seasonModel.ts';
 import {REFERENCE_STYLE,inSunsetGarden} from './sunsetReferencePolicy.ts';
 import * as T from 'three';
+import {uploadInstancePrefix} from './instanceUpload.ts';
 import {trunkRootHeight,replacedByCherry,cherryTreeSite} from './treeGrounding.ts';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {loadStartupModel} from './startupAssets.ts';
@@ -42,6 +43,8 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
   }
   const mesh=new T.InstancedMesh(geometry,source.material,count);mesh.name=name;mesh.count=0;
   mesh.castShadow=shadow;mesh.userData.seasonalLeaf=/leaves/.test(name);mesh.receiveShadow=true;mesh.frustumCulled=false;
+  // Allocate the color attribute before shader warmup, including initially empty pools.
+  mesh.setColorAt(0,new T.Color(0xffffff));
   mesh.instanceMatrix.setUsage(T.DynamicDrawUsage);scene.add(mesh);return mesh;
  }
  const canopyCache=new WeakMap<Plant,ReturnType<typeof canopyProfile>>();
@@ -101,8 +104,8 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
   const selected=new Set([...nearTrees,...nearGround]);const cutoff=nearTrees.length>=budget.trees?Math.min(budget.treeRadius,Math.sqrt(d(nearTrees[nearTrees.length-1]))):budget.treeRadius;stats.visibleTrees=nearTrees.length;stats.visibleGround=nearGround.length;
   for(const pool of pools){
    const near=pool.plants.filter(p=>selected.has(p));
-   for(const mesh of pool.meshes){mesh.count=near.length;near.forEach((p,i)=>{mesh.setMatrixAt(i,matrix(p));mesh.setColorAt(i,plantTint(p));});mesh.instanceMatrix.needsUpdate=true;const weights=mesh.geometry.getAttribute('lodWeight') as T.InstancedBufferAttribute|undefined;if(weights){near.forEach((p,i)=>weights.setX(i,treeBlend(Math.sqrt(d(p)),cutoff)));weights.needsUpdate=true;}const canopy=mesh.geometry.getAttribute('canopyDensity') as T.InstancedBufferAttribute|undefined;if(canopy){near.forEach((p,i)=>canopy.setX(i,growth(p).density));canopy.needsUpdate=true;}if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;}
-   if(pool.far)for(const far of pool.far){const visible=pool.plants.filter(p=>d(p)<(cardsActive?145:quality==='smooth'?850:1300)**2&&(!selected.has(p)||treeBlend(Math.sqrt(d(p)),cutoff)<1));far.count=visible.length;const weights=far.geometry.getAttribute('lodWeight') as T.InstancedBufferAttribute;visible.forEach((p,i)=>{far.setMatrixAt(i,matrix(p));far.setColorAt(i,plantTint(p));const distance=Math.sqrt(d(p));weights.setX(i,(selected.has(p)?1-treeBlend(distance,cutoff):1)*(cardsActive?Math.max(0,Math.min(1,(145-distance)/50)):1));});weights.needsUpdate=true;const canopy=far.geometry.getAttribute('canopyDensity') as T.InstancedBufferAttribute|undefined;if(canopy){visible.forEach((p,i)=>canopy.setX(i,growth(p).density));canopy.needsUpdate=true;}far.instanceMatrix.needsUpdate=true;if(far.instanceColor)far.instanceColor.needsUpdate=true;}
+   for(const mesh of pool.meshes){mesh.count=near.length;near.forEach((p,i)=>{mesh.setMatrixAt(i,matrix(p));mesh.setColorAt(i,plantTint(p));});uploadInstancePrefix(mesh.instanceMatrix,mesh.count);const weights=mesh.geometry.getAttribute('lodWeight') as T.InstancedBufferAttribute|undefined;if(weights){near.forEach((p,i)=>weights.setX(i,treeBlend(Math.sqrt(d(p)),cutoff)));uploadInstancePrefix(weights,mesh.count);}const canopy=mesh.geometry.getAttribute('canopyDensity') as T.InstancedBufferAttribute|undefined;if(canopy){near.forEach((p,i)=>canopy.setX(i,growth(p).density));uploadInstancePrefix(canopy,mesh.count);}uploadInstancePrefix(mesh.instanceColor,mesh.count);}
+   if(pool.far)for(const far of pool.far){const visible=pool.plants.filter(p=>d(p)<(cardsActive?145:quality==='smooth'?850:1300)**2&&(!selected.has(p)||treeBlend(Math.sqrt(d(p)),cutoff)<1));far.count=visible.length;const weights=far.geometry.getAttribute('lodWeight') as T.InstancedBufferAttribute;visible.forEach((p,i)=>{far.setMatrixAt(i,matrix(p));far.setColorAt(i,plantTint(p));const distance=Math.sqrt(d(p));weights.setX(i,(selected.has(p)?1-treeBlend(distance,cutoff):1)*(cardsActive?Math.max(0,Math.min(1,(145-distance)/50)):1));});uploadInstancePrefix(weights,far.count);const canopy=far.geometry.getAttribute('canopyDensity') as T.InstancedBufferAttribute|undefined;if(canopy){visible.forEach((p,i)=>canopy.setX(i,growth(p).density));uploadInstancePrefix(canopy,far.count);}uploadInstancePrefix(far.instanceMatrix,far.count);uploadInstancePrefix(far.instanceColor,far.count);}
    if(pool.card){pool.card.visible=cardsActive;if(cardsActive){const weights=pool.card.geometry.getAttribute('lodWeight') as T.InstancedBufferAttribute;pool.plants.forEach((p,i)=>weights.setX(i,Math.max(0,Math.min(1,(Math.sqrt(d(p))-95)/50))));weights.needsUpdate=true;}}
   }
  }

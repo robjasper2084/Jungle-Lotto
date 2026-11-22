@@ -86,10 +86,12 @@ function fit(h:Rig):Fit{
   arms.push({upper:a,knee:b,foot:c,palm:bone(side+'HandMiddle1'),upperLength:a.getWorldPosition(v()).distanceTo(b.getWorldPosition(v())),lowerLength:b.getWorldPosition(v()).distanceTo(c.getWorldPosition(v()))});
  }
  // Measure the real shoes once per model; do not scan vertices in the animation loop.
+ const worldToRig=h.root.matrixWorld.clone().invert(),vertex=new T.Vector3();
+ const soleCeiling=bottom+.12*Math.max(.45,h.motionScale);
  h.rider.traverse(o=>{const m=o as T.Mesh;if(!m.isMesh)return;for(let i=0;i<m.geometry.attributes.position.count;i++){
-  const vertex=h.root.worldToLocal(m.getVertexPosition(i,v()).applyMatrix4(m.matrixWorld));
-  if(vertex.y>bottom+.12*Math.max(.45,h.motionScale))continue;
-  const l=legs.reduce((a,b)=>Math.abs(vertex.x-a.rest.x)<Math.abs(vertex.x-b.rest.x)?a:b);l.sole.push(vertex.sub(l.rest));
+  m.getVertexPosition(i,vertex).applyMatrix4(m.matrixWorld).applyMatrix4(worldToRig);
+  if(vertex.y>soleCeiling)continue;
+  const l=legs.reduce((a,b)=>Math.abs(vertex.x-a.rest.x)<Math.abs(vertex.x-b.rest.x)?a:b);l.sole.push(vertex.clone().sub(l.rest));
  }});
  for(const l of legs)if(!l.sole.length)l.sole.push(new T.Vector3(0,-.05,0));
  // Pedal spacing is a riding stance, not a walking track. Bring the feet
