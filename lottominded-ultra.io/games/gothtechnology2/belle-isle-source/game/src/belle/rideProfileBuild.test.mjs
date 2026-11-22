@@ -37,3 +37,33 @@ test('ordinary automated profiles never request a launcher marker',()=>{
  }
  assert.equal(calls,0);
 });
+
+const pages='https://robjasper2084.github.io/Jungle-Lotto/';
+const game='lottominded-ultra.io/games/gothtechnology2/arcade/belle-isle-explorer/';
+const bundle=game+'assets/main-fixture.js';
+const stamp={commit:marker.commit,generatedAt:marker.builtAt,belleGame:{version:1,commit:marker.commit,entry:game+'index.html',files:[{path:game+'index.html',sha256:marker.indexSha256},{path:bundle,sha256:'f'.repeat(64)}]}};
+test('public manual rides identify the stamped release containing the running game module',async()=>{
+ for(const entry of ['', 'index.html']){
+  const target={pageUrl:pages+game+entry+'?profile=manual&ride=cadillac',moduleUrl:pages+bundle};
+  const requests=[];
+  const read=createRideProfileBuildReader('manual',async(url,options)=>{requests.push(url);assert.equal(options.credentials,'same-origin');return Response.json(stamp);},target);
+  await setImmediate();
+  assert.deepEqual(requests,[pages+'pages-artifact-manifest.json']);
+  assert.deepEqual(read(),{status:'available',source:'GitHub Pages release manifest',marker:{version:1,repository:marker.repository,commit:stamp.commit,buildId:'pages-'+stamp.commit,builtAt:stamp.generatedAt,indexSha256:marker.indexSha256}});
+ }
+});
+test('an older open tab, a mismatched stamp or an incomplete public entry is left unattributed',async()=>{
+ const target={pageUrl:pages+game,moduleUrl:pages+bundle};
+ for(const [data,where] of [[stamp,{...target,moduleUrl:pages+game+'assets/old.js'}],[stamp,{...target,moduleUrl:'https://elsewhere.example/main.js'}],[{...stamp,commit:'f'.repeat(40)},target],[{...stamp,belleGame:{...stamp.belleGame,files:stamp.belleGame.files.slice(1)}},target]]){
+  const read=createRideProfileBuildReader('manual',async()=>Response.json(data),where);
+  await setImmediate();assert.equal(read().status,'unavailable');
+ }
+});
+test('the LAN launcher still reads its root marker and a regular Pages visit makes no provenance request',async()=>{
+ const calls=[];
+ const fetcher=async url=>{calls.push(url);return Response.json(marker);};
+ const lan=createRideProfileBuildReader('manual',fetcher,{pageUrl:'http://192.168.0.2:8388/?profile=manual',moduleUrl:'http://192.168.0.2:8388/assets/main-LAN.js'});
+ await setImmediate();assert.equal(lan().marker.buildId,marker.buildId);
+ createRideProfileBuildReader(null,fetcher,{pageUrl:pages+game,moduleUrl:pages+bundle});
+ assert.deepEqual(calls,['/__belle_test_build.json']);
+});

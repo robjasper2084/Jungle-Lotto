@@ -1,7 +1,6 @@
-/** Read the local test launcher's provenance once, outside the frame loop.
- * Ordinary hosted builds may not have a marker; never guess their identity.
- */
-export type RideProfileBuild={status:'pending'|'unavailable';source:'same-origin build marker';reason?:string}|{status:'available';source:'same-origin build marker';marker:Record<string,string|number>};
+/** Read provenance once, outside the frame loop. */
+type BuildSource='same-origin build marker'|'GitHub Pages release manifest';
+export type RideProfileBuild={status:'pending'|'unavailable';source:BuildSource;reason?:string}|{status:'available';source:BuildSource;marker:Record<string,string|number>};
 const fields=['version','repository','pullRequest','commit','baseCommit','candidate','sourceState','patchSha256','buildId','builtAt','indexSha256','profileQuery'] as const;
 const sha1=/^[0-9a-f]{40}$/i,sha256=/^[0-9a-f]{64}$/i;
 export function parseRideProfileBuildMarker(value:unknown):Record<string,string|number>|null {
@@ -16,17 +15,39 @@ export function parseRideProfileBuildMarker(value:unknown):Record<string,string|
  }
  return marker;
 }
-export function createRideProfileBuildReader(mode:string|null,fetcher:typeof fetch=fetch):()=>RideProfileBuild {
+const pagesRoot='https://robjasper2084.github.io/Jungle-Lotto/';
+const gamePath='lottominded-ultra.io/games/gothtechnology2/arcade/belle-isle-explorer/';
+type BuildLocation={pageUrl:string;moduleUrl:string};
+
+function pagesBuildMarker(value:unknown,moduleUrl:string){
+ if(!value||typeof value!=='object'||!moduleUrl.startsWith(pagesRoot+gamePath+'assets/'))return null;
+ const manifest=value as {generatedAt?:string;commit?:string;belleGame?:{version?:number;commit?:string;entry?:string;files?:{path?:string;sha256?:string}[]}};
+ const release=manifest.belleGame;
+ if(!release||release.version!==1||release.commit!==manifest.commit||release.entry!==gamePath+'index.html'||!Array.isArray(release.files))return null;
+ // A tab may have loaded an older build while a new Pages deployment was publishing.
+ const loadedPath=moduleUrl.slice(pagesRoot.length);
+ if(!release.files.some(file=>file?.path===loadedPath&&sha256.test(file.sha256??'')))return null;
+ const index=release.files.find(file=>file?.path===release.entry);
+ if(!index?.sha256||!sha256.test(index.sha256))return null;
+ return parseRideProfileBuildMarker({version:release.version,repository:'robjasper2084/Jungle-Lotto',commit:manifest.commit,buildId:'pages-'+manifest.commit,builtAt:manifest.generatedAt,indexSha256:index.sha256});
+}
+
+export function createRideProfileBuildReader(mode:string|null,fetcher:typeof fetch=fetch,
+ target:BuildLocation|undefined=typeof location==='undefined'?undefined:{pageUrl:location.href,moduleUrl:import.meta.url}):()=>RideProfileBuild {
  if(mode!=='manual')return ()=>({status:'unavailable',source:'same-origin build marker',reason:'manual comparison not selected'});
- let current:RideProfileBuild={status:'pending',source:'same-origin build marker'};
+ const page=target?.pageUrl.split(/[?#]/,1)[0];
+ const hosted=page===pagesRoot+gamePath||page===pagesRoot+gamePath+'index.html';
+ const source:BuildSource=hosted?'GitHub Pages release manifest':'same-origin build marker';
+ let current:RideProfileBuild={status:'pending',source};
  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),5000);
  void (async()=>{
   try{
-   const response=await fetcher('/__belle_test_build.json',{cache:'no-store',credentials:'same-origin',redirect:'error',signal:controller.signal});
+   const response=await fetcher(hosted?pagesRoot+'pages-artifact-manifest.json':'/__belle_test_build.json',{cache:'no-store',credentials:'same-origin',redirect:'error',signal:controller.signal});
    if(!response.ok)throw new Error('Build marker unavailable');
-   const marker=parseRideProfileBuildMarker(await response.json());
-   current=marker?{status:'available',source:'same-origin build marker',marker}:{status:'unavailable',source:'same-origin build marker',reason:'invalid build marker'};
-  }catch{current={status:'unavailable',source:'same-origin build marker',reason:'build marker could not be read'};}
+   const value:unknown=await response.json();
+   const marker=hosted?pagesBuildMarker(value,target!.moduleUrl):parseRideProfileBuildMarker(value);
+   current=marker?{status:'available',source,marker}:{status:'unavailable',source,reason:'invalid or mismatched build marker'};
+  }catch{current={status:'unavailable',source,reason:'build marker could not be read'};}
   finally{clearTimeout(timeout);}
  })();
  return ()=>current;
