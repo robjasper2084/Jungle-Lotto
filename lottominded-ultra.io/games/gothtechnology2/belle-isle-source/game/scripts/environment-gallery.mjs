@@ -17,15 +17,22 @@ const device=process.env.ENV_GALLERY_DEVICE==='phone'?'phone':'desktop';
 const viewport=device==='phone'?{width:390,height:844}:{width:1440,height:900};
 const variant=process.env.ENV_GALLERY_VARIANT==='baseline'?'baseline':'candidate';
 const output=resolve(game,'output/environment-gallery',variant,device);
+// The older published Guide has substitute locations, NOT camera-matched
+// Sylvan or Casino-bank viewpoints. Their screenshots stay contextual only.
+const baselineFallback={
+ 'wooded-canal':{search:/Nashua Canal/i,action:/Travel/},
+ 'red-pedestrian-bridge':{search:/Belle Isle Casino/i,action:/Travel/},
+ 'swimming-beach':{search:/Belle Isle Beach/i,action:/Walk onto the beach/}
+};
 const sites=[
  {id:'macarthur',name:'MacArthur Bridge',search:/MacArthur Bridge overlook/i,
-  note:'Concrete arches, protected riprap and bridge clearances'},
- {id:'wooded-canal',name:'Wooded Canal',search:/Wet-Mesic Flatwoods Forest/i,
-  note:'Mapped forest travel destination; canal-water framing requires manual validation'},
- {id:'red-pedestrian-bridge',name:'Red Pedestrian Bridge',search:/Covered Bridge/i,
-  note:'Covered Bridge guide destination is provisional; confirm red bridge identity in screenshots'},
- {id:'swimming-beach',name:'Swimming Beach',search:/Belle Isle Beach/i,
-  note:'Open sandy beach with wet margin, no new rock collisions'},
+  note:'Real MacArthur arch and river crossing; check the bridge identity'},
+ {id:'wooded-canal',name:'Wooded Sylvan Canal',search:/Sylvan Canal · wooded banks/i,action:/Visit canal view/i,
+  note:'Actual mapped Sylvan Canal bank, not the Wet-Mesic forest road'},
+ {id:'red-pedestrian-bridge',name:'Casino Way Bridge · bank side',search:/Casino Way Bridge · bank side/i,action:/Visit red bridge/i,wayId:'106948146',
+  note:'Historically mapped Casino Way bridge, OSM way 106948146; verify railwork in the true game frame'},
+ {id:'swimming-beach',name:'Belle Isle Swimming Beach',search:/Belle Isle Beach/i,action:/Walk onto the beach/i,
+  note:'Real on-foot swimming beach footprint, not the nearby Park service shed'},
 ];
 // CI runs each genuine lighting pass independently, retaining both required
 // lighting cases on desktop and phone without sharing a long-lived GPU context.
@@ -34,7 +41,9 @@ assert.ok(['all','high-noon','sunset'].includes(selectedLight),'Unknown environm
 const lights=[{id:'high-noon',value:'12'},{id:'sunset',value:'17.8'}].filter(l=>selectedLight==='all'||l.id===selectedLight);
 await mkdir(output,{recursive:true});
 const report={head:process.env.GITHUB_SHA||null,variant,device,viewport,
- source:'real built browser game; guide Travel action; Chrome SwiftShader',
+ source:'real built browser game; genuine Guide travel and GPU fence; Chrome SwiftShader',
+ pairingComplete:false,
+ comparisonLimitations:['Old published Nashua Canal/Casino Guide viewpoints are contextual, not camera-matched. Do not assert historic visual parity.'],
  limitations:['Not physical-device FPS certification','Travel cameras may not frame the intended bridge exactly','Reference photos are not bundled or distributed'],
  passed:false,visits:[],errors:[],failedRequests:[],coverageGaps:[]};
 const server=createCoopStaticServer(resolve(game,'dist'));
@@ -76,15 +85,19 @@ async function configureSky(page,time){
 }
 async function travel(page,site){
  await openMenu(page);await page.locator('#map-open').click();
- const card=page.locator('#landmarks .landmark').filter({has:page.locator('h3').filter({hasText:site.search})}).first();
+ const historic=variant==='baseline'?baselineFallback[site.id]:undefined;
+ const card=page.locator('#landmarks .landmark').filter({has:page.locator('h3').filter({hasText:historic?.search||site.search})}).first();
  await expect(card).toBeVisible();
  const found=await card.locator('h3').innerText();
- await card.getByRole('button',{name:/Travel/}).click();
+ await card.getByRole('button',{name:historic?.action||site.action||/Travel/}).click();
  await expect(page.locator('#guide')).not.toBeVisible();
- return found;
+ return {destination:found,comparable:!historic||site.id==='swimming-beach',
+  source:historic?'published Guide context substitute (NOT camera-matched)':'mapped candidate Guide view'};
 }
-try{
- browser=await chromium.launch({channel:'chrome',headless:true,args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+// Each lighting pass still captures all four real guide destinations with the
+// same WebGL frame/fence assertions. Recreate the SwiftShader page halfway
+// through to release its accumulated GPU resources before the third stop.
+async function openActiveRidePage(){
  const page=await browser.newPage({viewport,deviceScaleFactor:1,isMobile:device==='phone',hasTouch:device==='phone',reducedMotion:'reduce'});
  page.setDefaultTimeout(150000);
  page.on('pageerror',error=>report.errors.push(error.message));
@@ -100,22 +113,71 @@ try{
  await page.getByRole('button',{name:'Use this ride',exact:true}).click();
  await page.locator('#start').click();
  await expect(page.locator('body')).not.toHaveClass(/at-start/);
+ return page;
+}
+try{
+ const launch=()=>chromium.launch({channel:'chromium',headless:true,args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+ browser=await launch();
  for(const light of lights){
-  await configureSky(page,light.value);
-  for(const site of sites){
-   const entry={id:site.id,site:site.name,light:light.id,expectedReference:site.note,passed:false};
-   try{
-    entry.destination=await travel(page,site);
-    const frame=await painted(page);
-    const file=site.id+'-'+light.id+'.png';
-    await page.screenshot({path:resolve(output,file),timeout:180000});
-    entry.passed=true;entry.screenshot=file;entry.frame=frame;
-    entry.place=await page.locator('#place').textContent();
-    entry.profile=await page.locator('#profile').textContent();
-   }catch(error){
-    entry.failure=String(error);report.coverageGaps.push(site.id+' '+light.id+': '+error);
+  let page;
+  try{
+   page=await openActiveRidePage();
+   await configureSky(page,light.value);
+   for(let i=0;i<sites.length;i++){
+    if(i===2){
+     await page.close();
+     await browser.close();
+     browser=await launch();
+     page=await openActiveRidePage();
+     await configureSky(page,light.value);
+    }
+    const site=sites[i];
+    const entry={id:site.id,site:site.name,light:light.id,expectedReference:site.note,passed:false};
+    try{
+     const arrival=await travel(page,site);
+     entry.destination=arrival.destination;
+     entry.comparable=arrival.comparable;
+     entry.cameraBasis=arrival.source;
+     entry.wayId=site.wayId??null;
+     // After the new-browser boundary, a modal Guide click can leave the page
+     // without keyboard/animation focus. Restore foreground browser focus
+     // through genuine Playwright UI actions, not injected frames or poses.
+     await page.bringToFront();
+     await page.locator('#game').focus();
+     entry.focus=await page.evaluate(()=>({focused:document.hasFocus(),
+      visibility:document.visibilityState,activeElement:document.activeElement?.id||null}));
+     if(!entry.focus.focused||entry.focus.visibility!=='visible')
+      throw Error('Real gallery page is not foreground after Guide Travel: '+JSON.stringify(entry.focus));
+     const frame=await painted(page);
+     const file=site.id+'-'+light.id+'.png';
+     await page.screenshot({path:resolve(output,file),timeout:180000});
+     entry.place=await page.locator('#place').textContent();
+     entry.profile=await page.locator('#profile').textContent();
+     // A genuine capture at a service shed is NOT a capture of the swimming beach.
+     if(variant==='candidate'&&site.id==='swimming-beach'&&!/Belle Isle Beach/i.test(entry.place||''))
+      throw Error('Beach capture at wrong mapped place: '+entry.place);
+     entry.passed=true;entry.screenshot=file;entry.frame=frame;
+    }catch(error){
+     entry.failure=String(error);
+     // Keep a factual, separate stall receipt. No screenshot is counted as
+     // captured unless the original >2-frame + GPU-fence proof succeeds.
+     try{
+      entry.failureState=await page.evaluate(()=>{
+       const p=document.getElementById('profile'),gl=document.getElementById('game')?.getContext('webgl2');
+       const ext=gl?.getExtension('WEBGL_debug_renderer_info');
+       return {focused:document.hasFocus(),visibility:document.visibilityState,
+        activeElement:document.activeElement?.id||null,frames:p?.dataset.activeFrames||null,
+        frameP95Ms:p?.dataset.frameP95Ms||null,quality:p?.dataset.quality||null,
+        renderer:gl?String(gl.getParameter(ext?.UNMASKED_RENDERER_WEBGL??gl.RENDERER)):null,
+        contextLost:gl?.isContextLost()??null};
+      });
+     }catch(diagError){entry.failureStateError=String(diagError);}
+     report.coverageGaps.push(site.id+' '+light.id+': '+error);
+    }
+    report.visits.push(entry);
    }
-   report.visits.push(entry);
+  }finally{
+   if(page)await page.close();
   }
  }
  report.passed=report.visits.length===sites.length*lights.length&&report.visits.every(v=>v.passed)&&!report.errors.length&&!report.failedRequests.length;

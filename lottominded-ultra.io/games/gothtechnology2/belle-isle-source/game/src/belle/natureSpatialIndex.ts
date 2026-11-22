@@ -4,7 +4,11 @@
  */
 export class NatureSpatialIndex<T extends {x:number;z:number}> {
  private cells=new Map<string,number[]>();
- constructor(private points:readonly T[],private cellSize=96){
+ private readonly points: readonly T[];
+ private readonly cellSize: number;
+ constructor(points: readonly T[], cellSize = 96) {
+  this.points = points;
+  this.cellSize = cellSize;
   if(!Number.isFinite(cellSize)||cellSize<=0)throw Error('Invalid nature cell size');
   points.forEach((p,i)=>{
    if(!Number.isFinite(p.x)||!Number.isFinite(p.z))throw Error('Invalid nature placement');
