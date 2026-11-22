@@ -28,7 +28,20 @@ export async function addSunsetGarden(scene:T.Scene,map:ParkMap,terrain:ParkTerr
  }
  const leafShape=new T.Shape();const outline=[[-.04,-.28],[-.09,-.12],[-.29,-.18],[-.20,-.015],[-.37,.08],[-.19,.12],[-.22,.31],[-.08,.23],[0,.43],[.09,.23],[.24,.31],[.19,.12],[.37,.08],[.20,-.015],[.29,-.18],[.09,-.12],[.04,-.28]];
  outline.forEach((p,i)=>i?leafShape.lineTo(p[0],p[1]):leafShape.moveTo(p[0],p[1]));leafShape.closePath();const leafGeo=new T.ShapeGeometry(leafShape);leafGeo.rotateX(-Math.PI/2);const pos=leafGeo.attributes.position;for(let i=0;i<pos.count;i++)pos.setY(i,Math.abs(pos.getX(i))*.13);leafGeo.computeVertexNormals();
- const perTree=2400,leaves=new T.InstancedMesh(leafGeo,leafMat,sites.length*perTree);leaves.name='Reference full autumn maple canopies';leaves.castShadow=true;leaves.receiveShadow=true;root.add(leaves);
+ const perTree=2400,leaves=new T.Group();leaves.name='Reference full autumn maple canopies';root.add(leaves);
+ // Static spatial batches let each camera, including the shadow camera, reject
+ // whole stands. Trees within a stand retain their original generation order.
+ const stands=new Map<string,{trees:number;written:number;mesh?:T.InstancedMesh}>();
+ const treeStands=sites.map(site=>{
+  const key=Math.floor(site.x/64)+','+Math.floor(site.z/64);
+  let stand=stands.get(key);
+  if(!stand){stand={trees:0,written:0};stands.set(key,stand);}
+  stand.trees++;return stand;
+ });
+ for(const stand of stands.values()){
+  const canopy=new T.InstancedMesh(leafGeo,leafMat,stand.trees*perTree);
+  canopy.castShadow=true;canopy.receiveShadow=true;leaves.add(canopy);stand.mesh=canopy;
+ }
  const tones=[0xeaae25,0x76933b,0xc28019,0x9f9b2f,0xf1b730,0x658441];let leafCount=0;
  const crownMat=standard('Reference shaded inner canopy',0xffffff);const crowns=new T.InstancedMesh(new T.IcosahedronGeometry(1,2),crownMat,sites.length*10);crowns.castShadow=true;crowns.receiveShadow=true;root.add(crowns);let crownCount=0;
  for(const [index,p] of sites.entries()){
@@ -39,13 +52,15 @@ export async function addSunsetGarden(scene:T.Scene,map:ParkMap,terrain:ParkTerr
   for(let j=0;j<9;j++){const a=j/9*Math.PI*2+index*.8,c=base.clone().add(new T.Vector3(Math.cos(a)*p.r*.54,p.h*.67+rand()*p.h*.24,Math.sin(a)*p.r*.54));lobes.push(c);rod(base.clone().lerp(tip,.42+j*.035),c,.12,.025);}
   lobes.push(base.clone().add(new T.Vector3(0,p.h*.94,0)));
   for(const c of lobes){dummy.position.copy(c);dummy.rotation.set(rand(),rand()*6,rand());dummy.scale.set(p.r*.33,p.r*.29,p.r*.33);dummy.updateMatrix();crowns.setMatrixAt(crownCount,dummy.matrix);crowns.setColorAt(crownCount++,color.setHex(tones[index%tones.length]).multiplyScalar(.50));}
+  const stand=treeStands[index],canopy=stand.mesh!;
   for(let j=0;j<perTree;j++){
    const c=lobes[j%lobes.length],a=rand()*Math.PI*2,vy=rand()*2-1,s=Math.sqrt(1-vy*vy),r=Math.pow(rand(),.48)*p.r*.65;
-   dummy.position.set(c.x+Math.cos(a)*s*r,c.y+vy*r*.76,c.z+Math.sin(a)*s*r);dummy.rotation.set((rand()-.5)*1.5,rand()*Math.PI*2,(rand()-.5)*1.3);const size=1.0+rand()*1.2;dummy.scale.set(size,size,size);dummy.updateMatrix();leaves.setMatrixAt(leafCount,dummy.matrix);
-   color.setHex(tones[(index+Math.floor(rand()*2.3))%tones.length]).multiplyScalar(.82+rand()*.33);leaves.setColorAt(leafCount++,color);
+   dummy.position.set(c.x+Math.cos(a)*s*r,c.y+vy*r*.76,c.z+Math.sin(a)*s*r);dummy.rotation.set((rand()-.5)*1.5,rand()*Math.PI*2,(rand()-.5)*1.3);const size=1.0+rand()*1.2;dummy.scale.set(size,size,size);dummy.updateMatrix();canopy.setMatrixAt(stand.written,dummy.matrix);
+   color.setHex(tones[(index+Math.floor(rand()*2.3))%tones.length]).multiplyScalar(.82+rand()*.33);canopy.setColorAt(stand.written++,color);
   }
+  leafCount+=perTree;
+  if(stand.written===canopy.count){canopy.computeBoundingSphere();canopy.boundingSphere!.radius+=.1;}
  }
- leaves.computeBoundingSphere();
  // Natural rock revetment follows the actual island perimeter.
  const rocks:T.Matrix4[]=[];for(let j=1;j<map.island.length;j++){
   const a=map.island[j-1],b=map.island[j],length=Math.hypot(b[0]-a[0],b[1]-a[1]);
