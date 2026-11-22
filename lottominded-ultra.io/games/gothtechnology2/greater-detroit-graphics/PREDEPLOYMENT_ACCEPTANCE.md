@@ -37,6 +37,12 @@ The exact PR head SHA must be recorded by the CI that produces evidence and must
 - Attach the final evidence artifact as a job upload; do not commit large screenshots/metrics into the source branch.
 - Never merge to \`main\` based on this staging check; reconciling \`upgrade-redesign\` with current production and existing Belle Isle exact-head release gates is separately required.
 
+## Supplying exact-head evidence
+
+An independent device workflow runs from this repository's default branch and takes the PR head SHA as its capture target. The acceptance job recognizes `.github/workflows/gds-device-evidence.yml`. A repository maintainer can select an existing device workflow by setting the Actions variable `GDS_EVIDENCE_WORKFLOW_ID` to its numeric workflow ID.
+
+After collecting the measurements, the device workflow uploads one GitHub Actions artifact named `gds-evidence-<40-character-PR-head-SHA>`. The artifact contains `manifest.json` at its root alongside the evidence files referenced by the manifest. The producer must complete successfully. Rerun the PR acceptance job when the bundle and the independent approval for that head are available. It checks the producer revision, artifact digest, manifest SHA, per-file hashes and GitHub review.
+
 ## Status at time of this checklist
 
 - Shared source module: 18 focused local tests and isolated TypeScript check PASS (not a full game build).
