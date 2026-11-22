@@ -73,7 +73,7 @@ import * as T from 'three';import {GLTFLoader} from 'three/addons/loaders/GLTFLo
 import {createBeachLocator} from './beachLocation.ts';
 import {createMobileHud} from './mobileHud.ts';
 import {brakeThrottle} from './mobileInput.ts';
-import {batchArmoredInk} from './riderInkBatch.ts';
+import {batchArmoredInk,batchHelmetDecals} from './riderInkBatch.ts';
 import {batchWheelDisplay} from './wheelDisplay.ts';
 import {initiallyCollapsedMap} from './visualPolishPolicy.ts';
 import './visualPolish.css';
@@ -178,7 +178,7 @@ async function boot(){const response=await fetch('./belle/map.json');if(!respons
  // The first acceleration uses the fitted riding rig, including its skinned
  // boot soles. Prepare it once while the loading screen owns the frame.
  status('Fitting your rider');await yieldStartupTask();prepareOnFootRider(hero);
- if(REFERENCE_STYLE)batchArmoredInk(hero.rider,hero.root);
+ if(REFERENCE_STYLE){batchArmoredInk(hero.rider,hero.root);batchHelmetDecals(hero.rider,hero.root);}
  batchWheelDisplay(hero.vehicle,hero.root,wheel.animations);
  const remoteRiders=new OnlineRiders(scene,terrain,rider,wheel,async model=>{await warmObjectTextures(renderer,model);await renderer.compileAsync(model,camera,scene);});
  let savedSoloSky:typeof world.sky.settings|undefined;
