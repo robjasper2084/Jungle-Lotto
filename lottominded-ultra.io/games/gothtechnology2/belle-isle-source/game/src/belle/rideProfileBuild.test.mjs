@@ -16,7 +16,7 @@ test('a prior unpatched launcher marker is attributed without inventing a candid
 });
 test('build metadata is fetched once, same-origin, with explicit pending and available states',async()=>{
  let resolve,calls=0;const response=new Promise(r=>{resolve=r;});
- const read=createRideProfileBuildReader(async(url,options)=>{
+ const read=createRideProfileBuildReader('manual',async(url,options)=>{
   calls++;assert.equal(url,'/__belle_test_build.json');assert.equal(options.credentials,'same-origin');assert.equal(options.cache,'no-store');assert.equal(options.redirect,'error');assert.ok(options.signal);return response;
  });
  assert.equal(read().status,'pending');assert.equal(read().status,'pending');assert.equal(calls,1);
@@ -25,6 +25,15 @@ test('build metadata is fetched once, same-origin, with explicit pending and ava
 });
 test('missing, malformed and incomplete markers remain explicitly unattributed',async()=>{
  for(const fetcher of [async()=>new Response('missing',{status:404}),async()=>new Response('<html>ordinary preview</html>'),async()=>new Response(JSON.stringify({...marker,patchSha256:''})),async()=>{throw new Error('offline');}]){
-  const read=createRideProfileBuildReader(fetcher);await setImmediate();assert.equal(read().status,'unavailable');assert.equal('marker' in read(),false);
+  const read=createRideProfileBuildReader('manual',fetcher);await setImmediate();assert.equal(read().status,'unavailable');assert.equal('marker' in read(),false);
  }
+});
+
+test('ordinary automated profiles never request a launcher marker',()=>{
+ let calls=0;
+ for(const mode of [null,'','1']){
+  const read=createRideProfileBuildReader(mode,()=>{calls++;throw Error('Unexpected marker request');});
+  assert.equal(read().status,'unavailable');
+ }
+ assert.equal(calls,0);
 });

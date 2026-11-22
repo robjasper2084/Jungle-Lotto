@@ -16,7 +16,8 @@ export function parseRideProfileBuildMarker(value:unknown):Record<string,string|
  }
  return marker;
 }
-export function createRideProfileBuildReader(fetcher:typeof fetch=fetch):()=>RideProfileBuild {
+export function createRideProfileBuildReader(mode:string|null,fetcher:typeof fetch=fetch):()=>RideProfileBuild {
+ if(mode!=='manual')return ()=>({status:'unavailable',source:'same-origin build marker',reason:'manual comparison not selected'});
  let current:RideProfileBuild={status:'pending',source:'same-origin build marker'};
  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),5000);
  void (async()=>{
