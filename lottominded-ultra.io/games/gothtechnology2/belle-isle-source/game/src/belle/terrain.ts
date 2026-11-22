@@ -26,6 +26,26 @@ export type ParkMap={lagoonHabitat?:{id:string;view:Point;look:Point;description
 type Bounds={minX:number;maxX:number;minZ:number;maxZ:number};
 function bounds(points:Point[],padding=0):Bounds{let minX=Infinity,maxX=-Infinity,minZ=Infinity,maxZ=-Infinity;for(const [x,z]of points){minX=Math.min(minX,x);maxX=Math.max(maxX,x);minZ=Math.min(minZ,z);maxZ=Math.max(maxZ,z);}return{minX:minX-padding,maxX:maxX+padding,minZ:minZ-padding,maxZ:maxZ+padding};}
 function inBounds(b:Bounds,x:number,z:number){return x>=b.minX&&x<=b.maxX&&z>=b.minZ&&z<=b.maxZ;}
+const POLYGON_BAND_METRES=32,MAX_POLYGON_BANDS=4096,MAX_POLYGON_EDGE_REFERENCES=65536;
+type PolygonQuery=Bounds&{length:number;firstBand:number;bands:number[][]|null};
+/** Land/water rings are static after map preparation. A new ring array or a
+ * changed point count rebuilds the query; same-length coordinate edits require
+ * replacing the ring array, as the cached bounds also depend on its coordinates. */
+function polygonQuery(points:Point[]):PolygonQuery{
+ const b=bounds(points),firstBand=Math.floor(b.minZ/POLYGON_BAND_METRES),lastBand=Math.floor(b.maxZ/POLYGON_BAND_METRES),count=lastBand-firstBand+1;
+ const query:PolygonQuery={...b,length:points.length,firstBand,bands:null};
+ if(points.length<16||![b.minX,b.maxX,b.minZ,b.maxZ].every(Number.isFinite)||b.minX===b.maxX||b.minZ===b.maxZ||!Number.isSafeInteger(firstBand)||!Number.isSafeInteger(lastBand)||count<1||count>MAX_POLYGON_BANDS)return query;
+ const bands:number[][]=Array.from({length:count},()=>[]);let references=0;
+ for(let i=0,j=points.length-1;i<points.length;j=i++){
+  const a=points[i],b=points[j];if(a[1]===b[1])continue;
+  // Include both endpoint bands. The original strict crossing comparison below
+  // decides vertices and boundaries; band membership only excludes distant edges.
+  const first=Math.floor(Math.min(a[1],b[1])/POLYGON_BAND_METRES)-firstBand,last=Math.floor(Math.max(a[1],b[1])/POLYGON_BAND_METRES)-firstBand;
+  references+=last-first+1;if(references>MAX_POLYGON_EDGE_REFERENCES)return query;
+  for(let band=first;band<=last;band++)bands[band].push(i);
+ }
+ query.bands=bands;return query;
+}
 export type BoulderCollision={x:number;z:number;bottom:number;top:number;radius:number};
 export class ParkTerrain implements TerrainSampler{
  readonly flightSolids=new FlightSolids();
@@ -47,9 +67,14 @@ export class ParkTerrain implements TerrainSampler{
   }
   return false;
  }
- private polygonBounds=new WeakMap<Point[],Bounds>();
+ private polygonBounds=new WeakMap<Point[],PolygonQuery>();
  private deckSegments:{a:Point;b:Point;radius:number;bounds:Bounds}[]=[];
- private contains(x:number,z:number,p:Point[]){let b=this.polygonBounds.get(p);if(!b){b=bounds(p);this.polygonBounds.set(p,b);}return inBounds(b,x,z)&&inside(x,z,p);}
+ private contains(x:number,z:number,p:Point[]){
+  let query=this.polygonBounds.get(p);if(!query||query.length!==p.length){query=polygonQuery(p);this.polygonBounds.set(p,query);}
+  if(!inBounds(query,x,z))return false;
+  const edges=query.bands?.[Math.floor(z/POLYGON_BAND_METRES)-query.firstBand];if(!edges)return inside(x,z,p);
+  let c=false;for(let k=0;k<edges.length;k++){const i=edges[k],a=p[i],b=p[i===0?p.length-1:i-1];if((a[1]>z)!==(b[1]>z)&&x<(b[0]-a[0])*(z-a[1])/(b[1]-a[1])+a[0])c=!c;}return c;
+ }
 
  readonly lagoonRails:LagoonBridge[];
  readonly smallBridges:SmallBridgeCollision;
@@ -71,7 +96,14 @@ export class ParkTerrain implements TerrainSampler{
  // Camera clearance ignores the water travel boundary, but retains physical walls and rails.
  raycastCamera(o:{x:number;y:number;z:number},d:{x:number;y:number;z:number},max:number,half=.16){return this.obstacleRay(o,d,max,half,true);}
  raycastFlight(o:{x:number;y:number;z:number},d:{x:number;y:number;z:number},max:number,half=1.35){return this.obstacleRay(o,d,max,half,true);}
- private obstacleRay(o:{x:number;y:number;z:number},d:{x:number;y:number;z:number},max:number,half:number,flight:boolean){let hit=Math.min(this.smallBridges.ray(o,d,max,half)??max+1,bridgeRay(this.map,o,d,max,half)??max+1, this.flightSolids.ray(o,d,max,half)??max+1,playgroundRay(o,d,max,half,flight)??max+1,yachtRay(o,d,max,half,flight)??max+1,this.facilities.ray(o,d,max,half)??max+1,this.activityCollision.ray(o,d,max,half)??max+1,lagoonBridgeRay(this.lagoonRails,o,d,max,half)??max+1);for(const b of this.boxes){if(Math.min(o.y,o.y+d.y*max)>2+b.height+.2||Math.max(o.y,o.y+d.y*max)<2)continue;let t0=0,t1=max;for(const [p,v,lo,hi]of [[o.x,d.x,b.minX-half,b.maxX+half],[o.z,d.z,b.minZ-half,b.maxZ+half],[o.y,d.y,2,2+b.height]]){if(Math.abs(v)<1e-7){if(p<lo||p>hi){t0=max+1;break;}}else{const a=(lo-p)/v,c=(hi-p)/v;t0=Math.max(t0,Math.min(a,c));t1=Math.min(t1,Math.max(a,c));}}if(t0<=t1&&t0<hit){if(!b.points)hit=t0;else{const end=Math.min(t1,max),steps=Math.max(1,Math.ceil((end-t0)/.15));for(let i=0;i<=steps;i++){const t=t0+(end-t0)*i/steps,x=o.x+d.x*t,z=o.z+d.z*t;if(inside(x,z,b.points)||b.points.some((p,j)=>j>0&&segment(x,z,b.points![j-1],p).d<=half)){hit=t;break;}}}}}
+ private obstacleRay(o:{x:number;y:number;z:number},d:{x:number;y:number;z:number},max:number,half:number,flight:boolean){
+  // Conservative swept bounds only reject buildings the ray cannot reach. Keep
+  // the existing slab/polygon tests and their order, including appended towers.
+  const endX=o.x+d.x*max,endZ=o.z+d.z*max;
+  const roundoff=8*Number.EPSILON*Math.max(1,Math.abs(o.x),Math.abs(o.z),Math.abs(endX),Math.abs(endZ),Math.abs(half));
+  const bounded=max>=0&&half>=0&&Number.isFinite(max)&&Number.isFinite(roundoff);
+  const minX=Math.min(o.x,endX)-roundoff,maxX=Math.max(o.x,endX)+roundoff,minZ=Math.min(o.z,endZ)-roundoff,maxZ=Math.max(o.z,endZ)+roundoff;
+  let hit=Math.min(this.smallBridges.ray(o,d,max,half)??max+1,bridgeRay(this.map,o,d,max,half)??max+1, this.flightSolids.ray(o,d,max,half)??max+1,playgroundRay(o,d,max,half,flight)??max+1,yachtRay(o,d,max,half,flight)??max+1,this.facilities.ray(o,d,max,half)??max+1,this.activityCollision.ray(o,d,max,half)??max+1,lagoonBridgeRay(this.lagoonRails,o,d,max,half)??max+1);for(const b of this.boxes){if(bounded&&(maxX<b.minX-half||minX>b.maxX+half||maxZ<b.minZ-half||minZ>b.maxZ+half))continue;if(Math.min(o.y,o.y+d.y*max)>2+b.height+.2||Math.max(o.y,o.y+d.y*max)<2)continue;let t0=0,t1=max;for(const [p,v,lo,hi]of [[o.x,d.x,b.minX-half,b.maxX+half],[o.z,d.z,b.minZ-half,b.maxZ+half],[o.y,d.y,2,2+b.height]]){if(Math.abs(v)<1e-7){if(p<lo||p>hi){t0=max+1;break;}}else{const a=(lo-p)/v,c=(hi-p)/v;t0=Math.max(t0,Math.min(a,c));t1=Math.min(t1,Math.max(a,c));}}if(t0<=t1&&t0<hit){if(!b.points)hit=t0;else{const end=Math.min(t1,max),steps=Math.max(1,Math.ceil((end-t0)/.15));for(let i=0;i<=steps;i++){const t=t0+(end-t0)*i/steps,x=o.x+d.x*t,z=o.z+d.z*t;if(inside(x,z,b.points)||b.points.some((p,j)=>j>0&&segment(x,z,b.points![j-1],p).d<=half)){hit=t;break;}}}}}
 
  for(const m of this.monuments){const t=rayMonument(o,d,max,m,half);if(t!==null&&t<hit)hit=t;}
  if(this.map.conservatory){const t=greenhouseRay(this.map.conservatory,o,d,Math.min(max,hit),half);if(t!==null&&t<hit)hit=t;}

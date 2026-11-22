@@ -59,6 +59,7 @@ import {addGeology} from './geology.ts';
 import {addStreetDetails} from './streetDetails.ts';
 import {addActivities} from './activitiesScene.ts';
 import {addNature} from './nature.ts';
+import type {NatureRenderProbe} from './renderDiagnostics.ts';
 import {addCanalRoots} from './canalRoots.ts';
 import {addLivingCanals} from './livingCanals.ts';
 import {addCanalReflections} from './canalReflections.ts';
@@ -77,7 +78,7 @@ const loader=new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
 function poly(p:Point[],y:number,holes:Point[][]=[]){const s=new T.Shape(p.map(v=>new T.Vector2(v[0],-v[1])));for(const h of holes)s.holes.push(new T.Path(h.map(v=>new T.Vector2(v[0],-v[1]))));const g=new T.ShapeGeometry(s);g.rotateX(-Math.PI/2);g.translate(0,y,0);const a=g.attributes.position,uv=g.attributes.uv;for(let i=0;i<a.count;i++)uv.setXY(i,a.getX(i)/8,a.getZ(i)/8);return g;}
 function road(points:Point[],width:number,height:(x:number,z:number)=>number){const p:number[]=[],uv:number[]=[],routeUV:number[]=[],idx:number[]=[];let len=0;for(let i=0;i<points.length;i++){const a=points[Math.max(0,i-1)],b=points[Math.min(i+1,points.length-1)],before=new T.Vector2(points[i][0]-a[0],points[i][1]-a[1]).normalize(),after=new T.Vector2(b[0]-points[i][0],b[1]-points[i][1]).normalize(),v=before.clone().add(after).normalize(),miter=Math.min(1.8,1/Math.max(.56,v.dot(i===points.length-1?before:after)));if(i)len+=Math.hypot(points[i][0]-a[0],points[i][1]-a[1]);for(const side of[-1,1]){const x=points[i][0]+v.y*width*.5*side*miter,z=points[i][1]-v.x*width*.5*side*miter;p.push(x,height(x,z),z);uv.push(x/8,z/8);routeUV.push(side*width*.5,len);}if(i){const j=i*2;idx.push(j-2,j,j-1,j,j+1,j-1);}}const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(p,3));g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));g.setAttribute('routeCoord',new T.Float32BufferAttribute(routeUV,2));g.setIndex(idx);g.computeVertexNormals();return g;}
 const mat=(color:number,roughness=.8)=>new T.MeshStandardMaterial({color,roughness});
-export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:ParkMap,terrain:ParkTerrain,status:(s:string)=>void){
+export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:ParkMap,terrain:ParkTerrain,status:(s:string)=>void,renderProbe?:NatureRenderProbe){
  status('Preparing island surfaces and sky');
  const [islandSky]=await Promise.all([createIslandSky(scene,renderer,status),loadRealisticMaterials(renderer)]);if(REFERENCE_STYLE)renderer.toneMappingExposure=1.02;
  const localLights=new LocalLightPool(scene);
@@ -197,12 +198,12 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
  prepareDossinMaterials(landmarks.scene);const dossinLighting=data.dossin?addDossinLighting(scene,data.dossin,localLights):null;prepareAquariumMaterials(landmarks.scene);const aquariumLife=data.aquarium?addAquariumLife(scene,data.aquarium,localLights):null;
  for(const l of data.landmarks.filter(l=>/Yacht Club/.test(l.name))){const b=data.buildings.find(b=>b.id===l.id);if(b)add(poly(b.points,2),concrete);}
  status('Loading White House and stable yard');const historic=await loader.loadAsync('./belle/historic-houses.glb');historic.scene.name='White House and former stable yard';historic.scene.traverse(o=>{if((o as T.Mesh).isMesh){const mesh=o as T.Mesh;mesh.castShadow=!o.name.startsWith('Stable flower');mesh.receiveShadow=true;mesh.geometry.computeBoundingSphere();if(o.name.startsWith('Stable flower'))(mesh.material as T.MeshStandardMaterial).side=T.DoubleSide;}});scene.add(historic.scene);
- status('Adding park birds');const birds=await addBirds(scene,data,terrain);const activities=addActivities(scene,data,terrain,grass);const nature=await addNature(scene,status,terrain);const canalRoots=addCanalRoots(scene,data,terrain,nature.treeSites);const livingCanals=addLivingCanals(scene,data,terrain);const canalReflections=addCanalReflections(scene,data);const geology=addGeology(scene,data,terrain);status('Planting meadow grass');const meadow=await addMeadow(scene);const gardens=await addGardens(scene);const oudolf=addOudolfDetails(scene,data,grass);const lakeHabitat=await addLakeHabitat(scene);let lastX=Infinity,lastZ=Infinity;
+ status('Adding park birds');const birds=await addBirds(scene,data,terrain);const activities=addActivities(scene,data,terrain,grass);const nature=await addNature(scene,status,terrain,renderProbe);const canalRoots=addCanalRoots(scene,data,terrain,nature.treeSites);const livingCanals=addLivingCanals(scene,data,terrain);const canalReflections=addCanalReflections(scene,data);const geology=addGeology(scene,data,terrain);status('Planting meadow grass');const meadow=await addMeadow(scene);const gardens=await addGardens(scene);const oudolf=addOudolfDetails(scene,data,grass);const lakeHabitat=await addLakeHabitat(scene);let lastX=Infinity,lastZ=Infinity;
 
  const conservatoryGarden=addConservatoryGarden(scene,data);
  const groundBatch=batchStaticGround(groundPatches);
  const coastGuard=addCoastGuard(scene);
- const streetLights=addStreetLighting(scene,data),bridgeLights=addBridgeLighting(scene,data,streetLights.lamps,localLights);for(const l of streetLights.plan)terrain.flightSolids.add({x:l.x,z:l.z,bottom:l.y,top:l.y+l.height,radius:.15,kind:'lamp'});applyRealisticMaterials(scene);applyPhotoReferenceSurfaces(scene);if(REFERENCE_STYLE)dressSunsetGround(scene);const referenceGarden=REFERENCE_STYLE?addReferenceIsland(scene,data,terrain):undefined;const traffic=createRiverTraffic(scene,data),contactShadow=createVehicleContactShadow(scene,terrain);
+ const streetLights=addStreetLighting(scene,data),bridgeLights=addBridgeLighting(scene,data,streetLights.lamps,localLights);for(const l of streetLights.plan)terrain.flightSolids.add({x:l.x,z:l.z,bottom:l.y,top:l.y+l.height,radius:.15,kind:'lamp'});applyRealisticMaterials(scene);applyPhotoReferenceSurfaces(scene);if(REFERENCE_STYLE)dressSunsetGround(scene);const referenceGarden=REFERENCE_STYLE?await addReferenceIsland(scene,data,terrain):undefined;const traffic=createRiverTraffic(scene,data),contactShadow=createVehicleContactShadow(scene,terrain);
 
  // Static world-space bounds are cached once. Interior gravel/plants used to be
  // rendered from across the island even though the enclosing building hid them.

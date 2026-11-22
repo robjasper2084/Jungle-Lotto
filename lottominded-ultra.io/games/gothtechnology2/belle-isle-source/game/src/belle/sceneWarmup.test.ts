@@ -6,6 +6,20 @@ import {SceneWarmup} from './sceneWarmup.ts';
 function fixture(){const scene=new Scene(),sun=new DirectionalLight();sun.castShadow=true;scene.add(sun,...Array.from({length:4},()=>new PointLight()));const bike=new Group();bike.visible=false;bike.add(new PointLight(),new SpotLight(),new SpotLight());scene.add(bike);return{scene,sun,bike,camera:new PerspectiveCamera()};}
 function topology(scene:Scene){let points=0,spots=0,shadows=0;scene.traverseVisible(o=>{if(o instanceof PointLight)points++;if(o instanceof SpotLight)spots++;if(o instanceof DirectionalLight&&o.castShadow)shadows++;});return{points,spots,shadows};}
 
+test('Smooth island warmup submits bounded batches and retains each visible drawable exactly once',async()=>{
+ const {scene,camera}=fixture(),meshes=Array.from({length:150},()=>new Mesh());
+ scene.add(...meshes);
+ const seen:Object3D[]=[],sizes:number[]=[];
+ const renderer={shadowMap:{enabled:false},compileAsync:async(root:Object3D)=>{
+  const before=seen.length;
+  root.traverse(o=>seen.push(o));
+  sizes.push(seen.length-before);
+  return scene;
+ }};
+ await new SceneWarmup(renderer as unknown as ConstructorParameters<typeof SceneWarmup>[0],scene,camera,()=>{},async()=>{}).prepare();
+ assert.deepEqual(sizes,[64,64,22]);assert.deepEqual(seen,meshes);
+});
+
 test('contact-only warmup skips mapped shadows and permits a later mapped warmup',async()=>{
  const {scene,sun,camera}=fixture(),calls:boolean[]=[];
  const renderer={shadowMap:{enabled:false},compileAsync:async()=>{calls.push(sun.castShadow);return scene;}};

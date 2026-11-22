@@ -11,8 +11,11 @@ export const REFERENCE_PLACES=[
  {name:'Nature Center',x:3127,z:-9,radius:280},
  {name:'Blue Heron Lagoon',x:3740,z:-180,radius:260}
 ] as const;
-export function addReferenceIsland(scene:T.Scene,map:ParkMap,terrain:ParkTerrain){
+export async function addReferenceIsland(scene:T.Scene,map:ParkMap,terrain:ParkTerrain){
  const occupied=roadIndex(map.roads,true);
- const gardens=[addSunsetGarden(scene,map,terrain,undefined,occupied),...REFERENCE_PLACES.slice(1).map((place,i)=>addSunsetGarden(scene,map,terrain,{...place,trees:0,seed:209585+i,shore:place.name!=='Belle Isle Beach'},occupied))];
+ const gardens=[await addSunsetGarden(scene,map,terrain,undefined,occupied)];
+ for(const [i,place] of REFERENCE_PLACES.slice(1).entries()){
+  gardens.push(await addSunsetGarden(scene,map,terrain,{...place,trees:0,seed:209585+i,shore:place.name!=='Belle Isle Beach'},occupied));
+ }
  return{setQuality(q:string){gardens.forEach(g=>g.setQuality(q));},update(x:number,z:number){gardens.forEach(g=>g.update(x,z));},stats:gardens.map(g=>g.stats)};
 }

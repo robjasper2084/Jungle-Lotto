@@ -1,10 +1,11 @@
 import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import type {ParkMap,ParkTerrain} from './terrain.ts';
+import {yieldStartupTask} from './startupWork.ts';
 import {roadIndex} from './streetPlan.ts';
 import {inSunsetGarden,SUNSET_GARDEN} from './sunsetReferencePolicy.ts';
 /** Original bounded scenery, kept clear of mapped roads, paths and buildings. */
-export function addSunsetGarden(scene:T.Scene,map:ParkMap,terrain:ParkTerrain,options?:{name:string;x:number;z:number;radius:number;trees:number;seed:number;shore:boolean},occupied=roadIndex(map.roads,true)){
+export async function addSunsetGarden(scene:T.Scene,map:ParkMap,terrain:ParkTerrain,options?:{name:string;x:number;z:number;radius:number;trees:number;seed:number;shore:boolean},occupied=roadIndex(map.roads,true)){
  const center=options??SUNSET_GARDEN,inside=(x:number,z:number)=>Math.hypot(x-center.x,z-center.z)<center.radius&&(!options||!inSunsetGarden(x,z));
  const root=new T.Group();root.name=(options?.name??'Sunset Point')+' reference garden';scene.add(root);
  let seed=options?.seed??209584;const rand=()=>{seed=Math.imul(seed,1664525)+1013904223|0;return(seed>>>0)/4294967296;};
@@ -30,7 +31,8 @@ export function addSunsetGarden(scene:T.Scene,map:ParkMap,terrain:ParkTerrain,op
  const perTree=2400,leaves=new T.InstancedMesh(leafGeo,leafMat,sites.length*perTree);leaves.name='Reference full autumn maple canopies';leaves.castShadow=true;leaves.receiveShadow=true;root.add(leaves);
  const tones=[0xeaae25,0x76933b,0xc28019,0x9f9b2f,0xf1b730,0x658441];let leafCount=0;
  const crownMat=standard('Reference shaded inner canopy',0xffffff);const crowns=new T.InstancedMesh(new T.IcosahedronGeometry(1,2),crownMat,sites.length*10);crowns.castShadow=true;crowns.receiveShadow=true;root.add(crowns);let crownCount=0;
- sites.forEach((p,index)=>{
+ for(const [index,p] of sites.entries()){
+  if(index%4===0)await yieldStartupTask();
   const y=terrain.height(p.x,p.z),base=new T.Vector3(p.x,y,p.z),tip=base.clone().add(new T.Vector3((rand()-.5)*.8,p.h*.85,(rand()-.5)*.8));rod(base,tip,.32,.10);
   terrain.flightSolids.add({x:p.x,z:p.z,bottom:y,top:y+p.h,radius:.35,kind:'tree'});
   const lobes:T.Vector3[]=[];
@@ -42,7 +44,8 @@ export function addSunsetGarden(scene:T.Scene,map:ParkMap,terrain:ParkTerrain,op
    dummy.position.set(c.x+Math.cos(a)*s*r,c.y+vy*r*.76,c.z+Math.sin(a)*s*r);dummy.rotation.set((rand()-.5)*1.5,rand()*Math.PI*2,(rand()-.5)*1.3);const size=1.0+rand()*1.2;dummy.scale.set(size,size,size);dummy.updateMatrix();leaves.setMatrixAt(leafCount,dummy.matrix);
    color.setHex(tones[(index+Math.floor(rand()*2.3))%tones.length]).multiplyScalar(.82+rand()*.33);leaves.setColorAt(leafCount++,color);
   }
- });leaves.computeBoundingSphere();
+ }
+ leaves.computeBoundingSphere();
  // Natural rock revetment follows the actual island perimeter.
  const rocks:T.Matrix4[]=[];for(let j=1;j<map.island.length;j++){
   const a=map.island[j-1],b=map.island[j],length=Math.hypot(b[0]-a[0],b[1]-a[1]);
@@ -53,7 +56,10 @@ export function addSunsetGarden(scene:T.Scene,map:ParkMap,terrain:ParkTerrain,op
  const shore=new T.InstancedMesh(new T.IcosahedronGeometry(1,1),stone,rocks.length);rocks.forEach((m,i)=>{shore.setMatrixAt(i,m);shore.setColorAt(i,color.setHSL(.075,.13,.52+rand()*.22));});shore.receiveShadow=true;root.add(shore);
  // Benches and lamps are offset from route shoulders, never across travel space.
  const decor:{x:number;z:number}[]=[];const flowers:{x:number;y:number;z:number}[]=[];
- for(const r of roads){const length=Math.hypot(r.b[0]-r.a[0],r.b[1]-r.a[1]);if(length<5)continue;const nx=-(r.b[1]-r.a[1])/length,nz=(r.b[0]-r.a[0])/length;
+ let sliceStart=performance.now();
+ for(const r of roads){
+  if(performance.now()-sliceStart>16){await yieldStartupTask();sliceStart=performance.now();}
+  const length=Math.hypot(r.b[0]-r.a[0],r.b[1]-r.a[1]);if(length<5)continue;const nx=-(r.b[1]-r.a[1])/length,nz=(r.b[0]-r.a[0])/length;
   for(let d=6;d<length;d+=42){const t=d/length,cx=r.a[0]+(r.b[0]-r.a[0])*t,cz=r.a[1]+(r.b[1]-r.a[1])*t;if(!inside(cx,cz))continue;
    for(const sign of[-1,1]){const x=cx+nx*(r.width*.5+2.5)*sign,z=cz+nz*(r.width*.5+2.5)*sign;if(!clear(x,z,1.7)||decor.some(p=>Math.hypot(x-p.x,z-p.z)<25))continue;decor.push({x,z});const y=terrain.height(x,z);terrain.flightSolids.add({x,z,bottom:y,top:y+3.8,radius:.22,kind:'lamp'});const group=new T.Group();group.position.set(x,y,z);group.rotation.y=Math.atan2(nx*sign,nz*sign);staticParts.add(group);
     rod(new T.Vector3(0,0,0),new T.Vector3(0,3.3,0),.065,.045,metal,group);mesh(group,new T.CylinderGeometry(.13,.22,.18,8),metal,new T.Vector3(0,.09,0));mesh(group,new T.BoxGeometry(.25,.40,.25),glow,new T.Vector3(0,3.4,0));mesh(group,new T.ConeGeometry(.27,.2,4),metal,new T.Vector3(0,3.7,0)).rotation.y=Math.PI/4;
