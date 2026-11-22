@@ -1,6 +1,19 @@
 import test from 'node:test';import assert from 'node:assert/strict';import * as T from 'three';import {batchRigidChildren} from './batchRigid.ts';import {detailGeometry,indexHash} from '../landmarkDetail.ts';
 import {cullMacArthurSpans} from '../macArthurSpanCulling.ts';
 import {batchStaticArchitecture} from '../staticArchitectureBatch.ts';
+test('custom callbacks and transformed world-space pigment keep their original draw',()=>{
+ const make=()=>new T.Mesh(new T.BoxGeometry(),new T.MeshStandardMaterial());
+ const a=make(),b=make();
+ for(const mesh of [a,b]){mesh.material.userData.realisticSurface='stone';mesh.material.userData.photoSurfaceFinish='masonry';mesh.position.y=1;}
+ assert.equal(new StaticPaletteBatch([a,b]).stats.batches,0);
+ for(const mesh of [a,b]){mesh.position.y=0;delete mesh.material.userData.photoSurfaceFinish;mesh.material.userData.realisticBaseIsStandard=false;}
+ assert.equal(new StaticPaletteBatch([a,b]).stats.batches,0);
+ for(const mesh of [a,b]){delete mesh.material.userData.realisticBaseIsStandard;mesh.material.onBeforeRender=()=>{};}
+ assert.equal(new StaticPaletteBatch([a,b]).stats.batches,0);
+ const scene=new T.Scene(),root=new T.Group(),c=make(),d=make();root.add(c,d);scene.add(root);d.onBeforeShadow=()=>{};
+ const renderer={extensions:{has:()=>true}} as unknown as T.WebGLRenderer;
+ assert.equal(batchStaticArchitecture(scene,renderer,[root],()=>false),undefined);
+});
 test('world-space bridge tiles retain their exact material and shader uniforms',()=>{
  const root=new T.Group(),material=new T.MeshStandardMaterial(),uniform={value:.25};
  material.onBeforeCompile=s=>{s.uniforms.bridgeNight=uniform;};

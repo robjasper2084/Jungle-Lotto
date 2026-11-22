@@ -69,6 +69,7 @@ export function applyRealisticMaterials(root:T.Object3D,context=''){
    if(!m.alphaTest&&!m.transparent&&['asphalt','grass','sand','gravel'].includes(kind)){m.map=null;m.normalMap=null;m.bumpMap=null;m.roughnessMap=null;}const oldCompile=m.onBeforeCompile,oldKey=material.customProgramCacheKey();
    m.roughness=context==='boat'&&kind==='graphite'?.45:kind==='metal'?Math.max(.24,Math.min(.6,m.roughness)):roughness;
    m.userData.realisticSurface=kind;
+   m.userData.realisticBaseIsStandard=material.onBeforeCompile===T.Material.prototype.onBeforeCompile;
    m.userData.realisticProfile=/ballfield infield/i.test(material.name)?'infield-'+kind:kind;
    m.onBeforeCompile=(shader,renderer)=>{
     oldCompile(shader,renderer);

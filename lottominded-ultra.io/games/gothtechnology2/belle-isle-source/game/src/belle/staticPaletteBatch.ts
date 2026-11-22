@@ -20,7 +20,11 @@ export class StaticPaletteBatch {
    // The generated bridge tile positions are already in world coordinates.
    // With identical source transforms and the exact material object, even
    // custom local-position shader inputs and night uniforms remain identical.
-   if(exact&&!mesh.matrixWorld.equals(identity))continue;
+   if((exact||m.userData.photoSurfaceFinish)&&!mesh.matrixWorld.equals(identity))continue;
+   // An unrelated chained shader may add pigment independent of diffuse or
+   // read per-object uniforms. Such finishes must retain their original draw.
+   if(!exact&&m.userData.realisticBaseIsStandard===false)continue;
+   if(m.onBeforeRender!==T.Material.prototype.onBeforeRender)continue;
    let properties=exact?m.uuid:materials.get(m);
    if(properties===undefined){
     // Material JSON references textures by UUID. Seed those identities to avoid

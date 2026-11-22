@@ -9,7 +9,8 @@ export function batchStaticArchitecture(scene:T.Scene,renderer:T.WebGLRenderer,r
  const sources:T.Mesh[]=[];
  for(const root of roots)root.traverse(object=>{
   if(!(object instanceof T.Mesh)||object.name.startsWith('MacArthur')||
-     object.onBeforeRender!==T.Object3D.prototype.onBeforeRender||object.onAfterRender!==T.Object3D.prototype.onAfterRender)return;
+     object.onBeforeRender!==T.Object3D.prototype.onBeforeRender||object.onAfterRender!==T.Object3D.prototype.onAfterRender||
+     object.onBeforeShadow!==T.Object3D.prototype.onBeforeShadow||object.onAfterShadow!==T.Object3D.prototype.onAfterShadow)return;
   const geometry=object.geometry;
   if((geometry.index?.count??geometry.attributes.position?.count??Infinity)<=6000)sources.push(object);
  });
