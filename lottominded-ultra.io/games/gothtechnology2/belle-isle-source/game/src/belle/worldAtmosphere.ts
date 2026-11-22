@@ -63,11 +63,11 @@ export class WorldAtmosphere {
    compile.call(material,shader,renderer);if(wind)this.bindWind(shader,wind);
    Object.assign(shader.uniforms,this.uniforms);
    if(!shader.vertexShader.includes('varying vec3 belleAtmosphereWorld;')){
-    const result=atmosphereShader(shader.vertexShader,shader.fragmentShader,T.ShaderChunk.lights_fragment_begin);
+    const result=atmosphereShader(shader.vertexShader,shader.fragmentShader,T.ShaderChunk.lights_fragment_begin,shader.numPointLightShadows===0&&shader.numPointLights>1);
     shader.vertexShader=result.vertex;shader.fragmentShader=result.fragment;
    }
   };
-  material.customProgramCacheKey=()=>identity+'|belle-height-fog-clouds-v1'+(wind?'|wind':'');material.needsUpdate=true;
+  material.customProgramCacheKey=()=>identity+'|belle-height-fog-clouds-v2'+(wind?'|wind':'');material.needsUpdate=true;
  }
  update(time:number,direction:T.Vector3,coverage:number,day:number,overcast:number,quality:string,reduced:boolean,xr:boolean){
   this.flush();const budget=presentationBudget(quality,xr);

@@ -21,22 +21,29 @@ const server=createCoopStaticServer(resolve(game,'dist'));
 await new Promise(ok=>server.listen(0,'127.0.0.1',ok));
 const begin=Date.now();let browser;
 try{
- const candidates=[{name:'angle-gl',args:['--use-gl=angle','--use-angle=gl']},
+ const native=process.platform==='darwin'?'metal':process.platform==='win32'?'d3d11':'gl';
+ const candidates=[{name:'angle-'+native,args:['--use-gl=angle','--use-angle='+native]},
   {name:'swiftshader-fallback',args:['--use-gl=angle','--use-angle=swiftshader-webgl','--enable-unsafe-swiftshader']}];
  let page,lastBackendError;
  for(const candidate of candidates){
   try{
-   browser=await chromium.launch({channel:'chrome',headless:true,args:candidate.args});
+   browser=await chromium.launch({channel:'chrome',headless:process.platform!=='darwin',args:candidate.args});
    const probe=await browser.newPage();
-   const available=await probe.evaluate(()=>!!document.createElement('canvas').getContext('webgl2'));
+   const available=await probe.evaluate(()=>{
+    const gl=document.createElement('canvas').getContext('webgl2');
+    if(!gl)return null;
+    const ext=gl.getExtension('WEBGL_debug_renderer_info');
+    return String(gl.getParameter(ext?.UNMASKED_RENDERER_WEBGL??gl.RENDERER));
+   });
    await probe.close();
    if(!available)throw Error('WebGL2 unavailable on '+candidate.name);
-   report.renderBackend=candidate.name;
+   report.renderBackend=candidate.name;report.probeRenderer=available;
    page=await browser.newPage({viewport,deviceScaleFactor:1,isMobile:device==='phone',hasTouch:device==='phone',reducedMotion:'reduce'});
+   await page.bringToFront();
    break;
   }catch(error){
    lastBackendError=String(error);await browser?.close().catch(()=>{});browser=undefined;
-   if(candidate.name==='angle-gl')report.rendererFallback=lastBackendError;
+   if(candidate===candidates[0])report.rendererFallback=lastBackendError;
   }
  }
  if(!page)throw Error('No real WebGL2 backend available: '+lastBackendError);

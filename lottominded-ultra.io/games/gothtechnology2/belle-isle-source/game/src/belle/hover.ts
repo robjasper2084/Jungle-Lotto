@@ -34,7 +34,6 @@ const keyCodes=['KeyW','KeyS','KeyA','KeyD','ArrowUp','ArrowDown','ArrowLeft','A
 export class HoverRide {
  sim:HoverController;
  private authored?:VehicleModel;
- private readonly authoredHeadlamp:VehicleHeadlamp;
  private selected?:AuthoredChoice;
  get vehicle(){return this.selected?.vehicle??'hoverbike';}
  get selection(){return this.selected?{...this.selected}:{vehicle:'hoverbike' as const,pilot:undefined,livery:undefined};}
@@ -95,8 +94,7 @@ export class HoverRide {
  private altitude:HTMLElement;
  private mode:HTMLElement;
  private touchPad:HTMLElement;
- constructor(scene:T.Scene,readonly terrain:ParkTerrain,private hooks:Hooks){
-  this.authoredHeadlamp=new VehicleHeadlamp(scene);
+ constructor(scene:T.Scene,readonly terrain:ParkTerrain,private hooks:Hooks,private readonly authoredHeadlamp=new VehicleHeadlamp(scene)){
   this.sim=new HoverController(terrain,terrain.map.spawn,hooks.obstacle);
   // Reuses existing world geometry and traffic raycasts, sampled at most 4Hz.
   // No AI model, extra camera, network call, or startup work is introduced.

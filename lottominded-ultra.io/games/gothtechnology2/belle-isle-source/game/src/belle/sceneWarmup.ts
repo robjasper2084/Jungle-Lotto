@@ -2,7 +2,7 @@ import {Group,type Camera,type DirectionalLight,type Object3D,type Scene,type We
 
 import {warmObjectTextures,yieldStartupTask} from './startupWork.ts';
 
-type Compiler=Pick<WebGLRenderer,'compileAsync'> & Partial<Pick<WebGLRenderer,'initTexture'|'shadowMap'>>;
+type Compiler=Pick<WebGLRenderer,'compileAsync'> & Partial<Pick<WebGLRenderer,'compile'|'info'|'initTexture'|'shadowMap'|'getContext'>>;
 type Pending={promise:Promise<void>;signal?:AbortSignal;cancel:AbortController};
 /** compileAsync normally visits even invisible geometry. Supply Smooth's active
  * drawables while the real target scene continues to provide all the lighting.
@@ -22,6 +22,48 @@ class SmoothWarmupRoot extends Group {
  override traverse(callback:(object:Object3D)=>void){for(const object of this.drawables)callback(object);}
 }
 const cancelled=(signal:AbortSignal)=>signal.reason instanceof Error?signal.reason:new DOMException('Ride preparation cancelled','AbortError');
+/** Three's compileAsync polls each material's current program. A second
+ * lighting setup would replace that pointer. Keep the actual GL handles from
+ * both submissions so the driver can compile both sets before we wait. */
+async function prepareIslandPrograms(renderer:Compiler,scene:Scene,camera:Camera,lights:DirectionalLight[],signal:AbortSignal,onStage:(message:string)=>void,onNewLink:()=>void){
+ const gl=renderer.getContext?.();
+ const extension=gl?.getExtension?.('KHR_parallel_shader_compile');
+ if(!gl||!extension||!renderer.compile||!renderer.info?.programs)return false;
+ // Primed, cached and previously attempted programs still need validation.
+ // Only handles introduced by these submissions can renew this attempt.
+ const existing=new Set(renderer.info.programs.map(entry=>entry.program));
+ const pending=new Set<WebGLProgram>();
+ for(const castShadow of [false,true]){
+  if(signal.aborted)throw cancelled(signal);
+  onStage('submitting island shaders '+(castShadow?'with shadows':'without shadows'));
+  for(const light of lights)light.castShadow=castShadow;
+  renderer.compile(scene,camera,scene);
+  for(const linked of renderer.info.programs)pending.add(linked.program as WebGLProgram);
+  gl.flush();
+  await yieldStartupTask();
+ }
+ const total=pending.size;
+ let reported=-1;
+ while(pending.size){
+  if(reported!==pending.size){
+   reported=pending.size;
+   onStage('waiting for island shaders ('+(total-pending.size)+' of '+total+' programs verified)');
+  }
+  if(signal.aborted)throw cancelled(signal);
+  if(gl.isContextLost())throw new Error('WebGL context lost during island preparation');
+  for(const program of pending){
+   // Every program is already submitted. Poll a single unfinished handle
+   // per tick instead of round-tripping through the GPU process for all of
+   // them. Every ready handle still passes the same explicit link check.
+   if(!gl.getProgramParameter(program,extension.COMPLETION_STATUS_KHR))break;
+   if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw new Error('Island shader link failed: '+gl.getProgramInfoLog(program));
+   if(!existing.has(program))onNewLink();
+   pending.delete(program);
+  }
+  if(pending.size)await new Promise(resolve=>setTimeout(resolve,10));
+ }
+ return true;
+}
 function readyOrCancelled<T>(ready:Promise<T>,signal:AbortSignal){
  return new Promise<T>((resolve,reject)=>{
   const abort=()=>{signal.removeEventListener('abort',abort);reject(cancelled(signal));};
@@ -39,6 +81,15 @@ export class SceneWarmup {
  private tail:Promise<void>=Promise.resolve();
  private renderer:Compiler;private scene:Scene;private camera:Camera;private busy:(value:boolean)=>void;private paint:()=>Promise<void>;private timeoutMs:number;
  constructor(renderer:Compiler,scene:Scene,camera:Camera,busy:(value:boolean)=>void,paint:()=>Promise<void>=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))),timeoutMs=45_000){this.renderer=renderer;this.scene=scene;this.camera=camera;this.busy=busy;this.paint=paint;this.timeoutMs=timeoutMs;}
+ /** Submit the mapped island's current programs while the rider assets load.
+  * No light or model visibility is changed. prepare() still validates the
+  * complete scene, including actors, both lighting states and textures. */
+ primeIsland(){
+  const gl=this.renderer.getContext?.();
+  if(!this.renderer.compile||!this.renderer.shadowMap?.enabled||!gl||gl.isContextLost()||!gl.getExtension('KHR_parallel_shader_compile'))return;
+  this.renderer.compile(this.scene,this.camera,this.scene);
+  gl.flush();
+ }
  prepare(model?:Object3D,signal?:AbortSignal){
   if(signal?.aborted)return Promise.reject(cancelled(signal));
   const mappedShadows=this.renderer.shadowMap?.enabled!==false;
@@ -51,7 +102,27 @@ export class SceneWarmup {
    if(cancel.signal.aborted)throw cancelled(cancel.signal);
    if(this.completed.has(key))return;
    this.busy(true);
-   const timeout=setTimeout(()=>cancel.abort(new Error('Graphics preparation took too long. Please try starting again.')),this.timeoutMs);
+   let stage='painting the preparation screen';
+   const started=performance.now(),hardDeadline=started+Math.min(90_000,2*this.timeoutMs);
+   let deadline=Math.min(started+this.timeoutMs,hardDeadline);
+   const expire=()=>cancel.abort(new Error('Graphics preparation took too long while '+stage+'. Please try starting again.'));
+   // Keep one timer. A sweep can verify hundreds of programs at once.
+   const armTimer=(scheduled:number,delay:number):ReturnType<typeof setTimeout>=>setTimeout(()=>{
+    const remaining=deadline-performance.now();
+    if(scheduled===deadline||remaining<=0)expire();
+    else timeout=armTimer(deadline,remaining);
+   },Math.ceil(delay));
+   let timeout=armTimer(deadline,deadline-started);
+   const checkDeadline=()=>{
+    const now=performance.now();
+    // A synchronous driver call can outlast the timer that is waiting to run.
+    if(now>=deadline)expire();
+    if(cancel.signal.aborted)throw cancelled(cancel.signal);
+    return now;
+   };
+   const onNewLink=()=>{
+    deadline=Math.min(checkDeadline()+this.timeoutMs,hardDeadline);
+   };
    const visible=model?.visible;
    // Rider-only preparation must not recompile every island material. A model
    // with lights changes the scene light topology and still needs the full scene.
@@ -62,27 +133,37 @@ export class SceneWarmup {
    try{
     // Paint the existing Preparing label before shader submission begins.
     await readyOrCancelled(this.paint(),cancel.signal);
+    checkDeadline();
     // Upload material textures under the loading lock, not in the first ridden frame.
     // A Guide trip can immediately expose a previously hidden island sector.
     // Upload its textures here while still compiling only the active shader set.
+    stage='uploading scene textures';
     await readyOrCancelled(warmObjectTextures(this.renderer,model??this.scene,cancel.signal),cancel.signal);
+    checkDeadline();
     // Smooth has no shadow-map pass. A later prepare in a mapped mode
     // gets a distinct cache entry and still warms both lighting variants.
-    for(const enabled of mappedShadows?[false,true]:[false]){
+    const islandReady=!model&&mappedShadows&&shadows.length>0&&await readyOrCancelled(
+     prepareIslandPrograms(this.renderer,this.scene,this.camera,shadows.map(state=>state.light),cancel.signal,message=>{checkDeadline();stage=message;},onNewLink),
+     cancel.signal);
+    for(const enabled of islandReady?[]:mappedShadows?[false,true]:[false]){
      if(cancel.signal.aborted)throw cancelled(cancel.signal);
      for(const state of shadows)state.light.castShadow=enabled;
      // compileAsync collects synchronously, then awaits driver readiness.
      for(const [i,root] of compileRoots.entries()){
       if(i>0)await readyOrCancelled(yieldStartupTask(),cancel.signal);
       if(cancel.signal.aborted)throw cancelled(cancel.signal);
+      stage='compiling shader batch '+(i+1)+'/'+compileRoots.length+(enabled?' with shadows':' without shadows');
       let ready:Promise<unknown>;
       try{if(model)model.visible=true;ready=this.renderer.compileAsync(root,this.camera,this.scene);}
       finally{if(model)model.visible=visible!;}
+      // No frames are drawn under the preparation lock. Submit queued GL work
+      // before waiting for asynchronous shader completion on the driver.
+      this.renderer.getContext?.().flush();
       await readyOrCancelled(ready,cancel.signal);
      }
      if(!shadows.length)break;
     }
-    if(cancel.signal.aborted)throw cancelled(cancel.signal);
+    checkDeadline();
     this.completed.add(key);
    }finally{
     clearTimeout(timeout);

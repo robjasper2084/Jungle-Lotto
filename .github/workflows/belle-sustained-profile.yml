@@ -16,7 +16,8 @@ concurrency:
 
 jobs:
   profile:
-    runs-on: ubuntu-latest
+    # Apple's virtual Metal device supports a GPU-backed Chrome WebGL2 context.
+    runs-on: macos-15
     timeout-minutes: 50
     strategy:
       fail-fast: false
@@ -48,7 +49,7 @@ jobs:
           BELLE_PROFILE_DEVICE: ${{ matrix.device }}
           BELLE_PROFILE_MODE: ${{ matrix.mode }}
           BELLE_PROFILE_SECONDS: '90'
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node scripts/sustained-ride-profile.mjs
+        run: node scripts/sustained-ride-profile.mjs
       - name: Archive actual full or diagnostic evidence separately
         if: always()
         uses: actions/upload-artifact@v4

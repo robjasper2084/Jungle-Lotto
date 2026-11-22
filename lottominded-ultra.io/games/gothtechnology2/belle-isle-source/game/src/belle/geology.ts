@@ -81,6 +81,8 @@ export function addGeology(scene:T.Scene,map:ParkMap,terrain:ParkTerrain){
   for(const detail of ['near','far'] as const){
    const g=rockGeometry(shape,detail),mesh=new T.InstancedMesh(g,material,boulders.length);
    mesh.name='Clustered mapped mineral boulders '+shape+' '+detail;
+   // Keep the instancing-color shader variant stable when the first rock enters range.
+   if(boulders.length)mesh.setColorAt(0,color);
    mesh.castShadow=false;mesh.receiveShadow=true;mesh.frustumCulled=false;mesh.count=0;mesh.visible=false;
    mesh.instanceMatrix.setUsage(T.DynamicDrawUsage);
    scene.add(mesh);pools.push({shape,detail,mesh});

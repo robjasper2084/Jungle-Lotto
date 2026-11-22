@@ -15,6 +15,7 @@ export function addStreetDetails(scene:T.Scene,plan:StreetPlan){
   tactile:new T.MeshStandardMaterial({color:0x92713f,roughness:.9})
  };
  for(const [key,material]of Object.entries(materials)){
+  const grime=key==='curb'||key==='gutter';
   material.onBeforeCompile=shader=>{
    shader.vertexShader='varying vec3 detailWorld;\n'+shader.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\ndetailWorld=(modelMatrix*vec4(transformed,1.)).xyz;');
    shader.fragmentShader='varying vec3 detailWorld;\n'+shader.fragmentShader.replace('#include <map_fragment>',`#include <map_fragment>
@@ -22,10 +23,10 @@ export function addStreetDetails(scene:T.Scene,plan:StreetPlan){
     float resolved=1.-smoothstep(.35,1.7,length(fwidth(detailWorld.xz))*85.);
     float wear=.5+.25*sin(detailWorld.x*1.7+sin(detailWorld.z*.8))+.25*sin(detailWorld.z*2.3);
     diffuseColor.rgb*=mix(.86,1.04,wear)*mix(1.,mix(.86,1.08,grain),resolved);
-    ${key==='curb'||key==='gutter'?`float grime=.92+.08*smoothstep(2.06,2.19,detailWorld.y);diffuseColor.rgb*=grime;`:''}
+    ${grime?`float grime=.92+.08*smoothstep(2.06,2.19,detailWorld.y);diffuseColor.rgb*=grime;`:''}
    `);
   };
-  material.customProgramCacheKey=()=>'street-antialiased-weather-v2-'+key;
+  material.customProgramCacheKey=()=>'street-antialiased-weather-v2-'+(grime?'grime':'plain');
  }
  const unit=new T.BoxGeometry(1,1,1).toNonIndexed();
  // Chamfer the upper edges rather than making curb runs look like sharp blocks.
