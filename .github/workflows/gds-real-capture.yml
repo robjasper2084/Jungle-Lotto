@@ -32,6 +32,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24
+      - name: Install shared storefront build dependencies
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: npm ci
       - name: Prepare RideCore for source builds
         if: matrix.district != 'belle'
         working-directory: lottominded-ultra.io/games/gothtechnology2/ride-core
@@ -50,6 +53,10 @@ jobs:
           npm ci
           npm run check
           npm run build
+      - name: Prepare Elmwood imports for Swoop
+        if: matrix.district == 'swoop'
+        working-directory: lottominded-ultra.io/games/gothtechnology2/elmwood-source
+        run: npm ci
       - name: Compile Swoop source for actual in-game render
         if: matrix.district == 'swoop'
         working-directory: lottominded-ultra.io/games/gothtechnology2/swoop-source
@@ -77,9 +84,7 @@ jobs:
           test -s ../.gds-builds/elmwood/elmwood.html
       - name: Install browser dependencies
         working-directory: lottominded-ultra.io/games/gothtechnology2
-        run: |
-          npm ci
-          npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps chromium
       - name: Capture actual rendered game scenes
         working-directory: lottominded-ultra.io/games/gothtechnology2/greater-detroit-graphics
         env:

@@ -31,6 +31,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24
+      - name: Install shared storefront build dependencies
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: npm ci
       - name: Record candidate metadata
         shell: bash
         run: |
@@ -48,6 +51,10 @@ jobs:
           npm run build
           test -s dist/index.js
           # Both games use the sibling repo-local RideCore.
+      - name: Prepare Elmwood imports for Swoop
+        if: matrix.district == 'swoop'
+        working-directory: lottominded-ultra.io/games/gothtechnology2/elmwood-source
+        run: npm ci
       - name: Prepare sibling game imports for Elmwood compilation
         if: matrix.district == 'elmwood'
         working-directory: lottominded-ultra.io/games/gothtechnology2/swoop-source

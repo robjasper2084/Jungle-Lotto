@@ -1,5 +1,4 @@
 import * as T from 'three';
-import './helmetSkin.css';
 const decalUrl=new URL('../../art/helmet-ghoulies-20261004/ghoulies-decal.webp',import.meta.url).href;
 const key='digital-static-helmet-skin-v1',event='digital-static-helmet-skin';
 export type HelmetSkin='ghoulies'|'plain';
@@ -27,6 +26,7 @@ export class HelmetSkinDecal{
  dispose(){this.disposed=true;if(typeof window!=='undefined')window.removeEventListener(event,this.update);this.root.traverse(o=>{if(o instanceof T.Mesh)o.geometry.dispose();});this.material.dispose();this.root.removeFromParent();}
 }
 export function makeHelmetSkinPicker(){
+ void import('./helmetSkin.css');
  const root=document.createElement('section');root.className='helmet-skin-picker';root.setAttribute('aria-label','Hero helmet skin');
  root.innerHTML='<h3>Hero helmet</h3><p>Pick a skin for the armored rider.</p><div role="group" aria-label="Helmet skins"></div><p role="status"></p>';
  const group=root.querySelector('div')!,status=root.querySelector<HTMLElement>('[role="status"]')!,buttons=new Map<HelmetSkin,HTMLButtonElement>();

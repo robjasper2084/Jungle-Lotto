@@ -44,7 +44,7 @@ const server=createServer(async(req,res)=>{
   }
   const info=await stat(file);
   if(source==='published media')warnings.push(rel);
-  res.writeHead(200,{'Content-Type':mime[extname(file).toLowerCase()]||'application/octet-stream','Content-Length':info.size,'Cache-Control':'no-store'});
+  res.writeHead(200,{'Content-Type':mime[extname(file).toLowerCase()]||'application/octet-stream','Content-Length':info.size,'Cache-Control':'no-cache, max-age=0, must-revalidate'});
   if(req.method==='HEAD')res.end();else createReadStream(file).on('error',()=>res.destroy()).pipe(res);
  }catch(e){missing.push(req.url);res.writeHead(404).end('Asset unavailable');}
 });
