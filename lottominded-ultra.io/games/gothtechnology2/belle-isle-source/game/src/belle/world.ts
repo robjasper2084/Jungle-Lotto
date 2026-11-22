@@ -219,6 +219,7 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
   landmarkDraws.push({mesh:o,center:sphere.center.clone().applyMatrix4(o.matrixWorld),radius:sphere.radius*Math.max(...o.scale.toArray()),range:landmarkDisplayRange(o.name),shadow:o.castShadow});
  });
  const landmarkDetail=new LandmarkDetail(landmarks);
+ await landmarkDetail.prepareDistant(scene);
  // Static architecture transforms are fixed after the fountain is placed.
  for(const staticRoot of [landmarks.scene,skyline.scene,historic.scene]){staticRoot.updateMatrixWorld(true);staticRoot.traverse(o=>{o.matrixAutoUpdate=false;o.matrixWorldAutoUpdate=false;});}
  // Keep full quality shadow maps, but avoid redrawing identical static shadows at 60 Hz.

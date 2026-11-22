@@ -28,3 +28,34 @@ test('palette batches keep material bindings separate when two finishes share a 
  const batch=new StaticPaletteBatch([make('grass'),make('grass'),make('infield-grass'),make('infield-grass')]);
  assert.equal(batch.stats.batches,2);
 });
+import {LandmarkDetail,subpixelLandmark} from '../landmarkDetail.ts';
+import type {GLTF} from 'three/addons/loaders/GLTFLoader.js';
+
+test('landmarks use subpixel indices only during distant display and keep full picking geometry',async t=>{
+ const scene=new T.Scene(),g=new T.BufferGeometry();
+ g.setAttribute('position',new T.Float32BufferAttribute([-1,-1,0,0,-1,0,-1,1,0, 1,-1,0,2,-1,0,2,1,0],3));
+ g.setIndex([0,1,2,3,4,5]);g.computeBoundingSphere();
+ const mesh=new T.Mesh(g,new T.MeshBasicMaterial({side:T.DoubleSide}));scene.add(mesh);
+ const reducedIndices=new Uint8Array([209,0,4,4,0,0,0,0]); // meshopt index sequence [0,1,2]
+ const meta={version:1,entries:[{mesh:0,primitive:0,vertices:6,originalCount:6,hash:indexHash(g.index!.array),
+   count:3,offset:0,length:reducedIndices.length,error:.04}]};
+ t.mock.method(globalThis,'fetch',async (url:string)=>url.endsWith('.json')?Response.json(meta):new Response(reducedIndices));
+ const asset={scene,parser:{associations:new Map([[mesh,{meshes:0,primitives:0}]])}} as unknown as GLTF;
+ const detail=new LandmarkDetail(asset);await detail.prepareDistant(scene);
+ const camera=new T.PerspectiveCamera(60,1.6,.1,10000);
+ const renderer={xr:{isPresenting:false},getDrawingBufferSize:(v:T.Vector2)=>v.set(1440,900)} as T.WebGLRenderer;
+ const draw=(z:number)=>{
+  camera.position.z=z;camera.updateMatrixWorld();
+  // Three passes scene, camera and render target to Scene.onBeforeRender.
+  Reflect.apply(scene.onBeforeRender,scene,[renderer,scene,camera,null]);
+ };
+ draw(300);assert.equal(mesh.geometry.index!.count,3);
+ const ray=new T.Raycaster(new T.Vector3(1.75,0,10),new T.Vector3(0,0,-1));
+ assert.equal(ray.intersectObject(mesh).length,1);
+ assert.equal(mesh.geometry.index!.count,3,'picking restores current display detail');
+ Reflect.apply(scene.onAfterRender,scene,[renderer,scene,camera]);assert.equal(mesh.geometry,g);
+ draw(40);assert.equal(mesh.geometry,g,'close-up uses authored geometry');
+ camera.zoom=10;camera.updateProjectionMatrix();draw(300);assert.equal(mesh.geometry,g,'zoom resolves the mesh error');
+ camera.zoom=1;camera.updateProjectionMatrix();mesh.castShadow=true;draw(300);assert.equal(mesh.geometry,g,'casters retain their original shadow');
+ assert.equal(subpixelLandmark(NaN,1000,1000),false);
+});
