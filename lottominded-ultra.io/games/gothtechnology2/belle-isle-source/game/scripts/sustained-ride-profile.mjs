@@ -19,19 +19,28 @@ const report={sourceHead:process.env.GITHUB_SHA||null,device,viewport,requestedS
  passed:false,frameQualityAccepted:false,releasePerformanceVerified:false,welcomeReadyMs:null,rideStartedMs:null,firstPlayableMs:null,profileWindowCaveat:'Local browser capture ends at genuine trusted W-keyup before Settings/report extraction; NOT physical-device certification',profile:null,memory:null,browserSchedulerProbe:null,cdpCpuProbe:null,probeErrors:[],errors:[],failedRequests:[],elapsedWallMs:null};
 const server=createCoopStaticServer(resolve(game,'dist'));
 await new Promise(ok=>server.listen(0,'127.0.0.1',ok));
-const begin=Date.now();let browser;
+const begin=Date.now();let browser,page;
 try{
- const candidates=process.platform==='darwin'?[{name:'angle-metal',args:['--use-gl=angle','--use-angle=metal']}]:
+ const candidates=process.platform==='darwin'?[{name:'angle-metal',args:['--enable-gpu','--use-gl=angle','--use-angle=metal']}]:
   [{name:'angle-gl',args:['--use-gl=angle','--use-angle=gl']},
   {name:'swiftshader-fallback',args:['--use-gl=angle','--use-angle=swiftshader-webgl','--enable-unsafe-swiftshader']}];
- let page,lastBackendError;
+ let lastBackendError;
  for(const candidate of candidates){
   try{
-   browser=await chromium.launch({channel:'chrome',headless:process.platform!=='darwin',args:candidate.args});
+   browser=await chromium.launch({channel:'chrome',headless:true,args:candidate.args});
    const probe=await browser.newPage();
-   const available=await probe.evaluate(()=>!!document.createElement('canvas').getContext('webgl2'));
+   const available=await probe.evaluate(()=>{
+    const gl=document.createElement('canvas').getContext('webgl2');
+    if(!gl)return null;
+    const ext=gl.getExtension('WEBGL_debug_renderer_info');
+    return String(gl.getParameter(ext?.UNMASKED_RENDERER_WEBGL??gl.RENDERER));
+   });
    await probe.close();
    if(!available)throw Error('WebGL2 unavailable on '+candidate.name);
+   report.probeRenderer=available;
+   console.log('WebGL2 probe:',available);
+   if(candidate.name==='angle-metal'&&(!/Metal/i.test(available)||/SwiftShader|llvmpipe|software rasterizer/i.test(available)))
+    throw Error('Metal renderer unavailable: '+available);
    report.renderBackend=candidate.name;
    page=await browser.newPage({viewport,deviceScaleFactor:1,isMobile:device==='phone',hasTouch:device==='phone',reducedMotion:'reduce'});
    break;
@@ -42,6 +51,7 @@ try{
  }
  if(!page)throw Error('No real WebGL2 backend available: '+lastBackendError);
  page.setDefaultTimeout(180000);
+ await page.bringToFront();
  await page.addInitScript(()=>{const receipts={keydowns:0,keyups:0,repeats:0,blurs:0};
   window.__belleInputReceipts=receipts;
   window.addEventListener('keydown',event=>{if(event.code==='KeyW'&&event.isTrusted){receipts.keydowns++;if(event.repeat)receipts.repeats++;}},true);
@@ -78,7 +88,8 @@ try{
  page.on('requestfailed',r=>report.failedRequests.push((r.failure()?.errorText||'failed')+' '+r.url()));
  const navigationStarted=Date.now();
  await page.goto('http://127.0.0.1:'+server.address().port+'/?profile=1'+(mode==='diagnostic'?'&perfProbe=1':''),{waitUntil:'domcontentloaded'});
- await expect(page.locator('#welcome')).toHaveAttribute('data-state','ready');
+ await page.waitForFunction(()=>['ready','error'].includes(document.querySelector('#welcome')?.dataset.state));
+ await expect(page.locator('#welcome')).toHaveAttribute('data-state','ready',{timeout:1000});
  report.welcomeReadyMs=Date.now()-navigationStarted;
  report.actualGpu=await page.locator('#game').evaluate(canvas=>{
   const gl=canvas.getContext('webgl2');if(!gl||gl.isContextLost())throw Error('Game WebGL2 unavailable');
@@ -172,7 +183,13 @@ try{
   stats.distanceMetres<3?'render-starved-or-blocked-motion':report.frameQualityAccepted?'frame-budget-met':'stalls-detected';
  // A reduced-scene or software-browser success is never release approval.
  report.releasePerformanceVerified=false;
-}catch(error){report.errors.push(String(error?.stack||error));}
+}catch(error){
+ report.errors.push(String(error?.stack||error));
+ if(page)report.startupAtFailure=await page.evaluate(()=>({
+  visible:document.visibilityState,focused:document.hasFocus(),loading:document.querySelector('#loading')?.textContent,
+  telemetry:window.__belleStartupProfile?.(),callbacks:window.__belleBrowserClock?.snapshot?.()
+ })).catch(()=>null);
+}
 finally{
  report.elapsedWallMs=Date.now()-begin;
  await writeFile(resolve(output,'report.json'),JSON.stringify(report,null,2)+'\n');
