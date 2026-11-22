@@ -21,7 +21,8 @@ const server=createCoopStaticServer(resolve(game,'dist'));
 await new Promise(ok=>server.listen(0,'127.0.0.1',ok));
 const begin=Date.now();let browser;
 try{
- const candidates=[{name:'angle-gl',args:['--use-gl=angle','--use-angle=gl']},
+ const native=process.platform==='darwin'?'metal':process.platform==='win32'?'d3d11':'gl';
+ const candidates=[{name:'angle-'+native,args:['--use-gl=angle','--use-angle='+native]},
   {name:'swiftshader-fallback',args:['--use-gl=angle','--use-angle=swiftshader-webgl','--enable-unsafe-swiftshader']}];
  let page,lastBackendError;
  for(const candidate of candidates){
@@ -36,7 +37,7 @@ try{
    break;
   }catch(error){
    lastBackendError=String(error);await browser?.close().catch(()=>{});browser=undefined;
-   if(candidate.name==='angle-gl')report.rendererFallback=lastBackendError;
+   if(candidate===candidates[0])report.rendererFallback=lastBackendError;
   }
  }
  if(!page)throw Error('No real WebGL2 backend available: '+lastBackendError);
