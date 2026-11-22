@@ -3,10 +3,11 @@
 export function installObserver(){
  const events=new EventTarget();
  window.__THREE_DEVTOOLS__=events;
- let renderer;
- events.addEventListener('observe',e=>{if(typeof e.detail?.renderBufferDirect==='function')renderer=e.detail;});
+ const renderers=new Set();
+ events.addEventListener('observe',e=>{if(typeof e.detail?.renderBufferDirect==='function')renderers.add(e.detail);});
  window.__objectCostSample=async function(){
-  if(!renderer)throw Error('Game renderer was not observed');
+  const renderer=[...renderers].find(r=>r.domElement===document.querySelector('#game'));
+  if(!renderer)throw Error('Game renderer was not observed: '+[...renderers].map(r=>r.domElement?.id));
   const gl=renderer.getContext(),ext=gl.getExtension('EXT_disjoint_timer_query_webgl2');
   const orig=renderer.renderBufferDirect,rows=new Map(),queries=[];
   let sample,firstFrame,frames=0;
@@ -36,6 +37,7 @@ export function installObserver(){
    while(queries.length&&!gl.getQueryParameter(queries.at(-1)[0],gl.QUERY_RESULT_AVAILABLE)&&performance.now()<until)await new Promise(ok=>setTimeout(ok,80));
    const disjoint=ext?gl.getParameter(ext.GPU_DISJOINT_EXT):true;
    if(!disjoint)for(const [q,row] of queries)if(gl.getQueryParameter(q,gl.QUERY_RESULT_AVAILABLE))row.gpuMs+=gl.getQueryParameter(q,gl.QUERY_RESULT)/1e6;
+   if(!frames||!queries.length)throw Error('The game produced no timed samples');
    return {frames,disjoint,queries:queries.length,rows:[...rows.values()].sort((a,b)=>b.gpuMs-a.gpuMs)};
   }finally{for(const [q] of queries)gl.deleteQuery(q);}
  };
