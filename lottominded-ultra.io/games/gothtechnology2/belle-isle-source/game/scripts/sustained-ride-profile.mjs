@@ -14,19 +14,20 @@ const output=resolve(game,'output/sustained-profile',mode,device);
 await mkdir(output,{recursive:true});
 const report={sourceHead:process.env.GITHUB_SHA||null,device,viewport,requestedSeconds:seconds,mode,
  renderBackend:null,rendererFallback:null,actualGpu:null,input:null,classification:null,
- hardware:'GitHub Actions Chrome; phone viewport is NOT physical iOS/Android hardware',
+ hardware:'Chrome '+process.platform+' '+process.arch+'; phone viewport is emulated',
  acceptanceScope:mode==='diagnostic'?'REDUCED SCENE DIAGNOSTIC ONLY; not release quality':'FULL CURRENT GAME; still not device certification',
  passed:false,frameQualityAccepted:false,releasePerformanceVerified:false,welcomeReadyMs:null,rideStartedMs:null,firstPlayableMs:null,profileWindowCaveat:'Local browser capture ends at genuine trusted W-keyup before Settings/report extraction; NOT physical-device certification',profile:null,memory:null,browserSchedulerProbe:null,cdpCpuProbe:null,probeErrors:[],errors:[],failedRequests:[],elapsedWallMs:null};
 const server=createCoopStaticServer(resolve(game,'dist'));
 await new Promise(ok=>server.listen(0,'127.0.0.1',ok));
 const begin=Date.now();let browser;
 try{
- const candidates=[{name:'angle-gl',args:['--use-gl=angle','--use-angle=gl']},
+ const candidates=process.platform==='darwin'?[{name:'angle-metal',args:['--use-gl=angle','--use-angle=metal']}]:
+  [{name:'angle-gl',args:['--use-gl=angle','--use-angle=gl']},
   {name:'swiftshader-fallback',args:['--use-gl=angle','--use-angle=swiftshader-webgl','--enable-unsafe-swiftshader']}];
  let page,lastBackendError;
  for(const candidate of candidates){
   try{
-   browser=await chromium.launch({channel:'chrome',headless:true,args:candidate.args});
+   browser=await chromium.launch({channel:'chrome',headless:process.platform!=='darwin',args:candidate.args});
    const probe=await browser.newPage();
    const available=await probe.evaluate(()=>!!document.createElement('canvas').getContext('webgl2'));
    await probe.close();
@@ -86,6 +87,8 @@ try{
    renderer:String(gl.getParameter(ext?.UNMASKED_RENDERER_WEBGL??gl.RENDERER)),
    version:String(gl.getParameter(gl.VERSION))};
  });
+ if(report.renderBackend==='angle-metal'&&(!/Metal/i.test(report.actualGpu.renderer)||/SwiftShader|llvmpipe|software rasterizer/i.test(report.actualGpu.renderer)))
+  throw Error('The sustained profile requires a Metal renderer on macOS. Chrome reported '+report.actualGpu.renderer);
  await page.locator('.cinema-ride-picker > summary').click();
  await page.locator('.ride-options label').filter({hasText:'One wheel'}).click();
  await page.getByRole('button',{name:'Use this ride',exact:true}).click();
