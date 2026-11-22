@@ -83,7 +83,8 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
    const source=treeSource.getObjectByName(entry.id+'__'+part+(low?'__lod':'')) as T.Mesh;
    if(!source)throw Error('Missing seasonal tree '+entry.id+part);
    const mesh=instance(source,low?plants.length:natureBudget.high.trees,(low?'Distant ':'Nearby ')+entry.id+' '+part,!low,rootOffset);
-   const season=seasonalMaterial(Array.isArray(source.material)?source.material[0]:source.material,part==='leaves',low,entry.id==='pine',month);if(REFERENCE_STYLE&&part==='leaves'){const compile=season.material.onBeforeCompile;season.material.onBeforeCompile=(shader,renderer)=>{compile(shader,renderer);shader.fragmentShader=shader.fragmentShader.replace('autumn*.92','autumn*.62');};season.material.customProgramCacheKey=()=> 'reference-seasonal-'+low+'-'+entry.id;}seasons.push(season);mesh.material=season.material;
+   const season=seasonalMaterial(Array.isArray(source.material)?source.material[0]:source.material,part==='leaves',low,entry.id==='pine',month,REFERENCE_STYLE);
+   seasons.push(season);mesh.material=season.material;
    mesh.geometry.setAttribute('lodWeight',new T.InstancedBufferAttribute(new Float32Array(low?plants.length:natureBudget.high.trees),1));
    if(part==='leaves')mesh.geometry.setAttribute('canopyDensity',new T.InstancedBufferAttribute(new Float32Array(low?plants.length:natureBudget.high.trees).fill(1),1).setUsage(T.DynamicDrawUsage));
    const smooth=smoothIndices.get(entry.id);

@@ -1,7 +1,51 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {presentationBudget,tracedSkyEnabled,defaultTracedSky,fogColumn,reflectionRequired,aircraftFrame,RIDER_CLIPS,sampleRiderClip,articulateEuc,windMask,type EucMotion} from './presentationPolicy.ts';
 import {atmosphereShader,windVertex,HEIGHT_FOG} from './atmosphereShaders.ts';
-import {ShaderChunk} from 'three';
+import {Mesh,MeshStandardMaterial,Scene,ShaderChunk,ShaderLib,UniformsUtils,type WebGLRenderer} from 'three';
+import {seasonalMaterial} from './seasonalMaterial.ts';
+import {addStreetDetails} from './streetDetails.ts';
+
+function standardShader(material:MeshStandardMaterial){
+ const standard=ShaderLib.standard;
+ const shader={vertexShader:standard.vertexShader,fragmentShader:standard.fragmentShader,
+  uniforms:UniformsUtils.clone(standard.uniforms)} as Parameters<typeof material.onBeforeCompile>[0];
+ material.onBeforeCompile(shader,{} as WebGLRenderer);return shader;
+}
+
+test('reference tree species share shader code while retaining their own seasonal uniforms',()=>{
+ const base=new MeshStandardMaterial(),month={value:10};
+ for(const far of [false,true]){
+  const maple=seasonalMaterial(base,true,far,false,month,true),pine=seasonalMaterial(base,true,far,true,month,true);
+  const a=standardShader(maple.material),b=standardShader(pine.material);
+  assert.equal(maple.material.customProgramCacheKey(),pine.material.customProgramCacheKey());
+  assert.equal(a.vertexShader,b.vertexShader);assert.equal(a.fragmentShader,b.fragmentShader);
+  assert.notEqual(a.uniforms.autumn,b.uniforms.autumn);maple.update();pine.update();
+  assert.ok(a.uniforms.autumn.value>0);assert.equal(b.uniforms.autumn.value,0);
+  for(const other of [seasonalMaterial(base,true,!far,false,month,true),seasonalMaterial(base,true,far,false,month,false)]){
+   assert.notEqual(maple.material.customProgramCacheKey(),other.material.customProgramCacheKey());
+   assert.notEqual(a.fragmentShader,standardShader(other.material).fragmentShader);
+  }
+ }
+});
+
+test('street paint and curb materials share only equivalent shaders and keep their surface values',t=>{
+ const previous=Object.getOwnPropertyDescriptor(globalThis,'document');
+ Object.defineProperty(globalThis,'document',{configurable:true,value:{createElement:()=>({getContext:()=>({fillRect(){}})})}});
+ t.after(()=>{if(previous)Object.defineProperty(globalThis,'document',previous);else Reflect.deleteProperty(globalThis,'document');});
+ const scene=new Scene(),kinds=['white','yellow','curb','gutter','metal','green','tactile'] as const;
+ const boxes=kinds.map((material,x)=>({material,x,y:0,z:0,w:1,h:.1,l:1,yaw:0}));
+ addStreetDetails(scene,{boxes,signs:[],stats:{},notes:[]});
+ const surfaces=kinds.map(kind=>(scene.getObjectByName('Street detail 0,0,'+kind) as Mesh).material as MeshStandardMaterial);
+ const shaders=surfaces.map(standardShader);
+ for(const [i,first] of surfaces.entries())for(const [j,second] of surfaces.entries()){
+  const sameGrime=(i===2||i===3)===(j===2||j===3);
+  assert.equal(first.customProgramCacheKey()===second.customProgramCacheKey(),sameGrime);
+  assert.equal(shaders[i].vertexShader,shaders[j].vertexShader);
+  assert.equal(shaders[i].fragmentShader===shaders[j].fragmentShader,sameGrime);
+ }
+ assert.equal(new Set(surfaces.map(m=>m.color.getHex())).size,kinds.length);
+ assert.equal(surfaces[4].metalness,.5);assert.equal(surfaces[0].metalness,0);
+});
 
 test('the local point pool keeps all lights in order and preserves the stock point-shadow path',()=>{
  const chunk=ShaderChunk.lights_fragment_begin;
