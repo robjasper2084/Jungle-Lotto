@@ -1,6 +1,7 @@
 import {closesRideMenu} from './rideRadioDock.ts';
 import {PointerTrack,HeldControls,stickAxes} from './mobileInput.ts';
 import './mobileHud.css';
+import './hudFocus.css';
 import {installHudCustomization} from './hudLayoutRuntime.ts';
 
 type Hooks={blocked:()=>boolean;movementBlocked:()=>boolean;clear:()=>void;move:(steer:number,throttle:number)=>void;look:(x:number,y:number)=>void;hop:()=>void};
@@ -68,6 +69,11 @@ export function createMobileHud(h:Hooks){
  stickMode.onchange=()=>{save('belle-joystick-mode',stickMode.value);document.body.dataset.joystickMode=stickMode.value;h.clear();};
  get('reset-mobile').onclick=()=>{stickMode.value='floating';stickMode.onchange!(new Event('change'));resets.forEach(reset=>reset());spacing.value='standard';spacing.onchange!(new Event('change'));touch.checked=auto();try{localStorage.removeItem('belle-touch-controls');}catch{}syncTouch();};
  const menu=get<HTMLDialogElement>('ride-menu'),toggle=get('tools-toggle');
+ const focusButton=document.createElement('button');focusButton.type='button';focusButton.id='hud-focus-toggle';
+ const savedFocus=read('belle-hud-focus')==='true';let focusMode=savedFocus;
+ const syncFocus=()=>{document.body.classList.toggle('belle-hud-focus',focusMode);focusButton.textContent=focusMode?'Focus HUD: On':'Focus HUD: Off';focusButton.setAttribute('aria-pressed',String(focusMode));};
+ focusButton.onclick=()=>{focusMode=!focusMode;save('belle-hud-focus',String(focusMode));syncFocus();};
+ menu.querySelector('nav')?.append(focusButton);syncFocus();
  const closeMenu=()=>{if(!menu.open)return;h.clear();menu.close();toggle.setAttribute('aria-expanded','false');if(!document.querySelector('dialog[open]'))canvas.focus();};
  toggle.onclick=()=>{h.clear();menu.showModal();toggle.setAttribute('aria-expanded','true');};
  menu.querySelector<HTMLButtonElement>('[data-close="ride-menu"]')!.onclick=closeMenu;
