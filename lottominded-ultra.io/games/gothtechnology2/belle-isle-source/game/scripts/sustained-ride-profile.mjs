@@ -222,6 +222,8 @@ try{
  report.releasePerformanceVerified=false;
  try{await writeFile(resolve(output,'programs.json'),JSON.stringify(await measurePrograms(page),null,2));}
  catch(error){report.probeErrors.push('Post-ride GPU timings: '+String(error));}
+ try{await writeFile(resolve(output,'matched-world.json'),JSON.stringify(await page.evaluate(()=>window.__matchedWorldCosts())));}
+ catch(error){report.probeErrors.push('Matched-camera timing: '+String(error));}
 }catch(error){
  report.errors.push(String(error?.stack||error));
  if(page)report.startupAtFailure=await page.evaluate(()=>({
