@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {prepareColoredDetailPool} from './sceneWarmup.ts';
 import {inside,type ParkMap,type ParkTerrain,type Point} from './terrain.ts';
 import {roadIndex} from './streetPlan.ts';
 import {selectGeology,type GeologyTier} from './geologyLod.ts';
@@ -80,6 +81,7 @@ export function addGeology(scene:T.Scene,map:ParkMap,terrain:ParkTerrain){
   };material.customProgramCacheKey=()=> 'belle-mineral-weather-v1';
   for(const detail of ['near','far'] as const){
    const g=rockGeometry(shape,detail),mesh=new T.InstancedMesh(g,material,boulders.length);
+   prepareColoredDetailPool(mesh);
    mesh.name='Clustered mapped mineral boulders '+shape+' '+detail;
    mesh.castShadow=false;mesh.receiveShadow=true;mesh.frustumCulled=false;mesh.count=0;mesh.visible=false;
    mesh.instanceMatrix.setUsage(T.DynamicDrawUsage);

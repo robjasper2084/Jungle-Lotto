@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {DataTexture,DirectionalLight,Group,Mesh,MeshBasicMaterial,PerspectiveCamera,PointLight,Scene,SpotLight,type Texture,type Object3D} from 'three';
-import {SceneWarmup} from './sceneWarmup.ts';
+import {BoxGeometry,DataTexture,DirectionalLight,Group,InstancedMesh,Mesh,MeshBasicMaterial,PerspectiveCamera,PointLight,Scene,SpotLight,type Texture,type Object3D} from 'three';
+import {prepareColoredDetailPool,SceneWarmup} from './sceneWarmup.ts';
 
 function fixture(){const scene=new Scene(),sun=new DirectionalLight();sun.castShadow=true;scene.add(sun,...Array.from({length:4},()=>new PointLight()));const bike=new Group();bike.visible=false;bike.add(new PointLight(),new SpotLight(),new SpotLight());scene.add(bike);return{scene,sun,bike,camera:new PerspectiveCamera()};}
 function topology(scene:Scene){let points=0,spots=0,shadows=0;scene.traverseVisible(o=>{if(o instanceof PointLight)points++;if(o instanceof SpotLight)spots++;if(o instanceof DirectionalLight&&o.castShadow)shadows++;});return{points,spots,shadows};}
@@ -18,6 +18,23 @@ test('Smooth island warmup submits bounded batches and retains each visible draw
  }};
  await new SceneWarmup(renderer as unknown as ConstructorParameters<typeof SceneWarmup>[0],scene,camera,()=>{},async()=>{}).prepare();
  assert.deepEqual(sizes,[64,64,22]);assert.deepEqual(seen,meshes);
+});
+
+test('empty distance-selected pools warm the colored variant before a ride in either shadow mode',async()=>{
+ for(const mapped of [true,false]){
+  const {scene,camera,bike}=fixture();
+  const pool=new InstancedMesh(new BoxGeometry(),new MeshBasicMaterial(),8);
+  pool.count=0;pool.visible=false;scene.add(pool);
+  const hiddenRide=new Mesh();bike.add(hiddenRide);
+  prepareColoredDetailPool(pool);
+  const draws:Object3D[]=[];
+  const renderer={shadowMap:{enabled:mapped},compileAsync:async(root:Object3D)=>{
+   root.traverse(object=>draws.push(object));return scene;
+  }};
+  await new SceneWarmup(renderer as unknown as ConstructorParameters<typeof SceneWarmup>[0],scene,camera,()=>{},async()=>{}).prepare();
+  assert.equal(pool.instanceColor?.count,8);assert.equal(pool.count,0);assert.equal(pool.visible,false);
+  assert.deepEqual(draws,mapped?[pool,pool]:[pool]);
+ }
 });
 
 test('contact-only warmup skips mapped shadows and permits a later mapped warmup',async()=>{

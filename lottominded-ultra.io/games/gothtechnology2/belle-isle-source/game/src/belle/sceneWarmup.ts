@@ -1,22 +1,36 @@
-import {Group,type Camera,type DirectionalLight,type Object3D,type Scene,type WebGLRenderer} from 'three';
+import {Color,DynamicDrawUsage,Group,type Camera,type DirectionalLight,type InstancedMesh,type Object3D,type Scene,type WebGLRenderer} from 'three';
 
 import {warmObjectTextures,yieldStartupTask} from './startupWork.ts';
 
 type Compiler=Pick<WebGLRenderer,'compileAsync'> & Partial<Pick<WebGLRenderer,'initTexture'|'shadowMap'>>;
 type Pending={promise:Promise<void>;signal?:AbortSignal;cancel:AbortController};
-/** compileAsync normally visits even invisible geometry. Supply Smooth's active
- * drawables while the real target scene continues to provide all the lighting.
- * No game object is cloned, reparented or removed from the scene. */
-class SmoothWarmupRoot extends Group {
+const coloredDetailPools=new WeakSet<Object3D>();
+const white=new Color(0xffffff);
+
+// Three selects the shader variant from the presence of instanceColor. A pool
+// can be empty at spawn and receive its first colored instance well into a ride.
+export function prepareColoredDetailPool(mesh:InstancedMesh){
+ if(!mesh.instanceMatrix.count)return;
+ mesh.setColorAt(0,white);
+ mesh.instanceColor!.setUsage(DynamicDrawUsage);
+ coloredDetailPools.add(mesh);
+}
+
+/** Compile visible drawables and distance-selected pools against the live lights.
+ * Hidden vehicles are prepared separately when the player selects them. */
+class IslandWarmupRoot extends Group {
  private drawables:Object3D[];
  constructor(drawables:Object3D[]){super();this.drawables=drawables;}
  static batches(scene:Scene,camera:Camera){
   const drawables:Object3D[]=[];
-  scene.traverseVisible(object=>{
+  function collect(object:Object3D){
+   if(!object.visible&&!coloredDetailPools.has(object))return;
    if('material' in object && object.layers.test(camera.layers))drawables.push(object);
-  });
-  const batches:SmoothWarmupRoot[]=[];
-  for(let i=0;i<Math.max(1,drawables.length);i+=64)batches.push(new SmoothWarmupRoot(drawables.slice(i,i+64)));
+   for(const child of object.children)collect(child);
+  }
+  collect(scene);
+  const batches:IslandWarmupRoot[]=[];
+  for(let i=0;i<Math.max(1,drawables.length);i+=64)batches.push(new IslandWarmupRoot(drawables.slice(i,i+64)));
   return batches;
  }
  override traverse(callback:(object:Object3D)=>void){for(const object of this.drawables)callback(object);}
@@ -56,7 +70,7 @@ export class SceneWarmup {
    // Rider-only preparation must not recompile every island material. A model
    // with lights changes the scene light topology and still needs the full scene.
    let addsLights=false;model?.traverse?.(object=>{if((object as Object3D&{isLight?:boolean}).isLight)addsLights=true;});
-   const compileRoots=!model&&!mappedShadows?SmoothWarmupRoot.batches(this.scene,this.camera):[model&&!addsLights?model:this.scene];
+   const compileRoots=!model?IslandWarmupRoot.batches(this.scene,this.camera):[!addsLights?model:this.scene];
    const shadows:{light:DirectionalLight;enabled:boolean}[]=[];
    this.scene.traverse(object=>{const light=object as DirectionalLight;if(light.isDirectionalLight)shadows.push({light,enabled:light.castShadow});});
    try{

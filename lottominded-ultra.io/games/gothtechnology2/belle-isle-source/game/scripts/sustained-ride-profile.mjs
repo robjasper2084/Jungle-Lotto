@@ -52,6 +52,12 @@ try{
  if(!page)throw Error('No real WebGL2 backend available: '+lastBackendError);
  page.setDefaultTimeout(180000);
  await page.bringToFront();
+ // Boot with this lane's actual settings so startup prepares the same shaders
+ // that the 90-second ride will exercise. Settings also verifies the selection.
+ const quality=device==='phone'?'smooth':'high';
+ await page.addInitScript(quality=>{
+  localStorage.setItem('belle-graphics-v1',JSON.stringify({quality,cap:60,antiAliasing:'automatic'}));
+ },quality);
  await page.addInitScript(()=>{const receipts={keydowns:0,keyups:0,repeats:0,blurs:0};
   window.__belleInputReceipts=receipts;
   window.addEventListener('keydown',event=>{if(event.code==='KeyW'&&event.isTrusted){receipts.keydowns++;if(event.repeat)receipts.repeats++;}},true);
@@ -116,7 +122,7 @@ try{
  await settings();
  // Keep the actual quality tier identical between FULL and DIAGNOSTIC on each viewport.
  // Only localhost perfProbe reductions may differ; never attribute a High→Smooth change to scene reduction.
- await page.locator('#quality').selectOption(device==='phone'?'smooth':'high');
+ await expect(page.locator('#quality')).toHaveValue(quality);
  if(mode==='diagnostic')await expect(page.locator('#performance-probe-warning')).toBeVisible();
  else await expect(page.locator('#performance-probe-warning')).toHaveCount(0);
  const panel=page.locator('#ride-profile');
