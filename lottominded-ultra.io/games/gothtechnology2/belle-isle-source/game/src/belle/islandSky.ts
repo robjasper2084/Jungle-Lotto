@@ -136,6 +136,7 @@ export async function createIslandSky(scene:T.Scene,renderer:T.WebGLRenderer,sta
   try{bounded=boundedSkyProbe(hdr);generator=new T.PMREMGenerator(renderer);scene.environment=generator.fromEquirectangular(bounded).texture;}
   finally{generator?.dispose();bounded?.dispose();hdr.dispose();}
  }catch(e){console.warn('Sky reflection probe unavailable',e);}
+ key.userData.fixedShadowLayout=true;
  const broader=new BroaderPresentation(scene,renderer,sky.material,uniforms.cloudNoise.value);
  const volume=new VolumetricSky(renderer,scene);let tracedSelected=true,softwareShadow=false;
  try{
@@ -180,7 +181,13 @@ export async function createIslandSky(scene:T.Scene,renderer:T.WebGLRenderer,sta
   key.intensity*=cloudLightFactor(cloudClock,shape.coverage,shape.overcast,day,reduceMotion)*(1+photoLook.warmth*.48);
   const extent=photoShadowExtent(eye.y),lightDistance=180+(extent-55)*1.5;
   if(key.shadow.camera.right!==extent){Object.assign(key.shadow.camera,{left:-extent,right:extent,top:extent,bottom:-extent,far:450+(extent-55)*3});key.shadow.camera.updateProjectionMatrix();}
-  key.position.set(x+lightDirection.x*lightDistance,lightDirection.y*lightDistance,z+lightDirection.z*lightDistance);key.target.position.set(x,0,z);key.castShadow=shadowQuality&&key.intensity>.12;
+  key.position.set(x+lightDirection.x*lightDistance,lightDirection.y*lightDistance,z+lightDirection.z*lightDistance);key.target.position.set(x,0,z);
+  // Keep the directional shader layout stable through dawn and dusk. A zero
+  // shadow intensity preserves the unshadowed light without rendering a map.
+  key.castShadow=shadowQuality;
+  const shadowActive=shadowQuality&&key.intensity>.12;
+  if(shadowActive&&!key.shadow.autoUpdate)key.shadow.needsUpdate=true;
+  key.shadow.intensity=shadowActive?1:0;key.shadow.autoUpdate=shadowActive;
   scene.environmentIntensity=(.28+day*.31)*dim*(1-photoLook.warmth*.09);fogColor.copy(uniforms.horizon.value).lerp(uniforms.warm.value,.10*(1-day));(scene.fog as T.FogExp2).color.copy(fogColor).lerp(referenceFog,photoLook.haze*.09);(scene.fog as T.FogExp2).density=islandHazeDensity(shape.overcast,night);
   nightUniform.value=night;reflectionTint.copy(uniforms.horizon.value).lerp(uniforms.warm.value,.40*(1-smooth(.1,.65,uniforms.sunDirection.value.y))).multiplyScalar(1.8);reflectionTint.lerp(tempColor.setRGB(1,1,1),day*.25);reflectionTint.multiplyScalar(1/Math.max(.1,reflectionTint.r,reflectionTint.g,reflectionTint.b));
   // Smooth is the low-GPU tier: do not submit costly 64-step traced cloud

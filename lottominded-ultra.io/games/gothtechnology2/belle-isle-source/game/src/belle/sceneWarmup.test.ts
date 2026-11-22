@@ -65,6 +65,20 @@ test('island batches link concurrently within one lighting policy and drain befo
  assert(peak>1&&peak<=4);assert.deepEqual(calls,[false,false,false,false,true,true,true,true]);
 });
 
+test('a fixed directional light needs one mapped topology and polls shared programs only once',async()=>{
+ const {scene,camera,sun}=fixture();sun.userData.fixedShadowLayout=true;
+ scene.add(...Array.from({length:129},()=>new Mesh()));
+ const programs=[{program:{}},{program:{}}],polls:object[]=[],shadows:boolean[]=[];
+ let flushed=0;
+ const renderer={shadowMap:{enabled:true},info:{programs},getContext:()=>({
+  getExtension:()=>({COMPLETION_STATUS_KHR:0x91b1}),isContextLost:()=>false,flush:()=>flushed++,
+  getProgramParameter:(program:object)=>{polls.push(program);return polls.length!==1;}
+ }),compile:()=>shadows.push(sun.castShadow),compileAsync:()=>{throw Error('unexpected material poll');}};
+ await new SceneWarmup(renderer as unknown as ConstructorParameters<typeof SceneWarmup>[0],scene,camera,()=>{},async()=>{}).prepare();
+ assert.deepEqual(shadows,[true,true,true]);assert.equal(flushed,1);
+ assert.deepEqual(polls,[programs[0].program,programs[0].program,programs[1].program]);
+});
+
 test('Smooth prepares active drawables against the actual island lights, with a separate preparation for a hidden ride',async()=>{
  const {scene,bike,camera}=fixture(),island=new Mesh(),detail=new Mesh(),wrongLayer=new Mesh();
  const map=new DataTexture(new Uint8Array([255,255,255,255]),1,1),uploads:Texture[]=[];detail.material=new MeshBasicMaterial({map});

@@ -70,11 +70,23 @@ export async function addSunsetGarden(scene:T.Scene,map:ParkMap,terrain:ParkTerr
   }
  }
  const flowerGeo=new T.SphereGeometry(1,7,4),flowerMat=standard('Reference late-summer flower heads',0xffcf54);const blooms=new T.InstancedMesh(flowerGeo,flowerMat,flowers.length*5);const stemMat=standard('Reference flower stems',0x58662e);const stems=new T.InstancedMesh(new T.CylinderGeometry(.009,.015,1,4),stemMat,flowers.length);
+ // Each 16 cm petal keeps its color and transform at distance. Use fewer
+ // triangles once even the nearest flower in this garden is subpixel.
+ const distantPetal=new T.SphereGeometry(1,4,2),flowerBounds=new T.Box2();
+ const flowerPosition=new T.Vector2();
+ for(const p of flowers)flowerBounds.expandByPoint(flowerPosition.set(p.x,p.z));
  flowers.forEach((p,i)=>{const h=.25+rand()*.25;dummy.position.set(p.x,p.y+h*.5,p.z);dummy.rotation.set(0,0,0);dummy.scale.set(1,h,1);dummy.updateMatrix();stems.setMatrixAt(i,dummy.matrix);for(let k=0;k<5;k++){const a=k/5*Math.PI*2;dummy.position.set(p.x+Math.cos(a)*.065,p.y+h,p.z+Math.sin(a)*.065);dummy.scale.set(.065,.025,.055);dummy.rotation.y=a;dummy.updateMatrix();blooms.setMatrixAt(i*5+k,dummy.matrix);blooms.setColorAt(i*5+k,color.setHex(i%4===0?0xffe5b5:0xffbf28));}});root.add(blooms,stems);
  // Small fallen leaves create a readable path edge without expensive particles.
  const litter=new T.InstancedMesh(leafGeo,new T.MeshStandardMaterial({color:0xffb54a,roughness:1,side:T.DoubleSide}),sites.length*12);
  let count=0;sites.forEach(p=>{for(let i=0;i<12;i++){const x=p.x+(rand()-.5)*p.r*2,z=p.z+(rand()-.5)*p.r*2;if(!terrain.land(x,z))continue;dummy.position.set(x,terrain.height(x,z)+.045,z);dummy.rotation.set(0,rand()*6,0);dummy.scale.setScalar(.32+rand()*.22);dummy.updateMatrix();litter.setMatrixAt(count++,dummy.matrix);}});litter.count=count;root.add(litter);
  // Flatten the small architectural parts into one mesh per material.
  staticParts.updateMatrixWorld(true);const batches=new Map<T.Material,T.BufferGeometry[]>();staticParts.traverse(o=>{if(!(o instanceof T.Mesh))return;const g=o.geometry.clone().applyMatrix4(o.matrixWorld),m=o.material as T.Material;const list=batches.get(m)||[];list.push(g);batches.set(m,list);});staticParts.clear();for(const [m,parts]of batches){const g=mergeGeometries(parts);if(g)mesh(staticParts,g,m,new T.Vector3());for(const p of parts)p.dispose();}
- return{setQuality(q:string){leaves.visible=q!=='smooth';},stats:{trees:sites.length,leaves:leafCount,rocks:rocks.length,lamps:decor.length,flowers:flowers.length},update(x:number,z:number){root.visible=Math.hypot(x-center.x,z-center.z)<center.radius+610;},root};
+ return{setQuality(q:string){leaves.visible=q!=='smooth';},stats:{trees:sites.length,leaves:leafCount,rocks:rocks.length,lamps:decor.length,flowers:flowers.length},update(x:number,z:number,eyeX=x,eyeZ=z){
+  root.visible=Math.hypot(x-center.x,z-center.z)<center.radius+610;
+  if(root.visible&&flowers.length){
+   const distance=flowerBounds.distanceToPoint(flowerPosition.set(eyeX,eyeZ));
+   if(distance>200)blooms.geometry=distantPetal;
+   else if(distance<170)blooms.geometry=flowerGeo;
+  }
+ },root};
 }

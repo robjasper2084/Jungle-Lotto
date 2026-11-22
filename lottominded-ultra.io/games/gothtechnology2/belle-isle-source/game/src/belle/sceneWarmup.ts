@@ -1,8 +1,8 @@
 import {Color,DynamicDrawUsage,Group,type Camera,type DirectionalLight,type InstancedMesh,type Object3D,type Scene,type WebGLRenderer} from 'three';
 
-import {startupPool,warmObjectTextures,yieldStartupTask} from './startupWork.ts';
+import {checkStartupAbort,startupPool,warmObjectTextures,yieldStartupTask} from './startupWork.ts';
 
-type Compiler=Pick<WebGLRenderer,'compileAsync'> & Partial<Pick<WebGLRenderer,'initTexture'|'shadowMap'>>;
+type Compiler=Pick<WebGLRenderer,'compileAsync'> & Partial<Pick<WebGLRenderer,'compile'|'getContext'|'info'|'initTexture'|'shadowMap'>>;
 type Pending={promise:Promise<void>;signal?:AbortSignal;cancel:AbortController};
 const white=new Color(0xffffff);
 
@@ -37,6 +37,26 @@ class IslandWarmupRoot extends Group {
  override traverse(callback:(object:Object3D)=>void){for(const object of this.drawables)callback(object);}
 }
 const cancelled=(signal:AbortSignal)=>signal.reason instanceof Error?signal.reason:new DOMException('Ride preparation cancelled','AbortError');
+// Poll each linked program rather than every material sharing it. All programs
+// have already been submitted, so waiting in order does not serialize linking.
+async function compileIslandPrograms(renderer:Compiler,roots:Object3D[],camera:Camera,scene:Scene,signal:AbortSignal){
+ const gl=renderer.getContext?.(),ext=gl?.getExtension('KHR_parallel_shader_compile');
+ if(!gl||!ext||!renderer.compile||!renderer.info?.programs)return false;
+ for(const [i,root] of roots.entries()){
+  if(i)await yieldStartupTask();
+  checkStartupAbort(signal);renderer.compile(root,camera,scene);
+ }
+ gl.flush();
+ const programs=renderer.info.programs.map(p=>p.program as WebGLProgram);
+ for(const program of programs){
+  while(!gl.getProgramParameter(program,ext.COMPLETION_STATUS_KHR)){
+   checkStartupAbort(signal);
+   if(gl.isContextLost())throw Error('WebGL context lost during island preparation');
+   await new Promise(resolve=>setTimeout(resolve,16));
+  }
+ }
+ checkStartupAbort(signal);return true;
+}
 function readyOrCancelled<T>(ready:Promise<T>,signal:AbortSignal){
  return new Promise<T>((resolve,reject)=>{
   const abort=()=>{signal.removeEventListener('abort',abort);reject(cancelled(signal));};
@@ -83,9 +103,11 @@ export class SceneWarmup {
     await readyOrCancelled(warmObjectTextures(this.renderer,model??this.scene,cancel.signal),cancel.signal);
     // Smooth has no shadow-map pass. A later prepare in a mapped mode
     // gets a distinct cache entry and still warms both lighting variants.
-    for(const enabled of mappedShadows?[false,true]:[false]){
+    const varyingShadow=shadows.some(({light})=>!light.userData.fixedShadowLayout);
+    for(const enabled of mappedShadows&&varyingShadow?[false,true]:[mappedShadows]){
      if(cancel.signal.aborted)throw cancelled(cancel.signal);
-     for(const state of shadows)state.light.castShadow=enabled;
+     for(const state of shadows)state.light.castShadow=state.light.userData.fixedShadowLayout?mappedShadows:enabled;
+     if(!model&&await compileIslandPrograms(this.renderer,compileRoots,this.camera,this.scene,cancel.signal))continue;
      // Keep the compiler supplied while earlier programs link. Drain all work
      // for this light topology before changing the directional shadow policy.
      const submit=async(root:Object3D,i:number)=>{
