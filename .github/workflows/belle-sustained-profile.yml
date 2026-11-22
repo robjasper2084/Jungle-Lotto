@@ -1,11 +1,5 @@
-name: Belle Isle sustained riding profile
-
-on:
-  pull_request:
-    paths:
-      - '.github/workflows/belle-sustained-profile.yml'
-      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/**'
-  workflow_dispatch:
+name: Belle Isle GPU pacing diagnostic build
+on: workflow_dispatch
 
 permissions:
   contents: read
@@ -37,47 +31,3 @@ jobs:
           path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist/
           if-no-files-found: error
           retention-days: 1
-  profile:
-    needs: build
-    runs-on: macos-15
-    timeout-minutes: 35
-    strategy:
-      fail-fast: false
-      matrix:
-        device: [desktop, phone]
-        mode: [full, diagnostic]
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          sparse-checkout-cone-mode: false
-          sparse-checkout: |
-            /lottominded-ultra.io/games/gothtechnology2/package*.json
-            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-      - uses: actions/download-artifact@v4
-        with:
-          name: sustained-profile-game
-          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist
-      - name: Install Chrome browser runtime
-        working-directory: lottominded-ultra.io/games/gothtechnology2
-        run: |
-          npm ci
-          npx playwright install chrome
-      - name: Hold real input and sample 90-second foreground ride
-        timeout-minutes: 28
-        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
-        env:
-          BELLE_PROFILE_DEVICE: ${{ matrix.device }}
-          BELLE_PROFILE_MODE: ${{ matrix.mode }}
-          BELLE_PROFILE_SECONDS: '90'
-        run: node scripts/sustained-ride-profile.mjs
-      - name: Archive actual full or diagnostic evidence separately
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: belle-sustained-profile-${{ matrix.mode }}-${{ matrix.device }}
-          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/sustained-profile/${{ matrix.mode }}/${{ matrix.device }}
-          if-no-files-found: warn
-          retention-days: 14
