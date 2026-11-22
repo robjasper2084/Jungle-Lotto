@@ -159,9 +159,8 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
    const renderer=args[0],useCards=!renderer.xr.isPresenting&&!(renderer.getRenderTarget()?.samples);
    for(const display of leafDisplays)display.setSingleSample(useCards);
   }
-  args[2].getWorldPosition(eye);
   const selectionStart=renderProbe?.active?renderProbe.now():0;
-  view.render(eye.x,eye.z);
+  args[2].getWorldPosition(eye);view.render(eye.x,eye.z);
   if(renderProbe?.active){renderProbe.pass();renderProbe.elapsed('selectionCpuMs',selectionStart);}
   const cullStart=renderProbe?.active?renderProbe.now():0;
   const shadows=args[0].shadowMap,allCasters=shadows.enabled&&(shadows.autoUpdate||shadows.needsUpdate);
