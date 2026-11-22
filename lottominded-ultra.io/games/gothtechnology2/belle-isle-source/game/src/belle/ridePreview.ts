@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {cadillacModel} from './cadillacRide.ts';
 import {clone} from 'three/addons/utils/SkeletonUtils.js';
 import {createVehicleModel,type VehicleModel} from './vehicles/models.ts';
 
@@ -52,6 +53,7 @@ export function createRidePreview(host:HTMLElement,wheel:T.Object3D,loadBike:()=
   row.querySelectorAll('label')[index].classList.add('preview-ready');
  }
  add(wheel,0);
+ void cadillacModel().then(model=>{if(alive)add(model,4);}).catch(()=>row.querySelectorAll('label')[4]?.querySelector('.ride-preview-slot')?.setAttribute('data-status','Silver Fleetwood Brougham'));
  const reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
  const draw=(time:number)=>{
   frame=0;if(!active||!alive||document.hidden)return;
