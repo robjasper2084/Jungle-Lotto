@@ -1,4 +1,5 @@
 import {referenceTree} from './referenceTrees.ts';
+import {ReferenceLeafDisplay,applyLeafOutline} from './referenceLeafDisplay.ts';
 import {canopyTint} from './sunsetCanopy.ts';
 import {canopyProfile} from './habitatPolicy.ts';
 import {NatureViewSelection} from './natureViewSelection.ts';
@@ -21,14 +22,14 @@ import {localPerformanceProbe,PERF_PROBE_REDUCTIONS} from './performanceProbe.ts
 type Entry={id:string;meshes?:string[];cardSize?:number;cardCenter?:number[];card?:string;triangles:number};
 type Manifest={trees:Entry[];ground:Entry[]};
 type Pool={id:string;meshes:T.InstancedMesh[];far?:T.InstancedMesh[];farVisibility?:FarTreeVisibility;sourceIndices?:ReadonlyMap<Plant,number>;sourceIds?:Uint32Array;card?:T.InstancedMesh;plants:Plant[]};
-export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:ParkTerrain,renderProbe?:NatureRenderProbe){
+export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:ParkTerrain,renderProbe?:NatureRenderProbe,singleSample=false){
  const base='./belle/nature/',loader=new GLTFLoader(),textures=new T.TextureLoader();
  const json=async(name:string)=>{const r=await fetch(base+name);if(!r.ok)throw Error('Nature asset '+name+': '+r.status);return r.json();};
  const manifest:Manifest=await json('manifest.json'),plan:NaturePlan=await json('placements.json');if(REFERENCE_STYLE)plan.trees=plan.trees.filter(p=>!inSunsetGarden(p.x,p.z));
  status('Loading varied trees');
  const treeSource=REFERENCE_STYLE?new T.Group():(await loadStartupModel(loader,base+'seasonal-trees.glb')).scene;
  const smoothIndices=new Map<string,T.BufferAttribute>();
- const distantLeafIndices:{mesh:T.InstancedMesh;full:T.BufferAttribute;smooth:T.BufferAttribute}[]=[];
+ const leafDisplays:ReferenceLeafDisplay[]=[];
  if(REFERENCE_STYLE)for(const entry of manifest.trees)for(const low of [false,true]){
   await yieldStartupTask();
   const tree=referenceTree(entry.id,low,(entry.cardCenter?.[1]??8)*2);
@@ -82,8 +83,10 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
    const season=seasonalMaterial(Array.isArray(source.material)?source.material[0]:source.material,part==='leaves',low,entry.id==='pine',month);if(REFERENCE_STYLE&&part==='leaves'){const compile=season.material.onBeforeCompile;season.material.onBeforeCompile=(shader,renderer)=>{compile(shader,renderer);shader.fragmentShader=shader.fragmentShader.replace('autumn*.92','autumn*.62');};season.material.customProgramCacheKey=()=> 'reference-seasonal-'+low+'-'+entry.id;}seasons.push(season);mesh.material=season.material;
    mesh.geometry.setAttribute('lodWeight',new T.InstancedBufferAttribute(new Float32Array(low?plants.length:natureBudget.high.trees),1));
    if(part==='leaves')mesh.geometry.setAttribute('canopyDensity',new T.InstancedBufferAttribute(new Float32Array(low?plants.length:natureBudget.high.trees).fill(1),1).setUsage(T.DynamicDrawUsage));
-   const smooth=smoothIndices.get(entry.id);
-   if(low&&part==='leaves'&&smooth)distantLeafIndices.push({mesh,full:mesh.geometry.getIndex()!,smooth});
+   if(REFERENCE_STYLE&&part==='leaves'){
+    if(singleSample)applyLeafOutline(season.material);
+    leafDisplays.push(new ReferenceLeafDisplay(mesh,singleSample,low?smoothIndices.get(entry.id):undefined));
+   }
    (low?far:meshes).push(mesh);
   }
   for(const p of plants)terrain?.flightSolids.add({x:p.x,z:p.z,bottom:p.y,top:p.y+Math.max(4,(entry.cardCenter?.[1]??8)*1.3*p.scale),radius:.28*p.scale,kind:'tree'});
@@ -146,10 +149,14 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
  }
  const view=new NatureViewSelection(select),eye=new T.Vector3(),before=scene.onBeforeRender;
  scene.onBeforeRender=(...args)=>{before.apply(scene,args);
+  if(singleSample){
+   const renderer=args[0],useCards=!renderer.xr.isPresenting&&!(renderer.getRenderTarget()?.samples);
+   for(const display of leafDisplays)display.setSingleSample(useCards);
+  }
   if(renderProbe?.active){args[2].getWorldPosition(eye);renderProbe.pass();const selectionStart=renderProbe.now();view.render(eye.x,eye.z);renderProbe.elapsed('selectionCpuMs',selectionStart);const cullStart=renderProbe.now();for(const pool of pools)pool.farVisibility?.render(args[2]);renderProbe.elapsed('cullCpuMs',cullStart);}
   else{args[2].getWorldPosition(eye);view.render(eye.x,eye.z);for(const pool of pools)pool.farVisibility?.render(args[2]);}
  };
  return{stats,treeSites:plan.trees as readonly Plant[],update,setSplitDetail(value:boolean){splitDetail=value;},setQuality(value:string){quality=value in natureBudget?value as keyof typeof natureBudget:'automatic';
-  for(const {mesh,full,smooth} of distantLeafIndices)mesh.geometry.setIndex(quality==='smooth'?smooth:full);
+  for(const display of leafDisplays)display.setSmooth(quality==='smooth');
   lastX=Infinity;}};
 }

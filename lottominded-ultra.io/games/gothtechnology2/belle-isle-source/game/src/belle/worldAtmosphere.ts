@@ -1,8 +1,9 @@
 import * as T from 'three';
 import {atmosphereShader,windVertex} from './atmosphereShaders.ts';
 import {presentationBudget} from './presentationPolicy.ts';
+import {applyLeafOutline,referenceLeafDisplay,type ReferenceLeafDisplay} from './referenceLeafDisplay.ts';
 type Shader=Parameters<T.Material['onBeforeCompile']>[0];
-type Wind={time:T.IUniform<number>;amount:T.IUniform<number>;range:T.IUniform<T.Vector2>;amplitude:number;crown:boolean};
+type Wind={time:T.IUniform<number>;amount:T.IUniform<number>;range:T.IUniform<T.Vector2>;amplitude:number;crown:boolean;leaves?:ReferenceLeafDisplay};
 /** Scene-local shader composition; never mutates Three's shared ShaderChunk table. */
 export class WorldAtmosphere {
  private scene:T.Scene;private pending=new Set<T.Object3D>();private queued=false;private disposed=false;
@@ -35,12 +36,14 @@ export class WorldAtmosphere {
     this.windMeshes.add(mesh);const scale=mesh.getWorldScale(new T.Vector3());
     const amplitude=crown?.12:(hair?.010:.007)/Math.max(.001,Math.abs(scale.x),Math.abs(scale.z));
     const range=new T.Vector2(box.min.y,box.min.y+(box.max.y-box.min.y)*(crown?1:hair?.84:.28));
-    const wind:Wind={time:{value:0},amount:{value:0},range:{value:range},amplitude,crown};this.winds.push(wind);
+    const leaves=referenceLeafDisplay(mesh);
+    const wind:Wind={time:{value:0},amount:{value:0},range:{value:range},amplitude,crown,leaves};this.winds.push(wind);
     const materials=original.map(m=>{const c=m.clone();c.onBeforeCompile=m.onBeforeCompile;c.customProgramCacheKey=m.customProgramCacheKey.bind(m);this.patch(c,wind);return c;});
     const first=original[0] as T.MeshStandardMaterial;
     const depth=new T.MeshDepthMaterial({depthPacking:T.RGBADepthPacking,map:first.map,alphaMap:first.alphaMap,alphaTest:first.alphaTest,side:first.side});
     const distance=new T.MeshDistanceMaterial({map:first.map,alphaMap:first.alphaMap,alphaTest:first.alphaTest,side:first.side});
     this.patchWind(depth,wind);this.patchWind(distance,wind);
+    if(leaves){applyLeafOutline(depth);applyLeafOutline(distance);}
     this.owned.push({mesh,original:mesh.material,materials,depth:mesh.customDepthMaterial,distance:mesh.customDistanceMaterial,depthOwned:depth,distanceOwned:distance});
     mesh.material=Array.isArray(mesh.material)?materials:materials[0];mesh.customDepthMaterial=depth;mesh.customDistanceMaterial=distance;
    }
@@ -74,13 +77,13 @@ export class WorldAtmosphere {
   this.uniforms.belleSunDirection.value.copy(direction);this.uniforms.belleCloudTime.value=time;
   this.uniforms.belleCloudCoverage.value=coverage;this.uniforms.belleCloudStrength.value=budget.cloudStrength*day*(1-overcast*.8);
   this.uniforms.belleAirStrength.value=reduced||xr||quality==='smooth'?0:Math.min(.22,Math.max(0,day))*(1-overcast*.7);
-  for(const w of this.winds){w.time.value=time;w.amount.value=reduced||(w.crown&&(xr||quality==='smooth'))?0:w.amplitude*budget.wind;}
+  for(const w of this.winds){w.time.value=time;w.amount.value=reduced||(w.crown&&(xr||quality==='smooth'))?0:w.amplitude*budget.wind;w.leaves?.setWind(w.amount.value!==0);}
  }
  get stats(){return{materials:this.originals.size,windMeshes:this.winds.length};}
  dispose(){
   if(this.disposed)return;this.disposed=true;this.scene.removeEventListener('childadded',this.added);this.pending.clear();
   for(const [material,old]of this.originals){material.onBeforeCompile=old.compile;material.customProgramCacheKey=old.key;material.needsUpdate=true;}this.originals.clear();
-  for(const item of this.owned){item.mesh.material=item.original;item.mesh.customDepthMaterial=item.depth;item.mesh.customDistanceMaterial=item.distance;for(const m of item.materials)m.dispose();item.depthOwned.dispose();item.distanceOwned.dispose();}
+  for(const item of this.owned){referenceLeafDisplay(item.mesh)?.setWind(true);item.mesh.material=item.original;item.mesh.customDepthMaterial=item.depth;item.mesh.customDistanceMaterial=item.distance;for(const m of item.materials)m.dispose();item.depthOwned.dispose();item.distanceOwned.dispose();}
   this.owned.length=0;this.winds.length=0;
  }
 }
