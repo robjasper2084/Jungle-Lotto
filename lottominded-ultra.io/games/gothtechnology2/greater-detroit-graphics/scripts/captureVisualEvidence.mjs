@@ -30,12 +30,13 @@ const {chromium}=require('playwright');
 const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp','.svg':'image/svg+xml','.glb':'model/gltf-binary','.hdr':'application/octet-stream','.bin':'application/octet-stream','.mp3':'audio/mpeg','.wav':'audio/wav','.ogg':'audio/ogg','.mp4':'video/mp4','.webm':'video/webm','.woff2':'font/woff2'};
 const entry=game==='swoop'?'detroit.html':game==='elmwood'?'elmwood.html':'index.html';
 function validPath(parent,path){const target=resolve(parent,path);if(target!==parent&&!target.startsWith(parent+sep))throw Error('Invalid URL path');return target;}
-const fallbackMedia=/\.(?:glb|gltf|png|jpe?g|webp|hdr|bin|json|mp3|wav|ogg|mp4|webm|woff2)$/i;
+const fallbackMedia=/\.(?:glb|gltf|bin\.gz|png|jpe?g|webp|hdr|bin|json|mp3|wav|ogg|mp4|webm|woff2)$/i;
 const warnings=[],missing=[];
 const server=createServer(async(req,res)=>{
  try{
   const url=new URL(req.url,'http://localhost'),rel=decodeURIComponent(url.pathname).replace(/^\/+/,'')||entry;
-  let file=validPath(candidate,rel),source='candidate';
+  const icon = rel === 'favicon.ico';
+  let file=icon ? resolve(root,'store/public/favicon.svg') : validPath(candidate,rel),source='candidate';
   try{const s=await stat(file);if(!s.isFile())throw Error('not file');}
   catch(error){
    if(!published||!fallbackMedia.test(rel))throw error;
@@ -55,7 +56,7 @@ const report={game,head:process.env.GDS_CANDIDATE_SHA||null,candidateRoot:candid
  browser:null,passed:false,cases:[],errors:[],missingAssets:missing,mediaFallbacks:warnings,comparison:null};
 const config={
  belle:{canvas:'#game',ready:"document.querySelector('#welcome')?.dataset.state==='ready'",start:'#start'},
- swoop:{canvas:'#world',ready:"document.querySelector('#world')?.dataset.ready==='true'",start:'#start'},
+ swoop:{canvas:'#world',ready:"document.querySelector('#world')?.dataset.ready==='true'",start:'.game-menu-play'},
  elmwood:{canvas:'#view',ready:"document.querySelector('#detail')?.dataset.loaded==='true'",start:null}
 }[game];
 let browser;
@@ -72,6 +73,13 @@ async function capture(label,photo){
   const q='?gds-capture'+(photo?'&gds-photo':'');
   await page.goto('http://127.0.0.1:'+port+'/'+entry+q,{waitUntil:'domcontentloaded',timeout:45000});
   await page.waitForFunction(config.ready,null,{timeout:180000});
+  if(game==='swoop'||game==='elmwood'){
+   await page.locator('#startupPreview[data-ready="true"] button.start').click({timeout:180000});
+   if(game==='elmwood'){
+    await page.locator('#elmwood-main-menu[open]').waitFor({timeout:90000});
+    await page.keyboard.press('Escape');
+   }
+  }
   if(game==='elmwood'){
    await page.locator('#time').evaluate(input=>{input.value='16.7';input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));});
   }else{
@@ -79,15 +87,15 @@ async function capture(label,photo){
     // Reuse the already-tested real Belle startup interactions. Never bypass
     // the selection gate or seed rider state through an in-page test hook.
     const picker=page.locator('.cinema-ride-picker > summary');
-    await picker.click({timeout:30000});
-    await page.locator('.ride-options label').filter({hasText:'One wheel'}).click({timeout:30000});
-    await page.getByRole('button',{name:'Use this ride',exact:true}).click({timeout:30000});
+    await picker.click({timeout:180000});
+    await page.locator('.ride-options label').filter({hasText:'One wheel'}).click({timeout:180000});
+    await page.getByRole('button',{name:'Use this ride',exact:true}).click({timeout:180000});
    }
    await page.locator(config.start).click({timeout:90000});
    if(game==='swoop')await page.waitForFunction(()=>document.body.classList.contains('playing'),null,{timeout:90000});
    if(game==='belle')await page.waitForFunction(()=>document.querySelector('#ridehud')?.hidden===false,null,{timeout:90000});
    // Pause real ride after starting. Capture is the game's own last rendered frame.
-   await page.locator('#pause').click({timeout:15000});
+   await page.locator('#pause').click({timeout:180000});
   }
   await page.waitForTimeout(750);
   item.pose=await page.evaluate(selector=>{
