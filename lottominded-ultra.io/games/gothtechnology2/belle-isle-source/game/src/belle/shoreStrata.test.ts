@@ -18,4 +18,13 @@ test('layered sediment stays visual-only and has bounded river/lagoon geometry',
  assert(result.positions.every(Number.isFinite));
  assert(result.colors.every(x=>x>=0&&x<=1&&Number.isFinite(x)));
  assert(result.indices.every(i=>i>=0&&i<result.positions.length/3));
+ let start=0;
+ for(const [end,x,y,z,hx,hy,hz] of result.ranges){
+  for(let i=start;i<end;i++){
+   const v=result.indices[i]*3,p=result.positions;
+   assert(p[v]>=x&&p[v]<=hx&&p[v+1]>=y&&p[v+1]<=hy&&p[v+2]>=z&&p[v+2]<=hz);
+  }
+  start=end;
+ }
+ assert.equal(start,result.indices.length);
 });
