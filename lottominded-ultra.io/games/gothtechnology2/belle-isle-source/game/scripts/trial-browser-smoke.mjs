@@ -300,7 +300,7 @@ async function runCase(configuration) {
         assert.ok(Number.isFinite(sample.altitude) && Number.isFinite(sample.elapsed), `${name}: finite flight HUD readings required`);
         assert.equal(sample.status, 'running', `${name}: trial must remain running`);
         assert.equal(sample.paused, 'false', `${name}: trial must remain unpaused`);
-        assert.equal(sample.mode, 'ALTITUDE HOLD', `${name}: standardized flight mode must remain active`);
+        assert.equal(sample.mode, 'IN FLIGHT', `${name}: Sky Circuit must remain in Classic flight`);
         if (heldKey) assert.ok(sample.heldKeys.includes(heldKey), `${name}: real touch must remain held`);
         if (diagnostic.samples.at(-1)?.elapsed !== sample.elapsed) {
           diagnostic.samples.push(sample);
@@ -505,11 +505,12 @@ async function runCase(configuration) {
       await expect(page.locator('#trial-ghost-toggle')).toHaveAttribute('aria-pressed', 'true');
       await startCourse(skyCourse, 'hoverbike');
       await expect(page.locator('body')).toHaveClass(/on-hoverbike/);
-      await expect(page.locator('#hover-flight-mode')).toHaveValue('drone');
+      await expect(page.locator('#hover-flight-mode')).toHaveValue('classic');
+      await expect(page.locator('#hover-hud')).toHaveAttribute('data-flight-mode','classic');
       await expect(page.locator('#hover-flight-mode')).toBeDisabled();
       await expect(page.locator('#hover-hud [data-hover="takeoff"]')).toBeDisabled();
       await expect(page.locator('#hover-hud [data-hover="exit"]')).toBeDisabled();
-      await expect(page.locator('#hover-mode')).toHaveText('ALTITUDE HOLD');
+      await expect(page.locator('#hover-mode')).toHaveText('IN FLIGHT');
       await expect(page.locator('#trial-hud .trial-altitude')).toContainText('Altitude');
       const observeHover = async () => { await expect.poll(() => speed('#hover-speed')).toBeGreaterThan(0); entry.metrics.hoverMovingKmh = await speed('#hover-speed'); };
       if (configuration.mobile) {
@@ -552,7 +553,7 @@ async function runCase(configuration) {
         for (const key of ['b', 'f', 'g']) await page.keyboard.press(key);
         await expect(hud()).toHaveAttribute('data-status', 'running');
         await expect(page.locator('body')).toHaveClass(/on-hoverbike/);
-        await expect(page.locator('#hover-mode')).toHaveText('ALTITUDE HOLD');
+        await expect(page.locator('#hover-mode')).toHaveText('IN FLIGHT');
         entry.metrics.vehicleLockKeys = 'B/F/G retain the course hoverbike and flight mode';
       }
       await layout('#trial-hud', 'skyHud');
@@ -572,6 +573,7 @@ async function runCase(configuration) {
       await expect(page.locator('#hover-speed')).toHaveText('0');
       await leave();
       await expect(page.locator('#hover-flight-mode')).toBeEnabled();
+      await expect(page.locator('#hover-flight-mode')).toHaveValue('classic');
       await openBoard();
       await expect(page.locator('#trial-course-list .trial-course-record strong')).toHaveText(Array(4).fill('Set the first time'));
       await tap(page.locator('#trial-practice > summary'));
