@@ -1,5 +1,6 @@
 import * as T from 'three';
 import {startupPool,startupResource,warmTextureList} from './startupWork.ts';
+import {retrySurfaceTexture} from './surfaceRetry.ts';
 import {surfaceKind,type Surface} from './realisticMaterialRules.ts';
 type Maps={color:T.Texture;detail:T.Texture};
 const maps=new Map<Surface,Maps>();
@@ -21,7 +22,10 @@ export function loadRealisticMaterials(renderer:T.WebGLRenderer){
  const task=(async()=>{
   const loader=new T.TextureLoader(),controller=new AbortController(),owned=new Set<T.Texture>(),staged=new Map<Surface,Maps>();
   const deadline=setTimeout(()=>controller.abort(new Error('Island surface preparation timed out. Reload to retry.')),60000);
-  const load=async(url:string)=>{const texture=await startupResource(loader.loadAsync(url),45000,'Surface texture',t=>t.dispose(),controller.signal);owned.add(texture);return texture;};
+  const load=async(url:string)=>{
+   const texture=await retrySurfaceTexture(attempt=>startupResource(loader.loadAsync(url+(attempt?'?retry='+attempt:'')),attempt?14000:30000,'Surface texture',t=>t.dispose(),controller.signal),controller.signal);
+   owned.add(texture);return texture;
+  };
   try{
    // At most three pairs decode at once, rather than fifty-six simultaneous requests.
    await startupPool(Object.keys(profiles) as Surface[],3,async name=>{

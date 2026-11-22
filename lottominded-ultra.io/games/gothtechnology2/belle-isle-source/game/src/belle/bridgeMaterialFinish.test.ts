@@ -32,3 +32,10 @@ test('bridge soffit darkening is material-only and keeps geometry unchanged',()=
  assert.match(code,/smoothstep\(1\.2,5\.8,bridgeWorld\.y\)/);
  assert.doesNotMatch(code,/sampler2D|texture2D/);
 });
+
+test('MacArthur mineral streaks add no texture fetches or draw passes',()=>{
+ const code=bridgeFinishFragment('aged-concrete');
+ assert.match(code,/belleMineralStreak/);
+ assert.match(code,/smoothstep\(3\.,9\.,bridgeWorld\.y\)/);
+ assert.doesNotMatch(code,/sampler2D|texture2D|gl_FragColor|discard/);
+});

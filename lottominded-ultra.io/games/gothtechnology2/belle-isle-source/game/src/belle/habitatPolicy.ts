@@ -14,10 +14,10 @@ const mix=(a:number,b:number,t:number)=>a+(b-a)*t;
 export function canopyProfile(p:HabitatTree):CanopyProfile{
  const patch=hash(p.x/42,p.z/42,811),individual=hash(p.x*2,p.z*2,291);
  const type:TreeHabitat=p.id==='willow'?'riparian':p.id==='birch'?'forest-edge':p.id==='pine'?'upland':p.id==='maple'?'flatwoods':'understory';
- const group=type==='riparian'?[.92,1.04,.83,1.03,1.13]:
-  type==='forest-edge'?[.66,.88,1.12,.91,1.01]:
-  type==='upland'?[.81,.98,1.09,.94,.96]:
-  type==='flatwoods'?[.82,1.06,1.01,1.08,1.02]:
+ const group=type==='riparian'?[.95,1.06,.83,1.10,1.13]:
+  type==='forest-edge'?[.74,.94,1.12,1.00,1.01]:
+  type==='upland'?[.83,1.00,1.09,.99,.96]:
+  type==='flatwoods'?[.88,1.07,1.01,1.15,1.02]:
   [1,1,1,1,1];
  const grove=mix(0.25,0.75,patch),variance=mix(-1,1,individual);
  return {habitat:type,

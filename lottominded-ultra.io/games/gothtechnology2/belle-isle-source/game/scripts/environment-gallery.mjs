@@ -17,11 +17,12 @@ const device=process.env.ENV_GALLERY_DEVICE==='phone'?'phone':'desktop';
 const viewport=device==='phone'?{width:390,height:844}:{width:1440,height:900};
 const variant=process.env.ENV_GALLERY_VARIANT==='baseline'?'baseline':'candidate';
 const output=resolve(game,'output/environment-gallery',variant,device);
-// The older published Guide has substitute locations, NOT camera-matched
-// Sylvan or Casino-bank viewpoints. Their screenshots stay contextual only.
+// The source-commit baseline predates our new direct sightseeing entries.
+// Use only its real Guide Travel actions; mark different viewpoints unpaired.
 const baselineFallback={
  'wooded-canal':{search:/Nashua Canal/i,action:/Travel/},
  'red-pedestrian-bridge':{search:/Belle Isle Casino/i,action:/Travel/},
+ 'casino-context':{search:/Belle Isle Casino/i,action:/Travel/},
  'swimming-beach':{search:/Belle Isle Beach/i,action:/Walk onto the beach/}
 };
 const sites=[
@@ -31,6 +32,8 @@ const sites=[
   note:'Actual mapped Sylvan Canal bank, not the Wet-Mesic forest road'},
  {id:'red-pedestrian-bridge',name:'Casino Way Bridge · bank side',search:/Casino Way Bridge · bank side/i,action:/Visit red bridge/i,wayId:'106948146',
   note:'Historically mapped Casino Way bridge, OSM way 106948146; verify railwork in the true game frame'},
+ {id:'casino-context',name:'Casino bridge / Casino context',search:/Casino Way Bridge · Casino context/i,action:/Visit Casino context/i,
+  note:'Collision-safe wider bank view with the historic crossing and Casino architecture in the same real scene'},
  {id:'swimming-beach',name:'Belle Isle Swimming Beach',search:/Belle Isle Beach/i,action:/Walk onto the beach/i,
   note:'Real on-foot swimming beach footprint, not the nearby Park service shed'},
 ];
@@ -41,22 +44,20 @@ assert.ok(['all','high-noon','sunset'].includes(selectedLight),'Unknown environm
 const lights=[{id:'high-noon',value:'12'},{id:'sunset',value:'17.8'}].filter(l=>selectedLight==='all'||l.id===selectedLight);
 await mkdir(output,{recursive:true});
 const report={head:process.env.GITHUB_SHA||null,variant,device,viewport,
- source:'real built browser game; genuine Guide travel and GPU fence; Chrome SwiftShader',
+ source:process.env.ENV_GALLERY_BUILD_DIR?'exact production-source commit, rebuilt and served locally; real Guide Travel; Chrome SwiftShader':'real built browser game; guide Travel action; Chrome SwiftShader',
+ baselineHead:process.env.ENV_GALLERY_BASE_SHA||null,
+ comparisonLimitations:variant==='baseline'?['Nashua Canal and Casino are historic-guide contextual substitutes, NOT the same camera as the PR new views. Do not compute a matched four-site gain.']:[],
  pairingComplete:false,
- comparisonLimitations:['Old published Nashua Canal/Casino Guide viewpoints are contextual, not camera-matched. Do not assert historic visual parity.'],
  limitations:['Not physical-device FPS certification','Travel cameras may not frame the intended bridge exactly','Reference photos are not bundled or distributed'],
- passed:false,visits:[],errors:[],failedRequests:[],coverageGaps:[]};
-const server=createCoopStaticServer(resolve(game,'dist'));
+ passed:false,intro:null,actualMacArthurRailFinish:null,railFinishAccepted:null,visits:[],errors:[],failedRequests:[],coverageGaps:[]};
+const server=createCoopStaticServer(process.env.ENV_GALLERY_BUILD_DIR?resolve(process.env.ENV_GALLERY_BUILD_DIR):resolve(game,'dist'));
 await new Promise(ok=>server.listen(0,'127.0.0.1',ok));
 let browser;
 const rawUrl=process.env.ENV_GALLERY_URL||'http://127.0.0.1:'+server.address().port+'/';
 const url=new URL(rawUrl);url.searchParams.set('profile','1');
 const origin=url.href;
 const round=n=>Number(n.toFixed(2));
-async function painted(page){
- const frame=()=>page.locator('#profile').getAttribute('data-active-frames').then(Number);
- const first=await frame();
- await expect.poll(frame).toBeGreaterThan(first+2);
+async function gpuFenced(page){
  const proof=await page.locator('#game').evaluate(()=>new Promise((resolve,reject)=>{
   const gl=document.querySelector('#game')?.getContext('webgl2');
   if(!gl||gl.isContextLost())return reject(Error('Real WebGL renderer unavailable'));
@@ -71,6 +72,12 @@ async function painted(page){
   };poll();
  }));
  return proof;
+}
+async function painted(page){
+ const frame=()=>page.locator('#profile').getAttribute('data-active-frames').then(Number);
+ const first=await frame();
+ await expect.poll(frame).toBeGreaterThan(first+2);
+ return gpuFenced(page);
 }
 async function openMenu(page){
  if(!await page.locator('#ride-menu').isVisible())await page.locator('#tools-toggle').click();
@@ -106,8 +113,25 @@ async function openActiveRidePage(){
  page.on('requestfailed',request=>report.failedRequests.push((request.failure()?.errorText||'network failure')+' '+request.url()));
  await page.goto(origin,{waitUntil:'domcontentloaded'});
  await expect(page.locator('#welcome')).toHaveAttribute('data-state','ready');
+ if(variant==='candidate'){
+  const profile=page.locator('#profile');
+  const rawMeshes=await profile.getAttribute('data-macarthur-rail-meshes');
+  const rawMaterials=await profile.getAttribute('data-macarthur-rail-materials');
+  const railMeshes=rawMeshes===null?null:Number(rawMeshes),railMaterials=rawMaterials===null?null:Number(rawMaterials);
+  report.actualMacArthurRailFinish={meshes:railMeshes,materials:railMaterials,source:'actual loaded landmarks.glb after material pass'};
+  report.railFinishAccepted=Number.isInteger(railMeshes)&&railMeshes>0&&Number.isInteger(railMaterials)&&railMaterials>0;
+  if(!report.railFinishAccepted)report.coverageGaps.push('Loaded MacArthur railing material match is zero or unreported; inspect real GLB mesh labels');
+ }
  const motion=page.locator('#startup-motion');
  if(await motion.getAttribute('aria-pressed')!=='true')await motion.click();
+ // Reduced motion holds the first geographic flyover at a fixed camera position.
+ // Capture the actual GPU-painted MacArthur view before the game transitions.
+ const opening=(await page.locator('#startup-scene').textContent()||'').trim();
+ if(!/MACARTHUR BRIDGE/i.test(opening))throw Error('Intro flyover is not at MacArthur Bridge: '+opening);
+ const introFrame=await gpuFenced(page);
+ const introFile='intro-macarthur.png';
+ await page.screenshot({path:resolve(output,introFile),timeout:180000});
+ report.intro={passed:true,scene:opening,screenshot:introFile,frame:introFrame,lighting:'authored startup sky',camera:'first deterministic MacArthur flyover',variant,device};
  await page.locator('.cinema-ride-picker > summary').click();
  await page.locator('.ride-options label').filter({hasText:'One wheel'}).click();
  await page.getByRole('button',{name:'Use this ride',exact:true}).click();
@@ -180,7 +204,10 @@ try{
    if(page)await page.close();
   }
  }
- report.passed=report.visits.length===sites.length*lights.length&&report.visits.every(v=>v.passed)&&!report.errors.length&&!report.failedRequests.length;
+ report.passed=!!report.intro?.passed&&report.visits.length===sites.length*lights.length&&report.visits.every(v=>v.passed)&&!report.errors.length&&!report.failedRequests.length&&(variant==='baseline'||report.railFinishAccepted===true);
+ // Every photographic pairing still needs an actual camera-equivalence review.
+ report.pairingComplete=false;
+ report.comparableSites=report.visits.filter(v=>v.passed&&v.comparable).map(v=>v.id);
 }catch(error){
  report.errors.push(error.stack||String(error));
 }finally{
@@ -189,10 +216,11 @@ try{
  await new Promise(ok=>server.close(ok));
 }
 const safe=s=>String(s||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;');
+const openingCard='<section><h2>MacArthur · Opening Flyover</h2><p>Identical first-shot camera and startup sky; verify sunset bridge arches, foliage silhouette, river suntrail and horizon.</p>'+(report.intro?.screenshot?'<figure><img src="'+safe(report.intro.screenshot)+'" alt="Real MacArthur intro flyover"></figure>':'<p>Missing intro GPU capture</p>')+'</section>';
 const cards=sites.map(site=>'<section><h2>'+safe(site.name)+'</h2><p>'+safe(site.note)+'</p>'+lights.map(light=>{
  const a=report.visits.find(x=>x.id===site.id&&x.light===light.id);
  return '<figure><figcaption>'+safe(light.id)+' · '+safe(a?.destination||'NOT CAPTURED')+'</figcaption>'+(a?.screenshot?'<img src="'+a.screenshot+'" alt="'+safe(site.name)+' at '+safe(light.id)+'">':'<p>Missing genuine browser capture</p>')+'</figure>';
 }).join('')+'</section>').join('');
-await writeFile(resolve(output,'index.html'),'<!doctype html><meta charset="utf-8"><title>Belle Isle Environment Reference Gallery</title><style>body{background:#171c22;color:#eee;font:16px system-ui;margin:24px}main{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:20px}section{border:1px solid #38404a;padding:18px}img{max-width:100%;height:auto}figure{margin:8px 0}p{color:#b9c1c8}</style><h1>Environment Gallery — '+safe(variant)+' · '+safe(device)+'</h1><p>True game captures, not proof of real-device FPS. Compare your locally held reference photos beside these frames. Red-bridge identity remains provisional until visually confirmed.</p><main>'+cards+'</main>','utf8');
-console.log(JSON.stringify({passed:report.passed,device,completed:report.visits.filter(x=>x.passed).length,missing:report.coverageGaps,errors:report.errors.slice(0,8)}));
+await writeFile(resolve(output,'index.html'),'<!doctype html><meta charset="utf-8"><title>Belle Isle Environment Reference Gallery</title><style>body{background:#171c22;color:#eee;font:16px system-ui;margin:24px}main{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:20px}section{border:1px solid #38404a;padding:18px}img{max-width:100%;height:auto}figure{margin:8px 0}p{color:#b9c1c8}</style><h1>Environment Gallery — '+safe(variant)+' · '+safe(device)+'</h1><p>True game captures, not proof of real-device FPS. Compare your locally held reference photos beside these frames. Red-bridge identity remains provisional until visually confirmed.</p><main>'+openingCard+cards+'</main>','utf8');
+console.log(JSON.stringify({passed:report.passed,device,completed:report.visits.filter(x=>x.passed).length,pairingComplete:report.pairingComplete,introCaptured:!!report.intro?.passed,missing:report.coverageGaps,errors:report.errors.slice(0,8)}));
 if(!report.passed)process.exitCode=1;
