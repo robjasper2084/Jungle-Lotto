@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import {WebGLAttributes} from 'three/src/renderers/webgl/WebGLAttributes.js';
-import {FarTreeVisibility} from './farTreeVisibility.ts';
+import {FarTreeVisibility,TreeInstanceVisibility} from './farTreeVisibility.ts';
 import {referenceTree} from './referenceTrees.ts';
 
 function view(x=0,y=4,z=0,targetZ=-100){
@@ -34,6 +34,27 @@ function fill(meshes:T.InstancedMesh[],matrices:T.Matrix4[],season=0){
  }
 }
 const translation=(x:number,z:number)=>new T.Matrix4().makeTranslation(x,0,z);
+
+test('near trees keep every shadow caster and pickable instance when the beauty pass is compacted',()=>{
+ const {meshes}=pair(3);
+ meshes.forEach(mesh=>mesh.castShadow=true);
+ const near=new TreeInstanceVisibility(meshes,undefined,'near'),camera=view();
+ fill(meshes,[translation(0,40),translation(0,-40),translation(300,-40)]);
+ near.capture();
+ const ray=new T.Raycaster(new T.Vector3(0,3,0),new T.Vector3(0,0,1));
+ const originalHits=ray.intersectObject(meshes[0]).map(h=>[h.instanceId,h.distance]);
+ assert(originalHits.length);
+ assert.equal(near.render(camera),1);
+ assert.deepEqual(ids(meshes[0]),[1]);
+ assert.deepEqual(ray.intersectObject(meshes[0]).map(h=>[h.instanceId,h.distance]),originalHits);
+ assert.deepEqual(ids(meshes[0]),[1]);
+ assert.equal(near.render(camera,true),3);
+ assert.deepEqual(ids(meshes[0]),[0,1,2]);
+ assert.equal(near.render(camera),1);
+ const away=view(0,4,0,100);
+ assert.equal(near.render(away),1);
+ assert.deepEqual(ids(meshes[0]),[0]);
+});
 const ids=(mesh:T.InstancedMesh)=>Array.from({length:mesh.count},(_,i)=>mesh.geometry.getAttribute('sourceId').getX(i));
 const streams=(mesh:T.InstancedMesh)=>[mesh.instanceMatrix,mesh.instanceColor!,...['lodWeight','canopyDensity','sourceId'].map(name=>mesh.geometry.getAttribute(name) as T.BufferAttribute)];
 
