@@ -25,10 +25,13 @@ const cancelled=(signal:AbortSignal)=>signal.reason instanceof Error?signal.reas
 /** Three's compileAsync polls each material's current program. A second
  * lighting setup would replace that pointer. Keep the actual GL handles from
  * both submissions so the driver can compile both sets before we wait. */
-async function prepareIslandPrograms(renderer:Compiler,scene:Scene,camera:Camera,lights:DirectionalLight[],signal:AbortSignal,onStage:(message:string)=>void){
+async function prepareIslandPrograms(renderer:Compiler,scene:Scene,camera:Camera,lights:DirectionalLight[],signal:AbortSignal,onStage:(message:string)=>void,onNewLink:()=>void){
  const gl=renderer.getContext?.();
  const extension=gl?.getExtension?.('KHR_parallel_shader_compile');
  if(!gl||!extension||!renderer.compile||!renderer.info?.programs)return false;
+ // Primed, cached and previously attempted programs still need validation.
+ // Only handles introduced by these submissions can renew this attempt.
+ const existing=new Set(renderer.info.programs.map(entry=>entry.program));
  const pending=new Set<WebGLProgram>();
  for(const castShadow of [false,true]){
   if(signal.aborted)throw cancelled(signal);
@@ -54,6 +57,7 @@ async function prepareIslandPrograms(renderer:Compiler,scene:Scene,camera:Camera
    // them. Every ready handle still passes the same explicit link check.
    if(!gl.getProgramParameter(program,extension.COMPLETION_STATUS_KHR))break;
    if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw new Error('Island shader link failed: '+gl.getProgramInfoLog(program));
+   if(!existing.has(program))onNewLink();
    pending.delete(program);
   }
   if(pending.size)await new Promise(resolve=>setTimeout(resolve,10));
@@ -99,7 +103,26 @@ export class SceneWarmup {
    if(this.completed.has(key))return;
    this.busy(true);
    let stage='painting the preparation screen';
-   const timeout=setTimeout(()=>cancel.abort(new Error('Graphics preparation took too long while '+stage+'. Please try starting again.')),this.timeoutMs);
+   const started=performance.now(),hardDeadline=started+Math.min(90_000,2*this.timeoutMs);
+   let deadline=Math.min(started+this.timeoutMs,hardDeadline);
+   const expire=()=>cancel.abort(new Error('Graphics preparation took too long while '+stage+'. Please try starting again.'));
+   // Keep one timer. A sweep can verify hundreds of programs at once.
+   const armTimer=(scheduled:number,delay:number):ReturnType<typeof setTimeout>=>setTimeout(()=>{
+    const remaining=deadline-performance.now();
+    if(scheduled===deadline||remaining<=0)expire();
+    else timeout=armTimer(deadline,remaining);
+   },Math.ceil(delay));
+   let timeout=armTimer(deadline,deadline-started);
+   const checkDeadline=()=>{
+    const now=performance.now();
+    // A synchronous driver call can outlast the timer that is waiting to run.
+    if(now>=deadline)expire();
+    if(cancel.signal.aborted)throw cancelled(cancel.signal);
+    return now;
+   };
+   const onNewLink=()=>{
+    deadline=Math.min(checkDeadline()+this.timeoutMs,hardDeadline);
+   };
    const visible=model?.visible;
    // Rider-only preparation must not recompile every island material. A model
    // with lights changes the scene light topology and still needs the full scene.
@@ -110,14 +133,18 @@ export class SceneWarmup {
    try{
     // Paint the existing Preparing label before shader submission begins.
     await readyOrCancelled(this.paint(),cancel.signal);
+    checkDeadline();
     // Upload material textures under the loading lock, not in the first ridden frame.
     // A Guide trip can immediately expose a previously hidden island sector.
     // Upload its textures here while still compiling only the active shader set.
     stage='uploading scene textures';
     await readyOrCancelled(warmObjectTextures(this.renderer,model??this.scene,cancel.signal),cancel.signal);
+    checkDeadline();
     // Smooth has no shadow-map pass. A later prepare in a mapped mode
     // gets a distinct cache entry and still warms both lighting variants.
-    const islandReady=!model&&mappedShadows&&shadows.length>0&&await prepareIslandPrograms(this.renderer,this.scene,this.camera,shadows.map(state=>state.light),cancel.signal,message=>{stage=message;});
+    const islandReady=!model&&mappedShadows&&shadows.length>0&&await readyOrCancelled(
+     prepareIslandPrograms(this.renderer,this.scene,this.camera,shadows.map(state=>state.light),cancel.signal,message=>{checkDeadline();stage=message;},onNewLink),
+     cancel.signal);
     for(const enabled of islandReady?[]:mappedShadows?[false,true]:[false]){
      if(cancel.signal.aborted)throw cancelled(cancel.signal);
      for(const state of shadows)state.light.castShadow=enabled;
@@ -136,7 +163,7 @@ export class SceneWarmup {
      }
      if(!shadows.length)break;
     }
-    if(cancel.signal.aborted)throw cancelled(cancel.signal);
+    checkDeadline();
     this.completed.add(key);
    }finally{
     clearTimeout(timeout);

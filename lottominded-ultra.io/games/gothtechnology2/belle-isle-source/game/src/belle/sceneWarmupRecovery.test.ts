@@ -1,4 +1,4 @@
-import test from 'node:test';
+import test,{type TestContext} from 'node:test';
 import assert from 'node:assert/strict';
 import {getEventListeners} from 'node:events';
 import type {Camera,Object3D,Scene,WebGLRenderer} from 'three';
@@ -13,6 +13,65 @@ function fixture(){
 }
 const flush=()=>new Promise<void>(resolve=>setImmediate(resolve));
 function compiler(run:()=>Promise<unknown>){return{compileAsync:run} as unknown as Pick<WebGLRenderer,'compileAsync'>;}
+
+function linkedIsland(t:TestContext,readyAt:number[],cachedAt:number[]=[]){
+ t.mock.timers.enable({apis:['setTimeout']});
+ let now=0;
+ t.mock.method(performance,'now',()=>now);
+ const {scene,camera,light}=fixture(),busy:boolean[]=[],verified:number[]=[];
+ const entries=(times:number[])=>times.map(at=>({program:{at}}));
+ const programs=entries(cachedAt),newEntries=entries(readyAt);
+ let submissions=0,polls=0,linkBlockMs=0;
+ const renderer={info:{programs},shadowMap:{enabled:true},compile(){if(submissions++===0)programs.push(...newEntries);},
+  compileAsync:async()=>scene,getContext:()=>({getExtension:()=>({COMPLETION_STATUS_KHR:1}),LINK_STATUS:2,
+   isContextLost:()=>false,flush(){},getProgramParameter(handle:{at:number},key:number){
+    if(key===1){polls++;return now>=handle.at;}
+    now+=linkBlockMs;verified.push(handle.at);return true;
+   }})};
+ const warmup=new SceneWarmup(renderer as unknown as ConstructorParameters<typeof SceneWarmup>[0],scene,camera,v=>busy.push(v),async()=>{});
+ const outcome=warmup.prepare().then(()=>null,(e:Error)=>e);
+ const advance=async(ms:number)=>{now+=ms;t.mock.timers.tick(ms);await flush();};
+ return {busy,light,verified,outcome,advance,get polls(){return polls;},blockLink:(ms:number)=>{linkBlockMs=ms;},
+  async begin(){await flush();await advance(1);await advance(1);assert.equal(submissions,2);}};
+}
+
+test('new verified island links can carry preparation past 45 seconds',async t=>{
+ const f=linkedIsland(t,[30_000,60_000]);await f.begin();
+ await f.advance(30_000);assert.deepEqual(f.verified,[30_000]);
+ await f.advance(15_000);assert.deepEqual(f.busy,[true]);
+ await f.advance(15_000);assert.equal(await f.outcome,null);assert.deepEqual(f.verified,[30_000,60_000]);
+ assert.deepEqual(f.busy,[true,false]);assert.equal(f.light.castShadow,true);
+});
+
+test('45 seconds of inactivity after a new link times out a partially verified island',async t=>{
+ const f=linkedIsland(t,[25_000,Infinity]);await f.begin();
+ await f.advance(25_000);await f.advance(20_000);await f.advance(24_999);
+ assert.deepEqual(f.busy,[true]);await f.advance(1);
+ assert.match((await f.outcome)!.message,/preparation took too long/);assert.deepEqual(f.verified,[25_000]);
+ assert.deepEqual(f.busy,[true,false]);assert.equal(f.light.castShadow,true);
+});
+
+test('a progressing island reaches its absolute deadline at 90 seconds from the lock',async t=>{
+ const f=linkedIsland(t,[30_000,60_000,80_000,100_000]);await f.begin();
+ await f.advance(29_998);await f.advance(15_000);await f.advance(15_000);await f.advance(15_000);await f.advance(5_000);
+ assert.deepEqual(f.verified,[30_000,60_000,80_000]);
+ await f.advance(9_999);assert.deepEqual(f.busy,[true]);await f.advance(1);
+ assert.match((await f.outcome)!.message,/preparation took too long/);assert.deepEqual(f.busy,[true,false]);
+});
+
+test('cached links and repeated readiness polls do not extend the initial deadline',async t=>{
+ const f=linkedIsland(t,[Infinity],[20_000]);await f.begin();
+ for(let i=0;i<4;i++)await f.advance(10_000);
+ assert.ok(f.polls>=4);assert.deepEqual(f.verified,[20_000]);
+ await f.advance(4_998);
+ assert.match((await f.outcome)!.message,/preparation took too long/);assert.deepEqual(f.busy,[true,false]);
+});
+
+test('a synchronous link query that returns after the inactivity deadline cannot renew it',async t=>{
+ const f=linkedIsland(t,[1_000,30_000]);await f.begin();
+ await f.advance(1_000);f.blockLink(20_000);await f.advance(29_000);
+ assert.match((await f.outcome)!.message,/preparation took too long/);assert.deepEqual(f.busy,[true,false]);
+});
 
 test('a suspended preparation paint times out and releases scene controls before any shader submission',async t=>{
  t.mock.timers.enable({apis:['setTimeout']});const {scene,model,camera,light}=fixture(),busy:boolean[]=[];let calls=0;
