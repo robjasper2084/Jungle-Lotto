@@ -1,9 +1,24 @@
 import test from 'node:test';import assert from 'node:assert/strict';import * as T from 'three';
 import {WorldAtmosphere} from './worldAtmosphere.ts';import {SkyReflections} from './skyReflections.ts';import {SkyAircraft} from './skyAircraft.ts';
+import {physicalLighting} from './physicalLighting.ts';
 import {installRiderPresentation,presentRider} from '../../runtime/elmwood-source/src/detroit/riding/riderPresentation.ts';
 import type {RiderMotionTarget} from '../../runtime/elmwood-source/src/detroit/riding/riderMotion.ts';
 import type {RidePose} from '@digital-static/ridecore';
 function materialShader(){return {vertexShader:T.ShaderLib.standard.vertexShader,fragmentShader:T.ShaderLib.standard.fragmentShader,uniforms:{}} as Parameters<T.Material['onBeforeCompile']>[0];}
+test('base scattering shares one view sample while clearcoat, anisotropy and mixed metals retain their paths',()=>{
+ const fragment=physicalLighting(T.ShaderLib.physical.fragmentShader);
+ assert.equal(physicalLighting(fragment),fragment);
+ assert.equal(physicalLighting(T.ShaderLib.basic.fragmentShader),T.ShaderLib.basic.fragmentShader);
+ assert.equal((fragment.match(/belleViewDFG=textureLod/g)||[]).length,1);
+ assert.match(fragment,/vec2 dfgV = belleViewDFG/);
+ assert.match(fragment,/vec2 fab = belleViewDFG/);
+ assert.match(fragment,/EnvironmentBRDF\([^}]+texture2D\( dfgLUT/);
+ assert.equal((fragment.match(/if \(material.metalness != 0.0\) computeMultiscattering/g)||[]).length,2);
+ assert.match(fragment,/#ifndef USE_CLEARCOAT\s+if \(dotNL == 0.0\) return;/);
+ assert.match(fragment,/if \(material.roughness == 1.0\) radiance \+= iblIrradiance/);
+ assert.match(fragment,/radiance \+= getIBLAnisotropyRadiance/);
+ assert.match(fragment,/clearcoatRadiance \+= getIBLRadiance/);
+});
 test('actual Three standard shader composition preserves earlier material work',()=>{
  const scene=new T.Scene(),m=new T.MeshStandardMaterial();m.onBeforeCompile=s=>{s.fragmentShader='// earlier material\n'+s.fragmentShader;};m.customProgramCacheKey=()=> 'original';
  scene.add(new T.Mesh(new T.BoxGeometry(),m));const a=new WorldAtmosphere(scene,new T.Texture());a.flush();const s=materialShader();m.onBeforeCompile(s,{} as T.WebGLRenderer);

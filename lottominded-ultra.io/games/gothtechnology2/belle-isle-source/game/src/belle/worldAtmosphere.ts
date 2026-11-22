@@ -1,5 +1,6 @@
 import * as T from 'three';
 import {atmosphereShader,windVertex} from './atmosphereShaders.ts';
+import {physicalLighting} from './physicalLighting.ts';
 import {presentationBudget} from './presentationPolicy.ts';
 import {applyLeafOutline,referenceLeafDisplay,type ReferenceLeafDisplay} from './referenceLeafDisplay.ts';
 type Shader=Parameters<T.Material['onBeforeCompile']>[0];
@@ -61,10 +62,11 @@ export class WorldAtmosphere {
  }
  private patch(material:T.Material,wind?:Wind){
   if(this.originals.has(material)||!(material as T.MeshStandardMaterial).isMeshStandardMaterial)return;
-  const compile=material.onBeforeCompile,key=material.customProgramCacheKey,identity=key.call(material);this.originals.set(material,{compile,key});
+  const compile=material.onBeforeCompile,key=material.customProgramCacheKey,identity=key.call(material)+'|belle-pbr-v1';this.originals.set(material,{compile,key});
   material.onBeforeCompile=(shader,renderer)=>{
    compile.call(material,shader,renderer);if(wind)this.bindWind(shader,wind);
    Object.assign(shader.uniforms,this.uniforms);
+   shader.fragmentShader=physicalLighting(shader.fragmentShader);
    if(!shader.vertexShader.includes('varying vec3 belleAtmosphereWorld;')){
     const result=atmosphereShader(shader.vertexShader,shader.fragmentShader,T.ShaderChunk.lights_fragment_begin);
     shader.vertexShader=result.vertex;shader.fragmentShader=result.fragment;
