@@ -40,7 +40,20 @@ export async function addMeadow(scene:T.Scene){
  transformed.y*=meadowFade*(1.-meadowBend*.55);`);
  };
  material.customProgramCacheKey=()=> 'meadow-blades-v1';
- const mesh=new T.InstancedMesh(geometry,material,meadowBudget.high.tufts);mesh.name='Living meadow grass';mesh.frustumCulled=false;mesh.castShadow=false;mesh.receiveShadow=true;mesh.count=0;mesh.setColorAt(0,new T.Color(0xffffff));mesh.instanceMatrix.setUsage(T.DynamicDrawUsage);scene.add(mesh);
+ // A single island-wide draw sends every selected blade through the vertex
+ // shader, even when its entire cell is behind the camera. Three can cull a
+ // tile separately for each camera, including reflections and split views.
+ const cellsPerTile=3,maxPerCell=124,tiles:T.InstancedMesh[]=[];
+ function allocateTile(){
+  const mesh=new T.InstancedMesh(geometry,material,cellsPerTile*cellsPerTile*maxPerCell);
+  mesh.name='Living meadow grass';mesh.count=0;mesh.receiveShadow=true;
+  mesh.setColorAt(0,new T.Color(0xffffff));mesh.instanceMatrix.setUsage(T.DynamicDrawUsage);
+  mesh.instanceColor!.setUsage(T.DynamicDrawUsage);mesh.boundingBox=new T.Box3();mesh.boundingSphere=new T.Sphere();
+  tiles.push(mesh);scene.add(mesh);return mesh;
+ }
+ allocateTile(); // Include this material and its instance colours in initial shader preparation.
+ const tileForCell=new Map<number,T.InstancedMesh>();
+ const cellMin=new T.Vector3(),cellMax=new T.Vector3();
  const dummy=new T.Object3D(),color=new T.Color();let quality:keyof typeof meadowBudget='automatic',lastX=Infinity,lastZ=Infinity;
  let reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;const motion=document.getElementById('motion') as HTMLInputElement|null;motion?.addEventListener('change',()=>reduced=motion.checked);
  const stats={cells:plan.cells.length,tufts:0,trianglesPerTuft:56};
@@ -50,19 +63,35 @@ export async function addMeadow(scene:T.Scene){
   const ix=Math.round(x/plan.cellSize),iz=Math.round(z/plan.cellSize),r=Math.ceil(budget.radius/plan.cellSize)+1;
   const nearby=[];for(let dx=-r;dx<=r;dx++)for(let dz=-r;dz<=r;dz++){const cell=cells.get((ix+dx)*65536+iz+dz);if(cell&&Math.hypot(cell[0]*plan.cellSize-x,cell[1]*plan.cellSize-z)<budget.radius+plan.cellSize)nearby.push(cell);}
   nearby.sort((a,b)=>(a[0]*plan.cellSize-x)**2+(a[1]*plan.cellSize-z)**2-((b[0]*plan.cellSize-x)**2+(b[1]*plan.cellSize-z)**2));
+  tileForCell.clear();
+  for(const mesh of tiles){mesh.count=0;mesh.boundingBox!.makeEmpty();}
   let count=0,edge=budget.radius;for(const cell of nearby){
    if(count>=budget.tufts){edge=Math.min(budget.radius,Math.hypot(cell[0]*plan.cellSize-x,cell[1]*plan.cellSize-z)-plan.cellSize*.75);break;}
    const [cx,cz,ground,zone]=cell,number=zone===2?70:zone===0?96:124;
+   const key=Math.floor(cx/cellsPerTile)*65536+Math.floor(cz/cellsPerTile);
+   let mesh=tileForCell.get(key);
+   if(!mesh){mesh=tiles[tileForCell.size]??allocateTile();tileForCell.set(key,mesh);}
+   // Two metres beyond each seed cell covers the tuft radius, 1.3x
+   // instance scale, curved tips, wind and maximum rider displacement.
+   const half=plan.cellSize*.5+2;
+   mesh.boundingBox!.expandByPoint(cellMin.set(cx*plan.cellSize-half,ground-1,cz*plan.cellSize-half));
+   mesh.boundingBox!.expandByPoint(cellMax.set(cx*plan.cellSize+half,ground+1,cz*plan.cellSize+half));
    for(let i=0;i<number&&count<budget.tufts;i++){
     const px=(cx+meadowRandom(cx,cz,i*5)-.5)*plan.cellSize,pz=(cz+meadowRandom(cx,cz,i*5+1)-.5)*plan.cellSize;
     if(Math.hypot(px-x,pz-z)>budget.radius)continue;
     const patch=.5+.5*Math.sin(px*.15+Math.cos(pz*.13));
     const h=zone===0?.13+meadowRandom(cx,cz,i*5+2)*.25:zone===2?.22+meadowRandom(cx,cz,i*5+2)*.34:.28+meadowRandom(cx,cz,i*5+2)*.50;
-    dummy.position.set(px,ground-.018,pz);dummy.rotation.set(0,meadowRandom(cx,cz,i*5+3)*Math.PI*2,0);dummy.scale.set(.85+patch*.45,h*(.78+patch*.22)*(REFERENCE_STYLE?(zone===2?.80:.45+patch*.20):1),.85+patch*.45);dummy.updateMatrix();mesh.setMatrixAt(count,dummy.matrix);
-    color.setHSL(.20+meadowRandom(cx,cz,i*5+4)*.035,.18+patch*.13,.61+meadowRandom(cx,cz,i*5+2)*.22);mesh.setColorAt(count,color);count++;
+    dummy.position.set(px,ground-.018,pz);dummy.rotation.set(0,meadowRandom(cx,cz,i*5+3)*Math.PI*2,0);dummy.scale.set(.85+patch*.45,h*(.78+patch*.22)*(REFERENCE_STYLE?(zone===2?.80:.45+patch*.20):1),.85+patch*.45);dummy.updateMatrix();mesh.setMatrixAt(mesh.count,dummy.matrix);
+    color.setHSL(.20+meadowRandom(cx,cz,i*5+4)*.035,.18+patch*.13,.61+meadowRandom(cx,cz,i*5+2)*.22);mesh.setColorAt(mesh.count,color);mesh.count++;count++;
    }
   }
-  range.value=Math.max(12,edge);mesh.count=count;stats.tufts=count;uploadInstancePrefix(mesh.instanceMatrix,count);uploadInstancePrefix(mesh.instanceColor,count);
+  range.value=Math.max(12,edge);stats.tufts=count;
+  for(const mesh of tiles){
+   mesh.visible=mesh.count>0;
+   if(!mesh.visible)continue;
+   mesh.boundingBox!.getBoundingSphere(mesh.boundingSphere!);
+   uploadInstancePrefix(mesh.instanceMatrix,mesh.count);uploadInstancePrefix(mesh.instanceColor,mesh.count);
+  }
  }
  return{stats,update,setQuality(value:string){quality=value in meadowBudget?value as keyof typeof meadowBudget:'automatic';lastX=Infinity;}};
 }
