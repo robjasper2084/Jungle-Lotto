@@ -51,6 +51,20 @@ test('contact-only warmup skips mapped shadows and permits a later mapped warmup
  assert.deepEqual(calls,[false,false,true]);
 });
 
+test('island batches link concurrently within one lighting policy and drain before it changes',async()=>{
+ const {scene,camera,sun}=fixture();
+ scene.add(...Array.from({length:193},()=>new Mesh()));
+ let active=0,peak=0;
+ const calls:boolean[]=[];
+ const renderer={shadowMap:{enabled:true},compileAsync:async()=>{
+  const shadow=sun.castShadow;calls.push(shadow);active++;peak=Math.max(peak,active);
+  await new Promise(done=>setTimeout(done,12));
+  assert.equal(sun.castShadow,shadow);active--;return scene;
+ }};
+ await new SceneWarmup(renderer as unknown as ConstructorParameters<typeof SceneWarmup>[0],scene,camera,()=>{},async()=>{}).prepare();
+ assert(peak>1&&peak<=4);assert.deepEqual(calls,[false,false,false,false,true,true,true,true]);
+});
+
 test('Smooth prepares active drawables against the actual island lights, with a separate preparation for a hidden ride',async()=>{
  const {scene,bike,camera}=fixture(),island=new Mesh(),detail=new Mesh(),wrongLayer=new Mesh();
  const map=new DataTexture(new Uint8Array([255,255,255,255]),1,1),uploads:Texture[]=[];detail.material=new MeshBasicMaterial({map});

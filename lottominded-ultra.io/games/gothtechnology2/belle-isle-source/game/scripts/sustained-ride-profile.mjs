@@ -58,6 +58,24 @@ try{
  await page.addInitScript(quality=>{
   localStorage.setItem('belle-graphics-v1',JSON.stringify({quality,cap:60,antiAliasing:'automatic'}));
  },quality);
+ // Distinguish a blocked driver link from slow submission when a hosted GPU
+ // times out before the first ride. Restore the native methods before capture.
+ await page.addInitScript(()=>{
+  const proto=WebGL2RenderingContext.prototype;
+  const link=proto.linkProgram,query=proto.getProgramParameter;
+  const pending=new Map();let linked=0,checks=0;
+  proto.linkProgram=function(program){
+   linked++;pending.set(program,performance.now());return link.call(this,program);
+  };
+  proto.getProgramParameter=function(program,pname){
+   const value=query.call(this,program,pname);
+   if(pname===0x91b1){checks++;if(value)pending.delete(program);}
+   return value;
+  };
+  window.__belleStartupLinks=()=>({linked,completionChecks:checks,pending:pending.size,
+   oldestUnconfirmedMs:Math.max(0,...[...pending.values()].map(start=>performance.now()-start))});
+  window.__belleEndLinkProbe=()=>{proto.linkProgram=link;proto.getProgramParameter=query;pending.clear();};
+ });
  await page.addInitScript(()=>{const receipts={keydowns:0,keyups:0,repeats:0,blurs:0};
   window.__belleInputReceipts=receipts;
   window.addEventListener('keydown',event=>{if(event.code==='KeyW'&&event.isTrusted){receipts.keydowns++;if(event.repeat)receipts.repeats++;}},true);
@@ -97,6 +115,7 @@ try{
  await page.waitForFunction(()=>['ready','error'].includes(document.querySelector('#welcome')?.dataset.state));
  await expect(page.locator('#welcome')).toHaveAttribute('data-state','ready',{timeout:1000});
  report.welcomeReadyMs=Date.now()-navigationStarted;
+ report.startupLinks=await page.evaluate(()=>{const links=window.__belleStartupLinks();window.__belleEndLinkProbe();return links;});
  report.actualGpu=await page.locator('#game').evaluate(canvas=>{
   const gl=canvas.getContext('webgl2');if(!gl||gl.isContextLost())throw Error('Game WebGL2 unavailable');
   const ext=gl.getExtension('WEBGL_debug_renderer_info');return {
@@ -193,7 +212,7 @@ try{
  report.errors.push(String(error?.stack||error));
  if(page)report.startupAtFailure=await page.evaluate(()=>({
   visible:document.visibilityState,focused:document.hasFocus(),loading:document.querySelector('#loading')?.textContent,
-  telemetry:window.__belleStartupProfile?.(),callbacks:window.__belleBrowserClock?.snapshot?.()
+  telemetry:window.__belleStartupProfile?.(),callbacks:window.__belleBrowserClock?.snapshot?.(),links:window.__belleStartupLinks?.()
  })).catch(()=>null);
 }
 finally{

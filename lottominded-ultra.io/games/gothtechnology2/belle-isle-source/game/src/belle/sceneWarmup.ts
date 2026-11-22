@@ -1,6 +1,6 @@
 import {Color,DynamicDrawUsage,Group,type Camera,type DirectionalLight,type InstancedMesh,type Object3D,type Scene,type WebGLRenderer} from 'three';
 
-import {warmObjectTextures,yieldStartupTask} from './startupWork.ts';
+import {startupPool,warmObjectTextures,yieldStartupTask} from './startupWork.ts';
 
 type Compiler=Pick<WebGLRenderer,'compileAsync'> & Partial<Pick<WebGLRenderer,'initTexture'|'shadowMap'>>;
 type Pending={promise:Promise<void>;signal?:AbortSignal;cancel:AbortController};
@@ -86,15 +86,18 @@ export class SceneWarmup {
     for(const enabled of mappedShadows?[false,true]:[false]){
      if(cancel.signal.aborted)throw cancelled(cancel.signal);
      for(const state of shadows)state.light.castShadow=enabled;
-     // compileAsync collects synchronously, then awaits driver readiness.
-     for(const [i,root] of compileRoots.entries()){
+     // Keep the compiler supplied while earlier programs link. Drain all work
+     // for this light topology before changing the directional shadow policy.
+     const submit=async(root:Object3D,i:number)=>{
       if(i>0)await readyOrCancelled(yieldStartupTask(),cancel.signal);
       if(cancel.signal.aborted)throw cancelled(cancel.signal);
       let ready:Promise<unknown>;
       try{if(model)model.visible=true;ready=this.renderer.compileAsync(root,this.camera,this.scene);}
       finally{if(model)model.visible=visible!;}
       await readyOrCancelled(ready,cancel.signal);
-     }
+     };
+     if(compileRoots.length===1)await submit(compileRoots[0],0);
+     else await startupPool(compileRoots,4,submit,cancel.signal);
      if(!shadows.length)break;
     }
     if(cancel.signal.aborted)throw cancelled(cancel.signal);
