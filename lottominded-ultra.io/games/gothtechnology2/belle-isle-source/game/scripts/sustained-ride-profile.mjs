@@ -4,6 +4,7 @@ import {mkdir,writeFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {createCoopStaticServer} from './coop-static-server.mjs';
 import {calibrate,measurePrograms} from './host-display-calibration.mjs';
+import {installObserver} from './host-object-costs.mjs';
 const game=resolve(import.meta.dirname,'..'),require=createRequire(resolve(game,'../../package.json'));
 const {chromium,expect:rawExpect}=require('@playwright/test');
 const expect=rawExpect.configure({timeout:180000});
@@ -55,6 +56,7 @@ try{
  if(!page)throw Error('No real WebGL2 backend available: '+lastBackendError);
  page.setDefaultTimeout(180000);
  await page.bringToFront();
+ await page.addInitScript(installObserver);
  // Boot with this lane's actual settings so startup prepares the same shaders
  // that the 90-second ride will exercise. Settings also verifies the selection.
  const quality=device==='phone'?'smooth':'high';
@@ -169,7 +171,14 @@ try{
   if(inFlight)return;inFlight=true;
   pendingHeartbeat=page.keyboard.down('w').then(()=>reassertions++,error=>{heartbeatError=String(error);}).finally(()=>{inFlight=false;});
  },450);
- try{await page.waitForTimeout(seconds*1000);}finally{clearInterval(heartbeat);await pendingHeartbeat;await page.keyboard.up('w');}
+ try{
+  for(const second of [8,36,70]){
+   await page.waitForTimeout(Math.max(0,rideProbeStart+second*1000-Date.now()));
+   const costs=await page.evaluate(()=>window.__objectCostSample());
+   await writeFile(resolve(output,'object-costs-'+second+'.json'),JSON.stringify(costs));
+  }
+  await page.waitForTimeout(Math.max(0,rideProbeStart+seconds*1000-Date.now()));
+ }finally{clearInterval(heartbeat);await pendingHeartbeat;await page.keyboard.up('w');}
  report.input={...(await page.evaluate(()=>window.__belleInputReceipts||{keydowns:0,repeats:0,blurs:0})),reassertions,heartbeatError};
  try{report.browserSchedulerProbe=await page.evaluate(()=>({
   clock:window.__belleBrowserClock?.snapshot?.()??null,
