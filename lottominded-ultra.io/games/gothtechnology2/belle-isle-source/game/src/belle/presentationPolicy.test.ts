@@ -1,6 +1,20 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {presentationBudget,tracedSkyEnabled,defaultTracedSky,fogColumn,reflectionRequired,aircraftFrame,RIDER_CLIPS,sampleRiderClip,articulateEuc,windMask,type EucMotion} from './presentationPolicy.ts';
 import {atmosphereShader,windVertex,HEIGHT_FOG} from './atmosphereShaders.ts';
+import {ShaderChunk} from 'three';
+
+test('the local point pool keeps all lights in order and preserves the stock point-shadow path',()=>{
+ const chunk=ShaderChunk.lights_fragment_begin;
+ const generated=(pool:boolean)=>atmosphereShader('#include <worldpos_vertex>','#include <lights_fragment_begin>',chunk,pool).fragment;
+ const pointSection=(code:string)=>code.slice(code.indexOf('PointLight pointLight;'),code.indexOf('SpotLight spotLight;'));
+ const pool=pointSection(generated(true)),shadowed=pointSection(generated(false));
+ assert.match(pool,/for \(int i = 0; i < NUM_POINT_LIGHTS; \+\+i\)/);
+ assert.match(pool,/getPointLightInfo\(pointLights\[i\], geometryPosition, directLight\);/);
+ assert.match(pool,/if \(directLight.visible\) \{\s*RE_Direct\(/);
+ assert.doesNotMatch(pool,/#pragma unroll_loop_start|getPointShadow\(/);
+ assert.equal(shadowed,pointSection(chunk));
+ assert.match(generated(true),/getSpotShadow|getShadow\( spotShadowMap/);
+});
 const motion=():EucMotion=>({pitch:.12,drop:.1,shift:0,lateral:0,hipTilt:0,hipYaw:0,chestRoll:0,chestYaw:0,headRoll:0,headYaw:0,neck:0,shoulders:[0,0],hands:[{x:.05,y:.1,z:.1,wrist:0},{x:-.05,y:.1,z:.1,wrist:0}]});
 test('Smooth and XR bound optional rendering',()=>{for(const budget of [presentationBudget('smooth'),presentationBudget('high',true)]){assert.equal(budget.aircraft,false);assert.equal(budget.reflectionSize,32);assert.ok(budget.cloudStrength<=.1);}assert.ok(presentationBudget('high').reflectionSize<=128);});
 test('sea-level fog retains original density',()=>assert.equal(fogColumn(0,0),1));

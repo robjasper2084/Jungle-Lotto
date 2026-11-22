@@ -3,6 +3,37 @@ import assert from 'node:assert/strict';
 import {DataTexture,DirectionalLight,Group,Mesh,MeshBasicMaterial,PerspectiveCamera,PointLight,Scene,SpotLight,type Texture,type Object3D} from 'three';
 import {SceneWarmup} from './sceneWarmup.ts';
 
+test('both island lighting variants must finish linking before the island becomes ready',async()=>{
+ const {scene,sun,camera}=fixture(),states:boolean[]=[],busy:boolean[]=[];
+ const handles=[{},{}],programs:{program:object}[]=[],checked=new Set<object>(),polled:object[]=[];
+ let notifyPoll=()=>{};const firstPoll=new Promise<void>(resolve=>{notifyPoll=resolve;});
+ let firstReady=false,flushes=0;
+ const gl={getExtension:()=>({COMPLETION_STATUS_KHR:1}),LINK_STATUS:2,
+  flush(){flushes++;},isContextLost:()=>false,getProgramParameter(handle:object,key:number){
+   if(key===2){checked.add(handle);return true;}
+   polled.push(handle);notifyPoll();return handle===handles[1]||firstReady;
+  }};
+ const renderer={info:{programs},getContext:()=>gl,compile(){
+  states.push(sun.castShadow);programs.push({program:handles[states.length-1]});
+ },compileAsync(){throw Error('unexpected additional compilation');}};
+ const warmup=new SceneWarmup(renderer as unknown as ConstructorParameters<typeof SceneWarmup>[0],scene,camera,b=>busy.push(b),async()=>{});
+ const ready=warmup.prepare();
+ await firstPoll;assert.deepEqual(polled,[handles[0]]);assert.equal(checked.size,0);
+ assert.deepEqual(states,[false,true]);assert.deepEqual(busy,[true]);assert.equal(flushes,2);
+ firstReady=true;await ready;assert.equal(checked.size,2);assert.deepEqual(busy,[true,false]);assert.equal(sun.castShadow,true);
+});
+
+test('an unlinked island program fails preparation and allows a fresh attempt',async()=>{
+ const {scene,sun,camera}=fixture(),programs=[{program:{}}];sun.castShadow=false;
+ let linked=false;
+ const gl={getExtension:()=>({COMPLETION_STATUS_KHR:1}),LINK_STATUS:2,flush(){},isContextLost:()=>false,
+  getProgramParameter:(_:unknown,key:number)=>key===1||linked,getProgramInfoLog:()=>'driver error'};
+ const renderer={info:{programs},getContext:()=>gl,compile(){},compileAsync(){throw Error('unexpected fallback');}};
+ const warmup=new SceneWarmup(renderer as unknown as ConstructorParameters<typeof SceneWarmup>[0],scene,camera,()=>{},async()=>{});
+ await assert.rejects(warmup.prepare(),/Island shader link failed: driver error/);assert.equal(sun.castShadow,false);
+ linked=true;await warmup.prepare();assert.equal(sun.castShadow,false);
+});
+
 function fixture(){const scene=new Scene(),sun=new DirectionalLight();sun.castShadow=true;scene.add(sun,...Array.from({length:4},()=>new PointLight()));const bike=new Group();bike.visible=false;bike.add(new PointLight(),new SpotLight(),new SpotLight());scene.add(bike);return{scene,sun,bike,camera:new PerspectiveCamera()};}
 function topology(scene:Scene){let points=0,spots=0,shadows=0;scene.traverseVisible(o=>{if(o instanceof PointLight)points++;if(o instanceof SpotLight)spots++;if(o instanceof DirectionalLight&&o.castShadow)shadows++;});return{points,spots,shadows};}
 

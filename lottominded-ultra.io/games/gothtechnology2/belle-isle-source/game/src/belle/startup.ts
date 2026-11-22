@@ -9,6 +9,18 @@ export function createStartup(){
  const setup=createRideSetup(screen);
  const picker=document.createElement('details');picker.className='cinema-ride-picker';picker.innerHTML='<summary>Choose your ride &amp; view</summary>';
  const rideSetup=screen.querySelector('.ride-setup')!;rideSetup.before(picker);picker.append(rideSetup);
+ const toolbar=screen.querySelector<HTMLElement>('.cinema-top')!;
+ const fitPicker=()=>{
+  if(!picker.open)return;
+  // Compact landscape uses the title's in-flow scroller. On other screens the
+  // chooser opens upward from the title, with the flyover controls above it.
+  if(getComputedStyle(picker).position!=='absolute'){picker.style.removeProperty('max-height');return;}
+  const available=picker.getBoundingClientRect().bottom-toolbar.getBoundingClientRect().bottom-12;
+  picker.style.maxHeight=Math.max(0,Math.floor(available))+'px';
+ };
+ const resize=new ResizeObserver(fitPicker);resize.observe(screen);resize.observe(toolbar);
+ picker.addEventListener('toggle',fitPicker);
+ screen.querySelector('.cinema-title')!.addEventListener('animationend',fitPicker);
  const done=document.createElement('button');done.type='button';done.className='ride-picker-done';done.textContent='Use this ride';rideSetup.append(done);done.onclick=()=>{picker.open=false;picker.querySelector('summary')?.focus();};
  let preview:ReturnType<typeof createRidePreview>|undefined,sources:{wheel:Object3D,bike:()=>Promise<Object3D>}|undefined;
  let softwarePreview=false;

@@ -2,7 +2,7 @@ import {Group,type Camera,type DirectionalLight,type Object3D,type Scene,type We
 
 import {warmObjectTextures,yieldStartupTask} from './startupWork.ts';
 
-type Compiler=Pick<WebGLRenderer,'compileAsync'> & Partial<Pick<WebGLRenderer,'initTexture'|'shadowMap'|'getContext'>>;
+type Compiler=Pick<WebGLRenderer,'compileAsync'> & Partial<Pick<WebGLRenderer,'compile'|'info'|'initTexture'|'shadowMap'|'getContext'>>;
 type Pending={promise:Promise<void>;signal?:AbortSignal;cancel:AbortController};
 /** compileAsync normally visits even invisible geometry. Supply Smooth's active
  * drawables while the real target scene continues to provide all the lighting.
@@ -22,6 +22,37 @@ class SmoothWarmupRoot extends Group {
  override traverse(callback:(object:Object3D)=>void){for(const object of this.drawables)callback(object);}
 }
 const cancelled=(signal:AbortSignal)=>signal.reason instanceof Error?signal.reason:new DOMException('Ride preparation cancelled','AbortError');
+/** Three's compileAsync polls each material's current program. A second
+ * lighting setup would replace that pointer. Keep the actual GL handles from
+ * both submissions so the driver can compile both sets before we wait. */
+async function prepareIslandPrograms(renderer:Compiler,scene:Scene,camera:Camera,lights:DirectionalLight[],signal:AbortSignal){
+ const gl=renderer.getContext?.();
+ const extension=gl?.getExtension?.('KHR_parallel_shader_compile');
+ if(!gl||!extension||!renderer.compile||!renderer.info?.programs)return false;
+ const pending=new Set<WebGLProgram>();
+ for(const castShadow of [false,true]){
+  if(signal.aborted)throw cancelled(signal);
+  for(const light of lights)light.castShadow=castShadow;
+  renderer.compile(scene,camera,scene);
+  for(const linked of renderer.info.programs)pending.add(linked.program as WebGLProgram);
+  gl.flush();
+  await yieldStartupTask();
+ }
+ while(pending.size){
+  if(signal.aborted)throw cancelled(signal);
+  if(gl.isContextLost())throw new Error('WebGL context lost during island preparation');
+  for(const program of pending){
+   // Every program is already submitted. Poll a single unfinished handle
+   // per tick instead of round-tripping through the GPU process for all of
+   // them. Every ready handle still passes the same explicit link check.
+   if(!gl.getProgramParameter(program,extension.COMPLETION_STATUS_KHR))break;
+   if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw new Error('Island shader link failed: '+gl.getProgramInfoLog(program));
+   pending.delete(program);
+  }
+  if(pending.size)await new Promise(resolve=>setTimeout(resolve,10));
+ }
+ return true;
+}
 function readyOrCancelled<T>(ready:Promise<T>,signal:AbortSignal){
  return new Promise<T>((resolve,reject)=>{
   const abort=()=>{signal.removeEventListener('abort',abort);reject(cancelled(signal));};
@@ -70,7 +101,9 @@ export class SceneWarmup {
     await readyOrCancelled(warmObjectTextures(this.renderer,model??this.scene,cancel.signal),cancel.signal);
     // Smooth has no shadow-map pass. A later prepare in a mapped mode
     // gets a distinct cache entry and still warms both lighting variants.
-    for(const enabled of mappedShadows?[false,true]:[false]){
+    stage='compiling island lighting with and without shadows';
+    const islandReady=!model&&mappedShadows&&shadows.length>0&&await prepareIslandPrograms(this.renderer,this.scene,this.camera,shadows.map(state=>state.light),cancel.signal);
+    for(const enabled of islandReady?[]:mappedShadows?[false,true]:[false]){
      if(cancel.signal.aborted)throw cancelled(cancel.signal);
      for(const state of shadows)state.light.castShadow=enabled;
      // compileAsync collects synchronously, then awaits driver readiness.
