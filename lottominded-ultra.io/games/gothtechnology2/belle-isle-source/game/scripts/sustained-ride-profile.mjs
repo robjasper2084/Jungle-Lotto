@@ -21,7 +21,10 @@ const server=createCoopStaticServer(resolve(game,'dist'));
 await new Promise(ok=>server.listen(0,'127.0.0.1',ok));
 const begin=Date.now();let browser,page;
 try{
- const candidates=process.platform==='darwin'?[{name:'angle-metal',args:['--enable-gpu','--use-gl=angle','--use-angle=metal']}]:
+ // A headless runner has a virtual display. Let Chrome schedule the next
+ // callback after the previous frame is acknowledged. The game still caps
+ // draws at 60 Hz and checks its real WebGL fence before submitting another.
+ const candidates=process.platform==='darwin'?[{name:'angle-metal',args:['--enable-gpu','--use-gl=angle','--use-angle=metal','--disable-frame-rate-limit']}]:
   [{name:'angle-gl',args:['--use-gl=angle','--use-angle=gl']},
   {name:'swiftshader-fallback',args:['--use-gl=angle','--use-angle=swiftshader-webgl','--enable-unsafe-swiftshader']}];
  let lastBackendError;
@@ -42,6 +45,7 @@ try{
    if(candidate.name==='angle-metal'&&(!/Metal/i.test(available)||/SwiftShader|llvmpipe|software rasterizer/i.test(available)))
     throw Error('Metal renderer unavailable: '+available);
    report.renderBackend=candidate.name;
+   report.browserFrameScheduler=candidate.args.includes('--disable-frame-rate-limit')?'headless back-to-back acknowledgements':'default';
    page=await browser.newPage({viewport,deviceScaleFactor:1,isMobile:device==='phone',hasTouch:device==='phone',reducedMotion:'reduce'});
    break;
   }catch(error){
