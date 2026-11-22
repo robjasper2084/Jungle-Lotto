@@ -68,7 +68,7 @@ test('island batches link concurrently within one lighting policy and drain befo
 test('a fixed directional light needs one mapped topology and polls shared programs only once',async()=>{
  const {scene,camera,sun}=fixture();sun.userData.fixedShadowLayout=true;
  scene.add(...Array.from({length:129},()=>new Mesh()));
- const programs=[{program:{}},{program:{}}],polls:object[]=[],shadows:boolean[]=[];
+ const uniforms:number[]=[],programs=[0,1].map(i=>({program:{},getUniforms:()=>uniforms.push(i)})),polls:object[]=[],shadows:boolean[]=[];
  let flushed=0;
  const renderer={shadowMap:{enabled:true},info:{programs},getContext:()=>({
   getExtension:()=>({COMPLETION_STATUS_KHR:0x91b1}),isContextLost:()=>false,flush:()=>flushed++,
@@ -77,6 +77,7 @@ test('a fixed directional light needs one mapped topology and polls shared progr
  await new SceneWarmup(renderer as unknown as ConstructorParameters<typeof SceneWarmup>[0],scene,camera,()=>{},async()=>{}).prepare();
  assert.deepEqual(shadows,[true,true,true]);assert.equal(flushed,1);
  assert.deepEqual(polls,[programs[0].program,programs[0].program,programs[1].program]);
+ assert.deepEqual(uniforms,[0,1]);
 });
 
 test('Smooth prepares active drawables against the actual island lights, with a separate preparation for a hidden ride',async()=>{

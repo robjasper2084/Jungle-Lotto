@@ -81,6 +81,12 @@ function road(points:Point[],width:number,height:(x:number,z:number)=>number){co
 const mat=(color:number,roughness=.8)=>new T.MeshStandardMaterial({color,roughness});
 export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:ParkMap,terrain:ParkTerrain,status:(s:string)=>void,renderProbe?:NatureRenderProbe){
  status('Preparing island surfaces and sky');
+ // The two reference buildings are the first large scenery upload on the
+ // bridge. Decode them alongside the normal loading work when available.
+ const referenceBuildings=new T.Group();
+ let decodedBuildings:Awaited<ReturnType<typeof addReferenceArchitecture>>|undefined;
+ const buildingLoad=addReferenceArchitecture(referenceBuildings,loader).then(
+  buildings=>decodedBuildings=buildings,()=>undefined);
  const [islandSky]=await Promise.all([createIslandSky(scene,renderer,status),loadRealisticMaterials(renderer)]);if(REFERENCE_STYLE)renderer.toneMappingExposure=1.02;
  const localLights=new LocalLightPool(scene);
  // Surface skins are ready before world creation. Do not fetch the discarded PNG fallback atlases.
@@ -195,8 +201,18 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
  const golfCenterDetail=createApproachDetail(scene,[GOLF_CENTER_POSITION],deferredSceneryRadius(700,1000,softwareScenery,20),
   (stage,camera)=>prepareApproach(stage,camera,()=>addGolfCenter(stage,loader)),
   model=>Object.assign(golfStats,model.stats,{loaded:true}));
- const referenceArchitectureDetail=createApproachDetail(scene,REFERENCE_BUILDING_CENTRES,950,
-  (stage,camera)=>prepareApproach(stage,camera,()=>addReferenceArchitecture(stage,loader)));
+ // A slow or failed optional download can still finish or retry on approach.
+ // When ready now, its actual shaders join the island's normal startup warmup.
+ const referenceArchitectureDetail=decodedBuildings??createApproachDetail(scene,REFERENCE_BUILDING_CENTRES,950,
+  (stage,camera)=>prepareApproach(stage,camera,async()=>{
+   const buildings=await buildingLoad;
+   if(!buildings)return addReferenceArchitecture(stage,loader);
+   stage.add(referenceBuildings);return buildings;
+  }));
+ if(decodedBuildings){
+  referenceBuildings.traverse(o=>{if(o instanceof T.Mesh)o.userData.warmIslandShaders=true;});
+  scene.add(referenceBuildings);
+ }
  const playgroundDetail=createApproachDetail(scene,playgrounds.map(site=>[site.center[0],site.center[1]] as const),deferredSceneryRadius(420,760,softwareScenery,100),
   (stage,camera)=>prepareApproach(stage,camera,()=>addPlaygrounds(stage,loader),
    model=>{playgroundStats.batching=model.batch();}),

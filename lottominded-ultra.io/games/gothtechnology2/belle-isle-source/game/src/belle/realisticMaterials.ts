@@ -72,10 +72,13 @@ export function applyRealisticMaterials(root:T.Object3D,context=''){
    m.userData.realisticProfile=/ballfield infield/i.test(material.name)?'infield-'+kind:kind;
    m.onBeforeCompile=(shader,renderer)=>{
     oldCompile(shader,renderer);
-    Object.assign(shader.uniforms,{skinColor:{value:textures.color},skinDetail:{value:textures.detail}});
+    // The scale, pigment and relief belong to the material. A roof and a
+    // limestone wall can use one linked shader with their own texture inputs.
+    Object.assign(shader.uniforms,{skinColor:{value:textures.color},skinDetail:{value:textures.detail},
+     skinProfile:{value:new T.Vector3(scale,blend,relief)}});
     shader.vertexShader='varying vec3 skinPosition;varying vec3 skinNormal;\n'+shader.vertexShader;
     shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nskinPosition=position;skinNormal=normal;');
-    shader.fragmentShader=`varying vec3 skinPosition;varying vec3 skinNormal;uniform sampler2D skinColor;uniform sampler2D skinDetail;
+    shader.fragmentShader=`varying vec3 skinPosition;varying vec3 skinNormal;uniform sampler2D skinColor;uniform sampler2D skinDetail;uniform vec3 skinProfile;
 ${planar?'':`vec3 skinWeights(){
  vec3 w=normalize(skinNormal);w*=w;w*=w;w*=w;return w/max(.0001,w.x+w.y+w.z);
 }`}
@@ -89,7 +92,7 @@ vec3 sampleSkin(sampler2D tex,vec3 p,vec3 dx,vec3 dy${planar?'':',vec3 w'}){
 `+shader.fragmentShader;
     // Preserve camera colors, character likeness and foliage alpha. Add grain without relighting the atlas.
     shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>',`#include <map_fragment>
-vec3 skinP=skinPosition*${scale.toFixed(4)};
+vec3 skinP=skinPosition*skinProfile.x;
 vec3 skinPx=dFdx(skinP),skinPy=dFdy(skinP);
 ${planar?'':'vec3 skinW=skinWeights();'}
 // Height must be available to adjacent fragments on both sides of the fade.
@@ -99,7 +102,7 @@ float skinGrain=mix(1.,.85+skinD.g*.30,skinFade);
 diffuseColor.rgb*=skinGrain;
 ${blend>0?`if(skinFade>0.){
  vec3 skinC=sampleSkin(skinColor,skinP,skinPx,skinPy${planar?'':',skinW'});
- diffuseColor.rgb=mix(diffuseColor.rgb,skinC*diffuse,${blend.toFixed(3)}*skinFade);
+ diffuseColor.rgb=mix(diffuseColor.rgb,skinC*diffuse,skinProfile.y*skinFade);
 }`:''}
 `);
     shader.fragmentShader=shader.fragmentShader.replace('#include <roughnessmap_fragment>',`#include <roughnessmap_fragment>
@@ -110,12 +113,12 @@ roughnessFactor=clamp(roughnessFactor+(skinD.r-.5)*.16*skinFade,.08,1.);
 vec3 skinDx=dFdx(-vViewPosition),skinDy=dFdy(-vViewPosition);
 vec3 skinRx=cross(skinDy,normal),skinRy=cross(normal,skinDx);
 float skinDet=dot(skinDx,skinRx);
-vec2 skinGradient=vec2(dFdx(skinD.g),dFdy(skinD.g))*${relief.toFixed(6)}*skinFade;
+vec2 skinGradient=vec2(dFdx(skinD.g),dFdy(skinD.g))*skinProfile.z*skinFade;
 vec3 skinGrad=sign(skinDet)*(skinGradient.x*skinRx+skinGradient.y*skinRy);
 normal=normalize(abs(skinDet)*normal-skinGrad);
 `);
    };
-   m.customProgramCacheKey=()=>oldKey+'-higgsfield-surface-v3-'+m.userData.realisticProfile+(planar?'-planar':'');m.needsUpdate=true;return m;
+   m.customProgramCacheKey=()=>oldKey+'-higgsfield-surface-v4'+(blend>0?'-pigment':'')+(planar?'-planar':'');m.needsUpdate=true;return m;
   });
   object.material=Array.isArray(object.material)?updated:updated[0];
  });

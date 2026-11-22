@@ -22,7 +22,7 @@ class IslandWarmupRoot extends Group {
  static batches(scene:Scene,camera:Camera){
   const drawables:Object3D[]=[];
   function collect(object:Object3D){
-   if(!object.visible){
+   if(!object.visible&&!object.userData.warmIslandShaders){
     const pool=object as InstancedMesh;
     if(!pool.isInstancedMesh||pool.count!==0||pool.instanceMatrix.count===0)return;
    }
@@ -47,13 +47,18 @@ async function compileIslandPrograms(renderer:Compiler,roots:Object3D[],camera:C
   checkStartupAbort(signal);renderer.compile(root,camera,scene);
  }
  gl.flush();
- const programs=renderer.info.programs.map(p=>p.program as WebGLProgram);
+ const programs=renderer.info.programs.slice();
+ let sliceStart=performance.now();
  for(const program of programs){
-  while(!gl.getProgramParameter(program,ext.COMPLETION_STATUS_KHR)){
+  while(!gl.getProgramParameter(program.program as WebGLProgram,ext.COMPLETION_STATUS_KHR)){
    checkStartupAbort(signal);
    if(gl.isContextLost())throw Error('WebGL context lost during island preparation');
    await new Promise(resolve=>setTimeout(resolve,16));
   }
+  // Three discovers attribute and uniform locations together on first use.
+  // Fetch them while the island is preparing, before a ride needs the shader.
+  program.getUniforms();
+  if(performance.now()-sliceStart>=8){await yieldStartupTask();checkStartupAbort(signal);sliceStart=performance.now();}
  }
  checkStartupAbort(signal);return true;
 }
