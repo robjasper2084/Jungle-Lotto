@@ -23,6 +23,27 @@ test('completed callbacks keep the real wall timestamp, without invented catch-u
  f.tick(100);f.tick(116);f.tick(132);assert.deepEqual(seen,[100]);
  f.gl.state=f.gl.ALREADY_SIGNALED;f.tick(480);assert.deepEqual(seen,[100,480]);
 });
+test('hardware rides overlap only recent fences and report real completions in submission order',()=>{
+ const f=fixture(),g=new GpuFrameGate(f.gl),tickets=[],done=new Set(),deleted=[];
+ f.gl.fenceSync=()=>{const ticket={};tickets.push(ticket);return ticket;};
+ f.gl.clientWaitSync=(ticket,flags,timeout)=>{assert.equal(flags,0);assert.equal(timeout,0);return done.has(ticket)?f.gl.ALREADY_SIGNALED:f.gl.TIMEOUT_EXPIRED;};
+ f.gl.deleteSync=ticket=>deleted.push(ticket);
+ const draw=now=>g.submitted(undefined,undefined,now);
+ draw(0);assert.equal(g.ready(16,true),false,'first frame must really finish');
+ done.add(tickets[0]);assert(g.ready(33,true));draw(33);
+ assert(g.ready(49,true));draw(49);
+ assert.equal(g.depth,2);assert.equal(g.completed,1);
+ assert.throws(()=>draw(50),/already in flight/);
+ assert.equal(g.ready(65,true),false);
+ done.add(tickets[1]);assert.equal(g.ready(90,true),false,'avoid refilling a late frame');
+ assert.equal(g.depth,1);assert.equal(g.completed,2);
+ done.add(tickets[2]);assert(g.ready(100,true));draw(100);
+ assert.equal(g.ready(116,false),false,'menus drain to a single frame');
+ assert(g.ready(120,true));draw(120);
+ f.gl.lost=true;assert.equal(g.ready(132,true),false);assert.equal(g.depth,0);
+ assert.equal(g.peakDepth,2);assert.equal(g.completed,3);assert.deepEqual(deleted,tickets);
+ f.gl.lost=false;draw(150);assert.equal(g.ready(166,true),false,'restoration starts serially');
+});
 test('a split-screen callback submits both cameras before its single fence',()=>{
  const f=fixture();installGpuFramePacing(f.renderer);
  f.renderer.setAnimationLoop(()=>{for(let i=0;i<2;i++){f.calls.push('view'+i);f.renderer.info.render.frame++;}});f.tick();
