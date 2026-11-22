@@ -2,7 +2,7 @@ import {REFERENCE_STYLE} from './sunsetReferencePolicy.ts';
 import {skyRadiance} from './volumetricSky.ts';
 import {riverWaveGLSL} from './riverWaves.ts';
 import {RIVER_BROAD_NORMALS,riverPhotoGlintGLSL} from './riverSurfaceDetail.ts';
-import {riverFarRing,RIVER_PATCH_SIZE,RIVER_PATCH_SEGMENTS} from './riverPatch.ts';
+import {flatRiverPatchIndex,riverFarRing,RIVER_PATCH_SIZE,RIVER_PATCH_SEGMENTS} from './riverPatch.ts';
 import {createFountainLighting,FOUNTAIN_COLOR_UNIFORMS} from './fountainLighting.ts';
 import type {ShipWake} from './riverTraffic.ts';
 import {scottLayout} from './fountainLayout.ts';
@@ -11,6 +11,7 @@ import {addShallowWater} from './shallowWater.ts';
 import * as T from 'three';
 import {KOI_POND_ID} from './waterFeatures.ts';
 import {inside,type ParkMap,type Point,type ParkTerrain} from './terrain.ts';
+import {islandRenderOrder} from './worldPerformancePolicy.ts';
 export function waterLevel(map:ParkMap,x:number,z:number){return map.water.some(w=>inside(x,z,w.points)&&!w.holes.some(h=>inside(x,z,h)))?1.05:0;}
 type Vehicle={x:number;y:number;z:number;speed:number;rpm:number}|null;
 /** Geographic water surfaces with a bounded near-field mesh and vehicle displacement. */
@@ -18,15 +19,16 @@ export function createWater(scene:T.Scene,renderer:T.WebGLRenderer,map:ParkMap,t
  const fountainNight={value:0},fountain=scottLayout(map),fountainLighting=createFountainLighting();const reflectionTint={value:new T.Color(1,1,1)},skyLight={value:1};
  const riverSunDirection={value:new T.Vector3(0,1,0)},riverSunGlint={value:0};
  const time={value:0},centre={value:new T.Vector2()},vehicle={value:new T.Vector4(0,0,0,0)},ripples={value:Array.from({length:12},()=>new T.Vector4(0,0,-100,0))};const shipWake={value:Array.from({length:4},()=>new T.Vector4())},shipShape={value:Array.from({length:4},()=>new T.Vector4())};let active:Vehicle=null,lastRipple=0,cursor=0;
+ const activeRipples={value:false};
  const pixels=new Uint8Array(128*128*4);const field=(x:number,y:number)=>Math.sin(x*.147+y*.196+1.7*Math.sin(y*.098))+Math.sin(x*.294-y*.245+.8*Math.sin(x*.098))*.45+Math.sin(x*.687+y*.54)*.18;
  for(let y=0;y<128;y++)for(let x=0;x<128;x++){const i=(y*128+x)*4;pixels[i]=128+Math.round((field(x+1,y)-field(x-1,y))*70);pixels[i+1]=128+Math.round((field(x,y+1)-field(x,y-1))*70);pixels[i+2]=pixels[i+3]=255;}
  const normals=realisticWaterNormal()??new T.DataTexture(pixels,128,128);normals.wrapS=normals.wrapT=T.RepeatWrapping;normals.magFilter=T.LinearFilter;normals.minFilter=T.LinearMipmapLinearFilter;normals.generateMipmaps=true;normals.needsUpdate=true;
- const uniformHeader='uniform sampler2D tracedSky;uniform float tracedSkyReady;'+FOUNTAIN_COLOR_UNIFORMS+'uniform float fountainNight;uniform vec2 fountainCentre;uniform vec3 riverSkyTint;uniform vec3 riverSunDirection;uniform float riverSunGlint;uniform float riverTime;uniform sampler2D riverNormals;uniform vec2 riverCentre;uniform vec4 hoverWash;uniform vec4 riverRipples[12];uniform vec4 shipWake[4];uniform vec4 shipShape[4];varying vec3 riverWorld;';
+ const uniformHeader='uniform sampler2D tracedSky;uniform float tracedSkyReady;'+FOUNTAIN_COLOR_UNIFORMS+'uniform float fountainNight;uniform vec2 fountainCentre;uniform vec3 riverSkyTint;uniform vec3 riverSunDirection;uniform float riverSunGlint;uniform float riverTime;uniform sampler2D riverNormals;uniform vec2 riverCentre;uniform vec4 hoverWash;uniform vec4 riverRipples[12];uniform bool activeRipples;uniform vec4 shipWake[4];uniform vec4 shipShape[4];varying vec3 riverWorld;';
  function material(kind:'near'|'far'|'lagoon'){
   const m=new T.MeshPhysicalMaterial({color:kind==='lagoon'?0x284b48:0x50859f,roughness:kind==='lagoon'?.12:.28,metalness:kind==='lagoon'?.08:.035,envMapIntensity:kind==='lagoon'?1.15:.85,clearcoat:kind==='lagoon'?.60:0,clearcoatRoughness:.15});
   if(REFERENCE_STYLE){m.color.setHex(kind==='lagoon'?0x335c61:0x2c5966);m.roughness=.20;m.metalness=.015;m.envMapIntensity=.9;m.clearcoat=kind==='lagoon'?.25:0;}
   m.onBeforeCompile=shader=>{
-   Object.assign(shader.uniforms,{tracedSky:skyRadiance.texture,tracedSkyReady:skyRadiance.ready,...fountainLighting.uniforms,fountainNight,fountainCentre:{value:new T.Vector2(fountain.x,fountain.z)},riverSkyTint:reflectionTint,riverSunDirection,riverSunGlint,riverTime:time,riverNormals:{value:normals},riverCentre:centre,hoverWash:vehicle,riverRipples:ripples,shipWake,shipShape});
+   Object.assign(shader.uniforms,{tracedSky:skyRadiance.texture,tracedSkyReady:skyRadiance.ready,...fountainLighting.uniforms,fountainNight,fountainCentre:{value:new T.Vector2(fountain.x,fountain.z)},riverSkyTint:reflectionTint,riverSunDirection,riverSunGlint,riverTime:time,riverNormals:{value:normals},riverCentre:centre,hoverWash:vehicle,riverRipples:ripples,activeRipples,shipWake,shipShape});
    shader.vertexShader='uniform float riverTime;uniform vec2 riverCentre;varying vec3 riverWorld;\n'+shader.vertexShader;
    if(kind==='near')shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
 vec2 wp=(modelMatrix*vec4(transformed,1.)).xz;
@@ -58,17 +60,35 @@ wave*=riverNormalVisibility;
 ${RIVER_BROAD_NORMALS}
 ${REFERENCE_STYLE?`float referenceNormalFade=(1.-smoothstep(140.,850.,viewDistance))*(1.-smoothstep(.2,2.,riverFootprint));wave+=(r1+r2*.48)*.035*referenceNormalFade;`:''}
 `}
-vec2 delta=p-hoverWash.xy;float radius=length(delta);float wash=hoverWash.z*exp(-radius*.42);wave+=delta/max(.1,radius)*sin(radius*6.-riverTime*9.)*wash*.22;
-float wakeFoam=0.;
-for(int i=0;i<12;i++){vec4 r=riverRipples[i];float age=riverTime-r.z;float dist=length(p-r.xy);float ring=dist-age*1.8;float envelope=exp(-abs(ring)*2.2)*max(0.,1.-age/5.)*r.w;wave+=(p-r.xy)/max(.1,dist)*cos(ring*8.)*envelope*.12;wakeFoam+=envelope*.16;}
+if(hoverWash.z!=0.){
+ vec2 delta=p-hoverWash.xy;float radius=length(delta);float wash=hoverWash.z*exp(-radius*.42);
+ wave+=delta/max(.1,radius)*sin(radius*6.-riverTime*9.)*wash*.22;
+}
+if(activeRipples)for(int i=0;i<12;i++){
+ vec4 r=riverRipples[i];float age=riverTime-r.z;
+ if(r.w!=0.&&age<5.){
+  float dist=length(p-r.xy);float ring=dist-age*1.8;float envelope=exp(-abs(ring)*2.2)*max(0.,1.-age/5.)*r.w;
+  wave+=(p-r.xy)/max(.1,dist)*cos(ring*8.)*envelope*.12;
+ }
+}
 // Only the nearest four moving vessels affect water normals. Foam uses bounded meshes.
 for(int j=0;j<4;j++){vec4 origin=shipWake[j],shape=shipShape[j];vec2 offset=p-origin.xy;float aft=-dot(offset,origin.zw),side=dot(offset,vec2(origin.w,-origin.z));
  if(shape.z>0.&&aft>0.&&aft<shape.x&&abs(side)<shape.y+aft*.32){float edge=abs(side)-shape.y*.42-aft*.22;float envelope=exp(-abs(edge)/max(1.,shape.y*.14))*(1.-aft/shape.x)*shape.z;wave+=vec2(origin.w,-origin.z)*sign(side)*cos(edge*1.3-riverTime*2.)*envelope*.10;}}
 normal=normalize(mat3(viewMatrix)*vec3(wave.x,1.,wave.y));
 `);
    shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
-vec2 washDelta=riverWorld.xz-hoverWash.xy;float washR=length(washDelta);float washFoam=hoverWash.z*exp(-abs(washR-2.1)*1.1)*(.4+.6*texture2D(riverNormals,riverWorld.xz*.3+riverTime*.03).r);
-float rippleFoam=0.;for(int i=0;i<12;i++){vec4 rr=riverRipples[i];float age=riverTime-rr.z;float ring=length(riverWorld.xz-rr.xy)-age*1.8;rippleFoam+=exp(-abs(ring)*3.)*max(0.,1.-age/5.)*rr.w*.15;}
+float washFoam=0.;
+if(hoverWash.z!=0.){
+ vec2 washDelta=riverWorld.xz-hoverWash.xy;float washR=length(washDelta);
+ washFoam=hoverWash.z*exp(-abs(washR-2.1)*1.1)*(.4+.6*texture2D(riverNormals,riverWorld.xz*.3+riverTime*.03).r);
+}
+float rippleFoam=0.;if(activeRipples)for(int i=0;i<12;i++){
+ vec4 rr=riverRipples[i];float age=riverTime-rr.z;
+ if(rr.w!=0.&&age<5.){
+  float ring=length(riverWorld.xz-rr.xy)-age*1.8;
+  rippleFoam+=exp(-abs(ring)*3.)*max(0.,1.-age/5.)*rr.w*.15;
+ }
+}
 diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.5,.66,.65),clamp(washFoam*.4+rippleFoam,0.,.58));
 `);
    if(kind!=='lagoon')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`#include <emissivemap_fragment>
@@ -83,7 +103,7 @@ diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.5,.66,.65),clamp(washFoam*.4+rippleF
    if(kind==='lagoon')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`#include <emissivemap_fragment>
  // Reflected lamps lie on the sight line to virtual light sources beneath the water plane.
  vec3 lightReflection=vec3(0.);float localPool=1.-smoothstep(115.,150.,length(riverWorld.xz-fountainCentre));
- for(int j=0;j<8;j++){float a=float(j)*.785398;vec2 lightXZ=fountainCentre+vec2(sin(a),cos(a))*14.;
+ if(fountainNight!=0.&&localPool>0.)for(int j=0;j<8;j++){float a=float(j)*.785398;vec2 lightXZ=fountainCentre+vec2(sin(a),cos(a))*14.;
   float eyeHeight=max(.2,cameraPosition.y-riverWorld.y);float t=eyeHeight/(eyeHeight+5.);
   vec2 hit=mix(cameraPosition.xz,lightXZ,t),ray=normalize(lightXZ-cameraPosition.xz+vec2(.0001));
   vec2 d=riverWorld.xz-hit;float across=dot(d,vec2(-ray.y,ray.x)),along=dot(d,ray);
@@ -94,7 +114,7 @@ diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.5,.66,.65),clamp(washFoam*.4+rippleF
  }
  totalEmissiveRadiance+=lightReflection*fountainNight*localPool;
  `);
-  };m.customProgramCacheKey=()=>kind+'-reactive-water-multiscale-ring-v10';return m;
+  };m.customProgramCacheKey=()=>kind+'-reactive-water-multiscale-ring-v11';return m;
  }
  const ring=riverFarRing(),farGeometry=new T.BufferGeometry();farGeometry.setAttribute('position',new T.Float32BufferAttribute(ring.positions,3));farGeometry.setAttribute('uv',new T.Float32BufferAttribute(ring.uv,2));farGeometry.setIndex(ring.indices);farGeometry.computeVertexNormals();
  // Smooth mode keeps the same visible river geometry without GPU-heavy
@@ -104,6 +124,10 @@ diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.5,.66,.65),clamp(washFoam*.4+rippleF
  const calmWater=new T.MeshBasicMaterial({color:0x355f6b,depthWrite:true});
  const far:T.Mesh=new T.Mesh(farGeometry,farShader);far.name='Detroit River distant water';scene.add(far);
  const near:T.Mesh=new T.Mesh(new T.PlaneGeometry(RIVER_PATCH_SIZE,RIVER_PATCH_SIZE,RIVER_PATCH_SEGMENTS,RIVER_PATCH_SEGMENTS).rotateX(-Math.PI/2),nearShader);near.name='Detroit River rolling waves';near.frustumCulled=false;scene.add(near);
+ const waveIndex=near.geometry.getIndex()!,flatIndex=new T.BufferAttribute(flatRiverPatchIndex(),1);
+ // Both river materials are opaque. The deck can reject covered river samples,
+ // then the visible river depth can reject covered sky samples.
+ near.renderOrder=far.renderOrder=islandRenderOrder.river;
  const lagoon=material('lagoon');const koiPond=map.waterSources?.find(w=>w.id===KOI_POND_ID);const isKoi=(w:ParkMap['water'][number])=>!!koiPond&&inside(1336,1149,w.points);const pond=material('lagoon');pond.transparent=true;pond.opacity=.42;pond.depthWrite=false;pond.color.set(0x75958a);pond.roughness=.18;
  for(const w of map.water){const koi=isKoi(w),mesh=new T.Mesh(polygon(w.points,1.05,w.holes),koi?pond:lagoon);mesh.name=koi?'Koi pond · clear surface':'Lagoon · '+w.name;scene.add(mesh);if(koi){const bed=new T.Mesh(polygon(w.points,.2,w.holes),new T.MeshStandardMaterial({color:0x685f47,roughness:.95}));bed.name='Koi pond gravel bed';scene.add(bed);}}
 
@@ -124,11 +148,14 @@ diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.5,.66,.65),clamp(washFoam*.4+rippleF
   riverSunGlint.value=Number.isFinite(glint)?T.MathUtils.clamp(glint,0,1)*(REFERENCE_STYLE?.35:1):0;
  },setVehicle(p:Vehicle){active=p;},setQuality(q:string){const lightweight=q==='smooth';near.visible=true;foam.visible=!lightweight;shallow.setQuality(q);
    lagoon.transparent=!lightweight;lagoon.depthWrite=lightweight;lagoon.opacity=lightweight?1:.76;lagoon.needsUpdate=true;
-   // Switch the material, never the geometry: shape, collisions and actual
-   // water boundary remain consistent with the other graphics tiers.
+   // The calm material leaves every vertex on one plane. The wave shader needs
+   // the original interior grid to displace the surface.
+   near.geometry.setIndex(lightweight?flatIndex:waveIndex);
    near.material=lightweight?calmWater:nearShader;
    far.material=lightweight?calmWater:farShader;
   },update(t:number,camera:T.Camera){time.value=t;fountainLighting.update(t);const eye=new T.Vector3();camera.getWorldPosition(eye);near.position.set(Math.round(eye.x/2)*2,0,Math.round(eye.z/2)*2);far.position.copy(near.position);centre.value.set(near.position.x,near.position.z);shallow.update(eye.x,eye.z,t);
    if(active&&!terrain.land(active.x,active.z)){const level=waterLevel(map,active.x,active.z),power=active.rpm*Math.max(0,1-Math.max(0,active.y-level)/7);vehicle.value.set(active.x,active.z,power,level);if(power>.05&&t-lastRipple>.32){ripples.value[cursor].set(active.x,active.z,t,power);cursor=(cursor+1)%12;lastRipple=t;}}else vehicle.value.z=0;
+   // Match the five-second lifetime in the shader, including on a clock reset.
+   activeRipples.value=ripples.value.some(r=>r.w!==0&&t-r.z<5);
   }};
 }

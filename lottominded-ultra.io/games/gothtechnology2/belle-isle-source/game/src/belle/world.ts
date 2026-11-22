@@ -8,7 +8,7 @@ import {addWaterfront} from './waterfrontScene.ts';
 import {LandmarkDetail} from './landmarkDetail.ts';
 import {addCoastGuard} from './coastGuard.ts';
 import {WorldQuality,dynamicShadowsEnabled} from './worldQuality.ts';
-import {WorldFrameWork,ShadowMapCadence,directionalCasterEligible,ScenePreparationQueue,softwareWebGLRenderer,deferredSceneryRadius} from './worldPerformancePolicy.ts';
+import {WorldFrameWork,ShadowMapCadence,directionalCasterEligible,ScenePreparationQueue,softwareWebGLRenderer,deferredSceneryRadius,islandRenderOrder} from './worldPerformancePolicy.ts';
 import {LocalLightPool} from './localLighting.ts';
 import {createRiverTraffic} from './riverTraffic.ts';
 import {addWoodlandFloor} from './woodland.ts';
@@ -99,7 +99,13 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
 
  const bridgeConcrete=concrete.clone();bridgeConcrete.name='MacArthur aged concrete';finishBridgeMaterial(bridgeConcrete,'aged-concrete');
  const groundPatches:T.Mesh[]=[];
- function add(g:T.BufferGeometry,m:T.Material|T.Material[]){const mesh=new T.Mesh(g,m);mesh.receiveShadow=true;scene.add(mesh);groundPatches.push(mesh);return mesh;}
+ function add(g:T.BufferGeometry,m:T.Material|T.Material[]){
+  const mesh=new T.Mesh(g,m);mesh.receiveShadow=true;
+  // The land and bridge deck already fill the depth buffer. Draw them before
+  // the far-plane sky so covered samples skip its procedural cloud shader.
+  if(m===grass||m===bridgeConcrete||m===pavement)mesh.renderOrder=islandRenderOrder.ground;
+  scene.add(mesh);groundPatches.push(mesh);return mesh;
+ }
  const dryLand:Point[][][]=await fetch('./belle/beach-land.json').then(r=>r.json());for(const p of dryLand)add(poly(p[0],2,p.slice(1)),grass);const beachStats=await addBeach(scene,data,terrain);
  const bankPositions:number[]=[],bankIndices:number[]=[],sandyBankIndices:number[]=[];for(const shore of [data.island,...(data.outerIslets||[]).map(i=>i.points)]){const base=bankPositions.length/3;const outline=shore.slice(0,-1);let signed=0;outline.forEach((p,i)=>{const q=outline[(i+1)%outline.length];signed+=p[0]*q[1]-q[0]*p[1];});outline.forEach((p,i)=>{const prev=outline[(i+outline.length-1)%outline.length],next=outline[(i+1)%outline.length],dx=next[0]-prev[0],dz=next[1]-prev[1],len=Math.hypot(dx,dz)||1,side=Math.sign(signed);bankPositions.push(p[0],terrain.height(p[0],p[1]),p[1],p[0]+dz/len*4*side,-.1,p[1]-dx/len*4*side);const a=base+i*2,b=base+((i+1)%outline.length)*2;const q=outline[(i+1)%outline.length],mx=(p[0]+q[0])/2,mz=(p[1]+q[1])/2,sandy=terrain.beaches.some(beach=>beach.waterside.some(e=>segment(mx,mz,e.a,e.b).d<.2));(sandy?sandyBankIndices:bankIndices).push(a,b,a+1,b,b+1,a+1);});}const bankGeometry=new T.BufferGeometry();bankGeometry.setAttribute('position',new T.Float32BufferAttribute(bankPositions,3));bankGeometry.setIndex([...bankIndices,...sandyBankIndices]);bankGeometry.addGroup(0,bankIndices.length,0);bankGeometry.addGroup(bankIndices.length,sandyBankIndices.length,1);bankGeometry.computeVertexNormals();const bankMaterial=mat(0xffffff);bankMaterial.side=T.DoubleSide;const bankUV:number[]=[];for(let i=0;i<bankPositions.length;i+=3)bankUV.push(bankPositions[i]/3,bankPositions[i+2]/3);bankGeometry.setAttribute('uv',new T.Float32BufferAttribute(bankUV,2));bankMaterial.name='Park grass bank';finishBank(bankMaterial,0,2);add(bankGeometry,[bankMaterial,beachStats.material]);add(poly(data.mainland,2),grass);const shoreDetails=addShoreDetails(scene,data,terrain,grass,concrete),shoreStrata=addShoreStrata(scene,data,terrain);if(!data.landPolygons)for(const w of data.water)for(const h of w.holes)add(poly(h,2),grass);
  const waterBanks=addWaterBanks(scene,data,terrain,grass);addWoodlandFloor(scene,data);await yieldStartupTask();

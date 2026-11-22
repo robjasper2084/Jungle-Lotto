@@ -4,7 +4,7 @@ import {dressDetroitSkyline} from './skylineMaterials.ts';
 import {boundedSkyProbe} from './skyProbe.ts';
 
 import * as T from 'three';
-import {directionalShadowResolution,softwareWebGLRenderer,type WorldPerformanceTier} from './worldPerformancePolicy.ts';
+import {directionalShadowResolution,islandRenderOrder,softwareWebGLRenderer,type WorldPerformanceTier} from './worldPerformancePolicy.ts';
 import {yieldStartupTask} from './startupWork.ts';
 import {BroaderPresentation} from './broaderPresentation.ts';
 import {defaultTracedSky,tracedSkyEnabled} from './presentationPolicy.ts';
@@ -126,7 +126,7 @@ export async function createIslandSky(scene:T.Scene,renderer:T.WebGLRenderer,sta
  let settings=normalizeSky(null);try{settings=normalizeSky(JSON.parse(localStorage.getItem('belle-isle-sky-v1')||'null'));}catch{/* defaults */}
  let skyFrame=0,lastVolumeFrame=-1;let titlePreview=false,previewIndex=0;let hour=settings.hour,cloudClock=0,skyClock=0,reduceMotion=false,shadowQuality=true,quality='automatic';
  const uniforms={volumeRadiance:skyRadiance.texture,volumeReady:skyRadiance.ready,startupRipples:{value:0},startupSunset:{value:0},zenith:{value:new T.Color()},horizon:{value:new T.Color()},warm:{value:new T.Color()},cloudColor:{value:new T.Color()},sunColor:{value:new T.Color()},sunDirection:{value:new T.Vector3()},moonDirection:{value:new T.Vector3()},meteorHead:{value:new T.Vector3()},meteorTail:{value:new T.Vector3()},meteorOpacity:{value:0},cloudNoise:{value:cloudTexture()},cloudTime:{value:0},coverage:{value:0},density:{value:0},stretch:{value:1},cloudScale:{value:1},overcast:{value:0},daylight:{value:1},night:{value:0}};
- const sky=new T.Mesh(new T.SphereGeometry(1,32,16),new T.ShaderMaterial({uniforms,side:T.BackSide,depthWrite:false,depthTest:false,vertexShader:'varying vec3 skyDirection;void main(){skyDirection=position;vec4 p=projectionMatrix*modelViewMatrix*vec4(position,1.);gl_Position=p.xyww;}',fragmentShader:livingSkyFragment(fragment)}));sky.material.toneMapped=true;sky.name='Belle Isle changing sky';sky.scale.setScalar(9000);sky.frustumCulled=false;sky.renderOrder=-100;scene.add(sky);scene.background=null;
+ const sky=new T.Mesh(new T.SphereGeometry(1,32,16),new T.ShaderMaterial({uniforms,side:T.BackSide,depthWrite:false,depthFunc:T.LessEqualDepth,vertexShader:'varying vec3 skyDirection;void main(){skyDirection=position;vec4 p=projectionMatrix*modelViewMatrix*vec4(position,1.);gl_Position=p.xyww;}',fragmentShader:livingSkyFragment(fragment)}));sky.material.toneMapped=true;sky.name='Belle Isle changing sky';sky.scale.setScalar(9000);sky.frustumCulled=false;sky.renderOrder=islandRenderOrder.sky;scene.add(sky);scene.background=null;
 
  const hemi=new T.HemisphereLight(0xd5e8f8,0x63513a,1.3),key=new T.DirectionalLight(0xffdfb0,2.1);key.castShadow=true;key.shadow.mapSize.set(1024,1024);Object.assign(key.shadow.camera,{left:-55,right:55,top:55,bottom:-55,near:.1,far:450});key.shadow.bias=-.0003;key.shadow.normalBias=.035;scene.add(hemi,key,key.target);scene.fog=new T.FogExp2(0xb8c4c9,.00007);
  // The initial HDR remains a fallback; bounded sky-only probes follow live weather.

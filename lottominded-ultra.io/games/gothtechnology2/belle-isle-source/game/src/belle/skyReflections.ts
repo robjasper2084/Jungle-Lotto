@@ -10,7 +10,7 @@ export class SkyReflections {
  private lastCost=0;private captures=0;private startupGate=new ReflectionStartupGate();
  constructor(scene:T.Scene,renderer:T.WebGLRenderer,source:T.ShaderMaterial){
   this.scene=scene;this.renderer=renderer;this.fallback=scene.environment;this.generator=new T.PMREMGenerator(renderer);
-  const material=source.clone();material.uniforms=source.uniforms;material.toneMapped=false;material.fog=false;
+  const material=source.clone();material.uniforms=source.uniforms;material.toneMapped=false;material.fog=false;material.depthTest=false;
   // Keep a dark ground hemisphere instead of reflecting a bright horizon below.
   material.fragmentShader=material.fragmentShader.replace('gl_FragColor=vec4(max(color,vec3(0.)),1.);','color=mix(vec3(.045,.055,.042)*(.18+.82*daylight),color,smoothstep(-.20,.015,d.y));\n gl_FragColor=vec4(max(color,vec3(0.)),1.);');
   this.probe=new T.Mesh(new T.SphereGeometry(10,16,12),material);this.probe.frustumCulled=false;this.probeScene.add(this.probe);
