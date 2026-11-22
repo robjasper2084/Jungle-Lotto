@@ -149,8 +149,8 @@ try{
  try{await cdp?.detach();}catch{/* observer cleanup cannot waive test results */}
  await settings();
  // Local RideProfile finishes on real W-keyup; keyboard input and GPU frames are unmodified.
- await expect(panel.locator('button')).toHaveText('Start 10-minute capture');
  if(!await panel.evaluate(node=>node.open))await panel.locator('summary').click();
+ await expect(panel.getByRole('button',{name:'Start 10-minute capture',exact:true})).toBeVisible();
  report.profile=JSON.parse(await panel.locator('textarea').inputValue());
  if(report.profile.stopReason!=='trusted-W-keyup')throw Error('Capture did not end on real trusted keyboard release');
  report.memory=await page.evaluate(()=>({
