@@ -77,8 +77,17 @@ export function applyRealisticMaterials(root:T.Object3D,context=''){
     // limestone wall can use one linked shader with their own texture inputs.
     Object.assign(shader.uniforms,{skinColor:{value:textures.color},skinDetail:{value:textures.detail},
      skinProfile:{value:new T.Vector3(scale,blend,relief)}});
-    shader.vertexShader='varying vec3 skinPosition;varying vec3 skinNormal;\n'+shader.vertexShader;
-    shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nskinPosition=position;skinNormal=normal;');
+    shader.vertexShader=`varying vec3 skinPosition;varying vec3 skinNormal;
+#ifdef BELLE_ORIGINAL_SURFACE_COORDS
+attribute vec3 originalSurfacePosition;attribute vec3 originalSurfaceNormal;
+#endif
+`+shader.vertexShader;
+    shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
+#ifdef BELLE_ORIGINAL_SURFACE_COORDS
+skinPosition=originalSurfacePosition;skinNormal=originalSurfaceNormal;
+#else
+skinPosition=position;skinNormal=normal;
+#endif`);
     shader.fragmentShader=`varying vec3 skinPosition;varying vec3 skinNormal;uniform sampler2D skinColor;uniform sampler2D skinDetail;uniform vec3 skinProfile;
 ${planar?'':`vec3 skinWeights(){
  vec3 w=normalize(skinNormal);w*=w;w*=w;w*=w;return w/max(.0001,w.x+w.y+w.z);
