@@ -1,5 +1,5 @@
 import {test} from 'node:test';import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';
-import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';import {Vector3,Mesh,SkinnedMesh} from 'three';
+import {GLTFLoader} from './compressedGLTFLoader.ts';import {Vector3,Mesh,SkinnedMesh} from 'three';
 import {assetPath} from './testAssets.ts';import {RetailWalker,type RetailWalkClip} from './retailWalker.ts';
 async function loadHero(){const buf=await readFile(assetPath('exports/glb/DS_Man_01/DS_Man_01_LOD0.glb')),n=buf.readUInt32LE(12),j=JSON.parse(buf.subarray(20,20+n).toString());delete j.images;delete j.textures;delete j.materials;for(const m of j.meshes)for(const p of m.primitives)delete p.material;const json=Buffer.from(JSON.stringify(j)),length=Math.ceil(json.length/4)*4,pad=Buffer.alloc(length,32);json.copy(pad);const bin=buf.subarray(20+n),out=Buffer.alloc(20+length+bin.length);out.writeUInt32LE(0x46546c67,0);out.writeUInt32LE(2,4);out.writeUInt32LE(out.length,8);out.writeUInt32LE(length,12);out.writeUInt32LE(0x4e4f534a,16);pad.copy(out,20);bin.copy(out,20+length);return new GLTFLoader().parseAsync(out.buffer.slice(out.byteOffset,out.byteOffset+out.length),'');}
 const hero=await loadHero(),clip:RetailWalkClip=JSON.parse(await readFile(new URL('../../public/exports/polish/hero-retail-walk.json',import.meta.url),'utf8'));

@@ -2,7 +2,6 @@ import * as T from 'three';
 import {SurfaceParticles,effectSurface,ConfirmationState,type EffectPatch} from './effectRules.ts';
 import {createGroundSample,type TerrainSampler} from './terrain.ts';
 import type {RidePose} from './controller.ts';
-import './rideEffects.css';
 export function reducedEffects(){return document.documentElement.dataset.reducedMotion==='true'||matchMedia('(prefers-reduced-motion: reduce)').matches;}
 export class SurfaceEffects {
  readonly model=new SurfaceParticles();private terrain:TerrainSampler;private patches:readonly EffectPatch[];private ground=createGroundSample();
@@ -35,7 +34,7 @@ export class RiderLamp {
 }
 export class RideConfirmation {
  readonly model=new ConfirmationState();readonly element=document.createElement('div');private lastText='';
- constructor(parent:HTMLElement){this.element.className='rideConfirmation';this.element.setAttribute('role','status');this.element.setAttribute('aria-live','polite');this.element.hidden=true;parent.append(this.element);}
+ constructor(parent:HTMLElement){void import('./rideEffects.css');this.element.className='rideConfirmation';this.element.setAttribute('role','status');this.element.setAttribute('aria-live','polite');this.element.hidden=true;parent.append(this.element);}
  show(kind:string,text:string,token:string){return this.model.show(kind,text,token);}
  step(dt:number){this.model.step(dt);}
  render(visible:boolean){this.element.hidden=!visible||this.model.remaining<=0;if(this.lastText!==this.model.text){this.lastText=this.model.text;this.element.textContent='SWOOP / '+this.model.text;}this.element.dataset.kind=this.model.kind;this.element.style.setProperty('--cue-pulse',String(reducedEffects()?0:Math.max(0,(this.model.remaining-1.15)/.65)));}

@@ -10,7 +10,6 @@ const CHALLENGES=[{id:'tricks',title:'Two-minute trick session'},{id:'tour',titl
 import {roomActions,roomFrame,roomMatch,roomMember,roomRoster,fillRaceRoster,ROOM_PROTOCOL,type RoomMatch,type RoomMember,type RoomFrame} from './onlineProtocol.ts';
 
 import type {Binding as SplitBinding} from './elmwood-session-input.ts';
-import './onlineRooms.css';
 import {inviteSharing} from './inviteSharing.ts';
 type Channel={on:(type:string,filter:object,fn:(v:any)=>void)=>Channel;subscribe:(fn:(status:string)=>void)=>Channel;track:(v:object)=>Promise<unknown>;presenceState:()=>Record<string,unknown[]>;send:(v:object)=>Promise<unknown>};
 type Client={channel:(name:string,config:object)=>Channel;removeChannel:(channel:Channel)=>Promise<unknown>;disconnect:()=>void};
@@ -28,6 +27,7 @@ export class ElmwoodOnlineRooms{
  private sharing:ReturnType<typeof inviteSharing>;private share=document.createElement('div');private roomCodeField=document.createElement('input');private copyCode=document.createElement('button');private copyLink=document.createElement('button');
  private map='elmwood' as const;private ready:()=>boolean;private onLaunch:(match:RoomMatch,slot:number)=>void;private stop:()=>void;private rider=document.createElement('select');private startSelect=document.createElement('select');
  constructor(ready:()=>boolean,onLaunch:(match:RoomMatch,slot:number)=>void,stop:()=>void){
+  void import('./onlineRooms.css');
   this.voice.root.addEventListener('toggle',()=>{if(this.voice.root.open)document.querySelector('canvas')?.dispatchEvent(new Event('online-release-input'));});
  this.ready=ready;this.onLaunch=onLaunch;this.stop=stop;
   this.chat=new RoomChatPanel(text=>{if(!this.connected)return;const message={id:crypto.randomUUID(),player:this.self,name:'Player '+(this.members.findIndex(m=>m.id===this.self)+1),text,at:Date.now()};this.chat.receive(message);void this.send('chat',{room:this.code,message});},()=>document.querySelector('canvas')?.dispatchEvent(new Event('online-release-input')),()=>this.connected);

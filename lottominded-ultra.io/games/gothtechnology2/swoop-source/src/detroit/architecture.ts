@@ -2,7 +2,7 @@ import * as T from 'three';
 import {GLTFLoader} from './compressedGLTFLoader.ts';
 import type {Solid} from './world.ts';
 import {hash} from './world.ts';
-import {DETROIT_LANDMARKS,SKYLINE_ID} from './architectureData.ts';
+import {DETROIT_LANDMARKS,SKYLINE_PATH} from './architectureData.ts';
 
 type BuildingMaterials=Record<'red'|'buff'|'store'|'brick'|'stone'|'steel'|'roof'|'glass'|'metal',T.MeshStandardMaterial>;
 const boxGeo=new T.BoxGeometry(1,1,1),planeGeo=new T.PlaneGeometry(1,1);
@@ -58,7 +58,7 @@ export async function createArchitecture(scene:T.Scene,groupAt:(z:number)=>T.Gro
   const masonry=await loader.loadAsync('/textures/cut/brick.jpg');masonry.colorSpace=T.SRGBColorSpace;masonry.wrapS=masonry.wrapT=T.RepeatWrapping;masonry.repeat.set(3,3);masonry.anisotropy=8;
   const m:BuildingMaterials={red:new T.MeshStandardMaterial({map:textures[0],color:'#bdb9b2',roughness:.84}),buff:new T.MeshStandardMaterial({map:textures[1],color:'#cecac0',roughness:.86}),store:new T.MeshStandardMaterial({map:textures[2],color:'#d0cdc5',roughness:.65}),brick:new T.MeshStandardMaterial({map:masonry,color:'#765445',roughness:.91}),stone:new T.MeshStandardMaterial({color:'#9c9586',roughness:.87}),steel:new T.MeshStandardMaterial({color:'#252d2d',metalness:.55,roughness:.4}),roof:new T.MeshStandardMaterial({color:'#343839',roughness:.92}),glass:new T.MeshStandardMaterial({color:'#263d47',metalness:.48,roughness:.19}),metal:new T.MeshStandardMaterial({color:'#7b8281',metalness:.55,roughness:.58})};
   let blockCount=0;for(const s of solids)if(s.kind==='warehouse')groupAt(s.z).add(buildDetroitBlock(s,m,blockCount++));
-  const gltf=new GLTFLoader(),assets=await Promise.all([...DETROIT_LANDMARKS.map(l=>l.id),SKYLINE_ID].map(id=>gltf.loadAsync('/exports/architecture/'+id+'.glb')));
+  const gltf=new GLTFLoader(),assets=await Promise.all([...DETROIT_LANDMARKS.map(l=>'exports/architecture/'+l.id+'.glb'),SKYLINE_PATH].map(path=>gltf.loadAsync('/'+path)));
   DETROIT_LANDMARKS.forEach((l,i)=>{
     const model=assets[i].scene;model.name=l.name;model.position.set(l.x,l.base,l.z);model.rotation.y=l.rotation;
     model.traverse(o=>{const mesh=o as T.Mesh;if(!mesh.isMesh)return;mesh.castShadow=true;mesh.receiveShadow=true;const material=mesh.material as T.MeshStandardMaterial;if(material.name==='Detroit salvaged red brick')material.color.set('#9e7c65');if(material.name==='Painted charcoal brick')material.color.set('#5b6267');});

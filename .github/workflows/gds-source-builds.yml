@@ -1,0 +1,106 @@
+name: Greater Detroit clean-source compilation
+
+on:
+  pull_request:
+    paths:
+      - 'lottominded-ultra.io/games/gothtechnology2/greater-detroit-graphics/**'
+      - 'lottominded-ultra.io/games/gothtechnology2/swoop-source/**'
+      - 'lottominded-ultra.io/games/gothtechnology2/elmwood-source/**'
+      - '.github/workflows/gds-source-builds.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-build:
+    name: gds-source-build (${{ matrix.district }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        district: [swoop, elmwood]
+    steps:
+      - name: Checkout exact candidate source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Set up Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install shared storefront build dependencies
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: npm ci
+      - name: Record candidate metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p output/gds-source-verification/${{ matrix.district }}
+          git rev-parse HEAD | tee output/gds-source-verification/${{ matrix.district }}/HEAD
+          node --version | tee output/gds-source-verification/${{ matrix.district }}/node-version.txt
+          npm --version | tee output/gds-source-verification/${{ matrix.district }}/npm-version.txt
+      - name: Clean install and compile shared RideCore
+        working-directory: lottominded-ultra.io/games/gothtechnology2/ride-core
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run build
+          test -s dist/index.js
+          # Both games use the sibling repo-local RideCore.
+      - name: Prepare Elmwood imports for Swoop
+        if: matrix.district == 'swoop'
+        working-directory: lottominded-ultra.io/games/gothtechnology2/elmwood-source
+        run: npm ci
+      - name: Prepare sibling game imports for Elmwood compilation
+        if: matrix.district == 'elmwood'
+        working-directory: lottominded-ultra.io/games/gothtechnology2/swoop-source
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          npm ls @digital-static/ridecore --depth=0
+      - name: Verify repository-local dependency and lockfiles
+        working-directory: lottominded-ultra.io/games/gothtechnology2/greater-detroit-graphics
+        run: node --test tests/localRidecoreDependency.test.mjs
+      - name: Compile and test candidate game source
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ matrix.district }}" = swoop ]; then
+            cd lottominded-ultra.io/games/gothtechnology2/swoop-source
+            npm ci
+            npm ls @digital-static/ridecore --depth=0
+            npm run check
+            npm test
+            npm run build
+            test -s dist/detroit.html
+          else
+            cd lottominded-ultra.io/games/gothtechnology2/elmwood-source
+            npm ci
+            npm ls @digital-static/ridecore --depth=0
+            npm run check
+            npm run test:elmwood
+            # Source bundle only; complete packaged asset-backed release remains separate.
+            node --input-type=module -e "import {build} from 'vite'; import {resolve} from 'node:path'; await build({root:process.cwd(),configFile:false,base:'./',publicDir:false,build:{outDir:'dist',target:'es2022',rollupOptions:{input:resolve('elmwood.html')}}})"
+            test -s dist/elmwood.html
+          fi
+      - name: Record emitted bundle hashes
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="lottominded-ultra.io/games/gothtechnology2"
+          cd "$base/${{ matrix.district }}-source"
+          find dist -maxdepth 3 -type f -print0 | sort -z | xargs -0 sha256sum > "$GITHUB_WORKSPACE/output/gds-source-verification/${{ matrix.district }}/dist-sha256.txt"
+      - name: Publish exact-head source-build receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gds-${{ matrix.district }}-source-build-${{ github.run_id }}
+          path: output/gds-source-verification/${{ matrix.district }}
+          retention-days: 14
+          if-no-files-found: error
