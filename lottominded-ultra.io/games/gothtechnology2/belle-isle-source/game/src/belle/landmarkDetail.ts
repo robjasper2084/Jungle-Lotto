@@ -83,6 +83,7 @@ export class LandmarkDetail{
   this.asset.scene.parent?.add(this.palette.root);Object.assign(this.stats,this.palette.stats);
  }
  get batchRoot(){return this.palette?.root;}
+ get isSplitActive(){return this.splitActive;}
  beginView(){this.palette?.beginView();}
  endView(){this.palette?.endView();}
  setActive(active:boolean){this.splitActive=active;for(const i of this.items)i.mesh.geometry=active?i.reduced:i.full;}

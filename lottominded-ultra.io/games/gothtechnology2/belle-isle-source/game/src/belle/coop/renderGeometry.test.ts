@@ -1,5 +1,39 @@
 import test from 'node:test';import assert from 'node:assert/strict';import * as T from 'three';import {batchRigidChildren} from './batchRigid.ts';import {detailGeometry,indexHash} from '../landmarkDetail.ts';
 import {cullMacArthurSpans} from '../macArthurSpanCulling.ts';
+import {batchStaticArchitecture} from '../staticArchitectureBatch.ts';
+test('world-space bridge tiles retain their exact material and shader uniforms',()=>{
+ const root=new T.Group(),material=new T.MeshStandardMaterial(),uniform={value:.25};
+ material.onBeforeCompile=s=>{s.uniforms.bridgeNight=uniform;};
+ const pieces=Array.from({length:3},()=>new T.Mesh(new T.BoxGeometry(),material));
+ pieces[2].position.x=5;root.add(...pieces);
+ const palette=new StaticPaletteBatch(pieces,new Set(pieces)),batch=palette.root.children[0] as T.BatchedMesh;
+ assert.equal(palette.stats.sourceDraws,2);assert.equal(batch.material,material);
+ const shader={uniforms:{}} as any;material.onBeforeCompile(shader,{} as T.WebGLRenderer);assert.equal(shader.uniforms.bridgeNight,uniform);
+ let disposed=false;material.addEventListener('dispose',()=>{disposed=true;});palette.dispose();assert.equal(disposed,false);
+});
+test('ordinary architecture batches preserve original shadow, picking, visibility and LOD decisions',()=>{
+ const scene=new T.Scene(),root=new T.Group(),material=new T.MeshStandardMaterial();scene.add(root);
+ const pieces=Array.from({length:4},(_,i)=>{const m=new T.Mesh(new T.BoxGeometry(),material);m.name='piece '+i;m.position.x=i*3;m.castShadow=true;root.add(m);return m;});
+ const renderer={extensions:{has:()=>true},xr:{isPresenting:false},shadowMap:{enabled:true,autoUpdate:true}} as unknown as T.WebGLRenderer;
+ let split=false;
+ const palette=batchStaticArchitecture(scene,renderer,[root],()=>split)!;
+ const camera=new T.PerspectiveCamera(),batch=palette.root.children[0] as T.BatchedMesh;
+ const begin=()=>scene.onBeforeRender(renderer,scene,camera,null!,null!,null!);
+ const end=()=>scene.onAfterRender(renderer,scene,camera,null!,null!,null!);
+ pieces[0].castShadow=false;pieces[3].visible=false;begin();
+ assert.equal(batch.castShadow,true);assert.ok(pieces[0].visible);assert.equal(pieces[1].visible,false);assert.equal(pieces[2].visible,false);
+ let hits=new T.Raycaster(new T.Vector3(3,0,2),new T.Vector3(0,0,-1)).intersectObjects(scene.children,true);
+ assert.ok(hits.length);assert.ok(hits.every(h=>h.object===pieces[1]));
+ scene.onBeforeRender(renderer,scene,camera,{} as T.BufferGeometry,null!,null!);
+ assert.equal(palette.root.visible,false);assert.equal(pieces[1].visible,true);
+ end();assert.equal(palette.root.visible,true);assert.equal(pieces[1].visible,false);
+ end();assert.deepEqual(pieces.map(p=>p.visible),[true,true,true,false]);
+ renderer.shadowMap.enabled=false;pieces[1].geometry=pieces[1].geometry.clone();begin();
+ assert.equal(batch.castShadow,false);assert.equal(pieces[1].visible,true);assert.equal(pieces[2].visible,false);end();
+ split=true;begin();assert.equal(palette.root.visible,false);end();
+ const unsupported={extensions:{has:()=>false}} as unknown as T.WebGLRenderer;
+ assert.equal(batchStaticArchitecture(scene,unsupported,[root],()=>false),undefined);
+});
 test('bridge spans keep intersecting triangles, authored face IDs and full shadow geometry',()=>{
  const root=new T.Scene(),source=new T.BufferGeometry(),positions:number[]=[];
  // Interleave both ends in authored order, then a long triangle whose centroid
