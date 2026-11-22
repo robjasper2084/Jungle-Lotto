@@ -128,7 +128,16 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
  surfaceDetail(pathMat,'concrete');surfaceDetail(pavers,'pavers');surfaceDetail(wood,'wood');surfaceDetail(gravel,'gravel');
  await addPavement(scene,{asphalt:pavement,concrete:pathMat,gravel,wood,pavers});
  const bridgePts:Point[]=Array.from({length:151},(_,i)=>[data.bridge.a[0]+(data.bridge.b[0]-data.bridge.a[0])*i/150,data.bridge.a[1]+(data.bridge.b[1]-data.bridge.a[1])*i/150]);const deckY=(x:number,z:number)=>6+4*Math.sin(Math.PI*T.MathUtils.clamp(terrain.bridge(x,z).t,0,1));add(road(bridgePts,26,(x,z)=>deckY(x,z)+.015),bridgeConcrete);add(road(bridgePts,20,(x,z)=>deckY(x,z)+.06),pavement);
- for(const a of data.areas){if(a.points.length<4)continue;if(a.kind==='pitch')add(poly(a.points,2.012),mat(0x728260));if(a.kind==='garden'){const soil=grass.clone();soil.color.set(a.id==='107227702'?0x8f9b7e:0x8d8062);soil.onBeforeCompile=grass.onBeforeCompile;add(poly(a.points,2.012,a.holes),soil);}}
+ // These nonoverlapping pitches and gardens have three authored finishes.
+ // Sharing them lets the existing static ground batch submit one draw each.
+ const pitchSurface=mat(0x728260),gardenSoil=grass.clone(),gardenLawn=grass.clone();
+ gardenSoil.color.set(0x8d8062);gardenLawn.color.set(0x8f9b7e);
+ gardenSoil.onBeforeCompile=gardenLawn.onBeforeCompile=grass.onBeforeCompile;
+ for(const a of data.areas){
+  if(a.points.length<4)continue;
+  if(a.kind==='pitch')add(poly(a.points,2.012),pitchSurface);
+  if(a.kind==='garden')add(poly(a.points,2.012,a.holes),a.id==='107227702'?gardenLawn:gardenSoil);
+ }
  const lagoonBridge=addLagoonBridge(scene,data);await yieldStartupTask();const smallBridges=await addSmallBridgesStaged(scene,terrain.smallBridges.plan);await yieldStartupTask();
  addServiceBuildings(scene,data,islandSky.nightAmount);const facilities=addParkFacilities(scene,data);
  status('Adding road markings and wayfinding');const streetPlan=await fetch('./belle/street-details.json').then(r=>{if(!r.ok)throw new Error('Street details '+r.status);return r.json();});const streetBuffer:ArrayBuffer=await loadStartupBytes('./belle/street-details.bin');const streetData=new Float32Array(streetBuffer);streetPlan.boxes=[];for(let i=0;i<streetData.length;i+=streetPlan.stride)streetPlan.boxes.push({x:streetData[i],y:streetData[i+1],z:streetData[i+2],w:streetData[i+3],h:streetData[i+4],l:streetData[i+5],yaw:streetData[i+6],material:streetPlan.materials[streetData[i+7]],grade:streetData[i+8]});const streetStats=addStreetDetails(scene,streetPlan);streetPlan.boxes.length=0;await yieldStartupTask();
