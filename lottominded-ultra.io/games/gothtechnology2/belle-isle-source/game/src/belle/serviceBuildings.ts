@@ -3,6 +3,7 @@ import * as T from 'three';
 import {CUSTOM_ARCHITECTURE_IDS} from './referenceSites.ts';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {inside,segment,type ParkMap} from './terrain.ts';
+import {limitGroundDrawRange,type GroundRange} from './groundDrawRange.ts';
 
 /** Secondary buildings retain mapped footprints/heights. Facade treatments are
  * approximate until measured elevation photography is available. */
@@ -41,12 +42,26 @@ export function addServiceBuildings(scene:T.Scene,map:ParkMap,night={value:0}){
  // The same bounded set of materials serves all nearby facades; no per-window lights.
  const litGlass=glass.clone();litGlass.name='Warm arrival storefront glass';litGlass.emissive.set(0x80512c);
  litGlass.onBeforeCompile=shader=>{shader.uniforms.arrivalNight=night;shader.fragmentShader='uniform float arrivalNight;\n'+shader.fragmentShader;shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\ntotalEmissiveRadiance*=arrivalNight*.65;');};litGlass.customProgramCacheKey=()=>'arrival-window-night-v1';
- const groups=new Map<T.Material,T.BufferGeometry[]>();
- const add=(g:T.BufferGeometry,m:T.Material)=>{if(!groups.has(m))groups.set(m,[]);groups.get(m)!.push(g.index?g.toNonIndexed():g);if(g.index)g.dispose();};
+ const groups=new Map<T.Material,{pieces:T.BufferGeometry[];ranges:GroundRange[];count:number;site?:T.Box3}>();
+ let siteBounds:T.Box3;
+ const point=new T.Vector3();
+ const add=(g:T.BufferGeometry,m:T.Material)=>{
+  let group=groups.get(m);if(!group){group={pieces:[],ranges:[],count:0};groups.set(m,group);}
+  group.pieces.push(g);group.count+=g.index!.count;
+  if(group.site!==siteBounds){
+   const {min,max}=siteBounds;
+   group.ranges.push([group.count,min.x,min.y,min.z,max.x,max.y,max.z]);group.site=siteBounds;
+  }else group.ranges[group.ranges.length-1][0]=group.count;
+ };
  const box=(x:number,y:number,z:number,w:number,h:number,d:number,yaw:number,m:T.Material)=>{const g=new T.BoxGeometry(w,h,d);g.rotateY(yaw);g.translate(x,y,z);add(g,m);};
  for(const b of map.buildings){
   if(b.id==='513165063'||POND_SERVICE_IDS.has(b.id)||custom.has(b.id)||CUSTOM_ARCHITECTURE_IDS.has(b.id)||map.dossin?.ids.includes(b.id))continue;
   const facility=map.facilities?.sites.find(s=>s.id===b.id);if(facility?.kind==='shelter')continue;
+  // The window recesses, wall trim and entry canopies extend less than two
+  // metres beyond the footprint. Include the fixed-height doors on low sheds.
+  siteBounds=new T.Box3();
+  for(const [x,z] of b.points)siteBounds.expandByPoint(point.set(x,2,z));
+  siteBounds.max.y=Math.max(5.5,2+b.height);siteBounds.expandByScalar(2);
   const approach=b.points.some(p=>Math.hypot(p[0]-map.spawn.x,p[1]-map.spawn.z)<500);
   const detailed=beachIds.has(b.id)||!!facility||approach,edges=b.points.slice(1).map((q,i)=>{const p=b.points[i],dx=q[0]-p[0],dz=q[1]-p[1],length=Math.hypot(dx,dz),x=(p[0]+q[0])/2,z=(p[1]+q[1])/2;let nx=dz/length,nz=-dx/length;if(inside(x+nx*.1,z+nz*.1,b.points)){nx=-nx;nz=-nz;}return{p,q,x,z,dx,dz,length,nx,nz,yaw:-Math.atan2(dz,dx)};}).filter(e=>e.length>.1);
   const entrance=detailed?edges.filter(e=>e.length>5).sort((a,b)=>{const near=(e:typeof a)=>Math.min(...map.roads.filter(r=>r.foot).flatMap(r=>r.points.slice(1).map((p,i)=>segment(e.x,e.z,r.points[i],p).d)));return near(a)-near(b);})[0]:undefined;
@@ -68,5 +83,9 @@ export function addServiceBuildings(scene:T.Scene,map:ParkMap,night={value:0}){
   }
   const shape=new T.Shape(b.points.map(p=>new T.Vector2(p[0],-p[1]))),top=new T.ShapeGeometry(shape);top.rotateX(-Math.PI/2);top.translate(0,2+b.height+.14,0);add(top,roof);
  }
- for(const [material,gs]of groups){if(!gs.length)continue;const g=mergeGeometries(gs)!;gs.forEach(x=>x.dispose());const mesh=new T.Mesh(g,material);mesh.name='Mapped secondary buildings · '+(material===brick?'masonry':material===roof?'roofs':'entrances and facade detail');mesh.castShadow=true;mesh.receiveShadow=true;scene.add(mesh);}
+ for(const [material,{pieces,ranges}]of groups){
+  const g=mergeGeometries(pieces)!;pieces.forEach(x=>x.dispose());
+  const mesh=new T.Mesh(g,material);mesh.name='Mapped secondary buildings · '+(material===brick?'masonry':material===roof?'roofs':'entrances and facade detail');
+  mesh.castShadow=true;mesh.receiveShadow=true;limitGroundDrawRange(mesh,ranges);scene.add(mesh);
+ }
 }

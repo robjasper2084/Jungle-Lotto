@@ -25,7 +25,7 @@ test('each camera retains all intersecting triangles in one range and restores t
    }
   }
   g.setIndex(ordered);
-  const mesh=new T.Mesh(g,new T.MeshBasicMaterial());mesh.position.set(41,2,-17);mesh.updateMatrixWorld();
+  const mesh=new T.Mesh(g,new T.MeshBasicMaterial());mesh.castShadow=true;mesh.position.set(41,2,-17);mesh.updateMatrixWorld();
   limitGroundDrawRange(mesh,bounds);const rebuilt=Array.from(g.index!.array);
   assert.deepEqual(rebuilt.filter((_,i)=>i%3===0).sort((a,b)=>a-b),indices.filter((_,i)=>i%3===0));
   if(order==='authored')assert.deepEqual(rebuilt,indices);
@@ -42,7 +42,11 @@ test('each camera retains all intersecting triangles in one range and restores t
     box.makeEmpty();for(let n=0;n<3;n++)box.expandByPoint(vertex.fromBufferAttribute(a,indices[i+n]));
     if(frustum.intersectsBox(box))assert(submitted.has(indices[i]),'conservative bounds retain every intersecting triangle');
    }
-   mesh.onAfterRender(...args);assert.deepEqual(g.drawRange,{start:0,count:Infinity});
+   const expected={...g.drawRange};mesh.onAfterRender(...args);assert.deepEqual(g.drawRange,{start:0,count:Infinity});
+   const other=new T.PerspectiveCamera();
+   const shadowArgs=[args[0],scene,other,camera,g,mesh.material,args[5]] as Parameters<typeof mesh.onBeforeShadow>;
+   mesh.onBeforeShadow(...shadowArgs);assert.deepEqual(g.drawRange,expected);
+   mesh.onAfterShadow(...shadowArgs);assert.deepEqual(g.drawRange,{start:0,count:Infinity});
   }
   assert(smallest<indices.length);mesh.material.dispose();g.dispose();
  }

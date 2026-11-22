@@ -38,20 +38,24 @@ export function limitGroundDrawRange(mesh:T.Mesh,bounds?:GroundRange[]){
   start:i?bounds[i-1][0]:0,end,box:new T.Box3(new T.Vector3(x,y,z),new T.Vector3(hx,hy,hz)).expandByScalar(.02)
  }));
  const projection=new T.Matrix4(),frustum=new T.Frustum();
- const before=mesh.onBeforeRender,after=mesh.onAfterRender;
- mesh.onBeforeRender=function(...args){
-  before.apply(this,args);
-  const camera=args[2];
-  projection.multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse).multiply(this.matrixWorld);
+ function select(camera:T.Camera){
+  projection.multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse).multiply(mesh.matrixWorld);
   frustum.setFromProjectionMatrix(projection,camera.coordinateSystem,camera.reversedDepth);
   let first=0,last=ranges.length-1;
   while(first<=last&&!frustum.intersectsBox(ranges[first].box))first++;
   while(last>=first&&!frustum.intersectsBox(ranges[last].box))last--;
   const start=first<=last?ranges[first].start:0;
   g.setDrawRange(start,first<=last?ranges[last].end-start:0);
- };
+ }
+ const before=mesh.onBeforeRender,after=mesh.onAfterRender;
+ mesh.onBeforeRender=function(...args){before.apply(this,args);select(args[2]);};
  mesh.onAfterRender=function(...args){
   g.setDrawRange(0,Infinity);
   after.apply(this,args);
  };
+ if(mesh.castShadow){
+  const beforeShadow=mesh.onBeforeShadow,afterShadow=mesh.onAfterShadow;
+  mesh.onBeforeShadow=function(...args){beforeShadow.apply(this,args);select(args[3]);};
+  mesh.onAfterShadow=function(...args){g.setDrawRange(0,Infinity);afterShadow.apply(this,args);};
+ }
 }
