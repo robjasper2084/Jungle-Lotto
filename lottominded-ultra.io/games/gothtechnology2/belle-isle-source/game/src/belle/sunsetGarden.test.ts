@@ -11,6 +11,11 @@ test('reference spawn stays on a clear motor road facing the point',()=>{const p
 test('scenery geometry and collision remain bounded and keep route shoulders clear',async()=>{
  const scene=new T.Scene(),terrain=new ParkTerrain(map),solids:Solid[]=[];const add=terrain.flightSolids.add.bind(terrain.flightSolids);terrain.flightSolids.add=s=>{solids.push(s);add(s);};const garden=await addSunsetGarden(scene,map,terrain);
  assert(garden.stats.trees>30&&garden.stats.trees<=95);assert(garden.stats.leaves<=95*2400);
+ const canopy= garden.root.getObjectByName('Reference full autumn maple canopies')!;
+ const tiles=canopy.children as T.InstancedMesh[];
+ assert(tiles.length>1);
+ assert.equal(tiles.reduce((total,tile)=>total+tile.count,0),garden.stats.leaves);
+ for(const tile of tiles){assert(tile.frustumCulled&&tile.castShadow&&tile.receiveShadow);assert(tile.boundingSphere!.radius<65);}
  const routes=map.roads.flatMap(r=>r.points.slice(1).map((b,i)=>({a:r.points[i],b,w:r.width})));
  for(const s of solids){assert(terrain.land(s.x,s.z));assert(Math.hypot(s.x-SUNSET_GARDEN.x,s.z-SUNSET_GARDEN.z)<345);const clearance=Math.min(...routes.map(r=>segment(s.x,s.z,r.a,r.b).d-r.w*.5));assert(clearance>s.radius+.15,`${s.kind} overlaps route at ${s.x},${s.z}`);}
  garden.root.traverse(o=>{if(o instanceof T.Mesh){const p=o.geometry.getAttribute('position');for(let i=0;i<p.count;i++)assert(Number.isFinite(p.getX(i))&&Number.isFinite(p.getY(i))&&Number.isFinite(p.getZ(i)));}});

@@ -51,7 +51,12 @@ export const HEIGHT_FOG=`
 `;
 export function atmosphereShader(vertex:string,fragment:string,directionalChunk=''){
  if(!vertex.includes('#include <worldpos_vertex>'))return {vertex,fragment,applied:false};
- const directional=directionalChunk.replace(/getDirectionalLightInfo\(\s*directionalLight,\s*directLight\s*\);/g,'$&\n directLight.color*=belleCloudShade();');
+ // The four permanent road and interior light slots are often black. The
+ // uniform guard skips their attenuation, shadow and BRDF work together.
+ // Three expands this loop once per slot, preserving all active light paths.
+ const localLights=directionalChunk.replace(/(pointLight = pointLights\[ i \];)([\s\S]*?RE_Direct\( directLight,[^;]+;)/,
+  '$1\n if (pointLight.color != vec3(0.0)) {\n$2\n }');
+ const directional=localLights.replace(/getDirectionalLightInfo\(\s*directionalLight,\s*directLight\s*\);/g,'$&\n directLight.color*=belleCloudShade();');
  if(directional!==directionalChunk)fragment=fragment.replace('#include <lights_fragment_begin>',directional);
  return {vertex:WORLD_VERTEX+vertex.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\n'+WORLD_POSITION),
   fragment:WORLD_FRAGMENT+fragment.replace('#include <fog_fragment>',HEIGHT_FOG),applied:true};

@@ -28,11 +28,22 @@ export async function addSunsetGarden(scene:T.Scene,map:ParkMap,terrain:ParkTerr
  }
  const leafShape=new T.Shape();const outline=[[-.04,-.28],[-.09,-.12],[-.29,-.18],[-.20,-.015],[-.37,.08],[-.19,.12],[-.22,.31],[-.08,.23],[0,.43],[.09,.23],[.24,.31],[.19,.12],[.37,.08],[.20,-.015],[.29,-.18],[.09,-.12],[.04,-.28]];
  outline.forEach((p,i)=>i?leafShape.lineTo(p[0],p[1]):leafShape.moveTo(p[0],p[1]));leafShape.closePath();const leafGeo=new T.ShapeGeometry(leafShape);leafGeo.rotateX(-Math.PI/2);const pos=leafGeo.attributes.position;for(let i=0;i<pos.count;i++)pos.setY(i,Math.abs(pos.getX(i))*.13);leafGeo.computeVertexNormals();
- const perTree=2400,leaves=new T.InstancedMesh(leafGeo,leafMat,sites.length*perTree);leaves.name='Reference full autumn maple canopies';leaves.castShadow=true;leaves.receiveShadow=true;root.add(leaves);
+ // Each tile has its own conservative instance bounds. Colour and shadow
+ // cameras can then reject whole groves without uploading or drawing them.
+ const perTree=2400,leaves=new T.Group();leaves.name='Reference full autumn maple canopies';root.add(leaves);
+ const tileKey=(p:{x:number;z:number})=>Math.floor(p.x/64)+','+Math.floor(p.z/64);
+ const tileSizes=new Map<string,number>(),tiles=new Map<string,T.InstancedMesh>();
+ for(const site of sites){const key=tileKey(site);tileSizes.set(key,(tileSizes.get(key)??0)+perTree);}
+ for(const [key,size] of tileSizes){
+  const batch=new T.InstancedMesh(leafGeo,leafMat,size);
+  batch.name='Sunset Point maple leaves '+key;batch.castShadow=true;batch.receiveShadow=true;batch.count=0;
+  tiles.set(key,batch);leaves.add(batch);
+ }
  const tones=[0xeaae25,0x76933b,0xc28019,0x9f9b2f,0xf1b730,0x658441];let leafCount=0;
  const crownMat=standard('Reference shaded inner canopy',0xffffff);const crowns=new T.InstancedMesh(new T.IcosahedronGeometry(1,2),crownMat,sites.length*10);crowns.castShadow=true;crowns.receiveShadow=true;root.add(crowns);let crownCount=0;
  for(const [index,p] of sites.entries()){
   if(index%4===0)await yieldStartupTask();
+  const leafBatch=tiles.get(tileKey(p))!;
   const y=terrain.height(p.x,p.z),base=new T.Vector3(p.x,y,p.z),tip=base.clone().add(new T.Vector3((rand()-.5)*.8,p.h*.85,(rand()-.5)*.8));rod(base,tip,.32,.10);
   terrain.flightSolids.add({x:p.x,z:p.z,bottom:y,top:y+p.h,radius:.35,kind:'tree'});
   const lobes:T.Vector3[]=[];
@@ -41,11 +52,11 @@ export async function addSunsetGarden(scene:T.Scene,map:ParkMap,terrain:ParkTerr
   for(const c of lobes){dummy.position.copy(c);dummy.rotation.set(rand(),rand()*6,rand());dummy.scale.set(p.r*.33,p.r*.29,p.r*.33);dummy.updateMatrix();crowns.setMatrixAt(crownCount,dummy.matrix);crowns.setColorAt(crownCount++,color.setHex(tones[index%tones.length]).multiplyScalar(.50));}
   for(let j=0;j<perTree;j++){
    const c=lobes[j%lobes.length],a=rand()*Math.PI*2,vy=rand()*2-1,s=Math.sqrt(1-vy*vy),r=Math.pow(rand(),.48)*p.r*.65;
-   dummy.position.set(c.x+Math.cos(a)*s*r,c.y+vy*r*.76,c.z+Math.sin(a)*s*r);dummy.rotation.set((rand()-.5)*1.5,rand()*Math.PI*2,(rand()-.5)*1.3);const size=1.0+rand()*1.2;dummy.scale.set(size,size,size);dummy.updateMatrix();leaves.setMatrixAt(leafCount,dummy.matrix);
-   color.setHex(tones[(index+Math.floor(rand()*2.3))%tones.length]).multiplyScalar(.82+rand()*.33);leaves.setColorAt(leafCount++,color);
+   dummy.position.set(c.x+Math.cos(a)*s*r,c.y+vy*r*.76,c.z+Math.sin(a)*s*r);dummy.rotation.set((rand()-.5)*1.5,rand()*Math.PI*2,(rand()-.5)*1.3);const size=1.0+rand()*1.2;dummy.scale.set(size,size,size);dummy.updateMatrix();leafBatch.setMatrixAt(leafBatch.count,dummy.matrix);
+   color.setHex(tones[(index+Math.floor(rand()*2.3))%tones.length]).multiplyScalar(.82+rand()*.33);leafBatch.setColorAt(leafBatch.count++,color);leafCount++;
   }
  }
- leaves.computeBoundingSphere();
+ for(const batch of tiles.values())batch.computeBoundingSphere();
  // Natural rock revetment follows the actual island perimeter.
  const rocks:T.Matrix4[]=[];for(let j=1;j<map.island.length;j++){
   const a=map.island[j-1],b=map.island[j],length=Math.hypot(b[0]-a[0],b[1]-a[1]);

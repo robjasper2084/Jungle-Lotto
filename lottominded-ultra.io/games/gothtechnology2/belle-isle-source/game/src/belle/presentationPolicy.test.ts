@@ -1,6 +1,14 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {presentationBudget,tracedSkyEnabled,defaultTracedSky,fogColumn,reflectionRequired,aircraftFrame,RIDER_CLIPS,sampleRiderClip,articulateEuc,windMask,type EucMotion} from './presentationPolicy.ts';
 import {atmosphereShader,windVertex,HEIGHT_FOG} from './atmosphereShaders.ts';
+import {ShaderChunk} from 'three';
+test('inactive point lights skip the entire unrolled BRDF while live slots keep their shading',()=>{
+ const source=ShaderChunk.lights_fragment_begin;
+ const {fragment}=atmosphereShader('#include <worldpos_vertex>','#include <lights_fragment_begin>',source);
+ const run=fragment.slice(fragment.indexOf('pointLight = pointLights[ i ];'),fragment.indexOf('#pragma unroll_loop_end',fragment.indexOf('pointLight = pointLights[ i ];')));
+ assert.match(run,/if \(pointLight.color != vec3\(0.0\)\) \{[\s\S]*getPointLightInfo[\s\S]*getPointShadow[\s\S]*RE_Direct\([^;]+;\s*\}\s*\}/);
+ assert.equal(fragment.split('RE_Direct( directLight,').length,source.split('RE_Direct( directLight,').length);
+});
 const motion=():EucMotion=>({pitch:.12,drop:.1,shift:0,lateral:0,hipTilt:0,hipYaw:0,chestRoll:0,chestYaw:0,headRoll:0,headYaw:0,neck:0,shoulders:[0,0],hands:[{x:.05,y:.1,z:.1,wrist:0},{x:-.05,y:.1,z:.1,wrist:0}]});
 test('Smooth and XR bound optional rendering',()=>{for(const budget of [presentationBudget('smooth'),presentationBudget('high',true)]){assert.equal(budget.aircraft,false);assert.equal(budget.reflectionSize,32);assert.ok(budget.cloudStrength<=.1);}assert.ok(presentationBudget('high').reflectionSize<=128);});
 test('sea-level fog retains original density',()=>assert.equal(fogColumn(0,0),1));

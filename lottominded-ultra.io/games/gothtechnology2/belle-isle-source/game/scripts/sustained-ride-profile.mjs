@@ -27,7 +27,9 @@ try{
  let lastBackendError;
  for(const candidate of candidates){
   try{
-   browser=await chromium.launch({channel:'chrome',headless:true,args:candidate.args});
+   // macOS provides a WindowServer. Its onscreen compositor sustains normal
+   // refresh even when the headless virtual display throttles a clear canvas.
+   browser=await chromium.launch({channel:'chrome',headless:process.platform!=='darwin',args:candidate.args});
    const probe=await browser.newPage();
    const available=await probe.evaluate(()=>{
     const gl=document.createElement('canvas').getContext('webgl2');
