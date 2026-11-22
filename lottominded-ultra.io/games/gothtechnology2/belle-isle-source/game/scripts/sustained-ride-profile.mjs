@@ -27,13 +27,19 @@ try{
  let page,lastBackendError;
  for(const candidate of candidates){
   try{
-   browser=await chromium.launch({channel:'chrome',headless:true,args:candidate.args});
+   browser=await chromium.launch({channel:'chrome',headless:process.platform!=='darwin',args:candidate.args});
    const probe=await browser.newPage();
-   const available=await probe.evaluate(()=>!!document.createElement('canvas').getContext('webgl2'));
+   const available=await probe.evaluate(()=>{
+    const gl=document.createElement('canvas').getContext('webgl2');
+    if(!gl)return null;
+    const ext=gl.getExtension('WEBGL_debug_renderer_info');
+    return String(gl.getParameter(ext?.UNMASKED_RENDERER_WEBGL??gl.RENDERER));
+   });
    await probe.close();
    if(!available)throw Error('WebGL2 unavailable on '+candidate.name);
-   report.renderBackend=candidate.name;
+   report.renderBackend=candidate.name;report.probeRenderer=available;
    page=await browser.newPage({viewport,deviceScaleFactor:1,isMobile:device==='phone',hasTouch:device==='phone',reducedMotion:'reduce'});
+   await page.bringToFront();
    break;
   }catch(error){
    lastBackendError=String(error);await browser?.close().catch(()=>{});browser=undefined;

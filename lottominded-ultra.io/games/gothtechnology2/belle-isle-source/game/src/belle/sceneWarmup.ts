@@ -2,7 +2,7 @@ import {Group,type Camera,type DirectionalLight,type Object3D,type Scene,type We
 
 import {warmObjectTextures,yieldStartupTask} from './startupWork.ts';
 
-type Compiler=Pick<WebGLRenderer,'compileAsync'> & Partial<Pick<WebGLRenderer,'initTexture'|'shadowMap'>>;
+type Compiler=Pick<WebGLRenderer,'compileAsync'> & Partial<Pick<WebGLRenderer,'initTexture'|'shadowMap'|'getContext'>>;
 type Pending={promise:Promise<void>;signal?:AbortSignal;cancel:AbortController};
 /** compileAsync normally visits even invisible geometry. Supply Smooth's active
  * drawables while the real target scene continues to provide all the lighting.
@@ -51,7 +51,8 @@ export class SceneWarmup {
    if(cancel.signal.aborted)throw cancelled(cancel.signal);
    if(this.completed.has(key))return;
    this.busy(true);
-   const timeout=setTimeout(()=>cancel.abort(new Error('Graphics preparation took too long. Please try starting again.')),this.timeoutMs);
+   let stage='painting the preparation screen';
+   const timeout=setTimeout(()=>cancel.abort(new Error('Graphics preparation took too long while '+stage+'. Please try starting again.')),this.timeoutMs);
    const visible=model?.visible;
    // Rider-only preparation must not recompile every island material. A model
    // with lights changes the scene light topology and still needs the full scene.
@@ -65,6 +66,7 @@ export class SceneWarmup {
     // Upload material textures under the loading lock, not in the first ridden frame.
     // A Guide trip can immediately expose a previously hidden island sector.
     // Upload its textures here while still compiling only the active shader set.
+    stage='uploading scene textures';
     await readyOrCancelled(warmObjectTextures(this.renderer,model??this.scene,cancel.signal),cancel.signal);
     // Smooth has no shadow-map pass. A later prepare in a mapped mode
     // gets a distinct cache entry and still warms both lighting variants.
@@ -75,9 +77,13 @@ export class SceneWarmup {
      for(const [i,root] of compileRoots.entries()){
       if(i>0)await readyOrCancelled(yieldStartupTask(),cancel.signal);
       if(cancel.signal.aborted)throw cancelled(cancel.signal);
+      stage='compiling shader batch '+(i+1)+'/'+compileRoots.length+(enabled?' with shadows':' without shadows');
       let ready:Promise<unknown>;
       try{if(model)model.visible=true;ready=this.renderer.compileAsync(root,this.camera,this.scene);}
       finally{if(model)model.visible=visible!;}
+      // No frames are drawn under the preparation lock. Submit queued GL work
+      // before waiting for asynchronous shader completion on the driver.
+      this.renderer.getContext?.().flush();
       await readyOrCancelled(ready,cancel.signal);
      }
      if(!shadows.length)break;

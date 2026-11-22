@@ -120,3 +120,14 @@ test('rider-only warmup compiles the new actors against existing lighting withou
  for(const [root,view,lighting] of calls){assert.equal(root,riders);assert.equal(view,camera);assert.equal(lighting,scene);}
  assert.equal(riders.visible,false);
 });
+
+test('preparation flushes pending shaders before waiting on driver completion',async()=>{
+ const {scene,camera}=fixture();
+ let complete=()=>{},submissions=0;
+ const renderer={
+  compileAsync:()=>new Promise<Scene>(resolve=>{complete=()=>resolve(scene);}),
+  getContext:()=>({flush(){submissions++;complete();}} as WebGL2RenderingContext),
+ };
+ await new SceneWarmup(renderer,scene,camera,()=>{},async()=>{},1000).prepare();
+ assert.equal(submissions,2);
+});
