@@ -25,6 +25,8 @@ test('empty distance-selected pools warm the colored variant before a ride in ei
   const {scene,camera,bike}=fixture();
   const pool=new InstancedMesh(new BoxGeometry(),new MeshBasicMaterial(),8);
   pool.count=0;pool.visible=false;scene.add(pool);
+  const limestone=new InstancedMesh(new BoxGeometry(),new MeshBasicMaterial(),4);
+  limestone.count=0;limestone.visible=false;scene.add(limestone);
   const hiddenRide=new Mesh();bike.add(hiddenRide);
   prepareColoredDetailPool(pool);
   const draws:Object3D[]=[];
@@ -33,7 +35,8 @@ test('empty distance-selected pools warm the colored variant before a ride in ei
   }};
   await new SceneWarmup(renderer as unknown as ConstructorParameters<typeof SceneWarmup>[0],scene,camera,()=>{},async()=>{}).prepare();
   assert.equal(pool.instanceColor?.count,8);assert.equal(pool.count,0);assert.equal(pool.visible,false);
-  assert.deepEqual(draws,mapped?[pool,pool]:[pool]);
+  assert.equal(limestone.instanceColor,null);
+  assert.deepEqual(draws,mapped?[pool,limestone,pool,limestone]:[pool,limestone]);
  }
 });
 

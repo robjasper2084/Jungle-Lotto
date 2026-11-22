@@ -4,7 +4,6 @@ import {warmObjectTextures,yieldStartupTask} from './startupWork.ts';
 
 type Compiler=Pick<WebGLRenderer,'compileAsync'> & Partial<Pick<WebGLRenderer,'initTexture'|'shadowMap'>>;
 type Pending={promise:Promise<void>;signal?:AbortSignal;cancel:AbortController};
-const coloredDetailPools=new WeakSet<Object3D>();
 const white=new Color(0xffffff);
 
 // Three selects the shader variant from the presence of instanceColor. A pool
@@ -13,7 +12,6 @@ export function prepareColoredDetailPool(mesh:InstancedMesh){
  if(!mesh.instanceMatrix.count)return;
  mesh.setColorAt(0,white);
  mesh.instanceColor!.setUsage(DynamicDrawUsage);
- coloredDetailPools.add(mesh);
 }
 
 /** Compile visible drawables and distance-selected pools against the live lights.
@@ -24,7 +22,10 @@ class IslandWarmupRoot extends Group {
  static batches(scene:Scene,camera:Camera){
   const drawables:Object3D[]=[];
   function collect(object:Object3D){
-   if(!object.visible&&!coloredDetailPools.has(object))return;
+   if(!object.visible){
+    const pool=object as InstancedMesh;
+    if(!pool.isInstancedMesh||pool.count!==0||pool.instanceMatrix.count===0)return;
+   }
    if('material' in object && object.layers.test(camera.layers))drawables.push(object);
    for(const child of object.children)collect(child);
   }
