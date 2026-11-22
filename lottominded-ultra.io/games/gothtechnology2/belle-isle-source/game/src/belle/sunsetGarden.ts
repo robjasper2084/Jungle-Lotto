@@ -3,6 +3,7 @@ import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import type {ParkMap,ParkTerrain} from './terrain.ts';
 import {yieldStartupTask} from './startupWork.ts';
 import {roadIndex} from './streetPlan.ts';
+import {mapleDetail,useDistantMaple} from './distantMaple.ts';
 import {inSunsetGarden,SUNSET_GARDEN} from './sunsetReferencePolicy.ts';
 /** Original bounded scenery, kept clear of mapped roads, paths and buildings. */
 export async function addSunsetGarden(scene:T.Scene,map:ParkMap,terrain:ParkTerrain,options?:{name:string;x:number;z:number;radius:number;trees:number;seed:number;shore:boolean},occupied=roadIndex(map.roads,true)){
@@ -34,8 +35,10 @@ export async function addSunsetGarden(scene:T.Scene,map:ParkMap,terrain:ParkTerr
  const tileKey=(p:{x:number;z:number})=>Math.floor(p.x/64)+','+Math.floor(p.z/64);
  const tileSizes=new Map<string,number>(),tiles=new Map<string,T.InstancedMesh>();
  for(const site of sites){const key=tileKey(site);tileSizes.set(key,(tileSizes.get(key)??0)+perTree);}
+ const canopyDetail=tileSizes.size?mapleDetail(leafGeo):null;
  for(const [key,size] of tileSizes){
-  const batch=new T.InstancedMesh(leafGeo,leafMat,size);
+  const batch=new T.InstancedMesh(canopyDetail!.geometry,leafMat,size);
+  useDistantMaple(batch,canopyDetail!);
   batch.name='Sunset Point maple leaves '+key;batch.castShadow=true;batch.receiveShadow=true;batch.count=0;
   tiles.set(key,batch);leaves.add(batch);
  }
