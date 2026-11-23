@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import {WebGLAttributes} from 'three/src/renderers/webgl/WebGLAttributes.js';
-import {FarTreeVisibility,TreeInstanceVisibility} from './farTreeVisibility.ts';
+import {FarTreeVisibility,TreeInstanceVisibility,TreeShadowVisibility} from './farTreeVisibility.ts';
 import {referenceTree} from './referenceTrees.ts';
 
 function view(x=0,y=4,z=0,targetZ=-100){
@@ -54,6 +54,32 @@ test('near trees keep every shadow caster and pickable instance when the beauty 
  const away=view(0,4,0,100);
  assert.equal(near.render(away),1);
  assert.deepEqual(ids(meshes[0]),[0]);
+});
+
+test('near tree shadow updates keep both view-visible trees and offscreen casters without submitting either outside set',()=>{
+ const {meshes}=pair(3);
+ meshes.forEach(mesh=>mesh.castShadow=true);
+ const near=new TreeInstanceVisibility(meshes,undefined,'near');
+ fill(meshes,[translation(0,40),translation(0,-40),translation(300,-40)]);
+ near.capture();
+ const scene=new T.Scene(),directional=new T.DirectionalLight(0xffffff,1);
+ directional.castShadow=true;
+ directional.position.set(0,80,40);directional.target.position.set(0,0,40);
+ directional.shadow.camera.far=120;directional.shadow.camera.updateProjectionMatrix();
+ scene.add(directional,directional.target);
+ scene.updateMatrixWorld(true);
+ const viewCamera=view(),shadowSelector=new TreeShadowVisibility();
+ const renderer={shadowMap:{enabled:true,autoUpdate:false,needsUpdate:true,type:T.PCFShadowMap},xr:{isPresenting:false},capabilities:{reversedDepthBuffer:false}};
+ const realCamera=directional.shadow.camera.matrixWorld.clone();
+ const shadowView=shadowSelector.forRender(scene,renderer as unknown as T.WebGLRenderer,viewCamera);
+ assert.equal(near.render(viewCamera,shadowView),2);
+ assert.deepEqual(ids(meshes[0]),[0,1]);
+ assert(directional.shadow.camera.matrixWorld.equals(realCamera),'visibility leaves the renderer shadow camera untouched');
+ const extra=new T.PointLight();extra.castShadow=true;scene.add(extra);
+ assert.equal(shadowSelector.forRender(scene,renderer as unknown as T.WebGLRenderer,viewCamera),true);
+ assert.equal(near.render(viewCamera,true),3);
+ renderer.shadowMap.needsUpdate=false;
+ assert.equal(shadowSelector.forRender(scene,renderer as unknown as T.WebGLRenderer,viewCamera),false);
 });
 const ids=(mesh:T.InstancedMesh)=>Array.from({length:mesh.count},(_,i)=>mesh.geometry.getAttribute('sourceId').getX(i));
 const streams=(mesh:T.InstancedMesh)=>[mesh.instanceMatrix,mesh.instanceColor!,...['lodWeight','canopyDensity','sourceId'].map(name=>mesh.geometry.getAttribute(name) as T.BufferAttribute)];

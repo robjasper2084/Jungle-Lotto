@@ -12,14 +12,16 @@ type LandmarkProgram = {
 export async function warmLandmarkPrograms(renderer: WebGLRenderer, root: Object3D, camera: Camera, scene: Scene) {
  // The live scene composes atmosphere and terrain shaders in microtasks on
  // childadded. Use that same path, hidden, before capturing any program keys.
- const visible = root.visible;
- root.visible = false;
- try {
-  scene.add(root);
-  await Promise.resolve();
- } finally {
-  root.removeFromParent();
-  root.visible = visible;
+ if (!root.parent) {
+  const visible = root.visible;
+  root.visible = false;
+  try {
+   scene.add(root);
+   await Promise.resolve();
+  } finally {
+   root.removeFromParent();
+   root.visible = visible;
+  }
  }
  const gl = renderer.getContext();
  const parallel = gl.getExtension('KHR_parallel_shader_compile');

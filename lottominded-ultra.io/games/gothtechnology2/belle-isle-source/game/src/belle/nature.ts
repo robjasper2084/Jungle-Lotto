@@ -4,7 +4,7 @@ import {ReferenceLeafDisplay,applyLeafOutline} from './referenceLeafDisplay.ts';
 import {canopyTint} from './sunsetCanopy.ts';
 import {canopyProfile} from './habitatPolicy.ts';
 import {NatureViewSelection} from './natureViewSelection.ts';
-import {TreeInstanceVisibility} from './farTreeVisibility.ts';
+import {TreeInstanceVisibility,TreeShadowVisibility} from './farTreeVisibility.ts';
 import {NatureSpatialIndex} from './natureSpatialIndex.ts';
 import {NaturePlacementMatrices} from './naturePlacementMatrices.ts';
 import type {NatureRenderProbe} from './renderDiagnostics.ts';
@@ -158,6 +158,7 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
   view.prepare(x,z);
  }
  const view=new NatureViewSelection(select),eye=new T.Vector3(),before=scene.onBeforeRender;
+ const shadowVisibility=new TreeShadowVisibility();
  scene.onBeforeRender=(...args)=>{before.apply(scene,args);
   if(singleSample){
    const renderer=args[0],useCards=!renderer.xr.isPresenting&&!(renderer.getRenderTarget()?.samples);
@@ -167,9 +168,9 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
   args[2].getWorldPosition(eye);view.render(eye.x,eye.z);
   if(renderProbe?.active){renderProbe.pass();renderProbe.elapsed('selectionCpuMs',selectionStart);}
   const cullStart=renderProbe?.active?renderProbe.now():0;
-  const shadows=args[0].shadowMap,allCasters=shadows.enabled&&(shadows.autoUpdate||shadows.needsUpdate);
+  const shadowView=shadowVisibility.forRender(scene,args[0],args[2]);
   for(const pool of pools){
-   pool.nearVisibility?.render(args[2],allCasters);
+   pool.nearVisibility?.render(args[2],shadowView);
    pool.farVisibility?.render(args[2]);
   }
   if(renderProbe?.active)renderProbe.elapsed('cullCpuMs',cullStart);
