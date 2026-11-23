@@ -6,7 +6,7 @@ import {prepareVegetationLod,vegetationScale} from './vegetationLod.ts';
 import {prepareCanopyCoverage} from './canopyCoverage.ts';
 import {riverBandVisibility,RIVER_BROAD_NORMALS} from './riverSurfaceDetail.ts';
 const shader=(basic=false)=>({vertexShader:T.ShaderLib[basic?'basic':'standard'].vertexShader,fragmentShader:T.ShaderLib[basic?'basic':'standard'].fragmentShader,uniforms:{}} as Parameters<T.Material['onBeforeCompile']>[0]);
-const read=(name:string)=>readFileSync(new URL('./'+name,import.meta.url),'utf8');
+const read=(name:string)=>readFileSync(new URL('./'+name,import.meta.url),'utf8').replace(/\r\n/g,'\n');
 test('intermediate tree coverage retains full authored silhouette rather than two shrinking trees',()=>{
  for(const v of [.0001,.1,.25,.5,.75,.99,1])assert.equal(vegetationScale(v),1);
  for(const v of [0,-1,NaN,Infinity,-Infinity])assert.equal(vegetationScale(v),0);
@@ -54,7 +54,15 @@ test('coverage shading adds no texture samples or lighting passes',()=>{
  assert.equal((s.fragmentShader.match(/texture2D\(/g)||[]).length,before);
  assert(!s.fragmentShader.includes('sampler2D belle'));
 });
-test('full 3D seasonal instances retain authored scale through complementary LOD coverage',()=>{const s=read('nature.ts');assert(s.includes('far.setMatrixAt(i,matrix(p))'));assert(s.includes('mesh.setMatrixAt(i,matrix(p))'));assert(s.includes('1-treeBlend(distance,cutoff)'));assert(s.includes('slice(0,budget.trees)')&&s.includes('slice(0,budget.ground)'));assert(!s.includes('matrix(p,blend)'));});
+test('seasonal instances retain authored scale and solid crowns draw in one pool at a time',()=>{
+ const s=read('nature.ts');
+ assert(s.includes('far.setMatrixAt(i,matrix(p,false,far.userData.seasonalLeaf))'));
+ assert(s.includes('mesh.setMatrixAt(i,matrix(p))'));
+ assert(s.includes('!selected.has(p)||(!REFERENCE_STYLE&&treeBlend('));
+ assert(s.includes('1-treeBlend(distance,cutoff)'));
+ assert(s.includes('slice(0,budget.trees)')&&s.includes('slice(0,budget.ground)'));
+ assert(!s.includes('matrix(p,blend)'));
+});
 test('broad river waves retain resolvable slopes but vanish before subpixel aliasing',()=>{
  assert.equal(riverBandVisibility(0),1);assert(riverBandVisibility(.5)>.9);
  assert(riverBandVisibility(2)>.35);assert(riverBandVisibility(6)<.0002);
