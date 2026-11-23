@@ -64,14 +64,15 @@ test('real reflection controller primes once, protects startup and rejects unsta
   getViewport:(v:T.Vector4)=>v.set(0,0,640,480),getScissor:(v:T.Vector4)=>v.set(1,2,3,4),getScissorTest:()=>true,getClearColor:(c:T.Color)=>c.set('#123456'),getClearAlpha:()=>.5,
   setRenderTarget:(v:T.WebGLRenderTarget|null)=>{actual=v;if(v===target)restores++;},setViewport:()=>{},setScissor:()=>{},setScissorTest:()=>{},setClearColor:()=>{}} as unknown as T.WebGLRenderer;
  const sky=new T.ShaderMaterial({vertexShader:'void main(){}',fragmentShader:'void main(){}'}),r=new SkyReflections(scene,renderer,sky);
- const internals=r as unknown as {generator:{fromScene:(source:T.Scene)=>T.WebGLRenderTarget;dispose:()=>void}};
- internals.generator.fromScene=source=>{assert.notEqual(source,scene);assert.equal(source.children.length,1);captures++;actual=null;const probe=new T.WebGLRenderTarget();probe.addEventListener('dispose',()=>disposed++);return probe;};internals.generator.dispose=()=>{};
+ const internals=r as unknown as {generator:{fromScene:(source:T.Scene,sigma:number,near:number,far:number,options:{size:number})=>T.WebGLRenderTarget;dispose:()=>void}};
+ const sizes:number[]=[];
+ internals.generator.fromScene=(source,_sigma,_near,_far,{size})=>{assert.notEqual(source,scene);assert.equal(source.children.length,1);sizes.push(size);captures++;actual=null;const probe=new T.WebGLRenderTarget(3*size,4*size);probe.texture.mapping=T.CubeUVReflectionMapping;probe.addEventListener('dispose',()=>disposed++);return probe;};internals.generator.dispose=()=>{};
  try{
   r.prepare(0,12,.6,'automatic');assert.equal(captures,1);assert.equal(restores,1);assert.notEqual(scene.environment,fallback);
   r.prepare(0,12,.6,'automatic');assert.equal(captures,1,'repeated preparation reuses its valid probe');
   for(let i=0;i<60;i++)r.observe(16,true);
   now=29999;r.update(90,18,.9,'automatic',true);assert.equal(captures,1,'protection cannot expire a millisecond early');
-  now=30000;r.update(90,18,.9,'automatic',true);assert.equal(captures,2);assert.equal(disposed,1);assert.equal(restores,2);
+  now=30000;r.update(180,18,.9,'smooth',true);assert.deepEqual(sizes,[64,64],'Smooth refresh reuses the prepared material layout');assert.equal(captures,2);assert.equal(disposed,1);assert.equal(restores,2);
   r.observe(250,true);now=70000;r.update(180,20,.3,'automatic',true);assert.equal(captures,2,'slow frame breaks eligibility');
   for(let i=0;i<30;i++)r.observe(16,true);
   r.update(180,20,.3,'automatic',false);assert.equal(captures,2,'paused session cannot refresh');

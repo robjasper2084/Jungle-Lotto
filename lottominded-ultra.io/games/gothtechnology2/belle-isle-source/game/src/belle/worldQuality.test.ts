@@ -77,3 +77,18 @@ test('software High retains scene detail with a bounded framebuffer; hardware Hi
  hardware.setQuality('high');hardware.setQuality('automatic');
  assert.deepEqual(nativePixels,[1.5,1.25]);
 });
+
+test('adaptive shadow passes stop and resume with the prepared light layout',()=>{
+ const states:{draw:boolean;mapped:boolean}[]=[];
+ const quality=new WorldQuality((q,mapped)=>states.push({draw:dynamicShadowsEnabled(q),mapped}),()=>{},()=>1);
+ quality.setQuality('automatic');
+ quality.setBudget(.7);
+ quality.setBudget(.65);
+ quality.setBudget(.9);
+ quality.setBudget(.7);
+ quality.setQuality('smooth');
+ assert.deepEqual(states,[
+  {draw:true,mapped:true},{draw:false,mapped:true},{draw:true,mapped:true},
+  {draw:false,mapped:true},{draw:false,mapped:false},
+ ]);
+});
