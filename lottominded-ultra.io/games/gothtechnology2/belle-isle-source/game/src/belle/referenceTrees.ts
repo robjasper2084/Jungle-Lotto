@@ -35,7 +35,7 @@ export function referenceCanopyTexture(){
 }
 
 /** Shared, deterministic silhouettes; native placement, seasons and distance pools remain in charge. */
-export function referenceTree(id:string,low:boolean,height:number,solidCanopy?:'full'|'compact'){
+export function referenceTree(id:string,low:boolean,height:number,solidCanopy?:'full'|'compact',distant=false){
  let seed=Array.from(id).reduce((n,c)=>Math.imul(n,31)+c.charCodeAt(0),81);
  const random=()=>{seed=Math.imul(seed,1664525)+1013904223|0;return(seed>>>0)/4294967296;};
  const trunks:T.BufferGeometry[]=[],leaves:T.BufferGeometry[]=[],up=new T.Vector3(0,1,0),matrix=new T.Matrix4(),q=new T.Quaternion(),color=new T.Color();
@@ -48,8 +48,10 @@ export function referenceTree(id:string,low:boolean,height:number,solidCanopy?:'
  if(solidCanopy){
   const crowns:T.BufferGeometry[]=[];
   const phases=Array.from({length:3},()=>random()*Math.PI*2);
+  const longitude=distant ? 6 : solidCanopy==='compact' ? 7 : 8;
+  const latitude=distant ? 4 : solidCanopy==='compact' ? 5 : 6;
   const lobe=(center:T.Vector3,width:number,depth:number)=>{
-   const geometry=solidCanopy==='compact'?new T.SphereGeometry(1,7,5):new T.SphereGeometry(1,8,6);
+   const geometry=new T.SphereGeometry(1,longitude,latitude);
    const position=geometry.getAttribute('position');
    const uv=geometry.getAttribute('uv');
    const colors=new Float32Array(position.count*3);

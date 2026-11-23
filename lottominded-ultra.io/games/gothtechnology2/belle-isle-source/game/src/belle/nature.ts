@@ -44,13 +44,19 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
   ?[tree,{...tree,key:tree.key+'__grove',compact:true}]:[tree]):baseTrees;
  if(REFERENCE_STYLE)for(const {entry,key,compact} of treeSets){
   await yieldStartupTask();
-  const tree=referenceTree(entry.id,true,(entry.cardCenter?.[1]??8)*2,compact?'compact':'full');
+  const height=(entry.cardCenter?.[1]??8)*2,shape=compact?'compact':'full';
+  const tree=referenceTree(entry.id,true,height,shape);
+  const distant=referenceTree(entry.id,true,height,shape,true);
   tree.foliage.map=canopyTexture;
   for(const part of ['trunk','leaves'] as const){
    const source=new T.Mesh(tree[part],part==='trunk'?tree.bark:tree.foliage);
    source.name=key+'__'+part;
    treeSource.add(source);
   }
+  const distantSource=new T.Mesh(distant.leaves,tree.foliage);
+  distantSource.name=key+'__leaves__lod';
+  treeSource.add(distantSource);
+  distant.trunk.dispose();distant.bark.dispose();distant.foliage.dispose();
  }
  treeSource.updateMatrixWorld(true);
  const month={value:Math.min(12,Math.max(1,Number(localStorage.getItem('belle-season-month'))||7))},seasons:ReturnType<typeof seasonalMaterial>[]=[];
@@ -89,7 +95,8 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
   const rootOffset=trunk?trunkRootHeight(trunk.geometry.attributes.position.array,trunk.matrixWorld.elements[13]):0;
   const meshes:T.InstancedMesh[]=[],far:T.InstancedMesh[]=[];
   for(const low of [false,true])for(const part of ['trunk','leaves']){
-   const source=treeSource.getObjectByName(key+'__'+part+(low&&!REFERENCE_STYLE?'__lod':'')) as T.Mesh;
+   const useLod=low&&(!REFERENCE_STYLE||part==='leaves');
+   const source=treeSource.getObjectByName(key+'__'+part+(useLod?'__lod':'')) as T.Mesh;
    if(!source)throw Error('Missing seasonal tree '+entry.id+part);
    const mesh=instance(source,low?plants.length:natureBudget.high.trees,(low?'Distant ':'Nearby ')+key+' '+part,!low,rootOffset);
    if(REFERENCE_STYLE){
@@ -155,8 +162,8 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
    let farSourcePlants:Plant[]|undefined;
    if(pool.far){
     const range=diagnostic?PERF_PROBE_REDUCTIONS.farRange:cardsActive?145:quality==='smooth'?850:1300;
-    // Both pools draw the same solid tree. Keep one instance when it moves
-    // between shadowed and distant pools, with no depth or coverage overlap.
+    // Both pools use the same crown lobes, with fewer facets at a distance.
+    // Keep one instance at a time, with no depth or coverage overlap.
     const visible=pool.plants.filter(p=>d(p)<range**2&&(!selected.has(p)||(!REFERENCE_STYLE&&treeBlend(Math.sqrt(d(p)),cutoff)<1)));
     farSourcePlants=visible;
     for(const far of pool.far){

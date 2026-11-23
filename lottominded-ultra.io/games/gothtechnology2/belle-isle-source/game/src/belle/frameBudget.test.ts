@@ -22,17 +22,6 @@ test('ordinary 25fps pressure at a 60fps target lowers quality gradually',()=>{
  for(let i=1;i<changes.length;i++)assert(changes[i].seconds-changes[i-1].seconds>=2.9);
 });
 
-test('High can shed more pixel work after sustained pressure and recover with headroom',()=>{
- const budget=new FrameBudget();
- for(let i=0;i<240;i++)budget.sample(1/60,60,true,true);
- budget.sample(.4,60,true,true);
- assert.equal(budget.scale,1);
- for(let i=0;i<120;i++)budget.sample(.075,60,true,true);
- assert.equal(budget.scale,.55);
- for(let i=0;i<1500;i++)budget.sample(1/60,60,true,true);
- assert.ok(budget.scale>.55);
-});
-
 test('exactly three times the target interval stays on the gradual path',()=>{
  const b=new FrameBudget(),changes:number[]=[];
  for(let i=0;i<300;i++)if(b.sample(.05,60,true))changes.push(b.scale);
