@@ -1,0 +1,279 @@
+name: Belle chooser paired full-scene comparison
+
+on:
+  push:
+    branches: [upgrade-redesign-ride-chooser-compare-20261123]
+    paths: ['.github/workflows/belle-chooser-paired.yml']
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: belle-chooser-paired-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  BASELINE_SHA: 3f6b95f22e257df41ae6369b5a756bf697716d6a
+  CANDIDATE_SHA: 49b4be27b0c0c3432494767691f29d4078572904
+  PAGES_RUN_ID: '45176901442'
+  GAME: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+  MEASUREMENT_SHA: ${{ github.sha }}
+
+jobs:
+  build:
+    name: Build pinned ${{ matrix.label }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: baseline
+            sha: 3f6b95f22e257df41ae6369b5a756bf697716d6a
+          - label: candidate
+            sha: 49b4be27b0c0c3432494767691f29d4078572904
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Check, test, and build the exact source
+        working-directory: ${{ env.GAME }}
+        env:
+          EXPECTED_SHA: ${{ matrix.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          npm ci
+          npm run check
+          npm test
+          node --check scripts/sustained-ride-profile.mjs
+          npm run build
+      - name: Record source and complete build hashes
+        working-directory: ${{ env.GAME }}
+        env:
+          EXPECTED_SHA: ${{ matrix.sha }}
+          BUILD_LABEL: ${{ matrix.label }}
+        run: |
+          node --input-type=module <<'NODE'
+          import {createHash} from 'node:crypto';
+          import {execFileSync} from 'node:child_process';
+          import {readFile,readdir,writeFile} from 'node:fs/promises';
+          import {join} from 'node:path';
+          const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+          const git=(...args)=>execFileSync('git',args,{encoding:'utf8'}).trim();
+          const commit=git('rev-parse','HEAD');
+          if(commit!==process.env.EXPECTED_SHA)throw Error('Unexpected source checkout');
+          const sources={};
+          for(const path of ['scripts/sustained-ride-profile.mjs','scripts/coop-static-server.mjs','package-lock.json','../../package-lock.json','src/belle/ridePreview.ts','src/belle/vehicles/models.ts','src/belle/startup.ts','src/belle/rideSetup.ts','src/belle/rideSetup.css'])sources[path]=hash(await readFile(path));
+          const files=[];
+          async function visit(dir,prefix=''){
+            for(const entry of await readdir(dir,{withFileTypes:true})){
+              const relative=prefix+entry.name,path=join(dir,entry.name);
+              if(entry.isDirectory())await visit(path,relative+'/');
+              else if(entry.isFile()){const bytes=await readFile(path);files.push({path:relative,bytes:bytes.length,sha256:hash(bytes)});}
+              else throw Error('Unexpected non-file in build: '+relative);
+            }
+          }
+          await visit('dist');files.sort((a,b)=>a.path.localeCompare(b.path));
+          if(!files.some(file=>file.path==='index.html'))throw Error('Built game is missing');
+          await writeFile('paired-build.json',JSON.stringify({version:1,label:process.env.BUILD_LABEL,repository:'robjasper2084/Jungle-Lotto',commit,tree:git('rev-parse','HEAD^{tree}'),measurementCommit:process.env.MEASUREMENT_SHA,node:process.version,builtAt:new Date().toISOString(),buildMode:'Existing standalone sustained-profile build; full scene; no Pages asset rewriting',sources,files},null,2)+'\n');
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: belle-chooser-pinned-${{ matrix.label }}-${{ matrix.sha }}
+          path: |
+            ${{ env.GAME }}/dist/
+            ${{ env.GAME }}/paired-build.json
+          if-no-files-found: error
+          retention-days: 1
+
+  compare:
+    name: Same-runner full scene (${{ matrix.device }})
+    needs: build
+    runs-on: macos-15
+    # Two independent 28-minute script limits, plus setup and public verification.
+    timeout-minutes: 80
+    strategy:
+      fail-fast: false
+      matrix:
+        device: [desktop, phone]
+    env:
+      BELLE_PROFILE_DEVICE: ${{ matrix.device }}
+      BELLE_PROFILE_MODE: full
+      BELLE_PROFILE_SECONDS: '90'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 3f6b95f22e257df41ae6369b5a756bf697716d6a
+          path: baseline
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /scripts/belle-production-jobs.mjs
+            /scripts/belle-release-pages.mjs
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/startupAssets.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/release-health-model.mjs
+      - uses: actions/checkout@v4
+        with:
+          ref: 49b4be27b0c0c3432494767691f29d4078572904
+          path: candidate
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@v4
+        with:
+          name: belle-chooser-pinned-baseline-3f6b95f22e257df41ae6369b5a756bf697716d6a
+          path: baseline/${{ env.GAME }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: belle-chooser-pinned-candidate-49b4be27b0c0c3432494767691f29d4078572904
+          path: candidate/${{ env.GAME }}
+      - name: Verify immutable inputs and install one Chrome runtime
+        id: prepare
+        run: |
+          mkdir -p evidence/baseline evidence/candidate
+          test "$(git -C baseline rev-parse HEAD)" = "$BASELINE_SHA"
+          test "$(git -C candidate rev-parse HEAD)" = "$CANDIDATE_SHA"
+          cmp "baseline/$GAME/scripts/sustained-ride-profile.mjs" "candidate/$GAME/scripts/sustained-ride-profile.mjs"
+          cmp "baseline/$GAME/scripts/coop-static-server.mjs" "candidate/$GAME/scripts/coop-static-server.mjs"
+          cmp baseline/lottominded-ultra.io/games/gothtechnology2/package-lock.json candidate/lottominded-ultra.io/games/gothtechnology2/package-lock.json
+          node --input-type=module <<'NODE'
+          import {createHash} from 'node:crypto';
+          import {readFile,writeFile} from 'node:fs/promises';
+          import {resolve,sep} from 'node:path';
+          const hash=bytes=>createHash('sha256').update(bytes).digest('hex'),builds={};
+          for(const label of ['baseline','candidate']){
+            const game=resolve(label,process.env.GAME),root=resolve(game,'dist');
+            const build=JSON.parse(await readFile(resolve(game,'paired-build.json'),'utf8'));
+            if(build.commit!==process.env[label.toUpperCase()+'_SHA']||build.label!==label)throw Error('Mismatched build '+label);
+            for(const file of build.files){
+              const path=resolve(root,file.path);if(!path.startsWith(root+sep))throw Error('Invalid artifact path');
+              const bytes=await readFile(path);if(bytes.length!==file.bytes||hash(bytes)!==file.sha256)throw Error('Artifact hash mismatch: '+label+'/'+file.path);
+            }
+            for(const path of ['scripts/sustained-ride-profile.mjs','scripts/coop-static-server.mjs','../../package-lock.json'])if(hash(await readFile(resolve(game,path)))!==build.sources[path])throw Error('Source/runtime hash mismatch: '+label+'/'+path);
+            builds[label]=build;
+          }
+          await writeFile('evidence/inputs.json',JSON.stringify({version:1,measurementCommit:process.env.MEASUREMENT_SHA,baselineCommit:process.env.BASELINE_SHA,candidateCommit:process.env.CANDIDATE_SHA,publicOrigin:'https://robjasper2084.github.io/Jungle-Lotto/',pagesRunId:process.env.PAGES_RUN_ID,device:process.env.BELLE_PROFILE_DEVICE,mode:'full',requestedSeconds:90,order:['baseline','candidate'],node:process.version,runner:{os:process.platform,architecture:process.arch},builds},null,2)+'\n');
+          NODE
+          npm ci --prefix baseline/lottominded-ultra.io/games/gothtechnology2
+          npm ci --prefix candidate/lottominded-ultra.io/games/gothtechnology2
+          cd baseline/lottominded-ultra.io/games/gothtechnology2
+          npx playwright install chrome
+      - name: Prove the baseline completed production deployment
+        id: production
+        working-directory: baseline
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          status=0
+          node scripts/belle-production-jobs.mjs "$BASELINE_SHA" "$PAGES_RUN_ID" || status=$?
+          cp belle-production-jobs.json ../evidence/production-jobs.json
+          exit "$status"
+      - name: Verify current public baseline bytes before the pair
+        id: public_before
+        timeout-minutes: 8
+        working-directory: baseline
+        run: |
+          status=0
+          node scripts/belle-release-pages.mjs verify https://robjasper2084.github.io/Jungle-Lotto/ "$BASELINE_SHA" || status=$?
+          cp belle-public-verification.json ../evidence/public-before.json
+          exit "$status"
+      - name: Run unchanged baseline profile and preserve its strict exit
+        id: baseline_profile
+        timeout-minutes: 28
+        working-directory: baseline/${{ env.GAME }}
+        env:
+          PROFILE_SOURCE_SHA: 3f6b95f22e257df41ae6369b5a756bf697716d6a
+        run: |
+          status=0
+          GITHUB_SHA="$PROFILE_SOURCE_SHA" node scripts/sustained-ride-profile.mjs > "$GITHUB_WORKSPACE/evidence/baseline/console.log" 2>&1 || status=$?
+          PROFILE_EXIT_CODE="$status" node --input-type=module <<'NODE'
+          import {writeFile} from 'node:fs/promises';
+          await writeFile(process.env.GITHUB_WORKSPACE+'/evidence/baseline/exit.json',JSON.stringify({sourceHead:process.env.PROFILE_SOURCE_SHA,exitCode:Number(process.env.PROFILE_EXIT_CODE),recordedAt:new Date().toISOString()},null,2)+'\n');
+          NODE
+          cat "$GITHUB_WORKSPACE/evidence/baseline/console.log"
+          exit "$status"
+      - name: Run unchanged candidate profile even after a failed baseline
+        id: candidate_profile
+        if: always() && !cancelled() && steps.prepare.outcome == 'success' && steps.production.outcome == 'success' && steps.public_before.outcome == 'success'
+        timeout-minutes: 28
+        working-directory: candidate/${{ env.GAME }}
+        env:
+          PROFILE_SOURCE_SHA: 49b4be27b0c0c3432494767691f29d4078572904
+        run: |
+          status=0
+          GITHUB_SHA="$PROFILE_SOURCE_SHA" node scripts/sustained-ride-profile.mjs > "$GITHUB_WORKSPACE/evidence/candidate/console.log" 2>&1 || status=$?
+          PROFILE_EXIT_CODE="$status" node --input-type=module <<'NODE'
+          import {writeFile} from 'node:fs/promises';
+          await writeFile(process.env.GITHUB_WORKSPACE+'/evidence/candidate/exit.json',JSON.stringify({sourceHead:process.env.PROFILE_SOURCE_SHA,exitCode:Number(process.env.PROFILE_EXIT_CODE),recordedAt:new Date().toISOString()},null,2)+'\n');
+          NODE
+          cat "$GITHUB_WORKSPACE/evidence/candidate/console.log"
+          exit "$status"
+      - name: Verify public baseline bytes again after both profiles
+        id: public_after
+        if: always() && !cancelled() && steps.prepare.outcome == 'success'
+        timeout-minutes: 8
+        working-directory: baseline
+        run: |
+          status=0
+          node scripts/belle-release-pages.mjs verify https://robjasper2084.github.io/Jungle-Lotto/ "$BASELINE_SHA" || status=$?
+          cp belle-public-verification.json ../evidence/public-after.json
+          exit "$status"
+      - name: Collect unchanged reports and provenance, including failures
+        if: always()
+        run: |
+          mkdir -p evidence/baseline evidence/candidate
+          for label in baseline candidate; do
+            if [ -f "$label/$GAME/paired-build.json" ]; then cp "$label/$GAME/paired-build.json" "evidence/$label/build.json"; fi
+            if [ -d "$label/$GAME/output/sustained-profile/full/$BELLE_PROFILE_DEVICE" ]; then cp -R "$label/$GAME/output/sustained-profile/full/$BELLE_PROFILE_DEVICE/." "evidence/$label/"; fi
+          done
+      - name: Preserve comparison and fail for any strict profile or provenance failure
+        if: always()
+        env:
+          BASELINE_OUTCOME: ${{ steps.baseline_profile.outcome }}
+          CANDIDATE_OUTCOME: ${{ steps.candidate_profile.outcome }}
+          BEFORE_OUTCOME: ${{ steps.public_before.outcome }}
+          AFTER_OUTCOME: ${{ steps.public_after.outcome }}
+          PRODUCTION_OUTCOME: ${{ steps.production.outcome }}
+        run: |
+          node --input-type=module <<'NODE'
+          import {readFile,writeFile,appendFile} from 'node:fs/promises';
+          const failures=[],lanes={};
+          async function json(path){try{return JSON.parse(await readFile('evidence/'+path,'utf8'));}catch(error){failures.push(path+': '+String(error));return null;}}
+          const before=await json('public-before.json'),after=await json('public-after.json'),production=await json('production-jobs.json');
+          for(const [label,value] of [['before',before],['after',after]])if(value?.passed!==true||value?.commit!==process.env.BASELINE_SHA||process.env[label.toUpperCase()+'_OUTCOME']!=='success')failures.push('Public '+label+' verification did not pass for the pinned baseline');
+          if(production?.passed!==true||process.env.PRODUCTION_OUTCOME!=='success')failures.push('Completed production proof did not pass');
+          for(const label of ['baseline','candidate']){
+            const exit=await json(label+'/exit.json'),report=await json(label+'/report.json'),expected=process.env[label.toUpperCase()+'_SHA'];
+            if(exit?.exitCode!==0||exit?.sourceHead!==expected||process.env[label.toUpperCase()+'_OUTCOME']!=='success')failures.push(label+' strict process did not pass');
+            if(report?.passed!==true||report?.frameQualityAccepted!==true||report?.sourceHead!==expected||report?.mode!=='full'||report?.device!==process.env.BELLE_PROFILE_DEVICE||report?.requestedSeconds!==90||report?.releasePerformanceVerified!==false)failures.push(label+' strict report or identity did not pass');
+            if(report?.renderBackend!=='angle-metal'||!/Metal/i.test(report?.actualGpu?.renderer??'')||/SwiftShader|llvmpipe|software rasterizer/i.test(report?.actualGpu?.renderer??''))failures.push(label+' did not use verified Metal');
+            lanes[label]={sourceHead:report?.sourceHead??expected,strictExitCode:exit?.exitCode??null,stepOutcome:process.env[label.toUpperCase()+'_OUTCOME'],passed:report?.passed??false,classification:report?.classification??null,renderer:report?.actualGpu??null,viewport:report?.viewport??null,input:report?.input??null,frames:report?.profile?.frames??null,activeSeconds:report?.profile?.activeSeconds??null,movingSeconds:report?.profile?.movingSeconds??null,distanceMetres:report?.profile?.distanceMetres??null,frameMs:report?.profile?.metrics?.frameMs??null,over50ms:report?.profile?.over50ms??null,over100ms:report?.profile?.over100ms??null,over250ms:report?.profile?.over250ms??null,welcomeReadyMs:report?.welcomeReadyMs??null,rideStartedMs:report?.rideStartedMs??null,firstPlayableMs:report?.firstPlayableMs??null,elapsedWallMs:report?.elapsedWallMs??null};
+          }
+          if(!lanes.baseline.renderer||JSON.stringify(lanes.baseline.renderer)!==JSON.stringify(lanes.candidate.renderer)||JSON.stringify(lanes.baseline.viewport)!==JSON.stringify(lanes.candidate.viewport))failures.push('GPU or viewport differs between the paired profiles');
+          const base=lanes.baseline.frameMs?.p95,candidate=lanes.candidate.frameMs?.p95;
+          const comparison={version:1,scope:'Pinned production-source baseline versus pinned chooser source; sequential full-scene local builds on one hosted Mac per device. Public bytes verified before/after. Not a public-network latency test or physical-device certification.',device:process.env.BELLE_PROFILE_DEVICE,measurementCommit:process.env.MEASUREMENT_SHA,baselineCommit:process.env.BASELINE_SHA,candidateCommit:process.env.CANDIDATE_SHA,strictGatePassed:failures.length===0,releasePerformanceVerified:false,p95DeltaPercent:Number.isFinite(base)&&base>0&&Number.isFinite(candidate)?100*(candidate-base)/base:null,lanes,failures};
+          await writeFile('evidence/comparison.json',JSON.stringify(comparison,null,2)+'\n');
+          console.log(JSON.stringify(comparison,null,2));
+          await appendFile(process.env.GITHUB_STEP_SUMMARY,'## Pinned full-scene comparison — '+process.env.BELLE_PROFILE_DEVICE+'\n\nStrict gate: **'+(comparison.strictGatePassed?'passed':'failed')+'**. Both original reports and process exit receipts are archived. Physical-device performance remains unverified.\n\n| Source | Exit | Strict passed | Frame p95 (ms) | Over 250 ms |\n| --- | ---: | --- | ---: | ---: |\n'+Object.entries(lanes).map(([label,lane])=>'| '+label+' | '+lane.strictExitCode+' | '+lane.passed+' | '+lane.frameMs?.p95+' | '+lane.over250ms+' |').join('\n')+'\n');
+          if(failures.length)process.exitCode=1;
+          NODE
+      - name: Archive both strict outcomes and public/source receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-chooser-paired-full-${{ matrix.device }}
+          path: evidence/
+          if-no-files-found: error
+          retention-days: 14
