@@ -36,23 +36,28 @@ export async function addSunsetGarden(scene:T.Scene,map:ParkMap,terrain:ParkTerr
  const tileSizes=new Map<string,number>(),tiles=new Map<string,T.InstancedMesh>();
  for(const site of sites){const key=tileKey(site);tileSizes.set(key,(tileSizes.get(key)??0)+perTree);}
  const canopyDetail=tileSizes.size?mapleDetail(leafGeo):null;
+ const crownGeometry=new T.IcosahedronGeometry(1,2);
+ const crownMaterial=standard('Reference shaded inner canopy',0xffffff);
+ const crownTiles=new Map<string,T.InstancedMesh>();
  for(const [key,size] of tileSizes){
   const batch=new T.InstancedMesh(canopyDetail!.geometry,leafMat,size);
   useDistantMaple(batch,canopyDetail!);
   batch.name='Sunset Point maple leaves '+key;batch.castShadow=true;batch.receiveShadow=true;batch.count=0;
   tiles.set(key,batch);leaves.add(batch);
+  const crown=new T.InstancedMesh(crownGeometry,crownMaterial,size/perTree*10);
+  crown.castShadow=true;crown.receiveShadow=true;crown.count=0;
+  crownTiles.set(key,crown);root.add(crown);
  }
  const tones=[0xeaae25,0x76933b,0xc28019,0x9f9b2f,0xf1b730,0x658441];let leafCount=0;
- const crownMat=standard('Reference shaded inner canopy',0xffffff);const crowns=new T.InstancedMesh(new T.IcosahedronGeometry(1,2),crownMat,sites.length*10);crowns.castShadow=true;crowns.receiveShadow=true;root.add(crowns);let crownCount=0;
  for(const [index,p] of sites.entries()){
   if(index%4===0)await yieldStartupTask();
-  const leafBatch=tiles.get(tileKey(p))!;
+  const key=tileKey(p),leafBatch=tiles.get(key)!,crown=crownTiles.get(key)!;
   const y=terrain.height(p.x,p.z),base=new T.Vector3(p.x,y,p.z),tip=base.clone().add(new T.Vector3((rand()-.5)*.8,p.h*.85,(rand()-.5)*.8));rod(base,tip,.32,.10);
   terrain.flightSolids.add({x:p.x,z:p.z,bottom:y,top:y+p.h,radius:.35,kind:'tree'});
   const lobes:T.Vector3[]=[];
   for(let j=0;j<9;j++){const a=j/9*Math.PI*2+index*.8,c=base.clone().add(new T.Vector3(Math.cos(a)*p.r*.54,p.h*.67+rand()*p.h*.24,Math.sin(a)*p.r*.54));lobes.push(c);rod(base.clone().lerp(tip,.42+j*.035),c,.12,.025);}
   lobes.push(base.clone().add(new T.Vector3(0,p.h*.94,0)));
-  for(const c of lobes){dummy.position.copy(c);dummy.rotation.set(rand(),rand()*6,rand());dummy.scale.set(p.r*.33,p.r*.29,p.r*.33);dummy.updateMatrix();crowns.setMatrixAt(crownCount,dummy.matrix);crowns.setColorAt(crownCount++,color.setHex(tones[index%tones.length]).multiplyScalar(.50));}
+  for(const c of lobes){dummy.position.copy(c);dummy.rotation.set(rand(),rand()*6,rand());dummy.scale.set(p.r*.33,p.r*.29,p.r*.33);dummy.updateMatrix();crown.setMatrixAt(crown.count,dummy.matrix);crown.setColorAt(crown.count++,color.setHex(tones[index%tones.length]).multiplyScalar(.50));}
   for(let j=0;j<perTree;j++){
    const c=lobes[j%lobes.length],a=rand()*Math.PI*2,vy=rand()*2-1,s=Math.sqrt(1-vy*vy),r=Math.pow(rand(),.48)*p.r*.65;
    dummy.position.set(c.x+Math.cos(a)*s*r,c.y+vy*r*.76,c.z+Math.sin(a)*s*r);dummy.rotation.set((rand()-.5)*1.5,rand()*Math.PI*2,(rand()-.5)*1.3);const size=1.0+rand()*1.2;dummy.scale.set(size,size,size);dummy.updateMatrix();leafBatch.setMatrixAt(leafBatch.count,dummy.matrix);
@@ -60,14 +65,30 @@ export async function addSunsetGarden(scene:T.Scene,map:ParkMap,terrain:ParkTerr
   }
  }
  for(const batch of tiles.values())batch.computeBoundingSphere();
+ for(const crown of crownTiles.values())crown.computeBoundingSphere();
  // Natural rock revetment follows the actual island perimeter.
- const rocks:T.Matrix4[]=[];for(let j=1;j<map.island.length;j++){
+ const rockTiles=new Map<string,{matrix:T.Matrix4;lightness:number}[]>();
+ // Keep generating the same placements and tints in shoreline order. Group
+ // afterward so a single rock inside the view doesn't draw the entire shore.
+ const rocks:T.Matrix4[]=[];
+ for(let j=1;j<map.island.length;j++){
   const a=map.island[j-1],b=map.island[j],length=Math.hypot(b[0]-a[0],b[1]-a[1]);
   for(let d=0;d<length;d+=1.7){const t=d/length,x=a[0]+(b[0]-a[0])*t,z=a[1]+(b[1]-a[1])*t;if(options?.shore===false||Math.hypot(x-center.x,z-center.z)>center.radius+80||options&&inSunsetGarden(x,z))continue;
    for(let k=0;k<2;k++){dummy.position.set(x+(rand()-.5)*2,.5+rand()*.8,z+(rand()-.5)*2);dummy.scale.set(.65+rand()*.8,.45+rand()*.55,.6+rand()*.9);dummy.rotation.set(rand(),rand()*6,rand());dummy.updateMatrix();rocks.push(dummy.matrix.clone());}
   }
  }
- const shore=new T.InstancedMesh(new T.IcosahedronGeometry(1,1),stone,rocks.length);rocks.forEach((m,i)=>{shore.setMatrixAt(i,m);shore.setColorAt(i,color.setHSL(.075,.13,.52+rand()*.22));});shore.receiveShadow=true;root.add(shore);
+ for(const matrix of rocks){
+  const key=tileKey({x:matrix.elements[12],z:matrix.elements[14]});
+  const tile=rockTiles.get(key)??[];
+  tile.push({matrix,lightness:.52+rand()*.22});
+  rockTiles.set(key,tile);
+ }
+ const shoreGeometry=new T.IcosahedronGeometry(1,1);
+ for(const tile of rockTiles.values()){
+  const shore=new T.InstancedMesh(shoreGeometry,stone,tile.length);
+  tile.forEach(({matrix,lightness},i)=>{shore.setMatrixAt(i,matrix);shore.setColorAt(i,color.setHSL(.075,.13,lightness));});
+  shore.receiveShadow=true;shore.computeBoundingSphere();root.add(shore);
+ }
  // Benches and lamps are offset from route shoulders, never across travel space.
  const decor:{x:number;z:number}[]=[];const flowers:{x:number;y:number;z:number}[]=[];
  let sliceStart=performance.now();
