@@ -395,7 +395,10 @@ const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreferen
   ctx.clearRect(0,0,420,290);ctx.drawImage(mapLayer,0,0);
   ctx.strokeStyle='#c3c98e';ctx.lineWidth=.65;
   for(const l of data.landmarks){ctx.fillStyle=l===destination?'#ffd98b':l.kind==='monument'?'#96e7dc':'#e8deaa';ctx.beginPath();ctx.arc(px(l.x),pz(l.z),l===destination?4:2,0,Math.PI*2);ctx.fill();}for(const [i,m]of (online?.members??[]).entries()){if(m.id===online?.self)continue;const p=online?.buffers.get(m.id)?.sample(performance.now());if(!p)continue;ctx.fillStyle=PLAYER_COLORS[i];ctx.strokeStyle='#10252c';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(px(p.pose.x),pz(p.pose.z),4,0,Math.PI*2);ctx.fill();ctx.stroke();}race?.drawMap(ctx,px,pz);activities?.drawMap(ctx,px,pz);ctx.save();ctx.translate(px(x),pz(z));ctx.rotate(-heading);ctx.fillStyle='#a5fff0';ctx.beginPath();ctx.moveTo(0,7);ctx.lineTo(-4,-4);ctx.lineTo(4,-4);ctx.fill();ctx.restore();ctx.fillStyle='#f2f4e6';ctx.font='12px system-ui';ctx.fillText('N ↑',10,18);}
- status('Warming up island lighting');await sceneWarmup.prepare();status('Preparing the first frame');let prepared=false,starting=false;start.onclick=async()=>{if(starting||!prepared)return;starting=true;const choice=startup.choice;natureAudio.unlock();clear();startup.preparing();try{if(choice.vehicle==='cadillac'){
+ status('Warming up island lighting');await sceneWarmup.prepare();status('Preparing the first frame');let prepared=false,starting=false;start.onclick=async()=>{if(starting||!prepared)return;starting=true;const choice=startup.choice;natureAudio.unlock();clear();startup.preparing();try{
+  status('Preparing handheld camera shaders');
+  await photo?.prepareCarriedCamera(renderer,camera);
+  if(choice.vehicle==='cadillac'){
   status('Preparing playground and marina shaders');
   if(!cadillac){cadillac=new CadillacRide((await cadillacModel()).clone(true),terrain);scene.add(cadillac.model);}
   await world.prepareCadillacLandmarks(camera,core.current.x,core.current.z);
