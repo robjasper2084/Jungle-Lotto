@@ -46,6 +46,7 @@ import {GIANT_SLIDE,SLIDE_ENTRY,SLIDE_HEADING} from './giantSlide.ts';
 import {configureAssetDelivery} from './assetDelivery.ts';
 import {applyRealisticMaterials} from './realisticMaterials.ts';
 import {connectSkySettings} from './skySettings.ts';
+import {setSharedSolarCalibration} from './skyModel.ts';
 import {Photography,mixGameAudio} from './photography.ts';
 import {ParkCompanion} from './parkCompanion.ts';
 import {bridgeOverlook} from './bridgeLighting.ts';
@@ -77,6 +78,7 @@ import {batchArmoredInk} from './riderInkBatch.ts';
 import {batchWheelDisplay} from './wheelDisplay.ts';
 import {initiallyCollapsedMap} from './visualPolishPolicy.ts';
 import './visualPolish.css';
+setSharedSolarCalibration(new URLSearchParams(location.search).has('gds-photo'));
 prepareReferencePreferences();
 configureAssetDelivery();
 const el=<E extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(id) as E;
@@ -151,7 +153,9 @@ const syncMap=()=>{el('minimap').hidden=mapCollapsed;el('navigation').classList.
 el('minimap-hide').onclick=()=>{mapCollapsed=!mapCollapsed;syncMap();try{localStorage.setItem('belle-map-collapsed',String(mapCollapsed));}catch{}};syncMap();
 import {portalStates} from '../../../../greater-detroit-world/src/connectionMath.ts';
 import {districts,districtDestinations,districtName} from './detroitGround.ts';
-async function boot(){const response=await fetch('./belle/map.json');if(!response.ok)throw Error('Map unavailable');const data=await response.json() as ParkMap;alignScottMap(data);prepareCoastGuardMap(data);if(SUNSET_REFERENCE)data.spawn=referenceSpawn(data);const beachPlace=createBeachLocator(data.areas);for(const p of activityLandmarks())if(!data.landmarks.some(l=>l.id===p.id))data.landmarks.push(p);for(const p of playgroundLandmarks)if(!data.landmarks.some(l=>l.id===p.id))data.landmarks.push(p);status('Preparing terrain and canal crossings');await yieldStartupTask();const terrain=new ParkTerrain(data,true);await yieldStartupTask();const natureAudio=new NatureAudio(fountains(data),text=>el('nature-audio-status').textContent=text,[data.island,...data.water.map(w=>w.points)]);const natureToggle=el<HTMLInputElement>('nature-sound'),natureVolume=el<HTMLInputElement>('nature-volume'),birdVolume=el<HTMLInputElement>('bird-volume');natureToggle.checked=natureAudio.enabled;natureVolume.value=String(natureAudio.volume);birdVolume.value=String(natureAudio.birdVolume);const audioSettings=()=>natureAudio.configure(natureToggle.checked,Number(natureVolume.value),Number(birdVolume.value));natureToggle.onchange=audioSettings;natureVolume.oninput=audioSettings;birdVolume.oninput=audioSettings;el('nature-preview').onclick=()=>natureAudio.preview();const scene=new T.Scene(),camera=new T.PerspectiveCamera(60,innerWidth/innerHeight,.08,22000);const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreference:'high-performance'});
+async function boot(){const response=await fetch('./belle/map.json');if(!response.ok)throw Error('Map unavailable');const data=await response.json() as ParkMap;alignScottMap(data);prepareCoastGuardMap(data);if(SUNSET_REFERENCE)data.spawn=referenceSpawn(data);const beachPlace=createBeachLocator(data.areas);for(const p of activityLandmarks())if(!data.landmarks.some(l=>l.id===p.id))data.landmarks.push(p);for(const p of playgroundLandmarks)if(!data.landmarks.some(l=>l.id===p.id))data.landmarks.push(p);status('Preparing terrain and canal crossings');await yieldStartupTask();const terrain=new ParkTerrain(data,true);await yieldStartupTask();const natureAudio=new NatureAudio(fountains(data),text=>el('nature-audio-status').textContent=text,[data.island,...data.water.map(w=>w.points)]);const natureToggle=el<HTMLInputElement>('nature-sound'),natureVolume=el<HTMLInputElement>('nature-volume'),birdVolume=el<HTMLInputElement>('bird-volume');natureToggle.checked=natureAudio.enabled;natureVolume.value=String(natureAudio.volume);birdVolume.value=String(natureAudio.birdVolume);const audioSettings=()=>natureAudio.configure(natureToggle.checked,Number(natureVolume.value),Number(birdVolume.value));natureToggle.onchange=audioSettings;natureVolume.oninput=audioSettings;birdVolume.oninput=audioSettings;el('nature-preview').onclick=()=>natureAudio.preview();const scene=new T.Scene(),camera=new T.PerspectiveCamera(60,innerWidth/innerHeight,.08,22000);
+if(new URLSearchParams(location.search).has('gds-capture'))Object.defineProperty(window,'__gdsCamera',{value:()=>{const heading=camera.getWorldDirection(new T.Vector3());return {position:camera.position.toArray(),direction:heading.toArray(),fovDegrees:camera.fov};},configurable:false});
+const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreference:'high-performance'});
  // The renderer's ACTUAL WebGL backend, not a user-agent/viewport guess,
  // governs whether decorative preview canvases should consume a second GPU.
  const gameGl=renderer.getContext(),gpuDebug=gameGl.getExtension('WEBGL_debug_renderer_info');

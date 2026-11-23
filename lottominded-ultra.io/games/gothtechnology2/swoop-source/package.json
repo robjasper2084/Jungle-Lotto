@@ -5,17 +5,20 @@
   "type": "module",
   "description": "Swoop . Detroit electric unicycle game",
   "scripts": {
+    "postbuild": "node scripts/preparePublicElmwood.mjs",
+    "pretest": "node scripts/preparePublicElmwood.mjs",
     "build": "vite build --config vite.config.ts",
-    "check": "tsc -p tsconfig.json",
+    "check": "tsc -p tsconfig.merge-check.json --noEmit",
     "test": "node --experimental-transform-types --test src/detroit/*.test.ts"
   },
   "dependencies": {
+    "@digital-static/ridecore": "file:../ride-core",
     "@dimforge/rapier3d-compat": "0.20.0",
     "fflate": "0.8.3",
-    "three": "0.185.1",
-    "@digital-static/ridecore": "file:../../../../../Digital_Static_RideCore"
+    "three": "0.185.1"
   },
   "devDependencies": {
+    "@gltf-transform/core": "4.5.1",
     "@types/node": "^24.0.0",
     "@types/three": "0.185.3",
     "typescript": "5.9.2",

@@ -1,6 +1,5 @@
 import * as T from 'three';
-import './helmetSkin.css';
-import decalUrl from '../../art/helmet-ghoulies-20261004/ghoulies-decal.webp?url';
+const decalUrl=new URL('../../art/helmet-ghoulies-20261004/ghoulies-decal.webp',import.meta.url).href;
 const key='digital-static-helmet-skin-v1',event='digital-static-helmet-skin';
 export type HelmetSkin='ghoulies'|'plain';
 function selected():HelmetSkin{try{return localStorage.getItem(key)==='plain'?'plain':'ghoulies';}catch{return 'ghoulies';}}
@@ -18,12 +17,15 @@ export class HelmetSkinDecal{
    for(let i=0;i<p.count;i++){const u=center-(uv.getX(i)-.5)*2*halfU,v=(uv.getY(i)-.5)*2*halfV;p.setXYZ(i,.1445*Math.sin(u)*Math.cos(v),1.705+.159*Math.sin(v),-.018-.152*Math.cos(u)*Math.cos(v));}g.computeVertexNormals();
    const face=new T.Mesh(g,this.material);face.name='Ghoulies curved helmet decal';this.root.add(face);
   }
-  rider.updateWorldMatrix(true,true);(rider.getObjectByName('Head')??rider).attach(this.root);this.update();window.addEventListener(event,this.update);
+  rider.updateWorldMatrix(true,true);(rider.getObjectByName('Head')??rider).attach(this.root);this.update();
+  if(typeof window==='undefined')return;
+  window.addEventListener(event,this.update);
   void map().then(t=>{if(!this.disposed){this.material.map=t;this.material.needsUpdate=true;}}).catch(()=>{this.root.visible=false;});
  }
- dispose(){this.disposed=true;window.removeEventListener(event,this.update);this.root.traverse(o=>{if(o instanceof T.Mesh)o.geometry.dispose();});this.material.dispose();this.root.removeFromParent();}
+ dispose(){this.disposed=true;if(typeof window!=='undefined')window.removeEventListener(event,this.update);this.root.traverse(o=>{if(o instanceof T.Mesh)o.geometry.dispose();});this.material.dispose();this.root.removeFromParent();}
 }
 export function makeHelmetSkinPicker(){
+ void import('./helmetSkin.css');
  const root=document.createElement('section');root.className='helmet-skin-picker';root.setAttribute('aria-label','Hero helmet skin');
  root.innerHTML='<h3>Hero helmet</h3><p>Pick a skin for the armored rider.</p><div role="group" aria-label="Helmet skins"></div><p role="status"></p>';
  const group=root.querySelector('div')!,status=root.querySelector<HTMLElement>('[role="status"]')!,buttons=new Map<HelmetSkin,HTMLButtonElement>();

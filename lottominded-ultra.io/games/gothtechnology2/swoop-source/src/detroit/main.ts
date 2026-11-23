@@ -66,7 +66,7 @@ import {installTouchLayout} from './touchLayout.ts';
 import {FrameSchedule} from './frameSchedule.ts';
 import {PARK_SPAWN,buildFreestylePark,parkContains} from './freestylePark.ts';
 import {windTime} from './windMotion.ts';
-import {RouteSky,DAY_SUN,DUSK_SUN,DAY_HAZE,DUSK_HAZE} from './routeSky.ts';
+import {RouteSky,DAY_HAZE,DUSK_HAZE} from './routeSky.ts';
 import {CourseFeatureView} from './courseFeatureView.ts';
 import {AdaptiveQuality} from './adaptiveQuality.ts';
 import {buildMackStudio} from './mackStudio.ts';
@@ -156,9 +156,10 @@ renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.0;
 const scene=new T.Scene();const lightingBudget=new PointLightBudget(scene);scene.background=new T.Color(DAY_HAZE);scene.fog=new T.Fog(DAY_HAZE,elmwood&&compactElmwood?65:130,elmwood&&compactElmwood?165:370);
 const graphics=createGraphicsQuality(renderer,scene,canvas);
 const onlineView=new OnlineViewPreference(typeof localStorage==='undefined'?undefined:localStorage);
-const sky=new RouteSky();scene.add(sky);
+const sky=new RouteSky();sky.setSharedSolarCalibration(new URLSearchParams(location.search).has('gds-photo'));scene.add(sky);
 const reducedAtmosphereMotion=matchMedia('(prefers-reduced-motion: reduce)'),atmosphereMotionOverride=new URLSearchParams(location.search).has('reducedMotion');
 const camera=new T.PerspectiveCamera(55,innerWidth/innerHeight,.08,1500);
+if(new URLSearchParams(location.search).has('gds-capture'))Object.defineProperty(window,'__gdsCamera',{value:()=>{const heading=camera.getWorldDirection(new T.Vector3());return {position:camera.position.toArray(),direction:heading.toArray(),fovDegrees:camera.fov};},configurable:false});
 const interactiveWater=new InteractiveWater(canvas,camera);
 const pm=new StableEnvironment(renderer);
 try{
@@ -624,7 +625,7 @@ try{
   hero.apply(current);
   camera.position.set(current.x+Math.sin(current.headingY)*5,current.y+2.05,current.z+Math.cos(current.headingY)*5);
   camera.lookAt(current.x,current.y+1.1,current.z);camera.fov=52;camera.updateProjectionMatrix();
-  followStableSun(sun,current,night?DUSK_SUN:DAY_SUN);
+  followStableSun(sun,current,sky.sunVector);
   // Upload only the visible starting district, yielding between textures so the
   // startup movie and input are serviced before the first full render.
   await timeLoad('first-view',()=>warmFirstView(renderer,scene,camera));
@@ -656,7 +657,7 @@ function frameSplit(now:number,dt:number){
  if(room.simulation.rules.done&&!finished){finished=true;clearInput();}
  hero.root.visible=false;dogView.root.visible=false;confirmation.render(false);riderLamp.update(dt,current,night,false);ambience?.update(room.simulation.rules.elapsed,room.simulation.riders.map(r=>r.pose));
  room.view.render(renderer,scene,dt,active&&!finished?Math.min(1,acc*120):1,active&&!finished,paused,visible,p=>{
-  followStableSun(sun,p,night?DUSK_SUN:DAY_SUN);fill.position.set(p.x-12,p.y+8,p.z-13);fill.target.position.set(p.x,p.y+1,p.z);
+  followStableSun(sun,p,sky.sunVector);fill.position.set(p.x-12,p.y+8,p.z-13);fill.target.position.set(p.x,p.y+1,p.z);
   if(!night){const roof=world.raycastObstacle({x:p.x,y:p.y+2.3,z:p.z},{x:0,y:1,z:0},7);fill.intensity=roof===null?.26:.45;}
   mackStudio?.update(p.x,p.z);
   for(const destination of [gallery,boutique])if(destination)destination.building.visible=Math.hypot(p.x-destination.building.position.x,p.z-destination.building.position.z)<180;
@@ -692,7 +693,7 @@ function frame(now:number,xrFrame?:XRFrame){
   if(film.playing||gallery?.active||boutique?.active||split){footControls.update(current,false);studioScreens?.update(current.x,current.z,false);lottoShop?.update(current.x,current.z,false);cabinets?.update(current.x,current.z,false,camera);}
   for(const destination of [gallery,boutique])destination?.animateVisitors((running&&!paused||gallery?.active||boutique?.active||film.playing)?dt:0);
   if(split||film.playing||gallery?.active||boutique?.active)savedGhost.suspend();
-  if(film.playing){studioCapture?.update(current.x,current.z,false,camera);film.render(dt,renderer,scene,camera,(focus,wanted)=>{const mapped=toMap(focus.x,focus.y,focus.z);scenery.update(mapped.x,mapped.z,clock);wanted.y=Math.max(wanted.y,world.sampleGround(wanted.x,wanted.z,ground).height+.5);followStableSun(sun,focus,night?DUSK_SUN:DAY_SUN);});return;}
+  if(film.playing){studioCapture?.update(current.x,current.z,false,camera);film.render(dt,renderer,scene,camera,(focus,wanted)=>{const mapped=toMap(focus.x,focus.y,focus.z);scenery.update(mapped.x,mapped.z,clock);wanted.y=Math.max(wanted.y,world.sampleGround(wanted.x,wanted.z,ground).height+.5);followStableSun(sun,focus,sky.sunVector);});return;}
   if(gallery?.active||boutique?.active){
     const destination=(gallery?.active?gallery:boutique)!;const walking=destination.update(document.hidden?0:dt,camera);
     if(vr.active){vr.eyeHeight=hero.vrEyeHeight-hero.mountHeight;vr.update(walking,false,false,'Serengeti Galleries',false,dt,xrFrame);}
@@ -793,7 +794,7 @@ function frame(now:number,xrFrame?:XRFrame){
   jazzVisit?.update(pose.x,pose.z,shopVisible&&mode==='free'&&!challengeRun&&!race&&!cabinets?.playing);
   savedGhost.update(dt,pose,selectedRider+':'+vehicle.value,running&&!paused&&!finished&&!film.playing,running&&!split&&!sim.cycling&&!vr.active&&!jazzVisit?.active);
   camera.userData.rideSightline=running&&!vr.active&&cameraMode!=='first'?(camera.userData.rideSightline??new T.Vector3()).set(pose.x,pose.y+1.1,pose.z):undefined;
-  if(!vr.active){gyroscope.applyCamera(camera,dt,running&&!paused&&!finished&&!split&&!jazzVisit?.active,cameraMode==='first');camera.updateProjectionMatrix();}followStableSun(sun,pose,night?DUSK_SUN:DAY_SUN);fill.position.set(pose.x-12,pose.y+8,pose.z-13);fill.target.position.copy(hero.root.position);if(!qaVisualBaseline&&!elmwood&&!night){const roof=world.raycastObstacle({x:pose.x,y:pose.y+2.3,z:pose.z},{x:0,y:1,z:0},7);fill.intensity=T.MathUtils.damp(fill.intensity,roof===null?.26:.45,5,dt);}
+  if(!vr.active){gyroscope.applyCamera(camera,dt,running&&!paused&&!finished&&!split&&!jazzVisit?.active,cameraMode==='first');camera.updateProjectionMatrix();}followStableSun(sun,pose,sky.sunVector);fill.position.set(pose.x-12,pose.y+8,pose.z-13);fill.target.position.copy(hero.root.position);if(!qaVisualBaseline&&!elmwood&&!night){const roof=world.raycastObstacle({x:pose.x,y:pose.y+2.3,z:pose.z},{x:0,y:1,z:0},7);fill.intensity=T.MathUtils.damp(fill.intensity,roof===null?.26:.45,5,dt);}
   frameProfile.effects=performance.now()-frameCpuStarted;
   canvas.dataset.visibleChunks=String(scenery.update(toMap(pose.x,0,pose.z).x,toMap(pose.x,0,pose.z).z,clock));if(now-hudAt>120)canvas.dataset.environment=JSON.stringify({birds:'birds' in scenery?scenery.birds:null,foodTrucks:'foodTrucks' in scenery?scenery.foodTrucks:0,rails:'rails' in scenery?scenery.rails:0,landmarks:'landmarks' in scenery?scenery.landmarks:null,flowers:'flowers' in scenery?scenery.flowers:0,trees:scenery.trees,grassClumps:'grassClumps' in scenery?scenery.grassClumps:0,routeArt:'routeArt' in scenery?scenery.routeArt:null,generatedSkins:scenery.skins,treeVersion:elmwood?'elmwood-five-species-20260916':'curved-elm-maple-20260915',style:elmwood?'Five botanical meshes, photographic PBR and outdoor HDR lighting':'Higgsfield elm/maple foliage, tapered branches and bark',quality:compactElmwood||vr.active?'compact':'detailed'});renderer.render(scene,camera);studioCapture?.afterRender();if(finished)loop.capture(canvas);frames++;if(now-fpsAt>1000){fps=frames*1000/(now-fpsAt);frames=0;fpsAt=now;}
   frameProfile.render=performance.now()-frameCpuStarted;

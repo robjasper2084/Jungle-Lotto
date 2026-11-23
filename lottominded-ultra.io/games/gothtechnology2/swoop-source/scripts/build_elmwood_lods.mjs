@@ -1,27 +1,106 @@
-import fs from 'node:fs/promises';
-import * as T from 'three';
-import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {mkdir, writeFile} from 'node:fs/promises';
+import {resolve} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {NodeIO} from '@gltf-transform/core';
+import {BufferAttribute, BufferGeometry, Vector3} from 'three';
 import {SimplifyModifier} from 'three/addons/modifiers/SimplifyModifier.js';
-import {GLTFExporter} from 'three/addons/exporters/GLTFExporter.js';
-// FileReader is only used to package the generated GLB bytes in Node.
-globalThis.FileReader=class {async readAsArrayBuffer(blob){this.result=await blob.arrayBuffer();this.onloadend?.();}};
-const root=new URL('../../../exports/elmwood/',import.meta.url),report=[];
-for(const name of ['white-oak','red-maple','american-elm','white-pine','weeping-willow']){
- const bytes=await fs.readFile(new URL(name+'.glb',root)),model=(await new GLTFLoader().parseAsync(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength),'' )).scene;
- model.traverse(o=>{if(typeof o.userData.pivot==='string'){o.userData.pivotDescription=o.userData.pivot;delete o.userData.pivot;}});
- let before=0,after=0;
- model.traverse(o=>{if(!o.isMesh)return;const g=o.geometry;for(const [key,attribute]of Object.entries(g.attributes)){if(attribute.isInterleavedBufferAttribute){const data=new Float32Array(attribute.count*attribute.itemSize);for(let i=0;i<attribute.count;i++)for(let k=0;k<attribute.itemSize;k++)data[i*attribute.itemSize+k]=attribute.getComponent(i,k);g.setAttribute(key,new T.BufferAttribute(data,attribute.itemSize));}}before+=g.index.count/3;
- if(o.material.name.startsWith('leaf')){
-   // Keep complete connected leaf cards, evenly distributed through the crown.
-   const parent=Array.from({length:g.attributes.position.count},(_,i)=>i),find=x=>parent[x]===x?x:(parent[x]=find(parent[x]));
-   const index=g.index.array;for(let i=0;i<index.length;i+=3){const a=find(index[i]);parent[find(index[i+1])]=a;parent[find(index[i+2])]=a;}
-   const order=new Map(),kept=[];for(let i=0;i<index.length;i+=3){const r=find(index[i]);if(!order.has(r))order.set(r,order.size);if(order.get(r)%3===0)kept.push(index[i],index[i+1],index[i+2]);}
-   const used=new Map();for(const id of new Set(kept)){const r=find(id);if(!used.has(r))used.set(r,[]);used.get(r).push(id);}const p=g.attributes.position;
-   for(const ids of used.values()){const centre=new T.Vector3();for(const i of ids)centre.add(new T.Vector3().fromBufferAttribute(p,i));centre.multiplyScalar(1/ids.length);for(const i of ids){const v=new T.Vector3().fromBufferAttribute(p,i).sub(centre).multiplyScalar(1.55).add(centre);p.setXYZ(i,v.x,v.y,v.z);}}
-   g.setIndex(kept);g.computeBoundingBox();g.computeBoundingSphere();o.geometry=g;
- }else{o.geometry=new SimplifyModifier().modify(g,Math.floor(g.attributes.position.count*.72));o.geometry.computeVertexNormals();}
- after+=o.geometry.index?o.geometry.index.count/3:o.geometry.attributes.position.count/3;
- });
- const result=await new GLTFExporter().parseAsync(model,{binary:true,onlyVisible:false});const check=(await new GLTFLoader().parseAsync(result,'')).scene;check.updateMatrixWorld(true);check.traverse(o=>{if(!o.matrixWorld.elements.every(Number.isFinite))throw new Error('Invalid LOD transform '+name);});await fs.writeFile(new URL(name+'-far.glb',root),Buffer.from(result));report.push({name,before,after});console.log(report.at(-1));
+
+const species = ['white-oak', 'red-maple', 'american-elm', 'white-pine', 'weeping-willow'];
+const attributes = {POSITION:'position', NORMAL:'normal', TEXCOORD_0:'uv', TANGENT:'tangent', COLOR_0:'color'};
+
+// Preserve complete leaf cards and distribute them through the crown.
+function reduceLeaves(geometry) {
+  const position = geometry.getAttribute('position');
+  const parent = Array.from({length: position.count}, (_, i) => i);
+  const root = i => parent[i] === i ? i : (parent[i] = root(parent[i]));
+  const index = geometry.index.array;
+  for (let i = 0; i < index.length; i += 3) {
+    const first = root(index[i]);
+    parent[root(index[i+1])] = first;
+    parent[root(index[i+2])] = first;
+  }
+  const order = new Map(), kept = [], cards = new Map();
+  for (let i = 0; i < index.length; i += 3) {
+    const id = root(index[i]);
+    if (!order.has(id)) order.set(id, order.size);
+    if (order.get(id) % 3 === 0) kept.push(index[i], index[i+1], index[i+2]);
+  }
+  for (const i of new Set(kept)) {
+    const id = root(i);
+    if (!cards.has(id)) cards.set(id, []);
+    cards.get(id).push(i);
+  }
+  const point = new Vector3();
+  for (const vertices of cards.values()) {
+    const centre = new Vector3();
+    for (const i of vertices) centre.add(point.fromBufferAttribute(position, i));
+    centre.multiplyScalar(1 / vertices.length);
+    for (const i of vertices) {
+      point.fromBufferAttribute(position, i).sub(centre).multiplyScalar(1.55).add(centre);
+      position.setXYZ(i, point.x, point.y, point.z);
+    }
+  }
+  return geometry.setIndex(kept);
 }
-await fs.writeFile(new URL('lod-report.json',root),JSON.stringify(report,null,2));
+
+// Change just the indexed geometry. Embedded photographs, materials, UVs,
+// nodes and transforms stay in their original glTF document.
+function reducePrimitive(document, primitive) {
+  const geometry = new BufferGeometry();
+  const original = primitive.getIndices();
+  geometry.setIndex(new BufferAttribute(original.getArray().slice(), 1));
+  for (const semantic of primitive.listSemantics()) {
+    const accessor = primitive.getAttribute(semantic);
+    if (!attributes[semantic]) throw Error('Unsupported tree attribute ' + semantic);
+    geometry.setAttribute(attributes[semantic], new BufferAttribute(
+      accessor.getArray().slice(), accessor.getElementSize(), accessor.getNormalized()));
+  }
+  const leaves = primitive.getMaterial().getName().startsWith('leaf');
+  const reduced = leaves ? reduceLeaves(geometry) :
+    new SimplifyModifier().modify(geometry, Math.floor(geometry.getAttribute('position').count * .72));
+  if (!leaves) reduced.computeVertexNormals();
+  const buffer = original.getBuffer();
+  const index = document.createAccessor().setType('SCALAR').setBuffer(buffer).setArray(reduced.index.array);
+  primitive.setIndices(index);
+  for (const semantic of primitive.listSemantics()) {
+    const old = primitive.getAttribute(semantic), value = reduced.getAttribute(attributes[semantic]);
+    primitive.setAttribute(semantic, value ? document.createAccessor().setBuffer(buffer)
+      .setType(old.getType()).setNormalized(value.normalized).setArray(value.array) : null);
+  }
+  return {before: original.getCount() / 3, after: index.getCount() / 3};
+}
+
+export async function buildElmwoodLods(input, output) {
+  const io = new NodeIO(), report = [];
+  await mkdir(output, {recursive:true});
+  for (const name of species) {
+    const doc = await io.read(resolve(input, name + '.glb')), root = doc.getRoot();
+    const oldAccessors = root.listAccessors();
+    let before = 0, after = 0;
+    for (const mesh of root.listMeshes()) for (const primitive of mesh.listPrimitives()) {
+      const count = reducePrimitive(doc, primitive);
+      before += count.before;
+      after += count.after;
+    }
+    for (const accessor of oldAccessors) {
+      if (accessor.listParents().every(parent => parent === root)) accessor.dispose();
+    }
+    for (const node of root.listNodes()) {
+      const extras = node.getExtras();
+      if (typeof extras.pivot === 'string') {
+        const {pivot, ...rest} = extras;
+        node.setExtras({...rest, pivotDescription:pivot});
+      }
+      if (!node.getWorldMatrix().every(Number.isFinite)) throw Error('Invalid LOD transform ' + name);
+    }
+    await io.write(resolve(output, name + '-far.glb'), doc);
+    report.push({name, before, after});
+  }
+  await writeFile(resolve(output, 'lod-report.json'), JSON.stringify(report, null, 2) + '\n');
+  return report;
+}
+
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  const input = process.argv[2] || fileURLToPath(new URL('../../../exports/elmwood/', import.meta.url));
+  await buildElmwoodLods(input, process.argv[3] || input);
+}

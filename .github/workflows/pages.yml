@@ -58,6 +58,11 @@ jobs:
           npm run check
           npm test
           npm run build
+      - name: Validate Greater Detroit graphics policy before full Pages build
+        working-directory: lottominded-ultra.io/games/gothtechnology2/greater-detroit-graphics
+        run: |
+          node --experimental-strip-types --test tests/*.test.mjs
+          ../belle-isle-source/game/node_modules/.bin/tsc --noEmit -p tsconfig.json
       - name: Install GothTechnology dependencies
         working-directory: lottominded-ultra.io/games/gothtechnology2
         run: npm ci

@@ -17,7 +17,6 @@ import {splitVisibleViews,splitControlSeat} from './splitLayout.ts';
 import {mountSplitTouch} from './splitTouchControls.ts';
 import type {SplitRideInput} from './splitInput.ts';
 import {RIDER_CHOICES} from './riderChoices.ts';
-import './splitRace.css';
 
 const riderName=(id:string)=>RIDER_CHOICES.find(r=>r.id===id)!.label;
 export class SplitRaceView {
@@ -32,6 +31,7 @@ export class SplitRaceView {
  private panels:HTMLElement[]=[];private clock:HTMLElement;private pauseButton:HTMLButtonElement;
  readonly bindings:readonly SplitBinding[];private ownerSlot?:number;private onlineSplit?:()=>boolean;
  constructor(scene:T.Scene,simulation:SplitRaceSimulation,data:Awaited<ReturnType<typeof loadActors>>,bindings:readonly SplitBinding[],actions:{pause:()=>void;restart:()=>void;menu:()=>void;recover:(i:number)=>void;camera:(i:number)=>void;cruise:(i:number)=>void;photo?:(i:number)=>void;display?:()=>void;input?:SplitRideInput;onlineSlot?:number;bots?:readonly number[];splitView?:()=>boolean},patches:readonly EffectPatch[]=[],audio:readonly RideAudio[]=[]){
+  void import('./splitRace.css');
   this.simulation=simulation;this.bindings=bindings;this.ownerSlot=actions.onlineSlot;this.onlineSplit=actions.splitView;this.audio=audio;this.lamps=simulation.riders.map(()=>new RiderLamp(scene,simulation.terrain));
   this.poses=simulation.riders.map(()=>createPose());this.lastGates=simulation.riders.map(()=>0);this.first=simulation.riders.map(()=>false);this.cameras=simulation.riders.map(()=>new T.PerspectiveCamera(55,1,.08,1500));this.photoFocus=simulation.riders.map(()=>undefined);
   this.heroes=simulation.riders.map(r=>{const h=new Hero(data,r.sim.terrain,r.id,'kimodo');r.sim.mountedVolume=h.mountedVolume;h.apply(r.pose);scene.add(h.root);return h;});
