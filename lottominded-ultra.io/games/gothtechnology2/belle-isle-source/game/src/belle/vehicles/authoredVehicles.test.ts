@@ -9,6 +9,7 @@ import {corleoGaitClips} from './corleoMotion.ts';
 import {fitCorleoRider} from './corleoFit.ts';
 import {CorleoController} from './corleoController.ts';
 import {VehicleHeadlamp} from './headlamp.ts';
+import {createVehicleModel,type VehicleModel} from './models.ts';
 import {normalizeRideChoice} from '../rideChoice.ts';
 import {assignPlayer,defaultSelection} from '../coop/coop.ts';
 import {ExplorerBuffer,explorerFrame} from '../onlineProtocol.ts';
@@ -20,6 +21,81 @@ import {CORLEO_LEGS,CORLEO_GAITS,sampleCorleoStride,corleoGaitForSpeed,corleoCad
 import type {ParkTerrain} from '../terrain.ts';
 const neutral={throttle:0,steer:0,lift:0,boost:false,brake:false};
 const flat={map:{water:[]},height:()=>0,land:(_x:number,z:number)=>z<20,obstructed:()=>false,bridge:()=>({active:false}),raycastFlight:()=>null,raycastObstacle:()=>null,raycast:()=>null,sampleGround:(_x:number,_z:number,out:any)=>Object.assign(out,{height:0,normal:{x:0,y:1,z:0},surface:'asphalt'}),navigationObstacles:()=>[]} as unknown as ParkTerrain;
+
+// Compare the actual fitted surface, not mesh counts: a still preview can batch
+// pieces that the playable instance must retain as separate animation targets.
+function surfaceFingerprint(root:T.Object3D){
+ const rows:string[]=[],materialKeys=new Map<T.Material,string>();let triangles=0;
+ const point=new T.Vector3(),normal=new T.Vector3(),normalMatrix=new T.Matrix3();
+ const rounded=(v:T.Vector3)=>v.toArray().map(n=>Math.round(n*10000)).join(',');
+ root.updateMatrixWorld(true);
+ root.traverseVisible(object=>{
+  const mesh=object as T.Mesh;if(!mesh.isMesh)return;
+  assert(!Array.isArray(mesh.material),'authored CORLEO surface has one material per mesh');
+  let key=materialKeys.get(mesh.material);
+  if(key===undefined){const {uuid,metadata,...properties}=mesh.material.toJSON();key=JSON.stringify(properties);materialKeys.set(mesh.material,key);}
+  const positions=mesh.geometry.getAttribute('position'),normals=mesh.geometry.getAttribute('normal');
+  normalMatrix.getNormalMatrix(mesh.matrixWorld);
+  triangles+=(mesh.geometry.index?.count??positions.count)/3;
+  for(let i=0;i<positions.count;i++){
+   mesh.getVertexPosition(i,point).applyMatrix4(mesh.matrixWorld);
+   if(normals)normal.fromBufferAttribute(normals,i).applyNormalMatrix(normalMatrix);
+   rows.push(key+'|'+rounded(point)+'|'+(normals?rounded(normal):''));
+  }
+ });
+ return {vertices:rows.length,triangles,sha256:crypto.createHash('sha256').update(rows.sort().join('\n')).digest('hex')};
+}
+
+test('CORLEO preview uses the actual fitted model without downloading gameplay actions',async()=>{
+ const savedDocument=Object.getOwnPropertyDescriptor(globalThis,'document'),savedFetch=globalThis.fetch;
+ const requests:string[]=[],owned:VehicleModel[]=[];
+ Object.defineProperty(globalThis,'document',{configurable:true,value:{baseURI:'https://belle.test/'}});
+ globalThis.fetch=async(input,init)=>{
+  const url=new URL(typeof input==='string'?input:input instanceof URL?input.href:input.url);
+  assert.equal(url.origin,'https://belle.test');assert.equal(init?.credentials,'omit');
+  assert.match(url.pathname,/^\/belle\/vehicles\/(?:corleo-(?:professional|maverick)\.glb|corleo\/CORLEO_(?:Professional|Maverick)_(?:MOUNT|RUN|CRAWL|JUMP|DISMOUNT)\.glb\.gz)$/);
+  requests.push(url.pathname);
+  return new Response(Uint8Array.from(fs.readFileSync('public'+url.pathname)).buffer);
+ };
+ try{
+  for(const pilot of ['professional','maverick'] as const){
+   const choice={vehicle:'corleo' as const,pilot,livery:'industrial' as const},before=requests.length;
+   const preview=await createVehicleModel(choice,{preview:true});owned.push(preview);
+   assert.deepEqual(requests.slice(before),['/belle/vehicles/corleo-'+pilot+'.glb']);
+   const full=await createVehicleModel(choice);owned.push(full);
+   const style=pilot==='professional'?'Professional':'Maverick';
+   assert.deepEqual(requests.slice(before+1).sort(),['MOUNT','RUN','CRAWL','JUMP','DISMOUNT'].map(action=>'/belle/vehicles/corleo/CORLEO_'+style+'_'+action+'.glb.gz').sort());
+   const previewSurface=surfaceFingerprint(preview.root),fullSurface=surfaceFingerprint(full.root);
+   assert.deepEqual(previewSurface,fullSurface,'preview preserves fitted vertices, normals and materials to 0.1 mm');
+   const previewMaterials=new Set<T.Material>(),fullMaterials=new Set<T.Material>(),previewGeometry=new Set<T.BufferGeometry>(),fullGeometry=new Set<T.BufferGeometry>();
+   const collect=(model:VehicleModel,materials:Set<T.Material>,geometry:Set<T.BufferGeometry>)=>model.root.traverse(o=>{const mesh=o as T.Mesh;if(!mesh.isMesh)return;for(const material of Array.isArray(mesh.material)?mesh.material:[mesh.material])materials.add(material);geometry.add(mesh.geometry);});
+   collect(preview,previewMaterials,previewGeometry);collect(full,fullMaterials,fullGeometry);
+   for(const material of previewMaterials)assert(!fullMaterials.has(material),'each instance owns its material clones');
+   const sharedGeometry=[...previewGeometry].filter(geometry=>fullGeometry.has(geometry));assert(sharedGeometry.length>0);
+   let sharedDisposals=0,materialDisposals=0;
+   for(const geometry of sharedGeometry)geometry.addEventListener('dispose',()=>sharedDisposals++);
+   for(const material of previewMaterials)material.addEventListener('dispose',()=>materialDisposals++);
+   preview.dispose();preview.dispose();
+   assert.equal(materialDisposals,previewMaterials.size,'preview owns and releases its materials once');
+   assert.equal(sharedDisposals,0,'preview cleanup preserves cached model geometry');
+   assert.deepEqual(surfaceFingerprint(full.root),fullSurface,'preview disposal cannot change the playable model');
+   const riderPosition=full.rider.position.clone();
+   full.update({x:0,y:.18,z:0,heading:0,speed:0,pitch:0,roll:0,lift:0,rpm:0,corleoAction:'MOUNT',corleoTime:6},1/60,true,0,1);
+   assert(full.rider.position.distanceTo(riderPosition)>.01,'default factory retains the actual mount animation');
+   const cached=await createVehicleModel(choice,{preview:true});owned.push(cached);
+   assert.equal(requests.length,before+6,'a later preview reuses the integrity-checked source cache');
+  }
+  const cancelled=new AbortController();cancelled.abort(new Error('cancelled by caller'));
+  const count=requests.length,choice={vehicle:'corleo' as const,pilot:'professional' as const,livery:'industrial' as const};
+  await assert.rejects(createVehicleModel(choice,cancelled.signal),/cancelled by caller/);
+  await assert.rejects(createVehicleModel(choice,{preview:true,signal:cancelled.signal}),/cancelled by caller/);
+  assert.equal(requests.length,count,'both existing and options-based cancellation precede asset work');
+ }finally{
+  owned.forEach(model=>model.dispose());globalThis.fetch=savedFetch;
+  if(savedDocument)Object.defineProperty(globalThis,'document',savedDocument);else Reflect.deleteProperty(globalThis,'document');
+ }
+});
+
 test('vehicle switching and headlights keep the pre-warmed scene light count fixed',()=>{
  const scene=new T.Scene(),lamp=new VehicleHeadlamp(scene),corleo=new T.Group(),jetson=new T.Group();corleo.position.set(3,2,8);jetson.position.set(-4,6,10);jetson.rotation.y=Math.PI/2;
  const topology=()=>{const lights:T.Object3D[]=[];scene.traverseVisible(o=>{if((o as T.Light).isLight)lights.push(o);});return lights;};
