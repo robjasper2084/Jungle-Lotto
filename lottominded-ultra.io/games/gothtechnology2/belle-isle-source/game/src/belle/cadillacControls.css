@@ -1,0 +1,11 @@
+#cadillac-controls{margin-top:18px;padding-top:16px;border-top:1px solid #c29a5459;max-width:100%}
+#cadillac-controls h3{margin:0 0 12px;color:#f2d4a2;font-size:14px;line-height:1.4}
+#cadillac-controls .cadillac-access-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#cadillac-controls button{min-width:0;min-height:48px;width:100%;padding:9px 10px;font-size:12px;line-height:1.35;text-align:left;white-space:normal;overflow-wrap:anywhere;touch-action:manipulation}
+#cadillac-controls button[aria-pressed=true]{border-color:#efbb72;background:#59252be8;color:#fff1da}
+#cadillac-controls button:disabled{cursor:default}
+#cadillac-controls .cadillac-sound-control{display:flex;justify-content:flex-start;gap:10px;margin:10px 0 0;min-height:44px;font-size:12px;line-height:1.4;cursor:pointer}
+#cadillac-controls input[type=checkbox]{flex:0 0 22px;width:22px;height:22px;accent-color:#e6ba78}
+#cadillac-controls .cadillac-access-note{margin:8px 0 0;color:#c2d2ca;font-size:11px;line-height:1.5}
+#cadillac-access-feedback{position:fixed;z-index:32;left:50%;bottom:max(174px,calc(env(safe-area-inset-bottom) + 160px));transform:translateX(-50%);width:max-content;max-width:min(420px,calc(100vw - 28px));padding:10px 14px;border:1px solid #dfbd7a88;border-radius:7px;background:#172629f0;color:#fff2d9;font:12px/1.5 system-ui;pointer-events:none;overflow-wrap:anywhere;text-align:center}
+@media(prefers-reduced-motion:reduce){#cadillac-controls *,#cadillac-access-feedback{transition:none!important;animation:none!important}}

@@ -1,14 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {stripTypeScriptTypes} from 'node:module';
+import path from 'node:path';
+import {searchForWorkspaceRoot} from 'vite';
+import config from '../vite.config.ts';
 const source=await readFile(new URL('../vite.config.ts',import.meta.url),'utf8');
-// Execute the actual configuration/hook with only Vite's identity wrapper replaced.
-// This is a config unit test, not a full Vite build or GPU test.
-const js=stripTypeScriptTypes(source).replace("import { defineConfig } from 'vite';",'const defineConfig=value=>value;').replace("import {defineConfig} from 'vite';",'const defineConfig=value=>value;')
- .replace(/from (['"])(\.[^'"]+)\1/g,(_match,quote,specifier)=>'from '+quote+new URL(specifier,new URL('../vite.config.ts',import.meta.url)).href+quote);
-assert.ok(!/from ['"]vite['"]/.test(js),'Only the Vite wrapper is substituted');
-const config=(await import('data:text/javascript;base64,'+Buffer.from(js).toString('base64'))).default;
+// Node 24 loads the real TypeScript configuration from its file URL, including
+// Vite helpers and relative adapters. No imports or configuration are replaced.
+// This remains a config unit test, not a full Vite build or GPU test.
 const build=config({command:'build'});
 test('actual HTML transform declares a real relative SVG icon',()=>{
  const plugin=build.plugins.find(p=>p.name==='belle-runtime-assets');
@@ -32,6 +31,11 @@ test('new document files are copied without removing vehicle or world assets',()
 });
 test('nested deployment base and single entry stylesheet are retained',()=>{
  assert.equal(build.base,'./');assert.equal(build.build.cssCodeSplit,false);assert.equal(build.build.target,'es2022');assert.equal(build.server.port,8301);assert.equal(build.server.strictPort,true);
+});
+test('development file access retains the strict workspace and exact suited hero allowance',()=>{
+ const dev=config({command:'serve'});
+ assert.equal(dev.server.fs.strict,true);
+ assert.deepEqual(dev.server.fs.allow,[searchForWorkspaceRoot(process.cwd()),path.resolve('../../swoop-source/public/exports/rigged-heroes/DS_Man_01.glb')]);
 });
 test('favicon bytes are an actual non-executable SVG, not an empty 200 substitute',async()=>{
  const svg=await readFile(new URL('../public/favicon.svg',import.meta.url),'utf8');
