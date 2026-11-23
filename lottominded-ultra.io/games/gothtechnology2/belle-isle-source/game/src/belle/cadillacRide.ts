@@ -106,13 +106,11 @@ export class CadillacRide {
   update(dt:number,input:CarInput,night:number,reduced:boolean){
     if(!this.riding)return;
     const smooth=1-Math.exp(-dt*8);
-    const wasHeld=this.doorOpen||this.doorAngle>0||this.access.held;
     this.doorAngle=T.MathUtils.lerp(this.doorAngle,Number(this.doorOpen),reduced?1:smooth);
     if(Math.abs(this.doorAngle-Number(this.doorOpen))<.0001)this.doorAngle=Number(this.doorOpen);
     this.door.rotation.y=-this.doorAngle*1.03||0;
     this.access.update(dt,reduced);this.trunk.setOpen(this.access.trunkProgress);
-    const held=wasHeld||this.doorOpen||this.doorAngle>0||this.access.held;
-    const p=this.sim.advance(dt,held?{...input,gas:0,brake:1,handbrake:true}:input);
+    const p=this.sim.advance(dt,this.exiting?{...input,gas:0,brake:1,handbrake:true}:input);
     this.model.position.set(p.x,p.y,p.z);this.model.rotation.y=p.heading;
     if(Math.abs(p.speed)>=.25)this.inspectTrunk=false;
     const acceleration=dt?clamp((p.speed-this.lastSpeed)/dt,-10,6):0;
