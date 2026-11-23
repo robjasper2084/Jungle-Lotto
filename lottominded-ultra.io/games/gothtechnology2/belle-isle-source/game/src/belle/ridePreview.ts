@@ -90,6 +90,7 @@ export function createRidePreview(host:HTMLElement,wheel:T.Object3D,loadBike:()=
    const load=async()=>{
     if(index===1)return loadBike();
     if(index===4)return cadillacModel();
+    if(index===5)return cadillacModel('hydraulic-cadillac');
     const model=await createVehicleModel({vehicle:index===2?'jetson':'corleo',pilot:'professional',livery:'industrial'},{preview:true,signal:controller?.signal});
     if(!alive||controller?.signal.aborted){model.dispose();return;}
     ownedVehicles.push(model);return model.root;

@@ -42,7 +42,7 @@ function snapshots(root:T.Object3D){
  return poses;
 }
 function restore(poses:BonePose[]){for(const p of poses){p.bone.position.copy(p.position);p.bone.quaternion.copy(p.quaternion);p.bone.scale.copy(p.scale);}}
-function independentRig(source:T.Object3D){
+export function independentRig(source:T.Object3D){
  const rig=clone(source),skeletons=new Set<T.Skeleton>();
  rig.position.set(0,0,0);rig.quaternion.identity();rig.scale.setScalar(1);rig.visible=true;
  rig.traverse(object=>{const mesh=object as T.SkinnedMesh;if(!mesh.isSkinnedMesh)return;skeletons.add(mesh.skeleton);mesh.frustumCulled=false;mesh.castShadow=mesh.receiveShadow=true;});
