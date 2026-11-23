@@ -10,7 +10,7 @@ import {localPerformanceProbe} from './performanceProbe.ts';
  * batches are frustum-culled by tile for BOTH solo and split-screen cameras. */
 function* buildSmallBridges(scene:T.Scene,plan:SmallBridgePlan){
  const root=new T.Group();root.name='Mapped canal bridges and raised trail links';
- const materials={stone:new T.MeshStandardMaterial({name:'Canal bridge limestone',color:0x9e9e91,roughness:.88}),red:new T.MeshStandardMaterial({name:'Casino bridge red cast iron',color:0xa72820,roughness:.54,metalness:.32,side:T.DoubleSide}),iron:new T.MeshStandardMaterial({color:0x5a4a43,roughness:.7,metalness:.25}),timber:new T.MeshStandardMaterial({color:0x74634b,roughness:.92}),brick:new T.MeshStandardMaterial({color:0x9d5e43,roughness:.93})};
+ const materials={woodside:new T.MeshStandardMaterial({color:0x383d3c,roughness:.7,metalness:.35}),stone:new T.MeshStandardMaterial({name:'Canal bridge limestone',color:0x9e9e91,roughness:.88}),red:new T.MeshStandardMaterial({name:'Casino bridge red cast iron',color:0xa72820,roughness:.54,metalness:.32,side:T.DoubleSide}),iron:new T.MeshStandardMaterial({color:0x5a4a43,roughness:.7,metalness:.25}),timber:new T.MeshStandardMaterial({color:0x74634b,roughness:.92}),brick:new T.MeshStandardMaterial({color:0x9d5e43,roughness:.93})};
  finishBridgeMaterial(materials.stone,'aged-concrete');finishBridgeMaterial(materials.red,'weathered-red-iron');finishBridgeMaterial(materials.iron,'rusted-steel');
  materials.brick.onBeforeCompile=shader=>{
   shader.vertexShader='varying vec3 bridgePos;\n'+shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nbridgePos=position;');
@@ -44,6 +44,12 @@ function* buildSmallBridges(scene:T.Scene,plan:SmallBridgePlan){
    const key=Math.floor(x/256)+','+Math.floor(z/256)+',red';
    if(!batches.has(key))batches.set(key,{kind:'red',geometry:[]});
    casinoBridgeRail(p,g=>batches.get(key)!.geometry.push(g),localPerformanceProbe());continue;
+  }
+  if(p.id==='42986439'){
+   box('stone',x,p.bottom+.13,z,.22,.26,len,yaw);
+   for(const level of [.48,.9])box('woodside',x,p.bottom+level,z,.14,.12,len,yaw);
+   const posts=Math.ceil(len/2.2);for(let i=0;i<=posts;i++)box('woodside',p.a[0]+dx*i/posts,p.bottom+.5,p.a[1]+dz*i/posts,.14,1,.14,yaw);
+   continue;
   }
   if(p.style==='brick'){
    const h=p.top-p.bottom;

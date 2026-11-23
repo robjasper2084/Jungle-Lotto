@@ -58,6 +58,11 @@ export async function addMeadow(scene:T.Scene){
  let reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;const motion=document.getElementById('motion') as HTMLInputElement|null;motion?.addEventListener('change',()=>reduced=motion.checked);
  const stats={cells:plan.cells.length,tufts:0,trianglesPerTuft:56};
  function update(time:number,x:number,z:number,y=2){
+  // The original meadow plan predates the Detroit streets and the cemetery DEM.
+  if(x<-450&&z<=1550){
+   if(lastX!==Infinity||stats.tufts){for(const tile of tiles)tile.visible=false;}
+   stats.tufts=0;lastX=Infinity;return;
+  }
   clock.value=reduced?0:time;rider.value.set(x,y,z);const budget=meadowBudget[quality];
   if(Math.hypot(x-lastX,z-lastZ)<3)return;lastX=x;lastZ=z;
   const ix=Math.round(x/plan.cellSize),iz=Math.round(z/plan.cellSize),r=Math.ceil(budget.radius/plan.cellSize)+1;
