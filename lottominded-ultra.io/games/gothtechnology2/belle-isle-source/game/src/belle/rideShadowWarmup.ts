@@ -1,5 +1,5 @@
 import {
- OrthographicCamera,Vector3,Vector4,WebGLRenderTarget,
+ InstancedMesh,OrthographicCamera,Vector3,Vector4,WebGLRenderTarget,
  type Camera,type DirectionalLight,type Object3D,type Scene,type WebGLRenderer
 } from 'three';
 import {GpuFrameGate} from './gpuFramePacing.ts';
@@ -22,6 +22,12 @@ export async function warmRideShadows(renderer:WebGLRenderer,scene:Scene,rider:O
  const previousScissor=launchView?renderer.getScissor(new Vector4()):undefined;
  const scissorTest=launchView?renderer.getScissorTest():false;
  const draw=renderer.renderBufferDirect,visible=rider.visible,autoUpdate=light?.shadow.autoUpdate;
+ const approachMeshes:{mesh:InstancedMesh;visible:boolean;frustumCulled:boolean}[]=[];
+ if(launchView&&!reveal)scene.traverse(object=>{
+  if(object instanceof InstancedMesh&&object.userData.warmRideAppearance&&object.count===0&&object.instanceMatrix.count>0){
+   approachMeshes.push({mesh:object,visible:object.visible,frustumCulled:object.frustumCulled});
+  }
+ });
  const offset=light?new Vector3(x-light.target.position.x,0,z-light.target.position.z):undefined;
  if(light&&offset){
   light.position.add(offset);light.target.position.add(offset);
@@ -49,10 +55,16 @@ export async function warmRideShadows(renderer:WebGLRenderer,scene:Scene,rider:O
    renderer.setRenderTarget(null);
    if(!reveal)renderer.setScissor(0,0,1,1);
    renderer.setScissorTest(!reveal);
+   // Distance-selected canal props are empty at spawn. Their first real draw
+   // can build a native GPU pipeline even after the GLSL program has linked.
+   for(const {mesh} of approachMeshes){mesh.count=1;mesh.visible=true;mesh.frustumCulled=false;}
    renderer.render(scene,launchView);
   }
  }finally{
   renderer.renderBufferDirect=draw;rider.visible=visible;
+  for(const state of approachMeshes){
+   state.mesh.count=0;state.mesh.visible=state.visible;state.mesh.frustumCulled=state.frustumCulled;
+  }
   if(light&&offset){
    light.position.sub(offset);light.target.position.sub(offset);light.shadow.autoUpdate=autoUpdate!;
    renderer.shadowMap.needsUpdate=true;

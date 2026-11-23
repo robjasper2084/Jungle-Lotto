@@ -53,6 +53,7 @@ export function addCanalRoots(scene:T.Scene,map:ParkMap,terrain:ParkTerrain,tree
  };mat.customProgramCacheKey=()=> 'canal-root-bark-v1';
  const mesh=new T.InstancedMesh(geo,mat,roots.length),dummy=new T.Object3D();
  mesh.name='Canal and riparian exposed root systems';mesh.castShadow=false;mesh.receiveShadow=true;mesh.frustumCulled=false;mesh.visible=false;mesh.count=0;
+ mesh.userData.warmRideAppearance=true;
  scene.add(mesh);
  let quality:'smooth'|'automatic'|'high'='automatic',lastX=Infinity,lastZ=Infinity;
  const stats={total:roots.length,visible:0,maxDraws:1};

@@ -63,6 +63,7 @@ export function addShallowWater(scene:T.Scene,map:ParkMap,polygon:(points:Point[
  const rock=new T.InstancedMesh(new T.DodecahedronGeometry(1,0),
   new T.MeshStandardMaterial({name:'Submerged limestone stones',color:0x7b7d74,roughness:.78,flatShading:true}),Math.max(1,plan.stones.length));
  rock.name='Visible submerged lagoon stones';rock.count=0;rock.visible=false;rock.castShadow=false;scene.add(rock);
+ rock.userData.warmRideAppearance=true;
  const dummy=new T.Object3D();let quality:keyof typeof SHALLOW_LIMITS='automatic',lastX=Infinity,lastZ=Infinity;
  const stats={edges:plan.edges,stones:plan.stones.length,visibleStones:0,maxDraws:3};
  return{stats,

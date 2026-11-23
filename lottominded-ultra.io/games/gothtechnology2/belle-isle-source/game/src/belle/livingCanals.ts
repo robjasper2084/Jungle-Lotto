@@ -85,7 +85,7 @@ export function addLivingCanals(scene:T.Scene,map:ParkMap,terrain:ParkTerrain){
  const branches=new T.InstancedMesh(fallenBranchGeometry(),branchMaterial,Math.max(1,plan.branches.length));
  if(plan.reeds.length)prepareColoredDetailPool(reeds);
  if(plan.branches.length)prepareColoredDetailPool(branches);
- for(const mesh of [reeds,branches]){mesh.count=0;mesh.visible=false;mesh.frustumCulled=false;mesh.castShadow=false;mesh.receiveShadow=true;mesh.instanceMatrix.setUsage(T.DynamicDrawUsage);scene.add(mesh);}
+ for(const mesh of [reeds,branches]){mesh.count=0;mesh.visible=false;mesh.frustumCulled=false;mesh.castShadow=false;mesh.receiveShadow=true;mesh.userData.warmRideAppearance=true;mesh.instanceMatrix.setUsage(T.DynamicDrawUsage);scene.add(mesh);}
  reeds.name='Sheltered canal reeds and sedges';branches.name='Dry fallen branches along wooded canals';
  const diagnostic=localPerformanceProbe();
  let quality:keyof typeof CANAL_DETAIL_LIMITS='automatic',lastX=Infinity,lastZ=Infinity;

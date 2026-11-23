@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
- BoxGeometry,DirectionalLight,Group,Mesh,MeshBasicMaterial,MeshDepthMaterial,PerspectiveCamera,Scene,Vector4,WebGLRenderTarget,
+ BoxGeometry,DirectionalLight,Group,InstancedMesh,Mesh,MeshBasicMaterial,MeshDepthMaterial,PerspectiveCamera,Scene,Vector4,WebGLRenderTarget,
  type WebGLRenderer
 } from 'three';
 import {warmRideShadows} from './rideShadowWarmup.ts';
@@ -47,6 +47,8 @@ test('ride warmup submits a bounded depth draw and restores the live renderer',a
 for(const reveal of [false,true])test('the launch view warms the '+(reveal?'full':'clipped')+' screen pipeline and restores viewport clipping',async()=>{
  const scene=new Scene(),rider=new Group(),view=new PerspectiveCamera();
  rider.visible=false;scene.add(rider);
+ const canal=new InstancedMesh(new BoxGeometry(),new MeshBasicMaterial(),2);
+ canal.count=0;canal.visible=false;canal.userData.warmRideAppearance=true;scene.add(canal);
  const scissor=new Vector4(7,8,900,600);
  let enabled=reveal,drawn=false;
  const fake={
@@ -65,10 +67,14 @@ for(const reveal of [false,true])test('the launch view warms the '+(reveal?'full
   render(active:Scene,camera:PerspectiveCamera){
    assert.equal(active,scene);assert.equal(camera,view);assert.ok(rider.visible);
    assert.equal(enabled,!reveal);
+   assert.equal(canal.count,reveal?0:1);
+   assert.equal(canal.visible,!reveal);
+   assert.equal(canal.frustumCulled,reveal);
    assert.deepEqual(scissor.toArray(),reveal?[7,8,900,600]:[0,0,1,1]);drawn=true;
   }
  };
  await warmRideShadows(fake as unknown as WebGLRenderer,scene,rider,0,0,view,reveal);
  assert.ok(drawn);assert.equal(rider.visible,false);assert.equal(enabled,reveal);
+ assert.equal(canal.count,0);assert.equal(canal.visible,false);assert.equal(canal.frustumCulled,true);
  assert.deepEqual(scissor.toArray(),[7,8,900,600]);
 });
