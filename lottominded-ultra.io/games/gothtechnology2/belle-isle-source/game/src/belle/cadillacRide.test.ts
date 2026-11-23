@@ -43,3 +43,32 @@ test('Fleetwood rig drives, steers, brakes, opens at rest and stops before a wal
   ride.toggleDoor();advance(100,0,1,0);
   assert.equal(ride.sim.gear,'R');assert(ride.sim.pose.speed<0);
 });
+
+test('cabin view follows suspension and keeps both faces framed in either iPad orientation',()=>{
+  const group=new T.Group();
+  for(const n of asset.nodes){const part=new T.Group();part.name=n.name;if(n.translation)part.position.fromArray(n.translation);group.add(part);}
+  const terrain={map:{spawn:{x:0,z:0,heading:0},roads:[{points:[[0,-20],[0,20]]}]},
+    height:()=>0,land:()=>true,obstructed:()=>false,bridge:()=>({active:false,t:0,side:0}),raycastObstacle:()=>null} as unknown as ParkTerrain;
+  const ride=new CadillacRide(group,terrain);ride.start();
+  const body=group.getObjectByName('SprungBody')!;
+  const driver=new T.Object3D(),dog=new T.Object3D();
+  // Independently measured head centres of the posed, shipped character skins.
+  driver.position.set(.4343,1.1759,.2011);dog.position.set(-.4252,1.1278,-.6);body.add(driver,dog);
+  group.position.set(400,2,-300);group.rotation.y=1.4;body.position.y=.09;body.rotation.set(.10,0,-.08);
+  for(const [width,height]of [[1194,834],[834,1194]]){
+    const camera=new T.PerspectiveCamera(60,width/height,.04,2000);
+    ride.camera(camera,true,0,.1,1/60,true);camera.updateMatrixWorld(true);
+    const anchor=group.getObjectByName('Cadillac_InteriorCamera')!;
+    assert(camera.position.distanceTo(anchor.getWorldPosition(new T.Vector3()))<1e-8);
+    for(const head of [driver,dog]){
+      const screen=head.getWorldPosition(new T.Vector3()).project(camera);
+      assert(Math.abs(screen.x)<.9&&Math.abs(screen.y)<.9&&screen.z>-1&&screen.z<1,
+        `${width}×${height}: occupant outside the camera frame: ${screen.toArray()}`);
+    }
+    const before=camera.getWorldDirection(new T.Vector3());
+    ride.camera(camera,true,.2,.1,1/60,true);
+    assert(before.angleTo(camera.getWorldDirection(new T.Vector3()))>.15,'look input remains responsive');
+    ride.camera(camera,false,0,.1,1/60,true);
+    assert.equal(camera.fov,54);assert.deepEqual(camera.up.toArray(),[0,1,0]);
+  }
+});

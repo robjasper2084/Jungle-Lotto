@@ -1,6 +1,7 @@
 import * as T from 'three';
-import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {GLTFLoader,type GLTF} from 'three/addons/loaders/GLTFLoader.js';
 import {CarController,type CarInput} from './carController.ts';
+import {CadillacCabin} from './cadillacCabin.ts';
 import type {ParkTerrain} from './terrain.ts';
 
 const modelUrl='./belle/vehicles/silver-cadillac.glb';
@@ -12,6 +13,7 @@ const radius=.346, wheelbase=3.213, track=1.648;
 const clamp=T.MathUtils.clamp;
 export class CadillacRide {
   readonly sim:CarController;
+  readonly cabin?:CadillacCabin;
   private readonly body:T.Object3D;
   private readonly door:T.Object3D;
   private readonly steeringWheel:T.Object3D;
@@ -21,6 +23,8 @@ export class CadillacRide {
   private readonly aim=new T.Vector3();
   private readonly wanted=new T.Vector3();
   private readonly steeringAxis=new T.Vector3(0,.42,-.91).normalize();
+  private readonly interiorEye=new T.Object3D();
+  private readonly interiorAim=new T.Object3D();
   private doorAngle=0;
   private doorOpen=false;
   exiting=false;
@@ -29,13 +33,19 @@ export class CadillacRide {
   private travel=0;
   private lastSpeed=0;
   riding=false;
-  constructor(readonly model:T.Group,private terrain:ParkTerrain){
+  constructor(readonly model:T.Group,private terrain:ParkTerrain,occupants?:{hero:T.Object3D;dog:GLTF;heroClips?:T.AnimationClip[]}){
     const need=(name:string)=>{const item=model.getObjectByName(name);if(!item)throw Error('Cadillac part missing: '+name);return item;};
     this.body=need('SprungBody');this.door=need('DriverDoor');this.steeringWheel=need('SteeringWheel');
+    // A passenger-side cabin camera shows the driver's profile and rear passenger.
+    // These anchors follow the same suspension transform as the seats and occupants.
+    this.interiorEye.name='Cadillac_InteriorCamera';this.interiorEye.position.set(-.61,1.19,.57);
+    this.interiorAim.name='Cadillac_InteriorTarget';this.interiorAim.position.set(.10,1.16,-.28);
+    this.body.add(this.interiorEye,this.interiorAim);
     this.hubs=['FL','FR','RL','RR'].map(axle=>({hub:need('Hub'+axle),spin:need('Spin'+axle),front:axle.startsWith('F')}));
     model.traverse(o=>{if(o instanceof T.Mesh){
       for(const m of ([] as T.Material[]).concat(o.material))if(m instanceof T.MeshStandardMaterial)this.lenses.set(m.name,m);
     }});
+    if(occupants)this.cabin=new CadillacCabin(model,occupants.hero,occupants.dog,occupants.heroClips);
     this.sim=new CarController(terrain,terrain.map.spawn);
     model.visible=false;
   }
@@ -51,6 +61,7 @@ export class CadillacRide {
     if(!this.sim.reset(p.x,p.z,p.heading))throw Error('No clear pavement for Cadillac');
     this.sim.engine=true;this.sim.selectGear('D');this.riding=this.model.visible=true;
     this.doorAngle=this.doorOpen?1:0;this.doorOpen=this.exiting=false;this.pitch=this.heave=this.travel=this.lastSpeed=0;
+    this.cabin?.reset();
     this.update(0,{gas:0,brake:0,steer:0,handbrake:false},0,false);
   }
   leave(){this.riding=this.model.visible=this.exiting=this.doorOpen=false;}
@@ -85,6 +96,7 @@ export class CadillacRide {
     this.body.position.y=this.heave;
     this.body.rotation.set(p.pitch-this.pitch,0,p.roll);
     this.steeringWheel.quaternion.setFromAxisAngle(this.steeringAxis,p.steering*5.5);
+    this.cabin?.update(dt,p.steering,reduced);
     this.travel+=Math.abs(p.speed)*dt;
     this.lenses.get('BrakeLens')?.emissive.setRGB(this.sim.braking?.95:.15,.005,.007);
     this.lenses.get('Headlamp')?.emissive.setRGB(.23+.75*night,.21+.67*night,.15+.51*night);
@@ -93,8 +105,13 @@ export class CadillacRide {
   camera(camera:T.PerspectiveCamera,inside:boolean,yaw:number,pitch:number,dt:number,snap:boolean){
     const p=this.sim.pose,angle=p.heading+yaw;
     if(inside){
-      this.eye.set(.43,1.16+this.heave,.33).applyAxisAngle(T.Object3D.DEFAULT_UP,p.heading).add(this.model.position);
-      this.aim.copy(this.eye).add(this.wanted.set(Math.sin(angle),Math.tan(-pitch+.075),Math.cos(angle)).multiplyScalar(8));
+      this.interiorEye.getWorldPosition(this.eye);
+      this.wanted.copy(this.interiorAim.position).sub(this.interiorEye.position);
+      const heading=Math.atan2(this.wanted.x,this.wanted.z)+yaw;
+      const elevation=clamp(Math.atan2(this.wanted.y,Math.hypot(this.wanted.x,this.wanted.z))-(pitch-.1),-1.35,1.35);
+      this.wanted.set(Math.sin(heading)*Math.cos(elevation),Math.sin(elevation),Math.cos(heading)*Math.cos(elevation));
+      this.aim.copy(this.interiorEye.position).add(this.wanted);
+      this.body.localToWorld(this.aim);
       camera.position.copy(this.eye);
     }else{
       this.aim.set(p.x,p.y+1.03,p.z);
@@ -106,10 +123,14 @@ export class CadillacRide {
       this.wanted.y=Math.max(this.wanted.y,this.terrain.height(this.wanted.x,this.wanted.z,p.y)+.5);
       camera.position.lerp(this.wanted,snap?1:1-Math.exp(-dt*12));
     }
-    const fov=inside?66:54;if(camera.fov!==fov){camera.fov=fov;camera.updateProjectionMatrix();}
+    // Retain enough horizontal coverage for both occupants when an iPad rotates.
+    const fov=inside?clamp(T.MathUtils.radToDeg(2*Math.atan(Math.tan(T.MathUtils.degToRad(41))/camera.aspect)),55,110):54;
+    if(camera.fov!==fov){camera.fov=fov;camera.updateProjectionMatrix();}
+    camera.up.copy(T.Object3D.DEFAULT_UP);
     camera.lookAt(this.aim);
   }
   diagnostics(){return {vehicle:'silver-cadillac',gear:this.sim.gear,speedMps:this.sim.pose.speed,distanceM:this.travel,
     steeringRad:this.sim.pose.steering,wheelPhaseRad:this.hubs.map(w=>w.spin.rotation.x),driverDoorRad:this.door.rotation.y,
-    suspensionPitchRad:this.body.rotation.x,suspensionRollRad:this.body.rotation.z,braking:this.sim.braking,collision:this.sim.collided};}
+    suspensionPitchRad:this.body.rotation.x,suspensionRollRad:this.body.rotation.z,braking:this.sim.braking,collision:this.sim.collided,
+    ...(this.cabin?{occupants:this.cabin.diagnostics()}: {})};}
 }
