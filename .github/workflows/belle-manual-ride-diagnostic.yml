@@ -231,7 +231,6 @@ jobs:
           await writeFile('evidence/inputs.json',JSON.stringify({baseline:process.env.BASELINE_SHA,candidate:process.env.CANDIDATE_SHA,measurementCommit:process.env.GITHUB_SHA,
             device:process.env.DEVICE,mode:'full',seconds:90,order:['A1','B1','B2','A2'],builds},null,2)+'\n');
           NODE
-          git -C candidate-source fetch --no-tags --depth=1 ../baseline-source "$BASELINE_SHA"
       - id: runtime
         name: Install one existing Chrome runtime for both exact sources
         working-directory: candidate-source/lottominded-ultra.io/games/gothtechnology2
@@ -247,6 +246,7 @@ jobs:
         working-directory: candidate-source/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
         env:
           BELLE_SHADER_BASELINE: 41ee1d94b532ae4a31a6547261ebfd98ec79de44
+          GIT_ALTERNATE_OBJECT_DIRECTORIES: ${{ github.workspace }}/baseline-source/.git/objects
         run: node scripts/render-shader-equivalence.mjs
       - id: production
         name: Prove the baseline completed actual production deployment
