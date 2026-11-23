@@ -1,9 +1,9 @@
 import type {Camera,DirectionalLight,Object3D,Scene,WebGLRenderer} from 'three';
 
 import {installGpuFramePacing} from './gpuFramePacing.ts';
-import {warmObjectTextures} from './startupWork.ts';
+import {warmObjectTextures,yieldStartupTask} from './startupWork.ts';
 
-type Compiler=Pick<WebGLRenderer,'compileAsync'> & Partial<Pick<WebGLRenderer,'initTexture'>>;
+type Compiler=Pick<WebGLRenderer,'compileAsync'> & Partial<Pick<WebGLRenderer,'initTexture'|'info'>>;
 type Pending={promise:Promise<void>;signal?:AbortSignal;cancel:AbortController};
 const cancelled=(signal:AbortSignal)=>signal.reason instanceof Error?signal.reason:new DOMException('Ride preparation cancelled','AbortError');
 function readyOrCancelled<T>(ready:Promise<T>,signal:AbortSignal){
@@ -55,6 +55,16 @@ export class SceneWarmup {
      try{if(model)model.visible=true;ready=this.renderer.compileAsync(compileRoot,this.camera,this.scene);}
      finally{if(model)model.visible=visible!;}
      await readyOrCancelled(ready,cancel.signal);
+     if(model){
+      let sliceStart=performance.now();
+      for(const program of this.renderer.info?.programs??[]){
+       if(cancel.signal.aborted)throw cancelled(cancel.signal);
+       program.getUniforms();
+       if(performance.now()-sliceStart>=8){
+        await yieldStartupTask();sliceStart=performance.now();
+       }
+      }
+     }
      if(!shadows.length)break;
     }
     if(cancel.signal.aborted)throw cancelled(cancel.signal);
