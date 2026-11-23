@@ -2,17 +2,11 @@ import * as T from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {districts} from './detroitGround.ts';
 import {planDetroitProps} from './detroitProps.ts';
+import models from './districtModelUrls.ts';
 import type {ParkTerrain,Point} from './terrain.ts';
 
 type Building=typeof districts.buildings[number];
 const loader=new GLTFLoader();
-const streets=new URL('./districtModels/street-at-sunset.glb',import.meta.url).href;
-const scenery=new URL('./districtModels/detroit-scenery.glb',import.meta.url).href;
-const landmarks:Record<string,string>={
- 'elmwood-gatehouse':new URL('./districtModels/elmwood-gatehouse.glb',import.meta.url).href,
- 'elmwood-entrance-sign':new URL('./districtModels/elmwood-entrance-sign.glb',import.meta.url).href,
- 'elmwood-chapel':new URL('./districtModels/elmwood-chapel.glb',import.meta.url).href,
-};
 type Fit={id:string;x:number;z:number;yaw:number;w:number;d:number;h:number};
 export function fitStreetBuilding(b:Building):Fit|undefined {
  const ring=b.points;let longest=0,angle=0,area=0;
@@ -73,10 +67,10 @@ export function streamDetroitArt(scene:T.Scene,terrain:ParkTerrain,fits:Fit[],fa
  return (x:number,z:number)=>{
   if(Math.hypot(x-lastX,z-lastZ)<16&&Math.min(...retry.values())>performance.now())return;
   lastX=x;lastZ=z;
-  if(x<350)load(streets,addStreets);
-  load(scenery,addProps);
+  if(x<350)load(models['street-at-sunset'],addStreets);
+  load(models['detroit-scenery'],addProps);
   for(const p of districts.models)if(Math.hypot(p.point[0]-x,p.point[1]-z)<(p.asset==='elmwood-chapel'?190:275)){
-   load(landmarks[p.asset],object=>{object.position.set(p.point[0],terrain.height(...p.point),p.point[1]);object.rotation.y=p.yaw;object.scale.setScalar(p.scale);object.name=p.asset;scene.add(object);
+   load(models[p.asset],object=>{object.position.set(p.point[0],terrain.height(...p.point),p.point[1]);object.rotation.y=p.yaw;object.scale.setScalar(p.scale);object.name=p.asset;scene.add(object);
     const proxy=architecturalProxies.get(p.asset);if(proxy)proxy.visible=false;
    });
   }
