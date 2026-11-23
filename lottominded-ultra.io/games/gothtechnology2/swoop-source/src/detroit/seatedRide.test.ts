@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {assetPath as resolve} from './testAssets.ts';
-import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {GLTFLoader} from './compressedGLTFLoader.ts';
 import {Vector3,Box3} from 'three';
 import {Hero} from './actors.ts';
 import {createPose,RideController,NEUTRAL_ACTIONS} from './controller.ts';

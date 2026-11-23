@@ -32,11 +32,11 @@ export function loadRealisticMaterials(renderer:T.WebGLRenderer){
     try{
      const [color,detail]=await Promise.all(['color','detail'].map(suffix=>load('./belle/skins/'+name+'-'+suffix+'.webp')));
      for(const texture of [color,detail]){texture.wrapS=texture.wrapT=T.RepeatWrapping;texture.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());}
-     color.colorSpace=T.SRGBColorSpace;
+     color.colorSpace=T.SRGBColorSpace;detail.colorSpace=T.NoColorSpace;
      await warmTextureList(renderer,[color,detail],controller.signal);staged.set(name,{color,detail});
     }catch(error){controller.abort(error);throw error;}
    },controller.signal);
-   const water=await load('./belle/skins/water-normal.webp');water.wrapS=water.wrapT=T.RepeatWrapping;water.anisotropy=4;
+   const water=await load('./belle/skins/water-normal.webp');water.colorSpace=T.NoColorSpace;water.wrapS=water.wrapT=T.RepeatWrapping;water.anisotropy=4;
    await warmTextureList(renderer,[water],controller.signal);
    for(const [name,textures] of staged)maps.set(name,textures);waterNormal=water;
   }catch(error){controller.abort(error);for(const texture of owned)texture.dispose();throw error;}

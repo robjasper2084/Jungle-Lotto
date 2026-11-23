@@ -3,29 +3,32 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {assetPath as resolve} from './testAssets.ts';
 import {Box3,Vector3} from 'three';
-import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-import {DETROIT_LANDMARKS,SKYLINE_ID} from './architectureData.ts';
+import {GLTFLoader} from './compressedGLTFLoader.ts';
+import {DETROIT_LANDMARKS,SKYLINE_PATH} from './architectureData.ts';
 import {worldSolids,SPOTS} from './world.ts';
 
-async function landmark(id:string){
-  const buf=await readFile(resolve('../../exports/architecture',id+'.glb')),n=buf.readUInt32LE(12),j=JSON.parse(buf.subarray(20,20+n).toString());
+async function landmark(path:string){
+  const buf=await readFile(resolve(path)),n=buf.readUInt32LE(12),j=JSON.parse(buf.subarray(20,20+n).toString());
   // Decode actual exported geometry and transforms, excluding browser-only image decoding.
-  assert.ok(j.images?.length||id===SKYLINE_ID);assert.ok(j.meshes.length>3);
+  assert.ok(j.images?.length||path===SKYLINE_PATH);assert.ok(j.meshes.length>3);
   delete j.images;delete j.textures;delete j.materials;for(const m of j.meshes)for(const p of m.primitives)delete p.material;
   const json=Buffer.from(JSON.stringify(j)),length=Math.ceil(json.length/4)*4,pad=Buffer.alloc(length,32);json.copy(pad);
   const bin=buf.subarray(20+n),out=Buffer.alloc(20+length+bin.length);out.writeUInt32LE(0x46546c67,0);out.writeUInt32LE(2,4);out.writeUInt32LE(out.length,8);out.writeUInt32LE(length,12);out.writeUInt32LE(0x4e4f534a,16);pad.copy(out,20);bin.copy(out,20+length);
   return (await new GLTFLoader().parseAsync(out.buffer.slice(out.byteOffset,out.byteOffset+out.length),'')).scene;
 }
 for(const l of DETROIT_LANDMARKS)test(l.name+' exports at architectural scale with a protective footprint',async()=>{
-  const model=await landmark(l.id);model.rotation.y=l.rotation;model.updateMatrixWorld(true);
+  const model=await landmark('exports/architecture/'+l.id+'.glb');model.rotation.y=l.rotation;model.updateMatrixWorld(true);
   const bounds=new Box3().setFromObject(model),size=bounds.getSize(new Vector3());
   assert.ok(size.toArray().every(Number.isFinite));assert.ok(size.y>l.height*.8&&size.y<l.height+1);
   assert.ok(size.x<=l.hx*2+2,`width ${size.x}`);assert.ok(size.z<=l.hz*2+2,`depth ${size.z}`);
   assert.ok(bounds.min.y>-.2&&bounds.min.y<.2,`ground ${bounds.min.y}`);
 });
 test('Renaissance Center has a 221 m central tower and full multi-tower footprint',async()=>{
-  const model=await landmark(SKYLINE_ID),size=new Box3().setFromObject(model).getSize(new Vector3());
-  assert.ok(size.y>220&&size.y<226);assert.ok(size.x>140&&size.z>140);
+  const model=await landmark(SKYLINE_PATH),size=new Box3().setFromObject(model).getSize(new Vector3());
+  const tower=model.getObjectByName('RenCen_tower_0');assert.ok(tower,'central tower');
+  const height=new Box3().setFromObject(tower).getSize(new Vector3()).y;
+  assert.ok(height>220&&height<226);assert.ok(size.x>140&&size.z>140);
+  assert.ok(size.y>=height&&size.y-height<=6.1,'rooftop mechanical equipment');
 });
 test('landmarks keep the trail, warehouse footprints and sightseeing spawns clear',()=>{
   const solids=worldSolids();

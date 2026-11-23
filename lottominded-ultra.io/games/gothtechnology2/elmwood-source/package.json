@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
-  "description": "EUC Thrills \u00e2\u20ac\u201d an open-source arcade riding game about electric unicycles",
+  "description": "EUC Thrills â€” an open-source arcade riding game about electric unicycles",
   "license": "MIT",
   "author": "VibezZzCoder (https://github.com/VibezZzCoder)",
   "repository": {
@@ -13,11 +13,11 @@
   "homepage": "https://vibezzzcoder.github.io/EUC-thrills/",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "check": "tsc -p tsconfig.riverwalk.json --noEmit",
+    "check": "tsc -p tsconfig.merge-check.json --noEmit",
     "test:elmwood": "node --experimental-transform-types --test src/detroit/elmwood-*.test.ts src/detroit/blockingPack.test.ts"
   },
   "dependencies": {
-    "@digital-static/ridecore": "file:../../../../../Digital_Static_RideCore",
+    "@digital-static/ridecore": "file:../ride-core",
     "@dimforge/rapier3d-compat": "^0.20.0",
     "fflate": "0.8.3",
     "three": "0.185.1"

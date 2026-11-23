@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {assetPath as resolve} from './testAssets.ts';
-import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {GLTFLoader} from './compressedGLTFLoader.ts';
 import {Scene,Vector3,Box3} from 'three';
 import {TrafficView} from './actors.ts';
 import {trafficAt,trafficBounds,DetroitWorld,cutPoint} from './world.ts';

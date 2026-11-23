@@ -1,8 +1,12 @@
+import {districtSun,DETROIT_REFERENCE} from '../../../../greater-detroit-graphics/src/visualStandard.ts';
 export const CLOUD_TYPES=['changing','clear','wispy','scattered','layered','overcast'] as const;
 export type CloudType=typeof CLOUD_TYPES[number];
 export type SkySettings={hour:number;cycle:boolean;dayMinutes:number;clouds:CloudType};
 export const DEFAULT_SKY:SkySettings={hour:16.7,cycle:true,dayMinutes:20,clouds:'changing'};
 const clamp=(n:number,a:number,b:number)=>Math.max(a,Math.min(b,n));
+let sharedSolarCalibration=false;
+/** Opt-in reference calibration for comparison; no change to default authored sky. */
+export function setSharedSolarCalibration(enabled:boolean){sharedSolarCalibration=!!enabled;}
 export const wrapHour=(hour:number)=>((hour%24)+24)%24;
 export function normalizeSky(value:Partial<SkySettings>|null):SkySettings{
  const v=value||{};return {hour:Number.isFinite(v.hour)?wrapHour(v.hour!):DEFAULT_SKY.hour,cycle:typeof v.cycle==='boolean'?v.cycle:DEFAULT_SKY.cycle,dayMinutes:[10,20,60].includes(v.dayMinutes!)?v.dayMinutes!:20,clouds:CLOUD_TYPES.includes(v.clouds!)?v.clouds!:'changing'};
@@ -14,6 +18,7 @@ export function clockLabel(hour:number){const minutes=Math.floor(wrapHour(hour)*
  * east/west and noon to south; altitude/time remain an artistic day cycle,
  * not a date-dependent astronomical or civil-time calculation. */
 export function sunDirection(hour:number):[number,number,number]{
+ if(sharedSolarCalibration){const v=districtSun('belle-isle',DETROIT_REFERENCE.date,wrapHour(hour));return [v.x,v.y,v.z];}
  const a=(wrapHour(hour)-12)*Math.PI/12,s=Math.sin(a),c=Math.cos(a),x=-s,y=.82*c,z=.30*c,length=Math.hypot(x,y,z);return [x/length,y/length,z/length];
 }
 export function smooth(a:number,b:number,x:number){const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t);}

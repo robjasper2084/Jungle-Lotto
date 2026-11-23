@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
-import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {GLTFLoader} from './compressedGLTFLoader.ts';
 import {Vector3,Quaternion,SkinnedMesh} from 'three';
 import {BicycleView} from '@digital-static/ridecore/cycling-view';
 import {assetPath} from './testAssets.ts';
