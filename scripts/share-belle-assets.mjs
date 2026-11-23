@@ -6,7 +6,7 @@ const product='lottominded-ultra.io/games/gothtechnology2';
 /** Only the artifact copy is reduced. Editable source and exact committed binaries remain. */
 export async function shareBelleAssets(root,options={}){
  const game=options.game??resolve(root,product,'arcade/belle-isle-explorer');
- const pinSets=options.pinSets??(options.pins?[options.pins]:await Promise.all(['assetPins.json','vehicles/assetPins.json','cadillacHeroPins.json'].map(file=>readFile(new URL('../'+product+'/belle-isle-source/game/src/belle/'+file,import.meta.url),'utf8').then(JSON.parse))));
+ const pinSets=options.pinSets??(options.pins?[options.pins]:await Promise.all(['assetPins.json','vehicles/assetPins.json','cadillacHeroPins.json','hydraulicCadillacPins.json'].map(file=>readFile(new URL('../'+product+'/belle-isle-source/game/src/belle/'+file,import.meta.url),'utf8').then(JSON.parse))));
  const chunks=await readdir(resolve(game,'assets'));let runtime='';for(const file of chunks.filter(f=>f.endsWith('.js')))runtime+=await readFile(resolve(game,'assets',file),'utf8');
  const files=[],seen=new Set();for(const pins of pinSets){
  if(!/^[a-f0-9]{40}$/.test(pins.commit)||!pins.base.includes('/'+pins.commit+'/')||!pins.base.startsWith('https://raw.githubusercontent.com/robjasper2084/Jungle-Lotto/'))throw Error('Belle Isle requires immutable first-party asset pins');
