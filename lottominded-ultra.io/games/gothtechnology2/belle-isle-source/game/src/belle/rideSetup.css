@@ -8,6 +8,7 @@
 .ride-preview-slot svg{width:72px;height:58px;opacity:.55}
 .ride-preview-slot:after{content:attr(data-status);position:absolute;bottom:12px;left:0;width:100%;text-align:center;font:10px Arial,sans-serif;color:#adc3c7}
 .preview-ready .ride-preview-slot svg,.preview-ready .ride-preview-slot:after{visibility:hidden}
+.preview-static .ride-preview-slot:after{content:none}
 .ride-options strong{font-size:16px;line-height:1.4}
 .ride-options small{font-size:11px;display:block;line-height:1.5}
 .ride-options input:checked+span{border-color:#e1bd79;background:linear-gradient(155deg,#334e50,#172b32);box-shadow:inset 0 0 0 1px #e1bd7944}
