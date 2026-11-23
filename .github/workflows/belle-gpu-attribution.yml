@@ -1,0 +1,140 @@
+name: Belle native pipeline attribution
+
+on:
+  push:
+    branches: [upgrade-redesign-gpu-attribution-20261123]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: belle-pipeline-attribution-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  PRODUCT_PARENT_SHA: b1bcaf641c612890d118b4af698e01ccfccdc0b3
+  INTEGRATED_MAIN_SHA: 3e68163e94d173395cf7a2f47bd37859cf1a3f47
+  GAME_PATH: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+  RUNTIME_PATH: lottominded-ultra.io/games/gothtechnology2
+  STRICT_SCRIPT_SHA256: c7bf025a63918b885bcd7e1bcda55865423aba73c63f58a8287ff9a03af1a100
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Check test and build the exact diagnostic source
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm ci
+          npm run check
+          npm test
+          node --check scripts/manual-ride-diagnostic.mjs
+          node --check scripts/host-service-trace.mjs
+          npm run build
+      - name: Preserve complete source and build integrity
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {createHash} from 'node:crypto';
+          import {execFileSync} from 'node:child_process';
+          import {readFile,readdir,writeFile,mkdir,cp} from 'node:fs/promises';
+          import {resolve,relative,sep} from 'node:path';
+          const game=process.cwd(),out=resolve(process.env.RUNNER_TEMP,'gpu-build'),hash=b=>createHash('sha256').update(b).digest('hex');
+          const commit=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();assert.equal(commit,process.env.GITHUB_SHA);
+          const tree=execFileSync('git',['rev-parse','HEAD^{tree}'],{encoding:'utf8'}).trim();
+          const parent=execFileSync('git',['rev-parse','HEAD^'],{encoding:'utf8'}).trim();assert.equal(parent,process.env.PRODUCT_PARENT_SHA);
+          const sourceFiles=['scripts/sustained-ride-profile.mjs','scripts/manual-ride-diagnostic.mjs','scripts/host-service-trace.mjs','scripts/coop-static-server.mjs','package-lock.json','../../package-lock.json',
+            ...['main.ts','gpuRenderDiagnostics.ts','pipelineDiagnostics.ts','gpuFramePacing.ts','loopDiagnostics.ts','renderDiagnostics.ts','renderSubmissionDiagnostics.ts','rideProfile.ts','rideProfileStats.ts','rideProfileBuild.ts'].map(x=>'src/belle/'+x)];
+          const sources=Object.fromEntries(await Promise.all(sourceFiles.map(async path=>[path,hash(await readFile(resolve(game,path)))])));
+          assert.equal(sources['scripts/sustained-ride-profile.mjs'],process.env.STRICT_SCRIPT_SHA256);
+          const files=[];async function walk(dir){for(const entry of await readdir(dir,{withFileTypes:true})){
+            const path=resolve(dir,entry.name);if(entry.isDirectory())await walk(path);else{assert(entry.isFile());const bytes=await readFile(path);files.push({path:relative(resolve(game,'dist'),path).split(sep).join('/'),bytes:bytes.length,sha256:hash(bytes)});}
+          }}await walk(resolve(game,'dist'));files.sort((a,b)=>a.path.localeCompare(b.path));
+          const metadata={version:1,repository:'robjasper2084/Jungle-Lotto',label:'candidate',commit,tree,workflowCommit:process.env.GITHUB_SHA,
+            integratedProductCommit:parent,integratedMainCommit:process.env.INTEGRATED_MAIN_SHA,
+            buildId:'pipeline-'+process.env.GITHUB_RUN_ID+'-'+commit,builtAt:new Date().toISOString(),node:process.version,sources,files};
+          await mkdir(out,{recursive:true});await cp(resolve(game,'dist'),resolve(out,'dist'),{recursive:true});
+          await writeFile(resolve(out,'manual-diagnostic-build.json'),JSON.stringify(metadata,null,2)+'\n');
+          console.log(JSON.stringify({commit,tree,buildId:metadata.buildId,files:files.length,strictScriptSha256:sources['scripts/sustained-ride-profile.mjs']}));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: belle-pipeline-build-${{ github.sha }}
+          path: ${{ runner.temp }}/gpu-build/
+          if-no-files-found: error
+          retention-days: 2
+
+  attribution:
+    name: Native Metal matched query controls and late host trace
+    needs: build
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@v4
+        with:
+          name: belle-pipeline-build-${{ github.sha }}
+          path: gpu-build
+      - name: Install the pinned browser driver and actual Chrome
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install chrome
+      - name: Capture the unchanged full scene with matched query controls
+        run: |
+          mkdir -p pipeline-evidence
+          node --input-type=module <<'NODE'
+          import {spawnSync} from 'node:child_process';
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const cases=[['A1','off',false],['B1','frame',false],['A2','off',true]],receipts=[];
+          for(const [name,condition,trace] of cases){
+            const args=[process.env.GAME_PATH+'/scripts/manual-ride-diagnostic.mjs',
+              '--game',process.env.GAME_PATH,'--build','gpu-build','--output','pipeline-evidence/'+name,
+              '--sha',process.env.GITHUB_SHA,'--source','candidate','--case',name,'--device','desktop',
+              '--baseline',process.env.GITHUB_SHA,'--candidate',process.env.GITHUB_SHA,'--condition',condition,...(trace?['--trace']:[])];
+            const child=spawnSync(process.execPath,args,{stdio:'inherit'});
+            let report=null,readError=null;
+            try{report=JSON.parse(readFileSync('pipeline-evidence/'+name+'/report.json','utf8'));}catch(error){readError=String(error);}
+            receipts.push({case:name,condition,lateHostTrace:trace,status:child.status,signal:child.signal,error:child.error?String(child.error):null,readError,
+              source:report?.sourceHead,tree:report?.sourceTree,build:report?.buildManifestSha256,
+              valid:report?.diagnosticEvidenceValid,frameQualityAccepted:report?.frameQualityAccepted,
+              frames:report?.profile?.frames,frameMs:report?.profile?.metrics?.frameMs,over250ms:report?.profile?.over250ms,
+              heldInputWallMs:report?.heldInputWallMs,actualGpu:report?.actualGpu,
+              pacing:report?.observers?.gpuFramePacing,pipelineCounts:report?.pipeline?.counts,
+              gpuQueries:report?.gpuTiming?.counts,hostTraceStatus:report?.hostServiceTrace?.status,
+              errors:report?.errors,probeErrors:report?.probeErrors,failedRequests:report?.failedRequests});
+            writeFileSync('pipeline-evidence/comparison.json',JSON.stringify({version:1,source:process.env.GITHUB_SHA,receipts,
+              note:'A1 and B1 use one identical full-quality build with the same original-fence observer. Only B1 has sparse whole-callback queries (every32 eligible callbacks). A2 is a separate query-off trace case; tracing starts after60 seconds and includes observer overhead. No case substitutes for strict release acceptance.'},null,2)+'\n');
+          }
+          console.log('BELLE_PIPELINE_COMPARISON '+JSON.stringify(receipts));
+          process.exit(receipts.every(row=>row.status===0&&row.valid===true)?0:1);
+          NODE
+      - name: Preserve every case including original numerical failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-native-pipeline-attribution-${{ github.sha }}
+          path: pipeline-evidence/
+          if-no-files-found: warn
+          retention-days: 14

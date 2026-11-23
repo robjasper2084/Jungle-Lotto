@@ -40,6 +40,8 @@ import type {TrunkSpeakerFrame} from './cadillacAudio.ts';
 import {RideProfile} from './rideProfile.ts';
 import {createNatureRenderProbe} from './renderDiagnostics.ts';
 import {installRenderSubmissionProbe} from './renderSubmissionDiagnostics.ts';
+import {ManualGpuProbe,gpuDiagnosticMode} from './gpuRenderDiagnostics.ts';
+import {ManualPipelineProbe,pipelineDiagnosticRequested} from './pipelineDiagnostics.ts';
 import {createRideProfileBuildReader} from './rideProfileBuild.ts';
 import {gpuFramePacingDiagnostics,attachGpuFramePacingProbe} from './gpuFramePacing.ts';
 import {ManualLoopProbe} from './loopDiagnostics.ts';
@@ -221,6 +223,8 @@ const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreferen
  // governs whether decorative preview canvases should consume a second GPU.
  const gameGl=renderer.getContext(),gpuDebug=gameGl.getExtension('WEBGL_debug_renderer_info');
  const gpuName=String(gameGl.getParameter(gpuDebug?.UNMASKED_RENDERER_WEBGL??gameGl.RENDERER));
+ const pipelineProbe=pipelineDiagnosticRequested(location)?new ManualPipelineProbe(renderer):undefined;
+ if(pipelineProbe){Object.defineProperty(window,'__bellePipelineDiagnostics',{configurable:true,value:()=>pipelineProbe.snapshot()});window.addEventListener('pagehide',event=>{if(!event.persisted)pipelineProbe.dispose();});}
  const softwareStartup=softwareWebGLRenderer(gpuName);
  startup.setSoftwarePreview(softwareStartup);
  // Native Apple GPUs may overlap three complete callbacks while keeping a hard
@@ -513,8 +517,10 @@ const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreferen
   exit:()=>{clear();release();first=savedFirst;paused=true;el('pause').textContent='Resume';world.setQuality(savedQuality);if(savedQuality==='automatic')world.setBudget(frameBudget.scale);zone.hidden=!touch.checked;hero.rider.visible=true;snap=true;previous=performance.now();cameraYaw=0;cameraPitch=.1;camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);canvas.focus();}
  });
  const submissionProbe=renderProbe?installRenderSubmissionProbe(renderer,scene):undefined;
+ const gpuMode=gpuDiagnosticMode(location),gpuProbe=gpuMode?new ManualGpuProbe(renderer,undefined,gpuMode):undefined;
+ if(gpuProbe){Object.defineProperty(window,'__belleGpuDiagnostics',{configurable:true,value:()=>gpuProbe.snapshot()});window.addEventListener('pagehide',event=>{if(!event.persisted)gpuProbe.dispose();});}
  const loopProbe=renderProbe?new ManualLoopProbe():undefined;const loopBinding=loopProbe?attachGpuFramePacingProbe(renderer,loopProbe):undefined;
- const rideProfile=new URLSearchParams(location.search).has('profile')?new RideProfile(()=>({quality:graphics.value,effectiveQuality:world.quality.effective,cap,shadowMappingSupported:renderer.shadowMap.enabled,pixelRatio:renderer.getPixelRatio(),adaptiveScale:frameBudget.scale,world:world.stats,diagnosticReduction:localPerformanceProbe(),vehicle:cadillac?.riding?(cadillac.variant==='cadillac'?'silver-cadillac':cadillac.variant):hover?.riding?hover.vehicle:boat?.riding?'boat':'onewheel',cadillac:cadillac?.riding?cadillac.diagnostics():null,cockpitDisplay:hover?.cockpitDisplayDiagnostics??null}),{shortRideSeconds:cadillacDiagnostic?150:undefined,build:createRideProfileBuildReader(new URLSearchParams(location.search).get('profile')),loopProbe,loopCoverage:()=>loopBinding?.coverage(),gpuPacing:()=>gpuFramePacingDiagnostics(renderer),submissionCoverage:()=>submissionProbe?.coverage(),resetRenderDiagnostics:()=>{renderProbe?.cancelFrame();submissionProbe?.cancelFrame();}}):null;
+ const rideProfile=new URLSearchParams(location.search).has('profile')?new RideProfile(()=>({quality:graphics.value,effectiveQuality:world.quality.effective,cap,shadowMappingSupported:renderer.shadowMap.enabled,pixelRatio:renderer.getPixelRatio(),adaptiveScale:frameBudget.scale,world:world.stats,diagnosticReduction:localPerformanceProbe(),vehicle:cadillac?.riding?(cadillac.variant==='cadillac'?'silver-cadillac':cadillac.variant):hover?.riding?hover.vehicle:boat?.riding?'boat':'onewheel',cadillac:cadillac?.riding?cadillac.diagnostics():null,cockpitDisplay:hover?.cockpitDisplayDiagnostics??null}),{gpuProbe,pipelineProbe,shortRideSeconds:cadillacDiagnostic?150:undefined,build:createRideProfileBuildReader(new URLSearchParams(location.search).get('profile')),loopProbe,loopCoverage:()=>loopBinding?.coverage(),gpuPacing:()=>gpuFramePacingDiagnostics(renderer),submissionCoverage:()=>submissionProbe?.coverage(),resetRenderDiagnostics:()=>{renderProbe?.cancelFrame();submissionProbe?.cancelFrame();}}):null;
  let previous=performance.now(),lastUI=0,lastRender=0,clock=0,lastMeasurementEligible=false,activeFrames=0,stalledFrames=0,severeFrames=0,longestFrameMs=0;const samples:number[]=[];const target=new T.Vector3(),desired=new T.Vector3(),forward=new T.Vector3();function frame(now:number,xrFrame?:XRFrame){
  // The authentic MacArthur start frame must be rendered first. Once ready,
  // the software WebGL island freezes behind the open ride picker. Leaving
@@ -563,7 +569,12 @@ const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreferen
  document.addEventListener('visibilitychange',()=>{previous=performance.now();lastMeasurementEligible=false;});
  window.addEventListener('focus',()=>{previous=performance.now();lastMeasurementEligible=false;});
 
- renderer.setAnimationLoop(frame);
+ if(gpuProbe||pipelineProbe)renderer.setAnimationLoop((now,xrFrame)=>{
+  const eligible=!!rideProfile?.enabled&&active&&!paused&&!document.hidden&&renderFocused&&!scenePreparing&&!document.querySelector('dialog[open]')&&!renderer.xr.isPresenting;
+  const body=()=>gpuProbe?gpuProbe.runFrame(()=>frame(now,xrFrame),eligible):frame(now,xrFrame);
+  return pipelineProbe?pipelineProbe.runGameFrame(body,eligible):body();
+ });
+ else renderer.setAnimationLoop(frame);
 }
 // Give the title a painted frame before building the geographic scene.
 requestAnimationFrame(()=>requestAnimationFrame(()=>{void boot().catch(e=>{console.error(e);startup.error(e instanceof Error?e.message:String(e));});}));
