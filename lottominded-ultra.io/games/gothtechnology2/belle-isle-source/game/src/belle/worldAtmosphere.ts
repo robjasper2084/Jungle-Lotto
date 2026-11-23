@@ -30,7 +30,7 @@ export class WorldAtmosphere {
   const original=Array.isArray(mesh.material)?mesh.material:[mesh.material];
   const hair=/^Hero_Dreadlocks(?:_\d+)?$/.test(mesh.name);
   const coat=/^Hero_Body(?:_\d+)?$/.test(mesh.name)&&original.some(m=>m.userData.realisticSurface==='cloth'||/cloth|suit|coat/i.test(m.name));
-  const crown=!!(mesh as T.InstancedMesh).isInstancedMesh&&/^Nearby .+ leaves$/.test(mesh.name);
+  const crown=!!(mesh as T.InstancedMesh).isInstancedMesh&&!mesh.userData.solidCanopy&&/^Nearby .+ leaves$/.test(mesh.name);
   if((hair||coat||crown)&&!this.windMeshes.has(mesh)&&!mesh.customDepthMaterial&&!mesh.customDistanceMaterial){
    mesh.geometry.computeBoundingBox();const box=mesh.geometry.boundingBox;
    if(box&&!box.isEmpty()){

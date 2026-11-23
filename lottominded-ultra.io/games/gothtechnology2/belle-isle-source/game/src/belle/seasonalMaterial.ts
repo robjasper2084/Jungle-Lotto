@@ -1,5 +1,27 @@
 import * as T from 'three';
 import {seasonLook} from './seasonModel.ts';
+
+/** Whole crown lobes thin together in both the color and shadow passes. */
+export function solidCanopySeason(material:T.MeshStandardMaterial,geometry:T.BufferGeometry,evergreen:boolean,month:{value:number}){
+ const stride=geometry.userData.crownLobeIndices as number;
+ const lobes=geometry.getIndex()!.count/stride;
+ const autumn={value:0},spring={value:0};
+ material.onBeforeCompile=shader=>{
+  Object.assign(shader.uniforms,{autumn,spring});
+  shader.fragmentShader='uniform float autumn, spring;\n'+shader.fragmentShader.replace(
+   '#include <color_fragment>',`#include <color_fragment>
+   float crownLuma=dot(diffuseColor.rgb,vec3(.2126,.7152,.0722));
+   diffuseColor.rgb=mix(diffuseColor.rgb,vec3(crownLuma*1.67,crownLuma*.81,crownLuma*.25),autumn*.64);
+   diffuseColor.rgb*=mix(vec3(1.0),vec3(1.10,1.13,.76),spring*.4);`);
+ };
+ material.customProgramCacheKey=()=> 'solid-canopy-season-v1';
+ return{material,update(){
+  const look=seasonLook(month.value,evergreen);
+  autumn.value=look.autumn;spring.value=look.spring;
+  geometry.setDrawRange(0,Math.round(lobes*look.density)*stride);
+ }};
+}
+
 export function seasonalMaterial(source:T.Material,leaf:boolean,far:boolean,evergreen:boolean,month:{value:number},referenceStyle=false){
  const material=source.clone() as T.MeshStandardMaterial;material.side=T.DoubleSide;material.transparent=false;material.alphaTest=leaf?(far?.34:.36):0;material.alphaToCoverage=leaf;material.roughness=.88;
  const referenceLeaf=referenceStyle&&leaf;

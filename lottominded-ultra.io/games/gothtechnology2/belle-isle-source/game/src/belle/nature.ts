@@ -1,6 +1,5 @@
 import {addSurveyVegetation,keepOriginalTree} from './surveyVegetation.ts';
-import {referenceTree} from './referenceTrees.ts';
-import {ReferenceLeafDisplay,applyLeafOutline} from './referenceLeafDisplay.ts';
+import {referenceCanopyTexture,referenceTree} from './referenceTrees.ts';
 import {canopyTint} from './sunsetCanopy.ts';
 import {canopyProfile} from './habitatPolicy.ts';
 import {NatureViewSelection} from './natureViewSelection.ts';
@@ -9,7 +8,7 @@ import {NatureSpatialIndex} from './natureSpatialIndex.ts';
 import {NaturePlacementMatrices} from './naturePlacementMatrices.ts';
 import type {NatureRenderProbe} from './renderDiagnostics.ts';
 import type {ParkTerrain} from './terrain.ts';
-import {seasonalMaterial} from './seasonalMaterial.ts';
+import {seasonalMaterial,solidCanopySeason} from './seasonalMaterial.ts';
 import {treeBlend,seasonLook} from './seasonModel.ts';
 import {REFERENCE_STYLE,inSunsetGarden} from './sunsetReferencePolicy.ts';
 import * as T from 'three';
@@ -24,27 +23,27 @@ import {localPerformanceProbe,PERF_PROBE_REDUCTIONS} from './performanceProbe.ts
 type Entry={id:string;meshes?:string[];cardSize?:number;cardCenter?:number[];card?:string;triangles:number};
 type Manifest={trees:Entry[];ground:Entry[]};
 type Pool={id:string;meshes:T.InstancedMesh[];nearVisibility?:TreeInstanceVisibility;far?:T.InstancedMesh[];farVisibility?:TreeInstanceVisibility;sourceIndices?:ReadonlyMap<Plant,number>;sourceIds?:Uint32Array;card?:T.InstancedMesh;plants:Plant[]};
-export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:ParkTerrain,renderProbe?:NatureRenderProbe,singleSample=false){
+export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:ParkTerrain,renderProbe?:NatureRenderProbe){
  const base='./belle/nature/',loader=new GLTFLoader(),textures=new T.TextureLoader();
  const json=async(name:string)=>{const r=await fetch(base+name);if(!r.ok)throw Error('Nature asset '+name+': '+r.status);return r.json();};
  const manifest:Manifest=await json('manifest.json'),plan:NaturePlan=await json('placements.json');if(REFERENCE_STYLE)plan.trees=plan.trees.filter(p=>!inSunsetGarden(p.x,p.z));
  // Created once; exact source positions and original encounter order remain.
  plan.trees=plan.trees.filter(keepOriginalTree);
- if(terrain)await addSurveyVegetation(scene,terrain);
+ const surveyed=new Set(terrain?await addSurveyVegetation(scene,terrain):[]);
+ plan.trees.push(...surveyed);
  const boundsCounts=new URLSearchParams(location.search).has('profile')?{requests:0,transforms:0}:undefined;
  const treeIndex=new NatureSpatialIndex(plan.trees.filter(p=>!replacedByCherry(p)));
  const groundIndex=new NatureSpatialIndex(plan.ground);
  status('Loading varied trees');
  const treeSource=REFERENCE_STYLE?new T.Group():(await loadStartupModel(loader,base+'seasonal-trees.glb')).scene;
- const smoothIndices=new Map<string,T.BufferAttribute>();
- const leafDisplays:ReferenceLeafDisplay[]=[];
- if(REFERENCE_STYLE)for(const entry of manifest.trees)for(const low of [false,true]){
+ const canopyTexture=REFERENCE_STYLE?referenceCanopyTexture():null;
+ if(REFERENCE_STYLE)for(const entry of manifest.trees){
   await yieldStartupTask();
-  const tree=referenceTree(entry.id,low,(entry.cardCenter?.[1]??8)*2);
-  if(tree.smoothLeafIndex)smoothIndices.set(entry.id,tree.smoothLeafIndex);
+  const tree=referenceTree(entry.id,true,(entry.cardCenter?.[1]??8)*2,true);
+  tree.foliage.map=canopyTexture;
   for(const part of ['trunk','leaves'] as const){
    const source=new T.Mesh(tree[part],part==='trunk'?tree.bark:tree.foliage);
-   source.name=entry.id+'__'+part+(low?'__lod':'');
+   source.name=entry.id+'__'+part;
    treeSource.add(source);
   }
  }
@@ -85,26 +84,35 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
   const rootOffset=trunk?trunkRootHeight(trunk.geometry.attributes.position.array,trunk.matrixWorld.elements[13]):0;
   const meshes:T.InstancedMesh[]=[],far:T.InstancedMesh[]=[];
   for(const low of [false,true])for(const part of ['trunk','leaves']){
-   const source=treeSource.getObjectByName(entry.id+'__'+part+(low?'__lod':'')) as T.Mesh;
+   const source=treeSource.getObjectByName(entry.id+'__'+part+(low&&!REFERENCE_STYLE?'__lod':'')) as T.Mesh;
    if(!source)throw Error('Missing seasonal tree '+entry.id+part);
    const mesh=instance(source,low?plants.length:natureBudget.high.trees,(low?'Distant ':'Nearby ')+entry.id+' '+part,!low,rootOffset);
-   const season=seasonalMaterial(Array.isArray(source.material)?source.material[0]:source.material,part==='leaves',low,entry.id==='pine',month,REFERENCE_STYLE);
-   seasons.push(season);mesh.material=season.material;
-   mesh.geometry.setAttribute('lodWeight',new T.InstancedBufferAttribute(new Float32Array(low?plants.length:natureBudget.high.trees),1));
-   if(part==='leaves')mesh.geometry.setAttribute('canopyDensity',new T.InstancedBufferAttribute(new Float32Array(low?plants.length:natureBudget.high.trees).fill(1),1).setUsage(T.DynamicDrawUsage));
-   if(REFERENCE_STYLE&&part==='leaves'){
-    if(singleSample)applyLeafOutline(season.material);
-    leafDisplays.push(new ReferenceLeafDisplay(mesh,singleSample,low?smoothIndices.get(entry.id):undefined));
+   if(REFERENCE_STYLE){
+    (mesh.material as T.MeshStandardMaterial).side=T.FrontSide;
+    if(part==='leaves'){
+     mesh.userData.solidCanopy=true;
+     const season=solidCanopySeason((source.material as T.MeshStandardMaterial).clone(),mesh.geometry,entry.id==='pine',month);
+     seasons.push(season);mesh.material=season.material;
+    }
+   }else{
+    const season=seasonalMaterial(Array.isArray(source.material)?source.material[0]:source.material,part==='leaves',low,entry.id==='pine',month);
+    seasons.push(season);mesh.material=season.material;
+    mesh.geometry.setAttribute('lodWeight',new T.InstancedBufferAttribute(new Float32Array(low?plants.length:natureBudget.high.trees),1));
+    if(part==='leaves')mesh.geometry.setAttribute('canopyDensity',new T.InstancedBufferAttribute(new Float32Array(low?plants.length:natureBudget.high.trees).fill(1),1).setUsage(T.DynamicDrawUsage));
    }
    (low?far:meshes).push(mesh);
   }
-  for(const p of plants)terrain?.flightSolids.add({x:p.x,z:p.z,bottom:p.y,top:p.y+Math.max(4,(entry.cardCenter?.[1]??8)*1.3*p.scale),radius:.28*p.scale,kind:'tree'});
-  const size=entry.cardSize!,center=entry.cardCenter!,a=new T.PlaneGeometry(size,size),b=a.clone().rotateY(Math.PI/2),cards=mergeGeometries([a,b])!;a.dispose();b.dispose();cards.translate(center[0],center[1],center[2]);
-  const image=await textures.loadAsync(base+entry.card);image.colorSpace=T.SRGBColorSpace;
-  const cardSeason=seasonalMaterial(new T.MeshBasicMaterial({map:image,alphaTest:.35,side:T.DoubleSide,toneMapped:true}),false,true,entry.id==='pine',month);cardSeason.material.alphaTest=.35;seasons.push(cardSeason);
-  const card=new T.InstancedMesh(cards,cardSeason.material,plants.length);card.name='Split distant '+entry.id;card.visible=false;
-  cards.setAttribute('lodWeight',new T.InstancedBufferAttribute(new Float32Array(plants.length),1).setUsage(T.DynamicDrawUsage));
-  plants.forEach((p,i)=>{card.setMatrixAt(i,matrix(p,false,true));card.setColorAt(i,plantTint(p));});card.computeBoundingSphere();scene.add(card);
+  for(const p of plants)if(!surveyed.has(p))terrain?.flightSolids.add({x:p.x,z:p.z,bottom:p.y,top:p.y+Math.max(4,(entry.cardCenter?.[1]??8)*1.3*p.scale),radius:.28*p.scale,kind:'tree'});
+  let card:T.InstancedMesh|undefined;
+  if(!REFERENCE_STYLE){
+   const size=entry.cardSize!,center=entry.cardCenter!,a=new T.PlaneGeometry(size,size),b=a.clone().rotateY(Math.PI/2),cards=mergeGeometries([a,b])!;a.dispose();b.dispose();cards.translate(center[0],center[1],center[2]);
+   const image=await textures.loadAsync(base+entry.card);image.colorSpace=T.SRGBColorSpace;
+   const cardSeason=seasonalMaterial(new T.MeshBasicMaterial({map:image,alphaTest:.35,side:T.DoubleSide,toneMapped:true}),false,true,entry.id==='pine',month);cardSeason.material.alphaTest=.35;seasons.push(cardSeason);
+   card=new T.InstancedMesh(cards,cardSeason.material,plants.length);card.name='Split distant '+entry.id;card.visible=false;
+   cards.setAttribute('lodWeight',new T.InstancedBufferAttribute(new Float32Array(plants.length),1).setUsage(T.DynamicDrawUsage));
+   for(const [i,p] of plants.entries()){card.setMatrixAt(i,matrix(p,false,true));card.setColorAt(i,plantTint(p));}
+   card.computeBoundingSphere();scene.add(card);
+  }
   pools.push({id:entry.id,meshes,nearVisibility:new TreeInstanceVisibility(meshes,undefined,'near'),far,farVisibility:new TreeInstanceVisibility(far,renderProbe,'far',boundsCounts),sourceIndices:new Map(plants.map((p,i)=>[p,i])),sourceIds:new Uint32Array(plants.length),card,plants});
  }
  // Ground cover is a separate, smaller stage. Source LOD2 models and shared
@@ -125,9 +133,8 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
  const stats={boundsCounts,treeVariants:manifest.trees.length,groundVariants:manifest.ground.length,trees:plan.trees.length,ground:plan.ground.length,visibleTrees:0,visibleGround:0,get placementMatrices(){return placementMatrices.diagnostics;}};
  function select(x:number,z:number){
   cherry.scene.visible=Math.hypot(x-cherryTreeSite.x,z-cherryTreeSite.z)<900;
-  // Offline summer impostors retain the full canopy silhouette in smaller panes.
-  // Other seasons keep the seasonal geometry so bare branches are not replaced by leaves.
-  const cardsActive=!diagnostic&&splitDetail&&month.value>=6&&month.value<=9;
+  // Older asset sets retain their existing seasonal split-screen policy.
+  const cardsActive=!REFERENCE_STYLE&&!diagnostic&&splitDetail&&month.value>=6&&month.value<=9;
   if(Math.hypot(x-lastX,z-lastZ)<6&&lastSplit===cardsActive)return;
   if(renderProbe?.active)renderProbe.refresh();
   lastSplit=cardsActive;
@@ -141,7 +148,27 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
    for(const mesh of pool.meshes){mesh.count=near.length;near.forEach((p,i)=>{if(mesh.userData.seasonalLeaf)mesh.setMatrixAt(i,matrix(p,false,true));else mesh.setMatrixAt(i,matrix(p));mesh.setColorAt(i,plantTint(p));});uploadInstancePrefix(mesh.instanceMatrix,mesh.count);const weights=mesh.geometry.getAttribute('lodWeight') as T.InstancedBufferAttribute|undefined;if(weights){near.forEach((p,i)=>weights.setX(i,treeBlend(Math.sqrt(d(p)),cutoff)));uploadInstancePrefix(weights,mesh.count);}const canopy=mesh.geometry.getAttribute('canopyDensity') as T.InstancedBufferAttribute|undefined;if(canopy){near.forEach((p,i)=>canopy.setX(i,growth(p).density));uploadInstancePrefix(canopy,mesh.count);}uploadInstancePrefix(mesh.instanceColor,mesh.count);}
    pool.nearVisibility?.capture();
    let farSourcePlants:Plant[]|undefined;
-   if(pool.far)for(const far of pool.far){const visible=pool.plants.filter(p=>d(p)<(diagnostic?PERF_PROBE_REDUCTIONS.farRange:cardsActive?145:quality==='smooth'?850:1300)**2&&(!selected.has(p)||treeBlend(Math.sqrt(d(p)),cutoff)<1));farSourcePlants??=visible;far.count=visible.length;const weights=far.geometry.getAttribute('lodWeight') as T.InstancedBufferAttribute;visible.forEach((p,i)=>{if(far.userData.seasonalLeaf)far.setMatrixAt(i,matrix(p,false,true));else far.setMatrixAt(i,matrix(p));far.setColorAt(i,plantTint(p));const distance=Math.sqrt(d(p));weights.setX(i,(selected.has(p)?1-treeBlend(distance,cutoff):1)*(cardsActive?Math.max(0,Math.min(1,(145-distance)/50)):1));});uploadInstancePrefix(weights,far.count);const canopy=far.geometry.getAttribute('canopyDensity') as T.InstancedBufferAttribute|undefined;if(canopy){visible.forEach((p,i)=>canopy.setX(i,growth(p).density));uploadInstancePrefix(canopy,far.count);}uploadInstancePrefix(far.instanceMatrix,far.count);uploadInstancePrefix(far.instanceColor,far.count);}
+   if(pool.far){
+    const range=diagnostic?PERF_PROBE_REDUCTIONS.farRange:cardsActive?145:quality==='smooth'?850:1300;
+    // Both pools draw the same solid tree. Keep one instance when it moves
+    // between shadowed and distant pools, with no depth or coverage overlap.
+    const visible=pool.plants.filter(p=>d(p)<range**2&&(!selected.has(p)||(!REFERENCE_STYLE&&treeBlend(Math.sqrt(d(p)),cutoff)<1)));
+    farSourcePlants=visible;
+    for(const far of pool.far){
+     far.count=visible.length;
+     const weights=far.geometry.getAttribute('lodWeight') as T.InstancedBufferAttribute|undefined;
+     const canopy=far.geometry.getAttribute('canopyDensity') as T.InstancedBufferAttribute|undefined;
+     visible.forEach((p,i)=>{
+      far.setMatrixAt(i,matrix(p,false,far.userData.seasonalLeaf));
+      far.setColorAt(i,plantTint(p));
+      if(weights){const distance=Math.sqrt(d(p));weights.setX(i,(selected.has(p)?1-treeBlend(distance,cutoff):1)*(cardsActive?Math.max(0,Math.min(1,(145-distance)/50)):1));}
+      canopy?.setX(i,growth(p).density);
+     });
+     if(weights)uploadInstancePrefix(weights,far.count);
+     if(canopy)uploadInstancePrefix(canopy,far.count);
+     uploadInstancePrefix(far.instanceMatrix,far.count);uploadInstancePrefix(far.instanceColor,far.count);
+    }
+   }
    const sourceIds=pool.sourceIds;
    if(farSourcePlants&&sourceIds)for(let i=0;i<farSourcePlants.length;i++)sourceIds[i]=pool.sourceIndices?.get(farSourcePlants[i])??0xffffffff;
    if(pool.farVisibility&&renderProbe?.active){const start=renderProbe.now();pool.farVisibility.capture(sourceIds);renderProbe.elapsed('captureCpuMs',start);renderProbe.capture();}else pool.farVisibility?.capture(sourceIds);
@@ -160,10 +187,6 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
  const view=new NatureViewSelection(select),eye=new T.Vector3(),before=scene.onBeforeRender;
  const shadowVisibility=new TreeShadowVisibility();
  scene.onBeforeRender=(...args)=>{before.apply(scene,args);
-  if(singleSample){
-   const renderer=args[0],useCards=!renderer.xr.isPresenting&&!(renderer.getRenderTarget()?.samples);
-   for(const display of leafDisplays)display.setSingleSample(useCards);
-  }
   const selectionStart=renderProbe?.active?renderProbe.now():0;
   args[2].getWorldPosition(eye);view.render(eye.x,eye.z);
   if(renderProbe?.active){renderProbe.pass();renderProbe.elapsed('selectionCpuMs',selectionStart);}
@@ -175,7 +198,5 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
   }
   if(renderProbe?.active)renderProbe.elapsed('cullCpuMs',cullStart);
  };
- return{stats,treeSites:plan.trees as readonly Plant[],update,setSplitDetail(value:boolean){splitDetail=value;},setQuality(value:string){quality=value in natureBudget?value as keyof typeof natureBudget:'automatic';
-  for(const display of leafDisplays)display.setSmooth(quality==='smooth');
-  lastX=Infinity;}};
+ return{stats,treeSites:plan.trees as readonly Plant[],update,setSplitDetail(value:boolean){splitDetail=value;},setQuality(value:string){quality=value in natureBudget?value as keyof typeof natureBudget:'automatic';lastX=Infinity;}};
 }

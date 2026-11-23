@@ -12,13 +12,15 @@ test('the three mapped sectors keep crowns off paths and all geometry inside its
  t.mock.method(T.TextureLoader.prototype,'loadAsync',async()=>new T.Texture());
  const map=JSON.parse(fs.readFileSync(new URL('../../public/belle/map.json',import.meta.url),'utf8')) as ParkMap;
  const terrain=new ParkTerrain(map,true),scene=new T.Scene();
- await addSurveyVegetation(scene,terrain);
+ const trees=await addSurveyVegetation(scene,terrain);
+ assert.equal(trees.length,surveySites.flatMap(site=>site.plants).filter(p=>p[3]==='tree').length);
  assert.equal(scene.children.length,surveySites.length);
  assert.equal(keepOriginalTree({x:2923,z:644}),false);
  for(const [i,object] of scene.children.entries()){
   const mesh=object as T.Mesh<T.BufferGeometry>,g=mesh.geometry,vertices=g.getAttribute('position');
-  assert.equal(vertices.count,8*surveySites[i].plants.length);
-  assert.equal(g.index!.count/3,4*surveySites[i].plants.length);
+  const shrubs=surveySites[i].plants.filter(p=>p[3]==='shrub');
+  assert.equal(vertices.count,8*shrubs.length);
+  assert.equal(g.index!.count/3,4*shrubs.length);
   assert.ok(mesh.frustumCulled);
   for(let j=0;j<vertices.count;j++){
    const p=new T.Vector3().fromBufferAttribute(vertices,j);
@@ -27,6 +29,7 @@ test('the three mapped sectors keep crowns off paths and all geometry inside its
   }
   for(const [dx,dz,h,kind] of surveySites[i].plants){
    const x=surveySites[i].anchor[0]+dx,z=surveySites[i].anchor[1]+dz;
+   if(kind==='tree')assert.ok(trees.some(tree=>tree.x===x&&tree.z===z&&tree.y===terrain.height(x,z)));
    assert.ok(terrain.land(x,z));
    const radius=h*(kind==='tree'?.29:.5);
    for(const r of map.roads)for(let j=1;j<r.points.length;j++){

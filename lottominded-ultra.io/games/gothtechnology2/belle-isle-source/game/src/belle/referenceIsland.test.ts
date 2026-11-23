@@ -8,6 +8,7 @@ import {REFERENCE_PLACES} from './referenceIsland.ts';
 import {addSunsetGarden} from './sunsetGarden.ts';
 import {referenceGate,referenceRoute} from './referenceRace.ts';
 import {referenceTree} from './referenceTrees.ts';
+import {solidCanopySeason} from './seasonalMaterial.ts';
 import type {Solid} from './flightCollision.ts';
 const map:ParkMap=JSON.parse(readFileSync(new URL('../../public/belle/map.json',import.meta.url),'utf8'));
 test('all preview locations use navigable roads and new park fittings leave travel lanes clear',async()=>{
@@ -27,4 +28,24 @@ test('illuminated gate structures stay outside each playable aperture',()=>{
 });
 test('tree LODs keep full silhouettes within mapped mature-tree scale',()=>{
  for(const id of ['maple','birch','willow','pine'])for(const low of [false,true]){const tree=referenceTree(id,low,16);for(const geometry of [tree.trunk,tree.leaves]){geometry.computeBoundingBox();const b=geometry.boundingBox!;assert(b.min.y>=-.1);assert(b.max.y<24);assert(b.max.x-b.min.x<22);const p=geometry.getAttribute('position');for(let i=0;i<p.count;i++)assert(Number.isFinite(p.getX(i)+p.getY(i)+p.getZ(i)));}if(low)assert(tree.leaves.getAttribute('position').count<25000);}
+});
+
+test('solid crowns stay within the tree budget and seasonal changes keep whole lobes',()=>{
+ for(const id of ['maple','birch','willow','pine']){
+  const {leaves,foliage}=referenceTree(id,true,16,true);
+  const indices=leaves.getIndex()!.count;
+  assert.ok(indices<referenceTree(id,true,16).leaves.getIndex()!.count);
+  leaves.computeBoundingBox();
+  const bounds=leaves.boundingBox!;
+  assert.ok(bounds.max.y>13&&bounds.max.y<24);
+  assert.ok(bounds.max.x-bounds.min.x>3&&bounds.max.z-bounds.min.z>3);
+  const month={value:7},season=solidCanopySeason(foliage,leaves,id==='pine',month);
+  season.update();
+  assert.equal(leaves.drawRange.count,indices);
+  month.value=11;season.update();
+  assert.equal(leaves.drawRange.count%leaves.userData.crownLobeIndices,0);
+  if(id!=='pine')assert.ok(leaves.drawRange.count>0&&leaves.drawRange.count<indices);
+  month.value=1;season.update();
+  assert.equal(leaves.drawRange.count,id==='pine'?indices:0);
+ }
 });

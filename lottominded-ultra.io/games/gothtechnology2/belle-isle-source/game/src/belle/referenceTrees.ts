@@ -2,8 +2,40 @@ import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {referenceLeafEdges} from './referenceLeafDisplay.ts';
 
+/** A tileable leaf surface. Mipmaps blend the leaf detail into shaded crowns as
+ * it gets smaller on screen, without changing the canopy's coverage. */
+export function referenceCanopyTexture(){
+ const size=256,canvas=document.createElement('canvas');
+ canvas.width=canvas.height=size;
+ const ctx=canvas.getContext('2d')!;
+ ctx.fillStyle='#5c5c5c';ctx.fillRect(0,0,size,size);
+ let seed=0x5da1338;
+ const random=()=>{seed=Math.imul(seed,1664525)+1013904223|0;return(seed>>>0)/4294967296;};
+ for(let i=0;i<1100;i++){
+  const x=random()*size,y=random()*size,angle=random()*Math.PI;
+  const length=2+random()*6,width=length*(.4+random()*.26);
+  const tone=135+Math.floor(random()*116);
+  const gradient=ctx.createLinearGradient(-length,-width,length,width);
+  gradient.addColorStop(0,'#5c5c5c');
+  gradient.addColorStop(.42,`rgb(${tone},${tone},${tone})`);
+  gradient.addColorStop(1,'#aaa');
+  for(let dy=-size;dy<=size;dy+=size)for(let dx=-size;dx<=size;dx+=size){
+   if(x+dx<-length||x+dx>size+length||y+dy<-length||y+dy>size+length)continue;
+   ctx.save();ctx.translate(x+dx,y+dy);ctx.rotate(angle);
+   ctx.fillStyle=gradient;
+   ctx.beginPath();ctx.moveTo(-length,0);ctx.quadraticCurveTo(0,-width,length,0);
+   ctx.quadraticCurveTo(0,width,-length,0);ctx.fill();ctx.restore();
+  }
+ }
+ const texture=new T.CanvasTexture(canvas);
+ texture.wrapS=texture.wrapT=T.RepeatWrapping;
+ texture.colorSpace=T.SRGBColorSpace;
+ texture.anisotropy=4;
+ return texture;
+}
+
 /** Shared, deterministic silhouettes; native placement, seasons and distance pools remain in charge. */
-export function referenceTree(id:string,low:boolean,height:number){
+export function referenceTree(id:string,low:boolean,height:number,solidCanopy=false){
  let seed=Array.from(id).reduce((n,c)=>Math.imul(n,31)+c.charCodeAt(0),81);
  const random=()=>{seed=Math.imul(seed,1664525)+1013904223|0;return(seed>>>0)/4294967296;};
  const trunks:T.BufferGeometry[]=[],leaves:T.BufferGeometry[]=[],up=new T.Vector3(0,1,0),matrix=new T.Matrix4(),q=new T.Quaternion(),color=new T.Color();
@@ -13,6 +45,50 @@ export function referenceTree(id:string,low:boolean,height:number){
  const centers:T.Vector3[]=[];
  for(let i=0;i<12;i++){const a=i*2.39996,level=i/12;const r=pine?radius*(1-level*.8):radius*(.42+random()*.24);const y=height*(pine?.26+level*.67:.56+level*.33);const c=new T.Vector3(Math.cos(a)*r,y,Math.sin(a)*r);centers.push(c);branch(new T.Vector3(0,y*.66,0),c,.075);}
  centers.push(new T.Vector3(0,height*.91,0));
+ if(solidCanopy){
+  const crowns:T.BufferGeometry[]=[];
+  const phases=Array.from({length:3},()=>random()*Math.PI*2);
+  const lobe=(center:T.Vector3,width:number,depth:number)=>{
+   const geometry=new T.SphereGeometry(1,10,7);
+   const position=geometry.getAttribute('position');
+   const uv=geometry.getAttribute('uv');
+   const colors=new Float32Array(position.count*3);
+   const variation=.5+.5*Math.sin(center.x*3.1+center.y*6.3+center.z*7.5);
+   for(let i=0;i<position.count;i++){
+    const x=position.getX(i),y=position.getY(i),z=position.getZ(i);
+    const ripple=Math.sin(x*6.8+y*3.7+phases[0])*Math.sin(y*7.5-z*5.1+phases[1]);
+    const detail=Math.sin(z*12+x*7+phases[2])*Math.sin(x*13-y*4);
+    const profile=1+ripple*.17+detail*.075;
+    position.setXYZ(i,x*profile,y*profile,z*profile);
+    color.setHSL((pine?.275:willow?.217:.245)+variation*.026,pine?.40:.53,.237+variation*.048+(y+1)*.042+ripple*.025+detail*.014);
+    colors.set([color.r,color.g,color.b],i*3);
+    uv.setXY(i,uv.getX(i)*2+variation,uv.getY(i)+variation*.79);
+   }
+   geometry.setAttribute('color',new T.BufferAttribute(colors,3));
+   geometry.scale(width,depth,width*.92).translate(center.x,center.y,center.z);
+   crowns.push(geometry);
+  };
+  // Build coherent branch-sized clusters, then fill the silhouette with smaller
+  // lobes. Every lobe is closed and has the same shape from above or below.
+  for(const [i,center] of centers.entries()){
+   const taper=pine?1-i/centers.length*.61:1;
+   lobe(center,radius*(.34+i%3*.038)*taper,radius*(willow?.51:.33)*taper);
+  }
+  for(const [i,center] of centers.entries()){
+   const taper=pine?1-i/centers.length*.61:1;
+   for(let j=0;j<2;j++){
+    const angle=(i*2+j)*2.39996;
+    const reach=radius*(.19+random()*.25)*taper;
+    const point=center.clone().add(new T.Vector3(Math.cos(angle)*reach,(random()-.48)*radius*(willow?.75:.41),Math.sin(angle)*reach));
+    const size=radius*(.19+random()*.14)*taper;
+    lobe(point,size,size*(willow?1.6:.87));
+   }
+  }
+  const trunk=mergeGeometries(trunks)!,canopy=mergeGeometries(crowns)!;
+  canopy.userData.crownLobeIndices=crowns[0].getIndex()!.count;
+  for(const part of [...trunks,...crowns])part.dispose();
+  return{trunk,leaves:canopy,bark:new T.MeshStandardMaterial({color:birch?0xb6aea1:0x70513a,roughness:.95}),foliage:new T.MeshStandardMaterial({vertexColors:true,roughness:1})};
+ }
  const leafShape=new T.Shape();
  referenceLeafEdges.forEach(([y,x],i)=>i?leafShape.lineTo(x?-x:0,y):leafShape.moveTo(-x,y));
  for(let i=referenceLeafEdges.length-2;i>=0;i--){const [y,x]=referenceLeafEdges[i];leafShape.lineTo(x,y);}

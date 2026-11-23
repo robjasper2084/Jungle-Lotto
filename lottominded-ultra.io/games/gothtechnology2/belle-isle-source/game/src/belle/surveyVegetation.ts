@@ -1,6 +1,7 @@
 import * as T from 'three';
 import {inside, segment, type ParkTerrain} from './terrain.ts';
 import {surveySites,shelterLawn} from './surveySites.ts';
+import type {Plant} from './naturePlan.ts';
 
 export function keepOriginalTree(p:{x:number;z:number}){
  return !inside(p.x,p.z,shelterLawn);
@@ -9,25 +10,31 @@ export function keepOriginalTree(p:{x:number;z:number}){
 export async function addSurveyVegetation(scene:T.Scene,terrain:ParkTerrain){
  const atlas=await new T.TextureLoader().loadAsync(new URL('./districtModels/woodland.webp',import.meta.url).href);
  atlas.colorSpace=T.SRGBColorSpace;
+ atlas.anisotropy=4;
  const material=new T.MeshLambertMaterial({map:atlas,side:T.DoubleSide,alphaTest:.32});
+ const trees:Plant[]=[];
  for(const site of surveySites){
   const positions:number[]=[],uv:number[]=[],indices:number[]=[];
   for(const [index,[dx,dz,height,kind]] of site.plants.entries()){
    const x=site.anchor[0]+dx,z=site.anchor[1]+dz,y=terrain.height(x,z);
-   const row=kind==='tree'?1:0,half=height*(kind==='tree'?.29:.5);
+   const half=height*(kind==='tree'?.29:.5);
    if(!terrain.land(x,z)||terrain.obstructed(x,z,.55))continue;
    const crossesRoad=terrain.map.roads.some(road=>road.points.some((p,i)=>i>0 && segment(x,z,road.points[i-1],p).d < road.width/2+half+.5));
    if(crossesRoad)continue;
+   if(kind==='tree'){
+    const id=site.name==='Nashua Canal'&&index%2===0?'willow':index%3===2?'birch':'maple';
+    trees.push({id,x,y,z,scale:height/16,yaw:index*2.39996,tint:.9+(index%4)*.045});
+    terrain.flightSolids.add({x,z,bottom:y,top:y+height,radius:.28,kind:'tree'});
+    continue;
+   }
    for(let face=0;face<2;face++){
     const yaw=index*2.39996+face*Math.PI/2,wx=half*Math.cos(yaw),wz=half*Math.sin(yaw);
     const start=positions.length/3;
     positions.push(x-wx,y,z-wz,x+wx,y,z+wz,x+wx,y+height,z+wz,x-wx,y+height,z-wz);
-    const inset=kind==='tree'?.105:.001;
-    const left=face*.5+inset,right=(face+1)*.5-inset,bottom=row*.5+.001,top=(row+1)*.5-.001;
+    const left=face*.5+.001,right=(face+1)*.5-.001,bottom=.001,top=.499;
     uv.push(left,bottom,right,bottom,right,top,left,top);
     indices.push(start,start+1,start+2,start,start+2,start+3);
    }
-   if(kind==='tree')terrain.flightSolids.add({x,z,bottom:y,top:y+height,radius:.28,kind:'tree'});
   }
   const geometry=new T.BufferGeometry();
   geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));
@@ -42,4 +49,5 @@ export async function addSurveyVegetation(scene:T.Scene,terrain:ParkTerrain){
   mesh.receiveShadow=true;
   scene.add(mesh);
  }
+ return trees;
 }
