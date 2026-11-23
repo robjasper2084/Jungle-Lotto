@@ -2,6 +2,8 @@ import * as T from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {districts} from './detroitGround.ts';
 import {planDetroitProps} from './detroitProps.ts';
+import {warmLandmarkPrograms} from './landmarkPrograms.ts';
+import {warmObjectTextures} from './startupWork.ts';
 import type {ParkTerrain,Point} from './terrain.ts';
 
 type Building=typeof districts.buildings[number];
@@ -30,7 +32,7 @@ export function fitStreetBuilding(b:Building):Fit|undefined {
 function matrix(x:number,y:number,z:number,yaw:number,w:number,h:number,d:number){
  const m=new T.Matrix4().makeRotationY(yaw);m.scale(new T.Vector3(w,h,d));m.setPosition(x,y,z);return m;
 }
-function instances(scene:T.Scene,object:T.Object3D,locations:T.Matrix4[],name:string,maxDistance:number,street=false){
+function instances(stage:T.Group,object:T.Object3D,locations:T.Matrix4[],name:string,maxDistance:number,street=false){
  const cells=new Map<string,T.Matrix4[]>();
  for(const m of locations){const key=Math.floor(m.elements[12]/240)+','+Math.floor(m.elements[14]/240);
   const group=cells.get(key)??[];group.push(m);cells.set(key,group);}
@@ -40,46 +42,81 @@ function instances(scene:T.Scene,object:T.Object3D,locations:T.Matrix4[],name:st
   for(const [key,transforms] of cells){
    const batch=new T.InstancedMesh(o.geometry,o.material,transforms.length),combined=new T.Matrix4();
    transforms.forEach((m,i)=>batch.setMatrixAt(i,combined.multiplyMatrices(m,o.matrixWorld)));
-   batch.computeBoundingSphere();batch.name=name;batch.receiveShadow=true;scene.add(batch);
+   batch.computeBoundingSphere();batch.name=name;batch.receiveShadow=true;stage.add(batch);
    const bs=batch.boundingSphere!,cell=key.split(',').map(Number);tiles.push({mesh:batch,cx:street?(cell[0]+.5)*240:bs.center.x,cz:street?(cell[1]+.5)*240:bs.center.z,range:street?maxDistance:maxDistance+bs.radius});
   }
  });
  return tiles;
 }
-export function streamDetroitArt(scene:T.Scene,terrain:ParkTerrain,fits:Fit[],fallback:T.Group,architecturalProxies:Map<string,T.Mesh>){
+export function streamDetroitArt(scene:T.Scene,renderer:T.WebGLRenderer,terrain:ParkTerrain,fits:Fit[],fallback:T.Group,architecturalProxies:Map<string,T.Mesh>){
  const tiles:ReturnType<typeof instances>=[];
- const pending=new Set<string>(),retry=new Map<string,number>();
+ const started=new Set<string>(),retry=new Map<string,number>();
+ let preparation=Promise.resolve();
  let lastX=Infinity,lastZ=Infinity,streetsReady=false;
- const load=(url:string,apply:(obj:T.Group)=>void)=>{
-  if(pending.has(url)||performance.now()<(retry.get(url)??0))return;
-  pending.add(url);
-  void loader.loadAsync(url).then(g=>{apply(g.scene);lastX=Infinity;}).catch(e=>{pending.delete(url);retry.set(url,performance.now()+15000);console.warn('District art unavailable',url,e);});
- };
- function addStreets(pack:T.Group){
+ // Keep the map proxies visible until an entire pack is prepared against the
+ // active lights. Only register its tiles after upload and program reflection.
+ type PreparePack=(pack:T.Group,stage:T.Group)=>()=>void;
+ function load(url:string,camera:T.Camera,prepare:PreparePack){
+  if(started.has(url)||performance.now()<(retry.get(url)??0))return;
+  retry.delete(url);
+  started.add(url);
+  void loader.loadAsync(url).then(({scene:pack})=>{
+   const task=preparation.then(async()=>{
+    const stage=new T.Group();
+    const publish=prepare(pack,stage);
+    await warmObjectTextures(renderer,stage);
+    await warmLandmarkPrograms(renderer,stage,camera,scene);
+    // The current location may have changed while the driver was compiling.
+    // The next world update chooses visible batches before Three draws them.
+    ready.set(stage,publish);
+    lastX=Infinity;
+   });
+   preparation=task.catch(()=>{});
+   return task;
+  }).catch(error=>{
+   started.delete(url);
+   retry.set(url,performance.now()+15000);
+   console.warn('District art unavailable',url,error);
+  });
+ }
+ const ready=new Map<T.Group,()=>void>();
+ function prepareStreets(pack:T.Group,stage:T.Group){
+  const batches:ReturnType<typeof instances>=[];
   for(let i=0;i<4;i++){
    const prototype=pack.getObjectByName('SunsetBlock'+(i+1));if(!prototype)throw Error('Missing Sunset block');
    const group=fits.filter((_,n)=>n%4===i).map(p=>matrix(p.x,terrain.height(p.x,p.z)-.05,p.z,p.yaw,p.w,p.h,p.d));
-   tiles.push(...instances(scene,prototype,group,'Street at Sunset · city blocks',405,true));
+   batches.push(...instances(stage,prototype,group,'Street at Sunset · city blocks',405,true));
   }
-  streetsReady=true;
+  return ()=>{tiles.push(...batches);streetsReady=true;};
  }
- function addProps(pack:T.Group){
+ function prepareProps(pack:T.Group,stage:T.Group){
+  const batches:ReturnType<typeof instances>=[];
   for(const [name,items] of planDetroitProps(terrain)){
    const positions=items.map(p=>matrix(p.x,terrain.height(p.x,p.z),p.z,p.yaw,p.scale,p.scale,p.scale));
    const proto=pack.getObjectByName(name+'__LOD0');if(!proto)throw Error('Missing scenery '+name);
-   tiles.push(...instances(scene,proto,positions,name,name==='CityFacade'?650:140));
+   batches.push(...instances(stage,proto,positions,name,name==='CityFacade'?650:140));
   }
+  return ()=>{tiles.push(...batches);};
  }
- return (x:number,z:number)=>{
+ return (x:number,z:number,camera:T.Camera)=>{
   if(Math.hypot(x-lastX,z-lastZ)<16&&Math.min(...retry.values())>performance.now())return;
   lastX=x;lastZ=z;
-  if(x<350)load(streets,addStreets);
-  load(scenery,addProps);
-  for(const p of districts.models)if(Math.hypot(p.point[0]-x,p.point[1]-z)<(p.asset==='elmwood-chapel'?190:275)){
-   load(landmarks[p.asset],object=>{object.position.set(p.point[0],terrain.height(...p.point),p.point[1]);object.rotation.y=p.yaw;object.scale.setScalar(p.scale);object.name=p.asset;scene.add(object);
-    const proxy=architecturalProxies.get(p.asset);if(proxy)proxy.visible=false;
+  // Begin on the bridge between the island landing and the mainland.
+  if(x<520)load(streets,camera,prepareStreets);
+  load(scenery,camera,prepareProps);
+  for(const p of districts.models)if(Math.hypot(p.point[0]-x,p.point[1]-z)<(p.asset==='elmwood-chapel'?270:350)){
+   load(landmarks[p.asset],camera,(object,stage)=>{
+    object.position.set(p.point[0],terrain.height(...p.point),p.point[1]);
+    object.rotation.y=p.yaw;object.scale.setScalar(p.scale);object.name=p.asset;
+    stage.add(object);
+    return ()=>{
+     const proxy=architecturalProxies.get(p.asset);
+     if(proxy)proxy.visible=false;
+    };
    });
   }
+  for(const [stage,publish] of ready){scene.add(stage);publish();}
+  ready.clear();
   if(streetsReady)for(const proxy of fallback.children){const [cx,cz]=proxy.userData.tile as Point;proxy.visible=Math.hypot(x-cx,z-cz)>=405;}
   for(const t of tiles)t.mesh.visible=Math.hypot(x-t.cx,z-t.cz)<t.range;
  };

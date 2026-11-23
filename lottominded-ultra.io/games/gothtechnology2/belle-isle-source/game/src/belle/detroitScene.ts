@@ -25,7 +25,7 @@ function batches(scene:T.Object3D,mat:T.Material,name:string,size=320){
     }
   };
 }
-export function addDetroitDistricts(scene:T.Scene,terrain:ParkTerrain,poly:Polygon,road:Road,grass:T.Material,asphalt:T.Material){
+export function addDetroitDistricts(scene:T.Scene,renderer:T.WebGLRenderer,terrain:ParkTerrain,poly:Polygon,road:Road,grass:T.Material,asphalt:T.Material){
   for(const [outline,...holes] of districts.flat){
     const m=new T.Mesh(poly(outline,2,holes),grass);m.name='Detroit mainland';m.receiveShadow=true;scene.add(m);
   }
@@ -108,5 +108,5 @@ export function addDetroitDistricts(scene:T.Scene,terrain:ParkTerrain,poly:Polyg
     const pond=new T.Mesh(poly(ring,y+.06),new T.MeshStandardMaterial({color:0x416c6c,roughness:.36}));
     pond.name='Elmwood Pond';scene.add(pond);
   }
-  return streamDetroitArt(scene,terrain,fits,fallback,proxies);
+  return streamDetroitArt(scene,renderer,terrain,fits,fallback,proxies);
 }
