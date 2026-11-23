@@ -3,8 +3,8 @@
  * independent shared frame; no speculative terrain meshes are generated.
  * All regions use a shared east / up / south coordinate convention (metres).
  *
- * This is a guarded adapter for future one-renderer world integration, not an
- * installed world host or proof of collision-connected playable travel.
+ * Belle's world host uses these transforms at map-build time and tests both
+ * mounted routes against the live terrain before enabling their guide entries.
  */
 export type District='belle-isle'|'swoop-detroit'|'elmwood';
 export type Point=Readonly<{x:number;z:number}>;
@@ -12,11 +12,11 @@ export type Position=Readonly<{x:number;y:number;z:number}>;
 export type Geo=Readonly<{lat:number;lon:number}>;
 export const BELLE_ORIGIN=Object.freeze({lat:42.34680,lon:-83.00175});
 export const SWOOP_ORIGIN=Object.freeze({lat:42.3283,lon:-83.0399});
-export const ELMWOOD_ANCHOR=Object.freeze({lat:42.3492177,lon:-83.0196698,x:-153.6358,north:468.1876});
+export const ELMWOOD_ANCHOR=Object.freeze({lat:42.345036600130385,lon:-83.01767080014567,x:0,north:0});
 export const ELMWOOD_GATE=Object.freeze({x:-14,north:-34});
 export const MACARTHUR=Object.freeze({
-  island:{lat:42.34535,lon:-83.00060},
-  mainland:{lat:42.33985,lon:-82.99648},
+  mainland:{lat:42.34535,lon:-83.00060},
+  island:{lat:42.33985,lon:-82.99648},
   source:'Belle Isle OSM-derived prepare-map.mjs endpoint anchors; check against current map.json'
 });
 const R=111320,rad=Math.PI/180,c30=Math.sqrt(3)/2;
@@ -99,12 +99,34 @@ export function transferAcrossVerifiedSeam(pose:WorldPose,seam:Seam):WorldPose {
   headingY:Math.atan2(dx,dz),speedMps};
 }
 export type Portal=Readonly<{id:string;from:District;to:District;connected:boolean;reason:string}>;
-/** Verified state MUST come from engine collision data, never a claim in JSON. */
-export function portalStates():readonly Portal[]{
- return Object.freeze([
-  {id:'macarthur-to-mainland',from:'belle-isle',to:'swoop-detroit',connected:false,
-   reason:'Existing Swoop detailed map does not yet reach East Grand / Jefferson landing; must author roadway, nav/collider and measured elevation seam'},
-  {id:'elmwood-avenue-entrance',from:'swoop-detroit',to:'elmwood',connected:false,
-   reason:'Shared Elmwood gate is georeferenced, but adjoining city street/entrance collision and route mesh are not yet stitched'},
- ]);
+type RoutePoint=readonly [number,number];
+type MountedCrossings={
+ routes:{cut:readonly RoutePoint[];elmwood:readonly RoutePoint[]};
+ terrain:{height(x:number,z:number):number;land(x:number,z:number,y:number):boolean;obstructed(x:number,z:number,margin:number):unknown};
+ pavementReady:boolean;
+};
+function supported(path:readonly RoutePoint[],terrain:MountedCrossings['terrain']){
+ if(path.length<2)return false;
+ let previousHeight:number|undefined;
+ for(let i=1;i<path.length;i++){
+  const a=path[i-1],b=path[i],n=Math.max(1,Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1])/3));
+  for(let j=0;j<=n;j++){
+   const x=a[0]+(b[0]-a[0])*j/n,z=a[1]+(b[1]-a[1])*j/n,y=terrain.height(x,z);
+   if(!Number.isFinite(y)||!terrain.land(x,z,y)||terrain.obstructed(x,z,.48)
+     ||(previousHeight!==undefined&&Math.abs(y-previousHeight)>1))return false;
+   previousHeight=y;
+  }
+ }
+ return true;
+}
+/** A mounted host reports its own continuous roads. Other hosts remain closed. */
+export function portalStates(host?:MountedCrossings):readonly Portal[]{
+ const describe=(id:string,from:District,to:District,path:readonly RoutePoint[]|undefined):Portal=>{
+  const connected=!!(host?.pavementReady&&path&&supported(path,host.terrain));
+  return {id,from,to,connected,reason:connected?'Continuous road in the shared scene':'Awaiting connected pavement and ground support'};
+ };
+ return [
+  describe('macarthur-to-mainland','belle-isle','swoop-detroit',host?.routes.cut),
+  describe('elmwood-avenue-entrance','swoop-detroit','elmwood',host?.routes.elmwood)
+ ];
 }

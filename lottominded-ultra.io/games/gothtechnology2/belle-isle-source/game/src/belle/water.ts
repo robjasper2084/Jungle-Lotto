@@ -1,3 +1,4 @@
+import {maskDistrictGround} from './detroitWaterMask.ts';
 import {skyRadiance} from './volumetricSky.ts';
 import {RIVER_BROAD_NORMALS} from './riverSurfaceDetail.ts';
 import {riverFarRing,RIVER_PATCH_SIZE,RIVER_PATCH_SEGMENTS} from './riverPatch.ts';
@@ -98,6 +99,7 @@ diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.5,.66,.65),clamp(washFoam*.4+rippleF
  // High/Automatic retain the original reactive surfaces and water effects.
  const farShader=material('far'),nearShader=material('near');
  const calmWater=new T.MeshBasicMaterial({color:0x355f6b,depthWrite:true});
+ maskDistrictGround([farShader,nearShader,calmWater]);
  const far:T.Mesh=new T.Mesh(farGeometry,farShader);far.name='Detroit River distant water';scene.add(far);
  const near:T.Mesh=new T.Mesh(new T.PlaneGeometry(RIVER_PATCH_SIZE,RIVER_PATCH_SIZE,RIVER_PATCH_SEGMENTS,RIVER_PATCH_SEGMENTS).rotateX(-Math.PI/2),nearShader);near.name='Detroit River rolling waves';near.frustumCulled=false;scene.add(near);
  const lagoon=material('lagoon');const koiPond=map.waterSources?.find(w=>w.id===KOI_POND_ID);const isKoi=(w:ParkMap['water'][number])=>!!koiPond&&inside(1336,1149,w.points);const pond=material('lagoon');pond.transparent=true;pond.opacity=.42;pond.depthWrite=false;pond.color.set(0x75958a);pond.roughness=.18;
