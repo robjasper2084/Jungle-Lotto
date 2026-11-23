@@ -1,12 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {BoxGeometry,DataTexture,DirectionalLight,Group,InstancedMesh,Mesh,MeshBasicMaterial,PerspectiveCamera,PointLight,Scene,SpotLight,type Texture,type Object3D} from 'three';
+import {BoxGeometry,DataTexture,DirectionalLight,Group,InstancedMesh,Mesh,MeshBasicMaterial,MeshStandardMaterial,PerspectiveCamera,PointLight,Scene,SpotLight,type Texture,type Object3D} from 'three';
 import {prepareColoredDetailPool,SceneWarmup} from './sceneWarmup.ts';
 import {warmLandmarkPrograms} from './landmarkPrograms.ts';
+import {WorldAtmosphere} from './worldAtmosphere.ts';
 
 for(const parallel of [true,false]){
  test('landmark preparation reflects every shared-material variant before drawing, parallel='+parallel,async()=>{
-  const model=new Group(),camera=new PerspectiveCamera(),scene=new Scene(),material=new MeshBasicMaterial();
+  const model=new Group(),camera=new PerspectiveCamera(),scene=new Scene(),mesh=new Mesh(new BoxGeometry(),new MeshStandardMaterial());
+  const material=mesh.material;model.add(mesh);
+  const atmosphere=new WorldAtmosphere(scene,new DataTexture());
+  const addedVisibility:boolean[]=[];
+  scene.addEventListener('childadded',event=>addedVisibility.push(event.child.visible));
   const reflected:number[]=[],linked:number[]=[];
   let flushed=false,firstPoll=true;
   const programs=[1,2].map(program=>({program,getUniforms(){assert(flushed);reflected.push(program);}}));
@@ -17,10 +22,14 @@ for(const parallel of [true,false]){
     assert(parallel);if(handle===1&&firstPoll){firstPoll=false;return false;}return true;
    }};
   const renderer={compile(root:Group,view:PerspectiveCamera,target:Scene){
-   assert.equal(root,model);assert.equal(view,camera);assert.equal(target,scene);return new Set([material]);
+   assert.equal(root,model);assert.equal(view,camera);assert.equal(target,scene);
+   assert.match(material.customProgramCacheKey(),/belle-height-fog-clouds/);return new Set([material]);
   },properties:{get:()=>({programs:new Map(programs.map(p=>[p.program,p])),currentProgram:programs[1]})},getContext:()=>gl};
   await warmLandmarkPrograms(renderer as unknown as Parameters<typeof warmLandmarkPrograms>[0],model,camera,scene);
   assert.deepEqual(reflected,parallel?[2,1]:[1,2]);assert.deepEqual(linked,reflected);
+  assert.deepEqual(addedVisibility,[false]);assert.equal(model.parent,null);assert.equal(model.visible,true);
+  const preparedKey=material.customProgramCacheKey();
+  scene.add(model);await Promise.resolve();assert.equal(material.customProgramCacheKey(),preparedKey);atmosphere.dispose();
  });
 }
 
