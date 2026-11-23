@@ -36,10 +36,23 @@ const environment=ShaderChunk.lights_fragment_maps.replace(radiance,`
   ${radiance}
  #endif`);
 
+// Each hardware comparison already bilinearly filters four depth texels.
+// A fixed, centered triangle preserves soft edges without per-fragment noise,
+// trigonometry and the two extra comparisons in Three's stock PCF filter.
+const shadows=ShaderChunk.shadowmap_pars_fragment.replace(
+ /vec2 texelSize = vec2\( 1\.0 \) \/ shadowMapSize;[\s\S]*?\) \* 0\.2;/,
+ `vec2 spread=vec2(shadowRadius)/shadowMapSize;
+   shadow=(
+    texture(shadowMap, vec3(shadowCoord.xy + vec2(0., .65)*spread, shadowCoord.z)) +
+    texture(shadowMap, vec3(shadowCoord.xy + vec2(-.563, -.325)*spread, shadowCoord.z)) +
+    texture(shadowMap, vec3(shadowCoord.xy + vec2(.563, -.325)*spread, shadowCoord.z))
+   ) / 3.;`);
+
 /** Patch only materials that still use the stock Three physical-lighting interface. */
 export function physicalLighting(fragment:string){
  const declarations='#include <lights_physical_pars_fragment>',material='#include <lights_physical_fragment>';
  if(!fragment.includes(declarations)||!fragment.includes(material))return fragment;
  return fragment.replace(declarations,lightingPars).replace(material,material+viewSample)
-  .replace('#include <lights_fragment_maps>',environment);
+  .replace('#include <lights_fragment_maps>',environment)
+  .replace('#include <shadowmap_pars_fragment>',shadows);
 }

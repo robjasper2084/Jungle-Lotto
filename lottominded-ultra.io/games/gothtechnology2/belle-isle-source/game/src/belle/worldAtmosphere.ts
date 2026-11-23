@@ -62,7 +62,7 @@ export class WorldAtmosphere {
  }
  private patch(material:T.Material,wind?:Wind){
   if(this.originals.has(material)||!(material as T.MeshStandardMaterial).isMeshStandardMaterial)return;
-  const compile=material.onBeforeCompile,key=material.customProgramCacheKey,identity=key.call(material)+'|belle-pbr-v1';this.originals.set(material,{compile,key});
+  const compile=material.onBeforeCompile,key=material.customProgramCacheKey,identity=key.call(material)+'|belle-pbr-v2';this.originals.set(material,{compile,key});
   material.onBeforeCompile=(shader,renderer)=>{
    compile.call(material,shader,renderer);if(wind)this.bindWind(shader,wind);
    Object.assign(shader.uniforms,this.uniforms);

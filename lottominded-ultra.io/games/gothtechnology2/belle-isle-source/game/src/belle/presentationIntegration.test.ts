@@ -18,6 +18,10 @@ test('base scattering shares one view sample while clearcoat, anisotropy and mix
  assert.match(fragment,/if \(material.roughness == 1.0\) radiance \+= iblIrradiance/);
  assert.match(fragment,/radiance \+= getIBLAnisotropyRadiance/);
  assert.match(fragment,/clearcoatRadiance \+= getIBLRadiance/);
+ const pcf=fragment.slice(fragment.indexOf('float getShadow( sampler2DShadow'),fragment.indexOf('#elif defined( SHADOWMAP_TYPE_VSM )',fragment.indexOf('float getShadow( sampler2DShadow')));
+ assert.equal((pcf.match(/texture\(shadowMap,/g)||[]).length,3);
+ assert.doesNotMatch(pcf,/vogelDiskSample|interleavedGradientNoise/);
+ assert.match(fragment,/float getPointShadow/);
 });
 test('actual Three standard shader composition preserves earlier material work',()=>{
  const scene=new T.Scene(),m=new T.MeshStandardMaterial();m.onBeforeCompile=s=>{s.fragmentShader='// earlier material\n'+s.fragmentShader;};m.customProgramCacheKey=()=> 'original';

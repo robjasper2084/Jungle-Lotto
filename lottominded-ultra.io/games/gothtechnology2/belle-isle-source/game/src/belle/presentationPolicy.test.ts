@@ -10,6 +10,8 @@ test('inactive point lights skip the entire unrolled BRDF while live slots keep 
  const {fragment}=atmosphereShader('#include <worldpos_vertex>','#include <lights_fragment_begin>',source);
  const run=fragment.slice(fragment.indexOf('pointLight = pointLights[ i ];'),fragment.indexOf('#pragma unroll_loop_end',fragment.indexOf('pointLight = pointLights[ i ];')));
  assert.match(run,/if \(pointLight.color != vec3\(0.0\)\) \{[\s\S]*getPointLightInfo[\s\S]*getPointShadow[\s\S]*RE_Direct\([^;]+;\s*\}\s*\}/);
+ const spot=fragment.slice(fragment.indexOf('spotLight = spotLights[ i ];'));
+ assert.match(spot,/if \(spotLight.color != vec3\(0.0\)\) \{[\s\S]*getSpotLightInfo[\s\S]*SPOT_LIGHT_MAP_INDEX[\s\S]*RE_Direct\([^;]+;\s*\}\s*\}/);
  assert.equal(fragment.split('RE_Direct( directLight,').length,source.split('RE_Direct( directLight,').length);
 });
 
