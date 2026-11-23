@@ -18,7 +18,7 @@ export const CADILLAC_ACCESS_FIT={
 } as const;
 const names:CadillacPanel[]=['trunk','rearLeft','rearRight'];
 const bits={trunk:1,rearLeft:2,rearRight:4};
-type Panel={group:T.Group;bounds:T.Box3;samples:T.Vector3[];radius:number;open:boolean;progress:number;triangles:number};
+type Panel={group:T.Group;bounds:T.Box3;sweep:T.Box3;samples:T.Vector3[];radius:number;open:boolean;progress:number;triangles:number};
 type Source={mesh:T.Mesh;geometry:T.BufferGeometry;labels:Uint8Array;mask:number;variants:Map<number,T.BufferGeometry>};
 
 /** Preserve every source attribute and vertex ID (including the cabin's fitted
@@ -35,7 +35,7 @@ export class CadillacAccess{
   constructor(private readonly body:T.Object3D){
     const create=(name:CadillacPanel):Panel=>{
       const fit=CADILLAC_ACCESS_FIT[name],group=new T.Group();group.name=fit.name;group.position.fromArray(fit.hinge);group.visible=false;body.add(group);
-      return {group,bounds:new T.Box3(),samples:[],radius:0,open:false,progress:0,triangles:0};
+      return {group,bounds:new T.Box3(),sweep:new T.Box3(),samples:[],radius:0,open:false,progress:0,triangles:0};
     };
     this.panels={trunk:create('trunk'),rearLeft:create('rearLeft'),rearRight:create('rearRight')};
     this.trunkLid=this.panels.trunk.group;
@@ -72,6 +72,12 @@ export class CadillacAccess{
       const spacing=size.toArray().map((length,i)=>length/steps[i]);panel.radius=Math.hypot(...spacing)/2+.006;
       for(let x=0;x<=steps[0];x++)for(let y=0;y<=steps[1];y++)for(let z=0;z<=steps[2];z++)
         panel.samples.push(new T.Vector3(panel.bounds.min.x+x*spacing[0],panel.bounds.min.y+y*spacing[1],panel.bounds.min.z+z*spacing[2]));
+      const fit=CADILLAC_ACCESS_FIT[name],rotation=new T.Matrix4(),shift=new T.Matrix4().makeTranslation(fit.hinge[0],fit.hinge[1],fit.hinge[2]);
+      for(let step=0;step<=24;step++){
+        if(fit.axis==='x')rotation.makeRotationX(fit.angle*step/24);else rotation.makeRotationY(fit.angle*step/24);
+        panel.sweep.union(panel.bounds.clone().applyMatrix4(rotation).applyMatrix4(shift));
+      }
+      panel.sweep.expandByScalar(.004);
     }
   }
   private indexGeometry(source:T.BufferGeometry,indices:number[]){
@@ -146,6 +152,12 @@ export class CadillacAccess{
   reset(){for(const name of names){const panel=this.panels[name];panel.open=false;panel.progress=0;panel.group.rotation.set(0,0,0);}this.reason=undefined;this.setMask(0);}
   get trunkProgress(){return this.panels.trunk.progress;}
   get held(){return names.some(name=>this.panels[name].open||this.panels[name].progress>0);}
+  /** Include the entire hinge arc while a panel is open or animating, so a
+   * simultaneous chassis lift is checked against every intermediate pose. */
+  collisionParts(extra?:CadillacPanel,target:T.Box3[]=[]){
+    target.length=0;for(const name of names)if(name===extra||this.panels[name].open||this.panels[name].progress>0)target.push(this.panels[name].sweep);
+    return target;
+  }
   snapshot():CadillacAccessSnapshot{
     const state=(name:CadillacPanel)=>({open:this.panels[name].open,progress:this.panels[name].progress,angle:this.panels[name].progress*CADILLAC_ACCESS_FIT[name].angle||0});
     return{trunk:state('trunk'),rearLeft:state('rearLeft'),rearRight:state('rearRight'),held:this.held,...(this.reason?{reason:this.reason}:{})};

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import * as T from 'three';
 import {CadillacRide,cadillacModel} from './cadillacRide.ts';
+import {fitCadillacWireWheels} from './cadillacWireWheels.ts';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import type {ParkTerrain} from './terrain.ts';
 
@@ -176,16 +177,17 @@ test('hydraulic Cadillac fits shared wire rims to the original tires and complet
   ride.start();
   const hydraulics=ride.hydraulics!;
   const advance=(frames:number,keys:ReadonlySet<string>=new Set())=>{
-    for(let i=0;i<frames;i++)ride.update(1/60,{gas:0,brake:0,steer:0,handbrake:false},0,true,keys);
+    for(let i=0;i<frames;i++)ride.update(1/60,{gas:0,brake:0,steer:0,handbrake:false},0,false,keys);
   };
   const body=asset.scene.getObjectByName('ChassisGeometry')!;
   advance(60,new Set(['PageUp','KeyU']));
   assert(body.position.y>0&&body.rotation.z>0);
   assert.equal(ride.accessSnapshot(),undefined);
-  hydraulics.stance('cruise');advance(60);
+  ride.setSuspensionStance('cruise');advance(60);
   assert(Math.abs(body.position.y)<.001);
-  assert.equal(hydraulics.hop(true,3),false);
-  assert.equal(hydraulics.hop(true,0),true);
+  assert.equal(ride.hopSuspension('front',true).accepted,false);
+  ride.sim.pose.speed=3;assert.equal(ride.hopSuspension('front',false).accepted,false);ride.sim.pose.speed=0;
+  assert.equal(ride.hopSuspension('front',false).accepted,true);
   advance(30);
   assert(hydraulics.hubs[0].hub.position.y>hydraulics.hubs[2].hub.position.y+.1);
   advance(70);
@@ -194,4 +196,174 @@ test('hydraulic Cadillac fits shared wire rims to the original tires and complet
   assert(Math.abs(body.position.y)<.001);
   assert.equal(ride.diagnostics().vehicle,'hydraulic-cadillac');
   ride.dispose();
+});
+
+test('parked customization previews without advancing travel, panel motion, or wheel phase',()=>{
+ const ride=new CadillacRide(car(),flatTerrain());ride.start();
+ try{
+  ride.toggleTrunk();ride.toggleRearDoor('left');ride.update(.08,idle,0,false);
+  const before=ride.diagnostics(),panel=ride.accessSnapshot()!;
+  assert(ride.setSuspensionCorner('FL',.18).accepted);
+  const after=ride.diagnostics();
+  assert.equal(after.distanceM,before.distanceM);assert.equal(ride.sim.pose.distance,0);assert.equal(after.speedMps,0);
+  assert.deepEqual(after.wheelPhaseRad,before.wheelPhaseRad);assert.deepEqual(ride.accessSnapshot(),panel);
+  assert(after.suspensionRollRad>0);assert(after.suspensionPitchRad<0);assert(!ride.suspension.readyForDrive);
+  assert(ride.setWheels({rim:'wire-gold',tire:'low-profile-whitewall',center:'black'}).accepted);
+  assert.equal(ride.wheels.radius,.346);assert.equal(ride.diagnostics().wheels.spokesPerWheel,100);
+  assert.deepEqual(ride.accessSnapshot(),panel);assert.deepEqual(ride.diagnostics().wheelPhaseRad,before.wheelPhaseRad);
+  assert(ride.setSuspensionStance('raised').accepted);assert(ride.suspension.readyForDrive);
+ }finally{ride.dispose();}
+});
+
+test('suspension and access animations run together on separate transforms and fully land',()=>{
+ const ride=new CadillacRide(car(),flatTerrain());ride.start();
+ try{
+  ride.toggleTrunk();ride.toggleRearDoor('left');ride.toggleRearDoor('right');ride.toggleDoor();
+  const lid=ride.access!.trunkLid,body=ride.model.getObjectByName('SprungBody')!,lidPosition=lid.position.clone();
+  assert(ride.hopSuspension('all',false).accepted);
+  for(let i=0;i<25;i++)ride.update(1/60,idle,0,false);
+  assert(body.position.y>.18);assert(ride.accessSnapshot()!.trunk.progress>.8);assert(ride.accessSnapshot()!.rearLeft.progress>.8);
+  assert.equal(lid.parent,body);assert(lid.position.equals(lidPosition));
+  assert(ride.trunkSpeakerAnchor!.parent!==ride.model,'speakers remain in the moving cabin');
+  for(let i=0;i<65;i++)ride.update(1/60,idle,0,false);
+  assert(ride.suspension.readyForDrive);assert.equal(ride.suspension.snapshot().hop,null);assert(Math.abs(body.position.y)<1e-8);
+  for(const corner of ['FL','FR','RL','RR'])assert(Math.abs(ride.model.getObjectByName('Hub'+corner)!.position.y-.346)<1e-8);
+  assert.equal(ride.accessSnapshot()!.trunk.progress,1);assert(ride.accessSnapshot()!.rearLeft.open&&ride.accessSnapshot()!.rearRight.open);
+ }finally{ride.dispose();}
+});
+
+test('driving and reverse wait for an uneven setup to level, without closing doors or trunk',()=>{
+ for(const reverse of [false,true]){
+  const ride=new CadillacRide(car(),flatTerrain());ride.start();
+  try{
+   ride.toggleTrunk();ride.toggleRearDoor('right');ride.update(0,idle,0,true);
+   assert(ride.setSuspensionCorner('FL',.20).accepted);
+   const input=reverse?{gas:0,brake:1,steer:0,handbrake:false}:pedals;
+   ride.update(1/120,input,0,false);assert.equal(ride.sim.pose.speed,0);assert.equal(ride.sim.pose.z,0);
+   for(let i=0;i<180;i++){
+    ride.update(1/120,input,0,false);
+    if(!ride.suspension.readyForDrive)assert.equal(ride.sim.pose.speed,0,'an unlevel car must not drive');
+   }
+   assert(ride.suspension.readyForDrive);assert(reverse?ride.sim.pose.speed<0:ride.sim.pose.speed>0);
+   assert.equal(ride.sim.gear,reverse?'R':'D');assert(ride.accessSnapshot()!.trunk.open&&ride.accessSnapshot()!.rearRight.open);
+  }finally{ride.dispose();}
+ }
+});
+
+test('reduced motion preserves static setup but suppresses hops, including keyboard requests',()=>{
+ const ride=new CadillacRide(car(),flatTerrain());ride.start();
+ try{
+  assert(ride.setSuspensionStance('raised').accepted);assert.equal(ride.suspension.pose.heave,.14);
+  assert(!ride.hopSuspension('all',true).accepted);assert(ride.suspensionKey('KeyZ',true,false,true));
+  ride.update(.1,idle,0,true);assert.equal(ride.suspension.pose.heave,.14);assert.equal(ride.suspension.snapshot().hop,null);
+  assert(ride.suspensionKey('KeyY',true,false,true));assert.equal(ride.suspension.pose.heave,0);
+  assert(ride.hopSuspension('rear',false).accepted);ride.update(.2,idle,0,false);assert(ride.suspension.snapshot().hop);
+  ride.update(.1,idle,0,true);assert.equal(ride.suspension.snapshot().hop,null);assert(ride.suspension.readyForDrive);
+ }finally{ride.dispose();}
+});
+
+test('invalid, moving, overhead-blocked, and ground-blocked changes retain the accepted setup',()=>{
+ const terrain=flatTerrain(),ride=new CadillacRide(car(),terrain);ride.start();
+ try{
+  const initial=ride.suspension.snapshot();
+  assert(!ride.setSuspensionCorner('FL',NaN).accepted);assert(!ride.setSuspensionCorner('FL',-.01).accepted);
+  ride.sim.pose.speed=2;
+  assert(!ride.setSuspensionStance('raised').accepted);assert(!ride.setWheels({rim:'wire-gold',tire:'whitewall',center:'white'}).accepted);
+  ride.update(.1,idle,0,false,new Set(['PageUp','KeyU']));assert.deepEqual(ride.suspension.snapshot().targets,initial.targets);
+  ride.sim.pose.speed=0;ride.start();
+  const body=ride.model.getObjectByName('SprungBody')!,top=new T.Box3().setFromObject(body).max.y,ceiling=top+.06;
+  terrain.raycastObstacle=(origin,direction,max)=>{
+   if(direction.y<=0)return null;const distance=(ceiling-origin.y)/direction.y;return distance>=0&&distance<=max?distance:null;
+  };
+  assert(!ride.setSuspensionStance('raised').accepted);assert(!ride.hopSuspension('all',false).accepted);
+  assert.deepEqual(ride.suspension.snapshot().targets,initial.targets);assert.equal(ride.suspension.snapshot().hop,null);
+  terrain.raycastObstacle=()=>null;assert(ride.setSuspensionStance('raised').accepted);
+  terrain.height=()=>.30;
+  assert(!ride.setSuspensionStance('cruise').accepted);assert.equal(ride.suspension.targets.FL,.14);
+ }finally{ride.dispose();}
+});
+
+test('hop finishing, exit, and recovery reset suspension without discarding wheel choice',()=>{
+ const ride=new CadillacRide(car(),flatTerrain());ride.start();
+ try{
+  assert(ride.setWheels({rim:'wire-chrome',tire:'whitewall',center:'white'}).accepted);
+  assert(ride.setSuspensionCorner('FR',.16).accepted);assert(ride.hopSuspension('front',false).accepted);
+  ride.update(.12,idle,0,false);const airborne=ride.suspension.pose.heave;
+  assert(ride.settleSuspension().accepted);assert.equal(ride.suspension.pose.heave,airborne,'finishing must not snap an airborne car');
+  for(let i=0;i<120;i++)ride.update(1/60,idle,0,false);
+  assert(ride.suspension.readyForDrive);assert(Math.abs(ride.suspension.targets.FL-.04)<1e-8);
+  ride.requestExit();for(let i=0;i<80;i++)ride.update(1/60,idle,0,false);assert(ride.exitReady);
+  ride.leave();ride.start();assert.equal(ride.suspension.pose.heave,0);assert(ride.suspension.readyForDrive);
+  assert.equal(ride.wheels.selection.rim,'wire-chrome');assert.equal(ride.wheels.selection.tire,'whitewall');
+ }finally{ride.dispose();}
+});
+
+test('hops and uneven stances hold their validated steering angle until the car levels',()=>{
+ const ride=new CadillacRide(car(),flatTerrain());ride.start();
+ try{
+  assert(ride.hopSuspension('all',false).accepted);
+  for(let i=0;i<30;i++){
+   ride.update(1/60,{...idle,steer:1},0,false);
+   assert(ride.sim.pose.steering===0,'the accepted hop cannot steer into an unchecked fender position');
+  }
+  for(let i=0;i<45;i++)ride.update(1/60,idle,0,false);
+  assert(ride.suspension.readyForDrive);
+  assert(ride.setSuspensionCorner('FL',.18).accepted);
+  for(let i=0;i<20;i++)ride.update(1/60,{...idle,steer:-1},0,false);
+  assert(ride.sim.pose.steering===0);
+  assert(ride.setSuspensionStance('level').accepted);
+  ride.update(.1,{...idle,steer:1},0,false);
+  assert(ride.sim.pose.steering<0,'ordinary steering returns after leveling');
+ }finally{ride.dispose();}
+});
+
+test('a parked hydraulic tilt preserves its checked ground attitude and road heave on a slope',()=>{
+ const terrain=flatTerrain();terrain.height=(x:number,z:number)=>x*.006+z*.004;
+ const ride=new CadillacRide(car(),terrain);ride.start();
+ try{
+  assert(ride.setSuspensionStance('raised').accepted);
+  assert(ride.setSuspensionCorner('FL',.20).accepted);
+  const body=ride.model.getObjectByName('SprungBody')!,before={pitch:ride.sim.pose.pitch,roll:ride.sim.pose.roll,heave:body.position.y-ride.suspension.pose.heave};
+  for(let i=0;i<30;i++){
+   ride.update(1/60,idle,0,false);
+   assert.equal(ride.sim.pose.pitch,before.pitch);assert.equal(ride.sim.pose.roll,before.roll);
+   assert(Math.abs(body.position.y-ride.suspension.pose.heave-before.heave)<1e-10);
+   assert(Math.abs(body.rotation.x-ride.suspension.pose.pitch-before.pitch)<1e-10);
+   assert(Math.abs(body.rotation.z-ride.suspension.pose.roll-before.roll)<1e-10);
+  }
+  assert(ride.setSuspensionStance('level').accepted);
+  ride.update(.1,idle,0,false);
+  assert(Math.abs(ride.sim.pose.pitch)>0&&Math.abs(ride.sim.pose.roll)>0,'normal terrain alignment resumes after leveling');
+ }finally{ride.dispose();}
+});
+
+test('both actual Cadillac wheel meshes fit the numerical collision envelope at full steering lock',async()=>{
+ for(const variant of ['cadillac','hydraulic-cadillac'] as const){
+  const model=variant==='cadillac'?car():(await loadFixture(readFileSync('public/belle/vehicles/hydraulics-cadillac.glb'))).scene;
+  if(variant==='hydraulic-cadillac')fitCadillacWireWheels(model);
+  const ride=new CadillacRide(model,flatTerrain(),undefined,variant);ride.start();
+  try{
+   for(const tire of ['standard','low-profile-whitewall'] as const){
+    assert(ride.setWheels({rim:tire==='standard'?'stock':'wire-chrome',tire,center:'gold'}).accepted);
+    for(const steering of [-.52,0,.52]){
+     ride.sim.pose.steering=steering;ride.update(0,idle,0,false);model.updateWorldMatrix(true,true);
+     const bounds=(ride.sim as unknown as {collisionSamples:{bounds:{minX:number;maxX:number;minY:number;maxY:number;minZ:number;maxZ:number}}}).collisionSamples.bounds;
+     const inverse=model.matrixWorld.clone().invert(),matrix=new T.Matrix4(),point=new T.Vector3();
+     for(const corner of ['FL','FR','RL','RR']){
+      const hub=model.getObjectByName((variant==='cadillac'?'Hub':'HydraulicHub')+corner)!;
+      hub.traverseVisible(object=>{
+       if(!(object instanceof T.Mesh))return;
+       matrix.multiplyMatrices(inverse,object.matrixWorld);
+       const positions=object.geometry.getAttribute('position');
+       for(let i=0;i<positions.count;i++){
+        point.fromBufferAttribute(positions,i).applyMatrix4(matrix);
+        assert(point.x>=bounds.minX-1e-5&&point.x<=bounds.maxX+1e-5&&point.y>=bounds.minY-1e-5&&point.y<=bounds.maxY+1e-5&&point.z>=bounds.minZ-1e-5&&point.z<=bounds.maxZ+1e-5,
+         `${variant} ${tire} ${corner} at ${steering}: wheel vertex ${point.toArray()} lies outside the collision envelope`);
+       }
+      });
+     }
+    }
+   }
+  }finally{ride.dispose();}
+ }
 });
