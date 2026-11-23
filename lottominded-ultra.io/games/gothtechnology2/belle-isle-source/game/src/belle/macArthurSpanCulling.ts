@@ -39,24 +39,35 @@ export function cullMacArthurSpans(root:T.Object3D){
   display.boundingSphere=source.boundingSphere;display.boundingBox=source.boundingBox;
   mesh.geometry=display;
   const raycast=mesh.raycast,before=mesh.onBeforeRender,after=mesh.onAfterRender;
+  const beforeShadow=mesh.onBeforeShadow,afterShadow=mesh.onAfterShadow;
   mesh.raycast=function(ray,hits){
    const active=this.geometry;this.geometry=source;
    try{raycast.call(this,ray,hits);}finally{this.geometry=active;}
   };
-  mesh.onBeforeRender=function(...args){
-   before.apply(this,args);
-   const [renderer,,camera,geometry]=args;
-   if(geometry!==display||renderer.xr.isPresenting||renderer.getRenderTarget())return;
-   clip.multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse).multiply(this.matrixWorld);
-   frustum.setFromProjectionMatrix(clip,camera.coordinateSystem);
+  function selectSpans(camera:T.Camera){
+   clip.multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse).multiply(mesh.matrixWorld);
+   frustum.setFromProjectionMatrix(clip,camera.coordinateSystem,camera.reversedDepth);
    let first=0,last=spans.length-1;
    while(first<=last&&(!spans[first].count||!frustum.intersectsBox(spans[first].bounds)))first++;
    while(last>=first&&(!spans[last].count||!frustum.intersectsBox(spans[last].bounds)))last--;
    if(first>last)display.setDrawRange(0,0);
    else display.setDrawRange(spans[first].start,spans[last].start+spans[last].count-spans[first].start);
+  }
+  mesh.onBeforeRender=function(...args){
+   before.apply(this,args);
+   const [renderer,,camera,geometry]=args;
+   if(geometry===display&&!renderer.xr.isPresenting&&!renderer.getRenderTarget())selectSpans(camera);
   };
-  // WebGLShadowMap has its own draw callbacks. Restoring the whole mesh here
-  // lets the next shadow or reflection pass use every original triangle.
   mesh.onAfterRender=function(...args){display.setDrawRange(0,Infinity);after.apply(this,args);};
+  mesh.onBeforeShadow=function(...args){
+   beforeShadow.apply(this,args);
+   const [renderer,,,shadowCamera,geometry,depthMaterial]=args;
+   // Use the light's view, which can include casters off-screen to the rider.
+   // The authored bounds cannot account for vertex displacement.
+   if(geometry===display&&!renderer.xr.isPresenting&&
+      !('displacementMap' in depthMaterial&&depthMaterial.displacementMap)&&!this.customDepthMaterial&&!this.customDistanceMaterial)
+    selectSpans(shadowCamera);
+  };
+  mesh.onAfterShadow=function(...args){display.setDrawRange(0,Infinity);afterShadow.apply(this,args);};
  });
 }

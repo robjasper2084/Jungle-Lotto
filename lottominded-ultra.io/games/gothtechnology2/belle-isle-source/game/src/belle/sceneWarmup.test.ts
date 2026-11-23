@@ -164,6 +164,21 @@ test('a fixed directional light needs one mapped topology and polls shared progr
  assert.deepEqual(uniforms,[0,1]);
 });
 
+test('vehicle warmup reflects each program before making the ride visible',async()=>{
+ const {scene,camera,bike}=fixture();
+ const reflected:number[]=[];
+ const programs=[0,1].map(i=>({program:{},getUniforms:()=>reflected.push(i)}));
+ const renderer={shadowMap:{enabled:false},info:{programs},getContext:()=>({
+  getExtension:()=>({COMPLETION_STATUS_KHR:1}),LINK_STATUS:2,isContextLost:()=>false,flush(){},
+  getProgramParameter(){assert.equal(bike.visible,false);return true;}
+ }),compile(_root:Object3D,view:PerspectiveCamera,target:Scene){
+  assert.equal(view,camera);assert.equal(target,scene);assert.equal(bike.visible,true);
+ },compileAsync(){throw Error('Unexpected material-only poll');}};
+ await new SceneWarmup(renderer as unknown as ConstructorParameters<typeof SceneWarmup>[0],
+  scene,camera,()=>{},async()=>{}).prepare(bike);
+ assert.deepEqual(reflected,[0,1]);assert.equal(bike.visible,false);
+});
+
 test('Smooth prepares active drawables against the actual island lights, with a separate preparation for a hidden ride',async()=>{
  const {scene,bike,camera}=fixture(),island=new Mesh(),detail=new Mesh(),wrongLayer=new Mesh();
  const map=new DataTexture(new Uint8Array([255,255,255,255]),1,1),uploads:Texture[]=[];detail.material=new MeshBasicMaterial({map});
