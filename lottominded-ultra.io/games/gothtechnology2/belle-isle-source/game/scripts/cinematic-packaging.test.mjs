@@ -32,10 +32,14 @@ test('new document files are copied without removing vehicle or world assets',()
 test('nested deployment base and single entry stylesheet are retained',()=>{
  assert.equal(build.base,'./');assert.equal(build.build.cssCodeSplit,false);assert.equal(build.build.target,'es2022');assert.equal(build.server.port,8301);assert.equal(build.server.strictPort,true);
 });
-test('development file access retains the strict workspace and exact suited hero allowance',()=>{
+test('development file access allows only the strict workspace and the two Cadillac driver assets',()=>{
  const dev=config({command:'serve'});
  assert.equal(dev.server.fs.strict,true);
- assert.deepEqual(dev.server.fs.allow,[searchForWorkspaceRoot(process.cwd()),path.resolve('../../swoop-source/public/exports/rigged-heroes/DS_Man_01.glb')]);
+ assert.deepEqual(dev.server.fs.allow,[
+  searchForWorkspaceRoot(process.cwd()),
+  path.resolve('../../swoop-source/public/exports/rigged-heroes/DS_Man_01.glb'),
+  path.resolve('../../swoop-source/public/exports/rigged-heroes/DS_Hoodie_Woman_01.glb'),
+ ]);
 });
 test('favicon bytes are an actual non-executable SVG, not an empty 200 substitute',async()=>{
  const svg=await readFile(new URL('../public/favicon.svg',import.meta.url),'utf8');
