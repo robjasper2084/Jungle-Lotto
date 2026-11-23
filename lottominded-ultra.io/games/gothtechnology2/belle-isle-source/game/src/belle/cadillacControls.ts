@@ -38,7 +38,7 @@ export class CadillacControls{
   const label=document.createElement('label');label.className='cadillac-sound-control';
   this.sound.type='checkbox';this.sound.addEventListener('change',event=>{this.hooks.sounds(this.sound.checked,event);this.refresh();});
   label.append(this.sound,document.createTextNode('Vehicle sounds · opening horn'));
-  this.note.className='cadillac-access-note';this.note.textContent='Park to open panels. Close every door and the trunk before driving. Your radio music plays through the trunk sound system.';
+  this.note.className='cadillac-access-note';this.note.textContent='Stop to open or close the doors and trunk. Your radio music plays through the trunk sound system.';
   this.root.append(heading,grid,label,this.note);
   this.menu.querySelector('.menu-controls-note')?.before(this.root);
   if(!this.root.parentElement)this.menu.append(this.root);
@@ -76,7 +76,7 @@ export class CadillacControls{
    ['trunk-view',state.trunkView?'Driving view · C':'Trunk view · C',state.trunkView],
   ];
   for(const [action,label,pressed]of labels){const button=this.buttons.get(action)!;button.textContent=label;button.setAttribute('aria-pressed',String(pressed));button.disabled=!state.parked;}
-  this.note.textContent=state.parked?'Close every door and the trunk before driving. T opens the trunk; 1 / 2 control the rear doors; C shows the sound system.':'Brake to a stop before using the trunk and rear doors.';
+  this.note.textContent=state.parked?'T opens the trunk, 1 and 2 open the rear doors, and C shows the sound system. Open panels stay open when you drive.':'Brake to a stop to open or close the trunk and rear doors.';
  }
  private announce(message:string){
   if(this.timer)clearTimeout(this.timer);this.feedback.textContent=message;this.feedback.hidden=false;

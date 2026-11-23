@@ -46,10 +46,11 @@ test('Fleetwood rig drives, steers, brakes, opens at rest and stops before a wal
   ride.toggleDoor();assert(ride.diagnostics().driverDoorRad===0);
   wall=ride.sim.pose.z+6;
   advance(150,1,0,0);assert.equal(ride.sim.pose.speed,0);assert(ride.sim.pose.z<wall-2.5);
-  ride.toggleDoor();advance(45,1,0,0);
+  ride.toggleDoor();advance(45,0,0,0);
   assert(ride.diagnostics().driverDoorRad<-.9&&ride.sim.pose.speed===0);
-  ride.toggleDoor();advance(100,0,1,0);
-  assert.equal(ride.sim.gear,'R');assert(ride.sim.pose.speed<0);ride.dispose();
+  advance(100,0,1,0);
+  assert.equal(ride.sim.gear,'R');assert(ride.sim.pose.speed<0);
+  assert(ride.diagnostics().driverDoorRad<-.9);ride.dispose();
 });
 
 test('cabin view follows suspension and keeps both faces framed in either iPad orientation',()=>{
@@ -85,7 +86,7 @@ function flatTerrain(){return{map:{spawn:{x:0,z:0,heading:0},roads:[{points:[[0,
  bridge:()=>({active:false,t:0,side:0}),raycastObstacle:()=>null} as unknown as ParkTerrain;}
 const pedals={gas:1,brake:0,steer:0,handbrake:false};
 const idle={gas:0,brake:0,steer:0,handbrake:false};
-test('trunk and rear doors accept independent parked commands and hold the brakes until fully closed',()=>{
+test('the Cadillac moves with both rear doors and the trunk open and operates the panels while stopped',()=>{
  const ride=new CadillacRide(car(),flatTerrain());
  try{
   assert.deepEqual(ride.toggleTrunk(),{accepted:false,opening:false,reason:'unavailable'});ride.start();
@@ -93,19 +94,20 @@ test('trunk and rear doors accept independent parked commands and hold the brake
   ride.sim.pose.speed=.1;ride.sim.cruise=10;
   assert.deepEqual(ride.toggleTrunk(),{accepted:true,opening:true});assert.equal(ride.sim.pose.speed,0);assert.equal(ride.sim.cruise,0);
   assert.deepEqual(ride.toggleRearDoor('left'),{accepted:true,opening:true});
-  ride.update(.1,pedals,0,false);
-  assert(ride.accessSnapshot().trunk.progress>0);assert(ride.accessSnapshot().rearLeft.progress>0);assert.equal(ride.accessSnapshot().rearRight.progress,0);
+  assert.deepEqual(ride.toggleRearDoor('right'),{accepted:true,opening:true});
+  ride.update(.1,idle,0,false);
+  assert(ride.accessSnapshot().trunk.progress>0);assert(ride.accessSnapshot().rearLeft.progress>0);assert(ride.accessSnapshot().rearRight.progress>0);
   const position=[ride.sim.pose.x,ride.sim.pose.z];
   for(let i=0;i<90;i++)ride.update(1/60,pedals,0,false);
-  assert.equal(ride.sim.pose.speed,0);assert.equal(ride.sim.gear,'D');assert(ride.sim.braking);assert.deepEqual([ride.sim.pose.x,ride.sim.pose.z],position);
+  assert(ride.sim.pose.speed>2);assert.equal(ride.sim.gear,'D');assert.notDeepEqual([ride.sim.pose.x,ride.sim.pose.z],position);
+  assert(ride.accessSnapshot().trunk.open&&ride.accessSnapshot().rearLeft.open&&ride.accessSnapshot().rearRight.open);
+  assert.equal(ride.toggleTrunk().reason,'moving');
+  ride.sim.pose.speed=0;
   assert.deepEqual(ride.toggleTrunk(),{accepted:true,opening:false});
   ride.update(.1,pedals,0,false);assert(ride.accessSnapshot().trunk.progress>0,'closing retains a physical panel');
   for(let i=0;i<90;i++)ride.update(1/60,pedals,0,false);
-  assert.equal(ride.accessSnapshot().trunk.progress,0);assert(ride.accessSnapshot().rearLeft.open);assert.equal(ride.sim.pose.speed,0);
-  assert.deepEqual(ride.toggleRearDoor('left'),{accepted:true,opening:false});
-  ride.update(0,pedals,0,true);assert.equal(ride.accessSnapshot().held,false);assert.equal(ride.sim.pose.speed,0);
-  for(let i=0;i<20;i++)ride.update(1/60,pedals,0,false);
-  assert(ride.sim.pose.speed>1,'driving resumes only after all panels are closed');
+  assert.equal(ride.accessSnapshot().trunk.progress,0);assert(ride.accessSnapshot().rearLeft.open);assert(ride.accessSnapshot().rearRight.open);
+  assert(ride.sim.pose.speed>2,'driving continues through a closing animation');
  }finally{ride.dispose();}
 });
 
@@ -116,7 +118,7 @@ test('reduced motion, exit, leave and restart preserve functional access state',
   let state=ride.accessSnapshot();assert.equal(state.trunk.angle,1.25);assert.equal(state.rearRight.angle,1.03);assert.equal(state.rearLeft.angle,0);assert.equal(ride.diagnostics().driverDoorRad,-1.03);
   assert(ride.setTrunkView(true));ride.requestExit();assert(!ride.trunkView);assert(ride.exiting);assert(!ride.exitReady);
   assert.equal(ride.toggleTrunk().reason,'exiting');assert(!ride.setTrunkView(true));
-  ride.update(0,pedals,0,true);assert(ride.exitReady);assert(!ride.accessSnapshot().held);assert.equal(ride.sim.pose.speed,0);
+  ride.update(.1,pedals,0,true);assert(ride.exitReady);assert(!ride.accessSnapshot().held);assert.equal(ride.sim.pose.speed,0);
   ride.leave();assert(!ride.model.visible);assert.equal(ride.diagnostics().driverDoorRad,0);assert.equal(ride.accessSnapshot().trunk.progress,0);
   ride.start();assert(!ride.trunkView&&!ride.exiting&&!ride.accessSnapshot().held);assert.equal(ride.diagnostics().driverDoorRad,0);
   ride.toggleTrunk();ride.update(.1,idle,0,false);ride.leave();ride.start();state=ride.accessSnapshot();
@@ -139,8 +141,9 @@ test('parked trunk camera frames the actual lid and subwoofers and retains look 
    terrain.raycastObstacle=()=>1;ride.camera(camera,false,0,.1,1/60,true);
    const aim=body.localToWorld(new T.Vector3(0,1.25,-2.12));assert(camera.position.distanceTo(aim)<1,'nearby obstacle clips the inspection camera');terrain.raycastObstacle=()=>null;
   }
-  assert(ride.setTrunkView(false));assert(!ride.trunkView);ride.setTrunkView(true);ride.toggleTrunk();ride.update(0,idle,0,true);
+  assert(ride.setTrunkView(false));assert(!ride.trunkView);ride.setTrunkView(true);
   for(let i=0;i<30;i++)ride.update(1/60,pedals,0,false);assert(!ride.trunkView,'driving restores normal camera');
   assert(!ride.setTrunkView(true),'inspection cannot be selected at speed');
+  assert(ride.accessSnapshot().trunk.open);
  }finally{ride.dispose();}
 });
