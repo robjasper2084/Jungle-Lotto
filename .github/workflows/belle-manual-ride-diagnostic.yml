@@ -1,0 +1,420 @@
+name: Belle full-scene manual observer diagnosis
+
+on:
+  push:
+    branches: [upgrade-redesign-performance-diagnostic-20261123]
+  workflow_dispatch:
+    inputs:
+      candidate_sha:
+        description: Exact 40-character candidate commit (never a moving branch)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: belle-manual-diagnostic-${{ github.ref }}-${{ github.sha }}
+  cancel-in-progress: false
+
+env:
+  BASELINE_SHA: 41ee1d94b532ae4a31a6547261ebfd98ec79de44
+  BASELINE_PAGES_RUN: '45250647135'
+  GAME_PATH: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+  RUNTIME_PATH: lottominded-ultra.io/games/gothtechnology2
+  STRICT_SCRIPT_SHA256: c7bf025a63918b885bcd7e1bcda55865423aba73c63f58a8287ff9a03af1a100
+
+jobs:
+  pins:
+    runs-on: ubuntu-latest
+    outputs:
+      candidate: ${{ steps.pins.outputs.candidate }}
+    steps:
+      - id: pins
+        name: Resolve immutable candidate input
+        env:
+          REQUESTED_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.candidate_sha || github.sha }}
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {appendFile} from 'node:fs/promises';
+          assert.match(process.env.REQUESTED_SHA,/^[0-9a-f]{40}$/);
+          assert.match(process.env.BASELINE_SHA,/^[0-9a-f]{40}$/);
+          await appendFile(process.env.GITHUB_OUTPUT,'candidate='+process.env.REQUESTED_SHA+'\n');
+          console.log(JSON.stringify({baseline:process.env.BASELINE_SHA,candidate:process.env.REQUESTED_SHA,measurementCommit:process.env.GITHUB_SHA}));
+          NODE
+
+  baseline-deployment:
+    name: Await the exact baseline deployment
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Observe the pinned production run without changing it
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {writeFile} from 'node:fs/promises';
+          import {setTimeout as pause} from 'node:timers/promises';
+          const report={run:process.env.BASELINE_PAGES_RUN,commit:process.env.BASELINE_SHA,
+            scope:'Read-only dependency wait; does not retry deployment or alter browser test deadlines.',
+            passed:false,observations:[],errors:[]};
+          const deadline=Date.now()+45*60*1000;
+          try {
+            for (;;) {
+              const response=await fetch('https://api.github.com/repos/robjasper2084/Jungle-Lotto/actions/runs/'+report.run,
+                {headers:{Authorization:'Bearer '+process.env.GITHUB_TOKEN,Accept:'application/vnd.github+json'},
+                  signal:AbortSignal.timeout(30000),cache:'no-store',redirect:'error'});
+              assert.equal(response.status,200,'Pinned deployment metadata must be accessible');
+              const run=await response.json();
+              assert.equal(String(run.id),report.run);assert.equal(run.head_sha,report.commit);
+              assert.equal(run.head_branch,'main');assert.equal(run.event,'push');
+              assert.equal(run.name,'Deploy GitHub Pages');assert.equal(run.path,'.github/workflows/pages.yml');
+              assert.equal(run.head_repository.full_name,'robjasper2084/Jungle-Lotto');
+              const observation={at:new Date().toISOString(),status:run.status,conclusion:run.conclusion,attempt:run.run_attempt};
+              report.observations.push(observation);
+              await writeFile('baseline-deployment-wait.json',JSON.stringify(report,null,2)+'\n');
+              if(report.observations.length===1||run.status!==report.observations.at(-2).status)console.log(JSON.stringify(observation));
+              if(run.status==='completed'){assert.equal(run.conclusion,'success','Baseline deployment terminated without success');report.passed=true;break;}
+              assert(Date.now()<deadline,'Baseline deployment did not complete within the bounded dependency wait');
+              await pause(15000);
+            }
+          } catch(error) {report.errors.push(String(error.stack||error));process.exitCode=1;}
+          finally {await writeFile('baseline-deployment-wait.json',JSON.stringify(report,null,2)+'\n');}
+          NODE
+      - name: Preserve every dependency-wait observation
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-manual-baseline-deployment-${{ github.run_id }}
+          path: baseline-deployment-wait.json
+          if-no-files-found: error
+          retention-days: 14
+
+  build:
+    needs: pins
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        source: [baseline, candidate]
+    env:
+      SOURCE_SHA: ${{ matrix.source == 'baseline' && '41ee1d94b532ae4a31a6547261ebfd98ec79de44' || needs.pins.outputs.candidate }}
+      SOURCE_LABEL: ${{ matrix.source }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Run the existing checks and build the exact source
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm ci
+          npm run check
+          npm test
+          node --check scripts/sustained-ride-profile.mjs
+          npm run build
+      - name: Preserve complete source and build integrity
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {createHash} from 'node:crypto';
+          import {execFileSync} from 'node:child_process';
+          import {readFile,readdir,writeFile,mkdir,cp} from 'node:fs/promises';
+          import {resolve,relative,sep} from 'node:path';
+          const game=process.cwd(),out=resolve(process.env.RUNNER_TEMP,'manual-build'),hash=b=>createHash('sha256').update(b).digest('hex');
+          const commit=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();assert.equal(commit,process.env.SOURCE_SHA);
+          const tree=execFileSync('git',['rev-parse','HEAD^{tree}'],{encoding:'utf8'}).trim();
+          const sourceFiles=['scripts/sustained-ride-profile.mjs','scripts/coop-static-server.mjs','package-lock.json','../../package-lock.json',
+            ...['main.ts','gpuFramePacing.ts','loopDiagnostics.ts','renderDiagnostics.ts','renderSubmissionDiagnostics.ts','rideProfile.ts','rideProfileStats.ts','rideProfileBuild.ts'].map(x=>'src/belle/'+x)];
+          const sources=Object.fromEntries(await Promise.all(sourceFiles.map(async path=>[path,hash(await readFile(resolve(game,path)))])));
+          assert.equal(sources['scripts/sustained-ride-profile.mjs'],process.env.STRICT_SCRIPT_SHA256);
+          const files=[];async function walk(dir){for(const entry of await readdir(dir,{withFileTypes:true})){
+            const path=resolve(dir,entry.name);if(entry.isDirectory())await walk(path);else{assert(entry.isFile());const bytes=await readFile(path);files.push({path:relative(resolve(game,'dist'),path).split(sep).join('/'),bytes:bytes.length,sha256:hash(bytes)});}
+          }}await walk(resolve(game,'dist'));files.sort((a,b)=>a.path.localeCompare(b.path));
+          const metadata={version:1,repository:'robjasper2084/Jungle-Lotto',label:process.env.SOURCE_LABEL,commit,tree,workflowCommit:process.env.GITHUB_SHA,
+            buildId:'manual-'+process.env.GITHUB_RUN_ID+'-'+process.env.SOURCE_LABEL+'-'+commit,builtAt:new Date().toISOString(),node:process.version,sources,files};
+          await mkdir(out,{recursive:true});await cp(resolve(game,'dist'),resolve(out,'dist'),{recursive:true});
+          await writeFile(resolve(out,'manual-diagnostic-build.json'),JSON.stringify(metadata,null,2)+'\n');
+          console.log(JSON.stringify({commit,tree,label:metadata.label,buildId:metadata.buildId,sources,files:files.length}));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: belle-manual-pinned-${{ matrix.source }}-${{ env.SOURCE_SHA }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/manual-build/
+          if-no-files-found: error
+          retention-days: 2
+
+  manual:
+    name: Manual native observers, ABBA (${{ matrix.device }})
+    needs: [pins, build, baseline-deployment]
+    runs-on: macos-15
+    timeout-minutes: 145
+    strategy:
+      fail-fast: false
+      matrix:
+        device: [desktop, phone]
+    env:
+      CANDIDATE_SHA: ${{ needs.pins.outputs.candidate }}
+      DEVICE: ${{ matrix.device }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 41ee1d94b532ae4a31a6547261ebfd98ec79de44
+          path: baseline-source
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /scripts/belle-production-jobs.mjs
+            /scripts/belle-release-pages.mjs
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/release-health-model.mjs
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.pins.outputs.candidate }}
+          path: candidate-source
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: measurement
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/manual-ride-diagnostic.mjs
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@v4
+        with:
+          name: belle-manual-pinned-baseline-41ee1d94b532ae4a31a6547261ebfd98ec79de44-${{ github.run_id }}
+          path: baseline-build
+      - uses: actions/download-artifact@v4
+        with:
+          name: belle-manual-pinned-candidate-${{ needs.pins.outputs.candidate }}-${{ github.run_id }}
+          path: candidate-build
+      - id: prepare
+        name: Check immutable identities and prepare unique evidence directories
+        run: |
+          mkdir -p evidence/cases evidence/production evidence/public-before evidence/public-after
+          node --check "measurement/$GAME_PATH/scripts/manual-ride-diagnostic.mjs"
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {execFileSync} from 'node:child_process';
+          import {readFile,writeFile} from 'node:fs/promises';
+          const builds={};for(const label of ['baseline','candidate']){
+            const metadata=JSON.parse(await readFile(label+'-build/manual-diagnostic-build.json','utf8'));
+            const expected=process.env[label.toUpperCase()+'_SHA'];assert.equal(metadata.commit,expected);assert.equal(metadata.label,label);assert.equal(metadata.workflowCommit,process.env.GITHUB_SHA);
+            assert.equal(execFileSync('git',['-C',label+'-source','rev-parse','HEAD'],{encoding:'utf8'}).trim(),expected);
+            assert.equal(execFileSync('git',['-C',label+'-source','rev-parse','HEAD^{tree}'],{encoding:'utf8'}).trim(),metadata.tree);builds[label]=metadata;
+          }
+          for(const path of ['scripts/sustained-ride-profile.mjs','scripts/coop-static-server.mjs','package-lock.json','../../package-lock.json'])assert.equal(builds.baseline.sources[path],builds.candidate.sources[path],path+' must match');
+          assert.equal(builds.candidate.sources['scripts/sustained-ride-profile.mjs'],process.env.STRICT_SCRIPT_SHA256);
+          await writeFile('evidence/inputs.json',JSON.stringify({baseline:process.env.BASELINE_SHA,candidate:process.env.CANDIDATE_SHA,measurementCommit:process.env.GITHUB_SHA,
+            device:process.env.DEVICE,mode:'full',seconds:90,order:['A1','B1','B2','A2'],builds},null,2)+'\n');
+          NODE
+      - id: runtime
+        name: Install one existing Chrome runtime for both exact sources
+        working-directory: candidate-source/lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npm ci --prefix belle-isle-source/game
+          npx playwright install chrome
+          ln -s "$GITHUB_WORKSPACE/candidate-source/$RUNTIME_PATH/node_modules" "$GITHUB_WORKSPACE/baseline-source/$RUNTIME_PATH/node_modules"
+      - id: shader
+        name: Verify native shader pixels against the unchanged live source
+        if: matrix.device == 'desktop'
+        timeout-minutes: 20
+        working-directory: candidate-source/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          BELLE_SHADER_BASELINE: 41ee1d94b532ae4a31a6547261ebfd98ec79de44
+          GIT_ALTERNATE_OBJECT_DIRECTORIES: ${{ github.workspace }}/baseline-source/.git/objects
+        run: node scripts/render-shader-equivalence.mjs
+      - id: production
+        name: Prove the baseline completed actual production deployment
+        if: always() && steps.prepare.outcome == 'success' && steps.runtime.outcome == 'success'
+        working-directory: evidence/production
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node "$GITHUB_WORKSPACE/baseline-source/scripts/belle-production-jobs.mjs" "$BASELINE_SHA" "$BASELINE_PAGES_RUN"
+      - id: public_before
+        name: Verify public baseline bytes before all four cases
+        if: always() && steps.production.outcome == 'success'
+        working-directory: evidence/public-before
+        run: node "$GITHUB_WORKSPACE/baseline-source/scripts/belle-release-pages.mjs" verify https://robjasper2084.github.io/Jungle-Lotto/ "$BASELINE_SHA"
+      - id: a1
+        name: A1 baseline, native manual Start and Stop
+        if: always() && steps.public_before.outcome == 'success'
+        timeout-minutes: 28
+        run: >-
+          node "measurement/$GAME_PATH/scripts/manual-ride-diagnostic.mjs"
+          --game "baseline-source/$GAME_PATH" --build baseline-build --output evidence/cases/A1
+          --sha "$BASELINE_SHA" --source baseline --case A1 --device "$DEVICE"
+          --baseline "$BASELINE_SHA" --candidate "$CANDIDATE_SHA"
+      - id: b1
+        name: B1 candidate, native manual Start and Stop
+        if: always() && steps.public_before.outcome == 'success'
+        timeout-minutes: 28
+        run: >-
+          node "measurement/$GAME_PATH/scripts/manual-ride-diagnostic.mjs"
+          --game "candidate-source/$GAME_PATH" --build candidate-build --output evidence/cases/B1
+          --sha "$CANDIDATE_SHA" --source candidate --case B1 --device "$DEVICE"
+          --baseline "$BASELINE_SHA" --candidate "$CANDIDATE_SHA"
+      - id: b2
+        name: B2 candidate, native manual Start and Stop
+        if: always() && steps.public_before.outcome == 'success'
+        timeout-minutes: 28
+        run: >-
+          node "measurement/$GAME_PATH/scripts/manual-ride-diagnostic.mjs"
+          --game "candidate-source/$GAME_PATH" --build candidate-build --output evidence/cases/B2
+          --sha "$CANDIDATE_SHA" --source candidate --case B2 --device "$DEVICE"
+          --baseline "$BASELINE_SHA" --candidate "$CANDIDATE_SHA"
+      - id: a2
+        name: A2 baseline, native manual Start and Stop
+        if: always() && steps.public_before.outcome == 'success'
+        timeout-minutes: 28
+        run: >-
+          node "measurement/$GAME_PATH/scripts/manual-ride-diagnostic.mjs"
+          --game "baseline-source/$GAME_PATH" --build baseline-build --output evidence/cases/A2
+          --sha "$BASELINE_SHA" --source baseline --case A2 --device "$DEVICE"
+          --baseline "$BASELINE_SHA" --candidate "$CANDIDATE_SHA"
+      - id: public_after
+        name: Verify public baseline bytes after all four cases
+        if: always() && steps.public_before.outcome == 'success'
+        working-directory: evidence/public-after
+        run: node "$GITHUB_WORKSPACE/baseline-source/scripts/belle-release-pages.mjs" verify https://robjasper2084.github.io/Jungle-Lotto/ "$BASELINE_SHA"
+      - name: Summarize evidence validity and preserve every numeric failure
+        if: always() && steps.prepare.outcome == 'success'
+        env:
+          A1_OUTCOME: ${{ steps.a1.outcome }}
+          B1_OUTCOME: ${{ steps.b1.outcome }}
+          B2_OUTCOME: ${{ steps.b2.outcome }}
+          A2_OUTCOME: ${{ steps.a2.outcome }}
+          PUBLIC_BEFORE: ${{ steps.public_before.outcome }}
+          PUBLIC_AFTER: ${{ steps.public_after.outcome }}
+        run: |
+          node --input-type=module <<'NODE'
+          import {readFile,writeFile,appendFile} from 'node:fs/promises';
+          import {createHash} from 'node:crypto';
+          const cases={},failures=[];for(const id of ['A1','B1','B2','A2']){
+            const outcome=process.env[id+'_OUTCOME'];let report=null;
+            try{
+              report=JSON.parse(await readFile('evidence/cases/'+id+'/report.json','utf8'));
+              const hashes=JSON.parse(await readFile('evidence/cases/'+id+'/evidence-hashes.json','utf8'));
+              for(const entry of hashes){const bytes=await readFile('evidence/cases/'+id+'/'+entry.path);if(bytes.length!==entry.bytes||createHash('sha256').update(bytes).digest('hex')!==entry.sha256)throw Error('Evidence hash mismatch');}
+            }catch(error){failures.push(id+': '+String(error));}
+            const expected=id.startsWith('A')?process.env.BASELINE_SHA:process.env.CANDIDATE_SHA;
+            if(outcome!=='success'||!report?.diagnosticEvidenceValid||report?.sourceHead!==expected||report?.case!==id)failures.push(id+' diagnostic evidence invalid/incomplete');
+            cases[id]={sourceHead:report?.sourceHead??expected,stepOutcome:outcome,diagnosticEvidenceValid:report?.diagnosticEvidenceValid??false,
+              frameQualityAccepted:report?.frameQualityAccepted??false,frameMs:report?.profile?.metrics?.frameMs??null,over250ms:report?.profile?.over250ms??null,
+              numericObservations:report?.originalNumericObservations??null,errors:report?.errors??null};
+          }
+          if(process.env.PUBLIC_BEFORE!=='success'||process.env.PUBLIC_AFTER!=='success')failures.push('Public provenance incomplete');
+          const summary={scope:'Manual observer diagnosis only; original strict full jobs remain the acceptance checks',device:process.env.DEVICE,
+            baseline:process.env.BASELINE_SHA,candidate:process.env.CANDIDATE_SHA,order:['A1','B1','B2','A2'],diagnosticEvidenceValid:failures.length===0,
+            releasePerformanceVerified:false,cases,failures,limitations:'Two runs per source; fixed ABBA. Native observers add CPU overhead and manual Stop has a different boundary from strict trusted-W-keyup. No statistical confidence or physical-device certification.'};
+          await writeFile('evidence/comparison.json',JSON.stringify(summary,null,2)+'\n');console.log(JSON.stringify(summary,null,2));
+          await appendFile(process.env.GITHUB_STEP_SUMMARY,'## Manual observer diagnosis — '+process.env.DEVICE+'\n\nDiagnostic only. Original strict full jobs remain authoritative. Numeric failures are retained.\n\n| Case | Evidence valid | Frame p95 ms | Frames over250ms | Original frame budget met |\n|---|---|---:|---:|---|\n'+Object.entries(cases).map(([id,c])=>'| '+id+' | '+c.diagnosticEvidenceValid+' | '+c.frameMs?.p95+' | '+c.over250ms+' | '+c.frameQualityAccepted+' |').join('\n')+'\n');
+          if(failures.length)process.exitCode=1;
+          NODE
+      - name: Preserve all raw cases, hashes and public provenance
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-manual-full-abba-${{ matrix.device }}-${{ needs.pins.outputs.candidate }}
+          path: evidence/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Preserve native shader-equivalence evidence
+        if: always() && matrix.device == 'desktop'
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-manual-shader-equivalence-${{ needs.pins.outputs.candidate }}
+          path: candidate-source/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/shader-equivalence/
+          if-no-files-found: warn
+          retention-days: 14
+
+  strict-full:
+    name: Unchanged strict full ride (${{ matrix.device }})
+    needs: [pins, build]
+    runs-on: macos-15
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        device: [desktop, phone]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.pins.outputs.candidate }}
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@v4
+        with:
+          name: belle-manual-pinned-candidate-${{ needs.pins.outputs.candidate }}-${{ github.run_id }}
+          path: strict-build
+      - name: Verify source and original strict script, then install the exact build
+        env:
+          CANDIDATE_SHA: ${{ needs.pins.outputs.candidate }}
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {readFile,cp} from 'node:fs/promises';
+          import {createHash} from 'node:crypto';
+          import {execFileSync} from 'node:child_process';
+          const metadata=JSON.parse(await readFile('strict-build/manual-diagnostic-build.json','utf8'));
+          assert.equal(execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),process.env.CANDIDATE_SHA);assert.equal(metadata.commit,process.env.CANDIDATE_SHA);
+          assert.equal(execFileSync('git',['rev-parse','HEAD^{tree}'],{encoding:'utf8'}).trim(),metadata.tree);
+          const hash=b=>createHash('sha256').update(b).digest('hex');assert.equal(hash(await readFile(process.env.GAME_PATH+'/scripts/sustained-ride-profile.mjs')),process.env.STRICT_SCRIPT_SHA256);
+          for(const file of metadata.files){const bytes=await readFile('strict-build/dist/'+file.path);assert.equal(bytes.length,file.bytes);assert.equal(hash(bytes),file.sha256);}
+          await cp('strict-build/dist',process.env.GAME_PATH+'/dist',{recursive:true});
+          console.log(JSON.stringify({source:metadata.commit,tree:metadata.tree,files:metadata.files.length,strictScriptSha256:process.env.STRICT_SCRIPT_SHA256}));
+          NODE
+      - name: Install the existing browser runtime
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install chrome
+      - name: Run the unchanged strict full 90-second profile
+        timeout-minutes: 28
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          GITHUB_SHA: ${{ needs.pins.outputs.candidate }}
+          BELLE_PROFILE_DEVICE: ${{ matrix.device }}
+          BELLE_PROFILE_MODE: full
+          BELLE_PROFILE_SECONDS: '90'
+        run: node scripts/sustained-ride-profile.mjs
+      - name: Preserve the strict success, failure or partial result unchanged
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-manual-unchanged-strict-full-${{ matrix.device }}-${{ needs.pins.outputs.candidate }}
+          path: |
+            lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/sustained-profile/full/${{ matrix.device }}/
+            strict-build/manual-diagnostic-build.json
+          if-no-files-found: warn
+          retention-days: 14
