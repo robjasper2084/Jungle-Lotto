@@ -1,3 +1,4 @@
+import {maskDistrictGround} from './detroitWaterMask.ts';
 import {REFERENCE_STYLE} from './sunsetReferencePolicy.ts';
 import {skyRadiance} from './volumetricSky.ts';
 import {riverWaveGLSL} from './riverWaves.ts';
@@ -122,6 +123,7 @@ diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.5,.66,.65),clamp(washFoam*.4+rippleF
  // High/Automatic retain the original reactive surfaces and water effects.
  const farShader=material('far'),nearShader=material('near');
  const calmWater=new T.MeshBasicMaterial({color:0x355f6b,depthWrite:true});
+ maskDistrictGround([farShader,nearShader,calmWater]);
  const far:T.Mesh=new T.Mesh(farGeometry,farShader);far.name='Detroit River distant water';scene.add(far);
  const near:T.Mesh=new T.Mesh(new T.PlaneGeometry(RIVER_PATCH_SIZE,RIVER_PATCH_SIZE,RIVER_PATCH_SEGMENTS,RIVER_PATCH_SEGMENTS).rotateX(-Math.PI/2),nearShader);near.name='Detroit River rolling waves';near.frustumCulled=false;scene.add(near);
  const waveIndex=near.geometry.getIndex()!,flatIndex=new T.BufferAttribute(flatRiverPatchIndex(),1);

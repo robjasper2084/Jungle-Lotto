@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {oakwayRoof} from './oakwayRoof.ts';
 import {SHELTER_PROFILES} from './shelterProfiles.ts';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {facilityPlan,type FacilitySite} from './facilityPlan.ts';
@@ -12,6 +13,11 @@ export function addParkFacilities(scene:T.Scene,map:ParkMap,multiDraw=false){
  const bar=(a:Point,b:Point,y:number,h:number,d:number,m:T.Material)=>{const p:Point=[(a[0]+b[0])/2,(a[1]+b[1])/2];box(p,y,Math.hypot(b[0]-a[0],b[1]-a[1]),h,d,Math.atan2(b[1]-a[1],b[0]-a[0]),m);};
  const palette=new Map<number,T.MeshStandardMaterial>();const colored=(color:number)=>{if(!palette.has(color))palette.set(color,new T.MeshStandardMaterial({color,roughness:.9,side:T.DoubleSide}));return palette.get(color)!;};
  const roofFor=(site:FacilitySite,eave:number)=>{
+  if(site.id==='368854143'){
+   const roof=oakwayRoof(site.center,2+eave);add(roof.geometry,roof.material,...site.center);
+   box([site.center[0]-.8,site.center[1]-.5],2+eave+2.9,.88,2.4,1.1,-.65,colored(0x865a45));
+   return;
+  }
   const ring=site.points.slice(0,-1),p:number[]=[],uv:number[]=[],profile=SHELTER_PROFILES[site.id],rm=profile?colored(profile.roof):roof,tm=profile?colored(profile.trim):wood;
   const radius=Math.max(...ring.map(v=>Math.hypot(v[0]-site.center[0],v[1]-site.center[1]))),rise=profile?.rise??Math.min(2.2,radius*.20),cy=2+eave;
   const vertex=(v:number[])=>{p.push(...v);uv.push(v[0]/3,v[2]/3);};
