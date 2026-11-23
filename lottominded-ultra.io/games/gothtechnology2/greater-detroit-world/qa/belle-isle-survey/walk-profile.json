@@ -1,0 +1,142 @@
+{
+  "freshSessionAggregate": {
+    "requests": 181820,
+    "transforms": 8340,
+    "avoidedPercent": 95.4130458695413
+  },
+  "sourceHashes": {
+    "Trees  Bushes pack.zip": "e03313e29de033f0d00f8c4beba1a9e5007aa7abc4a00c9f6d129efc40f5a695",
+    "Belle_Isle_iPad_Perf8_Optimization_Evidence.zip": "04a5aaada5c89c3cd55ff4d050780986cbd0832a106e56f76c7199dd1974d6a0",
+    "woodland.webp": "6067e780229da91a9894fe15436e4ee758a182470374c4477994cab8b45a8432"
+  },
+  "sectors": [
+    {
+      "name": "Shelter 17",
+      "profileStarted": "2026-11-23T01:19:11.829Z",
+      "acceptedFrames": 865,
+      "eligibleSeconds": 15.516699999999974,
+      "movingSeconds": 13.749799999999986,
+      "distanceMetres": 31.153903830278495,
+      "averageFPS": 55.74638937402937,
+      "p95Ms": 33.09999999999127,
+      "maxMs": 283.29999999998836,
+      "stallsOver250ms": 1,
+      "viewport": [
+        1194,
+        694,
+        2
+      ],
+      "graphics": "high",
+      "effectiveQuality": "high",
+      "renderPixelRatio": 1.5,
+      "startCamera": {
+        "position": [
+          2906.238212853056,
+          4.85,
+          635.5283247570969
+        ],
+        "direction": [
+          0.8472938144962151,
+          -0.3338471422445881,
+          0.41308507299535213
+        ],
+        "fovDegrees": 60
+      },
+      "intervalBounds": {
+        "requests": 45076,
+        "transforms": 14
+      },
+      "cumulativeBounds": {
+        "requests": 68598,
+        "transforms": 8246
+      },
+      "visibilityInterruptions": 0
+    },
+    {
+      "name": "Nashua Canal",
+      "profileStarted": "2026-11-23T01:19:34.728Z",
+      "acceptedFrames": 569,
+      "eligibleSeconds": 14.550200000000004,
+      "movingSeconds": 13.7666,
+      "distanceMetres": 31.154161000825088,
+      "averageFPS": 39.105991670217584,
+      "p95Ms": 33.60000000000582,
+      "maxMs": 283.3000000000029,
+      "stallsOver250ms": 1,
+      "viewport": [
+        1194,
+        694,
+        2
+      ],
+      "graphics": "high",
+      "effectiveQuality": "high",
+      "renderPixelRatio": 1.5,
+      "startCamera": {
+        "position": [
+          2147.962327724587,
+          4.85,
+          694.9897343964677
+        ],
+        "direction": [
+          0.9319027280980338,
+          -0.3338471422446017,
+          -0.14178642734251826
+        ],
+        "fovDegrees": 60
+      },
+      "intervalBounds": {
+        "requests": 37920,
+        "transforms": 0
+      },
+      "cumulativeBounds": {
+        "requests": 144426,
+        "transforms": 8340
+      },
+      "visibilityInterruptions": 0
+    },
+    {
+      "name": "Oakway Refectory",
+      "profileStarted": "2026-11-23T01:19:57.183Z",
+      "acceptedFrames": 562,
+      "eligibleSeconds": 16.79999999999996,
+      "movingSeconds": 13.450099999999997,
+      "distanceMetres": 20.93640574487398,
+      "averageFPS": 33.45238095238103,
+      "p95Ms": 33,
+      "maxMs": 1749.800000000003,
+      "stallsOver250ms": 7,
+      "viewport": [
+        1194,
+        694,
+        2
+      ],
+      "graphics": "high",
+      "effectiveQuality": "high",
+      "renderPixelRatio": 1.5,
+      "startCamera": {
+        "position": [
+          2001.1524155808881,
+          4.85,
+          313.15212433615864
+        ],
+        "direction": [
+          0.9303519471314443,
+          -0.33384714224458895,
+          -0.15162895529499557
+        ],
+        "fovDegrees": 60
+      },
+      "intervalBounds": {
+        "requests": 29918,
+        "transforms": 0
+      },
+      "cumulativeBounds": {
+        "requests": 181820,
+        "transforms": 8340
+      },
+      "visibilityInterruptions": 0
+    }
+  ],
+  "client": "Windows Chrome, software automation with Direct3D, 1194 × 694 CSS pixels at DPR 2, reduced motion, default High graphics",
+  "method": "In-game ride profiler after each guide entry, on foot with forward and steering inputs. Short video takes used the same start points and ran separately. Each named interval includes all eligible foreground frames, including stalls. Bounds counts compare the actual miss-path sphere transforms with all requests for a local transformed sphere. Aggregate includes initial loading, recording approaches and travel between sites."
+}

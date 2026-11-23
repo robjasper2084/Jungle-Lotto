@@ -1,3 +1,4 @@
+import {addSurveyVegetation,keepOriginalTree} from './surveyVegetation.ts';
 import {referenceTree} from './referenceTrees.ts';
 import {ReferenceLeafDisplay,applyLeafOutline} from './referenceLeafDisplay.ts';
 import {canopyTint} from './sunsetCanopy.ts';
@@ -28,6 +29,9 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
  const json=async(name:string)=>{const r=await fetch(base+name);if(!r.ok)throw Error('Nature asset '+name+': '+r.status);return r.json();};
  const manifest:Manifest=await json('manifest.json'),plan:NaturePlan=await json('placements.json');if(REFERENCE_STYLE)plan.trees=plan.trees.filter(p=>!inSunsetGarden(p.x,p.z));
  // Created once; exact source positions and original encounter order remain.
+ plan.trees=plan.trees.filter(keepOriginalTree);
+ if(terrain)await addSurveyVegetation(scene,terrain);
+ const boundsCounts=new URLSearchParams(location.search).has('profile')?{requests:0,transforms:0}:undefined;
  const treeIndex=new NatureSpatialIndex(plan.trees.filter(p=>!replacedByCherry(p)));
  const groundIndex=new NatureSpatialIndex(plan.ground);
  status('Loading varied trees');
@@ -101,7 +105,7 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
   const card=new T.InstancedMesh(cards,cardSeason.material,plants.length);card.name='Split distant '+entry.id;card.visible=false;
   cards.setAttribute('lodWeight',new T.InstancedBufferAttribute(new Float32Array(plants.length),1).setUsage(T.DynamicDrawUsage));
   plants.forEach((p,i)=>{card.setMatrixAt(i,matrix(p,false,true));card.setColorAt(i,plantTint(p));});card.computeBoundingSphere();scene.add(card);
-  pools.push({id:entry.id,meshes,nearVisibility:new TreeInstanceVisibility(meshes,undefined,'near'),far,farVisibility:new TreeInstanceVisibility(far,renderProbe),sourceIndices:new Map(plants.map((p,i)=>[p,i])),sourceIds:new Uint32Array(plants.length),card,plants});
+  pools.push({id:entry.id,meshes,nearVisibility:new TreeInstanceVisibility(meshes,undefined,'near'),far,farVisibility:new TreeInstanceVisibility(far,renderProbe,'far',boundsCounts),sourceIndices:new Map(plants.map((p,i)=>[p,i])),sourceIds:new Uint32Array(plants.length),card,plants});
  }
  // Ground cover is a separate, smaller stage. Source LOD2 models and shared
  // texture atlases avoid the provider's multi-million-polygon scatter setup.
@@ -118,7 +122,7 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
  const calendar=document.createElement('label');calendar.textContent='Island season';const monthSelect=document.createElement('select');monthSelect.id='season-month';monthSelect.setAttribute('aria-label','Island season month');['January','February','March','April','May','June','July','August','September','October','November','December'].forEach((name,i)=>monthSelect.add(new Option(name,String(i+1))));monthSelect.value=String(month.value);calendar.append(monthSelect);document.querySelector('#settings .settings-body')?.append(calendar);if(!calendar.isConnected)document.getElementById('settings')?.append(calendar);monthSelect.onchange=()=>{month.value=Number(monthSelect.value);localStorage.setItem('belle-season-month',String(month.value));lastX=Infinity;};
  const diagnostic=localPerformanceProbe();
  let quality:keyof typeof natureBudget='automatic',lastX=Infinity,lastZ=Infinity,splitDetail=false,lastSplit=false,lastMonth=-1;
- const stats={treeVariants:manifest.trees.length,groundVariants:manifest.ground.length,trees:plan.trees.length,ground:plan.ground.length,visibleTrees:0,visibleGround:0,get placementMatrices(){return placementMatrices.diagnostics;}};
+ const stats={boundsCounts,treeVariants:manifest.trees.length,groundVariants:manifest.ground.length,trees:plan.trees.length,ground:plan.ground.length,visibleTrees:0,visibleGround:0,get placementMatrices(){return placementMatrices.diagnostics;}};
  function select(x:number,z:number){
   cherry.scene.visible=Math.hypot(x-cherryTreeSite.x,z-cherryTreeSite.z)<900;
   // Offline summer impostors retain the full canopy silhouette in smaller panes.

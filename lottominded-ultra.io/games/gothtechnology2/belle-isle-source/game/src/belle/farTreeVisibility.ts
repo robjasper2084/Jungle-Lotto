@@ -53,6 +53,7 @@ function transformMagnitude(source:T.Sphere,instance:T.Matrix4,world:T.Matrix4){
  * unchanged membership; every actual view, including rotation in place, is tested.
  */
 export class TreeInstanceVisibility {
+ private readonly boundsCounts?:{requests:number;transforms:number};
  private readonly parts:Part[];
  private readonly pool:'far'|'near';
  private readonly renderProbe?:NatureRenderProbe;
@@ -62,7 +63,8 @@ export class TreeInstanceVisibility {
  private readonly projection=new T.Matrix4();private readonly frustum=new T.Frustum();
  private readonly sphere=new T.Sphere();private readonly union=new T.Sphere();
  private readonly paired=new T.Sphere();
- constructor(meshes:readonly T.InstancedMesh[],renderProbe?:NatureRenderProbe,pool:'far'|'near'='far'){
+ constructor(meshes:readonly T.InstancedMesh[],renderProbe?:NatureRenderProbe,pool:'far'|'near'='far',boundsCounts?:{requests:number;transforms:number}){
+  this.boundsCounts=boundsCounts;
   this.renderProbe=renderProbe;this.pool=pool;
   this.parts=meshes.map(mesh=>{
    mesh.geometry.computeBoundingSphere();
@@ -125,13 +127,13 @@ export class TreeInstanceVisibility {
    // Photo-subject raycasts use this same mesh after the world render. Keep its
    // broad-phase sphere over ALL selected sources, not just the first view.
    part.localBounds.prepare(part.base,part.matrix.source);
-   this.union.makeEmpty();let valid=true;
+   this.union.makeEmpty();let valid=true,transforms=0;
    for(let i=0;i<count;i++){
     this.matrix.fromArray(part.matrix.source,i*16);
     const sourceId=hasSourceIds?sourceIds![i]:undefined;
     if(!part.localBounds.restore(sourceId,i*16,this.sphere)){
      if(!transformedSphere(part.base,this.matrix,this.sphere)){valid=false;reuseLocalBounds=false;break;}
-     part.localBounds.remember(sourceId,i*16,this.sphere);
+     transforms++;part.localBounds.remember(sourceId,i*16,this.sphere);
     }
     this.union.union(this.sphere);
     // With exact identity parents the existing world-bound transform repeats
@@ -148,6 +150,7 @@ export class TreeInstanceVisibility {
      }
     }
    }
+   if(valid&&this.boundsCounts){this.boundsCounts.requests+=count;this.boundsCounts.transforms+=transforms;}
    if(!mesh.boundingSphere)mesh.boundingSphere=new T.Sphere();
    if(valid)mesh.boundingSphere.copy(this.union);
    else mesh.boundingSphere.set(new T.Vector3(),Infinity);
@@ -163,7 +166,7 @@ export class TreeInstanceVisibility {
  private updateBounds(){
   for(const part of this.parts)part.world.set(part.mesh.matrixWorld.elements);
   for(let i=0;i<this.count;i++){
-   this.union.makeEmpty();let valid=true;
+   this.union.makeEmpty();let valid=true,transforms=0;
    for(const part of this.parts){
     this.matrix.fromArray(part.matrix!.source,i*16);
     this.combined.multiplyMatrices(part.mesh.matrixWorld,this.matrix);
