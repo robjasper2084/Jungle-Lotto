@@ -49,7 +49,7 @@ export function referenceTree(id:string,low:boolean,height:number,solidCanopy?:'
   const crowns:T.BufferGeometry[]=[];
   const phases=Array.from({length:3},()=>random()*Math.PI*2);
   const lobe=(center:T.Vector3,width:number,depth:number)=>{
-   const geometry=solidCanopy==='compact'?new T.SphereGeometry(1,7,5):new T.SphereGeometry(1,10,7);
+   const geometry=solidCanopy==='compact'?new T.SphereGeometry(1,7,5):new T.SphereGeometry(1,8,6);
    const position=geometry.getAttribute('position');
    const uv=geometry.getAttribute('uv');
    const colors=new Float32Array(position.count*3);

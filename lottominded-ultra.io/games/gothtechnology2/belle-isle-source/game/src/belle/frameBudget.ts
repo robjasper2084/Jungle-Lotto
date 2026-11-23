@@ -1,8 +1,9 @@
-/** Automatic mode adapts after sustained foreground pressure, including very slow frames. */
+/** Adapt after sustained foreground pressure, including very slow frames. */
 export class FrameBudget {
  scale=1;private sum=0;private count=0;private slow=0;private severe=0;private critical=0;private good=0;private warmup=2;
  reset(){this.scale=1;this.sum=this.count=this.slow=this.severe=this.critical=this.good=0;this.warmup=2;}
- sample(dt:number,cap:number,eligible:boolean){
+ sample(dt:number,cap:number,eligible:boolean,highDetail=false){
+  const minimumScale=highDetail ? .55 : .65;
   // Menus, background time and the first resumed frame interrupt both pressure
   // and recovery streaks. They must not join separate bursts into a downgrade.
   if(!eligible||!Number.isFinite(dt)||dt<=0){this.sum=this.count=this.slow=this.severe=this.critical=this.good=0;return false;}
@@ -11,7 +12,7 @@ export class FrameBudget {
   // separate streak, so one or two loading hitches cannot trigger the fallback.
   this.critical=dt>=1?this.critical+1:0;
   if(this.critical>=3){
-   const changed=this.scale!==.65;this.scale=.65;
+   const changed=this.scale!==minimumScale;this.scale=minimumScale;
    this.sum=this.count=this.slow=this.severe=this.critical=this.good=this.warmup=0;
    return changed;
   }
@@ -25,7 +26,7 @@ export class FrameBudget {
   const old=this.scale;
   // Two separate severe windows justify the lightest tier immediately. A
   // single hitch or ordinary missed-frame pressure still cannot take this path.
-  if(this.slow>=2){this.scale=this.severe>=2?.65:Math.max(.65,Math.round((this.scale-.1)*100)/100);this.slow=this.severe=0;}
+  if(this.slow>=2){this.scale=this.severe>=2?minimumScale:Math.max(minimumScale,Math.round((this.scale-.1)*100)/100);this.slow=this.severe=0;}
   if(this.good>=8){this.scale=Math.min(1,Math.round((this.scale+.05)*100)/100);this.good=0;}
   return old!==this.scale;
  }

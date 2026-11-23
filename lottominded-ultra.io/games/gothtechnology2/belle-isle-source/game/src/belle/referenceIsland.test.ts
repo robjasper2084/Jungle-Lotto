@@ -35,7 +35,8 @@ test('solid crowns stay within the tree budget and seasonal changes keep whole l
   const {leaves,foliage}=referenceTree(id,true,16,'full');
   const indices=leaves.getIndex()!.count;
   assert.ok(indices<referenceTree(id,true,16).leaves.getIndex()!.count);
-  assert.ok(referenceTree(id,true,16,'compact').leaves.getIndex()!.count<indices*.4);
+  assert.ok(indices<=3*3200);
+  assert.ok(referenceTree(id,true,16,'compact').leaves.getIndex()!.count<indices*.5);
   leaves.computeBoundingBox();
   const bounds=leaves.boundingBox!;
   assert.ok(bounds.max.y>13&&bounds.max.y<24);

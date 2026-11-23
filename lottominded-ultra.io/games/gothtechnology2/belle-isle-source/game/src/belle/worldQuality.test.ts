@@ -25,11 +25,11 @@ test('detail hysteresis prevents repeated rebuilds during gradual recovery',()=>
  assert.equal(f.details.length,3);assert.equal(f.quality.effective,'automatic');
  f.quality.setBudget(.75);assert.equal(f.quality.effective,'smooth');assert.equal(f.details.length,4);
 });
-test('explicit High and Smooth retain their authored detail and pixel policies',()=>{
+test('High adapts pixels while retaining mapped detail and Smooth keeps its authored ratio',()=>{
  const f=fixture();f.quality.setQuality('high');f.quality.setBudget(.65);
- assert.equal(f.quality.effective,'high');assert.equal(f.quality.scale,1);assert.deepEqual(f.pixels,[1.5]);
+ assert.equal(f.quality.effective,'high');assert.equal(f.quality.scale,.65);assert.deepEqual(f.pixels,[1.5,1.5*.65]);
  f.quality.setQuality('smooth');f.quality.setBudget(1);f.quality.setQuality('smooth');
- assert.deepEqual(f.details,['high','smooth']);assert.deepEqual(f.pixels,[1.5,1]);
+ assert.deepEqual(f.details,['high','smooth']);assert.deepEqual(f.pixels,[1.5,1.5*.65,1]);
  f.quality.setQuality('automatic');assert.equal(f.quality.effective,'automatic');assert.equal(f.quality.scale,1);assert.equal(f.pixels.at(-1),1.25);
 });
 test('DPR changes update resolution without invalidating a stable detail tier',()=>{
