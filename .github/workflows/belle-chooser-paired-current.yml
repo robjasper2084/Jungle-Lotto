@@ -1,0 +1,391 @@
+name: Belle chooser current-source ABBA comparison
+
+on:
+  push:
+    branches: [upgrade-redesign-ride-chooser-compare-current-20261123]
+    paths: ['.github/workflows/belle-chooser-paired-current.yml']
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: belle-chooser-paired-current-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  BASELINE_SHA: 2cd7410e8718c81fecf597d88f7fe92580fb5078
+  CANDIDATE_SHA: fed76b916ab7fa66e291034af8b5bd6808b1211a
+  BASELINE_TREE: 30a5f4118ed3735a8990f6949298d4d32a35b370
+  CANDIDATE_TREE: d1c54e0d0ba9052a6ef80763209e5954b5bade95
+  PAGES_RUN_ID: '45221986041'
+  GAME: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+  MEASUREMENT_SHA: ${{ github.sha }}
+
+jobs:
+  build:
+    name: Build pinned ${{ matrix.label }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: baseline
+            sha: 2cd7410e8718c81fecf597d88f7fe92580fb5078
+          - label: candidate
+            sha: fed76b916ab7fa66e291034af8b5bd6808b1211a
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Check, test, and build the exact source
+        working-directory: ${{ env.GAME }}
+        env:
+          EXPECTED_SHA: ${{ matrix.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          npm ci
+          npm run check
+          npm test
+          node --check scripts/sustained-ride-profile.mjs
+          npm run build
+      - name: Record source and complete build hashes
+        working-directory: ${{ env.GAME }}
+        env:
+          EXPECTED_SHA: ${{ matrix.sha }}
+          BUILD_LABEL: ${{ matrix.label }}
+        run: |
+          node --input-type=module <<'NODE'
+          import {createHash} from 'node:crypto';
+          import {execFileSync} from 'node:child_process';
+          import {readFile,readdir,writeFile} from 'node:fs/promises';
+          import {join} from 'node:path';
+          const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+          const git=(...args)=>execFileSync('git',args,{encoding:'utf8'}).trim();
+          const commit=git('rev-parse','HEAD');
+          if(commit!==process.env.EXPECTED_SHA)throw Error('Unexpected source checkout');
+          const sources={};
+          for(const path of ['scripts/sustained-ride-profile.mjs','scripts/coop-static-server.mjs','package-lock.json','../../package-lock.json','src/belle/ridePreview.ts','src/belle/vehicles/models.ts','src/belle/startup.ts','src/belle/rideSetup.ts','src/belle/rideSetup.css'])sources[path]=hash(await readFile(path));
+          const files=[];
+          async function visit(dir,prefix=''){
+            for(const entry of await readdir(dir,{withFileTypes:true})){
+              const relative=prefix+entry.name,path=join(dir,entry.name);
+              if(entry.isDirectory())await visit(path,relative+'/');
+              else if(entry.isFile()){const bytes=await readFile(path);files.push({path:relative,bytes:bytes.length,sha256:hash(bytes)});}
+              else throw Error('Unexpected non-file in build: '+relative);
+            }
+          }
+          await visit('dist');files.sort((a,b)=>a.path.localeCompare(b.path));
+          if(!files.some(file=>file.path==='index.html'))throw Error('Built game is missing');
+          await writeFile('paired-build.json',JSON.stringify({version:1,label:process.env.BUILD_LABEL,repository:'robjasper2084/Jungle-Lotto',commit,tree:git('rev-parse','HEAD^{tree}'),measurementCommit:process.env.MEASUREMENT_SHA,node:process.version,builtAt:new Date().toISOString(),buildMode:'Existing standalone sustained-profile build; full scene; no Pages asset rewriting',sources,files},null,2)+'\n');
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: belle-chooser-current-pinned-${{ matrix.label }}-${{ matrix.sha }}
+          path: |
+            ${{ env.GAME }}/dist/
+            ${{ env.GAME }}/paired-build.json
+          if-no-files-found: error
+          retention-days: 1
+
+  compare:
+    name: Same-runner full-scene ABBA (${{ matrix.device }})
+    needs: build
+    runs-on: macos-15
+    # Four independent original 28-minute limits; setup/public checks have separate budgets.
+    timeout-minutes: 145
+    strategy:
+      fail-fast: false
+      matrix:
+        device: [desktop, phone]
+    env:
+      BELLE_PROFILE_DEVICE: ${{ matrix.device }}
+      BELLE_PROFILE_MODE: full
+      BELLE_PROFILE_SECONDS: '90'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 2cd7410e8718c81fecf597d88f7fe92580fb5078
+          path: baseline
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /scripts/belle-production-jobs.mjs
+            /scripts/belle-release-pages.mjs
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/startupAssets.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/release-health-model.mjs
+      - uses: actions/checkout@v4
+        with:
+          ref: fed76b916ab7fa66e291034af8b5bd6808b1211a
+          path: candidate
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@v4
+        with:
+          name: belle-chooser-current-pinned-baseline-2cd7410e8718c81fecf597d88f7fe92580fb5078
+          path: baseline/${{ env.GAME }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: belle-chooser-current-pinned-candidate-fed76b916ab7fa66e291034af8b5bd6808b1211a
+          path: candidate/${{ env.GAME }}
+      - name: Verify immutable inputs and install one Chrome runtime
+        id: prepare
+        run: |
+          mkdir -p evidence/builds evidence/cases
+          test "$(git -C baseline rev-parse HEAD)" = "$BASELINE_SHA"
+          test "$(git -C candidate rev-parse HEAD)" = "$CANDIDATE_SHA"
+          cmp "baseline/$GAME/scripts/sustained-ride-profile.mjs" "candidate/$GAME/scripts/sustained-ride-profile.mjs"
+          cmp "baseline/$GAME/scripts/coop-static-server.mjs" "candidate/$GAME/scripts/coop-static-server.mjs"
+          cmp baseline/lottominded-ultra.io/games/gothtechnology2/package-lock.json candidate/lottominded-ultra.io/games/gothtechnology2/package-lock.json
+          node --input-type=module <<'NODE'
+          import {createHash} from 'node:crypto';
+          import {readFile,writeFile} from 'node:fs/promises';
+          import {resolve,sep} from 'node:path';
+          const hash=bytes=>createHash('sha256').update(bytes).digest('hex'),builds={};
+          for(const label of ['baseline','candidate']){
+            const game=resolve(label,process.env.GAME),root=resolve(game,'dist');
+            const build=JSON.parse(await readFile(resolve(game,'paired-build.json'),'utf8'));
+            if(build.commit!==process.env[label.toUpperCase()+'_SHA']||build.tree!==process.env[label.toUpperCase()+'_TREE']||build.label!==label)throw Error('Mismatched build '+label);
+            for(const file of build.files){
+              const path=resolve(root,file.path);if(!path.startsWith(root+sep))throw Error('Invalid artifact path');
+              const bytes=await readFile(path);if(bytes.length!==file.bytes||hash(bytes)!==file.sha256)throw Error('Artifact hash mismatch: '+label+'/'+file.path);
+            }
+            for(const path of ['scripts/sustained-ride-profile.mjs','scripts/coop-static-server.mjs','../../package-lock.json'])if(hash(await readFile(resolve(game,path)))!==build.sources[path])throw Error('Source/runtime hash mismatch: '+label+'/'+path);
+            if(build.sources['scripts/sustained-ride-profile.mjs']!=='c7bf025a63918b885bcd7e1bcda55865423aba73c63f58a8287ff9a03af1a100'||build.sources['scripts/coop-static-server.mjs']!=='b905f1c33ff6c115fe11d35242ec37a2c38832e1b1a2a507f2ee461e646c63c0')throw Error('Original measurement script/server changed');
+            builds[label]=build;
+            await writeFile('evidence/builds/'+label+'.json',JSON.stringify(build,null,2)+'\n',{flag:'wx'});
+          }
+          await writeFile('evidence/inputs.json',JSON.stringify({version:1,measurementCommit:process.env.MEASUREMENT_SHA,baselineCommit:process.env.BASELINE_SHA,candidateCommit:process.env.CANDIDATE_SHA,publicOrigin:'https://robjasper2084.github.io/Jungle-Lotto/',pagesRunId:process.env.PAGES_RUN_ID,device:process.env.BELLE_PROFILE_DEVICE,mode:'full',requestedSeconds:90,order:['A1','B1','B2','A2'],caseSources:{A1:'baseline',B1:'candidate',B2:'candidate',A2:'baseline'},repetitionsPerSource:2,node:process.version,runner:{os:process.platform,architecture:process.arch},builds},null,2)+'\n');
+          NODE
+          npm ci --prefix baseline/lottominded-ultra.io/games/gothtechnology2
+          npm ci --prefix candidate/lottominded-ultra.io/games/gothtechnology2
+          cd baseline/lottominded-ultra.io/games/gothtechnology2
+          npx playwright install chrome
+      - name: Prepare fixed case driver and immutable evidence directories
+        id: driver
+        run: |
+          cat > "$RUNNER_TEMP/belle-chooser-abba-case.mjs" <<'NODE'
+          import {createHash} from 'node:crypto';
+          import {execFileSync,spawnSync} from 'node:child_process';
+          import {existsSync,openSync,closeSync} from 'node:fs';
+          import {mkdir,readFile,writeFile,cp,readdir,rm} from 'node:fs/promises';
+          import {resolve,join,relative} from 'node:path';
+          const [mode,id]=process.argv.slice(2),plan={A1:'baseline',B1:'candidate',B2:'candidate',A2:'baseline'};
+          if(!Object.hasOwn(plan,id)||!['run','archive'].includes(mode))throw Error('Unknown fixed comparison case');
+          const label=plan[id],workspace=process.env.GITHUB_WORKSPACE,device=process.env.BELLE_PROFILE_DEVICE;
+          if(!['desktop','phone'].includes(device)||process.env.BELLE_PROFILE_MODE!=='full'||process.env.BELLE_PROFILE_SECONDS!=='90')throw Error('The original full-scene case settings are required');
+          const game=resolve(workspace,label,process.env.GAME),directory=resolve(workspace,'evidence/cases',id);
+          const output=resolve(game,'output/sustained-profile/full',device),expected=process.env[label.toUpperCase()+'_SHA'];
+          const build=JSON.parse(await readFile(resolve(game,'paired-build.json'),'utf8'));
+          const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+          const runner='scripts/sustained-ride-profile.mjs',server='scripts/coop-static-server.mjs';
+          if(build.commit!==expected||build.tree!==process.env[label.toUpperCase()+'_TREE'])throw Error('Unexpected build provenance');
+          for(const path of [runner,server,'../../package-lock.json'])if(hash(await readFile(resolve(game,path)))!==build.sources[path])throw Error('Source/runtime changed before '+mode+': '+path);
+          if(mode==='run'){
+            if(execFileSync('git',['rev-parse','HEAD'],{cwd:game,encoding:'utf8'}).trim()!==expected)throw Error('Unexpected source checkout');
+            // A previous case must be archived successfully; never erase or reuse its output.
+            if(existsSync(directory)||existsSync(output))throw Error('Case destination or source output already exists; refusing stale/overwritten evidence');
+            await mkdir(directory);
+            const invocation={case:id,source:label,sourceHead:expected,sourceTree:build.tree,measurementCommit:process.env.MEASUREMENT_SHA,device,mode:'full',requestedSeconds:90,startedAt:new Date().toISOString(),runnerSha256:build.sources[runner]};
+            await writeFile(resolve(directory,'invocation.json'),JSON.stringify(invocation,null,2)+'\n',{flag:'wx'});
+            const descriptor=openSync(resolve(directory,'console.log'),'wx');
+            let result;
+            try{
+              // The pinned script owns all inputs, timers, browser state and assertions.
+              // This parent only records its original process status and raw output.
+              result=spawnSync(process.execPath,[resolve(game,runner)],{cwd:game,env:{...process.env,GITHUB_SHA:expected},stdio:['ignore',descriptor,descriptor]});
+            }finally{closeSync(descriptor);}
+            const receipt={...invocation,finishedAt:new Date().toISOString(),exitCode:result.status,signal:result.signal??null,spawnError:result.error?String(result.error):null};
+            await writeFile(resolve(directory,'exit.json'),JSON.stringify(receipt,null,2)+'\n',{flag:'wx'});
+            process.stdout.write(await readFile(resolve(directory,'console.log'),'utf8'));
+            process.exitCode=result.error?1:result.status??1;
+          }else{
+            const invocation=JSON.parse(await readFile(resolve(directory,'invocation.json'),'utf8'));
+            if(invocation.case!==id||invocation.source!==label||invocation.sourceHead!==expected)throw Error('Cannot assign output to a different invocation');
+            const destination=resolve(directory,'profile');
+            if(existsSync(destination)||existsSync(resolve(directory,'archive.json')))throw Error('Case evidence is already archived; refusing overwrite');
+            const missingOutput=!existsSync(output),files=[];
+            if(!missingOutput){
+              await cp(output,destination,{recursive:true,errorOnExist:true,force:false});
+              async function visit(dir){
+                for(const entry of await readdir(dir,{withFileTypes:true})){
+                  const path=join(dir,entry.name);
+                  if(entry.isDirectory())await visit(path);
+                  else if(entry.isFile()){
+                    const name=relative(output,path),original=await readFile(path),copied=await readFile(resolve(destination,name));
+                    if(hash(original)!==hash(copied))throw Error('Copied evidence differs: '+name);
+                    files.push({path:name,bytes:original.length,sha256:hash(original)});
+                  }else throw Error('Unexpected non-file in profile output');
+                }
+              }
+              await visit(output);files.sort((a,b)=>a.path.localeCompare(b.path));
+            }
+            await writeFile(resolve(directory,'build.json'),JSON.stringify(build,null,2)+'\n',{flag:'wx'});
+            await writeFile(resolve(directory,'archive.json'),JSON.stringify({case:id,source:label,sourceHead:expected,stepOutcome:process.env.CASE_STEP_OUTCOME,archivedAt:new Date().toISOString(),missingOutput,files},null,2)+'\n',{flag:'wx'});
+            // Only remove this invocation's copied-and-hashed transient output.
+            // A missing/partial report remains a strict failure in the final gate.
+            if(!missingOutput)await rm(output,{recursive:true});
+            console.log(JSON.stringify({case:id,source:label,stepOutcome:process.env.CASE_STEP_OUTCOME,missingOutput,archivedFiles:files.length}));
+          }
+          NODE
+          node --check "$RUNNER_TEMP/belle-chooser-abba-case.mjs"
+          node --input-type=module <<'NODE'
+          import {createHash} from 'node:crypto';
+          import {readFile,writeFile} from 'node:fs/promises';
+          const bytes=await readFile(process.env.RUNNER_TEMP+'/belle-chooser-abba-case.mjs');
+          await writeFile('evidence/case-driver.mjs',bytes,{flag:'wx'});
+          const inputs=JSON.parse(await readFile('evidence/inputs.json','utf8'));
+          inputs.caseDriverSha256=createHash('sha256').update(bytes).digest('hex');
+          await writeFile('evidence/inputs.json',JSON.stringify(inputs,null,2)+'\n');
+          NODE
+      - name: Prove the baseline completed production deployment
+        id: production
+        working-directory: baseline
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          status=0
+          node scripts/belle-production-jobs.mjs "$BASELINE_SHA" "$PAGES_RUN_ID" || status=$?
+          cp belle-production-jobs.json ../evidence/production-jobs.json
+          exit "$status"
+      - name: Verify current public baseline bytes before all four cases
+        id: public_before
+        timeout-minutes: 8
+        working-directory: baseline
+        run: |
+          status=0
+          node scripts/belle-release-pages.mjs verify https://robjasper2084.github.io/Jungle-Lotto/ "$BASELINE_SHA" || status=$?
+          cp belle-public-verification.json ../evidence/public-before.json
+          exit "$status"
+      - name: Run A1 pinned baseline with the unchanged strict script
+        id: a1
+        if: always() && !cancelled() && steps.prepare.outcome == 'success' && steps.driver.outcome == 'success' && steps.production.outcome == 'success' && steps.public_before.outcome == 'success'
+        timeout-minutes: 28
+        run: node "$RUNNER_TEMP/belle-chooser-abba-case.mjs" run A1
+      - name: Immediately preserve A1 evidence, including failed or partial output
+        id: archive_a1
+        if: always() && !cancelled() && steps.driver.outcome == 'success' && steps.a1.outcome != 'skipped'
+        env:
+          CASE_STEP_OUTCOME: ${{ steps.a1.outcome }}
+        run: node "$RUNNER_TEMP/belle-chooser-abba-case.mjs" archive A1
+      - name: Run B1 pinned candidate with the unchanged strict script
+        id: b1
+        if: always() && !cancelled() && steps.prepare.outcome == 'success' && steps.driver.outcome == 'success' && steps.production.outcome == 'success' && steps.public_before.outcome == 'success' && steps.archive_a1.outcome == 'success'
+        timeout-minutes: 28
+        run: node "$RUNNER_TEMP/belle-chooser-abba-case.mjs" run B1
+      - name: Immediately preserve B1 evidence, including failed or partial output
+        id: archive_b1
+        if: always() && !cancelled() && steps.driver.outcome == 'success' && steps.b1.outcome != 'skipped'
+        env:
+          CASE_STEP_OUTCOME: ${{ steps.b1.outcome }}
+        run: node "$RUNNER_TEMP/belle-chooser-abba-case.mjs" archive B1
+      - name: Run B2 pinned candidate with the unchanged strict script
+        id: b2
+        if: always() && !cancelled() && steps.prepare.outcome == 'success' && steps.driver.outcome == 'success' && steps.production.outcome == 'success' && steps.public_before.outcome == 'success' && steps.archive_b1.outcome == 'success'
+        timeout-minutes: 28
+        run: node "$RUNNER_TEMP/belle-chooser-abba-case.mjs" run B2
+      - name: Immediately preserve B2 evidence, including failed or partial output
+        id: archive_b2
+        if: always() && !cancelled() && steps.driver.outcome == 'success' && steps.b2.outcome != 'skipped'
+        env:
+          CASE_STEP_OUTCOME: ${{ steps.b2.outcome }}
+        run: node "$RUNNER_TEMP/belle-chooser-abba-case.mjs" archive B2
+      - name: Run A2 pinned baseline with the unchanged strict script
+        id: a2
+        if: always() && !cancelled() && steps.prepare.outcome == 'success' && steps.driver.outcome == 'success' && steps.production.outcome == 'success' && steps.public_before.outcome == 'success' && steps.archive_b2.outcome == 'success'
+        timeout-minutes: 28
+        run: node "$RUNNER_TEMP/belle-chooser-abba-case.mjs" run A2
+      - name: Immediately preserve A2 evidence, including failed or partial output
+        id: archive_a2
+        if: always() && !cancelled() && steps.driver.outcome == 'success' && steps.a2.outcome != 'skipped'
+        env:
+          CASE_STEP_OUTCOME: ${{ steps.a2.outcome }}
+        run: node "$RUNNER_TEMP/belle-chooser-abba-case.mjs" archive A2
+      - name: Verify public baseline bytes again after all four cases
+        id: public_after
+        if: always() && !cancelled() && steps.prepare.outcome == 'success'
+        timeout-minutes: 8
+        working-directory: baseline
+        run: |
+          status=0
+          node scripts/belle-release-pages.mjs verify https://robjasper2084.github.io/Jungle-Lotto/ "$BASELINE_SHA" || status=$?
+          cp belle-public-verification.json ../evidence/public-after.json
+          exit "$status"
+      - name: Preserve all four results and enforce every original strict outcome
+        if: always()
+        env:
+          A1_OUTCOME: ${{ steps.a1.outcome }}
+          B1_OUTCOME: ${{ steps.b1.outcome }}
+          B2_OUTCOME: ${{ steps.b2.outcome }}
+          A2_OUTCOME: ${{ steps.a2.outcome }}
+          A1_ARCHIVE_OUTCOME: ${{ steps.archive_a1.outcome }}
+          B1_ARCHIVE_OUTCOME: ${{ steps.archive_b1.outcome }}
+          B2_ARCHIVE_OUTCOME: ${{ steps.archive_b2.outcome }}
+          A2_ARCHIVE_OUTCOME: ${{ steps.archive_a2.outcome }}
+          BEFORE_OUTCOME: ${{ steps.public_before.outcome }}
+          AFTER_OUTCOME: ${{ steps.public_after.outcome }}
+          PRODUCTION_OUTCOME: ${{ steps.production.outcome }}
+        run: |
+          node --input-type=module <<'NODE'
+          import {createHash} from 'node:crypto';
+          import {mkdir,readFile,writeFile,appendFile} from 'node:fs/promises';
+          await mkdir('evidence',{recursive:true});
+          const failures=[],cases={},order=['A1','B1','B2','A2'],plan={A1:'baseline',B1:'candidate',B2:'candidate',A2:'baseline'};
+          const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+          async function json(path){try{return JSON.parse(await readFile('evidence/'+path,'utf8'));}catch(error){failures.push(path+': '+String(error));return null;}}
+          const inputs=await json('inputs.json'),before=await json('public-before.json'),after=await json('public-after.json'),production=await json('production-jobs.json');
+          for(const [label,value] of [['before',before],['after',after]])if(value?.passed!==true||value?.commit!==process.env.BASELINE_SHA||process.env[label.toUpperCase()+'_OUTCOME']!=='success')failures.push('Public '+label+' verification did not pass for the pinned baseline');
+          if(production?.passed!==true||production?.commit!==process.env.BASELINE_SHA||Number(production?.runId)!==Number(process.env.PAGES_RUN_ID)||process.env.PRODUCTION_OUTCOME!=='success')failures.push('Completed production proof did not pass');
+          try{if(hash(await readFile('evidence/case-driver.mjs'))!==inputs?.caseDriverSha256)failures.push('Case driver provenance differs');}catch(error){failures.push('Case driver provenance unavailable: '+String(error));}
+          let previousArchivedAt=null;
+          for(const id of order){
+            const label=plan[id],prefix='cases/'+id+'/',invocation=await json(prefix+'invocation.json'),exit=await json(prefix+'exit.json'),archive=await json(prefix+'archive.json'),report=await json(prefix+'profile/report.json'),build=await json(prefix+'build.json');
+            const expected=process.env[label.toUpperCase()+'_SHA'],expectedTree=process.env[label.toUpperCase()+'_TREE'];
+            if(invocation?.case!==id||invocation?.source!==label||invocation?.sourceHead!==expected||invocation?.sourceTree!==expectedTree)failures.push(id+' invocation identity did not match');
+            if(previousArchivedAt!==null&&(!Number.isFinite(Date.parse(invocation?.startedAt))||Date.parse(invocation.startedAt)<previousArchivedAt))failures.push(id+' did not start after the prior case was archived');
+            previousArchivedAt=Date.parse(archive?.archivedAt);
+            if(!Number.isFinite(previousArchivedAt))failures.push(id+' archive timestamp missing');
+            if(exit?.exitCode!==0||exit?.signal||exit?.spawnError||exit?.case!==id||exit?.sourceHead!==expected||process.env[id+'_OUTCOME']!=='success')failures.push(id+' original strict process did not pass');
+            if(archive?.case!==id||archive?.sourceHead!==expected||archive?.missingOutput!==false||process.env[id+'_ARCHIVE_OUTCOME']!=='success')failures.push(id+' original output was missing or not archived');
+            if(build?.commit!==expected||build?.tree!==expectedTree||build?.sources?.['scripts/sustained-ride-profile.mjs']!=='c7bf025a63918b885bcd7e1bcda55865423aba73c63f58a8287ff9a03af1a100')failures.push(id+' source/runner provenance differs');
+            const reportFile=archive?.files?.find(file=>file.path==='report.json');
+            try{if(!reportFile||hash(await readFile('evidence/'+prefix+'profile/report.json'))!==reportFile.sha256)failures.push(id+' original report hash differs');}catch(error){failures.push(id+' original report unavailable: '+String(error));}
+            if(report?.passed!==true||report?.frameQualityAccepted!==true||report?.sourceHead!==expected||report?.mode!=='full'||report?.device!==process.env.BELLE_PROFILE_DEVICE||report?.requestedSeconds!==90||report?.releasePerformanceVerified!==false)failures.push(id+' original strict report did not pass');
+            if(report?.renderBackend!=='angle-metal'||!/Metal/i.test(report?.actualGpu?.renderer??'')||/SwiftShader|llvmpipe|software rasterizer/i.test(report?.actualGpu?.renderer??''))failures.push(id+' did not use verified Metal');
+            cases[id]={source:label,sourceHead:report?.sourceHead??expected,strictExitCode:exit?.exitCode??null,signal:exit?.signal??null,stepOutcome:process.env[id+'_OUTCOME'],archiveOutcome:process.env[id+'_ARCHIVE_OUTCOME'],passed:report?.passed??false,classification:report?.classification??null,renderer:report?.actualGpu??null,viewport:report?.viewport??null,input:report?.input??null,frames:report?.profile?.frames??null,activeSeconds:report?.profile?.activeSeconds??null,movingSeconds:report?.profile?.movingSeconds??null,distanceMetres:report?.profile?.distanceMetres??null,frameMs:report?.profile?.metrics?.frameMs??null,over50ms:report?.profile?.over50ms??null,over100ms:report?.profile?.over100ms??null,over250ms:report?.profile?.over250ms??null,welcomeReadyMs:report?.welcomeReadyMs??null,rideStartedMs:report?.rideStartedMs??null,firstPlayableMs:report?.firstPlayableMs??null,elapsedWallMs:report?.elapsedWallMs??null};
+          }
+          for(const id of order)if(!cases[id].renderer||JSON.stringify(cases.A1.renderer)!==JSON.stringify(cases[id].renderer)||JSON.stringify(cases.A1.viewport)!==JSON.stringify(cases[id].viewport))failures.push(id+' GPU/viewport differs within the four-case sequence');
+          function summary(ids){
+            const values=ids.map(id=>cases[id].frameMs?.p95),complete=values.every(Number.isFinite);
+            return {cases:ids,runP95Ms:values.map(value=>value??null),meanOfRunP95Ms:complete?values.reduce((sum,value)=>sum+value,0)/values.length:null,minRunP95Ms:complete?Math.min(...values):null,maxRunP95Ms:complete?Math.max(...values):null};
+          }
+          const baseline=summary(['A1','A2']),candidate=summary(['B1','B2']);
+          const percent=(base,value)=>Number.isFinite(base)&&base>0&&Number.isFinite(value)?100*(value-base)/base:null;
+          const descriptive={baseline,candidate,percentChangeInMeanOfRunP95:percent(baseline.meanOfRunP95Ms,candidate.meanOfRunP95Ms),orderedPairP95Changes:[{baseline:'A1',candidate:'B1',percent:percent(cases.A1.frameMs?.p95,cases.B1.frameMs?.p95)},{baseline:'A2',candidate:'B2',percent:percent(cases.A2.frameMs?.p95,cases.B2.frameMs?.p95)}],caveat:'Two runs per source, fixed A-B-B-A order. Means of per-run p95s are not pooled percentiles. Descriptive replication only; no statistical confidence, public-network latency, physical-device certification, or automatic waiver of any original strict failure.'};
+          const comparison={version:2,scope:'Current pinned production-source baseline versus pinned chooser source; four planned full-scene A-B-B-A invocations on one hosted Mac per device. Public bytes verified before/after. Every original strict result is retained.',device:process.env.BELLE_PROFILE_DEVICE,measurementCommit:process.env.MEASUREMENT_SHA,baselineCommit:process.env.BASELINE_SHA,candidateCommit:process.env.CANDIDATE_SHA,order,strictGatePassed:failures.length===0,releasePerformanceVerified:false,cases,descriptive,failures};
+          await writeFile('evidence/comparison.json',JSON.stringify(comparison,null,2)+'\n');
+          console.log(JSON.stringify(comparison,null,2));
+          await appendFile(process.env.GITHUB_STEP_SUMMARY,'## Current-source A–B–B–A comparison — '+process.env.BELLE_PROFILE_DEVICE+'\n\nStrict gate: **'+(comparison.strictGatePassed?'passed':'failed')+'**. All four original reports, raw process exits, and copied-output hashes are retained. Two observations per source do not establish statistical confidence. Physical-device performance remains unverified.\n\n| Case | Source | Exit | Strict passed | Frame p95 (ms) | Over 250 ms |\n| --- | --- | ---: | --- | ---: | ---: |\n'+order.map(id=>{const c=cases[id];return '| '+id+' | '+c.source+' | '+c.strictExitCode+' | '+c.passed+' | '+(c.frameMs?.p95??null)+' | '+c.over250ms+' |';}).join('\n')+'\n');
+          if(failures.length)process.exitCode=1;
+          NODE
+      - name: Archive all four strict outcomes and public/source receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-chooser-current-abba-full-${{ matrix.device }}
+          path: evidence/
+          if-no-files-found: error
+          retention-days: 14
