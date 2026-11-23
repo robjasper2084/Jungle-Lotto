@@ -1,0 +1,52 @@
+name: Belle Isle ride chooser previews
+on:
+  pull_request:
+    paths:
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/ridePreview*'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/rideSetup*'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/startup.ts'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/vehicles/models.ts'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/ride-preview-browser-smoke.mjs'
+      - '.github/workflows/belle-ride-preview.yml'
+permissions:
+  contents: read
+concurrency:
+  group: belle-ride-preview-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  real-preview-component:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install production component dependencies
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: npm ci
+      - name: Install browser test runtime
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install --with-deps chrome
+      - name: Fetch comparison source
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: git fetch --no-tags --depth=1 origin "$BASE_SHA"
+      - name: Verify real chooser rendering and native input
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          BELLE_PREVIEW_COMPARE_BASE: ${{ github.event.pull_request.base.sha }}
+        run: node scripts/ride-preview-browser-smoke.mjs
+      - name: Preserve component captures and results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-ride-preview-component
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/ride-preview
+          if-no-files-found: warn
+          retention-days: 14

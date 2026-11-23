@@ -29,7 +29,10 @@ async function asset(file:keyof typeof files){
  })();cache.set(file,task);task.catch(()=>cache.delete(file));}return task;
 }
 export type VehicleModel={root:T.Group;rider:T.Object3D;choice:AuthoredChoice;eye:(out:T.Vector3)=>T.Vector3;firstPerson:(value:boolean)=>void;update:(pose:HoverPose,dt:number,running:boolean,power:number,energy:number,lights?:boolean,brake?:boolean)=>void;dispose:()=>void};
-export async function createVehicleModel(choice:AuthoredChoice,signal?:AbortSignal):Promise<VehicleModel>{
+export type VehicleModelOptions={preview?:boolean;signal?:AbortSignal};
+export async function createVehicleModel(choice:AuthoredChoice,preparation?:AbortSignal|VehicleModelOptions):Promise<VehicleModel>{
+ const options:VehicleModelOptions|undefined=preparation&&'aborted' in preparation?{signal:preparation}:preparation;
+ const signal=options?.signal;
  const check=()=>{if(signal?.aborted)throw signal.reason??new DOMException('Vehicle preparation cancelled','AbortError');};check();
  const source=await asset(choice.vehicle==='jetson'?'jetson-one.glb':`corleo-${choice.pilot}.glb`);check();
  const model=clone(source.scene),root=new T.Group();root.name=choice.vehicle+' · '+choice.pilot;root.userData.vehicleChoice={...choice};root.add(model);
@@ -57,7 +60,9 @@ export async function createVehicleModel(choice:AuthoredChoice,signal?:AbortSign
    const armature=model.getObjectByName(`CR_${choice.pilot==='professional'?'Professional':'Maverick'}_Pilot_Armature`);if(!armature?.parent)throw Error('CORLEO pilot rig is missing');rider=armature.parent;
    fit=fitCorleoRider(model);
    mixer.stopAllAction();mixer.uncacheRoot(model);
-   corleoActions=createCorleoActions(model,clip,await loadCorleoActions(choice.pilot));check();mixer=corleoActions.mixer;
+   // The chooser displays this same fitted, still model. Its five gameplay
+   // action packages belong to the playable instance, not the decorative card.
+   if(!options?.preview){corleoActions=createCorleoActions(model,clip,await loadCorleoActions(choice.pilot));check();mixer=corleoActions.mixer;}
    dashboard=corleoDashboard(model);
   }
   model.traverse(o=>{if(o.userData.first_person_hidden)heads.push(o);if((o as T.Bone).isBone&&/head$/i.test(o.name))head=o;});

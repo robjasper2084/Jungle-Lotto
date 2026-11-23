@@ -30,10 +30,11 @@ export function createStartup(){
    // Existing accessible radio cards + authored vehicle icon SVGs remain;
    // never allocate a second SwiftShader context for decorative 3D models.
    rideSetup.classList.add('preview-static');
+   rideSetup.querySelectorAll('.ride-preview-slot').forEach(slot=>slot.setAttribute('data-status',''));
    return;
   }
   rideSetup.classList.remove('preview-static');
-  if(picker.open&&sources&&!preview){try{preview=createRidePreview(rideSetup as HTMLElement,sources.wheel,sources.bike);}catch{rideSetup.classList.add('preview-unavailable');}}
+  if(picker.open&&sources&&!preview){try{preview=createRidePreview(rideSetup as HTMLElement,sources.wheel,sources.bike);rideSetup.classList.remove('preview-unavailable');}catch{rideSetup.classList.add('preview-unavailable');rideSetup.querySelectorAll('.ride-preview-slot').forEach(slot=>slot.setAttribute('data-status','Preview unavailable'));}}
   preview?.setActive(picker.open);
  };
  picker.addEventListener('toggle',refreshPreview);
