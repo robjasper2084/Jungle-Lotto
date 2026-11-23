@@ -16,7 +16,7 @@ export const WORLD_FRAGMENT=`
 varying vec3 belleAtmosphereWorld;
 uniform sampler2D belleCloudNoise;
 uniform vec3 belleSunDirection;
-uniform float belleCloudTime,belleCloudCoverage,belleCloudStrength;
+uniform float belleCloudTime,belleCloudCoverage,belleCloudStrength,belleAirStrength;
 float belleCloudShade(){
  if(belleCloudStrength<.0001||belleSunDirection.y<.08)return 1.0;
  vec2 projected=belleAtmosphereWorld.xz+belleSunDirection.xz*(900.0-belleAtmosphereWorld.y)/max(.18,belleSunDirection.y);
@@ -38,12 +38,40 @@ export const HEIGHT_FOG=`
  #else
   float fogFactor=smoothstep(fogNear,fogFar,vFogDepth);
  #endif
- gl_FragColor.rgb=mix(gl_FragColor.rgb,fogColor,fogFactor);
+ vec3 belleAerialColor=fogColor;
+ if(belleAirStrength>.0001&&belleSunDirection.y>.01){
+  vec3 belleViewRay=normalize(belleAtmosphereWorld-cameraPosition);
+  float belleForward=max(0.0,dot(belleViewRay,normalize(belleSunDirection)));
+  float bellePhase=belleForward*belleForward;
+  bellePhase*=bellePhase;
+  belleAerialColor=mix(fogColor,vec3(.91,.73,.54),min(.25,belleAirStrength)*bellePhase);
+ }
+ gl_FragColor.rgb=mix(gl_FragColor.rgb,belleAerialColor,fogFactor);
 #endif
 `;
-export function atmosphereShader(vertex:string,fragment:string,directionalChunk=''){
+// The fixed light pool does not cast point shadows. A real WebGL2 loop can
+// index its uniform structs directly, so keep one copy of the physical
+// lighting calculation in the shader. Shadow samplers still use Three's
+// statically indexed implementation whenever a point shadow is present.
+const unrolledPointLights=/#pragma unroll_loop_start\s+for \( int i = 0; i < NUM_POINT_LIGHTS; i \+\+ \) \{[\s\S]*?#pragma unroll_loop_end/;
+const pooledPointLights=`
+ for (int i = 0; i < NUM_POINT_LIGHTS; ++i) {
+  if (pointLights[i].color == vec3(0.0)) continue;
+  getPointLightInfo(pointLights[i], geometryPosition, directLight);
+  if (directLight.visible) {
+   RE_Direct(directLight, geometryPosition, geometryNormal, geometryViewDir, geometryClearcoatNormal, material, reflectedLight);
+  }
+ }
+`;
+export function atmosphereShader(vertex:string,fragment:string,directionalChunk='',usePointPool=false){
  if(!vertex.includes('#include <worldpos_vertex>'))return {vertex,fragment,applied:false};
- const directional=directionalChunk.replace(/getDirectionalLightInfo\(\s*directionalLight,\s*directLight\s*\);/g,'$&\n directLight.color*=belleCloudShade();');
+ // The four permanent road and interior light slots are often black. The
+ // uniform guard skips their attenuation, shadow and BRDF work together.
+ // Three expands this loop once per slot, preserving all active light paths.
+ const localLights=directionalChunk.replace(/(pointLight = pointLights\[ i \];)([\s\S]*?RE_Direct\( directLight,[^;]+;)/,
+  '$1\n if (pointLight.color != vec3(0.0)) {\n$2\n }');
+ let directional=localLights.replace(/getDirectionalLightInfo\(\s*directionalLight,\s*directLight\s*\);/g,'$&\n directLight.color*=belleCloudShade();');
+ if(usePointPool)directional=directional.replace(unrolledPointLights,pooledPointLights);
  if(directional!==directionalChunk)fragment=fragment.replace('#include <lights_fragment_begin>',directional);
  return {vertex:WORLD_VERTEX+vertex.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\n'+WORLD_POSITION),
   fragment:WORLD_FRAGMENT+fragment.replace('#include <fog_fragment>',HEIGHT_FOG),applied:true};
@@ -66,7 +94,10 @@ float belleDZ=belleWindAmount*.55*(-2.0*belleNM*belleND*cos(belleNP*.79)-3.95*be
 objectNormal.y-=belleDX*objectNormal.x+belleDZ*objectNormal.z;
 objectNormal=normalize(objectNormal);
 `;
-export function windVertex(vertex:string){
+/** Crown mode anchors foliage at its trunk rather than moving its lower leaves. */
+export function windVertex(vertex:string,crown=false){
  if(!vertex.includes('#include <begin_vertex>'))return vertex;
- return WIND_HEADER+vertex.replace('#include <begin_vertex>','#include <begin_vertex>\n'+WIND_VERTEX).replace('#include <beginnormal_vertex>','#include <beginnormal_vertex>\n'+WIND_NORMAL);
+ const vertexWind=crown?WIND_VERTEX.replace('bellePin=1.0-clamp','bellePin=clamp'):WIND_VERTEX;
+ const normalWind=crown?WIND_NORMAL.replace('belleNM=1.0-clamp','belleNM=clamp').replace('-2.0*belleNM*belleND*sin','2.0*belleNM*belleND*sin').replace('-2.0*belleNM*belleND*cos','2.0*belleNM*belleND*cos'):WIND_NORMAL;
+ return WIND_HEADER+vertex.replace('#include <begin_vertex>','#include <begin_vertex>\n'+vertexWind).replace('#include <beginnormal_vertex>','#include <beginnormal_vertex>\n'+normalWind);
 }

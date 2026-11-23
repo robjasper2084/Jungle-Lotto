@@ -1,4 +1,6 @@
 import {HoverIdleMotion,idleHoverInputActive} from './hoverIdleMotion.ts';
+import {REFERENCE_STYLE} from './sunsetReferencePolicy.ts';
+import {animeRider,glowVehicle} from './referenceActors.ts';
 import type {CockpitRadio} from './cockpitRadio.ts';
 import {waitForRideModel} from './rideModelWait.ts';
 import {installHoverPresentation} from './visualPolishHud.ts';
@@ -21,11 +23,35 @@ import {segment,type ParkTerrain} from './terrain.ts';
 import './hover.css';
 import {HoverLighting,LED_COLORS} from './hoverLighting.ts';
 import {HoverRiderRig} from './hoverRiderMotion.ts';
+import {createVehicleModel,type VehicleModel} from './vehicles/models.ts';
+import {authoredChoice,authoredName,type AuthoredChoice} from './vehicles/choices.ts';
+import {CorleoController} from './vehicles/corleoController.ts';
+import type {RideChoice} from './rideChoice.ts';
+import {VehicleHeadlamp} from './vehicles/headlamp.ts';
 type Pose={x:number;y:number;z:number;headingY:number};
 type Hooks={pose:()=>Pose;blocked:()=>boolean;entered:()=>void;exited:(p:{x:number;y:number;z:number;heading:number})=>void;touch:()=>boolean;nightAmount?:()=>number;obstacle?:FlightObstacle;vehicleLocked?:()=>boolean;restartTrial?:()=>void;prepareScene?:(model:T.Object3D,signal?:AbortSignal)=>Promise<void>};
-const keyCodes=['KeyW','KeyS','KeyA','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyE','KeyQ','Space','ShiftLeft','ShiftRight','KeyG','KeyF','KeyL','KeyH','KeyK','KeyR','KeyC','BracketLeft','BracketRight','KeyX','Minus','Equal'];
+const keyCodes=['KeyW','KeyS','KeyA','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyE','KeyQ','Space','ShiftLeft','ShiftRight','KeyG','KeyJ','KeyF','KeyL','KeyH','KeyK','KeyR','KeyC','BracketLeft','BracketRight','KeyX','Minus','Equal'];
 export class HoverRide {
- readonly sim:HoverController;
+ sim:HoverController;
+ private authored?:VehicleModel;
+ private selected?:AuthoredChoice;
+ get vehicle(){return this.selected?.vehicle??'hoverbike';}
+ get selection(){return this.selected?{...this.selected}:{vehicle:'hoverbike' as const,pilot:undefined,livery:undefined};}
+ private get visualModel(){return this.authored?.root??this.model;}
+ private get rideLabel(){return this.selected?authoredName(this.selected.vehicle):'hoverbike';}
+ async selectVehicle(choice:RideChoice,scene:T.Scene,signal?:AbortSignal){
+  const selected=authoredChoice(choice);if(JSON.stringify(selected)===JSON.stringify(this.selected))return;
+  if(signal?.aborted)throw signal.reason;
+  const next=selected?await createVehicleModel(selected,signal):undefined;
+  if(signal?.aborted){next?.dispose();throw signal.reason;}
+  this.leaveForTravel();this.authored?.dispose();this.authored=next;this.selected=selected;
+  if(next){next.root.visible=false;scene.add(next.root);}
+  this.sim=selected?.vehicle==='corleo'?new CorleoController(this.terrain,this.terrain.map.spawn,this.hooks.obstacle):new HoverController(this.terrain,this.terrain.map.spawn,this.hooks.obstacle);
+  this.sim.setMode(this.flightSelect.value==='drone'?'drone':'classic');
+  this.hud.dataset.vehicle=this.vehicle;this.hud.setAttribute('aria-label',this.rideLabel+' controls');this.hud.querySelector('.hover-title strong')!.textContent=this.rideLabel;
+  this.hud.querySelector('.hover-energy label')!.textContent=this.vehicle==='corleo'?'DRIVE ENERGY':'FAN ENERGY';
+  this.enterButton.textContent='Ride '+this.rideLabel+' · B';
+ }
  riding=false;
  private fittedArms?:HoverFirstPerson;private radio?:CockpitRadio;private radioCanvas?:HTMLCanvasElement;
  setRadio(radio:CockpitRadio,canvas:HTMLCanvasElement){this.radio=radio;this.radioCanvas=canvas;this.cockpit?.connectRadio(radio,canvas);}
@@ -68,7 +94,7 @@ export class HoverRide {
  private altitude:HTMLElement;
  private mode:HTMLElement;
  private touchPad:HTMLElement;
- constructor(scene:T.Scene,readonly terrain:ParkTerrain,private hooks:Hooks){
+ constructor(scene:T.Scene,readonly terrain:ParkTerrain,private hooks:Hooks,private readonly authoredHeadlamp=new VehicleHeadlamp(scene)){
   this.sim=new HoverController(terrain,terrain.map.spawn,hooks.obstacle);
   // Reuses existing world geometry and traffic raycasts, sampled at most 4Hz.
   // No AI model, extra camera, network call, or startup work is introduced.
@@ -102,6 +128,7 @@ installHoverPresentation(this.hud);
   this.flightSelect.onchange=()=>{if(this.hooks.vehicleLocked?.()){this.flightSelect.value=this.sim.mode;return;}this.clear();this.sim.setMode(this.flightSelect.value==='classic'?'classic':'drone');try{localStorage.setItem('belle-flight-mode',this.sim.mode);}catch{}this.refresh();};
   this.driveSelect=this.hud.querySelector('#hover-drive-gear')!;this.driveSelect.onchange=()=>this.selectGear(this.driveSelect.value==='auto'?'auto':Number(this.driveSelect.value) as DriveGear);
 
+  const corleoControls=document.createElement('div');corleoControls.className='corleo-actions';corleoControls.innerHTML='<button type="button" data-hold="ShiftLeft">RUN · Shift</button><button type="button" data-hover="crawl" aria-pressed="false">CRAWL · C</button><button type="button" data-hover="jump">JUMP · J</button>';this.hud.querySelector('.hover-actions')?.append(corleoControls);
   this.bindFlightStick();
   this.ledInput=this.hud.querySelector('#hover-led-color')!;this.ledSelect=this.hud.querySelector('#hover-led-mode')!;
   try{const prefs=JSON.parse(localStorage.getItem('belle-hover-lighting')||'{}');if(/^#[0-9a-f]{6}$/i.test(prefs.color))this.ledColor=prefs.color;if(['solid','cycle','off'].includes(prefs.mode))this.ledMode=prefs.mode;}catch{}this.ledInput.value=this.ledColor;this.ledSelect.value=this.ledMode;
@@ -109,7 +136,7 @@ installHoverPresentation(this.hud);
   this.hud.querySelectorAll<HTMLButtonElement>('[data-hover]').forEach(b=>b.onclick=()=>{
    if(b.dataset.hover==='reset'&&this.hooks.vehicleLocked?.()){this.hooks.restartTrial?.();return;}
    if(this.hooks.blocked())return;
-   switch(b.dataset.hover){case'cruise':this.toggleCruise();break;case'cruise-down':this.sim.adjustCruise(-5);this.refresh();break;case'cruise-up':this.sim.adjustCruise(5);this.refresh();break;case'takeoff':this.toggleFlight();break;case'lights':this.toggleLights();break;case'beam':this.toggleBeam();break;case'color':this.nextColor();break;case'sound':this.toggleSound();break;case'reset':this.recover();break;case'exit':this.exit();break;}
+   switch(b.dataset.hover){case'crawl':if(this.sim instanceof CorleoController)this.sim.toggleCrawl();break;case'jump':if(this.sim instanceof CorleoController)this.sim.launch();break;case'cruise':this.toggleCruise();break;case'cruise-down':this.sim.adjustCruise(-5);this.refresh();break;case'cruise-up':this.sim.adjustCruise(5);this.refresh();break;case'takeoff':this.toggleFlight();break;case'lights':this.toggleLights();break;case'beam':this.toggleBeam();break;case'color':this.nextColor();break;case'sound':this.toggleSound();break;case'reset':this.recover();break;case'exit':this.exit();break;}
   });
   this.hud.querySelectorAll<HTMLButtonElement>('[data-hold]').forEach(b=>{
    const key=b.dataset.hold!;
@@ -130,8 +157,10 @@ installHoverPresentation(this.hud);
   const move=(e:PointerEvent)=>{if(e.pointerId!==this.stick.id)return;if(this.hooks.blocked()){this.releaseStick();return;}e.preventDefault();const radius=pad.getBoundingClientRect().width*.37;let x=(e.clientX-this.stick.cx)/radius,y=(this.stick.cy-e.clientY)/radius;const n=Math.max(1,Math.hypot(x,y));x/=n;y/=n;this.stick.x=Math.abs(x)<.08?0:x;this.stick.y=Math.abs(y)<.08?0:y;knob.style.transform='translate(calc(-50% + '+x*radius+'px),calc(-50% - '+y*radius+'px))';};
   zone.onpointermove=move;const end=(e:PointerEvent)=>{if(e.pointerId!==this.stick.id)return;this.releaseStick();if(zone.hasPointerCapture(e.pointerId))zone.releasePointerCapture(e.pointerId);};zone.onpointerup=end;zone.onpointercancel=end;zone.onlostpointercapture=end;
  }
- get riderObject(){return this.hero;}
+ get riderObject(){return this.authored?.rider??this.hero;}
+ get vehicleTelemetry(){return {lights:this.lightOn,brake:this.pressed.has('Space'),energy:this.sim.boostEnergy,...(this.sim instanceof CorleoController?{corleoAction:this.sim.pose.corleoAction,corleoTime:this.sim.pose.corleoTime,corleoPhase:this.sim.pose.corleoPhase}:{})};}
  get previewVehicle(){return this.model?.getObjectByName('HoverBikeRoot');}
+ async preparePreview(scene:T.Scene){await waitForRideModel(this.load(scene),20000);return this.previewVehicle;}
  captureAudio(){return this.sound.capture();}
  private async load(scene:T.Scene){
   if(this.model)return;
@@ -155,7 +184,7 @@ installHoverPresentation(this.hud);
     }
    });
    this.fittedArms=new HoverFirstPerson(this.model.getObjectByName('HoverBikeRoot')??this.model);this.rider=HoverRiderRig.create(this.model);this.controls=new HoverControls(this.model);
-   applyRealisticMaterials(this.model);await attachMichiganPlate(this.model);this.cockpit=new CockpitLcd(this.model.getObjectByName('HoverBikeRoot')??this.model);if(this.radio&&this.radioCanvas)this.cockpit.connectRadio(this.radio,this.radioCanvas);this.lighting=new HoverLighting(this.model.getObjectByName('HoverBikeRoot')??this.model,this.lights);this.model.visible=false;scene.add(this.model);
+   applyRealisticMaterials(this.model);await attachMichiganPlate(this.model);this.cockpit=new CockpitLcd(this.model.getObjectByName('HoverBikeRoot')??this.model);if(this.radio&&this.radioCanvas)this.cockpit.connectRadio(this.radio,this.radioCanvas);this.lighting=new HoverLighting(this.model.getObjectByName('HoverBikeRoot')??this.model,this.lights);if(REFERENCE_STYLE){if(this.hero)animeRider(this.hero);glowVehicle(this.model.getObjectByName('HoverBikeRoot')??this.model,'hover');}this.model.visible=false;scene.add(this.model);
 
   })().catch(e=>{this.loading=undefined;throw e;});
   await this.loading;
@@ -171,27 +200,27 @@ installHoverPresentation(this.hud);
  }
  async prepare(scene:T.Scene,forRide=false,signal?:AbortSignal){
   if(signal?.aborted)throw new DOMException('Ride preparation cancelled','AbortError');
-  await waitForRideModel(this.load(scene),20000,signal);
+  if(!this.authored)await waitForRideModel(this.load(scene),20000,signal);
   if(signal?.aborted)throw new DOMException('Ride preparation cancelled','AbortError');
-  if(forRide&&this.model)await this.hooks.prepareScene?.(this.model,signal);
+  if(forRide&&this.visualModel)await this.hooks.prepareScene?.(this.visualModel,signal);
  }
  async mount(scene:T.Scene){
   if(this.hooks.blocked()||this.hooks.vehicleLocked?.()||this.enterButton.disabled||this.mountAbort)return;
   const generation=++this.mountGeneration;const preparation=this.mountAbort=new AbortController();
-  void this.sound.unlock();this.enterButton.disabled=true;this.enterButton.textContent='Preparing hoverbike…';
+  void this.sound.unlock();this.enterButton.disabled=true;this.enterButton.textContent='Preparing '+this.rideLabel+'…';
   try{
    await this.prepare(scene,true,preparation.signal);
    if(generation!==this.mountGeneration||this.hooks.blocked()||this.hooks.vehicleLocked?.())return;
    const p=this.spawnNear(this.hooks.pose());this.sim.reset(p.x,p.z,p.heading);this.resetRider();
-   this.riding=true;this.model!.visible=true;this.hero&&(this.hero.visible=true);
-   document.body.classList.add('on-hoverbike');this.hud.hidden=false;this.hooks.entered();
-   this.say('Press G to take off. E / Q changes height.');this.refresh();
+   this.riding=true;this.visualModel!.visible=true;this.hero&&(this.hero.visible=true);
+   document.body.classList.add('on-hoverbike');this.hud.hidden=false;this.hooks.entered();if(this.sim instanceof CorleoController)this.sim.beginMount();
+   this.say(this.vehicle==='corleo'?'Mounting CORLEO · W/S move, Shift run, C crawl, J jump, Space brake.':'Press G to take off. E / Q changes height.');this.refresh();
   }catch(e){if(generation===this.mountGeneration&&!preparation.signal.aborted){console.error('Hoverbike load failed',e);this.enterButton.textContent='Retry hoverbike';}}
-  finally{if(generation===this.mountGeneration){this.mountAbort=undefined;this.enterButton.disabled=!!this.hooks.vehicleLocked?.();if(this.model)this.enterButton.textContent=this.riding?'Get off hoverbike · B':'Ride hoverbike · B';}}
+  finally{if(generation===this.mountGeneration){this.mountAbort=undefined;this.enterButton.disabled=!!this.hooks.vehicleLocked?.();if(this.visualModel)this.enterButton.textContent=(this.riding?'Get off ':'Ride ')+this.rideLabel+' · B';}}
  }
  /** prepare() loads assets first; this synchronous placement cannot outlive a cancelled start. */
  beginTrial(p:{x:number;y:number;z:number;heading:number}){
-  if(!this.model)return false;
+  if(!this.model||this.selected)return false;
   ++this.mountGeneration;this.clear();this.jarvs.reset();
   if(!this.sim.startFlight(p))return false;
   this.savedFlightMode??=this.sim.mode;this.savedDriveGear??=this.sim.drive.gear;this.sim.drive.gear='auto';this.driveSelect.value='auto';this.sim.setMode('drone');this.flightSelect.value='drone';this.resetRider();
@@ -205,12 +234,12 @@ installHoverPresentation(this.hud);
  private resetRider(){
   this.idleHover.reset();
   this.steerBlend=0;if(this.bars)this.bars.quaternion.copy(this.barsRest);
-  const p=this.sim.pose;if(this.model){this.model.position.set(p.x,p.y,p.z);this.model.rotation.set(p.pitch,p.heading,p.roll,'YXZ');}
+  const p=this.sim.pose;if(this.visualModel){this.visualModel.position.set(p.x,p.y,p.z);this.visualModel.rotation.set(p.pitch,p.heading,p.roll,'YXZ');}this.authored?.update(p,0,false,0,1);
   this.rider?.reset(p,this.sim.landed);
  }
  key(e:KeyboardEvent){
   if(!this.riding||!keyCodes.includes(e.code))return false;e.preventDefault();this.pressed.add(e.code);
-  if(!e.repeat)switch(e.code){case'KeyX':this.toggleCruise();break;case'Minus':this.sim.adjustCruise(-5);break;case'Equal':this.sim.adjustCruise(5);break;case'KeyG':this.toggleFlight();break;case'KeyF':this.exit();break;case'KeyL':this.toggleLights();break;case'KeyH':this.toggleBeam();break;case'KeyK':this.nextColor();break;case'KeyR':this.recover();break;case'BracketLeft':this.shiftGear(-1);break;case'BracketRight':this.shiftGear(1);break;}
+  if(!e.repeat)switch(e.code){case'KeyC':if(this.sim instanceof CorleoController)this.sim.toggleCrawl();break;case'KeyJ':if(this.sim instanceof CorleoController)this.sim.launch();break;case'KeyX':this.toggleCruise();break;case'Minus':this.sim.adjustCruise(-5);break;case'Equal':this.sim.adjustCruise(5);break;case'KeyG':this.toggleFlight();break;case'KeyF':this.exit();break;case'KeyL':this.toggleLights();break;case'KeyH':this.toggleBeam();break;case'KeyK':this.nextColor();break;case'KeyR':this.recover();break;case'BracketLeft':this.shiftGear(-1);break;case'BracketRight':this.shiftGear(1);break;}
   return true;
  }
  keyUp(code:string){this.pressed.delete(code);}
@@ -221,7 +250,7 @@ installHoverPresentation(this.hud);
   else this.say('Drive · '+gearLabel(gear));this.driveSelect.value=String(this.sim.drive.gear);this.refresh();
  }
  private shiftGear(direction:number){const i=DRIVE_GEARS.indexOf(this.sim.drive.gear);this.selectGear(DRIVE_GEARS[Math.max(0,Math.min(DRIVE_GEARS.length-1,i+direction))]);}
- private toggleFlight(){if(this.hooks.vehicleLocked?.())return;void this.sound.unlock();if(this.sim.flying&&this.sim.clearance>.3){this.sim.land();this.say('Landing… wait for the skids to settle.');}else{this.sim.launch();this.say('Lift fans online. Ready to ride.');}}
+ private toggleFlight(){if(this.hooks.vehicleLocked?.()||this.vehicle==='corleo')return;void this.sound.unlock();if(this.sim.flying&&this.sim.clearance>.3){this.sim.land();this.say('Landing… wait for the skids to settle.');}else{this.sim.launch();this.say('Lift fans online. Ready to ride.');}}
  private toggleCruise(){const was=this.sim.cruiseSpeed!==null;this.sim.toggleCruise();this.say(this.sim.cruiseSpeed!==null?'Speed locked at '+speedMph(this.sim.cruiseSpeed)+' mph. Brake to cancel.':was?'Cruise off.':'Take off and ride above 5 mph to lock speed.');this.refresh();}
  private toggleLights(){this.lightOn=!this.lightOn;this.hud.querySelector('[data-hover="lights"]')!.setAttribute('aria-pressed',String(this.lightOn));}
  private saveLighting(){try{localStorage.setItem('belle-hover-lighting',JSON.stringify({color:this.ledColor,mode:this.ledMode}));}catch{}}
@@ -232,11 +261,12 @@ installHoverPresentation(this.hud);
  private recover(){if(this.hooks.vehicleLocked?.()){this.hooks.restartTrial?.();return;}this.clear();this.sim.reset();this.resetRider();this.say('Recovered to the last landing spot.');}
  exit(){
   if(this.hooks.vehicleLocked?.())return;
+  if(this.sim instanceof CorleoController){if(this.sim.beginDismount())this.say('Dismounting CORLEO…');else this.say('Stop on clear ground before dismounting.');return;}
   const point=this.sim.exitPoint();
   if(!point){this.say('Land on clear ground before getting off. Press G to land.');return;}
   this.leaveForTravel();this.hooks.exited(point);
  }
- leaveForTravel(){++this.mountGeneration;this.mountAbort?.abort();this.mountAbort=undefined;this.endTrial();this.clear();this.riding=false;this.idleHover.reset();this.sim.land();this.jarvs.reset();this.hud.hidden=true;this.model&&(this.model.visible=false);document.body.classList.remove('on-hoverbike');this.enterButton.disabled=!!this.hooks.vehicleLocked?.();this.enterButton.textContent='Ride hoverbike · B';}
+ leaveForTravel(){++this.mountGeneration;this.mountAbort?.abort();this.mountAbort=undefined;this.endTrial();this.clear();this.riding=false;this.authoredHeadlamp.off();this.idleHover.reset();this.sim.land();this.jarvs.reset();this.hud.hidden=true;if(this.visualModel)this.visualModel.visible=false;document.body.classList.remove('on-hoverbike');this.enterButton.disabled=!!this.hooks.vehicleLocked?.();this.enterButton.textContent='Ride '+this.rideLabel+' · B';}
  private say(message:string){this.notice.textContent=message;this.messageUntil=performance.now()+4500;}
  private refresh(){
   const p=this.sim.pose,jarvs=this.jarvs.snapshot;
@@ -255,6 +285,8 @@ installHoverPresentation(this.hud);
   const target=this.hud.querySelector('#hover-cruise-target')!,label=locked?speedMph(this.sim.cruiseSpeed!)+' MPH':'Cruise off';if(target.textContent!==label)target.textContent=label;
   this.altitude.textContent=Math.max(0,p.y-this.sim.floor(p.x,p.z)).toFixed(1);
   this.mode.textContent=this.sim.landed?'LANDED':this.sim.clearance<.3?'LANDING':this.sim.boostActive?'BOOST':locked?'CRUISE':this.sim.mode==='drone'?'ALTITUDE HOLD':'IN FLIGHT';
+  if(this.vehicle==='corleo'){this.mode.textContent=p.corleoAction??'IDLE';this.hud.dataset.corleoAction=p.corleoAction??'IDLE';this.hud.dataset.corleoTime=String(p.corleoTime??0);this.hud.querySelector('[data-hover="crawl"]')?.setAttribute('aria-pressed',String((this.sim as CorleoController).crawl));}
+  Object.assign(this.hud.dataset,{vehicle:this.vehicle,pilot:this.selected?.pilot??'sentinel',x:String(p.x),y:String(p.y),z:String(p.z),heading:String(p.heading),speed:String(p.speed)});
   // Lock the visible flight-mode selector while Sky Circuit owns the vehicle.
   const trialVehicleLocked=!!this.hooks.vehicleLocked?.();
   this.flightSelect.disabled=trialVehicleLocked;
@@ -265,21 +297,23 @@ installHoverPresentation(this.hud);
   this.hud.querySelector('#hover-drive')!.textContent=gearLabel(this.sim.drive.gear);
   // Read-only applied-pose telemetry supports real-input regression captures.
   // It does not expose controls or alter the player's scene or simulation.
-  const rider=this.rider?.diagnostics;this.hud.dataset.riderRig=rider?.contacts===4?'anchored':'unavailable';
+  const rider=this.authored?undefined:this.rider?.diagnostics;this.hud.dataset.riderRig=this.authored?'authored':rider?.contacts===4?'anchored':'unavailable';
   this.hud.dataset.riderMotion=this.motionPreference.matches||this.motionCheckbox?.checked?'reduced':'reactive';
   this.hud.dataset.idleHoverY=this.idleHover.offsetY.toFixed(5);this.hud.dataset.idleHoverWeight=this.idleHover.strength.toFixed(4);this.hud.dataset.idleHoverEligible=String(this.idleHover.isIdle);
-  if(rider){this.hud.dataset.riderLean=rider.lean.toFixed(4);this.hud.dataset.riderPitch=rider.pitch.toFixed(4);this.hud.dataset.riderCompression=rider.compression.toFixed(4);this.hud.dataset.riderHandError=rider.handError.toFixed(5);this.hud.dataset.riderFootError=rider.footError.toFixed(5);}
+  if(rider){this.hud.dataset.riderLean=rider.lean.toFixed(4);this.hud.dataset.riderPitch=rider.pitch.toFixed(4);this.hud.dataset.riderCompression=rider.compression.toFixed(4);this.hud.dataset.riderHandError=rider.handError.toFixed(5);this.hud.dataset.riderFootError=rider.footError.toFixed(5);}else{for(const key of ['riderLean','riderPitch','riderCompression','riderHandError','riderFootError'])delete this.hud.dataset[key];}
    this.hud.querySelector('.hover-help')!.textContent=this.sim.mode==='drone'?'W / S forward / back · A / D strafe · ← / → turn · E / Q height · position hold on release · Space brake · X lock speed · − / = adjust · Shift boost':'W / S speed · A / D steer · E / Q height · Space brake · X lock speed · − / = adjust · Shift boost · drag to look';
-  if(performance.now()>this.messageUntil)this.notice.textContent=this.sim.collision?'Contact — brake and steer clear.':this.sim.hazard?'Caution · obstacle ahead':this.sim.landed?'Ready for takeoff.':'Michigan 2084 · Explore the island';
+  if(this.vehicle==='corleo')this.hud.querySelector('.hover-help')!.textContent='W/S move · A/D steer · Shift run · C crawl · J jump · Space brake · V camera · F dismount';
+  if(performance.now()>this.messageUntil)this.notice.textContent=this.vehicle==='corleo'?(this.sim.collision?'Contact · brake and steer clear.':'CORLEO · Explore on foot or ride the island.'):this.sim.collision?'Contact — brake and steer clear.':this.sim.hazard?'Caution · obstacle ahead':this.sim.landed?'Ready for takeoff.':'Michigan 2084 · Explore the island';
  }
  update(dt:number,running:boolean,clock:number){
-  if(!this.riding||!this.model)return;
+  if(!this.riding||!this.visualModel)return;
   const has=(a:string,b?:string)=>this.pressed.has(a)||!!b&&this.pressed.has(b);
-  const drone=this.sim.mode==='drone',horizontal=Number(has('KeyD'))-Number(has('KeyA'))+this.stick.x;
+  const drone=this.sim.mode==='drone'&&this.vehicle!=='corleo',horizontal=Number(has('KeyD'))-Number(has('KeyA'))+this.stick.x;
   const steer=T.MathUtils.clamp(Number(has('ArrowRight'))-Number(has('ArrowLeft'))+(drone?0:horizontal),-1,1);
   const pilotLift=Number(has('KeyE'))-Number(has('KeyQ'));
   const lift=this.jarvs.assistLift(pilotLift,this.sim.mode,!!this.hooks.vehicleLocked?.());
   if(running)this.sim.advance(dt,{throttle:Number(has('KeyW','ArrowUp'))-Number(has('KeyS','ArrowDown'))+this.stick.y,strafe:drone?horizontal:0,steer,lift,brake:has('Space'),clutch:Number(has('KeyC')),boost:has('ShiftLeft','ShiftRight')});
+  if(this.sim instanceof CorleoController&&this.sim.dismountReady){const point=this.sim.exitPoint();if(point){this.leaveForTravel();this.hooks.exited(point);return;}}
   const p=this.sim.pose;
   const avionics=this.jarvs.update({now:performance.now(),x:p.x,y:p.y,z:p.z,heading:p.heading,speed:p.speed,
    clearance:this.sim.clearance,flying:this.sim.flying,landed:this.sim.landed,collision:this.sim.collision,hazard:this.sim.hazard,
@@ -295,9 +329,11 @@ installHoverPresentation(this.hud);
   });
   // Move the entire render hierarchy (bike, rider, grips, LCD) from the authoritative pose.
   // Never accumulate onto the last render transform or feed visual Y back into simulation.
-  this.model.position.set(p.x,p.y+idleY,p.z);
-  this.model.rotation.set(p.pitch,p.heading,p.roll,'YXZ');
-  if(running){
+  this.visualModel.position.set(p.x,p.y+idleY,p.z);
+  this.visualModel.rotation.set(p.pitch,p.heading,p.roll,'YXZ');
+  this.authored?.update(p,dt,running,this.sim.throttleDemand,this.sim.boostEnergy,this.lightOn,has('Space'));
+  if(this.authored)this.authoredHeadlamp.update(this.authored.root,this.vehicle==='corleo',this.lightOn,this.highBeam,this.hooks.nightAmount?.()??1);
+  if(running&&!this.authored){
    this.steerBlend=T.MathUtils.damp(this.steerBlend,steer,7,dt);
    this.rotors.forEach((r,i)=>r.rotateY(dt*p.rpm*(i%2?-1:1)*32));
    this.pods.forEach(({o,q},i)=>o.quaternion.copy(q).multiply(this.localRotation.setFromEuler(this.localEuler.set(p.pitch*.4,0,steer*.08*(i%2?-1:1)))));
@@ -305,10 +341,10 @@ installHoverPresentation(this.hud);
    this.gear.forEach(({o,q},i)=>o.quaternion.copy(q).multiply(this.localRotation.setFromAxisAngle(this.zAxis,this.gearBlend*(i?-.65:.65))));
    if(this.bars)this.bars.quaternion.copy(this.barsRest).multiply(this.localRotation.setFromAxisAngle(this.yAxis,-this.steerBlend*.18));
   }
-  this.controls?.update(dt,this.sim.drive);this.fittedArms?.update(dt,this.sim.throttleDemand);
+  if(!this.authored){this.controls?.update(dt,this.sim.drive);this.fittedArms?.update(dt,this.sim.throttleDemand);
   this.rider?.update(dt,p,this.sim.landed,this.steerBlend,running,reducedMotion);
   this.lighting?.update(dt,running,this.ledColor,this.ledMode,this.lightOn,this.highBeam,reducedMotion,this.hooks.nightAmount?.()??1);
-  this.brakes.forEach(m=>m.emissiveIntensity=has('Space')?4:this.lightOn?.65:0);
+  this.brakes.forEach(m=>m.emissiveIntensity=has('Space')?4:this.lightOn?.65:0);}
   if(running)this.sound.warn(this.sim.impactSpeed,this.sim.hazard);
   this.sound.update(p.rpm,p.speed,p.lift,this.sim.flying,this.sim.landed,has('Space'),running&&document.hasFocus());
   if(clock-this.lastUI>.1){this.lastUI=clock;this.refresh();}
@@ -318,12 +354,14 @@ installHoverPresentation(this.hud);
   this.idleFirstPerson=first; // Camera remains anchored to physics; only model heave is attenuated.
   this.cockpit?.setVisible(!photo);this.cockpit?.setInteraction(camera,first&&!photo&&this.riding&&!this.hooks.blocked());
   const p=this.sim.pose;this.cockpitHidden.forEach(o=>o.visible=!first);if(this.fpvArms)this.fpvArms.visible=false;this.fittedArms?.setVisible(first&&!photo);
+  this.authored?.firstPerson(first&&!photo);
   const angle=p.heading+yaw,forward=new T.Vector3(Math.sin(angle),0,Math.cos(angle));
   const look=new T.Vector3(p.x,p.y+1.15,p.z),desired=new T.Vector3();
   if(first){desired.set(p.x-Math.sin(p.heading)*.40,p.y+1.58,p.z-Math.cos(p.heading)*.40);look.copy(desired).addScaledVector(forward,12);look.y-=Math.tan(Math.min(1.25,pitch+(photo?0:.12)))*12;}
   else{desired.copy(look).addScaledVector(forward,-5.4);desired.y+=2.2+pitch*3;desired.y=Math.max(desired.y,this.sim.floor(desired.x,desired.z)+.7);
    const dir=desired.clone().sub(look),length=dir.length();dir.normalize();const hit=this.terrain.raycastFlight(look,dir,length,.2);if(hit!==null)desired.copy(look).addScaledVector(dir,Math.max(.5,hit-.3));
   }
+  if(this.authored){if(first){this.authored.eye(desired);desired.addScaledVector(new T.Vector3(Math.sin(p.heading),0,Math.cos(p.heading)),.1);look.copy(desired).addScaledVector(forward,12);look.y-=Math.tan(Math.min(1.25,pitch+(photo?0:this.vehicle==='corleo'?.35:.12)))*12;}else if(this.vehicle==='corleo'){look.y+=.15;desired.y+=.15;}}
   // A cockpit camera must move with the vehicle: chase lag moves it metres behind at road speed.
   camera.position.lerp(desired,first||snap?1:1-Math.exp(-dt*9));if(!first)look.y+=Math.max(0,-pitch-.25)*6;camera.lookAt(look);
   if(first&&!photo&&!reduced)camera.rotateZ(-p.roll*.18);

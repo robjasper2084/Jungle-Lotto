@@ -3,13 +3,14 @@ import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {inside,segment,type ParkMap,ParkTerrain,type Point} from './terrain.ts';
 import {roadIndex} from './streetPlan.ts';
 import {bankGrassGeometry,createShoreDetailPool,type ShoreInstance} from './shoreDetail.ts';
+import {shoreStyle,stoneCharacter,stoneHSL,type ShoreZone} from './shorePhotoPolicy.ts';
 
 export const riverBankHeight=(offset:number,top=2)=>top-(top+.1)*Math.min(1,Math.max(0,offset/4));
 
 /** Sparse, reproducible bank patches keep beaches, paths and bridge openings clear. */
 export function planShoreClutter(data:ParkMap,terrain:ParkTerrain){
- const walls:{x:number;z:number;length:number;heading:number}[]=[],stones:ShoreInstance[]=[],plants:ShoreInstance[]=[];
- const occupied=roadIndex(data.roads),beaches=data.areas.filter(a=>a.kind==='beach'),tint=new T.Color();
+ const walls:{x:number;z:number;length:number;heading:number}[]=[],stones:ShoreInstance[]=[],plants:ShoreInstance[]=[],driftwood:ShoreInstance[]=[];
+ const occupied=roadIndex(data.roads),beaches=data.areas.filter(a=>a.kind==='beach'),woods=data.areas.filter(a=>a.kind==='wood'||a.kind==='forest'),tint=new T.Color();
  const sandy=(x:number,z:number)=>beaches.some(a=>inside(x,z,a.points)||a.points.slice(1).some((p,i)=>segment(x,z,a.points[i],p).d<9));
  let seed=174;const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)|0;return(seed>>>0)/4294967296;};
  const banks=[{points:data.shoreline,land:data.mainland,closed:false},{points:data.island,land:data.island,closed:true},...(data.outerIslets||[]).map(i=>({points:i.points,land:i.points,closed:true}))];
@@ -21,14 +22,25 @@ export function planShoreClutter(data:ParkMap,terrain:ParkTerrain){
    if(Math.abs(bp.side)<15&&bp.t>-.03&&bp.t<1.03)continue;
    if(!closed)walls.push({x,z,length:length/n+.06,heading:Math.atan2(tx,tz)});
    const outward=inside(x+nx,z+nz,land)?-1:1;
-   if(sandy(x,z))continue;
-   const count=random()<.18?0:2+Math.floor(random()*4);
+   const nearBridge=bp.t>-.08&&bp.t<1.08&&Math.abs(bp.side)<40;
+   const wooded=woods.some(a=>inside(x-nx*7*outward,z-nz*7*outward,a.points));
+   const zone:ShoreZone=sandy(x,z)?'swim-beach':!closed&&!nearBridge?'formal-edge':nearBridge?'bridge-approach':wooded?'wooded-bank':'natural-riprap';
+   const style=shoreStyle(x,z,zone);
+   const count=random()<style.rockChance?style.minStones+Math.floor(random()*(style.maxStones-style.minStones+1)):0;
    for(let k=0;k<count;k++){
-    const offset=.65+random()*3.15,along=(random()-.5)*4.5,size=.28+random()*.62;
+    const offset=.65+random()*3.15,along=(random()-.5)*4.5,size=style.minRadius+random()*(style.maxRadius-style.minRadius);
     const rx=x+nx*offset*outward+tx*along,rz=z+nz*offset*outward+tz*along;
-    if(occupied(rx,rz,'',size*.7+.35)||terrain.obstructed(rx,rz,size*.5))continue;
+    if(sandy(rx,rz)||terrain.bridge(rx,rz).active||occupied(rx,rz,'',size*.7+.35)||terrain.obstructed(rx,rz,size*.5))continue;
     const y=(closed?riverBankHeight(offset,terrain.height(x+tx*along,z+tz*along)):-.22)-size*.12;
-    stones.push({x:rx,z:rz,y,yaw:random()*Math.PI*2,sx:size*(1.2+random()*.45),sy:size*.65,sz:size,color:tint.setHSL(.09+random()*.04,.04+random()*.08,(y<.3?.28:.39)+random()*.15).getHex()});
+    const [h,s,l]=stoneHSL(stoneCharacter(random(),y<.65),random());
+    stones.push({x:rx,z:rz,y,yaw:random()*Math.PI*2,sx:size*(1.12+random()*.48),sy:size*(.50+random()*.28),sz:size*(.88+random()*.4),color:tint.setHSL(h,s,l).getHex()});
+   }
+   if(closed&&style.driftwoodChance>0&&random()<style.driftwoodChance){
+    const along=(random()-.5)*3.5,inland=1.2+random()*2.4;
+    const px=x-nx*inland*outward+tx*along,pz=z-nz*inland*outward+tz*along;
+    if(!sandy(px,pz)&&terrain.land(px,pz)&&!terrain.bridge(px,pz).active&&!occupied(px,pz,'',2.4)&&!terrain.obstructed(px,pz,.4)){
+     driftwood.push({x:px,y:terrain.height(px,pz)+.09,z:pz,yaw:random()*Math.PI*2,sx:.65+random()*1.4,sy:.85+random()*.6,sz:.75+random()*.45,color:tint.setHSL(.085,.14,.25+random()*.16).getHex()});
+    }
    }
    if(!closed||random()>.44)continue;
    // Low grass on the landward lip breaks the straight turf/soil join. It is
@@ -42,7 +54,7 @@ export function planShoreClutter(data:ParkMap,terrain:ParkTerrain){
    }
   }
  }
- return {walls,stones,plants};
+ return {walls,stones,plants,driftwood};
 }
 
 /** Shoreline surfaces share the controller's mapped bank and ramp heights. */
@@ -63,17 +75,22 @@ export function addShoreDetails(scene:T.Scene,data:ParkMap,terrain:ParkTerrain,g
   const geometry=new T.BoxGeometry(.48,2.2,w.length);geometry.rotateY(w.heading);geometry.translate(w.x,.9,w.z);return geometry;
  });
  if(walls.length){const g=mergeGeometries(walls)!;walls.forEach(g=>g.dispose());const m=new T.Mesh(g,concrete);m.name='Mapped Detroit seawall';m.receiveShadow=true;scene.add(m);}
- const rock=new T.IcosahedronGeometry(1,1),rockMaterial=new T.MeshStandardMaterial({color:0xb7b7a8,roughness:.97});rockMaterial.name='Weathered shoreline stone';
- rockMaterial.onBeforeCompile=s=>{s.vertexShader='varying vec3 rockWorld;\n'+s.vertexShader;s.vertexShader=s.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nvec4 rw=vec4(transformed,1.);\n#ifdef USE_INSTANCING\nrw=instanceMatrix*rw;\n#endif\nrockWorld=(modelMatrix*rw).xyz;');s.fragmentShader='varying vec3 rockWorld;\n'+s.fragmentShader;s.fragmentShader=s.fragmentShader.replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\nfloat wet=1.-smoothstep(.05,.65,rockWorld.y);diffuseColor.rgb*=1.-wet*.35;roughnessFactor=mix(roughnessFactor,.32,wet);');};
+ const rock=new T.IcosahedronGeometry(1,1),rockMaterial=new T.MeshStandardMaterial({color:0xffffff,roughness:.94,flatShading:true});rockMaterial.name='Weathered shoreline stone';
+ rockMaterial.onBeforeCompile=s=>{s.vertexShader='varying vec3 rockWorld;\n'+s.vertexShader;s.vertexShader=s.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nvec4 rw=vec4(transformed,1.);\n#ifdef USE_INSTANCING\nrw=instanceMatrix*rw;\n#endif\nrockWorld=(modelMatrix*rw).xyz;');s.fragmentShader='varying vec3 rockWorld;\n'+s.fragmentShader;s.fragmentShader=s.fragmentShader.replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\nfloat wet=1.-smoothstep(.07,.72,rockWorld.y);float mineral=.91+.09*sin(rockWorld.x*8.2+rockWorld.z*3.7);diffuseColor.rgb*=mineral*(1.-wet*.31);roughnessFactor=mix(roughnessFactor,.36,wet);');};
 
  const vertices=rock.attributes.position;
- for(let i=0;i<vertices.count;i++){const x=vertices.getX(i),y=vertices.getY(i),z=vertices.getZ(i),r=.91+.09*Math.sin(x*8.1+y*4.7+z*6.3);vertices.setXYZ(i,x*r,y*r,z*r);}rock.computeVertexNormals();
+ for(let i=0;i<vertices.count;i++){const x=vertices.getX(i),y=vertices.getY(i),z=vertices.getZ(i),r=.84+.15*Math.sin(x*8.1+y*4.7+z*6.3);vertices.setXYZ(i,x*r,y*r*.85,z*r);}rock.computeVertexNormals();
  const plantMaterial=new T.MeshStandardMaterial({color:0xffffff,roughness:1,side:T.DoubleSide});plantMaterial.name='Shore bank grass';
  const stones=createShoreDetailPool(scene,rock,rockMaterial,plan.stones,'rocks','Shoreline riprap');
  const plants=createShoreDetailPool(scene,bankGrassGeometry(),plantMaterial,plan.plants,'plants','Low riverbank grass');
- return {animate:foam.animate,rocks:plan.stones.length,plants:plan.plants.length,stats:{rocks:stones.stats,plants:plants.stats,maxDraws:2},
-  setQuality(quality:string){stones.setQuality(quality);plants.setQuality(quality);},
-  update(x:number,z:number){stones.update(x,z);plants.update(x,z);}
+ const log=new T.CylinderGeometry(.09,.14,1.4,6,1),branch=new T.CylinderGeometry(.035,.065,.55,5,1);
+ log.rotateZ(Math.PI/2);branch.rotateZ(-.63);branch.translate(.42,.23,0);
+ const wood=mergeGeometries([log,branch])!;log.dispose();branch.dispose();
+ const woodMat=new T.MeshStandardMaterial({name:'Aged driftwood on wooded shores',color:0xffffff,roughness:1,flatShading:true});
+ const logs=createShoreDetailPool(scene,wood,woodMat,plan.driftwood,'rocks','Natural riverbank driftwood');
+ return {animate:foam.animate,rocks:plan.stones.length,plants:plan.plants.length,driftwood:plan.driftwood.length,stats:{rocks:stones.stats,plants:plants.stats,driftwood:logs.stats,maxDraws:3},
+  setQuality(quality:string){stones.setQuality(quality);plants.setQuality(quality);logs.setQuality(quality);},
+  update(x:number,z:number){stones.update(x,z);plants.update(x,z);logs.update(x,z);}
  };
 }
 

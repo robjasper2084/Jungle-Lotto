@@ -1,34 +1,49 @@
 import {addWoodsideBank} from './woodsideBank.ts';
+import {dressSunsetGround} from './sunsetGround.ts';
+import {addReferenceSkyline} from './referenceSkyline.ts';
+import {addBoatClub} from './boatClubScene.ts';
+import {addWaterfrontSkyline} from './waterfrontSkyline.ts';
 import {batchStaticGround} from './staticGroundBatch.ts';
 import {landmarkDisplayRange} from './landmarkRange.ts';
 import {addWaterfront} from './waterfrontScene.ts';
 import {LandmarkDetail} from './landmarkDetail.ts';
+import {batchStaticArchitecture} from './staticArchitectureBatch.ts';
+import {cullMacArthurSpans} from './macArthurSpanCulling.ts';
 import {addCoastGuard} from './coastGuard.ts';
 import {WorldQuality,dynamicShadowsEnabled} from './worldQuality.ts';
+import {WorldFrameWork,ShadowMapCadence,directionalCasterEligible,ScenePreparationQueue,softwareWebGLRenderer,deferredSceneryRadius,islandRenderOrder} from './worldPerformancePolicy.ts';
 import {LocalLightPool} from './localLighting.ts';
 import {createRiverTraffic} from './riverTraffic.ts';
 import {addWoodlandFloor} from './woodland.ts';
 import {addMeadow} from './meadow.ts';
-import {applyRealisticMaterials} from './realisticMaterials.ts';
+import {applyRealisticMaterials,loadRealisticMaterials} from './realisticMaterials.ts';
+import {applyPhotoReferenceSurfaces} from './photoReferenceSurfaces.ts';
 import {addStreetLighting} from './streetLighting.ts';
 import {addBridgeLighting} from './bridgeLighting.ts';
+import {finishBridgeMaterial} from './bridgeMaterialFinish.ts';
+import {finishMacArthurConcrete} from './macArthurSurface.ts';
+import {finishMacArthurRailings} from './macArthurRailFinish.ts';
 import {sunDirection,smooth} from './skyModel.ts';
 import {visibleWithHysteresis} from './environmentDetail.ts';
 import {createVehicleContactShadow,type ContactShadowPose} from './contactShadow.ts';
 import {addPlaygrounds} from './playgroundScene.ts';
+import {playgrounds} from './playgrounds.ts';
+import {createApproachDetail} from './approachDetail.ts';
+import {warmLandmarkPrograms} from './landmarkPrograms.ts';
 import {createWater} from './water.ts';
 import {addKoi,addFountainFlow} from './waterLife.ts';
 import {addLagoonBridge} from './lagoonBridgeScene.ts';
 import {addSmallBridgesStaged} from './smallBridgeScene.ts';
-import {yieldStartupTask} from './startupWork.ts';
+import {startupResource,warmObjectTextures,yieldStartupTask} from './startupWork.ts';
 import {addLakeHabitat} from './lakeHabitat.ts';
 import {addBirds} from './birds.ts';
 import {addWaterfowl} from './waterfowl.ts';
 import {addGulls} from './gulls.ts';
 import {addShoreBirds} from './shoreBirds.ts';
 import {addYachtClub} from './yachtClubScene.ts';
-import {addReferenceArchitecture} from './referenceArchitecture.ts';
-import {addGolfCenter} from './golfCenterScene.ts';
+import {YACHT} from './yachtClub.ts';
+import {addReferenceArchitecture,REFERENCE_BUILDING_CENTRES} from './referenceArchitecture.ts';
+import {addGolfCenter,GOLF_CENTER_POSITION} from './golfCenterScene.ts';
 import {addParkFacilities} from './parkFacilities.ts';
 import {prepareDossinMaterials,addDossinLighting} from './dossinScene.ts';
 import {prepareAquariumMaterials,addAquariumLife} from './aquariumScene.ts';
@@ -38,16 +53,29 @@ import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {MeshoptDecoder} from 'three/addons/libs/meshopt_decoder.module.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {loadStartupBytes,loadStartupModel} from './startupAssets.ts';
+import {REFERENCE_STYLE} from './sunsetReferencePolicy.ts';
+import {addReferenceIsland} from './referenceIsland.ts';
 import {createIslandSky} from './islandSky.ts';
 import {addShoreDetails} from './shore.ts';
+import {addShoreStrata} from './shoreStrata.ts';
+import {addGeology} from './geology.ts';
 import {addStreetDetails} from './streetDetails.ts';
 import {addActivities} from './activitiesScene.ts';
 import {addNature} from './nature.ts';
+import type {NatureRenderProbe} from './renderDiagnostics.ts';
+import {addCanalRoots} from './canalRoots.ts';
+import {addLivingCanals} from './livingCanals.ts';
+import {addCanalReflections} from './canalReflections.ts';
+import {localPerformanceProbe} from './performanceProbe.ts';
 import {addGardens} from './gardens.ts';
+import {addConservatoryGarden} from './conservatoryGarden.ts';
+import {tuneConservatoryMaterial} from './conservatoryVisuals.ts';
 import {addOudolfDetails} from './oudolfScene.ts';
 import {addDetroitDistricts} from './detroitScene.ts';
 import {addPavement} from './pavement.ts';
 import {finishAsphalt,finishBank} from './surfaceFinish.ts';
+import {pathWeatherFragment,type PathSurface} from './pathWeather.ts';
 import {addEntrance} from './entrance.ts';
 import {addWaterBanks} from './waterBanks.ts';
 import {ParkTerrain,inside,segment,type Point,type ParkMap} from './terrain.ts';
@@ -55,64 +83,178 @@ const loader=new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
 function poly(p:Point[],y:number,holes:Point[][]=[]){const s=new T.Shape(p.map(v=>new T.Vector2(v[0],-v[1])));for(const h of holes)s.holes.push(new T.Path(h.map(v=>new T.Vector2(v[0],-v[1]))));const g=new T.ShapeGeometry(s);g.rotateX(-Math.PI/2);g.translate(0,y,0);const a=g.attributes.position,uv=g.attributes.uv;for(let i=0;i<a.count;i++)uv.setXY(i,a.getX(i)/8,a.getZ(i)/8);return g;}
 function road(points:Point[],width:number,height:(x:number,z:number)=>number){const p:number[]=[],uv:number[]=[],routeUV:number[]=[],idx:number[]=[];let len=0;for(let i=0;i<points.length;i++){const a=points[Math.max(0,i-1)],b=points[Math.min(i+1,points.length-1)],before=new T.Vector2(points[i][0]-a[0],points[i][1]-a[1]).normalize(),after=new T.Vector2(b[0]-points[i][0],b[1]-points[i][1]).normalize(),v=before.clone().add(after).normalize(),miter=Math.min(1.8,1/Math.max(.56,v.dot(i===points.length-1?before:after)));if(i)len+=Math.hypot(points[i][0]-a[0],points[i][1]-a[1]);for(const side of[-1,1]){const x=points[i][0]+v.y*width*.5*side*miter,z=points[i][1]-v.x*width*.5*side*miter;p.push(x,height(x,z),z);uv.push(x/8,z/8);routeUV.push(side*width*.5,len);}if(i){const j=i*2;idx.push(j-2,j,j-1,j,j+1,j-1);}}const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(p,3));g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));g.setAttribute('routeCoord',new T.Float32BufferAttribute(routeUV,2));g.setIndex(idx);g.computeVertexNormals();return g;}
 const mat=(color:number,roughness=.8)=>new T.MeshStandardMaterial({color,roughness});
-export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:ParkMap,terrain:ParkTerrain,status:(s:string)=>void){
- const islandSky=await createIslandSky(scene,renderer,status);
+export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:ParkMap,terrain:ParkTerrain,status:(s:string)=>void,renderProbe?:NatureRenderProbe){
+ status('Preparing island surfaces and sky');
+ // The two reference buildings are the first large scenery upload on the
+ // bridge. Decode them alongside the normal loading work when available.
+ const referenceBuildings=new T.Group();
+ let decodedBuildings:Awaited<ReturnType<typeof addReferenceArchitecture>>|undefined;
+ const buildingLoad=addReferenceArchitecture(referenceBuildings,loader).then(
+  buildings=>decodedBuildings=buildings,()=>undefined);
+ const [islandSky]=await Promise.all([createIslandSky(scene,renderer,status),loadRealisticMaterials(renderer)]);if(REFERENCE_STYLE)renderer.toneMappingExposure=1.02;
  const localLights=new LocalLightPool(scene);
  // Surface skins are ready before world creation. Do not fetch the discarded PNG fallback atlases.
  const grass=mat(0x8f9b7e);grass.onBeforeCompile=shader=>{shader.vertexShader='varying vec2 terrainXZ;\n'+shader.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nterrainXZ=(modelMatrix*vec4(transformed,1.)).xz;');shader.fragmentShader='varying vec2 terrainXZ;\n'+shader.fragmentShader.replace('#include <map_fragment>','#include <map_fragment>\nfloat meadowVariation=.5+.25*sin(terrainXZ.x*.037+sin(terrainXZ.y*.043)*2.)+.25*sin(terrainXZ.y*.077+terrainXZ.x*.019);diffuseColor.rgb*=mix(vec3(.72,.79,.62),vec3(1.05,1.04,.91),meadowVariation);');};const pavement=mat(0x979b99);finishAsphalt(pavement);const pathMat=mat(0x948f81),concrete=mat(0xbebdb2),sand=mat(0xc3b28c);
  grass.name='Park lawn';pavement.name='Island asphalt';pathMat.name='Concrete pathways';concrete.name='Poured concrete';sand.name='Beach sand';
- // Metre-scale aggregate and broad weathering keep untextured paths from reading
- // as uniformly colored ribbons. Fade subpixel grain instead of sparkling.
+ // The Higgsfield maps provide filtered aggregate. Keep broad weathering only;
+ // the old high-frequency sine hash produced visible diagonal bands on paths.
  for(const m of [pathMat,concrete]){
   m.onBeforeCompile=shader=>{
    shader.vertexShader='varying vec2 pavingXZ;\n'+shader.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\npavingXZ=(modelMatrix*vec4(transformed,1.)).xz;');
    shader.fragmentShader='varying vec2 pavingXZ;\n'+shader.fragmentShader.replace('#include <map_fragment>',`#include <map_fragment>
-    vec2 aggregateCell=floor(pavingXZ*75.);
-    float aggregate=fract(sin(dot(aggregateCell,vec2(12.9898,78.233)))*43758.5453);
-    float fineDetail=1.-smoothstep(.4,1.8,length(fwidth(pavingXZ))*75.);
     float weather=.94+.045*sin(pavingXZ.x*.85+sin(pavingXZ.y*.47))+.025*sin(pavingXZ.y*3.1);
-    diffuseColor.rgb*=weather*mix(1.,mix(.80,1.12,aggregate),fineDetail);
+    diffuseColor.rgb*=weather;
    `);
-  };m.customProgramCacheKey=()=>'paving-aggregate-v1';
+  };m.customProgramCacheKey=()=>'paving-weather-v2';
  }
 
+ const bridgeConcrete=concrete.clone();bridgeConcrete.name='MacArthur aged concrete';finishBridgeMaterial(bridgeConcrete,'aged-concrete');
  const groundPatches:T.Mesh[]=[];
- function add(g:T.BufferGeometry,m:T.Material|T.Material[]){const mesh=new T.Mesh(g,m);mesh.receiveShadow=true;scene.add(mesh);groundPatches.push(mesh);return mesh;}
+ function add(g:T.BufferGeometry,m:T.Material|T.Material[]){
+  const mesh=new T.Mesh(g,m);mesh.receiveShadow=true;
+  // The land and bridge deck already fill the depth buffer. Draw them before
+  // the far-plane sky so covered samples skip its procedural cloud shader.
+  if(m===grass||m===bridgeConcrete||m===pavement)mesh.renderOrder=islandRenderOrder.ground;
+  scene.add(mesh);groundPatches.push(mesh);return mesh;
+ }
  const dryLand:Point[][][]=await fetch('./belle/beach-land.json').then(r=>r.json());for(const p of dryLand)add(poly(p[0],2,p.slice(1)),grass);const beachStats=await addBeach(scene,data,terrain);
- const bankPositions:number[]=[],bankIndices:number[]=[],sandyBankIndices:number[]=[];for(const shore of [data.island,...(data.outerIslets||[]).map(i=>i.points)]){const base=bankPositions.length/3;const outline=shore.slice(0,-1);let signed=0;outline.forEach((p,i)=>{const q=outline[(i+1)%outline.length];signed+=p[0]*q[1]-q[0]*p[1];});outline.forEach((p,i)=>{const prev=outline[(i+outline.length-1)%outline.length],next=outline[(i+1)%outline.length],dx=next[0]-prev[0],dz=next[1]-prev[1],len=Math.hypot(dx,dz)||1,side=Math.sign(signed);bankPositions.push(p[0],terrain.height(p[0],p[1]),p[1],p[0]+dz/len*4*side,-.1,p[1]-dx/len*4*side);const a=base+i*2,b=base+((i+1)%outline.length)*2;const q=outline[(i+1)%outline.length],mx=(p[0]+q[0])/2,mz=(p[1]+q[1])/2,sandy=terrain.beaches.some(beach=>beach.waterside.some(e=>segment(mx,mz,e.a,e.b).d<.2));(sandy?sandyBankIndices:bankIndices).push(a,b,a+1,b,b+1,a+1);});}const bankGeometry=new T.BufferGeometry();bankGeometry.setAttribute('position',new T.Float32BufferAttribute(bankPositions,3));bankGeometry.setIndex([...bankIndices,...sandyBankIndices]);bankGeometry.addGroup(0,bankIndices.length,0);bankGeometry.addGroup(bankIndices.length,sandyBankIndices.length,1);bankGeometry.computeVertexNormals();const bankMaterial=mat(0xffffff);bankMaterial.side=T.DoubleSide;const bankUV:number[]=[];for(let i=0;i<bankPositions.length;i+=3)bankUV.push(bankPositions[i]/3,bankPositions[i+2]/3);bankGeometry.setAttribute('uv',new T.Float32BufferAttribute(bankUV,2));bankMaterial.name='Park grass bank';finishBank(bankMaterial,0,2);add(bankGeometry,[bankMaterial,beachStats.material]);const updateDetroitArt=addDetroitDistricts(scene,renderer,terrain,poly,road,grass,pavement);const shoreDetails=addShoreDetails(scene,data,terrain,grass,concrete);if(!data.landPolygons)for(const w of data.water)for(const h of w.holes)add(poly(h,2),grass);
+ const bankPositions:number[]=[],bankIndices:number[]=[],sandyBankIndices:number[]=[];for(const shore of [data.island,...(data.outerIslets||[]).map(i=>i.points)]){const base=bankPositions.length/3;const outline=shore.slice(0,-1);let signed=0;outline.forEach((p,i)=>{const q=outline[(i+1)%outline.length];signed+=p[0]*q[1]-q[0]*p[1];});outline.forEach((p,i)=>{const prev=outline[(i+outline.length-1)%outline.length],next=outline[(i+1)%outline.length],dx=next[0]-prev[0],dz=next[1]-prev[1],len=Math.hypot(dx,dz)||1,side=Math.sign(signed);bankPositions.push(p[0],terrain.height(p[0],p[1]),p[1],p[0]+dz/len*4*side,-.1,p[1]-dx/len*4*side);const a=base+i*2,b=base+((i+1)%outline.length)*2;const q=outline[(i+1)%outline.length],mx=(p[0]+q[0])/2,mz=(p[1]+q[1])/2,sandy=terrain.beaches.some(beach=>beach.waterside.some(e=>segment(mx,mz,e.a,e.b).d<.2));(sandy?sandyBankIndices:bankIndices).push(a,b,a+1,b,b+1,a+1);});}const bankGeometry=new T.BufferGeometry();bankGeometry.setAttribute('position',new T.Float32BufferAttribute(bankPositions,3));bankGeometry.setIndex([...bankIndices,...sandyBankIndices]);bankGeometry.addGroup(0,bankIndices.length,0);bankGeometry.addGroup(bankIndices.length,sandyBankIndices.length,1);bankGeometry.computeVertexNormals();const bankMaterial=mat(0xffffff);bankMaterial.side=T.DoubleSide;const bankUV:number[]=[];for(let i=0;i<bankPositions.length;i+=3)bankUV.push(bankPositions[i]/3,bankPositions[i+2]/3);bankGeometry.setAttribute('uv',new T.Float32BufferAttribute(bankUV,2));bankMaterial.name='Park grass bank';finishBank(bankMaterial,0,2);add(bankGeometry,[bankMaterial,beachStats.material]);const updateDetroitArt=addDetroitDistricts(scene,renderer,terrain,poly,road,grass,pavement);const shoreDetails=addShoreDetails(scene,data,terrain,grass,concrete),shoreStrata=addShoreStrata(scene,data,terrain);if(!data.landPolygons)for(const w of data.water)for(const h of w.holes)add(poly(h,2),grass);
  const waterBanks=addWaterBanks(scene,data,terrain,grass);addWoodlandFloor(scene,data);await yieldStartupTask();
  const water=createWater(scene,renderer,data,terrain,poly);const koi=addKoi(scene);const waterfowl=addWaterfowl(scene);const gulls=addGulls(scene);const shoreBirds=addShoreBirds(scene,terrain);
  const gravel=mat(0x8d846c),wood=mat(0x81745b),pavers=pathMat.clone();
  gravel.name='Park gravel';wood.name='Timber boardwalk';pavers.name='Concrete pavers';
- function surfaceDetail(m:T.MeshStandardMaterial,kind:string){const base=m.onBeforeCompile;m.onBeforeCompile=(shader,r)=>{base(shader,r);shader.vertexShader='varying vec2 corridor;\n'+shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\ncorridor=(modelMatrix*vec4(transformed,1.)).xz;');shader.fragmentShader='varying vec2 corridor;\n'+shader.fragmentShader.replace('#include <map_fragment>',`#include <map_fragment>
+ function surfaceDetail(m:T.MeshStandardMaterial,kind:PathSurface){const base=m.onBeforeCompile;m.onBeforeCompile=(shader,r)=>{base(shader,r);shader.vertexShader='varying vec2 corridor;\n'+shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\ncorridor=(modelMatrix*vec4(transformed,1.)).xz;');shader.fragmentShader='varying vec2 corridor;\n'+shader.fragmentShader.replace('#include <map_fragment>',`#include <map_fragment>
  vec2 q=corridor;float seam=1.;
  ${kind==='wood'?`float edge=min(fract(q.y/.19),1.-fract(q.y/.19))*.19;seam=mix(.57,1.,smoothstep(0.,.008+fwidth(q.y),edge));seam*=.93+.06*sin(q.x*48.+sin(q.y*12.));`:kind==='pavers'?`vec2 cell=vec2(q.x+mod(floor(q.y/.22),2.)*.11,q.y)/.22;vec2 e=min(fract(cell),1.-fract(cell))*.22;seam=mix(.67,1.,smoothstep(0.,.006+length(fwidth(q)),min(e.x,e.y)));`:kind==='concrete'?`vec2 cell=q/2.4;vec2 edge=min(fract(cell),1.-fract(cell))*2.4;seam=mix(.87,1.,smoothstep(0.,.004+length(fwidth(q)),min(edge.x,edge.y)));`:`float grain=fract(sin(dot(floor(q*36.),vec2(12.89,78.23)))*43758.54);seam=mix(1.,.82+grain*.3,1.-smoothstep(.4,1.8,length(fwidth(q))*36.));`}
  if(length(q)<.000001)seam=1.;diffuseColor.rgb*=seam;
- `);};m.customProgramCacheKey=()=>kind+'-joined-pavement-detail-v2';}
+ ${pathWeatherFragment(kind)}
+ `);};m.customProgramCacheKey=()=>kind+'-joined-pavement-detail-v3';}
  surfaceDetail(pathMat,'concrete');surfaceDetail(pavers,'pavers');surfaceDetail(wood,'wood');surfaceDetail(gravel,'gravel');
  await addPavement(scene,{asphalt:pavement,concrete:pathMat,gravel,wood,pavers});
- const bridgePts:Point[]=Array.from({length:151},(_,i)=>[data.bridge.a[0]+(data.bridge.b[0]-data.bridge.a[0])*i/150,data.bridge.a[1]+(data.bridge.b[1]-data.bridge.a[1])*i/150]);const deckY=(x:number,z:number)=>6+4*Math.sin(Math.PI*T.MathUtils.clamp(terrain.bridge(x,z).t,0,1));add(road(bridgePts,26,(x,z)=>deckY(x,z)+.015),concrete);add(road(bridgePts,20,(x,z)=>deckY(x,z)+.06),pavement);
- for(const a of data.areas){if(a.points.length<4)continue;if(a.kind==='pitch')add(poly(a.points,2.012),mat(0x728260));if(a.kind==='garden'){const soil=grass.clone();soil.color.set(a.id==='107227702'?0x8f9b7e:0x8d8062);soil.onBeforeCompile=grass.onBeforeCompile;add(poly(a.points,2.012,a.holes),soil);}}
+ const bridgePts:Point[]=Array.from({length:151},(_,i)=>[data.bridge.a[0]+(data.bridge.b[0]-data.bridge.a[0])*i/150,data.bridge.a[1]+(data.bridge.b[1]-data.bridge.a[1])*i/150]);const deckY=(x:number,z:number)=>6+4*Math.sin(Math.PI*T.MathUtils.clamp(terrain.bridge(x,z).t,0,1));add(road(bridgePts,26,(x,z)=>deckY(x,z)+.015),bridgeConcrete);add(road(bridgePts,20,(x,z)=>deckY(x,z)+.06),pavement);
+ // These nonoverlapping pitches and gardens have three authored finishes.
+ // Sharing them lets the existing static ground batch submit one draw each.
+ const pitchSurface=mat(0x728260),gardenSoil=grass.clone(),gardenLawn=grass.clone();
+ gardenSoil.color.set(0x8d8062);gardenLawn.color.set(0x8f9b7e);
+ gardenSoil.onBeforeCompile=gardenLawn.onBeforeCompile=grass.onBeforeCompile;
+ for(const a of data.areas){
+  if(a.points.length<4)continue;
+  if(a.kind==='pitch')add(poly(a.points,2.012),pitchSurface);
+  if(a.kind==='garden')add(poly(a.points,2.012,a.holes),a.id==='107227702'?gardenLawn:gardenSoil);
+ }
  const lagoonBridge=addLagoonBridge(scene,data);await yieldStartupTask();const smallBridges=await addSmallBridgesStaged(scene,terrain.smallBridges.plan);await yieldStartupTask();
- addServiceBuildings(scene,data,islandSky.nightAmount);const facilities=addParkFacilities(scene,data);addWoodsideBank(scene,data);
- status('Adding road markings and wayfinding');const streetPlan=await fetch('./belle/street-details.json').then(r=>{if(!r.ok)throw new Error('Street details '+r.status);return r.json();});const streetBuffer:ArrayBuffer=await fetch('./belle/street-details.bin').then(r=>{if(!r.ok)throw new Error('Street geometry '+r.status);return r.arrayBuffer();});const streetData=new Float32Array(streetBuffer);streetPlan.boxes=[];for(let i=0;i<streetData.length;i+=streetPlan.stride)streetPlan.boxes.push({x:streetData[i],y:streetData[i+1],z:streetData[i+2],w:streetData[i+3],h:streetData[i+4],l:streetData[i+5],yaw:streetData[i+6],material:streetPlan.materials[streetData[i+7]],grade:streetData[i+8]});const streetStats=addStreetDetails(scene,streetPlan);streetPlan.boxes.length=0;await yieldStartupTask();
+ addServiceBuildings(scene,data,islandSky.nightAmount);const facilities=addParkFacilities(scene,data,renderer.extensions.has('WEBGL_multi_draw'));addWoodsideBank(scene,data);
+ status('Adding road markings and wayfinding');const streetPlan=await fetch('./belle/street-details.json').then(r=>{if(!r.ok)throw new Error('Street details '+r.status);return r.json();});const streetBuffer:ArrayBuffer=await loadStartupBytes('./belle/street-details.bin');const streetData=new Float32Array(streetBuffer);streetPlan.boxes=[];for(let i=0;i<streetData.length;i+=streetPlan.stride)streetPlan.boxes.push({x:streetData[i],y:streetData[i+1],z:streetData[i+2],w:streetData[i+3],h:streetData[i+4],l:streetData[i+5],yaw:streetData[i+6],material:streetPlan.materials[streetData[i+7]],grade:streetData[i+8]});const streetStats=addStreetDetails(scene,streetPlan);streetPlan.boxes.length=0;await yieldStartupTask();
  addEntrance(scene,data,terrain);await yieldStartupTask();
- status('Loading Detroit skyline');const skyline=await loader.loadAsync('./belle/detroit-skyline.glb');skyline.scene.name='Detroit skyline · Renaissance Center';skyline.scene.traverse(o=>{if((o as T.Mesh).isMesh){o.castShadow=false;o.receiveShadow=false;}});scene.add(skyline.scene);islandSky.dressSkyline(skyline.scene);
- status('Loading landmark architecture');const landmarks=await loader.loadAsync('./belle/landmarks.glb?v=walkthrough-20261103');scene.add(landmarks.scene);landmarks.scene.traverse(o=>{if((o as T.Mesh).isMesh){o.castShadow=true;o.receiveShadow=true;(o as T.Mesh).geometry.computeBoundingSphere();for(const m of(Array.isArray((o as T.Mesh).material)?(o as T.Mesh).material:[(o as T.Mesh).material]) as T.MeshStandardMaterial[]){if(m.name==='Conservatory clear panes'){m.transparent=true;m.opacity=.62;m.color.setRGB(.20,.30,.29);m.roughness=.22;m.metalness=.18;m.envMapIntensity=.85;m.depthWrite=false;m.side=T.DoubleSide;o.castShadow=false;}if(m.name.startsWith('Conservatory leaf'))m.side=T.DoubleSide;if(m.name==='Casino buff masonry'){m.color.setRGB(.52,.39,.24);m.bumpMap=m.map;m.bumpScale=.012;}if(m.map&&/limestone/i.test(m.name)){m.bumpMap=m.map;m.bumpScale=.018;m.roughness=.88;}};}});
+ status('Loading Detroit skyline');const skyline=await loadStartupModel(loader,'./belle/detroit-skyline.glb');skyline.scene.name='Detroit skyline · Renaissance Center';skyline.scene.traverse(o=>{if((o as T.Mesh).isMesh){o.castShadow=false;o.receiveShadow=false;}});scene.add(skyline.scene);islandSky.dressSkyline(skyline.scene);if(REFERENCE_STYLE)addReferenceSkyline(scene);const windsor=addWaterfrontSkyline(scene);islandSky.dressSkyline(windsor);
+ status('Loading landmark architecture');const landmarks=await loadStartupModel(loader,'./belle/landmarks.glb?v=walkthrough-20261103');scene.add(landmarks.scene);const bridgePhotoFinish=finishMacArthurConcrete(landmarks.scene);const bridgeRailFinish=finishMacArthurRailings(landmarks.scene);landmarks.scene.traverse(o=>{if((o as T.Mesh).isMesh){o.castShadow=true;o.receiveShadow=true;(o as T.Mesh).geometry.computeBoundingSphere();for(const m of(Array.isArray((o as T.Mesh).material)?(o as T.Mesh).material:[(o as T.Mesh).material]) as T.MeshStandardMaterial[]){if(tuneConservatoryMaterial(m)==='glazing')o.castShadow=false;if(m.name==='Casino buff masonry'){m.color.setRGB(.72,.66,.53);m.bumpMap=m.map;m.bumpScale=.012;}if(m.map&&/limestone/i.test(m.name)){m.bumpMap=m.map;m.bumpScale=.018;m.roughness=.88;}};}});
  // Remove only the old solid Yacht Club shell; every other landmark remains intact.
+ const oldBoatClub:T.Object3D[]=[];landmarks.scene.traverse(o=>{if(o.name.startsWith('107192915_'))oldBoatClub.push(o);});for(const o of oldBoatClub)o.removeFromParent();addBoatClub(scene,terrain,islandSky.nightAmount);
  const oldYacht:T.Object3D[]=[];landmarks.scene.traverse(o=>{if(o.name.startsWith('264321737_'))oldYacht.push(o);});for(const o of oldYacht)o.removeFromParent();
- status('Loading Yacht Club and marina');const yachtClub=await addYachtClub(scene,loader,localLights);
+ // Only one optional large landmark may decode, upload textures and compile shaders
+ // at a time. The Covered Bridge lies inside the Yacht Club, golf and
+ // playground prefetch radii; simultaneous warmups starved SwiftShader frames.
+ const sceneryPreparation=new ScenePreparationQueue();
+ const yachtStats={boats:YACHT.boats.length,piers:YACHT.piers.length,triangles:0,meshes:0};
+ let yachtClub:Awaited<ReturnType<typeof addYachtClub>>|undefined;
+ let yachtTask:Promise<void>|undefined,attemptedYachtApproach=false;
+ function prepareYachtClub(camera:T.Camera){
+  if(yachtClub)return Promise.resolve();
+  if(yachtTask)return yachtTask;
+  const task=sceneryPreparation.run(async()=>{
+   const root=new T.Group();
+   const detail=await addYachtClub(root,loader,localLights);
+   applyRealisticMaterials(root);
+   await warmObjectTextures(renderer,root);
+   await warmLandmarkPrograms(renderer,root,camera,scene);
+   scene.add(root);
+   yachtClub=detail;
+   Object.assign(yachtStats,detail.stats);
+  });
+  yachtTask=task;
+  void task.then(()=>{yachtTask=undefined;},()=>{yachtTask=undefined;});
+  return task;
+ }
+ function updateYachtClub(x:number,z:number,camera:T.Camera,running:boolean){
+  if(yachtClub){yachtClub.update(x,z);return;}
+  // Start outside the club's 1 km display range so ordinary rides can keep moving.
+  if(Math.hypot(x-YACHT.center[0],z-YACHT.center[1])>=1550){attemptedYachtApproach=false;return;}
+  if(running&&!document.hidden&&!attemptedYachtApproach){
+   attemptedYachtApproach=true;
+   void prepareYachtClub(camera).catch(error=>console.warn('Yacht Club unavailable; choose it in the guide to retry.',error));
+  }
+ }
+ // Both desktop and mobile now stage the 8.1 MB Yacht Club on approach.
+ // The existing guide can still request prepareYachtClub(camera) explicitly.
  const oldGolf:T.Object3D[]=[];landmarks.scene.traverse(o=>{if(o.name.startsWith('509207568_'))oldGolf.push(o);});for(const o of oldGolf)o.removeFromParent();
- status('Loading Golf Center');const golfCenter=await addGolfCenter(scene,loader);const waterfront=await addWaterfront(scene,loader);const referenceArchitecture=await addReferenceArchitecture(scene,loader);status('Loading playgrounds');const playgroundScene=await addPlaygrounds(scene,loader);
+ // Waterfront remains part of the first island view. The other three
+ // mapped assets are visual-only, so they can load before entering view rather
+ // than delaying the initial player spawn.
+ status('Loading waterfront');const waterfront=await addWaterfront(scene,loader);
+ const golfStats={meshes:0,triangles:0,stations:0,loaded:false};
+ const playgroundStats={sites:playgrounds.length,meshes:0,triangles:0,loaded:false,batching:{sourceMeshes:0,renderMeshes:0,joinedSources:0,batches:0}};
+ async function prepareApproach<A extends {update:(x:number,z:number)=>void}>(
+  stage:T.Group,camera:T.Camera,load:()=>Promise<A>
+ ){
+  return sceneryPreparation.run(async()=>{
+   const model=await load();applyRealisticMaterials(stage);applyPhotoReferenceSurfaces(stage);
+   await warmObjectTextures(renderer,stage);
+   await renderer.compileAsync(stage,camera,scene);
+   return model;
+  });
+ }
+ // Software WebGL stalls when offscreen golf and playground GLBs compile beside
+ // the Covered Bridge. Defer only those optional details until they approach
+ // their actual visibility range; hardware GPU prefetch distances stay intact.
+ const gl=renderer.getContext(),gpuInfo=gl.getExtension('WEBGL_debug_renderer_info');
+ const softwareScenery=softwareWebGLRenderer(String(gl.getParameter(gpuInfo?.UNMASKED_RENDERER_WEBGL??gl.RENDERER)||''));
+ const golfCenterDetail=createApproachDetail(scene,[GOLF_CENTER_POSITION],deferredSceneryRadius(700,1000,softwareScenery,20),
+  (stage,camera)=>prepareApproach(stage,camera,()=>addGolfCenter(stage,loader)),
+  model=>Object.assign(golfStats,model.stats,{loaded:true}));
+ // A slow or failed optional download can still finish or retry on approach.
+ // When ready now, its actual shaders join the island's normal startup warmup.
+ const referenceArchitectureDetail=decodedBuildings??createApproachDetail(scene,REFERENCE_BUILDING_CENTRES,950,
+  (stage,camera)=>prepareApproach(stage,camera,async()=>{
+   const buildings=await buildingLoad;
+   if(!buildings)return addReferenceArchitecture(stage,loader);
+   stage.add(referenceBuildings);return buildings;
+  }));
+ if(decodedBuildings){
+  referenceBuildings.traverse(o=>{if(o instanceof T.Mesh)o.userData.warmIslandShaders=true;});
+  scene.add(referenceBuildings);
+ }
+ const playgroundDetail=createApproachDetail(scene,playgrounds.map(site=>[site.center[0],site.center[1]] as const),deferredSceneryRadius(420,760,softwareScenery,100),
+  (stage,camera)=>sceneryPreparation.run(async()=>{
+   const model=await addPlaygrounds(stage,loader);
+   applyRealisticMaterials(stage);applyPhotoReferenceSurfaces(stage);
+   playgroundStats.batching=model.batch();
+   await warmObjectTextures(renderer,stage);
+   await warmLandmarkPrograms(renderer,stage,camera,scene);
+   return model;
+  }),
+  model=>Object.assign(playgroundStats,model.stats,{loaded:true}));
+ async function prepareCadillacLandmarks(camera:T.Camera,x:number,z:number){
+  // Both requests use the shared preparation queue. A missing optional model
+  // can still retry on approach, and a slow download cannot lock the welcome screen.
+  const landmarks=Promise.allSettled([
+   playgroundDetail.prepareAt(x,z,camera),
+   prepareYachtClub(camera).then(()=>yachtClub?.update(x,z))
+  ]);
+  try{
+   const results=await startupResource(landmarks,45000,'Cadillac landmarks',()=>{});
+   for(const result of results)if(result.status==='rejected')console.warn('Cadillac landmark will retry on approach.',result.reason);
+  }catch(error){console.warn('Cadillac landmark preparation continues on approach.',error);}
+ }
  const fountainFlow=addFountainFlow(scene,data,landmarks.scene);
  prepareDossinMaterials(landmarks.scene);const dossinLighting=data.dossin?addDossinLighting(scene,data.dossin,localLights):null;prepareAquariumMaterials(landmarks.scene);const aquariumLife=data.aquarium?addAquariumLife(scene,data.aquarium,localLights):null;
- for(const l of data.landmarks.filter(l=>/Boat House|Yacht Club/.test(l.name))){const b=data.buildings.find(b=>b.id===l.id);if(b)add(poly(b.points,2),concrete);}
+ for(const l of data.landmarks.filter(l=>/Yacht Club/.test(l.name))){const b=data.buildings.find(b=>b.id===l.id);if(b)add(poly(b.points,2),concrete);}
  status('Loading White House and stable yard');const historic=await loader.loadAsync('./belle/historic-houses.glb');historic.scene.name='White House and former stable yard';historic.scene.traverse(o=>{if((o as T.Mesh).isMesh){const mesh=o as T.Mesh;mesh.castShadow=!o.name.startsWith('Stable flower');mesh.receiveShadow=true;mesh.geometry.computeBoundingSphere();if(o.name.startsWith('Stable flower'))(mesh.material as T.MeshStandardMaterial).side=T.DoubleSide;}});scene.add(historic.scene);
- status('Adding park birds');const birds=await addBirds(scene,data,terrain);const activities=addActivities(scene,data,terrain,grass);const nature=await addNature(scene,status,terrain);status('Planting meadow grass');const meadow=await addMeadow(scene);const gardens=await addGardens(scene);const oudolf=addOudolfDetails(scene,data,grass);const lakeHabitat=await addLakeHabitat(scene);let lastX=Infinity,lastZ=Infinity;
+ status('Adding park birds');const birds=await addBirds(scene,data,terrain);const activities=addActivities(scene,data,terrain,grass);const nature=await addNature(scene,status,terrain,renderProbe,renderer.getContextAttributes().antialias===false);const canalRoots=addCanalRoots(scene,data,terrain,nature.treeSites);const livingCanals=addLivingCanals(scene,data,terrain);const canalReflections=addCanalReflections(scene,data);const geology=addGeology(scene,data,terrain);status('Planting meadow grass');const meadow=await addMeadow(scene);const gardens=await addGardens(scene);const oudolf=addOudolfDetails(scene,data,grass);const lakeHabitat=await addLakeHabitat(scene);let lastX=Infinity,lastZ=Infinity;
 
+ const conservatoryGarden=addConservatoryGarden(scene,data);
  const groundBatch=batchStaticGround(groundPatches);
  const coastGuard=addCoastGuard(scene);
- const streetLights=addStreetLighting(scene,data),bridgeLights=addBridgeLighting(scene,data,streetLights.lamps,localLights);for(const l of streetLights.plan)terrain.flightSolids.add({x:l.x,z:l.z,bottom:l.y,top:l.y+l.height,radius:.15,kind:'lamp'});applyRealisticMaterials(scene);const traffic=createRiverTraffic(scene,data),contactShadow=createVehicleContactShadow(scene,terrain);
+ const streetLights=addStreetLighting(scene,data),bridgeLights=addBridgeLighting(scene,data,streetLights.lamps,localLights);for(const l of streetLights.plan)terrain.flightSolids.add({x:l.x,z:l.z,bottom:l.y,top:l.y+l.height,radius:.15,kind:'lamp'});applyRealisticMaterials(scene);applyPhotoReferenceSurfaces(scene);if(REFERENCE_STYLE)dressSunsetGround(scene);const referenceGarden=REFERENCE_STYLE?await addReferenceIsland(scene,data,terrain):undefined;const traffic=createRiverTraffic(scene,data),contactShadow=createVehicleContactShadow(scene,terrain);
 
  // Static world-space bounds are cached once. Interior gravel/plants used to be
  // rendered from across the island even though the enclosing building hid them.
@@ -122,18 +264,26 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
   landmarkDraws.push({mesh:o,center:sphere.center.clone().applyMatrix4(o.matrixWorld),radius:sphere.radius*Math.max(...o.scale.toArray()),range:landmarkDisplayRange(o.name),shadow:o.castShadow});
  });
  const landmarkDetail=new LandmarkDetail(landmarks);
+ await landmarkDetail.prepareDistant(scene);
+ cullMacArthurSpans(landmarks.scene);
+ batchStaticArchitecture(scene,renderer,[landmarks.scene,historic.scene],()=>landmarkDetail.isSplitActive,smallBridges.root);
  // Static architecture transforms are fixed after the fountain is placed.
  for(const staticRoot of [landmarks.scene,skyline.scene,historic.scene]){staticRoot.updateMatrixWorld(true);staticRoot.traverse(o=>{o.matrixAutoUpdate=false;o.matrixWorldAutoUpdate=false;});}
+ // Keep full quality shadow maps, but avoid redrawing identical static shadows at 60 Hz.
+ const shadowCadence=new ShadowMapCadence();
+ renderer.shadowMap.autoUpdate=false;
+ renderer.shadowMap.needsUpdate=true;
  const quality=new WorldQuality((q,mappedLayout)=>{
   const dynamicShadows=dynamicShadowsEnabled(q);
   renderer.shadowMap.enabled=mappedLayout;
-  renderer.shadowMap.autoUpdate=dynamicShadows;
+  shadowCadence.reset();
   renderer.shadowMap.needsUpdate=dynamicShadows;
-  water.setQuality(q);islandSky.setQuality(q,mappedLayout);birds.setQuality(q);gulls.setQuality(q);waterfowl.setQuality(q);shoreBirds.setQuality(q);
-  nature.setQuality(q);meadow.setQuality(q);gardens.setQuality(q);shoreDetails.setQuality(q);beachStats.setQuality(q);waterBanks.setQuality(q);contactShadow.setQuality(q);
+  water.setQuality(q);islandSky.setQuality(q,mappedLayout);geology.setQuality(q);canalRoots.setQuality(q);livingCanals.setQuality(q);canalReflections.setQuality(q);birds.setQuality(q);gulls.setQuality(q);waterfowl.setQuality(q);shoreBirds.setQuality(q);
+  referenceGarden?.setQuality(q);nature.setQuality(q);meadow.setQuality(q);gardens.setQuality(q);shoreDetails.setQuality(q);beachStats.setQuality(q);waterBanks.setQuality(q);contactShadow.setQuality(q);
   lastX=Infinity;
- },ratio=>renderer.setPixelRatio(ratio));
+ },ratio=>renderer.setPixelRatio(ratio),()=>devicePixelRatio,softwareScenery);
+ const sharedFrameWork=new WorldFrameWork();
  let playerWake:{x:number;z:number;dx:number;dz:number;length:number;width:number;power:number}|null=null;
- return {boatWake:(wake:typeof playerWake)=>{playerWake=wake;},prepareSplitDetail:()=>landmarkDetail.prepare(),splitBatchRoot:()=>landmarkDetail.batchRoot,beginSplitView:()=>landmarkDetail.beginView(),endSplitView:()=>landmarkDetail.endView(),splitDetail:(enabled:boolean)=>{landmarkDetail.setActive(enabled);nature.setSplitDetail(enabled);},sky:islandSky,trafficRay:traffic.raycast,waterVehicle:water.setVehicle,contactVehicle(pose:ContactShadowPose|null){contactShadow.update(pose);},quality,setBudget(scale:number){quality.setBudget(scale);},setQuality(q:string){quality.setQuality(q);},update(time:number,x:number,z:number,camera:T.Camera,running=true){localLights.beginFrame(x,z);yachtClub.update(x,z);golfCenter.update(x,z);referenceArchitecture.update(x,z);playgroundScene.update(x,z);const skyLight=islandSky.update(camera,x,z);const lampNight=1-smooth(-.12,.08,sunDirection(islandSky.renderHour)[1]);coastGuard.update(time,lampNight);bridgeLights.setNight(lampNight);streetLights.setNight(lampNight);bridgeLights.update(time,x,z);water.setLighting(skyLight.reflection,skyLight.light,skyLight.sun,skyLight.glint);water.setFountainNight(lampNight);water.setShipWakes([...(playerWake?[playerWake]:[]),...traffic.update(time,x,z,lampNight,skyLight.light,running)].slice(0,4));water.update(time,camera);waterfront.update(x,z,lampNight);koi.update(time,x,z);waterfowl.update(time,x,z);shoreBirds.update(time,x,z);fountainFlow.update(time,x,z,lampNight);birds.update(time,x,z);gulls.update(time,x,z);activities.update(islandSky.hour,x,z);nature.update(x,z,skyLight.night,skyLight.golden);shoreDetails.update(x,z);beachStats.update(x,z);shoreDetails.animate(time,skyLight.light);gardens.animate(time);waterBanks.update(x,z);meadow.update(time,x,z,camera.position.y-1.5);updateDetroitArt(x,z,camera);aquariumLife?.update(time,x,z);dossinLighting?.update(x,z);localLights.update();if(Math.hypot(x-lastX,z-lastZ)>30){lastX=x;lastZ=z;historic.scene.visible=visibleWithHysteresis(Math.hypot(x-1428,z-1000),900,historic.scene.visible,50);lakeHabitat.update(x,z);lagoonBridge.visible=visibleWithHysteresis(Math.hypot(x-3950,z+200),600,lagoonBridge.visible,40);facilities.update(x,z);streetStats.update(x,z);gardens.update(x,z);oudolf.update(x,z);for(const item of landmarkDraws){const distance=Math.hypot(item.center.x-x,item.center.z-z);item.mesh.visible=!item.mesh.userData.staticSprayReplaced&&(/MacArthur/.test(item.mesh.name)||visibleWithHysteresis(distance,item.range+item.radius,item.mesh.visible,item.range<200?14:45));item.mesh.castShadow=item.shadow&&visibleWithHysteresis(distance,170+item.radius,item.mesh.castShadow,20);}}},stats:{groundBatch,splitLandmarks:landmarkDetail.stats,smallBridges:smallBridges.stats,traffic:traffic.stats,waterfowl:waterfowl.stats,gulls:gulls.stats,shoreBirds:shoreBirds.stats,activities:activities.stats,meadow:meadow.stats,playgrounds:playgroundScene.stats,golfCenter:golfCenter.stats,yachtClub:yachtClub.stats,koi:koi.stats,fountains:fountainFlow.stats,lakeHabitat:lakeHabitat.stats,birds:birds.stats,facilities:facilities.stats,beaches:{triangles:beachStats.triangles,detail:beachStats.stats},shore:{...shoreDetails.stats,lagoonSedges:waterBanks.stats},gardens:gardens.stats,street:streetStats,nature:nature.stats,trees:nature.stats.trees,landmarks:data.landmarks.length,roads:data.roads.length}};
+ return {prepareYachtClub,prepareCadillacLandmarks,boatWake:(wake:typeof playerWake)=>{playerWake=wake;},prepareSplitDetail:()=>landmarkDetail.prepare(),splitBatchRoot:()=>landmarkDetail.batchRoot,beginSplitView:()=>landmarkDetail.beginView(),endSplitView:()=>landmarkDetail.endView(),splitDetail:(enabled:boolean)=>{landmarkDetail.setActive(enabled);nature.setSplitDetail(enabled);},sky:islandSky,trafficRay:traffic.raycast,waterVehicle:water.setVehicle,contactVehicle(pose:ContactShadowPose|null){contactShadow.update(pose);},quality,setBudget(scale:number){quality.setBudget(scale);},setQuality(q:string){quality.setQuality(q);},update(time:number,x:number,z:number,camera:T.Camera,running=true,allowDeferred=true){const firstWorldView=sharedFrameWork.begin(time);if(renderer.shadowMap.enabled&&dynamicShadowsEnabled(quality.effective)&&shadowCadence.shouldRefresh(time,x,z))renderer.shadowMap.needsUpdate=true;referenceGarden?.update(x,z,camera);localLights.beginFrame(x,z);conservatoryGarden.update(x,z);updateYachtClub(x,z,camera,running&&allowDeferred);golfCenterDetail.update(x,z,camera,running&&allowDeferred);referenceArchitectureDetail.update(x,z,camera,running&&allowDeferred);playgroundDetail.update(x,z,camera,running&&allowDeferred);const skyLight=islandSky.update(camera,x,z);if(REFERENCE_STYLE&&scene.fog instanceof T.FogExp2)scene.fog.density=.00012;const lampNight=1-smooth(-.12,.08,sunDirection(islandSky.renderHour)[1]);if(firstWorldView){coastGuard.update(time,lampNight);bridgeLights.setNight(lampNight);streetLights.setNight(lampNight);water.setLighting(skyLight.reflection,skyLight.light,skyLight.sun,skyLight.glint);water.setFountainNight(lampNight);}bridgeLights.update(time,x,z);water.setShipWakes([...(playerWake?[playerWake]:[]),...traffic.update(time,x,z,lampNight,skyLight.light,running)].slice(0,4));water.update(time,camera);waterfront.update(x,z,lampNight);koi.update(time,x,z);waterfowl.update(time,x,z);shoreBirds.update(time,x,z);fountainFlow.update(time,x,z,lampNight);birds.update(time,x,z);gulls.update(time,x,z);activities.update(islandSky.hour,x,z);nature.update(x,z,skyLight.night,skyLight.golden);shoreDetails.update(x,z);beachStats.update(x,z);if(firstWorldView){shoreDetails.animate(time,skyLight.light);gardens.animate(time);}waterBanks.update(x,z);geology.update(x,z);canalRoots.update(x,z);livingCanals.update(x,z,time);if(firstWorldView)canalReflections.update(time);meadow.update(time,x,z,camera.position.y-1.5);updateDetroitArt(x,z,camera);aquariumLife?.update(time,x,z);dossinLighting?.update(x,z);localLights.update();if(Math.hypot(x-lastX,z-lastZ)>30){lastX=x;lastZ=z;historic.scene.visible=visibleWithHysteresis(Math.hypot(x-1428,z-1000),900,historic.scene.visible,50);lakeHabitat.update(x,z);lagoonBridge.visible=visibleWithHysteresis(Math.hypot(x-3950,z+200),600,lagoonBridge.visible,40);facilities.update(x,z);streetStats.update(x,z);gardens.update(x,z);oudolf.update(x,z);for(const item of landmarkDraws){const distance=Math.hypot(item.center.x-x,item.center.z-z);item.mesh.visible=!item.mesh.userData.staticSprayReplaced&&(/MacArthur/.test(item.mesh.name)||visibleWithHysteresis(distance,item.range+item.radius,item.mesh.visible,item.range<200?14:45));item.mesh.castShadow=directionalCasterEligible(quality.effective,Math.max(0,distance-(item.mesh.castShadow?12:0)),item.radius,item.shadow);}}},stats:{performanceDiagnostic:localPerformanceProbe(),bridgePhotoFinish,bridgeRailFinish,water:{shallow:water.shallowStats},groundBatch,conservatoryGarden:conservatoryGarden.stats,splitLandmarks:landmarkDetail.stats,smallBridges:smallBridges.stats,traffic:traffic.stats,waterfowl:waterfowl.stats,gulls:gulls.stats,shoreBirds:shoreBirds.stats,activities:activities.stats,meadow:meadow.stats,playgrounds:playgroundStats,golfCenter:golfStats,yachtClub:yachtStats,koi:koi.stats,fountains:fountainFlow.stats,lakeHabitat:lakeHabitat.stats,birds:birds.stats,facilities:facilities.stats,beaches:{triangles:beachStats.triangles,detail:beachStats.stats},shore:{...shoreDetails.stats,lagoonSedges:waterBanks.stats,strata:shoreStrata.stats},geology:geology.stats,canalRoots:canalRoots.stats,livingCanals:livingCanals.stats,canalReflections:canalReflections.stats,gardens:gardens.stats,street:streetStats,nature:nature.stats,trees:nature.stats.trees,landmarks:data.landmarks.length,roads:data.roads.length}};
 
 }

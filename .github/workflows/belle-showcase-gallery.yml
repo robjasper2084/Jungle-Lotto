@@ -1,0 +1,69 @@
+name: Belle Isle three-stop showcase review
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/belle-showcase-gallery.yml'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/showcaseStops*'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/showcase-gallery.mjs'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/gallery-renderer.mjs'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/index.html'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/main.ts'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+concurrency:
+  group: belle-showcase-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  gallery:
+    strategy:
+      fail-fast: false
+      matrix:
+        device: [desktop, phone]
+    runs-on: ${{ matrix.device == 'desktop' && 'macos-15' || 'ubuntu-latest' }}
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Validate and build exact candidate
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm ci
+          npm run check
+          npm test
+          npm run build
+      - name: Install browser runtime
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          if [ "$RUNNER_OS" = 'macOS' ]; then
+            npx playwright install chrome
+          else
+            npx playwright install --with-deps chromium
+          fi
+      - name: Capture real-game bridge, canal and lagoon
+        timeout-minutes: 30
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          ENV_GALLERY_DEVICE: ${{ matrix.device }}
+          ENV_GALLERY_REQUIRE_METAL: ${{ matrix.device == 'desktop' && '1' || '0' }}
+          ENV_GALLERY_BROWSER: chromium
+          ENV_GALLERY_QUICK: '1'
+        run: |
+          if [ "$RUNNER_OS" = 'macOS' ]; then
+            node scripts/showcase-gallery.mjs
+          else
+            xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node scripts/showcase-gallery.mjs
+          fi
+      - name: Preserve genuine game screenshots and performance diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-showcase-${{ matrix.device }}
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/showcase-gallery/${{ matrix.device }}
+          if-no-files-found: warn
+          retention-days: 14

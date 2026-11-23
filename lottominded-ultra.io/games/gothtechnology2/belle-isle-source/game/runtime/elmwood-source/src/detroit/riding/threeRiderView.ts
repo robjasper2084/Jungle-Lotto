@@ -24,9 +24,20 @@ import {WheelLights} from '../wheelLights.ts';
 
 type Limb={upper:T.Object3D;knee:T.Object3D;foot:T.Object3D;target:T.Vector3;rotation:T.Quaternion;};
 const v=()=>new T.Vector3(),q=()=>new T.Quaternion();
-function rotateWorld(bone:T.Object3D|undefined,axis:T.Vector3,angle:number){if(!bone)return;const w=bone.getWorldQuaternion(q()).premultiply(q().setFromAxisAngle(axis,angle));bone.quaternion.copy(bone.parent!.getWorldQuaternion(q()).invert().multiply(w));bone.updateWorldMatrix(false,true);}
+function rotateWorld(bone:T.Object3D|undefined,axis:T.Vector3,angle:number){
+  if(!bone)return;
+  const w=bone.getWorldQuaternion(q()).premultiply(q().setFromAxisAngle(axis,angle));
+  bone.quaternion.copy(bone.parent!.getWorldQuaternion(q()).invert().multiply(w));
+  // Following world queries refresh their own ancestor paths. Publish all
+  // descendants in the completed pose's root update instead of traversing
+  // both legs and every finger after each small torso rotation.
+  bone.updateWorldMatrix(false,false);
+}
 function prepare(o:T.Object3D){o.traverse(n=>{const m=n as T.Mesh;if(m.isMesh){m.castShadow=true;m.receiveShadow=true;m.frustumCulled=!(m as T.SkinnedMesh).isSkinnedMesh;}});}
 export class ThreeRiderView {
+  private readonly reducedMotionQuery=typeof matchMedia==='function'?matchMedia('(prefers-reduced-motion: reduce)'):undefined;
+  private reducedMotion=this.reducedMotionQuery?.matches??false;
+  private readonly onMotionChange=(event:MediaQueryListEvent)=>{this.reducedMotion=event.matches;};
   private fallenSupport:FallenSupport;
   private detail:HeroDetail;private wardrobe:RiderWardrobe;
   readonly walkStyle='kimodo' as const;
@@ -41,6 +52,7 @@ export class ThreeRiderView {
   readonly profile:RiderProfile;
   readonly wheelScale:number;readonly motionScale:number;readonly mountHeight:number;
   constructor(riderAsset:GLTF,wheelAsset:GLTF,terrain?:TerrainSampler,profile:RiderProfile=HUMAN_PROFILE){
+    this.reducedMotionQuery?.addEventListener('change',this.onMotionChange);
     this.terrain=terrain;this.profile=profile;
     this.wheelScale=profile.wheelScale;this.motionScale=profile.motionScale;this.mountHeight=profile.pedalHeight*this.wheelScale;
     this.root.add(this.ground);this.ground.add(this.lean);
@@ -69,7 +81,7 @@ export class ThreeRiderView {
     this.fallenSupport=new FallenSupport(this.riderContact.probes,this);
     if(baseRiderId(profile.id)===profile.id&&this.rider.getObjectByName('Armored_Rider_Surface')){this.armorKeychain=new ArmorKeychain(this.rider);this.helmetSkin=new HelmetSkinDecal(this.rider);}
   }
-  dispose(){this.wardrobe.dispose();this.detail.dispose();this.lights.dispose();this.armorKeychain?.dispose();this.helmetSkin?.dispose();this.root.removeFromParent();this.rider.traverse(o=>{if((o as T.SkinnedMesh).isSkinnedMesh)(o as T.SkinnedMesh).skeleton.dispose();});}
+  dispose(){this.reducedMotionQuery?.removeEventListener('change',this.onMotionChange);this.wardrobe.dispose();this.detail.dispose();this.lights.dispose();this.armorKeychain?.dispose();this.helmetSkin?.dispose();this.root.removeFromParent();this.rider.traverse(o=>{if((o as T.SkinnedMesh).isSkinnedMesh)(o as T.SkinnedMesh).skeleton.dispose();});}
   pedalTarget(l:Limb,suspensionOffset:number){return this.vehicle.localToWorld(l.target.clone().add(new T.Vector3(0,suspensionOffset,0)));}
   footTarget(index:number,p:RidePose){
     const target=this.pedalTarget(this.legs[index],p.suspensionOffset);
@@ -86,8 +98,8 @@ export class ThreeRiderView {
   }
   apply(p:RidePose){
     invalidateAnimatedShadow(this.root);
-    this.lights.update(p,typeof matchMedia!=='undefined'&&(matchMedia('(prefers-reduced-motion: reduce)').matches||document.documentElement.dataset.reducedMotion==='true'));
-    this.armorKeychain?.update(p,typeof matchMedia!=='undefined'&&matchMedia('(prefers-reduced-motion: reduce)').matches);
+    this.lights.update(p,this.reducedMotion||(typeof document!=='undefined'&&document.documentElement.dataset.reducedMotion==='true'));
+    this.armorKeychain?.update(p,this.reducedMotion);
     // A recovered/mounted pose must not inherit a previous fall's body or wheel
     // displacement, including when a paused preview supplies a partial pose.
     if(p.crashBlend<=0){

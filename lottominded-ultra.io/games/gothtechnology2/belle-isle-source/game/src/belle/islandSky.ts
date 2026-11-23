@@ -1,10 +1,13 @@
+import {REFERENCE_STYLE} from './sunsetReferencePolicy.ts';
 import {VolumetricSky,skyRadiance} from './volumetricSky.ts';
 import {dressDetroitSkyline} from './skylineMaterials.ts';
+import {boundedSkyProbe} from './skyProbe.ts';
 
 import * as T from 'three';
+import {directionalShadowResolution,islandRenderOrder,softwareWebGLRenderer,type WorldPerformanceTier} from './worldPerformancePolicy.ts';
 import {yieldStartupTask} from './startupWork.ts';
 import {BroaderPresentation} from './broaderPresentation.ts';
-import {tracedSkyEnabled} from './presentationPolicy.ts';
+import {defaultTracedSky,tracedSkyEnabled} from './presentationPolicy.ts';
 import {sunsetPhotoGrade,photoShadowExtent} from './photoReferenceGrade.ts';
 import {livingSkyFragment,cloudLightFactor} from './skyAtmosphere.ts';
 import {SkyLife} from './skyLife.ts';
@@ -123,14 +126,25 @@ export async function createIslandSky(scene:T.Scene,renderer:T.WebGLRenderer,sta
  let settings=normalizeSky(null);try{settings=normalizeSky(JSON.parse(localStorage.getItem('belle-isle-sky-v1')||'null'));}catch{/* defaults */}
  let skyFrame=0,lastVolumeFrame=-1;let titlePreview=false,previewIndex=0;let hour=settings.hour,cloudClock=0,skyClock=0,reduceMotion=false,shadowQuality=true,quality='automatic';
  const uniforms={volumeRadiance:skyRadiance.texture,volumeReady:skyRadiance.ready,startupRipples:{value:0},startupSunset:{value:0},zenith:{value:new T.Color()},horizon:{value:new T.Color()},warm:{value:new T.Color()},cloudColor:{value:new T.Color()},sunColor:{value:new T.Color()},sunDirection:{value:new T.Vector3()},moonDirection:{value:new T.Vector3()},meteorHead:{value:new T.Vector3()},meteorTail:{value:new T.Vector3()},meteorOpacity:{value:0},cloudNoise:{value:cloudTexture()},cloudTime:{value:0},coverage:{value:0},density:{value:0},stretch:{value:1},cloudScale:{value:1},overcast:{value:0},daylight:{value:1},night:{value:0}};
- const sky=new T.Mesh(new T.SphereGeometry(1,32,16),new T.ShaderMaterial({uniforms,side:T.BackSide,depthWrite:false,depthTest:false,vertexShader:'varying vec3 skyDirection;void main(){skyDirection=position;vec4 p=projectionMatrix*modelViewMatrix*vec4(position,1.);gl_Position=p.xyww;}',fragmentShader:livingSkyFragment(fragment)}));sky.name='Belle Isle changing sky';sky.scale.setScalar(9000);sky.frustumCulled=false;sky.renderOrder=-100;scene.add(sky);scene.background=null;
+ const sky=new T.Mesh(new T.SphereGeometry(1,32,16),new T.ShaderMaterial({uniforms,side:T.BackSide,depthWrite:false,depthFunc:T.LessEqualDepth,vertexShader:'varying vec3 skyDirection;void main(){skyDirection=position;vec4 p=projectionMatrix*modelViewMatrix*vec4(position,1.);gl_Position=p.xyww;}',fragmentShader:livingSkyFragment(fragment)}));sky.material.toneMapped=true;sky.name='Belle Isle changing sky';sky.scale.setScalar(9000);sky.frustumCulled=false;sky.renderOrder=islandRenderOrder.sky;scene.add(sky);scene.background=null;
 
- const hemi=new T.HemisphereLight(0xd5e8f8,0x63513a,1.3),key=new T.DirectionalLight(0xffdfb0,2.1);key.castShadow=true;key.shadow.mapSize.set(2048,2048);Object.assign(key.shadow.camera,{left:-55,right:55,top:55,bottom:-55,near:.1,far:450});key.shadow.bias=-.0003;key.shadow.normalBias=.035;scene.add(hemi,key,key.target);scene.fog=new T.FogExp2(0xb8c4c9,.00007);
+ const hemi=new T.HemisphereLight(0xd5e8f8,0x63513a,1.3),key=new T.DirectionalLight(0xffdfb0,2.1);key.castShadow=true;key.shadow.mapSize.set(1024,1024);Object.assign(key.shadow.camera,{left:-55,right:55,top:55,bottom:-55,near:.1,far:450});key.shadow.bias=-.0003;key.shadow.normalBias=.035;scene.add(hemi,key,key.target);scene.fog=new T.FogExp2(0xb8c4c9,.00007);
  // The initial HDR remains a fallback; bounded sky-only probes follow live weather.
- try{status('Preparing sky reflections');const hdr=await new HDRLoader().setDataType(T.HalfFloatType).loadAsync('./belle/environment/kloppenheim-06-2k.hdr');hdr.mapping=T.EquirectangularReflectionMapping;const generator=new T.PMREMGenerator(renderer),probe=generator.fromEquirectangular(hdr);scene.environment=probe.texture;generator.dispose();hdr.dispose();}catch(e){console.warn('Sky reflection probe unavailable',e);}
+ try{
+  status('Preparing sky reflections');const hdr=await new HDRLoader().setDataType(T.HalfFloatType).loadAsync('./belle/environment/kloppenheim-06-2k.hdr');
+  let bounded:T.DataTexture|undefined,generator:T.PMREMGenerator|undefined;
+  try{bounded=boundedSkyProbe(hdr);generator=new T.PMREMGenerator(renderer);scene.environment=generator.fromEquirectangular(bounded).texture;}
+  finally{generator?.dispose();bounded?.dispose();hdr.dispose();}
+ }catch(e){console.warn('Sky reflection probe unavailable',e);}
+ key.userData.fixedShadowLayout=true;
  const broader=new BroaderPresentation(scene,renderer,sky.material,uniforms.cloudNoise.value);
- const volume=new VolumetricSky(renderer,scene);let tracedSelected=true;
- try{tracedSelected=localStorage.getItem('belle-sky-renderer')!=='layered';}catch{}
+ const volume=new VolumetricSky(renderer,scene);let tracedSelected=true,softwareShadow=false;
+ try{
+  const gl=renderer.getContext(),debug=gl.getExtension('WEBGL_debug_renderer_info');
+  const gpu=String(gl.getParameter(debug?debug.UNMASKED_RENDERER_WEBGL:gl.RENDERER)||'');
+  softwareShadow=softwareWebGLRenderer(gpu);
+  tracedSelected=defaultTracedSky(gpu,localStorage.getItem('belle-sky-renderer'));
+ }catch{/* Preserve cinematic default if driver detection or storage fails */}
  // Smooth avoids traced panorama GPU passes; higher modes restore saved preference.
  const applyVolumePolicy=()=>{volume.enabled=tracedSelected&&quality!=='smooth';if(!volume.enabled)skyRadiance.ready.value=0;};
  applyVolumePolicy();
@@ -142,10 +156,10 @@ export async function createIslandSky(scene:T.Scene,renderer:T.WebGLRenderer,sta
  const daylightAmbient=new T.Color('#d8e8f5');
  const eye=new T.Vector3(),lightDirection=new T.Vector3(),tempColor=new T.Color(),fogColor=new T.Color(),reflectionTint=new T.Color();
  const referenceHorizon=new T.Color('#dcded7'),referenceZenith=new T.Color('#8daec2'),referenceFog=new T.Color('#d8d4c5');
+ // Natural atmospheric colors; the anime materials elsewhere keep their own finish.
+ const referenceColors={zenith:new T.Color('#397fb5'),horizon:new T.Color('#9dbdd1'),warm:new T.Color('#eed3ae'),cloudColor:new T.Color('#e5edf3'),sunColor:new T.Color('#fff1dc')};
  const nightUniform={value:0},skyLife=new SkyLife(scene);
- function dressSkyline(root:T.Object3D){const seen=new Set<T.Material>();root.traverse(o=>{if(!(o as T.Mesh).isMesh)return;const mesh=o as T.Mesh;for(const m of(Array.isArray(mesh.material)?mesh.material:[mesh.material]) as T.MeshStandardMaterial[]){if(seen.has(m)||m.name!=='Detroit reflective blue glass')continue;seen.add(m);m.onBeforeCompile=shader=>{shader.uniforms.cityNight=nightUniform;shader.vertexShader='varying vec3 cityWorld;\n'+shader.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\ncityWorld=(modelMatrix*vec4(transformed,1.)).xyz;');shader.fragmentShader='varying vec3 cityWorld;uniform float cityNight;\n'+shader.fragmentShader.replace('#include <emissivemap_fragment>',`#include <emissivemap_fragment>
-vec2 face=abs(normal.x)>abs(normal.z)?cityWorld.zy:cityWorld.xy;vec2 cells=face/vec2(2.1,3.6);vec2 p=fract(cells);float seed=fract(sin(dot(floor(cells),vec2(12.9898,78.233)))*43758.5453);float windows=step(.7,seed)*smoothstep(.08,.19,p.x)*(1.-smoothstep(.76,.9,p.x))*smoothstep(.17,.3,p.y)*(1.-smoothstep(.68,.8,p.y));totalEmissiveRadiance+=vec3(.95,.62,.27)*windows*cityNight*1.3;
-`);};m.customProgramCacheKey=()=>'detroit-night-windows-v1';m.needsUpdate=true;}});}
+ function dressSkyline(root:T.Object3D){dressDetroitSkyline(root,nightUniform);}
  function configure(next:Partial<SkySettings>){settings=normalizeSky({...settings,hour,...next});hour=settings.hour;try{localStorage.setItem('belle-isle-sky-v1',JSON.stringify(settings));}catch{/* storage may be unavailable */}}
  function tick(seconds:number,running:boolean,reduced:boolean){skyFrame++;broader.tick(seconds,running,reduced);reduceMotion=reduced;if(running&&!reduced)skyClock+=Math.min(Math.max(seconds,0),.1);hour=advanceHour(hour,seconds,settings,running);if(running&&!reduced)cloudClock+=Math.min(Math.max(seconds,0),.1);}
  function update(camera:T.Camera,x:number,z:number){
@@ -158,18 +172,22 @@ vec2 face=abs(normal.x)>abs(normal.z)?cityWorld.zy:cityWorld.xy;vec2 cells=face/
   }
   uniforms.startupRipples.value=look?.ripples??0;uniforms.startupSunset.value=look?.sunset??(.65*(1-smooth(.04,.28,Math.abs(direction[1]))));
 
+  if(REFERENCE_STYLE&&!look){const strength=smooth(-.025,.18,direction[1])*(1-shape.overcast*.85);for(const key of ['zenith','horizon','warm','cloudColor','sunColor'] as const)uniforms[key].value.lerp(referenceColors[key],strength*.85);uniforms.startupSunset.value*=.20;}
   const lunar=moonDirection(visualHour),meteor=meteorFrame(skyClock,night,reduceMotion);uniforms.moonDirection.value.fromArray(lunar);uniforms.meteorHead.value.fromArray(meteor.head);uniforms.meteorTail.value.fromArray(meteor.tail);uniforms.meteorOpacity.value=meteor.opacity;
   uniforms.sunDirection.value.fromArray(direction);uniforms.daylight.value=day;uniforms.night.value=night;uniforms.coverage.value=shape.coverage;uniforms.density.value=shape.density;uniforms.stretch.value=shape.stretch;uniforms.cloudScale.value=shape.scale;uniforms.overcast.value=shape.overcast;uniforms.cloudTime.value=cloudClock;
   const dim=1-shape.overcast*.58;uniforms.zenith.value.lerp(tempColor.set('#6e7d8b'),shape.overcast*.3*day);uniforms.warm.value.multiplyScalar(1-shape.overcast*.23);
   hemi.color.set('#c0cad7').lerp(tempColor.copy(uniforms.horizon.value).lerp(daylightAmbient,.55),day);hemi.groundColor.set('#727b83').lerp(tempColor.set('#665d4a'),day);hemi.intensity=skyFillIntensity(day,shape.overcast)*(1-photoLook.warmth*.20);
   key.color.copy(uniforms.sunColor.value);key.intensity=.10+2.3*day*dim*smooth(-.01,.20,uniforms.sunDirection.value.y);lightDirection.copy(uniforms.sunDirection.value);if(lightDirection.y<0){lightDirection.fromArray(lunar);key.color.set('#c9dcf3');key.intensity=.72*night*(1-shape.overcast*.45);}
   key.intensity*=cloudLightFactor(cloudClock,shape.coverage,shape.overcast,day,reduceMotion)*(1+photoLook.warmth*.48);
-  skyLife.update(skyClock,day,!titlePreview&&!reduceMotion,shadowQuality);
   const extent=photoShadowExtent(eye.y),lightDistance=180+(extent-55)*1.5;
   if(key.shadow.camera.right!==extent){Object.assign(key.shadow.camera,{left:-extent,right:extent,top:extent,bottom:-extent,far:450+(extent-55)*3});key.shadow.camera.updateProjectionMatrix();}
-  key.position.set(x+lightDirection.x*lightDistance,lightDirection.y*lightDistance,z+lightDirection.z*lightDistance);key.target.position.set(x,0,z);const shadowActive=shadowQuality&&key.intensity>.12;
+  key.position.set(x+lightDirection.x*lightDistance,lightDirection.y*lightDistance,z+lightDirection.z*lightDistance);key.target.position.set(x,0,z);
+  // Keep the directional shader layout stable through dawn and dusk. A zero
+  // shadow intensity preserves the unshadowed light without rendering a map.
+  const shadowActive=shadowQuality&&key.intensity>.12;
+  if(shadowActive&&!key.shadow.autoUpdate)key.shadow.needsUpdate=true;
   key.shadow.intensity=shadowActive?1:0;key.shadow.autoUpdate=shadowActive;
-  scene.environmentIntensity=(.28+day*.31)*dim*(1-photoLook.warmth*.12);fogColor.copy(uniforms.horizon.value).lerp(uniforms.warm.value,.10*(1-day));(scene.fog as T.FogExp2).color.copy(fogColor).lerp(referenceFog,photoLook.haze*.09);(scene.fog as T.FogExp2).density=islandHazeDensity(shape.overcast,night);
+  scene.environmentIntensity=(.28+day*.31)*dim*(1-photoLook.warmth*.09);fogColor.copy(uniforms.horizon.value).lerp(uniforms.warm.value,.10*(1-day));(scene.fog as T.FogExp2).color.copy(fogColor).lerp(referenceFog,photoLook.haze*.09);(scene.fog as T.FogExp2).density=islandHazeDensity(shape.overcast,night);
   nightUniform.value=night;reflectionTint.copy(uniforms.horizon.value).lerp(uniforms.warm.value,.40*(1-smooth(.1,.65,uniforms.sunDirection.value.y))).multiplyScalar(1.8);reflectionTint.lerp(tempColor.setRGB(1,1,1),day*.25);reflectionTint.multiplyScalar(1/Math.max(.1,reflectionTint.r,reflectionTint.g,reflectionTint.b));
   // Smooth is the low-GPU tier: do not submit costly 64-step traced cloud
   // panoramas into the same GPU queue as the real starting-line frame.
@@ -178,10 +196,11 @@ vec2 face=abs(normal.x)>abs(normal.z)?cityWorld.zy:cityWorld.xy;vec2 cells=face/
   const traced=tracedSkyEnabled(volume.enabled,quality);
   if(lastVolumeFrame!==skyFrame){
    lastVolumeFrame=skyFrame;
+   skyLife.update(skyClock,day,!titlePreview&&!reduceMotion,shadowQuality);
    if(traced)volume.update({sun:uniforms.sunDirection.value,zenith:uniforms.zenith.value,horizon:uniforms.horizon.value,warm:uniforms.warm.value,sunColor:uniforms.sunColor.value,coverage:shape.coverage,density:shape.density,stretch:shape.stretch,scale:shape.scale,time:cloudClock,night});
    else skyRadiance.ready.value=0;
+   broader.update(visualHour,shape.coverage,day,shape.overcast,uniforms.sunDirection.value,quality,titlePreview,traced);
   }
-  broader.update(visualHour,shape.coverage,day,shape.overcast,uniforms.sunDirection.value,quality,titlePreview,traced);
   lighting.reflection.copy(reflectionTint);lighting.light=.12+day*.88;lighting.night=night;
   lighting.sun.copy(uniforms.sunDirection.value);lighting.glint=photoLook.glint;lighting.golden=photoLook.foliage;return lighting;
  }
@@ -191,5 +210,5 @@ vec2 face=abs(normal.x)>abs(normal.z)?cityWorld.zy:cityWorld.xy;vec2 cells=face/
   finally{titlePreview=preview;update(camera,x,z);}
 
  }
- return {prepareReflections,protectStartup:()=>broader.protectStartup(),observeFrame:(ms:number,eligible:boolean)=>broader.observeFrame(ms,eligible),preview(value:boolean){titlePreview=value;},previewShot(index:number){previewIndex=index;},get renderHour(){return titlePreview?startupSkyLook(previewIndex).hour:hour;},nightAmount:nightUniform,configure,synchronize(next:SkySettings){settings=normalizeSky(next);hour=settings.hour;},tick,update,dressSkyline,setQuality(q:string,mappedLayout=q!=='smooth'){quality=q;shadowQuality=q!=='smooth';key.castShadow=mappedLayout;applyVolumePolicy();skySelect.title=q==='smooth'?'Smooth uses layered clouds to keep GPU rendering responsive; choose Automatic or High for traced skies.':'';},get presentation(){return broader.stats;},dispose(){volume.dispose();broader.dispose();},get settings(){return {...settings,hour};},get hour(){return hour;}};
+ return {prepareReflections,protectStartup:()=>broader.protectStartup(),observeFrame:(ms:number,eligible:boolean)=>broader.observeFrame(ms,eligible),preview(value:boolean){titlePreview=value;},previewShot(index:number){previewIndex=index;},get renderHour(){return titlePreview?startupSkyLook(previewIndex).hour:hour;},nightAmount:nightUniform,configure,synchronize(next:SkySettings){settings=normalizeSky(next);hour=settings.hour;},tick,update,dressSkyline,setQuality(q:string,mappedLayout=q!=='smooth'){quality=q;shadowQuality=q!=='smooth';key.castShadow=mappedLayout;const resolution=softwareShadow?directionalShadowResolution(q as WorldPerformanceTier,true):directionalShadowResolution(q as WorldPerformanceTier);if(shadowQuality&&key.shadow.mapSize.x!==resolution){key.shadow.mapSize.set(resolution,resolution);key.shadow.map?.setSize(resolution,resolution);key.shadow.needsUpdate=true;}lastVolumeFrame=-1;applyVolumePolicy();skySelect.title=q==='smooth'?'Smooth uses layered clouds to keep GPU rendering responsive; choose Automatic or High for traced skies.':'';},get presentation(){return broader.stats;},dispose(){volume.dispose();broader.dispose();},get settings(){return {...settings,hour};},get hour(){return hour;}};
 }

@@ -1,5 +1,6 @@
 import * as T from 'three';
 import type {StreetPlan,StreetBox} from './streetPlan.ts';
+import {CURB_PROFILE} from './curbProfile.ts';
 
 // Build once from the offline plan. Group by material AND 256 m tile so the
 // renderer can discard distant detail without per-frame object traversal.
@@ -14,6 +15,7 @@ export function addStreetDetails(scene:T.Scene,plan:StreetPlan){
   tactile:new T.MeshStandardMaterial({color:0x92713f,roughness:.9})
  };
  for(const [key,material]of Object.entries(materials)){
+  const grime=key==='curb'||key==='gutter';
   material.onBeforeCompile=shader=>{
    shader.vertexShader='varying vec3 detailWorld;\n'+shader.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\ndetailWorld=(modelMatrix*vec4(transformed,1.)).xyz;');
    shader.fragmentShader='varying vec3 detailWorld;\n'+shader.fragmentShader.replace('#include <map_fragment>',`#include <map_fragment>
@@ -21,14 +23,14 @@ export function addStreetDetails(scene:T.Scene,plan:StreetPlan){
     float resolved=1.-smoothstep(.35,1.7,length(fwidth(detailWorld.xz))*85.);
     float wear=.5+.25*sin(detailWorld.x*1.7+sin(detailWorld.z*.8))+.25*sin(detailWorld.z*2.3);
     diffuseColor.rgb*=mix(.86,1.04,wear)*mix(1.,mix(.86,1.08,grain),resolved);
-    ${key==='curb'||key==='gutter'?`float grime=.92+.08*smoothstep(2.06,2.19,detailWorld.y);diffuseColor.rgb*=grime;`:''}
+    ${grime?`float grime=.92+.08*smoothstep(2.06,2.19,detailWorld.y);diffuseColor.rgb*=grime;`:''}
    `);
   };
-  material.customProgramCacheKey=()=>'street-antialiased-weather-v2-'+key;
+  material.customProgramCacheKey=()=>'street-antialiased-weather-v2-'+(grime?'grime':'plain');
  }
  const unit=new T.BoxGeometry(1,1,1).toNonIndexed();
  // Chamfer the upper edges rather than making curb runs look like sharp blocks.
- const section=new T.Shape();section.moveTo(-.5,-.5);section.lineTo(.5,-.5);section.lineTo(.5,.3);section.lineTo(.4,.5);section.lineTo(-.4,.5);section.lineTo(-.5,.3);section.closePath();
+ const section=new T.Shape();CURB_PROFILE.forEach(([x,y],i)=>i?section.lineTo(x,y):section.moveTo(x,y));section.closePath();
  const curbUnit=new T.ExtrudeGeometry(section,{depth:1,bevelEnabled:false,steps:1});curbUnit.translate(0,0,-.5);
  const groups=new Map<string,{p:number[];n:number[];m:StreetBox['material']}>();
  for(const b of plan.boxes){

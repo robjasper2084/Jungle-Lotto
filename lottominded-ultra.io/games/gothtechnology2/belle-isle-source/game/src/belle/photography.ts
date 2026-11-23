@@ -7,6 +7,8 @@ import {CameraCapture} from './cameraCapture.ts';
 import {CameraRearLcd} from './cameraRearLcd.ts';
 import {makePhotoGrip} from './photoGrip.ts';
 import {LENSES,lensFov,exposureScale} from './photoMath.ts';
+import {warmLandmarkPrograms} from './landmarkPrograms.ts';
+import {startupResource,warmObjectTextures} from './startupWork.ts';
 type Kind='static'|'heart'|'bass';
 type AudioFeed={stream:MediaStream;release:()=>void};
 export class Photography {
@@ -17,13 +19,23 @@ export class Photography {
  get active(){return this.capture.active;}
  constructor(private scene:T.Scene,private canvas:HTMLCanvasElement,hero:T.Object3D,changed:()=>void,audio:()=>AudioFeed|undefined){
   this.capture=new CameraCapture(canvas,changed,audio);this.capture.viewfinder=false;
-  this.rig.name='Hero camera and authored arms';this.rig.visible=false;scene.add(this.rig,this.carried);
+  this.rig.name='Hero camera and authored arms';this.rig.visible=false;this.carried.visible=false;scene.add(this.rig,this.carried);
   this.prepareArms(hero);
   const label=(name:string,select:HTMLSelectElement)=>{const l=document.createElement('label');l.textContent=name;l.append(select);this.capture.panel.prepend(l);};
   this.bodyChoice.setAttribute('aria-label','Camera body');for(const [value,text] of [['static','Static · Field'],['heart','Heart · Studio'],['bass','Bass · Cinema']])this.bodyChoice.add(new Option(text,value));label('CAMERA',this.bodyChoice);
   this.lensChoice.setAttribute('aria-label','Camera lens');for(const l of LENSES)this.lensChoice.add(new Option(l.name,String(l.mm)));this.lensChoice.value='35';label('LENS',this.lensChoice);
   this.bodyChoice.onchange=()=>{this.kind=this.bodyChoice.value as Kind;this.equip();};this.lensChoice.onchange=()=>{this.mm=Number(this.lensChoice.value);this.makeLens();};
   this.loadPromise=this.load().catch(e=>{console.warn('Camera equipment unavailable',e);this.bodyChoice.disabled=true;this.bodyChoice.title='Camera model unavailable; photo capture still works';});
+ }
+ async prepareCarriedCamera(renderer:T.WebGLRenderer,camera:T.Camera){
+  // The carried body can be hidden for the entire Cadillac ride until the
+  // first dismount. Warm its actual material variants under the start screen.
+  try{
+   await startupResource(this.loadPromise,15_000,'Handheld camera equipment',()=>{});
+   if(!this.carried.children.length)return;
+   await warmObjectTextures(renderer,this.carried);
+   await warmLandmarkPrograms(renderer,this.carried,camera,this.scene);
+  }catch(error){console.warn('Handheld camera could not be fully prepared.',error);}
  }
  private prepareArms(hero:T.Object3D){if(this.arms){this.arms.removeFromParent();this.armGeometry.forEach(g=>g.dispose());this.armGeometry=[];}this.actorId=hero.uuid;this.limbs=[];this.rests=[];if(hero.name==='HeroRoot'){this.bakeHoverArms(hero);return;}
   this.arms=clone(hero);this.rig.add(this.arms);this.arms.position.set(0,-1.47,0);this.arms.scale.setScalar(hero.name==='HeroRoot'?.9:1);this.arms.rotation.set(0,Math.PI,0);
@@ -46,7 +58,9 @@ export class Photography {
  close(){this.capture.stop();if(this.active)this.capture.setActive(false);}
  update(camera:T.PerspectiveCamera,available:boolean,hero:T.Object3D,now:number){
   this.capture.update(available);this.rig.visible=this.active&&!this.capture.finder;this.carried.visible=!this.active&&available&&hero.visible&&(()=>{let o:T.Object3D|null=hero;while(o){if(!o.visible)return false;o=o.parent;}return true;})();
-  if(this.carried.visible){hero.updateWorldMatrix(true,true);const hand=hero.getObjectByName('RightHand')??hero.getObjectByName('Hand_R');if(hand){this.carried.position.copy(hand.getWorldPosition(new T.Vector3()));this.carried.quaternion.copy(hero.getWorldQuaternion(new T.Quaternion()));this.carried.position.y-=.08;}else this.carried.visible=false;}
+  // These world getters refresh the hand's ancestors; unrelated bones and
+  // meshes do not need another full traversal just to place the carried camera.
+  if(this.carried.visible){const hand=hero.getObjectByName('RightHand')??hero.getObjectByName('Hand_R');if(hand){this.carried.position.copy(hand.getWorldPosition(new T.Vector3()));this.carried.quaternion.copy(hero.getWorldQuaternion(new T.Quaternion()));this.carried.position.y-=.08;}else this.carried.visible=false;}
   if(!this.active)return;
   if(hero.uuid!==this.actorId)this.prepareArms(hero);
   const frame=this.capture.frame();camera.fov=lensFov(this.mm,this.capture.zoom,this.canvas.height,this.capture.finder?frame.h:this.canvas.height);camera.updateProjectionMatrix();

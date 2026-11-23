@@ -3,6 +3,9 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import ts from 'typescript';
+import * as T from 'three';
+import {LocationPresentation} from './locationPresentation.ts';
+import {createPose,type RidePose} from '../../runtime/ride-core/src/controller.ts';
 
 const source=readFileSync(new URL('./main.ts',import.meta.url),'utf8');
 const ast=ts.createSourceFile('main.ts',source,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS);
@@ -16,11 +19,23 @@ function property(object:ts.Expression,key:string){
  const field=object.properties.find(p=>ts.isPropertyAssignment(p)&&p.name.getText(ast)===key);
  assert.ok(field&&ts.isPropertyAssignment(field));return field.initializer.getText(ast);
 }
+function declaration(name:string){
+ const found=ast.statements.flatMap(function collect(n:ts.Node):ts.FunctionDeclaration[]{return ts.isFunctionDeclaration(n)&&n.name?.text===name?[n]:n.getChildren(ast).flatMap(collect);})[0];
+ assert.ok(found?.body,'Missing function '+name);return found;
+}
+function locationTransition(){
+ const changes:ts.NewExpression[]=[];
+ const visit=(n:ts.Node)=>{if(ts.isNewExpression(n)&&n.expression.getText(ast)==='RealLocationPanel')changes.push(n);ts.forEachChild(n,visit);};visit(ast);
+ assert.equal(changes.length,1);
+ return property(changes[0].arguments![0],'onFollowChanged');
+}
 
 test('network, activity progress and saved diagnostics consume only parked simulation coordinates',()=>{
  const network=call('online.update').arguments[0];
  assert.equal(property(network,'pose'),'manualPose');
  assert.equal(property(network,'active'),'active&&!locationFollowing');
+ for(const key of ['vehicle','pilot','livery'])assert.ok(property(network,key),'Existing vehicle protocol field '+key);
+ assert.match(network.getText(ast),/hover\.vehicleTelemetry/,'Existing telemetry is preserved beside the private pose boundary');
  const activity=call('activities?.update').arguments[1];
  for(const name of ['x','y','z'])assert.equal(property(activity,name),'manualPose.'+name);
  assert.equal(property(activity,'speedMps'),'manualPose.speed');
@@ -28,27 +43,115 @@ test('network, activity progress and saved diagnostics consume only parked simul
  assert.deepEqual(profile.slice(6,9).map(a=>a.getText(ast)),['manualPose.x','manualPose.z','manualPose.speed']);
  assert.equal(profile[9].getText(ast),'profilePlace');
  assert.match(profile[10].getText(ast),/!locationFollowing/);
+ assert.equal(profile[11].getText(ast),'renderProbe?.finishFrame()');
+ assert.equal(profile[12].getText(ast),'submissionFrame');
+ const firstRide=call('firstRide.update').arguments;
+ assert.deepEqual(firstRide.slice(0,2).map(a=>a.getText(ast)),['manualPose.x','manualPose.z']);
+ assert.match(firstRide[3].getText(ast),/!locationFollowing/,'GPS does not complete the saved first-ride objective');
  assert.match(source,/if\(!locationFollowing\)profilePlace=/,'GPS-derived landmark names do not persist in a later diagnostic frame');
  assert.ok(source.indexOf('const manualPose=pose')<source.indexOf('locationPresentation.update('));
  assert.ok(source.indexOf('trials?.update(')<source.indexOf('locationPresentation.update('));
+ assert.ok(source.indexOf('const manualPose=pose')>source.indexOf('const p=cadillac.sim.pose'),'Manual pose includes the actual Cadillac before display override');
 });
 
 test('follow guard rejects every conflicting mode, pending room joins and non-walkable fixes',()=>{
- const declaration=ast.statements.flatMap(function collect(n:ts.Node):ts.FunctionDeclaration[]{return ts.isFunctionDeclaration(n)&&n.name?.text==='canFollowLocation'?[n]:n.getChildren(ast).flatMap(collect);})[0];
- assert.ok(declaration?.body);
- const body=declaration.body.getText(ast);
+ const body=declaration('canFollowLocation').body!.getText(ast);
  const context:Record<string,unknown>={locationMapMatches:true,active:true,paused:false,scenePreparing:false,
   online:{online:false,sessionActive:false},locationGroundAvailable:()=>true};
- const modes=['vr','coop','race','trials','activities','fishing','golf','slide','hover','boat','photo'];
+ const modes=['cadillac','vr','coop','race','trials','activities','fishing','golf','slide','hover','boat','photo'];
  for(const mode of modes)context[mode]={active:false,riding:false};
  const run=vm.runInNewContext('(function(fix)'+body+')',context) as (fix:{x:number;z:number})=>string|null;
  const fix={x:1200,z:400};assert.equal(run(fix),null);
  for(const mode of modes){context[mode]={active:true,riding:true};assert.equal(typeof run(fix),'string',mode);context[mode]={active:false,riding:false};}
+ context.cadillac={riding:false,exiting:true};assert.equal(typeof run(fix),'string','Cadillac exit transition');context.cadillac={riding:false,exiting:false};
  context.online={online:false,sessionActive:true};assert.match(run(fix)!,/multiplayer/);context.online={sessionActive:false};
  for(const mode of ['paused','scenePreparing']){context[mode]=true;assert.equal(typeof run(fix),'string');context[mode]=false;}
  context.active=false;assert.equal(typeof run(fix),'string');context.active=true;
  context.locationGroundAvailable=()=>false;assert.match(run(fix)!,/ground/);context.locationGroundAvailable=()=>true;
  context.locationMapMatches=false;assert.match(run(fix)!,/coordinate/);
+});
+
+test('GPS follow excludes located render probes and breaks diagnostic associations on transitions',()=>{
+ for(const name of ['renderProbe?.beginFrame','submissionProbe?.beginFrame'])assert.match(call(name).arguments[0].getText(ast),/!locationFollowing/);
+ const transition=locationTransition();
+ assert.match(transition,/rideProfile\?\.breakFrameAssociation\(\)/);
+ assert.match(transition,/renderProbe\?\.cancelFrame\(\)/);
+ assert.match(transition,/submissionProbe\?\.cancelFrame\(\)/);
+});
+
+for(const firstPerson of [false,true])test('stopping GPS restores the '+(firstPerson?'first':'third')+'-person hero and camera without another animation frame',()=>{
+ const core={
+  current:Object.assign(createPose(),{x:12,y:2,z:24,headingY:.7}),
+  renderPose:Object.assign(createPose(),{x:11.8,y:2,z:23.9,headingY:.68}),
+ };
+ const parked=structuredClone(core);
+ const root=new T.Group(),rider=new T.Group(),vehicle=new T.Group();root.add(rider,vehicle);
+ root.visible=rider.visible=!firstPerson;vehicle.visible=firstPerson;
+ const applied:RidePose[]=[];
+ const hero={root,rider,vehicle,apply(pose:RidePose){
+  applied.push(pose);root.position.set(pose.x,pose.y,pose.z);
+  // Applying a pose may change visibility; the saved view must be restored last.
+  root.visible=rider.visible=vehicle.visible=true;
+ }};
+ const camera=new T.PerspectiveCamera(63,1.7,.1,10000);
+ camera.position.set(10,4,20);camera.lookAt(15,2,30);camera.updateProjectionMatrix();
+ const saved={position:camera.position.toArray(),quaternion:camera.quaternion.toArray(),projection:camera.projectionMatrix.toArray(),fov:camera.fov,
+  rootVisible:root.visible,riderVisible:rider.visible,vehicleVisible:vehicle.visible};
+ const presentation=new LocationPresentation();
+ let following=false,restoredBeforeFollowOff=false;
+ const context:Record<string,unknown>={
+  first:firstPerson,cameraYaw:.6,cameraPitch:-.2,camera,hero,core,locationPresentation:presentation,locationSavedView:null,
+  rideProfile:{breakFrameAssociation(){}},renderProbe:{cancelFrame(){}},submissionProbe:{cancelFrame(){}},
+  document:{body:{classList:{toggle(){}}}},clear(){},release(){},syncViewLabel(){},syncTrialControls(){},
+  zone:{hidden:false},active:true,touch:{checked:true},snap:false,resetFrameClock:false,
+ };
+ Object.defineProperty(context,'locationFollowing',{get:()=>following,set:(value:boolean)=>{
+  if(!value){
+   assert.equal(applied.at(-1),core.renderPose,'The parked render pose is applied before follow is exposed as off');
+   assert.deepEqual(root.position.toArray(),[core.renderPose.x,core.renderPose.y,core.renderPose.z]);
+   assert.deepEqual(camera.position.toArray(),saved.position);
+   assert.deepEqual(camera.quaternion.toArray(),saved.quaternion);
+   assert.equal(root.visible,saved.rootVisible);assert.equal(rider.visible,saved.riderVisible);assert.equal(vehicle.visible,saved.vehicleVisible);
+   restoredBeforeFollowOff=true;
+  }
+  following=value;
+ }});
+ const transition=vm.runInNewContext('('+locationTransition()+')',context) as (following:boolean)=>void;
+ transition(true);assert.equal(following,true);
+ const gps=presentation.update({x:1200,z:400,headingY:2.2,speedMps:1.8},3,.05)!;
+ hero.apply(gps);vehicle.visible=false;
+ camera.position.set(1195,5,399);camera.lookAt(1200,4,400);camera.fov=90;camera.updateProjectionMatrix();
+
+ // Do not run a frame: pagehide or shader preparation can stop the render loop here.
+ transition(false);
+
+ assert.equal(following,false);assert.equal(restoredBeforeFollowOff,true);
+ assert.deepEqual(core,parked,'Neither entering nor leaving GPS changes simulation state');
+ assert.equal(context.first,firstPerson);assert.equal(context.cameraYaw,.6);assert.equal(context.cameraPitch,-.2);
+ assert.equal(camera.fov,saved.fov);assert.deepEqual(camera.projectionMatrix.toArray(),saved.projection);
+ const cleared=(presentation as unknown as {pose:RidePose}).pose;
+ assert.equal(cleared.x,0);assert.equal(cleared.z,0);assert.equal(cleared.footTime,0);assert.equal(cleared.footCycle,0);
+ assert.equal(cleared.headingY,core.current.headingY);assert.equal(cleared.parkX,core.current.x);assert.equal(cleared.parkZ,core.current.z);
+ assert.equal(context.snap,true);assert.equal(context.resetFrameClock,true);
+});
+
+test('GPS extent changes invalidate the existing minimap cache while ordinary jitter reuses it',()=>{
+ let backgroundRenders=0;
+ const ctx=Object.fromEntries(['clearRect','drawImage','save','translate','rotate','beginPath','moveTo','lineTo','fill','restore','fillText'].map(name=>[name,()=>{}]));
+ const context:Record<string,any>={navigation:{hidden:false},minimap:{hidden:false},opacity:{value:'.8'},cityMap:false,
+  mapFrame:{minX:-600,maxX:4100,minZ:-700,maxZ:2000},mapLayerOpacity:-1,mapLayer:{},ctx,data:{landmarks:[]},districtDestinations:[],destination:undefined,
+  online:undefined,race:undefined,activities:undefined,realLocation:{snapshot:{status:'off'},drawMap:()=>{}}};
+ context.px=(x:number)=>(x-context.mapFrame.minX)/(context.mapFrame.maxX-context.mapFrame.minX)*420;
+ context.pz=(z:number)=>(z-context.mapFrame.minZ)/(context.mapFrame.maxZ-context.mapFrame.minZ)*290;
+ context.drawMapLayer=(alpha:number)=>{backgroundRenders++;context.mapLayerOpacity=alpha;};
+ const js=ts.transpileModule('('+declaration('drawMap').getText(ast)+')',{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText;
+ const draw=vm.runInNewContext(js,context) as (x:number,z:number,heading:number)=>void;
+ draw(0,0,0);draw(0,0,0);assert.equal(backgroundRenders,1,'Ordinary map background is reused');
+ context.realLocation.snapshot={status:'tracking',fix:{x:3900,z:2100,accuracy:10}};
+ draw(0,0,0);assert.equal(backgroundRenders,2);assert.equal(context.mapFrame.maxZ,2200);
+ context.realLocation.snapshot.fix.z=2101;draw(0,0,0);assert.equal(backgroundRenders,2,'Small GPS jitter keeps the same expanded tile');
+ context.realLocation.snapshot.fix.z=2300;draw(0,0,0);assert.equal(backgroundRenders,3);assert.equal(context.mapFrame.maxZ,2400);
+ context.realLocation.snapshot={status:'off'};draw(0,0,0);assert.equal(backgroundRenders,4);assert.equal(context.mapFrame.maxZ,2000,'Stopping location restores the ordinary map viewport');
 });
 
 test('online session guard includes in-flight joins and reconnecting channels',()=>{

@@ -4,7 +4,9 @@ import {createHash} from 'node:crypto';
 import {readFile,readdir,writeFile,lstat} from 'node:fs/promises';
 import {resolve,relative,sep} from 'node:path';
 import {pathToFileURL} from 'node:url';
+import startupAssets from '../lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/startupAssets.json' with {type:'json'};
 export const GAME_PATH='lottominded-ultra.io/games/gothtechnology2/arcade/belle-isle-explorer/';
+const packedStartupPaths=new Set(startupAssets.map(path=>GAME_PATH+path+'.gz'));
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
 const shaPattern=/^[0-9a-f]{40}$/;
 function safePath(value){return typeof value==='string'&&value.startsWith(GAME_PATH)&&!value.includes('..')&&!value.includes('\\')&&!/[?#%\x00-\x20]/.test(value);}
@@ -16,7 +18,7 @@ export async function stampBelleRelease(site){
   const path=resolve(dir,entry.name),s=await lstat(path);if(s.isSymbolicLink())throw Error('Published game must not contain a symlink');
   if(s.isDirectory()){await visit(path);continue;}
   const name=relative(root,path).split(sep).join('/');
-  if(!s.isFile()||!(/\.(m?js|css)$/i.test(name)||name===GAME_PATH+'index.html'||name===GAME_PATH+'deployment-health.html'))continue;
+  if(!s.isFile()||!(/\.(m?js|css)$/i.test(name)||name===GAME_PATH+'index.html'||name===GAME_PATH+'deployment-health.html'||packedStartupPaths.has(name)||name.startsWith(GAME_PATH+'belle/vehicles/corleo/')&&/\.(glb\.gz|json)$/.test(name)))continue;
   if(!safePath(name)||s.size>32*1024*1024)throw Error('Unsafe/oversized game bundle '+name);
   const bytes=await readFile(path);files.push({path:name,bytes:bytes.length,sha256:hash(bytes)});
  }}
@@ -32,6 +34,15 @@ export async function stampBelleRelease(site){
  let js='';for(const f of files.filter(f=>f.path.endsWith('.js')))js+=await readFile(resolve(root,f.path),'utf8');
  const signatures={localCoop:js.includes('coop-open')&&js.includes('coop-overlay'),startupProfile:js.includes('__belleStartupProfile')};
  if(Object.values(signatures).some(v=>!v))throw Error('Required co-op/startup code absent from actual emitted bundles');
+ if(js.includes('Startup asset unavailable: ')){
+  for(const path of packedStartupPaths)if(!files.some(file=>file.path===path))throw Error('Packed startup asset missing: '+path);
+ }
+ if(js.includes('corleo-enter')||js.includes('corleo-actions')){
+  for(const style of ['Professional','Maverick'])for(const action of ['MOUNT','RUN','CRAWL','JUMP','DISMOUNT']){
+   const asset=GAME_PATH+'belle/vehicles/corleo/CORLEO_'+style+'_'+action+'.glb.gz';
+   if(!files.some(file=>file.path===asset))throw Error('CORLEO runtime asset missing: '+asset);
+  }
+ }
  manifest.belleGame={version:1,commit:manifest.commit,entry,files,signatures};
  await writeFile(manifestPath,JSON.stringify(manifest,null,2)+'\n');
  return manifest.belleGame;

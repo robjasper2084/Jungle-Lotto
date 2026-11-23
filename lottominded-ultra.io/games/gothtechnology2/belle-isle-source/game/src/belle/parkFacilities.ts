@@ -4,9 +4,9 @@ import {SHELTER_PROFILES} from './shelterProfiles.ts';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {facilityPlan,type FacilitySite} from './facilityPlan.ts';
 import {segment,type Point,type ParkMap} from './terrain.ts';
-export function addParkFacilities(scene:T.Scene,map:ParkMap){
+export function addParkFacilities(scene:T.Scene,map:ParkMap,multiDraw=false){
  const plan=facilityPlan(map),wood=new T.MeshStandardMaterial({color:0x6c5b40,roughness:.88}),stone=new T.MeshStandardMaterial({color:0xa3a297,roughness:.92}),roof=new T.MeshStandardMaterial({color:0x425047,roughness:.84,side:T.DoubleSide}),iron=new T.MeshStandardMaterial({color:0x303b39,metalness:.55,roughness:.52}),galvanized=new T.MeshStandardMaterial({color:0x929c98,metalness:.65,roughness:.48});
- const tiles=new Map<string,{x:number;z:number;groups:Map<T.Material,T.BufferGeometry[]>;lines:number[]}>(),batches:{object:T.Object3D;x:number;z:number}[]=[];let triangles=0;
+ const tiles=new Map<string,{x:number;z:number;groups:Map<T.Material,T.BufferGeometry[]>;lines:number[]}>(),batches:{object:T.Object3D;x:number;z:number;instance?:number}[]=[];let triangles=0;
  const tile=(x:number,z:number)=>{const key=Math.floor(x/96)+','+Math.floor(z/96);if(!tiles.has(key))tiles.set(key,{x:Math.floor(x/96)*96+48,z:Math.floor(z/96)*96+48,groups:new Map(),lines:[]});return tiles.get(key)!;};
  const add=(g:T.BufferGeometry,m:T.Material,x:number,z:number)=>{const t=tile(x,z);if(!t.groups.has(m))t.groups.set(m,[]);if(g.index){const n=g.toNonIndexed();g.dispose();g=n;}t.groups.get(m)!.push(g);};
  const box=(p:Point,y:number,w:number,h:number,d:number,yaw:number,m:T.Material)=>{const g=new T.BoxGeometry(w,h,d).rotateY(-yaw).translate(p[0],y,p[1]);add(g,m,...p);};
@@ -52,6 +52,44 @@ export function addParkFacilities(scene:T.Scene,map:ParkMap){
   if(f.style==='iron'){const count=Math.ceil(length/.22);for(let j=1;j<count;j++)box(lerp(j/count),2+f.height/2,.022,f.height,.022,0,iron);}else{const line=tile(...lerp(.5)).lines;const count=Math.ceil(length/.35),step=length/count;for(let j=0;j<count;j++){const p=lerp(j/count),q=lerp(Math.min(1,(j+1)/count));for(let y=.18;y<f.height-.12;y+=.35){const top=Math.min(f.height,y+step);line.push(p[0],2+y,p[1],q[0],2+top,q[1],p[0],2+top,p[1],q[0],2+y,q[1]);}}}
  }
  for(const g of map.facilities?.gates||[]){const n:Point=[-Math.sin(g.yaw),Math.cos(g.yaw)],d:Point=[Math.cos(g.yaw),Math.sin(g.yaw)];for(const side of [-1,1]){const a:Point=[g.p[0]+n[0]*g.width*.5*side,g.p[1]+n[1]*g.width*.5*side],b:Point=[a[0]+d[0]*2.2,a[1]+d[1]*2.2];box(a,2.6,.14,1.2,.14,0,iron);for(const h of [.3,1.05])bar(a,b,2+h,.07,.07,iron);box(b,2.67,.055,.75,.055,0,iron);for(let j=1;j<6;j++)box([a[0]+d[0]*j*.35,a[1]+d[1]*j*.35],2.67,.03,.75,.03,0,iron);}}
- for(const t of tiles.values()){for(const [material,gs]of t.groups){const g=mergeGeometries(gs)!;gs.forEach(g=>g.dispose());triangles+=g.attributes.position.count/3;const mesh=new T.Mesh(g,material);mesh.name='Mapped park facilities';mesh.castShadow=true;mesh.receiveShadow=true;scene.add(mesh);batches.push({object:mesh,x:t.x,z:t.z});}if(t.lines.length){const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(t.lines,3));const lines=new T.LineSegments(g,new T.LineBasicMaterial({color:0x777f77}));lines.name='Mapped chain-link fence';scene.add(lines);batches.push({object:lines,x:t.x,z:t.z});}}
- return{stats:{sites:map.facilities?.sites.length||0,shelters:plan.shelters.length,gates:map.facilities?.gates.length||0,fences:map.facilities?.fences.length||0,triangles},update(x:number,z:number){for(const b of batches)b.object.visible=Math.hypot(x-b.x,z-b.z)<520;}};
+ const materials=new Map<string,{material:T.Material;parts:{g:T.BufferGeometry;x:number;z:number}[]}>();
+ for(const t of tiles.values()){
+  for(const [material,gs]of t.groups){
+   const g=mergeGeometries(gs)!;gs.forEach(v=>v.dispose());triangles+=g.attributes.position.count/3;
+   if(!multiDraw){
+    const mesh=new T.Mesh(g,material);mesh.name='Mapped park facilities';mesh.castShadow=true;mesh.receiveShadow=true;
+    scene.add(mesh);batches.push({object:mesh,x:t.x,z:t.z});continue;
+   }
+   // The horizontal-only surface projection and the triplanar projection
+   // need separate shaders even when two tiles share a material.
+   const normal=g.getAttribute('normal');let planar=true;
+   for(let i=0;i<normal.count;i++)if(Math.abs(normal.getY(i))<.999){planar=false;break;}
+   const key=material.uuid+'|'+planar;let group=materials.get(key);
+   if(!group){group={material,parts:[]};materials.set(key,group);}
+   group.parts.push({g,x:t.x,z:t.z});
+  }
+  if(t.lines.length){
+   const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(t.lines,3));
+   const lines=new T.LineSegments(g,new T.LineBasicMaterial({color:0x777f77}));lines.name='Mapped chain-link fence';scene.add(lines);batches.push({object:lines,x:t.x,z:t.z});
+  }
+ }
+ for(const {material,parts} of materials.values()){
+  if(parts.length>1){
+   const vertices=parts.reduce((n,p)=>n+p.g.getAttribute('position').count,0);
+   const batch=new T.BatchedMesh(parts.length,vertices,0,material);
+   batch.name='Mapped park facilities';batch.castShadow=true;batch.receiveShadow=true;batch.sortObjects=false;
+   for(const {g,x,z} of parts){
+    g.computeBoundingBox();g.computeBoundingSphere();
+    const instance=batch.addInstance(batch.addGeometry(g));batches.push({object:batch,x,z,instance});g.dispose();
+   }
+   scene.add(batch);
+  }else for(const {g,x,z} of parts){
+   const mesh=new T.Mesh(g,material);mesh.name='Mapped park facilities';mesh.castShadow=true;mesh.receiveShadow=true;scene.add(mesh);batches.push({object:mesh,x,z});
+  }
+ }
+ return{stats:{sites:map.facilities?.sites.length||0,shelters:plan.shelters.length,gates:map.facilities?.gates.length||0,fences:map.facilities?.fences.length||0,triangles},update(x:number,z:number){
+  for(const b of batches){const visible=Math.hypot(x-b.x,z-b.z)<520;
+   if(b.instance===undefined)b.object.visible=visible;else (b.object as T.BatchedMesh).setVisibleAt(b.instance,visible);
+  }
+ }};
 }

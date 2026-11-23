@@ -1,11 +1,13 @@
 import {syncRaceRadioDock} from './rideRadioDock.ts';
 import type {CockpitRadioAction} from './cockpitRadio.ts';
+import {TrunkSpeakerBus,type TrunkSpeakerFrame} from './cadillacAudio.ts';
 import './rideMedia.css';
 type Track={name:string;url:string};
 /** Local files only. A compressor limits the music bus before output and capture. */
 export class RideRadio {
  private raceDocked=false;private menu=document.querySelector<HTMLElement>('#ride-menu nav');
  private cockpit=false;private libraryOpen=false;private details!:HTMLDetailsElement;private tracks:Track[]=[];private index=0;private player=new Audio();private context?:AudioContext;private output?:GainNode;private suspended=false;private wasPlaying=false;
+ private speaker?:TrunkSpeakerBus;private trunkFrame:TrunkSpeakerFrame|null=null;
  private root=document.createElement('section');private play=document.createElement('button');private title=document.createElement('span');private list=document.createElement('select');private volume=document.createElement('input');private status=document.createElement('span');
  constructor(private canvas:HTMLCanvasElement){
   this.root.id='ride-radio';this.root.hidden=true;this.root.setAttribute('aria-label','Ride radio');
@@ -24,7 +26,7 @@ export class RideRadio {
   window.addEventListener('pagehide',()=>this.dispose());
  }
  private syncList(){this.list.replaceChildren(...this.tracks.map((t,i)=>new Option(t.name,String(i))));this.list.value=String(this.index);this.play.disabled=!this.tracks.length;this.title.textContent=this.tracks[this.index]?.name||'Your soundtrack';}
- private async unlock(){if(!this.context){this.context=new AudioContext();const source=this.context.createMediaElementSource(this.player),compressor=this.context.createDynamicsCompressor();compressor.threshold.value=-18;compressor.knee.value=18;compressor.ratio.value=5;compressor.attack.value=.005;compressor.release.value=.25;this.output=this.context.createGain();source.connect(compressor);compressor.connect(this.output);this.output.connect(this.context.destination);this.level();}await this.context.resume();}
+ private async unlock(){if(!this.context){this.context=new AudioContext();const source=this.context.createMediaElementSource(this.player),compressor=this.context.createDynamicsCompressor();compressor.threshold.value=-18;compressor.knee.value=18;compressor.ratio.value=5;compressor.attack.value=.005;compressor.release.value=.25;this.output=this.context.createGain();this.speaker=new TrunkSpeakerBus(this.context);source.connect(compressor);compressor.connect(this.output);this.output.connect(this.speaker.input);this.speaker.output.connect(this.context.destination);this.speaker.setFrame(this.trunkFrame);this.level();}await this.context.resume();}
  private level(duck=1){if(this.context&&this.output)this.output.gain.setTargetAtTime(Number(this.volume.value)*.5*duck,this.context.currentTime,.12);}
  private async toggle(){if(!this.tracks.length)return;if(!this.player.paused){this.player.pause();return;}await this.unlock();if(!this.player.src)this.player.src=this.tracks[this.index].url;try{await this.player.play();this.status.textContent='';}catch{this.status.textContent='Press Play to start your music.';}this.canvas.focus();}
  private select(index:number,autoplay=!this.player.paused){if(!this.tracks.length)return;this.index=(index+this.tracks.length)%this.tracks.length;this.player.src=this.tracks[this.index].url;this.syncList();if(autoplay)void this.toggle();}
@@ -37,6 +39,7 @@ export class RideRadio {
   this.root.hidden=!visible||(this.cockpit&&!this.libraryOpen&&!this.raceDocked);
  }
  update(visible:boolean,paused:boolean,hazard=false,cockpit=false){this.cockpit=cockpit;this.present(visible);this.setSuspended(!visible||paused||document.hidden);this.level(hazard?.3:1);}
- capture(){if(!this.context||!this.output)return;const out=this.context.createMediaStreamDestination();this.output.connect(out);return{stream:out.stream,release:()=>{this.output?.disconnect(out);out.stream.getTracks().forEach(t=>t.stop());}};}
- dispose(){this.player.pause();this.player.removeAttribute('src');this.tracks.forEach(t=>URL.revokeObjectURL(t.url));this.tracks=[];void this.context?.close();}
+ setTrunkSpeaker(frame:TrunkSpeakerFrame|null){this.trunkFrame=frame;this.speaker?.setFrame(frame);}
+ capture(){return this.speaker?.capture();}
+ dispose(){this.player.pause();this.player.removeAttribute('src');this.tracks.forEach(t=>URL.revokeObjectURL(t.url));this.tracks=[];this.speaker?.dispose();void this.context?.close();}
 }

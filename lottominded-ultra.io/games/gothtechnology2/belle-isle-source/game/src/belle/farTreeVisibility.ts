@@ -7,6 +7,7 @@ type Stream={attribute:T.BufferAttribute;source:TypedArray};
 type Part={mesh:T.InstancedMesh;base:T.Sphere;streams:Stream[];saved:Map<T.BufferAttribute,Stream>;matrix:Stream|undefined;world:Float64Array;localBounds:LocalTreeBoundsCache};
 const FLOAT32_EPSILON=2**-23;
 const IDENTITY_WORLD=new T.Matrix4();
+type TreeShadowView={frustum:T.Frustum;margin:number};
 
 function finiteMatrix(matrix:T.Matrix4){return matrix.elements.every(Number.isFinite);}
 function affine(matrix:T.Matrix4){const e=matrix.elements;return finiteMatrix(matrix)&&e[3]===0&&e[7]===0&&e[11]===0&&e[15]===1;}
@@ -14,6 +15,52 @@ function affine(matrix:T.Matrix4){const e=matrix.elements;return finiteMatrix(ma
 // precision ulps away from 1. That is not a projective/malformed camera.
 function cameraAffine(matrix:T.Matrix4){const e=matrix.elements;return finiteMatrix(matrix)&&Math.abs(e[3])<1e-12&&Math.abs(e[7])<1e-12&&Math.abs(e[11])<1e-12&&Math.abs(e[15]-1)<1e-12;}
 function finiteSphere(sphere:T.Sphere){return Number.isFinite(sphere.center.x)&&Number.isFinite(sphere.center.y)&&Number.isFinite(sphere.center.z)&&Number.isFinite(sphere.radius)&&sphere.radius>=0;}
+function finiteFrustum(frustum:T.Frustum){
+ return frustum.planes.every(plane=>Number.isFinite(plane.constant)&&
+  Number.isFinite(plane.normal.x)&&Number.isFinite(plane.normal.y)&&Number.isFinite(plane.normal.z)&&plane.normal.lengthSq()>.5);
+}
+
+/** The view and the live directional shadow camera both use the same
+ * instance buffers. Retain the union of their conservative bounds. */
+export class TreeShadowVisibility {
+ private readonly camera=new T.OrthographicCamera();
+ private readonly projection=new T.Matrix4();
+ private readonly target=new T.Vector3();
+ private readonly view:TreeShadowView={frustum:new T.Frustum(),margin:0};
+
+ forRender(scene:T.Scene,renderer:T.WebGLRenderer,camera:T.Camera):TreeShadowView|boolean{
+  const {enabled,autoUpdate,needsUpdate,type}=renderer.shadowMap;
+  if(!enabled||!(autoUpdate||needsUpdate))return false;
+  if(type!==T.PCFShadowMap||renderer.xr.isPresenting||renderer.capabilities.reversedDepthBuffer)return true;
+
+  let sun:T.DirectionalLight|undefined;
+  let unsupported=false;
+  scene.traverseVisible(object=>{
+   const light=object as T.Light&{shadow?:T.LightShadow<T.Camera>};
+   if(!light.isLight||!light.castShadow||!light.layers.test(camera.layers))return;
+   if(!light.shadow||!(light.shadow.autoUpdate||light.shadow.needsUpdate))return;
+   if((light as T.DirectionalLight).isDirectionalLight&&!sun)sun=light as T.DirectionalLight;
+   else unsupported=true;
+  });
+  if(unsupported)return true;
+  if(!sun)return false;
+  const source=sun.shadow.camera;
+  if(!finiteMatrix(source.projectionMatrix)||!affine(sun.matrixWorld)||!affine(sun.target.matrixWorld))return true;
+
+  // Match LightShadow.updateMatrices without touching the actual shadow
+  // camera, its cached map or the renderer's scheduling flags.
+  this.camera.projectionMatrix.copy(source.projectionMatrix);
+  this.camera.up.copy(source.up);
+  this.camera.position.setFromMatrixPosition(sun.matrixWorld);
+  this.target.setFromMatrixPosition(sun.target.matrixWorld);
+  this.camera.lookAt(this.target);
+  this.camera.updateMatrixWorld(true);
+  this.projection.multiplyMatrices(this.camera.projectionMatrix,this.camera.matrixWorldInverse);
+  this.view.frustum.setFromProjectionMatrix(this.projection,source.coordinateSystem,source.reversedDepth);
+  this.view.margin=Math.max(.02,16*FLOAT32_EPSILON*(this.camera.position.length()+1));
+  return finiteFrustum(this.view.frustum)?this.view:true;
+ }
+}
 
 /** sqrt(||A||1 * ||A||infinity) bounds the largest linear stretch, including
  * shear. Matrix4.getMaxScaleOnAxis alone is not conservative for sheared parents.
@@ -45,18 +92,18 @@ function transformMagnitude(source:T.Sphere,instance:T.Matrix4,world:T.Matrix4){
  return Math.max(a(w[0])*ix+a(w[4])*iy+a(w[8])*iz+a(w[12]),a(w[1])*ix+a(w[5])*iy+a(w[9])*iz+a(w[13]),a(w[2])*ix+a(w[6])*iy+a(w[10])*iz+a(w[14]));
 }
 
-/** A render-only subset of the original distance-selected, non-shadow-casting
- * far tree pairs. capture() runs AFTER their existing selection writes all
+/** A render-only subset of the original distance-selected tree pairs.
+ * capture() runs AFTER their existing selection writes all
  * source instances. render() runs in Scene.onBeforeRender, before Three uploads
  * instance attributes, and preserves matrix/colour/fade/density in lockstep.
- * Near trees, selection radii, seasons, collision sites and draw batches stay
- * with their original owners. No per-instance allocations or uploads occur for
+ * Shadow refreshes retain casters outside the player view. No per-instance allocations or uploads occur for
  * unchanged membership; every actual view, including rotation in place, is tested.
  */
-export interface TreeBoundsCounts {requests:number; transforms:number}
-export class FarTreeVisibility {
- private readonly parts:Part[];
+export interface TreeBoundsCounts {requests:number;transforms:number}
+export class TreeInstanceVisibility {
  private readonly boundsCounts?:TreeBoundsCounts;
+ private readonly parts:Part[];
+ private readonly pool:'far'|'near';
  private readonly renderProbe?:NatureRenderProbe;
  private count=0;private shown=0;private ready=false;
  private indices=new Uint32Array(0);private bounds=new Float64Array(0);
@@ -64,12 +111,29 @@ export class FarTreeVisibility {
  private readonly projection=new T.Matrix4();private readonly frustum=new T.Frustum();
  private readonly sphere=new T.Sphere();private readonly union=new T.Sphere();
  private readonly paired=new T.Sphere();
- constructor(meshes:readonly T.InstancedMesh[],renderProbe?:NatureRenderProbe,boundsCounts?:TreeBoundsCounts){
-  this.boundsCounts=boundsCounts;this.renderProbe=renderProbe;
+ constructor(meshes:readonly T.InstancedMesh[],renderProbe?:NatureRenderProbe,pool:'far'|'near'='far',boundsCounts?:TreeBoundsCounts){
+  this.boundsCounts=boundsCounts;
+  this.renderProbe=renderProbe;this.pool=pool;
   this.parts=meshes.map(mesh=>{
    mesh.geometry.computeBoundingSphere();
-   return {mesh,base:mesh.geometry.boundingSphere!.clone(),streams:[],saved:new Map(),matrix:undefined,world:new Float64Array(16).fill(NaN),localBounds:new LocalTreeBoundsCache(mesh.instanceMatrix.count)};
+   const base=mesh.geometry.boundingSphere!.clone();
+   // Crown wind displaces local x/z by at most .12/.066 before instancing.
+   if(pool==='near'&&mesh.userData.seasonalLeaf)base.radius+=.14;
+   return {mesh,base,streams:[],saved:new Map(),matrix:undefined,world:new Float64Array(16).fill(NaN),localBounds:new LocalTreeBoundsCache(mesh.instanceMatrix.count)};
   });
+  if(pool==='near')for(const part of this.parts){
+   const mesh=part.mesh,raycast=mesh.raycast;
+   // Camera compaction is render-only. Picking and photo occlusion retain
+   // all selected sources and their original instance IDs in any direction.
+   mesh.raycast=(ray,hits)=>{
+    if(!this.ready||!part.matrix||this.count===this.shown)return raycast.call(mesh,ray,hits);
+    const display=mesh.instanceMatrix.array,count=mesh.count;
+    try{
+     mesh.instanceMatrix.array=part.matrix.source;mesh.count=this.count;
+     raycast.call(mesh,ray,hits);
+    }finally{mesh.instanceMatrix.array=display;mesh.count=count;}
+   };
+  }
  }
  get sourceCount(){return this.count;}
  get visibleCount(){return this.shown;}
@@ -77,7 +141,7 @@ export class FarTreeVisibility {
  capture(sourceIds?:ArrayLike<number>){
   this.ready=false;
   const count=this.parts[0]?.mesh.count??0;
-  if(!Number.isSafeInteger(count)||count<0||this.parts.some(({mesh})=>mesh.count!==count||mesh.castShadow||mesh.morphTexture))return;
+  if(!Number.isSafeInteger(count)||count<0||this.parts.some(({mesh})=>mesh.count!==count||(mesh.castShadow&&this.pool==='far')||mesh.morphTexture))return;
   const hasSourceIds=sourceIds!=null&&Number.isSafeInteger(sourceIds.length)&&sourceIds.length>=count;
   if(this.indices.length<count){this.indices=new Uint32Array(count);this.bounds=new Float64Array(count*4);}
   let reuseLocalBounds=true,firstPart=true;
@@ -134,7 +198,7 @@ export class FarTreeVisibility {
      }
     }
    }
-   if(valid && this.boundsCounts){this.boundsCounts.requests+=count;this.boundsCounts.transforms+=transforms;}
+   if(valid&&this.boundsCounts){this.boundsCounts.requests+=count;this.boundsCounts.transforms+=transforms;}
    if(!mesh.boundingSphere)mesh.boundingSphere=new T.Sphere();
    if(valid)mesh.boundingSphere.copy(this.union);
    else mesh.boundingSphere.set(new T.Vector3(),Infinity);
@@ -164,14 +228,14 @@ export class FarTreeVisibility {
   }
  }
 
- render(camera:T.Camera){
+ render(camera:T.Camera,shadow:TreeShadowView|boolean=false){
   // The camera LCD uses a separate layer-only overlay pass. It must not empty
   // the world buffers and force their restoration on every subsequent frame.
   if(!this.ready||!this.parts.some(({mesh})=>mesh.layers.test(camera.layers)))return this.shown;
   if(this.parts.some(part=>part.world.some((value,i)=>value!==part.mesh.matrixWorld.elements[i])))this.updateBounds();
   // XR supplies ArrayCamera here. Keep the original source set for both eyes;
   // a single-eye or inferred combined frustum could drop visible geometry.
-  let cull=!(camera as T.ArrayCamera).isArrayCamera&&cameraAffine(camera.matrixWorld)&&cameraAffine(camera.matrixWorldInverse)&&finiteMatrix(camera.projectionMatrix);
+  let cull=shadow!==true&&!(camera as T.ArrayCamera).isArrayCamera&&cameraAffine(camera.matrixWorld)&&cameraAffine(camera.matrixWorldInverse)&&finiteMatrix(camera.projectionMatrix);
   if(cull){
    const worldDet=camera.matrixWorld.determinant(),projectionDet=camera.projectionMatrix.determinant();
    cull=Number.isFinite(worldDet)&&Math.abs(worldDet)>1e-12&&Number.isFinite(projectionDet)&&Math.abs(projectionDet)>1e-12;
@@ -179,14 +243,18 @@ export class FarTreeVisibility {
   if(cull){
    this.projection.multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse);
    this.frustum.setFromProjectionMatrix(this.projection,T.WebGLCoordinateSystem,camera.reversedDepth);
-   cull=this.frustum.planes.every(plane=>Number.isFinite(plane.constant)&&Number.isFinite(plane.normal.x)&&Number.isFinite(plane.normal.y)&&Number.isFinite(plane.normal.z)&&plane.normal.lengthSq()>.5);
+   cull=finiteFrustum(this.frustum);
   }
   const e=camera.matrixWorld.elements,cameraMargin=16*FLOAT32_EPSILON*(Math.max(Math.abs(e[12]),Math.abs(e[13]),Math.abs(e[14]))+1);
+  const shadowView=typeof shadow==='object'?shadow:undefined;
   let kept=0,changed=false;
   for(let i=0;i<this.count;i++){
    const j=i*4,radius=this.bounds[j+3];
    this.sphere.center.set(this.bounds[j],this.bounds[j+1],this.bounds[j+2]);this.sphere.radius=radius+cameraMargin;
-   if(cull&&Number.isFinite(radius)&&!this.frustum.intersectsSphere(this.sphere))continue;
+   if(cull&&Number.isFinite(radius)&&!this.frustum.intersectsSphere(this.sphere)){
+    this.sphere.radius=radius+(shadowView?.margin??0);
+    if(!shadowView?.frustum.intersectsSphere(this.sphere))continue;
+   }
    if(this.indices[kept]!==i)changed=true;
    this.indices[kept++]=i;
   }
@@ -210,3 +278,5 @@ export class FarTreeVisibility {
   return this.shown;
  }
 }
+
+export {TreeInstanceVisibility as FarTreeVisibility};

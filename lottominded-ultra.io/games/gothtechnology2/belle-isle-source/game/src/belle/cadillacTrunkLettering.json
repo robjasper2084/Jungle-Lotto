@@ -1,0 +1,86 @@
+{
+  "glyphs": {
+    " ": {
+      "ha": 277.832,
+      "x_min": 0.0,
+      "x_max": 0.0,
+      "o": ""
+    },
+    "?": {
+      "ha": 610.84,
+      "x_min": 45.898,
+      "x_max": 553.223,
+      "o": "m 553.223 500.977 q 531.982 416.016 553.223 453.613 q 452.637 336.914 510.742 378.418 l 415.527 310.059 q 365.967 261.719 382.324 286.133 q 348.145 208.008 349.609 237.305 l 217.773 208.008 q 245.85 296.875 220.703 257.812 q 319.824 370.117 270.996 335.938 q 393.555 433.838 372.07 406.25 q 415.039 495.117 415.039 461.426 q 386.963 562.988 415.039 538.086 q 307.129 587.891 358.887 587.891 q 224.365 559.082 257.812 587.891 q 185.059 482.91 190.918 530.273 l 45.898 488.77 q 127.441 643.066 59.082 587.891 q 305.176 698.242 195.801 698.242 q 487.061 645.752 420.898 698.242 q 553.223 500.977 553.223 593.262 l 553.223 500.977 m 213.867 0 l 213.867 131.836 l 354.98 131.836 l 354.98 0 l 213.867 0"
+    },
+    "D": {
+      "ha": 722.168,
+      "x_min": 66.895,
+      "x_max": 680.176,
+      "o": "m 680.176 349.121 q 638.428 163.33 680.176 242.676 q 520.264 41.992 596.68 83.984 q 345.215 0 443.848 0 l 66.895 0 l 66.895 687.988 l 315.918 687.988 q 584.961 600.342 489.746 687.988 q 680.176 349.121 680.176 512.695 l 680.176 349.121 m 535.156 349.121 q 477.539 518.311 535.156 459.961 q 312.988 576.66 419.922 576.66 l 210.938 576.66 l 210.938 111.328 l 333.008 111.328 q 480.469 175.293 425.781 111.328 q 535.156 349.121 535.156 239.258 l 535.156 349.121"
+    },
+    "E": {
+      "ha": 666.992,
+      "x_min": 66.895,
+      "x_max": 627.93,
+      "o": "m 66.895 0 l 66.895 687.988 l 607.91 687.988 l 607.91 576.66 l 210.938 576.66 l 210.938 403.809 l 578.125 403.809 l 578.125 292.48 l 210.938 292.48 l 210.938 111.328 l 627.93 111.328 l 627.93 0 l 66.895 0"
+    },
+    "I": {
+      "ha": 277.832,
+      "x_min": 66.895,
+      "x_max": 210.938,
+      "o": "m 66.895 0 l 66.895 687.988 l 210.938 687.988 l 210.938 0 l 66.895 0"
+    },
+    "L": {
+      "ha": 610.84,
+      "x_min": 66.895,
+      "x_max": 580.078,
+      "o": "m 66.895 0 l 66.895 687.988 l 210.938 687.988 l 210.938 111.328 l 580.078 111.328 l 580.078 0 l 66.895 0"
+    },
+    "O": {
+      "ha": 777.832,
+      "x_min": 41.016,
+      "x_max": 735.84,
+      "o": "m 735.84 347.168 q 693.359 158.203 735.84 239.746 q 571.777 33.447 650.879 76.66 q 387.207 -9.766 492.676 -9.766 q 133.057 85.693 225.098 -9.766 q 41.016 347.168 41.016 181.152 q 132.812 605.469 41.016 512.695 q 388.184 698.242 224.609 698.242 q 643.799 604.492 551.758 698.242 q 735.84 347.168 735.84 510.742 l 735.84 347.168 m 588.867 347.168 q 536.133 521.729 588.867 458.496 q 388.184 584.961 483.398 584.961 q 238.77 522.217 291.504 584.961 q 186.035 347.168 186.035 459.473 q 239.99 168.701 186.035 233.887 q 387.207 103.516 293.945 103.516 q 536.377 166.992 483.887 103.516 q 588.867 347.168 588.867 230.469 l 588.867 347.168"
+    },
+    "R": {
+      "ha": 722.168,
+      "x_min": 66.895,
+      "x_max": 701.66,
+      "o": "m 539.551 0 l 379.883 261.23 l 210.938 261.23 l 210.938 0 l 66.895 0 l 66.895 687.988 l 410.645 687.988 q 600.586 635.01 533.691 687.988 q 667.48 482.91 667.48 582.031 q 626.465 358.154 667.48 410.645 q 515.625 289.062 585.449 305.664 l 701.66 0 l 539.551 0 m 522.461 477.051 q 395.508 576.172 522.461 576.172 l 210.938 576.172 l 210.938 373.047 l 399.414 373.047 q 491.211 400.391 459.961 373.047 q 522.461 477.051 522.461 427.734 l 522.461 477.051"
+    },
+    "T": {
+      "ha": 610.84,
+      "x_min": 11.23,
+      "x_max": 600.098,
+      "o": "m 377.441 576.66 l 377.441 0 l 233.398 0 l 233.398 576.66 l 11.23 576.66 l 11.23 687.988 l 600.098 687.988 l 600.098 576.66 l 377.441 576.66"
+    },
+    "V": {
+      "ha": 666.992,
+      "x_min": 6.836,
+      "x_max": 660.156,
+      "o": "m 407.227 0 l 261.23 0 l 6.836 687.988 l 157.227 687.988 l 298.828 246.094 q 334.961 116.211 312.012 203.125 l 345.215 158.203 l 370.117 246.094 l 511.23 687.988 l 660.156 687.988 l 407.227 0"
+    }
+  },
+  "familyName": "Detroit Trunk Lettering",
+  "ascender": 905.273,
+  "descender": -211.914,
+  "underlinePosition": -0.977,
+  "underlineThickness": 104.98,
+  "boundingBox": {
+    "yMin": -376.465,
+    "xMin": -481.934,
+    "yMax": 1033.203,
+    "xMax": 1304.199
+  },
+  "resolution": 1000,
+  "original_font_information": {
+    "copyright": "Digitized data copyright (c) 2010 Google Corporation.\nCopyright (c) 2012 Red Hat, Inc.",
+    "source_family": "Liberation Sans",
+    "source_version": "Version 2.1.5",
+    "source_filename": "LiberationSans-Bold.ttf",
+    "source_sha256": "1b5f2da6f4cadce4c05b9ecebe3a6fcd374eb95ae443605e799f4c3287978939",
+    "derivation": "Phrase-only outline subset for I LOVE DETROIT. Primary family renamed to Detroit Trunk Lettering. Coordinates normalized to 1000 units/em; original contours preserved.",
+    "license": "This Font Software is licensed under the SIL Open Font License,\nVersion 1.1.\n\nThis license is copied below, and is also available with a FAQ at:\nhttp://scripts.sil.org/OFL\n\nSIL OPEN FONT LICENSE Version 1.1 - 26 February 2007\n\nPREAMBLE The goals of the Open Font License (OFL) are to stimulate\nworldwide development of collaborative font projects, to support the font\ncreation efforts of academic and linguistic communities, and to provide\na free and open framework in which fonts may be shared and improved in\npartnership with others.\n\nThe OFL allows the licensed fonts to be used, studied, modified and\nredistributed freely as long as they are not sold by themselves.\nThe fonts, including any derivative works, can be bundled, embedded,\nredistributed and/or sold with any software provided that any reserved\nnames are not used by derivative works.  The fonts and derivatives,\nhowever, cannot be released under any other type of license.  The\nrequirement for fonts to remain under this license does not apply to\nany document created using the fonts or their derivatives.\n\n\n\nDEFINITIONS\n\"Font Software\" refers to the set of files released by the Copyright\nHolder(s) under this license and clearly marked as such.\nThis may include source files, build scripts and documentation.\n\n\"Reserved Font Name\" refers to any names specified as such after the\ncopyright statement(s).\n\n\"Original Version\" refers to the collection of Font Software components\nas distributed by the Copyright Holder(s).\n\n\"Modified Version\" refers to any derivative made by adding to, deleting,\nor substituting ? in part or in whole ?\nany of the components of the Original Version, by changing formats or\nby porting the Font Software to a new environment.\n\n\"Author\" refers to any designer, engineer, programmer, technical writer\nor other person who contributed to the Font Software.\n\n\nPERMISSION & CONDITIONS\n\nPermission is hereby granted, free of charge, to any person obtaining a\ncopy of the Font Software, to use, study, copy, merge, embed, modify,\nredistribute, and sell modified and unmodified copies of the Font\nSoftware, subject to the following conditions:\n\n1) Neither the Font Software nor any of its individual components,in\n   Original or Modified Versions, may be sold by itself.\n\n2) Original or Modified Versions of the Font Software may be bundled,\n   redistributed and/or sold with any software, provided that each copy\n   contains the above copyright notice and this license. These can be\n   included either as stand-alone text files, human-readable headers or\n   in the appropriate machine-readable metadata fields within text or\n   binary files as long as those fields can be easily viewed by the user.\n\n3) No Modified Version of the Font Software may use the Reserved Font\n   Name(s) unless explicit written permission is granted by the\n   corresponding Copyright Holder. This restriction only applies to the\n   primary font name as presented to the users.\n\n4) The name(s) of the Copyright Holder(s) or the Author(s) of the Font\n   Software shall not be used to promote, endorse or advertise any\n   Modified Version, except to acknowledge the contribution(s) of the\n   Copyright Holder(s) and the Author(s) or with their explicit written\n   permission.\n\n5) The Font Software, modified or unmodified, in part or in whole, must\n   be distributed entirely under this license, and must not be distributed\n   under any other license. The requirement for fonts to remain under\n   this license does not apply to any document created using the Font\n   Software.\n\n\n\nTERMINATION\nThis license becomes null and void if any of the above conditions are not met.\n\n\n\nDISCLAIMER\nTHE FONT SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND,\nEXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF\nMERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT\nOF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT.  IN NO EVENT SHALL THE\nCOPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,\nINCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL\nDAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING\nFROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM OTHER\nDEALINGS IN THE FONT SOFTWARE.",
+    "license_url": "http://scripts.sil.org/OFL"
+  }
+}

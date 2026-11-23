@@ -1,5 +1,7 @@
 import {DRIVE_GEARS} from '../hoverTransmission.ts';
 import {HoverController} from '../hoverController.ts';
+import {CorleoController} from '../vehicles/corleoController.ts';
+import {CORLEO_RADIUS} from '../vehicles/corleoFit.ts';
 import type {ParkTerrain} from '../terrain.ts';
 import {RideCore} from '../../../runtime/ride-core/src/ridecore.ts';
 import type {RidePose} from '../../../runtime/ride-core/src/controller.ts';
@@ -52,17 +54,24 @@ export class PairSimulation{
  private readonly grounds:TerrainSampler[];
  readonly hovers:(HoverController|undefined)[];
  readonly mounted:boolean[];
- radius(seat:number){return this.manifests[seat].vehicleId==='hoverbike'?1.3:COOP_RADIUS;}
+ braking(seat:number){return !!this.pending[seat]?.brake;}
+ radius(seat:number){return this.manifests[seat].controller==='CorleoController'?CORLEO_RADIUS:this.manifests[seat].controller!=='RideCore'?1.4:COOP_RADIUS;}
+ private spawnBlocked(x:number,z:number,radius:number,airborne:boolean){
+  // Ground footprints omit registered tree trunks and overhead flight solids.
+  // Reserve rider height plus the normal takeoff rise for flying vehicles.
+  return this.terrain.obstructed(x,z,radius)||this.terrain.raycastObstacle({x,y:this.terrain.height(x,z)+.25,z},{x:0,y:1,z:0},airborne?3.4:2.1,radius)!==null;
+ }
  constructor(terrain:CoopTerrainSource,manifests:readonly PlayerManifest[],anchor:Spawn){
   if(manifests.length<2||manifests.length>4||manifests.some((m,i)=>m.seat!==i))throw new Error('Use two to four ordered player manifests.');
   this.terrain=terrain;this.manifests=manifests;
-  const ground:Ground=(x,z)=>({height:terrain.height(x,z),land:terrain.land(x,z),blocked:terrain.obstructed(x,z,Math.max(...manifests.map(m=>m.vehicleId==='hoverbike'?1.3:COOP_RADIUS)))});
-  this.initial=findPairSpawns(anchor,ground,manifests.map((m)=>m.vehicleId==='hoverbike'?1.3:COOP_RADIUS));
+  const radius=Math.max(...manifests.map((_,i)=>this.radius(i))),airborne=manifests.some(m=>m.controller==='HoverController');
+  const ground:Ground=(x,z)=>({height:terrain.height(x,z),land:terrain.land(x,z),blocked:this.spawnBlocked(x,z,radius,airborne)});
+  this.initial=findPairSpawns(anchor,ground,manifests.map((_,i)=>this.radius(i)));
   this.snapshots=this.initial.map(p=>({x:p.x,y:p.y,z:p.z}));
   this.grounds=manifests.map((_,i)=>this.playerTerrain(i));
   this.pending=manifests.map(()=>neutral());this.mounted=manifests.map(()=>true);
-  this.hovers=manifests.map((m,i)=>m.vehicleId==='hoverbike'?new HoverController(terrain as ParkTerrain,this.initial[i],(o,d,max,half)=>{let best:number|null=null;this.snapshots.forEach((p,j)=>{if(j===i)return;const hit=peerRay(o,d,max,p,this.radius(j)+half);if(hit!==null&&(best===null||hit<best))best=hit;});return best;}):undefined);
-  for(const hover of this.hovers)hover?.setMode('classic');
+  this.hovers=manifests.map((m,i)=>m.controller!=='RideCore'?new (m.controller==='CorleoController'?CorleoController:HoverController)(terrain as ParkTerrain,this.initial[i],(o,d,max,half)=>{let best:number|null=null;this.snapshots.forEach((p,j)=>{if(j===i)return;const hit=peerRay(o,d,max,p,this.radius(j)+half);if(hit!==null&&(best===null||hit<best))best=hit;});return best;}):undefined);
+  for(const hover of this.hovers){hover?.setMode('classic');if(hover instanceof CorleoController)hover.beginMount();}
   this.actors=manifests.map((m,i)=>{
    const s=this.initial[i],core=new RideCore(this.grounds[i],{profile:riderProfile(m.riderId),spawn:{position:{x:s.x,y:s.y,z:s.z},headingY:s.heading}});
    const handling=eucProfile(m.vehicleId);if(handling)core.controller.setHandling(eucHandling(handling));
@@ -96,7 +105,7 @@ export class PairSimulation{
  recover(seat:Seat,near?:Spawn){
   const core=this.actors[seat],own=core.current;
   const anchor=near??{x:own.x,y:own.y,z:own.z,heading:own.headingY};
-  const ground:Ground=(x,z)=>({height:this.terrain.height(x,z),land:this.terrain.land(x,z),blocked:this.terrain.obstructed(x,z,this.radius(seat))||this.actors.some((a,i)=>i!==seat&&Math.hypot(x-a.current.x,z-a.current.z)<this.radius(seat)+this.radius(i)+.8)});
+  const ground:Ground=(x,z)=>({height:this.terrain.height(x,z),land:this.terrain.land(x,z),blocked:this.spawnBlocked(x,z,this.radius(seat),this.manifests[seat].controller==='HoverController')||this.actors.some((a,i)=>i!==seat&&Math.hypot(x-a.current.x,z-a.current.z)<this.radius(seat)+this.radius(i)+.8)});
   let safe:Spawn;
   try{safe=findPairSpawns(anchor,ground,[this.radius(seat)])[0];}
   catch{safe=findPairSpawns(this.initial[seat],ground,[this.radius(seat)])[0];}
@@ -124,12 +133,14 @@ export class PairSimulation{
      hover.drive.clutch=Math.max(0,Math.min(1,input.clutch??0));
      if(input.shift){const i=DRIVE_GEARS.indexOf(hover.drive.gear);hover.drive.select(DRIVE_GEARS[Math.max(0,Math.min(DRIVE_GEARS.length-1,i+Math.sign(input.shift)))],hover.landed);input.shift=0;}
      if(input.hop){if(hover.flying)hover.land();else hover.launch();}
-     if(input.interact){const exit=hover.exitPoint();if(exit){core.reset({position:{x:exit.x,y:exit.y,z:exit.z},headingY:exit.heading});core.advance(STEP,{dismount:true});this.mounted[seat]=false;}}
-     if(this.mounted[seat]){hover.advance(STEP,{throttle:input.throttle,steer:input.steer,lift:clamp(input.lift??0),brake:input.brake,clutch:input.clutch,boost:false});const p=hover.pose;for(const pose of [core.current,core.previous,core.renderPose])Object.assign(pose,{x:p.x,y:p.y,z:p.z,headingY:p.heading,speed:p.speed,footBlend:0,footMode:0,crashBlend:0});}
+     if(input.interact){if(hover instanceof CorleoController)hover.beginDismount();else{const exit=hover.exitPoint();if(exit){core.reset({position:{x:exit.x,y:exit.y,z:exit.z},headingY:exit.heading});core.advance(STEP,{dismount:true});this.mounted[seat]=false;}}}
+     if(this.mounted[seat]){hover.advance(STEP,{throttle:input.throttle,steer:input.steer,lift:clamp(input.lift??0),brake:input.brake,clutch:input.clutch,boost:hover instanceof CorleoController&&(input.lift??0)>0,crawl:(input.lift??0)<0||(input.clutch??0)>.5});const p=hover.pose;for(const pose of [core.current,core.previous,core.renderPose])Object.assign(pose,{x:p.x,y:p.y,z:p.z,headingY:p.heading,speed:p.speed,footBlend:0,footMode:0,crashBlend:0});
+      if(hover instanceof CorleoController&&hover.dismountReady){const exit=hover.exitPoint();if(exit){core.reset({position:{x:exit.x,y:exit.y,z:exit.z},headingY:exit.heading});core.advance(STEP,{dismount:true});this.mounted[seat]=false;}}
+     }
      input.hop=input.recover=input.interact=false;continue;
     }
     input.shift=0; // Never queue an on-foot gear press for the next mount.
-    if(hover&&input.interact&&this.canMountHover(seat)){this.mounted[seat]=true;core.reset({position:{x:hover.pose.x,y:hover.pose.y,z:hover.pose.z},headingY:hover.pose.heading});input.interact=false;continue;}
+    if(hover&&input.interact&&this.canMountHover(seat)){this.mounted[seat]=true;core.reset({position:{x:hover.pose.x,y:hover.pose.y,z:hover.pose.z},headingY:hover.pose.heading});if(hover instanceof CorleoController)hover.beginMount();input.interact=false;continue;}
     const braking=input.brake?(Math.abs(core.current.speed)>.15?-Math.sign(core.current.speed):0):input.throttle;
     core.advance(STEP,{throttle:braking,steer:input.steer,hop:input.hop,hopHeld:input.hop,dismount:hover?false:input.interact});
     input.hop=input.recover=input.interact=false;

@@ -19,8 +19,9 @@ export class WorldQuality {
  private detail:(quality:EnvironmentQuality,mappedLayout:boolean)=>void;
  private pixels:(ratio:number)=>void;
  private deviceRatio:()=>number;
- constructor(detail:(quality:EnvironmentQuality,mappedLayout:boolean)=>void,pixels:(ratio:number)=>void,deviceRatio=()=>devicePixelRatio){
-  this.detail=detail;this.pixels=pixels;this.deviceRatio=deviceRatio;
+ private softwareRasterizer:boolean;
+ constructor(detail:(quality:EnvironmentQuality,mappedLayout:boolean)=>void,pixels:(ratio:number)=>void,deviceRatio=()=>devicePixelRatio,softwareRasterizer=false){
+  this.detail=detail;this.pixels=pixels;this.deviceRatio=deviceRatio;this.softwareRasterizer=softwareRasterizer;
  }
  setQuality(value:string){
   this.requested=environmentQuality(value);this.effective=this.requested;this.scale=1;this.apply();
@@ -35,7 +36,9 @@ export class WorldQuality {
  }
  private apply(){
   const device=this.deviceRatio(),dpr=Number.isFinite(device)&&device>0?device:1;
-  const ratio=this.requested==='high'?Math.min(dpr,1.5):this.requested==='smooth'?1:Math.min(dpr,1.25)*this.scale;
+  // Software WebGL has a smaller internal framebuffer budget; keep all High
+  // scene materials, geometry, and shadows. Native hardware retains full DPR.
+  const ratio=this.requested==='high'?Math.min(dpr,this.softwareRasterizer?.7:1.5):this.requested==='smooth'?1:Math.min(dpr,this.softwareRasterizer?.85:1.25)*this.scale;
   if(ratio!==this.ratio){this.ratio=ratio;this.pixels(ratio);}
   // Three includes the shadow layout in every lit material's program key.
   // Automatic can suspend shadow draws without relinking the entire view.

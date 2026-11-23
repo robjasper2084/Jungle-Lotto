@@ -78,3 +78,12 @@ test('nonfinite corridor dimensions and oversized ray extents cannot hang spatia
  assert.equal(terrain.smallBridges.blocked(0,0,Infinity),false);assert.equal(terrain.smallBridges.blocked(NaN,0),false);
  assert.equal(terrain.smallBridges.ray({x:0,y:100,z:0},{x:1,y:0,z:0},1e10,.1),null);
 });
+
+test('historic Casino Way ironwork adds bounded ornament without changing crossing collisions',()=>{
+ const reference=plan.links.find(x=>x.id==='106948146');assert(reference);
+ const scene=new T.Scene(),built=addSmallBridges(scene,plan);
+ assert(built.stats.triangles<20000,'all 59 crossings must remain inside the existing budget');
+ const crossing=reference.points[0],terrainNow=new ParkTerrain(map);
+ assert.equal(terrainNow.smallBridges.blocked(crossing[0],crossing[1],.3),false);
+ built.dispose();
+});

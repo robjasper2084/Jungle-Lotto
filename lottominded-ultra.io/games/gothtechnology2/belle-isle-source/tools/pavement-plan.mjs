@@ -3,7 +3,33 @@ import {ENCLOSED_SHELTERS} from '../game/src/belle/referenceSites.ts';
 // Reconcile overlapping OSM ways into one surface before triangulation. A plaza
 // owns its footpaths; a real carriageway owns crossings. No stacked flat ribbons.
 export const surfaceKind=r=>['grass','gravel','fine_gravel','unpaved','dirt','ground','compacted','sand'].includes(r.surface)?'gravel':r.surface==='wood'?'wood':['paving_stones','sett'].includes(r.surface)?'pavers':/concrete/.test(r.surface)?'concrete':'asphalt';
+/** Visual-only corner fillets. Original OSM ways still govern physics, crossing
+ * clearance and race routes. Closed rings retain their surveyed join. */
+export function smoothCorridorPoints(points,width){
+ const clean=points.filter((p,i)=>!i||Math.hypot(p[0]-points[i-1][0],p[1]-points[i-1][1])>.001);
+ if(clean.length<3||Math.hypot(clean[0][0]-clean.at(-1)[0],clean[0][1]-clean.at(-1)[1])<.001)return clean;
+ const out=[clean[0]];
+ for(let i=1;i<clean.length-1;i++){
+  const a=clean[i-1],b=clean[i],c=clean[i+1],dx=b[0]-a[0],dz=b[1]-a[1],ex=c[0]-b[0],ez=c[1]-b[1];
+  const before=Math.hypot(dx,dz),after=Math.hypot(ex,ez);
+  if(before<.01||after<.01){out.push(b);continue;}
+  const ax=dx/before,az=dz/before,bx=ex/after,bz=ez/after,turn=Math.abs(ax*bz-az*bx),dot=ax*bx+az*bz;
+  if(turn<.4||dot<-.3){out.push(b);continue;}
+  const trim=Math.min(1.25,width*.20,before*.15,after*.15);
+  if(trim<.12){out.push(b);continue;}
+  const start=[b[0]-ax*trim,b[1]-az*trim],end=[b[0]+bx*trim,b[1]+bz*trim];
+  out.push(start);
+  for(const t of [1/3,2/3]){
+   const s=1-t;out.push([s*s*start[0]+2*s*t*b[0]+t*t*end[0],s*s*start[1]+2*s*t*b[1]+t*t*end[1]]);
+  }
+  out.push(end);
+ }
+ out.push(clean.at(-1));
+ return out;
+}
 export function corridorPolygons(points,width){
+ // Keep the proven original mapped vertices for polygon-clipping's sweep-line union.
+ // Curved render-only sampling must not subdivide boolean source boundaries.
  const clean=points.filter((p,i)=>!i||Math.hypot(p[0]-points[i-1][0],p[1]-points[i-1][1])>.001);
  if(clean.length<2)return [];
  const closed=clean.length>2&&Math.hypot(clean[0][0]-clean.at(-1)[0],clean[0][1]-clean.at(-1)[1])<.001;

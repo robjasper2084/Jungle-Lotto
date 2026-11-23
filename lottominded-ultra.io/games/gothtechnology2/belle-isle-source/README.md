@@ -101,3 +101,13 @@ The Giant Slide now has stairs on the right when facing uphill, matching the ref
 Four swans and two ducks swim near the eastern Blue Heron Lagoon viewing path. Original shared meshes and six bounded analytic routes keep them off the banks and inlet bridge. The helmet logo and back charm retain their asynchronously loaded textures during the material pass.
 
 The reference audit now covers all 124 guide destinations and distinguishes reviewed photographs from search links and uninspected ground views. This is a coverage log, not a claim that every landmark is photorealistic. See qa/ACTIVITIES_VERIFICATION_20261103.md and research/LANDMARK_AUDIT_20261103.md. Local only; timed foreground performance and physical-device checks remain deferred.
+
+## Photo-guided environmental assets and Blender workflow (draft PR #172)
+
+The active **PR #172** introduces variable riparian canopies, world-space path weathering, graded sand/mud/stone shoreline colors, route-clear riprap and low-poly collidable inland boulders. It is still a **draft staging candidate**: do not confuse these changes with the deployed PR #167 release. The separate draft PR #171 covers conservatory, curbs and other atmosphere changes; neither should overwrite the other.
+
+An additional reproducible Blender authoring pipeline is under `authoring/environment/README.md`. It pins CC0 [Poly Haven concrete](https://polyhaven.com/a/concrete_slab_wall) and [rusted metal](https://polyhaven.com/a/rust_coarse_01), records 1K texture hashes, prepares independent visual rock/bridge LOD GLBs and validates Meshopt (the compression already recognized by this game's loader). Source textures and unreviewed exports stay in ignored authoring/output directories; **no external texture or new GLB has yet been shipped to the runtime**.
+
+The new `game/scripts/environment-gallery.mjs` uses real Island Guide travel to capture four comparison viewpoints (MacArthur Bridge, wet-mesic forest/canal, provisional red-footbridge viewpoint, beach) at noon and sunset. The captures are screenshots of actual game frames, not photorealistic guarantees or physical-device FPS measurements. Google/Image Search photos remain local references only and are never copied into shipping textures without appropriate rights. Experimental shallow-water transparency and final bridge texture atlases still require visual/GPU verification before enabling them in the live game.
+
+Release gate: exact-head unit, build, time-trial, co-op, cinematic, HUD and Pages checks; matched screenshot review; then a dedicated staging release and explicit production approval.

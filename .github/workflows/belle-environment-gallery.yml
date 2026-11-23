@@ -1,0 +1,113 @@
+name: Belle Isle matched environment gallery
+
+on:
+  pull_request:
+    paths:
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/**'
+      - '.github/workflows/belle-environment-gallery.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: belle-environment-gallery-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  typecheck-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Check all project types and deterministic behavior
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm ci
+          npm run check
+          npm test
+  gallery:
+    needs: typecheck-tests
+    runs-on: ${{ matrix.device == 'desktop' && 'macos-15' || 'ubuntu-latest' }}
+    timeout-minutes: 65
+    strategy:
+      fail-fast: false
+      matrix:
+        device: [desktop, phone]
+        light: [high-noon, sunset]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Build PR candidate
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm ci
+          npm run build
+      - name: Install browser test runtime
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          if [ "$RUNNER_OS" = 'macOS' ]; then
+            npx playwright install chrome
+          else
+            npx playwright install --with-deps chromium
+          fi
+      - name: Capture four candidate sites at noon and sunset
+        timeout-minutes: 30
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          ENV_GALLERY_DEVICE: ${{ matrix.device }}
+          ENV_GALLERY_REQUIRE_METAL: ${{ matrix.device == 'desktop' && '1' || '0' }}
+          ENV_GALLERY_LIGHT: ${{ matrix.light }}
+          ENV_GALLERY_VARIANT: candidate
+        run: |
+          if [ "$RUNNER_OS" = 'macOS' ]; then
+            node scripts/environment-gallery.mjs
+          else
+            xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node scripts/environment-gallery.mjs
+          fi
+      - name: Checkout the exact unmodified base revision for comparable-source capture
+        if: always()
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha || 'main' }}
+          path: comparison-baseline
+          persist-credentials: false
+      - name: Build published-source baseline locally to avoid remote transient 503
+        if: always()
+        timeout-minutes: 30
+        working-directory: comparison-baseline/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm ci
+          npm run build
+          npm --prefix ../.. ci
+      - name: Capture real original guide locations without invented baseline controls
+        if: always()
+        timeout-minutes: 20
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          ENV_GALLERY_DEVICE: ${{ matrix.device }}
+          ENV_GALLERY_REQUIRE_METAL: ${{ matrix.device == 'desktop' && '1' || '0' }}
+          ENV_GALLERY_LIGHT: ${{ matrix.light }}
+          ENV_GALLERY_VARIANT: baseline
+          ENV_GALLERY_BASE_SHA: ${{ github.event.pull_request.base.sha || 'main' }}
+          ENV_GALLERY_BUILD_DIR: ${{ github.workspace }}/comparison-baseline/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist
+        run: |
+          if [ "$RUNNER_OS" = 'macOS' ]; then
+            node scripts/environment-gallery.mjs
+          else
+            xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node scripts/environment-gallery.mjs
+          fi
+      - name: Preserve real browser image pairs and reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-matched-environment-${{ matrix.device }}-${{ matrix.light }}
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/environment-gallery
+          if-no-files-found: warn
+          retention-days: 14

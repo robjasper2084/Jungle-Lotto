@@ -371,5 +371,749 @@
     "processing": "Selected material crops; suppressed low-frequency lighting; edge-blended repeat; 1024 color / 512 luminance-derived detail. Not measured PBR.",
     "projectConservativeSubmittedCredits": 174.5,
     "projectApprovedCredits": 200
+  },
+  "worldRefresh20261114": {
+    "provider": "Higgsfield",
+    "model": "gpt_image_2_6",
+    "quotedCredits": 29,
+    "approvedCeiling": 500,
+    "sourceCount": 29,
+    "runtimeCount": 57,
+    "colorDimensions": [
+      1024,
+      1024
+    ],
+    "detailDimensions": [
+      512,
+      512
+    ],
+    "waterDimensions": [
+      512,
+      512
+    ],
+    "previousBytes": 13125164,
+    "runtimeBytes": 14334856,
+    "pigmentGains": {
+      "asphalt": [
+        0.84579,
+        0.86145,
+        0.87081
+      ],
+      "grass": [
+        0.99618,
+        0.98924,
+        1.75023
+      ],
+      "concrete": [
+        1.01111,
+        0.9994,
+        0.98691
+      ],
+      "brick": [
+        0.93011,
+        1.02195,
+        1.11138
+      ],
+      "bark": [
+        0.91579,
+        1.02206,
+        1.15487
+      ],
+      "sand": [
+        1.01244,
+        1.05583,
+        1.13345
+      ],
+      "limestone": [
+        0.87006,
+        0.93684,
+        1.06587
+      ],
+      "wood": [
+        1.30154,
+        1.15042,
+        0.92394
+      ],
+      "metal": [
+        0.84893,
+        0.84958,
+        0.84891
+      ],
+      "rubber": [
+        1.04877,
+        1.04264,
+        1.02157
+      ],
+      "leaf": [
+        1.26263,
+        1.28106,
+        1.90604
+      ],
+      "cloth": [
+        1.00727,
+        1.00109,
+        0.98554
+      ],
+      "fur": [
+        1.49018,
+        1.07881,
+        0.66967
+      ],
+      "skin": [
+        0.8557,
+        0.76918,
+        0.65475
+      ],
+      "gravel": [
+        1.30648,
+        1.39017,
+        1.45406
+      ],
+      "roof": [
+        0.85253,
+        0.73187,
+        0.63168
+      ],
+      "marble": [
+        0.911,
+        0.90394,
+        0.88083
+      ],
+      "bronze": [
+        0.60548,
+        0.59743,
+        0.82451
+      ],
+      "copper": [
+        1.01734,
+        1.06843,
+        0.9809
+      ],
+      "ceramic": [
+        0.99554,
+        0.95578,
+        0.8829
+      ],
+      "paint": [
+        1.24109,
+        1.2073,
+        1.14568
+      ],
+      "granite": [
+        0.90776,
+        0.89966,
+        0.86859
+      ],
+      "rope": [
+        1.34821,
+        1.14917,
+        0.90796
+      ],
+      "feather": [
+        0.96981,
+        0.9783,
+        0.98503
+      ],
+      "leather": [
+        0.50234,
+        0.4988,
+        0.47556
+      ],
+      "cork": [
+        0.93403,
+        1.0212,
+        1.17137
+      ],
+      "graphite": [
+        0.8722,
+        0.8988,
+        0.88919
+      ],
+      "scales": [
+        0.91253,
+        0.91848,
+        0.91823
+      ]
+    },
+    "processing": "Blender resampling, bounded mean-pigment matching, opposite-edge blending; authored roughness and luminance-derived microheight. Water normal from wrapped height derivatives. FFmpeg WebP color quality 85; lossless data maps. No geometry changes or measured PBR claims.",
+    "sources": [
+      {
+        "name": "asphalt",
+        "index": 0,
+        "job": "3a34e5ae-8758-49ff-8caf-dadd0799bf87",
+        "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261115_001603_3a34e5ae-8758-49ff-8caf-dadd0799bf87.png",
+        "bytes": 10681587,
+        "width": 2048,
+        "height": 2048,
+        "sha256": "c001ff034dc66745a7136c7d006b96657f07636786d7c25c077448df35f517b5"
+      },
+      {
+        "name": "brick",
+        "index": 3,
+        "job": "74722ed9-0bff-42bc-90b6-a9ba3aafbf6e",
+        "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261115_001602_74722ed9-0bff-42bc-90b6-a9ba3aafbf6e.png",
+        "bytes": 9803799,
+        "width": 2048,
+        "height": 2048,
+        "sha256": "6f03b47c8151ae62fae92907cfebd8a7767bc43453e83a2a269035c3844563dc"
+      },
+      {
+        "name": "limestone",
+        "index": 6,
+        "job": "d99e5545-d095-4354-affe-c66b5f2a03c3",
+        "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261115_001602_d99e5545-d095-4354-affe-c66b5f2a03c3.png",
+        "bytes": 8896885,
+        "width": 2048,
+        "height": 2048,
+        "sha256": "e31c9f4c16b90ef2bb3ebd82918db99f3c63a09248f073c19e0a3c04081ab79f"
+      },
+      {
+        "name": "marble",
+        "index": 16,
+        "job": "a4466b1e-23b1-45d3-a430-8244e85411f1",
+        "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261115_001602_a4466b1e-23b1-45d3-a430-8244e85411f1.png",
+        "bytes": 4575558,
+        "width": 2048,
+        "height": 2048,
+        "sha256": "2bcdb8c148a3c1417529f4f926b55c25f7d2f937ab6446a4c37c7f54f81b5514"
+      },
+      {
+        "name": "graphite",
+        "index": 26,
+        "job": "3b1a5422-4c79-4b16-a4fd-b9c1042d5285",
+        "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261115_001602_3b1a5422-4c79-4b16-a4fd-b9c1042d5285.png",
+        "bytes": 6361232,
+        "width": 2048,
+        "height": 2048,
+        "sha256": "17feb58e02f4af628a364019a09add922b178ab71ba55f7e9162538a45786686"
+      },
+      {
+        "name": "water",
+        "index": 28,
+        "job": "3b7861ab-6bac-4651-bee3-82dfd1479eea",
+        "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261115_001602_3b7861ab-6bac-4651-bee3-82dfd1479eea.png",
+        "bytes": 4162080,
+        "width": 2048,
+        "height": 2048,
+        "sha256": "f7d118b538ff43e98b2448decaf633d24340e8b762ea77a2415ca3a8b2a888db"
+      },
+      {
+        "name": "grass",
+        "index": 1,
+        "job": "56c2b7fb-a62f-4652-a6f8-5f22b3feb2fa",
+        "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261115_001941_56c2b7fb-a62f-4652-a6f8-5f22b3feb2fa.png",
+        "bytes": 11087858,
+        "width": 2048,
+        "height": 2048,
+        "sha256": "5654fa176303d403b5d8351a6b7f1d839680c28338e75326de42ed44fc88f458"
+      },
+      {
+        "name": "concrete",
+        "index": 2,
+        "job": "c8aceb27-c04c-4dc0-b041-d042218f226a",
+        "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261115_001941_c8aceb27-c04c-4dc0-b041-d042218f226a.png",
+        "bytes": 9096623,
+        "width": 2048,
+        "height": 2048,
+        "sha256": "3c7ed2da866747c93e4c0f266c2f7a07d717c028d79db3b3f3beae19093ec14f"
+      },
+      {
+        "name": "bark",
+        "index": 4,
+        "job": "151fd1d0-0647-4eff-879b-4833be3fc58c",
+        "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261115_001940_151fd1d0-0647-4eff-879b-4833be3fc58c.png",
+        "bytes": 10628938,
+        "width": 2048,
+        "height": 2048,
+        "sha256": "b25f9a5be529e72d48f2af51e500b902122b2279a212beec2633c142223a5bd3"
+      },
+      {
+        "name": "sand",
+        "index": 5,
+        "job": "2d77b130-b5ed-4da3-bbc4-b99f5a1caa6d",
+        "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261115_001940_2d77b130-b5ed-4da3-bbc4-b99f5a1caa6d.png",
+        "bytes": 9634947,
+        "width": 2048,
+        "height": 2048,
+        "sha256": "902ff2a2a9083b6cc2517934cb1342d6bbbdf6d28f882a6bd6ffeb32d16d2c67"
+      },
+      {
+        "name": "wood",
+        "index": 7,
+        "job": "ce9d5c5b-da7c-452c-9c90-298b7d239299",
+        "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261115_001941_ce9d5c5b-da7c-452c-9c90-298b7d239299.png",
+        "bytes": 8745634,
+        "width": 2048,
+        "height": 2048,
+        "sha256": "92e24d32a03a4c294c96ab339b1030022730f356f38b6036a2fafa29bc8a974a"
+      },
+      {
+        "name": "metal",
+        "index": 8,
+        "job": "da744c30-a985-4cc6-a57f-750cde01465f",
+        "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261115_001941_da744c30-a985-4cc6-a57f-750cde01465f.png",
+        "bytes": 5240803,
+        "width": 2048,
+        "height": 2048,
+        "sha256": "1f0081a8113c9638293393e284c9dcc45eae6cc339f80fa2c87bf8dbf4ccca59"
+      },
+      {
+        "name": "rubber",
+        "index": 9,
+        "job": "dbea2946-dfe2-419e-9e85-d66b7361b52f",
+        "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261115_001945_dbea2946-dfe2-419e-9e85-d66b7361b52f.png",
+        "bytes": 7779149,
+        "width": 2048,
+        "height": 2048,
+        "sha256": "88d683768f209e6227203ef208d23fa242238b023f1dbebbe71d0754c52144c7"
+      },
+      {
+        "name": "leaf",
+        "index": 10,
+        "job": "0a49dffb-b047-433c-b175-cc49f96ffcc3",
+        "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261115_001946_0a49dffb-b047-433c-b175-cc49f96ffcc3.png",
+        "bytes": 8749378,
+        "width": 2048,
+        "height": 2048,
+        "sha256": "00f49ac6aff51176053f1324855c632b0f35e1f65923ca8fe0acac8ae46a5a2d"
+      },
+      {
+        "name": "cloth",
+        "index": 11,
+        "job": "f2287a2c-6168-4f98-9ec5-1b0f44d46123",
+        "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261115_001946_f2287a2c-6168-4f98-9ec5-1b0f44d46123.png",
+        "bytes": 9775775,
+        "width": 2048,
+        "height": 2048,
+        "sha256": "45fd43553adf74ba80b9859eb4fca6b3afbbe53e3811066ba596e5344ba1757f"
+      },
+      {
+        "name": "fur",
+        "index": 12,
+        "job": "09d9b013-e089-49fe-bb1e-c278807c4246",
+        "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261115_001945_09d9b013-e089-49fe-bb1e-c278807c4246.png",
+        "bytes": 11504734,
+        "width": 2048,
+        "height": 2048,
+        "sha256": "24960562c0ce14c1dd92e56f850a75303faa86a86fa5a1bd3c18f70edb1b30ac"
+      },
+      {
+        "name": "skin",
+        "index": 13,
+        "job": "9370b766-2f06-462c-8c9e-348c566338e5",
+        "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261115_001946_9370b766-2f06-462c-8c9e-348c566338e5.png",
+        "bytes": 6697069,
+        "width": 2048,
+        "height": 2048,
+        "sha256": "75914fd48211cb373e068c7fbdb9296137a984eb01713b523e3d69e9bdf0875a"
+      },
+      {
+        "name": "gravel",
+        "index": 14,
+        "job": "9dd0d6e9-fce7-4c89-9488-a6387f8b820c",
+        "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261115_001946_9dd0d6e9-fce7-4c89-9488-a6387f8b820c.png",
+        "bytes": 11120012,
+        "width": 2048,
+        "height": 2048,
+        "sha256": "6f3bc1a2c9e921fa2ea14e64bc000a84025b82a6c0104ec8bc687d2dd2b1f75f"
+      },
+      {
+        "name": "roof",
+        "index": 15,
+        "job": "c98e6add-fd1b-41f8-b942-63d324b78363",
+        "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261115_001951_c98e6add-fd1b-41f8-b942-63d324b78363.png",
+        "bytes": 8537268,
+        "width": 2048,
+        "height": 2048,
+        "sha256": "d8cbaef8ab75a638b8999095e4538e4cc9f7fe54e54797a0eecb7f9b041f3424"
+      },
+      {
+        "name": "bronze",
+        "index": 17,
+        "job": "062776be-e07b-4388-92bc-a6f5f31b990b",
+        "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261115_001951_062776be-e07b-4388-92bc-a6f5f31b990b.png",
+        "bytes": 8892242,
+        "width": 2048,
+        "height": 2048,
+        "sha256": "171ae4b264b9ecab3938cd1b45f5fc59baadee59fc180d8d5db6f0eb87f82bc1"
+      },
+      {
+        "name": "copper",
+        "index": 18,
+        "job": "440c6287-f891-4d7e-b9f3-5687d3d0e99e",
+        "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261115_001951_440c6287-f891-4d7e-b9f3-5687d3d0e99e.png",
+        "bytes": 9564916,
+        "width": 2048,
+        "height": 2048,
+        "sha256": "d797bc7aeaf602d0026b210ac92160452f3da2e74488b4cf413d160759bf9f29"
+      },
+      {
+        "name": "ceramic",
+        "index": 19,
+        "job": "61e2f7bf-7815-4c64-a527-1ad7d60fca72",
+        "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261115_001951_61e2f7bf-7815-4c64-a527-1ad7d60fca72.png",
+        "bytes": 6085801,
+        "width": 2048,
+        "height": 2048,
+        "sha256": "4867815f91b049dd419cd7067edf5776021ef979d86ae54f8b87f577c812a98b"
+      },
+      {
+        "name": "paint",
+        "index": 20,
+        "job": "6a3ad6c6-b93d-4f6a-8e57-a5659cfa5604",
+        "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261115_001950_6a3ad6c6-b93d-4f6a-8e57-a5659cfa5604.png",
+        "bytes": 6997853,
+        "width": 2048,
+        "height": 2048,
+        "sha256": "049a73d583782e9763abbeb73c6172e4dc6a57bdca7b70adf3b47ed494edd550"
+      },
+      {
+        "name": "granite",
+        "index": 21,
+        "job": "741a0146-f4a7-484b-bb42-0adab915a965",
+        "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261115_001951_741a0146-f4a7-484b-bb42-0adab915a965.png",
+        "bytes": 9627644,
+        "width": 2048,
+        "height": 2048,
+        "sha256": "2cddaa5398fdb56622d11d7b3b6bfc9fe857f25afeb574aa19d6fc66b17622c7"
+      },
+      {
+        "name": "rope",
+        "index": 22,
+        "job": "3905200c-d684-4572-9ef4-bca9f846dcc8",
+        "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261115_001958_3905200c-d684-4572-9ef4-bca9f846dcc8.png",
+        "bytes": 10271166,
+        "width": 2048,
+        "height": 2048,
+        "sha256": "6a91bee59afd25fd7226ab9d74207a75f19d7c9587e72b50c63e1ebd7ba19b04"
+      },
+      {
+        "name": "feather",
+        "index": 23,
+        "job": "df361434-bf54-4309-8a06-88c03dc2fb80",
+        "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261115_001958_df361434-bf54-4309-8a06-88c03dc2fb80.png",
+        "bytes": 12048806,
+        "width": 2048,
+        "height": 2048,
+        "sha256": "5f386ceadce9be260c0c59eb0c55e750abd49e839e15fc09bba5baf094a10e13"
+      },
+      {
+        "name": "leather",
+        "index": 24,
+        "job": "a765d787-936f-4c5e-bde5-cecb9a88a9a0",
+        "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261115_001957_a765d787-936f-4c5e-bde5-cecb9a88a9a0.png",
+        "bytes": 8571229,
+        "width": 2048,
+        "height": 2048,
+        "sha256": "7811fdbdd6c5c407cda68598b16b79e8b28eed31d5cf130cf9d91992f06d935d"
+      },
+      {
+        "name": "cork",
+        "index": 25,
+        "job": "48f92892-70e5-4d90-8ee6-78459be1baf1",
+        "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261115_001958_48f92892-70e5-4d90-8ee6-78459be1baf1.png",
+        "bytes": 9694357,
+        "width": 2048,
+        "height": 2048,
+        "sha256": "22fc5ca57e485a32cb380256d2af408ca7270dba30bdb4f949534f8300536179"
+      },
+      {
+        "name": "scales",
+        "index": 27,
+        "job": "f0349ff2-12aa-4e61-92f9-6996a0a4b45f",
+        "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261115_001957_f0349ff2-12aa-4e61-92f9-6996a0a4b45f.png",
+        "bytes": 9475747,
+        "width": 2048,
+        "height": 2048,
+        "sha256": "5453f331a32d5a81cc2f2b836cdd57dcff360fdb4fddc2615a57cc9bdf0c2350"
+      }
+    ],
+    "outputs": [
+      {
+        "file": "asphalt-color.webp",
+        "bytes": 334260,
+        "sha256": "dd455673f52a123c881a553182c241e46c8586ff5d104391d7711ab483b3c171"
+      },
+      {
+        "file": "asphalt-detail.webp",
+        "bytes": 298930,
+        "sha256": "1f550de87b7cbcb8cafd9e3efbb8cde6fc15319b289ddc6153bae6d5578c4f66"
+      },
+      {
+        "file": "grass-color.webp",
+        "bytes": 459994,
+        "sha256": "95d1a99861eea7e55f60df8f7c59a09b3eac10df890ce1759b4f02fdd8389e7b"
+      },
+      {
+        "file": "grass-detail.webp",
+        "bytes": 312280,
+        "sha256": "c17f136680b21e091bef70cce4549f0b1d0c009319df924ee0cc2082c2c4fd82"
+      },
+      {
+        "file": "concrete-color.webp",
+        "bytes": 220474,
+        "sha256": "98d145299af4054a61935ae958f37f7735ddca151a145cb2dbd220a40cc57982"
+      },
+      {
+        "file": "concrete-detail.webp",
+        "bytes": 254782,
+        "sha256": "3e097ac48c7e61466c1b6508990ae9cb4c5fd3af26b88a501f47cace402b6b8f"
+      },
+      {
+        "file": "brick-color.webp",
+        "bytes": 293134,
+        "sha256": "90575259db2fe0217d00ad84c40a6c523e914a4933c498e3e6ad621a50b2629b"
+      },
+      {
+        "file": "brick-detail.webp",
+        "bytes": 219512,
+        "sha256": "99b34781744f04ef4fdec5baf29bafd386ae2f2decf49ea6358ddf5d93576d90"
+      },
+      {
+        "file": "bark-color.webp",
+        "bytes": 382704,
+        "sha256": "7f28a38793a23fa092004ab4959effd191b6f74b402dfcd35d10c9b55e3fbca4"
+      },
+      {
+        "file": "bark-detail.webp",
+        "bytes": 312428,
+        "sha256": "df66465631c2cfc1d69fccb0dc478ca250829b491362a813fdf54019c55d5223"
+      },
+      {
+        "file": "sand-color.webp",
+        "bytes": 315726,
+        "sha256": "ca589561ae72eaf775675411e78053c668a2922722ab4ec4b8450756aa807e65"
+      },
+      {
+        "file": "sand-detail.webp",
+        "bytes": 259400,
+        "sha256": "f3a41966a9eb65e313becb08f661aa37360a1db2f59d15ffb611cb8aad23bee2"
+      },
+      {
+        "file": "limestone-color.webp",
+        "bytes": 222314,
+        "sha256": "15069b349f557ab7c9f7cb40d8e44bc10391f847f8ce1a36e479ab7cdd020043"
+      },
+      {
+        "file": "limestone-detail.webp",
+        "bytes": 255448,
+        "sha256": "36939611b5bd7133e995000943e8052a075fe3724a3a744c9de520fdebd9a55a"
+      },
+      {
+        "file": "wood-color.webp",
+        "bytes": 263138,
+        "sha256": "101c1d46f0348da1553820014f7564a38e3daa082e259910a1a00c4504836a64"
+      },
+      {
+        "file": "wood-detail.webp",
+        "bytes": 312538,
+        "sha256": "ffd9c4d599bece04fbbb6598409778dae105d415c7cfec874d44c365a9c19d33"
+      },
+      {
+        "file": "metal-color.webp",
+        "bytes": 86732,
+        "sha256": "ab600a85288ebc8174ea35c08499d81d64c0cadcf4b3550c7157b53196832218"
+      },
+      {
+        "file": "metal-detail.webp",
+        "bytes": 209384,
+        "sha256": "f2a10a13998faef414f028d3c8c90897c2de52dab5034c11351d82a1ca424f63"
+      },
+      {
+        "file": "rubber-color.webp",
+        "bytes": 150690,
+        "sha256": "6d9ff00c7db07f7f559d14abd176e5a62e706f22ee90ced5985b85b6b923b3f8"
+      },
+      {
+        "file": "rubber-detail.webp",
+        "bytes": 311722,
+        "sha256": "935d464afd1ff54f79106cade3090b2fdc5abd91d93aaffbcb5c204f5f223171"
+      },
+      {
+        "file": "leaf-color.webp",
+        "bytes": 315414,
+        "sha256": "dcc8d88b846996f6eef36f183b5273ba462d2dfa59586abfd7ff58f0c51d0eff"
+      },
+      {
+        "file": "leaf-detail.webp",
+        "bytes": 299190,
+        "sha256": "94ba8b43613ec5607e85d756c4018efc5da5dede92f01fb1e4042f6df32ceff3"
+      },
+      {
+        "file": "cloth-color.webp",
+        "bytes": 390032,
+        "sha256": "dce39cde6e20261d092fcbd59024e42b8b250826edc56a09b2fcadd6eb9aa2c5"
+      },
+      {
+        "file": "cloth-detail.webp",
+        "bytes": 307548,
+        "sha256": "c89db78278ef294eae1382bc5de4a1b59aa27048b61ba0eb43bc68b0749fbf05"
+      },
+      {
+        "file": "fur-color.webp",
+        "bytes": 365306,
+        "sha256": "b8923ebe0deb08d8db573d1761f1ab0b1b551ddd92e50f89825d329f27b69c7a"
+      },
+      {
+        "file": "fur-detail.webp",
+        "bytes": 313144,
+        "sha256": "57d6c9569eee3472a6273c99c1636cf477737eefbd27c13a6cdbc7c83c5f7efd"
+      },
+      {
+        "file": "skin-color.webp",
+        "bytes": 49680,
+        "sha256": "30354e2db7e14bc58864348a4bae5677f6c1675d5d4d864dc8dd99f95ac3cacf"
+      },
+      {
+        "file": "skin-detail.webp",
+        "bytes": 213784,
+        "sha256": "d9880e2f3a5bdb053ce17d0ada402fd53348b87dcd48bf42141769c1e97aea54"
+      },
+      {
+        "file": "gravel-color.webp",
+        "bytes": 506278,
+        "sha256": "18d4071626c8c54510b608be2bbe788522c3bd938eb919e7013ffcb479a909d6"
+      },
+      {
+        "file": "gravel-detail.webp",
+        "bytes": 239538,
+        "sha256": "478b4ed6eafbf4a23af22c634d4c5e5117513b49ee024d60887278af762237b4"
+      },
+      {
+        "file": "roof-color.webp",
+        "bytes": 141928,
+        "sha256": "1f1b5f3fc2e986c3d6213e6c12131f7ab17604785b4639f74c1c78821a585f75"
+      },
+      {
+        "file": "roof-detail.webp",
+        "bytes": 217088,
+        "sha256": "4f3922ffbb848e2f260d6c65396890013d8f66d2c2fa5be23715b76dd0ea90ef"
+      },
+      {
+        "file": "marble-color.webp",
+        "bytes": 33734,
+        "sha256": "5e4d2e22dec195f9bcd7cfe2b5985a9b3cd79269b0c7404bc6a762dbb24801c5"
+      },
+      {
+        "file": "marble-detail.webp",
+        "bytes": 213538,
+        "sha256": "bc4e1b44a47d2bf015a137cb0080c6b4ec5f761ba842d8b1691975551a1915de"
+      },
+      {
+        "file": "bronze-color.webp",
+        "bytes": 107268,
+        "sha256": "be42a82090780ab0e858ec85fbdefdab747adc53de44a0ad77b3b42ef362847f"
+      },
+      {
+        "file": "bronze-detail.webp",
+        "bytes": 243414,
+        "sha256": "1f6deea89be8a5bd787c3bdf04a945b57699712b9f8ad0c0dd97b88adfe826f7"
+      },
+      {
+        "file": "copper-color.webp",
+        "bytes": 279522,
+        "sha256": "aba6b33d9554137c444e3f17901df399dd04f67c963c9536bacca5a0efb2ee52"
+      },
+      {
+        "file": "copper-detail.webp",
+        "bytes": 256274,
+        "sha256": "79e17845254d19ea19da9d1b9b9a754ef30b6b5ef8f6d454d196e040bdf48837"
+      },
+      {
+        "file": "ceramic-color.webp",
+        "bytes": 35464,
+        "sha256": "b459d4323638f9ef832c8fcfa06b413ca5202c953a563c06b53e58be2dc15d7e"
+      },
+      {
+        "file": "ceramic-detail.webp",
+        "bytes": 201592,
+        "sha256": "b3007145f2f5d42c8d8f3dac3dc344655ffb525946e852f4653bb23c91a862de"
+      },
+      {
+        "file": "paint-color.webp",
+        "bytes": 50898,
+        "sha256": "509382cceb3470ea074cf16997196c0cc9cd123f101676a02d242ac3f9792d48"
+      },
+      {
+        "file": "paint-detail.webp",
+        "bytes": 199178,
+        "sha256": "3665a017e7707ffe15591a146ef6a9a539ed62b1c1fa5c6aa1519de77df1f30a"
+      },
+      {
+        "file": "granite-color.webp",
+        "bytes": 350988,
+        "sha256": "c1122e1e025af9e41ba00549fbc390840ebf8313b81126d74dfdb8c2aaafff6e"
+      },
+      {
+        "file": "granite-detail.webp",
+        "bytes": 231068,
+        "sha256": "07c533cf4293ea7a5fe61a550498b1bb71145ccd519feb0e44edfd20125a1416"
+      },
+      {
+        "file": "rope-color.webp",
+        "bytes": 396962,
+        "sha256": "903c5a9d9d2fa62c8bc08a2dbe0768ed4d0713206787875acada0eb11b1bc44e"
+      },
+      {
+        "file": "rope-detail.webp",
+        "bytes": 233118,
+        "sha256": "ade1a0b46d0aa8eb4fd38dd1f94257ea827fa217ce2defd706730cf2f6e6f48a"
+      },
+      {
+        "file": "feather-color.webp",
+        "bytes": 284030,
+        "sha256": "828d7dd7196a81084ac9310eb7e20b2c7e9fc723dda59cfb99eae71d1b6dce8e"
+      },
+      {
+        "file": "feather-detail.webp",
+        "bytes": 245188,
+        "sha256": "da504184c0da85a3370428ffe0b7537f6f39569e15c7a8a3929789c69ff0cefc"
+      },
+      {
+        "file": "leather-color.webp",
+        "bytes": 103574,
+        "sha256": "df48d5b9d68307e8fa1a6ccc6778960835e05fddf2c04409a7f81b20673744f1"
+      },
+      {
+        "file": "leather-detail.webp",
+        "bytes": 254400,
+        "sha256": "20a2279ccca30ecea96bafd975d8f4277bdfad6cbbfdc49f6824bf7dc85da31c"
+      },
+      {
+        "file": "cork-color.webp",
+        "bytes": 362616,
+        "sha256": "30c2024d9e65e8921bf3375a946aa605fe5ccffcaa701657385defb358923128"
+      },
+      {
+        "file": "cork-detail.webp",
+        "bytes": 301608,
+        "sha256": "8e440caa164ad37f60eade226dcfc8f9a6241df2126d029d0676aad13e832e8d"
+      },
+      {
+        "file": "graphite-color.webp",
+        "bytes": 93592,
+        "sha256": "581cef68e21cc9a6b7d9944ac5aa78b86a74f35e10be18ee93502c0f579a61e4"
+      },
+      {
+        "file": "graphite-detail.webp",
+        "bytes": 230610,
+        "sha256": "e148956fdbcd3eee923f1e79cb5ee265ad6cba1880109b24b02ca28991845227"
+      },
+      {
+        "file": "scales-color.webp",
+        "bytes": 273876,
+        "sha256": "dcd5369046569e62784b5a58435aefcd77faf6f69852535d98ed092470daa16a"
+      },
+      {
+        "file": "scales-detail.webp",
+        "bytes": 224090,
+        "sha256": "d754fe91dae75474a9b390ac5a0475bd4dfd12643f5f93e31428a0b68f0bb1f1"
+      },
+      {
+        "file": "water-normal.webp",
+        "bytes": 293734,
+        "sha256": "62574c8e014ccfa92c85cfd4a48a50921adac515998dd4dea71a3ddf6683bf6c"
+      }
+    ]
   }
 }

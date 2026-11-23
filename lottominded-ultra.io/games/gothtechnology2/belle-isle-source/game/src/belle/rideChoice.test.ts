@@ -3,3 +3,8 @@ test('fresh or corrupt ride preferences use the primary hoverbike and third-pers
 test('both vehicle and camera combinations survive saved preference restoration',()=>{for(const vehicle of ['onewheel','hoverbike'] as const)for(const camera of ['fpp','tpp'] as const){const choice={vehicle,camera};assert.deepEqual(normalizeRideChoice(JSON.parse(JSON.stringify(choice))),choice);}});
 
 test('every new visit selects hoverbike even after a saved one-wheel ride',()=>{assert.deepEqual(startupRideChoice({vehicle:'onewheel',camera:'fpp'}),{vehicle:'hoverbike',camera:'fpp'});});
+
+test('the hydraulic and silver Cadillacs remain distinct ride selections',()=>{
+ for(const vehicle of ['cadillac','hydraulic-cadillac'] as const)
+  assert.deepEqual(normalizeRideChoice({vehicle,camera:'tpp'}),{vehicle,camera:'tpp'});
+});

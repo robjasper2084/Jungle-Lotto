@@ -2,6 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {pathSamples,strokePieces,createStreetPlan,roadIndex} from './streetPlan.ts';
+import {CURB_PROFILE} from './curbProfile.ts';
+test('garden clearance includes the exact edge while street placement keeps its open boundary',()=>{
+ const road={id:'walk',width:4,points:[[0,0],[0,64]]} as Parameters<typeof roadIndex>[0][number];
+ const garden=roadIndex([road],true),street=roadIndex([road]);
+ assert.equal(garden(5.5,32,'',3.5),true);
+ assert.equal(garden(5.501,32,'',3.5),false);
+ assert.equal(street(5.5,32,'',3.5),false);
+});
 import {ParkTerrain,inside,type ParkMap} from './terrain.ts';
 test('road sample spacing continues across source segments without bunching',()=>{
  const a=pathSamples([[0,0],[0,1],[0,2],[0,18]],6);
@@ -67,4 +75,13 @@ test('closed road loops share the same offset seam without curbs crossing the ro
  const path: [number,number][]=[[0,0],[0,20],[20,20],[20,0],[0,0]];
  const all=strokePieces(path,0,80,4);assert.deepEqual(all[0].a,all.at(-1)!.b);
  assert.deepEqual(all[0].a,[4,4]);
+});
+
+test('the curb top is rounded symmetrically while maintaining unchanged height and width',()=>{
+ assert(CURB_PROFILE.length>=10);
+ assert.equal(Math.min(...CURB_PROFILE.map(p=>p[0])),-.5);
+ assert.equal(Math.max(...CURB_PROFILE.map(p=>p[0])),.5);
+ assert.equal(Math.min(...CURB_PROFILE.map(p=>p[1])),-.5);
+ assert.equal(Math.max(...CURB_PROFILE.map(p=>p[1])),.5);
+ for(const [x,y] of CURB_PROFILE)assert(CURB_PROFILE.some(([a,b])=>Math.abs(a+x)<1e-10&&Math.abs(b-y)<1e-10));
 });

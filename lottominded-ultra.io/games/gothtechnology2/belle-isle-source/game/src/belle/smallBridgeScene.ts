@@ -2,12 +2,16 @@ import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import type {SmallBridgePlan} from './smallBridges.ts';
 import {yieldStartupTask} from './startupWork.ts';
+import {CASINO_FOOTBRIDGES,casinoBridgeRail} from './casinoBridgeDetail.ts';
+import {finishBridgeMaterial} from './bridgeMaterialFinish.ts';
+import {localPerformanceProbe} from './performanceProbe.ts';
 
 /** Structural geometry never uses optional foliage/detail LOD. Fixed material
  * batches are frustum-culled by tile for BOTH solo and split-screen cameras. */
 function* buildSmallBridges(scene:T.Scene,plan:SmallBridgePlan){
  const root=new T.Group();root.name='Mapped canal bridges and raised trail links';
- const materials={woodside:new T.MeshStandardMaterial({color:0x383d3c,roughness:.7,metalness:.35}),stone:new T.MeshStandardMaterial({color:0x9e9e91,roughness:.88}),iron:new T.MeshStandardMaterial({color:0x5a4a43,roughness:.7,metalness:.25}),timber:new T.MeshStandardMaterial({color:0x74634b,roughness:.92}),brick:new T.MeshStandardMaterial({color:0x9d5e43,roughness:.93})};
+ const materials={woodside:new T.MeshStandardMaterial({color:0x383d3c,roughness:.7,metalness:.35}),stone:new T.MeshStandardMaterial({name:'Canal bridge limestone',color:0x9e9e91,roughness:.88}),red:new T.MeshStandardMaterial({name:'Casino bridge red cast iron',color:0xa72820,roughness:.54,metalness:.32,side:T.DoubleSide}),iron:new T.MeshStandardMaterial({color:0x5a4a43,roughness:.7,metalness:.25}),timber:new T.MeshStandardMaterial({color:0x74634b,roughness:.92}),brick:new T.MeshStandardMaterial({color:0x9d5e43,roughness:.93})};
+ finishBridgeMaterial(materials.stone,'aged-concrete');finishBridgeMaterial(materials.red,'weathered-red-iron');finishBridgeMaterial(materials.iron,'rusted-steel');
  materials.brick.onBeforeCompile=shader=>{
   shader.vertexShader='varying vec3 bridgePos;\n'+shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nbridgePos=position;');
   shader.fragmentShader='varying vec3 bridgePos;\n'+shader.fragmentShader.replace('#include <map_fragment>',[
@@ -27,7 +31,20 @@ function* buildSmallBridges(scene:T.Scene,plan:SmallBridgePlan){
  let partIndex=0;for(const p of plan.parts){
   if(partIndex++%8===0)yield;
   const dx=p.b[0]-p.a[0],dz=p.b[1]-p.a[1],len=Math.hypot(dx,dz),yaw=Math.atan2(dx,dz),x=(p.a[0]+p.b[0])/2,z=(p.a[1]+p.b[1])/2;
-  if(p.kind==='slab'){box(p.style==='timber'?'timber':'stone',x,(p.bottom+p.top)/2,z,p.width,p.top-p.bottom,len,yaw);continue;}
+  if(p.kind==='slab'){
+   box(p.style==='timber'?'timber':'stone',x,(p.bottom+p.top)/2,z,p.width,p.top-p.bottom,len,yaw);
+   if(CASINO_FOOTBRIDGES.has(p.id)){
+    // Under-deck red beams and short masonry abutments leave the canal open.
+    for(const side of [-1,1])box('red',x+Math.cos(yaw)*p.width*.42*side,p.bottom-.17,z-Math.sin(yaw)*p.width*.42*side,.10,.34,len,yaw);
+    for(const end of [p.a,p.b])box('stone',end[0],p.bottom-.48,end[1],p.width,.96,.7,yaw);
+   }
+   continue;
+  }
+  if(CASINO_FOOTBRIDGES.has(p.id)){
+   const key=Math.floor(x/256)+','+Math.floor(z/256)+',red';
+   if(!batches.has(key))batches.set(key,{kind:'red',geometry:[]});
+   casinoBridgeRail(p,g=>batches.get(key)!.geometry.push(g),localPerformanceProbe());continue;
+  }
   if(p.id==='42986439'){
    box('stone',x,p.bottom+.13,z,.22,.26,len,yaw);
    for(const level of [.48,.9])box('woodside',x,p.bottom+level,z,.14,.12,len,yaw);

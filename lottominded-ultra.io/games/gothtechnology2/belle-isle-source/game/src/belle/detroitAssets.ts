@@ -4,17 +4,11 @@ import {districts} from './detroitGround.ts';
 import {planDetroitProps} from './detroitProps.ts';
 import {warmLandmarkPrograms} from './landmarkPrograms.ts';
 import {warmObjectTextures} from './startupWork.ts';
+import models from './districtModelUrls.ts';
 import type {ParkTerrain,Point} from './terrain.ts';
 
 type Building=typeof districts.buildings[number];
 const loader=new GLTFLoader();
-const streets=new URL('./districtModels/street-at-sunset.glb',import.meta.url).href;
-const scenery=new URL('./districtModels/detroit-scenery.glb',import.meta.url).href;
-const landmarks:Record<string,string>={
- 'elmwood-gatehouse':new URL('./districtModels/elmwood-gatehouse.glb',import.meta.url).href,
- 'elmwood-entrance-sign':new URL('./districtModels/elmwood-entrance-sign.glb',import.meta.url).href,
- 'elmwood-chapel':new URL('./districtModels/elmwood-chapel.glb',import.meta.url).href,
-};
 type Fit={id:string;x:number;z:number;yaw:number;w:number;d:number;h:number};
 export function fitStreetBuilding(b:Building):Fit|undefined {
  const ring=b.points;let longest=0,angle=0,area=0;
@@ -102,10 +96,10 @@ export function streamDetroitArt(scene:T.Scene,renderer:T.WebGLRenderer,terrain:
   if(Math.hypot(x-lastX,z-lastZ)<16&&Math.min(...retry.values())>performance.now())return;
   lastX=x;lastZ=z;
   // Begin on the bridge between the island landing and the mainland.
-  if(x<520)load(streets,camera,prepareStreets);
-  load(scenery,camera,prepareProps);
+  if(x<520)load(models['street-at-sunset'],camera,prepareStreets);
+  load(models['detroit-scenery'],camera,prepareProps);
   for(const p of districts.models)if(Math.hypot(p.point[0]-x,p.point[1]-z)<(p.asset==='elmwood-chapel'?270:350)){
-   load(landmarks[p.asset],camera,(object,stage)=>{
+   load(models[p.asset],camera,(object,stage)=>{
     object.position.set(p.point[0],terrain.height(...p.point),p.point[1]);
     object.rotation.y=p.yaw;object.scale.setScalar(p.scale);object.name=p.asset;
     stage.add(object);

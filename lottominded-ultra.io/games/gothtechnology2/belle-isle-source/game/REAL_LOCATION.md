@@ -21,7 +21,7 @@ Location starts off on every load. Hiding the tab pauses it; returning requires 
 - `realLocationPanel.ts` owns explicit opt-in controls, status text, marker drawing and presentation smoothing. The dialog uses native buttons, labels and focus restoration. The reduced-motion option removes the panel's extra display interpolation; the location filter still suppresses sensor jitter.
 - `locationPresentation.ts` produces a separate on-foot pose. It never advances, resets or teleports `RideCore`.
 - `main.ts` parks normal simulation while following. Multiplayer messages, activity progress and ride-profile diagnostics continue to use the normal simulation pose. GPS follow is excluded from those activity and profiling paths. Camera diagnostics are withheld during follow and the original camera is restored synchronously on exit.
-- Follow is unavailable during connected or pending multiplayer sessions, local co-op, VR, races, trials, activities, fishing, golf, the slide, photography, or vehicle use. Switching modes or traveling in the game stops follow.
+- Follow is unavailable during connected or pending multiplayer sessions, local co-op, VR, races, trials, activities, fishing, golf, the slide, photography, or vehicle use, including Cadillac driving and exit transitions. Switching modes or traveling in the game stops follow.
 - Location is local to this feature. No server endpoint, analytics event, route history, friend-location sharing or geofence reward was added. The device/browser location provider still operates under its own platform permissions and policies.
 
 ## Map alignment and validation defaults
@@ -74,7 +74,15 @@ npm run build
 
 The targeted GPS tests cover projection, uncertainty, stale/future/out-of-order fixes, jump rejection, stopped and superseded callbacks, high-accuracy restarts, permission failures, hidden tabs, compass orientation, separate presentation state, pending multiplayer joins and coordinate isolation. Panel tests exercise reduced-motion behavior and stopping a compass session without a valid heading using a minimal test fixture; they are not rendered-browser tests.
 
-During preparation on 2026-11-23, TypeScript checking and all 40 initial GPS/compass/integration tests passed. The full suite ran 1,200 tests: 1,199 passed and one failed because a baseline golf fixture was absent from the sparse checkout. After restoring that existing fixture, all three tests in the affected golf file passed. All five additional panel tests passed, including reduced-motion behavior. The production build completed successfully with the existing large-chunk warning and a parent Astro-config warning from this partial checkout. No generated assets or bundles are included in the source change.
+Validation on 2026-11-23 used the current Cadillac web implementation from production commit `374b7a2e639b2727fd8f832042379020ec65136b`, merged into `upgrade-redesign`. Its Cadillac physics, hydraulics, vehicle presentation, cached minimap, first-ride objectives and expanded profiling were retained. GPS guards cover these newer paths as well. Stopping follow restores the hero and camera synchronously, even when no next animation frame runs.
+
+- Project TypeScript checking passed.
+- All **49 focused GPS, compass, panel and integration tests passed**, including reduced motion and immediate first-person/third-person restoration.
+- The larger game run reported **1,563 tests: 1,560 passed and three failed because two baseline source fixtures were absent from the partial checkout**. Restoring the existing bridge material manifest and suited-character GLB resolved these failures; all **15 tests in the three affected files passed**, including Cadillac cabin and door-clearance checks.
+- The separate asset-pack validation stage passed **11 tests**.
+- The updated production build passed, including lossless landmark and startup-asset compression. It retains the existing large-bundle warning and a parent Astro-config warning from this partial checkout.
+
+No failing check remained in the targeted reruns. The complete large suite was not repeated after those fixture restorations; the final GPS transition change was checked with the 49-test focused suite and project TypeScript check. The GPS implementation does not edit generated bundles. Existing development refinements to vegetation and shader warmup were preserved while reconciling the branch with production.
 
 **Still required before release:** rendered desktop/phone layout and keyboard checks; real GPS/compass checks on supported devices; foreground/background, permission-denied and retry checks in the deployed HTTPS context; and frame-time/battery measurements with the full island loaded. The available preview browsers could not connect to the local server in this environment. No full-scene browser performance or real-device accuracy result is claimed.
 

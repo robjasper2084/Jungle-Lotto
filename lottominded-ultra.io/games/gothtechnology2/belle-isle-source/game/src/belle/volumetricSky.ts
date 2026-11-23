@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {SKY_PROBE_WIDTH,SKY_PROBE_HEIGHT} from './skyProbe.ts';
 
 /** Shared linear radiance: water traces its reflection direction into this sky. */
 export const skyRadiance={texture:{value:null as T.Texture|null},ready:{value:0}};
@@ -81,7 +82,7 @@ export class VolumetricSky {
  private targets=[0,1].map(()=>new T.WebGLRenderTarget(2048,1024,{type:T.HalfFloatType,depthBuffer:false,stencilBuffer:false,minFilter:T.LinearFilter,magFilter:T.LinearFilter,wrapS:T.RepeatWrapping,wrapT:T.ClampToEdgeWrapping}));
  private frame=0;private row=0;private back=0;private complete=false;private lastSun=new T.Vector3();private lastCoverage=-1;
  private viewport=new T.Vector4();private scissor=new T.Vector4();
- private probeScene=new T.Scene();private probeTarget=new T.WebGLRenderTarget(512,256,{type:T.HalfFloatType,depthBuffer:false});private probeCopy:T.ShaderMaterial;private pmrem:T.PMREMGenerator;private probe?:T.WebGLRenderTarget;private lastProbe=-Infinity;
+ private probeScene=new T.Scene();private probeTarget=new T.WebGLRenderTarget(SKY_PROBE_WIDTH,SKY_PROBE_HEIGHT,{type:T.HalfFloatType,depthBuffer:false});private probeCopy:T.ShaderMaterial;private pmrem:T.PMREMGenerator;private probe?:T.WebGLRenderTarget;private lastProbe=-Infinity;
  enabled=true;
  private renderer:T.WebGLRenderer; private world:T.Scene;
  constructor(renderer:T.WebGLRenderer,world:T.Scene){this.renderer=renderer;this.world=world;
@@ -98,11 +99,15 @@ export class VolumetricSky {
   if(this.row===0){this.uniforms.sun.value.copy(frame.sun);for(const key of ['zenith','horizon','warm','sunColor'] as const)this.uniforms[key].value.copy(frame[key]);for(const key of ['coverage','density','stretch','night'] as const)this.uniforms[key].value=frame[key];this.uniforms.cloudScale.value=frame.scale;this.uniforms.cloudTime.value=frame.time;this.lastSun.copy(frame.sun);this.lastCoverage=frame.coverage;}
   const r=this.renderer,target=r.getRenderTarget(),scissorTest=r.getScissorTest(),auto=r.autoClear,xr=r.xr.enabled;r.getViewport(this.viewport);r.getScissor(this.scissor);r.xr.enabled=false;r.autoClear=false;
   try{
-   r.setRenderTarget(this.targets[this.back]);r.setViewport(0,0,2048,1024);r.setScissor(0,this.row,2048,8);r.setScissorTest(true);r.render(this.scene,this.camera);this.row+=8;
+   r.setRenderTarget(this.targets[this.back]);r.setViewport(0,0,2048,1024);// Preserve the full 2048×1024 panorama and all 64×6 lighting samples,
+   // but bound a single in-flight software-GPU submission to two rows.
+   // Desktop High at the sunset bridge otherwise stalls on the real GPU fence.
+   const stripRows=2;
+   r.setScissor(0,this.row,2048,stripRows);r.setScissorTest(true);r.render(this.scene,this.camera);this.row+=stripRows;
    if(this.row>=1024){
     this.complete=true;skyRadiance.texture.value=this.targets[this.back].texture;skyRadiance.ready.value=1;this.back=1-this.back;this.row=0;
     // Filter only a small probe, at a bounded cadence; never render the world six times.
-    const now=performance.now();if(now-this.lastProbe>5000){this.probeCopy.uniforms.source.value=skyRadiance.texture.value;r.setRenderTarget(this.probeTarget);r.setViewport(0,0,512,256);r.setScissorTest(false);r.render(this.probeScene,this.camera);this.probeTarget.texture.mapping=T.EquirectangularReflectionMapping;this.probe=this.pmrem.fromEquirectangular(this.probeTarget.texture,this.probe);this.world.environment=this.probe.texture;this.lastProbe=now;}
+    const now=performance.now();if(now-this.lastProbe>5000){this.probeCopy.uniforms.source.value=skyRadiance.texture.value;r.setRenderTarget(this.probeTarget);r.setViewport(0,0,SKY_PROBE_WIDTH,SKY_PROBE_HEIGHT);r.setScissorTest(false);r.render(this.probeScene,this.camera);this.probeTarget.texture.mapping=T.EquirectangularReflectionMapping;this.probe=this.pmrem.fromEquirectangular(this.probeTarget.texture,this.probe);this.world.environment=this.probe.texture;this.lastProbe=now;}
    }
    if(this.complete)skyRadiance.ready.value=1;
   }finally{r.setRenderTarget(target);r.setViewport(this.viewport);r.setScissor(this.scissor);r.setScissorTest(scissorTest);r.autoClear=auto;r.xr.enabled=xr;}

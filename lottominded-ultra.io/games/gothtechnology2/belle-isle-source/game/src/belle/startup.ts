@@ -9,9 +9,34 @@ export function createStartup(){
  const setup=createRideSetup(screen);
  const picker=document.createElement('details');picker.className='cinema-ride-picker';picker.innerHTML='<summary>Choose your ride &amp; view</summary>';
  const rideSetup=screen.querySelector('.ride-setup')!;rideSetup.before(picker);picker.append(rideSetup);
+ const toolbar=screen.querySelector<HTMLElement>('.cinema-top')!;
+ const fitPicker=()=>{
+  if(!picker.open)return;
+  // Compact landscape uses the title's in-flow scroller. On other screens the
+  // chooser opens upward from the title, with the flyover controls above it.
+  if(getComputedStyle(picker).position!=='absolute'){picker.style.removeProperty('max-height');return;}
+  const available=picker.getBoundingClientRect().bottom-toolbar.getBoundingClientRect().bottom-12;
+  picker.style.maxHeight=Math.max(0,Math.floor(available))+'px';
+ };
+ const resize=new ResizeObserver(fitPicker);resize.observe(screen);resize.observe(toolbar);
+ picker.addEventListener('toggle',fitPicker);
+ screen.querySelector('.cinema-title')!.addEventListener('animationend',fitPicker);
  const done=document.createElement('button');done.type='button';done.className='ride-picker-done';done.textContent='Use this ride';rideSetup.append(done);done.onclick=()=>{picker.open=false;picker.querySelector('summary')?.focus();};
  let preview:ReturnType<typeof createRidePreview>|undefined,sources:{wheel:Object3D,bike:()=>Promise<Object3D>}|undefined;
- const refreshPreview=()=>{if(picker.open&&sources&&!preview){try{preview=createRidePreview(rideSetup as HTMLElement,sources.wheel,sources.bike);}catch{rideSetup.classList.add('preview-unavailable');}}preview?.setActive(picker.open);};
+ let softwarePreview=false;
+ const refreshPreview=()=>{
+  if(softwarePreview){
+   preview?.dispose();preview=undefined;
+   // Existing accessible radio cards + authored vehicle icon SVGs remain;
+   // never allocate a second SwiftShader context for decorative 3D models.
+   rideSetup.classList.add('preview-static');
+   rideSetup.querySelectorAll('.ride-preview-slot').forEach(slot=>slot.setAttribute('data-status',''));
+   return;
+  }
+  rideSetup.classList.remove('preview-static');
+  if(picker.open&&sources&&!preview){try{preview=createRidePreview(rideSetup as HTMLElement,sources.wheel,sources.bike);rideSetup.classList.remove('preview-unavailable');}catch{rideSetup.classList.add('preview-unavailable');rideSetup.querySelectorAll('.ride-preview-slot').forEach(slot=>slot.setAttribute('data-status','Preview unavailable'));}}
+  preview?.setActive(picker.open);
+ };
  picker.addEventListener('toggle',refreshPreview);
  const indicators=screen.querySelector('.cinema-views')!;indicators.innerHTML=FLYOVER_SHOTS.map((_,i)=>'<i'+(i===0?' class="is-current"':'')+'></i>').join('');
  const friends=document.getElementById('welcome-friends') as HTMLButtonElement;let friendsDisabled=true;
@@ -60,6 +85,7 @@ export function createStartup(){
  return {
   get choice(){return setup.choice;},
   bindVehicles(wheel:Object3D,bike:()=>Promise<Object3D>){sources={wheel,bike};refreshPreview();},
+  setSoftwarePreview(value:boolean){softwarePreview=value;refreshPreview();},
   setCamera:setup.setCamera,
   preparing(){friendsDisabled=friends.disabled;friends.disabled=true;setup.disable(true);start.disabled=true;label.textContent='Preparing '+setup.name.toLowerCase()+'…';loading.textContent='Getting your selected ride ready.';},
   retryRide(message:string){friends.disabled=friendsDisabled;setup.disable(false);start.disabled=false;label.textContent='Try starting again';loading.textContent=message;},

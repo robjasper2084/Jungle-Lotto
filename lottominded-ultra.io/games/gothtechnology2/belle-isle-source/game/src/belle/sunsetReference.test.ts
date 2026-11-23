@@ -6,6 +6,7 @@ import {makeSunsetCanopy,canopyTint,SUNSET_CANOPY_LIMIT} from './sunsetCanopy.ts
 import {makeNaturePlan,natureBudget,type NaturePlan} from './naturePlan.ts';
 import {ParkTerrain,inside,segment,type ParkMap} from './terrain.ts';
 import {photoShadowExtent,sunsetPhotoGrade} from './photoReferenceGrade.ts';
+import {directionalShadowResolution} from './worldPerformancePolicy.ts';
 import {createWater} from './water.ts';
 import {connectSkySettings} from './skySettings.ts';
 import type {SkySettings} from './skyModel.ts';
@@ -78,7 +79,11 @@ test('aerial shadows widen gradually without increasing texture resolution or af
  assert.equal(photoShadowExtent(1e6),170);
  let previous=55;for(let y=0;y<250;y+=.1){const v=photoShadowExtent(y);assert(v>=previous&&v<=170);previous=v;}
  const source=readFileSync(new URL('./islandSky.ts',import.meta.url),'utf8');
- assert(source.includes('key.shadow.mapSize.set(2048,2048)'));
+ assert(source.includes('key.shadow.mapSize.set(1024,1024)'), 'startup begins at the low-cost 1024px shadow tier');
+ assert(source.includes('directionalShadowResolution(q as WorldPerformanceTier)'), 'quality selection sets the final shadow-map budget');
+ assert.equal(directionalShadowResolution('high'),1536,'High mode retains detailed close-range shadows with fewer texels');
+ assert.equal(directionalShadowResolution('automatic'),1024);
+ assert.equal(directionalShadowResolution('smooth'),1024);
  assert.equal((source.match(/new T.DirectionalLight\(/g)||[]).length,1);
 });
 test('photo lighting retains the original neutral day/night envelope',()=>{
@@ -95,19 +100,38 @@ test('river layers share uncoated water normals while lagoons retain their optic
  const far=scene.getObjectByName('Detroit River distant water') as T.Mesh<T.BufferGeometry,T.MeshPhysicalMaterial>;
  const lagoon=scene.children.find(o=>o.name.startsWith('Lagoon · ')) as T.Mesh<T.BufferGeometry,T.MeshPhysicalMaterial>;
  for(const mesh of [near,far]){
-  assert.equal(mesh.material.clearcoat,0);assert.equal(mesh.material.roughness,.28);
+  assert.equal(mesh.material.clearcoat,0);assert.equal(mesh.material.roughness,.20);
   const shader={vertexShader:T.ShaderLib.physical.vertexShader,fragmentShader:T.ShaderLib.physical.fragmentShader,uniforms:{}} as Parameters<T.Material['onBeforeCompile']>[0];
   mesh.material.onBeforeCompile(shader,{} as T.WebGLRenderer);
   assert(shader.fragmentShader.includes('vec2 warp=')&&shader.fragmentShader.includes('warp.yx*.7+r1*.08'));
   assert.equal((shader.fragmentShader.match(/texture2D\(riverNormals/g)||[]).length,3,'still two normal layers plus existing wash sample');
   for(const token of ['riverSunReflection','riverRipples[12]','shipWake[4]','hoverWash'])assert(shader.fragmentShader.includes(token));
  }
- assert.equal(lagoon.material.clearcoat,.60);assert.equal(lagoon.material.roughness,.12);
+ assert.equal(lagoon.material.clearcoat,.25);assert.equal(lagoon.material.roughness,.20);
  const shader={vertexShader:T.ShaderLib.physical.vertexShader,fragmentShader:T.ShaderLib.physical.fragmentShader,uniforms:{}} as Parameters<T.Material['onBeforeCompile']>[0];
  lagoon.material.onBeforeCompile(shader,{} as T.WebGLRenderer);
  assert(!shader.fragmentShader.includes('vec2 warp='));assert(shader.fragmentShader.includes('fountainNight'));
  scene.traverse(o=>{if(o instanceof T.Mesh){o.geometry.dispose();for(const material of Array.isArray(o.material)?o.material:[o.material])material.dispose();}});
 });
+test('water keeps fading ripples after the vehicle leaves and restores the wave grid on High',()=>{
+ const scene=new T.Scene(),camera=new T.PerspectiveCamera();
+ const water=createWater(scene,{} as T.WebGLRenderer,map,terrain,()=>new T.PlaneGeometry(1,1));
+ try{
+  const near=scene.getObjectByName('Detroit River rolling waves') as T.Mesh<T.BufferGeometry,T.MeshPhysicalMaterial>;
+  const full=near.geometry.getIndex();
+  const shader={vertexShader:T.ShaderLib.physical.vertexShader,fragmentShader:T.ShaderLib.physical.fragmentShader,uniforms:{}} as Parameters<T.Material['onBeforeCompile']>[0];
+  near.material.onBeforeCompile(shader,{} as T.WebGLRenderer);
+  const active=shader.uniforms.activeRipples;
+  water.update(10,camera);assert.equal(active.value,false);
+  const river={x:4000,y:0,z:4000,speed:1,rpm:1};assert.equal(terrain.land(river.x,river.z),false);
+  water.setVehicle(river);water.update(11,camera);assert.equal(active.value,true);
+  water.setVehicle(null);water.update(15.9,camera);assert.equal(active.value,true);
+  water.update(16,camera);assert.equal(active.value,false);
+  water.setQuality('smooth');assert.equal(near.geometry.getIndex()!.count,512*3);
+  water.setQuality('high');assert.equal(near.geometry.getIndex(),full);
+ }finally{scene.traverse(o=>{if(o instanceof T.Mesh){o.geometry.dispose();for(const m of Array.isArray(o.material)?o.material:[o.material])m.dispose();}});}
+});
+
 test('optional reference sky preset holds a clear sunset without overriding saved settings on initialization',()=>{
  const ids=['sky-hour','sky-clock','sky-cycle','sky-speed','sky-clouds','sky-preset'];
  const elements=Object.fromEntries(ids.map(id=>[id,{value:'',checked:false,onchange:undefined as undefined|(()=>void)}]));

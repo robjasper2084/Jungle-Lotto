@@ -1,3 +1,5 @@
 game/node_modules/
 game/dist/
 game/.test/
+game/output/belle-blender/
+tools/__pycache__/

@@ -1,9 +1,24 @@
 import test from 'node:test';import assert from 'node:assert/strict';import * as T from 'three';
 import {WorldAtmosphere} from './worldAtmosphere.ts';import {SkyReflections} from './skyReflections.ts';import {SkyAircraft} from './skyAircraft.ts';
+import {physicalLighting} from './physicalLighting.ts';
 import {installRiderPresentation,presentRider} from '../../runtime/elmwood-source/src/detroit/riding/riderPresentation.ts';
 import type {RiderMotionTarget} from '../../runtime/elmwood-source/src/detroit/riding/riderMotion.ts';
 import type {RidePose} from '@digital-static/ridecore';
 function materialShader(){return {vertexShader:T.ShaderLib.standard.vertexShader,fragmentShader:T.ShaderLib.standard.fragmentShader,uniforms:{}} as Parameters<T.Material['onBeforeCompile']>[0];}
+test('base scattering shares one view sample while clearcoat, anisotropy and mixed metals retain their paths',()=>{
+ const fragment=physicalLighting(T.ShaderLib.physical.fragmentShader);
+ assert.equal(physicalLighting(fragment),fragment);
+ assert.equal(physicalLighting(T.ShaderLib.basic.fragmentShader),T.ShaderLib.basic.fragmentShader);
+ assert.equal((fragment.match(/belleViewDFG=textureLod/g)||[]).length,1);
+ assert.match(fragment,/vec2 dfgV = belleViewDFG/);
+ assert.match(fragment,/vec2 fab = belleViewDFG/);
+ assert.match(fragment,/EnvironmentBRDF\([^}]+texture2D\( dfgLUT/);
+ assert.equal((fragment.match(/if \(material.metalness != 0.0\) computeMultiscattering/g)||[]).length,2);
+ assert.match(fragment,/#ifndef USE_CLEARCOAT\s+if \(dotNL == 0.0\) return;/);
+ assert.match(fragment,/if \(material.roughness == 1.0\) radiance \+= iblIrradiance/);
+ assert.match(fragment,/radiance \+= getIBLAnisotropyRadiance/);
+ assert.match(fragment,/clearcoatRadiance \+= getIBLRadiance/);
+});
 test('actual Three standard shader composition preserves earlier material work',()=>{
  const scene=new T.Scene(),m=new T.MeshStandardMaterial();m.onBeforeCompile=s=>{s.fragmentShader='// earlier material\n'+s.fragmentShader;};m.customProgramCacheKey=()=> 'original';
  scene.add(new T.Mesh(new T.BoxGeometry(),m));const a=new WorldAtmosphere(scene,new T.Texture());a.flush();const s=materialShader();m.onBeforeCompile(s,{} as T.WebGLRenderer);
@@ -64,4 +79,26 @@ test('real reflection controller primes once, protects startup and rejects unsta
   r.protect();now=99999;r.update(180,20,.3,'automatic',true);assert.equal(captures,2,'new session renews protection');
  }finally{r.dispose();target.dispose();fallback.dispose();sky.dispose();}
  assert.equal(listeners.size,0);assert.equal(scene.environment,fallback);assert.equal(disposed,2);
+});
+
+test('instanced near foliage sways only in high quality, with matching depth and distance passes',async()=>{
+ const scene=new T.Scene(),a=new WorldAtmosphere(scene,new T.Texture()),material=new T.MeshStandardMaterial({alphaTest:.3});
+ const mesh=new T.InstancedMesh(new T.BoxGeometry(2,6,2),material,2);
+ mesh.name='Nearby oak leaves';scene.add(mesh);await Promise.resolve();
+ assert.equal(a.stats.windMeshes,1);assert.equal(mesh.isInstancedMesh,true);
+ assert.notEqual(mesh.material,material);
+ assert(mesh.customDepthMaterial&&mesh.customDistanceMaterial);
+ const s=materialShader();(mesh.material as T.Material).onBeforeCompile(s,{} as T.WebGLRenderer);
+ assert.match(s.vertexShader,/bellePin=clamp/);
+ const depth={vertexShader:T.ShaderLib.depth.vertexShader,fragmentShader:T.ShaderLib.depth.fragmentShader,uniforms:{}} as Parameters<T.Material['onBeforeCompile']>[0];
+ mesh.customDepthMaterial!.onBeforeCompile(depth,{} as T.WebGLRenderer);
+ assert.match(depth.vertexShader,/bellePin=clamp/);
+ a.update(2,new T.Vector3(0,.5,1),.6,1,.1,'high',false,false);
+ assert(s.uniforms.belleWindAmount.value>0);
+ assert(s.uniforms.belleAirStrength.value>0);
+ a.update(3,new T.Vector3(0,.5,1),.6,1,.1,'smooth',false,false);
+ assert.equal(s.uniforms.belleWindAmount.value,0);assert.equal(s.uniforms.belleAirStrength.value,0);
+ a.update(4,new T.Vector3(0,.5,1),.6,1,.1,'high',true,false);
+ assert.equal(s.uniforms.belleWindAmount.value,0);
+ a.dispose();assert.equal(mesh.material,material);assert.equal(mesh.customDepthMaterial,undefined);
 });

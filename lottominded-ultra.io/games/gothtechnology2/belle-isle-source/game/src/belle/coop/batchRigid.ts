@@ -1,12 +1,12 @@
 import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 /** Combine sibling rigid pieces only. Animated parents, skinning, sockets and materials survive. */
-export function batchRigidChildren(root:T.Object3D,animatedNames:ReadonlySet<string>=new Set()){
+export function batchRigidChildren(root:T.Object3D,animatedNames:ReadonlySet<string>=new Set(),preserveMesh?:(mesh:T.Mesh)=>boolean){
  const owned:T.BufferGeometry[]=[],parents:T.Object3D[]=[];root.traverse(o=>parents.push(o));
  let before=0,after=0;
  for(const parent of parents){
   const groups=new Map<string,T.Mesh[]>();
-  for(const child of parent.children){const m=child as T.Mesh;if(!m.isMesh||(m as T.InstancedMesh).isInstancedMesh||(m as T.SkinnedMesh).isSkinnedMesh||m.children.length||!m.visible||Array.isArray(m.material)||m.material.transparent||m.geometry.morphAttributes.position||animatedNames.has(m.name))continue;
+  for(const child of parent.children){const m=child as T.Mesh;if(!m.isMesh||(m as T.InstancedMesh).isInstancedMesh||(m as T.SkinnedMesh).isSkinnedMesh||m.children.length||!m.visible||Array.isArray(m.material)||m.material.transparent||m.geometry.morphAttributes.position||animatedNames.has(m.name)||preserveMesh?.(m))continue;
    const key=[m.material.uuid,m.castShadow,m.receiveShadow,m.renderOrder,m.layers.mask,!!m.geometry.index,Object.keys(m.geometry.attributes).sort().join(',')].join('|');groups.set(key,[...(groups.get(key)??[]),m]);
   }
   for(const pieces of groups.values()){if(pieces.length<2)continue;const geos=pieces.map(m=>{m.updateMatrix();return m.geometry.clone().applyMatrix4(m.matrix);});const geo=mergeGeometries(geos,false);geos.forEach(g=>g.dispose());if(!geo)continue;

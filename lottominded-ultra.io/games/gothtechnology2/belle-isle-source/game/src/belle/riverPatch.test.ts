@@ -1,9 +1,28 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {riverFarRing,RIVER_PATCH_SIZE,RIVER_PATCH_SEGMENTS} from './riverPatch.ts';
+import {PlaneGeometry} from 'three';
+import {flatRiverPatchIndex,riverFarRing,RIVER_PATCH_SIZE,RIVER_PATCH_SEGMENTS} from './riverPatch.ts';
 import {sunDirection,DEFAULT_SKY} from './skyModel.ts';
 const at=(positions:number[],i:number)=>positions.slice(i*3,i*3+3);
+test('calm water covers the original plane with upward triangles and the entire ring boundary',()=>{
+ const plane=new PlaneGeometry(RIVER_PATCH_SIZE,RIVER_PATCH_SIZE,RIVER_PATCH_SEGMENTS,RIVER_PATCH_SEGMENTS).rotateX(-Math.PI/2);
+ try{
+  const index=flatRiverPatchIndex(),p=plane.getAttribute('position'),ring=riverFarRing(),perimeter=new Set<string>();
+  assert.equal(index.length/3,RIVER_PATCH_SEGMENTS*4);
+  let area=0;
+  for(let i=0;i<index.length;i+=3){
+   const [a,b,c]=index.subarray(i,i+3);
+   assert.equal(p.getX(a),0);assert.equal(p.getZ(a),0);
+   const doubleArea=(p.getZ(b)-p.getZ(a))*(p.getX(c)-p.getX(a))-(p.getX(b)-p.getX(a))*(p.getZ(c)-p.getZ(a));
+   assert(doubleArea>0);area+=doubleArea/2;
+   perimeter.add(p.getX(b)+','+p.getZ(b));
+  }
+  assert.equal(area,RIVER_PATCH_SIZE**2);
+  const inner=Array.from({length:RIVER_PATCH_SEGMENTS*4},(_,i)=>ring.positions[i*3]+','+ring.positions[i*3+2]);
+  assert.deepEqual(perimeter,new Set(inner));
+ }finally{plane.dispose();}
+});
 test('river far ring has bounded finite buffers and upward faces',()=>{
  const g=riverFarRing();assert.equal(g.positions.length,3072);assert.equal(g.indices.length,3072);assert.equal(g.uv.length,2048);
  assert(g.positions.every(Number.isFinite)&&g.uv.every(Number.isFinite));
@@ -36,10 +55,11 @@ test('shipping river uses connected geometry with no fragment cut and one cached
  assert.doesNotMatch(source,/discard\s*;/);assert.equal((source.match(/texture2D\(/g)||[]).length,6);
  assert.match(source,/smoothstep\(165\.,195\./);assert.match(source,/smoothstep\(35\.,220\.,viewDistance\)/);
 });
-test('art-directed low sun aligns near the skyline while retaining the day and night arc',()=>{
- const [x,y,z]=sunDirection(17.6),direction=[-3127-114,1983-1373],length=Math.hypot(...direction);
- const cosine=(x*direction[0]+z*direction[1])/(Math.hypot(x,z)*length);
- assert(cosine>Math.cos(5*Math.PI/180));assert(y>0&&y<.15);
+test('low evening sun faces map west while retaining the day and night arc',()=>{
+ // The photo integration anchors lighting to map cardinal directions instead
+ // of aiming at the RenCen from one particular camera position.
+ const [x,y,z]=sunDirection(17.6);
+ assert(x<-.99&&z>0&&z<.05);assert(y>0&&y<.15);
  assert(sunDirection(7)[0]>0);assert(sunDirection(12)[1]>.9);assert(sunDirection(0)[1]<-.9);
  for(let h=0;h<=24;h+=.025){const v=sunDirection(h);assert(v.every(Number.isFinite));assert(Math.abs(Math.hypot(...v)-1)<1e-12);}
  assert.deepEqual(sunDirection(24),sunDirection(0));assert.deepEqual(DEFAULT_SKY,{hour:16.7,cycle:true,dayMinutes:20,clouds:'changing'});

@@ -3,6 +3,7 @@ import path from 'node:path';
 import * as T from '../game/node_modules/three/build/three.module.js';
 import {mergeVertices} from '../game/node_modules/three/examples/jsm/utils/BufferGeometryUtils.js';
 import {ParkTerrain} from '../game/src/belle/terrain.ts';
+import {orderPavementIndices} from '../game/src/belle/groundDrawRange.ts';
 import {aquariumFloor} from '../game/src/belle/aquarium.ts';
 import {makePavementPlan} from './pavement-plan.mjs';
 const root=path.resolve(import.meta.dirname,'..'),map=JSON.parse(await fs.readFile(root+'/game/public/belle/map.json','utf8')),terrain=new ParkTerrain(map),plan=makePavementPlan(map,terrain);
@@ -28,6 +29,7 @@ for(const kind of materials){
  // Clip operations can produce sub-millimetre slivers. Float32 conversion may
  // collapse or reverse those; never ship a backwards/zero-area pavement face.
  const indices=[];for(let i=0;i<g.index.count;i+=3){let a=g.index.getX(i),b=g.index.getX(i+1),c=g.index.getX(i+2);const cy=(p.getZ(b)-p.getZ(a))*(p.getX(c)-p.getX(a))-(p.getX(b)-p.getX(a))*(p.getZ(c)-p.getZ(a));if(Math.abs(cy)<1e-7)continue;if(cy<0)[b,c]=[c,b];indices.push(a,b,c);}
- chunks.push(Buffer.from(packed.buffer));groups.push({kind,offset,vertices:p.count,indices});offset+=packed.byteLength;triangles+=indices.length/3;g.dispose();source.dispose();
+ const ranges=orderPavementIndices(indices,p);
+ chunks.push(Buffer.from(packed.buffer));groups.push({kind,offset,vertices:p.count,indices,ranges});offset+=packed.byteLength;triangles+=indices.length/3;g.dispose();source.dispose();
 }
 await fs.writeFile(root+'/game/public/belle/pavement.bin',Buffer.concat(chunks));await fs.writeFile(root+'/game/public/belle/pavement.json',JSON.stringify({version:1,stride:8,groups,triangles,bytes:offset}));console.log('Joined pavement:',triangles,'triangles,',offset,'bytes,',groups.length,'materials');

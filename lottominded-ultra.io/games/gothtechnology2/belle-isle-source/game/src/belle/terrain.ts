@@ -1,3 +1,4 @@
+import {clubPierDeck,clubQuay} from './boatClubPlan.ts';
 import {makeSmallBridgePlan,SmallBridgeCollision} from './smallBridges.ts';
 import {FlightSolids,bridgeRay} from './flightCollision.ts';
 import {waterfrontRails,pierDeck} from './waterfrontPlan.ts';
@@ -26,11 +27,55 @@ export type ParkMap={lagoonHabitat?:{id:string;view:Point;look:Point;description
 type Bounds={minX:number;maxX:number;minZ:number;maxZ:number};
 function bounds(points:Point[],padding=0):Bounds{let minX=Infinity,maxX=-Infinity,minZ=Infinity,maxZ=-Infinity;for(const [x,z]of points){minX=Math.min(minX,x);maxX=Math.max(maxX,x);minZ=Math.min(minZ,z);maxZ=Math.max(maxZ,z);}return{minX:minX-padding,maxX:maxX+padding,minZ:minZ-padding,maxZ:maxZ+padding};}
 function inBounds(b:Bounds,x:number,z:number){return x>=b.minX&&x<=b.maxX&&z>=b.minZ&&z<=b.maxZ;}
+const POLYGON_BAND_METRES=32,MAX_POLYGON_BANDS=4096,MAX_POLYGON_EDGE_REFERENCES=65536;
+type PolygonQuery=Bounds&{length:number;firstBand:number;bands:number[][]|null};
+/** Land/water rings are static after map preparation. A new ring array or a
+ * changed point count rebuilds the query; same-length coordinate edits require
+ * replacing the ring array, as the cached bounds also depend on its coordinates. */
+function polygonQuery(points:Point[]):PolygonQuery{
+ const b=bounds(points),firstBand=Math.floor(b.minZ/POLYGON_BAND_METRES),lastBand=Math.floor(b.maxZ/POLYGON_BAND_METRES),count=lastBand-firstBand+1;
+ const query:PolygonQuery={...b,length:points.length,firstBand,bands:null};
+ if(points.length<16||![b.minX,b.maxX,b.minZ,b.maxZ].every(Number.isFinite)||b.minX===b.maxX||b.minZ===b.maxZ||!Number.isSafeInteger(firstBand)||!Number.isSafeInteger(lastBand)||count<1||count>MAX_POLYGON_BANDS)return query;
+ const bands:number[][]=Array.from({length:count},()=>[]);let references=0;
+ for(let i=0,j=points.length-1;i<points.length;j=i++){
+  const a=points[i],b=points[j];if(a[1]===b[1])continue;
+  // Include both endpoint bands. The original strict crossing comparison below
+  // decides vertices and boundaries; band membership only excludes distant edges.
+  const first=Math.floor(Math.min(a[1],b[1])/POLYGON_BAND_METRES)-firstBand,last=Math.floor(Math.max(a[1],b[1])/POLYGON_BAND_METRES)-firstBand;
+  references+=last-first+1;if(references>MAX_POLYGON_EDGE_REFERENCES)return query;
+  for(let band=first;band<=last;band++)bands[band].push(i);
+ }
+ query.bands=bands;return query;
+}
+export type BoulderCollision={x:number;z:number;bottom:number;top:number;radius:number};
 export class ParkTerrain implements TerrainSampler{
  readonly flightSolids=new FlightSolids();
- private polygonBounds=new WeakMap<Point[],Bounds>();
+ private readonly boulderCells=new Map<string,BoulderCollision[]>();
+ /** Static mineral obstacles are always physical, regardless of graphics tier. */
+ registerBoulders(boulders:readonly BoulderCollision[]){
+  for(const b of boulders){
+   if(![b.x,b.z,b.bottom,b.top,b.radius].every(Number.isFinite)||b.radius<=0||b.top<=b.bottom)throw Error('Invalid rock collider');
+   const key=Math.floor(b.x/32)+','+Math.floor(b.z/32),list=this.boulderCells.get(key)||[];
+   if(list.some(p=>p.x===b.x&&p.z===b.z))continue;
+   list.push(b);this.boulderCells.set(key,list);
+   this.flightSolids.add({...b,kind:'rock'});
+  }
+ }
+ private boulderBlocked(x:number,z:number,margin=0){
+  const ix=Math.floor(x/32),iz=Math.floor(z/32),pad=Math.ceil((Math.max(0,margin)+2.5)/32);
+  for(let i=ix-pad;i<=ix+pad;i++)for(let j=iz-pad;j<=iz+pad;j++){
+   for(const b of this.boulderCells.get(i+','+j)||[])if(Math.hypot(x-b.x,z-b.z)<b.radius+margin)return true;
+  }
+  return false;
+ }
+ private polygonBounds=new WeakMap<Point[],PolygonQuery>();
  private deckSegments:{a:Point;b:Point;radius:number;bounds:Bounds}[]=[];
- private contains(x:number,z:number,p:Point[]){let b=this.polygonBounds.get(p);if(!b){b=bounds(p);this.polygonBounds.set(p,b);}return inBounds(b,x,z)&&inside(x,z,p);}
+ private contains(x:number,z:number,p:Point[]){
+  let query=this.polygonBounds.get(p);if(!query||query.length!==p.length){query=polygonQuery(p);this.polygonBounds.set(p,query);}
+  if(!inBounds(query,x,z))return false;
+  const edges=query.bands?.[Math.floor(z/POLYGON_BAND_METRES)-query.firstBand];if(!edges)return inside(x,z,p);
+  let c=false;for(let k=0;k<edges.length;k++){const i=edges[k],a=p[i],b=p[i===0?p.length-1:i-1];if((a[1]>z)!==(b[1]>z)&&x<(b[0]-a[0])*(z-a[1])/(b[1]-a[1])+a[0])c=!c;}return c;
+ }
 
  readonly lagoonRails:LagoonBridge[];
  readonly smallBridges:SmallBridgeCollision;
@@ -40,20 +85,27 @@ export class ParkTerrain implements TerrainSampler{
  readonly decks:{points:Point[];width:number}[]=[];
  map:ParkMap;
  readonly monuments:MonumentSolid[];
- obstructed(x:number,z:number,margin=0){return this.smallBridges.blocked(x,z,margin)||this.activityCollision.blocked(x,z,margin)||playgroundBlocked(x,z,margin)||yachtBlocked(x,z,margin)||lagoonBridgeBlocked(this.lagoonRails,x,z,margin)||this.facilities.blocked(x,z,margin)||(this.map.dossin&&dossinBlocked(this.map.dossin,x,z,margin))||(this.map.aquarium&&aquariumBlocked(this.map.aquarium,x,z,margin))||(this.map.conservatory&&greenhouseBlocked(this.map.conservatory,x,z,margin))||this.boxes.some(b=>x>b.minX-margin&&x<b.maxX+margin&&z>b.minZ-margin&&z<b.maxZ+margin&&(!b.points||inside(x,z,b.points)||b.points.some((p,j)=>j>0&&segment(x,z,b.points![j-1],p).d<=margin)))||this.monuments.some(m=>Math.hypot(x-m.x,z-m.z)<m.radius+margin); }
+ obstructed(x:number,z:number,margin=0){return this.boulderBlocked(x,z,margin)||this.smallBridges.blocked(x,z,margin)||this.activityCollision.blocked(x,z,margin)||playgroundBlocked(x,z,margin)||yachtBlocked(x,z,margin)||lagoonBridgeBlocked(this.lagoonRails,x,z,margin)||this.facilities.blocked(x,z,margin)||(this.map.dossin&&dossinBlocked(this.map.dossin,x,z,margin))||(this.map.aquarium&&aquariumBlocked(this.map.aquarium,x,z,margin))||(this.map.conservatory&&greenhouseBlocked(this.map.conservatory,x,z,margin))||this.boxes.some(b=>x>b.minX-margin&&x<b.maxX+margin&&z>b.minZ-margin&&z<b.maxZ+margin&&(!b.points||inside(x,z,b.points)||b.points.some((p,j)=>j>0&&segment(x,z,b.points![j-1],p).d<=margin)))||this.monuments.some(m=>Math.hypot(x-m.x,z-m.z)<m.radius+margin); }
  private readonly connectedMainland:boolean;
  constructor(map:ParkMap,connectedMainland=false){this.map=map;this.connectedMainland=connectedMainland;this.activityCollision=new FacilityCollision({...map,facilities:activityFacilities()});this.lagoonRails=[...lagoonBridges(map),...waterfrontRails];this.facilities=new FacilityCollision(map);this.beaches=makeBeachProfiles(map);this.monuments=monumentSolids(map.monuments||[]);this.smallBridges=new SmallBridgeCollision(makeSmallBridgePlan(map,(x,z)=>this.height(x,z)));this.decks=map.roads.filter(r=>r.bridge||r.points.some(p=>map.water.some(w=>inside(p[0],p[1],w.points)&&!w.holes.some(h=>inside(p[0],p[1],h))))); for(const r of this.decks)for(let i=1;i<r.points.length;i++)this.deckSegments.push({a:r.points[i-1],b:r.points[i],radius:r.width*.5,bounds:bounds([r.points[i-1],r.points[i]],r.width*.5)}); const districtBuildings=new Set(connectedMainland?districts.buildings:[]);for(const b of [...map.buildings,...districtBuildings]){if(map.facilities?.sites.some(s=>s.id===b.id&&s.kind==='shelter')&&!ENCLOSED_SHELTERS.has(b.id))continue;if(b.id===YACHT.id||map.dossin?.ids.includes(b.id)||b.id===map.conservatory?.id||b.id===map.aquarium?.id)continue;const xs=b.points.map(p=>p[0]),zs=b.points.map(p=>p[1]);this.boxes.push({minX:Math.min(...xs),maxX:Math.max(...xs),minZ:Math.min(...zs),maxZ:Math.max(...zs),height:REFERENCE_HEIGHTS[b.id]??b.height,base:districtBuildings.has(b)?this.height(...b.points[0]):2,points:b.points});}}
  boxes:{minX:number;maxX:number;minZ:number;maxZ:number;height:number;base?:number;points?:Point[]}[]=[];
  bridge(x:number,z:number){const b=this.map.bridge,dx=b.b[0]-b.a[0],dz=b.b[1]-b.a[1],t=((x-b.a[0])*dx+(z-b.a[1])*dz)/(b.length*b.length),side=((x-b.a[0])*dz-(z-b.a[1])*dx)/b.length;return{t,side,active:t>=-1e-7&&t<=1+1e-7&&Math.abs(side)<=13.05};}
- height(x:number,z:number,referenceY?:number){const mainlandY=this.connectedMainland?(districtHeight(x,z)??greenwayHeight(x,z,referenceY)):undefined;if(mainlandY!==undefined)return mainlandY;if(pierDeck(x,z))return 2.04;const clockRise=clockHillHeight(x,z)-2;const yacht=yachtFloor(x,z);if(yacht!==null)return yacht;if(this.map.aquarium){const floor=aquariumFloor(this.map.aquarium,x,z);if(floor!==null)return floor;}const b=this.bridge(x,z),s=b.t*this.map.bridge.length;if(b.active){if(referenceY!==undefined&&referenceY<4)return 2;return 6+4*Math.sin(Math.PI*b.t);}const smooth=(t:number)=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t);};const ramp=s<0?smooth((s+180)/180):1-smooth((s-this.map.bridge.length)/110);if(s>=-180&&s<=this.map.bridge.length+110&&(s<0||s>this.map.bridge.length)){return 2+4*ramp*(1-smooth((Math.abs(b.side)-13)/25))+clockRise;}return beachHeight(this.beaches,x,z)+clockRise;}
- land(x:number,z:number,referenceY?:number){if(this.connectedMainland&&x<0&&districts.water.some(r=>this.contains(x,z,r)))return false;if(pierDeck(x,z))return true;if(yachtDeck(x,z))return true;const under=this.bridge(x,z).active&&referenceY!==undefined&&referenceY<4;if((this.bridge(x,z).active&&!under)||this.contains(x,z,this.map.mainland))return true;if(this.connectedMainland&&x<0&&districts.land.some(([outer,...holes])=>this.contains(x,z,outer)&&!holes.some(h=>this.contains(x,z,h))))return true;if(!under&&this.deckSegments.some(s=>inBounds(s.bounds,x,z)&&segment(x,z,s.a,s.b).d<=s.radius))return true;return (this.contains(x,z,this.map.island)||(this.map.outerIslets||[]).some(i=>this.contains(x,z,i.points)))&&!this.map.water.some(w=>this.contains(x,z,w.points)&&!w.holes.some(h=>this.contains(x,z,h)));}
+ height(x:number,z:number,referenceY?:number){const mainlandY=this.connectedMainland?(districtHeight(x,z)??greenwayHeight(x,z,referenceY)):undefined;if(mainlandY!==undefined)return mainlandY;if(clubPierDeck(x,z))return .87;if(clubQuay(x,z))return 2;if(pierDeck(x,z))return 2.04;const clockRise=clockHillHeight(x,z)-2;const yacht=yachtFloor(x,z);if(yacht!==null)return yacht;if(this.map.aquarium){const floor=aquariumFloor(this.map.aquarium,x,z);if(floor!==null)return floor;}const b=this.bridge(x,z),s=b.t*this.map.bridge.length;if(b.active){if(referenceY!==undefined&&referenceY<4)return 2;return 6+4*Math.sin(Math.PI*b.t);}const smooth=(t:number)=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t);};const ramp=s<0?smooth((s+180)/180):1-smooth((s-this.map.bridge.length)/110);if(s>=-180&&s<=this.map.bridge.length+110&&(s<0||s>this.map.bridge.length)){return 2+4*ramp*(1-smooth((Math.abs(b.side)-13)/25))+clockRise;}return beachHeight(this.beaches,x,z)+clockRise;}
+ land(x:number,z:number,referenceY?:number){if(this.connectedMainland&&x<0&&districts.water.some(r=>this.contains(x,z,r)))return false;if(clubPierDeck(x,z)||clubQuay(x,z))return true;if(pierDeck(x,z))return true;if(yachtDeck(x,z))return true;const under=this.bridge(x,z).active&&referenceY!==undefined&&referenceY<4;if((this.bridge(x,z).active&&!under)||this.contains(x,z,this.map.mainland))return true;if(this.connectedMainland&&x<0&&districts.land.some(([outer,...holes])=>this.contains(x,z,outer)&&!holes.some(h=>this.contains(x,z,h))))return true;if(!under&&this.deckSegments.some(s=>inBounds(s.bounds,x,z)&&segment(x,z,s.a,s.b).d<=s.radius))return true;return (this.contains(x,z,this.map.island)||(this.map.outerIslets||[]).some(i=>this.contains(x,z,i.points)))&&!this.map.water.some(w=>this.contains(x,z,w.points)&&!w.holes.some(h=>this.contains(x,z,h)));}
  sampleGround(x:number,z:number,out:GroundSample,referenceY?:number){out.height=this.height(x,z,referenceY);const step=.3,dx=(this.height(x+step,z,referenceY)-this.height(x-step,z,referenceY))/(step*2),dz=(this.height(x,z+step,referenceY)-this.height(x,z-step,referenceY))/(step*2),n=Math.hypot(dx,1,dz);out.normal.x=-dx/n;out.normal.y=1/n;out.normal.z=-dz/n;out.surface='pavement';out.offCourse=!this.land(x,z,referenceY);return out;}
  raycast(o:{x:number;y:number;z:number},d:{x:number;y:number;z:number},max:number){if(Math.abs(d.y)<.00001)return null;let t=(this.height(o.x,o.z,o.y)-o.y)/d.y;for(let i=0;i<5;i++)t=(this.height(o.x+d.x*t,o.z+d.z*t,o.y)-o.y)/d.y;return t>=0&&t<=max?t:null;}
  raycastObstacle(o:{x:number;y:number;z:number},d:{x:number;y:number;z:number},max:number,half=.4){return this.obstacleRay(o,d,max,half,false);}
  // Camera clearance ignores the water travel boundary, but retains physical walls and rails.
  raycastCamera(o:{x:number;y:number;z:number},d:{x:number;y:number;z:number},max:number,half=.16){return this.obstacleRay(o,d,max,half,true);}
  raycastFlight(o:{x:number;y:number;z:number},d:{x:number;y:number;z:number},max:number,half=1.35){return this.obstacleRay(o,d,max,half,true);}
- private obstacleRay(o:{x:number;y:number;z:number},d:{x:number;y:number;z:number},max:number,half:number,flight:boolean){let hit=Math.min(this.smallBridges.ray(o,d,max,half)??max+1,bridgeRay(this.map,o,d,max,half)??max+1, this.flightSolids.ray(o,d,max,half)??max+1,playgroundRay(o,d,max,half,flight)??max+1,yachtRay(o,d,max,half,flight)??max+1,this.facilities.ray(o,d,max,half)??max+1,this.activityCollision.ray(o,d,max,half)??max+1,lagoonBridgeRay(this.lagoonRails,o,d,max,half)??max+1);const endX=o.x+d.x*max,endZ=o.z+d.z*max,minX=Math.min(o.x,endX)-half,maxX=Math.max(o.x,endX)+half,minZ=Math.min(o.z,endZ)-half,maxZ=Math.max(o.z,endZ)+half;for(const b of this.boxes){if(b.minX>maxX||b.maxX<minX||b.minZ>maxZ||b.maxZ<minZ)continue;const base=b.base??2;if(Math.min(o.y,o.y+d.y*max)>base+b.height+.2||Math.max(o.y,o.y+d.y*max)<base)continue;let t0=0,t1=max;for(const [p,v,lo,hi]of [[o.x,d.x,b.minX-half,b.maxX+half],[o.z,d.z,b.minZ-half,b.maxZ+half],[o.y,d.y,base,base+b.height]]){if(Math.abs(v)<1e-7){if(p<lo||p>hi){t0=max+1;break;}}else{const a=(lo-p)/v,c=(hi-p)/v;t0=Math.max(t0,Math.min(a,c));t1=Math.min(t1,Math.max(a,c));}}if(t0<=t1&&t0<hit){if(!b.points)hit=t0;else{const end=Math.min(t1,max),steps=Math.max(1,Math.ceil((end-t0)/.15));for(let i=0;i<=steps;i++){const t=t0+(end-t0)*i/steps,x=o.x+d.x*t,z=o.z+d.z*t;if(inside(x,z,b.points)||b.points.some((p,j)=>j>0&&segment(x,z,b.points![j-1],p).d<=half)){hit=t;break;}}}}}
+ private obstacleRay(o:{x:number;y:number;z:number},d:{x:number;y:number;z:number},max:number,half:number,flight:boolean){
+  // Conservative swept bounds only reject buildings the ray cannot reach. Keep
+  // the existing slab/polygon tests and their order, including appended towers.
+  const endX=o.x+d.x*max,endZ=o.z+d.z*max;
+  const roundoff=8*Number.EPSILON*Math.max(1,Math.abs(o.x),Math.abs(o.z),Math.abs(endX),Math.abs(endZ),Math.abs(half));
+  const bounded=max>=0&&half>=0&&Number.isFinite(max)&&Number.isFinite(roundoff);
+  const minX=Math.min(o.x,endX)-roundoff,maxX=Math.max(o.x,endX)+roundoff,minZ=Math.min(o.z,endZ)-roundoff,maxZ=Math.max(o.z,endZ)+roundoff;
+  let hit=Math.min(this.smallBridges.ray(o,d,max,half)??max+1,bridgeRay(this.map,o,d,max,half)??max+1, this.flightSolids.ray(o,d,max,half)??max+1,playgroundRay(o,d,max,half,flight)??max+1,yachtRay(o,d,max,half,flight)??max+1,this.facilities.ray(o,d,max,half)??max+1,this.activityCollision.ray(o,d,max,half)??max+1,lagoonBridgeRay(this.lagoonRails,o,d,max,half)??max+1);for(const b of this.boxes){if(bounded&&(maxX<b.minX-half||minX>b.maxX+half||maxZ<b.minZ-half||minZ>b.maxZ+half))continue;const base=b.base??2;if(Math.min(o.y,o.y+d.y*max)>base+b.height+.2||Math.max(o.y,o.y+d.y*max)<base)continue;let t0=0,t1=max;for(const [p,v,lo,hi]of [[o.x,d.x,b.minX-half,b.maxX+half],[o.z,d.z,b.minZ-half,b.maxZ+half],[o.y,d.y,base,base+b.height]]){if(Math.abs(v)<1e-7){if(p<lo||p>hi){t0=max+1;break;}}else{const a=(lo-p)/v,c=(hi-p)/v;t0=Math.max(t0,Math.min(a,c));t1=Math.min(t1,Math.max(a,c));}}if(t0<=t1&&t0<hit){if(!b.points)hit=t0;else{const end=Math.min(t1,max),steps=Math.max(1,Math.ceil((end-t0)/.15));for(let i=0;i<=steps;i++){const t=t0+(end-t0)*i/steps,x=o.x+d.x*t,z=o.z+d.z*t;if(inside(x,z,b.points)||b.points.some((p,j)=>j>0&&segment(x,z,b.points![j-1],p).d<=half)){hit=t;break;}}}}}
 
  for(const m of this.monuments){const t=rayMonument(o,d,max,m,half);if(t!==null&&t<hit)hit=t;}
  if(this.map.conservatory){const t=greenhouseRay(this.map.conservatory,o,d,Math.min(max,hit),half);if(t!==null&&t<hit)hit=t;}

@@ -1,0 +1,5 @@
+Cadillac from the 1980s, by scorpion81 (wine-red Fleetwood Brougham).
+Original: https://www.blendswap.com/blends/view/83568 (archive ID 83568).
+License: Creative Commons Attribution 3.0 https://creativecommons.org/licenses/by/3.0/
+
+The supplied Unity project contained a derivative with a normalized body, original packed textures, separate wheels, and modeled hydraulic hardware. This browser export uses its prepared Cadillac_Hydraulics.blend (SHA-256 77b0f4a88ac734f52b01942762092ed0c6e81d78a1590c9ed40cc33343b16f1e). The Blender mesh was validated before export; the original remains untouched.
