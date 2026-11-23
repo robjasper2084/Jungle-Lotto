@@ -4,6 +4,7 @@ import {readFileSync} from 'node:fs';
 import * as T from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {CadillacHydraulics} from './cadillacHydraulics.ts';
+import {HYDRAULIC_SMART_POSES} from './hydraulicController.ts';
 import {CadillacSuspension,CADILLAC_CORNERS,CADILLAC_SUSPENSION_LIMITS as LIMITS,SILVER_CADILLAC_SUSPENSION_ANCHORS,
   type CadillacCornerHeights,type CadillacSuspensionAnchors,type CadillacSuspensionPose,type CadillacHop} from './cadillacSuspension.ts';
 
@@ -16,6 +17,13 @@ const nearPose=(actual:Readonly<CadillacSuspensionPose>,expected:Readonly<Cadill
 const step=(suspension:CadillacSuspension,seconds:number,framesPerSecond=60)=>{
   for(let frame=0;frame<Math.round(seconds*framesPerSecond);frame++)suspension.update(1/framesPerSecond);
 };
+const advanceExact=(suspension:CadillacSuspension,seconds:number)=>{
+  while(seconds>LIMITS.maxFrameSeconds){suspension.update(LIMITS.maxFrameSeconds);seconds-=LIMITS.maxFrameSeconds;}
+  if(seconds>0)suspension.update(seconds);
+};
+// Invert cubic smoothstep independently to compare the uniformly spaced
+// collision samples with the exact times the animation reaches those points.
+const spatialTime=(weight:number)=>.5-Math.sin(Math.asin(1-2*weight)/3);
 const glb=readFileSync('public/belle/vehicles/hydraulics-cadillac.glb');
 const asset=JSON.parse(glb.subarray(20,20+glb.readUInt32LE(12)).toString());
 const hydraulicAnchors=Object.fromEntries(CADILLAC_CORNERS.map(corner=>{
@@ -70,8 +78,8 @@ test('clearance previews do not mutate state and follow the actual normalized co
   const targets={FL:.24,FR:.12,RL:.04,RR:0},before=s.snapshot(),path=s.previewPath(targets,20);
   assert.deepEqual(s.snapshot(),before);assert.equal(path.length,21);nearPose(path[0],before.pose);
   assert(s.setTargets(targets));
-  const duration=.24/LIMITS.actuatorMetresPerSecond;
-  for(let i=1;i<path.length;i++){s.update(duration/20);nearPose(s.pose,path[i]);}
+  const duration=1.5*.24/LIMITS.actuatorMetresPerSecond;
+  for(let i=1;i<path.length;i++){advanceExact(s,duration*(spatialTime(i/20)-spatialTime((i-1)/20)));nearPose(s.pose,path[i]);}
   assert(s.settled);nearPose(s.pose,s.preview(targets));
 });
 
@@ -128,9 +136,10 @@ test('pending previews follow remaining hop, landing and queued leveling in rend
     assert.deepEqual(s.snapshot(),before,'preview must preserve queued leveling and current motion');
     assert.equal(path.length,49);nearPose(path[0],before.pose);nearPose(path[24],s.preview(initial));nearPose(path.at(-1)!,s.preview(all(height)));
     const hopStep=(1-before.hopProgress)*LIMITS.hopSeconds/24;
-    const levelStep=Math.max(...Object.values(initial).map(value=>Math.abs(value-height)))/LIMITS.actuatorMetresPerSecond/24;
+    const levelDuration=1.5*Math.max(...Object.values(initial).map(value=>Math.abs(value-height)))/LIMITS.actuatorMetresPerSecond;
     for(let index=1;index<path.length;index++){
-      s.update(index<=24?hopStep:levelStep);nearPose(s.pose,path[index]);
+      const levelIndex=index-24;
+      advanceExact(s,index<=24?hopStep:levelDuration*(spatialTime(levelIndex/24)-spatialTime((levelIndex-1)/24)));nearPose(s.pose,path[index]);
       const actual=transformedBounds(s.pose),expected=sampleBounds[index];
       near(actual.min.distanceTo(expected.min),0,'clearance bounds follow the same lower surface');
       near(actual.max.distanceTo(expected.max),0,'clearance bounds follow the same upper surface');
@@ -157,6 +166,29 @@ test('invalid or collinear hub geometry is rejected before producing NaN transfo
   assert.throws(()=>new CadillacSuspension({...SILVER_CADILLAC_SUSPENSION_ANCHORS,FL:{x:NaN,y:.346,z:1}}),/finite/);
   const line=Object.fromEntries(CADILLAC_CORNERS.map((corner,index)=>[corner,{x:0,y:.3,z:index}])) as unknown as CadillacSuspensionAnchors;
   assert.throws(()=>new CadillacSuspension(line),/chassis plane/);
+});
+
+test('Smart Pump retargets preserve the displayed pose and the new collision segment on both actual hub layouts',()=>{
+  for(const anchors of [SILVER_CADILLAC_SUSPENSION_ANCHORS,hydraulicAnchors]){
+    const s=new CadillacSuspension(anchors);
+    for(const target of [HYDRAULIC_SMART_POSES['front-up'],HYDRAULIC_SMART_POSES['back-up'],HYDRAULIC_SMART_POSES.pancake]){
+      const before=s.snapshot(),path=s.previewPath(target,16);
+      assert(s.setTargets(target));nearPose(s.pose,before.pose);nearPose(path[0],before.pose);
+      assert.deepEqual(s.snapshot().current,before.current,'retarget starts at the visible actuator positions');
+      for(const dt of [.04,.06,.03]){
+        const prior=s.snapshot().current;s.update(dt);const now=s.snapshot().current;
+        const leading=CADILLAC_CORNERS.reduce((key,next)=>Math.abs(target[next]-before.current[next])>Math.abs(target[key]-before.current[key])?next:key,CADILLAC_CORNERS[0]);
+        const span=target[leading]-before.current[leading],weight=span?(now[leading]-before.current[leading])/span:0;
+        assert(weight>=0&&weight<=1);
+        for(const corner of CADILLAC_CORNERS){
+          near(now[corner],before.current[corner]+(target[corner]-before.current[corner])*weight);
+          assert(Math.abs(now[corner]-prior[corner])<=LIMITS.actuatorMetresPerSecond*dt+1e-10);
+        }
+        nearPose(s.pose,s.preview(now));
+      }
+    }
+    s.update(0,true);assert(s.readyForDrive);assert.deepEqual(s.snapshot().current,HYDRAULIC_SMART_POSES.pancake);
+  }
 });
 
 // Decode the actual dedicated-model hierarchy without browser-only textures.

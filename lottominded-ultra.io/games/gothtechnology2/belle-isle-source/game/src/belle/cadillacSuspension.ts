@@ -1,3 +1,5 @@
+import {HydraulicController} from './hydraulicController.ts';
+
 /** Bounded kinematic hydraulics. Metres/seconds/radians; +X is left, +Z forward.
  * Collision acceptance belongs to CadillacRide before a command is committed.
  * No door, trunk, steering, wheel-spin, or scene-node transform is owned here. */
@@ -34,17 +36,17 @@ const hopCorner=(mode:CadillacHop,corner:CadillacCorner)=>mode==='all'||(corner.
 const clean=(value:number)=>Math.abs(value)<EPS?0:value;
 
 export class CadillacSuspension {
-  private readonly wanted=values();
-  private readonly travel=values();
-  private readonly from=values();
+  private readonly movement=new HydraulicController(CADILLAC_CORNERS,values(),{
+    maxSpeed:CADILLAC_SUSPENSION_LIMITS.actuatorMetresPerSecond,maxFrameSeconds:CADILLAC_SUSPENSION_LIMITS.maxFrameSeconds,
+  });
+  private get wanted(){return this.movement.targets;}
+  private get travel(){return this.movement.current;}
   private readonly effective=values();
   private readonly air=values();
   private readonly result=emptyPose();
   private readonly anchors:CadillacSuspensionAnchors;
   private readonly inverse:number[];
   private readonly centre:{x:number;y:number;z:number};
-  private movementSeconds=0;
-  private movementDuration=0;
   private hopMode:CadillacHop|null=null;
   private hopSeconds=0;
   private remainingCooldown=0;
@@ -69,7 +71,7 @@ export class CadillacSuspension {
 
   get targets():Readonly<CadillacCornerHeights>{return copy(this.wanted);}
   get pose():Readonly<CadillacSuspensionPose>{return this.result;}
-  get settled(){return this.hopMode===null&&!this.levelAfterHop&&CADILLAC_CORNERS.every(corner=>Math.abs(this.travel[corner]-this.wanted[corner])<EPS);}
+  get settled(){return this.hopMode===null&&!this.levelAfterHop&&this.movement.settled;}
   get readyForDrive(){return this.settled&&CADILLAC_CORNERS.every(corner=>Math.abs(this.wanted[corner]-this.wanted.FL)<EPS&&this.result.wheelLifts[corner]<EPS);}
 
   private normalized(targets:Partial<CadillacCornerHeights>){
@@ -83,15 +85,8 @@ export class CadillacSuspension {
   }
   private commitTargets(next:CadillacCornerHeights,immediate:boolean){
     this.levelAfterHop=false;
-    const changed=CADILLAC_CORNERS.some(corner=>this.wanted[corner]!==next[corner]);
-    if(changed){
-      this.movementSeconds=0;this.movementDuration=0;
-      for(const corner of CADILLAC_CORNERS){
-        this.from[corner]=this.travel[corner];this.wanted[corner]=next[corner];
-        this.movementDuration=Math.max(this.movementDuration,Math.abs(next[corner]-this.travel[corner])/CADILLAC_SUSPENSION_LIMITS.actuatorMetresPerSecond);
-      }
-    }
-    if(immediate){for(const corner of CADILLAC_CORNERS)this.travel[corner]=this.from[corner]=this.wanted[corner];this.movementSeconds=this.movementDuration=0;this.compose();}
+    this.movement.setTargets(next,immediate);
+    if(immediate)this.compose();
   }
   setTargets(targets:Partial<CadillacCornerHeights>,immediate=false){
     const next=this.normalized(targets);if(!next||this.hopMode!==null)return false;
@@ -113,13 +108,16 @@ export class CadillacSuspension {
     this.hopMode=mode;this.hopSeconds=0;return true;
   }
   reset(){
-    for(const corner of CADILLAC_CORNERS)this.wanted[corner]=this.travel[corner]=this.from[corner]=this.effective[corner]=this.air[corner]=0;
-    this.movementSeconds=this.movementDuration=this.hopSeconds=this.remainingCooldown=0;
+    this.movement.reset();
+    for(const corner of CADILLAC_CORNERS)this.effective[corner]=this.air[corner]=0;
+    this.hopSeconds=this.remainingCooldown=0;
     this.hopMode=null;this.levelAfterHop=false;this.compose();
   }
 
-  /** Samples follow the exact linear corner path used by update(), including
-   * retargets during travel. The caller must sweep the real body and panels. */
+  /** Uniform spatial samples of the exact shared corner segment. The lift's
+   * time easing changes its speed along that segment, never the segment or
+   * the maximum spacing of these collision samples. Retargets start at the
+   * actual current positions. The caller sweeps the real body and panels. */
   preview(targets:Partial<CadillacCornerHeights>=this.wanted){
     const next=this.normalized(targets);if(!next)throw new Error('Invalid Cadillac suspension target.');
     return this.solve(next,values());
@@ -172,8 +170,7 @@ export class CadillacSuspension {
       changed=this.hopMode!==null||!this.settled;
       this.hopMode=null;this.hopSeconds=this.remainingCooldown=0;
       if(this.levelAfterHop)this.stance('level');
-      for(const corner of CADILLAC_CORNERS)this.travel[corner]=this.from[corner]=this.wanted[corner];
-      this.movementSeconds=this.movementDuration=0;
+      changed=this.movement.update(0,true)||changed;
     }else if(this.hopMode!==null){
       const remaining=CADILLAC_SUSPENSION_LIMITS.hopSeconds-this.hopSeconds;
       this.hopSeconds=Math.min(CADILLAC_SUSPENSION_LIMITS.hopSeconds,this.hopSeconds+dt);changed=dt>0;
@@ -184,12 +181,7 @@ export class CadillacSuspension {
         if(this.levelAfterHop)this.stance('level');
       }
     }else this.remainingCooldown=Math.max(0,this.remainingCooldown-dt);
-    if(!reducedMotion&&this.movementDuration>0&&movementDt>0){
-      this.movementSeconds=Math.min(this.movementDuration,this.movementSeconds+movementDt);
-      const progress=this.movementSeconds/this.movementDuration;
-      for(const corner of CADILLAC_CORNERS)this.travel[corner]=progress>=1-EPS?this.wanted[corner]:this.from[corner]+(this.wanted[corner]-this.from[corner])*progress;
-      if(progress>=1-EPS)this.movementDuration=this.movementSeconds=0;changed=true;
-    }
+    if(!reducedMotion)changed=this.movement.update(movementDt)||changed;
     if(changed)this.compose();
     return this.result;
   }

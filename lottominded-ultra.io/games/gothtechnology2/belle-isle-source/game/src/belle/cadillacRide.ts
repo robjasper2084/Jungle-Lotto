@@ -12,6 +12,8 @@ import {CadillacSuspension,CADILLAC_CORNERS,CADILLAC_SUSPENSION_LIMITS,type Cadi
 import {CadillacWheels,CADILLAC_WHEEL_FITS,type CadillacWheelSelection} from './cadillacWheels.ts';
 import {CadillacClearance,cadillacPartSweep} from './cadillacClearance.ts';
 import {CadillacWheelClearance,cadillacSuspensionHubXZ} from './cadillacWheelClearance.ts';
+import {HYDRAULIC_SMART_POSES,type HydraulicSmartPose} from './hydraulicController.ts';
+import {CadillacHydraulicSwitches} from './cadillacHydraulicSwitches.ts';
 import type {ParkTerrain} from './terrain.ts';
 
 export type CadillacVariant='cadillac'|'hydraulic-cadillac';
@@ -33,6 +35,7 @@ export class CadillacRide {
   readonly hydraulics?:CadillacHydraulics;
   readonly suspension:CadillacSuspension;
   readonly wheels:CadillacWheels;
+  readonly hydraulicSwitches:CadillacHydraulicSwitches;
   readonly trunk?:CadillacTrunk;
   readonly trunkSpeakerAnchor?:T.Object3D;
   private inspectTrunk=false;
@@ -108,6 +111,9 @@ export class CadillacRide {
       this.access=new CadillacAccess(this.body);
       this.trunk=new CadillacTrunk(this.body,this.access.trunkLid);this.trunkSpeakerAnchor=this.trunk.audioAnchor;
     }
+    // The console is cabin equipment, not authored fender geometry. Attach it
+    // after the fixed clearance captures and access-panel partitioning.
+    this.hydraulicSwitches=new CadillacHydraulicSwitches(this.body,variant);
     this.sim=new CarController(terrain,terrain.map.spawn);
     model.visible=false;
   }
@@ -124,14 +130,14 @@ export class CadillacRide {
     if(!this.sim.reset(p.x,p.z,p.heading))throw Error('No clear pavement for Cadillac');
     this.sim.engine=true;this.sim.selectGear('D');this.riding=this.model.visible=true;
     this.doorAngle=0;this.doorOpen=this.exiting=this.inspectTrunk=false;this.pitch=this.heave=this.travel=this.lastSpeed=0;
-    this.access?.reset();this.trunk?.setOpen(0);this.suspension.reset();this.automaticLevel=this.levelDenied=false;this.modificationMessage='';
+    this.access?.reset();this.trunk?.setOpen(0);this.suspension.reset();this.hydraulicSwitches.reset();this.automaticLevel=this.levelDenied=false;this.modificationMessage='';
     this.cabin?.reset();
     this.update(0,{gas:0,brake:0,steer:0,handbrake:false},0,false);
   }
   leave(){
     this.riding=this.model.visible=this.exiting=this.doorOpen=this.inspectTrunk=false;
     this.doorAngle=0;if(this.door)this.door.rotation.y=0;this.access?.reset();this.trunk?.setOpen(0);this.sim.cancelCruise();this.sim.pose.speed=0;
-    this.suspension.reset();this.sim.setCollisionEnvelope();this.automaticLevel=this.levelDenied=false;this.modificationMessage='';
+    this.suspension.reset();this.hydraulicSwitches.reset();this.sim.setCollisionEnvelope();this.automaticLevel=this.levelDenied=false;this.modificationMessage='';
   }
   private parkForAccess(){this.sim.selectGear(this.sim.gear);this.sim.cancelCruise();}
   toggleDoor(){if(this.door&&this.riding&&Math.abs(this.sim.pose.speed)<.25&&!this.exiting){
@@ -213,6 +219,7 @@ export class CadillacRide {
     const steps=Math.max(1,Math.ceil(Math.max(...CADILLAC_CORNERS.map(corner=>Math.abs(targets[corner]-current[corner])))/.025));
     if(!this.pathClear(this.suspension.previewPath(targets,steps)))return this.result(false,this.clearanceMessage('Not enough clearance. Move away from the obstacle or choose a higher, more level stance.'));
     this.parkForAccess();this.suspension.setTargets(targets,immediate);this.automaticLevel=this.levelDenied=false;
+    this.hydraulicSwitches.syncTargets(this.suspension.targets);
     if(immediate)this.presentSuspension(0);
     return this.result(true,'Suspension updated. Uneven corners level before steering or driving.');
   }
@@ -224,6 +231,14 @@ export class CadillacRide {
     if(!['low','cruise','raised','level'].includes(stance))return this.result(false,'Choose a suspension preset.');
     const targets=this.suspension.targets,height=stance==='level'?CADILLAC_CORNERS.reduce((sum,corner)=>sum+targets[corner]/4,0):CADILLAC_SUSPENSION_LIMITS[stance];
     return this.acceptTargets({FL:height,FR:height,RL:height,RR:height},immediate);
+  }
+  setHydraulicPose(pose:HydraulicSmartPose,reducedMotion=false){
+    if(!Object.hasOwn(HYDRAULIC_SMART_POSES,pose))return this.result(false,'Choose a Smart Pump pose.');
+    const result=this.acceptTargets({...HYDRAULIC_SMART_POSES[pose]},reducedMotion);
+    if(!result.accepted)return result;
+    this.hydraulicSwitches.trigger(pose,reducedMotion);
+    const title=pose==='front-up'?'Front up':pose==='back-up'?'Back up':'Pancake · factory height';
+    return this.result(true,`Smart Pump: ${title}${reducedMotion?' applied.':'. Suspension moving smoothly.'}`);
   }
   hopSuspension(mode:CadillacHop,reduced:boolean){
     const reason=this.modificationReady();if(reason)return this.result(false,reason);
@@ -260,7 +275,14 @@ export class CadillacRide {
     this.exiting=this.doorOpen=true;this.inspectTrunk=false;this.parkForAccess();
   }
   get exitReady(){return this.exiting&&this.suspension.readyForDrive&&(!this.door||this.doorAngle>.96)&&!this.access?.held;}
-  update(dt:number,input:CarInput,night:number,reduced:boolean,keys:ReadonlySet<string>=emptyKeys){
+  /** A detailed setup dialog pauses driving, while its requested lift previews
+   * keep using the same motion controller. Other animation layers stay paused. */
+  updateHydraulicPreview(dt:number,reduced:boolean){
+    if(!this.riding||this.exiting||Math.abs(this.sim.pose.speed)>.001||this.suspension.snapshot().hop&&!reduced)return;
+    this.suspension.update(dt,reduced);this.presentSuspension(0,true);
+    this.hydraulicSwitches.update(dt,reduced);
+  }
+  update(dt:number,input:CarInput,night:number,reduced:boolean,keys:ReadonlySet<string>=emptyKeys,controlsHeld=false){
     if(!this.riding)return;
     dt=clamp(Number.isFinite(dt)?dt:0,0,.12);
     const smooth=1-Math.exp(-dt*8);
@@ -270,7 +292,7 @@ export class CadillacRide {
       CADILLAC_CORNERS.forEach((corner,i)=>{if(!single||keys.has(selectors[i]))targets[corner]=clamp(targets[corner]+liftDirection*dt*.28,CADILLAC_SUSPENSION_LIMITS.min,CADILLAC_SUSPENSION_LIMITS.max);});
       if(CADILLAC_CORNERS.some(corner=>targets[corner]!==previous[corner]))this.acceptTargets(targets,reduced);
     }
-    const wantsDrive=input.gas>.02||input.brake>.02&&!input.handbrake||this.sim.cruise>0;
+    const wantsDrive=!controlsHeld&&(input.gas>.02||input.brake>.02&&!input.handbrake||this.sim.cruise>0);
     if(wantsDrive&&!this.suspension.readyForDrive&&!this.automaticLevel&&!this.levelDenied){
       if(!this.settleSuspension().accepted)this.levelDenied=true;
     }
@@ -283,17 +305,18 @@ export class CadillacRide {
     this.access?.update(dt,reduced);this.trunk?.setOpen(this.access!.trunkProgress);
     // Preserve the intentional open-panel driving feature. Only an unfinished
     // hydraulic motion/asymmetric wheel contact or exit holds the brakes.
-    const suspensionHeld=!this.suspension.readyForDrive,held=this.exiting||suspensionHeld;
+    const suspensionHeld=!this.suspension.readyForDrive,poseHeld=suspensionHeld||controlsHeld,held=this.exiting||poseHeld;
     this.syncCollisionEnvelope();
     // Keep the steering angle used by the accepted fender-clearance sweep.
     // Normal steering resumes as soon as all corners have landed and leveled.
-    const p=this.sim.advance(dt,held?{...input,gas:0,brake:1,handbrake:true,lockSteering:suspensionHeld,lockAttitude:suspensionHeld}:input);
+    const p=this.sim.advance(dt,held?{...input,gas:0,brake:1,handbrake:true,lockSteering:poseHeld,lockAttitude:poseHeld}:input);
     this.model.position.set(p.x,p.y,p.z);this.model.rotation.y=p.heading;
     if(Math.abs(p.speed)>=.25)this.inspectTrunk=false;
     const acceleration=dt?clamp((p.speed-this.lastSpeed)/dt,-10,6):0;
     this.lastSpeed=p.speed;
-    if(!suspensionHeld)this.pitch=T.MathUtils.lerp(this.pitch,reduced?0:acceleration*.004,smooth);
-    this.presentSuspension(dt);
+    if(!poseHeld)this.pitch=T.MathUtils.lerp(this.pitch,reduced?0:acceleration*.004,smooth);
+    this.presentSuspension(dt,controlsHeld);
+    this.hydraulicSwitches.update(dt,reduced);
     this.steeringWheel?.quaternion.setFromAxisAngle(this.steeringAxis,p.steering*5.5);
     this.cabin?.update(dt,p.steering,reduced);
     this.hydraulicDriver?.update(p.steering);
@@ -303,7 +326,7 @@ export class CadillacRide {
     this.lenses.get('Headlamp')?.emissive.setRGB(.23+.75*night,.21+.67*night,.15+.51*night);
     this.lenses.get('ReverseLens')?.emissive.setScalar(this.sim.gear==='R'?.9:0);
   }
-  private presentSuspension(dt:number){
+  private presentSuspension(dt:number,holdGround=false){
     const p=this.sim.pose,smooth=1-Math.exp(-dt*8),suspension=this.suspension.pose;
     const sine=Math.sin(p.heading),cosine=Math.cos(p.heading);
     const curvature=Math.tan(p.steering)/wheelbase;
@@ -327,10 +350,11 @@ export class CadillacRide {
     }
     // Clearance was checked against this parked base attitude and road heave.
     // Do not add an unmeasured ground-settling transform during a hop/tilt.
-    if(this.suspension.readyForDrive)this.heave=T.MathUtils.lerp(this.heave,mean,smooth);
+    if(this.suspension.readyForDrive&&!holdGround)this.heave=T.MathUtils.lerp(this.heave,mean,smooth);
     this.body.position.y=this.heave+suspension.heave;
     this.body.rotation.set(p.pitch-this.pitch+suspension.pitch,0,p.roll+suspension.roll);
     this.hydraulics?.updateCylinders();
+    this.hydraulicSwitches.syncTargets(this.suspension.targets);
     this.syncCollisionEnvelope();
   }
   private syncCollisionEnvelope(){
@@ -393,7 +417,7 @@ export class CadillacRide {
     steeringRad:this.sim.pose.steering,wheelPhaseRad:this.hubs.map(w=>w.spin.rotation.x),driverDoorRad:this.door?.rotation.y??0,
     suspensionPitchRad:this.body.rotation.x,suspensionRollRad:this.body.rotation.z,braking:this.sim.braking,collision:this.sim.collided,
     access:this.access?.diagnostics(),trunkInstallation:this.trunk?.diagnostics(),trunkView:this.inspectTrunk,
-    suspension:this.suspension.snapshot(),wheels:this.wheels.diagnostics(),modificationStatus:this.modificationMessage,
+    suspension:this.suspension.snapshot(),hydraulicSwitches:this.hydraulicSwitches.diagnostics(),wheels:this.wheels.diagnostics(),modificationStatus:this.modificationMessage,
     ...(this.cabin?{occupants:this.cabin.diagnostics()}: {})};}
-  dispose(){this.leave();this.wheels.dispose();this.trunk?.dispose();this.access?.dispose();this.cabin?.dispose();this.hydraulicDriver?.dispose();this.interiorEye.removeFromParent();this.interiorAim.removeFromParent();}
+  dispose(){this.leave();this.hydraulicSwitches.dispose();this.wheels.dispose();this.trunk?.dispose();this.access?.dispose();this.cabin?.dispose();this.hydraulicDriver?.dispose();this.interiorEye.removeFromParent();this.interiorAim.removeFromParent();}
 }

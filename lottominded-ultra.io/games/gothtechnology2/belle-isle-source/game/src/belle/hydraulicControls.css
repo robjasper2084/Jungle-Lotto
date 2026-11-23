@@ -1,0 +1,47 @@
+#hydraulic-mode-entry{margin-top:12px;min-width:0;max-width:100%}
+body.belle-hydraulic-mode #touch-zone{visibility:hidden;pointer-events:none}
+#hydraulic-mode-toggle{display:block;width:100%;min-width:44px;min-height:48px;padding:10px 12px;text-align:left;white-space:normal;overflow-wrap:anywhere;touch-action:manipulation}
+#hydraulic-mode-toggle[aria-pressed=true]{border-color:#d4b477;background:#455044;color:#ffedc9}
+#hydraulic-mode-note{margin:6px 2px 0;color:#c0cec5;font:11px/1.5 system-ui;overflow-wrap:anywhere}
+#hydraulic-controls{position:fixed;z-index:45;top:calc(76px + env(safe-area-inset-top,0px));right:max(12px,env(safe-area-inset-right,0px));width:min(248px,calc(100vw - 24px));max-height:calc(100dvh - 92px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));box-sizing:border-box;overflow:auto;overscroll-behavior:contain;padding:11px;border:1px solid #b79b665c;border-radius:16px;background:#0d2224f5;color:#eef2e8;box-shadow:0 8px 24px #0005;scrollbar-width:thin;scrollbar-color:#a9956b #152e30;pointer-events:auto;touch-action:pan-y;isolation:isolate}
+#hydraulic-controls[hidden],#hydraulic-mode-entry[hidden],#hydraulic-controls [hidden]{display:none!important}
+#hydraulic-outside-controls>header{position:static;inset:auto;display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:0;pointer-events:auto}
+#hydraulic-outside-controls>header>span{font:600 8px/1.4 system-ui;letter-spacing:.12em;color:#c6b991}
+#hydraulic-controls h2{margin:0;color:#f4d8a7;font:600 14px/1.4 system-ui;letter-spacing:.01em}
+#hydraulic-motion-status{min-height:2.8em;margin:6px 0 8px;color:#bacfc5;font:11px/1.4 system-ui;overflow-wrap:anywhere}
+#hydraulic-controls button{min-width:44px;min-height:44px;box-sizing:border-box;padding:7px 5px;border:1px solid #b39b6d66;border-radius:13px;background:#203d3a;color:#f0efdf;font:600 11px/1.2 system-ui;white-space:normal;overflow-wrap:anywhere;touch-action:manipulation;cursor:pointer}
+#hydraulic-controls button:hover{background:#35544b;border-color:#dcc18b}
+#hydraulic-controls button:active{background:#49624d}
+#hydraulic-controls button:disabled{cursor:default;opacity:.46;background:#203633}
+#hydraulic-controls :focus-visible,#hydraulic-mode-entry :focus-visible{outline:2px solid #ffe1a0;outline-offset:2px}
+#hydraulic-controls .hydraulic-radial{display:grid;grid-template-columns:1fr 1.12fr 1fr;grid-template-rows:44px 66px 44px;grid-template-areas:'. front .' 'pancake center exit' '. back .';gap:6px;align-items:stretch;min-width:0}
+#hydraulic-controls .hydraulic-front{grid-area:front;border-radius:18px 18px 11px 11px}
+#hydraulic-controls .hydraulic-back{grid-area:back;border-radius:11px 11px 18px 18px}
+#hydraulic-controls .hydraulic-pancake{grid-area:pancake;align-self:center;min-height:52px}
+#hydraulic-controls .hydraulic-center{grid-area:center;border-radius:50%;border-color:#d2ad70;background:#bda16a;color:#112b28;font-weight:750;box-shadow:inset 0 0 0 3px #223e321f}
+#hydraulic-controls .hydraulic-center:hover{background:#d5b77d}
+#hydraulic-controls .hydraulic-exit{grid-area:exit;align-self:center;min-height:52px;background:#152c2d;color:#c9d6ca}
+#hydraulic-controls .hydraulic-hops{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:10px;padding-top:10px;border-top:1px solid #b39b6d30;min-width:0}
+#hydraulic-controls .hydraulic-hops button{padding:7px 3px;font-size:10px;border-radius:9px}
+#hydraulic-advanced-corners{margin-top:8px;border-top:1px solid #b39b6d30;min-width:0}
+#hydraulic-advanced-corners>summary{box-sizing:border-box;min-height:44px;padding:13px 4px;color:#dac9a6;font:600 11px/1.5 system-ui;cursor:pointer;touch-action:manipulation}
+#hydraulic-controls .hydraulic-corner-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 10px;min-width:0}
+#hydraulic-controls .hydraulic-corner{min-width:0}
+#hydraulic-controls .hydraulic-corner-label{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:2px 6px;min-width:0}
+#hydraulic-controls .hydraulic-corner-label label{display:block;margin:0;min-width:0;color:#c8d6ca;font:11px/1.4 system-ui}
+#hydraulic-controls .hydraulic-corner-label output{color:#f4d7a2;font:600 10px/1.4 system-ui;font-variant-numeric:tabular-nums;white-space:nowrap}
+#hydraulic-controls input[type=range]{display:block;box-sizing:border-box;min-width:44px;width:100%;min-height:44px;height:44px;margin:0;padding:0;accent-color:#d3b77e;touch-action:pan-y}
+#hydraulic-controls input[type=range]:disabled{opacity:.46;cursor:default}
+#hydraulic-controls .hydraulic-corner-note{margin:5px 0;color:#adbbb2;font:10px/1.45 system-ui}
+#hydraulic-controls-feedback{display:block;margin-top:6px;color:#efd9ae;font:11px/1.4 system-ui;overflow-wrap:anywhere}
+#hydraulic-controls-feedback:empty{display:none}
+#hydraulic-controls[data-view=inside]{width:min(330px,calc(100vw - 24px));padding:10px 11px;border-radius:12px}
+#hydraulic-inside-controls{display:flex;align-items:center;gap:10px;min-width:0}
+#hydraulic-inside-hint{flex:1;min-width:0;margin:0;color:#d9dfcf;font:11px/1.5 system-ui;overflow-wrap:anywhere}
+#hydraulic-inside-exit{flex:0 0 62px}
+@media(max-width:360px){#hydraulic-controls{right:max(10px,env(safe-area-inset-right,0px));width:min(244px,calc(100vw - 20px))}}
+@media(max-height:420px){#hydraulic-controls{top:calc(60px + env(safe-area-inset-top,0px));max-height:calc(100dvh - 72px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));padding:9px;width:min(244px,calc(100vw - 24px))}#hydraulic-motion-status{min-height:0;margin:4px 0 6px}#hydraulic-controls .hydraulic-radial{grid-template-rows:44px 60px 44px;gap:5px}}
+/* The occupied silver cabin's switches project just above the bottom row on
+   short phones. Keep every existing action available without covering them. */
+@media(max-height:420px) and (max-width:600px){body.belle-hydraulic-mode.belle-hydraulic-inside #ridehud .actions{grid-template-columns:repeat(4,56px);gap:6px}body.belle-hydraulic-mode.belle-hydraulic-inside #ridehud .touch-action{width:56px;height:44px;padding:3px;gap:1px}body.belle-hydraulic-mode.belle-hydraulic-inside #ridehud .touch-action svg{width:18px;height:18px}body.belle-hydraulic-mode.belle-hydraulic-inside #ridehud .touch-action span{font-size:9px;line-height:1.1}}
+@media(prefers-reduced-motion:reduce){#hydraulic-controls *,#hydraulic-mode-entry *{transition:none!important;animation:none!important;scroll-behavior:auto!important}}

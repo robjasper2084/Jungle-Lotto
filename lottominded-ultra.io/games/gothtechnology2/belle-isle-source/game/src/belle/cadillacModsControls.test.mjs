@@ -131,6 +131,16 @@ test('a rejected settle reopens Settings with unchanged targets and restores foc
  assert.deepEqual(f.state.targets,{FL:.12,FR:.12,RL:.04,RR:.04});assert.equal(f.id('cadillac-modifications-feedback').textContent,'Resume the game before finishing suspension motion.');assert.equal(f.saved.length,0);
 });
 
+test('an eased lift accepts retargeting while wheel swaps and new hops wait for settlement',()=>{
+ const f=fixture({busy:true,hop:false,targets:{FL:.14,FR:.14,RL:.14,RR:.14}});f.ui.open();
+ assert.equal(f.range('FL').disabled,false);assert.equal(f.button('Raise').disabled,false);
+ assert.equal(f.select('rim').disabled,true);assert.equal(f.button('Front hop').disabled,true);
+ f.range('FL').value='.20';f.range('FL').dispatch('input');assert.equal(f.calls.length,1);assert.equal(f.state.targets.FL,.20);
+ assert.equal(f.id('cadillac-modifications').getAttribute('data-motion'),'lift');
+ f.state.hop=true;f.ui.refresh();assert.equal(f.range('FL').disabled,true);assert.equal(f.button('Raise').disabled,true);
+ assert.equal(f.button('Finish motion & level').disabled,false);assert.equal(f.id('cadillac-modifications').getAttribute('data-motion'),'hop');
+});
+
 test('background refresh preserves an active slider gesture, then resynchronizes on blur',()=>{
  const f=fixture(),input=f.range('FL');input.focus();input.value='.13';f.state.reason='Checking clearance.';f.ui.refresh();assert.equal(input.value,'.13');
  f.doc.activeElement=null;input.dispatch('blur');assert.equal(input.value,'0');
