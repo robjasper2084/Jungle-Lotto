@@ -7,6 +7,7 @@ import {StartupTelemetry} from './startupTelemetry.ts';
 import {CoopSession} from './coop/session.ts';
 import {createBelleAudio} from './belleAudio.ts';
 import {SceneWarmup} from './sceneWarmup.ts';
+import {warmRideShadows} from './rideShadowWarmup.ts';
 import {VehicleHeadlamp} from './vehicles/headlamp.ts';
 import {BoatRide} from './boatRide.ts';
 import {RideRadio} from './rideRadio.ts';
@@ -169,6 +170,12 @@ const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreferen
  const core=new RideCore(terrain,{spawn:{position:{x:data.spawn.x,y:2,z:data.spawn.z},headingY:data.spawn.heading}});clearSimulationInput=()=>core.clearPendingActions();const loader=new GLTFLoader();const renderProbe=createNatureRenderProbe(location.search);const world=await createWorld(scene,renderer,data,terrain,status,renderProbe);el('profile').dataset.macarthurRailMeshes=String(world.stats.bridgeRailFinish.meshes);el('profile').dataset.macarthurRailMaterials=String(world.stats.bridgeRailFinish.newMaterials);world.sky.preview(!SUNSET_REFERENCE);const refreshSkySettings=connectSkySettings(world.sky);const sunsetPreview=SUNSET_REFERENCE?createSunsetPreview(camera,()=>hover,()=>active&&!trials?.active&&!race?.active&&!coop?.active&&!photo?.active,()=>{clear();cameraYaw=0;cameraPitch=.1;snap=true;},data.spawn,data):undefined;
  const frameBudget=new FrameBudget();graphics.onchange=()=>{frameBudget.reset();world.setQuality(graphics.value);saveGraphics();};world.setQuality(graphics.value);window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();if(!vr?.active)renderer.setSize(innerWidth,innerHeight);});
  const sceneWarmup=new SceneWarmup(renderer,scene,camera,value=>{scenePreparing=value;resetFrameClock=true;if(value)clear();});
+ async function prepareRideShadows(rider:T.Object3D,x:number,z:number){
+  const wasPreparing=scenePreparing;
+  scenePreparing=true;
+  try{await warmRideShadows(renderer,scene,rider,x,z);}
+  finally{scenePreparing=wasPreparing;resetFrameClock=true;}
+ }
  // The permanent vehicle spotlight contributes to the shader light count,
  // including while its intensity is zero and no ride has been selected.
  const headlamp=new VehicleHeadlamp(scene);
@@ -192,7 +199,7 @@ const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreferen
  const openPlaces=districtDestinations.filter(l=>crossings[l.id==='greater-detroit-elmwood'?1:0].connected);
  const destinations=[...openPlaces,...data.landmarks,...data.pois.filter(p=>!data.landmarks.some(l=>l.id===p.id))];let destination:ParkMap['landmarks'][number]|undefined;const routepoints=data.roads.flatMap(r=>r.points.slice(1).flatMap((b,i)=>{const a=r.points[i],steps=Math.max(1,Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1])/8));return Array.from({length:steps},(_,j)=>[a[0]+(b[0]-a[0])*j/steps,a[1]+(b[1]-a[1])*j/steps] as [number,number]);})).filter(p=>terrain.land(p[0],p[1])&&!terrain.obstructed(p[0],p[1],2));let snap=true;const vrPlaces:{label:string;go:()=>void}[]=[];
  function jump(x:number,z:number,headingY:number){golf?.stop();trials?.interrupt();activities?.relocated();fishing?.stop();slide?.cancel();photo?.close();cadillac?.leave();hover?.leaveForTravel();boat?.leave();clear();core.reset({position:{x,y:terrain.height(x,z),z},headingY});cameraYaw=0;cameraPitch=.1;snap=true;vr?.relocated();}
- hover=new HoverRide(scene,terrain,{nightAmount:()=>world.sky.nightAmount.value,prepareScene:(model,signal)=>sceneWarmup.prepare(model,signal),obstacle:world.trafficRay,vehicleLocked:()=>!!trials?.active,restartTrial:()=>trials?.restart(),pose:()=>core.current,blocked:()=>!!cadillac?.riding||inputCaptureBlocked()||!!photo?.active||!!slide?.active||!!boat?.riding,touch:()=>touch.checked,entered:()=>{clear();release();cameraYaw=0;cameraPitch=.1;snap=true;zone.hidden=true;canvas.focus();},exited:p=>{clear();core.reset({position:{x:p.x,y:p.y,z:p.z},headingY:p.heading});core.advance(1/60,{dismount:true});cameraYaw=0;snap=true;zone.hidden=!touch.checked;canvas.focus();}},headlamp);
+ hover=new HoverRide(scene,terrain,{nightAmount:()=>world.sky.nightAmount.value,prepareScene:async(model,signal)=>{await sceneWarmup.prepare(model,signal);if(!active&&!signal?.aborted)await prepareRideShadows(model,core.current.x,core.current.z);},obstacle:world.trafficRay,vehicleLocked:()=>!!trials?.active,restartTrial:()=>trials?.restart(),pose:()=>core.current,blocked:()=>!!cadillac?.riding||inputCaptureBlocked()||!!photo?.active||!!slide?.active||!!boat?.riding,touch:()=>touch.checked,entered:()=>{clear();release();cameraYaw=0;cameraPitch=.1;snap=true;zone.hidden=true;canvas.focus();},exited:p=>{clear();core.reset({position:{x:p.x,y:p.y,z:p.z},headingY:p.heading});core.advance(1/60,{dismount:true});cameraYaw=0;snap=true;zone.hidden=!touch.checked;canvas.focus();}},headlamp);
   startup.bindVehicles(wheel.scene,async()=>{const vehicle=await hover!.preparePreview(scene);if(!vehicle)throw new Error('Hoverbike preview unavailable');return vehicle;});
  const home=document.createElement('button');home.type='button';home.id='main-menu-return';home.textContent='Main menu';document.querySelector('#ride-menu nav')!.append(home);
  home.onclick=()=>{photo?.close();trials?.interrupt();activities?.interrupt('Returned to the main menu. Saved records are kept.');coop?.stop();race?.stop();fishing?.stop();golf?.stop();slide?.cancel();cadillac?.leave();hover?.leaveForTravel();boat?.leave();void online?.leave();clear();document.querySelectorAll<HTMLDialogElement>('dialog[open]').forEach(d=>d.close());active=false;paused=false;world.sky.preview(!SUNSET_REFERENCE);el('ridehud').hidden=true;el('navigation').hidden=true;zone.hidden=true;startup.show();};
@@ -395,7 +402,7 @@ const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreferen
   ctx.clearRect(0,0,420,290);ctx.drawImage(mapLayer,0,0);
   ctx.strokeStyle='#c3c98e';ctx.lineWidth=.65;
   for(const l of data.landmarks){ctx.fillStyle=l===destination?'#ffd98b':l.kind==='monument'?'#96e7dc':'#e8deaa';ctx.beginPath();ctx.arc(px(l.x),pz(l.z),l===destination?4:2,0,Math.PI*2);ctx.fill();}for(const [i,m]of (online?.members??[]).entries()){if(m.id===online?.self)continue;const p=online?.buffers.get(m.id)?.sample(performance.now());if(!p)continue;ctx.fillStyle=PLAYER_COLORS[i];ctx.strokeStyle='#10252c';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(px(p.pose.x),pz(p.pose.z),4,0,Math.PI*2);ctx.fill();ctx.stroke();}race?.drawMap(ctx,px,pz);activities?.drawMap(ctx,px,pz);ctx.save();ctx.translate(px(x),pz(z));ctx.rotate(-heading);ctx.fillStyle='#a5fff0';ctx.beginPath();ctx.moveTo(0,7);ctx.lineTo(-4,-4);ctx.lineTo(4,-4);ctx.fill();ctx.restore();ctx.fillStyle='#f2f4e6';ctx.font='12px system-ui';ctx.fillText('N ↑',10,18);}
- status('Warming up island lighting');await sceneWarmup.prepare();status('Preparing the first frame');let prepared=false,starting=false;start.onclick=async()=>{if(starting||!prepared)return;starting=true;const choice=startup.choice;natureAudio.unlock();clear();startup.preparing();try{
+ status('Warming up island lighting');await sceneWarmup.prepare();status('Preparing rider shadows');await yieldStartupTask();await prepareRideShadows(hero.root,core.current.x,core.current.z);status('Preparing the first frame');let prepared=false,starting=false;start.onclick=async()=>{if(starting||!prepared)return;starting=true;const choice=startup.choice;natureAudio.unlock();clear();startup.preparing();try{
   status('Preparing handheld camera shaders');
   await photo?.prepareCarriedCamera(renderer,camera);
   if(choice.vehicle==='cadillac'){

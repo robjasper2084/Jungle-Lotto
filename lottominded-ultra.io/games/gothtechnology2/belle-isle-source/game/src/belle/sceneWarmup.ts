@@ -40,7 +40,7 @@ const cancelled=(signal:AbortSignal)=>signal.reason instanceof Error?signal.reas
 /** Submit every required light topology before polling. Keep each distinct GL
  * handle so a later submission cannot replace the material pointer we verify. */
 async function prepareIslandPrograms(renderer:Compiler,roots:Object3D[],scene:Scene,camera:Camera,policies:boolean[],
- setShadows:(enabled:boolean)=>void,signal:AbortSignal,onStage:(stage:string)=>void,onNewLink:()=>void){
+ setShadows:(enabled:boolean)=>void,signal:AbortSignal,onStage:(stage:string)=>void,onNewLink:()=>void,model?:Object3D){
  const gl=renderer.getContext?.(),extension=gl?.getExtension?.('KHR_parallel_shader_compile');
  if(!gl||!extension||!renderer.compile||!renderer.info?.programs)return false;
  const existing=new Set(renderer.info.programs.map(entry=>entry.program));
@@ -51,7 +51,10 @@ async function prepareIslandPrograms(renderer:Compiler,roots:Object3D[],scene:Sc
    if(i)await yieldStartupTask();
    checkStartupAbort(signal);
    onStage('submitting island shader batch '+(i+1)+'/'+roots.length+(enabled?' with shadows':' without shadows'));
-   renderer.compile(root,camera,scene);
+   const visible=model?.visible;
+   if(model)model.visible=true;
+   try{renderer.compile(root,camera,scene);}
+   finally{if(model)model.visible=visible!;}
   }
   for(const entry of renderer.info.programs)pending.set(entry.program as WebGLProgram,entry);
   gl.flush();await yieldStartupTask();
@@ -158,8 +161,8 @@ export class SceneWarmup {
     const varyingShadow=shadows.some(({light})=>!light.userData.fixedShadowLayout);
     const policies=mappedShadows&&varyingShadow?[false,true]:[mappedShadows];
     const setShadows=(enabled:boolean)=>{for(const {light} of shadows)light.castShadow=light.userData.fixedShadowLayout?mappedShadows:enabled;};
-    const islandReady=!model&&await readyOrCancelled(prepareIslandPrograms(this.renderer,compileRoots,this.scene,this.camera,
-     policies,setShadows,cancel.signal,message=>{checkDeadline();stage=message;},onNewLink),cancel.signal);
+    const islandReady=await readyOrCancelled(prepareIslandPrograms(this.renderer,compileRoots,this.scene,this.camera,
+     policies,setShadows,cancel.signal,message=>{checkDeadline();stage=message;},onNewLink,model),cancel.signal);
     for(const enabled of islandReady?[]:policies){
      if(cancel.signal.aborted)throw cancelled(cancel.signal);
      setShadows(enabled);
