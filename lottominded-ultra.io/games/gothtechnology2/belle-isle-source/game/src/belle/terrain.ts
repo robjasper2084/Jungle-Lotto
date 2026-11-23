@@ -16,6 +16,7 @@ import {greenhouseBlocked,greenhouseRay,type ConservatoryLayout} from './conserv
 import {monumentSolids,rayMonument,type MonumentSolid} from './monumentCollision.ts';
 import type {TerrainSampler,GroundSample} from '../../runtime/ride-core/src/terrain.ts';
 import {districts,districtHeight,greenwayHeight} from './detroitGround.ts';
+import {RoadContactSurface} from './roadContactSurface.ts';
 export type Point=[number,number];
 export function inside(x:number,z:number,p:Point[]){let c=false;for(let i=0,j=p.length-1;i<p.length;j=i++){const a=p[i],b=p[j];if((a[1]>z)!==(b[1]>z)&&x<(b[0]-a[0])*(z-a[1])/(b[1]-a[1])+a[0])c=!c;}return c;}
 export function segment(x:number,z:number,a:Point,b:Point){const dx=b[0]-a[0],dz=b[1]-a[1],l=dx*dx+dz*dz;const t=l?Math.max(0,Math.min(1,((x-a[0])*dx+(z-a[1])*dz)/l)):0;return{t,d:Math.hypot(x-a[0]-t*dx,z-a[1]-t*dz)};}
@@ -49,6 +50,7 @@ function polygonQuery(points:Point[]):PolygonQuery{
 }
 export type BoulderCollision={x:number;z:number;bottom:number;top:number;radius:number};
 export class ParkTerrain implements TerrainSampler{
+ readonly roadContact=new RoadContactSurface();
  readonly flightSolids=new FlightSolids();
  private readonly boulderCells=new Map<string,BoulderCollision[]>();
  /** Static mineral obstacles are always physical, regardless of graphics tier. */
