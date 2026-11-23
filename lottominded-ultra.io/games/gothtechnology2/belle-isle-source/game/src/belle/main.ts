@@ -5,6 +5,7 @@ import {REAL_LOCATION_ORIGIN,REAL_LOCATION_AXES,type RealLocationFix} from './re
 import {LocationPresentation} from './locationPresentation.ts';
 import {roadContactPresentation} from './roadContactPresentation.ts';
 import {createLocationPerformancePanel} from './locationPerformance.ts';
+import {observeModalMeasurementBoundaries} from './modalMeasurementBoundary.ts';
 import './rideMedia.css';
 import {yieldStartupTask,warmObjectTextures} from './startupWork.ts';
 import {prepareOnFootRider} from '../../runtime/ride-core/src/onFootRider.ts';
@@ -456,7 +457,10 @@ const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreferen
  for(const [value,label]of [['sports','Courts & ballfields'],['trail','Trails']]){const option=document.createElement('option');option.value=value;option.textContent=label;el('guide-category').append(option);}
  const filterGuide=()=>{const query=el<HTMLInputElement>('guide-search').value.trim().toLowerCase(),kind=el<HTMLSelectElement>('guide-category').value;let shown=0;document.querySelectorAll<HTMLElement>('#landmarks .landmark').forEach(c=>{c.hidden=!(c.dataset.search!.includes(query)&&(kind==='all'||c.dataset.kind===kind));if(!c.hidden)shown++;});el('guide-count').textContent=shown+' places';};el('guide-search').oninput=filterGuide;el('guide-category').onchange=filterGuide;filterGuide();
  const firstRide=createFirstRideObjective(destinations,data.spawn,target=>{if(destination===target)destination=undefined;});
- const referenceHud=REFERENCE_STYLE?createReferenceHud(data):undefined;
+ const referenceHud=REFERENCE_STYLE?createReferenceHud(data,{
+  position:()=>{const state=realLocation?.snapshot;return state?.status==='tracking'?state.fix:undefined;},
+  draw:(mapContext,mapX,mapZ)=>realLocation?.drawMap(mapContext,mapX,mapZ),
+ }):undefined;
  const minimap=el<HTMLCanvasElement>('minimap'),navigation=el('navigation'),ctx=minimap.getContext('2d')!;
  let cityMap=false;
  let mapFrame={minX:-600,maxX:4100,minZ:-700,maxZ:2000};
@@ -617,8 +621,14 @@ const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreferen
     const doorButton=el('hop');if(cadillac?.riding){el('ride-mode').textContent='CADILLAC · '+cadillac.sim.gear;el('mount-label').textContent='Exit';el('mount').setAttribute('aria-label','Exit parked Cadillac (F)');doorButton.querySelector('span')!.textContent=cadillac.hydraulics?'Hydraulics':'Door';doorButton.setAttribute('aria-label',cadillac.hydraulics?'Cadillac hydraulics controls':'Open or close parked driver door (E)');el('hint').textContent=cadillac.hydraulics?'WASD drive · S brake/reverse · Page Up/Down lift/lower · Right Shift + Z/X axle hops · V view':'WASD drive · S brake/reverse · E driver door · T trunk · 1/2 rear doors · C trunk view · V view';el('hover-enter').setAttribute('disabled','');}else if(/driver door|Cadillac hydraulics/.test(doorButton.getAttribute('aria-label')??'')){doorButton.querySelector('span')!.textContent='Hop';doorButton.setAttribute('aria-label','Hop (Space)');}
     const nearest=destinations.reduce((a,b)=>Math.hypot(a.x-pose.x,a.z-pose.z)<Math.hypot(b.x-pose.x,b.z-pose.z)?a:b);el('place').textContent=yachtRoom(pose.x,pose.z)||(data.dossin&&dossinRoom(data.dossin,pose.x,pose.z))||(data.aquarium&&(aquariumRoom(data.aquarium,pose.x,pose.z)||(Math.hypot(pose.x-aquariumWorld(data.aquarium,0,-38).x,pose.z-aquariumWorld(data.aquarium,0,-38).z)<13?'Aquarium · North entrance':null)))||(data.conservatory&&greenhouseRoom(data.conservatory,pose.x,pose.z))||(data.conservatory&&Math.hypot(pose.x-data.conservatory.center[0],pose.z-data.conservatory.center[1])<35?'Conservatory · West entrance':Math.hypot(pose.x,pose.z)<210?'Jefferson Avenue · Bridge approach':terrain.bridge(pose.x,pose.z).active?'MacArthur Bridge':(districtName(pose.x,pose.z)??beachPlace(pose.x,pose.z)??nearest.name));if(!locationFollowing)profilePlace=el('place').textContent||'';const districtLabel=districtName(pose.x,pose.z);el('district-title').textContent=districtLabel?.startsWith('Elmwood')?'ELMWOOD':districtLabel?'SWOOP DETROIT':'BELLE ISLE';el('destination').textContent=destination?destination.name+' · '+Math.round(Math.hypot(destination.x-pose.x,destination.z-pose.z))+' m':destinations.length+' places · Greater Detroit guide';referenceHud?.update(pose,active&&!sunsetPreview?.showcase&&!photo?.active&&!vr?.active&&!race?.active&&!coop?.active,destination??undefined,el('place').textContent||'',!!trials?.active);const flightPanelFactor=flightHudBackdropFactor(pose.speed,!!hover?.riding,paused||overlay||!!coop?.active);document.body.style.setProperty('--belle-flight-hud-alpha',(.87*flightPanelFactor).toFixed(3));const s=samples.slice().sort((a,b)=>a-b),diagnostic=el('profile');Object.assign(diagnostic.dataset,{quality:graphics.value,effectiveQuality:world.quality.effective,adaptiveScale:String(world.quality.scale),frameCap:String(cap),activeFrames:String(activeFrames),stalledFrames:String(stalledFrames),severeFrames:String(severeFrames),longestFrameMs:longestFrameMs.toFixed(1),pixelRatio:renderer.getPixelRatio().toFixed(3),programs:String(renderer.info.programs?.length??0),sampleCount:String(s.length),frameP50Ms:s.length?s[Math.floor(s.length*.50)].toFixed(2):'',frameP95Ms:s.length?s[Math.min(s.length-1,Math.floor(s.length*.95))].toFixed(2):'',frameP99Ms:s.length?s[Math.min(s.length-1,Math.floor(s.length*.99))].toFixed(2):'',drawCalls:String(renderer.info.render.calls),triangles:String(renderer.info.render.triangles),textures:String(renderer.info.memory.textures),geometries:String(renderer.info.memory.geometries)});diagnostic.textContent=s.length?'Frame '+s[Math.floor(s.length*.5)].toFixed(1)+' ms · p95 '+s[Math.floor(s.length*.95)].toFixed(1)+' ms · '+renderer.info.render.calls+' draws · '+world.quality.effective+' · '+stalledFrames+' stalls >250 ms'+(rideProfile?.shortStatus?' · '+rideProfile.shortStatus:''):'';}rideProfile?.sample(elapsed,[simEnd-cpuStart,presentationEnd-simEnd,worldEnd-presentationEnd,renderEnd-worldEnd,performance.now()-renderEnd],renderer.info.render.calls,renderer.info.render.triangles,renderer.info.memory.textures,renderer.info.memory.geometries,manualPose.x,manualPose.z,manualPose.speed,profilePlace,eligibleFrame&&!blocked()&&!locationFollowing,renderProbe?.finishFrame(),submissionFrame);}
  // Hidden tabs may suspend animation frames entirely; do not charge that gap to a delivery.
- document.addEventListener('visibilitychange',()=>{previous=performance.now();lastMeasurementEligible=false;});
- window.addEventListener('focus',()=>{previous=performance.now();lastMeasurementEligible=false;});
+ const breakMeasurementInterval=()=>{previous=performance.now();lastMeasurementEligible=false;rideProfile?.breakFrameAssociation();};
+ // This document can resume from the back/forward cache after pagehide.
+ // Keep its modal observer for the same lifetime as the visibility listeners.
+ observeModalMeasurementBoundaries(document,()=>{
+  breakMeasurementInterval();locationPerformance?.modalBoundary();
+ });
+ document.addEventListener('visibilitychange',breakMeasurementInterval);
+ window.addEventListener('focus',breakMeasurementInterval);
 
  renderer.setAnimationLoop(frame);
 }

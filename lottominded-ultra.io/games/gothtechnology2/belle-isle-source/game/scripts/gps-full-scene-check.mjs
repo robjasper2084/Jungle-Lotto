@@ -44,9 +44,9 @@ export async function checkGpsFullScene({page,expect,game,output,device,renderBa
   actualMacMetal:process.platform==='darwin'&&renderBackend==='angle-metal'&&/Metal/i.test(actualGpu?.renderer||'')&&!/SwiftShader|llvmpipe|software rasterizer/i.test(actualGpu?.renderer||''),
   scope:'Actual full game and visible controls; synthetic public-spawn geolocation. Timing counts scene render submissions, not GPU execution or confirmed presentation.',
   placement:'Existing Return to Jefferson bridge start and Dismount controls; map origin/spawn projection, no injected game pose.',
-  passed:false,states:{},captures:[],checks:{},errors:[],privacy:{networkCoordinateMatches:0,storageCoordinateMatches:0},cleanupErrors:[]};
+  passed:false,map:null,states:{},captures:[],checks:{},errors:[],privacy:{networkCoordinateMatches:0,storageCoordinateMatches:0},cleanupErrors:[]};
  const context=page.context(),origin=new URL(page.url()).origin;let timer,pending=Promise.resolve(),inFlight=false,refreshError;
- let coordinateTokens=[];
+ let coordinateTokens=[],mapCanvas;
  const observeRequest=request=>{const value=request.url()+'\n'+(request.postData()||'');if(coordinateTokens.some(token=>value.includes(token)))result.privacy.networkCoordinateMatches++;};
  const capture=async name=>{const file='gps-'+name+'.png';await page.screenshot({path:resolve(output,file),timeout:90000});result.captures.push(file);};
  const panel=page.locator('#location-perf'),summary=panel.locator(':scope > summary'),dialog=page.locator('#real-location');
@@ -60,16 +60,34 @@ export async function checkGpsFullScene({page,expect,game,output,device,renderBa
   if(await page.locator('#ride-menu').isVisible())await page.locator('#ride-menu [data-close="ride-menu"]').click();
   await expect(page.locator('dialog[open]')).toHaveCount(0);
  };
- const cyanPixels=()=>page.locator('#minimap').evaluate(canvas=>{
+ const cyanPixels=async()=>{
+  assert(mapCanvas&&await mapCanvas.isVisible(),'The selected player-visible GPS map must remain visible');
+  return mapCanvas.evaluate(canvas=>{
   const ctx=canvas.getContext('2d');if(!ctx)throw Error('The actual minimap canvas is unavailable');
   const rgba=ctx.getImageData(0,0,canvas.width,canvas.height).data;let count=0;
   for(let i=0;i<rgba.length;i+=4)if(Math.abs(rgba[i]-101)<=3&&Math.abs(rgba[i+1]-232)<=3&&rgba[i+2]>=252&&rgba[i+3]>=200)count++;
   return count;
- });
- const settings=async()=>({quality:await page.locator('#quality').inputValue(),cap:await page.locator('#fps').inputValue(),reducedMotion:await page.locator('#motion').isChecked()});
+  });
+ };
+ const assertMapUnobscured=async label=>{
+  await expect(mapCanvas).toBeVisible();
+  const uncovered=await mapCanvas.evaluate(canvas=>{
+   const box=canvas.getBoundingClientRect(),surface=canvas.closest('.reference-map')||canvas;
+   // The center and four interior quadrants lie inside the circular map.
+   // Read hit targets only; never mutate styles or dismiss an obstruction.
+   return [[.5,.5],[.25,.25],[.75,.25],[.25,.75],[.75,.75]].every(([x,y])=>{
+    const target=document.elementFromPoint(box.left+box.width*x,box.top+box.height*y);
+    return !!target&&surface.contains(target);
+   });
+  });
+  result.checks['mapUnobscured'+label]=uncovered;
+  assert(uncovered,'The selected GPS map must remain unobscured at its center and four interior quadrants');
+ };
+ const settings=async()=>({quality:await page.locator('#quality').inputValue(),cap:await page.locator('#fps').inputValue(),reducedMotion:await page.locator('#motion').isChecked(),hudPreset:await page.locator('body').getAttribute('data-hud-preset'),focusHud:/\bbelle-hud-focus\b/.test(await page.locator('body').getAttribute('class')||'')});
  let fixedSettings,firstMetadata;
  async function record(name,state){
   assert.deepEqual(await settings(),fixedSettings,'Graphics settings must match across GPS phases');
+  await assertMapUnobscured('Before_'+name);
   await expect(dialog).toHaveAttribute('data-location-status',state==='follow'?'tracking':state);
   if(state==='follow')await expect(page.locator('body')).toHaveClass(/location-following/);else await expect(page.locator('body')).not.toHaveClass(/location-following/);
   await expect(page.locator('dialog[open]')).toHaveCount(0);
@@ -82,6 +100,7 @@ export async function checkGpsFullScene({page,expect,game,output,device,renderBa
   const comparable={viewport:timing.atStart.viewport,targetFrameCap:timing.atStart.targetFrameCap,reducedMotion:timing.atStart.reducedMotion};
   if(firstMetadata)assert.deepEqual(comparable,firstMetadata,'Viewport and rendering settings must remain identical across phases');else firstMetadata=comparable;
   assert.deepEqual(await settings(),fixedSettings);assert(!refreshError,refreshError);
+  await assertMapUnobscured('After_'+name);
   result.states[name]=timing;await writeFile(resolve(output,'gps-'+name+'-timing.json'),JSON.stringify(timing,null,2)+'\n');
   await capture(name+'-timing');await summary.click();
  }
@@ -101,15 +120,22 @@ export async function checkGpsFullScene({page,expect,game,output,device,renderBa
   await openSettings();await page.locator('#restart').click();await expect(page.locator('#settings')).not.toBeVisible();
   if((await page.locator('#ride-mode').innerText()).trim()!=='ON FOOT')await page.locator('#mount').click();
   await expect(page.locator('#ride-mode')).toHaveText('ON FOOT');
-  // Phone layouts begin collapsed, and main.drawMap deliberately skips a
-  // hidden canvas. Use the real toggle and keep the same map view in all phases.
-  if(!await page.locator('#minimap').isVisible()){
-   await expect(page.locator('#minimap-hide')).toBeVisible();
-   // The QA disclosure can overlap this corner; native keyboard activation
-   // exercises the actual button without forced clicks or changing DOM state.
-   await page.locator('#minimap-hide').press('Enter');
+  // The default cinematic preset shows the circular navigation canvas and
+  // hides legacy #navigation. Check the map players actually see, preserving
+  // their HUD preset instead of exposing a hidden legacy canvas for the test.
+  const referenceMap=page.locator('#reference-hud .reference-map canvas');
+  if(await referenceMap.isVisible()){
+   mapCanvas=referenceMap;result.map={kind:'circular',selector:'#reference-hud .reference-map canvas'};
+  }else{
+   mapCanvas=page.locator('#minimap');result.map={kind:'legacy',selector:'#minimap'};
+   if(!await mapCanvas.isVisible()){
+    await expect(page.locator('#minimap-hide')).toBeVisible();
+    // The QA disclosure can overlap this corner; native keyboard activation
+    // uses the actual visible button, without a forced click or DOM mutation.
+    await page.locator('#minimap-hide').press('Enter');
+   }
   }
-  await expect(page.locator('#minimap')).toBeVisible();
+  await expect(mapCanvas).toBeVisible();
   fixedSettings=await settings();result.settings=fixedSettings;
   await openLocation();await expect(dialog).toHaveAttribute('data-location-status','off');
   await expect(page.locator('#real-location-start')).toHaveText('Use my location');await expect(page.locator('#real-location-follow')).toBeDisabled();
@@ -136,6 +162,7 @@ export async function checkGpsFullScene({page,expect,game,output,device,renderBa
   await page.getByRole('button',{name:'Stop real location and clear position',exact:true}).click();
   await expect(page.locator('body')).not.toHaveClass(/location-following/);await expect(dialog).toHaveAttribute('data-location-status','off');
   await expect(page.locator('#real-location-strip')).toBeHidden();await expect(page.locator('#mount')).toBeEnabled();
+  await assertMapUnobscured('AfterStop');
   await expect.poll(cyanPixels,{timeout:15000}).toBeLessThanOrEqual(beforeMarker);result.checks.stopClearsMarkerAndRestoresControls=true;
   result.privacy.storageCoordinateMatches=await page.evaluate(tokens=>[localStorage,sessionStorage].reduce((count,storage)=>{
    for(let i=0;i<storage.length;i++){const value=storage.getItem(storage.key(i))||'';if(tokens.some(token=>value.includes(token)))count++;}return count;

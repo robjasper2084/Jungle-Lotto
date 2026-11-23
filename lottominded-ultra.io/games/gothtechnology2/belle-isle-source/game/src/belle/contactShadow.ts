@@ -16,7 +16,10 @@ export function createVehicleContactShadow(scene:Pick<T.Object3D,'add'>,terrain:
    diffuseColor.a*=contactEdge*contactEdge;
   `);
  };material.customProgramCacheKey=()=>'vehicle-contact-gradient-v1';
- const mesh=new T.Mesh(geometry,material);mesh.name='Vehicle contact shadow';mesh.visible=false;mesh.renderOrder=1;scene.add(mesh);
+ const mesh=new T.Mesh(geometry,material);mesh.name='Vehicle contact shadow';mesh.visible=false;
+ // This unique shader first becomes visible when riding starts. Compile it
+ // under the existing preparation lock while preserving its runtime visibility.
+ mesh.userData.warmIslandShaders=true;mesh.renderOrder=1;scene.add(mesh);
  const ground=createGroundSample(),up=new T.Vector3(0,1,0),normal=new T.Vector3(),tilt=new T.Quaternion(),yaw=new T.Quaternion();
  let opacity=.14;
  return {

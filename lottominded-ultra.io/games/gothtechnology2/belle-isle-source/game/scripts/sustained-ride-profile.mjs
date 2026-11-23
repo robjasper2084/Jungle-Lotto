@@ -130,15 +130,15 @@ try{
  });
  if(report.renderBackend==='angle-metal'&&(!/Metal/i.test(report.actualGpu.renderer)||/SwiftShader|llvmpipe|software rasterizer/i.test(report.actualGpu.renderer)))
   throw Error('The sustained profile requires a Metal renderer on macOS. Chrome reported '+report.actualGpu.renderer);
- // The observer is idle throughout the ordinary ride. Its native disclosure
- // stays collapsed until the separate GPS windows after baseline extraction.
- if(mode==='full')await page.locator('#location-perf > summary').click();
  await page.locator('.cinema-ride-picker > summary').click();
  await page.locator('.ride-options label').filter({hasText:'One wheel'}).click();
  await page.getByRole('button',{name:'Use this ride',exact:true}).click();
  await page.locator('#start').click();
  await expect(page.locator('body')).not.toHaveClass(/at-start/);
  report.rideStartedMs=Date.now()-navigationStarted;
+ // The QA observer is hidden during ride selection. Once play starts, keep
+ // its idle disclosure collapsed until the separate GPS capture windows.
+ if(mode==='full')await page.locator('#location-perf > summary').click();
  // Welcome/ride start are not proof of the first input-responsive rendered frame.
  // firstPlayableMs remains null pending genuine frame-coupled input evidence.
  async function settings(){

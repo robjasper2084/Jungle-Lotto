@@ -85,6 +85,9 @@ export class LocationPerformanceCapture {
   }
   const state=this.latest!.locationState;this.states[state]=(this.states[state]??0)+1;
  }
+ modalBoundary(now:number,context:LocationPerfContext):void {
+  this.check(now,{...context,modal:true});
+ }
  stop(now:number,context:LocationPerfContext):void {
   this.check(now,context);if(this.recording)this.finish(now,'manual');
  }
@@ -107,14 +110,14 @@ export class LocationPerformanceCapture {
  }
 }
 
-export interface LocationPerformancePanel {check():void;rendered(now:number,cpuMs:number):void;dispose():void;}
+export interface LocationPerformancePanel {check():void;modalBoundary():void;rendered(now:number,cpuMs:number):void;dispose():void;}
 /** No DOM, listeners or measurement work unless the exact QA query flag is present. */
 export function createLocationPerformancePanel(context:()=>LocationPerfContext,search=location.search):LocationPerformancePanel|undefined {
  if(!locationPerformanceEnabled(search))return;
  const capture=new LocationPerformanceCapture(),panel=document.createElement('details'),style=document.createElement('style');
  panel.id='location-perf';panel.open=true;
- // Leave the 44px Menu/Settings toolbar reachable at every viewport width.
- style.textContent=`#location-perf{position:fixed;right:max(10px,env(safe-area-inset-right));top:calc(max(12px,env(safe-area-inset-top)) + 56px);z-index:15000;width:min(310px,calc(100vw - 20px));box-sizing:border-box;max-height:min(75vh,calc(100dvh - max(12px,env(safe-area-inset-top)) - 72px));overflow:auto;padding:10px;border:1px solid #7bafa6;border-radius:10px;background:#0b242df5;color:#eef7f5;font:12px/1.45 system-ui;box-shadow:0 6px 24px #0006;animation:none;transition:none}#location-perf summary{cursor:pointer;min-height:44px;font-weight:700}#location-perf p{margin:7px 0}#location-perf .location-perf-actions{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}#location-perf button,#location-perf select{font:inherit;min-height:44px;padding:6px 10px;border:1px solid #7bafa6;border-radius:6px;background:#153c45;color:#fff}#location-perf button:disabled{opacity:.55}#location-perf :focus-visible{outline:3px solid #ffd98b;outline-offset:2px}#location-perf-report{box-sizing:border-box;width:100%;height:160px;resize:vertical;background:#071c24;color:#eef7f5;font:11px/1.4 monospace}#location-perf [hidden]{display:none!important}`;
+ // Keep the toolbar and the default circular map clear, including on phones.
+ style.textContent=`#location-perf{position:fixed;left:max(10px,env(safe-area-inset-left));top:calc(max(12px,env(safe-area-inset-top)) + 208px);z-index:15000;width:min(310px,calc(100vw - 20px));box-sizing:border-box;max-height:min(75vh,calc(100dvh - max(12px,env(safe-area-inset-top)) - 224px));overflow:auto;padding:10px;border:1px solid #7bafa6;border-radius:10px;background:#0b242df5;color:#eef7f5;font:12px/1.45 system-ui;box-shadow:0 6px 24px #0006;animation:none;transition:none}#location-perf summary{cursor:pointer;min-height:44px;font-weight:700}#location-perf p{margin:7px 0}#location-perf .location-perf-actions{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}#location-perf button,#location-perf select{font:inherit;min-height:44px;padding:6px 10px;border:1px solid #7bafa6;border-radius:6px;background:#153c45;color:#fff}#location-perf button:disabled{opacity:.55}#location-perf :focus-visible{outline:3px solid #ffd98b;outline-offset:2px}#location-perf-report{box-sizing:border-box;width:100%;height:160px;resize:vertical;background:#071c24;color:#eef7f5;font:11px/1.4 monospace}#location-perf [hidden]{display:none!important}body.at-start #location-perf{display:none}`;
  const summary=document.createElement('summary');summary.textContent='Location timing · QA only';
  const note=document.createElement('p');note.textContent='Full-scene CPU frame intervals, including GPS follow. No positions or headings. Close other panels and keep this tab active.';
  const label=document.createElement('label');label.textContent='Capture duration ';
@@ -157,7 +160,7 @@ export function createLocationPerformancePanel(context:()=>LocationPerfContext,s
  };
  document.addEventListener('visibilitychange',hidden);window.addEventListener('blur',blur);window.addEventListener('pagehide',pagehide);
  const timer=window.setInterval(check,250);
- const api:LocationPerformancePanel={check,rendered(now,cpuMs){if(disposed||!capture.running)return;capture.rendered(now,cpuMs,context());if(!capture.running)refresh();},dispose(){
+ const api:LocationPerformancePanel={check,modalBoundary(){if(disposed||!capture.running)return;capture.modalBoundary(performance.now(),context());refresh();},rendered(now,cpuMs){if(disposed||!capture.running)return;capture.rendered(now,cpuMs,context());if(!capture.running)refresh();},dispose(){
   if(disposed)return;disposed=true;capture.clear();lastReport=undefined;report.value='';window.clearInterval(timer);
   document.removeEventListener('visibilitychange',hidden);window.removeEventListener('blur',blur);window.removeEventListener('pagehide',pagehide);panel.remove();style.remove();
  }};

@@ -80,6 +80,18 @@ test('GPS follow excludes located render probes and breaks diagnostic associatio
  assert.match(transition,/submissionProbe\?\.cancelFrame\(\)/);
 });
 
+test('the default circular HUD receives only the active local fix and the real GPS drawing callback',()=>{
+ const overlay=call('createReferenceHud').arguments[1];
+ const fixture:{realLocation:any}={realLocation:{snapshot:{status:'tracking',fix:{x:900,z:600,accuracy:5}},drawMap:(...args:unknown[])=>args}};
+ const position=vm.runInNewContext('('+property(overlay,'position')+')',fixture);
+ const draw=vm.runInNewContext('('+property(overlay,'draw')+')',fixture);
+ assert.equal(position(),fixture.realLocation.snapshot.fix);
+ const canvas={},mapX=(x:number)=>x,mapZ=(z:number)=>z;
+ assert.deepEqual(Array.from(draw(canvas,mapX,mapZ)),[canvas,mapX,mapZ]);
+ fixture.realLocation.snapshot.status='off';assert.equal(position(),undefined);
+ fixture.realLocation=undefined;assert.equal(position(),undefined);assert.equal(draw(canvas,mapX,mapZ),undefined);
+});
+
 for(const roadRise of [0,.08])for(const firstPerson of [false,true])test('stopping GPS restores the '+(firstPerson?'first':'third')+'-person hero and camera with '+roadRise+' m road rise without another animation frame',()=>{
  const core={
   current:Object.assign(createPose(),{x:12,y:2.3,z:24,airHeight:.3,headingY:.7,footBlend:.25,parkX:8,parkY:2,parkZ:20}),

@@ -64,6 +64,17 @@ test('orientation, framebuffer, motion and frame-cap changes cannot silently mix
  assert.deepEqual(capture.result!.locationFrames,{off:1,tracking:1,follow:1},'GPS state changes are reported only as bounded aggregate labels');
 });
 
+test('an observed modal boundary interrupts even if the dialog closes before the next rendered frame',()=>{
+ const capture=new LocationPerformanceCapture(),state=context();capture.start(0,30,state);capture.rendered(16,2,state);
+ // The live context already says closed when a batched open/close mutation is delivered.
+ capture.modalBoundary(20,state);
+ assert.equal(capture.result!.reason,'modal');assert.equal(capture.result!.outcome,'interrupted');
+ assert.equal(capture.result!.renderedFrames,1);assert.equal(capture.result!.wallDurationMs,20);
+ capture.rendered(350,2,state);assert.equal(capture.result!.renderedFrames,1,'A later frame cannot silently resume the capture');
+ capture.start(400,30,state);capture.rendered(416,2,state);capture.rendered(716,2,state);capture.stop(720,state);
+ assert.equal(capture.result!.stalls.over250Ms,1,'A genuine gameplay stall without a modal is still counted');
+});
+
 test('sample storage is bounded even if a caller submits frames above the allowed game frame rate',()=>{
  const capture=new LocationPerformanceCapture(),state=context();capture.start(0,60,state);
  for(let i=1;i<=LOCATION_PERF_SAMPLE_LIMIT+1;i++)capture.rendered(i,1,state);

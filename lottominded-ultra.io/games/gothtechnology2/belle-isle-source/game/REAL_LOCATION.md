@@ -6,7 +6,7 @@ This feature adds optional browser location and compass support to the existing 
 
 1. Open **Real location** from the ride menu or the island guide.
 2. Choose **Use my location**. Only this deliberate action requests browser location access.
-3. A usable fix adds a cyan **YOU · GPS** marker and an estimated accuracy area to the minimap. The map expands when needed to include both the device and the game rider.
+3. A usable fix adds a cyan **YOU · GPS** marker and an estimated accuracy area to the visible circular navigation map, with support for the legacy minimap as well. The map expands when needed to include both the device and the game rider.
 4. During solo exploration, choose **Follow my location** to display the avatar at the device position. Follow requires clear, dry mapped ground and no conflicting activity or multiplayer session.
 5. **Stop following** restores the ordinary game view where it was parked. **Stop location**, or **Stop** on the persistent location strip, also clears the current fix and stops the sensor watches.
 
@@ -111,6 +111,14 @@ Follow-up verification on 2026-11-23 supersedes the earlier connection limitatio
 See [the rendered QA record](../qa/gps-release-2026-11-23/README.md) for the screenshots, exact scope and evidence references. Full-scene GPU performance results and publication evidence must be read from the exact release workflow run; an in-progress or queued workflow is not a passing result.
 
 The release integration also incorporates production update `3e68163e94d173395cf7a2f47bd37859cf1a3f47` (PR #209), preserving its Cadillac wire rims, road-contact alignment and animated-shadow fixes. A shared nonmutating presentation helper applies the same road alignment during ordinary rendering and synchronous GPS Stop restoration. Focused checks passed 23/23, including both camera modes on flat/raised pavement and unchanged simulation poses. Project typechecking and the local production build passed. The full local run had only the same two sparse-checkout fixture omissions after merging; restoring those tracked files yielded 15/15 passes in the three affected files, with the separate asset stage passing 11/11. Exact final full-suite counts belong to the new CI run.
+
+### Corrections from the first full-game GPS run
+
+The actual Mac/Metal phone-viewport run on candidate `7e82f325…` revealed that the default cinematic HUD displays a circular map while hiding the legacy minimap. GPS now draws through the same local-only panel callback onto the visible circular map, after the rider marker, and expands its range to contain the fix and estimated uncertainty. The CI helper selects the actual visible map without changing the HUD preset and checks both its rendered marker pixels and five unobscured interior points. The optional timing panel is docked below the phone map and on the left so it does not cover the map or toolbar.
+
+That candidate also reported one interval over 250 ms in each phone riding lane: 282.4 ms in full mode and 317.2 ms in the reduced-scene diagnostic. Neither result is reclassified as passing. A concrete modal-boundary gap was corrected: opening and closing a dialog between rendered callbacks now invalidates that transition interval, and the GPS recorder explicitly interrupts. Genuine gameplay stalls without a modal remain counted; the existing p95 ≤ 50 ms and zero >250 ms gates are unchanged. Observation persists with the document across back/forward-cache restoration.
+
+The unique contact-shadow shader is now included in the existing island preparation while its mesh stays hidden, removing that known first-use compilation path. These source corrections do not prove the earlier outliers were caused by either path. New exact-head browser results must establish the release outcome.
 
 **Physical-device checks remain unexecuted:** real GPS/compass accuracy and heading on a phone/iPad, actual sensor permission prompts in the deployed HTTPS context, field foreground/background behavior, battery/thermal behavior, and GPS-follow timing with the complete scene on those devices. Browser emulation and synthetic input do not certify those results.
 

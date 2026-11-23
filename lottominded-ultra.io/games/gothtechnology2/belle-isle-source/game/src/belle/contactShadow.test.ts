@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import * as T from 'three';
 import type {TerrainSampler} from '../../runtime/ride-core/src/terrain.ts';
 import {createVehicleContactShadow,type ContactShadowPose} from './contactShadow.ts';
+import {SceneWarmup} from './sceneWarmup.ts';
 
 function fixture(){
  const scene=new T.Scene();let height=2,wet=false,reference:number|undefined,normal={x:0,y:1,z:0};
@@ -11,6 +12,19 @@ function fixture(){
  return {scene,shadow,mesh,setHeight(v:number){height=v;},setWet(v:boolean){wet=v;},setNormal(v:typeof normal){normal=v;},reference:()=>reference};
 }
 const wheel:ContactShadowPose={x:10,y:2,z:20,heading:.4,vehicle:'onewheel'};
+
+test('the first-use contact shader is included in island warmup without displaying or moving its hidden mesh',async()=>{
+ const {scene,mesh}=fixture(),submitted:T.Object3D[]=[];
+ const camera=new T.PerspectiveCamera();
+ const warmup=new SceneWarmup({shadowMap:{enabled:false,autoUpdate:true,needsUpdate:false,type:T.PCFShadowMap,render(){}},compileAsync:async root=>{
+  root.traverse(object=>submitted.push(object));return scene;
+ }},scene,camera,()=>{},async()=>{});
+ assert.equal(mesh.visible,false);const transform=mesh.matrix.toArray();
+ await warmup.prepare();
+ assert.ok(submitted.includes(mesh),'The actual preparation compiler receives the hidden contact drawable');
+ assert.equal(mesh.visible,false);assert.deepEqual(mesh.matrix.toArray(),transform);
+ assert.equal(mesh.material.customProgramCacheKey(),'vehicle-contact-gradient-v1');
+});
 
 test('contact shade uses one texture-free quad above the existing pavement skins',()=>{
  const {scene,shadow,mesh}=fixture();shadow.update(wheel);
