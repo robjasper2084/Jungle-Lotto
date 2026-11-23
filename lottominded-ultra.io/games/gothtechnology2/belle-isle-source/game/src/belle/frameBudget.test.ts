@@ -22,6 +22,17 @@ test('ordinary 25fps pressure at a 60fps target lowers quality gradually',()=>{
  for(let i=1;i<changes.length;i++)assert(changes[i].seconds-changes[i-1].seconds>=2.9);
 });
 
+test('high detail lowers the canvas budget in two steps under sustained load',()=>{
+ const budget=new FrameBudget(),scales:number[]=[];
+ for(let i=0;i<240;i++)budget.sample(1/60,60,true,true);
+ budget.sample(.34,60,true,true);
+ assert.equal(budget.scale,1);
+ for(let i=0;i<160;i++)if(budget.sample(1/30,60,true,true))scales.push(budget.scale);
+ assert.deepEqual(scales,[.8,.6]);
+ for(let i=0;i<360;i++)budget.sample(1/60,60,true,true);
+ assert.ok(budget.scale>.6);
+});
+
 test('exactly three times the target interval stays on the gradual path',()=>{
  const b=new FrameBudget(),changes:number[]=[];
  for(let i=0;i<300;i++)if(b.sample(.05,60,true))changes.push(b.scale);
