@@ -149,6 +149,9 @@ diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.5,.66,.65),clamp(washFoam*.4+rippleF
   if(sun&&sun.lengthSq()>.000001)riverSunDirection.value.copy(sun).normalize();
   riverSunGlint.value=Number.isFinite(glint)?T.MathUtils.clamp(glint,0,1)*(REFERENCE_STYLE?.35:1):0;
  },setVehicle(p:Vehicle){active=p;},setQuality(q:string){const lightweight=q==='smooth';near.visible=true;foam.visible=!lightweight;shallow.setQuality(q);
+   // Keep the same alpha shader. In Smooth the opaque pass writes alpha one
+   // and depth with blending disabled, so no new lagoon program is needed.
+   lagoon.blending=lightweight?T.NoBlending:T.NormalBlending;
    lagoon.transparent=!lightweight;lagoon.depthWrite=lightweight;lagoon.opacity=lightweight?1:.76;lagoon.needsUpdate=true;
    // The calm material leaves every vertex on one plane. The wave shader needs
    // the original interior grid to displace the surface.
