@@ -1,6 +1,7 @@
 import type {Camera,Object3D,Scene,WebGLRenderer} from 'three';
 
 const animatedScenes=new WeakSet<Scene>();
+export function consumeAnimatedShadowUpdate(scene:Scene){return animatedScenes.delete(scene);}
 /** A cached depth map belongs to its rendered pose. Reusing it after skinning
  * makes the old silhouette sweep across the new body as flashing self-shadow. */
 export function invalidateAnimatedShadow(root:Object3D){
@@ -26,7 +27,7 @@ export function installShadowBudget(renderer:WebGLRenderer,scene:Scene,canvas?:H
  renderer.shadowMap.autoUpdate=false;
  scene.onBeforeRender=function(r,s,c,...rest){
   original.call(this,r,s,c,...rest);
-  const animated=animatedScenes.delete(scene);
+  const animated=consumeAnimatedShadowUpdate(scene);
   if(renderer.xr.isPresenting){renderer.shadowMap.needsUpdate=renderer.shadowMap.enabled;return;}
   if(!renderer.shadowMap.enabled)return;
   const camera=c as Camera,now=performance.now();

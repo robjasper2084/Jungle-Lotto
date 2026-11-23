@@ -15,11 +15,12 @@ function batches(scene:T.Object3D,mat:T.Material,name:string,size=320){
       const key=Math.floor(p[0]/size)+','+Math.floor(p[1]/size);
       const list=cells.get(key)??[];list.push(g);cells.set(key,list);
     },
-    finish(){
+    finish(onGeometry?:(geometry:T.BufferGeometry)=>void){
       for(const [key,geometries] of cells){
         const g=mergeGeometries(geometries);
         if(!g)throw Error('Could not batch '+name);
         const m=new T.Mesh(g,mat);m.name=name;m.userData.tile=key.split(',').map(v=>(Number(v)+.5)*size);m.receiveShadow=true;scene.add(m);
+        onGeometry?.(g);
         for(const part of geometries)part.dispose();
       }
     }
@@ -50,6 +51,7 @@ export function addDetroitDistricts(scene:T.Scene,renderer:T.WebGLRenderer,terra
   const banks=new T.Mesh(trailMesh,grass);banks.name='Dequindre Cut greenway banks';scene.add(banks);
   const trailPath=districts.greenway.map(([x,z])=>[x,z] as Point);
   const trail=new T.Mesh(road(trailPath,6.096,(x,z)=>terrain.height(x,z,-20)+.05),asphalt);trail.name='Dequindre Cut greenway';scene.add(trail);
+  terrain.roadContact.add(trail.geometry);
   const deck=new T.MeshStandardMaterial({color:0x97958b});
   for(const b of districts.bridges){const slab=new T.Mesh(poly(b.points,2.035),deck);slab.name=b.name+' overpass';scene.add(slab);}
   const streets=batches(scene,asphalt,'Greater Detroit pavement');
@@ -68,7 +70,7 @@ export function addDetroitDistricts(scene:T.Scene,renderer:T.WebGLRenderer,terra
     streets.add(points[0],road(points,r.width,roadHeight));
     if(r.name==='Jefferson')paint.add(points[0],road(points,.16,(x,z)=>roadHeight(x,z)+.025));
   }
-  streets.finish();paint.finish();sidewalks.finish();
+  streets.finish(g=>terrain.roadContact.add(g));paint.finish();sidewalks.finish(g=>terrain.roadContact.add(g));
   const facade=new T.MeshStandardMaterial({color:0xb19b8a,roughness:.84});
   facade.onBeforeCompile=s=>{
     s.vertexShader='varying vec3 wallPosition;varying vec3 wallNormal;\n'+s.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nwallPosition=position;wallNormal=normal;');

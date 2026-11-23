@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import * as T from 'three';
-import {CadillacRide} from './cadillacRide.ts';
+import {CadillacRide,cadillacModel} from './cadillacRide.ts';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import type {ParkTerrain} from './terrain.ts';
 
@@ -152,11 +152,27 @@ test('parked trunk camera frames the actual lid and subwoofers and retains look 
  }finally{ride.dispose();}
 });
 
-test('hydraulic Cadillac binds the authored wheels, lifts one corner and completes a front hop',async()=>{
+test('hydraulic Cadillac fits shared wire rims to the original tires and completes a front hop',async t=>{
   const asset=await loadFixture(readFileSync('public/belle/vehicles/hydraulics-cadillac.glb'));
+  const tireMeshes=['FL','FR','RL','RR'].map(corner=>{
+    const wheel=asset.scene.getObjectByName('WheelGeometry_'+corner)!;
+    return wheel.children.find(part=>(part as T.Mesh<T.BufferGeometry,T.Material>).material?.name==='Cadillac_Rubber')!;
+  });
+  t.mock.method(GLTFLoader.prototype,'loadAsync',async()=>asset);
+  const model=await cadillacModel('hydraulic-cadillac');
+  const rims=['FL','FR','RL','RR'].map((corner,index)=>{
+    const rim=model.getObjectByName('Cadillac_Wire_Rim_'+corner) as T.Mesh;
+    assert.equal(rim.parent,tireMeshes[index].parent);
+    assert.equal(rim.parent!.children.length,2,'the original tire and a single rim draw remain');
+    assert.equal(rim.rotation.y,corner.endsWith('R')?Math.PI:0);
+    return rim;
+  });
+  assert.equal(new Set(rims.map(rim=>rim.geometry)).size,1);
+  assert.equal(new Set(rims.map(rim=>rim.material)).size,1);
+  assert(rims[0].geometry.index!.count/3<=2250,'the wire rim retains the vehicle geometry budget');
   const terrain={map:{spawn:{x:0,z:0,heading:0},roads:[]},height:()=>0,land:()=>true,
     obstructed:()=>false,bridge:()=>({active:false,t:0,side:0}),raycastObstacle:()=>null} as unknown as ParkTerrain;
-  const ride=new CadillacRide(asset.scene,terrain,undefined,'hydraulic-cadillac');
+  const ride=new CadillacRide(model,terrain,undefined,'hydraulic-cadillac');
   ride.start();
   const hydraulics=ride.hydraulics!;
   const advance=(frames:number,keys:ReadonlySet<string>=new Set())=>{
