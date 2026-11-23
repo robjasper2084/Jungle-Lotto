@@ -7,7 +7,7 @@ import {yieldStartupTask} from './startupWork.ts';
  * batches are frustum-culled by tile for BOTH solo and split-screen cameras. */
 function* buildSmallBridges(scene:T.Scene,plan:SmallBridgePlan){
  const root=new T.Group();root.name='Mapped canal bridges and raised trail links';
- const materials={stone:new T.MeshStandardMaterial({color:0x9e9e91,roughness:.88}),iron:new T.MeshStandardMaterial({color:0x5a4a43,roughness:.7,metalness:.25}),timber:new T.MeshStandardMaterial({color:0x74634b,roughness:.92}),brick:new T.MeshStandardMaterial({color:0x9d5e43,roughness:.93})};
+ const materials={woodside:new T.MeshStandardMaterial({color:0x383d3c,roughness:.7,metalness:.35}),stone:new T.MeshStandardMaterial({color:0x9e9e91,roughness:.88}),iron:new T.MeshStandardMaterial({color:0x5a4a43,roughness:.7,metalness:.25}),timber:new T.MeshStandardMaterial({color:0x74634b,roughness:.92}),brick:new T.MeshStandardMaterial({color:0x9d5e43,roughness:.93})};
  materials.brick.onBeforeCompile=shader=>{
   shader.vertexShader='varying vec3 bridgePos;\n'+shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nbridgePos=position;');
   shader.fragmentShader='varying vec3 bridgePos;\n'+shader.fragmentShader.replace('#include <map_fragment>',[
@@ -28,6 +28,12 @@ function* buildSmallBridges(scene:T.Scene,plan:SmallBridgePlan){
   if(partIndex++%8===0)yield;
   const dx=p.b[0]-p.a[0],dz=p.b[1]-p.a[1],len=Math.hypot(dx,dz),yaw=Math.atan2(dx,dz),x=(p.a[0]+p.b[0])/2,z=(p.a[1]+p.b[1])/2;
   if(p.kind==='slab'){box(p.style==='timber'?'timber':'stone',x,(p.bottom+p.top)/2,z,p.width,p.top-p.bottom,len,yaw);continue;}
+  if(p.id==='42986439'){
+   box('stone',x,p.bottom+.13,z,.22,.26,len,yaw);
+   for(const level of [.48,.9])box('woodside',x,p.bottom+level,z,.14,.12,len,yaw);
+   const posts=Math.ceil(len/2.2);for(let i=0;i<=posts;i++)box('woodside',p.a[0]+dx*i/posts,p.bottom+.5,p.a[1]+dz*i/posts,.14,1,.14,yaw);
+   continue;
+  }
   if(p.style==='brick'){
    const h=p.top-p.bottom;
    box('brick',x,p.bottom+(h-.14)/2,z,.44,h-.14,len,yaw);

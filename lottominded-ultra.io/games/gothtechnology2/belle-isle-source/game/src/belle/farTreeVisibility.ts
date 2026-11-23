@@ -1,0 +1,212 @@
+import * as T from 'three';
+import type {TypedArray} from 'three';
+import type {NatureRenderProbe} from './renderDiagnostics.ts';
+import {LocalTreeBoundsCache} from './localTreeBoundsCache.ts';
+
+type Stream={attribute:T.BufferAttribute;source:TypedArray};
+type Part={mesh:T.InstancedMesh;base:T.Sphere;streams:Stream[];saved:Map<T.BufferAttribute,Stream>;matrix:Stream|undefined;world:Float64Array;localBounds:LocalTreeBoundsCache};
+const FLOAT32_EPSILON=2**-23;
+const IDENTITY_WORLD=new T.Matrix4();
+
+function finiteMatrix(matrix:T.Matrix4){return matrix.elements.every(Number.isFinite);}
+function affine(matrix:T.Matrix4){const e=matrix.elements;return finiteMatrix(matrix)&&e[3]===0&&e[7]===0&&e[11]===0&&e[15]===1;}
+// Inverting an ordinary lookAt camera can put its homogeneous 1 a few double
+// precision ulps away from 1. That is not a projective/malformed camera.
+function cameraAffine(matrix:T.Matrix4){const e=matrix.elements;return finiteMatrix(matrix)&&Math.abs(e[3])<1e-12&&Math.abs(e[7])<1e-12&&Math.abs(e[11])<1e-12&&Math.abs(e[15]-1)<1e-12;}
+function finiteSphere(sphere:T.Sphere){return Number.isFinite(sphere.center.x)&&Number.isFinite(sphere.center.y)&&Number.isFinite(sphere.center.z)&&Number.isFinite(sphere.radius)&&sphere.radius>=0;}
+
+/** sqrt(||A||1 * ||A||infinity) bounds the largest linear stretch, including
+ * shear. Matrix4.getMaxScaleOnAxis alone is not conservative for sheared parents.
+ * Use the stored instance floats, plus a coordinate-scaled float32 margin for
+ * the GPU's matrix arithmetic and clip-plane edge rounding. These tree shaders
+ * change fragment tint/discard only; they do not displace vertices.
+ */
+function transformedSphere(source:T.Sphere,matrix:T.Matrix4,target:T.Sphere,intermediateMagnitude=0){
+ if(!finiteSphere(source)||!affine(matrix))return false;
+ const e=matrix.elements,a=Math.abs;
+ const columns=Math.max(a(e[0])+a(e[1])+a(e[2]),a(e[4])+a(e[5])+a(e[6]),a(e[8])+a(e[9])+a(e[10]));
+ const rows=Math.max(a(e[0])+a(e[4])+a(e[8]),a(e[1])+a(e[5])+a(e[9]),a(e[2])+a(e[6])+a(e[10]));
+ target.center.copy(source.center).applyMatrix4(matrix);
+ target.radius=source.radius*Math.sqrt(columns*rows);
+ const x=a(source.center.x)+source.radius,y=a(source.center.y)+source.radius,z=a(source.center.z)+source.radius;
+ const magnitude=Math.max(a(e[0])*x+a(e[4])*y+a(e[8])*z+a(e[12]),a(e[1])*x+a(e[5])*y+a(e[9])*z+a(e[13]),a(e[2])*x+a(e[6])*y+a(e[10])*z+a(e[14]),intermediateMagnitude);
+ target.radius+=Math.max(.02,16*FLOAT32_EPSILON*(magnitude+target.radius+1));
+ return finiteSphere(target);
+}
+
+function transformMagnitude(source:T.Sphere,instance:T.Matrix4,world:T.Matrix4){
+ const a=Math.abs,e=instance.elements,w=world.elements;
+ const x=a(source.center.x)+source.radius,y=a(source.center.y)+source.radius,z=a(source.center.z)+source.radius;
+ const ix=a(e[0])*x+a(e[4])*y+a(e[8])*z+a(e[12]);
+ const iy=a(e[1])*x+a(e[5])*y+a(e[9])*z+a(e[13]);
+ const iz=a(e[2])*x+a(e[6])*y+a(e[10])*z+a(e[14]);
+ // Absolute sums retain the precision budget when a parent and instance have
+ // large opposing translations that cancel in their double-precision product.
+ return Math.max(a(w[0])*ix+a(w[4])*iy+a(w[8])*iz+a(w[12]),a(w[1])*ix+a(w[5])*iy+a(w[9])*iz+a(w[13]),a(w[2])*ix+a(w[6])*iy+a(w[10])*iz+a(w[14]));
+}
+
+/** A render-only subset of the original distance-selected, non-shadow-casting
+ * far tree pairs. capture() runs AFTER their existing selection writes all
+ * source instances. render() runs in Scene.onBeforeRender, before Three uploads
+ * instance attributes, and preserves matrix/colour/fade/density in lockstep.
+ * Near trees, selection radii, seasons, collision sites and draw batches stay
+ * with their original owners. No per-instance allocations or uploads occur for
+ * unchanged membership; every actual view, including rotation in place, is tested.
+ */
+export interface TreeBoundsCounts {requests:number; transforms:number}
+export class FarTreeVisibility {
+ private readonly parts:Part[];
+ private readonly boundsCounts?:TreeBoundsCounts;
+ private readonly renderProbe?:NatureRenderProbe;
+ private count=0;private shown=0;private ready=false;
+ private indices=new Uint32Array(0);private bounds=new Float64Array(0);
+ private readonly matrix=new T.Matrix4();private readonly combined=new T.Matrix4();
+ private readonly projection=new T.Matrix4();private readonly frustum=new T.Frustum();
+ private readonly sphere=new T.Sphere();private readonly union=new T.Sphere();
+ private readonly paired=new T.Sphere();
+ constructor(meshes:readonly T.InstancedMesh[],renderProbe?:NatureRenderProbe,boundsCounts?:TreeBoundsCounts){
+  this.boundsCounts=boundsCounts;this.renderProbe=renderProbe;
+  this.parts=meshes.map(mesh=>{
+   mesh.geometry.computeBoundingSphere();
+   return {mesh,base:mesh.geometry.boundingSphere!.clone(),streams:[],saved:new Map(),matrix:undefined,world:new Float64Array(16).fill(NaN),localBounds:new LocalTreeBoundsCache(mesh.instanceMatrix.count)};
+  });
+ }
+ get sourceCount(){return this.count;}
+ get visibleCount(){return this.shown;}
+
+ capture(sourceIds?:ArrayLike<number>){
+  this.ready=false;
+  const count=this.parts[0]?.mesh.count??0;
+  if(!Number.isSafeInteger(count)||count<0||this.parts.some(({mesh})=>mesh.count!==count||mesh.castShadow||mesh.morphTexture))return;
+  const hasSourceIds=sourceIds!=null&&Number.isSafeInteger(sourceIds.length)&&sourceIds.length>=count;
+  if(this.indices.length<count){this.indices=new Uint32Array(count);this.bounds=new Float64Array(count*4);}
+  let reuseLocalBounds=true,firstPart=true;
+  for(const {mesh} of this.parts){
+   if(!mesh.matrixWorld.equals(IDENTITY_WORLD))reuseLocalBounds=false;
+   // A later malformed stream makes capture return before updateBounds. Do
+   // not change the old paired bounds in that case; original writes and
+   // validation below still run in their original order.
+   const usable=(attribute:unknown)=>attribute instanceof T.BufferAttribute&&attribute.count>=count&&(attribute as T.InstancedBufferAttribute).meshPerAttribute===1;
+   if(!usable(mesh.instanceMatrix)||(mesh.instanceColor&&!usable(mesh.instanceColor))||Object.values(mesh.geometry.attributes).some(attribute=>(attribute as T.InstancedBufferAttribute).isInstancedBufferAttribute&&!usable(attribute)))reuseLocalBounds=false;
+  }
+  for(const part of this.parts){
+   const {mesh}=part;part.streams.length=0;
+   const attributes=[mesh.instanceMatrix,...(mesh.instanceColor?[mesh.instanceColor]:[]),...Object.values(mesh.geometry.attributes).filter(attribute=>(attribute as T.InstancedBufferAttribute).isInstancedBufferAttribute)];
+   for(const attribute of attributes){
+    if(!(attribute instanceof T.BufferAttribute)||attribute.count<count||(attribute as T.InstancedBufferAttribute).meshPerAttribute!==1)return;
+    let stream=part.saved.get(attribute);
+    if(!stream||stream.source.length!==attribute.array.length){stream={attribute,source:attribute.array.slice()};part.saved.set(attribute,stream);}
+    else stream.source.set(attribute.array);
+    // Three's first bufferData upload does not consume updateRanges. A later
+    // full source rewrite must replace any earlier compact-prefix range even
+    // when the new view keeps every source and render() makes no further edit.
+    attribute.clearUpdateRanges();
+    if(count)attribute.addUpdateRange(0,count*attribute.itemSize);
+    attribute.needsUpdate=true;
+    if(this.renderProbe?.active)this.renderProbe.marked('capture',count?count*attribute.itemSize*attribute.array.BYTES_PER_ELEMENT:attribute.array.byteLength);
+    part.streams.push(stream);
+    if(attribute===mesh.instanceMatrix)part.matrix=stream;
+   }
+   if(!part.matrix)return;
+   // Photo-subject raycasts use this same mesh after the world render. Keep its
+   // broad-phase sphere over ALL selected sources, not just the first view.
+   part.localBounds.prepare(part.base,part.matrix.source);
+   this.union.makeEmpty();let valid=true,transforms=0;
+   for(let i=0;i<count;i++){
+    this.matrix.fromArray(part.matrix.source,i*16);
+    const sourceId=hasSourceIds?sourceIds![i]:undefined;
+    if(!part.localBounds.restore(sourceId,i*16,this.sphere)){
+     if(!transformedSphere(part.base,this.matrix,this.sphere)){valid=false;reuseLocalBounds=false;break;}
+     transforms++;part.localBounds.remember(sourceId,i*16,this.sphere);
+    }
+    this.union.union(this.sphere);
+    // With exact identity parents the existing world-bound transform repeats
+    // this local transform. Reuse it only within this capture. An identity
+    // product can change either sign of zero (including signed-zero parent
+    // coefficients); keep the original fallback for any zero centre component.
+    if(reuseLocalBounds){
+     if(this.sphere.center.x===0||this.sphere.center.y===0||this.sphere.center.z===0)reuseLocalBounds=false;
+     else{
+      const j=i*4;
+      if(firstPart)this.paired.copy(this.sphere);
+      else{this.paired.center.set(this.bounds[j],this.bounds[j+1],this.bounds[j+2]);this.paired.radius=this.bounds[j+3];this.paired.union(this.sphere);}
+      this.bounds[j]=this.paired.center.x;this.bounds[j+1]=this.paired.center.y;this.bounds[j+2]=this.paired.center.z;this.bounds[j+3]=this.paired.radius;
+     }
+    }
+   }
+   if(valid && this.boundsCounts){this.boundsCounts.requests+=count;this.boundsCounts.transforms+=transforms;}
+   if(!mesh.boundingSphere)mesh.boundingSphere=new T.Sphere();
+   if(valid)mesh.boundingSphere.copy(this.union);
+   else mesh.boundingSphere.set(new T.Vector3(),Infinity);
+   firstPart=false;
+  }
+  this.count=this.shown=count;
+  for(let i=0;i<count;i++)this.indices[i]=i;
+  this.ready=true;
+  if(reuseLocalBounds){for(const part of this.parts)part.world.set(part.mesh.matrixWorld.elements);}
+  else this.updateBounds();
+ }
+
+ private updateBounds(){
+  for(const part of this.parts)part.world.set(part.mesh.matrixWorld.elements);
+  for(let i=0;i<this.count;i++){
+   this.union.makeEmpty();let valid=true;
+   for(const part of this.parts){
+    this.matrix.fromArray(part.matrix!.source,i*16);
+    this.combined.multiplyMatrices(part.mesh.matrixWorld,this.matrix);
+    if(!transformedSphere(part.base,this.combined,this.sphere,transformMagnitude(part.base,this.matrix,part.mesh.matrixWorld))){valid=false;break;}
+    this.union.union(this.sphere);
+   }
+   const j=i*4;
+   this.bounds[j]=this.union.center.x;this.bounds[j+1]=this.union.center.y;this.bounds[j+2]=this.union.center.z;
+   // A malformed bound or transform retains this source instance.
+   this.bounds[j+3]=valid?this.union.radius:Infinity;
+  }
+ }
+
+ render(camera:T.Camera){
+  // The camera LCD uses a separate layer-only overlay pass. It must not empty
+  // the world buffers and force their restoration on every subsequent frame.
+  if(!this.ready||!this.parts.some(({mesh})=>mesh.layers.test(camera.layers)))return this.shown;
+  if(this.parts.some(part=>part.world.some((value,i)=>value!==part.mesh.matrixWorld.elements[i])))this.updateBounds();
+  // XR supplies ArrayCamera here. Keep the original source set for both eyes;
+  // a single-eye or inferred combined frustum could drop visible geometry.
+  let cull=!(camera as T.ArrayCamera).isArrayCamera&&cameraAffine(camera.matrixWorld)&&cameraAffine(camera.matrixWorldInverse)&&finiteMatrix(camera.projectionMatrix);
+  if(cull){
+   const worldDet=camera.matrixWorld.determinant(),projectionDet=camera.projectionMatrix.determinant();
+   cull=Number.isFinite(worldDet)&&Math.abs(worldDet)>1e-12&&Number.isFinite(projectionDet)&&Math.abs(projectionDet)>1e-12;
+  }
+  if(cull){
+   this.projection.multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse);
+   this.frustum.setFromProjectionMatrix(this.projection,T.WebGLCoordinateSystem,camera.reversedDepth);
+   cull=this.frustum.planes.every(plane=>Number.isFinite(plane.constant)&&Number.isFinite(plane.normal.x)&&Number.isFinite(plane.normal.y)&&Number.isFinite(plane.normal.z)&&plane.normal.lengthSq()>.5);
+  }
+  const e=camera.matrixWorld.elements,cameraMargin=16*FLOAT32_EPSILON*(Math.max(Math.abs(e[12]),Math.abs(e[13]),Math.abs(e[14]))+1);
+  let kept=0,changed=false;
+  for(let i=0;i<this.count;i++){
+   const j=i*4,radius=this.bounds[j+3];
+   this.sphere.center.set(this.bounds[j],this.bounds[j+1],this.bounds[j+2]);this.sphere.radius=radius+cameraMargin;
+   if(cull&&Number.isFinite(radius)&&!this.frustum.intersectsSphere(this.sphere))continue;
+   if(this.indices[kept]!==i)changed=true;
+   this.indices[kept++]=i;
+  }
+  changed||=kept!==this.shown;
+  if(changed){
+   if(this.renderProbe?.active)this.renderProbe.compact();
+   for(const {mesh,streams} of this.parts){
+    mesh.count=kept;
+    for(const {attribute,source} of streams){
+     const stride=attribute.itemSize,target=attribute.array;
+     for(let i=0;i<kept;i++)for(let n=0;n<stride;n++)target[i*stride+n]=source[this.indices[i]*stride+n];
+     attribute.clearUpdateRanges();
+     if(kept)attribute.addUpdateRange(0,kept*stride);
+     attribute.needsUpdate=true;
+     if(this.renderProbe?.active)this.renderProbe.marked('compaction',kept?kept*stride*attribute.array.BYTES_PER_ELEMENT:attribute.array.byteLength);
+    }
+   }
+   this.shown=kept;
+  }
+  if(this.renderProbe?.active)this.renderProbe.pool(this.count,this.shown);
+  return this.shown;
+ }
+}
