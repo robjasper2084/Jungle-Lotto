@@ -19,3 +19,23 @@
 .cinema-ride-picker[open]{max-height:calc(100dvh - 100px);overflow:auto}
 @media(max-width:760px){.ride-preview-slot{height:135px}.ride-options label>span{padding:8px 10px 12px}.ride-options strong{font-size:14px}.ride-options small{display:block;font-size:10px}.ride-setup .camera-choice{margin:14px 0}.cinema-ride-picker[open]{max-height:calc(100dvh - 95px)}}
 @media(max-height:500px) and (min-width:600px){.ride-preview-slot{height:92px}.ride-options small{display:none}.cinema-ride-picker[open]{max-height:calc(100dvh - 50px)}}
+
+/* The open picker grows up from the title. Reserve space for the title's
+   bottom inset and the header controls before making the ride list scroll. */
+#welcome.startup .cinema-ride-picker[open] {
+  pointer-events: auto;
+  overscroll-behavior: contain;
+}
+@media (min-height: 501px) {
+  #welcome.startup .cinema-ride-picker[open] {
+    max-height: calc(100dvh - clamp(156px, 23vh, 270px) - clamp(48px, 7vh, 85px) - 56px);
+  }
+}
+@media (min-width: 600px) and (max-height: 500px) {
+  #welcome.startup .cinema-ride-picker {
+    width: min(360px, calc(100vw - 390px));
+  }
+  #welcome.startup .cinema-ride-picker[open] {
+    max-height: calc(100dvh - 160px);
+  }
+}

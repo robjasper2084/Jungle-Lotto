@@ -14,19 +14,22 @@ const output=resolve(game,'output/sustained-profile',mode,device);
 await mkdir(output,{recursive:true});
 const report={sourceHead:process.env.GITHUB_SHA||null,device,viewport,requestedSeconds:seconds,mode,
  renderBackend:null,rendererFallback:null,actualGpu:null,input:null,classification:null,
- hardware:'GitHub Actions Chrome; phone viewport is NOT physical iOS/Android hardware',
+ hardware:'Chrome '+process.platform+' '+process.arch+'; phone viewport is emulated',
  acceptanceScope:mode==='diagnostic'?'REDUCED SCENE DIAGNOSTIC ONLY; not release quality':'FULL CURRENT GAME; still not device certification',
  passed:false,frameQualityAccepted:false,releasePerformanceVerified:false,welcomeReadyMs:null,rideStartedMs:null,firstPlayableMs:null,profileWindowCaveat:'Local browser capture ends at genuine trusted W-keyup before Settings/report extraction; NOT physical-device certification',profile:null,memory:null,browserSchedulerProbe:null,cdpCpuProbe:null,probeErrors:[],errors:[],failedRequests:[],elapsedWallMs:null};
 const server=createCoopStaticServer(resolve(game,'dist'));
 await new Promise(ok=>server.listen(0,'127.0.0.1',ok));
-const begin=Date.now();let browser;
+const begin=Date.now();let browser,page;
 try{
  const native=process.platform==='darwin'?'metal':process.platform==='win32'?'d3d11':'gl';
- const candidates=[{name:'angle-'+native,args:['--use-gl=angle','--use-angle='+native]},
+ const hardware={name:'angle-'+native,args:['--enable-gpu','--use-gl=angle','--use-angle='+native]};
+ const candidates=process.platform==='darwin'?[hardware]:[hardware,
   {name:'swiftshader-fallback',args:['--use-gl=angle','--use-angle=swiftshader-webgl','--enable-unsafe-swiftshader']}];
- let page,lastBackendError;
+ let lastBackendError;
  for(const candidate of candidates){
   try{
+   // macOS provides a WindowServer. Its onscreen compositor sustains normal
+   // refresh even when the headless virtual display throttles a clear canvas.
    browser=await chromium.launch({channel:'chrome',headless:process.platform!=='darwin',args:candidate.args});
    const probe=await browser.newPage();
    const available=await probe.evaluate(()=>{
@@ -37,7 +40,11 @@ try{
    });
    await probe.close();
    if(!available)throw Error('WebGL2 unavailable on '+candidate.name);
-   report.renderBackend=candidate.name;report.probeRenderer=available;
+   report.probeRenderer=available;
+   console.log('WebGL2 probe:',available);
+   if(candidate.name==='angle-metal'&&(!/Metal/i.test(available)||/SwiftShader|llvmpipe|software rasterizer/i.test(available)))
+    throw Error('Metal renderer unavailable: '+available);
+   report.renderBackend=candidate.name;
    page=await browser.newPage({viewport,deviceScaleFactor:1,isMobile:device==='phone',hasTouch:device==='phone',reducedMotion:'reduce'});
    await page.bringToFront();
    break;
@@ -48,6 +55,31 @@ try{
  }
  if(!page)throw Error('No real WebGL2 backend available: '+lastBackendError);
  page.setDefaultTimeout(180000);
+ await page.bringToFront();
+ // Boot with this lane's actual settings so startup prepares the same shaders
+ // that the 90-second ride will exercise. Settings also verifies the selection.
+ const quality=device==='phone'?'smooth':'high';
+ await page.addInitScript(quality=>{
+  localStorage.setItem('belle-graphics-v1',JSON.stringify({quality,cap:60,antiAliasing:'automatic'}));
+ },quality);
+ // Distinguish a blocked driver link from slow submission when a hosted GPU
+ // times out before the first ride. Restore the native methods before capture.
+ await page.addInitScript(()=>{
+  const proto=WebGL2RenderingContext.prototype;
+  const link=proto.linkProgram,query=proto.getProgramParameter;
+  const pending=new Map();let linked=0,checks=0;
+  proto.linkProgram=function(program){
+   linked++;pending.set(program,performance.now());return link.call(this,program);
+  };
+  proto.getProgramParameter=function(program,pname){
+   const value=query.call(this,program,pname);
+   if(pname===0x91b1){checks++;if(value)pending.delete(program);}
+   return value;
+  };
+  window.__belleStartupLinks=()=>({linked,completionChecks:checks,pending:pending.size,
+   oldestUnconfirmedMs:Math.max(0,...[...pending.values()].map(start=>performance.now()-start))});
+  window.__belleEndLinkProbe=()=>{proto.linkProgram=link;proto.getProgramParameter=query;pending.clear();};
+ });
  await page.addInitScript(()=>{const receipts={keydowns:0,keyups:0,repeats:0,blurs:0};
   window.__belleInputReceipts=receipts;
   window.addEventListener('keydown',event=>{if(event.code==='KeyW'&&event.isTrusted){receipts.keydowns++;if(event.repeat)receipts.repeats++;}},true);
@@ -84,8 +116,10 @@ try{
  page.on('requestfailed',r=>report.failedRequests.push((r.failure()?.errorText||'failed')+' '+r.url()));
  const navigationStarted=Date.now();
  await page.goto('http://127.0.0.1:'+server.address().port+'/?profile=1'+(mode==='diagnostic'?'&perfProbe=1':''),{waitUntil:'domcontentloaded'});
- await expect(page.locator('#welcome')).toHaveAttribute('data-state','ready');
+ await page.waitForFunction(()=>['ready','error'].includes(document.querySelector('#welcome')?.dataset.state));
+ await expect(page.locator('#welcome')).toHaveAttribute('data-state','ready',{timeout:1000});
  report.welcomeReadyMs=Date.now()-navigationStarted;
+ report.startupLinks=await page.evaluate(()=>{const links=window.__belleStartupLinks();window.__belleEndLinkProbe();return links;});
  report.actualGpu=await page.locator('#game').evaluate(canvas=>{
   const gl=canvas.getContext('webgl2');if(!gl||gl.isContextLost())throw Error('Game WebGL2 unavailable');
   const ext=gl.getExtension('WEBGL_debug_renderer_info');return {
@@ -93,6 +127,8 @@ try{
    renderer:String(gl.getParameter(ext?.UNMASKED_RENDERER_WEBGL??gl.RENDERER)),
    version:String(gl.getParameter(gl.VERSION))};
  });
+ if(report.renderBackend==='angle-metal'&&(!/Metal/i.test(report.actualGpu.renderer)||/SwiftShader|llvmpipe|software rasterizer/i.test(report.actualGpu.renderer)))
+  throw Error('The sustained profile requires a Metal renderer on macOS. Chrome reported '+report.actualGpu.renderer);
  await page.locator('.cinema-ride-picker > summary').click();
  await page.locator('.ride-options label').filter({hasText:'One wheel'}).click();
  await page.getByRole('button',{name:'Use this ride',exact:true}).click();
@@ -109,7 +145,7 @@ try{
  await settings();
  // Keep the actual quality tier identical between FULL and DIAGNOSTIC on each viewport.
  // Only localhost perfProbe reductions may differ; never attribute a High→Smooth change to scene reduction.
- await page.locator('#quality').selectOption(device==='phone'?'smooth':'high');
+ await expect(page.locator('#quality')).toHaveValue(quality);
  if(mode==='diagnostic')await expect(page.locator('#performance-probe-warning')).toBeVisible();
  else await expect(page.locator('#performance-probe-warning')).toHaveCount(0);
  const panel=page.locator('#ride-profile');
@@ -176,7 +212,13 @@ try{
   stats.distanceMetres<3?'render-starved-or-blocked-motion':report.frameQualityAccepted?'frame-budget-met':'stalls-detected';
  // A reduced-scene or software-browser success is never release approval.
  report.releasePerformanceVerified=false;
-}catch(error){report.errors.push(String(error?.stack||error));}
+}catch(error){
+ report.errors.push(String(error?.stack||error));
+ if(page)report.startupAtFailure=await page.evaluate(()=>({
+  visible:document.visibilityState,focused:document.hasFocus(),loading:document.querySelector('#loading')?.textContent,
+  telemetry:window.__belleStartupProfile?.(),callbacks:window.__belleBrowserClock?.snapshot?.(),links:window.__belleStartupLinks?.()
+ })).catch(()=>null);
+}
 finally{
  report.elapsedWallMs=Date.now()-begin;
  await writeFile(resolve(output,'report.json'),JSON.stringify(report,null,2)+'\n');

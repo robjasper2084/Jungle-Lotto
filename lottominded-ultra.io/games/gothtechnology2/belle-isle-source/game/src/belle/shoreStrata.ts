@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {limitGroundDrawRange,type GroundRange} from './groundDrawRange.ts';
 import {inside,segment,type ParkMap,type Point,type ParkTerrain} from './terrain.ts';
 
 /** Two PBR draw submissions at most; overlays hug the authored geometric banks
@@ -8,7 +9,7 @@ import {inside,segment,type ParkMap,type Point,type ParkTerrain} from './terrain
 export const SHORE_STRATA_MAX_EDGES=4600;
 export type ShoreStrataStats={edges:number;triangles:number;sandyEdges:number;lagoonEdges:number};
 type Band='river'|'lagoon';
-type Strip={positions:number[];colors:number[];uv:number[];indices:number[];stats:ShoreStrataStats};
+type Strip={positions:number[];colors:number[];uv:number[];indices:number[];ranges:GroundRange[];stats:ShoreStrataStats};
 const offsets={river:[.08,.72,1.58,2.55,3.65],lagoon:[.03,.22,.49,.76,1.04]} as const;
 function lerp(a:number,b:number,t:number){return a+(b-a)*t;}
 function pushEdge(out:Strip,a:Point,b:Point,nx:number,nz:number,top:number,kind:Band,sandy:boolean,along:number){
@@ -32,6 +33,15 @@ function pushEdge(out:Strip,a:Point,b:Point,nx:number,nz:number,top:number,kind:
  }
  const w=chosen.length;
  for(let j=0;j<w-1;j++){const i=base+j,k=i+w;out.indices.push(i,k,i+1,k,k+1,i+1);}
+ // All five strip offsets interpolate between the two outside corners at
+ // each end. Bound groups of eight edges while retaining their overlap order.
+ if(out.stats.edges%8===0)out.ranges.push([0,Infinity,Infinity,Infinity,-Infinity,-Infinity,-Infinity]);
+ const range=out.ranges[out.ranges.length-1];range[0]=out.indices.length;
+ for(const i of [base,base+w-1,base+w,base+2*w-1]){
+  const x=out.positions[i*3],y=out.positions[i*3+1],z=out.positions[i*3+2];
+  range[1]=Math.min(range[1],x);range[2]=Math.min(range[2],y);range[3]=Math.min(range[3],z);
+  range[4]=Math.max(range[4],x);range[5]=Math.max(range[5],y);range[6]=Math.max(range[6],z);
+ }
  out.stats.edges++;out.stats.triangles+=(w-1)*2;
  if(sandy)out.stats.sandyEdges++;
  if(kind==='lagoon')out.stats.lagoonEdges++;
@@ -41,7 +51,7 @@ function ringPoints(p:Point[]):Point[]{
  return p;
 }
 export function buildShoreStrata(map:ParkMap,terrain:Pick<ParkTerrain,'height'|'land'|'bridge'>){
- const out:Strip={positions:[],colors:[],uv:[],indices:[],stats:{edges:0,triangles:0,sandyEdges:0,lagoonEdges:0}};
+ const out:Strip={positions:[],colors:[],uv:[],indices:[],ranges:[],stats:{edges:0,triangles:0,sandyEdges:0,lagoonEdges:0}};
  const beaches=map.areas.filter(a=>a.kind==='beach'),formals=(map.waterSources||[]).filter(w=>/model yacht basin|koi/i.test(w.name));
  const sandy=(x:number,z:number)=>beaches.some(a=>inside(x,z,a.points)||a.points.slice(1).some((b,i)=>segment(x,z,a.points[i],b).d<7));
  const addRing=(ring:Point[],kind:Band,wetTest:(x:number,z:number)=>boolean)=>{
@@ -102,6 +112,6 @@ export function addShoreStrata(scene:T.Scene,map:ParkMap,terrain:ParkTerrain){
   `);
  };
  material.customProgramCacheKey=()=> 'shore-sediment-strata-v1';
- const mesh=new T.Mesh(g,material);mesh.name='Mapped river and lagoon sediment bands';mesh.castShadow=false;mesh.receiveShadow=true;scene.add(mesh);
+ const mesh=new T.Mesh(g,material);mesh.name='Mapped river and lagoon sediment bands';mesh.castShadow=false;mesh.receiveShadow=true;limitGroundDrawRange(mesh,data.ranges);scene.add(mesh);
  return {stats:data.stats};
 }

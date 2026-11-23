@@ -5,6 +5,14 @@ import {Mesh,MeshStandardMaterial,Scene,ShaderChunk,ShaderLib,UniformsUtils,type
 import {seasonalMaterial} from './seasonalMaterial.ts';
 import {addStreetDetails} from './streetDetails.ts';
 
+test('inactive point lights skip the entire unrolled BRDF while live slots keep their shading',()=>{
+ const source=ShaderChunk.lights_fragment_begin;
+ const {fragment}=atmosphereShader('#include <worldpos_vertex>','#include <lights_fragment_begin>',source);
+ const run=fragment.slice(fragment.indexOf('pointLight = pointLights[ i ];'),fragment.indexOf('#pragma unroll_loop_end',fragment.indexOf('pointLight = pointLights[ i ];')));
+ assert.match(run,/if \(pointLight.color != vec3\(0.0\)\) \{[\s\S]*getPointLightInfo[\s\S]*getPointShadow[\s\S]*RE_Direct\([^;]+;\s*\}\s*\}/);
+ assert.equal(fragment.split('RE_Direct( directLight,').length,source.split('RE_Direct( directLight,').length);
+});
+
 function standardShader(material:MeshStandardMaterial){
  const standard=ShaderLib.standard;
  const shader={vertexShader:standard.vertexShader,fragmentShader:standard.fragmentShader,
@@ -56,7 +64,9 @@ test('the local point pool keeps all lights in order and preserves the stock poi
  assert.match(pool,/getPointLightInfo\(pointLights\[i\], geometryPosition, directLight\);/);
  assert.match(pool,/if \(directLight.visible\) \{\s*RE_Direct\(/);
  assert.doesNotMatch(pool,/#pragma unroll_loop_start|getPointShadow\(/);
- assert.equal(shadowed,pointSection(chunk));
+ assert.match(pool,/if \(pointLights\[i\]\.color == vec3\(0\.0\)\) continue;/);
+ // Casting slots retain Three's shadow lookup and skip only black lights.
+ assert.equal(shadowed.replace('\n if (pointLight.color != vec3(0.0)) {\n','').replace(/(RE_Direct\( directLight,[^;]+;)\n \}/,'$1'),pointSection(chunk));
  assert.match(generated(true),/getSpotShadow|getShadow\( spotShadowMap/);
 });
 const motion=():EucMotion=>({pitch:.12,drop:.1,shift:0,lateral:0,hipTilt:0,hipYaw:0,chestRoll:0,chestYaw:0,headRoll:0,headYaw:0,neck:0,shoulders:[0,0],hands:[{x:.05,y:.1,z:.1,wrist:0},{x:-.05,y:.1,z:.1,wrist:0}]});

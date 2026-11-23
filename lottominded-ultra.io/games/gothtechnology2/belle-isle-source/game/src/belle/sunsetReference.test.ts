@@ -113,6 +113,25 @@ test('river layers share uncoated water normals while lagoons retain their optic
  assert(!shader.fragmentShader.includes('vec2 warp='));assert(shader.fragmentShader.includes('fountainNight'));
  scene.traverse(o=>{if(o instanceof T.Mesh){o.geometry.dispose();for(const material of Array.isArray(o.material)?o.material:[o.material])material.dispose();}});
 });
+test('water keeps fading ripples after the vehicle leaves and restores the wave grid on High',()=>{
+ const scene=new T.Scene(),camera=new T.PerspectiveCamera();
+ const water=createWater(scene,{} as T.WebGLRenderer,map,terrain,()=>new T.PlaneGeometry(1,1));
+ try{
+  const near=scene.getObjectByName('Detroit River rolling waves') as T.Mesh<T.BufferGeometry,T.MeshPhysicalMaterial>;
+  const full=near.geometry.getIndex();
+  const shader={vertexShader:T.ShaderLib.physical.vertexShader,fragmentShader:T.ShaderLib.physical.fragmentShader,uniforms:{}} as Parameters<T.Material['onBeforeCompile']>[0];
+  near.material.onBeforeCompile(shader,{} as T.WebGLRenderer);
+  const active=shader.uniforms.activeRipples;
+  water.update(10,camera);assert.equal(active.value,false);
+  const river={x:4000,y:0,z:4000,speed:1,rpm:1};assert.equal(terrain.land(river.x,river.z),false);
+  water.setVehicle(river);water.update(11,camera);assert.equal(active.value,true);
+  water.setVehicle(null);water.update(15.9,camera);assert.equal(active.value,true);
+  water.update(16,camera);assert.equal(active.value,false);
+  water.setQuality('smooth');assert.equal(near.geometry.getIndex()!.count,512*3);
+  water.setQuality('high');assert.equal(near.geometry.getIndex(),full);
+ }finally{scene.traverse(o=>{if(o instanceof T.Mesh){o.geometry.dispose();for(const m of Array.isArray(o.material)?o.material:[o.material])m.dispose();}});}
+});
+
 test('optional reference sky preset holds a clear sunset without overriding saved settings on initialization',()=>{
  const ids=['sky-hour','sky-clock','sky-cycle','sky-speed','sky-clouds','sky-preset'];
  const elements=Object.fromEntries(ids.map(id=>[id,{value:'',checked:false,onchange:undefined as undefined|(()=>void)}]));

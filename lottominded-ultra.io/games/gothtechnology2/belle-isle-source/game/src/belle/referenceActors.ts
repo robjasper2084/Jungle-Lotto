@@ -1,8 +1,10 @@
 import * as T from 'three';
+import {shareRiderPalettes} from './riderInkBatch.ts';
 
 /** Anime finish on the original meshes, UVs and rig. No replacement character. */
 export function animeRider(root:T.Object3D){
  const meshes:T.Mesh[]=[];root.traverse(o=>{if(o instanceof T.Mesh&&!o.userData.referenceInk)meshes.push(o);});
+ shareRiderPalettes(meshes);
  const materials=new Map<T.Material,T.Material>();
  for(const mesh of meshes){
   const source=Array.isArray(mesh.material)?mesh.material:[mesh.material];

@@ -45,16 +45,16 @@ function transformMagnitude(source:T.Sphere,instance:T.Matrix4,world:T.Matrix4){
  return Math.max(a(w[0])*ix+a(w[4])*iy+a(w[8])*iz+a(w[12]),a(w[1])*ix+a(w[5])*iy+a(w[9])*iz+a(w[13]),a(w[2])*ix+a(w[6])*iy+a(w[10])*iz+a(w[14]));
 }
 
-/** A render-only subset of the original distance-selected, non-shadow-casting
- * far tree pairs. capture() runs AFTER their existing selection writes all
+/** A render-only subset of the original distance-selected tree pairs.
+ * capture() runs AFTER their existing selection writes all
  * source instances. render() runs in Scene.onBeforeRender, before Three uploads
  * instance attributes, and preserves matrix/colour/fade/density in lockstep.
- * Near trees, selection radii, seasons, collision sites and draw batches stay
- * with their original owners. No per-instance allocations or uploads occur for
+ * Shadow refreshes can request the full near set. No per-instance allocations or uploads occur for
  * unchanged membership; every actual view, including rotation in place, is tested.
  */
-export class FarTreeVisibility {
+export class TreeInstanceVisibility {
  private readonly parts:Part[];
+ private readonly pool:'far'|'near';
  private readonly renderProbe?:NatureRenderProbe;
  private count=0;private shown=0;private ready=false;
  private indices=new Uint32Array(0);private bounds=new Float64Array(0);
@@ -62,12 +62,28 @@ export class FarTreeVisibility {
  private readonly projection=new T.Matrix4();private readonly frustum=new T.Frustum();
  private readonly sphere=new T.Sphere();private readonly union=new T.Sphere();
  private readonly paired=new T.Sphere();
- constructor(meshes:readonly T.InstancedMesh[],renderProbe?:NatureRenderProbe){
-  this.renderProbe=renderProbe;
+ constructor(meshes:readonly T.InstancedMesh[],renderProbe?:NatureRenderProbe,pool:'far'|'near'='far'){
+  this.renderProbe=renderProbe;this.pool=pool;
   this.parts=meshes.map(mesh=>{
    mesh.geometry.computeBoundingSphere();
-   return {mesh,base:mesh.geometry.boundingSphere!.clone(),streams:[],saved:new Map(),matrix:undefined,world:new Float64Array(16).fill(NaN),localBounds:new LocalTreeBoundsCache(mesh.instanceMatrix.count)};
+   const base=mesh.geometry.boundingSphere!.clone();
+   // Crown wind displaces local x/z by at most .12/.066 before instancing.
+   if(pool==='near'&&mesh.userData.seasonalLeaf)base.radius+=.14;
+   return {mesh,base,streams:[],saved:new Map(),matrix:undefined,world:new Float64Array(16).fill(NaN),localBounds:new LocalTreeBoundsCache(mesh.instanceMatrix.count)};
   });
+  if(pool==='near')for(const part of this.parts){
+   const mesh=part.mesh,raycast=mesh.raycast;
+   // Camera compaction is render-only. Picking and photo occlusion retain
+   // all selected sources and their original instance IDs in any direction.
+   mesh.raycast=(ray,hits)=>{
+    if(!this.ready||!part.matrix||this.count===this.shown)return raycast.call(mesh,ray,hits);
+    const display=mesh.instanceMatrix.array,count=mesh.count;
+    try{
+     mesh.instanceMatrix.array=part.matrix.source;mesh.count=this.count;
+     raycast.call(mesh,ray,hits);
+    }finally{mesh.instanceMatrix.array=display;mesh.count=count;}
+   };
+  }
  }
  get sourceCount(){return this.count;}
  get visibleCount(){return this.shown;}
@@ -75,7 +91,7 @@ export class FarTreeVisibility {
  capture(sourceIds?:ArrayLike<number>){
   this.ready=false;
   const count=this.parts[0]?.mesh.count??0;
-  if(!Number.isSafeInteger(count)||count<0||this.parts.some(({mesh})=>mesh.count!==count||mesh.castShadow||mesh.morphTexture))return;
+  if(!Number.isSafeInteger(count)||count<0||this.parts.some(({mesh})=>mesh.count!==count||(mesh.castShadow&&this.pool==='far')||mesh.morphTexture))return;
   const hasSourceIds=sourceIds!=null&&Number.isSafeInteger(sourceIds.length)&&sourceIds.length>=count;
   if(this.indices.length<count){this.indices=new Uint32Array(count);this.bounds=new Float64Array(count*4);}
   let reuseLocalBounds=true,firstPart=true;
@@ -161,14 +177,14 @@ export class FarTreeVisibility {
   }
  }
 
- render(camera:T.Camera){
+ render(camera:T.Camera,allCasters=false){
   // The camera LCD uses a separate layer-only overlay pass. It must not empty
   // the world buffers and force their restoration on every subsequent frame.
   if(!this.ready||!this.parts.some(({mesh})=>mesh.layers.test(camera.layers)))return this.shown;
   if(this.parts.some(part=>part.world.some((value,i)=>value!==part.mesh.matrixWorld.elements[i])))this.updateBounds();
   // XR supplies ArrayCamera here. Keep the original source set for both eyes;
   // a single-eye or inferred combined frustum could drop visible geometry.
-  let cull=!(camera as T.ArrayCamera).isArrayCamera&&cameraAffine(camera.matrixWorld)&&cameraAffine(camera.matrixWorldInverse)&&finiteMatrix(camera.projectionMatrix);
+  let cull=!allCasters&&!(camera as T.ArrayCamera).isArrayCamera&&cameraAffine(camera.matrixWorld)&&cameraAffine(camera.matrixWorldInverse)&&finiteMatrix(camera.projectionMatrix);
   if(cull){
    const worldDet=camera.matrixWorld.determinant(),projectionDet=camera.projectionMatrix.determinant();
    cull=Number.isFinite(worldDet)&&Math.abs(worldDet)>1e-12&&Number.isFinite(projectionDet)&&Math.abs(projectionDet)>1e-12;
@@ -207,3 +223,5 @@ export class FarTreeVisibility {
   return this.shown;
  }
 }
+
+export {TreeInstanceVisibility as FarTreeVisibility};

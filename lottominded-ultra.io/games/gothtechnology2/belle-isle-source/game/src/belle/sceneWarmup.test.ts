@@ -1,11 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {DataTexture,DirectionalLight,Group,Mesh,MeshBasicMaterial,PerspectiveCamera,PointLight,Scene,SpotLight,type Texture,type Object3D} from 'three';
-import {SceneWarmup} from './sceneWarmup.ts';
+import {BoxGeometry,DataTexture,DirectionalLight,Group,InstancedMesh,Mesh,MeshBasicMaterial,PerspectiveCamera,PointLight,Scene,SpotLight,type Texture,type Object3D} from 'three';
+import {prepareColoredDetailPool,SceneWarmup} from './sceneWarmup.ts';
 
 test('both island lighting variants must finish linking before the island becomes ready',async()=>{
  const {scene,sun,camera}=fixture(),states:boolean[]=[],busy:boolean[]=[];
- const handles=[{},{}],programs:{program:object}[]=[],checked=new Set<object>(),polled:object[]=[];
+ const handles=[{},{}],programs:{program:object;getUniforms():void}[]=[],checked=new Set<object>(),polled:object[]=[];
  let notifyPoll=()=>{};const firstPoll=new Promise<void>(resolve=>{notifyPoll=resolve;});
  let firstReady=false,flushes=0;
  const gl={getExtension:()=>({COMPLETION_STATUS_KHR:1}),LINK_STATUS:2,
@@ -14,7 +14,7 @@ test('both island lighting variants must finish linking before the island become
    polled.push(handle);notifyPoll();return handle===handles[1]||firstReady;
   }};
  const renderer={info:{programs},getContext:()=>gl,compile(){
-  states.push(sun.castShadow);programs.push({program:handles[states.length-1]});
+  states.push(sun.castShadow);programs.push({program:handles[states.length-1],getUniforms(){}});
  },compileAsync(){throw Error('unexpected additional compilation');}};
  const warmup=new SceneWarmup(renderer as unknown as ConstructorParameters<typeof SceneWarmup>[0],scene,camera,b=>busy.push(b),async()=>{});
  const ready=warmup.prepare();
@@ -24,7 +24,7 @@ test('both island lighting variants must finish linking before the island become
 });
 
 test('an unlinked island program fails preparation and allows a fresh attempt',async()=>{
- const {scene,sun,camera}=fixture(),programs=[{program:{}}];sun.castShadow=false;
+ const {scene,sun,camera}=fixture(),programs=[{program:{},getUniforms(){}}];sun.castShadow=false;
  let linked=false;
  const gl={getExtension:()=>({COMPLETION_STATUS_KHR:1}),LINK_STATUS:2,flush(){},isContextLost:()=>false,
   getProgramParameter:(_:unknown,key:number)=>key===1||linked,getProgramInfoLog:()=>'driver error'};
@@ -42,7 +42,7 @@ test('early mapped submission keeps the current lights and still validates both 
  }),compile(root:Object3D,view:PerspectiveCamera,target:Scene){
   assert.equal(root,scene);assert.equal(view,camera);assert.equal(target,scene);
   assert.equal(sun.castShadow,true);assert.equal(bike.visible,false);assert.equal(root.getObjectById(late.id),undefined);primes++;
- },async compileAsync(root:Object3D){assert.equal(root.getObjectById(late.id),late);seen.push(sun.castShadow);return scene;}};
+ },async compileAsync(root:Object3D){const submitted:Object3D[]=[];root.traverse(o=>submitted.push(o));assert(submitted.includes(late));seen.push(sun.castShadow);return scene;}};
  const warmup=new SceneWarmup(renderer as unknown as ConstructorParameters<typeof SceneWarmup>[0],scene,camera,v=>busy.push(v),async()=>{});
  warmup.primeIsland();assert.equal(primes,1);assert.equal(flushes,1);assert.deepEqual(busy,[]);
  scene.add(late);await warmup.prepare();assert.deepEqual(seen,[false,true]);assert.deepEqual(busy,[true,false]);
@@ -74,6 +74,26 @@ test('Smooth island warmup submits bounded batches and retains each visible draw
  assert.deepEqual(sizes,[64,64,22]);assert.deepEqual(seen,meshes);
 });
 
+test('empty distance-selected pools warm the colored variant before a ride in either shadow mode',async()=>{
+ for(const mapped of [true,false]){
+  const {scene,camera,bike}=fixture();
+  const pool=new InstancedMesh(new BoxGeometry(),new MeshBasicMaterial(),8);
+  pool.count=0;pool.visible=false;scene.add(pool);
+  const limestone=new InstancedMesh(new BoxGeometry(),new MeshBasicMaterial(),4);
+  limestone.count=0;limestone.visible=false;scene.add(limestone);
+  const hiddenRide=new Mesh();bike.add(hiddenRide);
+  prepareColoredDetailPool(pool);
+  const draws:Object3D[]=[];
+  const renderer={shadowMap:{enabled:mapped},compileAsync:async(root:Object3D)=>{
+   root.traverse(object=>draws.push(object));return scene;
+  }};
+  await new SceneWarmup(renderer as unknown as ConstructorParameters<typeof SceneWarmup>[0],scene,camera,()=>{},async()=>{}).prepare();
+  assert.equal(pool.instanceColor?.count,8);assert.equal(pool.count,0);assert.equal(pool.visible,false);
+  assert.equal(limestone.instanceColor,null);
+  assert.deepEqual(draws,mapped?[pool,limestone,pool,limestone]:[pool,limestone]);
+ }
+});
+
 test('contact-only warmup skips mapped shadows and permits a later mapped warmup',async()=>{
  const {scene,sun,camera}=fixture(),calls:boolean[]=[];
  const renderer={shadowMap:{enabled:false},compileAsync:async()=>{calls.push(sun.castShadow);return scene;}};
@@ -83,6 +103,35 @@ test('contact-only warmup skips mapped shadows and permits a later mapped warmup
  renderer.shadowMap.enabled=true;
  await warmup.prepare();await warmup.prepare();
  assert.deepEqual(calls,[false,false,true]);
+});
+
+test('island batches link concurrently within one lighting policy and drain before it changes',async()=>{
+ const {scene,camera,sun}=fixture();
+ scene.add(...Array.from({length:193},()=>new Mesh()));
+ let active=0,peak=0;
+ const calls:boolean[]=[];
+ const renderer={shadowMap:{enabled:true},compileAsync:async()=>{
+  const shadow=sun.castShadow;calls.push(shadow);active++;peak=Math.max(peak,active);
+  await new Promise(done=>setTimeout(done,12));
+  assert.equal(sun.castShadow,shadow);active--;return scene;
+ }};
+ await new SceneWarmup(renderer as unknown as ConstructorParameters<typeof SceneWarmup>[0],scene,camera,()=>{},async()=>{}).prepare();
+ assert(peak>1&&peak<=4);assert.deepEqual(calls,[false,false,false,false,true,true,true,true]);
+});
+
+test('a fixed directional light needs one mapped topology and polls shared programs only once',async()=>{
+ const {scene,camera,sun}=fixture();sun.userData.fixedShadowLayout=true;
+ scene.add(...Array.from({length:129},()=>new Mesh()));
+ const uniforms:number[]=[],programs=[0,1].map(i=>({program:{},getUniforms:()=>uniforms.push(i)})),polls:object[]=[],shadows:boolean[]=[];
+ let flushed=0;
+ const renderer={shadowMap:{enabled:true},info:{programs},getContext:()=>({
+  getExtension:()=>({COMPLETION_STATUS_KHR:0x91b1}),LINK_STATUS:0x8b82,isContextLost:()=>false,flush:()=>flushed++,
+  getProgramParameter:(program:object,key:number)=>{if(key===0x8b82)return true;polls.push(program);return polls.length!==1;}
+ }),compile:()=>shadows.push(sun.castShadow),compileAsync:()=>{throw Error('unexpected material poll');}};
+ await new SceneWarmup(renderer as unknown as ConstructorParameters<typeof SceneWarmup>[0],scene,camera,()=>{},async()=>{}).prepare();
+ assert.deepEqual(shadows,[true,true,true]);assert.equal(flushed,1);
+ assert.deepEqual(polls,[programs[0].program,programs[0].program,programs[1].program]);
+ assert.deepEqual(uniforms,[0,1]);
 });
 
 test('Smooth prepares active drawables against the actual island lights, with a separate preparation for a hidden ride',async()=>{

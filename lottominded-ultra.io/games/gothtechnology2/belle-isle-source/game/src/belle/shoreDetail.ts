@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {prepareColoredDetailPool} from './sceneWarmup.ts';
 import {SHORE_BUDGETS,environmentQuality,type EnvironmentQuality} from './environmentDetail.ts';
 
 export type ShoreInstance={x:number;y:number;z:number;yaw:number;sx:number;sy:number;sz:number;color:number};
@@ -28,8 +29,7 @@ export function createShoreDetailPool(scene:T.Scene,geometry:T.BufferGeometry,ma
   `);
  };material.customProgramCacheKey=()=>oldKey+'-shore-distance-settle-v1';
  const capacity=SHORE_BUDGETS.high[kind],mesh=new T.InstancedMesh(geometry,material,capacity),dummy=new T.Object3D(),tint=new T.Color();
- // The pool is empty at spawn, but its first visible draw already needs instance colors.
- if(instances.length)mesh.setColorAt(0,tint);
+ if(instances.length)prepareColoredDetailPool(mesh);
  mesh.name=name;mesh.count=0;mesh.visible=false;mesh.frustumCulled=false;mesh.receiveShadow=kind==='rocks';mesh.instanceMatrix.setUsage(T.DynamicDrawUsage);scene.add(mesh);
  let quality:EnvironmentQuality='automatic',lastX=Infinity,lastZ=Infinity,selected=new Set<number>();
  const stats={total:instances.length,visible:0,limit:0,range:0,maxDraws:1};

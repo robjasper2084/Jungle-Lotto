@@ -1,15 +1,15 @@
 import test,{type TestContext} from 'node:test';
 import assert from 'node:assert/strict';
 import {getEventListeners} from 'node:events';
-import type {Camera,Object3D,Scene,WebGLRenderer} from 'three';
+import {DirectionalLight,PerspectiveCamera,Scene,type Object3D,type WebGLRenderer} from 'three';
 import {SceneWarmup} from './sceneWarmup.ts';
 
 // Structural fixtures exercise preparation ownership, not actual GPU performance.
 function fixture(){
- const light={isDirectionalLight:true,castShadow:true};
- const scene={traverse(visit:(object:unknown)=>void){visit(light);}} as unknown as Scene;
+ const light=new DirectionalLight();light.castShadow=true;
+ const scene=new Scene();scene.add(light);
  const model={uuid:'recovery-bike',visible:false} as Object3D;
- return{light,scene,model,camera:{} as Camera};
+ return{light,scene,model,camera:new PerspectiveCamera()};
 }
 const flush=()=>new Promise<void>(resolve=>setImmediate(resolve));
 function compiler(run:()=>Promise<unknown>){return{compileAsync:run} as unknown as Pick<WebGLRenderer,'compileAsync'>;}
@@ -19,7 +19,7 @@ function linkedIsland(t:TestContext,readyAt:number[],cachedAt:number[]=[]){
  let now=0;
  t.mock.method(performance,'now',()=>now);
  const {scene,camera,light}=fixture(),busy:boolean[]=[],verified:number[]=[];
- const entries=(times:number[])=>times.map(at=>({program:{at}}));
+ const entries=(times:number[])=>times.map(at=>({program:{at},getUniforms(){}}));
  const programs=entries(cachedAt),newEntries=entries(readyAt);
  let submissions=0,polls=0,linkBlockMs=0;
  const renderer={info:{programs},shadowMap:{enabled:true},compile(){if(submissions++===0)programs.push(...newEntries);},

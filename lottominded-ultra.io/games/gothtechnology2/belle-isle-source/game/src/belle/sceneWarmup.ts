@@ -1,68 +1,81 @@
-import {Group,type Camera,type DirectionalLight,type Object3D,type Scene,type WebGLRenderer} from 'three';
+import {Color,DynamicDrawUsage,Group,type Camera,type DirectionalLight,type InstancedMesh,type Object3D,type Scene,type WebGLRenderer} from 'three';
 
-import {warmObjectTextures,yieldStartupTask} from './startupWork.ts';
+import {checkStartupAbort,startupPool,warmObjectTextures,yieldStartupTask} from './startupWork.ts';
 
-type Compiler=Pick<WebGLRenderer,'compileAsync'> & Partial<Pick<WebGLRenderer,'compile'|'info'|'initTexture'|'shadowMap'|'getContext'>>;
+type Compiler=Pick<WebGLRenderer,'compileAsync'> & Partial<Pick<WebGLRenderer,'compile'|'getContext'|'info'|'initTexture'|'shadowMap'>>;
 type Pending={promise:Promise<void>;signal?:AbortSignal;cancel:AbortController};
-/** compileAsync normally visits even invisible geometry. Supply Smooth's active
- * drawables while the real target scene continues to provide all the lighting.
- * No game object is cloned, reparented or removed from the scene. */
-class SmoothWarmupRoot extends Group {
+const white=new Color(0xffffff);
+
+// Three selects the shader variant from the presence of instanceColor. A pool
+// can be empty at spawn and receive its first colored instance well into a ride.
+export function prepareColoredDetailPool(mesh:InstancedMesh){
+ if(!mesh.instanceMatrix.count)return;
+ mesh.setColorAt(0,white);
+ mesh.instanceColor!.setUsage(DynamicDrawUsage);
+}
+
+/** Compile visible drawables and distance-selected pools against the live lights.
+ * Hidden vehicles are prepared separately when the player selects them. */
+class IslandWarmupRoot extends Group {
  private drawables:Object3D[];
  constructor(drawables:Object3D[]){super();this.drawables=drawables;}
  static batches(scene:Scene,camera:Camera){
   const drawables:Object3D[]=[];
-  scene.traverseVisible(object=>{
+  function collect(object:Object3D){
+   if(!object.visible&&!object.userData.warmIslandShaders){
+    const pool=object as InstancedMesh;
+    if(!pool.isInstancedMesh||pool.count!==0||pool.instanceMatrix.count===0)return;
+   }
    if('material' in object && object.layers.test(camera.layers))drawables.push(object);
-  });
-  const batches:SmoothWarmupRoot[]=[];
-  for(let i=0;i<Math.max(1,drawables.length);i+=64)batches.push(new SmoothWarmupRoot(drawables.slice(i,i+64)));
+   for(const child of object.children)collect(child);
+  }
+  collect(scene);
+  const batches:IslandWarmupRoot[]=[];
+  for(let i=0;i<Math.max(1,drawables.length);i+=64)batches.push(new IslandWarmupRoot(drawables.slice(i,i+64)));
   return batches;
  }
  override traverse(callback:(object:Object3D)=>void){for(const object of this.drawables)callback(object);}
 }
 const cancelled=(signal:AbortSignal)=>signal.reason instanceof Error?signal.reason:new DOMException('Ride preparation cancelled','AbortError');
-/** Three's compileAsync polls each material's current program. A second
- * lighting setup would replace that pointer. Keep the actual GL handles from
- * both submissions so the driver can compile both sets before we wait. */
-async function prepareIslandPrograms(renderer:Compiler,scene:Scene,camera:Camera,lights:DirectionalLight[],signal:AbortSignal,onStage:(message:string)=>void,onNewLink:()=>void){
- const gl=renderer.getContext?.();
- const extension=gl?.getExtension?.('KHR_parallel_shader_compile');
+/** Submit every required light topology before polling. Keep each distinct GL
+ * handle so a later submission cannot replace the material pointer we verify. */
+async function prepareIslandPrograms(renderer:Compiler,roots:Object3D[],scene:Scene,camera:Camera,policies:boolean[],
+ setShadows:(enabled:boolean)=>void,signal:AbortSignal,onStage:(stage:string)=>void,onNewLink:()=>void){
+ const gl=renderer.getContext?.(),extension=gl?.getExtension?.('KHR_parallel_shader_compile');
  if(!gl||!extension||!renderer.compile||!renderer.info?.programs)return false;
- // Primed, cached and previously attempted programs still need validation.
- // Only handles introduced by these submissions can renew this attempt.
  const existing=new Set(renderer.info.programs.map(entry=>entry.program));
- const pending=new Set<WebGLProgram>();
- for(const castShadow of [false,true]){
-  if(signal.aborted)throw cancelled(signal);
-  onStage('submitting island shaders '+(castShadow?'with shadows':'without shadows'));
-  for(const light of lights)light.castShadow=castShadow;
-  renderer.compile(scene,camera,scene);
-  for(const linked of renderer.info.programs)pending.add(linked.program as WebGLProgram);
-  gl.flush();
-  await yieldStartupTask();
- }
- const total=pending.size;
- let reported=-1;
- while(pending.size){
-  if(reported!==pending.size){
-   reported=pending.size;
-   onStage('waiting for island shaders ('+(total-pending.size)+' of '+total+' programs verified)');
+ const pending=new Map<WebGLProgram,(typeof renderer.info.programs)[number]>();
+ for(const enabled of policies){
+  setShadows(enabled);
+  for(const [i,root] of roots.entries()){
+   if(i)await yieldStartupTask();
+   checkStartupAbort(signal);
+   onStage('submitting island shader batch '+(i+1)+'/'+roots.length+(enabled?' with shadows':' without shadows'));
+   renderer.compile(root,camera,scene);
   }
-  if(signal.aborted)throw cancelled(signal);
-  if(gl.isContextLost())throw new Error('WebGL context lost during island preparation');
-  for(const program of pending){
-   // Every program is already submitted. Poll a single unfinished handle
-   // per tick instead of round-tripping through the GPU process for all of
-   // them. Every ready handle still passes the same explicit link check.
-   if(!gl.getProgramParameter(program,extension.COMPLETION_STATUS_KHR))break;
-   if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw new Error('Island shader link failed: '+gl.getProgramInfoLog(program));
-   if(!existing.has(program))onNewLink();
-   pending.delete(program);
+  for(const entry of renderer.info.programs)pending.set(entry.program as WebGLProgram,entry);
+  gl.flush();await yieldStartupTask();
+ }
+ const total=pending.size;let lastReported=-1;
+ while(pending.size){
+  checkStartupAbort(signal);
+  if(gl.isContextLost())throw Error('WebGL context lost during island preparation');
+  if(pending.size!==lastReported){
+   lastReported=pending.size;onStage('waiting for island shaders ('+(total-pending.size)+' of '+total+' programs verified)');
+  }
+  let sliceStart=performance.now();
+  for(const [handle,entry] of pending){
+   if(!gl.getProgramParameter(handle,extension.COMPLETION_STATUS_KHR))break;
+   if(!gl.getProgramParameter(handle,gl.LINK_STATUS))throw Error('Island shader link failed: '+gl.getProgramInfoLog(handle));
+   if(!existing.has(handle))onNewLink();
+   // Prime Three's reflected uniforms and attributes before the first ride.
+   entry.getUniforms();
+   pending.delete(handle);
+   if(performance.now()-sliceStart>=8){await yieldStartupTask();checkStartupAbort(signal);sliceStart=performance.now();}
   }
   if(pending.size)await new Promise(resolve=>setTimeout(resolve,10));
  }
- return true;
+ checkStartupAbort(signal);return true;
 }
 function readyOrCancelled<T>(ready:Promise<T>,signal:AbortSignal){
  return new Promise<T>((resolve,reject)=>{
@@ -127,7 +140,7 @@ export class SceneWarmup {
    // Rider-only preparation must not recompile every island material. A model
    // with lights changes the scene light topology and still needs the full scene.
    let addsLights=false;model?.traverse?.(object=>{if((object as Object3D&{isLight?:boolean}).isLight)addsLights=true;});
-   const compileRoots=!model&&!mappedShadows?SmoothWarmupRoot.batches(this.scene,this.camera):[model&&!addsLights?model:this.scene];
+   const compileRoots=!model?IslandWarmupRoot.batches(this.scene,this.camera):[!addsLights?model:this.scene];
    const shadows:{light:DirectionalLight;enabled:boolean}[]=[];
    this.scene.traverse(object=>{const light=object as DirectionalLight;if(light.isDirectionalLight)shadows.push({light,enabled:light.castShadow});});
    try{
@@ -142,14 +155,17 @@ export class SceneWarmup {
     checkDeadline();
     // Smooth has no shadow-map pass. A later prepare in a mapped mode
     // gets a distinct cache entry and still warms both lighting variants.
-    const islandReady=!model&&mappedShadows&&shadows.length>0&&await readyOrCancelled(
-     prepareIslandPrograms(this.renderer,this.scene,this.camera,shadows.map(state=>state.light),cancel.signal,message=>{checkDeadline();stage=message;},onNewLink),
-     cancel.signal);
-    for(const enabled of islandReady?[]:mappedShadows?[false,true]:[false]){
+    const varyingShadow=shadows.some(({light})=>!light.userData.fixedShadowLayout);
+    const policies=mappedShadows&&varyingShadow?[false,true]:[mappedShadows];
+    const setShadows=(enabled:boolean)=>{for(const {light} of shadows)light.castShadow=light.userData.fixedShadowLayout?mappedShadows:enabled;};
+    const islandReady=!model&&await readyOrCancelled(prepareIslandPrograms(this.renderer,compileRoots,this.scene,this.camera,
+     policies,setShadows,cancel.signal,message=>{checkDeadline();stage=message;},onNewLink),cancel.signal);
+    for(const enabled of islandReady?[]:policies){
      if(cancel.signal.aborted)throw cancelled(cancel.signal);
-     for(const state of shadows)state.light.castShadow=enabled;
-     // compileAsync collects synchronously, then awaits driver readiness.
-     for(const [i,root] of compileRoots.entries()){
+     setShadows(enabled);
+     // Keep the compiler supplied while earlier programs link. Drain all work
+     // for this light topology before changing the directional shadow policy.
+     const submit=async(root:Object3D,i:number)=>{
       if(i>0)await readyOrCancelled(yieldStartupTask(),cancel.signal);
       if(cancel.signal.aborted)throw cancelled(cancel.signal);
       stage='compiling shader batch '+(i+1)+'/'+compileRoots.length+(enabled?' with shadows':' without shadows');
@@ -160,7 +176,9 @@ export class SceneWarmup {
       // before waiting for asynchronous shader completion on the driver.
       this.renderer.getContext?.().flush();
       await readyOrCancelled(ready,cancel.signal);
-     }
+     };
+     if(compileRoots.length===1)await submit(compileRoots[0],0);
+     else await startupPool(compileRoots,4,submit,cancel.signal);
      if(!shadows.length)break;
     }
     checkDeadline();

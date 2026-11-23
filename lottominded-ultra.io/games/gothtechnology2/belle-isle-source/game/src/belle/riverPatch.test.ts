@@ -1,9 +1,28 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {riverFarRing,RIVER_PATCH_SIZE,RIVER_PATCH_SEGMENTS} from './riverPatch.ts';
+import {PlaneGeometry} from 'three';
+import {flatRiverPatchIndex,riverFarRing,RIVER_PATCH_SIZE,RIVER_PATCH_SEGMENTS} from './riverPatch.ts';
 import {sunDirection,DEFAULT_SKY} from './skyModel.ts';
 const at=(positions:number[],i:number)=>positions.slice(i*3,i*3+3);
+test('calm water covers the original plane with upward triangles and the entire ring boundary',()=>{
+ const plane=new PlaneGeometry(RIVER_PATCH_SIZE,RIVER_PATCH_SIZE,RIVER_PATCH_SEGMENTS,RIVER_PATCH_SEGMENTS).rotateX(-Math.PI/2);
+ try{
+  const index=flatRiverPatchIndex(),p=plane.getAttribute('position'),ring=riverFarRing(),perimeter=new Set<string>();
+  assert.equal(index.length/3,RIVER_PATCH_SEGMENTS*4);
+  let area=0;
+  for(let i=0;i<index.length;i+=3){
+   const [a,b,c]=index.subarray(i,i+3);
+   assert.equal(p.getX(a),0);assert.equal(p.getZ(a),0);
+   const doubleArea=(p.getZ(b)-p.getZ(a))*(p.getX(c)-p.getX(a))-(p.getX(b)-p.getX(a))*(p.getZ(c)-p.getZ(a));
+   assert(doubleArea>0);area+=doubleArea/2;
+   perimeter.add(p.getX(b)+','+p.getZ(b));
+  }
+  assert.equal(area,RIVER_PATCH_SIZE**2);
+  const inner=Array.from({length:RIVER_PATCH_SEGMENTS*4},(_,i)=>ring.positions[i*3]+','+ring.positions[i*3+2]);
+  assert.deepEqual(perimeter,new Set(inner));
+ }finally{plane.dispose();}
+});
 test('river far ring has bounded finite buffers and upward faces',()=>{
  const g=riverFarRing();assert.equal(g.positions.length,3072);assert.equal(g.indices.length,3072);assert.equal(g.uv.length,2048);
  assert(g.positions.every(Number.isFinite)&&g.uv.every(Number.isFinite));

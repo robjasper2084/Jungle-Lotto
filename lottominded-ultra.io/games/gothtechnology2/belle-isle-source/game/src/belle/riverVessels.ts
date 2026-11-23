@@ -1,7 +1,7 @@
 import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import type {VesselKind} from './riverTrafficPlan.ts';
-/** Original lightweight silhouettes, with geometry merged by finish. No image downloads. */
+/** Each moving hull has one opaque palette mesh and separate navigation lamps. */
 export function vesselModel(kind:VesselKind,length:number,width:number){
  const group=new T.Group(),parts:T.BufferGeometry[][]=Array.from({length:5},()=>[]);
  const palettes:Record<VesselKind,number[]>={freighter:[0x773b2b,0xdddaca,0x263b43,0x8d8c76,0x263232],tanker:[0x245666,0xe2e2d9,0x263941,0xa1aaa5,0x252b2c],excursion:[0xe7e1cf,0xf1eee1,0x25383b,0xba4032,0x393d38],fishing:[0xc4c5ba,0xe8e4d9,0x213b42,0x788174,0x282e2b]};
@@ -30,7 +30,28 @@ export function vesselModel(kind:VesselKind,length:number,width:number){
   for(const x of[-.6,.6])add(new T.CylinderGeometry(.018,.028,2,5),4,x,1.4,-1.8,-.5,0,x*.5);
  }
  const fade={value:1},night={value:0};
- for(let i=0;i<parts.length;i++){if(!parts[i].length)continue;const g=mergeGeometries(parts[i]);parts[i].forEach(p=>p.dispose());if(!g)continue;g.computeBoundingSphere();const m=new T.MeshStandardMaterial({color:palettes[kind][i],roughness:.64,metalness:.17});m.name=i===2?'River vessel glazing':'River vessel finish';m.onBeforeCompile=shader=>{shader.uniforms.vesselFade=fade;shader.fragmentShader='uniform float vesselFade;\n'+shader.fragmentShader;shader.fragmentShader=shader.fragmentShader.replace('#include <alphatest_fragment>','#include <alphatest_fragment>\nif(fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.5453)>vesselFade)discard;');};m.customProgramCacheKey=()=>'river-vessel-fade';group.add(new T.Mesh(g,m));}
+ const paint=new T.Color();
+ for(const [finish,pieces] of parts.entries()){
+  // Material.color uses linear RGB in the shader. Use the same linear value
+  // at every vertex of each original face, including the opaque glazing.
+  paint.setHex(palettes[kind][finish]);
+  for(const piece of pieces){
+   const count=piece.getAttribute('position').count,colors=new Float32Array(count*3);
+   for(let i=0;i<colors.length;i+=3)paint.toArray(colors,i);
+   piece.setAttribute('color',new T.BufferAttribute(colors,3));
+  }
+ }
+ const geometry=mergeGeometries(parts.flat())!;
+ for(const pieces of parts)for(const piece of pieces)piece.dispose();
+ geometry.computeBoundingSphere();
+ const material=new T.MeshStandardMaterial({name:'River vessel finish',vertexColors:true,roughness:.64,metalness:.17});
+ material.onBeforeCompile=shader=>{
+  shader.uniforms.vesselFade=fade;
+  shader.fragmentShader='uniform float vesselFade;\n'+shader.fragmentShader;
+  shader.fragmentShader=shader.fragmentShader.replace('#include <alphatest_fragment>','#include <alphatest_fragment>\nif(fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.5453)>vesselFade)discard;');
+ };
+ material.customProgramCacheKey=()=>'river-vessel-fade';
+ group.add(new T.Mesh(geometry,material));
  // Red port, green starboard and warm mast lamps remain visible after sundown.
  const lightsGeo:T.BufferGeometry[]=[];for(const [x,z,color] of[[-width*.45,length*.15,0xff4a34],[width*.45,length*.15,0x68e5a6],[0,-length*.3,0xffedb6]]){const g=new T.SphereGeometry(small?.09:.38,6,4);g.translate(x,small?2.1:deck+10,z);const c=new T.Color(color),colors=[];for(let i=0;i<g.attributes.position.count;i++)colors.push(c.r,c.g,c.b);g.setAttribute('color',new T.Float32BufferAttribute(colors,3));lightsGeo.push(g);}
  const lamps=new T.Mesh(mergeGeometries(lightsGeo)!,new T.MeshBasicMaterial({vertexColors:true,toneMapped:false}));lightsGeo.forEach(g=>g.dispose());group.add(lamps);

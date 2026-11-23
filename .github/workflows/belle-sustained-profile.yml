@@ -15,15 +15,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  profile:
-    # Apple's virtual Metal device supports a GPU-backed Chrome WebGL2 context.
-    runs-on: macos-15
-    timeout-minutes: 50
-    strategy:
-      fail-fast: false
-      matrix:
-        device: [desktop, phone]
-        mode: [full, diagnostic]
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -37,11 +31,40 @@ jobs:
           npm test
           node --check scripts/sustained-ride-profile.mjs
           npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sustained-profile-game
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist/
+          if-no-files-found: error
+          retention-days: 1
+  profile:
+    needs: build
+    runs-on: macos-15
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        device: [desktop, phone]
+        mode: [full, diagnostic]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@v4
+        with:
+          name: sustained-profile-game
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist
       - name: Install Chrome browser runtime
         working-directory: lottominded-ultra.io/games/gothtechnology2
         run: |
           npm ci
-          npx playwright install --with-deps chrome
+          npx playwright install chrome
       - name: Hold real input and sample 90-second foreground ride
         timeout-minutes: 28
         working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game

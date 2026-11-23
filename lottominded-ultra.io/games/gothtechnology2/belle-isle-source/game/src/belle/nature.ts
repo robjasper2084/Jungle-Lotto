@@ -1,9 +1,10 @@
 import {referenceTree} from './referenceTrees.ts';
+import {ReferenceLeafDisplay,applyLeafOutline} from './referenceLeafDisplay.ts';
 import {canopyTint} from './sunsetCanopy.ts';
 import {canopyProfile} from './habitatPolicy.ts';
 import {NatureViewSelection} from './natureViewSelection.ts';
+import {TreeInstanceVisibility} from './farTreeVisibility.ts';
 import {NatureSpatialIndex} from './natureSpatialIndex.ts';
-import {FarTreeVisibility} from './farTreeVisibility.ts';
 import {NaturePlacementMatrices} from './naturePlacementMatrices.ts';
 import type {NatureRenderProbe} from './renderDiagnostics.ts';
 import type {ParkTerrain} from './terrain.ts';
@@ -21,8 +22,8 @@ import {natureBudget,type Plant,type NaturePlan} from './naturePlan.ts';
 import {localPerformanceProbe,PERF_PROBE_REDUCTIONS} from './performanceProbe.ts';
 type Entry={id:string;meshes?:string[];cardSize?:number;cardCenter?:number[];card?:string;triangles:number};
 type Manifest={trees:Entry[];ground:Entry[]};
-type Pool={id:string;meshes:T.InstancedMesh[];far?:T.InstancedMesh[];farVisibility?:FarTreeVisibility;sourceIndices?:ReadonlyMap<Plant,number>;sourceIds?:Uint32Array;card?:T.InstancedMesh;plants:Plant[]};
-export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:ParkTerrain,renderProbe?:NatureRenderProbe){
+type Pool={id:string;meshes:T.InstancedMesh[];nearVisibility?:TreeInstanceVisibility;far?:T.InstancedMesh[];farVisibility?:TreeInstanceVisibility;sourceIndices?:ReadonlyMap<Plant,number>;sourceIds?:Uint32Array;card?:T.InstancedMesh;plants:Plant[]};
+export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:ParkTerrain,renderProbe?:NatureRenderProbe,singleSample=false){
  const base='./belle/nature/',loader=new GLTFLoader(),textures=new T.TextureLoader();
  const json=async(name:string)=>{const r=await fetch(base+name);if(!r.ok)throw Error('Nature asset '+name+': '+r.status);return r.json();};
  const manifest:Manifest=await json('manifest.json'),plan:NaturePlan=await json('placements.json');if(REFERENCE_STYLE)plan.trees=plan.trees.filter(p=>!inSunsetGarden(p.x,p.z));
@@ -32,7 +33,7 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
  status('Loading varied trees');
  const treeSource=REFERENCE_STYLE?new T.Group():(await loadStartupModel(loader,base+'seasonal-trees.glb')).scene;
  const smoothIndices=new Map<string,T.BufferAttribute>();
- const distantLeafIndices:{mesh:T.InstancedMesh;full:T.BufferAttribute;smooth:T.BufferAttribute}[]=[];
+ const leafDisplays:ReferenceLeafDisplay[]=[];
  if(REFERENCE_STYLE)for(const entry of manifest.trees)for(const low of [false,true]){
   await yieldStartupTask();
   const tree=referenceTree(entry.id,low,(entry.cardCenter?.[1]??8)*2);
@@ -87,8 +88,10 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
    seasons.push(season);mesh.material=season.material;
    mesh.geometry.setAttribute('lodWeight',new T.InstancedBufferAttribute(new Float32Array(low?plants.length:natureBudget.high.trees),1));
    if(part==='leaves')mesh.geometry.setAttribute('canopyDensity',new T.InstancedBufferAttribute(new Float32Array(low?plants.length:natureBudget.high.trees).fill(1),1).setUsage(T.DynamicDrawUsage));
-   const smooth=smoothIndices.get(entry.id);
-   if(low&&part==='leaves'&&smooth)distantLeafIndices.push({mesh,full:mesh.geometry.getIndex()!,smooth});
+   if(REFERENCE_STYLE&&part==='leaves'){
+    if(singleSample)applyLeafOutline(season.material);
+    leafDisplays.push(new ReferenceLeafDisplay(mesh,singleSample,low?smoothIndices.get(entry.id):undefined));
+   }
    (low?far:meshes).push(mesh);
   }
   for(const p of plants)terrain?.flightSolids.add({x:p.x,z:p.z,bottom:p.y,top:p.y+Math.max(4,(entry.cardCenter?.[1]??8)*1.3*p.scale),radius:.28*p.scale,kind:'tree'});
@@ -98,7 +101,7 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
   const card=new T.InstancedMesh(cards,cardSeason.material,plants.length);card.name='Split distant '+entry.id;card.visible=false;
   cards.setAttribute('lodWeight',new T.InstancedBufferAttribute(new Float32Array(plants.length),1).setUsage(T.DynamicDrawUsage));
   plants.forEach((p,i)=>{card.setMatrixAt(i,matrix(p,false,true));card.setColorAt(i,plantTint(p));});card.computeBoundingSphere();scene.add(card);
-  pools.push({id:entry.id,meshes,far,farVisibility:new FarTreeVisibility(far,renderProbe),sourceIndices:new Map(plants.map((p,i)=>[p,i])),sourceIds:new Uint32Array(plants.length),card,plants});
+  pools.push({id:entry.id,meshes,nearVisibility:new TreeInstanceVisibility(meshes,undefined,'near'),far,farVisibility:new TreeInstanceVisibility(far,renderProbe),sourceIndices:new Map(plants.map((p,i)=>[p,i])),sourceIds:new Uint32Array(plants.length),card,plants});
  }
  // Ground cover is a separate, smaller stage. Source LOD2 models and shared
  // texture atlases avoid the provider's multi-million-polygon scatter setup.
@@ -132,6 +135,7 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
   for(const pool of pools){
    const near=pool.plants.filter(p=>selected.has(p));
    for(const mesh of pool.meshes){mesh.count=near.length;near.forEach((p,i)=>{if(mesh.userData.seasonalLeaf)mesh.setMatrixAt(i,matrix(p,false,true));else mesh.setMatrixAt(i,matrix(p));mesh.setColorAt(i,plantTint(p));});uploadInstancePrefix(mesh.instanceMatrix,mesh.count);const weights=mesh.geometry.getAttribute('lodWeight') as T.InstancedBufferAttribute|undefined;if(weights){near.forEach((p,i)=>weights.setX(i,treeBlend(Math.sqrt(d(p)),cutoff)));uploadInstancePrefix(weights,mesh.count);}const canopy=mesh.geometry.getAttribute('canopyDensity') as T.InstancedBufferAttribute|undefined;if(canopy){near.forEach((p,i)=>canopy.setX(i,growth(p).density));uploadInstancePrefix(canopy,mesh.count);}uploadInstancePrefix(mesh.instanceColor,mesh.count);}
+   pool.nearVisibility?.capture();
    let farSourcePlants:Plant[]|undefined;
    if(pool.far)for(const far of pool.far){const visible=pool.plants.filter(p=>d(p)<(diagnostic?PERF_PROBE_REDUCTIONS.farRange:cardsActive?145:quality==='smooth'?850:1300)**2&&(!selected.has(p)||treeBlend(Math.sqrt(d(p)),cutoff)<1));farSourcePlants??=visible;far.count=visible.length;const weights=far.geometry.getAttribute('lodWeight') as T.InstancedBufferAttribute;visible.forEach((p,i)=>{if(far.userData.seasonalLeaf)far.setMatrixAt(i,matrix(p,false,true));else far.setMatrixAt(i,matrix(p));far.setColorAt(i,plantTint(p));const distance=Math.sqrt(d(p));weights.setX(i,(selected.has(p)?1-treeBlend(distance,cutoff):1)*(cardsActive?Math.max(0,Math.min(1,(145-distance)/50)):1));});uploadInstancePrefix(weights,far.count);const canopy=far.geometry.getAttribute('canopyDensity') as T.InstancedBufferAttribute|undefined;if(canopy){visible.forEach((p,i)=>canopy.setX(i,growth(p).density));uploadInstancePrefix(canopy,far.count);}uploadInstancePrefix(far.instanceMatrix,far.count);uploadInstancePrefix(far.instanceColor,far.count);}
    const sourceIds=pool.sourceIds;
@@ -151,10 +155,22 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
  }
  const view=new NatureViewSelection(select),eye=new T.Vector3(),before=scene.onBeforeRender;
  scene.onBeforeRender=(...args)=>{before.apply(scene,args);
-  if(renderProbe?.active){args[2].getWorldPosition(eye);renderProbe.pass();const selectionStart=renderProbe.now();view.render(eye.x,eye.z);renderProbe.elapsed('selectionCpuMs',selectionStart);const cullStart=renderProbe.now();for(const pool of pools)pool.farVisibility?.render(args[2]);renderProbe.elapsed('cullCpuMs',cullStart);}
-  else{args[2].getWorldPosition(eye);view.render(eye.x,eye.z);for(const pool of pools)pool.farVisibility?.render(args[2]);}
+  if(singleSample){
+   const renderer=args[0],useCards=!renderer.xr.isPresenting&&!(renderer.getRenderTarget()?.samples);
+   for(const display of leafDisplays)display.setSingleSample(useCards);
+  }
+  const selectionStart=renderProbe?.active?renderProbe.now():0;
+  args[2].getWorldPosition(eye);view.render(eye.x,eye.z);
+  if(renderProbe?.active){renderProbe.pass();renderProbe.elapsed('selectionCpuMs',selectionStart);}
+  const cullStart=renderProbe?.active?renderProbe.now():0;
+  const shadows=args[0].shadowMap,allCasters=shadows.enabled&&(shadows.autoUpdate||shadows.needsUpdate);
+  for(const pool of pools){
+   pool.nearVisibility?.render(args[2],allCasters);
+   pool.farVisibility?.render(args[2]);
+  }
+  if(renderProbe?.active)renderProbe.elapsed('cullCpuMs',cullStart);
  };
  return{stats,treeSites:plan.trees as readonly Plant[],update,setSplitDetail(value:boolean){splitDetail=value;},setQuality(value:string){quality=value in natureBudget?value as keyof typeof natureBudget:'automatic';
-  for(const {mesh,full,smooth} of distantLeafIndices)mesh.geometry.setIndex(quality==='smooth'?smooth:full);
+  for(const display of leafDisplays)display.setSmooth(quality==='smooth');
   lastX=Infinity;}};
 }

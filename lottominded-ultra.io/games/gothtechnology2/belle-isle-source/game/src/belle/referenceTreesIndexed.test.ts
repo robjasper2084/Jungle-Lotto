@@ -4,6 +4,58 @@ import fs from 'node:fs';
 import {createHash} from 'node:crypto';
 import * as T from 'three';
 import {referenceTree} from './referenceTrees.ts';
+import {ReferenceLeafDisplay, applyLeafOutline, rigidLeafGeometry} from './referenceLeafDisplay.ts';
+
+test('rigid leaf cards reproduce every authored vertex and preserve shaded crown cores',()=>{
+ for(const id of ['maple','birch','pine','willow'])for(const low of [false,true]){
+  const {leaves:source}=referenceTree(id,low,16),count=source.userData.referenceLeafCount;
+  const cards=rigidLeafGeometry(source,count);
+  const original=source.getAttribute('position'),position=cards.getAttribute('position');
+  const uv=source.getAttribute('uv'),point=new T.Vector3(),a=new T.Vector3(),across=new T.Vector3(),along=new T.Vector3(),expected=new T.Vector3();
+  assert.equal(cards.index!.count/3,count*2+260);
+  for(let i=0;i<count;i++){
+   a.fromBufferAttribute(position,i*4);across.fromBufferAttribute(position,i*4+1).sub(a);along.fromBufferAttribute(position,i*4+3).sub(a);
+   for(let j=0;j<13;j++){
+    const index=i*13+j;
+    point.copy(a).addScaledVector(across,(uv.getX(index)+.30)/.60).addScaledVector(along,(uv.getY(index)+.25)/.67);
+    assert(point.distanceTo(expected.fromBufferAttribute(original,index))<.00001);
+   }
+  }
+  for(const name of ['position','normal','uv','color']){
+   const orig=source.getAttribute(name),card=cards.getAttribute(name);
+   assert.deepEqual(card.array.subarray(count*4*card.itemSize),orig.array.subarray(count*13*orig.itemSize));
+  }
+ }
+});
+
+test('canopy selection preserves wind, native multisampling, Smooth distant leaves and authored ray hits',()=>{
+ const tree=referenceTree('maple',false,16),mesh=new T.InstancedMesh(tree.leaves,tree.foliage,1);
+ mesh.setMatrixAt(0,new T.Matrix4());mesh.updateMatrixWorld();
+ const ray=new T.Raycaster(new T.Vector3(0,12,12),new T.Vector3(0,0,-1));
+ const expected=ray.intersectObject(mesh).map(hit=>[hit.faceIndex,hit.distance]);
+ assert(expected.length>0);
+ const near=new ReferenceLeafDisplay(mesh,true);
+ assert.equal(mesh.geometry,tree.leaves);
+ near.setWind(false);assert.notEqual(mesh.geometry,tree.leaves);
+ assert.deepEqual(ray.intersectObject(mesh).map(hit=>[hit.faceIndex,hit.distance]),expected);
+ near.setSingleSample(false);assert.equal(mesh.geometry,tree.leaves);
+ near.setSingleSample(true);assert.notEqual(mesh.geometry,tree.leaves);
+ near.setWind(true);assert.equal(mesh.geometry,tree.leaves);
+ const far=referenceTree('pine',true,16),distant=new T.InstancedMesh(far.leaves,far.foliage,1);
+ const full=far.leaves.index,display=new ReferenceLeafDisplay(distant,true,far.smoothLeafIndex);
+ assert.notEqual(distant.geometry,far.leaves);
+ display.setSmooth(true);assert.equal(distant.geometry,far.leaves);assert.equal(distant.geometry.index,far.smoothLeafIndex);
+ display.setSmooth(false);assert.notEqual(distant.geometry,far.leaves);assert.equal(far.leaves.index,full);
+ const native=new T.InstancedMesh(far.leaves,far.foliage,1),multisample=new ReferenceLeafDisplay(native,false,far.smoothLeafIndex);
+ multisample.setSmooth(false);assert.equal(native.geometry,far.leaves);multisample.setSmooth(true);assert.equal(native.geometry.index,far.smoothLeafIndex);
+ for(const [material,template] of [[new T.MeshStandardMaterial(),T.ShaderLib.standard],[new T.MeshDepthMaterial(),T.ShaderLib.depth],[new T.MeshDistanceMaterial(),T.ShaderLib.distance]] as const){
+  applyLeafOutline(material);
+  const shader={vertexShader:template.vertexShader,fragmentShader:template.fragmentShader} as Parameters<T.Material['onBeforeCompile']>[0];
+  material.onBeforeCompile(shader,{} as T.WebGLRenderer);
+  assert(shader.vertexShader.includes('referenceLeafUV = uv;'));
+  assert(shader.fragmentShader.includes('> referenceLeafWidth(referenceLeafUV.y)) discard;'));
+ }
+});
 
 type GoldenGeometry={hashes:Record<string,string>;bounds:{box:{min:number[];max:number[]};sphere:{center:number[];radius:number}}};
 type GoldenTree={id:string;low:boolean;height:number;trunk:GoldenGeometry;leaves:GoldenGeometry};
