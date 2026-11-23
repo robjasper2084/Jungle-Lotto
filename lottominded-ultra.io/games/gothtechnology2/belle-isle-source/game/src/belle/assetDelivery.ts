@@ -1,11 +1,15 @@
 import {DefaultLoadingManager} from 'three';
 import pins from './assetPins.json' with {type:'json'};
 import vehiclePins from './vehicles/assetPins.json' with {type:'json'};
+import cadillacHeroPins from './cadillacHeroPins.json' with {type:'json'};
+// Pin the exact Vite-emitted hero as well as public models. A future filename
+// or binary change fails Pages integrity validation until its pin is updated.
+const pinSets=[pins,vehiclePins,cadillacHeroPins];
 
 /** Keep the local authoring build self-contained; production uses exact committed bytes. */
 export function configureAssetDelivery(){
  if(!import.meta.env.PROD||['127.0.0.1','localhost'].includes(location.hostname))return;
- const urls=new Map([pins,vehiclePins].flatMap(group=>group.files.map(file=>[new URL('./'+file.path,document.baseURI).href,group.base+((file as {source?:string}).source??file.path)] as const)));
+ const urls=new Map(pinSets.flatMap(group=>group.files.map(file=>[new URL('./'+file.path,document.baseURI).href,group.base+((file as {source?:string}).source??file.path)] as const)));
 
  // The skyline is a modest, required first-view model. Begin its transfer
  // early; do not preload the 30 MB landmark archive or every selectable vehicle.
@@ -19,7 +23,7 @@ export function configureAssetDelivery(){
    if(rel==='preload'){link.as='fetch';link.fetchPriority='high';}
    link.dataset.belleAssetHint=rel;head.append(link);hinted.add(href);
   };
-  for(const origin of new Set([pins.base,vehiclePins.base].map(base=>new URL(base).origin+'/')))hint('preconnect',origin);
+  for(const origin of new Set(pinSets.map(group=>new URL(group.base).origin+'/')))hint('preconnect',origin);
   const skyline=urls.get(new URL('./belle/detroit-skyline.glb',document.baseURI).href);
   if(skyline)hint('preload',skyline);
  }
