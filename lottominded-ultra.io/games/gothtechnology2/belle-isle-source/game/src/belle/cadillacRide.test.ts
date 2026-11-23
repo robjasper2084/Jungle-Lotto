@@ -52,8 +52,8 @@ test('cabin view follows suspension and keeps both faces framed in either iPad o
   const ride=new CadillacRide(group,terrain);ride.start();
   const body=group.getObjectByName('SprungBody')!;
   const driver=new T.Object3D(),dog=new T.Object3D();
-  // Independently measured head centres of the posed, shipped character skins.
-  driver.position.set(.4343,1.1759,.2011);dog.position.set(-.4252,1.1278,-.6);body.add(driver,dog);
+  // Independently measured heads of the posed suited hero and rear passenger.
+  driver.position.set(.4297691775,1.2015169098,.2303756170);dog.position.set(-.4252,1.1278,-.6);body.add(driver,dog);
   group.position.set(400,2,-300);group.rotation.y=1.4;body.position.y=.09;body.rotation.set(.10,0,-.08);
   for(const [width,height]of [[1194,834],[834,1194]]){
     const camera=new T.PerspectiveCamera(60,width/height,.04,2000);

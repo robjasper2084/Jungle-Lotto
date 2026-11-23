@@ -9,9 +9,11 @@ import {invalidateAnimatedShadow} from '../../runtime/ride-core/src/shadowBudget
  * metres. That asset has no exported seat nodes or vertex groups; these are
  * explicit runtime fittings, not purported Blender vertex-group bindings. */
 export const CADILLAC_CABIN_FIT={
- driverScale:.74,driverRecline:-.28,
- driverHip:[.43,.70,.35] as const,
- leftFoot:[.55,.495,.84] as const,rightFoot:[.31,.495,.84] as const,
+ // The original DS_Man_01 suited rig includes its long hair and fitted aviators.
+ driverScale:.77,driverRecline:-.28,
+ driverHip:[.43,.712,.35] as const,
+ leftFoot:[.55,.487,.84] as const,rightFoot:[.31,.487,.84] as const,
+ steeringWheelLift:.08,
  dogScale:.70,dogYaw:-Math.PI/2,dogRoll:.07,dogPosition:[-.38,.58025,-.60] as const,
  rearCushionY:.566903,dogSupportClearance:.0065,
  // The conservative rear-seat envelope includes the complete tail. Turning
@@ -71,17 +73,54 @@ function skinBounds(root:T.Object3D,space:T.Object3D){
 }
 const bounds=(box:T.Box3):Bounds=>({min:box.min.toArray(),max:box.max.toArray()});
 
-/** The visible solo hero and Boerboel, seated as one cabin-local assembly.
+/** Raise the adjustable wheel to clear the suited driver's thighs. The source
+ * GLB merges its open-ended column into the upholstery mesh. Its measured
+ * 32-sided shaft is exactly vertices 9387..9450: move only the hub ring, keeping
+ * the dashboard ring fixed. A private geometry preserves every shared asset;
+ * the same affine shear updates only the shaft normals, once at construction. */
+function fitSteeringColumn(model:T.Object3D,wheel:T.Object3D){
+ const mesh=required(model,'Coachwork_3') as T.Mesh;
+ const source=mesh.geometry,first=9387,last=9450;
+ const position=source?.getAttribute('position');
+ if(!mesh.isMesh||!position||position.count<=last)throw new Error('Cadillac steering-column geometry is missing');
+ const dashboard=vector(),hub=vector();let dashboardCount=0,hubCount=0;
+ const point=vector();
+ for(let i=first;i<=last;i++){
+  point.fromBufferAttribute(position,i);
+  if(point.x<.37||point.x>.49||point.y<.74||point.y>.95||point.z<.56||point.z>.87)throw new Error('Cadillac steering-column geometry changed');
+  if(point.z<.7){hub.add(point);hubCount++;}else{dashboard.add(point);dashboardCount++;}
+ }
+ if(hubCount!==32||dashboardCount!==32)throw new Error('Cadillac steering-column rings changed');
+ dashboard.divideScalar(dashboardCount);hub.divideScalar(hubCount);
+ const shaft=hub.sub(dashboard),lift=CADILLAC_CABIN_FIT.steeringWheelLift;
+ const gradient=shaft.clone().divideScalar(shaft.lengthSq());
+ const shear=new T.Matrix4().set(1,0,0,0,lift*gradient.x,1+lift*gradient.y,lift*gradient.z,0,0,0,1,0,0,0,0,1);
+ const normalMatrix=new T.Matrix3().getNormalMatrix(shear);
+ const fitted=source.clone(),fittedPosition=fitted.getAttribute('position'),normal=fitted.getAttribute('normal'),tangent=fitted.getAttribute('tangent');
+ for(let i=first;i<=last;i++){
+  if(position.getZ(i)<.7)fittedPosition.setY(i,position.getY(i)+lift);
+  if(normal){point.fromBufferAttribute(normal,i).applyNormalMatrix(normalMatrix);normal.setXYZ(i,point.x,point.y,point.z);}
+  if(tangent){point.fromBufferAttribute(tangent,i).transformDirection(shear);tangent.setXYZ(i,point.x,point.y,point.z);}
+ }
+ fittedPosition.needsUpdate=true;if(normal)normal.needsUpdate=true;if(tangent)tangent.needsUpdate=true;
+ fitted.computeBoundingBox();fitted.computeBoundingSphere();mesh.geometry=fitted;
+ const wheelPosition=wheel.position.clone();wheel.position.y+=lift;
+ return()=>{wheel.position.copy(wheelPosition);mesh.geometry=source;fitted.dispose();};
+}
+
+/** The long-haired suited hero and Boerboel, seated as one cabin-local assembly.
  * There are no independent occupant rigid bodies to drift during a turn.
  * Geometry/materials stay shared; bones, skeletons and animation state do not. */
 export class CadillacCabin{
  readonly root=new T.Group();
  readonly driver:T.Object3D;
  readonly dog:T.Object3D;
+ readonly driverAsset:string;
  readonly anchors:{driverSeat:T.Object3D;rearSeat:T.Object3D;driverHead:T.Object3D;dogHead:T.Object3D;leftGrip:T.Object3D;rightGrip:T.Object3D;leftFoot:T.Object3D;rightFoot:T.Object3D};
  private readonly wheel:T.Object3D;
  private readonly gripFrame:T.Object3D;
  private readonly wheelRest:T.Quaternion;
+ private readonly restoreSteeringFit:()=>void;
  private readonly hips:T.Object3D;
  private readonly driverHead:T.Object3D;
  private readonly driverSpine:T.Object3D;
@@ -111,8 +150,12 @@ export class CadillacCabin{
   const body=required(model,'SprungBody');this.wheel=required(model,'SteeringWheel');
   const clip=dogAsset.animations.find(animation=>animation.name==='Dog_Sit');
   if(!clip)throw new Error('Cadillac rear passenger requires the authored Dog_Sit clip');
+  this.restoreSteeringFit=fitSteeringColumn(model,this.wheel);
   this.root.name='Cadillac_Cabin_Occupants';body.add(this.root);
   this.driver=independentRig(hero);this.driver.name='Cadillac_Main_Hero';
+  this.driverAsset=hero.getObjectByName('DS_Man_01_Dressed_Surface')?'DS_Man_01':hero.getObjectByName('Armored_Rider_Surface')?'DS_Armored_Rider_01':hero.name||'custom';
+  this.driver.userData.sourceAsset=this.driverAsset;
+  if(this.driverAsset==='DS_Man_01')this.driver.userData.characterLabel='Main Hero · long hair, black suit';
   this.dog=independentRig(dogAsset.scene);this.dog.name='Cadillac_Boerboel';
   this.root.add(this.driver,this.dog);
   this.hips=required(this.driver,'Hips');this.driverHead=required(this.driver,'Head');
@@ -150,8 +193,8 @@ export class CadillacCabin{
    leg.target.getWorldPosition(this.point);this.pole.set(0,1,.2).transformDirection(this.root.matrixWorld);
    solveLimb(leg,this.point,this.pole,this.rotation.copy(this.frameQuaternion).multiply(leg.rotation),.98);
   }
-  // Use the existing authored finger curls when supplied. The asset has hand
-  // clips only, so Driving_Idle deliberately describes a procedural state.
+  // Reuse the suited hero's authored hand curls. Its EUC_Ride_Idle clip is for
+  // a different vehicle, so Driving_Idle is the fitted procedural cabin state.
   new FingerPose(this.driver,heroClips).apply('WeaponGrip');
   for(const [side,sign]of [['Left',1],['Right',-1]] as const){
    const hand=required(this.driver,side+'Hand');
@@ -245,9 +288,10 @@ export class CadillacCabin{
  }
  diagnostics(){
   return{
-   parent:this.root.parent?.name??null,driverState:'Driving_Idle',driverAnimation:'procedural seated IK',
+   parent:this.root.parent?.name??null,driverAsset:this.driverAsset,driverState:'Driving_Idle',driverAnimation:'procedural seated IK',
    dogState:this.dogState,dogSourceClip:'Dog_Sit',seatBinding:'measured runtime anchors',
    driverScale:CADILLAC_CABIN_FIT.driverScale,dogScale:CADILLAC_CABIN_FIT.dogScale,
+   steeringWheelLift:CADILLAC_CABIN_FIT.steeringWheelLift,
    driverSeat:this.anchors.driverSeat.position.toArray(),rearSeat:this.anchors.rearSeat.position.toArray(),
    driverHead:this.anchors.driverHead.position.toArray(),dogHead:this.anchors.dogHead.position.toArray(),
    driverPoseBounds:bounds(this.driverBounds),dogPoseBounds:bounds(this.dogBounds),
@@ -260,6 +304,7 @@ export class CadillacCabin{
   const skeletons=new Set<T.Skeleton>();
   this.root.traverse(object=>{if((object as T.SkinnedMesh).isSkinnedMesh)skeletons.add((object as T.SkinnedMesh).skeleton);});
   for(const skeleton of skeletons)skeleton.dispose();
+  this.restoreSteeringFit();
   this.gripFrame.removeFromParent();this.root.removeFromParent();
  }
 }

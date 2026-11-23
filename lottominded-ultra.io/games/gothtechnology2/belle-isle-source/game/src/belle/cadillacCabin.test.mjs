@@ -18,22 +18,24 @@ const {ThreeRiderView,createPose,HUMAN_PROFILE}=await import(pathToFileURL(decor
 
 // Read the shipped skins, skeletons, hierarchy and clips. Only material texture
 // references are removed in this Node fixture; the runtime assets are untouched.
-async function asset(relative){
- const bytes=await fs.readFile(path.join(game,'public',relative)),length=bytes.readUInt32LE(12),data=JSON.parse(bytes.subarray(20,20+length).toString());
+async function asset(relative,directory=path.join(game,'public')){
+ const bytes=await fs.readFile(path.join(directory,relative)),length=bytes.readUInt32LE(12),data=JSON.parse(bytes.subarray(20,20+length).toString());
  data.materials=(data.materials??[]).map(material=>({name:material.name}));
  const json=Buffer.from(JSON.stringify(data)),padded=Buffer.alloc(Math.ceil(json.length/4)*4,32);json.copy(padded);
  const binary=bytes.subarray(20+length),output=Buffer.alloc(20+padded.length+binary.length);
  output.write('glTF');output.writeUInt32LE(2,4);output.writeUInt32LE(output.length,8);output.writeUInt32LE(padded.length,12);output.writeUInt32LE(0x4e4f534a,16);padded.copy(output,20);binary.copy(output,20+padded.length);
  return new GLTFLoader().parseAsync(output.buffer.slice(output.byteOffset,output.byteOffset+output.byteLength),'');
 }
-const [car,hero,dog,wheel]=await Promise.all([
- asset('belle/vehicles/silver-cadillac.glb'),asset('exports/rigged-heroes/DS_Armored_Rider_01.glb'),asset('exports/glb/DS_Boerboel_01/DS_Boerboel_Elmwood.glb'),
- asset('exports/glb/DS_EUC_01/DS_EUC_01_LOD1.glb'),
+const [car,hero,dog,wheel,armored]=await Promise.all([
+ asset('belle/vehicles/silver-cadillac.glb'),
+ asset('exports/rigged-heroes/DS_Man_01.glb',path.resolve(game,'../../swoop-source/public')),
+ asset('exports/glb/DS_Boerboel_01/DS_Boerboel_Elmwood.glb'),
+ asset('exports/glb/DS_EUC_01/DS_EUC_01_LOD1.glb'),asset('exports/rigged-heroes/DS_Armored_Rider_01.glb'),
 ]);
-function fixture(source=hero.scene,transformed=false){
+function fixture(source=hero.scene,transformed=false,clips=hero.animations){
  const model=car.scene.clone(true);
  if(transformed){model.position.set(184,4.2,-210);model.rotation.set(.08,1.9,-.06,'YXZ');}
- const cabin=new CadillacCabin(model,source,dog,hero.animations);
+ const cabin=new CadillacCabin(model,source,dog,clips);
  return{model,cabin};
 }
 function near(actual,expected,label,epsilon=1e-6){
@@ -66,12 +68,16 @@ function assertContacts(cabin){
  }
 }
 
-test('cabin uses the actual solo hero and dog, with independent mutable skeletons',()=>{
+test('cabin uses the actual long-haired suited hero and dog, with independent mutable skeletons',()=>{
  const source=clone(hero.scene);source.position.set(3,.2,-4);source.rotation.set(.2,.8,-.4);source.scale.setScalar(1.2);
  source.getObjectByName('Hips').position.y+=.3;source.getObjectByName('LeftArm').rotation.z+=1.1;
  const sourcePose=pose(source),dogPose=pose(dog.scene),sourceTransform=[...source.position,...source.quaternion,...source.scale];
  const {cabin}=fixture(source),{cabin:canonical}=fixture();
  try{
+  assert.equal(cabin.diagnostics().driverAsset,'DS_Man_01');assert.equal(cabin.driver.userData.sourceAsset,'DS_Man_01');
+  assert(cabin.driver.getObjectByName('DS_Man_01_Dressed_Surface'),'original suited surface includes the long hair');
+  assert.equal(cabin.driver.getObjectByName('DS_Hero_Fitted_Sunglasses').children.length,8,'all fitted aviator meshes are retained');
+  assert.equal(cabin.driver.getObjectByName('Armored_Rider_Surface'),undefined,'Cadillac uses the requested suited model');
   comparePose(pose(cabin.driver),pose(canonical.driver));
   for(const [original,copy]of [[source,cabin.driver],[dog.scene,cabin.dog]])original.traverse(object=>{
    if(!object.isSkinnedMesh)return;
@@ -88,7 +94,7 @@ test('cabin uses the actual solo hero and dog, with independent mutable skeleton
  }finally{cabin.dispose();canonical.dispose();}
 });
 
-test('live solo-hero tailoring keeps its authored body rest pose and shared accessory skins',()=>{
+test('secondary decorated rigs keep their authored rest pose and independent accessory skins',()=>{
  const globals=new Map(['window','document','matchMedia'].map(key=>[key,Object.getOwnPropertyDescriptor(globalThis,key)]));
  const load=T.TextureLoader.prototype.loadAsync;
  Object.assign(globalThis,{window:new EventTarget(),document:{documentElement:{dataset:{}}},matchMedia:()=>Object.assign(new EventTarget(),{matches:false})});
@@ -96,29 +102,29 @@ test('live solo-hero tailoring keeps its authored body rest pose and shared acce
  let view,cabin,canonical;
  try{
   const terrain={sampleGround(x,z,out){Object.assign(out,{height:0,normal:{x:0,y:1,z:0},surface:'pavement',offCourse:false});return out;},raycastObstacle(){return null;}};
-  view=new ThreeRiderView(hero,wheel,terrain,{...HUMAN_PROFILE,id:'DS_Armored_Rider_01'});
+  view=new ThreeRiderView(armored,wheel,terrain,{...HUMAN_PROFILE,id:'DS_Armored_Rider_01'});
   const ancestor=new T.Group();ancestor.position.set(100,3,-200);ancestor.rotation.set(.08,1.1,-.05);ancestor.add(view.root);
   view.apply({...createPose(),x:3,y:.1,z:2,headingY:.8,speed:9,rollAngle:.22,riderPitch:.1,bodyBob:.03});
   const before=pose(view.rider),source=view.rider.getObjectByName('Fitted hero cuffs, knuckles and tailoring');assert(source?.isSkinnedMesh);
-  cabin=fixture(view.rider,true).cabin;canonical=fixture().cabin;
+  cabin=fixture(view.rider,true,armored.animations).cabin;canonical=fixture(armored.scene,false,armored.animations).cabin;
   comparePose(pose(cabin.driver),pose(canonical.driver));comparePose(pose(view.rider),before);
   const copy=cabin.driver.getObjectByName(source.name);assert.equal(copy.geometry,source.geometry);copy.material.forEach((material,i)=>assert.equal(material,source.material[i]));assert.notEqual(copy.skeleton,source.skeleton);
   const originalBody=skinBounds(canonical.driver,canonical.root),detailedBody=skinBounds(cabin.driver,cabin.root);
-  assert(detailedBody.max.y<1.36,'runtime helmet and detailing clear headliner');
-  assert(detailedBody.min.y>.369,'runtime fitted shoes clear floor');
   assert(detailedBody.getSize(new T.Vector3()).distanceTo(originalBody.getSize(new T.Vector3()))<.12,'accessories retain their fitted scale');
-  cabin.update(.1,.6,false);assertContacts(cabin);comparePose(pose(view.rider),before);
+  // This secondary rig exercises clone isolation, not the suited driver's fit.
+  cabin.update(.1,.6,false);canonical.update(.1,.6,false);
+  comparePose(pose(cabin.driver),pose(canonical.driver));comparePose(pose(view.rider),before);
  }finally{
   cabin?.dispose();canonical?.dispose();view?.dispose();T.TextureLoader.prototype.loadAsync=load;
   for(const [key,descriptor]of globals)if(descriptor)Object.defineProperty(globalThis,key,descriptor);else delete globalThis[key];
  }
 });
 
-test('real seated skins fit roof, floor and rear bench without per-frame vertex scans',()=>{
+test('suited hair, aviators, shoes and rear passenger fit without per-frame vertex scans',()=>{
  const {cabin,model}=fixture();
  try{
   const driver=skinBounds(cabin.driver,cabin.root),passenger=skinBounds(cabin.dog,cabin.root);
-  assert(driver.max.y<1.36,'helmet clears measured headliner');assert(driver.min.y>.369,'soles clear measured floor');
+  assert(driver.max.y<1.36,'hair and aviators clear measured headliner');assert(driver.min.y>.369,'suited soles clear measured floor');
   assert(passenger.min.y>.566&&passenger.min.y<.577,'paws fit the sculpted cushion support height');
   assert(passenger.min.x>-.61&&passenger.max.x<0,'complete dog and tail fit across bench');
   assert(passenger.min.z>-.80&&passenger.max.z<-.40,'dog clears rear backrest and front seat');
@@ -140,7 +146,7 @@ test('real seated skins fit roof, floor and rear bench without per-frame vertex 
  }finally{cabin.dispose();}
 });
 
-test('known boot and haunch contacts clear the actual sculpted upholstery surfaces',()=>{
+test('suited shoe, trousers and passenger contacts clear the actual sculpted upholstery',()=>{
  const {cabin,model}=fixture();
  try{
   model.updateMatrixWorld(true);
@@ -151,13 +157,67 @@ test('known boot and haunch contacts clear the actual sculpted upholstery surfac
    const hit=ray.intersectObject(upholstery,false)[0];assert(hit,'measured cabin support surface');
    return point.y-hit.point.y;
   };
-  // These shipped vertices exposed penetrations hidden by overall boxes:
-  // the right toe above the raised footwell and the haunch above its bolster.
-  const boot=gap(cabin.driver.getObjectByName('char1'),28499);
+  // These actual suited-surface vertices are the closest shoe/floor and
+  // trousers/cushion contacts; their indices belong to DS_Man_01, not armor.
+  const suited=cabin.driver.getObjectByName('DS_Man_01_Dressed_Surface');
+  const boot=gap(suited,81163),trousers=gap(suited,56474);
   const haunch=gap(cabin.dog.getObjectByName('Boerboel_Body'),17311);
   assert(boot>.002&&boot<.012,`boot to floor clearance ${boot}`);
+  assert(trousers>.002&&trousers<.012,`trousers to cushion clearance ${trousers}`);
   assert(haunch>=0&&haunch<.025,`haunch to cushion clearance ${haunch}`);
  }finally{cabin.dispose();}
+});
+
+test('suited thighs clear the actual steering rim and the fitted column keeps its dashboard attachment',()=>{
+ const {cabin,model}=fixture(),temporary=[];
+ try{
+  model.updateMatrixWorld(true);
+  const original=car.scene.getObjectByName('Coachwork_3').geometry,fitted=model.getObjectByName('Coachwork_3').geometry;
+  assert.notEqual(fitted,original,'the column adjustment owns its geometry');
+  const before=original.attributes.position,after=fitted.attributes.position,normalBefore=original.attributes.normal,normalAfter=fitted.attributes.normal;
+  let moved=0;
+  for(let i=0;i<before.count;i++){
+   const a=new T.Vector3().fromBufferAttribute(before,i),b=new T.Vector3().fromBufferAttribute(after,i);
+   const hub=i>=9387&&i<=9450&&a.z<.7;
+   if(hub){assert(Math.abs(b.y-a.y-.08)<1e-7,'column hub follows adjusted wheel');moved++;}
+   else near(b.toArray(),a.toArray(),'fixed dashboard and remaining upholstery',1e-7);
+   if(i<9387||i>9450)near(new T.Vector3().fromBufferAttribute(normalAfter,i).toArray(),new T.Vector3().fromBufferAttribute(normalBefore,i).toArray(),'unchanged upholstery normal',1e-7);
+  }
+  assert.equal(moved,32,'one complete 32-sided column ring moves');
+  const suited=cabin.driver.getObjectByName('DS_Man_01_Dressed_Surface'),source=suited.geometry,index=source.index.array;
+  const weights=source.attributes.skinWeight,bones=source.attributes.skinIndex;
+  const thigh=i=>{for(let k=0;k<4;k++)if(weights.getComponent(i,k)>.5&&/UpLeg$/.test(suited.skeleton.bones[bones.getComponent(i,k)].name))return true;return false;};
+  const wheelMeshes=[];model.getObjectByName('SteeringWheel').traverse(mesh=>{if(mesh.isMesh){const copy=new T.Mesh(mesh.geometry,new T.MeshBasicMaterial({side:T.DoubleSide}));copy.name=mesh.name;copy.matrixAutoUpdate=false;wheelMeshes.push({original:mesh,copy});temporary.push(copy);}});
+  const ray=new T.Raycaster(),a=new T.Vector3(),b=new T.Vector3(),direction=new T.Vector3(),triangleBox=new T.Box3();
+  for(const steering of [-1,0,1]){
+   model.getObjectByName('SteeringWheel').quaternion.setFromAxisAngle(new T.Vector3(0,.42,-.91).normalize(),steering*5.5);
+   cabin.update(0,steering,true);model.updateMatrixWorld(true);assertContacts(cabin);
+   const wheelBox=new T.Box3();for(const {original,copy}of wheelMeshes){copy.matrix.copy(original.matrixWorld);copy.updateMatrixWorld(true);wheelBox.union(new T.Box3().setFromObject(copy));}
+   const points=new Float32Array(source.attributes.position.count*3),indices=[],cached=new Set();
+   for(let i=0;i<index.length;i+=3){
+    const tri=[index[i],index[i+1],index[i+2]];if(!tri.some(thigh))continue;
+    triangleBox.makeEmpty();for(const vertex of tri){if(!cached.has(vertex)){suited.getVertexPosition(vertex,a).applyMatrix4(suited.matrixWorld);a.toArray(points,vertex*3);cached.add(vertex);}triangleBox.expandByPoint(a.fromArray(points,vertex*3));}
+    if(triangleBox.intersectsBox(wheelBox))indices.push(...tri);
+   }
+   assert(indices.length>0,'actual trousers triangles cover the former lower-rim overlap');
+   const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.BufferAttribute(points,3));geometry.setIndex(indices);geometry.computeBoundingBox();geometry.computeBoundingSphere();
+   const trousers=new T.Mesh(geometry,new T.MeshBasicMaterial({side:T.DoubleSide}));trousers.updateMatrixWorld(true);
+   const meshes=wheelMeshes.map(({copy})=>copy),check=(from,targets)=>{
+    const targetBox=new T.Box3();for(const target of targets)targetBox.union(new T.Box3().setFromObject(target));
+    for(const mesh of from){const p=mesh.geometry.attributes.position,ix=mesh.geometry.index.array,seen=new Set();
+     for(let i=0;i<ix.length;i+=3)for(const [v,w]of [[ix[i],ix[i+1]],[ix[i+1],ix[i+2]],[ix[i+2],ix[i]]]){
+      const key=v<w?v+','+w:w+','+v;if(seen.has(key))continue;seen.add(key);
+      a.fromBufferAttribute(p,v).applyMatrix4(mesh.matrixWorld);b.fromBufferAttribute(p,w).applyMatrix4(mesh.matrixWorld);
+      if(!triangleBox.makeEmpty().expandByPoint(a).expandByPoint(b).intersectsBox(targetBox))continue;
+      const length=direction.copy(b).sub(a).length();if(length<2e-6)continue;
+      ray.set(a,direction.divideScalar(length));ray.near=1e-6;ray.far=length-1e-6;
+      assert.equal(ray.intersectObjects(targets,false).length,0,`trousers/rim surface crossing at steering ${steering}`);
+     }
+    }
+   };
+   check([trousers],meshes);check(meshes,[trousers]);geometry.dispose();trousers.material.dispose();
+  }
+ }finally{for(const mesh of temporary)mesh.material.dispose();cabin.dispose();}
 });
 
 test('instantiation and driving pose are invariant to translated, rotated vehicle parents',()=>{
@@ -175,7 +235,9 @@ test('instantiation and driving pose are invariant to translated, rotated vehicl
 
 test('reduced motion, repeated reset and disposal preserve functional contacts and source assets',()=>{
  const {cabin,model}=fixture();let geometryDisposals=0,materialDisposals=0;
- const geometry=hero.scene.getObjectByName('char1').geometry,material=hero.scene.getObjectByName('char1').material;
+ const originalUpholstery=car.scene.getObjectByName('Coachwork_3').geometry,privateUpholstery=model.getObjectByName('Coachwork_3').geometry;
+ let columnDisposals=0;privateUpholstery.addEventListener('dispose',()=>columnDisposals++);
+ const suited=hero.scene.getObjectByName('DS_Man_01_Dressed_Surface'),geometry=suited.geometry,material=suited.material;
  const onGeometry=()=>geometryDisposals++,onMaterial=()=>materialDisposals++;
  geometry.addEventListener('dispose',onGeometry);material.addEventListener('dispose',onMaterial);
  try{
@@ -188,6 +250,8 @@ test('reduced motion, repeated reset and disposal preserve functional contacts a
   cabin.update(NaN,Infinity,false);cabin.reset();cabin.reset();
   comparePose(pose(cabin.driver),driver);comparePose(pose(cabin.dog),passenger);
   cabin.dispose();cabin.dispose();assert.equal(cabin.root.parent,null);assert.equal(model.getObjectByName('Cadillac_Wheel_Grip_Frame'),undefined);
+  assert.equal(model.getObjectByName('Coachwork_3').geometry,originalUpholstery);assert.equal(columnDisposals,1);
+  near(model.getObjectByName('SteeringWheel').position.toArray(),car.scene.getObjectByName('SteeringWheel').position.toArray(),'original steering-wheel position restored');
   assert.equal(geometryDisposals,0);assert.equal(materialDisposals,0);
  }finally{cabin.dispose();geometry.removeEventListener('dispose',onGeometry);material.removeEventListener('dispose',onMaterial);}
 });

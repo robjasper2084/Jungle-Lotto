@@ -31,6 +31,7 @@ import {createSunsetPreview} from './sunsetPreview.ts';
 import {alignScottMap} from './fountainLayout.ts';
 import {prepareIslandRecovery} from './recovery.ts';
 import {CadillacRide,cadillacModel} from './cadillacRide.ts';
+import {cadillacHeroModel} from './cadillacHero.ts';
 import {RideProfile} from './rideProfile.ts';
 import {createNatureRenderProbe} from './renderDiagnostics.ts';
 import {installRenderSubmissionProbe} from './renderSubmissionDiagnostics.ts';
@@ -401,8 +402,8 @@ const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreferen
   if(choice.vehicle==='cadillac'){
   status('Preparing the Cadillac and passengers');
   if(!cadillac){
-   const [car,dog]=await Promise.all([cadillacModel(),boerboelModel()]);
-   cadillac=new CadillacRide(car.clone(true),terrain,{hero:hero.rider,dog,heroClips:rider.animations});scene.add(cadillac.model);
+   const [car,driver,dog]=await Promise.all([cadillacModel(),cadillacHeroModel(),boerboelModel()]);
+   cadillac=new CadillacRide(car.clone(true),terrain,{hero:driver.scene,dog,heroClips:driver.animations});scene.add(cadillac.model);
   }
   status('Preparing the Cadillac cabin');
   await sceneWarmup.prepare(cadillac.model);
