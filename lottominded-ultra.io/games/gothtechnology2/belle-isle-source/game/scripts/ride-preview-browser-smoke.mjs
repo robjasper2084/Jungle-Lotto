@@ -37,7 +37,7 @@ let preview,bike;const loadBike=()=>bike??=loader.loadAsync('/belle/vehicles/her
 picker.addEventListener('toggle',()=>{if(picker.open&&!preview)preview=factory.createRidePreview(host,wheel.scene,loadBike);preview?.setActive(picker.open);});
 window.addEventListener('pagehide',()=>preview?.dispose());document.body.dataset.fixtureReady='true';`;
 const server=await createServer({root:game,configFile:false,publicDir:resolve(game,'public'),logLevel:'error',cacheDir:resolve(out,'vite-cache'),optimizeDeps:{noDiscovery:true,include:['three','fflate']},server:{host:'127.0.0.1',port:0,strictPort:false},plugins:[{name:'ride-preview-component-fixture',configureServer(server){server.middlewares.use((request,response,next)=>{const path=new URL(request.url,'http://fixture').pathname;if(path==='/'){response.setHeader('Content-Type','text/html');response.end(fixture);}else next();});},resolveId(id){if(id==='/component-fixture.mjs')return '\0component-fixture.mjs';if(id==='/baseline-preview.ts'&&baselineModule)return '\0baseline-preview.ts';},load(id){if(id==='\0component-fixture.mjs')return fixtureModule;if(id==='\0baseline-preview.ts')return baselineModule;}}]});
-let browser,closing=false;
+let browser;
 function componentFence(canvas){
  const gl=canvas.getContext('webgl2');if(!gl||gl.isContextLost()||!canvas.width||!canvas.height)throw Error('Preview requires a live nonempty canvas.');
  const debug=gl.getExtension('WEBGL_debug_renderer_info'),renderer=gl.getParameter(debug?.UNMASKED_RENDERER_WEBGL??gl.RENDERER),submittedAt=performance.now();
@@ -58,7 +58,7 @@ async function scrollToRide(page,vehicle){
 async function runCase(name,viewport,mobile,base=false){
  const record={name,viewport,mobile,baseline:base,passed:false,requests:[],errors:[],failedRequests:[],captures:[],metrics:{}};report.cases.push(record);
  const context=await browser.newContext({viewport,deviceScaleFactor:1,isMobile:mobile,hasTouch:mobile,reducedMotion:'reduce',serviceWorkers:'block'}),page=await context.newPage();page.setDefaultTimeout(45000);
- const started=Date.now();page.on('pageerror',e=>record.errors.push(e.stack||e.message));page.on('console',m=>{if(m.type()==='error')record.errors.push(m.text());});page.on('request',request=>{const path=modelPath(request.url());if(path)record.requests.push({path,startedMs:Date.now()-started});});page.on('requestfailed',request=>{if(!closing)record.failedRequests.push({url:request.url(),error:request.failure()?.errorText});});page.on('response',response=>{if(response.status()>=400)record.errors.push('HTTP '+response.status()+' '+response.url());});
+ const started=Date.now();page.on('pageerror',e=>record.errors.push(e.stack||e.message));page.on('console',m=>{if(m.type()==='error')record.errors.push(m.text());});page.on('request',request=>{const path=modelPath(request.url());if(path)record.requests.push({path,startedMs:Date.now()-started});});page.on('requestfailed',request=>{record.failedRequests.push({url:request.url(),error:request.failure()?.errorText});});page.on('response',response=>{if(response.status()>=400)record.errors.push('HTTP '+response.status()+' '+response.url());});
  try{
   await page.goto(origin+'/?'+(base?'baseline=1':''),{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.body.dataset.fixtureReady==='true');
   record.beforeOpenRequests=record.requests.map(r=>r.path);const openAt=Date.now();await page.locator('summary').click();record.metrics.summaryClickMs=Date.now()-openAt;
@@ -82,7 +82,11 @@ async function runCase(name,viewport,mobile,base=false){
   record.resourceTiming=await page.evaluate(()=>performance.getEntriesByType('resource').filter(e=>/\.(?:glb|glb\.gz)(?:\?|$)/.test(e.name)).map(e=>({path:new URL(e.name).pathname,duration:e.duration,transferSize:e.transferSize,encodedBodySize:e.encodedBodySize,decodedBodySize:e.decodedBodySize})));
   assert.deepEqual(record.errors,[]);assert.deepEqual(record.failedRequests,[]);record.passed=true;
  }catch(error){record.failure=error.stack||String(error);try{const file=name+'-failure.png';await page.screenshot({path:resolve(out,file)});record.failureScreenshot=file;}catch(captureError){record.errors.push(captureError.message);}throw error;}
- finally{await context.close();}
+ finally{
+  try{await context.close();}catch(error){record.errors.push('Context cleanup: '+(error.stack||String(error)));}
+  record.passed=record.passed&&!record.failure&&!record.errors.length&&!record.failedRequests.length;
+ }
+ assert.equal(record.passed,true,'Preview case must remain clean through context cleanup');
 }
 let origin;
 try{
@@ -97,4 +101,4 @@ try{
  console.log('Ride preview component: candidate phone');await runCase('candidate-phone',{width:390,height:700},true);
  assert.deepEqual(await sourceHashes(),report.workingTreeSources,'component source changed during verification');report.passed=true;
 }catch(error){report.errors.push(error.stack||String(error));process.exitCode=1;}
-finally{closing=true;try{await browser?.close();}catch(error){report.errors.push('Browser cleanup: '+error.message);}try{await server.close();}catch(error){report.errors.push('Server cleanup: '+error.message);}report.finishedAt=new Date().toISOString();report.passed=report.passed&&!report.errors.length;await writeFile(resolve(out,'report.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({passed:report.passed,cases:report.cases.map(({name,passed,failure,metrics,requests})=>({name,passed,failure,metrics,modelRequests:requests.length})),errors:report.errors},null,2));if(!report.passed)process.exitCode=1;}
+finally{try{await browser?.close();}catch(error){report.errors.push('Browser cleanup: '+error.message);}try{await server.close();}catch(error){report.errors.push('Server cleanup: '+error.message);}report.finishedAt=new Date().toISOString();for(const record of report.cases)record.passed=record.passed&&!record.failure&&!record.errors.length&&!record.failedRequests.length;report.passed=report.passed&&!report.errors.length&&report.cases.length===(baseline?3:2)&&report.cases.every(record=>record.passed&&!record.errors.length&&!record.failedRequests.length);await writeFile(resolve(out,'report.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({passed:report.passed,cases:report.cases.map(({name,passed,failure,metrics,requests})=>({name,passed,failure,metrics,modelRequests:requests.length})),errors:report.errors},null,2));if(!report.passed)process.exitCode=1;}
