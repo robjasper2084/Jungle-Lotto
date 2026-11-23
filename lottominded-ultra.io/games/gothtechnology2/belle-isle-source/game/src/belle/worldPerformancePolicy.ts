@@ -1,5 +1,7 @@
 /** Render-only budgets: no collision, gameplay, or route rules change. */
-export const islandRenderOrder={ground:-102,river:-101,sky:-100} as const;
+// Opaque terrain, buildings and foliage write depth before the large river and
+// sky shaders run. Depthless opaque markers still draw over those surfaces.
+export const islandRenderOrder={ground:-102,river:100,sky:101,marker:102} as const;
 /** Limit redundant directional shadow-map submissions while retaining full
  * map resolution, every caster, and the original world geometry.
  * Clock values are simulation seconds; resets cover a sky/quality transition. */

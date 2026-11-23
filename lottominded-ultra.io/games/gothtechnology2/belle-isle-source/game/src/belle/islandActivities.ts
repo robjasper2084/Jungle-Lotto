@@ -6,6 +6,7 @@ import {ActivityAlbum, albumImage, downloadAlbumPhoto, type AlbumPhoto} from './
 import {evaluatePhotoSubject} from './photoQuestScene.ts';
 import type {CameraCapture, PhotoCaptureFrame} from './cameraCapture.ts';
 import type {ParkMap, ParkTerrain} from './terrain.ts';
+import {islandRenderOrder} from './worldPerformancePolicy.ts';
 import './islandActivities.css';
 
 type ActivityTab = 'dispatch' | 'photo' | 'album';
@@ -419,7 +420,7 @@ export class IslandActivities {
     this.clearMarkers(); this.markerKey = key;
     for (const target of targets) {
       const group = new T.Group(); group.position.set(target.x, target.y + .12, target.z);
-      const ring = new T.Mesh(new T.TorusGeometry(3.5, .13, 6, 32), new T.MeshBasicMaterial({color: 0x81d8c9, depthWrite: false})); ring.rotation.x = Math.PI / 2;
+      const ring = new T.Mesh(new T.TorusGeometry(3.5, .13, 6, 32), new T.MeshBasicMaterial({color: 0x81d8c9, depthWrite: false})); ring.rotation.x = Math.PI / 2; ring.renderOrder = islandRenderOrder.marker;
       const beam = new T.Mesh(new T.CylinderGeometry(.13, .13, 9, 6), new T.MeshBasicMaterial({color: 0xe4b871, transparent: true, opacity: .72, depthWrite: false})); beam.position.y = 4.5;
       group.add(ring, beam); this.markers.add(group);
     }

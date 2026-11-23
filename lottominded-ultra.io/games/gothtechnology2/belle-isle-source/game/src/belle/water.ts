@@ -127,8 +127,8 @@ diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.5,.66,.65),clamp(washFoam*.4+rippleF
  const far:T.Mesh=new T.Mesh(farGeometry,farShader);far.name='Detroit River distant water';scene.add(far);
  const near:T.Mesh=new T.Mesh(new T.PlaneGeometry(RIVER_PATCH_SIZE,RIVER_PATCH_SIZE,RIVER_PATCH_SEGMENTS,RIVER_PATCH_SEGMENTS).rotateX(-Math.PI/2),nearShader);near.name='Detroit River rolling waves';near.frustumCulled=false;scene.add(near);
  const waveIndex=near.geometry.getIndex()!,flatIndex=new T.BufferAttribute(flatRiverPatchIndex(),1);
- // Both river materials are opaque. The deck can reject covered river samples,
- // then the visible river depth can reject covered sky samples.
+ // Both river materials are opaque. Existing scene depth rejects covered
+ // river samples, and visible river depth rejects covered sky samples.
  near.renderOrder=far.renderOrder=islandRenderOrder.river;
  const lagoon=material('lagoon');const koiPond=map.waterSources?.find(w=>w.id===KOI_POND_ID);const isKoi=(w:ParkMap['water'][number])=>!!koiPond&&inside(1336,1149,w.points);const pond=material('lagoon');pond.transparent=true;pond.opacity=.42;pond.depthWrite=false;pond.color.set(0x75958a);pond.roughness=.18;
  for(const w of map.water){const koi=isKoi(w),mesh=new T.Mesh(polygon(w.points,1.05,w.holes),koi?pond:lagoon);mesh.name=koi?'Koi pond · clear surface':'Lagoon · '+w.name;scene.add(mesh);if(koi){const bed=new T.Mesh(polygon(w.points,.2,w.holes),new T.MeshStandardMaterial({color:0x685f47,roughness:.95}));bed.name='Koi pond gravel bed';scene.add(bed);}}
