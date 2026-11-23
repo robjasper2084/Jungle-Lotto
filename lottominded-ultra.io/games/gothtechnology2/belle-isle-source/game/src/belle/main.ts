@@ -173,7 +173,19 @@ const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreferen
  async function prepareRideShadows(rider:T.Object3D,x:number,z:number){
   const wasPreparing=scenePreparing;
   scenePreparing=true;
-  try{await warmRideShadows(renderer,scene,rider,x,z);}
+  try{
+   const {y,headingY}=core.current;
+   const sin=Math.sin(headingY),cos=Math.cos(headingY);
+   const view=new T.PerspectiveCamera(60,camera.aspect,.08,22000);
+   if(startup.choice.camera==='fpp'){
+    view.position.set(x,y+1.8,z);
+    view.lookAt(x+15*sin,y+.3,z+15*cos);
+   }else{
+    view.position.set(x-4.8*sin,y+3.1,z-4.8*cos);
+    view.lookAt(x,y+1.4,z);
+   }
+   await warmRideShadows(renderer,scene,rider,x,z,view);
+  }
   finally{scenePreparing=wasPreparing;resetFrameClock=true;}
  }
  // The permanent vehicle spotlight contributes to the shader light count,
