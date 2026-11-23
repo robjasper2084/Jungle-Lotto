@@ -27,21 +27,18 @@ export class WorldQuality {
   this.requested=environmentQuality(value);this.effective=this.requested;this.scale=1;this.apply();
  }
  setBudget(value:number){
-  if(this.requested==='smooth'||!Number.isFinite(value))return;
-  this.scale=Math.max(this.requested==='high' ? .6 : .25,Math.min(1,value));
-  if(this.requested==='automatic'){
-   if(this.effective==='smooth'){
-    if(this.scale>=.85)this.effective='automatic';
-   }else if(this.scale<=.75)this.effective='smooth';
-  }
+  if(this.requested!=='automatic'||!Number.isFinite(value))return;
+  this.scale=Math.max(.25,Math.min(1,value));
+  if(this.effective==='smooth'){
+   if(this.scale>=.85)this.effective='automatic';
+  }else if(this.scale<=.75)this.effective='smooth';
   this.apply();
  }
  private apply(){
   const device=this.deviceRatio(),dpr=Number.isFinite(device)&&device>0?device:1;
   // Software WebGL has a smaller internal framebuffer budget; keep all High
-  // scene materials, geometry, and shadows. High can adapt only the canvas
-  // pixel count when foreground rendering cannot keep up.
-  const ratio=this.requested==='high'?Math.min(dpr,this.softwareRasterizer?.7:1.5)*this.scale:this.requested==='smooth'?1:Math.min(dpr,this.softwareRasterizer?.85:1.25)*this.scale;
+  // scene materials, geometry, and shadows. Native hardware retains full DPR.
+  const ratio=this.requested==='high'?Math.min(dpr,this.softwareRasterizer?.7:1.5):this.requested==='smooth'?1:Math.min(dpr,this.softwareRasterizer?.85:1.25)*this.scale;
   if(ratio!==this.ratio){this.ratio=ratio;this.pixels(ratio);}
   // Three includes the shadow layout in every lit material's program key.
   // Automatic can suspend shadow draws without relinking the entire view.

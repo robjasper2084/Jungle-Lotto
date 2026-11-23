@@ -8,7 +8,13 @@ export function addParkFacilities(scene:T.Scene,map:ParkMap,multiDraw=false){
  const plan=facilityPlan(map),wood=new T.MeshStandardMaterial({color:0x6c5b40,roughness:.88}),stone=new T.MeshStandardMaterial({color:0xa3a297,roughness:.92}),roof=new T.MeshStandardMaterial({color:0x425047,roughness:.84,side:T.DoubleSide}),iron=new T.MeshStandardMaterial({color:0x303b39,metalness:.55,roughness:.52}),galvanized=new T.MeshStandardMaterial({color:0x929c98,metalness:.65,roughness:.48});
  const tiles=new Map<string,{x:number;z:number;groups:Map<T.Material,T.BufferGeometry[]>;lines:number[]}>(),batches:{object:T.Object3D;x:number;z:number;instance?:number}[]=[];let triangles=0;
  const tile=(x:number,z:number)=>{const key=Math.floor(x/96)+','+Math.floor(z/96);if(!tiles.has(key))tiles.set(key,{x:Math.floor(x/96)*96+48,z:Math.floor(z/96)*96+48,groups:new Map(),lines:[]});return tiles.get(key)!;};
- const add=(g:T.BufferGeometry,m:T.Material,x:number,z:number)=>{const t=tile(x,z);if(!t.groups.has(m))t.groups.set(m,[]);if(g.index){const n=g.toNonIndexed();g.dispose();g=n;}t.groups.get(m)!.push(g);};
+ const add=(g:T.BufferGeometry,m:T.Material,x:number,z:number)=>{
+  const t=tile(x,z);
+  if(!t.groups.has(m))t.groups.set(m,[]);
+  // Keep shared box and roof vertices when merging the tile.
+  if(!g.index)g.setIndex(Array.from({length:g.getAttribute('position').count},(_,i)=>i));
+  t.groups.get(m)!.push(g);
+ };
  const box=(p:Point,y:number,w:number,h:number,d:number,yaw:number,m:T.Material)=>{const g=new T.BoxGeometry(w,h,d).rotateY(-yaw).translate(p[0],y,p[1]);add(g,m,...p);};
  const bar=(a:Point,b:Point,y:number,h:number,d:number,m:T.Material)=>{const p:Point=[(a[0]+b[0])/2,(a[1]+b[1])/2];box(p,y,Math.hypot(b[0]-a[0],b[1]-a[1]),h,d,Math.atan2(b[1]-a[1],b[0]-a[0]),m);};
  const palette=new Map<number,T.MeshStandardMaterial>();const colored=(color:number)=>{if(!palette.has(color))palette.set(color,new T.MeshStandardMaterial({color,roughness:.9,side:T.DoubleSide}));return palette.get(color)!;};
@@ -55,7 +61,7 @@ export function addParkFacilities(scene:T.Scene,map:ParkMap,multiDraw=false){
  const materials=new Map<string,{material:T.Material;parts:{g:T.BufferGeometry;x:number;z:number}[]}>();
  for(const t of tiles.values()){
   for(const [material,gs]of t.groups){
-   const g=mergeGeometries(gs)!;gs.forEach(v=>v.dispose());triangles+=g.attributes.position.count/3;
+   const g=mergeGeometries(gs)!;gs.forEach(v=>v.dispose());triangles+=g.index!.count/3;
    if(!multiDraw){
     const mesh=new T.Mesh(g,material);mesh.name='Mapped park facilities';mesh.castShadow=true;mesh.receiveShadow=true;
     scene.add(mesh);batches.push({object:mesh,x:t.x,z:t.z});continue;
@@ -76,7 +82,8 @@ export function addParkFacilities(scene:T.Scene,map:ParkMap,multiDraw=false){
  for(const {material,parts} of materials.values()){
   if(parts.length>1){
    const vertices=parts.reduce((n,p)=>n+p.g.getAttribute('position').count,0);
-   const batch=new T.BatchedMesh(parts.length,vertices,0,material);
+   const indices=parts.reduce((n,p)=>n+p.g.index!.count,0);
+   const batch=new T.BatchedMesh(parts.length,vertices,indices,material);
    batch.name='Mapped park facilities';batch.castShadow=true;batch.receiveShadow=true;batch.sortObjects=false;
    for(const {g,x,z} of parts){
     g.computeBoundingBox();g.computeBoundingSphere();

@@ -79,7 +79,22 @@ export async function addSunsetGarden(scene:T.Scene,map:ParkMap,terrain:ParkTerr
  const distantPetal=new T.SphereGeometry(1,4,2),flowerBounds=new T.Box2();
  const flowerPosition=new T.Vector2();
  for(const p of flowers)flowerBounds.expandByPoint(flowerPosition.set(p.x,p.z));
- flowers.forEach((p,i)=>{const h=.25+rand()*.25;dummy.position.set(p.x,p.y+h*.5,p.z);dummy.rotation.set(0,0,0);dummy.scale.set(1,h,1);dummy.updateMatrix();stems.setMatrixAt(i,dummy.matrix);for(let k=0;k<5;k++){const a=k/5*Math.PI*2;dummy.position.set(p.x+Math.cos(a)*.065,p.y+h,p.z+Math.sin(a)*.065);dummy.scale.set(.065,.025,.055);dummy.rotation.y=a;dummy.updateMatrix();blooms.setMatrixAt(i*5+k,dummy.matrix);blooms.setColorAt(i*5+k,color.setHex(i%4===0?0xffe5b5:0xffbf28));}});root.add(blooms,stems);
+ const distantBlooms=new T.InstancedMesh(new T.OctahedronGeometry(1),flowerMat,flowers.length);
+ flowers.forEach((p,i)=>{
+  const h=.25+rand()*.25;
+  dummy.position.set(p.x,p.y+h*.5,p.z);dummy.rotation.set(0,0,0);dummy.scale.set(1,h,1);
+  dummy.updateMatrix();stems.setMatrixAt(i,dummy.matrix);
+  color.setHex(i%4===0?0xffe5b5:0xffbf28);
+  for(let k=0;k<5;k++){
+   const a=k/5*Math.PI*2;
+   dummy.position.set(p.x+Math.cos(a)*.065,p.y+h,p.z+Math.sin(a)*.065);
+   dummy.scale.set(.065,.025,.055);dummy.rotation.y=a;
+   dummy.updateMatrix();blooms.setMatrixAt(i*5+k,dummy.matrix);blooms.setColorAt(i*5+k,color);
+  }
+  dummy.position.set(p.x,p.y+h,p.z);dummy.rotation.y=0;dummy.scale.set(.13,.025,.13);
+  dummy.updateMatrix();distantBlooms.setMatrixAt(i,dummy.matrix);distantBlooms.setColorAt(i,color);
+ });
+ distantBlooms.visible=false;root.add(blooms,stems,distantBlooms);
  // Small fallen leaves create a readable path edge without expensive particles.
  const litter=new T.InstancedMesh(leafGeo,new T.MeshStandardMaterial({color:0xffb54a,roughness:1,side:T.DoubleSide}),sites.length*12);
  let count=0;sites.forEach(p=>{for(let i=0;i<12;i++){const x=p.x+(rand()-.5)*p.r*2,z=p.z+(rand()-.5)*p.r*2;if(!terrain.land(x,z))continue;dummy.position.set(x,terrain.height(x,z)+.045,z);dummy.rotation.set(0,rand()*6,0);dummy.scale.setScalar(.32+rand()*.22);dummy.updateMatrix();litter.setMatrixAt(count++,dummy.matrix);}});litter.count=count;root.add(litter);
@@ -89,6 +104,10 @@ export async function addSunsetGarden(scene:T.Scene,map:ParkMap,terrain:ParkTerr
   root.visible=Math.hypot(x-center.x,z-center.z)<center.radius+610;
   if(root.visible&&flowers.length){
    const distance=flowerBounds.distanceToPoint(flowerPosition.set(eyeX,eyeZ));
+   // A 26 cm flower at this distance covers roughly one screen pixel.
+   // Preserve its position and tint with one crown and skip the thin stem.
+   distantBlooms.visible=distance>(distantBlooms.visible?410:460);
+   blooms.visible=stems.visible=!distantBlooms.visible;
    if(distance>200)blooms.geometry=distantPetal;
    else if(distance<170)blooms.geometry=flowerGeo;
   }
