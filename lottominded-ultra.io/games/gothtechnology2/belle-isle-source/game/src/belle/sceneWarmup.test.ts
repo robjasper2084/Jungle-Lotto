@@ -2,6 +2,27 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {BoxGeometry,DataTexture,DirectionalLight,Group,InstancedMesh,Mesh,MeshBasicMaterial,PerspectiveCamera,PointLight,Scene,SpotLight,type Texture,type Object3D} from 'three';
 import {prepareColoredDetailPool,SceneWarmup} from './sceneWarmup.ts';
+import {warmLandmarkPrograms} from './landmarkPrograms.ts';
+
+for(const parallel of [true,false]){
+ test('landmark preparation reflects every shared-material variant before drawing, parallel='+parallel,async()=>{
+  const model=new Group(),camera=new PerspectiveCamera(),scene=new Scene(),material=new MeshBasicMaterial();
+  const reflected:number[]=[],linked:number[]=[];
+  let flushed=false,firstPoll=true;
+  const programs=[1,2].map(program=>({program,getUniforms(){assert(flushed);reflected.push(program);}}));
+  const gl={LINK_STATUS:2,isContextLost:()=>false,flush(){flushed=true;},
+   getExtension:()=>parallel?{COMPLETION_STATUS_KHR:1}:null,
+   getProgramParameter(handle:number,key:number){
+    if(key===2){linked.push(handle);return true;}
+    assert(parallel);if(handle===1&&firstPoll){firstPoll=false;return false;}return true;
+   }};
+  const renderer={compile(root:Group,view:PerspectiveCamera,target:Scene){
+   assert.equal(root,model);assert.equal(view,camera);assert.equal(target,scene);return new Set([material]);
+  },properties:{get:()=>({programs:new Map(programs.map(p=>[p.program,p])),currentProgram:programs[1]})},getContext:()=>gl};
+  await warmLandmarkPrograms(renderer as unknown as Parameters<typeof warmLandmarkPrograms>[0],model,camera,scene);
+  assert.deepEqual(reflected,parallel?[2,1]:[1,2]);assert.deepEqual(linked,reflected);
+ });
+}
 
 test('both island lighting variants must finish linking before the island becomes ready',async()=>{
  const {scene,sun,camera}=fixture(),states:boolean[]=[],busy:boolean[]=[];

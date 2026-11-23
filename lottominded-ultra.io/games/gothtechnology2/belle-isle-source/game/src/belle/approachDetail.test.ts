@@ -5,6 +5,20 @@ import {createApproachDetail} from './approachDetail.ts';
 
 const flush=()=>new Promise<void>(resolve=>setImmediate(resolve));
 
+test('preparing at spawn shares the in-flight load and preserves distance visibility on approach',async()=>{
+ const scene=new T.Scene(),camera=new T.PerspectiveCamera();
+ let runs=0;const display=new T.Group();
+ const detail=createApproachDetail(scene,[[1000,0]],100,async stage=>{
+  runs++;stage.add(display);
+  return {update(x:number){display.visible=x>900;}};
+ });
+ const ready=detail.prepareAt(0,0,camera);
+ assert.equal(detail.prepareAt(0,0,camera),ready);await ready;
+ assert.equal(display.visible,false);assert.equal(scene.children.length,1);
+ detail.update(990,0,camera);await detail.prepareAt(990,0,camera);
+ assert.equal(display.visible,true);assert.equal(runs,1);
+});
+
 test('optional scenery is absent on spawn and loads once before the player can see it',async()=>{
  const scene=new T.Scene(),camera=new T.PerspectiveCamera(),poses:number[][]=[];
  let finish!:(value:{update:(x:number,z:number)=>void})=>void,started=0;
