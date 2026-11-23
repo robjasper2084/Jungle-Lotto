@@ -1,7 +1,8 @@
 import * as T from 'three';
 import {loadStartupBytes} from './startupAssets.ts';
 import {limitGroundDrawRange} from './groundDrawRange.ts';
-export async function addPavement(scene:T.Scene,materials:Record<string,T.Material>){
+import type {RoadContactSurface} from './roadContactSurface.ts';
+export async function addPavement(scene:T.Scene,materials:Record<string,T.Material>,roadContact:RoadContactSurface){
  const [meta,buffer]=await Promise.all([fetch('./belle/pavement.json').then(r=>{if(!r.ok)throw Error('Pavement '+r.status);return r.json();}),loadStartupBytes('./belle/pavement.bin')]);
  for(const part of meta.groups){
   if(!part.vertices)continue;
@@ -11,6 +12,7 @@ export async function addPavement(scene:T.Scene,materials:Record<string,T.Materi
   g.setAttribute('normal',new T.InterleavedBufferAttribute(data,3,3));
   g.setAttribute('uv',new T.InterleavedBufferAttribute(data,2,6));
   g.setIndex(part.indices);g.computeBoundingSphere();
+  roadContact.add(g);
   const mesh=new T.Mesh(g,materials[part.kind]);mesh.name='Joined island pavement · '+part.kind;
   mesh.receiveShadow=true;limitGroundDrawRange(mesh,part.ranges);scene.add(mesh);
  }

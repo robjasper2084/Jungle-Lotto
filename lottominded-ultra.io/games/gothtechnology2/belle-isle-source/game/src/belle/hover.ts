@@ -11,6 +11,7 @@ import {HoverFirstPerson} from './hoverFirstPerson.ts';
 
 
 import {applyRealisticMaterials} from './realisticMaterials.ts';
+import {invalidateAnimatedShadow} from '../../runtime/ride-core/src/shadowBudget.ts';
 import * as T from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {HoverControls} from './hoverControls.ts';
@@ -345,6 +346,7 @@ installHoverPresentation(this.hud);
   this.rider?.update(dt,p,this.sim.landed,this.steerBlend,running,reducedMotion);
   this.lighting?.update(dt,running,this.ledColor,this.ledMode,this.lightOn,this.highBeam,reducedMotion,this.hooks.nightAmount?.()??1);
   this.brakes.forEach(m=>m.emissiveIntensity=has('Space')?4:this.lightOn?.65:0);}
+  if(running)invalidateAnimatedShadow(this.visualModel);
   if(running)this.sound.warn(this.sim.impactSpeed,this.sim.hazard);
   this.sound.update(p.rpm,p.speed,p.lift,this.sim.flying,this.sim.landed,has('Space'),running&&document.hasFocus());
   if(clock-this.lastUI>.1){this.lastUI=clock;this.refresh();}

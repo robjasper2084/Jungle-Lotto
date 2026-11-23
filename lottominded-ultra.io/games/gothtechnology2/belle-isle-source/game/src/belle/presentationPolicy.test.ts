@@ -4,6 +4,7 @@ import {atmosphereShader,windVertex,HEIGHT_FOG} from './atmosphereShaders.ts';
 import {Mesh,MeshStandardMaterial,Scene,ShaderChunk,ShaderLib,UniformsUtils,type WebGLRenderer} from 'three';
 import {seasonalMaterial} from './seasonalMaterial.ts';
 import {addStreetDetails} from './streetDetails.ts';
+import {consumeAnimatedShadowUpdate,invalidateAnimatedShadow} from '../../runtime/ride-core/src/shadowBudget.ts';
 
 test('inactive point lights skip the entire unrolled BRDF while live slots keep their shading',()=>{
  const source=ShaderChunk.lights_fragment_begin;
@@ -34,6 +35,30 @@ test('reference tree species share shader code while retaining their own seasona
    assert.notEqual(a.fragmentShader,standardShader(other.material).fragmentShader);
   }
  }
+});
+
+test('tree distance fades use the same object-space mask for both LODs',()=>{
+ const source=new MeshStandardMaterial(),month={value:7};
+ const near=standardShader(seasonalMaterial(source,true,false,false,month).material);
+ const far=standardShader(seasonalMaterial(source,true,true,false,month).material);
+ for(const shader of [near,far]){
+  assert.match(shader.vertexShader,/localTreePos=position/);
+  assert.match(shader.fragmentShader,/lodCell=floor\(localTreePos\*6\.0\)/);
+  assert.doesNotMatch(shader.fragmentShader,/gl_FragCoord/);
+ }
+ assert.match(near.fragmentShader,/lodSeed>=treeWeight/);
+ assert.match(far.fragmentShader,/lodSeed<1\.0-treeWeight/);
+});
+
+test('only a visible animated actor dirties its own scene shadow map once',()=>{
+ const scene=new Scene(),other=new Scene(),actor=new Mesh();
+ scene.add(actor);
+ actor.visible=false;invalidateAnimatedShadow(actor);
+ assert.equal(consumeAnimatedShadowUpdate(scene),false);
+ actor.visible=true;invalidateAnimatedShadow(actor);
+ assert.equal(consumeAnimatedShadowUpdate(other),false);
+ assert.equal(consumeAnimatedShadowUpdate(scene),true);
+ assert.equal(consumeAnimatedShadowUpdate(scene),false);
 });
 
 test('street paint and curb materials share only equivalent shaders and keep their surface values',t=>{
