@@ -1,5 +1,6 @@
 import * as T from 'three';
 import {SKY_PROBE_WIDTH,SKY_PROBE_HEIGHT} from './skyProbe.ts';
+import {ReflectionStartupGate} from './startupWork.ts';
 
 /** Shared linear radiance: water traces its reflection direction into this sky. */
 export const skyRadiance={texture:{value:null as T.Texture|null},ready:{value:0}};
@@ -81,8 +82,8 @@ export class VolumetricSky {
  private scene=new T.Scene();private camera=new T.OrthographicCamera();
  private targets=[0,1].map(()=>new T.WebGLRenderTarget(2048,1024,{type:T.HalfFloatType,depthBuffer:false,stencilBuffer:false,minFilter:T.LinearFilter,magFilter:T.LinearFilter,wrapS:T.RepeatWrapping,wrapT:T.ClampToEdgeWrapping}));
  private frame=0;private row=0;private back=0;private complete=false;private lastSun=new T.Vector3();private lastCoverage=-1;
- private viewport=new T.Vector4();private scissor=new T.Vector4();
  private probeScene=new T.Scene();private probeTarget=new T.WebGLRenderTarget(SKY_PROBE_WIDTH,SKY_PROBE_HEIGHT,{type:T.HalfFloatType,depthBuffer:false});private probeCopy:T.ShaderMaterial;private pmrem:T.PMREMGenerator;private probe?:T.WebGLRenderTarget;private lastProbe=-Infinity;
+ private probeDirty=false;private probeGate=new ReflectionStartupGate();
  enabled=true;
  private renderer:T.WebGLRenderer; private world:T.Scene;
  constructor(renderer:T.WebGLRenderer,world:T.Scene){this.renderer=renderer;this.world=world;
@@ -91,26 +92,40 @@ export class VolumetricSky {
   this.probeCopy=new T.ShaderMaterial({uniforms:{source:{value:null as T.Texture|null}},vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}',fragmentShader:'uniform sampler2D source;varying vec2 vUv;void main(){vec3 c=texture2D(source,vUv).rgb;if(vUv.y<.49)c*=.18;gl_FragColor=vec4(c,1.);}',depthTest:false,depthWrite:false});
   this.probeScene.add(new T.Mesh(new T.PlaneGeometry(2,2),this.probeCopy));this.pmrem=new T.PMREMGenerator(renderer);
  }
+ observeFrame(frameMs:number,eligible:boolean){this.probeGate.observe(frameMs,eligible);}
+ protectReflections(){this.probeGate.protect(performance.now());}
  update(frame:SkyFrame){
   if(!this.enabled){skyRadiance.ready.value=0;return;}
   if(++this.frame%2)return;
   // A deliberately changed preset restarts the unfinished batch, not the visible sky.
   if(this.lastSun.distanceTo(frame.sun)>.16||Math.abs(this.lastCoverage-frame.coverage)>.2)this.row=0;
   if(this.row===0){this.uniforms.sun.value.copy(frame.sun);for(const key of ['zenith','horizon','warm','sunColor'] as const)this.uniforms[key].value.copy(frame[key]);for(const key of ['coverage','density','stretch','night'] as const)this.uniforms[key].value=frame[key];this.uniforms.cloudScale.value=frame.scale;this.uniforms.cloudTime.value=frame.time;this.lastSun.copy(frame.sun);this.lastCoverage=frame.coverage;}
-  const r=this.renderer,target=r.getRenderTarget(),scissorTest=r.getScissorTest(),auto=r.autoClear,xr=r.xr.enabled;r.getViewport(this.viewport);r.getScissor(this.scissor);r.xr.enabled=false;r.autoClear=false;
+  const r=this.renderer,target=r.getRenderTarget(),face=r.getActiveCubeFace(),mip=r.getActiveMipmapLevel();
+  const auto=r.autoClear,xr=r.xr.enabled;r.xr.enabled=false;r.autoClear=false;
   try{
-   r.setRenderTarget(this.targets[this.back]);r.setViewport(0,0,2048,1024);// Preserve the full 2048×1024 panorama and all 64×6 lighting samples,
-   // but bound a single in-flight software-GPU submission to two rows.
-   // Desktop High at the sunset bridge otherwise stalls on the real GPU fence.
+   // Write directly in render-target pixels. The canvas resolution can
+   // change mid-ride without shifting or clipping the traced panorama.
    const stripRows=2;
-   r.setScissor(0,this.row,2048,stripRows);r.setScissorTest(true);r.render(this.scene,this.camera);this.row+=stripRows;
-   if(this.row>=1024){
-    this.complete=true;skyRadiance.texture.value=this.targets[this.back].texture;skyRadiance.ready.value=1;this.back=1-this.back;this.row=0;
-    // Filter only a small probe, at a bounded cadence; never render the world six times.
-    const now=performance.now();if(now-this.lastProbe>5000){this.probeCopy.uniforms.source.value=skyRadiance.texture.value;r.setRenderTarget(this.probeTarget);r.setViewport(0,0,SKY_PROBE_WIDTH,SKY_PROBE_HEIGHT);r.setScissorTest(false);r.render(this.probeScene,this.camera);this.probeTarget.texture.mapping=T.EquirectangularReflectionMapping;this.probe=this.pmrem.fromEquirectangular(this.probeTarget.texture,this.probe);this.world.environment=this.probe.texture;this.lastProbe=now;}
+   const panorama=this.targets[this.back];
+   panorama.scissor.set(0,this.row,panorama.width,stripRows);panorama.scissorTest=true;
+   r.setRenderTarget(panorama);r.render(this.scene,this.camera);this.row+=stripRows;
+   if(this.row>=panorama.height){
+    this.complete=true;skyRadiance.texture.value=panorama.texture;skyRadiance.ready.value=1;this.back=1-this.back;this.row=0;
+    this.probeDirty=true;
+   }else if(this.probeDirty){
+    // The sky and water can use the new panorama immediately. Refresh the
+    // filtered lighting only after foreground rendering has headroom.
+    const now=performance.now();
+    if(now-this.lastProbe>5000&&this.probeGate.allowed(now)){
+     this.probeCopy.uniforms.source.value=skyRadiance.texture.value;
+     r.setRenderTarget(this.probeTarget);r.render(this.probeScene,this.camera);
+     this.probeTarget.texture.mapping=T.EquirectangularReflectionMapping;
+     this.probe=this.pmrem.fromEquirectangular(this.probeTarget.texture,this.probe);
+     this.world.environment=this.probe.texture;this.lastProbe=now;this.probeDirty=false;
+    }
    }
    if(this.complete)skyRadiance.ready.value=1;
-  }finally{r.setRenderTarget(target);r.setViewport(this.viewport);r.setScissor(this.scissor);r.setScissorTest(scissorTest);r.autoClear=auto;r.xr.enabled=xr;}
+  }finally{r.setRenderTarget(target,face,mip);r.autoClear=auto;r.xr.enabled=xr;}
  }
  dispose(){if(this.world.environment===this.probe?.texture)this.world.environment=null;this.probe?.dispose();this.pmrem.dispose();this.probeTarget.dispose();for(const t of this.targets)t.dispose();for(const scene of[this.scene,this.probeScene])scene.traverse(o=>{if(o instanceof T.Mesh){o.geometry.dispose();const ms=Array.isArray(o.material)?o.material:[o.material];ms.forEach(m=>m.dispose());}});skyRadiance.ready.value=0;}
 }
