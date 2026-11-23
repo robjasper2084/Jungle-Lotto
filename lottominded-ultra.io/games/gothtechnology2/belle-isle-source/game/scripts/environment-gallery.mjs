@@ -9,6 +9,7 @@ import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {createCoopStaticServer} from './coop-static-server.mjs';
+import {launchGalleryBrowser,galleryRenderer} from './gallery-renderer.mjs';
 
 const game=resolve(import.meta.dirname,'..'),require=createRequire(resolve(game,'../../package.json'));
 const {chromium,expect:rawExpect}=require('@playwright/test');
@@ -44,7 +45,7 @@ assert.ok(['all','high-noon','sunset'].includes(selectedLight),'Unknown environm
 const lights=[{id:'high-noon',value:'12'},{id:'sunset',value:'17.8'}].filter(l=>selectedLight==='all'||l.id===selectedLight);
 await mkdir(output,{recursive:true});
 const report={head:process.env.GITHUB_SHA||null,variant,device,viewport,
- source:process.env.ENV_GALLERY_BUILD_DIR?'exact production-source commit, rebuilt and served locally; real Guide Travel; Chrome SwiftShader':'real built browser game; guide Travel action; Chrome SwiftShader',
+ source:process.env.ENV_GALLERY_BUILD_DIR?'exact production-source commit, rebuilt and served locally; real Guide Travel':'real built browser game; guide Travel action',
  baselineHead:process.env.ENV_GALLERY_BASE_SHA||null,
  comparisonLimitations:variant==='baseline'?['Nashua Canal and Casino are historic-guide contextual substitutes, NOT the same camera as the PR new views. Do not compute a matched four-site gain.']:[],
  pairingComplete:false,
@@ -113,6 +114,7 @@ async function openActiveRidePage(){
  page.on('requestfailed',request=>report.failedRequests.push((request.failure()?.errorText||'network failure')+' '+request.url()));
  await page.goto(origin,{waitUntil:'domcontentloaded'});
  await expect(page.locator('#welcome')).toHaveAttribute('data-state','ready');
+ report.renderer=await galleryRenderer(page);
  if(variant==='candidate'){
   const profile=page.locator('#profile');
   const rawMeshes=await profile.getAttribute('data-macarthur-rail-meshes');
@@ -140,7 +142,7 @@ async function openActiveRidePage(){
  return page;
 }
 try{
- const launch=()=>chromium.launch({channel:'chromium',headless:true,args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+ const launch=()=>launchGalleryBrowser(chromium,'chromium');
  browser=await launch();
  for(const light of lights){
   let page;

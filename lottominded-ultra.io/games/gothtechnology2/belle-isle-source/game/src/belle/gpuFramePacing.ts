@@ -11,7 +11,7 @@ export class GpuFrameGate {
  constructor(gl:WebGL2RenderingContext){this.gl=gl;}
  get pending(){return this.fence!==undefined;}
  ready(){
-  if(this.gl.isContextLost()){this.clear();return false;}
+  if(this.gl.isContextLost()){this.forgetLostContext();return false;}
   if(!this.fence)return true;
   const state=this.gl.clientWaitSync(this.fence,0,0);
   if(state===this.gl.TIMEOUT_EXPIRED)return false;
@@ -32,9 +32,10 @@ export class GpuFrameGate {
   try{this.gl.flush();}finally{observeLoop(probe,value=>value.endScope(flushTiming));}
  }
  clear(){if(this.fence){this.gl.deleteSync(this.fence);this.fence=undefined;}}
+ forgetLostContext(){this.fence=undefined;}
 }
 
-type Renderer=Pick<WebGLRenderer,'getContext'|'setAnimationLoop'|'xr'|'info'|'dispose'>;
+type Renderer=Pick<WebGLRenderer,'getContext'|'setAnimationLoop'|'xr'|'info'|'dispose'|'domElement'>;
 const installed=new WeakMap<object,()=>void>();
 const loopBindings=new WeakMap<object,{probe?:ManualLoopProbe}>();
 export interface LoopProbeBinding {
@@ -91,6 +92,11 @@ export function installGpuFramePacing(target:object):()=>void {
   lastPendingTimestamp=now;
  };
  const endPending=(now?:number)=>{if(lastPendingTimestamp!==undefined&&now!==undefined)observePending(now);lastPendingTimestamp=undefined;observed.currentPendingFenceObservedSpanMs=0;};
+ // A suspended tab can lose and restore WebGL between animation callbacks.
+ // Once the context changes, a sync from the old context cannot be polled.
+ const resetContext=()=>{gate.forgetLostContext();endPending();};
+ renderer.domElement?.addEventListener('webglcontextlost',resetContext);
+ renderer.domElement?.addEventListener('webglcontextrestored',resetContext);
  let stopped=false;
  const set:Renderer['setAnimationLoop']=callback=>{
   if(!callback){gate.clear();endPending();originalSet.call(renderer,null);return;}
@@ -131,6 +137,8 @@ export function installGpuFramePacing(target:object):()=>void {
  };
  const cleanup=()=>{
   if(stopped)return;stopped=true;gate.clear();endPending();observed.installed=false;installed.delete(candidate);
+  renderer.domElement?.removeEventListener('webglcontextlost',resetContext);
+  renderer.domElement?.removeEventListener('webglcontextrestored',resetContext);
   observeLoop(loopBinding.probe,value=>value.cancelCallback());loopBinding.probe=undefined;loopBindings.delete(candidate);
   if(renderer.setAnimationLoop===set)renderer.setAnimationLoop=originalSet;
   if(renderer.dispose===dispose)renderer.dispose=originalDispose;
