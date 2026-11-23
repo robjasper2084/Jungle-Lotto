@@ -166,7 +166,7 @@ export class TreeInstanceVisibility {
  private updateBounds(){
   for(const part of this.parts)part.world.set(part.mesh.matrixWorld.elements);
   for(let i=0;i<this.count;i++){
-   this.union.makeEmpty();let valid=true,transforms=0;
+   this.union.makeEmpty();let valid=true;
    for(const part of this.parts){
     this.matrix.fromArray(part.matrix!.source,i*16);
     this.combined.multiplyMatrices(part.mesh.matrixWorld,this.matrix);
