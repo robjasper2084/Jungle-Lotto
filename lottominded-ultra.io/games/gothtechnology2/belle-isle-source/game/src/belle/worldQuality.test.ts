@@ -61,3 +61,18 @@ test('Smooth avoids software-heavy dynamic shadows without losing High and Autom
  f.quality.setBudget(.9);
  assert.equal(dynamicShadowsEnabled(f.quality.effective),true);
 });
+
+test('adaptive shadow passes stop and resume with the prepared light layout',()=>{
+ const states:{draw:boolean;mapped:boolean}[]=[];
+ const quality=new WorldQuality((q,mapped)=>states.push({draw:dynamicShadowsEnabled(q),mapped}),()=>{},()=>1);
+ quality.setQuality('automatic');
+ quality.setBudget(.7);
+ quality.setBudget(.65);
+ quality.setBudget(.9);
+ quality.setBudget(.7);
+ quality.setQuality('smooth');
+ assert.deepEqual(states,[
+  {draw:true,mapped:true},{draw:false,mapped:true},{draw:true,mapped:true},
+  {draw:false,mapped:true},{draw:false,mapped:false},
+ ]);
+});

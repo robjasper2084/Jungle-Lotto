@@ -14,11 +14,12 @@ export class WorldQuality {
  effective:EnvironmentQuality='automatic';
  scale=1;
  private applied:EnvironmentQuality|undefined;
+ private mappedLayout:boolean|undefined;
  private ratio=0;
- private detail:(quality:EnvironmentQuality)=>void;
+ private detail:(quality:EnvironmentQuality,mappedLayout:boolean)=>void;
  private pixels:(ratio:number)=>void;
  private deviceRatio:()=>number;
- constructor(detail:(quality:EnvironmentQuality)=>void,pixels:(ratio:number)=>void,deviceRatio=()=>devicePixelRatio){
+ constructor(detail:(quality:EnvironmentQuality,mappedLayout:boolean)=>void,pixels:(ratio:number)=>void,deviceRatio=()=>devicePixelRatio){
   this.detail=detail;this.pixels=pixels;this.deviceRatio=deviceRatio;
  }
  setQuality(value:string){
@@ -36,6 +37,12 @@ export class WorldQuality {
   const device=this.deviceRatio(),dpr=Number.isFinite(device)&&device>0?device:1;
   const ratio=this.requested==='high'?Math.min(dpr,1.5):this.requested==='smooth'?1:Math.min(dpr,1.25)*this.scale;
   if(ratio!==this.ratio){this.ratio=ratio;this.pixels(ratio);}
-  if(this.effective!==this.applied){this.applied=this.effective;this.detail(this.effective);}
+  // Three includes the shadow layout in every lit material's program key.
+  // Automatic can suspend shadow draws without relinking the entire view.
+  const mappedLayout=dynamicShadowsEnabled(this.requested);
+  if(this.effective!==this.applied||mappedLayout!==this.mappedLayout){
+   this.applied=this.effective;this.mappedLayout=mappedLayout;
+   this.detail(this.effective,mappedLayout);
+  }
  }
 }

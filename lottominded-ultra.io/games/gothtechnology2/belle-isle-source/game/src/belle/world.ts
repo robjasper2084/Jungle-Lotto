@@ -124,17 +124,12 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
  const landmarkDetail=new LandmarkDetail(landmarks);
  // Static architecture transforms are fixed after the fountain is placed.
  for(const staticRoot of [landmarks.scene,skyline.scene,historic.scene]){staticRoot.updateMatrixWorld(true);staticRoot.traverse(o=>{o.matrixAutoUpdate=false;o.matrixWorldAutoUpdate=false;});}
- const quality=new WorldQuality(q=>{
-  // Smooth is the intentional lower-cost mode. Rendering all dynamic shadow
-  // maps at once held the real 1440px starting-line frame beyond the GPU
-  // readiness gate on software Chromium. Keep the scene, buildings, textures,
-  // water, contact-shadow meshes and authentic readiness test unchanged.
+ const quality=new WorldQuality((q,mappedLayout)=>{
   const dynamicShadows=dynamicShadowsEnabled(q);
-  if(renderer.shadowMap.enabled!==dynamicShadows){
-   renderer.shadowMap.enabled=dynamicShadows;
-   renderer.shadowMap.needsUpdate=true;
-  }
-  water.setQuality(q);islandSky.setQuality(q);birds.setQuality(q);gulls.setQuality(q);waterfowl.setQuality(q);shoreBirds.setQuality(q);
+  renderer.shadowMap.enabled=mappedLayout;
+  renderer.shadowMap.autoUpdate=dynamicShadows;
+  renderer.shadowMap.needsUpdate=dynamicShadows;
+  water.setQuality(q);islandSky.setQuality(q,mappedLayout);birds.setQuality(q);gulls.setQuality(q);waterfowl.setQuality(q);shoreBirds.setQuality(q);
   nature.setQuality(q);meadow.setQuality(q);gardens.setQuality(q);shoreDetails.setQuality(q);beachStats.setQuality(q);waterBanks.setQuality(q);contactShadow.setQuality(q);
   lastX=Infinity;
  },ratio=>renderer.setPixelRatio(ratio));

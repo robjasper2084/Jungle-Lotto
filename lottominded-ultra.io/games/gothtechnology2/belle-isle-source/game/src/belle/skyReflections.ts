@@ -22,23 +22,28 @@ export class SkyReflections {
  prepare(clock:number,hour:number,coverage:number,quality:string){
   if(this.disposed||this.disabled||this.target||this.renderer.xr.isPresenting||this.renderer.getContext().isContextLost())return;
   // Synchronous GPU submission is deliberate here: loading screen is still locked.
-  this.capture(clock,hour,coverage,quality);this.protect();
+  this.capture(clock,hour,coverage,presentationBudget(quality).reflectionSize);this.protect();
  }
  update(clock:number,hour:number,coverage:number,quality:string,active:boolean){
   if(this.disposed||this.disabled||!active||this.renderer.xr.isPresenting||this.renderer.getContext().isContextLost())return;
   if(!this.startupGate.allowed(performance.now()))return;
   const budget=presentationBudget(quality),interval=this.lastCost>40?Math.max(120,budget.reflectionInterval):budget.reflectionInterval;
   if(!reflectionRequired(clock,this.last,hour,this.lastHour,coverage,this.lastCoverage,interval))return;
-  this.capture(clock,hour,coverage,quality);
+  // Three bakes CubeUV atlas dimensions into every lit material program.
+  // Refresh the sky at the current atlas size while the player is riding.
+  // Smooth still selects its smaller probe at startup and its slower cadence.
+  const environment=this.scene.environment;
+  const atlas=environment?.image as {height:number}|undefined;
+  const faceSize=environment?.mapping===T.CubeUVReflectionMapping&&atlas ? atlas.height/4 : 0;
+  this.capture(clock,hour,coverage,faceSize||budget.reflectionSize);
  }
- private capture(clock:number,hour:number,coverage:number,quality:string){
-  const budget=presentationBudget(quality);
+ private capture(clock:number,hour:number,coverage:number,size:number){
   const renderer=this.renderer,oldTarget=renderer.getRenderTarget(),face=renderer.getActiveCubeFace(),mip=renderer.getActiveMipmapLevel();
   const xr=renderer.xr.enabled,tone=renderer.toneMapping,autoClear=renderer.autoClear;
   const viewport=renderer.getViewport(new T.Vector4()),scissor=renderer.getScissor(new T.Vector4()),scissorTest=renderer.getScissorTest();
   const clear=renderer.getClearColor(new T.Color()),alpha=renderer.getClearAlpha(),begin=performance.now();
   try{
-   const next=this.generator.fromScene(this.probeScene,0,.1,100,{size:budget.reflectionSize});
+   const next=this.generator.fromScene(this.probeScene,0,.1,100,{size});
    const previous=this.target;this.target=next;this.scene.environment=next.texture;previous?.dispose();
    this.last=clock;this.lastHour=hour;this.lastCoverage=coverage;this.captures++;
   }catch(error){this.disabled=true;console.warn('Dynamic sky reflections unavailable; keeping the last valid environment.',error);}
