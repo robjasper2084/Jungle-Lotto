@@ -26,13 +26,17 @@ test('completed callbacks keep the real wall timestamp, without invented catch-u
 test('three-frame pacing overlaps real draws and waits when every slot is occupied',()=>{
  const f=fixture(),seen=[];installGpuFramePacing(f.renderer,3);
  f.renderer.setAnimationLoop(t=>{seen.push(t);f.renderer.info.render.frame++;});
- for(const time of [100,116,132,148,164])f.tick(time);
+ let polls=0;
+ f.gl.clientWaitSync=()=>{polls++;return f.gl.TIMEOUT_EXPIRED;};
+ for(const time of [100,116,132])f.tick(time);
+ assert.equal(polls,0);
+ for(const time of [148,164])f.tick(time);
  assert.deepEqual(seen,[100,116,132]);
  assert.deepEqual(f.calls,['fence','flush','fence','flush','fence','flush']);
- let first=true;
- f.gl.clientWaitSync=()=>{if(!first)return f.gl.TIMEOUT_EXPIRED;first=false;return f.gl.CONDITION_SATISFIED;};
+ f.gl.clientWaitSync=()=>++polls===3?f.gl.CONDITION_SATISFIED:f.gl.TIMEOUT_EXPIRED;
  f.tick(180);f.tick(196);
  assert.deepEqual(seen,[100,116,132,180]);
+ assert.equal(polls,4);
  assert.equal(gpuFramePacingDiagnostics(f.renderer).pendingFenceSkippedCallbacks,3);
  f.renderer.setAnimationLoop(null);
  assert.equal(f.calls.filter(call=>call==='delete').length,4);

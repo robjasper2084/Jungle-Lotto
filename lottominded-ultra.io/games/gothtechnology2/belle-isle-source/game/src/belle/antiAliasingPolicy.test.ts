@@ -13,6 +13,8 @@ test('Automatic preserves desktop MSAA and protects touch and low-end devices',(
  assert.equal(enableHardwareAntialiasing('automatic',{...desktop,coarsePointer:true}),false);
  assert.equal(enableHardwareAntialiasing('automatic',{...desktop,deviceMemoryGB:2}),false);
  assert.equal(enableHardwareAntialiasing('automatic',{...desktop,logicalCores:2}),false);
+ assert.equal(enableHardwareAntialiasing('automatic',{...desktop,logicalCores:3}),false);
+ assert.equal(enableHardwareAntialiasing('automatic',{...desktop,logicalCores:4}),true);
  assert.equal(enableHardwareAntialiasing('automatic',{coarsePointer:false}),true);
 });
 test('explicit On or Off overrides automatic device selection',()=>{

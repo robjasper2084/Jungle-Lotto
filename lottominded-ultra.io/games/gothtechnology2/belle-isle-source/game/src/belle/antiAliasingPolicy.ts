@@ -17,6 +17,6 @@ export function enableHardwareAntialiasing(mode:AntiAliasingMode,device:AntiAlia
  if(device.coarsePointer)return false;
  const memory=device.deviceMemoryGB,cores=device.logicalCores;
  if(typeof memory==='number'&&Number.isFinite(memory)&&memory>0&&memory<=2)return false;
- if(typeof cores==='number'&&Number.isFinite(cores)&&cores>0&&cores<=2)return false;
+ if(typeof cores==='number'&&Number.isFinite(cores)&&cores>0&&cores<4)return false;
  return true;
 }

@@ -13,13 +13,14 @@ export class GpuFrameGate {
  get pending(){return this.fences.length>0;}
  ready(){
   if(this.gl.isContextLost()){this.forgetLostContext();return false;}
-  while(this.fences.length){
-   const fence=this.fences[0],state=this.gl.clientWaitSync(fence,0,0);
-   if(state===this.gl.TIMEOUT_EXPIRED)return this.fences.length<this.capacity;
-   this.fences.shift();
-   this.gl.deleteSync(fence);
-   if(state!==this.gl.ALREADY_SIGNALED&&state!==this.gl.CONDITION_SATISFIED)throw new Error('Frame GPU fence failed.');
-  }
+  // At most one more frame can be submitted per callback. Query completion
+  // only when the queue needs a slot, and only poll the oldest fence.
+  if(this.fences.length<this.capacity)return true;
+  const fence=this.fences[0],state=this.gl.clientWaitSync(fence,0,0);
+  if(state===this.gl.TIMEOUT_EXPIRED)return false;
+  this.fences.shift();
+  this.gl.deleteSync(fence);
+  if(state!==this.gl.ALREADY_SIGNALED&&state!==this.gl.CONDITION_SATISFIED)throw new Error('Frame GPU fence failed.');
   return true;
  }
  submitted(probe?:ManualLoopProbe,callback?:LoopToken){
@@ -33,6 +34,7 @@ export class GpuFrameGate {
   this.fences.push(fence);
   const flushTiming=observeLoop(probe,value=>value.beginScope(callback,'flushCpuMs'));
   try{this.gl.flush();}finally{observeLoop(probe,value=>value.endScope(flushTiming));}
+  return true;
  }
  clear(){for(const fence of this.fences)this.gl.deleteSync(fence);this.fences.length=0;}
  forgetLostContext(){this.fences.length=0;}
@@ -132,7 +134,7 @@ export function installGpuFramePacing(target:object,maxQueuedFrames:1|2|3=1):()=
     try{try{callback(now,frame);}finally{observeLoop(probe,value=>value.endScope(body));}}
     finally{if(!stopped&&!renderer.xr.isPresenting&&(didRender=renderer.info.render.frame!==before)){
      const submittedTiming=observeLoop(probe,value=>value.beginScope(loop,'gateSubmittedCpuMs'));
-     try{gate.submitted(probe,loop);if(gate.pending)observed.submittedCallbacks++;}
+     try{if(gate.submitted(probe,loop))observed.submittedCallbacks++;}
      finally{observeLoop(probe,value=>value.endScope(submittedTiming));}
     }}
     outcome=didRender===false?'no-draw':'executed';
