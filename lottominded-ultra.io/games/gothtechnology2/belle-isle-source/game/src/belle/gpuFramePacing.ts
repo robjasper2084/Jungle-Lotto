@@ -1,38 +1,41 @@
 import type {WebGLRenderer} from 'three';
 import {observeLoop,type ManualLoopProbe,type LoopToken,type LoopOutcome} from './loopDiagnostics.ts';
 
-/** Bound queued GPU work to one complete animation callback, including every
+/** Bound queued GPU work across complete animation callbacks, including every
  * split-screen view. Never block the main thread with finish()/a nonzero wait.
  * This is rendering backpressure, not a new simulation clock or readiness test.
  */
 export class GpuFrameGate {
- private fence:WebGLSync|undefined;
- private gl:WebGL2RenderingContext;
- constructor(gl:WebGL2RenderingContext){this.gl=gl;}
- get pending(){return this.fence!==undefined;}
+ private readonly fences:WebGLSync[]=[];
+ private readonly gl:WebGL2RenderingContext;
+ private readonly capacity:1|2|3;
+ constructor(gl:WebGL2RenderingContext,capacity:1|2|3=1){this.gl=gl;this.capacity=capacity;}
+ get pending(){return this.fences.length>0;}
  ready(){
   if(this.gl.isContextLost()){this.forgetLostContext();return false;}
-  if(!this.fence)return true;
-  const state=this.gl.clientWaitSync(this.fence,0,0);
-  if(state===this.gl.TIMEOUT_EXPIRED)return false;
-  this.clear();
-  if(state!==this.gl.ALREADY_SIGNALED&&state!==this.gl.CONDITION_SATISFIED)throw new Error('Frame GPU fence failed.');
+  while(this.fences.length){
+   const fence=this.fences[0],state=this.gl.clientWaitSync(fence,0,0);
+   if(state===this.gl.TIMEOUT_EXPIRED)return this.fences.length<this.capacity;
+   this.fences.shift();
+   this.gl.deleteSync(fence);
+   if(state!==this.gl.ALREADY_SIGNALED&&state!==this.gl.CONDITION_SATISFIED)throw new Error('Frame GPU fence failed.');
+  }
   return true;
  }
  submitted(probe?:ManualLoopProbe,callback?:LoopToken){
   if(this.gl.isContextLost())return;
-  if(this.fence)throw new Error('A GPU frame is already in flight.');
+  if(this.fences.length>=this.capacity)throw new Error('A GPU frame is already in flight at the queue limit.');
   const fenceTiming=observeLoop(probe,value=>value.beginScope(callback,'fenceSyncCpuMs'));
   let fence:WebGLSync|null;
   try{fence=this.gl.fenceSync(this.gl.SYNC_GPU_COMMANDS_COMPLETE,0);}
   finally{observeLoop(probe,value=>value.endScope(fenceTiming));}
   if(!fence)throw new Error('Frame GPU fence unavailable.');
-  this.fence=fence;
+  this.fences.push(fence);
   const flushTiming=observeLoop(probe,value=>value.beginScope(callback,'flushCpuMs'));
   try{this.gl.flush();}finally{observeLoop(probe,value=>value.endScope(flushTiming));}
  }
- clear(){if(this.fence){this.gl.deleteSync(this.fence);this.fence=undefined;}}
- forgetLostContext(){this.fence=undefined;}
+ clear(){for(const fence of this.fences)this.gl.deleteSync(fence);this.fences.length=0;}
+ forgetLostContext(){this.fences.length=0;}
 }
 
 type Renderer=Pick<WebGLRenderer,'getContext'|'setAnimationLoop'|'xr'|'info'|'dispose'|'domElement'>;
@@ -58,6 +61,7 @@ export function attachGpuFramePacingProbe(target:object,probe:ManualLoopProbe):L
  */
 export interface GpuFramePacingDiagnostics {
  installed:boolean;
+ maxQueuedFrames:number;
  animationCallbacks:number;
  executedCallbacks:number;
  submittedCallbacks:number;
@@ -76,14 +80,14 @@ export function gpuFramePacingDiagnostics(target:object):GpuFramePacingDiagnosti
 /** Install before the game registers its one animation loop. Fake compilers and
  * unsupported contexts remain untouched. XR keeps the browser's own scheduler.
  */
-export function installGpuFramePacing(target:object):()=>void {
+export function installGpuFramePacing(target:object,maxQueuedFrames:1|2|3=1):()=>void {
  const candidate=target as Partial<Renderer>;
  const existing=installed.get(candidate);if(existing)return existing;
  if(typeof candidate.getContext!=='function'||typeof candidate.setAnimationLoop!=='function'||typeof candidate.dispose!=='function'||!candidate.xr||!candidate.info)return ()=>{};
  const renderer=candidate as Renderer,gl=renderer.getContext() as WebGL2RenderingContext;
  if(typeof gl.fenceSync!=='function'||typeof gl.clientWaitSync!=='function')return ()=>{};
- const gate=new GpuFrameGate(gl),originalSet=renderer.setAnimationLoop,originalDispose=renderer.dispose;
- const observed:GpuFramePacingDiagnostics={installed:true,animationCallbacks:0,executedCallbacks:0,submittedCallbacks:0,xrCallbacks:0,pendingFenceSkippedCallbacks:0,contextLostSkippedCallbacks:0,pendingFenceResumptions:0,pendingFenceObservedSpanMs:0,longestPendingFenceObservedSpanMs:0,currentPendingFenceObservedSpanMs:0};
+ const gate=new GpuFrameGate(gl,maxQueuedFrames),originalSet=renderer.setAnimationLoop,originalDispose=renderer.dispose;
+ const observed:GpuFramePacingDiagnostics={installed:true,maxQueuedFrames,animationCallbacks:0,executedCallbacks:0,submittedCallbacks:0,xrCallbacks:0,pendingFenceSkippedCallbacks:0,contextLostSkippedCallbacks:0,pendingFenceResumptions:0,pendingFenceObservedSpanMs:0,longestPendingFenceObservedSpanMs:0,currentPendingFenceObservedSpanMs:0};
  observations.set(candidate,observed);
  const loopBinding:{probe?:ManualLoopProbe}={};loopBindings.set(candidate,loopBinding);
  let lastPendingTimestamp:number|undefined;

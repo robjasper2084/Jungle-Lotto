@@ -81,7 +81,7 @@ export class VolumetricSky {
  private uniforms={volumeNoise:{value:volumeNoise()},sun:{value:new T.Vector3()},zenith:{value:new T.Color()},horizon:{value:new T.Color()},warm:{value:new T.Color()},sunColor:{value:new T.Color()},coverage:{value:.65},density:{value:1},stretch:{value:1},cloudScale:{value:1},cloudTime:{value:0},night:{value:0}};
  private scene=new T.Scene();private camera=new T.OrthographicCamera();
  private targets=[0,1].map(()=>new T.WebGLRenderTarget(2048,1024,{type:T.HalfFloatType,depthBuffer:false,stencilBuffer:false,minFilter:T.LinearFilter,magFilter:T.LinearFilter,wrapS:T.RepeatWrapping,wrapT:T.ClampToEdgeWrapping}));
- private frame=0;private row=0;private back=0;private complete=false;private lastSun=new T.Vector3();private lastCoverage=-1;
+ private framesUntilStrip=0;private foregroundFrameMs=16;private row=0;private back=0;private complete=false;private lastSun=new T.Vector3();private lastCoverage=-1;
  private probeScene=new T.Scene();private probeTarget=new T.WebGLRenderTarget(SKY_PROBE_WIDTH,SKY_PROBE_HEIGHT,{type:T.HalfFloatType,depthBuffer:false});private probeCopy:T.ShaderMaterial;private pmrem:T.PMREMGenerator;private probe?:T.WebGLRenderTarget;private lastProbe=-Infinity;
  private probeDirty=false;private probeGate=new ReflectionStartupGate();
  enabled=true;
@@ -92,11 +92,19 @@ export class VolumetricSky {
   this.probeCopy=new T.ShaderMaterial({uniforms:{source:{value:null as T.Texture|null}},vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}',fragmentShader:'uniform sampler2D source;varying vec2 vUv;void main(){vec3 c=texture2D(source,vUv).rgb;if(vUv.y<.49)c*=.18;gl_FragColor=vec4(c,1.);}',depthTest:false,depthWrite:false});
   this.probeScene.add(new T.Mesh(new T.PlaneGeometry(2,2),this.probeCopy));this.pmrem=new T.PMREMGenerator(renderer);
  }
- observeFrame(frameMs:number,eligible:boolean){this.probeGate.observe(frameMs,eligible);}
+ observeFrame(frameMs:number,eligible:boolean){
+  this.probeGate.observe(frameMs,eligible);
+  if(eligible&&Number.isFinite(frameMs)&&frameMs>0){
+   this.foregroundFrameMs+=.2*(Math.min(frameMs,160)-this.foregroundFrameMs);
+  }
+ }
  protectReflections(){this.probeGate.protect(performance.now());}
  update(frame:SkyFrame){
   if(!this.enabled){skyRadiance.ready.value=0;return;}
-  if(++this.frame%2)return;
+  if(this.framesUntilStrip>0){this.framesUntilStrip--;return;}
+  // The last complete panorama (or layered sky during startup) stays visible.
+  // Let the foreground render catch up before tracing another background strip.
+  this.framesUntilStrip=Math.max(2,Math.ceil(this.foregroundFrameMs/12))-1;
   // A deliberately changed preset restarts the unfinished batch, not the visible sky.
   if(this.lastSun.distanceTo(frame.sun)>.16||Math.abs(this.lastCoverage-frame.coverage)>.2)this.row=0;
   if(this.row===0){this.uniforms.sun.value.copy(frame.sun);for(const key of ['zenith','horizon','warm','sunColor'] as const)this.uniforms[key].value.copy(frame[key]);for(const key of ['coverage','density','stretch','night'] as const)this.uniforms[key].value=frame[key];this.uniforms.cloudScale.value=frame.scale;this.uniforms.cloudTime.value=frame.time;this.lastSun.copy(frame.sun);this.lastCoverage=frame.coverage;}
