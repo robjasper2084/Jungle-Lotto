@@ -7,7 +7,7 @@ function fixture(){
   lost:false,state:2,isContextLost(){return this.lost;},fenceSync(){calls.push('fence');return {};},
   clientWaitSync(_f,flags,timeout){assert.equal(flags,0);assert.equal(timeout,0);return this.state;},
   deleteSync(){calls.push('delete');},flush(){calls.push('flush');}};
- let callback=null;const renderer={xr:{isPresenting:false},info:{render:{frame:0}},getContext:()=>gl,
+ let callback=null;const renderer={domElement:new EventTarget(),xr:{isPresenting:false},info:{render:{frame:0}},getContext:()=>gl,
   setAnimationLoop(fn){callback=fn;},dispose(){calls.push('dispose');}};
  return {calls,gl,renderer,tick:(time=10,frame=undefined)=>callback?.(time,frame)};
 }
@@ -39,7 +39,21 @@ test('XR retains its scheduler and exact frame object',()=>{
 });
 test('context loss clears outstanding work and does not report GPU readiness',()=>{
  const f=fixture(),g=new GpuFrameGate(f.gl);g.submitted();f.gl.lost=true;assert.equal(g.ready(),false);
- f.gl.lost=false;assert(g.ready());g.submitted();assert.equal(f.calls.filter(x=>x==='delete').length,1);
+ f.gl.lost=false;assert(g.ready());g.submitted();assert.deepEqual(f.calls,['fence','flush','fence','flush']);
+});
+test('restoring WebGL between animation callbacks drops the stale fence and resumes drawing',()=>{
+ const f=fixture(),seen=[];installGpuFramePacing(f.renderer);
+ f.renderer.setAnimationLoop(t=>{seen.push(t);f.renderer.info.render.frame++;});
+ f.tick(100);f.tick(116);
+ f.renderer.domElement.dispatchEvent(new Event('webglcontextlost'));
+ f.renderer.domElement.dispatchEvent(new Event('webglcontextrestored'));
+ f.gl.state=f.gl.WAIT_FAILED;
+ f.tick(150);
+ assert.deepEqual(seen,[100,150]);
+ assert.deepEqual(f.calls,['fence','flush','fence','flush']);
+ const diagnostics=gpuFramePacingDiagnostics(f.renderer);
+ assert.equal(diagnostics.currentPendingFenceObservedSpanMs,0);
+ assert.equal(diagnostics.pendingFenceResumptions,0);
 });
 test('failed and missing GPU fences remain errors, never successful frames',()=>{
  const f=fixture(),g=new GpuFrameGate(f.gl);g.submitted();f.gl.state=f.gl.WAIT_FAILED;assert.throws(()=>g.ready(),/fence failed/);

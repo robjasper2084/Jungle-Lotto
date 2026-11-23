@@ -47,7 +47,7 @@ test('ordinary architecture batches preserve original shadow, picking, visibilit
  const unsupported={extensions:{has:()=>false}} as unknown as T.WebGLRenderer;
  assert.equal(batchStaticArchitecture(scene,unsupported,[root],()=>false),undefined);
 });
-test('bridge spans keep intersecting triangles, authored face IDs and full shadow geometry',()=>{
+test('bridge span selection follows the active light or view and retains authored face IDs',()=>{
  const root=new T.Scene(),source=new T.BufferGeometry(),positions:number[]=[];
  // Interleave both ends in authored order, then a long triangle whose centroid
  // falls outside the photo frustum but whose tip is visible inside it.
@@ -71,6 +71,15 @@ test('bridge spans keep intersecting triangles, authored face IDs and full shado
  assert.equal(display.drawRange.count,Infinity);assert.equal(display.index!.count,source.index!.count);
  const reflection={xr:{isPresenting:false},getRenderTarget:()=>({})} as unknown as T.WebGLRenderer;
  bridge.onBeforeRender(reflection,root,camera,display,material,group);assert.equal(display.drawRange.count,Infinity);
+ const lightView=new T.OrthographicCamera(-10,10,10,-10,.1,85);
+ lightView.position.set(0,0,-220);lightView.lookAt(0,0,-160);lightView.updateMatrixWorld();
+ const depth=new T.MeshDepthMaterial();
+ bridge.onBeforeShadow(renderer,root,camera,lightView,display,depth,group);
+ const casters=Array.from(display.index!.array).slice(display.drawRange.start,display.drawRange.start+display.drawRange.count);
+ assert.ok(casters.includes(0)&&casters.includes(12),'retain off-screen casters and triangles crossing the light frustum');
+ assert.ok(!casters.includes(3));
+ bridge.onAfterShadow(renderer,root,camera,lightView,display,depth,group);
+ assert.equal(display.drawRange.count,Infinity);
 });
 test('rigid batches preserve parent motion, material boundaries and animated pieces',()=>{const root=new T.Group(),rotor=new T.Group(),mat=new T.MeshBasicMaterial(),other=new T.MeshBasicMaterial();root.add(rotor);const a=new T.Mesh(new T.BoxGeometry(),mat),b=new T.Mesh(new T.BoxGeometry(),mat),lever=new T.Mesh(new T.BoxGeometry(),mat),glass=new T.Mesh(new T.BoxGeometry(),other);a.position.x=2;b.position.x=-2;lever.name='lever';rotor.add(a,b,lever,glass);const expected=new T.Box3().expandByObject(a).expandByObject(b);const result=batchRigidChildren(root,new Set(['lever']));assert.equal(result.before,2);assert.equal(result.after,1);assert.equal(lever.parent,rotor);assert.equal(glass.parent,rotor);const batch=rotor.children.find(o=>o.name.startsWith('Rigid batch ·'))!;assert.deepEqual(new T.Box3().setFromObject(batch),expected);rotor.position.x=10;root.updateMatrixWorld(true);assert.equal(new T.Box3().setFromObject(batch).min.x,expected.min.x+10);result.dispose();});
 test('skinning, hidden parts and child sockets never merge',()=>{const root=new T.Group(),mat=new T.MeshBasicMaterial();const skin=new T.SkinnedMesh(new T.BoxGeometry(),mat),hidden=new T.Mesh(new T.BoxGeometry(),mat),socket=new T.Mesh(new T.BoxGeometry(),mat);hidden.visible=false;socket.add(new T.Object3D());root.add(skin,hidden,socket);assert.equal(batchRigidChildren(root).before,0);assert.equal(root.children.length,3);});

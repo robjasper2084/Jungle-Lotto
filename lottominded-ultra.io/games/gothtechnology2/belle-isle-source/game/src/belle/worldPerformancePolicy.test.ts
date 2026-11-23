@@ -47,6 +47,15 @@ test('shadow cadence preserves full-resolution first refresh and skips redundant
  assert.equal(cadence.shouldRefresh(NaN),true,'invalid frame time must never hide shadows');
 });
 
+test('a slow view gets a color-only frame between shadow updates',()=>{
+ const cadence=new ShadowMapCadence();
+ assert.equal(cadence.shouldRefresh(0,310,560),true);
+ assert.equal(cadence.shouldRefresh(.15,311,562),false);
+ assert.equal(cadence.shouldRefresh(.15,311,562),false,'a second view is the same simulation frame');
+ assert.equal(cadence.shouldRefresh(.30,312,564),true);
+ assert.equal(cadence.shouldRefresh(.31,433,773),true,'a new location needs its shadow map immediately');
+});
+
 
 test('software WebGL retains real mapped shadows with smaller GPU submissions, while physical hardware keeps quality maps',()=>{
  assert.equal(softwareWebGLRenderer('ANGLE (Google, Vulkan SwiftShader Device (Subzero))'),true);
