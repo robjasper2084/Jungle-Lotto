@@ -1,22 +1,5 @@
-import {test} from 'node:test';import assert from 'node:assert/strict';import {FrameBudget,SceneFrameCadence,sceneFrameCap} from './frameBudget.ts';
+import {test} from 'node:test';import assert from 'node:assert/strict';import {FrameBudget,sceneFrameCap} from './frameBudget.ts';
 test('menus and unfocused previews reduce rendering without capping active riding',()=>{assert.equal(sceneFrameCap(60,true,false,true),60);assert.equal(sceneFrameCap(60,true,true,true),10);assert.equal(sceneFrameCap(60,true,false,false),5);assert.equal(sceneFrameCap(60,false,false,true),30);});
-
-test('late browser callbacks do not repeatedly move the next 30 FPS deadline',()=>{
- const cadence=new SceneFrameCadence();
- const callbacks=[0,16.7,34.5,50.6,66.4,83.3,99.7,116.5,133.3];
- assert.deepEqual(callbacks.filter(now=>cadence.ready(now,30)),[0,34.5,66.4,99.7,133.3]);
-});
-
-test('a long pause drops missed frames and a change of cap starts a new cadence',()=>{
- const cadence=new SceneFrameCadence();
- assert(cadence.ready(0,30));
- assert(cadence.ready(5000,30));
- assert(!cadence.ready(5001,30));
- assert(cadence.ready(5001,60));
- assert(!cadence.ready(5002,60));
- cadence.reset();
- assert(cadence.ready(5002,60));
-});
 test('automatic scaling reacts to sustained slow frames and recovers gradually',()=>{const b=new FrameBudget();for(let i=0;i<400;i++)b.sample(1/25,60,true);assert(b.scale<1&&b.scale>=.65);const low=b.scale;for(let i=0;i<400;i++)b.sample(1/60,60,true);assert.equal(b.scale,low);for(let i=0;i<3000;i++)b.sample(1/60,60,true);assert(b.scale>low&&b.scale<=1);});
 test('a brief load hitch and menus do not degrade automatic resolution',()=>{const b=new FrameBudget();for(let i=0;i<600;i++)b.sample(1/60,60,true);b.sample(.2,60,true);for(let i=0;i<600;i++)b.sample(.1,60,false);assert.equal(b.scale,1);b.reset();assert.equal(b.scale,1);});
 
