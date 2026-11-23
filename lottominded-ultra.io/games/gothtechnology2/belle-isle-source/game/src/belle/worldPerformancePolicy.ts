@@ -5,17 +5,32 @@ export const islandRenderOrder={ground:-102,river:-101,sky:-100} as const;
  * Clock values are simulation seconds; resets cover a sky/quality transition. */
 export class ShadowMapCadence {
  private last=-Infinity;
+ private previousViewClock=-Infinity;
+ private lastX=0;
+ private lastZ=0;
+ private framesSinceRefresh=0;
  private readonly interval:number;
  constructor(interval=1/10){this.interval=interval;}
- shouldRefresh(clock:number):boolean{
+ shouldRefresh(clock:number,x=0,z=0):boolean{
   if(!Number.isFinite(clock))return true;
-  if(clock<this.last||clock-this.last>=this.interval){
+  if(clock===this.previousViewClock)return false;
+  this.previousViewClock=clock;
+  this.framesSinceRefresh++;
+  // A slow view can consume the entire time interval on its own. Leave one
+  // color-only frame between shadow updates so the next frame can recover.
+  // Camera jumps and world resets still get a fresh map on their first frame.
+  const relocated=Math.hypot(x-this.lastX,z-this.lastZ)>20;
+  if(!Number.isFinite(this.last)||clock<this.last||relocated||
+     (this.framesSinceRefresh>=2&&clock-this.last>=this.interval)){
    this.last=clock;
+   this.lastX=x;
+   this.lastZ=z;
+   this.framesSinceRefresh=0;
    return true;
   }
   return false;
  }
- reset(){this.last=-Infinity;}
+ reset(){this.last=this.previousViewClock=-Infinity;this.framesSinceRefresh=0;}
 }
 
 
