@@ -31,7 +31,7 @@ jobs:
           npm test
   gallery:
     needs: typecheck-tests
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.device == 'desktop' && 'macos-15' || 'ubuntu-latest' }}
     timeout-minutes: 65
     strategy:
       fail-fast: false
@@ -52,15 +52,25 @@ jobs:
         working-directory: lottominded-ultra.io/games/gothtechnology2
         run: |
           npm ci
-          npx playwright install --with-deps chromium
+          if [ "$RUNNER_OS" = 'macOS' ]; then
+            npx playwright install chrome
+          else
+            npx playwright install --with-deps chromium
+          fi
       - name: Capture four candidate sites at noon and sunset
         timeout-minutes: 30
         working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
         env:
           ENV_GALLERY_DEVICE: ${{ matrix.device }}
+          ENV_GALLERY_REQUIRE_METAL: ${{ matrix.device == 'desktop' && '1' || '0' }}
           ENV_GALLERY_LIGHT: ${{ matrix.light }}
           ENV_GALLERY_VARIANT: candidate
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node scripts/environment-gallery.mjs
+        run: |
+          if [ "$RUNNER_OS" = 'macOS' ]; then
+            node scripts/environment-gallery.mjs
+          else
+            xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node scripts/environment-gallery.mjs
+          fi
       - name: Checkout the exact unmodified base revision for comparable-source capture
         if: always()
         uses: actions/checkout@v4
@@ -82,11 +92,17 @@ jobs:
         working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
         env:
           ENV_GALLERY_DEVICE: ${{ matrix.device }}
+          ENV_GALLERY_REQUIRE_METAL: ${{ matrix.device == 'desktop' && '1' || '0' }}
           ENV_GALLERY_LIGHT: ${{ matrix.light }}
           ENV_GALLERY_VARIANT: baseline
           ENV_GALLERY_BASE_SHA: ${{ github.event.pull_request.base.sha || 'main' }}
           ENV_GALLERY_BUILD_DIR: ${{ github.workspace }}/comparison-baseline/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node scripts/environment-gallery.mjs
+        run: |
+          if [ "$RUNNER_OS" = 'macOS' ]; then
+            node scripts/environment-gallery.mjs
+          else
+            xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node scripts/environment-gallery.mjs
+          fi
       - name: Preserve real browser image pairs and reports
         if: always()
         uses: actions/upload-artifact@v4

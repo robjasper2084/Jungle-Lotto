@@ -6,6 +6,7 @@ on:
       - '.github/workflows/belle-showcase-gallery.yml'
       - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/showcaseStops*'
       - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/showcase-gallery.mjs'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/gallery-renderer.mjs'
       - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/index.html'
       - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/main.ts'
   workflow_dispatch:
@@ -21,7 +22,7 @@ jobs:
       fail-fast: false
       matrix:
         device: [desktop, phone]
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.device == 'desktop' && 'macos-15' || 'ubuntu-latest' }}
     timeout-minutes: 55
     steps:
       - uses: actions/checkout@v4
@@ -39,15 +40,25 @@ jobs:
         working-directory: lottominded-ultra.io/games/gothtechnology2
         run: |
           npm ci
-          npx playwright install --with-deps chromium
+          if [ "$RUNNER_OS" = 'macOS' ]; then
+            npx playwright install chrome
+          else
+            npx playwright install --with-deps chromium
+          fi
       - name: Capture real-game bridge, canal and lagoon
         timeout-minutes: 30
         working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
         env:
           ENV_GALLERY_DEVICE: ${{ matrix.device }}
+          ENV_GALLERY_REQUIRE_METAL: ${{ matrix.device == 'desktop' && '1' || '0' }}
           ENV_GALLERY_BROWSER: chromium
           ENV_GALLERY_QUICK: '1'
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node scripts/showcase-gallery.mjs
+        run: |
+          if [ "$RUNNER_OS" = 'macOS' ]; then
+            node scripts/showcase-gallery.mjs
+          else
+            xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node scripts/showcase-gallery.mjs
+          fi
       - name: Preserve genuine game screenshots and performance diagnostics
         if: always()
         uses: actions/upload-artifact@v4

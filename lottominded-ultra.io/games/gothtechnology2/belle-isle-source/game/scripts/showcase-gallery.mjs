@@ -10,6 +10,7 @@ import {mkdir,writeFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import showcase from '../src/belle/showcaseStops.json' with {type:'json'};
 import {createCoopStaticServer} from './coop-static-server.mjs';
+import {launchGalleryBrowser,galleryRenderer} from './gallery-renderer.mjs';
 
 const game=resolve(import.meta.dirname,'..'),require=createRequire(resolve(game,'../../package.json'));
 const {chromium,expect:rawExpect}=require('@playwright/test');
@@ -26,7 +27,7 @@ const qualities=quick?[device==='phone'?'smooth':'high']:['smooth','automatic','
 const lights=quick?[{id:'high-noon',value:'12'}]:[{id:'high-noon',value:'12'},{id:'sunset',value:'17.8'}];
 await mkdir(output,{recursive:true});
 const report={head:process.env.GITHUB_SHA||null,route:showcase.id,device,viewport,quick,qualities,
- source:'real built browser game; guide Travel action; Chrome SwiftShader',
+ source:'real built browser game; guide Travel action',
  limitations:['Not physical-device FPS certification','Travel cameras may not frame the intended bridge exactly','Reference photos are not bundled or distributed'],
  passed:false,visits:[],errors:[],failedRequests:[],coverageGaps:[]};
 const server=createCoopStaticServer(resolve(game,'dist'));
@@ -76,7 +77,7 @@ async function travel(page,site){
  return found;
 }
 try{
- browser=await chromium.launch({...(process.env.ENV_GALLERY_BROWSER==='chromium'?{}:{channel:'chrome'}),headless:true,args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+ browser=await launchGalleryBrowser(chromium,process.env.ENV_GALLERY_BROWSER==='chromium'?undefined:'chrome');
  const page=await browser.newPage({viewport,deviceScaleFactor:1,isMobile:device==='phone',hasTouch:device==='phone',reducedMotion:'reduce'});
  page.setDefaultTimeout(150000);
  page.on('pageerror',error=>report.errors.push(error.message));
@@ -85,6 +86,7 @@ try{
  page.on('requestfailed',request=>report.failedRequests.push((request.failure()?.errorText||'network failure')+' '+request.url()));
  await page.goto(origin,{waitUntil:'domcontentloaded'});
  await expect(page.locator('#welcome')).toHaveAttribute('data-state','ready');
+ report.renderer=await galleryRenderer(page);
  const motion=page.locator('#startup-motion');
  if(await motion.getAttribute('aria-pressed')!=='true')await motion.click();
  await page.locator('.cinema-ride-picker > summary').click();

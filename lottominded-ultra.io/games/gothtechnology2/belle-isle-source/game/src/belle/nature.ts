@@ -23,7 +23,7 @@ import {natureBudget,type Plant,type NaturePlan} from './naturePlan.ts';
 import {localPerformanceProbe,PERF_PROBE_REDUCTIONS} from './performanceProbe.ts';
 type Entry={id:string;meshes?:string[];cardSize?:number;cardCenter?:number[];card?:string;triangles:number};
 type Manifest={trees:Entry[];ground:Entry[]};
-type Pool={id:string;meshes:T.InstancedMesh[];nearVisibility?:TreeInstanceVisibility;far?:T.InstancedMesh[];farVisibility?:TreeInstanceVisibility;sourceIndices?:ReadonlyMap<Plant,number>;sourceIds?:Uint32Array;card?:T.InstancedMesh;plants:Plant[]};
+type Pool={id:string;meshes:T.InstancedMesh[];nearVisibility:TreeInstanceVisibility;far?:T.InstancedMesh[];farVisibility?:TreeInstanceVisibility;sourceIndices?:ReadonlyMap<Plant,number>;sourceIds?:Uint32Array;card?:T.InstancedMesh;plants:Plant[]};
 export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:ParkTerrain,renderProbe?:NatureRenderProbe,singleSample=false){
  const base='./belle/nature/',loader=new GLTFLoader(),textures=new T.TextureLoader();
  const json=async(name:string)=>{const r=await fetch(base+name);if(!r.ok)throw Error('Nature asset '+name+': '+r.status);return r.json();};
@@ -113,7 +113,8 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
  const ground=await loader.loadAsync(base+'groundcover.glb');ground.scene.updateMatrixWorld(true);
  for(const entry of manifest.ground){const source=ground.scene.getObjectByName(entry.id) as T.Mesh;
   if(!source?.isMesh)throw Error('Missing ground-cover variant '+entry.id);
-  pools.push({id:entry.id,meshes:[instance(source,natureBudget.high.ground,'Nearby '+entry.id,false)],plants:plan.ground.filter(p=>p.id===entry.id)});
+  const meshes=[instance(source,natureBudget.high.ground,'Nearby '+entry.id,false)];
+  pools.push({id:entry.id,meshes,nearVisibility:new TreeInstanceVisibility(meshes,undefined,'near'),plants:plan.ground.filter(p=>p.id===entry.id)});
  }
  // Source objects never enter the scene. Pool geometries are the only copies
  // retained; textures and materials stay shared between instances.
@@ -139,7 +140,7 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
   for(const pool of pools){
    const near=pool.plants.filter(p=>selected.has(p));
    for(const mesh of pool.meshes){mesh.count=near.length;near.forEach((p,i)=>{if(mesh.userData.seasonalLeaf)mesh.setMatrixAt(i,matrix(p,false,true));else mesh.setMatrixAt(i,matrix(p));mesh.setColorAt(i,plantTint(p));});uploadInstancePrefix(mesh.instanceMatrix,mesh.count);const weights=mesh.geometry.getAttribute('lodWeight') as T.InstancedBufferAttribute|undefined;if(weights){near.forEach((p,i)=>weights.setX(i,treeBlend(Math.sqrt(d(p)),cutoff)));uploadInstancePrefix(weights,mesh.count);}const canopy=mesh.geometry.getAttribute('canopyDensity') as T.InstancedBufferAttribute|undefined;if(canopy){near.forEach((p,i)=>canopy.setX(i,growth(p).density));uploadInstancePrefix(canopy,mesh.count);}uploadInstancePrefix(mesh.instanceColor,mesh.count);}
-   pool.nearVisibility?.capture();
+   pool.nearVisibility.capture();
    let farSourcePlants:Plant[]|undefined;
    if(pool.far)for(const far of pool.far){const visible=pool.plants.filter(p=>d(p)<(diagnostic?PERF_PROBE_REDUCTIONS.farRange:cardsActive?145:quality==='smooth'?850:1300)**2&&(!selected.has(p)||treeBlend(Math.sqrt(d(p)),cutoff)<1));farSourcePlants??=visible;far.count=visible.length;const weights=far.geometry.getAttribute('lodWeight') as T.InstancedBufferAttribute;visible.forEach((p,i)=>{if(far.userData.seasonalLeaf)far.setMatrixAt(i,matrix(p,false,true));else far.setMatrixAt(i,matrix(p));far.setColorAt(i,plantTint(p));const distance=Math.sqrt(d(p));weights.setX(i,(selected.has(p)?1-treeBlend(distance,cutoff):1)*(cardsActive?Math.max(0,Math.min(1,(145-distance)/50)):1));});uploadInstancePrefix(weights,far.count);const canopy=far.geometry.getAttribute('canopyDensity') as T.InstancedBufferAttribute|undefined;if(canopy){visible.forEach((p,i)=>canopy.setX(i,growth(p).density));uploadInstancePrefix(canopy,far.count);}uploadInstancePrefix(far.instanceMatrix,far.count);uploadInstancePrefix(far.instanceColor,far.count);}
    const sourceIds=pool.sourceIds;
@@ -169,8 +170,11 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
   if(renderProbe?.active){renderProbe.pass();renderProbe.elapsed('selectionCpuMs',selectionStart);}
   const cullStart=renderProbe?.active?renderProbe.now():0;
   const shadowView=shadowVisibility.forRender(scene,args[0],args[2]);
+  const shadowMap=args[0].shadowMap;
+  const varianceReceivers=shadowMap.enabled&&shadowMap.type===T.VSMShadowMap&&(shadowMap.autoUpdate||shadowMap.needsUpdate);
   for(const pool of pools){
-   pool.nearVisibility?.render(args[2],shadowView);
+   // Ground cover receives shadows but only the tree pools cast them in PCF.
+   pool.nearVisibility.render(args[2],pool.far?shadowView:varianceReceivers);
    pool.farVisibility?.render(args[2]);
   }
   if(renderProbe?.active)renderProbe.elapsed('cullCpuMs',cullStart);

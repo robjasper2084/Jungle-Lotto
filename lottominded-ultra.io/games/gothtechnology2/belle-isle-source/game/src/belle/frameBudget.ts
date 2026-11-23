@@ -31,3 +31,26 @@ export class FrameBudget {
  }
 }
 export function sceneFrameCap(cap:number,active:boolean,overlay:boolean,focused:boolean){return !focused?5:overlay?10:active?cap:30;}
+
+/** Match the requested average cadence even when individual browser callbacks
+ * arrive late. Advance over missed deadlines without drawing catch-up frames. */
+export class SceneFrameCadence {
+ private previous=-Infinity;
+ private next=0;
+ private cap=0;
+
+ reset(){this.cap=0;}
+
+ ready(now:number,cap:number){
+  const period=1000/cap, tolerance=.8;
+  const restart=cap!==this.cap||now<this.previous;
+  this.previous=now;
+  if(restart){
+   this.cap=cap;this.next=now+period;
+   return true;
+  }
+  if(now+tolerance<this.next)return false;
+  this.next+=(Math.floor((now+tolerance-this.next)/period)+1)*period;
+  return true;
+ }
+}
