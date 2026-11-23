@@ -2,13 +2,13 @@ import type {WebGLRenderer} from 'three';
 import {observeLoop,type ManualLoopProbe,type LoopToken,type LoopOutcome} from './loopDiagnostics.ts';
 import {softwareWebGLRenderer} from './worldPerformancePolicy.ts';
 
-export type GpuFrameCapacity=1|2;
+export type GpuFrameCapacity=1|2|3;
 export interface GpuFramePacingOptions {capacity?:GpuFrameCapacity;}
 /** Keep software and unknown descriptions conservative. Only the existing
  * Apple pacing path opts into overlap on a positively identified GPU backend. */
 export function gpuFrameCapacityForRenderer(description:unknown):GpuFrameCapacity {
  if(typeof description!=='string'||softwareWebGLRenderer(description))return 1;
- return /\bANGLE Metal Renderer:\s*Apple\b|\bApple [MA][1-9]\d*\b/i.test(description)?2:1;
+ return /\bANGLE Metal Renderer:\s*Apple\b|\bApple [MA][1-9]\d*\b/i.test(description)?3:1;
 }
 
 /** Bound queued GPU work to complete animation callbacks, including every
@@ -23,7 +23,7 @@ export class GpuFrameGate {
  private gl:WebGL2RenderingContext;
  readonly capacity:GpuFrameCapacity;
  constructor(gl:WebGL2RenderingContext,capacity:GpuFrameCapacity=1){
-  if(capacity!==1&&capacity!==2)throw new RangeError('GPU frame capacity must be 1 or 2.');
+  if(capacity!==1&&capacity!==2&&capacity!==3)throw new RangeError('GPU frame capacity must be 1, 2 or 3.');
   this.gl=gl;this.capacity=capacity;
  }
  get pending(){return this.fences.length>0;}

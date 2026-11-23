@@ -223,7 +223,7 @@ const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreferen
  const gpuName=String(gameGl.getParameter(gpuDebug?.UNMASKED_RENDERER_WEBGL??gameGl.RENDERER));
  const softwareStartup=softwareWebGLRenderer(gpuName);
  startup.setSoftwarePreview(softwareStartup);
- // Native Apple GPUs may overlap two complete callbacks while keeping a hard
+ // Native Apple GPUs may overlap three complete callbacks while keeping a hard
  // queue limit. Software/unknown Apple backends retain one; XR owns its loop.
  if(softwareStartup || /\bApple\b/i.test(gpuName))installGpuFramePacing(renderer,{capacity:gpuFrameCapacityForRenderer(gpuName)});
  actualMsaa=!!renderer.getContext().getContextAttributes()?.antialias;syncAaStatus();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.25));renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.85;renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;

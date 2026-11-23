@@ -200,14 +200,14 @@ function queuedFixture(){
  return {...f,fences,states,polls,deleted,complete(id){states.set(fences[id-1],f.gl.CONDITION_SATISFIED);}};
 }
 
-test('only positively identified native Apple renderers select two callbacks',()=>{
- for(const name of ['ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)','ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)','Apple M1','Apple M4 Max','Apple A17 GPU'])assert.equal(gpuFrameCapacityForRenderer(name),2,name);
+test('only positively identified native Apple renderers select three callbacks',()=>{
+ for(const name of ['ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)','ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)','Apple M1','Apple M4 Max','Apple A17 GPU'])assert.equal(gpuFrameCapacityForRenderer(name),3,name);
  for(const name of ['',null,undefined,42,'WebKit WebGL','Apple GPU','Apple unknown renderer','ANGLE (NVIDIA, NVIDIA GeForce RTX 4090, D3D11)','ANGLE (Apple, ANGLE Metal Renderer: Apple SwiftShader)','Apple M1 llvmpipe','Apple M2 softpipe','Apple software rasterizer'])assert.equal(gpuFrameCapacityForRenderer(name),1,String(name));
 });
 
-test('capacity is explicitly bounded to one or two with the old default retained',()=>{
- const f=fixture();assert.equal(new GpuFrameGate(f.gl).capacity,1);assert.equal(new GpuFrameGate(f.gl,2).capacity,2);
- for(const capacity of [0,-1,3,1.5,NaN,Infinity,'2',null]){
+test('capacity is explicitly bounded to one, two or three with the old default retained',()=>{
+ const f=fixture();assert.equal(new GpuFrameGate(f.gl).capacity,1);assert.equal(new GpuFrameGate(f.gl,2).capacity,2);assert.equal(new GpuFrameGate(f.gl,3).capacity,3);
+ for(const capacity of [0,-1,4,1.5,NaN,Infinity,'2',null]){
   assert.throws(()=>new GpuFrameGate(f.gl,capacity),RangeError);
   assert.throws(()=>installGpuFramePacing(fixture().renderer,{capacity}),RangeError);
  }
@@ -291,4 +291,45 @@ test('stop and cleanup release a full native queue once without inventing comple
 test('stopping from inside a callback cannot create a fence after the loop was cleared',()=>{
  const f=queuedFixture();installGpuFramePacing(f.renderer,{capacity:2});f.renderer.setAnimationLoop(()=>{f.renderer.info.render.frame++;f.renderer.setAnimationLoop(null);});f.tick(100);f.tick(116);
  assert.equal(f.fences.length,0);assert.equal(gpuFramePacingDiagnostics(f.renderer).submittedCallbacks,0);
+});
+
+test('three-slot FIFO rejects a fourth submission and reuses only actually completed slots',()=>{
+ const f=queuedFixture(),g=new GpuFrameGate(f.gl,3);
+ for(let i=0;i<3;i++){assert(g.ready());g.submitted();}
+ assert.equal(g.pendingCount,3);assert.equal(g.ready(),false);assert.throws(()=>g.submitted(),/queue limit/);
+ f.complete(2);f.complete(3);assert.equal(g.ready(),false);assert.equal(f.polls.at(-1),1);assert.deepEqual(f.deleted,[]);
+ f.complete(1);assert(g.ready());assert.deepEqual(f.deleted,[1,2,3]);assert.equal(g.completed,3);
+ for(let i=0;i<3;i++)g.submitted();f.complete(4);assert(g.ready());assert.equal(g.pendingCount,2);assert.equal(g.completed,4);
+ g.submitted();assert.equal(g.pendingCount,3);assert.equal(g.ready(),false);assert.equal(f.polls.at(-1),5);assert.equal(g.peakPending,3);
+ f.complete(5);f.complete(6);f.complete(7);assert(g.ready());assert.equal(g.completed,7);assert.equal(g.pendingCount,0);
+});
+
+test('three-slot delivery retains real timestamps and one fence after all four views',()=>{
+ const f=queuedFixture(),seen=[];installGpuFramePacing(f.renderer,{capacity:3});
+ f.renderer.setAnimationLoop((now,frame)=>{seen.push([now,frame]);for(let view=0;view<4;view++){f.calls.push(now+':view'+view);f.renderer.info.render.frame++;}});
+ const frames=[{},{},{},{}];f.tick(100,frames[0]);f.tick(116,frames[1]);f.tick(132,frames[2]);f.tick(148,{});
+ assert.deepEqual(seen,[[100,frames[0]],[116,frames[1]],[132,frames[2]]]);assert.equal(f.fences.length,3);
+ for(let i=0;i<3;i++)assert.deepEqual(f.calls.slice(i*6,(i+1)*6),[...[100,116,132].slice(i,i+1).flatMap(now=>[0,1,2,3].map(view=>now+':view'+view)),'fence'+(i+1),'flush']);
+ f.complete(1);f.tick(211,frames[3]);assert.deepEqual(seen.at(-1),[211,frames[3]]);
+ const report=gpuFramePacingDiagnostics(f.renderer);assert.equal(report.capacity,3);assert.equal(report.pendingCallbacks,3);assert.equal(report.peakPendingCallbacks,3);assert.equal(report.completedCallbacks,1);assert.equal(report.submittedCallbacks,4);assert.equal(report.pendingFenceSkippedCallbacks,1);
+});
+
+test('a full three-slot queue is safely released or forgotten across every native lifecycle boundary',()=>{
+ for(const mode of ['xr','context','stop','dispose','cleanup']){
+  const f=queuedFixture(),seen=[],cleanup=installGpuFramePacing(f.renderer,{capacity:3});f.renderer.setAnimationLoop(now=>{seen.push(now);f.renderer.info.render.frame++;});f.tick(100);f.tick(116);f.tick(132);f.tick(148);
+  assert.deepEqual(seen,[100,116,132]);
+  if(mode==='xr'){f.renderer.xr.isPresenting=true;f.tick(164,{});assert.deepEqual(seen,[100,116,132,164]);}
+  else if(mode==='context'){f.gl.lost=true;f.renderer.domElement.dispatchEvent(new Event('webglcontextlost'));f.tick(164);f.gl.lost=false;f.renderer.domElement.dispatchEvent(new Event('webglcontextrestored'));}
+  else if(mode==='stop')f.renderer.setAnimationLoop(null);else if(mode==='dispose')f.renderer.dispose();else cleanup();
+  const report=gpuFramePacingDiagnostics(f.renderer);assert.equal(report.capacity,3);assert.equal(report.pendingCallbacks,0);assert.equal(report.peakPendingCallbacks,3);assert.equal(report.completedCallbacks,0);assert.deepEqual(f.deleted,mode==='context'?[]:[1,2,3]);
+  if(mode==='context'){const polled=f.polls.length;f.tick(200);assert.equal(f.polls.length,polled);assert.equal(gpuFramePacingDiagnostics(f.renderer).pendingCallbacks,1);}
+  cleanup();
+ }
+});
+
+test('three-slot spare capacity never overrides a failed oldest fence',()=>{
+ const f=queuedFixture(),seen=[];installGpuFramePacing(f.renderer,{capacity:3});f.renderer.setAnimationLoop(now=>{seen.push(now);f.renderer.info.render.frame++;});
+ f.tick(100);f.tick(116);f.states.set(f.fences[0],f.gl.WAIT_FAILED);assert.throws(()=>f.tick(132),/fence failed/);assert.deepEqual(f.deleted,[1,2]);
+ assert.throws(()=>f.tick(148),/fence failed/);assert.deepEqual(seen,[100,116]);assert.equal(gpuFramePacingDiagnostics(f.renderer).completedCallbacks,0);
+ f.renderer.domElement.dispatchEvent(new Event('webglcontextrestored'));f.tick(200);assert.deepEqual(seen,[100,116,200]);
 });
