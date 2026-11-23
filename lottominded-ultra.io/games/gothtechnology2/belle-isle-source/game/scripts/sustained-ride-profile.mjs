@@ -3,6 +3,7 @@ import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {createCoopStaticServer} from './coop-static-server.mjs';
+import {checkGpsFullScene} from './gps-full-scene-check.mjs';
 const game=resolve(import.meta.dirname,'..'),require=createRequire(resolve(game,'../../package.json'));
 const {chromium,expect:rawExpect}=require('@playwright/test');
 const expect=rawExpect.configure({timeout:180000});
@@ -16,7 +17,7 @@ const report={sourceHead:process.env.GITHUB_SHA||null,device,viewport,requestedS
  renderBackend:null,rendererFallback:null,actualGpu:null,input:null,classification:null,
  hardware:'Chrome '+process.platform+' '+process.arch+'; phone viewport is emulated',
  acceptanceScope:mode==='diagnostic'?'REDUCED SCENE DIAGNOSTIC ONLY; not release quality':'FULL CURRENT GAME; still not device certification',
- passed:false,frameQualityAccepted:false,releasePerformanceVerified:false,welcomeReadyMs:null,rideStartedMs:null,firstPlayableMs:null,profileWindowCaveat:'Local browser capture ends at genuine trusted W-keyup before Settings/report extraction; NOT physical-device certification',profile:null,memory:null,browserSchedulerProbe:null,cdpCpuProbe:null,probeErrors:[],errors:[],failedRequests:[],elapsedWallMs:null};
+ passed:false,baselinePassed:false,gpsRegression:null,frameQualityAccepted:false,releasePerformanceVerified:false,welcomeReadyMs:null,rideStartedMs:null,firstPlayableMs:null,profileWindowCaveat:'Local browser capture ends at genuine trusted W-keyup before Settings/report extraction; NOT physical-device certification',profile:null,memory:null,browserSchedulerProbe:null,cdpCpuProbe:null,probeErrors:[],errors:[],failedRequests:[],elapsedWallMs:null};
 const server=createCoopStaticServer(resolve(game,'dist'));
 await new Promise(ok=>server.listen(0,'127.0.0.1',ok));
 const begin=Date.now();let browser,page;
@@ -115,7 +116,7 @@ try{
  page.on('response',r=>{if(r.status()>=400)report.errors.push('HTTP '+r.status()+' '+r.url());});
  page.on('requestfailed',r=>report.failedRequests.push((r.failure()?.errorText||'failed')+' '+r.url()));
  const navigationStarted=Date.now();
- await page.goto('http://127.0.0.1:'+server.address().port+'/?profile=1'+(mode==='diagnostic'?'&perfProbe=1':''),{waitUntil:'domcontentloaded'});
+ await page.goto('http://127.0.0.1:'+server.address().port+'/?profile=1'+(mode==='diagnostic'?'&perfProbe=1':'&locationPerf=1'),{waitUntil:'domcontentloaded'});
  await page.waitForFunction(()=>['ready','error'].includes(document.querySelector('#welcome')?.dataset.state));
  await expect(page.locator('#welcome')).toHaveAttribute('data-state','ready',{timeout:1000});
  report.welcomeReadyMs=Date.now()-navigationStarted;
@@ -129,6 +130,9 @@ try{
  });
  if(report.renderBackend==='angle-metal'&&(!/Metal/i.test(report.actualGpu.renderer)||/SwiftShader|llvmpipe|software rasterizer/i.test(report.actualGpu.renderer)))
   throw Error('The sustained profile requires a Metal renderer on macOS. Chrome reported '+report.actualGpu.renderer);
+ // The observer is idle throughout the ordinary ride. Its native disclosure
+ // stays collapsed until the separate GPS windows after baseline extraction.
+ if(mode==='full')await page.locator('#location-perf > summary').click();
  await page.locator('.cinema-ride-picker > summary').click();
  await page.locator('.ride-options label').filter({hasText:'One wheel'}).click();
  await page.getByRole('button',{name:'Use this ride',exact:true}).click();
@@ -212,6 +216,13 @@ try{
   stats.distanceMetres<3?'render-starved-or-blocked-motion':report.frameQualityAccepted?'frame-budget-met':'stalls-detected';
  // A reduced-scene or software-browser success is never release approval.
  report.releasePerformanceVerified=false;
+ report.baselinePassed=report.passed;
+ if(mode==='full'){
+  report.gpsRegression=await checkGpsFullScene({page,expect,game,output,device,renderBackend:report.renderBackend,actualGpu:report.actualGpu,openSettings:settings});
+  // Keep the original riding threshold and failures; GPS regression is an
+  // additional functional gate, with its timing distributions reported apart.
+  report.passed=report.baselinePassed&&report.gpsRegression.passed&&!report.errors.length&&!report.failedRequests.length;
+ }
 }catch(error){
  report.errors.push(String(error?.stack||error));
  if(page)report.startupAtFailure=await page.evaluate(()=>({
@@ -228,5 +239,7 @@ finally{
 console.log(JSON.stringify({passed:report.passed,mode,device,renderBackend:report.renderBackend,renderer:report.actualGpu?.renderer,classification:report.classification,frames:report.profile?.frames,
  movingSeconds:report.profile?.movingSeconds,distanceMetres:report.profile?.distanceMetres,
  p50:report.profile?.metrics?.frameMs?.p50,p95:report.profile?.metrics?.frameMs?.p95,
- p99:report.profile?.metrics?.frameMs?.p99,errors:report.errors.slice(0,3)}));
+ p99:report.profile?.metrics?.frameMs?.p99,baselinePassed:report.baselinePassed,
+ gps:report.gpsRegression?{passed:report.gpsRegression.passed,syntheticSensors:true,states:Object.fromEntries(Object.entries(report.gpsRegression.states).map(([name,value])=>[name,{frames:value.renderedFrames,p95Ms:value.frameIntervalsMs?.p95Ms,stallsOver250ms:value.stalls.over250Ms}])),errors:report.gpsRegression.errors.slice(0,2)}:null,
+ errors:report.errors.slice(0,3)}));
 if(!report.passed)process.exitCode=1;

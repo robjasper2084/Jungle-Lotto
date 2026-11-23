@@ -5,6 +5,7 @@ import vm from 'node:vm';
 import ts from 'typescript';
 import * as T from 'three';
 import {LocationPresentation} from './locationPresentation.ts';
+import {roadContactPresentation} from './roadContactPresentation.ts';
 import {createPose,type RidePose} from '../../runtime/ride-core/src/controller.ts';
 
 const source=readFileSync(new URL('./main.ts',import.meta.url),'utf8');
@@ -79,12 +80,13 @@ test('GPS follow excludes located render probes and breaks diagnostic associatio
  assert.match(transition,/submissionProbe\?\.cancelFrame\(\)/);
 });
 
-for(const firstPerson of [false,true])test('stopping GPS restores the '+(firstPerson?'first':'third')+'-person hero and camera without another animation frame',()=>{
+for(const roadRise of [0,.08])for(const firstPerson of [false,true])test('stopping GPS restores the '+(firstPerson?'first':'third')+'-person hero and camera with '+roadRise+' m road rise without another animation frame',()=>{
  const core={
-  current:Object.assign(createPose(),{x:12,y:2,z:24,headingY:.7}),
-  renderPose:Object.assign(createPose(),{x:11.8,y:2,z:23.9,headingY:.68}),
+  current:Object.assign(createPose(),{x:12,y:2.3,z:24,airHeight:.3,headingY:.7,footBlend:.25,parkX:8,parkY:2,parkZ:20}),
+  renderPose:Object.assign(createPose(),{x:11.8,y:2.3,z:23.9,airHeight:.3,headingY:.68,footBlend:.25,parkX:8,parkY:2,parkZ:20}),
  };
  const parked=structuredClone(core);
+ const expectedPose={...core.renderPose,y:core.renderPose.y+roadRise*.75,parkY:core.renderPose.parkY+roadRise};
  const root=new T.Group(),rider=new T.Group(),vehicle=new T.Group();root.add(rider,vehicle);
  root.visible=rider.visible=!firstPerson;vehicle.visible=firstPerson;
  const applied:RidePose[]=[];
@@ -101,14 +103,17 @@ for(const firstPerson of [false,true])test('stopping GPS restores the '+(firstPe
  let following=false,restoredBeforeFollowOff=false;
  const context:Record<string,unknown>={
   first:firstPerson,cameraYaw:.6,cameraPitch:-.2,camera,hero,core,locationPresentation:presentation,locationSavedView:null,
+  roadContactPresentation,terrain:{roadContact:{height:(_x:number,_z:number,groundY:number)=>groundY+roadRise}},
   rideProfile:{breakFrameAssociation(){}},renderProbe:{cancelFrame(){}},submissionProbe:{cancelFrame(){}},
   document:{body:{classList:{toggle(){}}}},clear(){},release(){},syncViewLabel(){},syncTrialControls(){},
   zone:{hidden:false},active:true,touch:{checked:true},snap:false,resetFrameClock:false,
  };
  Object.defineProperty(context,'locationFollowing',{get:()=>following,set:(value:boolean)=>{
   if(!value){
-   assert.equal(applied.at(-1),core.renderPose,'The parked render pose is applied before follow is exposed as off');
-   assert.deepEqual(root.position.toArray(),[core.renderPose.x,core.renderPose.y,core.renderPose.z]);
+   assert.deepEqual(applied.at(-1),expectedPose,'The road-aligned parked presentation is applied before follow is exposed as off');
+   if(roadRise)assert.notEqual(applied.at(-1),core.renderPose,'Road alignment uses a copy, never the simulation object');
+   else assert.equal(applied.at(-1),core.renderPose,'Unchanged road contact reuses the original pose');
+   assert.deepEqual(root.position.toArray(),[expectedPose.x,expectedPose.y,expectedPose.z]);
    assert.deepEqual(camera.position.toArray(),saved.position);
    assert.deepEqual(camera.quaternion.toArray(),saved.quaternion);
    assert.equal(root.visible,saved.rootVisible);assert.equal(rider.visible,saved.riderVisible);assert.equal(vehicle.visible,saved.vehicleVisible);
@@ -133,6 +138,15 @@ for(const firstPerson of [false,true])test('stopping GPS restores the '+(firstPe
  assert.equal(cleared.x,0);assert.equal(cleared.z,0);assert.equal(cleared.footTime,0);assert.equal(cleared.footCycle,0);
  assert.equal(cleared.headingY,core.current.headingY);assert.equal(cleared.parkX,core.current.x);assert.equal(cleared.parkZ,core.current.z);
  assert.equal(context.snap,true);assert.equal(context.resetFrameClock,true);
+});
+
+test('road presentation preserves GPS walking height while aligning only the parked wheel',()=>{
+ const gps=Object.freeze(Object.assign(createPose(),{x:1200,y:3,z:400,footBlend:1,parkX:12,parkY:2,parkZ:24}));
+ const aligned=roadContactPresentation(gps,{height:(x,_z,groundY)=>x===12?groundY+.06:groundY+100});
+ assert.equal(aligned.x,gps.x);assert.equal(aligned.y,3);assert.equal(aligned.z,gps.z);assert.equal(aligned.parkY,2.06);
+ assert.equal(gps.parkY,2);assert.equal(gps.y,3);assert.notEqual(aligned,gps);
+ assert.match(source,/hero\.apply\(!hover\?\.riding&&!boat\?\.riding&&!slide\?\.active&&!race\?\.active\?roadContactPresentation\(pose,terrain\.roadContact\):pose\)/,
+  'Ordinary rendering uses the same helper and keeps specialized vehicle modes on their own presentation');
 });
 
 test('GPS extent changes invalidate the existing minimap cache while ordinary jitter reuses it',()=>{

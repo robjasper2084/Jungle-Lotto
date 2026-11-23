@@ -1,6 +1,24 @@
 import {clockHillHeight} from './activitiesPlan.ts';
+import {BufferGeometry,Float32BufferAttribute} from 'three';
+import {RoadContactSurface} from './roadContactSurface.ts';
 import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import {ParkTerrain,inside,segment,type ParkMap} from './terrain.ts';
 const data=JSON.parse(fs.readFileSync(new URL('../../public/belle/map.json',import.meta.url),'utf8')) as ParkMap;const terrain=new ParkTerrain(data);
+
+test('wheel contact follows the rendered triangle and stays on the selected bridge level',()=>{
+ const surface=new RoadContactSurface();
+ for(const height of [2.065,6.065]){
+  const mesh=new BufferGeometry();
+  mesh.setAttribute('position',new Float32BufferAttribute([
+   -18,height,-3, 18,height,0, -18,height+.04,3,
+  ],3));
+  mesh.setIndex([0,1,2]);
+  surface.add(mesh);
+ }
+ assert(Math.abs(surface.height(0,0,2)-2.075)<1e-6);
+ assert(Math.abs(surface.height(0,0,6)-6.075)<1e-6);
+ assert.equal(surface.height(17,2,2),2,'a cell hit outside the pavement still uses terrain');
+ assert.equal(surface.height(19,0,2),2);
+});
 test('spawn is on the Jefferson approach and close to a mapped road',()=>{assert(terrain.land(data.spawn.x,data.spawn.z));assert(data.roads.some(r=>!r.foot&&r.points.slice(1).some((p,i)=>segment(data.spawn.x,data.spawn.z,r.points[i],p).d<r.width/2)));});
 test('the full bridge centerline supports the rider without a water collision',()=>{const b=data.bridge;for(let i=0;i<=100;i++){const x=b.a[0]+(b.b[0]-b.a[0])*i/100,z=b.a[1]+(b.b[1]-b.a[1])*i/100;assert(terrain.land(x,z),'bridge gap at '+i);const g={height:0,normal:{x:0,y:1,z:0},surface:'pavement' as const,offCourse:false};terrain.sampleGround(x,z,g);assert(g.height>=1.99&&g.height<=10.01);assert(g.normal.y>.98);}});
 test('river and lagoon interiors block travel; shoreline stays dry',()=>{assert(!terrain.land(0,1000));assert(terrain.land(data.landmarks.find(l=>l.name==='Belle Isle Casino')!.x,data.landmarks.find(l=>l.name==='Belle Isle Casino')!.z));});

@@ -5,14 +5,19 @@ import {CadillacCabin} from './cadillacCabin.ts';
 import {CadillacAccess,type CadillacAccessResult,type CadillacPanel} from './cadillacAccess.ts';
 import {CadillacTrunk} from './cadillacTrunk.ts';
 import {CadillacHydraulics} from './cadillacHydraulics.ts';
+import {fitCadillacWireWheels} from './cadillacWireWheels.ts';
 import {HydraulicCadillacDriver} from './hydraulicCadillacDriver.ts';
+import {invalidateAnimatedShadow} from '../../runtime/ride-core/src/shadowBudget.ts';
 import type {ParkTerrain} from './terrain.ts';
 
 export type CadillacVariant='cadillac'|'hydraulic-cadillac';
 const modelUrls={cadillac:'./belle/vehicles/silver-cadillac.glb','hydraulic-cadillac':'./belle/vehicles/hydraulics-cadillac.glb'};
 const source:Partial<Record<CadillacVariant,Promise<T.Group>>>={};
 export function cadillacModel(variant:CadillacVariant='cadillac'){
-  return source[variant]??=new GLTFLoader().loadAsync(modelUrls[variant]).then(asset=>asset.scene).catch(error=>{delete source[variant];throw error;});
+  return source[variant]??=new GLTFLoader().loadAsync(modelUrls[variant]).then(asset=>{
+    if(variant==='hydraulic-cadillac')fitCadillacWireWheels(asset.scene);
+    return asset.scene;
+  }).catch(error=>{delete source[variant];throw error;});
 }
 const radius=.346, wheelbase=3.213, track=1.648;
 const clamp=T.MathUtils.clamp;
@@ -141,8 +146,10 @@ export class CadillacRide {
     let mean=0;
     for(const {hub,spin,front} of this.hubs){
       const {x,z}=hub.position;
-      const ground=this.terrain.height(p.x+x*cosine+z*sine,p.z-x*sine+z*cosine,p.y);
-      const dy=clamp(ground-p.y,-.22,.22);
+      const wheelX=p.x+x*cosine+z*sine,wheelZ=p.z-x*sine+z*cosine;
+      const ground=this.terrain.height(wheelX,wheelZ,p.y);
+      const surface=this.terrain.roadContact?.height(wheelX,wheelZ,ground)??ground;
+      const dy=clamp(surface-p.y,-.22,.22);
       hub.position.y=wheelRadius+dy+(suspension?(front?suspension.front:suspension.rear):0);mean+=dy*.25;
       const arc=1-x*curvature;
       hub.rotation.y=front?Math.atan2(wheelbase*curvature,arc):0;
@@ -156,6 +163,7 @@ export class CadillacRide {
     this.steeringWheel?.quaternion.setFromAxisAngle(this.steeringAxis,p.steering*5.5);
     this.cabin?.update(dt,p.steering,reduced);
     this.hydraulicDriver?.update(p.steering);
+    if(this.hydraulicDriver)invalidateAnimatedShadow(this.model);
     this.travel+=Math.abs(p.speed)*dt;
     this.lenses.get('BrakeLens')?.emissive.setRGB(this.sim.braking?.95:.15,.005,.007);
     this.lenses.get('Headlamp')?.emissive.setRGB(.23+.75*night,.21+.67*night,.15+.51*night);

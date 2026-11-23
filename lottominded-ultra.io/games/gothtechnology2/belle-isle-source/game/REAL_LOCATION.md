@@ -63,6 +63,22 @@ References:
 
 ## Verification and release status
 
+### Rendered interface fixture
+
+With the development server running, open `/qa/gps-ui.html`. This development-only entry imports the real location panel and the game's actual base/mobile styles into a same-origin frame. Its visible controls provide synthetic fixes, simulated visibility changes and compass events. A prominent label identifies simulated data, and the frame denies native sensor permissions. No real device location is requested. The entry is outside the production asset directory and is not linked or imported by the production game.
+
+The fixture supports desktop, phone, tablet portrait/landscape and short landscape viewports. It exposes active/cleared simulated watches, follow state, focus and the first-frame presentation gap for reduced-motion checks. It validates rendered interface behavior; it does not replace a real browser permission prompt, an iPad sensor check, or rendering the full island.
+
+### Full-scene aggregate timing
+
+Add `?locationPerf=1` to the direct game URL (or `&locationPerf=1` if a query already exists). After the island is playable, close other panels, select 30 or 60 seconds, and choose **Start capture**. The overlay can be collapsed during the capture. Start separate captures with location off, with the GPS marker active, and with GPS follow active. Keep graphics settings, orientation and the frame cap consistent when comparing captures.
+
+The recorder counts successful full-scene render calls, including GPS-follow frames that the existing located ride profiler deliberately excludes. It reports CPU completion-to-completion intervals, p50/p95/p99, submission rate, render-call CPU duration, stalls, initial wait and an unfinished trailing gap. These values are **not GPU completion times or proof of display presentation**. A hidden/unfocused tab, pause, modal, scene preparation, XR/co-op, reduced-scene diagnostic mode, or a change to viewport/frame cap/motion/pixel ratio interrupts the capture instead of silently mixing conditions.
+
+Only bounded in-memory timings, viewport/settings and GPS state labels enter the copyable JSON report. It includes no coordinates, headings, camera positions, route, identity or absolute timestamps, and it performs no upload or persistent storage. **Remove QA** clears the capture and removes its listeners and UI. Without the exact query flag, no measurement UI or listeners are created. This instrumentation leaves rendering effects and frame pacing unchanged.
+
+The existing sustained-profile CI now adds a separate GPS phase in its full-scene desktop/phone lanes. It retains the original 90-second riding gate, then uses normal game controls and an isolated synthetic geolocation provider for three 30-second captures: location off, marker on, and follow on. `gps-regression.json` and `gps-{off,marker,follow}-timing.json` distinguish these measurements from the riding profile. Real rendered marker/Stop behavior, unchanged settings and the report's coordinate-free schema are checked. An emulated phone viewport on the CI Mac remains distinct from a physical phone or iPad.
+
 Run from this directory:
 
 ```sh
@@ -84,8 +100,20 @@ Validation on 2026-11-23 used the current Cadillac web implementation from produ
 
 No failing check remained in the targeted reruns. The complete large suite was not repeated after those fixture restorations; the final GPS transition change was checked with the 49-test focused suite and project TypeScript check. The GPS implementation does not edit generated bundles. Existing development refinements to vegetation and shader warmup were preserved while reconciling the branch with production.
 
-**Still required before release:** rendered desktop/phone layout and keyboard checks; real GPS/compass checks on supported devices; foreground/background, permission-denied and retry checks in the deployed HTTPS context; and frame-time/battery measurements with the full island loaded. The available preview browsers could not connect to the local server in this environment. No full-scene browser performance or real-device accuracy result is claimed.
+Follow-up verification on 2026-11-23 supersedes the earlier connection limitation:
+
+- GitHub CI on GPS candidate `c0191859cfa05754bec11fc81f3eaf2e3ab30f5f`, checked out as PR merge `16548f4bd90a871d48327bc32bc515643d82dea8`, completed the full suite with **1,572 tests: 1,569 passed, three skipped and zero failed**, followed by **11/11 asset checks**. TypeScript and the production build passed.
+- Both desktop and phone HUD acceptance jobs passed using the actual loaded 3D game. Phone coverage includes 390×844, 320×568, 390×340 and 844×390. These are browser layout/input checks, not physical-phone performance certification. [HUD CI evidence](https://github.com/robjasper2084/Jungle-Lotto/actions/runs/45276045932).
+- The supported managed preview now connects. The cloud browser itself cannot create a WebGL context, so it cannot supply full-island frame-time measurements. No graphics security settings were altered to bypass this limitation.
+- The actual location panel was rendered separately at 1280×800, 390×844, 820×1180, 1180×820 and 844×390. It stayed within the viewport, had no horizontal content overflow, retained 44px button heights, and provided vertical scrolling in short layouts.
+- The rendered fixture exercised explicit opt-in, follow, poor-accuracy rejection, denied access and retry, simulated background pause with manual resume, separate compass activation and an east heading, Stop cleanup, Escape/focus restoration and reduced-motion presentation. The reduced-motion first-frame gap was zero; the ordinary smoothed presentation showed a nonzero gap. The measurements use synthetic inputs, not physical GPS.
+
+See [the rendered QA record](../qa/gps-release-2026-11-23/README.md) for the screenshots, exact scope and evidence references. Full-scene GPU performance results and publication evidence must be read from the exact release workflow run; an in-progress or queued workflow is not a passing result.
+
+The release integration also incorporates production update `3e68163e94d173395cf7a2f47bd37859cf1a3f47` (PR #209), preserving its Cadillac wire rims, road-contact alignment and animated-shadow fixes. A shared nonmutating presentation helper applies the same road alignment during ordinary rendering and synchronous GPS Stop restoration. Focused checks passed 23/23, including both camera modes on flat/raised pavement and unchanged simulation poses. Project typechecking and the local production build passed. The full local run had only the same two sparse-checkout fixture omissions after merging; restoring those tracked files yielded 15/15 passes in the three affected files, with the separate asset stage passing 11/11. Exact final full-suite counts belong to the new CI run.
+
+**Physical-device checks remain unexecuted:** real GPS/compass accuracy and heading on a phone/iPad, actual sensor permission prompts in the deployed HTTPS context, field foreground/background behavior, battery/thermal behavior, and GPS-follow timing with the complete scene on those devices. Browser emulation and synthetic input do not certify those results.
 
 Field review should check a known public landmark, walking slowly and standing still, rotating portrait/landscape, optional compass on/off, switching tabs, stopping/restarting location, losing accuracy, entering a multiplayer room, and returning to ordinary riding. Keep precise device positions out of exported logs or screenshots used for review.
 
-Production publication remains a separate approval step under the repository's root `AGENTS.md`.
+The user explicitly authorized merging and publishing after the available checks on 2026-11-23. Publication still requires a successful production deployment and verification of the exact live revision; this document alone does not claim a live release.

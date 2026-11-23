@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Belle Isle — GPS UI fixture</title><link rel="stylesheet" href="./gps-ui.css"></head>
+<body class="qa-host">
+<main>
+  <h1>Belle Isle · GPS controls</h1>
+  <p class="qa-banner"><strong>Simulated sensor data — no real device location</strong><br>Development UI fixture. The actual location panel and game styles run without WebGL. This is not a full-scene performance or hardware test.</p>
+  <section class="qa-toolbar" aria-label="Fixture controls">
+    <label>Viewport <select id="viewport"><option value="desktop">Desktop · 1280 × 800</option><option value="ipad-portrait">iPad portrait · 820 × 1180</option><option value="ipad-landscape">iPad landscape · 1180 × 820</option><option value="phone">Phone · 390 × 844</option><option value="short">Short landscape · 844 × 390</option></select></label>
+    <label><input id="reduced" type="checkbox"> Reduced motion</label>
+    <button data-command="open">Open location panel</button><button id="reset">Reset fixture to Off</button>
+  </section>
+  <p class="qa-instructions">Open the panel and use its <strong>Use my location</strong>, <strong>Follow my location</strong>, compass and Stop buttons. These controls below change the simulated sensor feed; they do not grant or request device permissions.</p>
+  <section class="qa-scenarios" aria-label="Simulated sensor scenarios">
+    <button data-command="usable">Usable GPS · ±5 m</button><button data-command="poor">Poor accuracy · ±120 m</button><button data-command="denied">Deny location</button><button data-command="stale">Stale location</button><button data-command="outside">Outside mapped area</button>
+    <button data-command="pause">Hide simulated tab</button><button data-command="visible">Return tab · then Resume</button><button data-command="step">Step 6 m east</button>
+    <button data-command="north">Compass north</button><button data-command="east">Compass east</button><button data-command="invalid-compass">Compass unavailable</button><button data-command="deny-compass">Deny next compass request</button>
+  </section>
+  <output id="qa-report" aria-live="off">Loading fixture…</output>
+  <p class="qa-instructions">For denial recovery, select <strong>Usable GPS</strong>, then press the panel’s <strong>Retry location</strong>. Returning a simulated tab leaves tracking paused until <strong>Resume location</strong>. For motion, start Follow, step east, and compare the reported first-frame gap with reduced motion on/off. Close the dialog or press Escape to check focus restoration.</p>
+  <div class="qa-viewport-scroll"><iframe id="fixture" title="Actual Belle Isle location controls with simulated sensors" src="./gps-frame.html" width="1280" height="800" allow="geolocation 'none'; accelerometer 'none'; gyroscope 'none'; magnetometer 'none'"></iframe></div>
+</main>
+<script type="module" src="./gps-ui.ts"></script>
+</body></html>
