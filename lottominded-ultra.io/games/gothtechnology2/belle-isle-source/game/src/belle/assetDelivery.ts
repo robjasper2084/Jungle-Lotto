@@ -2,9 +2,10 @@ import {DefaultLoadingManager} from 'three';
 import pins from './assetPins.json' with {type:'json'};
 import vehiclePins from './vehicles/assetPins.json' with {type:'json'};
 import cadillacHeroPins from './cadillacHeroPins.json' with {type:'json'};
-// Pin the exact Vite-emitted hero as well as public models. A future filename
+import hydraulicCadillacPins from './hydraulicCadillacPins.json' with {type:'json'};
+// Pin exact Vite-emitted heroes as well as public models. A future filename
 // or binary change fails Pages integrity validation until its pin is updated.
-const pinSets=[pins,vehiclePins,cadillacHeroPins];
+const pinSets=[pins,vehiclePins,cadillacHeroPins,hydraulicCadillacPins];
 
 /** Keep the local authoring build self-contained; production uses exact committed bytes. */
 export function configureAssetDelivery(){
