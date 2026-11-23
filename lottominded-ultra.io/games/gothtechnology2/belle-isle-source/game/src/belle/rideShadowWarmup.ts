@@ -8,10 +8,10 @@ import {GpuFrameGate} from './gpuFramePacing.ts';
  * compile() only visits color materials. The shadow pass chooses its own
  * programs based on the caster, including skinning and the material's maps.
  */
-export async function warmRideShadows(renderer:WebGLRenderer,scene:Scene,rider:Object3D,x:number,z:number,launchView?:Camera){
+export async function warmRideShadows(renderer:WebGLRenderer,scene:Scene,rider:Object3D,x:number,z:number,launchView?:Camera,reveal=false){
  const gl=renderer.getContext() as WebGL2RenderingContext;
  if(gl.isContextLost())return;
- const light=renderer.shadowMap.enabled
+ const light=!reveal&&renderer.shadowMap.enabled
   ?scene.children.find(object=>(object as DirectionalLight).isDirectionalLight&&object.castShadow) as DirectionalLight|undefined
   :undefined;
  if(!light&&!launchView)return;
@@ -43,12 +43,12 @@ export async function warmRideShadows(renderer:WebGLRenderer,scene:Scene,rider:O
    renderer.render(scene,camera);
   }
   if(launchView){
-   // A render target uses different color output state from the screen.
-   // Exercise the screen shaders and vertex bindings through a tiny scissor.
+   // Prime driver state with a cheap clipped draw at boot. Before enabling
+   // the rider, finish one real full canvas frame under the loading screen.
    renderer.renderBufferDirect=draw;
    renderer.setRenderTarget(null);
-   renderer.setScissor(0,0,1,1);
-   renderer.setScissorTest(true);
+   if(!reveal)renderer.setScissor(0,0,1,1);
+   renderer.setScissorTest(!reveal);
    renderer.render(scene,launchView);
   }
  }finally{

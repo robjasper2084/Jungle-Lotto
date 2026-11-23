@@ -202,7 +202,7 @@ const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreferen
  const core=new RideCore(terrain,{spawn:{position:{x:data.spawn.x,y:2,z:data.spawn.z},headingY:data.spawn.heading}});clearSimulationInput=()=>core.clearPendingActions();const loader=new GLTFLoader();const renderProbe=createNatureRenderProbe(location.search);const world=await createWorld(scene,renderer,data,terrain,status,renderProbe);el('profile').dataset.macarthurRailMeshes=String(world.stats.bridgeRailFinish.meshes);el('profile').dataset.macarthurRailMaterials=String(world.stats.bridgeRailFinish.newMaterials);world.sky.preview(!SUNSET_REFERENCE);const refreshSkySettings=connectSkySettings(world.sky);const sunsetPreview=SUNSET_REFERENCE?createSunsetPreview(camera,()=>hover,()=>active&&!trials?.active&&!race?.active&&!coop?.active&&!photo?.active,()=>{clear();cameraYaw=0;cameraPitch=.1;snap=true;},data.spawn,data):undefined;
  const frameBudget=new FrameBudget();graphics.onchange=()=>{frameBudget.reset();world.setQuality(graphics.value);saveGraphics();};world.setQuality(graphics.value);window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();if(!vr?.active)renderer.setSize(innerWidth,innerHeight);});
  const sceneWarmup=new SceneWarmup(renderer,scene,camera,value=>{scenePreparing=value;resetFrameClock=true;if(value)clear();});
- async function prepareRideShadows(rider:T.Object3D,x:number,z:number){
+ async function prepareRideShadows(rider:T.Object3D,x:number,z:number,revealClock?:number){
   const wasPreparing=scenePreparing;
   scenePreparing=true;
   try{
@@ -216,7 +216,11 @@ const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreferen
     view.position.set(x-4.8*sin,y+3.1,z-4.8*cos);
     view.lookAt(x,y+1.4,z);
    }
-   await warmRideShadows(renderer,scene,rider,x,z,view);
+   if(revealClock!==undefined){
+    world.sky.preview(false);world.sky.protectStartup();
+    world.update(revealClock,x,z,view,false,false);
+   }
+   await warmRideShadows(renderer,scene,rider,x,z,view,revealClock!==undefined);
   }
   finally{scenePreparing=wasPreparing;resetFrameClock=true;}
  }
@@ -460,7 +464,10 @@ const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreferen
  status('Warming up island lighting');await sceneWarmup.prepare();status('Preparing rider shadows');await yieldStartupTask();await prepareRideShadows(hero.root,core.current.x,core.current.z);status('Preparing the first frame');let prepared=false,starting=false;start.onclick=async()=>{if(starting||!prepared)return;starting=true;const choice=startup.choice;natureAudio.unlock();clear();startup.preparing();try{
   status('Preparing handheld camera shaders');
   await photo?.prepareCarriedCamera(renderer,camera);
-  if(choice.vehicle==='cadillac'){
+  if(choice.vehicle==='onewheel'){
+   status('Preparing the first ride view');
+   await prepareRideShadows(hero.root,core.current.x,core.current.z,clock);
+  }else if(choice.vehicle==='cadillac'){
   status('Preparing the Cadillac and passengers');
   if(!cadillac){
    const [car,driver,dog]=await Promise.all([cadillacModel(),cadillacHeroModel(),boerboelModel()]);
@@ -470,7 +477,11 @@ const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreferen
   await sceneWarmup.prepare(cadillac.model);
   await world.prepareCadillacLandmarks(camera,core.current.x,core.current.z);
   cadillac.start();cameraPitch=.1;
- }else if(choice.vehicle!=='onewheel'){await hover!.selectVehicle(choice,scene);await hover!.prepare(scene,true);}startup.leave(()=>{world.sky.preview(false);world.sky.protectStartup();startupMetrics.begin('solo');active=true;paused=false;destination??=firstRide.begin(destination);chooseView(choice.camera==='fpp');el('ridehud').hidden=false;el('navigation').hidden=false;zone.hidden=!touch.checked;snap=true;canvas.focus();vr?.refresh();if(choice.vehicle==='cadillac'){if(choice.camera==='tpp')cameraYaw=.60;starting=false;if(cadillacDiagnostic)rideProfile?.start();}else if(choice.vehicle!=='onewheel')void hover!.mount(scene).finally(()=>{starting=false;});else starting=false;});}catch(error){starting=false;startup.retryRide('Your ride could not load. Try again, or choose the other vehicle.');console.warn('Selected ride preparation failed',error);}};
+  }else{
+   await hover!.selectVehicle(choice,scene);
+   await hover!.prepare(scene,true);
+  }
+  startup.leave(()=>{world.sky.preview(false);world.sky.protectStartup();startupMetrics.begin('solo');active=true;paused=false;destination??=firstRide.begin(destination);chooseView(choice.camera==='fpp');el('ridehud').hidden=false;el('navigation').hidden=false;zone.hidden=!touch.checked;snap=true;canvas.focus();vr?.refresh();if(choice.vehicle==='cadillac'){if(choice.camera==='tpp')cameraYaw=.60;starting=false;if(cadillacDiagnostic)rideProfile?.start();}else if(choice.vehicle!=='onewheel')void hover!.mount(scene).finally(()=>{starting=false;});else starting=false;});}catch(error){starting=false;startup.retryRide('Your ride could not load. Try again, or choose the other vehicle.');console.warn('Selected ride preparation failed',error);}};
  let savedFirst=false,savedQuality='automatic';
  vr=new BelleVR(renderer,scene,camera,terrain,{
   ready:()=>active&&!scenePreparing&&!race?.active&&!trials?.active&&!coop?.active,pose:()=>core.current,places:()=>[{label:'Jefferson Avenue · bridge start',go:()=>el('restart').click()},...vrPlaces],clear:()=>{clear();core.clearPendingActions();},

@@ -3,7 +3,7 @@ import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import type {ParkMap,ParkTerrain} from './terrain.ts';
 import {yieldStartupTask} from './startupWork.ts';
 import {roadIndex} from './streetPlan.ts';
-import {mapleDetail,useDistantMaple} from './distantMaple.ts';
+import type {Plant} from './naturePlan.ts';
 import {inSunsetGarden,SUNSET_GARDEN} from './sunsetReferencePolicy.ts';
 /** Original bounded scenery, kept clear of mapped roads, paths and buildings. */
 export async function addSunsetGarden(scene:T.Scene,map:ParkMap,terrain:ParkTerrain,options?:{name:string;x:number;z:number;radius:number;trees:number;seed:number;shore:boolean},occupied=roadIndex(map.roads,true)){
@@ -12,8 +12,7 @@ export async function addSunsetGarden(scene:T.Scene,map:ParkMap,terrain:ParkTerr
  let seed=options?.seed??209584;const rand=()=>{seed=Math.imul(seed,1664525)+1013904223|0;return(seed>>>0)/4294967296;};
  const dummy=new T.Object3D(),color=new T.Color();
  const standard=(name:string,value:number,roughness=.85)=>new T.MeshStandardMaterial({name,color:value,roughness});
- const bark=standard('Reference warm oak bark',0x73503c),stone=standard('Reference shoreline limestone',0xb9a190),wood=standard('Reference cedar bench',0x81503a),metal=standard('Reference bronze park fittings',0x293239,.50),leafMat=standard('Reference autumn leaves',0xffffff);
- leafMat.side=T.DoubleSide;leafMat.emissive.set(0xa84e0e);leafMat.emissiveIntensity=.02;
+ const bark=standard('Reference warm oak bark',0x73503c),stone=standard('Reference shoreline limestone',0xb9a190),wood=standard('Reference cedar bench',0x81503a),metal=standard('Reference bronze park fittings',0x293239,.50);
  const glow=new T.MeshStandardMaterial({name:'Reference lantern glass',color:0xffdc8b,emissive:0xffad49,emissiveIntensity:1.8,roughness:.4});
  const staticParts=new T.Group();root.add(staticParts);
  const mesh=(parent:T.Object3D,g:T.BufferGeometry,m:T.Material,p:T.Vector3)=>{const o=new T.Mesh(g,m);o.position.copy(p);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o;};
@@ -29,43 +28,13 @@ export async function addSunsetGarden(scene:T.Scene,map:ParkMap,terrain:ParkTerr
  }
  const leafShape=new T.Shape();const outline=[[-.04,-.28],[-.09,-.12],[-.29,-.18],[-.20,-.015],[-.37,.08],[-.19,.12],[-.22,.31],[-.08,.23],[0,.43],[.09,.23],[.24,.31],[.19,.12],[.37,.08],[.20,-.015],[.29,-.18],[.09,-.12],[.04,-.28]];
  outline.forEach((p,i)=>i?leafShape.lineTo(p[0],p[1]):leafShape.moveTo(p[0],p[1]));leafShape.closePath();const leafGeo=new T.ShapeGeometry(leafShape);leafGeo.rotateX(-Math.PI/2);const pos=leafGeo.attributes.position;for(let i=0;i<pos.count;i++)pos.setY(i,Math.abs(pos.getX(i))*.13);leafGeo.computeVertexNormals();
- // Each tile has its own conservative instance bounds. Colour and shadow
- // cameras can then reject whole groves without uploading or drawing them.
- const perTree=2400,leaves=new T.Group();leaves.name='Reference full autumn maple canopies';root.add(leaves);
  const tileKey=(p:{x:number;z:number})=>Math.floor(p.x/64)+','+Math.floor(p.z/64);
- const tileSizes=new Map<string,number>(),tiles=new Map<string,T.InstancedMesh>();
- for(const site of sites){const key=tileKey(site);tileSizes.set(key,(tileSizes.get(key)??0)+perTree);}
- const canopyDetail=tileSizes.size?mapleDetail(leafGeo):null;
- const crownGeometry=new T.IcosahedronGeometry(1,2);
- const crownMaterial=standard('Reference shaded inner canopy',0xffffff);
- const crownTiles=new Map<string,T.InstancedMesh>();
- for(const [key,size] of tileSizes){
-  const batch=new T.InstancedMesh(canopyDetail!.geometry,leafMat,size);
-  useDistantMaple(batch,canopyDetail!);
-  batch.name='Sunset Point maple leaves '+key;batch.castShadow=true;batch.receiveShadow=true;batch.count=0;
-  tiles.set(key,batch);leaves.add(batch);
-  const crown=new T.InstancedMesh(crownGeometry,crownMaterial,size/perTree*10);
-  crown.castShadow=true;crown.receiveShadow=true;crown.count=0;
-  crownTiles.set(key,crown);root.add(crown);
- }
- const tones=[0xeaae25,0x76933b,0xc28019,0x9f9b2f,0xf1b730,0x658441];let leafCount=0;
- for(const [index,p] of sites.entries()){
-  if(index%4===0)await yieldStartupTask();
-  const key=tileKey(p),leafBatch=tiles.get(key)!,crown=crownTiles.get(key)!;
-  const y=terrain.height(p.x,p.z),base=new T.Vector3(p.x,y,p.z),tip=base.clone().add(new T.Vector3((rand()-.5)*.8,p.h*.85,(rand()-.5)*.8));rod(base,tip,.32,.10);
+ // Render the same mapped maple grove through the seasonal canopy pools.
+ const trees=sites.map((p,index):Plant=>{
+  const y=terrain.height(p.x,p.z),scale=p.r/6.7;
   terrain.flightSolids.add({x:p.x,z:p.z,bottom:y,top:y+p.h,radius:.35,kind:'tree'});
-  const lobes:T.Vector3[]=[];
-  for(let j=0;j<9;j++){const a=j/9*Math.PI*2+index*.8,c=base.clone().add(new T.Vector3(Math.cos(a)*p.r*.54,p.h*.67+rand()*p.h*.24,Math.sin(a)*p.r*.54));lobes.push(c);rod(base.clone().lerp(tip,.42+j*.035),c,.12,.025);}
-  lobes.push(base.clone().add(new T.Vector3(0,p.h*.94,0)));
-  for(const c of lobes){dummy.position.copy(c);dummy.rotation.set(rand(),rand()*6,rand());dummy.scale.set(p.r*.33,p.r*.29,p.r*.33);dummy.updateMatrix();crown.setMatrixAt(crown.count,dummy.matrix);crown.setColorAt(crown.count++,color.setHex(tones[index%tones.length]).multiplyScalar(.50));}
-  for(let j=0;j<perTree;j++){
-   const c=lobes[j%lobes.length],a=rand()*Math.PI*2,vy=rand()*2-1,s=Math.sqrt(1-vy*vy),r=Math.pow(rand(),.48)*p.r*.65;
-   dummy.position.set(c.x+Math.cos(a)*s*r,c.y+vy*r*.76,c.z+Math.sin(a)*s*r);dummy.rotation.set((rand()-.5)*1.5,rand()*Math.PI*2,(rand()-.5)*1.3);const size=1.0+rand()*1.2;dummy.scale.set(size,size,size);dummy.updateMatrix();leafBatch.setMatrixAt(leafBatch.count,dummy.matrix);
-   color.setHex(tones[(index+Math.floor(rand()*2.3))%tones.length]).multiplyScalar(.82+rand()*.33);leafBatch.setColorAt(leafBatch.count++,color);leafCount++;
-  }
- }
- for(const batch of tiles.values())batch.computeBoundingSphere();
- for(const crown of crownTiles.values())crown.computeBoundingSphere();
+  return {id:'maple',x:p.x,y,z:p.z,scale,heightScale:p.h/(16*scale),yaw:index*2.39996,tint:.98+(index%6)*.034,canopyTone:.12+(index%7)*.09};
+ });
  // Natural rock revetment follows the actual island perimeter.
  const rockTiles=new Map<string,{matrix:T.Matrix4;lightness:number}[]>();
  // Keep generating the same placements and tints in shoreline order. Group
@@ -116,7 +85,7 @@ export async function addSunsetGarden(scene:T.Scene,map:ParkMap,terrain:ParkTerr
  let count=0;sites.forEach(p=>{for(let i=0;i<12;i++){const x=p.x+(rand()-.5)*p.r*2,z=p.z+(rand()-.5)*p.r*2;if(!terrain.land(x,z))continue;dummy.position.set(x,terrain.height(x,z)+.045,z);dummy.rotation.set(0,rand()*6,0);dummy.scale.setScalar(.32+rand()*.22);dummy.updateMatrix();litter.setMatrixAt(count++,dummy.matrix);}});litter.count=count;root.add(litter);
  // Flatten the small architectural parts into one mesh per material.
  staticParts.updateMatrixWorld(true);const batches=new Map<T.Material,T.BufferGeometry[]>();staticParts.traverse(o=>{if(!(o instanceof T.Mesh))return;const g=o.geometry.clone().applyMatrix4(o.matrixWorld),m=o.material as T.Material;const list=batches.get(m)||[];list.push(g);batches.set(m,list);});staticParts.clear();for(const [m,parts]of batches){const g=mergeGeometries(parts);if(g)mesh(staticParts,g,m,new T.Vector3());for(const p of parts)p.dispose();}
- return{setQuality(q:string){leaves.visible=q!=='smooth';},stats:{trees:sites.length,leaves:leafCount,rocks:rocks.length,lamps:decor.length,flowers:flowers.length},update(x:number,z:number,eyeX=x,eyeZ=z){
+ return{trees,stats:{trees:trees.length,rocks:rocks.length,lamps:decor.length,flowers:flowers.length},update(x:number,z:number,eyeX=x,eyeZ=z){
   root.visible=Math.hypot(x-center.x,z-center.z)<center.radius+610;
   if(root.visible&&flowers.length){
    const distance=flowerBounds.distanceToPoint(flowerPosition.set(eyeX,eyeZ));

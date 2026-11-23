@@ -35,7 +35,7 @@ export function referenceCanopyTexture(){
 }
 
 /** Shared, deterministic silhouettes; native placement, seasons and distance pools remain in charge. */
-export function referenceTree(id:string,low:boolean,height:number,solidCanopy=false){
+export function referenceTree(id:string,low:boolean,height:number,solidCanopy?:'full'|'compact'){
  let seed=Array.from(id).reduce((n,c)=>Math.imul(n,31)+c.charCodeAt(0),81);
  const random=()=>{seed=Math.imul(seed,1664525)+1013904223|0;return(seed>>>0)/4294967296;};
  const trunks:T.BufferGeometry[]=[],leaves:T.BufferGeometry[]=[],up=new T.Vector3(0,1,0),matrix=new T.Matrix4(),q=new T.Quaternion(),color=new T.Color();
@@ -49,7 +49,7 @@ export function referenceTree(id:string,low:boolean,height:number,solidCanopy=fa
   const crowns:T.BufferGeometry[]=[];
   const phases=Array.from({length:3},()=>random()*Math.PI*2);
   const lobe=(center:T.Vector3,width:number,depth:number)=>{
-   const geometry=new T.SphereGeometry(1,10,7);
+   const geometry=solidCanopy==='compact'?new T.SphereGeometry(1,7,5):new T.SphereGeometry(1,10,7);
    const position=geometry.getAttribute('position');
    const uv=geometry.getAttribute('uv');
    const colors=new Float32Array(position.count*3);
@@ -74,10 +74,11 @@ export function referenceTree(id:string,low:boolean,height:number,solidCanopy=fa
    const taper=pine?1-i/centers.length*.61:1;
    lobe(center,radius*(.34+i%3*.038)*taper,radius*(willow?.51:.33)*taper);
   }
+  const satellites=solidCanopy==='compact'?1:2;
   for(const [i,center] of centers.entries()){
    const taper=pine?1-i/centers.length*.61:1;
-   for(let j=0;j<2;j++){
-    const angle=(i*2+j)*2.39996;
+   for(let j=0;j<satellites;j++){
+    const angle=(i*satellites+j)*2.39996;
     const reach=radius*(.19+random()*.25)*taper;
     const point=center.clone().add(new T.Vector3(Math.cos(angle)*reach,(random()-.48)*radius*(willow?.75:.41),Math.sin(angle)*reach));
     const size=radius*(.19+random()*.14)*taper;

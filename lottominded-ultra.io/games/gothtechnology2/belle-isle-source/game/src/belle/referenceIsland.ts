@@ -18,7 +18,7 @@ export async function addReferenceIsland(scene:T.Scene,map:ParkMap,terrain:ParkT
   gardens.push(await addSunsetGarden(scene,map,terrain,{...place,trees:0,seed:209585+i,shore:place.name!=='Belle Isle Beach'},occupied));
  }
  const eye=new T.Vector3();
- return{setQuality(q:string){gardens.forEach(g=>g.setQuality(q));},update(x:number,z:number,camera:T.Camera){
+ return{trees:gardens.flatMap(g=>g.trees),update(x:number,z:number,camera:T.Camera){
   camera.getWorldPosition(eye);gardens.forEach(g=>g.update(x,z,eye.x,eye.z));
  },stats:gardens.map(g=>g.stats)};
 }

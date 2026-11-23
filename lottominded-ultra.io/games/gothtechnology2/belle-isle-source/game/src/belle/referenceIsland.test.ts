@@ -32,9 +32,10 @@ test('tree LODs keep full silhouettes within mapped mature-tree scale',()=>{
 
 test('solid crowns stay within the tree budget and seasonal changes keep whole lobes',()=>{
  for(const id of ['maple','birch','willow','pine']){
-  const {leaves,foliage}=referenceTree(id,true,16,true);
+  const {leaves,foliage}=referenceTree(id,true,16,'full');
   const indices=leaves.getIndex()!.count;
   assert.ok(indices<referenceTree(id,true,16).leaves.getIndex()!.count);
+  assert.ok(referenceTree(id,true,16,'compact').leaves.getIndex()!.count<indices*.4);
   leaves.computeBoundingBox();
   const bounds=leaves.boundingBox!;
   assert.ok(bounds.max.y>13&&bounds.max.y<24);

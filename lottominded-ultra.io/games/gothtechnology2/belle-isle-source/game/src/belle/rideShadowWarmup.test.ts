@@ -44,11 +44,11 @@ test('ride warmup submits a bounded depth draw and restores the live renderer',a
  }finally{previousTarget.dispose();geometry.dispose();mesh.material.dispose();depth.dispose();}
 });
 
-test('the launch view warms the screen pipeline in Smooth and restores its viewport clipping',async()=>{
+for(const reveal of [false,true])test('the launch view warms the '+(reveal?'full':'clipped')+' screen pipeline and restores viewport clipping',async()=>{
  const scene=new Scene(),rider=new Group(),view=new PerspectiveCamera();
  rider.visible=false;scene.add(rider);
  const scissor=new Vector4(7,8,900,600);
- let enabled=false,drawn=false;
+ let enabled=reveal,drawn=false;
  const fake={
   shadowMap:{enabled:false},renderBufferDirect(){},
   getContext:()=>({
@@ -63,11 +63,12 @@ test('the launch view warms the screen pipeline in Smooth and restores its viewp
   setScissorTest:(value:boolean)=>{enabled=value;},
   setRenderTarget:(target:unknown)=>assert.equal(target,null),
   render(active:Scene,camera:PerspectiveCamera){
-   assert.equal(active,scene);assert.equal(camera,view);assert.ok(rider.visible&&enabled);
-   assert.deepEqual(scissor.toArray(),[0,0,1,1]);drawn=true;
+   assert.equal(active,scene);assert.equal(camera,view);assert.ok(rider.visible);
+   assert.equal(enabled,!reveal);
+   assert.deepEqual(scissor.toArray(),reveal?[7,8,900,600]:[0,0,1,1]);drawn=true;
   }
  };
- await warmRideShadows(fake as unknown as WebGLRenderer,scene,rider,0,0,view);
- assert.ok(drawn);assert.equal(rider.visible,false);assert.equal(enabled,false);
+ await warmRideShadows(fake as unknown as WebGLRenderer,scene,rider,0,0,view,reveal);
+ assert.ok(drawn);assert.equal(rider.visible,false);assert.equal(enabled,reveal);
  assert.deepEqual(scissor.toArray(),[7,8,900,600]);
 });

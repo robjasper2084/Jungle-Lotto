@@ -23,27 +23,32 @@ import {localPerformanceProbe,PERF_PROBE_REDUCTIONS} from './performanceProbe.ts
 type Entry={id:string;meshes?:string[];cardSize?:number;cardCenter?:number[];card?:string;triangles:number};
 type Manifest={trees:Entry[];ground:Entry[]};
 type Pool={id:string;meshes:T.InstancedMesh[];nearVisibility?:TreeInstanceVisibility;far?:T.InstancedMesh[];farVisibility?:TreeInstanceVisibility;sourceIndices?:ReadonlyMap<Plant,number>;sourceIds?:Uint32Array;card?:T.InstancedMesh;plants:Plant[]};
-export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:ParkTerrain,renderProbe?:NatureRenderProbe){
+export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:ParkTerrain,renderProbe?:NatureRenderProbe,gardenTrees:readonly Plant[]=[]){
  const base='./belle/nature/',loader=new GLTFLoader(),textures=new T.TextureLoader();
  const json=async(name:string)=>{const r=await fetch(base+name);if(!r.ok)throw Error('Nature asset '+name+': '+r.status);return r.json();};
  const manifest:Manifest=await json('manifest.json'),plan:NaturePlan=await json('placements.json');if(REFERENCE_STYLE)plan.trees=plan.trees.filter(p=>!inSunsetGarden(p.x,p.z));
  // Created once; exact source positions and original encounter order remain.
  plan.trees=plan.trees.filter(keepOriginalTree);
  const surveyed=new Set(terrain?await addSurveyVegetation(scene,terrain):[]);
- plan.trees.push(...surveyed);
+ const compactTrees=new Set(gardenTrees);
+ plan.trees.push(...surveyed,...compactTrees);
  const boundsCounts=new URLSearchParams(location.search).has('profile')?{requests:0,transforms:0}:undefined;
  const treeIndex=new NatureSpatialIndex(plan.trees.filter(p=>!replacedByCherry(p)));
  const groundIndex=new NatureSpatialIndex(plan.ground);
  status('Loading varied trees');
  const treeSource=REFERENCE_STYLE?new T.Group():(await loadStartupModel(loader,base+'seasonal-trees.glb')).scene;
  const canopyTexture=REFERENCE_STYLE?referenceCanopyTexture():null;
- if(REFERENCE_STYLE)for(const entry of manifest.trees){
+ const baseTrees=manifest.trees.map(entry=>({entry,key:entry.id,compact:false}));
+ const compactSpecies=new Set(Array.from(compactTrees,p=>p.id));
+ const treeSets=REFERENCE_STYLE?baseTrees.flatMap(tree=>compactSpecies.has(tree.entry.id)
+  ?[tree,{...tree,key:tree.key+'__grove',compact:true}]:[tree]):baseTrees;
+ if(REFERENCE_STYLE)for(const {entry,key,compact} of treeSets){
   await yieldStartupTask();
-  const tree=referenceTree(entry.id,true,(entry.cardCenter?.[1]??8)*2,true);
+  const tree=referenceTree(entry.id,true,(entry.cardCenter?.[1]??8)*2,compact?'compact':'full');
   tree.foliage.map=canopyTexture;
   for(const part of ['trunk','leaves'] as const){
    const source=new T.Mesh(tree[part],part==='trunk'?tree.bark:tree.foliage);
-   source.name=entry.id+'__'+part;
+   source.name=key+'__'+part;
    treeSource.add(source);
   }
  }
@@ -78,15 +83,15 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
  const placementMatrices=new NaturePlacementMatrices(plan,trees,canopyCache,canalCrowns,dummy.matrix,composePlacementMatrix);
  function composePlacementMatrix(p:Plant,hidden=false,crown=false){dummy.position.set(p.x,p.y,p.z);const leaning=p.id==='willow'||p.id==='birch';const tilt=leaning?.035*Math.sin(p.x*.017+p.z*.013):0;dummy.rotation.set(tilt,p.yaw,tilt*.63);const g=crown&&trees.has(p.id)?growth(p):null;const spread=crown?(leaning?1.06:1)*1.09:1;const canalCrown=crown?crownOverlap(p):1;dummy.scale.set(hidden?0:p.scale*(g?.width??1)*spread*canalCrown,hidden?0:p.scale*(p.heightScale??1)*(g?.height??1),hidden?0:p.scale*(g?.width??1)*spread*canalCrown);placementMatrices.composition();dummy.updateMatrix();return dummy.matrix;}
  function matrix(p:Plant,hidden=false,crown=false){return placementMatrices.get(p,hidden,crown);}
- for(const entry of manifest.trees){
-  const plants=plan.trees.filter(p=>p.id===entry.id&&!replacedByCherry(p));
-  const trunk=treeSource.getObjectByName(entry.id+'__trunk') as T.Mesh;
+ for(const {entry,key,compact} of treeSets){
+  const plants=plan.trees.filter(p=>p.id===entry.id&&!replacedByCherry(p)&&(!REFERENCE_STYLE||compactTrees.has(p)===compact));
+  const trunk=treeSource.getObjectByName(key+'__trunk') as T.Mesh;
   const rootOffset=trunk?trunkRootHeight(trunk.geometry.attributes.position.array,trunk.matrixWorld.elements[13]):0;
   const meshes:T.InstancedMesh[]=[],far:T.InstancedMesh[]=[];
   for(const low of [false,true])for(const part of ['trunk','leaves']){
-   const source=treeSource.getObjectByName(entry.id+'__'+part+(low&&!REFERENCE_STYLE?'__lod':'')) as T.Mesh;
+   const source=treeSource.getObjectByName(key+'__'+part+(low&&!REFERENCE_STYLE?'__lod':'')) as T.Mesh;
    if(!source)throw Error('Missing seasonal tree '+entry.id+part);
-   const mesh=instance(source,low?plants.length:natureBudget.high.trees,(low?'Distant ':'Nearby ')+entry.id+' '+part,!low,rootOffset);
+   const mesh=instance(source,low?plants.length:natureBudget.high.trees,(low?'Distant ':'Nearby ')+key+' '+part,!low,rootOffset);
    if(REFERENCE_STYLE){
     (mesh.material as T.MeshStandardMaterial).side=T.FrontSide;
     if(part==='leaves'){
@@ -102,7 +107,7 @@ export async function addNature(scene:T.Scene,status:(s:string)=>void,terrain?:P
    }
    (low?far:meshes).push(mesh);
   }
-  for(const p of plants)if(!surveyed.has(p))terrain?.flightSolids.add({x:p.x,z:p.z,bottom:p.y,top:p.y+Math.max(4,(entry.cardCenter?.[1]??8)*1.3*p.scale),radius:.28*p.scale,kind:'tree'});
+  for(const p of plants)if(!surveyed.has(p)&&!compactTrees.has(p))terrain?.flightSolids.add({x:p.x,z:p.z,bottom:p.y,top:p.y+Math.max(4,(entry.cardCenter?.[1]??8)*1.3*p.scale),radius:.28*p.scale,kind:'tree'});
   let card:T.InstancedMesh|undefined;
   if(!REFERENCE_STYLE){
    const size=entry.cardSize!,center=entry.cardCenter!,a=new T.PlaneGeometry(size,size),b=a.clone().rotateY(Math.PI/2),cards=mergeGeometries([a,b])!;a.dispose();b.dispose();cards.translate(center[0],center[1],center[2]);
