@@ -44,9 +44,9 @@ export async function checkGpsFullScene({page,expect,game,output,device,renderBa
   actualMacMetal:process.platform==='darwin'&&renderBackend==='angle-metal'&&/Metal/i.test(actualGpu?.renderer||'')&&!/SwiftShader|llvmpipe|software rasterizer/i.test(actualGpu?.renderer||''),
   scope:'Actual full game and visible controls; synthetic public-spawn geolocation. Timing counts scene render submissions, not GPU execution or confirmed presentation.',
   placement:'Existing Return to Jefferson bridge start and Dismount controls; map origin/spawn projection, no injected game pose.',
-  passed:false,map:null,states:{},captures:[],checks:{},errors:[],privacy:{networkCoordinateMatches:0,storageCoordinateMatches:0},cleanupErrors:[]};
+  passed:false,map:null,states:{},captures:[],checks:{},controlLayouts:{},uiTransitions:null,failureUi:null,diagnosticErrors:[],errors:[],privacy:{networkCoordinateMatches:0,networkObserved:false,storageCoordinateMatches:null,storageChecked:false},cleanupErrors:[]};
  const context=page.context(),origin=new URL(page.url()).origin;let timer,pending=Promise.resolve(),inFlight=false,refreshError;
- let coordinateTokens=[],mapCanvas;
+ let coordinateTokens=[],mapCanvas,uiObserver,initialMovementControls;
  const observeRequest=request=>{const value=request.url()+'\n'+(request.postData()||'');if(coordinateTokens.some(token=>value.includes(token)))result.privacy.networkCoordinateMatches++;};
  const capture=async name=>{const file='gps-'+name+'.png';await page.screenshot({path:resolve(output,file),timeout:90000});result.captures.push(file);};
  const panel=page.locator('#location-perf'),summary=panel.locator(':scope > summary'),dialog=page.locator('#real-location');
@@ -83,6 +83,92 @@ export async function checkGpsFullScene({page,expect,game,output,device,renderBa
   result.checks['mapUnobscured'+label]=uncovered;
   assert(uncovered,'The selected GPS map must remain unobscured at its center and four interior quadrants');
  };
+ const observeUi=async()=>page.evaluateHandle(()=>{
+  const dialog=document.getElementById('real-location'),note=document.getElementById('real-location-follow-note'),body=document.body;
+  if(!dialog||!note)throw Error('GPS UI diagnostics require the actual location controls');
+  const statuses=new Set(['off','requesting','tracking','poor-accuracy','stale','outside-map','denied','unavailable','timeout','unsupported','insecure','paused','jump-rejected']);
+  const reasons=new Map([
+   ['', 'none'],
+   ['Your local avatar view follows your location. Ordinary riding resumes where you left it when you stop.', 'following'],
+   ['Follow is for solo exploration on mapped open ground. Ordinary ride controls pause while following.', 'ready'],
+   ['This map uses a different coordinate layout. Avatar follow is unavailable.', 'map-layout'],
+   ['Start or resume solo exploration before following your location.', 'solo-inactive'],
+   ['Leave the multiplayer room before following your location.', 'multiplayer-active'],
+   ['Return to solo exploration and exit vehicles and activities first.', 'mode-active'],
+   ['Your location is not on clear mapped ground. The map marker remains available.', 'ground-unavailable'],
+   ['Avatar follow paused because mapped ground is unavailable.', 'mapped-ground-unavailable'],
+   ['Avatar follow stopped before multiplayer.', 'multiplayer-switch'],
+   ['Avatar follow stopped for game travel.', 'travel-switch'],
+   ['Avatar follow stopped for a vehicle.', 'vehicle-switch'],
+   ['Avatar follow stopped for the slide.', 'slide-switch'],
+   ['Avatar follow stopped for a boat.', 'boat-switch'],
+   ['Avatar follow stopped for photography.', 'photo-switch'],
+   ['Avatar follow stopped for a race.', 'race-switch'],
+   ['Avatar follow stopped for an activity.', 'activity-switch'],
+   ['Avatar follow stopped for local co-op.', 'coop-switch'],
+   ['Avatar follow stopped for the Cadillac.', 'cadillac-switch'],
+   ['Avatar follow stopped for VR.', 'vr-switch'],
+  ]);
+  const status=value=>statuses.has(value)?value:'unrecognized',reason=value=>reasons.get(value||'')||'unrecognized';
+  const following=value=>/\blocation-following\b/.test(value||'');
+  const state=()=>({status:status(dialog.getAttribute('data-location-status')),following:following(body.getAttribute('class')),reason:reason(note.textContent)});
+  const started=performance.now(),events=[],limit=200;let dropped=0;
+  const append=(field,from,to)=>{
+   if(from===to)return;
+   if(events.length===limit){events.shift();dropped++;}
+   events.push({atMs:Math.max(0,Math.round(performance.now()-started)),field,from,to});
+  };
+  for(const [field,value]of Object.entries(state()))append(field,null,value);
+  const collect=records=>{
+   for(let i=0;i<records.length;i++){
+    const record=records[i];
+    if(record.type==='attributes'){
+     // The next mutation's oldValue is this mutation's new value. Reading
+     // only the final DOM value would lose brief stale -> tracking changes.
+     const next=records.slice(i+1).find(other=>other.type==='attributes'&&other.target===record.target&&other.attributeName===record.attributeName);
+     const value=next?next.oldValue:record.target.getAttribute(record.attributeName);
+     if(record.target===dialog)append('status',status(record.oldValue),status(value));
+     else if(record.target===body)append('following',following(record.oldValue),following(value));
+    }else if(record.type==='childList'&&record.target===note){
+     append('reason',reason([...record.removedNodes].map(node=>node.textContent||'').join('')),reason([...record.addedNodes].map(node=>node.textContent||'').join('')));
+    }else if(record.type==='characterData'&&note.contains(record.target)){
+     const next=records.slice(i+1).find(other=>other.type==='characterData'&&other.target===record.target);
+     append('reason',reason(record.oldValue),reason(next?next.oldValue:record.target.textContent));
+    }
+   }
+  };
+  const observer=new MutationObserver(collect);
+  observer.observe(dialog,{attributes:true,attributeOldValue:true,attributeFilter:['data-location-status']});
+  observer.observe(body,{attributes:true,attributeOldValue:true,attributeFilter:['class']});
+  observer.observe(note,{childList:true,subtree:true,characterData:true,characterDataOldValue:true});
+  return {
+   snapshot(){collect(observer.takeRecords());return {source:'Read-only DOM status and follow controls; no sensor API replacement or coordinates.',limit,dropped,events:[...events],final:state()};},
+   disconnect(){observer.disconnect();},
+  };
+ });
+ const readUiEvidence=async()=>{
+  if(!uiObserver)return null;
+  try{return await uiObserver.evaluate(observer=>observer.snapshot());}
+  catch{result.diagnosticErrors.push('Could not read the bounded GPS UI transition record.');return null;}
+ };
+ const recordControlLayout=async(label,state)=>{
+  const layout=await page.evaluate(()=>{
+   const points=[[.5,.5],[.25,.25],[.75,.25],[.25,.75],[.75,.75]];
+   const visible=element=>{if(!element)return false;const box=element.getBoundingClientRect(),style=getComputedStyle(element);return box.width>0&&box.height>0&&style.visibility==='visible'&&style.display!=='none';};
+   const hit=(element,samples)=>{const box=element.getBoundingClientRect();return samples.every(([x,y])=>{const target=document.elementFromPoint(box.left+box.width*x,box.top+box.height*y);return !!target&&element.contains(target);});};
+   const check=(element,samples)=>{const shown=visible(element);return {visible:shown,unobscured:shown?hit(element,samples):null};};
+   const strip=document.getElementById('real-location-strip'),buttons=strip?[...strip.querySelectorAll('button')]:[];
+   return {strip:check(strip,points),locationButton:check(buttons[0],points),stopButton:check(buttons[1],points),movement:Object.fromEntries(['touch-zone','mount','recover','brake','hop','sprint'].map(id=>[id,check(document.getElementById(id),[[.5,.5]])]))};
+  });
+  const visibleMovement=Object.entries(layout.movement).filter(([,check])=>check.visible).map(([id])=>id).sort();
+  if(label==='Before_off')initialMovementControls=visibleMovement;
+  layout.movementMatchesOff=state==='follow'?null:JSON.stringify(visibleMovement)===JSON.stringify(initialMovementControls);
+  layout.passed=state==='off'?!layout.strip.visible:layout.strip.visible&&layout.strip.unobscured&&layout.locationButton.unobscured&&layout.stopButton.unobscured;
+  layout.passed=!!layout.passed&&Object.values(layout.movement).every(check=>!check.visible||check.unobscured)&&(state==='follow'||layout.movementMatchesOff);
+  // Keep evidence now, but defer layout assertions until after all three
+  // timing windows and Stop so an overlap cannot hide a Follow diagnostic.
+  result.controlLayouts[label]=layout;
+ };
  const settings=async()=>({quality:await page.locator('#quality').inputValue(),cap:await page.locator('#fps').inputValue(),reducedMotion:await page.locator('#motion').isChecked(),hudPreset:await page.locator('body').getAttribute('data-hud-preset'),focusHud:/\bbelle-hud-focus\b/.test(await page.locator('body').getAttribute('class')||'')});
  let fixedSettings,firstMetadata;
  async function record(name,state){
@@ -91,6 +177,7 @@ export async function checkGpsFullScene({page,expect,game,output,device,renderBa
   await expect(dialog).toHaveAttribute('data-location-status',state==='follow'?'tracking':state);
   if(state==='follow')await expect(page.locator('body')).toHaveClass(/location-following/);else await expect(page.locator('body')).not.toHaveClass(/location-following/);
   await expect(page.locator('dialog[open]')).toHaveCount(0);
+  await recordControlLayout('Before_'+name,state);
   if(!await panel.evaluate(element=>element.open))await summary.click();
   await page.locator('#location-perf-duration').selectOption('30');await page.locator('#location-perf-start').click();
   await expect(page.locator('#location-perf-start')).toBeDisabled();await summary.click();
@@ -102,9 +189,10 @@ export async function checkGpsFullScene({page,expect,game,output,device,renderBa
   assert.deepEqual(await settings(),fixedSettings);assert(!refreshError,refreshError);
   await assertMapUnobscured('After_'+name);
   result.states[name]=timing;await writeFile(resolve(output,'gps-'+name+'-timing.json'),JSON.stringify(timing,null,2)+'\n');
-  await capture(name+'-timing');await summary.click();
+  await capture(name+'-timing');await summary.click();await recordControlLayout('After_'+name,state);
  }
  try{
+  uiObserver=await observeUi();
   await expect(panel).toBeVisible();assert.equal(new URL(page.url()).searchParams.get('locationPerf'),'1');
   const capability=await page.evaluate(()=>({secure:isSecureContext,geolocation:!!navigator.geolocation}));result.checks.capability=capability;
   assert(capability.secure&&capability.geolocation,'GPS regression unavailable: secure context and browser geolocation are required');
@@ -144,7 +232,7 @@ export async function checkGpsFullScene({page,expect,game,output,device,renderBa
   await record('off','off');const beforeMarker=await cyanPixels();
   // Set the synthetic fix before granting permission: the test can never fall
   // back to the runner's real location provider. No compass is requested.
-  await context.setGeolocation(synthetic);await context.grantPermissions(['geolocation'],{origin});page.on('request',observeRequest);
+  await context.setGeolocation(synthetic);await context.grantPermissions(['geolocation'],{origin});page.on('request',observeRequest);result.privacy.networkObserved=true;
   await openLocation();await expect(dialog).toHaveAttribute('data-location-status','off');await page.locator('#real-location-start').click();
   await expect(dialog).toHaveAttribute('data-location-status','tracking',{timeout:15000});
   await expect(page.locator('#real-location-accuracy')).toContainText('±5 m');
@@ -163,21 +251,27 @@ export async function checkGpsFullScene({page,expect,game,output,device,renderBa
   await expect(page.locator('body')).not.toHaveClass(/location-following/);await expect(dialog).toHaveAttribute('data-location-status','off');
   await expect(page.locator('#real-location-strip')).toBeHidden();await expect(page.locator('#mount')).toBeEnabled();
   await assertMapUnobscured('AfterStop');
+  await recordControlLayout('AfterStop','off');
   await expect.poll(cyanPixels,{timeout:15000}).toBeLessThanOrEqual(beforeMarker);result.checks.stopClearsMarkerAndRestoresControls=true;
   result.privacy.storageCoordinateMatches=await page.evaluate(tokens=>[localStorage,sessionStorage].reduce((count,storage)=>{
    for(let i=0;i<storage.length;i++){const value=storage.getItem(storage.key(i))||'';if(tokens.some(token=>value.includes(token)))count++;}return count;
   },0),coordinateTokens);
+  result.privacy.storageChecked=true;
   assert.equal(result.privacy.networkCoordinateMatches,0,'Synthetic geographic coordinates must not be sent in requests');
   assert.equal(result.privacy.storageCoordinateMatches,0,'Synthetic geographic coordinates must not be saved in browser storage');
-  assert(!refreshError,refreshError);await capture('stopped');result.passed=true;
- }catch(error){result.errors.push(String(error?.stack||error));try{await capture('failure');}catch(captureError){result.errors.push('Screenshot: '+String(captureError));}}
+  assert(!refreshError,refreshError);await capture('stopped');
+  result.checks.controlLayoutsPassed=Object.values(result.controlLayouts).every(layout=>layout.passed);
+  assert(result.checks.controlLayoutsPassed,'GPS strip buttons and ordinary movement controls must remain unobscured in the default HUD');result.passed=true;
+ }catch(error){result.errors.push(String(error?.stack||error));result.uiTransitions=await readUiEvidence();result.failureUi=result.uiTransitions?.final??null;try{await capture('failure');}catch(captureError){result.errors.push('Screenshot: '+String(captureError));}}
  finally{
+  if(!result.uiTransitions)result.uiTransitions=await readUiEvidence();
+  if(uiObserver){try{await uiObserver.evaluate(observer=>observer.disconnect());await uiObserver.dispose();}catch{result.diagnosticErrors.push('Could not dispose the GPS UI transition observer.');}}
   if(timer)clearInterval(timer);await pending;page.off('request',observeRequest);
   if(refreshError)result.cleanupErrors.push('Synthetic fix refresh: '+refreshError);
   // These are test-context settings only; release the watch through the real UI.
   try{if(await page.getByRole('button',{name:'Stop real location and clear position',exact:true}).isVisible())await page.getByRole('button',{name:'Stop real location and clear position',exact:true}).click({timeout:5000});}catch(error){result.cleanupErrors.push(String(error));}
   try{await context.clearPermissions();await context.setGeolocation(null);}catch(error){result.cleanupErrors.push(String(error));}
-  if(result.cleanupErrors.length)result.passed=false;
+  if(result.cleanupErrors.length||result.diagnosticErrors.length||!result.uiTransitions)result.passed=false;
   await writeFile(resolve(output,'gps-regression.json'),JSON.stringify(result,null,2)+'\n');
  }
  return result;

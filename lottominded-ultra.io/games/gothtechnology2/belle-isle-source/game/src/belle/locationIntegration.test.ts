@@ -6,7 +6,12 @@ import ts from 'typescript';
 import * as T from 'three';
 import {LocationPresentation} from './locationPresentation.ts';
 import {roadContactPresentation} from './roadContactPresentation.ts';
+import {sceneFrameCap} from './frameBudget.ts';
+import {pauseSoftwareStartupScene} from './startupRenderPolicy.ts';
+import {RideProfileStats} from './rideProfileStats.ts';
 import {createPose,type RidePose} from '../../runtime/ride-core/src/controller.ts';
+import {RideCore} from '../../runtime/ride-core/src/ridecore.ts';
+import type {TerrainSampler} from '../../runtime/ride-core/src/terrain.ts';
 
 const source=readFileSync(new URL('./main.ts',import.meta.url),'utf8');
 const ast=ts.createSourceFile('main.ts',source,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS);
@@ -30,6 +35,64 @@ function locationTransition(){
  assert.equal(changes.length,1);
  return property(changes[0].arguments![0],'onFollowChanged');
 }
+
+function frameClockFixture(){
+ const frameStatements=declaration('frame').body!.statements;
+ const end=frameStatements.findIndex(statement=>ts.isExpressionStatement(statement)&&
+  ts.isCallExpression(statement.expression)&&statement.expression.expression.getText(ast)==='world.sky.tick');
+ assert.ok(end>=0,'The actual frame prefix must include elapsed time and the sky tick');
+ const prefix=frameStatements.slice(0,end+1).map(statement=>statement.getText(ast)).join('\n');
+ let boundary:ts.VariableDeclaration|undefined;
+ const visit=(node:ts.Node)=>{if(ts.isVariableDeclaration(node)&&node.name.getText(ast)==='breakMeasurementInterval')boundary=node;ts.forEachChild(node,visit);};
+ visit(ast);assert.ok(boundary?.initializer,'Missing actual measurement boundary');
+ let wallNow=132,associationsBroken=0;
+ const context={locationPerformance:undefined,pauseSoftwareStartupScene,softwareStartup:false,prepared:true,
+  active:true,document:{hidden:false,querySelector:()=>null},vr:undefined,scenePreparing:false,
+  resetFrameClock:false,previous:100,lastRender:100,lastMeasurementEligible:true,
+  rideProfile:{breakFrameAssociation(){associationsBroken++;}},paused:false,renderFocused:true,sceneFrameCap,cap:60,
+  performance:{now:()=>wallNow},clock:0,world:{sky:{observeFrame(){},tick(){}}},coop:undefined,
+  graphics:{value:'high'},frameBudget:undefined,online:undefined,reduced:true};
+ const sandbox=vm.createContext(context);
+ const js=ts.transpileModule(`({boundary:${boundary.initializer.getText(ast)},frame(now:number){${prefix}\nreturn {elapsed,dt,eligibleFrame};}})`,
+  {compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText;
+ const run=vm.runInContext(js,sandbox) as {boundary:()=>void;frame:(now:number)=>{elapsed:number;dt:number;eligibleFrame:boolean}|undefined};
+ return {context,run,wall(value:number){wallNow=value;},get associationsBroken(){return associationsBroken;}};
+}
+
+test('a later modal or focus boundary reanchors on RAF time for GPS and ordinary riding',()=>{
+ const f=frameClockFixture(),display=new LocationPresentation();display.begin(createPose());
+ const ground:TerrainSampler={sampleGround(_x,_z,out){out.height=2;out.normal={x:0,y:1,z:0};out.surface='pavement';out.offCourse=false;return out;},
+  raycast(){return null;},raycastObstacle(){return null;}};
+ const core=new RideCore(ground,{spawn:{position:{x:0,y:2,z:0},headingY:0}});
+ const point={x:0,z:0,headingY:null,speedMps:0};
+ // A follow transition already requests a reset; its first callback stays safe.
+ assert.match(locationTransition(),/resetFrameClock=true/);f.context.resetFrameClock=true;
+ const first=f.run.frame(130)!;assert.equal(first.dt,0);assert.equal(first.eligibleFrame,false);
+ assert.ok(display.update(point,2,first.dt));assert.equal(f.context.resetFrameClock,false);
+ const ordinary=f.run.frame(150)!;assert.equal(ordinary.dt,.02);assert.equal(ordinary.eligibleFrame,true);
+
+ // A new boundary after that reset has been consumed may run after the browser
+ // has already assigned the next callback's timestamp. Execute the source hook.
+ f.wall(182);const previous=f.context.previous,broken=f.associationsBroken;f.run.boundary();
+ assert.equal(f.context.previous,previous,'Event wall time must not replace the animation anchor');
+ assert.equal(f.context.lastMeasurementEligible,false);assert.equal(f.associationsBroken,broken+1);
+ const resumed=f.run.frame(180)!;assert.equal(resumed.dt,0);assert.equal(resumed.eligibleFrame,false);
+ assert.ok(display.update(point,2,resumed.dt),'Fresh valid GPS coordinates remain presentable');
+ assert.doesNotThrow(()=>core.advance(resumed.dt,{throttle:1}),'Ordinary riding must not throw on a resumed callback');
+ const next=f.run.frame(200)!;assert.equal(next.elapsed,.02);assert.equal(next.eligibleFrame,true);
+ assert.doesNotThrow(()=>core.advance(next.dt,{throttle:1}));assert.ok(core.current.speed>0,'Ordinary movement continues after the boundary');
+});
+
+test('an uninterrupted 300 ms frame stays eligible and reaches the existing stall statistics unchanged',()=>{
+ const f=frameClockFixture();f.wall(402);
+ const sample=f.run.frame(400)!;
+ assert.equal(sample.elapsed,.3);assert.equal(sample.dt,.05);assert.equal(sample.eligibleFrame,true);
+ assert.equal(call('rideProfile?.sample').arguments[0].getText(ast),'elapsed','Profiling keeps raw elapsed time, not bounded simulation dt');
+ const stats=new RideProfileStats();
+ stats.sample({dt:sample.elapsed,times:[0,0,0,0,0],draws:1,triangles:1,textures:1,geometries:1,
+  x:0,z:0,speed:1,place:'clock regression',eligible:sample.eligibleFrame,hidden:false});
+ const report=stats.report();assert.equal(report.frames,1);assert.equal(report.over250ms,1);assert.equal(report.maxFrameMs,300);
+});
 
 test('network, activity progress and saved diagnostics consume only parked simulation coordinates',()=>{
  const network=call('online.update').arguments[0];
