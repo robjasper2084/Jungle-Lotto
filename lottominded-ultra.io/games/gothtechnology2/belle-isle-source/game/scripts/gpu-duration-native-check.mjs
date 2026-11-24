@@ -10,17 +10,62 @@ import {createGpuDurationTrace,markGpuTraceClock} from './gpu-duration-trace.mjs
 // GPU TRACE OPT-IN END
 const gpuApiWallStages=['issue.drawingBufferWidth','issue.drawingBufferHeight','issue.drawFramebufferBinding','issue.samples',
  'issue.sampleBuffers','issue.createQuery','issue.beginQuery','issue.ownershipAfterBegin','close.ownership','close.endQuery'];
+const gpuApiStagesForMode=mode=>mode==='omit-msaa'?gpuApiWallStages.filter(stage=>stage!=='issue.samples'&&stage!=='issue.sampleBuffers'):gpuApiWallStages;
+function gpuObserverComparison(value,environment){
+ if(value===undefined)return null;
+ if(value!=='read-msaa'&&value!=='omit-msaa')throw Error('BELLE_GPU_OBSERVER_MODE must be read-msaa or omit-msaa');
+ if(environment.platform!=='darwin'||environment.device!=='desktop'||environment.mode!=='full'||environment.seconds!==90||environment.traceRequested!==true)
+  throw Error('GPU observer comparison requires the unchanged 90-second desktop full-scene Metal workload with BELLE_GPU_TRACE=1 on darwin');
+ if([['requestedDevice','desktop'],['requestedMode','full'],['requestedSeconds','90']].some(([key,expected])=>environment[key]!==undefined&&environment[key]!==expected))
+  throw Error('Explicit comparison workload environment must be desktop/full/90 without fallback or normalization');
+ return {mode:value,executionOrder:['read-msaa','omit-msaa'],laneIndex:value==='read-msaa'?0:1,
+  scope:'Same-build observer comparison only. Fixed read-msaa then omit-msaa order, fresh browser per lane, unchanged strict failures. No release acceptance; cache/order/load and lifetime-cap coverage can differ.'};
+}
+function gpuObserverBackendValid(actualGpu,renderBackend){
+ return renderBackend==='angle-metal'&&typeof actualGpu?.renderer==='string'&&/\bANGLE\b/i.test(actualGpu.renderer)&&/\bMetal\b/i.test(actualGpu.renderer)&&
+  !/SwiftShader|llvmpipe|softpipe|software rasterizer/i.test(actualGpu.renderer);
+}
+/** Derived only from existing bounded receipts/counters, without a new clock or GL observation. */
+function summarizeGpuObserverCoverage(gpu){
+ const rows=Array.isArray(gpu?.samples)?gpu.samples.slice(0,256):[];
+ const receipt=row=>row?{sample:row.sample,callback:row.callback,eligibleCallback:row.eligibleCallback,rafTimeMs:row.rafTimeMs,issuedCpuTimeMs:row.issuedCpuTimeMs}:null;
+ const first=rows[0],last=rows.at(-1),capReached=gpu?.counts?.issued===256&&last?.sample===256;
+ const after=(total,ordinal)=>Number.isSafeInteger(total)&&Number.isSafeInteger(ordinal)&&total>=ordinal?total-ordinal:null;
+ return {mode:gpu?.observationMode??null,sampleEvery:7,maxIssued:256,firstIssued:receipt(first),lastIssued:receipt(last),capReached,
+  capReachedAt:capReached?receipt(last):null,
+  issuedReceiptSpanMs:first&&last?last.issuedCpuTimeMs-first.issuedCpuTimeMs:null,
+  admittedCallbacksAfterLastIssue:after(gpu?.counts?.admittedCallbacks,last?.callback),
+  eligibleCallbacksAfterLastIssue:after(gpu?.counts?.eligibleCallbacks,last?.eligibleCallback),
+  note:'The unchanged 256-query cap can be reached sooner in a faster lane. First/last issue timestamps bound sampled receipts, not all observer work or the entire ride. Pending queries may resolve afterward; no unseen interval is assigned zero cost. Compare common early trace coverage separately from whole-ride totals.'};
+}
+/** Comparison-only teardown proof. No timeout, retry, extra close, or recovery is introduced. */
+async function finishGpuObserverLane(browser,server,{sourceHead,mode,laneIndex}){
+ const result={version:1,sourceHead,mode,laneIndex,executionOrder:['read-msaa','omit-msaa'],browserCloseSucceeded:false,
+  serverCloseRequested:false,serverKnownNotListening:false,complete:false,errors:[]};
+ if(!/^[0-9a-f]{40}$/.test(sourceHead??'')||!((mode==='read-msaa'&&laneIndex===0)||(mode==='omit-msaa'&&laneIndex===1)))result.errors.push('Invalid comparison source or lane identity');
+ try{if(!browser)throw Error('No browser was launched');await browser.close();result.browserCloseSucceeded=true;}
+ catch(error){result.errors.push('Browser close failed or was unavailable: '+String(error));}
+ try{
+  if(server.listening){result.serverCloseRequested=true;await new Promise(ok=>server.close(error=>{if(error)result.errors.push('Server close reported: '+String(error));ok();}));}
+  result.serverKnownNotListening=server.listening===false;
+  if(!result.serverKnownNotListening)result.errors.push('Server listening state remains uncertain');
+ }catch(error){result.errors.push('Server close failed: '+String(error));}
+ result.complete=result.errors.length===0&&result.browserCloseSucceeded&&result.serverKnownNotListening;
+ result.finishedAt=new Date().toISOString();return result;
+}
 /** Independent receipt arithmetic; call spans overlap the existing enclosing
  * callback/query-bracket totals and must never be added to those totals. */
-function validateGpuApiWall(row){
+function validateGpuApiWall(row,observationMode='read-msaa'){
  const errors=[],check=(ok,message)=>{if(!ok)errors.push(message);};
+ const stages=gpuApiStagesForMode(observationMode),issueStages=stages.slice(0,-2),allocationCount=issueStages.length-2;
+ check(observationMode==='read-msaa'||observationMode==='omit-msaa','Unknown GPU observation mode');
  const finite=value=>typeof value==='number'&&Number.isFinite(value)&&value>=0,tolerance=.000001;
  const timing=row.apiWall,calls=Array.isArray(timing?.calls)?timing.calls:[];
- check(Array.isArray(timing?.calls)&&calls.length>=6&&calls.length<=12&&timing.dropped===0,'API wall receipt bound/inventory is invalid');
+ check(Array.isArray(timing?.calls)&&calls.length>=allocationCount&&calls.length<=12&&timing.dropped===0,'API wall receipt bound/inventory is invalid');
  const phases={issue:[],end:[],cleanup:[]};let phaseOrder=0,previousEnd=row.issuedCpuTimeMs,sum=0,firstStart=null,lastEnd=null;
  for(const call of calls.slice(0,12)){
   if(!call||typeof call!=='object'){errors.push('API wall call object missing');continue;}
-  check(gpuApiWallStages.includes(call.stage),'Unknown API wall stage');
+  check(stages.includes(call.stage),'Unknown or omitted API wall stage');
   const phase=['issue','end','cleanup'].indexOf(call.phase);
   check(phase>=phaseOrder&&phase>=0,'API wall phases are out of order');if(phase>=0){phaseOrder=phase;phases[call.phase].push(call);}
   check(['returned','threw'].includes(call.outcome),'API wall call outcome is invalid');
@@ -42,11 +87,11 @@ function validateGpuApiWall(row){
    check(call.endMs<=row.cpuEndMs-row.renderSubmitCpuMs+tolerance,'Issue API wall call escaped the pre-render interval');
   if(finite(row.cpuEndMs)&&call.phase==='end')check(call.startMs+tolerance>=row.cpuEndMs,'Close API wall call precedes the original render-end timestamp');
  }
- check(phases.issue.length>=6&&phases.issue.length<=8&&phases.issue.every((call,index)=>call.stage===gpuApiWallStages[index]),'Issue API wall stage order is invalid');
- check(phases.issue.slice(0,6).every(call=>call.outcome==='returned'),'An issued query cannot have failed before allocation');
- for(const phase of ['end','cleanup'])check(phases[phase].length<=2&&phases[phase].every((call,index)=>call.stage===gpuApiWallStages[8+index]),'Close API wall stage order is invalid');
+ check(phases.issue.length>=allocationCount&&phases.issue.length<=issueStages.length&&phases.issue.every((call,index)=>call.stage===issueStages[index]),'Issue API wall stage order is invalid');
+ check(phases.issue.slice(0,allocationCount).every(call=>call.outcome==='returned'),'An issued query cannot have failed before allocation');
+ for(const phase of ['end','cleanup'])check(phases[phase].length<=2&&phases[phase].every((call,index)=>call.stage===stages[issueStages.length+index]),'Close API wall stage order is invalid');
  for(const phase of ['issue','end','cleanup']){const threw=phases[phase].findIndex(call=>call.outcome==='threw');check(threw<0||threw===phases[phase].length-1,'A thrown API call must terminate its phase');}
- if(row.status==='valid'||finite(row.cpuEndMs))check(phases.issue.length===8&&phases.end.length===2&&phases.cleanup.length===0&&calls.every(call=>call&&call.outcome==='returned'),'Completed query lacks its successful issue/close API wall receipts');
+ if(row.status==='valid'||finite(row.cpuEndMs))check(phases.issue.length===issueStages.length&&phases.end.length===2&&phases.cleanup.length===0&&calls.every(call=>call&&call.outcome==='returned'),'Completed query lacks its successful issue/close API wall receipts');
  if(firstStart!==null&&lastEnd!==null)check(sum<=lastEnd-firstStart+tolerance,'Non-overlapping API wall calls exceed their containing span');
  if(finite(row.queryBracketCpuMs))check(sum<=row.queryBracketCpuMs+tolerance,'API wall sum exceeds its legacy enclosing bracket');
  return errors;
@@ -59,19 +104,20 @@ function summarizeGpuApiWall(gpu){
   const values=calls.filter(call=>Array.isArray(call.clockErrors)&&call.clockErrors.length===0&&
    typeof call.startMs==='number'&&Number.isFinite(call.startMs)&&call.startMs>=0&&typeof call.endMs==='number'&&Number.isFinite(call.endMs)&&call.endMs>=call.startMs&&
    call.wallMs===call.endMs-call.startMs).map(call=>call.wallMs).sort((a,b)=>a-b);
-  return{stage,calls:calls.length,returned:calls.filter(call=>call.outcome==='returned').length,threw:calls.filter(call=>call.outcome==='threw').length,
+  return{stage,observation:gpu?.observationMode==='omit-msaa'&&!gpuApiStagesForMode('omit-msaa').includes(stage)?'unobserved':'observed',calls:calls.length,returned:calls.filter(call=>call.outcome==='returned').length,threw:calls.filter(call=>call.outcome==='threw').length,
    invalidClock:calls.length-values.length,phases:Object.fromEntries(['issue','end','cleanup'].map(phase=>[phase,calls.filter(call=>call.phase===phase).length])),
    wallMs:values.length?{count:values.length,sum:values.reduce((a,b)=>a+b,0),mean:values.reduce((a,b)=>a+b,0)/values.length,
     p50:values[Math.min(values.length-1,Math.floor(values.length*.5))],p95:values[Math.min(values.length-1,Math.floor(values.length*.95))],max:values.at(-1)}:null};
  });
 }
 /** Reconcile the detached report without polling GL or trusting its aggregates. */
-function validateGpuDuration(gpu,actualGpu){
+function validateGpuDuration(gpu,actualGpu,expectedObservationMode='read-msaa'){
  const errors=[],check=(condition,message)=>{if(!condition)errors.push(message);};
  const finite=value=>typeof value==='number'&&Number.isFinite(value),integer=value=>Number.isSafeInteger(value)&&value>=0;
  if(!gpu||typeof gpu!=='object')return ['Opt-in GPU duration snapshot missing'];
- check(gpu.version===2&&gpu.enabled===true&&gpu.status==='ready','GPU duration schema or state is invalid');
- check(gpu.apiWallTiming?.clock==='performance.now'&&gpu.apiWallTiming.maxCallsPerSample===12&&JSON.stringify(gpu.apiWallTiming.stages)===JSON.stringify(gpuApiWallStages),'API wall timing scope/schema is invalid');
+ check(gpu.version===3&&gpu.enabled===true&&gpu.status==='ready','GPU duration schema or state is invalid');
+ check((expectedObservationMode==='read-msaa'||expectedObservationMode==='omit-msaa')&&gpu.observationMode===expectedObservationMode,'GPU observation mode differs from the explicit driver request');
+ check(gpu.apiWallTiming?.clock==='performance.now'&&gpu.apiWallTiming.maxCallsPerSample===12&&JSON.stringify(gpu.apiWallTiming.stages)===JSON.stringify(gpuApiStagesForMode(expectedObservationMode)),'API wall timing scope/schema is invalid');
  check(gpu.capability?.extension==='EXT_disjoint_timer_query_webgl2'&&gpu.capability.available===true&&integer(gpu.capability.counterBits)&&gpu.capability.counterBits>0,'Elapsed-query capability was not established');
  check(gpu.backend?.renderer===actualGpu?.renderer&&gpu.backend?.version===actualGpu?.version,'Query and workload GPU identities differ');
  check(gpu.limits?.sampleEvery===7&&gpu.limits?.maxIssued===256&&gpu.limits?.maxPending===4,'Diagnostic sampling bounds changed');
@@ -86,14 +132,17 @@ function validateGpuDuration(gpu,actualGpu){
  for(const [index,row]of rows.slice(0,256).entries()){
   const label='Receipt '+(index+1)+': ';
   if(!row||typeof row!=='object'){errors.push(label+'missing object');continue;}
-  errors.push(...validateGpuApiWall(row).map(error=>label+error));
+  errors.push(...validateGpuApiWall(row,expectedObservationMode).map(error=>label+error));
   check(row.sample===index+1&&integer(row.callback)&&row.callback>previousCallback&&row.callback<=c.admittedCallbacks,'Receipt identifiers or callback order are invalid');
   check(integer(row.eligibleCallback)&&row.eligibleCallback>previousEligible&&row.eligibleCallback<=c.eligibleCallbacks&&row.eligibleCallback<=row.callback&&row.eligibleCallback%7===0,label+'sampling cadence is invalid');
   previousCallback=row.callback;previousEligible=row.eligibleCallback;
   if(Object.hasOwn(statuses,row.status))statuses[row.status]++;else errors.push(label+'unknown query status');
   check(finite(row.rafTimeMs)&&row.rafTimeMs>=0&&finite(row.cpuStartMs)&&row.cpuStartMs>=0&&finite(row.issuedCpuTimeMs)&&row.issuedCpuTimeMs>=row.cpuStartMs,label+'issue timestamps are invalid');
   check(integer(row.drawingBuffer?.width)&&row.drawingBuffer.width>0&&integer(row.drawingBuffer?.height)&&row.drawingBuffer.height>0,label+'drawing buffer is invalid');
-  check(typeof row.framebuffer?.defaultBound==='boolean'&&integer(row.framebuffer.samples)&&integer(row.framebuffer.sampleBuffers),label+'framebuffer metadata is invalid');
+  check(typeof row.framebuffer?.defaultBound==='boolean',label+'framebuffer binding metadata is invalid');
+  check(expectedObservationMode==='omit-msaa'?
+   row.framebuffer?.sampleObservation==='unobserved'&&row.framebuffer.samples===null&&row.framebuffer.sampleBuffers===null:
+   row.framebuffer?.sampleObservation==='observed'&&integer(row.framebuffer.samples)&&integer(row.framebuffer.sampleBuffers),label+'framebuffer sample observation is invalid');
   check(['waiting','paired','interrupted'].includes(row.association),label+'unknown callback association');
   for(const key of ['nextAdmittedCallback','nextEligibleCallback']){
    const next=row[key];if(next===null)continue;
@@ -126,7 +175,11 @@ const device=process.env.BELLE_PROFILE_DEVICE==='phone'?'phone':'desktop';
 const viewport=device==='phone'?{width:390,height:844}:{width:1440,height:900};
 const seconds=Math.max(30,Math.min(600,Number(process.env.BELLE_PROFILE_SECONDS)||90));
 const mode='full';
-const output=resolve(game,'output/gpu-duration-profile',mode,device);
+// GPU OBSERVER COMPARISON BEGIN
+const observerRequest=process.env.BELLE_GPU_OBSERVER_MODE,observerMode=observerRequest??'read-msaa';
+const observerOutputLane=['read-msaa','omit-msaa'].includes(observerMode)?observerMode:'invalid';
+// GPU OBSERVER COMPARISON END
+const output=resolve(game,'output/gpu-duration-profile',...(observerRequest===undefined?[]:['observer-comparison',observerOutputLane]),mode,device);
 await mkdir(output,{recursive:true});
 const report={sourceHead:process.env.GITHUB_SHA||null,device,viewport,requestedSeconds:seconds,mode,
  renderBackend:null,rendererFallback:null,actualGpu:null,input:null,classification:null,
@@ -143,9 +196,16 @@ const traceRequested=process.env.BELLE_GPU_TRACE==='1';
 const traceEnvironment=traceRequested?{platform:process.platform,device,mode,requestedSeconds:seconds,renderBackend:null,actualGpu:null}:null;
 const trace=traceRequested?createGpuDurationTrace({output,environment:traceEnvironment,
  createSession:()=>browser.newBrowserCDPSession(),browserVersion:()=>browser.version(),
- markClock:name=>page.evaluate(markGpuTraceClock,name)}):null;
+ markClock:name=>page.evaluate(markGpuTraceClock,name),observationMode:observerMode}):null;
 // GPU TRACE OPT-IN END
 try{
+ // GPU OBSERVER COMPARISON BEGIN
+ if(observerRequest!==undefined){
+  report.gpuObserverComparison={requestedMode:String(observerRequest).slice(0,64),invocationStartedAt:new Date(begin).toISOString()};
+  Object.assign(report.gpuObserverComparison,gpuObserverComparison(observerRequest,{platform:process.platform,device,mode,seconds,traceRequested,
+   requestedDevice:process.env.BELLE_PROFILE_DEVICE,requestedMode:process.env.BELLE_PROFILE_MODE,requestedSeconds:process.env.BELLE_PROFILE_SECONDS}));
+ }
+ // GPU OBSERVER COMPARISON END
  // GPU TRACE OPT-IN BEGIN
  if(traceRequested&&(process.platform!=='darwin'||device!=='desktop'||mode!=='full'||seconds!==90))
   throw Error('BELLE_GPU_TRACE=1 requires the unchanged 90-second desktop full-scene native Metal workload on darwin');
@@ -273,7 +333,7 @@ try{
  page.on('pageerror',sourcePageError);page.on('console',sourceConsoleError);
  page.on('response',sourceResponseError);page.on('requestfailed',sourceRequestError);
  const navigationStarted=Date.now();
- await page.goto('http://127.0.0.1:'+server.address().port+'/?profile=1&gpu-duration=1'+(mode==='diagnostic'?'&perfProbe=1':'&locationPerf=1'),{waitUntil:'domcontentloaded'});
+ await page.goto('http://127.0.0.1:'+server.address().port+'/?profile=1&gpu-duration=1'+(mode==='diagnostic'?'&perfProbe=1':'&locationPerf=1')+(observerRequest===undefined?'':'&gpu-duration-observer='+observerMode),{waitUntil:'domcontentloaded'});
  await page.waitForFunction(()=>['ready','error'].includes(document.querySelector('#welcome')?.dataset.state));
  await expect(page.locator('#welcome')).toHaveAttribute('data-state','ready',{timeout:1000});
  report.welcomeReadyMs=Date.now()-navigationStarted;
@@ -287,6 +347,9 @@ try{
  });
  if(report.renderBackend==='angle-metal'&&(!/Metal/i.test(report.actualGpu.renderer)||/SwiftShader|llvmpipe|software rasterizer/i.test(report.actualGpu.renderer)))
   throw Error('The sustained profile requires a Metal renderer on macOS. Chrome reported '+report.actualGpu.renderer);
+ // GPU OBSERVER COMPARISON BEGIN
+ if(observerRequest!==undefined&&!gpuObserverBackendValid(report.actualGpu,report.renderBackend))throw Error('Observer comparison requires the actual game canvas on ANGLE Metal without software fallback');
+ // GPU OBSERVER COMPARISON END
  await page.locator('.cinema-ride-picker > summary').click();
  await page.locator('.ride-options label').filter({hasText:'One wheel'}).click();
  await page.getByRole('button',{name:'Use this ride',exact:true}).click();
@@ -369,8 +432,11 @@ try{
  report.gpuDuration=report.profile.settings?.gpuDuration??null;
  // Inspect only the immutable, bounded snapshot already emitted by the real
  // recorder. No forced query resolution, fence, frame, or app control is used.
- report.gpuDurationValidationErrors=validateGpuDuration(report.gpuDuration,report.actualGpu);
+ report.gpuDurationValidationErrors=validateGpuDuration(report.gpuDuration,report.actualGpu,observerMode);
  report.gpuApiWall=summarizeGpuApiWall(report.gpuDuration);
+ // GPU OBSERVER COMPARISON BEGIN
+ if(observerRequest!==undefined)report.gpuObserverCoverage=summarizeGpuObserverCoverage(report.gpuDuration);
+ // GPU OBSERVER COMPARISON END
  report.gpuDurationDiagnosticComplete=report.gpuDurationValidationErrors.length===0;
  // GPU TRACE OPT-IN BEGIN
  // Riding, native key release and ending counters are complete before any IO.read.
@@ -431,8 +497,20 @@ finally{
  // GPU TRACE OPT-IN END
  report.elapsedWallMs=Date.now()-begin;
  await writeFile(resolve(output,'report.json'),JSON.stringify(report,null,2)+'\n');
+ // GPU OBSERVER COMPARISON BEGIN
+ if(observerRequest!==undefined){
+  const completion=await finishGpuObserverLane(browser,server,{sourceHead:report.sourceHead,mode:observerMode,laneIndex:report.gpuObserverComparison?.laneIndex});
+  await writeFile(resolve(output,'observer-completion.json'),JSON.stringify(completion,null,2)+'\n');
+  report.gpuObserverCompletion={file:'observer-completion.json',complete:completion.complete};
+  if(!completion.complete){report.passed=false;report.errors.push(...completion.errors);}
+  await writeFile(resolve(output,'report.json'),JSON.stringify(report,null,2)+'\n');
+ }else{
+ // GPU OBSERVER COMPARISON END
  if(browser)await browser.close().catch(()=>{});
  await new Promise(ok=>server.close(ok));
+ // GPU OBSERVER COMPARISON BEGIN
+ }
+ // GPU OBSERVER COMPARISON END
 }
 console.log(JSON.stringify({passed:report.passed,diagnosticComplete:report.gpuDurationDiagnosticComplete,gpuMs:report.gpuDuration?.gpuMs,gpuCounts:report.gpuDuration?.counts,gpuValidationErrors:report.gpuDurationValidationErrors,mode,device,renderBackend:report.renderBackend,renderer:report.actualGpu?.renderer,classification:report.classification,frames:report.profile?.frames,
  movingSeconds:report.profile?.movingSeconds,distanceMetres:report.profile?.distanceMetres,

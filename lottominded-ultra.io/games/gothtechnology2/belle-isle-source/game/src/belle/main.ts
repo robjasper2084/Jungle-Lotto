@@ -29,7 +29,7 @@ import {softwareWebGLRenderer} from './worldPerformancePolicy.ts';
 import {pauseSoftwareStartupScene} from './startupRenderPolicy.ts';
 import {installGpuFramePacing,nativeAppleMetalRenderer} from './gpuFramePacing.ts';
 import {batchedIndirectUpdateDiagnostics} from './batchedIndirectUpdates.ts';
-import {createGpuDurationProbe,gpuDurationEnabled,gpuDurationContextExcluded} from './gpuDurationProbe.ts';
+import {createGpuDurationProbe,gpuDurationEnabled,gpuDurationObservationMode,gpuDurationContextExcluded} from './gpuDurationProbe.ts';
 import {installSharedGeometryBuffers} from './sharedGeometryBuffers.ts';
 import {readAntiAliasingMode,enableHardwareAntialiasing} from './antiAliasingPolicy.ts';
 import {prepareCoastGuardMap} from './coastGuard.ts';
@@ -542,7 +542,7 @@ const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreferen
  });
  const submissionProbe=renderProbe?installRenderSubmissionProbe(renderer,scene):undefined;
  const loopProbe=renderProbe?new ManualLoopProbe():undefined;const loopBinding=loopProbe?attachGpuFramePacingProbe(renderer,loopProbe):undefined;
- const gpuDuration=createGpuDurationProbe(gpuDurationEnabled(location.search),()=>renderer.getContext());
+ const gpuDuration=createGpuDurationProbe(gpuDurationEnabled(location.search),()=>renderer.getContext(),undefined,undefined,gpuDurationObservationMode(location.search));
  const gpuDurationExcluded=()=>gpuDurationContextExcluded({xr:!!vr?.active,coop:!!coop?.active,reducedScene:localPerformanceProbe(),following:locationFollowing,locationState:realLocation?.snapshot.status});
  if(gpuDuration){
   canvas.addEventListener('webglcontextlost',()=>gpuDuration.contextLost());

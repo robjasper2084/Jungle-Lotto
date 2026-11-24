@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {createGpuDurationProbe,gpuDurationEnabled,gpuDurationContextExcluded,GPU_DURATION_API_STAGES,type GpuDurationFrameStart,type GpuDurationFrameEnd} from './gpuDurationProbe.ts';
+import {createGpuDurationProbe,gpuDurationEnabled,gpuDurationObservationMode,gpuDurationContextExcluded,GPU_DURATION_API_STAGES,type GpuDurationFrameStart,type GpuDurationFrameEnd,type GpuDurationObservationMode} from './gpuDurationProbe.ts';
 
-function fixture(){
+function fixture(observationMode:GpuDurationObservationMode='read-msaa'){
  let time=0,callback=0,contextReads=0,clockThrows=false,apiClockReads=0;
  let onCall:((call:{name:string;args:unknown[]})=>void)|undefined,apiClockOverride:(()=>number)|undefined;
  const legacyClockPositions:number[]=[];
@@ -37,7 +37,7 @@ function fixture(){
  const getContext=()=>{contextReads++;return gl as unknown as WebGL2RenderingContext;};
  const clock=()=>{legacyClockPositions.push(calls.length);if(clockThrows)throw Error('clock');return time;};
  const apiClock=()=>{apiClockReads++;return apiClockOverride?apiClockOverride():time;};
- const probe=createGpuDurationProbe(true,getContext,clock,apiClock)!;
+ const probe=createGpuDurationProbe(true,getContext,clock,apiClock,observationMode)!;
  const begin=(flags:Partial<GpuDurationFrameStart>={})=>{callback++;time+=20;probe.beginFrame({rafTimeMs:callback*20,cpuStartMs:time,recording:true,eligible:true,excluded:false,...flags});};
  const end=(values:Partial<GpuDurationFrameEnd>={})=>{time+=4;probe.endFrame({cpuEndMs:time,renderSubmitCpuMs:2,eligible:true,drawCalls:400,triangles:2_000_000,renderPasses:3,shadowUpdateRequested:true,...values});};
  const tick=(count=1,flags:Partial<GpuDurationFrameStart>={})=>{for(let i=0;i<count;i++){begin(flags);try{end();}finally{probe.cancelFrame();}}};
@@ -46,6 +46,47 @@ function fixture(){
   set onCall(value:typeof onCall){onCall=value;},set apiClockOverride(value:typeof apiClockOverride){apiClockOverride=value;}};
 }
 const count=(f:ReturnType<typeof fixture>,name:string)=>f.calls.filter(c=>c.name===name).length;
+
+test('observation mode is explicit, immutable, and invalid modes fail before context acquisition',()=>{
+ assert.equal(gpuDurationObservationMode(''),'read-msaa');
+ for(const mode of ['read-msaa','omit-msaa'] as const)assert.equal(gpuDurationObservationMode('?gpu-duration=1&gpu-duration-observer='+mode),mode);
+ for(const value of ['','0','cached','OMIT-MSAA'])assert.throws(()=>gpuDurationObservationMode('?gpu-duration-observer='+value),/Invalid/);
+ let acquired=0;const getContext=()=>{acquired++;throw Error('must not acquire');};
+ assert.throws(()=>createGpuDurationProbe(true,getContext,undefined,undefined,'cached' as GpuDurationObservationMode),/Invalid/);
+ assert.equal(createGpuDurationProbe(false,getContext,undefined,undefined,'omit-msaa'),undefined);assert.equal(acquired,0);
+ const f=fixture('omit-msaa'),snapshot=f.probe.snapshot();snapshot.observationMode='read-msaa';
+ assert.equal(f.probe.snapshot().observationMode,'omit-msaa');assert.equal(f.contextReads,0);
+ const source=readFileSync(new URL('./main.ts',import.meta.url),'utf8');
+ assert.match(source,/createGpuDurationProbe\(gpuDurationEnabled\(location.search\),\(\)=>renderer.getContext\(\),undefined,undefined,gpuDurationObservationMode\(location.search\)\)/);
+});
+
+test('omission removes exactly the two metadata getters and preserves remaining GL and legacy clock order',()=>{
+ const baseline=fixture(),omission=fixture('omit-msaa');baseline.tick(7);omission.tick(7);
+ const withoutMsaa=baseline.calls.filter(call=>!(call.name==='getParameter'&&[baseline.gl.SAMPLES,baseline.gl.SAMPLE_BUFFERS].includes(call.args[0] as number)));
+ assert.deepEqual(omission.calls,withoutMsaa);
+ assert.deepEqual(baseline.legacyClockPositions,[11,22]);assert.deepEqual(omission.legacyClockPositions,[11,20]);
+ assert.equal(baseline.apiClockReads,20);assert.equal(omission.apiClockReads,16);
+ const expectedStages=GPU_DURATION_API_STAGES.filter(stage=>stage!=='issue.samples'&&stage!=='issue.sampleBuffers');
+ const observed=baseline.probe.snapshot().samples[0],snapshot=omission.probe.snapshot(),row=snapshot.samples[0];
+ assert.deepEqual(snapshot.apiWallTiming.stages,expectedStages);assert.deepEqual(row.apiWall.calls.map(call=>call.stage),expectedStages);
+ assert.deepEqual(row.framebuffer,{defaultBound:true,samples:null,sampleBuffers:null,sampleObservation:'unobserved'});
+ assert.deepEqual(row,{...observed,framebuffer:row.framebuffer,apiWall:{calls:observed.apiWall.calls.filter(call=>call.stage!=='issue.samples'&&call.stage!=='issue.sampleBuffers'),dropped:0}});
+ assert.deepEqual(omission.probe.snapshot().counts,baseline.probe.snapshot().counts);
+});
+
+test('omitted getters cannot throw or add delay while unrelated observations still fail normally',()=>{
+ for(const mode of ['read-msaa','omit-msaa'] as const){
+  const f=fixture(mode);f.onCall=call=>{if(call.name==='getParameter'&&[f.gl.SAMPLES,f.gl.SAMPLE_BUFFERS].includes(call.args[0] as number))throw Error('diagnostic metadata getter');};
+  f.tick(7);const s=f.probe.snapshot();assert.equal(s.counts.errors,mode==='read-msaa'?1:0);assert.equal(s.counts.issued,mode==='read-msaa'?0:1);
+ }
+ const unrelated=fixture('omit-msaa');unrelated.onCall=call=>{if(call.name==='getParameter'&&call.args[0]===unrelated.gl.DRAW_FRAMEBUFFER_BINDING)throw Error('binding');};
+ unrelated.tick(7);assert.equal(unrelated.probe.snapshot().counts.errors,1);assert.equal(unrelated.queries.length,0);
+ const baseline=fixture(),omission=fixture('omit-msaa');
+ for(const f of [baseline,omission]){f.gl.autoAvailable=true;f.onCall=call=>{if(call.name==='getParameter'&&call.args[0]===f.gl.SAMPLES)f.advance(200);if(call.name==='getParameter'&&call.args[0]===f.gl.SAMPLE_BUFFERS)f.advance(30);};f.tick(8);}
+ assert.equal(baseline.probe.snapshot().samples[0].cpuElapsedMs,234);assert.equal(omission.probe.snapshot().samples[0].cpuElapsedMs,4);
+ assert.equal(baseline.probe.snapshot().samples[0].gpuNanoseconds,omission.probe.snapshot().samples[0].gpuNanoseconds);
+ assert.equal(count(baseline,'beginQuery'),count(omission,'beginQuery'));assert.equal(count(baseline,'endQuery'),count(omission,'endQuery'));
+});
 
 test('flag off performs zero context acquisition, extension lookup, parameter or query calls',()=>{
  const f=fixture();
@@ -76,7 +117,7 @@ test('only every seventh eligible recorded callback issues, without observing pr
  f.tick(6);assert.equal(f.contextReads,0);f.tick();assert.equal(f.contextReads,1);assert.equal(count(f,'beginQuery'),1);assert.equal(count(f,'endQuery'),1);
  const s=f.probe.snapshot();assert.equal(s.counts.eligibleCallbacks,7);assert.equal(s.samples[0].callback,67);assert.equal(s.samples[0].eligibleCallback,7);
  assert.deepEqual(s.backend,{vendor:'Native vendor',renderer:'Native renderer',version:'WebGL 2',antialias:true});
- assert.deepEqual(s.samples[0].drawingBuffer,{width:1440,height:900});assert.deepEqual(s.samples[0].framebuffer,{defaultBound:true,samples:4,sampleBuffers:1});
+ assert.deepEqual(s.samples[0].drawingBuffer,{width:1440,height:900});assert.deepEqual(s.samples[0].framebuffer,{defaultBound:true,samples:4,sampleBuffers:1,sampleObservation:'observed'});
 });
 
 test('availability is read only on later admitted callbacks; snapshots and cleanup do not poll',()=>{
@@ -210,8 +251,8 @@ test('API wall scopes preserve the original exact GL trace, arguments, values an
  ]);
  assert.deepEqual(f.legacyClockPositions,[11,22],'Legacy issue/end reads retain their original positions and count');
  assert.equal(f.apiClockReads,20);const s=f.probe.snapshot(),row=s.samples[0];
- assert.equal(s.version,2);assert.deepEqual(row.apiWall.calls.map(call=>call.stage),GPU_DURATION_API_STAGES);
- assert.deepEqual(row.drawingBuffer,{width:1440,height:900});assert.deepEqual(row.framebuffer,{defaultBound:true,samples:4,sampleBuffers:1});
+ assert.equal(s.version,3);assert.equal(s.observationMode,'read-msaa');assert.deepEqual(row.apiWall.calls.map(call=>call.stage),GPU_DURATION_API_STAGES);
+ assert.deepEqual(row.drawingBuffer,{width:1440,height:900});assert.deepEqual(row.framebuffer,{defaultBound:true,samples:4,sampleBuffers:1,sampleObservation:'observed'});
  assert.equal(row.issuedCpuTimeMs,164);assert.equal(row.cpuEndMs,168);assert.equal(row.queryBracketCpuMs,4);
  assert.equal(row.apiWall.dropped,0);
  for(const call of row.apiWall.calls){assert.equal(call.wallMs,0);assert.equal(call.outcome,'returned');assert.deepEqual(call.clockErrors,[]);}
@@ -284,10 +325,82 @@ const driverSource=readFileSync(new URL('../../scripts/gpu-duration-native-check
 // Execute only the driver's pure reconciliation code. Browser startup/input is
 // outside this slice and is neither imported nor simulated by these tests.
 const driver=Function(driverSource.slice(driverSource.indexOf('const gpuApiWallStages='),driverSource.indexOf('const game='))+
- ';return {validateGpuApiWall,validateGpuDuration,summarizeGpuApiWall};')() as {
- validateGpuApiWall:(row:unknown)=>string[];validateGpuDuration:(snapshot:unknown,actual:unknown)=>string[];
- summarizeGpuApiWall:(snapshot:unknown)=>{stage:string;calls:number;wallMs:{count:number;sum:number;mean:number;p50:number;p95:number;max:number}|null}[];
+ ';return {validateGpuApiWall,validateGpuDuration,summarizeGpuApiWall,summarizeGpuObserverCoverage,gpuObserverComparison,gpuObserverBackendValid,finishGpuObserverLane};')() as {
+ validateGpuApiWall:(row:unknown,mode?:string)=>string[];validateGpuDuration:(snapshot:unknown,actual:unknown,mode?:string)=>string[];
+ summarizeGpuApiWall:(snapshot:unknown)=>{stage:string;observation:string;calls:number;wallMs:{count:number;sum:number;mean:number;p50:number;p95:number;max:number}|null}[];
+ summarizeGpuObserverCoverage:(snapshot:unknown)=>{capReached:boolean;capReachedAt:{sample:number;callback:number;eligibleCallback:number;issuedCpuTimeMs:number}|null;firstIssued:object|null;lastIssued:object|null;eligibleCallbacksAfterLastIssue:number|null;admittedCallbacksAfterLastIssue:number|null;issuedReceiptSpanMs:number|null};
+ gpuObserverComparison:(mode:unknown,environment:Record<string,unknown>)=>null|{mode:string;executionOrder:string[];laneIndex:number};
+ gpuObserverBackendValid:(actual:unknown,backend:string)=>boolean;
+ finishGpuObserverLane:(browser:unknown,server:unknown,identity:{sourceHead:string|null;mode:string;laneIndex:number})=>Promise<{complete:boolean;browserCloseSucceeded:boolean;serverCloseRequested:boolean;serverKnownNotListening:boolean;errors:string[]}>;
 };
+
+test('comparison completion requires actual browser/server teardown and exact source/lane identity',async()=>{
+ const identity={sourceHead:'1a485b08db6bfe780376e0904569d19c7012e2ad',mode:'read-msaa',laneIndex:0};
+ let browserCloses=0,serverCloses=0;
+ const browser={async close(){browserCloses++;}},server={listening:true,close(done:()=>void){serverCloses++;this.listening=false;done();}};
+ let completion=await driver.finishGpuObserverLane(browser,server,identity);assert.equal(completion.complete,true);assert.equal(completion.browserCloseSucceeded,true);assert.equal(completion.serverKnownNotListening,true);
+ assert.equal(browserCloses,1);assert.equal(serverCloses,1);
+ completion=await driver.finishGpuObserverLane(browser,server,{...identity,mode:'omit-msaa',laneIndex:1});assert.equal(completion.complete,true);assert.equal(completion.serverCloseRequested,false);assert.equal(serverCloses,1);
+ for(const bad of [{sourceHead:null},{mode:'omit-msaa'},{laneIndex:1}])assert.equal((await driver.finishGpuObserverLane(browser,server,{...identity,...bad})).complete,false);
+ const rejected={async close(){throw Error('uncertain browser close');}};
+ completion=await driver.finishGpuObserverLane(rejected,server,identity);assert.equal(completion.complete,false);assert.equal(completion.browserCloseSucceeded,false);assert(completion.errors.some(error=>error.includes('uncertain browser close')));
+ completion=await driver.finishGpuObserverLane(null,server,identity);assert.equal(completion.complete,false);
+ const uncertainServer={listening:true,close(done:()=>void){done();}};
+ completion=await driver.finishGpuObserverLane(browser,uncertainServer,identity);assert.equal(completion.complete,false);assert.equal(completion.serverKnownNotListening,false);
+ let resolveClose!:()=>void,settled=false;const hanging={close:()=>new Promise<void>(resolve=>{resolveClose=resolve;})};
+ const pending=driver.finishGpuObserverLane(hanging,server,identity).then(value=>{settled=true;return value;});await Promise.resolve();assert.equal(settled,false,'No completion proof while browser close is pending');
+ resolveClose();assert.equal((await pending).complete,true);
+});
+
+test('comparison driver rejects unknown modes and incompatible workloads before a browser launch',()=>{
+ const environment={platform:'darwin',device:'desktop',mode:'full',seconds:90,traceRequested:true};
+ assert.equal(driver.gpuObserverComparison(undefined,{}),null);
+ for(const [index,mode]of ['read-msaa','omit-msaa'].entries()){
+  const config=driver.gpuObserverComparison(mode,environment)!;assert.equal(config.mode,mode);assert.equal(config.laneIndex,index);assert.deepEqual(config.executionOrder,['read-msaa','omit-msaa']);
+ }
+ for(const value of ['',null,'read','cached',0])assert.throws(()=>driver.gpuObserverComparison(value,environment),/must be/);
+ for(const changed of [{platform:'linux'},{device:'phone'},{mode:'diagnostic'},{seconds:30},{seconds:91},{traceRequested:false}])
+  assert.throws(()=>driver.gpuObserverComparison('omit-msaa',{...environment,...changed}),/unchanged 90-second/);
+ for(const changed of [{requestedDevice:'tablet'},{requestedMode:'diagnostic'},{requestedSeconds:'0'},{requestedSeconds:'invalid'},{requestedSeconds:'600'}])
+  assert.throws(()=>driver.gpuObserverComparison('omit-msaa',{...environment,...changed}),/without fallback or normalization/);
+ assert(driver.gpuObserverComparison('read-msaa',{...environment,requestedDevice:'desktop',requestedMode:'full',requestedSeconds:'90'}));
+ assert(driver.gpuObserverBackendValid({renderer:'ANGLE (Apple, ANGLE Metal Renderer: Test)'},'angle-metal'));
+ for(const renderer of ['Metal only','ANGLE only','ANGLE Metal SwiftShader','ANGLE Metal llvmpipe','ANGLE Metal software rasterizer'])
+  assert.equal(driver.gpuObserverBackendValid({renderer},'angle-metal'),false);
+ assert.equal(driver.gpuObserverBackendValid({renderer:'ANGLE Metal'},'swiftshader-fallback'),false);
+});
+
+test('driver requires null unobserved metadata only in the explicitly requested omission mode',()=>{
+ const f=fixture('omit-msaa');f.gl.autoAvailable=true;f.tick(57);const original=f.probe.snapshot(),before=f.calls.length;
+ assert.deepEqual(driver.validateGpuDuration(original,original.backend,'omit-msaa'),[]);
+ assert(driver.validateGpuDuration(original,original.backend).length>0);assert(driver.validateGpuDuration(original,original.backend,'cached').length>0);
+ const summaries=driver.summarizeGpuApiWall(original);
+ for(const stage of ['issue.samples','issue.sampleBuffers']){const row=summaries.find(row=>row.stage===stage)!;assert.equal(row.observation,'unobserved');assert.equal(row.calls,0);assert.equal(row.wallMs,null);}
+ const mutations:((s:typeof original)=>void)[]=[
+  s=>{s.observationMode='read-msaa';},s=>{s.samples[0].framebuffer.samples=0;},s=>{s.samples[0].framebuffer.sampleBuffers=1;},
+  s=>{s.samples[0].framebuffer.sampleObservation='observed';},s=>{s.samples[0].apiWall.calls.splice(3,0,{...s.samples[0].apiWall.calls[2],stage:'issue.samples'});},
+  s=>{s.samples[0].apiWall.calls.splice(2,1);},s=>{s.apiWallTiming.stages=[...GPU_DURATION_API_STAGES];},
+ ];
+ for(const mutate of mutations){const s=structuredClone(original);mutate(s);assert(driver.validateGpuDuration(s,s.backend,'omit-msaa').length>0);}
+ const observed=fixture();observed.gl.autoAvailable=true;observed.tick(57);const baseline=observed.probe.snapshot();
+ assert.deepEqual(driver.validateGpuDuration(baseline,baseline.backend),[]);assert(driver.validateGpuDuration(baseline,baseline.backend,'omit-msaa').length>0);
+ assert.equal(f.calls.length,before);
+});
+
+test('omission keeps pending accounting and the 256-query cap; coverage is derived without another observation',()=>{
+ const f=fixture('omit-msaa');f.gl.autoAvailable=true;f.tick(62);f.begin();let s=f.probe.snapshot();
+ assert.equal(s.samples.at(-1)!.apiWall.calls.length,6);assert.deepEqual(driver.validateGpuDuration(s,s.backend,'omit-msaa'),[]);f.probe.cancelFrame();
+ const bounded=fixture('omit-msaa');bounded.gl.autoAvailable=true;bounded.tick(7*256+1);bounded.tick(100);
+ s=bounded.probe.snapshot();const before=[bounded.calls.length,bounded.legacyClockPositions.length,bounded.apiClockReads];
+ assert.equal(s.counts.issued,256);assert.equal(s.counts.valid,256);assert.equal(s.counts.pendingPeak,1);assert(s.skips.limit>0);
+ assert.deepEqual(driver.validateGpuDuration(s,s.backend,'omit-msaa'),[]);
+ const coverage=driver.summarizeGpuObserverCoverage(s);assert.equal(coverage.capReached,true);assert.equal(coverage.capReachedAt?.sample,256);
+ assert.equal(coverage.capReachedAt?.callback,7*256);assert.equal(coverage.capReachedAt?.eligibleCallback,7*256);
+ assert.equal(coverage.capReachedAt?.issuedCpuTimeMs,s.samples.at(-1)!.issuedCpuTimeMs);assert.equal(coverage.eligibleCallbacksAfterLastIssue,101);
+ assert.equal(coverage.admittedCallbacksAfterLastIssue,101);assert.equal(coverage.issuedReceiptSpanMs,s.samples.at(-1)!.issuedCpuTimeMs-s.samples[0].issuedCpuTimeMs);
+ assert.deepEqual([bounded.calls.length,bounded.legacyClockPositions.length,bounded.apiClockReads],before);
+ const empty=driver.summarizeGpuObserverCoverage(null);assert.equal(empty.capReached,false);assert.equal(empty.capReachedAt,null);assert.equal(empty.firstIssued,null);
+});
 test('the separate driver reconciles raw wall receipts and computes per-stage statistics without GL reads',()=>{
  const f=fixture();f.gl.autoAvailable=true;f.onCall=call=>{if(call.name==='getParameter'&&call.args[0]===f.gl.SAMPLES)f.advance(37);};f.tick(63);
  const s=f.probe.snapshot(),before=f.calls.length;assert.equal(s.counts.valid,8);assert.equal(s.counts.unresolved,1);

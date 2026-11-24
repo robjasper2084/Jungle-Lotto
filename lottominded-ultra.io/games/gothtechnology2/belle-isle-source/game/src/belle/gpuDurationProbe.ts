@@ -6,6 +6,13 @@ export const GPU_DURATION_API_STAGES=['issue.drawingBufferWidth','issue.drawingB
 export const GPU_DURATION_API_WALL_NOTE='Per-call elapsed wall time from separate performance.now reads, not pure CPU execution time or proof of a GPU cause. Scheduling, driver/process communication and synchronization can contribute. These non-overlapping call scopes overlap the legacy callback or query-bracket intervals; close scopes occur after cpuEndMs but within a completed query bracket. Never add child scopes to their containing intervals. Legacy issuedCpuTimeMs remains before the metadata reads and beginQuery, and queryBracketCpuMs keeps that original origin. Initialization, result polling, ordinary scene work and callbacks issuing no query are not individually timed; cpuStartMs to issuedCpuTimeMs remains the broad pre-issue interval. Only issued samples retain call receipts; failures before query allocation have no sample. Invalid/throwing clock reads retain null durations and explicit errors. Cleanup calls are separately marked and bounded; dropped receipts are counted. No additional GL calls or explicit waits are made.';
 export const GPU_DURATION_NOTE='Diagnostic only, not release acceptance. Queries surround sky/world updates through the final scene render/copy in sampled eligible recorded callbacks. Elapsed GPU-command intervals can include gaps while the CPU supplies commands; they exclude earlier queue delay and browser composition/presentation, and are not pure GPU busy time. CPU timings include observer overhead and overlap GPU work; do not add them or subtract their percentiles. Next-callback intervals are associations, not proof of cause. RAF timestamps and performance.now timestamps have different callback timing semantics. Counts and samples are bounded lifetime observations; compare settingsAtStart for repeated captures. Snapshots never poll GL; unresolved queries at capture stop are not zero-duration results. No locations, headings, inputs or account data are collected.';
 export const gpuDurationEnabled=(search:string)=>new URLSearchParams(search).get('gpu-duration')==='1';
+export type GpuDurationObservationMode='read-msaa'|'omit-msaa';
+export function gpuDurationObservationMode(search:string):GpuDurationObservationMode{
+ const value=new URLSearchParams(search).get('gpu-duration-observer')??'read-msaa';
+ if(value!=='read-msaa'&&value!=='omit-msaa')throw Error('Invalid GPU duration observation mode');
+ return value;
+}
+const omissionStages=GPU_DURATION_API_STAGES.filter(stage=>stage!=='issue.samples'&&stage!=='issue.sampleBuffers');
 export const gpuDurationContextExcluded=(context:{xr:boolean;coop:boolean;reducedScene:boolean;following:boolean;locationState:string|undefined})=>
  context.xr||context.coop||context.reducedScene||context.following||(context.locationState!==undefined&&context.locationState!=='off');
 
@@ -25,7 +32,7 @@ export interface GpuDurationSample {
  sample:number;callback:number;eligibleCallback:number;rafTimeMs:number;cpuStartMs:number;issuedCpuTimeMs:number;
  cpuEndMs:number|null;cpuElapsedMs:number|null;renderSubmitCpuMs:number|null;queryBracketCpuMs:number|null;
  drawCalls:number|null;triangles:number|null;renderPasses:number|null;shadowUpdateRequested:boolean|null;
- drawingBuffer:{width:number;height:number};framebuffer:{defaultBound:boolean;samples:number|null;sampleBuffers:number|null};
+ drawingBuffer:{width:number;height:number};framebuffer:{defaultBound:boolean;samples:number|null;sampleBuffers:number|null;sampleObservation:'observed'|'unobserved'};
  status:'pending'|'valid'|'rejected';rejectionReason:string|null;gpuNanoseconds:number|null;gpuMs:number|null;
  resultCallback:number|null;resolutionDelayCallbacks:number|null;resolutionDelayCpuMs:number|null;
  nextAdmittedCallback:Association|null;nextEligibleCallback:Association|null;association:'waiting'|'paired'|'interrupted';
@@ -38,8 +45,8 @@ const parameterNumber=(value:unknown)=>nonnegative(value)?value:null;
 const parameterText=(value:unknown)=>typeof value==='string'?value.slice(0,512):null;
 
 /** The disabled factory does not even acquire a context or read its properties. */
-export function createGpuDurationProbe(enabled:boolean,getContext:()=>ContextSource,clock:()=>number=()=>performance.now(),apiClock:()=>number=()=>performance.now()){
- return enabled?new GpuDurationProbe(getContext,clock,apiClock):undefined;
+export function createGpuDurationProbe(enabled:boolean,getContext:()=>ContextSource,clock:()=>number=()=>performance.now(),apiClock:()=>number=()=>performance.now(),observationMode:GpuDurationObservationMode='read-msaa'){
+ return enabled?new GpuDurationProbe(getContext,clock,apiClock,observationMode):undefined;
 }
 
 export class GpuDurationProbe {
@@ -54,8 +61,10 @@ export class GpuDurationProbe {
  private skips={notRecording:0,ineligible:0,excluded:0,cadence:0,limit:0,pendingLimit:0,foreignQuery:0,invalidClock:0,unsupported:0};
  private rejectionReasons:Record<string,number>={};
  private getContext:()=>ContextSource;private clock:()=>number;private apiClock:()=>number;
- constructor(getContext:()=>ContextSource,clock:()=>number=()=>performance.now(),apiClock:()=>number=()=>performance.now()){
-  this.getContext=getContext;this.clock=clock;this.apiClock=apiClock;
+ private readonly observationMode:GpuDurationObservationMode;
+ constructor(getContext:()=>ContextSource,clock:()=>number=()=>performance.now(),apiClock:()=>number=()=>performance.now(),observationMode:GpuDurationObservationMode='read-msaa'){
+  if(observationMode!=='read-msaa'&&observationMode!=='omit-msaa')throw Error('Invalid GPU duration observation mode');
+  this.getContext=getContext;this.clock=clock;this.apiClock=apiClock;this.observationMode=observationMode;
  }
 
  private readApiClock(){
@@ -169,8 +178,9 @@ export class GpuDurationProbe {
    const width=this.apiCall(apiWall,'issue.drawingBufferWidth','issue',()=>gl.drawingBufferWidth),
     height=this.apiCall(apiWall,'issue.drawingBufferHeight','issue',()=>gl.drawingBufferHeight);
    const framebuffer={defaultBound:this.apiCall(apiWall,'issue.drawFramebufferBinding','issue',()=>gl.getParameter(gl.DRAW_FRAMEBUFFER_BINDING))===null,
-    samples:parameterNumber(this.apiCall(apiWall,'issue.samples','issue',()=>gl.getParameter(gl.SAMPLES))),
-    sampleBuffers:parameterNumber(this.apiCall(apiWall,'issue.sampleBuffers','issue',()=>gl.getParameter(gl.SAMPLE_BUFFERS)))};
+    samples:this.observationMode==='omit-msaa'?null:parameterNumber(this.apiCall(apiWall,'issue.samples','issue',()=>gl.getParameter(gl.SAMPLES))),
+    sampleBuffers:this.observationMode==='omit-msaa'?null:parameterNumber(this.apiCall(apiWall,'issue.sampleBuffers','issue',()=>gl.getParameter(gl.SAMPLE_BUFFERS))),
+    sampleObservation:this.observationMode==='omit-msaa'?'unobserved' as const:'observed' as const};
    const query=this.apiCall(apiWall,'issue.createQuery','issue',()=>gl.createQuery());
    if(!query){this.fail();return;}
    const row:GpuDurationSample={sample:++this.counts.issued,callback,eligibleCallback,rafTimeMs:frame.rafTimeMs,cpuStartMs:frame.cpuStartMs,issuedCpuTimeMs:issued,
@@ -246,8 +256,9 @@ export class GpuDurationProbe {
   const values=this.rows.flatMap(row=>row.status==='valid'&&row.gpuMs!==null?[row.gpuMs]:[]).sort((a,b)=>a-b);
   const gpuMs=values.length?{count:values.length,mean:values.reduce((a,b)=>a+b,0)/values.length,
    p50:values[Math.min(values.length-1,Math.floor(values.length*.5))],p95:values[Math.min(values.length-1,Math.floor(values.length*.95))],max:values.at(-1)!}:null;
-  return structuredClone({version:2,enabled:true,status:this.status,limits:GPU_DURATION_LIMITS,capability:this.capability,backend:this.backend,
-   apiWallTiming:{clock:'performance.now',maxCallsPerSample:GPU_DURATION_API_WALL_LIMIT,stages:GPU_DURATION_API_STAGES,note:GPU_DURATION_API_WALL_NOTE},
+  return structuredClone({version:3,enabled:true,status:this.status,observationMode:this.observationMode,limits:GPU_DURATION_LIMITS,capability:this.capability,backend:this.backend,
+   apiWallTiming:{clock:'performance.now',maxCallsPerSample:GPU_DURATION_API_WALL_LIMIT,stages:this.observationMode==='omit-msaa'?omissionStages:GPU_DURATION_API_STAGES,note:GPU_DURATION_API_WALL_NOTE,
+    observationNote:'omit-msaa omits only diagnostic SAMPLES and SAMPLE_BUFFERS reads and their timing receipts. Their metadata is null/unobserved, never cached or assumed zero. All other GL operations and query bracket locations are unchanged.'},
    counts:{...this.counts,completed:this.counts.valid+this.counts.rejected,unresolved:this.pending.length+Number(!!this.active)},
    skips:this.skips,rejectionReasons:this.rejectionReasons,gpuMs,samples:this.rows,note:GPU_DURATION_NOTE});
  }

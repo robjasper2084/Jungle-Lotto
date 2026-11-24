@@ -23,6 +23,11 @@ const sampleRows=()=>[{sample:1,callback:7,apiWall:{calls:[
  {stage:'issue.samples',phase:'issue',startMs:1010,endMs:1100},
  {stage:'issue.sampleBuffers',phase:'issue',startMs:1100,endMs:1120},
  ]}}];
+const omissionRows=()=>[{sample:1,callback:7,apiWall:{calls:[
+ {stage:'issue.createQuery',phase:'issue',startMs:1010,endMs:1010.1},
+ {stage:'issue.beginQuery',phase:'issue',startMs:1010.1,endMs:1010.2},
+ {stage:'close.endQuery',phase:'end',startMs:1120,endMs:1120.1},
+ ]}}];
 function markerReceipt(name){return {name,pageTimeOriginMs:1700000000000,pageNowBeforeMs:1000,markStartTimeMs:1000.1,pageNowAfterMs:1000.2};}
 function traceDocument(marker){return {traceEvents:[
  {name:'thread_name',ph:'M',pid:1,tid:7,args:{name:'CrRendererMain'}},
@@ -51,7 +56,7 @@ function fixture(overrides={}){
   async detach(){detached++;if(overrides.detach)return overrides.detach();}
  }
  const session=new Session();
- const controller=createGpuDurationTrace({output:'/trace-test',
+ const controller=createGpuDurationTrace({output:'/trace-test',observationMode:overrides.observationMode??'read-msaa',
   environment:{platform:'darwin',device:'desktop',mode:'full',requestedSeconds:90,renderBackend:'angle-metal',actualGpu:{renderer:'ANGLE (Apple, ANGLE Metal Renderer: Test, Unspecified Version)'},...overrides.environment},
   createSession:()=>{opened++;return overrides.createSession?overrides.createSession(session):session;},
   browserVersion:()=> 'Chrome test protocol, not a native run',
@@ -84,14 +89,57 @@ test('bounded timer stops the fixed narrow trace; IO waits for explicit post-rid
  assert.strictEqual(await f.controller.finish([]),result);assert.equal(f.clock.pending.size,0);
 });
 
-test('driver default body is exactly the reviewed 5009 source after removing trace-only additions',async()=>{
+test('comparison preserves the entire reviewed 1a485 workload body and unchanged strict driver',async()=>{
  const source=await readFile(new URL('./gpu-duration-native-check.mjs',import.meta.url),'utf8');
- const stripped=source.replace(/^[ \t]*\/\/ GPU TRACE OPT-IN BEGIN\n[\s\S]*?^[ \t]*\/\/ GPU TRACE OPT-IN END\n/gm,'');
- assert.equal(createHash('sha256').update(stripped).digest('hex'),'714ade75a6cfa6e11f24cb47e424cc8c0ca73be9767ef8527c87d60f28961c2b');
+ // Pure mode-aware validators are tested with real probe receipts separately.
+ // Every existing workload action, callback, gate, timeout and trace lifecycle
+ // remains byte-identical after only these explicit comparison additions.
+ const stripped=source.slice(source.indexOf('const game='))
+  .replace(/^[ \t]*\/\/ GPU OBSERVER COMPARISON BEGIN\n[\s\S]*?^[ \t]*\/\/ GPU OBSERVER COMPARISON END\n/gm,'')
+  .replace("const output=resolve(game,'output/gpu-duration-profile',...(observerRequest===undefined?[]:['observer-comparison',observerOutputLane]),mode,device);","const output=resolve(game,'output/gpu-duration-profile',mode,device);")
+  .replace('markClock:name=>page.evaluate(markGpuTraceClock,name),observationMode:observerMode','markClock:name=>page.evaluate(markGpuTraceClock,name)')
+  .replace("+(observerRequest===undefined?'':'&gpu-duration-observer='+observerMode)",'')
+  .replace('validateGpuDuration(report.gpuDuration,report.actualGpu,observerMode)','validateGpuDuration(report.gpuDuration,report.actualGpu)');
+ assert.equal(createHash('sha256').update(stripped).digest('hex'),'49d55ece71c539c2e57c91d511842daa23a24f4f21ab684f8f9f84097044e5a3');
+ const strict=await readFile(new URL('./sustained-ride-profile.mjs',import.meta.url));
+ assert.equal(createHash('sha256').update(strict).digest('hex'),'8f6af949083800c491b65e0709c04cc29eb5712634f744c5b912f76ce651fcf5');
  assert.match(source,/process\.env\.BELLE_GPU_TRACE==='1'/);
  assert.match(source,/seconds!==90/);
  assert.ok(source.indexOf('await trace.start()')<source.indexOf("await panel.getByRole('button',{name:'Start 10-minute capture'}).click()"));
  assert.ok(source.indexOf('await trace.finish(')>source.indexOf('CDP ending counters:'));
+});
+
+test('explicit omission requires complete unchanged issue/close coverage and records its mode',async()=>{
+ const f=fixture({observationMode:'omit-msaa'});await stopped(f);const result=await f.controller.finish(omissionRows());
+ assert.equal(result.complete,true);assert.equal(result.observationMode,'omit-msaa');assert.equal(result.analysis.observationMode,'omit-msaa');
+ assert.deepEqual(result.analysis.mappedCalls.map(call=>call.stage),['issue.createQuery','issue.beginQuery','close.endQuery']);
+ assert.deepEqual(result.analysis.coverage,{mainThread:3,gpu:1,compositor:1});
+ assert.deepEqual(f.commands.slice(0,3).map(call=>call.method),['Tracing.getCategories','Tracing.start','Tracing.end']);
+ assert.equal(f.commands[1].params.traceConfig.traceBufferSizeInKb,16384);
+ assert.equal(result.timing.requestToEndRequestMs,10000);assert.equal(result.raw.eof,true);
+});
+
+test('omission cannot disguise baseline missing getters, cached receipts or incomplete query coverage',()=>{
+ const marker=markerReceipt('mode-coverage'),raw=Buffer.from(JSON.stringify(traceDocument(marker)));
+ assert(inspectGpuTrace(raw,marker,omissionRows()).errors.some(error=>error.includes('issue.samples')));
+ assert(inspectGpuTrace(raw,marker,sampleRows(),'omit-msaa').errors.some(error=>error.includes('forbidden MSAA')));
+ assert(inspectGpuTrace(raw,marker,omissionRows(),'unknown').errors.some(error=>error.includes('Unknown')));
+ for(const stage of ['issue.createQuery','issue.beginQuery','close.endQuery']){
+  const rows=omissionRows();rows[0].apiWall.calls=rows[0].apiWall.calls.filter(call=>call.stage!==stage);
+  assert(inspectGpuTrace(raw,marker,rows,'omit-msaa').errors.some(error=>error.includes('issue/close')));
+ }
+ const split=omissionRows();split.push({sample:2,callback:14,apiWall:{calls:[split[0].apiWall.calls.pop()]}});
+ assert(inspectGpuTrace(raw,marker,split,'omit-msaa').errors.some(error=>error.includes('issue/close')));
+ const outside=omissionRows();outside[0].apiWall.calls.at(-1).startMs=3000;outside[0].apiWall.calls.at(-1).endMs=3001;
+ assert(inspectGpuTrace(raw,marker,outside,'omit-msaa').errors.some(error=>error.includes('issue/close')));
+ const missingGpu=traceDocument(marker);missingGpu.traceEvents=missingGpu.traceEvents.filter(event=>event.cat!=='gpu');
+ assert(inspectGpuTrace(Buffer.from(JSON.stringify(missingGpu)),marker,omissionRows(),'omit-msaa').errors.some(error=>error.includes('gpu event coverage')));
+});
+
+test('unknown observation mode creates no trace session and retains explicit failed evidence',async()=>{
+ const f=fixture({observationMode:'cached'});assert.equal(await f.controller.start(),false);assert.equal(f.opened,0);
+ const result=await f.controller.finish([]);assert.equal(result.complete,false);assert(hasError(result,/Unknown GPU observation mode/));
+ assert.equal(f.saved.has('gpu-duration-trace-metadata.json'),true);assert.equal(f.saved.get('gpu-duration-trace.json').length,0);
 });
 
 test('wrong environment or software identity creates no CDP session',async()=>{

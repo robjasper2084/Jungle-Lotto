@@ -20,9 +20,10 @@ export function markGpuTraceClock(name){
 }
 
 /** Inspect the retained JSON independently; a category inventory is only advisory. */
-export function inspectGpuTrace(raw,marker,samples=[]){
+export function inspectGpuTrace(raw,marker,samples=[],observationMode='read-msaa'){
  const errors=[],events=JSON.parse(raw.toString('utf8'))?.traceEvents;
  if(!Array.isArray(events))throw Error('Export has no traceEvents array');
+ if(observationMode!=='read-msaa'&&observationMode!=='omit-msaa')errors.push('Unknown GPU observation mode');
  const categories=new Set(),markers=[],forbiddenReceipts=[],coverage={mainThread:0,gpu:0,compositor:0},names={mainThread:new Set(),gpu:new Set(),compositor:new Set()};
  let forbiddenCount=0;
  let firstUs=Infinity,lastUs=-Infinity;
@@ -66,6 +67,7 @@ export function inspectGpuTrace(raw,marker,samples=[]){
  for(const row of (Array.isArray(samples)?samples:[]).slice(0,GPU_TRACE_LIMITS.samples)){
   const calls=Array.isArray(row?.apiWall?.calls)?row.apiWall.calls:[];
   if(calls.length>GPU_TRACE_LIMITS.callsPerSample)errors.push('GPU call inventory exceeds its existing bound');
+  if(observationMode==='omit-msaa'&&calls.some(call=>call?.stage==='issue.samples'||call?.stage==='issue.sampleBuffers'))errors.push('Omission mode retained a forbidden MSAA getter receipt');
   if(offset===null)continue;
   for(const call of calls.slice(0,GPU_TRACE_LIMITS.callsPerSample)){
    if(!finite(call?.startMs)||!finite(call.endMs)||call.endMs<call.startMs)continue;
@@ -76,9 +78,13 @@ export function inspectGpuTrace(raw,marker,samples=[]){
     fullyInsideObservedEventSpan:startUs>=firstUs&&endUs<=lastUs});
   }
  }
- for(const stage of ['issue.samples','issue.sampleBuffers'])if(!mappedCalls.some(call=>call.stage===stage&&call.fullyInsideObservedEventSpan))
+ if(observationMode==='omit-msaa'){
+  const required=['issue.createQuery','issue.beginQuery','close.endQuery'];
+  if(!mappedCalls.some(row=>required.every(stage=>mappedCalls.some(call=>call.sample===row.sample&&call.stage===stage&&call.fullyInsideObservedEventSpan))))
+   errors.push('No complete unchanged query issue/close receipt group overlaps the omission trace');
+ }else for(const stage of ['issue.samples','issue.sampleBuffers'])if(!mappedCalls.some(call=>call.stage===stage&&call.fullyInsideObservedEventSpan))
   errors.push('No complete '+stage+' receipt overlaps the exported event span');
- return {eventCount:events.length,exportedCategories:[...categories].sort(),coverage,
+ return {eventCount:events.length,observationMode,exportedCategories:[...categories].sort(),coverage,
   forbiddenEvidence:{count:forbiddenCount,receipts:forbiddenReceipts,dropped:forbiddenCount-forbiddenReceipts.length},
   representativeEventNames:Object.fromEntries(Object.entries(names).map(([key,value])=>[key,[...value]])),
   observedEventSpan:finite(firstUs)?{firstUs,lastUs,spanMs:(lastUs-firstUs)/1000}:null,
@@ -92,12 +98,12 @@ export function inspectGpuTrace(raw,marker,samples=[]){
 
 /** All protocol activity is opt-in at the caller. Timers stop recording during the
  * existing ride; finish is called only after ride/counter/profile snapshots. */
-export function createGpuDurationTrace({output,createSession,markClock,browserVersion,environment,
+export function createGpuDurationTrace({output,createSession,markClock,browserVersion,environment,observationMode='read-msaa',
  clock=()=>performance.now(),timers={setTimeout,clearTimeout},save=writeFile}){
  const config={transferMode:'ReturnAsStream',streamFormat:'json',streamCompression:'none',bufferUsageReportingInterval:1000,
   traceConfig:{recordMode:'recordUntilFull',traceBufferSizeInKb:GPU_TRACE_LIMITS.bufferKiB,enableSampling:false,enableSystrace:false,
    includedCategories:[...GPU_TRACE_CATEGORIES],excludedCategories:['*']}};
- const meta={version:1,enabled:true,complete:false,status:'not-started',environment,browserVersion:null,
+ const meta={version:1,enabled:true,complete:false,status:'not-started',environment,observationMode,browserVersion:null,
   limits:{...GPU_TRACE_LIMITS},requestedConfig:config,categoryInventory:null,advertisedRequested:[],notAdvertisedRequested:[],
   categoryDiscoveryNote:'Tracing.getCategories is advisory. The fixed narrow request is never broadened; actual exported spans and the clock marker establish coverage.',
   ownership:'none',timing:{clock:'Node performance.now; no equality to page or trace clock assumed',createdMs:clock()},
@@ -168,6 +174,7 @@ export function createGpuDurationTrace({output,createSession,markClock,browserVe
   if(meta.status!=='not-started')throw Error('Trace start may be attempted only once');
   meta.status='starting';
   try{
+   if(observationMode!=='read-msaa'&&observationMode!=='omit-msaa')throw Error('Unknown GPU observation mode');
    if(environment.platform!=='darwin'||environment.device!=='desktop'||environment.mode!=='full'||environment.requestedSeconds!==90||environment.renderBackend!=='angle-metal'||
     !/ANGLE/i.test(environment.actualGpu?.renderer??'')||!/Metal/i.test(environment.actualGpu?.renderer??'')||/SwiftShader|llvmpipe|softpipe|software/i.test(environment.actualGpu?.renderer??''))
     throw Error('Trace requires the 90-second desktop full-scene native ANGLE/Metal workload on darwin');
@@ -239,7 +246,7 @@ export function createGpuDurationTrace({output,createSession,markClock,browserVe
    }
    raw=Buffer.concat(chunks);meta.raw.sha256=createHash('sha256').update(raw).digest('hex');
    try{await save(resolve(output,meta.raw.file),raw);}catch(error){addError('Raw trace retention failed',error);}
-   if(meta.raw.eof){try{meta.analysis=inspectGpuTrace(raw,meta.marker,samples);for(const error of meta.analysis.errors)addError('Trace evidence incomplete',error);}
+   if(meta.raw.eof){try{meta.analysis=inspectGpuTrace(raw,meta.marker,samples,observationMode);for(const error of meta.analysis.errors)addError('Trace evidence incomplete',error);}
     catch(error){addError('Trace parse/correlation failed',error);}}
    if(!meta.raw.eof)addError('Trace stream did not reach EOF');
    meta.timing.finalizedMs=clock();
