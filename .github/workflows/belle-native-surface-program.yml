@@ -1,0 +1,344 @@
+name: Belle native boat and shadow layout check
+
+on:
+  push:
+    branches: [upgrade-redesign-desktop-boat-shadow-layout-20261124]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: belle-native-surface-program-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PRODUCT_PARENT_SHA: 09cf5f3c7438bb198c922087f6d92435780d095e
+  BASELINE_SHA: e424aac64ad82f2448c11717c38c592d666c2af9
+  GROUND_BASELINE_SHA: 8cd309d76c93593025b22f971c580b47aadcad01
+  LAYOUT_BASELINE_SHA: 108bbae1d475a6dbbfb914be8394dbe3347ba669
+  OWNER_REPAIR_SHA: a1c369132618cd27bec00a87ba6376a3ebac46bd
+  ORDER_BASELINE_SHA: 318a94f7ce3fd47b12ec980b855e56469fcecca8
+  MACARTHUR_BASELINE_SHA: ae67c67462e0006852c9affc63298c7042cd2638
+  BOAT_BASELINE_SHA: 0439350062e9f9bb122363b3339604aa19d7494e
+  INTEGRATED_MAIN_SHA: 2a8901996e53b1f93474f3c2165e078b6dd16e57
+  GAME_PATH: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+  STRICT_SCRIPT_SHA256: 8f6af949083800c491b65e0709c04cc29eb5712634f744c5b912f76ce651fcf5
+
+jobs:
+  native-surface-program:
+    name: Check surface pixels and unchanged full-scene riding gates
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 32
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Verify exact candidate experiment and current production ancestry
+        id: preflight
+        timeout-minutes: 2
+        run: |
+          git fetch --no-tags --depth=32 origin main:refs/remotes/origin/main
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {execFileSync} from 'node:child_process';
+          import {mkdir,writeFile} from 'node:fs/promises';
+          import {resolve} from 'node:path';
+          const git=(...args)=>execFileSync('git',args,{encoding:'utf8'}).trim();
+          const names=(from,to)=>git('diff','--no-renames','--name-only',from,to).split('\n').filter(Boolean).sort();
+          const game=process.env.GAME_PATH,out=resolve('surface-program-evidence');
+          await mkdir(out,{recursive:true});
+          assert.match(process.env.PRODUCT_PARENT_SHA,/^[0-9a-f]{40}$/,'Replace the product-parent placeholder with the pure candidate SHA');
+          const commit=git('rev-parse','HEAD'),tree=git('rev-parse','HEAD^{tree}');
+          const parents=git('show','-s','--format=%P','HEAD').split(' ').filter(Boolean);
+          const currentMain=git('rev-parse','refs/remotes/origin/main');
+          const expectedProductFiles=["lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/run-tests.mjs","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/runtime/ride-core/src/heroDetail.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/atmosphereProgramIdentity.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/atmosphereProgramSharing.test.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/boatMaterialPreparation.test.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/boatRide.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/broaderPresentation.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/cinematicTerrain.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/coastGuard.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/fountainDetail.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/fountainLighting.test.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/heroIndexStorage.test.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/islandSky.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/macArthurShadowLayout.test.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/macArthurSpanCulling.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/main.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/materialPreparation.test.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/oudolfScene.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/pavement.test.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/pavement.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/pondServiceBuildings.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/presentationPolicy.test.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/realisticMaterials.test.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/realisticMaterials.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/referenceActors.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/riverBoats.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/streetDetails.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/streetProgramSharing.test.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/sunsetGround.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/surfaceFinish.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/surfaceProgramSharing.test.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/vehicleGlowProgramSharing.test.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/water.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/waterProgramSharing.test.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/world.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/worldAtmosphere.ts"].sort();
+          const expectedExtras=[".github/workflows/belle-native-surface-program.yml","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/asphalt-layout-fixture.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/asphalt-layout-native-check.mjs","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/boat-order-fixtures.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/boat-order-native-proof.mjs","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/boat-order-native-proof.test.mjs","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/hero-index-fixtures.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/hero-index-native-proof.mjs","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/macarthur-uv-fixture.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/macarthur-uv-native-check.mjs","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/macarthur-uv-native-proof.mjs","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/macarthur-uv-native-proof.test.mjs","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/macarthur-uv-scenes.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/material-order-fixtures.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/material-order-native-proof.mjs","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/pipeline-state-census.mjs","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/pipeline-state-census.test.mjs","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/program-family-fixtures.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/run-pipeline-census.mjs","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/surface-program-fixture.ts","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/surface-program-native-check.mjs","lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/vehicle-glow-fixtures.ts"].sort();
+          const proof={version:1,repository:'robjasper2084/Jungle-Lotto',commit,tree,parents,
+            productParent:process.env.PRODUCT_PARENT_SHA,baseline:process.env.BASELINE_SHA,groundBaseline:process.env.GROUND_BASELINE_SHA,layoutBaseline:process.env.LAYOUT_BASELINE_SHA,ownerRepair:process.env.OWNER_REPAIR_SHA,orderBaseline:process.env.ORDER_BASELINE_SHA,macarthurBaseline:process.env.MACARTHUR_BASELINE_SHA,boatBaseline:process.env.BOAT_BASELINE_SHA,
+            integratedMain:process.env.INTEGRATED_MAIN_SHA,currentMain,
+            expectedProductFiles,actualProductFiles:names(process.env.BASELINE_SHA,process.env.PRODUCT_PARENT_SHA),
+            expectedExtras,actualExtras:names(process.env.PRODUCT_PARENT_SHA,'HEAD'),verified:false};
+          await writeFile(resolve(out,'source-preflight.json'),JSON.stringify(proof,null,2)+'\n');
+          assert.equal(commit,process.env.GITHUB_SHA);
+          assert.deepEqual(parents,[process.env.PRODUCT_PARENT_SHA],'Experiment must have exactly one pure-product parent');
+          assert.deepEqual(proof.actualProductFiles,expectedProductFiles,'Pure product may modify only the listed runtime modules and registered regression tests');
+          assert.deepEqual(proof.actualExtras,expectedExtras,'Experiment may add only its workflow, exact native fixture scripts and unchanged failure-only census scripts');
+          execFileSync('git',['merge-base','--is-ancestor',process.env.BASELINE_SHA,process.env.PRODUCT_PARENT_SHA]);
+          execFileSync('git',['merge-base','--is-ancestor',process.env.GROUND_BASELINE_SHA,process.env.PRODUCT_PARENT_SHA]);
+          execFileSync('git',['merge-base','--is-ancestor',process.env.LAYOUT_BASELINE_SHA,process.env.PRODUCT_PARENT_SHA]);
+          execFileSync('git',['merge-base','--is-ancestor',process.env.OWNER_REPAIR_SHA,process.env.PRODUCT_PARENT_SHA]);
+          execFileSync('git',['merge-base','--is-ancestor',process.env.ORDER_BASELINE_SHA,process.env.PRODUCT_PARENT_SHA]);
+          execFileSync('git',['merge-base','--is-ancestor',process.env.MACARTHUR_BASELINE_SHA,process.env.PRODUCT_PARENT_SHA]);
+          execFileSync('git',['merge-base','--is-ancestor',process.env.BOAT_BASELINE_SHA,process.env.PRODUCT_PARENT_SHA]);
+          execFileSync('git',['merge-base','--is-ancestor',process.env.INTEGRATED_MAIN_SHA,process.env.PRODUCT_PARENT_SHA]);
+          execFileSync('git',['merge-base','--is-ancestor',currentMain,process.env.PRODUCT_PARENT_SHA]);
+          execFileSync('git',['diff','--exit-code','HEAD','--']);
+          proof.verified=true;proof.verifiedAt=new Date().toISOString();
+          await writeFile(resolve(out,'source-preflight.json'),JSON.stringify(proof,null,2)+'\n');
+          NODE
+      - name: Typecheck test and build the exact experiment source
+        id: build
+        timeout-minutes: 8
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm ci
+          npm run check
+          npm test
+          node --check scripts/sustained-ride-profile.mjs
+          node --check scripts/surface-program-native-check.mjs
+          node --check scripts/hero-index-native-proof.mjs
+          node --check scripts/material-order-native-proof.mjs
+          node --check scripts/boat-order-native-proof.mjs
+          node --test scripts/boat-order-native-proof.test.mjs
+          node --check scripts/asphalt-layout-native-check.mjs
+          node --check scripts/macarthur-uv-native-check.mjs
+          node --check scripts/macarthur-uv-native-proof.mjs
+          node --test scripts/macarthur-uv-native-proof.test.mjs
+          node --check scripts/run-pipeline-census.mjs
+          node --check scripts/pipeline-state-census.mjs
+          node --test scripts/pipeline-state-census.test.mjs
+          npm run build
+      - name: Retain committed source hashes and the immutable full-game build
+        id: identity
+        timeout-minutes: 1
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {createHash} from 'node:crypto';
+          import {execFileSync} from 'node:child_process';
+          import {readFile,readdir,writeFile,mkdir} from 'node:fs/promises';
+          import {resolve,relative,sep} from 'node:path';
+          const game=resolve(process.env.GAME_PATH),out=resolve('surface-program-evidence');
+          const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+          const git=(...args)=>execFileSync('git',args,{encoding:'utf8'}).trim();
+          const preflight=JSON.parse(await readFile(resolve(out,'source-preflight.json'),'utf8'));
+          const commit=git('rev-parse','HEAD'),tree=git('rev-parse','HEAD^{tree}'),parent=git('rev-parse','HEAD^');
+          assert(preflight.verified);assert.equal(commit,process.env.GITHUB_SHA);assert.equal(commit,preflight.commit);
+          assert.equal(tree,preflight.tree);assert.equal(parent,process.env.PRODUCT_PARENT_SHA);
+          const sourceFiles=['package.json','package-lock.json','../../package.json','../../package-lock.json','index.html','vite.config.ts','tsconfig.json','run-tests.mjs'];
+          async function sourceWalk(directory){for(const entry of await readdir(directory,{withFileTypes:true})){
+            const path=resolve(directory,entry.name);
+            if(entry.isDirectory())await sourceWalk(path);
+            else{assert(entry.isFile(),'Unexpected source symlink/nonfile: '+path);if(/\.(?:ts|mjs|js)$/.test(entry.name))sourceFiles.push(relative(game,path).split(sep).join('/'));}
+          }}for(const directory of ['src','runtime','scripts','../tools'])await sourceWalk(resolve(game,directory));
+          sourceFiles.sort();assert.equal(new Set(sourceFiles).size,sourceFiles.length);
+          const sources=Object.fromEntries(await Promise.all(sourceFiles.map(async path=>{
+            const bytes=await readFile(resolve(game,path)),repoPath=relative(resolve('.'),resolve(game,path)).split(sep).join('/');
+            assert(!repoPath.startsWith('../'),'Source must belong to this checkout');
+            const committed=execFileSync('git',['show','HEAD:'+repoPath]);
+            assert.equal(hash(bytes),hash(committed),'Source differs from committed bytes: '+path);
+            return [path,hash(bytes)];
+          })));
+          assert.equal(sources['scripts/sustained-ride-profile.mjs'],process.env.STRICT_SCRIPT_SHA256);
+          for(const ref of [process.env.BASELINE_SHA,process.env.GROUND_BASELINE_SHA,process.env.LAYOUT_BASELINE_SHA,process.env.OWNER_REPAIR_SHA,process.env.ORDER_BASELINE_SHA,process.env.MACARTHUR_BASELINE_SHA,process.env.BOAT_BASELINE_SHA,process.env.PRODUCT_PARENT_SHA,process.env.INTEGRATED_MAIN_SHA,preflight.currentMain]){
+            const original=execFileSync('git',['show',ref+':'+process.env.GAME_PATH+'/scripts/sustained-ride-profile.mjs']);
+            assert.equal(hash(original),process.env.STRICT_SCRIPT_SHA256,'Original strict riding/GPS script must remain unchanged at '+ref);
+          }
+          const workflowPath='.github/workflows/belle-native-surface-program.yml',workflowBytes=await readFile(workflowPath);
+          assert.equal(hash(workflowBytes),hash(execFileSync('git',['show','HEAD:'+workflowPath])),'Workflow differs from committed bytes');
+          // The existing street builder records elapsed buildMs in one tracked research
+          // report. Retain that report and prove this is its sole semantic difference.
+          const researchPath=relative(resolve('.'),resolve(game,'../research/street-detail-stats.json')).split(sep).join('/');
+          const committedResearch=execFileSync('git',['show','HEAD:'+researchPath]),builtResearch=await readFile(researchPath);
+          const researchDirectory=resolve(out,'build-metadata');await mkdir(researchDirectory,{recursive:true});
+          await writeFile(resolve(researchDirectory,'street-detail-stats.committed.json'),committedResearch);
+          await writeFile(resolve(researchDirectory,'street-detail-stats.post-build.json'),builtResearch);
+          const committedStats=JSON.parse(committedResearch),builtStats=JSON.parse(builtResearch);
+          for(const [label,value] of [['committed',committedStats],['post-build',builtStats]]){
+            assert(value&&typeof value==='object'&&!Array.isArray(value),'Street report must be a JSON object: '+label);
+            assert(Object.hasOwn(value,'buildMs')&&typeof value.buildMs==='number'&&Number.isFinite(value.buildMs)&&value.buildMs>=0,'Street buildMs must be finite and nonnegative: '+label);
+          }
+          const {buildMs:committedBuildMs,...committedContent}=committedStats,{buildMs:actualBuildMs,...builtContent}=builtStats;
+          assert.deepEqual(builtContent,committedContent,'Street report may change only its numeric buildMs');
+          const trackedChanges=git('diff','--no-renames','--name-status','HEAD','--').split('\n').filter(Boolean);
+          const expectedChanges=hash(committedResearch)===hash(builtResearch)?[]:['M\t'+researchPath];
+          assert.deepEqual(trackedChanges,expectedChanges,'Only the explicitly verified street build-time report may differ from HEAD');
+          const trackedRawChanges=git('diff','--no-renames','--raw','HEAD','--').split('\n').filter(Boolean);
+          for(const change of trackedRawChanges){
+            const match=change.match(/^:(\d{6}) (\d{6}) [0-9a-f]+ [0-9a-f]+ M\t(.+)$/);
+            assert(match&&match[1]===match[2]&&match[3]===researchPath,'No tracked mode, type, rename or unrelated change is allowed');
+          }
+          const buildMetadata={path:researchPath,permittedField:'buildMs',semanticMatchExceptBuildMs:true,trackedChanges,trackedRawChanges,
+            committed:{sha256:hash(committedResearch),bytes:committedResearch.length,buildMs:committedBuildMs,artifact:'build-metadata/street-detail-stats.committed.json'},
+            postBuild:{sha256:hash(builtResearch),bytes:builtResearch.length,buildMs:actualBuildMs,artifact:'build-metadata/street-detail-stats.post-build.json'},
+            note:'The unchanged build-street-detail.mjs writes measured build duration here. Original and actual bytes are retained; this exact metadata exception does not permit runtime source, asset-content or other tracked changes.'};
+          await writeFile(resolve(researchDirectory,'verification.json'),JSON.stringify(buildMetadata,null,2)+'\n');
+          const files=[];async function buildWalk(directory){for(const entry of await readdir(directory,{withFileTypes:true})){
+            const path=resolve(directory,entry.name);
+            if(entry.isDirectory())await buildWalk(path);
+            else{assert(entry.isFile(),'Unexpected dist symlink/nonfile: '+path);const bytes=await readFile(path);files.push({path:relative(resolve(game,'dist'),path).split(sep).join('/'),bytes:bytes.length,sha256:hash(bytes)});}
+          }}await buildWalk(resolve(game,'dist'));files.sort((a,b)=>a.path.localeCompare(b.path));
+          assert.equal(files.length,195,'Preserve the complete 195-file full-game build inventory');
+          assert(files.some(file=>file.path==='index.html'),'Full-game entry point missing');
+          const metadata={version:1,repository:'robjasper2084/Jungle-Lotto',commit,tree,parent,baseline:process.env.BASELINE_SHA,
+            integratedMainCommit:process.env.INTEGRATED_MAIN_SHA,currentMainCommit:preflight.currentMain,
+            buildId:'native-surface-program-'+process.env.GITHUB_RUN_ID+'-'+commit,builtAt:new Date().toISOString(),node:process.version,
+            workflow:{path:workflowPath,sha256:hash(workflowBytes)},buildMetadata,sources,files,
+            scope:'Isolated native surface, glow, rider, station/vehicle/boat material-order, asphalt and MacArthur display-UV equivalence followed by the unchanged full desktop and full phone 90-second sustained-riding/GPS gates. No threshold, scene-quality, input, renderer flag or failed result is changed. A failure-only 45-second draw census runs in a separate browser after both strict rides and is diagnostic only. Phone remains an emulated viewport, not physical-device certification.'};
+          await writeFile(resolve(out,'source-integrity.json'),JSON.stringify(metadata,null,2)+'\n');
+          console.log('BELLE_SURFACE_BUILD '+JSON.stringify({commit,tree,parent,baseline:metadata.baseline,buildId:metadata.buildId,files:files.length,sourceFiles:sourceFiles.length,strictScriptSha256:sources['scripts/sustained-ride-profile.mjs']}));
+          NODE
+      - name: Install the locked browser driver and Chrome
+        id: browser
+        timeout-minutes: 4
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install chrome
+      - name: Verify exact surface glow rider shadow and material-order evidence
+        id: fixture
+        if: ${{ !cancelled() && steps.identity.outcome == 'success' }}
+        timeout-minutes: 8
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          BELLE_SURFACE_OUTPUT: ${{ github.workspace }}/surface-program-evidence/fixture
+        run: node scripts/surface-program-native-check.mjs
+      - name: Verify actual asphalt layout pixels and restored geometry control
+        id: asphalt
+        if: ${{ !cancelled() && steps.identity.outcome == 'success' }}
+        timeout-minutes: 5
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          BELLE_ASPHALT_OUTPUT: ${{ github.workspace }}/surface-program-evidence/asphalt-fixture
+        run: node scripts/asphalt-layout-native-check.mjs
+      - name: Verify actual MacArthur shadow inputs pixels and restored controls
+        id: macarthur
+        if: ${{ !cancelled() && steps.identity.outcome == 'success' }}
+        timeout-minutes: 10
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          BELLE_MACARTHUR_PRODUCT: ${{ env.PRODUCT_PARENT_SHA }}
+          BELLE_MACARTHUR_OUTPUT: ${{ github.workspace }}/surface-program-evidence/macarthur-fixture
+        run: node scripts/macarthur-uv-native-check.mjs
+      - name: Retain preliminary native fixture evidence before sustained rides
+        if: ${{ !cancelled() && steps.identity.outcome == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-native-fixture-preliminary-${{ github.sha }}
+          path: |
+            surface-program-evidence/fixture/
+            surface-program-evidence/asphalt-fixture/
+            surface-program-evidence/macarthur-fixture/
+            surface-program-evidence/source-preflight.json
+            surface-program-evidence/source-integrity.json
+          if-no-files-found: error
+          retention-days: 14
+      - name: Run the original full desktop 90-second riding and GPS gate
+        id: desktop
+        if: ${{ !cancelled() && steps.identity.outcome == 'success' }}
+        timeout-minutes: 10
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          BELLE_PROFILE_DEVICE: desktop
+          BELLE_PROFILE_MODE: full
+          BELLE_PROFILE_SECONDS: '90'
+        run: node scripts/sustained-ride-profile.mjs
+      - name: Run the original full phone 90-second riding and GPS gate
+        id: phone
+        if: ${{ !cancelled() && steps.identity.outcome == 'success' }}
+        timeout-minutes: 10
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          BELLE_PROFILE_DEVICE: phone
+          BELLE_PROFILE_MODE: full
+          BELLE_PROFILE_SECONDS: '90'
+        run: node scripts/sustained-ride-profile.mjs
+      - name: Retain current native draw census after a failed desktop gate
+        id: census
+        if: ${{ !cancelled() && steps.identity.outcome == 'success' && steps.desktop.outcome == 'failure' }}
+        timeout-minutes: 7
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          BELLE_CENSUS_OUTPUT: ${{ github.workspace }}/surface-program-evidence/census
+          BELLE_CENSUS_SECONDS: '45'
+        run: node scripts/run-pipeline-census.mjs
+      - name: Verify exact source and full-game build remained unchanged
+        id: integrity_after
+        if: ${{ !cancelled() && steps.identity.outcome == 'success' }}
+        timeout-minutes: 1
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {createHash} from 'node:crypto';
+          import {execFileSync} from 'node:child_process';
+          import {readFile,readdir,writeFile} from 'node:fs/promises';
+          import {resolve,relative,sep} from 'node:path';
+          const game=resolve(process.env.GAME_PATH),out=resolve('surface-program-evidence'),hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+          const original=JSON.parse(await readFile(resolve(out,'source-integrity.json'),'utf8'));
+          const git=(...args)=>execFileSync('git',args,{encoding:'utf8'}).trim();
+          assert.equal(git('rev-parse','HEAD'),original.commit);assert.equal(git('rev-parse','HEAD^{tree}'),original.tree);
+          assert.equal(git('rev-parse','HEAD^'),original.parent);
+          assert.deepEqual(git('diff','--no-renames','--name-status','HEAD','--').split('\n').filter(Boolean),original.buildMetadata.trackedChanges,'Tracked changes differ from the explicitly verified post-build metadata');
+          assert.deepEqual(git('diff','--no-renames','--raw','HEAD','--').split('\n').filter(Boolean),original.buildMetadata.trackedRawChanges,'Tracked modes, types or contents changed after the build');
+          const researchPath=relative(resolve('.'),resolve(game,'../research/street-detail-stats.json')).split(sep).join('/');
+          assert.equal(original.buildMetadata.path,researchPath);assert.equal(original.buildMetadata.permittedField,'buildMs');
+          const researchBytes=await readFile(researchPath);
+          assert.equal(researchBytes.length,original.buildMetadata.postBuild.bytes,'Post-build street metadata size changed during the browser checks');
+          assert.equal(hash(researchBytes),original.buildMetadata.postBuild.sha256,'Post-build street metadata bytes changed during the browser checks');
+          assert.equal(hash(await readFile(original.workflow.path)),original.workflow.sha256);
+          const sourceFiles=['package.json','package-lock.json','../../package.json','../../package-lock.json','index.html','vite.config.ts','tsconfig.json','run-tests.mjs'];
+          async function sourceWalk(directory){for(const entry of await readdir(directory,{withFileTypes:true})){
+            const path=resolve(directory,entry.name);if(entry.isDirectory())await sourceWalk(path);
+            else{assert(entry.isFile());if(/\.(?:ts|mjs|js)$/.test(entry.name))sourceFiles.push(relative(game,path).split(sep).join('/'));}
+          }}for(const directory of ['src','runtime','scripts','../tools'])await sourceWalk(resolve(game,directory));sourceFiles.sort();
+          assert.deepEqual(sourceFiles,Object.keys(original.sources).sort(),'Exact source inventory changed');
+          const sources=Object.fromEntries(await Promise.all(sourceFiles.map(async path=>[path,hash(await readFile(resolve(game,path)))])));
+          assert.deepEqual(sources,original.sources,'Source bytes changed');
+          const files=[];async function buildWalk(directory){for(const entry of await readdir(directory,{withFileTypes:true})){
+            const path=resolve(directory,entry.name);if(entry.isDirectory())await buildWalk(path);
+            else{assert(entry.isFile());const bytes=await readFile(path);files.push({path:relative(resolve(game,'dist'),path).split(sep).join('/'),bytes:bytes.length,sha256:hash(bytes)});}
+          }}await buildWalk(resolve(game,'dist'));files.sort((a,b)=>a.path.localeCompare(b.path));
+          assert.equal(files.length,195);assert.deepEqual(files,original.files,'Full build inventory or bytes changed');
+          await writeFile(resolve(out,'source-integrity-after.json'),JSON.stringify({commit:original.commit,tree:original.tree,
+            sourceFiles:sourceFiles.length,builtFiles:files.length,verifiedAt:new Date().toISOString(),unchanged:true,
+            buildMetadata:{path:researchPath,sha256:hash(researchBytes),bytes:researchBytes.length,buildMs:JSON.parse(researchBytes).buildMs,unchangedSinceBuild:true}},null,2)+'\n');
+          NODE
+      - name: Retain all fixture and original strict results including failures
+        if: always()
+        env:
+          PREFLIGHT_OUTCOME: ${{ steps.preflight.outcome }}
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+          IDENTITY_OUTCOME: ${{ steps.identity.outcome }}
+          BROWSER_OUTCOME: ${{ steps.browser.outcome }}
+          FIXTURE_OUTCOME: ${{ steps.fixture.outcome }}
+          ASPHALT_OUTCOME: ${{ steps.asphalt.outcome }}
+          MACARTHUR_OUTCOME: ${{ steps.macarthur.outcome }}
+          DESKTOP_OUTCOME: ${{ steps.desktop.outcome }}
+          PHONE_OUTCOME: ${{ steps.phone.outcome }}
+          CENSUS_OUTCOME: ${{ steps.census.outcome }}
+          INTEGRITY_AFTER_OUTCOME: ${{ steps.integrity_after.outcome }}
+        run: |
+          node --input-type=module <<'NODE'
+          import {existsSync,cpSync,mkdirSync} from 'node:fs';
+          import {readFile,readdir,writeFile} from 'node:fs/promises';
+          import {createHash} from 'node:crypto';
+          import {resolve,relative,sep} from 'node:path';
+          const out=resolve('surface-program-evidence');mkdirSync(out,{recursive:true});
+          for(const device of ['desktop','phone']){
+            const source=resolve(process.env.GAME_PATH,'output/sustained-profile/full',device);
+            if(existsSync(source))cpSync(source,resolve(out,'sustained/full',device),{recursive:true});
+          }
+          const outcomes=Object.fromEntries(['PREFLIGHT','BUILD','IDENTITY','BROWSER','FIXTURE','ASPHALT','MACARTHUR','DESKTOP','PHONE','CENSUS','INTEGRITY_AFTER'].map(name=>[name.toLowerCase(),process.env[name+'_OUTCOME']??'unknown']));
+          await writeFile(resolve(out,'step-outcomes.json'),JSON.stringify({commit:process.env.GITHUB_SHA,outcomes,
+            note:'Original step outcomes are retained. Each fixture and strict command keeps its own nonzero exit; later evidence collection does not convert any failure to success.'},null,2)+'\n');
+          const hashes=[];async function walk(directory){for(const entry of await readdir(directory,{withFileTypes:true})){
+            const path=resolve(directory,entry.name);if(entry.isDirectory())await walk(path);else{
+              if(!entry.isFile())throw Error('Unexpected evidence symlink/nonfile: '+path);
+              const bytes=await readFile(path);hashes.push({path:relative(out,path).split(sep).join('/'),bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex')});
+            }
+          }}await walk(out);hashes.sort((a,b)=>a.path.localeCompare(b.path));
+          await writeFile(resolve(out,'evidence-hashes.json'),JSON.stringify(hashes,null,2)+'\n');
+          NODE
+      - name: Preserve all original experiment evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-native-surface-program-${{ github.sha }}
+          path: surface-program-evidence/
+          if-no-files-found: error
+          retention-days: 14
