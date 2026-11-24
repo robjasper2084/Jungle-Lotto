@@ -35,8 +35,9 @@ async function bounded(promise,ms,label){let timer;try{return await Promise.race
 async function tap(locator){if(mobile)await locator.tap();else await locator.click();report.harness.pointerActivations++;}
 async function diagnosticActivate(locator){
  if(mobile)return tap(locator);
- // Recorder/navigation controls support the ordinary keyboard path. Keep the
- // actual native mouse path for vehicle, mode, hop, and mesh commands.
+ // Repeated recorder/navigation controls use the ordinary keyboard path after
+ // the initial pointer roundtrip. Keep native mouse input for every vehicle,
+ // mode, hop, checkbox, and mesh command; mobile navigation still uses touch.
  await expect(locator).toBeVisible();await expect(locator).toBeEnabled();
  await locator.focus();await expect(locator).toBeFocused();await page.keyboard.press('Enter');
  report.harness.diagnosticKeyboardActivations++;
@@ -60,8 +61,8 @@ async function scrollIfNeeded(locator){
  if(contained)report.harness.alreadyVisibleScrolls++;
  else{await locator.scrollIntoViewIfNeeded();report.harness.explicitScrolls++;}
 }
-async function openMenu(activate=tap){if(!await page.locator('#ride-menu').isVisible())await activate(page.locator('#tools-toggle'));await expect(page.locator('#ride-menu')).toBeVisible();}
-async function openMods(activate=tap){
+async function openMenu(activate=diagnosticActivate){if(!await page.locator('#ride-menu').isVisible())await activate(page.locator('#tools-toggle'));await expect(page.locator('#ride-menu')).toBeVisible();}
+async function openMods(activate=diagnosticActivate){
  if(!await page.locator('#settings').isVisible()){
   await openMenu(activate);await activate(page.getByRole('button',{name:'Hydraulics, wheels & tires',exact:true}));
  }
@@ -69,7 +70,7 @@ async function openMods(activate=tap){
  if(await page.locator('#cadillac-modifications').getAttribute('open')===null)await activate(page.locator('#cadillac-modifications>summary'));
  await expect(page.locator('#cadillac-modifications')).toBeVisible();
 }
-async function closeSettings(activate=tap){if(await page.locator('#settings').isVisible())await activate(page.locator('[data-close="settings"]'));await expect(page.locator('#settings')).not.toBeVisible();}
+async function closeSettings(activate=diagnosticActivate){if(await page.locator('#settings').isVisible())await activate(page.locator('[data-close="settings"]'));await expect(page.locator('#settings')).not.toBeVisible();}
 
 /** Use actual native key events on a real select, including its change handler. */
 async function selectWithKeyboard(selector,value){
@@ -475,20 +476,43 @@ async function driveAfterLevel(){
  phase('finish-level-and-drive');await openMods();await tap(modButton('Raise'));await setCorner('FL',20);await setCorner('FR',16);
  await tap(modButton('Finish motion & level'));await expect(page.locator('#settings')).not.toBeVisible();await frames(3);
  let car=await snapshot('finish-motion-level');assert(car.suspension.readyForDrive);
+ assert.equal(car.speedMps,0,'The final driving check starts from rest');
  for(const corner of ['FL','FR','RL','RR'])assert(Math.abs(car.suspension.current[corner]-.16)<1e-8);
  await closeSettings();
  const speed=async()=>parseFloat(await page.locator('#speed').innerText());
+ const drivingHud=async()=>page.evaluate(()=>({
+  speedMph:parseFloat(document.getElementById('speed')?.textContent??''),
+  activeFrames:Number(document.getElementById('profile')?.dataset.activeFrames??NaN),
+  settingsOpen:document.getElementById('settings')?.open??true
+ }));
+ let drivingFramesBefore,drivingObservation;
+ const captureDrivingStart=async()=>{
+  const state=await drivingHud();assert(!state.settingsOpen,'Driving is observed with Settings closed');
+  assert(Number.isSafeInteger(state.activeFrames)&&state.activeFrames>=0,'Active-frame UI counter is required');
+  drivingFramesBefore=state.activeFrames;
+ };
+ // Rounded 1 MPH can appear after only 0.019 m on the compact joystick.
+ // Keep real input held until a fresh 2 MPH HUD update before braking. From
+ // rest, the controller's 3.9 m/s² acceleration bound requires >0.05 m to
+ // reach the 1.5 MPH rounding boundary. The original poll deadline remains.
+ const drivingSpeed=async()=>{
+  const state=await drivingHud();assert(!state.settingsOpen,'Driving is observed with Settings closed');
+  assert(Number.isSafeInteger(state.activeFrames)&&Number.isFinite(state.speedMph),'Fresh driving HUD values are required');
+  drivingObservation=state;return state.activeFrames>drivingFramesBefore?state.speedMph:0;
+ };
  if(mobile){
   const proof=await targetProof(page.locator('#stick'),'native-driving-joystick','#touch-zone'),r=proof.rect;
   // The joystick is painted inside #touch-zone and deliberately pointer-events:none.
   const x=r.left+r.width/2,y=r.top+r.height/2;
+  await captureDrivingStart();
   await touchSequence.dispatch('touchStart',[{id:1,x,y,radiusX:2,radiusY:2,force:1}]);
   await touchSequence.dispatch('touchMove',[{id:1,x,y:y-30,radiusX:2,radiusY:2,force:1}]);
-  try{await expect.poll(speed).toBeGreaterThan(0);}finally{await touchSequence.dispatch('touchEnd',[]);}
+  try{await expect.poll(drivingSpeed).toBeGreaterThanOrEqual(2);}finally{await touchSequence.dispatch('touchEnd',[]);}
  }else{
-  await page.locator('#game').focus();await page.keyboard.down('w');
-  try{await expect.poll(speed).toBeGreaterThan(0);}finally{await page.keyboard.up('w');}
+  await page.locator('#game').focus();await captureDrivingStart();await page.keyboard.down('w');
+  try{await expect.poll(drivingSpeed).toBeGreaterThanOrEqual(2);}finally{await page.keyboard.up('w');}
  }
+ report.checks.drivingExposure={minimumDisplayedMph:2,activeFramesBefore:drivingFramesBefore,observed:drivingObservation};
  report.checks.drivingSpeedMph=await speed();
  await page.locator('#game').focus();await page.keyboard.down('Space');
  try{await expect.poll(speed).toBe(0);}finally{await page.keyboard.up('Space');}
@@ -553,14 +577,16 @@ async function run(){
  await page.waitForFunction(()=>['ready','error'].includes(document.querySelector('#welcome')?.dataset.state),null,{timeout:180000});
  await expect(page.locator('#welcome')).toHaveAttribute('data-state','ready');await tap(page.locator('#start'));
  await expect(page.locator('body')).not.toHaveClass(/at-start/);await expect(page.locator('#ride-mode')).toContainText('CADILLAC');
- await openMods();await setReduced(true);
+ await openMods(tap);await setReduced(true);
  // Functional software-renderer fixture uses the ordinary Smooth setting. This
  // does not change any full-quality or sustained-performance acceptance suite.
  await selectWithKeyboard('#quality','smooth');await selectWithKeyboard('#fps','30');
  if(mobile){if(!await page.locator('#touch').isChecked())await tap(page.locator('#touch').locator('..'));await selectWithKeyboard('#joystick-mode','fixed');}
  await verifyEditorTargets();await editorCapture('modifications-menu','#cadillac-mod-rim');
  const baseline=await snapshot('initial-stock');assert(baseline.suspension.readyForDrive);assert.equal(baseline.wheels.sourceRestored,true);
- await closeSettings();await frames(2);await capture('original-car');
+ // Retain the initial complete mouse/touch menu roundtrip before keyboard
+ // navigation avoids repeating the same desktop stability-frame waits.
+ await closeSettings(tap);await frames(2);await capture('original-car');
  await wheelChecks();await silverPanels(true);await heightChecks();await silverPanels(false);await hopChecks();await hydraulicModeChecks();await driveAfterLevel();
  report.nativeEvidence=await page.evaluate(()=>window.__cadillacModsEvidence);
  assert(report.nativeEvidence.input.length>0);assert(report.nativeEvidence.input.every(event=>event.trusted),'All observed input must originate in native browser input');
