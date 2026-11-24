@@ -1,20 +1,20 @@
-name: Belle native browser pacing trace
+name: Belle native render command census
 
 on:
   push:
-    branches: [upgrade-redesign-browser-trace-20261124]
+    branches: [upgrade-redesign-render-census-20261124]
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: belle-pipeline-attribution-${{ github.ref }}
+  group: belle-render-census-${{ github.ref }}
   cancel-in-progress: false
 
 env:
   PRODUCT_PARENT_SHA: 2c3e6757f4266c35f95d1dfe6b15f1a840e97161
-  EXPECTED_PARENT_SHA: e0f7a732e10c1395ac9d2e397376b8160ead46e8
+  EXPECTED_PARENT_SHA: 2f31efd8649785bb0076cf60a7bfeb6ecbf3b837
   INTEGRATED_MAIN_SHA: 3e68163e94d173395cf7a2f47bd37859cf1a3f47
   GAME_PATH: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
   RUNTIME_PATH: lottominded-ultra.io/games/gothtechnology2
@@ -28,7 +28,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-          fetch-depth: 2
+          fetch-depth: 3
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -54,9 +54,11 @@ jobs:
           const commit=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();assert.equal(commit,process.env.GITHUB_SHA);
           const tree=execFileSync('git',['rev-parse','HEAD^{tree}'],{encoding:'utf8'}).trim();
           const parent=execFileSync('git',['rev-parse','HEAD^'],{encoding:'utf8'}).trim();assert.equal(parent,process.env.EXPECTED_PARENT_SHA);
-          assert.equal(execFileSync('git',['rev-parse','HEAD^2'],{encoding:'utf8'}).trim(),process.env.PRODUCT_PARENT_SHA);
+          async function sourcePaths(directory){const result=[];for(const entry of await readdir(resolve(game,directory),{withFileTypes:true})){
+            const path=directory+'/'+entry.name;if(entry.isDirectory())result.push(...await sourcePaths(path));else if(entry.isFile()&&/\.(ts|mjs)$/.test(entry.name))result.push(path);
+          }return result.sort();}
           const sourceFiles=['scripts/sustained-ride-profile.mjs','scripts/manual-ride-diagnostic.mjs','scripts/host-service-trace.mjs','scripts/coop-static-server.mjs','package-lock.json','../../package-lock.json',
-            ...['main.ts','gpuRenderDiagnostics.ts','pipelineDiagnostics.ts','gpuFramePacing.ts','loopDiagnostics.ts','renderDiagnostics.ts','renderSubmissionDiagnostics.ts','rideProfile.ts','rideProfileStats.ts','rideProfileBuild.ts'].map(x=>'src/belle/'+x)];
+            ...await sourcePaths('src/belle')];
           const sources=Object.fromEntries(await Promise.all(sourceFiles.map(async path=>[path,hash(await readFile(resolve(game,path)))])));
           assert.equal(sources['scripts/sustained-ride-profile.mjs'],process.env.STRICT_SCRIPT_SHA256);
           assert.equal(sources['src/belle/gpuFramePacing.ts'],hash(execFileSync('git',['show',process.env.PRODUCT_PARENT_SHA+':'+process.env.GAME_PATH+'/src/belle/gpuFramePacing.ts'])));
@@ -65,20 +67,20 @@ jobs:
           }}await walk(resolve(game,'dist'));files.sort((a,b)=>a.path.localeCompare(b.path));
           const metadata={version:1,repository:'robjasper2084/Jungle-Lotto',label:'candidate',commit,tree,workflowCommit:process.env.GITHUB_SHA,
             parentCommit:parent,integratedProductCommit:process.env.PRODUCT_PARENT_SHA,integratedMainCommit:process.env.INTEGRATED_MAIN_SHA,
-            buildId:'pipeline-'+process.env.GITHUB_RUN_ID+'-'+commit,builtAt:new Date().toISOString(),node:process.version,sources,files};
+            buildId:'render-census-'+process.env.GITHUB_RUN_ID+'-'+commit,builtAt:new Date().toISOString(),node:process.version,sources,files};
           await mkdir(out,{recursive:true});await cp(resolve(game,'dist'),resolve(out,'dist'),{recursive:true});
           await writeFile(resolve(out,'manual-diagnostic-build.json'),JSON.stringify(metadata,null,2)+'\n');
           console.log(JSON.stringify({commit,tree,buildId:metadata.buildId,files:files.length,strictScriptSha256:sources['scripts/sustained-ride-profile.mjs']}));
           NODE
       - uses: actions/upload-artifact@v4
         with:
-          name: belle-pipeline-build-${{ github.sha }}
+          name: belle-render-census-build-${{ github.sha }}
           path: ${{ runner.temp }}/gpu-build/
           if-no-files-found: error
           retention-days: 2
 
   attribution:
-    name: Native Metal browser pacing callback and host trace
+    name: Native Metal full-scene command census
     needs: build
     runs-on: macos-15
     timeout-minutes: 45
@@ -97,22 +99,56 @@ jobs:
           node-version: 24
       - uses: actions/download-artifact@v4
         with:
-          name: belle-pipeline-build-${{ github.sha }}
+          name: belle-render-census-build-${{ github.sha }}
           path: gpu-build
       - name: Install the pinned browser driver and actual Chrome
         working-directory: lottominded-ultra.io/games/gothtechnology2
         run: |
           npm ci
           npx playwright install chrome
-      - name: Capture full-scene browser pacing with late host trace
+      - name: Observe existing full-scene render commands without host trace
         run: |
           mkdir -p pipeline-evidence
           node --input-type=module <<'NODE'
           import {spawnSync} from 'node:child_process';
           import {readFileSync,writeFileSync} from 'node:fs';
-          const cases=[['A2','off',true]],receipts=[];
-          const browserPacing=value=>value?.installed===true&&value.mode==='browser'&&value.submittedCallbacks===0&&
+          const cases=[['A1','off',false]],receipts=[];
+          const browserPacing=value=>value?.installed===true&&value.mode==='browser'&&value.submittedCallbacks===0&&value.pendingFenceSkippedCallbacks===0&&
             ['capacity','pendingCallbacks','completedCallbacks','peakPendingCallbacks'].every(key=>value[key]===null);
+          const count=value=>Number.isSafeInteger(value)&&value>=0;
+          function validateCensus(report){
+            const errors=[],c=report?.profile?.submissionDiagnostics?.programCensus,coverage=report?.profile?.submissionInstrumentation;
+            const require=(condition,message)=>{if(!condition)errors.push(message);};
+            require(c?.version===1,'Census version1 is required');
+            for(const boundary of ['atStart','atFinish']){const value=coverage?.[boundary];require(value?.installed===true&&value?.context==='available'&&value?.status==='complete'&&Array.isArray(value?.hooks)&&value.hooks.length>0&&value.hooks.every(hook=>hook.status==='installed'),'Complete submission hook coverage is required '+boundary);}
+            if(!c)return errors;
+            require(count(c.observedCallbacks)&&c.observedCallbacks>0&&c.observedCallbacks===report.profile.submissionDiagnostics.profiledCallbacks,'Census callback population must match accepted submission callbacks');
+            const submission=report.profile.submissionDiagnostics;
+            require(submission.invalidDiagnosticSamples===0&&submission.profiledCallbacks===report.profile.frames,'Every profile frame must retain a valid submission observation');
+
+            for(const key of ['observerErrors','identityLimitHits','truncatedSamples','droppedDraws','droppedProgramEvents','droppedTextureEvents'])require(c[key]===0,key+' must be zero for complete census detail');
+            for(const phase of ['opaque','shadow','transparent','transmissive','offscreen','xr','unknown']){
+              const values=c.phases?.[phase];require(values&&Object.values(values).every(count),'Finite counts required for '+phase);
+              if(values){require(['directDraws','coreDrawCalls','useProgramCalls','useProgramReturned','useProgramThrew','uniformCalls','textureCalls'].every(key=>count(values[key])),'Required operation counts missing for '+phase);
+                require(values.useProgramCalls===values.useProgramReturned+values.useProgramThrew,'Program request outcomes must balance for '+phase);
+                require(values.foreignReceiverCalls===0,'Foreign receiver calls prevent complete phase attribution for '+phase);}
+            }
+            const phaseTotal=key=>Object.values(c.phases??{}).reduce((total,value)=>total+(count(value?.[key])?value[key]:NaN),0);
+            for(const [key,operation] of [['directDraws','directDraw'],['coreDrawCalls','draw'],['useProgramCalls','programUse'],['textureCalls','textureUpload']])require(phaseTotal(key)===submission.operations?.[operation]?.calls,'Phase totals must match existing '+operation+' census');
+            for(const [key,methodKey] of [['uniformCalls','uniformMethods'],['textureCalls','textureMethods']])require(phaseTotal(key)===Object.values(c[methodKey]??{}).reduce((total,value)=>total+(count(value?.calls)?value.calls:NaN),0),'Method totals must match phase '+key+' census');
+            require(c.phases?.opaque?.directDraws>0&&c.phases?.opaque?.coreDrawCalls>0&&c.phases?.opaque?.useProgramCalls>0,'Observed opaque draws and program requests are required');
+            require(c.phases?.shadow?.directDraws>0,'Observed High-quality shadow draws are required');
+            require(c.phases?.unknown?.directDraws===0,'Every direct draw must have a known phase');
+            for(const key of ['uniformMethods','textureMethods'])require(c[key]&&Object.keys(c[key]).length>0&&Object.values(c[key]).every(value=>count(value.calls)&&count(value.threw)&&value.threw<=value.calls),'Valid '+key+' counts required');
+            require(Array.isArray(c.samples)&&c.samples.length>0&&c.samples.length<=c.maxSamples&&c.retainedSamples===c.samples.length,'Bounded complete sample retention is required');
+            require(count(c.droppedSamples)&&count(c.sampledCallbacks)&&c.sampledCallbacks===c.retainedSamples+c.droppedSamples,'Sample retention accounting must balance');
+            for(const sample of Array.isArray(c.samples)?c.samples:[]){
+              require(sample.sampled===true&&sample.observerErrors===0&&sample.droppedDraws===0&&sample.droppedProgramEvents===0&&sample.droppedTextureEvents===0,'Retained sample must be complete');
+              require(Array.isArray(sample.draws)&&sample.draws.length>0&&sample.draws.length<=c.maxDrawsPerSample&&Array.isArray(sample.programEvents)&&sample.programEvents.length<=c.maxProgramEventsPerSample&&Array.isArray(sample.textureEvents)&&sample.textureEvents.length<=c.maxTextureEventsPerSample,'Retained sample row bounds must hold');
+            }
+            return errors;
+          }
+          function censusSummary(c){if(!c)return null;const {samples,...counts}=c;return {...counts,samplesRetained:Array.isArray(samples)?samples.length:null};}
           for(const [name,condition,trace] of cases){
             const args=[process.env.GAME_PATH+'/scripts/manual-ride-diagnostic.mjs',
               '--game',process.env.GAME_PATH,'--build','gpu-build','--output','pipeline-evidence/'+name,
@@ -123,25 +159,27 @@ jobs:
             try{report=JSON.parse(readFileSync('pipeline-evidence/'+name+'/report.json','utf8'));}catch(error){readError=String(error);}
             const pacing=report?.observers?.gpuFramePacing;
             const treatmentValid=browserPacing(pacing?.atStart)&&browserPacing(pacing?.atFinish)&&pacing.atFinish.renderedCallbacks>pacing.atStart.renderedCallbacks;
+            const censusErrors=validateCensus(report);
             receipts.push({case:name,condition,lateHostTrace:trace,status:child.status,signal:child.signal,error:child.error?String(child.error):null,readError,
               source:report?.sourceHead,tree:report?.sourceTree,build:report?.buildManifestSha256,
-              valid:report?.diagnosticEvidenceValid,treatmentValid,frameQualityAccepted:report?.frameQualityAccepted,
+              valid:report?.diagnosticEvidenceValid,treatmentValid,censusValid:censusErrors.length===0,censusErrors,frameQualityAccepted:report?.frameQualityAccepted,
               frames:report?.profile?.frames,frameMs:report?.profile?.metrics?.frameMs,over250ms:report?.profile?.over250ms,
               heldInputWallMs:report?.heldInputWallMs,actualGpu:report?.actualGpu,
               pacing:report?.observers?.gpuFramePacing,pipelineCounts:report?.pipeline?.counts,
               gpuQueries:report?.gpuTiming?.counts,hostTraceStatus:report?.hostServiceTrace?.status,
+              programCensus:censusSummary(report?.profile?.submissionDiagnostics?.programCensus),
               errors:report?.errors,probeErrors:report?.probeErrors,failedRequests:report?.failedRequests});
             writeFileSync('pipeline-evidence/comparison.json',JSON.stringify({version:1,source:process.env.GITHUB_SHA,receipts,
-              note:'Separate query-off late host trace of the browser-pacing product2c3e6757 after its strict desktop failure in run45295190223. The A2 case label is required by the existing collector and is not a repeat of the cap3 source. Source/build identities and actual pacing mode distinguish the runs. Full quality and genuine90-second input remain unchanged. Trace begins after60 seconds and includes overhead. Original numerical failures remain reported; collection success is not release acceptance.'},null,2)+'\n');
+              note:'Bounded read-only command census on the browser-pacing product2c3e6757. One A1 full High desktop capture retains genuine90-second input and the original numerical outcomes. Existing program, uniform and texture calls are observed without extra GL queries, timer queries, host trace, render reordering or quality changes. Observation overhead is part of this diagnostic; collection success is not release acceptance.'},null,2)+'\n');
           }
           console.log('BELLE_PIPELINE_COMPARISON '+JSON.stringify(receipts));
-          process.exit(receipts.every(row=>row.status===0&&row.valid===true&&row.treatmentValid===true)?0:1);
+          process.exit(receipts.every(row=>row.status===0&&row.valid===true&&row.treatmentValid===true&&row.censusValid===true)?0:1);
           NODE
       - name: Preserve every case including original numerical failures
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: belle-native-pipeline-attribution-${{ github.sha }}
+          name: belle-native-render-command-census-${{ github.sha }}
           path: pipeline-evidence/
           if-no-files-found: warn
           retention-days: 14

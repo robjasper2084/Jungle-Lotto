@@ -74,6 +74,14 @@ async function verifySources(){
 }
 const compactSubmission=value=>value?{invalidObservations:value.invalidObservations,
   largestObservedOperations:Object.entries(value.operations).filter(([,v])=>v.calls>0).sort((a,b)=>b[1].cpuMs-a[1].cpuMs).slice(0,5).map(([operation,v])=>({operation,...v})),topDirectDraws:value.topDirectDraws}:null;
+// Preserve complete bounded census detail in the original JSON artifacts.
+// Stdout contains only its count/coverage summary, so rows do not flood CI logs.
+const compactSubmissionTotals=value=>{
+  if(!value?.programCensus)return value;
+  const {samples,...counts}=value.programCensus;
+  return {...value,programCensus:{...counts,samplesRetained:Array.isArray(samples)?samples.length:null,
+    detail:'Complete bounded sample rows remain in manual-profile.json and report.json.'}};
+};
 const compactLoop=value=>value?{captureEpoch:value.captureEpoch,callbackId:value.callbackId,outcome:value.outcome,acceptedSample:value.acceptedSample,
   associationEligible:value.associationEligible,place:value.place,x:value.x,z:value.z,draws:value.draws,triangles:value.triangles,renderMs:value.renderMs,
   wallGapSincePreviousObservedCallbackMs:value.wallGapSincePreviousObservedCallbackMs,invalidObservations:value.invalidObservations,scopes:value.scopes}:null;
@@ -303,7 +311,7 @@ finally{
     errors:report.errors,failedRequests:report.failedRequests,probeErrors:report.probeErrors,integrityErrors:report.integrityErrors,cleanupErrors:report.cleanupErrors,
     cleanupRequestAborts:report.cleanupRequestAborts,captureBoundary:report.captureBoundary});
   emit('FENCE',report.observers?.gpuFramePacing??null);emit('LOOP_TOTALS',report.observers?.loopTotals??null);
-  emit('SUBMISSION_TOTALS',{totals:report.observers?.submissionTotals,coverage:report.observers?.submissionCoverage});
+  emit('SUBMISSION_TOTALS',{totals:compactSubmissionTotals(report.observers?.submissionTotals),coverage:report.observers?.submissionCoverage});
   emit('LOOP_ASSOCIATIONS',{topCallbacks:report.observers?.topLoopCallbacks,slowIntervals:report.observers?.loopSlowIntervals});
   emit('RENDER_ASSOCIATIONS',report.observers?.currentAndPreviousRenderWork??null);emit('NATURE_TOTALS',report.observers?.natureTotals??null);
   emit('CDP_AND_MEMORY',{cdpAtKeyup:report.cdpAtKeyup,memoryAfterExtraction:report.memoryAfterExtraction});

@@ -44,7 +44,12 @@ export class RideProfileStats {
   if(frame.submission!==undefined){
    this.submissionSummary??=new RenderSubmissionSummary();
    const copied=copyRenderSubmissionFrame(frame.submission);
-   if(copied&&!copied.invalidObservations&&positionValid&&!invalidMetrics&&Number.isFinite(frame.speed)){submission=copied;this.submissionSummary.add(copied);}
+   if(copied&&!copied.invalidObservations&&positionValid&&!invalidMetrics&&Number.isFinite(frame.speed)){
+    this.submissionSummary.add(copied);
+    // Full sampled census sequences have their own bounded summary. Located
+    // slow/previous/top rows retain the original small CPU observations only.
+    submission=copyRenderSubmissionFrame(copied,false);
+   }
    else this.submissionSummary.invalidSample();
   }
   const submissionField=frame.submission!==undefined?{submission}:{};

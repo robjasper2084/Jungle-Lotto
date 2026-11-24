@@ -1,5 +1,6 @@
 /** Bounded manual-capture CPU observations. No frame or GPU policy changes. */
 import {copyRenderSubmissionFrame,renderSubmissionOperationNames,type RenderSubmissionFrame} from './renderSubmissionDiagnostics.ts';
+import {ProgramCensusSummary} from './renderProgramCensus.ts';
 export interface NatureRenderFrame {
  renderPasses:number;selectionCpuMs:number;captureCpuMs:number;cullCpuMs:number;
  selectionRefreshes:number;captureCalls:number;farPoolViewCalls:number;
@@ -62,18 +63,20 @@ export class RenderDiagnosticsSummary {
 export const SUBMISSION_DIAGNOSTICS_NOTE='Manual eligible-render-window CPU observations only. Direct draw timing includes nested GL operations; do not sum those inclusive categories. outsideDirectCpuMs identifies operation time observed outside renderer.renderBufferDirect. matrix times the world scene updateMatrixWorld call, not every camera update. GL-call durations can include synchronous driver work and are not GPU execution time. Hook coverage is recorded separately; missing hooks are not zero-cost evidence. No upload byte count is inferred. Top direct draws retain at most three bounded object/material labels per callback. The observer adds CPU work and does not change frame acceptance, FPS, graphics or GPU pacing.';
 type SubmissionOperationTotals={calls:number;cpuMs:number;maxCallCpuMs:number;maxFrameCpuMs:number;outsideDirectCalls:number;outsideDirectCpuMs:number;maxOutsideDirectFrameCpuMs:number};
 const submissionOperationTotals=():SubmissionOperationTotals=>({calls:0,cpuMs:0,maxCallCpuMs:0,maxFrameCpuMs:0,outsideDirectCalls:0,outsideDirectCpuMs:0,maxOutsideDirectFrameCpuMs:0});
-/** Totals only; located samples share the existing bounded render/slow lists. */
+/** CPU totals retain the existing located lists; program detail has its own cap. */
 export class RenderSubmissionSummary {
  private count=0;private invalid=0;
+ private programCensus:ProgramCensusSummary|undefined;
  private operations=Object.fromEntries(renderSubmissionOperationNames.map(name=>[name,submissionOperationTotals()])) as Record<typeof renderSubmissionOperationNames[number],SubmissionOperationTotals>;
  invalidSample(){this.invalid++;}
  add(frame:RenderSubmissionFrame){
   this.count++;
+  if(frame.programCensus){this.programCensus??=new ProgramCensusSummary();this.programCensus.add(frame.programCensus,this.count);}
   for(const name of renderSubmissionOperationNames){
    const value=frame.operations[name],total=this.operations[name];
    total.calls+=value.calls;total.cpuMs+=value.cpuMs;total.maxCallCpuMs=Math.max(total.maxCallCpuMs,value.maxCpuMs);total.maxFrameCpuMs=Math.max(total.maxFrameCpuMs,value.cpuMs);
    total.outsideDirectCalls+=value.outsideDirectCalls;total.outsideDirectCpuMs+=value.outsideDirectCpuMs;total.maxOutsideDirectFrameCpuMs=Math.max(total.maxOutsideDirectFrameCpuMs,value.outsideDirectCpuMs);
   }
  }
- report(){return {profiledCallbacks:this.count,invalidDiagnosticSamples:this.invalid,operations:Object.fromEntries(renderSubmissionOperationNames.map(name=>[name,{...this.operations[name]}])),note:SUBMISSION_DIAGNOSTICS_NOTE};}
+ report(){return {profiledCallbacks:this.count,invalidDiagnosticSamples:this.invalid,operations:Object.fromEntries(renderSubmissionOperationNames.map(name=>[name,{...this.operations[name]}])),...(this.programCensus?{programCensus:this.programCensus.report()}:{}),note:SUBMISSION_DIAGNOSTICS_NOTE};}
 }

@@ -1,5 +1,7 @@
 /** Opt-in CPU observations around existing renderer calls. No GPU queries,
  * synchronization, uploads or rendering decisions are added by this observer. */
+import {RenderProgramCensus,copyProgramCensusFrame,textureCensusMethods,uniformCensusMethods,
+  type CensusKind,type CensusOwner,type CensusToken,type ProgramCensusFrame} from './renderProgramCensus.ts';
 export const renderSubmissionOperationNames = [
   'matrix', 'directDraw', 'bufferData', 'bufferSubData', 'textureUpload',
   'programCompile', 'programLink', 'programStatus', 'programUse', 'draw',
@@ -20,6 +22,7 @@ export interface RenderSubmissionFrame {
   operations:Record<RenderSubmissionOperationName,RenderSubmissionOperation>;
   invalidObservations:number;
   topDirectDraws:RenderDirectDrawRow[];
+  programCensus?:ProgramCensusFrame;
 }
 export interface RenderSubmissionHookCoverage {
   name:string; status:'installed'|'missing'|'failed'; reason?:string;
@@ -49,9 +52,7 @@ const notes = [
 ];
 const glHooks:readonly (readonly [string,RenderSubmissionOperationName])[] = [
   ['bufferData','bufferData'], ['bufferSubData','bufferSubData'],
-  ...['texImage2D','texSubImage2D','texImage3D','texSubImage3D',
-    'compressedTexImage2D','compressedTexSubImage2D','compressedTexImage3D','compressedTexSubImage3D',
-    'texStorage2D','texStorage3D','copyTexImage2D','copyTexSubImage2D','copyTexSubImage3D','generateMipmap']
+  ...textureCensusMethods
     .map(name=>[name,'textureUpload'] as const),
   ['compileShader','programCompile'], ['linkProgram','programLink'],
   ...['getProgramParameter','getShaderParameter','getProgramInfoLog','getShaderInfoLog',
@@ -75,7 +76,7 @@ export function createEmptyRenderSubmissionFrame():RenderSubmissionFrame {
 }
 
 /** Reject malformed observations without retaining any source object references. */
-export function copyRenderSubmissionFrame(value:unknown):RenderSubmissionFrame|null {
+export function copyRenderSubmissionFrame(value:unknown,includeCensus=true):RenderSubmissionFrame|null {
   try {
     if(!isObject(value))return null;
     const source=value as RenderSubmissionFrame;
@@ -101,6 +102,10 @@ export function copyRenderSubmissionFrame(value:unknown):RenderSubmissionFrame|n
         parentId:row.parentId,parent:row.parent,geometryId:row.geometryId,
         materialId:row.materialId,material:row.material,materialType:row.materialType});
     }
+    if(includeCensus&&source.programCensus!==undefined){
+      const census=copyProgramCensusFrame(source.programCensus);if(!census)return null;
+      result.programCensus=census;
+    }
     return result;
   }catch{return null;}
 }
@@ -119,6 +124,7 @@ class SubmissionProbe implements RenderSubmissionProbe {
   private hooks:InstalledHook[]=[]; private hookCoverage:RenderSubmissionHookCoverage[]=[];
   private context:RenderSubmissionCoverage['context']='missing';
   private clock:()=>number;
+  private census:RenderProgramCensus|undefined;
   constructor(renderer:object,scene:object,clock:()=>number){
     this.clock=clock;
     this.install(renderer,'renderBufferDirect','directDraw','renderer.renderBufferDirect');
@@ -131,7 +137,18 @@ class SubmissionProbe implements RenderSubmissionProbe {
         this.context=isObject(gl)?'available':'missing';
       }
     }catch{this.context='failed';}
-    for(const [name,kind] of glHooks)this.install(isObject(gl)?gl:undefined,name,kind,'gl.'+name);
+    if(isObject(gl)){
+      this.census=new RenderProgramCensus(renderer,gl);
+      this.install(renderer,'render',undefined,'renderer.render','render');
+      this.install(renderer,'setRenderTarget',undefined,'renderer.setRenderTarget','target');
+      let shadow:unknown;try{shadow=Object.getOwnPropertyDescriptor(renderer,'shadowMap')?.value;}catch{/* Coverage remains missing. */}
+      this.install(isObject(shadow)?shadow:undefined,'render',undefined,'renderer.shadowMap.render','shadow');
+    }
+    for(const [name,kind] of glHooks){
+      const censusKind:CensusKind|undefined=kind==='programUse'?'program':kind==='draw'?'draw':kind==='textureUpload'?'texture':undefined;
+      this.install(isObject(gl)?gl:undefined,name,kind,'gl.'+name,censusKind);
+    }
+    if(this.census)for(const name of uniformCensusMethods)this.install(isObject(gl)?gl:undefined,name,undefined,'gl.'+name,undefined,true);
   }
   private invalid(){this.frame.invalidObservations++;this.faults++;}
   private checkpoint(epoch:number):number|undefined {
@@ -202,7 +219,7 @@ class SubmissionProbe implements RenderSubmissionProbe {
     if(top.length<3)top.push(row);else top[2]=row;
     top.sort((a,b)=>b.cpuMs-a.cpuMs);
   }
-  private install(target:object|undefined,method:string,kind:RenderSubmissionOperationName,name:string){
+  private install(target:object|undefined,method:string,kind:RenderSubmissionOperationName|undefined,name:string,censusKind?:CensusKind,uniform=false){
     const coverage:RenderSubmissionHookCoverage={name,status:'missing'};this.hookCoverage.push(coverage);
     if(!target){coverage.reason='context-unavailable';return;}
     let own:PropertyDescriptor|undefined,wrapper:Callable|undefined;
@@ -222,9 +239,23 @@ class SubmissionProbe implements RenderSubmissionProbe {
       const probe=this;
       wrapper=function(this:unknown,...args:unknown[]){
         if(!probe.active||probe.disposed)return Reflect.apply(original,this,args);
-        const token=probe.enter(kind);
-        try{return Reflect.apply(original,this,args);}
-        finally{if(token)probe.leave(token,args);}
+        if(uniform){
+          let owner:CensusOwner|undefined;
+          try{owner=probe.census?.uniformEnter(method,this);}catch{probe.census?.fault();}
+          let returned=false;
+          try{const result=Reflect.apply(original,this,args);returned=true;return result;}
+          finally{if(owner)try{probe.census?.uniformLeave(owner,method,returned);}catch{probe.census?.fault();}}
+        }
+        const token=kind?probe.enter(kind):undefined;
+        let censusToken:CensusToken|undefined;
+        const censusOperation=kind==='directDraw'?'direct':censusKind;
+        if(censusOperation&&(!kind||token))try{censusToken=probe.census?.enter(censusOperation,method,args,this);}catch{probe.census?.fault();}
+        let returned=false;
+        try{const result=Reflect.apply(original,this,args);returned=true;return result;}
+        finally{
+          if(token)probe.leave(token,args);
+          if(censusToken)try{probe.census?.leave(censusToken,args,returned);}catch{probe.census?.fault();}
+        }
       };
       Object.defineProperty(target,method,own?{...own,value:wrapper}:{value:wrapper,writable:true,configurable:true,enumerable:false});
       if(Object.getOwnPropertyDescriptor(target,method)?.value!==wrapper)throw Error('Hook unavailable');
@@ -243,15 +274,18 @@ class SubmissionProbe implements RenderSubmissionProbe {
     this.cancelFrame();
     if(!enabled||this.disposed)return;
     this.frame=createEmptyRenderSubmissionFrame();this.faults=0;this.active=true;
+    try{this.census?.begin();}catch{this.census?.fault();}
   }
   finishFrame():RenderSubmissionFrame|undefined {
     if(!this.active)return;
     if(renderSubmissionOperationNames.some(name=>this.depths[name]>0))this.invalid();
+    try{const census=this.census?.finish();if(census)this.frame.programCensus=census;}catch{this.census?.fault();}
     const result=copyRenderSubmissionFrame(this.frame)??undefined;
     this.cancelFrame();return result;
   }
   cancelFrame(){
     this.active=false;this.epoch++;this.lastClock=undefined;
+    this.census?.cancel();
     this.activeOperations=0;
     for(const name of renderSubmissionOperationNames)this.depths[name]=0;
   }
