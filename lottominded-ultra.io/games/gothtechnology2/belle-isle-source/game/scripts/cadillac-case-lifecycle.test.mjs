@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {createContext,runInContext} from 'node:vm';
 import {createCadillacCaseLifecycle,createCadillacCaseInput} from './cadillac-case-lifecycle.mjs';
+import {createCadillacOperationTiming} from './cadillac-operation-timing.mjs';
 
 const deferred=()=>{let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return{promise,resolve,reject};};
 const flush=async()=>{for(let i=0;i<30;i++)await Promise.resolve();};
@@ -44,6 +45,16 @@ test('ordinary adapters preserve native order and arguments apart from the clipp
  assert.throws(()=>f.lifecycle.publish(()=>assert.fail('late publication')),/already complete/);
 });
 
+test('the explicit non-navigating press adds only noWaitAfter and retains both action and case ceilings',async()=>{
+ const f=fixture();
+ await f.input.press(f.locator,'Home');await f.input.pressWithoutNavigation(f.locator,'Home');
+ f.set(100+32*60000-1234);
+ await f.input.press(f.locator,'ArrowDown');await f.input.pressWithoutNavigation(f.locator,'ArrowDown');
+ assert.deepEqual(f.calls,[['locator.press','Home',{timeout:90000}],['locator.press','Home',{timeout:90000,noWaitAfter:true}],
+  ['locator.press','ArrowDown',{timeout:1234}],['locator.press','ArrowDown',{timeout:1234,noWaitAfter:true}]]);
+ assert(f.lifecycle.snapshot().inputs.every(row=>row.outcome==='completed'&&row.completedBeforeStop));
+});
+
 test('the final clock boundary and clipped budget describe the actual native call without a second pre-call clock read',async()=>{
  for(const atIssue of [199,200]){
   let reads=0;const calls=[],times=[100,atIssue,200];
@@ -58,7 +69,7 @@ test('the final clock boundary and clipped budget describe the actual native cal
 test('the stopped latch rejects every new native entry including the deferred CDP transport callback',async()=>{
  const f=fixture();f.expire();const client={send:()=>assert.fail('CDP dispatch after stop')};
  for(const action of [()=>f.input.tap(f.locator,false),()=>f.input.tap(f.locator,true),()=>f.input.focus(f.locator),()=>f.input.scroll(f.locator),
-  ()=>f.input.press(f.locator,'Enter'),()=>f.input.keyPress('h'),()=>f.input.keyDown('w'),()=>f.input.mouseMove(1,2),
+  ()=>f.input.press(f.locator,'Enter'),()=>f.input.pressWithoutNavigation(f.locator,'Enter'),()=>f.input.keyPress('h'),()=>f.input.keyDown('w'),()=>f.input.mouseMove(1,2),
   ()=>f.input.mouseDown(),()=>f.input.mouseClick(1,2),()=>f.input.touch('touchStart',[]),
   ()=>Promise.resolve().then(()=>f.input.sendTouch(client,'Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[]}))])
   await assert.rejects(action,/case exceeded its deadline/);
@@ -66,21 +77,73 @@ test('the stopped latch rejects every new native entry including the deferred CD
 });
 
 test('late preflight or key completion cannot send a following key or publish functional success',async()=>{
- for(const stage of ['preflight','native key']){
+ for(const method of ['press','pressWithoutNavigation'])for(const stage of ['preflight','native key']){
   const f=fixture({timeout:100}),pending=deferred();let success=false;
   if(stage==='native key')f.locator.press=(...args)=>{f.calls.push(['locator.press',...args]);return pending.promise;};
   const running=f.lifecycle.run(async()=>{
    if(stage==='preflight')await pending.promise;
-   await f.input.press(f.locator,'Home');await f.input.press(f.locator,'ArrowDown');await f.input.press(f.locator,'Enter');
+   await f.input[method](f.locator,'Home');await f.input[method](f.locator,'ArrowDown');await f.input[method](f.locator,'Enter');
    f.lifecycle.publish(()=>{success=true;});
   });
   await flush();f.expire();await assert.rejects(running,/case exceeded its deadline/);
+  if(stage==='native key')assert.equal(f.lifecycle.snapshot().inputs[0].outcome,'pending','Only the original native promise can settle its receipt');
   pending.resolve();await flush();assert.equal(success,false);
   assert.deepEqual(f.calls.map(call=>call[1]),stage==='native key'?['Home']:[]);
   if(stage==='native key'){
    const receipt=f.lifecycle.snapshot().inputs[0];assert.equal(receipt.outcome,'completed-after-stop');
    assert.equal(receipt.completedBeforeStop,false);assert.equal(receipt.completedAtNodeMs,200);
   }
+ }
+});
+
+test('the actual wheel fixture keeps all 42 keys and scopes noWaitAfter away from boot and mobile selects',async()=>{
+ const source=await readFile(new URL('./cadillac-mods-browser-smoke.mjs',import.meta.url),'utf8');
+ const select=source.slice(source.indexOf('async function selectWithKeyboard('),source.indexOf('async function setReduced('));
+ const wheels=source.slice(source.indexOf('async function wheelChecks('),source.indexOf('async function panelAction('));
+ const rim='#cadillac-mod-rim',center='#cadillac-mod-center',tire='#cadillac-mod-tire';
+ const expectedSelections=[[rim,1],[center,1],[tire,1],[tire,2],[tire,3],[rim,2],[center,2],[tire,1],[tire,2],[tire,3],[rim,0],[tire,0]];
+ const expectedKeys=expectedSelections.flatMap(([selector,index])=>['Home',...Array(index).fill('ArrowDown'),'Enter'].map(key=>({selector,key})));
+ assert.equal(expectedKeys.length,42);
+ for(const mobile of [false,true]){
+  const f=fixture(),calls=[],scrolled=[],enabled=[],valuesChecked=[];
+  const options={[rim]:['stock','wire-gold','wire-chrome'],[center]:['gold','black','white'],[tire]:['standard','whitewall','low-profile','low-profile-whitewall'],
+   '#quality':['automatic','smooth','high'],'#fps':['60','30'],'#joystick-mode':['floating','fixed']};
+  const values=Object.fromEntries(Object.entries(options).map(([selector,items])=>[selector,items[0]]));
+  const controls=Object.fromEntries(Object.entries(options).map(([selector,items])=>[selector,{
+   selector,locator:child=>{assert.equal(child,'option');return{evaluateAll:async evaluate=>evaluate(items.map(value=>({value}))) };},
+   async press(key,config){
+    calls.push({selector,key,config});
+    if(key==='Home')values[selector]=items[0];
+    else if(key==='ArrowDown')values[selector]=items[items.indexOf(values[selector])+1];
+    else assert.equal(key,'Enter');
+   },
+  }]));
+  const page={locator:selector=>{assert(Object.hasOwn(controls,selector));return controls[selector];}};
+  const context=createContext({assert,mobile,page,nativeInput:f.input,
+   scrollIfNeeded:async control=>{scrolled.push(control.selector);},
+   expect:control=>({
+    toBeEnabled:async()=>{assert(control.selector!==center||values[rim]!=='stock');enabled.push(control.selector);},
+    toHaveValue:async value=>{assert.equal(values[control.selector],value);valuesChecked.push(control.selector);},
+    toBeDisabled:async()=>{assert.equal(control.selector,center);assert.equal(values[rim],'stock');},
+   }),
+   phase:()=>{},openMods:async()=>{},closeSettings:async()=>{},editorCapture:async()=>{},frames:async()=>{},capture:async()=>{},checkResult:()=>{},
+   snapshot:async()=>({wheels:{rim:values[rim],tire:values[tire],spokesPerWheel:100,texturesAdded:0,
+    customMeshes:values[rim]==='stock'&&values[tire]==='standard'?0:8,sourceRestored:values[rim]==='stock'&&values[tire]==='standard'}}),
+  });
+  runInContext(select+wheels,context);await runInContext('wheelChecks()',context);
+  assert.deepEqual(calls.map(({selector,key})=>({selector,key})),expectedKeys);
+  assert.deepEqual(scrolled,expectedSelections.map(([selector])=>selector));assert.deepEqual(enabled,scrolled);assert.deepEqual(valuesChecked,scrolled);
+  assert(calls.every(({config})=>JSON.stringify(config)===JSON.stringify(mobile?{timeout:90000}:{timeout:90000,noWaitAfter:true})));
+  await runInContext("selectWithKeyboard('#quality','smooth')",context);await runInContext("selectWithKeyboard('#fps','30')",context);
+  assert.deepEqual(calls.slice(42),['#quality','#fps'].flatMap(selector=>['Home','ArrowDown','Enter'].map(key=>({selector,key,config:{timeout:90000}}))));
+  if(mobile){
+   await runInContext("selectWithKeyboard('#joystick-mode','fixed')",context);
+   assert.deepEqual(calls.slice(48),['Home','ArrowDown','Enter'].map(key=>({selector:'#joystick-mode',key,config:{timeout:90000}})));
+  }
+  assert.equal(calls.filter(({config})=>config.noWaitAfter).length,mobile?0:42);
+  const receipts=f.lifecycle.snapshot().inputs;
+  assert.deepEqual(receipts.slice(0,42).map(row=>row.label),expectedKeys.map(({key})=>(mobile?'locator.press ':'locator.press(noWaitAfter) ')+key));
+  assert.deepEqual(receipts.slice(42,48).map(row=>row.label),['Home','ArrowDown','Enter','Home','ArrowDown','Enter'].map(key=>'locator.press '+key));
  }
 });
 
@@ -154,15 +217,19 @@ test('the actual capture path neither starts a late screenshot nor publishes an 
  const source=await readFile(new URL('./cadillac-mods-browser-smoke.mjs',import.meta.url),'utf8');
  const capture=source.slice(source.indexOf('async function capture('),source.indexOf('async function editorCapture('));
  for(const stage of ['paint','screenshot']){
-  const f=fixture(),pending=deferred(),issued=deferred(),report={captures:[],phase:'test'},screenshots=[];
+  const f=fixture(),pending=deferred(),issued=deferred(),report={captures:[],phase:'test'},screenshots=[],operationTiming=createCadillacOperationTiming({now:f.now});
   const page={screenshot:options=>{screenshots.push(options);issued.resolve();return stage==='screenshot'?pending.promise:Promise.resolve(Buffer.from('pixels'));},viewportSize:()=>({width:1280,height:800})};
-  const context=createContext({caseLifecycle:f.lifecycle,page,report,out:'/fixture',resolve:(...parts)=>parts.join('/'),hash:()=> 'hash',
+  const context=createContext({caseLifecycle:f.lifecycle,operationTiming,page,report,out:'/fixture',resolve:(...parts)=>parts.join('/'),hash:()=> 'hash',
    painted:()=>stage==='paint'?pending.promise:Promise.resolve({fence:true,paints:2})});
   runInContext(capture,context);const running=runInContext("capture('test')",context);
   if(stage==='screenshot')await issued.promise;else await flush();
-  f.expire();pending.resolve(stage==='screenshot'?Buffer.from('pixels'):{fence:true,paints:2});await assert.rejects(running,/deadline/);
+  f.expire();const timingAtStop=operationTiming.snapshot();
+  pending.resolve(stage==='screenshot'?Buffer.from('pixels'):{fence:true,paints:2});await assert.rejects(running,/deadline/);
   assert.equal(screenshots.length,stage==='screenshot'?1:0);assert.deepEqual(report.captures,[]);
   if(screenshots.length)assert.equal(screenshots[0].timeout,150000,'The existing complete screenshot budget remains intact');
+  assert.equal(timingAtStop.pendingOperations,1);assert.equal(timingAtStop.entries.at(-1).settlement,'pending');
+  const settledTiming=operationTiming.snapshot();assert.equal(settledTiming.pendingOperations,0);
+  assert.equal(settledTiming.entries.at(-1).settlement,'resolved','An observed operation settlement cannot publish a successful capture after stop');
  }
 });
 

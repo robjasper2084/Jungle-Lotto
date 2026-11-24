@@ -79,6 +79,9 @@ export function createCadillacCaseInput({lifecycle,page,touch}){
  const api={
   tap:(locator,mobile)=>lifecycle.input(mobile?'locator.tap':'locator.click',timeout=>mobile?locator.tap({timeout}):locator.click({timeout})),
   press:(locator,key)=>lifecycle.input('locator.press '+key,timeout=>locator.press(key,{timeout})),
+  // Only the three desktop wheel selects opt out of the navigation barrier.
+  // Locator resolution/focus, native keys, timeout and promise ownership stay intact.
+  pressWithoutNavigation:(locator,key)=>lifecycle.input('locator.press(noWaitAfter) '+key,timeout=>locator.press(key,{timeout,noWaitAfter:true})),
   focus:locator=>lifecycle.input('locator.focus',timeout=>locator.focus({timeout})),
   scroll:locator=>lifecycle.input('locator.scrollIntoViewIfNeeded',timeout=>locator.scrollIntoViewIfNeeded({timeout})),
   keyPress:key=>lifecycle.input('keyboard.press '+key,()=>page().keyboard.press(key)),

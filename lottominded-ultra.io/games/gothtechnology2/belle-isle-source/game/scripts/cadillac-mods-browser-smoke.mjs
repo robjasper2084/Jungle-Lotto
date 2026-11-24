@@ -10,6 +10,7 @@ import {createCoopStaticServer} from './coop-static-server.mjs';
 import {createNativeTouchSequence} from './native-touch-sequence.mjs';
 import {clickCadillacCommand} from './cadillac-native-command-click.mjs';
 import {createCadillacCaseLifecycle,createCadillacCaseInput} from './cadillac-case-lifecycle.mjs';
+import {createCadillacOperationTiming} from './cadillac-operation-timing.mjs';
 
 const game=resolve(import.meta.dirname,'..'),dist=resolve(game,'dist');
 const layouts={desktop:{width:1280,height:800},'small-phone':{width:320,height:568},compact:{width:390,height:340}};
@@ -28,9 +29,10 @@ const report={version:2,case:caseName,source,checkout,run:process.env.GITHUB_RUN
  passed:false,phase:'setup',startedAt:new Date().toISOString(),checks:{},snapshots:[],captures:[],errors:[],failedRequests:[],startupWarnings:[],
  harness:{pointerActivations:0,diagnosticKeyboardActivations:0,explicitScrolls:0,alreadyVisibleScrolls:0,cooldownReports:0,cooldownReadinessPolls:0,snapshotTimings:[],commandClicks:[]},
  limitations:'Actual built full island on Chrome SwiftShader. Functional/layout screenshots and native input only; not physical-device, hardware FPS, sustained-performance, or completed human visual acceptance. Short Ride profile reports below are paused UI state snapshots, not performance samples. Existing release gates are unchanged.'};
+const operationTiming=createCadillacOperationTiming();
 await mkdir(out,{recursive:true});
 const server=createCoopStaticServer(dist);let browser,page,context,client,touchSequence,caseLifecycle,nativeInput,inputCleanup;
-const phase=name=>{if(name!=='cleanup')caseLifecycle.check();report.phase=name;console.log(new Date().toISOString()+' '+caseName+' '+name);};
+const phase=name=>{if(name!=='cleanup')caseLifecycle.check();operationTiming.phase(name);report.phase=name;console.log(new Date().toISOString()+' '+caseName+' '+name);};
 const checkResult=(key,value)=>caseLifecycle.publish(()=>{report.checks[key]=value;});
 const appendCheck=(key,value)=>caseLifecycle.publish(()=>(report.checks[key]??=[]).push(value));
 async function bounded(promise,ms,label){let timer;try{return await Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error(label+' exceeded its deadline')),ms);})]);}finally{clearTimeout(timer);}}
@@ -99,7 +101,10 @@ async function selectWithKeyboard(selector,value){
  const control=page.locator(selector);await scrollIfNeeded(control);await expect(control).toBeEnabled();
  const options=await control.locator('option').evaluateAll(items=>items.map(item=>item.value)),index=options.indexOf(value);
  assert(index>=0,selector+' contains '+value);
- await nativeInput.press(control,'Home');for(let i=0;i<index;i++)await nativeInput.press(control,'ArrowDown');await nativeInput.press(control,'Enter');
+ // These wheel change handlers update the current car without navigating.
+ // Keep locator targeting/focus for every key; only its navigation wait is omitted.
+ const press=!mobile&&['#cadillac-mod-rim','#cadillac-mod-center','#cadillac-mod-tire'].includes(selector)?nativeInput.pressWithoutNavigation:nativeInput.press;
+ await press(control,'Home');for(let i=0;i<index;i++)await press(control,'ArrowDown');await press(control,'Enter');
  await expect(control).toHaveValue(value);
 }
 async function setReduced(value){
@@ -190,15 +195,15 @@ async function painted(){
  assert.match(proof.renderer,/SwiftShader/i,'This workflow records software WebGL honestly');return proof;
 }
 async function capture(name){
- caseLifecycle.check();const gpu=await painted(),file=name+'.png';caseLifecycle.check();
- const bytes=await page.screenshot({path:resolve(out,file),timeout:150000});
+ caseLifecycle.check();const gpu=await operationTiming.observe('capture '+name+' fence and paints',()=>painted()),file=name+'.png';caseLifecycle.check();
+ const bytes=await operationTiming.observe('capture '+name+' screenshot',()=>page.screenshot({path:resolve(out,file),timeout:150000}));
  caseLifecycle.publish(()=>report.captures.push({file,bytes:bytes.length,sha256:hash(bytes),viewport:page.viewportSize(),phase:report.phase,gpu}));
 }
 async function editorCapture(name,selector){await scrollIfNeeded(page.locator(selector).first());await capture(name);}
 async function frames(count){
  caseLifecycle.check();
- const before=Number(await page.locator('#profile').getAttribute('data-active-frames'));assert(Number.isFinite(before));
- await caseLifecycle.wait(page.waitForFunction(({before,count})=>Number(document.querySelector('#profile')?.dataset.activeFrames)>=before+count,{before,count},{timeout:90000}));
+ const before=Number(await operationTiming.observe('frames '+count+' baseline',()=>page.locator('#profile').getAttribute('data-active-frames')));assert(Number.isFinite(before));
+ await caseLifecycle.wait(operationTiming.observe('frames '+count+' wait',()=>page.waitForFunction(({before,count})=>Number(document.querySelector('#profile')?.dataset.activeFrames)>=before+count,{before,count},{timeout:90000})));
 }
 
 async function wheelChecks(){
@@ -645,6 +650,7 @@ finally{
  if(browser)try{await bounded(browser.close(),30000,'Browser cleanup');}catch(error){report.errors.push('Browser cleanup: '+error.message);}
  if(server.listening)try{await bounded(new Promise((yes,no)=>server.close(error=>error?no(error):yes())),10000,'Static server cleanup');}catch(error){report.errors.push('Static server cleanup: '+error.message);}
  report.caseLifecycle=caseLifecycle.snapshot();
+ report.harness.operationTiming=operationTiming.snapshot();
  report.passed=report.caseLifecycle.state==='completed'&&report.functionalPassed===true&&report.errors.length===0&&report.failedRequests.length===0;report.finishedAt=new Date().toISOString();
  await writeFile(resolve(out,'report.json'),JSON.stringify(report,null,2)+'\n');
  console.log(JSON.stringify({passed:report.passed,case:caseName,source,snapshots:report.snapshots.length,screenshots:report.captures.length,failurePhase:report.failurePhase??null,errors:report.errors,failedRequests:report.failedRequests}));
