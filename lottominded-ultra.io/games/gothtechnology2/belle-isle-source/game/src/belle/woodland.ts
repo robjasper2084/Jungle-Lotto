@@ -1,5 +1,6 @@
 import * as T from 'three';
 import type {ParkMap} from './terrain.ts';
+import {batchStaticGround} from './staticGroundBatch.ts';
 
 /** Leaf litter sits below path paving; mapped water holes remain completely open. */
 export function addWoodlandFloor(scene:T.Scene,map:ParkMap){
@@ -17,10 +18,15 @@ export function addWoodlandFloor(scene:T.Scene,map:ParkMap){
    diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.19,.15,.085)*(.75+seed*.5),leaf*detail*.48);
   `);
  };material.customProgramCacheKey=()=>'flatwoods-leaf-litter-v1';
+ const patches:T.Mesh[]=[];
  for(const a of map.areas.filter(a=>a.kind==='wood'||a.kind==='forest')){
   const shape=new T.Shape(a.points.map(p=>new T.Vector2(p[0],-p[1])));
   for(const hole of a.holes||[])shape.holes.push(new T.Path(hole.map(p=>new T.Vector2(p[0],-p[1]))));
   const g=new T.ShapeGeometry(shape);g.rotateX(-Math.PI/2);g.translate(0,2.006,0);
-  const mesh=new T.Mesh(g,material);mesh.name='Woodland leaf litter '+a.id;mesh.receiveShadow=true;scene.add(mesh);
+  const mesh=new T.Mesh(g,material);mesh.name='Woodland leaf litter '+a.id;mesh.receiveShadow=true;scene.add(mesh);patches.push(mesh);
  }
+ // All patches already share baked world coordinates and the same leaf-litter material.
+ const joined=batchStaticGround(patches);
+ // Later surface dressing uses the object name to distinguish leaf litter from wood.
+ if(joined.after>0)for(const mesh of scene.children)if(mesh instanceof T.Mesh&&mesh.material===material)mesh.name='Woodland leaf litter · joined patches';
 }
