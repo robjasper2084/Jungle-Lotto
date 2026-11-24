@@ -13,6 +13,8 @@ import {applyRealisticMaterials,loadRealisticMaterials} from './realisticMateria
 import {dressSunsetGround} from './sunsetGround.ts';
 import {batchStaticGround} from './staticGroundBatch.ts';
 import {StaticPaletteBatch} from './staticPaletteBatch.ts';
+import {seasonalMaterial} from './seasonalMaterial.ts';
+import {referenceTree} from './referenceTrees.ts';
 
 type Shader=Parameters<T.Material['onBeforeCompile']>[0];
 type SurfaceMesh=T.Mesh<T.BufferGeometry,T.MeshStandardMaterial>;
@@ -98,6 +100,107 @@ function nativeMaterialCache(){
  return {lightState,select:(mesh:SurfaceMesh,scene:T.Scene)=>getProgram(mesh.material,scene,mesh),
   uniforms:(material:T.Material)=>properties.get(material).uniforms};
 }
+
+test('only leafless Standard trunks share the near/far key and keep separate construction-time selectors',t=>{
+ const source=new T.MeshStandardMaterial({color:0x70513a,roughness:.95}),month={value:7},original=source.toJSON();
+ const near=seasonalMaterial(source,false,false,false,month,true),far=seasonalMaterial(source,false,true,false,month,true);
+ const materials:T.Material[]=[source,near.material,far.material];t.after(()=>materials.forEach(material=>material.dispose()));
+ const shaders=[compile(near.material),compile(far.material)];
+ assert.equal(near.material.customProgramCacheKey(),far.material.customProgramCacheKey());
+ assert.equal(near.material.customProgramCacheKey(),'seasonal-trunk-selector-v1');
+ assert.deepEqual(pair(shaders[0]),pair(shaders[1]));
+ assert.deepEqual(shaders.map(shader=>shader.uniforms.treeFarLod.value),[false,true]);
+ assert.notEqual(shaders[0].uniforms.treeFarLod,shaders[1].uniforms.treeFarLod);
+ for(const material of [near.material,far.material]){
+  assert.equal(material.side,T.DoubleSide);assert.equal(material.transparent,false);assert.equal(material.alphaTest,0);assert.equal(material.alphaToCoverage,false);assert.equal(material.roughness,.88);
+ }
+ // An old shader table cannot change a later compile's constructor choice or
+ // the other material's table. Production has no per-frame selector mutation.
+ shaders[0].uniforms.treeFarLod.value=true;
+ const fresh=compile(near.material);assert.equal(fresh.uniforms.treeFarLod.value,false);assert.notEqual(fresh.uniforms.treeFarLod,shaders[0].uniforms.treeFarLod);
+ for(const reference of [false,true])for(const distant of [false,true]){
+  const leaf=seasonalMaterial(source,true,distant,false,month,reference).material;materials.push(leaf);
+  const shader=compile(leaf);assert.equal(shader.uniforms.treeFarLod,undefined);assert.doesNotMatch(shader.fragmentShader,/treeFarLod/);
+  assert.equal(leaf.customProgramCacheKey(),reference?'reference-seasonal-stable-'+distant:'seasonal-tree-stable-true-'+distant);
+  assert.equal(leaf.alphaTest,distant?.34:.36);assert.equal(leaf.alphaToCoverage,true);
+  assert(shader.fragmentShader.includes(distant?'if(lodSeed<1.0-treeWeight)discard;':'if(lodSeed>=treeWeight)discard;'));
+ }
+ for(const base of [new T.MeshBasicMaterial(),new T.MeshPhysicalMaterial()]){
+  materials.push(base);
+  for(const distant of [false,true]){
+   const material=seasonalMaterial(base,false,distant,false,month).material;materials.push(material);
+   assert.equal(material.customProgramCacheKey(),'seasonal-tree-stable-false-'+distant);assert.doesNotMatch(compile(material).fragmentShader,/treeFarLod/);
+  }
+ }
+ assert.deepEqual(source.toJSON(),original,'the authored source material is unchanged');
+});
+
+test('leafless selector preserves both original discard predicates at reciprocal and fractional thresholds',t=>{
+ const source=new T.MeshStandardMaterial(),material=seasonalMaterial(source,false,false,false,{value:7}).material;
+ t.after(()=>{material.dispose();source.dispose();});
+ const shader=compile(material),match=shader.fragmentShader.match(/#include <alphatest_fragment>([\s\S]*?)#include <alphahash_fragment>/);
+ assert(match,'the actual compiled coverage block is present');
+ assert.match(match[1],/if\(treeFarLod\)\{\s*if\(lodSeed<1\.0-treeWeight\)discard;\s*\}else\{\s*if\(lodSeed>=treeWeight\)discard;/);
+ assert.match(match[1],/vec3 lodCell=floor\(localTreePos\*6\.0\);/);
+ assert.match(match[1],/float lodSeed=fract\(52\.9829189\*fract\(dot\(lodCell,vec3\(\.06711056,\.00583715,\.02383154\)\)\)\);/);
+ // Execute the actual selector/early-discard structure with a supplied hash
+ // value. This checks the threshold contract, not GPU float rounding or pixels.
+ const coverage=match[1].replace(/vec3 lodCell=[^;]+;/,'').replace(/float lodSeed=[^;]+;/,'').replaceAll('discard;','return true;');
+ const discard=Function('treeFarLod','treeWeight','lodSeed',coverage+'\nreturn false;') as (far:boolean,weight:number,seed:number)=>boolean;
+ const weights=new Float32Array([-.1,0,.1,.125,.25,.3,.5,.7,.75,.875,.9,1,1.1]);
+ for(const weight of weights)for(const distant of [false,true]){
+  const boundary=distant?1-weight:weight;
+  const seeds=[0,Number.MIN_VALUE,.05,.125,.25,.5,.75,.875,.95,1,boundary-Number.EPSILON,boundary,boundary+Number.EPSILON];
+  for(const seed of seeds){
+   const original=weight<=0 || (weight<1 && (distant?seed<1.0-weight:seed>=weight));
+   assert.equal(discard(distant,weight,seed),original,JSON.stringify({distant,weight,seed}));
+  }
+ }
+ for(const near of [.125,.25,.5,.75,.875])for(const seed of [0,near-Number.EPSILON,near,near+Number.EPSILON,.99]){
+  assert.notEqual(discard(false,near,seed),discard(true,1-near,seed),'original complementary binary thresholds select exactly one side');
+ }
+});
+
+test('actual trunk chains keep near/far/near bindings through the pinned native material and bool-uniform caches',async t=>{
+ const scene=new T.Scene(),noise=new T.Texture(),owner=new WorldAtmosphere(scene,noise),month={value:10};
+ const sources=[false,true].map(far=>{
+  const tree=referenceTree('maple',far,12),season=seasonalMaterial(tree.bark,false,far,false,month,true);
+  tree.trunk.setAttribute('lodWeight',new T.InstancedBufferAttribute(new Float32Array([far?.75:.25]),1));
+  const mesh=new T.InstancedMesh(tree.trunk,season.material,1);mesh.name=(far?'Distant ':'Nearby ')+'maple trunk';
+  mesh.setMatrixAt(0,new T.Matrix4());mesh.setColorAt(0,new T.Color(0xffffff));mesh.castShadow=!far;mesh.receiveShadow=true;mesh.frustumCulled=false;
+  scene.add(mesh);return {tree,season,mesh,geometry:mesh.geometry,weight:mesh.geometry.getAttribute('lodWeight'),before:mesh.geometry.attributes.position.array.slice()};
+ });
+ const dressed:T.Material[]=[];
+ t.after(()=>{owner.dispose();for(const row of sources){row.mesh.dispose();row.tree.trunk.dispose();row.tree.leaves.dispose();row.tree.bark.dispose();row.tree.foliage.dispose();row.season.material.dispose();}dressed.forEach(material=>material.dispose());noise.dispose();});
+ await Promise.resolve();dressed.push(...applyRealisticMaterials(scene));assert.equal(dressed.length,2);
+ const [near,far]=sources.map(row=>row.mesh);
+ assert.notEqual(near.material,far.material);assert.equal(near.material.customProgramCacheKey(),far.material.customProgramCacheKey());
+ for(const mesh of [near,far]){assert.equal(mesh.material.userData.realisticProfile,'bark|triplanar');assert.equal(mesh.material.userData.realisticBaseIsStandard,false);}
+ const batch=new StaticPaletteBatch([near,far],new Set([near,far]));t.after(()=>batch.dispose());
+ assert.deepEqual(batch.stats,{sourceDraws:0,batches:0},'a shared GPU key never authorizes sharing these instance-pool uniform bindings');
+ const native=nativeMaterialCache(),first=native.select(near,scene),nearUniforms=native.uniforms(near.material),second=native.select(far,scene),farUniforms=native.uniforms(far.material);
+ assert.equal(first,second,'the actual pinned Three cache acquires one program for the two materials');
+ assert.notEqual(nearUniforms,farUniforms);assert.notEqual(nearUniforms.treeFarLod,farUniforms.treeFarLod);
+ assert.deepEqual([nearUniforms.treeFarLod.value,farUniforms.treeFarLod.value],[false,true]);
+ const calls:number[]=[];let current:number|undefined;
+ const gl={ACTIVE_UNIFORMS:0x8b86,getProgramParameter:()=>1,getActiveUniform:()=>({name:'treeFarLod',type:0x8b56,size:1}),getUniformLocation:()=>0,
+  uniform1i:(_:unknown,value:boolean|number)=>{current=Number(value);calls.push(current);}};
+ const Uniforms=WebGLUniforms as unknown as {new(gl:unknown,program:unknown):{seq:unknown[]};upload:(gl:unknown,seq:unknown[],values:Record<string,T.IUniform>,textures:unknown)=>void};
+ const uniforms=new Uniforms(gl,{});
+ for(const mesh of [near,far,near,near,far,near]){
+  assert.equal(native.select(mesh,scene),first);
+  Uniforms.upload(gl,uniforms.seq,native.uniforms(mesh.material),{});
+  assert.equal(current,Number(mesh===far),'the shared native uniform cache switches to this material value');
+ }
+ assert.deepEqual(calls,[0,1,0,1,0],'the pinned value cache skips only an actually unchanged bool');
+ assert.equal(native.uniforms(near.material),nearUniforms);assert.equal(native.uniforms(far.material),farUniforms);
+ for(const [i,row]of sources.entries()){
+  row.season.update();assert.equal(native.uniforms(row.mesh.material).treeFarLod.value,i===1);
+  assert.equal(row.mesh.geometry,row.geometry);assert.equal(row.mesh.geometry.getAttribute('lodWeight'),row.weight);assert.deepEqual(row.mesh.geometry.attributes.position.array,row.before);
+  assert.equal(row.mesh.castShadow,i===0);assert.equal(row.mesh.receiveShadow,true);assert.equal(row.mesh.frustumCulled,false);
+  assert.equal(row.mesh.customDepthMaterial,undefined);assert.equal(row.mesh.customDistanceMaterial,undefined);
+ }
+});
 
 async function lawnCase(kind:'original'|'gardenSoil'|'gardenLawn'|'oudolf',rediscover:boolean){
  const scene=new T.Scene(),terrain=new CinematicTerrain(scene),noise=new T.Texture(),atmosphere=new WorldAtmosphere(scene,noise);
