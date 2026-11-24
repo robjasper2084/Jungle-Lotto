@@ -35,6 +35,8 @@ export class BelleOnlineRooms{
  get inputBlocked(){return this.comms.inputBlocked;}
  get isHost(){return this.connected&&this.owner===this.self;}
  get online(){return this.connected;}
+ /** Includes joins and reconnecting channels, when .online can temporarily be false. */
+ get sessionActive(){return this.connected||this.connecting||!!this.channel;}
  get hostId(){return this.owner;}
  sendRace(data:unknown){this.send('race',data);}
  open(){this.hooks.clear();this.comms.place(this.dialog);if(!this.dialog.open)this.dialog.showModal();}

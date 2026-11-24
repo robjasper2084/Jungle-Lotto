@@ -182,6 +182,17 @@ export class SceneWarmup {
      };
      if(compileRoots.length===1)await submit(compileRoots[0],0);
      else await startupPool(compileRoots,4,submit,cancel.signal);
+     // Preserve model uniform-cache warmup on drivers without the parallel
+     // shader path; their first visible draw must not perform reflection work.
+     if(model){
+      let sliceStart=performance.now();
+      for(const program of this.renderer.info?.programs??[]){
+       checkDeadline();program.getUniforms();
+       if(performance.now()-sliceStart>=8){
+        await readyOrCancelled(yieldStartupTask(),cancel.signal);sliceStart=performance.now();
+       }
+      }
+     }
      if(!shadows.length)break;
     }
     checkDeadline();

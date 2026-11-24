@@ -1,0 +1,88 @@
+{
+  "date": "2026-11-23",
+  "baseCandidate": "c0191859cfa05754bec11fc81f3eaf2e3ab30f5f",
+  "browser": "Cloud Chrome through supported managed preview and CUA",
+  "mode": "Actual production panel modules with development-only synthetic sensor fixture",
+  "realDeviceSensorsTested": false,
+  "fullIslandPerformanceMeasuredHere": false,
+  "fullGameCloudBrowserResult": "WebGL context creation failed; managed preview connectivity succeeded; one normal retry failed identically.",
+  "sourceSha256": {
+    "src/belle/realLocationPanel.ts": "ca5b25a77591864378595d7a62d2240dd0b2b7eea32d6fd57c2eae7ebd4f93cc",
+    "src/belle/realLocation.css": "143654446e884fe9f3b32510551d310fc2d36f5d5e0585dae7863afc598b96ee",
+    "src/belle/realLocation.ts": "1b0f2bcd85bda9a6ea8db1a63713fcabfcbc4fa0b295f9ffbb685323f5e81adb",
+    "src/belle/realCompass.ts": "e7f100c5e194b719efd0788b8dac597811ab182adde19154202fa9d276a90966"
+  },
+  "viewports": [
+    {
+      "width": 1280,
+      "height": 800,
+      "dialogWidth": 560,
+      "dialogHeight": 695.890625,
+      "horizontalOverflow": false,
+      "minimumButtonHeight": 44
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "dialogWidth": 366,
+      "dialogHeight": 820,
+      "horizontalOverflow": false,
+      "verticalScroll": true,
+      "minimumButtonHeight": 44
+    },
+    {
+      "width": 820,
+      "height": 1180,
+      "dialogWidth": 560,
+      "dialogHeight": 676.390625,
+      "horizontalOverflow": false,
+      "verticalScroll": false,
+      "minimumButtonHeight": 44
+    },
+    {
+      "width": 1180,
+      "height": 820,
+      "dialogWidth": 560,
+      "dialogHeight": 676.390625,
+      "horizontalOverflow": false,
+      "verticalScroll": false,
+      "minimumButtonHeight": 44
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "dialogWidth": 560,
+      "dialogHeight": 366,
+      "horizontalOverflow": false,
+      "verticalScroll": true,
+      "minimumButtonHeight": 44
+    }
+  ],
+  "observedCases": [
+    "Initial off state has zero watches; explicit Use my location creates one simulated watch.",
+    "Usable synthetic fix enables Follow; Follow closes the dialog and displays the GPS follow strip.",
+    "Poor accuracy stops follow and disables the follow control.",
+    "Denial clears the simulated watch; usable feed plus explicit Retry recovers.",
+    "Simulated hide pauses location, stops follow and clears the watch; return stays paused until Resume.",
+    "Compass activates separately and displays the synthetic east heading of 90 degrees.",
+    "Stop clears all three started simulated watches, removes the current displayed position and turns compass off.",
+    "Escape closes the dialog and restores its actual opener after the close event.",
+    "Reduced-motion first-frame gap is 0.000 m; ordinary smoothed presentation observed 1.249 m."
+  ],
+  "screenshots": {
+    "phone-gps-controls.jpg": {
+      "sha256": "78ab4f414463d36cd9f9d44efa52e18affe97497a07c8dd4702aa78e3accc113",
+      "syntheticSensorData": true
+    },
+    "tablet-gps-controls.jpg": {
+      "sha256": "64be02d48eab49f4079439c6f8c4573bfb55fb631cbd6467fed8cf3eca46ce2b",
+      "syntheticSensorData": true
+    }
+  },
+  "limits": [
+    "No actual iPad or phone hardware tested.",
+    "No real permission prompt tested.",
+    "No scene GPU rendering in this fixture.",
+    "No physical GPS coordinates were collected."
+  ]
+}
