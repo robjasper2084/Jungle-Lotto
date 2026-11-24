@@ -91,7 +91,10 @@ test('near tree native render callbacks separate the unchanged shadow caster uni
  fill(meshes,[translation(0,40),translation(0,-40),translation(300,-40)]);
  near.capture();const camera=view(),reverse=view(0,4,0,100);
  const original=meshes.map(mesh=>streams(mesh).map(attribute=>attribute.array.slice()));
- assert.equal(near.render(camera,true),3,'sun and camera retain all three original casters');
+ const lightCamera=new T.OrthographicCamera(-500,500,500,-500,.1,1200);
+ lightCamera.position.set(0,200,0);lightCamera.lookAt(0,0,0);lightCamera.updateMatrixWorld(true);
+ const shadowView={frustum:new T.Frustum().setFromProjectionMatrix(new T.Matrix4().multiplyMatrices(lightCamera.projectionMatrix,lightCamera.matrixWorldInverse),T.WebGLCoordinateSystem),margin:.02};
+ assert.equal(near.render(camera,shadowView),3,'sun and camera retain all three original casters');
  for(const [m,mesh] of meshes.entries()){
   const renderArgs=[undefined,undefined,camera,mesh.geometry,mesh.material,undefined] as unknown as Parameters<T.InstancedMesh['onBeforeRender']>;
   const shadowArgs=[undefined,mesh,camera,camera,mesh.geometry,mesh.material,undefined] as unknown as Parameters<T.InstancedMesh['onBeforeShadow']>;
@@ -101,7 +104,7 @@ test('near tree native render callbacks separate the unchanged shadow caster uni
    const stride=attr.itemSize;
    assert.deepEqual(Array.from(attr.array.slice(0,stride)),Array.from(original[m][s].slice(stride,2*stride)),'every native instance stream follows the exact camera source ID');
   }
-  const ray=new T.Raycaster(new T.Vector3(0,3,0),new T.Vector3(0,0,1));
+  const ray=new T.Raycaster(new T.Vector3(0,m===0?3:8,0),new T.Vector3(0,0,1));
   assert(ray.intersectObject(mesh).some(h=>h.instanceId===0),'photo picking retains shadow-only source while beauty is compacted');
   mesh.onAfterRender(...renderArgs);assert.deepEqual(ids(mesh),[0,1,2],'post-render source union is restored');
   for(const [s,attr] of streams(mesh).entries()){
@@ -109,7 +112,7 @@ test('near tree native render callbacks separate the unchanged shadow caster uni
    assert.deepEqual(attr.updateRanges,[{start:0,count:3*attr.itemSize}],'the full original native upload prefix is marked');
   }
  }
- near.render(reverse,true);
+ near.render(reverse,shadowView);
  for(const mesh of meshes){
   const args=[undefined,undefined,reverse,mesh.geometry,mesh.material,undefined] as unknown as Parameters<T.InstancedMesh['onBeforeRender']>;
   mesh.onBeforeRender(...args);assert.deepEqual(ids(mesh),[0],'opposing camera uses its own source subset');
