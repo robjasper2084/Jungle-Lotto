@@ -268,7 +268,7 @@ const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreferen
   loader.loadAsync('./exports/glb/DS_EUC_01/DS_EUC_01_LOD1.glb'),
   Promise.resolve().then(()=>sceneWarmup.primeIsland())
  ]);
- const hero=new ThreeRiderView(rider,wheel,terrain,{...HUMAN_PROFILE,id:'DS_Armored_Rider_01'});scene.add(hero.root);applyRealisticMaterials(hero.root,'actor');if(REFERENCE_STYLE){animeRider(hero.rider);glowVehicle(hero.vehicle,'wheel');}hero.apply(core.current);
+ const hero=new ThreeRiderView(rider,wheel,terrain,{...HUMAN_PROFILE,id:'DS_Armored_Rider_01'});scene.add(hero.root);applyRealisticMaterials(hero.vehicle,'actor',world.sky.prepareMaterial);applyRealisticMaterials(hero.root,'actor');if(REFERENCE_STYLE){animeRider(hero.rider);glowVehicle(hero.vehicle,'wheel');}hero.apply(core.current);
  // The first acceleration uses the fitted riding rig, including its skinned
  // boot soles. Prepare it once while the loading screen owns the frame.
  status('Fitting your rider');await yieldStartupTask();prepareOnFootRider(hero);

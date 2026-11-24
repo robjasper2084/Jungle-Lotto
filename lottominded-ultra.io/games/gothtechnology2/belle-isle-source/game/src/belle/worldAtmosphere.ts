@@ -26,6 +26,12 @@ export class WorldAtmosphere {
   // the next awaited preparation/render. No new animation loop or polling timer.
   queueMicrotask(()=>{this.queued=false;this.flush();});
  }
+ // Used only for a fresh realistic-surface clone at an explicit constructor.
+ // The surface installer supplies its completed original hook for disposal.
+ prepareMaterial(material:T.MeshStandardMaterial,restore:{compile:T.Material['onBeforeCompile'];key:T.Material['customProgramCacheKey']}){
+  if(this.disposed||this.originals.has(material))return;
+  this.patch(material);this.originals.set(material,restore);
+ }
  flush(){if(this.disposed)return;for(const root of this.pending)root.traverse(object=>this.patchObject(object));this.pending.clear();}
  private patchObject(object:T.Object3D){
   const mesh=object as T.Mesh;if(!mesh.isMesh)return;

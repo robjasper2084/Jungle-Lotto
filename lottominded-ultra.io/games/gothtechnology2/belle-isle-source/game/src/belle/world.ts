@@ -258,7 +258,7 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
 
  const conservatoryGarden=addConservatoryGarden(scene,data);
  const groundBatch=batchStaticGround(groundPatches);
- const coastGuard=addCoastGuard(scene);
+ const coastGuard=addCoastGuard(scene);applyRealisticMaterials(coastGuard.root,'',islandSky.prepareMaterial);
  const streetLights=addStreetLighting(scene,data),bridgeLights=addBridgeLighting(scene,data,streetLights.lamps,localLights);for(const l of streetLights.plan)terrain.flightSolids.add({x:l.x,z:l.z,bottom:l.y,top:l.y+l.height,radius:.15,kind:'lamp'});applyRealisticMaterials(scene);applyPhotoReferenceSurfaces(scene);if(REFERENCE_STYLE)dressSunsetGround(scene);const referenceGarden=REFERENCE_STYLE?await addReferenceIsland(scene,data,terrain):undefined;const traffic=createRiverTraffic(scene,data),contactShadow=createVehicleContactShadow(scene,terrain);
 
  // Static world-space bounds are cached once. Interior gravel/plants used to be

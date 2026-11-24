@@ -50,7 +50,7 @@ export function loadRealisticMaterials(renderer:T.WebGLRenderer){
  * Existing albedo/alpha maps, articulated pivots, skins and custom shaders are retained.
  * Detail green is luminance-derived height, red is authored roughness (not a scanned PBR map).
  */
-export function applyRealisticMaterials(root:T.Object3D,context=''){
+export function applyRealisticMaterials(root:T.Object3D,context='',prepareBase?:(material:T.MeshStandardMaterial,restore:{compile:T.Material['onBeforeCompile'];key:T.Material['customProgramCacheKey']})=>void){
  const clones=new Map<string,T.MeshStandardMaterial>();
  root.traverse(object=>{if(!(object instanceof T.Mesh))return;
   const original=Array.isArray(object.material)?object.material:[object.material];
@@ -75,6 +75,7 @@ export function applyRealisticMaterials(root:T.Object3D,context=''){
    // Palette batches share one material's uniforms. Projection remains part of
    // that binding identity even though both projections share a GPU program.
    m.userData.realisticProfile=(/ballfield infield/i.test(material.name)?'infield-'+kind:kind)+(planar?'|planar':'|triplanar');
+   const compose=(oldCompile:T.Material['onBeforeCompile'],oldKey:string)=>{
    m.onBeforeCompile=(shader,renderer)=>{
     oldCompile(shader,renderer);
     // The scale, pigment and relief belong to the material. A roof and a
@@ -137,7 +138,17 @@ normal=normalize(abs(skinDet)*normal-skinGrad);
    };
    registerSharedGeometryShader(m,oldCompile);
    inheritAtmosphereProgram(m,oldCompile);
-   m.customProgramCacheKey=()=>oldKey+'-higgsfield-surface-v5';m.needsUpdate=true;return m;
+   m.customProgramCacheKey=()=>oldKey+'-higgsfield-surface-v5';
+   };
+   compose(oldCompile,oldKey);
+   if(prepareBase&&oldCompile===T.Material.prototype.onBeforeCompile&&material.customProgramCacheKey===T.Material.prototype.customProgramCacheKey){
+    // Prepare only our fresh clone, leaving the loaded asset and per-material
+    // surface identity intact. Keep the original completed surface for disposal.
+    const restore={compile:m.onBeforeCompile,key:m.customProgramCacheKey};
+    m.onBeforeCompile=oldCompile;m.customProgramCacheKey=()=>oldKey;
+    prepareBase(m,restore);compose(m.onBeforeCompile,m.customProgramCacheKey());
+   }
+   m.needsUpdate=true;return m;
   });
   object.material=Array.isArray(object.material)?updated:updated[0];
  });
