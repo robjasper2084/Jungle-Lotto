@@ -31,11 +31,19 @@ export function createWater(scene:T.Scene,renderer:T.WebGLRenderer,map:ParkMap,t
   m.onBeforeCompile=shader=>{
    Object.assign(shader.uniforms,{tracedSky:skyRadiance.texture,tracedSkyReady:skyRadiance.ready,...fountainLighting.uniforms,fountainNight,fountainCentre:{value:new T.Vector2(fountain.x,fountain.z)},riverSkyTint:reflectionTint,riverSunDirection,riverSunGlint,riverTime:time,riverNormals:{value:normals},riverCentre:centre,hoverWash:vehicle,riverRipples:ripples,activeRipples,shipWake,shipShape});
    shader.vertexShader='uniform float riverTime;uniform vec2 riverCentre;varying vec3 riverWorld;\n'+shader.vertexShader;
-   if(kind==='near')shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
+   // The connected river meshes use the same finish. Keep their original
+   // displacement choice in a material uniform instead of a second program.
+   if(kind!=='lagoon'){
+    shader.uniforms.riverDisplacement={value:kind==='near'};
+    shader.vertexShader='uniform bool riverDisplacement;\n'+shader.vertexShader;
+    shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
+if(riverDisplacement){
 vec2 wp=(modelMatrix*vec4(transformed,1.)).xz;
 float edge=1.-smoothstep(165.,195.,max(abs(wp.x-riverCentre.x),abs(wp.y-riverCentre.y)));
 transformed.y+=(${riverWaveGLSL})*edge;
+}
 `);
+   }
    shader.vertexShader=shader.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nriverWorld=(modelMatrix*vec4(transformed,1.)).xyz;');
    shader.fragmentShader=uniformHeader+'\n'+shader.fragmentShader;
    shader.fragmentShader=shader.fragmentShader.replace('#include <lights_fragment_end>',"#include <lights_fragment_end>\nreflectedLight.indirectSpecular*=riverSkyTint;\nif(tracedSkyReady>.5){\n vec3 worldN=inverseTransformDirection(normal,viewMatrix);\n vec3 ray=reflect(normalize(riverWorld-cameraPosition),worldN);\n vec2 skyUV=vec2(atan(ray.z,ray.x)*.15915494+.5,asin(clamp(ray.y,-1.,1.))*.318309886+.5);\n vec3 sky=texture2D(tracedSky,skyUV).rgb;\n float fresnel=.025+.975*pow(1.-max(0.,dot(normalize(cameraPosition-riverWorld),worldN)),5.);\n reflectedLight.indirectSpecular=mix(reflectedLight.indirectSpecular,sky*fresnel,.82);\n}");
@@ -115,7 +123,7 @@ diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.5,.66,.65),clamp(washFoam*.4+rippleF
  }
  totalEmissiveRadiance+=lightReflection*fountainNight*localPool;
  `);
-  };m.customProgramCacheKey=()=>kind+'-reactive-water-multiscale-ring-v11';return m;
+  };m.customProgramCacheKey=()=>kind==='lagoon'?'lagoon-reactive-water-multiscale-ring-v11':'river-reactive-water-multiscale-ring-v12';return m;
  }
  const ring=riverFarRing(),farGeometry=new T.BufferGeometry();farGeometry.setAttribute('position',new T.Float32BufferAttribute(ring.positions,3));farGeometry.setAttribute('uv',new T.Float32BufferAttribute(ring.uv,2));farGeometry.setIndex(ring.indices);farGeometry.computeVertexNormals();
  // Smooth mode keeps the same visible river geometry without GPU-heavy

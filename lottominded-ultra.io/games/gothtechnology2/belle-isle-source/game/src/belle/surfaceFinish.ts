@@ -28,16 +28,20 @@ export function finishAsphalt(material:T.MeshStandardMaterial){
 /** Colour the exposed bank by elevation, not rows of flat-colour triangles. */
 export function finishBank(material:T.MeshStandardMaterial,waterLevel:number,top:number,stone=false){
  material.onBeforeCompile=shader=>{
+  // Preserve the independently rounded GLSL constants as material inputs.
+  shader.uniforms.bankLevels={value:new T.Vector3(Number(waterLevel.toFixed(3)),Number((top-waterLevel-.65).toFixed(3)),Number((top-waterLevel-.12).toFixed(3)))};
+  shader.uniforms.bankStone={value:stone};
   shader.vertexShader='varying vec3 bankWorld;\n'+shader.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nbankWorld=(modelMatrix*vec4(transformed,1.)).xyz;');
-  shader.fragmentShader='varying vec3 bankWorld;\n'+shader.fragmentShader.replace('#include <map_fragment>',`#include <map_fragment>
+  shader.fragmentShader='varying vec3 bankWorld;uniform vec3 bankLevels;uniform bool bankStone;\n'+shader.fragmentShader.replace('#include <map_fragment>',`#include <map_fragment>
    float noise=.5+.25*sin(bankWorld.x*2.1+sin(bankWorld.z*1.3))+.25*sin(bankWorld.z*3.7-bankWorld.x*.8);
-   float height=bankWorld.y-${waterLevel.toFixed(3)};
+   float height=bankWorld.y-bankLevels.x;
    float dry=smoothstep(.04,.48,height+(noise-.5)*.12);
-   float turf=smoothstep(${(top-waterLevel-.65).toFixed(3)},${(top-waterLevel-.12).toFixed(3)},height);
+   float turf=smoothstep(bankLevels.y,bankLevels.z,height);
    vec3 earth=mix(vec3(.18,.23,.23),vec3(.58,.54,.43),dry);
-   ${stone?'earth=mix(vec3(.35,.40,.36),vec3(.87,.86,.79),dry);':'earth=mix(earth,vec3(.55,.61,.39),turf);'}
+   if(bankStone)earth=mix(vec3(.35,.40,.36),vec3(.87,.86,.79),dry);
+   else earth=mix(earth,vec3(.55,.61,.39),turf);
    float wetEdge=1.-smoothstep(.035,.22,height);
    diffuseColor.rgb*=earth*(.92+.12*noise)*(1.-wetEdge*.12);
   `);
- };material.customProgramCacheKey=()=>['bank-wet-edge-v3',waterLevel,top,stone].join('-');
+ };material.customProgramCacheKey=()=>'bank-wet-edge-v4';
 }

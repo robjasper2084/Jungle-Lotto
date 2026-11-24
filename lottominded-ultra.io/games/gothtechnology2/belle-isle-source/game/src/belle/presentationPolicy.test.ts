@@ -89,11 +89,12 @@ test('street paint and curb materials share only equivalent shaders and keep the
  const surfaces=kinds.map(kind=>(scene.getObjectByName('Street detail 0,0,'+kind) as Mesh).material as MeshStandardMaterial);
  const shaders=surfaces.map(standardShader);
  for(const [i,first] of surfaces.entries())for(const [j,second] of surfaces.entries()){
-  const sameGrime=(i===2||i===3)===(j===2||j===3);
-  assert.equal(first.customProgramCacheKey()===second.customProgramCacheKey(),sameGrime);
+  assert.equal(first.customProgramCacheKey(),second.customProgramCacheKey());
   assert.equal(shaders[i].vertexShader,shaders[j].vertexShader);
-  assert.equal(shaders[i].fragmentShader===shaders[j].fragmentShader,sameGrime);
+  assert.equal(shaders[i].fragmentShader,shaders[j].fragmentShader);
  }
+ assert.deepEqual(shaders.map(shader=>shader.uniforms.streetGrime.value),[false,false,true,true,false,false,false]);
+ assert.equal(new Set(shaders.map(shader=>shader.uniforms.streetGrime)).size,kinds.length);
  assert.equal(new Set(surfaces.map(m=>m.color.getHex())).size,kinds.length);
  assert.equal(surfaces[4].metalness,.5);assert.equal(surfaces[0].metalness,0);
 });

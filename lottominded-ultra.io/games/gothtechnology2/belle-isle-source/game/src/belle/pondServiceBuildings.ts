@@ -29,16 +29,17 @@ export function addPondServiceBuildings(scene:T.Scene,map:ParkMap){
  for(const [kind,size]of [['brick',[.24,.075]],['roof',[.28,.24]]] as const){
   const material=mats[kind];
   material.onBeforeCompile=shader=>{
+   shader.uniforms.servicePattern={value:new T.Vector3(size[0],size[1],kind==='brick'?.72:.56)};
    shader.vertexShader='varying vec2 serviceUV;\n'+shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nserviceUV=uv;');
-   shader.fragmentShader='varying vec2 serviceUV;\n'+shader.fragmentShader.replace('#include <map_fragment>',`#include <map_fragment>
-    vec2 cells=serviceUV/vec2(${size[0]},${size[1]});cells.x+=mod(floor(cells.y),2.)*.5;
+   shader.fragmentShader='varying vec2 serviceUV;uniform vec3 servicePattern;\n'+shader.fragmentShader.replace('#include <map_fragment>',`#include <map_fragment>
+    vec2 cells=serviceUV/servicePattern.xy;cells.x+=mod(floor(cells.y),2.)*.5;
     vec2 edge=min(fract(cells),1.-fract(cells));
     float aa=max(fwidth(cells.x),fwidth(cells.y));
     float joint=1.-smoothstep(.018,.045+aa,min(edge.x,edge.y));
     float variation=fract(sin(dot(floor(cells),vec2(17.17,41.33)))*43758.5453);
-    diffuseColor.rgb*=mix(mix(.85,1.12,variation),${kind==='brick'?'.72':'.56'},joint);
+    diffuseColor.rgb*=mix(mix(.85,1.12,variation),servicePattern.z,joint);
    `);
-  };material.customProgramCacheKey=()=>kind+'-pond-service-masonry-v1';
+  };material.customProgramCacheKey=()=>'pond-service-masonry-v2';
  }
  type Mat=keyof typeof mats;
  const batches=new Map<Mat,T.BufferGeometry[]>();let pieces=0;
