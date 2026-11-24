@@ -39,6 +39,9 @@ This is a playable geographic prototype, not a finished photorealistic recreatio
 - qa/: screenshots, validation and remaining work.
 
 ## Run and verify
+
+The optional browser GPS feature is documented in [Real location](game/REAL_LOCATION.md), including player controls, coordinate alignment, privacy boundaries and remaining device checks.
+
 From game/:
 
     npm ci

@@ -99,8 +99,9 @@ function transformMagnitude(source:T.Sphere,instance:T.Matrix4,world:T.Matrix4){
  * Shadow refreshes retain casters outside the player view. No per-instance allocations or uploads occur for
  * unchanged membership; every actual view, including rotation in place, is tested.
  */
+export interface TreeBoundsCounts {requests:number;transforms:number}
 export class TreeInstanceVisibility {
- private readonly boundsCounts?:{requests:number;transforms:number};
+ private readonly boundsCounts?:TreeBoundsCounts;
  private readonly parts:Part[];
  private readonly pool:'far'|'near';
  private readonly renderProbe?:NatureRenderProbe;
@@ -110,7 +111,7 @@ export class TreeInstanceVisibility {
  private readonly projection=new T.Matrix4();private readonly frustum=new T.Frustum();
  private readonly sphere=new T.Sphere();private readonly union=new T.Sphere();
  private readonly paired=new T.Sphere();
- constructor(meshes:readonly T.InstancedMesh[],renderProbe?:NatureRenderProbe,pool:'far'|'near'='far',boundsCounts?:{requests:number;transforms:number}){
+ constructor(meshes:readonly T.InstancedMesh[],renderProbe?:NatureRenderProbe,pool:'far'|'near'='far',boundsCounts?:TreeBoundsCounts){
   this.boundsCounts=boundsCounts;
   this.renderProbe=renderProbe;this.pool=pool;
   this.parts=meshes.map(mesh=>{

@@ -24,38 +24,68 @@ assert.match(source,/^[0-9a-f]{40}$/);assert.equal(checkout,source,'Checkout mus
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
 const report={version:2,case:caseName,source,checkout,run:process.env.GITHUB_RUN_ID??null,viewport,mobile,
  passed:false,phase:'setup',startedAt:new Date().toISOString(),checks:{},snapshots:[],captures:[],errors:[],failedRequests:[],
+ harness:{pointerActivations:0,diagnosticKeyboardActivations:0,explicitScrolls:0,alreadyVisibleScrolls:0,cooldownReports:0,snapshotTimings:[]},
  limitations:'Actual built full island on Chrome SwiftShader. Functional/layout screenshots and native input only; not physical-device, hardware FPS, sustained-performance, or completed human visual acceptance. Short Ride profile reports below are paused UI state snapshots, not performance samples. Existing release gates are unchanged.'};
 await mkdir(out,{recursive:true});
 const server=createCoopStaticServer(dist);let browser,page,context,client,touchSequence;
 const phase=name=>{report.phase=name;console.log(new Date().toISOString()+' '+caseName+' '+name);};
 async function bounded(promise,ms,label){let timer;try{return await Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error(label+' exceeded its deadline')),ms);})]);}finally{clearTimeout(timer);}}
-async function tap(locator){await locator.scrollIntoViewIfNeeded();if(mobile)await locator.tap();else await locator.click();}
-async function openMenu(){if(!await page.locator('#ride-menu').isVisible())await tap(page.locator('#tools-toggle'));await expect(page.locator('#ride-menu')).toBeVisible();}
-async function openMods(){
+// Pointer actions already scroll and perform their own visible/stable/hit/enabled
+// checks. A separate scroll action repeats its animation-frame stability wait.
+async function tap(locator){if(mobile)await locator.tap();else await locator.click();report.harness.pointerActivations++;}
+async function diagnosticActivate(locator){
+ if(mobile)return tap(locator);
+ // Recorder/navigation controls support the ordinary keyboard path. Keep the
+ // actual native mouse path for vehicle, mode, hop, and mesh commands.
+ await expect(locator).toBeVisible();await expect(locator).toBeEnabled();
+ await locator.focus();await expect(locator).toBeFocused();await page.keyboard.press('Enter');
+ report.harness.diagnosticKeyboardActivations++;
+}
+/** Read geometry before requesting an explicit scroll. Every later target proof
+ * still checks all five hit points, size, and clipping; pointer actions retain
+ * Playwright's normal actionability checks. No app state or scroll is injected. */
+async function scrollIfNeeded(locator){
+ const contained=await locator.evaluate(element=>{
+  const r=element.getBoundingClientRect();if(r.width<=0||r.height<=0)return false;
+  let left=0,top=0,right=innerWidth,bottom=innerHeight;
+  for(let ancestor=element.parentElement;ancestor;ancestor=ancestor.parentElement){
+   const style=getComputedStyle(ancestor),bounds=ancestor.getBoundingClientRect();
+   const sx=ancestor.offsetWidth?bounds.width/ancestor.offsetWidth:1,sy=ancestor.offsetHeight?bounds.height/ancestor.offsetHeight:1;
+   const x=bounds.left+ancestor.clientLeft*sx,y=bounds.top+ancestor.clientTop*sy;
+   if(/^(auto|scroll|hidden|clip)$/.test(style.overflowX)){left=Math.max(left,x);right=Math.min(right,x+ancestor.clientWidth*sx);}
+   if(/^(auto|scroll|hidden|clip)$/.test(style.overflowY)){top=Math.max(top,y);bottom=Math.min(bottom,y+ancestor.clientHeight*sy);}
+  }
+  return r.left>=left&&r.top>=top&&r.right<=right&&r.bottom<=bottom;
+ });
+ if(contained)report.harness.alreadyVisibleScrolls++;
+ else{await locator.scrollIntoViewIfNeeded();report.harness.explicitScrolls++;}
+}
+async function openMenu(activate=tap){if(!await page.locator('#ride-menu').isVisible())await activate(page.locator('#tools-toggle'));await expect(page.locator('#ride-menu')).toBeVisible();}
+async function openMods(activate=tap){
  if(!await page.locator('#settings').isVisible()){
-  await openMenu();await tap(page.getByRole('button',{name:'Hydraulics, wheels & tires',exact:true}));
+  await openMenu(activate);await activate(page.getByRole('button',{name:'Hydraulics, wheels & tires',exact:true}));
  }
  await expect(page.locator('#settings')).toBeVisible();
- if(await page.locator('#cadillac-modifications').getAttribute('open')===null)await tap(page.locator('#cadillac-modifications>summary'));
+ if(await page.locator('#cadillac-modifications').getAttribute('open')===null)await activate(page.locator('#cadillac-modifications>summary'));
  await expect(page.locator('#cadillac-modifications')).toBeVisible();
 }
-async function closeSettings(){if(await page.locator('#settings').isVisible())await tap(page.locator('[data-close="settings"]'));await expect(page.locator('#settings')).not.toBeVisible();}
+async function closeSettings(activate=tap){if(await page.locator('#settings').isVisible())await activate(page.locator('[data-close="settings"]'));await expect(page.locator('#settings')).not.toBeVisible();}
 
 /** Use actual native key events on a real select, including its change handler. */
 async function selectWithKeyboard(selector,value){
- const control=page.locator(selector);await control.scrollIntoViewIfNeeded();await expect(control).toBeEnabled();
+ const control=page.locator(selector);await scrollIfNeeded(control);await expect(control).toBeEnabled();
  const options=await control.locator('option').evaluateAll(items=>items.map(item=>item.value)),index=options.indexOf(value);
  assert(index>=0,selector+' contains '+value);
  await control.press('Home');for(let i=0;i<index;i++)await control.press('ArrowDown');await control.press('Enter');
  await expect(control).toHaveValue(value);
 }
 async function setReduced(value){
- const control=page.locator('#motion');await control.scrollIntoViewIfNeeded();
+ const control=page.locator('#motion');
  if(await control.isChecked()!==value)await tap(control.locator('..'));
  assert.equal(await control.isChecked(),value);report.checks.reducedMotion=value;
 }
 async function setCorner(corner,targetCm){
- const control=page.locator('#cadillac-height-'+corner);await control.scrollIntoViewIfNeeded();await expect(control).toBeEnabled();
+ const control=page.locator('#cadillac-height-'+corner);await scrollIfNeeded(control);await expect(control).toBeEnabled();
  const currentCm=Number(await control.inputValue())*100,current=Math.round(currentCm);
  assert(Number.isInteger(targetCm)&&Math.abs(current-currentCm)<1e-6,'Corner controls use whole centimeters');
  assert.equal(Number(await control.getAttribute('step')),.01);
@@ -72,21 +102,22 @@ const modButton=name=>page.locator('#cadillac-modifications').getByRole('button'
 /** Existing user-facing diagnostics; starting/stopping the normal recorder is
  * deliberate native UI interaction. No application object is obtained or called. */
 async function snapshot(label){
- await openMods();const summary=page.locator('#ride-profile>summary');
- if(await page.locator('#ride-profile').getAttribute('open')===null)await tap(summary);
+ const started=Date.now();await openMods(diagnosticActivate);const summary=page.locator('#ride-profile>summary');
+ if(await page.locator('#ride-profile').getAttribute('open')===null)await diagnosticActivate(summary);
  const stop=page.locator('#ride-profile').getByRole('button',{name:'Stop and show report',exact:true});
  if(!await stop.isVisible()){
-  await tap(page.locator('#ride-profile').getByRole('button',{name:'Start Cadillac ride capture',exact:true}));
-  await tap(summary);
+  await diagnosticActivate(page.locator('#ride-profile').getByRole('button',{name:'Start Cadillac ride capture',exact:true}));
+  await diagnosticActivate(summary);
  }
- await tap(stop);const data=JSON.parse(await page.getByLabel('Ride profile report',{exact:true}).inputValue());
+ await diagnosticActivate(stop);const data=JSON.parse(await page.getByLabel('Ride profile report',{exact:true}).inputValue());
  const car=data.settings?.cadillac;assert(car,'Real Ride profile report includes the Cadillac');
  assert.equal(car.vehicle,variant==='cadillac'?'silver-cadillac':variant);
+ report.harness.snapshotTimings.push({label,milliseconds:Date.now()-started,activation:mobile?'native touch':'native keyboard'});
  report.snapshots.push({label,at:new Date().toISOString(),cadillac:car,profile:data});return car;
 }
 
 async function targetProof(locator,label,ownerSelector){
- await locator.scrollIntoViewIfNeeded();
+ await scrollIfNeeded(locator);
  const proof=await locator.evaluate((element,ownerSelector)=>{
   const r=element.getBoundingClientRect(),dialog=element.closest('dialog')?.getBoundingClientRect(),panel=element.closest('#hydraulic-controls')?.getBoundingClientRect();
   const owner=ownerSelector?document.querySelector(ownerSelector):element;
@@ -137,7 +168,7 @@ async function capture(name){
  const gpu=await painted(),file=name+'.png';const bytes=await page.screenshot({path:resolve(out,file),timeout:150000});
  report.captures.push({file,bytes:bytes.length,sha256:hash(bytes),viewport:page.viewportSize(),phase:report.phase,gpu});
 }
-async function editorCapture(name,selector){await page.locator(selector).first().scrollIntoViewIfNeeded();await capture(name);}
+async function editorCapture(name,selector){await scrollIfNeeded(page.locator(selector).first());await capture(name);}
 async function frames(count){
  const before=Number(await page.locator('#profile').getAttribute('data-active-frames'));assert(Number.isFinite(before));
  await page.waitForFunction(({before,count})=>Number(document.querySelector('#profile')?.dataset.activeFrames)>=before+count,{before,count},{timeout:90000});
@@ -216,8 +247,17 @@ async function hopChecks(){
    const states=window.__cadillacModsEvidence.states.slice(start),busy=states.findIndex(state=>state.busy);
    return busy>=0&&states.slice(busy+1).some(state=>!state.busy);
   },boundary)).toBe(true);
-  await frames(30);const car=await snapshot(mode+'-hop-landed');
+  // The observed busy→idle transition already proves landing. The old extra
+  // 30 rendered frames only delayed the report; wait for the real cooldown
+  // through fresh, native UI reports instead of guessing a frame count.
+  let car;await expect.poll(async()=>{
+   car=await snapshot(mode+'-hop-landed');report.harness.cooldownReports++;
+   const ready=car.suspension.hop===null&&car.suspension.settled&&car.suspension.readyForDrive&&car.suspension.cooldown===0;
+   // Do not hold a diagnostic modal open while waiting for simulation time.
+   if(!ready)await closeSettings(diagnosticActivate);return ready;
+  },{message:mode+' hop lands, levels, and completes its real cooldown',intervals:[1000,2000,5000]}).toBe(true);
   assert.equal(car.suspension.hop,null);assert(car.suspension.settled&&car.suspension.readyForDrive);
+  assert.equal(car.suspension.cooldown,0);
   assert(Object.values(car.suspension.pose.wheelLifts).every(value=>value===0));
   report.checks[mode+'Hop']=await page.evaluate(start=>window.__cadillacModsEvidence.states.slice(start),boundary);
   await closeSettings();await capture(mode+'-hop-landed');
@@ -249,10 +289,10 @@ async function modeSnapshot(label,{inside=false}={}){
  const car=await snapshot(label),controls=report.snapshots.at(-1).profile.settings.hydraulicControls;
  assert(controls,'Ride Profile exposes read-only hydraulic controls diagnostics');
  assert.equal(controls.active,true);assert.equal(controls.inside,inside);assert.equal(controls.blocked,true,'The open Settings report genuinely blocks cabin input');
- await expect(modeRoot()).not.toBeVisible();await closeSettings();await expect(modeRoot()).toBeVisible();return{car,controls};
+ await expect(modeRoot()).not.toBeVisible();await closeSettings(diagnosticActivate);await expect(modeRoot()).toBeVisible();return{car,controls};
 }
 async function setModeCorner(corner,targetCm){
- const control=page.locator('#hydraulic-corner-'+corner);await control.scrollIntoViewIfNeeded();await expect(control).toBeEnabled();
+ const control=page.locator('#hydraulic-corner-'+corner);await scrollIfNeeded(control);await expect(control).toBeEnabled();
  const raw=Number(await control.inputValue())*100,current=Math.round(raw);assert(Math.abs(raw-current)<1e-6);assert.equal(Number(await control.getAttribute('step')),.01);
  assert(Number.isInteger(targetCm)&&targetCm>=0&&targetCm<=24);
  const direction=Math.sign(targetCm-current),key=direction>0?'ArrowRight':'ArrowLeft';
@@ -300,18 +340,26 @@ async function cabinChecks(){
  const hudActions=page.locator('#ridehud .actions button');assert.equal(await hudActions.count(),4);
  for(let i=0;i<4;i++)await targetProof(hudActions.nth(i),'hydraulic-first-person-hud-action-'+i);
  await frames(3);await capture('hydraulic-first-person-hint');
+ let sample;
  for(const [key,pose]of [['7','front-up'],['8','back-up'],['9','pancake']]){
   // Native keys deliberately arrive while the FPP Exit button owns focus;
   // forcing focus to the canvas here would conceal the shortcut regression.
   await page.locator('#hydraulic-inside-exit').press(key);await expect(page.locator('#hydraulic-inside-exit')).toBeFocused();
   await expect(page.locator('#hydraulic-controls-feedback')).toContainText('Smart Pump:');
-  const {car}=await modeSnapshot('hydraulic-cabin-key-'+key,{inside:true});assertSmartPose(car,pose);
+  // The faster diagnostic keyboard path must not rely on incidental pointer
+  // actionability waits to present the new body pose and cockpit camera.
+  await frames(1);
+  sample=await modeSnapshot('hydraulic-cabin-key-'+key,{inside:true});assertSmartPose(sample.car,pose);
  }
- let sample=await modeSnapshot('hydraulic-cabin-projected-switches',{inside:true});
+ // Key 9's report already contains the live projections at this exact parked,
+ // reduced-motion pose. No input or view change intervenes before the first tap.
+ assert(sample?.controls,'The final keyboard report includes live switch projections');
+ report.checks.cabinProjectionSource='hydraulic-cabin-key-9';
  for(const pose of ['front-up','back-up','pancake']){
   const point=sample.controls.switches.find(item=>item.pose===pose);assert(point,'Profile includes '+pose+' grip');
   assert.equal(point.inViewport,true);assert.equal(point.reachableWhenSettingsClosed,true,pose+' is reachable through the normal scene picker');
   await canvasPointProof(point,'native-'+pose+'-grip');await tapPoint(point);
+  await frames(1);
   sample=await modeSnapshot('hydraulic-native-cabin-'+pose,{inside:true});assertSmartPose(sample.car,pose);
  }
  await capture('hydraulic-native-cabin-switches');
@@ -388,8 +436,8 @@ async function hydraulicModeChecks(){
  for(const [corner,height]of [['FL',22],['FR',18],['RL',20],['RR',16]])await setModeCorner(corner,height);
  await expect(modeRoot()).toHaveAttribute('data-motion','still');({car}=await modeSnapshot('hydraulic-mode-independent-corners'));
  assert.deepEqual(car.suspension.current,{FL:.22,FR:.18,RL:.20,RR:.16});assert.deepEqual(car.suspension.targets,car.suspension.current);
- await page.locator('#hydraulic-corner-FL').scrollIntoViewIfNeeded();await capture('hydraulic-advanced-front-corners');
- await page.locator('#hydraulic-corner-RR').scrollIntoViewIfNeeded();await capture('hydraulic-advanced-rear-corners');
+ await scrollIfNeeded(page.locator('#hydraulic-corner-FL'));await capture('hydraulic-advanced-front-corners');
+ await scrollIfNeeded(page.locator('#hydraulic-corner-RR'));await capture('hydraulic-advanced-rear-corners');
  await tap(page.locator('#hydraulic-settle'));await expect(modeRoot()).toHaveAttribute('data-motion','still');({car}=await modeSnapshot('hydraulic-mode-finish-level'));
  for(const value of Object.values(car.suspension.current))assert(Math.abs(value-.19)<1e-8);assert(car.suspension.readyForDrive);
  await openMods();await setReduced(true);await closeSettings();
