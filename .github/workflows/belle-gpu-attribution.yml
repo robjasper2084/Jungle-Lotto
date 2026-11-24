@@ -8,7 +8,7 @@ on:
       app_sha:
         description: Immutable production app source to build without diagnostic runtime changes
         required: true
-        default: 33d09ec62aabff20ccf3d0d41946d4c3f884fb36
+        default: 36a2aadacf17f244ff60d41cf5ec40500f5e39bb
         type: string
 
 permissions:
@@ -19,7 +19,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  APP_SOURCE_SHA: ${{ inputs.app_sha || '33d09ec62aabff20ccf3d0d41946d4c3f884fb36' }}
+  APP_SOURCE_SHA: ${{ inputs.app_sha || '36a2aadacf17f244ff60d41cf5ec40500f5e39bb' }}
   GAME_PATH: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
   RUNTIME_PATH: lottominded-ultra.io/games/gothtechnology2
   STRICT_SCRIPT_SHA256: 8f6af949083800c491b65e0709c04cc29eb5712634f744c5b912f76ce651fcf5
@@ -86,7 +86,7 @@ jobs:
           }
           git(game,'diff','--exit-code','HEAD');git(driver,'diff','--exit-code','HEAD');
           const sourceFiles=['scripts/sustained-ride-profile.mjs','scripts/coop-static-server.mjs','package-lock.json','../../package-lock.json',
-            ...['main.ts','gpuFramePacing.ts','loopDiagnostics.ts','renderDiagnostics.ts','renderSubmissionDiagnostics.ts','rideProfile.ts','rideProfileStats.ts','rideProfileBuild.ts'].map(x=>'src/belle/'+x)];
+            ...['main.ts','shadowMatrixCache.ts','gpuFramePacing.ts','loopDiagnostics.ts','renderDiagnostics.ts','renderSubmissionDiagnostics.ts','rideProfile.ts','rideProfileStats.ts','rideProfileBuild.ts'].map(x=>'src/belle/'+x)];
           const sources=Object.fromEntries(await Promise.all(sourceFiles.map(async path=>[path,hash(await readFile(resolve(game,path)))])));
           assert.equal(sources['scripts/sustained-ride-profile.mjs'],process.env.STRICT_SCRIPT_SHA256);
           assert.equal(sources['src/belle/gpuFramePacing.ts'],'f4d5abc9cfa56c5b1a3def0294ea37e5c9dd28284d3c9614a4b06d22a7f51fd1','Production capacity-one governor changed');
