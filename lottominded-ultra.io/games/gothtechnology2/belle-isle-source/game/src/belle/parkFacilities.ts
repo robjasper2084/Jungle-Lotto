@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {installBatchedIndirectUpdates} from './batchedIndirectUpdates.ts';
 import {oakwayRoof} from './oakwayRoof.ts';
 import {SHELTER_PROFILES} from './shelterProfiles.ts';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
@@ -77,6 +78,7 @@ export function addParkFacilities(scene:T.Scene,map:ParkMap,multiDraw=false){
   if(parts.length>1){
    const vertices=parts.reduce((n,p)=>n+p.g.getAttribute('position').count,0);
    const batch=new T.BatchedMesh(parts.length,vertices,0,material);
+   installBatchedIndirectUpdates(batch);
    batch.name='Mapped park facilities';batch.castShadow=true;batch.receiveShadow=true;batch.sortObjects=false;
    for(const {g,x,z} of parts){
     g.computeBoundingBox();g.computeBoundingSphere();

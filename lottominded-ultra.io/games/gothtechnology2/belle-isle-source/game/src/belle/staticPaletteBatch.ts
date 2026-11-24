@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {installBatchedIndirectUpdates} from './batchedIndirectUpdates.ts';
 /** Display-only multi-draw groups. Each piece keeps its own transform, bounds and
  * visibility, so a hidden interior no longer splits an entire material batch.
  * Original scene meshes and collision remain authoritative outside split views.
@@ -53,6 +54,7 @@ export class StaticPaletteBatch {
    const geometries=[...new Set(sources.map(s=>s.geometry))];
    const vertices=geometries.reduce((n,g)=>n+g.attributes.position.count,0),indices=geometries.reduce((n,g)=>n+(g.index?.count??0),0);
    const mesh=new T.BatchedMesh(sources.length,vertices,indices,material),geometryIds=new Map<T.BufferGeometry,number>();
+   installBatchedIndirectUpdates(mesh);
    for(const geometry of geometries)geometryIds.set(geometry,mesh.addGeometry(geometry));
    const ids=sources.map(source=>{const id=mesh.addInstance(geometryIds.get(source.geometry)!);mesh.setMatrixAt(id,source.matrixWorld);if(!exact)mesh.setColorAt(id,(source.material as T.MeshStandardMaterial).color);return id;});
    mesh.name='Static multi-draw · '+first.name;mesh.castShadow=first.castShadow;mesh.receiveShadow=first.receiveShadow;mesh.renderOrder=first.renderOrder;mesh.layers.mask=first.layers.mask;mesh.matrixAutoUpdate=false;
