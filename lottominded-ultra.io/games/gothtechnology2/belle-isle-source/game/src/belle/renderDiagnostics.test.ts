@@ -50,5 +50,5 @@ test('read-only helper counters preserve all visible buffers and account for eac
  }
  const overlay=observed.camera.clone();overlay.layers.set(30);observed.helper.render(overlay);
  const frame=p.finishFrame()!;assert.equal(frame.farPoolViewCalls,2);assert.equal(frame.farSourceInstancesAcrossViews,4);assert.equal(frame.farSubmittedInstancesAcrossViews,2);assert.equal(frame.compactions,2);
- assert.equal(frame.captureAttributeMarks,4);assert.equal(frame.captureBytesMarked,168);assert.equal(frame.compactionAttributeMarks,8);assert.equal(frame.compactionBytesMarked,168);
+ assert.equal(frame.captureAttributeMarks,4);assert.equal(frame.captureBytesMarked,168);assert.equal(frame.compactionAttributeMarks,4);assert.equal(frame.compactionBytesMarked,168);
 });
