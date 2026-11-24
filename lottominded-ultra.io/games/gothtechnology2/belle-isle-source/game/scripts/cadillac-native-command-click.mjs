@@ -116,16 +116,25 @@ export function validateCadillacCommandReceipts(result){
  * Each awaited operation shares the original 90s action budget. No timed-out
  * step can continue into another input action. An already-issued mouse click
  * can have uncertain delivery; record that attempt and never retry it. */
-export async function clickCadillacCommand({page,locator,targetProof,record,timeout=90000,now=()=>performance.now()}){
+export async function clickCadillacCommand({page,locator,targetProof,record,timeout=90000,now=()=>performance.now(),caseLifecycle}){
  const started=now(),deadline=started+timeout;
+ const startedAtNodeMs=caseLifecycle?.check()??null;
  let element,session,identity,audit,error;
- function remaining(){return Math.max(0,deadline-now());}
+ function actionRemaining(){return Math.max(0,deadline-now());}
+ function remaining(){return Math.min(actionRemaining(),caseLifecycle?.remaining()??Infinity);}
  async function step(label,operation,lateCleanup){
   const ms=remaining();if(ms<=0)throw Error('Cadillac native command '+label+' exceeded its deadline');
-  let timer,expired=false;
+  let timer;
   const pending=Promise.resolve().then(()=>{const budget=remaining();if(budget<=0)throw Error('Cadillac native command '+label+' exceeded its deadline');return operation(budget);});
-  pending.then(value=>{if(expired&&lateCleanup)return lateCleanup(value);},()=>{}).catch(()=>{});
-  try{return await Promise.race([pending,new Promise((_,reject)=>{timer=setTimeout(()=>{expired=true;reject(Error('Cadillac native command '+label+' exceeded its deadline'));},ms);})]);}
+  try{
+   const result=Promise.race([pending,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Cadillac native command '+label+' exceeded its deadline')),ms);})]);
+   return await(caseLifecycle?caseLifecycle.wait(result):result);
+  }catch(caught){
+   // Both a local deadline and the case stop abandon this exact handle. Dispose
+   // even if its resolution races the stop; never continue from late preflight.
+   if(lateCleanup)pending.then(value=>lateCleanup(value),()=>{}).catch(()=>{});
+   throw caught;
+  }
   finally{clearTimeout(timer);}
  }
  try{
@@ -134,7 +143,8 @@ export async function clickCadillacCommand({page,locator,targetProof,record,time
   session=await step('identify',()=>element.evaluateHandle(createCadillacCommandSession),handle=>handle.dispose());
   identity=await step('identity',()=>session.evaluate(value=>value?.identity??null));
   if(!identity)return false;
-  audit={...identity,readinessMs:null,preflightMs:null,hoverMs:null,dispatchMs:null,totalMs:null,dispatchAttempted:false,receipts:null,error:null,cleanupError:null};
+  audit={...identity,readinessMs:null,preflightMs:null,hoverMs:null,dispatchMs:null,totalMs:null,dispatchAttempted:false,receipts:null,error:null,cleanupError:null,
+   startedAtNodeMs,dispatchStartedAtNodeMs:null,dispatchFinishedAtNodeMs:null,acceptedAtNodeMs:null,accepted:false};
   // Keep locator.click's transient visibility/enabled waits without its stable-
   // rectangle wait. ElementHandle retains this exact button; it cannot resolve
   // a replacement. Both waits consume the same original action deadline.
@@ -148,7 +158,9 @@ export async function clickCadillacCommand({page,locator,targetProof,record,time
   const first=await step('first target proof',()=>targetProof(element,'native-command-'+identity.command));
   audit.before=await step('first guard',()=>session.evaluate((value,rect)=>value.inspect({rect}),first.rect));
   const point={x:first.rect.left+first.rect.width/2,y:first.rect.top+first.rect.height/2};
-  const hoverStarted=now();await step('hover',()=>page.mouse.move(point.x,point.y));audit.hoverMs=now()-hoverStarted;
+  const hoverStarted=now();await step('hover',()=>caseLifecycle
+   ?caseLifecycle.issue('command mouse.move '+identity.command,()=>page.mouse.move(point.x,point.y))
+   :page.mouse.move(point.x,point.y));audit.hoverMs=now()-hoverStarted;
   // Reject movement before targetProof's scroll helper can compensate for it.
   await step('hover guard',()=>session.evaluate((value,rect)=>value.inspect({rect}),first.rect));
   const second=await step('second target proof',()=>targetProof(element,'native-command-'+identity.command+'-after-hover'));
@@ -156,10 +168,14 @@ export async function clickCadillacCommand({page,locator,targetProof,record,time
   audit.after=await step('arm',()=>session.evaluate((value,rect)=>value.arm(rect),first.rect));
   audit.preflightMs=now()-started;
   const dispatchStarted=now();
-  try{await step('dispatch',()=>{audit.dispatchAttempted=true;return page.mouse.click(point.x,point.y,{button:'left',clickCount:1});});}
+  try{await step('dispatch',()=>{
+   const dispatch=at=>{audit.dispatchStartedAtNodeMs=at??null;audit.dispatchAttempted=true;return page.mouse.click(point.x,point.y,{button:'left',clickCount:1});};
+   return caseLifecycle?caseLifecycle.issue('command mouse.click '+identity.command,dispatch):dispatch();
+  });audit.dispatchFinishedAtNodeMs=caseLifecycle?.check()??null;}
   finally{audit.dispatchMs=now()-dispatchStarted;}
   audit.receipts=await step('receipts',()=>session.evaluate(value=>value.finish()));
   validateCadillacCommandReceipts(audit.receipts);
+  caseLifecycle?.check();
   return true;
  }catch(caught){error=caught;if(audit){audit.error=String(caught.message||caught);audit.preflightMs??=now()-started;}throw caught;}
  finally{
@@ -172,8 +188,19 @@ export async function clickCadillacCommand({page,locator,targetProof,record,time
      finally{await session.dispose();}}
    }finally{await element?.dispose();}
   })();
-  try{await Promise.race([cleanup,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Native command cleanup exceeded its action deadline')),remaining());})]);}
+  // Stop does not suppress disposal, but it cannot grant another action window
+  // or hold failure collection open. A late cleanup may update only this local
+  // audit; the final recorded copy below is immutable with respect to it.
+  let cleanupMs=actionRemaining();
+  if(caseLifecycle)try{cleanupMs=Math.min(cleanupMs,caseLifecycle.remaining());}catch{cleanupMs=0;}
+  try{
+   await Promise.race([cleanup,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Native command cleanup exceeded its action deadline')),cleanupMs);})]);
+   if(!error&&audit){
+    if(actionRemaining()<=0)throw Error('Native command cleanup exceeded its action deadline');
+    audit.acceptedAtNodeMs=caseLifecycle?.check()??null;audit.accepted=true;
+   }
+  }
   catch(caught){if(audit)audit.cleanupError=String(caught.message||caught);if(!error)throw caught;}
-  finally{clearTimeout(timer);if(audit){audit.totalMs=now()-started;record(audit);}}
+  finally{clearTimeout(timer);if(audit){audit.totalMs=now()-started;record(structuredClone(audit));}}
  }
 }

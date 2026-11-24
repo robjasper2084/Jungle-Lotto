@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {createContext,runInContext} from 'node:vm';
 import {readFile} from 'node:fs/promises';
 import {clickCadillacCommand,createCadillacCommandSession} from './cadillac-native-command-click.mjs';
+import {createCadillacCaseLifecycle} from './cadillac-case-lifecycle.mjs';
 
 const box=(left=100,top=100,width=160,height=48)=>({left,top,width,height,right:left+width,bottom:top+height});
 const flush=async()=>{for(let index=0;index<80;index++)await Promise.resolve();};
@@ -108,6 +109,11 @@ function fixture(options={}){
 }
 function cleaned(f){assert.equal(f.listenerCount(),0);assert.equal(f.sessionDisposed,true);assert.equal(f.elementDisposed,true);}
 const clicks=f=>f.calls.filter(call=>call[0]==='click');
+function caseClock(f,timeout=100000){
+ let expire;
+ const lifecycle=createCadillacCaseLifecycle({timeout,now:f.now,setTimer:callback=>{expire=callback;return 1;},clearTimer:()=>{}});
+ return{lifecycle,expire:()=>{f.advance(timeout);expire();}};
+}
 
 test('only the 17 actual command buttons enter the scoped native path',()=>{
  const detailed=[['Lower'],['Stock height'],['Raise'],['Level corners'],['Full-car hop','all'],['Front hop','front'],['Rear hop','rear'],['Finish motion & level']];
@@ -353,11 +359,80 @@ test('observer disposal is idempotent and forbids a late arm',()=>{
  session.dispose();session.dispose();assert.equal(f.listenerCount(),0);assert.throws(()=>session.arm(proof.rect),/closed/);
 });
 
+test('the case deadline clips readiness and abandons late preflight before hover or click',async t=>{
+ t.mock.timers.enable({apis:['setTimeout']});
+ for(const stage of ['readiness','proof']){
+  const f=fixture(),clock=caseClock(f,123),pending=deferred();
+  if(stage==='readiness')f.onReadiness=()=>pending.promise;
+  else f.onProof=()=>pending.promise;
+  const running=f.run({caseLifecycle:clock.lifecycle});await flush();
+  assert(f.calls.filter(call=>call[0]==='readiness').every(call=>call[2]===123));
+  clock.expire();await assert.rejects(running,/case exceeded its deadline/);cleaned(f);
+  pending.resolve();await flush();assert.equal(clicks(f).length,0);assert.equal(f.calls.filter(call=>call[0]==='move').length,0);
+  assert.equal(f.audits[0].dispatchAttempted,false);assert.equal(f.audits[0].accepted,false);
+ }
+});
+
+test('case stop during hover or the second proof never resumes into a native click',async()=>{
+ for(const stage of ['hover','second proof']){
+  const f=fixture(),clock=caseClock(f),pending=deferred();
+  if(stage==='hover')f.onHover=()=>pending.promise;else f.onProof=count=>count===2?pending.promise:undefined;
+  const running=f.run({caseLifecycle:clock.lifecycle});await flush();assert.equal(f.calls.filter(call=>call[0]==='move').length,1);
+  clock.expire();await assert.rejects(running,/case exceeded its deadline/);cleaned(f);
+  pending.resolve();await flush();assert.equal(clicks(f).length,0);assert.equal(f.audits[0].accepted,false);
+ }
+});
+
+test('one Node clock associates native dispatch and accepted cleanup with the case interval',async()=>{
+ const f=fixture(),clock=caseClock(f);f.onHover=()=>f.advance(5);
+ assert.equal(await f.run({caseLifecycle:clock.lifecycle}),true);cleaned(f);
+ const audit=f.audits[0],receipt=clock.lifecycle.snapshot().inputs.find(row=>row.label.startsWith('command mouse.click'));
+ assert.equal(audit.startedAtNodeMs,0);assert.equal(audit.dispatchStartedAtNodeMs,5);assert.equal(audit.dispatchStartedAtNodeMs,receipt.issuedAtNodeMs);
+ assert.equal(audit.dispatchFinishedAtNodeMs,8);assert.equal(audit.acceptedAtNodeMs,8);assert.equal(audit.accepted,true);
+ clock.lifecycle.stop();
+});
+
+test('successful disposal crossing the local action deadline cannot beat its delayed timer into acceptance',async()=>{
+ const f=fixture(),clock=caseClock(f);
+ f.onClick=()=>{const dispose=f.session.dispose;f.session.dispose=()=>{f.advance(90000);return dispose();};};
+ await assert.rejects(f.run({caseLifecycle:clock.lifecycle}),/cleanup exceeded its action deadline/);cleaned(f);
+ assert.equal(clicks(f).length,1);assert.equal(f.audits[0].accepted,false);assert.equal(f.audits[0].acceptedAtNodeMs,null);
+ assert.equal(clock.lifecycle.snapshot().state,'running','The original action ceiling expires before the case ceiling');clock.lifecycle.stop();
+});
+
+test('case stop after a click was issued retains its uncertainty without retry or accepted success',async()=>{
+ const f=fixture(),clock=caseClock(f),pending=deferred(),issued=deferred();
+ f.dispatch=async()=>{f.emit('pointerdown');issued.resolve();await pending.promise;f.emit('pointerup');f.emit('click');};
+ const running=f.run({caseLifecycle:clock.lifecycle});await issued.promise;assert.equal(clicks(f).length,1);
+ clock.expire();await assert.rejects(running,/case exceeded its deadline/);cleaned(f);
+ const audit=f.audits[0];assert.equal(audit.dispatchAttempted,true);assert.equal(audit.dispatchStartedAtNodeMs,0);
+ assert.equal(audit.dispatchFinishedAtNodeMs,null);assert.equal(audit.accepted,false);assert.equal(audit.acceptedAtNodeMs,null);
+ assert.equal(audit.receipts.totalEvents,1);pending.resolve();await flush();assert.equal(clicks(f).length,1);
+ assert.equal(audit.receipts.totalEvents,1);assert.equal(clock.lifecycle.snapshot().inputs.at(-1).outcome,'completed-after-stop');
+});
+
+test('late cleanup cannot mutate the recorded audit or fabricate observed receipts',async()=>{
+ const f=fixture(),clock=caseClock(f),pending=deferred(),cleanup=deferred();
+ f.onProof=count=>{if(count===1){const dispose=f.session.dispose;f.session.dispose=async()=>{await cleanup.promise;return dispose();};return pending.promise;}};
+ const running=f.run({caseLifecycle:clock.lifecycle});await flush();clock.expire();await assert.rejects(running,/case exceeded its deadline/);
+ assert.equal(f.audits.length,1);const saved=structuredClone(f.audits[0]);assert.equal(saved.receipts,null);assert.equal(saved.accepted,false);
+ assert.match(saved.cleanupError,/cleanup exceeded/);cleanup.resolve();pending.resolve();await flush();cleaned(f);
+ assert.deepEqual(f.audits[0],saved,'The recorded audit is a finalized clone, not the live cleanup object');assert.equal(clicks(f).length,0);
+});
+
+test('a handle resolving after case stop is disposed without advancing to identity or input',async()=>{
+ const f=fixture(),clock=caseClock(f),pending=deferred();let disposed=0;
+ const running=f.run({caseLifecycle:clock.lifecycle,locator:{elementHandle:()=>pending.promise}});await flush();clock.expire();
+ await assert.rejects(running,/case exceeded its deadline/);pending.resolve({dispose:async()=>{disposed++;}});await flush();
+ assert.equal(disposed,1);assert.equal(f.calls.includes('identify'),false);assert.equal(clicks(f).length,0);assert.equal(f.audits.length,0);
+});
+
 test('desktop tap adds only the guarded whitelist path while mobile keeps its native tap',async()=>{
  const source=await readFile(new URL('./cadillac-mods-browser-smoke.mjs',import.meta.url),'utf8');
- assert(source.includes('async function tap(locator){if(mobile)await locator.tap();else await locator.click();report.harness.pointerActivations++;}'));
+ assert(source.includes('async function tap(locator){await nativeInput.tap(locator,mobile);caseLifecycle.publish(()=>report.harness.pointerActivations++);}'));
  const command=source.slice(source.indexOf('async function commandTap('),source.indexOf('async function diagnosticActivate('));
  assert.match(command,/if\(mobile\)return tap\(locator\);/);assert.match(command,/assert\(await clickCadillacCommand/);
+ assert.match(command,/targetProof,caseLifecycle,record:/);
  assert.match(command,/report\.harness\.pointerActivations\+\+/);
  assert(!/catch|force|dispatchEvent|locator\.click/.test(command),'Recognized failure must not fall back to another input path');
  const routed=source.split('\n').filter(line=>line.includes('await commandTap('));assert(routed.length>10);

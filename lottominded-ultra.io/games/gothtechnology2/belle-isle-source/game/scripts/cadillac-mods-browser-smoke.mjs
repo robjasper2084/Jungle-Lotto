@@ -9,6 +9,7 @@ import {resolve} from 'node:path';
 import {createCoopStaticServer} from './coop-static-server.mjs';
 import {createNativeTouchSequence} from './native-touch-sequence.mjs';
 import {clickCadillacCommand} from './cadillac-native-command-click.mjs';
+import {createCadillacCaseLifecycle,createCadillacCaseInput} from './cadillac-case-lifecycle.mjs';
 
 const game=resolve(import.meta.dirname,'..'),dist=resolve(game,'dist');
 const layouts={desktop:{width:1280,height:800},'small-phone':{width:320,height:568},compact:{width:390,height:340}};
@@ -28,17 +29,29 @@ const report={version:2,case:caseName,source,checkout,run:process.env.GITHUB_RUN
  harness:{pointerActivations:0,diagnosticKeyboardActivations:0,explicitScrolls:0,alreadyVisibleScrolls:0,cooldownReports:0,cooldownReadinessPolls:0,snapshotTimings:[],commandClicks:[]},
  limitations:'Actual built full island on Chrome SwiftShader. Functional/layout screenshots and native input only; not physical-device, hardware FPS, sustained-performance, or completed human visual acceptance. Short Ride profile reports below are paused UI state snapshots, not performance samples. Existing release gates are unchanged.'};
 await mkdir(out,{recursive:true});
-const server=createCoopStaticServer(dist);let browser,page,context,client,touchSequence;
-const phase=name=>{report.phase=name;console.log(new Date().toISOString()+' '+caseName+' '+name);};
+const server=createCoopStaticServer(dist);let browser,page,context,client,touchSequence,caseLifecycle,nativeInput,inputCleanup;
+const phase=name=>{if(name!=='cleanup')caseLifecycle.check();report.phase=name;console.log(new Date().toISOString()+' '+caseName+' '+name);};
+const checkResult=(key,value)=>caseLifecycle.publish(()=>{report.checks[key]=value;});
+const appendCheck=(key,value)=>caseLifecycle.publish(()=>(report.checks[key]??=[]).push(value));
 async function bounded(promise,ms,label){let timer;try{return await Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error(label+' exceeded its deadline')),ms);})]);}finally{clearTimeout(timer);}}
+function startInputCleanup(){
+ if(!inputCleanup){
+  inputCleanup=bounded(Promise.all([nativeInput.releaseOwned(),touchSequence?.cancelActive()]),10000,'Native input cleanup');
+  // Failure collection may take longer than cleanup. Retain this same result
+  // for finally without an unhandled rejection, a retry, or another 10s window.
+  inputCleanup.catch(()=>{});
+ }
+ return inputCleanup;
+}
 // Pointer actions already scroll and perform their own visible/stable/hit/enabled
 // checks. A separate scroll action repeats its animation-frame stability wait.
-async function tap(locator){if(mobile)await locator.tap();else await locator.click();report.harness.pointerActivations++;}
+async function tap(locator){await nativeInput.tap(locator,mobile);caseLifecycle.publish(()=>report.harness.pointerActivations++);}
 // Only the existing, explicit command call sites use this guarded desktop path.
 // A changed whitelist identity is fatal; it must never retry through locator.click.
 async function commandTap(locator){
  if(mobile)return tap(locator);
- assert(await clickCadillacCommand({page,locator,targetProof,record:audit=>report.harness.commandClicks.push(audit)}),'Expected an actual whitelisted Cadillac command button');
+ assert(await clickCadillacCommand({page,locator,targetProof,caseLifecycle,record:audit=>report.harness.commandClicks.push(audit)}),'Expected an actual whitelisted Cadillac command button');
+ caseLifecycle.check();
  report.harness.pointerActivations++;
 }
 async function diagnosticActivate(locator){
@@ -47,8 +60,8 @@ async function diagnosticActivate(locator){
  // the initial pointer roundtrip. Keep native mouse input for every vehicle,
  // mode, hop, checkbox, and mesh command; mobile navigation still uses touch.
  await expect(locator).toBeVisible();await expect(locator).toBeEnabled();
- await locator.focus();await expect(locator).toBeFocused();await page.keyboard.press('Enter');
- report.harness.diagnosticKeyboardActivations++;
+ await nativeInput.focus(locator);await expect(locator).toBeFocused();await nativeInput.keyPress('Enter');
+ caseLifecycle.publish(()=>report.harness.diagnosticKeyboardActivations++);
 }
 /** Read geometry before requesting an explicit scroll. Every later target proof
  * still checks all five hit points, size, and clipping. Scoped desktop commands
@@ -67,8 +80,8 @@ async function scrollIfNeeded(locator){
   }
   return r.left>=left&&r.top>=top&&r.right<=right&&r.bottom<=bottom;
  });
- if(contained)report.harness.alreadyVisibleScrolls++;
- else{await locator.scrollIntoViewIfNeeded();report.harness.explicitScrolls++;}
+ if(contained)caseLifecycle.publish(()=>report.harness.alreadyVisibleScrolls++);
+ else{await nativeInput.scroll(locator);caseLifecycle.publish(()=>report.harness.explicitScrolls++);}
 }
 async function openMenu(activate=diagnosticActivate){if(!await page.locator('#ride-menu').isVisible())await activate(page.locator('#tools-toggle'));await expect(page.locator('#ride-menu')).toBeVisible();}
 async function openMods(activate=diagnosticActivate){
@@ -86,13 +99,13 @@ async function selectWithKeyboard(selector,value){
  const control=page.locator(selector);await scrollIfNeeded(control);await expect(control).toBeEnabled();
  const options=await control.locator('option').evaluateAll(items=>items.map(item=>item.value)),index=options.indexOf(value);
  assert(index>=0,selector+' contains '+value);
- await control.press('Home');for(let i=0;i<index;i++)await control.press('ArrowDown');await control.press('Enter');
+ await nativeInput.press(control,'Home');for(let i=0;i<index;i++)await nativeInput.press(control,'ArrowDown');await nativeInput.press(control,'Enter');
  await expect(control).toHaveValue(value);
 }
 async function setReduced(value){
  const control=page.locator('#motion');
  if(await control.isChecked()!==value)await tap(control.locator('..'));
- assert.equal(await control.isChecked(),value);report.checks.reducedMotion=value;
+ assert.equal(await control.isChecked(),value);checkResult('reducedMotion',value);
 }
 async function setCorner(corner,targetCm){
  const control=page.locator('#cadillac-height-'+corner);await scrollIfNeeded(control);await expect(control).toBeEnabled();
@@ -103,7 +116,7 @@ async function setCorner(corner,targetCm){
  const direction=Math.sign(targetCm-current),key=direction>0?'ArrowRight':'ArrowLeft';
  // Never visit the slider minimum as a shortcut: an asymmetric low corner can
  // legitimately fail the real car's fender clearance check.
- for(let value=current;value!==targetCm;){value+=direction;await control.press(key);await expect(control).toHaveValue((value/100).toString());}
+ for(let value=current;value!==targetCm;){value+=direction;await nativeInput.press(control,key);await expect(control).toHaveValue((value/100).toString());}
  await expect(control).toHaveValue((targetCm/100).toString());
  await expect(page.locator('#cadillac-height-'+corner+'-value')).toHaveText(targetCm+' cm');
 }
@@ -122,8 +135,10 @@ async function snapshot(label){
  await diagnosticActivate(stop);const data=JSON.parse(await page.getByLabel('Ride profile report',{exact:true}).inputValue());
  const car=data.settings?.cadillac;assert(car,'Real Ride profile report includes the Cadillac');
  assert.equal(car.vehicle,variant==='cadillac'?'silver-cadillac':variant);
- report.harness.snapshotTimings.push({label,milliseconds:Date.now()-started,activation:mobile?'native touch':'native keyboard'});
- report.snapshots.push({label,at:new Date().toISOString(),cadillac:car,profile:data});return car;
+ caseLifecycle.publish(()=>{
+  report.harness.snapshotTimings.push({label,milliseconds:Date.now()-started,activation:mobile?'native touch':'native keyboard'});
+  report.snapshots.push({label,at:new Date().toISOString(),cadillac:car,profile:data});
+ });return car;
 }
 
 async function targetProof(locator,label,ownerSelector){
@@ -144,14 +159,14 @@ async function targetProof(locator,label,ownerSelector){
  if(proof.dialog)assert(r.left>=proof.dialog.left&&r.top>=proof.dialog.top&&r.right<=proof.dialog.right+1&&r.bottom<=proof.dialog.bottom+1,label+': target clipped by scroll container');
  if(proof.panel)assert(r.left>=proof.panel.left&&r.top>=proof.panel.top&&r.right<=proof.panel.right+1&&r.bottom<=proof.panel.bottom+1,label+': target clipped by hydraulic panel');
  assert(proof.points.every(point=>point.receives),label+': obscured target '+JSON.stringify(proof.points));
- (report.checks.targets??=[]).push({label,...proof});return proof;
+ appendCheck('targets',{label,...proof});return proof;
 }
 async function verifyEditorTargets(){
  await openMods();const controls=page.locator('#cadillac-modifications summary,#cadillac-modifications select,#cadillac-modifications input,#cadillac-modifications button');
  const count=await controls.count();assert.equal(count,16,'All editor controls must be inspected after scrolling');
  for(let i=0;i<count;i++)await targetProof(controls.nth(i),'modification-control-'+i);
  const overflow=await page.locator('#settings').evaluate(element=>({scrollWidth:element.scrollWidth,clientWidth:element.clientWidth}));
- assert(overflow.scrollWidth<=overflow.clientWidth+1,'Settings must not require horizontal scrolling');report.checks.settingsOverflow=overflow;
+ assert(overflow.scrollWidth<=overflow.clientWidth+1,'Settings must not require horizontal scrolling');checkResult('settingsOverflow',overflow);
 }
 
 /** A completion fence observes the real submitted canvas. It does not modify
@@ -175,13 +190,15 @@ async function painted(){
  assert.match(proof.renderer,/SwiftShader/i,'This workflow records software WebGL honestly');return proof;
 }
 async function capture(name){
- const gpu=await painted(),file=name+'.png';const bytes=await page.screenshot({path:resolve(out,file),timeout:150000});
- report.captures.push({file,bytes:bytes.length,sha256:hash(bytes),viewport:page.viewportSize(),phase:report.phase,gpu});
+ caseLifecycle.check();const gpu=await painted(),file=name+'.png';caseLifecycle.check();
+ const bytes=await page.screenshot({path:resolve(out,file),timeout:150000});
+ caseLifecycle.publish(()=>report.captures.push({file,bytes:bytes.length,sha256:hash(bytes),viewport:page.viewportSize(),phase:report.phase,gpu}));
 }
 async function editorCapture(name,selector){await scrollIfNeeded(page.locator(selector).first());await capture(name);}
 async function frames(count){
+ caseLifecycle.check();
  const before=Number(await page.locator('#profile').getAttribute('data-active-frames'));assert(Number.isFinite(before));
- await page.waitForFunction(({before,count})=>Number(document.querySelector('#profile')?.dataset.activeFrames)>=before+count,{before,count},{timeout:90000});
+ await caseLifecycle.wait(page.waitForFunction(({before,count})=>Number(document.querySelector('#profile')?.dataset.activeFrames)>=before+count,{before,count},{timeout:90000}));
 }
 
 async function wheelChecks(){
@@ -200,14 +217,14 @@ async function wheelChecks(){
  await openMods();await selectWithKeyboard('#cadillac-mod-rim','stock');await selectWithKeyboard('#cadillac-mod-tire','standard');
  await expect(page.locator('#cadillac-mod-center')).toBeDisabled();
  const stock=await snapshot('original-wheels-restored');assert.equal(stock.wheels.sourceRestored,true);assert.equal(stock.wheels.customMeshes,0);
- await closeSettings();await frames(1);await capture('original-wheels-restored');report.checks.wheelsAndTires=true;
+ await closeSettings();await frames(1);await capture('original-wheels-restored');checkResult('wheelsAndTires',true);
 }
 
 async function panelAction(action){await openMenu();await tap(page.locator('[data-cadillac-action="'+action+'"]'));await expect(page.locator('#ride-menu')).not.toBeVisible();await frames(2);}
 async function silverPanels(open){
  if(variant!=='cadillac')return;
  phase(open?'open-silver-panels':'close-silver-panels');await closeSettings();
- await page.locator('#game').press('e');await frames(2);
+ await nativeInput.press(page.locator('#game'),'e');await frames(2);
  for(const action of ['trunk','rear-left','rear-right'])await panelAction(action);
  const car=await snapshot(open?'silver-panels-open':'silver-panels-closed');
  for(const part of ['trunk','rearLeft','rearRight']){
@@ -239,11 +256,11 @@ async function heightChecks(){
  await commandTap(modButton('Level corners'));car=await snapshot('level-at-selected-average');
  for(const corner of ['FL','FR','RL','RR'])assert(Math.abs(car.suspension.current[corner]-.19)<1e-8);
  assert(car.suspension.readyForDrive);await closeSettings();await frames(1);await capture('leveled-car');
- report.checks.immediateStaticHeights=true;report.checks.reducedMotionHopsDisabled=true;
+ checkResult('immediateStaticHeights',true);checkResult('reducedMotionHopsDisabled',true);
 }
 
 async function hopChecks(){
- if(mobile){report.checks.animatedHops='Detailed-editor hop sequences are covered by both desktop variant cases; this phase retains reduced motion.';return;}
+ if(mobile){checkResult('animatedHops','Detailed-editor hop sequences are covered by both desktop variant cases; this phase retains reduced motion.');return;}
  phase('animated-hops');await openMods();await setReduced(false);await commandTap(modButton('Raise'));await closeSettings();await frames(2);
  for(const [mode,name]of [['all','Full-car hop'],['front','Front hop'],['rear','Rear hop']]){
   await openMods();await expect(modButton(name)).toBeEnabled();
@@ -265,11 +282,11 @@ async function hopChecks(){
    const readiness=await page.locator('#cadillac-modifications [data-cadillac-hop]').evaluateAll(buttons=>({
     count:buttons.length,enabled:buttons.every(button=>!button.disabled),settingsOpen:!!document.querySelector('#settings[open]'),
    }));
-   report.harness.cooldownReadinessPolls++;
+   caseLifecycle.publish(()=>report.harness.cooldownReadinessPolls++);
    assert.equal(readiness.count,3,'Read all three actual detailed hop controls');
    assert.equal(readiness.settingsOpen,false,'Cooldown readiness polling must leave the game unpaused');
    if(!readiness.enabled)return false;
-   car=await snapshot(mode+'-hop-landed');report.harness.cooldownReports++;
+   car=await snapshot(mode+'-hop-landed');caseLifecycle.publish(()=>report.harness.cooldownReports++);
    const ready=car.suspension.hop===null&&car.suspension.settled&&car.suspension.readyForDrive&&car.suspension.cooldown===0;
    // Do not hold a diagnostic modal open while waiting for simulation time.
    if(!ready)await closeSettings(diagnosticActivate);return ready;
@@ -277,7 +294,7 @@ async function hopChecks(){
   assert.equal(car.suspension.hop,null);assert(car.suspension.settled&&car.suspension.readyForDrive);
   assert.equal(car.suspension.cooldown,0);
   assert(Object.values(car.suspension.pose.wheelLifts).every(value=>value===0));
-  report.checks[mode+'Hop']=await page.evaluate(start=>window.__cadillacModsEvidence.states.slice(start),boundary);
+  checkResult(mode+'Hop',await page.evaluate(start=>window.__cadillacModsEvidence.states.slice(start),boundary));
   await closeSettings();await capture(mode+'-hop-landed');
  }
  await openMods();await setReduced(true);
@@ -296,7 +313,7 @@ async function motionCycle(key,start,label){
   return moving>=0&&states.slice(moving+1).some(state=>!state.busy);
  },{key,start}),{message:label+' must move and then settle'}).toBe(true);
  const states=await page.evaluate(({key,start})=>window.__cadillacModsEvidence[key].slice(start),{key,start});
- (report.checks.hydraulicMotion??=[]).push({label,states});return states;
+ appendCheck('hydraulicMotion',{label,states});return states;
 }
 function assertSmartPose(car,pose){
  assert.deepEqual(car.suspension.targets,smartPoses[pose],pose+' sets all four intended targets');
@@ -314,7 +331,7 @@ async function setModeCorner(corner,targetCm){
  const raw=Number(await control.inputValue())*100,current=Math.round(raw);assert(Math.abs(raw-current)<1e-6);assert.equal(Number(await control.getAttribute('step')),.01);
  assert(Number.isInteger(targetCm)&&targetCm>=0&&targetCm<=24);
  const direction=Math.sign(targetCm-current),key=direction>0?'ArrowRight':'ArrowLeft';
- for(let value=current;value!==targetCm;){value+=direction;await control.press(key);await expect(control).toHaveValue(String(value/100));}
+ for(let value=current;value!==targetCm;){value+=direction;await nativeInput.press(control,key);await expect(control).toHaveValue(String(value/100));}
  await expect(control).toHaveAttribute('aria-valuetext',new RegExp('^'+targetCm+' cm target'));
 }
 async function verifyModeTargets(){
@@ -324,22 +341,22 @@ async function verifyModeTargets(){
  for(let i=0;i<count;i++)await targetProof(controls.nth(i),'hydraulic-mode-control-'+i);
  const size=await modeRoot().evaluate(element=>({scrollWidth:element.scrollWidth,clientWidth:element.clientWidth,height:element.getBoundingClientRect().height,viewportHeight:innerHeight}));
  assert(size.scrollWidth<=size.clientWidth+1,'Hydraulic panel must not scroll horizontally');assert(size.height< size.viewportHeight,'Hydraulic panel leaves part of the playfield visible');
- report.checks.hydraulicPanelBounds=size;
+ checkResult('hydraulicPanelBounds',size);
 }
 async function tapPoint(point){
  if(mobile){
-  await touchSequence.dispatch('touchStart',[{id:7,x:point.clientX,y:point.clientY,radiusX:2,radiusY:2,force:1}]);
-  await touchSequence.dispatch('touchEnd',[]);
- }else await page.mouse.click(point.clientX,point.clientY);
+  await nativeInput.touch('touchStart',[{id:7,x:point.clientX,y:point.clientY,radiusX:2,radiusY:2,force:1}]);
+  await nativeInput.touch('touchEnd',[]);
+ }else await nativeInput.mouseClick(point.clientX,point.clientY);
 }
 async function dragPoint(point,dx,dy=0){
  if(mobile){
-  await touchSequence.dispatch('touchStart',[{id:7,x:point.clientX,y:point.clientY,radiusX:2,radiusY:2,force:1}]);
-  for(let step=1;step<=8;step++)await touchSequence.dispatch('touchMove',[{id:7,x:point.clientX+dx*step/8,y:point.clientY+dy*step/8,radiusX:2,radiusY:2,force:1}]);
-  await touchSequence.dispatch('touchEnd',[]);
+  await nativeInput.touch('touchStart',[{id:7,x:point.clientX,y:point.clientY,radiusX:2,radiusY:2,force:1}]);
+  for(let step=1;step<=8;step++)await nativeInput.touch('touchMove',[{id:7,x:point.clientX+dx*step/8,y:point.clientY+dy*step/8,radiusX:2,radiusY:2,force:1}]);
+  await nativeInput.touch('touchEnd',[]);
  }else{
-  await page.mouse.move(point.clientX,point.clientY);await page.mouse.down();
-  try{await page.mouse.move(point.clientX+dx,point.clientY+dy,{steps:8});}finally{await page.mouse.up();}
+  await nativeInput.mouseMove(point.clientX,point.clientY);await nativeInput.mouseDown();
+  try{await nativeInput.mouseMove(point.clientX+dx,point.clientY+dy,{steps:8});}finally{await nativeInput.mouseUp();}
  }
 }
 async function canvasPointProof(point,label){
@@ -348,7 +365,7 @@ async function canvasPointProof(point,label){
   const hit=document.elementFromPoint(clientX,clientY);return{clientX,clientY,receiver:hit?.id??hit?.tagName};
  },point);
  assert.equal(proof.receiver,'game',label+' must reach the real canvas, without a covering HUD');
- (report.checks.cabinPointerTargets??=[]).push({label,...proof});return proof;
+ appendCheck('cabinPointerTargets',{label,...proof});return proof;
 }
 async function cabinChecks(){
  phase('hydraulic-first-person-controls');await tap(page.locator('#view'));
@@ -362,7 +379,7 @@ async function cabinChecks(){
  for(const [key,pose]of [['7','front-up'],['8','back-up'],['9','pancake']]){
   // Native keys deliberately arrive while the FPP Exit button owns focus;
   // forcing focus to the canvas here would conceal the shortcut regression.
-  await page.locator('#hydraulic-inside-exit').press(key);await expect(page.locator('#hydraulic-inside-exit')).toBeFocused();
+  await nativeInput.press(page.locator('#hydraulic-inside-exit'),key);await expect(page.locator('#hydraulic-inside-exit')).toBeFocused();
   await expect(page.locator('#hydraulic-controls-feedback')).toContainText('Smart Pump:');
   // The faster diagnostic keyboard path must not rely on incidental pointer
   // actionability waits to present the new body pose and cockpit camera.
@@ -372,7 +389,7 @@ async function cabinChecks(){
  // Key 9's report already contains the live projections at this exact parked,
  // reduced-motion pose. No input or view change intervenes before the first tap.
  assert(sample?.controls,'The final keyboard report includes live switch projections');
- report.checks.cabinProjectionSource='hydraulic-cabin-key-9';
+ checkResult('cabinProjectionSource','hydraulic-cabin-key-9');
  for(const pose of ['front-up','back-up','pancake']){
   const point=sample.controls.switches.find(item=>item.pose===pose);assert(point,'Profile includes '+pose+' grip');
   assert.equal(point.inViewport,true);assert.equal(point.reachableWhenSettingsClosed,true,pose+' is reachable through the normal scene picker');
@@ -401,16 +418,16 @@ async function cabinChecks(){
  assert(start,'An exposed canvas patch is available for camera look');await canvasPointProof(start,'native-camera-drag-start');
  await dragPoint(start,start.dx);await frames(3);const looked=await modeSnapshot('hydraulic-camera-drag-no-command',{inside:true});assertSmartPose(looked.car,'pancake');
  assert(looked.controls.switches.some(item=>{const before=dragged.controls.switches.find(previous=>previous.pose===item.pose);return Math.hypot(item.clientX-before.clientX,item.clientY-before.clientY)>1;}),'The native camera drag changes the real projected switch positions');
- report.checks.nativeCabinSwitches={poses:['front-up','back-up','pancake'],input:mobile?'native touch':'native mouse',switchDragRejected:true,cameraDragNoCommand:true,
-  note:'Physical grip meshes use real-sized hit surfaces. The 44px DOM target requirement is verified separately for accessible overlay controls.'};
- await page.locator('#hydraulic-inside-exit').press('h');await expect(modeRoot()).not.toBeVisible();await expect(page.locator('#game')).toBeFocused();
+ checkResult('nativeCabinSwitches',{poses:['front-up','back-up','pancake'],input:mobile?'native touch':'native mouse',switchDragRejected:true,cameraDragNoCommand:true,
+  note:'Physical grip meshes use real-sized hit surfaces. The 44px DOM target requirement is verified separately for accessible overlay controls.'});
+ await nativeInput.press(page.locator('#hydraulic-inside-exit'),'h');await expect(modeRoot()).not.toBeVisible();await expect(page.locator('#game')).toBeFocused();
  await expect(page.locator('body')).not.toHaveClass(/belle-hydraulic-mode/);
  if(mobile)await expect(page.locator('#touch-zone')).toBeVisible();
- await page.locator('#game').press('7');await frames(2);const off=await snapshot('hydraulic-mode-off-key-ignored');assertSmartPose(off,'pancake');await closeSettings();
+ await nativeInput.press(page.locator('#game'),'7');await frames(2);const off=await snapshot('hydraulic-mode-off-key-ignored');assertSmartPose(off,'pancake');await closeSettings();
  // The ordinary view button also resets the native look offset for the next
  // third-person phase; no diagnostic camera setter is used.
  await tap(page.locator('#view'));await expect(page.locator('#view')).toHaveAttribute('aria-pressed','false');
- report.checks.hydraulicViewGating=true;report.checks.hydraulicKeyboardPoses=true;
+ checkResult('hydraulicViewGating',true);checkResult('hydraulicKeyboardPoses',true);
 }
 
 async function hydraulicModeChecks(){
@@ -426,7 +443,7 @@ async function hydraulicModeChecks(){
  await expect(page.locator('#ride-menu')).not.toBeVisible();await expect(modeRoot()).toBeVisible();await expect(modeRoot()).toHaveAttribute('data-view','outside');
  await expect(page.locator('body')).toHaveClass(/belle-hydraulic-mode/);
  const movementSurface=await page.locator('#touch-zone').evaluate(element=>({visibility:getComputedStyle(element).visibility,pointerEvents:getComputedStyle(element).pointerEvents}));
- assert.deepEqual(movementSurface,{visibility:'hidden',pointerEvents:'none'});report.checks.hydraulicMovementSurface=movementSurface;
+ assert.deepEqual(movementSurface,{visibility:'hidden',pointerEvents:'none'});checkResult('hydraulicMovementSurface',movementSurface);
  await capture('hydraulic-mode-radial');
  await openMenu();await expect(modeRoot()).not.toBeVisible();await tap(page.locator('[data-close="ride-menu"]'));await expect(modeRoot()).toBeVisible();
  for(const pose of ['front-up','back-up','pancake']){
@@ -440,10 +457,10 @@ async function hydraulicModeChecks(){
  // A native Enter on the second button avoids an extra pointer-stability wait
  // while the first lift runs. Capture its pre-command visible motion state.
  boundary=await evidenceLength('modeStates');const inputBoundary=await evidenceLength('input');
- await commandTap(page.locator('#hydraulic-front-up'));await page.locator('#hydraulic-back-up').press('Enter');await motionCycle('modeStates',boundary,'Native in-flight retarget');
+ await commandTap(page.locator('#hydraulic-front-up'));await nativeInput.press(page.locator('#hydraulic-back-up'),'Enter');await motionCycle('modeStates',boundary,'Native in-flight retarget');
  const retarget=await page.evaluate(start=>window.__cadillacModsEvidence.input.slice(start).find(event=>event.type==='keydown'&&event.code==='Enter'&&event.target==='hydraulic-back-up'),inputBoundary);
  assert(retarget&&retarget.modeMotion==='moving','The native Back up activation must retarget an unfinished lift');
- ({car}=await modeSnapshot('hydraulic-mode-retarget'));assertSmartPose(car,'back-up');report.checks.hydraulicRetargetInput=retarget;
+ ({car}=await modeSnapshot('hydraulic-mode-retarget'));assertSmartPose(car,'back-up');checkResult('hydraulicRetargetInput',retarget);
  await openMods();await commandTap(modButton('Raise'));await expect(page.locator('#cadillac-modifications')).toHaveAttribute('data-motion','idle');await closeSettings();
  boundary=await evidenceLength('modeStates');await commandTap(page.locator('#hydraulic-hop-all'));
  const hopStates=await motionCycle('modeStates',boundary,'Hydraulic Mode full hop');
@@ -463,22 +480,22 @@ async function hydraulicModeChecks(){
  await expect(page.locator('#hydraulic-front-up')).toBeEnabled();await expect(page.locator('#hydraulic-corner-FL')).toBeEnabled();
  await commandTap(page.locator('#hydraulic-pancake'));({car}=await modeSnapshot('hydraulic-mode-reduced-pancake'));assertSmartPose(car,'pancake');
  await cabinChecks();
- phase('hydraulic-mode-holds-driving');await page.locator('#game').focus();await page.keyboard.press('h');await expect(modeRoot()).toBeVisible();
- await page.locator('#hydraulic-front-up').press('Escape');await expect(modeRoot()).not.toBeVisible();await expect(page.locator('#game')).toBeFocused();
- await page.keyboard.press('h');await expect(modeRoot()).toBeVisible();
+ phase('hydraulic-mode-holds-driving');await nativeInput.focus(page.locator('#game'));await nativeInput.keyPress('h');await expect(modeRoot()).toBeVisible();
+ await nativeInput.press(page.locator('#hydraulic-front-up'),'Escape');await expect(modeRoot()).not.toBeVisible();await expect(page.locator('#game')).toBeFocused();
+ await nativeInput.keyPress('h');await expect(modeRoot()).toBeVisible();
  await commandTap(page.locator('#hydraulic-front-up'));const before=await modeSnapshot('hydraulic-mode-before-held-drive');assertSmartPose(before.car,'front-up');
- await page.locator('#game').focus();await page.keyboard.down('w');
- try{await frames(12);assert.equal(parseFloat(await page.locator('#speed').innerText()),0);}finally{await page.keyboard.up('w');}
+ await nativeInput.focus(page.locator('#game'));await nativeInput.keyDown('w');
+ try{await frames(12);assert.equal(parseFloat(await page.locator('#speed').innerText()),0);}finally{await nativeInput.keyUp('w');}
  const held=await modeSnapshot('hydraulic-mode-held-drive');assertSmartPose(held.car,'front-up');
  assert(Math.abs(held.car.distanceM-before.car.distanceM)<1e-8,'Held accelerator cannot propel the car in Hydraulic Mode');
  assert.equal(held.car.speedMps,0);assert.equal(held.car.suspension.readyForDrive,false,'Held controls cannot silently level the selected uneven pose');
  await commandTap(page.locator('#hydraulic-exit'));await expect(modeRoot()).not.toBeVisible();await expect(page.locator('body')).not.toHaveClass(/belle-hydraulic-mode/);
- await page.locator('#game').focus();await page.keyboard.down('w');
- try{await expect.poll(async()=>parseFloat(await page.locator('#speed').innerText())).toBeGreaterThan(0);}finally{await page.keyboard.up('w');}
- await page.keyboard.down('Space');try{await expect.poll(async()=>parseFloat(await page.locator('#speed').innerText())).toBe(0);}finally{await page.keyboard.up('Space');}
+ await nativeInput.focus(page.locator('#game'));await nativeInput.keyDown('w');
+ try{await expect.poll(async()=>parseFloat(await page.locator('#speed').innerText())).toBeGreaterThan(0);}finally{await nativeInput.keyUp('w');}
+ await nativeInput.keyDown('Space');try{await expect.poll(async()=>parseFloat(await page.locator('#speed').innerText())).toBe(0);}finally{await nativeInput.keyUp('Space');}
  car=await snapshot('hydraulic-mode-exit-restores-driving');assert(car.distanceM>held.car.distanceM+.01);assert(car.suspension.readyForDrive);
- await closeSettings();report.checks.hydraulicModeHoldsDriving={distanceBefore:before.car.distanceM,distanceHeld:held.car.distanceM,distanceAfterExit:car.distanceM};
- report.checks.hydraulicMode=true;report.checks.smoothSettingsPreview=true;
+ await closeSettings();checkResult('hydraulicModeHoldsDriving',{distanceBefore:before.car.distanceM,distanceHeld:held.car.distanceM,distanceAfterExit:car.distanceM});
+ checkResult('hydraulicMode',true);checkResult('smoothSettingsPreview',true);
 }
 
 async function driveAfterLevel(){
@@ -514,27 +531,27 @@ async function driveAfterLevel(){
   // The joystick is painted inside #touch-zone and deliberately pointer-events:none.
   const x=r.left+r.width/2,y=r.top+r.height/2;
   await captureDrivingStart();
-  await touchSequence.dispatch('touchStart',[{id:1,x,y,radiusX:2,radiusY:2,force:1}]);
-  await touchSequence.dispatch('touchMove',[{id:1,x,y:y-30,radiusX:2,radiusY:2,force:1}]);
-  try{await expect.poll(drivingSpeed).toBeGreaterThanOrEqual(2);}finally{await touchSequence.dispatch('touchEnd',[]);}
+  await nativeInput.touch('touchStart',[{id:1,x,y,radiusX:2,radiusY:2,force:1}]);
+  await nativeInput.touch('touchMove',[{id:1,x,y:y-30,radiusX:2,radiusY:2,force:1}]);
+  try{await expect.poll(drivingSpeed).toBeGreaterThanOrEqual(2);}finally{await nativeInput.touch('touchEnd',[]);}
  }else{
-  await page.locator('#game').focus();await captureDrivingStart();await page.keyboard.down('w');
-  try{await expect.poll(drivingSpeed).toBeGreaterThanOrEqual(2);}finally{await page.keyboard.up('w');}
+  await nativeInput.focus(page.locator('#game'));await captureDrivingStart();await nativeInput.keyDown('w');
+  try{await expect.poll(drivingSpeed).toBeGreaterThanOrEqual(2);}finally{await nativeInput.keyUp('w');}
  }
- report.checks.drivingExposure={minimumDisplayedMph:2,activeFramesBefore:drivingFramesBefore,observed:drivingObservation};
- report.checks.drivingSpeedMph=await speed();
- await page.locator('#game').focus();await page.keyboard.down('Space');
- try{await expect.poll(speed).toBe(0);}finally{await page.keyboard.up('Space');}
+ checkResult('drivingExposure',{minimumDisplayedMph:2,activeFramesBefore:drivingFramesBefore,observed:drivingObservation});
+ checkResult('drivingSpeedMph',await speed());
+ await nativeInput.focus(page.locator('#game'));await nativeInput.keyDown('Space');
+ try{await expect.poll(speed).toBe(0);}finally{await nativeInput.keyUp('Space');}
  car=await snapshot('drive-resumed-and-braked');assert(car.distanceM>.05);assert(car.suspension.readyForDrive);
- await closeSettings();await capture('drive-resumed');report.checks.drivingAfterLevel=true;
+ await closeSettings();await capture('drive-resumed');checkResult('drivingAfterLevel',true);
 }
 
 async function run(){
  const marker=JSON.parse(await readFile(resolve(dist,'cadillac-mods-build.json'),'utf8'));assert.equal(marker.sourceSha,source);
- assert.equal(marker.indexSha256,hash(await readFile(resolve(dist,'index.html'))));report.build=marker;
+ assert.equal(marker.indexSha256,hash(await readFile(resolve(dist,'index.html'))));caseLifecycle.publish(()=>{report.build=marker;});
  await new Promise((yes,no)=>{server.once('error',no);server.listen(0,'127.0.0.1',yes);});
  browser=await chromium.launch({channel:'chrome',headless:false,args:['--use-angle=swiftshader','--enable-unsafe-swiftshader','--gpu-watchdog-timeout-seconds=60']});
- report.browser=browser.version();
+ caseLifecycle.publish(()=>{report.browser=browser.version();});
  context=await browser.newContext({viewport,isMobile:mobile,hasTouch:mobile,deviceScaleFactor:1,reducedMotion:'reduce',serviceWorkers:'block'});
  await context.addInitScript(()=>{
   const evidence=window.__cadillacModsEvidence={input:[],states:[],modeStates:[],startupStates:[]};let last='',lastMode='',lastStartup='';
@@ -573,7 +590,7 @@ async function run(){
    const next=JSON.stringify(state);if(next!==lastMode){lastMode=next;evidence.modeStates.push({...state,at:performance.now()});}
   }).observe(document,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['disabled','open','hidden','data-state','data-motion','data-view','aria-valuetext','class']});
  });
- page=await context.newPage();page.setDefaultTimeout(90000);client=await context.newCDPSession(page);touchSequence=createNativeTouchSequence((method,params)=>client.send(method,params));
+ page=await context.newPage();page.setDefaultTimeout(90000);client=await context.newCDPSession(page);touchSequence=createNativeTouchSequence((method,params)=>nativeInput.sendTouch(client,method,params));
  page.on('pageerror',error=>report.errors.push(error.stack||error.message));
  page.on('console',message=>{
   if(message.type()==='error'||/context.*lost/i.test(message.text()))report.errors.push(message.text());
@@ -597,15 +614,20 @@ async function run(){
  // navigation avoids repeating the same desktop stability-frame waits.
  await closeSettings(tap);await frames(2);await capture('original-car');
  await wheelChecks();await silverPanels(true);await heightChecks();await silverPanels(false);await hopChecks();await hydraulicModeChecks();await driveAfterLevel();
- report.nativeEvidence=await page.evaluate(()=>window.__cadillacModsEvidence);
+ const nativeEvidence=await page.evaluate(()=>window.__cadillacModsEvidence);caseLifecycle.publish(()=>{report.nativeEvidence=nativeEvidence;});
  assert(report.nativeEvidence.input.length>0);assert(report.nativeEvidence.input.every(event=>event.trusted),'All observed input must originate in native browser input');
  if(mobile)assert(report.nativeEvidence.input.some(event=>event.type==='pointerdown'&&event.pointerType==='touch'),'Phone driving/navigation requires real touch receipt');
- await page.waitForLoadState('networkidle',{timeout:60000});assert.deepEqual(report.errors,[]);assert.deepEqual(report.failedRequests,[]);report.functionalPassed=true;
+ await page.waitForLoadState('networkidle',{timeout:60000});assert.deepEqual(report.errors,[]);assert.deepEqual(report.failedRequests,[]);
 }
 
-try{await bounded(run(),32*60000,'Cadillac modification case');}
+// Start at the original run() boundary. Failure evidence uses the still-open
+// page after stop; only owned releases and read-only collection remain allowed.
+caseLifecycle=createCadillacCaseLifecycle({timeout:32*60000});
+nativeInput=createCadillacCaseInput({lifecycle:caseLifecycle,page:()=>page,touch:()=>touchSequence});
+try{await caseLifecycle.run(run);report.functionalPassed=true;}
 catch(error){
  report.failurePhase=report.phase;report.errors.push(error.stack||String(error));
+ startInputCleanup();
  if(page)try{
   const failure=await page.evaluate(()=>({evidence:window.__cadillacModsEvidence,startup:{at:performance.now(),
    welcomeState:document.querySelector('#welcome')?.dataset.state??null,welcomeHidden:document.querySelector('#welcome')?.hidden??null,
@@ -616,10 +638,14 @@ catch(error){
  }catch(captureError){report.errors.push('Failure screenshot: '+captureError.message);}
 }
 finally{
- phase('cleanup');if(touchSequence)try{report.touchCleanup=await bounded(touchSequence.cancelActive(),10000,'Native input cleanup');}catch(error){report.errors.push('Native input cleanup: '+error.message);}
+ phase('cleanup');try{
+  const [owned,touches]=await startInputCleanup();
+  report.ownedInputCleanup=owned;if(touchSequence)report.touchCleanup=touches;
+ }catch(error){report.errors.push('Native input cleanup: '+error.message);}
  if(browser)try{await bounded(browser.close(),30000,'Browser cleanup');}catch(error){report.errors.push('Browser cleanup: '+error.message);}
  if(server.listening)try{await bounded(new Promise((yes,no)=>server.close(error=>error?no(error):yes())),10000,'Static server cleanup');}catch(error){report.errors.push('Static server cleanup: '+error.message);}
- report.passed=report.functionalPassed===true&&report.errors.length===0&&report.failedRequests.length===0;report.finishedAt=new Date().toISOString();
+ report.caseLifecycle=caseLifecycle.snapshot();
+ report.passed=report.caseLifecycle.state==='completed'&&report.functionalPassed===true&&report.errors.length===0&&report.failedRequests.length===0;report.finishedAt=new Date().toISOString();
  await writeFile(resolve(out,'report.json'),JSON.stringify(report,null,2)+'\n');
  console.log(JSON.stringify({passed:report.passed,case:caseName,source,snapshots:report.snapshots.length,screenshots:report.captures.length,failurePhase:report.failurePhase??null,errors:report.errors,failedRequests:report.failedRequests}));
  if(!report.passed)process.exitCode=1;
