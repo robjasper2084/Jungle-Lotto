@@ -1,0 +1,123 @@
+name: Belle native GPU process sample
+
+on:
+  push:
+    branches: [upgrade-redesign-native-gpu-process-sample-identity-20261124]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: belle-native-gpu-process-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  PRODUCT_PARENT_SHA: e424aac64ad82f2448c11717c38c592d666c2af9
+  INTEGRATED_MAIN_SHA: 2a8901996e53b1f93474f3c2165e078b6dd16e57
+  GAME_PATH: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+  STRICT_SCRIPT_SHA256: 8f6af949083800c491b65e0709c04cc29eb5712634f744c5b912f76ce651fcf5
+
+jobs:
+  native-process-sample:
+    name: Sample native Chrome GPU process with unchanged product rendering
+    runs-on: macos-15
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 8
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Typecheck syntax-check and build the exact experiment source
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm ci
+          npm run check
+          node --check scripts/sustained-ride-profile.mjs
+          node --check scripts/render-gpu-process-sample.mjs
+          npm run build
+      - name: Retain exact product source and immutable build identity
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {createHash} from 'node:crypto';
+          import {execFileSync} from 'node:child_process';
+          import {readFile,readdir,writeFile,mkdir} from 'node:fs/promises';
+          import {resolve,relative,sep} from 'node:path';
+          const game=resolve(process.env.GAME_PATH),out=resolve('native-gpu-process-evidence'),hash=b=>createHash('sha256').update(b).digest('hex');
+          const git=(...args)=>execFileSync('git',args,{encoding:'utf8'}).trim();
+          const commit=git('rev-parse','HEAD'),tree=git('rev-parse','HEAD^{tree}'),parent=git('rev-parse','HEAD^');
+          assert.equal(commit,process.env.GITHUB_SHA);assert.equal(parent,process.env.PRODUCT_PARENT_SHA);
+          execFileSync('git',['merge-base','--is-ancestor',process.env.INTEGRATED_MAIN_SHA,'HEAD']);
+          const expectedExtras=['.github/workflows/belle-native-gpu-process-sample.yml',process.env.GAME_PATH+'/scripts/render-gpu-process-sample.mjs'].sort();
+          assert.deepEqual(git('diff','--name-only',parent,'HEAD').split('\n').filter(Boolean).sort(),expectedExtras);
+          const sourceFiles=['package.json','package-lock.json','../../package.json','../../package-lock.json','vite.config.ts','tsconfig.json'];
+          async function sourceWalk(dir){for(const entry of await readdir(dir,{withFileTypes:true})){
+            const path=resolve(dir,entry.name);if(entry.isDirectory())await sourceWalk(path);else if(entry.isFile()&&/\.(?:ts|mjs|js)$/.test(entry.name))sourceFiles.push(relative(game,path).split(sep).join('/'));
+          }}for(const directory of ['src','runtime','scripts','../tools'])await sourceWalk(resolve(game,directory));sourceFiles.sort();
+          const sources=Object.fromEntries(await Promise.all(sourceFiles.map(async path=>{
+            const bytes=await readFile(resolve(game,path)),repoPath=relative(resolve('.'),resolve(game,path)).split(sep).join('/');
+            assert(!repoPath.startsWith('../'),'Source must belong to this checkout');
+            const committed=execFileSync('git',['show','HEAD:'+repoPath]);assert.equal(hash(bytes),hash(committed),'Source differs from committed bytes: '+path);
+            return [path,hash(bytes)];
+          })));
+          assert.equal(sources['scripts/sustained-ride-profile.mjs'],process.env.STRICT_SCRIPT_SHA256);
+          const mainStrict=execFileSync('git',['show',process.env.INTEGRATED_MAIN_SHA+':'+process.env.GAME_PATH+'/scripts/sustained-ride-profile.mjs']);
+          assert.equal(hash(mainStrict),process.env.STRICT_SCRIPT_SHA256,'Retain main GPS additions and original riding thresholds unchanged');
+          const files=[];async function walk(dir){for(const entry of await readdir(dir,{withFileTypes:true})){
+            const path=resolve(dir,entry.name);if(entry.isDirectory())await walk(path);else{assert(entry.isFile());const bytes=await readFile(path);files.push({path:relative(resolve(game,'dist'),path).split(sep).join('/'),bytes:bytes.length,sha256:hash(bytes)});}
+          }}await walk(resolve(game,'dist'));files.sort((a,b)=>a.path.localeCompare(b.path));
+          const metadata={version:1,repository:'robjasper2084/Jungle-Lotto',commit,tree,parent,integratedMainCommit:process.env.INTEGRATED_MAIN_SHA,
+            buildId:'native-gpu-process-'+process.env.GITHUB_RUN_ID+'-'+commit,builtAt:new Date().toISOString(),node:process.version,sources,files,
+            scope:'Read-only bounded OS call-stack sampling of the native Chrome GPU process during a trusted desktop High ride. Product rendering, browser flags, quality and strict script remain unchanged. Statistical samples and diagnostic frame timings do not establish GPU execution time or release acceptance.'};
+          await mkdir(out,{recursive:true});await writeFile(resolve(out,'source-integrity.json'),JSON.stringify(metadata,null,2)+'\n');
+          console.log('BELLE_NATIVE_GPU_PROCESS_BUILD '+JSON.stringify({commit,tree,parent,buildId:metadata.buildId,files:files.length,sourceFiles:sourceFiles.length,strictScriptSha256:sources['scripts/sustained-ride-profile.mjs']}));
+          NODE
+      - name: Install the pinned browser driver and Chrome
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install chrome
+      - name: Collect one bounded native GPU process sample
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          BELLE_GPU_SAMPLE_OUTPUT: output/native-gpu-process-sample
+          BELLE_GPU_SAMPLE_IDENTITY: ${{ github.workspace }}/native-gpu-process-evidence/source-integrity.json
+          BELLE_GPU_SAMPLE_BUILD: dist
+        run: node scripts/render-gpu-process-sample.mjs
+      - name: Retain all diagnostic evidence including unavailable or failed sampling
+        if: always()
+        run: |
+          node --input-type=module <<'NODE'
+          import {existsSync,cpSync,mkdirSync} from 'node:fs';
+          import {resolve} from 'node:path';
+          mkdirSync('native-gpu-process-evidence',{recursive:true});
+          const source=resolve(process.env.GAME_PATH,'output/native-gpu-process-sample');
+          if(existsSync(source))cpSync(source,resolve('native-gpu-process-evidence/sample'),{recursive:true});
+          NODE
+      - name: Verify source and build remained unchanged
+        if: always()
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {createHash} from 'node:crypto';
+          import {readFile,writeFile} from 'node:fs/promises';
+          import {resolve} from 'node:path';
+          const game=resolve(process.env.GAME_PATH),hash=b=>createHash('sha256').update(b).digest('hex');
+          const original=JSON.parse(await readFile('native-gpu-process-evidence/source-integrity.json','utf8'));
+          const sources=Object.fromEntries(await Promise.all(Object.keys(original.sources).map(async path=>[path,hash(await readFile(resolve(game,path)))])));
+          assert.deepEqual(sources,original.sources);
+          for(const file of original.files){const bytes=await readFile(resolve(game,'dist',file.path));assert.equal(bytes.length,file.bytes,file.path);assert.equal(hash(bytes),file.sha256,file.path);}
+          await writeFile('native-gpu-process-evidence/source-integrity-after.json',JSON.stringify({commit:original.commit,sourceFiles:Object.keys(sources).length,builtFiles:original.files.length,verifiedAt:new Date().toISOString(),unchanged:true},null,2)+'\n');
+          NODE
+      - name: Preserve all original diagnostic evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-native-gpu-process-sample-${{ github.sha }}
+          path: native-gpu-process-evidence/
+          if-no-files-found: warn
+          retention-days: 14
