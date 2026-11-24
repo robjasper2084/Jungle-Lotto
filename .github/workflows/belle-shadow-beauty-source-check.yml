@@ -1,0 +1,53 @@
+name: Belle shadow and beauty source equivalence
+on:
+  push:
+    branches: [upgrade-redesign-shadow-color-tree-source-check-20261124]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 32
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Pin the exact pure product and no validation in its source
+        env:
+          PURE_PARENT_SHA: 68f829865325f55dc3dfe01b758d00e49dc572ee
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {execFileSync} from 'node:child_process';
+          const git=(...args)=>execFileSync('git',args,{encoding:'utf8'}).trim();
+          assert.equal(git('rev-parse','HEAD^'),process.env.PURE_PARENT_SHA);
+          assert.deepEqual(git('diff','--no-renames','--name-only','HEAD^','HEAD').split('\n').filter(Boolean),['.github/workflows/belle-shadow-beauty-source-check.yml']);
+          assert.equal(git('diff','--no-renames','--name-only','2e6856108e011bda78dd6cb57cc82941db00509e','HEAD^'), 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/farTreeVisibility.test.ts');
+          assert.equal(git('diff','--no-renames','--name-only','473a597a71e02856c5555670d6b3a228ff204553','2e6856108e011bda78dd6cb57cc82941db00509e').split('\n').filter(Boolean).sort().join('\n'), ['lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/farTreeVisibility.test.ts','lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/farTreeVisibility.ts'].sort().join('\n'));
+          assert.equal(git('status','--porcelain'),'');
+          NODE
+      - name: Typecheck all source, run registered tests and build the exact full game
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm ci
+          npm run check
+          npm test
+          npm run build
+      - name: Preserve original strict-profile script and full build
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {createHash} from 'node:crypto';
+          import {readFileSync,readdirSync} from 'node:fs';
+          import {join} from 'node:path';
+          const sha=b=>createHash('sha256').update(b).digest('hex');
+          assert.equal(sha(readFileSync('scripts/sustained-ride-profile.mjs')),'8f6af949083800c491b65e0709c04cc29eb5712634f744c5b912f76ce651fcf5');
+          function files(root){return readdirSync(root,{withFileTypes:true}).flatMap(x=>x.isDirectory()?files(join(root,x.name)):[join(root,x.name)]);}
+          assert.equal(files('dist').length,195,'Full 195-file build required');
+          NODE
