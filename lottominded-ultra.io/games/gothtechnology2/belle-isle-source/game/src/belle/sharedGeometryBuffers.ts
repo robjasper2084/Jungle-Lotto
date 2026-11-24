@@ -2,8 +2,8 @@ import * as T from 'three';
 
 /** Immutable display storage for the pinned Three r185 renderer. Each source
  * remains a separate object and native draw. Only its geometry storage is shared
- * during a render; original bounds, material, matrices, order and vertex values
- * stay authoritative. The object hooks select a prevalidated source range.
+ * for an eligible native direct draw; original geometry, bounds, callbacks,
+ * material, matrices, order and vertex values stay authoritative at all times.
  *
  * Sources must remain immutable during a native render. Between renders, normal
  * attribute version/identity/layout changes invalidate an entry. Unannounced raw
@@ -34,6 +34,10 @@ export function registerSharedGeometryShader(material:T.Material, previousCompil
 }
 
 export type SharedGeometryBufferOptions = Readonly<{
+  /** Audited renderer-lifetime construction contract, not discovered GL state.
+   * r185 has no public output-buffer/node-handler getters. The caller must use
+   * this output type at construction and never install a node handler. */
+  rendererOutput?:Readonly<{type:T.TextureDataType;nodes:boolean}>;
   /** Explicit shader-only provenance for a fixture or another audited caller. */
   approvedMaterialCallbacks?:ReadonlyMap<T.Material, Compile>;
   maxPageVertices?:number;
@@ -55,6 +59,8 @@ export type SharedGeometryBufferStats = Readonly<{
   pageCount:number; poolBytes:number; renderCalls:number; pooledRenders:number;
   pooledCalls:number; colorCalls:number; shadowCalls:number; fallbacks:number;
   nestedRenders:number; contextLosses:number; contextRestores:number; observerErrors:number;
+  preparationReady:boolean; preparationQueued:boolean; preparationAttempts:number;
+  preparationRenders:number; preparationFrames:number; preparationFailures:number; preparationDeferrals:number;
   truncatedEntries:number; truncatedPages:number;
   entries:readonly SharedGeometryBufferEntry[];
   pages:readonly Readonly<{geometryId:number; vertices:number; indices:number; bytes:number; entries:number}>[];
@@ -88,12 +94,10 @@ type Entry = {
   bounds:T.Sphere; sourceSphere:T.Sphere|null; objectSphere:PropertyDescriptor|undefined;
   descriptors:Descriptors; page:Page; vertexOffset:number; indexOffset:number;
   status:'ready'|'fallback'|'disposed'; reason:string|null; colorCalls:number; shadowCalls:number;
-  before:T.Object3D['onBeforeRender']; shadow:T.Object3D['onBeforeShadow']; raycast:T.Mesh['raycast'];
   onDispose:()=>void;
 };
 type Page = {geometry:T.BufferGeometry; entries:Entry[]; vertices:number; indices:number; bytes:number};
-type Patch = {entry:Entry; descriptors:Descriptors};
-type Scope = {root:T.Object3D; camera:T.Camera; patches:Patch[]; restored:boolean};
+type Scope = {root:T.Object3D; eligible:boolean; pooled:boolean};
 const owners = new WeakMap<T.Scene,{renderer:T.WebGLRenderer;handle:SharedGeometryBufferHandle}>();
 
 function own(object:object,key:PropertyKey):unknown {
@@ -170,16 +174,19 @@ function sourceRange(entry:Entry):{start:number;count:number}|null {
 export function installSharedGeometryBuffers(renderer:T.WebGLRenderer,scene:T.Scene,options:SharedGeometryBufferOptions={}):SharedGeometryBufferHandle {
   const existing=owners.get(scene);
   if (existing?.renderer===renderer) return existing.handle;
-  const entries:Entry[]=[],pages:Page[]=[],seen=new WeakSet<T.Object3D>(),scopes:Scope[]=[];
+  const entries:Entry[]=[],pages:Page[]=[],seen=new WeakSet<T.Object3D>(),byObject=new WeakMap<T.Object3D,Entry>(),scopes:Scope[]=[];
   const rejected:Record<string,number>={};
   const limits={vertices:bounded(options.maxPageVertices,65534,0xfffffffe),pageBytes:bounded(options.maxPageBytes,8*1024*1024,64*1024*1024),totalBytes:bounded(options.maxTotalBytes,64*1024*1024,256*1024*1024),entries:bounded(options.maxEntries,4096,16384),pages:bounded(options.maxPages,128,512),rows:bounded(options.maxDiagnosticEntries,256,4096)};
-  const counts={consideredEntries:0,rejectedEntries:0,renderCalls:0,pooledRenders:0,pooledCalls:0,colorCalls:0,shadowCalls:0,fallbacks:0,nestedRenders:0,contextLosses:0,contextRestores:0,observerErrors:0};
-  const renderDescriptor=Object.getOwnPropertyDescriptor(renderer,'render'),beforeDescriptor=Object.getOwnPropertyDescriptor(scene,'onBeforeRender'),afterDescriptor=Object.getOwnPropertyDescriptor(scene,'onAfterRender');
-  const originalRender=method(renderer,'render') as T.WebGLRenderer['render'],originalBefore=method(scene,'onBeforeRender') as T.Scene['onBeforeRender'],originalAfter=method(scene,'onAfterRender') as T.Scene['onAfterRender'];
-  let disposed=false,disposeRequested=false,lost=false,poolBytes=0;
+  const counts={consideredEntries:0,rejectedEntries:0,renderCalls:0,pooledRenders:0,pooledCalls:0,colorCalls:0,shadowCalls:0,fallbacks:0,nestedRenders:0,contextLosses:0,contextRestores:0,observerErrors:0,preparationAttempts:0,preparationRenders:0,preparationFrames:0,preparationFailures:0,preparationDeferrals:0};
+  const renderDescriptor=Object.getOwnPropertyDescriptor(renderer,'render'),directDescriptor=Object.getOwnPropertyDescriptor(renderer,'renderBufferDirect'),beforeDescriptor=Object.getOwnPropertyDescriptor(scene,'onBeforeRender'),afterDescriptor=Object.getOwnPropertyDescriptor(scene,'onAfterRender');
+  const originalRender=method(renderer,'render') as T.WebGLRenderer['render'],originalDirect=method(renderer,'renderBufferDirect') as T.WebGLRenderer['renderBufferDirect'],originalBefore=method(scene,'onBeforeRender') as T.Scene['onBeforeRender'],originalAfter=method(scene,'onAfterRender') as T.Scene['onAfterRender'];
+  let disposed=false,disposeRequested=false,lost=false,poolBytes=0,preparing=false,directDepth=0,generation=0,readyGeneration=-1,queuedGeneration:number|null=null;
+  const preparationScene=new T.Scene(),preparationCamera=new T.PerspectiveCamera(),preparationMaterial=new T.MeshBasicMaterial();
+  preparationMaterial.visible=false;
   let disabledReason:string|null=existing?'scene-already-owned':T.REVISION!=='185'?'unsupported-three-revision':
-    typeof originalRender!=='function'||typeof originalBefore!=='function'||typeof originalAfter!=='function'||!Object.isExtensible(scene)||!Object.isExtensible(renderer)?'unsupported-render-hooks':
-    (renderDescriptor&&!renderDescriptor.configurable)||(beforeDescriptor&&!beforeDescriptor.configurable)||(afterDescriptor&&!afterDescriptor.configurable)?'nonconfigurable-render-hooks':
+    options.rendererOutput?.type!==T.UnsignedByteType||options.rendererOutput.nodes!==false?'unsupported-renderer-output-contract':
+    typeof originalRender!=='function'||typeof originalDirect!=='function'||typeof originalBefore!=='function'||typeof originalAfter!=='function'||typeof method(renderer,'getRenderTarget')!=='function'||!renderer.info?.render||typeof renderer.info.autoReset!=='boolean'||typeof renderer.autoClear!=='boolean'||!Object.isExtensible(scene)||!Object.isExtensible(renderer)?'unsupported-render-hooks':
+    (renderDescriptor&&!renderDescriptor.configurable)||(directDescriptor&&!directDescriptor.configurable)||(beforeDescriptor&&!beforeDescriptor.configurable)||(afterDescriptor&&!afterDescriptor.configurable)?'nonconfigurable-render-hooks':
     !renderer.domElement?.addEventListener?'context-events-unavailable':null;
   const supported=disabledReason===null;
 
@@ -197,7 +204,7 @@ export function installSharedGeometryBuffers(renderer:T.WebGLRenderer,scene:T.Sc
     if (Object.getPrototypeOf(object)!==T.Mesh.prototype || !callbacksNative(object)) return 'object-callback-changed';
     if (object.geometry!==source || object.material!==material) return 'source-identity-changed';
     if (object.customDepthMaterial || object.customDistanceMaterial) return 'custom-depth-material';
-    if (!materialAllowed(material) || method(material,'onBeforeCompile')!==entry.compile || method(material,'onBeforeRender')!==nativeMaterialRender || material.version!==entry.materialVersion || material.transparent || (material as T.MeshStandardMaterial).wireframe || (material as T.MeshPhysicalMaterial).transmission>0) return 'material-changed';
+    if (!materialTypes.has(Object.getPrototypeOf(material)) || !materialAllowed(material) || method(material,'onBeforeCompile')!==entry.compile || method(material,'onBeforeRender')!==nativeMaterialRender || material.version!==entry.materialVersion || material.transparent || (material as T.MeshStandardMaterial).wireframe || (material as T.MeshPhysicalMaterial).transmission>0) return 'material-changed';
     if (source.attributes!==entry.attributesObject || source.index!==(entry.index?.value??null) || Object.keys(source.morphAttributes).length) return 'geometry-layout-changed';
     const keys=Object.keys(source.attributes);
     if (keys.length!==entry.attributes.length || entry.attributes.some(a=>source.attributes[a.name]!==a.value || !attributeMatches(a)) || (entry.index&&!attributeMatches(entry.index))) return 'attribute-changed';
@@ -243,28 +250,9 @@ export function installSharedGeometryBuffers(renderer:T.WebGLRenderer,scene:T.Sc
     }
     if (!bounds || ![bounds.center.x,bounds.center.y,bounds.center.z,bounds.radius].every(Number.isFinite) || bounds.radius<0) {reject('invalid-bounds');return null;}
     const key=JSON.stringify([attributes.map(a=>[a.name,a.constructor.name,a.itemSize,a.normalized,a.gpuType]),index?.constructor.name??null]);
-    const entry:Entry={object:mesh,source,material,compile:method(material,'onBeforeCompile') as Compile,materialVersion:material.version,attributesObject:source.attributes,attributes,index,vertexCount:position.count,indexCount:index?.count??0,key,bounds,sourceSphere:source.boundingSphere,objectSphere,descriptors:saved,page:null as unknown as Page,vertexOffset:0,indexOffset:0,status:'ready',reason:null,colorCalls:0,shadowCalls:0,before:null as unknown as T.Object3D['onBeforeRender'],shadow:null as unknown as T.Object3D['onBeforeShadow'],raycast:null as unknown as T.Mesh['raycast'],onDispose:()=>{}};
+    const entry:Entry={object:mesh,source,material,compile:method(material,'onBeforeCompile') as Compile,materialVersion:material.version,attributesObject:source.attributes,attributes,index,vertexCount:position.count,indexCount:index?.count??0,key,bounds,sourceSphere:source.boundingSphere,objectSphere,descriptors:saved,page:null as unknown as Page,vertexOffset:0,indexOffset:0,status:'ready',reason:null,colorCalls:0,shadowCalls:0,onDispose:()=>{}};
     if (!sourceRange(entry)) {reject('unsupported-draw-range');return null;}
-    entry.before=function(this:T.Object3D,...args) { if (this===mesh && args[3]===entry.page.geometry) selectRange(entry,false); };
-    entry.shadow=function(this:T.Object3D,...args) { if (this===mesh && args[4]===entry.page.geometry) selectRange(entry,true); };
-    entry.raycast=function(this:T.Mesh,...args) {
-      if (this!==mesh) return Reflect.apply(nativeRaycast,this,args);
-      const current=Object.getOwnPropertyDescriptor(mesh,'geometry');
-      Object.defineProperty(mesh,'geometry',dataDescriptor(source,current));
-      try { return Reflect.apply(nativeRaycast,this,args); }
-      finally { put(mesh,'geometry',current); }
-    };
     return entry;
-  }
-  function selectRange(entry:Entry,shadow:boolean) {
-    const range=sourceRange(entry);
-    // Source ranges were validated after the scene's preparation callbacks. A
-    // source mutation during a native render is outside this immutable contract.
-    if (!range) return;
-    entry.page.geometry.setDrawRange(range.start,range.count);
-    counts.pooledCalls++;
-    if (shadow) {counts.shadowCalls++;entry.shadowCalls++;}
-    else {counts.colorCalls++;entry.colorCalls++;}
   }
   function buildPage(group:Entry[]) {
     const unique=[...new Map(group.map(e=>[e.source,e])).values()];
@@ -290,12 +278,22 @@ export function installSharedGeometryBuffers(renderer:T.WebGLRenderer,scene:T.Sc
     for (const entry of group) {
       const offset=offsets.get(entry.source)!;entry.page=page;entry.vertexOffset=offset.vertex;entry.indexOffset=offset.index;
       entry.onDispose=()=>invalidate(entry,'source-disposed');entry.source.addEventListener('dispose',entry.onDispose);
-      entries.push(entry);
+      entries.push(entry);byObject.set(entry.object,entry);
     }
+    // Native projectObject updates geometry before checking material.visible.
+    // The invisible material prevents a render-list entry (unlike count=0,
+    // which still issues a zero-count draw in r185). This uploads attributes
+    // and registers disposal; the index uploads during the first real draw.
+    const uploadObject=new T.Mesh(geometry,preparationMaterial) as MeshBounds;
+    uploadObject.frustumCulled=false;uploadObject.boundingSphere=new T.Sphere();
+    preparationScene.add(uploadObject);
     pages.push(page);poolBytes+=bytes;
   }
   function prepare(root:T.Object3D=scene) {
-    if (disposed || disposeRequested || disabledReason || scopes.length) return read();
+    // Explicit callers must use a startup/outside-animation boundary. Deferred
+    // restoration and readiness retries never call this traversal from a frame.
+    if (disposed || disposeRequested || disabledReason || scopes.length || preparing || directDepth) return read();
+    const oldPageCount=pages.length;
     const inventory=new Set<T.Object3D>();scene.traverse(o=>inventory.add(o));if(root!==scene)root.traverse(o=>inventory.add(o));
     const hazardGeometry=new WeakSet<object>(),hazardAttributes=new WeakSet<object>();
     for (const object of inventory) {
@@ -325,69 +323,118 @@ export function installSharedGeometryBuffers(renderer:T.WebGLRenderer,scene:T.Sc
       }
       buildPage(page);
     }
+    if(pages.length!==oldPageCount){generation++;readyGeneration=-1;}
+    if(!preparePages())queuePreparation();
     return read();
   }
-  function restore(scope:Scope) {
-    if(scope.restored)return;scope.restored=true;
-    for (let i=scope.patches.length-1;i>=0;i--) {
-      const patch=scope.patches[i];
-      for (const key of ownedKeys) {
-        try {put(patch.entry.object,key,patch.descriptors[key]);}
-        catch {counts.observerErrors++;disabledReason='restoration-failed';}
-      }
+  function preparationReady() { return pages.length>0 && readyGeneration===generation && !lost && !disposed && !disposeRequested && !disabledReason; }
+  function preparePages():boolean {
+    if(preparationReady())return true;
+    if(!pages.length||disposed||disposeRequested||disabledReason||lost)return false;
+    if(scopes.length||directDepth||preparing||renderer.xr?.isPresenting||renderer.getRenderTarget()!==null){counts.preparationDeferrals++;return false;}
+    const expectedGeneration=generation,autoClear=renderer.autoClear,info=renderer.info,autoReset=info.autoReset;
+    const frameBefore=info.render.frame,callsBefore=info.render.calls,trianglesBefore=info.render.triangles,pointsBefore=info.render.points,linesBefore=info.render.lines;
+    preparing=true;counts.preparationAttempts++;
+    let completed=false;
+    try {
+      renderer.autoClear=false;info.autoReset=false;
+      Reflect.apply(originalRender,renderer,[preparationScene,preparationCamera]);
+      completed=true;
+    } catch {
+      counts.preparationFailures++;counts.observerErrors++;disabledReason='preparation-failed';
+    } finally {
+      renderer.autoClear=autoClear;info.autoReset=autoReset;
+      // A context generation can replace renderer.info; restore the public
+      // setting inherited from our temporary override as well.
+      if(renderer.info!==info)renderer.info.autoReset=autoReset;
+      const delta=info.render.frame-frameBefore;
+      if(Number.isSafeInteger(delta)&&delta>0)counts.preparationFrames+=delta;
+      preparing=false;
+      if(disposeRequested&&!scopes.length&&!directDepth)finishDispose();
     }
-  }
-  function activate(scope:Scope,resume=false) {
-    if(disposed||disabledReason||lost||(!resume&&disposeRequested))return;
-    const selected=resume?scope.patches.map(p=>p.entry):entries;
-    if(!resume)scope.patches=[];
-    scope.restored=false;
-    for (const entry of selected) {
-      if(!resume && entry.status!=='ready')continue;
-      if(!resume) {const reason=validate(entry);if(reason){invalidate(entry,reason);continue;}}
-      const saved=descriptors(entry.object);
-      if(!resume)scope.patches.push({entry,descriptors:saved});
-      Object.defineProperty(entry.object,'geometry',dataDescriptor(entry.page.geometry,saved.geometry));
-      Object.defineProperty(entry.object,'boundingSphere',dataDescriptor(entry.bounds,saved.boundingSphere));
-      Object.defineProperty(entry.object,'onBeforeRender',dataDescriptor(entry.before,saved.onBeforeRender));
-      Object.defineProperty(entry.object,'onBeforeShadow',dataDescriptor(entry.shadow,saved.onBeforeShadow));
-      Object.defineProperty(entry.object,'raycast',dataDescriptor(entry.raycast,saved.raycast));
+    if(!completed||disposed||disposeRequested||disabledReason||lost||generation!==expectedGeneration||renderer.info!==info)return false;
+    const delta=info.render.frame-frameBefore;
+    // A public outer render wrapper may return before reaching native render.
+    // That is unready, never proof of resident page attributes.
+    if(delta===0){counts.preparationDeferrals++;return false;}
+    if(delta!==1||info.render.calls!==callsBefore||info.render.triangles!==trianglesBefore||info.render.points!==pointsBefore||info.render.lines!==linesBefore){
+      counts.preparationFailures++;counts.observerErrors++;disabledReason='unexpected-preparation-render';return false;
     }
-    if(!resume && scope.patches.length)counts.pooledRenders++;
+    readyGeneration=generation;counts.preparationRenders++;
+    return true;
   }
+  function queuePreparation() {
+    if(disposed||disposeRequested||disabledReason||lost||!pages.length||preparationReady()||queuedGeneration===generation)return;
+    const expectedGeneration=generation;queuedGeneration=expectedGeneration;
+    // One attempt per trigger; no self-rescheduling microtask loop. This runs
+    // after the complete animation/render call stack, never inside a riding
+    // callback. An unsafe target/XR boundary waits for another real render.
+    queueMicrotask(()=>{
+      if(queuedGeneration!==expectedGeneration)return;
+      queuedGeneration=null;
+      if(generation!==expectedGeneration||disposed||disposeRequested||disabledReason||lost)return;
+      try {preparePages();}
+      catch {counts.preparationFailures++;counts.observerErrors++;disabledReason='preparation-failed';}
+    });
+  }
+  function actualMaterialAllowed(material:T.Material,entry:Entry,shadow:boolean):boolean {
+    if(!shadow)return material===entry.material;
+    const prototype=Object.getPrototypeOf(material);
+    return (prototype===T.MeshDepthMaterial.prototype||prototype===T.MeshDistanceMaterial.prototype) &&
+      method(material,'onBeforeRender')===nativeMaterialRender && materialAllowed(material) &&
+      !(material as T.MeshDepthMaterial).wireframe;
+  }
+  const direct=function(this:T.WebGLRenderer,...args:Parameters<T.WebGLRenderer['renderBufferDirect']>) {
+    const scope=scopes.at(-1),[camera,drawScene,geometry,material,object,group]=args;
+    const entry=byObject.get(object),shadow=drawScene===null;
+    if(this!==renderer||preparing||directDepth||!scope?.eligible||scopes.length!==1||!preparationReady()||!entry||entry.status!=='ready'||
+        (drawScene!==scene&&!shadow)||renderer.xr?.isPresenting||scene.overrideMaterial!==null||
+        (!shadow&&renderer.getRenderTarget()!==null))return Reflect.apply(originalDirect,this,args);
+    // ShadowMap deliberately binds a non-null target before its scene=null
+    // depth/distance calls. Color calls must still target the default buffer
+    // here: a preceding object's callback may have changed the root state.
+    let reason:string|null;
+    try {reason=validate(entry);} catch {reason='validation-error';counts.observerErrors++;}
+    if(reason){invalidate(entry,reason);return Reflect.apply(originalDirect,this,args);}
+    if(group!==null||geometry!==entry.source||!actualMaterialAllowed(material,entry,shadow))return Reflect.apply(originalDirect,this,args);
+    const range=sourceRange(entry);
+    if(!range){invalidate(entry,'unsupported-draw-range');return Reflect.apply(originalDirect,this,args);}
+    const page=entry.page.geometry,start=page.drawRange.start,count=page.drawRange.count;
+    page.setDrawRange(range.start,range.count);directDepth++;
+    counts.pooledCalls++;
+    if(!scope.pooled){scope.pooled=true;counts.pooledRenders++;}
+    if(shadow){counts.shadowCalls++;entry.shadowCalls++;}else{counts.colorCalls++;entry.colorCalls++;}
+    try {return Reflect.apply(originalDirect,this,[camera,drawScene,page,material,object,group]);}
+    finally {page.setDrawRange(start,count);directDepth--;if(!directDepth&&!scopes.length&&disposeRequested)finishDispose();}
+  };
   const before=function(this:T.Scene,...args:Parameters<T.Scene['onBeforeRender']>) {
     const result=Reflect.apply(originalBefore,this,args);
     const scope=scopes.at(-1),camera=args[2];
     if (this===scene && args[0]===renderer && scope?.root===scene && scopes.length===1 && scene.overrideMaterial===null &&
         !(camera as T.ArrayCamera).isArrayCamera && ((camera as T.PerspectiveCamera).isPerspectiveCamera||(camera as T.OrthographicCamera).isOrthographicCamera) &&
         !renderer.xr?.isPresenting && renderer.getRenderTarget()===null) {
-      try {activate(scope);} catch {counts.observerErrors++;restore(scope);disabledReason='activation-failed';}
+      scope.eligible=preparationReady();
     }
     return result;
   };
   const after=function(this:T.Scene,...args:Parameters<T.Scene['onAfterRender']>) {
-    const scope=scopes.at(-1);if(this===scene && args[0]===renderer && scope?.root===scene)restore(scope);
+    const scope=scopes.at(-1);if(this===scene && args[0]===renderer && scope?.root===scene)scope.eligible=false;
     return Reflect.apply(originalAfter,this,args);
   };
   const render=function(this:T.WebGLRenderer,...args:Parameters<T.WebGLRenderer['render']>) {
     if(this!==renderer || disposed || disabledReason)return Reflect.apply(originalRender,this,args);
     counts.renderCalls++;
-    const outer=scopes.at(-1),resumeOuter=!!outer&&!outer.restored&&outer.patches.length>0;
-    const ranges=resumeOuter?pages.map(page=>({page,start:page.geometry.drawRange.start,count:page.geometry.drawRange.count})):[];
-    if(outer){counts.nestedRenders++;restore(outer);}
-    const scope:Scope={root:args[0],camera:args[1],patches:[],restored:false};scopes.push(scope);
+    if(scopes.length)counts.nestedRenders++;
+    const scope:Scope={root:args[0],eligible:false,pooled:false};scopes.push(scope);
     try {return Reflect.apply(originalRender,this,args);}
     finally {
-      restore(scope);scopes.pop();
-      if(outer && resumeOuter && !disposed && !disabledReason) {
-        try {activate(outer,true);for(const {page,start,count} of ranges)page.geometry.setDrawRange(start,count);}
-        catch {counts.observerErrors++;restore(outer);disabledReason='resume-failed';}
-      }
-      if(!scopes.length&&disposeRequested)finishDispose();
+      scope.eligible=false;scopes.pop();
+      if(!scopes.length&&disposeRequested&&!directDepth)finishDispose();
+      if(!scopes.length)queuePreparation();
     }
   };
   const onLost=()=>{
-    lost=true;counts.contextLosses++;
+    lost=true;generation++;readyGeneration=-1;counts.contextLosses++;
     // Three recreates its WebGL caches on restoration but leaves geometry
     // disposal listeners attached. Retire this generation while GL is lost,
     // retaining the CPU pages for normal reupload into the restored context.
@@ -408,28 +455,31 @@ export function installSharedGeometryBuffers(renderer:T.WebGLRenderer,scene:T.Sc
         if(changed)invalidate(entry,'source-bytes-changed-on-restore');
       } catch {invalidate(entry,'source-unavailable-on-restore');}
     }
+    queuePreparation();
   };
   function read():SharedGeometryBufferStats {
     const rows=entries.slice(0,limits.rows).map(e=>({sourceId:e.object.id,sourceGeometryId:e.source.id,materialId:(e.material as T.Material&{id:number}).id,sharedGeometryId:e.page.geometry.id,vertexOffset:e.vertexOffset,indexOffset:e.indexOffset,sourceVertexCount:e.vertexCount,sourceIndexCount:e.indexCount,indexed:!!e.index,status:e.status,fallbackReason:e.reason,colorCalls:e.colorCalls,shadowCalls:e.shadowCalls}));
-    return {version:1,supported,active:supported&&!disposed&&!disposeRequested&&!disabledReason,disabledReason:disposed||disposeRequested?'disposed':disabledReason,...counts,preparedEntries:entries.length,activeEntries:disposed||disposeRequested||disabledReason?0:entries.filter(e=>e.status==='ready').length,scopedEntries:scopes.reduce((n,s)=>n+(s.restored?0:s.patches.length),0),pageCount:pages.length,poolBytes,truncatedEntries:Math.max(0,entries.length-rows.length),truncatedPages:0,entries:rows,pages:pages.map(p=>({geometryId:p.geometry.id,vertices:p.vertices,indices:p.indices,bytes:p.bytes,entries:p.entries.length})),rejected:{...rejected},notes:['Calls count range-setting object callbacks, not independently observed GL draws, uploads, GPU work or completions.','Prepared pages are immutable copies. Between-render source identity/version/layout changes fall back; unsupported late assets remain native until an explicit prepare boundary.','Original object bounds/order/material/matrices remain native. Offscreen, ArrayCamera, XR and nested render scopes use original geometry.','Geometry and hooks are restored before the prior scene after-render callback and on renderer exceptions. Shared ranges are restored after nested rendering.']};
+    return {version:1,supported,active:supported&&!disposed&&!disposeRequested&&!disabledReason,disabledReason:disposed||disposeRequested?'disposed':disabledReason,...counts,preparationReady:preparationReady(),preparationQueued:queuedGeneration===generation,preparedEntries:entries.length,activeEntries:disposed||disposeRequested||disabledReason?0:entries.filter(e=>e.status==='ready').length,scopedEntries:directDepth,pageCount:pages.length,poolBytes,truncatedEntries:Math.max(0,entries.length-rows.length),truncatedPages:0,entries:rows,pages:pages.map(p=>({geometryId:p.geometry.id,vertices:p.vertices,indices:p.indices,bytes:p.bytes,entries:p.entries.length})),rejected:{...rejected},notes:['Calls count eligible native renderBufferDirect substitutions, including calls that throw; they are not independently observed GL draws, uploads, GPU work or completions.','Prepared pages are immutable copies. Draw-time source identity/version/layout changes fall back; unsupported late assets remain native until an explicit prepare boundary.','Original object geometry, descriptors, bounds, order, material, matrices and callback arguments remain native at all times. Offscreen, ArrayCamera, XR and nested render scopes use original geometry.','Only the owned page range is scoped to one direct invocation and restored in finally. scopedEntries counts currently active direct range scopes.','Public invisible-material preparation registers page vertex attributes and disposal; native index upload occurs at the first actual pooled draw. Preparation render/frame counters are separate and native frame increments are never rewritten.','rendererOutput is the caller-audited lifetime constructor contract, not discovered runtime output state. Preparation runs only at explicit outside-animation boundaries or in one deferred microtask; unavailable pages stay native.']};
   }
   function dispose() {
     if(disposed||disposeRequested)return;disposeRequested=true;
-    if(!scopes.length)finishDispose();
+    if(!scopes.length&&!directDepth&&!preparing)finishDispose();
   }
   function finishDispose() {
-    if(disposed)return;disposed=true;
-    for(const scope of scopes)restore(scope);
+    if(disposed)return;disposed=true;queuedGeneration=null;generation++;readyGeneration=-1;
     if(method(renderer,'render')===render)put(renderer,'render',renderDescriptor);
+    if(method(renderer,'renderBufferDirect')===direct)put(renderer,'renderBufferDirect',directDescriptor);
     if(method(scene,'onBeforeRender')===before)put(scene,'onBeforeRender',beforeDescriptor);
     if(method(scene,'onAfterRender')===after)put(scene,'onAfterRender',afterDescriptor);
     renderer.domElement?.removeEventListener('webglcontextlost',onLost);renderer.domElement?.removeEventListener('webglcontextrestored',onRestored);
     for(const e of entries){e.status='disposed';e.source.removeEventListener('dispose',e.onDispose);}for(const page of pages)page.geometry.dispose();
+    preparationScene.clear();preparationMaterial.dispose();
     if(owners.get(scene)?.handle===handle)owners.delete(scene);
   }
   const handle:SharedGeometryBufferHandle={prepare,read,dispose};
   if(supported) {
     Object.defineProperty(renderer,'render',dataDescriptor(render,renderDescriptor));
+    Object.defineProperty(renderer,'renderBufferDirect',dataDescriptor(direct,directDescriptor));
     Object.defineProperty(scene,'onBeforeRender',dataDescriptor(before,beforeDescriptor));
     Object.defineProperty(scene,'onAfterRender',dataDescriptor(after,afterDescriptor));
     renderer.domElement.addEventListener('webglcontextlost',onLost);renderer.domElement.addEventListener('webglcontextrestored',onRestored);
