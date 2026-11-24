@@ -1,8 +1,8 @@
-name: Belle Cadillac native control environment diagnostic
+name: Belle Cadillac native context-loss log diagnostic
 
 on:
   push:
-    branches: [upgrade-redesign-cadillac-native-readiness-20261124]
+    branches: [upgrade-redesign-cadillac-context-log-20261124]
 
 permissions:
   contents: read
@@ -15,12 +15,13 @@ env:
   CADILLAC_MODS_SOURCE_SHA: ${{ github.sha }}
   BASELINE_SHA: d0a1b76b1ff6444f27a24d118537730a5d93708d
   BASELINE_TREE: 895dc2e85f69848c0213a6455cf38e166271022f
-  EXPERIMENT_PARENT_SHA: d0a1b76b1ff6444f27a24d118537730a5d93708d
-  EXPERIMENT_PARENT_TREE: 895dc2e85f69848c0213a6455cf38e166271022f
+  EXPERIMENT_PARENT_SHA: c4471e99c4128cbcfb639c57f72e12e5cc6618d7
+  EXPERIMENT_PARENT_TREE: b960a21855bedbd062dd0e43747c333a38f2fd21
   GAME_PATH: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
   ORIGINAL_WORKFLOW_SHA256: 7fbff2a138681c9f6d271dbba8dce913a9587453c0d71d0e9a08825346703551
   COMMAND_HELPER_SHA256: 33fca91c7c97693643fedea33bfd03fbd53d958a0bc1f049fe73f4a9745a256a
   STRICT_SCRIPT_SHA256: 8f6af949083800c491b65e0709c04cc29eb5712634f744c5b912f76ce651fcf5
+  LAUNCHER_SHA256: 4e603c96718eb27e7718d6cac01d4d375a87cd85e63e0b2f8a3ea8036533e85c
 
 jobs:
   build:
@@ -31,7 +32,7 @@ jobs:
         with:
           ref: ${{ env.CADILLAC_MODS_SOURCE_SHA }}
           persist-credentials: false
-          fetch-depth: 2
+          fetch-depth: 3
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -56,17 +57,21 @@ jobs:
           const proof={version:2,commit,tree,parents,baseline:process.env.BASELINE_SHA,baselineTree:process.env.BASELINE_TREE,
             expectedParent:process.env.EXPERIMENT_PARENT_SHA,expectedParentTree:process.env.EXPERIMENT_PARENT_TREE,
             expectedChanges,actualChanges,verified:false,
-            scope:'Two desktop vehicle cases on native ANGLE/Metal, with a bounded native character-key path for the existing Mac selects. The existing PR workflow and its software desktop/mobile cases remain required and unchanged. This environment diagnostic does not grant release or performance acceptance.'};
+            scope:'One standard Cadillac desktop case on native ANGLE/Metal with Playwright DEBUG=pw:browser process logging. The reviewed launcher, browser arguments, runtime, native input, Smooth/30 fixture and deadlines remain unchanged. Existing PR cases remain required; this context-loss diagnostic does not grant release or performance acceptance.'};
           await mkdir(out,{recursive:true});
           await writeFile(resolve(out,'source-preflight.json'),JSON.stringify(proof,null,2)+'\n');
           assert.equal(commit,process.env.CADILLAC_MODS_SOURCE_SHA);
-          assert.deepEqual(parents,[process.env.EXPERIMENT_PARENT_SHA],'The native-select follow-up must have the reviewed command-readiness candidate as its sole parent');
+          assert.deepEqual(parents,[process.env.EXPERIMENT_PARENT_SHA],'The context-loss log diagnostic must have the reviewed native-select candidate as its sole parent');
           assert.equal(git('rev-parse',process.env.EXPERIMENT_PARENT_SHA+'^{tree}'),process.env.EXPERIMENT_PARENT_TREE);
           assert.equal(git('rev-parse',process.env.BASELINE_SHA+'^{tree}'),process.env.BASELINE_TREE);
-          assert.deepEqual(actualChanges,expectedChanges,'Only the native environment workflow and launcher may differ from the reviewed readiness candidate');
+          assert.deepEqual(actualChanges,expectedChanges,'Only the reviewed cumulative workflow and launcher delta may differ from the readiness baseline');
           const increment=git('diff','--no-renames','--name-status',process.env.EXPERIMENT_PARENT_SHA,'HEAD').split('\n').filter(Boolean).sort();
-          assert.deepEqual(increment,expectedChanges,'Only the native environment launcher and provenance workflow may differ from the sole parent');
-          proof.increment=increment;
+          const expectedIncrement=['M\t'+workflow];
+          assert.deepEqual(increment,expectedIncrement,'Only the existing diagnostic workflow may change from the native-select parent');
+          const rawIncrement=git('diff','--no-renames','--raw',process.env.EXPERIMENT_PARENT_SHA,'HEAD').split('\n').filter(Boolean);
+          assert.equal(rawIncrement.length,1);
+          assert(/^:100644 100644 [0-9a-f]+ [0-9a-f]+ M\t/.test(rawIncrement[0]),'No incremental file mode or type change is allowed');
+          proof.expectedIncrement=expectedIncrement;proof.increment=increment;proof.rawIncrement=rawIncrement;
           const rawChanges=git('diff','--no-renames','--raw',process.env.BASELINE_SHA,'HEAD').split('\n').filter(Boolean);
           assert.equal(rawChanges.length,2);
           for(const change of rawChanges){
@@ -85,6 +90,9 @@ jobs:
             for(const ref of ['HEAD',process.env.BASELINE_SHA])assert.equal(hash(execFileSync('git',['show',ref+':'+path])),expected);
             proof.pinnedFiles[path]=expected;
           }
+          assert.equal(hash(await readFile(launcher)),process.env.LAUNCHER_SHA256);
+          for(const ref of ['HEAD',process.env.EXPERIMENT_PARENT_SHA])assert.equal(hash(execFileSync('git',['show',ref+':'+launcher])),process.env.LAUNCHER_SHA256);
+          proof.pinnedFiles[launcher]=process.env.LAUNCHER_SHA256;
           proof.runtimeTrees={};
           for(const directory of ['src','runtime']){
             const path=game+'/'+directory,baseline=git('rev-parse',process.env.BASELINE_SHA+':'+path),candidate=git('rev-parse','HEAD:'+path);
@@ -133,6 +141,7 @@ jobs:
           })));
           assert.equal(sources['scripts/cadillac-native-command-click.mjs'],process.env.COMMAND_HELPER_SHA256);
           assert.equal(sources['scripts/sustained-ride-profile.mjs'],process.env.STRICT_SCRIPT_SHA256);
+          assert.equal(sources['scripts/cadillac-mods-browser-smoke.mjs'],process.env.LAUNCHER_SHA256);
           const workflowPath='.github/workflows/belle-cadillac-native-controls.yml',workflowBytes=await readFile(workflowPath);
           assert.equal(hash(workflowBytes),hash(execFileSync('git',['show','HEAD:'+workflowPath])));
           // Preserve and verify the existing build's sole tracked timing-metadata change.
@@ -167,7 +176,7 @@ jobs:
           const identity={version:1,commit,tree,parent,baseline:process.env.BASELINE_SHA,buildId,builtAt,
             workflow:{path:workflowPath,sha256:hash(workflowBytes)},preflightSha256:hash(await readFile(resolve(out,'source-preflight.json'))),
             sourceFiles:sourceFiles.length,sources,builtFiles:files.length,files,buildMetadata,
-            scope:'Exact full-game build for two native Metal desktop control cases. Runtime source is unchanged from the reviewed candidate. The Mac-only closed-select character cycle records trusted key/input/change evidence; the software path remains unchanged. Smooth/30, all control-state assertions, screenshots, fences, two paints and deadlines are retained. Not performance or release acceptance.'};
+            scope:'Exact full-game build for one standard Cadillac native Metal desktop context-loss diagnostic. Launcher and runtime source are unchanged from c447. Only Playwright browser-process logging is enabled; no Chrome logging, tracing, GPU or recovery flags are added. Native input, Smooth/30, all control assertions, screenshots, fences, two paints and deadlines are retained. Not performance or release acceptance.'};
           await writeFile(resolve(out,'source-integrity.json'),JSON.stringify(identity,null,2)+'\n');
           NODE
       - uses: actions/upload-artifact@v4
@@ -192,11 +201,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ride: [cadillac, hydraulic-cadillac]
+        ride: [cadillac]
     env:
       BELLE_CADILLAC_MODS_CASE: desktop
       BELLE_CADILLAC_MODS_RIDE: ${{ matrix.ride }}
       BELLE_CADILLAC_MODS_BACKEND: metal
+      DEBUG: pw:browser
     steps:
       - uses: actions/checkout@v4
         with:
@@ -250,6 +260,7 @@ jobs:
           const sources=Object.fromEntries(await Promise.all(sourceFiles.map(async path=>[path,hash(await readFile(resolve(game,path)))])));
           assert.deepEqual(sources,identity.sources);assert.equal(sources['scripts/cadillac-native-command-click.mjs'],process.env.COMMAND_HELPER_SHA256);
           assert.equal(sources['scripts/sustained-ride-profile.mjs'],process.env.STRICT_SCRIPT_SHA256);
+          assert.equal(sources['scripts/cadillac-mods-browser-smoke.mjs'],process.env.LAUNCHER_SHA256);
           const files=[];async function buildWalk(directory){for(const entry of await readdir(directory,{withFileTypes:true})){
             const path=resolve(directory,entry.name);if(entry.isDirectory())await buildWalk(path);
             else{assert(entry.isFile());const bytes=await readFile(path);files.push({path:relative(dist,path).split(sep).join('/'),bytes:bytes.length,sha256:hash(bytes)});}
@@ -261,7 +272,7 @@ jobs:
           await writeFile(resolve(out,'integrity-before.json'),JSON.stringify({commit:identity.commit,tree:identity.tree,identitySha256:hash(identityBytes),
             sourceFiles:sourceFiles.length,builtFiles:files.length,verified:true,verifiedAt:new Date().toISOString()},null,2)+'\n');
           NODE
-      - name: Exercise desktop controls with native Mac select navigation
+      - name: Exercise unchanged standard Cadillac controls with browser-process logs
         id: controls
         timeout-minutes: 34
         working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
@@ -317,12 +328,15 @@ jobs:
           import {readFile,readdir,writeFile} from 'node:fs/promises';
           import {createHash} from 'node:crypto';
           import {resolve,relative,sep} from 'node:path';
+          import {release} from 'node:os';
           const out=resolve('cadillac-native-evidence'),caseName=process.env.BELLE_CADILLAC_MODS_RIDE+'-desktop';mkdirSync(out,{recursive:true});
           const source=resolve(process.env.GAME_PATH,'output/cadillac-mods',caseName);
           if(existsSync(source))cpSync(source,resolve(out,'controls',caseName),{recursive:true});
           await writeFile(resolve(out,'step-outcomes.json'),JSON.stringify({commit:process.env.CADILLAC_MODS_SOURCE_SHA,case:caseName,requestedBackend:'angle-metal',
+            browserDebug:process.env.DEBUG??null,host:{arch:process.arch,platform:process.platform,runnerArchitecture:process.env.RUNNER_ARCH??null,
+              imageOS:process.env.ImageOS??null,imageVersion:process.env.ImageVersion??null,osRelease:release()},
             outcomes:{verifyBefore:process.env.VERIFY_BEFORE_OUTCOME,controls:process.env.CONTROLS_OUTCOME,verifyAfter:process.env.VERIFY_AFTER_OUTCOME},
-            scope:'Environment diagnostic only. Original functional failures are retained. A native Metal control result neither replaces the required PR software/mobile cases nor grants release-performance acceptance.'},null,2)+'\n');
+            scope:'Single standard Cadillac context-loss diagnostic with the unchanged c447 launcher and workload. DEBUG=pw:browser exposes browser-process stdout/stderr in the complete job log, retained separately; it adds no Chrome flags, recovery, retries or deadline changes. Original functional failures remain failures. This result does not replace required PR cases or grant release-performance acceptance.'},null,2)+'\n');
           const hashes=[];async function walk(directory){for(const entry of await readdir(directory,{withFileTypes:true})){
             const path=resolve(directory,entry.name);if(entry.isDirectory())await walk(path);else{
               if(!entry.isFile())throw Error('Unexpected evidence symlink/nonfile: '+path);const bytes=await readFile(path);
@@ -331,7 +345,7 @@ jobs:
           }}await walk(out);hashes.sort((a,b)=>a.path<b.path?-1:a.path>b.path?1:0);
           await writeFile(resolve(out,'evidence-hashes.json'),JSON.stringify(hashes,null,2)+'\n');
           NODE
-      - name: Preserve both successful and failed native cases
+      - name: Preserve successful or failed context-loss diagnostic evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
