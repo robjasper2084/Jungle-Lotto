@@ -5,6 +5,8 @@ import * as T from 'three';
 import {prepareCanopyCoverage} from './canopyCoverage.ts';
 import {readFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
+import {applyRealisticMaterials,loadRealisticMaterials} from './realisticMaterials.ts';
+import {WebGLUniforms} from 'three/src/renderers/webgl/WebGLUniforms.js';
 
 test('all world skins match their recorded bytes and bounded runtime dimensions',async()=>{
  const base=new URL('../../public/belle/skins/',import.meta.url);
@@ -90,4 +92,90 @@ test('canopy color fails closed on an incompatible shader instead of silently dr
  const material=new T.MeshStandardMaterial();prepareCanopyCoverage(material);
  assert.throws(()=>material.onBeforeCompile({vertexShader:'',fragmentShader:'void main(){}',uniforms:{}} as Parameters<T.Material['onBeforeCompile']>[0],{} as T.WebGLRenderer),/original map shader missing/);
  material.dispose();
+});
+
+test('all four surface combinations share shader source while retaining their own material inputs and authored hook',async t=>{
+ const loaded=new Map<string,T.Texture>(),uploaded:T.Texture[]=[];
+ const renderer={capabilities:{getMaxAnisotropy:()=>8},initTexture:(texture:T.Texture)=>uploaded.push(texture)} as unknown as T.WebGLRenderer;
+ const loader=t.mock.method(T.TextureLoader.prototype,'loadAsync',async(url:string)=>{
+  const texture=new T.Texture({width:1,height:1});texture.name=url;loaded.set(url,texture);return texture;
+ });
+ await loadRealisticMaterials(renderer);loader.mock.restore();
+ assert.equal(loaded.size,57);assert.equal(new Set(uploaded).size,57);
+
+ const source=new T.MeshStandardMaterial({color:0x427856,metalness:.12,side:T.DoubleSide});
+ const atlas=new T.Texture(),normalMap=new T.Texture();source.map=atlas;source.normalMap=normalMap;
+ source.defines={AUTHORED_SURFACE:1};source.customProgramCacheKey=()=>'authored-surface-v7';
+ // Keep the existing r185 clone contract. Its define reset is a separate,
+ // pre-existing edge; this shader-variant change does not repair that behavior.
+ const baselineClone=source.clone(),expectedDefines={...baselineClone.defines};baselineClone.dispose();
+ const authoredUniform={value:17};let authoredCalls=0;
+ source.onBeforeCompile=shader=>{authoredCalls++;shader.uniforms.authored=authoredUniform;shader.fragmentShader='// retained authored finish\n'+shader.fragmentShader;};
+ const root=new T.Group(),planes=new T.PlaneGeometry(1,1).rotateX(-Math.PI/2),solid=new T.BoxGeometry(1,1,1);
+ const cases=[
+  {kind:'wood',planar:true,profile:[1,.50,.01]},
+  {kind:'wood',planar:false,profile:[1,.50,.01]},
+  {kind:'rubber',planar:true,profile:[9,0,.002]},
+  {kind:'rubber',planar:false,profile:[9,0,.002]},
+ ];
+ const meshes=cases.map(row=>{const mesh=new T.Mesh(row.planar?planes:solid,source);mesh.name=row.kind+' surface';root.add(mesh);return mesh;});
+ const duplicate=new T.Mesh(planes,source);duplicate.name='wood surface';root.add(duplicate);
+ const created=applyRealisticMaterials(root);
+ assert.equal(created.length,4);assert.equal(new Set(meshes.map(mesh=>mesh.material)).size,4);
+ assert.equal(duplicate.material,meshes[0].material,'identical kind and projection can retain their material clone');
+ assert.deepEqual(applyRealisticMaterials(root),[],'dressing remains idempotent');
+ const compile=(material:T.MeshStandardMaterial)=>{
+  const shader={vertexShader:T.ShaderLib.standard.vertexShader,fragmentShader:T.ShaderLib.standard.fragmentShader,uniforms:{}} as Parameters<T.Material['onBeforeCompile']>[0];
+  material.onBeforeCompile(shader,renderer);return shader;
+ };
+ const shaders=meshes.map(mesh=>compile(mesh.material));
+ assert.equal(authoredCalls,4,'each material prepares its own uniform bindings even with a common program');
+ assert.equal(new Set(shaders.map(shader=>shader.vertexShader)).size,1);
+ assert.equal(new Set(shaders.map(shader=>shader.fragmentShader)).size,1);
+ assert.equal(new Set(meshes.map(mesh=>mesh.material.customProgramCacheKey())).size,1);
+ assert.equal(meshes[0].material.customProgramCacheKey(),'authored-surface-v7-higgsfield-surface-v5');
+ for(let i=0;i<cases.length;i++){
+  const row=cases[i],material=meshes[i].material,shader=shaders[i];
+  assert.deepEqual(shader.uniforms.skinProfile.value.toArray(),row.profile);
+  assert.equal(shader.uniforms.skinPlanar.value,row.planar);
+  assert.equal(shader.uniforms.skinColor.value,loaded.get('./belle/skins/'+row.kind+'-color.webp'));
+  assert.equal(shader.uniforms.skinDetail.value,loaded.get('./belle/skins/'+row.kind+'-detail.webp'));
+  assert.equal(shader.uniforms.authored,authoredUniform);
+  assert.equal(material.map,atlas);assert.equal(material.normalMap,normalMap);assert.equal(material.side,source.side);
+  assert.deepEqual(material.defines,expectedDefines);assert(material.color.equals(source.color));assert.equal(material.metalness,source.metalness);
+ }
+ assert.equal(source.customProgramCacheKey(),'authored-surface-v7');assert.equal(source.version,0);
+ assert.deepEqual(source.defines,{AUTHORED_SURFACE:1});
+ assert.equal(source.map,atlas);assert.equal(source.normalMap,normalMap);
+
+ await t.test('the pinned Three uniform uploader switches every material through one cached program without stale projection, pigment or textures',()=>{
+  const active=[{name:'skinColor',size:1,type:0x8b5e},{name:'skinDetail',size:1,type:0x8b5e},
+   {name:'skinProfile',size:1,type:0x8b51},{name:'skinPlanar',size:1,type:0x8b56}];
+  const state=new Map<string,number|number[]>(),bound=new Map<number,T.Texture>();let nextUnit=0;
+  const gl={ACTIVE_UNIFORMS:0x8b86,getProgramParameter:()=>active.length,getActiveUniform:(_:unknown,i:number)=>active[i],getUniformLocation:(_:unknown,name:string)=>name,
+   uniform1i:(name:string,value:number)=>state.set(name,Number(value)),uniform3f:(name:string,x:number,y:number,z:number)=>state.set(name,[x,y,z])};
+  const textures={allocateTextureUnit:()=>nextUnit++,setTexture2D:(texture:T.Texture,unit:number)=>bound.set(unit,texture)};
+  // The public type declarations omit seq/upload. Exercise the installed r185
+  // implementation and its per-program value cache, not a mock uploader.
+  const Uniforms=WebGLUniforms as unknown as {new(gl:unknown,program:unknown):{seq:unknown[]};upload:(gl:unknown,seq:unknown[],values:Record<string,T.IUniform>,textures:unknown)=>void};
+  const programUniforms=new Uniforms(gl,{});
+  for(const i of [0,1,2,3,0,3,2,1,0]){
+   nextUnit=0;bound.clear();Uniforms.upload(gl,programUniforms.seq,shaders[i].uniforms,textures);
+   assert.deepEqual(state.get('skinProfile'),cases[i].profile,'material '+i+' profile');
+   assert.equal(state.get('skinPlanar'),Number(cases[i].planar),'material '+i+' projection');
+   assert.equal(bound.get(Number(state.get('skinColor'))),loaded.get('./belle/skins/'+cases[i].kind+'-color.webp'));
+   assert.equal(bound.get(Number(state.get('skinDetail'))),loaded.get('./belle/skins/'+cases[i].kind+'-detail.webp'));
+  }
+ });
+
+ await t.test('uniform objects are per compilation and changing one cannot contaminate a sibling or recompiled material',()=>{
+  shaders[0].uniforms.skinPlanar.value=false;shaders[0].uniforms.skinProfile.value.set(77,88,99);
+  assert.equal(shaders[2].uniforms.skinPlanar.value,true);assert.deepEqual(shaders[1].uniforms.skinProfile.value.toArray(),cases[1].profile);
+  const again=compile(meshes[0].material);
+  assert.equal(again.uniforms.skinPlanar.value,true);assert.deepEqual(again.uniforms.skinProfile.value.toArray(),cases[0].profile);
+  assert.notEqual(again.uniforms.skinProfile,shaders[0].uniforms.skinProfile);assert.notEqual(again.uniforms.skinPlanar,shaders[0].uniforms.skinPlanar);
+  assert.equal(again.uniforms.skinColor.value,shaders[0].uniforms.skinColor.value,'only immutable texture inputs are shared');
+ });
+ for(const material of created)material.dispose();source.dispose();atlas.dispose();normalMap.dispose();planes.dispose();solid.dispose();
+ for(const texture of loaded.values())texture.dispose();
 });
