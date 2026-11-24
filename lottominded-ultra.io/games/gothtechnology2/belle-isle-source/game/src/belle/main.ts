@@ -240,21 +240,32 @@ const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreferen
  const core=new RideCore(terrain,{spawn:{position:{x:data.spawn.x,y:2,z:data.spawn.z},headingY:data.spawn.heading}});clearSimulationInput=()=>core.clearPendingActions();const loader=new GLTFLoader();const renderProbe=createNatureRenderProbe(location.search);const world=await createWorld(scene,renderer,data,terrain,status,renderProbe);el('profile').dataset.macarthurRailMeshes=String(world.stats.bridgeRailFinish.meshes);el('profile').dataset.macarthurRailMaterials=String(world.stats.bridgeRailFinish.newMaterials);world.sky.preview(!SUNSET_REFERENCE);const refreshSkySettings=connectSkySettings(world.sky);const sunsetPreview=SUNSET_REFERENCE?createSunsetPreview(camera,()=>hover,()=>active&&!trials?.active&&!race?.active&&!coop?.active&&!photo?.active,()=>{clear();cameraYaw=0;cameraPitch=.1;snap=true;},data.spawn,data):undefined;
  const frameBudget=new FrameBudget();graphics.onchange=()=>{frameBudget.reset();world.setQuality(graphics.value);saveGraphics();};world.setQuality(graphics.value);window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();if(!vr?.active)renderer.setSize(innerWidth,innerHeight);});
  const sceneWarmup=new SceneWarmup(renderer,scene,camera,value=>{scenePreparing=value;resetFrameClock=true;if(value)clear();});
- async function prepareRideShadows(rider:T.Object3D,x:number,z:number){
+ async function prepareRideShadows(rider:T.Object3D,x:number,z:number,warmCrossing=false){
   const wasPreparing=scenePreparing;
   scenePreparing=true;
   try{
-   const {y,headingY}=core.current;
-   const sin=Math.sin(headingY),cos=Math.cos(headingY);
    const view=new T.PerspectiveCamera(60,camera.aspect,.08,22000);
-   if(startup.choice.camera==='fpp'){
-    view.position.set(x,y+1.8,z);
-    view.lookAt(x+15*sin,y+.3,z+15*cos);
-   }else{
-    view.position.set(x-4.8*sin,y+3.1,z-4.8*cos);
-    view.lookAt(x,y+1.4,z);
+   const prepareView=async(x:number,y:number,z:number,heading:number)=>{
+    const sin=Math.sin(heading),cos=Math.cos(heading);
+    if(startup.choice.camera==='fpp'){
+     view.position.set(x,y+1.8,z);
+     view.lookAt(x+15*sin,y+.3,z+15*cos);
+    }else{
+     view.position.set(x-4.8*sin,y+3.1,z-4.8*cos);
+     view.lookAt(x,y+1.4,z);
+    }
+    await warmRideShadows(renderer,scene,rider,x,z,view);
+   };
+   if(warmCrossing&&graphics.value==='high'&&nativeAppleMetalRenderer(gpuName)){
+    // The island-side bridge spans are outside the Jefferson launch view.
+    // Warm their real screen and depth pipelines before the first ride.
+    const {a,b}=data.bridge;
+    const dx=b[0]-a[0],dz=b[1]-a[1];
+    const bridgeX=a[0]+dx*.8,bridgeZ=a[1]+dz*.8;
+    await prepareView(bridgeX,terrain.height(bridgeX,bridgeZ),bridgeZ,Math.atan2(dx,dz));
    }
-   await warmRideShadows(renderer,scene,rider,x,z,view);
+   const {y,headingY}=core.current;
+   await prepareView(x,y,z,headingY);
   }
   finally{scenePreparing=wasPreparing;resetFrameClock=true;}
  }
@@ -512,7 +523,7 @@ const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreferen
  // Pack immutable display buffers at this preparation boundary. Meshes keep
  // their authored materials, transforms and draw order; later assets fall back.
  const geometryBuffers=installSharedGeometryBuffers(renderer,scene,{rendererOutput});geometryBuffers.prepare();
- status('Preparing rider shadows');await yieldStartupTask();await prepareRideShadows(hero.root,core.current.x,core.current.z);status('Preparing the first frame');let prepared=false,starting=false;start.onclick=async()=>{if(starting||!prepared)return;starting=true;const choice=startup.choice;natureAudio.unlock();clear();startup.preparing();try{
+ status('Preparing rider shadows');await yieldStartupTask();await prepareRideShadows(hero.root,core.current.x,core.current.z,true);status('Preparing the first frame');let prepared=false,starting=false;start.onclick=async()=>{if(starting||!prepared)return;starting=true;const choice=startup.choice;natureAudio.unlock();clear();startup.preparing();try{
   status('Preparing handheld camera shaders');
   await photo?.prepareCarriedCamera(renderer,camera);
   if(isCadillacVariant(choice.vehicle)){
