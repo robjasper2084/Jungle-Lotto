@@ -386,7 +386,13 @@ export function installSharedGeometryBuffers(renderer:T.WebGLRenderer,scene:T.Sc
       if(!scopes.length&&disposeRequested)finishDispose();
     }
   };
-  const onLost=()=>{lost=true;counts.contextLosses++;};
+  const onLost=()=>{
+    lost=true;counts.contextLosses++;
+    // Three recreates its WebGL caches on restoration but leaves geometry
+    // disposal listeners attached. Retire this generation while GL is lost,
+    // retaining the CPU pages for normal reupload into the restored context.
+    for(const page of pages)page.geometry.dispose();
+  };
   const onRestored=()=>{
     lost=false;counts.contextRestores++;
     for(const entry of entries) {

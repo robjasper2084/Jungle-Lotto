@@ -6,6 +6,10 @@ import {createRequire} from 'node:module';
 import {dirname,resolve} from 'node:path';
 import * as T from 'three';
 import {WebGLRenderLists} from 'three/src/renderers/webgl/WebGLRenderLists.js';
+import {WebGLAttributes} from 'three/src/renderers/webgl/WebGLAttributes.js';
+import {WebGLBindingStates} from 'three/src/renderers/webgl/WebGLBindingStates.js';
+import {WebGLGeometries} from 'three/src/renderers/webgl/WebGLGeometries.js';
+import {WebGLObjects} from 'three/src/renderers/webgl/WebGLObjects.js';
 import {installSharedGeometryBuffers,registerSharedGeometryShader} from './sharedGeometryBuffers.ts';
 
 class Canvas extends EventTarget {
@@ -101,6 +105,9 @@ test('source assumptions are pinned to the reviewed Three 0.185.1 collection, bo
     'renderers/webgl/WebGLShadowMap.js':'7d69ca09821ed119d7e1db25e88ad43c2b8c7dd87e8746e1c63f8b86086b3e05',
     'renderers/webgl/WebGLRenderLists.js':'2606792964fa351876798a68317b3d8ca0fb466b5fbef5f7592ecb7f40b743b0',
     'renderers/webgl/WebGLBindingStates.js':'2cff5bf80b72044bfbd952151a5888c173048755039501921063f561261ca210',
+    'renderers/webgl/WebGLAttributes.js':'9132425f2359093927d6208ceedf7447e8157c1a3325cda45f941428b166fbf2',
+    'renderers/webgl/WebGLGeometries.js':'d04c0ef5e4ccf862867be3a00d5c4a12de1f0939f81e7d5c50c5c4dcb3bc0eff',
+    'renderers/webgl/WebGLObjects.js':'60829abba98579b02a84177ce86b3eea127a7decac487b69c70f0e3e83a1d923',
   };
   for(const [file,hash] of Object.entries(files))assert.equal(createHash('sha256').update(readFileSync(resolve(root,'src',file))).digest('hex'),hash,file);
 });
@@ -289,6 +296,74 @@ test('context loss keeps native storage and restoration reuses only unchanged so
   const f=fixture();f.draw();const before=f.handle.read().pooledCalls;f.canvas.dispatchEvent(new Event('webglcontextlost'));f.draw();assert.equal(f.handle.read().pooledCalls,before);
   f.canvas.dispatchEvent(new Event('webglcontextrestored'));f.draw();assert.equal(f.handle.read().pooledCalls,before+6);
   f.canvas.dispatchEvent(new Event('webglcontextlost'));f.meshes[0].geometry.attributes.position.array[0]+=.5;f.canvas.dispatchEvent(new Event('webglcontextrestored'));f.draw();assert.equal(f.handle.read().entries[0].fallbackReason,'source-bytes-changed-on-restore');assert.equal(f.handle.read().contextRestores,2);
+});
+
+test('lost-context retirement prevents stale native buffer and VAO deletion after repeated restoration',()=>{
+  // Actual pinned Three cache modules own all resource registration/deletion.
+  // The GL recorder only labels creation generations; it does not simulate a
+  // WebGL error or claim native rendering. Native pixels remain a separate gate.
+  const deletions=[],generations=[],pages=new Set();let serial=0,caches;
+  const gl={
+    epoch:1,lost:false,MAX_VERTEX_ATTRIBS:34921,ARRAY_BUFFER:34962,ELEMENT_ARRAY_BUFFER:34963,
+    FLOAT:5126,HALF_FLOAT:5131,UNSIGNED_SHORT:5123,SHORT:5122,UNSIGNED_INT:5125,INT:5124,BYTE:5120,UNSIGNED_BYTE:5121,
+    getParameter(parameter){assert.equal(parameter,this.MAX_VERTEX_ATTRIBS);return 16;},
+    createBuffer(){return {kind:'buffer',epoch:this.epoch,id:++serial};},
+    createVertexArray(){return {kind:'vao',epoch:this.epoch,id:++serial};},
+    deleteBuffer(resource){deletions.push({kind:'buffer',resource,lost:gl.lost,epoch:gl.epoch});},
+    deleteVertexArray(resource){deletions.push({kind:'vao',resource,lost:gl.lost,epoch:gl.epoch});},
+    bindBuffer(){},bufferData(){},bufferSubData(){},bindVertexArray(){},
+    enableVertexAttribArray(){},disableVertexAttribArray(){},vertexAttribDivisor(){},vertexAttribPointer(){},vertexAttribIPointer(){},
+  };
+  function createCaches(){
+    const info={memory:{geometries:0},render:{frame:0}},attributes=WebGLAttributes(gl);
+    const bindingStates=WebGLBindingStates(gl,attributes),geometries=WebGLGeometries(gl,attributes,info,bindingStates);
+    const objects=WebGLObjects(gl,geometries,attributes,bindingStates,info);
+    caches={info,attributes,bindingStates,geometries,objects};generations.push(caches);
+  }
+  const program=phase=>({id:phase==='shadow'?2:1,getAttributes:()=>({position:{location:0,locationSize:1},normal:{location:1,locationSize:1},uv:{location:2,locationSize:1}})});
+  const f=fixture({count:4,setup:f=>{
+    f.meshes[2].geometry.setIndex(null);f.meshes[3].geometry.setIndex(null);
+    createCaches();
+    // Native renderer registration precedes the adapter. Its restoration
+    // recreates these factories without cleaning old geometry listeners.
+    f.canvas.addEventListener('webglcontextlost',event=>event.preventDefault());
+    f.canvas.addEventListener('webglcontextrestored',createCaches);
+    f.tap=({object,geometry,material,phase})=>{
+      assert.equal(caches.objects.update(object),geometry);pages.add(geometry);
+      caches.bindingStates.setup(object,material,program(phase),geometry,geometry.index);
+    };
+  }});
+  const sources=f.meshes.map(mesh=>mesh.geometry),descriptorsBefore=f.meshes.map(sourceDescriptors);let sourceDisposals=0;
+  for(const source of sources)source.addEventListener('dispose',()=>sourceDisposals++);
+  function draw(){caches.info.render.frame++;const rows=f.draw();caches.bindingStates.resetDefaultState();return rows;}
+  const firstRows=draw();assert.equal(pages.size,2);assert.equal(f.handle.read().activeEntries,4);
+  const originals=[...pages].map(geometry=>({
+    geometry,index:geometry.index,attributes:geometry.attributes,
+    arrays:Object.values(geometry.attributes).map(a=>a.array).concat(geometry.index?[geometry.index.array]:[]),
+    bytes:Object.values(geometry.attributes).map(a=>Uint8Array.from(new Uint8Array(a.array.buffer,a.array.byteOffset,a.array.byteLength))).concat(geometry.index?[Uint8Array.from(new Uint8Array(geometry.index.array.buffer,geometry.index.array.byteOffset,geometry.index.array.byteLength))]:[]),
+  }));
+  const listenerCounts=()=>[...pages].map(geometry=>geometry._listeners?.dispose?.length??0);
+  assert.deepEqual(listenerCounts(),[1,1]);
+  for(let cycle=1;cycle<=2;cycle++){
+    gl.lost=true;f.canvas.dispatchEvent(new Event('webglcontextlost',{cancelable:true}));
+    assert.deepEqual(listenerCounts(),[0,0]);assert.equal(caches.info.memory.geometries,0);
+    assert.equal(deletions.filter(d=>d.lost&&d.kind==='buffer').length,7*cycle);
+    assert.equal(deletions.filter(d=>d.lost&&d.kind==='vao').length,4*cycle);
+    gl.epoch++;gl.lost=false;f.canvas.dispatchEvent(new Event('webglcontextrestored'));
+    assert.deepEqual(draw(),firstRows);assert.equal(pages.size,2);assert.deepEqual(listenerCounts(),[1,1]);
+    assert.equal(f.handle.read().activeEntries,4);assert.equal(f.handle.read().observerErrors,0);assertRestored(f,descriptorsBefore);
+    for(const original of originals){
+      assert.equal(original.geometry.index,original.index);assert.equal(original.geometry.attributes,original.attributes);
+      const arrays=Object.values(original.geometry.attributes).map(a=>a.array).concat(original.geometry.index?[original.geometry.index.array]:[]);
+      arrays.forEach((array,i)=>{assert.equal(array,original.arrays[i]);assert.deepEqual(new Uint8Array(array.buffer,array.byteOffset,array.byteLength),original.bytes[i]);});
+    }
+  }
+  f.handle.dispose();assertRestored(f,descriptorsBefore);assert.deepEqual(listenerCounts(),[0,0]);
+  assert.equal(sourceDisposals,0);assert.ok(generations.every(g=>g.info.memory.geometries===0));
+  assert.equal(deletions.filter(d=>!d.lost&&d.resource.epoch!==d.epoch).length,0);
+  assert.equal(deletions.filter(d=>!d.lost&&d.kind==='buffer').length,7);
+  assert.equal(deletions.filter(d=>!d.lost&&d.kind==='vao').length,4);
+  assert.equal(f.handle.read().contextLosses,2);assert.equal(f.handle.read().contextRestores,2);
 });
 
 test('detached source storage at restoration falls back without throwing from the context event',()=>{
