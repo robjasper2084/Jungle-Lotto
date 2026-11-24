@@ -85,6 +85,55 @@ test('near tree shadow updates keep both view-visible trees and offscreen caster
 const ids=(mesh:T.InstancedMesh)=>Array.from({length:mesh.count},(_,i)=>mesh.geometry.getAttribute('sourceId').getX(i));
 const streams=(mesh:T.InstancedMesh)=>[mesh.instanceMatrix,mesh.instanceColor!,...['lodWeight','canopyDensity','sourceId'].map(name=>mesh.geometry.getAttribute(name) as T.BufferAttribute)];
 
+test('near tree native render callbacks separate the unchanged shadow caster union from the beauty view',()=>{
+ const {meshes}=pair(3),near=new TreeInstanceVisibility(meshes,undefined,'near');
+ meshes.forEach(mesh=>mesh.castShadow=true);
+ fill(meshes,[translation(0,40),translation(0,-40),translation(300,-40)]);
+ near.capture();const camera=view(),reverse=view(0,4,0,100);
+ const original=meshes.map(mesh=>streams(mesh).map(attribute=>attribute.array.slice()));
+ assert.equal(near.render(camera,true),3,'sun and camera retain all three original casters');
+ for(const [m,mesh] of meshes.entries()){
+  const renderArgs=[undefined,undefined,camera,mesh.geometry,mesh.material,undefined] as unknown as Parameters<T.InstancedMesh['onBeforeRender']>;
+  const shadowArgs=[undefined,mesh,camera,camera,mesh.geometry,mesh.material,undefined] as unknown as Parameters<T.InstancedMesh['onBeforeShadow']>;
+  mesh.onBeforeShadow(...shadowArgs);assert.deepEqual(ids(mesh),[0,1,2]);
+  mesh.onBeforeRender(...renderArgs);assert.deepEqual(ids(mesh),[1],'beauty draw excludes rear and lateral shadow-only trees');
+  for(const [s,attr] of streams(mesh).entries()){
+   const stride=attr.itemSize;
+   assert.deepEqual(Array.from(attr.array.slice(0,stride)),Array.from(original[m][s].slice(stride,2*stride)),'every native instance stream follows the exact camera source ID');
+  }
+  const ray=new T.Raycaster(new T.Vector3(0,3,0),new T.Vector3(0,0,1));
+  assert(ray.intersectObject(mesh).some(h=>h.instanceId===0),'photo picking retains shadow-only source while beauty is compacted');
+  mesh.onAfterRender(...renderArgs);assert.deepEqual(ids(mesh),[0,1,2],'post-render source union is restored');
+  for(const [s,attr] of streams(mesh).entries()){
+   assert.deepEqual(attr.array,original[m][s],'post-render exact original instance bytes survive');
+   assert.deepEqual(attr.updateRanges,[{start:0,count:3*attr.itemSize}],'the full original native upload prefix is marked');
+  }
+ }
+ near.render(reverse,true);
+ for(const mesh of meshes){
+  const args=[undefined,undefined,reverse,mesh.geometry,mesh.material,undefined] as unknown as Parameters<T.InstancedMesh['onBeforeRender']>;
+  mesh.onBeforeRender(...args);assert.deepEqual(ids(mesh),[0],'opposing camera uses its own source subset');
+  mesh.onAfterRender(...args);assert.deepEqual(ids(mesh),[0,1,2]);
+ }
+});
+test('near callback shadow/view splitting is inert for far pools, invalid capture and camera-only draws',()=>{
+ const {meshes:farMeshes,visibility:far}=pair(2);
+ fill(farMeshes,[translation(0,-40),translation(0,40)]);far.capture();far.render(view());
+ assert.deepEqual(ids(farMeshes[0]),[0]);
+ const {meshes}=pair(2);meshes.forEach(mesh=>mesh.castShadow=true);
+ const near=new TreeInstanceVisibility(meshes,undefined,'near');
+ fill(meshes,[translation(0,-40),translation(0,40)]);near.capture();near.render(view());
+ const mesh=meshes[0],args=[undefined,undefined,view(),mesh.geometry,mesh.material,undefined] as unknown as Parameters<T.InstancedMesh['onBeforeRender']>;
+ const versions=streams(mesh).map(attribute=>attribute.version);
+ mesh.onBeforeRender(...args);mesh.onAfterRender(...args);
+ assert.deepEqual(ids(mesh),[0],'no shadow-only casters means no extra buffer churn');
+ assert.deepEqual(streams(mesh).map(attribute=>attribute.version),versions);
+ mesh.geometry.setAttribute('invalidLate',new T.InstancedBufferAttribute(new Float32Array(1),1));
+ fill(meshes,[translation(0,-30),translation(0,30)]);near.capture();
+ const stateBefore=mesh.instanceMatrix.array.slice();mesh.onBeforeRender(...args);mesh.onAfterRender(...args);
+ assert.deepEqual(mesh.instanceMatrix.array,stateBefore,'invalid capture never changes draw streams');
+});
+
 test('far trees compact matrix, colour, seasonal density and fade from immutable sources across views',()=>{
  const {meshes,visibility}=pair(4),matrices=[translation(0,-40),translation(0,40),translation(300,-40),translation(0,-70)];
  fill(meshes,matrices);const original=meshes.map(mesh=>streams(mesh).map(attribute=>attribute.array.slice()));

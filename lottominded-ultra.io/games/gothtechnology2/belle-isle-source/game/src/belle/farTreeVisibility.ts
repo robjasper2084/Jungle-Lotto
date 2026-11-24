@@ -107,6 +107,10 @@ export class TreeInstanceVisibility {
  private readonly renderProbe?:NatureRenderProbe;
  private count=0;private shown=0;private ready=false;
  private indices=new Uint32Array(0);private bounds=new Float64Array(0);
+ // Native shadow pass still receives the full conservative view+sun union.
+ // Only the main beauty pass needs the camera-visible subset. These indices
+ // refer to the immutable, fully selected attribute snapshots.
+ private colorIndices=new Uint32Array(0);private colorCount=0;
  private readonly matrix=new T.Matrix4();private readonly combined=new T.Matrix4();
  private readonly projection=new T.Matrix4();private readonly frustum=new T.Frustum();
  private readonly sphere=new T.Sphere();private readonly union=new T.Sphere();
@@ -126,13 +130,45 @@ export class TreeInstanceVisibility {
    // Camera compaction is render-only. Picking and photo occlusion retain
    // all selected sources and their original instance IDs in any direction.
    mesh.raycast=(ray,hits)=>{
-    if(!this.ready||!part.matrix||this.count===this.shown)return raycast.call(mesh,ray,hits);
+    if(!this.ready||!part.matrix||(this.count===this.shown&&mesh.count===this.count))return raycast.call(mesh,ray,hits);
     const display=mesh.instanceMatrix.array,count=mesh.count;
     try{
      mesh.instanceMatrix.array=part.matrix.source;mesh.count=this.count;
      raycast.call(mesh,ray,hits);
     }finally{mesh.instanceMatrix.array=display;mesh.count=count;}
    };
+  }
+  // The renderer draws directional shadows before the main scene. Leave the
+  // exact original conservative shadow set bound through the shadow callback;
+  // during the beauty callback submit only camera-visible instances. Restore
+  // all authored streams immediately afterward for photo raycasts, subsequent
+  // cameras and the next shadow pass. No material/shader/LOD/geometry changes.
+  if(pool==='near')for(const part of this.parts){
+   const mesh=part.mesh,helper=this;
+   const oldBefore=mesh.onBeforeRender,oldAfter=mesh.onAfterRender,oldShadow=mesh.onBeforeShadow;
+   mesh.onBeforeShadow=function(...args){oldShadow.apply(this,args);
+    if(helper.ready&&helper.colorCount<helper.shown&&mesh.count!==helper.shown)helper.writeSelection(part,helper.indices,helper.shown);
+   };
+   mesh.onBeforeRender=function(...args){oldBefore.apply(this,args);
+    if(helper.ready&&helper.colorCount<helper.shown)helper.writeSelection(part,helper.colorIndices,helper.colorCount);
+   };
+   mesh.onAfterRender=function(...args){
+    try{if(helper.ready&&helper.colorCount<helper.shown)helper.writeSelection(part,helper.indices,helper.shown);}
+    finally{oldAfter.apply(this,args);}
+   };
+  }
+ }
+ /** Rebind precisely the original selected matrix, tint and seasonal attributes.
+  * Every stream is switched as one draw set, with a full upload prefix, avoiding
+  * stale native buffers on the next light or camera render. */
+ private writeSelection(part:Part,indices:Uint32Array,count:number){
+  const mesh=part.mesh;mesh.count=count;
+  for(const {attribute,source} of part.streams){
+   const stride=attribute.itemSize,target=attribute.array;
+   for(let i=0;i<count;i++)for(let n=0;n<stride;n++)target[i*stride+n]=source[indices[i]*stride+n];
+   attribute.clearUpdateRanges();
+   if(count)attribute.addUpdateRange(0,count*stride);
+   attribute.needsUpdate=true;
   }
  }
  get sourceCount(){return this.count;}
@@ -144,6 +180,7 @@ export class TreeInstanceVisibility {
   if(!Number.isSafeInteger(count)||count<0||this.parts.some(({mesh})=>mesh.count!==count||(mesh.castShadow&&this.pool==='far')||mesh.morphTexture))return;
   const hasSourceIds=sourceIds!=null&&Number.isSafeInteger(sourceIds.length)&&sourceIds.length>=count;
   if(this.indices.length<count){this.indices=new Uint32Array(count);this.bounds=new Float64Array(count*4);}
+  if(this.pool==='near'&&this.colorIndices.length<count)this.colorIndices=new Uint32Array(count);
   let reuseLocalBounds=true,firstPart=true;
   for(const {mesh} of this.parts){
    if(!mesh.matrixWorld.equals(IDENTITY_WORLD))reuseLocalBounds=false;
@@ -204,7 +241,7 @@ export class TreeInstanceVisibility {
    else mesh.boundingSphere.set(new T.Vector3(),Infinity);
    firstPart=false;
   }
-  this.count=this.shown=count;
+  this.count=this.shown=count;this.colorCount=count;
   for(let i=0;i<count;i++)this.indices[i]=i;
   this.ready=true;
   if(reuseLocalBounds){for(const part of this.parts)part.world.set(part.mesh.matrixWorld.elements);}
@@ -247,17 +284,20 @@ export class TreeInstanceVisibility {
   }
   const e=camera.matrixWorld.elements,cameraMargin=16*FLOAT32_EPSILON*(Math.max(Math.abs(e[12]),Math.abs(e[13]),Math.abs(e[14]))+1);
   const shadowView=typeof shadow==='object'?shadow:undefined;
-  let kept=0,changed=false;
+  let kept=0,colorKept=0,changed=false;
   for(let i=0;i<this.count;i++){
    const j=i*4,radius=this.bounds[j+3];
    this.sphere.center.set(this.bounds[j],this.bounds[j+1],this.bounds[j+2]);this.sphere.radius=radius+cameraMargin;
-   if(cull&&Number.isFinite(radius)&&!this.frustum.intersectsSphere(this.sphere)){
+   const inCamera=!cull||!Number.isFinite(radius)||this.frustum.intersectsSphere(this.sphere);
+   if(this.pool==='near'&&inCamera)this.colorIndices[colorKept++]=i;
+   if(!inCamera){
     this.sphere.radius=radius+(shadowView?.margin??0);
     if(!shadowView?.frustum.intersectsSphere(this.sphere))continue;
    }
    if(this.indices[kept]!==i)changed=true;
    this.indices[kept++]=i;
   }
+  this.colorCount=this.pool==='near'?colorKept:kept;
   changed||=kept!==this.shown;
   if(changed){
    if(this.renderProbe?.active)this.renderProbe.compact();
