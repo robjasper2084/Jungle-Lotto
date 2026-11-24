@@ -3,14 +3,13 @@ import {observeLoop,type ManualLoopProbe,type LoopToken,type LoopOutcome} from '
 import {softwareWebGLRenderer} from './worldPerformancePolicy.ts';
 
 export type GpuFrameCapacity=1|2|3;
-export interface GpuFramePacingOptions {capacity?:GpuFrameCapacity;}
-/** Keep software and unknown descriptions conservative. Only the existing
- * Apple pacing path opts into overlap on a positively identified GPU backend. */
-export function gpuFrameCapacityForRenderer(description:unknown):GpuFrameCapacity {
- if(typeof description!=='string'||softwareWebGLRenderer(description))return 1;
- return /\bANGLE Metal Renderer:\s*Apple\b|\bApple [MA][1-9]\d*\b/i.test(description)?3:1;
+export type GpuFramePacingMode='fence'|'browser';
+export interface GpuFramePacingOptions {capacity?:GpuFrameCapacity;mode?:GpuFramePacingMode;}
+/** Only the positively identified native ANGLE Metal canvas path is eligible.
+ * Software backends and other Apple descriptions keep their existing policy. */
+export function nativeAppleMetalRenderer(description:unknown):boolean {
+ return typeof description==='string'&&!softwareWebGLRenderer(description)&&/\bANGLE Metal Renderer:\s*Apple\b/i.test(description);
 }
-
 /** Bound queued GPU work to complete animation callbacks, including every
  * split-screen view. Never block the main thread with finish()/a nonzero wait.
  * This is rendering backpressure, not a new simulation clock or readiness test.
@@ -68,7 +67,7 @@ export interface LoopProbeBinding {
  coverage():{installed:boolean;status:'installed'|'unavailable'|'detached'};
  detach():void;
 }
-/** Attach to the existing gate; do not add another scheduler or native wrapper. */
+/** Attach to the existing animation wrapper; never add another scheduler. */
 export function attachGpuFramePacingProbe(target:object,probe:ManualLoopProbe):LoopProbeBinding {
  const binding=loopBindings.get(target);let detached=false;
  const attached=!!binding&&!binding.probe;
@@ -84,12 +83,17 @@ export function attachGpuFramePacingProbe(target:object,probe:ManualLoopProbe):L
  */
 export interface GpuFramePacingDiagnostics {
  installed:boolean;
- capacity:GpuFrameCapacity;
- pendingCallbacks:number;
- completedCallbacks:number;
- peakPendingCallbacks:number;
+ mode:GpuFramePacingMode;
+ capacity:GpuFrameCapacity|null;
+ pendingCallbacks:number|null;
+ completedCallbacks:number|null;
+ peakPendingCallbacks:number|null;
  animationCallbacks:number;
  executedCallbacks:number;
+ /** Non-XR CPU callbacks that changed Three's render counter while the loop
+  * remained active. Excludes stopped/disposed callbacks; not GPU completion/presentation. */
+ renderedCallbacks:number;
+ /** Callbacks with an application fence; zero in browser mode says nothing about GPU completion. */
  submittedCallbacks:number;
  xrCallbacks:number;
  pendingFenceSkippedCallbacks:number;
@@ -111,9 +115,13 @@ export function installGpuFramePacing(target:object,options:GpuFramePacingOption
  const existing=installed.get(candidate);if(existing)return existing;
  if(typeof candidate.getContext!=='function'||typeof candidate.setAnimationLoop!=='function'||typeof candidate.dispose!=='function'||!candidate.xr||!candidate.info)return ()=>{};
  const renderer=candidate as Renderer,gl=renderer.getContext() as WebGL2RenderingContext;
- if(typeof gl.fenceSync!=='function'||typeof gl.clientWaitSync!=='function')return ()=>{};
- const gate=new GpuFrameGate(gl,options.capacity),originalSet=renderer.setAnimationLoop,originalDispose=renderer.dispose;
- const observed:GpuFramePacingDiagnostics={installed:true,capacity:gate.capacity,get pendingCallbacks(){return gate.pendingCount;},get completedCallbacks(){return gate.completed;},get peakPendingCallbacks(){return gate.peakPending;},animationCallbacks:0,executedCallbacks:0,submittedCallbacks:0,xrCallbacks:0,pendingFenceSkippedCallbacks:0,contextLostSkippedCallbacks:0,pendingFenceResumptions:0,pendingFenceObservedSpanMs:0,longestPendingFenceObservedSpanMs:0,currentPendingFenceObservedSpanMs:0};
+ const mode=options.mode??'fence';
+ if(mode!=='fence'&&mode!=='browser')throw new RangeError('GPU frame pacing mode must be fence or browser.');
+ if(typeof gl.isContextLost!=='function'||(mode==='fence'&&(typeof gl.fenceSync!=='function'||typeof gl.clientWaitSync!=='function')))return ()=>{};
+ const gate=mode==='fence'?new GpuFrameGate(gl,options.capacity):null,originalSet=renderer.setAnimationLoop,originalDispose=renderer.dispose;
+ // Browser mode owns no completion fence. Unknown browser queue/completion
+ // observations stay null; callback delivery is never reported as GPU retirement.
+ const observed:GpuFramePacingDiagnostics={installed:true,mode,capacity:gate?.capacity??null,get pendingCallbacks(){return gate?.pendingCount??null;},get completedCallbacks(){return gate?.completed??null;},get peakPendingCallbacks(){return gate?.peakPending??null;},animationCallbacks:0,executedCallbacks:0,renderedCallbacks:0,submittedCallbacks:0,xrCallbacks:0,pendingFenceSkippedCallbacks:0,contextLostSkippedCallbacks:0,pendingFenceResumptions:0,pendingFenceObservedSpanMs:0,longestPendingFenceObservedSpanMs:0,currentPendingFenceObservedSpanMs:0};
  observations.set(candidate,observed);
  const loopBinding:{probe?:ManualLoopProbe}={};loopBindings.set(candidate,loopBinding);
  let lastPendingTimestamp:number|undefined;
@@ -124,13 +132,13 @@ export function installGpuFramePacing(target:object,options:GpuFramePacingOption
  const endPending=(now?:number)=>{if(lastPendingTimestamp!==undefined&&now!==undefined)observePending(now);lastPendingTimestamp=undefined;observed.currentPendingFenceObservedSpanMs=0;};
  // A suspended tab can lose and restore WebGL between animation callbacks.
  // Once the context changes, a sync from the old context cannot be polled.
- const resetContext=()=>{gate.forgetLostContext();endPending();};
+ const resetContext=()=>{gate?.forgetLostContext();endPending();};
  renderer.domElement?.addEventListener('webglcontextlost',resetContext);
  renderer.domElement?.addEventListener('webglcontextrestored',resetContext);
  let stopped=false,loopActive=false;
  const set:Renderer['setAnimationLoop']=callback=>{
   loopActive=callback!==null;
-  if(!callback){gate.clear();endPending();originalSet.call(renderer,null);return;}
+  if(!callback){gate?.clear();endPending();originalSet.call(renderer,null);return;}
   originalSet.call(renderer,(now,frame)=>{
    if(stopped||!loopActive)return;
    observed.animationCallbacks++;
@@ -138,15 +146,17 @@ export function installGpuFramePacing(target:object,options:GpuFramePacingOption
    let outcome:LoopOutcome='error';
    try{
     if(renderer.xr.isPresenting){
-     gate.clear();endPending(now);observed.xrCallbacks++;observed.executedCallbacks++;
+     gate?.clear();endPending(now);observed.xrCallbacks++;observed.executedCallbacks++;
      const body=observeLoop(probe,value=>value.beginScope(loop,'callbackBodyCpuMs'));
      try{callback(now,frame);}finally{observeLoop(probe,value=>value.endScope(body));}
      outcome='xr';return;
     }
     const readyTiming=observeLoop(probe,value=>value.beginScope(loop,'gateReadyCpuMs'));let ready:boolean;
-    try{ready=gate.ready();}finally{observeLoop(probe,value=>value.endScope(readyTiming));}
+    // Preserve the original pre-body loss guard even when the browser owns pacing.
+    // Skipping a lost context never rewrites the game's clock or profile eligibility.
+    try{ready=gate?gate.ready():!gl.isContextLost();}finally{observeLoop(probe,value=>value.endScope(readyTiming));}
     if(!ready){
-     if(gate.pending){observed.pendingFenceSkippedCallbacks++;observePending(now);outcome='pending-fence';}
+     if(gate?.pending){observed.pendingFenceSkippedCallbacks++;observePending(now);outcome='pending-fence';}
      else{observed.contextLostSkippedCallbacks++;endPending(now);outcome='context-lost';}
      return;
     }
@@ -158,16 +168,19 @@ export function installGpuFramePacing(target:object,options:GpuFramePacingOption
     const body=observeLoop(probe,value=>value.beginScope(loop,'callbackBodyCpuMs'));
     try{try{callback(now,frame);}finally{observeLoop(probe,value=>value.endScope(body));}}
     finally{if(!stopped&&loopActive&&!renderer.xr.isPresenting&&(didRender=renderer.info.render.frame!==before)){
-     const submittedTiming=observeLoop(probe,value=>value.beginScope(loop,'gateSubmittedCpuMs'));
-     try{if(gate.submitted(probe,loop))observed.submittedCallbacks++;}
-     finally{observeLoop(probe,value=>value.endScope(submittedTiming));}
+     observed.renderedCallbacks++;
+     if(gate){
+      const submittedTiming=observeLoop(probe,value=>value.beginScope(loop,'gateSubmittedCpuMs'));
+      try{if(gate.submitted(probe,loop))observed.submittedCallbacks++;}
+      finally{observeLoop(probe,value=>value.endScope(submittedTiming));}
+     }
     }}
     outcome=didRender===false?'no-draw':'executed';
    }finally{observeLoop(probe,value=>value.finishCallback(loop,outcome));}
   });
  };
  const cleanup=()=>{
-  if(stopped)return;stopped=true;loopActive=false;gate.clear();endPending();observed.installed=false;installed.delete(candidate);
+  if(stopped)return;stopped=true;loopActive=false;gate?.clear();endPending();observed.installed=false;installed.delete(candidate);
   renderer.domElement?.removeEventListener('webglcontextlost',resetContext);
   renderer.domElement?.removeEventListener('webglcontextrestored',resetContext);
   observeLoop(loopBinding.probe,value=>value.cancelCallback());loopBinding.probe=undefined;loopBindings.delete(candidate);
