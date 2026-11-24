@@ -11,13 +11,19 @@ const forbiddenCategories=[
   'disabled-by-default-gpu.device','disabled-by-default-viz.gpu_composite_time','disabled-by-default-gpu.service',
   'disabled-by-default-devtools.screenshot','disabled-by-default-devtools.timeline.screenshot','disabled-by-default-devtools.video_screenshot'
 ];
+const categoryNames=group=>String(group??'').split(',').map(name=>name.trim()).filter(Boolean);
 export function selectHostTraceCategories(available){
-  const supported=new Set(available);
-  const included=requestedCategories.filter(name=>supported.has(name));
-  assert(included.includes('blink.user_timing'),'Trace must support exact page clock markers');
-  assert(included.includes('gpu'),'GPU host/service events are required');
-  assert(included.some(name=>name==='toplevel'||name==='renderer.scheduler'),'Host scheduling events are required');
-  return {included,excluded:[...forbiddenCategories],missing:requestedCategories.filter(name=>!supported.has(name))};
+  assert(Array.isArray(available)&&available.every(group=>typeof group==='string'),'Trace category discovery must return string groups');
+  // Chromium returns known category groups, which may contain comma-separated
+  // names and can change as code paths are reached. This is not a capability
+  // test for a page mark that has not executed yet. Request only this fixed
+  // allowlist; the exported events and exact clock marks decide coverage.
+  const normalizedDiscoveredCategories=[...new Set(available.flatMap(categoryNames))].sort();
+  const discovered=new Set(normalizedDiscoveredCategories);
+  return {discoveredGroups:[...available],normalizedDiscoveredCategories,
+    requested:[...requestedCategories],included:[...requestedCategories],excluded:[...forbiddenCategories],
+    missing:requestedCategories.filter(name=>!discovered.has(name)),
+    note:'Discovery is an advisory snapshot of known category groups. Missing means unadvertised in that snapshot, not unsupported. Explicit requests are verified by actual exported host/GPU events and retained page clock marks.'};
 }
 export async function drainTraceStream(session,handle,path,maxBytes=256*1024*1024){
   let file;
@@ -52,17 +58,24 @@ async function pageClockMarker(page,name){
 export function summarizeHostTrace(trace,clockMarkers){
   assert(Array.isArray(trace.traceEvents),'JSON trace events are required');
   const categories={},phases={},processes={},threads={},durationEvents=[],gpuNames=new Set();
+  const forbiddenObserved=new Set();let gpuHostEvents=0,hostSchedulingEvents=0,forbiddenEvents=0;
   const matches=clockMarkers.map(marker=>({marker,events:[]}));
   let firstTs=Infinity,lastTs=-Infinity;
   for(const event of trace.traceEvents){
+    const names=new Set(categoryNames(event.cat));
     categories[event.cat??'']=(categories[event.cat??'']??0)+1;
     phases[event.ph??'']=(phases[event.ph??'']??0)+1;
     if(event.ph==='M'&&event.name==='process_name')processes[event.pid]=event.args?.name??null;
     if(event.ph==='M'&&event.name==='thread_name')threads[event.pid+':'+event.tid]=event.args?.name??null;
     if(Number.isFinite(event.ts)){firstTs=Math.min(firstTs,event.ts);lastTs=Math.max(lastTs,event.ts+(event.dur??0));}
-    if(String(event.cat).includes('gpu')&&gpuNames.size<200)gpuNames.add(event.name);
+    if(typeof event.ph==='string'&&event.ph!=='M'&&Number.isFinite(event.ts)){
+      if(names.has('gpu')){gpuHostEvents++;if(gpuNames.size<200)gpuNames.add(event.name);}
+      if(names.has('toplevel')||names.has('renderer.scheduler'))hostSchedulingEvents++;
+      const forbidden=forbiddenCategories.filter(name=>names.has(name));
+      if(forbidden.length){forbiddenEvents++;for(const name of forbidden)forbiddenObserved.add(name);}
+    }
     for(const match of matches){
-      if(!String(event.cat).includes('blink.user_timing'))continue;
+      if(event.ph==='M'||!names.has('blink.user_timing'))continue;
       if(event.name===match.marker.name||event.args?.markName===match.marker.name||event.args?.data?.markName===match.marker.name)
         match.events.push({ts:event.ts,pid:event.pid,tid:event.tid,phase:event.ph,name:event.name});
     }
@@ -83,9 +96,12 @@ export function summarizeHostTrace(trace,clockMarkers){
   const alignmentToleranceMs=1;
   const alignmentValid=bothMarkersRetained&&Number.isFinite(alignment[0].timeOriginMs)&&alignment[0].timeOriginMs===alignment[1].timeOriginMs&&
     alignment[1].startTimeMs>alignment[0].startTimeMs&&Math.abs(clockOffsetDifferenceMs)<=alignmentToleranceMs;
+  const eventCoverage={gpuHostEvents,hostSchedulingEvents,forbiddenEvents,forbiddenObservedCategories:[...forbiddenObserved].sort(),
+    complete:gpuHostEvents>0&&hostSchedulingEvents>0&&forbiddenEvents===0,
+    note:'Counts require actual timestamped non-metadata events with exact category names, including comma-separated groups. Advertised category names alone do not establish coverage.'};
   return {eventCount:trace.traceEvents.length,categories,phases,processes,threads,gpuEventNames:[...gpuNames],
     firstTraceTimeUs:Number.isFinite(firstTs)?firstTs:null,lastTraceTimeUs:Number.isFinite(lastTs)?lastTs:null,
-    alignment,bothMarkersRetained,alignmentValid,alignmentToleranceMs,
+    alignment,bothMarkersRetained,alignmentValid,alignmentToleranceMs,eventCoverage,
     clockOffsetDifferenceMs,largestCompleteHostEvents:durationEvents,
     note:'Trace timestamps are monotonic microseconds. Subtract the measured offset to align with the original performance.now ledger; do not subtract epoch timeOrigin or rescale. Listed X durations are overlapping host/service spans, not GPU execution times. B/E and async spans remain in the raw trace.'};
 }
@@ -95,7 +111,7 @@ export async function prepareHostServiceTrace(browser,page,caseName){
     on:(method,listener)=>native.on(method,listener),once:(method,listener)=>native.once(method,listener),
     detach:()=>deadline(native.detach(),'CDP detach',5000)};
   try{
-  const metadata={version:1,status:'preparing',scope:'CPU host/service submission and browser scheduling; not GPU execution timing',
+  const metadata={version:2,status:'preparing',scope:'CPU host/service submission and browser scheduling; not GPU execution timing',
     browser:await session.send('Browser.getVersion'),system:await session.send('SystemInfo.getInfo'),
     processesAtStart:await session.send('SystemInfo.getProcessInfo'),clockMarkers:[],bufferUsage:{samples:0,maxPercentFull:0,maxEventCount:0},
     note:'A separate query-off case starts this trace after 60 seconds of genuine held input. GPU device timers, per-command service tracing, screenshots, sampling and systrace are disabled. The late traced interval includes trace overhead and is not interchangeable with the untraced pair.'};
@@ -144,7 +160,8 @@ export async function prepareHostServiceTrace(browser,page,caseName){
       metadata.summary=summarizeHostTrace(JSON.parse(decoded.toString('utf8')),metadata.clockMarkers);
       metadata.completeInterval=recording&&completion.dataLossOccurred===false&&metadata.bufferUsage.maxPercentFull<1&&metadata.summary.bothMarkersRetained;
       metadata.alignmentValid=metadata.summary.alignmentValid;
-      metadata.status=metadata.completeInterval&&metadata.alignmentValid?'complete':'incomplete';
+      metadata.eventCoverage=metadata.summary.eventCoverage;
+      metadata.status=metadata.completeInterval&&metadata.alignmentValid&&metadata.eventCoverage.complete?'complete':'incomplete';
       return metadata;
     }catch(error){
       metadata.status='failed';metadata.error=String(error?.stack??error);

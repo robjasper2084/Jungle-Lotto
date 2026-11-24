@@ -14,6 +14,7 @@ concurrency:
 
 env:
   PRODUCT_PARENT_SHA: b1bcaf641c612890d118b4af698e01ccfccdc0b3
+  EXPECTED_PARENT_SHA: d23083f7c9a365ba9d9e15c585563ab78828c94f
   INTEGRATED_MAIN_SHA: 3e68163e94d173395cf7a2f47bd37859cf1a3f47
   GAME_PATH: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
   RUNTIME_PATH: lottominded-ultra.io/games/gothtechnology2
@@ -52,7 +53,7 @@ jobs:
           const game=process.cwd(),out=resolve(process.env.RUNNER_TEMP,'gpu-build'),hash=b=>createHash('sha256').update(b).digest('hex');
           const commit=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();assert.equal(commit,process.env.GITHUB_SHA);
           const tree=execFileSync('git',['rev-parse','HEAD^{tree}'],{encoding:'utf8'}).trim();
-          const parent=execFileSync('git',['rev-parse','HEAD^'],{encoding:'utf8'}).trim();assert.equal(parent,process.env.PRODUCT_PARENT_SHA);
+          const parent=execFileSync('git',['rev-parse','HEAD^'],{encoding:'utf8'}).trim();assert.equal(parent,process.env.EXPECTED_PARENT_SHA);
           const sourceFiles=['scripts/sustained-ride-profile.mjs','scripts/manual-ride-diagnostic.mjs','scripts/host-service-trace.mjs','scripts/coop-static-server.mjs','package-lock.json','../../package-lock.json',
             ...['main.ts','gpuRenderDiagnostics.ts','pipelineDiagnostics.ts','gpuFramePacing.ts','loopDiagnostics.ts','renderDiagnostics.ts','renderSubmissionDiagnostics.ts','rideProfile.ts','rideProfileStats.ts','rideProfileBuild.ts'].map(x=>'src/belle/'+x)];
           const sources=Object.fromEntries(await Promise.all(sourceFiles.map(async path=>[path,hash(await readFile(resolve(game,path)))])));
@@ -61,7 +62,7 @@ jobs:
             const path=resolve(dir,entry.name);if(entry.isDirectory())await walk(path);else{assert(entry.isFile());const bytes=await readFile(path);files.push({path:relative(resolve(game,'dist'),path).split(sep).join('/'),bytes:bytes.length,sha256:hash(bytes)});}
           }}await walk(resolve(game,'dist'));files.sort((a,b)=>a.path.localeCompare(b.path));
           const metadata={version:1,repository:'robjasper2084/Jungle-Lotto',label:'candidate',commit,tree,workflowCommit:process.env.GITHUB_SHA,
-            integratedProductCommit:parent,integratedMainCommit:process.env.INTEGRATED_MAIN_SHA,
+            parentCommit:parent,integratedProductCommit:process.env.PRODUCT_PARENT_SHA,integratedMainCommit:process.env.INTEGRATED_MAIN_SHA,
             buildId:'pipeline-'+process.env.GITHUB_RUN_ID+'-'+commit,builtAt:new Date().toISOString(),node:process.version,sources,files};
           await mkdir(out,{recursive:true});await cp(resolve(game,'dist'),resolve(out,'dist'),{recursive:true});
           await writeFile(resolve(out,'manual-diagnostic-build.json'),JSON.stringify(metadata,null,2)+'\n');
@@ -75,7 +76,7 @@ jobs:
           retention-days: 2
 
   attribution:
-    name: Native Metal matched query controls and late host trace
+    name: Native Metal late host trace after collector repair
     needs: build
     runs-on: macos-15
     timeout-minutes: 45
@@ -101,13 +102,13 @@ jobs:
         run: |
           npm ci
           npx playwright install chrome
-      - name: Capture the unchanged full scene with matched query controls
+      - name: Capture the unchanged full scene with repaired late host trace
         run: |
           mkdir -p pipeline-evidence
           node --input-type=module <<'NODE'
           import {spawnSync} from 'node:child_process';
           import {readFileSync,writeFileSync} from 'node:fs';
-          const cases=[['A1','off',false],['B1','frame',false],['A2','off',true]],receipts=[];
+          const cases=[['A2','off',true]],receipts=[];
           for(const [name,condition,trace] of cases){
             const args=[process.env.GAME_PATH+'/scripts/manual-ride-diagnostic.mjs',
               '--game',process.env.GAME_PATH,'--build','gpu-build','--output','pipeline-evidence/'+name,
@@ -125,7 +126,7 @@ jobs:
               gpuQueries:report?.gpuTiming?.counts,hostTraceStatus:report?.hostServiceTrace?.status,
               errors:report?.errors,probeErrors:report?.probeErrors,failedRequests:report?.failedRequests});
             writeFileSync('pipeline-evidence/comparison.json',JSON.stringify({version:1,source:process.env.GITHUB_SHA,receipts,
-              note:'A1 and B1 use one identical full-quality build with the same original-fence observer. Only B1 has sparse whole-callback queries (every32 eligible callbacks). A2 is a separate query-off trace case; tracing starts after60 seconds and includes observer overhead. No case substitutes for strict release acceptance.'},null,2)+'\n');
+              note:'Only the previously failed A2 host-trace collection is repeated after repairing category discovery. Original A1/B1 results and the invalid A2 are retained in run45285850982. Game source, full quality, input, and original performance outcomes are unchanged. Trace begins after60 seconds and includes overhead. This diagnostic does not substitute for strict release acceptance.'},null,2)+'\n');
           }
           console.log('BELLE_PIPELINE_COMPARISON '+JSON.stringify(receipts));
           process.exit(receipts.every(row=>row.status===0&&row.valid===true)?0:1);
