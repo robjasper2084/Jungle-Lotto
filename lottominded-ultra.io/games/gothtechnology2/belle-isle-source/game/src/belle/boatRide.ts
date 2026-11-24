@@ -13,8 +13,8 @@ import {BOAT_PROFILES,type BoatKind} from './boatProfiles.ts';
 import {speedMph} from './speedUnits.ts';
 import type {ParkTerrain} from './terrain.ts';
 import type {FlightObstacle} from './hoverController.ts';
-type Hooks={allowed:()=>boolean;enter:()=>void;exit:()=>void;night:()=>number};
-function prepareBoat(group:T.Object3D,hero:T.Object3D){
+type Hooks={allowed:()=>boolean;enter:()=>void;exit:()=>void;night:()=>number;prepareMaterial?:Parameters<typeof applyRealisticMaterials>[2]};
+function prepareBoat(group:T.Object3D,hero:T.Object3D,prepareBase?:Parameters<typeof applyRealisticMaterials>[2]){
  const required=(name:string)=>{const node=group.getObjectByName(name);if(!node)throw Error('Boat asset is missing '+name);return node;};
  const eye=required('Driver_Eye'),hip=required('Driver_Hip'),wheel=required('Helm_Wheel'),panel=required('Cockpit_Display');if(!(panel instanceof T.Mesh))throw Error('Boat instrument panel must be a mesh');
  group.traverse(o=>{if(o instanceof T.Mesh){o.castShadow=true;o.receiveShadow=true;for(const m of Array.isArray(o.material)?o.material:[o.material])if(m instanceof T.MeshStandardMaterial&&m.transparent){m.depthWrite=false;m.side=T.DoubleSide;}}});
@@ -36,7 +36,7 @@ function prepareBoat(group:T.Object3D,hero:T.Object3D){
   const upper=rider.getObjectByName(side+'Arm'),knee=rider.getObjectByName(side+'ForeArm'),foot=rider.getObjectByName(side+'Hand');
   return upper&&knee&&foot?[{upper,knee,foot,sign:index===0?1:-1,upperRest:upper.quaternion.clone(),kneeRest:knee.quaternion.clone()}]:[];
  });
- const lamps=['Nav_Port','Nav_Starboard'].map(required),cockpit=new BoatCockpit(panel);applyRealisticMaterials(group,'boat');const jets=new BoatJets(group);return{group,rider,wheel,eye,lamps,cockpit,arms,jets};
+ const lamps=['Nav_Port','Nav_Starboard'].map(required),cockpit=new BoatCockpit(panel);applyRealisticMaterials(group,'boat',prepareBase);const jets=new BoatJets(group);return{group,rider,wheel,eye,lamps,cockpit,arms,jets};
 }
 export class BoatRide{
  riding=false;private kind:BoatKind='hydroplane';private sims:Record<BoatKind,BoatController>;private boats:Record<BoatKind,ReturnType<typeof prepareBoat>>;
@@ -44,7 +44,7 @@ export class BoatRide{
  private keys=new Set<string>();private hud=document.createElement('section');private info=document.createElement('output');private telemetry=document.createElement('div');private nextHud=0;private reduced=false;private spray:BoatSpray;private trail:BoatWake;
  get sim(){return this.sims[this.kind];}private get vessel(){return this.boats[this.kind];}
  constructor(scene:T.Scene,terrain:ParkTerrain,hero:T.Object3D,private hooks:Hooks,assets:Record<BoatKind,T.Object3D>,traffic?:FlightObstacle){
-  this.sims={offshore:new BoatController(terrain,traffic,'offshore'),hydroplane:new BoatController(terrain,traffic,'hydroplane')};this.boats={offshore:prepareBoat(assets.offshore,hero),hydroplane:prepareBoat(assets.hydroplane,hero)};
+  this.sims={offshore:new BoatController(terrain,traffic,'offshore'),hydroplane:new BoatController(terrain,traffic,'hydroplane')};this.boats={offshore:prepareBoat(assets.offshore,hero,hooks.prepareMaterial),hydroplane:prepareBoat(assets.hydroplane,hero,hooks.prepareMaterial)};
   for(const kind of ['offshore','hydroplane'] as const){const value=this.boats[kind];scene.add(value.group);const berth=CLUB_BERTHS[kind],u=kind==='offshore'?-17.5:17,pierU=kind==='offshore'?-22.2:22.2,points:T.Vector3[]=[];for(const v of [20,28]){const b=clubWorld(u,v),p=clubWorld(pierU,v);points.push(new T.Vector3(b.x,.95,b.z),new T.Vector3(p.x,1,p.z));}const rope=new T.LineSegments(new T.BufferGeometry().setFromPoints(points),new T.LineBasicMaterial({color:0xc3b18a}));rope.name='Boat Club '+kind+' mooring ropes';this.mooringLines.set(kind,rope);scene.add(rope);value.group.userData.berth=berth;}
   this.spray=new BoatSpray(scene);this.trail=new BoatWake(scene);
   this.hud.id='boat-hud';this.hud.hidden=true;this.hud.innerHTML='<strong id="boat-name"></strong><p>W / S throttle · A / D steer · Space brake assist · V cockpit</p><div class="boat-buttons"><button data-boat="KeyA" aria-label="Steer boat left">←</button><button data-boat="KeyW">Throttle</button><button data-boat="KeyS">Reverse assist</button><button data-boat="KeyD" aria-label="Steer boat right">→</button><button data-boat="Space">Brake</button><button id="boat-exit">Return to shore · F</button></div>';this.telemetry.id='boat-telemetry';this.telemetry.setAttribute('aria-label','Live boat telemetry');this.hud.prepend(this.info,this.telemetry);document.body.append(this.hud);

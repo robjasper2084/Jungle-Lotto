@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {installBatchedIndirectUpdates} from './batchedIndirectUpdates.ts';
 
 /** Batch only fixed opaque playground meshes with identical material/render state.
  * BatchedMesh retains each source's local vertices and a separate world matrix:
@@ -36,6 +37,7 @@ export function batchPlaygroundMeshes(scene:T.Object3D,sites:readonly {objects:T
    let batch:T.BatchedMesh|undefined;
    try{
     batch=new T.BatchedMesh(sources.length,vertices,indices,materials);
+    installBatchedIndirectUpdates(batch);
     const ids=new Map<T.BufferGeometry,number>();
     for(const g of geometries)ids.set(g,batch.addGeometry(g));
     for(const source of sources){

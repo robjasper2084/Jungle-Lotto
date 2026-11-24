@@ -3,6 +3,8 @@ import {atmosphereShader,windVertex} from './atmosphereShaders.ts';
 import {physicalLighting} from './physicalLighting.ts';
 import {presentationBudget} from './presentationPolicy.ts';
 import {applyLeafOutline,referenceLeafDisplay,type ReferenceLeafDisplay} from './referenceLeafDisplay.ts';
+import {registerSharedGeometryShader} from './sharedGeometryBuffers.ts';
+import {hasAtmosphereProgram,registerAtmosphereProgram} from './atmosphereProgramIdentity.ts';
 type Shader=Parameters<T.Material['onBeforeCompile']>[0];
 type Wind={time:T.IUniform<number>;amount:T.IUniform<number>;range:T.IUniform<T.Vector2>;amplitude:number;crown:boolean;leaves?:ReferenceLeafDisplay};
 /** Scene-local shader composition; never mutates Three's shared ShaderChunk table. */
@@ -23,6 +25,12 @@ export class WorldAtmosphere {
   // Material dressing is synchronous after scene.add(); compose after it, before
   // the next awaited preparation/render. No new animation loop or polling timer.
   queueMicrotask(()=>{this.queued=false;this.flush();});
+ }
+ // Used only for a fresh realistic-surface clone at an explicit constructor.
+ // The surface installer supplies its completed original hook for disposal.
+ prepareMaterial(material:T.MeshStandardMaterial,restore:{compile:T.Material['onBeforeCompile'];key:T.Material['customProgramCacheKey']}){
+  if(this.disposed||this.originals.has(material))return;
+  this.patch(material);this.originals.set(material,restore);
  }
  flush(){if(this.disposed)return;for(const root of this.pending)root.traverse(object=>this.patchObject(object));this.pending.clear();}
  private patchObject(object:T.Object3D){
@@ -58,11 +66,12 @@ export class WorldAtmosphere {
  private patchWind(material:T.Material,wind:Wind){
   const old=material.onBeforeCompile,key=material.customProgramCacheKey();
   material.onBeforeCompile=(shader,renderer)=>{old.call(material,shader,renderer);this.bindWind(shader,wind);};
+  registerSharedGeometryShader(material,old);
   material.customProgramCacheKey=()=>key+'|belle-wind-v1';material.needsUpdate=true;
  }
  private patch(material:T.Material,wind?:Wind){
   if(this.originals.has(material)||!(material as T.MeshStandardMaterial).isMeshStandardMaterial)return;
-  const compile=material.onBeforeCompile,key=material.customProgramCacheKey,identity=key.call(material)+'|belle-pbr-v1';this.originals.set(material,{compile,key});
+  const compile=material.onBeforeCompile,key=material.customProgramCacheKey,identity=key.call(material),inherited=!wind&&hasAtmosphereProgram(compile,this);this.originals.set(material,{compile,key});
   material.onBeforeCompile=(shader,renderer)=>{
    compile.call(material,shader,renderer);if(wind)this.bindWind(shader,wind);
    Object.assign(shader.uniforms,this.uniforms);
@@ -72,7 +81,9 @@ export class WorldAtmosphere {
     shader.vertexShader=result.vertex;shader.fragmentShader=result.fragment;
    }
   };
-  material.customProgramCacheKey=()=>identity+'|belle-height-fog-clouds-v2'+(wind?'|wind':'');material.needsUpdate=true;
+  registerSharedGeometryShader(material,compile);
+  registerAtmosphereProgram(material,this,!!wind,compile);
+  material.customProgramCacheKey=()=>inherited?identity:identity+'|belle-pbr-v1|belle-height-fog-clouds-v2'+(wind?'|wind':'');material.needsUpdate=true;
  }
  update(time:number,direction:T.Vector3,coverage:number,day:number,overcast:number,quality:string,reduced:boolean,xr:boolean){
   this.flush();const budget=presentationBudget(quality,xr);

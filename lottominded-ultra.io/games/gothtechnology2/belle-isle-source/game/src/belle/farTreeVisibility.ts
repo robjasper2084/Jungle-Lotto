@@ -160,7 +160,7 @@ export class TreeInstanceVisibility {
     if(!(attribute instanceof T.BufferAttribute)||attribute.count<count||(attribute as T.InstancedBufferAttribute).meshPerAttribute!==1)return;
     let stream=part.saved.get(attribute);
     if(!stream||stream.source.length!==attribute.array.length){stream={attribute,source:attribute.array.slice()};part.saved.set(attribute,stream);}
-    else stream.source.set(attribute.array);
+    else stream.source.set(attribute.array.subarray(0,count*attribute.itemSize));
     // Three's first bufferData upload does not consume updateRanges. A later
     // full source rewrite must replace any earlier compact-prefix range even
     // when the new view keeps every source and render() makes no further edit.
@@ -247,7 +247,7 @@ export class TreeInstanceVisibility {
   }
   const e=camera.matrixWorld.elements,cameraMargin=16*FLOAT32_EPSILON*(Math.max(Math.abs(e[12]),Math.abs(e[13]),Math.abs(e[14]))+1);
   const shadowView=typeof shadow==='object'?shadow:undefined;
-  let kept=0,changed=false;
+  let kept=0,dirtyStart=this.count,dirtyEnd=0;
   for(let i=0;i<this.count;i++){
    const j=i*4,radius=this.bounds[j+3];
    this.sphere.center.set(this.bounds[j],this.bounds[j+1],this.bounds[j+2]);this.sphere.radius=radius+cameraMargin;
@@ -255,21 +255,38 @@ export class TreeInstanceVisibility {
     this.sphere.radius=radius+(shadowView?.margin??0);
     if(!shadowView?.frustum.intersectsSphere(this.sphere))continue;
    }
-   if(this.indices[kept]!==i)changed=true;
+   if(kept>=this.shown||this.indices[kept]!==i){
+    dirtyStart=Math.min(dirtyStart,kept);dirtyEnd=kept+1;
+   }
    this.indices[kept++]=i;
   }
-  changed||=kept!==this.shown;
-  if(changed){
+  if(dirtyEnd||kept!==this.shown){
    if(this.renderProbe?.active)this.renderProbe.compact();
    for(const {mesh,streams} of this.parts){
     mesh.count=kept;
     for(const {attribute,source} of streams){
      const stride=attribute.itemSize,target=attribute.array;
-     for(let i=0;i<kept;i++)for(let n=0;n<stride;n++)target[i*stride+n]=source[this.indices[i]*stride+n];
+     if(!dirtyEnd)continue;
+     let first=dirtyStart;
+     while(first<dirtyEnd){
+      const start=this.indices[first];
+      let end=first+1;
+      while(end<dirtyEnd&&this.indices[end]===start+end-first)end++;
+      if(end-first>=4)target.set(source.subarray(start*stride,(start+end-first)*stride),first*stride);
+      else for(let i=first;i<end;i++)for(let n=0;n<stride;n++)target[i*stride+n]=source[this.indices[i]*stride+n];
+      first=end;
+     }
+     // A previous render or capture may still have a range awaiting upload.
+     // Keep that data dirty even if this view changes only the end of the pool.
+     let uploadStart=dirtyStart*stride,uploadEnd=dirtyEnd*stride;
+     for(const range of attribute.updateRanges){
+      uploadStart=Math.min(uploadStart,range.start);
+      uploadEnd=Math.max(uploadEnd,range.start+range.count);
+     }
      attribute.clearUpdateRanges();
-     if(kept)attribute.addUpdateRange(0,kept*stride);
+     attribute.addUpdateRange(uploadStart,uploadEnd-uploadStart);
      attribute.needsUpdate=true;
-     if(this.renderProbe?.active)this.renderProbe.marked('compaction',kept?kept*stride*attribute.array.BYTES_PER_ELEMENT:attribute.array.byteLength);
+     if(this.renderProbe?.active)this.renderProbe.marked('compaction',(uploadEnd-uploadStart)*attribute.array.BYTES_PER_ELEMENT);
     }
    }
    this.shown=kept;

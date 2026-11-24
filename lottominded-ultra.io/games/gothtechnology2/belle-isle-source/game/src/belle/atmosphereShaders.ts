@@ -69,7 +69,11 @@ export function atmosphereShader(vertex:string,fragment:string,directionalChunk=
  // uniform guard skips their attenuation, shadow and BRDF work together.
  // Three expands this loop once per slot, preserving all active light paths.
  const localLights=directionalChunk.replace(/(pointLight = pointLights\[ i \];)([\s\S]*?RE_Direct\( directLight,[^;]+;)/,
-  '$1\n if (pointLight.color != vec3(0.0)) {\n$2\n }');
+  '$1\n if (pointLight.color != vec3(0.0)) {\n$2\n }')
+  // Parked vehicle headlamps keep their shader slots but contribute no light.
+  // Include spot maps and shadows in the guard; retain the entire active path.
+  .replace(/(spotLight = spotLights\[ i \];)([\s\S]*?RE_Direct\( directLight,[^;]+;)/,
+   '$1\n if (spotLight.color != vec3(0.0)) {\n$2\n }');
  let directional=localLights.replace(/getDirectionalLightInfo\(\s*directionalLight,\s*directLight\s*\);/g,'$&\n directLight.color*=belleCloudShade();');
  if(usePointPool)directional=directional.replace(unrolledPointLights,pooledPointLights);
  if(directional!==directionalChunk)fragment=fragment.replace('#include <lights_fragment_begin>',directional);

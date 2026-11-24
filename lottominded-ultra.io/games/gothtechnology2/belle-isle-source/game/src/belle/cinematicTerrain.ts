@@ -1,5 +1,6 @@
 import type * as T from 'three';
 import {LAWN_DETAIL} from './cinematicPolicy.ts';
+import {inheritAtmosphereProgram} from './atmosphereProgramIdentity.ts';
 /** Dresses existing lawn materials. No new textures, meshes or frame callbacks. */
 export class CinematicTerrain {
   private originals = new Map<T.Material, {compile: T.Material['onBeforeCompile']; key: T.Material['customProgramCacheKey']}>();
@@ -25,6 +26,7 @@ export class CinematicTerrain {
               shader.fragmentShader = shader.fragmentShader.replace('#include <map_fragment>', '#include <map_fragment>\n' + LAWN_DETAIL);
             }
           };
+          inheritAtmosphereProgram(material,compile);
           material.customProgramCacheKey = () => identity.split('|').includes('belle-lawn-detail-v1') ? identity : identity + '|belle-lawn-detail-v1';
           material.needsUpdate = true;
         }

@@ -9,7 +9,7 @@ import {landmarkDisplayRange} from './landmarkRange.ts';
 import {addWaterfront} from './waterfrontScene.ts';
 import {LandmarkDetail} from './landmarkDetail.ts';
 import {batchStaticArchitecture} from './staticArchitectureBatch.ts';
-import {cullMacArthurSpans} from './macArthurSpanCulling.ts';
+import {cullMacArthurSpans,type MacArthurUvReceipt} from './macArthurSpanCulling.ts';
 import {addCoastGuard} from './coastGuard.ts';
 import {WorldQuality,dynamicShadowsEnabled} from './worldQuality.ts';
 import {WorldFrameWork,ShadowMapCadence,directionalCasterEligible,ScenePreparationQueue,softwareWebGLRenderer,deferredSceneryRadius,islandRenderOrder} from './worldPerformancePolicy.ts';
@@ -141,6 +141,7 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
  const pitchSurface=mat(0x728260),gardenSoil=grass.clone(),gardenLawn=grass.clone();
  gardenSoil.color.set(0x8d8062);gardenLawn.color.set(0x8f9b7e);
  gardenSoil.onBeforeCompile=gardenLawn.onBeforeCompile=grass.onBeforeCompile;
+ const lawnKey=grass.customProgramCacheKey();gardenSoil.customProgramCacheKey=gardenLawn.customProgramCacheKey=()=>lawnKey;
  for(const a of data.areas){
   if(a.points.length<4)continue;
   if(a.kind==='pitch')add(poly(a.points,2.012),pitchSurface);
@@ -257,8 +258,19 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
 
  const conservatoryGarden=addConservatoryGarden(scene,data);
  const groundBatch=batchStaticGround(groundPatches);
- const coastGuard=addCoastGuard(scene);
- const streetLights=addStreetLighting(scene,data),bridgeLights=addBridgeLighting(scene,data,streetLights.lamps,localLights);for(const l of streetLights.plan)terrain.flightSolids.add({x:l.x,z:l.z,bottom:l.y,top:l.y+l.height,radius:.15,kind:'lamp'});applyRealisticMaterials(scene);applyPhotoReferenceSurfaces(scene);if(REFERENCE_STYLE)dressSunsetGround(scene);const referenceGarden=REFERENCE_STYLE?await addReferenceIsland(scene,data,terrain):undefined;const traffic=createRiverTraffic(scene,data),contactShadow=createVehicleContactShadow(scene,terrain);
+ const coastGuard=addCoastGuard(scene,islandSky.prepareMaterial);applyRealisticMaterials(coastGuard.root,'',islandSky.prepareMaterial);
+ const streetLights=addStreetLighting(scene,data),bridgeLights=addBridgeLighting(scene,data,streetLights.lamps,localLights);for(const l of streetLights.plan)terrain.flightSolids.add({x:l.x,z:l.z,bottom:l.y,top:l.y+l.height,radius:.15,kind:'lamp'});applyRealisticMaterials(scene);applyPhotoReferenceSurfaces(scene);if(REFERENCE_STYLE)dressSunsetGround(scene);
+ // Only this audited asset/decorator path approves the four opaque bridge
+ // materials. Later geometry, material or shader replacements invalidate it.
+ const macArthurShadowUvReceipts=new Map<T.Mesh,MacArthurUvReceipt>();
+ for(const name of ['MacArthur_MacArthur_galvanized_crash_barrier','MacArthur_MacArthur_sidewalk_expansion_joints','MacArthur_Painted_steel_glazing_bars','MacArthur_Patinated_bronze']){
+  const mesh=landmarks.scene.getObjectByName(name);
+  if(mesh instanceof T.Mesh&&!Array.isArray(mesh.material)){
+   const material=mesh.material;
+   macArthurShadowUvReceipts.set(mesh,{geometry:mesh.geometry,material,compile:material.onBeforeCompile,key:material.customProgramCacheKey});
+  }
+ }
+ const referenceGarden=REFERENCE_STYLE?await addReferenceIsland(scene,data,terrain):undefined;const traffic=createRiverTraffic(scene,data),contactShadow=createVehicleContactShadow(scene,terrain);
 
  // Static world-space bounds are cached once. Interior gravel/plants used to be
  // rendered from across the island even though the enclosing building hid them.
@@ -269,7 +281,7 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
  });
  const landmarkDetail=new LandmarkDetail(landmarks);
  await landmarkDetail.prepareDistant(scene);
- cullMacArthurSpans(landmarks.scene);
+ cullMacArthurSpans(landmarks.scene,macArthurShadowUvReceipts);
  batchStaticArchitecture(scene,renderer,[landmarks.scene,historic.scene],()=>landmarkDetail.isSplitActive,smallBridges.root);
  // Static architecture transforms are fixed after the fountain is placed.
  for(const staticRoot of [landmarks.scene,skyline.scene,historic.scene]){staticRoot.updateMatrixWorld(true);staticRoot.traverse(o=>{o.matrixAutoUpdate=false;o.matrixWorldAutoUpdate=false;});}

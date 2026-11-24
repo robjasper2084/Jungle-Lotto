@@ -144,10 +144,29 @@ test('first GPU upload followed by an all-visible source rewrite uploads the com
  const gpu=new WebGLAttributes(gl as unknown as WebGL2RenderingContext);
  const {meshes,visibility}=pair(2,[new T.BoxGeometry(.1,.1,.1)]),mesh=meshes[0];
  fill(meshes,[translation(0,-5),translation(0,5)]);visibility.capture();visibility.render(view(0,0));gpu.update(mesh.instanceMatrix,gl.ARRAY_BUFFER);
- assert.deepEqual(mesh.instanceMatrix.updateRanges,[{start:0,count:16}],'Three retains the first upload range');
+ assert.deepEqual(mesh.instanceMatrix.updateRanges,[{start:0,count:32}],'a count-only shrink retains the pending capture range');
  fill(meshes,[translation(0,-7),translation(0,-10)]);visibility.capture();assert.equal(visibility.render(view(0,0)),2);gpu.update(mesh.instanceMatrix,gl.ARRAY_BUFFER);
  const data=(gpu.get(mesh.instanceMatrix)!.buffer as unknown as Buffer).data;
  assert.equal(data[14],-7);assert.equal(data[30],-10,'the newly visible tail was uploaded, not left behind the camera');
+});
+
+test('camera compaction leaves stable GPU slots alone and uploads a newly visible tail',()=>{
+ const {meshes,visibility}=pair(2,[new T.BoxGeometry(.1,.1,.1)]),mesh=meshes[0];
+ fill(meshes,[translation(0,-5),translation(0,-25)]);
+ visibility.capture();
+ const attribute=mesh.instanceMatrix,camera=view(0,0);
+ attribute.clearUpdateRanges();
+ const version=attribute.version;
+ camera.far=10;camera.updateProjectionMatrix();
+ assert.equal(visibility.render(camera),1);
+ assert.equal(attribute.version,version);
+ assert.deepEqual(attribute.updateRanges,[]);
+ camera.far=100;camera.updateProjectionMatrix();
+ assert.equal(visibility.render(camera),2);
+ assert.equal(attribute.version,version+1);
+ assert.deepEqual(attribute.updateRanges,[{start:16,count:16}]);
+ assert.equal(attribute.array[14],-5);
+ assert.equal(attribute.array[30],-25);
 });
 
 test('float32 cancellation and a crown intersecting the view remain conservatively visible',()=>{

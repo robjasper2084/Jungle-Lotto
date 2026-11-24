@@ -2,6 +2,8 @@ import * as T from 'three';
 import {startupPool,startupResource,warmTextureList} from './startupWork.ts';
 import {retrySurfaceTexture} from './surfaceRetry.ts';
 import {surfaceKind,type Surface} from './realisticMaterialRules.ts';
+import {registerSharedGeometryShader} from './sharedGeometryBuffers.ts';
+import {inheritAtmosphereProgram} from './atmosphereProgramIdentity.ts';
 type Maps={color:T.Texture;detail:T.Texture};
 const maps=new Map<Surface,Maps>();
 let waterNormal:T.Texture|undefined;
@@ -48,7 +50,7 @@ export function loadRealisticMaterials(renderer:T.WebGLRenderer){
  * Existing albedo/alpha maps, articulated pivots, skins and custom shaders are retained.
  * Detail green is luminance-derived height, red is authored roughness (not a scanned PBR map).
  */
-export function applyRealisticMaterials(root:T.Object3D,context=''){
+export function applyRealisticMaterials(root:T.Object3D,context='',prepareBase?:(material:T.MeshStandardMaterial,restore:{compile:T.Material['onBeforeCompile'];key:T.Material['customProgramCacheKey']})=>void){
  const clones=new Map<string,T.MeshStandardMaterial>();
  root.traverse(object=>{if(!(object instanceof T.Mesh))return;
   const original=Array.isArray(object.material)?object.material:[object.material];
@@ -70,13 +72,16 @@ export function applyRealisticMaterials(root:T.Object3D,context=''){
    m.roughness=context==='boat'&&kind==='graphite'?.45:kind==='metal'?Math.max(.24,Math.min(.6,m.roughness)):roughness;
    m.userData.realisticSurface=kind;
    m.userData.realisticBaseIsStandard=material.onBeforeCompile===T.Material.prototype.onBeforeCompile;
-   m.userData.realisticProfile=/ballfield infield/i.test(material.name)?'infield-'+kind:kind;
+   // Palette batches share one material's uniforms. Projection remains part of
+   // that binding identity even though both projections share a GPU program.
+   m.userData.realisticProfile=(/ballfield infield/i.test(material.name)?'infield-'+kind:kind)+(planar?'|planar':'|triplanar');
+   const compose=(oldCompile:T.Material['onBeforeCompile'],oldKey:string)=>{
    m.onBeforeCompile=(shader,renderer)=>{
     oldCompile(shader,renderer);
     // The scale, pigment and relief belong to the material. A roof and a
     // limestone wall can use one linked shader with their own texture inputs.
     Object.assign(shader.uniforms,{skinColor:{value:textures.color},skinDetail:{value:textures.detail},
-     skinProfile:{value:new T.Vector3(scale,blend,relief)}});
+     skinProfile:{value:new T.Vector3(scale,blend,relief)},skinPlanar:{value:planar}});
     shader.vertexShader=`varying vec3 skinPosition;varying vec3 skinNormal;
 #ifdef BELLE_ORIGINAL_SURFACE_COORDS
 attribute vec3 originalSurfacePosition;attribute vec3 originalSurfaceNormal;
@@ -88,32 +93,35 @@ skinPosition=originalSurfacePosition;skinNormal=originalSurfaceNormal;
 #else
 skinPosition=position;skinNormal=normal;
 #endif`);
-    shader.fragmentShader=`varying vec3 skinPosition;varying vec3 skinNormal;uniform sampler2D skinColor;uniform sampler2D skinDetail;uniform vec3 skinProfile;
-${planar?'':`vec3 skinWeights(){
+    // Projection and pigment are material uniforms, so the same authored base
+    // shader can keep one program across these four surface combinations.
+    shader.fragmentShader=`varying vec3 skinPosition;varying vec3 skinNormal;uniform sampler2D skinColor;uniform sampler2D skinDetail;uniform vec3 skinProfile;uniform bool skinPlanar;
+vec3 skinWeights(){
  vec3 w=normalize(skinNormal);w*=w;w*=w;w*=w;return w/max(.0001,w.x+w.y+w.z);
-}`}
-vec3 sampleSkin(sampler2D tex,vec3 p,vec3 dx,vec3 dy${planar?'':',vec3 w'}){
- ${planar?'return textureGrad(tex,p.xz,dx.xz,dy.xz).rgb;':`vec3 value=vec3(0.);
+}
+vec3 sampleSkin(sampler2D tex,vec3 p,vec3 dx,vec3 dy,vec3 w){
+ if(skinPlanar)return textureGrad(tex,p.xz,dx.xz,dy.xz).rgb;
+ vec3 value=vec3(0.);
  if(w.x>0.)value+=textureGrad(tex,p.zy,dx.zy,dy.zy).rgb*w.x;
  if(w.y>0.)value+=textureGrad(tex,p.xz,dx.xz,dy.xz).rgb*w.y;
  if(w.z>0.)value+=textureGrad(tex,p.xy,dx.xy,dy.xy).rgb*w.z;
- return value;`}
+ return value;
 }
 `+shader.fragmentShader;
     // Preserve camera colors, character likeness and foliage alpha. Add grain without relighting the atlas.
     shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>',`#include <map_fragment>
 vec3 skinP=skinPosition*skinProfile.x;
 vec3 skinPx=dFdx(skinP),skinPy=dFdy(skinP);
-${planar?'':'vec3 skinW=skinWeights();'}
+vec3 skinW=skinPlanar?vec3(0.,1.,0.):skinWeights();
 // Height must be available to adjacent fragments on both sides of the fade.
-vec3 skinD=sampleSkin(skinDetail,skinP,skinPx,skinPy${planar?'':',skinW'});
+vec3 skinD=sampleSkin(skinDetail,skinP,skinPx,skinPy,skinW);
 float skinFade=1.-smoothstep(.08,.65,max(length(skinPx),length(skinPy)));
 float skinGrain=mix(1.,.85+skinD.g*.30,skinFade);
 diffuseColor.rgb*=skinGrain;
-${blend>0?`if(skinFade>0.){
- vec3 skinC=sampleSkin(skinColor,skinP,skinPx,skinPy${planar?'':',skinW'});
+if(skinProfile.y>0.&&skinFade>0.){
+ vec3 skinC=sampleSkin(skinColor,skinP,skinPx,skinPy,skinW);
  diffuseColor.rgb=mix(diffuseColor.rgb,skinC*diffuse,skinProfile.y*skinFade);
-}`:''}
+}
 `);
     shader.fragmentShader=shader.fragmentShader.replace('#include <roughnessmap_fragment>',`#include <roughnessmap_fragment>
 roughnessFactor=clamp(roughnessFactor+(skinD.r-.5)*.16*skinFade,.08,1.);
@@ -128,7 +136,19 @@ vec3 skinGrad=sign(skinDet)*(skinGradient.x*skinRx+skinGradient.y*skinRy);
 normal=normalize(abs(skinDet)*normal-skinGrad);
 `);
    };
-   m.customProgramCacheKey=()=>oldKey+'-higgsfield-surface-v4'+(blend>0?'-pigment':'')+(planar?'-planar':'');m.needsUpdate=true;return m;
+   registerSharedGeometryShader(m,oldCompile);
+   inheritAtmosphereProgram(m,oldCompile);
+   m.customProgramCacheKey=()=>oldKey+'-higgsfield-surface-v5';
+   };
+   compose(oldCompile,oldKey);
+   if(prepareBase&&oldCompile===T.Material.prototype.onBeforeCompile&&material.customProgramCacheKey===T.Material.prototype.customProgramCacheKey){
+    // Prepare only our fresh clone, leaving the loaded asset and per-material
+    // surface identity intact. Keep the original completed surface for disposal.
+    const restore={compile:m.onBeforeCompile,key:m.customProgramCacheKey};
+    m.onBeforeCompile=oldCompile;m.customProgramCacheKey=()=>oldKey;
+    prepareBase(m,restore);compose(m.onBeforeCompile,m.customProgramCacheKey());
+   }
+   m.needsUpdate=true;return m;
   });
   object.material=Array.isArray(object.material)?updated:updated[0];
  });
