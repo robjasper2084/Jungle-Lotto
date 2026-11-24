@@ -9,7 +9,7 @@ type Fence={id:number;createdCapture:number;createdCallbackId:number|null;create
  imported:boolean;timeouts:number;lastTimeout:Poll|null;firstSignaled:Poll|null;failed:Poll|null;deletedWallMs:number|null;disposition:string};
 type CallbackRow={id:number;capture:number;originalTimestampMs:number|null;enteredWallMs:number|null;exitedWallMs:number|null;
  gameEnteredWallMs:number|null;gameExitedWallMs:number|null;gameCalls:number;eligible:boolean|null;outcome:string;gateCallback:number|null;
- pendingBefore:number|null;pendingAfter:number|null;submittedDelta:number|null;completedDelta:number|null;error:string|null};
+ pendingBefore:number|null;pendingAfter:number|null;renderedDelta:number|null;submittedDelta:number|null;completedDelta:number|null;error:string|null};
 type SyncRow=Poll&{method:string;fenceId:number|null;condition:number|null;flags:number|null;timeoutNs:number|null;result:string;error:string|null};
 export const PIPELINE_DIAGNOSTIC_LIMITS=Object.freeze({callbacks:8192,syncEvents:32768,finishedFences:8192,trackedFences:64,lifecycleEvents:64,errors:20});
 
@@ -22,6 +22,7 @@ class Ring<T>{
 }
 const object=(v:unknown):v is object=>v!==null&&(typeof v==='object'||typeof v==='function');
 const numeric=(v:unknown)=>typeof v==='number'&&Number.isFinite(v)?v:null;
+const counterDelta=(after:unknown,before:unknown)=>{const a=numeric(after),b=numeric(before);return a!==null&&b!==null?a-b:null;};
 const copy=<T>(value:T):T=>JSON.parse(JSON.stringify(value));
 const message=(value:unknown)=>{try{return String(value).slice(0,220);}catch{return 'unprintable error';}};
 
@@ -88,7 +89,7 @@ export class ManualPipelineProbe {
   const row=this.observe('callback-begin',()=>{
    const value:CallbackRow={id:++this.callbackId,capture:this.capture,originalTimestampMs:numeric(args[0]),enteredWallMs,exitedWallMs:null,
     gameEnteredWallMs:null,gameExitedWallMs:null,gameCalls:0,eligible:null,outcome:'unfinished',gateCallback:null,
-    pendingBefore:before?.pendingCallbacks??null,pendingAfter:null,submittedDelta:null,completedDelta:null,error:null};
+    pendingBefore:before?.pendingCallbacks??null,pendingAfter:null,renderedDelta:null,submittedDelta:null,completedDelta:null,error:null};
    this.current=value;this.counts.callbacks++;return value;
   });
   let threw=false,error:unknown;
@@ -97,7 +98,11 @@ export class ManualPipelineProbe {
    this.observe('callback-end',()=>{
     if(!row)return;
     row.exitedWallMs=this.wall();const after=this.pacing();row.gateCallback=after?.animationCallbacks??null;row.pendingAfter=after?.pendingCallbacks??null;
-    if(before&&after){row.submittedDelta=after.submittedCallbacks-before.submittedCallbacks;row.completedDelta=after.completedCallbacks-before.completedCallbacks;}
+    if(before&&after){
+     row.renderedDelta=counterDelta(after.renderedCallbacks,before.renderedCallbacks);
+     row.submittedDelta=counterDelta(after.submittedCallbacks,before.submittedCallbacks);
+     row.completedDelta=counterDelta(after.completedCallbacks,before.completedCallbacks);
+    }
     if(threw){row.outcome='error';row.error=message(error);this.counts.callbackErrors++;}
     else if(row.gameCalls){row.outcome=before&&after&&after.xrCallbacks>before.xrCallbacks?'xr':row.submittedDelta===0?'executed-no-fence':'executed';}
     else if(before&&after&&after.pendingFenceSkippedCallbacks>before.pendingFenceSkippedCallbacks){row.outcome='pending-fence';this.counts.pendingFenceSkippedCallbacks++;}
@@ -170,6 +175,7 @@ export class ManualPipelineProbe {
    notes:[
     'Manual local observer only. All original animation, game-body and WebGL calls keep their receiver, arguments, return values and exceptions. This ledger issues no additional native sync call, flush, timer query, draw or readback.',
     'Callback entry/exit and native call entry/exit are CPU wall times. They include observer overhead and are not GPU execution or display/present timings. gateCallback matches the existing lifetime animation callback counter.',
+    'renderedDelta counts non-XR callbacks that changed the existing renderer counter while the loop remained active; submittedDelta counts application fence submissions. Neither proves GPU completion or presentation. executed-no-fence may contain a render, and eligibility alone does not prove a render. Unknown queue/completion fields remain null, including completedDelta in browser mode.',
     'Each fence retains its last TIMEOUT_EXPIRED observation and first signaled observation. Their call entry/exit bounds bracket when those statuses were observed, not the physical GPU completion time; native status propagation can lag GPU work. No signal before deletion is reported as unknown, never successful completion.',
     'A fence created before Start remains in atStart. Context events discard stale identities without touching native objects. Bounded rings retain the newest events; dropped counts and partial hook coverage must be checked before drawing causal conclusions.',
    ]};

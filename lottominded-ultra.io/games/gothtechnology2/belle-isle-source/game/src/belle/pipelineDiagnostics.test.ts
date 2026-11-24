@@ -1,11 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {ManualPipelineProbe,pipelineDiagnosticRequested,PIPELINE_DIAGNOSTIC_LIMITS} from './pipelineDiagnostics.ts';
-import {installGpuFramePacing,gpuFramePacingDiagnostics,type GpuFrameCapacity} from './gpuFramePacing.ts';
+import {installGpuFramePacing,gpuFramePacingDiagnostics,type GpuFrameCapacity,type GpuFramePacingMode} from './gpuFramePacing.ts';
 
 type Animation=(now:number,frame?:unknown)=>unknown;
-function fixture(observe=true,capacity:GpuFrameCapacity=1){
- let clock=0,animation:Animation|null=null,nextFence=0;
+function fixture(observe=true,capacity:GpuFrameCapacity=1,mode:GpuFramePacingMode='fence'){
+ let clock=0,animation:Animation|null=null,nextFence=0,drawing=true;
  const calls:string[]=[],seen:{time:number;frame:unknown}[]=[],syncs:object[]=[];
  const gl={SYNC_GPU_COMMANDS_COMPLETE:1,TIMEOUT_EXPIRED:2,ALREADY_SIGNALED:3,CONDITION_SATISFIED:4,WAIT_FAILED:5,
   state:2,lost:false,failFence:null as unknown,failWait:null as unknown,failDelete:null as unknown,
@@ -21,10 +21,10 @@ function fixture(observe=true,capacity:GpuFrameCapacity=1){
  };
  const native={set:renderer.setAnimationLoop,fence:gl.fenceSync,wait:gl.clientWaitSync,delete:gl.deleteSync};
  const probe=observe?new ManualPipelineProbe(renderer,()=>clock):undefined;
- const cleanup=installGpuFramePacing(renderer,{capacity});
- const body=(time:number,frame?:unknown)=>{seen.push({time,frame});for(let view=0;view<4;view++){calls.push('view'+view);clock+=2;renderer.info.render.frame++;}};
+ const cleanup=installGpuFramePacing(renderer,{capacity,mode});
+ const body=(time:number,frame?:unknown)=>{seen.push({time,frame});if(!drawing)return;for(let view=0;view<4;view++){calls.push('view'+view);clock+=2;renderer.info.render.frame++;}};
  renderer.setAnimationLoop((time,frame)=>probe?probe.runGameFrame(()=>body(time,frame),true):body(time,frame));
- return {gl,renderer,calls,seen,syncs,probe,native,cleanup,tick:(time:number,frame?:unknown)=>{clock=time+2;return animation?.(time,frame);},clock:()=>clock,setClock:(value:number)=>{clock=value;}};
+ return {gl,renderer,calls,seen,syncs,probe,native,cleanup,tick:(time:number,frame?:unknown)=>{clock=time+2;return animation?.(time,frame);},clock:()=>clock,setClock:(value:number)=>{clock=value;},setDrawing:(value:boolean)=>{drawing=value;}};
 }
 
 test('pipeline observation requires a separate explicit localhost manual flag',()=>{
@@ -47,6 +47,47 @@ test('observing a real bounded gate preserves every native call, timestamp, XR f
  assert.deepEqual(run(true),run(false));
 });
 
+test('browser-mode observation preserves delivery, errors and lifecycle without adding native GPU work',()=>{
+ const run=(observe:boolean)=>{
+  const f=fixture(observe,1,'browser'),frame={native:'frame'},xrFrame={native:'xr'};f.probe?.startCapture();
+  f.tick(100,frame);f.setDrawing(false);f.tick(116);f.setDrawing(true);f.tick(132);
+  f.gl.lost=true;f.renderer.domElement.dispatchEvent(new Event('webglcontextlost'));f.tick(148);
+  f.gl.lost=false;f.renderer.domElement.dispatchEvent(new Event('webglcontextrestored'));f.tick(164);
+  f.renderer.xr.isPresenting=true;f.tick(180,xrFrame);f.renderer.xr.isPresenting=false;
+  const originalError={native:'callback error'},body=()=>{throw originalError;};
+  f.renderer.setAnimationLoop(()=>f.probe?f.probe.runGameFrame(body,true):body());
+  assert.throws(()=>f.tick(196),value=>value===originalError);
+  f.renderer.setAnimationLoop(null);f.tick(212);f.renderer.dispose();f.probe?.stopCapture();
+  assert.equal(f.syncs.length,0);assert.ok(f.calls.every(x=>!['fence','wait','delete','flush'].includes(x)));
+  assert.deepEqual(f.seen.map(x=>x.time),[100,116,132,164,180]);
+  assert.equal(f.seen[0].frame,frame);assert.equal(f.seen.at(-1)!.frame,xrFrame);
+  return {calls:f.calls,seen:f.seen,pacing:gpuFramePacingDiagnostics(f.renderer)};
+ };
+ assert.deepEqual(run(true),run(false));
+});
+
+test('browser ledger preserves null completion and separates actual render observations from zero application fences',()=>{
+ const f=fixture(true,1,'browser');f.probe!.startCapture();
+ f.tick(100);f.setDrawing(false);f.tick(116);f.setDrawing(true);f.gl.lost=true;f.tick(132);
+ f.gl.lost=false;f.tick(200);f.renderer.xr.isPresenting=true;f.tick(216,{native:'xr'});
+ const callsBefore=f.calls.slice(),r=f.probe!.stopCapture();assert.deepEqual(f.calls,callsBefore);
+ assert.equal(r.coverage.complete,true);assert.equal(r.observerErrors,0);
+ assert.deepEqual(r.callbacks.map(x=>x.originalTimestampMs),[100,116,132,200,216]);
+ assert.deepEqual(r.callbacks.map(x=>x.gameCalls),[1,1,0,1,1]);
+ assert.deepEqual(r.callbacks.map(x=>x.renderedDelta),[1,0,0,1,0]);
+ assert.deepEqual(r.callbacks.map(x=>x.outcome),['executed-no-fence','executed-no-fence','context-lost','executed-no-fence','xr']);
+ for(const row of r.callbacks){
+  assert.equal(row.pendingBefore,null);assert.equal(row.pendingAfter,null);assert.equal(row.completedDelta,null);
+  assert.equal(row.submittedDelta,0);
+ }
+ assert.equal(r.counts.executedCallbacks,4);assert.equal(r.counts.contextLostSkippedCallbacks,1);
+ assert.equal(r.counts.fenceSyncCalls,0);assert.equal(r.counts.clientWaitSyncCalls,0);assert.equal(r.counts.deleteSyncCalls,0);
+ assert.deepEqual(r.syncEvents,[]);assert.deepEqual(r.fences,{atStart:[],finished:[],pending:[]});
+ assert.equal(r.pacing.atFinish?.renderedCallbacks,2);assert.equal(r.pacing.atFinish?.completedCallbacks,null);
+ assert.equal(r.pacing.atFinish?.capacity,null);assert.equal(r.pacing.atFinish?.peakPendingCallbacks,null);
+ f.renderer.xr.isPresenting=false;f.tick(300);assert.deepEqual(f.probe!.snapshot(),r);
+});
+
 test('ledger associates skipped and executed callbacks with exact native timeout and first-signaled observations',()=>{
  const f=fixture();f.probe!.startCapture();f.tick(100);f.tick(116);f.tick(132);f.gl.state=f.gl.CONDITION_SATISFIED;f.tick(200);
  const report=f.probe!.stopCapture();
@@ -63,7 +104,7 @@ test('ledger associates skipped and executed callbacks with exact native timeout
  assert.ok(fence.lastTimeout!.exitedWallMs!<fence.firstSignaled!.enteredWallMs!);
  assert.ok(fence.firstSignaled!.exitedWallMs!<=last.gameEnteredWallMs!);
  assert.ok(last.gameExitedWallMs!<=next.createdEnteredWallMs!,'the single fence follows all four game views');
- assert.equal(last.completedDelta,1);assert.equal(last.submittedDelta,1);
+ assert.equal(last.completedDelta,1);assert.equal(last.submittedDelta,1);assert.equal(last.renderedDelta,1);
  assert.ok(report.syncEvents.filter(x=>x.method==='clientWaitSync').every(x=>x.flags===0&&x.timeoutNs===0));
 });
 

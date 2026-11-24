@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {GpuFrameGate,installGpuFramePacing,gpuFramePacingDiagnostics,attachGpuFramePacingProbe,gpuFrameCapacityForRenderer} from './gpuFramePacing.ts';
+import {GpuFrameGate,installGpuFramePacing,gpuFramePacingDiagnostics,attachGpuFramePacingProbe,nativeAppleMetalRenderer} from './gpuFramePacing.ts';
 import {ManualLoopProbe} from './loopDiagnostics.ts';
 function fixture(){
  const calls=[],gl={SYNC_GPU_COMMANDS_COMPLETE:1,TIMEOUT_EXPIRED:2,ALREADY_SIGNALED:3,CONDITION_SATISFIED:4,WAIT_FAILED:5,
@@ -200,9 +200,9 @@ function queuedFixture(){
  return {...f,fences,states,polls,deleted,complete(id){states.set(fences[id-1],f.gl.CONDITION_SATISFIED);}};
 }
 
-test('only positively identified native Apple renderers select three callbacks',()=>{
- for(const name of ['ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)','ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)','Apple M1','Apple M4 Max','Apple A17 GPU'])assert.equal(gpuFrameCapacityForRenderer(name),3,name);
- for(const name of ['',null,undefined,42,'WebKit WebGL','Apple GPU','Apple unknown renderer','ANGLE (NVIDIA, NVIDIA GeForce RTX 4090, D3D11)','ANGLE (Apple, ANGLE Metal Renderer: Apple SwiftShader)','Apple M1 llvmpipe','Apple M2 softpipe','Apple software rasterizer'])assert.equal(gpuFrameCapacityForRenderer(name),1,String(name));
+test('only positively identified native Apple Metal canvases select browser pacing',()=>{
+ for(const name of ['ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)','ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)'])assert.equal(nativeAppleMetalRenderer(name),true,name);
+ for(const name of ['',null,undefined,42,'WebKit WebGL','Apple GPU','Apple M1','Apple A17 GPU','Apple unknown renderer','ANGLE (NVIDIA, NVIDIA GeForce RTX 4090, D3D11)','ANGLE (Apple, ANGLE Metal Renderer: Apple SwiftShader)','ANGLE Metal Renderer: Apple M1 llvmpipe','ANGLE Metal Renderer: Apple M2 softpipe','Apple software rasterizer'])assert.equal(nativeAppleMetalRenderer(name),false,String(name));
 });
 
 test('capacity is explicitly bounded to one, two or three with the old default retained',()=>{
@@ -332,4 +332,67 @@ test('three-slot spare capacity never overrides a failed oldest fence',()=>{
  f.tick(100);f.tick(116);f.states.set(f.fences[0],f.gl.WAIT_FAILED);assert.throws(()=>f.tick(132),/fence failed/);assert.deepEqual(f.deleted,[1,2]);
  assert.throws(()=>f.tick(148),/fence failed/);assert.deepEqual(seen,[100,116]);assert.equal(gpuFramePacingDiagnostics(f.renderer).completedCallbacks,0);
  f.renderer.domElement.dispatchEvent(new Event('webglcontextrestored'));f.tick(200);assert.deepEqual(seen,[100,116,200]);
+});
+
+test('browser pacing delivers every original callback and all co-op views without native fences',()=>{
+ const f=queuedFixture(),seen=[];installGpuFramePacing(f.renderer,{mode:'browser'});
+ f.renderer.setAnimationLoop(function(now,frame){assert.equal(this,undefined);seen.push([now,frame]);for(let view=0;view<4;view++){f.calls.push('view'+view);f.renderer.info.render.frame++;}});
+ const frames=[{id:1},{id:2},{id:3}];for(let i=0;i<frames.length;i++)f.tick([100,116,400][i],frames[i]);
+ assert.deepEqual(seen,[[100,frames[0]],[116,frames[1]],[400,frames[2]]]);
+ assert.deepEqual(f.calls,Array.from({length:3},()=>['view0','view1','view2','view3']).flat());
+ assert.deepEqual(f.fences,[]);assert.deepEqual(f.polls,[]);assert.deepEqual(f.deleted,[]);
+ const report=gpuFramePacingDiagnostics(f.renderer);assert.equal(report.mode,'browser');assert.equal(report.executedCallbacks,3);assert.equal(report.renderedCallbacks,3);assert.equal(report.submittedCallbacks,0);
+ for(const key of ['capacity','pendingCallbacks','completedCallbacks','peakPendingCallbacks'])assert.equal(report[key],null,key);
+});
+
+test('browser pacing preserves the pre-body context-loss skip and original recovery timestamp',()=>{
+ const f=fixture(),seen=[];installGpuFramePacing(f.renderer,{mode:'browser'});
+ f.renderer.setAnimationLoop(now=>{seen.push(now);f.renderer.info.render.frame++;});f.tick(100);
+ f.gl.lost=true;f.renderer.domElement.dispatchEvent(new Event('webglcontextlost'));f.tick(116);f.tick(400);
+ assert.deepEqual(seen,[100]);f.gl.lost=false;f.renderer.domElement.dispatchEvent(new Event('webglcontextrestored'));f.tick(700);
+ assert.deepEqual(seen,[100,700]);assert.deepEqual(f.calls,[]);
+ const report=gpuFramePacingDiagnostics(f.renderer);assert.equal(report.contextLostSkippedCallbacks,2);assert.equal(report.pendingFenceSkippedCallbacks,0);assert.equal(report.renderedCallbacks,2);
+});
+
+test('browser mode keeps the existing XR scheduler and exact frame object without fences',()=>{
+ const f=fixture(),seen=[];installGpuFramePacing(f.renderer,{mode:'browser'});
+ f.renderer.setAnimationLoop((now,frame)=>{seen.push([now,frame]);f.renderer.info.render.frame++;});f.tick(100);
+ f.renderer.xr.isPresenting=true;const frame={session:'native-xr'};f.tick(120,frame);f.tick(140,frame);
+ f.renderer.xr.isPresenting=false;f.tick(300);
+ assert.deepEqual(seen,[[100,undefined],[120,frame],[140,frame],[300,undefined]]);assert.deepEqual(f.calls,[]);
+ assert.equal(gpuFramePacingDiagnostics(f.renderer).xrCallbacks,2);
+});
+
+test('browser-mode stop inside a callback and disposal never create replacement scheduling work',()=>{
+ const f=fixture(),original=f.renderer.setAnimationLoop,cleanup=installGpuFramePacing(f.renderer,{mode:'browser'});let runs=0;
+ assert.equal(installGpuFramePacing(f.renderer,{mode:'browser'}),cleanup);
+ f.renderer.setAnimationLoop(()=>{runs++;f.renderer.info.render.frame++;f.renderer.setAnimationLoop(null);});f.tick(100);f.tick(200);assert.equal(runs,1);
+ f.renderer.setAnimationLoop(()=>runs++);f.tick(400);assert.equal(runs,2);f.renderer.dispose();f.tick(500);cleanup();
+ assert.equal(runs,2);assert.equal(f.renderer.setAnimationLoop,original);assert.deepEqual(f.calls,['dispose']);assert.equal(gpuFramePacingDiagnostics(f.renderer).installed,false);
+});
+
+test('browser observer reports real callbacks and render-counter changes with no invented GPU timings',()=>{
+ const f=timedFixture();installGpuFramePacing(f.renderer,{mode:'browser'});const binding=attachGpuFramePacingProbe(f.renderer,f.probe);f.probe.startCapture();
+ f.renderer.setAnimationLoop(now=>{if(now===100)f.draw();});f.tick(100);f.tick(200);f.gl.lost=true;f.tick(300);
+ assert.equal(binding.coverage().installed,true);assert.deepEqual(f.trace,['lost','frame-read','draw','frame-read','lost','frame-read','frame-read','lost']);
+ const report=f.probe.snapshot();assert.equal(report.completedCallbacks,3);
+ assert.deepEqual(report.topCallbacks.map(row=>row.outcome).sort(),['context-lost','executed','no-draw']);
+ for(const row of report.topCallbacks)for(const scope of ['gateSubmittedCpuMs','fenceSyncCpuMs','flushCpuMs'])assert.equal(row.scopes[scope],null,scope);
+ assert.equal(gpuFramePacingDiagnostics(f.renderer).renderedCallbacks,1);assert.equal(gpuFramePacingDiagnostics(f.renderer).completedCallbacks,null);
+});
+
+test('browser observation preserves exceptions and identical native calls',()=>{
+ const run=observe=>{
+  const f=timedFixture();installGpuFramePacing(f.renderer,{mode:'browser'});if(observe){attachGpuFramePacingProbe(f.renderer,f.probe);f.probe.startCapture();}
+  f.renderer.setAnimationLoop(()=>{f.draw();throw f.callbackError;});assert.throws(()=>f.tick(480),error=>error===f.callbackError);
+  if(observe)assert.equal(f.probe.snapshot().topCallbacks[0].outcome,'error');
+  return {trace:f.trace,diagnostics:gpuFramePacingDiagnostics(f.renderer)};
+ };
+ assert.deepEqual(run(true),run(false));
+});
+
+test('browser pacing does not depend on sync methods and does not change independent warmup gates',()=>{
+ const f=fixture();delete f.gl.fenceSync;delete f.gl.clientWaitSync;installGpuFramePacing(f.renderer,{mode:'browser'});let runs=0;f.renderer.setAnimationLoop(()=>runs++);f.tick(100);assert.equal(runs,1);
+ const warmup=fixture(),gate=new GpuFrameGate(warmup.gl);gate.submitted();assert.equal(gate.ready(),false);assert.deepEqual(warmup.calls,['fence','flush']);
+ assert.throws(()=>installGpuFramePacing(fixture().renderer,{mode:'invalid'}),RangeError);
 });

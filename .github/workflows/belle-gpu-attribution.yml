@@ -1,8 +1,8 @@
-name: Belle native pipeline attribution
+name: Belle native browser pacing trace
 
 on:
   push:
-    branches: [upgrade-redesign-gpu-attribution-20261123]
+    branches: [upgrade-redesign-browser-trace-20261124]
   workflow_dispatch:
 
 permissions:
@@ -13,8 +13,8 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  PRODUCT_PARENT_SHA: b1bcaf641c612890d118b4af698e01ccfccdc0b3
-  EXPECTED_PARENT_SHA: d23083f7c9a365ba9d9e15c585563ab78828c94f
+  PRODUCT_PARENT_SHA: 2c3e6757f4266c35f95d1dfe6b15f1a840e97161
+  EXPECTED_PARENT_SHA: e0f7a732e10c1395ac9d2e397376b8160ead46e8
   INTEGRATED_MAIN_SHA: 3e68163e94d173395cf7a2f47bd37859cf1a3f47
   GAME_PATH: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
   RUNTIME_PATH: lottominded-ultra.io/games/gothtechnology2
@@ -54,10 +54,12 @@ jobs:
           const commit=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();assert.equal(commit,process.env.GITHUB_SHA);
           const tree=execFileSync('git',['rev-parse','HEAD^{tree}'],{encoding:'utf8'}).trim();
           const parent=execFileSync('git',['rev-parse','HEAD^'],{encoding:'utf8'}).trim();assert.equal(parent,process.env.EXPECTED_PARENT_SHA);
+          assert.equal(execFileSync('git',['rev-parse','HEAD^2'],{encoding:'utf8'}).trim(),process.env.PRODUCT_PARENT_SHA);
           const sourceFiles=['scripts/sustained-ride-profile.mjs','scripts/manual-ride-diagnostic.mjs','scripts/host-service-trace.mjs','scripts/coop-static-server.mjs','package-lock.json','../../package-lock.json',
             ...['main.ts','gpuRenderDiagnostics.ts','pipelineDiagnostics.ts','gpuFramePacing.ts','loopDiagnostics.ts','renderDiagnostics.ts','renderSubmissionDiagnostics.ts','rideProfile.ts','rideProfileStats.ts','rideProfileBuild.ts'].map(x=>'src/belle/'+x)];
           const sources=Object.fromEntries(await Promise.all(sourceFiles.map(async path=>[path,hash(await readFile(resolve(game,path)))])));
           assert.equal(sources['scripts/sustained-ride-profile.mjs'],process.env.STRICT_SCRIPT_SHA256);
+          assert.equal(sources['src/belle/gpuFramePacing.ts'],hash(execFileSync('git',['show',process.env.PRODUCT_PARENT_SHA+':'+process.env.GAME_PATH+'/src/belle/gpuFramePacing.ts'])));
           const files=[];async function walk(dir){for(const entry of await readdir(dir,{withFileTypes:true})){
             const path=resolve(dir,entry.name);if(entry.isDirectory())await walk(path);else{assert(entry.isFile());const bytes=await readFile(path);files.push({path:relative(resolve(game,'dist'),path).split(sep).join('/'),bytes:bytes.length,sha256:hash(bytes)});}
           }}await walk(resolve(game,'dist'));files.sort((a,b)=>a.path.localeCompare(b.path));
@@ -76,7 +78,7 @@ jobs:
           retention-days: 2
 
   attribution:
-    name: Native Metal late host trace after collector repair
+    name: Native Metal browser pacing callback and host trace
     needs: build
     runs-on: macos-15
     timeout-minutes: 45
@@ -102,13 +104,15 @@ jobs:
         run: |
           npm ci
           npx playwright install chrome
-      - name: Capture the unchanged full scene with repaired late host trace
+      - name: Capture full-scene browser pacing with late host trace
         run: |
           mkdir -p pipeline-evidence
           node --input-type=module <<'NODE'
           import {spawnSync} from 'node:child_process';
           import {readFileSync,writeFileSync} from 'node:fs';
           const cases=[['A2','off',true]],receipts=[];
+          const browserPacing=value=>value?.installed===true&&value.mode==='browser'&&value.submittedCallbacks===0&&
+            ['capacity','pendingCallbacks','completedCallbacks','peakPendingCallbacks'].every(key=>value[key]===null);
           for(const [name,condition,trace] of cases){
             const args=[process.env.GAME_PATH+'/scripts/manual-ride-diagnostic.mjs',
               '--game',process.env.GAME_PATH,'--build','gpu-build','--output','pipeline-evidence/'+name,
@@ -117,19 +121,21 @@ jobs:
             const child=spawnSync(process.execPath,args,{stdio:'inherit'});
             let report=null,readError=null;
             try{report=JSON.parse(readFileSync('pipeline-evidence/'+name+'/report.json','utf8'));}catch(error){readError=String(error);}
+            const pacing=report?.observers?.gpuFramePacing;
+            const treatmentValid=browserPacing(pacing?.atStart)&&browserPacing(pacing?.atFinish)&&pacing.atFinish.renderedCallbacks>pacing.atStart.renderedCallbacks;
             receipts.push({case:name,condition,lateHostTrace:trace,status:child.status,signal:child.signal,error:child.error?String(child.error):null,readError,
               source:report?.sourceHead,tree:report?.sourceTree,build:report?.buildManifestSha256,
-              valid:report?.diagnosticEvidenceValid,frameQualityAccepted:report?.frameQualityAccepted,
+              valid:report?.diagnosticEvidenceValid,treatmentValid,frameQualityAccepted:report?.frameQualityAccepted,
               frames:report?.profile?.frames,frameMs:report?.profile?.metrics?.frameMs,over250ms:report?.profile?.over250ms,
               heldInputWallMs:report?.heldInputWallMs,actualGpu:report?.actualGpu,
               pacing:report?.observers?.gpuFramePacing,pipelineCounts:report?.pipeline?.counts,
               gpuQueries:report?.gpuTiming?.counts,hostTraceStatus:report?.hostServiceTrace?.status,
               errors:report?.errors,probeErrors:report?.probeErrors,failedRequests:report?.failedRequests});
             writeFileSync('pipeline-evidence/comparison.json',JSON.stringify({version:1,source:process.env.GITHUB_SHA,receipts,
-              note:'Only the previously failed A2 host-trace collection is repeated after repairing category discovery. Original A1/B1 results and the invalid A2 are retained in run45285850982. Game source, full quality, input, and original performance outcomes are unchanged. Trace begins after60 seconds and includes overhead. This diagnostic does not substitute for strict release acceptance.'},null,2)+'\n');
+              note:'Separate query-off late host trace of the browser-pacing product2c3e6757 after its strict desktop failure in run45295190223. The A2 case label is required by the existing collector and is not a repeat of the cap3 source. Source/build identities and actual pacing mode distinguish the runs. Full quality and genuine90-second input remain unchanged. Trace begins after60 seconds and includes overhead. Original numerical failures remain reported; collection success is not release acceptance.'},null,2)+'\n');
           }
           console.log('BELLE_PIPELINE_COMPARISON '+JSON.stringify(receipts));
-          process.exit(receipts.every(row=>row.status===0&&row.valid===true)?0:1);
+          process.exit(receipts.every(row=>row.status===0&&row.valid===true&&row.treatmentValid===true)?0:1);
           NODE
       - name: Preserve every case including original numerical failures
         if: always()
