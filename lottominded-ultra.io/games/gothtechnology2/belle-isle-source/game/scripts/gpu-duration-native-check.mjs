@@ -5,6 +5,9 @@ import {mkdir,writeFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {createCoopStaticServer} from './coop-static-server.mjs';
 import {checkGpsFullScene} from './gps-full-scene-check.mjs';
+// GPU TRACE OPT-IN BEGIN
+import {createGpuDurationTrace,markGpuTraceClock} from './gpu-duration-trace.mjs';
+// GPU TRACE OPT-IN END
 const gpuApiWallStages=['issue.drawingBufferWidth','issue.drawingBufferHeight','issue.drawFramebufferBinding','issue.samples',
  'issue.sampleBuffers','issue.createQuery','issue.beginQuery','issue.ownershipAfterBegin','close.ownership','close.endQuery'];
 /** Independent receipt arithmetic; call spans overlap the existing enclosing
@@ -135,7 +138,18 @@ const report={sourceHead:process.env.GITHUB_SHA||null,device,viewport,requestedS
 const server=createCoopStaticServer(resolve(game,'dist'));
 await new Promise(ok=>server.listen(0,'127.0.0.1',ok));
 const begin=Date.now();let browser,page;
+// GPU TRACE OPT-IN BEGIN
+const traceRequested=process.env.BELLE_GPU_TRACE==='1';
+const traceEnvironment=traceRequested?{platform:process.platform,device,mode,requestedSeconds:seconds,renderBackend:null,actualGpu:null}:null;
+const trace=traceRequested?createGpuDurationTrace({output,environment:traceEnvironment,
+ createSession:()=>browser.newBrowserCDPSession(),browserVersion:()=>browser.version(),
+ markClock:name=>page.evaluate(markGpuTraceClock,name)}):null;
+// GPU TRACE OPT-IN END
 try{
+ // GPU TRACE OPT-IN BEGIN
+ if(traceRequested&&(process.platform!=='darwin'||device!=='desktop'||mode!=='full'||seconds!==90))
+  throw Error('BELLE_GPU_TRACE=1 requires the unchanged 90-second desktop full-scene native Metal workload on darwin');
+ // GPU TRACE OPT-IN END
  const native=process.platform==='darwin'?'metal':process.platform==='win32'?'d3d11':'gl';
  const hardware={name:'angle-'+native,args:['--enable-gpu','--use-gl=angle','--use-angle='+native]};
  const candidates=process.platform==='darwin'?[hardware]:[hardware,
@@ -297,6 +311,12 @@ try{
  else await expect(page.locator('#performance-probe-warning')).toHaveCount(0);
  const panel=page.locator('#ride-profile');
  await expect(panel).toBeAttached();
+ // GPU TRACE OPT-IN BEGIN
+ if(trace){
+  Object.assign(traceEnvironment,{renderBackend:report.renderBackend,actualGpu:report.actualGpu});
+  await trace.start(); // Setup errors remain explicit evidence; every original workload assertion still runs.
+ }
+ // GPU TRACE OPT-IN END
  await panel.locator('summary').click();
  // Start independent observers before the profiler/menu transition. Resetting
  // after closing Settings would miss the preceding render of an early stall.
@@ -352,6 +372,10 @@ try{
  report.gpuDurationValidationErrors=validateGpuDuration(report.gpuDuration,report.actualGpu);
  report.gpuApiWall=summarizeGpuApiWall(report.gpuDuration);
  report.gpuDurationDiagnosticComplete=report.gpuDurationValidationErrors.length===0;
+ // GPU TRACE OPT-IN BEGIN
+ // Riding, native key release and ending counters are complete before any IO.read.
+ if(trace)report.gpuTrace=await trace.finish(report.gpuDuration?.samples??[]);
+ // GPU TRACE OPT-IN END
  if(report.profile.stopReason!=='trusted-W-keyup')throw Error('Capture did not end on real trusted keyboard release');
  report.memory=await page.evaluate(()=>({
   jsHeap:performance.memory?{usedBytes:performance.memory.usedJSHeapSize,limitBytes:performance.memory.jsHeapSizeLimit}:null,
@@ -397,6 +421,14 @@ try{
  })).catch(()=>null);
 }
 finally{
+ // GPU TRACE OPT-IN BEGIN
+ if(trace){
+  report.gpuTrace??=await trace.finish(report.gpuDuration?.samples??[]);
+  report.gpuTraceDiagnosticComplete=report.gpuTrace.complete;
+  report.passed=report.passed&&report.gpuTraceDiagnosticComplete;
+  report.classification+='; host-trace='+(report.gpuTraceDiagnosticComplete?'complete':'incomplete');
+ }
+ // GPU TRACE OPT-IN END
  report.elapsedWallMs=Date.now()-begin;
  await writeFile(resolve(output,'report.json'),JSON.stringify(report,null,2)+'\n');
  if(browser)await browser.close().catch(()=>{});

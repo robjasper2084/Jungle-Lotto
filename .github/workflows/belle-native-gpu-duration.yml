@@ -1,4 +1,4 @@
-name: Belle native GPU duration diagnostic
+name: Belle native GPU metadata trace diagnostic
 
 on:
   push:
@@ -10,18 +10,19 @@ permissions:
 
 concurrency:
   group: belle-native-gpu-duration-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 env:
   BASELINE_SHA: a3d872a23fce2e378b00b15f8e512502907106d3
-  EXPERIMENT_PARENT_SHA: 784405af08007c79411303dc5cff688ad990326a
+  EXPERIMENT_PARENT_SHA: 5009aa7f4204d31a0cbe23a7975095e64e694cb2
+  EXPERIMENT_PARENT_TREE: 81a57e75523a0740c15ae1696b5b62bb6f7d8062
   INTEGRATED_MAIN_SHA: 2a8901996e53b1f93474f3c2165e078b6dd16e57
   GAME_PATH: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
   STRICT_SCRIPT_SHA256: 8f6af949083800c491b65e0709c04cc29eb5712634f744c5b912f76ce651fcf5
 
 jobs:
   native-gpu-duration:
-    name: Measure bounded GPU duration with the original full-game workload
+    name: Trace GPU metadata stalls with the original full desktop workload
     runs-on: macos-15
     timeout-minutes: 45
     steps:
@@ -49,17 +50,33 @@ jobs:
           const commit=git('rev-parse','HEAD'),tree=git('rev-parse','HEAD^{tree}');
           const parents=git('show','-s','--format=%P','HEAD').split(' ').filter(Boolean);
           const currentMain=git('rev-parse','refs/remotes/origin/main');
-          const expectedExtras=['.github/workflows/belle-native-gpu-duration.yml',game+'/scripts/gpu-duration-native-check.mjs',game+'/src/belle/main.ts',game+'/src/belle/gpuDurationProbe.ts',game+'/src/belle/gpuDurationProbe.test.ts',game+'/src/belle/locationIntegration.test.ts',game+'/run-tests.mjs'].sort();
-          const expectedIncrement=['.github/workflows/belle-native-gpu-duration.yml',game+'/scripts/gpu-duration-native-check.mjs',game+'/src/belle/gpuDurationProbe.ts',game+'/src/belle/gpuDurationProbe.test.ts'].sort();
+          const expectedExtras=['.github/workflows/belle-native-gpu-duration.yml',game+'/scripts/gpu-duration-native-check.mjs',game+'/scripts/gpu-duration-trace.mjs',game+'/scripts/gpu-duration-trace.test.mjs',game+'/src/belle/main.ts',game+'/src/belle/gpuDurationProbe.ts',game+'/src/belle/gpuDurationProbe.test.ts',game+'/src/belle/locationIntegration.test.ts',game+'/run-tests.mjs'].sort();
+          const expectedIncrement=['.github/workflows/belle-native-gpu-duration.yml',game+'/scripts/gpu-duration-native-check.mjs',game+'/scripts/gpu-duration-trace.mjs',game+'/scripts/gpu-duration-trace.test.mjs'].sort();
           const proof={version:1,repository:'robjasper2084/Jungle-Lotto',commit,tree,parents,
             baseline:process.env.BASELINE_SHA,expectedParent:process.env.EXPERIMENT_PARENT_SHA,
             integratedMain:process.env.INTEGRATED_MAIN_SHA,currentMain,
             expectedExtras,actualExtras:names(process.env.BASELINE_SHA,'HEAD'),expectedIncrement,actualIncrement:names(process.env.EXPERIMENT_PARENT_SHA,'HEAD'),verified:false};
           await writeFile(resolve(out,'source-preflight.json'),JSON.stringify(proof,null,2)+'\n');
           assert.equal(commit,process.env.GITHUB_SHA);
-          assert.deepEqual(parents,[process.env.EXPERIMENT_PARENT_SHA],'Wall-timing follow-up must have exactly the reviewed first diagnostic as its sole parent');
+          assert.deepEqual(parents,[process.env.EXPERIMENT_PARENT_SHA],'Trace follow-up must have exactly the reviewed call-wall diagnostic as its sole parent');
+          assert.equal(git('rev-parse',process.env.EXPERIMENT_PARENT_SHA+'^{tree}'),process.env.EXPERIMENT_PARENT_TREE);
           assert.deepEqual(proof.actualExtras,expectedExtras,'Only the explicit opt-in diagnostic module, integration, tests, runner, driver and workflow may differ');
-          assert.deepEqual(proof.actualIncrement,expectedIncrement,'The follow-up may change only the timing probe/test, separate diagnostic driver and workflow');
+          assert.deepEqual(proof.actualIncrement,expectedIncrement,'The follow-up may change only the separate diagnostic driver, bounded trace helper/test and workflow');
+          const expectedStatuses=['M\t.github/workflows/belle-native-gpu-duration.yml','M\t'+game+'/scripts/gpu-duration-native-check.mjs',
+            'A\t'+game+'/scripts/gpu-duration-trace.mjs','A\t'+game+'/scripts/gpu-duration-trace.test.mjs'].sort();
+          assert.deepEqual(git('diff','--no-renames','--name-status',process.env.EXPERIMENT_PARENT_SHA,'HEAD').split('\n').filter(Boolean).sort(),expectedStatuses);
+          const rawChanges=git('diff','--no-renames','--raw',process.env.EXPERIMENT_PARENT_SHA,'HEAD').split('\n').filter(Boolean);
+          assert.equal(rawChanges.length,4);
+          for(const change of rawChanges){
+            const match=change.match(/^:(\d{6}) (\d{6}) [0-9a-f]+ [0-9a-f]+ ([AM])\t(.+)$/);
+            assert(match&&match[2]==='100644'&&((match[3]==='A'&&match[1]==='000000')||(match[3]==='M'&&match[1]==='100644')),'No mode or type change is allowed');
+          }
+          proof.runtimeTrees={};
+          for(const directory of ['src','runtime']){
+            const path=game+'/'+directory,original=git('rev-parse',process.env.EXPERIMENT_PARENT_SHA+':'+path),candidate=git('rev-parse','HEAD:'+path);
+            assert.equal(candidate,original,'The application and GPU probe, including all GL operations and query positions, must remain unchanged');
+            proof.runtimeTrees[path]=candidate;
+          }
           execFileSync('git',['merge-base','--is-ancestor',process.env.BASELINE_SHA,process.env.EXPERIMENT_PARENT_SHA]);
           execFileSync('git',['merge-base','--is-ancestor',process.env.INTEGRATED_MAIN_SHA,process.env.BASELINE_SHA]);
           execFileSync('git',['merge-base','--is-ancestor',currentMain,process.env.BASELINE_SHA]);
@@ -77,6 +94,8 @@ jobs:
           npm test
           node --check scripts/sustained-ride-profile.mjs
           node --check scripts/gpu-duration-native-check.mjs
+          node --check scripts/gpu-duration-trace.mjs
+          node --test scripts/gpu-duration-trace.test.mjs
           npm run build
       - name: Retain committed source hashes and the immutable full-game build
         id: identity
@@ -154,7 +173,7 @@ jobs:
             integratedMainCommit:process.env.INTEGRATED_MAIN_SHA,currentMainCommit:preflight.currentMain,
             buildId:'native-gpu-duration-'+process.env.GITHUB_RUN_ID+'-'+commit,builtAt:new Date().toISOString(),node:process.version,
             workflow:{path:workflowPath,sha256:hash(workflowBytes)},buildMetadata,sources,files,
-            scope:'Isolated opt-in asynchronous GPU elapsed queries with bounded per-call elapsed wall timing over the full-game desktop and phone workloads. Call wall duration is not pure CPU execution or GPU causation. The original strict script remains byte-identical; the separate diagnostic driver preserves its native input, renderer flags, quality, timing limits and GPS coverage. Instrumented frame intervals cannot grant release acceptance. Phone remains an emulated viewport, not physical-device certification.'};
+            scope:'Isolated bounded browser trace during the unchanged full desktop GPU-duration workload. Product runtime, diagnostic GL operations, query placement and per-call wall timing are unchanged from the reviewed parent. The trace uses a narrow category request with recorded runtime discovery, a fixed buffer, explicit clock correlation, validated exported coverage and data-loss reporting. The original strict script remains byte-identical; native input, renderer flags, quality, the 90-second ride, frame-budget limits and GPS coverage are preserved. Tracing adds observer overhead; no instrumented result grants release acceptance. The prior phone diagnostic is not rerun or replaced by this desktop-only follow-up.'};
           await writeFile(resolve(out,'source-integrity.json'),JSON.stringify(metadata,null,2)+'\n');
           console.log('BELLE_GPU_DURATION_BUILD '+JSON.stringify({commit,tree,parent,baseline:metadata.baseline,buildId:metadata.buildId,files:files.length,sourceFiles:sourceFiles.length,strictScriptSha256:sources['scripts/sustained-ride-profile.mjs']}));
           NODE
@@ -165,7 +184,7 @@ jobs:
         run: |
           npm ci
           npx playwright install chrome
-      - name: Capture instrumented full desktop GPU duration and retained gates
+      - name: Trace metadata stalls during the full desktop ride and retain every gate
         id: desktop
         if: ${{ !cancelled() && steps.identity.outcome == 'success' }}
         timeout-minutes: 10
@@ -174,16 +193,7 @@ jobs:
           BELLE_PROFILE_DEVICE: desktop
           BELLE_PROFILE_MODE: full
           BELLE_PROFILE_SECONDS: '90'
-        run: node scripts/gpu-duration-native-check.mjs
-      - name: Capture instrumented full phone GPU duration and retained gates
-        id: phone
-        if: ${{ !cancelled() && steps.identity.outcome == 'success' }}
-        timeout-minutes: 10
-        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
-        env:
-          BELLE_PROFILE_DEVICE: phone
-          BELLE_PROFILE_MODE: full
-          BELLE_PROFILE_SECONDS: '90'
+          BELLE_GPU_TRACE: '1'
         run: node scripts/gpu-duration-native-check.mjs
       - name: Verify exact source and full-game build remained unchanged
         id: integrity_after
@@ -234,7 +244,6 @@ jobs:
           IDENTITY_OUTCOME: ${{ steps.identity.outcome }}
           BROWSER_OUTCOME: ${{ steps.browser.outcome }}
           DESKTOP_OUTCOME: ${{ steps.desktop.outcome }}
-          PHONE_OUTCOME: ${{ steps.phone.outcome }}
           INTEGRITY_AFTER_OUTCOME: ${{ steps.integrity_after.outcome }}
         run: |
           node --input-type=module <<'NODE'
@@ -243,11 +252,11 @@ jobs:
           import {createHash} from 'node:crypto';
           import {resolve,relative,sep} from 'node:path';
           const out=resolve('gpu-duration-evidence');mkdirSync(out,{recursive:true});
-          for(const device of ['desktop','phone']){
+          for(const device of ['desktop']){
             const source=resolve(process.env.GAME_PATH,'output/gpu-duration-profile/full',device);
             if(existsSync(source))cpSync(source,resolve(out,'gpu-duration/full',device),{recursive:true});
           }
-          const outcomes=Object.fromEntries(['PREFLIGHT','BUILD','IDENTITY','BROWSER','DESKTOP','PHONE','INTEGRITY_AFTER'].map(name=>[name.toLowerCase(),process.env[name+'_OUTCOME']??'unknown']));
+          const outcomes=Object.fromEntries(['PREFLIGHT','BUILD','IDENTITY','BROWSER','DESKTOP','INTEGRITY_AFTER'].map(name=>[name.toLowerCase(),process.env[name+'_OUTCOME']??'unknown']));
           await writeFile(resolve(out,'step-outcomes.json'),JSON.stringify({commit:process.env.GITHUB_SHA,outcomes,
             note:'Original step outcomes are retained. Each instrumented command retains all failures against the original limits; evidence collection never converts a failure to success or grants release acceptance.'},null,2)+'\n');
           const hashes=[];async function walk(directory){for(const entry of await readdir(directory,{withFileTypes:true})){
