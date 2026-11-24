@@ -65,7 +65,7 @@ export class WorldAtmosphere {
  }
  private patch(material:T.Material,wind?:Wind){
   if(this.originals.has(material)||!(material as T.MeshStandardMaterial).isMeshStandardMaterial)return;
-  const compile=material.onBeforeCompile,key=material.customProgramCacheKey,identity=key.call(material),inherited=!wind&&hasAtmosphereProgram(compile);this.originals.set(material,{compile,key});
+  const compile=material.onBeforeCompile,key=material.customProgramCacheKey,identity=key.call(material),inherited=!wind&&hasAtmosphereProgram(compile,this);this.originals.set(material,{compile,key});
   material.onBeforeCompile=(shader,renderer)=>{
    compile.call(material,shader,renderer);if(wind)this.bindWind(shader,wind);
    Object.assign(shader.uniforms,this.uniforms);
@@ -76,7 +76,7 @@ export class WorldAtmosphere {
    }
   };
   registerSharedGeometryShader(material,compile);
-  registerAtmosphereProgram(material);
+  registerAtmosphereProgram(material,this,!!wind,compile);
   material.customProgramCacheKey=()=>inherited?identity:identity+'|belle-pbr-v1|belle-height-fog-clouds-v2'+(wind?'|wind':'');material.needsUpdate=true;
  }
  update(time:number,direction:T.Vector3,coverage:number,day:number,overcast:number,quality:string,reduced:boolean,xr:boolean){
