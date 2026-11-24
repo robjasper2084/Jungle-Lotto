@@ -28,6 +28,7 @@ import {FrameBudget,sceneFrameCap} from './frameBudget.ts';
 import {softwareWebGLRenderer} from './worldPerformancePolicy.ts';
 import {pauseSoftwareStartupScene} from './startupRenderPolicy.ts';
 import {installGpuFramePacing} from './gpuFramePacing.ts';
+import {installShadowMatrixCache} from './shadowMatrixCache.ts';
 import {readAntiAliasingMode,enableHardwareAntialiasing} from './antiAliasingPolicy.ts';
 import {prepareCoastGuardMap} from './coastGuard.ts';
 import coastGuardLayout from './coastGuardLayout.json' with {type:'json'};
@@ -299,6 +300,7 @@ hydraulicCabinInput=new HydraulicCabinInput(canvas,{
 
 if(new URLSearchParams(location.search).has('gds-capture'))Object.defineProperty(window,'__gdsCamera',{value:()=>{if(locationFollowing)return {unavailable:'Real location follow is private.'};const heading=camera.getWorldDirection(new T.Vector3());return {position:camera.position.toArray(),direction:heading.toArray(),fovDegrees:camera.fov};},configurable:false});
 const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreference:'high-performance'});
+installShadowMatrixCache(renderer);
  // The renderer's ACTUAL WebGL backend, not a user-agent/viewport guess,
  // governs whether decorative preview canvases should consume a second GPU.
  const gameGl=renderer.getContext(),gpuDebug=gameGl.getExtension('WEBGL_debug_renderer_info');
@@ -599,6 +601,7 @@ const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreferen
   }
   status('Preparing Cadillac lighting');
   await sceneWarmup.prepare(cadillac.model);
+  status('Preparing nearby landmarks');
   await world.prepareCadillacLandmarks(camera,core.current.x,core.current.z);
   cadillac.start();cameraPitch=.1;
  }else if(choice.vehicle!=='onewheel'){await hover!.selectVehicle(choice,scene);await hover!.prepare(scene,true);}startup.leave(()=>{world.sky.preview(false);world.sky.protectStartup();startupMetrics.begin('solo');active=true;paused=false;destination??=firstRide.begin(destination);chooseView(choice.camera==='fpp');el('ridehud').hidden=false;el('navigation').hidden=false;zone.hidden=!touch.checked;snap=true;canvas.focus();vr?.refresh();if(isCadillacVariant(choice.vehicle)){if(choice.camera==='tpp')cameraYaw=.60;starting=false;if(cadillacDiagnostic)rideProfile?.start();}else if(choice.vehicle!=='onewheel')void hover!.mount(scene).finally(()=>{starting=false;});else starting=false;});}catch(error){starting=false;startup.retryRide('Your ride could not load. Try again, or choose the other vehicle.');console.warn('Selected ride preparation failed',error);}};
@@ -682,9 +685,9 @@ const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreferen
       if(recover){cadillac.start();recover=false;snap=true;}
       const forward=throttle+Number(keys.has('KeyW')||keys.has('ArrowUp'))-Number(keys.has('KeyS')||keys.has('ArrowDown'));
       const turn=steer+Number(keys.has('KeyD')||keys.has('ArrowRight'))-Number(keys.has('KeyA')||keys.has('ArrowLeft'));
-      cadillac.update(dt,{gas:Math.max(0,forward),brake:Math.max(-forward,hud?.held.has('brake')?1:0),steer:turn,handbrake:keys.has('Space')},world.sky.nightAmount.value,reduced,keys,hydraulicMode);
+      cadillac.update(dt,{gas:Math.max(0,forward),brake:Math.max(-forward,hud?.held.has('brake')?1:0),steer:turn,handbrake:keys.has('Space')},world.sky.nightAmount.value,reduced,keys,hydraulicMode,elapsed);
       if(cadillac.exitReady){const exit=cadillac.sim.exitPoint();if(exit){jump(exit.x,exit.z,exit.heading);core.advance(1/60,{dismount:true,instantDismount:true});pose=core.current;}}
-    }else if(hydraulicPreview)cadillac.updateHydraulicPreview(dt,reduced);
+    }else if(hydraulicPreview)cadillac.updateHydraulicPreview(dt,reduced,elapsed);
     if(cadillac.riding){const p=cadillac.sim.pose;pose={...pose,x:p.x,y:p.y,z:p.z,headingY:p.heading,speed:p.speed,groundPitch:p.pitch,groundRoll:p.roll};}
   }
   sunsetPreview?.sync();hover?.update(dt,!blocked()&&!photo?.active&&!sunsetPreview?.showcase,clock);boat?.update(dt,!blocked()&&!photo?.active,clock,reduced);world.boatWake(boat?.wake??null);world.waterVehicle(hover?.riding?hover.sim.pose:null);if(hover?.riding){const hp=hover.sim.pose;pose={...pose,x:hp.x,y:hp.y,z:hp.z,headingY:hp.heading,speed:hp.speed,groundPitch:hp.pitch,groundRoll:hp.roll};}if(boat?.riding){const bp=boat.sim.pose;pose={...pose,x:bp.x,y:bp.y,z:bp.z,headingY:bp.heading,speed:bp.speed};}const slidePose=slide?.update(dt,!cadillac?.riding&&!blocked()&&!photo?.active&&!hover?.riding);if(slidePose)pose=slidePose;if(slide?.active){hop=recover=mount=false;}const manualPose=pose;const trialPose:TrialPose={x:pose.x,y:pose.y,z:pose.z,heading:pose.headingY,vehicle:hover?.riding?'hoverbike':'onewheel',onFoot:!hover?.riding&&pose.footBlend>.05,pitch:hover?.riding?hover.sim.pose.pitch:pose.wheelPitch,roll:hover?.riding?hover.sim.pose.roll:pose.groundRoll*.25-pose.rollAngle};trials?.update(elapsed,trialPose,now);const simEnd=performance.now();

@@ -277,12 +277,12 @@ export class CadillacRide {
   get exitReady(){return this.exiting&&this.suspension.readyForDrive&&(!this.door||this.doorAngle>.96)&&!this.access?.held;}
   /** A detailed setup dialog pauses driving, while its requested lift previews
    * keep using the same motion controller. Other animation layers stay paused. */
-  updateHydraulicPreview(dt:number,reduced:boolean){
+  updateHydraulicPreview(dt:number,reduced:boolean,hydraulicSeconds=dt){
     if(!this.riding||this.exiting||Math.abs(this.sim.pose.speed)>.001||this.suspension.snapshot().hop&&!reduced)return;
-    this.suspension.update(dt,reduced);this.presentSuspension(0,true);
+    this.suspension.update(hydraulicSeconds,reduced);this.presentSuspension(0,true);
     this.hydraulicSwitches.update(dt,reduced);
   }
-  update(dt:number,input:CarInput,night:number,reduced:boolean,keys:ReadonlySet<string>=emptyKeys,controlsHeld=false){
+  update(dt:number,input:CarInput,night:number,reduced:boolean,keys:ReadonlySet<string>=emptyKeys,controlsHeld=false,hydraulicSeconds=dt){
     if(!this.riding)return;
     dt=clamp(Number.isFinite(dt)?dt:0,0,.12);
     const smooth=1-Math.exp(-dt*8);
@@ -297,7 +297,9 @@ export class CadillacRide {
       if(!this.settleSuspension().accepted)this.levelDenied=true;
     }
     if(!wantsDrive)this.levelDenied=false;
-    this.suspension.update(dt,reduced);
+    // The suspension owns its existing per-frame bound. Driving and every
+    // other animation retain the caller's separately bounded simulation dt.
+    this.suspension.update(hydraulicSeconds,reduced);
     if(this.suspension.readyForDrive)this.automaticLevel=false;
     this.doorAngle=T.MathUtils.lerp(this.doorAngle,Number(this.doorOpen),reduced?1:smooth);
     if(Math.abs(this.doorAngle-Number(this.doorOpen))<.0001)this.doorAngle=Number(this.doorOpen);

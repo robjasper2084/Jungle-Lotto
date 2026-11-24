@@ -23,7 +23,7 @@ const source=process.env.CADILLAC_MODS_SOURCE_SHA||checkout;
 assert.match(source,/^[0-9a-f]{40}$/);assert.equal(checkout,source,'Checkout must be the exact requested head');
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
 const report={version:2,case:caseName,source,checkout,run:process.env.GITHUB_RUN_ID??null,viewport,mobile,
- passed:false,phase:'setup',startedAt:new Date().toISOString(),checks:{},snapshots:[],captures:[],errors:[],failedRequests:[],
+ passed:false,phase:'setup',startedAt:new Date().toISOString(),checks:{},snapshots:[],captures:[],errors:[],failedRequests:[],startupWarnings:[],
  harness:{pointerActivations:0,diagnosticKeyboardActivations:0,explicitScrolls:0,alreadyVisibleScrolls:0,cooldownReports:0,snapshotTimings:[]},
  limitations:'Actual built full island on Chrome SwiftShader. Functional/layout screenshots and native input only; not physical-device, hardware FPS, sustained-performance, or completed human visual acceptance. Short Ride profile reports below are paused UI state snapshots, not performance samples. Existing release gates are unchanged.'};
 await mkdir(out,{recursive:true});
@@ -496,12 +496,22 @@ async function run(){
  report.browser=browser.version();
  context=await browser.newContext({viewport,isMobile:mobile,hasTouch:mobile,deviceScaleFactor:1,reducedMotion:'reduce',serviceWorkers:'block'});
  await context.addInitScript(()=>{
-  const evidence=window.__cadillacModsEvidence={input:[],states:[],modeStates:[]};let last='',lastMode='';
+  const evidence=window.__cadillacModsEvidence={input:[],states:[],modeStates:[],startupStates:[]};let last='',lastMode='',lastStartup='';
+  const recordStartup=reason=>{
+   const welcome=document.querySelector('#welcome'),start=document.querySelector('#start');if(!welcome||!start)return;
+   const state={welcomeState:welcome.dataset.state??null,welcomeHidden:welcome.hidden,atStart:document.body.classList.contains('at-start'),
+    loading:document.querySelector('#loading')?.textContent??null,startLabel:document.querySelector('#start-label')?.textContent??null,startDisabled:start.disabled};
+   const next=JSON.stringify(state);if(reason==='mutation'&&next===lastStartup)return;lastStartup=next;
+   if(evidence.startupStates.length>=128)evidence.startupStates.shift();
+   evidence.startupStates.push({...state,reason,at:performance.now()});
+  };
   for(const type of ['click','keydown','input','change','pointerdown','pointerup'])document.addEventListener(type,event=>{
    if(evidence.input.length<5000)evidence.input.push({type,trusted:event.isTrusted,code:event.code??null,pointerType:event.pointerType??null,target:event.target?.id||event.target?.closest?.('button,label')?.textContent?.trim()?.slice(0,100)||event.target?.tagName,
     modeMotion:document.querySelector('#hydraulic-controls')?.getAttribute('data-motion')??null,modeActive:document.body?.classList.contains('belle-hydraulic-mode')??false,at:performance.now()});
+   if(type==='click'&&event.target?.closest?.('#start'))recordStartup('start-click');
   },true);
   new MutationObserver(()=>{
+   recordStartup('mutation');
    const note=document.querySelector('#cadillac-modifications-note'),mods=document.querySelector('#cadillac-modifications');
    if(note&&mods){
     const motion=mods.getAttribute('data-motion')??'idle';
@@ -520,11 +530,15 @@ async function run(){
     hopsLocked:['all','front','rear'].every(mode=>document.querySelector('#hydraulic-hop-'+mode)?.disabled),
     corners,feedback:document.querySelector('#hydraulic-controls-feedback')?.textContent,settingsOpen:!!document.querySelector('#settings[open]')};
    const next=JSON.stringify(state);if(next!==lastMode){lastMode=next;evidence.modeStates.push({...state,at:performance.now()});}
-  }).observe(document,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['disabled','open','hidden','data-motion','data-view','aria-valuetext','class']});
+  }).observe(document,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['disabled','open','hidden','data-state','data-motion','data-view','aria-valuetext','class']});
  });
  page=await context.newPage();page.setDefaultTimeout(90000);client=await context.newCDPSession(page);touchSequence=createNativeTouchSequence((method,params)=>client.send(method,params));
  page.on('pageerror',error=>report.errors.push(error.stack||error.message));
- page.on('console',message=>{if(message.type()==='error'||/context.*lost/i.test(message.text()))report.errors.push(message.text());});
+ page.on('console',message=>{
+  if(message.type()==='error'||/context.*lost/i.test(message.text()))report.errors.push(message.text());
+  if(message.type()==='warning'&&message.text().startsWith('Selected ride preparation failed')&&report.startupWarnings.length<8)
+   report.startupWarnings.push({at:new Date().toISOString(),phase:report.phase,message:message.text()});
+ });
  page.on('response',response=>{if(response.status()>=400)report.errors.push('HTTP '+response.status()+' '+response.url());});
  page.on('requestfailed',request=>report.failedRequests.push({phase:report.phase,url:request.url(),type:request.resourceType(),error:request.failure()?.errorText}));
  phase('boot');await page.goto('http://127.0.0.1:'+server.address().port+'/?ride='+variant+'&profile=1',{waitUntil:'domcontentloaded',timeout:30000});
@@ -549,7 +563,14 @@ async function run(){
 try{await bounded(run(),32*60000,'Cadillac modification case');}
 catch(error){
  report.failurePhase=report.phase;report.errors.push(error.stack||String(error));
- if(page)try{report.nativeEvidence=await page.evaluate(()=>window.__cadillacModsEvidence);const file='failure.png';await page.screenshot({path:resolve(out,file),timeout:30000});report.failureScreenshot=file;}catch(captureError){report.errors.push('Failure screenshot: '+captureError.message);}
+ if(page)try{
+  const failure=await page.evaluate(()=>({evidence:window.__cadillacModsEvidence,startup:{at:performance.now(),
+   welcomeState:document.querySelector('#welcome')?.dataset.state??null,welcomeHidden:document.querySelector('#welcome')?.hidden??null,
+   atStart:document.body?.classList.contains('at-start')??null,loading:document.querySelector('#loading')?.textContent??null,
+   startLabel:document.querySelector('#start-label')?.textContent??null,startDisabled:document.querySelector('#start')?.disabled??null}}));
+  report.nativeEvidence=failure.evidence;report.startupAtFailure=failure.startup;
+  const file='failure.png';await page.screenshot({path:resolve(out,file),timeout:30000});report.failureScreenshot=file;
+ }catch(captureError){report.errors.push('Failure screenshot: '+captureError.message);}
 }
 finally{
  phase('cleanup');if(touchSequence)try{report.touchCleanup=await bounded(touchSequence.cancelActive(),10000,'Native input cleanup');}catch(error){report.errors.push('Native input cleanup: '+error.message);}
