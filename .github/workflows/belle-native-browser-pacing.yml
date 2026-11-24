@@ -1,0 +1,107 @@
+name: Belle native browser pacing experiment
+
+on:
+  push:
+    branches: [upgrade-redesign-native-browser-20261124]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: belle-native-browser-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  PRODUCT_PARENT_SHA: 2c3e6757f4266c35f95d1dfe6b15f1a840e97161
+  INTEGRATED_MAIN_SHA: 3e68163e94d173395cf7a2f47bd37859cf1a3f47
+  GAME_PATH: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+  STRICT_SCRIPT_SHA256: c7bf025a63918b885bcd7e1bcda55865423aba73c63f58a8287ff9a03af1a100
+
+jobs:
+  strict-native:
+    name: Build exact source and run unchanged full desktop and phone captures
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Check test and build the exact experiment source
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm ci
+          npm run check
+          npm test
+          node --check scripts/sustained-ride-profile.mjs
+          npm run build
+      - name: Retain source and built-file identity
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {createHash} from 'node:crypto';
+          import {execFileSync} from 'node:child_process';
+          import {readFile,readdir,writeFile,mkdir} from 'node:fs/promises';
+          import {resolve,relative,sep} from 'node:path';
+          const game=resolve(process.env.GAME_PATH),out=resolve('native-browser-evidence'),hash=b=>createHash('sha256').update(b).digest('hex');
+          const commit=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();assert.equal(commit,process.env.GITHUB_SHA);
+          const tree=execFileSync('git',['rev-parse','HEAD^{tree}'],{encoding:'utf8'}).trim();
+          const parent=execFileSync('git',['rev-parse','HEAD^'],{encoding:'utf8'}).trim();assert.equal(parent,process.env.PRODUCT_PARENT_SHA);
+          const sourceFiles=['scripts/sustained-ride-profile.mjs','scripts/coop-static-server.mjs','package-lock.json','../../package-lock.json',
+            ...['main.ts','gpuFramePacing.ts','rideShadowWarmup.ts','atmosphereShaders.ts','loopDiagnostics.ts','rideProfile.ts','rideProfileStats.ts'].map(x=>'src/belle/'+x)];
+          const sources=Object.fromEntries(await Promise.all(sourceFiles.map(async path=>[path,hash(await readFile(resolve(game,path)))])));
+          assert.equal(sources['scripts/sustained-ride-profile.mjs'],process.env.STRICT_SCRIPT_SHA256);
+          const files=[];async function walk(dir){for(const entry of await readdir(dir,{withFileTypes:true})){
+            const path=resolve(dir,entry.name);if(entry.isDirectory())await walk(path);else{assert(entry.isFile());const bytes=await readFile(path);files.push({path:relative(resolve(game,'dist'),path).split(sep).join('/'),bytes:bytes.length,sha256:hash(bytes)});}
+          }}await walk(resolve(game,'dist'));files.sort((a,b)=>a.path.localeCompare(b.path));
+          const metadata={version:1,repository:'robjasper2084/Jungle-Lotto',commit,tree,parent,integratedMainCommit:process.env.INTEGRATED_MAIN_SHA,
+            buildId:'native-browser-'+process.env.GITHUB_RUN_ID+'-'+commit,builtAt:new Date().toISOString(),node:process.version,sources,files,
+            scope:'New native Apple Metal animation pacing candidate. Both full-scene captures use the unchanged strict script and one immutable build. This experiment does not replace final PR release checks.'};
+          await mkdir(out,{recursive:true});await writeFile(resolve(out,'source-integrity.json'),JSON.stringify(metadata,null,2)+'\n');
+          console.log('BELLE_NATIVE_BROWSER_BUILD '+JSON.stringify({commit,tree,parent,buildId:metadata.buildId,files:files.length,strictScriptSha256:sources['scripts/sustained-ride-profile.mjs']}));
+          NODE
+      - name: Install the pinned browser driver and Chrome
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install chrome
+      - name: Run both unchanged strict full-scene captures and retain original outcomes
+        run: |
+          node --input-type=module <<'NODE'
+          import {spawnSync} from 'node:child_process';
+          import {readFileSync,writeFileSync,cpSync,existsSync} from 'node:fs';
+          import {resolve} from 'node:path';
+          const game=resolve(process.env.GAME_PATH),receipts=[];
+          const browserPacing=value=>value?.installed===true&&value.mode==='browser'&&value.submittedCallbacks===0&&value.pendingFenceSkippedCallbacks===0&&
+            ['capacity','pendingCallbacks','completedCallbacks','peakPendingCallbacks'].every(key=>value[key]===null);
+          for(const device of ['desktop','phone']){
+            const child=spawnSync(process.execPath,['scripts/sustained-ride-profile.mjs'],{cwd:game,stdio:'inherit',
+              env:{...process.env,BELLE_PROFILE_DEVICE:device,BELLE_PROFILE_MODE:'full',BELLE_PROFILE_SECONDS:'90'}});
+            const output=resolve(game,'output/sustained-profile/full',device);let report=null,readError=null;
+            try{report=JSON.parse(readFileSync(resolve(output,'report.json'),'utf8'));}catch(error){readError=String(error);}
+            if(existsSync(output))cpSync(output,resolve('native-browser-evidence',device),{recursive:true});
+            const pacing=report?.profile?.gpuFramePacing;
+            const identityValid=report?.sourceHead===process.env.GITHUB_SHA&&report?.device===device&&report?.mode==='full'&&report?.requestedSeconds===90;
+            const treatmentValid=browserPacing(pacing?.atStart)&&browserPacing(pacing?.atFinish)&&pacing.atFinish.renderedCallbacks>pacing.atStart.renderedCallbacks;
+            receipts.push({device,status:child.status,signal:child.signal,error:child.error?String(child.error):null,readError,
+              source:report?.sourceHead,identityValid,treatmentValid,passed:report?.passed,frameQualityAccepted:report?.frameQualityAccepted,
+              frames:report?.profile?.frames,frameMs:report?.profile?.metrics?.frameMs,over250ms:report?.profile?.over250ms,
+              actualGpu:report?.actualGpu,pacing:report?.profile?.gpuFramePacing,
+              errors:report?.errors,failedRequests:report?.failedRequests,probeErrors:report?.probeErrors});
+            writeFileSync('native-browser-evidence/results.json',JSON.stringify({version:1,source:process.env.GITHUB_SHA,receipts},null,2)+'\n');
+          }
+          console.log('BELLE_NATIVE_BROWSER_RESULTS '+JSON.stringify(receipts));
+          process.exit(receipts.every(row=>row.status===0&&row.identityValid===true&&row.treatmentValid===true&&row.passed===true&&row.frameQualityAccepted===true)?0:1);
+          NODE
+      - name: Preserve all evidence including failed numerical results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-native-browser-pacing-${{ github.sha }}
+          path: native-browser-evidence/
+          if-no-files-found: warn
+          retention-days: 14
