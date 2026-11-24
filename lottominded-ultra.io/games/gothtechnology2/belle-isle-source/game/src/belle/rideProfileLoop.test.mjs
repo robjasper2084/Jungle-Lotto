@@ -2,9 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {fileURLToPath} from 'node:url';
 import {readFile} from 'node:fs/promises';
+import {createContext,runInContext} from 'node:vm';
 import {build} from 'esbuild';
 import {ManualLoopProbe} from './loopDiagnostics.ts';
 import {installGpuFramePacing,attachGpuFramePacingProbe,gpuFramePacingDiagnostics} from './gpuFramePacing.ts';
+import {createNatureRenderProbe} from './renderDiagnostics.ts';
 const {outputFiles}=await build({entryPoints:[fileURLToPath(new URL('./rideProfile.ts',import.meta.url))],bundle:true,write:false,platform:'node',format:'esm',logLevel:'error'});
 const {RideProfile}=await import('data:text/javascript;base64,'+Buffer.from(outputFiles[0].text).toString('base64'));
 
@@ -18,7 +20,7 @@ class Element {
 const nature=()=>({renderPasses:1,selectionCpuMs:0,captureCpuMs:0,cullCpuMs:0,selectionRefreshes:0,captureCalls:0,
  farPoolViewCalls:4,farSourceInstancesAcrossViews:8,farSubmittedInstancesAcrossViews:4,compactions:0,
  captureAttributeMarks:0,captureBytesMarked:0,compactionAttributeMarks:0,compactionBytesMarked:0,invalidObservations:0});
-function fixture(observe=true){
+function fixture(observe=true,configure){
  let time=100,clockCalls=0,animation=null,flushes=0;const listeners=new Map(),settings=new Element('dialog');
  globalThis.document={hidden:false,createElement:tag=>new Element(tag,text=>{if(text.includes('s riding'))time+=5;}),
   getElementById:id=>id==='settings'?settings:null,addEventListener:(name,fn)=>{listeners.set(name,[...(listeners.get(name)??[]),fn]);},body:new Element('body')};
@@ -26,11 +28,13 @@ function fixture(observe=true){
  const gl={SYNC_GPU_COMMANDS_COMPLETE:1,TIMEOUT_EXPIRED:2,ALREADY_SIGNALED:3,CONDITION_SATISFIED:4,
   isContextLost(){time+=1;return false;},fenceSync(){time+=2;return {};},clientWaitSync(){time+=1;return 3;},deleteSync(){time+=1;},flush(){time+=3;flushes++;}};
  const renderer={xr:{isPresenting:false},info:{render:{frame:0}},getContext:()=>gl,setAnimationLoop:fn=>{animation=fn;},dispose(){}};
- installGpuFramePacing(renderer);const probe=observe?new ManualLoopProbe(()=>{clockCalls++;return time;}):undefined;
- const binding=probe?attachGpuFramePacingProbe(renderer,probe):undefined;
+ installGpuFramePacing(renderer);
+ const Probe=class extends ManualLoopProbe{constructor(){super(()=>{clockCalls++;return time;});}};
+ const configured=configure?.(renderer,Probe),probe=configure?configured.loopProbe:observe?new Probe():undefined;
+ const binding=configure?configured.loopBinding:probe?attachGpuFramePacingProbe(renderer,probe):undefined;
  const profile=new RideProfile(()=>({quality:'smooth',cap:60}),{loopProbe:probe,loopCoverage:()=>binding?.coverage(),gpuPacing:()=>gpuFramePacingDiagnostics(renderer)});
- return {profile,probe,binding,renderer,settings,advance:ms=>{time+=ms;},clockCalls:()=>clockCalls,flushes:()=>flushes,
-  tick:now=>animation?.(now),emit:name=>listeners.get(name)?.forEach(fn=>fn()),report:()=>JSON.parse(settings.children[0].children[2].value),text:()=>settings.children[0].children[2].value};
+ return {profile,probe,binding,configured,renderer,settings,advance:ms=>{time+=ms;},clockCalls:()=>clockCalls,flushes:()=>flushes,
+  tick:now=>animation?.(now),emit:(name,event)=>listeners.get(name)?.forEach(fn=>fn(event)),report:()=>JSON.parse(settings.children[0].children[2].value),text:()=>settings.children[0].children[2].value};
 }
 function feed(profile,dt=.2,options={}){
  profile.sample(dt,options.times??[1,2,3,4,5],20,200,2,3,options.x??1,0,options.speed??2,options.place??'Forest',options.eligible??true,options.nature??nature());
@@ -106,9 +110,62 @@ test('unsupported wrapper coverage records absent observations rather than inven
  assert.equal(r.loopDiagnostics.acceptedCallbacks.scopes.totalWrapperCpuMs.callbacks,0);assert.equal(f.clockCalls(),0);
 });
 
-test('production integration keeps the original phase endpoints and opts loop observation into manual profiling',async()=>{
+async function productionProbeSetup(){
  const source=await readFile(new URL('./main.ts',import.meta.url),'utf8');
- assert.match(source,/const loopProbe=renderProbe\?new ManualLoopProbe\(\):undefined/);
+ const setup=source.slice(source.indexOf(' const submissionProbe='),source.indexOf(' const rideProfile='));
+ assert(setup.includes('const localLoopProfile='));
+ return (hostname,search,renderer={},Probe=ManualLoopProbe)=>{
+  let submissionInstalls=0;const renderProbe=createNatureRenderProbe(search);
+  const context=createContext({location:{hostname,search},URLSearchParams,renderProbe,renderer,scene:{},ManualLoopProbe:Probe,attachGpuFramePacingProbe,
+   installRenderSubmissionProbe:()=>{submissionInstalls++;return{installed:true};}});
+  const result=runInContext(setup+';({loopProbe,loopBinding,submissionProbe})',context);
+  return{...result,renderProbe,submissionInstalls};
+ };
+}
+
+test('actual production setup enables only the loop probe for exact local profile=1 and preserves manual behavior',async()=>{
+ const setup=await productionProbeSetup();
+ for(const hostname of ['localhost','127.0.0.1','[::1]'])for(const search of ['?profile=1','?profile=1&locationPerf=1','?profile=1&profile=manual']){
+  const result=setup(hostname,search);assert(result.loopProbe instanceof ManualLoopProbe);
+  assert.equal(result.renderProbe,undefined);assert.equal(result.submissionProbe,undefined);assert.equal(result.submissionInstalls,0);
+ }
+ for(const hostname of ['example.com','localhost.example.com','127.0.0.1.example.com','127.0.0.2','localhost.','::1']){
+  const result=setup(hostname,'?profile=1');assert.equal(result.loopProbe,undefined);assert.equal(result.submissionInstalls,0);
+ }
+ for(const search of ['', '?profile','?profile=','?profile=true','?profile=01','?profile=1x','?profile=MANUAL','?profile=0&profile=1','?locationPerf=1']){
+  const result=setup('127.0.0.1',search);assert.equal(result.loopProbe,undefined);assert.equal(result.submissionInstalls,0);
+ }
+ for(const hostname of ['127.0.0.1','example.com'])for(const search of ['?profile=manual','?profile=manual&profile=1']){
+  const result=setup(hostname,search);assert(result.loopProbe instanceof ManualLoopProbe);assert(result.renderProbe);
+  assert.equal(result.submissionInstalls,1);assert(result.submissionProbe);
+ }
+});
+
+test('local profile=1 exports existing loop diagnostics and stops on trusted W release without broader observers',async()=>{
+ const setup=await productionProbeSetup(),oldLocation=Object.getOwnPropertyDescriptor(globalThis,'location');
+ Object.defineProperty(globalThis,'location',{configurable:true,value:{hostname:'127.0.0.1',search:'?profile=1&locationPerf=1'}});
+ try{
+  const f=fixture(true,(renderer,Probe)=>setup(location.hostname,location.search,renderer,Probe));
+  assert.equal(f.configured.submissionInstalls,0);assert.equal(f.configured.renderProbe,undefined);
+  f.renderer.setAnimationLoop(()=>{f.renderer.info.render.frame++;f.advance(10);f.profile.sample(.1,[1,2,3,4,5],20,200,2,3,1,0,2,'Bridge',true);});
+  f.tick(80);assert.equal(f.clockCalls(),0);f.profile.start();f.tick(100);f.tick(120);
+  f.emit('keyup',{code:'KeyW',isTrusted:false});f.emit('keyup',{code:'KeyS',isTrusted:true});assert.equal(f.profile.enabled,true);
+  f.emit('keyup',{code:'KeyW',isTrusted:true});assert.equal(f.profile.enabled,false);
+  const report=f.report(),loop=report.loopDiagnostics;
+  assert.equal(report.stopReason,'trusted-W-keyup');assert.equal(report.frames,2);assert.equal(report.activeSeconds,.2);
+  assert.equal(report.renderDiagnostics,undefined);assert.equal(report.submissionDiagnostics,undefined);
+  assert.equal(report.submissionInstrumentation.atStart,null);assert.equal(report.submissionInstrumentation.atFinish,null);
+  assert.equal(loop.status,'available');assert.equal(loop.completedCallbacks,2);assert.equal(loop.acceptedSamples,2);assert.equal(loop.invalidObservations,0);
+  assert.deepEqual(loop.coverage.atStart,{installed:true,status:'installed'});assert.deepEqual(loop.coverage.atFinish,loop.coverage.atStart);
+  assert.equal(loop.allCallbacks.scopes.gateReadyCpuMs.calls,2);assert.equal(loop.acceptedCallbacks.scopes.callbackBodyCpuMs.calls,2);
+  assert.equal(loop.allCallbacks.scopes.fenceSyncCpuMs.calls,2);assert.equal(loop.allCallbacks.scopes.flushCpuMs.calls,2);
+  const clockAtStop=f.clockCalls(),textAtStop=f.text();f.tick(140);assert.equal(f.clockCalls(),clockAtStop);assert.equal(f.text(),textAtStop);
+ }finally{if(oldLocation)Object.defineProperty(globalThis,'location',oldLocation);else delete globalThis.location;}
+});
+
+test('production integration keeps the original phase endpoints and observes only existing callbacks',async()=>{
+ const source=await readFile(new URL('./main.ts',import.meta.url),'utf8');
+ assert.match(source,/const loopProbe=renderProbe\|\|localLoopProfile\?new ManualLoopProbe\(\):undefined/);
  const renderEnd=source.indexOf('const renderEnd=performance.now();'),finishSubmission=source.indexOf('const submissionFrame=submissionProbe?.finishFrame();',renderEnd);
  const hudEnd=source.indexOf('performance.now()-renderEnd',finishSubmission),profileCall=source.lastIndexOf('rideProfile?.sample(elapsed');
  assert(renderEnd>=0&&finishSubmission>renderEnd&&profileCall>finishSubmission&&hudEnd>profileCall);
