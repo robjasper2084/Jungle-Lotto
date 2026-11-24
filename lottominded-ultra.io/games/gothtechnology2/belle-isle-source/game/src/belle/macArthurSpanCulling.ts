@@ -1,5 +1,16 @@
 import * as T from 'three';
 
+// Only this factory can attest to its range-only callback chain. Keep the
+// attestation tied to the exact display geometry and installed callback pair;
+// an unknown predecessor or a later replacement never inherits approval.
+const spanShadowOwners=new WeakMap<T.Mesh,{geometry:T.BufferGeometry;callbacks:Function[]}>();
+const callbackKeys=['onBeforeRender','onAfterRender','onBeforeShadow','onAfterShadow'] as const;
+export function hasMacArthurSpanShadowProvenance(mesh:T.Mesh):boolean {
+ const owner=spanShadowOwners.get(mesh);
+ return !!owner&&Object.getOwnPropertyDescriptor(mesh,'geometry')?.value===owner.geometry&&
+  callbackKeys.every((key,i)=>Object.getOwnPropertyDescriptor(mesh,key)?.value===owner.callbacks[i]);
+}
+
 /** Each bridge finish spans the whole crossing in one mesh. Keep that single
  * draw but order its opaque triangles by span, so a camera halfway across can
  * skip spans behind it. A span's bounds include all three triangle vertices. */
@@ -69,5 +80,7 @@ export function cullMacArthurSpans(root:T.Object3D){
     selectSpans(shadowCamera);
   };
   mesh.onAfterShadow=function(...args){display.setDrawRange(0,Infinity);afterShadow.apply(this,args);};
+  if([before,after,beforeShadow,afterShadow].every((callback,i)=>callback===T.Object3D.prototype[callbackKeys[i]]))
+   spanShadowOwners.set(mesh,{geometry:display,callbacks:callbackKeys.map(key=>mesh[key])});
  });
 }

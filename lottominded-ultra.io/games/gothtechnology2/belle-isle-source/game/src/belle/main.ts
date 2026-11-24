@@ -30,6 +30,7 @@ import {pauseSoftwareStartupScene} from './startupRenderPolicy.ts';
 import {installGpuFramePacing,nativeAppleMetalRenderer} from './gpuFramePacing.ts';
 import {batchedIndirectUpdateDiagnostics} from './batchedIndirectUpdates.ts';
 import {installSharedGeometryBuffers} from './sharedGeometryBuffers.ts';
+import {installOpaqueShadowPrograms} from './opaqueShadowPrograms.ts';
 import {readAntiAliasingMode,enableHardwareAntialiasing} from './antiAliasingPolicy.ts';
 import {prepareCoastGuardMap} from './coastGuard.ts';
 import coastGuardLayout from './coastGuardLayout.json' with {type:'json'};
@@ -227,6 +228,7 @@ async function boot(){const response=await fetch('./belle/map.json');if(!respons
 if(new URLSearchParams(location.search).has('gds-capture'))Object.defineProperty(window,'__gdsCamera',{value:()=>{if(locationFollowing)return {unavailable:'Real location follow is private.'};const heading=camera.getWorldDirection(new T.Vector3());return {position:camera.position.toArray(),direction:heading.toArray(),fovDegrees:camera.fov};},configurable:false});
 const rendererOutput={type:T.UnsignedByteType,nodes:false} as const;
 const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreference:'high-performance',outputBufferType:rendererOutput.type});
+const opaqueShadows=installOpaqueShadowPrograms(renderer,{nativeRenderer:true});
  // The renderer's ACTUAL WebGL backend, not a user-agent/viewport guess,
  // governs whether decorative preview canvases should consume a second GPU.
  const gameGl=renderer.getContext(),gpuDebug=gameGl.getExtension('WEBGL_debug_renderer_info');
@@ -541,7 +543,7 @@ const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreferen
  });
  const submissionProbe=renderProbe?installRenderSubmissionProbe(renderer,scene):undefined;
  const loopProbe=renderProbe?new ManualLoopProbe():undefined;const loopBinding=loopProbe?attachGpuFramePacingProbe(renderer,loopProbe):undefined;
- const rideProfile=new URLSearchParams(location.search).has('profile')?new RideProfile(()=>({quality:graphics.value,effectiveQuality:world.quality.effective,cap,shadowMappingSupported:renderer.shadowMap.enabled,pixelRatio:renderer.getPixelRatio(),adaptiveScale:frameBudget.scale,world:world.stats,batchIndirectUpdates:batchedIndirectUpdateDiagnostics(scene),sharedGeometryBuffers:geometryBuffers.read(),diagnosticReduction:localPerformanceProbe(),vehicle:cadillac?.riding?(cadillac.variant==='cadillac'?'silver-cadillac':cadillac.variant):hover?.riding?hover.vehicle:boat?.riding?'boat':'onewheel',cadillac:cadillac?.riding?cadillac.diagnostics():null,cockpitDisplay:hover?.cockpitDisplayDiagnostics??null}),{shortRideSeconds:cadillacDiagnostic?150:undefined,build:createRideProfileBuildReader(new URLSearchParams(location.search).get('profile')),loopProbe,loopCoverage:()=>loopBinding?.coverage(),gpuPacing:()=>gpuFramePacingDiagnostics(renderer),submissionCoverage:()=>submissionProbe?.coverage(),resetRenderDiagnostics:()=>{renderProbe?.cancelFrame();submissionProbe?.cancelFrame();}}):null;
+ const rideProfile=new URLSearchParams(location.search).has('profile')?new RideProfile(()=>({quality:graphics.value,effectiveQuality:world.quality.effective,cap,shadowMappingSupported:renderer.shadowMap.enabled,pixelRatio:renderer.getPixelRatio(),adaptiveScale:frameBudget.scale,world:world.stats,batchIndirectUpdates:batchedIndirectUpdateDiagnostics(scene),sharedGeometryBuffers:geometryBuffers.read(),opaqueShadowPrograms:opaqueShadows.read(),diagnosticReduction:localPerformanceProbe(),vehicle:cadillac?.riding?(cadillac.variant==='cadillac'?'silver-cadillac':cadillac.variant):hover?.riding?hover.vehicle:boat?.riding?'boat':'onewheel',cadillac:cadillac?.riding?cadillac.diagnostics():null,cockpitDisplay:hover?.cockpitDisplayDiagnostics??null}),{shortRideSeconds:cadillacDiagnostic?150:undefined,build:createRideProfileBuildReader(new URLSearchParams(location.search).get('profile')),loopProbe,loopCoverage:()=>loopBinding?.coverage(),gpuPacing:()=>gpuFramePacingDiagnostics(renderer),submissionCoverage:()=>submissionProbe?.coverage(),resetRenderDiagnostics:()=>{renderProbe?.cancelFrame();submissionProbe?.cancelFrame();}}):null;
  // The browser map has an explicit geographic origin. Fail closed if its projection changes.
  const locationMapMatches=Array.isArray(data.origin)&&data.origin.length===2&&data.origin.every((v,i)=>Number.isFinite(v)&&Math.abs(v-REAL_LOCATION_ORIGIN[i])<1e-8)&&(data as ParkMap&{axes?:string}).axes===REAL_LOCATION_AXES;
  const locationMapPoints=[...data.island,...data.mainland,...(data.outerIslets??[]).flatMap(i=>i.points)];
