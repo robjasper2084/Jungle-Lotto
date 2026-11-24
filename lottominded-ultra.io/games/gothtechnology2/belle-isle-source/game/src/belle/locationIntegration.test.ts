@@ -37,7 +37,12 @@ function locationTransition(){
 }
 
 function frameClockFixture(){
- const frameStatements=declaration('frame').body!.statements;
+ // The optional GPU observer owns only a cleanup scope around this same prefix.
+ // Execute the original clock statements in their original order with it disabled.
+ const frameStatements=declaration('frame').body!.statements.flatMap(statement=>
+  ts.isTryStatement(statement)&&statement.finallyBlock?.statements.some(cleanup=>ts.isExpressionStatement(cleanup)&&
+   ts.isCallExpression(cleanup.expression)&&cleanup.expression.expression.getText(ast)==='gpuDuration?.cancelFrame')
+   ?[...statement.tryBlock.statements]:[statement]);
  const end=frameStatements.findIndex(statement=>ts.isExpressionStatement(statement)&&
   ts.isCallExpression(statement.expression)&&statement.expression.expression.getText(ast)==='world.sky.tick');
  assert.ok(end>=0,'The actual frame prefix must include elapsed time and the sky tick');
@@ -46,7 +51,7 @@ function frameClockFixture(){
  const visit=(node:ts.Node)=>{if(ts.isVariableDeclaration(node)&&node.name.getText(ast)==='breakMeasurementInterval')boundary=node;ts.forEachChild(node,visit);};
  visit(ast);assert.ok(boundary?.initializer,'Missing actual measurement boundary');
  let wallNow=132,associationsBroken=0;
- const context={locationPerformance:undefined,pauseSoftwareStartupScene,softwareStartup:false,prepared:true,
+ const context={locationPerformance:undefined,gpuDuration:undefined,pauseSoftwareStartupScene,softwareStartup:false,prepared:true,
   active:true,document:{hidden:false,querySelector:()=>null},vr:undefined,scenePreparing:false,
   resetFrameClock:false,previous:100,lastRender:100,lastMeasurementEligible:true,
   rideProfile:{breakFrameAssociation(){associationsBroken++;}},paused:false,renderFocused:true,sceneFrameCap,cap:60,
