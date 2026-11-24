@@ -1,0 +1,333 @@
+name: Belle Cadillac native control environment diagnostic
+
+on:
+  push:
+    branches: [upgrade-redesign-cadillac-native-controls-20261124]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: belle-cadillac-native-controls-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  CADILLAC_MODS_SOURCE_SHA: ${{ github.sha }}
+  BASELINE_SHA: 7558e2dd26e425ca0ff3c53c2f21760a199433e7
+  BASELINE_TREE: 7cd92958bfc52320a77260b36185beafca951115
+  GAME_PATH: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+  ORIGINAL_WORKFLOW_SHA256: 7fbff2a138681c9f6d271dbba8dce913a9587453c0d71d0e9a08825346703551
+  COMMAND_HELPER_SHA256: 7e51606ec842ecd963e44ad883fd97e7aaa378e257f30c2e9f46f528a1aeb27b
+  STRICT_SCRIPT_SHA256: 8f6af949083800c491b65e0709c04cc29eb5712634f744c5b912f76ce651fcf5
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.CADILLAC_MODS_SOURCE_SHA }}
+          persist-credentials: false
+          fetch-depth: 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Verify the isolated environment-only source
+        timeout-minutes: 2
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {createHash} from 'node:crypto';
+          import {execFileSync} from 'node:child_process';
+          import {mkdir,readFile,writeFile} from 'node:fs/promises';
+          import {resolve} from 'node:path';
+          const git=(...args)=>execFileSync('git',args,{encoding:'utf8'}).trim();
+          const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+          const game=process.env.GAME_PATH,out=resolve('cadillac-native-evidence');
+          const workflow='.github/workflows/belle-cadillac-native-controls.yml';
+          const launcher=game+'/scripts/cadillac-mods-browser-smoke.mjs';
+          const commit=git('rev-parse','HEAD'),tree=git('rev-parse','HEAD^{tree}');
+          const parents=git('show','-s','--format=%P','HEAD').split(' ').filter(Boolean);
+          const expectedChanges=['A\t'+workflow,'M\t'+launcher].sort();
+          const actualChanges=git('diff','--no-renames','--name-status',process.env.BASELINE_SHA,'HEAD').split('\n').filter(Boolean).sort();
+          const proof={version:1,commit,tree,parents,baseline:process.env.BASELINE_SHA,baselineTree:process.env.BASELINE_TREE,
+            expectedChanges,actualChanges,verified:false,
+            scope:'Two desktop vehicle cases on native ANGLE/Metal. The existing PR workflow and its four software mobile cases remain required and unchanged. This environment diagnostic does not grant release or performance acceptance.'};
+          await mkdir(out,{recursive:true});
+          await writeFile(resolve(out,'source-preflight.json'),JSON.stringify(proof,null,2)+'\n');
+          assert.equal(commit,process.env.CADILLAC_MODS_SOURCE_SHA);
+          assert.deepEqual(parents,[process.env.BASELINE_SHA],'The environment experiment must have the reviewed candidate as its sole parent');
+          assert.equal(git('rev-parse',process.env.BASELINE_SHA+'^{tree}'),process.env.BASELINE_TREE);
+          assert.deepEqual(actualChanges,expectedChanges,'Only the new workflow and explicit renderer selection/identity/reporting may differ');
+          const rawChanges=git('diff','--no-renames','--raw',process.env.BASELINE_SHA,'HEAD').split('\n').filter(Boolean);
+          assert.equal(rawChanges.length,2);
+          for(const change of rawChanges){
+            const match=change.match(/^:(\d{6}) (\d{6}) [0-9a-f]+ [0-9a-f]+ ([AM])\t(.+)$/);
+            assert(match&&match[2]==='100644'&&((match[4]===workflow&&match[1]==='000000'&&match[3]==='A')||
+              (match[4]===launcher&&match[1]==='100644'&&match[3]==='M')),'No mode, type or unrelated change is allowed');
+          }
+          const pinned=[
+            ['.github/workflows/belle-cadillac-mods.yml',process.env.ORIGINAL_WORKFLOW_SHA256],
+            [game+'/scripts/cadillac-native-command-click.mjs',process.env.COMMAND_HELPER_SHA256],
+            [game+'/scripts/sustained-ride-profile.mjs',process.env.STRICT_SCRIPT_SHA256],
+          ];
+          proof.pinnedFiles={};
+          for(const [path,expected]of pinned){
+            assert.equal(hash(await readFile(path)),expected);
+            for(const ref of ['HEAD',process.env.BASELINE_SHA])assert.equal(hash(execFileSync('git',['show',ref+':'+path])),expected);
+            proof.pinnedFiles[path]=expected;
+          }
+          proof.runtimeTrees={};
+          for(const directory of ['src','runtime']){
+            const path=game+'/'+directory,baseline=git('rev-parse',process.env.BASELINE_SHA+':'+path),candidate=git('rev-parse','HEAD:'+path);
+            assert.equal(candidate,baseline,'Application runtime source must remain unchanged');
+            proof.runtimeTrees[path]=candidate;
+          }
+          execFileSync('git',['diff','--exit-code','HEAD','--']);
+          proof.verified=true;proof.runtimeUnchanged=true;proof.verifiedAt=new Date().toISOString();
+          await writeFile(resolve(out,'source-preflight.json'),JSON.stringify(proof,null,2)+'\n');
+          NODE
+      - name: Check, test and build the exact experiment
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm ci
+          npm run check
+          npm test
+          node --check scripts/cadillac-mods-browser-smoke.mjs
+          npm run build
+      - name: Bind the full build to committed source
+        timeout-minutes: 2
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {createHash} from 'node:crypto';
+          import {execFileSync} from 'node:child_process';
+          import {mkdir,readFile,readdir,writeFile} from 'node:fs/promises';
+          import {resolve,relative,sep} from 'node:path';
+          const game=resolve(process.env.GAME_PATH),dist=resolve(game,'dist'),out=resolve('cadillac-native-evidence');
+          const git=(...args)=>execFileSync('git',args,{encoding:'utf8'}).trim(),hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+          const preflight=JSON.parse(await readFile(resolve(out,'source-preflight.json'),'utf8'));
+          const commit=git('rev-parse','HEAD'),tree=git('rev-parse','HEAD^{tree}'),parent=git('rev-parse','HEAD^');
+          assert(preflight.verified&&preflight.runtimeUnchanged);assert.equal(commit,process.env.CADILLAC_MODS_SOURCE_SHA);
+          assert.equal(commit,preflight.commit);assert.equal(tree,preflight.tree);assert.equal(parent,process.env.BASELINE_SHA);
+          const sourceFiles=['package.json','package-lock.json','../../package.json','../../package-lock.json','index.html','vite.config.ts','tsconfig.json','run-tests.mjs'];
+          async function sourceWalk(directory){for(const entry of await readdir(directory,{withFileTypes:true})){
+            const path=resolve(directory,entry.name);
+            if(entry.isDirectory())await sourceWalk(path);
+            else{assert(entry.isFile(),'Unexpected source symlink/nonfile: '+path);if(/\.(?:ts|mjs|js|css|html|json|py)$/.test(entry.name))sourceFiles.push(relative(game,path).split(sep).join('/'));}
+          }}for(const directory of ['src','runtime','scripts','../tools'])await sourceWalk(resolve(game,directory));
+          sourceFiles.sort();assert.equal(new Set(sourceFiles).size,sourceFiles.length);
+          const sources=Object.fromEntries(await Promise.all(sourceFiles.map(async path=>{
+            const bytes=await readFile(resolve(game,path)),repoPath=relative(resolve('.'),resolve(game,path)).split(sep).join('/');
+            assert(!repoPath.startsWith('../'));assert.equal(hash(bytes),hash(execFileSync('git',['show','HEAD:'+repoPath],{maxBuffer:16*1024*1024})),'Source differs from committed bytes: '+path);
+            return[path,hash(bytes)];
+          })));
+          assert.equal(sources['scripts/cadillac-native-command-click.mjs'],process.env.COMMAND_HELPER_SHA256);
+          assert.equal(sources['scripts/sustained-ride-profile.mjs'],process.env.STRICT_SCRIPT_SHA256);
+          const workflowPath='.github/workflows/belle-cadillac-native-controls.yml',workflowBytes=await readFile(workflowPath);
+          assert.equal(hash(workflowBytes),hash(execFileSync('git',['show','HEAD:'+workflowPath])));
+          // Preserve and verify the existing build's sole tracked timing-metadata change.
+          const researchPath=relative(resolve('.'),resolve(game,'../research/street-detail-stats.json')).split(sep).join('/');
+          const committedResearch=execFileSync('git',['show','HEAD:'+researchPath]),builtResearch=await readFile(researchPath);
+          const committedStats=JSON.parse(committedResearch),builtStats=JSON.parse(builtResearch);
+          for(const value of [committedStats,builtStats])assert(value&&typeof value==='object'&&!Array.isArray(value)&&Object.hasOwn(value,'buildMs')&&typeof value.buildMs==='number'&&Number.isFinite(value.buildMs)&&value.buildMs>=0);
+          const {buildMs:committedBuildMs,...committedContent}=committedStats,{buildMs:actualBuildMs,...builtContent}=builtStats;
+          assert.deepEqual(builtContent,committedContent,'Only numeric buildMs may change in the street report');
+          const trackedChanges=git('diff','--no-renames','--name-status','HEAD','--').split('\n').filter(Boolean);
+          assert.deepEqual(trackedChanges,hash(committedResearch)===hash(builtResearch)?[]:['M\t'+researchPath]);
+          const trackedRawChanges=git('diff','--no-renames','--raw','HEAD','--').split('\n').filter(Boolean);
+          for(const change of trackedRawChanges){
+            const match=change.match(/^:(\d{6}) (\d{6}) [0-9a-f]+ [0-9a-f]+ M\t(.+)$/);
+            assert(match&&match[1]===match[2]&&match[3]===researchPath,'No tracked mode, type or unrelated change is allowed');
+          }
+          const metadataDirectory=resolve(out,'build-metadata');await mkdir(metadataDirectory,{recursive:true});
+          await writeFile(resolve(metadataDirectory,'street-detail-stats.committed.json'),committedResearch);
+          await writeFile(resolve(metadataDirectory,'street-detail-stats.post-build.json'),builtResearch);
+          const buildMetadata={path:researchPath,permittedField:'buildMs',semanticMatchExceptBuildMs:true,trackedChanges,trackedRawChanges,
+            committed:{sha256:hash(committedResearch),bytes:committedResearch.length,buildMs:committedBuildMs},
+            postBuild:{sha256:hash(builtResearch),bytes:builtResearch.length,buildMs:actualBuildMs}};
+          const indexSha256=hash(await readFile(resolve(dist,'index.html'))),builtAt=new Date().toISOString();
+          const buildId='cadillac-native-controls-'+process.env.GITHUB_RUN_ID+'-'+commit;
+          await writeFile(resolve(dist,'cadillac-mods-build.json'),JSON.stringify({sourceSha:commit,indexSha256,builtAt,tree,parent,buildId})+'\n');
+          const files=[];async function buildWalk(directory){for(const entry of await readdir(directory,{withFileTypes:true})){
+            const path=resolve(directory,entry.name);
+            if(entry.isDirectory())await buildWalk(path);
+            else{assert(entry.isFile(),'Unexpected build symlink/nonfile: '+path);const bytes=await readFile(path);files.push({path:relative(dist,path).split(sep).join('/'),bytes:bytes.length,sha256:hash(bytes)});}
+          }}await buildWalk(dist);files.sort((a,b)=>a.path<b.path?-1:a.path>b.path?1:0);
+          assert(files.some(file=>file.path==='index.html')&&files.some(file=>file.path==='cadillac-mods-build.json'));
+          const identity={version:1,commit,tree,parent,baseline:process.env.BASELINE_SHA,buildId,builtAt,
+            workflow:{path:workflowPath,sha256:hash(workflowBytes)},preflightSha256:hash(await readFile(resolve(out,'source-preflight.json'))),
+            sourceFiles:sourceFiles.length,sources,builtFiles:files.length,files,buildMetadata,
+            scope:'Exact full-game build for two native Metal desktop control cases. Runtime source is unchanged from the reviewed candidate. Smooth/30, all controls assertions, native input, screenshots, fences, two paints and deadlines are retained. Not performance or release acceptance.'};
+          await writeFile(resolve(out,'source-integrity.json'),JSON.stringify(identity,null,2)+'\n');
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cadillac-native-game-${{ env.CADILLAC_MODS_SOURCE_SHA }}
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist/
+          if-no-files-found: error
+          retention-days: 1
+      - name: Retain source and build provenance even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cadillac-native-source-${{ env.CADILLAC_MODS_SOURCE_SHA }}
+          path: cadillac-native-evidence/
+          if-no-files-found: error
+          retention-days: 14
+
+  desktop-controls:
+    needs: build
+    runs-on: macos-15
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        ride: [cadillac, hydraulic-cadillac]
+    env:
+      BELLE_CADILLAC_MODS_CASE: desktop
+      BELLE_CADILLAC_MODS_RIDE: ${{ matrix.ride }}
+      BELLE_CADILLAC_MODS_BACKEND: metal
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.CADILLAC_MODS_SOURCE_SHA }}
+          persist-credentials: false
+          fetch-depth: 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@v4
+        with:
+          name: cadillac-native-game-${{ env.CADILLAC_MODS_SOURCE_SHA }}
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: cadillac-native-source-${{ env.CADILLAC_MODS_SOURCE_SHA }}
+          path: cadillac-native-evidence
+      - name: Install the existing Chrome test runtime
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install chrome
+      - name: Verify committed source and every downloaded build file before controls
+        id: verify_before
+        timeout-minutes: 2
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {createHash} from 'node:crypto';
+          import {execFileSync} from 'node:child_process';
+          import {readFile,readdir,writeFile} from 'node:fs/promises';
+          import {resolve,relative,sep} from 'node:path';
+          const game=resolve(process.env.GAME_PATH),dist=resolve(game,'dist'),out=resolve('cadillac-native-evidence');
+          const git=(...args)=>execFileSync('git',args,{encoding:'utf8'}).trim(),hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+          const identityBytes=await readFile(resolve(out,'source-integrity.json')),identity=JSON.parse(identityBytes);
+          assert.equal(git('rev-parse','HEAD'),process.env.CADILLAC_MODS_SOURCE_SHA);assert.equal(identity.commit,process.env.CADILLAC_MODS_SOURCE_SHA);
+          assert.equal(git('rev-parse','HEAD^{tree}'),identity.tree);assert.equal(git('rev-parse','HEAD^'),process.env.BASELINE_SHA);assert.equal(identity.parent,process.env.BASELINE_SHA);
+          assert.equal(hash(await readFile(resolve(out,'source-preflight.json'))),identity.preflightSha256);
+          assert.equal(hash(await readFile(identity.workflow.path)),identity.workflow.sha256);
+          assert.equal(hash(await readFile('.github/workflows/belle-cadillac-mods.yml')),process.env.ORIGINAL_WORKFLOW_SHA256);
+          execFileSync('git',['diff','--exit-code','HEAD','--']);
+          const researchPath=relative(resolve('.'),resolve(game,'../research/street-detail-stats.json')).split(sep).join('/');
+          assert.equal(identity.buildMetadata.path,researchPath);assert.equal(identity.buildMetadata.permittedField,'buildMs');
+          assert.equal(hash(await readFile(researchPath)),identity.buildMetadata.committed.sha256,'Control jobs use the committed research metadata');
+          const sourceFiles=['package.json','package-lock.json','../../package.json','../../package-lock.json','index.html','vite.config.ts','tsconfig.json','run-tests.mjs'];
+          async function sourceWalk(directory){for(const entry of await readdir(directory,{withFileTypes:true})){
+            const path=resolve(directory,entry.name);if(entry.isDirectory())await sourceWalk(path);
+            else{assert(entry.isFile());if(/\.(?:ts|mjs|js|css|html|json|py)$/.test(entry.name))sourceFiles.push(relative(game,path).split(sep).join('/'));}
+          }}for(const directory of ['src','runtime','scripts','../tools'])await sourceWalk(resolve(game,directory));sourceFiles.sort();
+          assert.equal(sourceFiles.length,identity.sourceFiles);assert.deepEqual(sourceFiles,Object.keys(identity.sources).sort());
+          const sources=Object.fromEntries(await Promise.all(sourceFiles.map(async path=>[path,hash(await readFile(resolve(game,path)))])));
+          assert.deepEqual(sources,identity.sources);assert.equal(sources['scripts/cadillac-native-command-click.mjs'],process.env.COMMAND_HELPER_SHA256);
+          assert.equal(sources['scripts/sustained-ride-profile.mjs'],process.env.STRICT_SCRIPT_SHA256);
+          const files=[];async function buildWalk(directory){for(const entry of await readdir(directory,{withFileTypes:true})){
+            const path=resolve(directory,entry.name);if(entry.isDirectory())await buildWalk(path);
+            else{assert(entry.isFile());const bytes=await readFile(path);files.push({path:relative(dist,path).split(sep).join('/'),bytes:bytes.length,sha256:hash(bytes)});}
+          }}await buildWalk(dist);files.sort((a,b)=>a.path<b.path?-1:a.path>b.path?1:0);
+          assert.equal(files.length,identity.builtFiles);assert.deepEqual(files,identity.files,'Downloaded build inventory or bytes differ from the build job');
+          const marker=JSON.parse(await readFile(resolve(dist,'cadillac-mods-build.json'),'utf8'));
+          assert.equal(marker.sourceSha,identity.commit);assert.equal(marker.tree,identity.tree);assert.equal(marker.parent,identity.parent);assert.equal(marker.buildId,identity.buildId);
+          assert.equal(marker.indexSha256,hash(await readFile(resolve(dist,'index.html'))));
+          await writeFile(resolve(out,'integrity-before.json'),JSON.stringify({commit:identity.commit,tree:identity.tree,identitySha256:hash(identityBytes),
+            sourceFiles:sourceFiles.length,builtFiles:files.length,verified:true,verifiedAt:new Date().toISOString()},null,2)+'\n');
+          NODE
+      - name: Exercise the unchanged desktop control fixture on Metal
+        id: controls
+        timeout-minutes: 34
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: node scripts/cadillac-mods-browser-smoke.mjs
+      - name: Verify source and the full build remained unchanged
+        id: verify_after
+        if: ${{ always() && steps.verify_before.outcome == 'success' }}
+        timeout-minutes: 2
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {createHash} from 'node:crypto';
+          import {execFileSync} from 'node:child_process';
+          import {readFile,readdir,writeFile} from 'node:fs/promises';
+          import {resolve,relative,sep} from 'node:path';
+          const game=resolve(process.env.GAME_PATH),dist=resolve(game,'dist'),out=resolve('cadillac-native-evidence');
+          const git=(...args)=>execFileSync('git',args,{encoding:'utf8'}).trim(),hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+          const before=JSON.parse(await readFile(resolve(out,'integrity-before.json'),'utf8'));
+          const identityBytes=await readFile(resolve(out,'source-integrity.json')),identity=JSON.parse(identityBytes);
+          assert(before.verified);assert.equal(hash(identityBytes),before.identitySha256,'Build identity changed during the control case');
+          assert.equal(git('rev-parse','HEAD'),identity.commit);assert.equal(identity.commit,process.env.CADILLAC_MODS_SOURCE_SHA);
+          assert.equal(git('rev-parse','HEAD^{tree}'),identity.tree);assert.equal(git('rev-parse','HEAD^'),process.env.BASELINE_SHA);
+          assert.equal(hash(await readFile(resolve(out,'source-preflight.json'))),identity.preflightSha256);
+          assert.equal(hash(await readFile(identity.workflow.path)),identity.workflow.sha256);
+          assert.equal(hash(await readFile('.github/workflows/belle-cadillac-mods.yml')),process.env.ORIGINAL_WORKFLOW_SHA256);
+          execFileSync('git',['diff','--exit-code','HEAD','--']);
+          assert.equal(hash(await readFile(identity.buildMetadata.path)),identity.buildMetadata.committed.sha256);
+          const sourceFiles=['package.json','package-lock.json','../../package.json','../../package-lock.json','index.html','vite.config.ts','tsconfig.json','run-tests.mjs'];
+          async function sourceWalk(directory){for(const entry of await readdir(directory,{withFileTypes:true})){
+            const path=resolve(directory,entry.name);if(entry.isDirectory())await sourceWalk(path);
+            else{assert(entry.isFile());if(/\.(?:ts|mjs|js|css|html|json|py)$/.test(entry.name))sourceFiles.push(relative(game,path).split(sep).join('/'));}
+          }}for(const directory of ['src','runtime','scripts','../tools'])await sourceWalk(resolve(game,directory));sourceFiles.sort();
+          assert.equal(sourceFiles.length,identity.sourceFiles);assert.deepEqual(sourceFiles,Object.keys(identity.sources).sort());
+          const sources=Object.fromEntries(await Promise.all(sourceFiles.map(async path=>[path,hash(await readFile(resolve(game,path)))])));
+          assert.deepEqual(sources,identity.sources,'Source bytes changed during the control case');
+          const files=[];async function buildWalk(directory){for(const entry of await readdir(directory,{withFileTypes:true})){
+            const path=resolve(directory,entry.name);if(entry.isDirectory())await buildWalk(path);
+            else{assert(entry.isFile());const bytes=await readFile(path);files.push({path:relative(dist,path).split(sep).join('/'),bytes:bytes.length,sha256:hash(bytes)});}
+          }}await buildWalk(dist);files.sort((a,b)=>a.path<b.path?-1:a.path>b.path?1:0);
+          assert.equal(files.length,identity.builtFiles);assert.deepEqual(files,identity.files,'Build inventory or bytes changed during the control case');
+          await writeFile(resolve(out,'integrity-after.json'),JSON.stringify({commit:identity.commit,tree:identity.tree,identitySha256:hash(identityBytes),
+            sourceFiles:sourceFiles.length,builtFiles:files.length,unchanged:true,verifiedAt:new Date().toISOString()},null,2)+'\n');
+          NODE
+      - name: Retain native control evidence and all original failures
+        if: always()
+        env:
+          VERIFY_BEFORE_OUTCOME: ${{ steps.verify_before.outcome }}
+          CONTROLS_OUTCOME: ${{ steps.controls.outcome }}
+          VERIFY_AFTER_OUTCOME: ${{ steps.verify_after.outcome }}
+        run: |
+          node --input-type=module <<'NODE'
+          import {existsSync,cpSync,mkdirSync} from 'node:fs';
+          import {readFile,readdir,writeFile} from 'node:fs/promises';
+          import {createHash} from 'node:crypto';
+          import {resolve,relative,sep} from 'node:path';
+          const out=resolve('cadillac-native-evidence'),caseName=process.env.BELLE_CADILLAC_MODS_RIDE+'-desktop';mkdirSync(out,{recursive:true});
+          const source=resolve(process.env.GAME_PATH,'output/cadillac-mods',caseName);
+          if(existsSync(source))cpSync(source,resolve(out,'controls',caseName),{recursive:true});
+          await writeFile(resolve(out,'step-outcomes.json'),JSON.stringify({commit:process.env.CADILLAC_MODS_SOURCE_SHA,case:caseName,requestedBackend:'angle-metal',
+            outcomes:{verifyBefore:process.env.VERIFY_BEFORE_OUTCOME,controls:process.env.CONTROLS_OUTCOME,verifyAfter:process.env.VERIFY_AFTER_OUTCOME},
+            scope:'Environment diagnostic only. Original functional failures are retained. A native Metal control result neither replaces the required PR software/mobile cases nor grants release-performance acceptance.'},null,2)+'\n');
+          const hashes=[];async function walk(directory){for(const entry of await readdir(directory,{withFileTypes:true})){
+            const path=resolve(directory,entry.name);if(entry.isDirectory())await walk(path);else{
+              if(!entry.isFile())throw Error('Unexpected evidence symlink/nonfile: '+path);const bytes=await readFile(path);
+              hashes.push({path:relative(out,path).split(sep).join('/'),bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex')});
+            }
+          }}await walk(out);hashes.sort((a,b)=>a.path<b.path?-1:a.path>b.path?1:0);
+          await writeFile(resolve(out,'evidence-hashes.json'),JSON.stringify(hashes,null,2)+'\n');
+          NODE
+      - name: Preserve both successful and failed native cases
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-cadillac-native-${{ matrix.ride }}-desktop-${{ env.CADILLAC_MODS_SOURCE_SHA }}
+          path: cadillac-native-evidence/
+          if-no-files-found: error
+          retention-days: 14

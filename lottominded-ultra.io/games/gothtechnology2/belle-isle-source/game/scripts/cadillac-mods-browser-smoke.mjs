@@ -15,6 +15,24 @@ const layouts={desktop:{width:1280,height:800},'small-phone':{width:320,height:5
 const layout=process.env.BELLE_CADILLAC_MODS_CASE||'desktop',variant=process.env.BELLE_CADILLAC_MODS_RIDE||'hydraulic-cadillac';
 assert(Object.hasOwn(layouts,layout),'Unknown layout');
 assert(['cadillac','hydraulic-cadillac'].includes(variant),'Unknown Cadillac variant');
+/** Explicit environment selection only. Existing software cases remain the default. */
+function cadillacBackendPolicy(requested,platform,layout){
+ assert(['swiftshader','metal'].includes(requested),'Unknown Cadillac control renderer');
+ if(requested==='metal'){
+  assert.equal(platform,'darwin','The Metal control experiment requires macOS');
+  assert.equal(layout,'desktop','The Metal control experiment is desktop-only');
+  return{name:'metal',args:['--enable-gpu','--use-gl=angle','--use-angle=metal','--gpu-watchdog-timeout-seconds=60']};
+ }
+ return{name:'swiftshader',args:['--use-angle=swiftshader','--enable-unsafe-swiftshader','--gpu-watchdog-timeout-seconds=60']};
+}
+function assertCadillacBackend(renderer,requested){
+ if(requested==='metal'){
+  assert.match(renderer,/ANGLE/i,'The actual game canvas must identify the requested ANGLE backend');
+  assert.match(renderer,/Metal/i,'The actual game canvas must use ANGLE/Metal');
+  assert.doesNotMatch(renderer,/SwiftShader|llvmpipe|softpipe|software/i,'A software renderer cannot satisfy the Metal control experiment');
+ }else assert.match(renderer,/SwiftShader/i,'This workflow records software WebGL honestly');
+}
+const backend=cadillacBackendPolicy(process.env.BELLE_CADILLAC_MODS_BACKEND??'swiftshader',process.platform,layout);
 const mobile=layout!=='desktop',viewport=layouts[layout],caseName=variant+'-'+layout;
 const out=resolve(game,'output/cadillac-mods',caseName);
 const require=createRequire(resolve(game,'../../package.json'));
@@ -26,7 +44,9 @@ const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
 const report={version:2,case:caseName,source,checkout,run:process.env.GITHUB_RUN_ID??null,viewport,mobile,
  passed:false,phase:'setup',startedAt:new Date().toISOString(),checks:{},snapshots:[],captures:[],errors:[],failedRequests:[],startupWarnings:[],
  harness:{pointerActivations:0,diagnosticKeyboardActivations:0,explicitScrolls:0,alreadyVisibleScrolls:0,cooldownReports:0,cooldownReadinessPolls:0,snapshotTimings:[],commandClicks:[]},
- limitations:'Actual built full island on Chrome SwiftShader. Functional/layout screenshots and native input only; not physical-device, hardware FPS, sustained-performance, or completed human visual acceptance. Short Ride profile reports below are paused UI state snapshots, not performance samples. Existing release gates are unchanged.'};
+ ...(backend.name==='metal'?{nativeEnvironment:{requestedBackend:'angle-metal',platform:process.platform,actualGpu:null,
+  scope:'Isolated desktop control environment diagnostic at the unchanged Smooth/30 fixture. All original functional assertions and deadlines apply; this is not release-performance acceptance.'}}:{}),
+ limitations:backend.name==='metal'?'Actual built full island on Chrome ANGLE/Metal at the unchanged Smooth/30 control fixture. Functional/layout screenshots and native input only; not physical-device, hardware FPS, sustained-performance, or completed human visual acceptance. Short Ride profile reports below are paused UI state snapshots, not performance samples. Existing release gates are unchanged.':'Actual built full island on Chrome SwiftShader. Functional/layout screenshots and native input only; not physical-device, hardware FPS, sustained-performance, or completed human visual acceptance. Short Ride profile reports below are paused UI state snapshots, not performance samples. Existing release gates are unchanged.'};
 await mkdir(out,{recursive:true});
 const server=createCoopStaticServer(dist);let browser,page,context,client,touchSequence;
 const phase=name=>{report.phase=name;console.log(new Date().toISOString()+' '+caseName+' '+name);};
@@ -172,7 +192,9 @@ async function painted(){
    const completedAt=performance.now();frame=requestAnimationFrame(()=>{frame=requestAnimationFrame(()=>finish(null,{renderer,submittedAt,completedAt,paintOpportunities:2,width:canvas.width,height:canvas.height}));});
   }frame=requestAnimationFrame(poll);
  }));
- assert.match(proof.renderer,/SwiftShader/i,'This workflow records software WebGL honestly');return proof;
+ assertCadillacBackend(proof.renderer,backend.name);
+ if(backend.name==='metal')assert.equal(proof.renderer,report.nativeEnvironment.actualGpu?.renderer,'The completed capture must retain the verified game-canvas backend');
+ return proof;
 }
 async function capture(name){
  const gpu=await painted(),file=name+'.png';const bytes=await page.screenshot({path:resolve(out,file),timeout:150000});
@@ -533,7 +555,7 @@ async function run(){
  const marker=JSON.parse(await readFile(resolve(dist,'cadillac-mods-build.json'),'utf8'));assert.equal(marker.sourceSha,source);
  assert.equal(marker.indexSha256,hash(await readFile(resolve(dist,'index.html'))));report.build=marker;
  await new Promise((yes,no)=>{server.once('error',no);server.listen(0,'127.0.0.1',yes);});
- browser=await chromium.launch({channel:'chrome',headless:false,args:['--use-angle=swiftshader','--enable-unsafe-swiftshader','--gpu-watchdog-timeout-seconds=60']});
+ browser=await chromium.launch({channel:'chrome',headless:false,args:backend.args});
  report.browser=browser.version();
  context=await browser.newContext({viewport,isMobile:mobile,hasTouch:mobile,deviceScaleFactor:1,reducedMotion:'reduce',serviceWorkers:'block'});
  await context.addInitScript(()=>{
@@ -584,10 +606,21 @@ async function run(){
  page.on('requestfailed',request=>report.failedRequests.push({phase:report.phase,url:request.url(),type:request.resourceType(),error:request.failure()?.errorText}));
  phase('boot');await page.goto('http://127.0.0.1:'+server.address().port+'/?ride='+variant+'&profile=1',{waitUntil:'domcontentloaded',timeout:30000});
  await page.waitForFunction(()=>['ready','error'].includes(document.querySelector('#welcome')?.dataset.state),null,{timeout:180000});
- await expect(page.locator('#welcome')).toHaveAttribute('data-state','ready');await tap(page.locator('#start'));
+ await expect(page.locator('#welcome')).toHaveAttribute('data-state','ready');
+ if(backend.name==='metal'){
+  const actual=await page.locator('#game').evaluate(canvas=>{
+   const gl=canvas.getContext('webgl2');if(!gl||gl.isContextLost()||!canvas.width||!canvas.height)throw Error('A live, nonempty game WebGL2 canvas is required');
+   const debug=gl.getExtension('WEBGL_debug_renderer_info');return{
+    vendor:String(gl.getParameter(debug?.UNMASKED_VENDOR_WEBGL??gl.VENDOR)),
+    renderer:String(gl.getParameter(debug?.UNMASKED_RENDERER_WEBGL??gl.RENDERER)),
+    version:String(gl.getParameter(gl.VERSION)),width:canvas.width,height:canvas.height};
+  });
+  report.nativeEnvironment.actualGpu=actual;assertCadillacBackend(actual.renderer,backend.name);
+ }
+ await tap(page.locator('#start'));
  await expect(page.locator('body')).not.toHaveClass(/at-start/);await expect(page.locator('#ride-mode')).toContainText('CADILLAC');
  await openMods(tap);await setReduced(true);
- // Functional software-renderer fixture uses the ordinary Smooth setting. This
+ // Functional control fixture uses the ordinary Smooth setting. This
  // does not change any full-quality or sustained-performance acceptance suite.
  await selectWithKeyboard('#quality','smooth');await selectWithKeyboard('#fps','30');
  if(mobile){if(!await page.locator('#touch').isChecked())await tap(page.locator('#touch').locator('..'));await selectWithKeyboard('#joystick-mode','fixed');}
