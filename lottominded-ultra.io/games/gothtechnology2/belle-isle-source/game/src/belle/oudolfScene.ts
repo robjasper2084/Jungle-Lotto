@@ -28,7 +28,7 @@ export function addOudolfDetails(scene:T.Scene,map:ParkMap,lawn:T.MeshStandardMa
  };mulch.customProgramCacheKey=()=>'oudolf-mulch-v1';
  function add(parts:T.BufferGeometry[],material:T.Material,name:string){if(!parts.length)return;const mesh=new T.Mesh(mergeGeometries(parts,false)!,material);mesh.name=name;mesh.receiveShadow=true;group.add(mesh);for(const g of parts)g.dispose();}
  add(soil,mulch,'Oudolf soil beds');add(steel,new T.MeshStandardMaterial({color:0x363f39,roughness:.78,metalness:.4}),'Oudolf flush steel edging');
- const cutLawn=lawn.clone();cutLawn.color.setHex(0x70835a);cutLawn.onBeforeCompile=lawn.onBeforeCompile;
+ const cutLawn=lawn.clone(),lawnKey=lawn.customProgramCacheKey();cutLawn.color.setHex(0x70835a);cutLawn.onBeforeCompile=lawn.onBeforeCompile;cutLawn.customProgramCacheKey=()=>lawnKey;
  add(aisles,cutLawn,'Oudolf mown lawn aisles');
  const labelCanvas=document.createElement('canvas');labelCanvas.width=512;labelCanvas.height=256;const ctx=labelCanvas.getContext('2d')!;
  ctx.fillStyle='#e4e1ce';ctx.fillRect(0,0,512,256);ctx.fillStyle='#31463a';ctx.fillRect(24,26,8,202);ctx.font='bold 32px sans-serif';ctx.fillText('OUDOLF GARDEN',52,75);ctx.fillText('DETROIT',52,113);ctx.font='21px sans-serif';ctx.fillText('Perennials · grasses · seasonal colour',52,165);ctx.fillText('Explore the garden paths',52,204);

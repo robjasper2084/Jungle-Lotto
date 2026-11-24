@@ -141,6 +141,7 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
  const pitchSurface=mat(0x728260),gardenSoil=grass.clone(),gardenLawn=grass.clone();
  gardenSoil.color.set(0x8d8062);gardenLawn.color.set(0x8f9b7e);
  gardenSoil.onBeforeCompile=gardenLawn.onBeforeCompile=grass.onBeforeCompile;
+ const lawnKey=grass.customProgramCacheKey();gardenSoil.customProgramCacheKey=gardenLawn.customProgramCacheKey=()=>lawnKey;
  for(const a of data.areas){
   if(a.points.length<4)continue;
   if(a.kind==='pitch')add(poly(a.points,2.012),pitchSurface);

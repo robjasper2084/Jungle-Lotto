@@ -4,6 +4,7 @@ import {physicalLighting} from './physicalLighting.ts';
 import {presentationBudget} from './presentationPolicy.ts';
 import {applyLeafOutline,referenceLeafDisplay,type ReferenceLeafDisplay} from './referenceLeafDisplay.ts';
 import {registerSharedGeometryShader} from './sharedGeometryBuffers.ts';
+import {hasAtmosphereProgram,registerAtmosphereProgram} from './atmosphereProgramIdentity.ts';
 type Shader=Parameters<T.Material['onBeforeCompile']>[0];
 type Wind={time:T.IUniform<number>;amount:T.IUniform<number>;range:T.IUniform<T.Vector2>;amplitude:number;crown:boolean;leaves?:ReferenceLeafDisplay};
 /** Scene-local shader composition; never mutates Three's shared ShaderChunk table. */
@@ -64,7 +65,7 @@ export class WorldAtmosphere {
  }
  private patch(material:T.Material,wind?:Wind){
   if(this.originals.has(material)||!(material as T.MeshStandardMaterial).isMeshStandardMaterial)return;
-  const compile=material.onBeforeCompile,key=material.customProgramCacheKey,identity=key.call(material)+'|belle-pbr-v1';this.originals.set(material,{compile,key});
+  const compile=material.onBeforeCompile,key=material.customProgramCacheKey,identity=key.call(material),inherited=!wind&&hasAtmosphereProgram(compile);this.originals.set(material,{compile,key});
   material.onBeforeCompile=(shader,renderer)=>{
    compile.call(material,shader,renderer);if(wind)this.bindWind(shader,wind);
    Object.assign(shader.uniforms,this.uniforms);
@@ -75,7 +76,8 @@ export class WorldAtmosphere {
    }
   };
   registerSharedGeometryShader(material,compile);
-  material.customProgramCacheKey=()=>identity+'|belle-height-fog-clouds-v2'+(wind?'|wind':'');material.needsUpdate=true;
+  registerAtmosphereProgram(material);
+  material.customProgramCacheKey=()=>inherited?identity:identity+'|belle-pbr-v1|belle-height-fog-clouds-v2'+(wind?'|wind':'');material.needsUpdate=true;
  }
  update(time:number,direction:T.Vector3,coverage:number,day:number,overcast:number,quality:string,reduced:boolean,xr:boolean){
   this.flush();const budget=presentationBudget(quality,xr);
