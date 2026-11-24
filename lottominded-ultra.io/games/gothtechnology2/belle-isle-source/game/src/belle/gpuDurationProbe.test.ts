@@ -1,53 +1,61 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {createGpuDurationProbe,gpuDurationEnabled,gpuDurationContextExcluded,type GpuDurationFrameStart,type GpuDurationFrameEnd} from './gpuDurationProbe.ts';
+import {createGpuDurationProbe,gpuDurationEnabled,gpuDurationContextExcluded,GPU_DURATION_API_STAGES,type GpuDurationFrameStart,type GpuDurationFrameEnd} from './gpuDurationProbe.ts';
 
 function fixture(){
- let time=0,callback=0,contextReads=0,clockThrows=false;
+ let time=0,callback=0,contextReads=0,clockThrows=false,apiClockReads=0;
+ let onCall:((call:{name:string;args:unknown[]})=>void)|undefined,apiClockOverride:(()=>number)|undefined;
+ const legacyClockPositions:number[]=[];
  const calls:{name:string;args:unknown[]}[]=[],queries:{id:number;available:boolean;result:unknown}[]=[];
+ const record=(name:string,args:unknown[]=[])=>{const call={name,args};calls.push(call);onCall?.(call);};
  const ext={TIME_ELAPSED_EXT:20,QUERY_COUNTER_BITS_EXT:21,GPU_DISJOINT_EXT:22};
  const gl={CURRENT_QUERY:1,QUERY_RESULT_AVAILABLE:2,QUERY_RESULT:3,DRAW_FRAMEBUFFER_BINDING:4,SAMPLES:5,SAMPLE_BUFFERS:6,VENDOR:7,RENDERER:8,VERSION:9,
-  drawingBufferWidth:1440,drawingBufferHeight:900,active:null as object|null,lost:false,disjoint:false,supported:true,bits:64,
+  get drawingBufferWidth(){record('drawingBufferWidth');return 1440;},get drawingBufferHeight(){record('drawingBufferHeight');return 900;},
+  active:null as object|null,lost:false,disjoint:false,supported:true,bits:64,
   autoAvailable:false,throwEnd:false,throwBegin:false,throwParameter:false,allocationFails:false,
-  getExtension(name:string){calls.push({name:'getExtension',args:[name]});return name==='EXT_disjoint_timer_query_webgl2'&&this.supported?ext:null;},
-  getQuery(target:number,pname:number){calls.push({name:'getQuery',args:[target,pname]});assert.equal(target,ext.TIME_ELAPSED_EXT);return pname===ext.QUERY_COUNTER_BITS_EXT?this.bits:this.active;},
+  getExtension(name:string){record('getExtension',[name]);return name==='EXT_disjoint_timer_query_webgl2'&&this.supported?ext:null;},
+  getQuery(target:number,pname:number){record('getQuery',[target,pname]);assert.equal(target,ext.TIME_ELAPSED_EXT);return pname===ext.QUERY_COUNTER_BITS_EXT?this.bits:this.active;},
   getParameter(pname:number):unknown{
-   calls.push({name:'getParameter',args:[pname]});if(this.throwParameter)throw Error('parameter');
+   record('getParameter',[pname]);if(this.throwParameter)throw Error('parameter');
    if(pname===ext.GPU_DISJOINT_EXT){const value=this.disjoint;this.disjoint=false;return value;}
    return new Map<number,unknown>([[this.DRAW_FRAMEBUFFER_BINDING,null],[this.SAMPLES,4],[this.SAMPLE_BUFFERS,1],[this.VENDOR,'Native vendor'],[this.RENDERER,'Native renderer'],[this.VERSION,'WebGL 2']]).get(pname);
   },
-  getContextAttributes(){calls.push({name:'getContextAttributes',args:[]});return {antialias:true};},
-  isContextLost(){calls.push({name:'isContextLost',args:[]});return this.lost;},
-  createQuery(){calls.push({name:'createQuery',args:[]});if(this.allocationFails)return null;const q={id:queries.length+1,available:this.autoAvailable,result:5_000_000_000};queries.push(q);return q;},
-  deleteQuery(query:object){calls.push({name:'deleteQuery',args:[query]});},
-  beginQuery(target:number,query:object){calls.push({name:'beginQuery',args:[target,query]});assert.equal(this.active,null);this.active=query;if(this.throwBegin)throw Error('begin');},
-  endQuery(target:number){calls.push({name:'endQuery',args:[target]});assert.notEqual(this.active,null);if(this.throwEnd)throw Error('end');this.active=null;},
+  getContextAttributes(){record('getContextAttributes');return {antialias:true};},
+  isContextLost(){record('isContextLost');return this.lost;},
+  createQuery(){record('createQuery');if(this.allocationFails)return null;const q={id:queries.length+1,available:this.autoAvailable,result:5_000_000_000};queries.push(q);return q;},
+  deleteQuery(query:object){record('deleteQuery',[query]);},
+  beginQuery(target:number,query:object){record('beginQuery',[target,query]);assert.equal(this.active,null);this.active=query;if(this.throwBegin)throw Error('begin');},
+  endQuery(target:number){record('endQuery',[target]);assert.notEqual(this.active,null);if(this.throwEnd)throw Error('end');this.active=null;},
   getQueryParameter(query:object,pname:number):unknown{
-   calls.push({name:'getQueryParameter',args:[query,pname]});assert.notEqual(this.active,query,'never poll an active query');
+   record('getQueryParameter',[query,pname]);assert.notEqual(this.active,query,'never poll an active query');
    const q=queries.find(q=>q===query)!;assert(q);
    if(pname===this.QUERY_RESULT_AVAILABLE)return q.available;
    assert.equal(pname,this.QUERY_RESULT);assert(q.available,'never request unavailable results');return q.result;
   },
  };
  const getContext=()=>{contextReads++;return gl as unknown as WebGL2RenderingContext;};
- const clock=()=>{if(clockThrows)throw Error('clock');return time;};
- const probe=createGpuDurationProbe(true,getContext,clock)!;
+ const clock=()=>{legacyClockPositions.push(calls.length);if(clockThrows)throw Error('clock');return time;};
+ const apiClock=()=>{apiClockReads++;return apiClockOverride?apiClockOverride():time;};
+ const probe=createGpuDurationProbe(true,getContext,clock,apiClock)!;
  const begin=(flags:Partial<GpuDurationFrameStart>={})=>{callback++;time+=20;probe.beginFrame({rafTimeMs:callback*20,cpuStartMs:time,recording:true,eligible:true,excluded:false,...flags});};
  const end=(values:Partial<GpuDurationFrameEnd>={})=>{time+=4;probe.endFrame({cpuEndMs:time,renderSubmitCpuMs:2,eligible:true,drawCalls:400,triangles:2_000_000,renderPasses:3,shadowUpdateRequested:true,...values});};
  const tick=(count=1,flags:Partial<GpuDurationFrameStart>={})=>{for(let i=0;i<count;i++){begin(flags);try{end();}finally{probe.cancelFrame();}}};
- return {gl,ext,probe,calls,queries,getContext,clock,begin,end,tick,get contextReads(){return contextReads;},set clockThrows(value:boolean){clockThrows=value;}};
+ return {gl,ext,probe,calls,queries,getContext,clock,apiClock,begin,end,tick,legacyClockPositions,advance:(ms:number)=>{time+=ms;},
+  get contextReads(){return contextReads;},get apiClockReads(){return apiClockReads;},get time(){return time;},set clockThrows(value:boolean){clockThrows=value;},
+  set onCall(value:typeof onCall){onCall=value;},set apiClockOverride(value:typeof apiClockOverride){apiClockOverride=value;}};
 }
 const count=(f:ReturnType<typeof fixture>,name:string)=>f.calls.filter(c=>c.name===name).length;
 
 test('flag off performs zero context acquisition, extension lookup, parameter or query calls',()=>{
  const f=fixture();
  for(const search of ['', '?gpu-duration=0','?profile=1&locationPerf=1','?gpu-duration=true']){
-  const disabled=createGpuDurationProbe(gpuDurationEnabled(search),f.getContext,()=>{throw Error('clock must remain unused');});
+  const disabled=createGpuDurationProbe(gpuDurationEnabled(search),f.getContext,()=>{throw Error('clock must remain unused');},()=>{throw Error('API clock must remain unused');});
   disabled?.snapshot();disabled?.dispose();assert.equal(disabled,undefined);
  }
  assert.equal(f.contextReads,0);assert.deepEqual(f.calls,[]);
  f.probe.snapshot();f.probe.dispose();assert.equal(f.contextReads,0);assert.deepEqual(f.calls,[]);
+ assert.equal(f.apiClockReads,0);assert.deepEqual(f.legacyClockPositions,[]);
 });
 
 test('ordinary full profile URL with the location QA panel remains eligible while real sensors are off',()=>{
@@ -187,4 +195,129 @@ test('full callback integration brackets sky/world work and final rendering with
  assert(end<source.indexOf('rideProfile?.sample(',end));assert(source.indexOf('}finally{gpuDuration?.cancelFrame();}',end)>end);
  assert.match(source,/gpuDuration:gpuDuration\.snapshot\(\)/);
  assert.match(source,/resetRenderDiagnostics:\(\)=>\{[^}]*gpuDuration\?\.breakAssociation\(\)/);
+});
+
+test('API wall scopes preserve the original exact GL trace, arguments, values and legacy clock positions',()=>{
+ const f=fixture();f.tick(7);
+ const q=f.queries[0],e=f.ext,g=f.gl;
+ assert.deepEqual(f.calls.map(call=>[call.name,...call.args]),[
+  ['isContextLost'],['getExtension','EXT_disjoint_timer_query_webgl2'],['getQuery',e.TIME_ELAPSED_EXT,e.QUERY_COUNTER_BITS_EXT],
+  ['getExtension','WEBGL_debug_renderer_info'],['getParameter',g.VENDOR],['getParameter',g.RENDERER],['getParameter',g.VERSION],['getContextAttributes'],
+  ['isContextLost'],['getQuery',e.TIME_ELAPSED_EXT,g.CURRENT_QUERY],['getParameter',e.GPU_DISJOINT_EXT],
+  ['drawingBufferWidth'],['drawingBufferHeight'],['getParameter',g.DRAW_FRAMEBUFFER_BINDING],['getParameter',g.SAMPLES],['getParameter',g.SAMPLE_BUFFERS],
+  ['createQuery'],['beginQuery',e.TIME_ELAPSED_EXT,q],['getQuery',e.TIME_ELAPSED_EXT,g.CURRENT_QUERY],
+  ['isContextLost'],['getQuery',e.TIME_ELAPSED_EXT,g.CURRENT_QUERY],['endQuery',e.TIME_ELAPSED_EXT],
+ ]);
+ assert.deepEqual(f.legacyClockPositions,[11,22],'Legacy issue/end reads retain their original positions and count');
+ assert.equal(f.apiClockReads,20);const s=f.probe.snapshot(),row=s.samples[0];
+ assert.equal(s.version,2);assert.deepEqual(row.apiWall.calls.map(call=>call.stage),GPU_DURATION_API_STAGES);
+ assert.deepEqual(row.drawingBuffer,{width:1440,height:900});assert.deepEqual(row.framebuffer,{defaultBound:true,samples:4,sampleBuffers:1});
+ assert.equal(row.issuedCpuTimeMs,164);assert.equal(row.cpuEndMs,168);assert.equal(row.queryBracketCpuMs,4);
+ assert.equal(row.apiWall.dropped,0);
+ for(const call of row.apiWall.calls){assert.equal(call.wallMs,0);assert.equal(call.outcome,'returned');assert.deepEqual(call.clockErrors,[]);}
+ assert(!JSON.stringify(row.apiWall).includes('available'),'No GL query return object enters the snapshot');
+ const before=f.apiClockReads;f.probe.snapshot();f.probe.snapshot();assert.equal(f.apiClockReads,before,'Reading cached reports does not read clocks');
+});
+
+test('each deliberately slow GL operation is localized to its own scalar wall receipt',()=>{
+ // Positions are in the independently specified original trace above, including
+ // separately observable drawing-buffer properties and the two close controls.
+ const positions=[12,13,14,15,16,17,18,19,21,22];
+ for(const [index,position]of positions.entries()){
+  const f=fixture();f.onCall=()=>{if(f.calls.length===position)f.advance(37);};f.tick(7);
+  const row=f.probe.snapshot().samples[0];assert.equal(row.apiWall.calls.length,10);
+  for(const [i,call]of row.apiWall.calls.entries())assert.equal(call.wallMs,i===index?37:0,call.stage);
+  assert.equal(row.apiWall.calls[index].stage,GPU_DURATION_API_STAGES[index]);
+  assert.equal(row.queryBracketCpuMs,41,'Legacy bracket still contains setup, render and close');
+  assert.equal(row.cpuElapsedMs,index<8?41:4,'Post-render controls stay outside the original render-end timestamp');
+ }
+});
+
+test('new invalid or throwing clocks remain explicit metadata and never suppress a real GL operation',()=>{
+ const cases=[
+  {read:1,value:NaN,errors:['start-invalid']},{read:2,value:Infinity,errors:['end-invalid']},
+  {read:1,value:-1,errors:['start-invalid']},{read:1,throws:true,errors:['start-threw']},{read:2,throws:true,errors:['end-threw']},
+ ];
+ for(const mode of cases){
+  const f=fixture();let n=0;f.apiClockOverride=()=>{if(++n===mode.read){if(mode.throws)throw Error('new wall clock');return mode.value!;}return f.time;};
+  f.tick(7);f.queries[0].available=true;f.tick();const s=f.probe.snapshot(),call=s.samples[0].apiWall.calls[0];
+  assert.equal(s.counts.valid,1);assert.equal(s.counts.errors,0);assert.equal(count(f,'beginQuery'),1);assert.equal(count(f,'endQuery'),1);
+  assert.equal(call.wallMs,null);assert.deepEqual(call.clockErrors,mode.errors);
+  assert.equal(call[mode.read===1?'startMs':'endMs'],null,'An invalid observation is never replaced by zero');
+ }
+ const f=fixture();let n=0;f.apiClockOverride=()=>++n===1?f.time+1:f.time;f.tick(7);
+ const call=f.probe.snapshot().samples[0].apiWall.calls[0];assert.equal(call.wallMs,null);assert.deepEqual(call.clockErrors,['regressed']);
+ assert.equal(call.startMs,call.endMs!+1);assert.equal(count(f,'endQuery'),1);
+});
+
+test('timing failure cannot replace an original operation exception, and real begin failure still cleans its query',()=>{
+ const f=fixture(),original=Error('original GL failure');f.apiClockOverride=()=>{throw Error('wall clock');};
+ const timing={calls:[],dropped:0};let attempted=0;
+ const invoke=()=>Reflect.apply(Reflect.get(f.probe,'apiCall'),f.probe,[timing,'issue.beginQuery','issue',()=>{attempted++;throw original;}]);
+ assert.throws(invoke,error=>error===original);assert.equal(attempted,1);
+ assert.equal(Reflect.get(timing.calls[0],'outcome'),'threw');assert.deepEqual(Reflect.get(timing.calls[0],'clockErrors'),['start-threw','end-threw']);
+ f.gl.throwBegin=true;f.tick(7);const row=f.probe.snapshot().samples[0];
+ assert.equal(row.rejectionReason,'observer-error');assert.equal(f.gl.active,null);assert.equal(count(f,'deleteQuery'),1);
+ assert.deepEqual(row.apiWall.calls.slice(-3).map(call=>[call.stage,call.phase,call.outcome]),[
+  ['issue.beginQuery','issue','threw'],['close.ownership','cleanup','returned'],['close.endQuery','cleanup','returned'],
+ ]);
+});
+
+test('failed close cleanup is bounded and future dropped timing receipts cannot suppress operations',()=>{
+ const f=fixture();f.tick(6);f.begin();f.gl.throwEnd=true;f.end();const row=f.probe.snapshot().samples[0];
+ assert.equal(row.apiWall.calls.length,12);assert.equal(row.apiWall.dropped,0);
+ assert.deepEqual(row.apiWall.calls.slice(-4).map(call=>[call.phase,call.outcome]),[['end','returned'],['end','threw'],['cleanup','returned'],['cleanup','threw']]);
+ const before=f.apiClockReads;f.probe.cancelFrame();f.probe.dispose();assert.equal(f.apiClockReads,before);
+ const timing={calls:[],dropped:0};let operations=0;
+ for(let i=0;i<15;i++)assert.equal(Reflect.apply(Reflect.get(f.probe,'apiCall'),f.probe,[timing,'close.ownership','cleanup',()=>++operations]),i+1);
+ assert.equal(timing.calls.length,12);assert.equal(timing.dropped,3);assert.equal(operations,15);assert.equal(f.apiClockReads-before,24);
+});
+
+test('a setup exception or null allocation before issue creates no invented row or zero timing sample',()=>{
+ for(const mode of ['width','allocation'] as const){
+  const f=fixture();if(mode==='width')f.onCall=call=>{if(call.name==='drawingBufferWidth')throw Error('width getter');};else f.gl.allocationFails=true;
+  f.tick(7);const s=f.probe.snapshot();assert.equal(s.counts.issued,0);assert.equal(s.counts.errors,1);assert.deepEqual(s.samples,[]);assert.equal(count(f,'beginQuery'),0);
+ }
+});
+
+const driverSource=readFileSync(new URL('../../scripts/gpu-duration-native-check.mjs',import.meta.url),'utf8');
+// Execute only the driver's pure reconciliation code. Browser startup/input is
+// outside this slice and is neither imported nor simulated by these tests.
+const driver=Function(driverSource.slice(driverSource.indexOf('const gpuApiWallStages='),driverSource.indexOf('const game='))+
+ ';return {validateGpuApiWall,validateGpuDuration,summarizeGpuApiWall};')() as {
+ validateGpuApiWall:(row:unknown)=>string[];validateGpuDuration:(snapshot:unknown,actual:unknown)=>string[];
+ summarizeGpuApiWall:(snapshot:unknown)=>{stage:string;calls:number;wallMs:{count:number;sum:number;mean:number;p50:number;p95:number;max:number}|null}[];
+};
+test('the separate driver reconciles raw wall receipts and computes per-stage statistics without GL reads',()=>{
+ const f=fixture();f.gl.autoAvailable=true;f.onCall=call=>{if(call.name==='getParameter'&&call.args[0]===f.gl.SAMPLES)f.advance(37);};f.tick(63);
+ const s=f.probe.snapshot(),before=f.calls.length;assert.equal(s.counts.valid,8);assert.equal(s.counts.unresolved,1);
+ assert.deepEqual(driver.validateGpuDuration(s,s.backend),[]);
+ const stages=driver.summarizeGpuApiWall(s),slow=stages.find(stage=>stage.stage==='issue.samples')!;
+ assert.equal(slow.calls,9);assert.deepEqual(slow.wallMs,{count:9,sum:333,mean:37,p50:37,p95:37,max:37});
+ assert(stages.filter(stage=>stage!==slow).every(stage=>stage.wallMs?.sum===0));assert.equal(f.calls.length,before);
+ assert(driver.summarizeGpuApiWall(null).every(stage=>stage.wallMs===null),'Unobserved stages have no fabricated zero-duration aggregate');
+});
+
+test('a live pending query may retain only issue receipts without being drained for the report',()=>{
+ const f=fixture();f.gl.autoAvailable=true;f.tick(62);f.begin();const s=f.probe.snapshot(),row=s.samples.at(-1)!;
+ assert.equal(row.status,'pending');assert.equal(row.cpuEndMs,null);assert.equal(row.apiWall.calls.length,8);assert.equal(s.counts.valid,8);
+ const before=f.calls.length;assert.deepEqual(driver.validateGpuDuration(s,s.backend),[]);assert.equal(f.calls.length,before);f.probe.cancelFrame();
+});
+
+test('driver rejects modified wall arithmetic, order, containing scopes and invalid-clock substitutions',()=>{
+ const f=fixture();f.gl.autoAvailable=true;f.tick(57);const source=f.probe.snapshot();
+ const mutations:( (s:typeof source)=>void)[]=[
+  s=>{s.samples[0].apiWall.calls[0].wallMs=1;},s=>{s.samples[0].apiWall.calls.reverse();},
+  s=>{s.samples[0].apiWall.calls[0].startMs=s.samples[0].issuedCpuTimeMs-1;s.samples[0].apiWall.calls[0].wallMs=1;},
+  s=>{s.samples[0].apiWall.calls.at(-1)!.endMs!+=1;s.samples[0].apiWall.calls.at(-1)!.wallMs=1;},
+  s=>{s.samples[0].apiWall.calls[0].startMs=null;s.samples[0].apiWall.calls[0].clockErrors=['start-threw'];},
+  s=>{s.samples[0].apiWall.dropped=1;},s=>{s.samples[0].apiWall.calls.pop();},
+ ];
+ for(const mutate of mutations){const changed=structuredClone(source);mutate(changed);assert(driver.validateGpuDuration(changed,changed.backend).length>0);}
+ const g=fixture();g.gl.throwBegin=true;g.tick(7);const failed=g.probe.snapshot().samples[0];
+ assert.deepEqual(driver.validateGpuApiWall(failed),[],'A real issue throw can be followed by cleanup');
+ const impossible=structuredClone(failed);impossible.apiWall.calls.splice(7,0,{...impossible.apiWall.calls[5],stage:'issue.ownershipAfterBegin'});
+ assert(driver.validateGpuApiWall(impossible).some(error=>error.includes('terminate its phase')));
+ const badClose=structuredClone(source.samples[0]);badClose.apiWall.calls[8].outcome='threw';
+ assert(driver.validateGpuApiWall(badClose).some(error=>error.includes('terminate its phase')));
 });

@@ -1,5 +1,9 @@
-/** Opt-in asynchronous diagnostics. This observer never admits, delays or renders a frame. */
+/** Opt-in asynchronous diagnostics. Frame admission is unchanged; no explicit GPU wait or render is added. */
 export const GPU_DURATION_LIMITS={sampleEvery:7,maxIssued:256,maxPending:4} as const;
+export const GPU_DURATION_API_WALL_LIMIT=12;
+export const GPU_DURATION_API_STAGES=['issue.drawingBufferWidth','issue.drawingBufferHeight','issue.drawFramebufferBinding','issue.samples',
+ 'issue.sampleBuffers','issue.createQuery','issue.beginQuery','issue.ownershipAfterBegin','close.ownership','close.endQuery'] as const;
+export const GPU_DURATION_API_WALL_NOTE='Per-call elapsed wall time from separate performance.now reads, not pure CPU execution time or proof of a GPU cause. Scheduling, driver/process communication and synchronization can contribute. These non-overlapping call scopes overlap the legacy callback or query-bracket intervals; close scopes occur after cpuEndMs but within a completed query bracket. Never add child scopes to their containing intervals. Legacy issuedCpuTimeMs remains before the metadata reads and beginQuery, and queryBracketCpuMs keeps that original origin. Initialization, result polling, ordinary scene work and callbacks issuing no query are not individually timed; cpuStartMs to issuedCpuTimeMs remains the broad pre-issue interval. Only issued samples retain call receipts; failures before query allocation have no sample. Invalid/throwing clock reads retain null durations and explicit errors. Cleanup calls are separately marked and bounded; dropped receipts are counted. No additional GL calls or explicit waits are made.';
 export const GPU_DURATION_NOTE='Diagnostic only, not release acceptance. Queries surround sky/world updates through the final scene render/copy in sampled eligible recorded callbacks. Elapsed GPU-command intervals can include gaps while the CPU supplies commands; they exclude earlier queue delay and browser composition/presentation, and are not pure GPU busy time. CPU timings include observer overhead and overlap GPU work; do not add them or subtract their percentiles. Next-callback intervals are associations, not proof of cause. RAF timestamps and performance.now timestamps have different callback timing semantics. Counts and samples are bounded lifetime observations; compare settingsAtStart for repeated captures. Snapshots never poll GL; unresolved queries at capture stop are not zero-duration results. No locations, headings, inputs or account data are collected.';
 export const gpuDurationEnabled=(search:string)=>new URLSearchParams(search).get('gpu-duration')==='1';
 export const gpuDurationContextExcluded=(context:{xr:boolean;coop:boolean;reducedScene:boolean;following:boolean;locationState:string|undefined})=>
@@ -11,6 +15,12 @@ type ContextSource=Context|WebGLRenderingContext;
 export interface GpuDurationFrameStart {rafTimeMs:number;cpuStartMs:number;recording:boolean;eligible:boolean;excluded:boolean;}
 export interface GpuDurationFrameEnd {cpuEndMs:number;renderSubmitCpuMs:number;eligible:boolean;drawCalls:number;triangles:number;renderPasses:number;shadowUpdateRequested:boolean;}
 type Association={callback:number;rafTimeMs:number;intervalMs:number;eligible:boolean};
+export interface GpuDurationApiWallCall {
+ stage:typeof GPU_DURATION_API_STAGES[number];phase:'issue'|'end'|'cleanup';
+ startMs:number|null;endMs:number|null;wallMs:number|null;outcome:'returned'|'threw';
+ clockErrors:('start-threw'|'start-invalid'|'end-threw'|'end-invalid'|'regressed')[];
+}
+type ApiWall={calls:GpuDurationApiWallCall[];dropped:number};
 export interface GpuDurationSample {
  sample:number;callback:number;eligibleCallback:number;rafTimeMs:number;cpuStartMs:number;issuedCpuTimeMs:number;
  cpuEndMs:number|null;cpuElapsedMs:number|null;renderSubmitCpuMs:number|null;queryBracketCpuMs:number|null;
@@ -19,6 +29,7 @@ export interface GpuDurationSample {
  status:'pending'|'valid'|'rejected';rejectionReason:string|null;gpuNanoseconds:number|null;gpuMs:number|null;
  resultCallback:number|null;resolutionDelayCallbacks:number|null;resolutionDelayCpuMs:number|null;
  nextAdmittedCallback:Association|null;nextEligibleCallback:Association|null;association:'waiting'|'paired'|'interrupted';
+ apiWall:ApiWall;
 }
 type Pending={query:WebGLQuery;row:GpuDurationSample};
 const finite=(value:unknown):value is number=>typeof value==='number'&&Number.isFinite(value);
@@ -27,8 +38,8 @@ const parameterNumber=(value:unknown)=>nonnegative(value)?value:null;
 const parameterText=(value:unknown)=>typeof value==='string'?value.slice(0,512):null;
 
 /** The disabled factory does not even acquire a context or read its properties. */
-export function createGpuDurationProbe(enabled:boolean,getContext:()=>ContextSource,clock:()=>number=()=>performance.now()){
- return enabled?new GpuDurationProbe(getContext,clock):undefined;
+export function createGpuDurationProbe(enabled:boolean,getContext:()=>ContextSource,clock:()=>number=()=>performance.now(),apiClock:()=>number=()=>performance.now()){
+ return enabled?new GpuDurationProbe(getContext,clock,apiClock):undefined;
 }
 
 export class GpuDurationProbe {
@@ -42,8 +53,29 @@ export class GpuDurationProbe {
  private counts={admittedCallbacks:0,eligibleCallbacks:0,issued:0,valid:0,rejected:0,pendingPeak:0,disjointEvents:0,contextLosses:0,errors:0,interruptedAssociations:0};
  private skips={notRecording:0,ineligible:0,excluded:0,cadence:0,limit:0,pendingLimit:0,foreignQuery:0,invalidClock:0,unsupported:0};
  private rejectionReasons:Record<string,number>={};
- private getContext:()=>ContextSource;private clock:()=>number;
- constructor(getContext:()=>ContextSource,clock:()=>number=()=>performance.now()){this.getContext=getContext;this.clock=clock;}
+ private getContext:()=>ContextSource;private clock:()=>number;private apiClock:()=>number;
+ constructor(getContext:()=>ContextSource,clock:()=>number=()=>performance.now(),apiClock:()=>number=()=>performance.now()){
+  this.getContext=getContext;this.clock=clock;this.apiClock=apiClock;
+ }
+
+ private readApiClock(){
+  try{const value=this.apiClock();return nonnegative(value)?{value,error:null}:{value:null,error:'invalid' as const};}
+  catch{return{value:null,error:'threw' as const};}
+ }
+ /** Timing failures cannot suppress a GL call or replace its original exception. */
+ private apiCall<T>(timing:ApiWall,stage:GpuDurationApiWallCall['stage'],phase:GpuDurationApiWallCall['phase'],operation:()=>T):T{
+  if(timing.calls.length>=GPU_DURATION_API_WALL_LIMIT){timing.dropped++;return operation();}
+  const start=this.readApiClock();let outcome:GpuDurationApiWallCall['outcome']='threw';
+  try{const value=operation();outcome='returned';return value;}
+  finally{
+   const end=this.readApiClock(),clockErrors:GpuDurationApiWallCall['clockErrors']=[];
+   if(start.error)clockErrors.push(start.error==='threw'?'start-threw':'start-invalid');
+   if(end.error)clockErrors.push(end.error==='threw'?'end-threw':'end-invalid');
+   if(start.value!==null&&end.value!==null&&end.value<start.value)clockErrors.push('regressed');
+   timing.calls.push({stage,phase,startMs:start.value,endMs:end.value,
+    wallMs:clockErrors.length||start.value===null||end.value===null?null:end.value-start.value,outcome,clockErrors});
+  }
+ }
 
  private initialize(){
   if(this.status!=='waiting')return this.status==='ready';
@@ -75,14 +107,14 @@ export class GpuDurationProbe {
   this.rejectionReasons[reason]=(this.rejectionReasons[reason]??0)+1;this.deleteQuery(item.query);
  }
  /** End only the query we own. Never end a foreign elapsed query. */
- private close(item:Pending){
+ private close(item:Pending,phase:'end'|'cleanup'){
   const gl=this.gl!,ext=this.ext!;
-  if(gl.getQuery(ext.TIME_ELAPSED_EXT,gl.CURRENT_QUERY)!==item.query)return false;
-  gl.endQuery(ext.TIME_ELAPSED_EXT);return true;
+  if(this.apiCall(item.row.apiWall,'close.ownership',phase,()=>gl.getQuery(ext.TIME_ELAPSED_EXT,gl.CURRENT_QUERY))!==item.query)return false;
+  this.apiCall(item.row.apiWall,'close.endQuery',phase,()=>gl.endQuery(ext.TIME_ELAPSED_EXT));return true;
  }
  private fail(){
   this.counts.errors++;this.status='error';
-  if(this.active){const item=this.active;this.active=undefined;try{this.close(item);}catch{}this.reject(item,'observer-error');}
+  if(this.active){const item=this.active;this.active=undefined;try{this.close(item,'cleanup');}catch{}this.reject(item,'observer-error');}
   for(const item of this.pending)this.reject(item,'observer-error');this.pending=[];this.breakAssociation();
  }
  private disjoint(){
@@ -133,19 +165,22 @@ export class GpuDurationProbe {
    if(this.pending.length>=GPU_DURATION_LIMITS.maxPending){this.skips.pendingLimit++;return;}
    const issued=this.clock();
    if(!nonnegative(issued)||issued<frame.cpuStartMs){this.skips.invalidClock++;return;}
-   const width=gl.drawingBufferWidth,height=gl.drawingBufferHeight;
-   const framebuffer={defaultBound:gl.getParameter(gl.DRAW_FRAMEBUFFER_BINDING)===null,
-    samples:parameterNumber(gl.getParameter(gl.SAMPLES)),sampleBuffers:parameterNumber(gl.getParameter(gl.SAMPLE_BUFFERS))};
-   const query=gl.createQuery();
+   const apiWall:ApiWall={calls:[],dropped:0};
+   const width=this.apiCall(apiWall,'issue.drawingBufferWidth','issue',()=>gl.drawingBufferWidth),
+    height=this.apiCall(apiWall,'issue.drawingBufferHeight','issue',()=>gl.drawingBufferHeight);
+   const framebuffer={defaultBound:this.apiCall(apiWall,'issue.drawFramebufferBinding','issue',()=>gl.getParameter(gl.DRAW_FRAMEBUFFER_BINDING))===null,
+    samples:parameterNumber(this.apiCall(apiWall,'issue.samples','issue',()=>gl.getParameter(gl.SAMPLES))),
+    sampleBuffers:parameterNumber(this.apiCall(apiWall,'issue.sampleBuffers','issue',()=>gl.getParameter(gl.SAMPLE_BUFFERS)))};
+   const query=this.apiCall(apiWall,'issue.createQuery','issue',()=>gl.createQuery());
    if(!query){this.fail();return;}
    const row:GpuDurationSample={sample:++this.counts.issued,callback,eligibleCallback,rafTimeMs:frame.rafTimeMs,cpuStartMs:frame.cpuStartMs,issuedCpuTimeMs:issued,
     cpuEndMs:null,cpuElapsedMs:null,renderSubmitCpuMs:null,queryBracketCpuMs:null,drawCalls:null,triangles:null,renderPasses:null,shadowUpdateRequested:null,
-    drawingBuffer:{width,height},framebuffer,status:'pending',rejectionReason:null,gpuNanoseconds:null,gpuMs:null,
+    drawingBuffer:{width,height},framebuffer,apiWall,status:'pending',rejectionReason:null,gpuNanoseconds:null,gpuMs:null,
     resultCallback:null,resolutionDelayCallbacks:null,resolutionDelayCpuMs:null,nextAdmittedCallback:null,nextEligibleCallback:null,association:'waiting'};
    this.rows.push(row);this.active={query,row};this.waitingAssociation=row;
    this.counts.pendingPeak=Math.max(this.counts.pendingPeak,this.pending.length+1);
-   gl.beginQuery(ext.TIME_ELAPSED_EXT,query);
-   if(gl.getQuery(ext.TIME_ELAPSED_EXT,gl.CURRENT_QUERY)!==query){this.reject(this.active,'query-not-started');this.active=undefined;this.breakAssociation();}
+   this.apiCall(apiWall,'issue.beginQuery','issue',()=>gl.beginQuery(ext.TIME_ELAPSED_EXT,query));
+   if(this.apiCall(apiWall,'issue.ownershipAfterBegin','issue',()=>gl.getQuery(ext.TIME_ELAPSED_EXT,gl.CURRENT_QUERY))!==query){this.reject(this.active,'query-not-started');this.active=undefined;this.breakAssociation();}
   }catch{this.fail();}
  }
  /** Call immediately after the final render/copy. The outer finally still calls cancelFrame. */
@@ -160,7 +195,7 @@ export class GpuDurationProbe {
   try{
    if(this.gl!.isContextLost()){this.contextLost();return;}
    const item=this.active;
-   const closed=this.close(item);
+   const closed=this.close(item,'end');
    const ended=this.clock(),row=item.row;
    if(!closed){this.reject(item,'query-ownership');this.active=undefined;this.breakAssociation();return;}
    if(!frame.eligible){this.reject(item,'eligibility-changed');this.active=undefined;this.breakAssociation();return;}
@@ -182,7 +217,7 @@ export class GpuDurationProbe {
   }
   if(!this.active)return;
   const item=this.active;this.active=undefined;
-  try{if(!this.gl!.isContextLost())this.close(item);}catch{this.counts.errors++;}
+  try{if(!this.gl!.isContextLost())this.close(item,'cleanup');}catch{this.counts.errors++;}
   this.reject(item,'incomplete-callback');this.breakAssociation();
  }
  /** Immediate modal/focus/privacy boundaries must also break pairs between admitted callbacks. */
@@ -211,7 +246,8 @@ export class GpuDurationProbe {
   const values=this.rows.flatMap(row=>row.status==='valid'&&row.gpuMs!==null?[row.gpuMs]:[]).sort((a,b)=>a-b);
   const gpuMs=values.length?{count:values.length,mean:values.reduce((a,b)=>a+b,0)/values.length,
    p50:values[Math.min(values.length-1,Math.floor(values.length*.5))],p95:values[Math.min(values.length-1,Math.floor(values.length*.95))],max:values.at(-1)!}:null;
-  return structuredClone({version:1,enabled:true,status:this.status,limits:GPU_DURATION_LIMITS,capability:this.capability,backend:this.backend,
+  return structuredClone({version:2,enabled:true,status:this.status,limits:GPU_DURATION_LIMITS,capability:this.capability,backend:this.backend,
+   apiWallTiming:{clock:'performance.now',maxCallsPerSample:GPU_DURATION_API_WALL_LIMIT,stages:GPU_DURATION_API_STAGES,note:GPU_DURATION_API_WALL_NOTE},
    counts:{...this.counts,completed:this.counts.valid+this.counts.rejected,unresolved:this.pending.length+Number(!!this.active)},
    skips:this.skips,rejectionReasons:this.rejectionReasons,gpuMs,samples:this.rows,note:GPU_DURATION_NOTE});
  }

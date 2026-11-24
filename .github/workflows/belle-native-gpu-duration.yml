@@ -14,6 +14,7 @@ concurrency:
 
 env:
   BASELINE_SHA: a3d872a23fce2e378b00b15f8e512502907106d3
+  EXPERIMENT_PARENT_SHA: 784405af08007c79411303dc5cff688ad990326a
   INTEGRATED_MAIN_SHA: 2a8901996e53b1f93474f3c2165e078b6dd16e57
   GAME_PATH: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
   STRICT_SCRIPT_SHA256: 8f6af949083800c491b65e0709c04cc29eb5712634f744c5b912f76ce651fcf5
@@ -49,14 +50,17 @@ jobs:
           const parents=git('show','-s','--format=%P','HEAD').split(' ').filter(Boolean);
           const currentMain=git('rev-parse','refs/remotes/origin/main');
           const expectedExtras=['.github/workflows/belle-native-gpu-duration.yml',game+'/scripts/gpu-duration-native-check.mjs',game+'/src/belle/main.ts',game+'/src/belle/gpuDurationProbe.ts',game+'/src/belle/gpuDurationProbe.test.ts',game+'/src/belle/locationIntegration.test.ts',game+'/run-tests.mjs'].sort();
+          const expectedIncrement=['.github/workflows/belle-native-gpu-duration.yml',game+'/scripts/gpu-duration-native-check.mjs',game+'/src/belle/gpuDurationProbe.ts',game+'/src/belle/gpuDurationProbe.test.ts'].sort();
           const proof={version:1,repository:'robjasper2084/Jungle-Lotto',commit,tree,parents,
-            baseline:process.env.BASELINE_SHA,
+            baseline:process.env.BASELINE_SHA,expectedParent:process.env.EXPERIMENT_PARENT_SHA,
             integratedMain:process.env.INTEGRATED_MAIN_SHA,currentMain,
-            expectedExtras,actualExtras:names(process.env.BASELINE_SHA,'HEAD'),verified:false};
+            expectedExtras,actualExtras:names(process.env.BASELINE_SHA,'HEAD'),expectedIncrement,actualIncrement:names(process.env.EXPERIMENT_PARENT_SHA,'HEAD'),verified:false};
           await writeFile(resolve(out,'source-preflight.json'),JSON.stringify(proof,null,2)+'\n');
           assert.equal(commit,process.env.GITHUB_SHA);
-          assert.deepEqual(parents,[process.env.BASELINE_SHA],'Diagnostic must have exactly the reviewed full-game baseline as its sole parent');
+          assert.deepEqual(parents,[process.env.EXPERIMENT_PARENT_SHA],'Wall-timing follow-up must have exactly the reviewed first diagnostic as its sole parent');
           assert.deepEqual(proof.actualExtras,expectedExtras,'Only the explicit opt-in diagnostic module, integration, tests, runner, driver and workflow may differ');
+          assert.deepEqual(proof.actualIncrement,expectedIncrement,'The follow-up may change only the timing probe/test, separate diagnostic driver and workflow');
+          execFileSync('git',['merge-base','--is-ancestor',process.env.BASELINE_SHA,process.env.EXPERIMENT_PARENT_SHA]);
           execFileSync('git',['merge-base','--is-ancestor',process.env.INTEGRATED_MAIN_SHA,process.env.BASELINE_SHA]);
           execFileSync('git',['merge-base','--is-ancestor',currentMain,process.env.BASELINE_SHA]);
           execFileSync('git',['diff','--exit-code','HEAD','--']);
@@ -90,7 +94,7 @@ jobs:
           const preflight=JSON.parse(await readFile(resolve(out,'source-preflight.json'),'utf8'));
           const commit=git('rev-parse','HEAD'),tree=git('rev-parse','HEAD^{tree}'),parent=git('rev-parse','HEAD^');
           assert(preflight.verified);assert.equal(commit,process.env.GITHUB_SHA);assert.equal(commit,preflight.commit);
-          assert.equal(tree,preflight.tree);assert.equal(parent,process.env.BASELINE_SHA);
+          assert.equal(tree,preflight.tree);assert.equal(parent,process.env.EXPERIMENT_PARENT_SHA);assert.equal(parent,preflight.expectedParent);
           const sourceFiles=['package.json','package-lock.json','../../package.json','../../package-lock.json','index.html','vite.config.ts','tsconfig.json','run-tests.mjs'];
           async function sourceWalk(directory){for(const entry of await readdir(directory,{withFileTypes:true})){
             const path=resolve(directory,entry.name);
@@ -106,7 +110,7 @@ jobs:
             return [path,hash(bytes)];
           })));
           assert.equal(sources['scripts/sustained-ride-profile.mjs'],process.env.STRICT_SCRIPT_SHA256);
-          for(const ref of [process.env.BASELINE_SHA,process.env.INTEGRATED_MAIN_SHA,preflight.currentMain]){
+          for(const ref of [process.env.BASELINE_SHA,process.env.EXPERIMENT_PARENT_SHA,process.env.INTEGRATED_MAIN_SHA,preflight.currentMain]){
             const original=execFileSync('git',['show',ref+':'+process.env.GAME_PATH+'/scripts/sustained-ride-profile.mjs']);
             assert.equal(hash(original),process.env.STRICT_SCRIPT_SHA256,'Original strict riding/GPS script must remain unchanged at '+ref);
           }
@@ -150,7 +154,7 @@ jobs:
             integratedMainCommit:process.env.INTEGRATED_MAIN_SHA,currentMainCommit:preflight.currentMain,
             buildId:'native-gpu-duration-'+process.env.GITHUB_RUN_ID+'-'+commit,builtAt:new Date().toISOString(),node:process.version,
             workflow:{path:workflowPath,sha256:hash(workflowBytes)},buildMetadata,sources,files,
-            scope:'Isolated opt-in asynchronous GPU elapsed queries over the full-game desktop and phone workloads. The original strict script remains byte-identical; the separate diagnostic driver preserves its native input, renderer flags, quality, timing limits and GPS coverage. Instrumented frame intervals cannot grant release acceptance. Phone remains an emulated viewport, not physical-device certification.'};
+            scope:'Isolated opt-in asynchronous GPU elapsed queries with bounded per-call elapsed wall timing over the full-game desktop and phone workloads. Call wall duration is not pure CPU execution or GPU causation. The original strict script remains byte-identical; the separate diagnostic driver preserves its native input, renderer flags, quality, timing limits and GPS coverage. Instrumented frame intervals cannot grant release acceptance. Phone remains an emulated viewport, not physical-device certification.'};
           await writeFile(resolve(out,'source-integrity.json'),JSON.stringify(metadata,null,2)+'\n');
           console.log('BELLE_GPU_DURATION_BUILD '+JSON.stringify({commit,tree,parent,baseline:metadata.baseline,buildId:metadata.buildId,files:files.length,sourceFiles:sourceFiles.length,strictScriptSha256:sources['scripts/sustained-ride-profile.mjs']}));
           NODE

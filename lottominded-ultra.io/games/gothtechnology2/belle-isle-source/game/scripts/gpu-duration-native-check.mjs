@@ -5,12 +5,70 @@ import {mkdir,writeFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {createCoopStaticServer} from './coop-static-server.mjs';
 import {checkGpsFullScene} from './gps-full-scene-check.mjs';
+const gpuApiWallStages=['issue.drawingBufferWidth','issue.drawingBufferHeight','issue.drawFramebufferBinding','issue.samples',
+ 'issue.sampleBuffers','issue.createQuery','issue.beginQuery','issue.ownershipAfterBegin','close.ownership','close.endQuery'];
+/** Independent receipt arithmetic; call spans overlap the existing enclosing
+ * callback/query-bracket totals and must never be added to those totals. */
+function validateGpuApiWall(row){
+ const errors=[],check=(ok,message)=>{if(!ok)errors.push(message);};
+ const finite=value=>typeof value==='number'&&Number.isFinite(value)&&value>=0,tolerance=.000001;
+ const timing=row.apiWall,calls=Array.isArray(timing?.calls)?timing.calls:[];
+ check(Array.isArray(timing?.calls)&&calls.length>=6&&calls.length<=12&&timing.dropped===0,'API wall receipt bound/inventory is invalid');
+ const phases={issue:[],end:[],cleanup:[]};let phaseOrder=0,previousEnd=row.issuedCpuTimeMs,sum=0,firstStart=null,lastEnd=null;
+ for(const call of calls.slice(0,12)){
+  if(!call||typeof call!=='object'){errors.push('API wall call object missing');continue;}
+  check(gpuApiWallStages.includes(call.stage),'Unknown API wall stage');
+  const phase=['issue','end','cleanup'].indexOf(call.phase);
+  check(phase>=phaseOrder&&phase>=0,'API wall phases are out of order');if(phase>=0){phaseOrder=phase;phases[call.phase].push(call);}
+  check(['returned','threw'].includes(call.outcome),'API wall call outcome is invalid');
+  const clockErrors=Array.isArray(call.clockErrors)?call.clockErrors:[];
+  check(Array.isArray(call.clockErrors)&&clockErrors.length<=3&&new Set(clockErrors).size===clockErrors.length&&
+   clockErrors.every(value=>['start-threw','start-invalid','end-threw','end-invalid','regressed'].includes(value)),'API wall clock error inventory is invalid');
+  for(const key of ['start','end']){
+   const value=call[key+'Ms'],invalid=clockErrors.filter(error=>error===key+'-threw'||error===key+'-invalid');
+   check((value===null&&invalid.length===1)||(finite(value)&&invalid.length===0),'API wall timestamp/error markers disagree');
+  }
+  const regressed=finite(call.startMs)&&finite(call.endMs)&&call.endMs<call.startMs;
+  check(clockErrors.includes('regressed')===regressed,'API wall regression marker disagrees with timestamps');
+  if(clockErrors.length){check(call.wallMs===null,'Invalid API wall clock must retain a null duration');errors.push('API wall clock could not be validated');continue;}
+  check(finite(call.startMs)&&finite(call.endMs)&&call.endMs>=call.startMs&&call.wallMs===call.endMs-call.startMs,'API wall duration does not match its raw timestamps');
+  check(finite(previousEnd)&&call.startMs+tolerance>=previousEnd,'API wall call intervals overlap or precede issue');
+  previousEnd=call.endMs;firstStart??=call.startMs;lastEnd=call.endMs;if(finite(call.wallMs))sum+=call.wallMs;
+  if(finite(row.queryBracketCpuMs))check(call.endMs<=row.issuedCpuTimeMs+row.queryBracketCpuMs+tolerance,'API wall call escaped the legacy query bracket');
+  if(finite(row.cpuEndMs)&&finite(row.renderSubmitCpuMs)&&call.phase==='issue')
+   check(call.endMs<=row.cpuEndMs-row.renderSubmitCpuMs+tolerance,'Issue API wall call escaped the pre-render interval');
+  if(finite(row.cpuEndMs)&&call.phase==='end')check(call.startMs+tolerance>=row.cpuEndMs,'Close API wall call precedes the original render-end timestamp');
+ }
+ check(phases.issue.length>=6&&phases.issue.length<=8&&phases.issue.every((call,index)=>call.stage===gpuApiWallStages[index]),'Issue API wall stage order is invalid');
+ check(phases.issue.slice(0,6).every(call=>call.outcome==='returned'),'An issued query cannot have failed before allocation');
+ for(const phase of ['end','cleanup'])check(phases[phase].length<=2&&phases[phase].every((call,index)=>call.stage===gpuApiWallStages[8+index]),'Close API wall stage order is invalid');
+ for(const phase of ['issue','end','cleanup']){const threw=phases[phase].findIndex(call=>call.outcome==='threw');check(threw<0||threw===phases[phase].length-1,'A thrown API call must terminate its phase');}
+ if(row.status==='valid'||finite(row.cpuEndMs))check(phases.issue.length===8&&phases.end.length===2&&phases.cleanup.length===0&&calls.every(call=>call&&call.outcome==='returned'),'Completed query lacks its successful issue/close API wall receipts');
+ if(firstStart!==null&&lastEnd!==null)check(sum<=lastEnd-firstStart+tolerance,'Non-overlapping API wall calls exceed their containing span');
+ if(finite(row.queryBracketCpuMs))check(sum<=row.queryBracketCpuMs+tolerance,'API wall sum exceeds its legacy enclosing bracket');
+ return errors;
+}
+/** Derived here from scalar raw receipts, never from a probe-supplied aggregate. */
+function summarizeGpuApiWall(gpu){
+ const rows=Array.isArray(gpu?.samples)?gpu.samples.slice(0,256):[];
+ return gpuApiWallStages.map(stage=>{
+  const calls=rows.flatMap(row=>Array.isArray(row?.apiWall?.calls)?row.apiWall.calls.slice(0,12):[]).filter(call=>call?.stage===stage);
+  const values=calls.filter(call=>Array.isArray(call.clockErrors)&&call.clockErrors.length===0&&
+   typeof call.startMs==='number'&&Number.isFinite(call.startMs)&&call.startMs>=0&&typeof call.endMs==='number'&&Number.isFinite(call.endMs)&&call.endMs>=call.startMs&&
+   call.wallMs===call.endMs-call.startMs).map(call=>call.wallMs).sort((a,b)=>a-b);
+  return{stage,calls:calls.length,returned:calls.filter(call=>call.outcome==='returned').length,threw:calls.filter(call=>call.outcome==='threw').length,
+   invalidClock:calls.length-values.length,phases:Object.fromEntries(['issue','end','cleanup'].map(phase=>[phase,calls.filter(call=>call.phase===phase).length])),
+   wallMs:values.length?{count:values.length,sum:values.reduce((a,b)=>a+b,0),mean:values.reduce((a,b)=>a+b,0)/values.length,
+    p50:values[Math.min(values.length-1,Math.floor(values.length*.5))],p95:values[Math.min(values.length-1,Math.floor(values.length*.95))],max:values.at(-1)}:null};
+ });
+}
 /** Reconcile the detached report without polling GL or trusting its aggregates. */
 function validateGpuDuration(gpu,actualGpu){
  const errors=[],check=(condition,message)=>{if(!condition)errors.push(message);};
  const finite=value=>typeof value==='number'&&Number.isFinite(value),integer=value=>Number.isSafeInteger(value)&&value>=0;
  if(!gpu||typeof gpu!=='object')return ['Opt-in GPU duration snapshot missing'];
- check(gpu.version===1&&gpu.enabled===true&&gpu.status==='ready','GPU duration schema or state is invalid');
+ check(gpu.version===2&&gpu.enabled===true&&gpu.status==='ready','GPU duration schema or state is invalid');
+ check(gpu.apiWallTiming?.clock==='performance.now'&&gpu.apiWallTiming.maxCallsPerSample===12&&JSON.stringify(gpu.apiWallTiming.stages)===JSON.stringify(gpuApiWallStages),'API wall timing scope/schema is invalid');
  check(gpu.capability?.extension==='EXT_disjoint_timer_query_webgl2'&&gpu.capability.available===true&&integer(gpu.capability.counterBits)&&gpu.capability.counterBits>0,'Elapsed-query capability was not established');
  check(gpu.backend?.renderer===actualGpu?.renderer&&gpu.backend?.version===actualGpu?.version,'Query and workload GPU identities differ');
  check(gpu.limits?.sampleEvery===7&&gpu.limits?.maxIssued===256&&gpu.limits?.maxPending===4,'Diagnostic sampling bounds changed');
@@ -25,6 +83,7 @@ function validateGpuDuration(gpu,actualGpu){
  for(const [index,row]of rows.slice(0,256).entries()){
   const label='Receipt '+(index+1)+': ';
   if(!row||typeof row!=='object'){errors.push(label+'missing object');continue;}
+  errors.push(...validateGpuApiWall(row).map(error=>label+error));
   check(row.sample===index+1&&integer(row.callback)&&row.callback>previousCallback&&row.callback<=c.admittedCallbacks,'Receipt identifiers or callback order are invalid');
   check(integer(row.eligibleCallback)&&row.eligibleCallback>previousEligible&&row.eligibleCallback<=c.eligibleCallbacks&&row.eligibleCallback<=row.callback&&row.eligibleCallback%7===0,label+'sampling cadence is invalid');
   previousCallback=row.callback;previousEligible=row.eligibleCallback;
@@ -70,8 +129,8 @@ const report={sourceHead:process.env.GITHUB_SHA||null,device,viewport,requestedS
  renderBackend:null,rendererFallback:null,actualGpu:null,input:null,classification:null,
  hardware:'Chrome '+process.platform+' '+process.arch+'; phone viewport is emulated',
  acceptanceScope:'INSTRUMENTED FULL-GAME GPU DURATION DIAGNOSTIC ONLY; not release-performance acceptance or device certification',
- gpuDuration:null,gpuDurationDiagnosticComplete:false,gpuDurationValidationErrors:[],
- instrumentationNote:'GPU queries add diagnostic work. All frame-budget and GPS checks remain, but no instrumented result is release-performance acceptance. Query duration excludes compositor/presentation and queue delay before the interval; it is not pure shader-busy time.',
+ gpuDuration:null,gpuApiWall:null,gpuDurationDiagnosticComplete:false,gpuDurationValidationErrors:[],
+ instrumentationNote:'GPU queries and per-call wall timing add diagnostic work. All frame-budget and GPS checks remain, but no instrumented result is release-performance acceptance. Query duration excludes compositor/presentation and queue delay before the interval; it is not pure shader-busy time. API wall duration can include scheduling, process/driver communication or synchronization; it is not pure CPU execution or proof of a GPU cause. These spans overlap legacy callback or query-bracket intervals; close scopes occur after cpuEndMs but within a completed query bracket. Do not add child and enclosing spans or subtract their percentiles.',
  passed:false,instrumentedRideGatePassed:false,gpsRegression:null,frameQualityAccepted:false,releasePerformanceVerified:false,welcomeReadyMs:null,rideStartedMs:null,firstPlayableMs:null,profileWindowCaveat:'Local browser capture ends at genuine trusted W-keyup before Settings/report extraction; NOT physical-device certification',profile:null,memory:null,browserSchedulerProbe:null,cdpCpuProbe:null,probeErrors:[],errors:[],failedRequests:[],elapsedWallMs:null};
 const server=createCoopStaticServer(resolve(game,'dist'));
 await new Promise(ok=>server.listen(0,'127.0.0.1',ok));
@@ -291,6 +350,7 @@ try{
  // Inspect only the immutable, bounded snapshot already emitted by the real
  // recorder. No forced query resolution, fence, frame, or app control is used.
  report.gpuDurationValidationErrors=validateGpuDuration(report.gpuDuration,report.actualGpu);
+ report.gpuApiWall=summarizeGpuApiWall(report.gpuDuration);
  report.gpuDurationDiagnosticComplete=report.gpuDurationValidationErrors.length===0;
  if(report.profile.stopReason!=='trusted-W-keyup')throw Error('Capture did not end on real trusted keyboard release');
  report.memory=await page.evaluate(()=>({
