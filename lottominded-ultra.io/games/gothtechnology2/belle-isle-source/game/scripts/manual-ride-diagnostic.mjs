@@ -5,15 +5,16 @@ import {createHash} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
 import {readFile,writeFile,mkdir,readdir} from 'node:fs/promises';
 import {createRequire} from 'node:module';
-import {resolve,relative,sep} from 'node:path';
+import {resolve,relative,sep,dirname} from 'node:path';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 import {parseArgs} from 'node:util';
 import {prepareHostServiceTrace} from './host-service-trace.mjs';
+import {installGlCommandCensus} from './gl-command-census.mjs';
 
-const {values}=parseArgs({options:{...Object.fromEntries(['game','build','output','sha','source','case','device','baseline','candidate','condition'].map(name=>[name,{type:'string'}])),gpu:{type:'boolean',default:false},trace:{type:'boolean',default:false}}});
+const {values}=parseArgs({options:{...Object.fromEntries(['game','build','output','sha','source','case','device','baseline','candidate','condition'].map(name=>[name,{type:'string'}])),gpu:{type:'boolean',default:false},trace:{type:'boolean',default:false},commands:{type:'boolean',default:false}}});
 for(const name of ['game','build','output','sha','source','case','device','baseline','candidate'])assert(values[name],'Missing --'+name);
 for(const name of ['sha','baseline','candidate'])assert.match(values[name],/^[0-9a-f]{40}$/,'Full immutable --'+name+' SHA required');
-assert(['baseline','candidate'].includes(values.source));assert(['A1','B1','B2','A2'].includes(values.case));assert(['desktop','phone'].includes(values.device));
+assert(['baseline','candidate'].includes(values.source));assert(['A1','B1','B2','A2','C0','C1'].includes(values.case));assert(['desktop','phone'].includes(values.device));
 assert.equal(values.sha,values[values.source]);
 const attribution=values.condition!==undefined,gpuRequested=values.gpu||values.condition==='frame';
 if(attribution){
@@ -22,8 +23,14 @@ if(attribution){
   assert.equal(values.condition,values.case.startsWith('A')?'off':'frame');
 }else assert.equal(values.source,values.case.startsWith('A')?'baseline':'candidate');
 if(values.trace){assert(attribution);assert.equal(values.condition,'off');assert.equal(values.case,'A2','Trace only the separate query-off follow-up');}
+if(values.commands||values.case.startsWith('C')){
+  assert.equal(values.commands,values.case==='C1','Only C1 enables the command census');
+  assert(['C0','C1'].includes(values.case));assert.equal(attribution,false);assert.equal(gpuRequested,false);assert.equal(values.trace,false);
+  assert.equal(values.source,'candidate');assert.equal(values.baseline,values.candidate,'Command cases require the same immutable app source');
+}
 const game=resolve(values.game),bundle=resolve(values.build),dist=resolve(bundle,'dist'),output=resolve(values.output);
-const strictHash='c7bf025a63918b885bcd7e1bcda55865423aba73c63f58a8287ff9a03af1a100';
+const driverGame=resolve(dirname(fileURLToPath(import.meta.url)),'..');
+const strictHash=values.case.startsWith('C')?'8f6af949083800c491b65e0709c04cc29eb5712634f744c5b912f76ce651fcf5':'c7bf025a63918b885bcd7e1bcda55865423aba73c63f58a8287ff9a03af1a100';
 const mobile=values.device==='phone',viewport=mobile?{width:390,height:844}:{width:1440,height:900},quality=mobile?'smooth':'high';
 const sha256=bytes=>createHash('sha256').update(bytes).digest('hex');
 const json=(path,value)=>writeFile(path,JSON.stringify(value,null,2)+'\n');
@@ -34,12 +41,21 @@ await mkdir(output,{recursive:false}); // Refuse stale or overwritten case evide
 const report={version:1,case:values.case,source:values.source,sourceHead:values.sha,baseline:values.baseline,candidate:values.candidate,
   measurementCommit:process.env.GITHUB_SHA??null,runId:process.env.GITHUB_RUN_ID??null,runAttempt:process.env.GITHUB_RUN_ATTEMPT??null,
   scope:'FULL-scene manual observer diagnostic; not a strict release run',device:values.device,viewport,quality,mode:'full',profileQuery:'manual',requestedSeconds:90,gpuTimingRequested:gpuRequested,
-  queryCondition:values.condition??null,pipelineObservationRequested:attribution,hostServiceTraceRequested:values.trace,
+  queryCondition:values.condition??null,pipelineObservationRequested:attribution,hostServiceTraceRequested:values.trace,commandCensusRequested:values.commands,
   diagnosticCaptureCompleted:false,diagnosticEvidenceValid:false,frameQualityAccepted:false,releasePerformanceVerified:false,firstPlayableMs:null,
   exitSemantics:'Zero means valid diagnostic evidence collection only. Original numerical budget outcomes are reported separately. The unchanged strict full lane remains the acceptance check.',
   requestedGraphics:{quality,cap:60,antiAliasing:'automatic',pixelRatio:1,diagnosticReduction:false},
   errors:[],failedRequests:[],probeErrors:[],integrityErrors:[],cleanupErrors:[],cleanupRequestAborts:[],phase:'created'};
 let manifest,repoRoot,browser,page,server,cdp,marker,hostTrace,closingBrowser=false;
+async function disposeCommandCensus(){
+  return page.evaluate(()=>{
+    const descriptor=Object.getOwnPropertyDescriptor(window,'__belleCommandCensusHandle'),handle=descriptor?.value;
+    if(!handle)return null;
+    handle.dispose();const snapshot=handle.snapshot();
+    if(Object.getOwnPropertyDescriptor(window,'__belleCommandCensusHandle')?.value===handle)delete window.__belleCommandCensusHandle;
+    return snapshot;
+  });
+}
 async function checkpoint(phase){report.phase=phase;await json(resolve(output,'report.json'),report);emit('PHASE',{case:values.case,phase,elapsedMs:Date.now()-started});}
 async function fileNames(root,directory=root){
   const result=[];
@@ -69,7 +85,18 @@ async function verifySources(){
     result[name]=sha256(await readFile(path));assert.equal(result[name],expected,name+' source hash');
   }
   assert.equal(result['scripts/sustained-ride-profile.mjs'],strictHash,'Original strict script changed');
+  if(values.case.startsWith('C'))assert.equal(result['src/belle/gpuFramePacing.ts'],'f4d5abc9cfa56c5b1a3def0294ea37e5c9dd28284d3c9614a4b06d22a7f51fd1','Original production capacity-one pacing source changed');
   execFileSync('git',['-C',repoRoot,'diff','--exit-code','HEAD'],{stdio:'pipe'});
+  return result;
+}
+async function verifyDriverSources(){
+  if(!manifest.driverSources)return null; // Retain compatibility with the earlier A1/B1/A2 manifest.
+  const expected=['scripts/manual-ride-diagnostic.mjs','scripts/host-service-trace.mjs','scripts/gl-command-census.mjs'];
+  assert.deepEqual(Object.keys(manifest.driverSources).sort(),expected.sort(),'Complete separate driver/module hashes required');
+  assert.equal(execFileSync('git',['-C',driverGame,'rev-parse','HEAD'],{encoding:'utf8'}).trim(),report.measurementCommit);
+  const result={};
+  for(const name of expected){result[name]=sha256(await readFile(resolve(driverGame,name)));assert.equal(result[name],manifest.driverSources[name],name+' driver hash');}
+  execFileSync('git',['-C',driverGame,'diff','--exit-code','HEAD'],{stdio:'pipe'});
   return result;
 }
 const compactSubmission=value=>value?{invalidObservations:value.invalidObservations,
@@ -106,10 +133,12 @@ try{
   assert.equal(execFileSync('git',['-C',game,'rev-parse','HEAD'],{encoding:'utf8'}).trim(),values.sha);
   const manifestBytes=await readFile(resolve(bundle,'manual-diagnostic-build.json'));manifest=JSON.parse(manifestBytes);
   assert.equal(manifest.commit,values.sha);assert.equal(manifest.label,values.source);assert.equal(manifest.repository,'robjasper2084/Jungle-Lotto');
+  if(values.case.startsWith('C'))assert(manifest.driverSources,'Command cases require separately hashed immutable driver sources');
   assert.equal(execFileSync('git',['-C',game,'rev-parse','HEAD^{tree}'],{encoding:'utf8'}).trim(),manifest.tree);
   assert.equal(manifest.workflowCommit,report.measurementCommit,'Build and driver workflow revisions must match');
-  report.sourceTree=manifest.tree;report.buildManifestSha256=sha256(manifestBytes);report.sourceHashesBefore=await verifySources();report.buildIntegrityBefore=await verifyBuild();
+  report.sourceTree=manifest.tree;report.buildManifestSha256=sha256(manifestBytes);report.sourceHashesBefore=await verifySources();report.driverSourceHashesBefore=await verifyDriverSources();report.buildIntegrityBefore=await verifyBuild();
   await writeFile(resolve(output,'build.json'),manifestBytes);await writeFile(resolve(output,'diagnostic-driver.mjs'),await readFile(fileURLToPath(import.meta.url)));
+  if(values.commands)await writeFile(resolve(output,'gl-command-census.mjs'),await readFile(resolve(driverGame,'scripts/gl-command-census.mjs')));
   const index=manifest.files.find(file=>file.path==='index.html');assert(index);
   marker={version:1,repository:manifest.repository,commit:values.sha,buildId:manifest.buildId,builtAt:manifest.builtAt,indexSha256:index.sha256,profileQuery:'manual'};
   const markerPath=resolve(dist,'__belle_test_build.json');
@@ -126,10 +155,12 @@ try{
   emit('IDENTITY',{case:values.case,source:values.source,sourceHead:values.sha,sourceTree:manifest.tree,baseline:values.baseline,candidate:values.candidate,
     measurementCommit:report.measurementCommit,buildId:manifest.buildId,buildManifestSha256:report.buildManifestSha256,sourceHashes:report.sourceHashesBefore,
     runtime:report.runtime,launch:report.launch,viewport,quality,mode:'full',profileQuery:'manual',requestedSeconds:90,
-    queryCondition:report.queryCondition,pipelineObservationRequested:attribution,hostServiceTraceRequested:values.trace});
+    queryCondition:report.queryCondition,pipelineObservationRequested:attribution,hostServiceTraceRequested:values.trace,commandCensusRequested:values.commands,
+    driverSourceHashes:report.driverSourceHashesBefore});
   await checkpoint('verified-immutable-inputs');
   browser=await chromium.launch(report.launch);report.browserVersion=browser.version();
   page=await browser.newPage({viewport,deviceScaleFactor:1,isMobile:mobile,hasTouch:mobile,reducedMotion:'reduce'});page.setDefaultTimeout(180000);await page.bringToFront();
+  if(values.commands)await page.addInitScript({content:'Object.defineProperty(window,"__belleCommandCensusHandle",{configurable:true,value:('+installGlCommandCensus.toString()+')()});'});
   // Event receipt listeners observe genuine browser input. The source-owned
   // optional pipeline probe observes existing calls without issuing GL work.
   await page.addInitScript(quality=>{
@@ -197,6 +228,16 @@ try{
   await expect(panel.getByRole('button',{name:'Start 10-minute capture',exact:true})).toBeVisible();
   report.releaseToManualStopWallMs=Date.now()-released;
   const raw=await panel.locator('textarea').inputValue();report.profile=JSON.parse(raw);await writeFile(resolve(output,'manual-profile.json'),raw+'\n');
+  if(values.commands){
+    report.commandCensus=await disposeCommandCensus();
+    await json(resolve(output,'gl-command-census.json'),report.commandCensus);
+    assert(report.commandCensus,'Requested native command census must be available');
+    assert.equal(report.commandCensus.phase,'stopped');assert.equal(report.commandCensus.contextObserved,true);
+    assert.deepEqual(report.commandCensus.errors,[]);assert.deepEqual(report.commandCensus.limitHits,{});
+    assert(report.commandCensus.hooks.length>0&&report.commandCensus.hooks.every(hook=>hook.status==='installed'),'Every observed command hook must install');
+    assert(report.commandCensus.totalCalls>0&&report.commandCensus.totals.drawCalls>0,'Actual original rendering commands are required');
+    assert(report.commandCensus.lastWUpMs>report.commandCensus.firstWDownMs,'Trusted held-input census boundaries are required');
+  }else assert.equal(await page.evaluate(()=>typeof window.__belleCommandCensus),'undefined','Control must not install command census hooks');
   if(hostTrace){
     try{
       report.hostServiceTrace=await hostTrace.stop(output);await json(resolve(output,'host-service-trace-summary.json'),report.hostServiceTrace);
@@ -225,6 +266,10 @@ try{
     if(!gpuRequested)assert.equal(await page.evaluate(()=>typeof window.__belleGpuDiagnostics),'undefined','Query-off control must not install the GPU timer probe');
   }
   report.input={...(await page.evaluate(()=>window.__belleManualInputReceipts)),reassertions,heartbeatError};
+  if(report.commandCensus)report.commandCensusInputAlignment={
+    firstWDownDifferenceMs:report.commandCensus.firstWDownMs-report.input.firstWDownAt,
+    lastWUpDifferenceMs:report.commandCensus.lastWUpMs-report.input.lastWUpAt,
+    note:'Both listeners observe the genuine input event. Differences retain listener order/CPU scheduling; timestamps are not adjusted.'};
   if(hostTrace){
     const markers=report.hostServiceTrace.clockMarkers??[],start=markers.find(mark=>mark.name.endsWith('-trace-start')),end=markers.find(mark=>mark.name.endsWith('-trace-end'));
     report.hostServiceTrace.trustedInputAlignment={requestedStartDelayMs:60000,
@@ -236,6 +281,13 @@ try{
   }
   report.captureBoundary='Native manual Start precedes W-down; native Stop follows genuine W-up. The measured release-to-Stop delay is retained. This is not the strict CLI trusted-W-keyup boundary. Observer CPU overhead is included.';
   const stats=report.profile;
+  if(values.case.startsWith('C')){
+    for(const snapshot of [stats.gpuFramePacing?.atStart,stats.gpuFramePacing?.atFinish]){
+      assert.equal(snapshot?.installed,true,'Production GPU pacing must remain installed');
+      if(snapshot.capacity!==undefined)assert.equal(snapshot.capacity,1,'Command census must not use experimental capacity-three pacing');
+    }
+    report.productionPacingSourceSha256=report.sourceHashesBefore['src/belle/gpuFramePacing.ts'];
+  }
   report.frameQualityAccepted=Number.isFinite(stats.metrics?.frameMs?.p95)&&stats.metrics.frameMs.p95<=50&&stats.over250ms===0;
   report.originalNumericObservations={framesAtLeast8:stats.frames>=8,p95Present:Number.isFinite(stats.metrics?.frameMs?.p95),movingSecondsAtLeast5:stats.movingSeconds>=5,
     distanceAtLeast3m:stats.distanceMetres>=3,p95AtMost50ms:Number.isFinite(stats.metrics?.frameMs?.p95)&&stats.metrics.frameMs.p95<=50,noFramesOver250ms:stats.over250ms===0};
@@ -279,13 +331,17 @@ finally{
     catch(error){report.probeErrors.push('Host trace cleanup: '+String(error));}
   }
   try{await cdp?.detach();}catch(error){report.probeErrors.push('CDP cleanup: '+String(error));}
+  if(values.commands&&page&&!page.isClosed())try{
+    const census=await disposeCommandCensus();
+    if(census){report.commandCensus=census;await json(resolve(output,'gl-command-census.json'),census);}
+  }catch(error){report.cleanupErrors.push('Command census cleanup: '+String(error));}
   closingBrowser=true;
   try{await browser?.close();}catch(error){report.cleanupErrors.push('Browser cleanup: '+String(error));}
   if(server)try{await new Promise((ok,fail)=>server.close(error=>error?fail(error):ok()));}catch(error){report.cleanupErrors.push('Server cleanup: '+String(error));}
   // The browser is shut down before final serialization. Every late error or
   // failed request remains fatal, including classified shutdown aborts.
   await new Promise(ok=>setImmediate(ok));
-  if(manifest&&repoRoot)try{report.sourceHashesAfter=await verifySources();report.buildIntegrityAfter=await verifyBuild();assert.deepEqual(JSON.parse(await readFile(resolve(dist,'__belle_test_build.json'),'utf8')),marker);}catch(error){report.integrityErrors.push(String(error?.stack??error));}
+  if(manifest&&repoRoot)try{report.sourceHashesAfter=await verifySources();report.driverSourceHashesAfter=await verifyDriverSources();report.buildIntegrityAfter=await verifyBuild();assert.deepEqual(JSON.parse(await readFile(resolve(dist,'__belle_test_build.json'),'utf8')),marker);}catch(error){report.integrityErrors.push(String(error?.stack??error));}
   report.observers=null;
   try{report.observers=observerSummary(report.profile);}catch(error){report.errors.push('Observer summary: '+String(error?.stack??error));}
   report.elapsedWallMs=Date.now()-started;report.phase='finished';
@@ -294,7 +350,7 @@ finally{
   emit('RESULT',{case:values.case,source:values.source,sourceHead:values.sha,sourceTree:report.sourceTree,diagnosticCaptureCompleted:report.diagnosticCaptureCompleted,
     diagnosticEvidenceValid:report.diagnosticEvidenceValid,frameQualityAccepted:report.frameQualityAccepted,releasePerformanceVerified:false,exitSemantics:report.exitSemantics,
     actualGpu:report.actualGpu,browserVersion:report.browserVersion,viewport,quality,requestedGraphics:report.requestedGraphics,effectiveGraphicsAtFinish:report.effectiveGraphicsAtFinish,
-    queryCondition:report.queryCondition,pipelineObservationRequested:attribution,hostServiceTraceRequested:values.trace,
+    queryCondition:report.queryCondition,pipelineObservationRequested:attribution,hostServiceTraceRequested:values.trace,commandCensusRequested:values.commands,
     settingsAtStart:report.profile?.settingsAtStart&&Object.fromEntries(['quality','effectiveQuality','cap','pixelRatio','adaptiveScale','diagnosticReduction','vehicle'].map(key=>[key,report.profile.settingsAtStart[key]])),
     settingsAtFinish:report.profile?.settings&&Object.fromEntries(['quality','effectiveQuality','cap','pixelRatio','adaptiveScale','diagnosticReduction','vehicle'].map(key=>[key,report.profile.settings[key]])),
     heldInputWallMs:report.heldInputWallMs,releaseToManualStopWallMs:report.releaseToManualStopWallMs,stopReason:report.profile?.stopReason,frames:report.profile?.frames,
@@ -307,6 +363,10 @@ finally{
   emit('LOOP_ASSOCIATIONS',{topCallbacks:report.observers?.topLoopCallbacks,slowIntervals:report.observers?.loopSlowIntervals});
   emit('RENDER_ASSOCIATIONS',report.observers?.currentAndPreviousRenderWork??null);emit('NATURE_TOTALS',report.observers?.natureTotals??null);
   emit('CDP_AND_MEMORY',{cdpAtKeyup:report.cdpAtKeyup,memoryAfterExtraction:report.memoryAfterExtraction});
+  if(values.commands)emit('COMMAND_CENSUS',{phase:report.commandCensus?.phase,totalCalls:report.commandCensus?.totalCalls,
+    totals:report.commandCensus?.totals,identities:report.commandCensus?.identities,limits:report.commandCensus?.limits,
+    limitHits:report.commandCensus?.limitHits,errors:report.commandCensus?.errors,inputAlignment:report.commandCensusInputAlignment,
+    driverSourceHashes:report.driverSourceHashesAfter});
   if(values.gpu)emit('GPU_TIMING',report.gpuTiming??null);
   const hashes=[];for(const path of await fileNames(output)){const bytes=await readFile(resolve(output,path));hashes.push({path,bytes:bytes.length,sha256:sha256(bytes)});}
   await json(resolve(output,'evidence-hashes.json'),hashes);emit('HASHES',hashes);
