@@ -78,6 +78,11 @@ export class HeroDetail {
   const groups=pieces.map(items=>items.length?mergeGeometries(items,false):null).filter((g):g is T.BufferGeometry=>!!g);
   if(!groups.length)return;
   const geometry=mergeGeometries(groups,true)!;
+  // Preserve the completed palette indices while matching the small rig's
+  // byte layout. Larger palettes keep their existing 16-bit attribute.
+  const skinIndex=geometry.getAttribute('skinIndex') as T.BufferAttribute;
+  if(skinIndex.array.every(value=>Number.isInteger(value)&&value>=0&&value<=255))
+   geometry.setAttribute('skinIndex',new T.Uint8BufferAttribute(skinIndex.array,4));
   geometry.setIndex(Array.from({length:geometry.attributes.position.count},(_,i)=>i));
   for(const list of pieces)for(const g of list)g.dispose();for(const g of groups)g.dispose();
   const hardware=[new T.MeshStandardMaterial({name:'Hero detail / stitched charcoal',color:'#252d30',metalness:0,roughness:.86}),new T.MeshStandardMaterial({name:'Hero detail / brushed fasteners',color:'#6c7678',metalness:.65,roughness:.48})];this.materials.push(...hardware);
