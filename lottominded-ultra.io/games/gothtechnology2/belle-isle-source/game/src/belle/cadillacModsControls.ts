@@ -10,7 +10,7 @@ export type CadillacModsAction=
  |{kind:'wheels';selection:CadillacWheelSelection}
  |{kind:'settle'};
 export type CadillacModsState={
- riding:boolean;parked:boolean;reduced:boolean;busy:boolean;hop?:boolean;minHeight:number;maxHeight:number;
+ riding:boolean;parked:boolean;reduced:boolean;busy:boolean;hop?:boolean;cooldown:number;minHeight:number;maxHeight:number;
  targets:Record<CadillacModCorner,number>;wheels:CadillacWheelSelection;reason?:string;
 };
 export type CadillacModsResult={accepted:boolean;message?:string};
@@ -24,6 +24,7 @@ export type CadillacModsHooks={
 const corners:[CadillacModCorner,string][]=[['FL','Front left'],['FR','Front right'],['RL','Rear left'],['RR','Rear right']];
 const wheelsEqual=(a:CadillacWheelSelection,b:CadillacWheelSelection)=>a.rim===b.rim&&a.tire===b.tire&&a.center===b.center;
 const heightText=(metres:number)=>`${Math.round(metres*100)} cm`;
+const hopRecovery='Hop recovering. Wait briefly before hopping again.';
 
 /** One editor is shared by both Cadillac variants. The ride-menu launcher is a
  * sibling of the access panel because the hydraulic variant has no rear doors. */
@@ -106,7 +107,7 @@ export class CadillacModsControls{
   }
   const hops=document.createElement('div');hops.className='cadillac-mods-actions';
   for(const [mode,title]of [['all','Full-car hop'],['front','Front hop'],['rear','Rear hop']] as const){
-   const button=document.createElement('button');button.type='button';button.textContent=title;button.onclick=event=>this.command({kind:'hop',mode},event,button);this.hopButtons.push(button);hops.append(button);
+   const button=document.createElement('button');button.type='button';button.textContent=title;button.setAttribute('data-cadillac-hop',mode);button.setAttribute('aria-describedby',this.note.id);button.onclick=event=>this.command({kind:'hop',mode},event,button);this.hopButtons.push(button);hops.append(button);
   }
   this.settle.type='button';this.settle.textContent='Finish motion & level';this.settle.onclick=event=>this.command({kind:'settle'},event,this.settle);hops.append(this.settle);
   const hint=document.createElement('p');hint.className='cadillac-mods-note';hint.textContent='Height is measured from the stock stance. Lifts ease toward the selected height; you can adjust a target while it moves. Reduced motion applies heights immediately and turns hopping off. Finish motion & level closes this menu, completes any hop, and levels the car at the average selected height.';
@@ -125,8 +126,8 @@ export class CadillacModsControls{
   if(this.disposed)return;
   const state=this.hooks.state();
   const hopping=state.hop??state.busy;
-  const blocked=!state.riding||!state.parked||(hopping&&action.kind!=='settle')||(state.busy&&(action.kind==='wheels'||action.kind==='hop'))||(state.reduced&&action.kind==='hop');
-  if(blocked){this.feedback.textContent=state.reason??(!state.riding?'Enter the Cadillac to customize it.':!state.parked?'Stop the Cadillac before changing its setup.':state.reduced&&action.kind==='hop'?'Hopping is off while reduced motion is enabled.':'Let the suspension settle, or use Finish motion & level.');this.refresh(true);return;}
+  const blocked=!state.riding||!state.parked||(hopping&&action.kind!=='settle')||(state.busy&&(action.kind==='wheels'||action.kind==='hop'))||((state.reduced||state.cooldown>0)&&action.kind==='hop');
+  if(blocked){this.feedback.textContent=state.reason??(!state.riding?'Enter the Cadillac to customize it.':!state.parked?'Stop the Cadillac before changing its setup.':state.reduced&&action.kind==='hop'?'Hopping is off while reduced motion is enabled.':state.cooldown>0&&!hopping&&!state.busy&&action.kind==='hop'?hopRecovery:'Let the suspension settle, or use Finish motion & level.');this.refresh(true);return;}
   if(action.kind==='corner'&&(!Number.isFinite(action.metres)||action.metres<state.minHeight||action.metres>state.maxHeight)){
    this.feedback.textContent='Choose a height within the slider range.';this.refresh(true);return;
   }
@@ -151,7 +152,7 @@ export class CadillacModsControls{
   this.launch.disabled=!state.riding;
   const locked=!state.riding||!state.parked,hopping=state.hop??state.busy,editing=locked||hopping;
   this.root.setAttribute('data-motion',hopping?'hop':state.busy?'lift':'idle');
-  this.note.textContent=state.reason??(!state.parked?'Stop the Cadillac before changing its setup.':hopping?'Close Settings to let the hop finish, or choose Finish motion & level.':state.busy?'Suspension moving smoothly. You can adjust its target heights.':'Use Hydraulic Mode for one-touch Smart Pump poses. These detailed controls start at stock height for each new ride.');
+  this.note.textContent=state.reason??(!state.parked?'Stop the Cadillac before changing its setup.':hopping?'Close Settings to let the hop finish, or choose Finish motion & level.':state.busy?'Suspension moving smoothly. You can adjust its target heights.':state.cooldown>0&&!state.reduced?hopRecovery:'Use Hydraulic Mode for one-touch Smart Pump poses. These detailed controls start at stock height for each new ride.');
   for(const [corner,{input,output}]of this.ranges){
    input.min=String(state.minHeight);input.max=String(state.maxHeight);input.disabled=editing;
    if(force||document.activeElement!==input)input.value=String(state.targets[corner]);
@@ -159,7 +160,7 @@ export class CadillacModsControls{
   }
   for(const [key,select]of this.selects){select.value=state.wheels[key];select.disabled=locked||state.busy||(key==='center'&&state.wheels.rim==='stock');}
   for(const button of this.stanceButtons)button.disabled=editing;
-  for(const button of this.hopButtons){button.disabled=locked||state.busy||state.reduced;button.title=state.reduced?'Hopping is off while reduced motion is enabled.':'';}
+  for(const button of this.hopButtons){button.disabled=locked||state.busy||state.reduced||state.cooldown>0;button.title=state.reduced?'Hopping is off while reduced motion is enabled.':!locked&&!hopping&&!state.busy&&state.cooldown>0?hopRecovery:'';}
   this.settle.disabled=locked;
  }
 

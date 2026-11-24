@@ -10,8 +10,18 @@ type Renderer={
  properties:{get(material:object):{currentProgram?:Program}|undefined};
  domElement?:Pick<EventTarget,'addEventListener'|'removeEventListener'>;
 };
-type Context={uniformMatrix4fv:Call};
+type UniformMethod='uniformMatrix4fv'|'uniform4fv';
+type Context=Record<UniformMethod,Call>;
+type UniformSpec={id:string;type:number;minSize:number;maxSize:number;blockSize:number;method:UniformMethod};
 type State={own:PropertyDescriptor;wrapper:Call;cache:Float32Array|null;method:unknown;location:unknown;serial:number;epoch:number};
+// These exact array contracts account for the repeated submissions in the
+// measured baseline. Keep all other uniforms on Three's original path.
+const uniformSpecs:readonly UniformSpec[]=[
+ {id:'directionalShadowMatrix',type:0x8b5c,minSize:1,maxSize:16,blockSize:16,method:'uniformMatrix4fv'},
+ {id:'riverRipples',type:0x8b52,minSize:12,maxSize:12,blockSize:4,method:'uniform4fv'},
+ {id:'shipWake',type:0x8b52,minSize:4,maxSize:4,blockSize:4,method:'uniform4fv'},
+ {id:'shipShape',type:0x8b52,minSize:4,maxSize:4,blockSize:4,method:'uniform4fv'},
+];
 const installed=new WeakMap<object,()=>void>();
 const noop=()=>{};
 const isObject=(value:unknown):value is object=>value!==null&&(typeof value==='object'||typeof value==='function');
@@ -50,7 +60,7 @@ function restore(target:object,name:string,own:PropertyDescriptor,wrapper:Call){
  try{if(Object.getOwnPropertyDescriptor(target,name)?.value===wrapper)Object.defineProperty(target,name,own);}catch{}
 }
 
-/** Cache only the measured directional-shadow matrix array in Three r185.
+/** Cache only the measured directional-shadow and three named water arrays in Three r185.
  *
  * Three owns these programs and uniform locations, just as for its existing
  * single-uniform caches. No raw GL method, shader, draw, timer, fence, or frame
@@ -92,19 +102,23 @@ export function installShadowMatrixCache(target:object):()=>void {
   const program=renderer.properties.get(material)?.currentProgram;
   if(!isObject(program)||typeof program.getUniforms!=='function'||programs.has(program))return;
   programs.add(program);
-  const value=program.getUniforms()?.map?.directionalShadowMatrix;
+  const uniforms=program.getUniforms()?.map;if(!uniforms)return;
+  for(const spec of uniformSpecs)observeUniform(uniforms[spec.id],spec);
+ }
+ function observeUniform(value:unknown,spec:UniformSpec){
   if(!isObject(value))return;
   const node=value as Uniform,own=ownFunction(node,'setValue');
   const id=Object.getOwnPropertyDescriptor(node,'id')?.value,type=Object.getOwnPropertyDescriptor(node,'type')?.value;
   const size=Object.getOwnPropertyDescriptor(node,'size')?.value,address=Object.getOwnPropertyDescriptor(node,'addr');
-  // Active uniform sizes are fixed for a linked program. Larger arrays retain
-  // their original setter; bound this optional cache to at most 256 scalars.
-  if(!own||id!=='directionalShadowMatrix'||type!==0x8b5c||!Number.isInteger(size)||size<1||size>16||!address||!('value'in address)||!isObject(address.value))return;
-  const original=own.value as Call,length=size*16,location=address.value;
+  // Active sizes are fixed for a linked program. Water arrays require their
+  // exact declared size; the existing shadow bound remains 256 scalars.
+  if(!own||id!==spec.id||type!==spec.type||!Number.isInteger(size)||size<spec.minSize||size>spec.maxSize||!address||!('value'in address)||!isObject(address.value))return;
+  const original=own.value as Call,length=size*spec.blockSize,location=address.value,methodName=spec.method;
+  const matrix=methodName==='uniformMatrix4fv',argumentCount=matrix?3:2,dataIndex=matrix?2:1;
   const state:State={own,wrapper:noop,cache:null,method:null,location:null,serial:0,epoch};
   function forward(method:Call,args:unknown[]){
    try{
-    const data=args.length===3&&args[0]===location&&args[1]===false?finitePayload(args[2],length):null;
+    const data=args.length===argumentCount&&args[0]===location&&(!matrix||args[1]===false)?finitePayload(args[dataIndex],length):null;
     if(data&&state.cache&&state.method===method&&state.location===args[0]&&sameValues(state.cache,data,length))return;
     const serial=++state.serial;
     const next=data?(state.cache??new Float32Array(length)):null;
@@ -120,11 +134,11 @@ export function installShadowMatrixCache(target:object):()=>void {
    }catch(error){state.cache=null;state.serial++;throw error;}
   }
   let selectedMethod:unknown,selectedForward:Call|undefined;
-  const forwarding={get uniformMatrix4fv(){
+  const forwarding={get [methodName](){
    try{
     // JS resolves the method BEFORE evaluating this.addr and the other call
     // arguments. Keep that ordering, even if either accessor reenters a setter.
-    const method=Reflect.get(gl,'uniformMatrix4fv');
+    const method=Reflect.get(gl,methodName);
     if(typeof method!=='function'){state.cache=null;state.serial++;return method;}
     if(method!==selectedMethod){
      selectedMethod=method;

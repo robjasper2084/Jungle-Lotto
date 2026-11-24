@@ -4,6 +4,8 @@ import {readFileSync} from 'node:fs';
 import * as T from 'three';
 import {CadillacRide,cadillacModel} from './cadillacRide.ts';
 import {CADILLAC_CORNERS,CADILLAC_SUSPENSION_LIMITS} from './cadillacSuspension.ts';
+import {HYDRAULIC_SMART_POSES} from './hydraulicController.ts';
+import {HydraulicFrameClock} from './hydraulicFrameClock.ts';
 import {fitCadillacWireWheels} from './cadillacWireWheels.ts';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import type {ParkTerrain} from './terrain.ts';
@@ -261,17 +263,16 @@ test('parked lifts and hops use the same eligible time at 60 Hz and 10 Hz',()=>{
  for(const key of ['heave','pitch','roll'] as const)assert(Math.abs(states[0].lift.pose[key]-states[1].lift.pose[key])<1e-10);
 });
 
-test('large eligible intervals retain the suspension bound without skipping a hop or snapping a retarget',()=>{
+test('large eligible intervals present lift midpoints and hop peaks while other animations retain simulation timing',()=>{
  const ride=new CadillacRide(car(),flatTerrain()),baseline=new CadillacRide(car(),flatTerrain());
  try{
   for(const current of [ride,baseline]){
    current.start();current.toggleTrunk();current.toggleDoor();assert(current.setHydraulicPose('front-up').accepted);
   }
-  const maxTravel=CADILLAC_SUSPENSION_LIMITS.actuatorMetresPerSecond*CADILLAC_SUSPENSION_LIMITS.maxFrameSeconds;
   let previous=ride.suspension.snapshot().current;
   ride.update(.05,pedals,0,false,undefined,true,13);baseline.update(.05,pedals,0,false,undefined,true);
   assert(!ride.suspension.settled,'one delayed frame cannot finish the full lift');
-  for(const corner of CADILLAC_CORNERS)assert(Math.abs(ride.suspension.snapshot().current[corner]-previous[corner])<=maxTravel+1e-10);
+  for(const corner of CADILLAC_CORNERS)assert(Math.abs(ride.suspension.snapshot().current[corner]-HYDRAULIC_SMART_POSES['front-up'][corner]/2)<1e-10);
   assert.deepEqual(ride.accessSnapshot(),baseline.accessSnapshot());
   assert.equal(ride.diagnostics().driverDoorRad,baseline.diagnostics().driverDoorRad);
   const switchMotion=(current:CadillacRide)=>current.hydraulicSwitches.diagnostics().switches.map(({pose,angle,moving})=>({pose,angle,moving}));
@@ -279,14 +280,14 @@ test('large eligible intervals retain the suspension bound without skipping a ho
   previous=ride.suspension.snapshot().current;assert(ride.setHydraulicPose('back-up').accepted);
   assert.deepEqual(ride.suspension.snapshot().current,previous,'retargeting starts at the displayed corner heights');
   ride.update(.05,pedals,0,false,undefined,true,9);
-  for(const corner of CADILLAC_CORNERS)assert(Math.abs(ride.suspension.snapshot().current[corner]-previous[corner])<=maxTravel+1e-10);
+  for(const corner of CADILLAC_CORNERS)assert(Math.abs(ride.suspension.snapshot().current[corner]-(previous[corner]+HYDRAULIC_SMART_POSES['back-up'][corner])/2)<1e-10);
   assert(!ride.suspension.settled);assert.equal(ride.sim.pose.speed,0);assert.equal(ride.sim.pose.distance,0);
   ride.start();assert(ride.hopSuspension('all',false).accepted);
   const before=ride.suspension.snapshot();
   for(const elapsed of [NaN,Infinity,-1,0])ride.update(.05,idle,0,false,undefined,true,elapsed);
   assert.deepEqual(ride.suspension.snapshot(),before,'invalid hydraulic intervals cannot advance motion');
   ride.update(.05,idle,0,false,undefined,true,13);
-  assert(Math.abs(ride.suspension.snapshot().hopProgress-CADILLAC_SUSPENSION_LIMITS.maxFrameSeconds/CADILLAC_SUSPENSION_LIMITS.hopSeconds)<1e-10);
+  assert.equal(ride.suspension.snapshot().hopProgress,.5);
   assert.equal(ride.suspension.snapshot().hop,'all');assert(!ride.suspension.readyForDrive);
  }finally{ride.dispose();baseline.dispose();}
 });
@@ -305,7 +306,10 @@ test('Settings hydraulic elapsed preserves frozen physics and panels and cannot 
    assert.equal(after.distanceM,before.distanceM);assert.deepEqual(after.wheelPhaseRad,before.wheelPhaseRad);
    assert.equal(after.driverDoorRad,before.driverDoorRad);assert.deepEqual(after.trunkInstallation,before.trunkInstallation);
    assert(!ride.suspension.settled);
-   for(const corner of CADILLAC_CORNERS)assert(Math.abs(ride.suspension.snapshot().current[corner]-current[corner])<=CADILLAC_SUSPENSION_LIMITS.actuatorMetresPerSecond*Math.min(elapsed,CADILLAC_SUSPENSION_LIMITS.maxFrameSeconds)+1e-10);
+   for(const corner of CADILLAC_CORNERS){
+    if(elapsed<=CADILLAC_SUSPENSION_LIMITS.maxFrameSeconds)assert(Math.abs(ride.suspension.snapshot().current[corner]-current[corner])<=CADILLAC_SUSPENSION_LIMITS.actuatorMetresPerSecond*elapsed+1e-10);
+    else assert(Math.abs(ride.suspension.snapshot().current[corner]-HYDRAULIC_SMART_POSES['front-up'][corner]/2)<1e-10);
+   }
   }
   assert(ride.setHydraulicPose('pancake',true).accepted);assert(ride.hopSuspension('all',false).accepted);
   ride.update(.05,idle,0,false);const airborne=ride.diagnostics();assert(airborne.suspension.hop);
@@ -313,6 +317,128 @@ test('Settings hydraulic elapsed preserves frozen physics and panels and cannot 
   ride.updateHydraulicPreview(0,true,13);assert.equal(ride.suspension.snapshot().hop,null);
   assert(ride.suspension.readyForDrive);assert.equal(ride.suspension.pose.heave,0,'reduced motion still lands immediately');
  }finally{ride.dispose();}
+});
+
+test('hydraulic command epochs cover changed motion and resets without reanchoring rejected or identical commands',()=>{
+ let now=0;const terrain=flatTerrain(),ride=new CadillacRide(car(),terrain,undefined,'cadillac',undefined,()=>now);ride.start();
+ try{
+  const initial=ride.hydraulicCommandRevision;now=100;assert(ride.setHydraulicPose('front-up').accepted);
+  assert.equal(ride.hydraulicCommandRevision,initial+1);assert.equal(ride.hydraulicCommandTime,100);
+  ride.update(.05,idle,0,false,undefined,true,13);const revision=ride.hydraulicCommandRevision;
+  now=200;assert(ride.setHydraulicPose('front-up').accepted);assert.equal(ride.hydraulicCommandRevision,revision);
+  terrain.obstructed=()=>true;now=300;assert(!ride.setHydraulicPose('back-up').accepted);
+  assert.equal(ride.hydraulicCommandRevision,revision);assert.equal(ride.hydraulicCommandTime,100);
+  terrain.obstructed=()=>false;ride.update(1/60,idle,0,false,undefined,true,1/60);
+  assert(ride.suspension.settled,'rejected and identical commands retain the original accepted motion credit');
+  now=400;assert(ride.setHydraulicPose('pancake').accepted);ride.update(.05,idle,0,false,undefined,true,13);
+  const displayed=ride.suspension.snapshot().current;now=500;assert(ride.setHydraulicPose('back-up').accepted);
+  assert.equal(ride.hydraulicCommandTime,500);assert.deepEqual(ride.suspension.snapshot().current,displayed);
+  ride.update(1/60,idle,0,false,undefined,true,1/60);
+  for(const corner of CADILLAC_CORNERS)assert(Math.abs(ride.suspension.snapshot().current[corner]-displayed[corner])<=CADILLAC_SUSPENSION_LIMITS.actuatorMetresPerSecond/60+1e-10);
+  now=600;ride.start();assert.equal(ride.hydraulicCommandTime,600);
+  assert(ride.setSuspensionCorner('FL',.16).accepted);now=610;assert(ride.hopSuspension('all',false).accepted);
+  now=620;assert(ride.settleSuspension().accepted);const queued=ride.hydraulicCommandRevision;
+  now=630;assert(ride.settleSuspension().accepted);assert.equal(ride.hydraulicCommandRevision,queued);
+  ride.update(.05,idle,0,false,undefined,true,13);ride.update(.05,idle,0,false,undefined,true,13);
+  assert.equal(ride.hydraulicCommandRevision,queued,'internal landing and queued leveling do not invent new command epochs');
+  now=700;ride.leave();assert.equal(ride.hydraulicCommandTime,700);assert.equal(ride.hydraulicCommandRevision,queued+1);
+ }finally{ride.dispose();}
+});
+
+test('new held and automatic commands cannot consume a rendering gap before they were accepted',()=>{
+ let now=0;const ride=new CadillacRide(car(),flatTerrain(),undefined,'cadillac',undefined,()=>now);ride.start();
+ try{
+  now=13000;const before=ride.suspension.snapshot().current;
+  ride.update(.05,idle,0,false,new Set(['PageUp']),true,13);
+  assert.deepEqual(ride.suspension.snapshot().current,before,'the first held command cannot use the preceding thirteen seconds');
+  assert(ride.suspension.targets.FL>0);assert.equal(ride.hydraulicCommandTime,13000);
+  now=26000;ride.update(.05,idle,0,false,new Set(['PageUp']),true,13);
+  assert(ride.suspension.snapshot().current.FL>0,'continuous retargeting still advances the previously accepted motion');
+  ride.start();assert(ride.setSuspensionCorner('FL',.20).accepted);const unlevel=ride.suspension.snapshot().current;
+  now=39000;ride.update(.05,{...pedals,steer:1},0,false,undefined,false,13);
+  assert.deepEqual(ride.suspension.snapshot().current,unlevel,'a new automatic level starts from the current pose');
+  assert.equal(ride.hydraulicCommandTime,39000);assert.equal(ride.sim.pose.speed,0);assert.equal(ride.sim.pose.steering,0);
+  ride.update(.05,{...pedals,steer:1},0,false,undefined,false,13);
+  assert(!ride.suspension.readyForDrive);assert.equal(ride.sim.pose.speed,0);assert.equal(ride.sim.pose.distance,0);assert.equal(ride.sim.pose.steering,0);
+  ride.update(.05,{...pedals,steer:1},0,false,undefined,false,13);
+  assert(ride.suspension.readyForDrive);assert(ride.sim.pose.speed>0,'driving resumes only after the accepted level endpoint');
+ }finally{ride.dispose();}
+});
+
+test('leveling an already level hop preserves its accepted motion epoch and eligible credit',()=>{
+ let now=0;const ride=new CadillacRide(car(),flatTerrain(),undefined,'cadillac',undefined,()=>now);ride.start();
+ try{
+  assert(ride.setSuspensionStance('raised').accepted);now=100;assert(ride.hopSuspension('all',false).accepted);
+  ride.update(.05,idle,0,false,undefined,true,13);
+  const revision=ride.hydraulicCommandRevision,accepted=ride.hydraulicCommandTime,apex=ride.suspension.snapshot();
+  now=13100;assert(ride.settleSuspension().accepted);assert(ride.suspension.levelingQueued);
+  assert.equal(ride.hydraulicCommandRevision,revision);assert.equal(ride.hydraulicCommandTime,accepted);
+  assert.deepEqual(ride.suspension.snapshot(),apex,'the already level landing path remains unchanged');
+  ride.update(1/60,idle,0,false,undefined,true,1/60);
+  assert(ride.suspension.readyForDrive);assert.equal(ride.suspension.snapshot().hop,null);
+  assert.equal(ride.suspension.snapshot().cooldown,CADILLAC_SUSPENSION_LIMITS.hopCooldownSeconds);
+ }finally{ride.dispose();}
+});
+
+test('the landed idle cooldown expires on fresh eligible time in both ride and Settings preview paths',()=>{
+ for(const mode of ['active','preview'] as const){
+  let now=0;const ride=new CadillacRide(car(),flatTerrain(),undefined,'cadillac',undefined,()=>now),clock=new HydraulicFrameClock();ride.start();
+  try{
+   assert(ride.setSuspensionStance('raised').accepted);assert(ride.hopSuspension('all',false).accepted);
+   assert.equal(clock.sample(now,ride,'active'),0);
+   for(let frame=0;frame<8;frame++){
+    now+=120;ride.update(.05,idle,0,false,undefined,true,clock.sample(now,ride,'active'));
+   }
+   const landed=ride.suspension.snapshot(),physics={...ride.sim.pose},panels=ride.accessSnapshot();
+   assert.equal(landed.hop,null);assert(landed.settled&&landed.readyForDrive);
+   assert(Math.abs(landed.cooldown-.39)<1e-12,'reproduce the native report\'s idle post-landing cooldown');
+   const advance=(seconds:number)=>mode==='active'?ride.update(.05,idle,0,false,undefined,true,seconds):ride.updateHydraulicPreview(.05,false,seconds);
+   clock.reset();now+=89000;advance(clock.sample(now,ride,mode));
+   assert.equal(ride.suspension.snapshot().cooldown,landed.cooldown,'excluded time and the first resumed sample do not age cooldown');
+   now+=13000;advance(clock.sample(now,ride,mode));
+   assert.equal(ride.suspension.snapshot().cooldown,0,'idle pose must not prevent fresh eligible elapsed time from completing cooldown');
+   assert.deepEqual(ride.suspension.snapshot().current,landed.current);assert.deepEqual(ride.suspension.pose,landed.pose);
+   assert.deepEqual(ride.sim.pose,physics);assert.deepEqual(ride.accessSnapshot(),panels);
+   assert(ride.hopSuspension('all',false).accepted,'the actual next-hop gate reopens after cooldown');
+  }finally{ride.dispose();}
+ }
+});
+
+test('both shipped Cadillac models present safe hop and leveling landmarks under severe rendering stalls',async()=>{
+ for(const variant of ['cadillac','hydraulic-cadillac'] as const){
+  const model=variant==='cadillac'?car():(await loadFixture(readFileSync('public/belle/vehicles/hydraulics-cadillac.glb'))).scene;
+  if(variant==='hydraulic-cadillac')fitCadillacWireWheels(model);
+  const ride=new CadillacRide(model,flatTerrain(),undefined,variant);ride.start();
+  try{
+   const body=model.getObjectByName(variant==='cadillac'?'SprungBody':'ChassisGeometry')!;
+   for(const mode of ['all','front','rear'] as const){
+    ride.start();assert(ride.setSuspensionStance('raised').accepted);
+    const path=ride.suspension.previewHop(mode,2),base={height:body.position.y-ride.suspension.pose.heave,pitch:body.rotation.x-ride.suspension.pose.pitch,roll:body.rotation.z-ride.suspension.pose.roll};
+    assert(ride.hopSuspension(mode,false).accepted,variant+' '+mode+' must pass the actual fender and body sweep');
+    ride.update(.05,{...pedals,steer:1},0,false,undefined,true,13);
+    assert.equal(ride.suspension.snapshot().hopProgress,.5);assert.equal(ride.sim.pose.speed,0);assert.equal(ride.sim.pose.steering,0);
+    assert(Math.abs(body.position.y-base.height-path[1].heave)<1e-10);
+    assert(Math.abs(body.rotation.x-base.pitch-path[1].pitch)<1e-10);assert(Math.abs(body.rotation.z-base.roll-path[1].roll)<1e-10);
+    ride.update(.05,{...pedals,steer:1},0,false,undefined,true,9);
+    assert(ride.suspension.readyForDrive);assert.equal(ride.sim.pose.speed,0);assert.equal(ride.sim.pose.distance,0);
+    assert(Object.values(ride.suspension.pose.wheelLifts).every(height=>height===0));
+    assert(Math.abs(body.position.y-base.height-path[2].heave)<1e-10);
+   }
+   ride.start();assert(ride.setHydraulicPose('front-up',true).accepted);
+   const initial=ride.suspension.snapshot().current,level=Object.values(initial).reduce((sum,height)=>sum+height/4,0);
+   assert(ride.hopSuspension('all',false).accepted);assert(ride.settleSuspension().accepted);
+   const revision=ride.hydraulicCommandRevision;
+   for(let frame=0;frame<4;frame++){
+    ride.update(.05,{...pedals,steer:1},0,false,undefined,false,13);
+    assert.equal(ride.hydraulicCommandRevision,revision);
+    if(frame<3){assert(!ride.suspension.readyForDrive);assert.equal(ride.sim.pose.speed,0);assert.equal(ride.sim.pose.distance,0);assert.equal(ride.sim.pose.steering,0);}
+    if(frame===0)assert.equal(ride.suspension.snapshot().hopProgress,.5);
+    if(frame===1){assert.equal(ride.suspension.snapshot().hop,null);assert.deepEqual(ride.suspension.snapshot().current,initial);}
+    if(frame===2)for(const corner of CADILLAC_CORNERS)assert(Math.abs(ride.suspension.snapshot().current[corner]-(initial[corner]+level)/2)<1e-10);
+   }
+   assert(ride.suspension.readyForDrive);assert(ride.sim.pose.speed>0);
+  }finally{ride.dispose();}
+ }
 });
 
 test('suspension and access animations run together on separate transforms and fully land',()=>{

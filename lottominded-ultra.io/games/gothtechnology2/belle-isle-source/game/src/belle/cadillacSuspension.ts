@@ -51,6 +51,7 @@ export class CadillacSuspension {
   private hopSeconds=0;
   private remainingCooldown=0;
   private levelAfterHop=false;
+  private pendingSeconds=0;
 
   constructor(anchors:CadillacSuspensionAnchors=SILVER_CADILLAC_SUSPENSION_ANCHORS){
     const points=CADILLAC_CORNERS.map(corner=>anchors[corner]);
@@ -73,6 +74,9 @@ export class CadillacSuspension {
   get pose():Readonly<CadillacSuspensionPose>{return this.result;}
   get settled(){return this.hopMode===null&&!this.levelAfterHop&&this.movement.settled;}
   get readyForDrive(){return this.settled&&CADILLAC_CORNERS.every(corner=>Math.abs(this.wanted[corner]-this.wanted.FL)<EPS&&this.result.wheelLifts[corner]<EPS);}
+  get levelingQueued(){return this.levelAfterHop;}
+  /** Eligibility changes discard time credit, never the accepted pose or path. */
+  clearCatchUp(){this.pendingSeconds=0;}
 
   private normalized(targets:Partial<CadillacCornerHeights>){
     if(Object.keys(targets).some(key=>!CADILLAC_CORNERS.includes(key as CadillacCorner)))return null;
@@ -83,7 +87,8 @@ export class CadillacSuspension {
     }
     return next;
   }
-  private commitTargets(next:CadillacCornerHeights,immediate:boolean){
+  private commitTargets(next:CadillacCornerHeights,immediate:boolean,preserveCatchUp=false){
+    if(!preserveCatchUp&&(CADILLAC_CORNERS.some(corner=>next[corner]!==this.wanted[corner])||immediate&&!this.movement.settled))this.clearCatchUp();
     this.levelAfterHop=false;
     this.movement.setTargets(next,immediate);
     if(immediate)this.compose();
@@ -102,12 +107,19 @@ export class CadillacSuspension {
     return this.setTargets(values(height),immediate);
   }
   /** Finish a hop before equalizing the chassis for driving; no midair snap. */
-  settle(){if(this.hopMode!==null)this.levelAfterHop=true;else this.stance('level');}
+  settle(){
+    if(this.hopMode!==null){
+      const height=CADILLAC_CORNERS.reduce((sum,corner)=>sum+this.wanted[corner]/4,0);
+      if(!this.levelAfterHop&&CADILLAC_CORNERS.some(corner=>this.wanted[corner]!==height))this.clearCatchUp();
+      this.levelAfterHop=true;
+    }else this.stance('level');
+  }
   hop(mode:CadillacHop,reducedMotion=false){
     if(!validHop(mode)||reducedMotion||!this.settled||this.remainingCooldown>EPS)return false;
-    this.hopMode=mode;this.hopSeconds=0;return true;
+    this.clearCatchUp();this.hopMode=mode;this.hopSeconds=0;return true;
   }
   reset(){
+    this.clearCatchUp();
     this.movement.reset();
     for(const corner of CADILLAC_CORNERS)this.effective[corner]=this.air[corner]=0;
     this.hopSeconds=this.remainingCooldown=0;
@@ -163,10 +175,52 @@ export class CadillacSuspension {
     return path;
   }
 
-  update(seconds:number,reducedMotion=false):CadillacSuspensionPose{
+  update(seconds:number,reducedMotion=false):CadillacSuspensionPose{return this.updateStep(seconds,reducedMotion,true);}
+
+  private remainingMotionSeconds(){
+    if(this.hopMode===null)return Math.max(0,this.movement.durationSeconds-this.movement.elapsedSeconds);
+    const landing=CADILLAC_SUSPENSION_LIMITS.hopSeconds-this.hopSeconds;
+    if(!this.levelAfterHop)return landing;
+    const height=CADILLAC_CORNERS.reduce((sum,corner)=>sum+this.wanted[corner]/4,0);
+    return landing+1.5*Math.max(...CADILLAC_CORNERS.map(corner=>Math.abs(this.travel[corner]-height)))/CADILLAC_SUSPENSION_LIMITS.actuatorMetresPerSecond;
+  }
+
+  /** Recover eligible elapsed time in bounded kinematic steps. A delayed draw
+   * must still show the next apex, landing, or lift midpoint before passing it.
+   * Only time belonging to the already accepted motion survives that boundary;
+   * its maximum is one hop plus one full-range lift, less than two seconds. */
+  advanceElapsed(seconds:number,reducedMotion=false):CadillacSuspensionPose{
+    if(reducedMotion){this.clearCatchUp();return this.updateStep(0,true,true);}
+    if(!Number.isFinite(seconds)||seconds<=0)return this.result;
+    const limit=CADILLAC_SUSPENSION_LIMITS.maxFrameSeconds;
+    if(this.pendingSeconds===0&&seconds<=limit)return this.updateStep(seconds,false,true);
+    const remaining=this.remainingMotionSeconds();
+    // Cooldown starts at a presented landing. Old motion credit cannot age it.
+    this.remainingCooldown=Math.max(0,this.remainingCooldown-seconds);
+    if(remaining<=0){this.clearCatchUp();return this.result;}
+    this.pendingSeconds=Math.min(remaining,this.pendingSeconds+Math.min(seconds,remaining));
+    const landmark=this.hopMode!==null
+      ?(this.hopSeconds<CADILLAC_SUSPENSION_LIMITS.hopSeconds/2-EPS?CADILLAC_SUSPENSION_LIMITS.hopSeconds/2:CADILLAC_SUSPENSION_LIMITS.hopSeconds)-this.hopSeconds
+      :(this.movement.elapsedSeconds<this.movement.durationSeconds/2-EPS?this.movement.durationSeconds/2:this.movement.durationSeconds)-this.movement.elapsedSeconds;
+    let budget=Math.min(this.pendingSeconds,landmark);
+    // A full-range lift is the longest segment; this bound is independent of
+    // a caller's elapsed time, including an arbitrarily long rendering stall.
+    const maxSteps=Math.ceil(1.5*(CADILLAC_SUSPENSION_LIMITS.max-CADILLAC_SUSPENSION_LIMITS.min)/CADILLAC_SUSPENSION_LIMITS.actuatorMetresPerSecond/limit)+1;
+    for(let steps=0;budget>0&&steps<maxSteps;steps++){
+      const step=Math.min(limit,budget);
+      this.updateStep(step,false,false);
+      budget-=step;this.pendingSeconds=Math.max(0,this.pendingSeconds-step);
+    }
+    if(this.remainingMotionSeconds()<=0)this.clearCatchUp();
+    else if(this.pendingSeconds<EPS)this.pendingSeconds=0;
+    return this.result;
+  }
+
+  private updateStep(seconds:number,reducedMotion:boolean,ageCooldown:boolean):CadillacSuspensionPose{
     const dt=clamp(Number.isFinite(seconds)?seconds:0,0,CADILLAC_SUSPENSION_LIMITS.maxFrameSeconds);
     let movementDt=dt,changed=false;
     if(reducedMotion){
+      this.clearCatchUp();
       changed=this.hopMode!==null||!this.settled;
       this.hopMode=null;this.hopSeconds=this.remainingCooldown=0;
       if(this.levelAfterHop)this.stance('level');
@@ -176,11 +230,14 @@ export class CadillacSuspension {
       this.hopSeconds=Math.min(CADILLAC_SUSPENSION_LIMITS.hopSeconds,this.hopSeconds+dt);changed=dt>0;
       movementDt=0;
       if(this.hopSeconds>=CADILLAC_SUSPENSION_LIMITS.hopSeconds-EPS){
-        movementDt=Math.max(0,dt-remaining);this.hopMode=null;this.hopSeconds=0;
+        movementDt=ageCooldown?Math.max(0,dt-remaining):0;this.hopMode=null;this.hopSeconds=0;
         this.remainingCooldown=Math.max(0,CADILLAC_SUSPENSION_LIMITS.hopCooldownSeconds-movementDt);
-        if(this.levelAfterHop)this.stance('level');
+        if(this.levelAfterHop){
+          const height=CADILLAC_CORNERS.reduce((sum,corner)=>sum+this.wanted[corner]/4,0);
+          this.commitTargets(values(height),false,true);
+        }
       }
-    }else this.remainingCooldown=Math.max(0,this.remainingCooldown-dt);
+    }else if(ageCooldown)this.remainingCooldown=Math.max(0,this.remainingCooldown-dt);
     if(!reducedMotion)changed=this.movement.update(movementDt)||changed;
     if(changed)this.compose();
     return this.result;

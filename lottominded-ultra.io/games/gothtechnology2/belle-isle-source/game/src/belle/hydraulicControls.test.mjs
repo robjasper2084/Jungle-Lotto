@@ -38,7 +38,7 @@ function fixture(overrides={}){
  const doc={activeElement:null,createElement:tag=>new Element(tag,doc)};doc.body=doc.createElement('body');globalThis.document=doc;
  const menu=doc.createElement('dialog'),canvas=doc.createElement('canvas'),access=doc.createElement('section'),mods=doc.createElement('section');
  access.id='cadillac-controls';mods.id='cadillac-modifications-entry';menu.append(access,mods);doc.body.append(menu,canvas);
- const state={riding:true,parked:true,active:false,inside:false,blocked:false,reduced:false,hop:false,busy:false,
+ const state={riding:true,parked:true,active:false,inside:false,blocked:false,reduced:false,hop:false,busy:false,cooldown:0,
   targets:{FL:.14,FR:.14,RL:.14,RR:.14},current:{FL:.14,FR:.14,RL:.14,RR:.14},minHeight:0,maxHeight:.24,...overrides};
  const modes=[],requests=[];let modeRejection,commandRejection;
  const ui=new HydraulicControls(menu,canvas,{
@@ -161,6 +161,54 @@ test('reduced motion disables every hop while preserving poses and corner editin
  for(const mode of ['all','front','rear']){assert.equal(f.id('hydraulic-hop-'+mode).disabled,true);f.id('hydraulic-hop-'+mode).onclick({});}
  assert.equal(f.requests.length,0);assert.equal(f.id('hydraulic-front-up').disabled,false);assert.equal(f.id('hydraulic-corner-RL').disabled,false);
  f.id('hydraulic-pancake').click();assert.deepEqual(f.requests.at(-1).action,{kind:'pose',pose:'pancake'});
+});
+
+test('hop recovery disables repeat hops and stale handlers while poses, corners and Finish remain usable',()=>{
+ const f=fixture();f.enter();assert.equal(f.id('hydraulic-hop-front').disabled,false);
+ f.state.cooldown=.45;f.id('hydraulic-hop-front').onclick({});
+ assert.equal(f.requests.length,0);assert.match(f.id('hydraulic-controls-feedback').textContent,/Hop recovering/);
+ assert.match(f.id('hydraulic-motion-status').textContent,/Hop recovering/);
+ for(const mode of ['all','front','rear']){
+  const button=f.id('hydraulic-hop-'+mode);assert.equal(button.disabled,true);assert.match(button.title,/Hop recovering/);
+  assert.equal(button.getAttribute('aria-describedby'),'hydraulic-motion-status');button.onclick({});
+ }
+ assert.equal(f.requests.length,0);
+ for(const pose of ['front-up','back-up','pancake'])assert.equal(f.id('hydraulic-'+pose).disabled,false);
+ for(const corner of ['FL','FR','RL','RR'])assert.equal(f.id('hydraulic-corner-'+corner).disabled,false);
+ assert.equal(f.id('hydraulic-settle').disabled,false);
+ const input=f.id('hydraulic-corner-FL');input.value='.2';input.dispatch('input');assert.deepEqual(f.requests.at(-1).action,{kind:'corner',corner:'FL',metres:.2});
+ f.id('hydraulic-pancake').click();assert.deepEqual(f.requests.at(-1).action,{kind:'pose',pose:'pancake'});
+ f.id('hydraulic-settle').click();assert.deepEqual(f.requests.at(-1).action,{kind:'settle'});
+ f.state.busy=false;f.state.cooldown=Number.EPSILON;f.ui.refresh();assert.equal(f.id('hydraulic-hop-front').disabled,true);
+ f.state.cooldown=0;f.ui.refresh();
+ for(const mode of ['all','front','rear'])assert.equal(f.id('hydraulic-hop-'+mode).disabled,false);
+ assert.doesNotMatch(f.id('hydraulic-motion-status').textContent,/recovering/);
+ f.id('hydraulic-hop-front').click();assert.deepEqual(f.requests.at(-1).action,{kind:'hop',mode:'front'});assert.equal(f.state.active,true);
+});
+
+test('a settled mode restores hop readiness at zero cooldown through ordinary background refresh',()=>{
+ const f=fixture({active:true,hop:false,busy:false,cooldown:.39});
+ const buttons=['all','front','rear'].map(mode=>f.id('hydraulic-hop-'+mode));
+ assert.equal(f.menu.open,false);assert.equal(f.id('hydraulic-controls').getAttribute('data-motion'),'still');
+ assert(buttons.every(button=>button.disabled));assert.match(f.id('hydraulic-motion-status').textContent,/Hop recovering/);
+ f.state.cooldown=0;f.ui.refresh();
+ assert(buttons.every(button=>!button.disabled&&!/recovering/.test(button.title)));
+ assert.doesNotMatch(f.id('hydraulic-motion-status').textContent,/recovering/);
+ assert.equal(f.menu.open,false);assert.equal(f.requests.length,0);assert.equal(f.modes.length,0);
+});
+
+test('hop recovery keeps reduced-motion, blocked, moving, busy and supplied messages in priority order',()=>{
+ for(const [overrides,message]of [
+  [{reduced:true},'Hops are off with reduced motion.'],
+  [{blocked:true},'Use the third-person controls while Hydraulic mode is on.'],
+  [{parked:false},'Stop the car before adjusting its suspension.'],
+  [{busy:true},'Let the hop land, or choose Finish & level.'],
+  [{reason:'Hydraulics are unavailable.'},'Hydraulics are unavailable.'],
+ ]){
+  const f=fixture({active:true,cooldown:.45,...overrides});f.id('hydraulic-hop-front').onclick({});
+  assert.equal(f.requests.length,0);assert.equal(f.id('hydraulic-controls-feedback').textContent,message);
+  if(overrides.reduced){assert.equal(f.id('hydraulic-hop-front').title,message);assert.match(f.id('hydraulic-motion-status').textContent,/reduced motion/);}
+ }
 });
 
 test('hidden, first-person, inactive, and moving controls refuse stale commands',()=>{

@@ -24,7 +24,7 @@ assert.match(source,/^[0-9a-f]{40}$/);assert.equal(checkout,source,'Checkout mus
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
 const report={version:2,case:caseName,source,checkout,run:process.env.GITHUB_RUN_ID??null,viewport,mobile,
  passed:false,phase:'setup',startedAt:new Date().toISOString(),checks:{},snapshots:[],captures:[],errors:[],failedRequests:[],startupWarnings:[],
- harness:{pointerActivations:0,diagnosticKeyboardActivations:0,explicitScrolls:0,alreadyVisibleScrolls:0,cooldownReports:0,snapshotTimings:[]},
+ harness:{pointerActivations:0,diagnosticKeyboardActivations:0,explicitScrolls:0,alreadyVisibleScrolls:0,cooldownReports:0,cooldownReadinessPolls:0,snapshotTimings:[]},
  limitations:'Actual built full island on Chrome SwiftShader. Functional/layout screenshots and native input only; not physical-device, hardware FPS, sustained-performance, or completed human visual acceptance. Short Ride profile reports below are paused UI state snapshots, not performance samples. Existing release gates are unchanged.'};
 await mkdir(out,{recursive:true});
 const server=createCoopStaticServer(dist);let browser,page,context,client,touchSequence;
@@ -247,10 +247,18 @@ async function hopChecks(){
    const states=window.__cadillacModsEvidence.states.slice(start),busy=states.findIndex(state=>state.busy);
    return busy>=0&&states.slice(busy+1).some(state=>!state.busy);
   },boundary)).toBe(true);
-  // The observed busy→idle transition already proves landing. The old extra
-  // 30 rendered frames only delayed the report; wait for the real cooldown
-  // through fresh, native UI reports instead of guessing a frame count.
+  // Keep the real game running while its ordinary controls reflect cooldown.
+  // Reopening Settings for each poll can repeatedly pause every eligible frame
+  // under a stalled renderer. Read the three real controls first, then obtain
+  // the exact native report within this same unchanged polling deadline.
   let car;await expect.poll(async()=>{
+   const readiness=await page.locator('#cadillac-modifications [data-cadillac-hop]').evaluateAll(buttons=>({
+    count:buttons.length,enabled:buttons.every(button=>!button.disabled),settingsOpen:!!document.querySelector('#settings[open]'),
+   }));
+   report.harness.cooldownReadinessPolls++;
+   assert.equal(readiness.count,3,'Read all three actual detailed hop controls');
+   assert.equal(readiness.settingsOpen,false,'Cooldown readiness polling must leave the game unpaused');
+   if(!readiness.enabled)return false;
    car=await snapshot(mode+'-hop-landed');report.harness.cooldownReports++;
    const ready=car.suspension.hop===null&&car.suspension.settled&&car.suspension.readyForDrive&&car.suspension.cooldown===0;
    // Do not hold a diagnostic modal open while waiting for simulation time.

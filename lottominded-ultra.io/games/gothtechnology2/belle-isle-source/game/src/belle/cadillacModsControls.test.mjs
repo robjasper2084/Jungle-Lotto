@@ -33,7 +33,7 @@ function fixture(overrides={},withSettingsHeading=false){
  const saved=[];globalThis.localStorage={getItem:()=>null,setItem:(key,value)=>saved.push({key,value})};
  const settings=doc.createElement('dialog'),menu=doc.createElement('dialog'),canvas=doc.createElement('canvas'),access=doc.createElement('section');access.id='cadillac-controls';menu.append(access);
  if(withSettingsHeading){const heading=doc.createElement('h2'),other=doc.createElement('fieldset');heading.textContent='Ride your way.';other.id='other-settings';settings.append(heading,other);}
- const state={riding:true,parked:true,reduced:false,busy:false,minHeight:0,maxHeight:.24,targets:{FL:0,FR:0,RL:0,RR:0},wheels:{rim:'stock',tire:'standard',center:'gold'},...overrides};
+ const state={riding:true,parked:true,reduced:false,busy:false,cooldown:0,minHeight:0,maxHeight:.24,targets:{FL:0,FR:0,RL:0,RR:0},wheels:{rim:'stock',tire:'standard',center:'gold'},...overrides};
  const calls=[];let rejection;
  const hooks={state:()=>state,request:(action)=>{
   calls.push({action,settingsOpen:settings.open});
@@ -115,6 +115,59 @@ test('reduced motion disables hops but preserves static height and wheel customi
  f.button('Front hop').onclick(new Event('click'));assert.equal(f.calls.length,0);assert.equal(f.settings.open,true);
  assert.equal(f.range('FL').disabled,false);assert.equal(f.select('rim').disabled,false);
  f.range('FL').value='.1';f.range('FL').dispatch('input');assert.equal(f.state.targets.FL,.1);
+});
+
+test('hop recovery blocks stale requests until ready without locking static customization',()=>{
+ const f=fixture({hop:false});f.ui.open();
+ const modes=[['all','Full-car hop'],['front','Front hop'],['rear','Rear hop']];
+ for(const [mode,label]of modes){
+  const button=f.button(label);assert.equal(button.disabled,false);
+  assert.equal(button.getAttribute('data-cadillac-hop'),mode);assert.equal(button.getAttribute('aria-describedby'),'cadillac-modifications-note');
+ }
+ // Recovery can begin after the last UI refresh; a retained handler must not
+ // close Settings or dispatch another hop using its formerly enabled state.
+ f.state.cooldown=.45;f.button('Front hop').onclick(new Event('click'));
+ assert.equal(f.calls.length,0);assert.equal(f.settings.open,true);
+ assert.match(f.id('cadillac-modifications-feedback').textContent,/Hop recovering/);
+ assert.match(f.id('cadillac-modifications-note').textContent,/Hop recovering/);
+ for(const [,label]of modes){const button=f.button(label);assert.equal(button.disabled,true);assert.match(button.title,/Hop recovering/);button.onclick(new Event('click'));}
+ assert.equal(f.calls.length,0);
+ for(const corner of ['FL','FR','RL','RR'])assert.equal(f.range(corner).disabled,false);
+ assert.equal(f.button('Raise').disabled,false);assert.equal(f.select('rim').disabled,false);assert.equal(f.button('Finish motion & level').disabled,false);
+ f.range('FL').value='.1';f.range('FL').dispatch('input');assert.deepEqual(f.calls.at(-1).action,{kind:'corner',corner:'FL',metres:.1});assert.equal(f.settings.open,true);
+ f.button('Raise').click();assert.deepEqual(f.calls.at(-1).action,{kind:'stance',stance:'raised'});
+ f.state.cooldown=Number.EPSILON;f.ui.refresh();assert.equal(f.button('Front hop').disabled,true);
+ f.state.cooldown=0;f.ui.refresh();
+ for(const [,label]of modes){assert.equal(f.button(label).disabled,false);assert.equal(f.button(label).title,'');}
+ assert.doesNotMatch(f.id('cadillac-modifications-note').textContent,/recovering/);
+ f.button('Front hop').click();assert.deepEqual(f.calls.at(-1),{action:{kind:'hop',mode:'front'},settingsOpen:false});assert.equal(f.settings.open,false);
+ const finishing=fixture({cooldown:.45,hop:false});finishing.ui.open();finishing.button('Finish motion & level').click();
+ assert.deepEqual(finishing.calls[0],{action:{kind:'settle'},settingsOpen:false});
+});
+
+test('closed Settings reflects settled cooldown .39 to zero without reopening or requesting motion',()=>{
+ const f=fixture({hop:false,busy:false,cooldown:.39});
+ const buttons=['Full-car hop','Front hop','Rear hop'].map(label=>f.button(label));
+ assert.equal(f.settings.open,false);assert.equal(f.menu.open,false);
+ assert.equal(f.id('cadillac-modifications').getAttribute('data-motion'),'idle');
+ assert(buttons.every(button=>button.disabled));assert.match(f.id('cadillac-modifications-note').textContent,/Hop recovering/);
+ f.state.cooldown=0;f.ui.refresh();
+ assert(buttons.every(button=>!button.disabled&&button.title===''));
+ assert.doesNotMatch(f.id('cadillac-modifications-note').textContent,/recovering/);
+ assert.equal(f.settings.open,false);assert.equal(f.menu.open,false);assert.equal(f.calls.length,0);
+});
+
+test('hop recovery preserves reduced-motion, moving, busy and supplied rejection messages',()=>{
+ for(const [overrides,message]of [
+  [{reduced:true},'Hopping is off while reduced motion is enabled.'],
+  [{parked:false},'Stop the Cadillac before changing its setup.'],
+  [{busy:true,hop:false},'Let the suspension settle, or use Finish motion & level.'],
+  [{reason:'Setup is unavailable.'},'Setup is unavailable.'],
+ ]){
+  const f=fixture({cooldown:.45,...overrides});f.button('Front hop').onclick(new Event('click'));
+  assert.equal(f.calls.length,0);assert.equal(f.id('cadillac-modifications-feedback').textContent,message);
+  if(overrides.reduced)assert.equal(f.button('Front hop').title,message);
+ }
 });
 
 test('moving state blocks setup changes; finishing an active hop closes Settings and preserves average height',()=>{

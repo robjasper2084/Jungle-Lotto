@@ -9,6 +9,11 @@ import {installShadowMatrixCache} from './shadowMatrixCache.ts';
 const shadow={name:'directionalShadowMatrix[0]',type:0x8b5c,size:1};
 const ordinary={name:'otherMatrix[0]',type:0x8b5c,size:1};
 const water={name:'shipWake[0]',type:0x8b52,size:1};
+const namedWater=[
+ {name:'riverRipples[0]',type:0x8b52,size:12},
+ {name:'shipWake[0]',type:0x8b52,size:4},
+ {name:'shipShape[0]',type:0x8b52,size:4},
+];
 const floats=()=>new Float32Array(new Matrix4().elements);
 
 /** Real Three uniform reflection, classes, flattening, and upload dispatch.
@@ -27,7 +32,12 @@ function fixture(infos=[shadow,ordinary,water]){
    location.program.values.set(location.name,Array.from(data));
   },
   uniformMatrix3fv(...args){assert.equal(this,gl);calls.push({method:'uniformMatrix3fv',args,values:Array.from(args[2])});},
-  uniform4fv(...args){assert.equal(this,gl);calls.push({method:'uniform4fv',args,values:Array.from(args[1])});},
+  uniform4fv(...args){
+   assert.equal(this,gl);const [location,data]=args;
+   calls.push({method:'uniform4fv',args,values:Array.from(data),invalid:data.length%4!==0});
+   if(f.nativeError)throw f.nativeError;
+   location.program.values.set(location.name,Array.from(data));
+  },
  };
  const native=gl.uniformMatrix4fv;
  function makeProgram(){
@@ -45,13 +55,20 @@ function fixture(infos=[shadow,ordinary,water]){
   },
   dispose(...args){f.disposals++;f.disposeThis=this;f.disposeArgs=args;if(f.disposeError)throw f.disposeError;return f.result;},
  };
- Object.assign(f,{renderer,gl,values,material,native,properties,makeProgram,result:{original:true},
+ Object.assign(f,{renderer,gl,values,material,native,nativeV4:gl.uniform4fv,properties,makeProgram,result:{original:true},
   originalDirect:renderer.renderBufferDirect,originalDispose:renderer.dispose,
   draw:(selected=material)=>renderer.renderBufferDirect('camera','scene','geometry',selected,'object','group'),
   program:(selected=material)=>properties.get(selected).currentProgram,
-  node:()=>properties.get(material).currentProgram.getUniforms().map.directionalShadowMatrix,
+  node:(id='directionalShadowMatrix')=>properties.get(material).currentProgram.getUniforms().map[id],
   shadowCalls:()=>calls.filter(c=>c.args[0].name==='directionalShadowMatrix[0]'),
  });
+ return f;
+}
+function waterFixture(infos=namedWater){
+ const f=fixture(infos);
+ for(const info of infos)if(info.type===0x8b52){
+  f.values[info.name.slice(0,-3)]={value:Array.from({length:info.size},(_,i)=>new Vector4(i+1,i+2,i+3,i+4))};
+ }
  return f;
 }
 
@@ -70,7 +87,10 @@ test('the pinned source and browser entry retain the actual r185 uniform and pos
  assert(direct.indexOf('const program = setProgram(')<direct.indexOf('return;'),'setProgram precedes the first early return');
  assert.match(renderer,/const p_uniforms = program\.getUniforms\(\),\s*m_uniforms = materialProperties\.uniforms;/);
  const setter=/function setValueM4Array\( gl, v \) \{\s*const data = flatten\( v, this\.size, 16 \);\s*gl\.uniformMatrix4fv\( this\.addr, false, data \);\s*\}/;
- for(const file of ['build/three.module.js','src/renderers/webgl/WebGLUniforms.js'])assert.match(readFileSync(new URL(file,base),'utf8'),setter);
+ const vectorSetter=/function setValueV4fArray\( gl, v \) \{\s*const data = flatten\( v, this\.size, 4 \);\s*gl\.uniform4fv\( this\.addr, data \);\s*\}/;
+ for(const file of ['build/three.module.js','src/renderers/webgl/WebGLUniforms.js']){
+  const source=readFileSync(new URL(file,base),'utf8');assert.match(source,setter);assert.match(source,vectorSetter);
+ }
 });
 
 test('only the named array loses repeat uploads, with no extra native reflection, draws, or global GL wrappers',()=>{
@@ -215,6 +235,119 @@ test('noncallable or throwing method lookups retain the original argument-evalua
    results.push({trace,message:observed.message});
   }
   assert.deepEqual(results[1],results[0]);assert.deepEqual(results[0].trace,throwing?['method']:['method','address']);
+ }
+});
+
+test('the three water arrays retain independent first/change uploads in each program without added native reflection',()=>{
+ const baseline=waterFixture(),f=waterFixture(),other=new Map();
+ for(const entry of [baseline,f]){const material={};other.set(entry,material);entry.properties.set(material,{currentProgram:entry.makeProgram()});}
+ installShadowMatrixCache(f.renderer);
+ const draw=()=>{for(const entry of [baseline,f]){entry.draw();entry.draw(other.get(entry));}};
+ const calls=name=>f.calls.filter(call=>call.args[0].name===name);
+ draw();draw();draw();
+ for(const info of namedWater){assert.equal(calls(info.name).length,4);assert.equal(new Set(calls(info.name).map(call=>call.args[0])).size,2);}
+ for(const entry of [baseline,f])for(const info of namedWater)entry.values[info.name.slice(0,-3)].value.at(-1).y+=.25;
+ draw();draw();
+ for(const info of namedWater)assert.equal(calls(info.name).length,6,info.name+' changes in both programs');
+ for(const entry of [baseline,f])entry.values.shipWake.value[0].x+=2;
+ draw();draw();assert.equal(calls('shipWake[0]').length,8);
+ for(const name of ['riverRipples[0]','shipShape[0]'])assert.equal(calls(name).length,6,'another uniform changing does not invalidate '+name);
+ assert.deepEqual(f.program().handle.values,baseline.program().handle.values);
+ assert.deepEqual(f.program(other.get(f)).handle.values,baseline.program(other.get(baseline)).handle.values);
+ assert.deepEqual(f.reflection,baseline.reflection);assert.equal(f.draws.length,baseline.draws.length);
+ assert.equal(f.gl.uniform4fv,f.nativeV4);assert.equal(f.gl.uniformMatrix4fv,f.native);
+});
+
+test('water arrays with another name, type, or reflected size keep their original setters and uploads',()=>{
+ const cases=[{name:'otherVectors[0]',type:0x8b52,size:4}];
+ for(const info of namedWater)cases.push({...info,size:info.size-1},{...info,size:info.size+1},{...info,type:0x8b5c});
+ for(const info of cases){
+  const id=info.name.slice(0,-3),f=waterFixture([info]);
+  if(info.type===0x8b5c)f.values[id]={value:Array.from({length:info.size},()=>new Matrix4())};
+  const node=f.node(id),original=node.setValue;installShadowMatrixCache(f.renderer);
+  f.draw();f.draw();f.draw();assert.equal(node.setValue,original);assert.equal(f.calls.length,3,JSON.stringify(info));
+ }
+});
+
+test('original Vector4 conversions run every request and share the Three flatten pool safely with matrix arrays',()=>{
+ const f=waterFixture([shadow,...namedWater,ordinary]),conversions=new Map(),buffers=new Map();
+ const matrix=f.values.directionalShadowMatrix.value[0],matrixToArray=matrix.toArray;
+ matrix.toArray=function(...args){buffers.set('matrix',args[0]);return Reflect.apply(matrixToArray,this,args);};
+ for(const info of namedWater){
+  const id=info.name.slice(0,-3);conversions.set(id,0);
+  f.values[id].value.forEach((vector,index)=>{
+   const original=vector.toArray;
+   vector.toArray=function(...args){assert.equal(this,vector);assert.equal(args[1],index*4);conversions.set(id,conversions.get(id)+1);buffers.set(id,args[0]);return Reflect.apply(original,this,args);};
+  });
+ }
+ installShadowMatrixCache(f.renderer);f.draw();f.draw();f.draw();
+ assert.equal(buffers.get('shipWake'),buffers.get('matrix'));assert.equal(buffers.get('shipShape'),buffers.get('matrix'));
+ assert.notEqual(buffers.get('riverRipples'),buffers.get('matrix'));
+ for(const info of namedWater){const id=info.name.slice(0,-3);assert.equal(conversions.get(id),info.size*3);assert.equal(f.calls.filter(call=>call.args[0].name===info.name).length,2);}
+ // Changes below Float32 precision still execute toArray, but upload the same
+ // converted values. A representable change must reach the native method.
+ f.values.shipWake.value[0].x=1+2**-30;f.draw();
+ assert.equal(f.calls.filter(call=>call.args[0].name==='shipWake[0]').length,2);
+ f.values.shipWake.value[0].x=1.25;f.draw();f.draw();
+ assert.equal(f.calls.filter(call=>call.args[0].name==='shipWake[0]').length,3);
+ assert.equal(f.program().handle.values.get('shipWake[0]')[0],1.25);
+ assert.equal(f.program().handle.values.get('shipShape[0]')[0],1);
+ assert.equal(f.shadowCalls().length,2);assert.equal(f.program().handle.values.get('directionalShadowMatrix[0]')[12],0);
+ for(const info of namedWater)assert.equal(conversions.get(info.name.slice(0,-3)),info.size*6);
+});
+
+test('water Float32 subviews preserve their native two-argument calls, offsets, identity, and signed zeros',()=>{
+ for(const info of namedWater){
+  const f=waterFixture([info]),id=info.name.slice(0,-3),data=new Float32Array(new ArrayBuffer((info.size*4+8)*4),16,info.size*4);
+  data[0]=1;f.values[id].value=data;installShadowMatrixCache(f.renderer);f.draw();f.draw();f.draw();
+  assert.equal(f.calls.length,2);data[1]=-0;f.draw();f.draw();assert.equal(f.calls.length,3);assert(Object.is(f.calls.at(-1).values[1],-0));
+  data[1]=0;f.draw();assert.equal(f.calls.length,4);assert(Object.is(f.calls.at(-1).values[1],0));
+  const location=f.node(id).addr;assert(f.calls.every(call=>call.method==='uniform4fv'&&call.args.length===2&&call.args[0]===location&&call.args[1]===data));
+  assert.equal(data.byteOffset,16);
+ }
+});
+
+test('unsupported water payloads keep native validation and are never converted again for caching',()=>{
+ const cases=[Array.from(floats()),new Float32Array(new SharedArrayBuffer(64)),new Float32Array(15),new Float32Array(20),new Float64Array(16)];
+ if(Object.getOwnPropertyDescriptor(ArrayBuffer.prototype,'resizable'))cases.push(new Float32Array(new ArrayBuffer(64,{maxByteLength:128})));
+ for(const value of [NaN,Infinity,-Infinity]){const data=floats();data[5]=value;cases.push(data);}
+ for(const data of cases){
+  const f=waterFixture([namedWater[1]]);f.values.shipWake.value=data;installShadowMatrixCache(f.renderer);f.draw();f.draw();f.draw();
+  assert.equal(f.calls.length,3);assert(f.calls.every(call=>call.args.length===2&&call.args[1]===data));
+  if(data.length===15)assert(f.calls.every(call=>call.invalid));
+ }
+});
+
+test('water native/conversion failures, context reset and disposal preserve fresh-upload ownership',()=>{
+ const f=waterFixture([namedWater[1]]),vector=f.values.shipWake.value[0],stop=installShadowMatrixCache(f.renderer);
+ f.draw();f.draw();f.draw();assert.equal(f.calls.length,2);
+ const nativeError=Error('water native sentinel');f.nativeError=nativeError;vector.x=9;assert.throws(()=>f.draw(),error=>error===nativeError);
+ f.nativeError=null;vector.x=1;f.draw();assert.equal(f.calls.length,4);
+ const conversionError=Error('water conversion sentinel'),toArray=vector.toArray;
+ vector.toArray=()=>{throw conversionError;};assert.throws(()=>f.draw(),error=>error===conversionError);
+ vector.toArray=toArray;f.draw();assert.equal(f.calls.length,5);
+ const node=f.node('shipWake'),wrapper=node.setValue;
+ f.renderer.domElement.dispatchEvent(new Event('webglcontextlost'));f.renderer.domElement.dispatchEvent(new Event('webglcontextrestored'));
+ assert.notEqual(node.setValue,wrapper);f.draw();f.draw();f.draw();assert.equal(f.calls.length,7);
+ stop();f.draw();f.draw();assert.equal(f.calls.length,9);assert.equal(f.gl.uniform4fv,f.nativeV4);
+});
+
+test('water method-before-address lookup and noncallable/throwing lookup timing match original Three',()=>{
+ for(const mode of ['selected','noncallable','throwing']){
+  const results=[],sentinel=Error('water method sentinel');
+  for(const optimized of [false,true]){
+   const f=waterFixture([namedWater[1]]);if(optimized)installShadowMatrixCache(f.renderer);f.draw();
+   const node=f.node('shipWake'),location=node.addr,trace=[];let changed=false,observed;
+   const first=function(...args){trace.push('first');return Reflect.apply(f.nativeV4,this,args);};
+   const second=function(...args){trace.push('second');return Reflect.apply(f.nativeV4,this,args);};
+   Object.defineProperty(f.gl,'uniform4fv',{get(){trace.push('method');if(mode==='throwing')throw sentinel;return mode==='noncallable'?null:changed?second:first;}});
+   Object.defineProperty(node,'addr',{get(){trace.push('address');changed=true;return location;}});
+   try{f.draw();}catch(error){observed=error;}
+   if(mode==='throwing')assert.equal(observed,sentinel);else if(mode==='noncallable')assert(observed instanceof TypeError);else assert.equal(observed,undefined);
+   results.push({trace,message:observed?.message,values:f.calls.map(call=>call.values)});
+  }
+  assert.deepEqual(results[1],results[0]);
+  assert.deepEqual(results[0].trace,mode==='selected'?['method','address','first']:mode==='noncallable'?['method','address']:['method']);
  }
 });
 

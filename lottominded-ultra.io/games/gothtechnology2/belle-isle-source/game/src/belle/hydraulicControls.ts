@@ -9,7 +9,7 @@ export type HydraulicControlsAction=
  |{kind:'settle'};
 export type HydraulicControlsState={
  riding:boolean;parked:boolean;active:boolean;inside:boolean;blocked:boolean;
- reduced:boolean;hop:boolean;busy:boolean;targets:Record<HydraulicCorner,number>;
+ reduced:boolean;hop:boolean;busy:boolean;cooldown:number;targets:Record<HydraulicCorner,number>;
  current?:Record<HydraulicCorner,number>;minHeight?:number;maxHeight?:number;reason?:string;
 };
 export type HydraulicControlsResult={accepted:boolean;message?:string};
@@ -23,6 +23,7 @@ export type HydraulicControlsHooks={
 const corners:[HydraulicCorner,string][]=[['FL','Front left'],['FR','Front right'],['RL','Rear left'],['RR','Rear right']];
 const centimetres=(value:number)=>Math.round(value*100);
 const text=(element:HTMLElement,value:string)=>{if(element.textContent!==value)element.textContent=value;};
+const hopRecovery='Hop recovering. Wait briefly before hopping again.';
 
 /** A mode-only presentation layer. It never drives the vehicle, changes its
  * camera, persists suspension, or performs a lift outside the supplied hooks. */
@@ -64,7 +65,7 @@ export class HydraulicControls{
   radial.append(this.settle,this.leave);
   const hops=document.createElement('div');hops.className='hydraulic-hops';hops.setAttribute('role','group');hops.setAttribute('aria-label','One-shot hydraulic hops');
   for(const [mode,label]of [['all','Full hop'],['front','Front hop'],['rear','Rear hop']] as const){
-   const button=document.createElement('button');button.type='button';button.id='hydraulic-hop-'+mode;button.textContent=label;button.onclick=event=>this.command({kind:'hop',mode},event,button);
+   const button=document.createElement('button');button.type='button';button.id='hydraulic-hop-'+mode;button.textContent=label;button.setAttribute('aria-describedby',this.motion.id);button.onclick=event=>this.command({kind:'hop',mode},event,button);
    this.hopButtons.push(button);hops.append(button);
   }
   this.advanced.id='hydraulic-advanced-corners';const summary=document.createElement('summary');summary.textContent='Advanced corners';this.advanced.append(summary);
@@ -146,9 +147,9 @@ export class HydraulicControls{
   if(this.disposed)return;
   const state=this.hooks.state();
   const unavailable=!state.riding||!state.active||state.blocked||state.inside;
-  const locked=unavailable||!state.parked||(state.hop&&action.kind!=='settle')||(action.kind==='hop'&&(state.busy||state.reduced));
+  const locked=unavailable||!state.parked||(state.hop&&action.kind!=='settle')||(action.kind==='hop'&&(state.busy||state.reduced||state.cooldown>0));
   if(locked){
-   this.announce(state.reason??(unavailable?'Use the third-person controls while Hydraulic mode is on.':!state.parked?'Stop the car before adjusting its suspension.':state.reduced&&action.kind==='hop'?'Hops are off with reduced motion.':'Let the hop land, or choose Finish & level.'));
+   this.announce(state.reason??(unavailable?'Use the third-person controls while Hydraulic mode is on.':!state.parked?'Stop the car before adjusting its suspension.':state.reduced&&action.kind==='hop'?'Hops are off with reduced motion.':state.cooldown>0&&!state.hop&&!state.busy&&action.kind==='hop'?hopRecovery:'Let the hop land, or choose Finish & level.'));
    this.refresh(true);return;
   }
   if(action.kind==='corner'&&(!Number.isFinite(action.metres)||action.metres<(state.minHeight??0)||action.metres>(state.maxHeight??.24))){
@@ -171,11 +172,11 @@ export class HydraulicControls{
   text(this.toggle,state.active?'Hydraulic mode · On':'Hydraulic mode');this.toggle.setAttribute('aria-pressed',String(state.active));
   this.toggle.disabled=!state.riding||(!state.active&&!state.parked);
   text(this.entryNote,state.active?'Hydraulic mode keeps the car parked. Exit the mode to drive.':state.parked?'Parked controls for both Cadillac rides.':'Stop the car to enable hydraulics.');
-  text(this.motion,state.reason??(!state.parked?'Stop to adjust the suspension.':state.hop?'Hop in progress · Finish & level can settle it.':state.busy?'Adjusting height · you can change the target.':state.reduced?'Parked · reduced motion keeps hops off.':'Parked · choose a pose or adjust a corner.'));
+  text(this.motion,state.reason??(!state.parked?'Stop to adjust the suspension.':state.hop?'Hop in progress · Finish & level can settle it.':state.busy?'Adjusting height · you can change the target.':state.reduced?'Parked · reduced motion keeps hops off.':state.cooldown>0?hopRecovery:'Parked · choose a pose or adjust a corner.'));
   const locked=!visible||state.inside||!state.parked;
   for(const button of this.poseButtons.values())button.disabled=locked||state.hop;
   this.settle.disabled=locked;
-  for(const button of this.hopButtons){button.disabled=locked||state.hop||state.busy||state.reduced;button.title=state.reduced?'Hops are off with reduced motion.':'One hop; wait for landing before repeating.';}
+  for(const button of this.hopButtons){button.disabled=locked||state.hop||state.busy||state.reduced||state.cooldown>0;button.title=state.reduced?'Hops are off with reduced motion.':!locked&&!state.hop&&!state.busy&&state.cooldown>0?hopRecovery:'One hop; wait for landing before repeating.';}
   for(const [corner,{input,output}]of this.ranges){
    input.min=String(state.minHeight??0);input.max=String(state.maxHeight??.24);input.disabled=locked||state.hop;
    if(force||document.activeElement!==input)input.value=String(state.targets[corner]);

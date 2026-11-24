@@ -108,6 +108,98 @@ test('hop timing agrees at 30, 60 and 120 Hz and huge or invalid frame times can
   s.update(50);near(s.snapshot().hopProgress,LIMITS.maxFrameSeconds/LIMITS.hopSeconds);assert(!s.readyForDrive);
 });
 
+test('elapsed recovery leaves ordinary 10, 30, 60 and 120 Hz easing and hop timing exact',()=>{
+  for(const fps of [10,30,60,120])for(const hop of [false,true]){
+    const bounded=new CadillacSuspension(),elapsed=new CadillacSuspension();
+    for(const suspension of [bounded,elapsed]){
+      if(hop)suspension.hop('front');else suspension.setTargets(HYDRAULIC_SMART_POSES['front-up']);
+    }
+    for(let frame=0;frame<fps*2;frame++){
+      bounded.update(1/fps);elapsed.advanceElapsed(1/fps);
+      assert.deepEqual(elapsed.snapshot(),bounded.snapshot());
+    }
+  }
+});
+
+test('a single stall preserves eligible time while presenting the hop apex before landing',()=>{
+  const recovered=new CadillacSuspension(),reference=new CadillacSuspension();
+  recovered.hop('all');reference.hop('all');recovered.advanceElapsed(.6);advanceExact(reference,.6);
+  near(recovered.snapshot().hopProgress,.5);assert.equal(recovered.snapshot().hop,'all');
+  recovered.advanceElapsed(1/60);reference.update(1/60);
+  nearPose(recovered.pose,reference.pose);near(recovered.snapshot().hopProgress,reference.snapshot().hopProgress);
+  for(let frame=1;frame<18;frame++){recovered.advanceElapsed(1/60);reference.update(1/60);}
+  assert.equal(recovered.snapshot().hop,null);assert(recovered.readyForDrive);
+  nearPose(recovered.pose,reference.pose);
+  const uneven=new CadillacSuspension();uneven.hop('front');
+  uneven.advanceElapsed(.3);near(uneven.snapshot().hopProgress,1/3);
+  uneven.advanceElapsed(.3);near(uneven.snapshot().hopProgress,.5);
+  uneven.advanceElapsed(.3);assert.equal(uneven.snapshot().hop,null,'three real .3 second intervals complete the .9 second motion');
+});
+
+test('severe stalls present every hop apex and landing on both actual rig layouts without retaining idle credit',()=>{
+  for(const anchors of [SILVER_CADILLAC_SUSPENSION_ANCHORS,hydraulicAnchors])for(const mode of ['all','front','rear'] as const){
+    const s=new CadillacSuspension(anchors),path=s.previewHop(mode,2);assert(s.hop(mode));
+    s.advanceElapsed(13);near(s.snapshot().hopProgress,.5);nearPose(s.pose,path[1]);assert(!s.readyForDrive);
+    const apex=s.snapshot();for(const seconds of [0,-1,NaN,Infinity])s.advanceElapsed(seconds);
+    assert.deepEqual(s.snapshot(),apex,'a new positive eligible interval is required to spend retained motion time');
+    s.advanceElapsed(9);nearPose(s.pose,path[2]);assert(s.readyForDrive);assert.equal(s.snapshot().hop,null);
+    near(s.snapshot().cooldown,LIMITS.hopCooldownSeconds,'pre-landing credit cannot consume the new cooldown');
+    s.advanceElapsed(.1);near(s.snapshot().cooldown,.35);assert(!s.hop(mode));
+    s.advanceElapsed(13);assert(s.hop(mode));s.advanceElapsed(1/60);
+    near(s.snapshot().hopProgress,(1/60)/LIMITS.hopSeconds,'the new hop cannot inherit idle time');
+  }
+});
+
+test('static recovery preserves its midpoint and discards credit only for new commands or eligibility boundaries',()=>{
+  const target=HYDRAULIC_SMART_POSES['front-up'],s=new CadillacSuspension();s.setTargets(target);s.advanceElapsed(13);
+  for(const corner of CADILLAC_CORNERS)near(s.snapshot().current[corner],target[corner]/2);
+  assert(!s.settled);const midpoint=s.snapshot();
+  assert(s.setTargets(target));assert(!s.setTargets({FL:NaN}));s.advanceElapsed(0);
+  assert.deepEqual(s.snapshot(),midpoint);
+  s.advanceElapsed(1/60);assert(s.settled);assert.deepEqual(s.snapshot().current,target,'identical/rejected requests preserve existing credit');
+  s.reset();s.setTargets(target);s.advanceElapsed(13);const from=s.snapshot().current;
+  assert(s.setTargets(HYDRAULIC_SMART_POSES['back-up']));assert.deepEqual(s.snapshot().current,from);
+  s.advanceElapsed(1/60);assert(!s.settled);
+  for(const corner of CADILLAC_CORNERS)assert(Math.abs(s.snapshot().current[corner]-from[corner])<=LIMITS.actuatorMetresPerSecond/60+1e-10,'a retarget cannot spend the old segment credit');
+  const resumed=new CadillacSuspension(),reference=new CadillacSuspension();
+  resumed.setTargets(target);reference.setTargets(target);resumed.advanceElapsed(13);
+  advanceExact(reference,1.5*.22/LIMITS.actuatorMetresPerSecond/2);
+  resumed.clearCatchUp();resumed.advanceElapsed(1/60);reference.update(1/60);
+  nearPose(resumed.pose,reference.pose);assert(!resumed.settled,'resume cannot replay the excluded interval');
+  resumed.advanceElapsed(13,true);assert(resumed.settled);resumed.reset();resumed.setTargets(target);resumed.advanceElapsed(1/60);
+  assert(resumed.snapshot().current.FL<.01,'reduced motion and reset both discard old credit');
+});
+
+test('catch-up presents landing before queued leveling and ages cooldown only with fresh post-landing time',()=>{
+  const s=new CadillacSuspension(hydraulicAnchors),initial={FL:.24,FR:0,RL:0,RR:0};
+  s.setTargets(initial,true);const landed=s.preview(initial);assert(s.hop('all'));s.settle();
+  s.advanceElapsed(13);near(s.snapshot().hopProgress,.5);assert(s.levelingQueued);
+  s.settle();s.advanceElapsed(13);assert.equal(s.snapshot().hop,null);nearPose(s.pose,landed);
+  assert.deepEqual(s.snapshot().current,initial);assert.deepEqual(s.targets,all(.06));assert(!s.readyForDrive);
+  near(s.snapshot().cooldown,.45);s.advanceElapsed(1/60);
+  for(const corner of CADILLAC_CORNERS)near(s.snapshot().current[corner],(initial[corner]+.06)/2);
+  assert(!s.readyForDrive);near(s.snapshot().cooldown,.45-1/60);
+  s.advanceElapsed(1/60);assert(s.readyForDrive);assert.deepEqual(s.snapshot().current,all(.06));near(s.snapshot().cooldown,.45-2/60);
+});
+
+test('catch-up work remains bounded and every actual internal step keeps the actuator speed limit',t=>{
+  const s=new CadillacSuspension(),target=HYDRAULIC_SMART_POSES['front-up'];s.setTargets(target);
+  const integration=s as unknown as {updateStep:(seconds:number,reduced:boolean,ageCooldown:boolean)=>CadillacSuspensionPose};
+  const update=integration.updateStep.bind(s);let steps=0;
+  t.mock.method(integration,'updateStep',(seconds:number,reduced:boolean,ageCooldown:boolean)=>{
+    assert(seconds>0&&seconds<=LIMITS.maxFrameSeconds);const before=s.snapshot().current;
+    const pose=update(seconds,reduced,ageCooldown);steps++;
+    for(const corner of CADILLAC_CORNERS){
+      const current=s.snapshot().current[corner];
+      assert(Math.abs(current-before[corner])<=LIMITS.actuatorMetresPerSecond*seconds+1e-10);
+      near(current/target[corner],s.snapshot().current.FL/target.FL,'each substep stays on the preflight segment');
+    }
+    nearPose(pose,s.preview(s.snapshot().current));return pose;
+  });
+  s.advanceElapsed(Number.MAX_VALUE);assert(steps>1&&steps<=5);assert(!s.settled);
+  const first=steps;s.advanceElapsed(Number.MAX_VALUE);assert(steps-first<=5);assert(s.settled);
+});
+
 test('reduced motion preserves functional height, suppresses hopping, and reset cancels all transient state',()=>{
   const s=new CadillacSuspension();s.setCorner('RL',.2);
   s.update(0,true);assert(s.settled);nearPose(s.pose,s.preview({RL:.2}));

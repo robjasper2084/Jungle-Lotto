@@ -13,6 +13,7 @@ import {StartupTelemetry} from './startupTelemetry.ts';
 import {CoopSession} from './coop/session.ts';
 import {createBelleAudio} from './belleAudio.ts';
 import {SceneWarmup} from './sceneWarmup.ts';
+import {prepareRideAssets} from './rideAssetPreparation.ts';
 import {warmRideShadows} from './rideShadowWarmup.ts';
 import {VehicleHeadlamp} from './vehicles/headlamp.ts';
 import {BoatRide} from './boatRide.ts';
@@ -44,6 +45,7 @@ import {CADILLAC_SUSPENSION_LIMITS} from './cadillacSuspension.ts';
 import {CadillacModsControls,type CadillacModsAction} from './cadillacModsControls.ts';
 import {HydraulicControls,type HydraulicControlsAction} from './hydraulicControls.ts';
 import {HydraulicCabinInput} from './hydraulicCabinInput.ts';
+import {HydraulicFrameClock,observeHydraulicPreviewBoundary,observeHydraulicInputBoundary} from './hydraulicFrameClock.ts';
 import {CadillacHydraulicAudio} from './cadillacHydraulicAudio.ts';
 import type {HydraulicSmartPose} from './hydraulicController.ts';
 import {readCadillacModsPreferences} from './cadillacModsPreferences.ts';
@@ -123,18 +125,25 @@ let fishing:Fishing|undefined;
 let photo:Photography|undefined;
 let golf:Golf|undefined;let boat:BoatRide|undefined;let activities:IslandActivities|undefined;
 let cadillac:CadillacRide|undefined;
+const hydraulicFrameClock=new HydraulicFrameClock();
+const resetHydraulicFrameTime=()=>hydraulicFrameClock.reset();
+let hydraulicContextLost=false;
+canvas.addEventListener('webglcontextlost',()=>{hydraulicContextLost=true;suspendHydraulicControls();});
+canvas.addEventListener('webglcontextrestored',()=>{hydraulicContextLost=false;resetHydraulicFrameTime();});
+window.addEventListener('pagehide',resetHydraulicFrameTime);
 let hydraulicMode=false,hydraulicModeRide:CadillacRide|undefined;
 let hydraulicControls:HydraulicControls|undefined,hydraulicCabinInput:HydraulicCabinInput|undefined;
 const cadillacDiagnostic=isCadillacVariant(new URLSearchParams(location.search).get('ride'));
 let vr:BelleVR|undefined;let hover:HoverRide|undefined;
 let realLocation:RealLocationPanel|undefined;let locationFollowing=false;
-function baseBlocked(){return locationFollowing||!!golf?.active||!!coop?.active||scenePreparing||!!race?.active||!!fishing?.active||!!vr?.active||!active||paused||!!online?.inputBlocked||!!document.querySelector('dialog[open]')||!!trials?.active&&(!renderFocused||document.hidden);}
+function baseBlocked(){return hydraulicContextLost&&!!cadillac?.riding||locationFollowing||!!golf?.active||!!coop?.active||scenePreparing||!!race?.active||!!fishing?.active||!!vr?.active||!active||paused||!!online?.inputBlocked||!!document.querySelector('dialog[open]')||!!trials?.active&&(!renderFocused||document.hidden);}
 function blocked(){return baseBlocked()||!!trials?.inputLocked;}
 // Capture fresh held controls during the countdown; only simulation remains locked.
 function inputCaptureBlocked(){return baseBlocked()||!!trials?.inputCaptureLocked;}
 let cadillacTrunkReturnView=false;
 function clearCadillacInput(){keys.clear();throttle=steer=0;hop=recover=mount=false;hud?.clear();}
 function hydraulicUnavailable(allowSettings=false){
+ if(hydraulicContextLost)return 'Hydraulic controls will return when graphics recover.';
  if(!active||locationFollowing||!cadillac?.riding||cadillac.exiting||scenePreparing||coop?.active||vr?.active||online?.inputBlocked||golf?.active||race?.active||fishing?.active||trials?.active||photo?.active)return 'Return to the parked Cadillac to use hydraulics.';
  if(paused||!renderFocused||document.hidden)return 'Resume the ride before using hydraulics.';
  if([...document.querySelectorAll<HTMLDialogElement>('dialog[open]')].some(dialog=>!allowSettings||dialog.id!=='settings'))return 'Close the other menu before using hydraulics.';
@@ -147,7 +156,7 @@ function setHydraulicMode(enabled:boolean){
  hydraulicMode=enabled;clearCadillacInput();hydraulicCabinInput?.cancel();hydraulicAudio.silence();
  return{accepted:true,message:enabled?'Hydraulic Mode · Smart Pump ready.':'Hydraulic Mode off. Uneven corners level before driving.'};
 }
-function suspendHydraulicControls(){hydraulicMode=false;hydraulicModeRide=undefined;clearCadillacInput();hydraulicCabinInput?.cancel();hydraulicAudio.setActive(false);hydraulicControls?.refresh(true);}
+function suspendHydraulicControls(){resetHydraulicFrameTime();hydraulicMode=false;hydraulicModeRide=undefined;clearCadillacInput();hydraulicCabinInput?.cancel();hydraulicAudio.setActive(false);hydraulicControls?.refresh(true);}
 const hydraulicKeys:Partial<Record<string,HydraulicSmartPose>>={Digit7:'front-up',Digit8:'back-up',Digit9:'pancake'};
 function routeHydraulicKey(event:KeyboardEvent){
  if(event.defaultPrevented||!cadillac?.riding||inputCaptureBlocked()||photo?.active)return false;
@@ -201,8 +210,8 @@ const cadillacControls=new CadillacControls(el<HTMLDialogElement>('ride-menu'),c
 });
 const cadillacModsControls=new CadillacModsControls(el<HTMLDialogElement>('settings'),el<HTMLDialogElement>('ride-menu'),canvas,{
  state:()=>({
-  riding:active&&!!cadillac?.riding,parked:!!cadillac?.riding&&!cadillac.exiting&&Math.abs(cadillac.sim.pose.speed)<.25,
-  reduced,busy:!!cadillac&&!cadillac.suspension.settled,hop:!!cadillac?.suspension.snapshot().hop,
+  riding:active&&!!cadillac?.riding,parked:!!cadillac?.riding&&!hydraulicContextLost&&!cadillac.exiting&&Math.abs(cadillac.sim.pose.speed)<.25,
+  reduced,busy:!!cadillac&&!cadillac.suspension.settled,hop:!!cadillac?.suspension.snapshot().hop,cooldown:cadillac?.suspension.snapshot().cooldown??0,
   minHeight:CADILLAC_SUSPENSION_LIMITS.min,maxHeight:CADILLAC_SUSPENSION_LIMITS.max,
   targets:cadillac?.suspension.targets??{FL:0,FR:0,RL:0,RR:0},wheels:cadillac?.wheels.selection??readCadillacModsPreferences(),
  }),
@@ -212,12 +221,14 @@ const cadillacModsControls=new CadillacModsControls(el<HTMLDialogElement>('setti
   const result=cadillac.setWheels(action.selection);if(result.accepted)clearCadillacInput();return result;
  },
 });
+const stopHydraulicPreviewBoundary=observeHydraulicPreviewBoundary(document.getElementById('cadillac-modifications'),resetHydraulicFrameTime);
+let stopHydraulicInputBoundary=()=>{};
 hydraulicControls=new HydraulicControls(el<HTMLDialogElement>('ride-menu'),canvas,{
  state:()=>({
-  riding:active&&!!cadillac?.riding,parked:!!cadillac?.riding&&!cadillac.exiting&&Math.abs(cadillac.sim.pose.speed)<.25,
+  riding:active&&!!cadillac?.riding,parked:!!cadillac?.riding&&!hydraulicContextLost&&!cadillac.exiting&&Math.abs(cadillac.sim.pose.speed)<.25,
   active:hydraulicMode&&cadillac===hydraulicModeRide,inside:first&&!cadillac?.trunkView,
   blocked:blocked()||!!photo?.active||!renderFocused||document.hidden,reduced,
-  hop:!!cadillac?.suspension.snapshot().hop,busy:!!cadillac&&!cadillac.suspension.settled,
+  hop:!!cadillac?.suspension.snapshot().hop,busy:!!cadillac&&!cadillac.suspension.settled,cooldown:cadillac?.suspension.snapshot().cooldown??0,
   targets:cadillac?.suspension.targets??{FL:0,FR:0,RL:0,RR:0},current:cadillac?.suspension.snapshot().current,minHeight:0,maxHeight:.24,
  }),
  request:(action,event)=>hydraulicMode?requestHydraulicAction(action,event):{accepted:false,message:'Turn on Hydraulic Mode first.'},
@@ -225,7 +236,7 @@ hydraulicControls=new HydraulicControls(el<HTMLDialogElement>('ride-menu'),canva
 });
 window.addEventListener('blur',suspendHydraulicControls);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)suspendHydraulicControls();});
-window.addEventListener('pagehide',event=>{if(!event.persisted){cadillacControls.dispose();cadillacModsControls.dispose();hydraulicControls?.dispose();hydraulicCabinInput?.dispose();void hydraulicAudio.dispose();}});
+window.addEventListener('pagehide',event=>{if(!event.persisted){stopHydraulicPreviewBoundary();stopHydraulicInputBoundary();cadillacControls.dispose();cadillacModsControls.dispose();hydraulicControls?.dispose();hydraulicCabinInput?.dispose();void hydraulicAudio.dispose();}});
 window.addEventListener('keydown',e=>{if(golf?.active){if(!paused)golf.key(e);return;}if(e.code==='KeyG'&&!cadillac?.riding&&!hover?.riding&&!blocked()&&golf?.nearby){golf.begin();return;}if((e.target as HTMLElement)?.closest('input,select,textarea,[contenteditable=true]'))return;if(trials?.active&&!document.querySelector('dialog[open]')&&trials.key(e))return;if((e.target as HTMLElement)?.closest('#hydraulic-controls')&&routeHydraulicKey(e))return;if((e.target as HTMLElement)?.closest('button,a,summary'))return;if(trials?.active&&e.repeat){e.preventDefault();return;}if(fishing?.active){if(!paused&&!document.querySelector('dialog[open]'))fishing.key(e);return;}if(inputCaptureBlocked())return;if(cadillac?.riding){if(routeHydraulicKey(e))return;if(cadillacControls.key(e))return;if(!photo?.active&&cadillac.suspensionKey(e.code,keys.has('ShiftRight'),e.repeat,reduced)){e.preventDefault();return;}if(!photo?.active&&!blocked()&&['ShiftRight','PageUp','PageDown','KeyU','KeyO','KeyJ','KeyL'].includes(e.code)){keys.add(e.code);if(e.code!=='ShiftRight')e.preventDefault();return;}if(!['KeyW','KeyS','KeyA','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','KeyE','KeyF','KeyR','KeyV'].includes(e.code))return;e.preventDefault();keys.add(e.code);if(e.repeat)return;if(e.code==='KeyE')cadillac.toggleDoor();if(e.code==='KeyF')cadillac.requestExit();if(e.code==='KeyR')recover=true;if(e.code==='KeyV')chooseView(!first);return;}if(e.code==='KeyJ'&&hover?.riding&&hover.vehicle==='corleo'&&hover.key(e))return;if(activities?.key(e))return;if(slide?.active&&e.code==='KeyR'){e.preventDefault();slide.cancel();return;}if(e.code==='KeyE'&&!e.repeat&&!hover?.riding&&!photo?.active){e.preventDefault();slide?.interact();return;}if(photo?.key(e))return;if(boat?.key(e))return;if(hover?.key(e))return;if(['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','KeyR','KeyF','KeyV'].includes(e.code))e.preventDefault();keys.add(e.code);if(e.repeat)return;if(e.code==='Space'&&!blocked())hop=true;if(e.code==='KeyR')recover=true;if(e.code==='KeyF')mount=true;if(e.code==='KeyV')chooseView(!first);});window.addEventListener('keyup',e=>{keys.delete(e.code);fishing?.keyUp(e.code);hover?.keyUp(e.code);boat?.keyUp(e.code);});window.addEventListener('blur',clear);document.addEventListener('visibilitychange',clear);
 el('mount').onclick=()=>{if(!blocked()&&!trials?.active){if(cadillac?.riding)cadillac.requestExit();else mount=true;}};el('recover').onclick=()=>{if(trials?.active){trials.restart();return;}if(blocked())return;clear();if(slide?.active)slide.cancel();else recover=true;};el('view').onclick=()=>{if(!photo?.active)chooseView(!first);};el('pause').onclick=()=>{paused=!paused;el('pause').textContent=paused?'Resume':'Pause';if(paused)suspendHydraulicControls();clear();};
 for(const [button,dialog]of[['map-open','guide'],['settings-open','settings'],['welcome-settings','settings']])el(button).onclick=()=>{clear();el<HTMLDialogElement>(dialog).showModal();};document.querySelectorAll<HTMLButtonElement>('[data-close]').forEach(b=>b.onclick=()=>{el<HTMLDialogElement>(b.dataset.close!).close();if(!active&&b.dataset.close==='settings')el('welcome-settings').focus();else canvas.focus();});
@@ -235,7 +246,7 @@ document.addEventListener('click',e=>{const target=e.target as HTMLElement;if(ta
 const zone=el('touch-zone'),touch=el<HTMLInputElement>('touch');
 hud=createMobileHud({blocked:()=>locationFollowing?(!active||paused||!!document.querySelector('dialog[open]')):inputCaptureBlocked(),canvasLookOnly:()=>hydraulicMode,movementBlocked:()=>locationFollowing||hydraulicMode||!!photo?.active||!!hover?.riding||!!slide?.active,clear,move:(x,y)=>{steer=x;throttle=y;},look:(x,y)=>{cameraYaw-=x*.003;cameraPitch=Math.max(-1.25,Math.min(1.1,cameraPitch+y*.002));},hop:()=>{if(!blocked()){if(cadillac?.hydraulics&&cadillac.riding){clear();cadillacModsControls.open();}else if(cadillac?.riding)cadillac.toggleDoor();else hop=true;}}});
 const release=()=>hud?.clear();
-el<HTMLInputElement>('motion').checked=reduced;el<HTMLInputElement>('motion').onchange=e=>reduced=(e.target as HTMLInputElement).checked;
+el<HTMLInputElement>('motion').checked=reduced;el<HTMLInputElement>('motion').onchange=e=>{reduced=(e.target as HTMLInputElement).checked;resetHydraulicFrameTime();};
 const graphics=el<HTMLSelectElement>('quality'),frameLimit=el<HTMLSelectElement>('fps'),aaSelect=el<HTMLSelectElement>('anti-aliasing');
 graphics.value='automatic';aaSelect.value='automatic';try{const saved=JSON.parse(localStorage.getItem('belle-graphics-v1')||'null');if(saved&&['automatic','smooth','high'].includes(saved.quality))graphics.value=saved.quality;if(saved&&(saved.cap===30||saved.cap===60)){cap=saved.cap;frameLimit.value=String(cap);}aaSelect.value=readAntiAliasingMode(saved?.antiAliasing);}catch{/* Keep the default settings when storage is unavailable. */}
 let appliedAaMode=readAntiAliasingMode(aaSelect.value);
@@ -350,7 +361,7 @@ installShadowMatrixCache(renderer);
  batchWheelDisplay(hero.vehicle,hero.root,wheel.animations);
  const remoteRiders=new OnlineRiders(scene,terrain,rider,wheel,async model=>{await warmObjectTextures(renderer,model);await renderer.compileAsync(model,camera,scene);});
  let savedSoloSky:typeof world.sky.settings|undefined;
- void import('./onlineRooms.ts').then(({BelleOnlineRooms})=>{online=new BelleOnlineRooms({race:(sender,message)=>race?.receive(sender,message),raceOpen:()=>race?.open(),clear:()=>{realLocation?.stopFollow('Avatar follow stopped before multiplayer.');clear();release();core.clearPendingActions();},ride:()=>{if(!active)start.click();},sky:()=>world.sky.settings,syncSky:s=>{savedSoloSky??=world.sky.settings;world.sky.synchronize(s);},localSky:()=>{if(savedSoloSky){world.sky.configure(savedSoloSky);savedSoloSky=undefined;}},skyHost:host=>{document.querySelectorAll<HTMLInputElement|HTMLSelectElement>('.sky-settings input,.sky-settings select').forEach(e=>e.disabled=!host);el('sky-room-note').textContent=online?.online?(host?'You control the shared room sky.':'Time and clouds follow the room host.'):'Time pauses with solo play. Online rooms share the host’s sky.';},follow:p=>{for(const d of [4,7,11,18])for(let a=0;a<Math.PI*2;a+=Math.PI/4){const x=p.x+Math.sin(a)*d,z=p.z+Math.cos(a)*d;if(terrain.land(x,z)&&!terrain.obstructed(x,z,1.5)){jump(x,z,Math.atan2(p.x-x,p.z-z));return;}}}});}).catch(error=>{console.warn('Multiplayer unavailable',error);for(const id of ['friends-open','welcome-friends'])el(id).textContent='Multiplayer unavailable · reload';});
+ void import('./onlineRooms.ts').then(({BelleOnlineRooms})=>{online=new BelleOnlineRooms({race:(sender,message)=>race?.receive(sender,message),raceOpen:()=>race?.open(),clear:()=>{resetHydraulicFrameTime();realLocation?.stopFollow('Avatar follow stopped before multiplayer.');clear();release();core.clearPendingActions();},ride:()=>{if(!active)start.click();},sky:()=>world.sky.settings,syncSky:s=>{savedSoloSky??=world.sky.settings;world.sky.synchronize(s);},localSky:()=>{if(savedSoloSky){world.sky.configure(savedSoloSky);savedSoloSky=undefined;}},skyHost:host=>{document.querySelectorAll<HTMLInputElement|HTMLSelectElement>('.sky-settings input,.sky-settings select').forEach(e=>e.disabled=!host);el('sky-room-note').textContent=online?.online?(host?'You control the shared room sky.':'Time and clouds follow the room host.'):'Time pauses with solo play. Online rooms share the host’s sky.';},follow:p=>{for(const d of [4,7,11,18])for(let a=0;a<Math.PI*2;a+=Math.PI/4){const x=p.x+Math.sin(a)*d,z=p.z+Math.cos(a)*d;if(terrain.land(x,z)&&!terrain.obstructed(x,z,1.5)){jump(x,z,Math.atan2(p.x-x,p.z-z));return;}}}});stopHydraulicInputBoundary();stopHydraulicInputBoundary=observeHydraulicInputBoundary(online.comms.root,resetHydraulicFrameTime);}).catch(error=>{console.warn('Multiplayer unavailable',error);for(const id of ['friends-open','welcome-friends'])el(id).textContent='Multiplayer unavailable · reload';});
  const crossings=portalStates({routes:districts.routes,terrain,pavementReady:!!scene.getObjectByName('Greater Detroit pavement')});
  const openPlaces=districtDestinations.filter(l=>crossings[l.id==='greater-detroit-elmwood'?1:0].connected);
  const destinations=[...openPlaces,...data.landmarks,...data.pois.filter(p=>!data.landmarks.some(l=>l.id===p.id))];let destination:ParkMap['landmarks'][number]|undefined;const routepoints=data.roads.flatMap(r=>r.points.slice(1).flatMap((b,i)=>{const a=r.points[i],steps=Math.max(1,Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1])/8));return Array.from({length:steps},(_,j)=>[a[0]+(b[0]-a[0])*j/steps,a[1]+(b[1]-a[1])*j/steps] as [number,number]);})).filter(p=>terrain.land(p[0],p[1])&&!terrain.obstructed(p[0],p[1],2));let snap=true;const vrPlaces:{label:string;go:()=>void}[]=[];
@@ -376,7 +387,7 @@ installShadowMatrixCache(renderer);
   }
   belleAudio.setTrunkSpeaker(frame);radio.setTrunkSpeaker(frame);
  }
- photo=new Photography(scene,canvas,hero.rider,()=>{if(photo?.active){realLocation?.stopFollow('Avatar follow stopped for photography.');trials?.interrupt();}clear();release();if(photo?.active&&!photoWasActive){photoSaved={first,yaw:cameraYaw,pitch:cameraPitch};first=true;}else if(!photo?.active&&photoWasActive){first=photoSaved.first;cameraYaw=photoSaved.yaw;cameraPitch=photoSaved.pitch;}photoWasActive=!!photo?.active;snap=true;},()=>mixGameAudio([natureAudio.capture(),hover?.captureAudio(),trials?.captureAudio(),radio.capture()]));
+ photo=new Photography(scene,canvas,hero.rider,()=>{resetHydraulicFrameTime();if(photo?.active){realLocation?.stopFollow('Avatar follow stopped for photography.');trials?.interrupt();}clear();release();if(photo?.active&&!photoWasActive){photoSaved={first,yaw:cameraYaw,pitch:cameraPitch};first=true;}else if(!photo?.active&&photoWasActive){first=photoSaved.first;cameraYaw=photoSaved.yaw;cameraPitch=photoSaved.pitch;}photoWasActive=!!photo?.active;snap=true;},()=>mixGameAudio([natureAudio.capture(),hover?.captureAudio(),trials?.captureAudio(),radio.capture()]));
  let fishingSaved={first,yaw:cameraYaw,pitch:cameraPitch};
  fishing=new Fishing(scene,data,{allowed:()=>!locationFollowing&&active&&!paused&&!vr?.active&&!online?.inputBlocked&&!document.querySelector('dialog[open]'),travel:spot=>{activities?.interrupt('Activity ended when fishing started. Your saved records are kept.');fishingSaved={first,yaw:cameraYaw,pitch:cameraPitch};jump(...spot.stand,Math.atan2(spot.cast[0]-spot.stand[0],spot.cast[1]-spot.stand[1]));core.advance(1/60,{dismount:true});first=true;cameraPitch=.10;snap=true;},leave:()=>{first=fishingSaved.first;cameraYaw=fishingSaved.yaw;cameraPitch=fishingSaved.pitch;snap=true;clear();}});
  let golfSaved={first,yaw:cameraYaw,pitch:cameraPitch};
@@ -582,28 +593,34 @@ installShadowMatrixCache(renderer);
   ctx.clearRect(0,0,420,290);ctx.drawImage(mapLayer,0,0);
   ctx.strokeStyle='#c3c98e';ctx.lineWidth=.65;
   for(const l of data.landmarks){ctx.fillStyle=l===destination?'#ffd98b':l.kind==='monument'?'#96e7dc':'#e8deaa';ctx.beginPath();ctx.arc(px(l.x),pz(l.z),l===destination?4:2,0,Math.PI*2);ctx.fill();}for(const [i,m]of (online?.members??[]).entries()){if(m.id===online?.self)continue;const p=online?.buffers.get(m.id)?.sample(performance.now());if(!p)continue;ctx.fillStyle=PLAYER_COLORS[i];ctx.strokeStyle='#10252c';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(px(p.pose.x),pz(p.pose.z),4,0,Math.PI*2);ctx.fill();ctx.stroke();}race?.drawMap(ctx,px,pz);activities?.drawMap(ctx,px,pz);ctx.save();ctx.translate(px(x),pz(z));ctx.rotate(-heading);ctx.fillStyle='#a5fff0';ctx.beginPath();ctx.moveTo(0,7);ctx.lineTo(-4,-4);ctx.lineTo(4,-4);ctx.fill();ctx.restore();ctx.fillStyle='#f2f4e6';ctx.font='12px system-ui';ctx.fillText('N ↑',10,18);realLocation?.drawMap(ctx,px,pz);}
- status('Warming up island lighting');await sceneWarmup.prepare();status('Preparing rider shadows');await yieldStartupTask();await prepareRideShadows(hero.root,core.current.x,core.current.z);status('Preparing the first frame');let prepared=false,starting=false;start.onclick=async()=>{if(starting||!prepared)return;starting=true;const choice=startup.choice;natureAudio.unlock();clear();startup.preparing();try{
-  status('Preparing handheld camera shaders');
-  await photo?.prepareCarriedCamera(renderer,camera);
-  if(isCadillacVariant(choice.vehicle)){
-  realLocation?.stopFollow('Avatar follow stopped for the Cadillac.');status('Preparing the Cadillac');
-  if(cadillac?.variant!==choice.vehicle){
+ status('Warming up island lighting');await sceneWarmup.prepare();status('Preparing rider shadows');await yieldStartupTask();await prepareRideShadows(hero.root,core.current.x,core.current.z);status('Preparing the first frame');let prepared=false,starting=false;start.onclick=async()=>{if(starting||!prepared)return;starting=true;resetHydraulicFrameTime();const choice=startup.choice;natureAudio.unlock();clear();startup.preparing();try{
+  status('Preparing your selected ride');
+  const selectedCadillac=await prepareRideAssets(async()=>{
+   if(!isCadillacVariant(choice.vehicle)||cadillac?.variant===choice.vehicle)return;
    const variant=choice.vehicle;
    const car=cadillacModel(variant);
    const occupants=variant==='cadillac'?Promise.all([cadillacHeroModel(),boerboelModel()]).then(([driver,dog])=>({hero:driver.scene,dog,heroClips:driver.animations})):undefined;
    const hoodieDriver=variant==='hydraulic-cadillac'?cadillacHoodieDriverModel():undefined;
    const [model,cabin,driver]=await Promise.all([car,occupants,hoodieDriver]);
+   return {variant,model,cabin,driver};
+  },()=>photo?.prepareCarriedCamera(renderer,camera));
+  if(isCadillacVariant(choice.vehicle)){
+  realLocation?.stopFollow('Avatar follow stopped for the Cadillac.');status('Preparing the Cadillac');
+  if(selectedCadillac){
+   const {variant,model,cabin,driver}=selectedCadillac;
    const ride=new CadillacRide(model.clone(true),terrain,cabin,variant,driver);
    ride.wheels.apply(readCadillacModsPreferences());
    cadillac?.dispose();
    cadillac?.model.removeFromParent();
    cadillac=ride;scene.add(ride.model);
   }
+  const selectedRide=cadillac;
+  if(!selectedRide||selectedRide.variant!==choice.vehicle)throw Error('The selected Cadillac is unavailable. Please try again.');
   status('Preparing Cadillac lighting');
-  await sceneWarmup.prepare(cadillac.model);
+  await sceneWarmup.prepare(selectedRide.model);
   status('Preparing nearby landmarks');
   await world.prepareCadillacLandmarks(camera,core.current.x,core.current.z);
-  cadillac.start();cameraPitch=.1;
+  selectedRide.start();cameraPitch=.1;
  }else if(choice.vehicle!=='onewheel'){await hover!.selectVehicle(choice,scene);await hover!.prepare(scene,true);}startup.leave(()=>{world.sky.preview(false);world.sky.protectStartup();startupMetrics.begin('solo');active=true;paused=false;destination??=firstRide.begin(destination);chooseView(choice.camera==='fpp');el('ridehud').hidden=false;el('navigation').hidden=false;zone.hidden=!touch.checked;snap=true;canvas.focus();vr?.refresh();if(isCadillacVariant(choice.vehicle)){if(choice.camera==='tpp')cameraYaw=.60;starting=false;if(cadillacDiagnostic)rideProfile?.start();}else if(choice.vehicle!=='onewheel')void hover!.mount(scene).finally(()=>{starting=false;});else starting=false;});}catch(error){starting=false;startup.retryRide('Your ride could not load. Try again, or choose the other vehicle.');console.warn('Selected ride preparation failed',error);}};
  let savedFirst=false,savedQuality='automatic';
  vr=new BelleVR(renderer,scene,camera,terrain,{
@@ -655,6 +672,7 @@ installShadowMatrixCache(renderer);
  }));
  let profilePlace='';let previous=performance.now(),lastUI=0,lastRender=0,clock=0,lastMeasurementEligible=false,activeFrames=0,stalledFrames=0,severeFrames=0,longestFrameMs=0;const samples:number[]=[];const target=new T.Vector3(),desired=new T.Vector3(),forward=new T.Vector3();function frame(now:number,xrFrame?:XRFrame){
  // Mode teardown must precede co-op, loading and hidden-frame early returns.
+ if(!active||locationFollowing||!cadillac?.riding||paused||scenePreparing||photo?.active||vr?.active||coop?.active||!renderFocused||document.hidden||hydraulicContextLost)resetHydraulicFrameTime();
  if(hydraulicMode&&(!active||locationFollowing||!cadillac?.riding||cadillac!==hydraulicModeRide||cadillac.exiting||paused||scenePreparing||photo?.active||vr?.active||coop?.active))suspendHydraulicControls();
  locationPerformance?.check();
  // The authentic MacArthur start frame must be rendered first. Once ready,
@@ -664,7 +682,7 @@ installShadowMatrixCache(renderer);
  if(pauseSoftwareStartupScene(softwareStartup,prepared,active,document.querySelector<HTMLDetailsElement>('.cinema-ride-picker')?.open===true,!!vr?.active)){
   previous=now;lastMeasurementEligible=false;return;
  }
- if(scenePreparing||(document.hidden&&!vr?.active)){previous=now;lastMeasurementEligible=false;rideProfile?.breakFrameAssociation();return;}if(resetFrameClock){previous=now;lastMeasurementEligible=false;rideProfile?.breakFrameAssociation();resetFrameClock=false;}const overlay=paused||!!document.querySelector('dialog[open]');if(!active||overlay||!renderFocused)rideProfile?.breakFrameAssociation();const frameCap=sceneFrameCap(cap,active,overlay,renderFocused);if(!vr?.active&&now-lastRender<1000/frameCap-.8)return;const measureFrame=active&&!overlay&&renderFocused;const eligibleFrame=measureFrame&&lastMeasurementEligible;lastMeasurementEligible=measureFrame;const cpuStart=performance.now();const elapsed=(now-previous)/1000;previous=now;lastRender=now;clock+=Math.min(elapsed,.1);const dt=Math.min(elapsed,.05);world.sky.observeFrame(elapsed*1000,eligibleFrame&&!coop?.paused);const budgetChanged=graphics.value==='automatic'&&!vr?.active&&frameBudget.sample(elapsed,cap,eligibleFrame);world.sky.tick(dt,!!online?.online||(active&&!paused&&!coop?.paused&&!document.querySelector('dialog[open]')&&(!vr?.active||!vr.suspended)),reduced);
+ if(scenePreparing||(document.hidden&&!vr?.active)){previous=now;lastMeasurementEligible=false;rideProfile?.breakFrameAssociation();return;}if(resetFrameClock){resetHydraulicFrameTime();previous=now;lastMeasurementEligible=false;rideProfile?.breakFrameAssociation();resetFrameClock=false;}const overlay=paused||!!document.querySelector('dialog[open]');if(!active||overlay||!renderFocused)rideProfile?.breakFrameAssociation();const frameCap=sceneFrameCap(cap,active,overlay,renderFocused);if(!vr?.active&&now-lastRender<1000/frameCap-.8)return;const measureFrame=active&&!overlay&&renderFocused;const eligibleFrame=measureFrame&&lastMeasurementEligible;lastMeasurementEligible=measureFrame;const cpuStart=performance.now();const elapsed=(now-previous)/1000;previous=now;lastRender=now;clock+=Math.min(elapsed,.1);const dt=Math.min(elapsed,.05);world.sky.observeFrame(elapsed*1000,eligibleFrame&&!coop?.paused);const budgetChanged=graphics.value==='automatic'&&!vr?.active&&frameBudget.sample(elapsed,cap,eligibleFrame);world.sky.tick(dt,!!online?.online||(active&&!paused&&!coop?.paused&&!document.querySelector('dialog[open]')&&(!vr?.active||!vr.suspended)),reduced);
  coop?.refreshAvailability();
  if(coop?.active){
   syncCadillacSound();
@@ -682,12 +700,13 @@ installShadowMatrixCache(renderer);
   hydraulicAudio.setActive(active&&!!cadillac?.riding&&!paused&&renderFocused&&!document.hidden&&!photo?.active&&(!blocked()||hydraulicPreview));
   if(cadillac?.riding){
     if(!blocked()&&!photo?.active&&renderFocused){
-      if(recover){cadillac.start();recover=false;snap=true;}
+      if(recover){cadillac.start();resetHydraulicFrameTime();recover=false;snap=true;}
       const forward=throttle+Number(keys.has('KeyW')||keys.has('ArrowUp'))-Number(keys.has('KeyS')||keys.has('ArrowDown'));
       const turn=steer+Number(keys.has('KeyD')||keys.has('ArrowRight'))-Number(keys.has('KeyA')||keys.has('ArrowLeft'));
-      cadillac.update(dt,{gas:Math.max(0,forward),brake:Math.max(-forward,hud?.held.has('brake')?1:0),steer:turn,handbrake:keys.has('Space')},world.sky.nightAmount.value,reduced,keys,hydraulicMode,elapsed);
+      cadillac.update(dt,{gas:Math.max(0,forward),brake:Math.max(-forward,hud?.held.has('brake')?1:0),steer:turn,handbrake:keys.has('Space')},world.sky.nightAmount.value,reduced,keys,hydraulicMode,hydraulicFrameClock.sample(now,cadillac,'active'));
       if(cadillac.exitReady){const exit=cadillac.sim.exitPoint();if(exit){jump(exit.x,exit.z,exit.heading);core.advance(1/60,{dismount:true,instantDismount:true});pose=core.current;}}
-    }else if(hydraulicPreview)cadillac.updateHydraulicPreview(dt,reduced,elapsed);
+    }else if(hydraulicPreview)cadillac.updateHydraulicPreview(dt,reduced,hydraulicFrameClock.sample(now,cadillac,'preview'));
+    else resetHydraulicFrameTime();
     if(cadillac.riding){const p=cadillac.sim.pose;pose={...pose,x:p.x,y:p.y,z:p.z,headingY:p.heading,speed:p.speed,groundPitch:p.pitch,groundRoll:p.roll};}
   }
   sunsetPreview?.sync();hover?.update(dt,!blocked()&&!photo?.active&&!sunsetPreview?.showcase,clock);boat?.update(dt,!blocked()&&!photo?.active,clock,reduced);world.boatWake(boat?.wake??null);world.waterVehicle(hover?.riding?hover.sim.pose:null);if(hover?.riding){const hp=hover.sim.pose;pose={...pose,x:hp.x,y:hp.y,z:hp.z,headingY:hp.heading,speed:hp.speed,groundPitch:hp.pitch,groundRoll:hp.roll};}if(boat?.riding){const bp=boat.sim.pose;pose={...pose,x:bp.x,y:bp.y,z:bp.z,headingY:bp.heading,speed:bp.speed};}const slidePose=slide?.update(dt,!cadillac?.riding&&!blocked()&&!photo?.active&&!hover?.riding);if(slidePose)pose=slidePose;if(slide?.active){hop=recover=mount=false;}const manualPose=pose;const trialPose:TrialPose={x:pose.x,y:pose.y,z:pose.z,heading:pose.headingY,vehicle:hover?.riding?'hoverbike':'onewheel',onFoot:!hover?.riding&&pose.footBlend>.05,pitch:hover?.riding?hover.sim.pose.pitch:pose.wheelPitch,roll:hover?.riding?hover.sim.pose.roll:pose.groundRoll*.25-pose.rollAngle};trials?.update(elapsed,trialPose,now);const simEnd=performance.now();
@@ -707,7 +726,7 @@ installShadowMatrixCache(renderer);
  // Hidden tabs may suspend animation frames entirely; do not charge that gap to a delivery.
  // An already-issued animation timestamp can precede this event's performance.now().
  // Reanchor on the next animation callback so a boundary cannot create negative dt.
- const breakMeasurementInterval=()=>{resetFrameClock=true;lastMeasurementEligible=false;rideProfile?.breakFrameAssociation();};
+ const breakMeasurementInterval=()=>{resetHydraulicFrameTime();resetFrameClock=true;lastMeasurementEligible=false;rideProfile?.breakFrameAssociation();};
  // This document can resume from the back/forward cache after pagehide.
  // Keep its modal observer for the same lifetime as the visibility listeners.
  observeModalMeasurementBoundaries(document,()=>{
