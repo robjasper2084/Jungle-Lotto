@@ -29,6 +29,7 @@ import {softwareWebGLRenderer} from './worldPerformancePolicy.ts';
 import {pauseSoftwareStartupScene} from './startupRenderPolicy.ts';
 import {installGpuFramePacing,nativeAppleMetalRenderer} from './gpuFramePacing.ts';
 import {batchedIndirectUpdateDiagnostics} from './batchedIndirectUpdates.ts';
+import {installSharedGeometryBuffers} from './sharedGeometryBuffers.ts';
 import {readAntiAliasingMode,enableHardwareAntialiasing} from './antiAliasingPolicy.ts';
 import {prepareCoastGuardMap} from './coastGuard.ts';
 import coastGuardLayout from './coastGuardLayout.json' with {type:'json'};
@@ -506,7 +507,11 @@ const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreferen
   ctx.clearRect(0,0,420,290);ctx.drawImage(mapLayer,0,0);
   ctx.strokeStyle='#c3c98e';ctx.lineWidth=.65;
   for(const l of data.landmarks){ctx.fillStyle=l===destination?'#ffd98b':l.kind==='monument'?'#96e7dc':'#e8deaa';ctx.beginPath();ctx.arc(px(l.x),pz(l.z),l===destination?4:2,0,Math.PI*2);ctx.fill();}for(const [i,m]of (online?.members??[]).entries()){if(m.id===online?.self)continue;const p=online?.buffers.get(m.id)?.sample(performance.now());if(!p)continue;ctx.fillStyle=PLAYER_COLORS[i];ctx.strokeStyle='#10252c';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(px(p.pose.x),pz(p.pose.z),4,0,Math.PI*2);ctx.fill();ctx.stroke();}race?.drawMap(ctx,px,pz);activities?.drawMap(ctx,px,pz);ctx.save();ctx.translate(px(x),pz(z));ctx.rotate(-heading);ctx.fillStyle='#a5fff0';ctx.beginPath();ctx.moveTo(0,7);ctx.lineTo(-4,-4);ctx.lineTo(4,-4);ctx.fill();ctx.restore();ctx.fillStyle='#f2f4e6';ctx.font='12px system-ui';ctx.fillText('N ↑',10,18);realLocation?.drawMap(ctx,px,pz);}
- status('Warming up island lighting');await sceneWarmup.prepare();status('Preparing rider shadows');await yieldStartupTask();await prepareRideShadows(hero.root,core.current.x,core.current.z);status('Preparing the first frame');let prepared=false,starting=false;start.onclick=async()=>{if(starting||!prepared)return;starting=true;const choice=startup.choice;natureAudio.unlock();clear();startup.preparing();try{
+ status('Warming up island lighting');await sceneWarmup.prepare();
+ // Pack immutable display buffers at this preparation boundary. Meshes keep
+ // their authored materials, transforms and draw order; later assets fall back.
+ const geometryBuffers=installSharedGeometryBuffers(renderer,scene);geometryBuffers.prepare();
+ status('Preparing rider shadows');await yieldStartupTask();await prepareRideShadows(hero.root,core.current.x,core.current.z);status('Preparing the first frame');let prepared=false,starting=false;start.onclick=async()=>{if(starting||!prepared)return;starting=true;const choice=startup.choice;natureAudio.unlock();clear();startup.preparing();try{
   status('Preparing handheld camera shaders');
   await photo?.prepareCarriedCamera(renderer,camera);
   if(isCadillacVariant(choice.vehicle)){
@@ -535,7 +540,7 @@ const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreferen
  });
  const submissionProbe=renderProbe?installRenderSubmissionProbe(renderer,scene):undefined;
  const loopProbe=renderProbe?new ManualLoopProbe():undefined;const loopBinding=loopProbe?attachGpuFramePacingProbe(renderer,loopProbe):undefined;
- const rideProfile=new URLSearchParams(location.search).has('profile')?new RideProfile(()=>({quality:graphics.value,effectiveQuality:world.quality.effective,cap,shadowMappingSupported:renderer.shadowMap.enabled,pixelRatio:renderer.getPixelRatio(),adaptiveScale:frameBudget.scale,world:world.stats,batchIndirectUpdates:batchedIndirectUpdateDiagnostics(scene),diagnosticReduction:localPerformanceProbe(),vehicle:cadillac?.riding?(cadillac.variant==='cadillac'?'silver-cadillac':cadillac.variant):hover?.riding?hover.vehicle:boat?.riding?'boat':'onewheel',cadillac:cadillac?.riding?cadillac.diagnostics():null,cockpitDisplay:hover?.cockpitDisplayDiagnostics??null}),{shortRideSeconds:cadillacDiagnostic?150:undefined,build:createRideProfileBuildReader(new URLSearchParams(location.search).get('profile')),loopProbe,loopCoverage:()=>loopBinding?.coverage(),gpuPacing:()=>gpuFramePacingDiagnostics(renderer),submissionCoverage:()=>submissionProbe?.coverage(),resetRenderDiagnostics:()=>{renderProbe?.cancelFrame();submissionProbe?.cancelFrame();}}):null;
+ const rideProfile=new URLSearchParams(location.search).has('profile')?new RideProfile(()=>({quality:graphics.value,effectiveQuality:world.quality.effective,cap,shadowMappingSupported:renderer.shadowMap.enabled,pixelRatio:renderer.getPixelRatio(),adaptiveScale:frameBudget.scale,world:world.stats,batchIndirectUpdates:batchedIndirectUpdateDiagnostics(scene),sharedGeometryBuffers:geometryBuffers.read(),diagnosticReduction:localPerformanceProbe(),vehicle:cadillac?.riding?(cadillac.variant==='cadillac'?'silver-cadillac':cadillac.variant):hover?.riding?hover.vehicle:boat?.riding?'boat':'onewheel',cadillac:cadillac?.riding?cadillac.diagnostics():null,cockpitDisplay:hover?.cockpitDisplayDiagnostics??null}),{shortRideSeconds:cadillacDiagnostic?150:undefined,build:createRideProfileBuildReader(new URLSearchParams(location.search).get('profile')),loopProbe,loopCoverage:()=>loopBinding?.coverage(),gpuPacing:()=>gpuFramePacingDiagnostics(renderer),submissionCoverage:()=>submissionProbe?.coverage(),resetRenderDiagnostics:()=>{renderProbe?.cancelFrame();submissionProbe?.cancelFrame();}}):null;
  // The browser map has an explicit geographic origin. Fail closed if its projection changes.
  const locationMapMatches=Array.isArray(data.origin)&&data.origin.length===2&&data.origin.every((v,i)=>Number.isFinite(v)&&Math.abs(v-REAL_LOCATION_ORIGIN[i])<1e-8)&&(data as ParkMap&{axes?:string}).axes===REAL_LOCATION_AXES;
  const locationMapPoints=[...data.island,...data.mainland,...(data.outerIslets??[]).flatMap(i=>i.points)];

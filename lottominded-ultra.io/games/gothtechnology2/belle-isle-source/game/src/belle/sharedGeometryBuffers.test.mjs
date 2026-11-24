@@ -1,0 +1,328 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
+import {readFileSync} from 'node:fs';
+import {createRequire} from 'node:module';
+import {dirname,resolve} from 'node:path';
+import * as T from 'three';
+import {WebGLRenderLists} from 'three/src/renderers/webgl/WebGLRenderLists.js';
+import {installSharedGeometryBuffers,registerSharedGeometryShader} from './sharedGeometryBuffers.ts';
+
+class Canvas extends EventTarget {
+  listeners=new Map();
+  addEventListener(type,callback,options){super.addEventListener(type,callback,options);const list=this.listeners.get(type)??new Set();list.add(callback);this.listeners.set(type,list);}
+  removeEventListener(type,callback,options){super.removeEventListener(type,callback,options);this.listeners.get(type)?.delete(callback);}
+}
+function camera(){const c=new T.PerspectiveCamera(55,1,.1,200);c.position.set(0,0,20);c.lookAt(0,0,0);c.updateMatrixWorld(true);return c;}
+function geometry(seed=0,indexed=true,Index=Uint16Array){
+  const g=new T.BufferGeometry();
+  const p=[-1+seed,-1,0,1+seed,-1,0,seed,1,0,-.5+seed,-.5,-1,.5+seed,-.5,-1,seed,.5,-1];
+  g.setAttribute('position',new T.BufferAttribute(new Float32Array(p),3));
+  g.setAttribute('normal',new T.Float32BufferAttribute([0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1],3));
+  g.setAttribute('uv',new T.Float32BufferAttribute([0,0,1,0,.5,1,0,0,1,0,.5,1],2));
+  if(indexed)g.setIndex(new T.BufferAttribute(new Index([0,1,2,3,4,5]),1));
+  return g;
+}
+function snapshot(object,g,material,phase){
+  const total=g.index?.count??g.attributes.position.count;
+  const start=Math.max(0,g.drawRange.start),end=Math.min(total,g.drawRange.start+g.drawRange.count);
+  const elements=[];
+  for(let j=start;j<end;j++){
+    const i=g.index?g.index.array[j]:j;
+    elements.push(Object.fromEntries(Object.keys(g.attributes).sort().map(name=>{
+      const a=g.attributes[name];return [name,Array.from(a.array.subarray(i*a.itemSize,(i+1)*a.itemSize))];
+    })));
+  }
+  return {object:object.name,material:material.name,phase,elements,matrix:object.matrixWorld.elements.slice(),layout:Object.fromEntries(Object.entries(g.attributes).map(([name,a])=>[name,[a.array.constructor.name,a.itemSize,a.normalized,a.gpuType]]))};
+}
+/** Mirrors the reviewed native hook/collection order while using the actual
+ * Three Frustum and render-list sorter. Real GL/pixel/VAO evidence is a separate
+ * native fixture: these tests make no GPU performance or equivalence claim. */
+function fixture({adapt=true,count=3,indexed=true,options={},shadows=true,setup}={}){
+  const scene=new T.Scene(),cam=camera(),canvas=new Canvas(),meshes=[];
+  const material=new T.MeshStandardMaterial();material.name='surface';
+  for(let i=0;i<count;i++){
+    const mesh=new T.Mesh(geometry(i*.125,indexed),material);mesh.name=`mesh-${i}`;mesh.position.set((i-1)*2,0,-i*.25);mesh.castShadow=true;scene.add(mesh);meshes.push(mesh);
+  }
+  const lists=new WebGLRenderLists(),rows=[],calls=[],returnValue=Symbol('native-return');let target=null,depth=0;
+  const renderer={domElement:canvas,xr:{isPresenting:false},getRenderTarget:()=>target,setRenderTarget:v=>{target=v;},render:function(root,c){
+    calls.push({receiver:this,args:[root,c]});const level=depth++;let result;
+    try {
+      root.updateMatrixWorld(true);if(c.parent===null)c.updateMatrixWorld(true);
+      if(root.isScene)result=Reflect.apply(root.onBeforeRender,root,[renderer,root,c,target]);
+      const matrix=new T.Matrix4().multiplyMatrices(c.projectionMatrix,c.matrixWorldInverse),frustum=new T.Frustum().setFromProjectionMatrix(matrix);
+      const list=lists.get(root,level);list.init();
+      function collect(object,groupOrder=0){
+        if(object.visible===false)return;
+        if(object.layers.test(c.layers)){
+          if(object.isGroup)groupOrder=object.renderOrder;
+          if(object.isMesh && (!object.frustumCulled||frustum.intersectsObject(object)) && !Array.isArray(object.material) && object.material.visible){
+            const g=object.geometry;
+            if(object.boundingSphere===undefined && g.boundingSphere===null)g.computeBoundingSphere();
+            const center=(object.boundingSphere??g.boundingSphere).center.clone().applyMatrix4(object.matrixWorld).applyMatrix4(matrix);
+            list.push(object,g,object.material,groupOrder,center.z,null);
+          }
+        }
+        for(const child of object.children)collect(child,groupOrder);
+      }
+      collect(root);list.sort(null,null,false);
+      function draw(object,g,mat,phase){
+        if(phase==='shadow')Reflect.apply(object.onBeforeShadow,object,[renderer,object,c,c,g,mat,null]);
+        else {Reflect.apply(object.onBeforeRender,object,[renderer,root,c,g,mat,null]);Reflect.apply(mat.onBeforeRender,mat,[renderer,root,c,g,object,null]);}
+        f.tap?.({object,geometry:g,material:mat,phase,level,beforeResult:result});
+        rows.push(snapshot(object,g,mat,phase));
+        if(phase==='shadow')Reflect.apply(object.onAfterShadow,object,[renderer,object,c,c,g,mat,null]);
+        else Reflect.apply(object.onAfterRender,object,[renderer,root,c,g,mat,null]);
+      }
+      if(shadows){
+        const depthMaterial=new T.MeshDepthMaterial();depthMaterial.name='native-depth';
+        root.traverseVisible(object=>{if(object.isMesh && object.castShadow && object.layers.test(c.layers) && (!object.frustumCulled||frustum.intersectsObject(object)))draw(object,object.geometry,depthMaterial,'shadow');});
+      }
+      for(const item of [...list.opaque,...list.transmissive,...list.transparent])draw(item.object,item.geometry,root.overrideMaterial??item.material,'color');
+      if(root.isScene)Reflect.apply(root.onAfterRender,root,[renderer,root,c]);
+      return returnValue;
+    } finally {depth--;}
+  }};
+  const f={scene,cam,canvas,meshes,material,renderer,rows,calls,returnValue,handle:null,tap:null,draw(){rows.length=0;const result=renderer.render(scene,cam);assert.equal(result,returnValue);return rows.slice();}};
+  setup?.(f);
+  if(adapt){f.handle=installSharedGeometryBuffers(renderer,scene,options);f.handle.prepare();}
+  return f;
+}
+function sourceDescriptors(mesh){return Object.fromEntries(['geometry','boundingSphere','onBeforeRender','onBeforeShadow','raycast'].map(k=>[k,Object.getOwnPropertyDescriptor(mesh,k)]));}
+function assertRestored(f,originals){for(let i=0;i<originals.length;i++)assert.deepEqual(sourceDescriptors(f.meshes[i]),originals[i]);assert.equal(f.handle.read().scopedEntries,0);}
+
+test('source assumptions are pinned to the reviewed Three 0.185.1 collection, bounds and draw paths',()=>{
+  const root=resolve(dirname(createRequire(import.meta.url).resolve('three')),'..');
+  assert.equal(JSON.parse(readFileSync(resolve(root,'package.json'),'utf8')).version,'0.185.1');
+  const files={
+    'objects/Mesh.js':'432460d6dc5d290ead0c4664475e71b04dbe8fa0c1c08ccd032bd65c6acc9864',
+    'math/Frustum.js':'2332e8d732aace16957af57f82733969416827a4cfad8d5bea338fee9f082077',
+    'renderers/WebGLRenderer.js':'867948b57a6abb84d4cfd7619b38ea14fbb2c100c1b6f78d59de2383662ab7a0',
+    'renderers/webgl/WebGLShadowMap.js':'7d69ca09821ed119d7e1db25e88ad43c2b8c7dd87e8746e1c63f8b86086b3e05',
+    'renderers/webgl/WebGLRenderLists.js':'2606792964fa351876798a68317b3d8ca0fb466b5fbef5f7592ecb7f40b743b0',
+    'renderers/webgl/WebGLBindingStates.js':'2cff5bf80b72044bfbd952151a5888c173048755039501921063f561261ca210',
+  };
+  for(const [file,hash] of Object.entries(files))assert.equal(createHash('sha256').update(readFileSync(resolve(root,'src',file))).digest('hex'),hash,file);
+});
+
+test('one actual shared geometry keeps independent color/shadow draws, raw vertex values, matrices and native order',()=>{
+  const a=fixture({adapt:false}),b=fixture(),originals=b.meshes.map(sourceDescriptors),shared=[];
+  b.tap=({geometry})=>{shared.push(geometry);assert.equal(b.handle.read().scopedEntries,3);};
+  assert.deepEqual(b.draw(),a.draw());assert.equal(new Set(shared).size,1);assert.equal(b.handle.read().pageCount,1);
+  assert.equal(b.handle.read().pooledCalls,6);assert.equal(b.handle.read().colorCalls,3);assert.equal(b.handle.read().shadowCalls,3);
+  assertRestored(b,originals);assert.deepEqual(b.draw(),a.draw());assertRestored(b,originals);
+});
+
+test('different exact material identities share storage while native material ordering and callbacks remain unchanged',()=>{
+  const setup=f=>{f.meshes[1].material=new T.MeshBasicMaterial();f.meshes[1].material.name='second';f.meshes[0].renderOrder=3;const group=new T.Group();group.renderOrder=2;group.add(f.meshes[2]);f.scene.add(group);};
+  const a=fixture({adapt:false,setup}),b=fixture({setup});assert.deepEqual(b.draw(),a.draw());assert.equal(b.handle.read().activeEntries,3);assert.equal(b.handle.read().pageCount,1);
+});
+
+test('native Frustum and opaque z/id sorting retain source spheres, visibility and transforms',()=>{
+  const setup=f=>{f.meshes[0].position.set(100,0,0);f.meshes[1].rotation.set(.1,.3,.2);f.meshes[1].scale.set(2,.5,1);f.meshes[2].geometry.translate(1,2,-5);};
+  const a=fixture({adapt:false,setup}),b=fixture({setup});const rows=b.draw();assert.deepEqual(rows,a.draw());assert.equal(rows.filter(r=>r.phase==='color').length,2);
+  b.meshes[1].visible=false;a.meshes[1].visible=false;assert.deepEqual(b.draw(),a.draw());assert.equal(b.handle.read().activeEntries,3);
+});
+
+test('indexed and nonindexed ranges are clamped to their original allocation including Infinity and negative start',()=>{
+  for(const indexed of [true,false])for(const [start,count] of [[0,Infinity],[3,3],[-2,5],[1,100],[0,0]]){
+    const setup=f=>{for(const mesh of f.meshes)mesh.geometry.setDrawRange(start,count);};
+    const a=fixture({adapt:false,indexed,setup}),b=fixture({indexed,setup});assert.deepEqual(b.draw(),a.draw(),`${indexed}/${start}/${count}`);assert.equal(b.handle.read().activeEntries,3);
+  }
+});
+
+test('fractional, nonfinite and inverted ranges fall back before render-item collection',()=>{
+  for(const [start,count] of [[.5,3],[0,2.5],[NaN,3],[Infinity,3],[7,Infinity],[0,-1],[Number.MAX_SAFE_INTEGER+1,2]]){
+    const f=fixture({setup:f=>f.meshes[0].geometry.setDrawRange(start,count)});assert.equal(f.handle.read().activeEntries,2);assert.equal(f.handle.read().rejected['unsupported-draw-range'],1);
+  }
+});
+
+test('integer attribute types, normalization, gpuType and every component are preserved',()=>{
+  const setup=f=>{for(const mesh of f.meshes){mesh.geometry.setAttribute('color',new T.Uint8BufferAttribute([255,0,127,128,1,255,0,9,20,40,30,20,10,11,12,13,14,15],3,true));const tag=new T.Int32BufferAttribute([1,2,3,4,5,6],1);tag.gpuType=T.IntType;mesh.geometry.setAttribute('tag',tag);}};
+  const a=fixture({adapt:false,setup}),b=fixture({setup});assert.deepEqual(b.draw(),a.draw());assert.equal(b.handle.read().activeEntries,3);
+});
+
+test('index element types remain unchanged and fixed primitive-restart sentinels never become vertices',()=>{
+  for(const Index of [Uint8Array,Uint16Array,Uint32Array]){
+    const setup=f=>{f.meshes.forEach((mesh,i)=>{mesh.geometry=geometry(i*.125,true,Index);});};
+    const a=fixture({adapt:false,setup}),b=fixture({setup});assert.deepEqual(b.draw(),a.draw());
+    b.tap=({geometry})=>assert.equal(geometry.index.array.constructor,Index);b.draw();
+    const sentinel=Index===Uint8Array?255:Index===Uint16Array?65535:4294967295;
+    const bad=fixture({setup:f=>{f.meshes[0].geometry.setIndex(new T.BufferAttribute(new Index([0,1,sentinel]),1));}});assert.equal(bad.handle.read().rejected['index-outside-source-or-restart'],1);
+  }
+});
+
+test('known shader composition and cloned exact functions are approved while unknown predecessor chains remain native',()=>{
+  const f=fixture({adapt:false}),material=f.material,previous=material.onBeforeCompile;
+  material.onBeforeCompile=function first(shader,...args){return Reflect.apply(previous,this,[shader,...args]);};assert.equal(registerSharedGeometryShader(material,previous),true);
+  const known=material.onBeforeCompile;material.onBeforeCompile=function second(shader,...args){return Reflect.apply(known,this,[shader,...args]);};assert.equal(registerSharedGeometryShader(material,known),true);
+  const clone=material.clone();clone.onBeforeCompile=material.onBeforeCompile;f.meshes[1].material=clone;
+  f.handle=installSharedGeometryBuffers(f.renderer,f.scene);assert.equal(f.handle.prepare().activeEntries,3);
+  const g=fixture({adapt:false});const unknown=function(){};g.material.onBeforeCompile=unknown;const next=function(){};g.material.onBeforeCompile=next;assert.equal(registerSharedGeometryShader(g.material,unknown),false);
+  const rejected=installSharedGeometryBuffers(g.renderer,g.scene).prepare();assert.equal(rejected.activeEntries,0);
+});
+
+test('custom, Float16, interleaved, dynamic, instanced and upload-hook attributes stay native',()=>{
+  class CustomAttribute extends T.BufferAttribute {}
+  const mutations=[
+    g=>g.setAttribute('position',new T.Float16BufferAttribute(new Uint16Array(18),3)),
+    g=>g.setAttribute('position',new T.InterleavedBufferAttribute(new T.InterleavedBuffer(new Float32Array(18),3),3,0)),
+    g=>g.setAttribute('position',new CustomAttribute(new Float32Array(18),3)),
+    g=>g.setAttribute('position',new T.InstancedBufferAttribute(new Float32Array(18),3)),
+    g=>g.attributes.position.setUsage(T.DynamicDrawUsage),
+    g=>g.attributes.position.onUpload(()=>{}),
+  ];
+  for(const mutate of mutations){const f=fixture({setup:f=>mutate(f.meshes[0].geometry)});assert.equal(f.handle.read().activeEntries,2);assert.equal(f.handle.read().rejectedEntries,1);}
+});
+
+test('nonplain objects, morphs, arrays, unknown shaders and render hooks are conservatively excluded',()=>{
+  const mutations=[
+    mesh=>{Object.setPrototypeOf(mesh,T.SkinnedMesh.prototype);},
+    mesh=>{mesh.geometry.morphAttributes.position=[mesh.geometry.attributes.position.clone()];},
+    mesh=>{mesh.material=[mesh.material];},
+    mesh=>{mesh.onBeforeRender=function(){};},
+    mesh=>{mesh.onAfterShadow=function(){};},
+    mesh=>{mesh.raycast=function(){};},
+    mesh=>{mesh.customDepthMaterial=new T.MeshDepthMaterial();},
+    mesh=>{mesh.material=mesh.material.clone();mesh.material.wireframe=true;},
+    mesh=>{mesh.material=new T.MeshPhysicalMaterial({transmission:.5});},
+    mesh=>{mesh.material=mesh.material.clone();mesh.material.onBeforeRender=function(){};},
+    mesh=>{mesh.material=mesh.material.clone();mesh.material.onBeforeCompile=function(){};},
+  ];
+  for(const mutate of mutations){const f=fixture({setup:f=>mutate(f.meshes[0])});assert.equal(f.handle.read().activeEntries,2);assert.equal(f.handle.read().rejectedEntries,1);}
+});
+
+test('single-material source groups remain natively ignored, including group edits between renders',()=>{
+  const setup=f=>{for(const mesh of f.meshes){mesh.geometry.addGroup(0,3,0);mesh.geometry.addGroup(3,3,4);}};
+  const a=fixture({adapt:false,setup}),b=fixture({setup});assert.deepEqual(b.draw(),a.draw());assert.equal(b.handle.read().activeEntries,3);
+  for(const f of [a,b]){f.meshes[0].geometry.clearGroups();f.meshes[1].geometry.addGroup(1,1,8);}
+  assert.deepEqual(b.draw(),a.draw());assert.equal(b.handle.read().fallbacks,0);
+});
+
+test('a custom per-draw object poisons its shared geometry and shared attribute/index streams',()=>{
+  for(const sharing of ['geometry','position','index']){
+    const f=fixture({count:4,setup:f=>{
+      const unsafe=f.meshes[0],safe=f.meshes[1];unsafe.onBeforeRender=function(){this.geometry.setDrawRange(0,3);};
+      if(sharing==='geometry')safe.geometry=unsafe.geometry;else if(sharing==='index')safe.geometry.setIndex(unsafe.geometry.index);else safe.geometry.setAttribute('position',unsafe.geometry.attributes.position);
+    }});
+    assert.equal(f.handle.read().activeEntries,2,sharing);assert.equal(f.handle.read().rejectedEntries,2);
+  }
+});
+
+test('between-render geometry, attribute, index, layout, version and shader changes select original native storage',()=>{
+  const mutations=[
+    m=>{m.geometry=geometry(5);},m=>{m.geometry.setIndex(new T.Uint16BufferAttribute([0,2,1],1));},
+    m=>{m.geometry.setAttribute('position',m.geometry.attributes.position.clone());},m=>{m.geometry.attributes.position.needsUpdate=true;},
+    m=>{m.geometry.attributes.position.normalized=true;},m=>{m.geometry.attributes.position.setUsage(T.DynamicDrawUsage);},
+    m=>{m.material=m.material.clone();},m=>{m.material.onBeforeCompile=function(){};},
+  ];
+  for(const mutate of mutations){const f=fixture();f.draw();mutate(f.meshes[0]);let native=false;f.tap=({object,geometry})=>{if(object===f.meshes[0]){assert.equal(geometry,object.geometry);assert.equal(geometry,f.meshes[0].geometry);native=!f.handle.read().pages.some(p=>p.geometryId===geometry.id);}};f.draw();assert.equal(native,true);assert.ok(f.handle.read().fallbacks>=1);assert.equal(f.handle.read().scopedEntries,0);}
+});
+
+test('prior scene preparation selects source geometry before validation and the native call receives exact arguments',()=>{
+  let seen,original;const f=fixture({setup:f=>{original=f.meshes[0].geometry;f.scene.onBeforeRender=function(...args){seen={receiver:this,args};f.meshes[0].geometry=geometry(7);return 'before-value';};}});
+  f.tap=({beforeResult})=>assert.equal(beforeResult,'before-value');f.draw();assert.equal(seen.receiver,f.scene);assert.deepEqual(seen.args,[f.renderer,f.scene,f.cam,null]);assert.notEqual(f.meshes[0].geometry,original);assert.equal(f.handle.read().entries[0].fallbackReason,'source-identity-changed');
+});
+
+test('own source bounds and exact property descriptors restore before the old scene after callback',()=>{
+  let sourceDescriptorsBefore;const f=fixture({setup:f=>{
+    const mesh=f.meshes[0];mesh.geometry.computeBoundingSphere();Object.defineProperty(mesh,'boundingSphere',{value:mesh.geometry.boundingSphere.clone(),enumerable:false,writable:false,configurable:true});
+    Object.defineProperty(mesh,'onBeforeRender',{value:T.Object3D.prototype.onBeforeRender,enumerable:true,writable:false,configurable:true});
+    sourceDescriptorsBefore=f.meshes.map(sourceDescriptors);f.scene.onAfterRender=function(renderer,scene,camera){assert.equal(this,f.scene);assert.deepEqual([renderer,scene,camera],[f.renderer,f.scene,f.cam]);for(let i=0;i<f.meshes.length;i++)assert.deepEqual(sourceDescriptors(f.meshes[i]),sourceDescriptorsBefore[i]);};
+  }});f.draw();assertRestored(f,sourceDescriptorsBefore);
+  f.meshes[0].boundingSphere.radius+=1;f.draw();assert.equal(f.handle.read().entries[0].fallbackReason,'object-bounds-changed');
+});
+
+test('custom null-bound computation and inherited object bounds stay native without invoking custom code during preparation',()=>{
+  let called=0;const f=fixture({setup:f=>{f.meshes[0].geometry.computeBoundingSphere=function(){called++;this.boundingSphere=new T.Sphere(new T.Vector3(),100);};}});
+  assert.equal(called,0);assert.equal(f.handle.read().rejected['custom-source-bounds'],1);f.draw();assert.equal(called,1);
+  const prior=Object.getOwnPropertyDescriptor(T.Mesh.prototype,'boundingSphere');
+  try {Object.defineProperty(T.Mesh.prototype,'boundingSphere',{value:new T.Sphere(new T.Vector3(),10),configurable:true});const g=fixture();assert.equal(g.handle.read().activeEntries,0);assert.equal(g.handle.read().rejected['inherited-object-bounds'],3);}
+  finally {if(prior)Object.defineProperty(T.Mesh.prototype,'boundingSphere',prior);else delete T.Mesh.prototype.boundingSphere;}
+});
+
+test('in-render native raycasting retains original triangle face indices and source geometry',()=>{
+  const f=fixture(),mesh=f.meshes[1],source=mesh.geometry,ray=new T.Raycaster(new T.Vector3(0,0,20),new T.Vector3(0,0,-1));f.scene.updateMatrixWorld(true);
+  const expected=[];mesh.raycast(ray,expected);let actual;
+  f.tap=({object,geometry,phase})=>{if(object===mesh&&phase==='color'){assert.notEqual(geometry,source);actual=[];mesh.raycast(ray,actual);assert.equal(mesh.geometry,geometry);}};
+  f.draw();const compact=hits=>hits.map(h=>({faceIndex:h.faceIndex,distance:h.distance,point:h.point.toArray(),object:h.object}));assert.deepEqual(compact(actual),compact(expected));assert.equal(mesh.geometry,source);
+});
+
+test('nested rendering suspends original objects and restores the outer shared range before its pending draw',()=>{
+  const a=fixture({adapt:false}),b=fixture();let once=false,nestedRows=0;
+  b.tap=({level,object,geometry})=>{
+    if(level===1){nestedRows++;assert.equal(geometry,object.geometry);assert.equal(b.handle.read().scopedEntries,0);assert.equal(b.handle.read().pages.some(p=>p.geometryId===geometry.id),false);}
+    if(level===0&&!once){once=true;const range={...geometry.drawRange};b.renderer.render(b.scene,b.cam);assert.deepEqual(geometry.drawRange,range);assert.equal(object.geometry,geometry);}
+  };
+  const rows=b.draw();assert.equal(nestedRows,6);assert.deepEqual(rows.slice(6),a.draw());assert.equal(b.handle.read().nestedRenders,1);assert.equal(b.handle.read().scopedEntries,0);
+});
+
+test('nested rendering inside the prior scene after callback never reactivates its already restored outer scope',()=>{
+  let inAfter=false,checks=0;const f=fixture({setup:f=>{const sources=f.meshes.map(m=>m.geometry);f.scene.onAfterRender=function(){if(inAfter)return;inAfter=true;assert.deepEqual(f.meshes.map(m=>m.geometry),sources);f.renderer.render(f.scene,f.cam);assert.deepEqual(f.meshes.map(m=>m.geometry),sources);assert.equal(f.handle.read().scopedEntries,0);checks++;inAfter=false;};}});
+  f.draw();assert.equal(checks,1);assert.equal(f.handle.read().nestedRenders,1);assert.equal(f.handle.read().scopedEntries,0);
+});
+
+test('scene override materials use native geometry and clearing the override resumes safe pooling',()=>{
+  const f=fixture(),sources=f.meshes.map(m=>m.geometry);f.scene.overrideMaterial=new T.ShaderMaterial({vertexShader:'void main(){gl_Position=vec4(float(gl_VertexID),0.,0.,1.);}'});
+  f.tap=({object,geometry})=>assert.equal(geometry,sources[f.meshes.indexOf(object)]);f.draw();assert.equal(f.handle.read().pooledCalls,0);assert.equal(f.handle.read().activeEntries,3);
+  f.scene.overrideMaterial=null;f.tap=null;f.draw();assert.equal(f.handle.read().pooledCalls,6);
+});
+
+test('original render, before, after and nested exceptions preserve their exact thrown object and restore descriptors',()=>{
+  for(const point of ['before','draw','after','nested']){
+    const error={point};let fired=false;const f=fixture({setup:f=>{if(point==='before')f.scene.onBeforeRender=function(){throw error;};if(point==='after')f.scene.onAfterRender=function(){throw error;};}}),originals=f.meshes.map(sourceDescriptors);
+    if(point==='draw')f.tap=()=>{throw error;};
+    if(point==='nested')f.tap=({level})=>{if(level===1)throw error;if(!fired){fired=true;f.renderer.render(f.scene,f.cam);}};
+    assert.throws(()=>f.draw(),e=>e===error);assertRestored(f,originals);assert.equal(f.handle.read().observerErrors,0);
+  }
+});
+
+test('offscreen, ArrayCamera and XR scopes stay native while orthographic default rendering remains eligible',()=>{
+  for(const kind of ['offscreen','array','xr']){
+    const f=fixture();if(kind==='offscreen')f.renderer.setRenderTarget({});if(kind==='array')f.cam=new T.ArrayCamera([camera()]);if(kind==='xr')f.renderer.xr.isPresenting=true;
+    f.renderer.render(f.scene,f.cam);assert.equal(f.handle.read().pooledCalls,0,kind);assert.equal(f.handle.read().activeEntries,3);
+  }
+  const f=fixture(),c=new T.OrthographicCamera(-10,10,10,-10,.1,200);c.position.z=20;c.updateMatrixWorld(true);f.renderer.render(f.scene,c);assert.equal(f.handle.read().pooledCalls,6);
+});
+
+test('context loss keeps native storage and restoration reuses only unchanged source bytes',()=>{
+  const f=fixture();f.draw();const before=f.handle.read().pooledCalls;f.canvas.dispatchEvent(new Event('webglcontextlost'));f.draw();assert.equal(f.handle.read().pooledCalls,before);
+  f.canvas.dispatchEvent(new Event('webglcontextrestored'));f.draw();assert.equal(f.handle.read().pooledCalls,before+6);
+  f.canvas.dispatchEvent(new Event('webglcontextlost'));f.meshes[0].geometry.attributes.position.array[0]+=.5;f.canvas.dispatchEvent(new Event('webglcontextrestored'));f.draw();assert.equal(f.handle.read().entries[0].fallbackReason,'source-bytes-changed-on-restore');assert.equal(f.handle.read().contextRestores,2);
+});
+
+test('detached source storage at restoration falls back without throwing from the context event',()=>{
+  const f=fixture();f.canvas.dispatchEvent(new Event('webglcontextlost'));structuredClone(f.meshes[0].geometry.attributes.position.array.buffer,{transfer:[f.meshes[0].geometry.attributes.position.array.buffer]});
+  assert.doesNotThrow(()=>f.canvas.dispatchEvent(new Event('webglcontextrestored')));assert.equal(f.handle.read().entries[0].status,'fallback');assert.equal(f.handle.read().observerErrors,0);
+});
+
+test('source disposal invalidates only its entry and handle disposal removes all owned listeners and storage',()=>{
+  const f=fixture(),sources=f.meshes.map(m=>m.geometry),originals=f.meshes.map(sourceDescriptors),render=f.renderer.render;
+  sources[0].dispose();assert.equal(f.handle.read().entries[0].fallbackReason,'source-disposed');f.draw();assert.equal(f.handle.read().activeEntries,2);
+  const sourceDisposeListeners=sources.map(g=>g._listeners?.dispose?.length??0);assert.deepEqual(sourceDisposeListeners,[1,1,1]);
+  f.handle.dispose();assertRestored(f,originals);assert.notEqual(f.renderer.render,render);assert.equal(f.handle.read().active,false);assert.equal(f.handle.read().activeEntries,0);
+  assert.deepEqual(sources.map(g=>g._listeners?.dispose?.length??0),[0,0,0]);assert.ok([...f.canvas.listeners.values()].every(s=>s.size===0));assert.doesNotThrow(()=>f.handle.dispose());
+});
+
+test('disposal requested during a captured native render defers cleanup until its final draw and restoration',()=>{
+  const a=fixture({adapt:false}),b=fixture(),originals=b.meshes.map(sourceDescriptors);let once=false;
+  b.tap=()=>{if(!once){once=true;b.handle.dispose();assert.equal(b.handle.read().active,false);assert.equal(b.handle.read().scopedEntries,3);}};
+  assert.deepEqual(b.draw(),a.draw());assertRestored(b,originals);assert.equal(b.handle.read().disabledReason,'disposed');assert.deepEqual(b.draw(),a.draw());
+});
+
+test('diagnostics are bounded copies and page/entry budgets never merge incompatible or oversized allocations',()=>{
+  const f=fixture({count:5,options:{maxDiagnosticEntries:2,maxEntries:4}}),a=f.handle.read();assert.equal(a.preparedEntries,4);assert.equal(a.truncatedEntries,2);assert.equal(a.rejected['entry-budget'],1);
+  a.entries[0].status='disposed';a.pages[0].bytes=-1;a.rejected.fake=9;assert.equal(f.handle.read().entries[0].status,'ready');assert.ok(f.handle.read().pages[0].bytes>0);assert.equal(f.handle.read().rejected.fake,undefined);
+  for(const options of [{maxPageVertices:6},{maxPageBytes:16},{maxTotalBytes:16}]){const g=fixture({options});assert.equal(g.handle.read().activeEntries,0);assert.equal(g.handle.read().poolBytes,0);}
+  const g=fixture({count:5,options:{maxPageVertices:12,maxPages:1}});assert.equal(g.handle.read().pageCount,1);assert.equal(g.handle.read().activeEntries,2);assert.equal(g.handle.read().poolBytes,2*(6*8*4+6*2));
+});
+
+test('preparation is explicit and idempotent, with independent late assets staying native until a later boundary',()=>{
+  const f=fixture();assert.equal(installSharedGeometryBuffers(f.renderer,f.scene),f.handle);const old=f.handle.read();f.handle.prepare();assert.equal(f.handle.read().consideredEntries,old.consideredEntries);
+  const added=[new T.Mesh(geometry(0),f.material),new T.Mesh(geometry(.1),f.material)];for(const m of added){m.name='late';f.scene.add(m);}f.draw();assert.equal(f.handle.read().preparedEntries,3);f.handle.prepare();assert.equal(f.handle.read().preparedEntries,5);assert.equal(f.handle.read().pageCount,2);
+});
+
+test('unsupported hook descriptors and a second renderer do not replace existing native or owned callbacks',()=>{
+  const f=fixture({adapt:false});Object.defineProperty(f.renderer,'render',{value:f.renderer.render,configurable:false});const original=f.renderer.render,handle=installSharedGeometryBuffers(f.renderer,f.scene);assert.equal(handle.read().supported,false);assert.equal(f.renderer.render,original);
+  const g=fixture(),other=fixture({adapt:false});const previous=g.scene.onBeforeRender;const rejected=installSharedGeometryBuffers(other.renderer,g.scene);assert.equal(rejected.read().supported,false);assert.equal(g.scene.onBeforeRender,previous);
+});

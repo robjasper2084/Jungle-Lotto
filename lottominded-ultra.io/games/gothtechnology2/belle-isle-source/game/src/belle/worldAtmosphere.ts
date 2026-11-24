@@ -3,6 +3,7 @@ import {atmosphereShader,windVertex} from './atmosphereShaders.ts';
 import {physicalLighting} from './physicalLighting.ts';
 import {presentationBudget} from './presentationPolicy.ts';
 import {applyLeafOutline,referenceLeafDisplay,type ReferenceLeafDisplay} from './referenceLeafDisplay.ts';
+import {registerSharedGeometryShader} from './sharedGeometryBuffers.ts';
 type Shader=Parameters<T.Material['onBeforeCompile']>[0];
 type Wind={time:T.IUniform<number>;amount:T.IUniform<number>;range:T.IUniform<T.Vector2>;amplitude:number;crown:boolean;leaves?:ReferenceLeafDisplay};
 /** Scene-local shader composition; never mutates Three's shared ShaderChunk table. */
@@ -58,6 +59,7 @@ export class WorldAtmosphere {
  private patchWind(material:T.Material,wind:Wind){
   const old=material.onBeforeCompile,key=material.customProgramCacheKey();
   material.onBeforeCompile=(shader,renderer)=>{old.call(material,shader,renderer);this.bindWind(shader,wind);};
+  registerSharedGeometryShader(material,old);
   material.customProgramCacheKey=()=>key+'|belle-wind-v1';material.needsUpdate=true;
  }
  private patch(material:T.Material,wind?:Wind){
@@ -72,6 +74,7 @@ export class WorldAtmosphere {
     shader.vertexShader=result.vertex;shader.fragmentShader=result.fragment;
    }
   };
+  registerSharedGeometryShader(material,compile);
   material.customProgramCacheKey=()=>identity+'|belle-height-fog-clouds-v2'+(wind?'|wind':'');material.needsUpdate=true;
  }
  update(time:number,direction:T.Vector3,coverage:number,day:number,overcast:number,quality:string,reduced:boolean,xr:boolean){
