@@ -5,6 +5,7 @@ import ts from 'typescript';
 import * as T from 'three';
 import {WebGLPrograms} from 'three/src/renderers/webgl/WebGLPrograms.js';
 import {WebGLUniforms} from 'three/src/renderers/webgl/WebGLUniforms.js';
+import {WebGLProperties} from 'three/src/renderers/webgl/WebGLProperties.js';
 import {CinematicTerrain} from './cinematicTerrain.ts';
 import {WorldAtmosphere} from './worldAtmosphere.ts';
 import {hasAtmosphereProgram} from './atmosphereProgramIdentity.ts';
@@ -60,6 +61,42 @@ function keyBuilder(){
   const parameters=programs.getParameters(mesh.material,lights,[new T.DirectionalLight()],scene,mesh,[]);
   return programs.getProgramCacheKey(custom?parameters:{...parameters,customProgramCacheKey:''});
  }};
+}
+
+// Execute the installed renderer's actual per-material cache branch, with its
+// native program/key/uniform factories. GL sinks only retain generated sources;
+// this proves JavaScript cache/binding behavior, not GPU compilation or pixels.
+function nativeMaterialCache(){
+ assert.equal(T.REVISION,'185');
+ const text=readFileSync(new URL('../../node_modules/three/src/renderers/WebGLRenderer.js',import.meta.url),'utf8');
+ const file=ts.createSourceFile('WebGLRenderer.js',text,ts.ScriptTarget.Latest,true,ts.ScriptKind.JS);
+ const names=['getProgram','updateCommonMaterialProperties','materialNeedsLights'],functions=new Map<string,string>();
+ function visit(node:ts.Node){
+  if(ts.isFunctionDeclaration(node)&&node.name&&names.includes(node.name.text)){
+   assert(!functions.has(node.name.text));functions.set(node.name.text,node.getText(file));
+  }
+  ts.forEachChild(node,visit);
+ }
+ visit(file);assert.equal(functions.size,names.length);
+ const gl={VERTEX_SHADER:0x8b31,FRAGMENT_SHADER:0x8b30,createProgram:()=>({}),createShader:(type:number)=>({type,source:''}),
+  shaderSource:(shader:{source:string},source:string)=>{shader.source=source;},compileShader(){},attachShader(){},bindAttribLocation(){},linkProgram(){}};
+ const adapter={getContext:()=>gl,getRenderTarget:()=>null,state:{buffers:{depth:{getReversed:()=>false}}},outputColorSpace:T.SRGBColorSpace,
+  toneMapping:T.ACESFilmicToneMapping,shadowMap:{enabled:true,type:T.PCFShadowMap}};
+ const environments={get:()=>null},clipping={numPlanes:0,numIntersection:0,uniform:{value:[]}};
+ const Programs=WebGLPrograms as unknown as (...args:unknown[])=>unknown;
+ const programCache=Programs(adapter,environments,{has:()=>false},{precision:'highp',logarithmicDepthBuffer:false},{releaseStatesOfProgram(){}},clipping);
+ const Properties=WebGLProperties as unknown as ()=>{get:(object:object)=>{uniforms:Record<string,T.IUniform>}};
+ const properties=Properties();
+ const lights=Object.fromEntries(['ambient','probe','directional','point','spot','spotLightMap','rectArea','hemi','directionalShadowMap','pointShadowMap','spotShadowMap',
+  'directionalShadow','spotShadow','pointShadow','directionalShadowMatrix','spotLightMatrix','pointShadowMatrix'].map(name=>[name,[]]));
+ const lightState={...lights,version:1,numSpotLightShadowsWithMaps:0,numLightProbes:0,rectAreaLTC1:null,rectAreaLTC2:null};
+ const state={state:{lights:{state:lightState},shadowsArray:[],lightProbeGridArray:[]}};
+ type Program={cacheKey:string;vertexShader:{source:string};fragmentShader:{source:string}};
+ const getProgram=Function('properties','programCache','environments','clipping','currentRenderState','_this','_nodesHandler','_emptyScene','onMaterialDispose',
+  [...functions.values()].join('\n')+'\nreturn getProgram;')
+  (properties,programCache,environments,clipping,state,adapter,null,new T.Scene(),()=>{}) as (material:T.Material,scene:T.Scene,object:T.Object3D)=>Program;
+ return {lightState,select:(mesh:SurfaceMesh,scene:T.Scene)=>getProgram(mesh.material,scene,mesh),
+  uniforms:(material:T.Material)=>properties.get(material).uniforms};
 }
 
 async function lawnCase(kind:'original'|'gardenSoil'|'gardenLawn'|'oudolf',rediscover:boolean){
@@ -153,23 +190,23 @@ test('unknown authored callbacks and replacements retain their exact original ke
  const originalKey='authored'+suffix,hook:T.Material['onBeforeCompile']=shader=>{shader.fragmentShader='// authored shader\n'+shader.fragmentShader;};
  material.onBeforeCompile=hook;material.customProgramCacheKey=()=>originalKey;
  const keyFunction=material.customProgramCacheKey;scene.add(new T.Mesh(new T.BoxGeometry(),material));await Promise.resolve();
- assert.equal(hasAtmosphereProgram(hook),false);assert.equal(material.customProgramCacheKey(),originalKey+suffix);
+ assert.equal(hasAtmosphereProgram(hook,owner),false);assert.equal(material.customProgramCacheKey(),originalKey+suffix);
  const replacement=material.clone(),replacementHook:T.Material['onBeforeCompile']=shader=>{shader.fragmentShader='// replacement shader\n'+shader.fragmentShader;};
  replacement.onBeforeCompile=replacementHook;replacement.customProgramCacheKey=()=>originalKey+'-replacement';
  scene.add(new T.Mesh(new T.BoxGeometry(),replacement));await Promise.resolve();
- assert.equal(hasAtmosphereProgram(replacementHook),false);assert.equal(replacement.customProgramCacheKey(),originalKey+'-replacement'+suffix);
+ assert.equal(hasAtmosphereProgram(replacementHook,owner),false);assert.equal(replacement.customProgramCacheKey(),originalKey+'-replacement'+suffix);
  assert.notEqual(replacement.customProgramCacheKey(),material.customProgramCacheKey());
  owner.dispose();assert.equal(material.onBeforeCompile,hook);assert.equal(material.customProgramCacheKey,keyFunction);assert.equal(replacement.onBeforeCompile,replacementHook);
  t.after(()=>{scene.traverse(o=>{if(o instanceof T.Mesh){o.geometry.dispose();o.material.dispose();}});noise.dispose();});
 });
 
-test('different atmosphere owners preserve shared shader identity while binding receiving-owner uniforms and restoring hooks',async t=>{
+test('different atmosphere owners retain the original key boundary while binding receiving-owner uniforms and restoring hooks',async t=>{
  const a=new T.Scene(),b=new T.Scene(),noiseA=new T.Texture(),noiseB=new T.Texture(),ownerA=new WorldAtmosphere(a,noiseA),ownerB=new WorldAtmosphere(b,noiseB);
  const source=new T.MeshStandardMaterial(),geometry=new T.BoxGeometry();source.customProgramCacheKey=()=>'authored-owner-key';a.add(new T.Mesh(geometry,source));await Promise.resolve();
  const inherited=source.onBeforeCompile,key=source.customProgramCacheKey(),material=source.clone();material.onBeforeCompile=inherited;material.customProgramCacheKey=()=>key;
  const inheritedKey=material.customProgramCacheKey;b.add(new T.Mesh(geometry,material));await Promise.resolve();
  const shaderA=compile(source),shaderB=compile(material);
- assert.equal(material.customProgramCacheKey(),source.customProgramCacheKey());assert.deepEqual(pair(shaderA),pair(shaderB));
+ assert.equal(material.customProgramCacheKey(),source.customProgramCacheKey()+suffix);assert.deepEqual(pair(shaderA),pair(shaderB));
  assert.equal(shaderA.uniforms.belleCloudTime,ownerA.uniforms.belleCloudTime);assert.equal(shaderB.uniforms.belleCloudTime,ownerB.uniforms.belleCloudTime);
  assert.notEqual(shaderA.uniforms.belleCloudTime,shaderB.uniforms.belleCloudTime);assert.equal(shaderB.uniforms.belleCloudNoise.value,noiseB);
  ownerB.dispose();assert.equal(material.onBeforeCompile,inherited);assert.equal(material.customProgramCacheKey,inheritedKey);
@@ -177,7 +214,42 @@ test('different atmosphere owners preserve shared shader identity while binding 
  t.after(()=>{ownerA.dispose();source.dispose();material.dispose();geometry.dispose();noiseA.dispose();noiseB.dispose();});
 });
 
-test('new wind remains a distinct program and inherited wind keeps its own binding while atmosphere changes owner',async t=>{
+test('already-compiled material changing atmosphere owner refreshes native cached uniforms',async t=>{
+ for(const changedLights of [false,true])await t.test(changedLights?'changed native light state':'unchanged native light state',async t=>{
+  const a=new T.Scene(),b=new T.Scene(),noiseA=new T.Texture(),noiseB=new T.Texture(),ownerA=new WorldAtmosphere(a,noiseA),ownerB=new WorldAtmosphere(b,noiseB);
+  const material=new T.MeshStandardMaterial(),geometry=new T.BoxGeometry(),mesh=new T.Mesh(geometry,material),native=nativeMaterialCache();
+  let compiled=0;material.onBeforeCompile=()=>{compiled++;};material.customProgramCacheKey=()=>'cached-owner-regression';
+  t.after(()=>{ownerB.dispose();ownerA.dispose();material.dispose();geometry.dispose();noiseA.dispose();noiseB.dispose();});
+  ownerA.uniforms.belleCloudTime.value=11;ownerB.uniforms.belleCloudTime.value=37;
+  a.add(mesh);await Promise.resolve();
+  const first=native.select(mesh,a),firstUniforms=native.uniforms(material),version=material.version;
+  assert.equal(compiled,1);assert.equal(firstUniforms.belleCloudTime,ownerA.uniforms.belleCloudTime);
+  assert.equal(native.select(mesh,a),first);assert.equal(compiled,1,'the real native cache reuses this material before transfer');
+  b.add(mesh);await Promise.resolve();if(changedLights)native.lightState.version++;
+  assert(material.version>version,'owner discovery invalidates the material through the existing public setter');
+  const second=native.select(mesh,b),secondUniforms=native.uniforms(material);
+  assert.equal(secondUniforms.belleCloudTime,ownerB.uniforms.belleCloudTime,'the cached uniform table must bind the receiving owner');
+  assert.equal(secondUniforms.belleCloudTime.value,37);assert.equal(secondUniforms.belleCloudNoise.value,noiseB);
+  assert.equal(compiled,2);assert.notEqual(second,first);assert.notEqual(second.cacheKey,first.cacheKey);
+  assert.notEqual(secondUniforms,firstUniforms);assert.deepEqual([second.vertexShader.source,second.fragmentShader.source],[first.vertexShader.source,first.fragmentShader.source]);
+  assert.equal(native.select(mesh,b),second);assert.equal(compiled,2);
+ });
+});
+
+test('already-compiled same-owner clone keeps its native program and correct inherited bindings',async t=>{
+ const scene=new T.Scene(),noise=new T.Texture(),owner=new WorldAtmosphere(scene,noise),source=new T.MeshStandardMaterial(),geometry=new T.BoxGeometry();
+ let compiled=0;source.onBeforeCompile=()=>{compiled++;};source.customProgramCacheKey=()=>'same-owner-cache';
+ scene.add(new T.Mesh(geometry,source));await Promise.resolve();
+ const material=source.clone(),key=source.customProgramCacheKey();material.onBeforeCompile=source.onBeforeCompile;material.customProgramCacheKey=()=>key;
+ const mesh=new T.Mesh(geometry,material),native=nativeMaterialCache(),first=native.select(mesh,scene),uniforms=native.uniforms(material);
+ t.after(()=>{owner.dispose();source.dispose();material.dispose();geometry.dispose();noise.dispose();});
+ assert.equal(compiled,1);assert.equal(uniforms.belleCloudTime,owner.uniforms.belleCloudTime);
+ scene.add(mesh);await Promise.resolve();owner.uniforms.belleCloudTime.value=23;
+ assert.equal(material.customProgramCacheKey(),key);assert.equal(native.select(mesh,scene),first);assert.equal(compiled,1);
+ assert.equal(native.uniforms(material),uniforms);assert.equal(uniforms.belleCloudTime.value,23);
+});
+
+test('new and inherited wind retain their program boundaries while atmosphere changes owner',async t=>{
  const a=new T.Scene(),b=new T.Scene(),c=new T.Scene(),noise=new T.Texture(),owners=[a,b,c].map(scene=>new WorldAtmosphere(scene,noise));
  const geometry=new T.BoxGeometry(),source=new T.MeshStandardMaterial();a.add(new T.Mesh(geometry,source));await Promise.resolve();
  const hair=source.clone();hair.onBeforeCompile=source.onBeforeCompile;const sourceKey=source.customProgramCacheKey();hair.customProgramCacheKey=()=>sourceKey;
@@ -186,7 +258,7 @@ test('new wind remains a distinct program and inherited wind keeps its own bindi
  assert.notEqual(windKey,sourceKey);assert.match(windKey,/\|wind$/);assert.equal((shader.vertexShader.match(/uniform float belleWindTime,belleWindAmount;/g)||[]).length,1);
  owners[1].update(7,new T.Vector3(0,1,0),.4,1,0,'high',false,false);assert.equal(shader.uniforms.belleWindTime.value,7);
  const inherited=windy.clone();inherited.onBeforeCompile=windy.onBeforeCompile;inherited.customProgramCacheKey=()=>windKey;c.add(new T.Mesh(geometry,inherited));await Promise.resolve();
- const other=compile(inherited);assert.equal(inherited.customProgramCacheKey(),windKey);assert.deepEqual(pair(other),pair(shader));
+ const other=compile(inherited);assert.equal(inherited.customProgramCacheKey(),windKey+suffix);assert.deepEqual(pair(other),pair(shader));
  assert.equal(other.uniforms.belleWindTime,shader.uniforms.belleWindTime);assert.equal(other.uniforms.belleCloudTime,owners[2].uniforms.belleCloudTime);
  assert.notEqual(other.uniforms.belleCloudTime,shader.uniforms.belleCloudTime);
  t.after(()=>{for(const owner of owners.reverse())owner.dispose();source.dispose();hair.dispose();inherited.dispose();geometry.dispose();noise.dispose();});
