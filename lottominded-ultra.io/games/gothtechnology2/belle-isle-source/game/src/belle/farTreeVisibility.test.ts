@@ -4,6 +4,7 @@ import * as T from 'three';
 import {WebGLAttributes} from 'three/src/renderers/webgl/WebGLAttributes.js';
 import {FarTreeVisibility,TreeInstanceVisibility,TreeShadowVisibility} from './farTreeVisibility.ts';
 import {referenceTree} from './referenceTrees.ts';
+import {readFileSync} from 'node:fs';
 
 function view(x=0,y=4,z=0,targetZ=-100){
  const camera=new T.PerspectiveCamera(60,1.5,.1,1000);
@@ -160,8 +161,27 @@ test('float32 cancellation and a crown intersecting the view remain conservative
  fill(partial.meshes,[translation(70,-40)]);partial.visibility.capture();assert.equal(partial.visibility.render(view(0,0)),1,'offscreen trunk cannot remove an intersecting crown');
 });
 
-test('actual far-tree vertices visible after float32 transforms survive culling under camera and parent changes',()=>{
- const tree=referenceTree('maple',true,16),{meshes,visibility}=pair(6,[tree.trunk,tree.leaves]);
+function originalFarTreeGeometry(){
+ const glb=readFileSync(new URL('../../public/belle/nature/seasonal-trees.glb',import.meta.url));
+ const jsonSize=glb.readUInt32LE(12);
+ const gltf=JSON.parse(glb.toString('utf8',20,20+jsonSize));
+ const parts=['birch__trunk__lod','birch__leaves__lod'].map(name=>{
+  const node=gltf.nodes.find((item:{name:string})=>item.name===name);
+  const accessor=gltf.accessors[gltf.meshes[node.mesh].primitives[0].attributes.POSITION],view=gltf.bufferViews[accessor.bufferView];
+  assert.equal(accessor.componentType,5126);
+  const offset=28+jsonSize+(view.byteOffset??0)+(accessor.byteOffset??0),positions=new Float32Array(accessor.count*3);
+  for(let i=0;i<accessor.count;i++)for(let j=0;j<3;j++)positions[3*i+j]=glb.readFloatLE(offset+i*(view.byteStride??12)+4*j);
+  const geometry=new T.BufferGeometry().setAttribute('position',new T.BufferAttribute(positions,3));
+  return geometry.translate(node.translation?.[0]??0,node.translation?.[1]??0,node.translation?.[2]??0);
+ });
+ return parts;
+}
+const farTreeFixtures=[
+ {name:'reference tree',geometry:()=>{const tree=referenceTree('maple',true,16);return [tree.trunk,tree.leaves];}},
+ {name:'original seasonal GLB',geometry:originalFarTreeGeometry},
+];
+for(const fixture of farTreeFixtures)test(fixture.name+' vertices visible after float32 transforms survive culling under camera and parent changes',()=>{
+ const {meshes,visibility}=pair(6,fixture.geometry());
  const matrices=Array.from({length:6},(_,i)=>new T.Matrix4().compose(new T.Vector3((i%3-1)*27,0,i<3?-45:35),new T.Quaternion().setFromEuler(new T.Euler(.03,i*.47,.02)),new T.Vector3(.8+i*.09,1.2+i*.04,1.1)));
  fill(meshes,matrices);const scene=new T.Scene();meshes.forEach(mesh=>scene.add(mesh));scene.updateMatrixWorld(true);visibility.capture();
  const point=new T.Vector4(),instancePoint=new T.Vector4(),clip=new T.Vector4();
