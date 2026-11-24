@@ -30,6 +30,13 @@ test('actual street materials share shader code while retaining each curb and gu
   assert.equal(new Set(materials.map(m=>m.customProgramCacheKey())).size,1);
   assert.equal(new Set(shaders.map(s=>s.vertexShader)).size,1);
   assert.equal(new Set(shaders.map(s=>s.fragmentShader)).size,1);
+  // Inspect the actual factory-generated GLSL: the original curb scalar is
+  // evaluated before selection, with no uniform-controlled calculation block.
+  const grimeExpression=shaders[0].fragmentShader.match(/float grime=([.\d]+)\+([.\d]+)\*smoothstep\(([.\d]+),([.\d]+),detailWorld\.y\);diffuseColor\.rgb\*=streetGrime\?grime:1\.;/);
+  assert(grimeExpression,'The original straight-line grime calculation must precede the material selection');
+  const [base,gain,low,high]=grimeExpression.slice(1).map(Number);
+  assert.deepEqual([base,gain,low,high],[.92,.08,2.06,2.19]);
+  assert.doesNotMatch(shaders[0].fragmentShader,/if\s*\(\s*streetGrime\s*\)/);
   assert.deepEqual(shaders.map(s=>s.uniforms.streetGrime.value),[false,false,true,true,false,false,false]);
   assert.equal(new Set(shaders.map(s=>s.uniforms.streetGrime)).size,7);
   assert.deepEqual(materials.map(m=>m.roughness),[.94,.93,.9,.95,.7,.9,.9]);
@@ -46,7 +53,17 @@ test('actual street materials share shader code while retaining each curb and gu
   const linked=new Uniforms(gl,{});
   for(const i of [0,2,4,3,1,5,2,6,3,0]){
    Uniforms.upload(gl,linked.seq,shaders[i].uniforms,{});
-   assert.equal(Boolean(uploaded),kinds[i]==='curb'||kinds[i]==='gutter');
+   const grime=kinds[i]==='curb'||kinds[i]==='gutter';
+   assert.equal(Boolean(uploaded),grime);
+   // These are the authored scalar values, using the constants extracted from
+   // the compiled source and the bool actually delivered by Three's uploader.
+   // This checks material selection; only native images can establish GPU
+   // arithmetic/rounding equivalence with the preceding compile-time branch.
+   for(const [height,expected] of [[0,.92],[2.06,.92],[2.125,.96],[2.19,1],[3,1]]){
+    const t=T.MathUtils.clamp((height-low)/(high-low),0,1);
+    const scalar=Boolean(uploaded)?base+gain*t*t*(3-2*t):1;
+    assert(Math.abs(scalar-(grime?expected:1))<=Number.EPSILON*4,'Original grime scalar/selection changed for '+kinds[i]+' at '+height);
+   }
   }
   shaders[2].uniforms.streetGrime.value=false;
   assert.equal(shaders[3].uniforms.streetGrime.value,true);

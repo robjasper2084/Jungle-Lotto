@@ -24,10 +24,10 @@ export function addStreetDetails(scene:T.Scene,plan:StreetPlan){
     float resolved=1.-smoothstep(.35,1.7,length(fwidth(detailWorld.xz))*85.);
     float wear=.5+.25*sin(detailWorld.x*1.7+sin(detailWorld.z*.8))+.25*sin(detailWorld.z*2.3);
     diffuseColor.rgb*=mix(.86,1.04,wear)*mix(1.,mix(.86,1.08,grain),resolved);
-    if(streetGrime){float grime=.92+.08*smoothstep(2.06,2.19,detailWorld.y);diffuseColor.rgb*=grime;}
+    float grime=.92+.08*smoothstep(2.06,2.19,detailWorld.y);diffuseColor.rgb*=streetGrime?grime:1.;
    `);
   };
-  material.customProgramCacheKey=()=>'street-antialiased-weather-v3';
+  material.customProgramCacheKey=()=>'street-antialiased-weather-v4';
  }
  const unit=new T.BoxGeometry(1,1,1).toNonIndexed();
  // Chamfer the upper edges rather than making curb runs look like sharp blocks.

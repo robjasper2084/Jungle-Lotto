@@ -3,9 +3,8 @@ import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import * as T from 'three';
 import {WebGLPrograms} from 'three/src/renderers/webgl/WebGLPrograms.js';
-import {WebGLUniforms} from 'three/src/renderers/webgl/WebGLUniforms.js';
 import {createWater} from './water.ts';
-import {riverWaveGLSL} from './riverWaves.ts';
+import {riverWaveGLSL,riverWaveHeight} from './riverWaves.ts';
 import {flatRiverPatchIndex,riverFarRing,RIVER_PATCH_SIZE,RIVER_PATCH_SEGMENTS} from './riverPatch.ts';
 import type {ParkMap,ParkTerrain} from './terrain.ts';
 
@@ -43,36 +42,50 @@ function geometryBytes(geometry:T.BufferGeometry){
  return hash.digest('hex');
 }
 
-test('actual connected river materials share both shader stages and keep independent displacement bindings',t=>{
+test('actual connected river materials share the byte-identical original near shader and preserve lagoon state',t=>{
  const f=setup();t.after(f.dispose);
  const near=f.compile(f.near),far=f.compile(f.far),lagoon=f.compile(f.lagoon);
  assert.equal(near.vertexShader,far.vertexShader);assert.equal(near.fragmentShader,far.fragmentShader);
  assert.equal(f.near.material.customProgramCacheKey(),f.far.material.customProgramCacheKey());
- assert.equal(near.uniforms.riverDisplacement.value,true);assert.equal(far.uniforms.riverDisplacement.value,false);
- assert.notEqual(near.uniforms.riverDisplacement,far.uniforms.riverDisplacement);
+ // SHA-256 of the actual e424aac64ad82f2448c11717c38c592d666c2af9
+ // createWater near hook applied to the pinned r185 physical ShaderLib,
+ // including the unchanged district-mask wrapper. This pins every source byte.
+ assert.equal(T.REVISION,'185');
+ assert.equal(createHash('sha256').update(near.vertexShader).digest('hex'),'7429edb753fea2bfd36ae798b5e046e92a6ae1e4544bdfecc93497d5c208db3c');
+ assert.equal(createHash('sha256').update(near.fragmentShader).digest('hex'),'5f158bee5759641f0b75734efade43408f8847ec51353daaa70fbebf90a9e9d3');
  assert(near.vertexShader.includes('transformed.y+=('+riverWaveGLSL+')*edge;'),'Original near-wave calculation is retained');
- assert.match(near.vertexShader,/if\(riverDisplacement\)\{\s*vec2 wp=/);
+ assert.equal(near.uniforms.riverDisplacement,undefined);assert.equal(far.uniforms.riverDisplacement,undefined);
+ assert.doesNotMatch(near.vertexShader,/riverDisplacement/);
  assert.match(near.vertexShader,/smoothstep\(165\.,195\.,/);
  assert.equal(near.uniforms.detroitDry.value,far.uniforms.detroitDry.value,'The existing common district mask remains bound');
  assert.equal(near.uniforms.riverNormals.value,far.uniforms.riverNormals.value);
+ assert.equal(near.uniforms.riverTime,far.uniforms.riverTime);assert.equal(near.uniforms.riverCentre,far.uniforms.riverCentre);
  assert.equal(f.lagoon.material.customProgramCacheKey(),'lagoon-reactive-water-multiscale-ring-v11');
- assert.equal(lagoon.uniforms.riverDisplacement,undefined);assert.doesNotMatch(lagoon.vertexShader,/riverDisplacement/);
+ assert.doesNotMatch(lagoon.vertexShader,/riverDisplacement|transformed\.y\+=/);
  assert.notEqual(lagoon.fragmentShader,near.fragmentShader);assert(f.lagoon.material.clearcoat>0);
- near.uniforms.riverDisplacement.value=false;
- assert.equal(f.compile(f.near).uniforms.riverDisplacement.value,true,'Recompilation restores the authored near choice');
- far.uniforms.riverDisplacement.value=true;
- assert.equal(f.compile(f.far).uniforms.riverDisplacement.value,false,'Recompilation restores the authored far choice');
+ assert.equal(f.compile(f.near).vertexShader,near.vertexShader);assert.equal(f.compile(f.far).vertexShader,far.vertexShader);
 });
 
-test('pinned native uniform upload alternates near and far without retaining the previous material choice',t=>{
- const f=setup();t.after(f.dispose);const near=f.compile(f.near),far=f.compile(f.far),writes:number[]=[];
- const gl={ACTIVE_UNIFORMS:0x8b86,getProgramParameter:()=>1,
-  getActiveUniform:()=>({name:'riverDisplacement',size:1,type:0x8b56}),getUniformLocation:()=>0,
-  uniform1i:(_location:unknown,value:number)=>writes.push(Number(value))};
- const Uniforms=WebGLUniforms as unknown as {new(gl:unknown,program:unknown):{seq:unknown[]};upload:(gl:unknown,seq:unknown[],values:Record<string,T.IUniform>,textures:unknown)=>void};
- const uniforms=new Uniforms(gl,{});
- for(const shader of [near,far,near,far,near])Uniforms.upload(gl,uniforms.seq,shader.uniforms,{});
- assert.deepEqual(writes,[1,0,1,0,1]);
+test('every actual far-ring vertex retains exactly zero wave displacement through camera translations',t=>{
+ const f=setup();t.after(f.dispose);const shader=f.compile(f.far),camera=new T.PerspectiveCamera();
+ const position=f.far.geometry.getAttribute('position'),before=geometryBytes(f.far.geometry);
+ const cameras=[[0,0,0],[13.37,9,-27.23],[-3797.13,42,845.77],[1344.49,8,2876.5],[9000.25,11,-9000.75]];
+ const vertex=new T.Vector3(),f32=Math.fround;let checked=0;
+ for(const [i,coordinates]of cameras.entries()){
+  camera.position.fromArray(coordinates);f.water.update([0,1.25,6.75,123.5,7200][i],camera);f.far.updateMatrixWorld(true);
+  assert(f.far.position.equals(f.near.position));
+  const centre=shader.uniforms.riverCentre.value as T.Vector2,time=shader.uniforms.riverTime.value as number;
+  assert.deepEqual(centre.toArray(),[f.far.position.x,f.far.position.z]);
+  for(let j=0;j<position.count;j++){
+   vertex.fromBufferAttribute(position,j).applyMatrix4(f.far.matrixWorld);
+   // Model translation and the shared centre are also checked at float32
+   // precision. This is an envelope proof, not a simulation of GPU sin().
+   const x=f32(vertex.x),z=f32(vertex.z),distance=Math.max(Math.abs(f32(x-f32(centre.x))),Math.abs(f32(z-f32(centre.y))));
+   assert(distance>=200);const edge=1-T.MathUtils.smoothstep(distance,165,195);assert.equal(edge,0);
+   assert.equal(position.getY(j),0);assert.equal(position.getY(j)+riverWaveHeight(x,z,time)*edge,0);checked++;
+  }
+ }
+ assert.equal(checked,position.count*cameras.length);assert.equal(geometryBytes(f.far.geometry),before);
 });
 
 test('installed Three program parameters permit one river program for each native output configuration',t=>{
@@ -117,7 +130,8 @@ test('river quality changes and updates retain original patch/ring geometry, pla
  }
  const camera=new T.PerspectiveCamera();camera.position.set(13,9,-27);
  f.water.update(12.5,camera);assert.deepEqual(f.near.position.toArray(),[14,0,-26]);assert(f.far.position.equals(f.near.position));
- assert.equal(f.compile(f.near).uniforms.riverTime.value,12.5);assert.equal(f.compile(f.near).uniforms.riverDisplacement.value,true);assert.equal(f.compile(f.far).uniforms.riverDisplacement.value,false);
+ assert.equal(f.compile(f.near).uniforms.riverTime.value,12.5);assert.equal(f.compile(f.far).uniforms.riverTime.value,12.5);
+ assert.deepEqual(f.compile(f.far).uniforms.riverCentre.value.toArray(),[14,-26]);
  assert.deepEqual({near:f.near.renderOrder,far:f.far.renderOrder},order);
  assert.equal(geometryBytes(f.near.geometry),nearBytes);assert.equal(geometryBytes(f.far.geometry),farBytes);
 });

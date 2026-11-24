@@ -94,6 +94,8 @@ test('street paint and curb materials share only equivalent shaders and keep the
   assert.equal(shaders[i].fragmentShader,shaders[j].fragmentShader);
  }
  assert.deepEqual(shaders.map(shader=>shader.uniforms.streetGrime.value),[false,false,true,true,false,false,false]);
+ assert.match(shaders[0].fragmentShader,/float grime=\.92\+\.08\*smoothstep\(2\.06,2\.19,detailWorld\.y\);diffuseColor\.rgb\*=streetGrime\?grime:1\.;/);
+ assert.doesNotMatch(shaders[0].fragmentShader,/if\s*\(\s*streetGrime\s*\)/);
  assert.equal(new Set(shaders.map(shader=>shader.uniforms.streetGrime)).size,kinds.length);
  assert.equal(new Set(surfaces.map(m=>m.color.getHex())).size,kinds.length);
  assert.equal(surfaces[4].metalness,.5);assert.equal(surfaces[0].metalness,0);
