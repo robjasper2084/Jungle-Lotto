@@ -139,7 +139,7 @@ function setHydraulicMode(enabled:boolean){
  hydraulicMode=enabled;clearCadillacInput();hydraulicCabinInput?.cancel();hydraulicAudio.silence();
  return{accepted:true,message:enabled?'Hydraulic Mode · Smart Pump ready.':'Hydraulic Mode off. Uneven corners level before driving.'};
 }
-function suspendHydraulicControls(){hydraulicMode=false;hydraulicModeRide=undefined;hydraulicCabinInput?.cancel();hydraulicAudio.setActive(false);hydraulicControls?.refresh(true);}
+function suspendHydraulicControls(){hydraulicMode=false;hydraulicModeRide=undefined;clearCadillacInput();hydraulicCabinInput?.cancel();hydraulicAudio.setActive(false);hydraulicControls?.refresh(true);}
 const hydraulicKeys:Partial<Record<string,HydraulicSmartPose>>={Digit7:'front-up',Digit8:'back-up',Digit9:'pancake'};
 function routeHydraulicKey(event:KeyboardEvent){
  if(event.defaultPrevented||!cadillac?.riding||inputCaptureBlocked()||photo?.active)return false;
@@ -225,7 +225,7 @@ canvas.addEventListener('pointerdown',()=>{if(!blocked())canvas.focus({preventSc
 
 document.addEventListener('click',e=>{const target=e.target as HTMLElement;if(target.closest('button')&&!target.closest('#hydraulic-controls')&&!blocked())canvas.focus();});
 const zone=el('touch-zone'),touch=el<HTMLInputElement>('touch');
-hud=createMobileHud({blocked:inputCaptureBlocked,movementBlocked:()=>hydraulicMode||!!photo?.active||!!hover?.riding||!!slide?.active,clear,move:(x,y)=>{steer=x;throttle=y;},look:(x,y)=>{cameraYaw-=x*.003;cameraPitch=Math.max(-1.25,Math.min(1.1,cameraPitch+y*.002));},hop:()=>{if(!blocked()){if(cadillac?.hydraulics&&cadillac.riding){clear();cadillacModsControls.open();}else if(cadillac?.riding)cadillac.toggleDoor();else hop=true;}}});
+hud=createMobileHud({blocked:inputCaptureBlocked,canvasLookOnly:()=>hydraulicMode,movementBlocked:()=>hydraulicMode||!!photo?.active||!!hover?.riding||!!slide?.active,clear,move:(x,y)=>{steer=x;throttle=y;},look:(x,y)=>{cameraYaw-=x*.003;cameraPitch=Math.max(-1.25,Math.min(1.1,cameraPitch+y*.002));},hop:()=>{if(!blocked()){if(cadillac?.hydraulics&&cadillac.riding){clear();cadillacModsControls.open();}else if(cadillac?.riding)cadillac.toggleDoor();else hop=true;}}});
 const release=()=>hud?.clear();
 el<HTMLInputElement>('motion').checked=reduced;el<HTMLInputElement>('motion').onchange=e=>reduced=(e.target as HTMLInputElement).checked;
 const graphics=el<HTMLSelectElement>('quality'),frameLimit=el<HTMLSelectElement>('fps'),aaSelect=el<HTMLSelectElement>('anti-aliasing');

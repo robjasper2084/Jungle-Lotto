@@ -14,6 +14,24 @@ test('inactive point lights skip the entire unrolled BRDF while live slots keep 
  assert.equal(fragment.split('RE_Direct( directLight,').length,source.split('RE_Direct( directLight,').length);
 });
 
+test('inactive spot slots skip attenuation, maps, shadows and BRDF without changing active slots',()=>{
+ const source=ShaderChunk.lights_fragment_begin;
+ const spotSection=(code:string)=>code.slice(code.indexOf('SpotLight spotLight;'),code.indexOf('DirectionalLight directionalLight;'));
+ for(const pointPool of [false,true]){
+  const {fragment}=atmosphereShader(ShaderLib.standard.vertexShader,ShaderLib.standard.fragmentShader,source,pointPool);
+  const run=spotSection(fragment);
+  assert.match(run,/spotLight = spotLights\[ i \];\n if \(spotLight.color != vec3\(0.0\)\) \{\s*getSpotLightInfo/);
+  assert.match(run,/getSpotLightInfo[\s\S]*texture2D\( spotLightMap[\s\S]*getShadow\( spotShadowMap[\s\S]*RE_Direct\([^;]+;\n \}\s*\}\s*#pragma unroll_loop_end/);
+  // Exact inequality retains every nonzero color, including negative channels.
+  // Removing only this branch must recover every original statement, including
+  // Three's preprocessor branches and static shadow/map indices.
+  const active=run.replace('\n if (spotLight.color != vec3(0.0)) {\n','').replace(/(RE_Direct\( directLight,[^;]+;)\n \}/,'$1');
+  assert.equal(active,spotSection(source));
+  assert.doesNotMatch(fragment,/if \(directionalLight.color/);
+ }
+ assert.equal(ShaderChunk.lights_fragment_begin,source,'composition must not mutate shared Three chunks');
+});
+
 function standardShader(material:MeshStandardMaterial){
  const standard=ShaderLib.standard;
  const shader={vertexShader:standard.vertexShader,fragmentShader:standard.fragmentShader,

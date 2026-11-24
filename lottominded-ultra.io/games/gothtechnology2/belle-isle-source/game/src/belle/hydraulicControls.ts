@@ -88,7 +88,7 @@ export class HydraulicControls{
   this.outside.append(heading,this.motion,radial,hops,this.advanced);
 
   this.inside.id='hydraulic-inside-controls';this.inside.hidden=true;
-  const cabinHint=document.createElement('p');cabinHint.id='hydraulic-inside-hint';cabinHint.textContent='Hydraulic mode · 7 Front up · 8 Back up · 9 Pancake. Use the cabin switches, or return to third-person for corners. H / Escape exits.';
+  const cabinHint=document.createElement('p');cabinHint.id='hydraulic-inside-hint';cabinHint.textContent='Hydraulic mode · 7 Front up · 8 Back up · 9 Pancake. Tap switches; drag open space to look. Use third-person for corners. H / Escape exits.';
   this.cabinLeave.type='button';this.cabinLeave.id='hydraulic-inside-exit';this.cabinLeave.textContent='Exit mode';this.cabinLeave.onclick=event=>this.setMode(false,event,this.cabinLeave);
   this.inside.append(cabinHint,this.cabinLeave);
   this.feedback.id='hydraulic-controls-feedback';this.feedback.setAttribute('role','status');this.feedback.setAttribute('aria-live','polite');this.feedback.setAttribute('aria-atomic','true');

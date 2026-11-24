@@ -9,6 +9,12 @@ export function backgroundTouchRole(view:Rect,x:number,y:number,hand:Handedness=
  const left=u<.5;
  return left===(hand==='right')?'move':'look';
 }
+/** A parked interaction mode gives the exposed canvas to look and mesh input.
+ * Driving keeps its normal thumb split; neither mode extends beyond its view. */
+export function canvasTouchRole(view:Rect,x:number,y:number,hand:Handedness='right',guard=.08,lookOnly=false):TouchRole{
+ if(lookOnly)return contains(view,x,y)?'look':'ignored';
+ return backgroundTouchRole(view,x,y,hand,guard)==='look'?'look':'ignored';
+}
 export class TouchOwnership{
  private owners=new Map<number,TouchOwner>();private generation=0;
  begin(pointerId:number,player:string,role:TouchRole,actionId?:string):TouchOwner{
