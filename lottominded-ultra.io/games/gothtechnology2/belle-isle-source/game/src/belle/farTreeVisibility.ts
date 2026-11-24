@@ -160,7 +160,7 @@ export class TreeInstanceVisibility {
     if(!(attribute instanceof T.BufferAttribute)||attribute.count<count||(attribute as T.InstancedBufferAttribute).meshPerAttribute!==1)return;
     let stream=part.saved.get(attribute);
     if(!stream||stream.source.length!==attribute.array.length){stream={attribute,source:attribute.array.slice()};part.saved.set(attribute,stream);}
-    else stream.source.set(attribute.array);
+    else stream.source.set(attribute.array.subarray(0,count*attribute.itemSize));
     // Three's first bufferData upload does not consume updateRanges. A later
     // full source rewrite must replace any earlier compact-prefix range even
     // when the new view keeps every source and render() makes no further edit.
@@ -265,7 +265,15 @@ export class TreeInstanceVisibility {
     mesh.count=kept;
     for(const {attribute,source} of streams){
      const stride=attribute.itemSize,target=attribute.array;
-     for(let i=0;i<kept;i++)for(let n=0;n<stride;n++)target[i*stride+n]=source[this.indices[i]*stride+n];
+     let first=0;
+     while(first<kept){
+      const start=this.indices[first];
+      let end=first+1;
+      while(end<kept&&this.indices[end]===start+end-first)end++;
+      if(end-first>=4)target.set(source.subarray(start*stride,(start+end-first)*stride),first*stride);
+      else for(let i=first;i<end;i++)for(let n=0;n<stride;n++)target[i*stride+n]=source[this.indices[i]*stride+n];
+      first=end;
+     }
      attribute.clearUpdateRanges();
      if(kept)attribute.addUpdateRange(0,kept*stride);
      attribute.needsUpdate=true;
