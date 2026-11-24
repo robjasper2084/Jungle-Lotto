@@ -1,9 +1,34 @@
 import * as T from 'three';
 
+/** Supplied only by the audited landmark construction path after its final
+ * surface decorators. This is an explicit caller contract, not shader inference. */
+export type MacArthurUvReceipt={
+ geometry:T.BufferGeometry;material:T.Material;
+ compile:T.Material['onBeforeCompile'];key:T.Material['customProgramCacheKey'];
+};
+
+function canAddShadowUv(mesh:T.Mesh,source:T.BufferGeometry,material:T.Material,receipt?:MacArthurUvReceipt){
+ if(!receipt||receipt.geometry!==source||receipt.material!==material||
+  receipt.compile!==material.onBeforeCompile||receipt.key!==material.customProgramCacheKey)return false;
+ if(!(material instanceof T.MeshStandardMaterial)||material.constructor!==T.MeshStandardMaterial||
+  material.side!==T.DoubleSide||material.shadowSide!==null||material.transparent||material.opacity!==1||
+  material.alphaTest!==0||material.alphaHash||material.alphaToCoverage||material.wireframe||material.clippingPlanes!==null||
+  'defaultAttributeValues' in material||mesh.customDepthMaterial||mesh.customDistanceMaterial||
+  'isSkinnedMesh' in mesh||'isInstancedMesh' in mesh||'isBatchedMesh' in mesh||Object.keys(source.morphAttributes).length)return false;
+ if(!material.defines||typeof material.defines!=='object'||Array.isArray(material.defines)||
+  ['uv','uv1','uv2','uv3'].some(name=>source.hasAttribute(name))||
+  Object.keys(material.defines).length!==1||material.defines.STANDARD!=='')return false;
+ for(const name of ['map','alphaMap','aoMap','lightMap','bumpMap','normalMap','displacementMap','emissiveMap','metalnessMap','roughnessMap'] as const)
+  if(material[name])return false;
+ return material.onBeforeRender===T.Material.prototype.onBeforeRender&&
+  mesh.onBeforeRender===T.Object3D.prototype.onBeforeRender&&mesh.onAfterRender===T.Object3D.prototype.onAfterRender&&
+  mesh.onBeforeShadow===T.Object3D.prototype.onBeforeShadow&&mesh.onAfterShadow===T.Object3D.prototype.onAfterShadow;
+}
+
 /** Each bridge finish spans the whole crossing in one mesh. Keep that single
  * draw but order its opaque triangles by span, so a camera halfway across can
  * skip spans behind it. A span's bounds include all three triangle vertices. */
-export function cullMacArthurSpans(root:T.Object3D){
+export function cullMacArthurSpans(root:T.Object3D,shadowUvReceipts?:ReadonlyMap<T.Mesh,MacArthurUvReceipt>){
  const clip=new T.Matrix4(),frustum=new T.Frustum();
  root.traverse(object=>{
   if(!(object instanceof T.Mesh)||!/^MacArthur[ _]/.test(object.name))return;
@@ -35,6 +60,11 @@ export function cullMacArthurSpans(root:T.Object3D){
   }
   const display=new T.BufferGeometry();
   for(const [name,attribute] of Object.entries(source.attributes))display.setAttribute(name,attribute);
+  // These four opaque source shaders do not consume UVs. Give their display
+  // geometry the mapped shadow program's existing layout without changing the
+  // original raycast geometry, authored attributes or any material/shadow hook.
+  if(canAddShadowUv(mesh,source,material,shadowUvReceipts?.get(mesh)))
+   display.setAttribute('uv',new T.BufferAttribute(new Float32Array(pos.count*2),2));
   display.setIndex(new T.BufferAttribute(ordered,1));
   display.boundingSphere=source.boundingSphere;display.boundingBox=source.boundingBox;
   mesh.geometry=display;
