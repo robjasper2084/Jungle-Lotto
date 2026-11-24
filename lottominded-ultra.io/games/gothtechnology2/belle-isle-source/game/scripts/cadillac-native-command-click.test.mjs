@@ -1,0 +1,281 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {createContext,runInContext} from 'node:vm';
+import {readFile} from 'node:fs/promises';
+import {clickCadillacCommand,createCadillacCommandSession} from './cadillac-native-command-click.mjs';
+
+const box=(left=100,top=100,width=160,height=48)=>({left,top,width,height,right:left+width,bottom:top+height});
+// The actual serialized observer runs in a separate realm with these DOM
+// contracts. These tests prove guard/lifetime logic, not native browser delivery.
+function fixture(options={}){
+ const calls=[],listeners=new Map(),audits=[],animationReads=[];
+ const document={pointerLockElement:null};
+ class Element{
+  constructor(tag='div',{id='',text='',rect=box(0,0,1280,800)}={}){
+   this.tagName=tag.toUpperCase();this.attrs=new Map();this.id=id;this.textContent=text;this.rect=rect;
+   this.parentElement=null;this.children=[];this.ownerDocument=document;this.disabled=false;this.inert=false;this.animations=[];
+   this.style={display:'block',visibility:'visible',pointerEvents:'auto',overflowX:'visible',overflowY:'visible'};
+   this.offsetWidth=rect.width;this.offsetHeight=rect.height;this.clientWidth=rect.width;this.clientHeight=rect.height;this.clientLeft=0;this.clientTop=0;
+  }
+  get id(){return this.getAttribute('id')||'';}set id(value){this.attrs.set('id',value);}
+  get isConnected(){return this===document.documentElement||!!this.parentElement?.isConnected;}
+  getAttribute(name){return this.attrs.get(name)??null;}hasAttribute(name){return this.attrs.has(name);}
+  setAttribute(name,value){this.attrs.set(name,String(value));}removeAttribute(name){this.attrs.delete(name);}
+  append(...nodes){for(const node of nodes){node.remove();node.parentElement=this;this.children.push(node);}}
+  remove(){if(this.parentElement){const siblings=this.parentElement.children;siblings.splice(siblings.indexOf(this),1);this.parentElement=null;}}
+  contains(node){return node===this||this.children.some(child=>child.contains(node));}
+  matches(selector){
+   if(selector===':disabled')return this.disabled||this.ancestors().some(node=>node.tagName==='FIELDSET'&&node.disabled);
+   return selector.split(',').some(part=>part.startsWith('#')?this.id===part.slice(1):this.tagName===part.toUpperCase());
+  }
+  closest(selector){for(let node=this;node;node=node.parentElement)if(node.matches(selector))return node;return null;}
+  ancestors(){const result=[];for(let node=this.parentElement;node;node=node.parentElement)result.push(node);return result;}
+  getBoundingClientRect(){return{...this.rect};}
+  getAnimations({subtree=false}={}){
+   animationReads.push({node:this,subtree});
+   const collect=node=>[...node.animations,...node.children.flatMap(collect)];
+   return subtree?collect(this):[...this.animations];
+  }
+ }
+ class HTMLButtonElement extends Element{
+  constructor(values){super('button',values);this.setAttribute('type','button');}
+ }
+ const html=document.documentElement=new Element('html'),body=new Element('body');html.append(body);
+ const root=new Element('section',{id:options.root??'hydraulic-controls'}),container=new Element('div');body.append(root);root.append(container);
+ const button=options.nonButton?new Element(options.nonButton,{id:options.id??'',text:options.label??'Front up',rect:box()}):
+  new HTMLButtonElement({id:options.id??(root.id==='hydraulic-controls'?'hydraulic-front-up':''),text:options.label??'Front up',rect:box()});
+ if(options.hop)button.setAttribute('data-cadillac-hop',options.hop);
+ container.append(button);
+ const child=new Element('span');button.append(child);
+ document.querySelectorAll=selector=>{
+  const all=node=>[node,...node.children.flatMap(all)];return all(html).filter(node=>node.matches(selector));
+ };
+ document.querySelector=selector=>document.querySelectorAll(selector)[0]??null;
+ document.elementFromPoint=(x,y)=>f.hit?f.hit(x,y):button;
+ document.addEventListener=(type,handler,config)=>{assert.equal(config.capture,true);assert.equal(config.passive,true);(listeners.get(type)??listeners.set(type,new Set()).get(type)).add(handler);};
+ document.removeEventListener=(type,handler,capture)=>{assert.equal(capture,true);listeners.get(type)?.delete(handler);};
+ let clock=0;
+ const context=createContext({document,HTMLButtonElement,Element,getComputedStyle:node=>node.style,innerWidth:1280,innerHeight:800,performance:{now:()=>++clock},__element:button});
+ const f={calls,listeners,audits,animationReads,document,root,container,button,child,body,Element,HTMLButtonElement,
+  now:()=>clock,advance:ms=>{clock+=ms;},session:null,sessionDisposed:false,elementDisposed:false,
+  listenerCount:()=>[...listeners.values()].reduce((sum,set)=>sum+set.size,0),
+  createSession:()=>runInContext('('+createCadillacCommandSession.toString()+')(__element)',context),
+  emit(type,extra={}){
+   const target=extra.target??child;
+   const event={type,isTrusted:true,pointerType:'mouse',pointerId:0,isPrimary:type!=='click',button:0,buttons:type==='pointerdown'?1:0,
+    detail:type==='click'?1:0,clientX:button.rect.left+button.rect.width/2,clientY:button.rect.top+button.rect.height/2,
+    target,composedPath:()=>[target,...target.ancestors(),document],...extra};
+   for(const listener of listeners.get(type)??[])listener(event);
+  }
+ };
+ const elementHandle={
+  node:button,
+  async evaluateHandle(fn){
+   calls.push('identify');assert.equal(fn,createCadillacCommandSession);f.session=f.createSession();
+   return{
+    async evaluate(callback,arg){return structuredClone(await callback(f.session,arg));},
+    async dispose(){f.sessionDisposed=true;calls.push('dispose-session');}
+   };
+  },
+  async dispose(){f.elementDisposed=true;calls.push('dispose-element');}
+ };
+ const locator={async elementHandle({timeout}){assert(timeout>0&&timeout<=90000);calls.push('resolve');return elementHandle;}};
+ const page={mouse:{
+  async move(x,y){calls.push(['move',x,y]);await f.onHover?.();},
+  async click(x,y,config){
+   calls.push(['click',x,y,config]);assert.deepEqual(config,{button:'left',clickCount:1});
+   if(f.dispatch)await f.dispatch();
+   else{for(const type of ['pointerdown','pointerup','click'])f.emit(type);await f.onClick?.();}
+  }
+ }};
+ const targetProof=async(handle,label,...rest)=>{
+  assert.equal(handle,elementHandle,'Both proofs retain the original actual element');assert.deepEqual(rest,[],'No owner-selector shortcut is allowed');
+  calls.push(['proof',label]);const rect={...button.rect};await f.onProof?.(calls.filter(call=>call[0]==='proof').length);return{rect};
+ };
+ f.run=(extra={})=>clickCadillacCommand({page,locator,targetProof,record:audit=>audits.push(audit),now:f.now,...extra});
+ return f;
+}
+function cleaned(f){assert.equal(f.listenerCount(),0);assert.equal(f.sessionDisposed,true);assert.equal(f.elementDisposed,true);}
+const clicks=f=>f.calls.filter(call=>call[0]==='click');
+
+test('only the 17 actual command buttons enter the scoped native path',()=>{
+ const detailed=[['Lower'],['Stock height'],['Raise'],['Level corners'],['Full-car hop','all'],['Front hop','front'],['Rear hop','rear'],['Finish motion & level']];
+ for(const [label,hop]of detailed)assert(fixture({root:'cadillac-modifications',label,hop}).createSession());
+ const hydraulic=[['front-up','Front up'],['back-up','Back up'],['pancake','Pancake'],['settle','Finish & level'],['exit','Exit mode'],
+  ['hop-all','Full hop'],['hop-front','Front hop'],['hop-rear','Rear hop'],['inside-exit','Exit mode']];
+ for(const [id,label]of hydraulic)assert(fixture({id:'hydraulic-'+id,label}).createSession());
+ for(const options of [{id:'hydraulic-mode-toggle',label:'Hydraulic mode'},{root:'hydraulic-mode-entry'},
+  {root:'cadillac-modifications',label:'Full-car hop',hop:'rear'},
+  {root:'cadillac-modifications',label:'Raise',id:'replacement-command'},
+  {root:'cadillac-modifications',label:'Raise',nonButton:'summary'},
+  {id:'hydraulic-front-up',label:'Unrecognized command'},{root:'ride-menu'}])assert.equal(fixture(options).createSession(),null);
+ const submit=fixture();submit.button.setAttribute('type','submit');assert.equal(submit.createSession(),null);
+});
+
+test('out-of-scope controls leave native dispatch and receipts untouched',async()=>{
+ const f=fixture({id:'hydraulic-mode-toggle'});assert.equal(await f.run(),false);cleaned(f);
+ assert.equal(clicks(f).length,0);assert.equal(f.audits.length,0);assert.equal(f.calls.filter(call=>call[0]==='proof').length,0);
+});
+
+test('native hover, both actual-button proofs and one primary-left sequence pass even when click hides the panel',async()=>{
+ const f=fixture();f.onClick=()=>f.root.remove();assert.equal(await f.run(),true);cleaned(f);
+ assert.equal(clicks(f).length,1);assert.equal(f.calls.filter(call=>call[0]==='proof').length,2);
+ assert.equal(f.audits[0].receipts.totalEvents,3);assert.equal(f.audits[0].receipts.receipts[2].isPrimary,false);
+ assert.equal(f.audits[0].receipts.receipts[0].pointerId,0);
+ assert.equal(f.audits[0].dispatchAttempted,true);assert.equal(f.audits[0].error,null);
+ for(const metric of ['preflightMs','hoverMs','dispatchMs','totalMs'])assert(Number.isFinite(f.audits[0][metric])&&f.audits[0][metric]>=0);
+});
+
+test('a moving hydraulic simulation and unrelated body descendant animation do not invalidate a static command',async()=>{
+ const f=fixture();f.root.setAttribute('data-motion','moving');
+ const other=new f.Element();other.animations=[{playState:'running'}];f.body.append(other);
+ assert.equal(await f.run(),true);cleaned(f);
+ assert(f.animationReads.filter(read=>read.node===f.body).every(read=>read.subtree===false));
+ assert(f.animationReads.filter(read=>read.node===f.button).every(read=>read.subtree===true));
+});
+
+test('disabled button, disabled fieldset, inert ancestry, pointer lock and hidden controls fail before dispatch',async()=>{
+ const mutations=[
+  f=>{f.button.disabled=true;},f=>{f.container.tagName='FIELDSET';f.container.disabled=true;},
+  f=>f.root.setAttribute('inert',''),f=>{f.document.pointerLockElement=f.body;},
+  f=>{f.root.style.display='none';},f=>{f.button.style.pointerEvents='none';},f=>f.root.setAttribute('aria-disabled','true')
+ ];
+ for(const mutate of mutations){const f=fixture();mutate(f);await assert.rejects(f.run());assert.equal(clicks(f).length,0);cleaned(f);}
+});
+
+test('active or pending animations on button, ancestors or descendants fail without dispatch',async()=>{
+ for(const subject of ['button','root','child'])for(const animation of [{playState:'running'},{playState:'paused',pending:true}]){
+  const f=fixture();f[subject].animations=[animation];await assert.rejects(f.run(),/animating/);assert.equal(clicks(f).length,0);cleaned(f);
+ }
+ const f=fixture();f.root.animations=[{playState:'finished'},{playState:'paused'}];assert.equal(await f.run(),true);cleaned(f);
+});
+
+test('a clipped two-pixel edge fails even though all five interior points hit the actual button',async()=>{
+ const f=fixture();f.container.style.overflowX='hidden';f.container.rect=box(102,0,500,800);f.container.clientWidth=500;f.container.offsetWidth=500;
+ await assert.rejects(f.run(),/clipped/);assert.equal(clicks(f).length,0);cleaned(f);
+});
+
+test('client borders and scaled scroll boxes are included in full-rectangle clipping',async()=>{
+ const f=fixture();f.container.style.overflowX='auto';f.container.rect=box(96,0,500,800);f.container.offsetWidth=250;f.container.clientLeft=3;f.container.clientWidth=244;
+ await assert.rejects(f.run(),/clipped/);assert.equal(clicks(f).length,0);cleaned(f);
+});
+
+test('undersized, outside-viewport and obscured sibling-owned hitpoints are rejected',async()=>{
+ for(const mutate of [f=>{f.button.rect=box(100,100,160,43);},f=>{f.button.rect=box(-1,100);},
+  f=>{const sibling=new f.HTMLButtonElement({text:'Back up'});f.container.append(sibling);f.hit=(x,y)=>x===140?sibling:f.button;}]){
+  const f=fixture();mutate(f);await assert.rejects(f.run());assert.equal(clicks(f).length,0);cleaned(f);
+ }
+});
+
+test('replacement, detached root, moving rectangle, disabled state and hover animation are rejected between proofs',async()=>{
+ const mutations=[
+  f=>{const replacement=new f.HTMLButtonElement({id:f.button.id,text:f.button.textContent,rect:box()});f.button.remove();f.container.append(replacement);},
+  f=>{f.root.remove();},f=>{f.button.rect=box(101,100);},f=>{f.button.disabled=true;},
+  f=>{f.child.animations=[{playState:'running'}];}
+ ];
+ for(const mutate of mutations){const f=fixture();f.onHover=()=>mutate(f);await assert.rejects(f.run());assert.equal(clicks(f).length,0);cleaned(f);}
+});
+
+test('the last arm guard rejects movement after the second recorded proof',async()=>{
+ const f=fixture();f.onProof=count=>{if(count===2)f.button.rect=box(102,100);};
+ await assert.rejects(f.run(),/moved/);assert.equal(clicks(f).length,0);cleaned(f);
+});
+
+test('duplicate root identity or a changed command label cannot reuse the retained element',async()=>{
+ for(const mutate of [f=>f.body.append(new f.Element('section',{id:f.root.id})),f=>{f.button.textContent='Back up';}]){
+  const f=fixture();f.onHover=()=>mutate(f);await assert.rejects(f.run(),/identity changed/);assert.equal(clicks(f).length,0);cleaned(f);
+ }
+});
+
+test('untrusted, nonprimary, right-button, mismatched or invalid pointer receipts fail after exactly one dispatch',async()=>{
+ const variants=[{at:'click',isTrusted:false},{at:'pointerdown',isPrimary:false},{at:'pointerup',isPrimary:false},
+  {at:'click',button:2},{at:'pointerup',pointerId:4},{at:'click',pointerType:'touch'},{at:'pointerdown',pointerId:-1},
+  {at:'pointerdown',buttons:3},{at:'pointerup',buttons:1},{at:'click',buttons:1},
+  {at:'pointerdown',clientX:181},{at:'click',clientY:125}];
+ for(const {at,...extra}of variants){
+  const f=fixture();f.dispatch=()=>{for(const type of ['pointerdown','pointerup','click'])f.emit(type,type===at?extra:{});};
+  await assert.rejects(f.run());assert.equal(clicks(f).length,1);cleaned(f);assert(f.audits[0].error);
+ }
+});
+
+test('click coordinate flooring is accepted without weakening the down/up dispatch point',async()=>{
+ const f=fixture();f.button.rect=box(100.25,100.75,160,48);
+ f.dispatch=()=>{f.emit('pointerdown');f.emit('pointerup');f.emit('click',{clientX:180,clientY:124});};
+ assert.equal(await f.run(),true);cleaned(f);
+ assert.equal(f.audits[0].receipts.receipts[0].clientX,180.25);
+});
+
+test('wrong actual button/root, including a sibling in the approved root, fails the receipt proof',async()=>{
+ for(const kind of ['sibling','root']){
+  const f=fixture(),sibling=new f.HTMLButtonElement({id:'hydraulic-back-up',text:'Back up',rect:box()});f.container.append(sibling);
+  f.dispatch=()=>{
+   f.emit('pointerdown');
+   if(kind==='root'){f.root.id='old-root';f.body.append(new f.Element('section',{id:'hydraulic-controls'}));}
+   f.emit('pointerup',kind==='sibling'?{target:sibling}:{});f.emit('click');
+  };
+  await assert.rejects(f.run());assert.equal(clicks(f).length,1);cleaned(f);
+ }
+});
+
+test('missing, reordered, duplicate and excess native receipts cannot pass or cause retries',async()=>{
+ for(const types of [['pointerdown','click'],['pointerup','pointerdown','click'],['pointerdown','pointerup','click','click'],
+  ['pointerdown','pointerup','click','click','click','click','click']]){
+  const f=fixture();f.dispatch=()=>types.forEach(type=>f.emit(type));await assert.rejects(f.run());assert.equal(clicks(f).length,1);cleaned(f);
+  assert.equal(f.audits[0].receipts.totalEvents,types.length);assert(f.audits[0].receipts.receipts.length<=6);
+ }
+});
+
+test('a button that becomes unsafe between native down/up is recorded and rejected without interrupting events',async()=>{
+ const f=fixture();f.dispatch=()=>{f.emit('pointerdown');f.root.inert=true;f.emit('pointerup');f.emit('click');};
+ await assert.rejects(f.run(),/became unsafe/);assert.equal(clicks(f).length,1);cleaned(f);
+ assert.equal(f.audits[0].receipts.totalEvents,3);
+});
+
+test('native transport failure cleans listeners/handles, retains partial receipts, and never falls back',async()=>{
+ const f=fixture(),error=Error('native transport uncertain');f.dispatch=()=>{f.emit('pointerdown');throw error;};
+ await assert.rejects(f.run(),caught=>caught===error);cleaned(f);assert.equal(clicks(f).length,1);
+ assert.equal(f.audits[0].receipts.totalEvents,1);assert.equal(f.audits[0].dispatchAttempted,true);
+});
+
+test('cleanup failure is reported without masking the original native transport error',async()=>{
+ const f=fixture(),error=Error('native dispatch failed');
+ f.dispatch=()=>{
+  const dispose=f.session.dispose;f.session.dispose=()=>{dispose();throw Error('observer cleanup failed');};throw error;
+ };
+ await assert.rejects(f.run(),caught=>caught===error);cleaned(f);assert.equal(clicks(f).length,1);
+ assert.match(f.audits[0].cleanupError,/observer cleanup failed/);
+});
+
+test('cleanup failure also fails an otherwise accepted native command',async()=>{
+ const f=fixture();f.onClick=()=>{const dispose=f.session.dispose;f.session.dispose=()=>{dispose();throw Error('observer cleanup failed');};};
+ await assert.rejects(f.run(),/observer cleanup failed/);cleaned(f);assert.equal(clicks(f).length,1);
+});
+
+test('an expired preflight cannot proceed to hover or dispatch even when its read later finishes',async()=>{
+ const f=fixture();let complete;
+ f.onProof=()=>new Promise(resolve=>{complete=resolve;});
+ await assert.rejects(f.run({timeout:10}),/deadline/);cleaned(f);complete();await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(clicks(f).length,0);assert.equal(f.calls.filter(call=>call[0]==='move').length,0);
+});
+
+test('the single action budget is checked again before issuing native dispatch',async()=>{
+ const f=fixture();f.onProof=count=>{if(count===2)f.advance(90001);};
+ await assert.rejects(f.run(),/deadline/);cleaned(f);assert.equal(clicks(f).length,0);
+});
+
+test('observer disposal is idempotent and forbids a late arm',()=>{
+ const f=fixture(),session=f.createSession();const proof=session.inspect();session.arm(proof.rect);assert.equal(f.listenerCount(),3);
+ session.dispose();session.dispose();assert.equal(f.listenerCount(),0);assert.throws(()=>session.arm(proof.rect),/closed/);
+});
+
+test('desktop tap adds only the guarded whitelist path while mobile keeps its native tap',async()=>{
+ const source=await readFile(new URL('./cadillac-mods-browser-smoke.mjs',import.meta.url),'utf8');
+ assert(source.includes('async function tap(locator){if(mobile)await locator.tap();else await locator.click();report.harness.pointerActivations++;}'));
+ const command=source.slice(source.indexOf('async function commandTap('),source.indexOf('async function diagnosticActivate('));
+ assert.match(command,/if\(mobile\)return tap\(locator\);/);assert.match(command,/assert\(await clickCadillacCommand/);
+ assert.match(command,/report\.harness\.pointerActivations\+\+/);
+ assert(!/catch|force|dispatchEvent|locator\.click/.test(command),'Recognized failure must not fall back to another input path');
+ const routed=source.split('\n').filter(line=>line.includes('await commandTap('));assert(routed.length>10);
+ for(const line of routed)assert(/commandTap\(modButton\(|commandTap\(page\.locator\('#hydraulic-(?:'\+pose|front-up'|hop-all'|settle'|pancake'|exit')/.test(line));
+ for(const target of ['#view','#hydraulic-mode-toggle','#start'])assert(source.includes("await tap(page.locator('"+target+"'))"));
+});

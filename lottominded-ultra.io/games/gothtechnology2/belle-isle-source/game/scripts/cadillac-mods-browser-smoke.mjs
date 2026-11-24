@@ -8,6 +8,7 @@ import {createRequire} from 'node:module';
 import {resolve} from 'node:path';
 import {createCoopStaticServer} from './coop-static-server.mjs';
 import {createNativeTouchSequence} from './native-touch-sequence.mjs';
+import {clickCadillacCommand} from './cadillac-native-command-click.mjs';
 
 const game=resolve(import.meta.dirname,'..'),dist=resolve(game,'dist');
 const layouts={desktop:{width:1280,height:800},'small-phone':{width:320,height:568},compact:{width:390,height:340}};
@@ -24,7 +25,7 @@ assert.match(source,/^[0-9a-f]{40}$/);assert.equal(checkout,source,'Checkout mus
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
 const report={version:2,case:caseName,source,checkout,run:process.env.GITHUB_RUN_ID??null,viewport,mobile,
  passed:false,phase:'setup',startedAt:new Date().toISOString(),checks:{},snapshots:[],captures:[],errors:[],failedRequests:[],startupWarnings:[],
- harness:{pointerActivations:0,diagnosticKeyboardActivations:0,explicitScrolls:0,alreadyVisibleScrolls:0,cooldownReports:0,cooldownReadinessPolls:0,snapshotTimings:[]},
+ harness:{pointerActivations:0,diagnosticKeyboardActivations:0,explicitScrolls:0,alreadyVisibleScrolls:0,cooldownReports:0,cooldownReadinessPolls:0,snapshotTimings:[],commandClicks:[]},
  limitations:'Actual built full island on Chrome SwiftShader. Functional/layout screenshots and native input only; not physical-device, hardware FPS, sustained-performance, or completed human visual acceptance. Short Ride profile reports below are paused UI state snapshots, not performance samples. Existing release gates are unchanged.'};
 await mkdir(out,{recursive:true});
 const server=createCoopStaticServer(dist);let browser,page,context,client,touchSequence;
@@ -33,6 +34,13 @@ async function bounded(promise,ms,label){let timer;try{return await Promise.race
 // Pointer actions already scroll and perform their own visible/stable/hit/enabled
 // checks. A separate scroll action repeats its animation-frame stability wait.
 async function tap(locator){if(mobile)await locator.tap();else await locator.click();report.harness.pointerActivations++;}
+// Only the existing, explicit command call sites use this guarded desktop path.
+// A changed whitelist identity is fatal; it must never retry through locator.click.
+async function commandTap(locator){
+ if(mobile)return tap(locator);
+ assert(await clickCadillacCommand({page,locator,targetProof,record:audit=>report.harness.commandClicks.push(audit)}),'Expected an actual whitelisted Cadillac command button');
+ report.harness.pointerActivations++;
+}
 async function diagnosticActivate(locator){
  if(mobile)return tap(locator);
  // Repeated recorder/navigation controls use the ordinary keyboard path after
@@ -43,8 +51,9 @@ async function diagnosticActivate(locator){
  report.harness.diagnosticKeyboardActivations++;
 }
 /** Read geometry before requesting an explicit scroll. Every later target proof
- * still checks all five hit points, size, and clipping; pointer actions retain
- * Playwright's normal actionability checks. No app state or scroll is injected. */
+ * still checks all five hit points, size, and clipping. Scoped desktop commands
+ * additionally inspect animation/identity and native receipts. No app state or
+ * scroll is injected. */
 async function scrollIfNeeded(locator){
  const contained=await locator.evaluate(element=>{
   const r=element.getBoundingClientRect();if(r.width<=0||r.height<=0)return false;
@@ -211,12 +220,12 @@ async function silverPanels(open){
 async function heightChecks(){
  phase('reduced-motion-static-heights');await openMods();
  for(const name of ['Full-car hop','Front hop','Rear hop'])await expect(modButton(name)).toBeDisabled();
- await tap(modButton('Raise'));let car=await snapshot('raise-while-settings-pauses-ride');
+ await commandTap(modButton('Raise'));let car=await snapshot('raise-while-settings-pauses-ride');
  for(const corner of ['FL','FR','RL','RR']){assert.equal(car.suspension.targets[corner],.14);assert.equal(car.suspension.current[corner],.14);}
  assert(car.suspension.settled&&car.suspension.readyForDrive);assert(car.suspension.pose.heave>.13);
- await tap(modButton('Lower'));car=await snapshot('lower-while-settings-pauses-ride');
+ await commandTap(modButton('Lower'));car=await snapshot('lower-while-settings-pauses-ride');
  for(const corner of ['FL','FR','RL','RR'])assert.equal(car.suspension.current[corner],0);
- await tap(modButton('Raise'));
+ await commandTap(modButton('Raise'));
  await setCorner('FL',22);await setCorner('FR',18);await setCorner('RL',20);await setCorner('RR',16);
  car=await snapshot('independent-corners-apply-immediately');
  assert.deepEqual(car.suspension.current,{FL:.22,FR:.18,RL:.20,RR:.16});assert.deepEqual(car.suspension.current,car.suspension.targets);
@@ -227,7 +236,7 @@ async function heightChecks(){
  }
  await editorCapture('independent-corner-controls','#cadillac-height-FL');await editorCapture('suspension-actions','#cadillac-modifications .cadillac-mods-actions');
  await editorCapture('hop-actions','#cadillac-modifications .cadillac-mods-actions:last-of-type');
- await tap(modButton('Level corners'));car=await snapshot('level-at-selected-average');
+ await commandTap(modButton('Level corners'));car=await snapshot('level-at-selected-average');
  for(const corner of ['FL','FR','RL','RR'])assert(Math.abs(car.suspension.current[corner]-.19)<1e-8);
  assert(car.suspension.readyForDrive);await closeSettings();await frames(1);await capture('leveled-car');
  report.checks.immediateStaticHeights=true;report.checks.reducedMotionHopsDisabled=true;
@@ -235,11 +244,11 @@ async function heightChecks(){
 
 async function hopChecks(){
  if(mobile){report.checks.animatedHops='Detailed-editor hop sequences are covered by both desktop variant cases; this phase retains reduced motion.';return;}
- phase('animated-hops');await openMods();await setReduced(false);await tap(modButton('Raise'));await closeSettings();await frames(2);
+ phase('animated-hops');await openMods();await setReduced(false);await commandTap(modButton('Raise'));await closeSettings();await frames(2);
  for(const [mode,name]of [['all','Full-car hop'],['front','Front hop'],['rear','Rear hop']]){
   await openMods();await expect(modButton(name)).toBeEnabled();
   const boundary=await page.evaluate(()=>window.__cadillacModsEvidence.states.length);
-  await tap(modButton(name));await expect(page.locator('#settings')).not.toBeVisible();
+  await commandTap(modButton(name));await expect(page.locator('#settings')).not.toBeVisible();
   await expect(page.locator('#cadillac-modifications-feedback')).toHaveText('Hydraulic hop started. Driving resumes after landing and leveling.');
   await capture(mode+'-hop-after-native-command');
   // The observer records the real editor's synchronous busy state, even when
@@ -405,12 +414,12 @@ async function cabinChecks(){
 }
 
 async function hydraulicModeChecks(){
- phase('smooth-settings-preview');await openMods();await setReduced(true);await tap(modButton('Lower'));await setReduced(false);
- let boundary=await evidenceLength('states');await tap(modButton('Raise'));await expect(page.locator('#settings')).toBeVisible();
+ phase('smooth-settings-preview');await openMods();await setReduced(true);await commandTap(modButton('Lower'));await setReduced(false);
+ let boundary=await evidenceLength('states');await commandTap(modButton('Raise'));await expect(page.locator('#settings')).toBeVisible();
  const preview=await motionCycle('states',boundary,'Detailed Settings lift');
  assert(preview.some(state=>state.busy&&state.settingsOpen),'A normal lift advances while Settings remains open');
  let car=await snapshot('normal-motion-settings-preview');assert(car.suspension.settled);for(const value of Object.values(car.suspension.current))assert(Math.abs(value-.14)<1e-8);
- boundary=await evidenceLength('states');await tap(modButton('Lower'));await motionCycle('states',boundary,'Detailed Settings lower');await closeSettings();
+ boundary=await evidenceLength('states');await commandTap(modButton('Lower'));await motionCycle('states',boundary,'Detailed Settings lower');await closeSettings();
  phase('hydraulic-mode-third-person');await expect(modeRoot()).not.toBeVisible();await expect(page.locator('body')).not.toHaveClass(/belle-hydraulic-mode/);
  if(await page.locator('#view').getAttribute('aria-pressed')==='true')await tap(page.locator('#view'));
  await openMenu();await targetProof(page.locator('#hydraulic-mode-toggle'),'hydraulic-mode-menu-toggle');await tap(page.locator('#hydraulic-mode-toggle'));
@@ -421,7 +430,7 @@ async function hydraulicModeChecks(){
  await capture('hydraulic-mode-radial');
  await openMenu();await expect(modeRoot()).not.toBeVisible();await tap(page.locator('[data-close="ride-menu"]'));await expect(modeRoot()).toBeVisible();
  for(const pose of ['front-up','back-up','pancake']){
-  boundary=await evidenceLength('modeStates');await tap(page.locator('#hydraulic-'+pose));
+  boundary=await evidenceLength('modeStates');await commandTap(page.locator('#hydraulic-'+pose));
   const states=await motionCycle('modeStates',boundary,'Smart Pump '+pose);
   if(pose==='front-up')assert(states.some(state=>state.busy&&Object.values(state.corners).some(corner=>corner.currentCm!==null&&corner.currentCm<corner.targetCm)),
    'The actual UI must expose a current height below its accepted target during a normal lift');
@@ -431,12 +440,12 @@ async function hydraulicModeChecks(){
  // A native Enter on the second button avoids an extra pointer-stability wait
  // while the first lift runs. Capture its pre-command visible motion state.
  boundary=await evidenceLength('modeStates');const inputBoundary=await evidenceLength('input');
- await tap(page.locator('#hydraulic-front-up'));await page.locator('#hydraulic-back-up').press('Enter');await motionCycle('modeStates',boundary,'Native in-flight retarget');
+ await commandTap(page.locator('#hydraulic-front-up'));await page.locator('#hydraulic-back-up').press('Enter');await motionCycle('modeStates',boundary,'Native in-flight retarget');
  const retarget=await page.evaluate(start=>window.__cadillacModsEvidence.input.slice(start).find(event=>event.type==='keydown'&&event.code==='Enter'&&event.target==='hydraulic-back-up'),inputBoundary);
  assert(retarget&&retarget.modeMotion==='moving','The native Back up activation must retarget an unfinished lift');
  ({car}=await modeSnapshot('hydraulic-mode-retarget'));assertSmartPose(car,'back-up');report.checks.hydraulicRetargetInput=retarget;
- await openMods();await tap(modButton('Raise'));await expect(page.locator('#cadillac-modifications')).toHaveAttribute('data-motion','idle');await closeSettings();
- boundary=await evidenceLength('modeStates');await tap(page.locator('#hydraulic-hop-all'));
+ await openMods();await commandTap(modButton('Raise'));await expect(page.locator('#cadillac-modifications')).toHaveAttribute('data-motion','idle');await closeSettings();
+ boundary=await evidenceLength('modeStates');await commandTap(page.locator('#hydraulic-hop-all'));
  const hopStates=await motionCycle('modeStates',boundary,'Hydraulic Mode full hop');
  assert(hopStates.some(state=>state.motion==='hop'&&state.poseLocked&&state.cornersLocked&&state.hopsLocked),'A live mode hop locks conflicting controls');
  ({car}=await modeSnapshot('hydraulic-mode-hop-landed'));assert.equal(car.suspension.hop,null);assert(car.suspension.settled&&car.suspension.readyForDrive);
@@ -447,23 +456,23 @@ async function hydraulicModeChecks(){
  assert.deepEqual(car.suspension.current,{FL:.22,FR:.18,RL:.20,RR:.16});assert.deepEqual(car.suspension.targets,car.suspension.current);
  await scrollIfNeeded(page.locator('#hydraulic-corner-FL'));await capture('hydraulic-advanced-front-corners');
  await scrollIfNeeded(page.locator('#hydraulic-corner-RR'));await capture('hydraulic-advanced-rear-corners');
- await tap(page.locator('#hydraulic-settle'));await expect(modeRoot()).toHaveAttribute('data-motion','still');({car}=await modeSnapshot('hydraulic-mode-finish-level'));
+ await commandTap(page.locator('#hydraulic-settle'));await expect(modeRoot()).toHaveAttribute('data-motion','still');({car}=await modeSnapshot('hydraulic-mode-finish-level'));
  for(const value of Object.values(car.suspension.current))assert(Math.abs(value-.19)<1e-8);assert(car.suspension.readyForDrive);
  await openMods();await setReduced(true);await closeSettings();
  for(const mode of ['all','front','rear'])await expect(page.locator('#hydraulic-hop-'+mode)).toBeDisabled();
  await expect(page.locator('#hydraulic-front-up')).toBeEnabled();await expect(page.locator('#hydraulic-corner-FL')).toBeEnabled();
- await tap(page.locator('#hydraulic-pancake'));({car}=await modeSnapshot('hydraulic-mode-reduced-pancake'));assertSmartPose(car,'pancake');
+ await commandTap(page.locator('#hydraulic-pancake'));({car}=await modeSnapshot('hydraulic-mode-reduced-pancake'));assertSmartPose(car,'pancake');
  await cabinChecks();
  phase('hydraulic-mode-holds-driving');await page.locator('#game').focus();await page.keyboard.press('h');await expect(modeRoot()).toBeVisible();
  await page.locator('#hydraulic-front-up').press('Escape');await expect(modeRoot()).not.toBeVisible();await expect(page.locator('#game')).toBeFocused();
  await page.keyboard.press('h');await expect(modeRoot()).toBeVisible();
- await tap(page.locator('#hydraulic-front-up'));const before=await modeSnapshot('hydraulic-mode-before-held-drive');assertSmartPose(before.car,'front-up');
+ await commandTap(page.locator('#hydraulic-front-up'));const before=await modeSnapshot('hydraulic-mode-before-held-drive');assertSmartPose(before.car,'front-up');
  await page.locator('#game').focus();await page.keyboard.down('w');
  try{await frames(12);assert.equal(parseFloat(await page.locator('#speed').innerText()),0);}finally{await page.keyboard.up('w');}
  const held=await modeSnapshot('hydraulic-mode-held-drive');assertSmartPose(held.car,'front-up');
  assert(Math.abs(held.car.distanceM-before.car.distanceM)<1e-8,'Held accelerator cannot propel the car in Hydraulic Mode');
  assert.equal(held.car.speedMps,0);assert.equal(held.car.suspension.readyForDrive,false,'Held controls cannot silently level the selected uneven pose');
- await tap(page.locator('#hydraulic-exit'));await expect(modeRoot()).not.toBeVisible();await expect(page.locator('body')).not.toHaveClass(/belle-hydraulic-mode/);
+ await commandTap(page.locator('#hydraulic-exit'));await expect(modeRoot()).not.toBeVisible();await expect(page.locator('body')).not.toHaveClass(/belle-hydraulic-mode/);
  await page.locator('#game').focus();await page.keyboard.down('w');
  try{await expect.poll(async()=>parseFloat(await page.locator('#speed').innerText())).toBeGreaterThan(0);}finally{await page.keyboard.up('w');}
  await page.keyboard.down('Space');try{await expect.poll(async()=>parseFloat(await page.locator('#speed').innerText())).toBe(0);}finally{await page.keyboard.up('Space');}
@@ -473,8 +482,8 @@ async function hydraulicModeChecks(){
 }
 
 async function driveAfterLevel(){
- phase('finish-level-and-drive');await openMods();await tap(modButton('Raise'));await setCorner('FL',20);await setCorner('FR',16);
- await tap(modButton('Finish motion & level'));await expect(page.locator('#settings')).not.toBeVisible();await frames(3);
+ phase('finish-level-and-drive');await openMods();await commandTap(modButton('Raise'));await setCorner('FL',20);await setCorner('FR',16);
+ await commandTap(modButton('Finish motion & level'));await expect(page.locator('#settings')).not.toBeVisible();await frames(3);
  let car=await snapshot('finish-motion-level');assert(car.suspension.readyForDrive);
  assert.equal(car.speedMps,0,'The final driving check starts from rest');
  for(const corner of ['FL','FR','RL','RR'])assert(Math.abs(car.suspension.current[corner]-.16)<1e-8);
