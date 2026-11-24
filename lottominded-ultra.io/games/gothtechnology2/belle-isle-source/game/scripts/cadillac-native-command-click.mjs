@@ -134,7 +134,15 @@ export async function clickCadillacCommand({page,locator,targetProof,record,time
   session=await step('identify',()=>element.evaluateHandle(createCadillacCommandSession),handle=>handle.dispose());
   identity=await step('identity',()=>session.evaluate(value=>value?.identity??null));
   if(!identity)return false;
-  audit={...identity,preflightMs:null,hoverMs:null,dispatchMs:null,totalMs:null,dispatchAttempted:false,receipts:null,error:null,cleanupError:null};
+  audit={...identity,readinessMs:null,preflightMs:null,hoverMs:null,dispatchMs:null,totalMs:null,dispatchAttempted:false,receipts:null,error:null,cleanupError:null};
+  // Keep locator.click's transient visibility/enabled waits without its stable-
+  // rectangle wait. ElementHandle retains this exact button; it cannot resolve
+  // a replacement. Both waits consume the same original action deadline.
+  const readinessStarted=now();
+  try{
+   await step('visible readiness',ms=>element.waitForElementState('visible',{timeout:ms}));
+   await step('enabled readiness',ms=>element.waitForElementState('enabled',{timeout:ms}));
+  }finally{audit.readinessMs=now()-readinessStarted;}
   // Check disabled/animation state before a potentially necessary native scroll.
   await step('eligibility',()=>session.evaluate(value=>value.inspect({geometry:false})));
   const first=await step('first target proof',()=>targetProof(element,'native-command-'+identity.command));

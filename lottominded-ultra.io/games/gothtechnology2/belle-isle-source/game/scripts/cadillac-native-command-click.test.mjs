@@ -5,6 +5,8 @@ import {readFile} from 'node:fs/promises';
 import {clickCadillacCommand,createCadillacCommandSession} from './cadillac-native-command-click.mjs';
 
 const box=(left=100,top=100,width=160,height=48)=>({left,top,width,height,right:left+width,bottom:top+height});
+const flush=async()=>{for(let index=0;index<80;index++)await Promise.resolve();};
+function deferred(){let resolve;const promise=new Promise(ok=>{resolve=ok;});return{promise,resolve};}
 // The actual serialized observer runs in a separate realm with these DOM
 // contracts. These tests prove guard/lifetime logic, not native browser delivery.
 function fixture(options={}){
@@ -70,6 +72,15 @@ function fixture(options={}){
  };
  const elementHandle={
   node:button,
+  async waitForElementState(state,{timeout}){
+   assert(['visible','enabled'].includes(state),'Readiness must not add a stable-rectangle wait');
+   assert(timeout>0&&timeout<=90000);calls.push(['readiness',state,timeout]);
+   await f.onReadiness?.(state,timeout,button);
+   if(!button.isConnected)throw Error('Retained button detached during readiness');
+   const ancestry=[button,...button.ancestors()];
+   if(state==='visible'&&ancestry.some(node=>node.style.display==='none'||['hidden','collapse'].includes(node.style.visibility)))throw Error('Retained button remained hidden');
+   if(state==='enabled'&&(button.matches(':disabled')||ancestry.some(node=>node.getAttribute('aria-disabled')==='true')))throw Error('Retained button remained disabled');
+  },
   async evaluateHandle(fn){
    calls.push('identify');assert.equal(fn,createCadillacCommandSession);f.session=f.createSession();
    return{
@@ -123,7 +134,81 @@ test('native hover, both actual-button proofs and one primary-left sequence pass
  assert.equal(f.audits[0].receipts.totalEvents,3);assert.equal(f.audits[0].receipts.receipts[2].isPrimary,false);
  assert.equal(f.audits[0].receipts.receipts[0].pointerId,0);
  assert.equal(f.audits[0].dispatchAttempted,true);assert.equal(f.audits[0].error,null);
- for(const metric of ['preflightMs','hoverMs','dispatchMs','totalMs'])assert(Number.isFinite(f.audits[0][metric])&&f.audits[0][metric]>=0);
+ for(const metric of ['readinessMs','preflightMs','hoverMs','dispatchMs','totalMs'])assert(Number.isFinite(f.audits[0][metric])&&f.audits[0][metric]>=0);
+});
+
+test('transient hidden and disabled states wait on the same retained button before either geometry proof',async()=>{
+ const f=fixture(),visible=deferred(),enabled=deferred();f.root.style.display='none';f.button.disabled=true;
+ f.onReadiness=(state,timeout,node)=>{assert.equal(node,f.button);return state==='visible'?visible.promise:enabled.promise;};
+ const running=f.run();await flush();
+ assert.deepEqual(f.calls.filter(call=>call[0]==='readiness').map(call=>call[1]),['visible']);
+ assert.equal(clicks(f).length,0);assert.equal(f.calls.filter(call=>call[0]==='proof').length,0);
+ f.advance(100);f.root.style.display='block';visible.resolve();await flush();
+ assert.deepEqual(f.calls.filter(call=>call[0]==='readiness').map(call=>call[1]),['visible','enabled']);
+ assert.equal(clicks(f).length,0);assert.equal(f.calls.filter(call=>call[0]==='proof').length,0);
+ f.advance(200);f.button.disabled=false;enabled.resolve();assert.equal(await running,true);cleaned(f);
+ assert.equal(f.calls.filter(call=>call==='resolve').length,1);assert.equal(clicks(f).length,1);
+ assert.equal(f.audits[0].readinessMs,300);assert.equal(f.audits[0].receipts.totalEvents,3);
+});
+
+test('readiness consumes the original single budget instead of granting each element-state wait 90 seconds',async()=>{
+ const f=fixture();f.onReadiness=state=>f.advance(state==='visible'?30000:20000);
+ assert.equal(await f.run(),true);cleaned(f);
+ assert.deepEqual(f.calls.filter(call=>call[0]==='readiness').map(call=>[call[1],call[2]]),[['visible',90000],['enabled',60000]]);
+ assert.equal(f.audits[0].readinessMs,50000);assert.equal(clicks(f).length,1);
+});
+
+test('hidden or disabled readiness can exhaust its budget; later readiness cannot continue into proof or native input',async t=>{
+ t.mock.timers.enable({apis:['setTimeout']});
+ for(const state of ['visible','enabled']){
+  const f=fixture(),ready=deferred();
+  if(state==='visible')f.root.style.display='none';else f.button.disabled=true;
+  f.onReadiness=current=>current===state?ready.promise:undefined;
+  const running=f.run({timeout:25});await flush();
+  f.advance(25);t.mock.timers.tick(25);await assert.rejects(running,new RegExp(state+' readiness.*deadline'));cleaned(f);
+  assert.equal(f.audits[0].dispatchAttempted,false);assert.equal(f.audits[0].readinessMs,25);
+  f.root.style.display='block';f.button.disabled=false;ready.resolve();await flush();
+  assert.equal(clicks(f).length,0);assert.equal(f.calls.filter(call=>call[0]==='move'||call[0]==='proof').length,0);
+  assert.equal(f.calls.filter(call=>call==='resolve').length,1);
+ }
+});
+
+test('a detached or replaced button/root during readiness never retargets to another command',async()=>{
+ const mutations=[
+  f=>f.button.remove(),
+  f=>{const replacement=new f.HTMLButtonElement({id:f.button.id,text:f.button.textContent,rect:box()});f.button.remove();f.container.append(replacement);},
+  f=>{f.root.id='old-command-root';const replacement=new f.Element('section',{id:'hydraulic-controls'});f.body.append(replacement);replacement.append(f.button);},
+  f=>{f.button.textContent='Back up';},
+ ];
+ for(const mutate of mutations){
+  const f=fixture(),ready=deferred();f.onReadiness=state=>state==='enabled'?ready.promise:undefined;
+  const running=f.run();await flush();mutate(f);ready.resolve();await assert.rejects(running,/detached|identity changed/);cleaned(f);
+  assert.equal(f.calls.filter(call=>call==='resolve').length,1);assert.equal(clicks(f).length,0);
+  assert.equal(f.calls.filter(call=>call[0]==='move'||call[0]==='proof').length,0);assert.equal(f.audits[0].dispatchAttempted,false);
+ }
+});
+
+test('an enabled result after the deadline cannot proceed to strict proof or dispatch',async()=>{
+ const f=fixture();f.onReadiness=state=>{if(state==='enabled')f.advance(90001);};
+ await assert.rejects(f.run(),/deadline/);cleaned(f);assert.equal(clicks(f).length,0);
+ assert.equal(f.calls.filter(call=>call[0]==='move'||call[0]==='proof').length,0);assert.equal(f.audits[0].dispatchAttempted,false);
+});
+
+test('readiness does not relax disabled-fieldset, inert or post-readiness state guards',async()=>{
+ const f=fixture();f.container.tagName='FIELDSET';f.container.disabled=true;
+ f.onReadiness=state=>{if(state==='enabled'){f.container.disabled=false;f.root.inert=true;}};
+ await assert.rejects(f.run(),/inert/);cleaned(f);assert.equal(clicks(f).length,0);
+ const g=fixture();g.onProof=count=>{if(count===1)g.container.tagName='FIELDSET',g.container.disabled=true;};
+ await assert.rejects(g.run(),/disabled/);cleaned(g);assert.equal(clicks(g).length,0);
+});
+
+test('an already issued native click that times out is never retried after its late completion',async t=>{
+ t.mock.timers.enable({apis:['setTimeout']});
+ const f=fixture(),delivery=deferred();f.dispatch=async()=>{f.emit('pointerdown');await delivery.promise;f.emit('pointerup');f.emit('click');};
+ const running=f.run({timeout:25});await flush();assert.equal(clicks(f).length,1);
+ f.advance(25);t.mock.timers.tick(25);await assert.rejects(running,/dispatch.*deadline/);cleaned(f);
+ assert.equal(f.audits[0].dispatchAttempted,true);assert.equal(f.audits[0].receipts.totalEvents,1);
+ delivery.resolve();await flush();assert.equal(clicks(f).length,1);assert.equal(f.audits[0].receipts.totalEvents,1);
 });
 
 test('a moving hydraulic simulation and unrelated body descendant animation do not invalidate a static command',async()=>{
