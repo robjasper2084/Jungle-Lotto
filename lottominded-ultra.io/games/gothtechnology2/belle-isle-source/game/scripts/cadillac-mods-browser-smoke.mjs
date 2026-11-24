@@ -15,6 +15,24 @@ const layouts={desktop:{width:1280,height:800},'small-phone':{width:320,height:5
 const layout=process.env.BELLE_CADILLAC_MODS_CASE||'desktop',variant=process.env.BELLE_CADILLAC_MODS_RIDE||'hydraulic-cadillac';
 assert(Object.hasOwn(layouts,layout),'Unknown layout');
 assert(['cadillac','hydraulic-cadillac'].includes(variant),'Unknown Cadillac variant');
+/** Explicit environment selection only. Existing software cases remain the default. */
+function cadillacBackendPolicy(requested,platform,layout){
+ assert(['swiftshader','metal'].includes(requested),'Unknown Cadillac control renderer');
+ if(requested==='metal'){
+  assert.equal(platform,'darwin','The Metal control experiment requires macOS');
+  assert.equal(layout,'desktop','The Metal control experiment is desktop-only');
+  return{name:'metal',args:['--enable-gpu','--use-gl=angle','--use-angle=metal','--gpu-watchdog-timeout-seconds=60']};
+ }
+ return{name:'swiftshader',args:['--use-angle=swiftshader','--enable-unsafe-swiftshader','--gpu-watchdog-timeout-seconds=60']};
+}
+function assertCadillacBackend(renderer,requested){
+ if(requested==='metal'){
+  assert.match(renderer,/ANGLE/i,'The actual game canvas must identify the requested ANGLE backend');
+  assert.match(renderer,/Metal/i,'The actual game canvas must use ANGLE/Metal');
+  assert.doesNotMatch(renderer,/SwiftShader|llvmpipe|softpipe|software/i,'A software renderer cannot satisfy the Metal control experiment');
+ }else assert.match(renderer,/SwiftShader/i,'This workflow records software WebGL honestly');
+}
+const backend=cadillacBackendPolicy(process.env.BELLE_CADILLAC_MODS_BACKEND??'swiftshader',process.platform,layout);
 const mobile=layout!=='desktop',viewport=layouts[layout],caseName=variant+'-'+layout;
 const out=resolve(game,'output/cadillac-mods',caseName);
 const require=createRequire(resolve(game,'../../package.json'));
@@ -26,7 +44,9 @@ const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
 const report={version:2,case:caseName,source,checkout,run:process.env.GITHUB_RUN_ID??null,viewport,mobile,
  passed:false,phase:'setup',startedAt:new Date().toISOString(),checks:{},snapshots:[],captures:[],errors:[],failedRequests:[],startupWarnings:[],
  harness:{pointerActivations:0,diagnosticKeyboardActivations:0,explicitScrolls:0,alreadyVisibleScrolls:0,cooldownReports:0,cooldownReadinessPolls:0,snapshotTimings:[],commandClicks:[]},
- limitations:'Actual built full island on Chrome SwiftShader. Functional/layout screenshots and native input only; not physical-device, hardware FPS, sustained-performance, or completed human visual acceptance. Short Ride profile reports below are paused UI state snapshots, not performance samples. Existing release gates are unchanged.'};
+ ...(backend.name==='metal'?{nativeEnvironment:{requestedBackend:'angle-metal',platform:process.platform,actualGpu:null,
+  scope:'Isolated desktop control environment diagnostic at the unchanged Smooth/30 fixture. All original functional assertions and deadlines apply; this is not release-performance acceptance.'}}:{}),
+ limitations:backend.name==='metal'?'Actual built full island on Chrome ANGLE/Metal at the unchanged Smooth/30 control fixture. Functional/layout screenshots and native input only; not physical-device, hardware FPS, sustained-performance, or completed human visual acceptance. Short Ride profile reports below are paused UI state snapshots, not performance samples. Existing release gates are unchanged.':'Actual built full island on Chrome SwiftShader. Functional/layout screenshots and native input only; not physical-device, hardware FPS, sustained-performance, or completed human visual acceptance. Short Ride profile reports below are paused UI state snapshots, not performance samples. Existing release gates are unchanged.'};
 await mkdir(out,{recursive:true});
 const server=createCoopStaticServer(dist);let browser,page,context,client,touchSequence;
 const phase=name=>{report.phase=name;console.log(new Date().toISOString()+' '+caseName+' '+name);};
@@ -86,8 +106,59 @@ async function selectWithKeyboard(selector,value){
  const control=page.locator(selector);await scrollIfNeeded(control);await expect(control).toBeEnabled();
  const options=await control.locator('option').evaluateAll(items=>items.map(item=>item.value)),index=options.indexOf(value);
  assert(index>=0,selector+' contains '+value);
+ if(backend.name==='metal'){
+  await selectWithMetalTypeahead(control,selector,value);return;
+ }
  await control.press('Home');for(let i=0;i<index;i++)await control.press('ArrowDown');await control.press('Enter');
  await expect(control).toHaveValue(value);
+}
+/** Mac arrow keys open an OS popup that renderer key dispatch cannot navigate.
+ * Native printable keys select through the closed control's own typeahead. */
+async function selectWithMetalTypeahead(control,selector,value){
+ assert.equal(process.platform,'darwin');assert.equal(layout,'desktop');
+ assert(['#quality','#fps','#cadillac-mod-rim','#cadillac-mod-tire','#cadillac-mod-center'].includes(selector),'Only the existing desktop fixture selects may use native typeahead');
+ const receipt={selector,expectedValue:value,method:'native-closed-select-typeahead',key:null,maximumPresses:null,before:null,attempts:[],events:[],passed:false,error:null};
+ (report.nativeEnvironment.selects??=[]).push(receipt);
+ let evidenceStart;
+ try{
+  const inventory=await control.evaluate(node=>{
+   if(!(node instanceof HTMLSelectElement)||node.multiple||node.size>1)throw Error('A single native menu select is required');
+   return {id:node.id,options:[...node.options].map(option=>({value:option.value,label:option.label.trim(),disabled:option.disabled||!!option.closest('optgroup')?.disabled}))};
+  });
+  assert.equal(inventory.id,selector.slice(1));assert(inventory.options.length>0&&inventory.options.length<=32,'Native select inventory must be bounded');
+  const enabled=inventory.options.filter(option=>!option.disabled),targets=enabled.filter(option=>option.value===value);
+  assert.equal(targets.length,1,'The requested value must identify one enabled option');
+  const key=targets[0].label.charAt(0).toLowerCase();assert.match(key,/^[a-z0-9]$/,'The existing option label must start with a native printable key');
+  const cycle=enabled.filter(option=>option.label.charAt(0).toLowerCase()===key);
+  receipt.key=key;receipt.maximumPresses=cycle.length;receipt.enabledOptions=enabled;
+  evidenceStart=await page.evaluate(()=>window.__cadillacModsEvidence.input.length);
+  assert(evidenceStart+4+cycle.length*3<5000,'Native input evidence must have room for the entire selection');
+  // Genuine blur resets Blink's previous typeahead session without a timed wait.
+  await control.press('Tab');await expect(control).not.toBeFocused();
+  await control.focus();await expect(control).toBeFocused();
+  receipt.before=await control.inputValue();
+  for(let attempt=0;attempt<cycle.length;attempt++){
+   await control.press(key);await expect(control).toBeFocused();
+   const selected=await control.inputValue();receipt.attempts.push({press:attempt+1,value:selected});
+   if(selected===value)break;
+  }
+  await expect(control).toHaveValue(value);
+  receipt.events=await page.evaluate(start=>window.__cadillacModsEvidence.input.slice(start),evidenceStart);
+  const keyCode=/^[0-9]$/.test(key)?'Digit'+key:'Key'+key.toUpperCase();
+  const keys=receipt.events.filter(event=>event.type==='keydown');
+  assert.equal(keys.length,1+receipt.attempts.length,'Exactly the blur key and bounded character presses must be recorded');
+  assert.equal(keys[0]?.code,'Tab');assert(keys.every(event=>event.trusted&&event.target===inventory.id),'Each native key must target the actual select');
+  assert(keys.slice(1).every(event=>event.code===keyCode),'Only the planned printable character may select the value');
+  const changes=receipt.events.filter(event=>event.type==='input'||event.type==='change');
+  assert(changes.every(event=>event.trusted&&event.target===inventory.id),'Select changes must come from native browser input');
+  if(receipt.before!==value||receipt.attempts.some(attempt=>attempt.value!==receipt.before)){
+   assert(changes.some(event=>event.type==='input')&&changes.some(event=>event.type==='change'),'A changed selection must dispatch native input and change');
+  }
+  receipt.passed=true;
+ }catch(error){receipt.error=String(error);throw error;}
+ finally{
+  if(evidenceStart!==undefined&&!receipt.events.length)receipt.events=await page.evaluate(start=>window.__cadillacModsEvidence.input.slice(start),evidenceStart).catch(()=>[]);
+ }
 }
 async function setReduced(value){
  const control=page.locator('#motion');
@@ -172,7 +243,9 @@ async function painted(){
    const completedAt=performance.now();frame=requestAnimationFrame(()=>{frame=requestAnimationFrame(()=>finish(null,{renderer,submittedAt,completedAt,paintOpportunities:2,width:canvas.width,height:canvas.height}));});
   }frame=requestAnimationFrame(poll);
  }));
- assert.match(proof.renderer,/SwiftShader/i,'This workflow records software WebGL honestly');return proof;
+ assertCadillacBackend(proof.renderer,backend.name);
+ if(backend.name==='metal')assert.equal(proof.renderer,report.nativeEnvironment.actualGpu?.renderer,'The completed capture must retain the verified game-canvas backend');
+ return proof;
 }
 async function capture(name){
  const gpu=await painted(),file=name+'.png';const bytes=await page.screenshot({path:resolve(out,file),timeout:150000});
@@ -533,7 +606,7 @@ async function run(){
  const marker=JSON.parse(await readFile(resolve(dist,'cadillac-mods-build.json'),'utf8'));assert.equal(marker.sourceSha,source);
  assert.equal(marker.indexSha256,hash(await readFile(resolve(dist,'index.html'))));report.build=marker;
  await new Promise((yes,no)=>{server.once('error',no);server.listen(0,'127.0.0.1',yes);});
- browser=await chromium.launch({channel:'chrome',headless:false,args:['--use-angle=swiftshader','--enable-unsafe-swiftshader','--gpu-watchdog-timeout-seconds=60']});
+ browser=await chromium.launch({channel:'chrome',headless:false,args:backend.args});
  report.browser=browser.version();
  context=await browser.newContext({viewport,isMobile:mobile,hasTouch:mobile,deviceScaleFactor:1,reducedMotion:'reduce',serviceWorkers:'block'});
  await context.addInitScript(()=>{
@@ -584,10 +657,21 @@ async function run(){
  page.on('requestfailed',request=>report.failedRequests.push({phase:report.phase,url:request.url(),type:request.resourceType(),error:request.failure()?.errorText}));
  phase('boot');await page.goto('http://127.0.0.1:'+server.address().port+'/?ride='+variant+'&profile=1',{waitUntil:'domcontentloaded',timeout:30000});
  await page.waitForFunction(()=>['ready','error'].includes(document.querySelector('#welcome')?.dataset.state),null,{timeout:180000});
- await expect(page.locator('#welcome')).toHaveAttribute('data-state','ready');await tap(page.locator('#start'));
+ await expect(page.locator('#welcome')).toHaveAttribute('data-state','ready');
+ if(backend.name==='metal'){
+  const actual=await page.locator('#game').evaluate(canvas=>{
+   const gl=canvas.getContext('webgl2');if(!gl||gl.isContextLost()||!canvas.width||!canvas.height)throw Error('A live, nonempty game WebGL2 canvas is required');
+   const debug=gl.getExtension('WEBGL_debug_renderer_info');return{
+    vendor:String(gl.getParameter(debug?.UNMASKED_VENDOR_WEBGL??gl.VENDOR)),
+    renderer:String(gl.getParameter(debug?.UNMASKED_RENDERER_WEBGL??gl.RENDERER)),
+    version:String(gl.getParameter(gl.VERSION)),width:canvas.width,height:canvas.height};
+  });
+  report.nativeEnvironment.actualGpu=actual;assertCadillacBackend(actual.renderer,backend.name);
+ }
+ await tap(page.locator('#start'));
  await expect(page.locator('body')).not.toHaveClass(/at-start/);await expect(page.locator('#ride-mode')).toContainText('CADILLAC');
  await openMods(tap);await setReduced(true);
- // Functional software-renderer fixture uses the ordinary Smooth setting. This
+ // Functional control fixture uses the ordinary Smooth setting. This
  // does not change any full-quality or sustained-performance acceptance suite.
  await selectWithKeyboard('#quality','smooth');await selectWithKeyboard('#fps','30');
  if(mobile){if(!await page.locator('#touch').isChecked())await tap(page.locator('#touch').locator('..'));await selectWithKeyboard('#joystick-mode','fixed');}
