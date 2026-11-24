@@ -82,10 +82,37 @@ try{
   window.__belleEndLinkProbe=()=>{proto.linkProgram=link;proto.getProgramParameter=query;pending.clear();};
  });
  await page.addInitScript(()=>{const receipts={keydowns:0,keyups:0,repeats:0,blurs:0};
+  // Read native UI/input events without replacing game, sensor, or renderer APIs.
+  // Retain the early prelude even if later events reach this bounded limit.
+  const transitions=[],transitionLimit=32;let observing=false,observerStarted=0,droppedTransitions=0,firstW=false;
+  const mark=event=>{
+   if(!observing)return;
+   if(transitions.length>=transitionLimit){droppedTransitions++;return;}
+   transitions.push({event,atMs:Math.max(0,Math.round(performance.now()-observerStarted))});
+  };
+  window.__belleObserverWindow={
+   reset(){transitions.length=0;droppedTransitions=0;firstW=false;observerStarted=performance.now();observing=true;mark('observer-start');},
+   finish(){mark('observer-snapshot');observing=false;return {
+    scope:'Observers begin with Settings open, before the ride profile starts, and end after genuine W-keyup. Includes the profile-start, menu-close and focus prelude; distinct from the unchanged requested riding window.',
+    durationMs:Math.max(0,Math.round(performance.now()-observerStarted)),transitionLimit,droppedTransitions,transitions:[...transitions],
+    caveat:'Relative native-event observation times only; no coordinates, GPU execution timings, or previous-render attribution.',
+   };},
+  };
+  document.addEventListener('click',event=>{
+   if(!event.isTrusted||!(event.target instanceof Element))return;
+   const target=event.target;
+   if(target.closest('#ride-profile > button')?.textContent?.startsWith('Start'))mark('profile-start-click');
+   if(target.closest('[data-close="settings"]'))mark('settings-close-click');
+  },true);
+  document.addEventListener('close',event=>{if(event.target?.id==='settings')mark('settings-close-event');},true);
+  document.addEventListener('focus',event=>{if(event.target?.id==='game')mark('game-focus');},true);
+  document.addEventListener('visibilitychange',()=>mark(document.hidden?'document-hidden':'document-visible'));
+  window.addEventListener('focus',()=>mark('window-focus'));
+  window.addEventListener('blur',()=>mark('window-blur'));
   window.__belleInputReceipts=receipts;
-  window.addEventListener('keydown',event=>{if(event.code==='KeyW'&&event.isTrusted){receipts.keydowns++;if(event.repeat)receipts.repeats++;}},true);
+  window.addEventListener('keydown',event=>{if(event.code==='KeyW'&&event.isTrusted){receipts.keydowns++;if(event.repeat)receipts.repeats++;if(observing&&!firstW){firstW=true;mark('first-w-keydown');}}},true);
   window.addEventListener('blur',()=>receipts.blurs++,true);
-  window.addEventListener('keyup',event=>{if(event.code==='KeyW'&&event.isTrusted)receipts.keyups++;},true);
+  window.addEventListener('keyup',event=>{if(event.code==='KeyW'&&event.isTrusted){receipts.keyups++;mark('w-keyup');}},true);
   // Browser-only compositor callback observations: no extra game or GPU draws.
   const browserClock={rafCallbacks:0,gaps:[],over250ms:0,maxGapMs:0};let lastRaf=null;
   browserClock.reset=()=>{browserClock.rafCallbacks=0;browserClock.gaps=[];browserClock.over250ms=0;browserClock.maxGapMs=0;lastRaf=null;};
@@ -111,10 +138,12 @@ try{
    if(task.duration>250)longTasks.over250ms++;
   }}).observe({type:'longtask'});}catch{/* availability is not invented */}
  });
- page.on('pageerror',err=>report.errors.push(err.message));
- page.on('console',msg=>{if(msg.type()==='error')report.errors.push(msg.text());});
- page.on('response',r=>{if(r.status()>=400)report.errors.push('HTTP '+r.status()+' '+r.url());});
- page.on('requestfailed',r=>report.failedRequests.push((r.failure()?.errorText||'failed')+' '+r.url()));
+ const sourcePageError=err=>report.errors.push(err.message);
+ const sourceConsoleError=msg=>{if(msg.type()==='error')report.errors.push(msg.text());};
+ const sourceResponseError=r=>{if(r.status()>=400)report.errors.push('HTTP '+r.status()+' '+r.url());};
+ const sourceRequestError=r=>report.failedRequests.push((r.failure()?.errorText||'failed')+' '+r.url());
+ page.on('pageerror',sourcePageError);page.on('console',sourceConsoleError);
+ page.on('response',sourceResponseError);page.on('requestfailed',sourceRequestError);
  const navigationStarted=Date.now();
  await page.goto('http://127.0.0.1:'+server.address().port+'/?profile=1'+(mode==='diagnostic'?'&perfProbe=1':'&locationPerf=1'),{waitUntil:'domcontentloaded'});
  await page.waitForFunction(()=>['ready','error'].includes(document.querySelector('#welcome')?.dataset.state));
@@ -155,18 +184,20 @@ try{
  const panel=page.locator('#ride-profile');
  await expect(panel).toBeAttached();
  await panel.locator('summary').click();
- await panel.getByRole('button',{name:'Start 10-minute capture'}).click();
- await page.locator('[data-close="settings"]').click();
- await page.locator('#game').focus();
- let cdp=null,initialCounters=null,rideProbeStart=Date.now();
+ // Start independent observers before the profiler/menu transition. Resetting
+ // after closing Settings would miss the preceding render of an early stall.
+ let cdp=null,initialCounters=null,cpuProbeStart=Date.now();
  try{
   cdp=await page.context().newCDPSession(page);
   await cdp.send('Performance.enable');
   initialCounters=(await cdp.send('Performance.getMetrics')).metrics;
+  cpuProbeStart=Date.now();
  }catch(error){report.probeErrors.push('CDP initial counters: '+String(error));}
- try{await page.evaluate(()=>{window.__belleBrowserClock?.reset?.();window.__belleLongTasks?.reset?.();});}
+ try{await page.evaluate(()=>{window.__belleBrowserClock?.reset?.();window.__belleLongTasks?.reset?.();window.__belleObserverWindow?.reset?.();});}
  catch(error){report.probeErrors.push('Browser probe reset: '+String(error));}
- rideProbeStart=Date.now();
+ await panel.getByRole('button',{name:'Start 10-minute capture'}).click();
+ await page.locator('[data-close="settings"]').click();
+ await page.locator('#game').focus();
  let reassertions=0,inFlight=false,heartbeatError=null,pendingHeartbeat=Promise.resolve();
  await page.keyboard.down('w');
  // This timer is outside the game event loop: reassert real input, never pose.
@@ -177,6 +208,7 @@ try{
  try{await page.waitForTimeout(seconds*1000);}finally{clearInterval(heartbeat);await pendingHeartbeat;await page.keyboard.up('w');}
  report.input={...(await page.evaluate(()=>window.__belleInputReceipts||{keydowns:0,repeats:0,blurs:0})),reassertions,heartbeatError};
  try{report.browserSchedulerProbe=await page.evaluate(()=>({
+  observationWindow:window.__belleObserverWindow?.finish?.()??null,
   clock:window.__belleBrowserClock?.snapshot?.()??null,
   longTasks:window.__belleLongTasks?.snapshot?.()??null
  }));}catch(error){report.probeErrors.push('Browser scheduler snapshot: '+String(error));}
@@ -186,11 +218,12 @@ try{
    const before=Object.fromEntries(initialCounters.map(x=>[x.name,x.value]));
    const after=Object.fromEntries(subsequent.map(x=>[x.name,x.value]));
    const durations=['TaskDuration','ScriptDuration','LayoutDuration','RecalcStyleDuration','V8CompileDuration'];
-   report.cdpCpuProbe={wallSeconds:(Date.now()-rideProbeStart)/1000,
+   report.cdpCpuProbe={wallSeconds:(Date.now()-cpuProbeStart)/1000,
+    windowScope:'CDP counters begin before the ride profile starts with Settings open and end after genuine W-keyup; includes the menu/focus prelude, not only the requested riding window.',
     durationsSeconds:Object.fromEntries(durations.filter(k=>Number.isFinite(before[k])&&Number.isFinite(after[k]))
      .map(k=>[k,Math.max(0,after[k]-before[k])])),
     endJsHeapUsedBytes:after.JSHeapUsedSize??null,
-    caveat:'Chrome DevTools main-thread counters during attempted ride, NOT GPU time or VRAM'};
+    caveat:'Chrome DevTools main-thread counters over the stated observer window, NOT GPU time or VRAM'};
   }
  }catch(error){report.probeErrors.push('CDP ending counters: '+String(error));}
  try{await cdp?.detach();}catch{/* observer cleanup cannot waive test results */}
@@ -218,7 +251,14 @@ try{
  report.releasePerformanceVerified=false;
  report.baselinePassed=report.passed;
  if(mode==='full'){
-  report.gpsRegression=await checkGpsFullScene({page,expect,game,output,device,renderBackend:report.renderBackend,actualGpu:report.actualGpu,openSettings:settings});
+  report.gpsRegression=await checkGpsFullScene({page,expect,game,output,device,renderBackend:report.renderBackend,actualGpu:report.actualGpu,openSettings:settings,
+   releaseSourceContext:async()=>{
+    // Native ride and sensor checks are complete. Keep every collected error,
+    // then stop observing intentional teardown before releasing the GPU scene.
+    page.off('pageerror',sourcePageError);page.off('console',sourceConsoleError);
+    page.off('response',sourceResponseError);page.off('requestfailed',sourceRequestError);
+    await page.context().close();
+   }});
   // Keep the original riding threshold and failures; GPS regression is an
   // additional functional gate, with its timing distributions reported apart.
   report.passed=report.baselinePassed&&report.gpsRegression.passed&&!report.errors.length&&!report.failedRequests.length;

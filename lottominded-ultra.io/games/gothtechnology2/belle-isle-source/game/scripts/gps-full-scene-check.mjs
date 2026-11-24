@@ -1,9 +1,11 @@
-/** Full-game GPS regression using browser-emulated public coordinates, never device GPS.
- * No game pose, renderer, clock or sensor implementation is replaced by this test.
+/** Full-game GPS regression, never device GPS.
+ * Native browser integration/error checks and isolated deterministic sensor-contract
+ * timing are distinct evidence. Neither path replaces game pose, renderer or clock.
  */
 import assert from 'node:assert/strict';
 import {readFile,writeFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
+import {installGpsSensorContract} from './gps-sensor-contract.mjs';
 
 const reportKeys=['version','outcome','reason','requestedSeconds','wallDurationMs','renderedFrames','renderedFramesPerSecond','firstFrameWaitMs','tailWithoutFrameMs','frameIntervalsMs','sceneRenderCpuMs','invalidCpuSamples','stalls','locationFrames','atStart','atEnd','note'];
 const metadataKeys=['viewport','targetFrameCap','reducedMotion','locationState'];
@@ -38,14 +40,159 @@ export function validateGpsTimingReport(value,state){
  return value;
 }
 
-export async function checkGpsFullScene({page,expect,game,output,device,renderBackend,actualGpu,openSettings}){
+async function syntheticSpawn(game){
+ const map=JSON.parse(await readFile(resolve(game,'dist/belle/map.json'),'utf8'));
+ assert.equal(map.axes,'x east, y up, z south; metres; river 0 m, island 2 m');
+ assert.deepEqual(map.origin,[-83.00175,42.34680]);assert.equal(map.spawn.x,0);assert.equal(map.spawn.z,0);
+ const scale=111320,[lon,lat]=map.origin;
+ return {latitude:lat-map.spawn.z/scale,longitude:lon+map.spawn.x/(scale*Math.cos(lat*Math.PI/180)),accuracy:5};
+}
+
+/** This path keeps navigator.geolocation native. Chrome's unavailable override
+ * is deliberate here: recovery must not silently restart avatar following.
+ */
+async function checkNativeBrowserLocation({page,expect,output,synthetic,openSettings}){
+ expect=expect.configure({timeout:30000});
+ const context=page.context(),origin=new URL(page.url()).origin,tokens=[String(synthetic.latitude),String(synthetic.longitude)];
+ const result={source:'native-browser-geolocation-emulation',syntheticSensors:true,physicalDeviceCertified:false,passed:false,checks:{},states:[],captures:[],errors:[],cleanupErrors:[],privacy:{networkCoordinateMatches:0,networkObserved:false,storageCoordinateMatches:null,storageChecked:false}};
+ const dialog=page.locator('#real-location');
+ const requestObserver=request=>{const text=request.url()+'\n'+(request.postData()||'');if(tokens.some(token=>text.includes(token)))result.privacy.networkCoordinateMatches++;};
+ const state=async phase=>result.states.push({phase,...await page.evaluate(()=>{const value=document.querySelector('#real-location')?.getAttribute('data-location-status');return {status:['off','requesting','tracking','unavailable','stale','denied','timeout','poor-accuracy','outside-map','paused','jump-rejected'].includes(value)?value:'unrecognized',following:document.body.classList.contains('location-following')};})});
+ const capture=async name=>{const file='gps-native-'+name+'.png';await page.screenshot({path:resolve(output,file),timeout:90000});result.captures.push(file);};
+ const open=async()=>{
+  if(await dialog.isVisible())return;
+  if(!await page.locator('#ride-menu').isVisible())await page.locator('#tools-toggle').click();
+  await page.locator('#ride-menu .real-location-open').click();await expect(dialog).toBeVisible();
+ };
+ const close=async()=>{
+  if(await dialog.isVisible())await page.getByRole('button',{name:'Close real location settings',exact:true}).click();
+  if(await page.locator('#ride-menu').isVisible())await page.locator('#ride-menu [data-close="ride-menu"]').click();
+ };
+ let mapCanvas;
+ const pixels=async()=>mapCanvas.evaluate(canvas=>{const data=canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data;let count=0;for(let i=0;i<data.length;i+=4)if(Math.abs(data[i]-101)<=3&&Math.abs(data[i+1]-232)<=3&&data[i+2]>=252&&data[i+3]>=200)count++;return count;});
+ try{
+  assert(await page.evaluate(()=>isSecureContext&&!!navigator.geolocation&&!Object.hasOwn(globalThis,'__belleGpsSensorContract')),'Native browser GPS path must not contain the sensor contract fixture');
+  const qa=page.locator('#location-perf');if(await qa.evaluate(element=>element.open))await qa.locator(':scope > summary').click();
+  await openSettings();await page.locator('#restart').click();await expect(page.locator('#settings')).not.toBeVisible();
+  if((await page.locator('#ride-mode').innerText()).trim()!=='ON FOOT')await page.locator('#mount').click();
+  await expect(page.locator('#ride-mode')).toHaveText('ON FOOT');
+  const reference=page.locator('#reference-hud .reference-map canvas');mapCanvas=await reference.isVisible()?reference:page.locator('#minimap');
+  await expect(mapCanvas).toBeVisible();const before=await pixels();
+  await open();await expect(dialog).toHaveAttribute('data-location-status','off');await state('off');
+  // Configure a synthetic native provider before granting any permission.
+  await context.setGeolocation(synthetic);await context.grantPermissions(['geolocation'],{origin});
+  page.on('request',requestObserver);result.privacy.networkObserved=true;
+  await page.locator('#real-location-start').click();await expect(dialog).toHaveAttribute('data-location-status','tracking');
+  await expect(page.locator('#real-location-accuracy')).toContainText('±5 m');await state('initial-fix');
+  await close();await expect.poll(pixels).toBeGreaterThan(before+4);result.checks.nativeFixDrawsOnActualMap=true;
+  await open();await page.locator('#real-location-follow').click();await expect(page.locator('body')).toHaveClass(/location-following/);
+  await expect(page.locator('#real-location-strip')).toContainText('GPS follow');await state('initial-follow');
+  // An empty override explicitly means unavailable; it does not clear the
+  // override or fall through to the runner's real provider.
+  await context.setGeolocation(null);await expect(dialog).toHaveAttribute('data-location-status','unavailable');
+  await expect(page.locator('body')).not.toHaveClass(/location-following/);await expect(page.locator('#mount')).toBeEnabled();
+  await state('provider-unavailable');await capture('unavailable');result.checks.unavailableStopsFollow=true;
+  await context.setGeolocation(synthetic);await expect(dialog).toHaveAttribute('data-location-status','tracking');
+  await expect(page.locator('body')).not.toHaveClass(/location-following/);await expect(page.locator('#real-location-strip')).toContainText('GPS on');
+  await state('recovered-marker-only');result.checks.recoveryDoesNotAutoFollow=true;
+  await open();await page.locator('#real-location-follow').click();await expect(page.locator('body')).toHaveClass(/location-following/);
+  await state('manual-follow-after-recovery');result.checks.manualFollowAfterRecovery=true;
+  await page.getByRole('button',{name:'Stop real location and clear position',exact:true}).click();
+  await expect(dialog).toHaveAttribute('data-location-status','off');await expect(page.locator('body')).not.toHaveClass(/location-following/);
+  await expect(page.locator('#real-location-strip')).toBeHidden();await expect(page.locator('#mount')).toBeEnabled();
+  await expect.poll(pixels).toBeLessThanOrEqual(before);await state('stopped');result.checks.stopClearsMarkerAndRestoresControls=true;
+  result.privacy.storageCoordinateMatches=await page.evaluate(tokens=>[localStorage,sessionStorage].reduce((count,storage)=>{for(let i=0;i<storage.length;i++)if(tokens.some(token=>(storage.getItem(storage.key(i))||'').includes(token)))count++;return count;},0),tokens);
+  result.privacy.storageChecked=true;assert.equal(result.privacy.networkCoordinateMatches,0);assert.equal(result.privacy.storageCoordinateMatches,0);
+  await capture('stopped');result.passed=true;
+ }catch(error){result.errors.push(String(error?.stack||error));try{await state('failure');await capture('failure');}catch(captureError){result.errors.push(String(captureError));}}
+ finally{
+  page.off('request',requestObserver);
+  try{const stop=page.getByRole('button',{name:'Stop real location and clear position',exact:true});if(await stop.isVisible())await stop.click({timeout:5000});}catch(error){result.cleanupErrors.push(String(error));}
+  try{await context.setGeolocation(null);await context.clearPermissions();}catch(error){result.cleanupErrors.push(String(error));}
+  if(result.cleanupErrors.length)result.passed=false;
+  await writeFile(resolve(output,'gps-native-browser.json'),JSON.stringify(result,null,2)+'\n');
+ }
+ return result;
+}
+
+/** Preserve the caller's original riding result. The second context contains
+ * the unchanged built game and a test-only sensor source, never a production hook.
+ */
+export async function checkGpsFullScene(options){
+ const {page,expect,game,output,device,renderBackend,actualGpu}=options;
+ const sourceUrl=page.url(),viewport=page.viewportSize(),browser=page.context().browser();
+ const synthetic=await syntheticSpawn(game);
+ const expectedSettings={quality:await page.locator('#quality').inputValue(),cap:await page.locator('#fps').inputValue(),reducedMotion:await page.locator('#motion').isChecked(),hudPreset:await page.locator('body').getAttribute('data-hud-preset'),focusHud:/\bbelle-hud-focus\b/.test(await page.locator('body').getAttribute('class')||'')};
+ const nativeBrowserChecks=await checkNativeBrowserLocation({...options,synthetic});
+ let context,freshPage,contract,disposal,originalContextReleased=false,setupStage='release-original',setupFailure=null;const errors=[],failedRequests=[],cleanupErrors=[],setupCaptures=[];
+ const tokens=[String(synthetic.latitude),String(synthetic.longitude)];
+ const redact=value=>tokens.reduce((text,token)=>text.split(token).join('[synthetic coordinate]'),String(value));
+ const pageError=error=>errors.push(redact(error.message));
+ const consoleError=message=>{if(message.type()==='error')errors.push(redact(message.text()));};
+ const responseError=response=>{if(response.status()>=400)errors.push('HTTP '+response.status()+' '+redact(response.url()));};
+ const requestError=request=>failedRequests.push(redact((request.failure()?.errorText||'failed')+' '+request.url()));
+ try{
+  // The caller retires its exact observation handlers after the native path
+  // finishes, then releases the original island. No second GPU scene may load
+  // if that release fails; prior gameplay errors remain in the caller's report.
+  try{assert.equal(typeof options.releaseSourceContext,'function');await options.releaseSourceContext();originalContextReleased=true;}
+  catch(error){cleanupErrors.push('Original scene context release: '+redact(error));throw Error('Original island was not released before isolated fixture startup');}
+  // The native override remains synthetic even if the contract installation
+  // fails. No permissions are granted in this isolated context.
+  setupStage='create-isolated-context';context=await browser.newContext({viewport,deviceScaleFactor:1,isMobile:device==='phone',hasTouch:device==='phone',reducedMotion:expectedSettings.reducedMotion?'reduce':'no-preference',geolocation:synthetic,permissions:[]});
+  freshPage=await context.newPage();freshPage.setDefaultTimeout(180000);
+  await freshPage.addInitScript(installGpsSensorContract,{origin:new URL(sourceUrl).origin,position:synthetic,intervalMs:2000});
+  // Match the profiler's boot preferences so its real startup warms the same
+  // shaders. These preferences are subsequently verified through Settings UI.
+  await freshPage.addInitScript(({quality,cap})=>localStorage.setItem('belle-graphics-v1',JSON.stringify({quality,cap:Number(cap),antiAliasing:'automatic'})),expectedSettings);
+  freshPage.on('pageerror',pageError);freshPage.on('console',consoleError);freshPage.on('response',responseError);freshPage.on('requestfailed',requestError);
+  setupStage='normal-game-readiness';await freshPage.bringToFront();await freshPage.goto(sourceUrl,{waitUntil:'domcontentloaded'});
+  await freshPage.waitForFunction(()=>['ready','error'].includes(document.querySelector('#welcome')?.dataset.state));
+  await expect(freshPage.locator('#welcome')).toHaveAttribute('data-state','ready');
+  const fixtureReady=await freshPage.evaluate(()=>globalThis.__belleGpsSensorContract?.snapshot());
+  assert(fixtureReady?.source==='deterministic-watch-contract'&&fixtureReady.activeWatches===0&&!fixtureReady.timerActive,'Fresh context must contain an idle, isolated sensor contract');
+  const freshGpu=await freshPage.locator('#game').evaluate(canvas=>{const gl=canvas.getContext('webgl2');if(!gl||gl.isContextLost())throw Error('Fresh game WebGL2 unavailable');const ext=gl.getExtension('WEBGL_debug_renderer_info');return {vendor:String(gl.getParameter(ext?.UNMASKED_VENDOR_WEBGL??gl.VENDOR)),renderer:String(gl.getParameter(ext?.UNMASKED_RENDERER_WEBGL??gl.RENDERER)),version:String(gl.getParameter(gl.VERSION))};});
+  assert.equal(freshGpu.renderer,actualGpu.renderer,'The deterministic capture must use the same actual GPU backend');
+  setupStage='normal-ride-start';await freshPage.locator('.cinema-ride-picker > summary').click();await freshPage.locator('.ride-options label').filter({hasText:'One wheel'}).click();
+  await freshPage.getByRole('button',{name:'Use this ride',exact:true}).click();await freshPage.locator('#start').click();
+  await expect(freshPage.locator('body')).not.toHaveClass(/at-start/);
+  const timingPanel=freshPage.locator('#location-perf');if(await timingPanel.evaluate(element=>element.open))await timingPanel.locator(':scope > summary').click();
+  const openSettings=async()=>{if(!await freshPage.locator('#ride-menu').isVisible())await freshPage.locator('#tools-toggle').click();await freshPage.locator('#settings-open').click();await expect(freshPage.locator('#settings')).toBeVisible();};
+  setupStage='verify-settings';await openSettings();await expect(freshPage.locator('#quality')).toHaveValue(expectedSettings.quality);await expect(freshPage.locator('#fps')).toHaveValue(expectedSettings.cap);
+  assert.equal(await freshPage.locator('#motion').isChecked(),expectedSettings.reducedMotion);await freshPage.locator('[data-close="settings"]').click();
+  setupStage='full-scene-contract';contract=await checkGpsContractScene({page:freshPage,expect,game,output,device,renderBackend,actualGpu:freshGpu,openSettings,expectedSettings});
+ }catch(error){
+  errors.push(redact(error?.stack||error));setupFailure={stage:setupStage,ui:null};
+  if(freshPage){
+   let deadline;
+   try{setupFailure.ui=await Promise.race([freshPage.evaluate(()=>{const value=document.querySelector('#welcome')?.getAttribute('data-state');return {visibility:document.visibilityState,focused:document.hasFocus(),welcome:['loading','ready','error'].includes(value)?value:'unrecognized',atStart:document.body.classList.contains('at-start'),sensorContractInstalled:Object.hasOwn(globalThis,'__belleGpsSensorContract'),following:document.body.classList.contains('location-following')};}),new Promise((_,reject)=>{deadline=setTimeout(()=>reject(Error('Fresh setup UI diagnostic timed out')),5000);})]);}
+   catch(diagnosticError){errors.push('Fresh setup diagnostic: '+redact(diagnosticError));}finally{if(deadline)clearTimeout(deadline);}
+   try{const file='gps-contract-setup-failure.png';await freshPage.screenshot({path:resolve(output,file),timeout:15000});setupCaptures.push(file);}
+   catch(captureError){errors.push('Fresh setup screenshot: '+redact(captureError));}
+  }
+ }
+ finally{
+  if(freshPage){
+   try{const stop=freshPage.getByRole('button',{name:'Stop real location and clear position',exact:true});if(await stop.isVisible())await stop.click({timeout:5000});}catch(error){cleanupErrors.push('Fixture UI stop: '+redact(error));}
+   try{disposal=await freshPage.evaluate(()=>{const fixture=globalThis.__belleGpsSensorContract;if(!fixture)throw Error('Sensor contract missing during cleanup');return fixture.dispose();});assert.equal(disposal.activeWatches,0);assert.equal(disposal.timerActive,false);assert.equal(disposal.restored,true);}catch(error){cleanupErrors.push('Fixture disposal: '+redact(error));}
+   try{freshPage.off('pageerror',pageError);freshPage.off('console',consoleError);freshPage.off('response',responseError);freshPage.off('requestfailed',requestError);}catch(error){cleanupErrors.push('Fixture observer cleanup: '+redact(error));}
+  }
+  if(context)try{await context.close();}catch(error){cleanupErrors.push('Fixture context close: '+redact(error));}
+ }
+ const result=contract??{sourceHead:process.env.GITHUB_SHA||null,syntheticSensors:true,physicalDeviceCertified:false,device,passed:false,states:{},captures:[],errors:[],cleanupErrors:[]};
+ result.nativeBrowserChecks=nativeBrowserChecks;result.sensorSource='deterministic-watch-contract';result.sensorContractDisposal=disposal??null;result.originalContextReleased=originalContextReleased;result.setupFailure=setupFailure;result.setupCaptures=setupCaptures;result.captures.push(...setupCaptures);
+ result.errors.push(...nativeBrowserChecks.errors.map(error=>'Native browser path: '+error),...errors);result.failedRequests=failedRequests;result.cleanupErrors.push(...nativeBrowserChecks.cleanupErrors.map(error=>'Native browser path: '+error),...cleanupErrors);
+ result.passed=!!result.passed&&nativeBrowserChecks.passed&&!result.errors.length&&!failedRequests.length&&!result.cleanupErrors.length;
+ await writeFile(resolve(output,'gps-regression.json'),JSON.stringify(result,null,2)+'\n');return result;
+}
+
+async function checkGpsContractScene({page,expect,game,output,device,renderBackend,actualGpu,openSettings,expectedSettings}){
  expect=expect.configure({timeout:30000});page.setDefaultTimeout(45000);
  const result={sourceHead:process.env.GITHUB_SHA||null,syntheticSensors:true,physicalDeviceCertified:false,viewportEmulated:device==='phone',device,renderBackend,actualGpu,
   actualMacMetal:process.platform==='darwin'&&renderBackend==='angle-metal'&&/Metal/i.test(actualGpu?.renderer||'')&&!/SwiftShader|llvmpipe|software rasterizer/i.test(actualGpu?.renderer||''),
-  scope:'Actual full game and visible controls; synthetic public-spawn geolocation. Timing counts scene render submissions, not GPU execution or confirmed presentation.',
+  sensorSource:'deterministic-watch-contract',scope:'Actual full game and visible controls in a fresh isolated context with a deterministic synthetic watchPosition contract. Native browser sensor/error integration is reported separately. Timing counts scene render submissions, not GPU execution or confirmed presentation.',
   placement:'Existing Return to Jefferson bridge start and Dismount controls; map origin/spawn projection, no injected game pose.',
   passed:false,map:null,states:{},captures:[],checks:{},controlLayouts:{},uiTransitions:null,failureUi:null,diagnosticErrors:[],errors:[],privacy:{networkCoordinateMatches:0,networkObserved:false,storageCoordinateMatches:null,storageChecked:false},cleanupErrors:[]};
- const context=page.context(),origin=new URL(page.url()).origin;let timer,pending=Promise.resolve(),inFlight=false,refreshError;
  let coordinateTokens=[],mapCanvas,uiObserver,initialMovementControls;
  const observeRequest=request=>{const value=request.url()+'\n'+(request.postData()||'');if(coordinateTokens.some(token=>value.includes(token)))result.privacy.networkCoordinateMatches++;};
  const capture=async name=>{const file='gps-'+name+'.png';await page.screenshot({path:resolve(output,file),timeout:90000});result.captures.push(file);};
@@ -186,7 +333,7 @@ export async function checkGpsFullScene({page,expect,game,output,device,renderBa
   const timing=validateGpsTimingReport(JSON.parse(await textarea.inputValue()),state);
   const comparable={viewport:timing.atStart.viewport,targetFrameCap:timing.atStart.targetFrameCap,reducedMotion:timing.atStart.reducedMotion};
   if(firstMetadata)assert.deepEqual(comparable,firstMetadata,'Viewport and rendering settings must remain identical across phases');else firstMetadata=comparable;
-  assert.deepEqual(await settings(),fixedSettings);assert(!refreshError,refreshError);
+  assert.deepEqual(await settings(),fixedSettings);
   await assertMapUnobscured('After_'+name);
   result.states[name]=timing;await writeFile(resolve(output,'gps-'+name+'-timing.json'),JSON.stringify(timing,null,2)+'\n');
   await capture(name+'-timing');await summary.click();await recordControlLayout('After_'+name,state);
@@ -196,13 +343,7 @@ export async function checkGpsFullScene({page,expect,game,output,device,renderBa
   await expect(panel).toBeVisible();assert.equal(new URL(page.url()).searchParams.get('locationPerf'),'1');
   const capability=await page.evaluate(()=>({secure:isSecureContext,geolocation:!!navigator.geolocation}));result.checks.capability=capability;
   assert(capability.secure&&capability.geolocation,'GPS regression unavailable: secure context and browser geolocation are required');
-  const map=JSON.parse(await readFile(resolve(game,'dist/belle/map.json'),'utf8'));
-  assert.equal(map.axes,'x east, y up, z south; metres; river 0 m, island 2 m');
-  assert.deepEqual(map.origin,[-83.00175,42.34680]);assert.equal(map.spawn.x,0);assert.equal(map.spawn.z,0);
-  // Exact inverse of tools/prepare-map.mjs and realLocation.ts. These are public
-  // authored coordinates, held only in this isolated test context.
-  const scale=111320,[lon,lat]=map.origin;
-  const synthetic={latitude:lat-map.spawn.z/scale,longitude:lon+map.spawn.x/(scale*Math.cos(lat*Math.PI/180)),accuracy:5};
+  const synthetic=await syntheticSpawn(game);
   coordinateTokens=[String(synthetic.latitude),String(synthetic.longitude)];
   if(await panel.evaluate(element=>element.open))await summary.click();
   await openSettings();await page.locator('#restart').click();await expect(page.locator('#settings')).not.toBeVisible();
@@ -224,23 +365,19 @@ export async function checkGpsFullScene({page,expect,game,output,device,renderBa
    }
   }
   await expect(mapCanvas).toBeVisible();
-  fixedSettings=await settings();result.settings=fixedSettings;
+  fixedSettings=await settings();assert.deepEqual(fixedSettings,expectedSettings,'The isolated context must preserve the original graphics and HUD settings');result.settings=fixedSettings;
   await openLocation();await expect(dialog).toHaveAttribute('data-location-status','off');
   await expect(page.locator('#real-location-start')).toHaveText('Use my location');await expect(page.locator('#real-location-follow')).toBeDisabled();
   await expect(page.locator('#real-location-stop')).toBeDisabled();await expect(page.locator('#real-location-strip')).toBeHidden();
   result.checks.defaultOff=true;await capture('default-off');await closeLocation();
   await record('off','off');const beforeMarker=await cyanPixels();
-  // Set the synthetic fix before granting permission: the test can never fall
-  // back to the runner's real location provider. No compass is requested.
-  await context.setGeolocation(synthetic);await context.grantPermissions(['geolocation'],{origin});page.on('request',observeRequest);result.privacy.networkObserved=true;
+  result.sensorContractAtActivation=await page.evaluate(()=>globalThis.__belleGpsSensorContract.snapshot());
+  assert.equal(result.sensorContractAtActivation.activeWatches,0);assert.equal(result.sensorContractAtActivation.timerActive,false);
+  page.on('request',observeRequest);result.privacy.networkObserved=true;
   await openLocation();await expect(dialog).toHaveAttribute('data-location-status','off');await page.locator('#real-location-start').click();
   await expect(dialog).toHaveAttribute('data-location-status','tracking',{timeout:15000});
   await expect(page.locator('#real-location-accuracy')).toContainText('±5 m');
   await expect(page.locator('#real-location-follow')).toBeEnabled();
-  timer=setInterval(()=>{
-   if(inFlight)return;inFlight=true;
-   pending=context.setGeolocation(synthetic).catch(error=>{refreshError=String(error);}).finally(()=>{inFlight=false;});
-  },2000);
   await capture('tracking-dialog');await closeLocation();
   await expect.poll(cyanPixels,{timeout:15000}).toBeGreaterThan(beforeMarker+4);result.checks.actualMinimapMarker=true;
   await expect(page.locator('#real-location-strip')).toContainText('GPS on');await capture('marker');await record('marker','tracking');
@@ -259,18 +396,17 @@ export async function checkGpsFullScene({page,expect,game,output,device,renderBa
   result.privacy.storageChecked=true;
   assert.equal(result.privacy.networkCoordinateMatches,0,'Synthetic geographic coordinates must not be sent in requests');
   assert.equal(result.privacy.storageCoordinateMatches,0,'Synthetic geographic coordinates must not be saved in browser storage');
-  assert(!refreshError,refreshError);await capture('stopped');
+  await capture('stopped');
   result.checks.controlLayoutsPassed=Object.values(result.controlLayouts).every(layout=>layout.passed);
   assert(result.checks.controlLayoutsPassed,'GPS strip buttons and ordinary movement controls must remain unobscured in the default HUD');result.passed=true;
  }catch(error){result.errors.push(String(error?.stack||error));result.uiTransitions=await readUiEvidence();result.failureUi=result.uiTransitions?.final??null;try{await capture('failure');}catch(captureError){result.errors.push('Screenshot: '+String(captureError));}}
  finally{
   if(!result.uiTransitions)result.uiTransitions=await readUiEvidence();
   if(uiObserver){try{await uiObserver.evaluate(observer=>observer.disconnect());await uiObserver.dispose();}catch{result.diagnosticErrors.push('Could not dispose the GPS UI transition observer.');}}
-  if(timer)clearInterval(timer);await pending;page.off('request',observeRequest);
-  if(refreshError)result.cleanupErrors.push('Synthetic fix refresh: '+refreshError);
+  page.off('request',observeRequest);
   // These are test-context settings only; release the watch through the real UI.
   try{if(await page.getByRole('button',{name:'Stop real location and clear position',exact:true}).isVisible())await page.getByRole('button',{name:'Stop real location and clear position',exact:true}).click({timeout:5000});}catch(error){result.cleanupErrors.push(String(error));}
-  try{await context.clearPermissions();await context.setGeolocation(null);}catch(error){result.cleanupErrors.push(String(error));}
+  try{result.sensorContractAfterStop=await page.evaluate(()=>globalThis.__belleGpsSensorContract.snapshot());assert.equal(result.sensorContractAfterStop.activeWatches,0);assert.equal(result.sensorContractAfterStop.timerActive,false);}catch(error){result.cleanupErrors.push('Synthetic watch cleanup: '+String(error));}
   if(result.cleanupErrors.length||result.diagnosticErrors.length||!result.uiTransitions)result.passed=false;
   await writeFile(resolve(output,'gps-regression.json'),JSON.stringify(result,null,2)+'\n');
  }
