@@ -44,3 +44,17 @@ and geometry are identical, and extra ink-outline draw submissions are not
 created. The former anime function is retained for isolated legacy tests.
 This is not a replacement of the original rider asset, and it must pass
 the same actor animation, visual, collision and native frame-rate gates.
+
+## Experimental stone-arch picture study (separate draft branch)
+
+The generated pictures contain broad stone bridge balustrades. Under
+VITE_BRIDGE_BALUSTRADE_PREVIEW=1, this study replaces the original MacArthur
+crash-barrier *visual only* with two instanced arch railing meshes along the
+mapped bridge, staying entirely inside the existing rail-collision strip.
+The original GLB barrier remains for rollback but is excluded from rendering.
+Game controls, terrain, vehicle physics, shadow budgets and map geometry
+are unchanged. This is **not an as-built surveyed reconstruction**.
+
+Do not release until actual gameplay images, matched-angle visual assessment,
+real walk/drive/flight collision sweeps, verified architectural references
+and the unchanged full native 90-second desktop/phone performance gates pass.

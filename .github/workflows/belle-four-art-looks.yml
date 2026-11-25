@@ -7,6 +7,7 @@ on:
       - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/islandSky.ts'
       - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/skySettings.ts'
       - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/world.ts'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/macArthurPictureBalustrade*'
       - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/index.html'
       - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/art-direction-gallery.mjs'
   workflow_dispatch:
@@ -23,6 +24,8 @@ jobs:
           node-version: 22.16.0
       - name: Compile and verify preset behavior
         working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          VITE_BRIDGE_BALUSTRADE_PREVIEW: '1'
         run: |
           npm ci
           npm run check
@@ -73,6 +76,7 @@ jobs:
         env:
           BELLE_ART_DEVICE: ${{ matrix.device }}
           ENV_GALLERY_REQUIRE_METAL: ${{ matrix.device == 'desktop' && '1' || '0' }}
+          BELLE_BRIDGE_STONE_REVIEW: '1'
         run: node scripts/art-direction-gallery.mjs
       - uses: actions/upload-artifact@v4
         if: always()
