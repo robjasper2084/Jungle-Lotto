@@ -17,6 +17,7 @@ test('bounded environmental grade and unchanged graphic settings',()=>{
   assert.deepEqual(Object.keys(v).sort(),['clouds','cycle','hour']);
   for(const key of ['mix','fogMix','reflectionMix'] as const)assert(look[key]>=0&&look[key]<=.6);
   for(const key of ['ambientScale','sunScale','hazeScale','environmentScale'] as const)assert(look[key]>=.85&&look[key]<=1.15);
+  assert(look.roadWetness>=0&&look.roadWetness<=.55);
   for(const color of Object.values(look.palette))assert.match(color,/^#[0-9a-f]{6}$/i);
  }
  assert.equal(ART_DIRECTIONS.authentic.mix,0);assert.equal(ART_DIRECTIONS.authentic.hazeScale,1);
@@ -54,4 +55,14 @@ test('actual style control selects local palette and preserves host sky when dis
   controls['art-style'].value='noir';controls['art-style'].onchange();
   assert.equal(body.dataset.artStyle,'noir');assert.equal(state.hour,17.55);assert.equal(state.clouds,'wispy');
  }finally{if(prev)Object.defineProperty(globalThis,'document',prev);else delete(globalThis as any).document;}
+});
+
+test('asphalt keeps original texture allocation and one live road-wetness uniform',async()=>{
+ const T=await import('three'),{finishAsphalt}=await import('./surfaceFinish.ts'),{ART_ROAD_WETNESS}=await import('./artDirection.ts');
+ const m=new T.MeshStandardMaterial();finishAsphalt(m);
+ const shader={vertexShader:T.ShaderLib.standard.vertexShader,fragmentShader:T.ShaderLib.standard.fragmentShader,uniforms:{}} as Parameters<T.Material['onBeforeCompile']>[0];
+ m.onBeforeCompile(shader,{} as T.WebGLRenderer);
+ assert.equal(shader.uniforms.belleArtRoadWetness,ART_ROAD_WETNESS);
+ assert.match(shader.fragmentShader,/roughnessFactor=mix\(roughnessFactor,.36,clamp\(belleArtRoadWetness/);
+ assert.equal(m.map,null);assert.equal(m.normalMap,null);m.dispose();
 });

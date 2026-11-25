@@ -1,5 +1,5 @@
 import {REFERENCE_STYLE} from './sunsetReferencePolicy.ts';
-import {ART_STYLE_IDS,ART_DIRECTIONS,ART_STYLE_KEY,normalizeArtStyle,artStyleSkyPreset,type ArtStyleId} from './artDirection.ts';
+import {ART_STYLE_IDS,ART_DIRECTIONS,ART_STYLE_KEY,ART_ROAD_WETNESS,normalizeArtStyle,artStyleSkyPreset,type ArtStyleId} from './artDirection.ts';
 import {VolumetricSky,skyRadiance} from './volumetricSky.ts';
 import {dressDetroitSkyline} from './skylineMaterials.ts';
 import {boundedSkyProbe} from './skyProbe.ts';
@@ -179,6 +179,7 @@ export async function createIslandSky(scene:T.Scene,renderer:T.WebGLRenderer,sta
 
   if(REFERENCE_STYLE&&!look){const strength=smooth(-.025,.18,direction[1])*(1-shape.overcast*.85);for(const key of ['zenith','horizon','warm','cloudColor','sunColor'] as const)uniforms[key].value.lerp(referenceColors[key],strength*.85);uniforms.startupSunset.value*=.20;}
   const chosenLook=ART_DIRECTIONS[artStyle];
+  ART_ROAD_WETNESS.value=chosenLook.roadWetness;
   if(!look&&chosenLook.mix>0){const p=artColors[artStyle];for(const [key,color] of [['zenith','zenith'],['horizon','horizon'],['warm','warm'],['cloudColor','cloud'],['sunColor','sun']] as const)uniforms[key].value.lerp(p[color],chosenLook.mix);}
   const lunar=moonDirection(visualHour),meteor=meteorFrame(skyClock,night,reduceMotion);uniforms.moonDirection.value.fromArray(lunar);uniforms.meteorHead.value.fromArray(meteor.head);uniforms.meteorTail.value.fromArray(meteor.tail);uniforms.meteorOpacity.value=meteor.opacity;
   uniforms.sunDirection.value.fromArray(direction);uniforms.daylight.value=day;uniforms.night.value=night;uniforms.coverage.value=shape.coverage;uniforms.density.value=shape.density;uniforms.stretch.value=shape.stretch;uniforms.cloudScale.value=shape.scale;uniforms.overcast.value=shape.overcast;uniforms.cloudTime.value=cloudClock;
