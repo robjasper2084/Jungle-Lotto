@@ -78,6 +78,10 @@ export function createCadillacCaseInput({lifecycle,page,touch}){
  }
  const api={
   tap:(locator,mobile)=>lifecycle.input(mobile?'locator.tap':'locator.click',timeout=>mobile?locator.tap({timeout}):locator.click({timeout})),
+  // The Start button launches this SPA without navigation; Playwright must not
+  // consume the original action budget waiting for a navigation it does not perform.
+  // All native click preflights, lifetime limits and subsequent in-game assertions remain.
+  tapStart:(locator,mobile)=>lifecycle.input(mobile?'locator.tap':'locator.click(noWaitAfter)',timeout=>mobile?locator.tap({timeout}):locator.click({timeout,noWaitAfter:true})),
   press:(locator,key)=>lifecycle.input('locator.press '+key,timeout=>locator.press(key,{timeout})),
   // Only the three desktop wheel selects opt out of the navigation barrier.
   // Locator resolution/focus, native keys, timeout and promise ownership stay intact.
