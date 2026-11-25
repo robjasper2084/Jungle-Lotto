@@ -8,6 +8,7 @@ import {LocationPresentation} from './locationPresentation.ts';
 import {roadContactPresentation} from './roadContactPresentation.ts';
 import {sceneFrameCap} from './frameBudget.ts';
 import {pauseSoftwareStartupScene} from './startupRenderPolicy.ts';
+import {createOpenDialogProbe} from './renderDomQueries.ts';
 import {RideProfileStats} from './rideProfileStats.ts';
 import {createPose,type RidePose} from '../../runtime/ride-core/src/controller.ts';
 import {RideCore} from '../../runtime/ride-core/src/ridecore.ts';
@@ -48,7 +49,7 @@ function frameClockFixture(){
  let wallNow=132,associationsBroken=0,hydraulicBoundaries=0;
  const context={hydraulicMode:false,hydraulicContextLost:false,locationFollowing:false,cadillac:undefined,photo:undefined,
   resetHydraulicFrameTime(){hydraulicBoundaries++;},locationPerformance:undefined,pauseSoftwareStartupScene,softwareStartup:false,prepared:true,
-  active:true,document:{hidden:false,querySelector:()=>null},vr:undefined,scenePreparing:false,
+  active:true,document:{hidden:false,querySelector:()=>null},hasOpenDialog:createOpenDialogProbe({getElementsByTagName:()=>[]} as unknown as Document),vr:undefined,scenePreparing:false,
   resetFrameClock:false,previous:100,lastRender:100,lastMeasurementEligible:true,
   rideProfile:{breakFrameAssociation(){associationsBroken++;}},paused:false,renderFocused:true,sceneFrameCap,cap:60,
   performance:{now:()=>wallNow},clock:0,world:{sky:{observeFrame(){},tick(){}}},coop:undefined,
