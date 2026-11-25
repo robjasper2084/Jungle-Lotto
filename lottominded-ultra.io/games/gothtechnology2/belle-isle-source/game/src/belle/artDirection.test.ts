@@ -26,3 +26,31 @@ test('settings HTML includes accessible four-style control',()=>{
  for(const id of ART_STYLE_IDS)assert(html.includes('<option value="'+id+'">'));
  assert.match(html,/Visual atmosphere/);
 });
+
+test('actual style control selects local palette and preserves host sky when disabled',async()=>{
+ const {connectSkySettings}=await import('./skySettings.ts');
+ const names=['sky-hour','sky-clock','sky-cycle','sky-speed','sky-clouds','sky-preset','art-style'];
+ const controls=Object.fromEntries(names.map(id=>[id,{id,value:'',checked:false,disabled:false,onchange:null as null|(()=>void),oninput:null as null|(()=>void)}])) as Record<string,any>;
+ const options:{value:string;textContent:string}[]=[];
+ Object.assign(controls['sky-preset'],{querySelector:()=>options.find(x=>x.value==='17.55')??null,append:(x:{value:string;textContent:string})=>options.push(x)});
+ let state={hour:12,cycle:true,dayMinutes:60,clouds:'overcast' as 'overcast'|'wispy'};
+ let style:'authentic'|'golden'|'noir'|'detroit2084'='authentic',changes=0;
+ const fake={
+  get settings(){return {...state};},get hour(){return state.hour;},
+  get artStyle(){return style;},
+  configure(next:Partial<typeof state>){state={...state,...next};changes++;},
+  setArtStyle(next:typeof style,applyTime=true){style=next;if(applyTime){const preset=artStyleSkyPreset(next);state={...state,...preset};}}
+ };
+ const prev=Object.getOwnPropertyDescriptor(globalThis,'document');
+ const body={dataset:{} as Record<string,string>};
+ Object.defineProperty(globalThis,'document',{configurable:true,value:{body,activeElement:null,getElementById:(id:string)=>controls[id],createElement:()=>({value:'',textContent:''})}});
+ try{
+  connectSkySettings(fake);
+  assert.equal(changes,0);assert.equal(body.dataset.artStyle,'authentic');
+  controls['art-style'].value='golden';controls['art-style'].onchange();
+  assert.equal(body.dataset.artStyle,'golden');assert.equal(state.hour,17.55);assert.equal(state.clouds,'wispy');assert.equal(state.cycle,false);
+  controls['sky-cycle'].disabled=true;
+  controls['art-style'].value='noir';controls['art-style'].onchange();
+  assert.equal(body.dataset.artStyle,'noir');assert.equal(state.hour,17.55);assert.equal(state.clouds,'wispy');
+ }finally{if(prev)Object.defineProperty(globalThis,'document',prev);else delete(globalThis as any).document;}
+});
