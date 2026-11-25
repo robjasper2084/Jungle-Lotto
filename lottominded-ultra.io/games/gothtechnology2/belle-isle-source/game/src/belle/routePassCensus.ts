@@ -6,7 +6,7 @@ type Pass=typeof names[number];
 const keys=['calls','triangles','lines','points'] as const;
 type Counts=Record<typeof keys[number],number>;
 type Bucket=Counts&{directCalls:number};
-type Label=Bucket&{objectId:number;object:string;parent:string;material:string};
+type Label=Bucket&{objectId:number;object:string;parent:string;material:string;materialUuid:string};
 type Frame={passes:Record<Pass,Bucket>;objects:Record<Pass,Map<string,Label>>;invalid:number};
 type Located={sample:number;frameMs:number;renderMs:number;x:number;z:number;place:string};
 type Row=Located&{passes:Record<Pass,Bucket>;top:Record<Pass,Label[]>;invalid:number};
@@ -35,9 +35,9 @@ export function installRoutePassCensus(renderer:WebGLRenderer){
     const after=copy(),delta:Counts={calls:0,triangles:0,lines:0,points:0};
     for(const key of keys){delta[key]=after[key]-before[key];if(!Number.isFinite(delta[key])||delta[key]<0)throw Error('counter reset or invalid delta');}
     add(active.passes[pass],delta);
-    const object=args[4],material=args[3],id=object.id+':'+material.id;
+    const object=args[4],material=args[3],id=object.id+':'+material.uuid;
     const bucket=active.objects[pass];let entry=bucket.get(id);
-    if(!entry){entry={...empty(),objectId:object.id,object:label(object.name),parent:label(object.parent?.name??''),material:label(material.name||material.type)};bucket.set(id,entry);}
+    if(!entry){entry={...empty(),objectId:object.id,object:label(object.name),parent:label(object.parent?.name??''),material:label(material.name||material.type),materialUuid:material.uuid};bucket.set(id,entry);}
     add(entry,delta);
    }catch{active.invalid++;}
    else if(current===active&&!completed)active.invalid++;

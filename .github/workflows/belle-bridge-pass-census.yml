@@ -19,16 +19,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 3
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - name: Verify exact diagnostic parent and five-file scope
+      - name: Verify exact diagnostic ancestry and five-file scope
         shell: bash
         run: |
           BASE=cba3ca986f6201be0f3e502ea85fec5184dd9501
-          test "$(git rev-parse HEAD^)" = "$BASE"
+          test "$(git rev-parse HEAD^)" = "5f5160d74d8906daa0c71dff8deb0fe75fbaf763"
+          test "$(git rev-parse HEAD^^)" = "$BASE"
+          test "$(git diff --name-only HEAD^ HEAD | LC_ALL=C sort)" = "$(printf '%s\n' 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/routePassCensus.ts' 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/routePassCensus.test.ts' '.github/workflows/belle-bridge-pass-census.yml' | LC_ALL=C sort)"
           test "$(git diff --name-only "$BASE" HEAD | LC_ALL=C sort)" = "$(printf '%s\n' '.github/workflows/belle-bridge-pass-census.yml' 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/main.ts' 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/rideProfile.ts' 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/routePassCensus.ts' 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/routePassCensus.test.ts' | LC_ALL=C sort)"
           git diff --exit-code "$BASE" HEAD -- 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/sustained-ride-profile.mjs' '.github/workflows/belle-sustained-profile.yml'
       - name: Check test and build exact candidate
