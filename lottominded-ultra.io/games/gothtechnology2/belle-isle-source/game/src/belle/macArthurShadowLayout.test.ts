@@ -18,6 +18,7 @@ import {addReferenceIsland} from './referenceIsland.ts';
 import {LandmarkDetail} from './landmarkDetail.ts';
 import {ParkTerrain,type ParkMap} from './terrain.ts';
 import {batchStaticArchitecture} from './staticArchitectureBatch.ts';
+import {installStagedLandmarkStudies} from './stagedLandmarkStudies.ts';
 
 type Shader=Parameters<T.Material['onBeforeCompile']>[0];
 const renderer={capabilities:{getMaxAnisotropy:()=>8},initTexture(){}} as unknown as T.WebGLRenderer;
@@ -54,7 +55,15 @@ test('the actual four MacArthur display inputs survive real queued construction 
  const scene=new T.Scene(),owner=new WorldAtmosphere(scene,new T.Texture());t.after(()=>owner.dispose());
  const world=readFileSync(new URL('./world.ts',import.meta.url),'utf8');
  const decoration=span(world,'scene.add(landmarks.scene);const bridgePhotoFinish=','\n // Remove only the old solid Yacht Club shell');
- Function('scene','landmarks','T','finishMacArthurConcrete','finishMacArthurRailings','tuneConservatoryMaterial',transpile(decoration))(scene,asset,T,finishMacArthurConcrete,finishMacArthurRailings,tuneConservatoryMaterial);
+ // This exact world slice now includes an opt-in asynchronous staging block.
+ // Bind the real module metadata instead of evaluating import.meta in a
+ // dynamically constructed function, and await the actual decoration.
+ assert.equal(decoration.split('import.meta').length,2,'Expected one staging metadata reference in the original world slice');
+ const AsyncFunction=Object.getPrototypeOf(async function(){}).constructor as FunctionConstructor;
+ const stages:string[]=[];
+ await AsyncFunction('scene','landmarks','T','finishMacArthurConcrete','finishMacArthurRailings','tuneConservatoryMaterial','moduleMeta','loader','status','installStagedLandmarkStudies',
+  transpile(decoration.replace('import.meta','moduleMeta')))(scene,asset,T,finishMacArthurConcrete,finishMacArthurRailings,tuneConservatoryMaterial,import.meta,new GLTFLoader(),(stage:string)=>stages.push(stage),installStagedLandmarkStudies);
+ assert.deepEqual(stages,[],'The ordinary Node module path must not enable the opt-in staging build.');
  // The original landmarks were registered before the later whole-scene dress.
  await Promise.resolve();applyRealisticMaterials(scene);applyPhotoReferenceSurfaces(scene);dressSunsetGround(scene);
  const capture=span(world,'const macArthurShadowUvReceipts=','\n const referenceGarden=');
