@@ -1,0 +1,37 @@
+name: Jefferson game-map crosswalk (read-only)
+on:
+  pull_request:
+    paths:
+      - 'lottominded-ultra.io/games/gothtechnology2/greater-detroit-world/tools/jefferson_crosswalk.py'
+      - 'lottominded-ultra.io/games/gothtechnology2/greater-detroit-world/tests/test_jefferson_crosswalk.py'
+      - '.github/workflows/jefferson-gis-crosswalk.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install geometry dependency
+        run: python -m pip install --disable-pip-version-check 'shapely==2.1.2'
+      - name: Verify conservative source/geometry matching
+        run: python -m unittest discover -s lottominded-ultra.io/games/gothtechnology2/greater-detroit-world/tests -p 'test_jefferson_crosswalk.py' -v
+      - name: Crosswalk exact checked-out game maps against pinned City feature IDs
+        run: |
+          python lottominded-ultra.io/games/gothtechnology2/greater-detroit-world/tools/jefferson_crosswalk.py \
+            --map lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/map.json \
+            --districts lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/detroitDistricts.json \
+            --out jefferson-crosswalk/report.json
+      - name: Preserve only review metrics, not raw GIS coordinates
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jefferson-game-map-crosswalk
+          path: jefferson-crosswalk/report.json
+          if-no-files-found: warn
+          retention-days: 14
