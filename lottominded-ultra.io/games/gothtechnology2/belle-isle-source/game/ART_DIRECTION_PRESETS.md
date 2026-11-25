@@ -34,3 +34,13 @@ No teleport of a camera independent of the player, no skyline relocation,
 no replacement of bridge geometry, and no changes to the normal starting
 location. These images will be real in-game comparison frames, not the target
 illustrations. Pixel-perfect correspondence is not yet established.
+
+## Cinematic original rider materials
+
+The in-game visual targets require a believable PBR helmet and suit instead
+of anime shading. On the photo-target staging branch, the existing rider's
+original GLTF materials are retained (including their texture maps), the rig
+and geometry are identical, and extra ink-outline draw submissions are not
+created. The former anime function is retained for isolated legacy tests.
+This is not a replacement of the original rider asset, and it must pass
+the same actor animation, visual, collision and native frame-rate gates.

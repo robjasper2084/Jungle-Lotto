@@ -1,4 +1,4 @@
-import {animeRider,glowVehicle} from './referenceActors.ts';
+import {cinematicRider,glowVehicle} from './referenceActors.ts';
 import {Golf} from './golf.ts';
 import {RealLocationPanel} from './realLocationPanel.ts';
 import {REAL_LOCATION_ORIGIN,REAL_LOCATION_AXES,type RealLocationFix} from './realLocation.ts';
@@ -89,7 +89,6 @@ import * as T from 'three';import {GLTFLoader} from 'three/addons/loaders/GLTFLo
 import {createBeachLocator} from './beachLocation.ts';
 import {createMobileHud} from './mobileHud.ts';
 import {brakeThrottle} from './mobileInput.ts';
-import {batchArmoredInk} from './riderInkBatch.ts';
 import {batchWheelDisplay} from './wheelDisplay.ts';
 import {initiallyCollapsedMap} from './visualPolishPolicy.ts';
 import './visualPolish.css';
@@ -280,11 +279,10 @@ const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreferen
   loader.loadAsync('./exports/glb/DS_EUC_01/DS_EUC_01_LOD1.glb'),
   Promise.resolve().then(()=>sceneWarmup.primeIsland())
  ]);
- const hero=new ThreeRiderView(rider,wheel,terrain,{...HUMAN_PROFILE,id:'DS_Armored_Rider_01'});scene.add(hero.root);applyRealisticMaterials(hero.vehicle,'actor',world.sky.prepareMaterial);applyRealisticMaterials(hero.root,'actor');if(REFERENCE_STYLE){animeRider(hero.rider);glowVehicle(hero.vehicle,'wheel');}hero.apply(core.current);
+ const hero=new ThreeRiderView(rider,wheel,terrain,{...HUMAN_PROFILE,id:'DS_Armored_Rider_01'});scene.add(hero.root);applyRealisticMaterials(hero.vehicle,'actor',world.sky.prepareMaterial);applyRealisticMaterials(hero.root,'actor');if(REFERENCE_STYLE){cinematicRider(hero.rider);glowVehicle(hero.vehicle,'wheel');}hero.apply(core.current);
  // The first acceleration uses the fitted riding rig, including its skinned
  // boot soles. Prepare it once while the loading screen owns the frame.
  status('Fitting your rider');await yieldStartupTask();prepareOnFootRider(hero);
- if(REFERENCE_STYLE)batchArmoredInk(hero.rider,hero.root);
  batchWheelDisplay(hero.vehicle,hero.root,wheel.animations);
  const remoteRiders=new OnlineRiders(scene,terrain,rider,wheel,async model=>{await warmObjectTextures(renderer,model);await renderer.compileAsync(model,camera,scene);});
  let savedSoloSky:typeof world.sky.settings|undefined;

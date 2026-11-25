@@ -66,3 +66,15 @@ test('asphalt keeps original texture allocation and one live road-wetness unifor
  assert.match(shader.fragmentShader,/roughnessFactor=mix\(roughnessFactor,.36,clamp\(belleArtRoadWetness/);
  assert.equal(m.map,null);assert.equal(m.normalMap,null);m.dispose();
 });
+
+test('cinematic rider retains existing authored PBR materials and mesh geometry',async()=>{
+ const T=await import('three');
+ const {cinematicRider}=await import('./referenceActors.ts');
+ const root=new T.Group(),g=new T.BoxGeometry(),m=new T.MeshStandardMaterial({roughness:.61,metalness:.25});
+ const mesh=new T.Mesh(g,m);mesh.name='Armored rider suit';root.add(mesh);
+ const result=cinematicRider(root);
+ assert.equal(result.meshes,1);assert.equal(result.addedOutlines,0);
+ assert.equal(mesh.geometry,g);assert.equal(mesh.material,m);
+ assert.equal(m.roughness,.61);assert.equal(m.metalness,.25);
+ assert.deepEqual(root.children,[mesh]);g.dispose();m.dispose();
+});
