@@ -14,6 +14,14 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/workflows/jefferson-gis-crosswalk.yml
+            /lottominded-ultra.io/games/gothtechnology2/greater-detroit-world/tools/jefferson_crosswalk.py
+            /lottominded-ultra.io/games/gothtechnology2/greater-detroit-world/tests/test_jefferson_crosswalk.py
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/map.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/detroitDistricts.json
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
