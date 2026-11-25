@@ -18,3 +18,19 @@ the ride/HUD and online-host controls; run unchanged 90-second desktop High and
 phone-viewport Smooth tests at p95 <=50 ms with zero intervals over 250 ms.
 No automatic merge/deploy without those results. The separate standalone
 Swoop Detroit and Elmwood apps are outside this patch.
+
+## Fidelity target comparison (staging review)
+
+The user's cinematic pictures are visual targets, not screenshots of the
+live game or survey-accurate Detroit geography. The original comparison used
+the mainland Jefferson spawn, while the pictures depict a rider on the
+island-side bridge approach. In the Guide, choose **MacArthur Bridge · cinematic
+arrival** to ride to a reproducible point approximately 65 metres before
+the island landing, using the actual mapped bridge and existing collisions.
+
+The four-look browser gallery now travels to that destination through the
+real Guide interface and requires a camera receipt at the actual bridge.
+No teleport of a camera independent of the player, no skyline relocation,
+no replacement of bridge geometry, and no changes to the normal starting
+location. These images will be real in-game comparison frames, not the target
+illustrations. Pixel-perfect correspondence is not yet established.

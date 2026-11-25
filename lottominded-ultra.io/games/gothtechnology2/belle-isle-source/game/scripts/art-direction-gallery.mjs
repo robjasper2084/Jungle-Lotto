@@ -32,13 +32,20 @@ try{
  await page.goto('http://127.0.0.1:'+server.address().port+'/?profile=1&gds-capture=1',{waitUntil:'domcontentloaded'});
  await expect(page.locator('#welcome')).toHaveAttribute('data-state','ready');
  report.renderer=await galleryRenderer(page);
- // Actual initial ride controls: stay at Jefferson bridge approach for every angle.
+ // Start from real gameplay and use the Guide to travel to the island-side photo viewpoint.
  const pause=page.locator('#startup-motion');if(await pause.getAttribute('aria-pressed')!=='true')await pause.click();
  await page.locator('.cinema-ride-picker > summary').click();
  await page.locator('.ride-options label').filter({hasText:'One wheel'}).click();
  await page.getByRole('button',{name:'Use this ride',exact:true}).click();
  await page.locator('#start').click();
  await expect(page.locator('body')).not.toHaveClass(/at-start/);
+ if(!await page.locator('#ride-menu').isVisible())await page.locator('#tools-toggle').click();
+ await page.locator('#map-open').click();
+ const card=page.locator('#landmarks .landmark').filter({has:page.locator('h3').filter({hasText:'MacArthur Bridge · cinematic arrival'})}).first();
+ await expect(card).toBeVisible();
+ await card.getByRole('button',{name:/Travel/}).click();
+ await expect(page.locator('#guide')).not.toBeVisible();
+ report.photoTargetView='Real MacArthur Bridge island-side approach reached through Guide';
  let baseline;
  for(const mode of modes){
   if(!await page.locator('#ride-menu').isVisible())await page.locator('#tools-toggle').click();
@@ -64,6 +71,7 @@ try{
   }));
   const camera=await page.evaluate(()=>window.__gdsCamera?.()??null);
   if(!camera||!Array.isArray(camera.position)||!Array.isArray(camera.direction))throw Error('Missing real game camera receipt');
+  if(camera.position[0]<300||camera.position[0]>520||camera.position[2]<600||camera.position[2]>850)throw Error('Capture not at the mapped island-side bridge approach');
   if(baseline){
    const moved=Math.hypot(...camera.position.map((v,i)=>v-baseline.position[i]));
    const turned=Math.hypot(...camera.direction.map((v,i)=>v-baseline.direction[i]));
