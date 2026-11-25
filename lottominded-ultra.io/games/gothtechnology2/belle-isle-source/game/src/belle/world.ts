@@ -51,6 +51,7 @@ import {prepareAquariumMaterials,addAquariumLife} from './aquariumScene.ts';
 import {addBeach} from './beach.ts';
 import {addServiceBuildings} from './serviceBuildings.ts';
 import * as T from 'three';
+import {installTransformAttribution} from './transformAttributionDiagnostic.ts';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {MeshoptDecoder} from 'three/addons/libs/meshopt_decoder.module.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
@@ -149,7 +150,7 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
  }
  const lagoonBridge=addLagoonBridge(scene,data);await yieldStartupTask();const smallBridges=await addSmallBridgesStaged(scene,terrain.smallBridges.plan);await yieldStartupTask();
  addServiceBuildings(scene,data,islandSky.nightAmount);const facilities=addParkFacilities(scene,data,renderer.extensions.has('WEBGL_multi_draw'));addWoodsideBank(scene,data);
- status('Adding road markings and wayfinding');const streetPlan=await fetch('./belle/street-details.json').then(r=>{if(!r.ok)throw new Error('Street details '+r.status);return r.json();});const streetBuffer:ArrayBuffer=await loadStartupBytes('./belle/street-details.bin');const streetData=new Float32Array(streetBuffer);streetPlan.boxes=[];for(let i=0;i<streetData.length;i+=streetPlan.stride)streetPlan.boxes.push({x:streetData[i],y:streetData[i+1],z:streetData[i+2],w:streetData[i+3],h:streetData[i+4],l:streetData[i+5],yaw:streetData[i+6],material:streetPlan.materials[streetData[i+7]],grade:streetData[i+8]});const streetStats=addStreetDetails(scene,streetPlan);streetPlan.boxes.length=0;await yieldStartupTask();
+ status('Adding road markings and wayfinding');const streetPlan=await fetch('./belle/street-details.json').then(r=>{if(!r.ok)throw new Error('Street details '+r.status);return r.json();});const streetBuffer:ArrayBuffer=await loadStartupBytes('./belle/street-details.bin');const streetData=new Float32Array(streetBuffer);streetPlan.boxes=[];for(let i=0;i<streetData.length;i+=streetPlan.stride)streetPlan.boxes.push({x:streetData[i],y:streetData[i+1],z:streetData[i+2],w:streetData[i+3],h:streetData[i+4],l:streetData[i+5],yaw:streetData[i+6],material:streetPlan.materials[streetData[i+7]],grade:streetData[i+8]});const beforeStreetRoots=new Set(scene.children);const streetStats=addStreetDetails(scene,streetPlan);const streetRoots=scene.children.filter(o=>!beforeStreetRoots.has(o));streetPlan.boxes.length=0;await yieldStartupTask();
  addEntrance(scene,data,terrain);await yieldStartupTask();
  status('Loading Detroit skyline');const skyline=await loadStartupModel(loader,'./belle/detroit-skyline.glb');skyline.scene.name='Detroit skyline · Renaissance Center';skyline.scene.traverse(o=>{if((o as T.Mesh).isMesh){o.castShadow=false;o.receiveShadow=false;}});scene.add(skyline.scene);islandSky.dressSkyline(skyline.scene);if(REFERENCE_STYLE)addReferenceSkyline(scene);const windsor=addWaterfrontSkyline(scene);islandSky.dressSkyline(windsor);
  status('Loading landmark architecture');const landmarks=await loadStartupModel(loader,'./belle/landmarks.glb?v=walkthrough-20261103');scene.add(landmarks.scene);const bridgePhotoFinish=finishMacArthurConcrete(landmarks.scene);const bridgeRailFinish=finishMacArthurRailings(landmarks.scene);landmarks.scene.traverse(o=>{if((o as T.Mesh).isMesh){o.castShadow=true;o.receiveShadow=true;(o as T.Mesh).geometry.computeBoundingSphere();for(const m of(Array.isArray((o as T.Mesh).material)?(o as T.Mesh).material:[(o as T.Mesh).material]) as T.MeshStandardMaterial[]){if(tuneConservatoryMaterial(m)==='glazing')o.castShadow=false;if(m.name==='Casino buff masonry'){m.color.setRGB(.72,.66,.53);m.bumpMap=m.map;m.bumpScale=.012;}if(m.map&&/limestone/i.test(m.name)){m.bumpMap=m.map;m.bumpScale=.018;m.roughness=.88;}};}});
@@ -195,7 +196,7 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
  // Waterfront remains part of the first island view. The other three
  // mapped assets are visual-only, so they can load before entering view rather
  // than delaying the initial player spawn.
- status('Loading waterfront');const waterfront=await addWaterfront(scene,loader);
+ status('Loading waterfront');const beforeWaterfrontRoots=new Set(scene.children);const waterfront=await addWaterfront(scene,loader);const waterfrontRoots=scene.children.filter(o=>!beforeWaterfrontRoots.has(o));
  const golfStats={meshes:0,triangles:0,stations:0,loaded:false};
  const playgroundStats={sites:playgrounds.length,meshes:0,triangles:0,loaded:false,batching:{sourceMeshes:0,renderMeshes:0,joinedSources:0,batches:0}};
  async function prepareApproach<A extends {update:(x:number,z:number)=>void}>(
@@ -285,6 +286,10 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
  batchStaticArchitecture(scene,renderer,[landmarks.scene,historic.scene],()=>landmarkDetail.isSplitActive,smallBridges.root);
  // Static architecture transforms are fixed after the fountain is placed.
  for(const staticRoot of [landmarks.scene,skyline.scene,historic.scene]){staticRoot.updateMatrixWorld(true);staticRoot.traverse(o=>{o.matrixAutoUpdate=false;o.matrixWorldAutoUpdate=false;});}
+ if(location.hostname==='127.0.0.1'&&new URLSearchParams(location.search).get('profile')==='1'){
+  if(streetRoots.length!==streetStats.batches||waterfrontRoots.length!==2||!waterfrontRoots.some(o=>o.name==='Persistent fishing pier light pools'))throw Error('Unexpected diagnostic root ownership');
+  (window as unknown as {__belleTransformAttribution:ReturnType<typeof installTransformAttribution>}).__belleTransformAttribution=installTransformAttribution(scene,{street:streetRoots,waterfront:waterfrontRoots,frozenArchitecture:[landmarks.scene,skyline.scene,historic.scene]});
+ }
  // Keep full quality shadow maps, but avoid redrawing identical static shadows at 60 Hz.
  const shadowCadence=new ShadowMapCadence();
  renderer.shadowMap.autoUpdate=false;

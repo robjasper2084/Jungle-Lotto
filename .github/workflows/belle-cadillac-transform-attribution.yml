@@ -1,0 +1,90 @@
+name: Cadillac scene transform attribution (diagnostic only)
+on:
+  pull_request:
+    branches: [upgrade-redesign-cadillac-modification-suite]
+    paths:
+      - '.github/workflows/belle-cadillac-transform-attribution.yml'
+permissions:
+  contents: read
+jobs:
+  transform-attribution:
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Verify isolated source and original driver, build and test
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD^)" = 549dc89ade22532df9cd99508db66c323371bb4f
+          test "$(git rev-parse 'HEAD^^{tree}')" = 0a3a021bbff7dd0ab36f389a4a389d2b771ae220
+          test "$(git hash-object scripts/sustained-ride-profile.mjs)" = c722b5810a7693e5ece72ed00b4401e7cde7267a
+          git diff --name-only HEAD^ HEAD > "$RUNNER_TEMP/changed.txt"
+          test "$(wc -l < "$RUNNER_TEMP/changed.txt" | tr -d ' ')" = 4
+          npm ci
+          npm run check
+          node --experimental-strip-types scripts/transform-attribution-proof.mjs
+          npm test
+          npm run build
+          (cd ../.. && npm ci && npx playwright install chrome)
+          mkdir -p "$RUNNER_TEMP/evidence"
+          git rev-parse HEAD > "$RUNNER_TEMP/evidence/source.txt"
+          git rev-parse 'HEAD^{tree}' > "$RUNNER_TEMP/evidence/tree.txt"
+          cp "$RUNNER_TEMP/changed.txt" "$RUNNER_TEMP/evidence/"
+          git diff HEAD^ HEAD > "$RUNNER_TEMP/evidence/diagnostic.patch"
+          (cd dist && find . -type f -print0 | sort -z | xargs -0 shasum -a 256) > "$RUNNER_TEMP/evidence/dist.sha256"
+          node --input-type=module <<'NODE'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const path='scripts/sustained-ride-profile.mjs',original=readFileSync(path,'utf8');
+          const a=" await page.keyboard.down('w');",b=" report.input={...(await page.evaluate(";
+          const edits=[[a," await page.evaluate(()=>window.__belleTransformAttribution.start());\n"],[b," report.transformAttribution=await page.evaluate(()=>window.__belleTransformAttribution.finish());\n"]];
+          let derived=original;
+          for(const [anchor,insert] of edits){if(derived.split(anchor).length!==2)throw Error('Nonunique anchor');derived=derived.replace(anchor,()=>insert+anchor);}
+          let restored=derived;for(const [anchor,insert] of edits.slice().reverse()){if(restored.split(insert+anchor).length!==2)throw Error('Nonunique restoration');restored=restored.replace(insert+anchor,()=>anchor);}
+          if(restored!==original)throw Error('Original driver changed');
+          writeFileSync('scripts/sustained-ride-transform-diagnostic.mjs',derived,{flag:'wx'});
+          NODE
+          node --check scripts/sustained-ride-transform-diagnostic.mjs
+          cp scripts/sustained-ride-transform-diagnostic.mjs "$RUNNER_TEMP/evidence/derived-driver.mjs"
+          git diff --exit-code -- src scripts
+      - name: Collect sampled per-root timings on actual High native Metal 90-second ride
+        timeout-minutes: 22
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          BELLE_PROFILE_DEVICE: desktop
+          BELLE_PROFILE_MODE: full
+          BELLE_PROFILE_SECONDS: '90'
+        run: |
+          set -euo pipefail
+          export GITHUB_SHA="$(git rev-parse HEAD)"
+          target="$RUNNER_TEMP/evidence"
+          status=0
+          node scripts/sustained-ride-transform-diagnostic.mjs > "$target/driver.log" 2>&1 || status=$?
+          printf '%s\n' "$status" > "$target/driver-exit.txt"
+          cat "$target/driver.log"
+          test "$(git hash-object scripts/sustained-ride-profile.mjs)" = c722b5810a7693e5ece72ed00b4401e7cde7267a
+          git diff --exit-code -- src scripts
+          (cd dist && shasum -a 256 -c "$target/dist.sha256") > "$target/post-build-integrity.txt"
+          test "$(find dist -type f | wc -l | tr -d ' ')" = "$(wc -l < "$target/dist.sha256" | tr -d ' ')"
+          node --input-type=module <<'NODE'
+          import {readFileSync} from 'node:fs';
+          const r=JSON.parse(readFileSync('output/sustained-profile/full/desktop/report.json','utf8')),d=r.transformAttribution;
+          if(r.sourceHead!==process.env.GITHUB_SHA||r.device!=='desktop'||r.mode!=='full'||r.requestedSeconds!==90||r.renderBackend!=='angle-metal'||!/Metal/i.test(r.actualGpu?.renderer??'')||r.profile?.stopReason!=='trusted-W-keyup'||!r.gpsRegression||r.releasePerformanceVerified!==false||!d||d.dropped!==0||d.nestedSceneCalls!==0||d.rows.length<10||d.rows.length!==Math.floor(d.pass/d.stride)||d.rows.some(row=>row.rootsCalls.some(n=>n!==1)))throw Error('Missing or ambiguous original diagnostic evidence');
+          console.log('Diagnostic collection verified; original frame outcome remains',r.passed);
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cadillac-transform-attribution-not-release
+          path: |
+            ${{ runner.temp }}/evidence/
+            lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/sustained-profile/full/desktop/
+          if-no-files-found: warn
+          retention-days: 14
