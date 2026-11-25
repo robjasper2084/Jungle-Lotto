@@ -60,16 +60,18 @@ jobs:
             echo "Unexpected authentication or include configuration; refusing export"
             exit 1
           fi
+          echo "Verified Git provenance and credential-free configuration; checking source paths"
           test -f "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/package.json"
           test -f "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/cadillac-mods-browser-smoke.mjs"
-          test -f "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/main.ts"
-          test ! -d "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public"
+          test -f "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/main.ts"
+          test ! -d "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public" || { echo "Unexpected public directory"; exit 1; }
           echo "Pinned source and tree:"
           git rev-parse HEAD HEAD^{tree}
           git sparse-checkout list
           cd ..
           mkdir -p recovery-export
           tar -czf recovery-export/recovered-repo.tar.gz recovered-repo
+          stat -c "Recovery archive size: %s bytes" recovery-export/recovered-repo.tar.gz
           test "$(stat -c %s recovery-export/recovered-repo.tar.gz)" -le 200000000
           (
             cd recovery-export
