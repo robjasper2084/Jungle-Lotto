@@ -1,0 +1,110 @@
+name: Belle Isle bridge pass census (not release acceptance)
+
+on:
+  push:
+    branches:
+      - 'upgrade-redesign-cadillac-bridge-pass-census-20261125'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: belle-bridge-pass-census-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Verify exact diagnostic parent and five-file scope
+        shell: bash
+        run: |
+          BASE=cba3ca986f6201be0f3e502ea85fec5184dd9501
+          test "$(git rev-parse HEAD^)" = "$BASE"
+          test "$(git diff --name-only "$BASE" HEAD | LC_ALL=C sort)" = "$(printf '%s\n' '.github/workflows/belle-bridge-pass-census.yml' 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/main.ts' 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/rideProfile.ts' 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/routePassCensus.ts' 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/routePassCensus.test.ts' | LC_ALL=C sort)"
+          git diff --exit-code "$BASE" HEAD -- 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/sustained-ride-profile.mjs' '.github/workflows/belle-sustained-profile.yml'
+      - name: Check test and build exact candidate
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm ci
+          npm run check
+          npm test
+          node --experimental-strip-types --test src/belle/routePassCensus.test.ts
+          node --check scripts/sustained-ride-profile.mjs
+          npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sustained-profile-game
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist/
+          if-no-files-found: error
+          retention-days: 1
+  profile:
+    needs: build
+    runs-on: macos-15
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        device: [desktop]
+        mode: [full]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@v4
+        with:
+          name: sustained-profile-game
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist
+      - name: Pin diagnostic checkout and report build-file hashes
+        shell: bash
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          mkdir -p output/sustained-profile/full/desktop
+          node --input-type=module -e 'import{readdirSync,readFileSync,writeFileSync}from"node:fs";import{createHash}from"node:crypto";const root="dist";const files=readdirSync(root,{recursive:true,withFileTypes:true}).filter(x=>x.isFile()).map(x=>x.parentPath+"/"+x.name).sort();writeFileSync("route-build-before.json",JSON.stringify(Object.fromEntries(files.map(p=>[p,createHash("sha256").update(readFileSync(p)).digest("hex")]))));'
+      - name: Install Chrome browser runtime
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install chrome
+      - name: Hold real input and sample 90-second foreground ride
+        timeout-minutes: 28
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          BELLE_PROFILE_DEVICE: ${{ matrix.device }}
+          BELLE_PROFILE_MODE: ${{ matrix.mode }}
+          BELLE_PROFILE_SECONDS: '90'
+        run: node scripts/sustained-ride-profile.mjs
+      - name: Verify unchanged complete build and retain provenance
+        if: always()
+        shell: bash
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          mkdir -p output/sustained-profile/full/desktop
+          node --input-type=module -e 'import{readdirSync,readFileSync,writeFileSync}from"node:fs";import{createHash}from"node:crypto";const root="dist";const files=readdirSync(root,{recursive:true,withFileTypes:true}).filter(x=>x.isFile()).map(x=>x.parentPath+"/"+x.name).sort();writeFileSync("output/sustained-profile/full/desktop/route-build-after.json",JSON.stringify(Object.fromEntries(files.map(p=>[p,createHash("sha256").update(readFileSync(p)).digest("hex")]))));'
+          cp route-build-before.json output/sustained-profile/full/desktop/
+          cmp route-build-before.json output/sustained-profile/full/desktop/route-build-after.json
+          git rev-parse HEAD > output/sustained-profile/full/desktop/route-source-sha.txt
+      - name: Archive actual full or diagnostic evidence separately
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-sustained-profile-${{ matrix.mode }}-${{ matrix.device }}
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/sustained-profile/${{ matrix.mode }}/${{ matrix.device }}
+          if-no-files-found: warn
+          retention-days: 14
