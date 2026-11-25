@@ -55,6 +55,26 @@ test('the explicit non-navigating press adds only noWaitAfter and retains both a
  assert(f.lifecycle.snapshot().inputs.every(row=>row.outcome==='completed'&&row.completedBeforeStop));
 });
 
+
+test('Start uses one native click without a navigation barrier only on desktop, preserving the original deadlines',async()=>{
+ const f=fixture();
+ await f.input.tapStart(f.locator,false);
+ await f.input.tapStart(f.locator,true);
+ f.set(100+32*60000-1234);
+ await f.input.tapStart(f.locator,false);
+ await f.input.tapStart(f.locator,true);
+ assert.deepEqual(f.calls,[
+  ['locator.click',{timeout:90000,noWaitAfter:true}],['locator.tap',{timeout:90000}],
+  ['locator.click',{timeout:1234,noWaitAfter:true}],['locator.tap',{timeout:1234}],
+ ]);
+ assert.deepEqual(f.lifecycle.snapshot().inputs.map(x=>x.label),
+  ['locator.click(noWaitAfter)','locator.tap','locator.click(noWaitAfter)','locator.tap']);
+ assert(f.lifecycle.snapshot().inputs.every(x=>x.completedBeforeStop&&x.outcome==='completed'));
+ const source=await readFile(new URL('./cadillac-mods-browser-smoke.mjs',import.meta.url),'utf8');
+ assert.equal((source.match(/await tapStart\(page\.locator\('#start'\)\);/g)||[]).length,1);
+ assert.equal((source.match(/await tap\(page\.locator\('#start'\)\);/g)||[]).length,0);
+});
+
 test('the final clock boundary and clipped budget describe the actual native call without a second pre-call clock read',async()=>{
  for(const atIssue of [199,200]){
   let reads=0;const calls=[],times=[100,atIssue,200];
@@ -68,7 +88,7 @@ test('the final clock boundary and clipped budget describe the actual native cal
 
 test('the stopped latch rejects every new native entry including the deferred CDP transport callback',async()=>{
  const f=fixture();f.expire();const client={send:()=>assert.fail('CDP dispatch after stop')};
- for(const action of [()=>f.input.tap(f.locator,false),()=>f.input.tap(f.locator,true),()=>f.input.focus(f.locator),()=>f.input.scroll(f.locator),
+ for(const action of [()=>f.input.tap(f.locator,false),()=>f.input.tap(f.locator,true),()=>f.input.tapStart(f.locator,false),()=>f.input.tapStart(f.locator,true),()=>f.input.focus(f.locator),()=>f.input.scroll(f.locator),
   ()=>f.input.press(f.locator,'Enter'),()=>f.input.pressWithoutNavigation(f.locator,'Enter'),()=>f.input.keyPress('h'),()=>f.input.keyDown('w'),()=>f.input.mouseMove(1,2),
   ()=>f.input.mouseDown(),()=>f.input.mouseClick(1,2),()=>f.input.touch('touchStart',[]),
   ()=>Promise.resolve().then(()=>f.input.sendTouch(client,'Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[]}))])
