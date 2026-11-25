@@ -20,6 +20,9 @@ jobs:
           sparse-checkout: |
             /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/
             /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/
+            /lottominded-ultra.io/games/gothtechnology2/greater-detroit-world/src/
+            /lottominded-ultra.io/games/gothtechnology2/greater-detroit-graphics/src/
       - uses: actions/checkout@v4
         with:
           ref: 7e6c5c7d9f8ed36ee97982b925daa6703e9a9b3e
@@ -29,6 +32,9 @@ jobs:
           sparse-checkout: |
             /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/
             /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/
+            /lottominded-ultra.io/games/gothtechnology2/greater-detroit-world/src/
+            /lottominded-ultra.io/games/gothtechnology2/greater-detroit-graphics/src/
       - uses: actions/setup-node@v4
         with:
           node-version: 24
