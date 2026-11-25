@@ -1,0 +1,93 @@
+name: Belle Isle genuine sparse workspace recovery
+on:
+  push:
+    branches:
+      - upgrade-redesign-cadillac-workspace-recovery-20261125
+    paths:
+      - '.github/workflows/belle-workspace-recovery.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  export-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: '549dc89ade22532df9cd99508db66c323371bb4f'
+          path: recovered-repo
+          persist-credentials: false
+          fetch-depth: 1
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /AGENTS.md
+            /.github/workflows/
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/tsconfig.json
+            /lottominded-ultra.io/games/gothtechnology2/playwright*.*
+            /lottominded-ultra.io/games/gothtechnology2/scripts/
+            /lottominded-ultra.io/games/gothtechnology2/src/
+            /lottominded-ultra.io/games/gothtechnology2/ride-core/
+            /lottominded-ultra.io/games/gothtechnology2/engine/
+            /lottominded-ultra.io/games/gothtechnology2/greater-detroit-graphics/
+            /lottominded-ultra.io/games/gothtechnology2/greater-detroit-world/
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/*.md
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/index.html
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/tsconfig.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/vite.config.ts
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/run-tests.mjs
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/qa/
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/runtime/
+      - name: Verify authentic sparse checkout and export source with Git metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd recovered-repo
+          test "$(git rev-parse HEAD)" = "549dc89ade22532df9cd99508db66c323371bb4f"
+          test "$(git rev-parse HEAD^{tree})" = "0a3a021bbff7dd0ab36f389a4a389d2b771ae220"
+          test "$(git rev-parse --is-shallow-repository)" = true
+          test "$(git config --bool core.sparseCheckout)" = true
+          test -z "$(git status --porcelain)"
+          case "$(git config --local --get remote.origin.url)" in
+            https://github.com/robjasper2084/Jungle-Lotto|https://github.com/robjasper2084/Jungle-Lotto.git) ;;
+            *) echo "Unexpected origin; refusing export"; exit 1 ;;
+          esac
+          if git config --local --get-regexp '^(http\..*\.extraheader|credential\.|include(if)?\.)' >/dev/null; then
+            echo "Unexpected authentication or include configuration; refusing export"
+            exit 1
+          fi
+          test -f "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/package.json"
+          test -f "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/cadillac-mods-browser-smoke.mjs"
+          test -f "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/main.ts"
+          test ! -d "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public"
+          echo "Pinned source and tree:"
+          git rev-parse HEAD HEAD^{tree}
+          git sparse-checkout list
+          cd ..
+          mkdir -p recovery-export
+          tar -czf recovery-export/recovered-repo.tar.gz recovered-repo
+          test "$(stat -c %s recovery-export/recovered-repo.tar.gz)" -le 200000000
+          (
+            cd recovery-export
+            sha256sum recovered-repo.tar.gz > SHA256SUMS
+          )
+          mkdir -p "$RUNNER_TEMP/recovery-roundtrip"
+          tar -xzf recovery-export/recovered-repo.tar.gz -C "$RUNNER_TEMP/recovery-roundtrip"
+          cd "$RUNNER_TEMP/recovery-roundtrip/recovered-repo"
+          test "$(git rev-parse HEAD)" = "549dc89ade22532df9cd99508db66c323371bb4f"
+          test "$(git rev-parse HEAD^{tree})" = "0a3a021bbff7dd0ab36f389a4a389d2b771ae220"
+          test -z "$(git status --porcelain)"
+          git diff --exit-code HEAD --
+          git ls-files -t | awk '$1 != "S" {count++} END {print "Materialized tracked paths:", count}'
+          echo "Source-only export; public assets and npm dependencies intentionally not exported. No build or acceptance claim."
+      - uses: actions/upload-artifact@v4
+        with:
+          name: belle-authentic-sparse-source-549dc89
+          path: recovery-export/
+          compression-level: 0
+          if-no-files-found: error
+          retention-days: 3
