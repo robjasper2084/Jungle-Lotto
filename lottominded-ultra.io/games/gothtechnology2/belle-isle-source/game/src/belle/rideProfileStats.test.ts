@@ -39,3 +39,31 @@ test('bounded diagnostic samples preserve full-capture counts, maxima and worst 
  assert.equal(report.metrics.frameMs?.max,4000);assert.equal(report.metrics.frameMs?.mean,1225);
  assert.deepEqual(report.slowFrames.map(s=>s.place),['Place 2','Place 3']);assert.equal(report.places.length,2);assert.equal(report.placesTruncated,true);
 });
+
+test('diagnostic route trace covers every retained eligible frame without joining interruptions or corrupting release counters',()=>{
+ const stats=new RideProfileStats({frames:5,slowFrames:1});
+ stats.sample(frame({dt:.02,place:'Bridge',x:1,times:[1,2,3,4,5]}));
+ stats.sample(frame({dt:.12,place:'Bridge',x:2,times:[1,2,3,9,5]}));
+ stats.sample(frame({dt:4,hidden:true}));
+ stats.sample(frame({dt:.03,place:'Landing',x:3}));
+ stats.sample(frame({dt:.04,place:'Landing',x:NaN}));
+ stats.sample(frame({dt:.3,place:'Hill',x:4}));
+ stats.sample(frame({dt:.02,place:'Other',x:5}));
+ const report=stats.report(),trace=report.routeTrace;
+ assert.equal(report.frames,6);assert.equal(report.over100ms,2);assert.equal(report.over250ms,1);
+ assert.equal(report.excludedSeconds,4);assert.equal(trace.dropped,1);
+ assert.deepEqual(trace.rows.map(row=>row.sample),[1,2,3,4,5]);
+ assert.deepEqual(trace.rows.map(row=>row.previous),[null,1,null,null,null]);
+ assert.deepEqual(trace.rows.map(row=>row.valid),[true,true,true,false,true]);
+ assert.equal(trace.rows[1].metrics[0],120);assert.equal(trace.rows[1].metrics[4],9);
+ assert.equal(trace.rows[3].x,null);assert.equal(trace.rows[4].metrics[0],300);
+ assert.equal(report.metrics.frameMs?.max,300);
+ trace.rows[0].metrics[0]=999;assert.equal(stats.report().routeTrace.rows[0].metrics[0],20);
+});
+test('diagnostic route trace explicitly breaks previous association on callback reset and invalid metric',()=>{
+ const stats=new RideProfileStats();
+ stats.sample(frame());stats.breakCallback();stats.sample(frame());
+ stats.sample(frame({times:[1,2,3,NaN,5]}));stats.sample(frame());
+ assert.deepEqual(stats.report().routeTrace.rows.map(row=>row.previous),[null,null,null,null]);
+ assert.equal(stats.report().invalidMetricSamples,1);
+});

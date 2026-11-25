@@ -7,6 +7,8 @@ export interface RideProfileFrame {
 }
 interface SlowFrame {place:string;x:number;z:number;frameMs:number;renderMs:number;nature?:NatureRenderFrame|null;submission?:RenderSubmissionFrame|null;previousEligibleCallback?:RenderWorkRow|null}
 interface Limits {frames:number;slowFrames:number;places:number}
+// Diagnostic branch only: capture every retained eligible row, not only the worst stalls.
+interface RouteTraceRow {sample:number;previous:number|null;place:string;x:number|null;z:number|null;speed:number|null;valid:boolean;metrics:number[]}
 const metricNames=['frameMs','simulationCpuMs','presentationCpuMs','worldAndActivityCpuMs','renderSubmitCpuMs','hudCpuMs','drawCalls','triangles','textures','geometries'] as const;
 export class RideProfileStats {
  activeSeconds=0;movingSeconds=0;distanceMetres=0;
@@ -16,11 +18,12 @@ export class RideProfileStats {
  private sums=Array<number>(metricNames.length).fill(0);private maxima=Array<number>(metricNames.length).fill(0);
  private renderSummary:RenderDiagnosticsSummary|null=null;private submissionSummary:RenderSubmissionSummary|null=null;private previousProfiled:RenderWorkRow|null=null;
  private lastPosition:{x:number;z:number}|null=null;private limits:Limits;
+ private routeTrace:RouteTraceRow[]=[];private routePrevious:number|null=null;
  constructor(limits:Partial<Limits>={}){this.limits={frames:limits.frames??150000,slowFrames:limits.slowFrames??100,places:limits.places??256};}
  get acceptedFrames(){return this.frameCount;}
  get previousProfiledSample(){return this.previousProfiled?.sample??null;}
  breakPosition(){this.lastPosition=null;this.breakCallback();}
- breakCallback(){this.previousProfiled=null;}
+ breakCallback(){this.previousProfiled=null;this.routePrevious=null;}
  sample(frame:RideProfileFrame){
   const {dt,eligible,hidden}=frame;
   if(!Number.isFinite(dt)||dt<=0||!Number.isFinite(dt*1000)){this.invalidSamples++;this.breakPosition();return false;}
@@ -39,6 +42,15 @@ export class RideProfileStats {
   const row=values.map(value=>Number.isFinite(value)&&value>=0?value:0);
   for(let i=0;i<row.length;i++){this.sums[i]+=row[i];this.maxima[i]=Math.max(this.maxima[i],row[i]);}
   if(this.frames.length<this.limits.frames)this.frames.push(row);
+  // Same accepted population and bound as the unchanged global statistics.
+  // The label is the existing HUD place (updated periodically), not a new geofence.
+  const routeValid=positionValid&&!invalidMetrics&&Number.isFinite(frame.speed);
+  if(this.routeTrace.length<this.limits.frames){
+   this.routeTrace.push({sample:this.frameCount,previous:routeValid?this.routePrevious:null,place:frame.place,
+    x:positionValid?frame.x:null,z:positionValid?frame.z:null,speed:Number.isFinite(frame.speed)?frame.speed:null,
+    valid:routeValid,metrics:row});
+   this.routePrevious=routeValid?this.frameCount:null;
+  }else this.routePrevious=null;
   if(dt>.05)this.over50ms++;if(dt>.1)this.over100ms++;if(dt>.25)this.over250ms++;if(dt>2)this.over2s++;
   let submission:RenderSubmissionFrame|null=null;
   if(frame.submission!==undefined){
@@ -75,6 +87,7 @@ export class RideProfileStats {
    frames:this.frameCount,sampledFrames:this.frames.length,droppedFrameSamples:this.frameCount-this.frames.length,
    observedFPS:this.frameCount/Math.max(.001,this.activeSeconds),over50ms:this.over50ms,over100ms:this.over100ms,over250ms:this.over250ms,over2s:this.over2s,maxFrameMs:this.maxima[0],
    slowFrames:this.slowFrames.slice().sort((a,b)=>b.frameMs-a.frameMs).map(row=>({...row,...(row.nature?{nature:{...row.nature}}:{}),...(row.submission?{submission:copyRenderSubmissionFrame(row.submission)}:{}),...(row.previousEligibleCallback?{previousEligibleCallback:copyRenderWorkRow(row.previousEligibleCallback)}:{})})),renderDiagnostics:this.renderSummary?.report(),submissionDiagnostics:this.submissionSummary?.report(),places:[...this.places],placesTruncated:this.placesTruncated,
+   routeTrace:{version:1,columns:[...metricNames],rows:this.routeTrace.map(row=>({...row,metrics:row.metrics.slice()})),dropped:this.frameCount-this.routeTrace.length,note:'Diagnostic only. Existing HUD place label may lag position by its refresh interval; use x/z for spatial analysis. previous refers only to the immediately preceding valid eligible sample with no known break. Frame interval precedes current CPU submission; association is not causal GPU attribution. Every retained frame, including slow and invalid metric rows, is present.'},
    metrics:Object.fromEntries(metricNames.map((name,i)=>[name,metric(i)]))};
  }
 }
