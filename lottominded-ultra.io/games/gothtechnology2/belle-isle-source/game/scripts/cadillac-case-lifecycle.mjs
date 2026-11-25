@@ -78,6 +78,8 @@ export function createCadillacCaseInput({lifecycle,page,touch}){
  }
  const api={
   tap:(locator,mobile)=>lifecycle.input(mobile?'locator.tap':'locator.click',timeout=>mobile?locator.tap({timeout}):locator.click({timeout})),
+  // Only the audited in-page desktop Start button uses this native action.
+  clickStartWithoutNavigation:locator=>lifecycle.input('locator.click(noWaitAfter) Start',timeout=>locator.click({timeout,noWaitAfter:true})),
   press:(locator,key)=>lifecycle.input('locator.press '+key,timeout=>locator.press(key,{timeout})),
   // Only the three desktop wheel selects opt out of the navigation barrier.
   // Locator resolution/focus, native keys, timeout and promise ownership stay intact.

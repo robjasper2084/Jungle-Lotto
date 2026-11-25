@@ -68,7 +68,7 @@ test('the final clock boundary and clipped budget describe the actual native cal
 
 test('the stopped latch rejects every new native entry including the deferred CDP transport callback',async()=>{
  const f=fixture();f.expire();const client={send:()=>assert.fail('CDP dispatch after stop')};
- for(const action of [()=>f.input.tap(f.locator,false),()=>f.input.tap(f.locator,true),()=>f.input.focus(f.locator),()=>f.input.scroll(f.locator),
+ for(const action of [()=>f.input.tap(f.locator,false),()=>f.input.tap(f.locator,true),()=>f.input.clickStartWithoutNavigation(f.locator),()=>f.input.focus(f.locator),()=>f.input.scroll(f.locator),
   ()=>f.input.press(f.locator,'Enter'),()=>f.input.pressWithoutNavigation(f.locator,'Enter'),()=>f.input.keyPress('h'),()=>f.input.keyDown('w'),()=>f.input.mouseMove(1,2),
   ()=>f.input.mouseDown(),()=>f.input.mouseClick(1,2),()=>f.input.touch('touchStart',[]),
   ()=>Promise.resolve().then(()=>f.input.sendTouch(client,'Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[]}))])
@@ -309,4 +309,35 @@ test('the editor scroll optimizes only confirmed browser-native movement and ret
  result=await exercise({left:200,top:10,clipped:true});
  assert.deepEqual(result.calls.map(call=>call[0]),['observe','instant']);
  assert.equal(result.harness.explicitScrolls,1);
+});
+
+
+test('only the actual desktop Start click avoids the unrelated navigation wait while both readiness checks and trusted input remain mandatory',async()=>{
+ const source=await readFile(new URL('./cadillac-mods-browser-smoke.mjs',import.meta.url),'utf8');
+ const startup=source.slice(source.indexOf('async function tap('),source.indexOf('// Only the existing, explicit command call sites'));
+ assert.equal(source.match(/nativeInput\.clickStartWithoutNavigation\(/g)?.length,1);
+ assert(source.includes("await expect(page.locator('#welcome')).toHaveAttribute('data-state','ready');await startSelectedRide();"));
+ for(const mobile of [false,true])for(const fault of [null,'readiness','mode','url','duplicate','untrusted','native rejection','deadline']){
+  if(mobile&&['url','duplicate','untrusted'].includes(fault))continue;
+  const f=fixture(),calls=[],report={harness:{pointerActivations:0}};
+  let url='http://localhost/?ride=cadillac&profile=1';
+  const originalClick=f.locator.click;
+  f.locator.click=async options=>{await originalClick(options);if(fault==='native rejection')throw Error('native rejection');if(fault==='deadline')f.expire();};
+  const originalTap=f.locator.tap;
+  f.locator.tap=async options=>{await originalTap(options);if(fault==='native rejection')throw Error('native rejection');if(fault==='deadline')f.expire();};
+  const page={url:()=>url,locator:selector=>selector==='#start'?f.locator:selector,
+   evaluate:async()=>{calls.push('read evidence');return {startClicks:fault==='duplicate'?2:1,clicks:[fault!=='untrusted']};}};
+  const expect=selector=>selector==='body'?{not:{toHaveClass:async value=>{assert.equal(String(value),'/at-start/');calls.push('body readiness');if(fault==='readiness')throw Error('readiness');}}}:
+   {toContainText:async value=>{assert.equal(selector,'#ride-mode');assert.equal(value,'CADILLAC');calls.push('vehicle readiness');if(fault==='mode')throw Error('mode');if(fault==='url')url='http://localhost/other';}};
+  const context=createContext({assert,mobile,page,expect,nativeInput:f.input,caseLifecycle:f.lifecycle,report});
+  runInContext(startup,context);
+  const run=runInContext('startSelectedRide()',context);
+  if(fault)await assert.rejects(run);else await run;
+  assert.deepEqual(f.calls,[[mobile?'locator.tap':'locator.click',mobile?{timeout:90000}:{timeout:90000,noWaitAfter:true}]]);
+  assert.equal(f.lifecycle.snapshot().issuedInputs,1,'Never retry an uncertain native activation');
+  if(fault==='native rejection'||fault==='deadline'){assert.deepEqual(calls,[]);assert.equal(report.harness.pointerActivations,0);}
+  else if(fault==='readiness')assert.deepEqual(calls,['body readiness']);
+  else if(fault==='mode'||fault==='url')assert.deepEqual(calls,['body readiness','vehicle readiness']);
+  else assert.deepEqual(calls,mobile?['body readiness','vehicle readiness']:['body readiness','vehicle readiness','read evidence']);
+ }
 });
