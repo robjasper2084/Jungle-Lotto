@@ -35,10 +35,10 @@ try{
  await page.goto('http://127.0.0.1:'+server.address().port+'/',{waitUntil:'load'});
  const {images,...report}=await page.evaluate(()=>globalThis.__streetProof());
  receipt.report=report;receipt.captures=[];
- for(const item of images){const png=Buffer.from(item.png.replace(/^data:image\/png;base64,/,''),'base64');assert.equal(png.readUInt32BE(16),1440);assert.equal(png.readUInt32BE(20),900);await writeFile(join(out,item.name),png);receipt.captures.push({name:item.name,bytes:png.length,sha256:sha(png),rgbaSha256:item.rgbaSha256});}
+ for(const item of images){const png=Buffer.from(item.png.replace(/^data:image\/png;base64,/,''),'base64');assert.equal(png.readUInt32BE(16),1440);assert.equal(png.readUInt32BE(20),900);await writeFile(join(out,item.name),png);receipt.captures.push({name:item.name,bytes:png.length,sha256:sha(png),rgbaSha256:item.rgbaSha256,canvasRgbaSha256:item.canvasRgbaSha256});}
  const correctBackend=process.platform==='darwin'?/Metal/i.test(report.renderer)&&!/SwiftShader|llvmpipe|software rasterizer/i.test(report.renderer):/SwiftShader/i.test(report.renderer);
- receipt.passed=correctBackend&&report.three==='185'&&report.comparisons.length===6&&receipt.captures.length===12&&report.comparisons.every(c=>c.changedPixels===0&&c.baselineDraws===c.candidateDraws&&c.baselineTriangles===c.candidateTriangles)&&receipt.errors.length===0;
- console.log(JSON.stringify({scope:receipt.scope,passed:receipt.passed,renderer:report.renderer,roots:report.roots,comparisons:report.comparisons,timing:report.timing}));
+ receipt.passed=correctBackend&&report.three==='185'&&report.comparisons.length===6&&receipt.captures.length===12&&report.comparisons.every(c=>c.nonuniform&&c.changedPixels===0&&c.baselineCanvasHash===c.candidateCanvasHash&&c.baselineDraws===c.candidateDraws&&c.baselineTriangles===c.candidateTriangles)&&report.shadowControls.length===6&&report.shadowControls.every(c=>c.changedPixels>0&&c.canvasChanged)&&receipt.errors.length===0;
+ console.log(JSON.stringify({scope:receipt.scope,passed:receipt.passed,renderer:report.renderer,roots:report.roots,comparisons:report.comparisons,shadowControls:report.shadowControls,timing:report.timing}));
  if(!receipt.passed)process.exitCode=1;
 }catch(e){receipt.errors.push(String(e?.stack??e));receipt.passed=false;process.exitCode=1;}
 finally{await writeFile(join(out,'proof.json'),JSON.stringify(receipt,null,2)+'\n');if(browser)await browser.close().catch(()=>{});if(server?.listening)await new Promise(ok=>server.close(ok));}
