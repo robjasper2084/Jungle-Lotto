@@ -1,0 +1,114 @@
+name: Cadillac Linux software-renderer attribution (diagnostic only)
+on:
+  pull_request:
+    branches: [upgrade-redesign-cadillac-modification-suite]
+    paths:
+      - '.github/workflows/belle-cadillac-linux-attribution.yml'
+      - '.github/diagnostics/linux-controls-observer.py'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  linux-controls-attribution:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      CADILLAC_MODS_SOURCE_SHA: 96603a2346364262324569bb5839a07cea3a3eaa
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 96603a2346364262324569bb5839a07cea3a3eaa
+          path: app
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: diagnostic
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/diagnostics/linux-controls-observer.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 45541143545
+          github-token: ${{ github.token }}
+          name: cadillac-mods-game-96603a2346364262324569bb5839a07cea3a3eaa
+          path: app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist
+      - name: Verify original source and existing controls bundle
+        run: |
+          set -euo pipefail
+          game="$GITHUB_WORKSPACE/app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game"
+          observer="$GITHUB_WORKSPACE/diagnostic/.github/diagnostics/linux-controls-observer.py"
+          mkdir -p evidence
+          test "$(git -C app rev-parse HEAD)" = "$CADILLAC_MODS_SOURCE_SHA"
+          test "$(git -C app rev-parse 'HEAD^{tree}')" = 22b3c7cacd9d9af684489519895c3f260d16efca
+          test "$(git hash-object "$game/scripts/cadillac-mods-browser-smoke.mjs")" = dee6c7b7648d57114506c9dbf29f272ebd7e7b41
+          test "$(git hash-object "$observer")" = 506d3866ebb21da006f1ccf1e9927975013cf32d
+          python3 -m py_compile "$observer"
+          python3 - "$game/dist" "$CADILLAC_MODS_SOURCE_SHA" <<'PY'
+          import sys,json,hashlib,pathlib
+          dist=pathlib.Path(sys.argv[1])
+          marker=json.loads((dist/'cadillac-mods-build.json').read_text())
+          assert marker['sourceSha']==sys.argv[2]
+          assert marker['indexSha256']==hashlib.sha256((dist/'index.html').read_bytes()).hexdigest()
+          PY
+          (cd "$game/dist" && find . -type f -print0 | sort -z | xargs -0 sha256sum) > evidence/dist-before.sha256
+          git -C app rev-parse HEAD > evidence/source.txt
+          git -C app rev-parse 'HEAD^{tree}' > evidence/tree.txt
+          git -C diagnostic rev-parse HEAD > evidence/diagnostic-head.txt
+          (cd "$game/../.." && npm ci && npx playwright install --with-deps chrome)
+          { date -u; uname -a; nproc; lscpu; free -m; node -v; google-chrome --version; } > evidence/host-before.txt
+          git -C app diff --exit-code
+          printf 'Unchanged hydraulic Cadillac desktop case, original archived build, read-only process and scheduler observation. Diagnostic only, never release acceptance.\n' > evidence/scope.txt
+      - name: Observe original hydraulic desktop controls and actual software-renderer processes
+        timeout-minutes: 34
+        working-directory: app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          BELLE_CADILLAC_MODS_CASE: desktop
+          BELLE_CADILLAC_MODS_RIDE: hydraulic-cadillac
+        run: |
+          set -euo pipefail
+          target="$GITHUB_WORKSPACE/evidence"
+          observer="$GITHUB_WORKSPACE/diagnostic/.github/diagnostics/linux-controls-observer.py"
+          test ! -e output/cadillac-mods/hydraulic-cadillac-desktop
+          status=0
+          python3 "$observer" --out "$target" --interval 3 -- xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node scripts/cadillac-mods-browser-smoke.mjs || status=$?
+          printf '%s\n' "$status" > "$target/original-exit-code.txt"
+          cat "$target/original.log"
+          { date -u; uptime; free -m; } > "$target/host-after.txt"
+          (cd dist && find . -type f -print0 | sort -z | xargs -0 sha256sum) > "$target/dist-after.sha256"
+          cmp "$target/dist-before.sha256" "$target/dist-after.sha256"
+          test "$(git hash-object scripts/cadillac-mods-browser-smoke.mjs)" = dee6c7b7648d57114506c9dbf29f272ebd7e7b41
+          git diff --exit-code
+          report=output/cadillac-mods/hydraulic-cadillac-desktop/report.json
+          test -s "$report"
+          python3 - "$report" "$target/observer-receipt.json" "$target/original-exit-code.txt" "$target/host-samples.jsonl" <<'PY'
+          import sys,json,pathlib
+          r,o=(json.loads(pathlib.Path(p).read_text()) for p in sys.argv[1:3])
+          assert r['source']==r['checkout']=='96603a2346364262324569bb5839a07cea3a3eaa'
+          assert r['case']=='hydraulic-cadillac-desktop' and r['viewport']=={'width':1280,'height':800}
+          assert r['caseLifecycle']['timeoutMs']==1920000
+          assert o['childExitCode']==int(pathlib.Path(sys.argv[3]).read_text())
+          assert o['samples']>0 and not o['observerErrors']
+          rows=[json.loads(l) for l in pathlib.Path(sys.argv[4]).read_text().splitlines()]
+          assert len(rows)==o['samples']
+          assert any(p['role']=='chrome-gpu-process' for row in rows for p in row['processes']), 'No actual Chrome GPU process observed'
+          assert any(p['role']=='chrome-renderer' for row in rows for p in row['processes']), 'No actual renderer observed'
+          print('Original case passed:',r['passed'],'; diagnostic collection is not acceptance')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cadillac-linux-software-attribution-not-release
+          path: |
+            evidence/
+            app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/cadillac-mods/hydraulic-cadillac-desktop/
+          if-no-files-found: warn
+          retention-days: 14
