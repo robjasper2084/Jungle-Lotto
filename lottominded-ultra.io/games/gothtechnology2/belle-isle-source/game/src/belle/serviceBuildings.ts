@@ -7,7 +7,7 @@ import {limitGroundDrawRange,type GroundRange} from './groundDrawRange.ts';
 
 /** Secondary buildings retain mapped footprints/heights. Facade treatments are
  * approximate until measured elevation photography is available. */
-export function addServiceBuildings(scene:T.Scene,map:ParkMap,night={value:0}){
+export function addServiceBuildings(scene:T.Scene,map:ParkMap,night={value:0},isolatedId?:string){
  addPondServiceBuildings(scene,map);
  const custom=new Set(map.landmarks.map(l=>l.id)),beachIds=new Set(['368854145','927879992','509325790','509325814']);
  const brick=new T.MeshStandardMaterial({color:0xb29e7f,roughness:.94});
@@ -43,10 +43,12 @@ export function addServiceBuildings(scene:T.Scene,map:ParkMap,night={value:0}){
  const litGlass=glass.clone();litGlass.name='Warm arrival storefront glass';litGlass.emissive.set(0x80512c);
  litGlass.onBeforeCompile=shader=>{shader.uniforms.arrivalNight=night;shader.fragmentShader='uniform float arrivalNight;\n'+shader.fragmentShader;shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\ntotalEmissiveRadiance*=arrivalNight*.65;');};litGlass.customProgramCacheKey=()=>'arrival-window-night-v1';
  const groups=new Map<T.Material,{pieces:T.BufferGeometry[];ranges:GroundRange[];count:number;site?:T.Box3}>();
+ const isolatedGroups=new Map<T.Material,{pieces:T.BufferGeometry[];ranges:GroundRange[];count:number;site?:T.Box3}>();
+ let isolateCurrent=false;
  let siteBounds:T.Box3;
  const point=new T.Vector3();
  const add=(g:T.BufferGeometry,m:T.Material)=>{
-  let group=groups.get(m);if(!group){group={pieces:[],ranges:[],count:0};groups.set(m,group);}
+  const target=isolateCurrent?isolatedGroups:groups;let group=target.get(m);if(!group){group={pieces:[],ranges:[],count:0};target.set(m,group);}
   group.pieces.push(g);group.count+=g.index!.count;
   if(group.site!==siteBounds){
    const {min,max}=siteBounds;
@@ -55,6 +57,7 @@ export function addServiceBuildings(scene:T.Scene,map:ParkMap,night={value:0}){
  };
  const box=(x:number,y:number,z:number,w:number,h:number,d:number,yaw:number,m:T.Material)=>{const g=new T.BoxGeometry(w,h,d);g.rotateY(yaw);g.translate(x,y,z);add(g,m);};
  for(const b of map.buildings){
+  isolateCurrent=b.id===isolatedId;
   if(b.id==='513165063'||POND_SERVICE_IDS.has(b.id)||custom.has(b.id)||CUSTOM_ARCHITECTURE_IDS.has(b.id)||map.dossin?.ids.includes(b.id))continue;
   const facility=map.facilities?.sites.find(s=>s.id===b.id);if(facility?.kind==='shelter')continue;
   // The window recesses, wall trim and entry canopies extend less than two
@@ -83,9 +86,15 @@ export function addServiceBuildings(scene:T.Scene,map:ParkMap,night={value:0}){
   }
   const shape=new T.Shape(b.points.map(p=>new T.Vector2(p[0],-p[1]))),top=new T.ShapeGeometry(shape);top.rotateX(-Math.PI/2);top.translate(0,2+b.height+.14,0);add(top,roof);
  }
- for(const [material,{pieces,ranges}]of groups){
-  const g=mergeGeometries(pieces)!;pieces.forEach(x=>x.dispose());
-  const mesh=new T.Mesh(g,material);mesh.name='Mapped secondary buildings · '+(material===brick?'masonry':material===roof?'roofs':'entrances and facade detail');
-  mesh.castShadow=true;mesh.receiveShadow=true;limitGroundDrawRange(mesh,ranges);scene.add(mesh);
+ const fallback=new T.Group();fallback.name=isolatedId?'Jefferson Armory original facades and roofs':'Unused isolated-building fallback';
+ function finish(target:typeof groups,owner:T.Object3D){
+  for(const [material,{pieces,ranges}]of target){
+   const g=mergeGeometries(pieces)!;pieces.forEach(x=>x.dispose());
+   const mesh=new T.Mesh(g,material);mesh.name='Mapped secondary buildings · '+(material===brick?'masonry':material===roof?'roofs':'entrances and facade detail');
+   mesh.castShadow=true;mesh.receiveShadow=true;limitGroundDrawRange(mesh,ranges);owner.add(mesh);
+  }
  }
+ finish(groups,scene);
+ if(isolatedGroups.size){finish(isolatedGroups,fallback);scene.add(fallback);}
+ return fallback;
 }
