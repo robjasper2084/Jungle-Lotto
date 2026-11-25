@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+import type {SkySettings} from './skyModel.ts';
 import {ART_STYLE_IDS,ART_DIRECTIONS,DEFAULT_ART_STYLE,normalizeArtStyle,artStyleSkyPreset} from './artDirection.ts';
 test('four selectable looks and safe default for corrupt local storage',()=>{
  assert.deepEqual(ART_STYLE_IDS,['authentic','golden','noir','detroit2084']);
@@ -33,7 +34,7 @@ test('actual style control selects local palette and preserves host sky when dis
  const controls=Object.fromEntries(names.map(id=>[id,{id,value:'',checked:false,disabled:false,onchange:null as null|(()=>void),oninput:null as null|(()=>void)}])) as Record<string,any>;
  const options:{value:string;textContent:string}[]=[];
  Object.assign(controls['sky-preset'],{querySelector:()=>options.find(x=>x.value==='17.55')??null,append:(x:{value:string;textContent:string})=>options.push(x)});
- let state={hour:12,cycle:true,dayMinutes:60,clouds:'overcast' as 'overcast'|'wispy'};
+ let state:SkySettings={hour:12,cycle:true,dayMinutes:60,clouds:'overcast'};
  let style:'authentic'|'golden'|'noir'|'detroit2084'='authentic',changes=0;
  const fake={
   get settings(){return {...state};},get hour(){return state.hour;},
