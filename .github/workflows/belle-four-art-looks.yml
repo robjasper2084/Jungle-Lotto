@@ -36,7 +36,8 @@ jobs:
           if-no-files-found: error
   actual-game-gallery:
     needs: build
-    runs-on: ubuntu-latest
+    # Desktop uses the native Metal lane, not the SwiftShader software fallback.
+    runs-on: ${{ matrix.device == 'desktop' && 'macos-15' || 'ubuntu-latest' }}
     timeout-minutes: 35
     strategy:
       fail-fast: false
@@ -56,15 +57,22 @@ jobs:
         with:
           name: belle-art-directions-exact-build
           path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist/
-      - name: Install actual browser
+      - name: Install browser dependencies for actual gameplay
         working-directory: lottominded-ultra.io/games/gothtechnology2
-        run: |
-          npm ci
-          npx playwright install chromium --with-deps
+        run: npm ci
+      - name: Install native Metal Chrome for desktop screenshots
+        if: matrix.device == 'desktop'
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: npx playwright install chrome
+      - name: Install WebGL Chromium for phone viewport screenshots
+        if: matrix.device == 'phone'
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: npx playwright install chromium --with-deps
       - name: Same-camera WebGL and GPU-fenced screenshots, four looks
         working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
         env:
           BELLE_ART_DEVICE: ${{ matrix.device }}
+          ENV_GALLERY_REQUIRE_METAL: ${{ matrix.device == 'desktop' && '1' || '0' }}
         run: node scripts/art-direction-gallery.mjs
       - uses: actions/upload-artifact@v4
         if: always()
