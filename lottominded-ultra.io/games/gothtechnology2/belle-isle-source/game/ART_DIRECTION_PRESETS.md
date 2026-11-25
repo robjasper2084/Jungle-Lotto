@@ -58,3 +58,18 @@ are unchanged. This is **not an as-built surveyed reconstruction**.
 Do not release until actual gameplay images, matched-angle visual assessment,
 real walk/drive/flight collision sweeps, verified architectural references
 and the unchanged full native 90-second desktop/phone performance gates pass.
+
+## Optional live stone railings (picture-target conceptual mode)
+
+Settings → Visual atmosphere → **Cinematic stone bridge arches (concept art)**.
+The existing metal-look railings remain the default in Authentic Detroit.
+Choosing the conceptual arches displays the same 270 instanced stone panels
+that passed native Metal 90-second staging acceptance, hiding the old railing
+visual only. The original collision geometry, road grade, bridge route and
+vehicle physics are retained. Unchecking restores the original visual rails
+and their shadow behavior. The setting is stored locally when allowed.
+
+The user's generated pictures remain **visual references**, not verified
+as-built bridge evidence. Neither the default bridge nor the authored art
+mode should be described as photogrammetric. Live screenshots and release
+metrics must be checked again on the exact merged candidate.

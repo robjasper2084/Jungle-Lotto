@@ -47,3 +47,17 @@ test('missing original mesh fails closed before generating duplicate railing vis
  assert.equal(scene.children.length,1);
  assert.throws(()=>planPictureBalustrade({...map.bridge,length:44}),/geometry changed/);
 });
+
+test('real game bridge control is optional and outside the unchanged MacArthur shadow input fixture',()=>{
+ const source=readFileSync(new URL('./world.ts',import.meta.url),'utf8');
+ const html=readFileSync(new URL('../../index.html',import.meta.url),'utf8');
+ const main=readFileSync(new URL('./main.ts',import.meta.url),'utf8');
+ assert.match(html,/id="bridge-stone-style" type="checkbox"/);
+ assert.match(main,/setPictureBridgeEnabled\(bridgeStyleToggle.checked\)/);
+ assert.match(source,/bridgePictureStudy\?\.rollback\(\)/);
+ const from=source.indexOf('scene.add(landmarks.scene);const bridgePhotoFinish=');
+ const to=source.indexOf(' // Remove only the old solid Yacht Club shell',from);
+ assert(from>=0&&to>from);
+ assert(!source.slice(from,to).includes('import.meta'));
+ assert(source.indexOf('let bridgePictureStudy')>to);
+});
