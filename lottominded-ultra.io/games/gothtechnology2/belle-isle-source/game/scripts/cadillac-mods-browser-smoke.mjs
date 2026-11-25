@@ -11,6 +11,7 @@ import {createNativeTouchSequence} from './native-touch-sequence.mjs';
 import {clickCadillacCommand} from './cadillac-native-command-click.mjs';
 import {createCadillacCaseLifecycle,createCadillacCaseInput} from './cadillac-case-lifecycle.mjs';
 import {createCadillacOperationTiming} from './cadillac-operation-timing.mjs';
+import {captureCadillacViewportPng} from './cadillac-cdp-viewport-png.mjs';
 
 const game=resolve(import.meta.dirname,'..'),dist=resolve(game,'dist');
 const layouts={desktop:{width:1280,height:800},'small-phone':{width:320,height:568},compact:{width:390,height:340}};
@@ -94,6 +95,10 @@ async function scrollIfNeeded(locator){
   const style=getComputedStyle(element);
   if(element.isConnected&&style.display!=='none'&&style.visibility==='visible'&&typeof element.scrollIntoView==='function'){
    element.scrollIntoView({behavior:'instant',block:'nearest',inline:'nearest'});
+   if(contained())return 'instant';
+   // A nested clipped scroll box may still need centered alignment.
+   // Stay in the same browser task; all original hit-point checks remain.
+   element.scrollIntoView({behavior:'instant',block:'center',inline:'center'});
    if(contained())return 'instant';
   }
   return 'native';
@@ -215,7 +220,7 @@ async function painted(){
 }
 async function capture(name){
  caseLifecycle.check();const gpu=await operationTiming.observe('capture '+name+' fence and paints',()=>painted()),file=name+'.png';caseLifecycle.check();
- const bytes=await operationTiming.observe('capture '+name+' screenshot',()=>page.screenshot({path:resolve(out,file),timeout:150000}));
+ const bytes=await operationTiming.observe('capture '+name+' screenshot',()=>captureCadillacViewportPng({client,viewport:page.viewportSize(),path:resolve(out,file)}));
  caseLifecycle.publish(()=>report.captures.push({file,bytes:bytes.length,sha256:hash(bytes),viewport:page.viewportSize(),phase:report.phase,gpu}));
 }
 async function editorCapture(name,selector){await scrollIfNeeded(page.locator(selector).first());await capture(name);}
