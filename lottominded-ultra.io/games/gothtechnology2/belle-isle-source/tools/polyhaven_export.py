@@ -12,6 +12,7 @@ import struct
 import bpy
 from mathutils import Matrix, Vector
 from PIL import Image
+from polyhaven_texture_budget import GlbByteBudgetError, export_with_budget
 
 MANIFEST = Path(__file__).with_name("polyhaven-review.json")
 
@@ -112,8 +113,10 @@ def reduce_mesh(obj, cap):
 
 def inspect_glb(path,tier,cap):
     data=path.read_bytes()
-    if len(data)>tier["maxBytes"] or len(data)<28:
-        raise ValueError("GLB byte budget")
+    if len(data)<28:
+        raise ValueError("Truncated GLB")
+    if len(data)>tier["maxBytes"]:
+        raise GlbByteBudgetError(f"GLB byte budget: {len(data)} > {tier['maxBytes']} bytes")
     magic,version,size=struct.unpack_from("<4sII",data)
     if (magic,version,size)!=(b"glTF",2,len(data)):
         raise ValueError("Invalid GLB header")
@@ -185,16 +188,22 @@ def main():
             record={"variant":variant["name"],"tier":tier["name"],"source":variant["objects"][i]}
             path=dest/(variant["name"]+"-"+tier["name"]+".glb")
             try:
-                bpy.ops.wm.open_mainfile(filepath=str(source/(args.id+"_4k.blend")),load_ui=False,use_scripts=False)
-                obj=selected_object(record["source"])
-                before,count=reduce_mesh(obj,variant["triangles"][i])
-                reduce_textures(obj,source,tier["maxTexture"])
-                bpy.ops.export_scene.gltf(filepath=str(path),export_format="GLB",use_selection=True,
-                    export_yup=True,export_apply=False,export_texcoords=True,export_normals=True,
-                    export_tangents=True,export_materials="EXPORT",export_image_format="AUTO",
-                    export_draco_mesh_compression_enable=False)
-                record.update(inspect_glb(path,tier,variant["triangles"][i]))
-                record.update(status="review",sourceTriangles=before,stagedTriangles=count,file=path.name)
+                def export_once(limit):
+                    # Reopen the verified original for each attempt: no cascading
+                    # texture resamples, stale packed images or repeated decimation.
+                    path.unlink(missing_ok=True)
+                    bpy.ops.wm.open_mainfile(filepath=str(source/(args.id+"_4k.blend")),load_ui=False,use_scripts=False)
+                    obj=selected_object(record["source"])
+                    before,count=reduce_mesh(obj,variant["triangles"][i])
+                    reduce_textures(obj,source,limit)
+                    bpy.ops.export_scene.gltf(filepath=str(path),export_format="GLB",use_selection=True,
+                        export_yup=True,export_apply=False,export_texcoords=True,export_normals=True,
+                        export_tangents=True,export_materials="EXPORT",export_image_format="AUTO",
+                        export_draco_mesh_compression_enable=False)
+                    validated=inspect_glb(path,{**tier,"maxTexture":limit},variant["triangles"][i])
+                    return {**validated,"sourceTriangles":before,"stagedTriangles":count,"file":path.name}
+                record.update(export_with_budget(tier,export_once))
+                record.update(status="review")
             except Exception as e:
                 path.unlink(missing_ok=True)
                 record.update(status="blocked",reason=str(e))

@@ -25,13 +25,15 @@ jobs:
       - name: Source-intake tests
         working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/tools
         run: |
-          python -m py_compile polyhaven_acquire.py polyhaven_export.py
+          python -m py_compile polyhaven_acquire.py polyhaven_export.py polyhaven_texture_budget.py
           python -m unittest polyhaven_intake_test
       - name: Download exact user-uploaded source revisions
         run: |
           python lottominded-ultra.io/games/gothtechnology2/belle-isle-source/tools/polyhaven_acquire.py --sources "$RUNNER_TEMP/polyhaven-sources" --report "$RUNNER_TEMP/polyhaven-review/source-report.json"
       - name: Install pinned Blender Python and image inspector
         run: python -m pip install --disable-pip-version-check bpy==4.5.3 Pillow==11.3.0
+      - name: Verify headless Blender runtime
+        run: python -c "import bpy; assert bpy.app.version == (4, 5, 3), bpy.app.version_string; print(bpy.app.version_string)"
       - name: Export bounded opaque review meshes and inspect GLB PBR textures
         run: |
           status=0
