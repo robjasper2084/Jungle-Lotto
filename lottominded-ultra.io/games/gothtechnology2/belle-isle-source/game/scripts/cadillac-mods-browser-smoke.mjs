@@ -220,7 +220,7 @@ async function painted(){
 }
 async function capture(name){
  caseLifecycle.check();const gpu=await operationTiming.observe('capture '+name+' fence and paints',()=>painted()),file=name+'.png';caseLifecycle.check();
- const bytes=await operationTiming.observe('capture '+name+' screenshot',()=>captureCadillacViewportPng({client,viewport:page.viewportSize(),path:resolve(out,file)}));
+ const bytes=await operationTiming.observe('capture '+name+' screenshot',()=>bounded(captureCadillacViewportPng({client,viewport:page.viewportSize(),path:resolve(out,file)}),150000,'Native PNG capture'));
  caseLifecycle.publish(()=>report.captures.push({file,bytes:bytes.length,sha256:hash(bytes),viewport:page.viewportSize(),phase:report.phase,gpu}));
 }
 async function editorCapture(name,selector){await scrollIfNeeded(page.locator(selector).first());await capture(name);}
