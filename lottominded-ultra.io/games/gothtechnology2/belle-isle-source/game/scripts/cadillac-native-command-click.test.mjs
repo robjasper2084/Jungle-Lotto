@@ -437,7 +437,12 @@ test('desktop tap adds only the guarded whitelist path while mobile keeps its na
  assert(!/catch|force|dispatchEvent|locator\.click/.test(command),'Recognized failure must not fall back to another input path');
  const routed=source.split('\n').filter(line=>line.includes('await commandTap('));assert(routed.length>10);
  for(const line of routed)assert(/commandTap\(modButton\(|commandTap\(page\.locator\('#hydraulic-(?:'\+pose|front-up'|hop-all'|settle'|pancake'|exit')/.test(line));
- for(const target of ['#view','#hydraulic-mode-toggle','#start'])assert(source.includes("await tap(page.locator('"+target+"'))"));
+ for(const target of ['#view','#hydraulic-mode-toggle'])assert(source.includes("await tap(page.locator('"+target+"'))"));
+ // Start is a non-navigating SPA activation. Still require exactly one real
+ // native click path; the unrelated controls keep their original tap behavior.
+ assert.equal(source.split("await tapStart(page.locator('#start'));").length-1,1);
+ assert(!source.includes("await tap(page.locator('#start'));"));
+ assert(source.includes('async function tapStart(locator){await nativeInput.tapStart(locator,mobile);caseLifecycle.publish(()=>report.harness.pointerActivations++);}'));
 });
 
 test('clipped dialog command centers actual button before any native mouse input and fully re-proves its new rectangle',async()=>{
