@@ -50,6 +50,7 @@ import {prepareDossinMaterials,addDossinLighting} from './dossinScene.ts';
 import {prepareAquariumMaterials,addAquariumLife} from './aquariumScene.ts';
 import {addBeach} from './beach.ts';
 import {addServiceBuildings} from './serviceBuildings.ts';
+import {installStagedLandmarkStudies} from './stagedLandmarkStudies.ts';
 import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {MeshoptDecoder} from 'three/addons/libs/meshopt_decoder.module.js';
@@ -153,6 +154,14 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
  addEntrance(scene,data,terrain);await yieldStartupTask();
  status('Loading Detroit skyline');const skyline=await loadStartupModel(loader,'./belle/detroit-skyline.glb');skyline.scene.name='Detroit skyline · Renaissance Center';skyline.scene.traverse(o=>{if((o as T.Mesh).isMesh){o.castShadow=false;o.receiveShadow=false;}});scene.add(skyline.scene);islandSky.dressSkyline(skyline.scene);if(REFERENCE_STYLE)addReferenceSkyline(scene);const windsor=addWaterfrontSkyline(scene);islandSky.dressSkyline(windsor);
  status('Loading landmark architecture');const landmarks=await loadStartupModel(loader,'./belle/landmarks.glb?v=walkthrough-20261103');scene.add(landmarks.scene);const bridgePhotoFinish=finishMacArthurConcrete(landmarks.scene);const bridgeRailFinish=finishMacArthurRailings(landmarks.scene);landmarks.scene.traverse(o=>{if((o as T.Mesh).isMesh){o.castShadow=true;o.receiveShadow=true;(o as T.Mesh).geometry.computeBoundingSphere();for(const m of(Array.isArray((o as T.Mesh).material)?(o as T.Mesh).material:[(o as T.Mesh).material]) as T.MeshStandardMaterial[]){if(tuneConservatoryMaterial(m)==='glazing')o.castShadow=false;if(m.name==='Casino buff masonry'){m.color.setRGB(.72,.66,.53);m.bumpMap=m.map;m.bumpScale=.012;}if(m.map&&/limestone/i.test(m.name)){m.bumpMap=m.map;m.bumpScale=.018;m.roughness=.88;}};}});
+ 
+ // Staged architecture preview is never enabled in an ordinary production build.
+ const STAGED_BELLE_ARCHITECTURE=(import.meta as ImportMeta & {env?:Record<string,string|undefined>}).env?.VITE_STAGED_BELLE_ARCHITECTURE==='1';
+ if(STAGED_BELLE_ARCHITECTURE){
+  status('Verifying and preparing Conservatory/Aquarium study replacements');
+  const stagedStudies=await installStagedLandmarkStudies(loader,landmarks.scene);
+  console.info('STAGED landmark swap only; collisions, site survey and 90-second native performance remain unaccepted',stagedStudies.installed);
+ }
  // Remove only the old solid Yacht Club shell; every other landmark remains intact.
  const oldBoatClub:T.Object3D[]=[];landmarks.scene.traverse(o=>{if(o.name.startsWith('107192915_'))oldBoatClub.push(o);});for(const o of oldBoatClub)o.removeFromParent();addBoatClub(scene,terrain,islandSky.nightAmount);
  const oldYacht:T.Object3D[]=[];landmarks.scene.traverse(o=>{if(o.name.startsWith('264321737_'))oldYacht.push(o);});for(const o of oldYacht)o.removeFromParent();
