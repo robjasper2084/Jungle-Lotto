@@ -1,0 +1,101 @@
+name: Cadillac full-scene native production/feature attribution (diagnostic only)
+on:
+  pull_request:
+    branches: [upgrade-redesign-cadillac-modification-suite]
+    paths:
+      - '.github/workflows/cadillac-native-main-feature-ab.yml'
+permissions:
+  contents: read
+jobs:
+  native-abba:
+    runs-on: macos-15
+    timeout-minutes: 110
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ff97b14435bdbdf71040e59240d45af8e8fc9cad
+          path: main-app
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+      - uses: actions/checkout@v4
+        with:
+          ref: 7e6c5c7d9f8ed36ee97982b925daa6703e9a9b3e
+          path: cadillac-app
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Pin source/driver and capture host identity
+        run: |
+          set -euo pipefail
+          mkdir -p evidence
+          test "$(git -C main-app rev-parse HEAD)" = ff97b14435bdbdf71040e59240d45af8e8fc9cad
+          test "$(git -C cadillac-app rev-parse HEAD)" = 7e6c5c7d9f8ed36ee97982b925daa6703e9a9b3e
+          for folder in main-app cadillac-app; do
+            test "$(git -C "$folder" hash-object lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/sustained-ride-profile.mjs)" = c722b5810a7693e5ece72ed00b4401e7cde7267a
+          done
+          { date -u; sw_vers; uname -m; sysctl hw.model hw.ncpu hw.memsize; node -v; "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --version || :; } > evidence/host.txt
+          printf 'DIAGNOSTIC ONLY: same macOS runner, original unmodified 90s Chrome native Metal High full-scene driver; unchanged graphics/keyboard/GPS/frame thresholds. Neither lane is an accepted release merely because this workflow completes. ABBA order documents temporal drift.\n' > evidence/scope.txt
+      - name: Build both exact source trees with identical Vite commands
+        timeout-minutes: 40
+        run: |
+          set -euo pipefail
+          for folder in main-app cadillac-app; do
+            game="$folder/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game"
+            (cd "$game" && npm ci && npm run check && npm run build)
+            test -s "$game/dist/index.html"
+            (cd "$game/dist" && find . -type f -exec shasum -a 256 {} \; | LC_ALL=C sort) > "evidence/$folder-build.sha256"
+            (cd "$folder/lottominded-ultra.io/games/gothtechnology2" && npm ci)
+          done
+          (cd main-app/lottominded-ultra.io/games/gothtechnology2 && npx playwright install chrome)
+      - name: Sequential A-B-B-A real full-scene 90-second tests, original GPS and strict frame thresholds
+        timeout-minutes: 61
+        env:
+          BELLE_PROFILE_DEVICE: desktop
+          BELLE_PROFILE_MODE: full
+          BELLE_PROFILE_SECONDS: '90'
+        run: |
+          set -euo pipefail
+          for lane in production-A candidate-B candidate-B2 production-A2; do
+            case "$lane" in
+              production*) folder=main-app; source=ff97b14435bdbdf71040e59240d45af8e8fc9cad;;
+              candidate*) folder=cadillac-app; source=7e6c5c7d9f8ed36ee97982b925daa6703e9a9b3e;;
+            esac
+            export GITHUB_SHA="$source"
+            game="$folder/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game"
+            status=0
+            (cd "$game" && node scripts/sustained-ride-profile.mjs) > "evidence/$lane.log" 2>&1 || status=$?
+            printf '%s\n' "$status" > "evidence/$lane-exit.txt"
+            cat "evidence/$lane.log"
+            report="$game/output/sustained-profile/full/desktop"
+            test -s "$report/report.json"
+            node --input-type=module - "$report/report.json" "$source" "$lane" <<'NODE'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const file=process.argv[2],source=process.argv[3],lane=process.argv[4],r=JSON.parse(readFileSync(file,'utf8'));
+          if(r.sourceHead!==source||r.mode!=='full'||r.device!=='desktop'||r.requestedSeconds!==90||r.renderBackend!=='angle-metal'||!/Metal/i.test(r.actualGpu?.renderer??'')||r.profile?.stopReason!=='trusted-W-keyup'||r.profile?.frames<8||!Number.isFinite(r.profile.metrics?.frameMs?.p95))throw Error('Invalid actual native A/B evidence: '+lane);
+          const value={lane,sha:source,pass:r.passed,p95:r.profile.metrics.frameMs.p95,over250:r.profile.over250ms,maxMs:r.profile.maxFrameMs,draws:r.profile.metrics.drawCalls?.mean,triangles:r.profile.metrics.triangles?.mean,gpsPassed:r.gpsRegression?.passed??false,errors:r.errors};
+          console.log(JSON.stringify(value));writeFileSync('evidence/'+lane+'-summary.json',JSON.stringify(value,null,2)+'\n');
+          NODE
+            mkdir -p "evidence/$lane"
+            cp "$report/report.json" "$report/riding-end.png" "evidence/$lane/"
+          done
+          for folder in main-app cadillac-app; do
+            git -C "$folder" diff --exit-code
+            game="$folder/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game"
+            (cd "$game/dist" && find . -type f -exec shasum -a 256 {} \; | LC_ALL=C sort) > "evidence/$folder-build-after.sha256"
+            cmp "evidence/$folder-build.sha256" "evidence/$folder-build-after.sha256"
+          done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cadillac-native-full-scene-main-vs-feature-NOT-RELEASE
+          path: evidence/
+          retention-days: 14
+          if-no-files-found: warn
