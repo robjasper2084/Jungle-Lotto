@@ -49,12 +49,19 @@ try{
    if(s===gl.WAIT_FAILED||performance.now()-started>60000){gl.deleteSync(sync);return fail(Error('GPU fence timed out'));}
    requestAnimationFrame(poll);};poll();
  }));
+ // A loaded node is not proof of visible game geometry: require submitted model draws.
+ await expect.poll(()=>page.evaluate(()=>window.__jeffersonStageStatus?.().postSwapNewDraws??0)).toBeGreaterThan(0);
+ result.stagedState=await page.evaluate(()=>window.__jeffersonStageStatus());
+ if(!result.stagedState.gpuSubmissionCountersEnabled||!result.stagedState.swapCommitted||
+    result.stagedState.stagedMeshCount<1||result.stagedState.overlappingGroups||
+    result.stagedState.legacyVisible||!result.stagedState.modelVisible||
+    result.stagedState.postSwapOldDraws!==0)throw Error('Armory staged/legacy render overlap proof failed');
  result.screenshot='Naval-Armory-Jefferson-'+device+'-in-game.png';
  await page.screenshot({path:resolve(out,result.screenshot),timeout:180000});
  result.place=await page.locator('#place').textContent();
  result.camera=await page.evaluate(()=>window.__gdsCamera?.()||null);
  result.profile=await page.locator('#profile').evaluate(node=>Object.fromEntries(Object.entries(node.dataset)));
- result.passed=!result.errors.length&&!result.failedRequests.length&&!!result.gpuFence?.complete&&result.stagedState.ready&&!result.stagedState.legacyVisible;
+ result.passed=!result.errors.length&&!result.failedRequests.length&&!!result.gpuFence?.complete&&result.stagedState.ready&&!result.stagedState.legacyVisible&&!result.stagedState.overlappingGroups&&result.stagedState.postSwapOldDraws===0&&result.stagedState.postSwapNewDraws>0;
 }catch(e){result.errors.push(e.stack||String(e));}
 finally{await writeFile(resolve(out,'report.json'),JSON.stringify(result,null,2)+'\n');await browser?.close().catch(()=>{});await new Promise(ok=>server.close(ok));}
 console.log(JSON.stringify({passed:result.passed,device,stage:result.stagedState,screenshot:result.screenshot,errors:result.errors.slice(0,2)}));

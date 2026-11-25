@@ -162,22 +162,38 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
  // at a time. The Covered Bridge lies inside the Yacht Club, golf and
  // playground prefetch radii; simultaneous warmups starved SwiftShader frames.
  const sceneryPreparation=new ScenePreparationQueue();
+ // Capture-only render hooks count actual model submissions; native riding is not instrumented.
+ const armoryGpuEvidenceEnabled=STAGED_JEFFERSON_ARMORY&&new URLSearchParams(window.location.search).has('gds-capture');
+ let armorySwapCommitted=false,armoryPostSwapOldDraws=0,armoryPostSwapNewDraws=0;
+ if(armoryGpuEvidenceEnabled)jeffersonFallback.traverse(o=>{if(!(o instanceof T.Mesh))return;
+  const original=o.onBeforeRender;o.onBeforeRender=(...args)=>{if(armorySwapCommitted)armoryPostSwapOldDraws++;original.apply(o,args);};
+ });
   const jeffersonStudy=STAGED_JEFFERSON_ARMORY?createApproachDetail(
    scene,[JEFFERSON_ARMORY.center],JEFFERSON_ARMORY.triggerM,
    (stage,camera)=>sceneryPreparation.run(async()=>{
     const study=await prepareJeffersonArmoryStudy(loader,stage);
     await warmObjectTextures(renderer,stage);
     await warmLandmarkPrograms(renderer,stage,camera,scene);
+    if(armoryGpuEvidenceEnabled)study.lod.traverse(o=>{if(!(o instanceof T.Mesh))return;
+     const original=o.onBeforeRender;o.onBeforeRender=(...args)=>{if(armorySwapCommitted)armoryPostSwapNewDraws++;original.apply(o,args);};
+    });
     return study;
    }),
-   ()=>jeffersonFallback.removeFromParent()
+   ()=>{jeffersonFallback.removeFromParent();armorySwapCommitted=true;}
   ):undefined;
- // Browser visual gate exposes read-only proof, never player, camera or collision mutation.
+ // Read the actual scene graph and real draw callbacks, not just load success.
  if(STAGED_JEFFERSON_ARMORY)Object.defineProperty(window,'__jeffersonStageStatus',{
-  value:()=>({ready:jeffersonStudy?.ready===true,legacyVisible:!!jeffersonFallback.parent,
-   modelVisible:!!scene.getObjectByName('JEFFERSON_ARMORY_STUDY__UNSURVEYED_HEIGHT'),
-   sourceModel:'Naval_Armory_Jefferson_All_LODs.glb',collisionChanged:false,sourceHeightCertified:false}),
-  configurable:false});
+  value:()=>{
+   const model=scene.getObjectByName('JEFFERSON_ARMORY_STUDY__UNSURVEYED_HEIGHT');
+   const inScene=(node:T.Object3D|undefined)=>{for(let p=node;p;p=p.parent??undefined)if(p===scene)return true;return false;};
+   let stagedMeshCount=0;model?.traverse(o=>{if(o instanceof T.Mesh)stagedMeshCount++;});
+   const legacyVisible=inScene(jeffersonFallback),modelVisible=inScene(model)&&!!model?.visible;
+   return {ready:jeffersonStudy?.ready===true,legacyVisible,modelVisible,
+    overlappingGroups:legacyVisible&&modelVisible,stagedMeshCount,
+    postSwapOldDraws:armoryPostSwapOldDraws,postSwapNewDraws:armoryPostSwapNewDraws,
+    gpuSubmissionCountersEnabled:armoryGpuEvidenceEnabled,swapCommitted:armorySwapCommitted,
+    sourceModel:'Naval_Armory_Jefferson_All_LODs.glb',collisionChanged:false,sourceHeightCertified:false};
+  },configurable:false});
  const yachtStats={boats:YACHT.boats.length,piers:YACHT.piers.length,triangles:0,meshes:0};
  let yachtClub:Awaited<ReturnType<typeof addYachtClub>>|undefined;
  let yachtTask:Promise<void>|undefined,attemptedYachtApproach=false;
