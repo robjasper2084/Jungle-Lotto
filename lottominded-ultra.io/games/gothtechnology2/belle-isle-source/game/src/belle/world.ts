@@ -61,6 +61,7 @@ import {createIslandSky} from './islandSky.ts';
 import {addShoreDetails} from './shore.ts';
 import {addShoreStrata} from './shoreStrata.ts';
 import {addGeology} from './geology.ts';
+import {loadRockReview} from './polyhavenRockReview.ts';
 import {addStreetDetails} from './streetDetails.ts';
 import {addActivities} from './activitiesScene.ts';
 import {addNature} from './nature.ts';
@@ -254,7 +255,7 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
  prepareDossinMaterials(landmarks.scene);const dossinLighting=data.dossin?addDossinLighting(scene,data.dossin,localLights):null;prepareAquariumMaterials(landmarks.scene);const aquariumLife=data.aquarium?addAquariumLife(scene,data.aquarium,localLights):null;
  for(const l of data.landmarks.filter(l=>/Yacht Club/.test(l.name))){const b=data.buildings.find(b=>b.id===l.id);if(b)add(poly(b.points,2),concrete);}
  status('Loading White House and stable yard');const historic=await loader.loadAsync('./belle/historic-houses.glb');historic.scene.name='White House and former stable yard';historic.scene.traverse(o=>{if((o as T.Mesh).isMesh){const mesh=o as T.Mesh;mesh.castShadow=!o.name.startsWith('Stable flower');mesh.receiveShadow=true;mesh.geometry.computeBoundingSphere();if(o.name.startsWith('Stable flower'))(mesh.material as T.MeshStandardMaterial).side=T.DoubleSide;}});scene.add(historic.scene);
- status('Adding park birds');const birds=await addBirds(scene,data,terrain);const activities=addActivities(scene,data,terrain,grass);const nature=await addNature(scene,status,terrain,renderProbe,renderer.getContextAttributes().antialias===false);const canalRoots=addCanalRoots(scene,data,terrain,nature.treeSites);const livingCanals=addLivingCanals(scene,data,terrain);const canalReflections=addCanalReflections(scene,data);const geology=addGeology(scene,data,terrain);status('Planting meadow grass');const meadow=await addMeadow(scene);const gardens=await addGardens(scene);const oudolf=addOudolfDetails(scene,data,grass);const lakeHabitat=await addLakeHabitat(scene);let lastX=Infinity,lastZ=Infinity;
+ status('Adding park birds');const birds=await addBirds(scene,data,terrain);const activities=addActivities(scene,data,terrain,grass);const nature=await addNature(scene,status,terrain,renderProbe,renderer.getContextAttributes().antialias===false);const canalRoots=addCanalRoots(scene,data,terrain,nature.treeSites);const livingCanals=addLivingCanals(scene,data,terrain);const canalReflections=addCanalReflections(scene,data);const rockReview=import.meta.env.VITE_POLYHAVEN_ROCK_PREVIEW==='1'?await loadRockReview():undefined;const geology=addGeology(scene,data,terrain,rockReview);status('Planting meadow grass');const meadow=await addMeadow(scene);const gardens=await addGardens(scene);const oudolf=addOudolfDetails(scene,data,grass);const lakeHabitat=await addLakeHabitat(scene);let lastX=Infinity,lastZ=Infinity;
 
  const conservatoryGarden=addConservatoryGarden(scene,data);
  const groundBatch=batchStaticGround(groundPatches);

@@ -1,0 +1,96 @@
+name: Poly Haven exact-source environment review
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/belle-polyhaven-review.yml'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/tools/polyhaven*'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/polyhavenRockReview*'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: polyhaven-review-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  source-art:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Source-intake tests
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/tools
+        run: |
+          python -m py_compile polyhaven_acquire.py polyhaven_export.py
+          python -m unittest polyhaven_intake_test
+      - name: Download exact user-uploaded source revisions
+        run: |
+          python lottominded-ultra.io/games/gothtechnology2/belle-isle-source/tools/polyhaven_acquire.py --sources "$RUNNER_TEMP/polyhaven-sources" --report "$RUNNER_TEMP/polyhaven-review/source-report.json"
+      - name: Install pinned Blender Python and image inspector
+        run: python -m pip install --disable-pip-version-check bpy==4.5.3 Pillow==11.3.0
+      - name: Export bounded opaque review meshes and inspect GLB PBR textures
+        run: |
+          status=0
+          for asset in Barrel_02 dead_tree_trunk_02 dry_branches_medium_01 namaqualand_boulder_03 rock_moss_set_01; do
+            python lottominded-ultra.io/games/gothtechnology2/belle-isle-source/tools/polyhaven_export.py --id "$asset" --sources "$RUNNER_TEMP/polyhaven-sources" --source-report "$RUNNER_TEMP/polyhaven-review/source-report.json" --output "$RUNNER_TEMP/polyhaven-review" || status=1
+          done
+          exit "$status"
+      - name: Upload only verified derivatives and reports, never source archives
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: polyhaven-opaque-review
+          path: ${{ runner.temp }}/polyhaven-review
+          if-no-files-found: error
+          retention-days: 14
+  rock-game-capture:
+    needs: source-art
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        with:
+          name: polyhaven-opaque-review
+          path: ${{ runner.temp }}/polyhaven-review
+      - name: Stage only three bounded medium-tier prototypes in ephemeral build
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/
+        run: |
+          mkdir -p public/belle/polyhaven-review
+          cp "$RUNNER_TEMP/polyhaven-review/namaqualand_boulder_03/boulder-automatic.glb" public/belle/polyhaven-review/
+          cp "$RUNNER_TEMP/polyhaven-review/rock_moss_set_01/moss-1-automatic.glb" public/belle/polyhaven-review/
+          cp "$RUNNER_TEMP/polyhaven-review/rock_moss_set_01/moss-2-automatic.glb" public/belle/polyhaven-review/
+          npm ci
+          npm run check
+          npm test
+          VITE_POLYHAVEN_ROCK_PREVIEW=1 npm run build
+      - name: Install browser
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Capture genuine opt-in rock preview in existing island gallery
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/
+        env:
+          ENV_GALLERY_DEVICE: desktop
+          ENV_GALLERY_BROWSER: chromium
+          ENV_GALLERY_QUICK: '1'
+          ENV_GALLERY_POLYHAVEN: '1'
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node scripts/island-zone-gallery.mjs
+      - name: Upload real game captures (software browser, not native FPS certification)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: polyhaven-rock-game-capture
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/island-zone-gallery/desktop
+          if-no-files-found: warn
+          retention-days: 14

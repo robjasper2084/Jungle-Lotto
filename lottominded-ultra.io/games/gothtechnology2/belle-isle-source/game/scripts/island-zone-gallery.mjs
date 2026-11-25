@@ -120,12 +120,14 @@ try{
    entry.frame=frame;entry.place=await page.locator('#place').textContent();
    entry.profile=await page.locator('#profile').textContent();
    entry.profileData=await page.locator('#profile').evaluate(node=>Object.fromEntries(Object.entries(node.dataset)));
+   if(process.env.ENV_GALLERY_POLYHAVEN==='1')entry.rockReview=await page.evaluate(()=>({loaded:document.documentElement.dataset.polyhavenRockReview==='loaded',visible:Number(document.documentElement.dataset.polyhavenRockVisible||0)}));
    entry.benchmarkStatus='unverified/software GPU - run physical hardware review';
   }catch(error){
    entry.failure=String(error);report.coverageGaps.push(site.id+' '+quality+' '+light.id+': '+error);
   }
   report.visits.push(entry);
  }
+ if(process.env.ENV_GALLERY_POLYHAVEN==='1'&&!report.visits.some(v=>v.passed&&v.rockReview?.loaded&&v.rockReview.visible>0))report.errors.push('No captured visit reported active source-rock instances');
  report.passed=report.visits.length===sites.reduce((n,site)=>n+lightsFor(site).length,0)*qualities.length&&report.visits.every(v=>v.passed)&&!report.errors.length&&!report.failedRequests.length;
 }catch(error){
  report.errors.push(error.stack||String(error));
