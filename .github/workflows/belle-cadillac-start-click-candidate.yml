@@ -1,0 +1,99 @@
+name: Belle Isle isolated desktop Start click candidate
+
+on:
+  push:
+    branches:
+      - 'upgrade-redesign-cadillac-start-click-candidate-20261125'
+    paths:
+      - '.github/workflows/belle-cadillac-start-click-candidate.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: belle-cadillac-start-click-candidate-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CADILLAC_MODS_SOURCE_SHA: 'e272e114794b6ad4e3d7fb557af0d3b54b2c3087'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.CADILLAC_MODS_SOURCE_SHA }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Check, test and build the exact candidate
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          test "$(git rev-parse HEAD)" = "$CADILLAC_MODS_SOURCE_SHA"
+          npm ci
+          npm run check
+          npm test
+          node --check scripts/cadillac-mods-browser-smoke.mjs
+          npm run build
+          node --input-type=module <<'NODE'
+          import {createHash} from 'node:crypto';
+          import {readFile,writeFile} from 'node:fs/promises';
+          const sourceSha=process.env.CADILLAC_MODS_SOURCE_SHA;
+          const indexSha256=createHash('sha256').update(await readFile('dist/index.html')).digest('hex');
+          await writeFile('dist/cadillac-mods-build.json',JSON.stringify({sourceSha,indexSha256,builtAt:new Date().toISOString()})+'\n');
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cadillac-mods-game-${{ env.CADILLAC_MODS_SOURCE_SHA }}
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist/
+          if-no-files-found: error
+          retention-days: 1
+
+  controls:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        layout: [desktop, small-phone, compact]
+        ride: [cadillac, hydraulic-cadillac]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.CADILLAC_MODS_SOURCE_SHA }}
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@v4
+        with:
+          name: cadillac-mods-game-${{ env.CADILLAC_MODS_SOURCE_SHA }}
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist
+      - name: Install the existing Chrome test runtime
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install --with-deps chrome
+      - name: Exercise actual Cadillac controls and capture all layouts
+        timeout-minutes: 34
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          BELLE_CADILLAC_MODS_CASE: ${{ matrix.layout }}
+          BELLE_CADILLAC_MODS_RIDE: ${{ matrix.ride }}
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node scripts/cadillac-mods-browser-smoke.mjs
+      - name: Preserve exact-head reports and screenshots, including failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-cadillac-mods-${{ matrix.ride }}-${{ matrix.layout }}-${{ env.CADILLAC_MODS_SOURCE_SHA }}
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/cadillac-mods/${{ matrix.ride }}-${{ matrix.layout }}
+          if-no-files-found: warn
+          retention-days: 14
