@@ -439,3 +439,29 @@ test('desktop tap adds only the guarded whitelist path while mobile keeps its na
  for(const line of routed)assert(/commandTap\(modButton\(|commandTap\(page\.locator\('#hydraulic-(?:'\+pose|front-up'|hop-all'|settle'|pancake'|exit')/.test(line));
  for(const target of ['#view','#hydraulic-mode-toggle','#start'])assert(source.includes("await tap(page.locator('"+target+"'))"));
 });
+
+test('clipped dialog command centers actual button before any native mouse input and fully re-proves its new rectangle',async()=>{
+ const f=fixture({root:'cadillac-modifications',id:'',label:'Lower'});
+ f.container.style.overflowY='auto';f.container.rect=box(0,60,600,400);f.container.clientHeight=400;f.container.offsetHeight=400;
+ f.button.rect=box(100,40,160,48);
+ let scrolls=0;
+ f.button.scrollIntoView=opts=>{
+  scrolls++;assert.deepEqual({...opts},{behavior:'instant',block:'center',inline:'center'});
+  f.button.rect=box(100,150,160,48);
+ };
+ assert.equal(await f.run(),true);
+ assert.equal(scrolls,1);assert.equal(clicks(f).length,1);
+ assert.equal(f.audits[0].clipAdjusted,true);
+ assert.equal(f.calls.filter(entry=>entry[0]==='proof').length,3);
+ assert.deepEqual(f.audits[0].before.rect,{left:100,top:150,right:260,bottom:198,width:160,height:48});
+ cleaned(f);
+});
+test('unmovable clipped dialog button remains a fatal failure, with no native input or repeated click',async()=>{
+ const f=fixture({root:'cadillac-modifications',id:'',label:'Lower'});
+ f.container.style.overflowY='auto';f.container.rect=box(0,60,600,400);f.container.clientHeight=400;f.container.offsetHeight=400;
+ f.button.rect=box(100,40,160,48);
+ let scrolls=0;f.button.scrollIntoView=()=>{scrolls++;};
+ await assert.rejects(f.run(),/clipped/);
+ assert.equal(scrolls,1);assert.equal(clicks(f).length,0);
+ assert.equal(f.audits[0].dispatchAttempted,false);cleaned(f);
+});

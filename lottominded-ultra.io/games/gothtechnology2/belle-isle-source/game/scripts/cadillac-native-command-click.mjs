@@ -79,6 +79,18 @@ export function createCadillacCommandSession(element){
  function snapshot(){return{identity,point:expectedRect?{x:expectedRect.left+expectedRect.width/2,y:expectedRect.top+expectedRect.height/2}:null,
   totalEvents,receipts:receipts.map(receipt=>({...receipt}))};}
  return{identity,inspect,
+  // Native CSSOM centering is permitted only for a recognized button whose
+  // full rectangle is still clipped BEFORE any native input was attempted.
+  // Recheck identity, animation, clipping and all five hit points afterward.
+  alignBeforeInput(rect){
+   try{return{adjusted:false,proof:inspect({rect})};}
+   catch(error){
+    if(error?.message!=='Cadillac native command: button is clipped by the viewport or an ancestor client box')throw error;
+    if(typeof element.scrollIntoView!=='function')throw error;
+    element.scrollIntoView({behavior:'instant',block:'center',inline:'center'});
+    return{adjusted:true,proof:inspect()};
+   }
+  },
   arm(rect){require(!armed&&totalEvents===0,'observer cannot be armed twice');const proof=inspect({rect});expectedRect=rect;
    armed=true;for(const type of eventTypes)document.addEventListener(type,capture,{capture:true,passive:true});return proof;},
   finish(){disarm();return snapshot();},
@@ -155,8 +167,15 @@ export async function clickCadillacCommand({page,locator,targetProof,record,time
   }finally{audit.readinessMs=now()-readinessStarted;}
   // Check disabled/animation state before a potentially necessary native scroll.
   await step('eligibility',()=>session.evaluate(value=>value.inspect({geometry:false})));
-  const first=await step('first target proof',()=>targetProof(element,'native-command-'+identity.command));
-  audit.before=await step('first guard',()=>session.evaluate((value,rect)=>value.inspect({rect}),first.rect));
+  let first=await step('first target proof',()=>targetProof(element,'native-command-'+identity.command));
+  const alignment=await step('first guard',()=>session.evaluate((value,rect)=>value.alignBeforeInput(rect),first.rect));
+  audit.clipAdjusted=alignment.adjusted;
+  if(alignment.adjusted){
+   // The first proof is now stale because a real scroll relocated the button.
+   // Run the original hit-target proof again, before hover or input.
+   first=await step('centered target proof',()=>targetProof(element,'native-command-'+identity.command+'-centered'));
+   audit.before=await step('centered guard',()=>session.evaluate((value,rect)=>value.inspect({rect}),first.rect));
+  }else audit.before=alignment.proof;
   const point={x:first.rect.left+first.rect.width/2,y:first.rect.top+first.rect.height/2};
   const hoverStarted=now();await step('hover',()=>caseLifecycle
    ?caseLifecycle.issue('command mouse.move '+identity.command,()=>page.mouse.move(point.x,point.y))
