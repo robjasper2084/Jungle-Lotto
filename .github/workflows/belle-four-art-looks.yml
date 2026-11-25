@@ -29,7 +29,7 @@ jobs:
         run: |
           npm ci
           npm run check
-          node --experimental-strip-types --test src/belle/artDirection.test.ts
+          node --experimental-strip-types --test src/belle/artDirection.test.ts src/belle/macArthurPictureBalustrade.test.ts
           npm run build
       - uses: actions/upload-artifact@v4
         with:
@@ -83,5 +83,48 @@ jobs:
         with:
           name: belle-art-direction-real-game-${{ matrix.device }}
           path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/art-direction-gallery/${{ matrix.device }}/
+          retention-days: 14
+          if-no-files-found: warn
+
+  native-strict:
+    needs: build
+    runs-on: macos-15
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        device: [desktop, phone]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.16.0
+      - uses: actions/download-artifact@v4
+        with:
+          name: belle-art-directions-exact-build
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist/
+      - name: Install native Chrome and profile dependencies
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install chrome
+      - name: Unmodified genuine 90-second full scene ride on native Apple GPU
+        timeout-minutes: 28
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          BELLE_PROFILE_DEVICE: ${{ matrix.device }}
+          BELLE_PROFILE_MODE: full
+          BELLE_PROFILE_SECONDS: '90'
+        run: node scripts/sustained-ride-profile.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bridge-stone-native-${{ matrix.device }}
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/sustained-profile/full/${{ matrix.device }}/
           retention-days: 14
           if-no-files-found: warn
