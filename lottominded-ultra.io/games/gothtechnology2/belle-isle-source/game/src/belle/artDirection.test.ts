@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import type {SkySettings} from './skyModel.ts';
+import * as T from 'three';
 import {ART_STYLE_IDS,ART_DIRECTIONS,DEFAULT_ART_STYLE,normalizeArtStyle,artStyleSkyPreset} from './artDirection.ts';
 test('four selectable looks and safe default for corrupt local storage',()=>{
  assert.deepEqual(ART_STYLE_IDS,['authentic','golden','noir','detroit2084']);
@@ -58,7 +59,7 @@ test('actual style control selects local palette and preserves host sky when dis
 });
 
 test('asphalt keeps original texture allocation and one live road-wetness uniform',async()=>{
- const T=await import('three'),{finishAsphalt}=await import('./surfaceFinish.ts'),{ART_ROAD_WETNESS}=await import('./artDirection.ts');
+ const {finishAsphalt}=await import('./surfaceFinish.ts'),{ART_ROAD_WETNESS}=await import('./artDirection.ts');
  const m=new T.MeshStandardMaterial();finishAsphalt(m);
  const shader={vertexShader:T.ShaderLib.standard.vertexShader,fragmentShader:T.ShaderLib.standard.fragmentShader,uniforms:{}} as Parameters<T.Material['onBeforeCompile']>[0];
  m.onBeforeCompile(shader,{} as T.WebGLRenderer);
