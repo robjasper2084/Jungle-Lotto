@@ -1,0 +1,38 @@
+/** Generate a diagnostic-only variant of the pinned, otherwise unchanged
+ * real native 90s full-scene driver. No app, shader or renderer modifications.
+ */
+import assert from 'node:assert/strict';
+import {readFile,writeFile} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+
+const [sourcePath,outputPath]=process.argv.slice(2);
+assert(sourcePath&&outputPath,'Expected exact original strict driver and derived output paths');
+const source=await readFile(sourcePath,'utf8');
+const originalSha='c722b5810a7693e5ece72ed00b4401e7cde7267a';
+function gitBlob(text){return createHash('sha1').update('blob '+Buffer.byteLength(text)+'\0'+text).digest('hex')}
+assert.equal(gitBlob(source),originalSha,'Original strict driver changed; refuse automatic patch');
+const anchor=" await expect(page.locator('#quality')).toHaveValue(quality);";
+assert.equal(source.split(anchor).length,2,'Expected one fixed strict-quality assertion');
+const insertion=`
+ // Diagnostic-only comparison: actual browser UI changes only the optional
+ // artistic stone railing. All native full-scene rendering and original 90s
+ // strict input, frame and GPS evaluation below remain unchanged.
+ const bridgeVariant=process.env.BELLE_STONE_BRIDGE_AB;
+ if(bridgeVariant!=='on'&&bridgeVariant!=='off')throw Error('Explicit bridge AB mode missing');
+ const bridgeSwitch=page.locator('#bridge-stone-style');
+ await expect(bridgeSwitch).toBeVisible();
+ await expect(bridgeSwitch).toBeChecked(); // exact 5220c1a preview build starts ON
+ if(bridgeVariant==='off')await bridgeSwitch.uncheck(); // real trusted user input
+ if(bridgeVariant==='off')await expect(bridgeSwitch).not.toBeChecked();
+ else await expect(bridgeSwitch).toBeChecked();
+ report.bridgeAB={mode:bridgeVariant,source:'original unmodified production shaders/build',uiChecked:await bridgeSwitch.isChecked(),
+   toggleInput:bridgeVariant==='off'?'trusted Playwright native uncheck':'already on after native preview build',
+   strictQuality:quality,fullScene:true,profileSeconds:seconds};
+`;
+const patched=source.replace(anchor,anchor+insertion);
+assert.equal(patched.split('await page.keyboard.down(\'w\')').length,3,'Original genuine input and heartbeat must remain');
+assert(patched.includes("await page.waitForTimeout(seconds*1000)"),'Strict duration removed');
+assert(patched.includes("stats.metrics?.frameMs?.p95<=50&&stats.over250ms===0"),'Strict threshold changed');
+assert(patched.includes("await checkGpsFullScene({page,expect,game,output,device"),'Original GPS checks removed');
+await writeFile(outputPath,patched);
+console.log(JSON.stringify({originalBlob:originalSha,derivedSha256:createHash('sha256').update(patched).digest('hex'),insertedOneTrustedUIComparison:true}));
