@@ -32,6 +32,7 @@ test('inactive spot slots skip attenuation, maps, shadows and BRDF without chang
  assert.equal(ShaderChunk.lights_fragment_begin,source,'composition must not mutate shared Three chunks');
 });
 
+
 function standardShader(material:MeshStandardMaterial){
  const standard=ShaderLib.standard;
  const shader={vertexShader:standard.vertexShader,fragmentShader:standard.fragmentShader,
@@ -89,11 +90,14 @@ test('street paint and curb materials share only equivalent shaders and keep the
  const surfaces=kinds.map(kind=>(scene.getObjectByName('Street detail 0,0,'+kind) as Mesh).material as MeshStandardMaterial);
  const shaders=surfaces.map(standardShader);
  for(const [i,first] of surfaces.entries())for(const [j,second] of surfaces.entries()){
-  const sameGrime=(i===2||i===3)===(j===2||j===3);
-  assert.equal(first.customProgramCacheKey()===second.customProgramCacheKey(),sameGrime);
+  assert.equal(first.customProgramCacheKey(),second.customProgramCacheKey());
   assert.equal(shaders[i].vertexShader,shaders[j].vertexShader);
-  assert.equal(shaders[i].fragmentShader===shaders[j].fragmentShader,sameGrime);
+  assert.equal(shaders[i].fragmentShader,shaders[j].fragmentShader);
  }
+ assert.deepEqual(shaders.map(shader=>shader.uniforms.streetGrime.value),[false,false,true,true,false,false,false]);
+ assert.match(shaders[0].fragmentShader,/float grime=\.92\+\.08\*smoothstep\(2\.06,2\.19,detailWorld\.y\);diffuseColor\.rgb\*=streetGrime\?grime:1\.;/);
+ assert.doesNotMatch(shaders[0].fragmentShader,/if\s*\(\s*streetGrime\s*\)/);
+ assert.equal(new Set(shaders.map(shader=>shader.uniforms.streetGrime)).size,kinds.length);
  assert.equal(new Set(surfaces.map(m=>m.color.getHex())).size,kinds.length);
  assert.equal(surfaces[4].metalness,.5);assert.equal(surfaces[0].metalness,0);
 });

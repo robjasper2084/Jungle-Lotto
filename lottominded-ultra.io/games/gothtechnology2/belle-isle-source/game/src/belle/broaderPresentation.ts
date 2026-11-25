@@ -27,6 +27,7 @@ export class BroaderPresentation {
   this.aircraft.update(this.clock,day,!preview&&!this.reduced&&budget.aircraft);
   if(!externalReflections)this.reflections.update(this.liveClock,hour,coverage,quality,!preview&&this.running);
  }
+ prepareMaterial(...args:Parameters<WorldAtmosphere['prepareMaterial']>){this.atmosphere.prepareMaterial(...args);}
  prepareReflections(hour:number,coverage:number,quality:string){this.reflections.prepare(this.liveClock,hour,coverage,quality);}
  protectStartup(){this.reflections.protect();}
  observeFrame(frameMs:number,eligible:boolean){this.reflections.observe(frameMs,eligible);}

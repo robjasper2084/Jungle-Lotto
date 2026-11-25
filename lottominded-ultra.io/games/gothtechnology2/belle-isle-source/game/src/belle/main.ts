@@ -28,7 +28,9 @@ import {IslandActivities} from './islandActivities.ts';
 import {FrameBudget,sceneFrameCap} from './frameBudget.ts';
 import {softwareWebGLRenderer} from './worldPerformancePolicy.ts';
 import {pauseSoftwareStartupScene} from './startupRenderPolicy.ts';
-import {installGpuFramePacing} from './gpuFramePacing.ts';
+import {installGpuFramePacing,nativeAppleMetalRenderer} from './gpuFramePacing.ts';
+import {batchedIndirectUpdateDiagnostics} from './batchedIndirectUpdates.ts';
+import {installSharedGeometryBuffers} from './sharedGeometryBuffers.ts';
 import {installShadowMatrixCache} from './shadowMatrixCache.ts';
 import {readAntiAliasingMode,enableHardwareAntialiasing} from './antiAliasingPolicy.ts';
 import {prepareCoastGuardMap} from './coastGuard.ts';
@@ -310,7 +312,8 @@ hydraulicCabinInput=new HydraulicCabinInput(canvas,{
 });
 
 if(new URLSearchParams(location.search).has('gds-capture'))Object.defineProperty(window,'__gdsCamera',{value:()=>{if(locationFollowing)return {unavailable:'Real location follow is private.'};const heading=camera.getWorldDirection(new T.Vector3());return {position:camera.position.toArray(),direction:heading.toArray(),fovDegrees:camera.fov};},configurable:false});
-const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreference:'high-performance'});
+const rendererOutput={type:T.UnsignedByteType,nodes:false} as const;
+const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreference:'high-performance',outputBufferType:rendererOutput.type});
 installShadowMatrixCache(renderer);
  // The renderer's ACTUAL WebGL backend, not a user-agent/viewport guess,
  // governs whether decorative preview canvases should consume a second GPU.
@@ -318,28 +321,39 @@ installShadowMatrixCache(renderer);
  const gpuName=String(gameGl.getParameter(gpuDebug?.UNMASKED_RENDERER_WEBGL??gameGl.RENDERER));
  const softwareStartup=softwareWebGLRenderer(gpuName);
  startup.setSoftwarePreview(softwareStartup);
- // Use the published single-outstanding-frame policy on Apple GPUs as well.
- // The gate preserves real frame timestamps and bypasses XR.
- if(softwareStartup || /\bApple\b/i.test(gpuName))installGpuFramePacing(renderer);
+ // Native Apple Metal canvases use the browser's pacing with the same context-loss
+ // and loop-lifecycle guard. Other existing gated backends retain their fence policy.
+ if(softwareStartup || /\bApple\b/i.test(gpuName))installGpuFramePacing(renderer,{mode:nativeAppleMetalRenderer(gpuName)?'browser':'fence'});
  actualMsaa=!!renderer.getContext().getContextAttributes()?.antialias;syncAaStatus();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.25));renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.85;renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;
  const core=new RideCore(terrain,{spawn:{position:{x:data.spawn.x,y:2,z:data.spawn.z},headingY:data.spawn.heading}});clearSimulationInput=()=>core.clearPendingActions();const loader=new GLTFLoader();const renderProbe=createNatureRenderProbe(location.search);const world=await createWorld(scene,renderer,data,terrain,status,renderProbe);el('profile').dataset.macarthurRailMeshes=String(world.stats.bridgeRailFinish.meshes);el('profile').dataset.macarthurRailMaterials=String(world.stats.bridgeRailFinish.newMaterials);world.sky.preview(!SUNSET_REFERENCE);const refreshSkySettings=connectSkySettings(world.sky);const sunsetPreview=SUNSET_REFERENCE?createSunsetPreview(camera,()=>hover,()=>active&&!trials?.active&&!race?.active&&!coop?.active&&!photo?.active,()=>{clear();cameraYaw=0;cameraPitch=.1;snap=true;},data.spawn,data):undefined;
  const frameBudget=new FrameBudget();graphics.onchange=()=>{frameBudget.reset();world.setQuality(graphics.value);saveGraphics();};world.setQuality(graphics.value);window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();if(!vr?.active)renderer.setSize(innerWidth,innerHeight);});
  const sceneWarmup=new SceneWarmup(renderer,scene,camera,value=>{scenePreparing=value;resetFrameClock=true;if(value)clear();});
- async function prepareRideShadows(rider:T.Object3D,x:number,z:number){
+ async function prepareRideShadows(rider:T.Object3D,x:number,z:number,warmCrossing=false){
   const wasPreparing=scenePreparing;
   scenePreparing=true;
   try{
-   const {y,headingY}=core.current;
-   const sin=Math.sin(headingY),cos=Math.cos(headingY);
    const view=new T.PerspectiveCamera(60,camera.aspect,.08,22000);
-   if(startup.choice.camera==='fpp'){
-    view.position.set(x,y+1.8,z);
-    view.lookAt(x+15*sin,y+.3,z+15*cos);
-   }else{
-    view.position.set(x-4.8*sin,y+3.1,z-4.8*cos);
-    view.lookAt(x,y+1.4,z);
+   const prepareView=async(x:number,y:number,z:number,heading:number)=>{
+    const sin=Math.sin(heading),cos=Math.cos(heading);
+    if(startup.choice.camera==='fpp'){
+     view.position.set(x,y+1.8,z);
+     view.lookAt(x+15*sin,y+.3,z+15*cos);
+    }else{
+     view.position.set(x-4.8*sin,y+3.1,z-4.8*cos);
+     view.lookAt(x,y+1.4,z);
+    }
+    await warmRideShadows(renderer,scene,rider,x,z,view);
+   };
+   if(warmCrossing&&graphics.value==='high'&&nativeAppleMetalRenderer(gpuName)){
+    // The island-side bridge spans are outside the Jefferson launch view.
+    // Warm their real screen and depth pipelines before the first ride.
+    const {a,b}=data.bridge;
+    const dx=b[0]-a[0],dz=b[1]-a[1];
+    const bridgeX=a[0]+dx*.8,bridgeZ=a[1]+dz*.8;
+    await prepareView(bridgeX,terrain.height(bridgeX,bridgeZ),bridgeZ,Math.atan2(dx,dz));
    }
-   await warmRideShadows(renderer,scene,rider,x,z,view);
+   const {y,headingY}=core.current;
+   await prepareView(x,y,z,headingY);
   }
   finally{scenePreparing=wasPreparing;resetFrameClock=true;}
  }
@@ -353,7 +367,7 @@ installShadowMatrixCache(renderer);
   loader.loadAsync('./exports/glb/DS_EUC_01/DS_EUC_01_LOD1.glb'),
   Promise.resolve().then(()=>sceneWarmup.primeIsland())
  ]);
- const hero=new ThreeRiderView(rider,wheel,terrain,{...HUMAN_PROFILE,id:'DS_Armored_Rider_01'});scene.add(hero.root);applyRealisticMaterials(hero.root,'actor');if(REFERENCE_STYLE){animeRider(hero.rider);glowVehicle(hero.vehicle,'wheel');}hero.apply(core.current);
+ const hero=new ThreeRiderView(rider,wheel,terrain,{...HUMAN_PROFILE,id:'DS_Armored_Rider_01'});scene.add(hero.root);applyRealisticMaterials(hero.vehicle,'actor',world.sky.prepareMaterial);applyRealisticMaterials(hero.root,'actor');if(REFERENCE_STYLE){animeRider(hero.rider);glowVehicle(hero.vehicle,'wheel');}hero.apply(core.current);
  // The first acceleration uses the fitted riding rig, including its skinned
  // boot soles. Prepare it once while the loading screen owns the frame.
  status('Fitting your rider');await yieldStartupTask();prepareOnFootRider(hero);
@@ -374,7 +388,7 @@ installShadowMatrixCache(renderer);
  const companion=new ParkCompanion(scene,terrain);let photoSaved={first:false,yaw:0,pitch:.1};let photoWasActive=false;
  let boatReturn={x:data.spawn.x,z:data.spawn.z,headingY:data.spawn.heading};
  const boatAssets=await Promise.all([loader.loadAsync('./belle/vehicles/speedboat.glb'),loader.loadAsync('./belle/vehicles/hydroplane.glb')]);
- boat=new BoatRide(scene,terrain,hero.rider,{allowed:()=>!cadillac?.riding&&!blocked()&&!photo?.active,night:()=>world.sky.nightAmount.value,enter:()=>{realLocation?.stopFollow('Avatar follow stopped for a boat.');boatReturn={x:core.current.x,z:core.current.z,headingY:core.current.headingY};cadillac?.leave();hover?.leaveForTravel();clear();release();cameraYaw=0;cameraPitch=.1;snap=true;},exit:()=>{jump(boatReturn.x,boatReturn.z,boatReturn.headingY);canvas.focus();}},{offshore:boatAssets[0].scene,hydroplane:boatAssets[1].scene},world.trafficRay);
+ boat=new BoatRide(scene,terrain,hero.rider,{prepareMaterial:world.sky.prepareMaterial,allowed:()=>!cadillac?.riding&&!blocked()&&!photo?.active,night:()=>world.sky.nightAmount.value,enter:()=>{realLocation?.stopFollow('Avatar follow stopped for a boat.');boatReturn={x:core.current.x,z:core.current.z,headingY:core.current.headingY};cadillac?.leave();hover?.leaveForTravel();clear();release();cameraYaw=0;cameraPitch=.1;snap=true;},exit:()=>{jump(boatReturn.x,boatReturn.z,boatReturn.headingY);canvas.focus();}},{offshore:boatAssets[0].scene,hydroplane:boatAssets[1].scene},world.trafficRay);
  const radio=new RideRadio(canvas);hover.setRadio(radio,canvas);
  const trunkSource=new T.Vector3(),trunkListener=new T.Vector3(),trunkForward=new T.Vector3(),trunkUp=new T.Vector3(),trunkRotation=new T.Quaternion();
  const trunkAudioFrame:TrunkSpeakerFrame={source:trunkSource,listener:trunkListener,forward:trunkForward,up:trunkUp,open:0};
@@ -593,7 +607,11 @@ installShadowMatrixCache(renderer);
   ctx.clearRect(0,0,420,290);ctx.drawImage(mapLayer,0,0);
   ctx.strokeStyle='#c3c98e';ctx.lineWidth=.65;
   for(const l of data.landmarks){ctx.fillStyle=l===destination?'#ffd98b':l.kind==='monument'?'#96e7dc':'#e8deaa';ctx.beginPath();ctx.arc(px(l.x),pz(l.z),l===destination?4:2,0,Math.PI*2);ctx.fill();}for(const [i,m]of (online?.members??[]).entries()){if(m.id===online?.self)continue;const p=online?.buffers.get(m.id)?.sample(performance.now());if(!p)continue;ctx.fillStyle=PLAYER_COLORS[i];ctx.strokeStyle='#10252c';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(px(p.pose.x),pz(p.pose.z),4,0,Math.PI*2);ctx.fill();ctx.stroke();}race?.drawMap(ctx,px,pz);activities?.drawMap(ctx,px,pz);ctx.save();ctx.translate(px(x),pz(z));ctx.rotate(-heading);ctx.fillStyle='#a5fff0';ctx.beginPath();ctx.moveTo(0,7);ctx.lineTo(-4,-4);ctx.lineTo(4,-4);ctx.fill();ctx.restore();ctx.fillStyle='#f2f4e6';ctx.font='12px system-ui';ctx.fillText('N ↑',10,18);realLocation?.drawMap(ctx,px,pz);}
- status('Warming up island lighting');await sceneWarmup.prepare();status('Preparing rider shadows');await yieldStartupTask();await prepareRideShadows(hero.root,core.current.x,core.current.z);status('Preparing the first frame');let prepared=false,starting=false;start.onclick=async()=>{if(starting||!prepared)return;starting=true;resetHydraulicFrameTime();const choice=startup.choice;natureAudio.unlock();clear();startup.preparing();try{
+ status('Warming up island lighting');await sceneWarmup.prepare();
+ // Pack immutable display buffers at this preparation boundary. Meshes keep
+ // their authored materials, transforms and draw order; later assets fall back.
+ const geometryBuffers=installSharedGeometryBuffers(renderer,scene,{rendererOutput});geometryBuffers.prepare();
+ status('Preparing rider shadows');await yieldStartupTask();await prepareRideShadows(hero.root,core.current.x,core.current.z,true);status('Preparing the first frame');let prepared=false,starting=false;start.onclick=async()=>{if(starting||!prepared)return;starting=true;resetHydraulicFrameTime();const choice=startup.choice;natureAudio.unlock();clear();startup.preparing();try{
   status('Preparing your selected ride');
   const selectedCadillac=await prepareRideAssets(async()=>{
    if(!isCadillacVariant(choice.vehicle)||cadillac?.variant===choice.vehicle)return;
@@ -630,7 +648,7 @@ installShadowMatrixCache(renderer);
  });
  const submissionProbe=renderProbe?installRenderSubmissionProbe(renderer,scene):undefined;
  const loopProbe=renderProbe?new ManualLoopProbe():undefined;const loopBinding=loopProbe?attachGpuFramePacingProbe(renderer,loopProbe):undefined;
- const rideProfile=new URLSearchParams(location.search).has('profile')?new RideProfile(()=>({quality:graphics.value,effectiveQuality:world.quality.effective,cap,shadowMappingSupported:renderer.shadowMap.enabled,pixelRatio:renderer.getPixelRatio(),adaptiveScale:frameBudget.scale,world:world.stats,diagnosticReduction:localPerformanceProbe(),vehicle:cadillac?.riding?(cadillac.variant==='cadillac'?'silver-cadillac':cadillac.variant):hover?.riding?hover.vehicle:boat?.riding?'boat':'onewheel',cadillac:cadillac?.riding?cadillac.diagnostics():null,hydraulicControls:hydraulicControlDiagnostics(),cockpitDisplay:hover?.cockpitDisplayDiagnostics??null}),{shortRideSeconds:cadillacDiagnostic?150:undefined,build:createRideProfileBuildReader(new URLSearchParams(location.search).get('profile')),loopProbe,loopCoverage:()=>loopBinding?.coverage(),gpuPacing:()=>gpuFramePacingDiagnostics(renderer),submissionCoverage:()=>submissionProbe?.coverage(),resetRenderDiagnostics:()=>{renderProbe?.cancelFrame();submissionProbe?.cancelFrame();}}):null;
+ const rideProfile=new URLSearchParams(location.search).has('profile')?new RideProfile(()=>({quality:graphics.value,effectiveQuality:world.quality.effective,cap,shadowMappingSupported:renderer.shadowMap.enabled,pixelRatio:renderer.getPixelRatio(),adaptiveScale:frameBudget.scale,world:world.stats,batchIndirectUpdates:batchedIndirectUpdateDiagnostics(scene),sharedGeometryBuffers:geometryBuffers.read(),diagnosticReduction:localPerformanceProbe(),vehicle:cadillac?.riding?(cadillac.variant==='cadillac'?'silver-cadillac':cadillac.variant):hover?.riding?hover.vehicle:boat?.riding?'boat':'onewheel',cadillac:cadillac?.riding?cadillac.diagnostics():null,hydraulicControls:hydraulicControlDiagnostics(),cockpitDisplay:hover?.cockpitDisplayDiagnostics??null}),{shortRideSeconds:cadillacDiagnostic?150:undefined,build:createRideProfileBuildReader(new URLSearchParams(location.search).get('profile')),loopProbe,loopCoverage:()=>loopBinding?.coverage(),gpuPacing:()=>gpuFramePacingDiagnostics(renderer),submissionCoverage:()=>submissionProbe?.coverage(),resetRenderDiagnostics:()=>{renderProbe?.cancelFrame();submissionProbe?.cancelFrame();}}):null;
  // The browser map has an explicit geographic origin. Fail closed if its projection changes.
  const locationMapMatches=Array.isArray(data.origin)&&data.origin.length===2&&data.origin.every((v,i)=>Number.isFinite(v)&&Math.abs(v-REAL_LOCATION_ORIGIN[i])<1e-8)&&(data as ParkMap&{axes?:string}).axes===REAL_LOCATION_AXES;
  const locationMapPoints=[...data.island,...data.mainland,...(data.outerIslets??[]).flatMap(i=>i.points)];

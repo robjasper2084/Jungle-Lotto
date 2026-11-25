@@ -31,7 +31,9 @@ export function createWater(scene:T.Scene,renderer:T.WebGLRenderer,map:ParkMap,t
   m.onBeforeCompile=shader=>{
    Object.assign(shader.uniforms,{tracedSky:skyRadiance.texture,tracedSkyReady:skyRadiance.ready,...fountainLighting.uniforms,fountainNight,fountainCentre:{value:new T.Vector2(fountain.x,fountain.z)},riverSkyTint:reflectionTint,riverSunDirection,riverSunGlint,riverTime:time,riverNormals:{value:normals},riverCentre:centre,hoverWash:vehicle,riverRipples:ripples,activeRipples,shipWake,shipShape});
    shader.vertexShader='uniform float riverTime;uniform vec2 riverCentre;varying vec3 riverWorld;\n'+shader.vertexShader;
-   if(kind==='near')shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
+   // Keep the original near shader text. Every far-ring vertex is at least
+   // 200 m from the shared centre, beyond this unchanged 195 m wave fade.
+   if(kind!=='lagoon')shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
 vec2 wp=(modelMatrix*vec4(transformed,1.)).xz;
 float edge=1.-smoothstep(165.,195.,max(abs(wp.x-riverCentre.x),abs(wp.y-riverCentre.y)));
 transformed.y+=(${riverWaveGLSL})*edge;
@@ -115,7 +117,7 @@ diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.5,.66,.65),clamp(washFoam*.4+rippleF
  }
  totalEmissiveRadiance+=lightReflection*fountainNight*localPool;
  `);
-  };m.customProgramCacheKey=()=>kind+'-reactive-water-multiscale-ring-v11';return m;
+  };m.customProgramCacheKey=()=>kind==='lagoon'?'lagoon-reactive-water-multiscale-ring-v11':'river-reactive-water-multiscale-ring-v13';return m;
  }
  const ring=riverFarRing(),farGeometry=new T.BufferGeometry();farGeometry.setAttribute('position',new T.Float32BufferAttribute(ring.positions,3));farGeometry.setAttribute('uv',new T.Float32BufferAttribute(ring.uv,2));farGeometry.setIndex(ring.indices);farGeometry.computeVertexNormals();
  // Smooth mode keeps the same visible river geometry without GPU-heavy

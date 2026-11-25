@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {inheritAtmosphereProgram} from './atmosphereProgramIdentity.ts';
 /** Tint turf and walkways. Roads keep the asphalt finish shared by the island and bridge. */
 export function dressSunsetGround(scene:T.Scene){
  const targets:Record<string,number>={'Park lawn':0xb6c96d,'Park grass bank':0xb6c96d,'Concrete pathways':0xbca78d,'Concrete pavers':0xbca78d};
@@ -10,6 +11,6 @@ export function dressSunsetGround(scene:T.Scene){
   m.onBeforeCompile=(shader,renderer)=>{before(shader,renderer);shader.uniforms.sunsetPigment={value:ratio};shader.vertexShader='varying vec2 sunsetGroundXZ;\n'+shader.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nsunsetGroundXZ=(modelMatrix*vec4(transformed,1.)).xz;');shader.fragmentShader='varying vec2 sunsetGroundXZ;uniform vec3 sunsetPigment;\n'+shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
    float lawnVariation=.96+.04*sin(sunsetGroundXZ.x*.047+sin(sunsetGroundXZ.y*.02))*sin(sunsetGroundXZ.y*.061);
    diffuseColor.rgb*=sunsetPigment*lawnVariation;
-  `);};m.customProgramCacheKey=()=>key+'-reference-island-v2';m.needsUpdate=true;
+  `);};inheritAtmosphereProgram(m,before);m.customProgramCacheKey=()=>key+'-reference-island-v2';m.needsUpdate=true;
  }});
 }

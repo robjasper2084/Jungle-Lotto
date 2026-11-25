@@ -9,7 +9,7 @@ import {scottLayout,cascadePoint,cascadeLevel,CASCADE_STEPS,CASCADE_START,CASCAD
 export function addScottDetails(scene:T.Scene,map:ParkMap,architecture:T.Object3D,night:{value:number},time:{value:number},lighting:ReturnType<typeof createFountainLighting>){
  const p=scottLayout(map),geometries:T.BufferGeometry[]=[],pools:T.BufferGeometry[]=[],flows:Flow[]=[];
  const marble=new T.MeshStandardMaterial({name:'Scott cascade carved pale stone',color:0xddd9c8,roughness:.65});
- function dress(original:T.MeshStandardMaterial){const material=original.clone(),base=original.onBeforeCompile;material.onBeforeCompile=(shader,r)=>{base(shader,r);Object.assign(shader.uniforms,{...lighting.uniforms,fountainNight:night,fountainCentre:{value:new T.Vector2(p.x,p.z)}});
+ function dress(original:T.MeshStandardMaterial){const material=original.clone(),base=original.onBeforeCompile,baseKey=original.customProgramCacheKey();material.onBeforeCompile=(shader,r)=>{base(shader,r);Object.assign(shader.uniforms,{...lighting.uniforms,fountainNight:night,fountainCentre:{value:new T.Vector2(p.x,p.z)}});
  shader.vertexShader='varying vec3 fountainWorld;\n'+shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nfountainWorld=(modelMatrix*vec4(transformed,1.)).xyz;');
  shader.fragmentShader=FOUNTAIN_COLOR_UNIFORMS+'uniform float fountainNight;uniform vec2 fountainCentre;varying vec3 fountainWorld;\n'+shader.fragmentShader;
  shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>',`#include <map_fragment>
@@ -24,7 +24,7 @@ export function addScottDetails(scene:T.Scene,map:ParkMap,architecture:T.Object3
  float strength=(.16+fixture*.65)*band;
  if(fr>20.){wash=mix(amber,rose,.35+.35*sin(fr*.28));strength=.28+.30*pow(.5+.5*cos(fr*.84),6.);}
  totalEmissiveRadiance+=wash*strength*fountainNight;
- `);};material.customProgramCacheKey=()=>original.uuid+'-scott-carved-uplight-cycle-v2';return material;}
+ `);};material.customProgramCacheKey=()=>baseKey+'-scott-carved-uplight-cycle-v2';return material;}
  const dressed=dress(marble),clones=new Map<T.Material,T.Material>();
  architecture.traverse(o=>{if(!(o instanceof T.Mesh)||!o.name.startsWith('9146545_'))return;
   o.position.x=p.x+(o.position.x-SCOTT_AUTHORED.x)*p.scale;o.position.z=p.z+(o.position.z-SCOTT_AUTHORED.z)*p.scale;o.scale.x*=p.scale;o.scale.z*=p.scale;

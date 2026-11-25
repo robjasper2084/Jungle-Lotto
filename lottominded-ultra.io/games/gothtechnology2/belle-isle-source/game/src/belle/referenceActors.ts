@@ -37,7 +37,10 @@ export function glowVehicle(root:T.Object3D,kind:'hover'|'wheel'){
   if(kind==='wheel'){source=source.clone();source.emissive.set('#73e6ff');source.emissiveIntensity=2.8;source.color.set('#66b7cf');mesh.material=source;}
   for(const [thickness,opacity]of [[.018,.32],[.045,.09]]){
    const material=new T.MeshBasicMaterial({color:0x79dfff,transparent:true,opacity,blending:T.AdditiveBlending,depthWrite:false,side:T.BackSide,toneMapped:false});
-   material.onBeforeCompile=s=>{s.vertexShader=s.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>\ntransformed+=normal*${thickness.toFixed(3)};`);};material.customProgramCacheKey=()=> 'reference-vehicle-glow-'+thickness;
+   material.onBeforeCompile=s=>{
+    s.uniforms.referenceGlowThickness={value:Number(thickness.toFixed(3))};
+    s.vertexShader='uniform float referenceGlowThickness;\n'+s.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\ntransformed+=normal*referenceGlowThickness;');
+   };material.customProgramCacheKey=()=> 'reference-vehicle-glow-v2';
    const halo=new T.Mesh(mesh.geometry,material);halo.name='LED halo';halo.castShadow=false;halo.receiveShadow=false;halo.onBeforeRender=()=>{material.color.copy(source.emissive);material.opacity=opacity*Math.min(1,source.emissiveIntensity/2);};mesh.add(halo);
   }
  }
