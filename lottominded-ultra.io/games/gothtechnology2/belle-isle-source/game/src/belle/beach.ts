@@ -3,6 +3,16 @@ import type {ParkMap,ParkTerrain} from './terrain.ts';
 import {roadIndex} from './streetPlan.ts';
 import {planBeachDetails} from './beachDetailPlan.ts';
 import {bankGrassGeometry,createShoreDetailPool} from './shoreDetail.ts';
+import {decodeBeachAsset,type BeachAsset} from './beachAssetGeometry.ts';
+
+function detailedBeachGeometry(kind:BeachAsset){
+ const {positions,indices}=decodeBeachAsset(kind);
+ const geometry=new T.BufferGeometry();
+ geometry.setAttribute('position',new T.BufferAttribute(positions,3));
+ geometry.setIndex(new T.BufferAttribute(indices,1));
+ geometry.computeVertexNormals();
+ return geometry;
+}
 
 export async function addBeach(scene:T.Scene,data:ParkMap,terrain:ParkTerrain){
  const meta=await fetch('./belle/beach-surface.json').then(r=>r.json()),buffer=await fetch('./belle/beach-surface.bin').then(r=>r.arrayBuffer());
@@ -44,8 +54,8 @@ export async function addBeach(scene:T.Scene,data:ParkMap,terrain:ParkTerrain){
  const logGeo=new T.CylinderGeometry(.42,.52,1,7,1);logGeo.rotateZ(Math.PI/2);
  const logMat=new T.MeshStandardMaterial({color:0xffffff,roughness:.9,flatShading:true});
  const stones=createShoreDetailPool(scene,stoneGeo,stoneMat,plan.stones,'rocks','Beach edge · scattered river pebbles');
- const grasses=createShoreDetailPool(scene,bankGrassGeometry(),grassMat,plan.grasses,'plants','Beach backshore · sparse natural grasses');
- const driftwood=createShoreDetailPool(scene,logGeo,logMat,plan.driftwood,'rocks','Beach margin · low-poly driftwood');
+ const grasses=createShoreDetailPool(scene,bankGrassGeometry(),grassMat,plan.grasses,'plants','Beach backshore · sparse natural grasses',{high:detailedBeachGeometry('grass')});
+ const driftwood=createShoreDetailPool(scene,logGeo,logMat,plan.driftwood,'rocks','Beach margin · low-poly driftwood',{high:detailedBeachGeometry('driftwood')});
  const stats={stones:stones.stats,grasses:grasses.stats,driftwood:driftwood.stats,maxExtraDraws:3};
  return{material:sand,triangles:meta.indices.length/3,stats,
    setQuality(value:string){stones.setQuality(value);grasses.setQuality(value);driftwood.setQuality(value);},
