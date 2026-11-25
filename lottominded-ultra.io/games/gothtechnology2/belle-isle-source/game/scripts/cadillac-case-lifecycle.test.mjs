@@ -270,3 +270,43 @@ test('the actual failure/teardown cleanup shares one promise and one original 10
  assert.equal(caught,teardown);assert.deepEqual(calls,['owned release','touch cancel',{ms:10000,label:'Native input cleanup'}]);
  pending.resolve({keys:[],buttons:[]});await caught;assert.equal(runInContext('startInputCleanup()',context),caught);
 });
+
+
+test('the editor scroll optimizes only confirmed browser-native movement and retains the original fallback',async()=>{
+ const source=await readFile(new URL('./cadillac-mods-browser-smoke.mjs',import.meta.url),'utf8');
+ const start=source.indexOf('async function scrollIfNeeded(locator){'),end=source.indexOf('\nasync function openMenu(',start);
+ assert(start>=0&&end>start,'The exact shared test helper must be present');
+ const fn=source.slice(start,end);
+ async function exercise({left=100,top=900,width=48,height=48,visibility='visible',move=true,clipped=false}={}){
+  const calls=[],rect={left,top,width,height,right:left+width,bottom:top+height},harness={alreadyVisibleScrolls:0,explicitScrolls:0};
+  const parent=clipped?{parentElement:null,offsetWidth:150,offsetHeight:150,clientWidth:140,clientHeight:140,clientLeft:0,clientTop:0,
+   getBoundingClientRect(){return{left:0,top:0,right:150,bottom:150,width:150,height:150};}}:null;
+  const element={isConnected:true,parentElement:parent,getBoundingClientRect(){return{...rect};},
+   scrollIntoView(options){calls.push(['instant',options]);if(move)Object.assign(rect,{left:12,top:12,right:12+width,bottom:12+height});}};
+  const locator={evaluate:async operation=>operation(element)};
+  const context=createContext({
+   innerWidth:1280,innerHeight:800,locator,report:{harness},caseLifecycle:{publish:operation=>operation()},
+   operationTiming:{observe:(label,operation)=>{calls.push(['observe',label]);return operation();}},
+   getComputedStyle:node=>({visibility:node===element?visibility:'visible',display:'block',
+    overflowX:node===element?'visible':clipped?'hidden':'visible',
+    overflowY:node===element?'visible':clipped?'hidden':'visible'}),
+   nativeInput:{scroll:async()=>calls.push(['fallback'])}
+  });
+  runInContext(fn,context);await runInContext('scrollIfNeeded(locator)',context);return{calls,harness};
+ }
+ let result=await exercise({top:25});
+ assert.deepEqual(result.calls.map(call=>call[0]),['observe']);
+ assert.deepEqual(result.harness,{alreadyVisibleScrolls:1,explicitScrolls:0});
+ result=await exercise();
+ assert.deepEqual(result.calls.map(call=>call[0]),['observe','instant']);
+ assert.deepEqual([result.calls[1][1].behavior,result.calls[1][1].block,result.calls[1][1].inline],['instant','nearest','nearest']);
+ assert.deepEqual(result.harness,{alreadyVisibleScrolls:0,explicitScrolls:1});
+ result=await exercise({move:false});
+ assert.deepEqual(result.calls.map(call=>call[0]),['observe','instant','observe','fallback']);
+ assert.deepEqual(result.harness,{alreadyVisibleScrolls:0,explicitScrolls:1});
+ result=await exercise({visibility:'hidden'});
+ assert.deepEqual(result.calls.map(call=>call[0]),['observe','observe','fallback']);
+ result=await exercise({left:200,top:10,clipped:true});
+ assert.deepEqual(result.calls.map(call=>call[0]),['observe','instant']);
+ assert.equal(result.harness.explicitScrolls,1);
+});

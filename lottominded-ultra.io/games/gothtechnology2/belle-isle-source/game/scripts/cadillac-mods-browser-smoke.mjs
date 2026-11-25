@@ -70,20 +70,38 @@ async function diagnosticActivate(locator){
  * additionally inspect animation/identity and native receipts. No app state or
  * scroll is injected. */
 async function scrollIfNeeded(locator){
- const contained=await locator.evaluate(element=>{
-  const r=element.getBoundingClientRect();if(r.width<=0||r.height<=0)return false;
-  let left=0,top=0,right=innerWidth,bottom=innerHeight;
-  for(let ancestor=element.parentElement;ancestor;ancestor=ancestor.parentElement){
-   const style=getComputedStyle(ancestor),bounds=ancestor.getBoundingClientRect();
-   const sx=ancestor.offsetWidth?bounds.width/ancestor.offsetWidth:1,sy=ancestor.offsetHeight?bounds.height/ancestor.offsetHeight:1;
-   const x=bounds.left+ancestor.clientLeft*sx,y=bounds.top+ancestor.clientTop*sy;
-   if(/^(auto|scroll|hidden|clip)$/.test(style.overflowX)){left=Math.max(left,x);right=Math.min(right,x+ancestor.clientWidth*sx);}
-   if(/^(auto|scroll|hidden|clip)$/.test(style.overflowY)){top=Math.max(top,y);bottom=Math.min(bottom,y+ancestor.clientHeight*sy);}
+ // Playwright's scrollIntoViewIfNeeded waits for two stable animation frames
+ // even after the target is already known to be off-screen. A loaded
+ // SwiftShader island can stall those extra frames for many seconds. The
+ // browser's actual CSSOM scroll is synchronous; verify the final geometry in
+ // that same browser task. Unreachable/hidden targets keep the original
+ // Playwright scroll and all later real-input/5-point hit tests stay intact.
+ const outcome=await operationTiming.observe('scroll inspect and immediate CSSOM',()=>locator.evaluate(element=>{
+  const contained=()=>{
+   const r=element.getBoundingClientRect();if(r.width<=0||r.height<=0)return false;
+   let left=0,top=0,right=innerWidth,bottom=innerHeight;
+   for(let ancestor=element.parentElement;ancestor;ancestor=ancestor.parentElement){
+    const style=getComputedStyle(ancestor),bounds=ancestor.getBoundingClientRect();
+    const sx=ancestor.offsetWidth?bounds.width/ancestor.offsetWidth:1,sy=ancestor.offsetHeight?bounds.height/ancestor.offsetHeight:1;
+    const x=bounds.left+ancestor.clientLeft*sx,y=bounds.top+ancestor.clientTop*sy;
+    if(/^(auto|scroll|hidden|clip)$/.test(style.overflowX)){left=Math.max(left,x);right=Math.min(right,x+ancestor.clientWidth*sx);}
+    if(/^(auto|scroll|hidden|clip)$/.test(style.overflowY)){top=Math.max(top,y);bottom=Math.min(bottom,y+ancestor.clientHeight*sy);}
+   }
+   return r.left>=left&&r.top>=top&&r.right<=right&&r.bottom<=bottom;
+  };
+  if(contained())return 'visible';
+  const style=getComputedStyle(element);
+  if(element.isConnected&&style.display!=='none'&&style.visibility==='visible'&&typeof element.scrollIntoView==='function'){
+   element.scrollIntoView({behavior:'instant',block:'nearest',inline:'nearest'});
+   if(contained())return 'instant';
   }
-  return r.left>=left&&r.top>=top&&r.right<=right&&r.bottom<=bottom;
- });
- if(contained)caseLifecycle.publish(()=>report.harness.alreadyVisibleScrolls++);
- else{await nativeInput.scroll(locator);caseLifecycle.publish(()=>report.harness.explicitScrolls++);}
+  return 'native';
+ }));
+ if(outcome==='visible')caseLifecycle.publish(()=>report.harness.alreadyVisibleScrolls++);
+ else{
+  if(outcome!=='instant')await operationTiming.observe('scroll original Playwright fallback',()=>nativeInput.scroll(locator));
+  caseLifecycle.publish(()=>report.harness.explicitScrolls++);
+ }
 }
 async function openMenu(activate=diagnosticActivate){if(!await page.locator('#ride-menu').isVisible())await activate(page.locator('#tools-toggle'));await expect(page.locator('#ride-menu')).toBeVisible();}
 async function openMods(activate=diagnosticActivate){
