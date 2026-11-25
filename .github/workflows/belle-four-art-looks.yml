@@ -1,0 +1,75 @@
+name: Belle Isle four art looks — genuine game captures
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/belle-four-art-looks.yml'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/artDirection*'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/islandSky.ts'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/skySettings.ts'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/world.ts'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/index.html'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/art-direction-gallery.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.16.0
+      - name: Compile and verify preset behavior
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm ci
+          npm run check
+          node --experimental-strip-types --test src/belle/artDirection.test.ts
+          npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: belle-art-directions-exact-build
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist/
+          retention-days: 14
+          if-no-files-found: error
+  actual-game-gallery:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        device: [desktop, phone]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.16.0
+      - uses: actions/download-artifact@v4
+        with:
+          name: belle-art-directions-exact-build
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist/
+      - name: Install actual browser
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install chromium --with-deps
+      - name: Same-camera WebGL and GPU-fenced screenshots, four looks
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          BELLE_ART_DEVICE: ${{ matrix.device }}
+        run: node scripts/art-direction-gallery.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: belle-art-direction-real-game-${{ matrix.device }}
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/art-direction-gallery/${{ matrix.device }}/
+          retention-days: 14
+          if-no-files-found: warn
