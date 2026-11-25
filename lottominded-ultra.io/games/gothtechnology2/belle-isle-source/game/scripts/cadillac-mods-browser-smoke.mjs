@@ -48,6 +48,7 @@ function startInputCleanup(){
 // Pointer actions already scroll and perform their own visible/stable/hit/enabled
 // checks. A separate scroll action repeats its animation-frame stability wait.
 async function tap(locator){await nativeInput.tap(locator,mobile);caseLifecycle.publish(()=>report.harness.pointerActivations++);}
+async function tapStart(locator){await nativeInput.tapStart(locator,mobile);caseLifecycle.publish(()=>report.harness.pointerActivations++);}
 // Only the existing, explicit command call sites use this guarded desktop path.
 // A changed whitelist identity is fatal; it must never retry through locator.click.
 async function commandTap(locator){
@@ -624,7 +625,7 @@ async function run(){
  page.on('requestfailed',request=>report.failedRequests.push({phase:report.phase,url:request.url(),type:request.resourceType(),error:request.failure()?.errorText}));
  phase('boot');await page.goto('http://127.0.0.1:'+server.address().port+'/?ride='+variant+'&profile=1',{waitUntil:'domcontentloaded',timeout:30000});
  await page.waitForFunction(()=>['ready','error'].includes(document.querySelector('#welcome')?.dataset.state),null,{timeout:180000});
- await expect(page.locator('#welcome')).toHaveAttribute('data-state','ready');await tap(page.locator('#start'));
+ await expect(page.locator('#welcome')).toHaveAttribute('data-state','ready');await tapStart(page.locator('#start'));
  await expect(page.locator('body')).not.toHaveClass(/at-start/);await expect(page.locator('#ride-mode')).toContainText('CADILLAC');
  await openMods(tap);await setReduced(true);
  // Functional software-renderer fixture uses the ordinary Smooth setting. This
