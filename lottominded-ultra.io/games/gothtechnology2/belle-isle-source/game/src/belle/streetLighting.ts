@@ -1,10 +1,12 @@
 import * as T from 'three';
+import type {ArtStyleId} from './artDirection.ts';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {ParkTerrain,type ParkMap} from './terrain.ts';
 import {planStreetLights,type StreetLamp} from './streetLightPlan.ts';
 
 export function addStreetLighting(scene:T.Scene,map:ParkMap){
  const plan=planStreetLights(map),terrain=new ParkTerrain(map),night={value:0};
+ let mood:ArtStyleId='authentic';
  const metal=new T.MeshStandardMaterial({color:0x303d3e,roughness:.42,metalness:.65});
  const globeMaterial=new T.MeshBasicMaterial({color:0xffddb0,toneMapped:false});
  const group=new T.Group();group.name='Roadside and visitor path lighting';scene.add(group);
@@ -47,5 +49,5 @@ export function addStreetLighting(scene:T.Scene,map:ParkMap){
  const pools=new T.Mesh(geometry,poolMaterial);pools.name='Persistent streetlight illumination';cell.add(pools);nightMeshes.push(pools,bulbs);
  }
 
- return{plan,lamps:heads,count:plan.length,setNight(value:number){night.value=value;for(const mesh of nightMeshes)mesh.visible=value>.01;globeMaterial.color.setRGB(.7+value,.61+value*.8,.44+value*.6);}};
+ return{plan,lamps:heads,count:plan.length,setMood(next:ArtStyleId){mood=next;},setNight(value:number){night.value=value;for(const mesh of nightMeshes)mesh.visible=value>.01;if(mood==='detroit2084')globeMaterial.color.setRGB(.20+value*.30,.70+value*.40,.79+value*.45);else globeMaterial.color.setRGB(.7+value,.61+value*.8,.44+value*.6);}};
 }
