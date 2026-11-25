@@ -611,7 +611,8 @@ const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreferen
  // the software WebGL island freezes behind the open ride picker. Leaving
  // the picker instantly resumes the normal, unmodified world renderer.
  // This is never active in flight, XR, or hardware-accelerated browsers.
- if(pauseSoftwareStartupScene(softwareStartup,prepared,active,document.querySelector<HTMLDetailsElement>('.cinema-ride-picker')?.open===true,!!vr?.active)){
+ // Avoid the startup-only DOM search on every native or active gameplay frame.
+ if(softwareStartup&&prepared&&!active&&!vr?.active&&pauseSoftwareStartupScene(softwareStartup,prepared,active,document.querySelector<HTMLDetailsElement>('.cinema-ride-picker')?.open===true,!!vr?.active)){
   previous=now;lastMeasurementEligible=false;return;
  }
  if(scenePreparing||(document.hidden&&!vr?.active)){previous=now;lastMeasurementEligible=false;rideProfile?.breakFrameAssociation();return;}if(resetFrameClock){previous=now;lastMeasurementEligible=false;rideProfile?.breakFrameAssociation();resetFrameClock=false;}const overlay=paused||!!document.querySelector('dialog[open]');if(!active||overlay||!renderFocused)rideProfile?.breakFrameAssociation();const frameCap=sceneFrameCap(cap,active,overlay,renderFocused);if(!vr?.active&&now-lastRender<1000/frameCap-.8)return;const measureFrame=active&&!overlay&&renderFocused;const eligibleFrame=measureFrame&&lastMeasurementEligible;lastMeasurementEligible=measureFrame;const cpuStart=performance.now();const elapsed=(now-previous)/1000;previous=now;lastRender=now;clock+=Math.min(elapsed,.1);const dt=Math.min(elapsed,.05);world.sky.observeFrame(elapsed*1000,eligibleFrame&&!coop?.paused);const budgetChanged=graphics.value==='automatic'&&!vr?.active&&frameBudget.sample(elapsed,cap,eligibleFrame);world.sky.tick(dt,!!online?.online||(active&&!paused&&!coop?.paused&&!document.querySelector('dialog[open]')&&(!vr?.active||!vr.suspended)),reduced);
