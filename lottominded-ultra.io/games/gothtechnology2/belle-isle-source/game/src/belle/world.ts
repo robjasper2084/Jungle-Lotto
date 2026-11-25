@@ -172,6 +172,12 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
    }),
    ()=>jeffersonFallback.removeFromParent()
   ):undefined;
+ // Browser visual gate exposes read-only proof, never player, camera or collision mutation.
+ if(STAGED_JEFFERSON_ARMORY)Object.defineProperty(window,'__jeffersonStageStatus',{
+  value:()=>({ready:jeffersonStudy?.ready===true,legacyVisible:!!jeffersonFallback.parent,
+   modelVisible:!!scene.getObjectByName('JEFFERSON_ARMORY_STUDY__UNSURVEYED_HEIGHT'),
+   sourceModel:'Naval_Armory_Jefferson_All_LODs.glb',collisionChanged:false,sourceHeightCertified:false}),
+  configurable:false});
  const yachtStats={boats:YACHT.boats.length,piers:YACHT.piers.length,triangles:0,meshes:0};
  let yachtClub:Awaited<ReturnType<typeof addYachtClub>>|undefined;
  let yachtTask:Promise<void>|undefined,attemptedYachtApproach=false;
