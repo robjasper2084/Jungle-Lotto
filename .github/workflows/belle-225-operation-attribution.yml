@@ -33,10 +33,38 @@ jobs:
           test "$(git rev-parse HEAD)" = d4f4baa8e2016f4c9107b40176388bf2d3f6fe8c
           test "$(git rev-parse 'HEAD^{tree}')" = 8754910f55ac44dd430cd5601d789c0d84d40e35
           test "$(git hash-object scripts/sustained-ride-profile.mjs)" = c722b5810a7693e5ece72ed00b4401e7cde7267a
+          git diff HEAD --exit-code
           npm ci
           npm run check
           npm run build
-          git diff --exit-code
+          # The street generator writes elapsed wall-clock time into a tracked
+          # research report. Preserve that evidence and allow ONLY that field.
+          # Never ignore generated geometry, source, or any other tracked diff.
+          python3 - <<'PY'
+          import hashlib, json, math, re, subprocess
+          from pathlib import Path
+          root = Path(subprocess.check_output(['git', 'rev-parse', '--show-toplevel'], text=True).strip())
+          rel = 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/research/street-detail-stats.json'
+          changes = subprocess.check_output(['git', 'status', '--porcelain=v1', '--untracked-files=no'], cwd=root, text=True).splitlines()
+          assert changes in ([], [' M ' + rel]), changes
+          before = subprocess.check_output(['git', 'show', 'HEAD:' + rel], cwd=root)
+          after = (root / rel).read_bytes()
+          pattern = rb'(?m)^  "buildMs": [0-9]+(?:\.[0-9]+)?,\r?$'
+          assert len(re.findall(pattern, before)) == len(re.findall(pattern, after)) == 1
+          assert re.sub(pattern, b'  "buildMs": ELAPSED,', before) == re.sub(pattern, b'  "buildMs": ELAPSED,', after), 'Non-timing report bytes changed'
+          old, new = json.loads(before), json.loads(after)
+          for stats in (old, new):
+              value = stats.pop('buildMs')
+              assert type(value) in (int, float) and math.isfinite(value) and value >= 0
+          assert old == new, 'Street plan statistics changed'
+          receipt = {'path': rel, 'onlyElapsedBuildMsMayDiffer': True, 'beforeSha256': hashlib.sha256(before).hexdigest(), 'afterSha256': hashlib.sha256(after).hexdigest(), 'before': json.loads(before), 'after': json.loads(after)}
+          Path('dist/__belle_diagnostic_build_stats.json').write_text(json.dumps(receipt, indent=2) + '\n')
+          if changes:
+              subprocess.run(['git', 'restore', '--worktree', '--', rel], cwd=root, check=True)
+          assert (root / rel).read_bytes() == before
+          PY
+          git diff HEAD --exit-code
+          test -z "$(git status --porcelain=v1 --untracked-files=no)"
           node --input-type=module -e 'import {writeFileSync,readFileSync} from "node:fs";import {createHash} from "node:crypto";writeFileSync("dist/__belle_test_build.json",JSON.stringify({version:1,repository:"robjasper2084/Jungle-Lotto",pullRequest:225,commit:"d4f4baa8e2016f4c9107b40176388bf2d3f6fe8c",buildId:"operation-diagnostic-"+process.env.GITHUB_RUN_ID+"-"+process.env.VITE_BRIDGE_BALUSTRADE_PREVIEW,builtAt:new Date().toISOString(),indexSha256:createHash("sha256").update(readFileSync("dist/index.html")).digest("hex"),profileQuery:"manual"}))'
           (cd dist && find . -type f -exec sha256sum {} \; | LC_ALL=C sort) > diagnostic-dist.sha256
       - uses: actions/upload-artifact@v4
@@ -83,7 +111,7 @@ jobs:
           cp diagnostic-dist.sha256 /tmp/belle-manifest-check.txt output/operation-attribution/
           git rev-parse HEAD > output/operation-attribution/source-head.txt
           git rev-parse 'HEAD^{tree}' > output/operation-attribution/source-tree.txt
-          cp dist/__belle_test_build.json output/operation-attribution/
+          cp dist/__belle_test_build.json dist/__belle_diagnostic_build_stats.json output/operation-attribution/
           python3 - <<'PY'
           from pathlib import Path
           p=Path("scripts/sustained-ride-profile.mjs")
