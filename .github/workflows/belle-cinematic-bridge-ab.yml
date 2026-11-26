@@ -57,8 +57,8 @@ jobs:
           cp "$game/scripts/sustained-ride-bridge-ab.mjs" evidence/derived-driver.mjs
           cp "$helper" evidence/driver-generator.mjs
           { date -u; sw_vers; uname -m; sysctl hw.model hw.ncpu hw.memsize; node -v; "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --version; } > evidence/host.txt
-          printf 'Same archived build; same macOS host; exact original full desktop High 90-sec driver with only a real UI bridge toggle. Diagnostic only, not release acceptance.\n' > evidence/scope.txt
-      - name: Test full-scene ON then OFF using real Metal Chrome and unchanged ride gates
+          printf 'Same archived build; same macOS host; actual ON-OFF-OFF-ON input toggles from OFF baseline; exact original full desktop High 90-sec driver otherwise. Diagnostic only, not release acceptance.\n' > evidence/scope.txt
+      - name: Counterbalanced ON-OFF-OFF-ON full-scene real Metal rides with unchanged gates
         timeout-minutes: 48
         working-directory: app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
         env:
@@ -69,23 +69,24 @@ jobs:
           set -euo pipefail
           export GITHUB_SHA="$(git rev-parse HEAD)"
           test "$GITHUB_SHA" = 5220c1a03f895b471ca933bdd81f02d2a414ecd6
-          for mode in on off; do
+          for lane in on-1 off-1 off-2 on-2; do
+            mode="${lane%%-*}"
             export BELLE_STONE_BRIDGE_AB="$mode"
             status=0
-            node scripts/sustained-ride-bridge-ab.mjs > "$GITHUB_WORKSPACE/evidence/$mode.log" 2>&1 || status=$?
-            echo "$status" > "$GITHUB_WORKSPACE/evidence/$mode-exit.txt"
-            cat "$GITHUB_WORKSPACE/evidence/$mode.log"
+            node scripts/sustained-ride-bridge-ab.mjs > "$GITHUB_WORKSPACE/evidence/$lane.log" 2>&1 || status=$?
+            echo "$status" > "$GITHUB_WORKSPACE/evidence/$lane-exit.txt"
+            cat "$GITHUB_WORKSPACE/evidence/$lane.log"
             dir=output/sustained-profile/full/desktop
             test -s "$dir/report.json"
-            node --input-type=module - "$dir/report.json" "$mode" <<'NODE'
+            node --input-type=module - "$dir/report.json" "$mode" "$lane" <<'NODE'
           import {readFileSync} from 'node:fs';
           const report=JSON.parse(readFileSync(process.argv[2],'utf8'));
-          const mode=process.argv[3];
+          const mode=process.argv[3],lane=process.argv[4];
           if(report.sourceHead!=='5220c1a03f895b471ca933bdd81f02d2a414ecd6'||report.mode!=='full'||report.device!=='desktop'||report.requestedSeconds!==90||report.renderBackend!=='angle-metal'||!/Metal/i.test(report.actualGpu?.renderer??'')||report.bridgeAB?.mode!==mode||report.bridgeAB?.uiChecked!==(mode==='on')||report.profile?.stopReason!=='trusted-W-keyup'||report.profile?.frames<8||!Number.isFinite(report.profile.metrics?.frameMs?.p95))throw Error('Unusable exact-source real-game bridge A/B run: '+mode);
-          console.log(JSON.stringify({mode,actualGpu:report.actualGpu.renderer,p95Ms:report.profile.metrics.frameMs.p95,over250Ms:report.profile.over250ms,drawCalls:report.profile.metrics.drawCalls?.mean,triangles:report.profile.metrics.triangles?.mean,exit:report.passed}));
+          console.log(JSON.stringify({mode,lane,actualGpu:report.actualGpu.renderer,p95Ms:report.profile.metrics.frameMs.p95,over250Ms:report.profile.over250ms,drawCalls:report.profile.metrics.drawCalls?.mean,triangles:report.profile.metrics.triangles?.mean,exit:report.passed}));
           NODE
-            mkdir -p "$GITHUB_WORKSPACE/evidence/$mode"
-            cp "$dir/report.json" "$dir/riding-end.png" "$GITHUB_WORKSPACE/evidence/$mode/"
+            mkdir -p "$GITHUB_WORKSPACE/evidence/$lane"
+            cp "$dir/report.json" "$dir/riding-end.png" "$GITHUB_WORKSPACE/evidence/$lane/"
           done
           git diff --exit-code
           test "$(git hash-object scripts/sustained-ride-profile.mjs)" = c722b5810a7693e5ece72ed00b4401e7cde7267a
