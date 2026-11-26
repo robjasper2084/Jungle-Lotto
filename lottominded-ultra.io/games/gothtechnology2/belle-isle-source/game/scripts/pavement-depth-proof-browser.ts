@@ -7,6 +7,7 @@ import {loadRealisticMaterials,applyRealisticMaterials} from '../src/belle/reali
 import {applyPhotoReferenceSurfaces} from '../src/belle/photoReferenceSurfaces.ts';
 import {dressSunsetGround} from '../src/belle/sunsetGround.ts';
 import {ParkTerrain,type ParkMap} from '../src/belle/terrain.ts';
+import {pavementProofShadowAnchor} from './pavement-depth-proof-shadow.ts';
 // This virtual module is extracted and SHA-256 checked against exact 759 source.
 // It retains the actual grass shader, polygon construction and graded approaches.
 import {authoredGrass,authoredPoly,authoredApproaches} from 'pavement-proof-authored';
@@ -110,8 +111,9 @@ const ready=(async()=>{
   if(pose.recorded){camera.matrixAutoUpdate=false;camera.matrixWorldAutoUpdate=false;camera.matrixWorld.fromArray(startCamera.matrixWorld);camera.matrixWorldInverse.copy(camera.matrixWorld).invert();camera.matrix.copy(camera.matrixWorld);camera.position.setFromMatrixPosition(camera.matrixWorld);
    camera.projectionMatrix.fromArray(startCamera.projection);camera.projectionMatrixInverse.copy(camera.projectionMatrix).invert();}
   else{camera.matrixAutoUpdate=true;camera.matrixWorldAutoUpdate=true;camera.position.fromArray(pose.position);camera.lookAt(new T.Vector3().fromArray(pose.target));camera.updateProjectionMatrix();camera.updateMatrixWorld(true);}
-  const direction=new T.Vector3(0,0,-1).transformDirection(camera.matrixWorld),ahead=new T.Vector3().copy(camera.position).addScaledVector(direction,24);
-  const groundY=pose.stress?2:f.terrain.height(ahead.x,ahead.z);f.caster.position.set(ahead.x,groundY+1.5,ahead.z);f.caster.visible=!pose.stress;
+  const shadowAnchor=pose.stress?null:pavementProofShadowAnchor(camera,f.sources.filter(source=>source!==f.stress));
+  const ahead=shadowAnchor?new T.Vector3().fromArray(shadowAnchor.point):new T.Vector3().fromArray(pose.target);
+  const groundY=ahead.y,size=shadowAnchor?.size??3;f.caster.position.set(ahead.x,groundY+size/2,ahead.z);f.caster.scale.setScalar(size/3);f.caster.visible=!pose.stress;
   sun.position.set(ahead.x-35,groundY+70,ahead.z+35);sun.target.position.set(ahead.x,groundY,ahead.z);
   sun.intensity=night?.16:3;hemi.intensity=night?.24:2.1;lamp.intensity=night?600:0;lamp.position.set(ahead.x+4,groundY+7,ahead.z+3);
   scene.background=new T.Color(night?0x142033:0x8397a8);atmosphere.update(12,new T.Vector3(-.4,.7,.4).normalize(),.35,night?.04:1,.2,'high',false,false);
@@ -140,7 +142,7 @@ const ready=(async()=>{
   rows.push({name,passed,changedPixels:pixelDifference.pixels,maxChannelDelta:pixelDifference.maxChannelDelta,
    visibleAsphaltPixels,visibleShaderPixels,visibleShadowPixels,rejectedBiasedDepthPixels,originalDrawsIdentical:colorStable,exactDepthInputs,
    baselineCalls:baseline.calls,candidateCalls:candidate.calls,extraDepthCalls:extraCalls,baselineTriangles:baseline.triangles,candidateTriangles:candidate.triangles,extraDepthTriangles:extraTriangles,
-   cameraInput,cameraUnchanged,ownersUnchanged,baselineRgbaSha256:await hash(baseline.pixels),candidateRgbaSha256:await hash(candidate.pixels),depthStats:stats,
+   cameraInput,cameraUnchanged,ownersUnchanged,shadowAnchor,baselineRgbaSha256:await hash(baseline.pixels),candidateRgbaSha256:await hash(candidate.pixels),depthStats:stats,
    baselineDraws:baseline.draws,candidateDraws:candidate.draws});
   for(const [suffix,capture]of[['baseline',baseline],['candidate',candidate],['asphalt-hidden',hidden],['asphalt-shader-off',shaderOff],['shadow-off',shadowOff],['rejected-biased-depth',wrongDepth]] as const)images.push({name:name+'-'+suffix,png:capture.png});
  }
@@ -153,13 +155,17 @@ const ready=(async()=>{
  images.push({name:'quantized-depth-equality-positive-control',png:equalCapture.png});
  // A real unsupported live opacity/transparent change must draw only the native
  // color path, retain exact pixels, and submit zero depth triangles.
- const live=f.stress.material as T.MeshStandardMaterial;live.transparent=true;live.opacity=.65;
+ const live=f.stress.material as T.MeshStandardMaterial;live.transparent=true;live.opacity=.65;live.needsUpdate=true;
  f.depths.forEach(d=>d.visible=false);const fallbackBaseline=await render();f.depths.forEach(d=>d.visible=true);const fallbackCandidate=await render();
- const fallbackDepthCalls=fallbackCandidate.draws.filter(d=>f.depthIds.has(d.id)).reduce((n,d)=>n+d.calls,0),fallbackPixels=difference(fallbackBaseline.pixels,fallbackCandidate.pixels).pixels;
- live.transparent=false;live.opacity=1;
+ const targetDepthId=f.depthBySource.get(f.stress.id)!.id,depthStats=f.handle.read();
+ const fallbackDepthCalls=fallbackCandidate.draws.filter(d=>d.id===targetDepthId).reduce((n,d)=>n+d.calls,0),fallbackPixels=difference(fallbackBaseline.pixels,fallbackCandidate.pixels).pixels;
+ const unsupportedFallback={changedPixels:fallbackPixels,depthCalls:fallbackDepthCalls,targetSourceId:f.stress.id,targetDepthId,depthStats,targetMaterial:{transparent:live.transparent,opacity:live.opacity},
+  baselineCalls:fallbackBaseline.calls,candidateCalls:fallbackCandidate.calls,baselineTriangles:fallbackBaseline.triangles,candidateTriangles:fallbackCandidate.triangles,
+  baselineDraws:fallbackBaseline.draws,candidateDraws:fallbackCandidate.draws};
+ live.transparent=false;live.opacity=1;live.needsUpdate=true;
  images.push({name:'unsupported-transparent-baseline',png:fallbackBaseline.png},{name:'unsupported-transparent-candidate',png:fallbackCandidate.png});
  f.handle.dispose();renderer.renderBufferDirect=originalDirect;
- return{gpu:f.gpu,threeRevision:T.REVISION,width,height,assetSha256:f.assetSha256,rows,images,quantizedEqualPixels,unsupportedFallback:{changedPixels:fallbackPixels,depthCalls:fallbackDepthCalls},
+ return{gpu:f.gpu,threeRevision:T.REVISION,width,height,assetSha256:f.assetSha256,rows,images,quantizedEqualPixels,unsupportedFallback,
   scope:'Targeted original-759 asphalt/decorator/range and quantized-depth proof; context geometry is a fixture. Not full-game performance or controls acceptance.',
   passed:rows.length===8&&rows.every(row=>row.passed)&&quantizedEqualPixels>0&&fallbackPixels===0&&fallbackDepthCalls===0};
 };
