@@ -282,7 +282,7 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
  const landmarkDetail=new LandmarkDetail(landmarks);
  await landmarkDetail.prepareDistant(scene);
  cullMacArthurSpans(landmarks.scene,macArthurShadowUvReceipts);
- batchStaticArchitecture(scene,renderer,[landmarks.scene,historic.scene],()=>landmarkDetail.isSplitActive,smallBridges.root);
+ batchStaticArchitecture(scene,renderer,[landmarks.scene,historic.scene],()=>landmarkDetail.isSplitActive,smallBridges.root,streetStats.batchSources());
  // Static architecture transforms are fixed after the fountain is placed.
  for(const staticRoot of [landmarks.scene,skyline.scene,historic.scene]){staticRoot.updateMatrixWorld(true);staticRoot.traverse(o=>{o.matrixAutoUpdate=false;o.matrixWorldAutoUpdate=false;});}
  // Keep full quality shadow maps, but avoid redrawing identical static shadows at 60 Hz.

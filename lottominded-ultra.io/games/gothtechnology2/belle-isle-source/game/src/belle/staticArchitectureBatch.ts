@@ -4,7 +4,7 @@ import {StaticPaletteBatch} from './staticPaletteBatch.ts';
 /** Batch the small rigid pieces of landmarks and houses in ordinary views.
  * Larger forms retain their individual close/far indices and bridge span
  * ordering. Only hardware supporting an actual multi-draw path benefits. */
-export function batchStaticArchitecture(scene:T.Scene,renderer:T.WebGLRenderer,roots:T.Object3D[],splitActive:()=>boolean,bridgeTiles?:T.Object3D){
+export function batchStaticArchitecture(scene:T.Scene,renderer:T.WebGLRenderer,roots:T.Object3D[],splitActive:()=>boolean,bridgeTiles?:T.Object3D,streetTiles:readonly T.Mesh[]=[]){
  if(!renderer.extensions.has('WEBGL_multi_draw'))return;
  const sources:T.Mesh[]=[];
  for(const root of roots)root.traverse(object=>{
@@ -16,6 +16,15 @@ export function batchStaticArchitecture(scene:T.Scene,renderer:T.WebGLRenderer,r
  });
  const exact=new Set<T.Mesh>();
  bridgeTiles?.traverse(o=>{if(o instanceof T.Mesh){exact.add(o);sources.push(o);}});
+ // Street tiles already contain world-space vertices. Retain each finished
+ // material object and the original per-tile visibility, bounds and shadows.
+ // Only default-callback meshes can share a submission; dynamic draw hooks
+ // retain their ordinary renderer path.
+ for(const mesh of streetTiles){
+  if(mesh.onBeforeRender!==T.Object3D.prototype.onBeforeRender||mesh.onAfterRender!==T.Object3D.prototype.onAfterRender||
+     mesh.onBeforeShadow!==T.Object3D.prototype.onBeforeShadow||mesh.onAfterShadow!==T.Object3D.prototype.onAfterShadow)continue;
+  exact.add(mesh);sources.push(mesh);
+ }
  const palette=new StaticPaletteBatch(sources,exact);
  if(!palette.stats.batches)return;
  palette.root.name='Static architecture material batches';

@@ -70,5 +70,9 @@ export function addStreetDetails(scene:T.Scene,plan:StreetPlan){
  const front=new T.Mesh(frontG,new T.MeshStandardMaterial({map:atlas,roughness:.8}));front.name='Belle Isle wayfinding · shared text atlas';scene.add(front);
  const backG=new T.BufferGeometry();backG.setAttribute('position',new T.Float32BufferAttribute(backP,3));backG.setAttribute('normal',new T.Float32BufferAttribute(backN,3));scene.add(new T.Mesh(backG,materials.metal));
  const posts=new T.InstancedMesh(new T.BoxGeometry(1,1,1),materials.metal,poleMatrices.length);poleMatrices.forEach((m,i)=>posts.setMatrixAt(i,m));posts.computeBoundingSphere();scene.add(posts);
- return {batches:groups.size+3,signs:plan.signs.length,boxes:plan.boxes.length,atlas:[canvas.width,canvas.height],update(x:number,z:number){for(const t of tiles)t.mesh.visible=Math.hypot(t.x-x,t.z-z)<440;}};
+ // Expose only the existing baked tile objects to the later exact-material
+ // batching boundary, after world surface decorators have finished. A function
+ // keeps scene objects out of the serializable street statistics. Signs and
+ // instanced posts retain their original native draw paths.
+ return {batches:groups.size+3,signs:plan.signs.length,boxes:plan.boxes.length,atlas:[canvas.width,canvas.height],batchSources:():readonly T.Mesh[]=>tiles.map(t=>t.mesh),update(x:number,z:number){for(const t of tiles)t.mesh.visible=Math.hypot(t.x-x,t.z-z)<440;}};
 }
