@@ -1,0 +1,71 @@
+name: Belle Isle isolated pavement GPU elapsed comparison
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/belle-pavement-depth-benefit.yml'
+      - '.github/diagnostics/pavement-depth-benefit/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: belle-pavement-depth-benefit-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  PAVEMENT_BENEFIT_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+
+jobs:
+  elapsed:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-15]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.PAVEMENT_BENEFIT_SOURCE_SHA }}
+          fetch-depth: 2
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /AGENTS.md
+            /.github/diagnostics/pavement-depth-benefit/
+            /.github/workflows/belle-pavement-depth-benefit.yml
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/
+            /lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/electricVehicles.ts
+            /lottominded-ultra.io/games/gothtechnology2/greater-detroit-world/src/connectionMath.ts
+            /lottominded-ultra.io/games/gothtechnology2/greater-detroit-graphics/src/visualStandard.ts
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install the existing locked dependencies and Chrome
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          test "$(git rev-parse HEAD)" = "$PAVEMENT_BENEFIT_SOURCE_SHA"
+          npm ci
+          npx playwright install --with-deps chrome
+          cd belle-isle-source/game
+          npm ci
+      - name: Verify query lifecycle and strict measurement validity
+        run: |
+          node --experimental-strip-types --test .github/diagnostics/pavement-depth-benefit/timer.test.ts .github/diagnostics/pavement-depth-benefit/contract.test.mjs
+          node .github/diagnostics/pavement-depth-benefit/run.mjs --compile-only
+          git diff --exit-code HEAD
+      - name: Measure every balanced sample on the observed backend
+        run: node .github/diagnostics/pavement-depth-benefit/run.mjs
+      - name: Preserve raw samples and source identities for every outcome
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-pavement-GPU-elapsed-DIAGNOSTIC-${{ matrix.os }}-${{ env.PAVEMENT_BENEFIT_SOURCE_SHA }}
+          path: |
+            output/pavement-depth-benefit/
+            .github/diagnostics/pavement-depth-benefit/local-validation/
+          if-no-files-found: error
+          retention-days: 14
