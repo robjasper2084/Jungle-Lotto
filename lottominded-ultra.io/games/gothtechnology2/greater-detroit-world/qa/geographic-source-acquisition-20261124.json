@@ -1,0 +1,509 @@
+{
+  "schema": "greater-detroit-geographic-acquisition-qa/v1",
+  "verifiedAt": "2026-11-24T14:34:54.998305+00:00",
+  "reviewDate": "2026-11-24",
+  "scope": "Verification of three real public-source acquisitions and their staging artifacts. This is a source and build-tool review, not a runtime release or independent survey.",
+  "verificationResult": "passed-for-staging-evidence",
+  "stagingOnly": true,
+  "productionReady": false,
+  "runtimeGeometryChanged": false,
+  "runtimeRenderCertified": false,
+  "runtimePerformanceCertified": false,
+  "geographicAccuracyCertified": false,
+  "independentSurveyCheckpoints": 0,
+  "sourceSnapshots": [
+    {
+      "id": "detroit-current-building-footprints",
+      "snapshotDirectory": "/workspace/scratch/128c97a566f6/jefferson-city-buildings-20261124",
+      "sourceUrl": "https://services2.arcgis.com/qvkbeam7Wirps6zC/arcgis/rest/services/BaseUnitFeatures/FeatureServer/2",
+      "requestBbox": [
+        -83.016,
+        42.339,
+        -82.996,
+        42.349
+      ],
+      "retrievedAt": "2026-11-24T14:22:17.620Z",
+      "sourceAcquiredAt": null,
+      "sourceVersion": 12,
+      "sourceSpatialReference": {
+        "wkid": 4326,
+        "latestWkid": 4326
+      },
+      "coordinates": {
+        "horizontal": "OGC:CRS84",
+        "vertical": {
+          "datum": null,
+          "unit": null
+        }
+      },
+      "license": {
+        "name": "City of Detroit data terms not established",
+        "url": null,
+        "status": "unresolved"
+      },
+      "licenseUnresolved": true,
+      "artifacts": {
+        "manifest": {
+          "bytes": 8160,
+          "sha256": "1336e1cdcb6a718e8e8df08c41c85534759b721ddce5e91fe55c9a3db3362446",
+          "file": "source-manifest.json"
+        },
+        "aggregate": {
+          "bytes": 318567,
+          "sha256": "e390725bddceef7476ef538fb36bcc11933e4e32a1315ebddc572cdf4838e7c2",
+          "matchesAcquisitionOutputHash": true,
+          "file": "features.geojson"
+        },
+        "staged": {
+          "bytes": 721400,
+          "sha256": "5e8c6b5d40979887bf4b37fdaab456ca8e81279756b16f9e08e2577550d007a5",
+          "inputSha256MatchesAggregate": true,
+          "embeddedManifestMatchesOriginal": true,
+          "file": "staged-package.json"
+        }
+      },
+      "rawResponses": [
+        {
+          "bytes": 11139,
+          "sha256": "016f879f73511ab244ddaf56e372c2f2d3223e8b4e5f23a05844f8f3c23a8f53",
+          "matchesManifest": true,
+          "file": "metadata.json"
+        },
+        {
+          "bytes": 1178,
+          "sha256": "2d9d1e212f866d1587872365dd73c61afa7a4fa77960c45d76e366f0c4f39aca",
+          "matchesManifest": true,
+          "objectIdCount": 187,
+          "file": "responses/object-ids.json"
+        },
+        {
+          "bytes": 75013,
+          "sha256": "ea94771b55ed83999dec4867b79f2461d9cf3ea70c5647b94e744d4f48b6ad1d",
+          "matchesManifest": true,
+          "featureCount": 100,
+          "file": "responses/features-0001.geojson"
+        },
+        {
+          "bytes": 54287,
+          "sha256": "c803b08cff8fd2ff4e8233e9f11a683f1cac7f166d02087646b6e6ad3779ba5c",
+          "matchesManifest": true,
+          "featureCount": 87,
+          "file": "responses/features-0002.geojson"
+        }
+      ],
+      "coverage": {
+        "expectedFeatureCount": 187,
+        "idInventoryCount": 187,
+        "rawPageFeatureCounts": [
+          100,
+          87
+        ],
+        "rawPageFeatureCount": 187,
+        "aggregateFeatureCount": 187,
+        "stagedFeatureCount": 187,
+        "duplicateIds": [],
+        "missingIds": [],
+        "unexpectedIds": [],
+        "manifestInventoryRawAggregateStagedIdSetsMatch": true,
+        "canonicalSortedIdSetSha256": "c0c4e43919d13b00c5295643a11731fbae086f4e4433e5e6f5e8c4119260b24b",
+        "aggregatePreservesRawFeaturesAfterRecordedNormalization": true,
+        "stagedSourceFeaturesMatchAggregate": true
+      },
+      "collectorProvenance": {
+        "hashesPresentInOriginalManifest": false,
+        "manifestCollectorFiles": null,
+        "observedCollectorSha256": "37f040cb453766e33a387e1f8500c23d209b5d156ef461f2a95f3cbca275957f",
+        "observedHashEvidence": "Separate coordinating-run observation before source-tool hashes were added; not present in this original manifest.",
+        "originalManifestRewritten": false
+      },
+      "normalization": {
+        "recordedCrsRemovalCount": 2,
+        "literalNullCrsRemovalCount": 0,
+        "assignedFeatureIdCount": 0
+      },
+      "staging": {
+        "schema": "greater-detroit-geographic-staging/v1",
+        "stagingOnly": true,
+        "productionReady": false,
+        "requiresTerrainDatumAlignment": true,
+        "requiresTopologyReview": true,
+        "validationScope": "Individual-ring closure, degeneracy and self-intersection checks in source and projected coordinates; full inter-ring and MultiPolygon topology requires GIS review",
+        "allStagedSourceElevationsNull": true,
+        "coordinateFrameMatchesReportFrame": true
+      },
+      "rawSnapshotsCommitted": false,
+      "rawSnapshotLocationOutsideRepository": true,
+      "heightEvidence": {
+        "field": null,
+        "unit": null,
+        "appliedAsRuntimeHeight": false,
+        "interpretation": "These two-dimensional municipal layers provide no measured elevation or building height in this acquisition."
+      }
+    },
+    {
+      "id": "detroit-current-street-segments",
+      "snapshotDirectory": "/workspace/scratch/128c97a566f6/jefferson-city-streets-20261124",
+      "sourceUrl": "https://services2.arcgis.com/qvkbeam7Wirps6zC/arcgis/rest/services/BaseUnitFeatures/FeatureServer/1",
+      "requestBbox": [
+        -83.016,
+        42.339,
+        -82.996,
+        42.349
+      ],
+      "retrievedAt": "2026-11-24T14:27:02.744Z",
+      "sourceAcquiredAt": null,
+      "sourceVersion": 12,
+      "sourceSpatialReference": {
+        "wkid": 4326,
+        "latestWkid": 4326
+      },
+      "coordinates": {
+        "horizontal": "OGC:CRS84",
+        "vertical": {
+          "datum": null,
+          "unit": null
+        }
+      },
+      "license": {
+        "name": "City of Detroit data terms not established",
+        "url": null,
+        "status": "unresolved"
+      },
+      "licenseUnresolved": true,
+      "artifacts": {
+        "manifest": {
+          "bytes": 7713,
+          "sha256": "9f90f035c726a643e76c680dd455b9cf8d289327b03a255b0aeafe477069368e",
+          "file": "source-manifest.json"
+        },
+        "aggregate": {
+          "bytes": 94109,
+          "sha256": "2be3fdf28252b70234ff3ea187637b9071525d376f1d5a22cc683d2397fa3864",
+          "matchesAcquisitionOutputHash": true,
+          "file": "features.geojson"
+        },
+        "staged": {
+          "bytes": 198605,
+          "sha256": "634e59352068e9f1436ea5502870b4b46249ca2eee5ac94f478e07eb1381b39b",
+          "inputSha256MatchesAggregate": true,
+          "embeddedManifestMatchesOriginal": true,
+          "file": "staged-package.json"
+        }
+      },
+      "rawResponses": [
+        {
+          "bytes": 12836,
+          "sha256": "255dd135c84f581a92f27b912d5c3e734e401b6ec38123885b193342eccc3983",
+          "matchesManifest": true,
+          "file": "metadata.json"
+        },
+        {
+          "bytes": 886,
+          "sha256": "fc8c11a4fe31605dcda7619f5b5a19e4aa2dd42f473b0b91e5856e18b4b08c51",
+          "matchesManifest": true,
+          "objectIdCount": 140,
+          "file": "responses/object-ids.json"
+        },
+        {
+          "bytes": 30173,
+          "sha256": "c9fc1bd3a6509884dbe1e9905d592a406098c199f1ab7feca1927b5d58491d81",
+          "matchesManifest": true,
+          "featureCount": 100,
+          "file": "responses/features-0001.geojson"
+        },
+        {
+          "bytes": 16376,
+          "sha256": "42d5e13da1e7aca7d4f32c15eae19d0087dd8abdbaef24127536f20bdb2bfb9c",
+          "matchesManifest": true,
+          "featureCount": 40,
+          "file": "responses/features-0002.geojson"
+        }
+      ],
+      "coverage": {
+        "expectedFeatureCount": 140,
+        "idInventoryCount": 140,
+        "rawPageFeatureCounts": [
+          100,
+          40
+        ],
+        "rawPageFeatureCount": 140,
+        "aggregateFeatureCount": 140,
+        "stagedFeatureCount": 140,
+        "duplicateIds": [],
+        "missingIds": [],
+        "unexpectedIds": [],
+        "manifestInventoryRawAggregateStagedIdSetsMatch": true,
+        "canonicalSortedIdSetSha256": "15c3fb93fd9a17f1dd0f9e61401716c18527475fe842f374afcd8637285b1545",
+        "aggregatePreservesRawFeaturesAfterRecordedNormalization": true,
+        "stagedSourceFeaturesMatchAggregate": true
+      },
+      "collectorProvenance": {
+        "hashesPresentInOriginalManifest": true,
+        "manifestCollectorFiles": [
+          {
+            "file": "tools/fetch-geographic-source.mjs",
+            "sha256": "c810f7aff2a09206b12642041451113368ba83c1d00a8e67e66cb690756e9e4b"
+          },
+          {
+            "file": "tools/lib/georeference.mjs",
+            "sha256": "97b5add4fb4053acc80ccbc9612b55bad19276e21ab173cbfd460646e2b5911e"
+          }
+        ],
+        "observedCollectorSha256": "c810f7aff2a09206b12642041451113368ba83c1d00a8e67e66cb690756e9e4b",
+        "observedHashEvidence": "Original acquisition manifest, verified against frozen source files.",
+        "originalManifestRewritten": false
+      },
+      "normalization": {
+        "recordedCrsRemovalCount": 2,
+        "literalNullCrsRemovalCount": 0,
+        "assignedFeatureIdCount": 0
+      },
+      "staging": {
+        "schema": "greater-detroit-geographic-staging/v1",
+        "stagingOnly": true,
+        "productionReady": false,
+        "requiresTerrainDatumAlignment": true,
+        "requiresTopologyReview": true,
+        "validationScope": "Individual-ring closure, degeneracy and self-intersection checks in source and projected coordinates; full inter-ring and MultiPolygon topology requires GIS review",
+        "allStagedSourceElevationsNull": true,
+        "coordinateFrameMatchesReportFrame": true
+      },
+      "rawSnapshotsCommitted": false,
+      "rawSnapshotLocationOutsideRepository": true,
+      "heightEvidence": {
+        "field": null,
+        "unit": null,
+        "appliedAsRuntimeHeight": false,
+        "interpretation": "These two-dimensional municipal layers provide no measured elevation or building height in this acquisition."
+      }
+    },
+    {
+      "id": "semcog-buildings-2024",
+      "snapshotDirectory": "/workspace/scratch/128c97a566f6/jefferson-semcog-buildings-20261124",
+      "sourceUrl": "https://gis.semcog.org/server/rest/services/Hosted/Buildings_2024/FeatureServer/2",
+      "requestBbox": [
+        -83.016,
+        42.339,
+        -82.996,
+        42.349
+      ],
+      "retrievedAt": "2026-11-24T14:26:33.575Z",
+      "sourceAcquiredAt": null,
+      "sourceVersion": 11.5,
+      "sourceSpatialReference": {
+        "falseM": -100000,
+        "xyTolerance": 0.0032808398950131233,
+        "mUnits": 10000,
+        "zUnits": 10000,
+        "latestWkid": 2253,
+        "zTolerance": 0.001,
+        "wkid": 2253,
+        "xyUnits": 3048,
+        "mTolerance": 0.001,
+        "falseX": -107138600,
+        "falseY": -97193800,
+        "falseZ": -100000
+      },
+      "coordinates": {
+        "horizontal": "OGC:CRS84",
+        "vertical": {
+          "datum": null,
+          "unit": null
+        }
+      },
+      "license": {
+        "name": "SEMCOG Copyright License Agreement",
+        "url": "https://maps-semcog.opendata.arcgis.com/pages/copyright-license-agreement",
+        "status": "confirmed"
+      },
+      "licenseUnresolved": false,
+      "artifacts": {
+        "manifest": {
+          "bytes": 272309,
+          "sha256": "3c66f343d718f87cd59ea3b31329107a8898a40305040baf7ecbfe7dbb3cebd3",
+          "file": "source-manifest.json"
+        },
+        "aggregate": {
+          "bytes": 234830,
+          "sha256": "dc1da1924275d1fe9ebce5363a581057793422f107366cae25974cfbd3145b14",
+          "matchesAcquisitionOutputHash": true,
+          "file": "features.geojson"
+        },
+        "staged": {
+          "bytes": 764190,
+          "sha256": "0fa79744c463c493d9bdf053d7d2e8cb9149b59fb29863cf4bcee9ee5c28115d",
+          "inputSha256MatchesAggregate": true,
+          "embeddedManifestMatchesOriginal": true,
+          "file": "staged-package.json"
+        }
+      },
+      "rawResponses": [
+        {
+          "bytes": 12030,
+          "sha256": "f19f5407f0a9b7c2f0aee121d059cccdcadc8754d9ef4a9b486e6feb8899e8a0",
+          "matchesManifest": true,
+          "file": "metadata.json"
+        },
+        {
+          "bytes": 1205,
+          "sha256": "e9e0a37e2f7deb04d1187a32b24c21cc72368301525e5aff91afa5f2811f9625",
+          "matchesManifest": true,
+          "objectIdCount": 160,
+          "file": "responses/object-ids.json"
+        },
+        {
+          "bytes": 69747,
+          "sha256": "cc6aae3a532420c3dd57e849539d219657b3e6575be5f2321c20e5fc61ecdaa3",
+          "matchesManifest": true,
+          "featureCount": 100,
+          "file": "responses/features-0001.geojson"
+        },
+        {
+          "bytes": 38347,
+          "sha256": "2c7c76b8f1756074303304cbdbccedc9f67019e765c3c4ed47a3fb22f4b821ff",
+          "matchesManifest": true,
+          "featureCount": 60,
+          "file": "responses/features-0002.geojson"
+        }
+      ],
+      "coverage": {
+        "expectedFeatureCount": 160,
+        "idInventoryCount": 160,
+        "rawPageFeatureCounts": [
+          100,
+          60
+        ],
+        "rawPageFeatureCount": 160,
+        "aggregateFeatureCount": 160,
+        "stagedFeatureCount": 160,
+        "duplicateIds": [],
+        "missingIds": [],
+        "unexpectedIds": [],
+        "manifestInventoryRawAggregateStagedIdSetsMatch": true,
+        "canonicalSortedIdSetSha256": "eefa4b54f07d8bf080e83c8abb2f8e5a8827bf1f74744ffe919764c65ba4fb7d",
+        "aggregatePreservesRawFeaturesAfterRecordedNormalization": true,
+        "stagedSourceFeaturesMatchAggregate": true
+      },
+      "collectorProvenance": {
+        "hashesPresentInOriginalManifest": true,
+        "manifestCollectorFiles": [
+          {
+            "file": "tools/fetch-geographic-source.mjs",
+            "sha256": "c810f7aff2a09206b12642041451113368ba83c1d00a8e67e66cb690756e9e4b"
+          },
+          {
+            "file": "tools/lib/georeference.mjs",
+            "sha256": "97b5add4fb4053acc80ccbc9612b55bad19276e21ab173cbfd460646e2b5911e"
+          }
+        ],
+        "observedCollectorSha256": "c810f7aff2a09206b12642041451113368ba83c1d00a8e67e66cb690756e9e4b",
+        "observedHashEvidence": "Original acquisition manifest, verified against frozen source files.",
+        "originalManifestRewritten": false
+      },
+      "normalization": {
+        "recordedCrsRemovalCount": 160,
+        "literalNullCrsRemovalCount": 160,
+        "assignedFeatureIdCount": 0
+      },
+      "staging": {
+        "schema": "greater-detroit-geographic-staging/v1",
+        "stagingOnly": true,
+        "productionReady": false,
+        "requiresTerrainDatumAlignment": true,
+        "requiresTopologyReview": true,
+        "validationScope": "Individual-ring closure, degeneracy and self-intersection checks in source and projected coordinates; full inter-ring and MultiPolygon topology requires GIS review",
+        "allStagedSourceElevationsNull": true,
+        "coordinateFrameMatchesReportFrame": true
+      },
+      "rawSnapshotsCommitted": false,
+      "rawSnapshotLocationOutsideRepository": true,
+      "heightEvidence": {
+        "field": "median_hgt",
+        "rawNonNullCount": 156,
+        "unit": null,
+        "appliedAsRuntimeHeight": false,
+        "interpretation": "Raw median-height values are retained; their units remain unverified and they are not roof-peak measurements.",
+        "storiesNonNullCount": 159
+      }
+    }
+  ],
+  "buildingCorrespondence": {
+    "diagnostic": {
+      "path": "/workspace/scratch/128c97a566f6/gis-diagnostics/building-join-diagnostic.json",
+      "bytes": 16811,
+      "sha256": "2fc853aaa38a17ebb7670f5437e7b0e2e6d7b1be443172907e801e92e35e4566"
+    },
+    "method": "City semcog_id matched to exactly one SEMCOG building_id; correspondence list independently recomputed from the acquired aggregates.",
+    "cityFeatureCount": 187,
+    "semcogFeatureCount": 160,
+    "unambiguousCorrespondences": 151,
+    "cityNullJoinIds": 17,
+    "cityUnmatchedOrAmbiguousJoinIds": 19,
+    "duplicateSemcogBuildingIds": [],
+    "diagnosticMatchesRecomputed": true,
+    "rawMedianHeightUnit": null,
+    "runtimeHeightsChanged": false,
+    "buildingCountsAreOverlappingSourceInventories": true,
+    "sumAsUniqueBuildingCountPermitted": false,
+    "verifiedUniquePhysicalBuildingCount": null,
+    "interpretation": "These are overlapping source inventories, so their counts must not be added as a count of distinct buildings. Attribute correspondence is not proof of spatial coincidence, capture-date agreement, surveyed height, or complete corridor coverage."
+  },
+  "currentMapComparison": {
+    "diagnostic": {
+      "path": "/workspace/scratch/128c97a566f6/jefferson-city-buildings-20261124/current-map-comparison.json",
+      "bytes": 7671,
+      "sha256": "eca83895b00064cdb682f991139a0889e0e83257af84335fcc1688084d09a5d8"
+    },
+    "currentMapInput": {
+      "path": "/workspace/scratch/128c97a566f6/geographic-fidelity/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/detroitDistricts.json",
+      "bytes": 450362,
+      "sha256": "4006a1c523b08a5403f7101a45bd9f739c4aa4632d55a1be5c3676148cde0bdf"
+    },
+    "matchedExistingCityBuildingIds": 47,
+    "missingIds": [],
+    "multipartNotCompared": [],
+    "idCoverageIndependentlyRecomputed": true,
+    "reportedDistanceMetricsRecomputed": true,
+    "maximumVertexToEdgeDifferenceM": 0.07091593028434272,
+    "medianVertexToEdgeDifferenceM": 0.05418797815601221,
+    "scope": "Source-version comparison of existing City outer rings to current City source, both evaluated in the existing legacy frame. Not independent survey error; not full continuous Hausdorff distance; polygon holes and runtime deformations excluded.",
+    "interpretation": "Agreement between the existing map and another version of its municipal source is not independent survey accuracy. The metric compares outer-ring vertices to opposing polygon edges in the existing legacy frame; it is not a continuous Hausdorff bound, hole/topology certification, or rendered-world measurement."
+  },
+  "toolVerification": {
+    "command": "npm test",
+    "passed": 93,
+    "failed": 0,
+    "resultSource": "Coordinating task execution record after all source code was frozen; not rerun solely to create this report.",
+    "scope": "Build-time geographic tools and their checks only.",
+    "collectorSha256": "c810f7aff2a09206b12642041451113368ba83c1d00a8e67e66cb690756e9e4b",
+    "collectorHashVerifiedAgainstCurrentFile": true,
+    "georeferenceSha256": "97b5add4fb4053acc80ccbc9612b55bad19276e21ab173cbfd460646e2b5911e",
+    "runtimeBuildOrBrowserRenderEvidenceProvided": false,
+    "desktopOrMobileFpsEvidenceProvided": false
+  },
+  "provenanceLimitations": [
+    "The original City building capture predates collectorFiles in the manifest. Its separately observed collector hash is recorded as external evidence, not inserted retroactively into the original acquisition manifest.",
+    "Public ArcGIS multi-request acquisition was not transactional; exact ID coverage does not establish that all fields were read at one instant.",
+    "Raw snapshots and staging packages remain outside the repository; this report records their exact hashes and verification results without committing their dataset payloads.",
+    "City source redistribution terms remain unresolved. SEMCOG custom license identification does not establish blanket approval for every third-party or derived asset.",
+    "No absolute vertical datum alignment, measured facade dataset, or verified median-height unit was added.",
+    "Source fidelity, geometry acceptance, full build, visual review, and sustained device performance remain separate release criteria."
+  ],
+  "stagingCoordinateFrame": {
+    "horizontal": "WGS84 local ENU horizontal coordinates evaluated on the ellipsoid at h=0",
+    "origin": {
+      "longitude": -83.00175,
+      "latitude": 42.3468,
+      "ellipsoidalHeightM": 0
+    },
+    "axes": {
+      "x": "eastM",
+      "z": "-northM"
+    },
+    "unit": "m",
+    "distanceLimitM": 25000,
+    "sourceCoordinateDimensions": 2,
+    "sourceCoordinates": "Longitude and latitude use OGC:CRS84. Third coordinates follow the manifest-declared datum and unit; non-ellipsoidal datums or non-metre units are project-specific staging extensions, not standard RFC 7946 3D coordinates, which specify WGS84 ellipsoidal height in metres",
+    "vertical": "Source elevations converted to metres independently; no game Y or terrain datum alignment is assigned"
+  }
+}
