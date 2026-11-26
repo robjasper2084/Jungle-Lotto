@@ -1,6 +1,6 @@
 # Surface fragment repair — investigation and acceptance
 
-Version 2 · 26 November 2026
+Version 3 · 26 November 2026
 
 **Status:** the grass candidate is withdrawn because native Metal changed 23 pixels across nine cases at maximum channel delta 1. The original terrain shader is restored byte-for-byte. Asphalt and MacArthur candidates remain disabled in normal game construction: their strict targeted pixels passed on both backends, but their timings do not establish a consistent native improvement. The unchanged full-game desktop release checks remain failing on the original source; merge and deployment are blocked until the final revision passes them.
 
@@ -118,6 +118,28 @@ The separate [PR #242](https://github.com/robjasper2084/Jungle-Lotto/pull/242) h
 The next candidate is separate from the failed wrapper. A source-hash-pinned build transformation adds a dedicated setter only for Three 0.185.1's `directionalShadowMatrix` array uniform. It retains original conversion before comparing the resulting Float32 payload and leaves other uniform setters unchanged. Cache eligibility requires the captured native WebGL2 method and ordinary unchanged descriptors; custom wrappers and accessors delegate every request. Thirty-four contract tests include the stock-vector reentry case that defeated a callable-wrapper cache. It is opt-in in the transformation API and is not inserted into the game build configuration. Installed dependencies and generated application bundles are not edited.
 
 The new diagnostic uses the same immutable original world and prepared geometry pool for both arms. A proof-only controller switches actual eligible uniform nodes between the untouched original setter and the direct candidate before a lane. It requires exact pixels, unchanged draws/shaders, moved-light and restored-light uploads while the cache remains active, and invalidation when switching modes. Native timing retains every raw sample in eight ABBA groups, with 16 measured frames per lane after warm-up; CPU submission, GPU elapsed queries and fence waits remain separate. The initial six Authentic day/night cases are a usefulness experiment, not final four-look, optional-bridge or release acceptance.
+
+All seven diagnostic jobs at source `cab7128f559a136860b8c2eb2e354bd7e9a1f335` completed successfully: [surface equivalence](https://github.com/robjasper2084/Jungle-Lotto/actions/runs/45901702469), [partitioned shared-geometry proof](https://github.com/robjasper2084/Jungle-Lotto/actions/runs/45901702466), and [direct uniform proof](https://github.com/robjasper2084/Jungle-Lotto/actions/runs/45901702537). The final direct-uniform software proof finished within its unchanged 35-minute limit. This closes those diagnostic correctness failures, not the original application release failures.
+
+The direct uniform candidate remains disabled. Independent decoding checked all 72 native PNGs and all 48 exact RGBA pairs; all were identical. Independent timing analysis retained all 4,608 actual GPU queries and all 72 complete paired ABBA groups. Five CPU mean differences were negative, but every decrease's pointwise 95% whole-group bootstrap interval included zero. Four CPU means increased; Jefferson-night and Conservatory-day steady-color had pointwise positive intervals. Every GPU interval included zero, as did all multiplicity-adjusted CPU/GPU intervals. Upload skips demonstrate exercised work, not a useful native performance improvement.
+
+### Existing-draw ordering experiment
+
+The next bounded proof changes only the order of existing opaque draws. Factory references are recorded directly from pinned original `islandSky.ts`, `shore.ts` and `pavement.ts` source. Mesh names do not authorize changes. The helper defaults to original orders, leaves production construction unchanged, and has no per-frame callbacks.
+
+The `early-terrain` arm moves the single joined asphalt draw and two graded approaches before the underlying island lawn; it adds no depth pass. The `late-sky` arm moves only the existing far-plane sky draw after opaque depth writers. All source geometry, shaders, textures, material properties, visibility, collision and native shadow ordering remain required. The original geometry pool stays active.
+
+Neither arm is assumed equivalent. The approaches and pavement use different triangulations and small height offsets; with the original near `.08` / far `22000` camera and `LEqual`, quantized depth ties can change the winner. The sky's far-plane depth can likewise tie an opaque far fragment. The proof therefore includes the six original full-world views plus map-derived ramp grazing and under-ramp cases, records actual material depth-write contracts, and accepts no depth-function change, polygon offset, mask, epsilon or pixel tolerance to make an arm pass.
+
+Before seeing results, the native timing plan is fixed at six Authentic day/night full-world views, two independently compared candidates, eight complete ABBA groups per comparison, three warm-up renders per lane and 16 retained measured renders per lane. This is 6,144 raw completed GPU queries. Every view, raw sample, lane and block is retained; CPU submission, actual GPU elapsed and fence wait are separate. Analysis will report every paired view difference, whole-ABBA-group 95% bootstrap intervals and multiplicity-adjusted intervals across the 12 GPU comparisons. No favorable view subset, outlier removal, fence-time FPS claim or unchanged-candidate rerun substitutes for a useful result. The original full-game release gates are independent and unchanged.
+
+### Stronger native surface timing
+
+The original surface timing was underpowered: it recorded only one ABBA group per asphalt view and three per mapped-masonry view. In the c1 native artifact, asphalt grazing had separated baseline/candidate samples and a mean reduction of 0.626 ms, while near-view asphalt increased by 0.153 ms; one block cannot estimate between-block variability. The three masonry-view intervals also included zero.
+
+The follow-up keeps all 36 pixel cases, all 135 saved images, all controls and original zero-tolerance comparisons. It strengthens all nine existing Authentic native timing comparisons to eight ABBA groups with 16 retained renders per lane and three warm-up renders. Software pixel coverage and the original diagnostic deadline remain unchanged. This resolves the earlier sampling limitation; it does not enable a shader candidate or weaken an application release check.
+
+The separately prepared woodland leaf-detail helper also remains disabled and unmeasured. Its source tests preserve both unconditional derivatives and the original visible arithmetic, but compiled exact pixels and useful native performance have not been established. It is not part of the ordering experiment or any production build.
 
 ## Validation and remaining release gates
 

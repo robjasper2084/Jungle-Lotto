@@ -52,11 +52,16 @@ type View='near'|'mid'|'grazing';
 type Shader=Parameters<T.Material['onBeforeCompile']>[0];
 type Owner={materials:(T.Material|T.Material[])[];atmosphere:WorldAtmosphere;scene:T.Scene;terrain:CinematicTerrain;masonryStats:{meshes:number;newMaterials:number}|null;bumpCenterMaterials:Set<T.Material>};
 type Sample={rgba:Uint8Array;shadow:Uint8Array;png:string;calls:number;triangles:number;order:string[];cpuMs:number;fenceMs:number;gpu:{status:string;nanoseconds:number|null};};
+type NativeSubmission={calls:number;triangles:number;cpuMs:number;fenceMs:number;gpu:{status:string;nanoseconds:number|null;queryId:number|null;resultAvailable:boolean;disjoint:boolean};};
+type NativeSample=NativeSubmission&{index:number};
+type NativeLane={side:Side;repetition:number;lane:number;framesPerLane:number;warmupRenders:number;cpuMs:number;fenceMs:number;gpu:{status:string;nanoseconds:number};calls:number;triangles:number;samples:NativeSample[]};
 type Fixture={name:Subject;root:T.Group;meshes:T.Mesh[];owners:Record<Side,Owner>;control:(T.Material|T.Material[])[];mask:(T.Material|T.Material[])[];bumpCenterWrong:(T.Material|T.Material[])[];focus:T.Vector3;normal:T.Vector3;geometry:unknown[];};
 
 function assert(value:unknown,message:string):asserts value{if(!value)throw Error(message);}
 const query=new URLSearchParams(location.search),width=Number(query.get('width')||960),height=Number(query.get('height')||600);
 assert(Number.isInteger(width)&&width>=320&&width<=1920&&Number.isInteger(height)&&height>=240&&height<=1200,'Invalid proof dimensions');
+const timingMode=query.get('timing')||'legacy-software',nativeTiming=timingMode==='native-8x16-abba-v1';
+assert(nativeTiming||timingMode==='legacy-software','Unsupported timing protocol');
 const canvas=document.querySelector('canvas')!;
 const renderer=new T.WebGLRenderer({canvas,antialias:true,alpha:false,preserveDrawingBuffer:true,outputBufferType:T.UnsignedByteType});
 renderer.setPixelRatio(1);renderer.setSize(width,height,false);renderer.outputColorSpace=T.SRGBColorSpace;
@@ -66,6 +71,7 @@ const gl=renderer.getContext() as WebGL2RenderingContext;
 assert(typeof gl.fenceSync==='function','WebGL2 completion fences are required');
 const debug=gl.getExtension('WEBGL_debug_renderer_info'),gpu=String(gl.getParameter(debug?.UNMASKED_RENDERER_WEBGL??gl.RENDERER));
 const timer=gl.getExtension('EXT_disjoint_timer_query_webgl2');
+if(nativeTiming)assert(/Metal/i.test(gpu)&&!/SwiftShader|llvmpipe/i.test(gpu)&&timer,'Native block timing requires actual Metal and elapsed queries');
 const scene=new T.Scene(),camera=new T.PerspectiveCamera(50,width/height,.05,12000);
 scene.fog=new T.FogExp2(0xb8c4c9,.00007);
 const ambient=new T.HemisphereLight(0xd5e8f8,0x63513a,1.3),sun=new T.DirectionalLight(0xffdfb0,2.1);
@@ -80,6 +86,9 @@ caster.castShadow=true;scene.add(caster);
 const shaders=new Map<T.Material,Shader>(),shaderSources=new Map<T.Material,{vertex:string;fragment:string}>();
 const submittedMaterials=new Set<T.Material>();
 const drawOrder:string[]=[];
+type DrawObservation={mesh:T.Mesh;before:T.Mesh['onBeforeRender'];beforeShadow:T.Mesh['onBeforeShadow'];observed:T.Mesh['onBeforeRender'];observedShadow:T.Mesh['onBeforeShadow']};
+const drawObservations:DrawObservation[]=[];
+let nextNativeQueryId=1;
 const images:{name:string;png:string}[]=[],rows:Record<string,unknown>[]=[],timings:Record<string,unknown>[]=[],controls:Record<string,unknown>[]=[],errors:string[]=[];
 const resources:{path:string;sha256:string;bytes:number}[]=[];
 const hash=async(bytes:Uint8Array)=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes as Uint8Array<ArrayBuffer>)),b=>b.toString(16).padStart(2,'0')).join('');
@@ -223,7 +232,7 @@ async function buildFixtures(){
  for(const definition of definitions){
   const meshes=meshList(definition.root),baseline=await prepare(definition.root,definition.name,'baseline',noise),currentDefault=await prepare(definition.root,definition.name,'default',noise),candidate=await prepare(definition.root,definition.name,'candidate',noise);
   assert(meshes.length===baseline.materials.length&&meshes.length===currentDefault.materials.length&&meshes.length===candidate.materials.length,'Material ownership does not match source geometry');
-  meshes.forEach((mesh,i)=>{const before=mesh.onBeforeRender,beforeShadow=mesh.onBeforeShadow;mesh.onBeforeRender=function(...args){before.apply(this,args);submittedMaterials.add(args[4]);drawOrder.push('color:'+i+':'+args[4].name);};mesh.onBeforeShadow=function(...args){beforeShadow.apply(this,args);drawOrder.push('shadow:'+i);};});
+  meshes.forEach((mesh,i)=>{const before=mesh.onBeforeRender,beforeShadow=mesh.onBeforeShadow;mesh.onBeforeRender=function(...args){before.apply(this,args);submittedMaterials.add(args[4]);drawOrder.push('color:'+i+':'+args[4].name);};mesh.onBeforeShadow=function(...args){beforeShadow.apply(this,args);drawOrder.push('shadow:'+i);};drawObservations.push({mesh,before,beforeShadow,observed:mesh.onBeforeRender,observedShadow:mesh.onBeforeShadow});});
   const fixture={...definition,meshes,owners:{baseline,default:currentDefault,candidate},control:variants(candidate.materials,definition.name,'disabled'),mask:variants(candidate.materials,definition.name,'mask'),bumpCenterWrong:wrongBumpCenterVariants(candidate.materials,candidate.bumpCenterMaterials),geometry:await Promise.all(meshes.map(geometryReceipt))};
   definition.root.visible=false;scene.add(definition.root);fixtures.push(fixture);
  }
@@ -261,6 +270,77 @@ async function render(capture=true,measure=false):Promise<Sample>{
  if(capture){gl.readPixels(0,0,width,height,gl.RGBA,gl.UNSIGNED_BYTE,rgba);if(sun.castShadow&&sun.shadow.map){const map=sun.shadow.map;assert(map instanceof T.WebGLRenderTarget,'Unexpected shadow target type');shadow=new Uint8Array(map.width*map.height*4);renderer.readRenderTargetPixels(map,0,0,map.width,map.height,shadow);}}
  assert(gl.getError()===gl.NO_ERROR,'GL error during original render or readback');
  return {rgba,shadow,png:capture?png(rgba):'',...counts,order,cpuMs,fenceMs,gpu:timing};
+}
+function suspendDrawObservations(){
+ for(const o of drawObservations)assert(o.mesh.onBeforeRender===o.observed&&o.mesh.onBeforeShadow===o.observedShadow,'Draw observation ownership changed before timing');
+ for(const o of drawObservations){o.mesh.onBeforeRender=o.before;o.mesh.onBeforeShadow=o.beforeShadow;}
+ drawOrder.length=0;
+ return ()=>{
+  const unchanged=drawObservations.every(o=>o.mesh.onBeforeRender===o.before&&o.mesh.onBeforeShadow===o.beforeShadow);
+  for(const o of drawObservations){o.mesh.onBeforeRender=o.observed;o.mesh.onBeforeShadow=o.observedShadow;}
+  assert(unchanged,'An original draw callback changed during timing');
+ };
+}
+// Same individual-render query/fence method as the full-world diagnostic. No
+// display observation, readback, shader receipt or geometry snapshot runs here.
+async function nativeSubmission(measure:boolean):Promise<NativeSubmission>{
+ renderer.shadowMap.needsUpdate=true;
+ let elapsed:WebGLQuery|null=null,queryId:number|null=null,ended=false;
+ const gpuTiming:NativeSubmission['gpu']={status:measure?'pending':'not-requested',nanoseconds:null,queryId:null,resultAvailable:false,disjoint:false};
+ try{
+  if(measure){
+   assert(timer&&gl.getQuery(timer.TIME_ELAPSED_EXT,gl.CURRENT_QUERY)===null,'An unrelated GPU elapsed query is active');
+   gpuTiming.disjoint=Boolean(gl.getParameter(timer.GPU_DISJOINT_EXT));
+   elapsed=gl.createQuery();assert(elapsed,'Could not allocate native elapsed query');queryId=nextNativeQueryId++;
+   gpuTiming.queryId=queryId;gl.beginQuery(timer.TIME_ELAPSED_EXT,elapsed);
+  }
+  const started=performance.now();renderer.render(scene,camera);const cpuMs=performance.now()-started;
+  if(elapsed){gl.endQuery(timer!.TIME_ELAPSED_EXT);ended=true;}
+  const calls=renderer.info.render.calls,triangles=renderer.info.render.triangles,fenceMs=await fence();
+  if(elapsed){
+   const deadline=performance.now()+30000;
+   while(!gl.getQueryParameter(elapsed,gl.QUERY_RESULT_AVAILABLE)){assert(performance.now()<deadline,'GPU elapsed result remained unavailable');await new Promise(resolve=>setTimeout(resolve,8));}
+   gpuTiming.resultAvailable=true;gpuTiming.disjoint ||= Boolean(gl.getParameter(timer!.GPU_DISJOINT_EXT));
+   const value=Number(gl.getQueryParameter(elapsed,gl.QUERY_RESULT));gpuTiming.nanoseconds=value;
+   gpuTiming.status=gpuTiming.disjoint?'disjoint':Number.isFinite(value)&&value>=0?'complete':'invalid';
+  }
+  assert(gl.getError()===gl.NO_ERROR,'GL error during native timing');
+  return {calls,triangles,cpuMs,fenceMs,gpu:gpuTiming};
+ }finally{
+  if(elapsed){if(!ended)gl.endQuery(timer!.TIME_ELAPSED_EXT);gl.deleteQuery(elapsed);}
+ }
+}
+const mean=(values:number[])=>values.reduce((sum,value)=>sum+value,0)/values.length;
+function nativeGroups(lanes:NativeLane[]){
+ return Array.from({length:8},(_,i)=>{
+  const group=lanes.slice(i*4,i*4+4),summary=(side:Side)=>{
+   const own=group.filter(lane=>lane.side===side);
+   return {cpuMs:mean(own.map(lane=>lane.cpuMs)),fenceMs:mean(own.map(lane=>lane.fenceMs)),gpuNanoseconds:mean(own.map(lane=>lane.gpu.nanoseconds))};
+  };
+  const baseline=summary('baseline'),candidate=summary('candidate');
+  return {repetition:i+1,baseline,candidate,delta:{cpuMs:candidate.cpuMs-baseline.cpuMs,fenceMs:candidate.fenceMs-baseline.fenceMs,gpuNanoseconds:candidate.gpuNanoseconds-baseline.gpuNanoseconds}};
+ });
+}
+async function measureNative(fixture:Fixture,view:View,baseline:Sample,candidate:Sample){
+ const lanes:NativeLane[]=[],observation={meshes:drawObservations.length,removed:false,restored:false},restore=suspendDrawObservations();observation.removed=true;
+ const timing={subject:fixture.name,optimizationApplied:fixture.name!=='lawn',style:'authentic',view,width,height,protocol:timingMode,order:'ABBA',repetitions:8,framesPerLane:16,warmupRenders:3,lanes,groups:[] as ReturnType<typeof nativeGroups>,observation,
+  scope:'Eight paired ABBA groups, each lane with three warm renders and sixteen consecutive individually completed raw renders. Original shadows refresh on every render. GPU elapsed queries, CPU render submission and completion-fence waiting are separate. No diagnostic draw observers or snapshots during timing; no sample removal or outlier filtering. Lawn is unchanged regression coverage. Targeted fixture only, not full-game frame intervals or release acceptance.'};
+ timings.push(timing);
+ try{
+  for(let repetition=1;repetition<=8;repetition++)for(const [lane,side]of (['baseline','candidate','candidate','baseline'] as const).entries()){
+   use(fixture,side);for(let i=0;i<3;i++)await nativeSubmission(false);
+   const samples:NativeSample[]=[],expected=side==='baseline'?baseline:candidate;
+   const record:NativeLane={side,repetition,lane,framesPerLane:16,warmupRenders:3,cpuMs:0,fenceMs:0,gpu:{status:'pending',nanoseconds:0},calls:expected.calls,triangles:expected.triangles,samples};lanes.push(record);
+   for(let index=0;index<16;index++){
+    const sample=await nativeSubmission(true);samples.push({index,...sample});
+    assert(sample.gpu.status==='complete'&&sample.gpu.resultAvailable&&!sample.gpu.disjoint,'A native GPU query was invalid or disjoint; no sample may be discarded');
+    assert(sample.calls===expected.calls&&sample.triangles===expected.triangles,'Native timed draw counts differ from the exact pixel render');
+   }
+   record.cpuMs=mean(samples.map(sample=>sample.cpuMs));record.fenceMs=mean(samples.map(sample=>sample.fenceMs));
+   record.gpu={status:'complete',nanoseconds:mean(samples.map(sample=>sample.gpu.nanoseconds!))};
+  }
+  timing.groups=nativeGroups(lanes);
+ }finally{restore();observation.restored=true;}
 }
 function keep(name:string,sample:Sample){images.push({name,png:sample.png});}
 function maskCounts(bytes:Uint8Array){let active=0,inactive=0;for(let i=0;i<bytes.length;i+=4){if(bytes[i]===0&&bytes[i+1]===255&&bytes[i+2]===0)active++;if(bytes[i]===255&&bytes[i+1]===0&&bytes[i+2]===0)inactive++;}return{active,inactive};}
@@ -316,9 +396,12 @@ function nativeProgram(material:T.Material){
      controls.push({subject:fixture.name,view,detailDisabledChangedPixels:detailPixels,subjectHiddenChangedPixels:hiddenPixels,shadowOffChangedPixels:shadowPixels,bumpCenterWrongChangedPixels:bumpCenterWrongPixels,maskActivePixels:counts.active,maskInactivePixels:counts.inactive,restoredChangedPixels:restoredPixels,passed:restoredPixels===0&&(hiddenPixels===undefined||hiddenPixels>=16)&&(shadowPixels===undefined||shadowPixels>=16)&&counts.active+counts.inactive>=16});
      // Both variants have already completed genuine render/readback before the
      // warmed ABBA sequence. Timing remains distinct from correctness acceptance.
-     const repetitions=fixture.name==='masonry'?3:1,lanes=[];
-     for(let repetition=1;repetition<=repetitions;repetition++)for(const side of ['baseline','candidate','candidate','baseline'] as Side[]){use(fixture,side);const sample=await render(false,true);lanes.push({side,repetition,cpuMs:sample.cpuMs,fenceMs:sample.fenceMs,gpu:sample.gpu,calls:sample.calls,triangles:sample.triangles});}
-     timings.push({subject:fixture.name,optimizationApplied:fixture.name!=='lawn',view,width,height,order:'ABBA',repetitions,lanes,scope:'Warmed targeted fixture renders with elapsed-query overhead; not full-game frame intervals or release acceptance.'});
+     if(nativeTiming)await measureNative(fixture,view,baseline,candidate);
+     else{
+      const repetitions=fixture.name==='masonry'?3:1,lanes=[];
+      for(let repetition=1;repetition<=repetitions;repetition++)for(const side of ['baseline','candidate','candidate','baseline'] as Side[]){use(fixture,side);const sample=await render(false,true);lanes.push({side,repetition,cpuMs:sample.cpuMs,fenceMs:sample.fenceMs,gpu:sample.gpu,calls:sample.calls,triangles:sample.triangles});}
+      timings.push({subject:fixture.name,optimizationApplied:fixture.name!=='lawn',view,width,height,order:'ABBA',repetitions,lanes,scope:'Warmed targeted fixture renders with elapsed-query overhead; not full-game frame intervals or release acceptance.'});
+     }
     }
    }
    for(const side of ['baseline','default','candidate'] as Side[]){
@@ -344,7 +427,7 @@ function nativeProgram(material:T.Material){
  const bumpControls=controls.filter(c=>c.subject==='masonry'),installedMaterials=fixtures.find(f=>f.name==='masonry')?.owners.candidate.bumpCenterMaterials.size??0;
  const effectivePixels=Math.max(0,...bumpControls.map(c=>Number(c.bumpCenterWrongChangedPixels))),restoredChangedPixels=Math.max(0,...bumpControls.map(c=>Number(c.restoredChangedPixels)));
  const masonryBumpCenterControl={installedMaterials,effectivePixels,restoredChangedPixels,views:bumpControls.map(c=>c.view),passed:installedMaterials>0&&bumpControls.length===3&&effectivePixels>=16&&restoredChangedPixels===0&&bumpControls.every(c=>c.passed)};
- return {gpu,threeRevision:T.REVISION,width,height,grassWithdrawal,lawnEquivalence,dpr:renderer.getPixelRatio(),antialias:gl.getContextAttributes()?.antialias,shadowMapSize:sun.shadow.mapSize.toArray(),shadowReadback:'RGBA8 shadow target color attachment; effective receiver shadows also have an independent off/on control. Native depth texture bytes are not claimed.',rows,controls,coverage,masonryBumpCenterControl,timings,images,errors,resources,materials:materialEvidence,geometry:fixtures.map(f=>({subject:f.name,meshes:f.geometry})),
+ return {gpu,threeRevision:T.REVISION,width,height,grassWithdrawal,lawnEquivalence,timingMode,dpr:renderer.getPixelRatio(),antialias:gl.getContextAttributes()?.antialias,shadowMapSize:sun.shadow.mapSize.toArray(),shadowReadback:'RGBA8 shadow target color attachment; effective receiver shadows also have an independent off/on control. Native depth texture bytes are not claimed.',rows,controls,coverage,masonryBumpCenterControl,timings,images,errors,resources,materials:materialEvidence,geometry:fixtures.map(f=>({subject:f.name,meshes:f.geometry})),
   scope:'Pinned original and opt-in asphalt/masonry fragment candidates, plus original lawn regression coverage after grass candidate withdrawal, on shared actual geometry with actual materials/textures, controlled camera/light/style inputs, zero RGBA tolerance and shadow readback. Targeted fixture only; not full-world collision, gameplay, controls, physical-device or sustained performance acceptance.',
   passed:errors.length===0&&rows.length===36&&rows.every(r=>r.passed)&&coverage.length===3&&coverage.every(c=>c.passed)&&masonryBumpCenterControl.passed};
 };

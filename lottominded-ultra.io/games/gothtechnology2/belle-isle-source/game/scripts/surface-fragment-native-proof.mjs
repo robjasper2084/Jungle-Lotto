@@ -9,6 +9,112 @@ import {readFile,mkdir,writeFile} from 'node:fs/promises';
 import {resolve,dirname,extname,sep,posix} from 'node:path';
 import {build} from 'esbuild';
 
+const NATIVE_TIMING='native-8x16-abba-v1',SOFTWARE_TIMING='legacy-software';
+const timingCases=['lawn','asphalt','masonry'].flatMap(subject=>['near','mid','grazing'].map(view=>({subject,view,name:subject+'-'+view})));
+const average=values=>values.reduce((sum,value)=>sum+value,0)/values.length;
+const finiteNonnegative=(value,message)=>assert(Number.isFinite(value)&&value>=0,message);
+function validateTimings(result,native,width,height){
+ assert.equal(result.timingMode,native?NATIVE_TIMING:SOFTWARE_TIMING,'Timing protocol/backend mismatch');
+ assert.equal(result.timings?.length,9,'All nine original authentic-style timing comparisons must remain');
+ assert.deepEqual(result.timings.map(t=>t.subject+'-'+t.view),timingCases.map(t=>t.name),'Missing, duplicate or reordered timing comparison');
+ const queryIds=new Set(),comparisons=[];let measuredFrames=0,warmupFrames=0,totalLanes=0,totalGroups=0;
+ for(const timing of result.timings){
+  const name=timing.subject+'-'+timing.view,row=result.rows.find(row=>row.name===name+'-authentic');
+  assert(row,name+': missing corresponding exact pixel row');
+  assert.equal(timing.width,width,name+': width');assert.equal(timing.height,height,name+': height');
+  assert.equal(timing.optimizationApplied,timing.subject!=='lawn',name+': withdrawn lawn must remain original regression coverage');
+  assert.equal(timing.order,'ABBA',name+': lane order');
+  const repetitions=native?8:timing.subject==='masonry'?3:1;
+  assert.equal(timing.repetitions,repetitions,name+': group count');assert.equal(timing.lanes?.length,repetitions*4,name+': lane count');
+  if(native){
+   assert.equal(timing.protocol,NATIVE_TIMING,name+': protocol');assert.equal(timing.style,'authentic',name+': style');
+   assert.equal(timing.framesPerLane,16,name+': frames per lane');assert.equal(timing.warmupRenders,3,name+': warmups');
+   assert(Number.isSafeInteger(timing.observation?.meshes)&&timing.observation.meshes>0,name+': observation ownership receipt');
+   assert.equal(timing.observation.removed,true,name+': per-draw observers remained installed');
+   assert.equal(timing.observation.restored,true,name+': original observer references were not restored');
+  }
+  const recomputed=[];
+  for(const [index,lane]of timing.lanes.entries()){
+   const side=['baseline','candidate','candidate','baseline'][index%4],repetition=Math.floor(index/4)+1,label=name+' group'+repetition+' lane'+(index%4);
+   assert.equal(lane.side,side,label+': ABBA side');assert.equal(lane.repetition,repetition,label+': group index');
+   assert.equal(lane.calls,row[side+'Calls'],label+': display draw count');assert.equal(lane.triangles,row[side+'Triangles'],label+': display triangle count');
+   finiteNonnegative(lane.cpuMs,label+': CPU duration');finiteNonnegative(lane.fenceMs,label+': completion-fence duration');
+   if(!native){
+    assert(['available','unavailable','disjoint'].includes(lane.gpu?.status),label+': software elapsed status');
+    if(lane.gpu.status==='available')finiteNonnegative(lane.gpu.nanoseconds,label+': software elapsed value');
+    measuredFrames++;continue;
+   }
+   assert.equal(lane.lane,index%4,label+': lane index');assert.equal(lane.framesPerLane,16,label+': frame count');assert.equal(lane.warmupRenders,3,label+': warmup count');
+   assert.equal(lane.samples?.length,16,label+': every consecutive raw frame is required');
+   for(const [sampleIndex,sample]of lane.samples.entries()){
+    const sampleLabel=label+' sample'+sampleIndex;assert.equal(sample.index,sampleIndex,sampleLabel+': frame sequence');
+    finiteNonnegative(sample.cpuMs,sampleLabel+': CPU duration');finiteNonnegative(sample.fenceMs,sampleLabel+': completion-fence duration');
+    assert.equal(sample.calls,lane.calls,sampleLabel+': draw count');assert.equal(sample.triangles,lane.triangles,sampleLabel+': triangle count');
+    assert.equal(sample.gpu?.status,'complete',sampleLabel+': no unavailable/disjoint/invalid sample may be removed');
+    assert.equal(sample.gpu.resultAvailable,true,sampleLabel+': completed elapsed query');assert.equal(sample.gpu.disjoint,false,sampleLabel+': disjoint query');
+    assert(Number.isSafeInteger(sample.gpu.nanoseconds)&&sample.gpu.nanoseconds>=0,sampleLabel+': raw elapsed nanoseconds');
+    assert(Number.isSafeInteger(sample.gpu.queryId)&&sample.gpu.queryId===measuredFrames+1,sampleLabel+': unique global query sequence');
+    assert(!queryIds.has(sample.gpu.queryId),sampleLabel+': duplicated native query');queryIds.add(sample.gpu.queryId);measuredFrames++;
+   }
+   const cpuMs=average(lane.samples.map(sample=>sample.cpuMs)),fenceMs=average(lane.samples.map(sample=>sample.fenceMs)),gpuNanoseconds=average(lane.samples.map(sample=>sample.gpu.nanoseconds));
+   assert.equal(lane.cpuMs,cpuMs,label+': CPU lane mean must use all16 raw samples');assert.equal(lane.fenceMs,fenceMs,label+': fence lane mean must use all16 raw samples');
+   assert.equal(lane.gpu.status,'complete',label+': completed lane status');assert.equal(lane.gpu.nanoseconds,gpuNanoseconds,label+': GPU lane mean must use all16 raw samples');
+   recomputed.push({side,repetition,cpuMs,fenceMs,gpuNanoseconds});warmupFrames+=3;
+  }
+  totalLanes+=timing.lanes.length;totalGroups+=repetitions;
+  if(native){
+   const groups=Array.from({length:8},(_,groupIndex)=>{
+    const group=recomputed.slice(groupIndex*4,groupIndex*4+4),summarize=side=>{
+     const own=group.filter(lane=>lane.side===side);
+     return {cpuMs:average(own.map(lane=>lane.cpuMs)),fenceMs:average(own.map(lane=>lane.fenceMs)),gpuNanoseconds:average(own.map(lane=>lane.gpuNanoseconds))};
+    };
+    const baseline=summarize('baseline'),candidate=summarize('candidate');
+    return {repetition:groupIndex+1,baseline,candidate,delta:{cpuMs:candidate.cpuMs-baseline.cpuMs,fenceMs:candidate.fenceMs-baseline.fenceMs,gpuNanoseconds:candidate.gpuNanoseconds-baseline.gpuNanoseconds}};
+   });
+   assert.deepEqual(timing.groups,groups,name+': group summaries must be independently recoverable from all raw samples');
+   comparisons.push({name,optimizationApplied:timing.subject!=='lawn',lanes:recomputed,groups,meanPairedDelta:{cpuMs:average(groups.map(group=>group.delta.cpuMs)),fenceMs:average(groups.map(group=>group.delta.fenceMs)),gpuNanoseconds:average(groups.map(group=>group.delta.gpuNanoseconds))}});
+  }
+ }
+ if(native){assert.equal(measuredFrames,4608);assert.equal(queryIds.size,4608);assert.equal(warmupFrames,864);assert.equal(totalLanes,288);assert.equal(totalGroups,72);}
+ else{assert.equal(measuredFrames,60);assert.equal(totalLanes,60);assert.equal(totalGroups,15);}
+ return {protocol:result.timingMode,comparisons:9,groups:totalGroups,lanes:totalLanes,measuredFrames,warmupFrames,uniqueCompletedGpuQueries:queryIds.size,recomputed:comparisons,
+  interpretation:'Each native comparison has eight whole paired ABBA groups. Individual raw frames are not independent experimental units. CPU render submission, GPU elapsed time and completion-fence wait remain separate; fences and counters do not establish frame speed. Report all views and regressions. No outlier removal or performance threshold is applied by this appearance diagnostic.'};
+}
+
+function timingSelfTest(){
+ let queryId=0;const result={timingMode:NATIVE_TIMING,rows:[],timings:[]};
+ for(const {subject,view,name}of timingCases){
+  result.rows.push({name:name+'-authentic',baselineCalls:5,candidateCalls:5,baselineTriangles:321,candidateTriangles:321});
+  const lanes=[];
+  for(let repetition=1;repetition<=8;repetition++)for(const [lane,side]of ['baseline','candidate','candidate','baseline'].entries()){
+   const samples=Array.from({length:16},(_,index)=>({index,cpuMs:repetition+index/16+(side==='candidate'?.25:0),fenceMs:2+index/4,calls:5,triangles:321,gpu:{status:'complete',nanoseconds:1000000+queryId,queryId:++queryId,resultAvailable:true,disjoint:false}}));
+   lanes.push({side,repetition,lane,framesPerLane:16,warmupRenders:3,cpuMs:average(samples.map(s=>s.cpuMs)),fenceMs:average(samples.map(s=>s.fenceMs)),gpu:{status:'complete',nanoseconds:average(samples.map(s=>s.gpu.nanoseconds))},calls:5,triangles:321,samples});
+  }
+  const groups=Array.from({length:8},(_,i)=>{
+   const subset=lanes.slice(i*4,i*4+4),summarize=side=>{const own=subset.filter(lane=>lane.side===side);return {cpuMs:average(own.map(lane=>lane.cpuMs)),fenceMs:average(own.map(lane=>lane.fenceMs)),gpuNanoseconds:average(own.map(lane=>lane.gpu.nanoseconds))};};
+   const baseline=summarize('baseline'),candidate=summarize('candidate');return {repetition:i+1,baseline,candidate,delta:{cpuMs:candidate.cpuMs-baseline.cpuMs,fenceMs:candidate.fenceMs-baseline.fenceMs,gpuNanoseconds:candidate.gpuNanoseconds-baseline.gpuNanoseconds}};
+  });
+  result.timings.push({subject,view,optimizationApplied:subject!=='lawn',width:960,height:600,style:'authentic',protocol:NATIVE_TIMING,order:'ABBA',repetitions:8,framesPerLane:16,warmupRenders:3,observation:{meshes:12,removed:true,restored:true},lanes,groups});
+ }
+ const audit=validateTimings(result,true,960,600);assert.equal(audit.measuredFrames,4608);assert.equal(audit.recomputed.length,9);
+ const corruptions=[
+  r=>{r.timings.pop();},r=>{r.timings[1]=structuredClone(r.timings[0]);},r=>{r.timings[0].lanes.pop();},r=>{r.timings[0].lanes[0].samples.pop();},
+  r=>{r.timings[0].lanes[0].samples[1].gpu.queryId=1;},r=>{r.timings[0].lanes[0].samples[1].index=0;},r=>{r.timings[0].lanes[0].samples[1].gpu.status='disjoint';},
+  r=>{r.timings[0].lanes[0].samples[1].gpu.disjoint=true;},r=>{r.timings[0].lanes[0].samples[1].gpu.resultAvailable=false;},r=>{r.timings[0].lanes[0].samples[1].gpu.nanoseconds=NaN;},
+  r=>{r.timings[0].lanes[0].samples[1].cpuMs=NaN;},r=>{r.timings[0].lanes[0].samples[1].fenceMs=-1;},r=>{r.timings[0].lanes[0].samples[1].calls++;},
+  r=>{r.timings[0].lanes[0].samples[1].triangles++;},r=>{r.timings[0].lanes[0].cpuMs++;},r=>{r.timings[0].lanes[0].fenceMs++;},r=>{r.timings[0].lanes[0].gpu.nanoseconds++;},
+  r=>{r.timings[0].groups[0].delta.cpuMs++;},r=>{r.timings[0].groups[0].candidate.gpuNanoseconds++;},r=>{r.timings[0].lanes[0].side='candidate';},
+  r=>{r.timings[0].lanes[0].repetition=2;},r=>{r.timings[0].lanes[0].warmupRenders=2;},r=>{r.timings[0].observation.removed=false;},r=>{r.timings[0].observation.restored=false;},
+  r=>{r.timings[0].optimizationApplied=true;},r=>{r.timingMode=SOFTWARE_TIMING;},
+ ];
+ for(const [index,corrupt]of corruptions.entries()){const changed=structuredClone(result);corrupt(changed);assert.throws(()=>validateTimings(changed,true,960,600),undefined,'Corrupt timing receipt '+index+' was accepted');}
+ const software=structuredClone(result);software.timingMode=SOFTWARE_TIMING;
+ for(const timing of software.timings){timing.repetitions=timing.subject==='masonry'?3:1;timing.lanes=timing.lanes.slice(0,timing.repetitions*4);for(const lane of timing.lanes)lane.gpu={status:'available',nanoseconds:lane.gpu.nanoseconds};}
+ assert.equal(validateTimings(software,false,960,600).measuredFrames,60);
+ return {passed:true,nativeFrames:4608,nativeGroups:72,rejectedCorruptions:corruptions.length,softwareFrames:60};
+}
+if(process.argv.includes('--timing-self-test')){console.log(JSON.stringify(timingSelfTest()));process.exit(0);}
+
 const game=resolve(import.meta.dirname,'..');
 const repo=execFileSync('git',['rev-parse','--show-toplevel'],{cwd:game,encoding:'utf8'}).trim();
 const gamePath='lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game';
@@ -61,7 +167,11 @@ const plugin={name:'independent-pinned-surface-baseline',setup(b){
 }};
 
 const errors=[],failedRequests=[];
-const report={schema:'belle-surface-fragment-proof-v2',baseline,sourceHead,width,height,platform:process.platform,
+const native=process.platform==='darwin';
+const timingPlan={protocol:native?NATIVE_TIMING:SOFTWARE_TIMING,comparisons:timingCases,style:'authentic',nativeGroupsPerComparison:8,nativeFramesPerLane:16,nativeWarmupRendersPerLane:3,nativeMeasuredFrames:4608,nativeWarmupFrames:864,
+ motivation:'Increase paired-block coverage to resolve the earlier one-block asphalt grazing signal, possible near-view regression, and inconclusive three-block masonry measurements. Preserve all nine original timing comparisons, including unchanged lawn controls. No candidate activation or result-based case selection.',
+ method:'Individual render submission, elapsed query, and completion fence per raw frame. Original shadows refresh each render. No draw observer or diagnostic snapshot during native timing. Eight whole ABBA groups are the paired units; keep every raw sample. Pixel cases, controls, zero tolerances and the workflow deadline are unchanged.'};
+const report={schema:'belle-surface-fragment-proof-v3',baseline,sourceHead,width,height,platform:process.platform,timingPlan,timingValidation:null,
  passed:false,errors,failedRequests,fixtureSha256:null,pinnedSources:[],candidateInputs:[],assets:[],captures:[],worldLawnExtraction:null,result:null,
  scope:'Targeted material/geometry comparisons. No full-game performance, input, collision, physical-iPad, or release acceptance is implied.'};
 let browser,server;
@@ -116,7 +226,7 @@ try{
   }catch(error){errors.push(String(error));res.writeHead(500);res.end('Fixture asset failed verification');}
  });
  await new Promise(ok=>server.listen(0,'127.0.0.1',ok));
- const native=process.platform==='darwin',executablePath=process.env.SURFACE_PROOF_BROWSER_PATH;
+ const executablePath=process.env.SURFACE_PROOF_BROWSER_PATH;
  const launch={headless:!native,args:native?['--enable-gpu','--use-gl=angle','--use-angle=metal']:['--use-angle=swiftshader','--enable-unsafe-swiftshader']};
  browser=await chromium.launch({...launch,...(executablePath?{executablePath}:{channel:'chrome'})});
  const page=await browser.newPage({viewport:{width,height},deviceScaleFactor:1,reducedMotion:'reduce'});
@@ -124,7 +234,7 @@ try{
  page.on('requestfailed',request=>failedRequests.push({url:request.url(),failure:request.failure()}));
  page.on('console',message=>{if(message.type()==='error')errors.push(message.text());else if(message.text().startsWith('[surface-proof]'))console.log(message.text());});
  report.browserVersion=browser.version();
- await page.goto('http://127.0.0.1:'+server.address().port+'/?width='+width+'&height='+height,{waitUntil:'load'});
+ await page.goto('http://127.0.0.1:'+server.address().port+'/?width='+width+'&height='+height+'&timing='+(native?NATIVE_TIMING:SOFTWARE_TIMING),{waitUntil:'load'});
  await page.waitForFunction(()=>typeof window.__surfaceFragmentProof==='function',{},{timeout:60000});
  const result=await page.evaluate(()=>window.__surfaceFragmentProof());
  const images=result.images;delete result.images;report.result=result;
@@ -179,6 +289,7 @@ try{
  for(const material of result.materials.filter(material=>material.side==='baseline'||material.side==='default')){
   for(const name of ['bumpCenterReuseInstalled','bumpCenterMarkerObserved','linkedBumpCenterMarkerObserved'])assert.equal(material[name],false,'Mapped bump-center candidate leaked into '+material.side);
  }
+ report.timingValidation=validateTimings(result,native,width,height);
  assert.equal(errors.length,0,'Shader, page or asset error');assert.equal(failedRequests.length,0);
  assert.equal(result.passed,true,'At least one exact pixel, determinism, visibility, material, geometry or shadow comparison failed');
  report.passed=true;
