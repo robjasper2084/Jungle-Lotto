@@ -1,9 +1,9 @@
 import * as T from 'three';
-import {finishBridgeMaterial} from './bridgeMaterialFinish.ts';
+import {finishBridgeMaterial,type BridgeFinishOptions} from './bridgeMaterialFinish.ts';
 
 /** Weather MacArthur arch masonry without mutating shared landmark materials.
  * The original collision, bridge geometry and metal railings are untouched. */
-export function finishMacArthurConcrete(root:T.Object3D){
+export function finishMacArthurConcrete(root:T.Object3D,options:BridgeFinishOptions={}){
  const cached=new WeakMap<T.Material,T.MeshStandardMaterial>();
  const stats={meshes:0,newMaterials:0};
  root.traverse(obj=>{
@@ -19,7 +19,7 @@ export function finishMacArthurConcrete(root:T.Object3D){
    let updated=cached.get(material);
    if(!updated){
     updated=material.clone();updated.name=material.name+' · MacArthur masonry';
-    finishBridgeMaterial(updated,'aged-concrete');
+    finishBridgeMaterial(updated,'aged-concrete',options);
     cached.set(material,updated);stats.newMaterials++;
    }
    return updated;

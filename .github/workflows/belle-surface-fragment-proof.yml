@@ -1,0 +1,81 @@
+name: Belle Isle surface fragment pixel equivalence
+
+on:
+  push:
+    branches: ['upgrade-redesign-surface-fragments-*']
+  pull_request:
+    paths:
+      - '.github/workflows/belle-surface-fragment-proof.yml'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/surface-fragment-*.mjs'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/surface-fragment-*.ts'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: belle-surface-fragment-proof-${{ github.event.pull_request.head.ref || github.ref }}
+  cancel-in-progress: true
+
+env:
+  SURFACE_PROOF_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  SURFACE_PROOF_BASELINE_SHA: d4f4baa8e2016f4c9107b40176388bf2d3f6fe8c
+  SURFACE_PROOF_WIDTH: '960'
+  SURFACE_PROOF_HEIGHT: '600'
+
+jobs:
+  exact-pixels:
+    name: Exact surface pixels (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-15]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.SURFACE_PROOF_SOURCE_SHA }}
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /AGENTS.md
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Verify source and fetch immutable independent baseline
+        run: |
+          test "$(git rev-parse HEAD)" = "$SURFACE_PROOF_SOURCE_SHA"
+          git fetch --filter=blob:none --no-tags --depth=1 origin "$SURFACE_PROOF_BASELINE_SHA"
+      - name: Install locked browser and game dependencies
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install --with-deps chrome
+          cd belle-isle-source/game
+          npm ci
+      - name: Verify default shaders and candidate isolation
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: >-
+          node --experimental-strip-types --test
+          src/belle/asphaltFragmentOptimization.test.ts
+          src/belle/bridgeMaterialFinish.test.ts
+          src/belle/macArthurSurface.test.ts
+          src/belle/lawnFragmentOptimization.test.mjs
+          src/belle/cinematicCloning.test.mjs
+          src/belle/cinematicPolicy.test.ts
+          src/belle/atmosphereProgramSharing.test.ts
+      - name: Compare actual surface RGBA with zero tolerance
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: node scripts/surface-fragment-native-proof.mjs
+      - name: Preserve exact source, asset, shader, timing and image evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-surface-fragments-${{ matrix.os }}-${{ env.SURFACE_PROOF_SOURCE_SHA }}
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/surface-fragment-proof/
+          if-no-files-found: error
+          retention-days: 14
