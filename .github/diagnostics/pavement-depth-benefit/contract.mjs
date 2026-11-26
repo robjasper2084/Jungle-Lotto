@@ -37,7 +37,10 @@ export function analyzeBenefit(result){
   assert.equal(result.settings.width,1280);assert.equal(result.settings.height,800);assert.equal(result.settings.pixelRatio,1);
   assert.equal(result.settings.shadowMapSize,2048);assert.equal(result.settings.shadowEnabled,true);assert.equal(result.settings.shadowType,1);
   assert.equal(result.settings.outputType,1009);assert.equal(result.settings.antialias,true);assert.equal(result.settings.stencil,false);
-  assert.equal(result.settings.alpha,false);assert.equal(result.settings.depth,true);assert.equal(result.settings.preserveDrawingBuffer,true);
+  // Pinned Three r185 allocates an alpha-enabled native context even when the
+  // renderer constructor uses alpha:false for its opaque default clear value.
+  // fixtureSettings records gl.getContextAttributes(), not that clear option.
+  assert.equal(result.settings.alpha,true,'native r185 context alpha');assert.equal(result.settings.depth,true);assert.equal(result.settings.preserveDrawingBuffer,true);
   assert.equal(result.settings.outputColorSpace,'srgb');assert.equal(result.settings.toneMapping,4);assert.equal(result.settings.exposure,1.02);
   assert.equal(result.assetSha256,'14d16dd1c3148c8ee6132c765e59934b9e86ea79f4607dfd48dd08455feac21b');
   let previousFrame=null,nextQueryId=0;const used=new Set(),cases=[];

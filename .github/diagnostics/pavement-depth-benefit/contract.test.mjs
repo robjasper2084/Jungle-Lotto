@@ -5,7 +5,7 @@ import {analyzeBenefit,warmup,measured} from './contract.mjs';
 const clone=value=>structuredClone(value);
 function fixture(factor=.8){
  const settings={width:1280,height:800,pixelRatio:1,shadowMapSize:2048,shadowEnabled:true,shadowType:1,outputType:1009,antialias:true,stencil:false,
-  alpha:false,depth:true,preserveDrawingBuffer:true,outputColorSpace:'srgb',toneMapping:4,exposure:1.02};
+  alpha:true,depth:true,preserveDrawingBuffer:true,outputColorSpace:'srgb',toneMapping:4,exposure:1.02};
  let queryId=0,frame=0;const rows=[],cases=[];
  for(const pinned of pins.cases){
   const camera=clone(pinned.cameraInput),owners=[{sourceId:10,geometryId:20}],samples=[];
@@ -40,6 +40,12 @@ test('valid improvements, neutral outcomes and regressions all complete without 
   for(const row of analysis.cases){assert.equal(row.pairs.length,8);assert.equal(row.baselineGpuMs.n,8);assert.equal(row.candidateGpuMs.n,8);assert(row.drift.baseline);assert(row.drift.candidate);}
   if(factor===1.2)assert(analysis.cases[0].pairedDeltaPercent.mean>0,'a slower result remains valid diagnostic completion');
  }
+});
+test('requires observed native context alpha rather than the renderer clear-alpha option',()=>{
+ const report=fixture();assert.equal(analyzeBenefit(report).eligible,true);
+ report.settings.alpha=false;
+ const result=analyzeBenefit(report);assert.equal(result.eligible,false);
+ assert.match(result.reason,/native r185 context alpha/);assert.equal(result.performanceConclusion,null);
 });
 test('unavailable, disjoint, failed, unresolved or leaked queries produce no performance conclusion',()=>{
  const edits=[r=>{r.queries.available=false;},r=>{r.queries.disjoint=true;},r=>{r.errors.push('timed out');},
