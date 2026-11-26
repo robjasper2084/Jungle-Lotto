@@ -1,0 +1,989 @@
+{
+  "version": 1,
+  "applicationSource": "75906273c0cd414c0d004320fc6f654b4783e5b1",
+  "artifact": {
+    "id": 15127074963,
+    "run": 45839211197,
+    "bytes": 176640563,
+    "sha256": "ded31ca4e6658ab3edd5cbcd192a0ea0a57d8db79cd762ff9de7a23bb8409165"
+  },
+  "build": {
+    "sourceSha": "75906273c0cd414c0d004320fc6f654b4783e5b1",
+    "indexSha256": "9988025538e92f9613e72eee700c465981eb254ab635405f9f55ec8288f94646",
+    "builtAt": "2026-11-26T14:35:37.332Z"
+  },
+  "scope": "Every original759 runtime file except the index HTML containing the diagnostic-specific chunk references, compiled assets/*.js chunks, and the controls-only build receipt. This includes every non-JS asset and unchanged standalone runtime scripts. No model, texture, audio, material, geometry or collision asset may be absent, extra or changed.",
+  "sourceAssets": [
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/swoop-source/public/exports/rigged-heroes/DS_Man_01.glb",
+      "gitBlob": "cdf539c8dcca5df9f32d312351f5fd87b4d095f3",
+      "bytes": 11188172,
+      "sha256": "caaf9000d9f08cdcf75543da826701d2a33dc54abe7cf55dce2dce59af046d91",
+      "bundledPath": "assets/DS_Man_01-D3pPY0x-.glb"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/swoop-source/public/exports/rigged-heroes/DS_Hoodie_Woman_01.glb",
+      "gitBlob": "977d93a4a4d5472a6ef3f3571ceaf86b3c0642af",
+      "bytes": 8751112,
+      "sha256": "7b720fbfe482bb3a76723137e87d966392a21f8304fb6844c064b639910502a1",
+      "bundledPath": "assets/DS_Hoodie_Woman_01-CIB7I9_q.glb"
+    }
+  ],
+  "files": [
+    {
+      "path": "asset-manifest.json",
+      "bytes": 6472,
+      "sha256": "32e56f667c0ff26e626b4fda7a338c8efb4085524b88bc8ff76669b48faa4844"
+    },
+    {
+      "path": "assets/DS_Hoodie_Woman_01-CIB7I9_q.glb",
+      "bytes": 8751112,
+      "sha256": "7b720fbfe482bb3a76723137e87d966392a21f8304fb6844c064b639910502a1"
+    },
+    {
+      "path": "assets/DS_Man_01-D3pPY0x-.glb",
+      "bytes": 11188172,
+      "sha256": "caaf9000d9f08cdcf75543da826701d2a33dc54abe7cf55dce2dce59af046d91"
+    },
+    {
+      "path": "assets/detroit-1024-G5N1hkYJ.webp",
+      "bytes": 293256,
+      "sha256": "8a6581973616918423df6f58109a6da5460c3e5ad19a677db3ca93b494f89c63"
+    },
+    {
+      "path": "assets/detroit-512-9ND7C0JC.webp",
+      "bytes": 53766,
+      "sha256": "8adb973b11c14f02123d3cab2907ce59e1e9cb164ecef0370dbb42878fe442b7"
+    },
+    {
+      "path": "assets/detroit-scenery-zX4Bvt8V.glb",
+      "bytes": 350932,
+      "sha256": "45b909a248ab197d1cfe39136fc73abf31fa1133611f718f2a5606ee16f0e1a8"
+    },
+    {
+      "path": "assets/elmwood-chapel-m9hF2j6Z.glb",
+      "bytes": 4535132,
+      "sha256": "d6ec9fe8c3d806d0e7771cf9de352131d4642a8fe83138e68e10ca8ceee0f006"
+    },
+    {
+      "path": "assets/elmwood-entrance-sign-QWV4zV8F.glb",
+      "bytes": 506588,
+      "sha256": "071d811091a3e8b14f9266939664502b0683dd93e3663f731d1744ab463cba34"
+    },
+    {
+      "path": "assets/elmwood-gatehouse-CCriU9og.glb",
+      "bytes": 3128364,
+      "sha256": "6e365f69ba951e090c3f3950aa823ce1b1f4d1729a6d66aca911833135043b65"
+    },
+    {
+      "path": "assets/ghoulies-decal-DGrjxLNP.webp",
+      "bytes": 72424,
+      "sha256": "006503badd2181f625a24877ab7ba8b4527c46279750ca5c4229c67eac5d17d7"
+    },
+    {
+      "path": "assets/lottomind-charm-ChV7NTax.webp",
+      "bytes": 37850,
+      "sha256": "174c4fbd2e870adfe0baf39edc6ba76fe68723ec84f48d5038e91090bb82f23a"
+    },
+    {
+      "path": "assets/neural-1024-NNMQBsKR.webp",
+      "bytes": 148532,
+      "sha256": "af8bdad824e8b4429651cf37b97b1b576c6c9e06c42563f1a6c4b9ebbf2a91f7"
+    },
+    {
+      "path": "assets/neural-512-DkvMQO4E.webp",
+      "bytes": 60926,
+      "sha256": "075845634f1d352112a163045b3864d93e1d86603a6917c91e1d6650ca77cfc6"
+    },
+    {
+      "path": "assets/street-at-sunset-BhIEJtH_.glb",
+      "bytes": 1151336,
+      "sha256": "217fa0a4a077dd554e1992d3196997de6f189c8e40e0bdd067d27c83b87afa92"
+    },
+    {
+      "path": "assets/style-C7g0gGby.css",
+      "bytes": 159093,
+      "sha256": "f2cd1755c9ce56ad0d643c6e92ba39a5f5077ba7afc8dafed8b74a3e61c6057e"
+    },
+    {
+      "path": "assets/vampire-1024-Dlpl-6Ra.webp",
+      "bytes": 63648,
+      "sha256": "f1ba4bbe95eb71018ca099933747e5c419ae26bfc4570dacb5e1415709c2f1fd"
+    },
+    {
+      "path": "assets/vampire-512-Daq7IqiU.webp",
+      "bytes": 30112,
+      "sha256": "2d6c0f4b35de5ba7e7117455f0729ebb7a875256260c25a420d110adb35bcd71"
+    },
+    {
+      "path": "assets/woodland-km3ALgGl.webp",
+      "bytes": 215470,
+      "sha256": "6067e780229da91a9894fe15436e4ee758a182470374c4477994cab8b45a8432"
+    },
+    {
+      "path": "audio/swoop/belle-audio-provenance.json",
+      "bytes": 2571,
+      "sha256": "aef3815abd0c8554e5cb849b87db95ac5ea358c6e2961c8583c0d42194f56793"
+    },
+    {
+      "path": "audio/swoop/track-01.mp3",
+      "bytes": 3087090,
+      "sha256": "c52ffbde5a1acb346674e314fa16117b928f05a9d5ca0726b43ecfbdfa1f13c6"
+    },
+    {
+      "path": "audio/swoop/track-02.mp3",
+      "bytes": 2613124,
+      "sha256": "bc1d7fce993131a1a4e880b038c8a2f4b3e13de683be4b8016d1a7db874abdc7"
+    },
+    {
+      "path": "audio/swoop/track-03.mp3",
+      "bytes": 1200004,
+      "sha256": "31ba7dbb4c4a48a42986d7ab5ffbe4a93fef180907345820b2858ebb3eafa455"
+    },
+    {
+      "path": "audio/swoop/track-05.mp3",
+      "bytes": 932928,
+      "sha256": "ac53c30054c5e47e2b646ee0a4b7512a805c4309780b2cf6507d09cc90160bee"
+    },
+    {
+      "path": "audio/swoop/track-06.mp3",
+      "bytes": 1463319,
+      "sha256": "25f3f41dbdc1842fc3a4e38ca72ac89cd0137f0dad3fd1db4cfaf68277835d37"
+    },
+    {
+      "path": "audio/swoop/track-07.mp3",
+      "bytes": 1039926,
+      "sha256": "791ffe2b4dad51868b5b7f86cb3d6435f8886bdc45cb670e1fa6db6f8f948c1f"
+    },
+    {
+      "path": "audio/swoop/track-08.mp3",
+      "bytes": 1108889,
+      "sha256": "c325d4a2996fa55933d5596a26a96f89bcc9e89fbec0f33a0d249e238c8fc7ff"
+    },
+    {
+      "path": "audio/swoop/track-09.mp3",
+      "bytes": 4897689,
+      "sha256": "7dfb48c8a1a8311b16b11b134f8f57ee4486df96d3d7f49478c24760c5daf682"
+    },
+    {
+      "path": "audio/swoop/track-10.mp3",
+      "bytes": 2861392,
+      "sha256": "dcd9770c09a817da1edea322d6689a6bfa044e0e33e4e56b947b93daf4e53389"
+    },
+    {
+      "path": "audio/swoop/track-11.mp3",
+      "bytes": 420093,
+      "sha256": "cfce1a3d96875e38b157a20c619f13fe262bb15cd1aaa97111ce76ee5e9443e4"
+    },
+    {
+      "path": "audio/swoop/track-14.mp3",
+      "bytes": 1072527,
+      "sha256": "6759473d58d8fba52c4dd6b01e65b59c7dce282ec1d9de00609a30b6a84e6ef8"
+    },
+    {
+      "path": "audio/swoop/track-15.mp3",
+      "bytes": 2294222,
+      "sha256": "a8ab17fd0f5ea0fe039b1cf7707deddc5da90db74eb4904f8a2fba1f5569a35e"
+    },
+    {
+      "path": "audio/swoop/track-17.mp3",
+      "bytes": 1699466,
+      "sha256": "45edd010b744d00699ea64ab8ecb3452fe4959eaf6d6406acc8f8d27a2cbdc5a"
+    },
+    {
+      "path": "audio/swoop/track-18.mp3",
+      "bytes": 2400383,
+      "sha256": "aea4a082bb731cfd566b3243105c19147adac52bb574a38532367aba15674210"
+    },
+    {
+      "path": "audio/swoop/track-19.mp3",
+      "bytes": 2765679,
+      "sha256": "584059015f022743cb637c96834ce6b0cb6be0dc9be8db0260ecd939dab74b95"
+    },
+    {
+      "path": "audio/swoop/track-20.mp3",
+      "bytes": 2845092,
+      "sha256": "1e2d8a996923f34ed9024f570ae75ebc9be21c170c236a10bc2e9f7398d24f66"
+    },
+    {
+      "path": "audio/swoop/track-21.mp3",
+      "bytes": 3304847,
+      "sha256": "a5522179a1db9e33fc8be8b22ff8589d43df8e81af7eeff10a696a460fbf144d"
+    },
+    {
+      "path": "audio/swoop/track-23.mp3",
+      "bytes": 3026904,
+      "sha256": "3e89997e8364cd9d5c6607c6333c25fe3f436b40cbb67aa13c54b8df3c61d4b4"
+    },
+    {
+      "path": "audio/swoop/track-24.mp3",
+      "bytes": 4631031,
+      "sha256": "9c7a73f6ba3c793b9af017eddab6cfae6c6d4cd79b8631be0f4844101a6309f3"
+    },
+    {
+      "path": "belle/audio/LICENSE.md",
+      "bytes": 368,
+      "sha256": "d4c6c697c67848c46544e2b1b8a7c68ff4fa4fadcf4ca077243233fae21156fd"
+    },
+    {
+      "path": "belle/audio/park-birdsong.mp3",
+      "bytes": 357086,
+      "sha256": "d08b08bd2497886f52ea19759737f74d1379374efacc486272b50032c107d321"
+    },
+    {
+      "path": "belle/beach-land.json",
+      "bytes": 48824,
+      "sha256": "9a10661864fab731d43dc64c94a30fd57e58a3d5ea71028d04e754bbef2a3440"
+    },
+    {
+      "path": "belle/beach-surface.bin",
+      "bytes": 228160,
+      "sha256": "9a32db02077720b0dfdb8beeab6f3061baf0b655e8f7bf51b52fce8802879c88"
+    },
+    {
+      "path": "belle/beach-surface.json",
+      "bytes": 198168,
+      "sha256": "7810b99e9de1bfe39c0d516fb68ede817307626aa70b05c0ecff2c7297276b2f"
+    },
+    {
+      "path": "belle/birds/LICENSE.txt",
+      "bytes": 402,
+      "sha256": "01270a51ed3ab5d51270b6015ca875a879a64eb05a67e24f4a84114ce098c5b2"
+    },
+    {
+      "path": "belle/birds/pigeon.glb",
+      "bytes": 129740,
+      "sha256": "ef719250d6fdb01d4e7d1224d92339e5787d7a52d3470ef883d557ef6cd4cefc"
+    },
+    {
+      "path": "belle/cameras/bass.glb",
+      "bytes": 86384,
+      "sha256": "b6aceba289e69b9bc05e7d1ee0e846b5d956f2a4e633d10fe625a87188b969d0"
+    },
+    {
+      "path": "belle/cameras/heart.glb",
+      "bytes": 154768,
+      "sha256": "3bda0c3d4ba6af5bc83a8029b9642b3eb147c81ccc827b6a72bdd34921469392"
+    },
+    {
+      "path": "belle/cameras/static.glb",
+      "bytes": 76240,
+      "sha256": "a5ce67a53a87d88cb483842f9929057df6333b9602c8947ee62315a4cd73069b"
+    },
+    {
+      "path": "belle/detroit-skyline.glb",
+      "bytes": 2788944,
+      "sha256": "987a3366c0964856615cb14ac51c010a615da42a00fd7b06fd2480f8cafd30a1"
+    },
+    {
+      "path": "belle/detroit-skyline.glb.gz",
+      "bytes": 668191,
+      "sha256": "c9460d899970ab1c93d0487c487d7a5a0a3358c11db7c3cc695bb47fe82b171e"
+    },
+    {
+      "path": "belle/environment/kloppenheim-06-2k.hdr",
+      "bytes": 4434394,
+      "sha256": "99451201586489ef3288c97bfac2a2ac232a5491c51a1faf0ec8ea39f3ccd533"
+    },
+    {
+      "path": "belle/golf-center.glb",
+      "bytes": 871580,
+      "sha256": "924cdc27dac5c0918d31619ec2b98853d9db7eb4c2d388634321159bf31b4c0b"
+    },
+    {
+      "path": "belle/historic-houses.glb",
+      "bytes": 3323960,
+      "sha256": "261b12bd908d37472323adaf0ec5e760ed1c55103881f28b217496edf2a8305d"
+    },
+    {
+      "path": "belle/hoverbike/michigan-2084-bridge.png",
+      "bytes": 2161869,
+      "sha256": "6a7999d0364fe92fe4de2e30564fa4af68f8e8e244f6ea735111ae6ec40ce4ad"
+    },
+    {
+      "path": "belle/landmark-detail.bin",
+      "bytes": 814456,
+      "sha256": "c0ce94cee9cac8e8ebc51e7348100aa619d9db1c4b3b668f47e2086598d60d79"
+    },
+    {
+      "path": "belle/landmark-detail.json",
+      "bytes": 7113,
+      "sha256": "5e38eb76ab3a9efc82c3c99170e2761bb99e33eed8bd3afeeb7ec3b1bbb3711f"
+    },
+    {
+      "path": "belle/landmarks.glb",
+      "bytes": 30417032,
+      "sha256": "99bd8f7a8c1a5553bf78c0ab1e99cb771c275ca39fc6808c7fab07d8d899d3ba"
+    },
+    {
+      "path": "belle/landmarks.glb.gz",
+      "bytes": 11336521,
+      "sha256": "70a92e5b077930b6811926cb72a399a57694c66678db4a093b63d2060060cfa7"
+    },
+    {
+      "path": "belle/map.json",
+      "bytes": 988881,
+      "sha256": "eb36e093fc477055c217025668403fc5d2c422bfdc9d9021769192dbb5660d87"
+    },
+    {
+      "path": "belle/nature/LICENSES.md",
+      "bytes": 1366,
+      "sha256": "dc85d8364a219621b22d628b6fb3a31330f4167a063deb350e28bf33b09b9f67"
+    },
+    {
+      "path": "belle/nature/birch-far.png",
+      "bytes": 289933,
+      "sha256": "476db7cf6c8fa1d15eb776c7d5f18e5c51a1b8d71a382b75f8aa030f722e3290"
+    },
+    {
+      "path": "belle/nature/cherry.glb.gz",
+      "bytes": 3961123,
+      "sha256": "be1622251282093135531a875cfe90a6d290e40b6b8d39a84fc9973a94c9eaf6"
+    },
+    {
+      "path": "belle/nature/gardens.json",
+      "bytes": 901104,
+      "sha256": "83f271aefe991f5f883cfaf52bd11c40121fe20d3ed8f6c6ad79be8ee6985115"
+    },
+    {
+      "path": "belle/nature/groundcover.glb",
+      "bytes": 1876460,
+      "sha256": "f040bc4e3498f0d89c0cb6cfbe806260c84061c2e0388f1a8d227000e1d30154"
+    },
+    {
+      "path": "belle/nature/heron.json",
+      "bytes": 139734,
+      "sha256": "4a2012cc3fd294dbb316fa8d7f52862e1a8207129033027671b884403f036dca"
+    },
+    {
+      "path": "belle/nature/manifest.json",
+      "bytes": 3220,
+      "sha256": "618286cb9fb128cc312efe2549f3955e048ce3b4b1abba5f98a1f7ace0e5e4a8"
+    },
+    {
+      "path": "belle/nature/maple-far.png",
+      "bytes": 352775,
+      "sha256": "5203c03341603fabfc9b082cc8307c3223c8eb52ee5be398454575be0eb7efdd"
+    },
+    {
+      "path": "belle/nature/meadow.json.gz",
+      "bytes": 587834,
+      "sha256": "38acf71ecde1f0b4f946111f03cb406aeec4c3e792ee12448c067325d03ff464"
+    },
+    {
+      "path": "belle/nature/okonoka.json",
+      "bytes": 169790,
+      "sha256": "61810feb91f3f4d7078fe7f26e4782f027dcce6c8a6cd2908acf9510093f4bee"
+    },
+    {
+      "path": "belle/nature/pine-far.png",
+      "bytes": 297193,
+      "sha256": "499ab336a3db4034e373b0866213442677e04e6edb53f85c70b50e0680a7eba7"
+    },
+    {
+      "path": "belle/nature/placements.json",
+      "bytes": 1080179,
+      "sha256": "00dfa32a912db9b9da502c4823d5857075573223fe6642acce9b9806e60c2966"
+    },
+    {
+      "path": "belle/nature/seasonal-trees.glb.gz",
+      "bytes": 3432500,
+      "sha256": "ea59285801ed149ea17c6d98561b65e9f5e710230a3d964099f61a8f76b53a56"
+    },
+    {
+      "path": "belle/nature/trees.glb",
+      "bytes": 4607016,
+      "sha256": "2a7ef60cad15f2eb8322bc307e8ad53549eac0e2864aa0dc2e53c0994e0074b4"
+    },
+    {
+      "path": "belle/nature/willow-far.png",
+      "bytes": 335945,
+      "sha256": "2a1a85c6378b6463cb551d93c424bd2f2db8808731cd76e7994f724fa915ed54"
+    },
+    {
+      "path": "belle/pavement.bin.gz",
+      "bytes": 854232,
+      "sha256": "3bd8aa8d6fe88f4f55beec46efbe5f684f94620a0122eb8b500d0f8ccbed730a"
+    },
+    {
+      "path": "belle/pavement.json",
+      "bytes": 1263866,
+      "sha256": "d087fb6e489bb0d3ab9233d229ec586832efe96bcfef8ceabd632b145c709de9"
+    },
+    {
+      "path": "belle/playgrounds.glb",
+      "bytes": 3077524,
+      "sha256": "a0b4ee5d55876694e40658680a466fbc5ecea17899705ce2ef4cfccc10e360f2"
+    },
+    {
+      "path": "belle/playgrounds.glb.gz",
+      "bytes": 823784,
+      "sha256": "ff207790ec0c3e5cddbface7337d1d4f16bd22aa21b2af8c94ea2896c47e7bf8"
+    },
+    {
+      "path": "belle/race-checkpoint-detroit.png",
+      "bytes": 1715769,
+      "sha256": "7877ac1988f1797046a3761fa39aedf422c9e8b311eda831a0d5f9bc9d223c54"
+    },
+    {
+      "path": "belle/reference-architecture.glb",
+      "bytes": 1281660,
+      "sha256": "486257a051be2076b04cc8e91181528200332810cd80dc8454e802a37bccca6a"
+    },
+    {
+      "path": "belle/skins/PROVENANCE.json",
+      "bytes": 36076,
+      "sha256": "b542c6bc4eb420edffce055846dda956a9f6e2c5154292c2e8e3fdd8dcf15fcc"
+    },
+    {
+      "path": "belle/skins/asphalt-color.webp",
+      "bytes": 334260,
+      "sha256": "dd455673f52a123c881a553182c241e46c8586ff5d104391d7711ab483b3c171"
+    },
+    {
+      "path": "belle/skins/asphalt-detail.webp",
+      "bytes": 298930,
+      "sha256": "1f550de87b7cbcb8cafd9e3efbb8cde6fc15319b289ddc6153bae6d5578c4f66"
+    },
+    {
+      "path": "belle/skins/bark-color.webp",
+      "bytes": 382704,
+      "sha256": "7f28a38793a23fa092004ab4959effd191b6f74b402dfcd35d10c9b55e3fbca4"
+    },
+    {
+      "path": "belle/skins/bark-detail.webp",
+      "bytes": 312428,
+      "sha256": "df66465631c2cfc1d69fccb0dc478ca250829b491362a813fdf54019c55d5223"
+    },
+    {
+      "path": "belle/skins/brick-color.webp",
+      "bytes": 293134,
+      "sha256": "90575259db2fe0217d00ad84c40a6c523e914a4933c498e3e6ad621a50b2629b"
+    },
+    {
+      "path": "belle/skins/brick-detail.webp",
+      "bytes": 219512,
+      "sha256": "99b34781744f04ef4fdec5baf29bafd386ae2f2decf49ea6358ddf5d93576d90"
+    },
+    {
+      "path": "belle/skins/bronze-color.webp",
+      "bytes": 107268,
+      "sha256": "be42a82090780ab0e858ec85fbdefdab747adc53de44a0ad77b3b42ef362847f"
+    },
+    {
+      "path": "belle/skins/bronze-detail.webp",
+      "bytes": 243414,
+      "sha256": "1f6deea89be8a5bd787c3bdf04a945b57699712b9f8ad0c0dd97b88adfe826f7"
+    },
+    {
+      "path": "belle/skins/ceramic-color.webp",
+      "bytes": 35464,
+      "sha256": "b459d4323638f9ef832c8fcfa06b413ca5202c953a563c06b53e58be2dc15d7e"
+    },
+    {
+      "path": "belle/skins/ceramic-detail.webp",
+      "bytes": 201592,
+      "sha256": "b3007145f2f5d42c8d8f3dac3dc344655ffb525946e852f4653bb23c91a862de"
+    },
+    {
+      "path": "belle/skins/cloth-color.webp",
+      "bytes": 390032,
+      "sha256": "dce39cde6e20261d092fcbd59024e42b8b250826edc56a09b2fcadd6eb9aa2c5"
+    },
+    {
+      "path": "belle/skins/cloth-detail.webp",
+      "bytes": 307548,
+      "sha256": "c89db78278ef294eae1382bc5de4a1b59aa27048b61ba0eb43bc68b0749fbf05"
+    },
+    {
+      "path": "belle/skins/concrete-color.webp",
+      "bytes": 220474,
+      "sha256": "98d145299af4054a61935ae958f37f7735ddca151a145cb2dbd220a40cc57982"
+    },
+    {
+      "path": "belle/skins/concrete-detail.webp",
+      "bytes": 254782,
+      "sha256": "3e097ac48c7e61466c1b6508990ae9cb4c5fd3af26b88a501f47cace402b6b8f"
+    },
+    {
+      "path": "belle/skins/copper-color.webp",
+      "bytes": 279522,
+      "sha256": "aba6b33d9554137c444e3f17901df399dd04f67c963c9536bacca5a0efb2ee52"
+    },
+    {
+      "path": "belle/skins/copper-detail.webp",
+      "bytes": 256274,
+      "sha256": "79e17845254d19ea19da9d1b9b9a754ef30b6b5ef8f6d454d196e040bdf48837"
+    },
+    {
+      "path": "belle/skins/cork-color.webp",
+      "bytes": 362616,
+      "sha256": "30c2024d9e65e8921bf3375a946aa605fe5ccffcaa701657385defb358923128"
+    },
+    {
+      "path": "belle/skins/cork-detail.webp",
+      "bytes": 301608,
+      "sha256": "8e440caa164ad37f60eade226dcfc8f9a6241df2126d029d0676aad13e832e8d"
+    },
+    {
+      "path": "belle/skins/dog-replacement.jpg",
+      "bytes": 1519076,
+      "sha256": "e1d40390996c325158f3ebb7a92c86ba897797b1e32dfb634624223dbb935cb1"
+    },
+    {
+      "path": "belle/skins/feather-color.webp",
+      "bytes": 284030,
+      "sha256": "828d7dd7196a81084ac9310eb7e20b2c7e9fc723dda59cfb99eae71d1b6dce8e"
+    },
+    {
+      "path": "belle/skins/feather-detail.webp",
+      "bytes": 245188,
+      "sha256": "da504184c0da85a3370428ffe0b7537f6f39569e15c7a8a3929789c69ff0cefc"
+    },
+    {
+      "path": "belle/skins/fur-color.webp",
+      "bytes": 365306,
+      "sha256": "b8923ebe0deb08d8db573d1761f1ab0b1b551ddd92e50f89825d329f27b69c7a"
+    },
+    {
+      "path": "belle/skins/fur-detail.webp",
+      "bytes": 313144,
+      "sha256": "57d6c9569eee3472a6273c99c1636cf477737eefbd27c13a6cdbc7c83c5f7efd"
+    },
+    {
+      "path": "belle/skins/granite-color.webp",
+      "bytes": 350988,
+      "sha256": "c1122e1e025af9e41ba00549fbc390840ebf8313b81126d74dfdb8c2aaafff6e"
+    },
+    {
+      "path": "belle/skins/granite-detail.webp",
+      "bytes": 231068,
+      "sha256": "07c533cf4293ea7a5fe61a550498b1bb71145ccd519feb0e44edfd20125a1416"
+    },
+    {
+      "path": "belle/skins/graphite-color.webp",
+      "bytes": 93592,
+      "sha256": "581cef68e21cc9a6b7d9944ac5aa78b86a74f35e10be18ee93502c0f579a61e4"
+    },
+    {
+      "path": "belle/skins/graphite-detail.webp",
+      "bytes": 230610,
+      "sha256": "e148956fdbcd3eee923f1e79cb5ee265ad6cba1880109b24b02ca28991845227"
+    },
+    {
+      "path": "belle/skins/grass-color.webp",
+      "bytes": 459994,
+      "sha256": "95d1a99861eea7e55f60df8f7c59a09b3eac10df890ce1759b4f02fdd8389e7b"
+    },
+    {
+      "path": "belle/skins/grass-detail.webp",
+      "bytes": 312280,
+      "sha256": "c17f136680b21e091bef70cce4549f0b1d0c009319df924ee0cc2082c2c4fd82"
+    },
+    {
+      "path": "belle/skins/gravel-color.webp",
+      "bytes": 506278,
+      "sha256": "18d4071626c8c54510b608be2bbe788522c3bd938eb919e7013ffcb479a909d6"
+    },
+    {
+      "path": "belle/skins/gravel-detail.webp",
+      "bytes": 239538,
+      "sha256": "478b4ed6eafbf4a23af22c634d4c5e5117513b49ee024d60887278af762237b4"
+    },
+    {
+      "path": "belle/skins/leaf-color.webp",
+      "bytes": 315414,
+      "sha256": "dcc8d88b846996f6eef36f183b5273ba462d2dfa59586abfd7ff58f0c51d0eff"
+    },
+    {
+      "path": "belle/skins/leaf-detail.webp",
+      "bytes": 299190,
+      "sha256": "94ba8b43613ec5607e85d756c4018efc5da5dede92f01fb1e4042f6df32ceff3"
+    },
+    {
+      "path": "belle/skins/leather-color.webp",
+      "bytes": 103574,
+      "sha256": "df48d5b9d68307e8fa1a6ccc6778960835e05fddf2c04409a7f81b20673744f1"
+    },
+    {
+      "path": "belle/skins/leather-detail.webp",
+      "bytes": 254400,
+      "sha256": "20a2279ccca30ecea96bafd975d8f4277bdfad6cbbfdc49f6824bf7dc85da31c"
+    },
+    {
+      "path": "belle/skins/limestone-color.webp",
+      "bytes": 222314,
+      "sha256": "15069b349f557ab7c9f7cb40d8e44bc10391f847f8ce1a36e479ab7cdd020043"
+    },
+    {
+      "path": "belle/skins/limestone-detail.webp",
+      "bytes": 255448,
+      "sha256": "36939611b5bd7133e995000943e8052a075fe3724a3a744c9de520fdebd9a55a"
+    },
+    {
+      "path": "belle/skins/marble-color.webp",
+      "bytes": 33734,
+      "sha256": "5e4d2e22dec195f9bcd7cfe2b5985a9b3cd79269b0c7404bc6a762dbb24801c5"
+    },
+    {
+      "path": "belle/skins/marble-detail.webp",
+      "bytes": 213538,
+      "sha256": "bc4e1b44a47d2bf015a137cb0080c6b4ec5f761ba842d8b1691975551a1915de"
+    },
+    {
+      "path": "belle/skins/metal-color.webp",
+      "bytes": 86732,
+      "sha256": "ab600a85288ebc8174ea35c08499d81d64c0cadcf4b3550c7157b53196832218"
+    },
+    {
+      "path": "belle/skins/metal-detail.webp",
+      "bytes": 209384,
+      "sha256": "f2a10a13998faef414f028d3c8c90897c2de52dab5034c11351d82a1ca424f63"
+    },
+    {
+      "path": "belle/skins/paint-color.webp",
+      "bytes": 50898,
+      "sha256": "509382cceb3470ea074cf16997196c0cc9cd123f101676a02d242ac3f9792d48"
+    },
+    {
+      "path": "belle/skins/paint-detail.webp",
+      "bytes": 199178,
+      "sha256": "3665a017e7707ffe15591a146ef6a9a539ed62b1c1fa5c6aa1519de77df1f30a"
+    },
+    {
+      "path": "belle/skins/roof-color.webp",
+      "bytes": 141928,
+      "sha256": "1f1b5f3fc2e986c3d6213e6c12131f7ab17604785b4639f74c1c78821a585f75"
+    },
+    {
+      "path": "belle/skins/roof-detail.webp",
+      "bytes": 217088,
+      "sha256": "4f3922ffbb848e2f260d6c65396890013d8f66d2c2fa5be23715b76dd0ea90ef"
+    },
+    {
+      "path": "belle/skins/rope-color.webp",
+      "bytes": 396962,
+      "sha256": "903c5a9d9d2fa62c8bc08a2dbe0768ed4d0713206787875acada0eb11b1bc44e"
+    },
+    {
+      "path": "belle/skins/rope-detail.webp",
+      "bytes": 233118,
+      "sha256": "ade1a0b46d0aa8eb4fd38dd1f94257ea827fa217ce2defd706730cf2f6e6f48a"
+    },
+    {
+      "path": "belle/skins/rubber-color.webp",
+      "bytes": 150690,
+      "sha256": "6d9ff00c7db07f7f559d14abd176e5a62e706f22ee90ced5985b85b6b923b3f8"
+    },
+    {
+      "path": "belle/skins/rubber-detail.webp",
+      "bytes": 311722,
+      "sha256": "935d464afd1ff54f79106cade3090b2fdc5abd91d93aaffbcb5c204f5f223171"
+    },
+    {
+      "path": "belle/skins/sand-color.webp",
+      "bytes": 315726,
+      "sha256": "ca589561ae72eaf775675411e78053c668a2922722ab4ec4b8450756aa807e65"
+    },
+    {
+      "path": "belle/skins/sand-detail.webp",
+      "bytes": 259400,
+      "sha256": "f3a41966a9eb65e313becb08f661aa37360a1db2f59d15ffb611cb8aad23bee2"
+    },
+    {
+      "path": "belle/skins/scales-color.webp",
+      "bytes": 273876,
+      "sha256": "dcd5369046569e62784b5a58435aefcd77faf6f69852535d98ed092470daa16a"
+    },
+    {
+      "path": "belle/skins/scales-detail.webp",
+      "bytes": 224090,
+      "sha256": "d754fe91dae75474a9b390ac5a0475bd4dfd12643f5f93e31428a0b68f0bb1f1"
+    },
+    {
+      "path": "belle/skins/skin-color.webp",
+      "bytes": 49680,
+      "sha256": "30354e2db7e14bc58864348a4bae5677f6c1675d5d4d864dc8dd99f95ac3cacf"
+    },
+    {
+      "path": "belle/skins/skin-detail.webp",
+      "bytes": 213784,
+      "sha256": "d9880e2f3a5bdb053ce17d0ada402fd53348b87dcd48bf42141769c1e97aea54"
+    },
+    {
+      "path": "belle/skins/water-normal.webp",
+      "bytes": 293734,
+      "sha256": "62574c8e014ccfa92c85cfd4a48a50921adac515998dd4dea71a3ddf6683bf6c"
+    },
+    {
+      "path": "belle/skins/wood-color.webp",
+      "bytes": 263138,
+      "sha256": "101c1d46f0348da1553820014f7564a38e3daa082e259910a1a00c4504836a64"
+    },
+    {
+      "path": "belle/skins/wood-detail.webp",
+      "bytes": 312538,
+      "sha256": "ffd9c4d599bece04fbbb6598409778dae105d415c7cfec874d44c365a9c19d33"
+    },
+    {
+      "path": "belle/street-details.bin.gz",
+      "bytes": 518240,
+      "sha256": "c85a1994fa21d4e033335e86dfcf34ff5a333484455f19dcdf4235e9e047afc1"
+    },
+    {
+      "path": "belle/street-details.json",
+      "bytes": 24233,
+      "sha256": "ed32042a8546f5ade94af3eb475bd3e5ea452c034ebdca17bd24c23b2b9edd25"
+    },
+    {
+      "path": "belle/textures/BEACH_LICENSE.md",
+      "bytes": 318,
+      "sha256": "81b17fa6bb916e25af8ae5e172c4c213e5dd4ae6c2c834db5978f6480d8452dc"
+    },
+    {
+      "path": "belle/textures/beach-sand-albedo.jpg",
+      "bytes": 923953,
+      "sha256": "6854bc49936d7b2971b579095c21342ad2c8fd1495aa3382b840335202964f53"
+    },
+    {
+      "path": "belle/textures/beach-sand-normal.jpg",
+      "bytes": 1113299,
+      "sha256": "285a9b5c7f39215a1446c51a69d81228a01277ebafc48b9aeebd115066b4f796"
+    },
+    {
+      "path": "belle/textures/beach-sand-roughness.jpg",
+      "bytes": 479959,
+      "sha256": "f2b99b9f81c7bd467107f61551ab6517cfa090efcdb10cc19bc2fc4ea347fd7f"
+    },
+    {
+      "path": "belle/vehicles/audio/airbrake.wav",
+      "bytes": 97044,
+      "sha256": "4e11e2cb7c94f5934f7c5074fc9d5452b719acc454404ab952d71febff5a1406"
+    },
+    {
+      "path": "belle/vehicles/audio/hazard-warning.wav",
+      "bytes": 141128,
+      "sha256": "1e0cc67a26accea8d34bbac2b9a9f93dd19bb2c9a050e61ad76bf08042814da7"
+    },
+    {
+      "path": "belle/vehicles/audio/impact-warning.wav",
+      "bytes": 144876,
+      "sha256": "5ff42cf89aaf0bfc8dc0111050e1dbc9c89d47fcf03f06d5c6fbe97eaaf3c5d7"
+    },
+    {
+      "path": "belle/vehicles/audio/landing.wav",
+      "bytes": 144970,
+      "sha256": "04cbaf4f7a4b80be21850fc7fdcf410832534e3f01adc989fcd11a2fca1939b2"
+    },
+    {
+      "path": "belle/vehicles/audio/rotor-loop.wav",
+      "bytes": 324566,
+      "sha256": "fd7bf9331d1374e2c9ff0001d98be25499f7961b1c43571d03845e70872a6d8d"
+    },
+    {
+      "path": "belle/vehicles/audio/takeoff.wav",
+      "bytes": 192896,
+      "sha256": "9930fb2414d1158d8004f2e7aa5fff1ff1743b4518f9feadb517d0f7f59887a9"
+    },
+    {
+      "path": "belle/vehicles/authored-packages.json",
+      "bytes": 2516,
+      "sha256": "67cbfbfb04e80234590805ad8588e47df76b242b91574f4eabc8b06799fac729"
+    },
+    {
+      "path": "belle/vehicles/boat-provenance.json",
+      "bytes": 2567,
+      "sha256": "03ac1ba46bc6967b06ba4579568f5e59d8587f2120a5137fac7368bc96812ba3"
+    },
+    {
+      "path": "belle/vehicles/corleo-maverick.glb",
+      "bytes": 3851164,
+      "sha256": "eb1e40edbacd44053ae6ede7a53e91c0b0682bb12fc240b97af5aa14b79d0c49"
+    },
+    {
+      "path": "belle/vehicles/corleo-professional.glb",
+      "bytes": 3924176,
+      "sha256": "eb403561533a708ae203d3d4b668519b7dd4eec6c9adbc4e347613b87de52dd7"
+    },
+    {
+      "path": "belle/vehicles/corleo/CORLEO_Maverick_CRAWL.glb.gz",
+      "bytes": 627657,
+      "sha256": "5f605fd7930c7ee9409231e1957c0a72aa7cda346adfd8e2757bde7354d93b56"
+    },
+    {
+      "path": "belle/vehicles/corleo/CORLEO_Maverick_DISMOUNT.glb.gz",
+      "bytes": 688364,
+      "sha256": "0624eb5dd5d74990b815622a7a00f2ee49677a2ae627859cec3cec9f4eac7778"
+    },
+    {
+      "path": "belle/vehicles/corleo/CORLEO_Maverick_JUMP.glb.gz",
+      "bytes": 626881,
+      "sha256": "634a976c0586e3b2e0444ec59ea3adc486bf2c1e01bcd6c296a3e7e17dfa4127"
+    },
+    {
+      "path": "belle/vehicles/corleo/CORLEO_Maverick_MOUNT.glb.gz",
+      "bytes": 684923,
+      "sha256": "a0009d636a11db6280931fdcde63b7ff56f9faa4e27ee711e997582ccc725308"
+    },
+    {
+      "path": "belle/vehicles/corleo/CORLEO_Maverick_RUN.glb.gz",
+      "bytes": 625134,
+      "sha256": "72668bb83ca50caea8a6132198a417a05eced209c28692b3344a76e7117148c1"
+    },
+    {
+      "path": "belle/vehicles/corleo/CORLEO_Professional_CRAWL.glb.gz",
+      "bytes": 638461,
+      "sha256": "2b865928c604966a494b939672d82e340be151451794c9e63e42db14bceb9d55"
+    },
+    {
+      "path": "belle/vehicles/corleo/CORLEO_Professional_DISMOUNT.glb.gz",
+      "bytes": 698418,
+      "sha256": "47c95e706978a54d00e16657083831eaabd46048787eb7a9229a44b91d66224f"
+    },
+    {
+      "path": "belle/vehicles/corleo/CORLEO_Professional_JUMP.glb.gz",
+      "bytes": 637787,
+      "sha256": "af64fc932e114cc121f72d837b1280ae848cefc236638db253bf68ecf0c5ef28"
+    },
+    {
+      "path": "belle/vehicles/corleo/CORLEO_Professional_MOUNT.glb.gz",
+      "bytes": 694743,
+      "sha256": "0523bb76d8254bf99e55c1669af695b4e9bf445047f3adbc04cae9ccb7f5ae0d"
+    },
+    {
+      "path": "belle/vehicles/corleo/CORLEO_Professional_RUN.glb.gz",
+      "bytes": 636122,
+      "sha256": "fad3ce663e743df2718d6ad4239413f7f82c8ac116195cb2cc2a5bbd1d5252d6"
+    },
+    {
+      "path": "belle/vehicles/corleo/manifest.json",
+      "bytes": 4421,
+      "sha256": "3d554461098394f0838eb0f84cfa20753add7b2410cfb64e471bef7b3b6d1e29"
+    },
+    {
+      "path": "belle/vehicles/hero-hoverbike.glb",
+      "bytes": 8754060,
+      "sha256": "b32cd287c12410163d528f606c668a8fd3e4ba779194b8c74d90228886ba4ba7"
+    },
+    {
+      "path": "belle/vehicles/hydraulics-cadillac-credits.txt",
+      "bytes": 599,
+      "sha256": "cf7a7c377736fa8ef26ac51eb2b64c66890e71367588adfee00ad796ea0af393"
+    },
+    {
+      "path": "belle/vehicles/hydraulics-cadillac.glb",
+      "bytes": 7529936,
+      "sha256": "979ec7133647b49100a639344b49dc2ffeb4d8f9cd275cbe7fccd0e1b94f11f3"
+    },
+    {
+      "path": "belle/vehicles/hydroplane.glb",
+      "bytes": 635916,
+      "sha256": "e4127d1ded87fd8f0c9bbb29839f2ffb8f3488e01fb9c2804a552de957389b48"
+    },
+    {
+      "path": "belle/vehicles/jetson-one.glb",
+      "bytes": 3959972,
+      "sha256": "ff1430525309ce62224c765d755bd77907df78bb9ea2207501ace7d17f7063af"
+    },
+    {
+      "path": "belle/vehicles/pilot-maverick.glb",
+      "bytes": 987900,
+      "sha256": "48a260626075859ee44de93f3b1beaf42dad62627ebda479d6cbc7356c180c6e"
+    },
+    {
+      "path": "belle/vehicles/pilot-professional.glb",
+      "bytes": 1059404,
+      "sha256": "679c53bacd02a366dcd011eb634bbb13fac97535eca455a1762c94e4465bfd37"
+    },
+    {
+      "path": "belle/vehicles/silver-cadillac-credits.txt",
+      "bytes": 491,
+      "sha256": "916be861eb76772e89dbeadbc2474b9a832b58ab0e919eddfd52e5a6e06ed135"
+    },
+    {
+      "path": "belle/vehicles/silver-cadillac.glb",
+      "bytes": 1582664,
+      "sha256": "1fdb7b8c20bf3231dc76a8f8ade39f39c1aa83174534985c82c5b012ba4a6681"
+    },
+    {
+      "path": "belle/vehicles/speedboat.glb",
+      "bytes": 497864,
+      "sha256": "90eff0488bc92f932c5738e0a54207a4798fcbde29a2f8c6b0ceabdb10f9c36c"
+    },
+    {
+      "path": "belle/waterfront-detail.glb.gz",
+      "bytes": 2446056,
+      "sha256": "b17909190cd39fd66ae3c939dadd6f5a7fe82784c70c07e3e95bdf8b6c17efdb"
+    },
+    {
+      "path": "belle/waterfront-lamps.json",
+      "bytes": 5168,
+      "sha256": "f25497d9ef7956a5f2c52e0f77c0c4558bd1b69b223996d447a49c345b772710"
+    },
+    {
+      "path": "belle/yacht-club.glb",
+      "bytes": 8144556,
+      "sha256": "47ddd0f03c1ed24fd2abb55e01cff4b43efd8fb35775d846b6c1bd5d320a1f12"
+    },
+    {
+      "path": "deployment-health.html",
+      "bytes": 3444,
+      "sha256": "df9af224652c103d42947e67b83b5aa8c5ce45e26e000bab205a57e889cac2bd"
+    },
+    {
+      "path": "deployment-health.mjs",
+      "bytes": 3410,
+      "sha256": "c7687f91e21110ccf15daef99529ffee406befdc7aaa35b8a0b8d58b6fabc586"
+    },
+    {
+      "path": "exports/glb/DS_Boerboel_01/DS_Boerboel_Elmwood.glb",
+      "bytes": 1448792,
+      "sha256": "e80bceaaebc8b9db2ce7ca1765b74d8892ee6e7d1a31e41952bd21a0b64b39bc"
+    },
+    {
+      "path": "exports/glb/DS_EUC_01/DS_EUC_01_LOD1.glb",
+      "bytes": 887520,
+      "sha256": "ee06f55dcb5e1f5fab19851bafd0921434c258710461dced371ed3cc0ed5be9b"
+    },
+    {
+      "path": "exports/rigged-heroes/DS_Armored_Rider_01.glb",
+      "bytes": 3086456,
+      "sha256": "b213894836ccc70eae371ffef6fb6a41688537f08c59aed6ea93dfd96f491674"
+    },
+    {
+      "path": "favicon.svg",
+      "bytes": 294,
+      "sha256": "1ba03d4f87b8edd661cb450a4a2fc6b5ffee9cb685f0d2991cb49c121dbce7e1"
+    },
+    {
+      "path": "release-health-model.mjs",
+      "bytes": 2955,
+      "sha256": "6511c005937b84072becad1848617ec105d48ce1599494b06a276bbce7cca9e5"
+    },
+    {
+      "path": "shared-textures/3f53b9a02c9f9c4727e83d60052bb34fc1db6fb7d373aab33a730e4311dfd217.png",
+      "bytes": 338907,
+      "sha256": "3f53b9a02c9f9c4727e83d60052bb34fc1db6fb7d373aab33a730e4311dfd217"
+    },
+    {
+      "path": "shared-textures/9fa142ce92c041fa2b10f18e963b09431b412c44d2fc18d3a116365b3bea070e.png",
+      "bytes": 350166,
+      "sha256": "9fa142ce92c041fa2b10f18e963b09431b412c44d2fc18d3a116365b3bea070e"
+    },
+    {
+      "path": "shared-textures/a843f85fb7e17825aa8e075e25d27072d68d203c27bd18b5014927bc1d1f75ce.jpg",
+      "bytes": 1013113,
+      "sha256": "a843f85fb7e17825aa8e075e25d27072d68d203c27bd18b5014927bc1d1f75ce"
+    },
+    {
+      "path": "shared-textures/b304d9fc61f24a03fc60fd4c93a9c68a073d6fb5b574ee1d166b097deac42b8c.jpg",
+      "bytes": 66617,
+      "sha256": "b304d9fc61f24a03fc60fd4c93a9c68a073d6fb5b574ee1d166b097deac42b8c"
+    },
+    {
+      "path": "shared-textures/f9f5447a2bba37be279f4c413c296879e883f88cf86f2c79c9aaffe87df710a3.jpg",
+      "bytes": 1923791,
+      "sha256": "f9f5447a2bba37be279f4c413c296879e883f88cf86f2c79c9aaffe87df710a3"
+    }
+  ]
+}
