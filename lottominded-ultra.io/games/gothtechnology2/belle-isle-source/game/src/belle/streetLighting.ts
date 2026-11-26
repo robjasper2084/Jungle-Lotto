@@ -1,3 +1,4 @@
+import {freezeStaticWorldTransforms} from './worldPerformancePolicy.ts';
 import * as T from 'three';
 import type {ArtStyleId} from './artDirection.ts';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
@@ -49,5 +50,6 @@ export function addStreetLighting(scene:T.Scene,map:ParkMap){
  const pools=new T.Mesh(geometry,poolMaterial);pools.name='Persistent streetlight illumination';cell.add(pools);nightMeshes.push(pools,bulbs);
  }
 
+ freezeStaticWorldTransforms([group]);
  return{plan,lamps:heads,count:plan.length,setMood(next:ArtStyleId){mood=next;},setNight(value:number){night.value=value;for(const mesh of nightMeshes)mesh.visible=value>.01;if(mood==='detroit2084')globeMaterial.color.setRGB(.20+value*.30,.70+value*.40,.79+value*.45);else globeMaterial.color.setRGB(.7+value,.61+value*.8,.44+value*.6);}};
 }

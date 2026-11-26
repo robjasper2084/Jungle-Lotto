@@ -44,3 +44,32 @@ and geometry are identical, and extra ink-outline draw submissions are not
 created. The former anime function is retained for isolated legacy tests.
 This is not a replacement of the original rider asset, and it must pass
 the same actor animation, visual, collision and native frame-rate gates.
+
+## Experimental stone-arch picture study (separate draft branch)
+
+The generated pictures contain broad stone bridge balustrades. Under
+VITE_BRIDGE_BALUSTRADE_PREVIEW=1, this study replaces the original MacArthur
+crash-barrier *visual only* with two instanced arch railing meshes along the
+mapped bridge, staying entirely inside the existing rail-collision strip.
+The original GLB barrier remains for rollback but is excluded from rendering.
+Game controls, terrain, vehicle physics, shadow budgets and map geometry
+are unchanged. This is **not an as-built surveyed reconstruction**.
+
+Do not release until actual gameplay images, matched-angle visual assessment,
+real walk/drive/flight collision sweeps, verified architectural references
+and the unchanged full native 90-second desktop/phone performance gates pass.
+
+## Optional live stone railings (picture-target conceptual mode)
+
+Settings → Visual atmosphere → **Cinematic stone bridge arches (concept art)**.
+The existing metal-look railings remain the default in Authentic Detroit.
+Choosing the conceptual arches displays the same 270 instanced stone panels
+that passed native Metal 90-second staging acceptance, hiding the old railing
+visual only. The original collision geometry, road grade, bridge route and
+vehicle physics are retained. Unchecking restores the original visual rails
+and their shadow behavior. The setting is stored locally when allowed.
+
+The user's generated pictures remain **visual references**, not verified
+as-built bridge evidence. Neither the default bridge nor the authored art
+mode should be described as photogrammetric. Live screenshots and release
+metrics must be checked again on the exact merged candidate.

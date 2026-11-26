@@ -1,3 +1,5 @@
+import type {Object3D} from 'three';
+
 /** Render-only budgets: no collision, gameplay, or route rules change. */
 export const islandRenderOrder={ground:-102,river:-101,sky:-100} as const;
 /** Limit redundant directional shadow-map submissions while retaining full
@@ -90,4 +92,16 @@ export class ScenePreparationQueue {
  * Actual display distances, meshes, textures and collisions are unaffected. */
 export function deferredSceneryRadius(visibleRange:number,prefetchRange:number,software:boolean,lead:number):number{
  return software?Math.min(prefetchRange,visibleRange+lead):prefetchRange;
+}
+
+/** For authored, world-fixed scenery only. Final transforms and hierarchy
+ * are established before calling; animation may still change materials,
+ * instance data, visibility and shadow flags. Do not use on a moving or
+ * reparented root. Mirrors the existing fixed landmark matrix policy.
+ */
+export function freezeStaticWorldTransforms(roots:readonly Object3D[]):void{
+ for(const root of new Set(roots)){
+  root.updateWorldMatrix(true,true);
+  root.traverse(object=>{object.matrixAutoUpdate=false;object.matrixWorldAutoUpdate=false;object.matrixWorldNeedsUpdate=false;});
+ }
 }

@@ -9,6 +9,7 @@ import {roadContactPresentation} from './roadContactPresentation.ts';
 import {sceneFrameCap} from './frameBudget.ts';
 import {pauseSoftwareStartupScene} from './startupRenderPolicy.ts';
 import {RideProfileStats} from './rideProfileStats.ts';
+import {createOpenDialogCheck} from './modalMeasurementBoundary.ts';
 import {createPose,type RidePose} from '../../runtime/ride-core/src/controller.ts';
 import {RideCore} from '../../runtime/ride-core/src/ridecore.ts';
 import type {TerrainSampler} from '../../runtime/ride-core/src/terrain.ts';
@@ -46,7 +47,10 @@ function frameClockFixture(){
  const visit=(node:ts.Node)=>{if(ts.isVariableDeclaration(node)&&node.name.getText(ast)==='breakMeasurementInterval')boundary=node;ts.forEachChild(node,visit);};
  visit(ast);assert.ok(boundary?.initializer,'Missing actual measurement boundary');
  let wallNow=132,associationsBroken=0;
- const context={locationPerformance:undefined,pauseSoftwareStartupScene,softwareStartup:false,prepared:true,
+ // The extracted production frame now calls the real live-dialog checker.
+ // This fixture models the same empty document as the previous querySelector stub.
+ const hasOpenDialog=createOpenDialogCheck([]);
+ const context={hasOpenDialog,locationPerformance:undefined,pauseSoftwareStartupScene,softwareStartup:false,prepared:true,
   active:true,document:{hidden:false,querySelector:()=>null},vr:undefined,scenePreparing:false,
   resetFrameClock:false,previous:100,lastRender:100,lastMeasurementEligible:true,
   rideProfile:{breakFrameAssociation(){associationsBroken++;}},paused:false,renderFocused:true,sceneFrameCap,cap:60,

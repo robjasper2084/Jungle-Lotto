@@ -53,6 +53,14 @@ try{
   await expect(page.locator('#settings')).toBeVisible();
   await page.locator('#art-style').selectOption(mode);
   await expect(page.locator('body')).toHaveAttribute('data-art-style',mode);
+  if(process.env.BELLE_BRIDGE_STONE_REVIEW==='1'){
+   const stone=await page.evaluate(()=>window.__bridgePictureStatus?.()||null);
+   if(!stone||!stone.active||stone.legacyVisible||!stone.legacyMarkedReplaced||
+    !stone.newVisible||stone.instancedMeshes!==2||stone.stonePanels<220||
+    stone.collisionChanged||stone.asBuiltVerified)
+    throw Error('Stone bridge preview lacks exclusive visual proof: '+JSON.stringify(stone));
+   report.stoneBridge=stone;
+  }
   const skyHour=Number(await page.locator('#sky-hour').inputValue());
   const selected=await page.locator('#art-style').inputValue();
   await page.locator('#settings .close').click();

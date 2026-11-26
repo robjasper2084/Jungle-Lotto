@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {WorldFrameWork,coopMappedShadows,directionalCasterEligible,directionalShadowResolution,softwareWebGLRenderer,ShadowMapCadence,ScenePreparationQueue,deferredSceneryRadius} from './worldPerformancePolicy.ts';
+import * as T from 'three';
+import {freezeStaticWorldTransforms,WorldFrameWork,coopMappedShadows,directionalCasterEligible,directionalShadowResolution,softwareWebGLRenderer,ShadowMapCadence,ScenePreparationQueue,deferredSceneryRadius} from './worldPerformancePolicy.ts';
 
 test('high and automatic preserve nearby landmark shadows but reject distant casters',()=>{
  assert.equal(directionalShadowResolution('high'),1536);
@@ -101,4 +102,21 @@ test('software prefetch keeps all visible scenery while avoiding unnecessary Cov
  // golf (3199.19,-67.75) and Oakway playground (3016,-126) shader warmups.
  assert.ok(Math.hypot(3199.191677670181-2475.1,-67.74931744497917-22.35)>golf);
  assert.ok(Math.hypot(3016-2475.1,-126-22.35)>play);
+});
+
+
+test('authored static world batches keep exact transforms, native ray hits and dynamic visibility without repeated matrix composition',()=>{
+ const scene=new T.Scene(),root=new T.Group(),geometry=new T.BoxGeometry(2,2,2),material=new T.MeshStandardMaterial();
+ root.position.set(12,3,-40);root.rotation.y=.31;scene.add(root);
+ const mesh=new T.Mesh(geometry,material);mesh.position.set(1,2,-3);mesh.rotation.z=.2;mesh.castShadow=true;mesh.receiveShadow=true;root.add(mesh);
+ const lamps=new T.InstancedMesh(geometry,material,2);lamps.setMatrixAt(0,new T.Matrix4().makeTranslation(0,0,0));lamps.setMatrixAt(1,new T.Matrix4().makeTranslation(4,0,0));root.add(lamps);
+ scene.updateMatrixWorld(true);const nodes=[root,mesh,lamps],matrices=nodes.map(object=>({local:object.matrix.toArray(),world:object.matrixWorld.toArray()}));
+ const ray=new T.Raycaster(mesh.getWorldPosition(new T.Vector3()).add(new T.Vector3(0,0,10)),new T.Vector3(0,0,-1));
+ const hits=()=>ray.intersectObject(mesh).map(hit=>({distance:hit.distance,face:hit.faceIndex,point:hit.point.toArray()}));
+ const before=hits(),instanceBytes=lamps.instanceMatrix.array.slice(),positions=geometry.getAttribute('position').array.slice();assert(before.length>0);
+ freezeStaticWorldTransforms([root,root]);
+ for(const object of nodes){assert.equal(object.matrixAutoUpdate,false);assert.equal(object.matrixWorldAutoUpdate,false);object.updateMatrix=()=>{throw Error('immutable scenery must not recompose its local matrix');};}
+ const dynamic=new T.Object3D();scene.add(dynamic);dynamic.position.x=7;
+ for(let frame=0;frame<5;frame++){mesh.visible=frame%2===0;lamps.count=frame%2+1;scene.updateMatrixWorld(true);assert.equal(dynamic.matrixWorld.elements[12],7);nodes.forEach((object,i)=>{assert.deepEqual(object.matrix.toArray(),matrices[i].local);assert.deepEqual(object.matrixWorld.toArray(),matrices[i].world);});}
+ mesh.visible=true;assert.deepEqual(hits(),before);assert.deepEqual(lamps.instanceMatrix.array,instanceBytes);assert.deepEqual(geometry.getAttribute('position').array,positions);assert.equal(mesh.material,material);assert(mesh.castShadow&&mesh.receiveShadow);geometry.dispose();material.dispose();
 });

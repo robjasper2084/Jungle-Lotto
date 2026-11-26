@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {observeModalMeasurementBoundaries} from './modalMeasurementBoundary.ts';
+import {createOpenDialogCheck,observeModalMeasurementBoundaries} from './modalMeasurementBoundary.ts';
 import {RideProfileStats} from './rideProfileStats.ts';
 
 const mutation=(target:{nodeName:string;open?:boolean},attributeName='open')=>({type:'attributes',attributeName,target} as unknown as MutationRecord);
@@ -63,4 +63,22 @@ test('each later modal batch invalidates the next interval and disposal releases
  f.dispose();f.dispose();assert.equal(f.disconnected(),1);
  f.mutationAt(200,[mutation(dialog)]);assert.equal(f.boundaries(),2);
  f.render(412);assert.equal(f.stats.report().over250ms,1);
+});
+
+
+test('live modal check preserves immediate attribute and collection changes, with no stale frame cache',()=>{
+ const dialog=()=>{
+  const attributes=new Map<string,string>();
+  return {attributes,hasAttribute:(name:string)=>attributes.has(name)};
+ };
+ const one=dialog(),two=dialog(),dialogs=[one,two],hasOpen=createOpenDialogCheck(dialogs);
+ assert.equal(hasOpen(),false);
+ one.attributes.set('open','');assert.equal(hasOpen(),true);
+ one.attributes.delete('open');assert.equal(hasOpen(),false);
+ two.attributes.set('open','false');assert.equal(hasOpen(),true,'attribute presence, not value');
+ dialogs.pop();assert.equal(hasOpen(),false,'removing an open dialog must unblock synchronously');
+ dialogs.push(two);assert.equal(hasOpen(),true,'inserting an already-open dialog must block synchronously');
+ one.attributes.set('open','');two.attributes.delete('open');assert.equal(hasOpen(),true,'another open dialog still blocks');
+ one.attributes.delete('open');assert.equal(hasOpen(),false);
+ dialogs.splice(0);assert.equal(hasOpen(),false);
 });
