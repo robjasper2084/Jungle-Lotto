@@ -1,8 +1,28 @@
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
-import {SHADER_PROOF_CASES,SHADER_PROOF_SIZE} from './shader-reuse-cases.ts';
+import {SHADER_PROOF_CASES,SHADER_PROOF_SIZE,ASPHALT_REPAIR_CONTROL} from './shader-reuse-cases.ts';
 export const sha256=bytes=>createHash('sha256').update(bytes).digest('hex');
 const digest=value=>assert.match(value,/^[a-f0-9]{64}$/);
+export const BROWSER_BUFFER_ASSET='belle/landmarks.glb';
+/** The exact ArrayBuffer consumed by GLTFLoader is hashed in the browser before
+ * parsing. Its 59.6MB response exceeds Chromium's inspector body cache. Reconcile
+ * that independent receipt with the server's Git-bound bytes; no refetch, server-
+ * only receipt, or exception for any other CDP response body is permitted. */
+export function reconcileNativeAssetReceipts(assets,nativeAssets){
+ const expected=[BROWSER_BUFFER_ASSET,'belle/pavement.json','belle/pavement.bin'];
+ assert(Array.isArray(nativeAssets));assert.deepEqual(nativeAssets.map(row=>row.file).sort(),expected.slice().sort(),'Missing or duplicate native consumed buffers');
+ const rows=nativeAssets.map(native=>{
+  const row=assets.get(native.file);assert(row&&row.served===true,'Native buffer has no served source receipt');
+  assert.match(row.gitBlob,/^[a-f0-9]{40}$/);assert.equal(row.baselineGitBlob,row.gitBlob);digest(row.sha256);
+  assert(Number.isSafeInteger(native.bytes)&&native.bytes>0);assert.equal(native.bytes,row.bytes,'Native consumed buffer length mismatch');assert.equal(native.sha256,row.sha256,'Native consumed buffer hash mismatch');
+  if(native.file===BROWSER_BUFFER_ASSET){assert.equal(row.responseObserved,true);assert.equal(row.responseStatus,200);}
+  else{assert.equal(row.received,true,'Non-GLB body requires its original CDP receipt');assert.equal(row.receivedBy,'cdp-response-body');}
+  return{row,native};
+ });
+ // Validate all receipts before assigning an authoritative receipt method.
+ for(const {row,native}of rows){row.nativeConsumed={file:native.file,bytes:native.bytes,sha256:native.sha256};
+  if(native.file===BROWSER_BUFFER_ASSET){row.received=true;row.receivedBy='browser-consumed-arraybuffer';}}
+}
 export function compareRgba(a,b){
  assert.equal(a.length,b.length);assert.equal(a.length%4,0);let changedPixels=0,maxChannelDelta=0;
  for(let i=0;i<a.length;i+=4){let changed=false;for(let j=0;j<4;j++){const difference=Math.abs(a[i+j]-b[i+j]);maxChannelDelta=Math.max(maxChannelDelta,difference);changed ||= difference!==0;}if(changed)changedPixels++;}
@@ -42,6 +62,7 @@ export function assertShaderReuseResult(result,{backend,sourceSha,sourceTree}){
   if(spec.kind==='asphalt'){
    assert.equal(row.baseline.shader.originalRepairs,true);assert.equal(row.candidate.shader.gatedRepairs,true);
    assert.equal(row.baseline.profile,'asphalt|triplanar');assert.equal(row.candidate.profile,row.baseline.profile);
+   if(spec.effectRequired)assert.deepEqual(row.controlFocus,ASPHALT_REPAIR_CONTROL,'Required near asphalt control lost the observed source patch');
   }else{
    assert.equal(row.baseline.profile,'brick|triplanar');assert.equal(row.candidate.profile,row.baseline.profile);
    assert.equal(row.candidate.shader.programSafe,spec.nativeSafe);assert.equal(row.candidate.shader.guardUniform,spec.guard);
@@ -75,6 +96,8 @@ export function assertShaderReuseResult(result,{backend,sourceSha,sourceTree}){
   const asset=result.assets.find(a=>a.file===name);assert(asset&&asset.bytes>0,name);digest(asset.sha256);
   assert.match(asset.gitBlob,/^[a-f0-9]{40}$/);assert.equal(asset.baselineGitBlob,asset.gitBlob,name+' changed from the original shipped asset');
   assert.equal(asset.served,true);assert.equal(asset.received,true);
+  assert.equal(asset.receivedBy,name===BROWSER_BUFFER_ASSET?'browser-consumed-arraybuffer':'cdp-response-body');
+  if(name===BROWSER_BUFFER_ASSET){assert.equal(asset.responseObserved,true);assert.equal(asset.responseStatus,200);assert.deepEqual(asset.nativeConsumed,{file:name,bytes:asset.bytes,sha256:asset.sha256});}
  }
  return true;
 }

@@ -1,4 +1,17 @@
 export const SHADER_PROOF_SIZE={width:960,height:600} as const;
+/** Original dc4eb run 45877693528: this source pixel changes by seven channel
+ * units when the original repair block is disabled on BOTH Metal and SwiftShader.
+ * It is unprojected onto the unchanged pavement triangle, not a generated patch.
+ * Only the two required 45m day/dusk controls use this observed source anchor. */
+export const ASPHALT_REPAIR_CONTROL={
+ point:[1364.9783391104663,2.0650000572204306,1074.5762425084263],
+ faceIndex:41540,vertexIndices:[16219,15317,15318],
+ triangle:[[1349.897216796875,2.065000057220459,1081.266357421875],[1367.7266845703125,2.065000057220459,1075.61376953125],[1366.36572265625,2.065000057220459,1072.40771484375]],
+ repairCell:[97,56],pavementSha256:'14d16dd1c3148c8ee6132c765e59934b9e86ea79f4607dfd48dd08455feac21b',
+ evidence:{sourceSha:'dc4eb3f29ab450df7a771d46900b03385c8ff2bb',run:45877693528,case:'asphalt-resolution-below',pixel:[595,496],
+  metalZipSha256:'99be11a8e707aab6ef7f70862991a1ad01efef6ff1c832c69d7bc4e91cb403f9',
+  swiftShaderZipSha256:'e8a17daf0c3abf9408dc3839f97746a4790743f6e0c753541be96f2e25106f4d',minimumNativeChannelDelta:7},
+} as const;
 export type ShaderProofCase={id:string;kind:'asphalt'|'limestone';distance:number;light:'day'|'dusk';
  mode?:'grazing'|'uv1'|'uv2-low'|'uv2-high'|'map-replaced'|'render-replaced'|'unequal-uv-alias'|'cached-unsafe-return'|'video-alias'|'owner-rewrapped'|'frozen-defines'|'no-map'|'discard';
  effectRequired?:boolean;shadowRequired?:boolean;guard?:boolean|null;nativeSafe?:boolean;};

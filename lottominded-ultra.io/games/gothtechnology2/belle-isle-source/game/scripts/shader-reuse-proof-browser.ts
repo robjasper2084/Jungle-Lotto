@@ -13,7 +13,7 @@ import {WorldAtmosphere} from '../src/belle/worldAtmosphere.ts';
 import {inheritAtmosphereProgram} from '../src/belle/atmosphereProgramIdentity.ts';
 import {reuseMacArthurBumpCenters} from '../src/belle/bumpCenterReuse.ts';
 import {SHADER_REUSE_BASELINE} from './shader-reuse-baseline.ts';
-import {SHADER_PROOF_CASES,SHADER_PROOF_SIZE,type ShaderProofCase} from './shader-reuse-cases.ts';
+import {SHADER_PROOF_CASES,SHADER_PROOF_SIZE,ASPHALT_REPAIR_CONTROL,type ShaderProofCase} from './shader-reuse-cases.ts';
 
 type Shader=Parameters<T.Material['onBeforeCompile']>[0];
 type PixelRead={pixels:Uint8Array;calls:number;triangles:number;rgbaSha256:string;png:string;camera:unknown;geometry:unknown;
@@ -120,6 +120,18 @@ function surfaceFocus(mesh:T.Mesh,kind:'asphalt'|'limestone'){
  }
  check(point&&normal,'No genuine source triangle supports '+kind+' fixture focus');return{point,normal};
 }
+function asphaltRepairFocus(mesh:T.Mesh){
+ const receipt=ASPHALT_REPAIR_CONTROL,index=mesh.geometry.index!,position=mesh.geometry.getAttribute('position');
+ check(nativeAssets.find(asset=>asset.file==='belle/pavement.bin')?.sha256===receipt.pavementSha256,'Repair control pavement bytes changed');
+ const vertices=receipt.vertexIndices.map((id,i)=>{
+  check(index.getX(receipt.faceIndex*3+i)===id,'Repair control actual source triangle changed');
+  const p=new T.Vector3().fromBufferAttribute(position,id);check(p.toArray().every((value,j)=>value===receipt.triangle[i][j]),'Repair control source vertex changed');return p;
+ });
+ const triangle=new T.Triangle(...vertices as [T.Vector3,T.Vector3,T.Vector3]),point=new T.Vector3(...receipt.point);
+ check(triangle.closestPointToPoint(point,new T.Vector3()).distanceTo(point)<1e-8,'Repair control is not on its actual source triangle');
+ check(Math.floor(point.x/14)===receipt.repairCell[0]&&Math.floor(point.z/19)===receipt.repairCell[1],'Repair control world cell changed');
+ return{point,normal:triangle.getNormal(new T.Vector3())};
+}
 function uvFootprint(mesh:T.Mesh,texture:T.Texture|null){
  const summary={kind:'projected-source-triangle estimate; not a hardware LOD query',samples:0,minimum:0,median:0,maximum:0};if(!texture)return summary;
  const uv=mesh.geometry.getAttribute(texture.channel?'uv'+texture.channel:'uv'),p=mesh.geometry.getAttribute('position'),index=mesh.geometry.index;
@@ -170,20 +182,21 @@ const init=(async()=>{
  const uv=stone.geometry.getAttribute('uv') as T.BufferAttribute,uv1=uv.clone(),uv2=uv.clone();
  for(let i=0;i<uv1.count;i++)uv1.setXY(i,uv1.getX(i)+.37,uv1.getY(i)+.19);
  stone.geometry.setAttribute('uv1',uv1);stone.geometry.setAttribute('uv2',uv2);
- scene.updateMatrixWorld(true);const focus={asphalt:surfaceFocus(asphalt,'asphalt'),limestone:surfaceFocus(stone,'limestone')};
+ scene.updateMatrixWorld(true);const focus={asphalt:surfaceFocus(asphalt,'asphalt'),limestone:surfaceFocus(stone,'limestone')},repairFocus=asphaltRepairFocus(asphalt);
  const templates={asphalt:asphalt.material as T.MeshStandardMaterial,limestone:stone.material as T.MeshStandardMaterial};
  const detail=await new T.TextureLoader().loadAsync('/belle/skins/brick-detail.webp');detail.wrapS=detail.wrapT=T.RepeatWrapping;
  const debug=gl.getExtension('WEBGL_debug_renderer_info'),gpu=String(gl.getParameter(debug?.UNMASKED_RENDERER_WEBGL??gl.RENDERER));
- return{receipt,root,stone,asphalt,templates,atmosphere,focus,detail,gpu};
+ return{receipt,root,stone,asphalt,templates,atmosphere,focus,repairFocus,detail,gpu};
 })();
 
 (window as unknown as {__shaderReuseProof:()=>Promise<unknown>}).__shaderReuseProof=async()=>{
  const rows:Record<string,unknown>[]=[];let initialized:Awaited<typeof init>|undefined;
  try{
-  const state=initialized=await init;const {receipt,root,stone,asphalt,templates,atmosphere,focus,detail,gpu}=state;
+  const state=initialized=await init;const {receipt,root,stone,asphalt,templates,atmosphere,focus,repairFocus,detail,gpu}=state;
   for(const spec of SHADER_PROOF_CASES){
    console.log('shader proof '+spec.id);const mesh=spec.kind==='asphalt'?asphalt:stone,template=templates[spec.kind];asphalt.visible=spec.kind==='asphalt';stone.visible=spec.kind==='limestone';
-   const origin=focus[spec.kind].point,direction=focus[spec.kind].normal.clone();if(spec.kind==='limestone')direction.setY(0).normalize();
+   const controlFocus=spec.kind==='asphalt'&&spec.effectRequired?ASPHALT_REPAIR_CONTROL:null;
+   const chosenFocus=controlFocus?repairFocus:focus[spec.kind],origin=chosenFocus.point,direction=chosenFocus.normal.clone();if(spec.kind==='limestone')direction.setY(0).normalize();
    if(spec.kind==='asphalt')camera.position.copy(origin).add(new T.Vector3(spec.distance*.23,spec.mode==='grazing'?6:spec.distance,spec.mode==='grazing'?-spec.distance:-spec.distance*.55));
    else camera.position.copy(origin).addScaledVector(direction,spec.mode==='grazing'?12:spec.distance).add(new T.Vector3(spec.mode==='grazing'?direction.z*spec.distance:0,Math.max(1.5,spec.distance*.15),spec.mode==='grazing'?-direction.x*spec.distance:0));
    camera.lookAt(origin);camera.updateMatrixWorld(true);sun.target.position.copy(origin);sun.position.copy(origin).add(new T.Vector3(-45,80,35));
@@ -246,7 +259,7 @@ const init=(async()=>{
      const row={role,width,height,rgbaSha256:read.rgbaSha256};await(window as unknown as {__saveShaderCapture:(x:unknown)=>Promise<void>}).__saveShaderCapture({id:spec.id,...row,png:read.png});captures.push(row);
     }
     const summarize=(read:PixelRead)=>{const{pixels,png,...rest}=read;return rest;};
-    rows.push({id:spec.id,kind:spec.kind,case:spec,changedPixels:different.count,maxChannelDelta:different.max,
+    rows.push({id:spec.id,kind:spec.kind,case:spec,controlFocus,changedPixels:different.count,maxChannelDelta:different.max,
      baseline:summarize(baseline),candidate:summarize(optimized),targetMaskPixels:mask.filter((v,i)=>i%4===0&&v>=250).length,
      visibleTargetPixels:diff(baseline.pixels,hidden.pixels,mask).count,targetShadowPixels:diff(baseline.pixels,shadowOff.pixels,mask).count,
      effectPixels:diff(baseline.pixels,effect.pixels,mask).count,uvFootprint:uvFootprint(mesh,base.map),mipCalibration,captures,restored:mesh.visible&&sun.castShadow&&renderer.shadowMap.enabled});

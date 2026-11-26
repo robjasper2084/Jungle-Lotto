@@ -12,7 +12,7 @@ import * as T from 'three';
 import {SHADER_REUSE_BASELINE} from './shader-reuse-baseline.ts';
 import {BUMP_CENTER_CHUNKS} from '../src/belle/bumpCenterChunks.ts';
 import {SHADER_PROOF_CASES,SHADER_PROOF_SIZE} from './shader-reuse-cases.ts';
-import {assertShaderReuseResult,compareRgba,verifyCapturedPixels,sha256} from './shader-reuse-proof-contract.mjs';
+import {assertShaderReuseResult,compareRgba,verifyCapturedPixels,sha256,reconcileNativeAssetReceipts,BROWSER_BUFFER_ASSET} from './shader-reuse-proof-contract.mjs';
 
 const game=resolve(import.meta.dirname,'..'),repo=resolve(game,'../../../../..'),prefix=relative(repo,game).split(sep).join('/');
 const output=resolve(process.env.SHADER_REUSE_OUT??resolve(game,'output/shader-reuse-proof'));
@@ -99,8 +99,12 @@ try{
  page.on('requestfailed',request=>failedRequests.push({url:request.url(),failure:request.failure()}));
  page.on('response',response=>void remember((async()=>{
   try{const url=new URL(response.url());if(!url.pathname.startsWith('/belle/'))return;assert.equal(response.status(),200,'Asset HTTP failure');
-   const file=decodeURIComponent(url.pathname.slice(1)),bytes=await response.body(),row=assets.get(file);assert(row,'Unattested source asset response: '+file);
-   assert.equal(bytes.length,row.bytes);assert.equal(sha256(bytes),row.sha256);row.received=true;
+   const file=decodeURIComponent(url.pathname.slice(1)),row=assets.get(file);assert(row,'Unattested source asset response: '+file);
+   row.responseObserved=true;row.responseStatus=response.status();
+   // This one known large body is attested by bytes() hashing the exact native
+   // ArrayBuffer consumed by GLTFLoader. All other original CDP body checks stay.
+   if(file===BROWSER_BUFFER_ASSET)return;
+   const bytes=await response.body();assert.equal(bytes.length,row.bytes);assert.equal(sha256(bytes),row.sha256);row.received=true;row.receivedBy='cdp-response-body';
   }catch(error){assetFailures.push(String(error));}
  })()));
  await page.exposeFunction('__saveShaderSource',async row=>{
@@ -128,7 +132,7 @@ try{
  const result=await Promise.race([page.evaluate(()=>window.__shaderReuseProof()),new Promise((_,reject)=>{deadline=setTimeout(()=>reject(Error('Targeted shader fixture exceeded 12 minutes')),12*60*1000);})]);
  clearTimeout(deadline);report.result=result;report.renderer=result.gpu;
  while(pending.size)await Promise.allSettled([...pending]);
- for(const native of result.assets){const received=assets.get(native.file);assert(received&&received.received,'Missing native source body receipt');assert.equal(native.sha256,received.sha256);assert.equal(native.bytes,received.bytes);}
+ reconcileNativeAssetReceipts(assets,result.assets);
  result.assets=[...assets.values()].sort((a,b)=>a.file.localeCompare(b.file));assert.equal(assetFailures.length,0);assert.equal(failedRequests.length,0);assert.equal(errors.length,0);
  assertShaderReuseResult(result,{backend,sourceSha,sourceTree:report.sourceTree});
  assert.equal(report.independentPixelPairs.length,SHADER_PROOF_CASES.length);assert.equal(captures.size,SHADER_PROOF_CASES.length*5);

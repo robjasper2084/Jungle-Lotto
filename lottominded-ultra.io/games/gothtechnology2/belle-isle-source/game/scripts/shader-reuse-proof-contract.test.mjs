@@ -1,7 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {SHADER_PROOF_CASES,SHADER_PROOF_SIZE} from './shader-reuse-cases.ts';
-import {assertShaderReuseResult,compareRgba,verifyCapturedPixels,sha256} from './shader-reuse-proof-contract.mjs';
+import {SHADER_PROOF_CASES,SHADER_PROOF_SIZE,ASPHALT_REPAIR_CONTROL} from './shader-reuse-cases.ts';
+import {assertShaderReuseResult,compareRgba,verifyCapturedPixels,sha256,reconcileNativeAssetReceipts,BROWSER_BUFFER_ASSET} from './shader-reuse-proof-contract.mjs';
+import {readFile} from 'node:fs/promises';
+import * as T from 'three';
+import {createPavementGeometry} from '../src/belle/pavement.ts';
 
 const hash='a'.repeat(64),git='b'.repeat(40),sourceTree='c'.repeat(40);
 const options={backend:'metal',sourceSha:git,sourceTree};
@@ -21,7 +24,7 @@ function valid(){
    if(spec.mode==='video-alias')candidate.shader.decodeVideo=true;
   }
   const median=spec.mode==='uv2-low'?1.998:spec.mode==='uv2-high'?2.002:2;
-  return{id:spec.id,kind:spec.kind,changedPixels:0,maxChannelDelta:0,baseline,candidate,targetMaskPixels:20,visibleTargetPixels:19,targetShadowPixels:7,effectPixels:9,restored:true,
+  return{id:spec.id,kind:spec.kind,controlFocus:spec.kind==='asphalt'&&spec.effectRequired?structuredClone(ASPHALT_REPAIR_CONTROL):null,changedPixels:0,maxChannelDelta:0,baseline,candidate,targetMaskPixels:20,visibleTargetPixels:19,targetShadowPixels:7,effectPixels:9,restored:true,
    uvFootprint:{kind:'projected-source-triangle estimate; not a hardware LOD query',samples:12,minimum:1,median,maximum:spec.id==='limestone-mip-far'?4:2},
    mipCalibration:spec.mode?.startsWith('uv2')?{kind:'projected-triangle isotropic estimate; not hardware-selected anisotropic LOD',boundary:2,desired:median}:null,
    captures:['baseline','candidate','effect-off','shadow-off','target-hidden'].map(role=>({role,...SHADER_PROOF_SIZE,rgbaSha256:hash}))};
@@ -29,7 +32,8 @@ function valid(){
  return{scope:'Targeted shipped-asset shader equivalence; not full-scene performance or controls acceptance.',sourceSha:git,sourceTree,size:SHADER_PROOF_SIZE,
   devicePixelRatio:1,threeRevision:'185',gpu:'ANGLE Apple Metal',errors:[],contextLost:false,finished:true,rows,
   assets:['belle/landmarks.glb','belle/pavement.json','belle/pavement.bin','belle/skins/asphalt-color.webp','belle/skins/asphalt-detail.webp','belle/skins/brick-color.webp','belle/skins/brick-detail.webp']
-   .map(file=>({file,bytes:100,sha256:hash,gitBlob:git,baselineGitBlob:git,served:true,received:true}))};
+   .map(file=>({file,bytes:100,sha256:hash,gitBlob:git,baselineGitBlob:git,served:true,received:true,responseObserved:true,responseStatus:200,
+    receivedBy:file===BROWSER_BUFFER_ASSET?'browser-consumed-arraybuffer':'cdp-response-body',nativeConsumed:file===BROWSER_BUFFER_ASSET?{file,bytes:100,sha256:hash}:undefined}))};
 }
 const row=(result,id)=>result.rows.find(r=>r.id===id);
 const reject=(mutate,config=options)=>{const result=valid();mutate(result);assert.throws(()=>assertShaderReuseResult(result,config));};
@@ -84,6 +88,47 @@ test('mipmapped native samplers and genuine near/far footprint coverage are requ
 test('all control PNG receipts and original shipped asset bodies are required',()=>{
  reject(r=>r.rows[0].captures.pop());reject(r=>r.rows[0].captures[0].width=1);reject(r=>r.assets.pop());reject(r=>r.assets[0].received=false);
  reject(r=>r.assets[0].served=false);reject(r=>r.assets[0].baselineGitBlob='d'.repeat(40));
+ reject(r=>delete r.assets[0].nativeConsumed);reject(r=>r.assets[0].receivedBy='server-only');reject(r=>r.assets[1].receivedBy='browser-consumed-arraybuffer');
+});
+
+function assetInputs(){
+ const values=valid().assets,assets=new Map(values.map(row=>[row.file,row]));
+ assets.get(BROWSER_BUFFER_ASSET).received=false;delete assets.get(BROWSER_BUFFER_ASSET).receivedBy;delete assets.get(BROWSER_BUFFER_ASSET).nativeConsumed;
+ const native=[BROWSER_BUFFER_ASSET,'belle/pavement.json','belle/pavement.bin'].map(file=>({file,bytes:assets.get(file).bytes,sha256:assets.get(file).sha256}));
+ return{assets,native};
+}
+test('the exact large browser-consumed ArrayBuffer can attest the GLB without a second CDP body',()=>{
+ const{assets,native}=assetInputs();reconcileNativeAssetReceipts(assets,native);
+ const row=assets.get(BROWSER_BUFFER_ASSET);assert.equal(row.received,true);assert.equal(row.receivedBy,'browser-consumed-arraybuffer');assert.deepEqual(row.nativeConsumed,native[0]);
+ assert.equal(assets.get('belle/pavement.bin').receivedBy,'cdp-response-body');
+});
+test('server-only, missing, duplicate, mismatched and failed native GLB receipts cannot mark it received',()=>{
+ const changes=[v=>v.native.shift(),v=>v.native.push(v.native[0]),v=>v.native[0].sha256='d'.repeat(64),v=>v.native[0].bytes--,
+  v=>v.assets.get(BROWSER_BUFFER_ASSET).served=false,v=>v.assets.get(BROWSER_BUFFER_ASSET).responseObserved=false,v=>v.assets.get(BROWSER_BUFFER_ASSET).responseStatus=500,
+  v=>v.assets.get(BROWSER_BUFFER_ASSET).baselineGitBlob='d'.repeat(40)];
+ for(const change of changes){const value=assetInputs();change(value);assert.throws(()=>reconcileNativeAssetReceipts(value.assets,value.native));assert.equal(value.assets.get(BROWSER_BUFFER_ASSET).received,false);}
+});
+test('a native hash cannot suppress a missing CDP body for any other asset',()=>{
+ const{assets,native}=assetInputs();assets.get('belle/pavement.bin').received=false;
+ assert.throws(()=>reconcileNativeAssetReceipts(assets,native),/original CDP receipt/);assert.equal(assets.get(BROWSER_BUFFER_ASSET).received,false);
+ const unexpected=assetInputs();unexpected.native[0].file='belle/other-large.glb';assert.throws(()=>reconcileNativeAssetReceipts(unexpected.assets,unexpected.native),/consumed buffers/);
+});
+test('required near controls retain the exact observed source patch and original 45m distances',()=>{
+ for(const id of['asphalt-near-day','asphalt-near-dusk']){
+  const spec=SHADER_PROOF_CASES.find(s=>s.id===id);assert.equal(spec.distance,45);assert.equal(spec.effectRequired,true);assert.equal(spec.shadowRequired,true);
+  reject(r=>delete row(r,id).controlFocus);reject(r=>row(r,id).controlFocus.point[0]+=.1);reject(r=>row(r,id).controlFocus.vertexIndices[0]++);
+ }
+ assert.deepEqual(SHADER_PROOF_SIZE,{width:960,height:600});assert.equal(SHADER_PROOF_CASES.length,23);
+});
+test('the observed common repair pixel lies on the unchanged native pavement triangle and source world cell',async()=>{
+ const bytes=await readFile(new URL('../public/belle/pavement.bin',import.meta.url)),meta=JSON.parse(await readFile(new URL('../public/belle/pavement.json',import.meta.url),'utf8'));
+ assert.equal(sha256(bytes),ASPHALT_REPAIR_CONTROL.pavementSha256);
+ const part=meta.groups.find(p=>p.kind==='asphalt'),geometry=createPavementGeometry(Uint8Array.from(bytes).buffer,part,meta.stride),p=geometry.getAttribute('position');
+ const indices=[0,1,2].map(i=>geometry.index.getX(ASPHALT_REPAIR_CONTROL.faceIndex*3+i));assert.deepEqual(indices,[...ASPHALT_REPAIR_CONTROL.vertexIndices]);
+ const vertices=indices.map(i=>new T.Vector3().fromBufferAttribute(p,i));assert.deepEqual(vertices.map(v=>v.toArray()),ASPHALT_REPAIR_CONTROL.triangle);
+ const triangle=new T.Triangle(...vertices),point=new T.Vector3(...ASPHALT_REPAIR_CONTROL.point);
+ assert(triangle.closestPointToPoint(point,new T.Vector3()).distanceTo(point)<1e-8);assert.deepEqual([Math.floor(point.x/14),Math.floor(point.z/19)],[...ASPHALT_REPAIR_CONTROL.repairCell]);
+ geometry.dispose();
 });
 test('independent decoded PNG comparison includes alpha and counts whole changed pixels',()=>{
  const a=Buffer.from([1,2,3,255,4,5,6,255]),b=Buffer.from(a);assert.deepEqual(compareRgba(a,b),{changedPixels:0,maxChannelDelta:0});
