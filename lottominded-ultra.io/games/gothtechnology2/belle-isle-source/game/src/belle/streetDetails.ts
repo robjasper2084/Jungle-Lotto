@@ -1,3 +1,4 @@
+import {finalizeStaticLocalMatrix} from './staticLocalMatrix.ts';
 import * as T from 'three';
 import type {StreetPlan,StreetBox} from './streetPlan.ts';
 import {CURB_PROFILE} from './curbProfile.ts';
@@ -47,7 +48,7 @@ export function addStreetDetails(scene:T.Scene,plan:StreetPlan){
  }
  unit.dispose();curbUnit.dispose();
  const tiles:{mesh:T.Mesh;x:number;z:number}[]=[];
- for(const [key,b]of groups){const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(b.p,3));g.setAttribute('normal',new T.Float32BufferAttribute(b.n,3));g.computeBoundingSphere();const m=new T.Mesh(g,materials[b.m]);m.name='Street detail '+key;m.receiveShadow=true;scene.add(m);const [x,z]=key.split(',').map(Number);tiles.push({mesh:m,x:x*256+128,z:z*256+128});}
+ for(const [key,b]of groups){const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(b.p,3));g.setAttribute('normal',new T.Float32BufferAttribute(b.n,3));g.computeBoundingSphere();const m=new T.Mesh(g,materials[b.m]);m.name='Street detail '+key;m.receiveShadow=true;scene.add(finalizeStaticLocalMatrix(m));const [x,z]=key.split(',').map(Number);tiles.push({mesh:m,x:x*256+128,z:z*256+128});}
  // One text atlas for every sign, with actual readable text, solid rear panels,
  // bolted posts and no separate textures per destination.
  const columns=4,cellW=256,cellH=80,rows=Math.ceil(Math.max(1,plan.signs.length)/columns),canvas=document.createElement('canvas');canvas.width=columns*cellW;canvas.height=T.MathUtils.ceilPowerOfTwo(rows*cellH);
@@ -67,8 +68,8 @@ export function addStreetDetails(scene:T.Scene,plan:StreetPlan){
  });
  const atlas=new T.CanvasTexture(canvas);atlas.colorSpace=T.SRGBColorSpace;atlas.anisotropy=4;
  const frontG=new T.BufferGeometry();frontG.setAttribute('position',new T.Float32BufferAttribute(frontP,3));frontG.setAttribute('normal',new T.Float32BufferAttribute(frontN,3));frontG.setAttribute('uv',new T.Float32BufferAttribute(frontUV,2));
- const front=new T.Mesh(frontG,new T.MeshStandardMaterial({map:atlas,roughness:.8}));front.name='Belle Isle wayfinding · shared text atlas';scene.add(front);
- const backG=new T.BufferGeometry();backG.setAttribute('position',new T.Float32BufferAttribute(backP,3));backG.setAttribute('normal',new T.Float32BufferAttribute(backN,3));scene.add(new T.Mesh(backG,materials.metal));
- const posts=new T.InstancedMesh(new T.BoxGeometry(1,1,1),materials.metal,poleMatrices.length);poleMatrices.forEach((m,i)=>posts.setMatrixAt(i,m));posts.computeBoundingSphere();scene.add(posts);
+ const front=new T.Mesh(frontG,new T.MeshStandardMaterial({map:atlas,roughness:.8}));front.name='Belle Isle wayfinding · shared text atlas';scene.add(finalizeStaticLocalMatrix(front));
+ const backG=new T.BufferGeometry();backG.setAttribute('position',new T.Float32BufferAttribute(backP,3));backG.setAttribute('normal',new T.Float32BufferAttribute(backN,3));scene.add(finalizeStaticLocalMatrix(new T.Mesh(backG,materials.metal)));
+ const posts=new T.InstancedMesh(new T.BoxGeometry(1,1,1),materials.metal,poleMatrices.length);poleMatrices.forEach((m,i)=>posts.setMatrixAt(i,m));posts.computeBoundingSphere();scene.add(finalizeStaticLocalMatrix(posts));
  return {batches:groups.size+3,signs:plan.signs.length,boxes:plan.boxes.length,atlas:[canvas.width,canvas.height],update(x:number,z:number){for(const t of tiles)t.mesh.visible=Math.hypot(t.x-x,t.z-z)<440;}};
 }

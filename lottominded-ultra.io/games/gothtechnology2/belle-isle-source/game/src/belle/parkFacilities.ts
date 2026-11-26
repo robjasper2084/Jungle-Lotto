@@ -1,3 +1,4 @@
+import {finalizeStaticLocalMatrix} from './staticLocalMatrix.ts';
 import * as T from 'three';
 import {installBatchedIndirectUpdates} from './batchedIndirectUpdates.ts';
 import {oakwayRoof} from './oakwayRoof.ts';
@@ -45,7 +46,7 @@ export function addParkFacilities(scene:T.Scene,map:ParkMap,multiDraw=false){
  for(const site of map.facilities?.sites||[]){if(site.kind==='shelter')continue;const building=map.buildings.find(b=>b.id===site.id)!;if(site.kind!=='restroom'||site.id!=='368854145')roofFor(site,building.height+.18);
   const edges=site.points.slice(1).map((b,i)=>{const a=site.points[i],p:Point=[(a[0]+b[0])/2,(a[1]+b[1])/2];return{a,b,p,len:Math.hypot(b[0]-a[0],b[1]-a[1]),near:Math.min(...map.roads.filter(r=>r.foot).flatMap(r=>r.points.slice(1).map((q,j)=>segment(p[0],p[1],r.points[j],q).d)))};}).filter(e=>e.len>4).sort((a,b)=>a.near-b.near);const e=edges[0];if(!e)continue;const yaw=Math.atan2(e.b[1]-e.a[1],e.b[0]-e.a[0]);let nx=-Math.sin(yaw),nz=Math.cos(yaw);if(nx*(e.p[0]-site.center[0])+nz*(e.p[1]-site.center[1])<0){nx=-nx;nz=-nz;}
   // Closed service doors, framed vents and restrained signage; these are not enterable interiors.
-  const center:Point=[e.p[0]+nx*.16,e.p[1]+nz*.16];const plaque=document.createElement('canvas');plaque.width=512;plaque.height=128;const ctx=plaque.getContext('2d')!;ctx.fillStyle='#22483f';ctx.fillRect(0,0,512,128);ctx.strokeStyle='#c5c9b4';ctx.lineWidth=4;ctx.strokeRect(7,7,498,114);ctx.fillStyle='#f4f1df';ctx.font='bold 49px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(site.kind==='restroom'?'RESTROOMS':'PARK SERVICE',256,64);const tex=new T.CanvasTexture(plaque);tex.colorSpace=T.SRGBColorSpace;const material=new T.MeshStandardMaterial({map:tex,roughness:.75});const label=new T.Mesh(new T.PlaneGeometry(2.7,.68),material);label.position.set(center[0],4.85,center[1]);label.rotation.y=Math.atan2(nx,nz);label.name=site.name+' sign';scene.add(label);batches.push({object:label,x:center[0],z:center[1]});
+  const center:Point=[e.p[0]+nx*.16,e.p[1]+nz*.16];const plaque=document.createElement('canvas');plaque.width=512;plaque.height=128;const ctx=plaque.getContext('2d')!;ctx.fillStyle='#22483f';ctx.fillRect(0,0,512,128);ctx.strokeStyle='#c5c9b4';ctx.lineWidth=4;ctx.strokeRect(7,7,498,114);ctx.fillStyle='#f4f1df';ctx.font='bold 49px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(site.kind==='restroom'?'RESTROOMS':'PARK SERVICE',256,64);const tex=new T.CanvasTexture(plaque);tex.colorSpace=T.SRGBColorSpace;const material=new T.MeshStandardMaterial({map:tex,roughness:.75});const label=new T.Mesh(new T.PlaneGeometry(2.7,.68),material);label.position.set(center[0],4.85,center[1]);label.rotation.y=Math.atan2(nx,nz);label.name=site.name+' sign';scene.add(finalizeStaticLocalMatrix(label));batches.push({object:label,x:center[0],z:center[1]});
   const vent:Point=[e.p[0]+Math.cos(yaw)*Math.min(e.len*.25,3.2)+nx*.08,e.p[1]+Math.sin(yaw)*Math.min(e.len*.25,3.2)+nz*.08];box(vent,4.7,.72,.42,.07,yaw,iron);for(let i=0;i<5;i++)box([vent[0]+nx*.045,vent[1]+nz*.045],4.55+i*.075,.65,.025,.05,yaw,galvanized);
  }
  for(const f of map.facilities?.fences||[]){const length=Math.hypot(f.b[0]-f.a[0],f.b[1]-f.a[1]),n=Math.max(1,Math.ceil(length/2.7)),lerp=(t:number):Point=>[T.MathUtils.lerp(f.a[0],f.b[0],t),T.MathUtils.lerp(f.a[1],f.b[1],t)];if(f.style==='stone'){bar(f.a,f.b,2+f.height/2,f.height,.34,stone);continue;}const m=f.style==='iron'?iron:galvanized;
@@ -59,7 +60,7 @@ export function addParkFacilities(scene:T.Scene,map:ParkMap,multiDraw=false){
    const g=mergeGeometries(gs)!;gs.forEach(v=>v.dispose());triangles+=g.attributes.position.count/3;
    if(!multiDraw){
     const mesh=new T.Mesh(g,material);mesh.name='Mapped park facilities';mesh.castShadow=true;mesh.receiveShadow=true;
-    scene.add(mesh);batches.push({object:mesh,x:t.x,z:t.z});continue;
+    scene.add(finalizeStaticLocalMatrix(mesh));batches.push({object:mesh,x:t.x,z:t.z});continue;
    }
    // The horizontal-only surface projection and the triplanar projection
    // need separate shaders even when two tiles share a material.
@@ -71,7 +72,7 @@ export function addParkFacilities(scene:T.Scene,map:ParkMap,multiDraw=false){
   }
   if(t.lines.length){
    const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(t.lines,3));
-   const lines=new T.LineSegments(g,new T.LineBasicMaterial({color:0x777f77}));lines.name='Mapped chain-link fence';scene.add(lines);batches.push({object:lines,x:t.x,z:t.z});
+   const lines=new T.LineSegments(g,new T.LineBasicMaterial({color:0x777f77}));lines.name='Mapped chain-link fence';scene.add(finalizeStaticLocalMatrix(lines));batches.push({object:lines,x:t.x,z:t.z});
   }
  }
  for(const {material,parts} of materials.values()){
@@ -84,9 +85,9 @@ export function addParkFacilities(scene:T.Scene,map:ParkMap,multiDraw=false){
     g.computeBoundingBox();g.computeBoundingSphere();
     const instance=batch.addInstance(batch.addGeometry(g));batches.push({object:batch,x,z,instance});g.dispose();
    }
-   scene.add(batch);
+   scene.add(finalizeStaticLocalMatrix(batch));
   }else for(const {g,x,z} of parts){
-   const mesh=new T.Mesh(g,material);mesh.name='Mapped park facilities';mesh.castShadow=true;mesh.receiveShadow=true;scene.add(mesh);batches.push({object:mesh,x,z});
+   const mesh=new T.Mesh(g,material);mesh.name='Mapped park facilities';mesh.castShadow=true;mesh.receiveShadow=true;scene.add(finalizeStaticLocalMatrix(mesh));batches.push({object:mesh,x,z});
   }
  }
  return{stats:{sites:map.facilities?.sites.length||0,shelters:plan.shelters.length,gates:map.facilities?.gates.length||0,fences:map.facilities?.fences.length||0,triangles},update(x:number,z:number){
