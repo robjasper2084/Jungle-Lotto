@@ -6,12 +6,17 @@ export const ASPHALT_PATCH_DETAIL = `
  vec2 repairGrid=asphaltXZ/vec2(14.,19.);
  vec2 repairCell=floor(repairGrid),repairUv=fract(repairGrid);
  float repairSeed=fract(sin(dot(repairCell,vec2(127.1,311.7)))*43758.5453);
+ // Keep derivatives outside varying control flow, including inactive cells.
+ vec2 repairAa=max(fwidth(repairGrid),vec2(.001));
+ float repairResolved=1.-smoothstep(.035,.12,max(repairAa.x,repairAa.y));
+ // The original multiplier is exactly one for these finite, authored inputs.
+ // Every active-path operation below retains its original arithmetic/order.
+ if(repairSeed>=.77&&repairResolved>0.){
  vec2 repairCentre=vec2(.40+.15*fract(repairSeed*7.1),.42+.16*fract(repairSeed*11.3));
  vec2 repairHalf=vec2(.12+.13*fract(repairSeed*17.7),.09+.19*fract(repairSeed*23.1));
  vec2 repairEdge=repairHalf-abs(repairUv-repairCentre);
- vec2 repairAa=max(fwidth(repairGrid),vec2(.001));
  float repairShape=smoothstep(0.,repairAa.x*1.5,repairEdge.x)*smoothstep(0.,repairAa.y*1.5,repairEdge.y);
- float repairResolved=1.-smoothstep(.035,.12,max(repairAa.x,repairAa.y));
  float repairAmount=step(.77,repairSeed)*repairShape*repairResolved;
  diffuseColor.rgb*=1.-repairAmount*(.045+.055*repairSeed);
+ }
 `;
