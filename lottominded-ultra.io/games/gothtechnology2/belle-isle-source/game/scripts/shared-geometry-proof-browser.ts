@@ -27,6 +27,13 @@ type Frame={rgba:Uint8Array;shadow:Uint8Array;calls:number;triangles:number;draw
 const arms:Arm[]=['pooled','native','pooled-cache','native-cache'];
 const width=960,height=600,canvas=document.querySelector('canvas')!;
 const assert:(value:unknown,message:string)=>asserts value=(value,message)=>{if(!value)throw Error(message);};
+const allCases=['jefferson-day','jefferson-night','island-day','island-night','conservatory-day','conservatory-night'];
+const partitions={all:allCases,'linux-a':['jefferson-day','jefferson-night','island-day'],'linux-b':['island-night','conservatory-day','conservatory-night']};
+const partitionQuery=new URL(location.href).searchParams.getAll('partition');
+assert(partitionQuery.length===1&&Object.hasOwn(partitions,partitionQuery[0]),'Exactly one fixed proof partition is required');
+const partition=partitionQuery[0] as keyof typeof partitions,expectedCases=partitions[partition];
+const partitionPlan={version:1,cases:allCases,partitions};
+const lastCaseIndex=Math.max(...expectedCases.map(name=>allCases.indexOf(name))),prelude:{name:string;frozenTime:number;warmupRenders:number}[]=[];
 const hash=async(bytes:Uint8Array)=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes as Uint8Array<ArrayBuffer>)),v=>v.toString(16).padStart(2,'0')).join('');
 const textHash=(value:unknown)=>hash(new TextEncoder().encode(JSON.stringify(value)));
 const renderer=new T.WebGLRenderer({canvas,antialias:true,alpha:false,preserveDrawingBuffer:true,outputBufferType:T.UnsignedByteType,powerPreference:'high-performance'});
@@ -34,6 +41,7 @@ renderer.setPixelRatio(1);renderer.setSize(width,height,false);renderer.outputCo
 renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.02;renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;
 const gl=renderer.getContext() as WebGL2RenderingContext,debug=gl.getExtension('WEBGL_debug_renderer_info');
 const gpu=String(gl.getParameter(debug?.UNMASKED_RENDERER_WEBGL??gl.RENDERER)),software=/SwiftShader|llvmpipe/i.test(gpu);
+assert(software?partition!=='all':partition==='all','Software requires a fixed Linux partition; native proof requires every original case');
 const timer=gl.getExtension('EXT_disjoint_timer_query_webgl2');
 assert(typeof gl.fenceSync==='function','WebGL2 completion fences are required');
 if(!software)assert(timer,'Native elapsed GPU timer is required for this diagnostic');
@@ -130,13 +138,17 @@ function materialReceipts(){const materials=new Set<T.Material>();scene.traverse
   assert(poolBefore.observerErrors===0&&poolBefore.fallbacks===0,'Original pool preparation failed');entryByObject=new Map(poolBefore.entries.map((entry:any)=>[entry.sourceId,entry]));
   const objects=new Map<number,T.Object3D>();scene.traverse(object=>objects.set(object.id,object));
   const poses=[{name:'jefferson',position:[0,6,0],target:[160,4,290]},{name:'island',position:[480,8,830],target:[630,3,1050]},{name:'conservatory',position:[1290,7,1115],target:[1330.8,9,1174.7]}];
-  let caseIndex=0;for(const pose of poses)for(const night of [false,true]){
-   const id=pose.name+(night?'-night':'-day');status(id);
+  for(const pose of poses)for(const night of [false,true]){
+   const id=pose.name+(night?'-night':'-day'),caseIndex=allCases.indexOf(id);assert(caseIndex>=0,'Unexpected original case');if(caseIndex>lastCaseIndex)continue;
+   const selected=expectedCases.includes(id);status((selected?'':'prelude ')+id);
    stopCache?.();stopCache=undefined;use('native');camera.position.fromArray(pose.position);camera.lookAt(new T.Vector3().fromArray(pose.target));camera.updateMatrixWorld(true);
-   const frozenTime=120+caseIndex++;world.sky.configure({hour:night?21:14,cycle:false});world.sky.tick(0,false,true);world.update(frozenTime,camera.position.x,camera.position.z,camera,false,false);await Promise.resolve();scene.updateMatrixWorld(true);
+   const frozenTime=120+caseIndex;world.sky.configure({hour:night?21:14,cycle:false});world.sky.tick(0,false,true);world.update(frozenTime,camera.position.x,camera.position.z,camera,false,false);await Promise.resolve();scene.updateMatrixWorld(true);
    // Warm the original view-selection hooks before fingerprinting their stable
    // source state; first-use BatchedMesh shadow selection is intentional.
    use('pooled');await warm();use('native');await warm();
+   // Preserve the original prior-pose visibility/caster hysteresis in Linux-b.
+   // The selected cases retain every original capture, control and warmup.
+   if(!selected){prelude.push({name:id,frozenTime,warmupRenders:6});continue;}
    const caseGeometry=await geometryReceipts(),geometrySha256=await textHash(caseGeometry);
    if(!geometry)geometry=caseGeometry;
    const captures=new Map<Arm,Frame>();
@@ -187,7 +199,7 @@ function materialReceipts(){const materials=new Set<T.Material>();scene.traverse
   shadowChangedPixels:Math.max(0,...controls.map(c=>Number(c.shadowOffChangedPixels))),
   eligibleChangedPixels:Math.max(0,...controls.map(c=>Number(c.eligibleHiddenChangedPixels))),
   uniformUpdateChangedPixels:Math.max(0,...controls.map(c=>Number(c.uniformUpdateChangedPixels)))};
- const passed=errors.length===0&&rows.length===6&&rows.every(row=>row.passed)&&controls.length===6&&controls.every(c=>c.passed)&&programs.length>0&&programs.every(p=>p.linked)&&cacheCoverage.rows===12&&cacheCoverage.substitutedColorDraws>0&&cacheCoverage.substitutedShadowDraws>0&&cacheCoverage.namedShadowSkips>0&&cacheCoverage.nativeShadowUpdates>0&&cacheCoverage.shadowChangedPixels>=16&&cacheCoverage.eligibleChangedPixels>=16&&cacheCoverage.uniformUpdateChangedPixels>=16&&poolBefore?.activeEntries>=200;
- return {schema:'belle-shared-geometry-experiment-v1',gpu,width,height,dpr:renderer.getPixelRatio(),threeRevision:T.REVISION,software,rows,controls,timings,images,poolBefore,poolAfter,geometry,materials:materialReceipts(),programs,cacheCoverage,passed,errors,shadowReadback:'Exact RGBA8 shadow-target color attachments plus actual shadow draw/order checks and receiver shadow-off controls; native depth texture bytes are not claimed.',resourceScope:'Original source buffers and the one prepared pool remain resident in every arm. This isolates submission-path cost; it does not measure startup time, allocation or memory savings from never creating a pool.',
+ const passed=errors.length===0&&rows.length===expectedCases.length&&rows.every(row=>row.passed)&&controls.length===expectedCases.length&&controls.every(c=>c.passed)&&programs.length>0&&programs.every(p=>p.linked)&&cacheCoverage.rows===expectedCases.length*2&&cacheCoverage.substitutedColorDraws>0&&cacheCoverage.substitutedShadowDraws>0&&cacheCoverage.namedShadowSkips>0&&cacheCoverage.nativeShadowUpdates>0&&cacheCoverage.shadowChangedPixels>=16&&cacheCoverage.eligibleChangedPixels>=16&&cacheCoverage.uniformUpdateChangedPixels>=16&&poolBefore?.activeEntries>=200;
+ return {schema:'belle-shared-geometry-experiment-v1',partition,expectedCases,partitionPlanSha256:await textHash(partitionPlan),prelude,gpu,width,height,dpr:renderer.getPixelRatio(),threeRevision:T.REVISION,software,rows,controls,timings,images,poolBefore,poolAfter,geometry,materials:materialReceipts(),programs,cacheCoverage,passed,errors,shadowReadback:'Exact RGBA8 shadow-target color attachments plus actual shadow draw/order checks and receiver shadow-off controls; native depth texture bytes are not claimed.',resourceScope:'Original source buffers and the one prepared pool remain resident in every arm. This isolates submission-path cost; it does not measure startup time, allocation or memory savings from never creating a pool.',
   scope:'One constructed immutable d4 world, original material/geometry factories and render hooks, three fixed views and Authentic day/night. Original pooled vs native no-pool vs pooled-cache vs native-cache. All four named uniform activities are reported; only directionalShadowMatrix has a changing-payload pixel control here. Optional approach assets are not requested; snapshot membership is recorded. Four-art-style/optional-stone-bridge coverage, water-array mutation controls, actual riding/input, release performance and controls remain outside this initial diagnostic.'};
 };

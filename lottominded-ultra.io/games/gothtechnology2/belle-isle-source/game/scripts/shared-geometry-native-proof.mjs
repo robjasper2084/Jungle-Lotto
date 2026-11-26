@@ -14,11 +14,15 @@ import {build} from 'esbuild';
 
 const WIDTH=960,HEIGHT=600,BASELINE='d4f4baa8e2016f4c9107b40176388bf2d3f6fe8c';
 const CASES=['jefferson-day','jefferson-night','island-day','island-night','conservatory-day','conservatory-night'];
+const PARTITIONS={all:CASES,'linux-a':['jefferson-day','jefferson-night','island-day'],'linux-b':['island-night','conservatory-day','conservatory-night']};
+const PARTITION_PLAN={version:1,cases:CASES,partitions:PARTITIONS};
+const WORKFLOW_PATH='.github/workflows/belle-shared-geometry-proof.yml';
+const WORKFLOW_PARTITIONS=[{os:'ubuntu-latest',partition:'linux-a',cases:PARTITIONS['linux-a']},{os:'ubuntu-latest',partition:'linux-b',cases:PARTITIONS['linux-b']},{os:'macos-15',partition:'all',cases:PARTITIONS.all}];
 const ARMS=['pooled','native','pooled-cache','native-cache'];
 const CANDIDATES=ARMS.slice(1),CACHE_ARMS=ARMS.slice(2),ABBA_GROUPS=8;
 const TIMING_CASES=CASES.flatMap(name=>(name.endsWith('-day')?['forced-refresh','steady-color']:['forced-refresh']).flatMap(shadowMode=>CANDIDATES.map(candidate=>name+'|'+shadowMode+'|'+candidate)));
 const IMAGE_SUFFIXES=[...ARMS,'repeat','eligible-hidden-control','shadow-off-control','light-update-original-control','light-update-pooled-cache-control','light-update-native-cache-control','restored-control'];
-const EXPECTED_IMAGES=CASES.flatMap(name=>IMAGE_SUFFIXES.map(suffix=>name+'-'+suffix));
+const expectedImages=cases=>cases.flatMap(name=>IMAGE_SUFFIXES.map(suffix=>name+'-'+suffix));
 const GAME_PATH='lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game';
 const SOURCE_ROOT='lottominded-ultra.io/games/gothtechnology2/';
 const CACHE_HASHES={
@@ -26,7 +30,23 @@ const CACHE_HASHES={
  'src/belle/shadowMatrixCache.test.mjs':'e38bd99680ae85c7c6af2665489a1d8f3de5b430c47e72dca19adf955f2dc36f',
 };
 const sha256=value=>createHash('sha256').update(value).digest('hex');
+const PARTITION_PLAN_SHA256=sha256(JSON.stringify(PARTITION_PLAN));
 const hashPattern=/^[a-f0-9]{64}$/;
+function partitionCases(partition,native,compileOnly=false){
+ assert(Object.hasOwn(PARTITIONS,partition),'Unknown fixed proof partition '+partition);
+ if(!compileOnly)assert(native?partition==='all':partition!=='all','Native proof requires all original cases; Linux requires a fixed partition');
+ return PARTITIONS[partition];
+}
+function expectedPrelude(cases){return CASES.slice(0,CASES.indexOf(cases[0])).map((name,index)=>({name,frozenTime:120+index,warmupRenders:6}));}
+function validateWorkflowPartitions(source){
+ // The workflow matrix is intentionally literal JSON accepted by YAML. Read
+ // the actual source rather than trusting environment-provided case names.
+ const matches=[...source.matchAll(/^      matrix:\n        include: (\[[\s\S]*?\n        \])\n    env:\n/gm)];
+ assert.equal(matches.length,1,'Exactly one literal fixed workflow partition matrix is required');
+ const jobs=JSON.parse(matches[0][1]);assert.deepEqual(jobs,WORKFLOW_PARTITIONS,'Workflow partitions or exact case coverage changed');
+ assert.deepEqual(jobs.filter(job=>job.os==='ubuntu-latest').flatMap(job=>job.cases),CASES,'Linux partitions must cover every original case exactly once');
+ return jobs;
+}
 function finite(value,label,min=0){assert(typeof value==='number'&&Number.isFinite(value)&&value>=min,label+' must be finite and >= '+min);}
 function integer(value,label,min=0){assert(Number.isSafeInteger(value)&&value>=min,label+' must be an integer >= '+min);}
 function exactNames(items,expected,key,label){assert(Array.isArray(items),label+' must be an array');assert.deepEqual(items.map(item=>item[key]).sort(),[...expected].sort(),label+' has duplicate, missing or unexpected identifiers');}
@@ -99,10 +119,11 @@ function validateArmActivity(record,arm,label){
  if(arm.endsWith('-cache'))validateCache(record.cache,label);
  else if(record.cache)assert.equal(record.cache.active,false,label+': cache leaked into baseline/native arm');
 }
-function validateResult(result,decoded,native){
+function validateResult(result,decoded,native,partition){
+ const expectedCases=partitionCases(partition,native);assert.equal(result.partition,partition,'Browser partition');assert.deepEqual(result.expectedCases,expectedCases,'Browser expected cases');assert.equal(result.partitionPlanSha256,PARTITION_PLAN_SHA256,'Browser fixed partition plan');assert.deepEqual(result.prelude,expectedPrelude(expectedCases),'Original preceding view progression');
  assert.equal(result.schema,'belle-shared-geometry-experiment-v1');assert.equal(result.width,WIDTH);assert.equal(result.height,HEIGHT);assert.equal(result.dpr,1);assert.equal(result.threeRevision,'185');
  assert.equal(result.software,!native,'Declared renderer backend');assert(native?/Metal/i.test(result.gpu)&&!/SwiftShader|llvmpipe/i.test(result.gpu):/SwiftShader/i.test(result.gpu),'Unexpected actual GPU '+result.gpu);
- assert.deepEqual(result.errors,[],'Browser diagnostic errors');exactNames(result.rows,CASES,'name','Views');exactNames(result.controls,CASES,'name','Controls');
+ assert.deepEqual(result.errors,[],'Browser diagnostic errors');exactNames(result.rows,expectedCases,'name','Views');exactNames(result.controls,expectedCases,'name','Controls');
  assert(result.poolBefore?.supported===true&&result.poolBefore.preparationReady===true,'Original shared buffers unsupported/unprepared');
  integer(result.poolBefore.activeEntries,'Prepared entries',200);integer(result.poolBefore.pageCount,'Prepared pages',1);integer(result.poolBefore.poolBytes,'Pool bytes',1);
  assert.deepEqual(poolIdentity(result.poolAfter),poolIdentity(result.poolBefore),'Pool pages, preparation or eligibility changed');
@@ -117,7 +138,7 @@ function validateResult(result,decoded,native){
  const independent=[],cacheRows=[];
  for(const row of result.rows){
   const label=row.name;assert.equal(row.width,WIDTH);assert.equal(row.height,HEIGHT);assert.equal(row.style,'authentic');assert.equal(row.bridgePreview,false,'Optional bridge must remain off');
-  assert.equal(row.hour,label.endsWith('-night')?21:14);assert.equal(row.geometryEqual,true,label+': geometry');assert.match(row.geometrySha256,hashPattern);assert.equal(row.afterGeometrySha256,row.geometrySha256,label+': source geometry changed');
+  assert.equal(row.hour,label.endsWith('-night')?21:14);assert.equal(row.frozenTime,120+CASES.indexOf(label),label+': original frozen time');assert.equal(row.geometryEqual,true,label+': geometry');assert.match(row.geometrySha256,hashPattern);assert.equal(row.afterGeometrySha256,row.geometrySha256,label+': source geometry changed');
   for(const key of ['repeatChangedPixels','repeatMaxChannelDelta','repeatShadowChangedPixels'])zero(row[key],label+': '+key);
   exactNames(row.comparisons,ARMS,'arm',label+' arms');const original=row.comparisons.find(c=>c.arm==='pooled'),image=decoded.get(label+'-pooled');
   integer(original.calls,label+': native calls',1);finite(original.triangles,label+': triangles',1);assert(original.draws?.length>0,label+': no observed actual submissions');
@@ -154,7 +175,10 @@ function validateResult(result,decoded,native){
   }
   zero(control.restoredChangedPixels,label+': restored pixels');zero(control.restoredMaxChannelDelta,label+': restored delta');assert.equal(control.passed,true,label+': controls');
  }
- const expectedCoverage={rows:12,namedShadowSkips,nativeShadowUpdates,shadowChangedPixels:maxShadow,eligibleChangedPixels:maxEligible,uniformUpdateChangedPixels:maxUpdate};assert.deepEqual(result.cacheCoverage,expectedCoverage,'Independent control/cache coverage');
+ const pooledDraws=result.rows.flatMap(row=>row.comparisons.find(compared=>compared.arm==='pooled').draws);
+ const substitutedColorDraws=pooledDraws.filter(draw=>draw.substituted&&draw.phase==='color').length,substitutedShadowDraws=pooledDraws.filter(draw=>draw.substituted&&draw.phase==='shadow').length;
+ assert(substitutedColorDraws>0&&substitutedShadowDraws>0,'Original eligible geometry must exercise actual color and shadow substitutions');
+ const expectedCoverage={rows:expectedCases.length*CACHE_ARMS.length,substitutedColorDraws,substitutedShadowDraws,namedShadowSkips,nativeShadowUpdates,shadowChangedPixels:maxShadow,eligibleChangedPixels:maxEligible,uniformUpdateChangedPixels:maxUpdate};assert.deepEqual(result.cacheCoverage,expectedCoverage,'Independent control/cache coverage');
  assert(maxEligible>=16&&maxShadow>=16&&maxUpdate>=16,'Actual eligible geometry, receivers and live shadow update must each affect >=16 pixels in at least one view');
  if(!native)assert.deepEqual(result.timings,[],'Software timing must not be reported as native evidence');
  assert.equal(result.passed,true,'Browser proof failed');return {independent,coverage:expectedCoverage};
@@ -184,14 +208,19 @@ function pngForTest(pixels,width,height,filter=0){
  for(let y=0;y<height;y++){raw[y*(stride+1)]=filter;for(let x=0;x<stride;x++){const left=x>=4?pixels[y*stride+x-4]:0,up=y?pixels[(y-1)*stride+x]:0,c=y&&x>=4?pixels[(y-1)*stride+x-4]:0,predictor=filter===0?0:filter===1?left:filter===2?up:filter===3?Math.floor((left+up)/2):paeth(left,up,c);raw[y*(stride+1)+1+x]=(pixels[y*stride+x]-predictor)&255;}}
  return Buffer.concat([Buffer.from('89504e470d0a1a0a','hex'),chunk('IHDR',head),chunk('IDAT',deflateSync(raw)),chunk('IEND',Buffer.alloc(0))]);
 }
-function selfTest(){
+async function selfTest(){
  const pixels=Buffer.from([1,2,3,255,250,4,5,255,17,31,63,255,99,100,101,255]);
  for(let filter=0;filter<=4;filter++)assert.deepEqual(decodePng(pngForTest(pixels,2,2,filter),2,2).rgba,pixels,'Filter '+filter);
  const corrupt=pngForTest(pixels,2,2);corrupt[45]^=1;assert.throws(()=>decodePng(corrupt,2,2),/CRC/);assert.throws(()=>decodePng(pngForTest(pixels,2,2),3,2),/width/);
  const alpha=Buffer.from(pixels);alpha[3]--;assert.deepEqual(pixelDiff(pixels,alpha),{changedPixels:1,maxChannelDelta:1});
  assert.throws(()=>exactNames([{name:'a'},{name:'a'}],['a','b'],'name','fixture'),/identifiers/);assert.throws(()=>validateArmActivity({poolDelta:{renderCalls:1,pooledCalls:1,colorCalls:1,shadowCalls:0}},'native','fixture'),/native path/);
  assert.equal(decodePng(pngForTest(pixels,2,2),2,2).readPixelsSha256,sha256(bottomUp(pixels,2,2)));
- console.log('Shared geometry proof self-test passed: all PNG filters, CRC/dimensions, alpha differences, raw readPixels hash, duplicate case and inactive-arm rejection.');
+ assert.throws(()=>partitionCases('chosen-case',false),/Unknown/);assert.throws(()=>partitionCases('all',false),/Linux/);assert.throws(()=>partitionCases('linux-a',true),/Native/);
+ assert.deepEqual(expectedPrelude(PARTITIONS.all),[]);assert.deepEqual(expectedPrelude(PARTITIONS['linux-a']),[]);assert.deepEqual(expectedPrelude(PARTITIONS['linux-b']),[{name:'jefferson-day',frozenTime:120,warmupRenders:6},{name:'jefferson-night',frozenTime:121,warmupRenders:6},{name:'island-day',frozenTime:122,warmupRenders:6}]);
+ assert.deepEqual([...expectedImages(PARTITIONS['linux-a']),...expectedImages(PARTITIONS['linux-b'])],expectedImages(CASES));assert.equal(expectedImages(CASES).length,66);assert.equal(TIMING_CASES.length,27);
+ const repo=execFileSync('git',['rev-parse','--show-toplevel'],{cwd:import.meta.dirname,encoding:'utf8'}).trim(),workflow=await readFile(resolve(repo,WORKFLOW_PATH),'utf8');validateWorkflowPartitions(workflow);
+ assert.throws(()=>validateWorkflowPartitions(workflow.replace('"partition":"linux-b"','"partition":"linux-a"')),/partitions/);assert.throws(()=>validateWorkflowPartitions(workflow.replace('"island-night","conservatory-day","conservatory-night"','"island-day","conservatory-day","conservatory-night"')),/coverage/);
+ console.log('Shared geometry proof self-test passed: PNG decoding and equality, exact fixed workflow partitions, six-case/66-image union, 27 native timings, prior-view times, and invalid partition/backend rejection.');
 }
 
 async function main(){
@@ -204,7 +233,8 @@ async function main(){
  const output=resolve(game,'output/shared-geometry-proof');await mkdir(output,{recursive:true});
  const errors=[],failedRequests=[],pinnedSources=new Map(),assetEntries=new Map(),assetBytes=new Map(),literalAssets=new Map(),sourceFiles=new Map();
  const environmentDefines={'import.meta.env.PROD':'false','import.meta.env.BASE_URL':'"/"','import.meta.env':'{}'};
- const report={schema:'belle-shared-geometry-native-proof-v1',baseline:BASELINE,sourceHead,sourceTree,platform:process.platform,width:WIDTH,height:HEIGHT,dpr:1,compileOnly,compiled:false,passed:false,errors,failedRequests,fixtureSha256:null,sourceReceipts:[],pinnedSources:[],assetTransformations:[],assets:[],captures:[],independent:[],timingSummary:[],result:null,environmentDefines,scope:'Additional diagnostic: one immutable original full-world snapshot, four exact native/pool/cache arms, fixed Authentic day/night poses. No full-game riding, optional bridge, controls, input, collision, physical iPad, or release acceptance is implied.'};
+ const partition=process.env.SHARED_GEOMETRY_PROOF_PARTITION??'all',native=process.platform==='darwin';let expectedCases=[];
+ const report={schema:'belle-shared-geometry-native-proof-v1',baseline:BASELINE,sourceHead,sourceTree,platform:process.platform,partition,expectedCases,partitionPlan:PARTITION_PLAN,partitionPlanSha256:PARTITION_PLAN_SHA256,width:WIDTH,height:HEIGHT,dpr:1,compileOnly,compiled:false,passed:false,errors,failedRequests,fixtureSha256:null,sourceReceipts:[],pinnedSources:[],assetTransformations:[],assets:[],captures:[],independent:[],timingSummary:[],result:null,environmentDefines,scope:'Additional diagnostic: the declared fixed partition of one immutable original full-world snapshot, four exact native/pool/cache arms, fixed Authentic day/night poses. Both Linux partitions are required for all six-case software coverage; native always runs all six cases and all 27 timing comparisons. No full-game riding, optional bridge, controls, input, collision, physical iPad, or release acceptance is implied.'};
  let browser,server,deadline;
  const safePath=path=>{assert(path.startsWith(SOURCE_ROOT)&&!path.includes('\\')&&!path.includes('\0')&&!path.split('/').includes('..')&&!posix.isAbsolute(path),'Unsafe immutable repository path '+path);return path;};
  function original(path){
@@ -244,9 +274,14 @@ async function main(){
   });
  }};
  try{
+  expectedCases=partitionCases(partition,native,compileOnly);report.expectedCases=expectedCases;report.expectedImages=expectedImages(expectedCases);
+  const matrixCases=process.env.SHARED_GEOMETRY_PROOF_MATRIX_CASES;
+  if(process.env.CI&&!compileOnly)assert(matrixCases,'CI requires the workflow matrix case receipt');
+  report.matrixCasesReceipt=matrixCases===undefined?null:JSON.parse(matrixCases);if(matrixCases!==undefined)assert.deepEqual(report.matrixCasesReceipt,expectedCases,'Workflow case receipt differs from the fixed partition');
+  report.workflowPartitions=validateWorkflowPartitions(await readFile(resolve(repo,WORKFLOW_PATH),'utf8'));
   const tree=git('ls-tree','-rz',BASELINE,'--',SOURCE_ROOT).toString();for(const line of tree.split('\0').filter(Boolean)){const match=line.match(/^(\d+) (\w+) ([a-f0-9]{40})\t([\s\S]+)$/);assert(match,'Unexpected immutable tree record');sourceFiles.set(match[4],{mode:match[1],type:match[2],blob:match[3]});}assert(sourceFiles.size>0,'Immutable baseline tree is empty');
   report.baselineTree=git('rev-parse',BASELINE+'^{tree}').toString().trim();
-  const receiptPaths=[GAME_PATH+'/scripts/shared-geometry-native-proof.mjs',GAME_PATH+'/scripts/shared-geometry-proof-browser.ts',...Object.keys(CACHE_HASHES).map(path=>GAME_PATH+'/'+path),GAME_PATH+'/package.json',GAME_PATH+'/package-lock.json',SOURCE_ROOT+'package.json',SOURCE_ROOT+'package-lock.json','.github/workflows/belle-shared-geometry-proof.yml'];
+  const receiptPaths=[GAME_PATH+'/scripts/shared-geometry-native-proof.mjs',GAME_PATH+'/scripts/shared-geometry-proof-browser.ts',...Object.keys(CACHE_HASHES).map(path=>GAME_PATH+'/'+path),GAME_PATH+'/package.json',GAME_PATH+'/package-lock.json',SOURCE_ROOT+'package.json',SOURCE_ROOT+'package-lock.json',WORKFLOW_PATH];
   for(const path of receiptPaths){
    const bytes=await readFile(resolve(repo,path)),actual=sha256(bytes);let headHash=null;try{headHash=sha256(execFileSync('git',['show',sourceHead+':'+path],{...gitArgs,stdio:['ignore','pipe','ignore']}));}catch(error){if(!compileOnly)throw error;}
    const receipt={path,sha256:actual,headSha256:headHash,matchesHead:actual===headHash};report.sourceReceipts.push(receipt);if(!compileOnly)assert.equal(receipt.matchesHead,true,'Proof source differs from exact HEAD: '+path);
@@ -279,13 +314,13 @@ async function main(){
    }catch(error){errors.push(String(error.stack||error));res.writeHead(500);res.end('Immutable fixture asset verification failed');}
   });
   await new Promise((ok,reject)=>{server.once('error',reject);server.listen(0,'127.0.0.1',ok);});const origin='http://127.0.0.1:'+server.address().port;
-  const native=process.platform==='darwin';assert(native||process.platform==='linux','Only actual Metal/macOS and SwiftShader/Linux backends are supported');
+  assert(native||process.platform==='linux','Only actual Metal/macOS and SwiftShader/Linux backends are supported');
   const executablePath=process.env.SHARED_GEOMETRY_PROOF_BROWSER_PATH;browser=await chromium.launch({headless:!native,args:native?['--enable-gpu','--use-gl=angle','--use-angle=metal']:['--use-angle=swiftshader','--enable-unsafe-swiftshader'],...(executablePath?{executablePath}:{channel:'chrome'})});report.browserVersion=browser.version();
   const context=await browser.newContext({viewport:{width:WIDTH,height:HEIGHT},deviceScaleFactor:1,reducedMotion:'reduce',serviceWorkers:'block'});
   await context.route('**/*',route=>{const url=route.request().url();if(url.startsWith(origin+'/')||url.startsWith('data:')||url.startsWith('blob:'))return route.continue();errors.push('Unexpected external asset request: '+url);return route.abort();});
   const page=await context.newPage();page.on('pageerror',error=>errors.push(String(error.stack||error)));page.on('requestfailed',request=>failedRequests.push({url:request.url(),failure:request.failure()}));
   page.on('console',message=>{if(message.type()==='error')errors.push(message.text());else if(message.text().startsWith('shared geometry proof '))console.log(message.text());});
-  await page.goto(origin+'/',{waitUntil:'load',timeout:120000});await page.waitForFunction(()=>typeof window.__sharedGeometryProof==='function',{},{timeout:120000});
+  await page.goto(origin+'/?partition='+encodeURIComponent(partition),{waitUntil:'load',timeout:120000});await page.waitForFunction(()=>typeof window.__sharedGeometryProof==='function',{},{timeout:120000});
   const result=await Promise.race([page.evaluate(()=>window.__sharedGeometryProof()),new Promise((_,reject)=>{deadline=setTimeout(()=>reject(Error('Full-world proof exceeded35minutes')),35*60*1000);})]);clearTimeout(deadline);
   const captures=result.images;delete result.images;report.result=result;
   // Persist every well-named capture before inspecting dimensions/equality, so
@@ -297,20 +332,20 @@ async function main(){
    const data=typeof capture.png==='string'?capture.png:'',bytes=Buffer.from(data.replace(/^data:image\/png;base64,/,''),'base64');await writeFile(resolve(output,file),bytes);
    pending.push({name,file,bytes,valid,duplicate,dataUrl:data.startsWith('data:image/png;base64,')});report.captures.push({name,file,sha256:sha256(bytes),bytes:bytes.length});
   }
-  exactNames(pending,EXPECTED_IMAGES,'name','Saved image names');const decoded=new Map();
+  exactNames(pending,expectedImages(expectedCases),'name','Saved image names');const decoded=new Map();
   for(const capture of pending){
    assert(capture.valid&&!capture.duplicate&&capture.dataUrl,'Invalid/duplicate PNG capture '+capture.name);const value=decodePng(capture.bytes,WIDTH,HEIGHT);
    let opaque=true;for(let i=3;i<value.rgba.length;i+=4)if(value.rgba[i]!==255){opaque=false;break;}assert(opaque,capture.name+': framebuffer alpha must survive PNG roundtrip');decoded.set(capture.name,value);Object.assign(report.captures.find(item=>item.file===capture.file),{width:value.width,height:value.height,rgbaSha256:value.rgbaSha256,readPixelsSha256:value.readPixelsSha256});
   }
-  const validated=validateResult(result,decoded,native);report.independent=validated.independent;report.independentCoverage=validated.coverage;report.timingSummary=validateTimings(result,native);
+  const validated=validateResult(result,decoded,native,partition);report.independent=validated.independent;report.independentCoverage=validated.coverage;report.timingSummary=validateTimings(result,native);
   assert.equal(errors.length,0,'Page, shader or immutable asset errors');assert.equal(failedRequests.length,0,'Failed asset requests');report.passed=true;
  }catch(error){errors.push(String(error.stack||error));process.exitCode=1;}
  finally{
   clearTimeout(deadline);await browser?.close();if(server)await new Promise(ok=>server.close(ok));
   report.pinnedSources=[...pinnedSources.values()].map(({content,...receipt})=>receipt);report.assetTransformations=report.pinnedSources.flatMap(source=>source.transformations.map(transform=>({source:source.path,...transform})));report.assets=[...assetEntries.values()];
-  await writeFile(resolve(output,'report.json'),JSON.stringify(report,null,2)+'\n');await writeFile(resolve(output,'summary.json'),JSON.stringify({passed:report.passed,compiled:report.compiled,compileOnly,sourceHead,baseline:BASELINE,gpu:report.result?.gpu,rows:report.result?.rows?.length,cacheCoverage:report.independentCoverage,timingSummary:report.timingSummary,errors,scope:report.scope},null,2)+'\n');
-  console.log(JSON.stringify({passed:report.passed,compiled:report.compiled,compileOnly,sourceHead,baseline:BASELINE,gpu:report.result?.gpu,rows:report.result?.rows?.length,errors,report:resolve(output,'report.json')}));
+  await writeFile(resolve(output,'report.json'),JSON.stringify(report,null,2)+'\n');await writeFile(resolve(output,'summary.json'),JSON.stringify({passed:report.passed,compiled:report.compiled,compileOnly,sourceHead,baseline:BASELINE,partition,expectedCases,partitionPlanSha256:PARTITION_PLAN_SHA256,gpu:report.result?.gpu,rows:report.result?.rows?.length,cacheCoverage:report.independentCoverage,timingSummary:report.timingSummary,errors,scope:report.scope},null,2)+'\n');
+  console.log(JSON.stringify({passed:report.passed,compiled:report.compiled,compileOnly,sourceHead,baseline:BASELINE,partition,expectedCases,gpu:report.result?.gpu,rows:report.result?.rows?.length,errors,report:resolve(output,'report.json')}));
  }
 }
 
-if(process.argv.includes('--self-test')){assert.deepEqual(process.argv.slice(2),['--self-test']);selfTest();}else await main();
+if(process.argv.includes('--self-test')){assert.deepEqual(process.argv.slice(2),['--self-test']);await selfTest();}else await main();
