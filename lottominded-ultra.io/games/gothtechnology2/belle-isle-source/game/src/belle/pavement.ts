@@ -1,8 +1,12 @@
 import * as T from 'three';
 import {loadStartupBytes} from './startupAssets.ts';
-import {limitGroundDrawRange,type GroundRange} from './groundDrawRange.ts';
+import {limitGroundDrawRange,type GroundRange,type GroundRangeOwner} from './groundDrawRange.ts';
 import type {RoadContactSurface} from './roadContactSurface.ts';
 export type PavementPart={kind:string;offset:number;vertices:number;indices:number[];ranges?:GroundRange[]};
+export type PavementFactoryOwner=Readonly<{source:T.Mesh;geometry:T.BufferGeometry;kind:string;range:GroundRangeOwner|undefined}>;
+const factoryOwners=new WeakMap<T.Mesh,PavementFactoryOwner>();
+/** Names and userData cannot grant ownership of a depth-pass source. */
+export const pavementFactoryOwner=(mesh:T.Mesh)=>factoryOwners.get(mesh);
 
 /** Keep joined asphalt inputs in the same packed format as the other road meshes. */
 export function createPavementGeometry(buffer:ArrayBuffer,part:PavementPart,stride:number){
@@ -26,14 +30,21 @@ export function createPavementGeometry(buffer:ArrayBuffer,part:PavementPart,stri
  g.setIndex(part.indices);g.computeBoundingSphere();return g;
 }
 
+/** The one construction path used by both the runtime asset loader and proofs. */
+export function createPavementMesh(buffer:ArrayBuffer,part:PavementPart,stride:number,material:T.Material){
+ const geometry=createPavementGeometry(buffer,part,stride),mesh=new T.Mesh(geometry,material);
+ mesh.name='Joined island pavement · '+part.kind;mesh.receiveShadow=true;
+ const range=limitGroundDrawRange(mesh,part.ranges);
+ factoryOwners.set(mesh,Object.freeze({source:mesh,geometry,kind:part.kind,range}));
+ return mesh;
+}
+
 export async function addPavement(scene:T.Scene,materials:Record<string,T.Material>,roadContact:RoadContactSurface){
  const [meta,buffer]=await Promise.all([fetch('./belle/pavement.json').then(r=>{if(!r.ok)throw Error('Pavement '+r.status);return r.json();}),loadStartupBytes('./belle/pavement.bin')]);
  for(const part of meta.groups){
   if(!part.vertices)continue;
-  const g=createPavementGeometry(buffer,part,meta.stride);
-  roadContact.add(g);
-  const mesh=new T.Mesh(g,materials[part.kind]);mesh.name='Joined island pavement · '+part.kind;
-  mesh.receiveShadow=true;limitGroundDrawRange(mesh,part.ranges);scene.add(mesh);
+  const mesh=createPavementMesh(buffer,part,meta.stride,materials[part.kind]);
+  roadContact.add(mesh.geometry);scene.add(mesh);
  }
  return {triangles:meta.triangles,bytes:meta.bytes};
 }
