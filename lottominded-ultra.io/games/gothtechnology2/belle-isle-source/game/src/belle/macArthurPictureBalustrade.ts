@@ -43,9 +43,17 @@ export function stagePictureBalustrade(scene:T.Scene,bridge:ParkMap['bridge'],la
  const group=new T.Group();group.name=PICTURE_BRIDGE_NAME;
  const old={visible:legacy.visible,castShadow:legacy.castShadow,flag:legacy.userData.staticSprayReplaced};
  const yaw=new T.Quaternion(),pitch=new T.Quaternion(),q=new T.Quaternion(),at=new T.Vector3(),scale=new T.Vector3(1,1,1),matrix=new T.Matrix4();
+ const draws:T.InstancedMesh[]=[];let disposed=false;
+ function disposeOwnedResources(){
+  if(disposed)return;disposed=true;
+  // Instance buffers belong to each mesh, separately from the shared geometry.
+  for(const draw of draws)draw.dispose();
+  geometry.dispose();limestone.dispose();
+ }
  try{
   for(const [lane,side] of ([-1,1] as const).entries()){
    const draw=new T.InstancedMesh(geometry,limestone,count);
+   draws.push(draw);
    draw.name='MacArthur carved stone arch railing '+(side<0?'north':'south');
    draw.castShadow=true;draw.receiveShadow=true;
    for(let i=0;i<count;i++){
@@ -59,10 +67,10 @@ export function stagePictureBalustrade(scene:T.Scene,bridge:ParkMap['bridge'],la
   scene.add(group);freezeStaticWorldTransforms([group]);
   // The existing mesh's draw visibility must stay off during dynamic landmark updates.
   legacy.userData.staticSprayReplaced=true;legacy.visible=false;legacy.castShadow=false;
- }catch(error){group.removeFromParent();geometry.dispose();limestone.dispose();throw error;}
+ }catch(error){group.removeFromParent();disposeOwnedResources();throw error;}
  return {group,legacy,panels:panels.length,meshes:group.children.length,collisionChanged:false,asBuiltVerified:false,
-  rollback(){group.removeFromParent();legacy.visible=old.visible;legacy.castShadow=old.castShadow;
+  rollback(){if(disposed)return;group.removeFromParent();legacy.visible=old.visible;legacy.castShadow=old.castShadow;
    if(old.flag===undefined)delete legacy.userData.staticSprayReplaced;else legacy.userData.staticSprayReplaced=old.flag;
-   geometry.dispose();limestone.dispose();
+   disposeOwnedResources();
   }};
 }

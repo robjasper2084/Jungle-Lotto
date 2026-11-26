@@ -29,16 +29,28 @@ test('stone railing has a physically open arch, not opaque painted holes',()=>{
  assert(ray.intersectObject(mesh).length>0,'solid supporting post');
  g.dispose();(mesh.material as T.Material).dispose();
 });
-test('preview exclusively hides the original bridge rail and can safely rollback',()=>{
+test('preview exclusively hides the original bridge rail and releases each owned resource once on rollback',()=>{
  const scene=new T.Scene(),root=new T.Group(),original=new T.Mesh(new T.BoxGeometry(),new T.MeshStandardMaterial());
  original.name=PICTURE_BRIDGE_LEGACY;original.castShadow=true;root.add(original);scene.add(root);
+ let originalDisposals=0;original.geometry.addEventListener('dispose',()=>originalDisposals++);original.material.addEventListener('dispose',()=>originalDisposals++);
  const source=JSON.stringify(map.bridge),study=stagePictureBalustrade(scene,map.bridge,root);
  assert.equal(study.group.name,PICTURE_BRIDGE_NAME);
  assert.equal(study.meshes,2);assert(!original.visible&&original.userData.staticSprayReplaced);
  assert(study.group.children.every(x=>x instanceof T.InstancedMesh&&x.castShadow));
  assert.equal(study.collisionChanged,false);assert.equal(JSON.stringify(map.bridge),source);
+ const draws=study.group.children as T.InstancedMesh[],instanceDisposals=draws.map(()=>0),matrices=draws.map(draw=>draw.instanceMatrix.array.slice());
+ const geometry=draws[0].geometry,material=draws[0].material as T.Material,positions=geometry.getAttribute('position').array.slice();
+ let geometryDisposals=0,materialDisposals=0;
+ draws.forEach((draw,i)=>{assert.equal(draw.geometry,geometry);assert.equal(draw.material,material);draw.addEventListener('dispose',()=>instanceDisposals[i]++);});
+ geometry.addEventListener('dispose',()=>geometryDisposals++);material.addEventListener('dispose',()=>materialDisposals++);
  study.rollback();
  assert(original.visible&&original.castShadow);assert(!original.userData.staticSprayReplaced);
+ assert.deepEqual(instanceDisposals,[1,1]);assert.equal(geometryDisposals,1);assert.equal(materialDisposals,1);assert.equal(originalDisposals,0);
+ draws.forEach((draw,i)=>assert.deepEqual(draw.instanceMatrix.array,matrices[i]));assert.deepEqual(geometry.getAttribute('position').array,positions);
+ original.visible=false;original.castShadow=false;original.userData.staticSprayReplaced='later-owner';
+ study.rollback();
+ assert(!original.visible&&!original.castShadow);assert.equal(original.userData.staticSprayReplaced,'later-owner','repeated rollback must not overwrite later state');
+ assert.deepEqual(instanceDisposals,[1,1]);assert.equal(geometryDisposals,1);assert.equal(materialDisposals,1);assert.equal(originalDisposals,0);
  assert(!study.group.parent);original.geometry.dispose();(original.material as T.Material).dispose();
 });
 test('missing original mesh fails closed before generating duplicate railing visuals',()=>{
@@ -46,6 +58,35 @@ test('missing original mesh fails closed before generating duplicate railing vis
  assert.throws(()=>stagePictureBalustrade(scene,map.bridge,root),/unavailable/);
  assert.equal(scene.children.length,1);
  assert.throws(()=>planPictureBalustrade({...map.bridge,length:44}),/geometry changed/);
+});
+
+test('invalid collision mapping leaves the original rail and its resources untouched',()=>{
+ const scene=new T.Scene(),root=new T.Group(),original=new T.Mesh(new T.BoxGeometry(),new T.MeshStandardMaterial());
+ original.name=PICTURE_BRIDGE_LEGACY;original.castShadow=true;root.add(original);scene.add(root);
+ let disposals=0;original.geometry.addEventListener('dispose',()=>disposals++);original.material.addEventListener('dispose',()=>disposals++);
+ assert.throws(()=>stagePictureBalustrade(scene,{...map.bridge,width:20},root),/geometry changed/);
+ assert.deepEqual(scene.children,[root]);assert.deepEqual(root.children,[original]);assert(original.visible&&original.castShadow);
+ assert.equal(original.userData.staticSprayReplaced,undefined);assert.equal(disposals,0);
+ original.geometry.dispose();original.material.dispose();
+});
+
+test('failed scene staging releases both instance buffers and shared resources without hiding the original rail',()=>{
+ const scene=new T.Scene(),root=new T.Group(),original=new T.Mesh(new T.BoxGeometry(),new T.MeshStandardMaterial());
+ original.name=PICTURE_BRIDGE_LEGACY;original.castShadow=true;root.add(original);scene.add(root);
+ let originalDisposals=0;original.geometry.addEventListener('dispose',()=>originalDisposals++);original.material.addEventListener('dispose',()=>originalDisposals++);
+ const add=scene.add,instanceDisposals:number[]=[];let geometryDisposals=0,materialDisposals=0,staged:T.Object3D|undefined;
+ scene.add=function(...objects){
+  add.apply(this,objects);staged=objects[0];
+  const draws=staged.children as T.InstancedMesh[];
+  draws.forEach((draw,i)=>{instanceDisposals[i]=0;draw.addEventListener('dispose',()=>instanceDisposals[i]++);});
+  draws[0].geometry.addEventListener('dispose',()=>geometryDisposals++);(draws[0].material as T.Material).addEventListener('dispose',()=>materialDisposals++);
+  throw Error('Scene staging rejected');
+ };
+ assert.throws(()=>stagePictureBalustrade(scene,map.bridge,root),/Scene staging rejected/);
+ assert.equal(staged?.parent,null);assert.deepEqual(scene.children,[root]);assert(original.visible&&original.castShadow);
+ assert.equal(original.userData.staticSprayReplaced,undefined);assert.deepEqual(instanceDisposals,[1,1]);
+ assert.equal(geometryDisposals,1);assert.equal(materialDisposals,1);assert.equal(originalDisposals,0);
+ original.geometry.dispose();original.material.dispose();
 });
 
 test('real game bridge control is optional and outside the unchanged MacArthur shadow input fixture',()=>{
