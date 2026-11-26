@@ -127,6 +127,11 @@ jobs:
         run: |
           set -euo pipefail
           cd app
+          # Match the original full-worktree controls build, including cross-game GLB assets.
+          git sparse-checkout disable
+          test -z "$(git status --porcelain)"
+          test "$(git rev-parse HEAD^{tree})" = "$(sed -n '2p' ../evidence/commit-tree-parents.txt)"
+          test -s lottominded-ultra.io/games/gothtechnology2/swoop-source/public/exports/rigged-heroes/DS_Man_01.glb
           (cd lottominded-ultra.io/games/gothtechnology2 && npm ci)
           (cd "$GAME" && npm ci && npm run check && npm test && npm run build) 2>&1 | tee ../evidence/build.log
           test -s "$GAME/dist/index.html"
