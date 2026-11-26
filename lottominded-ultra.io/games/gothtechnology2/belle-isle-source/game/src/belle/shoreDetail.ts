@@ -16,7 +16,7 @@ export function bankGrassGeometry(){
 
 /** One bounded instanced draw per detail kind. Geometry settles into the bank
  * over the outer third of the range, before it leaves the selection pool. */
-export function createShoreDetailPool(scene:T.Scene,geometry:T.BufferGeometry,material:T.MeshStandardMaterial,instances:ShoreInstance[],kind:'rocks'|'plants',name:string){
+export function createShoreDetailPool(scene:T.Scene,geometry:T.BufferGeometry,material:T.MeshStandardMaterial,instances:ShoreInstance[],kind:'rocks'|'plants',name:string,geometryByQuality?:Partial<Record<EnvironmentQuality,T.BufferGeometry>>){
  const viewer={value:new T.Vector2()},range={value:1},oldCompile=material.onBeforeCompile,oldKey=material.customProgramCacheKey();
  material.onBeforeCompile=(shader,renderer)=>{
   oldCompile(shader,renderer);shader.uniforms.shoreViewer=viewer;shader.uniforms.shoreRange=range;
@@ -33,7 +33,7 @@ export function createShoreDetailPool(scene:T.Scene,geometry:T.BufferGeometry,ma
  mesh.name=name;mesh.count=0;mesh.visible=false;mesh.frustumCulled=false;mesh.receiveShadow=kind==='rocks';mesh.instanceMatrix.setUsage(T.DynamicDrawUsage);scene.add(mesh);
  let quality:EnvironmentQuality='automatic',lastX=Infinity,lastZ=Infinity,selected=new Set<number>();
  const stats={total:instances.length,visible:0,limit:0,range:0,maxDraws:1};
- function budget(){const b=SHORE_BUDGETS[quality];stats.limit=b[kind];stats.range=kind==='rocks'?b.rockRange:b.plantRange;range.value=stats.range;}
+ function budget(){mesh.geometry=geometryByQuality?.[quality]??geometry;const b=SHORE_BUDGETS[quality];stats.limit=b[kind];stats.range=kind==='rocks'?b.rockRange:b.plantRange;range.value=stats.range;}
  budget();
  return {stats,
   setQuality(value:string){quality=environmentQuality(value);budget();lastX=Infinity;},
