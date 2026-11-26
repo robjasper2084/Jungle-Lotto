@@ -30,7 +30,9 @@ const insertion=`
    strictQuality:quality,fullScene:true,profileSeconds:seconds};
 `;
 const patched=source.replace(anchor,anchor+insertion);
-assert.equal(patched.split('await page.keyboard.down(\'w\')').length,3,'Original genuine input and heartbeat must remain');
+// Prove byte-for-byte that only the single UI toggle was inserted.
+assert.equal(patched.replace(anchor+insertion,anchor),source,'Diagnostic may insert only the real UI comparison');
+assert(patched.includes("await page.keyboard.down('w');")&&patched.includes("pendingHeartbeat=page.keyboard.down('w').then(")&&patched.includes("await page.keyboard.up('w')"),'Original genuine input and heartbeat must remain');
 assert(patched.includes("await page.waitForTimeout(seconds*1000)"),'Strict duration removed');
 assert(patched.includes("stats.metrics?.frameMs?.p95<=50&&stats.over250ms===0"),'Strict threshold changed');
 assert(patched.includes("await checkGpsFullScene({page,expect,game,output,device"),'Original GPS checks removed');
