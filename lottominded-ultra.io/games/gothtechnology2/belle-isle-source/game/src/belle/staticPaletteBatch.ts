@@ -10,12 +10,16 @@ export class StaticPaletteBatch {
  private groups:{sources:T.Mesh[];geometries:T.BufferGeometry[];materials:T.Material[];mesh:T.BatchedMesh;ids:number[];visible:boolean[];eligible:boolean[]}[]=[];
  private active=false;
  private ownedMaterials:T.Material[]=[];
- constructor(sources:T.Mesh[],selection?:number|ReadonlySet<T.Mesh>){
+ private lods:T.LOD[]=[];
+ constructor(sources:T.Mesh[],selection?:number|ReadonlySet<T.Mesh>,prepareBatch?:(batch:T.BatchedMesh,sources:T.Mesh[])=>void){
   const sameMaterial=typeof selection==='number'?undefined:selection;
   this.root.name='Split static material batches';this.root.visible=false;
   const groups=new Map<string,T.Mesh[]>(),materials=new Map<T.Material,string>();
   for(const mesh of sources){
    const m=mesh.material,g=mesh.geometry,exact=sameMaterial?.has(mesh)??false;
+   // Native LOD.update writes a level root's own visible flag after the scene
+   // callback. Keep mesh roots native; descendants of grouped levels can batch.
+   if(mesh.parent instanceof T.LOD&&mesh.parent.levels.some(level=>level.object===mesh))continue;
    if(mesh.userData.staticSprayReplaced||(mesh as T.SkinnedMesh).isSkinnedMesh||(mesh as T.InstancedMesh).isInstancedMesh||(mesh as T.BatchedMesh).isBatchedMesh||mesh.children.length||Array.isArray(m)||!(m instanceof T.MeshStandardMaterial)||m.type!=='MeshStandardMaterial'||m.transparent||m.opacity!==1||m.alphaTest||Object.keys(g.morphAttributes).length||!g.attributes.position||!g.attributes.normal||(!exact&&m.onBeforeCompile!==T.Material.prototype.onBeforeCompile&&!m.userData.realisticSurface)||m.vertexColors)continue;
    mesh.updateWorldMatrix(true,false);
    // The generated bridge tile positions are already in world coordinates.
@@ -54,21 +58,41 @@ export class StaticPaletteBatch {
    const geometries=[...new Set(sources.map(s=>s.geometry))];
    const vertices=geometries.reduce((n,g)=>n+g.attributes.position.count,0),indices=geometries.reduce((n,g)=>n+(g.index?.count??0),0);
    const mesh=new T.BatchedMesh(sources.length,vertices,indices,material),geometryIds=new Map<T.BufferGeometry,number>();
+   mesh.sortObjects=false;prepareBatch?.(mesh,sources);
    installBatchedIndirectUpdates(mesh);
    for(const geometry of geometries)geometryIds.set(geometry,mesh.addGeometry(geometry));
    const ids=sources.map(source=>{const id=mesh.addInstance(geometryIds.get(source.geometry)!);mesh.setMatrixAt(id,source.matrixWorld);if(!exact)mesh.setColorAt(id,(source.material as T.MeshStandardMaterial).color);return id;});
    mesh.name='Static multi-draw · '+first.name;mesh.castShadow=first.castShadow;mesh.receiveShadow=first.receiveShadow;mesh.renderOrder=first.renderOrder;mesh.layers.mask=first.layers.mask;mesh.matrixAutoUpdate=false;
-   mesh.perObjectFrustumCulled=true;mesh.sortObjects=false;mesh.computeBoundingBox();mesh.computeBoundingSphere();this.root.add(mesh);
+   mesh.perObjectFrustumCulled=true;mesh.computeBoundingBox();mesh.computeBoundingSphere();this.root.add(mesh);
    this.groups.push({sources,mesh,ids,geometries:sources.map(s=>s.geometry),materials:sources.map(s=>s.material as T.Material),visible:[],eligible:[]});this.stats.sourceDraws+=sources.length;this.stats.batches++;
   }
+  const lods=new Set<T.LOD>();
+  for(const group of this.groups)for(const source of group.sources)
+   for(let parent=source.parent;parent;parent=parent.parent)if(parent instanceof T.LOD)lods.add(parent);
+  this.lods=[...lods].sort((a,b)=>depth(a)-depth(b));
  }
- beginView(worldShadows?:boolean){
-  if(this.active)this.endView();this.active=true;this.root.visible=true;
+ beginView(worldShadows?:boolean,camera?:T.Camera){
+  if(this.active)this.endView();
+  const attached=this.root.parent!==null;let viewRoot:T.Object3D=this.root;
+  while(viewRoot.parent)viewRoot=viewRoot.parent;
+  // scene.onBeforeRender runs before Three selects LODs. Select using this
+  // camera before hiding sources, including each independent split-screen view.
+  if(camera&&this.lods.length){
+   camera.updateWorldMatrix(true,false);
+   for(const lod of this.lods){
+    if(!lod.autoUpdate||!lod.layers.test(camera.layers))continue;
+    let parent:T.Object3D=lod;while(parent.visible&&parent.parent)parent=parent.parent;
+    if(parent.visible&&(!attached||parent===viewRoot))lod.update(camera);
+   }
+  }
+  this.active=true;this.root.visible=true;
   for(const group of this.groups){
    let casters=0,eligible=0;
    group.sources.forEach((source,i)=>{
     group.visible[i]=source.visible;
-    let shown=true;for(let o:T.Object3D|null=source;o;o=o.parent)if(!o.visible){shown=false;break;}
+    let parent:T.Object3D=source;while(parent.visible&&parent.parent)parent=parent.parent;
+    // Detached staged models must disappear from their sibling batch as well.
+    let shown=parent.visible&&(!attached||parent===viewRoot);
     if(worldShadows!==undefined&&(source.geometry!==group.geometries[i]||source.material!==group.materials[i]))shown=false;
     group.eligible[i]=shown;
     if(shown){eligible++;if(source.castShadow)casters++;}
@@ -87,3 +111,4 @@ export class StaticPaletteBatch {
  dispose(){this.endView();this.root.removeFromParent();for(const group of this.groups)group.mesh.dispose();for(const m of this.ownedMaterials)m.dispose();}
 }
 const identity=new T.Matrix4();
+function depth(object:T.Object3D){let value=0;for(let parent=object.parent;parent;parent=parent.parent)value++;return value;}

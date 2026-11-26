@@ -13,6 +13,7 @@ import {StartupTelemetry} from './startupTelemetry.ts';
 import {CoopSession} from './coop/session.ts';
 import {createBelleAudio} from './belleAudio.ts';
 import {SceneWarmup} from './sceneWarmup.ts';
+import {ScenePreparationOwnership} from './scenePreparationOwnership.ts';
 import {prepareRideAssets} from './rideAssetPreparation.ts';
 import {warmRideShadows} from './rideShadowWarmup.ts';
 import {VehicleHeadlamp} from './vehicles/headlamp.ts';
@@ -329,10 +330,14 @@ installShadowMatrixCache(renderer);
  actualMsaa=!!renderer.getContext().getContextAttributes()?.antialias;syncAaStatus();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.25));renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.85;renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;
  const core=new RideCore(terrain,{spawn:{position:{x:data.spawn.x,y:2,z:data.spawn.z},headingY:data.spawn.heading}});clearSimulationInput=()=>core.clearPendingActions();const loader=new GLTFLoader();const renderProbe=createNatureRenderProbe(location.search);const world=await createWorld(scene,renderer,data,terrain,status,renderProbe);el('profile').dataset.macarthurRailMeshes=String(world.stats.bridgeRailFinish.meshes);el('profile').dataset.macarthurRailMaterials=String(world.stats.bridgeRailFinish.newMaterials);world.sky.preview(!SUNSET_REFERENCE);const refreshSkySettings=connectSkySettings(world.sky);const sunsetPreview=SUNSET_REFERENCE?createSunsetPreview(camera,()=>hover,()=>active&&!trials?.active&&!race?.active&&!coop?.active&&!photo?.active,()=>{clear();cameraYaw=0;cameraPitch=.1;snap=true;},data.spawn,data):undefined;
  const frameBudget=new FrameBudget();graphics.onchange=()=>{frameBudget.reset();world.setQuality(graphics.value);saveGraphics();};world.setQuality(graphics.value);window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();if(!vr?.active)renderer.setSize(innerWidth,innerHeight);});
- const sceneWarmup=new SceneWarmup(renderer,scene,camera,value=>{scenePreparing=value;resetFrameClock=true;if(value)clear();});
+ const preparationOwnership=new ScenePreparationOwnership(value=>{scenePreparing=value;resetFrameClock=true;});
+ let releaseWarmup:(()=>void)|undefined;
+ const sceneWarmup=new SceneWarmup(renderer,scene,camera,value=>{
+  if(value){releaseWarmup??=preparationOwnership.acquire();clear();}
+  else{const release=releaseWarmup;releaseWarmup=undefined;release?.();}
+ });
  async function prepareRideShadows(rider:T.Object3D,x:number,z:number,warmCrossing=false){
-  const wasPreparing=scenePreparing;
-  scenePreparing=true;
+  const releasePreparation=preparationOwnership.acquire();
   try{
    const view=new T.PerspectiveCamera(60,camera.aspect,.08,22000);
    const prepareView=async(x:number,y:number,z:number,heading:number)=>{
@@ -357,7 +362,7 @@ installShadowMatrixCache(renderer);
    const {y,headingY}=core.current;
    await prepareView(x,y,z,headingY);
   }
-  finally{scenePreparing=wasPreparing;resetFrameClock=true;}
+  finally{releasePreparation();}
  }
  // The permanent vehicle spotlight contributes to the shader light count,
  // including while its intensity is zero and no ride has been selected.
@@ -614,7 +619,12 @@ installShadowMatrixCache(renderer);
  // Pack immutable display buffers at this preparation boundary. Meshes keep
  // their authored materials, transforms and draw order; later assets fall back.
  const geometryBuffers=installSharedGeometryBuffers(renderer,scene,{rendererOutput});geometryBuffers.prepare();
- status('Preparing rider shadows');await yieldStartupTask();await prepareRideShadows(hero.root,core.current.x,core.current.z,true);status('Preparing the first frame');let prepared=false,starting=false;start.onclick=async()=>{if(starting||!prepared)return;starting=true;resetHydraulicFrameTime();const choice=startup.choice;natureAudio.unlock();clear();startup.preparing();try{
+ status('Preparing rider shadows');await yieldStartupTask();await prepareRideShadows(hero.root,core.current.x,core.current.z,true);status('Preparing the first frame');let prepared=false,starting=false;start.onclick=async()=>{if(starting||!prepared)return;starting=true;resetHydraulicFrameTime();const choice=startup.choice;natureAudio.unlock();clear();startup.preparing();
+ // The welcome preview must not submit new scene work between selected-ride
+ // asset loading, shader preparation and the existing nearby-landmark barrier.
+ // Nested warmup completion cannot release this owner before handoff.
+ const releaseSelectedPreparation=isCadillacVariant(choice.vehicle)?preparationOwnership.acquire():undefined;
+ try{
   status('Preparing your selected ride');
   const selectedCadillac=await prepareRideAssets(async()=>{
    if(!isCadillacVariant(choice.vehicle)||cadillac?.variant===choice.vehicle)return;
@@ -642,7 +652,7 @@ installShadowMatrixCache(renderer);
   status('Preparing nearby landmarks');
   await world.prepareCadillacLandmarks(camera,core.current.x,core.current.z);
   selectedRide.start();cameraPitch=.1;
- }else if(choice.vehicle!=='onewheel'){await hover!.selectVehicle(choice,scene);await hover!.prepare(scene,true);}startup.leave(()=>{world.sky.preview(false);world.sky.protectStartup();startupMetrics.begin('solo');active=true;paused=false;destination??=firstRide.begin(destination);chooseView(choice.camera==='fpp');el('ridehud').hidden=false;el('navigation').hidden=false;zone.hidden=!touch.checked;snap=true;canvas.focus();vr?.refresh();if(isCadillacVariant(choice.vehicle)){if(choice.camera==='tpp')cameraYaw=.60;starting=false;if(cadillacDiagnostic)rideProfile?.start();}else if(choice.vehicle!=='onewheel')void hover!.mount(scene).finally(()=>{starting=false;});else starting=false;});}catch(error){starting=false;startup.retryRide('Your ride could not load. Try again, or choose the other vehicle.');console.warn('Selected ride preparation failed',error);}};
+ }else if(choice.vehicle!=='onewheel'){await hover!.selectVehicle(choice,scene);await hover!.prepare(scene,true);}releaseSelectedPreparation?.();startup.leave(()=>{world.sky.preview(false);world.sky.protectStartup();startupMetrics.begin('solo');active=true;paused=false;destination??=firstRide.begin(destination);chooseView(choice.camera==='fpp');el('ridehud').hidden=false;el('navigation').hidden=false;zone.hidden=!touch.checked;snap=true;canvas.focus();vr?.refresh();if(isCadillacVariant(choice.vehicle)){if(choice.camera==='tpp')cameraYaw=.60;starting=false;if(cadillacDiagnostic)rideProfile?.start();}else if(choice.vehicle!=='onewheel')void hover!.mount(scene).finally(()=>{starting=false;});else starting=false;});}catch(error){starting=false;startup.retryRide('Your ride could not load. Try again, or choose the other vehicle.');console.warn('Selected ride preparation failed',error);}finally{releaseSelectedPreparation?.();}};
  let savedFirst=false,savedQuality='automatic';
  vr=new BelleVR(renderer,scene,camera,terrain,{
   ready:()=>!locationFollowing&&active&&!scenePreparing&&!race?.active&&!trials?.active&&!coop?.active,pose:()=>core.current,places:()=>[{label:'Jefferson Avenue · bridge start',go:()=>el('restart').click()},...vrPlaces],clear:()=>{clear();core.clearPendingActions();},
