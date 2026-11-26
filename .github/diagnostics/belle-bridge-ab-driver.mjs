@@ -21,12 +21,16 @@ const insertion=`
  if(bridgeVariant!=='on'&&bridgeVariant!=='off')throw Error('Explicit bridge AB mode missing');
  const bridgeSwitch=page.locator('#bridge-stone-style');
  await expect(bridgeSwitch).toBeVisible();
- await expect(bridgeSwitch).toBeChecked(); // exact 5220c1a preview build starts ON
- if(bridgeVariant==='off')await bridgeSwitch.uncheck(); // real trusted user input
- if(bridgeVariant==='off')await expect(bridgeSwitch).not.toBeChecked();
- else await expect(bridgeSwitch).toBeChecked();
- report.bridgeAB={mode:bridgeVariant,source:'original unmodified production shaders/build',uiChecked:await bridgeSwitch.isChecked(),
-   toggleInput:bridgeVariant==='off'?'trusted Playwright native uncheck':'already on after native preview build',
+ // The archived 'sustained-profile-game' build is the ordinary production
+ // default: picture stone is OFF. It was NOT built with the gallery's preview flag.
+ // Fail closed if the baseline differs, rather than comparing unknown styles.
+ await expect(bridgeSwitch).not.toBeChecked();
+ if(bridgeVariant==='on')await bridgeSwitch.check(); // genuine trusted input via existing UI
+ if(bridgeVariant==='on')await expect(bridgeSwitch).toBeChecked();
+ else await expect(bridgeSwitch).not.toBeChecked();
+ report.bridgeAB={mode:bridgeVariant,source:'unchanged archived game build 5220c1a',initialChecked:false,
+   uiChecked:await bridgeSwitch.isChecked(),
+   toggleInput:bridgeVariant==='on'?'trusted Playwright native check':'original default OFF; no toggle',
    strictQuality:quality,fullScene:true,profileSeconds:seconds};
 `;
 const patched=source.replace(anchor,anchor+insertion);
