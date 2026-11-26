@@ -1,0 +1,42 @@
+{
+  "sourceHead": "61a9db36df072850f4bcea4536471e3d92e07453",
+  "sourceTree": "097f7e68cb3407a7c55d2cfc945b428b63c847df",
+  "gamePath": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game",
+  "sourceFiles": {
+    "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/terrain.ts": "41726e77171ac9e866510b169927e935d6dfefaf",
+    "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/roadContactSurface.ts": "5163b142aafce6c97be42130ccdc71a9cdf079a1",
+    "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/detroitGround.ts": "7c3358342e49fd84a4716e282f23926c3daa209e",
+    "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/detroitDistricts.json": "518c7146ff3f0c04c6a515d67f825f8226248e99",
+    "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/runtime/ride-core/src/terrain.ts": "3c3ad92de75211ad387efa7daffaeecd3b140bbd",
+    "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/monumentCollision.ts": "c0317804912e765a7a2fd25dba67d21dfc0c0885",
+    "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/conservatory.ts": "4248bea127d6ef895f2c4b92c7720ec4f2aa9182",
+    "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/conservatoryGardenPlan.ts": "d314ee265b184e417e7c97282b1651ee7356d2bc",
+    "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/beachProfile.ts": "b86f04075f5d2d40de60fb4ef9e2419905d72241",
+    "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/aquarium.ts": "bf0a11d5ef23d963c03055cde6683c6ba97db5d8",
+    "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/dossin.ts": "c8beedb658c6230eb9188a4b51b3f469acbe1589",
+    "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/facilityPlan.ts": "666448aa80b3f67c4f217b404be815b2e02cf7d7",
+    "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/referenceSites.ts": "1b2d7b66203f14a248e454db3abc7093a2c60fcf",
+    "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/shelterProfiles.ts": "c4ccfa8be9a5a7bbfe20504a9e774a342eaf7351",
+    "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/lagoonBridge.ts": "8282f7fcafaafeb1d979181319735a7f953a69b7",
+    "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/yachtClub.ts": "c4a7832bd6a6c557d8b15a0b264dbc9b1fba5c45",
+    "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/yachtClubLayout.json": "75a25d2de5df9df9f4e2ae7a2daf7f297ccc7843",
+    "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/playgrounds.ts": "3609d0b0b81e77717a2345e023770b43407baa62",
+    "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/playgroundSolids.json": "6f68fabad8645817c106b85c819b13b3943d6d28",
+    "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/playgrounds.json": "42749b12ead19e3bbe1c7d20fb5f9c9f7f45dfba",
+    "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/activitiesPlan.ts": "bb6e9b13e41a8b95a8e59a724a395f73ff007ff1",
+    "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/activitiesLayout.json": "d96932ac15c59d1ea698cadafc8b75bd39db4668",
+    "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/waterfrontPlan.ts": "40713cd76cac9363668c487149968962c4f00fc9",
+    "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/waterfrontLayout.json": "19cf8b69d6c7b24e8219675914991e028c06d27c",
+    "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/flightCollision.ts": "48d617995b7e7ce20c912989eb6ed019414b06c9",
+    "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/smallBridges.ts": "e345ad551c4475e0b2f2fe6500ae490e7d53d2de",
+    "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/boatClubPlan.ts": "235dcb27c14d659114594612169a5a2d861bfade"
+  },
+  "mapBlob": "e5c741279fe981b928c9fd4d58a72d72ae7cb017",
+  "manifestSha256": "5baff339b60ca78632b51625c1fd661ad85e67954635f4d80dd21329dd984d91",
+  "legacySha256": "99bd8f7a8c1a5553bf78c0ab1e99cb771c275ca39fc6808c7fab07d8d899d3ba",
+  "artifact": {
+    "id": 15149060140,
+    "runId": 45882624790,
+    "zipSha256": "6d244cd0bf5c5564af1e4790bab5605493f887d4686eaa0640386b3d6eb80559"
+  }
+}

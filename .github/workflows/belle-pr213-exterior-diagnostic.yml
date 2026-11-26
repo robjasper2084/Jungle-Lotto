@@ -1,0 +1,113 @@
+name: Belle Isle PR213 additive exterior diagnostic
+
+on:
+  pull_request:
+    paths:
+      - '.github/diagnostics/pr213-exterior/**'
+      - '.github/workflows/belle-pr213-exterior-diagnostic.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: belle-pr213-exterior-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  native-exterior:
+    runs-on: macos-15
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      matrix:
+        layout: [desktop, phone-landscape]
+    env:
+      STAGED_LANDMARK_SOURCE_SHA: 61a9db36df072850f4bcea4536471e3d92e07453
+      PR213_DIAGNOSTIC_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      STAGED_LANDMARK_LAYOUT: ${{ matrix.layout == 'phone-landscape' && 'phone' || 'desktop' }}
+      STAGED_LANDMARK_RENDERER: metal
+      ENV_GALLERY_REQUIRE_METAL: '1'
+    steps:
+      - name: Check out the diagnostic only
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: diagnostic
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/diagnostics/pr213-exterior/
+            /.github/workflows/belle-pr213-exterior-diagnostic.yml
+      - name: Check out the immutable original source separately
+        uses: actions/checkout@v4
+        with:
+          ref: 61a9db36df072850f4bcea4536471e3d92e07453
+          path: source
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /AGENTS.md
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/runtime/
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Configure isolated diagnostic output paths
+        env:
+          GALLERY_LAYOUT: ${{ matrix.layout }}
+        run: |
+          cat >> "$GITHUB_ENV" <<EOF
+          STAGED_LANDMARK_GAME_DIR=$GITHUB_WORKSPACE/source/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+          STAGED_LANDMARK_DIST=$RUNNER_TEMP/pr213-exterior-$GALLERY_LAYOUT/dist
+          STAGED_LANDMARK_OUT=$RUNNER_TEMP/pr213-exterior-$GALLERY_LAYOUT/evidence
+          PR213_EXTERIOR_GENERATED=$RUNNER_TEMP/pr213-exterior-$GALLERY_LAYOUT/generated
+          PR213_EXTERIOR_ZIP=$RUNNER_TEMP/staged61.zip
+          PR213_EXTERIOR_ARTIFACT_JSON=$RUNNER_TEMP/staged61-artifact.json
+          EOF
+      - name: Retrieve the pinned original staged artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api repos/robjasper2084/Jungle-Lotto/actions/artifacts/15149060140 > "$PR213_EXTERIOR_ARTIFACT_JSON"
+          gh api repos/robjasper2084/Jungle-Lotto/actions/artifacts/15149060140/zip > "$PR213_EXTERIOR_ZIP"
+          node diagnostic/.github/diagnostics/pr213-exterior/prepare-dist.mjs
+      - name: Install the original locked game dependencies
+        working-directory: source/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: npm ci
+      - name: Install the original native Chrome harness
+        working-directory: source/lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install chrome
+      - name: Verify diagnostic contracts and preserve the generated driver
+        run: |
+          node --test diagnostic/.github/diagnostics/pr213-exterior/contract.test.mjs
+          node diagnostic/.github/diagnostics/pr213-exterior/build-driver.mjs
+          node --check "$PR213_EXTERIOR_GENERATED/exterior-driver.mjs"
+      - name: Measure exact authored stairs and retained ground surfaces
+        id: ground
+        continue-on-error: true
+        run: |
+          node --experimental-transform-types diagnostic/.github/diagnostics/pr213-exterior/ground/audit-ground.mjs \
+            "$GITHUB_WORKSPACE/source" "$STAGED_LANDMARK_DIST" "$STAGED_LANDMARK_OUT/ground"
+      - name: Walk additional exterior routes with original public controls
+        timeout-minutes: 34
+        run: node "$PR213_EXTERIOR_GENERATED/exterior-driver.mjs"
+      - name: Preserve actual native views, immutable inputs and every failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-pr213-additive-exterior-${{ matrix.layout }}-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            ${{ runner.temp }}/pr213-exterior-${{ matrix.layout }}/evidence/
+            ${{ runner.temp }}/pr213-exterior-${{ matrix.layout }}/generated/
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Keep an earlier ground audit failure binding
+        if: always() && steps.ground.outcome == 'failure'
+        run: exit 1

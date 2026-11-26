@@ -1,0 +1,128 @@
+ // ADDITIVE EXTERIOR FIXTURE ONLY. The original driver remains unchanged.
+ const exteriorViews=exteriorPlan(layout),modelBoundReceipts={};
+ report.purpose='Additional exterior coverage reached through public Guide actions and trusted walking controls';
+ report.layout=layout==='phone'?'phone-landscape':'desktop';report.orientation='landscape';
+ report.originalAcceptancePreserved={matchedViews:6,walkCaptures:8,portraitPhoneViewport:{width:390,height:844},sourceFilesUnmodified:true,executedByThisFixture:false};
+ report.limitations='Additional native exterior gallery at fixed High/60 desktop or Smooth/30 phone landscape, full pixel scale, noon/clear sky, reduced motion and original application controls. Original portrait mobile checks remain separate. No hardware FPS, physical-device, full collision, surveyed height or human appearance acceptance.';
+ report.routes=[];report.failedViews=[];report.exteriorViews=exteriorViews;report.manualAppearanceReviewRequired=true;
+ report.fullExteriorAccepted=null;report.collisionAccepted=null;report.performanceAccepted=null;
+ report.fixture=JSON.parse(await readFile(resolve(import.meta.dirname,'driver-provenance.json'),'utf8'));
+ assert.equal(report.fixture.sourceSha,source);assert.equal(report.fixture.derivedSha256,hash(await readFile(fileURLToPath(import.meta.url))),'Generated diagnostic changed after provenance was recorded');
+ const {installLandmarkComparisonObserver}=await import(pathToFileURL(resolve(game,'scripts/landmark-comparison-observer.mjs')).href);
+ const {selectNativeByLabel}=await import(pathToFileURL(resolve(game,'scripts/native-select-typeahead.mjs')).href);
+ const {assertObservedCamera,assertCameraMatch,verifyCapturePng}=await import(pathToFileURL(resolve(game,'scripts/staged-landmark-comparison-contract.mjs')).href);
+ const observed=()=>page.evaluate(()=>window.__landmarkComparisonObserver.snapshot());
+ async function gallerySettings(){return page.evaluate(()=>({
+  quality:document.querySelector('#quality')?.value,effectiveQuality:document.querySelector('#profile')?.dataset.effectiveQuality,
+  fps:document.querySelector('#fps')?.value,frameCap:Number(document.querySelector('#profile')?.dataset.frameCap),
+  adaptiveScale:Number(document.querySelector('#profile')?.dataset.adaptiveScale),pixelRatio:Number(document.querySelector('#profile')?.dataset.pixelRatio),
+  width:innerWidth,height:innerHeight,devicePixelRatio,reducedMotion:matchMedia('(prefers-reduced-motion: reduce)').matches,
+  focused:document.hasFocus(),visible:document.visibilityState==='visible',skyCycle:document.querySelector('#sky-cycle')?.checked,
+  skyHour:Number(document.querySelector('#sky-hour')?.value),clouds:document.querySelector('#sky-clouds')?.value,
+  antiAliasing:document.querySelector('#anti-aliasing')?.value,
+ }));}
+ async function configureExterior(){
+  report.startupGraphics=await gallerySettings();await phase('configure-exterior');
+  if(!await page.locator('#settings-open').isVisible())await page.locator('#tools-toggle').click();
+  await page.locator('#settings-open').click();const cycle=page.locator('#sky-cycle');if(await cycle.isChecked())await cycle.uncheck();
+  report.nativeSelections=[];
+  for(const [selector,value] of [['#sky-preset','12'],['#sky-clouds','clear'],['#quality',layout==='phone'?'smooth':'high'],['#fps',layout==='phone'?'30':'60']])
+   report.nativeSelections.push(await selectNativeByLabel(page,expect,selector,value));
+  await page.locator('[data-close="settings"]').click();await focusCanvas();
+  await expect(page.locator('#profile')).toHaveAttribute('data-quality',layout==='phone'?'smooth':'high');
+  await expect(page.locator('#profile')).toHaveAttribute('data-effective-quality',layout==='phone'?'smooth':'high');
+  await page.waitForFunction(fps=>Number(document.querySelector('#profile')?.dataset.frameCap)===fps&&Number(document.querySelector('#profile')?.dataset.pixelRatio)===1&&Number(document.querySelector('#profile')?.dataset.adaptiveScale)===1,layout==='phone'?30:60,{polling:100,timeout:90_000});
+  report.gallerySettings=await gallerySettings();assertGallerySettings(report.gallerySettings,layout);
+ }
+ async function settleCamera(){
+  const deadline=Date.now()+120_000;let last=-1;
+  while(Date.now()<deadline){
+   checkBudget();await page.waitForFunction(previous=>window.__landmarkComparisonObserver?.ready()&&window.__landmarkComparisonObserver.frame()>previous,last,{polling:100,timeout:90_000});
+   const row=await observed();last=row.latest?.sequence??last;
+   const tail=row.history.slice(-6);
+   if(row.ready&&tail.length===6&&tail.every((p,i)=>p.valid&&p.sequence>row.captureWindow.afterSequence&&p.sequence===tail[0].sequence+i&&JSON.stringify(p.camera?.gpu)===JSON.stringify(tail[0].camera?.gpu))){assertObservedCamera(row);return row;}
+  }
+  throw Error('The actual submitted camera did not settle within 120 seconds');
+ }
+ async function walkWaypoint(name,id,target){
+  const cfg=site(await snapshot(),id).layout,finalGoal=worldPoint(cfg,target),origin=(await motion()).actor,segments=[];
+  // Fixed intermediate targets stay on the preflighted line. Re-aiming only
+  // at the distant endpoint could accumulate metres of cross-track drift.
+  const goals=segmentWaypoints(origin,finalGoal,7.5),route={name,id,target,goal:finalGoal,origin,segments,completed:false};report.routes.push(route);
+  for(const [step,goal] of goals.entries()){
+   for(let attempt=0;attempt<4;attempt++){
+   let before=await motion();if(distance(before.actor,goal)<.5)break;
+   await turnTo(headingTo(before.actor,goal));await phase('walk-'+name+'-'+step+'-'+attempt);await focusCanvas();before=await motion();
+   const from={x:before.actor.x,z:before.actor.z},vx=goal.x-from.x,vz=goal.z-from.z,length=Math.hypot(vx,vz),phaseName=report.phase;
+   await keyDown('w');
+   try{
+    const handle=await page.waitForFunction(({goal,from,vx,vz,length,phaseName})=>{
+     const row=window.__stagedLandmarkProof.motion(),e=window.__stagedWalkNativeEvidence;if(!row.actor?.onFoot)throw Error('Public exterior route left walking mode');
+     const trail=e.traces[phaseName]??=[];if(!trail.length||trail.at(-1).frames!==row.frames){if(trail.length>=4096){e.overflow=true;throw Error('Exterior trace overflow');}trail.push(row);}
+     if(Math.hypot(row.actor.x-goal.x,row.actor.z-goal.z)<.2||(row.actor.x-from.x)*vx+(row.actor.z-from.z)*vz>=length*length)return row;
+     if(trail.length>=16){const tail=trail.slice(-16),first=tail[0];if(row.frames-first.frames>=15&&tail.every(s=>Math.hypot(s.actor.x-first.actor.x,s.actor.z-first.actor.z)<.025))throw Error('Native walking stopped at an actual obstruction');}
+     return false;
+    },{goal,from,vx,vz,length,phaseName},{polling:'raf',timeout:Math.min(120_000,CASE_MS-(Date.now()-started))});
+    try{await handle.jsonValue();}finally{await handle.dispose();}
+   }finally{await keyUp('w');}
+   await settle(name);const after=await motion();segments.push({step,goal,before,after,trace:await trace(phaseName)});
+   assert(distance(before.actor,after.actor)>.05,'No actual actor displacement');
+   }
+   assert(distance((await motion()).actor,goal)<.5,'Native walking did not reach its bounded intermediate target');
+  }
+  route.actual=await motion();assert(distance(route.actual.actor,finalGoal)<.5,'Public native route did not reach the requested waypoint');route.completed=true;
+ }
+ async function exteriorCapture(view){
+  await phase('capture-'+view.name);const initial=await snapshot(),cfg=site(initial,view.id).layout;
+  const center={x:cfg.center[0],z:cfg.center[1]};
+  // Endpoints are preflighted on the unchanged terrain. Never retreat blindly
+  // for framing: the adjacent shoreline and existing obstacles remain binding.
+  await turnTo(headingTo((await motion()).actor,center));
+  await phase('capture-'+view.name);await settleCamera();const gpu=await painted();
+  if(requestedRenderer==='metal'){assert.match(gpu.renderer,/Metal/i);assert.doesNotMatch(gpu.renderer,/SwiftShader|llvmpipe|software rasterizer/i);}
+  else assert.match(gpu.renderer,/SwiftShader/i);
+  const settings=await gallerySettings();assertGallerySettings(settings,layout);
+  assert.equal(gpu.width,viewport.width);assert.equal(gpu.height,viewport.height);
+  const beforeActor=assertSnapshot(await snapshot(),view.id,{near:false}),before=await observed();assertObservedCamera(before);
+  const file=view.name+'.png',bytes=await bounded(captureCadillacViewportPng({client,viewport,path:resolve(out,file)}),150_000,'Native exterior PNG');
+  await frames(1);const afterActor=assertSnapshot(await snapshot(),view.id,{near:false}),after=await observed();assertCameraMatch(before,after);
+  assert(after.latest.sequence>before.latest.sequence,'No actual frame advanced across capture');
+  assert(distance(beforeActor.actor,afterActor.actor)<.1,'Actor moved during exterior capture');
+  assert.deepEqual(await gallerySettings(),settings,'Exterior settings changed during capture');
+  const modelTransform=observedModelTransform(before,view.id);assert.deepEqual(observedModelTransform(after,view.id).matrixWorld,modelTransform.matrixWorld,'Model transform changed during capture');
+  const fit=projectedModel(modelBoundReceipts[view.id],modelTransform.matrixWorld,before.latest.camera);
+  const row={name:view.name,id:view.id,file,sha256:hash(bytes),bytes:bytes.length,layout:report.layout,viewport,settings,gpu,before,after,beforeActor,afterActor,modelBounds:modelBoundReceipts[view.id],modelTransform,frameFit:fit,manualAppearanceReviewRequired:true};
+  report.captures.push(row);await verifyCapturePng(row,out,viewport);
+  assert(fit.framed,'The complete actual model geometry did not fit this public-input camera');
+  assert.deepEqual(site(beforeActor,view.id).selectedLevels,[0],'The target model left its full-detail LOD0');
+ }
+ async function preserveFailedView(view,error){
+  const row={name:view.name,id:view.id,failed:true,error:String(error),accepted:false};report.failedViews.push(row);
+  try{
+   row.actual=await snapshot();row.observation=await observed();
+   if(report.captures.some(c=>c.name===view.name)){row.file=view.name+'.png';return;}
+   // This is a labelled failure image, never a replacement for a required view.
+   await phase('failed-'+view.name);row.gpu=await painted();row.file=view.name+'-failed.png';
+   const bytes=await bounded(captureCadillacViewportPng({client,viewport,path:resolve(out,row.file)}),60_000,'Failed-route PNG');
+   row.sha256=hash(bytes);row.bytes=bytes.length;row.viewport=viewport;
+   row.after=await snapshot();await verifyCapturePng(row,out,viewport);
+  }catch(captureError){row.captureError=String(captureError);}
+ }
+ async function exteriorRoute(){
+  for(const [id,pin] of Object.entries(assetPins))modelBoundReceipts[id]=modelBounds(await readFile(resolve(dist,'belle/staged-architecture',pin.file)),id);
+  report.modelBounds=modelBoundReceipts;
+  const arm=await page.waitForFunction(()=>{const o=window.__landmarkComparisonObserver;return o?.canArm()?o.arm():false;},null,{polling:100,timeout:180_000});
+  try{report.captureWindow=await arm.jsonValue();}finally{await arm.dispose();}
+  for(const view of exteriorViews){
+   try{
+    await guideAction(view.guideId,view.guideTravel);await dismount();
+    for(const [i,waypoint] of view.waypoints.entries())await walkWaypoint(view.name+'-'+i,view.id,waypoint);
+    await exteriorCapture(view);
+   }catch(error){
+    report.errors.push(view.name+': '+String(error?.stack||error));
+    const cleanup=await releaseOwned();if(cleanup.length)throw Error(cleanup.join('; '));
+    await preserveFailedView(view,error);
+    checkBudget();
+   }
+  }
+ }
