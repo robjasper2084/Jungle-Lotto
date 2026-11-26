@@ -18,7 +18,7 @@ export const STUDY_SITES: readonly StudyDefinition[] = [
    hashes:['d4ca492b0c5d07f90c7e8a1e3a6369811e6fe765f15c73f707bd34c9d55f1ae2','6dc9148964da3db834563cefa68aa22883eef051bea15136b9f72ad3d614e20f','361951febb39f9b148b7298c10294d2a4c12590847b0021394fcbc4a24b5804e']},
   {id:'107227742',name:'Belle Isle Aquarium (STAGED)',center:[1363.78,1167.42],yaw:-2.828592653589793,
    files:['Aquarium_Arched_Entrance_Study.glb','Aquarium_Arched_Entrance_Study_LOD1.glb','Aquarium_Arched_Entrance_Study_LOD2.glb'],
-   hashes:['26447779b20c5bbd2ab1ee6eb3dc1489333722e045400697c40a32cae3c69b93','51d265f0a664ac896c8c23eb50b51f39ff52eeb2adbbc252ed16340c419e3ad9','4295c700ff745bf9c413d78f3e58997f2abc5da22665ee4515bedcd72db3c554']},
+   hashes:['0a7d6eea2010f2787594afe1275ed42241786847ed9ae7a1ba9e79adaba0665c','7dac2de69c4756eb81f98553e85194aa9f38e33fdd6867a86fc4501437644558','a31c9c384abc0fa16bdf9b0cc9e0cb17e90a314b02f1bef6a1921c6f2861a555']},
 ] as const;
 
 // Exact authored nodes in landmarks.glb: tank backings, walking surfaces,
