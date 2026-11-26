@@ -1,0 +1,152 @@
+name: Belle Isle pinned phone stall attribution (diagnostic only)
+
+on:
+  pull_request:
+    branches: [upgrade-redesign-belle-landmark-studies-20261124]
+    paths:
+      - '.github/workflows/belle-phone-stall-attribution.yml'
+      - '.github/diagnostics/belle-phone-stall/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: belle-phone-stall-attribution-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  phone-stall-attribution:
+    runs-on: macos-15
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 61a9db36df072850f4bcea4536471e3d92e07453
+          path: app
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: diagnostic
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/diagnostics/belle-phone-stall/
+            /.github/workflows/belle-phone-stall-attribution.yml
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Verify source and restore the exact failed build artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          game="$GITHUB_WORKSPACE/app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game"
+          bundle="$GITHUB_WORKSPACE/diagnostic/.github/diagnostics/belle-phone-stall"
+          evidence="$GITHUB_WORKSPACE/evidence"
+          mkdir -p "$evidence" "$game/dist"
+          test "$(git -C app rev-parse HEAD)" = 61a9db36df072850f4bcea4536471e3d92e07453
+          test "$(git -C app rev-parse HEAD^{tree})" = 097f7e68cb3407a7c55d2cfc945b428b63c847df
+          test "$(git hash-object "$game/scripts/sustained-ride-profile.mjs")" = c722b5810a7693e5ece72ed00b4401e7cde7267a
+          git -C app diff --exit-code
+          git -C diagnostic cat-file -p HEAD > "$evidence/diagnostic-commit.txt"
+          cp "$bundle/README.md" "$evidence/scope.md"
+          python3 - <<'PY'
+          import hashlib,json,os,pathlib,shutil,stat,urllib.error,urllib.request,zipfile
+          workspace=pathlib.Path(os.environ['GITHUB_WORKSPACE'])
+          evidence=workspace/'evidence'
+          dist=workspace/'app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist'
+          endpoint='https://api.github.com/repos/robjasper2084/Jungle-Lotto/actions/artifacts/15149081467'
+          headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}
+          with urllib.request.urlopen(urllib.request.Request(endpoint,headers=headers),timeout=60) as response:
+              metadata=json.load(response)
+          assert metadata['id']==15149081467 and metadata['name']=='sustained-profile-game'
+          assert not metadata['expired'], 'Pinned artifact expired; no rebuild or substitute is allowed'
+          assert metadata['workflow_run']['id']==45882624820
+          assert metadata['workflow_run']['head_sha']=='61a9db36df072850f4bcea4536471e3d92e07453'
+          expected='8cdd673784c04958e3ead4a8211d3ece44214bcd1dcb94214b3013f42fda5d0a'
+          assert metadata['digest']=='sha256:'+expected
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self,req,fp,code,msg,hdrs,newurl): return None
+          opener=urllib.request.build_opener(NoRedirect)
+          try:
+              opener.open(urllib.request.Request(endpoint+'/zip',headers=headers),timeout=60)
+              raise AssertionError('Expected GitHub artifact redirect')
+          except urllib.error.HTTPError as error:
+              assert error.code==302
+              location=error.headers['Location']
+          assert location.startswith('https://')
+          archive=pathlib.Path(os.environ['RUNNER_TEMP'])/'pinned-phone-diagnostic-build.zip'
+          # The signed redirect is downloaded without forwarding GitHub credentials.
+          with urllib.request.urlopen(location,timeout=60) as response,archive.open('wb') as target:
+              shutil.copyfileobj(response,target)
+          digest=hashlib.sha256(archive.read_bytes()).hexdigest()
+          assert digest==expected
+          assert archive.stat().st_size==metadata['size_in_bytes']
+          with zipfile.ZipFile(archive) as zipped:
+              for info in zipped.infolist():
+                  path=pathlib.PurePosixPath(info.filename)
+                  assert not path.is_absolute() and '..' not in path.parts
+                  assert not stat.S_ISLNK(info.external_attr>>16)
+              zipped.extractall(dist)
+          assert (dist/'index.html').is_file()
+          manifest=[{'path':str(p.relative_to(dist)),'bytes':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()}
+                    for p in sorted(dist.rglob('*')) if p.is_file()]
+          (evidence/'artifact-metadata.json').write_text(json.dumps(metadata,indent=2)+'\n')
+          (evidence/'dist-manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
+          (evidence/'artifact-provenance.json').write_text(json.dumps({'artifactId':15149081467,'runId':45882624820,'zipSha256':digest,
+              'bytes':archive.stat().st_size,'files':len(manifest),'applicationHead':'61a9db36df072850f4bcea4536471e3d92e07453',
+              'originalMergeHead':'1a065ee46fb944d1a842058f65f0d0b9957c5dc2','identicalSourceTree':'097f7e68cb3407a7c55d2cfc945b428b63c847df'},indent=2)+'\n')
+          print('Pinned artifact verified:',len(manifest),'files, ZIP SHA-256',digest)
+          PY
+      - name: Verify additive observation and install the existing browser runtime
+        run: |
+          set -euo pipefail
+          game="$GITHUB_WORKSPACE/app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game"
+          bundle="$GITHUB_WORKSPACE/diagnostic/.github/diagnostics/belle-phone-stall"
+          evidence="$GITHUB_WORKSPACE/evidence"
+          export STRICT_DRIVER_PATH="$game/scripts/sustained-ride-profile.mjs"
+          node --test "$bundle/observer.test.mjs" 2>&1 | tee "$evidence/observer-checks.log"
+          node "$bundle/phone-stall-observer.mjs" "$STRICT_DRIVER_PATH" "$evidence"
+          node --check "$game/scripts/sustained-phone-stall-diagnostic.mjs"
+          node --check "$bundle/validate-evidence.mjs"
+          (cd "$game/../.." && npm ci && npx playwright install chrome)
+          git -C app diff --exit-code
+          { date -u; sw_vers; uname -m; sysctl hw.model hw.ncpu hw.memsize; node -v; "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --version; uptime; vm_stat; } > "$evidence/host-before.txt"
+      - name: Observe the unchanged ninety-second native phone diagnostic
+        timeout-minutes: 28
+        working-directory: app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          BELLE_PROFILE_DEVICE: phone
+          BELLE_PROFILE_MODE: diagnostic
+          BELLE_PROFILE_SECONDS: '90'
+        run: |
+          set -euo pipefail
+          bundle="$GITHUB_WORKSPACE/diagnostic/.github/diagnostics/belle-phone-stall"
+          evidence="$GITHUB_WORKSPACE/evidence"
+          export GITHUB_SHA=61a9db36df072850f4bcea4536471e3d92e07453
+          status=0
+          node scripts/sustained-phone-stall-diagnostic.mjs > "$evidence/observed-driver.log" 2>&1 || status=$?
+          printf '%s\n' "$status" > "$evidence/original-verdict-exit.txt"
+          cat "$evidence/observed-driver.log"
+          { date -u; uptime; vm_stat; } > "$evidence/host-after.txt"
+          test "$(git hash-object scripts/sustained-ride-profile.mjs)" = c722b5810a7693e5ece72ed00b4401e7cde7267a
+          cmp scripts/sustained-ride-profile.mjs "$evidence/original-strict-driver.mjs"
+          git diff --exit-code
+          node "$bundle/validate-evidence.mjs" output/sustained-profile/diagnostic/phone
+          exit "$status"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: belle-pinned-phone-stall-attribution-NOT-RELEASE
+          path: |
+            evidence/
+            app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/sustained-profile/diagnostic/phone/
+          retention-days: 14
+          if-no-files-found: warn
