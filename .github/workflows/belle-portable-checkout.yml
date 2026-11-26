@@ -1,0 +1,457 @@
+name: Belle Isle portable exact-source checkout (diagnostic only)
+on:
+  pull_request:
+    branches: [upgrade-redesign-cadillac-modification-suite]
+    paths:
+      - '.github/workflows/belle-portable-checkout.yml'
+permissions:
+  contents: read
+jobs:
+  export:
+    if: github.event.pull_request.head.ref == 'diagnostic/belle-isle-offline-checkout-20261126'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      SOURCE_SHA: '7e6c5c7d9f8ed36ee97982b925daa6703e9a9b3e'
+      SOURCE_TREE: '9dbc2c14c58aee6228afa503f847feb19f143624'
+      RUNTIME: lottominded-ultra.io/games/gothtechnology2
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          path: checkout
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /AGENTS.md
+            /.github/workflows/
+            /lottominded-ultra.io/games/gothtechnology2/
+      - name: Export a real shallow sparse Git checkout and prove offline restoration
+        id: export
+        shell: bash
+        run: |
+          set -euo pipefail
+          out="$GITHUB_WORKSPACE/recovery"
+          mkdir -p "$out/source" "$out/meta"
+          cd "$GITHUB_WORKSPACE/checkout"
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          test "$(git rev-parse HEAD^{tree})" = "$SOURCE_TREE"
+          test "$(git rev-parse --is-shallow-repository)" = true
+          test -z "$(git status --porcelain --untracked-files=all)"
+          test -f AGENTS.md
+          test -f "$RUNTIME/package-lock.json"
+          test -f "$RUNTIME/belle-isle-source/game/package-lock.json"
+          git switch -c upgrade-redesign
+          case "$(git remote get-url origin)" in
+            https://github.com/robjasper2084/Jungle-Lotto|https://github.com/robjasper2084/Jungle-Lotto.git) ;;
+            *) echo "Unexpected origin"; exit 1;;
+          esac
+          # Fail closed if credential-related settings or external object stores exist.
+          if { git config --local --name-only --list; git config --worktree --name-only --list; } | grep -Ei 'credential|extraheader|(^|\.)include|^url\.|proxy|auth|token'; then
+            echo "Unexpected credential or external configuration key"; exit 1
+          fi
+          test ! -e .git/objects/info/alternates
+          test ! -e .git/objects/info/http-alternates
+          test ! -e .git/worktrees
+          git ls-files --stage | sha256sum | cut -d' ' -f1 > "$out/meta/index.sha256"
+          archive="$RUNNER_TEMP/belle-git.tar"
+          tar --exclude=.git/hooks --exclude=.git/logs --exclude=.git/FETCH_HEAD -cf "$archive" .git
+          restore="$RUNNER_TEMP/belle-offline-proof"
+          mkdir "$restore"
+          tar -xf "$archive" -C "$restore"
+          (
+            cd "$restore"
+            export GIT_ALLOW_PROTOCOL=none GIT_NO_LAZY_FETCH=1
+            git checkout-index -a
+            test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+            test "$(git rev-parse HEAD^{tree})" = "$SOURCE_TREE"
+            test "$(git branch --show-current)" = upgrade-redesign
+            test -z "$(git status --porcelain --untracked-files=all)"
+            test "$(git ls-files --stage | sha256sum | cut -d' ' -f1)" = "$(cat "$out/meta/index.sha256")"
+            test -f AGENTS.md
+            test -f "$RUNTIME/belle-isle-source/game/package-lock.json"
+          )
+          rm -rf "$restore"
+          sha256sum "$archive" | cut -d' ' -f1 > "$out/meta/repository.tar.sha256"
+          split -b 128M -d -a 2 "$archive" "$out/source/repo.part."
+          rm "$archive"
+          cd "$out/source"
+          shopt -s nullglob
+          parts=(repo.part.*)
+          test "${#parts[@]}" -ge 1
+          test "${#parts[@]}" -le 32
+          sha256sum "${parts[@]}" > "$out/meta/repo-parts.sha256"
+          printf 'source=%s\ntree=%s\nparts=%s\nverifiedOfflineRestore=true\n' "$SOURCE_SHA" "$SOURCE_TREE" "${#parts[@]}" > "$out/meta/source-receipt.txt"
+          git --version >> "$out/meta/source-receipt.txt"
+          printf 'parts=%s\n' "${#parts[@]}" >> "$GITHUB_OUTPUT"
+          cat "$out/meta/source-receipt.txt"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: belle-offline-source-metadata-7e6c5c7
+          path: recovery/meta/
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.export.outputs.parts) > 0 }}
+        with:
+          name: belle-offline-source-7e6c5c7-part-00
+          path: recovery/source/repo.part.00
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.export.outputs.parts) > 1 }}
+        with:
+          name: belle-offline-source-7e6c5c7-part-01
+          path: recovery/source/repo.part.01
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.export.outputs.parts) > 2 }}
+        with:
+          name: belle-offline-source-7e6c5c7-part-02
+          path: recovery/source/repo.part.02
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.export.outputs.parts) > 3 }}
+        with:
+          name: belle-offline-source-7e6c5c7-part-03
+          path: recovery/source/repo.part.03
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.export.outputs.parts) > 4 }}
+        with:
+          name: belle-offline-source-7e6c5c7-part-04
+          path: recovery/source/repo.part.04
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.export.outputs.parts) > 5 }}
+        with:
+          name: belle-offline-source-7e6c5c7-part-05
+          path: recovery/source/repo.part.05
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.export.outputs.parts) > 6 }}
+        with:
+          name: belle-offline-source-7e6c5c7-part-06
+          path: recovery/source/repo.part.06
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.export.outputs.parts) > 7 }}
+        with:
+          name: belle-offline-source-7e6c5c7-part-07
+          path: recovery/source/repo.part.07
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.export.outputs.parts) > 8 }}
+        with:
+          name: belle-offline-source-7e6c5c7-part-08
+          path: recovery/source/repo.part.08
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.export.outputs.parts) > 9 }}
+        with:
+          name: belle-offline-source-7e6c5c7-part-09
+          path: recovery/source/repo.part.09
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.export.outputs.parts) > 10 }}
+        with:
+          name: belle-offline-source-7e6c5c7-part-10
+          path: recovery/source/repo.part.10
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.export.outputs.parts) > 11 }}
+        with:
+          name: belle-offline-source-7e6c5c7-part-11
+          path: recovery/source/repo.part.11
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.export.outputs.parts) > 12 }}
+        with:
+          name: belle-offline-source-7e6c5c7-part-12
+          path: recovery/source/repo.part.12
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.export.outputs.parts) > 13 }}
+        with:
+          name: belle-offline-source-7e6c5c7-part-13
+          path: recovery/source/repo.part.13
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.export.outputs.parts) > 14 }}
+        with:
+          name: belle-offline-source-7e6c5c7-part-14
+          path: recovery/source/repo.part.14
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.export.outputs.parts) > 15 }}
+        with:
+          name: belle-offline-source-7e6c5c7-part-15
+          path: recovery/source/repo.part.15
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.export.outputs.parts) > 16 }}
+        with:
+          name: belle-offline-source-7e6c5c7-part-16
+          path: recovery/source/repo.part.16
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.export.outputs.parts) > 17 }}
+        with:
+          name: belle-offline-source-7e6c5c7-part-17
+          path: recovery/source/repo.part.17
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.export.outputs.parts) > 18 }}
+        with:
+          name: belle-offline-source-7e6c5c7-part-18
+          path: recovery/source/repo.part.18
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.export.outputs.parts) > 19 }}
+        with:
+          name: belle-offline-source-7e6c5c7-part-19
+          path: recovery/source/repo.part.19
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.export.outputs.parts) > 20 }}
+        with:
+          name: belle-offline-source-7e6c5c7-part-20
+          path: recovery/source/repo.part.20
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.export.outputs.parts) > 21 }}
+        with:
+          name: belle-offline-source-7e6c5c7-part-21
+          path: recovery/source/repo.part.21
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.export.outputs.parts) > 22 }}
+        with:
+          name: belle-offline-source-7e6c5c7-part-22
+          path: recovery/source/repo.part.22
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.export.outputs.parts) > 23 }}
+        with:
+          name: belle-offline-source-7e6c5c7-part-23
+          path: recovery/source/repo.part.23
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.export.outputs.parts) > 24 }}
+        with:
+          name: belle-offline-source-7e6c5c7-part-24
+          path: recovery/source/repo.part.24
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.export.outputs.parts) > 25 }}
+        with:
+          name: belle-offline-source-7e6c5c7-part-25
+          path: recovery/source/repo.part.25
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.export.outputs.parts) > 26 }}
+        with:
+          name: belle-offline-source-7e6c5c7-part-26
+          path: recovery/source/repo.part.26
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.export.outputs.parts) > 27 }}
+        with:
+          name: belle-offline-source-7e6c5c7-part-27
+          path: recovery/source/repo.part.27
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.export.outputs.parts) > 28 }}
+        with:
+          name: belle-offline-source-7e6c5c7-part-28
+          path: recovery/source/repo.part.28
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.export.outputs.parts) > 29 }}
+        with:
+          name: belle-offline-source-7e6c5c7-part-29
+          path: recovery/source/repo.part.29
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.export.outputs.parts) > 30 }}
+        with:
+          name: belle-offline-source-7e6c5c7-part-30
+          path: recovery/source/repo.part.30
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.export.outputs.parts) > 31 }}
+        with:
+          name: belle-offline-source-7e6c5c7-part-31
+          path: recovery/source/repo.part.31
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Prepare the existing locked Linux dependencies and Node toolchain
+        id: deps
+        shell: bash
+        run: |
+          set -euo pipefail
+          out="$GITHUB_WORKSPACE/recovery"
+          mkdir -p "$out/deps" "$out/deps-meta"
+          cd "$GITHUB_WORKSPACE/checkout/$RUNTIME"
+          npm ci
+          cd belle-isle-source/game
+          npm ci
+          cd "$GITHUB_WORKSPACE/checkout"
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          git diff --exit-code HEAD
+          test -d "$RUNTIME/node_modules"
+          test -d "$RUNTIME/belle-isle-source/game/node_modules"
+          tar -I 'zstd -T0 -3' -cf "$RUNNER_TEMP/belle-deps.tar.zst" "$RUNTIME/node_modules" "$RUNTIME/belle-isle-source/game/node_modules"
+          sha256sum "$RUNNER_TEMP/belle-deps.tar.zst" | cut -d' ' -f1 > "$out/deps-meta/dependencies.tar.zst.sha256"
+          split -b 128M -d -a 2 "$RUNNER_TEMP/belle-deps.tar.zst" "$out/deps/deps.part."
+          rm "$RUNNER_TEMP/belle-deps.tar.zst"
+          node_root="$(dirname "$(dirname "$(readlink -f "$(command -v node)")")")"
+          test -x "$node_root/bin/node"
+          tar -I 'zstd -T0 -3' -cf "$out/deps-meta/node-toolchain.tar.zst" -C "$node_root" .
+          (cd "$out/deps-meta"; sha256sum node-toolchain.tar.zst > node-toolchain.sha256; node --version > node-version.txt; npm --version > npm-version.txt; uname -sm > platform.txt)
+          cd "$out/deps"
+          shopt -s nullglob
+          parts=(deps.part.*)
+          test "${#parts[@]}" -ge 1
+          test "${#parts[@]}" -le 8
+          sha256sum "${parts[@]}" > "$out/deps-meta/deps-parts.sha256"
+          printf 'source=%s\nparts=%s\n' "$SOURCE_SHA" "${#parts[@]}" > "$out/deps-meta/deps-receipt.txt"
+          printf 'parts=%s\n' "${#parts[@]}" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: belle-offline-toolchain-7e6c5c7
+          path: recovery/deps-meta/
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.deps.outputs.parts) > 0 }}
+        with:
+          name: belle-offline-dependencies-7e6c5c7-part-00
+          path: recovery/deps/deps.part.00
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.deps.outputs.parts) > 1 }}
+        with:
+          name: belle-offline-dependencies-7e6c5c7-part-01
+          path: recovery/deps/deps.part.01
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.deps.outputs.parts) > 2 }}
+        with:
+          name: belle-offline-dependencies-7e6c5c7-part-02
+          path: recovery/deps/deps.part.02
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.deps.outputs.parts) > 3 }}
+        with:
+          name: belle-offline-dependencies-7e6c5c7-part-03
+          path: recovery/deps/deps.part.03
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.deps.outputs.parts) > 4 }}
+        with:
+          name: belle-offline-dependencies-7e6c5c7-part-04
+          path: recovery/deps/deps.part.04
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.deps.outputs.parts) > 5 }}
+        with:
+          name: belle-offline-dependencies-7e6c5c7-part-05
+          path: recovery/deps/deps.part.05
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.deps.outputs.parts) > 6 }}
+        with:
+          name: belle-offline-dependencies-7e6c5c7-part-06
+          path: recovery/deps/deps.part.06
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.deps.outputs.parts) > 7 }}
+        with:
+          name: belle-offline-dependencies-7e6c5c7-part-07
+          path: recovery/deps/deps.part.07
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
