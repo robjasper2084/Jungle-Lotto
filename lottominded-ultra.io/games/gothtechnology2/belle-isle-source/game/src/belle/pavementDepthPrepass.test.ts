@@ -114,6 +114,88 @@ test('source material, callback, visibility, parent, transform and uploaded-attr
   assert.notEqual(f.handle.read().entries[0].status,'active',change.toString());f.dispose();}
 });
 
+test('unsupported material is excluded before native collection rather than issuing a zero-count depth draw',()=>{
+ const f=fixture(),sourceBefore=f.source.onBeforeRender,sourceAfter=f.source.onAfterRender;
+ f.material.transparent=true;f.material.opacity=.65;f.material.needsUpdate=true;
+ f.begin();
+ assert.equal(f.depth!.visible,false);assert.equal(f.source.visible,true);
+ assert.equal(f.handle.read().entries[0].status,'material-changed');assert.equal(f.handle.read().entries[0].selectedIndices,0);
+ const collected:T.Object3D[]=[];f.scene.traverseVisible(object=>collected.push(object));
+ assert(collected.includes(f.source));assert(!collected.includes(f.depth!),'unsupported depth view never reaches render-list collection');
+ f.depth!.visible=true;assert.equal(f.depth!.visible,false,'a requested enable cannot bypass failed preflight');
+ assert.equal(f.source.onBeforeRender,sourceBefore);assert.equal(f.source.onAfterRender,sourceAfter);
+ assert.deepEqual(f.source.geometry.drawRange,{start:0,count:Infinity});assert.equal(f.contextCalls(),1);f.dispose();
+});
+
+test('requested baseline visibility and transient unsupported views recover only through a new valid preflight',()=>{
+ const f=fixture();assert.equal(f.depth!.visible,false,'no previous frame permission before first preflight');
+ f.depth!.visible=false;f.begin();assert.equal(f.depth!.visible,false);f.draw();assert.equal(f.depth!.geometry.drawRange.count,0);
+ f.depth!.visible=true;assert.equal(f.depth!.visible,false);f.begin();assert.equal(f.depth!.visible,true);f.draw();assert(f.depth!.geometry.drawRange.count>0);f.after();
+ const target=new T.WebGLRenderTarget(4,4);f.renderer.getRenderTarget=()=>target;f.begin();assert.equal(f.depth!.visible,false);
+ f.renderer.getRenderTarget=()=>null;f.depth!.visible=true;assert.equal(f.depth!.visible,false);f.begin();assert.equal(f.depth!.visible,true);f.draw();f.after();
+ f.material.transparent=true;f.begin();assert.equal(f.depth!.visible,false);
+ f.material.transparent=false;f.begin();assert.equal(f.depth!.visible,true);f.draw();assert(f.depth!.geometry.drawRange.count>0);f.after();
+ f.begin(new T.ArrayCamera([f.camera]));assert.equal(f.depth!.visible,false);f.begin();assert.equal(f.depth!.visible,true);
+ f.canvas.dispatchEvent(new Event('webglcontextlost'));f.begin();assert.equal(f.depth!.visible,false);
+ f.canvas.dispatchEvent(new Event('webglcontextrestored'));f.begin();assert.equal(f.depth!.visible,true);assert.equal(f.contextCalls(),2);
+ target.dispose();f.dispose();
+});
+
+test('preflight follows original scene-hook mutations and preserves its exact return and throw',()=>{
+ const f=fixture();f.handle.dispose();const answer={token:true},failure={token:'failure'};let mode='unsupported',calls=0;
+ f.scene.onBeforeRender=function(){assert.equal(this,f.scene);calls++;if(mode==='throw')throw failure;f.material.transparent=mode==='unsupported';return answer;};
+ const handle=preparePavementDepthPrepass(f.scene,f.renderer,[receipt(f.source)],options),depth=f.source.children[0] as T.Mesh;
+ assert.equal(Reflect.apply(f.scene.onBeforeRender,f.scene,[f.renderer,f.scene,f.camera,null]),answer);
+ assert.equal(depth.visible,false);assert.equal(handle.read().entries[0].status,'material-changed');f.renderer.info.render.frame++;
+ mode='valid';assert.equal(Reflect.apply(f.scene.onBeforeRender,f.scene,[f.renderer,f.scene,f.camera,null]),answer);assert.equal(depth.visible,true);f.renderer.info.render.frame++;
+ mode='throw';assert.throws(()=>Reflect.apply(f.scene.onBeforeRender,f.scene,[f.renderer,f.scene,f.camera,null]),error=>error===failure);
+ assert.equal(depth.visible,false);assert.equal(handle.read().entries[0].status,'scene-before-threw');assert.equal(calls,3);
+ handle.dispose();f.dispose();
+});
+
+test('nested scene-hook render gets its own upcoming stamp and outer view is approved after it returns',()=>{
+ const f=fixture();f.handle.dispose();const inner=f.camera.clone();inner.updateMatrixWorld(true);let wrapper:T.Scene['onBeforeRender'],depth:T.Mesh,calls=0;
+ f.scene.onBeforeRender=function(renderer,scene,camera){
+  calls++;
+  if(camera===f.camera){
+   Reflect.apply(wrapper,this,[renderer,scene,inner,null]);f.renderer.info.render.frame++;
+   assert.equal(depth.visible,true);Reflect.apply(depth.onBeforeRender,depth,[renderer,scene,inner,depth.geometry,depth.material,null]);assert(depth.geometry.drawRange.count>0);
+   Reflect.apply(depth.onAfterRender,depth,[renderer,scene,inner,depth.geometry,depth.material,null]);
+  }
+ };
+ const handle=preparePavementDepthPrepass(f.scene,f.renderer,[receipt(f.source)],options);wrapper=f.scene.onBeforeRender;depth=f.source.children[0] as T.Mesh;
+ Reflect.apply(wrapper,f.scene,[f.renderer,f.scene,f.camera,null]);f.renderer.info.render.frame++;
+ assert.equal(calls,2);assert.equal(f.renderer.info.render.frame,2);assert.equal(depth.visible,true);
+ Reflect.apply(depth.onBeforeRender,depth,[f.renderer,f.scene,f.camera,depth.geometry,depth.material,null]);assert(depth.geometry.drawRange.count>0);
+ // A nested render after outer collection invalidates that outer list's approval.
+ Reflect.apply(wrapper,f.scene,[f.renderer,f.scene,inner,null]);f.renderer.info.render.frame++;
+ Reflect.apply(depth.onBeforeRender,depth,[f.renderer,f.scene,f.camera,depth.geometry,depth.material,null]);assert.equal(depth.geometry.drawRange.count,0);assert.equal(depth.visible,false);
+ handle.dispose();f.dispose();
+});
+
+test('a later shadow-phase mutation still reaches the full per-draw guard after successful preflight',()=>{
+ const f=fixture();f.begin();assert.equal(f.depth!.visible,true);
+ // Native shadow callbacks run after render-list collection. No prior approval
+ // may substitute for re-reading the current source at its actual color draw.
+ f.material.depthWrite=false;f.draw();assert.equal(f.depth!.geometry.drawRange.count,0);assert.equal(f.depth!.visible,false);
+ assert.equal(f.handle.read().depthDrawAttempts,0);assert.equal(f.handle.read().entries[0].status,'material-changed');
+ assert.equal(f.material.depthWrite,false,'the caller-owned source remains untouched');assert.deepEqual(f.source.geometry.drawRange,{start:0,count:Infinity});f.dispose();
+});
+
+test('preflight keeps independent eligible owners and cannot rearm a disposed private view',()=>{
+ const f=fixture();f.handle.dispose();const data=part(),otherMaterial=new T.MeshStandardMaterial();finishAsphalt(otherMaterial);
+ otherMaterial.name='Island asphalt';otherMaterial.userData.realisticSurface='asphalt';otherMaterial.userData.realisticProfile='asphalt|planar';
+ const other=createPavementMesh(data.buffer,data.part,8,otherMaterial);f.scene.add(other);f.scene.updateMatrixWorld(true);
+ const handle=preparePavementDepthPrepass(f.scene,f.renderer,[receipt(f.source),receipt(other)],options),one=f.source.children[0] as T.Mesh,two=other.children[0] as T.Mesh;
+ f.material.transparent=true;Reflect.apply(f.scene.onBeforeRender,f.scene,[f.renderer,f.scene,f.camera,null]);f.renderer.info.render.frame++;
+ assert.equal(one.visible,false);assert.equal(two.visible,true);assert.equal(handle.read().entries[0].status,'material-changed');assert.equal(handle.read().entries[1].status,'ready');
+ Reflect.apply(two.onBeforeRender,two,[f.renderer,f.scene,f.camera,two.geometry,two.material,null]);assert(two.geometry.drawRange.count>0);
+ Reflect.apply(two.onAfterRender,two,[f.renderer,f.scene,f.camera,two.geometry,two.material,null]);other.geometry.dispose();assert.equal(two.visible,false);
+ Reflect.apply(f.scene.onBeforeRender,f.scene,[f.renderer,f.scene,f.camera,null]);f.renderer.info.render.frame++;
+ assert.equal(two.visible,false);assert.equal(handle.read().entries[1].status,'disposed');assert.equal(other.children.length,0);
+ handle.dispose();otherMaterial.dispose();f.dispose();
+});
+
 test('unsupported context, output, global clipping, target, override, log/reversed depth and ArrayCamera inputs fall back',()=>{
  const changes:((f:ReturnType<typeof fixture>)=>void)[]=[
   f=>{f.renderer.getRenderTarget=()=>new T.WebGLRenderTarget(4,4);},f=>{f.scene.overrideMaterial=new T.MeshBasicMaterial();},
@@ -201,7 +283,11 @@ test('the actual 759 asphalt factory, decorators and camera ranges activate with
 test('the pinned native frame stamp is observed before increment and original mesh callbacks still bracket the native draw',()=>{
  const source=readFileSync(new URL('../../node_modules/three/src/renderers/WebGLRenderer.js',import.meta.url),'utf8');
  const observe=source.indexOf('scene.onBeforeRender( _this, scene, camera, _currentRenderTarget )'),advance=source.indexOf('this.info.render.frame ++;');
- assert(observe>=0&&advance>observe);assert(source.indexOf('shadowMap.render( shadowsArray, scene, camera )')>advance);
+ const collect=source.indexOf('projectObject( scene, camera, 0, _this.sortObjects )',observe);
+ assert(observe>=0&&collect>observe&&advance>collect);assert(source.indexOf('shadowMap.render( shadowsArray, scene, camera )')>advance);
+ const project=source.slice(source.indexOf('function projectObject('),source.indexOf('function renderScene('));
+ assert(project.indexOf('if ( object.visible === false ) return;')>=0);
+ assert(project.indexOf('if ( object.visible === false ) return;')<project.indexOf('currentRenderList.push('),'native visibility rejection precedes list insertion');
  const start=source.indexOf('function renderObject( object, scene, camera, geometry, material, group )'),render=source.slice(start,source.indexOf('function getProgram',start));
  assert(render.indexOf('object.onBeforeRender')<render.indexOf('object.modelViewMatrix.multiplyMatrices'));
  assert(render.indexOf('object.onAfterRender')>render.lastIndexOf('_this.renderBufferDirect'));

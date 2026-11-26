@@ -70,19 +70,26 @@ export function preparePavementDepthPrepass(scene:T.Scene,renderer:T.WebGLRender
  const beforeDescriptor=Object.getOwnPropertyDescriptor(scene,'onBeforeRender'),originalBefore=scene.onBeforeRender;
  const viewStamp:{frame:number;camera:T.Camera|null}={frame:-1,camera:null};
  const before:T.Scene['onBeforeRender']=function(this:T.Scene,...args){
-  const result=Reflect.apply(originalBefore,this,args);
+  let result:unknown;
+  try{result=Reflect.apply(originalBefore,this,args);}
+  catch(error){viewStamp.frame=-1;viewStamp.camera=null;for(const entry of entries)entry.suspend('scene-before-threw');throw error;}
   // r185 increments frame after this hook and before shadow/color submissions.
   // A missing wrapper, nested render or a different ArrayCamera child cannot
   // accidentally reuse a prior view's approval.
-  if(!disposed&&this===scene&&args[0]===renderer&&args[1]===scene){
+  if(!disposed&&scene.onBeforeRender===before&&this===scene&&args[0]===renderer&&args[1]===scene){
    viewStamp.frame=renderer.info.render.frame+1;viewStamp.camera=args[2];
-  }
+   // r185 collects the render list after this hook. Reject an unsupported
+   // private view now, before even a zero-count native draw can be queued.
+   // The complete per-draw validation below remains independently mandatory.
+   for(const entry of entries)entry.preflight(renderer,scene,args[2]);
+  }else{viewStamp.frame=-1;viewStamp.camera=null;for(const entry of entries)entry.suspend('unsupported-view');}
   return result;
  };
  const fixedContract=options.rendererOutput.type===T.UnsignedByteType&&options.rendererOutput.nodes===false;
  const supported=!!context&&context.depth===true&&context.stencil===false&&fixedContract&&pinnedChunks()&&
   typeof originalBefore==='function'&&(!beforeDescriptor||('value'in beforeDescriptor&&beforeDescriptor.configurable===true&&beforeDescriptor.writable===true));
- const entries:{source:T.Mesh;depth:T.Mesh;geometry:T.BufferGeometry;material:T.MeshDepthMaterial;status:string;selectedIndices:number;release:()=>void}[]=[];
+ const entries:{source:T.Mesh;depth:T.Mesh;geometry:T.BufferGeometry;material:T.MeshDepthMaterial;status:string;selectedIndices:number;
+  preflight:(renderer:T.WebGLRenderer,scene:T.Scene,camera:T.Camera)=>void;suspend:(reason:string)=>void;release:()=>void}[]=[];
  const canvas=renderer.domElement;
  function contextLost(){contextActive=false;}
  function contextRestored(){context=renderer.getContextAttributes();contextActive=!!context&&context.depth===true&&context.stencil===false;}
@@ -117,12 +124,15 @@ export function preparePavementDepthPrepass(scene:T.Scene,renderer:T.WebGLRender
   depth.frustumCulled=frustumCulled;depth.renderOrder=-103;depth.castShadow=false;depth.receiveShadow=false;
   depth.raycast=()=>{};
   const depthMatrix=depth.matrixWorld,depthLocal=depth.matrix,depthLayers=depth.layers,depthVersion=depthMaterial.version,depthCompile=depthMaterial.onBeforeCompile,depthKey=depthMaterial.customProgramCacheKey;
-  const entry={source,depth,geometry:geometryView,material:depthMaterial,status:'ready',selectedIndices:0,release:()=>{}};
-  const selection={start:0,count:0};let released=false,privateOwnershipLost=false;
-  function valid(viewRenderer:T.WebGLRenderer,viewScene:T.Scene,viewCamera:T.Camera):string|null{
+  const entry={source,depth,geometry:geometryView,material:depthMaterial,status:'ready',selectedIndices:0,
+   preflight:(_renderer:T.WebGLRenderer,_scene:T.Scene,_camera:T.Camera)=>{},suspend:(_reason:string)=>{},release:()=>{}};
+  const selection={start:0,count:0};let released=false,privateOwnershipLost=false,privateVisible=false,requestedVisible=true;
+  function valid(viewRenderer:T.WebGLRenderer,viewScene:T.Scene,viewCamera:T.Camera,preflight=false):string|null{
    if(disposed||released||!contextActive)return'disposed-or-lost-context';
    if(privateOwnershipLost)return'depth-owner-changed';
-   if(viewRenderer!==renderer||viewScene!==scene||viewStamp.camera!==viewCamera||viewStamp.frame!==renderer.info.render.frame||
+   if(!requestedVisible)return'view-disabled';
+   if(viewRenderer!==renderer||viewScene!==scene||scene.onBeforeRender!==before||viewStamp.camera!==viewCamera||
+    viewStamp.frame!==renderer.info.render.frame+(preflight?1:0)||(!preflight&&!privateVisible)||
     renderer.getRenderTarget()!==null||scene.overrideMaterial!==null||
     renderer.xr.isPresenting||(viewCamera as T.ArrayCamera).isArrayCamera||viewCamera.coordinateSystem!==T.WebGLCoordinateSystem||viewCamera.reversedDepth||
     renderer.capabilities.logarithmicDepthBuffer||renderer.capabilities.reversedDepthBuffer||renderer.localClippingEnabled||renderer.clippingPlanes.length)return'unsupported-view';
@@ -152,11 +162,23 @@ export function preparePavementDepthPrepass(scene:T.Scene,renderer:T.WebGLRender
     attributes.some(({name,receipt:attribute})=>geometry.attributes[name]!==attribute!.attribute||!sameAttribute(attribute!)))return'geometry-changed';
    return null;
   }
+  entry.suspend=(reason)=>{privateVisible=false;geometryView.setDrawRange(0,0);entry.selectedIndices=0;if(!released)entry.status=reason;};
+  entry.preflight=(viewRenderer,viewScene,viewCamera)=>{
+   entry.suspend('ready');
+   const reason=valid(viewRenderer,viewScene,viewCamera,true);if(reason){entry.suspend(reason);return;}
+   privateVisible=true;
+  };
+  // Callers may disable this optional view (the proof does so for its native
+  // baseline). Enabling it never bypasses the current preflight decision.
+  Object.defineProperty(depth,'visible',{get:()=>requestedVisible&&privateVisible,set:(next:unknown)=>{
+   if(typeof next!=='boolean'){privateOwnershipLost=true;entry.suspend('depth-owner-changed');return;}
+   requestedVisible=next;if(!next)entry.suspend('view-disabled');
+  },enumerable:true,configurable:false});
   depth.onBeforeRender=function(viewRenderer,viewScene,viewCamera){
    // Only this owned view changes. A throw in any later renderer step cannot
    // leave the original geometry range or material in a modified state.
    geometryView.setDrawRange(0,0);entry.selectedIndices=0;
-   const reason=valid(viewRenderer,viewScene,viewCamera);if(reason){entry.status=reason;return;}
+   const reason=valid(viewRenderer,viewScene,viewCamera);if(reason){entry.suspend(reason);return;}
    range.select(viewCamera,selection);geometryView.setDrawRange(selection.start,selection.count);
    entry.status='active';entry.selectedIndices=selection.count;if(selection.count>0)depthDrawAttempts++;
   };
@@ -172,7 +194,7 @@ export function preparePavementDepthPrepass(scene:T.Scene,renderer:T.WebGLRender
    },enumerable:Object.getOwnPropertyDescriptor(depth,name)?.enumerable??false,configurable:false});
   }
   entry.release=()=>{
-   if(released)return;released=true;entry.status='disposed';entry.selectedIndices=0;
+   if(released)return;released=true;privateVisible=false;entry.status='disposed';entry.selectedIndices=0;
    geometry.removeEventListener('dispose',entry.release);material.removeEventListener('dispose',entry.release);
    depth.removeFromParent();geometryView.setDrawRange(0,0);
    // r185 WebGLGeometries reads these fields during its dispose listener. Strip
