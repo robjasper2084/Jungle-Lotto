@@ -1,0 +1,15 @@
+{
+  "applicationBase": "75906273c0cd414c0d004320fc6f654b4783e5b1",
+  "files": [
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/renderDiagnostics.ts",
+      "beforeSha256": "9dbcb6b06932fa733c8682f2ae5d79d82971b9647911f6d0c004fda9ca3bc600",
+      "afterSha256": "ec05b0e10439e88e5c7ca176d3ca239de07fee2ab7619f2a06019566cc16c0ed"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/main.ts",
+      "beforeSha256": "8ec347111a3de37cd5140e1014f5c07869398f7d8491e558ad862a9c41ddb985",
+      "afterSha256": "36e83e7c0c8e2ec3e0b64bb2f5920400714e7cab3449b654374e3645bda52781"
+    }
+  ]
+}

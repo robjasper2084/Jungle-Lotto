@@ -1,0 +1,27 @@
+--- a/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/renderDiagnostics.ts
++++ b/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/renderDiagnostics.ts
+@@ -36,7 +36,12 @@
+  marked(kind:'capture'|'compaction',bytes:number){if(!this.active)return;if(!Number.isSafeInteger(bytes)||bytes<0){this.frame.invalidObservations++;return;}if(kind==='capture'){this.frame.captureAttributeMarks++;this.frame.captureBytesMarked+=bytes;}else{this.frame.compactionAttributeMarks++;this.frame.compactionBytesMarked+=bytes;}}
+  finishFrame():NatureRenderFrame|undefined{if(!this.active)return;this.active=false;return {...this.frame};}
+ }
+-export function createNatureRenderProbe(search:string,clock?:()=>number){return new URLSearchParams(search).get('profile')==='manual'?new NatureRenderProbe(clock):undefined;}
++export function createNatureRenderProbe(search:string,clock?:()=>number){
++ const query=new URLSearchParams(search);
++ // Isolated attribution only: retain profile=1's original trusted W boundary.
++ const enabled=query.get('profile')==='manual'||query.get('profile')==='1'&&query.get('renderSubmission')==='1';
++ return enabled?new NatureRenderProbe(clock):undefined;
++}
+ 
+ export interface RenderWorkRow {sample:number;place:string;x:number;z:number;renderMs:number;draws:number;triangles:number;nature:NatureRenderFrame;submission?:RenderSubmissionFrame|null}
+ export function copyRenderWorkRow(row:RenderWorkRow):RenderWorkRow{return {...row,nature:{...row.nature},...(row.submission?{submission:copyRenderSubmissionFrame(row.submission)}:{})};}
+--- a/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/main.ts
++++ b/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/main.ts
+@@ -660,7 +660,7 @@
+   exit:()=>{clear();release();first=savedFirst;paused=true;el('pause').textContent='Resume';world.setQuality(savedQuality);if(savedQuality==='automatic')world.setBudget(frameBudget.scale);zone.hidden=!touch.checked;hero.rider.visible=true;snap=true;previous=performance.now();cameraYaw=0;cameraPitch=.1;camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);canvas.focus();}
+  });
+  const submissionProbe=renderProbe?installRenderSubmissionProbe(renderer,scene):undefined;
+- const loopProbe=renderProbe?new ManualLoopProbe():undefined;const loopBinding=loopProbe?attachGpuFramePacingProbe(renderer,loopProbe):undefined;
++ const loopProbe=renderProbe&&new URLSearchParams(location.search).get('profile')==='manual'?new ManualLoopProbe():undefined;const loopBinding=loopProbe?attachGpuFramePacingProbe(renderer,loopProbe):undefined;
+  const rideProfile=new URLSearchParams(location.search).has('profile')?new RideProfile(()=>({quality:graphics.value,effectiveQuality:world.quality.effective,cap,shadowMappingSupported:renderer.shadowMap.enabled,pixelRatio:renderer.getPixelRatio(),adaptiveScale:frameBudget.scale,world:world.stats,batchIndirectUpdates:batchedIndirectUpdateDiagnostics(scene),sharedGeometryBuffers:geometryBuffers.read(),diagnosticReduction:localPerformanceProbe(),vehicle:cadillac?.riding?(cadillac.variant==='cadillac'?'silver-cadillac':cadillac.variant):hover?.riding?hover.vehicle:boat?.riding?'boat':'onewheel',cadillac:cadillac?.riding?cadillac.diagnostics():null,hydraulicControls:hydraulicControlDiagnostics(),cockpitDisplay:hover?.cockpitDisplayDiagnostics??null}),{shortRideSeconds:cadillacDiagnostic?150:undefined,build:createRideProfileBuildReader(new URLSearchParams(location.search).get('profile')),loopProbe,loopCoverage:()=>loopBinding?.coverage(),gpuPacing:()=>gpuFramePacingDiagnostics(renderer),submissionCoverage:()=>submissionProbe?.coverage(),resetRenderDiagnostics:()=>{renderProbe?.cancelFrame();submissionProbe?.cancelFrame();}}):null;
+  // The browser map has an explicit geographic origin. Fail closed if its projection changes.
+  const locationMapMatches=Array.isArray(data.origin)&&data.origin.length===2&&data.origin.every((v,i)=>Number.isFinite(v)&&Math.abs(v-REAL_LOCATION_ORIGIN[i])<1e-8)&&(data as ParkMap&{axes?:string}).axes===REAL_LOCATION_AXES;
