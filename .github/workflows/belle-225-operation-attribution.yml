@@ -1,0 +1,135 @@
+name: PR 225 exact-source native operation attribution (NOT RELEASE)
+on:
+  push:
+    branches: [diagnostic/belle-225-native-operation-attribution-d4f4baa]
+    paths: ['.github/workflows/belle-225-operation-attribution.yml']
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        bridge: ['0', '1']
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: d4f4baa8e2016f4c9107b40176388bf2d3f6fe8c
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.16.0
+      - name: Build immutable candidate and bind the diagnostic marker
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          VITE_BRIDGE_BALUSTRADE_PREVIEW: ${{ matrix.bridge }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = d4f4baa8e2016f4c9107b40176388bf2d3f6fe8c
+          test "$(git rev-parse 'HEAD^{tree}')" = 8754910f55ac44dd430cd5601d789c0d84d40e35
+          test "$(git hash-object scripts/sustained-ride-profile.mjs)" = c722b5810a7693e5ece72ed00b4401e7cde7267a
+          npm ci
+          npm run check
+          npm run build
+          git diff --exit-code
+          node --input-type=module -e 'import {writeFileSync,readFileSync} from "node:fs";import {createHash} from "node:crypto";writeFileSync("dist/__belle_test_build.json",JSON.stringify({version:1,repository:"robjasper2084/Jungle-Lotto",pullRequest:225,commit:"d4f4baa8e2016f4c9107b40176388bf2d3f6fe8c",buildId:"operation-diagnostic-"+process.env.GITHUB_RUN_ID+"-"+process.env.VITE_BRIDGE_BALUSTRADE_PREVIEW,builtAt:new Date().toISOString(),indexSha256:createHash("sha256").update(readFileSync("dist/index.html")).digest("hex"),profileQuery:"manual"}))'
+          (cd dist && find . -type f -exec sha256sum {} \; | LC_ALL=C sort) > diagnostic-dist.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: operation-build-bridge-${{ matrix.bridge }}-NOT-RELEASE
+          path: |
+            lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist/
+            lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/diagnostic-dist.sha256
+          if-no-files-found: error
+          retention-days: 2
+  capture:
+    needs: build
+    runs-on: macos-15
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        bridge: ['0', '1']
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: d4f4baa8e2016f4c9107b40176388bf2d3f6fe8c
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.16.0
+      - uses: actions/download-artifact@v4
+        with:
+          name: operation-build-bridge-${{ matrix.bridge }}-NOT-RELEASE
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+      - name: Verify actual source and immutable build, derive separate diagnostic driver
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = d4f4baa8e2016f4c9107b40176388bf2d3f6fe8c
+          test "$(git rev-parse 'HEAD^{tree}')" = 8754910f55ac44dd430cd5601d789c0d84d40e35
+          test "$(git hash-object scripts/sustained-ride-profile.mjs)" = c722b5810a7693e5ece72ed00b4401e7cde7267a
+          (cd dist && shasum -a 256 -c ../diagnostic-dist.sha256) > /tmp/belle-manifest-check.txt
+          mkdir -p output/operation-attribution
+          cp diagnostic-dist.sha256 /tmp/belle-manifest-check.txt output/operation-attribution/
+          git rev-parse HEAD > output/operation-attribution/source-head.txt
+          git rev-parse 'HEAD^{tree}' > output/operation-attribution/source-tree.txt
+          cp dist/__belle_test_build.json output/operation-attribution/
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path("scripts/sustained-ride-profile.mjs")
+          s=p.read_text()
+          def change(old,new):
+              global s
+              assert s.count(old)==1, old
+              s=s.replace(old,new)
+          change("resolve(game,'output/sustained-profile',mode,device)", "resolve(game,'output/operation-attribution')")
+          change("sourceHead:process.env.GITHUB_SHA||null", "sourceHead:process.env.DIAGNOSTIC_APPLICATION_SHA||null,workflowHead:process.env.GITHUB_SHA||null,diagnosticOnly:true,bridgeExpected:process.env.DIAGNOSTIC_BRIDGE")
+          change("acceptanceScope:mode==='diagnostic'?'REDUCED SCENE DIAGNOSTIC ONLY; not release quality':'FULL CURRENT GAME; still not device certification'", "acceptanceScope:'FULL SCENE MANUAL OPERATION OBSERVER ONLY; NOT RELEASE ACCEPTANCE'")
+          change("Local browser capture ends at genuine trusted W-keyup before Settings/report extraction; NOT physical-device certification", "Manual operation observer adds overhead; genuine W-keyup followed by Settings and manual Stop; not identical to the strict eligible window or release acceptance")
+          change("/?profile=1", "/?profile=manual")
+          change("await expect(page.locator('#quality')).toHaveValue(quality);", "await expect(page.locator('#quality')).toHaveValue(quality); await expect(page.locator('#bridge-stone-style')).toBeChecked({checked:process.env.DIAGNOSTIC_BRIDGE==='1'});")
+          change("await expect(panel.getByRole('button',{name:'Start 10-minute capture',exact:true})).toBeVisible();", "await panel.getByRole('button',{name:'Stop and show report',exact:true}).click(); await expect(panel.getByRole('button',{name:'Start 10-minute capture',exact:true})).toBeVisible();")
+          change("if(report.profile.stopReason!=='trusted-W-keyup')throw Error('Capture did not end on real trusted keyboard release');", "if(report.profile.stopReason!=='manual')throw Error('Missing manual observer stop');")
+          Path("scripts/operation-attribution-diagnostic.mjs").write_text(s)
+          PY
+          node --check scripts/operation-attribution-diagnostic.mjs
+          cp scripts/operation-attribution-diagnostic.mjs output/operation-attribution/derived-driver.mjs
+          git diff --exit-code
+      - name: Install native Chrome and profile dependencies
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install chrome
+      - name: Gather full-scene named draw and operation observations, not acceptance
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          BELLE_PROFILE_DEVICE: desktop
+          BELLE_PROFILE_MODE: full
+          BELLE_PROFILE_SECONDS: '90'
+          DIAGNOSTIC_APPLICATION_SHA: d4f4baa8e2016f4c9107b40176388bf2d3f6fe8c
+          DIAGNOSTIC_BRIDGE: ${{ matrix.bridge }}
+        run: |
+          set -euo pipefail
+          out=output/operation-attribution
+          status=0
+          node scripts/operation-attribution-diagnostic.mjs > "$out/driver.log" 2>&1 || status=$?
+          printf '%s\n' "$status" > "$out/driver-exit.txt"
+          cat "$out/driver.log"
+          test "$(git hash-object scripts/sustained-ride-profile.mjs)" = c722b5810a7693e5ece72ed00b4401e7cde7267a
+          (cd dist && shasum -a 256 -c ../diagnostic-dist.sha256) > "$out/manifest-after.txt"
+          git diff --exit-code
+          node --input-type=module -e 'import assert from "node:assert/strict";import {readFileSync} from "node:fs";const r=JSON.parse(readFileSync("output/operation-attribution/report.json"));assert.equal(r.diagnosticOnly,true);assert.equal(r.sourceHead,process.env.DIAGNOSTIC_APPLICATION_SHA);assert.equal(r.renderBackend,"angle-metal");assert.match(r.actualGpu.renderer,/Metal/i);assert.equal(r.profile.stopReason,"manual");assert.equal(r.profile.settingsAtStart.quality,"high");assert.equal(r.profile.settingsAtStart.diagnosticReduction,false);assert.equal(r.profile.submissionInstrumentation.atStart.status,"complete");assert.equal(r.profile.submissionInstrumentation.atFinish.status,"complete");assert(r.profile.submissionDiagnostics.profiledCallbacks>0);assert.equal(r.profile.submissionDiagnostics.invalidDiagnosticSamples,0);assert(r.profile.activeSeconds>=85);assert(r.input.keydowns>=1&&r.input.keyups>=1&&!r.input.heartbeatError);assert.equal(r.errors.length,0);assert.equal(r.failedRequests.length,0);console.log(JSON.stringify({diagnosticOnly:true,sourceHead:r.sourceHead,bridgeExpected:r.bridgeExpected,frames:r.profile.frames,activeSeconds:r.profile.activeSeconds,frameMs:r.profile.metrics.frameMs,operations:r.profile.submissionDiagnostics.operations},null,2))'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: operation-attribution-bridge-${{ matrix.bridge }}-NOT-RELEASE
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/operation-attribution/
+          retention-days: 14
+          if-no-files-found: warn
