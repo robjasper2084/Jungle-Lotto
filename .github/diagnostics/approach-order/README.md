@@ -1,0 +1,35 @@
+# Graded approach draw order: isolated experiment
+
+This separate diagnostic tests one evidence-backed hypothesis: draw the two existing opaque **Graded bridge approach** meshes before the original early ground and sky so later covered fragments can fail depth testing. It does not activate the change in PR #210, modify its controls or sustained-performance scripts, extend their deadlines, reduce their resolution, or replace their failed results.
+
+## Immutable source and real scene context
+
+The application checkout is pinned to `75906273c0cd414c0d004320fc6f654b4783e5b1`, tree `9f0351be133dd370a676090d27559a0adaf00605`. The original controls artifact `15127074963` is verified using its full ZIP SHA-256, metadata, build marker, and complete file inventory. Those asset bytes remain untouched throughout the experiment. The verified ZIP and metadata are copied verbatim into the new 14-day evidence artifact before the original artifact's shorter retention expires.
+
+The fixture imports the actual `createWorld` implementation, including its real `createIslandSky`, `districts.flat` mainland geometry, both source-authored approaches, original ground batching, materials, decorators, terrain, and scene content. It applies the same map preparations as normal boot. The compiled fixture and every consumed source file receive separate hashes. It does **not** reuse the simplified mainland/background context of the pavement-depth fixture.
+
+This is a fixed-pose authored-world fixture. It has no avatar or native controls sequence. It uses the real world constructor and immutable assets, not the unchanged game entry point. Static lighting/time and explicit diagnostic poses are shared between comparison modes. Therefore its results cannot establish completed gameplay, physical-device performance, or release acceptance.
+
+The first camera and projection are copied exactly from completed frame 1 of PR #238's verified original full-scene software observation, artifact `15139580179` (ZIP SHA-256 `f191cab898c5fab8b9ebc6773bc7a0c4ceaa2f0137162fd022dc090c8d7e661f`). The two approaches are the original 1,353-vertex, 7,680-index meshes at `terrain.height + .006`; they remain opaque, depth-tested, depth-writing, shadow-receiving surfaces. Their original `castShadow=false` remains unchanged.
+
+## Exact candidate and comparison
+
+Baseline uses the original `renderOrder=0`. Candidate assigns `renderOrder=-103` to only the two original approach meshes. Existing ground remains `-102`, river `-101`, sky `-100`, and actual Detroit mainland `0`. No geometry, material, shader, texture, camera, light, collision, draw range, extra pass, or added depth material is introduced for the candidate. The baseline order is restored after each operation.
+
+Every comparison records original object/geometry/material identities and the native draw sequence. Removing the two moved color draws must leave every other draw in identical order. The complete draw multiset, including shadow work, must be identical. Material/geometry identities and depth/shadow settings are checked before and after each render.
+
+Each backend uses headed Chrome at **1280×800, DPR 1**, with its actual renderer checked. The twelve timed cases are six poses in day and night: the recorded start, mainland edge, mainland near, mainland far, island edge, and a real road occlusion. The occlusion case must find an effectively visible, original source asphalt road/deck hit in front of an original approach, and that source owner must occur in actual color draw receipts. No substitute occluder is created. The timed cases use the original controls lane's Smooth scene quality. Two additional High cases test native mapped shadows, at the same fixed full output resolution. The source-selected DPR is recorded separately: software High selects 0.7 while this supplemental fixture explicitly renders at 1. Its source quality and budget scale remain unchanged. This fixed High fixture resolution does not change the application's software-renderer quality policy.
+
+Every case has a distinct recorded source-world time, `12 + caseIndex`, frozen within that case's comparison operations. This permits the real world constructor's shared-frame, day/night and shadow-cadence logic to update for each new case. The first native preparation render is retained with all its color/shadow draws and actual shadow-map allocation; High cases require real caster work and allocated source maps. Subsequent comparisons use the source's normal cached map state. The experiment never silently drops the initial shadow work or forces extra map updates between comparison modes.
+
+Each case retains four complete RGBA/PNG images in **ABBA** order. Every pixel and channel must match the first baseline image exactly; baseline drift also fails. The original `preserveDrawingBuffer:false` context is retained: synchronous `readPixels` and canvas PNG capture occur before yielding to the compositor. Blank buffers fail. Each original bottom-up RGBA byte buffer and PNG is archived. An independent Node decoder verifies PNG chunk CRCs, dimensions, filters and every decoded channel against the vertically flipped raw buffer. Every original alpha byte must be 255; unexpected color/alpha conversion fails without normalization. Images are written individually before later work, so already captured baseline/candidate evidence survives a subsequent failure.
+
+For each of the twelve Smooth cases, the experiment retains four ABBA warmups and sixteen measured frames in alternating ABBA/BAAB blocks. All **240 elapsed queries**, including warmups, must resolve and be deleted without disjoint or leaked queries. Every raw duration stays in the report. Timing summaries retain all measurements, adjacent balanced pairs, and positive as well as negative percentage changes. A neutral or slower result can be a completed diagnostic, but it cannot justify activation.
+
+## Limits and next gate
+
+The diagnostic has a separate 65-minute overall budget. This does not alter the original 32-minute controls case, 90-second riding input, fences, paint opportunities, screenshots, quality settings, or thresholds. CPU observation, explicit fences and GPU timer queries have overhead. A static fixture improvement must subsequently reproduce in the unchanged full controls and native riding gates before any release decision.
+
+All original failures remain failures. No merge or deployment is authorized by this diagnostic's green status alone. Both backends must complete the entire zero-difference and measurement set before interpreting the experiment. If pixels differ, draw conservation fails, a query is unavailable, or any case is incomplete, the experiment reports that blocker and retains its raw evidence.
+
+Local verification consists of TypeScript/bundle compilation, syntax validation, workflow validation, and regression tests for missing/changed pixels, poses, draw work, shadows, query attribution, sample order, and neutral/regressing outcomes. Local tests do not claim that either live backend has passed.

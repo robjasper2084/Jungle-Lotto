@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "repository": "robjasper2084/Jungle-Lotto",
+  "applicationSource": "75906273c0cd414c0d004320fc6f654b4783e5b1",
+  "applicationTree": "9f0351be133dd370a676090d27559a0adaf00605",
+  "originalRun": 45839211197,
+  "artifact": {
+    "id": 15127074963,
+    "name": "cadillac-mods-game-75906273c0cd414c0d004320fc6f654b4783e5b1",
+    "bytes": 176640563,
+    "sha256": "ded31ca4e6658ab3edd5cbcd192a0ea0a57d8db79cd762ff9de7a23bb8409165"
+  },
+  "build": {
+    "sourceSha": "75906273c0cd414c0d004320fc6f654b4783e5b1",
+    "indexSha256": "9988025538e92f9613e72eee700c465981eb254ab635405f9f55ec8288f94646",
+    "builtAt": "2026-11-26T14:35:37.332Z"
+  },
+  "scripts": {
+    "cadillac-mods-browser-smoke.mjs": "62b2b338e80909d596dafb5bc50979987e2b965f",
+    "cadillac-case-lifecycle.mjs": "cb4606a48421ed4c6ca2e78e65c61308c6449254",
+    "cadillac-operation-timing.mjs": "ecc1cd29ad03e9b38f3fc0fecfb80f5d87a9840b",
+    "cadillac-cdp-viewport-png.mjs": "57151ffed665cbcd26078c3aafb1661a08e5d4e1",
+    "coop-static-server.mjs": "86d780f2a77eff0e9e46beacd35a558903d3ec29",
+    "sustained-ride-profile.mjs": "c722b5810a7693e5ece72ed00b4401e7cde7267a"
+  },
+  "observation": {
+    "run": 45851975232,
+    "artifact": 15139580179,
+    "artifactSha256": "f191cab898c5fab8b9ebc6773bc7a0c4ceaa2f0137162fd022dc090c8d7e661f",
+    "camera": {
+      "id": 6,
+      "type": "PerspectiveCamera",
+      "name": "",
+      "matrixWorld": [
+        -0.43808948975740325,
+        2.7755575615628914e-17,
+        0.8989313649907306,
+        0,
+        0.3195231959165713,
+        0.9346961248202004,
+        0.1557179550256197,
+        0,
+        -0.840227663336169,
+        0.35544782211472403,
+        -0.4094805484007036,
+        0,
+        4.507587308565813,
+        5.814214590996292,
+        16.664564622722438,
+        1
+      ],
+      "projectionMatrix": [
+        1.2266315659407192,
+        0,
+        0,
+        0,
+        0,
+        1.9626105055051506,
+        0,
+        0,
+        0,
+        0,
+        -1.0000072727537193,
+        -1,
+        0,
+        0,
+        -0.16000058182029753,
+        0
+      ]
+    }
+  }
+}

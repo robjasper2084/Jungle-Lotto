@@ -1,0 +1,120 @@
+name: Cadillac approach order experiment (diagnostic only)
+
+on:
+  pull_request:
+    branches: [upgrade-redesign-cadillac-modification-suite]
+    paths:
+      - '.github/diagnostics/approach-order/**'
+      - '.github/workflows/cadillac-approach-order-experiment.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: cadillac-approach-order-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  isolated-world:
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            backend: swiftshader
+          - os: macos-15
+            backend: metal
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 75906273c0cd414c0d004320fc6f654b4783e5b1
+          path: app
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/tsconfig.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/runtime/
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/
+            /lottominded-ultra.io/games/gothtechnology2/greater-detroit-graphics/src/
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: diagnostic
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/diagnostics/approach-order/
+            /.github/workflows/cadillac-approach-order-experiment.yml
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Verify and preserve the original immutable game assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          bundle="$GITHUB_WORKSPACE/diagnostic/.github/diagnostics/approach-order"
+          evidence="$GITHUB_WORKSPACE/evidence"
+          game="$GITHUB_WORKSPACE/app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game"
+          mkdir -p "$evidence" "$game/dist"
+          gh api repos/robjasper2084/Jungle-Lotto/actions/artifacts/15127074963 > "$evidence/original-artifact.json"
+          node "$bundle/provenance.mjs" artifact "$evidence/original-artifact.json"
+          gh api repos/robjasper2084/Jungle-Lotto/actions/artifacts/15127074963/zip > "$RUNNER_TEMP/approach-original-assets.zip"
+          node "$bundle/provenance.mjs" artifact "$evidence/original-artifact.json" "$RUNNER_TEMP/approach-original-assets.zip"
+          cp "$RUNNER_TEMP/approach-original-assets.zip" "$evidence/original-cadillac-assets-15127074963.zip"
+          unzip -q "$RUNNER_TEMP/approach-original-assets.zip" -d "$game/dist"
+          diagnostic_head="$(git -C diagnostic rev-parse HEAD)"
+          node "$bundle/provenance.mjs" prepare "$GITHUB_WORKSPACE/app" "$bundle" "$evidence" "$diagnostic_head"
+          git -C diagnostic cat-file -p HEAD > "$evidence/diagnostic-commit.txt"
+          cp -R "$bundle" "$evidence/diagnostic-source"
+          cp diagnostic/.github/workflows/cadillac-approach-order-experiment.yml "$evidence/workflow.yml"
+      - name: Install the pinned compiler and Chrome runtime
+        working-directory: app/lottominded-ultra.io/games/gothtechnology2
+        run: |
+          set -euo pipefail
+          npm ci
+          npm --prefix belle-isle-source/game ci
+          npx playwright install --with-deps chrome
+      - name: Test evidence guards and compile the isolated real-world fixture
+        run: |
+          set -euo pipefail
+          bundle="$GITHUB_WORKSPACE/diagnostic/.github/diagnostics/approach-order"
+          export APP_GAME="$GITHUB_WORKSPACE/app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game"
+          export APPROACH_ORDER_OUT="$GITHUB_WORKSPACE/evidence"
+          node --test "$bundle/contract.test.mjs" "$bundle/png-evidence.test.mjs" 2>&1 | tee "$APPROACH_ORDER_OUT/contract-tests.log"
+          node --check "$bundle/driver.mjs"
+          node "$bundle/build.mjs" 2>&1 | tee "$APPROACH_ORDER_OUT/fixture-build.log"
+      - name: Compare every image and retain every balanced GPU sample
+        timeout-minutes: 70
+        env:
+          APPROACH_ORDER_BACKEND: ${{ matrix.backend }}
+        run: |
+          set -euo pipefail
+          bundle="$GITHUB_WORKSPACE/diagnostic/.github/diagnostics/approach-order"
+          export APP_GAME="$GITHUB_WORKSPACE/app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game"
+          export APPROACH_ORDER_OUT="$GITHUB_WORKSPACE/evidence"
+          export APPROACH_ORDER_DIAGNOSTIC_SHA="$(git -C diagnostic rev-parse HEAD)"
+          if [ "$RUNNER_OS" = Linux ]; then
+            xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node "$bundle/driver.mjs" 2>&1 | tee "$APPROACH_ORDER_OUT/driver.log"
+          else
+            node "$bundle/driver.mjs" 2>&1 | tee "$APPROACH_ORDER_OUT/driver.log"
+          fi
+      - name: Verify original assets and acceptance helpers remain untouched
+        if: always()
+        run: |
+          node diagnostic/.github/diagnostics/approach-order/provenance.mjs after "$GITHUB_WORKSPACE/app" "$GITHUB_WORKSPACE/evidence"
+      - name: Keep successful and failed evidence together
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cadillac-approach-order-${{ matrix.backend }}-NOT-RELEASE-ACCEPTANCE
+          path: evidence/
+          retention-days: 14
+          if-no-files-found: warn
