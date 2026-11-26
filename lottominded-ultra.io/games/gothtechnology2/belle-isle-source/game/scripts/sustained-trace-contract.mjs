@@ -92,10 +92,11 @@ export function traceSummary(trace,cpu,pageEvidence){
  const events=Array.isArray(trace.traceEvents)?trace.traceEvents:[],errors=[];
  const processes=events.filter(e=>e.ph==='M'&&e.name==='process_name').map(e=>({pid:e.pid,name:e.args?.name}));
  const threads=events.filter(e=>e.ph==='M'&&e.name==='thread_name').map(e=>({pid:e.pid,tid:e.tid,name:e.args?.name}));
+ const inCategory=(event,category)=>typeof event.cat==='string'&&event.cat.split(',').map(value=>value.trim()).includes(category);
  const mapped=[];
  for(const label of ['profile-start-click','first-w-keydown','w-keyup']){
   const marker=pageEvidence?.markers?.find(row=>row.label===label);
-  const matches=events.filter(e=>e.name===MARKER_PREFIX+label&&Number.isFinite(e.ts));
+  const matches=events.filter(e=>e.name===MARKER_PREFIX+label&&Number.isFinite(e.ts)&&inCategory(e,'blink.user_timing'));
   const unique=[...new Map(matches.map(e=>[[e.pid,e.ts].join(':'),e])).values()];
   if(!marker||unique.length!==1){errors.push('Missing or ambiguous clock marker: '+label);continue;}
   mapped.push({label,pageMs:marker.atMs,traceUs:unique[0].ts,pid:unique[0].pid,offsetUs:unique[0].ts-marker.atMs*1000});
@@ -108,7 +109,10 @@ export function traceSummary(trace,cpu,pageEvidence){
  if(!isGameUrl(pageEvidence?.url)||pageEvidence?.droppedMarkers||pageEvidence?.errors?.length)errors.push('Invalid game target or page observer evidence');
  const rendererPid=mapped[0]?.pid;
  if(!processes.some(p=>p.pid===rendererPid))errors.push('Actual game renderer process absent from trace metadata');
+ const timelineEvents=start&&end?events.filter(e=>e.pid===rendererPid&&Number.isFinite(e.ts)&&e.ts>=start.traceUs&&e.ts<=end.traceUs&&inCategory(e,'devtools.timeline')).length:0;
+ if(!timelineEvents)errors.push('No actual devtools.timeline events from the game renderer during the mapped ride');
  return {errors,events:events.length,processes,threads,gameRendererPid:rendererPid??null,
+  categoryEvidence:{userTimingMarkers:mapped.length,gameRendererTimelineEvents:timelineEvents},
   browserProcesses:processes.filter(p=>/browser/i.test(p.name||'')),gpuProcesses:processes.filter(p=>/gpu/i.test(p.name||'')),
   clockMapping:{markers:mapped,spreadUs,pageToTraceOffsetUs:offsets.length?offsets.reduce((a,b)=>a+b,0)/offsets.length:null,
    note:'PerformanceMark startTime is paired with its native trace timestamp. CPU microsecond bounds must cover these markers. Native process tasks remain observations, not GPU-execution certification.'},

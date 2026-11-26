@@ -110,17 +110,22 @@ export async function installSustainedTrace(chromium,{game,output,source,onFailu
   evidence.browser=await cdp(browserSession,'Browser.getVersion');
   evidence.systemInfo=await optional(browserSession,'SystemInfo.getInfo');
   evidence.processesAtStart=await optional(browserSession,'SystemInfo.getProcessInfo');
-  const supported=await cdp(browserSession,'Tracing.getCategories');
-  evidence.categories={available:supported.categories,requested:categories,selected:categories.filter(c=>supported.categories.includes(c))};
-  assert.ok(evidence.categories.selected.includes('blink.user_timing')&&evidence.categories.selected.includes('devtools.timeline'),'Required timeline categories unavailable');
-  await cdp(browserSession,'Tracing.start',{transferMode:'ReturnAsStream',streamFormat:'json',streamCompression:'none',
-   traceConfig:{recordMode:'recordUntilFull',traceBufferSizeInKb:262144,includedCategories:evidence.categories.selected}});
-  recording=true;
   observeMethod(browser,'newPage',{onError:fail,after:async(page,args)=>{
    const entry={options:args[0]??null,observedGame:false};evidence.pages.push(entry);
    if(args[0]?.viewport?.width!==390||args[0]?.viewport?.height!==844)return;
    assert.deepEqual(args,[{viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true,reducedMotion:'reduce'}],'Original phone options changed');
    assert.ok(!gamePage,'Multiple game pages');gamePage=page;entry.observedGame=true;
+   // Chrome 158 returned an empty category inventory before renderer creation.
+   // Query after the original game page exists, but before its first navigation.
+   // Enumeration is advisory, not proof of recording: request the entire original
+   // explicit category set and require actual renderer category events afterward.
+   const supported=await cdp(browserSession,'Tracing.getCategories');
+   assert.ok(Array.isArray(supported.categories)&&supported.categories.every(c=>typeof c==='string'),'Malformed timeline category inventory');
+   evidence.categories={available:supported.categories,requested:[...categories],selected:[...categories],
+    enumerationComplete:categories.every(c=>supported.categories.includes(c))};
+   await cdp(browserSession,'Tracing.start',{transferMode:'ReturnAsStream',streamFormat:'json',streamCompression:'none',
+    traceConfig:{recordMode:'recordUntilFull',traceBufferSizeInKb:262144,includedCategories:evidence.categories.selected}});
+   recording=true;
    await page.addInitScript(installPageMarkers,{prefix:MARKER_PREFIX});
    page.on('response',response=>{
     const url=new URL(response.url());if(url.hostname!=='127.0.0.1'||!url.pathname.endsWith('.js'))return;

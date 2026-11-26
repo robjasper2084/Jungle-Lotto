@@ -15,8 +15,8 @@ function fixture(){
  const page={url:'http://127.0.0.1:1234/?profile=1&perfProbe=1',markers,errors:[],droppedMarkers:0};
  const trace={traceEvents:[
   ...['Browser','Renderer','GPU Process'].map((name,i)=>({ph:'M',name:'process_name',pid:i+1,args:{name}})),
-  ...markers.map(m=>({name:MARKER_PREFIX+m.label,pid:2,tid:9,ts:1_000_000+m.atMs*1000,ph:'R'})),
-  {ph:'X',name:'FunctionCall',pid:2,tid:9,ts:90_000_000,dur:466700}]};
+  ...markers.map(m=>({name:MARKER_PREFIX+m.label,pid:2,tid:9,ts:1_000_000+m.atMs*1000,ph:'R',cat:'blink.user_timing'})),
+  {ph:'X',name:'FunctionCall',pid:2,tid:9,ts:90_000_000,dur:466700,cat:'devtools.timeline'}]};
  const cpu={nodes:[{id:1,callFrame:{functionName:'nativeWork',url:page.url+'assets/game.js',lineNumber:0,columnNumber:0}}],
   samples:[1],timeDeltas:[2000],startTime:1_500_000,endTime:92_500_000};
  const report={sourceHead:source.head,mode:'diagnostic',device:'phone',requestedSeconds:90,renderBackend:'angle-metal',
@@ -57,6 +57,10 @@ test('clock mapping binds native CPU samples to the real game renderer and ride 
   x=>x.cpu.samples=[],
   x=>x.trace.traceEvents.find(e=>e.name===MARKER_PREFIX+'w-keyup').pid=3,
   x=>x.page.droppedMarkers=1,
+  x=>x.trace.traceEvents.find(e=>e.name===MARKER_PREFIX+'w-keyup').cat='wrong-category',
+  x=>x.trace.traceEvents.find(e=>e.name==='FunctionCall').cat='wrong-category',
+  x=>x.trace.traceEvents.find(e=>e.name==='FunctionCall').pid=3,
+  x=>x.trace.traceEvents.find(e=>e.name==='FunctionCall').ts=99_000_000,
  ];
  for(const mutate of mutations){const broken=fixture();mutate(broken);assert.ok(traceSummary(broken.trace,broken.cpu,broken.page).errors.length);}
  assert.equal(isGameUrl('https://example.com/?profile=1&perfProbe=1'),false);
@@ -123,13 +127,15 @@ test('clean input pin survives generated timing noise and rejects changed source
  }
 });
 
-test('observer archives native CPU/timeline/consumed source and preserves an original failed report',async()=>{
+for(const advertised of [[],['blink.user_timing','devtools.timeline','gpu']])
+test('observer archives native CPU/timeline/consumed source with '+advertised.length+' advertised categories and preserves original failure',async()=>{
  const f=fixture(),root=await mkdtemp(resolve(tmpdir(),'belle-trace-observer-')),output=resolve(root,'trace'),js=Buffer.from('function nativeWork() {}');
  f.source.files=[{file:'assets/game.js',bytes:js.length,sha256:sha256(js)}];
  let closed=0,failures=0;
  class BrowserSession extends EventEmitter{
-  async send(method){
-   if(method==='Tracing.getCategories')return {categories:['blink.user_timing','devtools.timeline','gpu']};
+  async send(method,params){
+   if(method==='Tracing.getCategories')return {categories:advertised};
+   if(method==='Tracing.start'){assert.ok(params.traceConfig.includedCategories.includes('blink.user_timing'));assert.ok(params.traceConfig.includedCategories.includes('devtools.timeline'));assert.ok(params.traceConfig.includedCategories.includes('disabled-by-default-gpu.service'));}
    if(method==='Tracing.end'){queueMicrotask(()=>this.emit('Tracing.tracingComplete',f.traceComplete));return {};}
    if(method==='IO.read')return {data:JSON.stringify(f.trace),eof:true};
    return {};
@@ -157,6 +163,8 @@ test('observer archives native CPU/timeline/consumed source and preserves an ori
   await page.goto(f.page.url,{waitUntil:'domcontentloaded'});await launched.close();
   const evidence=JSON.parse(await readFile(resolve(output,'trace-evidence.json'),'utf8'));
   assert.equal(failures,0);assert.equal(closed,1);assert.equal(evidence.verdict.collectionComplete,true);
+  assert.deepEqual(evidence.categories.available,advertised);assert.deepEqual(evidence.categories.selected,evidence.categories.requested);
+  assert.equal(evidence.summary.categoryEvidence.userTimingMarkers,3);assert.equal(evidence.summary.categoryEvidence.gameRendererTimelineEvents,1);
   assert.equal(evidence.verdict.originalHarnessPassed,false);assert.equal(evidence.verdict.releaseAcceptance,false);
   assert.deepEqual(await readFile(resolve(output,'original-report.json')),originalBytes);
   assert.deepEqual(await readFile(resolve(output,evidence.scriptReceipts[0].file)),js);

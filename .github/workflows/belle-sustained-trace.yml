@@ -5,6 +5,9 @@ on:
     paths:
       - '.github/workflows/belle-sustained-trace.yml'
       - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/**'
+  push:
+    branches:
+      - 'diagnostic/belle-213-phone-trace-8b33'
   workflow_dispatch:
 
 permissions:
@@ -20,7 +23,7 @@ concurrency:
 # the original harness reports GITHUB_SHA and must not be given a spoofed value.
 jobs:
   build:
-    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.number == 213
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.number == 213 || (github.event_name == 'push' && github.ref == 'refs/heads/diagnostic/belle-213-phone-trace-8b33')
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
