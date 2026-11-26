@@ -1,0 +1,4 @@
+__pycache__/
+models/
+previews/
+qa/model_report.json

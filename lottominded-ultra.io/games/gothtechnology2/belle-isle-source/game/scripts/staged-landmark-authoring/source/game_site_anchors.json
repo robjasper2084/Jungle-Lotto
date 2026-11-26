@@ -1,0 +1,140 @@
+{
+  "schema": "belle-isle-game-legacy-local-landmarks/v1",
+  "sourceRepository": "robjasper2084/Jungle-Lotto",
+  "sourceGameCommit": "2a8901996e53b1f93474f3c2165e078b6dd16e57",
+  "sourcePath": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/map.json",
+  "units": "metres game-relative, no surveyed vertical datum",
+  "axes": "x east, y up, z south",
+  "coordinateReference": "existing legacy local conversion, not surveyed WGS84 ENU",
+  "geographicAccuracyCertified": false,
+  "landmarks": {
+    "whitcomb_conservatory": {
+      "gameId": "107310050",
+      "center_xz": [
+        1330.8,
+        1174.7
+      ],
+      "yaw_rad": 0.313,
+      "localFront": "u=-17, v=0",
+      "walkableDoorGapLocalV": [
+        -1.7,
+        1.7
+      ],
+      "roomLocations": [
+        {
+          "name": "Palm House",
+          "u": 0,
+          "v": 0
+        },
+        {
+          "name": "Tropical House",
+          "u": 0,
+          "v": -20
+        },
+        {
+          "name": "Cactus House",
+          "u": 0,
+          "v": 16
+        },
+        {
+          "name": "Fernery",
+          "u": 0,
+          "v": 32
+        },
+        {
+          "name": "Show House",
+          "u": 16,
+          "v": 0
+        }
+      ],
+      "modelledDoorWorldXZ": [
+        1314.626,
+        1179.935
+      ]
+    },
+    "belle_isle_aquarium": {
+      "gameId": "107227742",
+      "center_xz": [
+        1363.78,
+        1167.42
+      ],
+      "yaw_rad": -2.828592653589793,
+      "frontEntryLocalUV": [
+        0,
+        -38
+      ],
+      "doorOpeningWidthM": 3.3,
+      "existingGameStairs": {
+        "rise_m": 0.15,
+        "count": 4,
+        "tread_m": 0.36,
+        "width_m": 4.2,
+        "outside_start_v": -41.04,
+        "landing_start_v": -39.6,
+        "landing_end_v": -36.4,
+        "inside_end_v": -34.96
+      },
+      "modelledDoorWorldXZ": [
+        1352.079,
+        1131.266
+      ]
+    },
+    "james_scott_fountain": {
+      "gameId": "9146545",
+      "originalMonumentCenterXZ": [
+        172.23,
+        1322.99
+      ],
+      "mappedUpperBasinCenterXZ": [
+        199.34,
+        1310.53
+      ],
+      "mappedUpperBasinRadiusM": 17.06,
+      "sourceOfBasinId": "107194067",
+      "studyYawRad": -1.18,
+      "existingDistalCascade": {
+        "steps": 6,
+        "start_radius_m": 78.5,
+        "run_per_step_m": 1.75,
+        "width_m": 26
+      }
+    },
+    "conservatory_drive": {
+      "roadId": "107230534",
+      "sampledCenterlineXZ": [
+        [
+          1310.28,
+          1098.38
+        ],
+        [
+          1315.08,
+          1095.39
+        ],
+        [
+          1322.81,
+          1091.35
+        ],
+        [
+          1331.93,
+          1086.85
+        ],
+        [
+          1360.36,
+          1074.83
+        ],
+        [
+          1366.32,
+          1072.3
+        ]
+      ],
+      "sampleCentroidXZ": [
+        1334.4633333333,
+        1086.5166666667
+      ],
+      "authoredGameWidthM": 7.2,
+      "recordedSourceWidthM": 6.3,
+      "surveyedCurbWidthM": null,
+      "surveyedCrossing": null
+    }
+  }
+}

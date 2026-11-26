@@ -112,18 +112,20 @@ function assertSnapshot(snapshot,id,{near=true}={}){
 export async function run(){
  const game=resolve(process.env.STAGED_LANDMARK_GAME_DIR||resolve(import.meta.dirname,'..'));
  const dist=resolve(process.env.STAGED_LANDMARK_DIST||resolve(game,'dist'));
- const out=resolve(process.env.STAGED_LANDMARK_OUT||resolve(game,'output/staged-landmark-walk-proof'));
+ const layout=process.env.STAGED_LANDMARK_LAYOUT||'desktop';
+ assert(['desktop','phone'].includes(layout),'Unknown staged walk layout');
+ const out=resolve(process.env.STAGED_LANDMARK_OUT||resolve(game,'output/staged-landmark-walk-proof',layout));
  const checkout=execFileSync('git',['rev-parse','HEAD'],{cwd:game,encoding:'utf8'}).trim();
  const source=process.env.STAGED_LANDMARK_SOURCE_SHA||checkout;
  assert.match(source,/^[0-9a-f]{40}$/);assert.equal(checkout,source,'Checkout must match the requested candidate head');
- const viewport={width:1280,height:800},started=Date.now();
+ const viewport=layout==='phone'?{width:390,height:844}:{width:1280,height:800},started=Date.now();
  const requireMetal=process.env.ENV_GALLERY_REQUIRE_METAL==='1';
  const requestedRenderer=process.env.STAGED_LANDMARK_RENDERER||(requireMetal?'metal':'software');
  assert(['metal','software'].includes(requestedRenderer),'Unknown requested renderer');
  if(requireMetal)assert.equal(requestedRenderer,'metal','The native Metal lane cannot select software rendering');
  if(requestedRenderer==='metal')assert.equal(process.platform,'darwin','The strict Metal proof requires macOS');
  const report={version:1,passed:false,source,checkout,run:process.env.GITHUB_RUN_ID||null,startedAt:new Date(started).toISOString(),
-  phase:'setup',viewport,requestedRenderer,stagedFlag:STAGED_FLAG,caseBudgetMs:CASE_MS,snapshots:[],captures:[],passages:[],contacts:[],errors:[],failedRequests:[],
+  phase:'setup',layout,viewport,deviceScaleFactor:1,requestedRenderer,stagedFlag:STAGED_FLAG,caseBudgetMs:CASE_MS,snapshots:[],captures:[],passages:[],contacts:[],errors:[],failedRequests:[],
   limitations:'Actual staged full island, original terrain/colliders, normal default graphics, reduced motion, trusted native browser controls and genuine compositor PNGs. Functional evidence on the recorded renderer; not hardware FPS, physical-device certification, full collision parity or human visual approval.'};
  await mkdir(out,{recursive:true});
  const require=createRequire(resolve(game,'../../package.json'));
@@ -277,7 +279,7 @@ export async function run(){
   const before=assertSnapshot(await snapshot(),id),file=name+'.png';
   const bytes=await bounded(captureCadillacViewportPng({client,viewport,path:resolve(out,file)}),150_000,'Native viewport PNG');
   const after=assertSnapshot(await snapshot(),id);assert(distance(before.actor,after.actor)<.1,'Actor moved while the screenshot was being captured');
-  report.captures.push({name,file,id,sha256:hash(bytes),bytes:bytes.length,viewport,gpu,before,after,
+  report.captures.push({name,file,id,sha256:hash(bytes),bytes:bytes.length,layout,viewport,gpu,before,after,
    place:await page.locator('#place').textContent()});
  }
  async function exercise(){
@@ -357,7 +359,7 @@ export async function run(){
   if(report.errors.length||report.failedRequests.length)report.passed=false;
   await writeFile(resolve(out,'report.json'),JSON.stringify(report,null,2)+'\n');
  }
- console.log(JSON.stringify({passed:report.passed,source,phase:report.phase,passages:report.passages.length,contacts:report.contacts.length,captures:report.captures.length,errors:report.errors.slice(0,4)}));
+ console.log(JSON.stringify({passed:report.passed,source,layout,phase:report.phase,passages:report.passages.length,contacts:report.contacts.length,captures:report.captures.length,errors:report.errors.slice(0,4)}));
  if(!report.passed)process.exitCode=1;return report;
 }
 

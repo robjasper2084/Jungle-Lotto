@@ -14,7 +14,7 @@ export type StudyDefinition = Readonly<{
 export const STUDY_SITES: readonly StudyDefinition[] = [
   {id:'107310050',name:'Anna Scripps Whitcomb Conservatory (STAGED)',center:[1330.8,1174.7],yaw:.313,
    files:['Conservatory_Architectural_Study.glb','Conservatory_Architectural_Study_LOD1.glb','Conservatory_Architectural_Study_LOD2.glb'],
-   hashes:['953eab50553c37290f33c6eff91646ebae88497ad5a07b86aa318dcad65e3963','dda98b48037f7f9196f64a9ca43e7112dc0681a0d1852aa02ca004bf65306604','235e3a1ddcec89c037a7e5b894a80226e8f7402540c8ceb691d9ec9e6948d522']},
+   hashes:['312fb0530916d72e75aef4f33be47b66e1c1afb1a904070629132d3881d5565e','c1c28010258437a50647820aad6204cf947c78248771375e9dd57ad3273b0f2d','5ea972e8d027e0fb46eadd65faac0ec49a4377e5b8710b2f5f07d7e4a5bb6716']},
   {id:'107227742',name:'Belle Isle Aquarium (STAGED)',center:[1363.78,1167.42],yaw:-2.828592653589793,
    files:['Aquarium_Arched_Entrance_Study.glb','Aquarium_Arched_Entrance_Study_LOD1.glb','Aquarium_Arched_Entrance_Study_LOD2.glb'],
    hashes:['26447779b20c5bbd2ab1ee6eb3dc1489333722e045400697c40a32cae3c69b93','51d265f0a664ac896c8c23eb50b51f39ff52eeb2adbbc252ed16340c419e3ad9','4295c700ff745bf9c413d78f3e58997f2abc5da22665ee4515bedcd72db3c554']},
