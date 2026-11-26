@@ -1,0 +1,108 @@
+name: Belle Isle pinned desktop stall attribution (diagnostic only)
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/belle-desktop-stall-attribution.yml'
+      - '.github/diagnostics/belle-desktop-stall/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: belle-desktop-stall-attribution-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  desktop-stall-attribution:
+    runs-on: macos-15
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: f7c008b14e391b9c07ea1f52fd913eb475f7b17e
+          path: app
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: diagnostic
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/diagnostics/belle-desktop-stall/
+            /.github/workflows/belle-desktop-stall-attribution.yml
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Verify source and restore the exact failed build artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DIAGNOSTIC_EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          game="$GITHUB_WORKSPACE/app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game"
+          bundle="$GITHUB_WORKSPACE/diagnostic/.github/diagnostics/belle-desktop-stall"
+          evidence="$GITHUB_WORKSPACE/evidence"
+          mkdir -p "$evidence"
+          test "$(git -C app rev-parse HEAD)" = f7c008b14e391b9c07ea1f52fd913eb475f7b17e
+          test "$(git -C app rev-parse HEAD^{tree})" = 7648674a8c7f8af0f274b7fade51bf446e55ce4a
+          test "$(git hash-object "$game/scripts/sustained-ride-profile.mjs")" = c722b5810a7693e5ece72ed00b4401e7cde7267a
+          git -C app diff --exit-code
+          git -C diagnostic cat-file -p HEAD > "$evidence/diagnostic-commit.txt"
+          node "$bundle/archive-source.mjs" capture "$GITHUB_WORKSPACE/diagnostic" "$evidence"
+          cp "$bundle/README.md" "$evidence/scope.md"
+          python3 "$bundle/download-build.py"
+      - name: Check isolated observers and install the existing browser runtime
+        run: |
+          set -euo pipefail
+          game="$GITHUB_WORKSPACE/app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game"
+          bundle="$GITHUB_WORKSPACE/diagnostic/.github/diagnostics/belle-desktop-stall"
+          evidence="$GITHUB_WORKSPACE/evidence"
+          export STRICT_DRIVER_PATH="$game/scripts/sustained-ride-profile.mjs"
+          node --test "$bundle/observer.test.mjs" "$bundle/sustained-trace-json.test.mjs" "$bundle/source.test.mjs" 2>&1 | tee "$evidence/observer-checks.log"
+          node --check "$bundle/preload.mjs"
+          node --check "$bundle/validate-evidence.mjs"
+          (cd "$game/../.." && npm ci && npx playwright install chrome)
+          git -C app diff --exit-code
+          { date -u; sw_vers; uname -m; sysctl hw.model hw.ncpu hw.memsize; node -v; "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --version; uptime; vm_stat; } > "$evidence/host-before.txt"
+      - name: Attribute the original ninety-second full desktop ride
+        timeout-minutes: 28
+        working-directory: app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          BELLE_PROFILE_DEVICE: desktop
+          BELLE_PROFILE_MODE: full
+          BELLE_PROFILE_SECONDS: '90'
+        run: |
+          set -euo pipefail
+          bundle="$GITHUB_WORKSPACE/diagnostic/.github/diagnostics/belle-desktop-stall"
+          evidence="$GITHUB_WORKSPACE/evidence"
+          export GITHUB_SHA=f7c008b14e391b9c07ea1f52fd913eb475f7b17e
+          export BELLE_STALL_EVIDENCE="$evidence"
+          original_status=0
+          node --import "$bundle/preload.mjs" scripts/sustained-ride-profile.mjs > "$evidence/original-driver.log" 2>&1 || original_status=$?
+          printf '%s\n' "$original_status" > "$evidence/original-process-exit.txt"
+          cat "$evidence/original-driver.log"
+          { date -u; uptime; vm_stat; } > "$evidence/host-after.txt"
+          diagnostic_status=0
+          node "$bundle/validate-evidence.mjs" "$PWD" "$evidence" || diagnostic_status=$?
+          source_status=0
+          node "$bundle/archive-source.mjs" verify "$GITHUB_WORKSPACE/diagnostic" "$evidence" || source_status=$?
+          if [ "$original_status" -ne 0 ]; then exit "$original_status"; fi
+          if [ "$diagnostic_status" -ne 0 ]; then exit "$diagnostic_status"; fi
+          exit "$source_status"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: belle-pinned-desktop-stall-attribution-NOT-RELEASE
+          path: |
+            evidence/
+            app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/sustained-profile/full/desktop/
+          retention-days: 14
+          if-no-files-found: warn
