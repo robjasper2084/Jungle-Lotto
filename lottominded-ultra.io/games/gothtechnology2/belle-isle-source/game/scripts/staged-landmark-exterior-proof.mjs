@@ -7,20 +7,23 @@ const distance=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
 const edgeKey=(a,b)=>a<b?a+':'+b:b+':'+a;
 const linePoints=(a,b)=>{const count=Math.max(1,Math.ceil(distance(a,b)/.5));return Array.from({length:count+1},(_,i)=>({x:a.x+(b.x-a.x)*i/count,z:a.z+(b.z-a.z)*i/count}));};
 
-/** Four-neighbour grid plus independent half-metre edge checks. A blocked
+/** Neighbour grid plus independent half-metre and native body-sweep checks. A blocked
  * connector/edge fails or is replanned; it never teleports or relaxes terrain. */
-export async function createExteriorPlanner({bounds,camera,layout,queryGround}){
+export async function createExteriorPlanner({bounds,camera,layout,queryGround,querySweeps}){
  const center={x:bounds.center[0],z:bounds.center[2]},radius=Math.hypot(...bounds.max.map((n,i)=>n-bounds.min[i]))/2;
  const halfV=camera.fov*Math.PI/360,halfH=Math.atan(Math.tan(halfV)*camera.aspect);
- const viewDistance=radius/Math.sin(Math.min(halfV,halfH))*1.22,range=viewDistance+60,spacing=4,width=Math.ceil(range*2/spacing)+1;
- assert(width*width<=50000,'Exterior terrain query exceeds its bounded area');
+ const viewDistance=radius/Math.sin(Math.min(halfV,halfH))*1.22,range=viewDistance+60,spacing=2,width=Math.ceil(range*2/spacing)+1;
+ assert(width*width<=200000,'Exterior terrain query exceeds its bounded area');
  const points=Array.from({length:width*width},(_,i)=>({x:center.x-range+i%width*spacing,z:center.z-range+Math.floor(i/width)*spacing}));
  async function query(values){const rows=[];for(let i=0;i<values.length;i+=10000)rows.push(...await queryGround(values.slice(i,i+10000)));assert.equal(rows.length,values.length,'Incomplete original terrain receipt');return rows;}
- const ground=await query(points),blocked=new Set();let checkedEdges=0;
+ assert.equal(typeof querySweeps,'function','Original native body sweeps are required');
+ const ground=await query(points),blocked=new Set(),rejectedSweeps=[];let checkedEdges=0;
+ async function sweeps(segments){const rows=[];for(let i=0;i<segments.length;i+=2000)rows.push(...await querySweeps(segments.slice(i,i+2000)));assert.equal(rows.length,segments.length,'Incomplete original body-sweep receipt');return rows;}
  async function route(start,bearing){
   const starts=points.map((p,i)=>({i,d:distance(start,p)})).filter(v=>ground[v.i].walkable&&v.d<=12).sort((a,b)=>a.d-b.d);
   let first=-1;
-  for(const candidate of starts)if((await query(linePoints(start,points[candidate.i]))).every(p=>p.walkable)){first=candidate.i;break;}
+  for(const candidate of starts)if((await query(linePoints(start,points[candidate.i]))).every(p=>p.walkable)&&
+   (candidate.d<1e-6||(await sweeps([{from:start,to:points[candidate.i],maxLateral:.41}]))[0].clear)){first=candidate.i;break;}
   assert(first>=0,'The actual actor has no walkable original-terrain connector');
   const candidates=points.flatMap((p,i)=>{
    const d=distance(p,center),delta=Math.abs(angle(Math.atan2(p.x-center.x,p.z-center.z)-bearing));
@@ -31,7 +34,8 @@ export async function createExteriorPlanner({bounds,camera,layout,queryGround}){
    const parent=new Int32Array(points.length).fill(-1),queue=[first];parent[first]=first;
    for(let j=0;j<queue.length;j++){
     const current=queue[j],x=current%width,z=Math.floor(current/width);
-    for(const next of[x>0?current-1:-1,x+1<width?current+1:-1,z>0?current-width:-1,z+1<width?current+width:-1]){
+    const neighbours=[];for(const ox of[-1,0,1])for(const oz of[-1,0,1])if((ox||oz)&&x+ox>=0&&x+ox<width&&z+oz>=0&&z+oz<width)neighbours.push(current+ox+oz*width);
+    for(const next of neighbours){
      if(next<0||parent[next]>=0||!ground[next].walkable||blocked.has(edgeKey(current,next)))continue;
      parent[next]=current;queue.push(next);
     }
@@ -40,18 +44,65 @@ export async function createExteriorPlanner({bounds,camera,layout,queryGround}){
    const indices=[goal.i];while(indices.at(-1)!==first)indices.push(parent[indices.at(-1)]);indices.reverse();
    const samples=[],owners=[];
    for(let i=1;i<indices.length;i++)for(const p of linePoints(points[indices[i-1]],points[indices[i]])){samples.push(p);owners.push(edgeKey(indices[i-1],indices[i]));}
-   const checked=await query(samples);checkedEdges+=indices.length-1;let failed=false;
+   const checked=await query(samples),edgeSweeps=await sweeps(indices.slice(1).map((next,i)=>({from:points[indices[i]],to:points[next],maxLateral:.41})));
+   checkedEdges+=indices.length-1;let failed=false;
    for(let i=0;i<checked.length;i++)if(!checked[i].walkable){blocked.add(owners[i]);failed=true;}
+   for(let i=0;i<edgeSweeps.length;i++)if(!edgeSweeps[i].clear){blocked.add(edgeKey(indices[i],indices[i+1]));failed=true;
+    rejectedSweeps.push({...edgeSweeps[i],samples:edgeSweeps[i].samples.filter(sample=>!sample.clear)});}
    if(failed)continue;
    const waypoints=[points[first]];
    for(let i=1;i<indices.length-1;i++)if(indices[i]-indices[i-1]!==indices[i+1]-indices[i])waypoints.push(points[indices[i]]);
    waypoints.push(points[indices.at(-1)]);
-   return{bearing,viewDistance,spacing,layout,waypoints,endpoint:waypoints.at(-1),checkedEdges,halfMetreSamples:checked.length,
-    source:'Read-only original terrain land/obstruction queries, with at least 0.7m planning clearance and independently recorded actual native walking'};
+   return{bearing,viewDistance,spacing,layout,waypoints,endpoint:waypoints.at(-1),checkedEdges,halfMetreSamples:checked.length,rejectedSweeps,
+    source:'Read-only original terrain land/obstruction and loaded native body-sweep queries; independently recorded actual native walking'};
   }
   throw Error('Exterior route could not pass all original-terrain edge checks');
  }
  return{route,query,viewDistance,center};
+}
+
+/** The original entrance turn helper remains unchanged. Its 100ms polling
+ * while A/D stays held overshot the phone exterior target repeatedly. Here
+ * genuine key holds have a bounded duration independent of observation RPCs;
+ * every correction starts from the actual settled post-keyup heading. */
+function headingAllowance(geometry,settlement){
+ assert(settlement&&settlement.intervals?.length>=3&&settlement.intervals.every(r=>Number.isSafeInteger(r.frames)&&r.frames>0&&Number.isFinite(r.seconds)&&r.seconds>0),'Missing actual settled-frame cadence');
+ const seconds=settlement.intervals.reduce((n,r)=>n+r.seconds,0),frames=settlement.intervals.reduce((n,r)=>n+r.frames,0);
+ assert(seconds>=.18&&Number.isFinite(settlement.meanFrameSeconds)&&settlement.meanFrameSeconds>0&&Math.abs(settlement.meanFrameSeconds-seconds/frames)<1e-10&&
+  Number.isFinite(settlement.maximumHeadingDifference)&&settlement.maximumHeadingDifference>=0&&settlement.maximumHeadingDifference<.002,'Invalid actual settled-frame cadence');
+ // Original main samples held A/D once per rendered loop; RideCore then
+ // advances fixed steps at the existing 2.7rad/s turn rate, with main's
+ // unchanged .05s simulation-dt cap. At steady30Hz,
+ // a .09rad turn quantum can make a strict .04rad target unreachable.
+ // Keep that desired target; any cadence allowance remains below the old
+ // .15rad gate AND the complete lateral/stopping-envelope geometry.
+ const limit=Math.atan2(geometry.maxLateral-.015,geometry.legLength+geometry.maxForward);
+ return Math.min(.15,limit,Math.max(.04,Math.min(.05,settlement.meanFrameSeconds)*2.7/2+.002));
+}
+export async function turnExteriorHeading({heading,name,receipt,legLength,maxLateral,maxForward,motion,phase,setFirstPerson,focusCanvas,pulse,settleHeading}){
+ assert([heading,legLength,maxLateral,maxForward].every(Number.isFinite)&&legLength>.4&&maxLateral>.015&&maxForward>=0,'Invalid native turn geometry');
+ const geometry={legLength,maxLateral,maxForward,stationaryReserve:.015};
+ Object.assign(receipt,{name,heading,desiredTolerance:.04,tolerance:null,geometry,acceptanceCadence:null,before:await motion(),pulses:[],after:null,complete:false});
+ await phase(name+'-tpp');await setFirstPerson(false);await focusCanvas();
+ let current=await settleHeading(name+'-initial-settled');
+ for(let attempt=0;attempt<18;attempt++){
+  const delta=angle(heading-current.actor.headingY);if(Math.abs(delta)<=headingAllowance(geometry,current.headingSettlement))break;
+  const key=delta>0?'a':'d',milliseconds=Math.min(240,Math.max(8,Math.abs(delta)*1000/2.7*.75));
+  const correction={name:name+'-pulse-'+attempt,key,milliseconds,before:current,after:null};receipt.pulses.push(correction);
+  await phase(correction.name);await pulse(key,milliseconds);
+  current=await settleHeading(correction.name+'-settled');correction.after=current;
+  correction.observedTurnRadians=angle(current.actor.headingY-correction.before.actor.headingY);
+  correction.noObservedHeadingChange=Math.abs(correction.observedTurnRadians)<1e-4;
+ }
+ receipt.acceptanceCadence=current.headingSettlement;receipt.tolerance=headingAllowance(geometry,current.headingSettlement);
+ receipt.toleranceDerivation={desiredRadians:.04,originalLimitRadians:.15,turnRateRadiansPerSecond:2.7,originalMainStepLimitSeconds:.05,halfFrameQuantumRadians:Math.min(.05,current.headingSettlement.meanFrameSeconds)*2.7/2,
+  settlingBoundRadians:.002,corridorLimitRadians:Math.atan2(maxLateral-.015,legLength+maxForward)};
+ assert(Math.abs(angle(heading-current.actor.headingY))<=receipt.tolerance,'Native exterior pulse turn did not reach its recorded heading');
+ await phase(name+'-fpp');await setFirstPerson(true);current=await settleHeading(name+'-final-settled');receipt.after=current;
+ receipt.finalErrorRadians=Math.abs(angle(heading-current.actor.headingY));receipt.cadenceAllowanceUsed=receipt.finalErrorRadians>.04;
+ assert(current.actor.onFoot&&current.actor.firstPerson,'Exterior turning changed out of the real walking camera');
+ assert(Math.abs(angle(heading-current.actor.headingY))<=receipt.tolerance,'The actual heading changed after the native camera toggle');
+ assert(distance(receipt.before.actor,current.actor)<.015,'A stationary exterior turn moved the actual actor');receipt.complete=true;return receipt;
 }
 
 export function assertExteriorEvidence(report){
@@ -66,6 +117,18 @@ export function assertExteriorEvidence(report){
  assert(report.groundFit?.structuralReceiptPassed,'Actual loaded ground/step/paving receipt failed');
  assert.equal(report.captures.length,4,'Both opposite views of both complete exteriors are required');
  assert.equal(report.exteriorViews.length,4);assert(report.exteriorLegs.length>0,'No genuine exterior walking');
+ assert(report.exteriorTurns?.length===report.exteriorLegs.length,'Missing per-leg actual native heading receipts');
+ for(const turn of report.exteriorTurns){
+  assert(turn.complete&&turn.after.actor.onFoot&&turn.after.actor.firstPerson&&turn.tolerance===headingAllowance(turn.geometry,turn.acceptanceCadence),'Native exterior turn did not finish');
+  const derivation=turn.toleranceDerivation;assert(derivation?.desiredRadians===.04&&derivation.originalLimitRadians===.15&&derivation.turnRateRadiansPerSecond===2.7&&derivation.originalMainStepLimitSeconds===.05&&derivation.settlingBoundRadians===.002&&
+   derivation.halfFrameQuantumRadians===Math.min(.05,turn.acceptanceCadence.meanFrameSeconds)*2.7/2&&derivation.corridorLimitRadians===Math.atan2(turn.geometry.maxLateral-.015,turn.geometry.legLength+turn.geometry.maxForward),'Native turn tolerance derivation changed');
+  assert(turn.finalErrorRadians===Math.abs(angle(turn.heading-turn.after.actor.headingY))&&turn.cadenceAllowanceUsed===(turn.finalErrorRadians>.04),'Missing actual final heading error');
+  assert(Math.abs(angle(turn.heading-turn.after.actor.headingY))<=turn.tolerance&&distance(turn.before.actor,turn.after.actor)<.015,'Exterior heading or stationary position failed');
+  for(const pulse of turn.pulses){
+   assert(pulse.after&&pulse.milliseconds>=8&&pulse.milliseconds<=240,'Missing bounded native pulse receipt');
+   for(const type of['keydown','keyup'])assert(evidence.events.some(e=>e.phase===pulse.name&&e.type===type&&e.code==='Key'+pulse.key.toUpperCase()),'Missing genuine native turn pulse '+type);
+  }
+ }
  for(const id of['107227742','107310050']){
   const views=report.exteriorViews.filter(v=>v.id===id);assert.equal(views.length,2);
   assert(Math.abs(angle(views[0].bearing-views[1].bearing))>=Math.PI*.8,'Exterior views do not cover opposite directions');
@@ -78,12 +141,20 @@ export function assertExteriorEvidence(report){
  }
  for(const leg of report.exteriorLegs){
   assert(leg.after.frames>leg.before.frames+3&&distance(leg.before.actor,leg.after.actor)>.15,'Exterior walking has no genuine actor movement');
-  assert(leg.trace.length>=2&&leg.trace.every(row=>row.actor.onFoot),'Exterior trajectory is missing or changed walking mode');
+  assert(leg.trace.length>=2&&leg.coastTrace?.length>=4&&[...leg.trace,...leg.coastTrace].every(row=>row.actor.onFoot),'Exterior trajectory or coast is missing or changed walking mode');
   const dx=leg.goal.x-leg.before.actor.x,dz=leg.goal.z-leg.before.actor.z,length=Math.hypot(dx,dz);
   assert(length>.4&&Number.isFinite(leg.maxLateral)&&leg.maxLateral>0&&leg.ground.every(p=>p.walkable&&p.planningClearance>=.7),'Missing original-terrain route clearance');
-  for(const row of[...leg.trace,leg.after]){
+  assert(leg.sweep?.clear&&leg.sweep.bodyRadius===.27&&JSON.stringify(leg.sweep.bodyHeights)==='[0.62,1.1,1.58]'&&leg.sweep.maxLateral===leg.maxLateral,'Missing unchanged native body/corridor sweep');
+  assert(distance(leg.sweep.from,leg.before.actor)<.015&&distance(leg.sweep.to,leg.goal)<1e-7,'Body sweep does not describe this actual leg');
+  const turn=report.exteriorTurns.find(turn=>turn.name===leg.name+'-turn');assert(turn&&turn.geometry.maxLateral===leg.maxLateral&&turn.geometry.maxForward===leg.sweep.maxForward&&Math.abs(turn.geometry.legLength-length)<.015,'Heading tolerance does not describe the actual leg');
+  assert(Math.abs(angle(Math.atan2(dx,dz)-leg.before.actor.headingY))<=Math.min(.15,Math.atan2(leg.maxLateral-.015,length+leg.sweep.maxForward)),'Actual walking heading exceeds its original/corridor bound');
+  assert(leg.sweep.samples?.length>0&&leg.sweep.samples.every(sample=>sample.clear&&sample.groundClear&&sample.step>0&&sample.step<=.25+1e-8&&
+   Math.abs(sample.rayLength-sample.step-.3)<1e-8&&Math.abs(sample.acceptedBeyond-sample.step-.27)<1e-8&&Math.abs(sample.corridorRadius-.27-leg.maxLateral)<1e-8&&
+   [sample.bodyHits,sample.corridorHits].every(hits=>hits.length===3&&hits.every(hit=>hit===null||Number.isFinite(hit)&&hit>sample.acceptedBeyond))&&sample.headHit===null&&sample.corridorHeadHit===null),'Original body/corridor raw hit receipt failed');
+  for(const row of[...leg.trace,...leg.coastTrace,leg.after]){
    const x=row.actor.x-leg.before.actor.x,z=row.actor.z-leg.before.actor.z;
    assert(Math.abs(x*dz-z*dx)/length<=leg.maxLateral,'Observed native trajectory left its measured lateral corridor');
+   assert((x*dx+z*dz)/length<=length+leg.sweep.maxForward,'Observed native trajectory passed its swept stopping envelope');
   }
   const afterX=leg.after.actor.x-leg.before.actor.x,afterZ=leg.after.actor.z-leg.before.actor.z;
   assert((afterX*dx+afterZ*dz)/length>=length-.1,'The actual actor did not reach the recorded leg goal');
@@ -91,31 +162,63 @@ export function assertExteriorEvidence(report){
  }
 }
 
-export async function runExteriorProof({page,report,phase,motion,snapshot,guideAction,dismount,turnTo,focusCanvas,keyDown,keyUp,waitMotion,settle,frames,capture,trace}){
- report.exteriorViews=[];report.exteriorLegs=[];
+export async function runExteriorProof({page,report,phase,motion,snapshot,guideAction,dismount,focusCanvas,keyDown,keyUp,waitMotion,settle,frames,capture,trace}){
+ report.exteriorViews=[];report.exteriorLegs=[];report.exteriorTurns=[];report.exteriorPlans=[];
  report.manualVisualReviewRequired=true;report.appearanceAccepted=null;report.occlusionAccepted=null;report.collisionAccepted=null;
  report.groundFit=await page.evaluate(()=>window.__stagedLandmarkProof.groundFit());assert(report.groundFit.structuralReceiptPassed,'Actual original terrain and loaded walking surfaces disagree');
  const queryGround=points=>page.evaluate(points=>window.__stagedLandmarkProof.routeGround(points),points);
+ const querySweeps=segments=>page.evaluate(segments=>window.__stagedLandmarkProof.routeSweeps(segments),segments);
  const exterior=id=>page.evaluate(id=>window.__stagedLandmarkProof.exterior(id),id);
+ async function setFirstPerson(wanted){
+  if((await motion()).actor.firstPerson!==wanted){await focusCanvas();await pulse('v',0);await frames(3);}
+  assert.equal((await motion()).actor.firstPerson,wanted,'Exterior native V did not change the real camera');
+ }
+ async function settleHeading(name){
+  await phase(name);
+  const handle=await page.waitForFunction(name=>{
+   const e=window.__stagedWalkNativeEvidence,row=window.__stagedLandmarkProof.motion();
+   if(!row.actor?.onFoot)throw Error('Exterior turn left native on-foot mode');
+   const rows=e.traces[name]??=[];if(!rows.length||rows.at(-1).frames!==row.frames){if(rows.length>=4096){e.overflow=true;throw Error('Exterior turn trace overflow');}rows.push(row);}
+   const tail=rows.filter(r=>row.time-r.time<=.22);if(tail.length<4||row.time-tail[0].time<.18)return false;
+   if(!tail.every(r=>Math.abs(Math.atan2(Math.sin(row.actor.headingY-r.actor.headingY),Math.cos(row.actor.headingY-r.actor.headingY)))<.002&&Math.hypot(row.actor.x-r.actor.x,row.actor.z-r.actor.z)<.015))return false;
+   return{...row,headingSettlement:{phase:name,firstFrame:tail[0].frames,lastFrame:row.frames,timeSpan:row.time-tail[0].time,
+    intervals:tail.slice(1).map((r,i)=>({frames:r.frames-tail[i].frames,seconds:r.time-tail[i].time})),
+    meanFrameSeconds:(row.time-tail[0].time)/(row.frames-tail[0].frames),maximumHeadingDifference:Math.max(...tail.map(r=>Math.abs(Math.atan2(Math.sin(row.actor.headingY-r.actor.headingY),Math.cos(row.actor.headingY-r.actor.headingY)))))}};
+  },name,{polling:'raf',timeout:90_000});
+  try{return await handle.jsonValue();}finally{await handle.dispose();}
+ }
+ const pulse=async(key,milliseconds)=>{await keyDown(key);try{await new Promise(resolve=>setTimeout(resolve,milliseconds));}finally{await keyUp(key);}};
  async function walkRoute(route,label){
   for(const [index,waypoint]of route.waypoints.entries())for(let segment=0;segment<80;segment++){
    const current=(await motion()).actor,remaining=distance(current,waypoint);if(remaining<=.4)break;
    let length=Math.min(12,remaining),goal={x:current.x+(waypoint.x-current.x)*length/remaining,z:current.z+(waypoint.z-current.z)*length/remaining};
    let ground=await queryGround(linePoints(current,goal));
    if(ground.some(p=>p.planningClearance<2.25)){
-    // The original garden passages are narrower than a 4.5m corridor. Keep the
-    // unchanged native heading tolerance, but use short legs whose lateral
-    // error remains within the measured clearance of the actual .27m body.
+    // The original garden passages are narrower than a 4.5m corridor. Keep
+    // the original body/clearance requirements and use short legs whose
+    // observed lateral error remains inside the measured native corridor.
     length=Math.min(2.5,remaining);goal={x:current.x+(waypoint.x-current.x)*length/remaining,z:current.z+(waypoint.z-current.z)*length/remaining};
     ground=await queryGround(linePoints(current,goal));
    }
    assert(ground.every(p=>p.walkable),'Observed actor route approaches an original obstruction');
    const maxLateral=Math.min(...ground.map(p=>p.planningClearance))-.29;
-   await turnTo(Math.atan2(goal.x-current.x,goal.z-current.z));
-   const name=label+'-walk-'+index+'-'+segment;await phase(name);await focusCanvas();const before=await motion();
+   const name=label+'-walk-'+index+'-'+segment,turn={};report.exteriorTurns.push(turn);
+   await turnExteriorHeading({heading:Math.atan2(goal.x-current.x,goal.z-current.z),name:name+'-turn',receipt:turn,legLength:length,maxLateral,maxForward:.75,motion,phase,setFirstPerson,focusCanvas,pulse,settleHeading});
+   await phase(name);await focusCanvas();const before=await motion();
    const dx=goal.x-before.actor.x,dz=goal.z-before.actor.z,actualLength=Math.hypot(dx,dz);
-   await keyDown('w');try{await waitMotion({type:'world-target',x:before.actor.x,z:before.actor.z,dx:dx/actualLength,dz:dz/actualLength,length:actualLength,maxLateral},90_000);}finally{await keyUp('w');}
-   await settle(name);const after=await motion();report.exteriorLegs.push({name,before,after,goal,ground,maxLateral,trace:await trace(name)});
+   assert(Math.abs(angle(Math.atan2(dx,dz)-before.actor.headingY))<=Math.min(.15,Math.atan2(maxLateral-.015,actualLength+.75)),'Native exterior heading exceeds the actual swept corridor');
+   const sweep=(await querySweeps([{from:before.actor,to:goal,maxLateral,maxForward:.75}]))[0];
+   const leg={name,before,after:null,goal,ground,maxLateral,sweep,trace:[],coastTrace:[]};report.exteriorLegs.push(leg);
+   assert(sweep.clear,'The actual exterior leg or stopping corridor intersects an original native body obstacle');
+   let movementFailure;
+   await keyDown('w');try{await waitMotion({type:'world-target',x:before.actor.x,z:before.actor.z,dx:dx/actualLength,dz:dz/actualLength,length:actualLength,maxLateral},90_000);}catch(error){movementFailure=error;}finally{await keyUp('w');}
+   await settle(name);const after=await motion();Object.assign(leg,{after,trace:await trace(name),coastTrace:await trace('settle-'+name)});
+   if(movementFailure)throw movementFailure;
+   for(const row of[...leg.trace,...leg.coastTrace,after]){
+    const x=row.actor.x-before.actor.x,z=row.actor.z-before.actor.z;
+    assert(Math.abs(x*dz-z*dx)/actualLength<=maxLateral,'Native exterior coast left its measured route corridor');
+    assert((x*dx+z*dz)/actualLength<=actualLength+sweep.maxForward,'Native exterior coast passed its swept stopping envelope');
+   }
    assert(after.frames>before.frames+3&&distance(before.actor,after.actor)>.15,'Native exterior walk did not advance');
    if(segment===79)throw Error('Native exterior waypoint exceeded its bounded leg count');
   }
@@ -141,13 +244,13 @@ export async function runExteriorProof({page,report,phase,motion,snapshot,guideA
  for(const [id,label,action]of[['107227742','aquarium','Travel to entrance'],['107310050','conservatory','Travel to path']]){
   await guideAction(id,action);await dismount();
   const current=await snapshot(),site=current.sites.find(s=>s.id===id),initial=await exterior(id);assert(initial.ready);
-  const planner=await createExteriorPlanner({bounds:initial.bounds,camera:initial.camera,layout:report.layout,queryGround});
+  const planner=await createExteriorPlanner({bounds:initial.bounds,camera:initial.camera,layout:report.layout,queryGround,querySweeps});
   // Diagonal front/side and opposite rear/side directions expose all four
   // exterior orientations while preserving real surrounding scenery.
   const front=id==='107227742'?Math.atan2(Math.sin(site.layout.yaw),Math.cos(site.layout.yaw)):Math.atan2(-Math.cos(site.layout.yaw),Math.sin(site.layout.yaw));
   for(const [suffix,bearing]of[['front-side',front+Math.PI/4],['rear-side',front+Math.PI*1.25]]){
    const name=label+'-complete-'+suffix;await phase(name+'-plan');
-   const route=await planner.route((await motion()).actor,bearing);await walkRoute(route,name);
+   const route=await planner.route((await motion()).actor,bearing);report.exteriorPlans.push({name,id,route});await walkRoute(route,name);
    const before=await aim(id,name);await capture(name,id,{near:false});const after=await exterior(id);
    assert(after.completeBoundsInFrame,'The real capture camera cropped the model');
    report.exteriorViews.push({id,name,bearing:Math.atan2(after.camera.position[0]-after.bounds.center[0],after.camera.position[2]-after.bounds.center[2]),route,before,after});

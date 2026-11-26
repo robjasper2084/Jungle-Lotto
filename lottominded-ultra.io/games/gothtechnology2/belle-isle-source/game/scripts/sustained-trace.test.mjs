@@ -8,6 +8,9 @@ import {execFileSync} from 'node:child_process';
 import {ORIGINAL_HARNESS_BLOB,MARKER_PREFIX,gitBlob,sha256,buildInventory,generatedTimingReceipt,
  failExit,isGameUrl,traceSummary,diagnosticVerdict,writeBuildInputs,writeBuildReceipt,verifyBuildReceipt} from './sustained-trace-contract.mjs';
 import {observeMethod,installSustainedTrace} from './sustained-trace-observer.mjs';
+import {scanTraceFile,summarizeTraceFile} from './sustained-trace-stream.mjs';
+
+const traceBytes=trace=>Buffer.from('{"traceEvents":[\n'+trace.traceEvents.map(event=>JSON.stringify(event)).join(',\n')+'\n]}\n');
 
 function fixture(){
  const source={head:'pinned-source',tree:'pinned-tree',harness:{gitBlob:ORIGINAL_HARNESS_BLOB},files:[]};
@@ -25,7 +28,7 @@ function fixture(){
  const report={sourceHead:source.head,mode:'diagnostic',device:'phone',requestedSeconds:90,renderBackend:'angle-metal',
   actualGpu:{renderer:'ANGLE Metal Renderer: Apple'},passed:false,profile:{
    viewport:[390,844,1],settings:{quality:'smooth',effectiveQuality:'smooth',pixelRatio:1,adaptiveScale:1,cap:60,world:{performanceDiagnostic:true}},
-   stopReason:'trusted-W-keyup',activeSeconds:89.699,excludedSeconds:.3163,over250ms:2,metrics:{frameMs:{p95:33.5}}}};
+   stopReason:'trusted-W-keyup',activeSeconds:90.1,excludedSeconds:.3163,over250ms:2,metrics:{frameMs:{p95:33.5}}}};
  return {source,page,trace,cpu,report,traceComplete:{dataLossOccurred:false,stream:'raw-stream'}};
 }
 
@@ -87,7 +90,7 @@ test('trace collection preserves failed ride metrics and never qualifies release
   x=>x.report.requestedSeconds=30,x=>x.report.actualGpu.renderer='SwiftShader',x=>x.report.profile.viewport[2]=2,
   x=>x.report.profile.settings.quality='high',x=>x.report.profile.settings.adaptiveScale=.5,
   x=>x.report.profile.settings.cap=30,x=>x.report.profile.settings.world.performanceDiagnostic=false,
-  x=>x.report.profile.stopReason='timeout',
+  x=>x.report.profile.stopReason='timeout',x=>x.report.profile.activeSeconds=89.99,
   x=>x.traceComplete.dataLossOccurred=true,x=>delete x.traceComplete.dataLossOccurred,x=>delete x.traceComplete.stream,
  ];
  for(const mutate of mutations){const broken=fixture();mutate(broken);const result=diagnosticVerdict({...broken,summary});
@@ -95,10 +98,18 @@ test('trace collection preserves failed ride metrics and never qualifies release
  assert.equal(diagnosticVerdict({...f,summary:null}).collectionComplete,false);
 });
 
-test('native 90-second input bounds remain strict while eligible frame time stays separate',()=>{
+test('both 90-second active frame time and native input bounds remain independently required',()=>{
  const f=fixture(),summary=traceSummary(f.trace,f.cpu,f.page),verdict=diagnosticVerdict({...f,summary});
- assert.equal(verdict.collectionComplete,true);assert.equal(verdict.originalActiveSeconds,89.699);assert.equal(verdict.originalExcludedSeconds,.3163);
+ assert.equal(verdict.collectionComplete,true);assert.equal(verdict.originalActiveSeconds,90.1);assert.equal(verdict.originalExcludedSeconds,.3163);
  assert.equal(verdict.nativeCapture.durationMs,90008);assert.equal(verdict.originalHarnessPassed,false);
+ // Historical 8b33's 89.699 active seconds stay incomplete despite a 90s input hold.
+ f.report.profile.activeSeconds=89.699;f.report.passed=true;
+ const incomplete=diagnosticVerdict({...f,summary});assert.equal(incomplete.collectionComplete,false);
+ assert.equal(incomplete.originalHarnessPassed,true);assert.equal(incomplete.originalActiveSeconds,89.699);
+ assert.equal(incomplete.originalExcludedSeconds,.3163);assert.equal(incomplete.releaseAcceptance,false);
+ assert.ok(incomplete.errors.includes('Original trusted 90-second capture incomplete'));
+ f.report.profile.activeSeconds=90;assert.equal(diagnosticVerdict({...f,summary}).collectionComplete,true);
+ f.report.profile.activeSeconds=NaN;assert.equal(diagnosticVerdict({...f,summary}).collectionComplete,false);
  // A long active total must never substitute for a short trusted input window.
  f.report.profile.activeSeconds=95;f.report.profile.excludedSeconds=5;
  f.page.markers.at(-1).atMs=91099;f.trace.traceEvents.find(e=>e.name===MARKER_PREFIX+'w-keyup').ts=92_099_000;
@@ -109,8 +120,77 @@ test('native 90-second input bounds remain strict while eligible frame time stay
 
 test('native signed CPU deltas are retained while sample times still cover the ride',()=>{
  const f=fixture();f.cpu.samples=[1,1,1,1,1];f.cpu.timeDeltas=[100_000,600_000,-4,89_900_004,200_000];
+ const unchanged=structuredClone(f);
  const summary=traceSummary(f.trace,f.cpu,f.page);assert.deepEqual(summary.errors,[]);assert.equal(summary.cpuCoverage.negativeDeltas,1);
  assert.equal(summary.cpuCoverage.lastSampleUs,92_300_000);assert.equal(f.cpu.timeDeltas[2],-4);
+ assert.deepEqual(f,unchanged);assert.equal(summary.cpuCoverage.minimumRawDeltaUs,-4);
+ assert.equal(summary.cpuCoverage.rideSamples,3);assert.equal(summary.cpuCoverage.firstRideSampleUs,2_199_996);
+ assert.equal(summary.cpuCoverage.lastRideSampleUs,92_100_000);assert.equal(summary.cpuCoverage.maximumRawDeltaEndingDuringRideUs,89_900_004);
+ assert.equal(summary.cpuCoverage.initialUnsampledUs,99_996);assert.equal(summary.cpuCoverage.finalUnsampledUs,8_000);
+ assert.equal(summary.nativeActivity.gpu.events,0);assert.match(summary.nativeActivity.gpu.limitation,/metadata alone is not coverage/);
+ f.trace.traceEvents.push({ph:'X',name:'GpuTask',cat:'gpu',pid:3,tid:11,ts:3_000_000,dur:5000});
+ assert.equal(traceSummary(f.trace,f.cpu,f.page).nativeActivity.gpu.durationEvents,1);
+});
+
+test('metadata and bounding timestamps cannot substitute for actual observations during trusted W input',()=>{
+ const mutations=[
+  x=>{x.cpu.samples=[1];x.cpu.timeDeltas=[2000];}, // Published b074 counterexample: sample precedes ride.
+  x=>{x.cpu.samples=[1,1];x.cpu.timeDeltas=[100_000,90_700_000];}, // Header/sample bounds span ride; no samples inside.
+  x=>x.trace.traceEvents.filter(e=>e.ph==='X').forEach((e,i)=>{e.ts=i?93_000_000:1_900_000;e.dur=100;}),
+  x=>x.trace.traceEvents.filter(e=>e.ph==='X').forEach(e=>e.ph='M'),
+  x=>x.trace.traceEvents.filter(e=>e.ph==='X').forEach(e=>e.dur=0),
+  x=>x.trace.traceEvents.filter(e=>e.ph==='X').forEach(e=>e.tid=99),
+  x=>x.cpu.nodes.push({...x.cpu.nodes[0]}),
+  x=>x.cpu.samples.fill(99),x=>x.cpu.timeDeltas[1]=null,x=>x.cpu.timeDeltas.pop(),
+  x=>{x.page.markers[1].atMs=92000;x.trace.traceEvents.find(e=>e.name===MARKER_PREFIX+'first-w-keydown').ts=93_000_000;},
+ ];
+ for(const mutate of mutations){const f=fixture();mutate(f);const summary=traceSummary(f.trace,f.cpu,f.page);
+  assert.ok(summary.errors.length);assert.equal(diagnosticVerdict({...f,summary}).collectionComplete,false);}
+});
+
+test('streamed events match the array summary and preserve the original failed verdict',async()=>{
+ const f=fixture(),root=await mkdtemp(resolve(tmpdir(),'belle-trace-stream-')),path=resolve(root,'trace.json');
+ try{
+  const bytes=traceBytes(f.trace);await writeFile(path,bytes);
+  const {summary,receipt}=await summarizeTraceFile(path,f.cpu,f.page);
+  assert.deepEqual(summary,traceSummary(f.trace,f.cpu,f.page));assert.equal(receipt.sha256,sha256(bytes));
+  assert.equal(receipt.bytes,bytes.length);assert.equal(receipt.events,f.trace.traceEvents.length);assert.equal(receipt.passes,2);
+  assert.equal(receipt.completeDocument,true);assert.equal(receipt.unchangedBetweenPasses,true);
+  const verdict=diagnosticVerdict({...f,summary});assert.equal(verdict.collectionComplete,true);
+  assert.equal(verdict.originalHarnessPassed,false);assert.equal(verdict.originalIntervalsOver250ms,2);assert.equal(verdict.releaseAcceptance,false);
+ }finally{await rm(root,{recursive:true,force:true});}
+});
+
+test('stream reader validates final inline metadata, escaped delimiters and split UTF-8 bytes',async()=>{
+ const root=await mkdtemp(resolve(tmpdir(),'belle-trace-framing-')),path=resolve(root,'trace.json');
+ try{
+  const event={name:'é }, ], "metadata": escaped \\ text',args:{list:[{x:1}]}},seen=[];
+  const bytes=Buffer.from('{"traceEvents":[\n'+JSON.stringify(event)+'],"metadata":\n{"complete":true}}\n');
+  await writeFile(path,bytes);const receipt=await scanTraceFile(path,value=>seen.push(value),{highWaterMark:1});
+  assert.deepEqual(seen,[event]);assert.equal(receipt.sha256,sha256(bytes));assert.deepEqual(receipt.topLevelKeys,['traceEvents','metadata']);
+ }finally{await rm(root,{recursive:true,force:true});}
+});
+
+test('malformed or truncated trace fails closed while the full unchanged file is still hashed',async()=>{
+ const root=await mkdtemp(resolve(tmpdir(),'belle-trace-bad-stream-')),path=resolve(root,'trace.json');
+ const cases=[
+  Buffer.from('{"traceEvents":[\n{"ts":1},\n]}'),
+  Buffer.from('{"traceEvents":[\n{"ts":1}\n{"ts":2}]}'),
+  Buffer.from('{"traceEvents":[\n{"ts":1}'),
+  Buffer.from('{"traceEvents":[\n{"ts":1}],"metadata":'),
+  Buffer.from('{"traceEvents":[\n{"ts":NaN}]}'),
+  Buffer.from('{"traceEvents":[\n{"ts":1}],"metadata":{"value":Infinity}}'),
+  Buffer.from('{"traceEvents":[\n{"ts":1}],"traceEvents":[]}'),
+  Buffer.from('{"traceEvents":[\n{"ts":1} extra]}'),
+  Buffer.concat([Buffer.from('{"traceEvents":[\n{"name":"'),Buffer.from([0xff]),Buffer.from('"}]}')]),
+ ];
+ try{for(const bytes of cases){await writeFile(path,bytes);let failure;
+   try{await scanTraceFile(path,()=>{},{highWaterMark:13});}catch(error){failure=error;}
+   assert.ok(failure);assert.equal(failure.traceReceipt.completeFile,true);assert.equal(failure.traceReceipt.completeDocument,false);
+   assert.equal(failure.traceReceipt.sha256,sha256(bytes));assert.equal(failure.traceReceipt.bytes,bytes.length);
+   assert.deepEqual(await readFile(path),bytes);
+  }
+ }finally{await rm(root,{recursive:true,force:true});}
 });
 
 test('build inventory detects changed bytes and rejects symlinks; timing exception permits only buildMs',async()=>{
@@ -167,7 +247,7 @@ async function observerFixture({listedCategories=[],listingError=false,missingTi
    calls.push({method,params});
    if(method==='Tracing.getCategories'){if(listingError)throw Error('Enumeration unavailable');return {categories:listedCategories};}
    if(method==='Tracing.end'){queueMicrotask(()=>this.emit('Tracing.tracingComplete',f.traceComplete));return {};}
-   if(method==='IO.read')return {data:JSON.stringify(f.trace),eof:true};
+   if(method==='IO.read')return {data:traceBytes(f.trace).toString(),eof:true};
    return {};
   }
  }

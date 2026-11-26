@@ -2,7 +2,7 @@ import * as T from 'three';
 import {replaceableLegacyMesh,legacyDetailName,STUDY_SITES} from './stagedLandmarkStudies.ts';
 import {waterfrontSkylineSiteReceipts} from './waterfrontSkyline.ts';
 import {sweepVisibleMeshTriangles} from './visibleTriangleSweep.ts';
-import {readStagedGroundFit,readStagedExterior,readStagedRouteGround,type GroundLayout} from './stagedLandmarkGroundFit.ts';
+import {readStagedGroundFit,readStagedExterior,readStagedRouteGround,readStagedRouteSweeps,type GroundLayout,type GroundRouteSegment} from './stagedLandmarkGroundFit.ts';
 
 type Point={x:number;y:number;z:number};
 type Actor=Point&{headingY:number;speed:number;footBlend:number;footMode?:number};
@@ -79,6 +79,7 @@ export function createStagedLandmarkProof(root:T.Object3D,terrain:Terrain,layout
    groundFit:()=>readStagedGroundFit(root,terrain,{aquarium:copies.get('107227742'),conservatory:copies.get('107310050')}),
    exterior:(id:string)=>readStagedExterior(root,id,camera),
    routeGround:(points:readonly {x:number;z:number}[])=>readStagedRouteGround(terrain,points),
+   routeSweeps:(segments:readonly GroundRouteSegment[])=>readStagedRouteSweeps(terrain,segments),
   }),
   observeActor(p:Actor,firstPerson:boolean){actor={x:p.x,y:p.y,z:p.z,headingY:p.headingY,speed:p.speed,footBlend:p.footBlend,footMode:p.footMode,firstPerson};},
   observeView(t:number,_x:number,_z:number,c:T.Camera){if(t!==time){frames++;time=t;}camera=c;},

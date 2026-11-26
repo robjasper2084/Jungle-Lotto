@@ -17,7 +17,7 @@ test('staging proof reads the actual actor and camera without exposing mutable g
  }
  const retained=new T.Mesh(new T.BoxGeometry(),new T.MeshStandardMaterial());retained.name='107227742_Aquarium illuminated habitat';root.add(retained);
  const cfg={id:'107227742',center:[10,20],yaw:0,walls:[{a:[0,0],b:[1,0]}]},calls:{height:number;radius:number}[]=[];
- const terrain={height:()=>2,obstructed:(x:number)=>x>12,raycastObstacle:(o:{y:number},_d:unknown,_m:number,r:number)=>{calls.push({height:o.y,radius:r});return o.y>3?.4:null;}};
+ const terrain={height:()=>2,land:()=>true,obstructed:(x:number)=>x>12,raycastObstacle:(o:{y:number},_d:unknown,_m:number,r:number)=>{calls.push({height:o.y,radius:r});return o.y>3?.4:null;}};
  const proof=createStagedLandmarkProof(root,terrain,{aquarium:cfg,conservatory:{id:'107310050',center:[0,0],yaw:0}});
  const camera=new T.PerspectiveCamera(55,1.6,.1,1000);camera.position.set(12,3.6,22);camera.updateMatrixWorld();
  const pose={x:12,y:2,z:22,headingY:0,speed:2.35,footBlend:1,footMode:2};
@@ -34,7 +34,11 @@ test('staging proof reads the actual actor and camera without exposing mutable g
  assert.deepEqual(root.toJSON(),before,'Snapshot must not rewrite scene transforms, visibility, geometry, or materials');
  snapshot.actor!.x=999;snapshot.sites[1].layout!.center[0]=999;motion.actor!.z=999;pose.x=777;cfg.center[0]=777;
  const again=proof.publicApi.snapshot();assert.equal(again.actor?.x,12);assert.equal(again.actor?.z,22);assert.deepEqual(again.sites[1].layout?.center,[10,20]);
- assert.equal(Object.isFrozen(proof.publicApi),true);assert.deepEqual(Object.keys(proof.publicApi).sort(),['exterior','frame','groundFit','motion','routeGround','snapshot']);
+ assert.equal(Object.isFrozen(proof.publicApi),true);assert.deepEqual(Object.keys(proof.publicApi).sort(),['exterior','frame','groundFit','motion','routeGround','routeSweeps','snapshot']);
+ const segment={from:{x:0,z:0},to:{x:1,z:0},maxLateral:.41},saved=JSON.stringify(segment),sweep=proof.publicApi.routeSweeps([segment])[0];
+ assert.equal(sweep.clear,false,'Actual native ray hits must reach the public proof receipt');sweep.from.x=999;sweep.samples[0].from.x=999;
+ assert.equal(JSON.stringify(segment),saved);assert.equal(proof.publicApi.routeSweeps([segment])[0].from.x,0);
+ assert.deepEqual(root.toJSON(),before);assert.equal(proof.publicApi.motion().actor?.x,12,'Route observations cannot move the real actor');
  proof.observeView(1,12,22,camera);assert.equal(proof.publicApi.frame(),1,'Repeated views at one simulation time do not fake movement frames');
  proof.observeView(2,12,22,camera);assert.equal(proof.publicApi.frame(),2);
 });

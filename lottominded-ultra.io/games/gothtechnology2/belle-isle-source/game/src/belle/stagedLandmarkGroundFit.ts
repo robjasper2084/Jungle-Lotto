@@ -1,7 +1,10 @@
 import * as T from 'three';
 
 export type GroundLayout={id:string;center:number[];yaw:number;stairs?:{rise:number;count:number;tread:number;width:number;outsideStart:number;landingStart:number;landingEnd:number;insideEnd:number}};
-export type GroundTerrain={height(x:number,z:number,y?:number):number;obstructed(x:number,z:number,margin?:number):unknown;land?(x:number,z:number,y?:number):boolean};
+type GroundPoint={x:number;z:number};
+type GroundVector=GroundPoint&{y:number};
+export type GroundTerrain={height(x:number,z:number,y?:number):number;obstructed(x:number,z:number,margin?:number):unknown;land?(x:number,z:number,y?:number):boolean;raycastObstacle?(o:GroundVector,d:GroundVector,max:number,half?:number):number|null};
+const routeBodyHeights=[.62,1.1,1.58],routeBodyRadius=.27;
 type Surface={height:number;mesh:string;triangle:number;vertices:number[][]};
 const epsilon=1e-4;
 const world=(c:GroundLayout,u:number,v:number)=>({x:c.center[0]+Math.cos(c.yaw)*u-Math.sin(c.yaw)*v,z:c.center[1]-Math.sin(c.yaw)*u-Math.cos(c.yaw)*v});
@@ -108,9 +111,44 @@ export function readStagedExterior(root:T.Object3D,id:string,camera:T.Camera|nul
 
 /** Bounded read-only queries for the external native-input route planner. */
 export function readStagedRouteGround(terrain:GroundTerrain,points:readonly {x:number;z:number}[]){
- if(!terrain.land||points.length>20000||points.some(p=>!Number.isFinite(p.x)||!Number.isFinite(p.z)))throw Error('Invalid read-only route query');
+ if(!terrain.land||!terrain.raycastObstacle||points.length>20000||points.some(p=>!Number.isFinite(p.x)||!Number.isFinite(p.z)))throw Error('Invalid read-only route query');
  return points.map(({x,z})=>{
-  const height=terrain.height(x,z,2),walkable=Number.isFinite(height)&&terrain.land!(x,z,2)&&!terrain.obstructed(x,z,.7);
-  return{x,z,height,walkable,planningClearance:walkable?(terrain.obstructed(x,z,2.25)?.7:2.25):0};
+  const height=terrain.height(x,z,2),groundClear=Number.isFinite(height)&&terrain.land!(x,z,2)&&!terrain.obstructed(x,z,.7);
+  // These are unordered point queries, not a path. Zero-length original
+  // obstacle rays include the loaded trees/lamps absent from obstructed().
+  // The .7/2.25 envelopes are conservative planning space; the unchanged
+  // standing body is .27m, tested separately in every directed leg below.
+  const hits=(half:number)=>Number.isFinite(height)?routeBodyHeights.map(h=>terrain.raycastObstacle!({x,y:height+h,z},{x:1,y:0,z:0},0,half)):[0,0,0];
+  const narrowHits=hits(.7),wideHits=hits(2.25),walkable=groundClear&&narrowHits.every(h=>h===null);
+  return{x,z,height,walkable,planningClearance:walkable&& !terrain.obstructed(x,z,2.25)&&wideHits.every(h=>h===null)?2.25:walkable?.7:0,
+   obstacleOccupancy:{bodyHeights:[...routeBodyHeights],narrowRadius:.7,narrowHits,wideRadius:2.25,wideHits}};
+ });
+}
+
+export type GroundRouteSegment={from:GroundPoint;to:GroundPoint;maxLateral:number;maxForward?:number};
+/** Explicit directed path receipts. Reuse the original standing-body sweeps,
+ * .34m step limit and rising-head check; never install or alter a collider.
+ * A second, larger sweep conservatively includes the whole permitted lateral
+ * corridor. Its radius is reported separately from the unchanged .27m body. */
+export function readStagedRouteSweeps(terrain:GroundTerrain,segments:readonly GroundRouteSegment[]){
+ if(!terrain.land||!terrain.raycastObstacle||segments.length>2000)throw Error('Invalid read-only route sweep');
+ return segments.map(segment=>{
+  const {from,to,maxLateral}=segment,maxForward=segment.maxForward??0,dx=to.x-from.x,dz=to.z-from.z,length=Math.hypot(dx,dz);
+  if(![from.x,from.z,to.x,to.z,maxLateral,maxForward,length].every(Number.isFinite)||length<=0||length>32||maxLateral<0||maxLateral>1.96||maxForward<0||maxForward>1)throw Error('Invalid read-only route sweep');
+  const direction={x:dx/length,y:0,z:dz/length},distance=length+maxForward,count=Math.ceil(distance/.25),samples=[];
+  for(let i=0;i<count;i++){
+   const a=distance*i/count,b=distance*(i+1)/count,x=from.x+direction.x*a,z=from.z+direction.z*a,nx=from.x+direction.x*b,nz=from.z+direction.z*b;
+   const height=terrain.height(x,z,2),nextHeight=terrain.height(nx,nz,height),rise=nextHeight-height,step=b-a;
+   const groundClear=Number.isFinite(height)&&Number.isFinite(nextHeight)&&terrain.land!(x,z,height)&&terrain.land!(nx,nz,height)&&rise<=.34;
+   const query=(half:number)=>groundClear?routeBodyHeights.map(h=>terrain.raycastObstacle!({x,y:height+h,z},direction,step+.3,half)):[0,0,0];
+   const bodyHits=query(routeBodyRadius),corridorRadius=routeBodyRadius+maxLateral,corridorHits=query(corridorRadius);
+   const head=(half:number)=>groundClear&&rise>.01?terrain.raycastObstacle!({x:nx,y:height+1.6,z:nz},{x:0,y:1,z:0},rise+.2,half):null;
+   const headHit=head(.22),corridorHeadHit=head(.22+maxLateral);
+   const clear=groundClear&&bodyHits.every(hit=>hit===null||hit>step+.27)&&corridorHits.every(hit=>hit===null||hit>step+.27)&&headHit===null&&corridorHeadHit===null;
+   samples.push({from:{x,y:height,z},to:{x:nx,y:nextHeight,z:nz},direction:{...direction},step,rayLength:step+.3,acceptedBeyond:step+.27,
+    bodyHits,corridorRadius,corridorHits,headHit,corridorHeadHit,groundClear,clear});
+  }
+  return{from:{...from},to:{...to},length,maxLateral,maxForward,bodyRadius:routeBodyRadius,bodyHeights:[...routeBodyHeights],samples,clear:samples.every(s=>s.clear),
+   scope:'Read-only original terrain and obstacle rays, including actual loaded flight solids. Anonymous ray distances do not identify a named obstacle.'};
  });
 }

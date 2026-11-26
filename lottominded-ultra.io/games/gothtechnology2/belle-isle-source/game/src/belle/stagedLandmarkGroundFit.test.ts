@@ -6,7 +6,7 @@ import * as T from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {ParkTerrain,type ParkMap} from './terrain.ts';
 import {STUDY_SITES} from './stagedLandmarkStudies.ts';
-import {readGroundSurface,readStagedGroundFit,readStagedExterior,readStagedRouteGround} from './stagedLandmarkGroundFit.ts';
+import {readGroundSurface,readStagedGroundFit,readStagedExterior,readStagedRouteGround,readStagedRouteSweeps} from './stagedLandmarkGroundFit.ts';
 
 const bytes=await readFile(new URL('../../public/belle/map.json',import.meta.url));
 const map=JSON.parse(bytes.toString()) as ParkMap,terrain=new ParkTerrain(map);
@@ -102,6 +102,32 @@ test('surface observation honors actual upward triangles and draw ranges without
 test('bounded route queries preserve the original terrain and reject incomplete or unbounded requests',()=>{
  const p={x:map.conservatory!.center[0]-100,z:map.conservatory!.center[1]-100},walkable=terrain.land(p.x,p.z,2)&&!terrain.obstructed(p.x,p.z,.7);
  const expected={...p,height:terrain.height(p.x,p.z,2),walkable,planningClearance:walkable?(terrain.obstructed(p.x,p.z,2.25)?.7:2.25):0};
- assert.deepEqual(readStagedRouteGround(terrain,[p]),[expected]);assert.throws(()=>readStagedRouteGround(terrain,[{x:NaN,z:0}]),/Invalid/);
+ const {obstacleOccupancy,...actual}=readStagedRouteGround(terrain,[p])[0];assert.deepEqual(actual,expected);assert.equal(obstacleOccupancy.narrowHits.length,3);assert.throws(()=>readStagedRouteGround(terrain,[{x:NaN,z:0}]),/Invalid/);
  assert.throws(()=>readStagedRouteGround(terrain,Array(20001).fill(p)),/Invalid/);assert.throws(()=>readStagedRouteGround({height:()=>2,obstructed:()=>false},[p]),/Invalid/);
+});
+test('original loaded flight solids absent from static obstructed are caught by unchanged native standing-body sweeps',()=>{
+ const local=new ParkTerrain(map),p={x:1327.2,z:1121.9};assert(!local.obstructed(p.x,p.z,.7));
+ // Controlled unit fixture uses the existing collider registry and original
+ // ray routine. Production collision data is never written by the observer.
+ local.flightSolids.add({...p,bottom:2,top:8,radius:.15,kind:'lamp'});
+ assert(!local.obstructed(p.x,p.z,.7),'The old 2D-only planner would call this clear');
+ const point=readStagedRouteGround(local,[p])[0];assert.equal(point.walkable,false);assert.deepEqual(point.obstacleOccupancy.narrowHits,[0,0,0]);
+ const from={x:p.x-1,z:p.z},to={x:p.x+1,z:p.z},before=local.raycastObstacle({x:from.x,y:2.62,z:from.z},{x:1,y:0,z:0},2.3,.27);
+ const receipt=readStagedRouteSweeps(local,[{from,to,maxLateral:.41}])[0];assert.equal(receipt.clear,false);assert.equal(receipt.bodyRadius,.27);assert.deepEqual(receipt.bodyHeights,[.62,1.1,1.58]);
+ assert(receipt.samples.some(s=>s.bodyHits.some(hit=>hit!==null&&hit<=s.acceptedBeyond)));
+ assert.equal(local.raycastObstacle({x:from.x,y:2.62,z:from.z},{x:1,y:0,z:0},2.3,.27),before,'Observation preserves the real collider');
+ // The unordered endpoint queries cannot stand in for the intervening path.
+ assert(readStagedRouteGround(local,[from,to]).every(row=>row.walkable));
+});
+test('the swept lateral and stopping envelope catches obstacles missed by a clear centerline',()=>{
+ const local=new ParkTerrain(map),from={x:1325,z:1120},to={x:1326,z:1120};assert(!local.obstructed(from.x,from.z,2.25));
+ local.flightSolids.add({x:1325.5,z:1120.55,bottom:2,top:8,radius:.1,kind:'tree'});
+ const centered=readStagedRouteSweeps(local,[{from,to,maxLateral:0}])[0];assert(centered.clear);
+ const corridor=readStagedRouteSweeps(local,[{from,to,maxLateral:.41}])[0];assert.equal(corridor.clear,false);
+ assert(corridor.samples.some(s=>s.bodyHits.every(hit=>hit===null)&&s.corridorHits.some(hit=>hit!==null)));
+ const stopping=new ParkTerrain(map);stopping.flightSolids.add({x:1326.8,z:1120,bottom:2,top:8,radius:.1,kind:'lamp'});
+ assert(readStagedRouteSweeps(stopping,[{from,to,maxLateral:0}])[0].clear);
+ assert.equal(readStagedRouteSweeps(stopping,[{from,to,maxLateral:0,maxForward:.75}])[0].clear,false);
+ assert.throws(()=>readStagedRouteSweeps(local,[{from,to,maxLateral:2}]),/Invalid/);
+ assert.throws(()=>readStagedRouteSweeps(local,[{from,to:from,maxLateral:0}]),/Invalid/);
 });

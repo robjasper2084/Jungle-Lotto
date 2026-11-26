@@ -2,7 +2,8 @@
 import assert from 'node:assert/strict';
 import {mkdir,readFile,writeFile,open} from 'node:fs/promises';
 import {resolve} from 'node:path';
-import {MARKER_PREFIX,isGameUrl,sha256,traceSummary,diagnosticVerdict} from './sustained-trace-contract.mjs';
+import {MARKER_PREFIX,isGameUrl,sha256,diagnosticVerdict} from './sustained-trace-contract.mjs';
+import {summarizeTraceFile} from './sustained-trace-stream.mjs';
 
 const save=(file,value)=>writeFile(file,JSON.stringify(value,null,2)+'\n');
 const errorText=error=>error?.stack||String(error);
@@ -90,10 +91,14 @@ export async function installSustainedTrace(chromium,{game,output,source,onFailu
     report=JSON.parse(bytes);evidence.originalReportSha256=sha256(bytes);await writeFile(resolve(output,'original-report.json'),bytes);
    }catch(error){fail(error);}
    try{
-    const raw=await readFile(resolve(output,'browser-trace.json')),profileBytes=await readFile(resolve(output,'renderer.cpuprofile'));
-    evidence.traceSha256=sha256(raw);evidence.cpuProfileSha256=sha256(profileBytes);
-    evidence.summary=traceSummary(JSON.parse(raw),JSON.parse(profileBytes),evidence.pageEvidence);
-   }catch(error){fail(error);}
+    const profileBytes=await readFile(resolve(output,'renderer.cpuprofile'));
+    evidence.cpuProfileSha256=sha256(profileBytes);
+    const result=await summarizeTraceFile(resolve(output,'browser-trace.json'),JSON.parse(profileBytes),evidence.pageEvidence);
+    evidence.traceSha256=result.receipt.sha256;evidence.traceValidation=result.receipt;evidence.summary=result.summary;
+   }catch(error){
+    if(error.traceReceipt){evidence.traceValidation=error.traceReceipt;evidence.traceSha256=error.traceReceipt.sha256;}
+    fail(error);
+   }
    if(evidence.launches.length!==1||evidence.pages.filter(p=>p.observedGame).length!==1)fail(Error('Expected exactly one original Metal launch and one observed game page'));
    if(!scriptReceipts.length)fail(Error('Missing browser-consumed JavaScript receipts'));
    evidence.verdict=diagnosticVerdict({source,report,traceComplete:evidence.traceComplete,summary:evidence.summary,errors:evidence.errors});
