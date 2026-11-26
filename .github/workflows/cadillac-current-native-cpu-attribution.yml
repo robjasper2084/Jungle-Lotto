@@ -1,0 +1,102 @@
+name: Cadillac current native CPU attribution (diagnostic only)
+on:
+  pull_request:
+    branches: [upgrade-redesign-cadillac-modification-suite]
+    paths:
+      - '.github/workflows/cadillac-current-native-cpu-attribution.yml'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  cpu-attribution:
+    runs-on: macos-15
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 4454d6110a8a738b3580fbd8e789fd94859233c6
+          path: app
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/
+      - uses: actions/checkout@v4
+        with:
+          ref: 1359fd6f42364da2a04ceb4fe04382847a7baea8
+          path: diagnostic
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/diagnostics/belle-cpu-observer.mjs
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 45691757970
+          github-token: ${{ github.token }}
+          name: sustained-profile-game
+          path: app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist
+      - name: Pin candidate and original unmodified driver; derive separate observer script
+        run: |
+          set -euo pipefail
+          mkdir -p evidence
+          game="$GITHUB_WORKSPACE/app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game"
+          helper="$GITHUB_WORKSPACE/diagnostic/.github/diagnostics/belle-cpu-observer.mjs"
+          test "$(git -C app rev-parse HEAD)" = 4454d6110a8a738b3580fbd8e789fd94859233c6
+          git -C app cat-file -p HEAD > evidence/application-commit.txt
+          grep -Fx 'parent ff97b14435bdbdf71040e59240d45af8e8fc9cad' evidence/application-commit.txt
+          grep -Fx 'parent 7e6c5c7d9f8ed36ee97982b925daa6703e9a9b3e' evidence/application-commit.txt
+          git -C app rev-parse 'HEAD^{tree}' > evidence/application-tree.txt
+          test "$(git hash-object "$game/scripts/sustained-ride-profile.mjs")" = c722b5810a7693e5ece72ed00b4401e7cde7267a
+          test "$(git hash-object "$helper")" = 007ef71a678d52e103492d5c4ecf74f38c3150af
+          (cd "$game/dist" && find . -type f -exec shasum -a 256 {} \; | LC_ALL=C sort) > evidence/dist-before.sha256
+          test -s evidence/dist-before.sha256
+          (cd "$game/../.." && npm ci && npx playwright install chrome)
+          node --check "$helper"
+          node "$helper" "$game/scripts/sustained-ride-profile.mjs"
+          node --check "$game/scripts/sustained-ride-cpu-diagnostic.mjs"
+          git -C app diff --exit-code
+          cp "$game/scripts/sustained-ride-cpu-diagnostic.mjs" evidence/derived-driver.mjs
+          cp "$helper" evidence/observer.mjs
+          git -C app rev-parse HEAD > evidence/source.txt
+          git -C diagnostic rev-parse HEAD > evidence/diagnostic-head.txt
+          { date -u; sw_vers; uname -m; sysctl hw.model hw.ncpu hw.memsize; node -v; "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --version; uptime; vm_stat; } > evidence/host-before.txt
+          printf 'Diagnostic only: original failed sustained-profile-game from run 45691757970, exact synthetic merge 4454d611 and matching candidate 7e6c5c7. Observer adds profiling overhead. Never count this as native release acceptance. No production code or strict driver edits.\n' > evidence/scope.txt
+      - name: Capture V8 CPU samples and native GPU-process stacks during the full original ride
+        timeout-minutes: 28
+        working-directory: app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          BELLE_PROFILE_DEVICE: desktop
+          BELLE_PROFILE_MODE: full
+          BELLE_PROFILE_SECONDS: '90'
+        run: |
+          set -euo pipefail
+          target="$GITHUB_WORKSPACE/evidence"
+          export GITHUB_SHA="$(git rev-parse HEAD)"
+          test "$GITHUB_SHA" = 4454d6110a8a738b3580fbd8e789fd94859233c6
+          status=0
+          node scripts/sustained-ride-cpu-diagnostic.mjs > "$target/profiled-driver.log" 2>&1 || status=$?
+          printf '%s\n' "$status" > "$target/profiled-driver-exit.txt"
+          cat "$target/profiled-driver.log"
+          { date -u; uptime; vm_stat; } > "$target/host-after.txt"
+          test "$(git hash-object scripts/sustained-ride-profile.mjs)" = c722b5810a7693e5ece72ed00b4401e7cde7267a
+          (cd dist && find . -type f -exec shasum -a 256 {} \; | LC_ALL=C sort) > "$target/dist-after.sha256"
+          cmp "$target/dist-before.sha256" "$target/dist-after.sha256"
+          git diff --exit-code
+          report=output/sustained-profile/full/desktop
+          test -s "$report/report.json"
+          test -s "$report/renderer.cpuprofile"
+          test -s "$report/renderer-profile-summary.json"
+          test -s "$report/cpu-diagnostic.json"
+          node --input-type=module -e 'import {readFileSync} from "node:fs";const r=JSON.parse(readFileSync(process.argv[1]));const c=JSON.parse(readFileSync(process.argv[2]));if(r.sourceHead!=="4454d6110a8a738b3580fbd8e789fd94859233c6"||r.device!=="desktop"||r.mode!=="full"||r.requestedSeconds!==90||r.renderBackend!=="angle-metal"||!/Metal/i.test(r.actualGpu?.renderer??"")||!r.profile||r.profile.stopReason!=="trusted-W-keyup"||!r.gpsRegression||!Array.isArray(c.samples)||!c.samples.length)throw Error("Missing diagnostic source/ride/CPU evidence");' "$report/report.json" "$report/renderer.cpuprofile"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cadillac-current-native-cpu-attribution-NOT-RELEASE
+          path: |
+            evidence/
+            app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/sustained-profile/full/desktop/
+          retention-days: 14
+          if-no-files-found: warn
