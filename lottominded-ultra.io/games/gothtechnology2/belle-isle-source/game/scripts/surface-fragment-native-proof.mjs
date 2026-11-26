@@ -61,7 +61,7 @@ const plugin={name:'independent-pinned-surface-baseline',setup(b){
 }};
 
 const errors=[],failedRequests=[];
-const report={schema:'belle-surface-fragment-proof-v1',baseline,sourceHead,width,height,platform:process.platform,
+const report={schema:'belle-surface-fragment-proof-v2',baseline,sourceHead,width,height,platform:process.platform,
  passed:false,errors,failedRequests,fixtureSha256:null,pinnedSources:[],candidateInputs:[],assets:[],captures:[],result:null,
  scope:'Targeted material/geometry comparisons. No full-game performance, input, collision, physical-iPad, or release acceptance is implied.'};
 let browser,server;
@@ -76,7 +76,7 @@ try{
   if(!filename.startsWith(repo+sep)||filename.includes(sep+'node_modules'+sep))continue;
   report.candidateInputs.push({path:filename.slice(repo.length+1),sha256:sha256(await readFile(filename))});
  }
- const changedSurfaceModules=new Set(['surfaceFinish.ts','asphaltPolish.ts','bridgeMaterialFinish.ts','macArthurSurface.ts','cinematicTerrain.ts','parkLawn.ts','lawnFragmentOptimization.ts'].map(name=>gamePath+'/src/belle/'+name));
+ const changedSurfaceModules=new Set(['surfaceFinish.ts','asphaltPolish.ts','bridgeMaterialFinish.ts','macArthurSurface.ts','macArthurBumpCenterReuse.ts','cinematicTerrain.ts','parkLawn.ts','lawnFragmentOptimization.ts'].map(name=>gamePath+'/src/belle/'+name));
  // Paired materials use shared geometry. Refuse to extend that claim to a
  // silently changed geometry factory, collision path, lighting or PBR helper.
  for(const input of report.candidateInputs){
@@ -130,15 +130,34 @@ try{
  assert.equal(result.rows?.length,36,'All three surfaces, four styles, and three views must be compared');
  const expectedCases=['lawn','asphalt','masonry'].flatMap(subject=>['near','mid','grazing'].flatMap(view=>['authentic','golden','noir','detroit2084'].map(style=>subject+'-'+view+'-'+style))).sort();
  assert.deepEqual(result.rows.map(row=>row.name).sort(),expectedCases,'Duplicate or missing required case identifiers');
- assert((images?.length||0)>=72,'Each case must retain both actual renders');
+ const captureNames=report.captures.map(capture=>capture.file);
+ assert.equal(new Set(captureNames).size,captureNames.length,'Capture names must be unique');
+ for(const name of expectedCases)for(const side of ['baseline','default','candidate']){
+  assert(captureNames.includes(name+'-'+side+'.png'),'Missing required render: '+name+'-'+side);
+ }
+ for(const capture of report.captures){
+  assert.equal(capture.width,width,capture.file+': capture width');assert.equal(capture.height,height,capture.file+': capture height');
+ }
  assert(native?/Metal/i.test(result.gpu)&&!/SwiftShader|llvmpipe/i.test(result.gpu):/SwiftShader/i.test(result.gpu),'Unexpected actual GPU backend '+result.gpu);
  for(const row of result.rows){
-  for(const name of ['changedPixels','maxChannelDelta','repeatChangedPixels','shadowChangedPixels','shadowRepeatChangedPixels'])assert.equal(row[name],0,row.name+': '+name);
-  assert.equal(row.orderEqual,true,row.name+': draw order');assert.equal(row.geometryEqual,true,row.name+': submitted geometry');
+  for(const name of ['changedPixels','maxChannelDelta','defaultChangedPixels','defaultMaxChannelDelta','defaultShadowChangedPixels','repeatChangedPixels','shadowChangedPixels','shadowRepeatChangedPixels'])assert.equal(row[name],0,row.name+': '+name);
+  for(const name of ['orderEqual','defaultOrderEqual','geometryEqual','defaultGeometryEqual'])assert.equal(row[name],true,row.name+': '+name);
+  for(const side of ['default','candidate']){
+   assert.equal(row[side+'RgbaSha256'],row.baselineRgbaSha256,row.name+': '+side+' RGBA hash');
+   assert.equal(row[side+'ShadowSha256'],row.baselineShadowSha256,row.name+': '+side+' shadow hash');
+  }
  }
  assert.equal(result.coverage?.length,3,'All subject controls must complete');
  for(const coverage of result.coverage){
   assert(coverage.activeFilterPixels>=16&&coverage.inactiveFilterPixels>=16&&coverage.effectiveDetailPixels>=16&&coverage.passed===true,'Ineffective controls: '+coverage.subject);
+ }
+ const bump=result.masonryBumpCenterControl;
+ assert(bump&&bump.installedMaterials>0&&bump.effectivePixels>=16&&bump.passed===true,'The mapped bump-center reuse must have a visibly effective control');
+ assert.equal(bump.restoredChangedPixels,0,'Mapped bump-center control did not restore the original image');
+ assert.deepEqual(bump.views,['near','mid','grazing'],'Mapped bump-center control coverage');
+ assert(result.materials.some(material=>material.subject==='masonry'&&material.side==='candidate'&&material.bumpCenterReuseInstalled===true&&material.bumpCenterMarkerObserved===true&&material.linkedBumpCenterMarkerObserved===true&&material.nativeLinked===true&&material.submitted===true),'No submitted, linked MacArthur material used the mapped bump-center candidate');
+ for(const material of result.materials.filter(material=>material.side==='baseline'||material.side==='default')){
+  for(const name of ['bumpCenterReuseInstalled','bumpCenterMarkerObserved','linkedBumpCenterMarkerObserved'])assert.equal(material[name],false,'Mapped bump-center candidate leaked into '+material.side);
  }
  assert.equal(errors.length,0,'Shader, page or asset error');assert.equal(failedRequests.length,0);
  assert.equal(result.passed,true,'At least one exact pixel, determinism, visibility, material, geometry or shadow comparison failed');

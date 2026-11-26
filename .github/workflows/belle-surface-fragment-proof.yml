@@ -15,7 +15,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: belle-surface-fragment-proof-${{ github.event.pull_request.head.ref || github.ref }}
+  group: belle-surface-fragment-proof-${{ github.event.pull_request.head.ref && format('refs/heads/{0}', github.event.pull_request.head.ref) || github.ref }}
   cancel-in-progress: true
 
 env:
@@ -64,6 +64,7 @@ jobs:
           src/belle/asphaltFragmentOptimization.test.ts
           src/belle/bridgeMaterialFinish.test.ts
           src/belle/macArthurSurface.test.ts
+          src/belle/macArthurBumpCenterReuse.test.ts
           src/belle/lawnFragmentOptimization.test.mjs
           src/belle/cinematicCloning.test.mjs
           src/belle/cinematicPolicy.test.ts

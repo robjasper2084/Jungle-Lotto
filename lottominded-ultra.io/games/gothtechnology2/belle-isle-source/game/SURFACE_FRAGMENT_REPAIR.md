@@ -2,7 +2,7 @@
 
 Version 1 · 26 November 2026
 
-**Status:** three opt-in shader candidates are implemented. They are disabled in normal game construction. Appearance equivalence, runtime benefit, and release acceptance have not been established by the source tests.
+**Status:** surface shader candidates are staged behind explicit opt-ins and remain disabled in normal game construction. A recorded SwiftShader run passed all 36 original-versus-candidate grain/patch cases with zero changed pixels. Its small timing sample did not demonstrate a reliable performance improvement. A subsequent MacArthur texture-sample candidate, native Metal, the added original-versus-current-default comparison, and full release acceptance remain unproven by that run.
 
 The immutable comparison baseline is [PR #225 source d4f4baa8e2016f4c9107b40176388bf2d3f6fe8c](https://github.com/robjasper2084/Jungle-Lotto/commit/d4f4baa8e2016f4c9107b40176388bf2d3f6fe8c). No terrain surface, texture, geometry, collision, shadow, resolution, or quality reduction is part of this repair.
 
@@ -28,10 +28,13 @@ These scopes identify expensive submitted surfaces. They do not separate texture
 | Grass | `cinematicPolicy.ts` calculates the grain sine hash even when its derivative filter produces an exact zero contribution. | `new CinematicTerrain(scene, {skipInvisibleGrain:true})` hashes only when `belleLawnResolved > 0`. It retains the original patch/color expressions and their order; derivatives remain unconditional. |
 | Asphalt | `asphaltPolish.ts` computes repair-cell shape work for fragments whose distance filter or cell-selection mask is zero. | `finishAsphalt(material, {skipInvisiblePatches:true})` skips filtered-out repair work and unselected cells. World-space coordinates, visible repair expressions, and the existing surface finish remain. |
 | MacArthur materials | `bridgeMaterialFinish.ts` calculates grain even when its derivative weight is zero. | `finishBridgeMaterial(material, kind, {skipInvisibleGrain:true})`, also forwarded by `finishMacArthurConcrete`, guards the grain hash at an exact zero weight. Existing PBR and weathering expressions remain. |
+| MacArthur mapped bump | The final warm-limestone material retains the exact same texture object for its color map and bump map. Stock Three samples the same center texel separately for each role. | `installMacArthurBumpCenterReuse(material, {enabled:true})`, installed only on an eligible final material, reuses the original raw color sample's red channel for the center height. Both offset bump samples, their derivatives, and the original multiplication/subtraction order remain. |
 
 All options default to false and have separate program-cache identities. No epsilon, resolution change, new texture, or approximation is introduced. Mathematical zero-contribution reasoning is a candidate justification, not a substitute for compiled pixel equality or measured improvement.
 
 `parkLawn.ts` extracts the original base grass hook for use by the proof fixture and `world.ts`. A comparison against the pinned baseline found its callback source, cache identity, and generated shader strings exactly equal. Existing three-sine meadow variation and two-sine patch variation remain.
+
+The bump-center candidate is installed after the actual atmosphere, realistic-surface, photo, and sunset decorators. Its narrow contract requires the named MacArthur masonry material, identical ordinary color/bump texture, stock UV channel and sampling paths, and no normal-map alternative. It has an independent cache identity and checks its contract before compilation and drawing. The proof must observe the reuse in the linked native shader and a visibly effective wrong-center control; a helper that silently does nothing cannot pass. The newer fixture records three warmed ABBA timing groups per masonry view (six samples per variant); the grass and asphalt paths retain one group. No production construction calls this installer.
 
 ### Overlapping terrain
 
@@ -49,9 +52,27 @@ Acceptance requires **zero changed RGBA pixels and zero channel tolerance**, wit
 
 Run the comparison separately on native Metal and SwiftShader, checking the reported backend. A targeted pass applies only to its recorded cases. It does not establish physical iPad behavior or complete full-scene visual acceptance. Any pixel mismatch keeps the candidate disabled; weakening tolerance does not satisfy this gate.
 
+## Recorded GPU evidence
+
+[Run 45867870864](https://github.com/robjasper2084/Jungle-Lotto/actions/runs/45867870864), source [`db28ef869aa0bd6fd32e54684fd39e9c1db466cb`](https://github.com/robjasper2084/Jungle-Lotto/commit/db28ef869aa0bd6fd32e54684fd39e9c1db466cb), passed the Linux proof against the pinned original. The actual backend was ANGLE Vulkan SwiftShader, Three r185, at 960×600/DPR1 with antialiasing. All 36 original-versus-enabled-candidate comparisons had zero changed RGBA pixels and zero maximum channel delta. Repeat-baseline, shadow, draw-order, submitted-geometry, visible-subject, effective-detail, and shadow controls also passed. This was a two-lane run; it does not certify the subsequently added current-default lane. The macOS job was still queued when this evidence was recorded on 26 November 2026.
+
+The [Linux artifact](https://github.com/robjasper2084/Jungle-Lotto/actions/runs/45867870864/artifacts/15141213646) contains 96 PNGs, compiled fixture code, source/asset receipts, and the machine-readable result. Its downloaded ZIP SHA-256 is `daeb9d4f068062f269c929c5923c1f218992caa913786820cf325f9f4c2e28c5`.
+
+Each timing case contains one warmed ABBA group: two original and two candidate elapsed queries. These are complete targeted fixture renders, including shadow work and query overhead, rather than isolated arithmetic or full-game frame times. The mean candidate change was:
+
+| Surface | Near | Mid | Grazing |
+| --- | ---: | ---: | ---: |
+| Grass | −1.46% | −0.15% | +1.81% |
+| Asphalt | +2.18% | −0.58% | +0.65% |
+| MacArthur masonry | −1.22% | +0.62% | +0.82% |
+
+Negative values mean a shorter elapsed query; positive values mean longer. The mixed direction and small sample do not establish a speed benefit. The guarded work is mathematically inactive in part of the image, but a GPU compiler may execute branches differently and other material work may dominate. No candidate is enabled on this evidence.
+
+The fixture uses the actual MacArthur mesh geometry and existing material classification. Its tiled bridge deck is an authored material outcome, not a replacement plane. The receiver box is an explicit shadow control. This targeted scene cannot certify the complete game's appearance, gameplay, or performance.
+
 ## Validation and remaining release gates
 
-Focused source/composition tests currently pass **33/33**, covering asphalt, bridge/MacArthur composition, lawn selection/cloning/restoration, and existing cinematic contracts. These tests do not establish rendered equality or speed gain.
+The initial **43 focused source/composition tests passed**, covering asphalt, bridge/MacArthur composition, lawn selection/cloning/restoration, existing cinematic contracts, and the actual atmosphere/material lifecycle checks. The bump-center candidate adds **eight passing contract tests**, now included in the same workflow and full suite. TypeScript checking and the Vite source compilation also pass; the compilation omits public-asset copying and does not certify full packaging. The complete code suite after adding the bump-center candidate finished with **1,791 passes, zero failures and three skips**; the asset validation suite added 11 passes (**1,802 passing tests total**). The final three-lane browser fixture also passes a separate strict TypeScript check. These tests do not establish rendered equality or speed gain.
 
 Before enabling a candidate, require its strict appearance proof and controlled timing evidence on the same source/build and renderer. Report unsupported or disjoint timer queries as unavailable. A faster diagnostic alone does not close any original release requirement.
 

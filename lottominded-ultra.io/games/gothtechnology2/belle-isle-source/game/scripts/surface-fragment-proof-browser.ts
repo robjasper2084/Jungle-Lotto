@@ -9,6 +9,7 @@ import {CinematicTerrain} from '../src/belle/cinematicTerrain.ts';
 import {finishAsphalt} from '../src/belle/surfaceFinish.ts';
 import {finishMacArthurConcrete} from '../src/belle/macArthurSurface.ts';
 import {finishMacArthurRailings} from '../src/belle/macArthurRailFinish.ts';
+import {installMacArthurBumpCenterReuse,MACARTHUR_BUMP_CENTER_ASSIGNMENT,MACARTHUR_BUMP_CENTER_READ} from '../src/belle/macArthurBumpCenterReuse.ts';
 import {loadRealisticMaterials,applyRealisticMaterials} from '../src/belle/realisticMaterials.ts';
 import {applyPhotoReferenceSurfaces} from '../src/belle/photoReferenceSurfaces.ts';
 import {dressSunsetGround} from '../src/belle/sunsetGround.ts';
@@ -45,13 +46,13 @@ import {WorldAtmosphere as OriginalAtmosphere} from 'baseline:worldAtmosphere.ts
 // @ts-ignore -- the baseline has its own live wetness uniform object.
 import {ART_ROAD_WETNESS as originalWetness} from 'baseline:artDirection.ts';
 
-type Side='baseline'|'candidate';
+type Side='baseline'|'default'|'candidate';
 type Subject='lawn'|'asphalt'|'masonry';
 type View='near'|'mid'|'grazing';
 type Shader=Parameters<T.Material['onBeforeCompile']>[0];
-type Owner={materials:(T.Material|T.Material[])[];atmosphere:WorldAtmosphere;scene:T.Scene;terrain:CinematicTerrain;masonryStats:{meshes:number;newMaterials:number}|null};
+type Owner={materials:(T.Material|T.Material[])[];atmosphere:WorldAtmosphere;scene:T.Scene;terrain:CinematicTerrain;masonryStats:{meshes:number;newMaterials:number}|null;bumpCenterMaterials:Set<T.Material>};
 type Sample={rgba:Uint8Array;shadow:Uint8Array;png:string;calls:number;triangles:number;order:string[];cpuMs:number;fenceMs:number;gpu:{status:string;nanoseconds:number|null};};
-type Fixture={name:Subject;root:T.Group;meshes:T.Mesh[];owners:Record<Side,Owner>;control:(T.Material|T.Material[])[];mask:(T.Material|T.Material[])[];focus:T.Vector3;normal:T.Vector3;geometry:unknown[];};
+type Fixture={name:Subject;root:T.Group;meshes:T.Mesh[];owners:Record<Side,Owner>;control:(T.Material|T.Material[])[];mask:(T.Material|T.Material[])[];bumpCenterWrong:(T.Material|T.Material[])[];focus:T.Vector3;normal:T.Vector3;geometry:unknown[];};
 
 function assert(value:unknown,message:string):asserts value{if(!value)throw Error(message);}
 const query=new URLSearchParams(location.search),width=Number(query.get('width')||960),height=Number(query.get('height')||600);
@@ -89,8 +90,8 @@ function png(bytes:Uint8Array,w=width,h=height){const c=document.createElement('
 function differencePng(a:Uint8Array,b:Uint8Array){const bytes=new Uint8Array(a.length);for(let i=0;i<bytes.length;i+=4){const d=Math.max(...[0,1,2,3].map(c=>Math.abs(a[i+c]-b[i+c])));bytes.set(d?[255,Math.min(255,d*12),0,255]:[0,0,0,255],i);}return png(bytes);}
 async function asset(path:string){const response=await fetch(path);assert(response.ok,'Required asset unavailable: '+path);const bytes=new Uint8Array(await response.arrayBuffer());resources.push({path,sha256:await hash(bytes),bytes:bytes.length});return bytes;}
 async function fence(){const sync=gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE,0);assert(sync,'GPU completion fence unavailable');gl.flush();const start=performance.now();try{for(;;){const state=gl.clientWaitSync(sync,0,0);if(state===gl.ALREADY_SIGNALED||state===gl.CONDITION_SATISFIED)return performance.now()-start;assert(state!==gl.WAIT_FAILED&&!gl.isContextLost(),'GPU completion failed');assert(performance.now()-start<60000,'GPU completion exceeded 60 seconds');await new Promise(resolve=>setTimeout(resolve,8));}}finally{gl.deleteSync(sync);}}
-function observe(material:T.Material){if(shaders.has(material))return;const old=material.onBeforeCompile;material.onBeforeCompile=(shader,r)=>{old.call(material,shader,r);shaders.set(material,shader);shaderSources.set(material,{vertex:shader.vertexShader,fragment:shader.fragmentShader});};}
-function cloneMaterial(material:T.Material,cache=new Map<T.Material,T.Material>()){let result=cache.get(material);if(!result){result=material.clone();result.onBeforeCompile=material.onBeforeCompile;result.customProgramCacheKey=material.customProgramCacheKey;cache.set(material,result);}return result;}
+function observe(material:T.Material){if(shaders.has(material))return;const old=material.onBeforeCompile;material.onBeforeCompile=function(shader,r){old.call(this,shader,r);shaders.set(this,shader);shaderSources.set(this,{vertex:shader.vertexShader,fragment:shader.fragmentShader});};}
+function cloneMaterial(material:T.Material,cache=new Map<T.Material,T.Material>()){let result=cache.get(material);if(!result){result=material.clone();result.onBeforeCompile=material.onBeforeCompile;result.onBeforeRender=material.onBeforeRender;result.customProgramCacheKey=material.customProgramCacheKey;cache.set(material,result);}return result;}
 const factors:Record<Subject,string>={lawn:'belleLawnResolved',asphalt:'repairResolved',masonry:'belleBridgeAA'};
 function diagnosticMaterial(material:T.Material,subject:Subject,mode:'disabled'|'mask'){
  const m=cloneMaterial(material),old=m.onBeforeCompile,key=m.customProgramCacheKey();
@@ -113,6 +114,23 @@ function variants(materials:(T.Material|T.Material[])[],subject:Subject,mode:'di
  const cache=new Map<T.Material,T.Material>();const one=(m:T.Material)=>{if(!cache.has(m))cache.set(m,diagnosticMaterial(m,subject,mode));return cache.get(m)!;};
  return materials.map(m=>Array.isArray(m)?m.map(one):one(m));
 }
+function wrongBumpCenterVariants(materials:(T.Material|T.Material[])[],eligible:ReadonlySet<T.Material>){
+ const cache=new Map<T.Material,T.Material>();
+ const one=(material:T.Material)=>{
+  if(!eligible.has(material))return material;
+  let m=cache.get(material);if(m)return m;
+  m=cloneMaterial(material);const target=m,old=m.onBeforeCompile,key=m.customProgramCacheKey();
+  m.onBeforeCompile=(shader,r)=>{
+   old.call(target,shader,r);
+   assert(shader.fragmentShader.split(MACARTHUR_BUMP_CENTER_ASSIGNMENT).length===2&&shader.fragmentShader.includes(MACARTHUR_BUMP_CENTER_READ),'Bump center positive control did not find exactly one installed cache assignment and its read');
+   // Alter only the reused bump-center sample. The diffuse map sample, offset
+   // bump fetches, grain, geometry and all actual texture objects are retained.
+   shader.fragmentShader=shader.fragmentShader.replace(MACARTHUR_BUMP_CENTER_ASSIGNMENT,'belleMacArthurMapCenterRed = 0.0;');
+  };
+  m.customProgramCacheKey=()=>key+'|fixture-only-wrong-bump-center';m.needsUpdate=true;cache.set(material,m);return m;
+ };
+ return materials.map(m=>Array.isArray(m)?m.map(one):one(m));
+}
 async function prepare(root:T.Group,subject:Subject,side:Side,noise:T.Texture):Promise<Owner>{
  const prep=new T.Scene(),copy=root.clone(true),cache=new Map<T.Material,T.Material>();
  for(const mesh of meshList(copy)){
@@ -123,15 +141,15 @@ async function prepare(root:T.Group,subject:Subject,side:Side,noise:T.Texture):P
  for(const m of originals){
   if(!(m instanceof T.MeshStandardMaterial))continue;
   if(m.name==='Park lawn')(side==='baseline'?originalLawn:finishParkLawn)(m);
-  if(m.name==='Island asphalt'){if(side==='baseline')originalAsphalt(m);else finishAsphalt(m,{skipInvisiblePatches:true});}
+  if(m.name==='Island asphalt'){if(side==='baseline')originalAsphalt(m);else finishAsphalt(m,{skipInvisiblePatches:side==='candidate'});}
  }
  let masonryStats:Owner['masonryStats']=null;
  if(subject==='masonry'){
-  if(side==='baseline'){masonryStats=originalMasonry(copy);originalRails(copy);}else{masonryStats=finishMacArthurConcrete(copy,{skipInvisibleGrain:true});finishMacArthurRailings(copy);}
+  if(side==='baseline'){masonryStats=originalMasonry(copy);originalRails(copy);}else{masonryStats=finishMacArthurConcrete(copy,{skipInvisibleGrain:side==='candidate'});finishMacArthurRailings(copy);}
   assert(masonryStats&&masonryStats.meshes>0&&masonryStats.newMaterials>0,'The actual '+side+' masonry decorator did no work');
   for(const mesh of meshList(copy))for(const m of Array.isArray(mesh.material)?mesh.material:[mesh.material])if(m instanceof T.MeshStandardMaterial&&m.map&&/limestone/i.test(m.name)){m.bumpMap=m.map;m.bumpScale=.018;m.roughness=.88;}
  }
- const terrain=side==='baseline'?new OriginalTerrain(prep):new CinematicTerrain(prep,{skipInvisibleGrain:true});
+ const terrain=side==='baseline'?new OriginalTerrain(prep):new CinematicTerrain(prep,{skipInvisibleGrain:side==='candidate'});
  const atmosphere:WorldAtmosphere=side==='baseline'?new OriginalAtmosphere(prep,noise):new WorldAtmosphere(prep,noise);
  prep.add(copy);await Promise.resolve();
  (side==='baseline'?originalMaterials:applyRealisticMaterials)(prep);
@@ -139,8 +157,13 @@ async function prepare(root:T.Group,subject:Subject,side:Side,noise:T.Texture):P
  (side==='baseline'?originalSunset:dressSunsetGround)(prep);
  await Promise.resolve();
  const materials=meshList(copy).map(mesh=>mesh.material);
+ const bumpCenterMaterials=new Set<T.Material>();
+ if(subject==='masonry'&&side==='candidate'){
+  for(const material of new Set(materials.flat()))if(installMacArthurBumpCenterReuse(material,{enabled:true}))bumpCenterMaterials.add(material);
+  assert(bumpCenterMaterials.size>0,'No final actual MacArthur masonry material was eligible for bump-center reuse');
+ }
  for(const m of new Set(materials.flat()))observe(m);
- return {materials,atmosphere,scene:prep,terrain,masonryStats};
+ return {materials,atmosphere,scene:prep,terrain,masonryStats,bumpCenterMaterials};
 }
 async function geometryReceipt(mesh:T.Mesh){
  const g=mesh.geometry,attrs:Record<string,unknown>={};
@@ -183,10 +206,10 @@ async function buildFixtures(){
  const definitions=[{name:'lawn' as const,root:lawn,focus:lawnFocus,normal:new T.Vector3(0,1,0)},{name:'asphalt' as const,root:pavement,focus:roadFocus,normal:new T.Vector3(0,1,0)},{name:'masonry' as const,root:masonry,focus:bridgeFocus,normal:bridgeNormal}];
  const fixtures:Fixture[]=[];
  for(const definition of definitions){
-  const meshes=meshList(definition.root),baseline=await prepare(definition.root,definition.name,'baseline',noise),candidate=await prepare(definition.root,definition.name,'candidate',noise);
-  assert(meshes.length===baseline.materials.length&&meshes.length===candidate.materials.length,'Material ownership does not match source geometry');
+  const meshes=meshList(definition.root),baseline=await prepare(definition.root,definition.name,'baseline',noise),currentDefault=await prepare(definition.root,definition.name,'default',noise),candidate=await prepare(definition.root,definition.name,'candidate',noise);
+  assert(meshes.length===baseline.materials.length&&meshes.length===currentDefault.materials.length&&meshes.length===candidate.materials.length,'Material ownership does not match source geometry');
   meshes.forEach((mesh,i)=>{const before=mesh.onBeforeRender,beforeShadow=mesh.onBeforeShadow;mesh.onBeforeRender=function(...args){before.apply(this,args);submittedMaterials.add(args[4]);drawOrder.push('color:'+i+':'+args[4].name);};mesh.onBeforeShadow=function(...args){beforeShadow.apply(this,args);drawOrder.push('shadow:'+i);};});
-  const fixture={...definition,meshes,owners:{baseline,candidate},control:variants(candidate.materials,definition.name,'disabled'),mask:variants(candidate.materials,definition.name,'mask'),geometry:await Promise.all(meshes.map(geometryReceipt))};
+  const fixture={...definition,meshes,owners:{baseline,default:currentDefault,candidate},control:variants(candidate.materials,definition.name,'disabled'),mask:variants(candidate.materials,definition.name,'mask'),bumpCenterWrong:wrongBumpCenterVariants(candidate.materials,candidate.bumpCenterMaterials),geometry:await Promise.all(meshes.map(geometryReceipt))};
   definition.root.visible=false;scene.add(definition.root);fixtures.push(fixture);
  }
  return {fixtures,map,terrain,contact};
@@ -207,8 +230,8 @@ function configure(fixture:Fixture,view:View,style:ArtStyleId){
  for(const owner of Object.values(fixture.owners))owner.atmosphere.update(5.25,direction,night?.55:.42,night?.08:.9,.15,'high',true,false);
  scene.updateMatrixWorld(true);return {position:camera.position.toArray(),matrixWorld:camera.matrixWorld.toArray(),projection:camera.projectionMatrix.toArray(),focus:focus.toArray(),roadWetness:look.roadWetness,style,view,night};
 }
-function use(fixture:Fixture,side:Side|'disabled'|'mask'){
- const materials=side==='disabled'?fixture.control:side==='mask'?fixture.mask:fixture.owners[side].materials;
+function use(fixture:Fixture,side:Side|'disabled'|'mask'|'bump-center-wrong'){
+ const materials=side==='disabled'?fixture.control:side==='mask'?fixture.mask:side==='bump-center-wrong'?fixture.bumpCenterWrong:fixture.owners[side].materials;
  fixture.meshes.forEach((mesh,i)=>{mesh.material=materials[i];});
 }
 async function render(capture=true,measure=false):Promise<Sample>{
@@ -226,7 +249,7 @@ async function render(capture=true,measure=false):Promise<Sample>{
 }
 function keep(name:string,sample:Sample){images.push({name,png:sample.png});}
 function maskCounts(bytes:Uint8Array){let active=0,inactive=0;for(let i=0;i<bytes.length;i+=4){if(bytes[i]===0&&bytes[i+1]===255&&bytes[i+2]===0)active++;if(bytes[i]===255&&bytes[i+1]===0&&bytes[i+2]===0)inactive++;}return{active,inactive};}
-function shaderReceipt(material:T.Material){const s=shaders.get(material);assert(s,'Expected production material was never compiled');const textures:Record<string,unknown>={};for(const [name,u] of Object.entries(s.uniforms)){if(u.value instanceof T.Texture){const t=u.value,data=t.source.data as {width?:number;height?:number;src?:string;currentSrc?:string};textures[name]={width:data?.width,height:data?.height,url:data?.currentSrc||data?.src||null,colorSpace:t.colorSpace,format:t.format,type:t.type,minFilter:t.minFilter,magFilter:t.magFilter,wrapS:t.wrapS,wrapT:t.wrapT,anisotropy:t.anisotropy,flipY:t.flipY};}}return{name:material.name,key:material.customProgramCacheKey(),textures,roughness:(material as T.MeshStandardMaterial).roughness,side:material.side,opacity:material.opacity,depthWrite:material.depthWrite,depthTest:material.depthTest};}
+function shaderReceipt(material:T.Material){const s=shaders.get(material);assert(s,'Expected production material was never compiled');const textures:Record<string,unknown>={};for(const [name,u] of Object.entries(s.uniforms)){if(u.value instanceof T.Texture){const t=u.value,data=t.source.data as {width?:number;height?:number;src?:string;currentSrc?:string};textures[name]={width:data?.width,height:data?.height,url:data?.currentSrc||data?.src||null,colorSpace:t.colorSpace,format:t.format,type:t.type,minFilter:t.minFilter,magFilter:t.magFilter,wrapS:t.wrapS,wrapT:t.wrapT,anisotropy:t.anisotropy,flipY:t.flipY};}}return{name:material.name,key:material.customProgramCacheKey(),textures,roughness:(material as T.MeshStandardMaterial).roughness,materialSide:material.side,opacity:material.opacity,depthWrite:material.depthWrite,depthTest:material.depthTest};}
 function nativeProgram(material:T.Material){
  const property=renderer.properties.get(material) as {currentProgram?:{id:number;program:WebGLProgram;vertexShader:WebGLShader;fragmentShader:WebGLShader}};
  const program=property.currentProgram;assert(program,'Actual material has no linked native program');
@@ -245,16 +268,24 @@ function nativeProgram(material:T.Material){
    for(const view of ['near','mid','grazing'] as View[])for(const style of ART_STYLE_IDS){
     const id=fixture.name+'-'+view+'-'+style,inputs=configure(fixture,view,style);
     console.log('[surface-proof] '+id);
-    use(fixture,'baseline');await renderer.compileAsync(scene,camera);use(fixture,'candidate');await renderer.compileAsync(scene,camera);
-    use(fixture,'baseline');const baseline=await render();use(fixture,'candidate');const candidate=await render();use(fixture,'baseline');const repeat=await render();
-    const color=changed(baseline.rgba,candidate.rgba),determinism=changed(baseline.rgba,repeat.rgba),shadow=changed(baseline.shadow,candidate.shadow),shadowRepeat=changed(baseline.shadow,repeat.shadow);
+    for(const side of ['baseline','default','candidate'] as Side[]){use(fixture,side);await renderer.compileAsync(scene,camera);}
+    use(fixture,'baseline');const baseline=await render();use(fixture,'default');const currentDefault=await render();use(fixture,'candidate');const candidate=await render();use(fixture,'baseline');const repeat=await render();
+    const color=changed(baseline.rgba,candidate.rgba),defaultColor=changed(baseline.rgba,currentDefault.rgba),determinism=changed(baseline.rgba,repeat.rgba),shadow=changed(baseline.shadow,candidate.shadow),defaultShadow=changed(baseline.shadow,currentDefault.shadow),shadowRepeat=changed(baseline.shadow,repeat.shadow);
     const orderEqual=JSON.stringify(baseline.order)===JSON.stringify(candidate.order)&&JSON.stringify(baseline.order)===JSON.stringify(repeat.order);
+    const defaultOrderEqual=JSON.stringify(baseline.order)===JSON.stringify(currentDefault.order);
     const geometryEqual=baseline.calls===candidate.calls&&baseline.triangles===candidate.triangles&&baseline.calls===repeat.calls&&baseline.triangles===repeat.triangles;
-    const row={name:id,subject:fixture.name,inputs,width,height,changedPixels:color.pixels,maxChannelDelta:color.maxChannelDelta,repeatChangedPixels:determinism.pixels,shadowChangedPixels:shadow.pixels,shadowRepeatChangedPixels:shadowRepeat.pixels,orderEqual,geometryEqual,baselineCalls:baseline.calls,candidateCalls:candidate.calls,baselineTriangles:baseline.triangles,candidateTriangles:candidate.triangles,baselineRgbaSha256:await hash(baseline.rgba),candidateRgbaSha256:await hash(candidate.rgba),baselineShadowSha256:await hash(baseline.shadow),candidateShadowSha256:await hash(candidate.shadow),passed:color.pixels===0&&determinism.pixels===0&&shadow.pixels===0&&shadowRepeat.pixels===0&&orderEqual&&geometryEqual};
-    rows.push(row);keep(id+'-baseline',baseline);keep(id+'-candidate',candidate);
+    const defaultGeometryEqual=baseline.calls===currentDefault.calls&&baseline.triangles===currentDefault.triangles;
+    const row={name:id,subject:fixture.name,inputs,width,height,changedPixels:color.pixels,maxChannelDelta:color.maxChannelDelta,defaultChangedPixels:defaultColor.pixels,defaultMaxChannelDelta:defaultColor.maxChannelDelta,repeatChangedPixels:determinism.pixels,shadowChangedPixels:shadow.pixels,defaultShadowChangedPixels:defaultShadow.pixels,shadowRepeatChangedPixels:shadowRepeat.pixels,orderEqual,defaultOrderEqual,geometryEqual,defaultGeometryEqual,baselineCalls:baseline.calls,defaultCalls:currentDefault.calls,candidateCalls:candidate.calls,baselineTriangles:baseline.triangles,defaultTriangles:currentDefault.triangles,candidateTriangles:candidate.triangles,baselineRgbaSha256:await hash(baseline.rgba),defaultRgbaSha256:await hash(currentDefault.rgba),candidateRgbaSha256:await hash(candidate.rgba),baselineShadowSha256:await hash(baseline.shadow),defaultShadowSha256:await hash(currentDefault.shadow),candidateShadowSha256:await hash(candidate.shadow),passed:color.pixels===0&&defaultColor.pixels===0&&determinism.pixels===0&&shadow.pixels===0&&defaultShadow.pixels===0&&shadowRepeat.pixels===0&&orderEqual&&defaultOrderEqual&&geometryEqual&&defaultGeometryEqual};
+    rows.push(row);keep(id+'-baseline',baseline);keep(id+'-default',currentDefault);keep(id+'-candidate',candidate);
     if(color.pixels)images.push({name:id+'-difference',png:differencePng(baseline.rgba,candidate.rgba)});
+    if(defaultColor.pixels)images.push({name:id+'-default-difference',png:differencePng(baseline.rgba,currentDefault.rgba)});
     if(determinism.pixels)keep(id+'-baseline-repeat',repeat);
     if(style==='authentic'){
+     let bumpCenterWrongPixels:number|undefined;
+     if(fixture.name==='masonry'){
+      use(fixture,'bump-center-wrong');const wrongCenter=await render();keep(id+'-bump-center-wrong-control',wrongCenter);
+      bumpCenterWrongPixels=changed(candidate.rgba,wrongCenter.rgba).pixels;
+     }
      use(fixture,'disabled');const disabled=await render();keep(id+'-detail-disabled-control',disabled);
      caster.visible=false;const oldBackground=scene.background;scene.background=new T.Color(0x000000);use(fixture,'mask');const mask=await render();keep(id+'-filter-mask',mask);const counts=maskCounts(mask.rgba);scene.background=oldBackground;caster.visible=true;
      let hiddenPixels:number|undefined,shadowPixels:number|undefined;
@@ -264,24 +295,37 @@ function nativeProgram(material:T.Material){
      }
      use(fixture,'baseline');const restored=await render();
      const restoredPixels=changed(baseline.rgba,restored.rgba).pixels,detailPixels=changed(candidate.rgba,disabled.rgba).pixels;
-     controls.push({subject:fixture.name,view,detailDisabledChangedPixels:detailPixels,subjectHiddenChangedPixels:hiddenPixels,shadowOffChangedPixels:shadowPixels,maskActivePixels:counts.active,maskInactivePixels:counts.inactive,restoredChangedPixels:restoredPixels,passed:restoredPixels===0&&(hiddenPixels===undefined||hiddenPixels>=16)&&(shadowPixels===undefined||shadowPixels>=16)&&counts.active+counts.inactive>=16});
+     controls.push({subject:fixture.name,view,detailDisabledChangedPixels:detailPixels,subjectHiddenChangedPixels:hiddenPixels,shadowOffChangedPixels:shadowPixels,bumpCenterWrongChangedPixels:bumpCenterWrongPixels,maskActivePixels:counts.active,maskInactivePixels:counts.inactive,restoredChangedPixels:restoredPixels,passed:restoredPixels===0&&(hiddenPixels===undefined||hiddenPixels>=16)&&(shadowPixels===undefined||shadowPixels>=16)&&counts.active+counts.inactive>=16});
      // Both variants have already completed genuine render/readback before the
      // warmed ABBA sequence. Timing remains distinct from correctness acceptance.
-     const lanes=[];for(const side of ['baseline','candidate','candidate','baseline'] as Side[]){use(fixture,side);const sample=await render(false,true);lanes.push({side,cpuMs:sample.cpuMs,fenceMs:sample.fenceMs,gpu:sample.gpu,calls:sample.calls,triangles:sample.triangles});}
-     timings.push({subject:fixture.name,view,width,height,order:'ABBA',lanes,scope:'Warmed targeted fixture renders with elapsed-query overhead; not full-game frame intervals or release acceptance.'});
+     const repetitions=fixture.name==='masonry'?3:1,lanes=[];
+     for(let repetition=1;repetition<=repetitions;repetition++)for(const side of ['baseline','candidate','candidate','baseline'] as Side[]){use(fixture,side);const sample=await render(false,true);lanes.push({side,repetition,cpuMs:sample.cpuMs,fenceMs:sample.fenceMs,gpu:sample.gpu,calls:sample.calls,triangles:sample.triangles});}
+     timings.push({subject:fixture.name,view,width,height,order:'ABBA',repetitions,lanes,scope:'Warmed targeted fixture renders with elapsed-query overhead; not full-game frame intervals or release acceptance.'});
     }
    }
-   for(const side of ['baseline','candidate'] as Side[]){
+   for(const side of ['baseline','default','candidate'] as Side[]){
     const materials=[...new Set(fixture.owners[side].materials.flat())],selected=materials.filter(m=>shaderSources.get(m)?.fragment.includes(factors[fixture.name]));
     assert(selected.length>0,'No actual '+fixture.name+' material contained its expected filter');
     assert(selected.some(material=>submittedMaterials.has(material)),'No decorated '+side+' '+fixture.name+' material reached a real display submission');
-    for(const material of selected){const source=shaderSources.get(material)!,native=nativeProgram(material),pattern=new RegExp('if\\s*\\(\\s*'+factors[fixture.name]+'\\s*>\\s*0\\.'),hasGuard=pattern.test(source.fragment),linkedGuard=pattern.test(native.fragment);assert(hasGuard===(side==='candidate')&&linkedGuard===(side==='candidate'),'Expected independent original/candidate shader path not observed in linked '+fixture.name+' program');materialEvidence.push({subject:fixture.name,side,...shaderReceipt(material),guardObserved:hasGuard,linkedGuardObserved:linkedGuard,nativeProgramId:native.id,nativeLinked:native.linked,submitted:native.submitted,masonryStats:fixture.owners[side].masonryStats,vertexSha256:await textHash(source.vertex),fragmentSha256:await textHash(source.fragment),nativeVertexSha256:await textHash(native.vertex),nativeFragmentSha256:await textHash(native.fragment)});}
+    for(const material of selected){
+     const source=shaderSources.get(material)!,native=nativeProgram(material),pattern=new RegExp('if\\s*\\(\\s*'+factors[fixture.name]+'\\s*>\\s*0\\.'),hasGuard=pattern.test(source.fragment),linkedGuard=pattern.test(native.fragment);
+     assert(hasGuard===(side==='candidate')&&linkedGuard===(side==='candidate'),'Expected independent original/candidate shader path not observed in linked '+fixture.name+' program');
+     const bumpCenterReuseInstalled=fixture.owners[side].bumpCenterMaterials.has(material);
+     const bumpCenterMarkerObserved=source.fragment.includes(MACARTHUR_BUMP_CENTER_ASSIGNMENT)&&source.fragment.includes(MACARTHUR_BUMP_CENTER_READ);
+     const linkedBumpCenterMarkerObserved=native.fragment.includes(MACARTHUR_BUMP_CENTER_ASSIGNMENT)&&native.fragment.includes(MACARTHUR_BUMP_CENTER_READ);
+     assert(bumpCenterMarkerObserved===bumpCenterReuseInstalled&&linkedBumpCenterMarkerObserved===bumpCenterReuseInstalled,'Unexpected bump-center reuse path in '+side+' '+fixture.name+' linked material');
+     if(bumpCenterReuseInstalled)assert(side==='candidate'&&fixture.name==='masonry'&&native.submitted,'An installed bump-center candidate did not reach a real masonry display submission');
+     materialEvidence.push({subject:fixture.name,side,...shaderReceipt(material),guardObserved:hasGuard,linkedGuardObserved:linkedGuard,bumpCenterReuseInstalled,bumpCenterMarkerObserved,linkedBumpCenterMarkerObserved,nativeProgramId:native.id,nativeLinked:native.linked,submitted:native.submitted,masonryStats:fixture.owners[side].masonryStats,vertexSha256:await textHash(source.vertex),fragmentSha256:await textHash(source.fragment),nativeVertexSha256:await textHash(native.vertex),nativeFragmentSha256:await textHash(native.fragment)});
+    }
    }
    fixture.root.visible=false;
   }
  }catch(error){errors.push(String(error instanceof Error?error.stack:error));}
  const coverage=fixtures.map(f=>{const own=controls.filter(c=>c.subject===f.name),active=own.reduce((n,c)=>n+Number(c.maskActivePixels),0),inactive=own.reduce((n,c)=>n+Number(c.maskInactivePixels),0),detail=Math.max(0,...own.map(c=>Number(c.detailDisabledChangedPixels)));return{subject:f.name,activeFilterPixels:active,inactiveFilterPixels:inactive,effectiveDetailPixels:detail,passed:own.length===3&&active>=16&&inactive>=16&&detail>=16&&own.every(c=>c.passed)};});
- return {gpu,threeRevision:T.REVISION,width,height,dpr:renderer.getPixelRatio(),antialias:gl.getContextAttributes()?.antialias,shadowMapSize:sun.shadow.mapSize.toArray(),shadowReadback:'RGBA8 shadow target color attachment; effective receiver shadows also have an independent off/on control. Native depth texture bytes are not claimed.',rows,controls,coverage,timings,images,errors,resources,materials:materialEvidence,geometry:fixtures.map(f=>({subject:f.name,meshes:f.geometry})),
+ const bumpControls=controls.filter(c=>c.subject==='masonry'),installedMaterials=fixtures.find(f=>f.name==='masonry')?.owners.candidate.bumpCenterMaterials.size??0;
+ const effectivePixels=Math.max(0,...bumpControls.map(c=>Number(c.bumpCenterWrongChangedPixels))),restoredChangedPixels=Math.max(0,...bumpControls.map(c=>Number(c.restoredChangedPixels)));
+ const masonryBumpCenterControl={installedMaterials,effectivePixels,restoredChangedPixels,views:bumpControls.map(c=>c.view),passed:installedMaterials>0&&bumpControls.length===3&&effectivePixels>=16&&restoredChangedPixels===0&&bumpControls.every(c=>c.passed)};
+ return {gpu,threeRevision:T.REVISION,width,height,dpr:renderer.getPixelRatio(),antialias:gl.getContextAttributes()?.antialias,shadowMapSize:sun.shadow.mapSize.toArray(),shadowReadback:'RGBA8 shadow target color attachment; effective receiver shadows also have an independent off/on control. Native depth texture bytes are not claimed.',rows,controls,coverage,masonryBumpCenterControl,timings,images,errors,resources,materials:materialEvidence,geometry:fixtures.map(f=>({subject:f.name,meshes:f.geometry})),
   scope:'Pinned original and opt-in fragment candidates on shared actual geometry with actual materials/textures, controlled camera/light/style inputs, zero RGBA tolerance and shadow readback. Targeted fixture only; not full-world collision, gameplay, controls, physical-device or sustained performance acceptance.',
-  passed:errors.length===0&&rows.length===36&&rows.every(r=>r.passed)&&coverage.length===3&&coverage.every(c=>c.passed)};
+  passed:errors.length===0&&rows.length===36&&rows.every(r=>r.passed)&&coverage.length===3&&coverage.every(c=>c.passed)&&masonryBumpCenterControl.passed};
 };
