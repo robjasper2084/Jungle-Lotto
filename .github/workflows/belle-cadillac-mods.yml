@@ -38,6 +38,7 @@ jobs:
           npm run check
           npm test
           node --check scripts/cadillac-mods-browser-smoke.mjs
+          node --test scripts/cadillac-cdp-viewport-png.test.mjs
           npm run build
           node --input-type=module <<'NODE'
           import {createHash} from 'node:crypto';

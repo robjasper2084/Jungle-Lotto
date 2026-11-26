@@ -238,15 +238,18 @@ test('the actual capture path neither starts a late screenshot nor publishes an 
  const capture=source.slice(source.indexOf('async function capture('),source.indexOf('async function editorCapture('));
  for(const stage of ['paint','screenshot']){
   const f=fixture(),pending=deferred(),issued=deferred(),report={captures:[],phase:'test'},screenshots=[],operationTiming=createCadillacOperationTiming({now:f.now});
-  const page={screenshot:options=>{screenshots.push(options);issued.resolve();return stage==='screenshot'?pending.promise:Promise.resolve(Buffer.from('pixels'));},viewportSize:()=>({width:1280,height:800})};
-  const context=createContext({caseLifecycle:f.lifecycle,operationTiming,page,report,out:'/fixture',resolve:(...parts)=>parts.join('/'),hash:()=> 'hash',
+  const viewport={width:1280,height:800},client={identity:'real CDP session'};
+  const page={viewportSize:()=>viewport};
+  const context=createContext({caseLifecycle:f.lifecycle,operationTiming,page,client,report,out:'/fixture',resolve:(...parts)=>parts.join('/'),hash:()=> 'hash',
+   bounded:(original,ms,label)=>{assert.equal(ms,150000,'Original screenshot timeout remains unchanged');assert.equal(label,'Native PNG capture');return original;},
+   captureCadillacViewportPng:args=>{screenshots.push(args);issued.resolve();return stage==='screenshot'?pending.promise:Promise.resolve(Buffer.from('pixels'));},
    painted:()=>stage==='paint'?pending.promise:Promise.resolve({fence:true,paints:2})});
   runInContext(capture,context);const running=runInContext("capture('test')",context);
   if(stage==='screenshot')await issued.promise;else await flush();
   f.expire();const timingAtStop=operationTiming.snapshot();
   pending.resolve(stage==='screenshot'?Buffer.from('pixels'):{fence:true,paints:2});await assert.rejects(running,/deadline/);
   assert.equal(screenshots.length,stage==='screenshot'?1:0);assert.deepEqual(report.captures,[]);
-  if(screenshots.length)assert.equal(screenshots[0].timeout,150000,'The existing complete screenshot budget remains intact');
+  if(screenshots.length){assert.equal(screenshots[0].client,client);assert.equal(screenshots[0].viewport,viewport);assert.equal(screenshots[0].path,'/fixture/test.png');}
   assert.equal(timingAtStop.pendingOperations,1);assert.equal(timingAtStop.entries.at(-1).settlement,'pending');
   const settledTiming=operationTiming.snapshot();assert.equal(settledTiming.pendingOperations,0);
   assert.equal(settledTiming.entries.at(-1).settlement,'resolved','An observed operation settlement cannot publish a successful capture after stop');
@@ -322,7 +325,8 @@ test('the editor scroll optimizes only confirmed browser-native movement and ret
  assert.deepEqual([result.calls[1][1].behavior,result.calls[1][1].block,result.calls[1][1].inline],['instant','nearest','nearest']);
  assert.deepEqual(result.harness,{alreadyVisibleScrolls:0,explicitScrolls:1});
  result=await exercise({move:false});
- assert.deepEqual(result.calls.map(call=>call[0]),['observe','instant','observe','fallback']);
+ assert.deepEqual(result.calls.map(call=>call[0]),['observe','instant','instant','observe','fallback']);
+ assert.deepEqual([result.calls[2][1].behavior,result.calls[2][1].block,result.calls[2][1].inline],['instant','center','center']);
  assert.deepEqual(result.harness,{alreadyVisibleScrolls:0,explicitScrolls:1});
  result=await exercise({visibility:'hidden'});
  assert.deepEqual(result.calls.map(call=>call[0]),['observe','observe','fallback']);
