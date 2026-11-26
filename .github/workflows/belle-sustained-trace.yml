@@ -1,0 +1,85 @@
+name: Belle Isle native phone trace (diagnostic only)
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/belle-sustained-trace.yml'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: belle-sustained-trace-${{ github.ref }}
+  cancel-in-progress: true
+
+# This additive lane investigates the baseline phone diagnostic stalls. Trace
+# overhead means its results never satisfy the unchanged release acceptance job.
+# Default checkout deliberately retains GITHUB_SHA's synthetic merge commit;
+# the original harness reports GITHUB_SHA and must not be given a spoofed value.
+jobs:
+  build:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.number == 213
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Build the pinned default scene with a complete file receipt
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm ci
+          node --test scripts/sustained-trace.test.mjs
+          node scripts/sustained-trace-preload.mjs --write-build-inputs
+          npm run build
+          node scripts/sustained-trace-preload.mjs --write-build-receipt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sustained-trace-default-game
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist/
+          if-no-files-found: error
+          retention-days: 1
+  trace:
+    needs: build
+    runs-on: macos-15
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@v4
+        with:
+          name: sustained-trace-default-game
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist
+      - name: Install the original Chrome browser runtime
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install chrome
+      - name: Observe the unchanged native 90-second diagnostic phone ride
+        timeout-minutes: 28
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          BELLE_PROFILE_DEVICE: phone
+          BELLE_PROFILE_MODE: diagnostic
+          BELLE_PROFILE_SECONDS: '90'
+        run: node --import ./scripts/sustained-trace-preload.mjs scripts/sustained-ride-profile.mjs
+      - name: Retain original report and all raw trace evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-native-phone-trace-NOT-release-acceptance
+          path: |
+            lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/sustained-profile/diagnostic/phone
+            lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/sustained-trace/diagnostic/phone
+          if-no-files-found: error
+          retention-days: 14
