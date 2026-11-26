@@ -1,0 +1,84 @@
+name: Belle Isle targeted shader reuse equivalence
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/belle-shader-reuse-proof.yml'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: belle-shader-reuse-proof-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SHADER_REUSE_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+
+jobs:
+  pixels:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            backend: swiftshader
+          - os: macos-15
+            backend: metal
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.SHADER_REUSE_SOURCE_SHA }}
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /AGENTS.md
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/
+            /lottominded-ultra.io/games/gothtechnology2/swoop-source/src/
+            /lottominded-ultra.io/games/gothtechnology2/greater-detroit-world/src/
+            /lottominded-ultra.io/games/gothtechnology2/greater-detroit-graphics/src/
+      - name: Independently check out the untouched comparison source
+        uses: actions/checkout@v4
+        with:
+          ref: 75906273c0cd414c0d004320fc6f654b4783e5b1
+          path: .shader-reuse-baseline
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/asphaltPolish.ts
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install the existing locked game and browser dependencies
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          test "$(git rev-parse HEAD)" = "$SHADER_REUSE_SOURCE_SHA"
+          npm ci
+          npx playwright install --with-deps chrome
+          cd belle-isle-source/game
+          npm ci
+      - name: Require shader lifecycle and negative image-proof guards
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          node --experimental-strip-types --test src/belle/bumpCenterReuse.test.ts src/belle/asphaltPolish.test.ts scripts/shader-reuse-proof-contract.test.mjs
+          npx tsc --noEmit
+          npx tsc --noEmit --pretty false --target ES2022 --module ESNext --moduleResolution bundler --allowImportingTsExtensions --lib ES2022,DOM --skipLibCheck --strict --types vite/client scripts/shader-reuse-proof-browser.ts
+      - name: Require zero RGBA differences on actual shipped shader paths
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          SHADER_REUSE_BACKEND: ${{ matrix.backend }}
+          SHADER_REUSE_BASELINE_REPO: ${{ github.workspace }}/.shader-reuse-baseline
+        run: node scripts/shader-reuse-native-proof.mjs
+      - name: Preserve exact sources, linked shaders, controls and native PNGs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-targeted-shader-reuse-${{ matrix.backend }}-${{ env.SHADER_REUSE_SOURCE_SHA }}
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/shader-reuse-proof/
+          if-no-files-found: error
+          retention-days: 14

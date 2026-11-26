@@ -26,7 +26,7 @@ export function finishAsphalt(material:T.MeshStandardMaterial){
     roughnessFactor=clamp(roughnessFactor+(asphaltRoughnessNoise-.5)*.075,.78,1.);
     roughnessFactor=mix(roughnessFactor,.36,clamp(belleArtRoadWetness,0.,.55));
   `);
- };material.customProgramCacheKey=()=>'world-asphalt-weather-v6-art-mood';
+ };material.customProgramCacheKey=()=>'world-asphalt-weather-v6-art-mood|resolved-repairs-v1';
 }
 
 /** Colour the exposed bank by elevation, not rows of flat-colour triangles. */

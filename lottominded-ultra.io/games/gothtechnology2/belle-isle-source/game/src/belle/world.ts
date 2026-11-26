@@ -23,6 +23,7 @@ import {addStreetLighting} from './streetLighting.ts';
 import {addBridgeLighting} from './bridgeLighting.ts';
 import {finishBridgeMaterial} from './bridgeMaterialFinish.ts';
 import {finishMacArthurConcrete} from './macArthurSurface.ts';
+import {reuseMacArthurBumpCenters} from './bumpCenterReuse.ts';
 import {finishMacArthurRailings} from './macArthurRailFinish.ts';
 import {sunDirection,smooth} from './skyModel.ts';
 import {visibleWithHysteresis} from './environmentDetail.ts';
@@ -282,6 +283,7 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
  const landmarkDetail=new LandmarkDetail(landmarks);
  await landmarkDetail.prepareDistant(scene);
  cullMacArthurSpans(landmarks.scene,macArthurShadowUvReceipts);
+ reuseMacArthurBumpCenters(landmarks.scene);
  batchStaticArchitecture(scene,renderer,[landmarks.scene,historic.scene],()=>landmarkDetail.isSplitActive,smallBridges.root,streetStats.batchSources());
  // Static architecture transforms are fixed after the fountain is placed.
  for(const staticRoot of [landmarks.scene,skyline.scene,historic.scene]){staticRoot.updateMatrixWorld(true);staticRoot.traverse(o=>{o.matrixAutoUpdate=false;o.matrixWorldAutoUpdate=false;});}
