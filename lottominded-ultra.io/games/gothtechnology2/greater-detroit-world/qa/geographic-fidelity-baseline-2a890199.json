@@ -1,0 +1,107 @@
+{
+  "schema": "greater-detroit-geographic-audit/v1",
+  "scope": "Inventory of existing source-map records and mathematical coordinate comparison; no surveyed checkpoints or visual acceptance.",
+  "geographicAccuracyCertified": false,
+  "independentSurveyCheckpoints": 0,
+  "runtimeCoordinateFrame": {
+    "origin": [
+      -83.00175,
+      42.3468
+    ],
+    "axes": "x east, y up, z south; metres; river 0 m, island 2 m",
+    "horizontalMethod": "111320 metres per degree, longitude scaled by cosine of origin latitude",
+    "verticalDatum": "Game-relative river 0 m / island 2 m; not NAVD88 or ellipsoidal height"
+  },
+  "counts": {
+    "parkRoadRecords": 1201,
+    "districtRoadRecords": 275,
+    "parkBuildingRecords": 276,
+    "districtBuildingRecords": 608
+  },
+  "roads": {
+    "parkRecordsWithSourceWidth": 444,
+    "parkRecordsDifferentFromSourceWidth": 444,
+    "maximumAbsoluteWidthAdjustmentM": 3.4,
+    "districtMunicipalRoadRecords": 165,
+    "districtMunicipalWidthValuesM": [
+      8,
+      10,
+      14
+    ],
+    "interpretation": "sourceWidth records preserve earlier imported/derived width, not necessarily survey measurements. build-mainland.mjs assigns municipal road widths by name. Preserve gameplay clearance until a separately tested road/collision migration."
+  },
+  "buildings": {
+    "districtCityFootprintRecords": 47,
+    "districtCityRecordsUsing6_8mHeight": 47,
+    "recordsWithoutHeightEvidence": 884,
+    "interpretation": "The current generator assigns 6.8 m to added City footprints. Missing per-building height evidence does not mean every other height is invented; it means this audit cannot certify its provenance."
+  },
+  "terrain": {
+    "districtGrid": {
+      "x0": -1880,
+      "z0": -792,
+      "nx": 109,
+      "nz": 136,
+      "stepM": 8,
+      "samples": 14824
+    },
+    "interpretation": "Elmwood grid is resampled into the game-relative frame. Jefferson mainland is rendered separately at a constant game elevation. No absolute vertical datum is established by this grid."
+  },
+  "projectionModelComparison": {
+    "reference": "WGS84 ECEF to local ENU; both geographic input and origin use ellipsoidal height 0 for the horizontal comparison only.",
+    "interpretation": "Coordinate-model difference reconstructed from existing map points, NOT real-world positional error, independent survey residual, correction offsets, or a reason to move only one district.",
+    "sampling": "Existing road/building/outline vertices, including repeated ring endpoints; not uniformly spaced spatial samples. Median averages the middle pair; p95 uses nearest rank.",
+    "park": {
+      "sampledVertices": 13500,
+      "medianM": 3.111,
+      "p95M": 5.752,
+      "maximumM": 6.209
+    },
+    "districts": {
+      "sampledVertices": 10646,
+      "medianM": 3.033,
+      "p95M": 4.322,
+      "maximumM": 5.251
+    }
+  },
+  "bridge": {
+    "legacyEndpointDistanceM": 699.831,
+    "enuHorizontalEndpointDistanceM": 698.937,
+    "interpretation": "Distances between current authored endpoints; neither establishes measured bridge deck length or grade."
+  },
+  "nextEvidence": [
+    "Independent control locations with source, acquisition date, horizontal uncertainty and CRS.",
+    "Ground DEM tiles with actual delivered horizontal/vertical CRS, units, datum transform and coverage.",
+    "Building-specific roof height, facade and footprint observations with rights to reuse source imagery.",
+    "Measured road widths, curb lines, bridge deck and shore/seawall geometry separated from ground.",
+    "Matched camera captures plus unchanged collision, accessibility and native performance acceptance."
+  ],
+  "provenance": {
+    "baseRevision": "2a8901996e53b1f93474f3c2165e078b6dd16e57",
+    "inputFiles": {
+      "park": {
+        "path": "../belle-isle-source/game/public/belle/map.json",
+        "sha256": "eb36e093fc477055c217025668403fc5d2c422bfdc9d9021769192dbb5660d87"
+      },
+      "districts": {
+        "path": "../belle-isle-source/game/src/belle/detroitDistricts.json",
+        "sha256": "4006a1c523b08a5403f7101a45bd9f739c4aa4632d55a1be5c3676148cde0bdf"
+      },
+      "generator": {
+        "path": "tools/build-mainland.mjs",
+        "sha256": "ceab6fd14fe2503fdfb898ee13bf6724185650e74495dd545680b581aace86b2"
+      }
+    },
+    "analysisFiles": [
+      {
+        "path": "tools/audit-geography.mjs",
+        "sha256": "467536198afad2ad60b6bffdee65a46c155509f1e5b2e34f2820a1217b3ab969"
+      },
+      {
+        "path": "tools/lib/georeference.mjs",
+        "sha256": "97b5add4fb4053acc80ccbc9612b55bad19276e21ab173cbfd460646e2b5911e"
+      }
+    ],
+    "note": "The input hashes identify the inspected bytes; baseRevision alone does not assert a clean working tree."
+  }
+}
