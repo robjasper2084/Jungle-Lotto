@@ -94,6 +94,20 @@ function observe(material:T.Material){if(shaders.has(material))return;const old=
 function cloneMaterial(material:T.Material,cache=new Map<T.Material,T.Material>()){let result=cache.get(material);if(!result){result=material.clone();result.onBeforeCompile=material.onBeforeCompile;result.onBeforeRender=material.onBeforeRender;result.customProgramCacheKey=material.customProgramCacheKey;cache.set(material,result);}return result;}
 const factors:Record<Subject,string>={lawn:'belleLawnResolved',asphalt:'repairResolved',masonry:'belleBridgeAA'};
 const grassWithdrawal={status:'withdrawn',candidateEnabled:false,proofPurpose:'Original lawn regression only; candidate slot uses original terrain and lawn shaders.'} as const;
+async function originalLawnEquivalence(){
+ const original=new T.MeshStandardMaterial(),current=new T.MeshStandardMaterial();
+ try{
+  originalLawn(original);finishParkLawn(current);
+  const originalCallback=original.onBeforeCompile.toString(),currentCallback=current.onBeforeCompile.toString();
+  const originalKey=original.customProgramCacheKey(),currentKey=current.customProgramCacheKey();
+  const shader=()=>({uniforms:T.UniformsUtils.clone(T.ShaderLib.standard.uniforms),vertexShader:T.ShaderLib.standard.vertexShader,fragmentShader:T.ShaderLib.standard.fragmentShader} as Shader);
+  const originalShader=shader(),currentShader=shader();
+  original.onBeforeCompile(originalShader,renderer);current.onBeforeCompile(currentShader,renderer);
+  const callbackEqual=originalCallback===currentCallback,cacheKeyEqual=originalKey===currentKey,vertexShaderEqual=originalShader.vertexShader===currentShader.vertexShader,fragmentShaderEqual=originalShader.fragmentShader===currentShader.fragmentShader;
+  const receipt=async(callback:string,key:string,source:Shader)=>({callbackSha256:await textHash(callback),cacheKeySha256:await textHash(key),vertexShaderSha256:await textHash(source.vertexShader),fragmentShaderSha256:await textHash(source.fragmentShader)});
+  return {callbackEqual,cacheKeyEqual,vertexShaderEqual,fragmentShaderEqual,original:await receipt(originalCallback,originalKey,originalShader),current:await receipt(currentCallback,currentKey,currentShader),passed:callbackEqual&&cacheKeyEqual&&vertexShaderEqual&&fragmentShaderEqual};
+ }finally{original.dispose();current.dispose();}
+}
 function diagnosticMaterial(material:T.Material,subject:Subject,mode:'disabled'|'mask'){
  const m=cloneMaterial(material),old=m.onBeforeCompile,key=m.customProgramCacheKey();
  m.onBeforeCompile=(shader,r)=>{
@@ -262,7 +276,10 @@ function nativeProgram(material:T.Material){
 
 (window as unknown as {__surfaceFragmentProof:()=>Promise<unknown>}).__surfaceFragmentProof=async()=>{
  let fixtures:Fixture[]=[];const materialEvidence:unknown[]=[];
+ let lawnEquivalence:Awaited<ReturnType<typeof originalLawnEquivalence>>|null=null;
  try{
+  lawnEquivalence=await originalLawnEquivalence();
+  assert(lawnEquivalence.passed,'The current lawn helper differs from the independently extracted original callback, key, or generated shaders');
   ({fixtures}=await buildFixtures());
   for(const fixture of fixtures){
    fixture.root.visible=true;
@@ -327,7 +344,7 @@ function nativeProgram(material:T.Material){
  const bumpControls=controls.filter(c=>c.subject==='masonry'),installedMaterials=fixtures.find(f=>f.name==='masonry')?.owners.candidate.bumpCenterMaterials.size??0;
  const effectivePixels=Math.max(0,...bumpControls.map(c=>Number(c.bumpCenterWrongChangedPixels))),restoredChangedPixels=Math.max(0,...bumpControls.map(c=>Number(c.restoredChangedPixels)));
  const masonryBumpCenterControl={installedMaterials,effectivePixels,restoredChangedPixels,views:bumpControls.map(c=>c.view),passed:installedMaterials>0&&bumpControls.length===3&&effectivePixels>=16&&restoredChangedPixels===0&&bumpControls.every(c=>c.passed)};
- return {gpu,threeRevision:T.REVISION,width,height,grassWithdrawal,dpr:renderer.getPixelRatio(),antialias:gl.getContextAttributes()?.antialias,shadowMapSize:sun.shadow.mapSize.toArray(),shadowReadback:'RGBA8 shadow target color attachment; effective receiver shadows also have an independent off/on control. Native depth texture bytes are not claimed.',rows,controls,coverage,masonryBumpCenterControl,timings,images,errors,resources,materials:materialEvidence,geometry:fixtures.map(f=>({subject:f.name,meshes:f.geometry})),
+ return {gpu,threeRevision:T.REVISION,width,height,grassWithdrawal,lawnEquivalence,dpr:renderer.getPixelRatio(),antialias:gl.getContextAttributes()?.antialias,shadowMapSize:sun.shadow.mapSize.toArray(),shadowReadback:'RGBA8 shadow target color attachment; effective receiver shadows also have an independent off/on control. Native depth texture bytes are not claimed.',rows,controls,coverage,masonryBumpCenterControl,timings,images,errors,resources,materials:materialEvidence,geometry:fixtures.map(f=>({subject:f.name,meshes:f.geometry})),
   scope:'Pinned original and opt-in asphalt/masonry fragment candidates, plus original lawn regression coverage after grass candidate withdrawal, on shared actual geometry with actual materials/textures, controlled camera/light/style inputs, zero RGBA tolerance and shadow readback. Targeted fixture only; not full-world collision, gameplay, controls, physical-device or sustained performance acceptance.',
   passed:errors.length===0&&rows.length===36&&rows.every(r=>r.passed)&&coverage.length===3&&coverage.every(c=>c.passed)&&masonryBumpCenterControl.passed};
 };

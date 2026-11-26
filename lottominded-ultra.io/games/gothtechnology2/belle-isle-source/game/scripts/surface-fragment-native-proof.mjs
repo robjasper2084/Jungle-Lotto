@@ -62,10 +62,18 @@ const plugin={name:'independent-pinned-surface-baseline',setup(b){
 
 const errors=[],failedRequests=[];
 const report={schema:'belle-surface-fragment-proof-v2',baseline,sourceHead,width,height,platform:process.platform,
- passed:false,errors,failedRequests,fixtureSha256:null,pinnedSources:[],candidateInputs:[],assets:[],captures:[],result:null,
+ passed:false,errors,failedRequests,fixtureSha256:null,pinnedSources:[],candidateInputs:[],assets:[],captures:[],worldLawnExtraction:null,result:null,
  scope:'Targeted material/geometry comparisons. No full-game performance, input, collision, physical-iPad, or release acceptance is implied.'};
 let browser,server;
 try{
+ const worldPath=gamePath+'/src/belle/world.ts',originalWorld=pinned(worldPath),currentWorld=await readFile(resolve(repo,worldPath),'utf8');
+ const originalHook=originalWorld.match(/grass\.onBeforeCompile=(shader=>\{[^\n]*?\});const pavement=/)?.[1];
+ const importAnchor="import {finishAsphalt,finishBank} from './surfaceFinish.ts';",helperImport="import {finishParkLawn} from './parkLawn.ts';";
+ assert(originalHook&&originalWorld.split(importAnchor).length===2&&!originalWorld.includes(helperImport),'Pinned production lawn extraction anchors changed');
+ const inlineHook='grass.onBeforeCompile='+originalHook+';';assert.equal(originalWorld.split(inlineHook).length,2,'The original lawn hook must occur exactly once');
+ const expectedWorld=originalWorld.replace(importAnchor,importAnchor+'\n'+helperImport).replace(inlineHook,'finishParkLawn(grass);');
+ report.worldLawnExtraction={path:worldPath,originalSha256:sha256(originalWorld),currentSha256:sha256(currentWorld),expectedSha256:sha256(expectedWorld),originalHookSha256:sha256(originalHook),helperExtractionOnly:currentWorld===expectedWorld};
+ assert.equal(report.worldLawnExtraction.helperExtractionOnly,true,'Production world.ts differs beyond the exact original lawn helper extraction and import');
  // The fixture serves pinned original bytes directly, rather than the build's
  // generated gzip transport. Both material paths use this same loader mode.
  const compiled=await build({entryPoints:[resolve(import.meta.dirname,'surface-fragment-proof-browser.ts')],bundle:true,format:'esm',target:'es2022',write:false,logLevel:'error',plugins:[plugin],metafile:true,define:{'import.meta.env.PROD':'false'}});
@@ -129,6 +137,11 @@ try{
  }
  assert.equal(result.grassWithdrawal?.status,'withdrawn','Grass must remain a withdrawn candidate');
  assert.equal(result.grassWithdrawal?.candidateEnabled,false,'Grass proof may only cover the original implementation');
+ for(const name of ['callbackEqual','cacheKeyEqual','vertexShaderEqual','fragmentShaderEqual','passed'])assert.equal(result.lawnEquivalence?.[name],true,'Original lawn equality failed: '+name);
+ for(const name of ['callbackSha256','cacheKeySha256','vertexShaderSha256','fragmentShaderSha256']){
+  assert.match(result.lawnEquivalence.original[name],/^[a-f0-9]{64}$/,'Missing original lawn receipt: '+name);
+  assert.equal(result.lawnEquivalence.current[name],result.lawnEquivalence.original[name],'Original lawn receipt differs: '+name);
+ }
  assert.equal(result.rows?.length,36,'All three surfaces, four styles, and three views must be compared');
  const expectedCases=['lawn','asphalt','masonry'].flatMap(subject=>['near','mid','grazing'].flatMap(view=>['authentic','golden','noir','detroit2084'].map(style=>subject+'-'+view+'-'+style))).sort();
  assert.deepEqual(result.rows.map(row=>row.name).sort(),expectedCases,'Duplicate or missing required case identifiers');

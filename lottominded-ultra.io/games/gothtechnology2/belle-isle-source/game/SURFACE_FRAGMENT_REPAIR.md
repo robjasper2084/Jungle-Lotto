@@ -83,11 +83,27 @@ The prior Linux-only result in [run 45867870864](https://github.com/robjasper208
 
 The fixture uses actual MacArthur geometry and existing material classification. Its tiled bridge deck is an authored material outcome. The receiver box is an explicit shadow control. This targeted scene cannot certify the complete game's appearance, gameplay or sustained performance.
 
+### Withdrawal verification
+
+[Run 45894166838](https://github.com/robjasper2084/Jungle-Lotto/actions/runs/45894166838), source [`c1a4ce4de582f06834c06d11ab4fed69855cd23b`](https://github.com/robjasper2084/Jungle-Lotto/commit/c1a4ce4de582f06834c06d11ab4fed69855cd23b), passed all 36 cases on both native Metal and SwiftShader after the grass candidate was removed. Original/default/candidate comparisons, repeats, controls, geometry and order all passed with zero RGBA tolerance. Lawn rows explicitly report `optimizationApplied:false`; the candidate slot is original lawn regression coverage. This repairs the failed appearance gate without claiming a grass speed improvement.
+
+The Metal artifact is `15153341053`, ZIP SHA-256 `520c058bdf9158fd7787272db8beaa41f49c069d367995378719a236f316d1f6`; the SwiftShader artifact is `15152748237`, ZIP SHA-256 `257f0906353d02cf6526df1df25eb84c8d1d8b76e8cf0aaaf1485bfe26a98617`. The 47 retained focused tests passed on both platforms. A separate Metal artifact audit decoded every required capture and confirmed all 72 original-versus-default/candidate pairs were exact; all 135 encoded capture hashes matched.
+
+The next fixture revision also persists the original lawn callback/cache/shader equality checks and a whole-file production-world assertion allowing only the exact original hook extraction. These added source guards were checked locally and are not attributed to the preceding run.
+
 ### Native CPU investigation
 
 [Diagnostic run 45887564199](https://github.com/robjasper2084/Jungle-Lotto/actions/runs/45887564199) built exact original source `d4f4baa8e2016f4c9107b40176388bf2d3f6fe8c` through the workflow-only [PR #241](https://github.com/robjasper2084/Jungle-Lotto/pull/241). Both diagnostic jobs completed, but both underlying ride reports remained failing. Their separate hosts, observer overhead and derived manual-profile driver make them attribution evidence only, not a controlled speed comparison or release acceptance.
 
 The observed window had zero shader compile/link/status calls. Inclusive direct-draw submission and matrix work were much larger CPU scopes than texture/buffer upload or raw GL draw calls. Older native CPU samples also concentrate work in program/material preparation and uniform upload, but those application revisions contain other experimental changes and their absolute timings are not current-source estimates. This motivates a controlled CPU submission candidate; it does not establish one as effective.
+
+### Separate CPU experiment
+
+The new shared-geometry diagnostic constructs one immutable original `createWorld` scene and alternates the original pooling hooks, native geometry submission, pooling with the opt-in named uniform cache, and native submission with that cache. It retains the actual original materials, meshes, shaders and framebuffer. The pool is prepared once; candidate timing does not include preparation or disable/recreate cycles. Recorded pool substitutions and native geometry identities establish which path actually ran.
+
+The cache candidate preserves Three's original array conversion and skips a captured upload only when the eligible Float32 payload, uniform location and context method are identical. Its four original targets are directional shadow matrices and the three named water arrays. Twenty-nine contract tests cover mutation, exact values including signed zero, exceptions, context transitions, native evaluation order, disposal and diagnostic accounting. No production code installs this helper.
+
+The first runtime experiment is explicitly bounded to three frozen original-world views and Authentic day/night. It records strict RGBA, source geometry and native draw order, linked shader receipts, effective source/shadow controls and a live shadow-uniform update. It records eight native ABBA groups for each candidate, separately for forced-shadow and daytime color-only rendering, with CPU submission and true GPU elapsed time. Fence waits and skipped-upload counts are not speed metrics. Other art styles, optional bridge coverage and live water-uniform mutation require further proof if a candidate is selected. This experiment does not replace the original riding, input, visual or release gates.
 
 ## Validation and remaining release gates
 
