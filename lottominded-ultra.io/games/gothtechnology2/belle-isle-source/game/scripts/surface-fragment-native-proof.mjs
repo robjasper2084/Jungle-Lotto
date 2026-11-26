@@ -66,7 +66,9 @@ const report={schema:'belle-surface-fragment-proof-v1',baseline,sourceHead,width
  scope:'Targeted material/geometry comparisons. No full-game performance, input, collision, physical-iPad, or release acceptance is implied.'};
 let browser,server;
 try{
- const compiled=await build({entryPoints:[resolve(import.meta.dirname,'surface-fragment-proof-browser.ts')],bundle:true,format:'esm',target:'es2022',write:false,logLevel:'error',plugins:[plugin],metafile:true});
+ // The fixture serves pinned original bytes directly, rather than the build's
+ // generated gzip transport. Both material paths use this same loader mode.
+ const compiled=await build({entryPoints:[resolve(import.meta.dirname,'surface-fragment-proof-browser.ts')],bundle:true,format:'esm',target:'es2022',write:false,logLevel:'error',plugins:[plugin],metafile:true,define:{'import.meta.env.PROD':'false'}});
  const javascript=compiled.outputFiles[0].contents;report.fixtureSha256=sha256(javascript);
  for(const input of Object.keys(compiled.metafile.inputs).sort()){
   if(input.startsWith('pinned-source:')||input.startsWith('pinned-construction:'))continue;
@@ -146,5 +148,5 @@ finally{
  await browser?.close();if(server)await new Promise(ok=>server.close(ok));
  report.pinnedSources=[...pinnedSources.values()].map(({content,...receipt})=>receipt);report.assets=[...assets.values()];
  await writeFile(resolve(output,'report.json'),JSON.stringify(report,null,2)+'\n');
- console.log(JSON.stringify({passed:report.passed,sourceHead,baseline,gpu:report.result?.gpu,rows:report.result?.rows?.length,failedRows:report.result?.rows?.filter(row=>!row.passed),errors,report:resolve(output,'report.json')}));
+ console.log(JSON.stringify({passed:report.passed,sourceHead,baseline,gpu:report.result?.gpu,rows:report.result?.rows?.length,failedRows:report.result?.rows?.filter(row=>!row.passed),fixtureErrors:report.result?.errors,errors,report:resolve(output,'report.json')}));
 }
