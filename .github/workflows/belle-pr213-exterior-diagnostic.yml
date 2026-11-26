@@ -107,6 +107,7 @@ jobs:
             ${{ runner.temp }}/pr213-exterior-${{ matrix.layout }}/evidence/
             ${{ runner.temp }}/pr213-exterior-${{ matrix.layout }}/generated/
           if-no-files-found: warn
+          include-hidden-files: true
           retention-days: 14
       - name: Keep an earlier ground audit failure binding
         if: always() && steps.ground.outcome == 'failure'

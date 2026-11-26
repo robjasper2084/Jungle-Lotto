@@ -6,10 +6,10 @@ export const artifactPin=Object.freeze({id:15149060140,run:45882624790,name:'bel
  sha256:'6d244cd0bf5c5564af1e4790bab5605493f887d4686eaa0640386b3d6eb80559',
  indexSha256:'9f7a207d35aab93fffad7dd8ccdda9573bb60022d82fa96e440b2abdc61d28d3'});
 export const sourcePins=Object.freeze({
- 'staged-landmark-walk-proof.mjs':'cf02efca856c189267b0e3cedf0904c3857c2746c4a2b249e7ad647896b66d4e',
- 'landmark-comparison-observer.mjs':'75f28f0ee2d88673d7e38da70f61cfbfe87d588e81fc73b25184195e0a9f594d',
- 'staged-landmark-comparison-contract.mjs':'0a625a0534e68079a75a06710a2a387ead3ef24e8ede906c9a2e45955ae06548',
- 'staged-landmark-native-comparison.mjs':'86a739d6f9ae79780d4ff7e0e18e9dd83469631b34df52b6e622095c2f31d574',
+ 'staged-landmark-walk-proof.mjs':'dbe7bf975297053c873c20d4483a413c9da3c52ddce412e00760618a46814470',
+ 'landmark-comparison-observer.mjs':'b62f69d328341a005330f1837c992d4ab298e2a80a8c11df9a7bfa64ac9054e4',
+ 'staged-landmark-comparison-contract.mjs':'072e9e58a98b5a86616359cb47c021d0435db72b1855321ea82e426f8df4ab69',
+ 'staged-landmark-native-comparison.mjs':'ba540580fa2eea0b42d3460534858e62a870b92550148de52f5820abc0335776',
  'native-select-typeahead.mjs':'6125282fee606b399c5ecb047c31a5aca1d9cc22be003bf362096c3bf9770d5f',
 });
 export const assetPins=Object.freeze({
