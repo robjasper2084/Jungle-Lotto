@@ -20,11 +20,28 @@ export const STUDY_SITES: readonly StudyDefinition[] = [
    hashes:['26447779b20c5bbd2ab1ee6eb3dc1489333722e045400697c40a32cae3c69b93','51d265f0a664ac896c8c23eb50b51f39ff52eeb2adbbc252ed16340c419e3ad9','4295c700ff745bf9c413d78f3e58997f2abc5da22665ee4515bedcd72db3c554']},
 ] as const;
 
+// Exact authored nodes in landmarks.glb: tank backings, walking surfaces,
+// circulation rails, low timber furnishings and the centers of retained lilies.
+const retainedLegacyDetails=new Set([
+ '107227742_Aquarium illuminated habitat','107227742_Aquarium aged handrails',
+ '107227742_Aquarium worn step nosings','107310050_Conservatory concrete paving',
+ '107310050_Timber','107310050_Water lily golden heart',
+]);
+
+/** Match authored and GLTFLoader node names without renaming actual objects. */
+export function legacyDetailName(id:SiteId,name:string){
+ return name.startsWith(id+'_')?name.slice(id.length+1).replace(/_/g,' '):null;
+}
+
 /** Exterior-only replacement: preserve the original walkable interior and garden. */
 export function replaceableLegacyMesh(id:SiteId,name:string):boolean {
- if(!name.startsWith(id+'_')) return false;
- if(id==='107310050')return !/(leaf|flower|orchid|palm bark|botanical|koi|pond|garden|soil|pot|fern|tufa|plant|monument|bench|label)/i.test(name);
- return !/(tank|aquatic plant|river gravel|warm pendant|jade glazed|black glazed|mosaic floor|gallery|fish|interior)/i.test(name);
+ // GLTFLoader sanitizes authored spaces to underscores before installation.
+ // Normalize only the detail suffix; keep the exact site identifier gate.
+ const detail=legacyDetailName(id,name);
+ if(detail===null)return false;
+ if(retainedLegacyDetails.has(id+'_'+detail))return false;
+ if(id==='107310050')return !/(leaf|flower|orchid|palm bark|botanical|koi|pond|garden|soil|pot|fern|tufa|plant|monument|bench|label)/i.test(detail);
+ return !/(tank|aquatic plant|river gravel|warm pendant|jade glazed|black glazed|mosaic floor|gallery|fish|interior)/i.test(detail);
 }
 
 function hex(bytes:ArrayBuffer){return Array.from(new Uint8Array(bytes),b=>b.toString(16).padStart(2,'0')).join('');}
