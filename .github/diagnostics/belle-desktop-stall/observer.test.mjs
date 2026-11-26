@@ -165,16 +165,24 @@ test('artifact pins, build bytes and symlinks fail closed',async()=>{
  }finally{await rm(root,{recursive:true,force:true});}
 });
 
-async function nativeMock({listedCategories=[],listingError=false,missingTimeline=false,cpuFailure=false,endFailure=false,streamFailure=false,badScript=false,deferredCpu=false,browserCloseFailure=null}={}){
+async function nativeMock({listedCategories=[],listingError=false,missingTimeline=false,cpuFailure=false,endFailure=false,streamFailure=false,badScript=false,deferredCpu=false,browserCloseFailure=null,completion='normal',deferredBrowserClose=false}={}){
  const f=fixture(),root=await mkdtemp(resolve(tmpdir(),'desktop-stall-observer-')),output=resolve(root,'capture'),js=Buffer.from('function nativeWork() {}');
  if(missingTimeline)f.trace.traceEvents=f.trace.traceEvents.filter(e=>e.ph!=='X');
  f.source.files=[{file:'assets/game.js',bytes:js.length,sha256:sha256(js)}];
- const calls=[];let closed=0,contextClosed=0,cpuResolve,readCount=0;
+ const calls=[];let closed=0,contextClosed=0,cpuResolve,readCount=0,browserCloseResolve,browserCloseEnteredResolve;
  const cpuDeferred=new Promise(ok=>{cpuResolve=ok;});
+ const browserCloseDeferred=new Promise(ok=>{browserCloseResolve=ok;}),browserCloseEntered=new Promise(ok=>{browserCloseEnteredResolve=ok;});
  class BrowserSession extends EventEmitter{async send(method,params){
   calls.push({method,params});
   if(method==='Tracing.getCategories'){if(listingError)throw Error('enumeration unavailable');return {categories:listedCategories};}
-  if(method==='Tracing.end'){if(endFailure)throw Error('native trace stop failed');queueMicrotask(()=>this.emit('Tracing.tracingComplete',f.traceComplete));return {};}
+  if(method==='Tracing.start'){assert.equal(this.listenerCount('Tracing.tracingComplete'),1,'Completion observation must precede Tracing.start');if(completion==='early')this.emit('Tracing.tracingComplete',f.traceComplete);return {};}
+  if(method==='Tracing.end'){
+   if(endFailure)throw Error('native trace stop failed');
+   if(completion!=='deferred')queueMicrotask(()=>{
+    this.emit('Tracing.tracingComplete',f.traceComplete);
+    if(completion==='duplicate'){this.emit('Tracing.tracingComplete',f.traceComplete);this.emit('Tracing.tracingComplete',{...f.traceComplete,stream:'extra-stream'});}
+   });return {};
+  }
   if(method==='IO.read'){readCount++;if(streamFailure){if(readCount===1)return {data:'{"traceEvents":[',eof:false};throw Error('raw stream interrupted');}return {data:JSON.stringify(f.trace),eof:true};}
   return {};
  }}
@@ -195,14 +203,15 @@ async function nativeMock({listedCategories=[],listingError=false,missingTimelin
   async evaluate(){return f.page;}
   async goto(){this.emit('response',{url:()=> 'http://127.0.0.1:1234/assets/game.js',status:()=>200,body:async()=>badScript?Buffer.from('wrong'):js});return 'navigated';}
  }
- const browser={newBrowserCDPSession:async()=>browserSession,newPage:async()=>new Page(),close:async()=>{closed++;calls.push({method:'native browser.close'});if(browserCloseFailure)throw browserCloseFailure;return 'browser-closed';}};
+ const browser={newBrowserCDPSession:async()=>browserSession,newPage:async()=>new Page(),close:async()=>{closed++;calls.push({method:'native browser.close'});browserCloseEnteredResolve();if(deferredBrowserClose)await browserCloseDeferred;if(browserCloseFailure)throw browserCloseFailure;return 'browser-closed';}};
  const chromium={launch:async()=>browser};
  const observer=await installDesktopStallTrace(chromium,{game:root,output,source:f.source,driver});
  const launched=await chromium.launch({channel:'chrome',headless:false,args:['--enable-gpu','--use-gl=angle','--use-angle=metal']});
  await launched.newPage();
  const page=await launched.newPage({viewport:{width:1440,height:900},deviceScaleFactor:1,isMobile:false,hasTouch:false,reducedMotion:'reduce'});
  assert.equal(await page.goto(f.page.url,{waitUntil:'domcontentloaded'}),'navigated');
- return {f,root,output,observer,calls,browser,page,panel,button,nativeUp,cpuResolve,context,getCounts:()=>({closed,contextClosed}),
+ return {f,root,output,observer,calls,browser,page,panel,button,nativeUp,cpuResolve,context,browserSession,browserCloseResolve,browserCloseEntered,
+  complete:event=>browserSession.emit('Tracing.tracingComplete',event??f.traceComplete),getCounts:()=>({closed,contextClosed}),
   async capture(){assert.equal(page.locator('#ride-profile'),panel);assert.equal(panel.getByRole('button',{name:'Start 10-minute capture'}),button);
    assert.equal(await button.click(),'clicked');const promise=page.keyboard.up('w');assert.equal(promise,nativeUp);assert.equal(await promise,'released');},
   async finish(){calls.push({method:'original GPS actions'});await context.close();
@@ -231,7 +240,8 @@ test('pinned driver lifecycle mock arms before click, stops before GPS, and bind
 
 test('native browser-close rejection keeps its error identity and collected evidence',async()=>{
  const nativeError=Error('original browser close failed'),h=await nativeMock({browserCloseFailure:nativeError});
- try{await h.capture();const e=await h.finish();assert.equal(e.status,'finished');assert.equal(e.verdict.originalHarnessPassed,false);assert.equal(h.getCounts().closed,1);}
+ try{await h.capture();const e=await h.finish();assert.equal(e.status,'finished');assert.equal(e.verdict.originalHarnessPassed,false);assert.equal(h.getCounts().closed,1);
+  assert.equal(h.browserSession.listenerCount('Tracing.tracingComplete'),0);assert(Number.isFinite(e.traceCompletion.listenerDetachedHostMs));}
  finally{await h.cleanup();}
 });
 
@@ -261,6 +271,65 @@ test('partial trace and script mismatch remain archived failures without suppres
    assert.equal(h.getCounts().closed,1);assert.equal(e.verdict.originalHarnessPassed,false);
    if(options.streamFailure){assert.equal(await readFile(resolve(h.output,'browser-trace.json'),'utf8'),'{"traceEvents":[');assert(e.errors.some(s=>s.includes('raw stream interrupted')));}
    if(options.badScript)assert(e.errors.some(s=>s.includes('Script length mismatch')));
+  }finally{await h.cleanup();}
+ }
+});
+
+test('completion before stop is observed and archived, while the original click and native release still run once',async()=>{
+ const h=await nativeMock({completion:'early'});
+ try{await h.capture();const e=await h.finish();
+  assert.equal(e.traceCompletion.events[0].phase,'before-stop');assert(e.errors.some(s=>s.includes('completed before the native stop')));
+  assert.equal(e.traceFlushed,true);assert.equal(e.verdict.collectionComplete,false);assert.equal(e.verdict.originalHarnessPassed,false);
+  assert.deepEqual(JSON.parse(await readFile(resolve(h.output,'browser-trace.json'),'utf8')),h.f.trace);
+  for(const method of ['native click','native keyboard.up','native context.close','native browser.close'])assert.equal(h.calls.filter(c=>c.method===method).length,1);
+ }finally{await h.cleanup();}
+});
+
+test('duplicate completion payloads retain timestamps and unique streams without rereading the same handle',async()=>{
+ const h=await nativeMock({completion:'duplicate'});
+ try{await h.capture();const e=await h.finish();
+  assert.equal(e.traceCompletion.events.length,3);assert(e.traceCompletion.events.every(row=>Number.isFinite(row.hostMs)));
+  assert.equal(e.traceCompletion.events[1].archive,'browser-trace.json');assert.equal(e.traceCompletion.events[2].archive,'browser-trace-extra-2.json');
+  assert.equal(e.traceStreams.length,2);assert.equal(h.calls.filter(c=>c.method==='IO.read').length,2);assert.equal(h.calls.filter(c=>c.method==='IO.close').length,2);
+  assert.deepEqual(JSON.parse(await readFile(resolve(h.output,'browser-trace-extra-2.json'),'utf8')),h.f.trace);
+  assert.equal(e.verdict.collectionComplete,false);assert(e.errors.filter(s=>s.includes('Duplicate tracingComplete')).length===2);
+ }finally{await h.cleanup();}
+});
+
+test('context close waits for pending completion and raw flush after the original keyup, then invokes native close once',async()=>{
+ const h=await nativeMock({completion:'deferred'});
+ try{await h.capture();await h.observer.stop('must-not-replace-native-trigger');const finished=h.finish();await tick();
+  assert.equal(h.getCounts().contextClosed,0);assert.equal(h.calls.filter(c=>c.method==='native keyboard.up').length,1);
+  h.complete();const e=await finished;
+  assert.equal(h.getCounts().contextClosed,1);assert.equal(e.stop.trigger,'native-w-keyup');assert.equal(e.verdict.collectionComplete,true);
+  assert(h.calls.findIndex(c=>c.method==='IO.close')<h.calls.findIndex(c=>c.method==='native context.close'));
+  assert(e.contextClose.requestedHostMs<=e.contextClose.nativeAllowedHostMs);assert(e.contextClose.nativeAllowedHostMs<=e.contextClose.settledHostMs);
+ }finally{await h.cleanup();}
+});
+
+test('the unchanged deadline releases context close and remains a failure when a late stream arrives during browser close',async t=>{
+ t.mock.timers.enable({apis:['setTimeout']});
+ const h=await nativeMock({completion:'deferred',deferredBrowserClose:true});
+ try{await h.capture();await h.observer.stop('must-not-replace-native-trigger');const finished=h.finish();await tick();
+  assert.equal(h.getCounts().contextClosed,0);assert.equal(h.observer.evidence.traceCompletion.deadlineHostMs-h.observer.evidence.stop.hostStartMs,60000);
+  t.mock.timers.tick(59000);await tick();assert.equal(h.getCounts().contextClosed,0);
+  t.mock.timers.tick(1000);await h.browserCloseEntered;
+  assert.equal(h.getCounts().contextClosed,1);assert.equal(h.browserSession.listenerCount('Tracing.tracingComplete'),1);
+  assert(h.observer.evidence.errors.some(s=>s.includes('Timeline flush timed out')));
+  h.complete();h.browserCloseResolve();const e=await finished;
+  assert.equal(e.traceCompletion.events[0].phase,'after-deadline');assert(e.errors.some(s=>s.includes('Timeline flush timed out')));
+  assert(e.errors.some(s=>s.includes('after the unchanged 60-second deadline')));assert.equal(e.verdict.collectionComplete,false);
+  assert.equal(e.traceFlushed,true);assert.deepEqual(JSON.parse(await readFile(resolve(h.output,'browser-trace.json'),'utf8')),h.f.trace);
+  assert.equal(h.browserSession.listenerCount('Tracing.tracingComplete'),0);
+  for(const method of ['native click','native keyboard.up','native context.close','native browser.close'])assert.equal(h.calls.filter(c=>c.method===method).length,1);
+ }finally{h.browserCloseResolve();await h.cleanup();}
+});
+
+test('CPU, trace-end and stream failures cannot suppress original context closure or erase earlier errors',async()=>{
+ for(const options of [{cpuFailure:true},{endFailure:true},{streamFailure:true}]){
+  const h=await nativeMock(options);try{await h.capture();const e=await h.finish();
+   assert.equal(h.getCounts().contextClosed,1);assert.equal(h.getCounts().closed,1);assert.equal(e.verdict.collectionComplete,false);assert(e.errors.length>0);
+   assert.equal(e.stop.trigger,'native-w-keyup');assert(Number.isFinite(e.contextClose.nativeAllowedHostMs));assert(Number.isFinite(e.contextClose.settledHostMs));
   }finally{await h.cleanup();}
  }
 });

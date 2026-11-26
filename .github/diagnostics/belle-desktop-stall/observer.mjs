@@ -24,12 +24,13 @@ export function observeSync(owner,key,{after,onError=()=>{}}={}){
  });
 }
 /** Await a setup hook, then call a native asynchronous operation exactly once. */
-export function observeAsync(owner,key,{before,after,onError=()=>{}}={}){
+export function observeAsync(owner,key,{before,after,settled,onError=()=>{}}={}){
  const original=owner[key];
  const observe=async(fn,...args)=>{try{await fn?.(...args);}catch(error){reportError(onError,error);}};
  return install(owner,key,async function(...args){
-  await observe(before,args,this);const result=await Reflect.apply(original,this,args);
-  await observe(after,result,args,this);return result;
+  await observe(before,args,this);
+  try{const result=await Reflect.apply(original,this,args);await observe(after,result,args,this);return result;}
+  finally{await observe(settled,args,this);}
  });
 }
 /** Keep the exact native promise and its rejection; observe only its completion. */
@@ -109,12 +110,15 @@ export async function installDesktopStallTrace(chromium,{game,output,source,driv
  await mkdir(output,{recursive:true});
  const evidence={diagnosticOnly:true,releaseAcceptance:false,source,diagnosticSource,host:{platform:process.platform,arch:process.arch},
   status:'starting',errors:[],errorRecords:[],unsupported:[],launches:[],pages:[],bufferUsage:[],droppedBufferUsage:0,
-  scriptReceipts:[],stop:null,traceComplete:null,cpu:null,pageEvidence:null,summary:null};
+  scriptReceipts:[],stop:null,traceComplete:null,cpu:null,pageEvidence:null,summary:null,
+  traceCompletion:{listenerAttachedHostMs:null,listenerDetachedHostMs:null,deadlineHostMs:null,timeoutHostMs:null,events:[]},traceStreams:[]};
  const fail=(where,error)=>{const message=errorText(error);evidence.errors.push(where+': '+message);evidence.errorRecords.push({where,message});};
  let persistQueue=Promise.resolve();
  const persist=()=>{const snapshot=JSON.stringify(evidence,null,2)+'\n';persistQueue=persistQueue.then(()=>writeFile(resolve(output,'trace-evidence.json'),snapshot)).catch(error=>fail('evidence.write',error));return persistQueue;};
  const optional=async(session,method)=>{try{return await cdp(session,method);}catch(error){evidence.unsupported.push({method,error:errorText(error)});return null;}};
- let browserSession,gameSession,gamePage,armed=false,recording=false,cpuRecording=false,arming,stopping,flushing,finishing;
+ let browserSession,gameSession,gamePage,armed=false,recording=false,cpuRecording=false,arming,stopping,flushing,finishing,originalReport=null;
+ let completionListener,completionResolve,completionReject,completionTimer;
+ const traceTasks=new Set(),traceStreams=new Map();
  const responseTasks=new Set(),observedPanels=new WeakSet(),observedButtons=new WeakSet(),seenScripts=new Set();
  await persist();
 
@@ -123,6 +127,7 @@ export async function installDesktopStallTrace(chromium,{game,output,source,driv
   arming=(async()=>{
    evidence.arm={hostStartMs:performance.now(),intervalUs:1000};
    if(!browserSession||!gameSession){fail('capture.arm',Error('Missing original game CDP sessions'));return;}
+   observeTimelineCompletion();
    try{await cdp(browserSession,'Tracing.start',{transferMode:'ReturnAsStream',streamFormat:'json',streamCompression:'none',bufferUsageReportingInterval:1000,
     traceConfig:{recordMode:'recordUntilFull',traceBufferSizeInKb:262144,includedCategories:[...TRACE_CATEGORIES]}});recording=true;
    }catch(error){fail('Tracing.start',error);}
@@ -130,10 +135,49 @@ export async function installDesktopStallTrace(chromium,{game,output,source,driv
    armed=true;evidence.arm.hostReadyMs=performance.now();evidence.status='armed';await persist();
   })();return arming;
  }
- async function streamTrace(complete){
-  evidence.traceComplete=complete;assert(complete?.stream,'Missing raw timeline stream');
-  evidence.traceIo=await drainTraceStream(browserSession,complete.stream,resolve(output,'browser-trace.json'),fail);
-  evidence.traceFlushed=evidence.traceIo.complete;evidence.traceFlushHostMs=performance.now();await persist();
+ async function streamTrace(complete,receipt){
+  receipt.io=await drainTraceStream(browserSession,complete.stream,resolve(output,receipt.file),fail);
+  receipt.finishedHostMs=performance.now();
+  if(receipt.file==='browser-trace.json'){
+   evidence.traceIo=receipt.io;evidence.traceFlushed=receipt.io.complete;evidence.traceFlushHostMs=receipt.finishedHostMs;
+  }
+  await persist();
+ }
+ async function joinTraceStreams(){while(traceTasks.size)await Promise.allSettled([...traceTasks]);}
+ function observeTimelineCompletion(){
+  if(completionListener)return;
+  evidence.traceCompletion.listenerAttachedHostMs=performance.now();
+  completionListener=complete=>{
+   const hostMs=performance.now(),observation=evidence.traceCompletion;
+   const early=!evidence.stop?.traceEndIssued;
+   const late=observation.deadlineHostMs!==null&&(observation.timeoutHostMs!==null||hostMs>observation.deadlineHostMs);
+   const receipt={ordinal:observation.events.length+1,hostMs,phase:early?'before-stop':late?'after-deadline':'after-stop',event:complete};
+   observation.events.push(receipt);
+   if(receipt.ordinal===1)evidence.traceComplete=complete;else fail('trace.completion',Error('Duplicate tracingComplete event'));
+   if(early)fail('trace.completion',Error('Timeline completed before the native stop request'));
+   if(late)fail('trace.completion',Error('Timeline completion arrived after the unchanged 60-second deadline'));
+   clearTimeout(completionTimer);
+   try{
+    assert(typeof complete?.stream==='string'&&complete.stream,'Missing raw timeline stream');
+    if(traceStreams.has(complete.stream))receipt.archive=traceStreams.get(complete.stream).file;
+    else{
+     const stream={handle:complete.stream,file:traceStreams.size?'browser-trace-extra-'+(traceStreams.size+1)+'.json':'browser-trace.json',receivedHostMs:hostMs};
+     traceStreams.set(complete.stream,stream);evidence.traceStreams.push(stream);receipt.archive=stream.file;
+     const task=streamTrace(complete,stream).catch(error=>fail('trace.stream archive',error)).finally(()=>traceTasks.delete(task));traceTasks.add(task);
+    }
+   }catch(error){fail('trace.completion stream',error);}
+   completionResolve?.(complete);void persist();
+  };
+  browserSession.on('Tracing.tracingComplete',completionListener);
+ }
+ async function closeTimelineObservation(){
+  evidence.traceCompletion.listenerDetachedHostMs=performance.now();
+  if(completionListener)browserSession.off('Tracing.tracingComplete',completionListener);
+  clearTimeout(completionTimer);
+  completionReject?.(Error('Browser close settled before timeline completion'));
+  await flushing;await joinTraceStreams();
+  evidence.verdict=diagnosticVerdict({source,report:originalReport,traceComplete:evidence.traceComplete,summary:evidence.summary,errors:evidence.errors,stop:evidence.stop});
+  await persist();
  }
  function stop(trigger){
   if(stopping)return stopping;
@@ -151,18 +195,21 @@ export async function installDesktopStallTrace(chromium,{game,output,source,driv
     }).catch(error=>fail('Profiler.stop/archive',error)));
    }else fail('capture.stop',Error('CPU recording was not active'));
    if(recording){
-    let timer,completeHandler;
+    evidence.traceCompletion.deadlineHostMs=evidence.stop.hostStartMs+60000;
     const completion=new Promise((ok,reject)=>{
-     completeHandler=value=>{clearTimeout(timer);ok(value);};browserSession.once('Tracing.tracingComplete',completeHandler);
-     timer=setTimeout(()=>{browserSession.off('Tracing.tracingComplete',completeHandler);reject(Error('Timeline flush timed out'));},60000);
+     completionResolve=ok;completionReject=reject;
+     if(evidence.traceCompletion.events.length){ok(evidence.traceComplete);return;}
+     completionTimer=setTimeout(()=>{
+      evidence.traceCompletion.timeoutHostMs=performance.now();reject(Error('Timeline flush timed out'));void persist();
+     },Math.max(0,evidence.traceCompletion.deadlineHostMs-performance.now()));
     });
     evidence.stop.traceEndIssued=true;
     const endRequest=cdp(browserSession,'Tracing.end').then(()=>{recording=false;evidence.stop.traceEnded=true;evidence.stop.traceEndHostMs=performance.now();})
      .catch(error=>{fail('Tracing.end',error);throw error;});
     operations.push(endRequest);
     // Flush is independent from recording stop and from final report binding.
-    flushing=Promise.all([endRequest,completion]).then(([,complete])=>streamTrace(complete)).catch(error=>fail('trace.flush',error)).finally(()=>{
-     clearTimeout(timer);browserSession.off('Tracing.tracingComplete',completeHandler);
+    flushing=Promise.all([endRequest,completion]).then(()=>joinTraceStreams()).catch(error=>fail('trace.flush',error)).finally(()=>{
+     clearTimeout(completionTimer);completionResolve=null;completionReject=null;
     });
    }else fail('capture.stop',Error('Timeline recording was not active'));
    if(gamePage&&!gamePage.isClosed()){
@@ -177,11 +224,11 @@ export async function installDesktopStallTrace(chromium,{game,output,source,driv
   if(finishing)return finishing;
   finishing=(async()=>{
    if(!stopping){fail('capture.finish',Error('Original native W release did not stop collection'));await stop('browser-close-fallback');}
-   await stopping;await flushing;await Promise.allSettled([...responseTasks]);
+   await stopping;await flushing;await joinTraceStreams();await Promise.allSettled([...responseTasks]);
    if(browserSession)evidence.processesAtEnd=await optional(browserSession,'SystemInfo.getProcessInfo');
    let report=null;
    try{const bytes=await readFile(resolve(game,'output/sustained-profile/full/desktop/report.json'));
-    report=JSON.parse(bytes);evidence.originalReportSha256=sha256(bytes);await writeFile(resolve(output,'original-report.json'),bytes);
+    report=JSON.parse(bytes);originalReport=report;evidence.originalReportSha256=sha256(bytes);await writeFile(resolve(output,'original-report.json'),bytes);
     verifyOriginalVerdict(report,driver);
    }catch(error){fail('original report',error);}
    try{const profile=await readFile(resolve(output,'renderer.cpuprofile'));evidence.cpuProfileSha256=sha256(profile);
@@ -197,7 +244,7 @@ export async function installDesktopStallTrace(chromium,{game,output,source,driv
 
  observeAsync(chromium,'launch',{onError:error=>fail('launch observer',error),after:async(browser,args)=>{
   evidence.launches.push(args[0]);
-  observeAsync(browser,'close',{before:finish,onError:error=>fail('browser close observer',error)});
+  observeAsync(browser,'close',{before:finish,settled:closeTimelineObservation,onError:error=>fail('browser close observer',error)});
   observeAsync(browser,'newPage',{onError:error=>fail('newPage observer',error),after:async(page,args)=>{
    const entry={options:args[0]??null,observedGame:false};evidence.pages.push(entry);
    if(gamePage||args[0]?.viewport?.width!==1440||args[0]?.viewport?.height!==900)return;
@@ -215,9 +262,13 @@ export async function installDesktopStallTrace(chromium,{game,output,source,driv
     if(args[0]==='w'){if(args.length!==1)fail('keyup arguments',Error('Original keyboard release arguments changed'));return stop('native-w-keyup');}
    },onRejected:(error,args)=>{if(args[0]==='w')fail('original keyup rejected',error);}});
    observeAsync(page.context(),'close',{onError:error=>fail('context close observer',error),before:async()=>{
-    if(!stopping){fail('context close',Error('Game context closed before native collection stop'));await stop('context-close-fallback');}
-    await stopping;evidence.contextCloseAfterStop=true;
-   }});
+    evidence.contextClose={requestedHostMs:performance.now(),nativeAllowedHostMs:null,settledHostMs:null};
+    try{
+     if(!stopping){fail('context close',Error('Game context closed before native collection stop'));await stop('context-close-fallback');}
+     await stopping;evidence.contextCloseAfterStop=true;
+     if(flushing)await bounded(flushing,'context trace completion/flush',Math.max(0,evidence.traceCompletion.deadlineHostMs-performance.now()));
+    }finally{evidence.contextClose.nativeAllowedHostMs=performance.now();void persist();}
+   },settled:async()=>{evidence.contextClose.settledHostMs=performance.now();await persist();}});
    page.on('response',response=>{
     let url;try{url=new URL(response.url());if(url.hostname!=='127.0.0.1'||!url.pathname.endsWith('.js')||seenScripts.has(response.url()))return;
      seenScripts.add(response.url());}catch(error){fail('script receipt URL',error);return;}
@@ -244,7 +295,7 @@ export async function installDesktopStallTrace(chromium,{game,output,source,driv
   evidence.processesAtStart=await optional(browserSession,'SystemInfo.getProcessInfo');
   const supported=await optional(browserSession,'Tracing.getCategories');
   evidence.categories={available:Array.isArray(supported?.categories)?supported.categories:null,requested:[...TRACE_CATEGORIES],enumerationAdvisory:true};
-  browserSession.on('Tracing.bufferUsage',value=>{if(evidence.bufferUsage.length<1024)evidence.bufferUsage.push(value);else evidence.droppedBufferUsage++;});
+  browserSession.on('Tracing.bufferUsage',value=>{if(evidence.bufferUsage.length<1024)evidence.bufferUsage.push({...value,observedHostMs:performance.now()});else evidence.droppedBufferUsage++;});
  }});
  return {evidence,finish,stop,arm};
 }
