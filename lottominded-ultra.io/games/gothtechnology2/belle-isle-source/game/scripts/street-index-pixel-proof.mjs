@@ -15,14 +15,13 @@ const game=fileURLToPath(new URL('../',import.meta.url));
 const repo=execFileSync('git',['rev-parse','--show-toplevel'],{cwd:game,encoding:'utf8'}).trim();
 const sourcePath=path.relative(repo,path.join(game,'src/belle/streetDetails.ts'));
 const baselineRef=process.env.BELLE_STREET_BASE??'6518764b9735f78bdc95ec6227d0ba26ba291b48';
-const output=path.resolve(game,process.env.BELLE_STREET_PROOF_OUTPUT??'output/street-batch-proof');
+const output=path.resolve(game,process.env.BELLE_STREET_PROOF_OUTPUT??'output/street-index-proof');
 const baseline=execFileSync('git',['show',`${baselineRef}:${sourcePath}`],{cwd:repo,encoding:'utf8'});
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
 const script=String.raw`
 import * as T from 'three';
 import {addStreetDetails as addBaseline} from 'proof:baseline';
 import {addStreetDetails as addCandidate} from './src/belle/streetDetails.ts';
-import {batchStaticArchitecture} from './src/belle/staticArchitectureBatch.ts';
 import {loadRealisticMaterials,applyRealisticMaterials} from './src/belle/realisticMaterials.ts';
 import {applyPhotoReferenceSurfaces} from './src/belle/photoReferenceSurfaces.ts';
 
@@ -33,33 +32,36 @@ renderer.setPixelRatio(1);renderer.setSize(width,height);renderer.outputColorSpa
 renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.02;
 renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;renderer.shadowMap.autoUpdate=true;
 const gl=renderer.getContext(),debug=gl.getExtension('WEBGL_debug_renderer_info');
-const extension=gl.getExtension('WEBGL_multi_draw');
-if(!extension)throw Error('WEBGL_multi_draw is unavailable: this fixture cannot test the candidate path.');
-let calls={};
+let calls={},streetCalls={},activeStreet=false;
+// Observe the actual street draw only, excluding the fixture's indexed ground
+// and shadow caster. The original renderer and each native call still run once.
+const direct=renderer.renderBufferDirect;
+renderer.renderBufferDirect=function(...args){
+ const previous=activeStreet;activeStreet=typeof args[4]?.name==='string'&&args[4].name.startsWith('Street detail ');
+ try{return direct.apply(this,args);}finally{activeStreet=previous;}
+};
 for(const name of ['drawArrays','drawElements','drawArraysInstanced','drawElementsInstanced']){
- const original=gl[name];gl[name]=function(...args){calls[name]=(calls[name]??0)+1;return original.apply(this,args);};
-}
-for(const name of ['multiDrawArraysWEBGL','multiDrawElementsWEBGL','multiDrawArraysInstancedWEBGL','multiDrawElementsInstancedWEBGL']){
- const original=extension[name];if(typeof original!=='function')continue;
- extension[name]=function(...args){calls[name]=(calls[name]??0)+1;return original.apply(this,args);};
+ const original=gl[name];gl[name]=function(...args){
+  calls[name]=(calls[name]??0)+1;if(activeStreet)streetCalls[name]=(streetCalls[name]??0)+1;
+  return original.apply(this,args);
+ };
 }
 const metadata={revision:T.REVISION,width,height,pixelRatio:renderer.getPixelRatio(),antialias:gl.getContextAttributes().antialias,
  renderer:String(gl.getParameter(debug?.UNMASKED_RENDERER_WEBGL??gl.RENDERER)),vendor:String(gl.getParameter(debug?.UNMASKED_VENDOR_WEBGL??gl.VENDOR)),
- multiDraw:true,scope:'Real mapped street assets in a controlled actual-WebGL fixture. This is not the full game, a 90-second ride, or release acceptance.'};
+ technique:'Exact template vertex indexing with the original ordinary mesh renderer',
+ scope:'Real mapped street assets in a controlled actual-WebGL fixture. This is not the full game, a 90-second ride, or release acceptance.'};
 const digest=async bytes=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))).map(x=>x.toString(16).padStart(2,'0')).join('');
 function makePlan(header,buffer){
  const data=new Float32Array(buffer),plan={...header,boxes:[]};
  for(let i=0;i<data.length;i+=header.stride)plan.boxes.push({x:data[i],y:data[i+1],z:data[i+2],w:data[i+3],h:data[i+4],l:data[i+5],yaw:data[i+6],material:header.materials[data[i+7]],grade:data[i+8]});
  return plan;
 }
-function sceneFor(add,plan,optimize){
+function sceneFor(add,plan){
  const scene=new T.Scene();scene.background=new T.Color(0x657a8d);
  const street=add(scene,plan);
  // Match the real world's material order; both stages share the loaded textures.
  applyRealisticMaterials(scene);applyPhotoReferenceSurfaces(scene);
  const sourceTiles=scene.children.filter(object=>object.name.startsWith('Street detail '));
- const palette=optimize?batchStaticArchitecture(scene,renderer,[],()=>false,undefined,street.batchSources()):undefined;
- if(optimize&&!palette?.stats.batches)throw Error('Candidate did not install any street batch.');
  const ground=new T.Mesh(new T.PlaneGeometry(1000,1000),new T.MeshStandardMaterial({color:0x343a3c,roughness:.94}));
  ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;ground.name='Proof ground';scene.add(ground);
  const caster=new T.Mesh(new T.BoxGeometry(6,8,6),new T.MeshStandardMaterial({color:0x787e86,roughness:.8}));
@@ -68,7 +70,7 @@ function sceneFor(add,plan,optimize){
  sun.shadow.camera.left=-85;sun.shadow.camera.right=85;sun.shadow.camera.bottom=-85;sun.shadow.camera.top=85;
  sun.shadow.camera.near=.1;sun.shadow.camera.far=350;sun.shadow.bias=-.0001;scene.add(sun,sun.target);
  scene.add(new T.HemisphereLight(0xb9cde2,0x343f2b,1.1));
- return {scene,street,palette,ground,caster,sun,sourceTiles};
+ return {scene,street,ground,caster,sun,sourceTiles};
 }
 const views=[
  {name:'jefferson-near',eye:[-19,10,-30],target:[0,2,0],update:[0,0],ground:2.02},
@@ -98,10 +100,10 @@ async function capture(stage,view,shadows){
  await renderer.compileAsync(stage.scene,camera);
  // Compile/warm before taking counters. Every captured draw is a genuine draw.
  renderer.render(stage.scene,camera);gl.finish();
- calls={};renderer.info.reset();renderer.render(stage.scene,camera);gl.finish();
+ calls={};streetCalls={};renderer.info.reset();renderer.render(stage.scene,camera);gl.finish();
  const pixels=new Uint8Array(width*height*4);gl.readPixels(0,0,width,height,gl.RGBA,gl.UNSIGNED_BYTE,pixels);
  const error=gl.getError();if(error!==gl.NO_ERROR)throw Error('WebGL error '+error);
- return {pixels,pixelSha256:await digest(pixels),png:canvas.toDataURL('image/png'),drawCalls:{...calls},triangles:renderer.info.render.triangles,
+ return {pixels,pixelSha256:await digest(pixels),png:canvas.toDataURL('image/png'),drawCalls:{...calls},streetDrawCalls:{...streetCalls},triangles:renderer.info.render.triangles,
  rendererCalls:renderer.info.render.calls,visibleSourceTiles:stage.sourceTiles.filter(o=>o.visible).length};
 }
 function differences(a,b){let bytes=0,pixels=0,max=0;for(let i=0;i<a.length;i+=4){let changed=false;
@@ -110,20 +112,37 @@ function differences(a,b){let bytes=0,pixels=0,max=0;for(let i=0;i<a.length;i+=4
 window.__streetProofReady=(async()=>{
  await loadRealisticMaterials(renderer);
  const [header,buffer]=await Promise.all([fetch('/belle/street-details.json').then(r=>r.json()),fetch('/belle/street-details.bin').then(r=>r.arrayBuffer())]);
- const before=sceneFor(addBaseline,makePlan(header,buffer),false),after=sceneFor(addCandidate,makePlan(header,buffer),true);
+ const before=sceneFor(addBaseline,makePlan(header,buffer)),after=sceneFor(addCandidate,makePlan(header,buffer));
  if(before.sourceTiles.length!==after.sourceTiles.length)throw Error('Source tile count changed');
- const sourceGeometry=[];
+ const sourceGeometry=[],storage={sourceVertices:0,candidateVertices:0,sourceAttributeBytes:0,candidateAttributeBytes:0,candidateIndexBytes:0,indexedTiles:0};
  for(let i=0;i<before.sourceTiles.length;i++){
   const a=before.sourceTiles[i],b=after.sourceTiles[i];
   if(a.name!==b.name)throw Error('Source tile order/name changed');
+  if(a.geometry.index!==null)throw Error('The pinned baseline must remain nonindexed');
+  const index=b.geometry.index;
+  if(!index||!(index.array instanceof Uint16Array||index.array instanceof Uint32Array))throw Error(b.name+' is not indexed with native unsigned storage');
+  const originalCount=a.geometry.getAttribute('position').count,uniqueCount=b.geometry.getAttribute('position').count;
+  if(index.count!==originalCount)throw Error(b.name+' triangle-index count changed');
+  if(uniqueCount>=originalCount)throw Error(b.name+' did not reduce its stored vertices');
+  storage.sourceVertices+=originalCount;storage.candidateVertices+=uniqueCount;storage.candidateIndexBytes+=index.array.byteLength;storage.indexedTiles++;
   for(const name of ['position','normal']){
    const aa=a.geometry.getAttribute(name).array,bb=b.geometry.getAttribute(name).array;
-   const ah=await digest(aa),bh=await digest(bb);if(ah!==bh)throw Error(a.name+' '+name+' changed');
-   sourceGeometry.push({tile:a.name,attribute:name,sha256:ah,count:aa.length});
+   if(!(aa instanceof Float32Array)||!(bb instanceof Float32Array)||bb.length!==uniqueCount*3)throw Error('Unexpected attribute storage '+name);
+   const originalBits=new Uint32Array(aa.buffer,aa.byteOffset,aa.length),uniqueBits=new Uint32Array(bb.buffer,bb.byteOffset,bb.length),expandedBits=new Uint32Array(aa.length);
+   for(let vertex=0;vertex<index.count;vertex++){
+    const at=index.getX(vertex);if(!Number.isInteger(at)||at<0||at>=uniqueCount)throw Error('Invalid native vertex index');
+    for(let component=0;component<3;component++)expandedBits[vertex*3+component]=uniqueBits[at*3+component];
+   }
+   const ah=await digest(originalBits),bh=await digest(expandedBits);if(ah!==bh)throw Error(a.name+' expanded '+name+' bits changed');
+   storage.sourceAttributeBytes+=aa.byteLength;storage.candidateAttributeBytes+=bb.byteLength;
+   sourceGeometry.push({tile:a.name,attribute:name,sha256:ah,expandedScalarCount:aa.length,storedScalarCount:bb.length});
   }
+  const sourceBytes=a.geometry.getAttribute('position').array.byteLength+a.geometry.getAttribute('normal').array.byteLength;
+  const candidateBytes=b.geometry.getAttribute('position').array.byteLength+b.geometry.getAttribute('normal').array.byteLength+index.array.byteLength;
+  if(candidateBytes>=sourceBytes)throw Error(b.name+' did not reduce combined attribute/index storage');
  }
  metadata.sourceTiles=before.sourceTiles.length;metadata.sourceGeometrySha256=await digest(new TextEncoder().encode(JSON.stringify(sourceGeometry)));
- metadata.batches={...after.palette.stats};
+ metadata.storage={...storage,sourceBytes:storage.sourceAttributeBytes,candidateBytes:storage.candidateAttributeBytes+storage.candidateIndexBytes};
  metadata.actualMaterialProfiles=[...new Set(after.sourceTiles.map(o=>JSON.stringify({surface:o.material.userData.realisticProfile,finish:o.material.userData.photoSurfaceFinish,grime:/curb|gutter/.test(o.name)})))];
  window.__streetProofViews=views.map(v=>v.name);window.__streetProofMetadata=metadata;
  window.__runStreetProof=async(index)=>{
@@ -149,7 +168,7 @@ const bundled=await build({absWorkingDir:game,stdin:{contents:script,sourcefile:
  plugins:[{name:'pinned-baseline',setup(b){b.onResolve({filter:/^proof:baseline$/},()=>({path:'baseline.ts',namespace:'baseline'}));b.onLoad({filter:/.*/,namespace:'baseline'},()=>({contents:baseline,loader:'ts',resolveDir:path.join(game,'src/belle')}));}}]});
 const bundle=bundled.outputFiles[0].contents;
 const mime={'.js':'text/javascript','.json':'application/json','.bin':'application/octet-stream','.webp':'image/webp','.png':'image/png'};
-const html='<!doctype html><meta charset="utf-8"><title>Street batch exact pixel proof</title><style>html,body{margin:0;width:100%;height:100%;overflow:hidden}canvas{display:block}</style><canvas></canvas><script src="/proof.js"></script>';
+const html='<!doctype html><meta charset="utf-8"><title>Street indexing exact pixel proof</title><style>html,body{margin:0;width:100%;height:100%;overflow:hidden}canvas{display:block}</style><canvas></canvas><script src="/proof.js"></script>';
 const server=http.createServer(async(req,res)=>{
  try{
   const pathname=new URL(req.url,'http://local').pathname;
@@ -163,14 +182,14 @@ const server=http.createServer(async(req,res)=>{
 });
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const report={baselineRef,baselineSha256:sha(baseline),candidateFiles:{},sharedSourceSha256:{},assetSha256:{},baselineAssetSha256:{},bundleSha256:sha(bundle),scope:'Exact renderer-equivalence fixture only; not release acceptance.',views:[],errors:[],pass:false};
-for(const name of ['streetDetails.ts','staticArchitectureBatch.ts','staticPaletteBatch.ts','realisticMaterials.ts','photoReferenceSurfaces.ts'])report.candidateFiles[name]=sha(await fs.readFile(path.join(game,'src/belle',name)));
+for(const name of ['streetDetails.ts','realisticMaterials.ts','photoReferenceSurfaces.ts'])report.candidateFiles[name]=sha(await fs.readFile(path.join(game,'src/belle',name)));
 for(const name of ['street-details.json','street-details.bin'])report.assetSha256[name]=sha(await fs.readFile(path.join(game,'public/belle',name)));
 let browser;
 try{
  // A baseline factory cannot stand in for the baseline if an unreviewed shader
  // dependency has drifted. Verify every bundled application dependency except
- // the two deliberate candidate adapters against the pinned baseline revision.
- const changedAdapters=new Set(['src/belle/streetDetails.ts','src/belle/staticArchitectureBatch.ts']);
+ // the deliberately changed street factory against the pinned baseline revision.
+ const changedAdapters=new Set(['src/belle/streetDetails.ts']);
  for(const name of Object.keys(bundled.metafile.inputs)){
   if(!name.startsWith('src/belle/')||changedAdapters.has(name))continue;
   const file=path.join(game,name),relative=path.relative(repo,file);
@@ -182,6 +201,14 @@ try{
   const name=path.relative(repo,file),before=execFileSync('git',['show',`${baselineRef}:${name}`],{cwd:repo});
   const current=await fs.readFile(file);assert.equal(sha(current),sha(before),`Dependency lock changed: ${name}`);
   report.sharedSourceSha256[name]=sha(current);
+ }
+ // The superseded batching candidate must not leak into this ordinary-mesh
+ // comparison or the game integration accompanying it.
+ for(const name of ['world.ts','staticArchitectureBatch.ts','staticPaletteBatch.ts']){
+  const file=path.join(game,'src/belle',name),relative=path.relative(repo,file);
+  const before=execFileSync('git',['show',`${baselineRef}:${relative}`],{cwd:repo});
+  const current=await fs.readFile(file);assert.equal(sha(current),sha(before),`Original render integration changed: ${name}`);
+  report.sharedSourceSha256['src/belle/'+name]=sha(current);
  }
  for(const name of ['street-details.json','street-details.bin']){
   const relative=path.relative(repo,path.join(game,'public/belle',name));
@@ -218,8 +245,11 @@ try{
   assert(result[mode].trianglesMatch,`${result.name} ${mode}: submitted triangle mismatch`);
  }
  assert(report.views.some(v=>v.shadowDifference.pixels>0),'Fixture did not produce actual receiver-shadow pixels');
- assert(report.views.some(v=>(v.color.candidate.drawCalls.multiDrawArraysWEBGL??0)+(v.color.candidate.drawCalls.multiDrawElementsWEBGL??0)>0),'No actual native multi-draw call occurred');
- assert(report.views.some(v=>v.color.candidate.rendererCalls<v.color.baseline.rendererCalls),'No draw reduction observed');
+ assert(report.views.some(v=>(v.color.baseline.streetDrawCalls.drawArrays??0)>0),'Baseline did not submit actual nonindexed streets');
+ assert(report.views.some(v=>(v.color.candidate.streetDrawCalls.drawElements??0)>0),'Candidate did not submit actual indexed streets');
+ for(const view of report.views)for(const mode of ['color','shadow'])assert.equal(view[mode].candidate.streetDrawCalls.drawArrays??0,0,'Candidate retained a nonindexed street draw');
+ assert(report.renderer.storage.candidateVertices<report.renderer.storage.sourceVertices,'No stored-vertex reduction observed');
+ assert(report.renderer.storage.candidateBytes<report.renderer.storage.sourceBytes,'No combined attribute/index storage reduction observed');
  report.pass=true;
 }catch(error){report.failure=String(error?.stack??error);process.exitCode=1;console.error(report.failure);}
 finally{

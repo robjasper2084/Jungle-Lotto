@@ -2,6 +2,23 @@ import * as T from 'three';
 import type {StreetPlan,StreetBox} from './streetPlan.ts';
 import {CURB_PROFILE} from './curbProfile.ts';
 
+/** Index only the tiny authored primitive, before any world placement. Equal
+ * Float32 position AND normal bits share a record; signed zero and hard edges
+ * stay distinct. The index sequence retains the original triangle order. */
+function indexedStreetTemplate(geometry:T.BufferGeometry,topOnly=false){
+ const position=geometry.attributes.position as T.BufferAttribute,normal=geometry.attributes.normal as T.BufferAttribute;
+ const p=position.array as Float32Array,n=normal.array as Float32Array;
+ const positionBits=new Uint32Array(p.buffer,p.byteOffset,p.length),normalBits=new Uint32Array(n.buffer,n.byteOffset,n.length);
+ const vertices:number[]=[],indices:number[]=[],seen=new Map<string,number>();
+ for(let i=0;i<position.count;i++){
+  if(topOnly&&normal.getY(i)<.5)continue;
+  const offset=i*3,key=[positionBits[offset],positionBits[offset+1],positionBits[offset+2],normalBits[offset],normalBits[offset+1],normalBits[offset+2]].join(',');
+  let index=seen.get(key);if(index===undefined){index=vertices.length;vertices.push(i);seen.set(key,index);}
+  indices.push(index);
+ }
+ return{geometry,vertices,indices};
+}
+
 // Build once from the offline plan. Group by material AND 256 m tile so the
 // renderer can discard distant detail without per-frame object traversal.
 export function addStreetDetails(scene:T.Scene,plan:StreetPlan){
@@ -33,21 +50,22 @@ export function addStreetDetails(scene:T.Scene,plan:StreetPlan){
  // Chamfer the upper edges rather than making curb runs look like sharp blocks.
  const section=new T.Shape();CURB_PROFILE.forEach(([x,y],i)=>i?section.lineTo(x,y):section.moveTo(x,y));section.closePath();
  const curbUnit=new T.ExtrudeGeometry(section,{depth:1,bevelEnabled:false,steps:1});curbUnit.translate(0,0,-.5);
- const groups=new Map<string,{p:number[];n:number[];m:StreetBox['material']}>();
+ // Hash at most 204 primitive records, never the completed island geometry.
+ const boxTemplate=indexedStreetTemplate(unit),topTemplate=indexedStreetTemplate(unit,true),curbTemplate=indexedStreetTemplate(curbUnit);
+ const groups=new Map<string,{p:number[];n:number[];indices:number[];m:StreetBox['material']}>();
  for(const b of plan.boxes){
-  const template=b.material==='curb'&&b.h>.03?curbUnit:unit,pos=template.attributes.position,nor=template.attributes.normal;
+  const template=b.material==='curb'&&b.h>.03?curbTemplate:b.h<.03?topTemplate:boxTemplate,pos=template.geometry.attributes.position,nor=template.geometry.attributes.normal;
   const key=Math.floor(b.x/256)+','+Math.floor(b.z/256)+','+b.material;
-  if(!groups.has(key))groups.set(key,{p:[],n:[],m:b.material});const g=groups.get(key)!,co=Math.cos(b.yaw),si=Math.sin(b.yaw);
-  for(let i=0;i<pos.count;i++){
-   // Flat paint/gutters need only the top face, not six box faces.
-   if(b.h<.03&&nor.getY(i)<.5)continue;
+  if(!groups.has(key))groups.set(key,{p:[],n:[],indices:[],m:b.material});const g=groups.get(key)!,co=Math.cos(b.yaw),si=Math.sin(b.yaw),vertexOffset=g.p.length/3;
+  for(const i of template.vertices){
    const x=pos.getX(i)*b.w,y=pos.getY(i)*b.h,z=pos.getZ(i)*b.l,nx=nor.getX(i),nz=nor.getZ(i);
    g.p.push(b.x+co*x+si*z,b.y+y+(b.grade||0)*z,b.z-si*x+co*z);const ny=nor.getY(i),normalZ=nz-(b.grade||0)*ny,normalLength=Math.hypot(nx,ny,normalZ);g.n.push((co*nx+si*normalZ)/normalLength,ny/normalLength,(-si*nx+co*normalZ)/normalLength);
   }
+  for(const index of template.indices)g.indices.push(vertexOffset+index);
  }
  unit.dispose();curbUnit.dispose();
  const tiles:{mesh:T.Mesh;x:number;z:number}[]=[];
- for(const [key,b]of groups){const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(b.p,3));g.setAttribute('normal',new T.Float32BufferAttribute(b.n,3));g.computeBoundingSphere();const m=new T.Mesh(g,materials[b.m]);m.name='Street detail '+key;m.receiveShadow=true;scene.add(m);const [x,z]=key.split(',').map(Number);tiles.push({mesh:m,x:x*256+128,z:z*256+128});}
+ for(const [key,b]of groups){const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(b.p,3));g.setAttribute('normal',new T.Float32BufferAttribute(b.n,3));g.setIndex(b.indices);g.computeBoundingSphere();const m=new T.Mesh(g,materials[b.m]);m.name='Street detail '+key;m.receiveShadow=true;scene.add(m);const [x,z]=key.split(',').map(Number);tiles.push({mesh:m,x:x*256+128,z:z*256+128});}
  // One text atlas for every sign, with actual readable text, solid rear panels,
  // bolted posts and no separate textures per destination.
  const columns=4,cellW=256,cellH=80,rows=Math.ceil(Math.max(1,plan.signs.length)/columns),canvas=document.createElement('canvas');canvas.width=columns*cellW;canvas.height=T.MathUtils.ceilPowerOfTwo(rows*cellH);
@@ -70,9 +88,5 @@ export function addStreetDetails(scene:T.Scene,plan:StreetPlan){
  const front=new T.Mesh(frontG,new T.MeshStandardMaterial({map:atlas,roughness:.8}));front.name='Belle Isle wayfinding · shared text atlas';scene.add(front);
  const backG=new T.BufferGeometry();backG.setAttribute('position',new T.Float32BufferAttribute(backP,3));backG.setAttribute('normal',new T.Float32BufferAttribute(backN,3));scene.add(new T.Mesh(backG,materials.metal));
  const posts=new T.InstancedMesh(new T.BoxGeometry(1,1,1),materials.metal,poleMatrices.length);poleMatrices.forEach((m,i)=>posts.setMatrixAt(i,m));posts.computeBoundingSphere();scene.add(posts);
- // Expose only the existing baked tile objects to the later exact-material
- // batching boundary, after world surface decorators have finished. A function
- // keeps scene objects out of the serializable street statistics. Signs and
- // instanced posts retain their original native draw paths.
- return {batches:groups.size+3,signs:plan.signs.length,boxes:plan.boxes.length,atlas:[canvas.width,canvas.height],batchSources:():readonly T.Mesh[]=>tiles.map(t=>t.mesh),update(x:number,z:number){for(const t of tiles)t.mesh.visible=Math.hypot(t.x-x,t.z-z)<440;}};
+ return {batches:groups.size+3,signs:plan.signs.length,boxes:plan.boxes.length,atlas:[canvas.width,canvas.height],update(x:number,z:number){for(const t of tiles)t.mesh.visible=Math.hypot(t.x-x,t.z-z)<440;}};
 }
