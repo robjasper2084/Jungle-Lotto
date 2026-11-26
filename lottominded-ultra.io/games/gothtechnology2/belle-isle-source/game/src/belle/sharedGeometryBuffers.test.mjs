@@ -558,3 +558,13 @@ test('a prior object callback changing target, override or XR state immediately 
     assert.equal(b.handle.read().pooledCalls,0);assert.equal(b.handle.read().fallbacks,0);assertRestored(b,originals);b.handle.dispose();
   }
 });
+
+test('pooled storage observes every dynamically updated draw range once per native submission',()=>{
+ const baseline=fixture({adapt:false}),candidate=fixture();
+ for(const [start,count] of [[0,Infinity],[1,5],[3,3],[-2,5],[0,0],[2,Infinity]]){
+  for(const f of [baseline,candidate])for(const mesh of f.meshes)mesh.geometry.setDrawRange(start,count);
+  assert.deepEqual(candidate.draw(),baseline.draw(),String(start)+'/'+String(count));
+  assert.equal(candidate.handle.read().fallbacks,0,'An in-range dynamic draw remains pooled');
+ }
+ assert.equal(candidate.handle.read().activeEntries,3);
+});

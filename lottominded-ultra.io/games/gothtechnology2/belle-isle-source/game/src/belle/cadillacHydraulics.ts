@@ -1,23 +1,20 @@
 import * as T from 'three';
+import {CadillacSuspension,CADILLAC_CORNERS,type CadillacSuspensionAnchors} from './cadillacSuspension.ts';
 
-const corners=['FL','FR','RL','RR'] as const;
+const corners=CADILLAC_CORNERS;
 export const hydraulicCadillacControls='Page Up / Page Down · raise / lower. Hold U, O, J or L for one corner. Right Shift + Z / X · front / rear hop. Right Shift + Y · cruise stance.';
 
 export class CadillacHydraulics {
-  private readonly targets=[0,0,0,0];
-  private readonly travel=[0,0,0,0];
+  readonly suspension:CadillacSuspension;
   private readonly start=new T.Vector3();
   private readonly end=new T.Vector3();
   private readonly difference=new T.Vector3();
   private readonly up=new T.Vector3(0,1,0);
-  private hopTime=0;
-  private hopFront=false;
-  private cooldown=0;
   readonly hubs:{hub:T.Group;spin:T.Object3D;front:boolean}[];
   private readonly cylinders:{chassis:T.Object3D;wheel:T.Object3D;sections:{part:T.Object3D;scale:number;fraction:number}[]}[];
-  heave=0;
-  pitch=0;
-  roll=0;
+  get heave(){return this.suspension.pose.heave;}
+  get pitch(){return this.suspension.pose.pitch;}
+  get roll(){return this.suspension.pose.roll;}
 
   constructor(private readonly root:T.Object3D,body:T.Object3D){
     const requirePart=(name:string)=>{
@@ -47,52 +44,35 @@ export class CadillacHydraulics {
         return {part,scale:part.scale.y/rest,fraction:index===0?.32:.78};
       })};
     });
+    this.suspension=new CadillacSuspension(Object.fromEntries(corners.map((corner,index)=>{
+      const p=this.hubs[index].hub.position;return[corner,{x:p.x,y:p.y,z:p.z}];
+    })) as unknown as CadillacSuspensionAnchors);
   }
 
-  reset(){
-    this.targets.fill(0);this.travel.fill(0);
-    this.heave=this.pitch=this.roll=this.hopTime=this.cooldown=0;
-  }
+  reset(){this.suspension.reset();}
 
   stance(value:'low'|'cruise'|'raised'){
-    this.targets.fill(value==='low' ? -.11 : value==='raised' ? .14 : 0);
+    return this.suspension.stance(value);
   }
 
-  hop(front:boolean,speed:number){
-    if(Math.abs(speed)>2||this.hopTime||this.cooldown>0)return false;
-    this.hopFront=front;this.hopTime=1;
-    return true;
+  hop(front:boolean,speed:number,reducedMotion=false){
+    if(!Number.isFinite(speed)||Math.abs(speed)>=.25)return false;
+    return this.suspension.hop(front?'front':'rear',reducedMotion);
   }
 
   key(code:string,shift:boolean,repeat:boolean,speed:number){
     if(!shift||!['KeyX','KeyY','KeyZ'].includes(code))return false;
     if(repeat)return true;
-    if(code==='KeyY')this.stance('cruise');
+    if(code==='KeyY'){if(Number.isFinite(speed)&&Math.abs(speed)<.25)this.stance('cruise');}
     else this.hop(code==='KeyZ',speed);
     return true;
   }
 
-  update(dt:number,keys:ReadonlySet<string>){
-    const direction=Number(keys.has('PageUp'))-Number(keys.has('PageDown'));
-    const selectors=['KeyU','KeyO','KeyJ','KeyL'];
-    const single=selectors.some(key=>keys.has(key));
-    this.cooldown=Math.max(0,this.cooldown-dt);
-    if(this.hopTime>0){
-      this.hopTime=Math.max(0,this.hopTime-dt);
-      if(!this.hopTime)this.cooldown=.45;
-    }
-    const hop=this.hopTime ? .23*Math.sin(Math.PI*this.hopTime)**2 : 0;
-    for(let i=0;i<4;i++){
-      if(!single||keys.has(selectors[i]))this.targets[i]=T.MathUtils.clamp(this.targets[i]+direction*dt*.28,-.11,.14);
-      const difference=this.targets[i]-this.travel[i];
-      this.travel[i]+=T.MathUtils.clamp(difference,-dt*.45,dt*.35);
-    }
-    const [fl,fr,rl,rr]=this.travel;
-    const front=(fl+fr)*.5+(this.hopFront?hop:0),rear=(rl+rr)*.5+(this.hopFront?0:hop);
-    this.heave=(front+rear)*.5;
-    this.pitch=(rear-front)/3.213;
-    this.roll=(fl+rl-fr-rr)/3.296;
-    return {front:this.hopFront?hop*.65:0,rear:this.hopFront?0:hop*.65};
+  /** Keyboard requests are validated by CadillacRide before changing targets.
+   * Retain the old argument shape without an unchecked per-frame mutation. */
+  update(dt:number,_keys:ReadonlySet<string>,reducedMotion=false){
+    const pose=this.suspension.update(dt,reducedMotion),wheels=pose.wheelLifts;
+    return {front:(wheels.FL+wheels.FR)/2,rear:(wheels.RL+wheels.RR)/2,wheelLifts:wheels};
   }
 
   updateCylinders(){

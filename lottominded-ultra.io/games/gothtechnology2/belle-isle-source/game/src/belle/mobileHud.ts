@@ -4,7 +4,7 @@ import './mobileHud.css';
 import './hudFocus.css';
 import {installHudCustomization} from './hudLayoutRuntime.ts';
 
-type Hooks={blocked:()=>boolean;movementBlocked:()=>boolean;clear:()=>void;move:(steer:number,throttle:number)=>void;look:(x:number,y:number)=>void;hop:()=>void};
+type Hooks={blocked:()=>boolean;movementBlocked:()=>boolean;canvasLookOnly?:()=>boolean;clear:()=>void;move:(steer:number,throttle:number)=>void;look:(x:number,y:number)=>void;hop:()=>void};
 const get=<E extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(id) as E;
 const read=(key:string)=>{try{return localStorage.getItem(key);}catch{return null;}};
 const save=(key:string,value:string)=>{try{localStorage.setItem(key,value);}catch{}};
@@ -86,7 +86,7 @@ export function createMobileHud(h:Hooks){
  // Native dialogs and room panels must never leave a held steering/brake input behind.
  const observer=new MutationObserver(records=>{if(records.some(r=>r.type==='attributes'&&(r.target as HTMLDialogElement).open))h.clear();});
  for(const dialog of document.querySelectorAll('dialog'))observer.observe(dialog,{attributes:true,attributeFilter:['open']});
- layouts=installHudCustomization({clear:()=>h.clear()});
+ layouts=installHudCustomization({clear:()=>h.clear(),canvasLookOnly:h.canvasLookOnly});
  return {clear,held, get running(){return running;},mode(onFoot:boolean){
   layouts?.mode(onFoot);
   get('mount-label').textContent=onFoot?'Ride':'Dismount';get('mount').setAttribute('aria-label',onFoot?'Get on wheel (F)':'Get off wheel (F)');

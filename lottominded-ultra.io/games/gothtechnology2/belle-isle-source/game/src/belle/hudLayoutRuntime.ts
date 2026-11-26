@@ -1,7 +1,7 @@
 import {clone,profileOf,contains,layoutProblems,normalizedPosition,placementRect,type ControlId,type HudLayout,type Rect,type HudMode} from './hudLayoutModel.ts';
 import {availableHudStorage,loadHudArchive,saveHudArchive,legacyHudPreferences} from './hudLayoutStore.ts';
 import {mountHudLayoutEditor,type HudEditScope} from './hudLayoutEditor.ts';
-import {backgroundTouchRole,customMovementZone,TouchOwnership,type TouchRole} from './touchZones.ts';
+import {backgroundTouchRole,canvasTouchRole,customMovementZone,TouchOwnership,type TouchRole} from './touchZones.ts';
 type Spec={id:ControlId;selector:string;label:string;kind:'button'|'stick'|'group'|'info';essential:boolean};
 type Binding={element:HTMLElement;spec:Spec;width:number;height:number};
 type Scope=HudEditScope&{root:HTMLElement;bindings:Binding[];layout:HudLayout};
@@ -15,7 +15,7 @@ const q=<E extends HTMLElement=HTMLElement>(s:string,root:ParentNode=document)=>
 const rect=(r:DOMRect):Rect=>({left:r.left,top:r.top,width:r.width,height:r.height});
 const visible=(e:HTMLElement)=>!e.closest('[hidden]')&&getComputedStyle(e).display!=='none'&&e.getClientRects().length>0;
 /** Adapter only. Existing movement, hover and co-op owners still deliver every simulation input. */
-export function installHudCustomization(hooks:{clear:()=>void}){
+export function installHudCustomization(hooks:{clear:()=>void;canvasLookOnly?:()=>boolean}){
  const storage=availableHudStorage(),loaded=loadHudArchive(storage),legacy=legacyHudPreferences(storage);let archive=loaded.archive;
  const owner=new TouchOwnership(),managed=new Set<HTMLElement>(),zones=new Set<HTMLElement>(),staleKeys=new Set<string>(),downKeys=new Set<string>(),suppressedClicks=new Set<number>();
  const probe=document.createElement('div');probe.className='belle-hud-safe-probe';probe.setAttribute('aria-hidden','true');document.body.append(probe);
@@ -104,6 +104,7 @@ export function installHudCustomization(hooks:{clear:()=>void}){
   const s=scopeFor(target);if(!s)return;
   const action=target.closest<HTMLElement>('button,summary,input,select,a');
   const movement=target.closest('#touch-zone,#hover-move-zone,.coop-touch-stick'),look=target.id==='game'||!!target.closest('.coop-look');
+  const canvasLookOnly=target.id==='game'&&s.key.startsWith('solo:')&&!!hooks.canvasLookOnly?.();
   if(!action&&!movement&&!look)return;
   if(action?.closest('.coop-session-toolbar,.belle-comms'))return;
   suppressedClicks.delete(e.pointerId);
@@ -115,11 +116,16 @@ export function installHudCustomization(hooks:{clear:()=>void}){
     // A moved fixed joystick has explicit control priority, even across the guard.
     if(fixed){if(!stick||!contains(rect(stick.getBoundingClientRect()),e.clientX,e.clientY))role='ignored';}
     else if(background!=='move')role='ignored';
-   }else if(background!=='look')role='ignored';
+   }else role=canvasTouchRole(s.view,e.clientX,e.clientY,s.layout.handedness,s.layout.centerGuardFraction,canvasLookOnly);
   }
   // The co-op lift adapter is scalar: a second opposing contact must not release its owner.
   const actionId=action?.closest('.coop-lift')?'coop-lift':action?(action.id||action.getAttribute('data-hold')||action.getAttribute('aria-label')||action.textContent||'action'):undefined;
-  const assigned=owner.begin(e.pointerId,s.key,role,actionId);if(assigned.role==='ignored'){rememberSuppressed(e.pointerId);consume(e);}
+  const assigned=owner.begin(e.pointerId,s.key,role,actionId);if(assigned.role==='ignored'){
+   // A second cabin contact is consumed here before mesh input can see it.
+   // Cancel the pending tap as well, so a two-finger gesture cannot become a pose.
+   if(canvasLookOnly)clear();
+   rememberSuppressed(e.pointerId);consume(e);
+  }
  }
  const pointerMove=(e:PointerEvent)=>{if(owner.get(e.pointerId)?.role==='ignored')consume(e);};
  const pointerEnd=(e:PointerEvent)=>{const o=owner.end(e.pointerId);if(o?.role==='ignored'){rememberSuppressed(e.pointerId);consume(e);}};

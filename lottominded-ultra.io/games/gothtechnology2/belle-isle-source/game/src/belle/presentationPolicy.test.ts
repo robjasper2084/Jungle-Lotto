@@ -22,8 +22,9 @@ test('inactive spot slots skip attenuation, maps, shadows and BRDF without chang
   const run=spotSection(fragment);
   assert.match(run,/spotLight = spotLights\[ i \];\n if \(spotLight.color != vec3\(0.0\)\) \{\s*getSpotLightInfo/);
   assert.match(run,/getSpotLightInfo[\s\S]*texture2D\( spotLightMap[\s\S]*getShadow\( spotShadowMap[\s\S]*RE_Direct\([^;]+;\n \}\s*\}\s*#pragma unroll_loop_end/);
-  // Removing only the exact-zero branch must recover every original statement,
-  // including Three's preprocessor branches and static shadow/map indices.
+  // Exact inequality retains every nonzero color, including negative channels.
+  // Removing only this branch must recover every original statement, including
+  // Three's preprocessor branches and static shadow/map indices.
   const active=run.replace('\n if (spotLight.color != vec3(0.0)) {\n','').replace(/(RE_Direct\( directLight,[^;]+;)\n \}/,'$1');
   assert.equal(active,spotSection(source));
   assert.doesNotMatch(fragment,/if \(directionalLight.color/);

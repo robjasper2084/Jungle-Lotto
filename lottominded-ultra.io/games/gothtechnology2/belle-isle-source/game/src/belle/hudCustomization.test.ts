@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {clone,emptyArchive,validateArchive,importArchive,profileOf,placementRect,normalizedPosition,layoutProblems,presetLayout,validContext,controlInContext,HudHistory,MAX_IMPORT_BYTES,type HudLayout,type ControlGeometry} from './hudLayoutModel.ts';
 import {loadHudArchive,saveHudArchive,legacyHudPreferences} from './hudLayoutStore.ts';
-import {TouchOwnership,backgroundTouchRole,customMovementZone} from './touchZones.ts';
+import {TouchOwnership,backgroundTouchRole,canvasTouchRole,customMovementZone} from './touchZones.ts';
 const view={left:10,top:20,width:300,height:500};
 const geometries:ControlGeometry[]=[{id:'stick',label:'Move',width:110,height:110,interactive:true,essential:true},{id:'brake',label:'Brake',width:60,height:60,interactive:true,essential:true},{id:'map',label:'Map',width:100,height:70,interactive:true,essential:false,minScale:1}];
 const layout:HudLayout={handedness:'right',centerGuardFraction:.08,controls:{stick:{u:0,v:1,scale:1,opacity:.6,hidden:false},brake:{u:1,v:1,scale:1,opacity:.8,hidden:false},map:{u:1,v:0,scale:1,opacity:.9,hidden:false}}};
@@ -35,6 +35,22 @@ test('second finger cannot steal movement or the same held action',()=>{const o=
 test('release/cancel is idempotent and owner snapshots are immutable',()=>{const o=new TouchOwnership(),v=o.begin(1,'p1','move');v.role='look';assert.equal(o.get(1)?.role,'move');o.end(1);assert.equal(o.end(1),undefined);});
 test('center guard only classifies starts, left-handed mirrors roles not signs',()=>{assert.equal(backgroundTouchRole(view,160,100),'ignored');assert.equal(backgroundTouchRole(view,30,100),'move');assert.equal(backgroundTouchRole(view,280,100),'look');assert.equal(backgroundTouchRole(view,30,100,'left'),'look');assert.equal(backgroundTouchRole(view,280,100,'left'),'move');});
 test('zero-width guard restores the boundary without a dead band',()=>{assert.equal(backgroundTouchRole(view,160,100,'right',0),'look');assert.equal(backgroundTouchRole(view,159.9,100,'right',0),'move');});
+test('parked hydraulic interaction accepts the actual left-side cabin grips and camera drag without entering the movement owner',()=>{
+ const compact={left:8,top:8,width:374,height:324};
+ for(const [x,y]of [[58.5,204],[110.99,222.12],[135.57,223.95],[163.25,223.39],[195,200]]){
+  assert.equal(canvasTouchRole(compact,x,y,'right',.08), 'ignored','normal driving reserves this touch start');
+  assert.equal(canvasTouchRole(compact,x,y,'right',.08,true),'look','Hydraulic Mode leaves the real canvas available');
+  assert.equal(canvasTouchRole(compact,x,y,'left',.08,true),'look','saved handedness cannot hide a physical switch');
+ }
+ const owners=new TouchOwnership();assert.equal(owners.begin(1,'solo:euc:landscape',canvasTouchRole(compact,110.99,222.12,'right',.08,true)).role,'look');
+ assert.equal(owners.begin(2,'solo:euc:landscape',canvasTouchRole(compact,291,260,'right',.08,true)).role,'ignored','a second contact cannot steal the active gesture');
+ owners.invalidate();assert.equal(owners.get(1)?.role,'ignored','mode exit cancels the prior gesture');
+});
+test('canvas interaction keeps safe bounds and restores the normal handed driving split outside Hydraulic Mode',()=>{
+ for(const [x,y]of [[9,100],[310,100],[100,520],[NaN,100]])assert.equal(canvasTouchRole(view,x,y,'right',.08,true),'ignored');
+ assert.equal(canvasTouchRole(view,30,100),'ignored');assert.equal(canvasTouchRole(view,280,100),'look');
+ assert.equal(canvasTouchRole(view,30,100,'left'),'look');assert.equal(canvasTouchRole(view,280,100,'left'),'ignored');
+});
 test('coordinates outside the player viewport never control their partner',()=>{assert.equal(backgroundTouchRole(view,9,100),'ignored');assert.equal(backgroundTouchRole(view,310,100),'ignored');assert.equal(backgroundTouchRole(view,100,520),'ignored');assert.equal(backgroundTouchRole(view,NaN,100),'ignored');});
 
 // Regressions from PR152's real phone/landscape hit-target failures.

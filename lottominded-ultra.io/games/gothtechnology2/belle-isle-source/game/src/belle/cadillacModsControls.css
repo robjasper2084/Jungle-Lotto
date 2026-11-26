@@ -1,0 +1,26 @@
+#cadillac-modifications-entry{margin-top:12px;max-width:100%}
+#cadillac-modifications-entry button{width:100%;min-height:48px;min-width:0;padding:10px 12px;text-align:left;white-space:normal;overflow-wrap:anywhere;touch-action:manipulation}
+#cadillac-modifications{margin:18px 0 8px;border:1px solid #c29a5466;border-radius:9px;min-width:0;max-width:100%;color:#edf5ef;background:#132b2c99}
+#cadillac-modifications[hidden],#cadillac-modifications-entry[hidden]{display:none!important}
+#cadillac-modifications>summary{min-height:48px;box-sizing:border-box;padding:14px 12px;color:#f2d4a2;font:700 14px/1.4 system-ui;cursor:pointer;overflow-wrap:anywhere}
+#cadillac-modifications .cadillac-mods-content{padding:0 12px 12px;min-width:0}
+#cadillac-modifications fieldset{margin:12px 0;padding:12px 10px;border:1px solid #c29a544d;border-radius:7px;min-inline-size:0;max-width:100%;box-sizing:border-box}
+#cadillac-modifications legend{padding:0 5px;color:#e8c68f;font-size:13px;font-weight:700;white-space:normal}
+#cadillac-modifications .cadillac-mods-wheels{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#cadillac-modifications .cadillac-mods-wheels label{display:flex;flex-direction:column;align-items:stretch;gap:5px;margin:0;min-width:0;font-size:12px;line-height:1.4}
+#cadillac-modifications select{min-width:0;max-width:100%;width:100%;height:auto;min-height:44px;padding:8px 7px;box-sizing:border-box;font-size:13px}
+#cadillac-modifications .cadillac-mods-wheels>.cadillac-mods-note{grid-column:1/-1}
+#cadillac-modifications .cadillac-mods-corners,#cadillac-modifications .cadillac-mods-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;min-width:0}
+#cadillac-modifications .cadillac-mods-corner{min-width:0}
+#cadillac-modifications .cadillac-mods-corner-title{display:flex;align-items:center;justify-content:space-between;gap:6px;min-width:0}
+#cadillac-modifications .cadillac-mods-corner-title label{margin:0;font-size:12px;line-height:1.4}
+#cadillac-modifications .cadillac-mods-corner-title output{flex:none;color:#f2d4a2;font:600 12px/1.4 system-ui;font-variant-numeric:tabular-nums}
+#cadillac-modifications input[type=range]{display:block;width:100%;max-width:100%;min-width:0;min-height:44px;height:44px;margin:0;accent-color:#e3ba75;touch-action:pan-y}
+#cadillac-modifications .cadillac-mods-actions{margin-top:10px}
+#cadillac-modifications button{min-width:0;width:100%;min-height:44px;padding:10px 8px;font-size:12px;line-height:1.4;white-space:normal;overflow-wrap:anywhere;touch-action:manipulation}
+#cadillac-modifications button:disabled,#cadillac-modifications select:disabled,#cadillac-modifications input:disabled{cursor:default;opacity:.5}
+#cadillac-modifications .cadillac-mods-note{margin:6px 0;color:#c8d8d0;font:12px/1.5 system-ui;overflow-wrap:anywhere}
+#cadillac-modifications-feedback{display:block;min-height:1.5em;color:#ffe4b1;font:12px/1.5 system-ui;overflow-wrap:anywhere}
+#cadillac-modifications :focus-visible,#cadillac-modifications-entry button:focus-visible{outline:2px solid #f2cb83;outline-offset:3px}
+@media(max-width:460px){#cadillac-modifications .cadillac-mods-wheels,#cadillac-modifications .cadillac-mods-corners{grid-template-columns:minmax(0,1fr)}#cadillac-modifications .cadillac-mods-content{padding:0 9px 10px}#cadillac-modifications fieldset{padding:10px 8px}}
+@media(prefers-reduced-motion:reduce){#cadillac-modifications *,#cadillac-modifications-entry *{transition:none!important;animation:none!important;scroll-behavior:auto!important}}

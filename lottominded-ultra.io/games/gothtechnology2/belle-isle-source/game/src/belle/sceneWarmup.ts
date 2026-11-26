@@ -2,7 +2,8 @@ import {Color,DynamicDrawUsage,Group,type Camera,type DirectionalLight,type Inst
 
 import {checkStartupAbort,startupPool,warmObjectTextures,yieldStartupTask} from './startupWork.ts';
 
-type Compiler=Pick<WebGLRenderer,'compileAsync'> & Partial<Pick<WebGLRenderer,'compile'|'getContext'|'info'|'initTexture'|'shadowMap'>>;
+type Compiler=Pick<WebGLRenderer,'compileAsync'> & Partial<Pick<WebGLRenderer,'compile'|'getContext'|'info'|'initTexture'|'properties'|'shadowMap'>>;
+type CompiledProgram=NonNullable<WebGLRenderer['info']['programs']>[number];
 type Pending={promise:Promise<void>;signal?:AbortSignal;cancel:AbortController};
 const white=new Color(0xffffff);
 
@@ -37,6 +38,18 @@ class IslandWarmupRoot extends Group {
  override traverse(callback:(object:Object3D)=>void){for(const object of this.drawables)callback(object);}
 }
 const cancelled=(signal:AbortSignal)=>signal.reason instanceof Error?signal.reason:new DOMException('Ride preparation cancelled','AbortError');
+function collectCompiledPrograms(renderer:Compiler,materials:ReturnType<WebGLRenderer['compile']>,pending:Map<WebGLProgram,CompiledProgram>){
+ // In pinned Three r185, compile() returns the submitted materials, and each
+ // material retains all its ordinary/instanced, side and lighting variants.
+ // currentProgram alone would miss variants shared by several drawables.
+ if(!renderer.properties||!(materials instanceof Set))return false;
+ for(const material of materials){
+  const properties=renderer.properties.get(material) as {programs?:Map<string,CompiledProgram>}|undefined;
+  if(!(properties?.programs instanceof Map))return false;
+  for(const entry of properties.programs.values())pending.set(entry.program as WebGLProgram,entry);
+ }
+ return true;
+}
 /** Submit every required light topology before polling. Keep each distinct GL
  * handle so a later submission cannot replace the material pointer we verify. */
 async function prepareIslandPrograms(renderer:Compiler,roots:Object3D[],scene:Scene,camera:Camera,policies:boolean[],
@@ -47,16 +60,22 @@ async function prepareIslandPrograms(renderer:Compiler,roots:Object3D[],scene:Sc
  const pending=new Map<WebGLProgram,(typeof renderer.info.programs)[number]>();
  for(const enabled of policies){
   setShadows(enabled);
+  let scoped=true;
   for(const [i,root] of roots.entries()){
    if(i)await yieldStartupTask();
    checkStartupAbort(signal);
    onStage('submitting island shader batch '+(i+1)+'/'+roots.length+(enabled?' with shadows':' without shadows'));
    const visible=model?.visible;
    if(model)model.visible=true;
-   try{renderer.compile(root,camera,scene);}
+   try{
+    const materials=renderer.compile(root,camera,scene);
+    if(!collectCompiledPrograms(renderer,materials,pending))scoped=false;
+   }
    finally{if(model)model.visible=visible!;}
   }
-  for(const entry of renderer.info.programs)pending.set(entry.program as WebGLProgram,entry);
+  // Structural compilers without Three's material-program map keep the full
+  // validation path. Native preparation ignores unrelated cached programs.
+  if(!scoped)for(const entry of renderer.info.programs)pending.set(entry.program as WebGLProgram,entry);
   gl.flush();await yieldStartupTask();
  }
  const total=pending.size;let lastReported=-1;

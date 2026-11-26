@@ -94,6 +94,7 @@ type Entry = {
   bounds:T.Sphere; sourceSphere:T.Sphere|null; objectSphere:PropertyDescriptor|undefined;
   descriptors:Descriptors; page:Page; vertexOffset:number; indexOffset:number;
   status:'ready'|'fallback'|'disposed'; reason:string|null; colorCalls:number; shadowCalls:number;
+  validatedRange:{start:number;count:number}|null;
   onDispose:()=>void;
 };
 type Page = {geometry:T.BufferGeometry; entries:Entry[]; vertices:number; indices:number; bytes:number};
@@ -200,6 +201,7 @@ export function installSharedGeometryBuffers(renderer:T.WebGLRenderer,scene:T.Sc
     return knownCompile(compile) || (typeof compile==='function' && options.approvedMaterialCallbacks?.get(material)===compile);
   }
   function validate(entry:Entry):string|null {
+    entry.validatedRange=null;
     const {object,source,material}=entry;
     if (Object.getPrototypeOf(object)!==T.Mesh.prototype || !callbacksNative(object)) return 'object-callback-changed';
     if (object.geometry!==source || object.material!==material) return 'source-identity-changed';
@@ -214,7 +216,10 @@ export function installSharedGeometryBuffers(renderer:T.WebGLRenderer,scene:T.Sc
     if (!entry.objectSphere && source.boundingSphere!==null && !sphereEqual(source.boundingSphere,entry.bounds)) return 'source-bounds-changed';
     if (!entry.objectSphere && source.boundingSphere===null && method(source,'computeBoundingSphere')!==nativeComputeSphere) return 'custom-source-bounds';
     for (const key of ['geometry','onBeforeRender','onBeforeShadow','raycast'] as const) if (!sameDescriptor(Object.getOwnPropertyDescriptor(object,key),entry.descriptors[key])) return 'object-descriptor-changed';
-    return sourceRange(entry)?null:'unsupported-draw-range';
+    // Reuse the freshly inspected index range at this same draw submission:
+    // no intervening application callback can change source geometry.
+    entry.validatedRange=sourceRange(entry);
+    return entry.validatedRange?null:'unsupported-draw-range';
   }
   function inspect(object:T.Object3D,hazardGeometry:WeakSet<object>,hazardAttributes:WeakSet<object>):Entry|null {
     if (Object.getPrototypeOf(object)!==T.Mesh.prototype) {reject('not-plain-mesh');return null;}
@@ -250,7 +255,7 @@ export function installSharedGeometryBuffers(renderer:T.WebGLRenderer,scene:T.Sc
     }
     if (!bounds || ![bounds.center.x,bounds.center.y,bounds.center.z,bounds.radius].every(Number.isFinite) || bounds.radius<0) {reject('invalid-bounds');return null;}
     const key=JSON.stringify([attributes.map(a=>[a.name,a.constructor.name,a.itemSize,a.normalized,a.gpuType]),index?.constructor.name??null]);
-    const entry:Entry={object:mesh,source,material,compile:method(material,'onBeforeCompile') as Compile,materialVersion:material.version,attributesObject:source.attributes,attributes,index,vertexCount:position.count,indexCount:index?.count??0,key,bounds,sourceSphere:source.boundingSphere,objectSphere,descriptors:saved,page:null as unknown as Page,vertexOffset:0,indexOffset:0,status:'ready',reason:null,colorCalls:0,shadowCalls:0,onDispose:()=>{}};
+    const entry:Entry={object:mesh,source,material,compile:method(material,'onBeforeCompile') as Compile,materialVersion:material.version,attributesObject:source.attributes,attributes,index,vertexCount:position.count,indexCount:index?.count??0,key,bounds,sourceSphere:source.boundingSphere,objectSphere,descriptors:saved,page:null as unknown as Page,vertexOffset:0,indexOffset:0,status:'ready',reason:null,colorCalls:0,shadowCalls:0,validatedRange:null,onDispose:()=>{}};
     if (!sourceRange(entry)) {reject('unsupported-draw-range');return null;}
     return entry;
   }
@@ -397,7 +402,8 @@ export function installSharedGeometryBuffers(renderer:T.WebGLRenderer,scene:T.Sc
     try {reason=validate(entry);} catch {reason='validation-error';counts.observerErrors++;}
     if(reason){invalidate(entry,reason);return Reflect.apply(originalDirect,this,args);}
     if(group!==null||geometry!==entry.source||!actualMaterialAllowed(material,entry,shadow))return Reflect.apply(originalDirect,this,args);
-    const range=sourceRange(entry);
+    // validate() has already checked the live range on this same render call.
+    const range=entry.validatedRange;
     if(!range){invalidate(entry,'unsupported-draw-range');return Reflect.apply(originalDirect,this,args);}
     const page=entry.page.geometry,start=page.drawRange.start,count=page.drawRange.count;
     page.setDrawRange(range.start,range.count);directDepth++;

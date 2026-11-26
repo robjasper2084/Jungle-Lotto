@@ -179,6 +179,99 @@ test('vehicle warmup reflects each program before making the ride visible',async
  assert.deepEqual(reflected,[0,1]);assert.equal(bike.visible,false);
 });
 
+test('vehicle warmup validates only submitted materials, including their already cached variants',async()=>{
+ const {scene,camera,sun}=fixture();sun.userData.fixedShadowLayout=true;
+ const material=new MeshStandardMaterial(),ride=new Group();ride.add(new Mesh(new BoxGeometry(),material));ride.visible=false;scene.add(ride);
+ const unrelated={},cached={},added={},checked:object[]=[],reflected:object[]=[];
+ const entry=(program:object)=>({program,getUniforms(){reflected.push(program);}});
+ const unrelatedEntry=entry(unrelated),cachedEntry=entry(cached),addedEntry=entry(added);
+ const programs=[unrelatedEntry,cachedEntry],variants=new Map([['cached',cachedEntry]]);
+ let compilations=0,flushed=false;
+ const renderer={shadowMap:{enabled:true},info:{programs},properties:{get(value:unknown){assert.equal(value,material);return{programs:variants,currentProgram:addedEntry};}},
+  compile(root:Object3D,view:PerspectiveCamera,target:Scene){
+   assert.equal(root,ride);assert.equal(view,camera);assert.equal(target,scene);assert.equal(ride.visible,true);
+   compilations++;programs.push(addedEntry);variants.set('added',addedEntry);return new Set([material]);
+  },compileAsync(){throw Error('unexpected additional compilation');},getContext:()=>({
+   getExtension:()=>({COMPLETION_STATUS_KHR:1}),LINK_STATUS:2,isContextLost:()=>false,flush(){flushed=true;},
+   getProgramParameter(handle:object,key:number){
+    assert(flushed);assert.equal(ride.visible,false);
+    assert.notEqual(handle,unrelated,'an unrelated, potentially pending program must not gate this ride');
+    if(key===2)checked.push(handle);return true;
+   }
+  })};
+ await new SceneWarmup(renderer as unknown as ConstructorParameters<typeof SceneWarmup>[0],scene,camera,()=>{},async()=>{}).prepare(ride);
+ assert.equal(compilations,1);assert.deepEqual(checked,[cached,added]);assert.deepEqual(reflected,[cached,added]);
+ assert.equal(ride.visible,false);assert.equal(sun.castShadow,true);
+});
+
+test('scoped preparation retains every shared-material variant across island batches and shadow policies',async()=>{
+ const {scene,camera,sun}=fixture(),first=new MeshStandardMaterial(),shared=new MeshStandardMaterial(),geometry=new BoxGeometry();
+ scene.add(...Array.from({length:64},()=>new Mesh(geometry,first)),new Mesh(geometry,shared),new InstancedMesh(geometry,shared,1));
+ type Entry={program:{name:string};getUniforms():void};
+ const unrelated={name:'unrelated'},checked:string[]=[],reflected:string[]=[],policies:boolean[]=[];
+ const programs:Entry[]=[{program:unrelated,getUniforms(){throw Error('unrelated reflection');}}];
+ const materialPrograms=new Map([first,shared].map(material=>[material,new Map<string,Entry>()]));
+ let delayed=false,flushes=0;
+ const renderer={shadowMap:{enabled:true},info:{programs},properties:{get(material:MeshStandardMaterial){
+  const variants=materialPrograms.get(material)!;return{programs:variants,currentProgram:[...variants.values()].at(-1)};
+ }},compile(root:Object3D){
+  policies.push(sun.castShadow);const submitted=new Set<MeshStandardMaterial>();
+  root.traverse(object=>{
+   if(!(object instanceof Mesh))return;
+   const material=object.material as MeshStandardMaterial,variants=materialPrograms.get(material)!;
+   const key=(sun.castShadow?'mapped':'contact')+((object as InstancedMesh).isInstancedMesh?'-instanced':'-ordinary');
+   if(!variants.has(key)){
+    const name=(material===first?'first-':'shared-')+key;
+    const entry={program:{name},getUniforms(){reflected.push(name);}};
+    variants.set(key,entry);programs.push(entry);
+   }
+   submitted.add(material);
+  });return submitted;
+ },compileAsync(){throw Error('unexpected additional compilation');},getContext:()=>({
+  getExtension:()=>({COMPLETION_STATUS_KHR:1}),LINK_STATUS:2,isContextLost:()=>false,flush(){flushes++;},
+  getProgramParameter(handle:{name:string},key:number){
+   assert.notEqual(handle,unrelated);assert.equal(flushes,2,'both policies submit before polling');
+   if(key===1&&handle.name==='shared-contact-instanced'&&!delayed){delayed=true;return false;}
+   if(key===2)checked.push(handle.name);return true;
+  }
+ })};
+ await new SceneWarmup(renderer as unknown as ConstructorParameters<typeof SceneWarmup>[0],scene,camera,()=>{},async()=>{}).prepare();
+ const expected=['first-contact-ordinary','shared-contact-ordinary','shared-contact-instanced','first-mapped-ordinary','shared-mapped-ordinary','shared-mapped-instanced'];
+ assert.deepEqual(policies,[false,false,true,true]);assert(delayed);
+ assert.deepEqual(checked,expected);assert.deepEqual(reflected,expected);assert.equal(sun.castShadow,true);
+});
+
+test('a compiler with incomplete material properties retains full program validation',async()=>{
+ const {scene,camera,sun}=fixture();sun.userData.fixedShadowLayout=true;
+ const material=new MeshStandardMaterial(),ride=new Mesh(new BoxGeometry(),material);ride.visible=false;scene.add(ride);
+ const reflected:number[]=[],programs=[0,1].map(id=>({program:{id},getUniforms(){reflected.push(id);}})),checked:number[]=[];
+ const renderer={shadowMap:{enabled:true},info:{programs},properties:{get:()=>({})},compile:()=>new Set([material]),
+  compileAsync(){throw Error('unexpected additional compilation');},getContext:()=>({
+   getExtension:()=>({COMPLETION_STATUS_KHR:1}),LINK_STATUS:2,isContextLost:()=>false,flush(){},
+   getProgramParameter(handle:{id:number},key:number){if(key===2)checked.push(handle.id);return true;}
+  })};
+ await new SceneWarmup(renderer as unknown as ConstructorParameters<typeof SceneWarmup>[0],scene,camera,()=>{},async()=>{}).prepare(ride);
+ assert.deepEqual(checked,[0,1]);assert.deepEqual(reflected,[0,1]);assert.equal(ride.visible,false);
+});
+
+test('a failed scoped program restores scene state and must be verified again on retry',async()=>{
+ const {scene,camera,sun}=fixture();sun.userData.fixedShadowLayout=true;
+ const material=new MeshStandardMaterial(),ride=new Mesh(new BoxGeometry(),material);ride.visible=false;scene.add(ride);
+ let linked=false,compilations=0,reflections=0,linkChecks=0;const busy:boolean[]=[];
+ const entry={program:{},getUniforms(){reflections++;}},programs=[entry],variants=new Map([['ride',entry]]);
+ const renderer={shadowMap:{enabled:true},info:{programs},properties:{get:()=>({programs:variants})},
+  compile(){compilations++;return new Set([material]);},compileAsync(){throw Error('unexpected additional compilation');},getContext:()=>({
+   getExtension:()=>({COMPLETION_STATUS_KHR:1}),LINK_STATUS:2,isContextLost:()=>false,flush(){},getProgramInfoLog:()=>'scoped link failure',
+   getProgramParameter(_:object,key:number){if(key===1)return true;linkChecks++;return linked;}
+  })};
+ const warmup=new SceneWarmup(renderer as unknown as ConstructorParameters<typeof SceneWarmup>[0],scene,camera,value=>busy.push(value),async()=>{});
+ await assert.rejects(warmup.prepare(ride),/scoped link failure/);
+ assert.equal(reflections,0);assert.equal(ride.visible,false);assert.equal(sun.castShadow,true);
+ linked=true;await warmup.prepare(ride);
+ assert.equal(compilations,2);assert.equal(linkChecks,2);assert.equal(reflections,1);assert.deepEqual(busy,[true,false,true,false]);
+ assert.equal(ride.visible,false);assert.equal(sun.castShadow,true);
+});
+
 test('Smooth prepares active drawables against the actual island lights, with a separate preparation for a hidden ride',async()=>{
  const {scene,bike,camera}=fixture(),island=new Mesh(),detail=new Mesh(),wrongLayer=new Mesh();
  const map=new DataTexture(new Uint8Array([255,255,255,255]),1,1),uploads:Texture[]=[];detail.material=new MeshBasicMaterial({map});
@@ -251,11 +344,15 @@ test('abort and immediate restart of the same bike cannot cancel the new prepara
  await warmup.prepare(bike,new AbortController().signal);assert.equal(calls,3);
 });
 
-test('a queued cancelled caller cannot lock the scene and an unready driver times out with retry available',async()=>{
+test('a queued cancelled caller cannot lock the scene and an unready driver times out with retry available',async t=>{
+ t.mock.timers.enable({apis:['setTimeout']});let now=0;t.mock.method(performance,'now',()=>now);
  const {scene,bike,camera}=fixture(),busy:boolean[]=[];let ready=false,calls=0;
- const warmup=new SceneWarmup({compileAsync:()=>{calls++;return ready?Promise.resolve(scene):new Promise<Scene>(()=>{});}},scene,camera,v=>busy.push(v),async()=>{},15);
+ const warmup=new SceneWarmup({compileAsync:()=>{calls++;return ready?Promise.resolve(scene):new Promise<Scene>(()=>{});}},scene,camera,v=>busy.push(v),async()=>{});
  const first=warmup.prepare(),failure=assert.rejects(first,/preparation took too long/);
  const signal=new AbortController(),queued=warmup.prepare(bike,signal.signal),cancelled=assert.rejects(queued,{name:'AbortError'});signal.abort();
+ await new Promise(resolve=>setImmediate(resolve));assert.equal(calls,1);assert.deepEqual(busy,[true]);
+ now=44_999;t.mock.timers.tick(now);await new Promise(resolve=>setImmediate(resolve));assert.deepEqual(busy,[true]);
+ now=45_000;t.mock.timers.tick(1);
  await Promise.all([failure,cancelled]);assert.deepEqual(busy,[true,false]);assert.equal(calls,1);
  ready=true;await warmup.prepare(bike);assert.equal(calls,3);assert.deepEqual(busy,[true,false,true,false]);
 });
