@@ -1,3 +1,4 @@
+import {finalizeStaticLocalMatrix} from './staticLocalMatrix.ts';
 import * as T from 'three';
 import type {ParkMap} from './terrain.ts';
 
@@ -21,6 +22,6 @@ export function addWoodlandFloor(scene:T.Scene,map:ParkMap){
   const shape=new T.Shape(a.points.map(p=>new T.Vector2(p[0],-p[1])));
   for(const hole of a.holes||[])shape.holes.push(new T.Path(hole.map(p=>new T.Vector2(p[0],-p[1]))));
   const g=new T.ShapeGeometry(shape);g.rotateX(-Math.PI/2);g.translate(0,2.006,0);
-  const mesh=new T.Mesh(g,material);mesh.name='Woodland leaf litter '+a.id;mesh.receiveShadow=true;scene.add(mesh);
+  const mesh=new T.Mesh(g,material);mesh.name='Woodland leaf litter '+a.id;mesh.receiveShadow=true;scene.add(finalizeStaticLocalMatrix(mesh));
  }
 }
