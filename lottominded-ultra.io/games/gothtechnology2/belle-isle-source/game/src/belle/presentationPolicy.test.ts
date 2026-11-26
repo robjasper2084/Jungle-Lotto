@@ -173,3 +173,37 @@ test('software WebGL defaults to layered clouds while respecting explicit sky se
  assert.equal(defaultTracedSky('ANGLE (Google, SwiftShader)','traced'),true);
  assert.equal(defaultTracedSky('NVIDIA GeForce RTX 4070','layered'),false);
 });
+
+test('baked street roots retain native world transforms, geometry and visibility while reusing their local matrices',t=>{
+ const previous=Object.getOwnPropertyDescriptor(globalThis,'document');
+ Object.defineProperty(globalThis,'document',{configurable:true,value:{createElement:()=>({getContext:()=>({fillRect(){}})})}});
+ t.after(()=>{if(previous)Object.defineProperty(globalThis,'document',previous);else Reflect.deleteProperty(globalThis,'document');});
+ const kinds=['white','yellow','curb','gutter','metal','green','tactile'] as const;
+ const plan={boxes:kinds.map((material,x)=>({material,x:x*260,y:2,z:0,w:1,h:.1,l:1,yaw:.2})),signs:[],stats:{},notes:[]};
+ const optimized=new Scene(),reference=new Scene();
+ const a=addStreetDetails(optimized,plan),b=addStreetDetails(reference,plan);
+ assert.equal(optimized.children.length,kinds.length+3);
+ for(const object of reference.children)object.matrixAutoUpdate=true;
+ const original=optimized.children.map(object=>({object,local:object.matrix.toArray(),geometry:(object as Mesh).geometry,material:(object as Mesh).material}));
+ for(const object of optimized.children){assert.equal(object.matrixAutoUpdate,false);assert.equal(object.matrixWorldAutoUpdate,true);}
+ for(const [x,z,yaw,scale] of [[0,0,0,1],[450,0,.2,1.5],[950,200,-.4,.8],[-300,0,0,1]]){
+  for(const root of [optimized,reference]){root.position.set(x,3,z);root.rotation.y=yaw;root.scale.setScalar(scale);}
+  a.update(x,z);b.update(x,z);
+  optimized.updateMatrixWorld(true);reference.updateMatrixWorld(true);
+  for(const [i,entry] of original.entries()){
+   const object=entry.object,expected=reference.children[i];
+   assert.equal(object,optimized.children[i]);assert.equal(object.visible,expected.visible);
+   assert.deepEqual(object.matrix.toArray(),entry.local);
+   assert.deepEqual(object.matrixWorld.toArray(),expected.matrixWorld.toArray());
+   assert.equal((object as Mesh).geometry,entry.geometry);assert.equal((object as Mesh).material,entry.material);
+   assert.equal(object.castShadow,expected.castShadow);assert.equal(object.receiveShadow,expected.receiveShadow);
+  }
+ }
+ // Reparent the exact same authored root. World propagation remains native.
+ const moved=optimized.children[0],control=reference.children[0],newParent=new Scene(),controlParent=new Scene();
+ for(const root of [newParent,controlParent]){root.position.set(8,-1,4);root.rotation.y=.7;}
+ newParent.add(moved);controlParent.add(control);
+ newParent.updateMatrixWorld(true);controlParent.updateMatrixWorld(true);
+ assert.deepEqual(moved.matrixWorld.toArray(),control.matrixWorld.toArray());
+ assert.equal(moved.matrixWorldAutoUpdate,true);
+});
