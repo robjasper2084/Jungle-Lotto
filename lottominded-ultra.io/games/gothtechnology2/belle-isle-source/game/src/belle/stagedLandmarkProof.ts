@@ -2,11 +2,12 @@ import * as T from 'three';
 import {replaceableLegacyMesh,legacyDetailName,STUDY_SITES} from './stagedLandmarkStudies.ts';
 import {waterfrontSkylineSiteReceipts} from './waterfrontSkyline.ts';
 import {sweepVisibleMeshTriangles} from './visibleTriangleSweep.ts';
+import {readStagedGroundFit,readStagedExterior,readStagedRouteGround,type GroundLayout} from './stagedLandmarkGroundFit.ts';
 
 type Point={x:number;y:number;z:number};
 type Actor=Point&{headingY:number;speed:number;footBlend:number;footMode?:number};
-type Layout={id:string;center:number[];yaw:number};
-type Terrain={height(x:number,z:number,y?:number):number;obstructed(x:number,z:number,margin?:number):unknown;raycastObstacle(o:Point,d:Point,max:number,half?:number):number|null};
+type Layout=GroundLayout;
+type Terrain={height(x:number,z:number,y?:number):number;obstructed(x:number,z:number,margin?:number):unknown;land?(x:number,z:number,y?:number):boolean;raycastObstacle(o:Point,d:Point,max:number,half?:number):number|null};
 const retained=[
  '107227742_Aquarium illuminated habitat','107227742_Aquarium aged handrails',
  '107227742_Aquarium worn step nosings','107310050_Conservatory concrete paving',
@@ -74,7 +75,11 @@ export function createStagedLandmarkProof(root:T.Object3D,terrain:Terrain,layout
  const motion=()=>({frames,time,actor:actor?{...actor,onFoot:actor.footMode===2||(actor.footMode===undefined&&actor.footBlend>.99)}:null,
   sites:STUDY_SITES.map(spec=>({id:spec.id,local:actor&&copies.has(spec.id)?local(copies.get(spec.id)!,actor.x,actor.z):null}))});
  return{
-  publicApi:Object.freeze({snapshot,motion,frame:()=>frames}),
+  publicApi:Object.freeze({snapshot,motion,frame:()=>frames,
+   groundFit:()=>readStagedGroundFit(root,terrain,{aquarium:copies.get('107227742'),conservatory:copies.get('107310050')}),
+   exterior:(id:string)=>readStagedExterior(root,id,camera),
+   routeGround:(points:readonly {x:number;z:number}[])=>readStagedRouteGround(terrain,points),
+  }),
   observeActor(p:Actor,firstPerson:boolean){actor={x:p.x,y:p.y,z:p.z,headingY:p.headingY,speed:p.speed,footBlend:p.footBlend,footMode:p.footMode,firstPerson};},
   observeView(t:number,_x:number,_z:number,c:T.Camera){if(t!==time){frames++;time=t;}camera=c;},
  };

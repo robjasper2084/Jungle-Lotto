@@ -5,7 +5,9 @@ on:
     paths:
       - '.github/workflows/belle-staged-architecture-native.yml'
       - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/stagedLandmarkProof*'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/stagedLandmarkGroundFit*'
       - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/staged-landmark-walk-proof*'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/staged-landmark-exterior-proof*'
       - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/cadillac-cdp-viewport-png.mjs'
       - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/main.ts'
       - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/stagedLandmarkStudies*'
@@ -71,6 +73,51 @@ jobs:
           name: belle-staged-architecture-verified-build
           path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist/
           if-no-files-found: error
+          retention-days: 14
+
+  staged-complete-exterior:
+    needs: build-staged
+    runs-on: macos-15
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        layout: [desktop, phone]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@v4
+        with:
+          name: belle-staged-architecture-verified-build
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist/
+      - name: Install the existing native Chrome and Playwright harness
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install chrome
+      - name: Walk to opposite complete exterior views and measure original ground fit
+        timeout-minutes: 34
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          STAGED_LANDMARK_RENDERER: metal
+          STAGED_LANDMARK_LAYOUT: ${{ matrix.layout }}
+          STAGED_LANDMARK_SCOPE: exterior
+        run: node scripts/staged-landmark-walk-proof.mjs
+      - name: Preserve complete native exteriors, original terrain receipts, and failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-staged-complete-exterior-${{ matrix.layout }}-${{ github.event.pull_request.head.sha || github.sha }}
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/staged-landmark-exterior-proof/${{ matrix.layout }}/
+          if-no-files-found: warn
           retention-days: 14
   native-full-scene:
     needs: build-staged

@@ -34,7 +34,7 @@ test('staging proof reads the actual actor and camera without exposing mutable g
  assert.deepEqual(root.toJSON(),before,'Snapshot must not rewrite scene transforms, visibility, geometry, or materials');
  snapshot.actor!.x=999;snapshot.sites[1].layout!.center[0]=999;motion.actor!.z=999;pose.x=777;cfg.center[0]=777;
  const again=proof.publicApi.snapshot();assert.equal(again.actor?.x,12);assert.equal(again.actor?.z,22);assert.deepEqual(again.sites[1].layout?.center,[10,20]);
- assert.equal(Object.isFrozen(proof.publicApi),true);assert.deepEqual(Object.keys(proof.publicApi).sort(),['frame','motion','snapshot']);
+ assert.equal(Object.isFrozen(proof.publicApi),true);assert.deepEqual(Object.keys(proof.publicApi).sort(),['exterior','frame','groundFit','motion','routeGround','snapshot']);
  proof.observeView(1,12,22,camera);assert.equal(proof.publicApi.frame(),1,'Repeated views at one simulation time do not fake movement frames');
  proof.observeView(2,12,22,camera);assert.equal(proof.publicApi.frame(),2);
 });

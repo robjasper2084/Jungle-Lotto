@@ -8,6 +8,7 @@ import {mkdir,readFile,writeFile} from 'node:fs/promises';
 import {createRequire} from 'node:module';
 import {resolve} from 'node:path';
 import {fileURLToPath,pathToFileURL} from 'node:url';
+import {runExteriorProof,assertExteriorEvidence} from './staged-landmark-exterior-proof.mjs';
 
 const AQUARIUM='107227742',CONSERVATORY='107310050';
 const STAGED_FLAG='VITE_STAGED_BELLE_ARCHITECTURE=1';
@@ -140,7 +141,9 @@ export async function run(){
  const dist=resolve(process.env.STAGED_LANDMARK_DIST||resolve(game,'dist'));
  const layout=process.env.STAGED_LANDMARK_LAYOUT||'desktop';
  assert(['desktop','phone'].includes(layout),'Unknown staged walk layout');
- const out=resolve(process.env.STAGED_LANDMARK_OUT||resolve(game,'output/staged-landmark-walk-proof',layout));
+ const scope=process.env.STAGED_LANDMARK_SCOPE||'entrances';
+ assert(['entrances','exterior'].includes(scope),'Unknown staged architecture scope');
+ const out=resolve(process.env.STAGED_LANDMARK_OUT||resolve(game,scope==='exterior'?'output/staged-landmark-exterior-proof':'output/staged-landmark-walk-proof',layout));
  const checkout=execFileSync('git',['rev-parse','HEAD'],{cwd:game,encoding:'utf8'}).trim();
  const source=process.env.STAGED_LANDMARK_SOURCE_SHA||checkout;
  assert.match(source,/^[0-9a-f]{40}$/);assert.equal(checkout,source,'Checkout must match the requested candidate head');
@@ -151,7 +154,7 @@ export async function run(){
  if(requireMetal)assert.equal(requestedRenderer,'metal','The native Metal lane cannot select software rendering');
  if(requestedRenderer==='metal')assert.equal(process.platform,'darwin','The strict Metal proof requires macOS');
  const report={version:1,passed:false,source,checkout,run:process.env.GITHUB_RUN_ID||null,startedAt:new Date(started).toISOString(),
-  phase:'setup',layout,viewport,deviceScaleFactor:1,requestedRenderer,stagedFlag:STAGED_FLAG,caseBudgetMs:CASE_MS,snapshots:[],captures:[],passages:[],contacts:[],errors:[],failedRequests:[],
+  phase:'setup',scope,layout,viewport,deviceScaleFactor:1,requestedRenderer,stagedFlag:STAGED_FLAG,caseBudgetMs:CASE_MS,snapshots:[],captures:[],passages:[],contacts:[],errors:[],failedRequests:[],
   limitations:'Actual staged full island, original terrain/colliders, normal default graphics, reduced motion, trusted native browser controls and genuine compositor PNGs. Functional evidence on the recorded renderer; not hardware FPS, physical-device certification, full collision parity or human visual approval.'};
  await mkdir(out,{recursive:true});
  const require=createRequire(resolve(game,'../../package.json'));
@@ -192,6 +195,12 @@ export async function run(){
     const local=row.sites.find(s=>s.id===rule.id)?.local;
     if(!local)throw Error('Missing actual site-local actor pose');
     return (local[rule.axis]-rule.value)*rule.sign>=0?row:false;
+   }
+   if(rule.type==='world-target'){
+    const dx=row.actor.x-rule.x,dz=row.actor.z-rule.z,progress=dx*rule.dx+dz*rule.dz;
+    if(Math.abs(dx*rule.dz-dz*rule.dx)>rule.maxLateral)throw Error('Native exterior walk departed its observed route corridor');
+    if(progress<rule.length-.1)return false;
+    return row;
    }
    if(rule.type==='turn'){
     const progress=Math.atan2(Math.sin(row.actor.headingY-rule.start),Math.cos(row.actor.headingY-rule.start))*rule.sign;
@@ -296,15 +305,15 @@ export async function run(){
    }frame=requestAnimationFrame(poll);
   }));
  }
- async function capture(name,id){
+ async function capture(name,id,options){
   checkBudget();const gpu=await painted();
   if(requestedRenderer==='metal'){
    assert.match(gpu.renderer,/Metal/i,'The strict native lane requires an actual Metal renderer');
    assert.doesNotMatch(gpu.renderer,/SwiftShader|llvmpipe|software rasterizer/i,'No software fallback is allowed in the Metal lane');
   }else assert.match(gpu.renderer,/SwiftShader/i,'The software proof must identify its renderer honestly');
-  const before=assertSnapshot(await snapshot(),id),file=name+'.png';
+  const before=assertSnapshot(await snapshot(),id,options),file=name+'.png';
   const bytes=await bounded(captureCadillacViewportPng({client,viewport,path:resolve(out,file)}),150_000,'Native viewport PNG');
-  const after=assertSnapshot(await snapshot(),id);assert(distance(before.actor,after.actor)<.1,'Actor moved while the screenshot was being captured');
+  const after=assertSnapshot(await snapshot(),id,options);assert(distance(before.actor,after.actor)<.1,'Actor moved while the screenshot was being captured');
   report.captures.push({name,file,id,sha256:hash(bytes),bytes:bytes.length,layout,viewport,gpu,before,after,
    place:await page.locator('#place').textContent()});
  }
@@ -316,9 +325,9 @@ export async function run(){
   const args=requestedRenderer==='metal'?['--use-angle=metal']:['--use-angle=swiftshader','--enable-unsafe-swiftshader','--gpu-watchdog-timeout-seconds=60'];
   browser=await chromium.launch({channel:'chrome',headless:false,args});
   report.browser=browser.version();context=await browser.newContext({viewport,deviceScaleFactor:1,reducedMotion:'reduce',serviceWorkers:'block'});
-  await context.addInitScript(()=>{
+  await context.addInitScript(scope=>{
    const held=new Set(),e=window.__stagedWalkNativeEvidence={phase:'boot',events:[],traces:{},overflow:false,focusLossDuringInput:[],held:[]};
-   for(const type of ['click','keydown','keyup','pointerdown','pointerup'])document.addEventListener(type,event=>{
+   for(const type of ['click','keydown','keyup','pointerdown','pointerup',...(scope==='exterior'?['pointermove']:[])])document.addEventListener(type,event=>{
     if(type==='keydown')held.add(event.code);if(type==='keyup')held.delete(event.code);e.held=[...held];
     const element=event.target,button=element?.closest?.('button');
     if(e.events.length>=10_000){e.overflow=true;return;}
@@ -328,7 +337,7 @@ export async function run(){
    },true);
    const lost=reason=>{if(held.size)e.focusLossDuringInput.push({reason,phase:e.phase,keys:[...held],at:performance.now()});};
    addEventListener('blur',()=>lost('window blur'));document.addEventListener('visibilitychange',()=>{if(document.hidden)lost('document hidden');});
-  });
+  },scope);
   page=await context.newPage();page.setDefaultTimeout(90_000);client=await context.newCDPSession(page);
   page.on('pageerror',error=>report.errors.push(String(error)));
   page.on('console',message=>{if(message.type()==='error')report.errors.push(message.text());});
@@ -342,6 +351,9 @@ export async function run(){
   await phase('staged-ready');assertSnapshot(await snapshot(),AQUARIUM,{near:false});
   report.initialGraphics=await page.evaluate(()=>({quality:document.querySelector('#quality')?.value,fps:document.querySelector('#fps')?.value,antiAliasing:document.querySelector('#anti-aliasing')?.value}));
 
+  if(scope==='exterior'){
+   await runExteriorProof({page,report,phase,motion,snapshot,guideAction,dismount,turnTo,focusCanvas,keyDown,keyUp,waitMotion,settle,frames,capture,trace});
+  }else{
   await guideAction(AQUARIUM,'Travel to entrance');await setFirstPerson(false);await capture('aquarium-exterior',AQUARIUM);
   await dismount();
   const aquariumEntry=await walkTo('aquarium-native-entry',AQUARIUM,'v',-36.8);
@@ -361,12 +373,17 @@ export async function run(){
   await guideAction(CONSERVATORY,'Explore Palm House on foot');await waitMotion({type:'on-foot'});await setFirstPerson(true);
   await walkTo('conservatory-native-palm-house',CONSERVATORY,'u',-2);
   await expect(page.locator('#place')).toHaveText('Palm House');await capture('conservatory-palm-house',CONSERVATORY);
+  }
 
   report.finalGraphics=await page.evaluate(()=>({quality:document.querySelector('#quality')?.value,fps:document.querySelector('#fps')?.value,antiAliasing:document.querySelector('#anti-aliasing')?.value}));
   assert.deepEqual(report.finalGraphics,report.initialGraphics,'The walk proof changed graphics settings');
-  report.nativeEvidence=await page.evaluate(()=>window.__stagedWalkNativeEvidence);assertNativeEvidence(report.nativeEvidence);
+  report.nativeEvidence=await page.evaluate(()=>window.__stagedWalkNativeEvidence);
+  if(scope==='exterior')assertExteriorEvidence(report);
+  else{
+  assertNativeEvidence(report.nativeEvidence);
   assert.equal(report.passages.length,2);assert.equal(report.contacts.length,2);assert.equal(report.captures.length,8);
   assert(report.contacts.every(contact=>contact.passed),'A sampled contact did not satisfy the native visual/collider agreement gate');
+  }
   assert.deepEqual(report.errors,[]);assert.deepEqual(report.failedRequests,[]);checkBudget();report.passed=true;
  }
  try{
