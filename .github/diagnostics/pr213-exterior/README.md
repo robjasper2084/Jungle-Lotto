@@ -151,3 +151,56 @@ submitted-camera comparison observer's stationary-pass and Float32 matrix guards
 This diagnostic preserves those guards and independent failures, while collecting
 additional full-detail landscape views. Neither fixture grants visual acceptance
 without reviewing the actual native images.
+
+## Passive renderer-lifecycle attribution after aef6
+
+The retained aef6 phone-landscape run `45905507435`, job `140201151134`,
+artifact `15158842925` failed before any exterior route or turn. All eight
+Guide actions exhausted the existing `frames(3)` wait. The last island pass
+remained sequence 53 / renderer frame 103; all attempted failure PNGs stopped
+at the original live-WebGL2 guard. Its one error combined `!gl`,
+`gl.isContextLost()`, and `!canvas.width || !canvas.height`. That report did
+not record the individual predicate or context lifecycle. Its original failure
+is retained; this observation change is not acceptance evidence or a repair.
+
+Only the additional diagnostic generator installs `renderer-lifecycle.mjs`
+before page navigation. It observes existing Three renderer announcements,
+the identity of their already-owned contexts, DOM canvas additions/removals,
+context loss/restoration/creation errors, and focus/visibility/page lifecycle.
+It never calls a canvas's `getContext`, creates or restores a context, invokes
+`preventDefault`, changes renderer methods, renders a frame, or supplies input.
+Context listeners are passive. The two existing init scripts and original
+application files remain unchanged.
+
+The existing capture guard still obtains its context exactly as before and
+evaluates `isContextLost()` once. It now records that same result, current
+bitmap dimensions, selected canvas identity and renderer/context matches
+before applying the same rejection or continuing to the original fence.
+Observation failures cannot replace the original result. No action, retry,
+frame wait, route, turn, timeout, overall deadline or acceptance assertion was
+changed. In particular, no failed capture is converted into a screenshot or
+accepted view.
+
+`report.rendererPageSignals` retains console log/warning/error text and source
+location, page errors, crash/close/navigation/load signals and browser
+disconnection. These Node-side records remain available if a crash prevents
+page evaluation. Normal cleanup is explicitly marked. The existing console
+error and page-error listeners continue to control the original failure verdict.
+The journal does not introduce additional acceptance failures or suppress any.
+
+`report.rendererLifecycle` is collected in the existing bounded final native
+evidence read, without an extra wait. It records `available`, `unavailable`, or
+`not-collected`; a crashed page can leave its in-page journal unavailable.
+Browser events are bounded to 512, tracked canvases to 32 and renderers to 16;
+Node signals are bounded to 4,096. Counts of dropped records and observer errors
+are explicit. Overflow or an unavailable journal cannot support a complete
+attribution claim. Browser timestamps are `performance.now()` milliseconds;
+Node signals use epoch milliseconds. Neither journal measures GPU execution.
+
+The unchanged contract-test command also runs focused lifecycle tests. They
+cover context-event deduplication and detached canvases, no context creation or
+default cancellation, all three guard predicates and replacement identity,
+observer errors/overflow, original error-listener preservation, and the actual
+generated guard's decisions and fence flow against the pinned original driver.
+The aef6 route extension, immutable 61a9 source pins, original build artifact,
+landmark geometry contracts and workflow triggers remain byte-for-byte unchanged.

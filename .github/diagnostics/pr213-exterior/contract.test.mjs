@@ -7,6 +7,7 @@ import {tmpdir} from 'node:os';
 import {sourcePins,assetPins,modelBounds,sha256,replaceOnce,betweenOnce,worldPoint,headingTo,
  exteriorPlan,galleryViewport,segmentWaypoints,projectedBounds,projectedModel,observedModelTransform,assertExteriorEvidence,assertGallerySettings} from './contract.mjs';
 import {buildDriver} from './build-driver.mjs';
+import './renderer-lifecycle.test.mjs';
 
 const game=process.env.STAGED_LANDMARK_GAME_DIR,dist=process.env.STAGED_LANDMARK_DIST;
 assert(game&&dist,'Tests require the pinned original game scripts and staged dist');
