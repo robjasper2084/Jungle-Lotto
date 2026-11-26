@@ -109,6 +109,24 @@ world/camera projection, independent public-input routes, and negative native
 input cases. They are not a claim that a route has been executed. Runtime PNGs
 and the full retained report are the execution evidence.
 
+### Gallery-only native heading control
+
+The first corrected gallery attempt at `f1f1aad1` reproduced the original turn
+helper's oscillation. The frozen on-foot controller smooths yaw rate at 16/s
+toward 2.7 rad/s and steps at 120 Hz. At full rate, native key release leaves
+0.15775 rad of subsequent rotation. The original helper polls at 100 ms and
+releases 0.08 rad before the target, so polling and retained angular motion can
+overshoot the unchanged 0.15 rad final tolerance.
+
+Only the additional gallery uses `exteriorTurnTo`: actual-frame polling, a
+0.20 rad release lead, and six consecutive observed headings within 0.002 rad
+after each release. It records every target, native pulse, release observation,
+settled pose and remaining error. The same four-attempt limit, case deadlines,
+native keyboard API, original application, original entrance driver, full-frame
+camera checks and capture tolerances remain. It fails if native control still
+does not settle or reach the target. This harness correction does not grant any
+appearance, collision or performance acceptance.
+
 ## Concurrent exterior fixture at 8b33a583
 
 This frozen-source diagnostic remains separate from the later
