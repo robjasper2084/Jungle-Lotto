@@ -1,4 +1,4 @@
-import {animeRider,glowVehicle} from './referenceActors.ts';
+import {cinematicRider,glowVehicle} from './referenceActors.ts';
 import {Golf} from './golf.ts';
 import {RealLocationPanel} from './realLocationPanel.ts';
 import {REAL_LOCATION_ORIGIN,REAL_LOCATION_AXES,type RealLocationFix} from './realLocation.ts';
@@ -60,6 +60,7 @@ import {GIANT_SLIDE,SLIDE_ENTRY,SLIDE_HEADING} from './giantSlide.ts';
 import {configureAssetDelivery} from './assetDelivery.ts';
 import {applyRealisticMaterials} from './realisticMaterials.ts';
 import {connectSkySettings} from './skySettings.ts';
+import {BRIDGE_PICTURE_VIEW_ID,BRIDGE_PICTURE_VIEW_NAME,bridgePictureView} from './bridgePictureView.ts';
 import {setSharedSolarCalibration} from './skyModel.ts';
 import {Photography,mixGameAudio} from './photography.ts';
 import {ParkCompanion,boerboelModel} from './parkCompanion.ts';
@@ -88,7 +89,6 @@ import * as T from 'three';import {GLTFLoader} from 'three/addons/loaders/GLTFLo
 import {createBeachLocator} from './beachLocation.ts';
 import {createMobileHud} from './mobileHud.ts';
 import {brakeThrottle} from './mobileInput.ts';
-import {batchArmoredInk} from './riderInkBatch.ts';
 import {batchWheelDisplay} from './wheelDisplay.ts';
 import {initiallyCollapsedMap} from './visualPolishPolicy.ts';
 import './visualPolish.css';
@@ -279,18 +279,19 @@ const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreferen
   loader.loadAsync('./exports/glb/DS_EUC_01/DS_EUC_01_LOD1.glb'),
   Promise.resolve().then(()=>sceneWarmup.primeIsland())
  ]);
- const hero=new ThreeRiderView(rider,wheel,terrain,{...HUMAN_PROFILE,id:'DS_Armored_Rider_01'});scene.add(hero.root);applyRealisticMaterials(hero.vehicle,'actor',world.sky.prepareMaterial);applyRealisticMaterials(hero.root,'actor');if(REFERENCE_STYLE){animeRider(hero.rider);glowVehicle(hero.vehicle,'wheel');}hero.apply(core.current);
+ const hero=new ThreeRiderView(rider,wheel,terrain,{...HUMAN_PROFILE,id:'DS_Armored_Rider_01'});scene.add(hero.root);applyRealisticMaterials(hero.vehicle,'actor',world.sky.prepareMaterial);applyRealisticMaterials(hero.root,'actor');if(REFERENCE_STYLE){cinematicRider(hero.rider);glowVehicle(hero.vehicle,'wheel');}hero.apply(core.current);
  // The first acceleration uses the fitted riding rig, including its skinned
  // boot soles. Prepare it once while the loading screen owns the frame.
  status('Fitting your rider');await yieldStartupTask();prepareOnFootRider(hero);
- if(REFERENCE_STYLE)batchArmoredInk(hero.rider,hero.root);
  batchWheelDisplay(hero.vehicle,hero.root,wheel.animations);
  const remoteRiders=new OnlineRiders(scene,terrain,rider,wheel,async model=>{await warmObjectTextures(renderer,model);await renderer.compileAsync(model,camera,scene);});
  let savedSoloSky:typeof world.sky.settings|undefined;
  void import('./onlineRooms.ts').then(({BelleOnlineRooms})=>{online=new BelleOnlineRooms({race:(sender,message)=>race?.receive(sender,message),raceOpen:()=>race?.open(),clear:()=>{realLocation?.stopFollow('Avatar follow stopped before multiplayer.');clear();release();core.clearPendingActions();},ride:()=>{if(!active)start.click();},sky:()=>world.sky.settings,syncSky:s=>{savedSoloSky??=world.sky.settings;world.sky.synchronize(s);},localSky:()=>{if(savedSoloSky){world.sky.configure(savedSoloSky);savedSoloSky=undefined;}},skyHost:host=>{document.querySelectorAll<HTMLInputElement|HTMLSelectElement>('.sky-settings input,.sky-settings select').forEach(e=>e.disabled=!host);el('sky-room-note').textContent=online?.online?(host?'You control the shared room sky.':'Time and clouds follow the room host.'):'Time pauses with solo play. Online rooms share the host’s sky.';},follow:p=>{for(const d of [4,7,11,18])for(let a=0;a<Math.PI*2;a+=Math.PI/4){const x=p.x+Math.sin(a)*d,z=p.z+Math.cos(a)*d;if(terrain.land(x,z)&&!terrain.obstructed(x,z,1.5)){jump(x,z,Math.atan2(p.x-x,p.z-z));return;}}}});}).catch(error=>{console.warn('Multiplayer unavailable',error);for(const id of ['friends-open','welcome-friends'])el(id).textContent='Multiplayer unavailable · reload';});
  const crossings=portalStates({routes:districts.routes,terrain,pavementReady:!!scene.getObjectByName('Greater Detroit pavement')});
  const openPlaces=districtDestinations.filter(l=>crossings[l.id==='greater-detroit-elmwood'?1:0].connected);
- const destinations=[...openPlaces,...data.landmarks,...data.pois.filter(p=>!data.landmarks.some(l=>l.id===p.id))];let destination:ParkMap['landmarks'][number]|undefined;const routepoints=data.roads.flatMap(r=>r.points.slice(1).flatMap((b,i)=>{const a=r.points[i],steps=Math.max(1,Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1])/8));return Array.from({length:steps},(_,j)=>[a[0]+(b[0]-a[0])*j/steps,a[1]+(b[1]-a[1])*j/steps] as [number,number]);})).filter(p=>terrain.land(p[0],p[1])&&!terrain.obstructed(p[0],p[1],2));let snap=true;const vrPlaces:{label:string;go:()=>void}[]=[];
+ const destinations=[...openPlaces,...data.landmarks,...data.pois.filter(p=>!data.landmarks.some(l=>l.id===p.id))];
+ const pictureView=bridgePictureView(data);
+ destinations.push({id:BRIDGE_PICTURE_VIEW_ID,name:BRIDGE_PICTURE_VIEW_NAME,x:pictureView.x,z:pictureView.z,kind:'attraction',viewDistance:0,description:'Real island-side MacArthur Bridge view for comparing the four cinematic styles, using the original playable roadway.'});let destination:ParkMap['landmarks'][number]|undefined;const routepoints=data.roads.flatMap(r=>r.points.slice(1).flatMap((b,i)=>{const a=r.points[i],steps=Math.max(1,Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1])/8));return Array.from({length:steps},(_,j)=>[a[0]+(b[0]-a[0])*j/steps,a[1]+(b[1]-a[1])*j/steps] as [number,number]);})).filter(p=>terrain.land(p[0],p[1])&&!terrain.obstructed(p[0],p[1],2));let snap=true;const vrPlaces:{label:string;go:()=>void}[]=[];
  function jump(x:number,z:number,headingY:number){realLocation?.stopFollow('Avatar follow stopped for game travel.');golf?.stop();trials?.interrupt();activities?.relocated();fishing?.stop();slide?.cancel();photo?.close();cadillac?.leave();hover?.leaveForTravel();boat?.leave();clear();core.reset({position:{x,y:terrain.height(x,z),z},headingY});cameraYaw=0;cameraPitch=.1;snap=true;vr?.relocated();}
  hover=new HoverRide(scene,terrain,{nightAmount:()=>world.sky.nightAmount.value,prepareScene:async(model,signal)=>{await sceneWarmup.prepare(model,signal);if(!active&&!signal?.aborted)await prepareRideShadows(model,core.current.x,core.current.z);},obstacle:world.trafficRay,vehicleLocked:()=>!!trials?.active,restartTrial:()=>trials?.restart(),pose:()=>core.current,blocked:()=>!!cadillac?.riding||inputCaptureBlocked()||!!photo?.active||!!slide?.active||!!boat?.riding,touch:()=>touch.checked,entered:()=>{realLocation?.stopFollow('Avatar follow stopped for a vehicle.');clear();release();cameraYaw=0;cameraPitch=.1;snap=true;zone.hidden=true;canvas.focus();},exited:p=>{clear();core.reset({position:{x:p.x,y:p.y,z:p.z},headingY:p.heading});core.advance(1/60,{dismount:true});cameraYaw=0;snap=true;zone.hidden=!touch.checked;canvas.focus();}},headlamp);
   startup.bindVehicles(wheel.scene,async()=>{const vehicle=await hover!.preparePreview(scene);if(!vehicle)throw new Error('Hoverbike preview unavailable');return vehicle;});
@@ -438,7 +439,7 @@ const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreferen
   }
  }
  const showcaseTravel=new Map<string,HTMLButtonElement>();
- for(const lm of destinations){const c=document.createElement('article');c.className='landmark';c.dataset.kind=['659605208','107208288'].includes(lm.id)?'monument':lm.kind;c.dataset.search=lm.name.toLowerCase();const h=document.createElement('h3');h.textContent=lm.name;const go=document.createElement('button');go.textContent='Navigate';go.onclick=()=>{destination=lm;el<HTMLDialogElement>('guide').close();};const travel=document.createElement('button');travel.textContent=data.facilities?.sites.some(s=>s.id===lm.id)?'Travel nearby':'Travel to path';travel.onclick=()=>{if(lm.name==='Nashua Canal'){
+ for(const lm of destinations){const c=document.createElement('article');c.className='landmark';c.dataset.kind=['659605208','107208288'].includes(lm.id)?'monument':lm.kind;c.dataset.search=lm.name.toLowerCase();const h=document.createElement('h3');h.textContent=lm.name;const go=document.createElement('button');go.textContent='Navigate';go.onclick=()=>{destination=lm;el<HTMLDialogElement>('guide').close();};const travel=document.createElement('button');travel.textContent=data.facilities?.sites.some(s=>s.id===lm.id)?'Travel nearby':'Travel to path';travel.onclick=()=>{if(lm.id===BRIDGE_PICTURE_VIEW_ID){destination=lm;jump(pictureView.x,pictureView.z,pictureView.heading);first=false;cameraPitch=.08;el<HTMLDialogElement>('guide').close();if(!active)start.click();return;}if(lm.name==='Nashua Canal'){
  // Approach on the mapped Nashua Trail footbridge from the retained profiling route.
  const x=2152.81,z=694.94;
  if(terrain.land(x,z)&&!terrain.obstructed(x,z,.55)){destination=lm;jump(x,z,Math.atan2(8.15,-1.24));el<HTMLDialogElement>('guide').close();if(!active)start.click();return;}

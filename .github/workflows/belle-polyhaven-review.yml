@@ -52,7 +52,7 @@ jobs:
           retention-days: 14
   rock-game-capture:
     needs: source-art
-    runs-on: ubuntu-latest
+    runs-on: macos-15
     timeout-minutes: 100
     steps:
       - uses: actions/checkout@v4
@@ -87,20 +87,44 @@ jobs:
         working-directory: lottominded-ultra.io/games/gothtechnology2
         run: |
           npm ci
-          npx playwright install --with-deps chromium
+          npx playwright install chrome
       - name: Capture genuine opt-in rock preview in existing island gallery
         working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/
         env:
           ENV_GALLERY_DEVICE: desktop
-          ENV_GALLERY_BROWSER: chromium
+          ENV_GALLERY_REQUIRE_METAL: '1'
           ENV_GALLERY_QUICK: '1'
           ENV_GALLERY_POLYHAVEN: '1'
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node scripts/island-zone-gallery.mjs
-      - name: Upload real game captures (software browser, not native FPS certification)
+        run: node scripts/island-zone-gallery.mjs
+      - name: Upload real game captures (Metal runner, not physical-device FPS certification)
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: polyhaven-rock-game-capture
           path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/island-zone-gallery/desktop
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Verify preview build on native desktop (unchanged full 90-second harness)
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/
+        env:
+          BELLE_PROFILE_DEVICE: desktop
+          BELLE_PROFILE_MODE: full
+          BELLE_PROFILE_SECONDS: '90'
+        run: node scripts/sustained-ride-profile.mjs
+      - name: Verify preview build on native phone viewport (unchanged full 90-second harness)
+        if: ${{ !cancelled() }}
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/
+        env:
+          BELLE_PROFILE_DEVICE: phone
+          BELLE_PROFILE_MODE: full
+          BELLE_PROFILE_SECONDS: '90'
+        run: node scripts/sustained-ride-profile.mjs
+      - name: Upload native preview performance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: polyhaven-rock-native-profile
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/sustained-profile/full/
           if-no-files-found: warn
           retention-days: 14

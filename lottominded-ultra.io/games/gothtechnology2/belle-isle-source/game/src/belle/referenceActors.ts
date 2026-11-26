@@ -1,7 +1,17 @@
 import * as T from 'three';
 import {shareRiderPalettes} from './riderInkBatch.ts';
 
-/** Anime finish on the original meshes, UVs and rig. No replacement character. */
+/** Cinematic photoreal mode: preserve the original GLTF physically-based materials,
+ * authored texture maps, exact geometry and rig. No cartoon shader or outline draw.
+ */
+export function cinematicRider(root:T.Object3D){
+ const meshes:T.Mesh[]=[];
+ root.traverse(o=>{if(o instanceof T.Mesh&&!o.userData.referenceInk)meshes.push(o);});
+ shareRiderPalettes(meshes);
+ return {meshes:meshes.length,unchangedMaterials:true,addedOutlines:0};
+}
+
+/** Legacy anime finish; retained for old screenshots and standalone tests. */
 export function animeRider(root:T.Object3D){
  const meshes:T.Mesh[]=[];root.traverse(o=>{if(o instanceof T.Mesh&&!o.userData.referenceInk)meshes.push(o);});
  shareRiderPalettes(meshes);
