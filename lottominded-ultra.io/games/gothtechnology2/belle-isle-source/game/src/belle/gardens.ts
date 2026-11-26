@@ -1,3 +1,4 @@
+import {freezeStaticWorldTransforms} from './worldPerformancePolicy.ts';
 import * as T from 'three';
 import type {GardenPlan,GardenPlant} from './gardenPlan.ts';
 import {gardenBotany} from './gardenBotany.ts';
@@ -69,6 +70,7 @@ export async function addGardens(scene:T.Scene){
    mesh.computeBoundingSphere();scene.add(mesh);tiles.push({mesh,x:tx*48+24,z:tz*48+24,count:plants.length,detailed:!!form});
   }
  }
+ freezeStaticWorldTransforms(tiles.map(tile=>tile.mesh));
  let radius=220;
  return{animate(time:number){wind.value=time;},stats:{clumps:plan.plants.length,triangles,batches:tiles.length},setQuality(q:string){radius=q==='smooth'?145:q==='high'?280:220;},update(x:number,z:number){for(const tile of tiles){const distance=Math.hypot(tile.x-x,tile.z-z);tile.mesh.visible=distance<radius;tile.mesh.count=tile.detailed&&distance>105?Math.ceil(tile.count*.35):tile.count;}}};
 }

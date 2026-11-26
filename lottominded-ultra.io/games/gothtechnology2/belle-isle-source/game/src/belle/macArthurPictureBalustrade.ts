@@ -1,3 +1,4 @@
+import {freezeStaticWorldTransforms} from './worldPerformancePolicy.ts';
 /** OPT-IN AI-picture stone arch balustrade study, not an as-built survey.
  * Bound to existing MacArthur bridge collision side >=11.8, deck..deck+1.6.
  * No extra navigation meshes or physics bodies.
@@ -55,7 +56,7 @@ export function stagePictureBalustrade(scene:T.Scene,bridge:ParkMap['bridge'],la
    }
    draw.instanceMatrix.needsUpdate=true;draw.computeBoundingSphere();group.add(draw);
   }
-  scene.add(group);
+  scene.add(group);freezeStaticWorldTransforms([group]);
   // The existing mesh's draw visibility must stay off during dynamic landmark updates.
   legacy.userData.staticSprayReplaced=true;legacy.visible=false;legacy.castShadow=false;
  }catch(error){group.removeFromParent();geometry.dispose();limestone.dispose();throw error;}

@@ -1,3 +1,4 @@
+import {freezeStaticWorldTransforms} from './worldPerformancePolicy.ts';
 import * as T from 'three';
 import {installBatchedIndirectUpdates} from './batchedIndirectUpdates.ts';
 import {oakwayRoof} from './oakwayRoof.ts';
@@ -89,6 +90,7 @@ export function addParkFacilities(scene:T.Scene,map:ParkMap,multiDraw=false){
    const mesh=new T.Mesh(g,material);mesh.name='Mapped park facilities';mesh.castShadow=true;mesh.receiveShadow=true;scene.add(mesh);batches.push({object:mesh,x,z});
   }
  }
+ freezeStaticWorldTransforms(batches.map(batch=>batch.object));
  return{stats:{sites:map.facilities?.sites.length||0,shelters:plan.shelters.length,gates:map.facilities?.gates.length||0,fences:map.facilities?.fences.length||0,triangles},update(x:number,z:number){
   for(const b of batches){const visible=Math.hypot(x-b.x,z-b.z)<520;
    if(b.instance===undefined)b.object.visible=visible;else (b.object as T.BatchedMesh).setVisibleAt(b.instance,visible);
