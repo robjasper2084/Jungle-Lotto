@@ -110,9 +110,10 @@ export async function installSustainedTrace(chromium,{game,output,source,onFailu
   evidence.browser=await cdp(browserSession,'Browser.getVersion');
   evidence.systemInfo=await optional(browserSession,'SystemInfo.getInfo');
   evidence.processesAtStart=await optional(browserSession,'SystemInfo.getProcessInfo');
-  const supported=await cdp(browserSession,'Tracing.getCategories');
-  evidence.categories={available:supported.categories,requested:categories,selected:categories.filter(c=>supported.categories.includes(c))};
-  assert.ok(evidence.categories.selected.includes('blink.user_timing')&&evidence.categories.selected.includes('devtools.timeline'),'Required timeline categories unavailable');
+  // Enumeration can be empty/incomplete on native Perfetto-backed Chrome.
+  // Request the unchanged category set; validate emitted events after capture.
+  const supported=await optional(browserSession,'Tracing.getCategories');
+  evidence.categories={available:Array.isArray(supported?.categories)?supported.categories:null,requested:categories,selected:[...categories],enumerationAdvisory:true};
   await cdp(browserSession,'Tracing.start',{transferMode:'ReturnAsStream',streamFormat:'json',streamCompression:'none',
    traceConfig:{recordMode:'recordUntilFull',traceBufferSizeInKb:262144,includedCategories:evidence.categories.selected}});
   recording=true;

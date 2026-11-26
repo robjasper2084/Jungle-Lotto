@@ -11,18 +11,21 @@ import {observeMethod,installSustainedTrace} from './sustained-trace-observer.mj
 
 function fixture(){
  const source={head:'pinned-source',tree:'pinned-tree',harness:{gitBlob:ORIGINAL_HARNESS_BLOB},files:[]};
- const markers=[{label:'profile-start-click',atMs:1000},{label:'first-w-keydown',atMs:1100},{label:'w-keyup',atMs:91100}];
+ const markers=[{label:'profile-start-click',atMs:1000},{label:'first-w-keydown',atMs:1100},{label:'w-keyup',atMs:91108}];
  const page={url:'http://127.0.0.1:1234/?profile=1&perfProbe=1',markers,errors:[],droppedMarkers:0};
  const trace={traceEvents:[
   ...['Browser','Renderer','GPU Process'].map((name,i)=>({ph:'M',name:'process_name',pid:i+1,args:{name}})),
-  ...markers.map(m=>({name:MARKER_PREFIX+m.label,pid:2,tid:9,ts:1_000_000+m.atMs*1000,ph:'R'})),
-  {ph:'X',name:'FunctionCall',pid:2,tid:9,ts:90_000_000,dur:466700}]};
+  {ph:'M',name:'thread_name',pid:2,tid:9,args:{name:'CrRendererMain'}},
+  ...markers.map(m=>({name:MARKER_PREFIX+m.label,cat:'blink.user_timing',pid:2,tid:9,ts:1_000_000+m.atMs*1000,ph:'R'})),
+  {ph:'X',cat:'devtools.timeline',name:'EventDispatch',pid:2,tid:9,ts:2_099_950,dur:100},
+  {ph:'X',cat:'devtools.timeline',name:'FunctionCall',pid:2,tid:9,ts:90_000_000,dur:466700},
+  {ph:'X',cat:'devtools.timeline',name:'EventDispatch',pid:2,tid:9,ts:92_107_950,dur:100}]};
  const cpu={nodes:[{id:1,callFrame:{functionName:'nativeWork',url:page.url+'assets/game.js',lineNumber:0,columnNumber:0}}],
-  samples:[1],timeDeltas:[2000],startTime:1_500_000,endTime:92_500_000};
+  samples:[1,1,1,1],timeDeltas:[100_000,600_000,89_900_000,200_000],startTime:1_500_000,endTime:92_500_000};
  const report={sourceHead:source.head,mode:'diagnostic',device:'phone',requestedSeconds:90,renderBackend:'angle-metal',
   actualGpu:{renderer:'ANGLE Metal Renderer: Apple'},passed:false,profile:{
    viewport:[390,844,1],settings:{quality:'smooth',effectiveQuality:'smooth',pixelRatio:1,adaptiveScale:1,cap:60,world:{performanceDiagnostic:true}},
-   stopReason:'trusted-W-keyup',activeSeconds:90.1,over250ms:2,metrics:{frameMs:{p95:33.5}}}};
+   stopReason:'trusted-W-keyup',activeSeconds:89.699,excludedSeconds:.3163,over250ms:2,metrics:{frameMs:{p95:33.5}}}};
  return {source,page,trace,cpu,report,traceComplete:{dataLossOccurred:false,stream:'raw-stream'}};
 }
 
@@ -47,6 +50,7 @@ test('observers retain native receiver, argument identity, result, and exception
 test('clock mapping binds native CPU samples to the real game renderer and ride bounds',()=>{
  const f=fixture(),summary=traceSummary(f.trace,f.cpu,f.page);
  assert.deepEqual(summary.errors,[]);assert.equal(summary.gameRendererPid,2);assert.equal(summary.clockMapping.spreadUs,0);
+ assert.equal(summary.nativeRide.durationMs,90008);assert.equal(summary.nativeRide.traceDurationMs,90008);assert.equal(summary.rendererTimeline.events,3);assert.equal(summary.cpuCoverage.rideSamples,2);
  assert.equal(summary.browserProcesses.length,1);assert.equal(summary.gpuProcesses.length,1);assert.equal(summary.longEvents[0].dur,466700);
  const mutations=[
   x=>x.trace.traceEvents.pop()&&x.trace.traceEvents.pop(),
@@ -57,6 +61,18 @@ test('clock mapping binds native CPU samples to the real game renderer and ride 
   x=>x.cpu.samples=[],
   x=>x.trace.traceEvents.find(e=>e.name===MARKER_PREFIX+'w-keyup').pid=3,
   x=>x.page.droppedMarkers=1,
+  x=>x.page.markers.push({...x.page.markers[0]}),
+  x=>x.page.markers[0].atMs=NaN,
+  x=>x.trace.traceEvents.find(e=>e.name===MARKER_PREFIX+'first-w-keydown').cat='not-user-timing',
+  x=>x.trace.traceEvents.find(e=>e.name===MARKER_PREFIX+'first-w-keydown').tid=10,
+  x=>x.trace.traceEvents=x.trace.traceEvents.filter(e=>e.ph!=='X'),
+  x=>x.trace.traceEvents.filter(e=>e.ph==='X').forEach(e=>e.pid=3),
+  x=>x.trace.traceEvents.find(e=>e.name==='process_name'&&e.pid===2).args.name='GPU Process',
+  x=>{x.cpu.samples=[1];x.cpu.timeDeltas=[100_000];},
+  x=>x.cpu.samples[1]=999,
+  x=>x.cpu.timeDeltas[1]=NaN,
+  x=>x.cpu.timeDeltas[1]=200_000_000,
+  x=>x.cpu.timeDeltas='1234',
  ];
  for(const mutate of mutations){const broken=fixture();mutate(broken);assert.ok(traceSummary(broken.trace,broken.cpu,broken.page).errors.length);}
  assert.equal(isGameUrl('https://example.com/?profile=1&perfProbe=1'),false);
@@ -71,12 +87,30 @@ test('trace collection preserves failed ride metrics and never qualifies release
   x=>x.report.requestedSeconds=30,x=>x.report.actualGpu.renderer='SwiftShader',x=>x.report.profile.viewport[2]=2,
   x=>x.report.profile.settings.quality='high',x=>x.report.profile.settings.adaptiveScale=.5,
   x=>x.report.profile.settings.cap=30,x=>x.report.profile.settings.world.performanceDiagnostic=false,
-  x=>x.report.profile.stopReason='timeout',x=>x.report.profile.activeSeconds=89.99,
+  x=>x.report.profile.stopReason='timeout',
   x=>x.traceComplete.dataLossOccurred=true,x=>delete x.traceComplete.dataLossOccurred,x=>delete x.traceComplete.stream,
  ];
  for(const mutate of mutations){const broken=fixture();mutate(broken);const result=diagnosticVerdict({...broken,summary});
   assert.equal(result.collectionComplete,false);assert.equal(result.releaseAcceptance,false);}
  assert.equal(diagnosticVerdict({...f,summary:null}).collectionComplete,false);
+});
+
+test('native 90-second input bounds remain strict while eligible frame time stays separate',()=>{
+ const f=fixture(),summary=traceSummary(f.trace,f.cpu,f.page),verdict=diagnosticVerdict({...f,summary});
+ assert.equal(verdict.collectionComplete,true);assert.equal(verdict.originalActiveSeconds,89.699);assert.equal(verdict.originalExcludedSeconds,.3163);
+ assert.equal(verdict.nativeCapture.durationMs,90008);assert.equal(verdict.originalHarnessPassed,false);
+ // A long active total must never substitute for a short trusted input window.
+ f.report.profile.activeSeconds=95;f.report.profile.excludedSeconds=5;
+ f.page.markers.at(-1).atMs=91099;f.trace.traceEvents.find(e=>e.name===MARKER_PREFIX+'w-keyup').ts=92_099_000;
+ const short=traceSummary(f.trace,f.cpu,f.page);assert.deepEqual(short.errors,[]);assert.equal(short.nativeRide.durationMs,89999);
+ assert.equal(diagnosticVerdict({...f,summary:short}).collectionComplete,false);
+ assert.equal(diagnosticVerdict({...f,summary:null}).collectionComplete,false);
+});
+
+test('native signed CPU deltas are retained while sample times still cover the ride',()=>{
+ const f=fixture();f.cpu.samples=[1,1,1,1,1];f.cpu.timeDeltas=[100_000,600_000,-4,89_900_004,200_000];
+ const summary=traceSummary(f.trace,f.cpu,f.page);assert.deepEqual(summary.errors,[]);assert.equal(summary.cpuCoverage.negativeDeltas,1);
+ assert.equal(summary.cpuCoverage.lastSampleUs,92_300_000);assert.equal(f.cpu.timeDeltas[2],-4);
 });
 
 test('build inventory detects changed bytes and rejects symlinks; timing exception permits only buildMs',async()=>{
@@ -123,13 +157,15 @@ test('clean input pin survives generated timing noise and rejects changed source
  }
 });
 
-test('observer archives native CPU/timeline/consumed source and preserves an original failed report',async()=>{
+async function observerFixture({listedCategories=[],listingError=false,missingTimeline=false}={}){
  const f=fixture(),root=await mkdtemp(resolve(tmpdir(),'belle-trace-observer-')),output=resolve(root,'trace'),js=Buffer.from('function nativeWork() {}');
+ if(missingTimeline)f.trace.traceEvents=f.trace.traceEvents.filter(event=>event.ph!=='X');
  f.source.files=[{file:'assets/game.js',bytes:js.length,sha256:sha256(js)}];
- let closed=0,failures=0;
+ let closed=0,failures=0;const calls=[];
  class BrowserSession extends EventEmitter{
-  async send(method){
-   if(method==='Tracing.getCategories')return {categories:['blink.user_timing','devtools.timeline','gpu']};
+  async send(method,params){
+   calls.push({method,params});
+   if(method==='Tracing.getCategories'){if(listingError)throw Error('Enumeration unavailable');return {categories:listedCategories};}
    if(method==='Tracing.end'){queueMicrotask(()=>this.emit('Tracing.tracingComplete',f.traceComplete));return {};}
    if(method==='IO.read')return {data:JSON.stringify(f.trace),eof:true};
    return {};
@@ -156,11 +192,30 @@ test('observer archives native CPU/timeline/consumed source and preserves an ori
   const page=await launched.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true,reducedMotion:'reduce'});
   await page.goto(f.page.url,{waitUntil:'domcontentloaded'});await launched.close();
   const evidence=JSON.parse(await readFile(resolve(output,'trace-evidence.json'),'utf8'));
-  assert.equal(failures,0);assert.equal(closed,1);assert.equal(evidence.verdict.collectionComplete,true);
-  assert.equal(evidence.verdict.originalHarnessPassed,false);assert.equal(evidence.verdict.releaseAcceptance,false);
+  assert.equal(closed,1);assert.equal(evidence.verdict.originalHarnessPassed,false);assert.equal(evidence.verdict.releaseAcceptance,false);
   assert.deepEqual(await readFile(resolve(output,'original-report.json')),originalBytes);
   assert.deepEqual(await readFile(resolve(output,evidence.scriptReceipts[0].file)),js);
   assert.deepEqual(JSON.parse(await readFile(resolve(output,'renderer.cpuprofile'),'utf8')),f.cpu);
   assert.deepEqual(JSON.parse(await readFile(resolve(output,'browser-trace.json'),'utf8')),f.trace);
+  const requested=['toplevel','devtools.timeline','disabled-by-default-devtools.timeline','blink.user_timing',
+   'v8','disabled-by-default-v8.gc','renderer.scheduler','gpu','viz','cc','disabled-by-default-gpu.service'];
+  const start=calls.find(call=>call.method==='Tracing.start');assert.ok(start,'always request native tracing despite enumeration');
+  assert.deepEqual(start.params,{transferMode:'ReturnAsStream',streamFormat:'json',streamCompression:'none',
+   traceConfig:{recordMode:'recordUntilFull',traceBufferSizeInKb:262144,includedCategories:requested}});
+  assert.deepEqual(evidence.categories.selected,requested);assert.equal(evidence.categories.enumerationAdvisory,true);
+  assert.deepEqual(evidence.categories.available,listingError?null:listedCategories);
+  assert.equal(evidence.verdict.collectionComplete,!missingTimeline);assert.equal(failures===0,!missingTimeline);
+  if(missingTimeline)assert(evidence.verdict.errors.includes('Renderer timeline work does not cover native ride boundaries'));
+  if(listingError)assert(evidence.unsupported.some(row=>row.method==='Tracing.getCategories'));
+  return evidence;
  }finally{await rm(root,{recursive:true,force:true});}
+}
+test('empty category enumeration still records and validates actual native trace, CPU and original failed report',async()=>{
+ await observerFixture();
+});
+test('partial or unsupported enumeration never filters required requested categories',async()=>{
+ await observerFixture({listedCategories:['gpu']});await observerFixture({listingError:true});
+});
+test('empty enumeration never excuses missing actual renderer timeline events',async()=>{
+ await observerFixture({missingTimeline:true});
 });
