@@ -3,6 +3,9 @@ on:
   push:
     branches: [diagnostic/belle-225-native-operation-attribution-d4f4baa]
     paths: ['.github/workflows/belle-225-operation-attribution.yml']
+  pull_request:
+    branches: [feature/belle-isle-cinematic-stone-bridge-20261125]
+    paths: ['.github/workflows/belle-225-operation-attribution.yml']
 permissions:
   contents: read
 jobs:
