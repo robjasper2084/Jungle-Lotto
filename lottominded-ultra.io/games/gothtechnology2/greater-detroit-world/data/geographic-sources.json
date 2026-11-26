@@ -1,0 +1,522 @@
+{
+  "schemaVersion": 1,
+  "id": "greater-detroit-geographic-source-catalog",
+  "title": "Belle Isle and Jefferson Avenue geographic source catalog",
+  "verifiedDate": "2026-11-24",
+  "status": "source-discovery",
+  "scope": "Candidate reference data for Belle Isle, the MacArthur Bridge approaches, and the East Jefferson Avenue corridor in Detroit, Michigan.",
+  "evidenceBoundary": {
+    "catalogOnly": true,
+    "datasetPayloadsIncluded": false,
+    "importsPerformedByThisCatalogUpdate": false,
+    "runtimeGeometryChangedByThisCatalogUpdate": false,
+    "productionDeploymentPerformed": false,
+    "cityLayerRedistributionLicenseConfirmed": false,
+    "summary": "This file records source discovery and metadata review. It does not establish that candidate datasets have been downloaded, transformed, imported, visually accepted, or cleared for every intended use. Existing game data and approximations require their own provenance and validation."
+  },
+  "coordinatePolicy": {
+    "sourceHorizontalCrsRequired": true,
+    "sourceVerticalDatumRequiredForElevation": true,
+    "sourceHorizontalUnitsRequired": true,
+    "sourceVerticalUnitsRequiredForElevation": true,
+    "sourceAcquisitionDateRequiredWhenKnown": true,
+    "recommendedRuntimeLengthUnit": "metre",
+    "catalogRuntimeHorizontalCrs": null,
+    "catalogRuntimeVerticalDatum": null,
+    "catalogRuntimeOrigin": null,
+    "rules": [
+      "Read each delivered file's coordinate-system metadata. Do not substitute a catalog CRS for a transformed download's actual CRS.",
+      "Geometry units do not establish the units of an attribute such as building height.",
+      "Preserve source elevation and its datum separately from any game-world vertical offset.",
+      "Convert horizontal and vertical units explicitly before comparing or combining datasets.",
+      "Keep orthometric heights, ellipsoidal heights, relative game heights, and water-level datums distinct.",
+      "Preserve unknown units, heights, acquisition dates, and accuracy values as null rather than inventing measurements.",
+      "Validate alignment against independent control locations and record residual errors before treating an import as geographically accepted."
+    ],
+    "waterDatumReference": "https://www.ngs.noaa.gov/TOOLS/IGLD85/igld85.shtml"
+  },
+  "sources": [
+    {
+      "id": "detroit-current-street-segments",
+      "name": "City of Detroit Base Unit Layers - Streets",
+      "provider": "City of Detroit Department of Public Works and Department of Innovation and Technology",
+      "sourceType": "vector-dataset",
+      "verifiedDate": "2026-11-24",
+      "intendedUse": "Reference street-segment alignment and street names; a candidate for comparison with the generator's existing street-centerline source.",
+      "urls": {
+        "portal": "https://baseunits.detroitmi.gov/",
+        "item": "https://www.arcgis.com/home/item.html?id=2b9ab7687289457c9793a4a92d7c4eb9",
+        "itemMetadata": "https://www.arcgis.com/sharing/rest/content/items/2b9ab7687289457c9793a4a92d7c4eb9?f=json",
+        "service": "https://services2.arcgis.com/qvkbeam7Wirps6zC/arcgis/rest/services/BaseUnitFeatures/FeatureServer",
+        "layer": "https://services2.arcgis.com/qvkbeam7Wirps6zC/arcgis/rest/services/BaseUnitFeatures/FeatureServer/1",
+        "query": "https://services2.arcgis.com/qvkbeam7Wirps6zC/arcgis/rest/services/BaseUnitFeatures/FeatureServer/1/query",
+        "existingGeneratorSource": "https://services2.arcgis.com/qvkbeam7Wirps6zC/arcgis/rest/services/Detroit_Street_Centerline_Map/FeatureServer/0/query"
+      },
+      "license": {
+        "name": null,
+        "status": "City item licenseInfo was empty when checked; specific redistribution terms were not established.",
+        "termsUrl": null,
+        "attribution": "City of Detroit; Department of Innovation and Technology (DoIT) and Department of Public Works (DPW) Maps & Records Bureau",
+        "allIntendedUsesCleared": false
+      },
+      "crs": {
+        "horizontal": "EPSG:4326",
+        "vertical": null,
+        "basis": "Live BaseUnitFeatures layer metadata; output CRS must still be checked for each query."
+      },
+      "units": {
+        "horizontal": "degree",
+        "elevation": null
+      },
+      "accuracy": {
+        "horizontalErrorM": null,
+        "verticalErrorM": null,
+        "surveyGradeVerified": false,
+        "summary": "Reference street segments; no numerical positional accuracy was verified."
+      },
+      "acquisitionDate": null,
+      "queryMetadata": {
+        "geometryType": "polyline",
+        "hasZ": false,
+        "maxRecordCount": 2000,
+        "idField": "objectid"
+      },
+      "useLimitations": [
+        "Centerlines do not define surveyed road edges, lane widths, curbs, pavement grades, or bridge-deck elevations.",
+        "Do not assume the existing generator source and this current base-unit layer have identical geometry or identifiers.",
+        "Paginate queries and check exceededTransferLimit; a successful response can still be incomplete.",
+        "Retain the query bounds, field selection, source item ID, retrieval timestamp, and returned coordinate reference system."
+      ]
+    },
+    {
+      "id": "detroit-current-building-footprints",
+      "name": "City of Detroit Base Unit Layers - Buildings",
+      "provider": "City of Detroit Department of Innovation and Technology",
+      "sourceType": "vector-dataset",
+      "verifiedDate": "2026-11-24",
+      "intendedUse": "Building footprint reference and stable identifiers; candidate joins to SEMCOG building attributes.",
+      "urls": {
+        "portal": "https://data.detroitmi.gov/datasets/detroitmi::buildings-4/about",
+        "itemMetadata": "https://www.arcgis.com/sharing/rest/content/items/2b9ab7687289457c9793a4a92d7c4eb9?f=json",
+        "layer": "https://services2.arcgis.com/qvkbeam7Wirps6zC/arcgis/rest/services/BaseUnitFeatures/FeatureServer/2",
+        "query": "https://services2.arcgis.com/qvkbeam7Wirps6zC/arcgis/rest/services/BaseUnitFeatures/FeatureServer/2/query"
+      },
+      "license": {
+        "name": null,
+        "status": "City item licenseInfo was empty when checked; specific redistribution terms were not established.",
+        "termsUrl": null,
+        "attribution": "City of Detroit Department of Innovation and Technology (DoIT)",
+        "allIntendedUsesCleared": false
+      },
+      "crs": {
+        "horizontal": "EPSG:4326",
+        "vertical": null,
+        "basis": "Live layer metadata. An older descriptive text mentioned EPSG:2898; do not override returned geometry metadata with that historical description."
+      },
+      "units": {
+        "horizontal": "degree",
+        "buildingHeight": null
+      },
+      "accuracy": {
+        "horizontalErrorM": null,
+        "verticalErrorM": null,
+        "surveyGradeVerified": false,
+        "summary": "The City describes the layer as reference geometry and cautions against engineering, survey, or construction-grade use without verifying accuracy and projection."
+      },
+      "acquisitionDate": null,
+      "queryMetadata": {
+        "geometryType": "polygon",
+        "hasZ": false,
+        "maxRecordCount": 2000,
+        "idField": "objectid",
+        "buildingIdField": "building_id",
+        "semcogJoinField": "semcog_id",
+        "heightField": null,
+        "storiesField": null
+      },
+      "useLimitations": [
+        "The checked schema has no measured height or story-count attribute; footprint extrusion height must come from another verified source or remain explicitly estimated.",
+        "Footprints do not contain measured roof forms, facade materials, individual windows, or complete tree positions.",
+        "Check join coverage and uniqueness before treating semcog_id as a successful link to SEMCOG building_id.",
+        "Parcel identifiers do not make footprint geometry a legal parcel boundary."
+      ]
+    },
+    {
+      "id": "semcog-buildings-2024",
+      "name": "SEMCOG Building Footprints, 2024",
+      "provider": "Southeast Michigan Council of Governments (SEMCOG)",
+      "sourceType": "vector-dataset",
+      "verifiedDate": "2026-11-24",
+      "intendedUse": "Candidate building attributes and footprint comparison, including story count, construction year, and raw lidar-derived median-height attributes.",
+      "urls": {
+        "item": "https://www.arcgis.com/home/item.html?id=c9bd1139cb15497084c328315a2c0c84",
+        "itemMetadata": "https://www.arcgis.com/sharing/rest/content/items/c9bd1139cb15497084c328315a2c0c84?f=json",
+        "descriptiveMetadata": "https://www.arcgis.com/sharing/rest/content/items/c9bd1139cb15497084c328315a2c0c84/info/metadata/metadata.xml?format=default&output=html",
+        "layer": "https://gis.semcog.org/server/rest/services/Hosted/Buildings_2024/FeatureServer/2",
+        "query": "https://gis.semcog.org/server/rest/services/Hosted/Buildings_2024/FeatureServer/2/query"
+      },
+      "license": {
+        "name": "SEMCOG Copyright License Agreement",
+        "status": "Custom license text reviewed; permits specified uses and derivatives subject to its terms, including copyright notices and third-party-rights limitations.",
+        "termsUrl": "https://maps-semcog.opendata.arcgis.com/pages/copyright-license-agreement",
+        "termsContentUrl": "https://www.arcgis.com/sharing/rest/content/items/a7374e5f72ba4c558d9d5463e933e1d9/data?f=json",
+        "attribution": "Southeast Michigan Council of Governments (SEMCOG); apply the copyright notice and appropriate year required by the license.",
+        "allIntendedUsesCleared": false
+      },
+      "crs": {
+        "horizontal": "EPSG:2253",
+        "vertical": null,
+        "basis": "Live Buildings_2024 service metadata."
+      },
+      "units": {
+        "horizontal": "international foot",
+        "median_hgt": null,
+        "stories": "story count"
+      },
+      "accuracy": {
+        "horizontalErrorM": null,
+        "verticalErrorM": null,
+        "surveyGradeVerified": false,
+        "summary": "Metadata warns that footprints initially delineated from 2010 imagery can be shifted relative to later imagery. Median building height is not maximum roof height."
+      },
+      "acquisitionDate": null,
+      "documentedInventoryDate": "2024-12-31",
+      "queryMetadata": {
+        "geometryType": "polygon",
+        "hasZ": false,
+        "maxRecordCount": 2000,
+        "idField": "objectid",
+        "buildingIdField": "building_id",
+        "currentBuildingFilter": "demolished IS NULL",
+        "heightField": "median_hgt",
+        "storiesField": "stories",
+        "sourceField": "source"
+      },
+      "useLimitations": [
+        "The checked metadata does not specify median_hgt units. Preserve that raw value with a null unit; do not convert it using geometry units or present it as a measured metre height.",
+        "Null heights and story counts represent missing information and must not become zero-height measured buildings.",
+        "Story-count-based extrusion is an estimate even when the story count is sourced.",
+        "The inventory retains demolished buildings; use the documented filter for a current-building candidate set.",
+        "Many detached garages, utility sheds, and recreational structures are outside the inventory definition.",
+        "The stated inventory date does not mean every footprint or height was newly measured in 2024.",
+        "Preserve source identifiers and separate inferred architectural dress from source-measured attributes."
+      ]
+    },
+    {
+      "id": "usgs-wayne-2017-dem",
+      "name": "2017 Lidar DEM: Wayne County, Michigan",
+      "provider": "State of Michigan and USGS; metadata and access through NOAA Office for Coastal Management",
+      "sourceType": "elevation-raster",
+      "verifiedDate": "2026-11-24",
+      "intendedUse": "Candidate hydro-flattened bare-earth ground elevations beneath Belle Isle and the Jefferson corridor.",
+      "urls": {
+        "metadata": "https://www.fisheries.noaa.gov/inport/item/80495/full-list",
+        "customDownload": "https://coast.noaa.gov/dataviewer/#/lidar/search/where:ID=15694/details/15694",
+        "bulkDownload": "https://prd-tnm.s3.amazonaws.com/index.html?prefix=StagedProducts/Elevation/OPR/Projects/MI_WayneCounty_2017_A17/MI_WayneCo_2017/TIFF/",
+        "reportsAndSpatialMetadata": "https://prd-tnm.s3.amazonaws.com/index.html?prefix=StagedProducts/Elevation/metadata/MI_WayneCounty_2017_A17/MI_WayneCo_2017/",
+        "programTerms": "https://www.usgs.gov/3d-elevation-program"
+      },
+      "license": {
+        "name": "USGS 3DEP public-domain data",
+        "status": "USGS states 3DEP products are free and without use restrictions; this product's metadata records no access constraints and documents accuracy and age limitations.",
+        "termsUrl": "https://www.usgs.gov/3d-elevation-program",
+        "attribution": "State of Michigan; U.S. Geological Survey 3D Elevation Program; NOAA Office for Coastal Management metadata and distribution",
+        "allIntendedUsesCleared": false
+      },
+      "crs": {
+        "horizontal": "EPSG:6499",
+        "horizontalName": "NAD83(2011) / Michigan South (ft)",
+        "vertical": "EPSG:8228",
+        "verticalName": "NAVD88 height (ft)",
+        "geoidModel": "Geoid12B",
+        "basis": "Original-project bulk GeoTIFF metadata; a custom download may have a different CRS."
+      },
+      "units": {
+        "horizontal": "international foot",
+        "elevation": "international foot",
+        "gridSpacing": "international foot"
+      },
+      "accuracy": {
+        "horizontalErrorM": null,
+        "verticalErrorM": null,
+        "reportedHorizontalProjectRmseM": 1.0,
+        "reportedVerticalProjectNvaSpecificationM": 0.196,
+        "reportedVerticalProjectNvaConfidencePercent": 95,
+        "localControlValidationPerformed": false,
+        "summary": "QL2 source. Metadata contains inconsistent prose about achieved nonvegetated vertical accuracy; retain the report and avoid claiming a uniform 10-centimetre result. Project-level accuracy is not a guarantee at every ground sample."
+      },
+      "acquisitionStart": "2017-04-12",
+      "acquisitionEnd": "2017-04-23",
+      "gridSpacing": 2,
+      "useLimitations": [
+        "The 2017 capture may not represent current construction, grading, vegetation, or shoreline conditions.",
+        "Bare-earth elevation does not supply roof height, tree height, bridge-deck clearance, or submerged bathymetry.",
+        "Inspect GeoTIFF tags and no-data values before reprojection, resampling, or collision-surface generation.",
+        "Hydro-flattened water is a modeling treatment, not a live water-level measurement.",
+        "Normalize horizontal and vertical foot units explicitly; retain a separate game-world height offset.",
+        "Compare transformed terrain with independent control points before changing existing driveable surfaces."
+      ]
+    },
+    {
+      "id": "noaa-wayne-2017-point-cloud",
+      "name": "2017 Lidar: Wayne County, Michigan - NOAA alternate distribution",
+      "provider": "State of Michigan and USGS; NOAA Office for Coastal Management distribution",
+      "sourceType": "point-cloud",
+      "verifiedDate": "2026-11-24",
+      "intendedUse": "Candidate point cloud for ground checks and carefully classified roof or canopy measurements.",
+      "urls": {
+        "metadata": "https://www.fisheries.noaa.gov/inport/item/58939/full-list",
+        "customDownload": "https://coast.noaa.gov/dataviewer/#/lidar/search/where:ID=9034",
+        "bulkDownload": "https://noaa-nos-coastal-lidar-pds.s3.amazonaws.com/laz/geoid18/9034/index.html",
+        "breaklines": "https://noaa-nos-coastal-lidar-pds.s3.amazonaws.com/laz/geoid18/9034/breaklines/index.html",
+        "coverageGraphic": "https://noaa-nos-coastal-lidar-pds.s3.amazonaws.com/laz/geoid18/9034/supplemental/mi2017_wayne_m9034.kmz"
+      },
+      "license": {
+        "name": "USGS 3DEP data distributed through NOAA",
+        "status": "Source 3DEP products have no use restrictions; NOAA metadata documents no access constraints and requires awareness of limitations.",
+        "termsUrl": "https://www.usgs.gov/3d-elevation-program",
+        "attribution": "State of Michigan; U.S. Geological Survey; NOAA Office for Coastal Management",
+        "allIntendedUsesCleared": false
+      },
+      "crs": {
+        "horizontal": null,
+        "vertical": null,
+        "geoidModel": null,
+        "basis": "NOAA bulk files were transformed. The bulk-download description explicitly warns that its heights differ from the original-project metadata. Read each delivered LAS/LAZ VLR and accompanying metadata before assigning a CRS."
+      },
+      "units": {
+        "horizontal": null,
+        "elevation": null
+      },
+      "accuracy": {
+        "horizontalErrorM": null,
+        "verticalErrorM": null,
+        "localControlValidationPerformed": false,
+        "summary": "2017 QL2 source with project-level accuracy reporting. No roof-specific or individual-tree accuracy was established in this review."
+      },
+      "acquisitionStart": "2017-04-12",
+      "acquisitionEnd": "2017-04-23",
+      "useLimitations": [
+        "Do not reuse the original project's State Plane foot-based transform without checking NOAA's delivered coordinates and heights.",
+        "The documented classification list does not establish a dedicated building class; roof extraction requires classification and footprint-aware quality checks.",
+        "The highest return in a footprint can be vegetation or noise and must not automatically become roof height.",
+        "Reject or separately process noise, withheld points, overlap points, and insufficiently supported estimates.",
+        "Record point density, footprint overlap, ground reference, height statistic, and confidence for derived building heights."
+      ]
+    },
+    {
+      "id": "usda-naip-orthoimagery",
+      "name": "National Agriculture Imagery Program (NAIP)",
+      "provider": "U.S. Department of Agriculture; USGS EROS distribution",
+      "sourceType": "orthoimagery-catalog",
+      "verifiedDate": "2026-11-24",
+      "intendedUse": "Candidate broad terrain color and land-cover reference after selecting actual Detroit-area scenes and reading their metadata.",
+      "urls": {
+        "program": "https://www.usgs.gov/centers/eros/science/usgs-eros-archive-aerial-photography-national-agriculture-imagery-program-naip",
+        "catalog": "https://data.usgs.gov/datacatalog/data/USGS%3AEROS5e83a340bf820c39",
+        "downloadPortal": "https://earthexplorer.usgs.gov/",
+        "doi": "https://doi.org/10.5066/F7QN651G",
+        "publicDomainExplanation": "https://www.usgs.gov/programs/national-geospatial-program/supporting-themes"
+      },
+      "license": {
+        "name": "Public domain",
+        "status": "USGS identifies NAIP imagery as public-domain data; the exact scene and its provenance still need selection.",
+        "termsUrl": "https://data.usgs.gov/datacatalog/data/USGS%3AEROS5e83a340bf820c39",
+        "attribution": "U.S. Department of Agriculture NAIP; USGS EROS distribution; include selected acquisition year and scene identifiers.",
+        "allIntendedUsesCleared": false
+      },
+      "crs": {
+        "horizontal": null,
+        "vertical": null,
+        "basis": "Product and encoding dependent; use the selected GeoTIFF or JPEG2000 metadata."
+      },
+      "units": {
+        "horizontal": null,
+        "groundSampleDistance": "metre",
+        "elevation": null
+      },
+      "accuracy": {
+        "horizontalErrorM": null,
+        "verticalErrorM": null,
+        "selectedSceneGroundSampleDistanceM": null,
+        "summary": "No Detroit scene was selected by this catalog. NAIP acquisition specifications, resolution, season, and image date must be checked for the selected product."
+      },
+      "acquisitionDate": null,
+      "useLimitations": [
+        "Broad aerial reference does not provide measured facade texture, curb geometry, or individual tree locations.",
+        "Leaf-on imagery can obscure roads, building edges, and ground under canopy.",
+        "An orthophoto is not automatically free from shadows or perspective effects on tall structures.",
+        "Do not substitute imagery from a commercial basemap shown by a portal for a selected public-domain NAIP scene."
+      ]
+    },
+    {
+      "id": "detroit-mapillary-panoramas",
+      "name": "Detroit Street View panoramas distributed through Mapillary",
+      "provider": "City of Detroit Detroit Street View program; Mapillary distribution",
+      "sourceType": "optional-street-level-imagery-reference",
+      "verifiedDate": "2026-11-24",
+      "intendedUse": "Optional dated reference for facade proportions, signs, materials, and street furniture, subject to the selected image's license and permitted workflow.",
+      "urls": {
+        "cityProgram": "https://detroitmi.gov/departments/department-innovation-and-technology/detroit-street-view",
+        "cityItem": "https://www.arcgis.com/home/item.html?id=454c2af636e94bae80d958d9a53217f4",
+        "licenseExplanation": "https://help.mapillary.com/hc/en-us/articles/115001770409-CC-BY-SA-license-for-open-data",
+        "apiDocumentation": "https://www.mapillary.com/developer/api-documentation/"
+      },
+      "license": {
+        "name": "CC-BY-SA for Mapillary imagery; confirm the selected image's applicable version and terms",
+        "status": "Image-level attribution and share-alike obligations require review for any distributed derivative texture. Catalog inclusion is not approval for unrestricted texture extraction.",
+        "termsUrl": "https://help.mapillary.com/hc/en-us/articles/115001770409-CC-BY-SA-license-for-open-data",
+        "attribution": "Preserve image URL, contributor identity/profile URL, capture date, applicable license, and a description of any modifications.",
+        "allIntendedUsesCleared": false
+      },
+      "crs": {
+        "horizontal": null,
+        "vertical": null,
+        "basis": "No image-specific metadata was selected."
+      },
+      "units": {
+        "horizontal": null,
+        "elevation": null
+      },
+      "accuracy": {
+        "horizontalErrorM": null,
+        "verticalErrorM": null,
+        "surveyGradeVerified": false,
+        "summary": "Street imagery is a visual reference; its camera position and reconstructed geometry were not independently validated."
+      },
+      "acquisitionDate": null,
+      "useLimitations": [
+        "Share-alike and attribution obligations can apply to modified imagery and derivative textures; review the actual image terms before incorporating assets.",
+        "Imagery licensing and licensing of extracted map data are distinct; do not assume one covers the other.",
+        "Respect anonymization and do not restore blurred faces or license plates.",
+        "Perspective distortion, reflections, baked lighting, occlusion, and capture age limit direct material extraction.",
+        "Single-image normal and roughness maps are inferred material estimates, not measured surface properties."
+      ]
+    },
+    {
+      "id": "original-or-permissioned-local-imagery",
+      "name": "Original or explicitly permissioned Detroit reference photography",
+      "provider": null,
+      "sourceType": "recommended-future-capture",
+      "verifiedDate": "2026-11-24",
+      "intendedUse": "Preferred source for custom facade materials, street-level details, and photogrammetry when capture rights, reuse rights, and measurement references are recorded.",
+      "urls": {
+        "source": null,
+        "permissionRecord": null
+      },
+      "license": {
+        "name": null,
+        "status": "No images, photographer agreement, or reusable texture rights are supplied by this catalog.",
+        "termsUrl": null,
+        "attribution": null,
+        "allIntendedUsesCleared": false
+      },
+      "crs": {
+        "horizontal": null,
+        "vertical": null,
+        "basis": "Determine from capture metadata and independent control measurements."
+      },
+      "units": {
+        "horizontal": null,
+        "elevation": null
+      },
+      "accuracy": {
+        "horizontalErrorM": null,
+        "verticalErrorM": null,
+        "surveyGradeVerified": false,
+        "summary": "Accuracy remains unknown until capture calibration, scale, control points, and reconstruction residuals are assessed."
+      },
+      "acquisitionDate": null,
+      "useLimitations": [
+        "Record photographer, location, date, permitted uses, and rights for distribution and derivative materials.",
+        "Use overlapping views and measured scale/control when a model is intended to carry geographic measurements.",
+        "Remove baked illumination and correct perspective before creating tileable PBR materials; keep original references for comparison.",
+        "Acquiring a photograph or model does not by itself establish every relevant reuse right."
+      ]
+    },
+    {
+      "id": "misail-public-imagery-reference",
+      "name": "Michigan MiSAIL public 12-inch imagery",
+      "provider": "Michigan Department of Technology, Management and Budget",
+      "sourceType": "view-only-imagery-reference",
+      "verifiedDate": "2026-11-24",
+      "intendedUse": "Reference discovery within the provider's available viewing service.",
+      "urls": {
+        "program": "https://www.michigan.gov/dtmb/services/maps/misail"
+      },
+      "license": {
+        "name": null,
+        "status": "The program explicitly describes the public 12-inch imagery as view only and not available for download.",
+        "termsUrl": "https://www.michigan.gov/dtmb/services/maps/misail",
+        "attribution": "State of Michigan MiSAIL",
+        "allIntendedUsesCleared": false
+      },
+      "crs": {
+        "horizontal": null,
+        "vertical": null
+      },
+      "units": {
+        "horizontal": null,
+        "elevation": null
+      },
+      "accuracy": {
+        "horizontalErrorM": null,
+        "verticalErrorM": null,
+        "summary": "Advertised imagery resolution does not establish positional accuracy or texture reuse rights."
+      },
+      "acquisitionDate": null,
+      "useLimitations": [
+        "Do not treat this viewing service as a source of downloadable or redistributable game textures.",
+        "The program's separately linked USGS lidar availability does not change these imagery restrictions."
+      ]
+    }
+  ],
+  "workflowCorrections": [
+    {
+      "id": "earth-studio-export-boundary",
+      "correction": "Earth Studio's documented outputs include rendered imagery, camera data, and tracking points. Those outputs do not establish an exportable terrain-mesh dataset or a surveyed ground surface for this game.",
+      "sourceUrls": [
+        "https://earth.google.com/studio/docs/advanced-features/3d-camera-export/",
+        "https://earth.google.com/studio/docs/making-animations/rendering/"
+      ]
+    },
+    {
+      "id": "google-imagery-reuse",
+      "correction": "Do not assume Google Street View screenshots may become redistributed PBR textures. Google Maps Platform policies restrict extraction and derived content; use original or suitably licensed imagery for the material pipeline.",
+      "sourceUrls": [
+        "https://developers.google.com/maps/documentation/streetview/policies"
+      ]
+    },
+    {
+      "id": "import-is-not-measurement",
+      "correction": "A GIS import preserves the source geometry's coordinate meaning when transformed correctly; it does not make every footprint, tree location, or elevation exact. Record the source's date, limitations, and independent alignment checks.",
+      "sourceUrls": [
+        "https://www.arcgis.com/sharing/rest/content/items/2b9ab7687289457c9793a4a92d7c4eb9?f=json",
+        "https://www.fisheries.noaa.gov/inport/item/80495/full-list"
+      ]
+    },
+    {
+      "id": "surface-type-separation",
+      "correction": "Keep ground, bridge deck, road deck, roof, canopy, and water elevation separate. A bare-earth DEM cannot supply all these surfaces, and a building median height cannot specify a roof peak.",
+      "sourceUrls": [
+        "https://www.fisheries.noaa.gov/inport/item/80495/full-list",
+        "https://www.arcgis.com/sharing/rest/content/items/c9bd1139cb15497084c328315a2c0c84/info/metadata/metadata.xml?format=default&output=html"
+      ]
+    },
+    {
+      "id": "vertical-datum-separation",
+      "correction": "NAVD88, ellipsoidal heights, and International Great Lakes Datum water levels are not interchangeable. Apply an appropriate documented transformation before using river levels to align terrain.",
+      "sourceUrls": [
+        "https://www.ngs.noaa.gov/TOOLS/IGLD85/igld85.shtml",
+        "https://www.fisheries.noaa.gov/inport/item/58939/full-list"
+      ]
+    }
+  ],
+  "remainingCriticalUncertainties": [
+    "City of Detroit Base Unit Layers' specific redistribution terms have not been established from the empty item license field.",
+    "The unit and measurement lineage of SEMCOG median_hgt require verification before it can drive measured runtime building heights.",
+    "No exact DEM, lidar, or NAIP tiles have been selected or inspected as part of creating this catalog.",
+    "No independent local control residuals, scene-specific positional accuracy, or runtime vertical alignment have been established.",
+    "No facade photo set, source-specific texture permission records, or matched-camera visual acceptance are supplied by this catalog."
+  ]
+}
