@@ -1,12 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
 import * as T from 'three';
 import {addStreetDetails} from './streetDetails.ts';
 import {StaticPaletteBatch} from './staticPaletteBatch.ts';
 import {preserveStreetBatchOrder} from './streetBatchOrder.ts';
 import {batchStaticArchitecture} from './staticArchitectureBatch.ts';
 import type {StreetPlan} from './streetPlan.ts';
+import {WorldAtmosphere} from './worldAtmosphere.ts';
+import {applyRealisticMaterials,loadRealisticMaterials} from './realisticMaterials.ts';
+import {applyPhotoReferenceSurfaces} from './photoReferenceSurfaces.ts';
+import {dressSunsetGround} from './sunsetGround.ts';
 
 function canvasFixture(run:()=>void){
  const old=Object.getOwnPropertyDescriptor(globalThis,'document');
@@ -29,6 +34,68 @@ function cameraAt(x:number,z:number,yaw:number){
  camera.updateMatrixWorld(true);return camera;
 }
 function frustumFor(camera:T.Camera){return new T.Frustum().setFromProjectionMatrix(new T.Matrix4().multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse));}
+
+test('identity street arithmetic is limited to the pinned native batching vertex branches',()=>{
+ assert.equal(T.REVISION,'185');
+ const files:Record<string,string>={
+  'src/renderers/webgl/WebGLProgram.js':'a341febd40f5f16253c1fd624f6ae7d0ca34b7a5411fcee1699b87962081ec72',
+  'src/renderers/shaders/ShaderChunk/batching_vertex.glsl.js':'266f63ad1197571269f6eb9363a2c916e120fccee3d897181805c831918ef34b',
+  'src/renderers/shaders/ShaderChunk/batching_pars_vertex.glsl.js':'f1010ad0951f5870cb4d12789dd0799a59eb365da814682f8e2a5f9fa585d0c9',
+  'src/renderers/shaders/ShaderChunk/defaultnormal_vertex.glsl.js':'4246f76524da8fcde17934603abf0467163fff241441b19ea5c6fe02f0ff61cb',
+  'src/renderers/shaders/ShaderChunk/project_vertex.glsl.js':'74632caa5cc4a9812b1bb423aac7574748e648613c18898c6bf57d26b85600d3',
+  'src/renderers/shaders/ShaderChunk/worldpos_vertex.glsl.js':'d291ca05988f57312c060b33fa271472b3756b6a6b737934f5a04f882bf4f17f',
+ };
+ for(const [path,hash] of Object.entries(files))assert.equal(createHash('sha256').update(readFileSync(new URL('../../node_modules/three/'+path,import.meta.url))).digest('hex'),hash,path);
+ assert.deepEqual(Object.entries(T.ShaderChunk).filter(([,value])=>/\bUSE_BATCHING\b/.test(value)).map(([key])=>key).sort(),
+  ['batching_pars_vertex','batching_vertex','defaultnormal_vertex','project_vertex','worldpos_vertex']);
+ const program=readFileSync(new URL('../../node_modules/three/src/renderers/webgl/WebGLProgram.js',import.meta.url),'utf8');
+ assert.match(program,/parameters\.batching \? '#define USE_BATCHING' : ''/);
+ assert.match(program,/prefixVertex \+ vertexShader/,'The original Mesh variant never defines the disabled macro, while the BatchedMesh prefix precedes our undef');
+});
+
+test('street identity shader preserves native fragment/uniform work, material identity and callback receiver/arguments',()=>{
+ const material=new T.MeshStandardMaterial(),geometry=new T.BoxGeometry();
+ const sources=[new T.Mesh(geometry,material),new T.Mesh(geometry,material)];
+ const calls:unknown[][]=[],renderer={} as T.WebGLRenderer,receiver=new T.MeshStandardMaterial();receiver.name='receiver';
+ const uniform={value:17},result={original:true};
+ const original:T.Material['onBeforeCompile']=function(this:T.Material,...args){calls.push([this,...args]);args[0].uniforms.authored=uniform;args[0].vertexShader='// authored vertex\n'+args[0].vertexShader;args[0].fragmentShader='// authored fragment\n'+args[0].fragmentShader;return result;};
+ material.onBeforeCompile=original;material.customProgramCacheKey=function(){return this.name+'-original-key';};
+ const shader=()=>({uniforms:{},vertexShader:T.ShaderLib.standard.vertexShader,fragmentShader:T.ShaderLib.standard.fragmentShader}) as Parameters<T.Material['onBeforeCompile']>[0];
+ const native=shader();assert.equal(Reflect.apply(original,receiver,[native,renderer]),result);
+ const batch=new T.BatchedMesh(2,geometry.attributes.position.count*2,geometry.index!.count*2,material);
+ const version=material.version;assert.notEqual(preserveStreetBatchOrder(batch,sources),false);
+ const candidate=shader();assert.equal(Reflect.apply(material.onBeforeCompile,receiver,[candidate,renderer]),result);
+ assert.deepEqual(calls,[[receiver,native,renderer],[receiver,candidate,renderer]]);
+ assert.equal(candidate.vertexShader,'#undef USE_BATCHING\n'+native.vertexShader);
+ assert.equal(candidate.fragmentShader,native.fragmentShader);assert.equal(candidate.uniforms.authored,uniform);
+ assert.equal(batch.material,material);assert.equal(material.version,version+1);
+ assert.equal(material.customProgramCacheKey.call(receiver),'receiver-original-key|street-identity-vertex-v1');
+ const compile=material.onBeforeCompile,key=material.customProgramCacheKey;
+ assert.notEqual(preserveStreetBatchOrder(batch,sources),false);assert.equal(material.version,version+1);
+ assert.equal(material.onBeforeCompile,compile);assert.equal(material.customProgramCacheKey,key);
+ material.onBeforeCompile=original;assert.equal(preserveStreetBatchOrder(batch,sources),false,'An externally replaced callback is not silently approved');
+ batch.dispose();geometry.dispose();material.dispose();receiver.dispose();
+});
+
+test('identity street shader rejects nonidentity or color/alpha variants before changing their materials',()=>{
+ for(const change of [
+  (sources:T.Mesh[],_batch:T.BatchedMesh)=>{sources[0].position.x=1;sources[0].updateMatrixWorld(true);},
+  (sources:T.Mesh[],_batch:T.BatchedMesh)=>{sources[0].matrixWorld.elements[12]=1;},
+  (_sources:T.Mesh[],batch:T.BatchedMesh)=>{batch.matrix.elements[12]=1;},
+  (_sources:T.Mesh[],batch:T.BatchedMesh)=>{batch.matrixWorld.elements[12]=1;},
+  (sources:T.Mesh[])=>{(sources[0].material as T.Material).transparent=true;},
+  (sources:T.Mesh[])=>{(sources[0].material as T.Material).alphaTest=.5;},
+  (sources:T.Mesh[])=>{(sources[0].material as T.Material).opacity=.5;},
+  (sources:T.Mesh[])=>{(sources[0].material as T.Material).vertexColors=true;},
+  (_sources:T.Mesh[],batch:T.BatchedMesh)=>{const geometry=new T.BoxGeometry(),id=batch.addGeometry(geometry);batch.setColorAt(batch.addInstance(id),new T.Color());geometry.dispose();},
+ ]){
+  const material=new T.MeshStandardMaterial(),geometry=new T.BoxGeometry(),sources=[new T.Mesh(geometry,material),new T.Mesh(geometry,material)];
+  const batch=new T.BatchedMesh(2,geometry.attributes.position.count*2,geometry.index!.count*2,material),compile=material.onBeforeCompile,key=material.customProgramCacheKey;
+  change(sources,batch);const version=material.version;assert.equal(preserveStreetBatchOrder(batch,sources),false);
+  assert.equal(material.onBeforeCompile,compile);assert.equal(material.customProgramCacheKey,key);assert.equal(material.version,version);
+  assert.equal(batch.customSort,null);batch.dispose();geometry.dispose();material.dispose();
+ }
+});
 
 test('full shipped street plan keeps every vertex, normal, material, bound and native source draw order',()=>canvasFixture(()=>{
  const scene=new T.Scene(),street=addStreetDetails(scene,fullPlan());
@@ -114,3 +181,35 @@ test('street batching retains original fallback, callbacks, live colors and visi
  street.update(4000,4000);palette.beginView(true,camera);assert(sources.every(s=>!s.visible));assert.equal(batch.visible,false);palette.endView();
  assert.equal(sources[2].onBeforeRender,callback);palette.dispose();
 }));
+
+test('actual street decoration and scene rediscovery retain one atmosphere owner and the original shader/uniform bindings',async()=>{
+ const scene=new T.Scene(),noise=new T.Texture(),atmosphere=new WorldAtmosphere(scene,noise),textures:T.Texture[]=[];
+ const renderer={capabilities:{getMaxAnisotropy:()=>8},initTexture(){}} as unknown as T.WebGLRenderer;
+ let street!:ReturnType<typeof addStreetDetails>;
+ canvasFixture(()=>{street=addStreetDetails(scene,{boxes:[0,260,520].map(x=>({x,y:2,z:0,w:5,h:.01,l:8,yaw:0,material:'white'})),signs:[],stats:{},notes:[]});});
+ await Promise.resolve();
+ const load=T.TextureLoader.prototype.loadAsync;
+ T.TextureLoader.prototype.loadAsync=async url=>{const texture=new T.Texture({width:1,height:1} as HTMLImageElement);texture.name=url;textures.push(texture);return texture;};
+ try{await loadRealisticMaterials(renderer);}finally{T.TextureLoader.prototype.loadAsync=load;}
+ applyRealisticMaterials(scene);applyPhotoReferenceSurfaces(scene);dressSunsetGround(scene);
+ const sources=street.batchSources();
+ const compile=(material:T.Material)=>{
+  const shader={uniforms:{},vertexShader:T.ShaderLib.standard.vertexShader,fragmentShader:T.ShaderLib.standard.fragmentShader,numPointLights:4,numPointLightShadows:0} as Parameters<T.Material['onBeforeCompile']>[0];
+  material.onBeforeCompile(shader,renderer);return shader;
+ };
+ const materials=[...new Set(sources.map(source=>source.material as T.Material))],before=new Map(materials.map(material=>[material,{key:material.customProgramCacheKey(),shader:compile(material)}]));
+ const palette=new StaticPaletteBatch(sources,new Set(sources),preserveStreetBatchOrder);scene.add(palette.root);
+ await Promise.resolve();atmosphere.flush();assert.equal(palette.stats.batches,1);
+ atmosphere.update(13,new T.Vector3(0,1,0),.4,1,0,'high',false,false);
+ for(const material of materials){
+  const original=before.get(material)!,shader=compile(material);
+  assert.equal(material.customProgramCacheKey(),original.key+'|street-identity-vertex-v1','Scene rediscovery keeps the original atmosphere owner/key');
+  assert.equal(shader.vertexShader,'#undef USE_BATCHING\n'+original.shader.vertexShader);assert.equal(shader.fragmentShader,original.shader.fragmentShader);
+  assert.equal((shader.vertexShader.match(/varying vec3 belleAtmosphereWorld;/g)||[]).length,1);
+  for(const [name,uniform] of Object.entries(atmosphere.uniforms))assert.equal(shader.uniforms[name],uniform);
+  assert.equal(shader.uniforms.belleCloudTime.value,13);
+ }
+ assert(sources.every(source=>source.material===(palette.root.children[0] as T.Mesh).material));
+ palette.dispose();atmosphere.dispose();noise.dispose();textures.forEach(texture=>texture.dispose());
+ scene.traverse(object=>{if(object instanceof T.Mesh)object.geometry.dispose();});materials.forEach(material=>material.dispose());
+});

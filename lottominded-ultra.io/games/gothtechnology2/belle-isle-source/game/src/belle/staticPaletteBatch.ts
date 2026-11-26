@@ -11,7 +11,7 @@ export class StaticPaletteBatch {
  private active=false;
  private ownedMaterials:T.Material[]=[];
  private lods:T.LOD[]=[];
- constructor(sources:T.Mesh[],selection?:number|ReadonlySet<T.Mesh>,prepareBatch?:(batch:T.BatchedMesh,sources:T.Mesh[])=>void){
+ constructor(sources:T.Mesh[],selection?:number|ReadonlySet<T.Mesh>,prepareBatch?:(batch:T.BatchedMesh,sources:T.Mesh[])=>void|false){
   const sameMaterial=typeof selection==='number'?undefined:selection;
   this.root.name='Split static material batches';this.root.visible=false;
   const groups=new Map<string,T.Mesh[]>(),materials=new Map<T.Material,string>();
@@ -51,14 +51,16 @@ export class StaticPaletteBatch {
    // Preserve the source-space procedural surface shader. BatchedMesh transforms
    // positions after begin_vertex, so no world-space texture rebaking is needed.
    if(!exact){
-    this.ownedMaterials.push(material);material.color.setRGB(1,1,1);
+    material.color.setRGB(1,1,1);
     material.onBeforeCompile=(shader,renderer)=>original.onBeforeCompile(shader,renderer);
     material.customProgramCacheKey=()=>original.customProgramCacheKey();
    }
    const geometries=[...new Set(sources.map(s=>s.geometry))];
    const vertices=geometries.reduce((n,g)=>n+g.attributes.position.count,0),indices=geometries.reduce((n,g)=>n+(g.index?.count??0),0);
    const mesh=new T.BatchedMesh(sources.length,vertices,indices,material),geometryIds=new Map<T.BufferGeometry,number>();
-   mesh.sortObjects=false;prepareBatch?.(mesh,sources);
+   mesh.sortObjects=false;
+   if(prepareBatch?.(mesh,sources)===false){mesh.dispose();if(!exact)material.dispose();continue;}
+   if(!exact)this.ownedMaterials.push(material);
    installBatchedIndirectUpdates(mesh);
    for(const geometry of geometries)geometryIds.set(geometry,mesh.addGeometry(geometry));
    const ids=sources.map(source=>{const id=mesh.addInstance(geometryIds.get(source.geometry)!);mesh.setMatrixAt(id,source.matrixWorld);if(!exact)mesh.setColorAt(id,(source.material as T.MeshStandardMaterial).color);return id;});

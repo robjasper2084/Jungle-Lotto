@@ -113,3 +113,23 @@ test('detaching a staged LOD for rollback cannot leave its batched facade visibl
   assert.deepEqual(drawn(scene,palette,sources),levelPieces(0));palette.endView();
  }finally{palette.dispose();}
 });
+
+test('a refused batch keeps original draws and disposes only its temporary resources',()=>{
+ for(const exact of [false,true]){
+  const {sources}=fixture(),original=sources[0].material as T.Material;
+  for(const source of sources)source.position.set(0,0,0);
+  let originalDisposed=0,temporaryGeometryDisposed=0,temporaryMaterialDisposed=0;
+  original.addEventListener('dispose',()=>originalDisposed++);
+  const palette=new StaticPaletteBatch(sources,exact?new Set(sources):undefined,(batch,group)=>{
+   assert.deepEqual(group.map(source=>source.uuid),sources.map(source=>source.uuid));
+   batch.geometry.addEventListener('dispose',()=>temporaryGeometryDisposed++);
+   if(batch.material!==original)(batch.material as T.Material).addEventListener('dispose',()=>temporaryMaterialDisposed++);
+   return false;
+  });
+  assert.deepEqual(palette.stats,{sourceDraws:0,batches:0});assert.equal(palette.root.children.length,0);
+  assert.ok(sources.every(source=>source.visible&&source.parent));
+  assert.equal(temporaryGeometryDisposed,1);assert.equal(temporaryMaterialDisposed,exact?0:1);assert.equal(originalDisposed,0);
+  palette.dispose();
+  assert.equal(temporaryGeometryDisposed,1);assert.equal(temporaryMaterialDisposed,exact?0:1);assert.equal(originalDisposed,0);
+ }
+});

@@ -24,7 +24,7 @@ export function batchStaticArchitecture(scene:T.Scene,renderer:T.WebGLRenderer,r
   streets.add(mesh);exact.add(mesh);sources.push(mesh);
  }
  const palette=new StaticPaletteBatch(sources,exact,(batch,group)=>{
-  if(group.every(source=>streets.has(source)))preserveStreetBatchOrder(batch,group);
+  if(group.every(source=>streets.has(source)))return preserveStreetBatchOrder(batch,group);
  });
  if(!palette.stats.batches)return;
  palette.root.name='Static architecture material batches';

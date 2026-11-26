@@ -94,8 +94,11 @@ const init=(async()=>{
   for(const source of sources)source.visible=false;
   renderer.shadowMap.needsUpdate=true;renderer.render(scene,camera);const streetHidden=await readRendered();
   sources.forEach((source,i)=>{source.visible=visibility[i];});
-  renderer.shadowMap.enabled=false;renderer.render(scene,camera);const shadowOff=await readRendered();
-  renderer.shadowMap.enabled=true;renderer.shadowMap.needsUpdate=true;
+  // Changing only shadowMap.enabled leaves existing cached shadow programs in
+  // r185. Changing the light's shadow membership also updates the native light
+  // state and selects the actual no-shadow material variant for this control.
+  sun.castShadow=false;renderer.render(scene,camera);const shadowOff=await readRendered();
+  sun.castShadow=true;renderer.shadowMap.needsUpdate=true;
   const visibleStreetPixels=changedPixels(baseline.pixels,streetHidden.pixels),visibleShadowPixels=changedPixels(baseline.pixels,shadowOff.pixels);
   const restored=sources.every((s,i)=>s.visible===visibility[i]);
   rows.push({name,width,height,changedPixels:differingPixels,maxChannelDelta,visibleStreetPixels,visibleShadowPixels,baselineCalls:baseline.calls,candidateCalls:candidate.calls,
