@@ -65,7 +65,6 @@ jobs:
           src/belle/bridgeMaterialFinish.test.ts
           src/belle/macArthurSurface.test.ts
           src/belle/macArthurBumpCenterReuse.test.ts
-          src/belle/lawnFragmentOptimization.test.mjs
           src/belle/cinematicCloning.test.mjs
           src/belle/cinematicPolicy.test.ts
           src/belle/atmosphereProgramSharing.test.ts

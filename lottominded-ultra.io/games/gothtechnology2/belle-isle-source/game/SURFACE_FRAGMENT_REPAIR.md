@@ -1,8 +1,8 @@
 # Surface fragment repair — investigation and acceptance
 
-Version 1 · 26 November 2026
+Version 2 · 26 November 2026
 
-**Status:** surface shader candidates are staged behind explicit opt-ins and remain disabled in normal game construction. A recorded SwiftShader run passed all 36 original-versus-candidate grain/patch cases with zero changed pixels. Its small timing sample did not demonstrate a reliable performance improvement. A subsequent MacArthur texture-sample candidate, native Metal, the added original-versus-current-default comparison, and full release acceptance remain unproven by that run.
+**Status:** the grass candidate is withdrawn because native Metal changed 23 pixels across nine cases at maximum channel delta 1. The original terrain shader is restored byte-for-byte. Asphalt and MacArthur candidates remain disabled in normal game construction: their strict targeted pixels passed on both backends, but their timings do not establish a consistent native improvement. The unchanged full-game desktop release checks remain failing on the original source; merge and deployment are blocked until the final revision passes them.
 
 The immutable comparison baseline is [PR #225 source d4f4baa8e2016f4c9107b40176388bf2d3f6fe8c](https://github.com/robjasper2084/Jungle-Lotto/commit/d4f4baa8e2016f4c9107b40176388bf2d3f6fe8c). No terrain surface, texture, geometry, collision, shadow, resolution, or quality reduction is part of this repair.
 
@@ -25,12 +25,12 @@ These scopes identify expensive submitted surfaces. They do not separate texture
 
 | Area | Source finding | Opt-in candidate |
 | --- | --- | --- |
-| Grass | `cinematicPolicy.ts` calculates the grain sine hash even when its derivative filter produces an exact zero contribution. | `new CinematicTerrain(scene, {skipInvisibleGrain:true})` hashes only when `belleLawnResolved > 0`. It retains the original patch/color expressions and their order; derivatives remain unconditional. |
+| Grass | `cinematicPolicy.ts` calculates the grain sine hash even when its derivative filter produces an exact zero contribution. | **Withdrawn.** A conditional hash produced one-channel rounding differences on native Metal. The option and helper are removed; `cinematicTerrain.ts` is the exact original source. The lawn remains in all 12 fixture cases as an unmodified regression control. |
 | Asphalt | `asphaltPolish.ts` computes repair-cell shape work for fragments whose distance filter or cell-selection mask is zero. | `finishAsphalt(material, {skipInvisiblePatches:true})` skips filtered-out repair work and unselected cells. World-space coordinates, visible repair expressions, and the existing surface finish remain. |
 | MacArthur materials | `bridgeMaterialFinish.ts` calculates grain even when its derivative weight is zero. | `finishBridgeMaterial(material, kind, {skipInvisibleGrain:true})`, also forwarded by `finishMacArthurConcrete`, guards the grain hash at an exact zero weight. Existing PBR and weathering expressions remain. |
 | MacArthur mapped bump | The final warm-limestone material retains the exact same texture object for its color map and bump map. Stock Three samples the same center texel separately for each role. | `installMacArthurBumpCenterReuse(material, {enabled:true})`, installed only on an eligible final material, reuses the original raw color sample's red channel for the center height. Both offset bump samples, their derivatives, and the original multiplication/subtraction order remain. |
 
-All options default to false and have separate program-cache identities. No epsilon, resolution change, new texture, or approximation is introduced. Mathematical zero-contribution reasoning is a candidate justification, not a substitute for compiled pixel equality or measured improvement.
+The remaining options default to false and have separate program-cache identities. No epsilon, resolution change, new texture, or approximation is introduced. Mathematical zero-contribution reasoning is a candidate justification, not a substitute for compiled pixel equality or measured improvement.
 
 `parkLawn.ts` extracts the original base grass hook for use by the proof fixture and `world.ts`. A comparison against the pinned baseline found its callback source, cache identity, and generated shader strings exactly equal. Existing three-sine meadow variation and two-sine patch variation remain.
 
@@ -54,26 +54,45 @@ Run the comparison separately on native Metal and SwiftShader, checking the repo
 
 ## Recorded GPU evidence
 
-[Run 45867870864](https://github.com/robjasper2084/Jungle-Lotto/actions/runs/45867870864), source [`db28ef869aa0bd6fd32e54684fd39e9c1db466cb`](https://github.com/robjasper2084/Jungle-Lotto/commit/db28ef869aa0bd6fd32e54684fd39e9c1db466cb), passed the Linux proof against the pinned original. The actual backend was ANGLE Vulkan SwiftShader, Three r185, at 960×600/DPR1 with antialiasing. All 36 original-versus-enabled-candidate comparisons had zero changed RGBA pixels and zero maximum channel delta. Repeat-baseline, shadow, draw-order, submitted-geometry, visible-subject, effective-detail, and shadow controls also passed. This was a two-lane run; it does not certify the subsequently added current-default lane. The macOS job was still queued when this evidence was recorded on 26 November 2026.
+[Run 45871891749](https://github.com/robjasper2084/Jungle-Lotto/actions/runs/45871891749), source [`d0f6154705cb24dff174b245c573c17919ed4a24`](https://github.com/robjasper2084/Jungle-Lotto/commit/d0f6154705cb24dff174b245c573c17919ed4a24), completed all 36 three-lane comparisons on both backends at 960×600/DPR1. The Linux job passed. The macOS job failed the original zero-tolerance assertion because the enabled grass candidate changed pixels.
 
-The [Linux artifact](https://github.com/robjasper2084/Jungle-Lotto/actions/runs/45867870864/artifacts/15141213646) contains 96 PNGs, compiled fixture code, source/asset receipts, and the machine-readable result. Its downloaded ZIP SHA-256 is `daeb9d4f068062f269c929c5923c1f218992caa913786820cf325f9f4c2e28c5`.
+| Comparison against pinned original | SwiftShader | Native Metal |
+| --- | --- | --- |
+| Current default, all surfaces | 36/36 exact | 36/36 exact |
+| Enabled grass candidate | 12/12 exact | 3/12 exact; 23 changed pixels in the other nine captures |
+| Enabled asphalt candidate | 12/12 exact | 12/12 exact |
+| Enabled MacArthur grain and mapped bump-center candidate | 12/12 exact | 12/12 exact |
 
-Each timing case contains one warmed ABBA group: two original and two candidate elapsed queries. These are complete targeted fixture renders, including shadow work and query overhead, rather than isolated arithmetic or full-game frame times. The mean candidate change was:
+Maximum grass channel difference was 1. No error tolerance, mask, ignored region or baseline update is accepted. The candidate was removed instead. Grass fixture metadata now explicitly records withdrawal and unchanged shaders, and the independent source check requires the current terrain implementation to equal the original.
 
-| Surface | Near | Mid | Grazing |
+Baseline repeat, current-default, shadow, draw-order and submitted-geometry comparisons were exact on both platforms. Actual linked/submitted bump-center shader markers were present. The wrong-center positive control changed 373,180 pixels on SwiftShader and 372,876 on Metal; restoring the original value restored zero-difference pixels. Both backends passed the asset and shader error checks.
+
+The [SwiftShader artifact](https://github.com/robjasper2084/Jungle-Lotto/actions/runs/45871891749/artifacts/15142939591) ZIP SHA-256 is `976ed04889366d8bd2827041b5bb7bf399bcbfb3b50ce2f0075ef75403dc41d0`. The [Metal artifact](https://github.com/robjasper2084/Jungle-Lotto/actions/runs/45871891749/artifacts/15143721491) ZIP SHA-256 is `0f57f2c8bc3dc95f85172e6d9d08e03a88eea7209f241119df0d7641c2e92689`. Every expected original/default/candidate capture is independently required and hashed.
+
+The masonry candidate uses three warmed ABBA groups per view, giving six observations per lane. The recorded native elapsed-query results are:
+
+| Masonry view | Original mean | Candidate mean | Mean change |
 | --- | ---: | ---: | ---: |
-| Grass | −1.46% | −0.15% | +1.81% |
-| Asphalt | +2.18% | −0.58% | +0.65% |
-| MacArthur masonry | −1.22% | +0.62% | +0.82% |
+| Near | 3.640 ms | 3.339 ms | −8.26% |
+| Mid | 2.543 ms | 2.578 ms | +1.38% |
+| Grazing | 3.122 ms | 3.129 ms | +0.21% |
 
-Negative values mean a shorter elapsed query; positive values mean longer. The mixed direction and small sample do not establish a speed benefit. The guarded work is mathematically inactive in part of the image, but a GPU compiler may execute branches differently and other material work may dominate. No candidate is enabled on this evidence.
+Near-view samples contain large outliers; their medians are 2.631 and 2.585 ms, only −1.77%. The other views have mixed results. These full targeted fixture queries include shadows and instrumentation overhead, and combine grain skipping with bump-center reuse. They do not demonstrate a consistent native rendering improvement or isolate one instruction's cost. Asphalt has only two samples per lane per view and similarly mixed results, so it also remains disabled. Fence-wait measurements include polling/scheduling and must not be described as GPU elapsed time.
 
-The fixture uses the actual MacArthur mesh geometry and existing material classification. Its tiled bridge deck is an authored material outcome, not a replacement plane. The receiver box is an explicit shadow control. This targeted scene cannot certify the complete game's appearance, gameplay, or performance.
+The prior Linux-only result in [run 45867870864](https://github.com/robjasper2084/Jungle-Lotto/actions/runs/45867870864), source `db28ef869aa0bd6fd32e54684fd39e9c1db466cb`, is historical two-lane evidence. Its macOS job was superseded by the later revision; it does not establish a native pass.
+
+The fixture uses actual MacArthur geometry and existing material classification. Its tiled bridge deck is an authored material outcome. The receiver box is an explicit shadow control. This targeted scene cannot certify the complete game's appearance, gameplay or sustained performance.
+
+### Native CPU investigation
+
+[Diagnostic run 45887564199](https://github.com/robjasper2084/Jungle-Lotto/actions/runs/45887564199) built exact original source `d4f4baa8e2016f4c9107b40176388bf2d3f6fe8c` through the workflow-only [PR #241](https://github.com/robjasper2084/Jungle-Lotto/pull/241). Both diagnostic jobs completed, but both underlying ride reports remained failing. Their separate hosts, observer overhead and derived manual-profile driver make them attribution evidence only, not a controlled speed comparison or release acceptance.
+
+The observed window had zero shader compile/link/status calls. Inclusive direct-draw submission and matrix work were much larger CPU scopes than texture/buffer upload or raw GL draw calls. Older native CPU samples also concentrate work in program/material preparation and uniform upload, but those application revisions contain other experimental changes and their absolute timings are not current-source estimates. This motivates a controlled CPU submission candidate; it does not establish one as effective.
 
 ## Validation and remaining release gates
 
-The initial **43 focused source/composition tests passed**, covering asphalt, bridge/MacArthur composition, lawn selection/cloning/restoration, existing cinematic contracts, and the actual atmosphere/material lifecycle checks. The bump-center candidate adds **eight passing contract tests**, now included in the same workflow and full suite. TypeScript checking and the Vite source compilation also pass; the compilation omits public-asset copying and does not certify full packaging. The complete code suite after adding the bump-center candidate finished with **1,791 passes, zero failures and three skips**; the asset validation suite added 11 passes (**1,802 passing tests total**). The final three-lane browser fixture also passes a separate strict TypeScript check. These tests do not establish rendered equality or speed gain.
+The last pre-withdrawal revision passed **51 focused source/composition tests**, covering asphalt, bridge/MacArthur composition, lawn selection/cloning/restoration, existing cinematic contracts, actual atmosphere/material lifecycle checks and eight bump-center contract tests. Removing the rejected grass helper also removes its four candidate-only tests; all original cinematic and atmosphere contracts remain required. TypeScript checking and the Vite source compilation also pass; the compilation omits public-asset copying and does not certify full packaging. The complete code suite after adding the bump-center candidate finished with **1,791 passes, zero failures and three skips**; the asset validation suite added 11 passes (**1,802 passing tests total**). The final three-lane browser fixture also passes a separate strict TypeScript check. These tests do not establish rendered equality or speed gain.
 
 Before enabling a candidate, require its strict appearance proof and controlled timing evidence on the same source/build and renderer. Report unsupported or disjoint timer queries as unavailable. A faster diagnostic alone does not close any original release requirement.
 
-The original full-game gates remain unchanged: exact-source typecheck/tests/build, complete feature visual and input checks, and the native 90-second sustained profile at p95 ≤50 ms with zero eligible intervals above 250 ms. Preserve the original desktop controls, all native inputs/assertions, and the 32-minute case deadline. Preserve the four art looks, optional bridge behavior, geometry, textures, shadows, resolution, and collision physics. Full acceptance must precede merge and deployment.
+The original full-game gates remain unchanged: exact-source typecheck/tests/build, complete feature visual and input checks, and the native 90-second sustained profile at p95 ≤50 ms with zero eligible intervals above 250 ms. Preserve the original desktop controls, all native inputs/assertions, and the 32-minute case deadline. Preserve the four art looks, optional bridge behavior, geometry, textures, shadows, resolution, and collision physics. The original source failed the independent desktop native profile at p95 50.1 ms in [run 45849327061](https://github.com/robjasper2084/Jungle-Lotto/actions/runs/45849327061), and the four-art desktop strict profile at p95 66.6 ms in [run 45849327565](https://github.com/robjasper2084/Jungle-Lotto/actions/runs/45849327565). Both phone profiles passed. These failures remain binding until the final improved revision passes the same checks. Full acceptance must precede merge and deployment.

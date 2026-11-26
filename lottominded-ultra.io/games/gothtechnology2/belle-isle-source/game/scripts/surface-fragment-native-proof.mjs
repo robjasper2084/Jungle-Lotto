@@ -76,7 +76,7 @@ try{
   if(!filename.startsWith(repo+sep)||filename.includes(sep+'node_modules'+sep))continue;
   report.candidateInputs.push({path:filename.slice(repo.length+1),sha256:sha256(await readFile(filename))});
  }
- const changedSurfaceModules=new Set(['surfaceFinish.ts','asphaltPolish.ts','bridgeMaterialFinish.ts','macArthurSurface.ts','macArthurBumpCenterReuse.ts','cinematicTerrain.ts','parkLawn.ts','lawnFragmentOptimization.ts'].map(name=>gamePath+'/src/belle/'+name));
+ const changedSurfaceModules=new Set(['surfaceFinish.ts','asphaltPolish.ts','bridgeMaterialFinish.ts','macArthurSurface.ts','macArthurBumpCenterReuse.ts','parkLawn.ts'].map(name=>gamePath+'/src/belle/'+name));
  // Paired materials use shared geometry. Refuse to extend that claim to a
  // silently changed geometry factory, collision path, lighting or PBR helper.
  for(const input of report.candidateInputs){
@@ -127,6 +127,8 @@ try{
   const filename=capture.name+'.png';await writeFile(resolve(output,filename),bytes);
   report.captures.push({file:filename,sha256:sha256(bytes),width:bytes.readUInt32BE(16),height:bytes.readUInt32BE(20)});
  }
+ assert.equal(result.grassWithdrawal?.status,'withdrawn','Grass must remain a withdrawn candidate');
+ assert.equal(result.grassWithdrawal?.candidateEnabled,false,'Grass proof may only cover the original implementation');
  assert.equal(result.rows?.length,36,'All three surfaces, four styles, and three views must be compared');
  const expectedCases=['lawn','asphalt','masonry'].flatMap(subject=>['near','mid','grazing'].flatMap(view=>['authentic','golden','noir','detroit2084'].map(style=>subject+'-'+view+'-'+style))).sort();
  assert.deepEqual(result.rows.map(row=>row.name).sort(),expectedCases,'Duplicate or missing required case identifiers');
@@ -140,12 +142,17 @@ try{
  }
  assert(native?/Metal/i.test(result.gpu)&&!/SwiftShader|llvmpipe/i.test(result.gpu):/SwiftShader/i.test(result.gpu),'Unexpected actual GPU backend '+result.gpu);
  for(const row of result.rows){
+  assert.equal(row.optimizationApplied,row.subject!=='lawn',row.name+': withdrawn grass must be reported as original regression coverage');
   for(const name of ['changedPixels','maxChannelDelta','defaultChangedPixels','defaultMaxChannelDelta','defaultShadowChangedPixels','repeatChangedPixels','shadowChangedPixels','shadowRepeatChangedPixels'])assert.equal(row[name],0,row.name+': '+name);
   for(const name of ['orderEqual','defaultOrderEqual','geometryEqual','defaultGeometryEqual'])assert.equal(row[name],true,row.name+': '+name);
   for(const side of ['default','candidate']){
    assert.equal(row[side+'RgbaSha256'],row.baselineRgbaSha256,row.name+': '+side+' RGBA hash');
    assert.equal(row[side+'ShadowSha256'],row.baselineShadowSha256,row.name+': '+side+' shadow hash');
   }
+ }
+ for(const material of result.materials.filter(material=>material.subject==='lawn')){
+  assert.equal(material.guardObserved,false,'Withdrawn grass guard appeared in an authored material');
+  assert.equal(material.linkedGuardObserved,false,'Withdrawn grass guard appeared in a linked material');
  }
  assert.equal(result.coverage?.length,3,'All subject controls must complete');
  for(const coverage of result.coverage){

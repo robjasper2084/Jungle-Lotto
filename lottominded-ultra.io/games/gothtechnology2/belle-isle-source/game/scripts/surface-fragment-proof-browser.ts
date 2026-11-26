@@ -93,6 +93,7 @@ async function fence(){const sync=gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE,0);
 function observe(material:T.Material){if(shaders.has(material))return;const old=material.onBeforeCompile;material.onBeforeCompile=function(shader,r){old.call(this,shader,r);shaders.set(this,shader);shaderSources.set(this,{vertex:shader.vertexShader,fragment:shader.fragmentShader});};}
 function cloneMaterial(material:T.Material,cache=new Map<T.Material,T.Material>()){let result=cache.get(material);if(!result){result=material.clone();result.onBeforeCompile=material.onBeforeCompile;result.onBeforeRender=material.onBeforeRender;result.customProgramCacheKey=material.customProgramCacheKey;cache.set(material,result);}return result;}
 const factors:Record<Subject,string>={lawn:'belleLawnResolved',asphalt:'repairResolved',masonry:'belleBridgeAA'};
+const grassWithdrawal={status:'withdrawn',candidateEnabled:false,proofPurpose:'Original lawn regression only; candidate slot uses original terrain and lawn shaders.'} as const;
 function diagnosticMaterial(material:T.Material,subject:Subject,mode:'disabled'|'mask'){
  const m=cloneMaterial(material),old=m.onBeforeCompile,key=m.customProgramCacheKey();
  m.onBeforeCompile=(shader,r)=>{
@@ -149,7 +150,7 @@ async function prepare(root:T.Group,subject:Subject,side:Side,noise:T.Texture):P
   assert(masonryStats&&masonryStats.meshes>0&&masonryStats.newMaterials>0,'The actual '+side+' masonry decorator did no work');
   for(const mesh of meshList(copy))for(const m of Array.isArray(mesh.material)?mesh.material:[mesh.material])if(m instanceof T.MeshStandardMaterial&&m.map&&/limestone/i.test(m.name)){m.bumpMap=m.map;m.bumpScale=.018;m.roughness=.88;}
  }
- const terrain=side==='baseline'?new OriginalTerrain(prep):new CinematicTerrain(prep,{skipInvisibleGrain:side==='candidate'});
+ const terrain=side==='baseline'?new OriginalTerrain(prep):new CinematicTerrain(prep);
  const atmosphere:WorldAtmosphere=side==='baseline'?new OriginalAtmosphere(prep,noise):new WorldAtmosphere(prep,noise);
  prep.add(copy);await Promise.resolve();
  (side==='baseline'?originalMaterials:applyRealisticMaterials)(prep);
@@ -275,7 +276,7 @@ function nativeProgram(material:T.Material){
     const defaultOrderEqual=JSON.stringify(baseline.order)===JSON.stringify(currentDefault.order);
     const geometryEqual=baseline.calls===candidate.calls&&baseline.triangles===candidate.triangles&&baseline.calls===repeat.calls&&baseline.triangles===repeat.triangles;
     const defaultGeometryEqual=baseline.calls===currentDefault.calls&&baseline.triangles===currentDefault.triangles;
-    const row={name:id,subject:fixture.name,inputs,width,height,changedPixels:color.pixels,maxChannelDelta:color.maxChannelDelta,defaultChangedPixels:defaultColor.pixels,defaultMaxChannelDelta:defaultColor.maxChannelDelta,repeatChangedPixels:determinism.pixels,shadowChangedPixels:shadow.pixels,defaultShadowChangedPixels:defaultShadow.pixels,shadowRepeatChangedPixels:shadowRepeat.pixels,orderEqual,defaultOrderEqual,geometryEqual,defaultGeometryEqual,baselineCalls:baseline.calls,defaultCalls:currentDefault.calls,candidateCalls:candidate.calls,baselineTriangles:baseline.triangles,defaultTriangles:currentDefault.triangles,candidateTriangles:candidate.triangles,baselineRgbaSha256:await hash(baseline.rgba),defaultRgbaSha256:await hash(currentDefault.rgba),candidateRgbaSha256:await hash(candidate.rgba),baselineShadowSha256:await hash(baseline.shadow),defaultShadowSha256:await hash(currentDefault.shadow),candidateShadowSha256:await hash(candidate.shadow),passed:color.pixels===0&&defaultColor.pixels===0&&determinism.pixels===0&&shadow.pixels===0&&defaultShadow.pixels===0&&shadowRepeat.pixels===0&&orderEqual&&defaultOrderEqual&&geometryEqual&&defaultGeometryEqual};
+    const row={name:id,subject:fixture.name,optimizationApplied:fixture.name!=='lawn',inputs,width,height,changedPixels:color.pixels,maxChannelDelta:color.maxChannelDelta,defaultChangedPixels:defaultColor.pixels,defaultMaxChannelDelta:defaultColor.maxChannelDelta,repeatChangedPixels:determinism.pixels,shadowChangedPixels:shadow.pixels,defaultShadowChangedPixels:defaultShadow.pixels,shadowRepeatChangedPixels:shadowRepeat.pixels,orderEqual,defaultOrderEqual,geometryEqual,defaultGeometryEqual,baselineCalls:baseline.calls,defaultCalls:currentDefault.calls,candidateCalls:candidate.calls,baselineTriangles:baseline.triangles,defaultTriangles:currentDefault.triangles,candidateTriangles:candidate.triangles,baselineRgbaSha256:await hash(baseline.rgba),defaultRgbaSha256:await hash(currentDefault.rgba),candidateRgbaSha256:await hash(candidate.rgba),baselineShadowSha256:await hash(baseline.shadow),defaultShadowSha256:await hash(currentDefault.shadow),candidateShadowSha256:await hash(candidate.shadow),passed:color.pixels===0&&defaultColor.pixels===0&&determinism.pixels===0&&shadow.pixels===0&&defaultShadow.pixels===0&&shadowRepeat.pixels===0&&orderEqual&&defaultOrderEqual&&geometryEqual&&defaultGeometryEqual};
     rows.push(row);keep(id+'-baseline',baseline);keep(id+'-default',currentDefault);keep(id+'-candidate',candidate);
     if(color.pixels)images.push({name:id+'-difference',png:differencePng(baseline.rgba,candidate.rgba)});
     if(defaultColor.pixels)images.push({name:id+'-default-difference',png:differencePng(baseline.rgba,currentDefault.rgba)});
@@ -300,7 +301,7 @@ function nativeProgram(material:T.Material){
      // warmed ABBA sequence. Timing remains distinct from correctness acceptance.
      const repetitions=fixture.name==='masonry'?3:1,lanes=[];
      for(let repetition=1;repetition<=repetitions;repetition++)for(const side of ['baseline','candidate','candidate','baseline'] as Side[]){use(fixture,side);const sample=await render(false,true);lanes.push({side,repetition,cpuMs:sample.cpuMs,fenceMs:sample.fenceMs,gpu:sample.gpu,calls:sample.calls,triangles:sample.triangles});}
-     timings.push({subject:fixture.name,view,width,height,order:'ABBA',repetitions,lanes,scope:'Warmed targeted fixture renders with elapsed-query overhead; not full-game frame intervals or release acceptance.'});
+     timings.push({subject:fixture.name,optimizationApplied:fixture.name!=='lawn',view,width,height,order:'ABBA',repetitions,lanes,scope:'Warmed targeted fixture renders with elapsed-query overhead; not full-game frame intervals or release acceptance.'});
     }
    }
    for(const side of ['baseline','default','candidate'] as Side[]){
@@ -309,7 +310,8 @@ function nativeProgram(material:T.Material){
     assert(selected.some(material=>submittedMaterials.has(material)),'No decorated '+side+' '+fixture.name+' material reached a real display submission');
     for(const material of selected){
      const source=shaderSources.get(material)!,native=nativeProgram(material),pattern=new RegExp('if\\s*\\(\\s*'+factors[fixture.name]+'\\s*>\\s*0\\.'),hasGuard=pattern.test(source.fragment),linkedGuard=pattern.test(native.fragment);
-     assert(hasGuard===(side==='candidate')&&linkedGuard===(side==='candidate'),'Expected independent original/candidate shader path not observed in linked '+fixture.name+' program');
+     const expectedGuard=side==='candidate'&&fixture.name!=='lawn';
+     assert(hasGuard===expectedGuard&&linkedGuard===expectedGuard,'Expected independent original/candidate shader path not observed in linked '+fixture.name+' program');
      const bumpCenterReuseInstalled=fixture.owners[side].bumpCenterMaterials.has(material);
      const bumpCenterMarkerObserved=source.fragment.includes(MACARTHUR_BUMP_CENTER_ASSIGNMENT)&&source.fragment.includes(MACARTHUR_BUMP_CENTER_READ);
      const linkedBumpCenterMarkerObserved=native.fragment.includes(MACARTHUR_BUMP_CENTER_ASSIGNMENT)&&native.fragment.includes(MACARTHUR_BUMP_CENTER_READ);
@@ -325,7 +327,7 @@ function nativeProgram(material:T.Material){
  const bumpControls=controls.filter(c=>c.subject==='masonry'),installedMaterials=fixtures.find(f=>f.name==='masonry')?.owners.candidate.bumpCenterMaterials.size??0;
  const effectivePixels=Math.max(0,...bumpControls.map(c=>Number(c.bumpCenterWrongChangedPixels))),restoredChangedPixels=Math.max(0,...bumpControls.map(c=>Number(c.restoredChangedPixels)));
  const masonryBumpCenterControl={installedMaterials,effectivePixels,restoredChangedPixels,views:bumpControls.map(c=>c.view),passed:installedMaterials>0&&bumpControls.length===3&&effectivePixels>=16&&restoredChangedPixels===0&&bumpControls.every(c=>c.passed)};
- return {gpu,threeRevision:T.REVISION,width,height,dpr:renderer.getPixelRatio(),antialias:gl.getContextAttributes()?.antialias,shadowMapSize:sun.shadow.mapSize.toArray(),shadowReadback:'RGBA8 shadow target color attachment; effective receiver shadows also have an independent off/on control. Native depth texture bytes are not claimed.',rows,controls,coverage,masonryBumpCenterControl,timings,images,errors,resources,materials:materialEvidence,geometry:fixtures.map(f=>({subject:f.name,meshes:f.geometry})),
-  scope:'Pinned original and opt-in fragment candidates on shared actual geometry with actual materials/textures, controlled camera/light/style inputs, zero RGBA tolerance and shadow readback. Targeted fixture only; not full-world collision, gameplay, controls, physical-device or sustained performance acceptance.',
+ return {gpu,threeRevision:T.REVISION,width,height,grassWithdrawal,dpr:renderer.getPixelRatio(),antialias:gl.getContextAttributes()?.antialias,shadowMapSize:sun.shadow.mapSize.toArray(),shadowReadback:'RGBA8 shadow target color attachment; effective receiver shadows also have an independent off/on control. Native depth texture bytes are not claimed.',rows,controls,coverage,masonryBumpCenterControl,timings,images,errors,resources,materials:materialEvidence,geometry:fixtures.map(f=>({subject:f.name,meshes:f.geometry})),
+  scope:'Pinned original and opt-in asphalt/masonry fragment candidates, plus original lawn regression coverage after grass candidate withdrawal, on shared actual geometry with actual materials/textures, controlled camera/light/style inputs, zero RGBA tolerance and shadow readback. Targeted fixture only; not full-world collision, gameplay, controls, physical-device or sustained performance acceptance.',
   passed:errors.length===0&&rows.length===36&&rows.every(r=>r.passed)&&coverage.length===3&&coverage.every(c=>c.passed)&&masonryBumpCenterControl.passed};
 };
