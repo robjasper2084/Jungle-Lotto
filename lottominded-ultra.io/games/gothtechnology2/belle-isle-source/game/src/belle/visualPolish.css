@@ -148,3 +148,11 @@ body[data-presentation-motion=reduced] :is(.location-chip,#navigation){backdrop-
 body.on-hoverbike[data-hud-preset]:not(.coop-playing) :is(.location-chip,#navigation,#jarvs-avionics:not([data-status=CRITICAL])){
  background-color:rgb(7 24 31 / var(--belle-flight-hud-alpha,.87));
 }
+
+/* Art-direction accent only; no changes to control layout or tap targets. */
+body[data-art-style="golden"] .location-chip{border-left-color:#e3b07b}
+body[data-art-style="noir"] .location-chip{border-left-color:#8da6df;background:#101c36bd}
+body[data-art-style="noir"] :is(.action-primary,#tools-toggle){border-color:#819ed455}
+body[data-art-style="detroit2084"] .location-chip{border-left-color:#83e8eb;background:#141e37cc}
+body[data-art-style="detroit2084"] :is(.action-primary,#tools-toggle){border-color:#64cdda88}
+body[data-art-style="detroit2084"] #district-title{color:#a4ecf2}

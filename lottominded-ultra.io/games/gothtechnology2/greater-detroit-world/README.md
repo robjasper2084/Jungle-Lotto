@@ -1,5 +1,9 @@
 # Greater Detroit crossings
 
+## Geographic fidelity tools
+
+See [the geographic-fidelity implementation and production plan](GEOGRAPHIC_FIDELITY.md) for the current map audit, verified data sources, immutable GIS acquisition, checked offline intake, and the first Jefferson–MacArthur modeling sequence. Run `npm run audit:geography` to inventory the loaded source maps. This tooling stages future data without changing the game's runtime geography.
+
 Belle Isle Explorer hosts the connected ride. Start at Jefferson Avenue. Head southeast over MacArthur Bridge for the island, or follow East Jefferson west to Swoop Detroit. The Detroit guide marks the Dequindre Cut overpass and the cemetery entrance. The city minimap shows the ride to Elmwood in amber and the ride to the bridge in green. Both routes use the same renderer, rider, terrain sampler, camera, and clock.
 
 ## Run and verify
