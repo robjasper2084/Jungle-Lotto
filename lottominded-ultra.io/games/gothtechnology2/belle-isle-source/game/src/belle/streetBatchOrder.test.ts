@@ -27,7 +27,8 @@ function fullPlan():StreetPlan{
  for(let i=0;i<data.length;i+=plan.stride)plan.boxes.push({x:data[i],y:data[i+1],z:data[i+2],w:data[i+3],h:data[i+4],l:data[i+5],yaw:data[i+6],material:plan.materials[data[i+7]],grade:data[i+8]});
  return plan;
 }
-type NativeBatch=T.BatchedMesh&{_multiDrawCount:number;_multiDrawCounts:Int32Array;_indirectTexture:T.DataTexture};
+type NativeBatch=T.BatchedMesh&{_multiDrawCount:number;_multiDrawCounts:Int32Array;_multiDrawStarts:Int32Array;_indirectTexture:T.DataTexture};
+function drawCount(geometry:T.BufferGeometry){return geometry.index?.count??geometry.attributes.position.count;}
 function cameraAt(x:number,z:number,yaw:number){
  const camera=new T.PerspectiveCamera(58,1440/900,.1,3500);
  camera.position.set(x,7,z);camera.lookAt(x+Math.sin(yaw)*150,2,z+Math.cos(yaw)*150);
@@ -97,7 +98,7 @@ test('identity street shader rejects nonidentity or color/alpha variants before 
  }
 });
 
-test('full shipped street plan keeps every vertex, normal, material, bound and native source draw order',()=>canvasFixture(()=>{
+test('full shipped indexed street plan keeps every vertex, normal, index, material, bound and native source draw order',()=>canvasFixture(()=>{
  const scene=new T.Scene(),street=addStreetDetails(scene,fullPlan());
  // World surface preparation can replace a factory material with a decorated
  // clone. Eligibility must follow the authored tile kind, not that old pointer.
@@ -108,27 +109,36 @@ test('full shipped street plan keeps every vertex, normal, material, bound and n
  scene.add(palette.root);scene.updateMatrixWorld(true);
  assert(sources.length>300);assert(palette.stats.batches>=4&&palette.stats.batches<=6);
  const allTiles=scene.children.filter((o):o is T.Mesh=>o instanceof T.Mesh&&o.name.startsWith('Street detail '));
+ assert(allTiles.every(source=>source.geometry.index?.array instanceof Uint16Array),'Every shipped tile retains its compact indexed source geometry');
  assert(allTiles.filter(o=>o.name.endsWith(',metal')).every(o=>!sourceSet.has(o)));
  assert.equal(sourceSet.size,allTiles.filter(o=>!o.name.endsWith(',metal')).length);
+ let wideIndexBatches=0;
  for(const [batch,group] of groups){
   assert.equal(batch.instanceCount,group.length);assert.equal(batch.material,group[0].material);
   assert.equal(batch.castShadow,false);assert.equal(batch.receiveShadow,true);assert.equal((batch as T.BatchedMesh&{_colorsTexture:T.DataTexture|null})._colorsTexture,null);
   assert.equal(batch.renderOrder,group[0].renderOrder);assert.equal(batch.layers.mask,group[0].layers.mask);
+  const batchIndex=batch.geometry.index;assert(batchIndex);
+  if(batch.geometry.attributes.position.count>65535){assert(batchIndex.array instanceof Uint32Array);wideIndexBatches++;}
+  else assert(batchIndex.array instanceof Uint16Array);
   for(const [i,source] of group.entries()){
    assert.equal(source.parent,scene);assert.equal(source.material,batch.material);
    assert.equal((source.material as T.Material).polygonOffset,false);
    assert.deepEqual(batch.getMatrixAt(i,new T.Matrix4()).elements,source.matrixWorld.elements);
-   const id=batch.getGeometryIdAt(i),range=batch.getGeometryRangeAt(id)!;
+   const id=batch.getGeometryIdAt(i),range=batch.getGeometryRangeAt(id);assert(range);
    assert.equal(range.vertexCount,source.geometry.attributes.position.count);
+   const sourceIndex=source.geometry.index;assert(sourceIndex);
+   assert.equal(range.indexCount,sourceIndex.count);assert.equal(range.count,sourceIndex.count);assert.equal(range.start,range.indexStart);
+   for(let j=0;j<sourceIndex.count;j++)assert.equal(batchIndex.getX(range.indexStart+j),sourceIndex.getX(j)+range.vertexStart,'Every index retains the original triangle order after rebasing');
    for(const key of ['position','normal']){
     const a=source.geometry.getAttribute(key),b=batch.geometry.getAttribute(key);
     const bytesA=new Uint8Array(a.array.buffer,a.array.byteOffset,a.array.byteLength);
-    const bytesB=new Uint8Array(b.array.buffer,b.array.byteOffset+range.vertexStart*a.itemSize*4,a.array.byteLength);
+    const bytesB:Uint8Array=new Uint8Array(b.array.buffer,b.array.byteOffset+range.vertexStart*a.itemSize*4,a.array.byteLength);
     assert.deepEqual(bytesB,bytesA,'Every copied '+key+' byte must be identical');
    }
    assert.deepEqual(batch.getBoundingSphereAt(id,new T.Sphere()),source.geometry.boundingSphere);
   }
  }
+ assert(wideIndexBatches>0,'Actual combined material batches must exercise 16-bit source indices rebased into 32-bit storage');
  const receipts:{x:number;z:number;shadow:boolean;nativeDraws:number;batchedDraws:number;triangles:number}[]=[];
  for(const [x,z,yaw] of [[350,-100,1.1],[800,500,.8],[1330,1175,2.1],[2100,1400,-.5],[3200,700,-2.5]])for(const shadow of [false,true]){
   street.update(x,z);const camera=cameraAt(x,z,yaw),frustum=frustumFor(camera);
@@ -143,16 +153,22 @@ test('full shipped street plan keeps every vertex, normal, material, bound and n
    if(batch.visible&&frustum.intersectsObject(batch)){
     batch.onBeforeRender({} as T.WebGLRenderer,scene,camera,batch.geometry,batch.material as T.Material,null as never);
     const native=batch as NativeBatch,ids=native._indirectTexture.image.data as Uint32Array;
-    for(let i=0;i<native._multiDrawCount;i++)actual.push(group[ids[i]]);
+    for(let i=0;i<native._multiDrawCount;i++){
+     const source=group[ids[i]],range=batch.getGeometryRangeAt(batch.getGeometryIdAt(ids[i]));assert(range);
+     actual.push(source);
+     assert.equal(native._multiDrawCounts[i],drawCount(source.geometry),'Native multi-draw counts indices, not unique vertices');
+     const indexBytes=(batch.geometry.index!.array as Uint16Array|Uint32Array).BYTES_PER_ELEMENT;
+     assert.equal(native._multiDrawStarts[i],range.indexStart*indexBytes,'Native indexed multi-draw offsets are byte addresses in the combined index buffer');
+    }
     if(native._multiDrawCount)batchedDraws++;
-    assert.equal([...native._multiDrawCounts.slice(0,native._multiDrawCount)].reduce((a,b)=>a+b,0),actual.reduce((n,s)=>n+s.geometry.attributes.position.count,0));
+    assert.equal([...native._multiDrawCounts.slice(0,native._multiDrawCount)].reduce((a,b)=>a+b,0),actual.reduce((n,s)=>n+drawCount(s.geometry),0));
    }
    // Groups with only one eligible source stay on their original native path.
    actual.push(...group.filter(s=>s.visible&&frustum.intersectsObject(s)));
    batchedDraws+=group.filter(s=>s.visible&&frustum.intersectsObject(s)).length;
    assert.deepEqual(actual.map(s=>s.id),expected.map(s=>s.id),'Native projected-depth/ID order and frustum membership');
    assert.equal(batch.castShadow,false);nativeDraws+=expected.length;
-   triangles+=expected.reduce((n,s)=>n+s.geometry.attributes.position.count/3,0);
+   triangles+=expected.reduce((n,s)=>n+drawCount(s.geometry)/3,0);
   }
   palette.endView();for(const s of sources)assert.equal(s.visible,shown.get(s));
   receipts.push({x,z,shadow,nativeDraws,batchedDraws,triangles});

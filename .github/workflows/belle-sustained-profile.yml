@@ -81,3 +81,35 @@ jobs:
           path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/sustained-profile/${{ matrix.mode }}/${{ matrix.device }}
           if-no-files-found: warn
           retention-days: 14
+      # Reuse the native desktop host only AFTER the original capture and its
+      # archive are complete. The independent fixture cannot alter ride timing,
+      # quality, input, classification or failure evidence. A separate queued
+      # macOS proof job previously ended without ever acquiring a runner.
+      - name: Prepare exact street indexing comparison
+        id: street-proof-setup
+        if: always() && matrix.device == 'desktop' && matrix.mode == 'full'
+        run: |
+          git sparse-checkout add --stdin <<'PATTERNS'
+          /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/package*.json
+          /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/
+          /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/street-details.json
+          /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/street-details.bin
+          /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/
+          PATTERNS
+          git fetch --no-tags --depth=1 --filter=blob:none origin 75906273c0cd414c0d004320fc6f654b4783e5b1
+          cd lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+          npm ci
+      - name: Compare original and indexed street color and shadow pixels
+        if: always() && matrix.device == 'desktop' && matrix.mode == 'full' && steps.street-proof-setup.outcome == 'success'
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          BELLE_STREET_BASE: '75906273c0cd414c0d004320fc6f654b4783e5b1'
+        run: node scripts/street-index-pixel-proof.mjs
+      - name: Archive exact street indexing evidence
+        if: always() && matrix.device == 'desktop' && matrix.mode == 'full'
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-street-index-native-pixel-proof
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/street-index-proof/
+          if-no-files-found: error
+          retention-days: 14
