@@ -1,0 +1,90 @@
+name: Cadillac fixed street transform pixel and CPU proof (diagnostic only)
+on:
+  pull_request:
+    branches: [upgrade-redesign-cadillac-modification-suite]
+    paths:
+      - '.github/workflows/belle-cadillac-street-matrix-proof.yml'
+      - '.github/diagnostics/street-matrix-proof.mjs'
+      - '.github/diagnostics/street-matrix-fixture.mjs'
+permissions:
+  contents: read
+env:
+  EXPECTED_BASE: 549dc89ade22532df9cd99508db66c323371bb4f
+  EXPECTED_CANDIDATE: f53843aaf0c534e6211a6f1114c3b28aabe5a32d
+  EXPECTED_TREE: 3b958db320c39bcc79033dce6f6220dedf6e33cd
+jobs:
+  native-fixture:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-15]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: f53843aaf0c534e6211a6f1114c3b28aabe5a32d
+          fetch-depth: 2
+          path: app
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/streetDetails.ts
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/curbProfile.ts
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/street-details.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/street-details.bin
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: diagnostic
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/diagnostics/street-matrix-proof.mjs
+            /.github/diagnostics/street-matrix-fixture.mjs
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Verify exact source and street assets; prepare original and candidate modules
+        shell: bash
+        run: |
+          set -euo pipefail
+          game="lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game"
+          test "$(git -C app rev-parse HEAD)" = "$EXPECTED_CANDIDATE"
+          test "$(git -C app rev-parse 'HEAD^{tree}')" = "$EXPECTED_TREE"
+          test "$(git -C app rev-parse HEAD^)" = "$EXPECTED_BASE"
+          test "$(git -C app hash-object "$game/src/belle/streetDetails.ts")" = 899ceed53fefd41687e5c7b40a58aac9fd4b5bca
+          git -C app show "$EXPECTED_BASE:$game/src/belle/streetDetails.ts" > "app/$game/src/belle/.street-matrix-baseline.ts"
+          test "$(git -C app hash-object "$game/src/belle/.street-matrix-baseline.ts")" = 9c44375548075a059ff95eecc141a8c7f7c37044
+          test "$(git -C app hash-object "$game/public/belle/street-details.json")" = 343a003964102ab73e7caa413c5cc0650d70924f
+          test "$(git -C app hash-object "$game/public/belle/street-details.bin")" = a1479dcfeb3bf7c314514dd3283c3f5b215af46d
+          git -C app diff --exit-code
+          mkdir -p evidence
+          git -C app rev-parse HEAD HEAD^ 'HEAD^{tree}' > evidence/source.txt
+          git -C diagnostic rev-parse HEAD > evidence/diagnostic.txt
+          shasum -a 256 "app/$game/src/belle/streetDetails.ts" "app/$game/src/belle/.street-matrix-baseline.ts" "app/$game/public/belle/street-details.json" "app/$game/public/belle/street-details.bin" > evidence/inputs.sha256
+          (cd "app/$game" && npm ci)
+          (cd "app/$game/../.." && npm ci && if [ "$RUNNER_OS" = Linux ]; then npx playwright install --with-deps chrome; else npx playwright install chrome; fi)
+          node --check diagnostic/.github/diagnostics/street-matrix-proof.mjs
+          node --check diagnostic/.github/diagnostics/street-matrix-fixture.mjs
+      - name: Render actual street assets with both native source versions
+        timeout-minutes: 15
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$RUNNER_OS" = Linux ]; then
+            xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node diagnostic/.github/diagnostics/street-matrix-proof.mjs "$GITHUB_WORKSPACE/app" "$GITHUB_WORKSPACE/evidence"
+          else
+            node diagnostic/.github/diagnostics/street-matrix-proof.mjs "$GITHUB_WORKSPACE/app" "$GITHUB_WORKSPACE/evidence"
+          fi
+          shasum -a 256 -c evidence/inputs.sha256
+          git -C app diff --exit-code
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: street-matrix-proof-${{ matrix.os }}
+          path: evidence/
+          if-no-files-found: error
+          retention-days: 14
