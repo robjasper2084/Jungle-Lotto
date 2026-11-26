@@ -140,3 +140,22 @@ report validation. It does not claim those failed runs passed, change the game,
 increase any deadline, or relax a capture-window camera/coverage condition.
 All 38 observer/contract checks pass locally; fresh native captures are still
 required before any visual acceptance.
+## Native desktop select correction
+
+The preserved 9b43 desktop comparison stopped before arming or capturing: the real sky preset stayed empty and no input/change event committed Midday. The same source/Chrome/Metal run with phone emulation completed all six matched pairs. Chromium routes arrow keys into the macOS native popup, while printable label typeahead on a closed select commits the actual selected option and native input/change events.
+
+The driver now reads the real enabled option labels, finds an unambiguous printable ASCII prefix, blurs with native Tab to reset the typeahead session, and types the prefix through Playwright's native keyboard path. If the target is already selected, it visits another actual option first so the final input/change receipt remains required. It does not assign the DOM value, dispatch synthetic events, use selectOption, alter the game sky API, or replace the control.
+
+The original exact final value, noon/clear sky, High/Smooth quality, DPR/scale, frame cap and trusted-event checks remain. A/S character keys are allowed only in the open settings dialog during configuration; settings keys after the one-shot capture boundary and every gameplay movement-key offset remain fatal. Option labels, selected values, native key/input/change events and configuration timestamps remain reviewable.
+
+Primary implementation references:
+- Chromium HTMLSelectElement default/typeahead handling and native blur reset: https://chromium.googlesource.com/chromium/src/third_party/+/2067f23a5ed6f53f730ad66bd94a922a5555326e/blink/renderer/core/html/forms/html_select_element.cc
+- Chromium menu-list keyboard dispatch: https://chromium.googlesource.com/chromium/src/+/be1eea1988a795d542b829e90f4938aebab154c6/third_party/blink/renderer/core/html/forms/select_type.cc
+- macOS arrow-key popup policy: https://chromium.googlesource.com/chromium/src/+/4b002a419dcb3e927aa998f402205663d720953b/third_party/blink/renderer/core/layout/layout_theme_mac.h
+
+Native execution of the corrected helper is still required. The old failed report is retained; it is not reclassified as a passing capture.
+
+
+## Saved signed-zero camera receipts
+
+JSON represents both numeric signed zeros as `0`. The Float32 camera bit arrays are retained as exact unsigned integers, so a saved report can still distinguish `+0` and `-0`. Validation now permits only that serialization loss in the redundant raw/Float32 numeric arrays. It does not rewrite the report, change integer bit arrays, introduce a numeric tolerance, accept a nonzero mismatch, or allow nonzero underflow to borrow the zero-sign exception. Every cross-build camera bit comparison remains exact, including the sign of zero. The preserved 9b43 phone reports replay directly with their original bytes and all six pairs intact.

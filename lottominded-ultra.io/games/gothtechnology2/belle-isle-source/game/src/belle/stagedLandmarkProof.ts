@@ -1,5 +1,7 @@
 import * as T from 'three';
 import {replaceableLegacyMesh,legacyDetailName,STUDY_SITES} from './stagedLandmarkStudies.ts';
+import {waterfrontSkylineSiteReceipts} from './waterfrontSkyline.ts';
+import {sweepVisibleMeshTriangles} from './visibleTriangleSweep.ts';
 
 type Point={x:number;y:number;z:number};
 type Actor=Point&{headingY:number;speed:number;footBlend:number;footMode?:number};
@@ -18,7 +20,7 @@ function local(c:Layout,x:number,z:number){const dx=x-c.center[0],dz=z-c.center[
  * scene changes, synthetic input, collider changes, or render hooks are exposed.
  * Callbacks copy the real loop's current pose and view. Expensive observations
  * run only when the external harness requests a snapshot, outside FPS gates. */
-export function createStagedLandmarkProof(root:T.Object3D,terrain:Terrain,layouts:{aquarium?:Layout;conservatory?:Layout}){
+export function createStagedLandmarkProof(root:T.Object3D,terrain:Terrain,layouts:{aquarium?:Layout;conservatory?:Layout},skylineRoot?:T.Group){
  let actor:(Actor&{firstPerson:boolean})|null=null,camera:T.Camera|null=null,frames=0,time:number|null=null;
  const copies=new Map([layouts.aquarium,layouts.conservatory].filter((c):c is Layout=>!!c).map(c=>[c.id,JSON.parse(JSON.stringify(c)) as Layout]));
  const ray=new T.Raycaster();
@@ -30,6 +32,7 @@ export function createStagedLandmarkProof(root:T.Object3D,terrain:Terrain,layout
  }
  const snapshot=()=>{
   const nodes:T.Object3D[]=[];root.traverse(o=>nodes.push(o));
+  const skylineSites=skylineRoot?waterfrontSkylineSiteReceipts(skylineRoot,STUDY_SITES.map(s=>s.id)):null;
   const sites=STUDY_SITES.map(spec=>{
    const cfg=copies.get(spec.id),lod=root.getObjectByName(spec.id+'_STAGED_LODS');
    const legacy=nodes.filter(o=>(o as T.Mesh).isMesh&&replaceableLegacyMesh(spec.id,o.name));
@@ -39,6 +42,7 @@ export function createStagedLandmarkProof(root:T.Object3D,terrain:Terrain,layout
     installedLods:lod instanceof T.LOD?lod.levels.length:0,
     selectedLevels:lod instanceof T.LOD?lod.levels.flatMap((level,i)=>visible(level.object)?[i]:[]):[],
     attachedLegacyFacades:legacy.map(o=>o.name),
+    skylineDuplicate:skylineSites?.find(s=>s.id===spec.id)??null,
     retainedDetails:retained.filter(name=>name.startsWith(spec.id+'_')&&nodes.some(o=>legacyDetailName(spec.id,o.name)===legacyDetailName(spec.id,name))),
     retainedDetailNodes:retained.filter(name=>name.startsWith(spec.id+'_')).flatMap(authored=>nodes.filter(o=>legacyDetailName(spec.id,o.name)===legacyDetailName(spec.id,authored)).map(o=>({authored,loaded:o.name}))),
    };
@@ -55,9 +59,15 @@ export function createStagedLandmarkProof(root:T.Object3D,terrain:Terrain,layout
    ray.set(new T.Vector3(actor!.x,actor!.y+h,actor!.z),new T.Vector3(sin,0,cos));ray.near=0;ray.far=2;
    const hit=ray.intersectObjects(geometry,false)[0];return hit?{height:h,distance:hit.distance,mesh:hit.object.name}:null;
   }):[];
+  // Keep the original centre rays above as independent evidence. A capsule
+  // may reach a finite pane edge that its centre ray misses, so contact compares
+  // the terrain sweep with a sphere of the identical radius at every body height.
+  const visibleForwardSweeps=actor?bodyHeights.map(height=>({height,...sweepVisibleMeshTriangles(geometry,
+   new T.Vector3(actor!.x,actor!.y+height,actor!.z),new T.Vector3(sin,0,cos),bodyRadius,probeLength,camera?.layers)})):[];
   const direction=camera?new T.Vector3(0,0,-1).transformDirection(camera.matrixWorld):null;
-  return{version:1,ready:!!actor&&!!camera&&sites.every(s=>s.installedLods===3),frames,time,
-   actor:actor?{...actor,onFoot:actor.footMode===2||(actor.footMode===undefined&&actor.footBlend>.99),floor:terrain.height(actor.x,actor.z,actor.y),forwardProbe,directionalProbes,visibleForwardSurfaces}:null,
+  const skylineClear=!skylineRoot||!!skylineSites&&skylineSites.every(s=>s.known&&s.attached&&s.vertices===0&&'exclusionOwned'in s&&s.exclusionOwned);
+  return{version:1,ready:!!actor&&!!camera&&sites.every(s=>s.installedLods===3)&&skylineClear,frames,time,
+   actor:actor?{...actor,onFoot:actor.footMode===2||(actor.footMode===undefined&&actor.footBlend>.99),floor:terrain.height(actor.x,actor.z,actor.y),forwardProbe,directionalProbes,visibleForwardSurfaces,visibleForwardSweeps}:null,
    camera:camera?{position:new T.Vector3().setFromMatrixPosition(camera.matrixWorld).toArray(),direction:direction!.toArray(),near:(camera as T.PerspectiveCamera).near,far:(camera as T.PerspectiveCamera).far,fov:(camera as T.PerspectiveCamera).fov,aspect:(camera as T.PerspectiveCamera).aspect}:null,
    sites,scope:'Actual staged full-game actor, camera, installed LODs and existing collision queries; no measured building-height or complete architectural collision parity certification.'};
  };

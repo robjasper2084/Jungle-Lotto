@@ -32,6 +32,12 @@ def main():
     require(cfg['center'] == alignment['placement']['center'] and cfg['yaw'] == alignment['placement']['yaw'], 'Original placement changed')
     for wall in alignment['vestibuleWalls']:
         require(cfg['walls'][wall['wallIndex']] == {key: wall[key] for key in ('a', 'b')}, 'Source wall excerpt changed')
+    connector = json.loads((source / 'source/showhouse_connector_alignment.json').read_text())
+    require(connector['sourceMapBlobSha'] == map_blob, 'Show House connector map source changed')
+    require(cfg['center'] == connector['placement']['center'] and cfg['yaw'] == connector['placement']['yaw'], 'Show House placement changed')
+    require([wall['wallIndex'] for wall in connector['connectorWalls']] == [17, 32], 'Unexpected connector wall ownership')
+    for wall in connector['connectorWalls']:
+        require(cfg['walls'][wall['wallIndex']] == {key: wall[key] for key in ('a', 'b')}, 'Show House connector wall excerpt changed')
 
     manifest = json.loads((assets / 'manifest.json').read_text())
     require(manifest['productionReady'] is False, 'This command only writes staged study assets')

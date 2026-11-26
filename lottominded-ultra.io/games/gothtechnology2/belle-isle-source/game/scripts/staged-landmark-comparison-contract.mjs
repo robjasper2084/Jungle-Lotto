@@ -34,6 +34,14 @@ const cameraInputs=[['viewMatrix',16],['projectionMatrix',16],['cameraPosition',
 const finiteArray=(value,length)=>Array.isArray(value)&&value.length===length&&value.every(Number.isFinite);
 const counterKeys=['calls','triangles','lines','points'];
 
+function matchesCameraBits(values,bits){
+ const actual=new Uint32Array(new Float32Array(values).buffer);
+ // JSON spells both signed zeros as 0. The integer receipts remain authoritative:
+ // only an exact numeric zero in the redundant values may lose its sign here.
+ return actual.every((value,index)=>value===bits[index]||
+  values[index]===0&&(bits[index]===0||bits[index]===0x80000000));
+}
+
 export function assertObservedCamera(observation){
  assert(observation?.ready,'The observation is not ready');
  assert.deepEqual(observation.errors,[],'The observer recorded an error');
@@ -73,9 +81,9 @@ export function assertObservedCamera(observation){
    assert(Array.isArray(bits)&&bits.length===length&&bits.every(v=>Number.isSafeInteger(v)&&v>=0&&v<=0xffffffff),'Invalid camera bit pattern');
    const floats=new Float32Array(camera.gpu[key]);
    assert.deepEqual(Array.from(floats),camera.gpu[key],'Camera GPU values are not Float32 representable');
-   assert.deepEqual(Array.from(new Uint32Array(floats.buffer)),bits,'Camera GPU values and bit patterns disagree');
+   assert(matchesCameraBits(camera.gpu[key],bits),'Camera GPU values and bit patterns disagree');
    const raw=key==='viewMatrix'?camera.matrixWorldInverse:key==='projectionMatrix'?camera.projectionMatrix:camera.position;
-   assert.deepEqual(Array.from(new Float32Array(raw)),camera.gpu[key],'GPU receipt does not represent the actual raw camera input');
+   assert(matchesCameraBits(raw,bits),'GPU receipt does not represent the actual raw camera input');
   }
   for(const key of ['fov','aspect','near','far','zoom'])assert(Number.isFinite(camera.projection?.[key]),'Missing actual projection parameter');
  }
@@ -136,7 +144,13 @@ export function assertNativeRoute(evidence,layout='desktop'){
  for(const [target,value] of [['#sky-preset','12'],['#sky-clouds','clear'],['#quality',layout==='phone'?'smooth':'high'],['#fps',layout==='phone'?'30':'60']]){
   for(const type of ['input','change'])assert(evidence.events.some(e=>e.type===type&&e.target===target&&e.value===value),'Missing trusted final settings '+type+' for '+target);
  }
- assert(!evidence.events.some(e=>['KeyW','KeyA','KeyS','KeyD'].includes(e.code)),'Canonical comparison anchors must not acquire a movement-key offset');
+ // A/S can be native option-label typeahead (Automatic, Smooth, Stable).
+ // They are permitted only on the real select while its settings dialog is
+ // open, before the capture boundary. Any gameplay movement key still fails.
+ const selectTargets=['#sky-preset','#sky-clouds','#quality','#fps'];
+ assert(!evidence.events.some(e=>['KeyW','KeyA','KeyS','KeyD'].includes(e.code)&&
+  !(['KeyA','KeyS'].includes(e.code)&&e.phase==='configure-settings'&&e.settingsOpen===true&&selectTargets.includes(e.target))),
+  'Canonical comparison anchors must not acquire a movement-key offset');
 }
 
 export function assertCapture(capture,{mode,layout}){
@@ -190,6 +204,8 @@ export function assertModeReport(report){
  const setup=report.nativeEvidence.events.filter(event=>event.type==='click'&&event.target==='#start'||
   ['input','change'].includes(event.type)&&['#sky-preset','#sky-clouds','#quality','#fps'].includes(event.target));
  assert(setup.length>0&&setup.every(event=>Number.isFinite(event.at)&&event.at<=boundary.atMs),'The capture boundary predates trusted native startup/settings');
+ const configurationKeys=report.nativeEvidence.events.filter(event=>event.phase==='configure-settings'&&['keydown','keypress','keyup'].includes(event.type));
+ assert(configurationKeys.every(event=>Number.isFinite(event.at)&&event.at<=boundary.atMs),'Native settings keys occurred after the capture boundary');
  const travel=report.nativeEvidence.events.filter(event=>event.type==='click'&&sites.some(site=>event.landmark===site.name&&[site.travel,site.explore].includes(event.text)));
  assert(travel.every(event=>Number.isFinite(event.at)&&event.at>=boundary.atMs),'Guide traversal occurred before the capture boundary');
  assertSourceAssets(report.sourceAssets);const build=report.build;

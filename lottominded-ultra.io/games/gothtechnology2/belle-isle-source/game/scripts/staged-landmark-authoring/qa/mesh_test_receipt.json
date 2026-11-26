@@ -26,6 +26,14 @@
       "passed": true
     },
     {
+      "description": "Conservatory existing Show House connector standing clearance LOD0",
+      "passed": true
+    },
+    {
+      "description": "Conservatory continuous connector glazing and retained exterior pane LOD0",
+      "passed": true
+    },
+    {
       "description": "Anna Scripps Whitcomb Conservatory LOD1 SHA-256",
       "passed": true
     },
@@ -50,6 +58,14 @@
       "passed": true
     },
     {
+      "description": "Conservatory existing Show House connector standing clearance LOD1",
+      "passed": true
+    },
+    {
+      "description": "Conservatory continuous connector glazing and retained exterior pane LOD1",
+      "passed": true
+    },
+    {
       "description": "Anna Scripps Whitcomb Conservatory LOD2 SHA-256",
       "passed": true
     },
@@ -71,6 +87,14 @@
     },
     {
       "description": "Conservatory west door standing clearance LOD2",
+      "passed": true
+    },
+    {
+      "description": "Conservatory existing Show House connector standing clearance LOD2",
+      "passed": true
+    },
+    {
+      "description": "Conservatory continuous connector glazing and retained exterior pane LOD2",
       "passed": true
     },
     {

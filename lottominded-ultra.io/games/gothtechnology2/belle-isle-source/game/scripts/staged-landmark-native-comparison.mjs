@@ -7,6 +7,7 @@ import {createRequire} from 'node:module';
 import {resolve,relative} from 'node:path';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 import {installLandmarkComparisonObserver} from './landmark-comparison-observer.mjs';
+import {selectNativeByLabel} from './native-select-typeahead.mjs';
 import {sites,views,viewportFor,sha256,assertSourceAssets,assertCapture,assertNativeRoute,assertModeReport,compareReports,verifyCapturePng,cameraContract,assertGeneratedTimingChange} from './staged-landmark-comparison-contract.mjs';
 
 const MODE_BUDGET=32*60_000;
@@ -76,13 +77,13 @@ async function buildMode({game,mode,sourceSha,sourceTree,assets,out}){
 
 function installNativeEvidence(){
  const held=new Set(),e=window.__landmarkComparisonInputs={phase:'boot',events:[],overflow:false,held:[],focusLossDuringInput:[]};
- for(const type of ['click','keydown','keyup','pointerdown','pointerup','input','change'])document.addEventListener(type,event=>{
+ for(const type of ['click','keydown','keypress','keyup','pointerdown','pointerup','input','change'])document.addEventListener(type,event=>{
   if(type==='keydown')held.add(event.code);if(type==='keyup')held.delete(event.code);e.held=[...held];
   if(e.events.length>=10000){e.overflow=true;return;}
   const element=event.target,button=element?.closest?.('button');
-  e.events.push({type,trusted:event.isTrusted,code:event.code||null,target:button?.id?'#'+button.id:element?.id?'#'+element.id:element?.tagName,
+  e.events.push({type,trusted:event.isTrusted,code:event.code||null,key:event.key||null,target:button?.id?'#'+button.id:element?.id?'#'+element.id:element?.tagName,
    text:button?.textContent?.trim()||null,value:element?.value??null,landmark:button?.closest('article.landmark')?.querySelector('h3')?.textContent?.trim()||null,
-   phase:e.phase,at:performance.now()});
+   phase:e.phase,settingsOpen:document.querySelector('#settings')?.open===true,at:performance.now()});
  },true);
  const lost=reason=>{if(held.size)e.focusLossDuringInput.push({reason,keys:[...held],phase:e.phase,at:performance.now()});};
  addEventListener('blur',()=>lost('window blur'));document.addEventListener('visibilitychange',()=>{if(document.hidden)lost('document hidden');});
@@ -133,23 +134,12 @@ export async function captureMode({game,mode,layout,sourceSha,sourceTree,assets,
   await card.getByRole('button',{name:action,exact:true}).click();await expect(page.locator('#guide')).not.toBeVisible();await focus();
  }
  async function configure(){
+  await phase('configure-settings');
   if(!await page.locator('#settings-open').isVisible())await page.locator('#tools-toggle').click();
   await page.locator('#settings-open').click();const cycle=page.locator('#sky-cycle');if(await cycle.isChecked())await cycle.uncheck();
-  async function selectNative(selector,value){
-   const control=page.locator(selector);await control.scrollIntoViewIfNeeded();await expect(control).toBeEnabled();
-   const options=await control.locator('option').evaluateAll(items=>items.map(item=>item.value)),index=options.indexOf(value);
-   assert(index>=0&&options.length>1,'Missing native setting option '+selector);
-   const select=async target=>{
-    await control.press('Home');for(let i=0;i<target;i++)await control.press('ArrowDown');await control.press('Enter');
-    await expect(control).toHaveValue(options[target]);
-   };
-   // If already selected, visit another real option first so the final input
-   // and change handlers have trusted browser evidence as well as a DOM value.
-   if(await control.inputValue()===value)await select(index===0?1:0);
-   await select(index);
-  }
-  await selectNative('#sky-preset','12');await selectNative('#sky-clouds','clear');
-  await selectNative('#quality',layout==='phone'?'smooth':'high');await selectNative('#fps',layout==='phone'?'30':'60');
+  report.nativeSelections=[];
+  for(const [selector,value] of [['#sky-preset','12'],['#sky-clouds','clear'],['#quality',layout==='phone'?'smooth':'high'],['#fps',layout==='phone'?'30':'60']])
+   report.nativeSelections.push(await selectNativeByLabel(page,expect,selector,value));
   await page.locator('[data-close="settings"]').click();await focus();
   await expect(page.locator('#profile')).toHaveAttribute('data-quality',layout==='phone'?'smooth':'high');
   await expect(page.locator('#profile')).toHaveAttribute('data-effective-quality',layout==='phone'?'smooth':'high');

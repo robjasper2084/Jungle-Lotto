@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {mkdtemp,rm,writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {resolve} from 'node:path';
+import {nativeTypeaheadPlan} from './native-select-typeahead.mjs';
 import {sites,views,retainedNames,legacyExteriorNames,viewportFor,sha256,assertObservedCamera,assertCameraMatch,assertModeInventory,
  assertNativeRoute,assertCapture,assertModeReport,compareReports,verifyCapturePng,assertGeneratedTimingChange} from './staged-landmark-comparison-contract.mjs';
 
@@ -80,6 +81,63 @@ test('one representable GPU bit of camera position is never accepted with a broa
  b.latest.camera.gpu.cameraPosition[0]=value;b.latest.camera.gpu.cameraPositionBits[0]=bits[0];b.latest.postCamera=copy(b.latest.camera);
  for(const row of b.history){row.camera=copy(b.latest.camera);row.postCamera=copy(b.latest.camera);}
  assert.throws(()=>assertCameraMatch(a,b),/cameraPosition differs/);
+});
+
+function setCameraInput(observation,key,index,value){
+ for(const row of [observation.latest,...observation.history])for(const cam of [row.camera,row.postCamera]){
+  const raw=key==='viewMatrix'?cam.matrixWorldInverse:key==='projectionMatrix'?cam.projectionMatrix:cam.position;
+  const floats=new Float32Array([value]);raw[index]=value;cam.gpu[key][index]=floats[0];
+  cam.gpu[key+'Bits'][index]=new Uint32Array(floats.buffer)[0];
+  if(key==='cameraPosition')cam.matrixWorld[12+index]=value;
+ }
+}
+
+test('JSON signed-zero loss in redundant camera values replays without changing authoritative bits',()=>{
+ const inputs=[['viewMatrix',7],['projectionMatrix',3],['cameraPosition',1]];
+ const original=observed();for(const [key,index] of inputs)setCameraInput(original,key,index,-0);
+ assert.doesNotThrow(()=>assertObservedCamera(original));
+ const saved=JSON.stringify(original),parsed=JSON.parse(saved);
+ for(const [key,index] of inputs){
+  assert(Object.is(parsed.latest.camera.gpu[key][index],0));
+  assert.equal(parsed.latest.camera.gpu[key+'Bits'][index],0x80000000);
+ }
+ assert.doesNotThrow(()=>assertObservedCamera(parsed));
+ assert.equal(assertCameraMatch(original,parsed).matched,true);
+ assert.equal(JSON.stringify(parsed),saved,'Validation must not rewrite any receipt');
+});
+
+test('signed-zero bit differences across builds remain exact failures after JSON serialization',()=>{
+ for(const [key,index] of [['viewMatrix',7],['projectionMatrix',3],['cameraPosition',1]]){
+  const a=observed(),b=observed('staged');setCameraInput(a,key,index,0);setCameraInput(b,key,index,-0);
+  const baseline=JSON.parse(JSON.stringify(a)),candidate=JSON.parse(JSON.stringify(b));
+  assert.doesNotThrow(()=>assertObservedCamera(baseline));assert.doesNotThrow(()=>assertObservedCamera(candidate));
+  assert.throws(()=>assertCameraMatch(baseline,candidate),new RegExp(key+' differs'));
+ }
+});
+
+test('zero reconciliation rejects nonzero camera mismatches and nonfinite encodings',()=>{
+ for(const [key,index] of [['viewMatrix',7],['projectionMatrix',3],['cameraPosition',1]]){
+  for(const bits of [1,0x80000001,0x3f800000,0x7f800000,0xff800000,0x7fc00000]){
+   const o=observed();setCameraInput(o,key,index,0);o.latest.camera.gpu[key+'Bits'][index]=bits;
+   assert.throws(()=>assertObservedCamera(o),/values and bit patterns disagree/);
+  }
+  const valueMismatch=observed();setCameraInput(valueMismatch,key,index,1);
+  valueMismatch.latest.camera.gpu[key][index]=Math.fround(1+2**-23);
+  assert.throws(()=>assertObservedCamera(valueMismatch),/values and bit patterns disagree/);
+  const rawMismatch=observed();setCameraInput(rawMismatch,key,index,1);
+  const raw=key==='viewMatrix'?rawMismatch.latest.camera.matrixWorldInverse:key==='projectionMatrix'?rawMismatch.latest.camera.projectionMatrix:rawMismatch.latest.camera.position;
+  raw[index]=Math.fround(1+2**-23);
+  assert.throws(()=>assertObservedCamera(rawMismatch),/actual raw camera input/);
+ }
+});
+
+test('nonzero raw underflow cannot borrow the serialized signed-zero exception',()=>{
+ for(const [key,index] of [['viewMatrix',7],['projectionMatrix',3],['cameraPosition',1]]){
+  const o=observed();setCameraInput(o,key,index,-0);
+  const raw=key==='viewMatrix'?o.latest.camera.matrixWorldInverse:key==='projectionMatrix'?o.latest.camera.projectionMatrix:o.latest.camera.position;
+  raw[index]=1e-50;
+  assert.throws(()=>assertObservedCamera(o),/actual raw camera input/);
+ }
 });
 test('raw double precision differences are retained but may match when every submitted Float32 input is identical',()=>{
  const a=observed(),b=observed('staged');
@@ -222,4 +280,41 @@ test('PNG header/dimensions and independently reread byte digest are checked',as
 });
 test('one failed mode cannot produce a successful matched comparison',()=>{
  const failed=modeReport('staged');failed.passed=false;assert.throws(()=>assertModeReport(failed));assert.throws(()=>compareReports(modeReport(),failed));
+});
+
+test('closed native select plans use unique real labels and record a change when already selected',()=>{
+ const sky=[['','Choose a time'],['6.2','Sunrise'],['9','Morning'],['12','Midday'],['16.7','Golden hour'],['17.8','Sunset'],['18.5','Dusk'],['22','Night'],['17.55','Photo-reference sunset · clear']]
+  .map(([value,label])=>({value,label,disabled:false}));
+ assert.deepEqual(nativeTypeaheadPlan(sky,'','12'),[{value:'12',prefix:'mi'}]);
+ assert.deepEqual(nativeTypeaheadPlan(sky,'12','12'),[{value:'',prefix:'c'},{value:'12',prefix:'mi'}]);
+ const quality=[{value:'automatic',label:'Automatic'},{value:'smooth',label:'Smooth · lighter shadows'},{value:'high',label:'High detail'}];
+ assert.deepEqual(nativeTypeaheadPlan(quality,'automatic','smooth'),[{value:'smooth',prefix:'s'}]);
+ assert.deepEqual(nativeTypeaheadPlan(quality,'high','high'),[{value:'automatic',prefix:'a'},{value:'high',prefix:'h'}]);
+ const fps=[{value:'60',label:'60 FPS target'},{value:'30',label:'Stable 30 FPS target'}];
+ assert.deepEqual(nativeTypeaheadPlan(fps,'60','60'),[{value:'30',prefix:'s'},{value:'60',prefix:'6'}]);
+});
+test('native typeahead rejects disabled, missing, ambiguous and popup-key option plans',()=>{
+ const options=[{value:'a',label:'Morning'},{value:'b',label:'Midday',disabled:true}];
+ assert.throws(()=>nativeTypeaheadPlan(options,'a','b'),/enabled/);
+ assert.throws(()=>nativeTypeaheadPlan(options,'a','missing'),/enabled/);
+ assert.throws(()=>nativeTypeaheadPlan([{value:'a',label:'Choice'},{value:'a',label:'Other'}],'','a'),/Ambiguous/);
+ assert.throws(()=>nativeTypeaheadPlan([{value:'a',label:'Same'},{value:'b',label:'Same'}],'a','b'),/unique/);
+ assert.throws(()=>nativeTypeaheadPlan([{value:'a',label:'High one'},{value:'b',label:'High two'}],'a','b'),/unique/);
+ assert.throws(()=>nativeTypeaheadPlan([{value:'a',label:'Morning'},{value:'b',label:'Éclair'}],'a','b'),/unique/);
+ assert.throws(()=>nativeTypeaheadPlan(options,'a','a'),/second enabled/);
+});
+test('setting typeahead cannot admit gameplay movement, closed-dialog keys or post-boundary input',()=>{
+ const accepted=nativeEvidence('phone');
+ accepted.events.push({type:'keydown',code:'KeyS',trusted:true,target:'#quality',phase:'configure-settings',settingsOpen:true,at:20});
+ assert.doesNotThrow(()=>assertNativeRoute(accepted,'phone'));
+ for(const change of [
+  e=>{e.target='#game';},e=>{e.settingsOpen=false;},e=>{delete e.settingsOpen;},
+  e=>{e.phase='aquarium-travel-to-entrance';},e=>{e.trusted=false;},
+  e=>{e.code='KeyW';},e=>{e.code='KeyD';}
+ ]){
+  const rejected=copy(accepted);change(rejected.events.at(-1));assert.throws(()=>assertNativeRoute(rejected,'phone'));
+ }
+ const mode=modeReport('default','phone');mode.nativeEvidence=accepted;assert.doesNotThrow(()=>assertModeReport(mode));
+ mode.nativeEvidence.events.at(-1).at=mode.captureWindow.atMs+1;
+ assert.throws(()=>assertModeReport(mode),/settings keys occurred after/);
 });

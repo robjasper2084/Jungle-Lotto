@@ -4,6 +4,7 @@
  */
 import * as T from 'three';
 import type {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {excludeWaterfrontSkylineSites} from './waterfrontSkyline.ts';
 
 export type SiteId = '107310050' | '107227742';
 export type StudyDefinition = Readonly<{
@@ -14,7 +15,7 @@ export type StudyDefinition = Readonly<{
 export const STUDY_SITES: readonly StudyDefinition[] = [
   {id:'107310050',name:'Anna Scripps Whitcomb Conservatory (STAGED)',center:[1330.8,1174.7],yaw:.313,
    files:['Conservatory_Architectural_Study.glb','Conservatory_Architectural_Study_LOD1.glb','Conservatory_Architectural_Study_LOD2.glb'],
-   hashes:['312fb0530916d72e75aef4f33be47b66e1c1afb1a904070629132d3881d5565e','c1c28010258437a50647820aad6204cf947c78248771375e9dd57ad3273b0f2d','5ea972e8d027e0fb46eadd65faac0ec49a4377e5b8710b2f5f07d7e4a5bb6716']},
+   hashes:['d4ca492b0c5d07f90c7e8a1e3a6369811e6fe765f15c73f707bd34c9d55f1ae2','6dc9148964da3db834563cefa68aa22883eef051bea15136b9f72ad3d614e20f','361951febb39f9b148b7298c10294d2a4c12590847b0021394fcbc4a24b5804e']},
   {id:'107227742',name:'Belle Isle Aquarium (STAGED)',center:[1363.78,1167.42],yaw:-2.828592653589793,
    files:['Aquarium_Arched_Entrance_Study.glb','Aquarium_Arched_Entrance_Study_LOD1.glb','Aquarium_Arched_Entrance_Study_LOD2.glb'],
    hashes:['26447779b20c5bbd2ab1ee6eb3dc1489333722e045400697c40a32cae3c69b93','51d265f0a664ac896c8c23eb50b51f39ff52eeb2adbbc252ed16340c419e3ad9','4295c700ff745bf9c413d78f3e58997f2abc5da22665ee4515bedcd72db3c554']},
@@ -66,7 +67,7 @@ async function loadVerified(loader:GLTFLoader,name:string,expected:string){
  * parity or measured architectural height. Existing offscreen/collision layouts
  * remain authoritative and must be reconciled before a production deployment.
  */
-export async function installStagedLandmarkStudies(loader:GLTFLoader, landmarkRoot:T.Object3D){
+export async function installStagedLandmarkStudies(loader:GLTFLoader, landmarkRoot:T.Object3D,skylineRoot?:T.Group){
  const ready:{spec:StudyDefinition;lod:T.LOD;originals:T.Object3D[]}[]=[];
  for(const spec of STUDY_SITES){
   const candidates:T.Object3D[]=[];
@@ -91,20 +92,54 @@ export async function installStagedLandmarkStudies(loader:GLTFLoader, landmarkRo
  // Do not delete geometry or reparent the old scene to prepare a replacement.
  // Explicit detach rather than hide: static architecture batching and future
  // distance culling cannot reactivate removed facades.
- const removed:{child:T.Object3D;parent:T.Object3D}[]=[];
+ const removed:{child:T.Object3D;parent:T.Object3D;index:number}[]=[],parentOrders=new Map<T.Object3D,T.Object3D[]>();
+ let skyline:ReturnType<typeof excludeWaterfrontSkylineSites>|undefined,active=true,sealed=false;
+ const listeners:(()=>void)[]=[];
+ const ownedNodes=ready.flatMap(entry=>{const nodes:T.Object3D[]=[];entry.lod.traverse(o=>nodes.push(o));return nodes;});
+ const geometryOwners=ownedNodes.filter((o):o is T.Mesh=>o instanceof T.Mesh).map(mesh=>({mesh,geometry:mesh.geometry}));
+ let hierarchy:{node:T.Object3D;parent:T.Object3D|null}[]=[],materialOwners:{mesh:T.Mesh;material:T.Material|T.Material[]}[]=[];
+ function rollback(){
+  if(!active)return;active=false;for(const stop of listeners.splice(0))stop();
+  skyline?.rollback();
+  for(const entry of ready)entry.lod.removeFromParent();
+  // Restoring the actual original draw owners also lets the batch's ancestor
+  // membership guard retire detached staged sources on the next real render.
+  for(const {child,parent,index}of [...removed].sort((a,b)=>a.index-b.index)){if(child.parent&&child.parent!==parent)continue;if(!child.parent)parent.add(child);const at=parent.children.indexOf(child);if(at!==index){parent.children.splice(at,1);parent.children.splice(Math.min(index,parent.children.length),0,child);}}
+ }
+ function watch(object:T.Object3D|T.Material|T.BufferGeometry,type:'removed'|'dispose'){
+  const events=object as T.EventDispatcher<{removed:{};dispose:{}}>;
+  events.addEventListener(type,rollback);listeners.push(()=>events.removeEventListener(type,rollback));
+ }
+ function maintainOwnership(){
+  if(!active)return false;
+  const valid=(!skyline||skyline.intact())&&hierarchy.every(({node,parent})=>node.parent===parent)&&
+   geometryOwners.every(({mesh,geometry})=>mesh.geometry===geometry)&&materialOwners.every(({mesh,material})=>mesh.material===material);
+  if(!valid)rollback();return valid;
+ }
  try {
   for(const entry of ready){
-   for(const child of entry.originals){if(child.parent){removed.push({child,parent:child.parent});child.removeFromParent();}}
+   for(const child of entry.originals){if(child.parent){const parent=child.parent;if(!parentOrders.has(parent))parentOrders.set(parent,parent.children.slice());removed.push({child,parent,index:parentOrders.get(parent)!.indexOf(child)});child.removeFromParent();}}
    landmarkRoot.add(entry.lod);
   }
+  if(skylineRoot)skyline=excludeWaterfrontSkylineSites(skylineRoot,ready.map(entry=>entry.spec.id));
+  hierarchy=ownedNodes.map(node=>({node,parent:node.parent}));
+  for(const node of ownedNodes)watch(node,'removed');
+  watch(landmarkRoot,'removed');
+  for(const geometry of new Set(geometryOwners.map(owner=>owner.geometry)))watch(geometry,'dispose');
+  if(skylineRoot)for(const node of skylineRoot.children)if(node instanceof T.Mesh)watch(node.geometry,'dispose');
  }catch(error){
-  for(const entry of ready)entry.lod.removeFromParent();
-  for(const {child,parent} of removed)parent.add(child);
+  rollback();
   throw error;
  }
  return {
   installed:ready.map(e=>({id:e.spec.id,name:e.spec.name,removedFacades:e.originals.length})),
-  // Used by staging screenshot controls; never silently call from the game loop.
-  rollback(){for(const entry of ready)entry.lod.removeFromParent();for(const {child,parent} of removed)parent.add(child);},
+  // World decoration legitimately clones materials before this explicit seal.
+  // Thereafter a replaced/disposed staged draw falls back as one transaction.
+  sealOwnership(){if(sealed||!maintainOwnership())return;sealed=true;materialOwners=geometryOwners.map(({mesh})=>({mesh,material:mesh.material}));
+   for(const material of new Set(materialOwners.flatMap(({material})=>Array.isArray(material)?material:[material])))watch(material,'dispose');
+  },
+  maintainOwnership,
+  // Explicit cleanup and failed ownership both restore the same prior scene.
+  rollback,dispose:rollback,
  };
 }

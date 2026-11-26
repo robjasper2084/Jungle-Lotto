@@ -4,6 +4,10 @@ import {readFile} from 'node:fs/promises';
 import * as T from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {replaceableLegacyMesh,STUDY_SITES,installStagedLandmarkStudies} from './stagedLandmarkStudies.ts';
+import {addWaterfrontSkyline,excludeWaterfrontSkylineSites,waterfrontSkylineSiteReceipts} from './waterfrontSkyline.ts';
+import {StaticPaletteBatch} from './staticPaletteBatch.ts';
+import {createStagedLandmarkProof} from './stagedLandmarkProof.ts';
+import skylinePlan from './windsorSkyline.json' with {type:'json'};
 
 const originalFetch=globalThis.fetch;
 function scene(){
@@ -39,6 +43,102 @@ test('explicit identifier classifier protects interiors and leaves Scott and roa
  assert.equal(replaceableLegacyMesh('107227742','107227742_Aquarium river gravel'),false);
  assert.equal(replaceableLegacyMesh('107227742','9146545_Scott stone'),false);
  assert.equal(STUDY_SITES.length,2);
+});
+
+const siteIds=STUDY_SITES.map(s=>s.id);
+function skylineFixture(){const world=new T.Scene(),landmarks=scene();world.add(landmarks);const skyline=addWaterfrontSkyline(world);return{world,landmarks,skyline};}
+function allMeshes(root:T.Object3D){const meshes:T.Mesh[]=[];root.traverse(o=>{if(o instanceof T.Mesh)meshes.push(o);});return meshes;}
+function portalRay(root:T.Object3D,site:'aquarium'|'conservatory'){
+ const c=site==='aquarium'?{position:[1348.7537841068875,5.1,1120.9909914392567],direction:[.2902483645901151,-.33384714224459117,.896828842348351]}:
+  {position:[1303.3992736362825,5.1,1183.5679306910174],direction:[.896828842348351,-.3338471422445911,-.29024836459011505]};
+ const camera=new T.PerspectiveCamera(60,1.6,.08,22000);camera.position.fromArray(c.position);camera.lookAt(camera.position.clone().add(new T.Vector3().fromArray(c.direction)));camera.updateMatrixWorld(true);root.updateMatrixWorld(true);
+ const ray=new T.Raycaster();ray.setFromCamera(new T.Vector2(0,1-230/800*2),camera);ray.far=20;return ray.intersectObject(root,true);
+}
+
+test('actual skyline source duplicates both photographed open portals and exact-ID exclusion removes only their index membership',()=>{
+ const {skyline}=skylineFixture(),meshes=allMeshes(skyline),before=meshes.map(mesh=>({mesh,geometry:mesh.geometry,material:mesh.material,hook:mesh.onBeforeRender}));
+ assert.deepEqual(skylinePlan.buildings.filter(b=>siteIds.includes(b.id as typeof siteIds[number])).map(b=>[b.id,b.height]),[['107227742',3.4],['107310050',10.2]]);
+ for(const site of ['aquarium','conservatory']as const){const first=portalRay(skyline,site)[0];assert.equal(first.object.name,'Windsor waterfront stone');assert.ok(first.distance>10&&first.distance<13);}
+ const original=waterfrontSkylineSiteReceipts(skyline,siteIds)!;assert.ok(original.every(r=>r.known&&r.attached&&r.vertices!>0));
+ const handle=excludeWaterfrontSkylineSites(skyline,siteIds);assert.equal(handle.intact(),true);
+ const after=waterfrontSkylineSiteReceipts(skyline,siteIds)!;assert.ok(after.every(r=>r.known&&r.attached&&r.vertices===0));
+ for(const {mesh,geometry,material} of before){
+  assert.equal(mesh.material,material);for(const [name,attribute]of Object.entries(geometry.attributes)){const current=mesh.geometry.getAttribute(name).array;assert.deepEqual(new Uint8Array(current.buffer,current.byteOffset,current.byteLength),new Uint8Array(attribute.array.buffer,attribute.array.byteOffset,attribute.array.byteLength),'every original attribute bit remains intact: '+name);}
+  if(mesh.geometry!==geometry){
+   assert.ok(mesh.geometry.index);let previous=-1;for(const index of mesh.geometry.index.array){assert.ok(index>previous,'unrelated vertex submission order is retained');previous=index;}
+   assert.equal(mesh.geometry.index.count,geometry.getAttribute('position').count-original.reduce((n,r)=>n+r.vertices!,0));
+  }
+ }
+ for(const site of ['aquarium','conservatory']as const)assert.equal(portalRay(skyline,site).length,0);
+ let disposed=0;const owned=meshes.filter(m=>m.geometry!==before.find(b=>b.mesh===m)!.geometry).map(m=>m.geometry);for(const geo of owned)geo.addEventListener('dispose',()=>disposed++);
+ handle.rollback();handle.rollback();assert.equal(disposed,owned.length);
+ for(const {mesh,geometry,material,hook}of before){assert.equal(mesh.geometry,geometry);assert.equal(mesh.material,material);assert.equal(mesh.onBeforeRender,hook);}
+ assert.deepEqual(waterfrontSkylineSiteReceipts(skyline,siteIds),original);
+ for(const site of ['aquarium','conservatory']as const)assert.equal(portalRay(skyline,site)[0].object.name,'Windsor waterfront stone');
+});
+
+test('unverified final GLB leaves actual skyline geometry and legacy child order intact',async()=>{
+ const {landmarks,skyline}=skylineFixture(),before=landmarks.children.slice(),geometries=allMeshes(skyline).map(m=>m.geometry);let count=0;
+ globalThis.fetch=(async url=>++count===6?new Response(new Uint8Array([1,2,3])):modelFetch(url)) as typeof fetch;
+ try{await assert.rejects(installStagedLandmarkStudies(loader(),landmarks,skyline),/hash mismatch/);assert.deepEqual(landmarks.children,before);assert.deepEqual(allMeshes(skyline).map(m=>m.geometry),geometries);}
+ finally{globalThis.fetch=originalFetch;}
+});
+
+test('failed skyline transaction restores every legacy facade and retains every unrelated source',async()=>{
+ const {landmarks,skyline}=skylineFixture(),before=landmarks.children.slice(),mesh=allMeshes(skyline)[0],foreign=mesh.geometry.clone();mesh.geometry=foreign;
+ globalThis.fetch=modelFetch as typeof fetch;
+ try{await assert.rejects(installStagedLandmarkStudies(loader(),landmarks,skyline),/source changed/);assert.deepEqual(landmarks.children,before);assert.equal(mesh.geometry,foreign);}
+ finally{globalThis.fetch=originalFetch;}
+});
+
+test('detached, disposed or replaced staged owners restore the prior skyline and exact legacy order',async()=>{
+ for(const action of ['rollback','remove','geometry-dispose','material-dispose','geometry-replace','material-replace','skyline-dispose','skyline-range','skyline-groups']as const){
+  const {landmarks,skyline}=skylineFixture(),before=landmarks.children.slice(),geometries=allMeshes(skyline).map(m=>m.geometry);
+  globalThis.fetch=modelFetch as typeof fetch;
+  try{
+   const handle=await installStagedLandmarkStudies(loader(),landmarks,skyline);handle.sealOwnership();
+   assert.ok(waterfrontSkylineSiteReceipts(skyline,siteIds)!.every(s=>s.vertices===0));
+   const lod=landmarks.getObjectByName('107310050_STAGED_LODS')!,mesh=allMeshes(lod)[0];
+   if(action==='rollback')handle.rollback();else if(action==='remove')lod.removeFromParent();else if(action==='geometry-dispose')mesh.geometry.dispose();
+   else if(action==='material-dispose')(mesh.material as T.Material).dispose();else if(action==='geometry-replace')mesh.geometry=mesh.geometry.clone();
+   else if(action==='material-replace')mesh.material=(mesh.material as T.Material).clone();
+   else if(action==='skyline-range'||action==='skyline-groups'){
+    const geometry=allMeshes(skyline)[0].geometry;if(action==='skyline-range')geometry.setDrawRange(0,0);else geometry.addGroup(0,0,0);
+    assert.ok(waterfrontSkylineSiteReceipts(skyline,siteIds)!.every(s=>!s.known&&s.vertices===null),'mutated selection must never be certified as zero duplicate vertices');
+   }else allMeshes(skyline)[0].geometry.dispose();
+   assert.equal(handle.maintainOwnership(),false,action);assert.deepEqual(landmarks.children,before,action);assert.deepEqual(allMeshes(skyline).map(m=>m.geometry),geometries,action);
+   assert.ok(waterfrontSkylineSiteReceipts(skyline,siteIds)!.every(s=>s.vertices!>0),action);
+  }finally{globalThis.fetch=originalFetch;}
+ }
+});
+
+test('rollback retires the actual staged static palette owner and the proof rejects external skyline duplicates',async()=>{
+ const {world,landmarks,skyline}=skylineFixture(),skylineMesh=allMeshes(skyline)[0],originalSkyline=skylineMesh.geometry;globalThis.fetch=modelFetch as typeof fetch;
+ let palette:StaticPaletteBatch|undefined;
+ try{
+  const handle=await installStagedLandmarkStudies(loader(),landmarks,skyline),sources=allMeshes(landmarks).filter(m=>m.parent?.name.includes('_STAGED_LOD'));
+  palette=new StaticPaletteBatch(sources);world.add(palette.root);assert.ok(palette.stats.batches>0);handle.sealOwnership();
+  const terrain={height:()=>2,obstructed:()=>false,raycastObstacle:()=>null},proof=createStagedLandmarkProof(landmarks,terrain,{},skyline),camera=new T.PerspectiveCamera(60,1.6,.08,22000);
+  camera.position.set(1330.8,5,1174.7);camera.updateMatrixWorld();proof.observeActor({x:1330.8,y:2,z:1174.7,headingY:0,speed:0,footBlend:0},false);proof.observeView(1,0,0,camera);
+  assert.equal(proof.publicApi.snapshot().ready,true);assert.ok(proof.publicApi.snapshot().sites.every(s=>s.skylineDuplicate?.vertices===0));
+  const excluded=skylineMesh.geometry;skylineMesh.geometry=originalSkyline;
+  assert.ok(proof.publicApi.snapshot().sites.every(s=>s.installedLods===3));assert.equal(proof.publicApi.snapshot().ready,false,'intact staged models cannot conceal a duplicate outside landmarks.scene');
+  skylineMesh.geometry=excluded;assert.equal(handle.maintainOwnership(),true);
+  palette.beginView(false,camera);palette.endView();handle.rollback();palette.beginView(false,camera);
+  for(const child of palette.root.children){assert.ok(child instanceof T.BatchedMesh);for(let i=0;i<child.maxInstanceCount;i++)assert.equal(child.getVisibleAt(i),false,'detached replacement cannot ghost through its existing batch');}
+  palette.endView();assert.equal(proof.publicApi.snapshot().ready,false);assert.ok(proof.publicApi.snapshot().sites.every(s=>s.skylineDuplicate?.vertices!>0));
+ }finally{palette?.dispose();globalThis.fetch=originalFetch;}
+});
+
+test('skyline exclusion forwards callback identity, arguments, return and errors once, with owned restoration',()=>{
+ const {skyline}=skylineFixture(),mesh=allMeshes(skyline)[0],seen:unknown[][]=[],result={returned:true},failure=new Error('original callback');let fail=false;
+ const before=function(this:T.Mesh,...args:unknown[]){assert.equal(this,mesh);seen.push(args);if(fail)throw failure;return result;};mesh.onBeforeRender=before;
+ const handle=excludeWaterfrontSkylineSites(skyline,siteIds),args=[1,2,3,4,5,6];
+ assert.equal(Reflect.apply(mesh.onBeforeRender,mesh,args),result);assert.deepEqual(seen,[args]);fail=true;
+ assert.throws(()=>Reflect.apply(mesh.onBeforeRender,mesh,args),error=>error===failure);assert.equal(seen.length,2);
+ assert.throws(()=>excludeWaterfrontSkylineSites(skyline,siteIds),/ownership unavailable/);
+ handle.rollback();assert.equal(mesh.onBeforeRender,before);
+ assert.throws(()=>excludeWaterfrontSkylineSites(skyline,['unknown']),/missing or ambiguous/);
 });
 
 test('six immutable authored GLBs pass the exact source-hash contract before detach',async t=>{

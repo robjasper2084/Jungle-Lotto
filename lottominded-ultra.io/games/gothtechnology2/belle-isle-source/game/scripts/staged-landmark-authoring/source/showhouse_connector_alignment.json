@@ -1,0 +1,51 @@
+{
+  "sourceHead": "9b43b72acb72cfe69dd483614e5c2d95bb57a7ed",
+  "sourceMapBlobSha": "e5c741279fe981b928c9fd4d58a72d72ae7cb017",
+  "modelCoordinates": "x=u,y=height above unchanged ground2,z=-v",
+  "placement": {
+    "center": [
+      1330.8,
+      1174.7
+    ],
+    "yaw": 0.313,
+    "groundY": 2
+  },
+  "connectorWalls": [
+    {
+      "wallIndex": 17,
+      "a": [
+        10.736619988791904,
+        -4.368190840184606
+      ],
+      "b": [
+        11.748786810778059,
+        -4.390957580629397
+      ]
+    },
+    {
+      "wallIndex": 32,
+      "a": [
+        11.661863539679922,
+        5.180862744937737
+      ],
+      "b": [
+        10.899590102265401,
+        5.196329050646911
+      ]
+    }
+  ],
+  "retainedWestPane": {
+    "centerU": 11.1,
+    "thickness": 0.055,
+    "bottomY": 0.2,
+    "topY": 6.0,
+    "outerZ": [
+      -8.8,
+      8.8
+    ]
+  },
+  "openingTopY": 3.5,
+  "openingTopBasis": "Existing PalmHouse/DrumGlass and DrumFrames begin at local y=3.5; retain glazing above that open base. This is an authored connection fit, not a surveyed doorway height.",
+  "retainedFarPaneU": 22.7,
+  "collisionOrPlacementChanges": false
+}

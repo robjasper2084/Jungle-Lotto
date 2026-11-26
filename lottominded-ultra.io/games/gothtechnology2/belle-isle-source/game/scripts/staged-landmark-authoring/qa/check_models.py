@@ -34,6 +34,9 @@ for site in report['models']:
   if siteName=='Anna Scripps Whitcomb Conservatory':
    # West vestibule, accessible ground-level volume. All opaque/glass elements should avoid this volume.
    chk(not has_blocker(scene,[-17.22,.64,-1.55],[-16.72,2.82,1.55]),f"Conservatory west door standing clearance LOD{v['lod']}")
+   chk(not has_blocker(scene,[10,.35,-1.55],[13,3.1,1.55]),f"Conservatory existing Show House connector standing clearance LOD{v['lod']}")
+   end_glazing=scene.geometry['ShowHouse/EndGlazing__greenGlass']
+   chk(end_glazing.is_watertight and end_glazing.is_winding_consistent and end_glazing.body_count==2,f"Conservatory continuous connector glazing and retained exterior pane LOD{v['lod']}")
   if siteName=='Belle Isle Aquarium':
    chk(not has_blocker(scene,[-1.45,1.22,37.70],[1.45,2.82,39.28]),f"Aquarium arched passage standing clearance LOD{v['lod']}")
  chk(sizes[0]>=sizes[1]>=sizes[2],f'{siteName} LOD triangle monotonicity')

@@ -72,17 +72,43 @@ export function assertContact({before,after,trace,id,axis}){
  const probe=after.actor.forwardProbe;
  assert.equal(probe.radius,.27,'Collision evidence changed the existing body radius');
  assert.deepEqual(probe.bodyHeights,[.62,1.1,1.58],'Collision evidence changed the standing sweep heights');
+ assert.equal(probe.maxDistance,.7,'Collision evidence changed the forward sweep length');
+ assert.equal(probe.sweptHits.length,3,'Missing original terrain sweep heights');
+ const visualSweeps=after.actor.visibleForwardSweeps;
+ assert.equal(visualSweeps?.length,3,'Missing same-radius visible triangle sweeps');
+ for(let i=0;i<3;i++){
+  const visual=visualSweeps[i],height=probe.bodyHeights[i];
+  assert.equal(visual.height,height);assert.equal(visual.radius,probe.radius);assert.equal(visual.maxDistance,probe.maxDistance);
+  const origin=[after.actor.x,after.actor.y+height,after.actor.z],direction=[Math.sin(after.actor.headingY),0,Math.cos(after.actor.headingY)];
+  assert(visual.origin?.length===3&&visual.origin.every((v,j)=>v===origin[j]),'Visible sweep moved the actual actor origin');
+  assert(visual.direction?.length===3&&visual.direction.every((v,j)=>v===direction[j]),'Visible sweep changed the actual heading');
+  assert.deepEqual(visual.unsupportedMeshes,[],'Visible triangle coverage contains unsupported geometry');
+  assert(Number.isSafeInteger(visual.checkedTriangles)&&visual.checkedTriangles>=0);
+  if(visual.hit){
+   const hit=visual.hit;assert(visual.checkedTriangles>0&&Number.isFinite(hit.distance)&&hit.distance>=0&&hit.distance<=probe.maxDistance,'Invalid forward visible sphere hit');
+   assert(['face','edge','vertex','initial-overlap'].includes(hit.feature)&&typeof hit.mesh==='string'&&hit.mesh.length>0);
+   assert(Number.isSafeInteger(hit.faceIndex)&&hit.faceIndex>=0&&hit.vertexIndices?.length===3&&hit.vertexIndices.every(v=>Number.isSafeInteger(v)&&v>=0));
+   assert(hit.triangle?.length===3&&hit.triangle.every(p=>p.length===3&&p.every(Number.isFinite))&&hit.point?.length===3&&hit.point.every(Number.isFinite));
+   const subtract=(a,b)=>a.map((v,j)=>v-b[j]),dot=(a,b)=>a.reduce((sum,v,j)=>sum+v*b[j],0);
+   const [a,b,c]=hit.triangle,u=subtract(b,a),v=subtract(c,a),w=subtract(hit.point,a),uu=dot(u,u),uv=dot(u,v),vv=dot(v,v),wu=dot(w,u),wv=dot(w,v),den=uu*vv-uv*uv;
+   const beta=(wu*vv-wv*uv)/den,gamma=(wv*uu-wu*uv)/den;
+   const reconstructed=a.map((x,j)=>x+beta*u[j]+gamma*v[j]);
+   assert(den>0&&beta>=-1e-9&&gamma>=-1e-9&&beta+gamma<=1+1e-9&&Math.hypot(...subtract(hit.point,reconstructed))<1e-7,'Visible contact point is outside its actual finite triangle');
+   const separation=Math.hypot(...hit.point.map((v,j)=>v-(origin[j]+direction[j]*hit.distance)));
+   assert(hit.feature==='initial-overlap'?hit.distance===0&&separation<=probe.radius+1e-7:Math.abs(separation-probe.radius)<1e-7,'Visible evidence is not a real same-radius swept-sphere contact');
+  }
+ }
  const pairs=probe.sweptHits.flatMap((hit,i)=>{
   if(hit===null||!Number.isFinite(hit)||hit<0||hit>probe.maxDistance)return[];
-  const visual=after.actor.visibleForwardSurfaces[i];
-  return visual&&Number.isFinite(visual.distance)?[{height:probe.bodyHeights[i],sweptHit:hit,visual,
-   surfaceDifferenceMetres:Math.abs(visual.distance-(hit+probe.radius))}]:[];
+  const visual=visualSweeps[i];
+  return visual.hit?[{height:probe.bodyHeights[i],sweptHit:hit,visual,
+   surfaceDifferenceMetres:Math.abs(visual.hit.distance-hit)}]:[];
  });
  assert(probe.blocked||probe.sweptHits.some(hit=>hit!==null&&Number.isFinite(hit)&&hit<=probe.maxDistance),'No real terrain obstruction ahead at the stop');
  assert(pairs.some(pair=>pair.surfaceDifferenceMetres<=.35),'The visible surface and existing collision contact differ by more than 0.35m, or a visible surface is missing');
- return{id,source:'native held W, advancing actor frames, existing terrain sweep and actual visible geometry rays',
+ return{id,source:'native held W, advancing actor frames, existing terrain sweep and same-radius visible triangle sweeps',
   movedMetres:travel,obstacleNormalAxis:axis,normalTravelMetres:normalTravel,plateauFrames:tail.at(-1).frames-tail[0].frames,
-  normalMaximumMetres:normalMaximum,tangentialMaximumMetres:tangentMaximum,probe,visualPairs:pairs,
+  normalMaximumMetres:normalMaximum,tangentialMaximumMetres:tangentMaximum,probe,visualPairs:pairs,visibleForwardSurfaces:after.actor.visibleForwardSurfaces,
   surfaceAgreementToleranceMetres:.35,scope:'This sampled contact only; not complete architectural collider parity'};
 }
 
@@ -239,19 +265,19 @@ export async function run(){
   try{await waitMotion({type:'contact',id,axis,x:before.actor.x,z:before.actor.z},300_000);after=await snapshot();}
   catch(error){contactFailure=error;}
   finally{await keyUp('w');}
-  after??=await snapshot();
+  after??=await snapshot();const trajectory=await trace(name);
   try{
    if(contactFailure)throw contactFailure;
-   const result=assertContact({before,after,trace:await trace(name),id,axis});
+   const result=assertContact({before,after,trace:trajectory,id,axis});
    report.contacts.push({name,passed:true,...result});
   }catch(error){
    // Keep the failure and its real pose/query evidence, then collect the other
    // requested camera views. A failed contact can never produce a passing case.
    report.contacts.push({name,id,passed:false,error:String(error),obstacleNormalAxis:axis,
-    probe:after.actor.forwardProbe,visibleForwardSurfaces:after.actor.visibleForwardSurfaces});
+    probe:after.actor.forwardProbe,visibleForwardSurfaces:after.actor.visibleForwardSurfaces,visibleForwardSweeps:after.actor.visibleForwardSweeps});
    report.errors.push(name+': '+String(error));
   }
-  report.snapshots.push({name,before,after});await settle(name);await capture(name,id);
+  report.snapshots.push({name,before,after,trace:trajectory});await settle(name);await capture(name,id);
  }
  async function painted(){
   return page.evaluate(()=>new Promise((yes,no)=>{

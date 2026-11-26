@@ -1,7 +1,7 @@
 {
   "schema": "staged-belle-landmarks/v1",
   "status": "not-production",
-  "basis": "Original 2026-11-24 modeling package; Conservatory vestibule regenerated from its source against the unchanged supplied map walls",
+  "basis": "Original 2026-11-24 modeling package; Conservatory vestibule and internal Show House connector fitted from source to the unchanged supplied map walls",
   "baseGameMapCommit": "2a8901996e53b1f93474f3c2165e078b6dd16e57",
   "models": [
     {
@@ -50,31 +50,44 @@
           ],
           "existingColliderAndInteriorUnchanged": true,
           "heightsAndMaterialsUnchanged": true
+        },
+        "showHouseConnector": {
+          "sourceHead": "9b43b72acb72cfe69dd483614e5c2d95bb57a7ed",
+          "sourceMapBlobSha": "e5c741279fe981b928c9fd4d58a72d72ae7cb017",
+          "wallIndices": [
+            17,
+            32
+          ],
+          "westPaneU": 11.1,
+          "openingTopY": 3.5,
+          "paneThickness": 0.055,
+          "existingColliderAndInteriorUnchanged": true,
+          "exteriorGlazingAndMaterialsUnchanged": true
         }
       },
       "lods": [
         {
           "lod": 0,
           "file": "Conservatory_Architectural_Study.glb",
-          "sha256": "312fb0530916d72e75aef4f33be47b66e1c1afb1a904070629132d3881d5565e",
-          "bytes": 335380,
-          "total_triangles": 17780,
+          "sha256": "d4ca492b0c5d07f90c7e8a1e3a6369811e6fe765f15c73f707bd34c9d55f1ae2",
+          "bytes": 336092,
+          "total_triangles": 17796,
           "total_mesh_groups": 25
         },
         {
           "lod": 1,
           "file": "Conservatory_Architectural_Study_LOD1.glb",
-          "sha256": "c1c28010258437a50647820aad6204cf947c78248771375e9dd57ad3273b0f2d",
-          "bytes": 303452,
-          "total_triangles": 16232,
+          "sha256": "6dc9148964da3db834563cefa68aa22883eef051bea15136b9f72ad3d614e20f",
+          "bytes": 304168,
+          "total_triangles": 16248,
           "total_mesh_groups": 20
         },
         {
           "lod": 2,
           "file": "Conservatory_Architectural_Study_LOD2.glb",
-          "sha256": "5ea972e8d027e0fb46eadd65faac0ec49a4377e5b8710b2f5f07d7e4a5bb6716",
-          "bytes": 75556,
-          "total_triangles": 3096,
+          "sha256": "361951febb39f9b148b7298c10294d2a4c12590847b0021394fcbc4a24b5804e",
+          "bytes": 76272,
+          "total_triangles": 3112,
           "total_mesh_groups": 12
         }
       ]
@@ -255,5 +268,13 @@
     "mapBlobSha": "e5c741279fe981b928c9fd4d58a72d72ae7cb017",
     "generator": "scripts/staged-landmark-authoring/build_landmarks.py",
     "nativeAcceptance": "Requires the unchanged native walk and ninety-second performance gates"
+  },
+  "conservatoryConnectorSource": {
+    "baseHead": "9b43b72acb72cfe69dd483614e5c2d95bb57a7ed",
+    "mapBlobSha": "e5c741279fe981b928c9fd4d58a72d72ae7cb017",
+    "generator": "scripts/staged-landmark-authoring/build_landmarks.py",
+    "changedComponent": "ShowHouse/EndGlazing",
+    "retainedMaterial": "greenGlass BLEND, alpha 167/255, roughness 0.17, doubleSided; runtime depthWrite=false",
+    "nativeAcceptance": "Requires the unchanged native walk, comparison, and ninety-second performance gates"
   }
 }

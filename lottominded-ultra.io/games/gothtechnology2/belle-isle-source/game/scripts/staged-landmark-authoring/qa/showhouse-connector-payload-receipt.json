@@ -1,0 +1,101 @@
+{
+  "sourceHead": "9b43b72acb72cfe69dd483614e5c2d95bb57a7ed",
+  "mapBlobSha": "e5c741279fe981b928c9fd4d58a72d72ae7cb017",
+  "passed": true,
+  "models": [
+    {
+      "file": "Conservatory_Architectural_Study.glb",
+      "beforeSha256": "312fb0530916d72e75aef4f33be47b66e1c1afb1a904070629132d3881d5565e",
+      "afterSha256": "d4ca492b0c5d07f90c7e8a1e3a6369811e6fe765f15c73f707bd34c9d55f1ae2",
+      "bytes": 336092,
+      "changedComponent": "ShowHouse/EndGlazing__greenGlass",
+      "unchangedPrimitiveCount": 24,
+      "allMaterialsTexturesIdentical": true,
+      "farExteriorTrianglePayload": {
+        "triangles": 12,
+        "attributeNames": [
+          "POSITION"
+        ],
+        "sha256": "b92c00ed0398e45e03476f2ff793e1ef34daab81efcb64eb7f9b1e60e0bb7ab5"
+      },
+      "beforeTriangles": 17780,
+      "afterTriangles": 17796
+    },
+    {
+      "file": "Conservatory_Architectural_Study_LOD1.glb",
+      "beforeSha256": "c1c28010258437a50647820aad6204cf947c78248771375e9dd57ad3273b0f2d",
+      "afterSha256": "6dc9148964da3db834563cefa68aa22883eef051bea15136b9f72ad3d614e20f",
+      "bytes": 304168,
+      "changedComponent": "ShowHouse/EndGlazing__greenGlass",
+      "unchangedPrimitiveCount": 19,
+      "allMaterialsTexturesIdentical": true,
+      "farExteriorTrianglePayload": {
+        "triangles": 12,
+        "attributeNames": [
+          "POSITION"
+        ],
+        "sha256": "b92c00ed0398e45e03476f2ff793e1ef34daab81efcb64eb7f9b1e60e0bb7ab5"
+      },
+      "beforeTriangles": 16232,
+      "afterTriangles": 16248
+    },
+    {
+      "file": "Conservatory_Architectural_Study_LOD2.glb",
+      "beforeSha256": "5ea972e8d027e0fb46eadd65faac0ec49a4377e5b8710b2f5f07d7e4a5bb6716",
+      "afterSha256": "361951febb39f9b148b7298c10294d2a4c12590847b0021394fcbc4a24b5804e",
+      "bytes": 76272,
+      "changedComponent": "ShowHouse/EndGlazing__greenGlass",
+      "unchangedPrimitiveCount": 11,
+      "allMaterialsTexturesIdentical": true,
+      "farExteriorTrianglePayload": {
+        "triangles": 12,
+        "attributeNames": [
+          "POSITION"
+        ],
+        "sha256": "b92c00ed0398e45e03476f2ff793e1ef34daab81efcb64eb7f9b1e60e0bb7ab5"
+      },
+      "beforeTriangles": 3096,
+      "afterTriangles": 3112
+    }
+  ],
+  "otherNineByteIdentical": {
+    "Aquarium_Arched_Entrance_Study.glb": {
+      "sha256": "26447779b20c5bbd2ab1ee6eb3dc1489333722e045400697c40a32cae3c69b93",
+      "bytes": 60268
+    },
+    "Aquarium_Arched_Entrance_Study_LOD1.glb": {
+      "sha256": "51d265f0a664ac896c8c23eb50b51f39ff52eeb2adbbc252ed16340c419e3ad9",
+      "bytes": 41788
+    },
+    "Aquarium_Arched_Entrance_Study_LOD2.glb": {
+      "sha256": "4295c700ff745bf9c413d78f3e58997f2abc5da22665ee4515bedcd72db3c554",
+      "bytes": 32144
+    },
+    "Scott_Fountain_Terraces_Study.glb": {
+      "sha256": "b32bd8558a76c40039b7d5d6441ccbaf28091e0ce5b85654d0701b8f7713759d",
+      "bytes": 77120
+    },
+    "Scott_Fountain_Terraces_Study_LOD1.glb": {
+      "sha256": "6ecd5c7f2d0687c15f4fc4619aa3f5e1c6ea2a31c503d3cb46367f88bd355dbc",
+      "bytes": 74852
+    },
+    "Scott_Fountain_Terraces_Study_LOD2.glb": {
+      "sha256": "9e13118ec3d6b7935d3ee5c7a9b4a75b757ce60aa39d421a82a85ac93c48bc3f",
+      "bytes": 67764
+    },
+    "Conservatory_Drive_Street_Detail_Study.glb": {
+      "sha256": "d1e6cc99f6edbf79ccfc6671145a5350cf435850ac50fd37a38e7a1683d502fa",
+      "bytes": 9432
+    },
+    "Conservatory_Drive_Street_Detail_Study_LOD1.glb": {
+      "sha256": "68f62aaee3f7b9421ed22f8d313738efc38b63372072027e1d81ac26c5cd3fe9",
+      "bytes": 8260
+    },
+    "Conservatory_Drive_Street_Detail_Study_LOD2.glb": {
+      "sha256": "9a117a51ee1456eda92f8a0176cb4933a95bb0f36581eec9e74ba974117695f3",
+      "bytes": 2288
+    }
+  },
+  "collisionPlacementOrMaterialsChanged": false,
+  "nativeAcceptance": "pending"
+}

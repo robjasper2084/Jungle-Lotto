@@ -3,7 +3,7 @@ import test from 'node:test';
 import {assertContact,assertNativeEvidence,assertPassage} from './staged-landmark-walk-proof.mjs';
 
 const id='107227742';
-const sample=(frames,u,v)=>({frames,actor:{x:u,y:2,z:v,onFoot:true,footBlend:1},sites:[{id,local:{u,v}}]});
+const sample=(frames,u,v)=>({frames,actor:{x:u,y:2,z:v,headingY:0,onFoot:true,footBlend:1},sites:[{id,local:{u,v}}]});
 function passage(){
  const trace=Array.from({length:10},(_,i)=>sample(i+1,.68,-44+i*.81));
  return{before:trace[0],after:trace.at(-1),trace,id,axis:'v',boundary:-38,clearHalfWidth:1.65};
@@ -13,6 +13,8 @@ function contact(){
  const after=structuredClone(trace.at(-1));
  after.actor.forwardProbe={radius:.27,bodyHeights:[.62,1.1,1.58],maxDistance:.7,blocked:false,sweptHits:[0,null,null]};
  after.actor.visibleForwardSurfaces=[{height:.62,distance:.30,mesh:'actual wall'},null,null];
+ after.actor.visibleForwardSweeps=[.62,1.1,1.58].map((height,i)=>({height,radius:.27,maxDistance:.7,origin:[3,2+height,0],direction:[0,0,1],checkedTriangles:1,unsupportedMeshes:[],
+  hit:i===0?{distance:.03,point:[3,2+height,.3],feature:'face',featureIndex:-1,mesh:'actual wall',meshUuid:'loaded-mesh',faceIndex:0,instanceId:null,vertexIndices:[0,1,2],triangle:[[2,2,.3],[4,2,.3],[3,4,.3]]}:null}));
  return{before,after,trace,id,axis:'u'};
 }
 function native(){
@@ -56,7 +58,32 @@ test('movement cessation without an actual terrain obstruction fails',()=>{
  const value=contact();value.after.actor.forwardProbe.sweptHits=[null,null,null];assert.throws(()=>assertContact(value),/No real terrain obstruction/);
 });
 test('an invisible or spatially mismatched collider cannot pass visual contact proof',()=>{
- const value=contact();value.after.actor.visibleForwardSurfaces[0].distance=1.5;assert.throws(()=>assertContact(value),/visible surface and existing collision/);
+ const value=contact(),hit=value.after.actor.visibleForwardSweeps[0].hit;hit.distance=.5;hit.point[2]=.77;
+ for(const vertex of hit.triangle)vertex[2]=.77;
+ assert.throws(()=>assertContact(value),/visible surface and existing collision/);
+});
+test('a real pane edge sphere contact may pass while all centerline rays remain null',()=>{
+ const value=contact();value.after.actor.visibleForwardSurfaces=[null,null,null];value.after.actor.visibleForwardSweeps[0].hit.feature='edge';
+ const result=assertContact(value);assert.equal(result.visualPairs[0].surfaceDifferenceMetres,.03);assert.deepEqual(result.visibleForwardSurfaces,[null,null,null]);
+});
+test('a nearby triangle without an actual forward sweep hit cannot establish contact',()=>{
+ const value=contact();value.after.actor.visibleForwardSweeps[0].hit=null;
+ assert.throws(()=>assertContact(value),/visible surface and existing collision/);
+});
+test('changing the radius, heading, height or origin cannot make another surface satisfy the same contact',()=>{
+ for(const change of[v=>v.radius=.5,v=>v.height=1.2,v=>v.origin[0]+=.1,v=>v.direction=[1,0,0]]){
+  const value=contact();change(value.after.actor.visibleForwardSweeps[0]);assert.throws(()=>assertContact(value));
+ }
+});
+test('all three observed body-height sweeps and complete supported geometry coverage are required',()=>{
+ const value=contact();value.after.actor.visibleForwardSweeps.pop();assert.throws(()=>assertContact(value),/same-radius/);
+ const incomplete=contact();incomplete.after.actor.visibleForwardSweeps[1].unsupportedMeshes=['unobserved pane'];assert.throws(()=>assertContact(incomplete),/coverage/);
+});
+test('a nearest point or malformed triangle cannot impersonate a swept-sphere hit',()=>{
+ const value=contact();value.after.actor.visibleForwardSweeps[0].hit.point[2]=.2;assert.throws(()=>assertContact(value),/finite triangle/);
+ const wrongRadius=contact();wrongRadius.after.actor.visibleForwardSweeps[0].hit.distance=.02;assert.throws(()=>assertContact(wrongRadius),/real same-radius/);
+ const missing=contact();delete missing.after.actor.visibleForwardSweeps[0].hit.triangle;assert.throws(()=>assertContact(missing));
+ const behind=contact();behind.after.actor.visibleForwardSweeps[0].hit.distance=-.1;assert.throws(()=>assertContact(behind),/Invalid forward/);
 });
 test('forward penetration cannot pass as a contact plateau',()=>{
  const value=contact();value.trace.at(-1).sites[0].local.u+=.2;assert.throws(()=>assertContact(value),/stop penetration/);
