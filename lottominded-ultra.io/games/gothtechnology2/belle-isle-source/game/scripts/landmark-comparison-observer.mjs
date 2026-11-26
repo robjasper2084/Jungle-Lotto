@@ -6,7 +6,8 @@ export function installLandmarkComparisonObserver(options={}){
  if(!Number.isSafeInteger(historyLimit)||historyLimit<1||historyLimit>32||!Number.isSafeInteger(maxInventoryNodes)||maxInventoryNodes<2||maxInventoryNodes>100000||!Number.isSafeInteger(maxLandmarkNodes)||maxLandmarkNodes<2||maxLandmarkNodes>8192)throw Error('Invalid bounded landmark comparison observer configuration');
  if(root.__landmarkComparisonObserver)throw Error('Landmark comparison observer already installed');
  const requiredNames=['107227742_Aquarium illuminated habitat','107310050_Conservatory concrete paving'];
- const coverage={renderer:false,render:false,direct:false},errors=[],history=[],scopes=[];
+ const coverage={renderer:false,render:false,direct:false},errors=[],history=[],scopes=[],firstInvalidPasses=[],firstCaptureInvalidPasses=[];
+ let captureWindow=null;
  let renderer,island,latest,attestedRender,attestedDirect,sequence=0,invalidPasses=0,ignoredOffscreenRenders=0,ignoredOtherSceneRenders=0;
  const copy=value=>structuredClone(value),now=()=>performance.now();
  const own=(value,key)=>{try{const descriptor=value&&Object.getOwnPropertyDescriptor(value,key);return descriptor&&'value'in descriptor?descriptor.value:undefined;}catch{return undefined;}};
@@ -140,7 +141,15 @@ export function installLandmarkComparisonObserver(options={}){
      if(renderer.render!==scope.publicRender||renderer.renderBufferDirect!==scope.publicDirect)issue(scope,'changed-render-hooks-during-pass');
     }catch(e){issue(scope,'finish-observation-error');error('finish render observation',e);}
     finally{
-     row.valid=row.issues.length===0&&!row.threw;if(!row.valid)invalidPasses++;
+     row.valid=row.issues.length===0&&!row.threw;
+     row.observationPhase=captureWindow?'capture':'preparation';
+     if(!row.valid){
+      invalidPasses++;
+      // Keep the first failed receipts even after thousands of later valid
+      // frames evict them from the short settling history. Never clear these.
+      if(firstInvalidPasses.length<8)firstInvalidPasses.push(row);
+      if(captureWindow&&firstCaptureInvalidPasses.length<8)firstCaptureInvalidPasses.push(row);
+     }
      if(row.valid){attestedRender=scope.publicRender;attestedDirect=scope.publicDirect;}
      latest=row;history.push(row);if(history.length>historyLimit)history.shift();
     }}
@@ -183,17 +192,27 @@ export function installLandmarkComparisonObserver(options={}){
   // Attest their public identities only through a completely conserved native
   // island pass; any later replacement is unproven until another full pass.
   const currentRenderHook=!!attestedRender&&renderer?.render===attestedRender,currentDirectHook=!!attestedDirect&&renderer?.renderBufferDirect===attestedDirect;
-  return{ready:Object.values(coverage).every(Boolean)&&currentRenderHook&&currentDirectHook&&!!latest?.valid&&fresh&&invalidPasses===0&&errors.length===0,
+  const currentPassReady=Object.values(coverage).every(Boolean)&&currentRenderHook&&currentDirectHook&&!!latest?.valid&&fresh&&errors.length===0;
+  const captureInvalidPasses=captureWindow?invalidPasses-captureWindow.preparationInvalidPasses:null;
+  return{ready:currentPassReady&&(captureWindow?latest.sequence>captureWindow.afterSequence&&captureInvalidPasses===0:invalidPasses===0),
+   canArm:!captureWindow&&currentPassReady&&scopes.length===0,captureWindow:captureWindow?copy(captureWindow):null,captureInvalidPasses,
    fresh,frame:sequence,coverage:{...coverage,currentRenderHook,currentDirectHook},errors:copy(errors),invalidPasses,ignoredOffscreenRenders,ignoredOtherSceneRenders,
-   limits:{historyLimit,maxInventoryNodes,maxLandmarkNodes},scope:'Read-only camera/submission comparison receipts. A completed renderer call is not a GPU fence or presentation proof; the native screenshot workflow supplies that separate evidence.'};
+   limits:{historyLimit,maxInventoryNodes,maxLandmarkNodes,invalidHistoryLimit:8},scope:'Read-only camera/submission comparison receipts. A completed renderer call is not a GPU fence or presentation proof; the native screenshot workflow supplies that separate evidence.'};
+ }
+ function arm(){
+  if(captureWindow)throw Error('The comparison capture window is one-shot and cannot be reset');
+  if(!state().canArm)throw Error('A current complete native island pass with intact hooks is required before arming');
+  captureWindow=Object.freeze({kind:'one-shot-native-pass-boundary',atMs:now(),afterSequence:sequence,
+   afterRendererFrame:renderer.info.render.frame,preparationInvalidPasses:invalidPasses});
+  return copy(captureWindow);
  }
  function snapshot(){
   let scan=null;
   try{if(island){scan=inventory(island);if(scan.overflow||scan.requiredNames.length!==requiredNames.length)error('snapshot inventory','The complete retained island inventory is unavailable');}}
   catch(e){error('snapshot inventory',e);}
-  return copy({...state(),latest,history,inventory:scan});
+  return copy({...state(),latest,history,firstInvalidPasses,firstCaptureInvalidPasses,inventory:scan});
  }
- Object.defineProperty(root,'__landmarkComparisonObserver',{value:Object.freeze({ready:()=>state().ready,frame:()=>sequence,snapshot}),configurable:false});
+ Object.defineProperty(root,'__landmarkComparisonObserver',{value:Object.freeze({ready:()=>state().ready,canArm:()=>state().canArm,arm,frame:()=>sequence,snapshot}),configurable:false});
  const existing=root.__THREE_DEVTOOLS__;
  if(existing!==undefined&&typeof existing.addEventListener!=='function'){error('devtools hook','An incompatible existing hook was retained');return;}
  const events=existing??new EventTarget();if(existing===undefined)root.__THREE_DEVTOOLS__=events;

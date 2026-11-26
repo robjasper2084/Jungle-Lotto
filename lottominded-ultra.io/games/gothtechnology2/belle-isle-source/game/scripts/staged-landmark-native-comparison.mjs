@@ -115,7 +115,7 @@ export async function captureMode({game,mode,layout,sourceSha,sourceTree,assets,
   while(Date.now()<deadline){
    await nextFrame(last);const observed=await snapshot();last=observed.latest?.sequence??last;
    const tail=observed.history.slice(-6);
-   if(observed.ready&&tail.length===6&&tail.every(row=>row.valid&&row.scene.uuid===tail[0].scene.uuid&&row.camera?.uuid===tail[0].camera?.uuid&&
+   if(observed.ready&&tail.length===6&&tail.every((row,index)=>row.valid&&row.sequence>observed.captureWindow.afterSequence&&row.sequence===tail[0].sequence+index&&row.scene.uuid===tail[0].scene.uuid&&row.camera?.uuid===tail[0].camera?.uuid&&
     JSON.stringify(row.camera?.gpu)===JSON.stringify(tail[0].camera?.gpu)))return observed;
   }
   throw Error('The real camera did not settle to six identical submitted GPU inputs within 180 seconds');
@@ -218,7 +218,16 @@ export async function captureMode({game,mode,layout,sourceSha,sourceTree,assets,
   const motion=page.locator('#startup-motion');if(await motion.getAttribute('aria-pressed')!=='true')await motion.click();
   await page.locator('.cinema-ride-picker > summary').click();await page.locator('.ride-options label').filter({hasText:'One wheel'}).click();
   await page.getByRole('button',{name:'Use this ride',exact:true}).click();await page.locator('#start').click();
-  await expect(page.locator('body')).not.toHaveClass(/at-start/);await nextFrame(0);await configure();
+  await expect(page.locator('body')).not.toHaveClass(/at-start/);
+  // Startup/preparation observations remain in the report. They do not define
+  // the six-view capture window, which can be armed exactly once below.
+  await page.waitForFunction(()=>window.__landmarkComparisonObserver?.canArm(),null,{polling:100,timeout:90_000});
+  await configure();await phase('arm-comparison-window');
+  const armHandle=await page.waitForFunction(()=>{
+   const observer=window.__landmarkComparisonObserver;
+   return observer?.canArm()?observer.arm():false;
+  },null,{polling:100,timeout:90_000});
+  try{report.captureWindow=await armHandle.jsonValue();}finally{await armHandle.dispose();}
   for(const site of sites){
    await guide(site,site.travel);await view(false);await expect(page.locator('#ride-mode')).toHaveText('EUC');await capture(site.key+'-exterior');
    await focus();await press('f');await expect(page.locator('#ride-mode')).toHaveText('ON FOOT');await view(true);await capture(site.key+'-entrance');

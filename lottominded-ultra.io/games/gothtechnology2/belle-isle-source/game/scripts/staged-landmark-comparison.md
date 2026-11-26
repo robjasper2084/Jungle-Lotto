@@ -72,8 +72,23 @@ camera matrices. Native draw counter conservation covers batched and instanced
 submissions and the original shadow pass. Missing coverage, a different camera,
 changed targets/matrices, or lost hooks fails the receipt.
 
-The driver waits for six consecutive fully observed island passes with identical
-GPU camera inputs. It then uses the original GPU fence, two paint opportunities,
+After trusted native Start and all settings selections, the driver requires a
+currently valid complete island pass with fresh counters and intact hooks. It
+then arms a **one-shot capture window**. The boundary records the native frame,
+observer sequence, timestamp and lifetime preparation-failure count. It cannot
+be reset or armed again. The report binds that boundary to the native Start and
+settings events before it, and every Guide action after it.
+
+Preparation failures remain in the lifetime counters and the first eight failed
+pass receipts, even after later valid frames replace the short settling history.
+The first eight capture-window failures are also retained separately. Any invalid
+pass after arming is fatal for the whole comparison, including intervening Guide
+transitions. Setup errors, missing hooks and stale/incomplete passes are never
+cleared by arming.
+
+The driver and independent report contract require six consecutive fully observed
+island passes strictly after that boundary, with identical GPU camera inputs.
+It then uses the original GPU fence, two paint opportunities,
 and existing CDP compositor-PNG helper. Camera inputs and object identity must
 remain stable across each capture, with another actual observed frame afterward.
 
@@ -106,3 +121,22 @@ and strict ninety-second full-scene gates still need their own successful eviden
 Contract checks use built-in Node test tooling:
 
     node --test scripts/landmark-comparison-observer.test.mjs scripts/staged-landmark-comparison-contract.test.mjs
+
+## Retained first-run harness failure
+
+The first phone comparison on `df52f1ba` (run `45862457527`, job `140067049393`)
+failed before any capture. Both modes completed normal startup and native Start
+without application or request errors. Each observer recorded one lifetime
+invalid pass, followed by more than 4,100 valid complete passes. The previous
+readiness rule remained false because it treated every preparatory observation
+as part of the later capture window. The first invalid row had already been
+evicted from its last-eight-pass history, so this artifact cannot identify that
+row's exact issue or place it on either side of the Start event.
+
+That failure remains retained as artifact `15140309037`, SHA-256
+`6da1fc3aefc1bc43a2ad7beeb0d0c6293a49a198967cdd9408104266e95e4d63`.
+The boundary repair changes only this additive observation harness and its
+report validation. It does not claim those failed runs passed, change the game,
+increase any deadline, or relax a capture-window camera/coverage condition.
+All 38 observer/contract checks pass locally; fresh native captures are still
+required before any visual acceptance.

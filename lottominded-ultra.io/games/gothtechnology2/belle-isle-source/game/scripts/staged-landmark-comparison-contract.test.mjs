@@ -18,7 +18,8 @@ function camera(uuid='camera'){
  }
  return result;
 }
-function observed(mode='default',sequence=1){
+const boundary=()=>({kind:'one-shot-native-pass-boundary',atMs:50,afterSequence:2,afterRendererFrame:2,preparationInvalidPasses:0});
+function observed(mode='default',sequence=8){
  const nodes=retainedNames.map((name,i)=>({name:name.replaceAll(' ','_'),id:100+i,worldVisible:true}));
  if(mode==='default')for(const name of legacyExteriorNames)nodes.push({name:name.replaceAll(' ','_'),worldVisible:true});
  else for(const [index,site] of sites.entries()){
@@ -26,9 +27,11 @@ function observed(mode='default',sequence=1){
   for(let level=0;level<3;level++)nodes.push({name:site.id+'_STAGED_LOD'+level,parentId:id,worldVisible:level===0});
  }
  const count={calls:12,triangles:2471,lines:0,points:0},zero={calls:0,triangles:0,lines:0,points:0},cam=camera(mode+'-camera');
- return{ready:true,fresh:true,invalidPasses:0,coverage:{renderer:true,render:true,direct:true,currentRenderHook:true,currentDirectHook:true},errors:[],
-  inventory:{overflow:false,nodes},latest:{valid:true,sequence,issues:[],scene:{uuid:mode+'-scene'},camera:cam,postCamera:copy(cam),
-   colorDirectInvocations:5,colorSubmitted:count,shadowSubmitted:zero,otherSubmitted:zero,counters:copy(count),nativeEndTotals:copy(count)}};
+ const latest={valid:true,sequence,observationPhase:'capture',issues:[],scene:{uuid:mode+'-scene'},camera:cam,postCamera:copy(cam),
+  colorDirectInvocations:5,colorSubmitted:count,shadowSubmitted:zero,otherSubmitted:zero,counters:copy(count),nativeEndTotals:copy(count)};
+ return{ready:true,fresh:true,invalidPasses:0,captureInvalidPasses:0,captureWindow:boundary(),firstInvalidPasses:[],firstCaptureInvalidPasses:[],
+  coverage:{renderer:true,render:true,direct:true,currentRenderHook:true,currentDirectHook:true},errors:[],inventory:{overflow:false,nodes},latest,
+  history:Array.from({length:6},(_,index)=>({...copy(latest),sequence:sequence-5+index}))};
 }
 function nativeEvidence(layout='desktop'){
  const events=[{type:'click',target:'#start'}];
@@ -36,7 +39,7 @@ function nativeEvidence(layout='desktop'){
  for(const code of ['KeyF','KeyV'])for(const type of ['keydown','keyup'])events.push({type,code});
  for(const [target,value] of [['#sky-preset','12'],['#sky-clouds','clear'],['#quality',layout==='phone'?'smooth':'high'],['#fps',layout==='phone'?'30':'60']])
   for(const type of ['input','change'])events.push({type,target,value});
- return{events:events.map(event=>({...event,trusted:true})),overflow:false,held:[],focusLossDuringInput:[]};
+ return{events:events.map(event=>({...event,trusted:true,at:event.target==='#start'||['input','change'].includes(event.type)?10:100})),overflow:false,held:[],focusLossDuringInput:[]};
 }
 function capture(mode,view,layout='desktop'){
  const viewport=viewportFor(layout);
@@ -45,7 +48,7 @@ function capture(mode,view,layout='desktop'){
   settings:{focused:true,visible:true,reducedMotion:true,startupMotion:true,skyCycle:false,skyHour:12,clouds:'clear',quality:layout==='phone'?'smooth':'high',
    effectiveQuality:layout==='phone'?'smooth':'high',fps:layout==='phone'?'30':'60',devicePixelRatio:1,innerWidth:viewport.width,innerHeight:viewport.height,
    contextAttributes:{antialias:true},antiAliasing:'fxaa',adaptiveScale:1,renderPixelRatio:1,effectiveFrameCap:layout==='phone'?30:60},
-  before:observed(mode),after:observed(mode,2)};
+  before:observed(mode),after:observed(mode,9)};
 }
 function sourceAssets(){
  const names=[['107227742','Aquarium_Arched_Entrance_Study'],['107310050','Conservatory_Architectural_Study'],['9146545','Scott_Fountain_Terraces_Study'],['107230534','Conservatory_Drive_Street_Detail_Study']];
@@ -54,7 +57,7 @@ function sourceAssets(){
 }
 function modeReport(mode='default',layout='desktop'){
  const assets=sourceAssets(),sourceSha='c'.repeat(40),sourceTree='d'.repeat(40);
- return{passed:true,mode,layout,sourceSha,sourceTree,sourceAssets:assets,browser:'Chrome 142.0.0.0',errors:[],failedRequests:[],nativeEvidence:nativeEvidence(layout),
+ return{passed:true,mode,layout,sourceSha,sourceTree,sourceAssets:assets,browser:'Chrome 142.0.0.0',errors:[],failedRequests:[],nativeEvidence:nativeEvidence(layout),captureWindow:boundary(),
   build:{sourceSha,sourceTree,mode,flag:mode==='staged'?'1':'0',sourceAssets:copy(assets),builtStagedAssets:mode==='staged'?copy(assets):[],
    stagedManifestPresent:mode==='staged',generatedTiming:{onlyBuildMsChanged:true,restoredOriginalBytes:true},indexSha256:'e'.repeat(64),assetManifestSha256:'f'.repeat(64),compiled:[{file:'assets/index-test.js',sha256:'1'.repeat(64),bytes:7000}]},
   stagedRequests:mode==='staged'?assets.filter(a=>sites.some(s=>s.id===a.site)).map(a=>({...a,status:200})):[],captures:views.map(view=>capture(mode,view,layout))};
@@ -75,6 +78,7 @@ test('one representable GPU bit of camera position is never accepted with a broa
  const a=observed(),b=observed('staged'),bits=new Uint32Array(b.latest.camera.gpu.cameraPositionBits);bits[0]++;
  const value=new Float32Array(bits.buffer)[0];b.latest.camera.position[0]=value;b.latest.camera.matrixWorld[12]=value;
  b.latest.camera.gpu.cameraPosition[0]=value;b.latest.camera.gpu.cameraPositionBits[0]=bits[0];b.latest.postCamera=copy(b.latest.camera);
+ for(const row of b.history){row.camera=copy(b.latest.camera);row.postCamera=copy(b.latest.camera);}
  assert.throws(()=>assertCameraMatch(a,b),/cameraPosition differs/);
 });
 test('raw double precision differences are retained but may match when every submitted Float32 input is identical',()=>{
@@ -94,6 +98,34 @@ test('partial counters, stale passes, post-render camera mutation and displaced 
  ]){
   const o=observed();change(o);assert.throws(()=>assertObservedCamera(o));
  }
+});
+
+test('a preserved preparation failure is distinct from a forbidden capture-window failure',()=>{
+ const report=modeReport();report.captureWindow.preparationInvalidPasses=1;
+ for(const capture of report.captures)for(const o of [capture.before,capture.after]){
+  o.invalidPasses=1;o.captureWindow.preparationInvalidPasses=1;
+  o.firstInvalidPasses=[{sequence:1,valid:false,observationPhase:'preparation',issues:['nested-render'],threw:false}];
+ }
+ assert.doesNotThrow(()=>assertModeReport(report));
+ const missed=copy(report);missed.captures[0].before.firstInvalidPasses=[];
+ assert.throws(()=>assertModeReport(missed),/receipts were lost/);
+ const later=copy(report);later.captures[0].before.captureInvalidPasses=1;
+ assert.throws(()=>assertModeReport(later),/capture-window island pass/);
+});
+
+test('capture boundaries cannot precede native settings or move between views',()=>{
+ rejected(a=>{a.captureWindow.atMs=5;},/predates trusted/);
+ rejected(a=>{a.nativeEvidence.events.find(e=>e.text==='Travel to path').at=49;},/before the capture boundary/);
+ rejected(a=>{a.captures[1].before.captureWindow.atMs++;},/changed or reset/);
+ rejected(a=>{a.captures[0].before.captureWindow=null;},/capture boundary/);
+});
+
+test('six consecutive settled post-boundary passes are mandatory in retained receipts',()=>{
+ for(const change of [
+  o=>{o.history.shift();},o=>{o.history[0].sequence=2;},o=>{o.history[1].sequence++;},
+  o=>{o.history[0].observationPhase='preparation';},o=>{o.history[1].valid=false;},
+  o=>{o.history[1].camera.gpu.cameraPositionBits[0]++;},o=>{o.history.at(-1).sequence--;},
+ ]){const o=observed();change(o);assert.throws(()=>assertObservedCamera(o));}
 });
 test('actual GLTFLoader normalized names are accepted without renaming the receipt',()=>{
  const o=observed('staged');assert(o.inventory.nodes.some(n=>n.name==='107227742_Aquarium_illuminated_habitat'));

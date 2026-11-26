@@ -79,7 +79,7 @@ test('serializable hook captures submitted matrices after native camera update a
  assert.equal(f.trace[2].args[2],f.geometry);assert.equal(f.trace[2].args[3],f.color);assert.equal(f.trace[2].args[5],f.group);
  assert.deepEqual(f.directResults,['draw-result','draw-result','draw-result']);
  assert.equal(receipt.inventory.nodes.find(node=>node.id===f.child.id).landmark,'conservatory');
- assert.deepEqual(Object.keys(f.api).sort(),['frame','ready','snapshot']);
+ assert.deepEqual(Object.keys(f.api).sort(),['arm','canArm','frame','ready','snapshot']);
 });
 
 test('copied bounded history and scene inventory expose no mutable application objects',()=>{
@@ -176,4 +176,44 @@ test('replacing either previously attested public renderer method immediately fa
   f.renderer[method]=()=>undefined;assert.equal(f.api.ready(),false);
   const field=method==='render'?'currentRenderHook':'currentDirectHook';assert.equal(f.api.snapshot().coverage[field],false);
  }
+});
+
+test('one-shot capture boundary retains preparation failures and requires a new complete pass',()=>{
+ const f=fixture({}, {noColor:true});
+ assert.throws(()=>f.api.arm(),/current complete/);f.draw();assert.equal(f.api.canArm(),false);
+ f.behavior.noColor=false;f.draw();assert.equal(f.api.ready(),false,'Lifetime failure remains visible before the capture boundary');
+ assert.equal(f.api.canArm(),true);const renders=f.trace.length,before=structuredClone(f.inputCamera),arm=f.api.arm();
+ assert.equal(f.trace.length,renders);assert.deepEqual(f.inputCamera,before);assert.equal(arm.afterSequence,2);assert.equal(arm.preparationInvalidPasses,1);
+ assert.equal(f.api.ready(),false,'The pre-boundary valid pass cannot count as capture evidence');
+ arm.afterSequence=-1;assert.equal(f.api.snapshot().captureWindow.afterSequence,2);
+ for(let i=0;i<12;i++)f.draw();const result=f.api.snapshot();
+ assert.equal(result.ready,true);assert.equal(result.invalidPasses,1);assert.equal(result.captureInvalidPasses,0);
+ assert.equal(result.firstInvalidPasses[0].sequence,1);assert.equal(result.firstInvalidPasses[0].observationPhase,'preparation');
+ assert.equal(result.history.some(row=>!row.valid),false);assert.equal(result.firstCaptureInvalidPasses.length,0);
+ assert.throws(()=>f.api.arm(),/one-shot/);assert.equal(f.api.snapshot().captureWindow.afterSequence,2);
+});
+
+test('any invalid capture-window pass stays fatal after later valid passes and cannot be reset',()=>{
+ const f=fixture();f.draw();f.api.arm();f.draw();assert.equal(f.api.ready(),true);
+ f.behavior.bypassSecond=true;f.draw();f.behavior.bypassSecond=false;for(let i=0;i<12;i++)f.draw();
+ const result=f.api.snapshot();assert.equal(result.latest.valid,true);assert.equal(result.ready,false);
+ assert.equal(result.captureInvalidPasses,1);assert.equal(result.invalidPasses,1);
+ assert.equal(result.firstCaptureInvalidPasses[0].observationPhase,'capture');
+ assert(result.firstCaptureInvalidPasses[0].issues.includes('partial-native-draw-coverage'));
+ assert.throws(()=>f.api.arm(),/one-shot/);assert.equal(f.api.snapshot().captureInvalidPasses,1);
+});
+
+test('arming requires fresh attested hooks and never clears setup errors or bounded first failures',()=>{
+ for(const key of ['render','renderBufferDirect']){
+  const f=fixture();f.draw();f.renderer[key]=()=>{};assert.equal(f.api.canArm(),false);assert.throws(()=>f.api.arm(),/current complete/);
+ }
+ const stale=fixture();stale.draw();stale.nativeRender.call(stale.renderer,stale.scene,stale.inputCamera);
+ assert.equal(stale.api.canArm(),false);assert.throws(()=>stale.api.arm(),/current complete/);
+ const bounded=fixture({}, {noColor:true});for(let i=0;i<12;i++)bounded.draw();bounded.behavior.noColor=false;bounded.draw();bounded.api.arm();
+ bounded.behavior.noColor=true;bounded.draw();const result=bounded.api.snapshot();
+ assert.equal(result.invalidPasses,13);assert.equal(result.firstInvalidPasses.length,8);
+ assert.deepEqual(result.firstInvalidPasses.map(row=>row.sequence),[1,2,3,4,5,6,7,8]);
+ assert.equal(result.firstCaptureInvalidPasses.length,1);assert.equal(result.firstCaptureInvalidPasses[0].sequence,14);
+ const missing=fixture({maxInventoryNodes:3});missing.draw();const errors=missing.api.snapshot().errors;
+ assert.throws(()=>missing.api.arm(),/current complete/);assert.deepEqual(missing.api.snapshot().errors,errors);
 });

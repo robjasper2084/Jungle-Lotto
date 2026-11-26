@@ -23,7 +23,7 @@ export const legacyExteriorNames=Object.freeze([
 export const cameraContract=Object.freeze({
  rule:'Exact equality of the Float32 view matrix, projection matrix and world camera-position bit patterns submitted by the original game renderer.',
  raw:'All four raw camera matrices, raw world position, projection parameters and within-run scene/camera identity are retained. Identity values are not compared across builds.',
- settling:'At least six consecutive completely observed island color passes with identical GPU camera inputs; bounded failure if the real camera does not settle.',
+ settling:'At least six consecutive completely observed island color passes strictly after the one-shot native Start/settings boundary, with identical GPU camera inputs; every invalid pass after that boundary is fatal, including between views.',
  scope:'Camera equivalence is not actor-path, collision, image-equivalence, architectural fidelity or visual-overlap approval. Original native walk/contact and ninety-second gates remain separate.',
 });
 export const sha256=bytes=>createHash('sha256').update(bytes).digest('hex');
@@ -37,7 +37,20 @@ const counterKeys=['calls','triangles','lines','points'];
 export function assertObservedCamera(observation){
  assert(observation?.ready,'The observation is not ready');
  assert.deepEqual(observation.errors,[],'The observer recorded an error');
- assert.equal(observation.invalidPasses,0,'The observer missed or invalidated an island pass');
+ const window=observation.captureWindow;
+ assert.equal(window?.kind,'one-shot-native-pass-boundary','Missing the one-shot capture boundary');
+ assert(Number.isFinite(window.atMs)&&window.atMs>=0&&Number.isSafeInteger(window.afterSequence)&&window.afterSequence>0,'Invalid capture boundary');
+ assert(Number.isSafeInteger(window.afterRendererFrame)&&window.afterRendererFrame>=window.afterSequence,'Invalid native frame boundary');
+ assert(Number.isSafeInteger(window.preparationInvalidPasses)&&window.preparationInvalidPasses>=0,'Missing preserved preparation count');
+ assert.equal(observation.captureInvalidPasses,0,'The observer missed or invalidated a capture-window island pass');
+ assert.equal(observation.invalidPasses,window.preparationInvalidPasses,'Lifetime invalid passes do not reconcile with the preserved preparation count');
+ assert(Array.isArray(observation.firstInvalidPasses)&&observation.firstInvalidPasses.length===Math.min(observation.invalidPasses,8),'First invalid-pass receipts were lost');
+ assert.deepEqual(observation.firstCaptureInvalidPasses,[],'A capture-window failure was retained');
+ for(const row of observation.firstInvalidPasses){
+  assert.equal(row.valid,false);assert.equal(row.observationPhase,'preparation');
+  assert(Number.isSafeInteger(row.sequence)&&row.sequence>0&&row.sequence<=window.afterSequence,'A purported preparation failure occurred after arming');
+  assert(row.issues?.length>0||row.threw===true,'A failed preparation receipt has no failure evidence');
+ }
  assert.equal(observation.fresh,true,'The observed pass is stale');
  for(const key of ['renderer','render','direct','currentRenderHook','currentDirectHook'])assert.equal(observation.coverage?.[key],true,'Both current original renderer methods must be observed');
  assert.equal(observation.inventory?.overflow,false,'The scene inventory is incomplete');
@@ -69,6 +82,15 @@ export function assertObservedCamera(observation){
  assert.equal(row.camera.uuid,row.postCamera.uuid);
  assert.equal(row.camera.id,row.postCamera.id);
  for(const key of [...matrices,'position','projection'])assert.deepEqual(row.camera[key],row.postCamera[key],'Camera changed after its color submissions');
+ const tail=observation.history?.slice(-6);
+ assert(tail?.length===6,'Six complete post-boundary passes are required');
+ assert.equal(tail.at(-1).sequence,row.sequence,'The settling history is not current');
+ for(const [index,pass] of tail.entries()){
+  assert(pass.valid===true&&pass.observationPhase==='capture'&&pass.sequence>window.afterSequence,'A settling pass predates the capture boundary or is invalid');
+  assert.equal(pass.sequence,tail[0].sequence+index,'The settling history has a missing pass');
+  assert.deepEqual(pass.issues,[]);assert.equal(pass.scene.uuid,row.scene.uuid);assert.equal(pass.camera.uuid,row.camera.uuid);
+  for(const [key] of cameraInputs)assert.deepEqual(pass.camera.gpu[key+'Bits'],row.camera.gpu[key+'Bits'],'The camera did not settle for six complete passes');
+ }
  return row.camera;
 }
 
@@ -163,6 +185,13 @@ export function assertModeReport(report){
  assert.equal(report.passed,true,'A capture mode did not complete successfully');assert.match(report.sourceSha,/^[a-f0-9]{40}$/);
  assert.match(report.sourceTree,/^[a-f0-9]{40}$/);assert(['default','staged'].includes(report.mode));viewportFor(report.layout);
  assert.deepEqual(report.errors,[]);assert.deepEqual(report.failedRequests,[]);assertNativeRoute(report.nativeEvidence,report.layout);
+ const boundary=report.captureWindow;
+ assert.equal(boundary?.kind,'one-shot-native-pass-boundary','Missing mode capture boundary');
+ const setup=report.nativeEvidence.events.filter(event=>event.type==='click'&&event.target==='#start'||
+  ['input','change'].includes(event.type)&&['#sky-preset','#sky-clouds','#quality','#fps'].includes(event.target));
+ assert(setup.length>0&&setup.every(event=>Number.isFinite(event.at)&&event.at<=boundary.atMs),'The capture boundary predates trusted native startup/settings');
+ const travel=report.nativeEvidence.events.filter(event=>event.type==='click'&&sites.some(site=>event.landmark===site.name&&[site.travel,site.explore].includes(event.text)));
+ assert(travel.every(event=>Number.isFinite(event.at)&&event.at>=boundary.atMs),'Guide traversal occurred before the capture boundary');
  assertSourceAssets(report.sourceAssets);const build=report.build;
  assert.equal(build?.sourceSha,report.sourceSha);assert.equal(build.sourceTree,report.sourceTree);assert.equal(build.mode,report.mode);
  assert.equal(build.flag,report.mode==='staged'?'1':'0');assert.deepEqual(build.sourceAssets,report.sourceAssets);
@@ -180,7 +209,10 @@ export function assertModeReport(report){
   assert.deepEqual(loaded,expected.map(({file,sha256,bytes})=>({file,sha256,bytes})),'Actual staged network bytes do not match all six active model levels');
  }
  assert.equal(report.captures.length,6);assert.equal(new Set(report.captures.map(c=>c.id)).size,6);
- for(const view of views)assertCapture(report.captures.find(c=>c.id===view.id),report);
+ for(const view of views){
+  const capture=report.captures.find(c=>c.id===view.id);assertCapture(capture,report);
+  for(const observation of [capture.before,capture.after])assert.deepEqual(observation.captureWindow,boundary,'The capture window was changed or reset between views');
+ }
 }
 
 /** Normal npm builds rewrite one tracked diagnostic's buildMs. Verify the
