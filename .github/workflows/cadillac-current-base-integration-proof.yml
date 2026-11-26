@@ -1,0 +1,160 @@
+name: Cadillac current-base integration proof (diagnostic only)
+on:
+  pull_request:
+    branches: [upgrade-redesign-cadillac-modification-suite]
+    paths:
+      - '.github/workflows/cadillac-current-base-integration-proof.yml'
+permissions:
+  contents: read
+jobs:
+  integration-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    env:
+      APP_HEAD: '7e6c5c7d9f8ed36ee97982b925daa6703e9a9b3e'
+      PROD_HEAD: '893f769838166e6e35624b7b979ed5cbb8414507'
+      COMMON_BASE: 'ff97b14435bdbdf71040e59240d45af8e8fc9cad'
+      GAME: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: '7e6c5c7d9f8ed36ee97982b925daa6703e9a9b3e'
+          path: app
+          fetch-depth: 0
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /AGENTS.md
+            /.github/workflows/
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/
+            /lottominded-ultra.io/games/gothtechnology2/greater-detroit-world/src/
+            /lottominded-ultra.io/games/gothtechnology2/greater-detroit-graphics/src/
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Real Git merge of pinned parents; verify both source deltas
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence
+          cd app
+          test "$(git rev-parse HEAD)" = "$APP_HEAD"
+          git cat-file -e "$PROD_HEAD^{commit}"
+          test "$(git merge-base "$APP_HEAD" "$PROD_HEAD")" = "$COMMON_BASE"
+          test -z "$(git status --porcelain)"
+          git config user.name 'Cadillac integration proof'
+          git config user.email 'cadillac-integration-proof@users.noreply.github.com'
+          merge_status=0
+          git merge --no-ff --no-commit "$PROD_HEAD" > ../evidence/merge.log 2>&1 || merge_status=$?
+          cat ../evidence/merge.log
+          test "$merge_status" -le 1
+          test "$(git rev-parse MERGE_HEAD)" = "$PROD_HEAD"
+          python3 - <<'PY'
+          import os, pathlib, subprocess, json, hashlib
+          def git(*args):
+              return subprocess.check_output(['git',*args])
+          head, main, base, game = (os.environ[k] for k in ['APP_HEAD','PROD_HEAD','COMMON_BASE','GAME'])
+          paths = [game+'/run-tests.mjs', game+'/src/belle/main.ts']
+          expected = set(paths)
+          def changes(ref):
+              return set(filter(None,git('diff','--no-renames','--name-only','-z',base,ref).decode().split('\0')))
+          h,m=changes(head),changes(main)
+          assert h&m == expected, ('unexpected overlap', sorted(h&m))
+          unmerged = set(filter(None,git('diff','--name-only','--diff-filter=U','-z').decode().split('\0')))
+          assert unmerged <= expected, ('unexpected conflicts', sorted(unmerged))
+          def blob(ref,p):
+              return git('show',ref+':'+p).decode('utf-8')
+          def unique_line(s,prefix):
+              found=[x for x in s.split('\n') if x.startswith(prefix)]
+              assert len(found)==1,(prefix,len(found))
+              return found[0]+'\n'
+          def transform(s,edits):
+              for old,new in edits:
+                  assert s.count(old)==1, ('missing/nonunique anchor',old[:100])
+                  s=s.replace(old,new,1)
+              return s
+          receipts=[]
+          for p in paths:
+              b,t,c=blob(base,p),blob(main,p),blob(head,p)
+              if p.endswith('run-tests.mjs'):
+                  edits=[
+                    ("'src/belle/bridgeLighting.test.ts'","'src/belle/bridgePictureView.test.ts','src/belle/bridgeLighting.test.ts'"),
+                    ("'src/belle/skyModel.test.ts'","'src/belle/artDirection.test.ts','src/belle/skyModel.test.ts'")]
+              else:
+                  def pair(a,z=None): return (unique_line(b,a),unique_line(t,z or a))
+                  edits=[pair('import {animeRider','import {cinematicRider'),
+                      (unique_line(b,'import {batchArmoredInk'),''),
+                      (unique_line(b,'import {connectSkySettings'),unique_line(b,'import {connectSkySettings')+unique_line(t,'import {BRIDGE_PICTURE_VIEW_ID')),
+                      pair(' const hero=new ThreeRiderView'),
+                      (unique_line(b,' if(REFERENCE_STYLE)batchArmoredInk'),''),
+                      (unique_line(b,' const destinations='),''.join(unique_line(t,x) for x in [' const destinations=',' const pictureView=',' destinations.push('])),
+                      pair(' for(const lm of destinations)')]
+              assert transform(b,edits)==t, ('not exact main delta',p)
+              result=transform(c,edits).encode('utf-8')
+              if p not in unmerged:
+                  assert pathlib.Path(p).read_bytes()==result, ('automatic merge differs from exact union',p)
+              else:
+                  pathlib.Path(p).write_bytes(result)
+                  git('add','--',p)
+              receipts.append({'path':p,'baseBlob':git('rev-parse',base+':'+p).decode().strip(),'mainBlob':git('rev-parse',main+':'+p).decode().strip(),'cadillacBlob':git('rev-parse',head+':'+p).decode().strip(),'resultBlob':git('hash-object',p).decode().strip(),'sha256':hashlib.sha256(result).hexdigest(),'exactMainDeltaVerified':True})
+          assert not git('ls-files','-u'), 'unresolved index'
+          # Every path changed by only one parent must preserve its exact blob and mode,
+          # including new/deleted files and paths outside the sparse worktree.
+          tree=git('write-tree').decode().strip()
+          for p in sorted((h|m)-expected):
+              ref=head if p in h else main
+              assert git('ls-tree',tree,'--',p)==git('ls-tree',ref,'--',p), ('unexpected single-parent path result',p)
+          assert set(filter(None,git('diff','--name-only','--no-renames','-z',head,tree).decode().split('\0'))) <= m, 'unexpected changes relative to Cadillac'
+          pathlib.Path('../evidence/integration.json').write_text(json.dumps({'head':head,'main':main,'base':base,'tree':tree,'conflicts':sorted(unmerged),'mainChangedPaths':len(m),'cadillacChangedPaths':len(h),'verifiedSingleParentPaths':len((h|m)-expected),'resolved':receipts},indent=2)+'\n')
+          print(pathlib.Path('../evidence/integration.json').read_text())
+          PY
+          git diff --cached --check
+          tree="$(git write-tree)"
+          git commit -m 'Diagnostic only: exact Cadillac and current production integration'
+          test "$(git rev-parse HEAD^{tree})" = "$tree"
+          test "$(git rev-parse HEAD^1)" = "$APP_HEAD"
+          test "$(git rev-parse HEAD^2)" = "$PROD_HEAD"
+          test -z "$(git status --porcelain)"
+          git rev-parse HEAD HEAD^{tree} HEAD^1 HEAD^2 > ../evidence/commit-tree-parents.txt
+          git diff-tree -r --no-renames --raw --no-abbrev "$APP_HEAD" HEAD > ../evidence/tree-delta.txt
+          git diff --binary "$APP_HEAD" HEAD -- "$GAME/run-tests.mjs" "$GAME/src/belle/main.ts" > ../evidence/overlap.diff
+          mkdir -p ../evidence/resolved
+          cp "$GAME/run-tests.mjs" ../evidence/resolved/run-tests.mjs
+          cp "$GAME/src/belle/main.ts" ../evidence/resolved/main.ts
+      - name: Original typecheck, tests, asset contracts and lossless production build
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd app
+          # Match the original full-worktree controls build, including cross-game GLB assets.
+          git sparse-checkout disable
+          test -z "$(git status --porcelain)"
+          test "$(git rev-parse HEAD^{tree})" = "$(sed -n '2p' ../evidence/commit-tree-parents.txt)"
+          test -s lottominded-ultra.io/games/gothtechnology2/swoop-source/public/exports/rigged-heroes/DS_Man_01.glb
+          (cd lottominded-ultra.io/games/gothtechnology2 && npm ci)
+          (cd "$GAME" && npm ci && npm run check && npm test && npm run build) 2>&1 | tee ../evidence/build.log
+          test -s "$GAME/dist/index.html"
+          (cd "$GAME/dist" && find . -type f -exec sha256sum {} + | LC_ALL=C sort) > ../evidence/build.sha256
+          # Build may regenerate the existing tracked research timing field only.
+          python3 - <<'PY'
+          import subprocess,json,pathlib
+          def git(*a): return subprocess.check_output(['git',*a])
+          changed=list(filter(None,git('diff','--name-only','-z','HEAD').decode().split('\0')))
+          for p in changed:
+              assert p.endswith('/research/street-detail-stats.json'), ('unexpected tracked build mutation',p)
+              before=json.loads(git('show','HEAD:'+p)); after=json.loads(pathlib.Path(p).read_text())
+              assert 'buildMs' in before and 'buildMs' in after
+              before.pop('buildMs');after.pop('buildMs')
+              assert before==after, ('generated metadata changed beyond timing',p)
+          pathlib.Path('../evidence/build-tracked-drift.json').write_text(json.dumps(changed)+'\n')
+          PY
+          test "$(git rev-parse HEAD^{tree})" = "$(sed -n '2p' ../evidence/commit-tree-parents.txt)"
+          printf '%s\n' 'Local integration tree built and tested; NOT browser/performance release acceptance; no ref pushed.' > ../evidence/scope.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cadillac-current-base-integration-proof-NOT-RELEASE
+          path: evidence/
+          retention-days: 14
+          if-no-files-found: error
