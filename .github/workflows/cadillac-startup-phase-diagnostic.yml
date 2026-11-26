@@ -1,0 +1,94 @@
+name: Cadillac startup phase attribution (diagnostic only)
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/cadillac-startup-phase-diagnostic.yml'
+permissions:
+  contents: read
+jobs:
+  trace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      CADILLAC_MODS_SOURCE_SHA: '6518764b9735f78bdc95ec6227d0ba26ba291b48'
+      BELLE_CADILLAC_MODS_CASE: desktop
+      BELLE_CADILLAC_MODS_RIDE: hydraulic-cadillac
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: '6518764b9735f78bdc95ec6227d0ba26ba291b48'
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify pinned source and insert diagnostic-only timestamps
+        working-directory: 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game'
+        run: |
+          test "$(git rev-parse HEAD)" = "$CADILLAC_MODS_SOURCE_SHA"
+          mkdir -p "$RUNNER_TEMP/cadillac-startup-evidence"
+          python3 - <<'PY'
+          import json, pathlib, subprocess, hashlib, os
+          edits=json.loads("{\"src/belle/world.ts\":[[\" const sceneryPreparation=new ScenePreparationQueue();\",\" const startupTrace=(phase:string)=>console.info('CADILLAC_STARTUP_TRACE '+JSON.stringify({phase,at:performance.now()}));\\n const sceneryPreparation=new ScenePreparationQueue();\"],[\"  const task=sceneryPreparation.run(async()=>{\\n   const root=new T.Group();\",\"  startupTrace('yacht:queued');\\n  const task=sceneryPreparation.run(async()=>{\\n   startupTrace('yacht:queue-enter');\\n   const root=new T.Group();\"],[\"   const detail=await addYachtClub(root,loader,localLights);\",\"   startupTrace('yacht:load-start');\\n   const detail=await addYachtClub(root,loader,localLights);\\n   startupTrace('yacht:load-end');\"],[\"   applyRealisticMaterials(root);\\n   await warmObjectTextures(renderer,root);\\n   await warmLandmarkPrograms(renderer,root,camera,scene);\",\"   applyRealisticMaterials(root);\\n   startupTrace('yacht:textures-start');\\n   await warmObjectTextures(renderer,root);\\n   startupTrace('yacht:textures-end');\\n   startupTrace('yacht:programs-start');\\n   await warmLandmarkPrograms(renderer,root,camera,scene);\\n   startupTrace('yacht:programs-end');\"],[\"   Object.assign(yachtStats,detail.stats);\",\"   Object.assign(yachtStats,detail.stats);\\n   startupTrace('yacht:attached');\"],[\"  (stage,camera)=>sceneryPreparation.run(async()=>{\\n   const model=await addPlaygrounds(stage,loader);\",\"  (stage,camera)=>{startupTrace('playgrounds:queued');return sceneryPreparation.run(async()=>{\\n   startupTrace('playgrounds:queue-enter');\\n   startupTrace('playgrounds:load-start');\\n   const model=await addPlaygrounds(stage,loader);\\n   startupTrace('playgrounds:load-end');\"],[\"   playgroundStats.batching=model.batch();\\n   await warmObjectTextures(renderer,stage);\\n   await warmLandmarkPrograms(renderer,stage,camera,scene);\\n   return model;\\n  }),\",\"   playgroundStats.batching=model.batch();\\n   startupTrace('playgrounds:textures-start');\\n   await warmObjectTextures(renderer,stage);\\n   startupTrace('playgrounds:textures-end');\\n   startupTrace('playgrounds:programs-start');\\n   await warmLandmarkPrograms(renderer,stage,camera,scene);\\n   startupTrace('playgrounds:programs-end');\\n   return model;\\n  });},\"],[\"  const landmarks=Promise.allSettled([\",\"  startupTrace('landmarks:requests');\\n  const landmarks=Promise.allSettled([\"],[\"   const results=await startupResource(landmarks,45000,'Cadillac landmarks',()=>{});\",\"   const results=await startupResource(landmarks,45000,'Cadillac landmarks',()=>{});\\n   startupTrace('landmarks:settled');\"],[\"  }catch(error){console.warn('Cadillac landmark preparation continues on approach.',error);}\",\"  }catch(error){startupTrace('landmarks:deadline-or-error');console.warn('Cadillac landmark preparation continues on approach.',error);}\"]],\"src/belle/main.ts\":[[\"  status('Preparing your selected ride');\",\"  const startupTrace=(phase:string)=>console.info('CADILLAC_STARTUP_TRACE '+JSON.stringify({phase,at:performance.now()}));\\n  startupTrace('ride:assets-start');\\n  status('Preparing your selected ride');\"],[\"  if(isCadillacVariant(choice.vehicle)){\\n  realLocation?.stopFollow\",\"  startupTrace('ride:assets-end');\\n  if(isCadillacVariant(choice.vehicle)){\\n  realLocation?.stopFollow\"],[\"   const [model,cabin,driver]=await Promise.all([car,occupants,hoodieDriver]);\",\"   startupTrace('ride:models-start');\\n   const [model,cabin,driver]=await Promise.all([car,occupants,hoodieDriver]);\\n   startupTrace('ride:models-end');\"],[\"  status('Preparing Cadillac lighting');\\n  await sceneWarmup.prepare(selectedRide.model);\",\"  startupTrace('ride:lighting-start');\\n  status('Preparing Cadillac lighting');\\n  await sceneWarmup.prepare(selectedRide.model);\\n  startupTrace('ride:lighting-end');\"],[\"  await world.prepareCadillacLandmarks(camera,core.current.x,core.current.z);\\n  selectedRide.start();\",\"  await world.prepareCadillacLandmarks(camera,core.current.x,core.current.z);\\n  startupTrace('ride:landmarks-return');\\n  selectedRide.start();\"]],\"scripts/cadillac-mods-browser-smoke.mjs\":[[\" page.on('console',message=>{\",\" page.on('console',message=>{\\n  if(message.text().startsWith('CADILLAC_STARTUP_TRACE ')){\\n   const rows=report.startupTrace??=[];\\n   if(rows.length<128){rows.push({message:message.text(),receivedAt:new Date().toISOString()});console.log(message.text());}\\n  }\"],[\" page.on('pageerror',error=>report.errors.push(error.stack||error.message));\",\" page.on('requestfinished',request=>{if(report.phase==='boot'&&/\\\\.(?:glb|gz|bin)(?:\\\\?|$)/i.test(request.url())){const rows=report.startupResourceTimings??=[];if(rows.length<256)rows.push({url:request.url(),timing:request.timing()});}});\\n page.on('pageerror',error=>report.errors.push(error.stack||error.message));\"]]}")
+          blobs=json.loads("{\"src/belle/world.ts\":\"6c93d8d7255f3a6132c3231b4757aeae36fe7e00\",\"src/belle/main.ts\":\"2116e9f0c0f0e16ddfa9c4fec418c8eb3779cd76\",\"scripts/cadillac-mods-browser-smoke.mjs\":\"3f3f8652ed69934ec6e4967f47108b5820032709\"}")
+          edits["src/belle/landmarkPrograms.ts"]=json.loads("[[\" // The live scene composes\",\" const traceStart=performance.now();\\n const costs:Record<string,number>={composition:0,compile:0,collect:0,flush:0,completion:0,link:0,reflection:0,yield:0,sleep:0};\\n const counts:Record<string,number>={completion:0,link:0,reflection:0,yield:0,sleep:0,materials:0,programs:0};\\n // The live scene composes\"],[\" const gl = renderer.getContext();\",\" costs.composition=performance.now()-traceStart;\\n const gl = renderer.getContext();\"],[\" for (const material of renderer.compile(root, camera, scene)) {\",\" let stamp=performance.now();\\n const submittedMaterials=renderer.compile(root, camera, scene);\\n costs.compile=performance.now()-stamp;\\n stamp=performance.now();\\n for (const material of submittedMaterials) {\\n  counts.materials++;\"],[\" gl.flush();\",\" costs.collect=performance.now()-stamp;\\n counts.programs=programs.size;\\n stamp=performance.now();\\n gl.flush();\\n costs.flush=performance.now()-stamp;\"],[\"   if (parallel && !gl.getProgramParameter(entry.program, parallel.COMPLETION_STATUS_KHR)) continue;\",\"   if (parallel) {\\n    stamp=performance.now();\\n    const ready=gl.getProgramParameter(entry.program, parallel.COMPLETION_STATUS_KHR);\\n    costs.completion+=performance.now()-stamp;counts.completion++;\\n    if (!ready) continue;\\n   }\"],[\"   if (!gl.getProgramParameter(entry.program, gl.LINK_STATUS)) throw new Error('Landmark shader failed to link');\",\"   stamp=performance.now();\\n   const linked=gl.getProgramParameter(entry.program, gl.LINK_STATUS);\\n   costs.link+=performance.now()-stamp;counts.link++;\\n   if (!linked) throw new Error('Landmark shader failed to link');\"],[\"   entry.getUniforms();\",\"   stamp=performance.now();\\n   entry.getUniforms();\\n   costs.reflection+=performance.now()-stamp;counts.reflection++;\"],[\"    await yieldStartupTask();\",\"    stamp=performance.now();\\n    await yieldStartupTask();\\n    costs.yield+=performance.now()-stamp;counts.yield++;\"],[\"  if (programs.size) await new Promise(resolve => setTimeout(resolve, 10));\\n }\\n}\",\"  if (programs.size) {\\n   stamp=performance.now();\\n   await new Promise(resolve => setTimeout(resolve, 10));\\n   costs.sleep+=performance.now()-stamp;counts.sleep++;\\n  }\\n }\\n console.info('CADILLAC_STARTUP_TRACE '+JSON.stringify({phase:'landmark:program-subphases',at:performance.now(),elapsed:performance.now()-traceStart,parallel:Boolean(parallel),costs,counts}));\\n}\"]]")
+          blobs["src/belle/landmarkPrograms.ts"]="56689465a28db591e138355ee0f692df58fb6587"
+          receipts={}
+          for name,pairs in edits.items():
+              p=pathlib.Path(name)
+              original=p.read_bytes()
+              assert subprocess.check_output(['git','hash-object',name],text=True).strip()==blobs[name],name
+              text=original.decode('utf-8')
+              for before,after in pairs:
+                  assert text.count(before)==1,(name,before)
+                  text=text.replace(before,after,1)
+              p.write_bytes(text.encode('utf-8'))
+              receipts[name]={'originalBlob':blobs[name],'originalSHA256':hashlib.sha256(original).hexdigest(),'diagnosticSHA256':hashlib.sha256(p.read_bytes()).hexdigest()}
+          out=pathlib.Path(os.environ['RUNNER_TEMP'])/'cadillac-startup-evidence'
+          (out/'source.json').write_text(json.dumps({'diagnosticOnly':True,'releaseAccepted':False,'source':os.environ['CADILLAC_MODS_SOURCE_SHA'],'files':receipts},indent=2))
+          PY
+          git diff --check
+          git diff -- src/belle/world.ts src/belle/main.ts src/belle/landmarkPrograms.ts scripts/cadillac-mods-browser-smoke.mjs > "$RUNNER_TEMP/cadillac-startup-evidence/instrumentation.diff"
+          node --check scripts/cadillac-mods-browser-smoke.mjs
+      - name: Build instrumented diagnostic (not release evidence)
+        working-directory: 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game'
+        run: |
+          npm ci
+          npm run check
+          npm run build
+          node --input-type=module <<'NODE'
+          import {createHash} from 'node:crypto';
+          import {readFile,writeFile} from 'node:fs/promises';
+          const indexSha256=createHash('sha256').update(await readFile('dist/index.html')).digest('hex');
+          await writeFile('dist/cadillac-mods-build.json',JSON.stringify({sourceSha:process.env.CADILLAC_MODS_SOURCE_SHA,indexSha256,diagnosticOnly:true,releaseAccepted:false,builtAt:new Date().toISOString()})+'\n');
+          NODE
+          cp dist/cadillac-mods-build.json "$RUNNER_TEMP/cadillac-startup-evidence/"
+          find dist -type f -print0 | sort -z | xargs -0 sha256sum > "$RUNNER_TEMP/cadillac-startup-evidence/dist-before.sha256"
+      - name: Install original native control browser dependencies
+        working-directory: 'lottominded-ultra.io/games/gothtechnology2'
+        run: |
+          npm ci
+          npx playwright install --with-deps chrome
+          google-chrome --version
+          lscpu
+          free -h
+      - name: Original full desktop hydraulic control case (diagnostic trace)
+        working-directory: 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game'
+        run: |
+          set -o pipefail
+          xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node scripts/cadillac-mods-browser-smoke.mjs | tee "$RUNNER_TEMP/cadillac-startup-evidence/trace.log"
+      - name: Preserve exact diagnostic build and original failure
+        if: always()
+        working-directory: 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game'
+        run: |
+          if test -f "$RUNNER_TEMP/cadillac-startup-evidence/dist-before.sha256"; then
+            sha256sum -c "$RUNNER_TEMP/cadillac-startup-evidence/dist-before.sha256"
+          fi
+          git status --short
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cadillac-startup-program-subphases-NOT-RELEASE
+          path: |
+            ${{ runner.temp }}/cadillac-startup-evidence/
+            lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/cadillac-mods/
+          if-no-files-found: error
