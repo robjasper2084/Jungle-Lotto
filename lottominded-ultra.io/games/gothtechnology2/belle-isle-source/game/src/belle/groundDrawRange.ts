@@ -2,6 +2,13 @@ import * as T from 'three';
 
 // End index (exclusive) and the min/max corners in local coordinates.
 export type GroundRange=[number,number,number,number,number,number,number];
+export type GroundRangeSelection={start:number;count:number};
+export type GroundRangeOwner=Readonly<{
+ geometry:T.BufferGeometry;
+ before:T.Object3D['onBeforeRender'];after:T.Object3D['onAfterRender'];
+ /** The identical native-camera selector, without changing any geometry. */
+ select:(camera:T.Camera,out:GroundRangeSelection)=>void;
+}>;
 
 /** Used by the offline asset builder. Joined road polygons do not overlap. */
 export function orderPavementIndices(indices:number[],position:T.BufferAttribute|T.InterleavedBufferAttribute){
@@ -32,30 +39,33 @@ export function orderPavementIndices(indices:number[],position:T.BufferAttribute
 
 /** Trim the two ends of a large static index buffer for each camera. Any
  * offscreen geometry between visible runs is left in the single draw. */
-export function limitGroundDrawRange(mesh:T.Mesh,bounds?:GroundRange[]){
+export function limitGroundDrawRange(mesh:T.Mesh,bounds?:GroundRange[]):GroundRangeOwner|undefined{
  const g=mesh.geometry;if(!bounds?.length||!g.index||g.groups.length||g.drawRange.start!==0||g.drawRange.count!==Infinity)return;
  const ranges=bounds.map(([end,x,y,z,hx,hy,hz],i)=>({
   start:i?bounds[i-1][0]:0,end,box:new T.Box3(new T.Vector3(x,y,z),new T.Vector3(hx,hy,hz)).expandByScalar(.02)
  }));
  const projection=new T.Matrix4(),frustum=new T.Frustum();
- function select(camera:T.Camera){
+ function select(camera:T.Camera,out:GroundRangeSelection){
   projection.multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse).multiply(mesh.matrixWorld);
   frustum.setFromProjectionMatrix(projection,camera.coordinateSystem,camera.reversedDepth);
   let first=0,last=ranges.length-1;
   while(first<=last&&!frustum.intersectsBox(ranges[first].box))first++;
   while(last>=first&&!frustum.intersectsBox(ranges[last].box))last--;
   const start=first<=last?ranges[first].start:0;
-  g.setDrawRange(start,first<=last?ranges[last].end-start:0);
+  out.start=start;out.count=first<=last?ranges[last].end-start:0;
  }
+ const selected:GroundRangeSelection={start:0,count:Infinity};
+ function apply(camera:T.Camera){select(camera,selected);g.setDrawRange(selected.start,selected.count);}
  const before=mesh.onBeforeRender,after=mesh.onAfterRender;
- mesh.onBeforeRender=function(...args){before.apply(this,args);select(args[2]);};
+ mesh.onBeforeRender=function(...args){before.apply(this,args);apply(args[2]);};
  mesh.onAfterRender=function(...args){
   g.setDrawRange(0,Infinity);
   after.apply(this,args);
  };
  if(mesh.castShadow){
   const beforeShadow=mesh.onBeforeShadow,afterShadow=mesh.onAfterShadow;
-  mesh.onBeforeShadow=function(...args){beforeShadow.apply(this,args);select(args[3]);};
+  mesh.onBeforeShadow=function(...args){beforeShadow.apply(this,args);apply(args[3]);};
   mesh.onAfterShadow=function(...args){g.setDrawRange(0,Infinity);afterShadow.apply(this,args);};
  }
+ return Object.freeze({geometry:g,before:mesh.onBeforeRender,after:mesh.onAfterRender,select});
 }

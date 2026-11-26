@@ -1,0 +1,1 @@
+{"extends":"./tsconfig.json","include":["src/belle/**/*.ts","scripts/pavement-depth-proof-browser.ts","scripts/pavement-proof-authored.d.ts"]}
