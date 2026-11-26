@@ -24,7 +24,8 @@ export class FallenSupport {
  private palms=new Map<Object3D,Quaternion>();
  private legAnatomy=new Map<Object3D,AnatomicalLimb>();
  private handle:Vector3;
- private groundCache=new Map<string,ReturnType<typeof createGroundSample>>();
+ // Numeric cell keys avoid allocating a coordinate string for every probe.
+ private groundCache=new Map<number,Map<number,ReturnType<typeof createGroundSample>>>();
  constructor(probes:Probe[],rig:Rig){
   const bendNormal=new Vector3(1,0,0).applyQuaternion(rig.root.getWorldQuaternion(new Quaternion()));
   for(const l of rig.legs)this.legAnatomy.set(l.upper,calibrateLimb(l,bendNormal));
@@ -103,8 +104,13 @@ export class FallenSupport {
    if((mesh as SkinnedMesh).isSkinnedMesh)(mesh as SkinnedMesh).skeleton.update();
    for(const i of indices){mesh.getVertexPosition(i,p).applyMatrix4(mesh.matrixWorld);
     let height=floor;
-    if(terrain){const x=Math.round(p.x/.35)*.35,z=Math.round(p.z/.35)*.35,key=x+','+z;
-     let ground=this.groundCache.get(key);if(!ground){ground=terrain.sampleGround(x,z,createGroundSample(),floor);this.groundCache.set(key,ground);}
+    if(terrain){const x=Math.round(p.x/.35)*.35,z=Math.round(p.z/.35)*.35;
+     let ground=this.groundCache.get(x)?.get(z);
+     if(!ground){
+      ground=terrain.sampleGround(x,z,createGroundSample(),floor);
+      // A sampler may reenter support and clear the cache; read its column again.
+      let column=this.groundCache.get(x);if(!column)this.groundCache.set(x,column=new Map());column.set(z,ground);
+     }
      height=ground.height;if(ground.normal.y>.2)height-=(ground.normal.x*(p.x-x)+ground.normal.z*(p.z-z))/ground.normal.y;
     }
     lift=Math.max(lift,height+margin-p.y);
