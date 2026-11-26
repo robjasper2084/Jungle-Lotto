@@ -7,6 +7,12 @@ const signature=Buffer.from([137,80,78,71,13,10,26,10]);
 const table=Array.from({length:256},(_,i)=>{let c=i;for(let k=0;k<8;k++)c=c&1?0xedb88320^(c>>>1):c>>>1;return c>>>0;});
 export function crc32(bytes){let crc=0xffffffff;for(const b of bytes)crc=table[(crc^b)&255]^(crc>>>8);return (crc^0xffffffff)>>>0;}
 const paeth=(a,b,c)=>{const p=a+b-c,pa=Math.abs(p-a),pb=Math.abs(p-b),pc=Math.abs(p-c);return pa<=pb&&pa<=pc?a:pb<=pc?b:c;};
+export function compareRawRgba(reference,candidate){
+ assert(Buffer.isBuffer(reference)&&Buffer.isBuffer(candidate));assert.equal(reference.length,candidate.length);assert.equal(reference.length%4,0);
+ let pixels=0,maxChannelDelta=0;for(let i=0;i<reference.length;i+=4){let changed=false;
+  for(let c=0;c<4;c++){const delta=Math.abs(reference[i+c]-candidate[i+c]);maxChannelDelta=Math.max(maxChannelDelta,delta);changed ||=delta!==0;}if(changed)pixels++;}
+ return {pixels,maxChannelDelta};
+}
 export function decodePng(bytes,{width,height}){
  assert(bytes.subarray(0,8).equals(signature),'Invalid PNG signature');let offset=8,header=null,ended=false;const idat=[];
  while(offset<bytes.length){assert(offset+12<=bytes.length,'Truncated PNG chunk');const n=bytes.readUInt32BE(offset),type=bytes.toString('ascii',offset+4,offset+8),end=offset+12+n;

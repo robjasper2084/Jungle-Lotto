@@ -89,7 +89,21 @@ async function image(){const receipt=draw();const pixels=new Uint8Array(width*he
 function rawBase64(bytes:Uint8Array){let binary='';for(let i=0;i<bytes.length;i+=32768)binary+=String.fromCharCode(...bytes.subarray(i,i+32768));return btoa(binary);}
 function delta(a:Uint8Array,b:Uint8Array){check(a.length===b.length,'RGBA length changed');let pixels=0,maxChannelDelta=0;for(let i=0;i<a.length;i+=4){let different=false;
  for(let c=0;c<4;c++){const d=Math.abs(a[i+c]-b[i+c]);different ||=d!==0;maxChannelDelta=Math.max(maxChannelDelta,d);}if(different)pixels++;}return{pixels,maxChannelDelta};}
+function proofIdentity(){return currentCase.proof.map((r:any)=>({index:r.index,mode:r.mode,pixelSha256:r.pixelSha256,frameBefore:r.frameBefore,frameAfter:r.frameAfter}));}
+function assertTimingAuthorized(){const gate=currentCase?.correctnessGate;
+ check(currentCase?.proofPassed&&gate?.authorized===true&&gate.passed===true,'Independent correctness verdict required before any elapsed query');
+ check(gate.caseIndex===currentCase.index&&gate.caseName===currentCase.name&&same(gate.proofIdentity,proofIdentity()),'Timing authorization belongs to a different proof');
+ check(gate.independentPngRgba&&gate.drawConserved&&gate.baselineRestored&&gate.error===null,'Incomplete independent correctness verdict');
+}
+function authorizeTiming(verdict:any){
+ check(currentCase?.timing&&currentCase.proofPassed&&currentCase.samples.length===0,'Only a completed untimed case may be authorized');
+ check(evidence.errors.length===0&&evidence.queries.live===0&&verdict?.queriesBefore===evidence.queries.created,'Query or browser state changed before authorization');
+ currentCase.correctnessGate={...verdict,authorized:true};
+ try{assertTimingAuthorized();}catch(error){currentCase.correctnessGate=null;throw error;}
+ return {case:currentCase.name,authorized:true,queriesBefore:evidence.queries.created};
+}
 async function measure(value:string,phase:string,index:number){
+ assertTimingAuthorized();
  setMode(value);check(ext,'Elapsed GPU query unavailable');if(gl.getParameter(ext.GPU_DISJOINT_EXT)){evidence.queries.disjoint=true;throw Error('Disjoint GPU query before frame');}
  const query=gl.createQuery();check(query,'GPU query allocation failed');const row:any={id:queryId++,case:currentCase.name,mode:value,phase,index,status:'pending',nanoseconds:null};
  evidence.queries.created++;evidence.queries.live++;evidence.queries.rows.push(row);let ended=false;
@@ -170,11 +184,11 @@ async function proofImage(index:number){check(currentCase&&index===currentCase.p
  currentCase.proofPassed=currentCase.proof.length===4&&currentCase.proof.every((r:any)=>r.difference.pixels===0&&r.difference.maxChannelDelta===0);
  return {...row,png,rawRgbaBase64:rawBase64(pixels),rawLayout:'RGBA8 bottom-up; unmodified gl.readPixels'};
 }
-async function timing(){check(currentCase?.timing,'Case is correctness only');
+async function timing(){check(currentCase?.timing,'Case is correctness only');assertTimingAuthorized();check(currentCase.samples.length===0,'A case may be measured only once');
  const warm=['baseline','candidate','candidate','baseline'];
  const measured=[...warm,...['candidate','baseline','baseline','candidate'],...warm,...['candidate','baseline','baseline','candidate']];
  for(const [phase,order]of [['warmup',warm],['measured',measured]] as const)for(let i=0;i<order.length;i++){const sample=await measure(order[i],phase,i);currentCase.samples.push(sample);}
  return {name:currentCase.name,samples:currentCase.samples.length};
 }
 const wrap=(fn:Function)=>async(...args:any[])=>{try{return await fn(...args);}catch(error){evidence.errors.push(errorText(error));throw error;}finally{setMode('baseline');}};
-(window as any).__approachOrder={ready:()=>ready,prepare:wrap(prepare),proofImage:wrap(proofImage),timing:wrap(timing),read:()=>evidence};
+(window as any).__approachOrder={ready:()=>ready,prepare:wrap(prepare),proofImage:wrap(proofImage),authorizeTiming:wrap(authorizeTiming),timing:wrap(timing),read:()=>evidence};

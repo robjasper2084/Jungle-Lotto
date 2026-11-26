@@ -6,8 +6,8 @@ import {createServer} from 'node:http';
 import {resolve} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {pins,sha256,verifyManifest} from './provenance.mjs';
-import {analyze} from './contract.mjs';
-import {verifyCapture} from './png-evidence.mjs';
+import {analyze,validateCorrectnessCase} from './contract.mjs';
+import {verifyCapture,compareRawRgba} from './png-evidence.mjs';
 const game=resolve(process.env.APP_GAME||''),out=resolve(process.env.APPROACH_ORDER_OUT||''),backend=process.env.APPROACH_ORDER_BACKEND;
 assert(process.env.APP_GAME&&process.env.APPROACH_ORDER_OUT&&['metal','swiftshader'].includes(backend));
 const {createCoopStaticServer}=await import(pathToFileURL(resolve(game,'scripts/coop-static-server.mjs')).href);
@@ -16,7 +16,7 @@ const launch=backend==='metal'?{channel:'chrome',headless:false,args:['--enable-
  {channel:'chrome',headless:false,args:['--use-angle=swiftshader','--enable-unsafe-swiftshader','--gpu-watchdog-timeout-seconds=60']};
 const report={diagnosticOnly:true,releaseAcceptance:false,complete:false,applicationSource:pins.applicationSource,
  diagnosticRevision:process.env.APPROACH_ORDER_DIAGNOSTIC_SHA??null,backend,launch,viewport:[1280,800,1],
- captures:[],errors:[],failedRequests:[],scriptReceipts:[],startedAt:new Date().toISOString(),analysis:null};
+ captures:[],correctnessGates:[],errors:[],failedRequests:[],scriptReceipts:[],startedAt:new Date().toISOString(),analysis:null};
 const before=JSON.parse(await readFile(resolve(out,'dist-before.json'),'utf8')),fixture=JSON.parse(await readFile(resolve(out,'fixture-before.json'),'utf8'));
 const fixturePaths=new Map(fixture.files.map(r=>['/'+r.path,r]));
 const assets=createCoopStaticServer(resolve(game,'dist')).listeners('request')[0],fixtureHandler=createCoopStaticServer(resolve(out,'fixture')).listeners('request')[0];
@@ -47,6 +47,7 @@ async function run(){
  assert(backend==='metal'?/Metal/.test(raw.gpu)&&!/SwiftShader|llvmpipe/i.test(raw.gpu):/SwiftShader/.test(raw.gpu),'Actual renderer differs from requested backend');
  for(let index=0;index<14;index++){
   const c=await bounded(page.evaluate(i=>window.__approachOrder.prepare(i),index),300000,'Case preparation');report.phase=c.name;console.log(new Date().toISOString()+' '+c.name);await checkpoint();
+  let baselineRgba;
   for(let imageIndex=0;imageIndex<4;imageIndex++){
    const capture=await bounded(page.evaluate(i=>window.__approachOrder.proofImage(i),imageIndex),180000,'Original-resolution proof image');
    assert(capture.png.startsWith('data:image/png;base64,'));const bytes=Buffer.from(capture.png.split(',')[1],'base64'),rgba=Buffer.from(capture.rawRgbaBase64,'base64');
@@ -55,9 +56,13 @@ async function run(){
    await writeFile(resolve(out,file),bytes);await writeFile(resolve(out,rawFile),rgba);
    const receipt={file,rawFile,case:c.name,index:imageIndex,mode:capture.mode,pngSha256:sha256(bytes),pixelSha256:capture.pixelSha256,difference:capture.difference};
    report.captures.push(receipt);await checkpoint();
-   receipt.encoding=verifyCapture(bytes,rgba,{width:1280,height:800,pixelSha256:capture.pixelSha256});await checkpoint();
+   receipt.encoding=verifyCapture(bytes,rgba,{width:1280,height:800,pixelSha256:capture.pixelSha256});
+   if(imageIndex===0)baselineRgba=rgba;receipt.independentDifference=compareRawRgba(baselineRgba,rgba);await checkpoint();
   }
-  if(c.timing){await bounded(page.evaluate(()=>window.__approachOrder.timing()),600000,'All balanced elapsed queries');await checkpoint();}
+  await Promise.allSettled([...pending]);assert.equal(report.errors.length,0,'Browser or served-script error before timing');assert.equal(report.failedRequests.length,0,'Failed request before timing');
+  const verdict=validateCorrectnessCase(raw,index,report.captures);report.correctnessGates.push(verdict);await checkpoint();assert(verdict.passed,verdict.error);
+  if(c.timing){await bounded(page.evaluate(v=>window.__approachOrder.authorizeTiming(v),verdict),15000,'Authorize independently proven case');await checkpoint();
+   await bounded(page.evaluate(()=>window.__approachOrder.timing()),600000,'All balanced elapsed queries');await checkpoint();}
  }
  await Promise.allSettled([...pending]);assert(report.scriptReceipts.length>0,'No served fixture script receipt');
 }

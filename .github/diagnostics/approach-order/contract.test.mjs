@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {analyze,compareDraws,PROOF_ORDER,MEASURED_ORDER,CASE_NAMES} from './contract.mjs';
+import {analyze,compareDraws,validateCorrectnessCase,proofIdentity,PROOF_ORDER,MEASURED_ORDER,CASE_NAMES} from './contract.mjs';
+import {readFileSync} from 'node:fs';
+import {stripTypeScriptTypes} from 'node:module';
+import {runInNewContext} from 'node:vm';
 import {pins} from './provenance.mjs';
 const clone=x=>structuredClone(x);
 function fixture(factor=1){
@@ -22,6 +25,7 @@ function fixture(factor=1){
   if(pose.name==='real-road-occlusion')pose.occlusion={front:{id:12,distance:2,name:'Joined island pavement · asphalt',ownerKind:'source-asphalt-road',effectiveVisible:true,materials:[{name:'Island asphalt',surface:'asphalt',visible:true}]},approach:{id:10,distance:3}};
   const nativePreparation={...receipt('baseline'),draws:clone([...shadows,...base]),shadowMaps:quality==='high'?[{castShadow:true,intensity:1,requestedSize:[2048,2048],allocatedSize:[2048,2048]}]:[]};
   const c={index,name,timing:index<12,night,quality,camera,settings,context,owners,pose,nativePreparation,proof:PROOF_ORDER.map((mode,i)=>({...receipt(mode),index:i,pixelSha256:'a'.repeat(64),difference:{pixels:0,maxChannelDelta:0},content:{nonzeroRgbPixels:1280*800,distinctColorsAtLeast:32,readback:'same-task before compositor yield'}})),samples:[]};
+  if(c.timing)c.correctnessGate={passed:true,authorized:true,caseIndex:index,caseName:name,queriesBefore:index*20,independentPngRgba:true,drawConserved:true,baselineRestored:true,proofIdentity:proofIdentity(c),error:null};
   if(c.timing)for(const [phase,order]of [['warmup',PROOF_ORDER],['measured',MEASURED_ORDER]])for(const [i,mode]of order.entries()){
    const q={id:id++,case:name,mode,phase,index:i,status:'resolved',nanoseconds:mode==='candidate'?1e6*factor:1e6};result.queries.rows.push(q);c.samples.push({...receipt(mode),query:q});
   }
@@ -63,4 +67,56 @@ test('native preparation shadows, effective road visibility and distinct source 
  for(const edit of edits){const r=fixture();edit(r);assert.equal(analyze(r).complete,false);}
  const sw=fixture();sw.gpu='ANGLE SwiftShader';for(const c of sw.cases.filter(c=>c.quality==='high'))for(const settings of [c.settings,c.nativePreparation.settings,...c.proof.map(r=>r.settings)]){settings.sourceQualityPixelRatio=.7;settings.fixedResolutionOverride=true;}
  assert.equal(analyze(sw).complete,true,'Source-selected software DPR is distinct from the fixed fixture DPR');
+});
+function pendingCase(index=0){
+ const r=fixture();r.cases=r.cases.slice(0,index+1);const c=r.cases[index];c.samples=[];delete c.correctnessGate;c.proofPassed=true;
+ const count=Math.min(index,12)*20;r.queries.rows=r.queries.rows.slice(0,count);for(const key of ['created','resolved','deleted'])r.queries[key]=count;
+ const captures=c.proof.map(p=>({case:c.name,index:p.index,mode:p.mode,file:p.index+'.png',rawFile:p.index+'.rgba',pixelSha256:p.pixelSha256,pngSha256:'b'.repeat(64),difference:clone(p.difference),independentDifference:{pixels:0,maxChannelDelta:0},
+  encoding:{rawSha256:p.pixelSha256,pngSha256:'b'.repeat(64),decodedRgbaSha256:'c'.repeat(64),width:1280,height:800}}));
+ return {r,c,captures};
+}
+test('independent current-case gate requires all four decoded captures and the original draw/restoration proof before timing',()=>{
+ for(const index of [0,1,11,12,13]){const f=pendingCase(index),v=validateCorrectnessCase(f.r,index,f.captures);assert.equal(v.passed,true,v.error);assert.equal(v.queriesBefore,Math.min(index,12)*20);}
+ for(const mutate of [f=>f.c.proof[1].difference.pixels=1,f=>f.c.proof[3].pixelSha256='d'.repeat(64),f=>f.c.proof[1].draws.pop(),
+  f=>f.captures[1].independentDifference.maxChannelDelta=1,f=>delete f.captures[1].encoding,f=>f.captures[2].encoding.decodedRgbaSha256='d'.repeat(64),
+  f=>f.captures.pop(),f=>f.r.queries.created++,f=>f.c.samples.push({}),f=>f.c.proof[3].draws.reverse()]){
+  const f=pendingCase();mutate(f);assert.equal(validateCorrectnessCase(f.r,0,f.captures).passed,false);
+ }
+});
+test('a later rejected case retains earlier proven timings while remaining ineligible overall',()=>{
+ const f=pendingCase(1),prior=clone(f.r.queries);f.captures[2].independentDifference.pixels=1;
+ assert.equal(validateCorrectnessCase(f.r,1,f.captures).passed,false);assert.deepEqual(f.r.queries,prior);assert.equal(prior.created,20);assert.equal(analyze(f.r).complete,false);
+});
+test('final interpretation rejects missing, stale or incomplete correctness authorization',()=>{
+ for(const edit of [r=>delete r.cases[0].correctnessGate,r=>r.cases[0].correctnessGate.caseIndex=1,r=>r.cases[0].correctnessGate.proofIdentity[0].pixelSha256='e'.repeat(64),r=>r.cases[0].correctnessGate.independentPngRgba=false]){
+  const r=fixture();edit(r);assert.equal(analyze(r).complete,false);
+ }
+});
+// Exercise the actual browser gate/measure functions with a synthetic GL
+// allocator. No native browser or GPU timing result is claimed by these tests.
+function browserGateHarness(c){
+ const source=readFileSync(new URL('./browser.ts',import.meta.url),'utf8');
+ const gates=source.slice(source.indexOf('function proofIdentity(){'),source.indexOf('const ready=(async()=>'));
+ const timing=source.slice(source.indexOf('async function timing(){'),source.indexOf('const wrap='));
+ let allocations=0;const evidence={errors:[],queries:{created:0,resolved:0,deleted:0,live:0,rows:[],disjoint:false}};
+ const context={currentCase:clone(c),evidence,queryId:0,same:(a,b)=>JSON.stringify(a)===JSON.stringify(b),check:(ok,message)=>{if(!ok)throw Error(message);},
+  errorText:String,mode:'baseline',setMode(value){context.mode=value;},draw:()=>({mode:context.mode}),fence:async()=>{},performance:{now:()=>0},setTimeout,
+  ext:{TIME_ELAPSED_EXT:1,GPU_DISJOINT_EXT:2},gl:{QUERY_RESULT_AVAILABLE:3,QUERY_RESULT:4,getParameter:()=>false,
+   createQuery:()=>{allocations++;return{};},beginQuery(){},endQuery(){},getQueryParameter:(_q,kind)=>kind===3?true:1000,deleteQuery(){}}};
+ const api=runInNewContext(stripTypeScriptTypes(gates+timing+'\n({authorizeTiming,timing,measure})',{mode:'strip'}),context);
+ return {api,context,allocations:()=>allocations};
+}
+test('actual browser query allocator is unreachable for missing, failed or stale proof authorization',async()=>{
+ const mutations=[null,f=>f.c.proofPassed=false,f=>f.verdict.caseIndex=1,f=>f.verdict.independentPngRgba=false,f=>f.verdict.proofIdentity[0].pixelSha256='f'.repeat(64)];
+ for(const edit of mutations){
+  const f=pendingCase();f.verdict=validateCorrectnessCase(f.r,0,f.captures);edit?.(f);const h=browserGateHarness(f.c);
+  if(edit)assert.throws(()=>h.api.authorizeTiming(f.verdict));
+  await assert.rejects(h.api.timing(),/correctness|authorization|proof/i);await assert.rejects(h.api.measure('baseline','warmup',0),/correctness|authorization|proof/i);assert.equal(h.allocations(),0);
+ }
+});
+test('actual browser passing gate preserves exactly the original 4 warmups and 16 balanced measurements',async()=>{
+ const f=pendingCase(),verdict=validateCorrectnessCase(f.r,0,f.captures),h=browserGateHarness(f.c);
+ h.api.authorizeTiming(verdict);await h.api.timing();assert.equal(h.allocations(),20);assert.equal(h.context.evidence.queries.created,20);assert.equal(h.context.evidence.queries.deleted,20);
+ assert.deepEqual(Array.from(h.context.currentCase.samples,s=>s.query.mode),[...PROOF_ORDER,...MEASURED_ORDER]);
+ await assert.rejects(h.api.timing(),/only once/);assert.equal(h.allocations(),20);
 });

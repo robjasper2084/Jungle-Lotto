@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {deflateSync} from 'node:zlib';
-import {crc32,decodePng,verifyCapture} from './png-evidence.mjs';
+import {crc32,decodePng,verifyCapture,compareRawRgba} from './png-evidence.mjs';
 const hash=b=>createHash('sha256').update(b).digest('hex');
 function chunk(type,data){const out=Buffer.alloc(data.length+12);out.writeUInt32BE(data.length,0);out.write(type,4);data.copy(out,8);out.writeUInt32BE(crc32(out.subarray(4,8+data.length)),8+data.length);return out;}
 function png(width,height,rgba,channels=4,filter=0){
@@ -28,4 +28,10 @@ test('damaged CRC, unsupported interlace and wrong dimensions are rejected',()=>
  const image=png(2,2,pixels),broken=Buffer.from(image);broken[40]^=1;assert.throws(()=>decodePng(broken,{width:2,height:2}),/CRC/);
  assert.throws(()=>decodePng(image,{width:1,height:2}));
  const interlaced=Buffer.from(image);interlaced[28]=1;interlaced.writeUInt32BE(crc32(interlaced.subarray(12,29)),29);assert.throws(()=>decodePng(interlaced,{width:2,height:2}),/Interlaced/);
+});
+test('independent raw comparison counts every changed RGBA channel without normalizing pixels',()=>{
+ assert.deepEqual(compareRawRgba(pixels,Buffer.from(pixels)),{pixels:0,maxChannelDelta:0});
+ const changed=Buffer.from(pixels);changed[0]+=3;changed[1]+=7;changed[7]-=1;
+ assert.deepEqual(compareRawRgba(pixels,changed),{pixels:2,maxChannelDelta:7});
+ assert.throws(()=>compareRawRgba(pixels,changed.subarray(1)));assert.throws(()=>compareRawRgba(Buffer.alloc(3),Buffer.alloc(3)));
 });
