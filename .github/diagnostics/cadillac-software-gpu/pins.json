@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "repository": "robjasper2084/Jungle-Lotto",
+  "applicationSource": "75906273c0cd414c0d004320fc6f654b4783e5b1",
+  "applicationTree": "9f0351be133dd370a676090d27559a0adaf00605",
+  "originalRun": 45839211197,
+  "artifact": {
+    "id": 15127074963,
+    "name": "cadillac-mods-game-75906273c0cd414c0d004320fc6f654b4783e5b1",
+    "bytes": 176640563,
+    "sha256": "ded31ca4e6658ab3edd5cbcd192a0ea0a57d8db79cd762ff9de7a23bb8409165"
+  },
+  "build": {
+    "sourceSha": "75906273c0cd414c0d004320fc6f654b4783e5b1",
+    "indexSha256": "9988025538e92f9613e72eee700c465981eb254ab635405f9f55ec8288f94646",
+    "builtAt": "2026-11-26T14:35:37.332Z"
+  },
+  "scripts": {
+    "cadillac-mods-browser-smoke.mjs": "62b2b338e80909d596dafb5bc50979987e2b965f",
+    "cadillac-case-lifecycle.mjs": "cb4606a48421ed4c6ca2e78e65c61308c6449254",
+    "cadillac-operation-timing.mjs": "ecc1cd29ad03e9b38f3fc0fecfb80f5d87a9840b",
+    "cadillac-cdp-viewport-png.mjs": "57151ffed665cbcd26078c3aafb1661a08e5d4e1",
+    "coop-static-server.mjs": "86d780f2a77eff0e9e46beacd35a558903d3ec29"
+  }
+}

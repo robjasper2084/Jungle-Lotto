@@ -1,0 +1,100 @@
+name: Cadillac original software GPU attribution (diagnostic only)
+
+on:
+  pull_request:
+    branches: [upgrade-redesign-cadillac-modification-suite]
+    paths:
+      - '.github/workflows/cadillac-original-software-gpu-attribution.yml'
+      - '.github/diagnostics/cadillac-software-gpu/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: cadillac-original-software-gpu-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  original-software-attribution:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 75906273c0cd414c0d004320fc6f654b4783e5b1
+          path: app
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: diagnostic
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/diagnostics/cadillac-software-gpu/
+            /.github/workflows/cadillac-original-software-gpu-attribution.yml
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Download and verify the immutable original controls build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          bundle="$GITHUB_WORKSPACE/diagnostic/.github/diagnostics/cadillac-software-gpu"
+          evidence="$GITHUB_WORKSPACE/evidence"
+          game="$GITHUB_WORKSPACE/app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game"
+          mkdir -p "$evidence" "$game/dist"
+          gh api repos/robjasper2084/Jungle-Lotto/actions/artifacts/15127074963 > "$evidence/original-artifact.json"
+          node "$bundle/provenance.mjs" artifact "$evidence/original-artifact.json"
+          gh api repos/robjasper2084/Jungle-Lotto/actions/artifacts/15127074963/zip > "$RUNNER_TEMP/original-cadillac-game.zip"
+          node "$bundle/provenance.mjs" artifact "$evidence/original-artifact.json" "$RUNNER_TEMP/original-cadillac-game.zip"
+          unzip -q "$RUNNER_TEMP/original-cadillac-game.zip" -d "$game/dist"
+          diagnostic_head="$(git -C diagnostic rev-parse HEAD)"
+          node "$bundle/provenance.mjs" prepare "$GITHUB_WORKSPACE/app" "$bundle" "$evidence" "$diagnostic_head"
+          git -C diagnostic cat-file -p HEAD > "$evidence/diagnostic-commit.txt"
+          cp -R "$bundle" "$evidence/diagnostic-source"
+          cp diagnostic/.github/workflows/cadillac-original-software-gpu-attribution.yml "$evidence/workflow.yml"
+          node "$bundle/derive-native-setup.mjs" "$game/scripts/cadillac-mods-browser-smoke.mjs" "$evidence/native-setup.mjs" "$evidence/native-setup-provenance.json"
+      - name: Verify observer guards and install the original Chrome test runtime
+        working-directory: app/lottominded-ultra.io/games/gothtechnology2
+        run: |
+          set -euo pipefail
+          bundle="$GITHUB_WORKSPACE/diagnostic/.github/diagnostics/cadillac-software-gpu"
+          export APP_GAME="$PWD/belle-isle-source/game"
+          node --test "$bundle/observer.test.mjs" "$bundle/driver-guards.test.mjs" 2>&1 | tee "$GITHUB_WORKSPACE/evidence/guard-tests.log"
+          node --check "$bundle/driver.mjs"
+          node --check "$GITHUB_WORKSPACE/evidence/native-setup.mjs"
+          npm ci
+          npx playwright install --with-deps chrome
+          { date -u; uname -a; node -v; google-chrome --version; lscpu; free -m; } > "$GITHUB_WORKSPACE/evidence/host-before.txt"
+      - name: Observe three completed original SwiftShader frames
+        timeout-minutes: 12
+        run: |
+          set -euo pipefail
+          bundle="$GITHUB_WORKSPACE/diagnostic/.github/diagnostics/cadillac-software-gpu"
+          export APP_GAME="$GITHUB_WORKSPACE/app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game"
+          export SOFTWARE_GPU_OUT="$GITHUB_WORKSPACE/evidence"
+          export SOFTWARE_GPU_DIAGNOSTIC_SHA="$(git -C diagnostic rev-parse HEAD)"
+          xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node "$bundle/driver.mjs" 2>&1 | tee "$SOFTWARE_GPU_OUT/driver.log"
+      - name: Verify original build and helpers remain byte-identical
+        if: always()
+        run: |
+          set -euo pipefail
+          bundle="$GITHUB_WORKSPACE/diagnostic/.github/diagnostics/cadillac-software-gpu"
+          node "$bundle/provenance.mjs" after "$GITHUB_WORKSPACE/app" "$GITHUB_WORKSPACE/evidence"
+          { date -u; uptime; free -m; } > "$GITHUB_WORKSPACE/evidence/host-after.txt"
+      - name: Preserve diagnostic measurements and original input/source receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cadillac-original-software-gpu-attribution-NOT-CONTROLS-ACCEPTANCE
+          path: evidence/
+          retention-days: 14
+          if-no-files-found: warn
