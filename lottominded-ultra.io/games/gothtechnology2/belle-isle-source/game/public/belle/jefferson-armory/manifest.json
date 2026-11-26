@@ -1,0 +1,33 @@
+{
+  "schema": "jefferson-armory-preview/v1",
+  "source": "Original Armory model from 2026-11-24 local review",
+  "studioOnly": true,
+  "releaseApproved": false,
+  "licenseCleared": false,
+  "collisionUnchanged": true,
+  "roofHeightSurveyVerified": false,
+  "id": "59264442",
+  "cityObjectId": 38712,
+  "studyMaximumHeightM": 16.3,
+  "gameColliderHeightM": 11.1,
+  "asset": {
+    "file": "Naval_Armory_Jefferson_All_LODs.glb",
+    "bytes": 2764484,
+    "sha256": "78a24b30d29126e8646aef3eb203199fc23476e23a6f6eb7b2a092f5d5c94f01",
+    "gitBlobSha": "9d9b9fe1de28665890f95f6c8ef3fe8e3373f615"
+  },
+  "point": {
+    "x": 347.303359,
+    "y": 2,
+    "z": -198.41108
+  },
+  "lodTriangles": [
+    4220,
+    2408,
+    524
+  ],
+  "sourceMatch": {
+    "IoU": 0.920103,
+    "boundaryHausdorffM": 2.626
+  }
+}

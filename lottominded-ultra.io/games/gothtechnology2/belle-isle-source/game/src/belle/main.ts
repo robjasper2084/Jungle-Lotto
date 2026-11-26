@@ -290,6 +290,10 @@ const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreferen
  const crossings=portalStates({routes:districts.routes,terrain,pavementReady:!!scene.getObjectByName('Greater Detroit pavement')});
  const openPlaces=districtDestinations.filter(l=>crossings[l.id==='greater-detroit-elmwood'?1:0].connected);
  const destinations=[...openPlaces,...data.landmarks,...data.pois.filter(p=>!data.landmarks.some(l=>l.id===p.id))];
+ // Staging-only Guide card for real gameplay captures. No production map or collision edits.
+ if((import.meta as ImportMeta & {env?:Record<string,string|undefined>}).env?.VITE_JEFFERSON_QA_GUIDE==='1')
+  destinations.push({id:'jefferson-armory-qa',name:'Detroit Naval Armory Jefferson QA',x:347.303359,z:-198.411080,
+    kind:'attraction',viewDistance:58,description:'Review-only visual camera waypoint; roof heights and elevations are not survey verified.'});
  const pictureView=bridgePictureView(data);
  destinations.push({id:BRIDGE_PICTURE_VIEW_ID,name:BRIDGE_PICTURE_VIEW_NAME,x:pictureView.x,z:pictureView.z,kind:'attraction',viewDistance:0,description:'Real island-side MacArthur Bridge view for comparing the four cinematic styles, using the original playable roadway.'});let destination:ParkMap['landmarks'][number]|undefined;const routepoints=data.roads.flatMap(r=>r.points.slice(1).flatMap((b,i)=>{const a=r.points[i],steps=Math.max(1,Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1])/8));return Array.from({length:steps},(_,j)=>[a[0]+(b[0]-a[0])*j/steps,a[1]+(b[1]-a[1])*j/steps] as [number,number]);})).filter(p=>terrain.land(p[0],p[1])&&!terrain.obstructed(p[0],p[1],2));let snap=true;const vrPlaces:{label:string;go:()=>void}[]=[];
  function jump(x:number,z:number,headingY:number){realLocation?.stopFollow('Avatar follow stopped for game travel.');golf?.stop();trials?.interrupt();activities?.relocated();fishing?.stop();slide?.cancel();photo?.close();cadillac?.leave();hover?.leaveForTravel();boat?.leave();clear();core.reset({position:{x,y:terrain.height(x,z),z},headingY});cameraYaw=0;cameraPitch=.1;snap=true;vr?.relocated();}

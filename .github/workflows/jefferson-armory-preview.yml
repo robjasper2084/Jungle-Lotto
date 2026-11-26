@@ -1,0 +1,141 @@
+name: Jefferson Armory staged visual CI
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/jefferson-armory-preview.yml'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/vite.config.ts'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/jeffersonArmory*'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/serviceBuildings.ts'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/world.ts'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/main.ts'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/jefferson-armory-gallery.mjs'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/jefferson-armory/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  preview-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.16.0
+      - name: Verify exact Armory model, compile, all game tests and build
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          VITE_STAGED_JEFFERSON_ARMORY: '1'
+          VITE_JEFFERSON_QA_GUIDE: '1'
+        run: |
+          npm ci
+          npm run check
+          npm test
+          npm run build
+      - name: Verify model preserved inside dist
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          node --input-type=module <<'NODE'
+          import {createHash} from 'node:crypto';
+          import {readFile} from 'node:fs/promises';
+          const prefix='dist/belle/jefferson-armory/';
+          const manifest=JSON.parse(await readFile(prefix+'manifest.json','utf8'));
+          const bytes=await readFile(prefix+manifest.asset.file);
+          if(bytes.length!==manifest.asset.bytes||createHash('sha256').update(bytes).digest('hex')!==manifest.asset.sha256)
+            throw Error('Dist Armory GLB does not match source bytes');
+          if(manifest.releaseApproved!==false||manifest.collisionUnchanged!==true||manifest.licenseCleared!==false)
+            throw Error('Staging safety contract lost');
+          console.log('Armory staged asset verified; not approved for production');
+          NODE
+      - name: Archive exact staging build (not Pages deployment)
+        uses: actions/upload-artifact@v4
+        with:
+          name: jefferson-armory-staged-dist
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist/
+          retention-days: 14
+          if-no-files-found: error
+
+  in-game-camera:
+    needs: preview-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        device: [desktop, phone]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.16.0
+      - uses: actions/download-artifact@v4
+        with:
+          name: jefferson-armory-staged-dist
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist/
+      - name: Install browser for actual gameplay screenshot
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install chromium --with-deps
+      - name: Capture genuine staged Armory via Guide Travel and GPU sync
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          JEFFERSON_CAPTURE_DEVICE: ${{ matrix.device }}
+          JEFFERSON_CAPTURE_BROWSER: chromium
+        run: node scripts/jefferson-armory-gallery.mjs
+      - name: Preserve screenshots and failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jefferson-armory-in-game-${{ matrix.device }}
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/jefferson-armory-game/${{ matrix.device }}/
+          retention-days: 14
+          if-no-files-found: warn
+  native-strict:
+    needs: preview-build
+    runs-on: macos-15
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        device: [desktop, phone]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.16.0
+      - uses: actions/download-artifact@v4
+        with:
+          name: jefferson-armory-staged-dist
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist/
+      - name: Install Chrome for native full-scene test
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install chrome
+      - name: Original strict 90-second genuine full-scene riding
+        timeout-minutes: 28
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          BELLE_PROFILE_DEVICE: ${{ matrix.device }}
+          BELLE_PROFILE_MODE: full
+          BELLE_PROFILE_SECONDS: '90'
+        run: node scripts/sustained-ride-profile.mjs
+      - name: Preserve original numerical failures and captures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jefferson-armory-native-${{ matrix.device }}
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/sustained-profile/full/${{ matrix.device }}/
+          retention-days: 14
+          if-no-files-found: warn
