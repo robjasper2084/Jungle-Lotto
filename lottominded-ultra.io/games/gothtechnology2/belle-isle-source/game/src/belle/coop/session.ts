@@ -15,7 +15,7 @@ import {coopAuthoredChoice} from '../vehicles/choices.ts';
 import './session.css';
 
 type Hooks={available:()=>boolean;anchor:()=>Spawn;activate:()=>Promise<void>|void;leave:()=>void;blocked:()=>boolean;prepare?:(root:T.Object3D,signal:AbortSignal)=>Promise<void>};
-type World={beginSplitView?:()=>void;endSplitView?:()=>void;splitDetail?:(enabled:boolean)=>void;update:(time:number,x:number,z:number,camera:T.Camera,running?:boolean)=>void};
+type World={beginSplitView?:(camera:T.Camera)=>void;endSplitView?:()=>void;splitDetail?:(enabled:boolean)=>void;update:(time:number,x:number,z:number,camera:T.Camera,running?:boolean)=>void};
 type Touch={clutch:number;shift:number;lift:number;throttle:number;steer:number;hop:boolean;recover:boolean;interact:boolean;brake:boolean};
 type Pane={root:HTMLElement;status:HTMLElement;stick:HTMLElement;thumb:HTMLElement;look:HTMLElement;input:Touch;pointer:number|null;lookPointer:number|null;origin:[number,number];last:[number,number]};
 const MOVE_KEYS=new Set(['KeyW','KeyS','KeyA','KeyD','Space','KeyR','KeyF','ShiftLeft','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Enter','Slash','Period','ShiftRight','KeyE','KeyQ','PageUp','PageDown','KeyC','KeyO','BracketLeft','BracketRight','Digit9','Digit0']);
@@ -249,7 +249,7 @@ export class CoopSession{
     // Per-view culling/light choices happen immediately before each view is drawn.
     // Simulation and time are owned by the one outer loop; never advance them here.
     const worldStart=performance.now();world.update(clock,p.x,p.z,actor.camera,!this.paused&&!this.hooks.blocked());worldMs+=performance.now()-worldStart;
-    if(this.actors.length>=3)world.beginSplitView?.();
+    if(this.actors.length>=3)world.beginSplitView?.(actor.camera);
     const renderStart=performance.now();const matrixStart=renderStart;this.scene.updateMatrixWorld();matrixMs+=performance.now()-matrixStart;const matrixAuto=this.scene.matrixWorldAutoUpdate;this.scene.matrixWorldAutoUpdate=false;try{renderer.render(this.scene,actor.camera);}finally{this.scene.matrixWorldAutoUpdate=matrixAuto;world.endSplitView?.();}renderMs+=performance.now()-renderStart;this.draws[seat]=renderer.info.render.calls;triangles+=renderer.info.render.triangles;
    }
   }finally{world.endSplitView?.();world.splitDetail?.(false);if(finishCensus)this.overlay.dataset.drawGroups=JSON.stringify(finishCensus());this.actors.forEach((a,i)=>{a.setFirstPerson(false);a.view.rider.visible=oldVisible[i];});renderer.autoClear=auto;renderer.shadowMap.enabled=shadows;renderer.setScissorTest(scissor);renderer.setScissor(this.savedScissor);renderer.setViewport(this.savedViewport);}

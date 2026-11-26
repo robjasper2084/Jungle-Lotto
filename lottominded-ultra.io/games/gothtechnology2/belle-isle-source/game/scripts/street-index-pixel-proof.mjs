@@ -14,7 +14,7 @@ import {chromium} from 'playwright';
 const game=fileURLToPath(new URL('../',import.meta.url));
 const repo=execFileSync('git',['rev-parse','--show-toplevel'],{cwd:game,encoding:'utf8'}).trim();
 const sourcePath=path.relative(repo,path.join(game,'src/belle/streetDetails.ts'));
-const baselineRef=process.env.BELLE_STREET_BASE??'6518764b9735f78bdc95ec6227d0ba26ba291b48';
+const baselineRef=process.env.BELLE_STREET_BASE??'75906273c0cd414c0d004320fc6f654b4783e5b1';
 const output=path.resolve(game,process.env.BELLE_STREET_PROOF_OUTPUT??'output/street-index-proof');
 const baseline=execFileSync('git',['show',`${baselineRef}:${sourcePath}`],{cwd:repo,encoding:'utf8'});
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
@@ -22,8 +22,10 @@ const script=String.raw`
 import * as T from 'three';
 import {addStreetDetails as addBaseline} from 'proof:baseline';
 import {addStreetDetails as addCandidate} from './src/belle/streetDetails.ts';
+import {batchStaticArchitecture} from './src/belle/staticArchitectureBatch.ts';
 import {loadRealisticMaterials,applyRealisticMaterials} from './src/belle/realisticMaterials.ts';
 import {applyPhotoReferenceSurfaces} from './src/belle/photoReferenceSurfaces.ts';
+import {dressSunsetGround} from './src/belle/sunsetGround.ts';
 
 const width=1440,height=900;
 const canvas=document.querySelector('canvas');
@@ -32,13 +34,17 @@ renderer.setPixelRatio(1);renderer.setSize(width,height);renderer.outputColorSpa
 renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.02;
 renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;renderer.shadowMap.autoUpdate=true;
 const gl=renderer.getContext(),debug=gl.getExtension('WEBGL_debug_renderer_info');
-let calls={},streetCalls={},activeStreet=false;
+const extension=gl.getExtension('WEBGL_multi_draw');
+if(!extension)throw Error('Actual WEBGL_multi_draw is required to exercise the inherited street integration.');
+let calls={},streetCalls={},streetBatchCalls={},activeStreet=false,activeStreetBatch=false;
 // Observe the actual street draw only, excluding the fixture's indexed ground
 // and shadow caster. The original renderer and each native call still run once.
 const direct=renderer.renderBufferDirect;
 renderer.renderBufferDirect=function(...args){
- const previous=activeStreet;activeStreet=typeof args[4]?.name==='string'&&args[4].name.startsWith('Street detail ');
- try{return direct.apply(this,args);}finally{activeStreet=previous;}
+ const previous=activeStreet,previousBatch=activeStreetBatch,object=args[4];
+ activeStreet=typeof object?.name==='string'&&object.name.startsWith('Street detail ');
+ activeStreetBatch=!!object?.isBatchedMesh&&object.name.startsWith('Static multi-draw · Street detail ');
+ try{return direct.apply(this,args);}finally{activeStreet=previous;activeStreetBatch=previousBatch;}
 };
 for(const name of ['drawArrays','drawElements','drawArraysInstanced','drawElementsInstanced']){
  const original=gl[name];gl[name]=function(...args){
@@ -46,10 +52,17 @@ for(const name of ['drawArrays','drawElements','drawArraysInstanced','drawElemen
   return original.apply(this,args);
  };
 }
+for(const name of ['multiDrawArraysWEBGL','multiDrawElementsWEBGL','multiDrawArraysInstancedWEBGL','multiDrawElementsInstancedWEBGL']){
+ const original=extension[name];if(typeof original!=='function')continue;
+ extension[name]=function(...args){
+  calls[name]=(calls[name]??0)+1;if(activeStreetBatch)streetBatchCalls[name]=(streetBatchCalls[name]??0)+1;
+  return original.apply(this,args);
+ };
+}
 const metadata={revision:T.REVISION,width,height,pixelRatio:renderer.getPixelRatio(),antialias:gl.getContextAttributes().antialias,
  renderer:String(gl.getParameter(debug?.UNMASKED_RENDERER_WEBGL??gl.RENDERER)),vendor:String(gl.getParameter(debug?.UNMASKED_VENDOR_WEBGL??gl.VENDOR)),
- technique:'Exact template vertex indexing with the original ordinary mesh renderer',
- scope:'Real mapped street assets in a controlled actual-WebGL fixture. This is not the full game, a 90-second ride, or release acceptance.'};
+ technique:'Exact template vertex indexing, compared through ordinary meshes and the unchanged inherited batching path',
+ scope:'Real mapped street assets in a controlled actual-WebGL fixture. This isolates indexing relative to the pinned base. It does not certify inherited batching against an earlier base, the full game, a 90-second ride, or release acceptance.'};
 const digest=async bytes=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))).map(x=>x.toString(16).padStart(2,'0')).join('');
 function makePlan(header,buffer){
  const data=new Float32Array(buffer),plan={...header,boxes:[]};
@@ -60,7 +73,7 @@ function sceneFor(add,plan){
  const scene=new T.Scene();scene.background=new T.Color(0x657a8d);
  const street=add(scene,plan);
  // Match the real world's material order; both stages share the loaded textures.
- applyRealisticMaterials(scene);applyPhotoReferenceSurfaces(scene);
+ applyRealisticMaterials(scene);applyPhotoReferenceSurfaces(scene);dressSunsetGround(scene);
  const sourceTiles=scene.children.filter(object=>object.name.startsWith('Street detail '));
  const ground=new T.Mesh(new T.PlaneGeometry(1000,1000),new T.MeshStandardMaterial({color:0x343a3c,roughness:.94}));
  ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;ground.name='Proof ground';scene.add(ground);
@@ -100,10 +113,10 @@ async function capture(stage,view,shadows){
  await renderer.compileAsync(stage.scene,camera);
  // Compile/warm before taking counters. Every captured draw is a genuine draw.
  renderer.render(stage.scene,camera);gl.finish();
- calls={};streetCalls={};renderer.info.reset();renderer.render(stage.scene,camera);gl.finish();
+ calls={};streetCalls={};streetBatchCalls={};renderer.info.reset();renderer.render(stage.scene,camera);gl.finish();
  const pixels=new Uint8Array(width*height*4);gl.readPixels(0,0,width,height,gl.RGBA,gl.UNSIGNED_BYTE,pixels);
  const error=gl.getError();if(error!==gl.NO_ERROR)throw Error('WebGL error '+error);
- return {pixels,pixelSha256:await digest(pixels),png:canvas.toDataURL('image/png'),drawCalls:{...calls},streetDrawCalls:{...streetCalls},triangles:renderer.info.render.triangles,
+ return {pixels,pixelSha256:await digest(pixels),png:canvas.toDataURL('image/png'),drawCalls:{...calls},streetDrawCalls:{...streetCalls},streetBatchDrawCalls:{...streetBatchCalls},triangles:renderer.info.render.triangles,
  rendererCalls:renderer.info.render.calls,visibleSourceTiles:stage.sourceTiles.filter(o=>o.visible).length};
 }
 function differences(a,b){let bytes=0,pixels=0,max=0;for(let i=0;i<a.length;i+=4){let changed=false;
@@ -143,17 +156,35 @@ window.__streetProofReady=(async()=>{
  }
  metadata.sourceTiles=before.sourceTiles.length;metadata.sourceGeometrySha256=await digest(new TextEncoder().encode(JSON.stringify(sourceGeometry)));
  metadata.storage={...storage,sourceBytes:storage.sourceAttributeBytes,candidateBytes:storage.candidateAttributeBytes+storage.candidateIndexBytes};
+ const baselineBatchNames=before.street.batchSources().map(o=>o.name),candidateBatchNames=after.street.batchSources().map(o=>o.name);
+ if(JSON.stringify(baselineBatchNames)!==JSON.stringify(candidateBatchNames))throw Error('Inherited street batch source selection changed');
+ metadata.inheritedBatchSources=baselineBatchNames.length;
  metadata.actualMaterialProfiles=[...new Set(after.sourceTiles.map(o=>JSON.stringify({surface:o.material.userData.realisticProfile,finish:o.material.userData.photoSurfaceFinish,grime:/curb|gutter/.test(o.name)})))];
- window.__streetProofViews=views.map(v=>v.name);window.__streetProofMetadata=metadata;
+ let inheritedBatches=false;
+ window.__streetProofViews=['ordinary','inherited-batch'].flatMap(path=>views.map(v=>path+'-'+v.name));window.__streetProofMetadata=metadata;
  window.__runStreetProof=async(index)=>{
-  const view=views[index];
+  const inherited=index>=views.length,path=inherited?'inherited-batch':'ordinary',view=views[index%views.length];
+  if(inherited&&!inheritedBatches){
+   // Install the exact inherited helper on BOTH already-validated source
+   // scenes after ordinary captures. This reuses geometry/textures and isolates
+   // indexing inside the new base's identity-shader and sorting adapter.
+   for(const stage of [before,after]){
+    const palette=batchStaticArchitecture(stage.scene,renderer,[],()=>false,undefined,stage.street.batchSources());
+    if(!palette?.stats.batches)throw Error('Inherited street batching did not activate');
+    stage.palette=palette;
+   }
+   metadata.inheritedBatchStats={baseline:{...before.palette.stats},candidate:{...after.palette.stats}};
+   if(JSON.stringify(metadata.inheritedBatchStats.baseline)!==JSON.stringify(metadata.inheritedBatchStats.candidate))throw Error('Inherited batch membership/count changed');
+   inheritedBatches=true;
+  }
+  if(!inherited&&inheritedBatches)throw Error('Ordinary captures must precede inherited batch installation');
   const captures={};
   for(const shadows of [false,true]){
    const a=await capture(before,view,shadows),b=await capture(after,view,shadows),diff=differences(a.pixels,b.pixels);
    captures[shadows?'shadow':'color']={baseline:a,candidate:b,diff,trianglesMatch:a.triangles===b.triangles};
   }
   const shadowDifference=differences(captures.color.baseline.pixels,captures.shadow.baseline.pixels);
-  const output={name:view.name,camera:view,shadowDifference};
+  const output={name:path+'-'+view.name,path,camera:view,shadowDifference};
   for(const [name,capture]of Object.entries(captures)){
    for(const item of [capture.baseline,capture.candidate])delete item.pixels;
    output[name]=capture;
@@ -181,7 +212,7 @@ const server=http.createServer(async(req,res)=>{
  }catch{res.writeHead(404).end();}
 });
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
-const report={baselineRef,baselineSha256:sha(baseline),candidateFiles:{},sharedSourceSha256:{},assetSha256:{},baselineAssetSha256:{},bundleSha256:sha(bundle),scope:'Exact renderer-equivalence fixture only; not release acceptance.',views:[],errors:[],pass:false};
+const report={baselineRef,baselineSha256:sha(baseline),candidateFiles:{},sharedSourceSha256:{},assetSha256:{},baselineAssetSha256:{},textureSha256:{},bundleSha256:sha(bundle),scope:'Exact renderer-equivalence fixture only; not release acceptance.',views:[],errors:[],pass:false};
 for(const name of ['streetDetails.ts','realisticMaterials.ts','photoReferenceSurfaces.ts'])report.candidateFiles[name]=sha(await fs.readFile(path.join(game,'src/belle',name)));
 for(const name of ['street-details.json','street-details.bin'])report.assetSha256[name]=sha(await fs.readFile(path.join(game,'public/belle',name)));
 let browser;
@@ -202,9 +233,9 @@ try{
   const current=await fs.readFile(file);assert.equal(sha(current),sha(before),`Dependency lock changed: ${name}`);
   report.sharedSourceSha256[name]=sha(current);
  }
- // The superseded batching candidate must not leak into this ordinary-mesh
- // comparison or the game integration accompanying it.
- for(const name of ['world.ts','staticArchitectureBatch.ts','staticPaletteBatch.ts']){
+ // Pin all inherited batching/sorting integration while changing only the
+ // factory's vertex storage. Its independent base-equivalence proof remains.
+ for(const name of ['world.ts','staticArchitectureBatch.ts','staticPaletteBatch.ts','streetBatchOrder.ts']){
   const file=path.join(game,'src/belle',name),relative=path.relative(repo,file);
   const before=execFileSync('git',['show',`${baselineRef}:${relative}`],{cwd:repo});
   const current=await fs.readFile(file);assert.equal(sha(current),sha(before),`Original render integration changed: ${name}`);
@@ -215,6 +246,14 @@ try{
   const before=execFileSync('git',['show',`${baselineRef}:${relative}`],{cwd:repo,maxBuffer:8*1024*1024});
   report.baselineAssetSha256[name]=sha(before);
   assert.equal(report.assetSha256[name],report.baselineAssetSha256[name],`Mapped street asset changed: ${name}`);
+ }
+ // The shared loader warms the complete surface atlas. Record and pin those
+ // bytes too, so equal pixels cannot silently depend on altered texture inputs.
+ for(const name of (await fs.readdir(path.join(game,'public/belle/skins'))).filter(name=>name.endsWith('.webp')).sort()){
+  const file=path.join(game,'public/belle/skins',name),relative=path.relative(repo,file);
+  const before=execFileSync('git',['show',`${baselineRef}:${relative}`],{cwd:repo});
+  const current=await fs.readFile(file);assert.equal(sha(current),sha(before),`Surface texture changed: ${name}`);
+  report.textureSha256[name]=sha(current);
  }
  const mac=process.platform==='darwin';
  const runtime=mac?{channel:'chrome'}:process.env.BELLE_PROOF_CHROME?{executablePath:process.env.BELLE_PROOF_CHROME}:{};
@@ -240,14 +279,20 @@ try{
   console.log(JSON.stringify({view:result.name,colorPixels:result.color.diff.pixels,shadowPixels:result.shadow.diff.pixels,shadowEvidencePixels:result.shadowDifference.pixels,triangles:[result.color.baseline.triangles,result.color.candidate.triangles],draws:[result.color.baseline.rendererCalls,result.color.candidate.rendererCalls]}));
  }
  assert.equal(report.errors.length,0,'Browser errors occurred');
+ report.renderer=await page.evaluate(()=>window.__streetProofMetadata);
+ assert.equal(report.views.filter(v=>v.path==='ordinary').length,8,'All ordinary views are required');
+ assert.equal(report.views.filter(v=>v.path==='inherited-batch').length,8,'All inherited batch views are required');
  for(const result of report.views)for(const mode of ['color','shadow']){
   assert.equal(result[mode].diff.pixels,0,`${result.name} ${mode}: pixel mismatch`);
   assert(result[mode].trianglesMatch,`${result.name} ${mode}: submitted triangle mismatch`);
  }
- assert(report.views.some(v=>v.shadowDifference.pixels>0),'Fixture did not produce actual receiver-shadow pixels');
- assert(report.views.some(v=>(v.color.baseline.streetDrawCalls.drawArrays??0)>0),'Baseline did not submit actual nonindexed streets');
- assert(report.views.some(v=>(v.color.candidate.streetDrawCalls.drawElements??0)>0),'Candidate did not submit actual indexed streets');
+ for(const path of ['ordinary','inherited-batch'])assert(report.views.some(v=>v.path===path&&v.shadowDifference.pixels>0),path+' did not produce actual receiver-shadow pixels');
+ assert(report.views.some(v=>v.path==='ordinary'&&(v.color.baseline.streetDrawCalls.drawArrays??0)>0),'Baseline did not submit actual ordinary nonindexed streets');
+ assert(report.views.some(v=>v.path==='ordinary'&&(v.color.candidate.streetDrawCalls.drawElements??0)>0),'Candidate did not submit actual ordinary indexed streets');
+ assert(report.views.some(v=>v.path==='inherited-batch'&&(v.color.baseline.streetBatchDrawCalls.multiDrawArraysWEBGL??0)>0),'Baseline did not submit actual inherited nonindexed street batches');
+ assert(report.views.some(v=>v.path==='inherited-batch'&&(v.color.candidate.streetBatchDrawCalls.multiDrawElementsWEBGL??0)>0),'Candidate did not submit actual inherited indexed street batches');
  for(const view of report.views)for(const mode of ['color','shadow'])assert.equal(view[mode].candidate.streetDrawCalls.drawArrays??0,0,'Candidate retained a nonindexed street draw');
+ for(const view of report.views)for(const mode of ['color','shadow'])assert.equal(view[mode].candidate.streetBatchDrawCalls.multiDrawArraysWEBGL??0,0,'Candidate retained a nonindexed street batch');
  assert(report.renderer.storage.candidateVertices<report.renderer.storage.sourceVertices,'No stored-vertex reduction observed');
  assert(report.renderer.storage.candidateBytes<report.renderer.storage.sourceBytes,'No combined attribute/index storage reduction observed');
  report.pass=true;

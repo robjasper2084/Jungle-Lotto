@@ -64,8 +64,8 @@ export function addStreetDetails(scene:T.Scene,plan:StreetPlan){
   for(const index of template.indices)g.indices.push(vertexOffset+index);
  }
  unit.dispose();curbUnit.dispose();
- const tiles:{mesh:T.Mesh;x:number;z:number}[]=[];
- for(const [key,b]of groups){const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(b.p,3));g.setAttribute('normal',new T.Float32BufferAttribute(b.n,3));g.setIndex(b.indices);g.computeBoundingSphere();const m=new T.Mesh(g,materials[b.m]);m.name='Street detail '+key;m.receiveShadow=true;scene.add(m);const [x,z]=key.split(',').map(Number);tiles.push({mesh:m,x:x*256+128,z:z*256+128});}
+ const tiles:{mesh:T.Mesh;x:number;z:number;material:StreetBox['material']}[]=[];
+ for(const [key,b]of groups){const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(b.p,3));g.setAttribute('normal',new T.Float32BufferAttribute(b.n,3));g.setIndex(b.indices);g.computeBoundingSphere();const m=new T.Mesh(g,materials[b.m]);m.name='Street detail '+key;m.receiveShadow=true;scene.add(m);const [x,z]=key.split(',').map(Number);tiles.push({mesh:m,x:x*256+128,z:z*256+128,material:b.m});}
  // One text atlas for every sign, with actual readable text, solid rear panels,
  // bolted posts and no separate textures per destination.
  const columns=4,cellW=256,cellH=80,rows=Math.ceil(Math.max(1,plan.signs.length)/columns),canvas=document.createElement('canvas');canvas.width=columns*cellW;canvas.height=T.MathUtils.ceilPowerOfTwo(rows*cellH);
@@ -88,5 +88,10 @@ export function addStreetDetails(scene:T.Scene,plan:StreetPlan){
  const front=new T.Mesh(frontG,new T.MeshStandardMaterial({map:atlas,roughness:.8}));front.name='Belle Isle wayfinding · shared text atlas';scene.add(front);
  const backG=new T.BufferGeometry();backG.setAttribute('position',new T.Float32BufferAttribute(backP,3));backG.setAttribute('normal',new T.Float32BufferAttribute(backN,3));scene.add(new T.Mesh(backG,materials.metal));
  const posts=new T.InstancedMesh(new T.BoxGeometry(1,1,1),materials.metal,poleMatrices.length);poleMatrices.forEach((m,i)=>posts.setMatrixAt(i,m));posts.computeBoundingSphere();scene.add(posts);
- return {batches:groups.size+3,signs:plan.signs.length,boxes:plan.boxes.length,atlas:[canvas.width,canvas.height],update(x:number,z:number){for(const t of tiles)t.mesh.visible=Math.hypot(t.x-x,t.z-z)<440;}};
+ return {batches:groups.size+3,signs:plan.signs.length,boxes:plan.boxes.length,atlas:[canvas.width,canvas.height],
+  // The original tiles remain authoritative for visibility and raycasting.
+  // Metal also belongs to the ordinary sign backs and instanced posts: leave
+  // that mixed material on its native path so its draw ordering stays intact.
+  batchSources:()=>tiles.filter(t=>t.material!=='metal').map(t=>t.mesh),
+  update(x:number,z:number){for(const t of tiles)t.mesh.visible=Math.hypot(t.x-x,t.z-z)<440;}};
 }
