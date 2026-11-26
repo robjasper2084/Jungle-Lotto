@@ -100,5 +100,7 @@ if __name__ == "__main__":
         except Exception as e:
             records.append({"id":asset["id"],"verified":False,"error":str(e)})
         args.report.write_text(json.dumps(records,indent=2)+"\n")
+    # Include trailing deferred assets, and create a report for an empty plan.
+    args.report.write_text(json.dumps(records,indent=2)+"\n")
     if any(r.get("verified") is False for r in records):
         raise SystemExit("One or more uploaded-source fingerprints failed; review report")
