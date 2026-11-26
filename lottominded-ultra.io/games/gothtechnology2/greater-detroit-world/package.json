@@ -1,1 +1,12 @@
-{"name":"greater-detroit-world-stitching","private":true,"type":"module","scripts":{"test":"node --experimental-strip-types --test tests/*.test.mjs","test:rides":"node --experimental-strip-types --test playtests/connected-ride.test.mjs","check":"tsc --noEmit"}}
+{
+  "name": "greater-detroit-world-stitching",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --experimental-strip-types --test tests/*.test.mjs",
+    "test:rides": "node --experimental-strip-types --test playtests/connected-ride.test.mjs",
+    "check": "tsc --noEmit",
+    "audit:geography": "node tools/audit-geography.mjs",
+    "stage:geography": "node tools/geographic-intake.mjs"
+  }
+}
