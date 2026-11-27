@@ -1,7 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
-import {EventEmitter} from 'node:events';
+import {EventEmitter, once} from 'node:events';
+import {Readable} from 'node:stream';
+import {spawn} from 'node:child_process';
 import {readFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {manifest, selectCase, verifyDriver, buildStatisticOnly, bounded, invalidateDiagnostic, sha256,
@@ -9,6 +11,8 @@ import {manifest, selectCase, verifyDriver, buildStatisticOnly, bounded, invalid
   boundedDiagnosticCleanup, traceCategoryRequest, summarizeTraceTopology, ownedTransportsClosed} from './common.mjs';
 import {installHooks} from './hooks.mjs';
 import {installPageProbe} from './page-probe.mjs';
+import {createTraceFinalizationScope, createTraceTopologyAccumulator, indexTraceSource, indexTraceFile, reconcileTracePasses} from './trace-index.mjs';
+import {scanTraceStream} from './trace-parser.mjs';
 
 test('only original 210 and the fixed compositor categories are selectable', () => {
   assert.deepEqual(Object.keys(manifest.cases), ['cadillac']);
@@ -24,7 +28,7 @@ test('only original 210 and the fixed compositor categories are selectable', () 
   assert.equal(manifest.transportOwnership.detachAndCloseTimeoutMs, 2000);
   assert.equal(manifest.transportOwnership.originalPageAndContextClosureDelayed, false);
   assert.equal(manifest.bounds.traceBufferKiB * 1024, 512 * 1024 * 1024);
-  assert.equal(manifest.bounds.traceFileBytes, 512 * 1024 * 1024);
+  assert.equal(manifest.bounds.traceFileBytes, 1024 * 1024 * 1024);
   assert.equal(manifest.bounds.traceDrainTimeoutMs, 120000);
   assert.equal(manifest.trace.finalizationBudget.milliseconds, manifest.bounds.traceDrainTimeoutMs);
   assert.equal(manifest.trace.finalizationBudget.start, 'Tracing.end issuance');
@@ -220,7 +224,7 @@ async function startupMonitorFixture({response = {categories: []}, failAt = null
   const state = finalState(), calls = [], saved = [], events = [];
   let observerStarts = 0;
   const NativeMonitor = vm.runInNewContext(source.slice(start, end) + '\nNativeMonitor;', {
-    assert, Buffer, resolve, state, manifest, limits: manifest.bounds, output: '/source-only-evidence',
+    assert, Buffer, resolve, state, createTraceFinalizationScope, indexTraceFile, manifest, limits: manifest.bounds, output: '/source-only-evidence',
     bounded, traceCategoryRequest, setTimeout: () => ({unref() {}}), setInterval: () => ({unref() {}}),
     async saveJson(path, value) { saved.push({path, value: structuredClone(value)}); },
     async event(name, detail) { events.push({name, detail}); }
@@ -379,7 +383,7 @@ test('a blocked event-write queue cannot delay either recorder stop or raw CPU p
   const blockedWrite = new Promise(() => {});
   const profile = {nodes: [{id: 1}], samples: [1], timeDeltas: [2000], startTime: 0, endTime: 3000};
   const NativeMonitor = vm.runInNewContext(source.slice(start, end) + '\nNativeMonitor;', {
-    assert, Buffer, resolve, state, limits: manifest.bounds, output: '/source-only-evidence',
+    assert, Buffer, resolve, state, createTraceFinalizationScope, indexTraceFile, limits: manifest.bounds, output: '/source-only-evidence',
     clearTimeout() {}, clearInterval() {},
     bounded: promise => promise,
     event(name) { events.push(name); return blockedWrite; },
@@ -411,7 +415,7 @@ test('a blocked event-write queue cannot delay either recorder stop or raw CPU p
 async function traceMonitorFixture({fileCap = 16, drainMs = 100, protocolMs = 10,
   read = async () => ({data: '0123456789abcdefghijkl', eof: false}), endTrace = async () => ({}),
   completion = Promise.resolve({stream: 'raw-trace-stream', dataLossOccurred: false}),
-  save = async () => {}, clock = null} = {}) {
+  save = async () => {}, clock = null, openFile = null} = {}) {
   const source = await readFile(new URL('./preload.mjs', import.meta.url), 'utf8');
   const start = source.indexOf('class NativeMonitor {'), end = source.indexOf('\ninstallHooks(', start);
   const state = finalState(), calls = [], writes = [], budgets = [];
@@ -419,13 +423,13 @@ async function traceMonitorFixture({fileCap = 16, drainMs = 100, protocolMs = 10
   let notifyClosed;
   const closed = new Promise(done => { notifyClosed = done; });
   const NativeMonitor = vm.runInNewContext(source.slice(start, end) + '\nNativeMonitor;', {
-    assert, Buffer, resolve, state, output: '/source-only-evidence',
+    assert, Buffer, resolve, state, createTraceFinalizationScope, indexTraceFile, output: '/source-only-evidence',
     Date: clock ? class extends Date { static now() { return clock.now; } } : Date,
     bounded(promise, ms, label) { budgets.push({label, ms}); return bounded(promise, ms, label); },
     limits: {...manifest.bounds, traceFileBytes: fileCap, traceDrainTimeoutMs: drainMs, protocolTimeoutMs: protocolMs},
     invalidateDiagnostic, saveJson: save, async persist() {}, async event() {},
     failure(where, error) { invalidateDiagnostic(state, where, error); },
-    async open() { return {async write(bytes) { writes.push(Buffer.from(bytes)); }, async close() { calls.push('file-close'); }}; }
+    async open() { if (openFile) return openFile(); return {async write(bytes, offset = 0, length = bytes.length) { writes.push(Buffer.from(bytes.subarray(offset, offset + length))); return {bytesWritten: length}; }, async close() { calls.push('file-close'); }}; }
   });
   const monitor = new NativeMonitor({});
   monitor.traceDone = completion;
@@ -527,7 +531,7 @@ test('a stalled raw trace read cannot escape the independent drain deadline', as
   const profile = f.state.cpuProfile;
   await assert.rejects(bounded(f.monitor.trace().catch(error => {
     invalidateDiagnostic(f.state, 'trace', error); throw error;
-  }), 100, 'outer trace test guard'), /timed out/);
+  }), 100, 'outer trace test guard'), /timed out|Trace finalization deadline reached; evidence remains partial/);
   await bounded(f.closed, 100, 'trace handle cleanup');
   assert.equal(f.calls[0], 'Tracing.end');
   assert.equal(f.state.trace.streamComplete, false);
@@ -537,7 +541,7 @@ test('a stalled raw trace read cannot escape the independent drain deadline', as
 
 
 async function ownershipFixture({cpuError = false, lateBrowserCreation = null, pageDetach = null,
-  protocolMs = 40, cleanupMs = 10, detachMs = 2000, onEvent = null} = {}) {
+  protocolMs = 40, cleanupMs = 10, detachMs = 2000, onEvent = null, indexStreamFactory = null, beforeSaveJson = null} = {}) {
   const source = await readFile(new URL('./preload.mjs', import.meta.url), 'utf8');
   const begin = source.indexOf('class NativeMonitor {'), end = source.indexOf('\ninstallHooks(', begin);
   const state = finalState(), calls = [], events = [], files = new Map();
@@ -588,13 +592,13 @@ async function ownershipFixture({cpuError = false, lateBrowserCreation = null, p
     return String(fn).includes('.start()') ? true : snapshot;
   };
   browser.newBrowserCDPSession = () => lateBrowserCreation || Promise.resolve(browserSession);
-  const saveJson = async (path, value) => { files.set(path, Buffer.from(JSON.stringify(value))); };
+  const saveJson = async (path, value) => { await beforeSaveJson?.(path, value); files.set(path, Buffer.from(JSON.stringify(value))); };
   const failure = (where, error) => invalidateDiagnostic(state, where, error);
   const createMonitor = vm.runInNewContext(source.slice(begin, end) + `
     (page, browser) => new NativeMonitor({page, browser,
       launchArguments: [{channel: 'chrome', headless: false, args: ['--enable-gpu', '--use-gl=angle', '--use-angle=metal']}],
       pageArguments: [{viewport: {width: 1440, height: 900}, deviceScaleFactor: 1, isMobile: false, hasTouch: false, reducedMotion: 'reduce'}]});`, {
-    assert, Buffer, resolve, state, manifest, output: '/source-only-evidence', structuredClone, installPageProbe,
+    assert, Buffer, resolve, state, createTraceFinalizationScope, indexTraceFile, manifest, output: '/source-only-evidence', structuredClone, installPageProbe,
     limits: {...manifest.bounds, protocolTimeoutMs: protocolMs, cleanupTimeoutMs: cleanupMs, traceDrainTimeoutMs: 200},
     bounded(promise, ms, label) { return bounded(promise, label.includes('CDP detach and close') ? detachMs : ms, label); },
     setTimeout, setInterval, clearTimeout, clearInterval, sha256, summarizeTraceTopology,
@@ -606,10 +610,11 @@ async function ownershipFixture({cpuError = false, lateBrowserCreation = null, p
     async writeFile(path, bytes) { files.set(path, Buffer.from(bytes)); },
     writeFileSync(path, bytes) { files.set(path, Buffer.from(bytes)); },
     async readFile(path) { assert(files.has(path), 'Missing in-memory raw file'); return files.get(path); },
+    indexTraceFile(path, options) { return indexTraceSource(indexStreamFactory || (() => Readable.from([files.get(path)])), options); },
     async rename(from, to) { files.set(to, files.get(from)); files.delete(from); },
     async open(path) {
       const chunks = [];
-      return {async write(bytes) { chunks.push(Buffer.from(bytes)); }, async close() { files.set(path, Buffer.concat(chunks)); }};
+      return {async write(bytes, offset = 0, length = bytes.length) { chunks.push(Buffer.from(bytes.subarray(offset, offset + length))); return {bytesWritten: length}; }, async close() { files.set(path, Buffer.concat(chunks)); }};
     }
   });
   const monitor = createMonitor(page, browser);
@@ -854,4 +859,243 @@ test('raw observer follows genuine key boundaries and records overflow without a
   assert.equal(f.originalReceipts.keydowns, 7);
   assert(f.timingMarks.some(mark => mark.name === 'belle-native-cpu:first-trusted-w'));
   assert(f.timingMarks.some(mark => mark.name === 'belle-native-cpu:trusted-w-keyup'));
+});
+
+
+async function streamingFixture(rows = traceFixture(), overrides = {}) {
+  const scope = createTraceFinalizationScope(Date.now() + 2000);
+  const bytes = Buffer.from(JSON.stringify({traceEvents: rows}));
+  try {
+    return await indexTraceSource(() => Readable.from([bytes]), {
+      limits: manifest.bounds, categories: manifest.trace.categories, scope, ...overrides
+    });
+  } finally { scope.dispose(); }
+}
+test('streaming topology preserves the five frozen original output fixtures, including nonchronological marks', async () => {
+  // SHA receipts were computed from the unchanged 0d838033 common.mjs before
+  // refactoring; they are not snapshots generated by the new implementation.
+  const rows = traceFixture();
+  const variants = {
+    ordered: rows,
+    metadataLast: [...rows.filter(row => row.ph !== 'M'), ...rows.filter(row => row.ph === 'M')],
+    nonchronological: [rows.at(-1), ...rows.slice(0, -1)],
+    rendererFlowsOnly: rows.map(row => row.bind_id || row.id2 ? {...row, pid: 1, tid: 10} : row),
+    outsideWindow: rows.map(row => row.cat?.includes('gpu') ? {...row, ts: 201} : row)
+  };
+  const hashes = {
+    ordered: '4a6042669e90728c290a84831815d816d61a0cddbd8601b1ec6058325707af05',
+    metadataLast: '6f421ad126645771696c565ef8dac1ec21a9faa5c87f283ea27b067c9955895a',
+    nonchronological: 'd16b437e641db33f04605955dfecd8261976144d8f038eaa35219e7163dd4704',
+    rendererFlowsOnly: '43008c77cbe72e2b6bb0f4eac27dce6186cdf59e40c7cfd7a475bbf583208833',
+    outsideWindow: 'ce4a5221bced458da3f19e55a59ed4fca81c2b3bba56d024b856858201558cd1'
+  };
+  for (const [name, events] of Object.entries(variants)) {
+    const before = JSON.stringify(events), indexed = await streamingFixture(events);
+    assert.equal(sha256(Buffer.from(JSON.stringify(indexed.topology))), hashes[name], name);
+    assert.equal(JSON.stringify(events), before);
+    assert.equal(indexed.receipt.passes, 2); assert.equal(indexed.receipt.unchangedBetweenPasses, true);
+    assert.deepEqual(indexed.marks, events.filter(row => String(row.name).startsWith('belle-native-cpu:'))
+      .map(({name, ts, pid, tid, ph, cat, args}) => ({name, ts, pid, tid, ph, cat, args})));
+  }
+});
+test('narrow parser fork keeps UTF-8/chunk/grammar validation and fails closed on truncated or duplicate documents', async () => {
+  const valid = Buffer.from(JSON.stringify({before: {unicode: 'Δ🌊'}, traceEvents: [{name: 'Δ🌊', ph: 'X'}], after: [1, false, null]}));
+  const rows = [];
+  const receipt = await scanTraceStream(Readable.from([...valid].map(byte => Buffer.from([byte]))), row => rows.push(row));
+  assert.equal(receipt.completeDocument, true); assert.equal(receipt.bytes, valid.length);
+  assert.deepEqual(rows, [{name: 'Δ🌊', ph: 'X'}]);
+  for (const bytes of [valid.subarray(0, -1), Buffer.from('{"traceEvents":[],"traceEvents":[]}'),
+    Buffer.from('{"traceEvents":[3]}'), Buffer.from('{"traceEvents":[{"x":01}]}'),
+    Buffer.from([123,34,116,114,97,99,101,69,118,101,110,116,115,34,58,91,93,44,34,120,34,58,34,255,34,125])]) {
+    await assert.rejects(scanTraceStream(Readable.from([bytes]), () => {}), error => {
+      assert.equal(error.traceReceipt.completeFile, true);
+      assert.equal(error.traceReceipt.completeDocument, false);
+      assert.equal(error.traceReceipt.sha256, sha256(bytes)); return true;
+    });
+  }
+});
+test('record, depth, root-key count and root-key size guards reject before unbounded retention', async () => {
+  const cases = [
+    ['{"traceEvents":[{"name":"' + 'x'.repeat(64) + '"}]}', {maxRecordChars: 32}],
+    ['{"traceEvents":[],"a":[[[[0]]]]}', {maxDepth: 3}],
+    ['{"traceEvents":[],"a":0,"b":0}', {maxRootKeys: 2}],
+    ['{"traceEvents":[],"' + 'k'.repeat(32) + '":0}', {maxRootKeyChars: 16}]
+  ];
+  for (const [text, options] of cases) {
+    await assert.rejects(scanTraceStream(Readable.from([Buffer.from(text)]), () => {}, options), error => {
+      assert.equal(error.traceReceipt.completeFile, true); assert.equal(error.traceReceipt.completeDocument, false);
+      assert(error.traceReceipt.topLevelKeys.length <= (options.maxRootKeys || 64)); return true;
+    });
+  }
+});
+test('every auxiliary track map rejects unadmitted tracks before retention', () => {
+  const limits = {...manifest.bounds, traceTracks: 1};
+  const accumulator = createTraceTopologyAccumulator(limits, manifest.trace.categories);
+  accumulator.index({pid: 1, tid: 10, name: 'first'});
+  assert.throws(() => accumulator.index({pid: 2, tid: 20, name: 'Scheduler::RunTask', cat: 'gpu', bind_id: '0x1'}), /tracks/);
+  const receipt = accumulator.boundsReceipt();
+  assert.equal(receipt.tracks, 1);
+  assert(Object.values(receipt.auxiliaryTracks).every(count => count === 0));
+  assert.equal(receipt.trackOverflow, 1);
+});
+test('metadata and mark byte budgets reject without retaining the overflowing row', () => {
+  const metadata = createTraceTopologyAccumulator({...manifest.bounds, traceMetadataBytes: 8}, manifest.trace.categories);
+  assert.throws(() => metadata.index(traceFixture()[0]), /metadata-retention/);
+  assert.equal(metadata.boundsReceipt().metadataRows, 0); assert.equal(metadata.boundsReceipt().metadataBytes, 0);
+  const marks = createTraceTopologyAccumulator({...manifest.bounds, traceMarkBytes: 8}, manifest.trace.categories);
+  assert.throws(() => marks.index(traceFixture()[7]), /mark-retention/);
+  assert.equal(marks.marks.length, 0); assert.equal(marks.boundsReceipt().markBytes, 0);
+});
+test('category and phase capacities are checked before inserting a new key', () => {
+  for (const [limits, rows, errorName] of [
+    [{traceCategories: 1}, [{pid: 1, tid: 1, cat: 'one', ph: 'X'}, {pid: 1, tid: 1, cat: 'two', ph: 'X'}], 'categories'],
+    [{tracePhases: 1}, [{pid: 1, tid: 1, cat: 'one', ph: 'X'}, {pid: 1, tid: 1, cat: 'one', ph: 'I'}], 'phases']
+  ]) {
+    const accumulator = createTraceTopologyAccumulator({...manifest.bounds, ...limits}, manifest.trace.categories);
+    rows.forEach(accumulator.index); accumulator.beginCoverage(); accumulator.observe(rows[0]);
+    assert.throws(() => accumulator.observe(rows[1]), new RegExp(errorName));
+    assert.equal(accumulator.boundsReceipt()[errorName], 1);
+  }
+});
+test('byte, event and SHA changes between complete passes each fail independently', () => {
+  const receipt = {completeFile: true, completeDocument: true, rootShape: 'object', sha256: 'a'.repeat(64), bytes: 20, events: 2};
+  assert.equal(reconcileTracePasses(receipt, {...receipt}).unchangedBetweenPasses, true);
+  for (const patch of [{bytes: 21}, {events: 3}, {sha256: 'b'.repeat(64)}, {completeFile: false}, {completeDocument: false}, {rootShape: 'array'}]) {
+    assert.throws(() => reconcileTracePasses(receipt, {...receipt, ...patch}));
+  }
+});
+test('a changed stream between the two passes never publishes an available index', async () => {
+  const first = traceFixture(), second = traceFixture(); second[8].dur = 11;
+  const scope = createTraceFinalizationScope(Date.now() + 1000), receipts = [];
+  try {
+    await assert.rejects(indexTraceSource(pass => Readable.from([Buffer.from(JSON.stringify({traceEvents: pass === 1 ? first : second}))]),
+      {limits: manifest.bounds, categories: manifest.trace.categories, scope, onReceipt: value => receipts.push(value)}), /changed between passes/);
+    assert.equal(scope.signal.aborted, true); assert.equal(scope.activeReaders, 0);
+    assert.equal(receipts.length, 2);
+  } finally { scope.dispose(); }
+});
+test('an absolute deadline destroys a stalled reader and no read escapes afterward', async () => {
+  let reads = 0;
+  const reader = new Readable({read() { reads++; }}), closed = new Promise(done => reader.once('close', done));
+  const scope = createTraceFinalizationScope(Date.now() + 15);
+  try {
+    await assert.rejects(indexTraceSource(() => reader, {limits: manifest.bounds, categories: manifest.trace.categories, scope}), /deadline|timed out/);
+    await closed; const after = reads;
+    await new Promise(done => setTimeout(done, 10));
+    assert.equal(reader.destroyed, true); assert.equal(reads, after); assert.equal(scope.activeReaders, 0);
+  } finally { scope.dispose(); }
+});
+test('deadline cancellation also destroys hash-only drain after an earlier parse error', async () => {
+  let reads = 0;
+  const reader = new Readable({read() { if (++reads === 1) this.push(Buffer.from('{"traceEvents":[0],')); }});
+  const closed = new Promise(done => reader.once('close', done));
+  const scope = createTraceFinalizationScope(Date.now() + 15);
+  try {
+    await assert.rejects(indexTraceSource(() => reader, {limits: manifest.bounds, categories: manifest.trace.categories, scope}), /deadline|timed out/);
+    await closed; assert(reads > 1, 'The parser attempted to hash the remainder after rejecting the event');
+    const after = reads; await new Promise(done => setTimeout(done, 10));
+    assert.equal(reads, after); assert.equal(reader.destroyed, true); assert.equal(scope.activeReaders, 0);
+  } finally { scope.dispose(); }
+});
+test('a deadline reached after the first receipt prevents a second reader and late promotion', async () => {
+  let now = 0, opened = 0;
+  const scope = createTraceFinalizationScope(1000, {now: () => now});
+  try {
+    await assert.rejects(indexTraceSource(() => { opened++; return Readable.from([Buffer.from(JSON.stringify({traceEvents: traceFixture()}))]); },
+      {limits: manifest.bounds, categories: manifest.trace.categories, scope, onReceipt: value => { if (value.complete) now = 1000; }}), /deadline/);
+    assert.equal(opened, 1); assert.equal(scope.activeReaders, 0); assert.equal(scope.signal.aborted, true);
+  } finally { scope.dispose(); }
+});
+test('browser-close cleanup aborts an active index stream and late chunks cannot recover completeness', async () => {
+  let ready, reads = 0;
+  const indexing = new Promise(done => { ready = done; });
+  const reader = new Readable({read() { reads++; }}), closed = new Promise(done => reader.once('close', done));
+  const f = await ownershipFixture({cleanupMs: 5, indexStreamFactory: () => { ready(); return reader; }});
+  await f.start(); const pending = f.monitor.stop('original-ending-metrics'); f.completeTrace();
+  await indexing; await f.monitor.cleanup(); await pending; await closed;
+  const after = reads; reader.push(Buffer.from('{"traceEvents":[]}')); await new Promise(setImmediate);
+  assert.equal(reads, after); assert.equal(reader.destroyed, true); assert.equal(f.monitor.traceScope.activeReaders, 0);
+  assert.equal(f.state.complete, false); assert.equal(f.state.partial, true);
+  assert(f.files.has('/source-only-evidence/native.cpuprofile'));
+  assert(f.files.has('/source-only-evidence/native-trace.json'));
+  assert(f.files.has('/source-only-evidence/observer-cleanup-terminal.json'));
+});
+test('unexpected browser tracing transport closure aborts an in-progress filesystem index', async () => {
+  let ready;
+  const indexing = new Promise(done => { ready = done; });
+  const reader = new Readable({read() {}}), closed = new Promise(done => reader.once('close', done));
+  const f = await ownershipFixture({indexStreamFactory: () => { ready(); return reader; }});
+  await f.start(); const pending = f.monitor.stop('original-ending-metrics'); f.completeTrace(); await indexing;
+  f.browserSession.emit('close'); await pending; await closed;
+  assert.equal(reader.destroyed, true); assert.equal(f.state.complete, false);
+  assert.equal(f.state.transports.browserTrace.unexpectedClose, true);
+  assert.equal(f.monitor.traceScope.activeReaders, 0);
+});
+test('valid input larger than MAX_STRING_LENGTH indexes twice under a bounded child heap without a raw file', {timeout: 120000}, async () => {
+  const code = `
+    import {Readable} from 'node:stream';
+    import {constants} from 'node:buffer';
+    import {getHeapStatistics} from 'node:v8';
+    import {createTraceFinalizationScope,indexTraceSource} from ${JSON.stringify(new URL('./trace-index.mjs', import.meta.url).href)};
+    const limits=${JSON.stringify(manifest.bounds)},categories=${JSON.stringify(manifest.trace.categories)};
+    const header=Buffer.from(${JSON.stringify(JSON.stringify({traceEvents: traceFixture()}).slice(0, -1) + ',"padding":"')});
+    const footer=Buffer.from('"}'),chunk=Buffer.alloc(limits.traceReaderChunkBytes,120);
+    const padding=constants.MAX_STRING_LENGTH+4096,expected=header.length+padding+footer.length;
+    const source=()=>Readable.from((async function*(){yield header;let left=padding;
+      while(left){const size=Math.min(left,chunk.length);yield chunk.subarray(0,size);left-=size;}yield footer;})());
+    const started=performance.now(),scope=createTraceFinalizationScope(Date.now()+90000);
+    try{const result=await indexTraceSource(source,{limits,categories,scope});
+      if(result.receipt.bytes!==expected||!result.topology.available||!result.receipt.unchangedBetweenPasses)throw Error('Synthetic proof mismatch');
+      console.log('STREAMING_HEAP_PROOF_JSON='+JSON.stringify({bytes:result.receipt.bytes,events:result.receipt.events,
+        passes:result.receipt.passes,sha256:result.receipt.sha256,maxStringLength:constants.MAX_STRING_LENGTH,
+        elapsedMs:performance.now()-started,maxRssKiB:process.resourceUsage().maxRSS,heapLimitBytes:getHeapStatistics().heap_size_limit,
+        oldSpaceLimitMiB:64,semiSpaceLimitMiB:4,rawFileCreated:false,completeDocument:result.receipt.completeDocument}));
+    }finally{scope.dispose();}
+  `;
+  const child = spawn(process.execPath, ['--max-old-space-size=64', '--max-semi-space-size=4', '--input-type=module', '--eval', code], {stdio: ['ignore', 'pipe', 'pipe']});
+  let stdout = '', stderr = '';
+  child.stdout.on('data', bytes => { stdout += bytes; if (stdout.length > 32768) child.kill(); });
+  child.stderr.on('data', bytes => { stderr += bytes; if (stderr.length > 32768) child.kill(); });
+  const timer = setTimeout(() => child.kill(), 100000);
+  try {
+    const [code, signal] = await once(child, 'close');
+    assert.equal(code, 0, stderr || String(signal));
+    const line = stdout.split('\n').find(row => row.startsWith('STREAMING_HEAP_PROOF_JSON='));
+    assert(line, stdout); const receipt = JSON.parse(line.slice('STREAMING_HEAP_PROOF_JSON='.length));
+    assert(receipt.bytes > receipt.maxStringLength); assert.equal(receipt.passes, 2);
+    assert.equal(receipt.rawFileCreated, false); assert.equal(receipt.completeDocument, true);
+    console.log(line);
+  } finally { clearTimeout(timer); if (child.exitCode === null) child.kill(); }
+});
+
+
+test('a file open resolving after expiry or just before a late resumption closes exactly once without reading', async () => {
+  for (const lateResolution of [false, true]) {
+    let closeCalls = 0, releaseOpen;
+    const handle = {async close() { closeCalls++; }, async write() { throw Error('Expired open must never write'); }};
+    const clock = {now: 1000};
+    const f = await traceMonitorFixture({clock: lateResolution ? null : clock, drainMs: 5,
+      openFile: lateResolution ? () => new Promise(done => { releaseOpen = done; }) : async () => { clock.now = 1006; return handle; }});
+    await assert.rejects(f.monitor.trace(), /deadline|timed out/);
+    if (lateResolution) releaseOpen(handle);
+    await new Promise(setImmediate); await new Promise(setImmediate);
+    assert.equal(closeCalls, 1);
+    assert.equal(f.calls.includes('IO.read'), false);
+    assert.equal(f.state.complete, false); assert.equal(f.state.partial, true);
+  }
+});
+test('late topology persistence after cleanup cannot publish index completion or erase the failed status', async () => {
+  let ready, releaseWrite;
+  const writing = new Promise(done => { ready = done; }), blocked = new Promise(done => { releaseWrite = done; });
+  const f = await ownershipFixture({cleanupMs: 5, beforeSaveJson(path) {
+    if (path.endsWith('/trace-process-threads.json')) { ready(); return blocked; }
+  }});
+  await f.start(); const pending = f.monitor.stop('original-ending-metrics'); f.completeTrace();
+  await writing; await f.monitor.cleanup(); await pending;
+  releaseWrite(); await new Promise(setImmediate); await new Promise(setImmediate);
+  assert.equal(f.state.trace.indexing.complete, false);
+  assert.equal(f.state.complete, false); assert.equal(f.state.partial, true);
+  const persisted = JSON.parse(f.files.get('/source-only-evidence/diagnostic-status.json'));
+  assert.equal(persisted.complete, false); assert.equal(persisted.partial, true);
+  assert.equal(terminalDiagnosticReceipt(f.state).complete, false);
 });

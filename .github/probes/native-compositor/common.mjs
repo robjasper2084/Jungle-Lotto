@@ -3,6 +3,7 @@ import {createHash} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
 import {mkdir, readFile, readdir, rename, writeFile} from 'node:fs/promises';
 import {resolve, relative} from 'node:path';
+import {summarizeTraceTopologyEvents} from './trace-index.mjs';
 
 export const manifest = JSON.parse(await readFile(new URL('./manifest.json', import.meta.url), 'utf8'));
 export const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -113,7 +114,7 @@ export function diagnosticRunIsClean(status, terminal, invocationId, cleanupTerm
     diagnosticStateIsClean(status) && diagnosticStateIsClean(terminal) &&
     (!cleanupTerminal || (cleanupTerminal.invocationId === invocationId && diagnosticStateIsClean(cleanupTerminal)));
 }
-export async function boundedDiagnosticCleanup(state, {finish, persist, terminal, timeoutMs}) {
+export async function boundedDiagnosticCleanup(state, {finish, persist, terminal, timeoutMs, cancel = () => {}}) {
   try {
     await bounded((async () => {
       await finish();
@@ -121,6 +122,8 @@ export async function boundedDiagnosticCleanup(state, {finish, persist, terminal
     })(), timeoutMs, 'Complete observer cleanup');
   } catch (error) {
     invalidateDiagnostic(state, 'bounded-cleanup', error);
+    try { cancel(error); }
+    catch (cancelError) { invalidateDiagnostic(state, 'cleanup-cancel', cancelError); }
     // Never wait on the same possibly blocked write queue after the deadline.
     try { terminal(terminalDiagnosticReceipt(state)); }
     catch (writeError) { invalidateDiagnostic(state, 'cleanup-terminal-write', writeError, {io: true}); }
@@ -148,95 +151,9 @@ export function traceCategoryRequest(available) {
 // The raw trace file is the authority for flow identifiers. This bounded index
 // never rewrites or converts those identifiers, and never claims GPU execution.
 export function summarizeTraceTopology(events, limits) {
-  const metadata = [], tracks = new Map(), flowFields = {}, flowPhases = {}, categories = {}, trustedWindowCategories = {};
-  let metadataOverflow = 0, trackOverflow = 0, flowRecords = 0, windowFlowRecords = 0;
-  const first = events.find(row => row.name === 'belle-native-cpu:first-trusted-w');
-  const last = events.find(row => row.name === 'belle-native-cpu:trusted-w-keyup');
-  const windowAvailable = Number.isFinite(first?.ts) && Number.isFinite(last?.ts) && last.ts > first.ts;
-  const inWindow = row => windowAvailable && Number.isFinite(row.ts) && row.ts >= first.ts && row.ts <= last.ts;
-  const serviceTracks = new Map(), vizTracks = new Map(), topLevelTracks = new Map();
-  const gpuFlowTracks = new Map(), vizFlowTracks = new Map();
-  let pipelineReporters = 0, gpuServiceEvents = 0, vizEvents = 0, mainRafEvents = 0;
-  const trackKey = row => JSON.stringify([row.pid, row.tid]);
-  const recordFlowTrack = (collection, row) => {
-    const key = trackKey(row);
-    const track = collection.get(key) || {pid: row.pid, tid: row.tid, records: 0};
-    track.records++; collection.set(key, track);
-  };
-  for (const row of events) {
-    if (row.ph === 'M') {
-      if (metadata.length < limits.traceMetadataRows) metadata.push(row);
-      else metadataOverflow++;
-    }
-    const key = trackKey(row), windowEvent = inWindow(row);
-    if (!tracks.has(key)) {
-      if (tracks.size < limits.traceTracks) tracks.set(key, {pid: row.pid, tid: row.tid, events: 0, trustedWindowEvents: 0});
-      else trackOverflow++;
-    }
-    const track = tracks.get(key);
-    if (track) { track.events++; if (windowEvent) track.trustedWindowEvents++; }
-    const cats = String(row.cat || '').split(',');
-    for (const cat of cats) categories[cat] = (categories[cat] || 0) + 1;
-    const fields = ['id', 'id2', 'bind_id', 'flow_in', 'flow_out'].filter(field => Object.hasOwn(row, field));
-    for (const field of fields) flowFields[field] = (flowFields[field] || 0) + 1;
-    const flow = ['s', 't', 'f'].includes(row.ph) || row.flow_in === true || row.flow_out === true || Object.hasOwn(row, 'bind_id');
-    if (flow) {
-      flowRecords++; if (windowEvent) windowFlowRecords++;
-      flowPhases[row.ph] = (flowPhases[row.ph] || 0) + 1;
-    }
-    if (!windowEvent) continue;
-    for (const cat of cats) trustedWindowCategories[cat] = (trustedWindowCategories[cat] || 0) + 1;
-    if (flow && cats.includes('gpu')) recordFlowTrack(gpuFlowTracks, row);
-    if (flow && cats.includes('viz')) recordFlowTrack(vizFlowTracks, row);
-    if (cats.includes('toplevel')) topLevelTracks.set(key, {pid: row.pid, tid: row.tid});
-    if (row.name === 'FireAnimationFrame' && row.pid === first.pid && row.tid === first.tid) mainRafEvents++;
-    if (cats.includes('gpu') && ['Scheduler::RunTask', 'CommandBufferStub::OnAsyncFlush', 'CommandBufferStub::PerformWork'].includes(row.name)) {
-      gpuServiceEvents++; serviceTracks.set(key, {pid: row.pid, tid: row.tid});
-    }
-    if (cats.includes('viz') && (row.name === 'Display::DrawAndSwap' || String(row.name).startsWith('Graphics.Pipeline'))) {
-      vizEvents++; vizTracks.set(key, {pid: row.pid, tid: row.tid});
-    }
-    if (cats.includes('cc') && row.name === 'PipelineReporter') pipelineReporters++;
-  }
-  const named = track => metadata.some(row => row.name === 'process_name' && row.pid === track.pid && row.args?.name) &&
-    metadata.some(row => row.name === 'thread_name' && row.pid === track.pid && row.tid === track.tid && row.args?.name);
-  // Category labels alone are insufficient: renderer-side flows must not be
-  // combined with unrelated service/Viz tracks to claim cross-process coverage.
-  const qualifyingFlows = (flows, evidenceTracks) => [...flows.entries()]
-    .filter(([key, track]) => evidenceTracks.has(key) && track.pid !== first?.pid && named(track))
-    .map(([, track]) => track);
-  const qualifyingGpuFlowTracks = qualifyingFlows(gpuFlowTracks, serviceTracks);
-  const qualifyingVizFlowTracks = qualifyingFlows(vizFlowTracks, vizTracks);
-  const windowGpuFlowRecords = qualifyingGpuFlowTracks.reduce((sum, track) => sum + track.records, 0);
-  const windowVizFlowRecords = qualifyingVizFlowTracks.reduce((sum, track) => sum + track.records, 0);
-  const requiredCategoryCounts = Object.fromEntries(manifest.trace.categories.map(name => [name, trustedWindowCategories[name] || 0]));
-  const requirements = {
-    trustedWindowAvailable: windowAvailable,
-    allRequiredCategoriesPresentInTrustedWindow: Object.values(requiredCategoryCounts).every(count => count > 0),
-    rendererProcessNamed: !!first && named(first),
-    mainThreadRafTracePresent: mainRafEvents > 0,
-    namedBrowserTaskTrackPresent: [...topLevelTracks.values()].some(track => named(track) &&
-      metadata.some(row => row.name === 'process_name' && row.pid === track.pid && /browser/i.test(row.args?.name || ''))),
-    namedGpuServiceTrackOutsideRenderer: [...serviceTracks.values()].some(track => track.pid !== first?.pid && named(track)),
-    namedVizTrackOutsideRenderer: [...vizTracks.values()].some(track => track.pid !== first?.pid && named(track)),
-    compositorPipelineReporterPresent: pipelineReporters > 0,
-    gpuFlowsPresentInTrustedWindow: windowGpuFlowRecords > 0,
-    vizFlowsPresentInTrustedWindow: windowVizFlowRecords > 0,
-    metadataWithinBounds: metadataOverflow === 0 && trackOverflow === 0
-  };
-  return {
-    rawTraceFile: 'native-trace.json', gpuExecutionMeasured: false,
-    note: 'Process/thread metadata is retained below. Raw flow IDs (id/id2/bind_id and flow flags), typed pipeline arguments, phases and timestamps remain in the unchanged hashed trace; this index does not normalize their IDs. GPU-service and toplevel spans are CPU-thread wall intervals, not hardware GPU duration.',
-    trustedWindow: windowAvailable ? {startTs: first.ts, endTs: last.ts, rendererPid: first.pid, rendererTid: first.tid} : null,
-    metadata, metadataOverflow, tracks: [...tracks.values()], trackOverflow,
-    flowRecords, windowFlowRecords, windowGpuFlowRecords, windowVizFlowRecords, flowFields, flowPhases, categories,
-    trustedWindowCategories, requiredCategoryCounts,
-    qualifyingGpuFlowTracks, qualifyingVizFlowTracks,
-    mainRafEvents, topLevelTracks: [...topLevelTracks.values()],
-    gpuServiceEvents, gpuServiceTracks: [...serviceTracks.values()], vizEvents, vizTracks: [...vizTracks.values()], pipelineReporters,
-    requirements, available: Object.values(requirements).every(Boolean)
-  };
+  return summarizeTraceTopologyEvents(events, limits, manifest.trace.categories);
 }
+
 export function verifyDriver(bytes) {
   assert.equal(bytes.length, manifest.driver.bytes, 'Original driver byte count changed');
   assert.equal(sha256(bytes), manifest.driver.sha256, 'Original driver SHA-256 changed');

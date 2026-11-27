@@ -5,7 +5,8 @@ import {writeFileSync} from 'node:fs';
 import {resolve} from 'node:path';
 import {manifest, sha256, saveJson, bounded, verifyDriver, invalidateDiagnostic,
   finalizeDiagnostic, terminalDiagnosticReceipt, boundedDiagnosticCleanup, ownedTransportsClosed} from './common.mjs';
-import {traceCategoryRequest, summarizeTraceTopology} from './common.mjs';
+import {traceCategoryRequest} from './common.mjs';
+import {createTraceFinalizationScope, indexTraceFile} from './trace-index.mjs';
 import {installPageProbe} from './page-probe.mjs';
 import {installHooks} from './hooks.mjs';
 
@@ -73,6 +74,7 @@ class NativeMonitor {
     this.requestIds = new WeakMap(); this.nextRequestId = 0;
     this.started = false; this.stopPromise = null; this.cdp = null;
     this.traceCdp = null; this.owners = {}; this.disposing = false; this.pageWorkFinished = false;
+    this.traceScope = null; this.traceCancellationReason = null;
     state.lifecycle ??= {};
     state.transports = Object.fromEntries(['page', 'browserTrace'].map(name => [name, {
       created: false, creationTimedOut: false, detachCalls: 0, detachAcknowledged: false,
@@ -95,7 +97,7 @@ class NativeMonitor {
           receipt.unexpectedClose = true;
           const error = Error('Owned ' + name + ' session closed before its explicit detach');
           failure('unexpected-session-close-' + name, error);
-          if (name === 'browserTrace') this.traceReject?.(error);
+          if (name === 'browserTrace') this.abortTrace(error);
           if (this.started && !this.stopPromise) void this.stop('unexpected-session-close');
         }
       });
@@ -223,7 +225,7 @@ class NativeMonitor {
       void event('browser-disconnected', {atNodeEpochMs: state.lifecycle.browserDisconnectedAtNodeEpochMs});
       if (!ownedTransportsClosed(state)) {
         const error = Error('Original browser disconnected before both owned transports closed');
-        failure('browser-disconnected', error); this.traceReject?.(error);
+        failure('browser-disconnected', error); this.abortTrace(error);
         if (this.started && !this.stopPromise) void this.stop('browser-disconnected');
       }
     });
@@ -397,7 +399,8 @@ class NativeMonitor {
     const rawComplete = raw?.stoppedBy === 'trusted-w-keyup' && raw.keydowns > 0 && raw.keyups === 1 &&
       raw.raf.overflow === 0 && raw.longTasks.overflow === 0 && raw.markOverflow === 0 && raw.longTaskSupported;
     const eligible = !!(state.originalMetricsCalls === 2 && state.cpuProfile && state.trace.streamComplete && state.trace.dataLossOccurred === false &&
-      !state.trace.capReached && state.trace.topology?.available && rawComplete && state.alignment.available && state.bundles.length &&
+      !state.trace.capReached && state.trace.indexing?.complete && state.trace.indexing.receipt?.unchangedBetweenPasses &&
+      state.trace.topology?.available && rawComplete && state.alignment.available && state.bundles.length &&
       !state.bundleOverflow && !state.assetEventOverflow && !state.parsedScriptOverflow &&
       state.parsedScripts > 0 && !state.partial && !state.ioError && !state.errors.length);
     await event('capture-collected', {eligibleForFinalization: eligible});
@@ -426,75 +429,120 @@ class NativeMonitor {
     }
     await event('cpu-profile-saved', state.cpuProfile);
   }
+  abortTrace(error) {
+    this.traceCancellationReason ||= error;
+    this.traceScope?.abort(error);
+    this.traceReject?.(error);
+  }
   async trace() {
     state.trace.stopIssuedAtNodeEpochMs = Date.now();
     const deadline = state.trace.stopIssuedAtNodeEpochMs + limits.traceDrainTimeoutMs;
     state.trace.finalizationDeadlineNodeEpochMs = deadline;
-    const remaining = () => {
-      const ms = deadline - Date.now();
-      assert(ms > 0, 'Trace finalization deadline reached; evidence remains partial');
-      return ms;
-    };
-    // The asynchronous flush notification is not an RPC response. End keeps its
-    // individual protocol timeout; notification, drain and persistence share
-    // this one absolute deadline from stop issuance, with no fresh drain budget.
-    await bounded((async () => {
-      await this.traceSend('Tracing.end');
-      state.trace.stopAcknowledgedAtNodeEpochMs = Date.now();
-      const complete = await bounded(this.traceDone, remaining(), 'Tracing.tracingComplete within finalization deadline');
-      remaining();
-      state.trace.completedAtNodeEpochMs = Date.now();
-      await bounded(saveJson(resolve(output, 'trace-completion.json'), complete), remaining(), 'Trace completion persistence');
-      remaining();
-      state.trace.dataLossOccurred = complete.dataLossOccurred ?? null;
-      if (complete.dataLossOccurred) invalidateDiagnostic(state, 'trace-data-loss');
-      assert(complete.stream, 'Tracing completed without a stream');
-      await this.collectTrace(complete, deadline);
-      remaining();
-      state.trace.finalizationFinishedAtNodeEpochMs = Date.now();
-    })(), remaining(), 'Complete trace finalization');
+    const scope = this.traceScope = createTraceFinalizationScope(deadline, {
+      now: () => Date.now(), onAbort: error => failure('trace-finalization-abort', error)
+    });
+    const remaining = () => { scope.check(); return deadline - Date.now(); };
+    try {
+      if (this.traceCancellationReason) { scope.abort(this.traceCancellationReason); scope.check(); }
+      // The independent RPC retains its 4-second bound. Every later phase uses
+      // the same stop-issued deadline, including both filesystem scans.
+      await bounded((async () => {
+        await scope.wait(this.traceSend('Tracing.end'));
+        state.trace.stopAcknowledgedAtNodeEpochMs = Date.now();
+        const complete = await bounded(scope.wait(this.traceDone), remaining(), 'Tracing.tracingComplete within finalization deadline');
+        scope.check(); state.trace.completedAtNodeEpochMs = Date.now();
+        await scope.wait(bounded(saveJson(resolve(output, 'trace-completion.json'), complete), remaining(), 'Trace completion persistence'));
+        scope.check(); state.trace.dataLossOccurred = complete.dataLossOccurred ?? null;
+        if (complete.dataLossOccurred) invalidateDiagnostic(state, 'trace-data-loss');
+        assert(complete.stream, 'Tracing completed without a stream');
+        await this.collectTrace(complete, deadline);
+        scope.check();
+        assert.equal(scope.activeReaders, 0, 'Trace finalization cannot leave a background reader');
+        state.trace.finalizationFinishedAtNodeEpochMs = Date.now();
+      })(), remaining(), 'Complete trace finalization');
+    } catch (error) { this.abortTrace(error); throw error; }
+    finally { scope.dispose(); }
   }
   async collectTrace(complete, deadline) {
-    // The outer deadline includes opening, closing, persistence and indexing;
-    // the caller passes its stop-issuance deadline without resetting the budget.
-    assert(Number.isFinite(deadline) && Date.now() < deadline, 'Trace finalization deadline reached before drain');
-    state.trace.drainStartedAtNodeEpochMs = Date.now();
-    const withinDrain = (promise, label) => bounded(promise, Math.max(1, deadline - Date.now()), label);
-    const path = resolve(output, 'native-trace.partial.json'), handle = await open(path, 'w');
-    let bytes = 0, eof = false;
+    const scope = this.traceScope;
+    assert(scope && scope.deadline === deadline, 'Trace collection must share the original finalization scope');
+    scope.check(); state.trace.drainStartedAtNodeEpochMs = Date.now();
+    const withinDrain = (promise, label) => scope.wait(bounded(promise, Math.max(1, deadline - Date.now()), label));
+    const path = resolve(output, 'native-trace.partial.json');
+    state.trace.file = 'native-trace.partial.json';
+    let handle, fileClosePromise, bytes = 0, eof = false;
+    const closeFile = () => {
+      if (!handle) return Promise.resolve();
+      return fileClosePromise ||= Promise.resolve().then(() => handle.close());
+    };
+    const opening = open(path, 'w').then(value => {
+      handle = value;
+      if (scope.signal.aborted || Date.now() >= deadline)
+        void closeFile().catch(error => failure('late-trace-file-close', error));
+      return value;
+    });
+    const writeChunk = async data => {
+      let offset = 0;
+      while (offset < data.length) {
+        scope.check();
+        const result = await withinDrain(handle.write(data, offset, data.length - offset), 'Trace write within drain deadline');
+        assert(Number.isInteger(result.bytesWritten) && result.bytesWritten > 0 && result.bytesWritten <= data.length - offset,
+          'Trace file write made invalid or no progress');
+        offset += result.bytesWritten; bytes += result.bytesWritten; state.trace.savedBytes = bytes;
+      }
+    };
     try {
+      await withinDrain(opening, 'Trace file open');
+      scope.check();
       while (!eof) {
-        assert(Date.now() < deadline, 'Trace drain deadline reached; partial file retained');
+        scope.check();
         const chunk = await withinDrain(this.traceSend('IO.read', {handle: complete.stream, size: 1024 * 1024}), 'Trace read within drain deadline');
         const data = Buffer.from(chunk.data, chunk.base64Encoded ? 'base64' : 'utf8');
         const remaining = limits.traceFileBytes - bytes;
         if (data.length > remaining) {
-          if (remaining > 0) { await withinDrain(handle.write(data.subarray(0, remaining)), 'Partial trace write'); bytes += remaining; }
-          state.trace.savedBytes = bytes;
+          if (remaining > 0) await writeChunk(data.subarray(0, remaining));
           state.trace.capReached = true; invalidateDiagnostic(state, 'trace-file-cap'); break;
         }
-        await withinDrain(handle.write(data), 'Trace write within drain deadline'); bytes += data.length; eof = chunk.eof;
-        state.trace.savedBytes = bytes;
+        await writeChunk(data); eof = chunk.eof;
       }
     } finally {
-      await handle.close();
-      await this.traceSend('IO.close', {handle: complete.stream}).catch(error => failure('trace-stream-close', error));
+      // Both close operations start even after a deadline. Their late results
+      // are observed without allowing another read or a complete verdict.
+      // This continuation also owns an open that resolves after the wait timed
+      // out, including the race where creation settles just before resumption.
+      void opening.then(closeFile, () => {}).catch(error => failure('late-trace-file-close', error));
+      await withinDrain(closeFile(), 'Trace file close').catch(error => failure('trace-file-close', error));
+      await withinDrain(this.traceSend('IO.close', {handle: complete.stream}), 'Trace stream close')
+        .catch(error => failure('trace-stream-close', error));
       state.trace.savedBytes = bytes; state.trace.streamComplete = eof;
-      await persist();
+      await withinDrain(persist(), 'Trace drain status persistence');
     }
+    scope.check();
     if (eof) {
-      await rename(path, resolve(output, 'native-trace.json'));
+      const completePath = resolve(output, 'native-trace.json');
+      await withinDrain(rename(path, completePath), 'Complete trace rename');
       state.trace.file = 'native-trace.json';
-      const bytes = await readFile(resolve(output, 'native-trace.json'));
-      state.trace.sha256 = sha256(bytes);
-      const parsed = JSON.parse(bytes);
-      assert(Array.isArray(parsed.traceEvents), 'Trace lacks its raw event array');
-      state.trace.eventCount = parsed.traceEvents.length;
-      state.trace.marks = parsed.traceEvents.filter(row => String(row.name).startsWith('belle-native-cpu:'))
-        .map(({name, ts, pid, tid, ph, cat, args}) => ({name, ts, pid, tid, ph, cat, args}));
-      await saveJson(resolve(output, 'trace-observer-marks.json'), state.trace.marks);
-      const topology = summarizeTraceTopology(parsed.traceEvents, limits);
-      await saveJson(resolve(output, 'trace-process-threads.json'), topology);
+      state.trace.indexing = {complete: false, passes: []};
+      const indexed = await indexTraceFile(completePath, {
+        limits, categories: manifest.trace.categories, scope,
+        onReceipt: receipt => {
+          if (receipt.complete && scope.signal.aborted) return;
+          const at = state.trace.indexing.passes.findIndex(row => row.pass === receipt.pass);
+          if (at < 0) state.trace.indexing.passes.push(receipt);
+          else state.trace.indexing.passes[at] = receipt;
+        }
+      });
+      scope.check();
+      assert.equal(indexed.receipt.bytes, bytes, 'Indexed raw byte count differs from actual written bytes');
+      await withinDrain(saveJson(resolve(output, 'trace-observer-marks.json'), indexed.marks), 'Trace mark persistence');
+      await withinDrain(saveJson(resolve(output, 'trace-process-threads.json'), indexed.topology), 'Trace topology persistence');
+      await withinDrain(saveJson(resolve(output, 'trace-index-receipt.json'), {receipt: indexed.receipt, bounds: indexed.bounds}), 'Trace index receipt persistence');
+      scope.check();
+      state.trace.sha256 = indexed.receipt.sha256; state.trace.eventCount = indexed.receipt.events;
+      state.trace.marks = indexed.marks;
+      state.trace.indexing.complete = true; state.trace.indexing.receipt = indexed.receipt;
+      state.trace.indexing.bounds = indexed.bounds;
+      const topology = indexed.topology;
       state.trace.topology = {
         file: 'trace-process-threads.json', available: topology.available,
         requirements: topology.requirements, metadataRows: topology.metadata.length,
@@ -504,17 +552,15 @@ class NativeMonitor {
         pipelineReporters: topology.pipelineReporters, flowRecords: topology.flowRecords,
         windowFlowRecords: topology.windowFlowRecords, rawFlowIdentifiersRemainInTrace: true,
         windowGpuFlowRecords: topology.windowGpuFlowRecords, windowVizFlowRecords: topology.windowVizFlowRecords,
-        mainRafEvents: topology.mainRafEvents,
-        gpuExecutionMeasured: false
+        mainRafEvents: topology.mainRafEvents, gpuExecutionMeasured: false
       };
       if (!topology.available) invalidateDiagnostic(state, 'missing-cross-process-trace-coverage',
         Error('Required compositor/GPU-service trace evidence is missing: ' +
           Object.entries(topology.requirements).filter(([, value]) => !value).map(([name]) => name).join(', ')));
-    } else state.trace.file = 'native-trace.partial.json';
-    assert(Date.now() <= deadline, 'Trace drain/indexing deadline reached; raw evidence retained');
-    state.trace.drainFinishedAtNodeEpochMs = Date.now();
-    await event('trace-saved', state.trace);
-    assert(Date.now() < deadline, 'Trace finalization deadline reached during persistence; raw evidence retained');
+    }
+    scope.check(); state.trace.drainFinishedAtNodeEpochMs = Date.now();
+    await withinDrain(event('trace-saved', state.trace), 'Trace saved-event persistence');
+    scope.check();
   }
   async cleanup() {
     this.disposing = true;
@@ -522,11 +568,12 @@ class NativeMonitor {
       finish: () => this.stop(this.stopPromise ? state.stopReason : 'original-browser-close'),
       persist,
       timeoutMs: limits.cleanupTimeoutMs,
+      cancel: error => this.abortTrace(error),
       terminal: receipt => writeFileSync(resolve(output, 'observer-cleanup-terminal.json'), JSON.stringify(receipt) + '\n')
     });
     if (!ownedTransportsClosed(state)) {
       invalidateDiagnostic(state, 'cleanup-forced-owned-detach');
-      this.traceReject?.(Error('Trace interrupted by bounded browser-close cleanup'));
+      this.abortTrace(Error('Trace interrupted by bounded browser-close cleanup'));
       // Both attempts begin without extending the original browser-close wait.
       void Promise.allSettled(['page', 'browserTrace'].map(name => this.detachTransport(name)));
     }

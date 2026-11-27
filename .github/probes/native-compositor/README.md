@@ -24,7 +24,7 @@ and loaded JavaScript response hashes are preserved.
 
 The new payload occupies only `.github/probes/native-compositor/` and its own
 workflow. Existing CPU-diagnostic files remain unchanged. A future publisher must
-publish only these nine new paths onto its approved base, or use ac88 as the PR
+publish only these eleven paths onto its approved base, or use ac88 as the PR
 base. A PR containing the inherited CPU workflow against main would also select
 that older pair and is outside this scope. There is one fixed job, no selectable
 source ref, matrix or retry. Attempts greater than one are skipped. Preparing this
@@ -151,7 +151,8 @@ The watchdog is 110 seconds around the original 90-second workload. Both recorde
 stop commands are issued independently of the serial metadata-write queue. A
 blocked stopping-event write cannot keep recording. Protocol calls retain a
 4-second timeout. The recordUntilFull buffer is 512 MiB; the raw saved trace has
-an independent 512 MiB cap (536,870,912 bytes).
+an independent 1 GiB cap (1,073,741,824 bytes). Only the file cap changes;
+the recording buffer remains 512 MiB.
 
 The manifest retains the initial 128 MiB assumption as superseded history. That
 assumption scaled a 27,956,883-byte renderer CPU trace and allowed 60 additional
@@ -167,10 +168,11 @@ event totals are distinguished in the manifest. The peer uses a different build
 and additional categories, so this is capacity evidence, not a performance
 comparison or an exact forecast. Complete volume for the four new categories
 remains unmeasured;
-512 MiB is a finite allowance, not a promise that every capture fits.
+the previous 512 MiB file allowance was finite and has now been exhausted by
+the original seven-category capture described below.
 
 The peer's full flush took 16.561 seconds for 242,232,971 bytes. Linear scaling to
-the new cap is about 36.7 seconds; that evidence originally informed a 60-second
+the then-512-MiB cap is about 36.7 seconds; that evidence originally informed a 60-second
 finalization allowance. The first browser-owned capture then demonstrated a
 different constraint. In [capture run 45987971947](https://github.com/robjasper2084/Jungle-Lotto/actions/runs/45987971947),
 Tracing.end was acknowledged after 3 ms,
@@ -194,13 +196,16 @@ response. Every individual RPC, including Tracing.end and IO.read, still has its
 4-second timeout. The absolute stop-issuance deadline is passed into collection;
 stream arrival never grants a second 120-second allowance. The larger finite
 allowance applies only to post-stop collection; the 90-second workload, 110-second
-recording watchdog, original source/input/performance gates and all other observer
-bounds are unchanged. Complete trace size and collection cost remain unproved, so
+recording watchdog and original source/input/performance gates are unchanged.
+The new post-stop reader limits are listed below; pre-existing resource, protocol
+and cleanup bounds remain unchanged. Complete trace size and collection cost remain unproved, so
 the allowance does not guarantee success. Receipts retain stop
 issuance, acknowledgement, notification, deadline and finalization timestamps.
 Missing or late notifications and late persistence remain partial, and late
-continuations cannot restore completeness. Parsing is synchronous and bounded by file size; a JavaScript timer
-cannot preempt its CPU work. Its wall cost is diagnostic overhead. Browser-close
+continuations cannot restore completeness. Each bounded event is parsed
+synchronously, with checks before and after its visitor; a JavaScript timer
+cannot preempt a single record parse. No whole-file Buffer or JavaScript string
+is materialized. Indexing cost is diagnostic overhead. Browser-close
 cleanup retains its total 10-second bound, including trailing writes, and the
 original driver step remains capped at 28 minutes. If close arrives before the
 diagnostic finishes, it records partial status instead of extending cleanup.
@@ -218,6 +223,79 @@ requires matching clean invocation/status/terminal receipts; an earlier stale
 success cannot override a late failure. CPU saving remains independent of trace
 failure. The original failed verdict remains failed and visible.
 
+## Streaming index and file-cap evidence
+
+[Run 45995465789](https://github.com/robjasper2084/Jungle-Lotto/actions/runs/45995465789)
+retained exactly 536,870,912 bytes and set capReached=true with dataLoss=false.
+The independent audit fully hashed that retained prefix as
+4ab5b9443d28a1d58b8c217042191a9bba17227d2a5bba6c3dec0eba4bdf637d,
+parsed 3,192,611 events, and rejected its truncated JSON document. Both trusted-W
+marks occur in the incomplete prefix; that does not certify a complete window.
+Finalization finished 77.264 seconds after stop, within its 120-second budget;
+both owned sessions closed cleanly. The original verdict remained failed.
+This is evidence for a larger finite file allowance, not evidence that 1 GiB
+will contain the complete trace. No buffer, source, driver, workload or category
+change follows from it.
+
+trace-index.mjs performs two incremental scans after raw EOF. The first retains
+bounded original metadata and projected observer marks. The second evaluates the
+same inclusive trusted-W-window coverage predicates, with all auxiliary maps
+restricted to tracks admitted by the single 4,096-track registry. Metadata and
+marks may be in nonchronological order. Both complete JSON receipts must agree on
+raw SHA-256, bytes and event count, and the byte count must match actual written
+bytes, before marks/topology/index completeness is published. Raw flow identifiers
+remain in the raw file and are never normalized or used for numeric-ID joins.
+
+The grammar/UTF-8 scanner is a narrow fork of source blob
+7cd2800adbcd140f1f476eb26543cc30cb6913d2 at PR265 commit
+b8fd4ccc564f231ff7f9b605379f417b6bd1d4bc, path
+.github/diagnostics/belle-full-desktop-stall/sustained-trace-json.mjs.
+Only root-key count/size guards and a provenance comment are added. It is not
+byte-identical to that source. The source and fork SHA-256 values are retained in
+manifest.trace.streamingIndex.parserSource. Existing grammar, UTF-8, duplicate
+traceEvents, individual-record and nesting checks remain intact.
+
+Additional reader/index limits are explicit:
+
+| Retained item | Bound |
+| --- | ---: |
+| Filesystem chunk | 65,536 bytes |
+| Individual event record | 33,554,432 JavaScript characters |
+| Parser nesting | 4,096 levels |
+| Root keys | 64, each at most 4,096 characters |
+| Metadata | 4,096 rows and 8 MiB of serialized retained rows |
+| Observer marks | 256 and 1 MiB of serialized retained marks |
+| Category names | 256 distinct; combined per-event text at most 4,096 characters |
+| Phase values | 64 distinct; each at most 64 characters |
+| PID/TID registry keys | 4,096 characters each; 4,096 distinct tracks |
+
+Guards reject before retaining an overflowing value. Count/byte/index overflow
+is recorded separately from the browser's data-loss flag and permanently leaves
+the diagnostic partial. The finite record limit bounds synchronous parsing but
+is not a promise of a particular peak RSS for arbitrary record shapes.
+
+One abort scope owns the absolute stop-issued deadline and active filesystem
+streams. Deadline expiry, bounded-cleanup expiry, unexpected browser-trace
+transport closure and outer trace-task errors actively destroy those streams.
+The source iterable checks before/after reads, including after the parser has
+switched to hash-only draining following an earlier syntax/visitor error. A
+Promise.race rejection by itself is not treated as cancellation. Successful
+finalization requires no background reader. Late open results are closed once;
+late reads or index writes cannot restore completeness after failure. Raw bytes
+and an independently saved CPU profile survive every indexing failure.
+
+Source-only validation preserves all 41 previous contracts and adds semantic
+parity against five frozen baseline output receipts, parser/retention negatives,
+changed two-pass receipts, stalled-read/hash-only-drain cancellation, filesystem
+creation races, cleanup and unexpected-transport cancellation, and late-index
+persistence checks. A generated 536,876,467-byte valid document exceeded this
+Node24 runtime's 536,870,888-character MAX_STRING_LENGTH and validated twice with
+no giant string or raw file. Its child used a 64 MiB old-space and 4 MiB semi-space
+limit; the retained first execution reported 53,676 KiB max RSS and a 79,691,776-byte
+heap limit. That synthetic document has 15 events and a large ignored scalar tail:
+it proves the whole-string limit is avoided, not millions-of-events throughput,
+representative native memory use, or success within the native 120-second budget.
+
 ## Artifacts and source-only validation
 
 - original-driver-output/report.json and original-driver-exit.json retain the
@@ -225,6 +303,8 @@ failure. The original failed verdict remains failed and visible.
 - native-trace.json or native-trace.partial.json retains raw trace bytes.
 - trace-process-threads.json retains raw process/thread metadata, PID/TID inventory,
   flow counts and coverage requirements.
+- trace-index-receipt.json records two complete matching raw receipts and retained
+  index counts/bytes; diagnostic-status.json retains failed pass receipts as available.
 - trace-categories-response.json and trace-categories.json retain the discovery
   response/value; trace-category-request.json retains the exact requested list,
   missing-enumeration warning and distinct actual-data requirement.
