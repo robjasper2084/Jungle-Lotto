@@ -15,7 +15,7 @@ The workshop follows its concave footprint; the market follows its four-corner f
 
 `jeffersonAssetSkins.ts` verifies target metadata, current dimensions, finite static mesh data and transformed vertices against the active footprint before accepting a model. The real-file test also checks complete projected triangles, required material maps, image bytes, normal/UV data, exact lettering positions, and the submitted geometry budget.
 
-The building pack has 13,168 triangles in 17 material batches. The sign pack has 1,660 triangles in six batches. Their PBR materials remain scoped to these assets. The runtime package separates the original PNG bytes from the GLBs without changing their pixels, geometry or material assignments.
+The building pack has 13,160 triangles in 17 material batches. The sign pack has 1,660 triangles in six batches. Their PBR materials remain scoped to these assets. The runtime package separates the original PNG bytes from the GLBs without changing their pixels, geometry or material assignments.
 
 ## Publication and fallback
 
@@ -29,9 +29,11 @@ Selected assets are enabled in ordinary candidate builds. Set `VITE_JEFFERSON_AS
 
 The query `?jefferson-gallery=1` exposes a read-only snapshot of actual player/camera state, renderer and asset publication. It provides no repositioning API and refuses to expose a real location-following session. It is absent in ordinary sessions and does no extra work in the render loop.
 
-`scripts/jefferson-asset-gallery.mjs` uses real UI and trusted keyboard/touch controls to reach the selected buildings. The existing Guide travel action shortens the route to the west market. It captures facade/corner, ground-level roofline and sign detail, checks active frames and a real GPU fence, and records exact camera/pose and replacement/proxy state. A separate baseline build uses the same routes. Pairing is accepted only after the actual recorded camera values are compared. Successful capture alone is not visual approval.
+`scripts/jefferson-asset-gallery.mjs` uses real UI and trusted keyboard, mouse-joystick and touch controls to reach the selected buildings. The existing Guide travel action shortens the route to the west market. It captures facade/corner, ground-level roofline and sign detail, checks active frames and a real GPU fence, and records exact camera/pose and replacement/proxy state. A separate baseline build uses the same routes. Pairing is accepted only after the actual recorded camera values are compared. Successful capture alone is not visual approval.
 
 The dedicated gallery workflow runs desktop and phone viewports in native Chrome on macOS Metal. The phone is an emulated viewport. Local browser installation was unavailable in the authoring workspace, so native run artifacts are the required game evidence.
+
+A native review of the prior candidate found fragile, near-coplanar sign lettering. The revised export provides about 10 mm glyph depth and at least 18 mm front-to-fascia clearance, without altering footprint, height, material definitions or original texture bytes. Its real-file regression also checks outward caps and backing-wall clearance. Current native screenshots are required to accept the revised rendering.
 
 The existing sustained workflow, its 90-second requested windows, graphics settings, trusted input capture, heartbeat, GPS checks, p95 limit and stall limits are unchanged. Gallery runs do not substitute for them. See the draft PR's exact-head workflow results and the separately retained review report before release.
 

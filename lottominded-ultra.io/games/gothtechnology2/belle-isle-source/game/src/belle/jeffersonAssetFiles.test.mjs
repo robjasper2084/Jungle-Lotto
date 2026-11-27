@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {createHash} from 'node:crypto';
-import {Matrix4,Quaternion,Vector3} from 'three';
+import {Matrix3,Matrix4,Quaternion,Vector3} from 'three';
 import polygonClipping from 'polygon-clipping';
 import {fitStreetBuilding} from './detroitAssets.ts';
 import {JEFFERSON_BUILDING_PLACEMENTS,JEFFERSON_BUILDING_SOURCE_AUDIT,JEFFERSON_CAMERA_TARGETS,JEFFERSON_PROP_PLACEMENTS} from './jeffersonPlacements.ts';
@@ -58,7 +58,7 @@ function readGlb(relative){
 const assetDirectory=new URL('../../public/belle/jefferson/',import.meta.url);
 const sha256=bytes=>createHash('sha256').update(bytes).digest('hex');
 const approvedSourceHashes={
-  'models/Jefferson_Assigned_Buildings.glb':'94390122fc6f8940b49e6d0d23b303a19869610912a7658739cdd38f32c72625',
+  'models/Jefferson_Assigned_Buildings.glb':'b9c930f5b6b5edde03e2d93511b26bb7d4d266133800e9f78eeccd04d8f5e2cf',
   'models/Jefferson_Assigned_Street.glb':'0986558a3e0fc15ffad4835efae399c52ccd022ae9455791572723dc8af48207',
 };
 
@@ -305,6 +305,83 @@ test('shipped building surfaces preserve opaque PBR, finite UVs, and the draw/tr
     assert.ok(pack.json.images[texture.source],'texture resolves to its checked image manifest entry');
   }
   t.diagnostic(`Assigned buildings: ${batches} material batches, ${triangles} triangles, ${materials.size} opaque PBR materials`);
+});
+
+test('shipped sign relief has separated fascia and wall surfaces and outward visible glyph caps',t=>{
+  // These metre limits come from the repaired export's independently measured
+  // 18.724/19.420 mm front gap, 10 mm depth and 5.771/10.285 mm wall gap.
+  // Validate the shipped triangles, not exporter metadata or a render fixture.
+  const minimumFrontGap=.018,minimumDepth=.0095,minimumBackGap=.008,minimumWallGap=.005;
+  const roundoff=1e-5; // Float32 position roundoff, not a visual-clearance allowance.
+  for(const selection of selections){
+    const {assignment,fit,entries}=selection,workshop=assignment.buildingId==='detroit-38139';
+    const glyphMaterial=workshop?'JEF_StaticGold':'JEF_LetteringIvory';
+    const glyphs=[],metal=[],brick=[];
+    for(const {primitive,world} of entries){
+      const name=pack.json.materials[primitive.material].name;
+      const target=name===glyphMaterial?glyphs:name==='JEF_PaintedMetal'?metal:name==='JEF_RedBrick'?brick:null;
+      if(!target)continue;
+      // Fit-local metres retain +Z as the sign's outward direction. A normal
+      // matrix is necessary because the normalized fit scales are nonuniform.
+      const transform=new Matrix4().makeScale(fit.w,fit.h,fit.d).multiply(world);
+      const normalMatrix=new Matrix3().getNormalMatrix(transform);
+      const positions=pack.accessor(primitive.attributes.POSITION).map(v=>new Vector3().fromArray(v).applyMatrix4(transform));
+      const normals=pack.accessor(primitive.attributes.NORMAL).map(v=>new Vector3().fromArray(v).applyNormalMatrix(normalMatrix));
+      const indices=triangleIndices(pack,primitive,positions.length);
+      for(let i=0;i<indices.length;i+=3){
+        const ids=indices.slice(i,i+3),points=ids.map(j=>positions[j]);
+        if(target===glyphs&&workshop&&points.some(p=>p.y<=4))continue; // Door handles share the gold material.
+        target.push({points,normals:ids.map(j=>normals[j])});
+      }
+    }
+    assert.ok(glyphs.length&&metal.length&&brick.length,`${assignment.buildingId} has lettering, fascia and supporting wall`);
+    const vertices=glyphs.flatMap(triangle=>triangle.points),front=Math.max(...vertices.map(p=>p.z)),back=Math.min(...vertices.map(p=>p.z));
+    const frontCaps=glyphs.filter(triangle=>triangle.points.every(p=>Math.abs(p.z-front)<=roundoff));
+    const backCaps=glyphs.filter(triangle=>triangle.points.every(p=>Math.abs(p.z-back)<=roundoff));
+    assert.ok(frontCaps.length&&backCaps.length,`${assignment.buildingId} has front and rear cap triangles`);
+    let frontArea=0,minFrontWinding=Infinity,minFrontNormal=Infinity,maxBackWinding=-Infinity,maxBackNormal=-Infinity;
+    for(const [caps,outward] of [[frontCaps,1],[backCaps,-1]])for(const triangle of caps){
+      const [a,b,c]=triangle.points,cross=new Vector3().subVectors(b,a).cross(new Vector3().subVectors(c,a));
+      assert.ok(Number.isFinite(cross.lengthSq())&&cross.lengthSq()>0,`${assignment.buildingId} cap triangle has nonzero area`);
+      const facing=cross.normalize().z;
+      if(outward===1){frontArea+=Math.abs((b.x-a.x)*(c.y-a.y)-(b.y-a.y)*(c.x-a.x))*.5;minFrontWinding=Math.min(minFrontWinding,facing);minFrontNormal=Math.min(minFrontNormal,...triangle.normals.map(n=>n.z));}
+      else {maxBackWinding=Math.max(maxBackWinding,facing);maxBackNormal=Math.max(maxBackNormal,...triangle.normals.map(n=>n.z));}
+    }
+    // Independent XY barycentric projection onto actual backing triangles.
+    // Taking the outermost depth also detects a surface placed in front of the
+    // lettering; filtering only surfaces behind the glyph would conceal it.
+    function outerDepth(triangles,point){
+      let depth=-Infinity;
+      for(const {points:[a,b,c]} of triangles){
+        const denominator=(b.y-c.y)*(a.x-c.x)+(c.x-b.x)*(a.y-c.y);
+        if(denominator===0)continue;
+        const u=((b.y-c.y)*(point.x-c.x)+(c.x-b.x)*(point.y-c.y))/denominator;
+        const v=((c.y-a.y)*(point.x-c.x)+(a.x-c.x)*(point.y-c.y))/denominator,w=1-u-v;
+        if(Math.min(u,v,w)<-1e-6||Math.max(u,v,w)>1+1e-6)continue;
+        depth=Math.max(depth,u*a.z+v*b.z+w*c.z);
+      }
+      assert.ok(Number.isFinite(depth),`${assignment.buildingId} backing covers glyph sample ${point.x}, ${point.y}`);
+      return depth;
+    }
+    const samples=frontCaps.flatMap(({points})=>[...points,points.reduce((sum,p)=>sum.add(p),new Vector3()).multiplyScalar(1/3)]);
+    const minX=Math.min(...vertices.map(p=>p.x)),maxX=Math.max(...vertices.map(p=>p.x));
+    const minY=Math.min(...vertices.map(p=>p.y)),maxY=Math.max(...vertices.map(p=>p.y));
+    for(let x=0;x<=8;x++)for(let y=0;y<=4;y++)samples.push(new Vector3(minX+(maxX-minX)*x/8,minY+(maxY-minY)*y/4,front));
+    let frontGap=Infinity,backGap=Infinity,wallGap=Infinity;
+    for(const sample of samples){
+      const fascia=outerDepth(metal,sample),wall=outerDepth(brick,sample);
+      frontGap=Math.min(frontGap,front-fascia);backGap=Math.min(backGap,back-fascia);wallGap=Math.min(wallGap,fascia-wall);
+    }
+    t.diagnostic(`${assignment.buildingId}: front/fascia ${(frontGap*1000).toFixed(4)} mm, glyph depth ${((front-back)*1000).toFixed(4)} mm, rear/fascia ${(backGap*1000).toFixed(4)} mm, fascia/wall ${(wallGap*1000).toFixed(4)} mm; front cap area ${frontArea.toFixed(6)} m²; winding/normal ${minFrontWinding.toFixed(6)}/${minFrontNormal.toFixed(6)}`);
+    assert.ok(frontGap+roundoff>=minimumFrontGap,`${assignment.buildingId} front-cap/fascia clearance below 18 mm`);
+    assert.ok(front-back+roundoff>=minimumDepth,`${assignment.buildingId} glyph depth below 9.5 mm`);
+    assert.ok(backGap+roundoff>=minimumBackGap,`${assignment.buildingId} rear-cap/fascia clearance below 8 mm`);
+    assert.ok(wallGap+roundoff>=minimumWallGap,`${assignment.buildingId} fascia/supporting-wall clearance below 5 mm`);
+    assert.ok(frontArea>0&&minFrontWinding>.99&&minFrontNormal>.99,`${assignment.buildingId} front caps face outward +Z`);
+    assert.ok(maxBackWinding<-.99&&maxBackNormal<-.99,`${assignment.buildingId} rear caps face outward -Z`);
+    // No watertightness claim: removing collinear/Float32-collapsed cap faces
+    // preserves the visible silhouette but is not a manifold-topology proof.
+  }
 });
 
 test('native sign framing targets the actual exported lettering, including its ground height',()=>{

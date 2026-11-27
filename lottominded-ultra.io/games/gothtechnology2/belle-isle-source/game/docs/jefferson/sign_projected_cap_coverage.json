@@ -1,0 +1,33 @@
+{
+  "scope": "Exact projected cap triangle clipping in XY before/after, within reported floating point tolerance; no native rendering or performance conclusion.",
+  "rows": [
+    {
+      "root": "JEF_886253052",
+      "sourceProjectedCapAreaM2": 0.1613160129744046,
+      "stagedProjectedCapAreaM2": 0.1613160129744046,
+      "sourceAreaNotCoveredByStagedM2": 0.0,
+      "maxPerTriangleUncoveredAreaM2": 0.0,
+      "stagedAreaOutsideSourceM2": 0.0,
+      "maximumVertexXYDifferenceM": 0.0,
+      "toleranceM2": 1e-07,
+      "pass": true
+    },
+    {
+      "root": "JEF_detroit_38139",
+      "sourceProjectedCapAreaM2": 0.18742489652940655,
+      "stagedProjectedCapAreaM2": 0.18742489652940655,
+      "sourceAreaNotCoveredByStagedM2": 0.0,
+      "maxPerTriangleUncoveredAreaM2": 0.0,
+      "stagedAreaOutsideSourceM2": 0.0,
+      "maximumVertexXYDifferenceM": 0.0,
+      "toleranceM2": 1e-07,
+      "pass": true
+    }
+  ],
+  "marketTopologicalLimitation": "The staged Blender market glyph mesh retains 12 non-manifold collinear cap-boundary edges after zero-area T-junction triangles are omitted. It is not described as fully closed or watertight. No positive cap area larger than the reported floating point tolerance is missing.",
+  "sourceGeometryUnchangedOutsideSigns": true,
+  "zeroAreaCleanup": {
+    "JEF_detroit_38139__JEF_StaticGold": 0,
+    "JEF_886253052__JEF_LetteringIvory": 4
+  }
+}

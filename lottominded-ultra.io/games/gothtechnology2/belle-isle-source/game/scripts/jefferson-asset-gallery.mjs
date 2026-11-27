@@ -31,7 +31,7 @@ const report = {
   variant, device, viewport, deviceScaleFactor: 1, buildDirectory,
   lighting: 'High Noon, sky cycle disabled', quality: device === 'phone' ? 'smooth' : 'high',
   frameCap: 60, reducedMotion: true, maximumRunMs: 480000,
-  navigation: 'Visible Guide Travel, then native keyboard or CDP touch; read-only feedback',
+  navigation: 'Visible Guide Travel, then native keyboard/mouse joystick or CDP touch; read-only feedback',
   poseInjection: false, cameraInjection: false, requiresMetal: galleryNeedsMetal, browserExecutable,
   passed: false, captures: [], routes: [], errors: [], failedRequests: [], assetResponses: [],
   pairing: {complete: false, reason: 'Matching report not read yet', captures: []},
@@ -57,7 +57,7 @@ const routeHeadingTolerance = 2.7 / 60 / 2 + .0025;
 const wrap = angle => Math.atan2(Math.sin(angle), Math.cos(angle));
 const distance = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
 const finitePoint = (point, length) => Array.isArray(point) && point.length === length && point.every(Number.isFinite);
-let browser, page, nativeTouch, server, timer, moving = false;
+let browser, page, nativeTouch, server, timer, moving = false, mouseHeld = false;
 const heldKeys = new Set();
 
 async function observe() {
@@ -110,28 +110,61 @@ async function openMenu() {
   if (!await page.locator('#ride-menu').isVisible()) await page.locator('#tools-toggle').click();
 }
 
+async function releaseMouse() {
+  if (!mouseHeld) return;
+  await page.mouse.up();
+  mouseHeld = false;
+}
+
 async function stopInput() {
-  if (nativeTouch?.snapshot().activeIds.length) await nativeTouch.dispatch('touchEnd', []);
-  for (const code of [...heldKeys]) { await page.keyboard.up(code); heldKeys.delete(code); }
+  const failures = [];
+  try { await releaseMouse(); } catch (error) { failures.push(error); }
+  if (nativeTouch?.snapshot().activeIds.length) {
+    try { await nativeTouch.dispatch('touchEnd', []); } catch (error) { failures.push(error); }
+  }
+  for (const code of [...heldKeys]) {
+    try { await page.keyboard.up(code); heldKeys.delete(code); } catch (error) { failures.push(error); }
+  }
   moving = false;
+  if (failures.length) throw new AggregateError(failures, 'Native input release failed');
 }
 
 async function axes(steer, throttle, run = false) {
   budget('native movement');
-  if (device === 'desktop') {
+  const mouseJoystick = device === 'desktop' && steer !== 0 && Math.abs(steer) < 1 && throttle === 0;
+  if (!mouseJoystick) await releaseMouse();
+  if (device === 'desktop' && !mouseJoystick) {
     const wanted = new Set([steer < 0 ? 'KeyA' : steer > 0 ? 'KeyD' : null,
       throttle > 0 ? 'KeyW' : throttle < 0 ? 'KeyS' : null, run ? 'ShiftLeft' : null].filter(Boolean));
     for (const code of [...heldKeys]) if (!wanted.has(code)) { await page.keyboard.up(code); heldKeys.delete(code); }
-    for (const code of wanted) if (!heldKeys.has(code)) { await page.keyboard.down(code); heldKeys.add(code); }
+    for (const code of wanted) if (!heldKeys.has(code)) { heldKeys.add(code); await page.keyboard.down(code); }
   } else if (!steer && !throttle) {
     if (nativeTouch.snapshot().activeIds.length) await nativeTouch.dispatch('touchEnd', []);
   } else {
     const stick = await page.locator('#stick').boundingBox();
     assert.ok(stick, 'Visible native movement joystick is unavailable');
     const center = {id: 1, x: stick.x + stick.width / 2, y: stick.y + stick.height / 2};
-    if (!nativeTouch.snapshot().activeIds.length) await nativeTouch.dispatch('touchStart', [center]);
     const radius = stick.width * .37;
-    await nativeTouch.dispatch('touchMove', [{...center, x: center.x + steer * radius, y: center.y - throttle * radius}]);
+    // Invert mobileInput.stickAxes' existing 9% deadzone and .92 curve.
+    // A small requested axis must remain a real, nonzero native joystick move.
+    const magnitude = Math.hypot(steer, throttle), requestedMagnitude = Math.min(1, magnitude);
+    const displacementFraction = .09 + .91 * Math.pow(requestedMagnitude, 1 / .92);
+    const dx = steer / magnitude * radius * displacementFraction;
+    const dy = -throttle / magnitude * radius * displacementFraction;
+    if (mouseJoystick) {
+      assert.equal(heldKeys.size, 0, 'Fine mouse steering requires released keyboard axes');
+      if (!mouseHeld) {
+        await page.mouse.move(center.x, center.y);
+        mouseHeld = true;
+        await page.mouse.down();
+      }
+      await page.mouse.move(center.x + dx, center.y + dy);
+    } else {
+      if (!nativeTouch.snapshot().activeIds.length) await nativeTouch.dispatch('touchStart', [center]);
+      await nativeTouch.dispatch('touchMove', [{...center, x: center.x + dx, y: center.y + dy}]);
+    }
+    moving = true;
+    return {pointerType: mouseJoystick ? 'mouse' : 'touch', centerPx: [center.x, center.y], targetPx: [center.x + dx, center.y + dy], radiusPx: radius, displacementPx: [dx, dy], displacementFraction};
   }
   moving = !!(steer || throttle);
 }
@@ -157,10 +190,16 @@ async function turnTo(heading) {
       return;
     }
     // onFoot.ts turns heading negatively for positive steer, at 2.7 rad/s.
-    const steer = error > 0 ? -1 : 1;
-    const holdMs = Math.min(650, Math.max(12, Math.abs(error) / 2.7 * 1000));
-    correction.pulses.push({observedHeadingRad: state.pose.headingY, residualRad: error, steer, requestedHoldMs: holdMs, beganMs: elapsed()});
-    await axes(steer, 0);
+    // Full-throw microtaps span extra native input frames. Reduce the
+    // analog axis near the target instead of relaxing heading acceptance.
+    const fineJoystick = Math.abs(error) < .4;
+    const magnitude = fineJoystick ? Math.abs(error) / .5 : 1;
+    const steer = (error > 0 ? -1 : 1) * magnitude;
+    const holdMs = fineJoystick ? 110 : Math.min(650, Math.max(12, Math.abs(error) / 2.7 * 1000));
+    const pulse = {observedHeadingRad: state.pose.headingY, residualRad: error, steer, requestedActualMagnitude: magnitude, requestedHoldMs: holdMs, beganMs: elapsed()};
+    correction.pulses.push(pulse);
+    const nativeJoystick = await axes(steer, 0);
+    if (nativeJoystick) pulse.nativeJoystick = nativeJoystick;
     await page.waitForTimeout(holdMs);
     await axes(0, 0);
     await page.waitForTimeout(240);
@@ -206,6 +245,18 @@ async function onFoot() {
   await focusGame();
 }
 
+async function desktopRouteControls(enabled) {
+  if (device !== 'desktop' || await page.locator('#touch').isChecked() === enabled) return;
+  await settle();
+  await openMenu(); await page.locator('#settings-open').click();
+  await page.locator('#touch').setChecked(enabled);
+  if (enabled) await page.locator('#joystick-mode').selectOption('fixed');
+  await page.locator('[data-close="settings"]').click();
+  await focusGame();
+  assert.equal(await page.locator('#touch').isChecked(), enabled, 'Desktop route controls did not update through Settings');
+  (report.controlChanges ||= []).push({touchControlsEnabled: enabled, joystickMode: await page.locator('#joystick-mode').inputValue(), atMs: elapsed()});
+}
+
 async function guideToDequindre() {
   await settle(); await openMenu(); await page.locator('#map-open').click();
   const card = page.locator('#landmarks .landmark').filter({has: page.locator('h3').filter({hasText: /^Swoop Detroit · Dequindre Cut at East Jefferson$/})});
@@ -244,8 +295,9 @@ async function lookDrag(dx, dy) {
     for (let i = 1; i <= 6; i++) await nativeTouch.dispatch('touchMove', [{id: 2, x: start.x + (end.x - start.x) * i / 6, y: start.y + (end.y - start.y) * i / 6}]);
     await nativeTouch.dispatch('touchEnd', []);
   } else {
-    await page.mouse.move(start.x, start.y); await page.mouse.down();
-    try { await page.mouse.move(end.x, end.y, {steps: 6}); } finally { await page.mouse.up(); }
+    await page.mouse.move(start.x, start.y);
+    mouseHeld = true;
+    try { await page.mouse.down(); await page.mouse.move(end.x, end.y, {steps: 6}); } finally { await releaseMouse(); }
   }
   await page.waitForTimeout(150);
 }
@@ -303,18 +355,30 @@ async function waitForAssets() {
 
 async function capture(target, kind, aim, photo = false) {
   await settle();
+  if (device === 'desktop') {
+    assert.equal(await page.locator('#touch').isChecked(), false, 'Desktop screenshots require the touch HUD switched off');
+    await expect(page.locator('#touch-zone')).not.toBeVisible();
+  }
+  let photoSettings;
   if (photo) {
     await openMenu(); await page.locator('#photo-open').click();
     await expect(page.locator('.capture-panel')).toBeVisible();
     await page.getByLabel('Camera lens', {exact: true}).selectOption('85');
     const finder = page.getByRole('button', {name: 'Viewfinder', exact: true});
     if (await finder.getAttribute('aria-pressed') !== 'true') await finder.click();
+    const zoom = page.getByLabel('Camera zoom', {exact: true});
+    const requestedZoom = target.buildingId === 'detroit-38139' ? 4 : 1;
+    await zoom.focus();
+    await page.keyboard.press(requestedZoom === 4 ? 'End' : 'Home');
+    await expect(zoom).toHaveValue(String(requestedZoom));
+    photoSettings = {lensMm: Number(await page.getByLabel('Camera lens', {exact: true}).inputValue()), zoom: Number(await zoom.inputValue()), viewfinder: await finder.getAttribute('aria-pressed') === 'true'};
   }
   await focusGame(); await aimAt(aim);
-  const entry = {id: target.id + '-' + kind, target: target.id, buildingId: target.buildingId, kind, requestedView: target.view, requestedAim: aim, aimSource: photo ? (target.signLookAt ? 'Authored sign world center' : 'Estimated facade band; sign placement needs visual review') : 'Authored building target', source: photo ? 'Existing Camera lens 85 mm / Viewfinder UI' : 'Ordinary first-person game camera', passed: false};
+  const entry = {id: target.id + '-' + kind, target: target.id, buildingId: target.buildingId, kind, requestedView: target.view, requestedAim: aim, aimSource: photo ? (target.signLookAt ? 'Authored sign world center' : 'Estimated facade band; sign placement needs visual review') : 'Authored building target', source: photo ? 'Existing Camera lens 85 mm / Viewfinder UI / ' + photoSettings.zoom + 'x zoom' : 'Ordinary first-person game camera', photoSettings, touchControlsEnabled: await page.locator('#touch').isChecked(), passed: false};
   report.captures.push(entry);
   entry.frame = await frameProof();
   entry.state = await observe();
+  if (photoSettings) photoSettings.actualFovDegrees = entry.state.camera.fovDegrees;
   validateAssets(entry.state, target.buildingId);
   entry.distanceFromViewM = distance([entry.state.pose.x, entry.state.pose.z], target.view);
   assert.ok(entry.distanceFromViewM < 1.2, 'Native actor did not arrive at the authored view');
@@ -413,7 +477,7 @@ async function run() {
   await page.locator('#sky-preset').selectOption('12');
   await page.locator('#quality').selectOption(report.quality);
   await page.locator('#fps').selectOption('60');
-  if (device === 'phone') { await page.locator('#touch').check(); await page.locator('#joystick-mode').selectOption('fixed'); }
+  await page.locator('#touch').check(); await page.locator('#joystick-mode').selectOption('fixed');
   await page.locator('[data-close="settings"]').click();
   await onFoot();
   report.initialState = await waitForAssets(); validateAssets(report.initialState);
@@ -426,6 +490,7 @@ async function run() {
     }
     // Menus and the photography UI intentionally clear held/sprint controls.
     await onFoot();
+    await desktopRouteControls(true);
     const routeEntry = {target: target.id, anchor, beganMs: elapsed(), waypoints: [], completed: false};
     report.routes.push(routeEntry);
     const state = await observe();
@@ -435,6 +500,7 @@ async function run() {
     await turnTo(target.yaw);
     routeEntry.completed = true; routeEntry.elapsedMs = elapsed() - routeEntry.beganMs;
     await save();
+    await desktopRouteControls(false);
     await capture(target, 'facade-corner', target.lookAt);
     if (target.captureDetails !== false) {
       const ground = target.groundY ?? 2;

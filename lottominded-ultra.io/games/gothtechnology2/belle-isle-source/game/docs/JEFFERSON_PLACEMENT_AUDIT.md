@@ -4,7 +4,7 @@
 
 This record selects two existing Jefferson Avenue building IDs for original fictional presentation skins and two slender street signs. The explicit assignments and native-route planning coordinates are in `src/belle/jeffersonPlacements.ts`. The corresponding adapter is responsible for validating the actual loaded asset and publishing it only after the existing warmup transaction succeeds.
 
-**Status: source placement and actual exported geometry checks complete; actual-game visual review and the unchanged desktop/phone performance checks remain pending.** This document does not certify a real building survey, a native route, a screenshot, or a release. The strings named `reviewedReference` retain that existing loader field name but explicitly say “visual review pending.”
+**Status: revised source geometry passes offline checks; release remains on hold. The prior native candidate produced six desktop views but exposed broken-looking market glyphs. Its full desktop 90-second check failed (83.5 ms p95, two frames over 250 ms); full phone passed (33.9 ms p95, zero over 250 ms). The sign correction below requires fresh native evidence.** This document does not certify a real building survey, a native route, a screenshot, or a release. The strings named `reviewedReference` retain that existing loader field name but explicitly say “visual review pending.”
 
 The assignment-specific model is `public/belle/jefferson/models/Jefferson_Assigned_Buildings.glb`. Its expected roots are `JEF_detroit_38139` and `JEF_886253052`. The source archetypes remain `SunsetBlock4` and `SunsetBlock1` respectively. The runtime `Jefferson_Assigned_Street.glb` contains exactly the two selected sign roots at their authored metre dimensions, extracted from the larger source `Jefferson_Street_Kit.glb`.
 
@@ -80,7 +80,7 @@ The positive minimum values above leave the signs clear of all mapped road and p
 
 `JEFFERSON_CAMERA_TARGETS` contains three targets, their intended look-at centers, fitted dimensions, headings, and full route arrays. These values are navigation hints only. The gallery driver must use normal input and the existing visible Guide action; it must not set the player position or camera state directly.
 
-The `signLookAt` points are measured from the bounds of the actual exported lettering vertices, including the 2 m terrain ground height. DIGITAL STATIC is at `[-766.9314639486762, 6.869166135787964, 421.3020398826117]`; RIVERFRONT MARKET is at `[-1952.6480470046893, 4.87523481696844, 1061.1167630426794]`. The workshop measurement isolates the `JEF_StaticGold` glyphs above local 4 m to exclude door handles; the market uses `JEF_LetteringIvory`. These values guide native sign framing and do not directly assign camera state.
+The `signLookAt` points are measured from the bounds of the actual exported lettering vertices, including the 2 m terrain ground height. DIGITAL STATIC is at `[-766.9330669174655, 6.869166135787964, 421.29926734029834]`; RIVERFRONT MARKET is at `[-1952.6465094238176, 4.87523481696844, 1061.1194384917483]`. The workshop measurement isolates the `JEF_StaticGold` glyphs above local 4 m to exclude door handles; the market uses `JEF_LetteringIvory`. These values guide native sign framing and do not directly assign camera state.
 
 | Target | Planning point x,z | Native route start | Planned route length | Source samples |
 | --- | --- | --- | --- | --- |
@@ -96,7 +96,7 @@ Terrain camera rays from nominal eye height 1.7 m above each planning point towa
 
 ## Actual exported geometry validation
 
-The final runtime bytes passed all six tests in `src/belle/jeffersonAssetFiles.test.mjs` with pure Node and no browser/image DOM. The command was:
+The final runtime bytes is checked by all seven tests in `src/belle/jeffersonAssetFiles.test.mjs` with pure Node and no browser/image DOM. The command was:
 
 ```sh
 node --experimental-strip-types --test src/belle/jeffersonAssetFiles.test.mjs
@@ -104,25 +104,27 @@ node --experimental-strip-types --test src/belle/jeffersonAssetFiles.test.mjs
 
 | Runtime file | Runtime SHA-256 | Material batches | Triangles |
 | --- | --- | --- | --- |
-| `Jefferson_Assigned_Buildings.glb` | `929e7574f4cce443a3c2378b20000bbe4bef2a1bb5b2321f56c0c999ece5a3a4` | 17 | 13,168 |
+| `Jefferson_Assigned_Buildings.glb` | `d45e4a33457d129b58ef2c76d7e520c9985e95d0f9102e31d0e73a453705c551` | 17 | 13,160 |
 | `Jefferson_Assigned_Street.glb` | `67a05f0a60a0b751632d1b1a70afc5f89592d961a448b0e04e9862213c876600` | 6 | 1,660 |
 
 The source GLBs embed their PNGs. Runtime packaging externalizes those exact PNG bytes into twelve shared files named `textures/<sha256>.png`, referenced only through `../textures/<sha256>.png`. This lossless packaging keeps individual transport payloads small without resizing, recompressing, or changing the textures, geometry, or materials.
 
 | Source file | Approved embedded-source SHA-256 | Source bytes | Runtime GLB bytes |
 | --- | --- | --- | --- |
-| `Jefferson_Assigned_Buildings.glb` | `94390122fc6f8940b49e6d0d23b303a19869610912a7658739cdd38f32c72625` | 14,182,112 | 894,508 |
+| `Jefferson_Assigned_Buildings.glb` | `b9c930f5b6b5edde03e2d93511b26bb7d4d266133800e9f78eeccd04d8f5e2cf` | 14,179,740 | 892,112 |
 | `Jefferson_Assigned_Street.glb` | `0986558a3e0fc15ffad4835efae399c52ccd022ae9455791572723dc8af48207` | 2,526,960 | 79,504 |
 
-`public/belle/jefferson/manifest.json` records both identities, every original image's source buffer provenance, every retained geometry buffer view's hash, and the exact runtime PNG paths, byte lengths, hashes, and dimensions. Its SHA-256 is `5e68b2fc0a9a8c6481b4b24506240b0f97b7f8292d7f0d137357464ea3dbce78`. The twelve shared PNGs total 13,287,694 bytes. The packaging step compared every source image and retained buffer view byte for byte and checked that non-storage glTF structures remained unchanged after buffer-view index remapping.
+`public/belle/jefferson/manifest.json` records both identities, every original image's source buffer provenance, every retained geometry buffer view's hash, and the exact runtime PNG paths, byte lengths, hashes, and dimensions. Its SHA-256 is `196495887c3f36a79b1a4205005279f9c3e51fcf423b914f5e8d6d9b4fdf3d86`. The twelve shared PNGs total 13,287,694 bytes. The packaging step compared every source image and retained buffer view byte for byte and checked that non-storage glTF structures remained unchanged after buffer-view index remapping.
 
 The Node gate pins the two approved source identities, verifies each runtime GLB hash, recomputes every retained buffer-view hash, and checks every referenced PNG's exact SHA-256, byte length, and dimensions against the source/runtime manifest. It accepts only the fixed relative texture path pattern, rejects unlisted images and symlinks, and permits no remote URL or arbitrary path. Both runtime models must reference exactly the manifest's texture set.
 
-The test reads the actual GLB JSON/BIN chunks and buffer accessors, applies the authored scene transforms and the real `fitStreetBuilding` matrices, and compares the root metadata with the current district records and placement audit. Both buildings retain their original ground and height. All transformed vertices stay inside the original source polygons within Float32 roundoff tolerance. Polygon clipping of every nondegenerate projected triangle found **0 m² outside the source footprint** for each building, including the concave workshop. The workshop has 6,097 exported vertices and 3,396 triangles; the market has 18,754 vertices and 9,772 triangles.
+The test reads the actual GLB JSON/BIN chunks and buffer accessors, applies the authored scene transforms and the real `fitStreetBuilding` matrices, and compares the root metadata with the current district records and placement audit. Both buildings retain their original ground and height. All transformed vertices stay inside the original source polygons within Float32 roundoff tolerance. Polygon clipping of every nondegenerate projected triangle found **0 m² outside the source footprint** for each building, including the concave workshop. The workshop has 6,080 exported vertices and 3,396 triangles; the market has 18,697 vertices and 9,764 triangles.
 
 The same gate verifies finite UVs and unit normals, opaque PBR materials, required albedo/normal/ORM bindings, the checked local PNGs within the 1,024 px runtime budget, and the exact lettering-based `signLookAt` targets. The street payload contains only the two selected sign roots. Both retain their 2.89 m authored height and fit the 1.01 m conservative placement radius. Building budgets remain capped at 17 material batches and 14,000 triangles; sign budgets are capped at 6 batches and 2,000 triangles.
 
-The final workshop export also removes a confirmed overlapping fascia surface. Its lettering coordinates and budget are unchanged. The geometric validation above was rerun against the repaired runtime file identified by the recorded hash; it is not evidence of a native in-game visual pass.
+The original workshop adaptation removes the hidden pier/header overlap. The subsequent native screenshot review exposed fragile lettering relief: approximately 0.6 mm at the market and 1.4 mm at the workshop, with microscopic glyph depth. The revised export advances the visible caps by 8 mm, recesses the supporting fascia by 10 mm, and gives each glyph approximately 10 mm depth. Measured minimum front/fascia clearance is 18.7238 mm for the market and 19.4198 mm for the workshop; fascia remains 5.7707 mm / 10.2847 mm ahead of the brick. Front and rear cap winding/normals are outward. Material definitions and all original PNG bytes are identical.
+
+The new real-file regression requires at least 18 mm front/fascia clearance, 9.5 mm glyph depth and 5 mm backing-wall clearance, using actual fitted triangle intersections. It fails the prior thin export and passes the revised geometry. Collinear zero-area market cap triangles were removed without changing positive projected coverage or visible outlines. Twelve collinear T-junction boundary edges remain; this is visual geometry and is not claimed to be watertight. Complete containment and original heights still pass. These source and Blender checks do not establish a native game visual pass.
 
 ## Integration and remaining acceptance
 

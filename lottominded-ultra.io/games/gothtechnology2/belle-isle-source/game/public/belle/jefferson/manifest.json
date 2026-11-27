@@ -55,7 +55,7 @@
         {
           "byteLength": 32472,
           "runtimeIndex": 8,
-          "sha256": "b80a53462e7b6c1ecd6124893a1d9c18e75a3a9c1ca0f1a1fe0c353863944320",
+          "sha256": "2bfab5e62d29b27eb59f63e6ebd96495d5f92f9e3aaa27f39fd683e42df7fc62",
           "sourceIndex": 14
         },
         {
@@ -149,27 +149,27 @@
           "sourceIndex": 35
         },
         {
-          "byteLength": 12540,
+          "byteLength": 12336,
           "runtimeIndex": 24,
-          "sha256": "1654e8369bf237f80a59ed1d1ec2f6f0f3974cdd692c43b8c721eaa5b2fad793",
+          "sha256": "81cc9eb93613390fb8126448bdb04d07b089c0b074fec93e69f401bfae9718bc",
           "sourceIndex": 36
         },
         {
-          "byteLength": 12540,
+          "byteLength": 12336,
           "runtimeIndex": 25,
-          "sha256": "063c7e8ad3b91b130f29c60014c05ce5b572d5ad7b3539576d4dcd5eee452e05",
+          "sha256": "8fe5a44f9fc8e3e14b56781d5c581a7cef281d1cb333dbd23f9f47af7b5565e0",
           "sourceIndex": 37
         },
         {
-          "byteLength": 8360,
+          "byteLength": 8224,
           "runtimeIndex": 26,
-          "sha256": "7b0ae5c366f5a36b948e724ebfed296eefc9c95b671ce38c2bfc6270dccc7d24",
+          "sha256": "ccc2e22b15259c275437b7897d880fb7b3497f1b89bdbd8d524c7a6347d7e7fe",
           "sourceIndex": 38
         },
         {
           "byteLength": 5016,
           "runtimeIndex": 27,
-          "sha256": "ff785acdc865c7a835c55f32843ccde1546a058912529c93bd6c5fb226039323",
+          "sha256": "a4621fcbabb574c5849c896191d6dc169329a5a72824379ce72b3915715fa0b3",
           "sourceIndex": 39
         },
         {
@@ -245,33 +245,33 @@
           "sourceIndex": 51
         },
         {
-          "byteLength": 16536,
+          "byteLength": 15852,
           "runtimeIndex": 40,
-          "sha256": "eda90dcd6fd741fa87164947a5930f3318709298e1442679ade7fd3e70f0cc9d",
+          "sha256": "e49bde73d90459cfcce9f00c12f368cfd1da004195511837ff957646bd6321bf",
           "sourceIndex": 52
         },
         {
-          "byteLength": 16536,
+          "byteLength": 15852,
           "runtimeIndex": 41,
-          "sha256": "6582a877576b29a53effc2863c9577b815896e575aa797a6c48cda00d208f859",
+          "sha256": "16a24fb3858656e8522005702b4cab819e42775165eac291f9863e0dfd6afdc0",
           "sourceIndex": 53
         },
         {
-          "byteLength": 11024,
+          "byteLength": 10568,
           "runtimeIndex": 42,
-          "sha256": "42aca8010617119a404f71e8046f13aec9e2d46ac3cb1849911f5025fd633c37",
+          "sha256": "20d03c34565787a1578449c7c79973ef29181a5b79626922059e944b8f202092",
           "sourceIndex": 54
         },
         {
-          "byteLength": 6432,
+          "byteLength": 6384,
           "runtimeIndex": 43,
-          "sha256": "fae6e900cb9ff865131ba724930f6c0b1097594e27f9867a4b555a550a67671b",
+          "sha256": "6bb63910a65faa21a6139d705facc0b92a320138488f6a595151439d69a2cc7c",
           "sourceIndex": 55
         },
         {
           "byteLength": 96192,
           "runtimeIndex": 44,
-          "sha256": "e653810e48aa3c126f658ca256b60c9ead6b7a7b84d35b585725dfae19a41b2d",
+          "sha256": "30e627f3b399b09e83ec64d4a31f941e5417bb5c7a85a08f75c6fa96e227a26b",
           "sourceIndex": 56
         },
         {
@@ -549,12 +549,12 @@
         }
       ],
       "losslessVerified": true,
-      "nonStorageStructureSha256": "a52436a97052b8229a4438e22e390fe7b4a55d6f4504d4943f42fec60fd40010",
-      "runtimeBytes": 894508,
-      "runtimeSha256": "929e7574f4cce443a3c2378b20000bbe4bef2a1bb5b2321f56c0c999ece5a3a4",
-      "sourceBytes": 14182112,
+      "nonStorageStructureSha256": "cdfcbe8eab5519b3cbf3af31db13b4b2e4dce8036c1cc826792c9c0f97e97b8d",
+      "runtimeBytes": 892112,
+      "runtimeSha256": "d45e4a33457d129b58ef2c76d7e520c9985e95d0f9102e31d0e73a453705c551",
+      "sourceBytes": 14179740,
       "sourceFile": "Jefferson_Assigned_Buildings.glb",
-      "sourceSha256": "94390122fc6f8940b49e6d0d23b303a19869610912a7658739cdd38f32c72625"
+      "sourceSha256": "b9c930f5b6b5edde03e2d93511b26bb7d4d266133800e9f78eeccd04d8f5e2cf"
     },
     {
       "bufferViews": [

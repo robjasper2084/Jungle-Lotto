@@ -1,11 +1,11 @@
 {
-  "glb_sha256": "94390122fc6f8940b49e6d0d23b303a19869610912a7658739cdd38f32c72625",
+  "glb_sha256": "b9c930f5b6b5edde03e2d93511b26bb7d4d266133800e9f78eeccd04d8f5e2cf",
   "target_data_sha256": "4006a1c523b08a5403f7101a45bd9f739c4aa4632d55a1be5c3676148cde0bdf",
   "assignments": [
     {
       "buildingId": "detroit-38139",
       "prototype": "JEF_detroit_38139",
-      "vertices": 6097,
+      "vertices": 6080,
       "triangles": 3396,
       "materialBatches": 8,
       "outsideVertexCount": 0,
@@ -33,8 +33,8 @@
     {
       "buildingId": "886253052",
       "prototype": "JEF_886253052",
-      "vertices": 18754,
-      "triangles": 9772,
+      "vertices": 18697,
+      "triangles": 9764,
       "materialBatches": 9,
       "outsideVertexCount": 0,
       "maxOutsideVertexM": 0,
