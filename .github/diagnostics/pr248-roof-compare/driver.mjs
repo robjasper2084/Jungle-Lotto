@@ -2,13 +2,15 @@
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {createServer} from 'node:http';
-import {readFile,writeFile,mkdir} from 'node:fs/promises';
+import {readFile,writeFile,mkdir,rename} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {pathToFileURL} from 'node:url';
+import {randomUUID} from 'node:crypto';
 import {pins,sha256,json,checkout,helperPins,modelPins,verifyManifest} from './provenance.mjs';
 import {analyze,assertSourcePair} from './contract.mjs';
 import {verifyCapture,decodePng} from './png-evidence.mjs';
 import {assertNonblank,encodeRgba,cropRgba,comparePixels} from './png-derived.mjs';
+import {readEvidenceCheckpoint} from './evidence-transfer.ts';
 
 const [beforeArg,candidateArg,distArg,outArg]=process.argv.slice(2);assert(beforeArg&&candidateArg&&distArg&&outArg);
 const apps={before:resolve(beforeArg),candidate:resolve(candidateArg)},dist=resolve(distArg),out=resolve(outArg);
@@ -18,14 +20,32 @@ const {installLandmarkComparisonObserver}=await import(pathToFileURL(resolve(gam
 const launch={channel:'chrome',headless:false,args:['--enable-gpu','--use-gl=angle','--use-angle=metal']};
 const report={schema:1,diagnosticOnly:true,releaseAcceptance:false,complete:false,diagnosticHead:process.env.ROOF_DIAGNOSTIC_SHA??null,
  source:pins.sources,assetContext:pins.artifact,launch,viewport:pins.viewport,startedAt:new Date().toISOString(),
- errors:[],failedRequests:[],console:[],served:[],captures:[],differences:[],contextCleanup:[],analysis:null};
-const raw={},pending=new Set();let browser,activePage,activeMode,abortVariants=false;const servers=[];
+ errors:[],failedRequests:[],console:[],served:[],captures:[],differences:[],contextCleanup:[],checkpoints:[],analysis:null};
+const raw={},pending=new Set();let browser,activePage,activeMode,activeTransfer,abortVariants=false;const servers=[];
 const errorText=e=>e?.stack||String(e);
 async function bounded(p,ms,label){let timer;try{return await Promise.race([p,new Promise((_,reject)=>{timer=setTimeout(()=>{const e=Error(label+' exceeded '+ms+' ms');e.code='DIAGNOSTIC_TIMEOUT';reject(e);},ms);})]);}finally{clearTimeout(timer);}}
-async function checkpoint(){
- if(activePage)try{const value=await bounded(activePage.evaluate(()=>window.__roofCompare?.read()??null),15000,'Read partial controlled evidence');if(value)raw[activeMode]=value;}catch(e){report.errors.push(errorText(e));}
- for(const [mode,value] of Object.entries(raw))await json(resolve(out,mode,'native-observation.json'),value);
+async function checkpoint({bestEffort=false}={}){
+ let failure;
+ // Capture page/mode/session locally. A late response cannot update another
+ // variant or replace the last completely verified, persisted checkpoint.
+ const state=activeTransfer,page=activePage,mode=activeMode;
+ if(page&&state&&!state.failed)try{
+  const result=await readEvidenceCheckpoint({session:state.session,mode,source:pins.sources[mode],previous:state.previous,
+   remote:(method,request)=>page.evaluate(({method,request})=>window.__roofCompare.transfer[method](request),{method,request})});
+  const directory=resolve(out,mode,'checkpoint-sections');await mkdir(directory,{recursive:true});
+  for(const section of result.newSections){
+   const file=resolve(directory,section.sha256+'.json'),temporary=file+'.pending';
+   await writeFile(temporary,section.encoded);await rename(temporary,file);
+  }
+  // The scalar-preserving sections and complete manifest retain the exact
+  // analyzer input, including -0/undefined, beyond ordinary JSON's limitations.
+  const manifestFile=resolve(out,mode,'checkpoint-manifest.json'),pendingManifest=manifestFile+'.pending';
+  await json(pendingManifest,result.manifest);await rename(pendingManifest,manifestFile);
+  state.previous=result;raw[mode]=result.value;
+  report.checkpoints.push({mode,diagnosticHead:report.diagnosticHead,...result.receipt});
+ }catch(e){state.failed=true;failure=e;report.errors.push(errorText(e));}
  await json(resolve(out,'report.json'),report);
+ if(failure&&!bestEffort)throw failure;
 }
 function installDeterminism(config){
  let state=config.seed>>>0,calls=0;const originalDate=Date;
@@ -56,7 +76,7 @@ async function collect(mode){
  const deadline=setTimeout(()=>{report.errors.push(mode+': 13-minute native variant deadline');void context.close().catch(e=>report.errors.push(errorText(e)));},13*60000);
  try{
  await context.addInitScript(installDeterminism,pins.construction);await context.addInitScript(installLandmarkComparisonObserver,{historyLimit:8});
- const page=await context.newPage();activePage=page;activeMode=mode;
+ const page=await context.newPage();activePage=page;activeMode=mode;activeTransfer={session:randomUUID(),previous:null,failed:false};
  page.on('pageerror',e=>report.errors.push(mode+': '+errorText(e)));
  page.on('console',m=>{report.console.push({mode,type:m.type(),text:m.text()});
   if(m.type()==='error'||m.type()==='warning'&&/unavailable|failed|fallback|retry/i.test(m.text()))report.errors.push(mode+': '+m.text());});
@@ -103,16 +123,27 @@ async function collect(mode){
      await writeFile(resolve(out,receipt.roofFile),cropPng);await checkpoint();
     }
     await bounded(page.evaluate(()=>window.__roofCompare.finishCase()),180000,report.phase+' complete scene conservation snapshot');await checkpoint();
-   }catch(e){report.errors.push(report.phase+': '+errorText(e));await checkpoint();if(e.code==='DIAGNOSTIC_TIMEOUT'||page.isClosed())throw e;}
+   }catch(e){report.errors.push(report.phase+': '+errorText(e));
+    // A timed-out browser operation may still be running. Never start a
+    // competing read against that context; retain the last good observation.
+    if(e.code==='DIAGNOSTIC_TIMEOUT')activeTransfer.failed=true;
+    await checkpoint({bestEffort:true});if(e.code==='DIAGNOSTIC_TIMEOUT'||page.isClosed())throw e;if(activeTransfer.failed)throw e;}
   }
   await bounded(Promise.allSettled([...pending]),35000,mode+' source response settlement');
   for(const file of Object.keys(pins.models))assert(report.served.some(r=>r.mode===mode&&r.path==='/belle/staged-architecture/'+file&&r.sha256===pins.models[file][mode].sha256),'A staged GLB was not fetched/verified: '+file);
+ }catch(e){
+  if(e.code==='DIAGNOSTIC_TIMEOUT'&&activeTransfer)activeTransfer.failed=true;
+  throw e;
  }finally{
   clearTimeout(deadline);
-  await checkpoint();activePage=null;activeMode=null;
+  try{await checkpoint({bestEffort:true});}catch(e){report.errors.push(errorText(e));}
+  activePage=null;activeMode=null;activeTransfer=null;
   let confirmed=false;
   try{await bounded(context.close(),30000,mode+' context cleanup');confirmed=true;}catch(e){report.errors.push(errorText(e));abortVariants=true;}
   report.contextCleanup.push({mode,confirmed});
+  // Write the compatible complete observation once per variant, including
+  // the last successfully verified partial snapshot on failure.
+  if(raw[mode])try{await json(resolve(modeOut,'native-observation.json'),raw[mode]);}catch(e){report.errors.push(errorText(e));}
   if(!confirmed)try{await bounded(browser.close(),30000,'Abort browser after unconfirmed context closure');}catch(e){report.errors.push(errorText(e));}
   try{await verifyManifest(resolve(modeOut,'fixture'),fixture);checkout(app,mode);}catch(e){report.errors.push(errorText(e));}
  }
@@ -136,13 +167,13 @@ try{
  const assetManifest=JSON.parse(await readFile(resolve(out,'dist-manifest.json'),'utf8'));await verifyManifest(dist,assetManifest);
  browser=await chromium.launch(launch);report.browser=browser.version();
  for(const mode of ['before','candidate']){if(abortVariants){report.errors.push('Skipped '+mode+' after unconfirmed prior context closure');break;}
-  try{await collect(mode);}catch(e){report.errors.push(mode+': '+errorText(e));await checkpoint();}}
+  try{await collect(mode);}catch(e){report.errors.push(mode+': '+errorText(e));await checkpoint({bestEffort:true});}}
  const derived=mode=>report.served.filter(r=>r.mode===mode&&r.kind==='derived-image').map(({kind,bytes,sha256})=>({kind,bytes,sha256})).sort((a,b)=>a.sha256.localeCompare(b.sha256));
  assert.deepEqual(derived('before'),derived('candidate'),'Derived image resources changed across worlds');
  await differences();
 }catch(e){report.errors.push(errorText(e));}
 finally{
- await checkpoint();
+ try{await checkpoint({bestEffort:true});}catch(e){report.errors.push(errorText(e));}
  if(browser)try{await bounded(browser.close(),30000,'Native browser cleanup');}catch(e){report.errors.push(errorText(e));}
  for(const server of servers)if(server.listening)try{await bounded(new Promise((yes,no)=>server.close(e=>e?no(e):yes())),10000,'Static server cleanup');}catch(e){report.errors.push(errorText(e));}
  try{await bounded(Promise.allSettled([...pending]),35000,'Final source response settlement');}catch(e){report.errors.push(errorText(e));}

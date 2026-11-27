@@ -20,7 +20,7 @@ env:
 
 jobs:
   native-metal-comparison:
-    if: github.event.pull_request.head.ref == 'upgrade-redesign-pr248-roof-comparison-20261126'
+    if: github.event.pull_request.head.ref == 'upgrade-redesign-pr248-roof-comparison-20261126' || github.event.pull_request.head.ref == 'upgrade-redesign-pr249-evidence-transfer-20261127'
     runs-on: macos-15
     timeout-minutes: 45
     steps:
@@ -102,7 +102,7 @@ jobs:
           node --check "$bundle/driver.mjs"
           node "$bundle/build.mjs" before "$GITHUB_WORKSPACE/before" "$out/before" 2>&1 | tee "$out/before-build.log"
           node "$bundle/build.mjs" candidate "$GITHUB_WORKSPACE/candidate" "$out/candidate" 2>&1 | tee "$out/candidate-build.log"
-          node --test "$bundle/contract.test.mjs" "$bundle/provenance.test.mjs" 2>&1 | tee "$out/contract-tests.log"
+          node --test "$bundle/contract.test.mjs" "$bundle/provenance.test.mjs" "$bundle/evidence-transfer.test.mjs" 2>&1 | tee "$out/contract-tests.log"
       - name: Capture matched native roof views and retain changed pixels
         timeout-minutes: 30
         run: |

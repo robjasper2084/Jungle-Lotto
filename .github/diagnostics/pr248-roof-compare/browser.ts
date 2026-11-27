@@ -13,6 +13,7 @@ import {planDetroitProps} from '@app/detroitProps.ts';
 import {check,sha,f32,objectPath,roofPath,cameraReceipt,setRecordedCamera,sceneReceipt} from './scene-receipt';
 import pins from './pins.json';
 import {snapshotOwnedSubmission} from './submission-receipt.ts';
+import {createEvidencePager} from './evidence-transfer.ts';
 declare const __ROOF_VARIANT__:'before'|'candidate';
 
 const root=window as any,mode=__ROOF_VARIANT__,{width,height}=pins.viewport;
@@ -208,4 +209,5 @@ async function finishCase(){
  return {name:current.name};
 }
 const wrap=(fn:Function)=>async(...args:any[])=>{try{return await fn(...args);}catch(e){evidence.errors.push(text(e));throw e;}};
-root.__roofCompare=Object.freeze({ready:()=>ready,prepare:wrap(prepare),capture:wrap(capture),finishCase:wrap(finishCase),read:()=>evidence});
+const transfer=createEvidencePager(()=>evidence,{mode,source:pins.sources[mode]});
+root.__roofCompare=Object.freeze({ready:()=>ready,prepare:wrap(prepare),capture:wrap(capture),finishCase:wrap(finishCase),read:()=>evidence,transfer});

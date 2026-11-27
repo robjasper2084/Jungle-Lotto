@@ -2,6 +2,18 @@
 
 This is an additive native Metal diagnostic for the estimated Aquarium study in PR #248. It compares exact before commit `bf2fa1eaef4c529e8428f2ac1d0ac5a897a1e112` with exact roof candidate `c7461c7c095cfb19ba8770b343952adb6eda5624`. The sole intended model change is the two copper end closures, adding 54 vertices and 50 triangles to the existing roof primitive in each of three LODs. Existing vertices, indices, materials, placement, height/profile, collider inputs and shadow policy remain authoritative.
 
+## Bounded incremental evidence transfer
+
+The second native run, [45923996462](https://github.com/robjasper2084/Jungle-Lotto/actions/runs/45923996462), retained all sixteen requested PNG/RGBA captures but failed to transfer the complete observations. Artifact `15167802199` (245,229,671 bytes; SHA-256 `76f3d7fbbf4b08b40d537a6b88ec5d04e4b454d07386c107e37fa9593625e35b`) contains 24 original 15-second read timeouts. Its before/candidate observation files are 111,682,058 and 114,105,248 bytes, each with only three cases. The unchanged analyzer correctly rejects the incomplete data. That failure remains recorded; the missing observations are not reconstructed from the images.
+
+The isolated transport repair replaces repeated whole-object Playwright reads with a snapshot of each root field and each case field. Fields whose exact encoded contents match the previous successful checkpoint are reused. Changed fields are transferred in pages of at most 262,144 UTF-16 code units, bound to the variant, source, session, revision, field order, length and SHA-256. All pages, host hashing/decoding, final browser mutation check and reconstruction share the **same original cumulative 15,000 ms read deadline**. Each page does not receive a new allowance. Snapshotting still examines the complete evidence; this is a reduction in transfer and rewriting, not a claim that the browser does no serialization work.
+
+Scalar encoding preserves negative zero, explicit undefined, NaN and infinities that ordinary JSON loses. Array holes become explicit undefined elements, as in the original Playwright transfer. Nonenumerable `settleOwners` functions are omitted as before. Unsupported exotic values, getters, cycles and custom JSON conversion hooks fail instead of changing the evidence. The browser rejects any evidence mutation between snapshot and seal. Late responses cannot commit after a timeout, and a failed variant cannot start competing evidence reads against a still-running timed-out operation.
+
+Each successful checkpoint atomically persists its typed sections and complete manifest in the variant's `checkpoint-sections/` and `checkpoint-manifest.json`. The compatible `native-observation.json` is written once at variant cleanup, including the last completely verified partial observation on failure. The typed files preserve the exact in-memory analyzer input beyond ordinary JSON's signed-zero/undefined limitations. Failed writes cannot truncate an earlier accepted manifest or a shared section file. Original captures are still written before downstream checks.
+
+No application source or model pin, camera, world construction, rendering sequence, shadow cadence, native fence, image derivation, material/submission assertion, four-view/sixteen-image requirement, 13-minute variant timer, 30-minute capture step or 45-minute job limit changes. The existing strict analyzer runs without edits. Historical garden material and pier draw-order differences can still fail the comparison. This diagnostic continues to report `releaseAcceptance: false` and does not certify native gameplay, collision fit, full exterior visibility or the original 90-second performance gates.
+
 ## What the images mean
 
 The fixture calls each commit's unmodified `createWorld` factory, with the complete immutable original asset context. It uses the four exact desktop camera matrices retained by public-input gallery PR #245 at `aef6e04`: Aquarium front, rear and east oblique, and Conservatory south. It assigns those matrices only to its own diagnostic camera. Float32 view/projection/position bits are checked both directly and by the unchanged original read-only renderer observer. The Aquarium transform and LOD0 submission are also binding.
@@ -43,7 +55,7 @@ The new workflow is restricted to the dedicated diagnostic branch targeting the 
 Focused portable checks:
 
 ```sh
-node --test .github/diagnostics/pr248-roof-compare/contract.test.mjs .github/diagnostics/pr248-roof-compare/provenance.test.mjs
+node --test .github/diagnostics/pr248-roof-compare/contract.test.mjs .github/diagnostics/pr248-roof-compare/provenance.test.mjs .github/diagnostics/pr248-roof-compare/evidence-transfer.test.mjs
 node --check .github/diagnostics/pr248-roof-compare/driver.mjs
 ```
 
