@@ -1,0 +1,1545 @@
+{
+  "version": 1,
+  "source": "59c03bfff92f82f777ede52f3dfdfcbb6e7fa5d7",
+  "artifactId": 15172498139,
+  "artifactSha256": "b29d542a7985795d947b6d1879f9e8840bec03aff45378fa890c9ff577b8e840",
+  "reportSha256": "bf4210b607f5dc9452db6c382546e0bd7a1ac4a5a3271136f3f29346e32c114a",
+  "scope": "Two unchanged raw native legs, selected from the independently verified historical failed report. Offline modeling adds no native acceptance or interpolated native frames.",
+  "firstLeg": {
+    "name": "aquarium-complete-front-side-walk-0-0",
+    "before": {
+      "frames": 944,
+      "time": 28.544599999999996,
+      "actor": {
+        "x": 1350.8787341500893,
+        "y": 2,
+        "z": 1125.3483974696717,
+        "headingY": -1.8919999999240045,
+        "speed": 0,
+        "footBlend": 1,
+        "footMode": 2,
+        "firstPerson": true,
+        "onFoot": true
+      },
+      "sites": [
+        {
+          "id": "107310050",
+          "local": {
+            "u": 34.29925315645864,
+            "v": 40.77128242146226
+          }
+        },
+        {
+          "id": "107227742",
+          "local": {
+            "u": -0.6800000000002004,
+            "v": -44.00000000000007
+          }
+        }
+      ]
+    },
+    "after": {
+      "frames": 1008,
+      "time": 29.842599999999994,
+      "actor": {
+        "x": 1349.70339966757,
+        "y": 2,
+        "z": 1124.957420892584,
+        "headingY": -1.8919999999999992,
+        "speed": 0.0026401916003234516,
+        "footBlend": 1,
+        "footMode": 2,
+        "firstPerson": true,
+        "onFoot": true
+      },
+      "sites": [
+        {
+          "id": "107310050",
+          "local": {
+            "u": 33.301410609447316,
+            "v": 41.5051653010854
+          }
+        },
+        {
+          "id": "107227742",
+          "local": {
+            "u": 0.317842547011125,
+            "v": -44.733882879623216
+          }
+        }
+      ]
+    },
+    "goal": {
+      "x": 1350.0817925909585,
+      "z": 1125.109778735999
+    },
+    "ground": [
+      {
+        "x": 1350.8787341500893,
+        "z": 1125.3483974696717,
+        "height": 2,
+        "walkable": true,
+        "planningClearance": 2.25,
+        "obstacleOccupancy": {
+          "bodyHeights": [
+            0.62,
+            1.1,
+            1.58
+          ],
+          "narrowRadius": 0.7,
+          "narrowHits": [
+            null,
+            null,
+            null
+          ],
+          "wideRadius": 2.25,
+          "wideHits": [
+            null,
+            null,
+            null
+          ]
+        }
+      },
+      {
+        "x": 1350.480263370524,
+        "z": 1125.2290881028352,
+        "height": 2,
+        "walkable": true,
+        "planningClearance": 2.25,
+        "obstacleOccupancy": {
+          "bodyHeights": [
+            0.62,
+            1.1,
+            1.58
+          ],
+          "narrowRadius": 0.7,
+          "narrowHits": [
+            null,
+            null,
+            null
+          ],
+          "wideRadius": 2.25,
+          "wideHits": [
+            null,
+            null,
+            null
+          ]
+        }
+      },
+      {
+        "x": 1350.0817925909585,
+        "z": 1125.109778735999,
+        "height": 2,
+        "walkable": true,
+        "planningClearance": 2.25,
+        "obstacleOccupancy": {
+          "bodyHeights": [
+            0.62,
+            1.1,
+            1.58
+          ],
+          "narrowRadius": 0.7,
+          "narrowHits": [
+            null,
+            null,
+            null
+          ],
+          "wideRadius": 2.25,
+          "wideHits": [
+            null,
+            null,
+            null
+          ]
+        }
+      }
+    ],
+    "maxLateral": 1.96,
+    "sweep": {
+      "from": {
+        "x": 1350.8787341500893,
+        "y": 2,
+        "z": 1125.3483974696717,
+        "headingY": -1.8919999999240045,
+        "speed": 0,
+        "footBlend": 1,
+        "footMode": 2,
+        "firstPerson": true,
+        "onFoot": true
+      },
+      "to": {
+        "x": 1350.0817925909585,
+        "z": 1125.109778735999
+      },
+      "length": 0.8318982802779225,
+      "maxLateral": 1.96,
+      "maxForward": 0.75,
+      "bodyRadius": 0.27,
+      "bodyHeights": [
+        0.62,
+        1.1,
+        1.58
+      ],
+      "samples": [
+        {
+          "from": {
+            "x": 1350.8787341500893,
+            "y": 2,
+            "z": 1125.3483974696717
+          },
+          "to": {
+            "x": 1350.6622446874164,
+            "y": 2,
+            "z": 1125.2835766043968
+          },
+          "direction": {
+            "x": -0.9579795727724748,
+            "y": 0,
+            "z": -0.28683643100322276
+          },
+          "step": 0.22598546861113178,
+          "rayLength": 0.5259854686111318,
+          "acceptedBeyond": 0.4959854686111318,
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorRadius": 2.23,
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "from": {
+            "x": 1350.6622446874164,
+            "y": 2,
+            "z": 1125.2835766043968
+          },
+          "to": {
+            "x": 1350.4457552247436,
+            "y": 2,
+            "z": 1125.2187557391217
+          },
+          "direction": {
+            "x": -0.9579795727724748,
+            "y": 0,
+            "z": -0.28683643100322276
+          },
+          "step": 0.22598546861113178,
+          "rayLength": 0.5259854686111318,
+          "acceptedBeyond": 0.4959854686111318,
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorRadius": 2.23,
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "from": {
+            "x": 1350.4457552247436,
+            "y": 2,
+            "z": 1125.2187557391217
+          },
+          "to": {
+            "x": 1350.2292657620706,
+            "y": 2,
+            "z": 1125.1539348738468
+          },
+          "direction": {
+            "x": -0.9579795727724748,
+            "y": 0,
+            "z": -0.28683643100322276
+          },
+          "step": 0.22598546861113178,
+          "rayLength": 0.5259854686111318,
+          "acceptedBeyond": 0.4959854686111318,
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorRadius": 2.23,
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "from": {
+            "x": 1350.2292657620706,
+            "y": 2,
+            "z": 1125.1539348738468
+          },
+          "to": {
+            "x": 1350.0127762993977,
+            "y": 2,
+            "z": 1125.0891140085716
+          },
+          "direction": {
+            "x": -0.9579795727724748,
+            "y": 0,
+            "z": -0.28683643100322276
+          },
+          "step": 0.22598546861113178,
+          "rayLength": 0.5259854686111318,
+          "acceptedBeyond": 0.4959854686111318,
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorRadius": 2.23,
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "from": {
+            "x": 1350.0127762993977,
+            "y": 2,
+            "z": 1125.0891140085716
+          },
+          "to": {
+            "x": 1349.796286836725,
+            "y": 2,
+            "z": 1125.0242931432967
+          },
+          "direction": {
+            "x": -0.9579795727724748,
+            "y": 0,
+            "z": -0.28683643100322276
+          },
+          "step": 0.22598546861113178,
+          "rayLength": 0.5259854686111318,
+          "acceptedBeyond": 0.4959854686111318,
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorRadius": 2.23,
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "from": {
+            "x": 1349.796286836725,
+            "y": 2,
+            "z": 1125.0242931432967
+          },
+          "to": {
+            "x": 1349.579797374052,
+            "y": 2,
+            "z": 1124.9594722780216
+          },
+          "direction": {
+            "x": -0.9579795727724748,
+            "y": 0,
+            "z": -0.28683643100322276
+          },
+          "step": 0.22598546861113178,
+          "rayLength": 0.5259854686111318,
+          "acceptedBeyond": 0.4959854686111318,
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorRadius": 2.23,
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "from": {
+            "x": 1349.579797374052,
+            "y": 2,
+            "z": 1124.9594722780216
+          },
+          "to": {
+            "x": 1349.363307911379,
+            "y": 2,
+            "z": 1124.8946514127467
+          },
+          "direction": {
+            "x": -0.9579795727724748,
+            "y": 0,
+            "z": -0.28683643100322276
+          },
+          "step": 0.22598546861113178,
+          "rayLength": 0.5259854686111318,
+          "acceptedBeyond": 0.4959854686111318,
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorRadius": 2.23,
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        }
+      ],
+      "clear": true,
+      "scope": "Read-only original terrain and obstacle rays, including actual loaded flight solids. Anonymous ray distances do not identify a named obstacle."
+    },
+    "trace": [
+      {
+        "frames": 944,
+        "time": 28.544599999999996,
+        "actor": {
+          "x": 1350.8787341500893,
+          "y": 2,
+          "z": 1125.3483974696717,
+          "headingY": -1.8919999999240045,
+          "speed": 0,
+          "footBlend": 1,
+          "footMode": 2,
+          "firstPerson": true,
+          "onFoot": true
+        },
+        "sites": [
+          {
+            "id": "107310050",
+            "local": {
+              "u": 34.29925315645864,
+              "v": 40.77128242146226
+            }
+          },
+          {
+            "id": "107227742",
+            "local": {
+              "u": -0.6800000000002004,
+              "v": -44.00000000000007
+            }
+          }
+        ]
+      },
+      {
+        "frames": 948,
+        "time": 28.661499999999986,
+        "actor": {
+          "x": 1350.8598662138288,
+          "y": 2,
+          "z": 1125.342119620519,
+          "headingY": -1.8919999999882913,
+          "speed": 0.42639622025157525,
+          "footBlend": 1,
+          "footMode": 2,
+          "firstPerson": true,
+          "onFoot": true
+        },
+        "sites": [
+          {
+            "id": "107310050",
+            "local": {
+              "u": 34.28323497495356,
+              "v": 40.783064962358935
+            }
+          },
+          {
+            "id": "107227742",
+            "local": {
+              "u": -0.6639818184951185,
+              "v": -44.011782540896746
+            }
+          }
+        ]
+      },
+      {
+        "frames": 954,
+        "time": 28.761199999999995,
+        "actor": {
+          "x": 1350.789938194195,
+          "y": 2,
+          "z": 1125.3188527643679,
+          "headingY": -1.8919999999976254,
+          "speed": 0.996716035374793,
+          "footBlend": 1,
+          "footMode": 2,
+          "firstPerson": true,
+          "onFoot": true
+        },
+        "sites": [
+          {
+            "id": "107310050",
+            "local": {
+              "u": 34.223868667196726,
+              "v": 40.826733212019185
+            }
+          },
+          {
+            "id": "107227742",
+            "local": {
+              "u": -0.6046155107382809,
+              "v": -44.05545079055699
+            }
+          }
+        ]
+      },
+      {
+        "frames": 960,
+        "time": 28.878199999999996,
+        "actor": {
+          "x": 1350.6460308043274,
+          "y": 2,
+          "z": 1125.2709710632016,
+          "headingY": -1.8919999999996349,
+          "speed": 1.5255113426362594,
+          "footBlend": 1,
+          "footMode": 2,
+          "firstPerson": true,
+          "onFoot": true
+        },
+        "sites": [
+          {
+            "id": "107310050",
+            "local": {
+              "u": 34.101696604552046,
+              "v": 40.91659967558712
+            }
+          },
+          {
+            "id": "107227742",
+            "local": {
+              "u": -0.48244344809360307,
+              "v": -44.145317254124926
+            }
+          }
+        ]
+      },
+      {
+        "frames": 965,
+        "time": 28.994699999999998,
+        "actor": {
+          "x": 1350.4556338948764,
+          "y": 2,
+          "z": 1125.2076210995212,
+          "headingY": -1.8919999999999433,
+          "speed": 1.8676394174616255,
+          "footBlend": 1,
+          "footMode": 2,
+          "firstPerson": true,
+          "onFoot": true
+        },
+        "sites": [
+          {
+            "id": "107310050",
+            "local": {
+              "u": 33.94005665562258,
+              "v": 41.03549764839102
+            }
+          },
+          {
+            "id": "107227742",
+            "local": {
+              "u": -0.32080349916413553,
+              "v": -44.26421522692884
+            }
+          }
+        ]
+      },
+      {
+        "frames": 971,
+        "time": 29.094599999999993,
+        "actor": {
+          "x": 1350.2685525557342,
+          "y": 2,
+          "z": 1125.145374311618,
+          "headingY": -1.8919999999999884,
+          "speed": 2.050683027519263,
+          "footBlend": 1,
+          "footMode": 2,
+          "firstPerson": true,
+          "onFoot": true
+        },
+        "sites": [
+          {
+            "id": "107310050",
+            "local": {
+              "u": 33.78123150351392,
+              "v": 41.15232513281641
+            }
+          },
+          {
+            "id": "107227742",
+            "local": {
+              "u": -0.16197834705547898,
+              "v": -44.381042711354226
+            }
+          }
+        ]
+      },
+      {
+        "frames": 977,
+        "time": 29.211199999999998,
+        "actor": {
+          "x": 1350.0333297126308,
+          "y": 2,
+          "z": 1125.0671096033795,
+          "headingY": -1.891999999999998,
+          "speed": 2.1804012500889254,
+          "footBlend": 1,
+          "footMode": 2,
+          "firstPerson": true,
+          "onFoot": true
+        },
+        "sites": [
+          {
+            "id": "107310050",
+            "local": {
+              "u": 33.58153599135556,
+              "v": 41.299215748231866
+            }
+          },
+          {
+            "id": "107227742",
+            "local": {
+              "u": 0.03771716510287959,
+              "v": -44.52793332676968
+            }
+          }
+        ]
+      }
+    ],
+    "coastTrace": [
+      {
+        "frames": 980,
+        "time": 29.26459999999999,
+        "actor": {
+          "x": 1349.9221535153017,
+          "y": 2,
+          "z": 1125.0301184143764,
+          "headingY": -1.8919999999999992,
+          "speed": 2.1677820912798302,
+          "footBlend": 1,
+          "footMode": 2,
+          "firstPerson": true,
+          "onFoot": true
+        },
+        "sites": [
+          {
+            "id": "107310050",
+            "local": {
+              "u": 33.48715150312936,
+              "v": 41.368642423931504
+            }
+          },
+          {
+            "id": "107227742",
+            "local": {
+              "u": 0.13210165332907842,
+              "v": -44.59736000246932
+            }
+          }
+        ]
+      },
+      {
+        "frames": 986,
+        "time": 29.392599999999995,
+        "actor": {
+          "x": 1349.7564847411584,
+          "y": 2,
+          "z": 1124.974996139254,
+          "headingY": -1.8919999999999992,
+          "speed": 0.7044121993523719,
+          "footBlend": 1,
+          "footMode": 2,
+          "firstPerson": true,
+          "onFoot": true
+        },
+        "sites": [
+          {
+            "id": "107310050",
+            "local": {
+              "u": 33.34650482840721,
+              "v": 41.47209831226284
+            }
+          },
+          {
+            "id": "107227742",
+            "local": {
+              "u": 0.27274832805122706,
+              "v": -44.700815890800655
+            }
+          }
+        ]
+      },
+      {
+        "frames": 991,
+        "time": 29.50929999999999,
+        "actor": {
+          "x": 1349.7160000214863,
+          "y": 2,
+          "z": 1124.9615258285842,
+          "headingY": -1.8919999999999992,
+          "speed": 0.1758152781195929,
+          "footBlend": 1,
+          "footMode": 2,
+          "firstPerson": true,
+          "onFoot": true
+        },
+        "sites": [
+          {
+            "id": "107310050",
+            "local": {
+              "u": 33.31213479562106,
+              "v": 41.4973799784016
+            }
+          },
+          {
+            "id": "107227742",
+            "local": {
+              "u": 0.3071183608373733,
+              "v": -44.72609755693941
+            }
+          }
+        ]
+      },
+      {
+        "frames": 997,
+        "time": 29.62779999999999,
+        "actor": {
+          "x": 1349.7061336667687,
+          "y": 2,
+          "z": 1124.9582430378343,
+          "headingY": -1.8919999999999992,
+          "speed": 0.04064344255327653,
+          "footBlend": 1,
+          "footMode": 2,
+          "firstPerson": true,
+          "onFoot": true
+        },
+        "sites": [
+          {
+            "id": "107310050",
+            "local": {
+              "u": 33.30375862461477,
+              "v": 41.50354126315348
+            }
+          },
+          {
+            "id": "107227742",
+            "local": {
+              "u": 0.3154945318436688,
+              "v": -44.73225884169129
+            }
+          }
+        ]
+      },
+      {
+        "frames": 1002,
+        "time": 29.726099999999995,
+        "actor": {
+          "x": 1349.7040587366519,
+          "y": 2,
+          "z": 1124.9575526550552,
+          "headingY": -1.8919999999999992,
+          "speed": 0.011925222759720352,
+          "footBlend": 1,
+          "footMode": 2,
+          "firstPerson": true,
+          "onFoot": true
+        },
+        "sites": [
+          {
+            "id": "107310050",
+            "local": {
+              "u": 33.301997085527304,
+              "v": 41.50483700364241
+            }
+          },
+          {
+            "id": "107227742",
+            "local": {
+              "u": 0.3172560709311334,
+              "v": -44.73355458218022
+            }
+          }
+        ]
+      },
+      {
+        "frames": 1008,
+        "time": 29.842599999999994,
+        "actor": {
+          "x": 1349.70339966757,
+          "y": 2,
+          "z": 1124.957420892584,
+          "headingY": -1.8919999999999992,
+          "speed": 0.0026401916003234516,
+          "footBlend": 1,
+          "footMode": 2,
+          "firstPerson": true,
+          "onFoot": true
+        },
+        "sites": [
+          {
+            "id": "107310050",
+            "local": {
+              "u": 33.301410609447316,
+              "v": 41.5051653010854
+            }
+          },
+          {
+            "id": "107227742",
+            "local": {
+              "u": 0.317842547011125,
+              "v": -44.733882879623216
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "reverseCorrection": {
+    "name": "aquarium-complete-front-side-walk-0-1",
+    "before": {
+      "frames": 1245,
+      "time": 35.24460000000003,
+      "actor": {
+        "x": 1349.7033628183353,
+        "y": 2,
+        "z": 1124.957420892584,
+        "headingY": 1.2129999990427967,
+        "speed": 0,
+        "footBlend": 1,
+        "footMode": 2,
+        "firstPerson": true,
+        "onFoot": true
+      },
+      "sites": [
+        {
+          "id": "107310050",
+          "local": {
+            "u": 33.30137555056551,
+            "v": 41.50517664749023
+          }
+        },
+        {
+          "id": "107227742",
+          "local": {
+            "u": 0.31787760589293335,
+            "v": -44.73389422602805
+          }
+        }
+      ]
+    },
+    "after": {
+      "frames": 1296,
+      "time": 36.344600000000064,
+      "actor": {
+        "x": 1350.3195975134201,
+        "y": 2,
+        "z": 1125.1877292855852,
+        "headingY": 1.2129999999999987,
+        "speed": 0,
+        "footBlend": 1,
+        "footMode": 2,
+        "firstPerson": true,
+        "onFoot": true
+      },
+      "sites": [
+        {
+          "id": "107310050",
+          "local": {
+            "u": 33.81675469602222,
+            "v": 41.096310542583765
+          }
+        },
+        {
+          "id": "107227742",
+          "local": {
+            "u": -0.19750153956378114,
+            "v": -44.325028121121576
+          }
+        }
+      ]
+    },
+    "goal": {
+      "x": 1350.0817925909585,
+      "z": 1125.109778735999
+    },
+    "ground": [
+      {
+        "x": 1349.7033628183353,
+        "z": 1124.957420892584,
+        "height": 2,
+        "walkable": true,
+        "planningClearance": 2.25,
+        "obstacleOccupancy": {
+          "bodyHeights": [
+            0.62,
+            1.1,
+            1.58
+          ],
+          "narrowRadius": 0.7,
+          "narrowHits": [
+            null,
+            null,
+            null
+          ],
+          "wideRadius": 2.25,
+          "wideHits": [
+            null,
+            null,
+            null
+          ]
+        }
+      },
+      {
+        "x": 1350.0817925909585,
+        "z": 1125.109778735999,
+        "height": 2,
+        "walkable": true,
+        "planningClearance": 2.25,
+        "obstacleOccupancy": {
+          "bodyHeights": [
+            0.62,
+            1.1,
+            1.58
+          ],
+          "narrowRadius": 0.7,
+          "narrowHits": [
+            null,
+            null,
+            null
+          ],
+          "wideRadius": 2.25,
+          "wideHits": [
+            null,
+            null,
+            null
+          ]
+        }
+      }
+    ],
+    "maxLateral": 1.96,
+    "sweep": {
+      "from": {
+        "x": 1349.7033628183353,
+        "y": 2,
+        "z": 1124.957420892584,
+        "headingY": 1.2129999990427967,
+        "speed": 0,
+        "footBlend": 1,
+        "footMode": 2,
+        "firstPerson": true,
+        "onFoot": true
+      },
+      "to": {
+        "x": 1350.0817925909585,
+        "z": 1125.109778735999
+      },
+      "length": 0.4079485326088085,
+      "maxLateral": 1.96,
+      "maxForward": 0.75,
+      "bodyRadius": 0.27,
+      "bodyHeights": [
+        0.62,
+        1.1,
+        1.58
+      ],
+      "samples": [
+        {
+          "from": {
+            "x": 1349.7033628183353,
+            "y": 2,
+            "z": 1124.957420892584
+          },
+          "to": {
+            "x": 1349.9181949184056,
+            "y": 2,
+            "z": 1125.0439134410856
+          },
+          "direction": {
+            "x": 0.9276409703034939,
+            "y": 0,
+            "z": 0.37347319878994273
+          },
+          "step": 0.23158970652176167,
+          "rayLength": 0.5315897065217616,
+          "acceptedBeyond": 0.5015897065217617,
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorRadius": 2.23,
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "from": {
+            "x": 1349.9181949184056,
+            "y": 2,
+            "z": 1125.0439134410856
+          },
+          "to": {
+            "x": 1350.1330270184756,
+            "y": 2,
+            "z": 1125.130405989587
+          },
+          "direction": {
+            "x": 0.9276409703034939,
+            "y": 0,
+            "z": 0.37347319878994273
+          },
+          "step": 0.23158970652176167,
+          "rayLength": 0.5315897065217616,
+          "acceptedBeyond": 0.5015897065217617,
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorRadius": 2.23,
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "from": {
+            "x": 1350.1330270184756,
+            "y": 2,
+            "z": 1125.130405989587
+          },
+          "to": {
+            "x": 1350.3478591185458,
+            "y": 2,
+            "z": 1125.2168985380886
+          },
+          "direction": {
+            "x": 0.9276409703034939,
+            "y": 0,
+            "z": 0.37347319878994273
+          },
+          "step": 0.23158970652176164,
+          "rayLength": 0.5315897065217616,
+          "acceptedBeyond": 0.5015897065217616,
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorRadius": 2.23,
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "from": {
+            "x": 1350.3478591185458,
+            "y": 2,
+            "z": 1125.2168985380886
+          },
+          "to": {
+            "x": 1350.562691218616,
+            "y": 2,
+            "z": 1125.30339108659
+          },
+          "direction": {
+            "x": 0.9276409703034939,
+            "y": 0,
+            "z": 0.37347319878994273
+          },
+          "step": 0.2315897065217617,
+          "rayLength": 0.5315897065217616,
+          "acceptedBeyond": 0.5015897065217617,
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorRadius": 2.23,
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "from": {
+            "x": 1350.562691218616,
+            "y": 2,
+            "z": 1125.30339108659
+          },
+          "to": {
+            "x": 1350.777523318686,
+            "y": 2,
+            "z": 1125.3898836350916
+          },
+          "direction": {
+            "x": 0.9276409703034939,
+            "y": 0,
+            "z": 0.37347319878994273
+          },
+          "step": 0.2315897065217617,
+          "rayLength": 0.5315897065217616,
+          "acceptedBeyond": 0.5015897065217617,
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorRadius": 2.23,
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        }
+      ],
+      "clear": true,
+      "scope": "Read-only original terrain and obstacle rays, including actual loaded flight solids. Anonymous ray distances do not identify a named obstacle."
+    },
+    "trace": [
+      {
+        "frames": 1246,
+        "time": 35.260600000000025,
+        "actor": {
+          "x": 1349.7033628183353,
+          "y": 2,
+          "z": 1124.957420892584,
+          "headingY": 1.2129999992592528,
+          "speed": 0,
+          "footBlend": 1,
+          "footMode": 2,
+          "firstPerson": true,
+          "onFoot": true
+        },
+        "sites": [
+          {
+            "id": "107310050",
+            "local": {
+              "u": 33.30137555056551,
+              "v": 41.50517664749023
+            }
+          },
+          {
+            "id": "107227742",
+            "local": {
+              "u": 0.31787760589293335,
+              "v": -44.73389422602805
+            }
+          }
+        ]
+      },
+      {
+        "frames": 1251,
+        "time": 35.35920000000004,
+        "actor": {
+          "x": 1349.7149185946691,
+          "y": 2,
+          "z": 1124.9617414707675,
+          "headingY": 1.2129999998472243,
+          "speed": 0.3196953367044228,
+          "footBlend": 1,
+          "footMode": 2,
+          "firstPerson": true,
+          "onFoot": true
+        },
+        "sites": [
+          {
+            "id": "107310050",
+            "local": {
+              "u": 33.31103951158518,
+              "v": 41.497507800123955
+            }
+          },
+          {
+            "id": "107227742",
+            "local": {
+              "u": 0.3082136448732662,
+              "v": -44.72622537866177
+            }
+          }
+        ]
+      },
+      {
+        "frames": 1256,
+        "time": 35.461200000000034,
+        "actor": {
+          "x": 1349.7758089588726,
+          "y": 2,
+          "z": 1124.9845077109117,
+          "headingY": 1.2129999999700842,
+          "speed": 0.9061213569485278,
+          "footBlend": 1,
+          "footMode": 2,
+          "firstPerson": true,
+          "onFoot": true
+        },
+        "sites": [
+          {
+            "id": "107310050",
+            "local": {
+              "u": 33.361961413253,
+              "v": 41.4570986665813
+            }
+          },
+          {
+            "id": "107227742",
+            "local": {
+              "u": 0.25729174320544246,
+              "v": -44.68581624511912
+            }
+          }
+        ]
+      },
+      {
+        "frames": 1262,
+        "time": 35.57590000000003,
+        "actor": {
+          "x": 1349.9063084041252,
+          "y": 2,
+          "z": 1125.0333000238998,
+          "headingY": 1.2129999999952326,
+          "speed": 1.4532889444540196,
+          "footBlend": 1,
+          "footMode": 2,
+          "firstPerson": true,
+          "onFoot": true
+        },
+        "sites": [
+          {
+            "id": "107310050",
+            "local": {
+              "u": 33.471096577841514,
+              "v": 41.370494331423124
+            }
+          },
+          {
+            "id": "107227742",
+            "local": {
+              "u": 0.14815657861692522,
+              "v": -44.599211909960935
+            }
+          }
+        ]
+      },
+      {
+        "frames": 1267,
+        "time": 35.67590000000003,
+        "actor": {
+          "x": 1350.0600443577582,
+          "y": 2,
+          "z": 1125.0907802128088,
+          "headingY": 1.2129999999990375,
+          "speed": 1.7805262732649463,
+          "footBlend": 1,
+          "footMode": 2,
+          "firstPerson": true,
+          "onFoot": true
+        },
+        "sites": [
+          {
+            "id": "107310050",
+            "local": {
+              "u": 33.59966416348081,
+              "v": 41.26846937624373
+            }
+          },
+          {
+            "id": "107227742",
+            "local": {
+              "u": 0.019588992977626063,
+              "v": -44.49718695478155
+            }
+          }
+        ]
+      }
+    ],
+    "coastTrace": [
+      {
+        "frames": 1268,
+        "time": 35.69450000000002,
+        "actor": {
+          "x": 1350.0916790078593,
+          "y": 2,
+          "z": 1125.1026080619279,
+          "headingY": 1.2129999999992842,
+          "speed": 1.827849893973946,
+          "footBlend": 1,
+          "footMode": 2,
+          "firstPerson": true,
+          "onFoot": true
+        },
+        "sites": [
+          {
+            "id": "107310050",
+            "local": {
+              "u": 33.62611985253705,
+              "v": 41.24747543382311
+            }
+          },
+          {
+            "id": "107227742",
+            "local": {
+              "u": -0.006866696078610346,
+              "v": -44.47619301236092
+            }
+          }
+        ]
+      },
+      {
+        "frames": 1274,
+        "time": 35.81110000000003,
+        "actor": {
+          "x": 1350.2503732392524,
+          "y": 2,
+          "z": 1125.1619420965656,
+          "headingY": 1.2129999999998888,
+          "speed": 0.8987928361770895,
+          "footBlend": 1,
+          "footMode": 2,
+          "firstPerson": true,
+          "onFoot": true
+        },
+        "sites": [
+          {
+            "id": "107310050",
+            "local": {
+              "u": 33.75883398806201,
+              "v": 41.14215997923209
+            }
+          },
+          {
+            "id": "107227742",
+            "local": {
+              "u": -0.1395808316035705,
+              "v": -44.37087755776991
+            }
+          }
+        ]
+      },
+      {
+        "frames": 1277,
+        "time": 35.91130000000003,
+        "actor": {
+          "x": 1350.2987958096826,
+          "y": 2,
+          "z": 1125.1800467651842,
+          "headingY": 1.2129999999999768,
+          "speed": 0.28849901844173154,
+          "footBlend": 1,
+          "footMode": 2,
+          "firstPerson": true,
+          "onFoot": true
+        },
+        "sites": [
+          {
+            "id": "107310050",
+            "local": {
+              "u": 33.79932921916237,
+              "v": 41.11002494210774
+            }
+          },
+          {
+            "id": "107227742",
+            "local": {
+              "u": -0.1800760627039253,
+              "v": -44.33874252064556
+            }
+          }
+        ]
+      },
+      {
+        "frames": 1281,
+        "time": 36.02640000000004,
+        "actor": {
+          "x": 1350.3147173063544,
+          "y": 2,
+          "z": 1125.1859996383712,
+          "headingY": 1.2129999999999956,
+          "speed": 0.07058344581984227,
+          "footBlend": 1,
+          "footMode": 2,
+          "firstPerson": true,
+          "onFoot": true
+        },
+        "sites": [
+          {
+            "id": "107310050",
+            "local": {
+              "u": 33.81264418120301,
+              "v": 41.099458838696044
+            }
+          },
+          {
+            "id": "107227742",
+            "local": {
+              "u": -0.19339102474457093,
+              "v": -44.328176417233855
+            }
+          }
+        ]
+      },
+      {
+        "frames": 1286,
+        "time": 36.14270000000005,
+        "actor": {
+          "x": 1350.3185785855376,
+          "y": 2,
+          "z": 1125.1874433283579,
+          "headingY": 1.2129999999999987,
+          "speed": 0.016613027698261992,
+          "footBlend": 1,
+          "footMode": 2,
+          "firstPerson": true,
+          "onFoot": true
+        },
+        "sites": [
+          {
+            "id": "107310050",
+            "local": {
+              "u": 33.815873323965896,
+              "v": 41.09689634874972
+            }
+          },
+          {
+            "id": "107227742",
+            "local": {
+              "u": -0.1966201675074597,
+              "v": -44.32561392728754
+            }
+          }
+        ]
+      },
+      {
+        "frames": 1292,
+        "time": 36.245000000000054,
+        "actor": {
+          "x": 1350.3194313334388,
+          "y": 2,
+          "z": 1125.1877292855852,
+          "headingY": 1.2129999999999987,
+          "speed": 0.00434349433987138,
+          "footBlend": 1,
+          "footMode": 2,
+          "firstPerson": true,
+          "onFoot": true
+        },
+        "sites": [
+          {
+            "id": "107310050",
+            "local": {
+              "u": 33.81659659004323,
+              "v": 41.09636171176975
+            }
+          },
+          {
+            "id": "107227742",
+            "local": {
+              "u": -0.19734343358479123,
+              "v": -44.32507929030757
+            }
+          }
+        ]
+      },
+      {
+        "frames": 1296,
+        "time": 36.344600000000064,
+        "actor": {
+          "x": 1350.3195975134201,
+          "y": 2,
+          "z": 1125.1877292855852,
+          "headingY": 1.2129999999999987,
+          "speed": 0,
+          "footBlend": 1,
+          "footMode": 2,
+          "firstPerson": true,
+          "onFoot": true
+        },
+        "sites": [
+          {
+            "id": "107310050",
+            "local": {
+              "u": 33.81675469602222,
+              "v": 41.096310542583765
+            }
+          },
+          {
+            "id": "107227742",
+            "local": {
+              "u": -0.19750153956378114,
+              "v": -44.325028121121576
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -287,7 +287,7 @@ export async function run(){
     return row.frames-first.frames>=7&&tail.every(s=>Math.abs(local(s)[rule.axis]-firstLocal[rule.axis])<.05&&Math.abs(local(s)[tangent]-firstLocal[tangent])<.8)?row:false;
    }
    throw Error('Unknown motion rule');
-  },{rule,phase:report.phase},{polling:100,timeout:Math.min(timeout,CASE_MS-(Date.now()-started))});
+  },{rule,phase:report.phase},{polling:rule.type==='world-target'?16:100,timeout:Math.min(timeout,CASE_MS-(Date.now()-started))});
   try{return await handle.jsonValue();}finally{await handle.dispose();}
  }
  const frames=async count=>{const before=await motion();return waitMotion({type:'frames',target:before.frames+count});};
