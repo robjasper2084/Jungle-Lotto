@@ -208,5 +208,83 @@ test('full original scenery reproduces every native c746 phone and desktop rejec
  }
 });
 
+test('the retained native250 phone failure keeps its unsafe connector rejected and reaches a clear alternative after the chosen component disconnects',async t=>{
+ const retained=JSON.parse(await readFile(new URL('./staged-landmark-exterior-proof-connector-fixture.json',import.meta.url),'utf8'));
+ assert.equal(retained.source,'7b69bf2b48d6177f5eb346021793ba79922be79e');
+ assert.equal(retained.plannerBlob,'43f39c112df68f5ca5c3fc2231bd550470fa8d86');
+ assert.equal(retained.artifact.id,15168627388);assert.equal(retained.plans.length,3);assert.equal(retained.nativeSweeps.length,9);
+ const {originalExteriorTerrain}=await import('./staged-landmark-original-solids.test-support.mjs');
+ const {terrain:loaded,solids,boulderCount}=await originalExteriorTerrain(map);
+ assert.equal(solids.length,6043);assert.equal(boulderCount,90);
+ const queries={queryGround:points=>readStagedRouteGround(loaded,points),querySweeps:segments=>readStagedRouteSweeps(loaded,segments)};
+ for(const sweep of retained.nativeSweeps){
+  const [actual]=queries.querySweeps([{from:sweep.from,to:sweep.to,maxLateral:sweep.maxLateral,maxForward:sweep.maxForward}]);
+  assert.deepEqual(actual,sweep,'All nine original native sweep receipts must reproduce exactly');
+ }
+ const receipt={},planner=await createExteriorPlanner({bounds:retained.bounds,camera:retained.camera,layout:retained.layout,...queries,receipt});
+ for(const old of retained.plans.slice(0,2)){
+  const route=await planner.route(old.from,old.bearing),plan=receipt.plans.at(-1);
+  assert.equal(plan.status,old.status);assert.equal(plan.attempts.length,old.attemptCount);
+  assert.deepEqual(plan.attempts.map(row=>row.connectedCells),old.connectedCells);
+  assert.deepEqual(plan.connectors,old.connectors);assert.deepEqual(plan.selected,old.selected);
+  assert.deepEqual(route.waypoints,old.selected.waypoints,'Already passing route choices must remain identical');
+  assert.deepEqual(plan.connectorChanges??[],[]);
+ }
+ const old=retained.plans.at(-1),route=await planner.route(old.from,old.bearing),plan=receipt.plans.at(-1);
+ assert.equal(old.status,'failed');assert.equal(old.attemptCount,7);
+ assert.deepEqual(plan.connectors.slice(0,2),old.connectors);
+ assert.equal(plan.connectors[0].prospective.clear,false,'The closest connector still fails its original stopping corridor');
+ assert.equal(plan.connectors[1].prospective.clear,true,'The next connector is locally clear but its component disconnects');
+ assert.equal(plan.connectors.length,3);assert.equal(plan.connectors[2].prospective.clear,true);
+ assert.deepEqual(plan.connectors[2].to,{x:1214.5335473956352,z:1329.1117891992094});
+ assert.deepEqual(plan.attempts.slice(0,7).map(row=>row.connectedCells),old.connectedCells);
+ assert.equal(plan.connectorChanges.length,1);assert.equal(plan.connectorChanges[0].afterAttempt,6);
+ assert(old.error.includes(plan.connectorChanges[0].reason),'The original disconnected-component cause remains explicit');
+ assert.deepEqual(plan.connectorChanges[0].from,old.connectors[1].to);assert.deepEqual(plan.connectorChanges[0].to,plan.connectors[2].to);
+ assert.equal(plan.status,'passed');assert(plan.attempts.length<=receipt.maximumSearchAttempts);
+ const checked=await checkExteriorProspectivePath(old.from,route.waypoints,queries);
+ assert(checked.clear);assert.equal(checked.checkedLegs,route.prospective.checkedLegs);
+ assert.equal(route.prospective.maxForward,.75);assert(checked.checkedLegs<=route.originalWaypointCount*80);
+ t.diagnostic(JSON.stringify({rawNativeSweepsMatched:9,connectorChanges:plan.connectorChanges,searchAttempts:plan.attempts.length,waypoints:route.waypoints.length,originalWaypointCount:route.originalWaypointCount,checkedLegs:checked.checkedLegs,originalTotalLegAllowance:route.originalWaypointCount*80}));
+ // This is an original-source geometric replay. The failed native archive is
+ // retained; only a new exact-head native run can establish actual completion.
+});
+
+function disconnectedConnectorFixture({small=false}={}){
+ const bounds={min:[-1,0,-1],max:[1,2,1],center:[0,1,0]},camera={fov:60,aspect:1.6};
+ const range=Math.sqrt(3)/Math.sin(Math.PI/6)*1.22+60,start={x:-range+44,z:-range+64};
+ const queryGround=points=>points.map(point=>{
+  const walkable=point.x>10||(small?distance(point,start)<=3.1:point.x<-10);
+  return{...point,height:2,walkable,planningClearance:walkable?.7:0};
+ });
+ const requests=[],querySweeps=segments=>{requests.push(...structuredClone(segments));return segments.map(()=>({clear:true,samples:[]}));};
+ return{bounds,camera,start,queryGround,querySweeps,requests,layout:'desktop'};
+}
+test('bounded connector selection fails closed when every independently clear connector is disconnected',async()=>{
+ const setup=disconnectedConnectorFixture({small:true}),receipt={},planner=await createExteriorPlanner({...setup,receipt});
+ await assert.rejects(planner.route(setup.start,Math.PI/2),/No connected original-terrain route/);
+ const plan=receipt.plans[0];assert.equal(plan.status,'failed');assert(plan.attempts.length>1&&plan.attempts.length<64);
+ assert.equal(plan.connectorChanges.length,plan.attempts.length-1);assert(plan.attempts.every(row=>row.disconnected));
+ assert(plan.connectors.every(row=>row.groundClear&&row.prospective.clear));
+ assert.equal(plan.selected,null);assert(plan.error.includes(plan.attempts.at(-1).disconnected));
+});
+test('connector alternatives share the unchanged64-search budget and retain deterministic failure receipts',async()=>{
+ const receipts=[];
+ for(let repeat=0;repeat<2;repeat++){
+  const setup=disconnectedConnectorFixture(),receipt={},planner=await createExteriorPlanner({...setup,receipt});
+  await assert.rejects(planner.route(setup.start,Math.PI/2),error=>{
+   assert.match(error.message,/64-attempt shared connector\/edge search budget exhausted/);
+   assert.match(String(error.cause),/No connected original-terrain route/);return true;
+  });
+  const plan=receipt.plans[0];assert.equal(receipt.maximumSearchAttempts,64);assert.equal(plan.attempts.length,64);
+  assert.equal(plan.connectorChanges.length,63);assert.equal(plan.connectors.length,64);
+  assert(plan.attempts.every(row=>row.disconnected));assert.equal(plan.selected,null);assert.equal(plan.status,'failed');
+  assert(setup.requests.every(row=>row.maxLateral===.41&&(row.maxForward===undefined||row.maxForward===.75)));
+  assert(new Set(plan.connectors.map(row=>JSON.stringify(row.to))).size===plan.connectors.length,'No connector is selected repeatedly');
+  receipts.push(plan);
+ }
+ assert.deepEqual(receipts[0],receipts[1]);
+});
+
 // Register the complete prospective/executor rejection regressions in the existing test target.
 import './staged-landmark-exterior-envelope.test.mjs';

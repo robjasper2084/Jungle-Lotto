@@ -114,7 +114,8 @@ export async function* exteriorLegProposals({route,label,motion,phase,queryGroun
 }
 
 /** Neighbour grid plus independent half-metre and native body-sweep checks. A blocked
- * connector/edge fails or is replanned; it never teleports or relaxes terrain. */
+ * connector/edge fails or is replanned; it never teleports or relaxes terrain.
+ * Nearby connector alternatives share the original 64 edge-search attempts. */
 export async function createExteriorPlanner({bounds,camera,layout,queryGround,querySweeps,receipt={}}){
  const center={x:bounds.center[0],z:bounds.center[2]},radius=Math.hypot(...bounds.max.map((n,i)=>n-bounds.min[i]))/2;
  const halfV=camera.fov*Math.PI/360,halfH=Math.atan(Math.tan(halfV)*camera.aspect);
@@ -128,20 +129,25 @@ export async function createExteriorPlanner({bounds,camera,layout,queryGround,qu
  const ground=await query(points);
  async function sweeps(segments){const rows=[];for(let i=0;i<segments.length;i+=2000)rows.push(...await querySweeps(segments.slice(i,i+2000)));assert.equal(rows.length,segments.length,'Incomplete original body-sweep receipt');return rows;}
  async function route(start,bearing){
-  const planReceipt={from:{...start},bearing,status:'planning',connectors:[],attempts:[],selected:null,error:null};receipt.plans.push(planReceipt);
+  const planReceipt={from:{...start},bearing,status:'planning',connectors:[],connectorChanges:[],attempts:[],selected:null,error:null};receipt.plans.push(planReceipt);
   try{
   const starts=points.map((p,i)=>({i,d:distance(start,p)})).filter(v=>ground[v.i].walkable&&v.d<=12).sort((a,b)=>a.d-b.d);
-  let first=-1;
-  for(const candidate of starts){
+  let nextStart=0,lastDisconnection;
+  async function nextConnector(){
+  for(;nextStart<starts.length;){
+   const candidate=starts[nextStart++];
    const connectorGround=await query(linePoints(start,points[candidate.i]));
    const connector={from:start,to:points[candidate.i],groundClear:connectorGround.every(p=>p.walkable),failedGround:connectorGround.filter(p=>!p.walkable),originalSweep:null,prospective:null};planReceipt.connectors.push(connector);
    if(!connector.groundClear)continue;
    if(candidate.d>=1e-6){connector.originalSweep=(await sweeps([{from:start,to:points[candidate.i],maxLateral:.41}]))[0];if(!connector.originalSweep.clear)continue;}
    const checked=await checkExteriorProspectivePath(start,[points[candidate.i]],{queryGround:query,querySweeps:sweeps});
    connector.prospective=checked;
-   if(checked.clear){first=candidate.i;break;}
+   if(checked.clear)return candidate.i;
    rejectedProspectivePaths.push({kind:'connector',from:start,waypoints:[points[candidate.i]],...checked});
   }
+  return -1;
+  }
+  let first=await nextConnector();
   assert(first>=0,'The actual actor has no walkable original-terrain connector');
   const candidates=points.flatMap((p,i)=>{
    const d=distance(p,center),delta=Math.abs(angle(Math.atan2(p.x-center.x,p.z-center.z)-bearing));
@@ -160,7 +166,19 @@ export async function createExteriorPlanner({bounds,camera,layout,queryGround,qu
     }
    }
    pathReceipt.connectedCells=queue.length;
-   const goal=candidates.find(c=>parent[c.i]>=0);assert(goal,`No connected original-terrain route reaches the required exterior direction (${queue.length} connected cells, ${candidates.length} candidate cells, ${blocked.size} rejected edges)`);
+   const goal=candidates.find(c=>parent[c.i]>=0);
+   if(!goal){
+    const reason=`No connected original-terrain route reaches the required exterior direction (${queue.length} connected cells, ${candidates.length} candidate cells, ${blocked.size} rejected edges)`;
+    pathReceipt.disconnected=reason;lastDisconnection=reason;
+    // Retain the first successful plan unchanged. Only a disconnected search
+    // component permits another nearby connector, in the same original order.
+    // Its ground, body and complete stopping corridor are checked independently;
+    // blocked edges and the single 64-attempt allowance are never reset.
+    if(attempt===63)break;
+    const next=await nextConnector();assert(next>=0,reason);
+    planReceipt.connectorChanges.push({afterAttempt:attempt,from:points[first],to:points[next],reason});
+    first=next;continue;
+   }
    const indices=[goal.i];while(indices.at(-1)!==first)indices.push(parent[indices.at(-1)]);indices.reverse();
    pathReceipt.waypoints=indices.map(i=>points[i]);
    const samples=[],owners=[];
@@ -203,7 +221,7 @@ export async function createExteriorPlanner({bounds,camera,layout,queryGround,qu
     prospective:{clear:true,checkedLegs:prospective.checkedLegs,coalesced,maxForward:.75},
     source:'Read-only original terrain land/obstruction and loaded native body-sweep queries; independently recorded actual native walking'};
   }
-  throw Error('Exterior route could not pass all original-terrain edge checks');
+  throw Error('Exterior route could not pass all original-terrain edge checks (64-attempt shared connector/edge search budget exhausted)',lastDisconnection?{cause:Error(lastDisconnection)}:undefined);
   }catch(error){planReceipt.status='failed';planReceipt.error=String(error);throw error;}
  }
  return{route,query,viewDistance,center,receipt};
