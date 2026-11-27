@@ -97,12 +97,40 @@ test('canopy color fails closed on an incompatible shader instead of silently dr
 
 test('all four surface combinations share shader source while retaining their own material inputs and authored hook',async t=>{
  const loaded=new Map<string,T.Texture>(),uploaded:T.Texture[]=[];
- const renderer={capabilities:{getMaxAnisotropy:()=>8},initTexture:(texture:T.Texture)=>uploaded.push(texture)} as unknown as T.WebGLRenderer;
+ const imageInputs=new Map<string,unknown>();
+ const uploadSnapshot=(texture:T.Texture)=>({image:texture.image,source:texture.source,format:texture.format,internalFormat:texture.internalFormat,type:texture.type,
+  colorSpace:texture.colorSpace,wrapS:texture.wrapS,wrapT:texture.wrapT,magFilter:texture.magFilter,minFilter:texture.minFilter,
+  anisotropy:texture.anisotropy,flipY:texture.flipY,premultiplyAlpha:texture.premultiplyAlpha,unpackAlignment:texture.unpackAlignment,generateMipmaps:texture.generateMipmaps});
+ const firstUploads=new Map<T.Texture,ReturnType<typeof uploadSnapshot>>();
+ const renderer={capabilities:{getMaxAnisotropy:()=>8},initTexture:(texture:T.Texture)=>{
+  if(!firstUploads.has(texture))firstUploads.set(texture,uploadSnapshot(texture));uploaded.push(texture);
+ }} as unknown as T.WebGLRenderer;
  const loader=t.mock.method(T.TextureLoader.prototype,'loadAsync',async(url:string)=>{
-  const texture=new T.Texture({width:1,height:1});texture.name=url;loaded.set(url,texture);return texture;
+  const image={width:url.endsWith('-color.webp')?1024:512,height:url.endsWith('-color.webp')?1024:512};imageInputs.set(url,image);
+  const texture=new T.Texture(image);texture.name=url;loaded.set(url,texture);return texture;
  });
  await loadRealisticMaterials(renderer);loader.mock.restore();
  assert.equal(loaded.size,57);assert.equal(new Set(uploaded).size,57);
+
+ await t.test('first GPU uploads use RG8 only for detail maps while retaining the decoded images and authored sampler roles',()=>{
+  let details=0,colors=0,water=0;
+  for(const [url,texture] of loaded){
+   const first=firstUploads.get(texture);assert(first,url+' reached native texture initialization');
+   const isDetail=url.endsWith('-detail.webp'),isColor=url.endsWith('-color.webp');
+   if(isDetail)details++;else if(isColor)colors++;else{assert.equal(url,'./belle/skins/water-normal.webp');water++;}
+   // Capture at initTexture, not after loading: a format change after warmup would leave the original native allocation in use.
+   assert.equal(first.image,imageInputs.get(url),url+' decoded image identity');assert.equal(first.source,texture.source,url+' texture source identity');
+   assert.equal(first.format,isDetail?T.RGFormat:T.RGBAFormat,url+' channel format');
+   assert.equal(first.internalFormat,isDetail?'RG8':null,url+' storage format');assert.equal(first.type,T.UnsignedByteType,url+' component type');
+   assert.equal(first.colorSpace,isColor?T.SRGBColorSpace:T.NoColorSpace,url+' color role');
+   assert.equal(first.wrapS,T.RepeatWrapping);assert.equal(first.wrapT,T.RepeatWrapping);
+   assert.equal(first.magFilter,T.LinearFilter);assert.equal(first.minFilter,T.LinearMipmapLinearFilter);
+   assert.equal(first.anisotropy,isDetail||isColor?8:4);assert.equal(first.flipY,true);assert.equal(first.premultiplyAlpha,false);
+   assert.equal(first.unpackAlignment,4);assert.equal(first.generateMipmaps,true);
+   assert.deepEqual(uploadSnapshot(texture),first,url+' remains unchanged after native initialization');
+  }
+  assert.deepEqual({details,colors,water},{details:28,colors:28,water:1});
+ });
 
  const source=new T.MeshStandardMaterial({color:0x427856,metalness:.12,side:T.DoubleSide});
  const atlas=new T.Texture(),normalMap=new T.Texture();source.map=atlas;source.normalMap=normalMap;

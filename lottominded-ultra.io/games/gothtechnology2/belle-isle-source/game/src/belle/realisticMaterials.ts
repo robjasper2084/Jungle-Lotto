@@ -35,6 +35,8 @@ export function loadRealisticMaterials(renderer:T.WebGLRenderer){
      const [color,detail]=await Promise.all(['color','detail'].map(suffix=>load('./belle/skins/'+name+'-'+suffix+'.webp')));
      for(const texture of [color,detail]){texture.wrapS=texture.wrapT=T.RepeatWrapping;texture.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());}
      color.colorSpace=T.SRGBColorSpace;detail.colorSpace=T.NoColorSpace;
+     // Detail shaders consume authored roughness R and height G from the same decoded image.
+     detail.format=T.RGFormat;detail.internalFormat='RG8';
      await warmTextureList(renderer,[color,detail],controller.signal);staged.set(name,{color,detail});
     }catch(error){controller.abort(error);throw error;}
    },controller.signal);
