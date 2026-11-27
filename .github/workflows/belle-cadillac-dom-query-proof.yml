@@ -1,0 +1,90 @@
+name: Cadillac measured DOM query candidate proof (diagnostic only)
+on:
+  pull_request:
+    branches: [upgrade-redesign-cadillac-modification-suite]
+    paths:
+      - '.github/workflows/belle-cadillac-dom-query-proof.yml'
+      - '.github/diagnostics/belle-dom-query-proof.mjs'
+permissions:
+  contents: read
+env:
+  EXPECTED_CANDIDATE: 549dc89ade22532df9cd99508db66c323371bb4f
+  EXPECTED_TREE: 0a3a021bbff7dd0ab36f389a4a389d2b771ae220
+jobs:
+  build-exact-candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 549dc89ade22532df9cd99508db66c323371bb4f
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Verify exact isolated source and run original full build
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_CANDIDATE"
+          test "$(git rev-parse 'HEAD^{tree}')" = "$EXPECTED_TREE"
+          test "$(git hash-object src/belle/renderDomQueries.ts)" = 519499351386b2868dfde95225db8523890d340c
+          npm ci
+          npm run check
+          npm test
+          npm run build
+          mkdir -p "$RUNNER_TEMP/receipt"
+          git rev-parse HEAD > "$RUNNER_TEMP/receipt/source.txt"
+          git rev-parse 'HEAD^{tree}' > "$RUNNER_TEMP/receipt/tree.txt"
+          (cd dist && find . -type f -print0 | sort -z | xargs -0 sha256sum) > "$RUNNER_TEMP/receipt/dist.sha256"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: isolated-dom-candidate-build-receipt
+          path: ${{ runner.temp }}/receipt/
+          if-no-files-found: error
+          retention-days: 14
+  real-chrome-dom-proof:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-15]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 549dc89ade22532df9cd99508db66c323371bb4f
+          path: app
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/index.html
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/renderDomQueries.ts
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: diagnostic
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/diagnostics/belle-dom-query-proof.mjs
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Verify exact source and install existing browser dependencies
+        run: |
+          test "$(git -C app rev-parse HEAD)" = "$EXPECTED_CANDIDATE"
+          test "$(git -C app rev-parse 'HEAD^{tree}')" = "$EXPECTED_TREE"
+          test "$(git -C app hash-object lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/renderDomQueries.ts)" = 519499351386b2868dfde95225db8523890d340c
+          (cd app/lottominded-ultra.io/games/gothtechnology2 && npm ci && npx playwright install --with-deps chrome)
+      - name: Real native Chrome DOM equivalence and query cost
+        run: |
+          node --check diagnostic/.github/diagnostics/belle-dom-query-proof.mjs
+          node --experimental-strip-types diagnostic/.github/diagnostics/belle-dom-query-proof.mjs "$GITHUB_WORKSPACE/app" "$GITHUB_WORKSPACE/evidence"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cadillac-dom-query-proof-${{ matrix.os }}
+          path: evidence/
+          if-no-files-found: warn
+          retention-days: 14
