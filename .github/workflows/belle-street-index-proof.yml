@@ -1,0 +1,76 @@
+name: Belle street indexed-copy proof (diagnostic only)
+
+on:
+  pull_request:
+    paths:
+      - '.github/belle-street-index-proof/**'
+      - '.github/workflows/belle-street-index-proof.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: belle-street-index-proof-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}
+  cancel-in-progress: false
+
+jobs:
+  proof:
+    if: github.run_attempt == 1
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-15
+            backend: metal
+          - os: ubuntu-24.04
+            backend: swiftshader
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: proof
+          sparse-checkout: |
+            .github/belle-street-index-proof
+            .github/workflows
+      - uses: actions/checkout@v4
+        with:
+          ref: 75906273c0cd414c0d004320fc6f654b4783e5b1
+          path: original
+          sparse-checkout: |
+            lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+      - uses: actions/checkout@v4
+        with:
+          ref: 027f6c7627e21a53be32c586764fe2a02aa0e3a3
+          path: candidate
+          sparse-checkout: |
+            lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+          fetch-depth: 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install original locked source dependencies
+        working-directory: original/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: npm ci --ignore-scripts
+      - name: Install original locked browser dependencies
+        working-directory: original/lottominded-ultra.io/games/gothtechnology2
+        run: npm ci --ignore-scripts
+      - name: Install the project's Chrome channel
+        working-directory: original/lottominded-ultra.io/games/gothtechnology2
+        run: npx playwright install --with-deps chrome
+      - name: Validate proof contracts
+        run: node --test proof/.github/belle-street-index-proof/contract.test.mjs
+      - name: Run the one fixed 20-case backend proof
+        run: >-
+          node proof/.github/belle-street-index-proof/driver.mjs
+          --original original --candidate candidate
+          --backend ${{ matrix.backend }} --output street-index-output
+      - name: Retain original failures and complete raw evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-street-index-proof-${{ matrix.backend }}-${{ github.event.pull_request.head.sha }}-attempt-${{ github.run_attempt }}
+          path: street-index-output
+          if-no-files-found: error
+          retention-days: 14

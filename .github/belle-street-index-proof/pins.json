@@ -1,0 +1,863 @@
+{
+  "schema": "belle-street-index-proof-pins-v1",
+  "baseline": "75906273c0cd414c0d004320fc6f654b4783e5b1",
+  "baselineTree": "9f0351be133dd370a676090d27559a0adaf00605",
+  "candidate": {
+    "commit": "027f6c7627e21a53be32c586764fe2a02aa0e3a3",
+    "tree": "8897d4009b8c117f5f241ca2bc81d21b769f63c4",
+    "files": [
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/run-tests.mjs",
+        "blob": "93788003726de19fb1c50a8a34ffcbcbcad81ee4",
+        "sha256": "1557d1bf865af9345e3a2fa2d476e26fb13429db732f8897ecd3180b0dd76279",
+        "bytes": 9950,
+        "status": "modified",
+        "mode": "100644"
+      },
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/cadillac-mods-browser-smoke.mjs",
+        "blob": "6addd9c0d6008222ad931c1dae3ac549ced599e2",
+        "sha256": "5e8b3777b0fee67947cafa5c9255a10bd070abea62809dcb9814dc4709629270",
+        "bytes": 57715,
+        "status": "modified",
+        "mode": "100644"
+      },
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/cadillac-native-command-click.mjs",
+        "blob": "391bdadbfaafc9a1a435ac63a43106525a71cd23",
+        "sha256": "29da33238672f343cb062592fd556eb9e890829f7145cb7105c0fabfe796639f",
+        "bytes": 19518,
+        "status": "modified",
+        "mode": "100644"
+      },
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/cadillac-native-command-click.test.mjs",
+        "blob": "9c1710281e12f5ab37abb1128b1c2013f99fad5c",
+        "sha256": "7f9fd53945e2156459fd16457d7f10b42e57236a1cb4b22c455bce1a65c3226b",
+        "bytes": 41492,
+        "status": "modified",
+        "mode": "100644"
+      },
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/indexedStreetDisplayGeometry.test.ts",
+        "blob": "271dfd83ae330def45ff794b33151ae547113b62",
+        "sha256": "6059e9bb9794df931be7d7dc607cbd58b6405870b5988a5b15d6d9d70c4cad30",
+        "bytes": 22728,
+        "status": "added",
+        "mode": "100644"
+      },
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/indexedStreetDisplayGeometry.ts",
+        "blob": "11c4e5dfbddf54b5a8029bf91aef0379803e0afc",
+        "sha256": "11dd2a754a7a9e6f233bc1031d8d6cb417e07b0a48d395dd4053a99bd7235428",
+        "bytes": 7540,
+        "status": "added",
+        "mode": "100644"
+      },
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/staticArchitectureBatch.ts",
+        "blob": "4624a3f422c01522a761e6cbe197039bceae390f",
+        "sha256": "5139bcae87fb29cb1ab074381cf352cc250b1630d8e185a2b151d0c14379e28e",
+        "bytes": 2954,
+        "status": "modified",
+        "mode": "100644"
+      },
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/staticPaletteBatch.ts",
+        "blob": "0e12ff5c29a2724b359049b3db2ce6a293191a5b",
+        "sha256": "1d440699302159c194279b6145128b3536237aa074773dddc6327aa763148ec5",
+        "bytes": 9086,
+        "status": "modified",
+        "mode": "100644"
+      }
+    ]
+  },
+  "candidateStatus": "BOUND by root after independent remote commit/tree/sole-parent/eight-file verification. Every browser execution must reverify this immutable binding.",
+  "expectedCandidateFiles": [
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/run-tests.mjs",
+      "blob": "93788003726de19fb1c50a8a34ffcbcbcad81ee4",
+      "sha256": "1557d1bf865af9345e3a2fa2d476e26fb13429db732f8897ecd3180b0dd76279",
+      "bytes": 9950,
+      "status": "modified",
+      "mode": "100644"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/cadillac-mods-browser-smoke.mjs",
+      "blob": "6addd9c0d6008222ad931c1dae3ac549ced599e2",
+      "sha256": "5e8b3777b0fee67947cafa5c9255a10bd070abea62809dcb9814dc4709629270",
+      "bytes": 57715,
+      "status": "modified",
+      "mode": "100644"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/cadillac-native-command-click.mjs",
+      "blob": "391bdadbfaafc9a1a435ac63a43106525a71cd23",
+      "sha256": "29da33238672f343cb062592fd556eb9e890829f7145cb7105c0fabfe796639f",
+      "bytes": 19518,
+      "status": "modified",
+      "mode": "100644"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/cadillac-native-command-click.test.mjs",
+      "blob": "9c1710281e12f5ab37abb1128b1c2013f99fad5c",
+      "sha256": "7f9fd53945e2156459fd16457d7f10b42e57236a1cb4b22c455bce1a65c3226b",
+      "bytes": 41492,
+      "status": "modified",
+      "mode": "100644"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/indexedStreetDisplayGeometry.test.ts",
+      "blob": "271dfd83ae330def45ff794b33151ae547113b62",
+      "sha256": "6059e9bb9794df931be7d7dc607cbd58b6405870b5988a5b15d6d9d70c4cad30",
+      "bytes": 22728,
+      "status": "added",
+      "mode": "100644"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/indexedStreetDisplayGeometry.ts",
+      "blob": "11c4e5dfbddf54b5a8029bf91aef0379803e0afc",
+      "sha256": "11dd2a754a7a9e6f233bc1031d8d6cb417e07b0a48d395dd4053a99bd7235428",
+      "bytes": 7540,
+      "status": "added",
+      "mode": "100644"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/staticArchitectureBatch.ts",
+      "blob": "4624a3f422c01522a761e6cbe197039bceae390f",
+      "sha256": "5139bcae87fb29cb1ab074381cf352cc250b1630d8e185a2b151d0c14379e28e",
+      "bytes": 2954,
+      "status": "modified",
+      "mode": "100644"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/staticPaletteBatch.ts",
+      "blob": "0e12ff5c29a2724b359049b3db2ce6a293191a5b",
+      "sha256": "1d440699302159c194279b6145128b3536237aa074773dddc6327aa763148ec5",
+      "bytes": 9086,
+      "status": "modified",
+      "mode": "100644"
+    }
+  ],
+  "preview": {
+    "tree": "e524957a7b46d76ce6e3f6c36770fde956ad62b3",
+    "files": [
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/indexedStreetDisplayGeometry.ts",
+        "status": "added",
+        "mode": "100644",
+        "blob": "11c4e5dfbddf54b5a8029bf91aef0379803e0afc",
+        "sha256": "11dd2a754a7a9e6f233bc1031d8d6cb417e07b0a48d395dd4053a99bd7235428",
+        "bytes": 7540,
+        "baseBlob": null
+      },
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/indexedStreetDisplayGeometry.test.ts",
+        "status": "added",
+        "mode": "100644",
+        "blob": "271dfd83ae330def45ff794b33151ae547113b62",
+        "sha256": "6059e9bb9794df931be7d7dc607cbd58b6405870b5988a5b15d6d9d70c4cad30",
+        "bytes": 22728,
+        "baseBlob": null
+      },
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/staticPaletteBatch.ts",
+        "status": "modified",
+        "mode": "100644",
+        "blob": "0e12ff5c29a2724b359049b3db2ce6a293191a5b",
+        "sha256": "1d440699302159c194279b6145128b3536237aa074773dddc6327aa763148ec5",
+        "bytes": 9086,
+        "baseBlob": "75916e48e11f11ddc281a06a04a6fceb2b528001"
+      },
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/staticArchitectureBatch.ts",
+        "status": "modified",
+        "mode": "100644",
+        "blob": "4624a3f422c01522a761e6cbe197039bceae390f",
+        "sha256": "5139bcae87fb29cb1ab074381cf352cc250b1630d8e185a2b151d0c14379e28e",
+        "bytes": 2954,
+        "baseBlob": "948767d9b2535fa891e69f33288b7f619080ce06"
+      },
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/run-tests.mjs",
+        "status": "modified",
+        "mode": "100644",
+        "blob": "93788003726de19fb1c50a8a34ffcbcbcad81ee4",
+        "sha256": "1557d1bf865af9345e3a2fa2d476e26fb13429db732f8897ecd3180b0dd76279",
+        "bytes": 9950,
+        "baseBlob": "3999a22bbd27fb72973357db7be0535f6c31baf5"
+      }
+    ],
+    "notExecutable": true
+  },
+  "hoverRepair": {
+    "commit": "5fdad83547097c5530cc96663b289ab64a3817c6",
+    "tree": "7f978ed980651014a938f4a3d7714cf0984b1794"
+  },
+  "unboundPlanSha256": "da5ee4e90ba70e0375bb14d759ec5ece60301a142cb0b42b3fbc2945e84adf55",
+  "sources": [
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/activitiesPlan.ts",
+      "blob": "bb6e9b13e41a8b95a8e59a724a395f73ff007ff1",
+      "sha256": "14284e9e42fca84715969532713fb5bf76a59245a36f03f51631b0f48ab83217",
+      "bytes": 7096
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/aquarium.ts",
+      "blob": "bf0a11d5ef23d963c03055cde6683c6ba97db5d8",
+      "sha256": "825aa8bebcd718068fb9d735559e5aa50a2d97e0c9b42dd56489bdf03b236f21",
+      "bytes": 2908
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/atmosphereProgramIdentity.ts",
+      "blob": "27c7abfe9d37b0f9262adca39577fdf3ff8462aa",
+      "sha256": "55e5fde2d5aa9d6eba01015c1dc3affcb3fee6edc4e1730c55f27136894da95d",
+      "bytes": 1088
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/atmosphereShaders.ts",
+      "blob": "2b18eae967f42657578bd0f4905622b01f78c234",
+      "sha256": "65283f35a24b4a63582240b8a1d1994345101778d3fae48b92e53ff6a51c0094",
+      "bytes": 6204
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/batchedIndirectUpdates.ts",
+      "blob": "1b653017e9f0e9d9e6df276084cac99938f8c455",
+      "sha256": "13fe0508bb019c51dff5294cf8a297939625304c5890b091c78d656797cd1dd2",
+      "bytes": 16017
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/beachProfile.ts",
+      "blob": "b86f04075f5d2d40de60fb4ef9e2419905d72241",
+      "sha256": "6668d6c43d91d746c7d96d51379cae82a59c6dc1b6044a1a1d65ae81ba6625dc",
+      "bytes": 2407
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/boatClubPlan.ts",
+      "blob": "235dcb27c14d659114594612169a5a2d861bfade",
+      "sha256": "ac09e3db635fd73acf0887e94ff2ebaa91bba86ae17688d28a99bea8f8e996ec",
+      "bytes": 1096
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/conservatory.ts",
+      "blob": "4248bea127d6ef895f2c4b92c7720ec4f2aa9182",
+      "sha256": "6ee194e2da021db3ca3355198430cc3bc944af9b740901e306c1fffbee8751ed",
+      "bytes": 2509
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/conservatoryGardenPlan.ts",
+      "blob": "d314ee265b184e417e7c97282b1651ee7356d2bc",
+      "sha256": "bd43d46d9775550b9a2777a59dd4e031caa1a776c09e9f9c814159a90a53be8f",
+      "bytes": 2793
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/curbProfile.ts",
+      "blob": "80b0c5cc9dd4d68ff1005f33fc5739cd08c99278",
+      "sha256": "013728036c294e7ae4220f07982cdf9d061fc6f24db839f7afa7cf59d12399d7",
+      "bytes": 337
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/detroitGround.ts",
+      "blob": "7c3358342e49fd84a4716e282f23926c3daa209e",
+      "sha256": "6de315f1a24780cf400fdba4a74cc9f1258018fbc81758bff8b20f5c9da94a7d",
+      "bytes": 3438
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/dossin.ts",
+      "blob": "c8beedb658c6230eb9188a4b51b3f469acbe1589",
+      "sha256": "13c1648daf9f88bf10cc0a51ae2a2f8dadb115bb666fa339a38e247b87f0c788",
+      "bytes": 2119
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/facilityPlan.ts",
+      "blob": "666448aa80b3f67c4f217b404be815b2e02cf7d7",
+      "sha256": "09dcadf6c35a2a49a4d155f2df18ccd7106a9f071f91cbf5d59b3fc3bc7cf015",
+      "bytes": 5158
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/flightCollision.ts",
+      "blob": "48d617995b7e7ce20c912989eb6ed019414b06c9",
+      "sha256": "6a06cfc56506ebb71b97cf6486d911050903c2ce732f981710c32188beae3a6b",
+      "bytes": 3118
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/islandSky.ts",
+      "blob": "8902245ff254999a0189a1e0aebd5d932f918c37",
+      "sha256": "40d4db69cea275afb9d7473f355cdc98b3618bc2f20be32bc2a202f5855029e0",
+      "bytes": 22938
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/lagoonBridge.ts",
+      "blob": "8282f7fcafaafeb1d979181319735a7f953a69b7",
+      "sha256": "3c78b33855e1e0d1228bfde0ed65a0af8a0e282487e0abcf45343f03b717ed87",
+      "bytes": 1851
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/mappedCrossings.ts",
+      "blob": "a54b8a4881ab932d6ee096912cf6e8116f9996ab",
+      "sha256": "9be1358a2d865a853a94e9d72af85fa0b69f362fe869400b44550ce3937781fc",
+      "bytes": 3102
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/monumentCollision.ts",
+      "blob": "c0317804912e765a7a2fd25dba67d21dfc0c0885",
+      "sha256": "5dc9ed9890e1f1556145d60d9e45e2c24364242b7777ef8d74117083fc5f8620",
+      "bytes": 1426
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/photoReferenceSurfaces.ts",
+      "blob": "1e83fb058d31d1264a5cb92afc62100bf5c9a7c0",
+      "sha256": "89731482b9f8f7e27bd22675a4e19f36609340cfc1f85b7d7cb2d8062f8f61df",
+      "bytes": 2872
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/physicalLighting.ts",
+      "blob": "c8e2fb412bc85470c0354a8bc0b6f9eca84adfc7",
+      "sha256": "4bad2d9e2e86508896e664bb6a87a225c4fd5297ecc477eb1fd4f8623fc146a6",
+      "bytes": 2608
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/playgrounds.ts",
+      "blob": "3609d0b0b81e77717a2345e023770b43407baa62",
+      "sha256": "f7cd8abc528a97daa58915b1a7ddfe2c78652202b55b2efec8c7ad832c802d0d",
+      "bytes": 1642
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/presentationPolicy.ts",
+      "blob": "7e531fcc0593b576fe9f157d0e504b9a6cbc9d6a",
+      "sha256": "58ae6664678b1ed8c12adfd9184066e210e8a15a946d1ee36a98f539441ee058",
+      "bytes": 5776
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/realisticMaterialRules.ts",
+      "blob": "c85cc79587896033eadebe8a16479590726cdf86",
+      "sha256": "6dc9f42e6a1dbd3143dde020670674f2af6cea2e8d65752f9ba6f68b946174d7",
+      "bytes": 3691
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/realisticMaterials.ts",
+      "blob": "27afa040de6e57073f3ffe396fb9bfb02e49b42d",
+      "sha256": "9e1ed79a2993c3336d33a2832e010303b61f12fc5d813d3b0619e8b06a2604f1",
+      "bytes": 10194
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/referenceLeafDisplay.ts",
+      "blob": "1f944df8f36b62b40266f3317802dd1210d5bd3c",
+      "sha256": "0e38835f0f9c39163093d38ca814c87c337228d3788c25b43184951973269a02",
+      "bytes": 6380
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/referenceSites.ts",
+      "blob": "1b2d7b66203f14a248e454db3abc7093a2c60fcf",
+      "sha256": "0be688b22b4176d7114ff0ea3c0965b16164111012afd12e8315fad670b17e33",
+      "bytes": 282
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/roadContactSurface.ts",
+      "blob": "5163b142aafce6c97be42130ccdc71a9cdf079a1",
+      "sha256": "2191736190d928e99ce6f6ee0a10dbd6d69d4ac624c89fed8f08ad1366615d7b",
+      "bytes": 2530
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/sharedGeometryBuffers.ts",
+      "blob": "705a9341702ee16d45a31789cdcb66be53e8f59c",
+      "sha256": "9713ac7a1674848b64734d05142426e95575553845fb4b4e0ff549af40e3b2c6",
+      "bytes": 39152
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/shelterProfiles.ts",
+      "blob": "c4ccfa8be9a5a7bbfe20504a9e774a342eaf7351",
+      "sha256": "940dfcb0d31c7f535f5cf6530c8ce27403fd6033ce5466bfa35f17ce190d0ca2",
+      "bytes": 934
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/smallBridges.ts",
+      "blob": "e345ad551c4475e0b2f2fe6500ae490e7d53d2de",
+      "sha256": "988c644e2ac5f8733fe3402ec2d5690f8b10c1a0aeeb2e45fda21a5f0c9e7dc7",
+      "bytes": 6979
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/startupWork.ts",
+      "blob": "5659cf6b176d624275255bbb8fa1acd78032dd91",
+      "sha256": "861a0a0132322234d68d92ab1bc6dfa2c82b3aadeb95e4b01e036556562a1899",
+      "bytes": 5411
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/staticPaletteBatch.ts",
+      "blob": "75916e48e11f11ddc281a06a04a6fceb2b528001",
+      "sha256": "110a4e415213083b1ed04c630c5fb4b40e730bd28ebcadad0b4d20b59312344b",
+      "bytes": 8429
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/streetBatchOrder.ts",
+      "blob": "f2cd4d1b6e98338cbc229e29b2b5821e78ecbf08",
+      "sha256": "8ff5a1a3b3ebe364ebd3f67f10db83a58bfb5b0a4bf1a6f71eea267b25946e37",
+      "bytes": 3932
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/streetDetails.ts",
+      "blob": "9f2f9695ce664cc33c4c4cbffd433642773cc887",
+      "sha256": "48e37e7bfb83d3792224d551a4a7e26f23aaaae70b503f692ed7fd19cadbb8be",
+      "bytes": 7209
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/streetPlan.ts",
+      "blob": "173e1b72fd3538d35597763a040601024f4ff39c",
+      "sha256": "ff39a4a009cbf141311a72b7cd7b9bc147a0da84199e3a5a355764cc67a7fb96",
+      "bytes": 11630
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/sunsetGround.ts",
+      "blob": "d4a108f5403633890203e86f80a507481f768d1f",
+      "sha256": "068301a28e4de7f296e6ad1123d105b2fd276b753768bb2e65d6a7d906f490f2",
+      "bytes": 1606
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/surfaceRetry.ts",
+      "blob": "9f8a16ade58e19d367ca3f317505dbdc4abc3eca",
+      "sha256": "a7ddf3ab01d7b3593f5c20ab25cea00793fcbe42ddb3d7f9696b0dce629c908c",
+      "bytes": 773
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/terrain.ts",
+      "blob": "41726e77171ac9e866510b169927e935d6dfefaf",
+      "sha256": "1d1baf30a1f2fffebf59bce97d6dbdc9b8b7079446f918e183582b16910d4dde",
+      "bytes": 16049
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/waterfrontPlan.ts",
+      "blob": "40713cd76cac9363668c487149968962c4f00fc9",
+      "sha256": "1519854ac75bca1993c71d353c468e9a3806f18761fb3e4577e3442da4785572",
+      "bytes": 1308
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/worldAtmosphere.ts",
+      "blob": "59ae2dd9ea9afd0a7265c0f8d06db9fc5544f685",
+      "sha256": "2625864cb5ae63225d0731ce3d8c8d830ed7e2232bb9e4887dd83a5b33997061",
+      "bytes": 8320
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/yachtClub.ts",
+      "blob": "c4a7832bd6a6c557d8b15a0b264dbc9b1fba5c45",
+      "sha256": "52a85627c7ad377087449371cde271dc9754c2c424f7db687ac5023ac4b1e33c",
+      "bytes": 2810
+    }
+  ],
+  "assets": [
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/asphalt-color.webp",
+      "blob": "c6912e1541c394756ec81ab7763cc2aa07c6fdcf",
+      "sha256": "dd455673f52a123c881a553182c241e46c8586ff5d104391d7711ab483b3c171",
+      "bytes": 334260
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/asphalt-detail.webp",
+      "blob": "02b4d6751441e2a898ebf95686d5dd7d832b8dea",
+      "sha256": "1f550de87b7cbcb8cafd9e3efbb8cde6fc15319b289ddc6153bae6d5578c4f66",
+      "bytes": 298930
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/bark-color.webp",
+      "blob": "3952be40801414c1697b68cebc752e34bdc8ed5d",
+      "sha256": "7f28a38793a23fa092004ab4959effd191b6f74b402dfcd35d10c9b55e3fbca4",
+      "bytes": 382704
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/bark-detail.webp",
+      "blob": "4102b40c50f1b78095fc743f98f9c93f3da40982",
+      "sha256": "df66465631c2cfc1d69fccb0dc478ca250829b491362a813fdf54019c55d5223",
+      "bytes": 312428
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/brick-color.webp",
+      "blob": "28a0f87398dae053b27caf690ab1b77644e8854c",
+      "sha256": "90575259db2fe0217d00ad84c40a6c523e914a4933c498e3e6ad621a50b2629b",
+      "bytes": 293134
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/brick-detail.webp",
+      "blob": "137f81ec6637a163ffa29fd38fe76ca0960ae8d1",
+      "sha256": "99b34781744f04ef4fdec5baf29bafd386ae2f2decf49ea6358ddf5d93576d90",
+      "bytes": 219512
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/bronze-color.webp",
+      "blob": "aa9cbcee54f0a968713aec8887f8d2ecd0b5726a",
+      "sha256": "be42a82090780ab0e858ec85fbdefdab747adc53de44a0ad77b3b42ef362847f",
+      "bytes": 107268
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/bronze-detail.webp",
+      "blob": "84489a1937bada1182bb9f4bea2b4e80c2b37f5b",
+      "sha256": "1f6deea89be8a5bd787c3bdf04a945b57699712b9f8ad0c0dd97b88adfe826f7",
+      "bytes": 243414
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/ceramic-color.webp",
+      "blob": "95439924f26622307f15dd397d0f5e6bf8dcea75",
+      "sha256": "b459d4323638f9ef832c8fcfa06b413ca5202c953a563c06b53e58be2dc15d7e",
+      "bytes": 35464
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/ceramic-detail.webp",
+      "blob": "7fe1a8f8ce2b5f416837ae6bb0dc667f37a88e73",
+      "sha256": "b3007145f2f5d42c8d8f3dac3dc344655ffb525946e852f4653bb23c91a862de",
+      "bytes": 201592
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/cloth-color.webp",
+      "blob": "8d9d8d3fbbcb635e652cc15be17f44c22c0a5761",
+      "sha256": "dce39cde6e20261d092fcbd59024e42b8b250826edc56a09b2fcadd6eb9aa2c5",
+      "bytes": 390032
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/cloth-detail.webp",
+      "blob": "dd1e43335d1427f12dee482414aff2b581739166",
+      "sha256": "c89db78278ef294eae1382bc5de4a1b59aa27048b61ba0eb43bc68b0749fbf05",
+      "bytes": 307548
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/concrete-color.webp",
+      "blob": "e9b9b0e504a26159cf54eb89882d2744cecfb1e1",
+      "sha256": "98d145299af4054a61935ae958f37f7735ddca151a145cb2dbd220a40cc57982",
+      "bytes": 220474
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/concrete-detail.webp",
+      "blob": "b54c0476c87fc0ecbed379999ee9c29ac73fe57d",
+      "sha256": "3e097ac48c7e61466c1b6508990ae9cb4c5fd3af26b88a501f47cace402b6b8f",
+      "bytes": 254782
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/copper-color.webp",
+      "blob": "f3b2501a22918ec72666e5b0f3101f3ec4f5c730",
+      "sha256": "aba6b33d9554137c444e3f17901df399dd04f67c963c9536bacca5a0efb2ee52",
+      "bytes": 279522
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/copper-detail.webp",
+      "blob": "359afbd85dffc3c228e69e037ad872c2e65095ea",
+      "sha256": "79e17845254d19ea19da9d1b9b9a754ef30b6b5ef8f6d454d196e040bdf48837",
+      "bytes": 256274
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/cork-color.webp",
+      "blob": "c72e46942ead9d12ecf98e9fbf193706d539c071",
+      "sha256": "30c2024d9e65e8921bf3375a946aa605fe5ccffcaa701657385defb358923128",
+      "bytes": 362616
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/cork-detail.webp",
+      "blob": "825f6fb5ede4637476dd1e539ac05037bc57faa7",
+      "sha256": "8e440caa164ad37f60eade226dcfc8f9a6241df2126d029d0676aad13e832e8d",
+      "bytes": 301608
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/feather-color.webp",
+      "blob": "9211ddfe8cb96d760495293bb2a6a4826a66258f",
+      "sha256": "828d7dd7196a81084ac9310eb7e20b2c7e9fc723dda59cfb99eae71d1b6dce8e",
+      "bytes": 284030
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/feather-detail.webp",
+      "blob": "044421edc157bd5fcc0ccddebc2b3bd340221254",
+      "sha256": "da504184c0da85a3370428ffe0b7537f6f39569e15c7a8a3929789c69ff0cefc",
+      "bytes": 245188
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/fur-color.webp",
+      "blob": "3b85288767ce95ec95b7bb7744f21b3596aedf2c",
+      "sha256": "b8923ebe0deb08d8db573d1761f1ab0b1b551ddd92e50f89825d329f27b69c7a",
+      "bytes": 365306
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/fur-detail.webp",
+      "blob": "525d983ff012cfab919ad7607e36b43cbe919417",
+      "sha256": "57d6c9569eee3472a6273c99c1636cf477737eefbd27c13a6cdbc7c83c5f7efd",
+      "bytes": 313144
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/granite-color.webp",
+      "blob": "edd6a14a376b00ef99baad1aeacb13d4da34a16f",
+      "sha256": "c1122e1e025af9e41ba00549fbc390840ebf8313b81126d74dfdb8c2aaafff6e",
+      "bytes": 350988
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/granite-detail.webp",
+      "blob": "5e91a7c2b4d3205a85a5b402bfd305602781d127",
+      "sha256": "07c533cf4293ea7a5fe61a550498b1bb71145ccd519feb0e44edfd20125a1416",
+      "bytes": 231068
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/graphite-color.webp",
+      "blob": "316c24e1907328f50b3a80c967a4e3799f18413a",
+      "sha256": "581cef68e21cc9a6b7d9944ac5aa78b86a74f35e10be18ee93502c0f579a61e4",
+      "bytes": 93592
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/graphite-detail.webp",
+      "blob": "69f8a729ccfdf2a74fc831f0dc13f7417b28f494",
+      "sha256": "e148956fdbcd3eee923f1e79cb5ee265ad6cba1880109b24b02ca28991845227",
+      "bytes": 230610
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/grass-color.webp",
+      "blob": "6c26039e1183191953425fed67edf007402901c1",
+      "sha256": "95d1a99861eea7e55f60df8f7c59a09b3eac10df890ce1759b4f02fdd8389e7b",
+      "bytes": 459994
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/grass-detail.webp",
+      "blob": "005d48ee233d6f16833c8ee7186dddf7fdfa46ce",
+      "sha256": "c17f136680b21e091bef70cce4549f0b1d0c009319df924ee0cc2082c2c4fd82",
+      "bytes": 312280
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/gravel-color.webp",
+      "blob": "9534b3fd0db8a8237844182382fc3b6efb28e119",
+      "sha256": "18d4071626c8c54510b608be2bbe788522c3bd938eb919e7013ffcb479a909d6",
+      "bytes": 506278
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/gravel-detail.webp",
+      "blob": "6a5b7a178ff4697fc3645aa002ceb097e5ac598d",
+      "sha256": "478b4ed6eafbf4a23af22c634d4c5e5117513b49ee024d60887278af762237b4",
+      "bytes": 239538
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/leaf-color.webp",
+      "blob": "df88678b36a00d0b1051fcc655d1b9b479eecc63",
+      "sha256": "dcc8d88b846996f6eef36f183b5273ba462d2dfa59586abfd7ff58f0c51d0eff",
+      "bytes": 315414
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/leaf-detail.webp",
+      "blob": "426ff75108521812187522610c1618bed3a6c554",
+      "sha256": "94ba8b43613ec5607e85d756c4018efc5da5dede92f01fb1e4042f6df32ceff3",
+      "bytes": 299190
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/leather-color.webp",
+      "blob": "46e45cd3c2897c60f58dc0750ce12660b1d7b27b",
+      "sha256": "df48d5b9d68307e8fa1a6ccc6778960835e05fddf2c04409a7f81b20673744f1",
+      "bytes": 103574
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/leather-detail.webp",
+      "blob": "1c018d9c11f9526ece07542668ae00ca79e66f5a",
+      "sha256": "20a2279ccca30ecea96bafd975d8f4277bdfad6cbbfdc49f6824bf7dc85da31c",
+      "bytes": 254400
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/limestone-color.webp",
+      "blob": "24e1485029071e11d1e11be7928b39b4d7eb0623",
+      "sha256": "15069b349f557ab7c9f7cb40d8e44bc10391f847f8ce1a36e479ab7cdd020043",
+      "bytes": 222314
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/limestone-detail.webp",
+      "blob": "04990d486c1ac5cc4169881b6e60c358839a49e7",
+      "sha256": "36939611b5bd7133e995000943e8052a075fe3724a3a744c9de520fdebd9a55a",
+      "bytes": 255448
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/marble-color.webp",
+      "blob": "183ec2d849e977470331efac7e431182e56d14f2",
+      "sha256": "5e4d2e22dec195f9bcd7cfe2b5985a9b3cd79269b0c7404bc6a762dbb24801c5",
+      "bytes": 33734
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/marble-detail.webp",
+      "blob": "f8b12bc9e4ebd780071495b53cb39587f917f791",
+      "sha256": "bc4e1b44a47d2bf015a137cb0080c6b4ec5f761ba842d8b1691975551a1915de",
+      "bytes": 213538
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/metal-color.webp",
+      "blob": "5f00d58c1b752a57f9f8fe90ab7b49d6c8d63332",
+      "sha256": "ab600a85288ebc8174ea35c08499d81d64c0cadcf4b3550c7157b53196832218",
+      "bytes": 86732
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/metal-detail.webp",
+      "blob": "b0c0811342ceeab911526529169ebb71345c76ba",
+      "sha256": "f2a10a13998faef414f028d3c8c90897c2de52dab5034c11351d82a1ca424f63",
+      "bytes": 209384
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/paint-color.webp",
+      "blob": "97edfaecb22f908963755a85974588c03abb973b",
+      "sha256": "509382cceb3470ea074cf16997196c0cc9cd123f101676a02d242ac3f9792d48",
+      "bytes": 50898
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/paint-detail.webp",
+      "blob": "4c25e401f56073387898036b69422378fcd762a0",
+      "sha256": "3665a017e7707ffe15591a146ef6a9a539ed62b1c1fa5c6aa1519de77df1f30a",
+      "bytes": 199178
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/roof-color.webp",
+      "blob": "4cc683a98c1fd48325ca35f7eebc056155d86c8c",
+      "sha256": "1f1b5f3fc2e986c3d6213e6c12131f7ab17604785b4639f74c1c78821a585f75",
+      "bytes": 141928
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/roof-detail.webp",
+      "blob": "6484496f4987689ad25b2115d2d103e591215b22",
+      "sha256": "4f3922ffbb848e2f260d6c65396890013d8f66d2c2fa5be23715b76dd0ea90ef",
+      "bytes": 217088
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/rope-color.webp",
+      "blob": "04f9c8e0e093dea6fd3ee106de0d8219f57af245",
+      "sha256": "903c5a9d9d2fa62c8bc08a2dbe0768ed4d0713206787875acada0eb11b1bc44e",
+      "bytes": 396962
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/rope-detail.webp",
+      "blob": "3d727b426f2884ed8298e2716e010a626c1739d4",
+      "sha256": "ade1a0b46d0aa8eb4fd38dd1f94257ea827fa217ce2defd706730cf2f6e6f48a",
+      "bytes": 233118
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/rubber-color.webp",
+      "blob": "fa3106341dfd28af6cac58a3c09d78666d507218",
+      "sha256": "6d9ff00c7db07f7f559d14abd176e5a62e706f22ee90ced5985b85b6b923b3f8",
+      "bytes": 150690
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/rubber-detail.webp",
+      "blob": "40347bd25e9f5ed4bf7d1f8746a5245bf8bdc035",
+      "sha256": "935d464afd1ff54f79106cade3090b2fdc5abd91d93aaffbcb5c204f5f223171",
+      "bytes": 311722
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/sand-color.webp",
+      "blob": "bf274adb40fbc84fcc5371f219bbd22815767fbb",
+      "sha256": "ca589561ae72eaf775675411e78053c668a2922722ab4ec4b8450756aa807e65",
+      "bytes": 315726
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/sand-detail.webp",
+      "blob": "c0aa9ed9f9e5a25d595b9a03c424b76207e052b0",
+      "sha256": "f3a41966a9eb65e313becb08f661aa37360a1db2f59d15ffb611cb8aad23bee2",
+      "bytes": 259400
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/scales-color.webp",
+      "blob": "933c214518c90c631e291a1ec62241d71e5cf123",
+      "sha256": "dcd5369046569e62784b5a58435aefcd77faf6f69852535d98ed092470daa16a",
+      "bytes": 273876
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/scales-detail.webp",
+      "blob": "d0b9e3b7b9cbd36cbbc8474e2a58b2715821861f",
+      "sha256": "d754fe91dae75474a9b390ac5a0475bd4dfd12643f5f93e31428a0b68f0bb1f1",
+      "bytes": 224090
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/skin-color.webp",
+      "blob": "37b4e9a5b5a97086c9f15ee310dd7cf8b7a04d69",
+      "sha256": "30354e2db7e14bc58864348a4bae5677f6c1675d5d4d864dc8dd99f95ac3cacf",
+      "bytes": 49680
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/skin-detail.webp",
+      "blob": "2c8a14c9669dc7da2dcd024e49d707893de0efd5",
+      "sha256": "d9880e2f3a5bdb053ce17d0ada402fd53348b87dcd48bf42141769c1e97aea54",
+      "bytes": 213784
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/water-normal.webp",
+      "blob": "5b3fa4f9b99440ff7d313dcfc4f6694e74702fd0",
+      "sha256": "62574c8e014ccfa92c85cfd4a48a50921adac515998dd4dea71a3ddf6683bf6c",
+      "bytes": 293734
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/wood-color.webp",
+      "blob": "8d3f8eb061e4f1073f4ca2bd3c149c315903cdb7",
+      "sha256": "101c1d46f0348da1553820014f7564a38e3daa082e259910a1a00c4504836a64",
+      "bytes": 263138
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/wood-detail.webp",
+      "blob": "e2e72114c19ecaec9377ac23270a8fcd5fc789e3",
+      "sha256": "ffd9c4d599bece04fbbb6598409778dae105d415c7cfec874d44c365a9c19d33",
+      "bytes": 312538
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/street-details.bin",
+      "blob": "a1479dcfeb3bf7c314514dd3283c3f5b215af46d",
+      "sha256": "9660caa782604b0a9e1b4f472208532c2597563ed9e5794801e645a0b4e1fc1b",
+      "bytes": 1657224
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/street-details.json",
+      "blob": "343a003964102ab73e7caa413c5cc0650d70924f",
+      "sha256": "ed32042a8546f5ade94af3eb475bd3e5ea452c034ebdca17bd24c23b2b9edd25",
+      "bytes": 24233
+    }
+  ],
+  "packages": [
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/package.json",
+      "blob": "b29f57eaabd6aa44f3fe9d5314fe1286758e9490",
+      "sha256": "7b2c4da476587cab12a33c31f43a596c526f53775647b88e586b46dd2bb9c246",
+      "bytes": 1294
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/package-lock.json",
+      "blob": "5ef4effc86aaa257620ab2c8d60d47b6c85965e4",
+      "sha256": "105e85e781044feb8f590a3ea1e5bd0e98bb20f5512dcb1aedab30a7af0686f2",
+      "bytes": 42217
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/package.json",
+      "blob": "dacb04e89117b51135c164f6079c09d44caee7fa",
+      "sha256": "b7849345af649ba60ce5c8c1c95203c5e8eb3f2fe2a31ae29d63ab665df3b2f7",
+      "bytes": 1858
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/package-lock.json",
+      "blob": "ec14f2b0c173dc030eda273c4e206b2649712552",
+      "sha256": "a54bba2d2b6226f3b8562c4b52f4be468af15d85ff8c0d992351bf9a3c5f8d32",
+      "bytes": 161941
+    }
+  ],
+  "three": {
+    "version": "0.185.1",
+    "revision": "185",
+    "files": {
+      "package.json": {
+        "bytes": 3826,
+        "sha256": "1d5c438acdc1fe5a52fb8ede2e417afd91fec91d22275c40f7b739591b24e4df"
+      },
+      "build/three.module.js": {
+        "bytes": 650153,
+        "sha256": "bbf5ed13fe4373f5bd38b14ea8e62e9f157327da5638edc6d3863e08b167c9c7"
+      },
+      "build/three.core.js": {
+        "bytes": 1443056,
+        "sha256": "3718df126d69c125362a03340913204470d8c50238605150e57f808840fb7759"
+      },
+      "src/objects/BatchedMesh.js": {
+        "bytes": 47901,
+        "sha256": "a7b4154d996fe13b73bfd986e09903779c902ad4dd86d8e667a83abd77aab329"
+      },
+      "src/geometries/BoxGeometry.js": {
+        "bytes": 5933,
+        "sha256": "9b3799b446b031e55ac60795859f3f941cb8bd32579ea43d29f32d98cd661d7c"
+      },
+      "src/geometries/ExtrudeGeometry.js": {
+        "bytes": 21582,
+        "sha256": "e9b7550aacea7dd6a68cf5dbd52975dfdb2fd5badddeabb4c8ddaa855681f723"
+      },
+      "src/utils.js": {
+        "bytes": 12516,
+        "sha256": "28f06d2e36ee99dcf3bad7dc10b13ed8715a5b8ed3468b1c7386384b0699e52a"
+      }
+    }
+  },
+  "playwrightVersion": "1.61.1"
+}
