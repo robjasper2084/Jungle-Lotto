@@ -1,0 +1,1990 @@
+{
+  "schema": "belle-street-index-proof-plan-v1",
+  "baseline": "75906273c0cd414c0d004320fc6f654b4783e5b1",
+  "baselineTree": "9f0351be133dd370a676090d27559a0adaf00605",
+  "candidate": null,
+  "candidateBinding": "UNBOUND: root must freeze an immutable commit/tree and exact changed-file hashes before any browser or CI execution",
+  "threeVersion": "0.185.1",
+  "viewport": {
+    "width": 960,
+    "height": 600,
+    "pixelRatio": 1,
+    "antialias": true,
+    "output": "RGBA8",
+    "changedFromOriginalFixture": false
+  },
+  "scope": "Full original street factory and original atmosphere/realistic/photo/sunset shader composition in the targeted street fixture. This is not full-world performance, FPS, controls or release acceptance.",
+  "assets": {
+    "metadataSha256": "ed32042a8546f5ade94af3eb475bd3e5ea452c034ebdca17bd24c23b2b9edd25",
+    "binarySha256": "9660caa782604b0a9e1b4f472208532c2597563ed9e5794801e645a0b4e1fc1b",
+    "binaryBytes": 1657224,
+    "stride": 9,
+    "pieces": 46034,
+    "pieceKinds": {
+      "flatTopQuads": 32105,
+      "curbExtrusions": 13929,
+      "fullBoxes": 0
+    }
+  },
+  "sourceGeometry": {
+    "allTiles": 429,
+    "selectedTiles": 355,
+    "groups": 7,
+    "expandedTupleHash": "952a14dc7bd6a7ac69c2c0b8fb2f1e0dc8734d078e5c1424c29d0cc03ebaf6f9"
+  },
+  "poses": [
+    {
+      "name": "west",
+      "x": 800,
+      "z": 500,
+      "yaw": 0.8,
+      "position": [
+        800,
+        7,
+        500
+      ],
+      "target": [
+        907.6034136349284,
+        2,
+        604.5060064020748
+      ],
+      "origin": "unchanged original street-batch-proof-browser.ts pose"
+    },
+    {
+      "name": "conservatory",
+      "x": 1330,
+      "z": 1175,
+      "yaw": 2.1,
+      "position": [
+        1330,
+        7,
+        1175
+      ],
+      "target": [
+        1459.481404997331,
+        2,
+        1099.2730843100214
+      ],
+      "origin": "unchanged original street-batch-proof-browser.ts pose"
+    },
+    {
+      "name": "northeast",
+      "x": 3200,
+      "z": 700,
+      "yaw": -2.5,
+      "position": [
+        3200,
+        7,
+        700
+      ],
+      "target": [
+        3110.2291783844066,
+        2,
+        579.8284576679599
+      ],
+      "origin": "unchanged original street-batch-proof-browser.ts pose"
+    },
+    {
+      "name": "grade-0-0",
+      "x": 82.18434504700853,
+      "z": 122.71524407607887,
+      "yaw": -2.9588967453571686,
+      "position": [
+        82.18434504700853,
+        10.43800016026944,
+        122.71524407607887
+      ],
+      "target": [
+        76.30000305175781,
+        4.438000160269439,
+        90.86599731445312
+      ],
+      "origin": "source-authored view, not a captured failing control camera",
+      "selectionRule": "white; length >= 1 m; absolute grade descending; original record ordinal ascending; eye = primitive centre - 32 m forward + 5 m right + 6 m up",
+      "witness": {
+        "x": 76.30000305175781,
+        "y": 4.432000160217285,
+        "z": 90.86599731445312,
+        "w": 0.11999999731779099,
+        "h": 0.012000000104308128,
+        "l": 5.955474376678467,
+        "yaw": -2.8039000034332275,
+        "material": "white",
+        "grade": -0.045134998857975006,
+        "ordinal": 16521,
+        "recordByteOffset": 594756,
+        "recordRawHex": "9a999842f2d28d4064bbb5428fc2f53da69b443c3f93be40197333c0000000007adf38bd"
+      }
+    },
+    {
+      "name": "grade-1-3",
+      "x": 447.64176554896915,
+      "z": 796.8810126608449,
+      "yaw": -0.18085674232567514,
+      "position": [
+        447.64176554896915,
+        9.886000114493072,
+        796.8810126608449
+      ],
+      "target": [
+        441.8160095214844,
+        3.886000114493072,
+        828.7410278320312
+      ],
+      "origin": "source-authored view, not a captured failing control camera",
+      "selectionRule": "white; length >= 1 m; absolute grade descending; original record ordinal ascending; eye = primitive centre - 32 m forward + 5 m right + 6 m up",
+      "witness": {
+        "x": 441.8160095214844,
+        "y": 3.880000114440918,
+        "z": 828.7410278320312,
+        "w": 0.11999999731779099,
+        "h": 0.012000000104308128,
+        "l": 2.9389429092407227,
+        "yaw": -0.025860000401735306,
+        "material": "white",
+        "grade": -0.0892459973692894,
+        "ordinal": 2010,
+        "recordByteOffset": 72360,
+        "recordRawHex": "73e8dc43ec5178406d2f4f448fc2f53da69b443ca4173c405ad8d3bc000000009bc6b6bd"
+      }
+    }
+  ],
+  "cases": [
+    {
+      "name": "west-day-shadow-on",
+      "pose": "west",
+      "night": false,
+      "shadows": true
+    },
+    {
+      "name": "west-day-shadow-off",
+      "pose": "west",
+      "night": false,
+      "shadows": false
+    },
+    {
+      "name": "west-night-shadow-on",
+      "pose": "west",
+      "night": true,
+      "shadows": true
+    },
+    {
+      "name": "west-night-shadow-off",
+      "pose": "west",
+      "night": true,
+      "shadows": false
+    },
+    {
+      "name": "conservatory-day-shadow-on",
+      "pose": "conservatory",
+      "night": false,
+      "shadows": true
+    },
+    {
+      "name": "conservatory-day-shadow-off",
+      "pose": "conservatory",
+      "night": false,
+      "shadows": false
+    },
+    {
+      "name": "conservatory-night-shadow-on",
+      "pose": "conservatory",
+      "night": true,
+      "shadows": true
+    },
+    {
+      "name": "conservatory-night-shadow-off",
+      "pose": "conservatory",
+      "night": true,
+      "shadows": false
+    },
+    {
+      "name": "northeast-day-shadow-on",
+      "pose": "northeast",
+      "night": false,
+      "shadows": true
+    },
+    {
+      "name": "northeast-day-shadow-off",
+      "pose": "northeast",
+      "night": false,
+      "shadows": false
+    },
+    {
+      "name": "northeast-night-shadow-on",
+      "pose": "northeast",
+      "night": true,
+      "shadows": true
+    },
+    {
+      "name": "northeast-night-shadow-off",
+      "pose": "northeast",
+      "night": true,
+      "shadows": false
+    },
+    {
+      "name": "grade-0-0-day-shadow-on",
+      "pose": "grade-0-0",
+      "night": false,
+      "shadows": true
+    },
+    {
+      "name": "grade-0-0-day-shadow-off",
+      "pose": "grade-0-0",
+      "night": false,
+      "shadows": false
+    },
+    {
+      "name": "grade-0-0-night-shadow-on",
+      "pose": "grade-0-0",
+      "night": true,
+      "shadows": true
+    },
+    {
+      "name": "grade-0-0-night-shadow-off",
+      "pose": "grade-0-0",
+      "night": true,
+      "shadows": false
+    },
+    {
+      "name": "grade-1-3-day-shadow-on",
+      "pose": "grade-1-3",
+      "night": false,
+      "shadows": true
+    },
+    {
+      "name": "grade-1-3-day-shadow-off",
+      "pose": "grade-1-3",
+      "night": false,
+      "shadows": false
+    },
+    {
+      "name": "grade-1-3-night-shadow-on",
+      "pose": "grade-1-3",
+      "night": true,
+      "shadows": true
+    },
+    {
+      "name": "grade-1-3-night-shadow-off",
+      "pose": "grade-1-3",
+      "night": true,
+      "shadows": false
+    }
+  ],
+  "groups": [
+    {
+      "ordinal": 0,
+      "materialKind": "white",
+      "surfaceProfile": "concrete|triplanar",
+      "sourceNames": [
+        "Street detail 0,0,white",
+        "Street detail 1,3,white"
+      ],
+      "sourceOrderSha256": "ef877abe8ff14526ffa7cff7a90cf12c53593b8f4c7ed2f1f3d25aa582b258cb",
+      "sourceCount": 2,
+      "originalVertices": 2082,
+      "uniqueVertices": 1388,
+      "indexCount": 2082,
+      "indexType": "Uint16Array",
+      "attributeBytes": 33312,
+      "indexBytes": 4164,
+      "customProgramCacheKey": "street-antialiased-weather-v4|belle-pbr-v1|belle-height-fog-clouds-v2-higgsfield-surface-v5|street-identity-vertex-v1"
+    },
+    {
+      "ordinal": 1,
+      "materialKind": "curb",
+      "surfaceProfile": "concrete|triplanar",
+      "sourceNames": [
+        "Street detail 0,0,curb",
+        "Street detail 0,-1,curb",
+        "Street detail 0,5,curb",
+        "Street detail 1,5,curb",
+        "Street detail 0,4,curb",
+        "Street detail 7,1,curb",
+        "Street detail 2,3,curb",
+        "Street detail -2,0,curb",
+        "Street detail -2,-1,curb",
+        "Street detail 6,2,curb",
+        "Street detail 1,3,curb",
+        "Street detail 7,2,curb",
+        "Street detail 7,3,curb",
+        "Street detail 6,3,curb",
+        "Street detail 8,4,curb",
+        "Street detail 8,3,curb",
+        "Street detail 2,5,curb",
+        "Street detail 8,2,curb",
+        "Street detail 1,-1,curb",
+        "Street detail 1,-2,curb",
+        "Street detail 3,5,curb",
+        "Street detail -1,0,curb",
+        "Street detail -1,-1,curb",
+        "Street detail -1,-2,curb",
+        "Street detail -2,-2,curb",
+        "Street detail 6,1,curb",
+        "Street detail 5,2,curb",
+        "Street detail 4,2,curb",
+        "Street detail 0,-2,curb",
+        "Street detail 2,4,curb",
+        "Street detail 0,3,curb",
+        "Street detail 4,4,curb",
+        "Street detail 4,5,curb",
+        "Street detail 6,4,curb",
+        "Street detail 3,4,curb",
+        "Street detail 1,4,curb",
+        "Street detail 5,5,curb",
+        "Street detail 5,3,curb",
+        "Street detail 8,-1,curb",
+        "Street detail 12,0,curb",
+        "Street detail 12,1,curb",
+        "Street detail 11,1,curb",
+        "Street detail 10,1,curb",
+        "Street detail 9,1,curb",
+        "Street detail 8,1,curb",
+        "Street detail 5,4,curb",
+        "Street detail 2,-1,curb",
+        "Street detail 2,-2,curb",
+        "Street detail 2,2,curb",
+        "Street detail 3,2,curb",
+        "Street detail 3,3,curb",
+        "Street detail -3,-3,curb",
+        "Street detail -3,-2,curb",
+        "Street detail -2,-3,curb",
+        "Street detail -2,-4,curb",
+        "Street detail -1,-3,curb",
+        "Street detail 4,3,curb",
+        "Street detail -1,5,curb",
+        "Street detail -1,4,curb",
+        "Street detail 7,4,curb",
+        "Street detail -1,-4,curb",
+        "Street detail 7,0,curb",
+        "Street detail 8,0,curb",
+        "Street detail -2,1,curb",
+        "Street detail -2,2,curb",
+        "Street detail 10,-2,curb",
+        "Street detail 11,-2,curb",
+        "Street detail 10,3,curb",
+        "Street detail 12,-1,curb",
+        "Street detail 11,-1,curb",
+        "Street detail 9,-1,curb",
+        "Street detail 9,-2,curb",
+        "Street detail 10,-1,curb",
+        "Street detail 10,2,curb",
+        "Street detail 11,2,curb",
+        "Street detail 12,2,curb",
+        "Street detail 11,3,curb",
+        "Street detail 9,3,curb",
+        "Street detail 12,3,curb",
+        "Street detail 13,2,curb",
+        "Street detail 13,1,curb",
+        "Street detail 13,0,curb",
+        "Street detail 1,-3,curb",
+        "Street detail 1,-4,curb",
+        "Street detail 0,-3,curb",
+        "Street detail 0,-4,curb",
+        "Street detail 2,-3,curb",
+        "Street detail 0,1,curb",
+        "Street detail 1,1,curb",
+        "Street detail 1,2,curb"
+      ],
+      "sourceOrderSha256": "dd2bb800900bfdebda53a828e80bbde371a98e79dff3a6e53fdc6c300211d890",
+      "sourceCount": 90,
+      "originalVertices": 1839384,
+      "uniqueVertices": 1052074,
+      "indexCount": 1839384,
+      "indexType": "Uint32Array",
+      "attributeBytes": 25249776,
+      "indexBytes": 7357536,
+      "customProgramCacheKey": "street-antialiased-weather-v4|belle-pbr-v1|belle-height-fog-clouds-v2-higgsfield-surface-v5|street-identity-vertex-v1"
+    },
+    {
+      "ordinal": 2,
+      "materialKind": "gutter",
+      "surfaceProfile": "concrete|triplanar",
+      "sourceNames": [
+        "Street detail 0,0,gutter",
+        "Street detail 1,3,gutter"
+      ],
+      "sourceOrderSha256": "7db6313512e8275d787e2861ef5d4ebc3632aafe995a45cad2ad573676fae20a",
+      "sourceCount": 2,
+      "originalVertices": 2670,
+      "uniqueVertices": 1779,
+      "indexCount": 2670,
+      "indexType": "Uint16Array",
+      "attributeBytes": 42696,
+      "indexBytes": 5340,
+      "customProgramCacheKey": "street-antialiased-weather-v4|belle-pbr-v1|belle-height-fog-clouds-v2-higgsfield-surface-v5|street-identity-vertex-v1"
+    },
+    {
+      "ordinal": 3,
+      "materialKind": "white",
+      "surfaceProfile": "concrete|planar",
+      "sourceNames": [
+        "Street detail 0,-1,white",
+        "Street detail 0,5,white",
+        "Street detail 1,5,white",
+        "Street detail 0,4,white",
+        "Street detail 7,1,white",
+        "Street detail -2,0,white",
+        "Street detail -2,-1,white",
+        "Street detail 6,2,white",
+        "Street detail 8,4,white",
+        "Street detail 8,3,white",
+        "Street detail 2,5,white",
+        "Street detail 1,-1,white",
+        "Street detail 1,-2,white",
+        "Street detail -1,-1,white",
+        "Street detail -1,0,white",
+        "Street detail -1,-2,white",
+        "Street detail -2,-2,white",
+        "Street detail 6,1,white",
+        "Street detail 5,2,white",
+        "Street detail 4,2,white",
+        "Street detail 2,4,white",
+        "Street detail 4,4,white",
+        "Street detail 4,5,white",
+        "Street detail 3,5,white",
+        "Street detail 3,4,white",
+        "Street detail 0,-2,white",
+        "Street detail 1,4,white",
+        "Street detail 7,2,white",
+        "Street detail 7,3,white",
+        "Street detail 8,-1,white",
+        "Street detail 12,0,white",
+        "Street detail 11,1,white",
+        "Street detail 10,1,white",
+        "Street detail 9,1,white",
+        "Street detail 8,1,white",
+        "Street detail 5,4,white",
+        "Street detail 2,3,white",
+        "Street detail -2,-3,white",
+        "Street detail 3,3,white",
+        "Street detail 4,3,white",
+        "Street detail 3,2,white",
+        "Street detail 5,3,white",
+        "Street detail 6,3,white",
+        "Street detail 5,5,white",
+        "Street detail -1,5,white",
+        "Street detail 9,-1,white",
+        "Street detail -1,4,white",
+        "Street detail 6,4,white",
+        "Street detail 7,4,white",
+        "Street detail 8,0,white",
+        "Street detail 7,0,white",
+        "Street detail -1,-3,white",
+        "Street detail 10,3,white",
+        "Street detail 12,-1,white",
+        "Street detail 11,-1,white",
+        "Street detail 10,2,white",
+        "Street detail 11,2,white",
+        "Street detail 12,2,white",
+        "Street detail 11,3,white",
+        "Street detail 11,-2,white",
+        "Street detail 10,-2,white",
+        "Street detail 9,3,white",
+        "Street detail 12,3,white",
+        "Street detail 13,2,white",
+        "Street detail 13,1,white",
+        "Street detail 13,0,white",
+        "Street detail 12,1,white",
+        "Street detail 10,-1,white",
+        "Street detail 1,-3,white",
+        "Street detail -1,-4,white",
+        "Street detail 1,-4,white",
+        "Street detail -2,-4,white",
+        "Street detail 0,-3,white",
+        "Street detail 0,-4,white",
+        "Street detail 2,-2,white",
+        "Street detail 2,-3,white",
+        "Street detail 0,1,white",
+        "Street detail 1,1,white",
+        "Street detail 1,2,white"
+      ],
+      "sourceOrderSha256": "cc6b7c4ae8353334f6354989b50582298c580c1570133bfd4dc52764dbe1c6b2",
+      "sourceCount": 79,
+      "originalVertices": 62238,
+      "uniqueVertices": 41492,
+      "indexCount": 62238,
+      "indexType": "Uint16Array",
+      "attributeBytes": 995808,
+      "indexBytes": 124476,
+      "customProgramCacheKey": "street-antialiased-weather-v4|belle-pbr-v1|belle-height-fog-clouds-v2-higgsfield-surface-v5|street-identity-vertex-v1"
+    },
+    {
+      "ordinal": 4,
+      "materialKind": "gutter",
+      "surfaceProfile": "concrete|planar",
+      "sourceNames": [
+        "Street detail 0,-1,gutter",
+        "Street detail 0,5,gutter",
+        "Street detail 1,5,gutter",
+        "Street detail 0,4,gutter",
+        "Street detail 7,1,gutter",
+        "Street detail 2,3,gutter",
+        "Street detail -2,0,gutter",
+        "Street detail -2,-1,gutter",
+        "Street detail 6,2,gutter",
+        "Street detail 7,2,gutter",
+        "Street detail 7,3,gutter",
+        "Street detail 6,3,gutter",
+        "Street detail 8,4,gutter",
+        "Street detail 8,3,gutter",
+        "Street detail 2,5,gutter",
+        "Street detail 8,2,gutter",
+        "Street detail 1,-1,gutter",
+        "Street detail 1,-2,gutter",
+        "Street detail 3,5,gutter",
+        "Street detail -1,0,gutter",
+        "Street detail -1,-1,gutter",
+        "Street detail -1,-2,gutter",
+        "Street detail -2,-2,gutter",
+        "Street detail 6,1,gutter",
+        "Street detail 5,2,gutter",
+        "Street detail 4,2,gutter",
+        "Street detail 0,-2,gutter",
+        "Street detail 2,4,gutter",
+        "Street detail 0,3,gutter",
+        "Street detail 4,4,gutter",
+        "Street detail 4,5,gutter",
+        "Street detail 6,4,gutter",
+        "Street detail 3,4,gutter",
+        "Street detail 1,4,gutter",
+        "Street detail 5,5,gutter",
+        "Street detail 5,3,gutter",
+        "Street detail 8,-1,gutter",
+        "Street detail 12,0,gutter",
+        "Street detail 12,1,gutter",
+        "Street detail 11,1,gutter",
+        "Street detail 10,1,gutter",
+        "Street detail 9,1,gutter",
+        "Street detail 8,1,gutter",
+        "Street detail 5,4,gutter",
+        "Street detail 2,-1,gutter",
+        "Street detail 2,-2,gutter",
+        "Street detail 2,2,gutter",
+        "Street detail 3,2,gutter",
+        "Street detail 3,3,gutter",
+        "Street detail -3,-3,gutter",
+        "Street detail -3,-2,gutter",
+        "Street detail -2,-3,gutter",
+        "Street detail -2,-4,gutter",
+        "Street detail -1,-3,gutter",
+        "Street detail 4,3,gutter",
+        "Street detail -1,5,gutter",
+        "Street detail -1,4,gutter",
+        "Street detail 7,4,gutter",
+        "Street detail -1,-4,gutter",
+        "Street detail 7,0,gutter",
+        "Street detail 8,0,gutter",
+        "Street detail -2,1,gutter",
+        "Street detail -2,2,gutter",
+        "Street detail 10,-2,gutter",
+        "Street detail 11,-2,gutter",
+        "Street detail 10,3,gutter",
+        "Street detail 12,-1,gutter",
+        "Street detail 11,-1,gutter",
+        "Street detail 9,-1,gutter",
+        "Street detail 9,-2,gutter",
+        "Street detail 10,-1,gutter",
+        "Street detail 10,2,gutter",
+        "Street detail 11,2,gutter",
+        "Street detail 12,2,gutter",
+        "Street detail 11,3,gutter",
+        "Street detail 9,3,gutter",
+        "Street detail 12,3,gutter",
+        "Street detail 13,2,gutter",
+        "Street detail 13,1,gutter",
+        "Street detail 13,0,gutter",
+        "Street detail 1,-3,gutter",
+        "Street detail 1,-4,gutter",
+        "Street detail 0,-3,gutter",
+        "Street detail 0,-4,gutter",
+        "Street detail 2,-3,gutter"
+      ],
+      "sourceOrderSha256": "b089a571bc04371048ff6bb70d7b627617bb185a14166e43835ac74aff2b35a4",
+      "sourceCount": 85,
+      "originalVertices": 92622,
+      "uniqueVertices": 61695,
+      "indexCount": 92622,
+      "indexType": "Uint16Array",
+      "attributeBytes": 1480680,
+      "indexBytes": 185244,
+      "customProgramCacheKey": "street-antialiased-weather-v4|belle-pbr-v1|belle-height-fog-clouds-v2-higgsfield-surface-v5|street-identity-vertex-v1"
+    },
+    {
+      "ordinal": 5,
+      "materialKind": "yellow",
+      "surfaceProfile": "concrete|planar",
+      "sourceNames": [
+        "Street detail 0,5,yellow",
+        "Street detail 0,4,yellow",
+        "Street detail 1,5,yellow",
+        "Street detail 7,1,yellow",
+        "Street detail -2,0,yellow",
+        "Street detail -2,-1,yellow",
+        "Street detail 6,2,yellow",
+        "Street detail 2,5,yellow",
+        "Street detail 1,-1,yellow",
+        "Street detail 1,-2,yellow",
+        "Street detail -1,-1,yellow",
+        "Street detail -1,-2,yellow",
+        "Street detail -2,-2,yellow",
+        "Street detail 2,4,yellow",
+        "Street detail 4,4,yellow",
+        "Street detail 4,5,yellow",
+        "Street detail 3,5,yellow",
+        "Street detail 3,4,yellow",
+        "Street detail 0,-2,yellow",
+        "Street detail 1,4,yellow",
+        "Street detail 7,2,yellow",
+        "Street detail 7,3,yellow",
+        "Street detail 5,4,yellow",
+        "Street detail 0,-1,yellow",
+        "Street detail -1,0,yellow",
+        "Street detail 1,3,yellow",
+        "Street detail 5,3,yellow",
+        "Street detail 6,3,yellow",
+        "Street detail 4,3,yellow",
+        "Street detail 2,3,yellow",
+        "Street detail 5,5,yellow",
+        "Street detail -1,5,yellow",
+        "Street detail 6,4,yellow",
+        "Street detail 7,4,yellow",
+        "Street detail 8,4,yellow",
+        "Street detail 8,3,yellow",
+        "Street detail -1,-3,yellow",
+        "Street detail 8,0,yellow",
+        "Street detail 4,2,yellow",
+        "Street detail 10,3,yellow",
+        "Street detail 12,-1,yellow",
+        "Street detail 11,-1,yellow",
+        "Street detail 10,2,yellow",
+        "Street detail 11,2,yellow",
+        "Street detail 12,2,yellow",
+        "Street detail 11,3,yellow",
+        "Street detail 9,3,yellow",
+        "Street detail 12,3,yellow",
+        "Street detail 13,2,yellow",
+        "Street detail 12,1,yellow",
+        "Street detail 12,0,yellow",
+        "Street detail 13,0,yellow",
+        "Street detail -1,-4,yellow",
+        "Street detail 1,-3,yellow",
+        "Street detail 1,-4,yellow",
+        "Street detail -2,-3,yellow",
+        "Street detail 0,-3,yellow",
+        "Street detail 0,-4,yellow",
+        "Street detail 2,-2,yellow",
+        "Street detail 0,0,yellow",
+        "Street detail 0,1,yellow",
+        "Street detail 1,1,yellow",
+        "Street detail 1,2,yellow"
+      ],
+      "sourceOrderSha256": "9d7decd349fc8213febdfc600a0c48d6814df8b083548a6527dd407229b0a61d",
+      "sourceCount": 63,
+      "originalVertices": 28998,
+      "uniqueVertices": 19332,
+      "indexCount": 28998,
+      "indexType": "Uint16Array",
+      "attributeBytes": 463968,
+      "indexBytes": 57996,
+      "customProgramCacheKey": "street-antialiased-weather-v4|belle-pbr-v1|belle-height-fog-clouds-v2-higgsfield-surface-v5|street-identity-vertex-v1"
+    },
+    {
+      "ordinal": 6,
+      "materialKind": "tactile",
+      "surfaceProfile": "concrete|planar",
+      "sourceNames": [
+        "Street detail 2,5,tactile",
+        "Street detail 0,4,tactile",
+        "Street detail 4,5,tactile",
+        "Street detail 5,4,tactile",
+        "Street detail 5,5,tactile",
+        "Street detail 0,-1,tactile",
+        "Street detail 0,5,tactile",
+        "Street detail -1,4,tactile",
+        "Street detail -1,0,tactile",
+        "Street detail -1,-1,tactile",
+        "Street detail 1,-2,tactile",
+        "Street detail -1,-2,tactile",
+        "Street detail 1,-3,tactile",
+        "Street detail 0,-2,tactile",
+        "Street detail 1,5,tactile",
+        "Street detail 7,2,tactile",
+        "Street detail 7,4,tactile",
+        "Street detail 8,1,tactile",
+        "Street detail -2,0,tactile",
+        "Street detail -1,5,tactile",
+        "Street detail 7,1,tactile",
+        "Street detail 7,3,tactile",
+        "Street detail 6,2,tactile",
+        "Street detail 13,1,tactile",
+        "Street detail 2,3,tactile",
+        "Street detail 5,2,tactile",
+        "Street detail 10,3,tactile",
+        "Street detail 1,3,tactile",
+        "Street detail 2,4,tactile",
+        "Street detail 12,2,tactile",
+        "Street detail 10,2,tactile",
+        "Street detail 12,-1,tactile",
+        "Street detail 12,0,tactile",
+        "Street detail -2,-3,tactile"
+      ],
+      "sourceOrderSha256": "d4760f4c32ec9174110172172097494c7224b5036355042a87366fca4b38798a",
+      "sourceCount": 34,
+      "originalVertices": 756,
+      "uniqueVertices": 504,
+      "indexCount": 756,
+      "indexType": "Uint16Array",
+      "attributeBytes": 12096,
+      "indexBytes": 1512,
+      "customProgramCacheKey": "street-antialiased-weather-v4|belle-pbr-v1|belle-height-fog-clouds-v2-higgsfield-surface-v5|street-identity-vertex-v1"
+    }
+  ],
+  "groupVisibilityControls": [
+    {
+      "group": 0,
+      "case": "grade-0-0-day-shadow-on",
+      "control": "hide exactly this display group; all other original inputs unchanged",
+      "witness": {
+        "source": "Street detail 0,0,white",
+        "group": 0,
+        "corner": 222,
+        "triangle": 74,
+        "area": 430.84984808275067,
+        "ndc": [
+          -0.18194994217958524,
+          -0.8150516526768908
+        ],
+        "world": [
+          [
+            79.8788833618164,
+            5.429592132568359,
+            116.50987243652344
+          ],
+          [
+            78.98434448242188,
+            5.36040735244751,
+            113.96236419677734
+          ],
+          [
+            79.76565551757812,
+            5.429592132568359,
+            116.54962921142578
+          ]
+        ],
+        "pixelTopLeft": [
+          392,
+          544
+        ],
+        "closestSource": "Street detail 0,0,white",
+        "closestFaceIndex": 74,
+        "closestPoint": [
+          79.59463025864304,
+          5.410989635498735,
+          115.840248939236
+        ],
+        "distance": 8.901854617597811
+      }
+    },
+    {
+      "group": 1,
+      "case": "west-day-shadow-on",
+      "control": "hide exactly this display group; all other original inputs unchanged",
+      "witness": {
+        "source": "Street detail 3,2,curb",
+        "group": 1,
+        "corner": 2973,
+        "triangle": 991,
+        "area": 1.1049752913684463,
+        "ndc": [
+          0.9518659183521795,
+          0.011043049879289632
+        ],
+        "world": [
+          [
+            821.4310913085938,
+            2.1700000762939453,
+            728.151611328125
+          ],
+          [
+            823.9105834960938,
+            2.1700000762939453,
+            735.352783203125
+          ],
+          [
+            823.9105834960938,
+            2.065000057220459,
+            735.352783203125
+          ]
+        ],
+        "pixelTopLeft": [
+          936,
+          296
+        ],
+        "closestSource": "Street detail 3,2,curb",
+        "closestFaceIndex": 993,
+        "closestPoint": [
+          823.2071905889546,
+          2.186516353785331,
+          733.3184647493401
+        ],
+        "distance": 234.51918751529377
+      }
+    },
+    {
+      "group": 2,
+      "case": "grade-0-0-day-shadow-on",
+      "control": "hide exactly this display group; all other original inputs unchanged",
+      "witness": {
+        "source": "Street detail 0,0,gutter",
+        "group": 2,
+        "corner": 210,
+        "triangle": 70,
+        "area": 965.9529494253837,
+        "ndc": [
+          -0.6642900015683485,
+          -0.4503086860925121
+        ],
+        "world": [
+          [
+            73.72321319580078,
+            5.288392066955566,
+            114.14922332763672
+          ],
+          [
+            71.73050689697266,
+            5.121607303619385,
+            108.47431945800781
+          ],
+          [
+            73.31749725341797,
+            5.288392066955566,
+            114.29168701171875
+          ]
+        ],
+        "pixelTopLeft": [
+          161,
+          435
+        ],
+        "closestSource": "Street detail 0,0,gutter",
+        "closestFaceIndex": 70,
+        "closestPoint": [
+          73.1089612988501,
+          5.248471946017052,
+          112.83913880113714
+        ],
+        "distance": 14.38162885992375
+      }
+    },
+    {
+      "group": 3,
+      "case": "conservatory-day-shadow-on",
+      "control": "hide exactly this display group; all other original inputs unchanged",
+      "witness": {
+        "source": "Street detail 5,4,white",
+        "group": 3,
+        "corner": 888,
+        "triangle": 296,
+        "area": 1.8838782700899077,
+        "ndc": [
+          -0.4708136961017521,
+          -0.05271241457725096
+        ],
+        "world": [
+          [
+            1381.656005859375,
+            2.0900001525878906,
+            1107.8486328125
+          ],
+          [
+            1380.5162353515625,
+            2.0900001525878906,
+            1105.4010009765625
+          ],
+          [
+            1381.2298583984375,
+            2.0900001525878906,
+            1108.0469970703125
+          ]
+        ],
+        "pixelTopLeft": [
+          254,
+          315
+        ],
+        "closestSource": "Street detail 5,4,white",
+        "closestFaceIndex": 295,
+        "closestPoint": [
+          1381.6507735396763,
+          2.0900001525878897,
+          1106.5287388592142
+        ],
+        "distance": 85.90823073465194
+      }
+    },
+    {
+      "group": 4,
+      "case": "conservatory-day-shadow-on",
+      "control": "hide exactly this display group; all other original inputs unchanged",
+      "witness": {
+        "source": "Street detail 5,4,gutter",
+        "group": 4,
+        "corner": 609,
+        "triangle": 203,
+        "area": 22.1637919246074,
+        "ndc": [
+          0.5788579311445295,
+          -0.1396806967732418
+        ],
+        "world": [
+          [
+            1378.5003662109375,
+            2.0820000171661377,
+            1170.6759033203125
+          ],
+          [
+            1378.1956787109375,
+            2.0820000171661377,
+            1170.9793701171875
+          ],
+          [
+            1382.6256103515625,
+            2.0820000171661377,
+            1175.4261474609375
+          ]
+        ],
+        "pixelTopLeft": [
+          757,
+          341
+        ],
+        "closestSource": "Street detail 5,4,gutter",
+        "closestFaceIndex": 202,
+        "closestPoint": [
+          1380.0683547389276,
+          2.0820000171661377,
+          1172.2859586640163
+        ],
+        "distance": 50.38246610148889
+      }
+    },
+    {
+      "group": 5,
+      "case": "conservatory-day-shadow-on",
+      "control": "hide exactly this display group; all other original inputs unchanged",
+      "witness": {
+        "source": "Street detail 5,4,yellow",
+        "group": 5,
+        "corner": 81,
+        "triangle": 27,
+        "area": 1.2086038979117983,
+        "ndc": [
+          0.8747134089902117,
+          -0.06499998551503984
+        ],
+        "world": [
+          [
+            1417.99951171875,
+            2.0900001525878906,
+            1184.88623046875
+          ],
+          [
+            1417.908447265625,
+            2.0900001525878906,
+            1184.9276123046875
+          ],
+          [
+            1420.384521484375,
+            2.0900001525878906,
+            1190.35986328125
+          ]
+        ],
+        "pixelTopLeft": [
+          899,
+          319
+        ],
+        "closestSource": "Street detail 5,4,yellow",
+        "closestFaceIndex": 27,
+        "closestPoint": [
+          1418.7451897949913,
+          2.0900001525878906,
+          1186.6948658952012
+        ],
+        "distance": 89.64701165436227
+      }
+    },
+    {
+      "group": 6,
+      "case": "conservatory-day-shadow-on",
+      "control": "hide exactly this display group; all other original inputs unchanged",
+      "witness": {
+        "source": "Street detail 5,4,tactile",
+        "group": 6,
+        "corner": 21,
+        "triangle": 7,
+        "area": 1.5552306109327,
+        "ndc": [
+          -0.5101836992567143,
+          -0.058219103307045834
+        ],
+        "world": [
+          [
+            1377.510009765625,
+            2.0920000076293945,
+            1107.3800048828125
+          ],
+          [
+            1377.011474609375,
+            2.0920000076293945,
+            1107.6121826171875
+          ],
+          [
+            1377.7080078125,
+            2.0920000076293945,
+            1109.1080322265625
+          ]
+        ],
+        "pixelTopLeft": [
+          235,
+          317
+        ],
+        "closestSource": "Street detail 5,4,tactile",
+        "closestFaceIndex": 7,
+        "closestPoint": [
+          1377.391020632912,
+          2.0920000076293936,
+          1108.1466798275944
+        ],
+        "distance": 82.09362775897021
+      }
+    }
+  ],
+  "shadowControl": {
+    "case": "west-day-shadow-on",
+    "control": "same original light and caster, castShadow=false; then restore and require exact pixels"
+  },
+  "lanes": [
+    "original",
+    "indexed",
+    "restored"
+  ],
+  "warmRendersPerLane": 3,
+  "timing": {
+    "cases": "all 20, after correctness and restored controls for that case",
+    "blocks": [
+      [
+        "original",
+        "indexed",
+        "indexed",
+        "original"
+      ],
+      [
+        "indexed",
+        "original",
+        "original",
+        "indexed"
+      ]
+    ],
+    "rendersPerQuery": 1,
+    "totalQueriesPerBackend": 160,
+    "queriesPerCase": 8,
+    "readbacksDuringTimedBlocks": 0,
+    "metrics": [
+      "GPU EXT_disjoint_timer_query_webgl2 nanoseconds, if valid and nondisjoint",
+      "CPU render submission wall milliseconds",
+      "separate completion-fence wait milliseconds"
+    ],
+    "failurePolicy": "retain every raw query and disjoint; never replace a sample, case or backend; no speed threshold confers correctness or release acceptance"
+  },
+  "bounds": {
+    "jobMinutes": 40,
+    "driverMs": 2100000,
+    "fenceMs": 30000,
+    "queryMs": 30000,
+    "closeMs": 10000
+  },
+  "sourceOnlyPlan": {
+    "geometryAndVisibilityOnly": true,
+    "canvasTextStub": true,
+    "renderedPixels": false,
+    "renderTiming": false,
+    "selectionPolicy": "Existing three poses unchanged. Grade poses selected from original record arithmetic. Each visibility control uses the first pose with a front-facing projected triangle and a closest original geometry ray hit; no result-driven camera or mask changes.",
+    "projectedWitnesses": [
+      {
+        "pose": "west",
+        "group": 0,
+        "witness": null
+      },
+      {
+        "pose": "west",
+        "group": 1,
+        "witness": {
+          "source": "Street detail 3,2,curb",
+          "group": 1,
+          "corner": 2973,
+          "triangle": 991,
+          "area": 1.1049752913684463,
+          "ndc": [
+            0.9518659183521795,
+            0.011043049879289632
+          ],
+          "world": [
+            [
+              821.4310913085938,
+              2.1700000762939453,
+              728.151611328125
+            ],
+            [
+              823.9105834960938,
+              2.1700000762939453,
+              735.352783203125
+            ],
+            [
+              823.9105834960938,
+              2.065000057220459,
+              735.352783203125
+            ]
+          ],
+          "pixelTopLeft": [
+            936,
+            296
+          ],
+          "closestSource": "Street detail 3,2,curb",
+          "closestFaceIndex": 993,
+          "closestPoint": [
+            823.2071905889546,
+            2.186516353785331,
+            733.3184647493401
+          ],
+          "distance": 234.51918751529377
+        }
+      },
+      {
+        "pose": "west",
+        "group": 2,
+        "witness": null
+      },
+      {
+        "pose": "west",
+        "group": 3,
+        "witness": null
+      },
+      {
+        "pose": "west",
+        "group": 4,
+        "witness": null
+      },
+      {
+        "pose": "west",
+        "group": 5,
+        "witness": null
+      },
+      {
+        "pose": "west",
+        "group": 6,
+        "witness": null
+      },
+      {
+        "pose": "conservatory",
+        "group": 0,
+        "witness": null
+      },
+      {
+        "pose": "conservatory",
+        "group": 1,
+        "witness": {
+          "source": "Street detail 5,4,curb",
+          "group": 1,
+          "corner": 12213,
+          "triangle": 4071,
+          "area": 50.380525325695416,
+          "ndc": [
+            0.728769089128177,
+            -0.1752547999356914
+          ],
+          "world": [
+            [
+              1376.9703369140625,
+              2.1700000762939453,
+              1179.774169921875
+            ],
+            [
+              1372.953125,
+              2.1700000762939453,
+              1175.7415771484375
+            ],
+            [
+              1372.953125,
+              2.065000057220459,
+              1175.7415771484375
+            ]
+          ],
+          "pixelTopLeft": [
+            829,
+            352
+          ],
+          "closestSource": "Street detail 5,4,curb",
+          "closestFaceIndex": 4071,
+          "closestPoint": [
+            1374.2396482545535,
+            2.140725935959078,
+            1177.0330261658544
+          ],
+          "distance": 44.55212921406927
+        }
+      },
+      {
+        "pose": "conservatory",
+        "group": 2,
+        "witness": null
+      },
+      {
+        "pose": "conservatory",
+        "group": 3,
+        "witness": {
+          "source": "Street detail 5,4,white",
+          "group": 3,
+          "corner": 888,
+          "triangle": 296,
+          "area": 1.8838782700899077,
+          "ndc": [
+            -0.4708136961017521,
+            -0.05271241457725096
+          ],
+          "world": [
+            [
+              1381.656005859375,
+              2.0900001525878906,
+              1107.8486328125
+            ],
+            [
+              1380.5162353515625,
+              2.0900001525878906,
+              1105.4010009765625
+            ],
+            [
+              1381.2298583984375,
+              2.0900001525878906,
+              1108.0469970703125
+            ]
+          ],
+          "pixelTopLeft": [
+            254,
+            315
+          ],
+          "closestSource": "Street detail 5,4,white",
+          "closestFaceIndex": 295,
+          "closestPoint": [
+            1381.6507735396763,
+            2.0900001525878897,
+            1106.5287388592142
+          ],
+          "distance": 85.90823073465194
+        }
+      },
+      {
+        "pose": "conservatory",
+        "group": 4,
+        "witness": {
+          "source": "Street detail 5,4,gutter",
+          "group": 4,
+          "corner": 609,
+          "triangle": 203,
+          "area": 22.1637919246074,
+          "ndc": [
+            0.5788579311445295,
+            -0.1396806967732418
+          ],
+          "world": [
+            [
+              1378.5003662109375,
+              2.0820000171661377,
+              1170.6759033203125
+            ],
+            [
+              1378.1956787109375,
+              2.0820000171661377,
+              1170.9793701171875
+            ],
+            [
+              1382.6256103515625,
+              2.0820000171661377,
+              1175.4261474609375
+            ]
+          ],
+          "pixelTopLeft": [
+            757,
+            341
+          ],
+          "closestSource": "Street detail 5,4,gutter",
+          "closestFaceIndex": 202,
+          "closestPoint": [
+            1380.0683547389276,
+            2.0820000171661377,
+            1172.2859586640163
+          ],
+          "distance": 50.38246610148889
+        }
+      },
+      {
+        "pose": "conservatory",
+        "group": 5,
+        "witness": {
+          "source": "Street detail 5,4,yellow",
+          "group": 5,
+          "corner": 81,
+          "triangle": 27,
+          "area": 1.2086038979117983,
+          "ndc": [
+            0.8747134089902117,
+            -0.06499998551503984
+          ],
+          "world": [
+            [
+              1417.99951171875,
+              2.0900001525878906,
+              1184.88623046875
+            ],
+            [
+              1417.908447265625,
+              2.0900001525878906,
+              1184.9276123046875
+            ],
+            [
+              1420.384521484375,
+              2.0900001525878906,
+              1190.35986328125
+            ]
+          ],
+          "pixelTopLeft": [
+            899,
+            319
+          ],
+          "closestSource": "Street detail 5,4,yellow",
+          "closestFaceIndex": 27,
+          "closestPoint": [
+            1418.7451897949913,
+            2.0900001525878906,
+            1186.6948658952012
+          ],
+          "distance": 89.64701165436227
+        }
+      },
+      {
+        "pose": "conservatory",
+        "group": 6,
+        "witness": {
+          "source": "Street detail 5,4,tactile",
+          "group": 6,
+          "corner": 21,
+          "triangle": 7,
+          "area": 1.5552306109327,
+          "ndc": [
+            -0.5101836992567143,
+            -0.058219103307045834
+          ],
+          "world": [
+            [
+              1377.510009765625,
+              2.0920000076293945,
+              1107.3800048828125
+            ],
+            [
+              1377.011474609375,
+              2.0920000076293945,
+              1107.6121826171875
+            ],
+            [
+              1377.7080078125,
+              2.0920000076293945,
+              1109.1080322265625
+            ]
+          ],
+          "pixelTopLeft": [
+            235,
+            317
+          ],
+          "closestSource": "Street detail 5,4,tactile",
+          "closestFaceIndex": 7,
+          "closestPoint": [
+            1377.391020632912,
+            2.0920000076293936,
+            1108.1466798275944
+          ],
+          "distance": 82.09362775897021
+        }
+      },
+      {
+        "pose": "northeast",
+        "group": 0,
+        "witness": null
+      },
+      {
+        "pose": "northeast",
+        "group": 1,
+        "witness": {
+          "source": "Street detail 12,2,curb",
+          "group": 1,
+          "corner": 261,
+          "triangle": 87,
+          "area": 2.104186338526525,
+          "ndc": [
+            0.02471090571136056,
+            0.017802414464991926
+          ],
+          "world": [
+            [
+              3075.178466796875,
+              2.065000057220459,
+              531.9019775390625
+            ],
+            [
+              3080.388671875,
+              2.065000057220459,
+              528.92041015625
+            ],
+            [
+              3080.388671875,
+              2.1700000762939453,
+              528.92041015625
+            ]
+          ],
+          "pixelTopLeft": [
+            491,
+            294
+          ],
+          "closestSource": "Street detail 12,2,curb",
+          "closestFaceIndex": 86,
+          "closestPoint": [
+            3078.5343209504613,
+            2.1611474942403666,
+            529.9815722698308
+          ],
+          "distance": 209.00619954531683
+        }
+      },
+      {
+        "pose": "northeast",
+        "group": 2,
+        "witness": null
+      },
+      {
+        "pose": "northeast",
+        "group": 3,
+        "witness": null
+      },
+      {
+        "pose": "northeast",
+        "group": 4,
+        "witness": null
+      },
+      {
+        "pose": "northeast",
+        "group": 5,
+        "witness": null
+      },
+      {
+        "pose": "northeast",
+        "group": 6,
+        "witness": null
+      },
+      {
+        "pose": "grade-0-0",
+        "group": 0,
+        "witness": {
+          "source": "Street detail 0,0,white",
+          "group": 0,
+          "corner": 222,
+          "triangle": 74,
+          "area": 430.84984808275067,
+          "ndc": [
+            -0.18194994217958524,
+            -0.8150516526768908
+          ],
+          "world": [
+            [
+              79.8788833618164,
+              5.429592132568359,
+              116.50987243652344
+            ],
+            [
+              78.98434448242188,
+              5.36040735244751,
+              113.96236419677734
+            ],
+            [
+              79.76565551757812,
+              5.429592132568359,
+              116.54962921142578
+            ]
+          ],
+          "pixelTopLeft": [
+            392,
+            544
+          ],
+          "closestSource": "Street detail 0,0,white",
+          "closestFaceIndex": 74,
+          "closestPoint": [
+            79.59463025864304,
+            5.410989635498735,
+            115.840248939236
+          ],
+          "distance": 8.901854617597811
+        }
+      },
+      {
+        "pose": "grade-0-0",
+        "group": 1,
+        "witness": {
+          "source": "Street detail 0,0,curb",
+          "group": 1,
+          "corner": 4056,
+          "triangle": 1352,
+          "area": 403.21319834456204,
+          "ndc": [
+            -0.7115758352552607,
+            -0.4367649800373932
+          ],
+          "world": [
+            [
+              73.0796127319336,
+              5.419458389282227,
+              114.38177490234375
+            ],
+            [
+              73.24944305419922,
+              5.419458389282227,
+              114.32213592529297
+            ],
+            [
+              71.08655548095703,
+              5.252541542053223,
+              108.70586395263672
+            ]
+          ],
+          "pixelTopLeft": [
+            138,
+            431
+          ],
+          "closestSource": "Street detail 0,0,curb",
+          "closestFaceIndex": 1352,
+          "closestPoint": [
+            72.68062157294423,
+            5.379599859621615,
+            112.99939101945996
+          ],
+          "distance": 14.501930012618523
+        }
+      },
+      {
+        "pose": "grade-0-0",
+        "group": 2,
+        "witness": {
+          "source": "Street detail 0,0,gutter",
+          "group": 2,
+          "corner": 210,
+          "triangle": 70,
+          "area": 965.9529494253837,
+          "ndc": [
+            -0.6642900015683485,
+            -0.4503086860925121
+          ],
+          "world": [
+            [
+              73.72321319580078,
+              5.288392066955566,
+              114.14922332763672
+            ],
+            [
+              71.73050689697266,
+              5.121607303619385,
+              108.47431945800781
+            ],
+            [
+              73.31749725341797,
+              5.288392066955566,
+              114.29168701171875
+            ]
+          ],
+          "pixelTopLeft": [
+            161,
+            435
+          ],
+          "closestSource": "Street detail 0,0,gutter",
+          "closestFaceIndex": 70,
+          "closestPoint": [
+            73.1089612988501,
+            5.248471946017052,
+            112.83913880113714
+          ],
+          "distance": 14.38162885992375
+        }
+      },
+      {
+        "pose": "grade-0-0",
+        "group": 3,
+        "witness": {
+          "source": "Street detail -1,0,white",
+          "group": 3,
+          "corner": 636,
+          "triangle": 212,
+          "area": 0.7007562694407796,
+          "ndc": [
+            -0.8237315786328397,
+            0.19170538394274714
+          ],
+          "world": [
+            [
+              -16.563533782958984,
+              2.090634346008301,
+              30.5628604888916
+            ],
+            [
+              -10.578787803649902,
+              2.111365556716919,
+              32.23670196533203
+            ],
+            [
+              -16.531211853027344,
+              2.090634346008301,
+              30.447296142578125
+            ]
+          ],
+          "pixelTopLeft": [
+            84,
+            242
+          ],
+          "closestSource": "Street detail -1,0,white",
+          "closestFaceIndex": 212,
+          "closestPoint": [
+            -14.518034535191063,
+            2.097708274747914,
+            31.12193651282128
+          ],
+          "distance": 133.4550286649889
+        }
+      },
+      {
+        "pose": "grade-0-0",
+        "group": 4,
+        "witness": {
+          "source": "Street detail -1,0,gutter",
+          "group": 4,
+          "corner": 696,
+          "triangle": 232,
+          "area": 2.5279300778181546,
+          "ndc": [
+            -0.7503962783442328,
+            0.18490554604095424
+          ],
+          "world": [
+            [
+              -4.698934078216553,
+              2.152766466140747,
+              34.305233001708984
+            ],
+            [
+              1.0485552549362183,
+              2.2392337322235107,
+              36.78556823730469
+            ],
+            [
+              -4.528555393218994,
+              2.152766466140747,
+              33.910430908203125
+            ]
+          ],
+          "pixelTopLeft": [
+            119,
+            244
+          ],
+          "closestSource": "Street detail -1,0,gutter",
+          "closestFaceIndex": 232,
+          "closestPoint": [
+            -2.813130112627263,
+            2.18023622503018,
+            34.95444219168816
+          ],
+          "distance": 122.45292889969728
+        }
+      },
+      {
+        "pose": "grade-0-0",
+        "group": 5,
+        "witness": null
+      },
+      {
+        "pose": "grade-0-0",
+        "group": 6,
+        "witness": {
+          "source": "Street detail -1,-1,tactile",
+          "group": 6,
+          "corner": 9,
+          "triangle": 3,
+          "area": 0.37068808228026645,
+          "ndc": [
+            -0.45732206908410755,
+            0.22794025096211834
+          ],
+          "world": [
+            [
+              -1.6902750730514526,
+              2.0920000076293945,
+              -8.605168342590332
+            ],
+            [
+              -1.2093207836151123,
+              2.0920000076293945,
+              -8.871969223022461
+            ],
+            [
+              -2.0097248554229736,
+              2.0920000076293945,
+              -10.314831733703613
+            ]
+          ],
+          "pixelTopLeft": [
+            260,
+            231
+          ],
+          "closestSource": "Street detail -1,-1,tactile",
+          "closestFaceIndex": 2,
+          "closestPoint": [
+            -1.9435572043007454,
+            2.0920000076293945,
+            -9.756361910205442
+          ],
+          "distance": 157.1492476862014
+        }
+      },
+      {
+        "pose": "grade-1-3",
+        "group": 0,
+        "witness": {
+          "source": "Street detail 1,3,white",
+          "group": 0,
+          "corner": 48,
+          "triangle": 16,
+          "area": 431.65834630158326,
+          "ndc": [
+            0.6756316081346904,
+            -0.7368008848627577
+          ],
+          "world": [
+            [
+              441.61920166015625,
+              5.407394886016846,
+              802.2540283203125
+            ],
+            [
+              442.225830078125,
+              5.294604778289795,
+              804.885009765625
+            ],
+            [
+              441.73614501953125,
+              5.407394886016846,
+              802.22705078125
+            ]
+          ],
+          "pixelTopLeft": [
+            804,
+            521
+          ],
+          "closestSource": "Street detail 1,3,white",
+          "closestFaceIndex": 16,
+          "closestPoint": [
+            441.8320839088535,
+            5.3773238775382755,
+            802.9436756944901
+          ],
+          "distance": 9.53081555947368
+        }
+      },
+      {
+        "pose": "grade-1-3",
+        "group": 1,
+        "witness": {
+          "source": "Street detail 1,3,curb",
+          "group": 1,
+          "corner": 1284,
+          "triangle": 428,
+          "area": 542.375849486056,
+          "ndc": [
+            -0.14998380946887233,
+            -0.47242464799876926
+          ],
+          "world": [
+            [
+              446.9791259765625,
+              5.296728610992432,
+              805.4287109375
+            ],
+            [
+              446.8037414550781,
+              5.296728610992432,
+              805.4691162109375
+            ],
+            [
+              448.3842468261719,
+              5.003271102905273,
+              811.5228271484375
+            ]
+          ],
+          "pixelTopLeft": [
+            408,
+            441
+          ],
+          "closestSource": "Street detail 1,3,curb",
+          "closestFaceIndex": 428,
+          "closestPoint": [
+            447.23506409137343,
+            5.226942188923388,
+            806.8959561812987
+          ],
+          "distance": 11.053113613245092
+        }
+      },
+      {
+        "pose": "grade-1-3",
+        "group": 2,
+        "witness": {
+          "source": "Street detail 1,3,gutter",
+          "group": 2,
+          "corner": 57,
+          "triangle": 19,
+          "area": 797.0754034062908,
+          "ndc": [
+            -0.1719293900704416,
+            -0.38004297145719423
+          ],
+          "world": [
+            [
+              447.71356201171875,
+              4.876002311706543,
+              811.6596069335938
+            ],
+            [
+              448.132568359375,
+              4.876002311706543,
+              811.56298828125
+            ],
+            [
+              446.732421875,
+              5.167997360229492,
+              805.4904174804688
+            ]
+          ],
+          "pixelTopLeft": [
+            397,
+            414
+          ],
+          "closestSource": "Street detail 1,3,gutter",
+          "closestFaceIndex": 19,
+          "closestPoint": [
+            447.39194047676847,
+            5.008019565666128,
+            808.8422576724582
+          ],
+          "distance": 12.920080844533372
+        }
+      },
+      {
+        "pose": "grade-1-3",
+        "group": 3,
+        "witness": null
+      },
+      {
+        "pose": "grade-1-3",
+        "group": 4,
+        "witness": {
+          "source": "Street detail 0,3,gutter",
+          "group": 4,
+          "corner": 0,
+          "triangle": 0,
+          "area": 0.3954250058971844,
+          "ndc": [
+            0.9124146590689799,
+            0.2615987658628928
+          ],
+          "world": [
+            [
+              256.0213623046875,
+              2.0820000171661377,
+              962.3961791992188
+            ],
+            [
+              252.08917236328125,
+              2.0820000171661377,
+              967.1538696289062
+            ],
+            [
+              256.3528137207031,
+              2.0820000171661377,
+              962.6701049804688
+            ]
+          ],
+          "pixelTopLeft": [
+            917,
+            221
+          ],
+          "closestSource": "Street detail 0,3,gutter",
+          "closestFaceIndex": 0,
+          "closestPoint": [
+            254.828802887673,
+            2.0820000171661377,
+            964.2344566389698
+          ],
+          "distance": 255.43084425942936
+        }
+      },
+      {
+        "pose": "grade-1-3",
+        "group": 5,
+        "witness": null
+      },
+      {
+        "pose": "grade-1-3",
+        "group": 6,
+        "witness": {
+          "source": "Street detail 1,3,tactile",
+          "group": 6,
+          "corner": 6,
+          "triangle": 2,
+          "area": 0.2553450440341897,
+          "ndc": [
+            0.03039337680660789,
+            0.24454118464485505
+          ],
+          "world": [
+            [
+              414.5382080078125,
+              2.0920000076293945,
+              953.666748046875
+            ],
+            [
+              413.90228271484375,
+              2.0920000076293945,
+              955.1892700195312
+            ],
+            [
+              415.04571533203125,
+              2.0920000076293945,
+              953.8787231445312
+            ]
+          ],
+          "pixelTopLeft": [
+            494,
+            226
+          ],
+          "closestSource": "Street detail 1,3,tactile",
+          "closestFaceIndex": 3,
+          "closestPoint": [
+            414.351294582416,
+            2.0920000076293945,
+            955.0632971002772
+          ],
+          "distance": 161.8352155907921
+        }
+      }
+    ]
+  }
+}
