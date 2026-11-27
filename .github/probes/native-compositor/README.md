@@ -131,9 +131,16 @@ comparison or an exact forecast. The four new categories remain unmeasured;
 512 MiB is a finite allowance, not a promise that every capture fits.
 
 The peer's full flush took 16.561 seconds for 242,232,971 bytes. Linear scaling to
-the new cap is about 36.7 seconds. A 60-second asynchronous trace drain/indexing
-budget provides bounded headroom, including trailing async
-persistence. Parsing is synchronous and bounded by file size; a JavaScript timer
+the new cap is about 36.7 seconds. One 60-second trace finalization budget starts
+when Tracing.end is issued and covers its acknowledgement, the asynchronous
+Tracing.tracingComplete notification, completion receipt, stream reads, indexing
+and trailing trace persistence. That notification is a flush event, not an RPC
+response. Every individual RPC, including Tracing.end and IO.read, still has its
+4-second timeout. The absolute stop-issuance deadline is passed into collection;
+stream arrival never grants a second 60-second allowance. Receipts retain stop
+issuance, acknowledgement, notification, deadline and finalization timestamps.
+Missing or late notifications and late persistence remain partial, and late
+continuations cannot restore completeness. Parsing is synchronous and bounded by file size; a JavaScript timer
 cannot preempt its CPU work. Its wall cost is diagnostic overhead. Browser-close
 cleanup retains its total 10-second bound, including trailing writes, and the
 original driver step remains capped at 28 minutes. If close arrives before the

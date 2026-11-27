@@ -20,6 +20,10 @@ test('only original 210 and the fixed compositor categories are selectable', () 
   assert.equal(manifest.bounds.traceBufferKiB * 1024, 512 * 1024 * 1024);
   assert.equal(manifest.bounds.traceFileBytes, 512 * 1024 * 1024);
   assert.equal(manifest.bounds.traceDrainTimeoutMs, 60000);
+  assert.equal(manifest.trace.finalizationBudget.milliseconds, manifest.bounds.traceDrainTimeoutMs);
+  assert.equal(manifest.trace.finalizationBudget.start, 'Tracing.end issuance');
+  assert.equal(manifest.trace.finalizationBudget.renewedOnStreamArrival, false);
+  assert.equal(manifest.trace.finalizationBudget.individualRpcTimeoutMs, 4000);
   assert.equal(manifest.bounds.captureWatchdogMs, 110000);
   assert.equal(manifest.bounds.protocolTimeoutMs, 4000);
   assert.equal(manifest.bounds.cleanupTimeoutMs, 10000);
@@ -392,30 +396,107 @@ test('a blocked event-write queue cannot delay either recorder stop or raw CPU p
   assert.equal(state.complete, false);
 });
 
-async function traceMonitorFixture({fileCap = 16, drainMs = 100, read = async () => ({data: '0123456789abcdefghijkl', eof: false})} = {}) {
+async function traceMonitorFixture({fileCap = 16, drainMs = 100, protocolMs = 10,
+  read = async () => ({data: '0123456789abcdefghijkl', eof: false}), endTrace = async () => ({}),
+  completion = Promise.resolve({stream: 'raw-trace-stream', dataLossOccurred: false}),
+  save = async () => {}, clock = null} = {}) {
   const source = await readFile(new URL('./preload.mjs', import.meta.url), 'utf8');
   const start = source.indexOf('class NativeMonitor {'), end = source.indexOf('\ninstallHooks(', start);
-  const state = finalState(), calls = [], writes = [];
+  const state = finalState(), calls = [], writes = [], budgets = [];
   Object.assign(state.trace, {streamComplete: false, savedBytes: 0});
   let notifyClosed;
   const closed = new Promise(done => { notifyClosed = done; });
   const NativeMonitor = vm.runInNewContext(source.slice(start, end) + '\nNativeMonitor;', {
-    assert, Buffer, resolve, state, output: '/source-only-evidence', bounded,
-    limits: {...manifest.bounds, traceFileBytes: fileCap, traceDrainTimeoutMs: drainMs},
-    invalidateDiagnostic, async saveJson() {}, async persist() {}, async event() {},
+    assert, Buffer, resolve, state, output: '/source-only-evidence',
+    Date: clock ? class extends Date { static now() { return clock.now; } } : Date,
+    bounded(promise, ms, label) { budgets.push({label, ms}); return bounded(promise, ms, label); },
+    limits: {...manifest.bounds, traceFileBytes: fileCap, traceDrainTimeoutMs: drainMs, protocolTimeoutMs: protocolMs},
+    invalidateDiagnostic, saveJson: save, async persist() {}, async event() {},
     failure(where, error) { invalidateDiagnostic(state, where, error); },
     async open() { return {async write(bytes) { writes.push(Buffer.from(bytes)); }, async close() { calls.push('file-close'); }}; }
   });
   const monitor = new NativeMonitor({});
-  monitor.traceDone = Promise.resolve({stream: 'raw-trace-stream', dataLossOccurred: false});
-  monitor.send = async method => {
+  monitor.traceDone = completion;
+  monitor.cdp = {async send(method) {
     calls.push(method);
+    if (method === 'Tracing.end') return endTrace();
     if (method === 'IO.read') return read();
     if (method === 'IO.close') notifyClosed();
     return {};
-  };
-  return {monitor, state, calls, writes, closed};
+  }};
+  return {monitor, state, calls, writes, closed, budgets};
 }
+test('asynchronous trace completion can outlive the RPC limit within the single finalization budget', async () => {
+  let releaseCompletion;
+  const completion = new Promise(resolve => { releaseCompletion = resolve; });
+  const f = await traceMonitorFixture({protocolMs: 5, drainMs: 100, completion});
+  let collectedDeadline;
+  f.monitor.collectTrace = async (_complete, deadline) => { collectedDeadline = deadline; };
+  const pending = f.monitor.trace();
+  await new Promise(resolve => setTimeout(resolve, 15));
+  releaseCompletion({stream: 'raw-trace-stream', dataLossOccurred: false});
+  await bounded(pending, 200, 'completion contract');
+  assert.deepEqual(f.calls, ['Tracing.end']);
+  assert.equal(collectedDeadline, f.state.trace.stopIssuedAtNodeEpochMs + 100);
+  assert.equal(f.state.trace.finalizationDeadlineNodeEpochMs, collectedDeadline);
+  assert(f.state.trace.finalizationFinishedAtNodeEpochMs < collectedDeadline);
+  assert.equal(f.budgets.find(row => row.label === 'Tracing.end').ms, 5);
+  assert(f.budgets.find(row => row.label.startsWith('Tracing.tracingComplete')).ms > 5);
+});
+test('stalled completion expires the total budget and a late event cannot start a new drain', async () => {
+  let releaseCompletion;
+  const completion = new Promise(resolve => { releaseCompletion = resolve; });
+  const f = await traceMonitorFixture({drainMs: 5, completion}), profile = f.state.cpuProfile;
+  const pending = f.monitor.trace().catch(error => { invalidateDiagnostic(f.state, 'trace', error); throw error; });
+  await assert.rejects(bounded(pending, 100, 'stalled completion contract'), /timed out|deadline/);
+  releaseCompletion({stream: 'late-stream', dataLossOccurred: false});
+  await new Promise(setImmediate);
+  assert.deepEqual(f.calls, ['Tracing.end']);
+  assert.equal(f.state.trace.drainStartedAtNodeEpochMs, undefined);
+  assert.equal(f.state.trace.finalizationFinishedAtNodeEpochMs, undefined);
+  assert.equal(f.state.complete, false); assert.equal(f.state.partial, true);
+  assert.equal(terminalDiagnosticReceipt(f.state).complete, false);
+  assert.strictEqual(f.state.cpuProfile, profile);
+});
+test('completion time consumes the same absolute drain budget instead of granting a second allowance', async () => {
+  const clock = {now: 1000};
+  let releaseCompletion;
+  const completion = new Promise(resolve => { releaseCompletion = resolve; });
+  const f = await traceMonitorFixture({clock, fileCap: 1024, drainMs: 60, completion,
+    endTrace: async () => { clock.now = 1003; return {}; },
+    read: async () => { clock.now = 1061; return {data: 'raw-prefix', eof: false}; }});
+  const pending = f.monitor.trace().catch(error => { invalidateDiagnostic(f.state, 'trace', error); throw error; });
+  await new Promise(setImmediate);
+  clock.now = 1040;
+  releaseCompletion({stream: 'shared-budget-stream', dataLossOccurred: false});
+  await assert.rejects(bounded(pending, 200, 'shared budget contract'), /deadline/);
+  assert.equal(f.state.trace.finalizationDeadlineNodeEpochMs, 1060);
+  assert.equal(f.state.trace.drainStartedAtNodeEpochMs, 1040);
+  assert.equal(f.calls.filter(method => method === 'IO.read').length, 1);
+  assert.equal(f.budgets.find(row => row.label === 'IO.read').ms, 10);
+  assert.equal(f.state.trace.finalizationFinishedAtNodeEpochMs, undefined);
+  assert.equal(f.state.complete, false); assert.equal(f.state.partial, true);
+});
+test('a late completion-receipt write cannot resume collection after the finalization deadline', async () => {
+  let releaseWrite;
+  const blocked = new Promise(resolve => { releaseWrite = resolve; });
+  const f = await traceMonitorFixture({drainMs: 5, save: () => blocked});
+  const pending = f.monitor.trace().catch(error => { invalidateDiagnostic(f.state, 'trace', error); throw error; });
+  await assert.rejects(bounded(pending, 100, 'completion persistence contract'), /timed out|deadline/);
+  releaseWrite();
+  await new Promise(setImmediate);
+  assert.deepEqual(f.calls, ['Tracing.end']);
+  assert.equal(f.state.trace.drainStartedAtNodeEpochMs, undefined);
+  assert.equal(f.state.trace.finalizationFinishedAtNodeEpochMs, undefined);
+  assert.equal(terminalDiagnosticReceipt(f.state).complete, false);
+});
+test('Tracing.end still fails at its individual RPC timeout before the larger finalization budget', async () => {
+  const f = await traceMonitorFixture({protocolMs: 5, drainMs: 100, endTrace: () => new Promise(() => {})});
+  await assert.rejects(bounded(f.monitor.trace(), 200, 'end RPC contract'), /Tracing.end timed out after 5 ms/);
+  assert.deepEqual(f.calls, ['Tracing.end']);
+  assert.equal(f.state.trace.stopAcknowledgedAtNodeEpochMs, undefined);
+  assert.equal(f.state.trace.drainStartedAtNodeEpochMs, undefined);
+});
 test('actual trace collector retains only the bounded prefix and rejects file overflow', async () => {
   const f = await traceMonitorFixture(), profile = f.state.cpuProfile;
   await f.monitor.trace();

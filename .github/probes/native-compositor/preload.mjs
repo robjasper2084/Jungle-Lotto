@@ -321,20 +321,36 @@ class NativeMonitor {
   }
   async trace() {
     state.trace.stopIssuedAtNodeEpochMs = Date.now();
-    await this.send('Tracing.end');
-    state.trace.stopAcknowledgedAtNodeEpochMs = Date.now();
-    const complete = await bounded(this.traceDone, limits.protocolTimeoutMs, 'Tracing.tracingComplete');
-    state.trace.completedAtNodeEpochMs = Date.now();
-    await saveJson(resolve(output, 'trace-completion.json'), complete);
-    state.trace.dataLossOccurred = complete.dataLossOccurred ?? null;
-    if (complete.dataLossOccurred) invalidateDiagnostic(state, 'trace-data-loss');
-    assert(complete.stream, 'Tracing completed without a stream');
-    await bounded(this.collectTrace(complete), limits.traceDrainTimeoutMs, 'Complete trace drain and indexing');
+    const deadline = state.trace.stopIssuedAtNodeEpochMs + limits.traceDrainTimeoutMs;
+    state.trace.finalizationDeadlineNodeEpochMs = deadline;
+    const remaining = () => {
+      const ms = deadline - Date.now();
+      assert(ms > 0, 'Trace finalization deadline reached; evidence remains partial');
+      return ms;
+    };
+    // The asynchronous flush notification is not an RPC response. End keeps its
+    // individual protocol timeout; notification, drain and persistence share
+    // this one absolute deadline from stop issuance, with no fresh drain budget.
+    await bounded((async () => {
+      await this.send('Tracing.end');
+      state.trace.stopAcknowledgedAtNodeEpochMs = Date.now();
+      const complete = await bounded(this.traceDone, remaining(), 'Tracing.tracingComplete within finalization deadline');
+      remaining();
+      state.trace.completedAtNodeEpochMs = Date.now();
+      await bounded(saveJson(resolve(output, 'trace-completion.json'), complete), remaining(), 'Trace completion persistence');
+      remaining();
+      state.trace.dataLossOccurred = complete.dataLossOccurred ?? null;
+      if (complete.dataLossOccurred) invalidateDiagnostic(state, 'trace-data-loss');
+      assert(complete.stream, 'Tracing completed without a stream');
+      await this.collectTrace(complete, deadline);
+      remaining();
+      state.trace.finalizationFinishedAtNodeEpochMs = Date.now();
+    })(), remaining(), 'Complete trace finalization');
   }
-  async collectTrace(complete) {
+  async collectTrace(complete, deadline) {
     // The outer deadline includes opening, closing, persistence and indexing;
-    // per-operation deadlines also stop issuing further reads after expiry.
-    const deadline = Date.now() + limits.traceDrainTimeoutMs;
+    // the caller passes its stop-issuance deadline without resetting the budget.
+    assert(Number.isFinite(deadline) && Date.now() < deadline, 'Trace finalization deadline reached before drain');
     state.trace.drainStartedAtNodeEpochMs = Date.now();
     const withinDrain = (promise, label) => bounded(promise, Math.max(1, deadline - Date.now()), label);
     const path = resolve(output, 'native-trace.partial.json'), handle = await open(path, 'w');
@@ -391,6 +407,7 @@ class NativeMonitor {
     assert(Date.now() <= deadline, 'Trace drain/indexing deadline reached; raw evidence retained');
     state.trace.drainFinishedAtNodeEpochMs = Date.now();
     await event('trace-saved', state.trace);
+    assert(Date.now() < deadline, 'Trace finalization deadline reached during persistence; raw evidence retained');
   }
   async cleanup() {
     await boundedDiagnosticCleanup(state, {

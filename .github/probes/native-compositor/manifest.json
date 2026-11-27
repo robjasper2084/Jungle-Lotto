@@ -70,6 +70,13 @@
     "rawFlowIdentifiersPreserved": true,
     "enumerationPolicy": "Retain a valid string-array enumeration as advisory; request the unchanged seven categories once, then require actual trusted-W-window category and named track/flow evidence. Malformed enumeration and protocol/start errors fail.",
     "requiredRawCategoryScope": "trusted-W-window",
+    "finalizationBudget": {
+      "start": "Tracing.end issuance",
+      "milliseconds": 60000,
+      "includes": ["end acknowledgement", "asynchronous tracingComplete event", "completion receipt", "stream drain", "indexing", "trace persistence"],
+      "individualRpcTimeoutMs": 4000,
+      "renewedOnStreamArrival": false
+    },
     "gpuExecutionMeasured": false,
     "semanticReference": {
       "chrome": "158.0.8127.89",
@@ -106,7 +113,7 @@
       },
       "linearFlushSecondsAt512MiB": 36.704827,
       "newCategoryVolumeMeasured": false,
-      "note": "The peer has a different application build and category set. Its exact raw hash/bytes and the estimated reserialized shared-category union are capacity evidence, not a performance comparison or exact forecast. The four new categories remain unmeasured. The 512 MiB buffer/file and 60-second drain/indexing bounds remain finite; any cap, loss, absent evidence or late completion makes the diagnostic partial."
+      "note": "The peer has a different application build and category set. Its exact raw hash/bytes and the estimated reserialized shared-category union are capacity evidence, not a performance comparison or exact forecast. The four new categories remain unmeasured. The 512 MiB buffer/file and single 60-second stop-to-finalization budget remain finite; any cap, loss, absent evidence or late completion makes the diagnostic partial."
     }
   },
   "strictDriverStepTimeoutMinutes": 28,
