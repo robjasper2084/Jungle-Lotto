@@ -1,0 +1,183 @@
+name: Belle Isle full-world RG8 storage proof
+
+on:
+  pull_request:
+    paths:
+      - '.github/belle-rg8-world-proof/**'
+      - '.github/workflows/belle-rg8-world-proof.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: belle-rg8-world-proof-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  world-proof:
+    name: Full-world storage (${{ matrix.backend }}, ${{ matrix.style }}, ${{ matrix.partition }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - style: authentic
+            backend: metal
+            os: macos-15
+            partition: all
+          - style: authentic
+            backend: swiftshader
+            os: ubuntu-24.04
+            partition: linux-a
+          - style: authentic
+            backend: swiftshader
+            os: ubuntu-24.04
+            partition: linux-b
+          - style: golden
+            backend: metal
+            os: macos-15
+            partition: all
+          - style: golden
+            backend: swiftshader
+            os: ubuntu-24.04
+            partition: linux-a
+          - style: golden
+            backend: swiftshader
+            os: ubuntu-24.04
+            partition: linux-b
+          - style: noir
+            backend: metal
+            os: macos-15
+            partition: all
+          - style: noir
+            backend: swiftshader
+            os: ubuntu-24.04
+            partition: linux-a
+          - style: noir
+            backend: swiftshader
+            os: ubuntu-24.04
+            partition: linux-b
+          - style: detroit2084
+            backend: metal
+            os: macos-15
+            partition: all
+          - style: detroit2084
+            backend: swiftshader
+            os: ubuntu-24.04
+            partition: linux-a
+          - style: detroit2084
+            backend: swiftshader
+            os: ubuntu-24.04
+            partition: linux-b
+    env:
+      RG8_WORLD_BACKEND: ${{ matrix.backend }}
+      RG8_WORLD_STYLE: ${{ matrix.style }}
+      RG8_WORLD_PARTITION: ${{ matrix.partition }}
+      RG8_WORLD_ORIGINAL: ${{ github.workspace }}/original
+      RG8_WORLD_CANDIDATE: ${{ github.workspace }}/candidate
+      RG8_WORLD_OUTPUT: ${{ github.workspace }}/world-output
+    steps:
+      - name: Check out isolated proof code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: proof
+          fetch-depth: 2
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/belle-rg8-world-proof/
+            /.github/workflows/belle-rg8-world-proof.yml
+      - name: Check out the immutable original world
+        uses: actions/checkout@v4
+        with:
+          ref: 75906273c0cd414c0d004320fc6f654b4783e5b1
+          path: original
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/package.json
+            /lottominded-ultra.io/games/gothtechnology2/package-lock.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/
+      - name: Check out the exact two-file runtime candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ef341f2f91a43aec26261f2778404ca7346de9a9
+          path: candidate
+          fetch-depth: 2
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/realisticMaterials.ts
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/realisticMaterials.test.ts
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install original locked game dependencies
+        working-directory: original/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: npm ci
+      - name: Install original locked browser runtime
+        working-directory: original/lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install --with-deps chrome
+      - name: Verify source bindings and compile immutable graph
+        env:
+          RG8_WORLD_COMPILE_ONLY: '1'
+        run: node proof/.github/belle-rg8-world-proof/driver.mjs
+      - name: Verify independent validator negative controls
+        run: node proof/.github/belle-rg8-world-proof/driver.mjs --self-test
+      - name: Compare fixed whole-world images and retained receipts
+        timeout-minutes: 36
+        shell: bash
+        run: |
+          if [ "$RG8_WORLD_BACKEND" = swiftshader ]; then
+            xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node proof/.github/belle-rg8-world-proof/driver.mjs
+          else
+            node proof/.github/belle-rg8-world-proof/driver.mjs
+          fi
+      - name: Preserve complete and partial raw evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-rg8-world-${{ matrix.backend }}-${{ matrix.style }}-${{ matrix.partition }}-${{ github.event.pull_request.head.sha || github.sha }}
+          path: world-output/
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+
+  complete-union:
+    name: Require all four looks on both renderers
+    needs: world-proof
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/belle-rg8-world-proof/
+            /.github/workflows/belle-rg8-world-proof.yml
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: belle-rg8-world-*
+          path: all-world-results
+      - name: Verify the exact twelve-job union
+        run: node .github/belle-rg8-world-proof/driver.mjs --verify-union all-world-results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: belle-rg8-world-complete-union-${{ github.event.pull_request.head.sha || github.sha }}
+          path: all-world-results/union.json
+          if-no-files-found: error
+          retention-days: 14
+
