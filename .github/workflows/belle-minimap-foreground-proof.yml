@@ -1,0 +1,135 @@
+name: Belle Isle isolated minimap foreground proof
+on:
+  pull_request:
+    paths:
+      - '.github/probes/minimap-foreground/**'
+      - '.github/workflows/belle-minimap-foreground-proof.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: belle-minimap-foreground-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  canvas-proof:
+    name: Exact Canvas2D pixels and state (${{ matrix.lane }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - lane: metal
+            os: macos-15
+          - lane: swiftshader
+            os: ubuntu-24.04
+    env:
+      MINIMAP_LANE: ${{ matrix.lane }}
+      MINIMAP_ORIGINAL: ${{ github.workspace }}/original
+      MINIMAP_CANDIDATE: ${{ github.workspace }}/candidate
+      MINIMAP_COMPILED: ${{ runner.temp }}/minimap-compiled
+      MINIMAP_OUTPUT: ${{ runner.temp }}/minimap-output
+      MINIMAP_BINDING: ${{ runner.temp }}/minimap-runtime-binding.json
+      MINIMAP_PROOF_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Refuse repeated workflow attempts
+        run: test "$GITHUB_RUN_ATTEMPT" = 1
+      - name: Check out isolated proof
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: proof
+          fetch-depth: 2
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/probes/minimap-foreground/
+            /.github/workflows/belle-minimap-foreground-proof.yml
+      - name: Check out immutable original source and locked tools
+        uses: actions/checkout@v4
+        with:
+          ref: 75906273c0cd414c0d004320fc6f654b4783e5b1
+          path: original
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/package.json
+            /lottominded-ultra.io/games/gothtechnology2/package-lock.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/package.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/package-lock.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/index.html
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/
+      - name: Check out reviewed six-file minimap candidate
+        uses: actions/checkout@v4
+        with:
+          ref: 1c06524e82012d1cecae2c7ac3d0bbf2abcbb355
+          path: candidate
+          fetch-depth: 2
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/run-tests.mjs
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install original locked source compiler
+        working-directory: original/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: npm ci
+      - name: Install original locked browser runtime
+        working-directory: original/lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install --with-deps chrome
+      - name: Compile only the source-bound small fixture
+        run: >-
+          node proof/.github/probes/minimap-foreground/build.mjs
+          "$MINIMAP_ORIGINAL" "$MINIMAP_CANDIDATE"
+          "$MINIMAP_ORIGINAL/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game"
+          "$MINIMAP_COMPILED"
+      - name: Bind this first proof workflow identity
+        run: |
+          python - <<'PY'
+          import hashlib,json,os,pathlib
+          root=pathlib.Path('proof/.github/probes/minimap-foreground')
+          data=(root/'manifest.json').read_bytes();manifest=json.loads(data)
+          assert manifest['executionBound'] is True, 'UNBOUND: source-only template cannot execute'
+          assert manifest['publication']['mode']=='verified-github-context'
+          assert os.environ['GITHUB_RUN_ATTEMPT']=='1'
+          binding={'proofHead':os.environ['MINIMAP_PROOF_HEAD'],'runId':os.environ['GITHUB_RUN_ID'],'attempt':1,'repository':os.environ['GITHUB_REPOSITORY'],'manifestSha256':hashlib.sha256(data).hexdigest()}
+          pathlib.Path(os.environ['MINIMAP_BINDING']).write_text(json.dumps(binding,sort_keys=True)+'\n')
+          PY
+      - name: Capture the fixed 8 groups once
+        id: capture
+        continue-on-error: true
+        timeout-minutes: 4
+        shell: bash
+        run: |
+          if [ "$MINIMAP_LANE" = swiftshader ]; then
+            xvfb-run --auto-servernum --server-args="-screen 0 1440x900x24" node proof/.github/probes/minimap-foreground/driver.mjs
+          else
+            node proof/.github/probes/minimap-foreground/driver.mjs
+          fi
+      - name: Independently compare the saved raw bytes and native screenshot regions
+        id: audit
+        if: always() && steps.capture.outcome != 'skipped'
+        continue-on-error: true
+        timeout-minutes: 1
+        run: >-
+          python proof/.github/probes/minimap-foreground/audit.py
+          "$MINIMAP_OUTPUT" proof/.github/probes/minimap-foreground/manifest.json "$MINIMAP_BINDING"
+      - name: Preserve complete and partial evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: minimap-foreground-${{ matrix.lane }}-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/minimap-output/
+          if-no-files-found: error
+          compression-level: 6
+          retention-days: 14
+      - name: Require both original capture and independent audit
+        if: always()
+        run: |
+          test '${{ steps.capture.outcome }}' = success
+          test '${{ steps.audit.outcome }}' = success
