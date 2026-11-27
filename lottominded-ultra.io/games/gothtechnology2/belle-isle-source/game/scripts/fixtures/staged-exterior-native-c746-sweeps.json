@@ -1,0 +1,1037 @@
+{
+  "sourceHead": "c7461c7c095cfb19ba8770b343952adb6eda5624",
+  "sourceTree": "c0154e2ca32101435b622c5c581d9af541cdd041",
+  "scope": "Original failed native exterior sweeps, retained verbatim. Unit replay is not native browser acceptance.",
+  "cases": [
+    {
+      "artifactId": "15161590652",
+      "reportSha256": "7979585b0b70afcc2e38c18261a7ca9692a082048ed6392bb519fa51b37f04ef",
+      "phase": "aquarium-complete-front-side-walk-1-6",
+      "segment": {
+        "from": {
+          "x": 1318.4376462237876,
+          "y": 2,
+          "z": 1091.9092085083453,
+          "headingY": -2.3644999999999996,
+          "speed": 0,
+          "footBlend": 1,
+          "footMode": 2,
+          "firstPerson": true,
+          "onFoot": true
+        },
+        "to": {
+          "x": 1316.6371072031423,
+          "z": 1090.174832760379
+        },
+        "maxLateral": 0.41,
+        "maxForward": 0.75
+      },
+      "expectedClear": false,
+      "samples": [
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            0.4061023997611966,
+            0.4061023997611966,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": false
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            0.15610239976139553,
+            0.15610239976139553,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": false
+        }
+      ]
+    },
+    {
+      "artifactId": "15161965049",
+      "reportSha256": "5f7a9db9caa246db87ab9b18fa4e8f2d0467af4733cf6acb06e3c98e21cb23d2",
+      "phase": "aquarium-complete-front-side-walk-1-3",
+      "segment": {
+        "from": {
+          "x": 1325.5704422487925,
+          "y": 2,
+          "z": 1098.4974789808828,
+          "headingY": 3.9354999999999967,
+          "speed": 0,
+          "footBlend": 1,
+          "footMode": 2,
+          "firstPerson": true,
+          "onFoot": true
+        },
+        "to": {
+          "x": 1317.7345674002454,
+          "z": 1090.7625535452858
+        },
+        "maxLateral": 1.96,
+        "maxForward": 0.75
+      },
+      "expectedClear": false,
+      "samples": [
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            null,
+            null,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": true
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            0.3175051534843601,
+            0.3175051534843601,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": false
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            0.07249578138504954,
+            0.07249578138504954,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": false
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            0,
+            0,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": false
+        },
+        {
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorHits": [
+            0,
+            0,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": false
+        }
+      ]
+    }
+  ]
+}
