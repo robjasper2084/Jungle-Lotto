@@ -230,15 +230,29 @@ export function makeSingleSampleRunner(output,{spawnImpl=spawn,timeoutMs=SAMPLE_
 /** Parse retained native text without inventing missing observations or resolving symbols. */
 export function parseNativeSampleReport(text){
  assert(typeof text==='string'&&Buffer.byteLength(text)<=C.maxReportBytes,'Sample report exceeds byte bound');
- const lines=text.split(/\r?\n/);assert(lines.length<=250000,'Sample report exceeds line bound');
- const out={format:'macos-sample-text',parserVersion:2,header:{},declaredGlobalSampleCount:null,declaredIntervalMs:null,
+ const parts=text.split('\n');assert(parts.length<=250000,'Sample report exceeds line bound');
+ const terminated=text.endsWith('\n');if(terminated)parts.pop();
+ const rawLines=parts.map((part,i)=>{const hasEnding=i<parts.length-1||terminated,crlf=hasEnding&&part.endsWith('\r');
+  return {lineNumber:i+1,raw:crlf?part.slice(0,-1):part,lineEnding:hasEnding?(crlf?'\r\n':'\n'):''};});
+ const out={format:'macos-sample-text',parserVersion:3,header:{},declaredGlobalSampleCount:null,declaredIntervalMs:null,
+  rawLines,rootCountMeaning:'Observation groups; repeated IDs and Thread_<multiple> do not establish a distinct-thread count.',
   threadRoots:[],inclusiveFrames:[],binaryImages:[],unparsedGraphLines:[],issues:[],symbolizedFrameRows:0,unknownSymbolFrameRows:0,
-  largeOffsetNamedFrameRows:0,symbolsByImage:{},mechanismAttributionUsable:null,
-  note:'Inclusive stack counts are statistical observations, not function-call counts, per-frame attribution, CPU milliseconds or GPU execution. Requested8s/10ms never supplies an observed count. Named rows may still have large unresolved offsets; raw text remains authoritative.'};
+  namedFrameRows:0,unresolvedNamedFrameRows:0,largeOffsetNamedFrameRows:0,collapsedFrameRows:0,incompleteLocationFrameRows:0,
+  retainedLocationCount:0,
+  symbolsByImage:{},mechanismAttributionUsable:null,
+  note:'Inclusive row counts are statistical observations, not function calls, distinct threads, per-location counts, per-frame attribution, CPU milliseconds or GPU execution. Requested8s/10ms never supplies an observed count. Large offsets from a named export are unresolved, not recovered function symbols; small named offsets do not prove complete symbol resolution. Collapsed locations retain one row count; ellipses explicitly omit locations. Every raw line remains authoritative.'};
  let mode='header',currentThread=null;
  const issue=m=>{assert(out.issues.length<1000,'Sample issue bound exceeded');out.issues.push(m);};
- for(let i=0;i<lines.length;i++){
-  const line=lines[i],lineNumber=i+1;
+ const list=(value,kind)=>{
+  // Cap before allocating an unbounded per-row list; native addresses are at
+  // most 64 bits. An ellipsis is the only accepted omitted-location marker.
+  const entries=value.split(',',1026).map(x=>x.trim()),incomplete=entries.at(-1)==='...';
+  if(incomplete)entries.pop();
+  if(!entries.length||entries.length>1024||entries.some(x=>!(kind==='address'?/^0x[0-9a-f]{1,16}$/i:/^\d{1,16}$/).test(x)))return null;
+  if(kind==='offset'&&entries.some(x=>!Number.isSafeInteger(Number(x))))return null;
+  return {entries,incomplete};
+ };
+ for(const {raw:line,lineNumber} of rawLines){
   if(/^Call graph:\s*$/.test(line)){mode='graph';continue;}
   if(/^Binary Images:\s*$/.test(line)){mode='images';continue;}
   if(mode==='graph'&&/^(?:Total number in stack|Sort by top of stack|Sort by total)/.test(line)){mode='aggregate';continue;}
@@ -250,35 +264,92 @@ export function parseNativeSampleReport(text){
    const global=line.match(/^(?:Total samples|Number of samples|Sample count):\s*(\d+)\s*$/);
    if(global){if(out.declaredGlobalSampleCount!==null)issue('Duplicate global-count declaration');out.declaredGlobalSampleCount=Number(global[1]);if(!Number.isSafeInteger(out.declaredGlobalSampleCount)||out.declaredGlobalSampleCount<=0)issue('Invalid global-count declaration');}
   }else if(mode==='graph'&&line.trim()){
-   const row=line.match(/^([\s+!:|]*)(\d+)\s+(.+)$/);
+   const row=line.match(/^([ \t+!:|]*)(\d+)[ \t]+(.+)$/);
    if(!row){assert(out.unparsedGraphLines.length<10000,'Unparsed graph bound exceeded');out.unparsedGraphLines.push({lineNumber,raw:line});continue;}
    const count=Number(row[2]),body=row[3];
    if(!Number.isSafeInteger(count)||count<=0){issue('Invalid positive stack count at '+lineNumber);continue;}
-   // Case-sensitive explicit thread identifiers prevent thread_start from becoming a root.
-   if(/^(?:Thread_[0-9A-Fa-fx]+\b|Thread \d+\b)/.test(body)){
+   // These are root observation groups, not a census of distinct OS threads.
+   const root=body.match(/^(Thread_(?:0x[0-9A-Fa-f]+|[0-9A-Fa-f]+|<multiple>)|Thread[ \t]+\d+)(?=$|[ \t:])/);
+   if(root){
     assert(out.threadRoots.length<1024,'Thread-root bound exceeded');currentThread=out.threadRoots.length;
-    out.threadRoots.push({lineNumber,count,identity:body,prefix:row[1],raw:line});continue;
+    const grouped=root[1]==='Thread_<multiple>';
+    out.threadRoots.push({lineNumber,count,identity:body,prefix:row[1],raw:line,
+     kind:grouped?'multiple-thread-group':'thread-observation-group',threadId:grouped?null:root[1].replace(/^Thread(?:_|[ \t]+)/,''),
+     distinctThreadCount:null});continue;
    }
    if(currentThread===null){issue('Frame without thread root at '+lineNumber);continue;}
    assert(out.inclusiveFrames.length<100000,'Frame-row bound exceeded');
-   // The image capture is greedy until the address suffix, preserving names with parentheses.
-   const frame=body.match(/^(.+?) \(in (.+)\)(?: \+ (\d+))? \[(0x[0-9a-f]+)\](?:\s+.*)?$/i);
-   const fullSymbol=frame?.[1]??null,image=frame?.[2]??null;
-   const inlineOffset=fullSymbol?.match(/ \+ (\d+)$/),offset=frame?.[3]??inlineOffset?.[1]??null;
-   const symbol=inlineOffset?fullSymbol.slice(0,inlineOffset.index):fullSymbol;
-   const symbolized=!!symbol&&!/^(?:\?+|0x[0-9a-f]+|unknown)(?:\s|$)/i.test(symbol);
-   const parsedOffset=offset===null?null:Number(offset),offsetBytes=Number.isSafeInteger(parsedOffset)?parsedOffset:null;
-   const largeOffset=symbolized&&offsetBytes!==null&&offsetBytes>4096;
-   if(!frame)issue('Unparsed native frame retained at '+lineNumber);
-   if(offset!==null&&offsetBytes===null)issue('Unsafe frame offset at '+lineNumber);
-   out[symbolized?'symbolizedFrameRows':'unknownSymbolFrameRows']++;
+   // Parse the address suffix separately so image names may contain parentheses.
+   // Multiple displayed locations remain one inclusive row, never expanded counts.
+   const tail=body.match(/^(.+?)[ \t]+\[([^\]]+)\](?:[ \t]+(.*))?$/);
+   const frame=tail?.[1].match(/^(.+?)[ \t]+\(in[ \t]+(.+)\)(.*)$/);
+   let symbol=frame?.[1]?.trim()??null,image=frame?.[2]?.trim()??null,locations=[],locationsComplete=false,
+    locationKind=null,loadAddress=null,parsed=!!frame,offsetValues=null;
+   // A greedy image match must not swallow a malformed offset or an unmatched
+   // delimiter. Real image names such as "Test (GPU)" remain balanced.
+   let imageDepth=0;
+   if(!image)parsed=false;
+   else for(const character of image){
+    if(character==='(')imageDepth++;
+    else if(character===')'&&--imageDepth<0){parsed=false;break;}
+   }
+   if(imageDepth!==0)parsed=false;
+   const addresses=tail?list(tail[2],'address'):null;
+   if(!addresses||tail?.[3])parsed=false;
+   const inlineOffset=symbol?.match(/[ \t]+\+[ \t]+(.+)$/);
+   let trailing=frame?.[3]?.trim()??'';
+   if(inlineOffset){
+    if(trailing)parsed=false;
+    else trailing='+ '+inlineOffset[1];
+    symbol=symbol.slice(0,inlineOffset.index).trim();
+   }
+   const unknownSymbol=!symbol||/^(?:\?+|0x[0-9a-f]+|unknown)(?:[ \t]|$)/i.test(symbol);
+   if(parsed){
+    if(!trailing){
+     locationKind='address-only';
+     if(addresses.entries.length!==1||addresses.incomplete)parsed=false;
+    }else if(/^\+[ \t]+/.test(trailing)){
+     locationKind='symbol-relative';offsetValues=list(trailing.replace(/^\+[ \t]+/,''),'offset');
+     if(!offsetValues||offsetValues.entries.length!==addresses.entries.length||offsetValues.incomplete!==addresses.incomplete)parsed=false;
+    }else{
+     const load=trailing.match(/^load[ \t]+address[ \t]+(0x[0-9a-f]{1,16})[ \t]+\+[ \t]+(0x[0-9a-f]{1,16})$/i);
+     if(!load||!unknownSymbol||addresses.entries.length!==1||addresses.incomplete)parsed=false;
+     else{
+      locationKind='load-address-relative';loadAddress=load[1];
+      const relative=BigInt(load[2]);
+      if(relative>BigInt(Number.MAX_SAFE_INTEGER)||BigInt(load[1])+relative!==BigInt(addresses.entries[0]))parsed=false;
+      else offsetValues={entries:[load[2]],incomplete:false};
+     }
+    }
+   }
+   if(parsed){
+    assert(out.retainedLocationCount+addresses.entries.length<=100000,'Total retained-location bound exceeded');
+    out.retainedLocationCount+=addresses.entries.length;
+    locationsComplete=!addresses.incomplete;
+    locations=addresses.entries.map((address,i)=>({address,offsetText:offsetValues?.entries[i]??null,
+     offsetBytes:offsetValues?Number(offsetValues.entries[i]):null}));
+   }else issue('Unparsed or inconsistent native frame retained at '+lineNumber);
+   const collapsed=parsed&&(locations.length>1||!locationsComplete);
+   const named=parsed&&!unknownSymbol;
+   const largeOffset=named&&locations.some(location=>location.offsetBytes!==null&&location.offsetBytes>4096);
+   const unresolvedNamed=named&&(largeOffset||!locationsComplete);
+   const symbolized=named&&!unresolvedNamed;
+   if(named)out.namedFrameRows++;
+   if(symbolized)out.symbolizedFrameRows++;
+   if(!named)out.unknownSymbolFrameRows++;
+   if(unresolvedNamed)out.unresolvedNamedFrameRows++;
    if(largeOffset)out.largeOffsetNamedFrameRows++;
+   if(collapsed)out.collapsedFrameRows++;
+   if(parsed&&!locationsComplete)out.incompleteLocationFrameRows++;
    const imageKey=image??'<unidentified>';
-   if(!Object.hasOwn(out.symbolsByImage,imageKey))Object.defineProperty(out.symbolsByImage,imageKey,{value:{namedFrameRows:0,unknownFrameRows:0,largeOffsetNamedFrameRows:0},enumerable:true,writable:true,configurable:true});
+   if(!Object.hasOwn(out.symbolsByImage,imageKey))Object.defineProperty(out.symbolsByImage,imageKey,{value:{namedFrameRows:0,symbolizedFrameRows:0,unknownFrameRows:0,unresolvedNamedFrameRows:0,largeOffsetNamedFrameRows:0},enumerable:true,writable:true,configurable:true});
    const byImage=out.symbolsByImage[imageKey];
-   byImage[symbolized?'namedFrameRows':'unknownFrameRows']++;if(largeOffset)byImage.largeOffsetNamedFrameRows++;
-   out.inclusiveFrames.push({lineNumber,thread:currentThread,count,prefix:row[1],symbol,image,symbolized,offsetBytes,largeOffset,
-    address:frame?.[4]??null,raw:line});
+   byImage[named?'namedFrameRows':'unknownFrameRows']++;if(symbolized)byImage.symbolizedFrameRows++;
+   if(unresolvedNamed)byImage.unresolvedNamedFrameRows++;if(largeOffset)byImage.largeOffsetNamedFrameRows++;
+   out.inclusiveFrames.push({lineNumber,thread:currentThread,count,prefix:row[1],symbol,image,named,symbolized,
+    offsetBytes:parsed&&!collapsed?locations[0]?.offsetBytes??null:null,largeOffset,unresolvedNamed,
+    address:parsed&&!collapsed?locations[0]?.address??null:null,locationKind,loadAddress,locations,collapsed,locationsComplete,
+    trailingAnnotation:tail?.[3]??null,parsed,raw:line});
   }else if(mode==='images'&&line.trim()){
    const row=line.match(/^\s*(0x[0-9a-f]+)\s*-\s*(0x[0-9a-f]+)\s+(.+)$/i);
    if(!row){issue('Unparsed binary-image line '+lineNumber);continue;}
@@ -297,7 +368,7 @@ export function parseNativeSampleReport(text){
  if(!out.binaryImages.some(r=>r.uuid&&r.path))issue('Missing auditable binary-image metadata');
  out.structureUsable=out.issues.length===0;
  out.someSymbolsPresent=out.symbolizedFrameRows>0;
- out.symbolCoverage=out.symbolizedFrameRows===0?'unavailable':out.unknownSymbolFrameRows>0||out.largeOffsetNamedFrameRows>0?'partial':'all-parsed-frames-named';
+ out.symbolCoverage=out.symbolizedFrameRows===0?'unavailable':out.unknownSymbolFrameRows>0||out.unresolvedNamedFrameRows>0||out.incompleteLocationFrameRows>0?'partial':'all-parsed-frames-named';
  return out;
 }
 
