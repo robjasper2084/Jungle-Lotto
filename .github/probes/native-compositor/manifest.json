@@ -51,7 +51,7 @@
     "cleanupTimeoutMs": 10000,
     "traceBufferKiB": 524288,
     "traceFileBytes": 536870912,
-    "traceDrainTimeoutMs": 60000,
+    "traceDrainTimeoutMs": 120000,
     "traceMetadataRows": 4096,
     "traceTracks": 4096,
     "bundleBytes": 33554432,
@@ -75,10 +75,30 @@
     "requiredRawCategoryScope": "trusted-W-window",
     "finalizationBudget": {
       "start": "Tracing.end issuance",
-      "milliseconds": 60000,
+      "milliseconds": 120000,
       "includes": ["end acknowledgement", "asynchronous tracingComplete event", "completion receipt", "stream drain", "indexing", "trace persistence"],
       "individualRpcTimeoutMs": 4000,
-      "renewedOnStreamArrival": false
+      "renewedOnStreamArrival": false,
+      "observedBudgetExhaustion": {
+        "observerHead": "a8e8b97a531d57b3c2b5b23d99aa0636d4c8dd25",
+        "diagnosticRunId": 45987971947,
+        "auditRunId": 45992949088,
+        "artifactId": 15193147198,
+        "previousBudgetMs": 60000,
+        "timingClock": "Node epoch event receipts",
+        "endAcknowledgementAfterStopMs": 3,
+        "completionAfterStopMs": 58009,
+        "drainStartedAfterStopMs": 58012,
+        "remainingAtDrainStartMs": 1988,
+        "retainedPartialTraceBytes": 90177536,
+        "retainedPartialTraceSha256": "6cee8382cf4fbd6b2e24071063d6902c9ae30554a10592c1673aff9849a9a675",
+        "completeDocument": false,
+        "bufferHighWater": 0.22013787925243378,
+        "dataLossOccurred": false,
+        "capReached": false,
+        "bothOwnedTransportsClean": true
+      },
+      "allowanceNote": "The 120-second limit is a finite post-stop collection allowance supported by the observed 60-second exhaustion. It retains one absolute stop-issuance deadline for acknowledgement, completion, drain, indexing and persistence; no phase renews it. Complete trace size and collection cost remain unproved. Original capture/input/performance gates and all other observer bounds are unchanged; any late or incomplete result remains partial."
     },
     "gpuExecutionMeasured": false,
     "semanticReference": {
@@ -116,7 +136,7 @@
       },
       "linearFlushSecondsAt512MiB": 36.704827,
       "newCategoryVolumeMeasured": false,
-      "note": "The peer has a different application build and category set. Its exact raw hash/bytes and the estimated reserialized shared-category union are capacity evidence, not a performance comparison or exact forecast. The four new categories remain unmeasured. The 512 MiB buffer/file and single 60-second stop-to-finalization budget remain finite; any cap, loss, absent evidence or late completion makes the diagnostic partial."
+      "note": "The peer has a different application build and category set. Its exact raw hash/bytes and the estimated reserialized shared-category union are capacity evidence, not a performance comparison or exact forecast. Complete volume for the four new categories remains unmeasured. The 512 MiB buffer/file and single 120-second stop-to-finalization budget remain finite; any cap, loss, absent evidence or late completion makes the diagnostic partial."
     }
   },
   "transportOwnership": {

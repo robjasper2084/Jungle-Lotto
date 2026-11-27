@@ -25,7 +25,7 @@ test('only original 210 and the fixed compositor categories are selectable', () 
   assert.equal(manifest.transportOwnership.originalPageAndContextClosureDelayed, false);
   assert.equal(manifest.bounds.traceBufferKiB * 1024, 512 * 1024 * 1024);
   assert.equal(manifest.bounds.traceFileBytes, 512 * 1024 * 1024);
-  assert.equal(manifest.bounds.traceDrainTimeoutMs, 60000);
+  assert.equal(manifest.bounds.traceDrainTimeoutMs, 120000);
   assert.equal(manifest.trace.finalizationBudget.milliseconds, manifest.bounds.traceDrainTimeoutMs);
   assert.equal(manifest.trace.finalizationBudget.start, 'Tracing.end issuance');
   assert.equal(manifest.trace.finalizationBudget.renewedOnStreamArrival, false);

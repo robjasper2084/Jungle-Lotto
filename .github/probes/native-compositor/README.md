@@ -122,7 +122,7 @@ page session promptly. It does not wait for the potentially longer browser trace
 flush. The original page/context can close while browser tracing continues.
 
 This repairs a source-supported lifetime mismatch, not a demonstrated performance
-cause. The preceding attempt exhausted its 60-second finalization budget and then
+cause. The earlier page-owned attempt exhausted its 60-second budget and then
 reported a closed target. Its retained timestamps bracket source-context release
 across that deadline; they do not establish the exact closure instant or prove
 that closure was the only reason the flush notification was absent. Neither the
@@ -165,17 +165,38 @@ already exceeds the former 134,217,728-byte cap, before the newly requested cc,
 viz, gpu and toplevel.flow traffic. Exact raw bytes/hash and estimated reserialized
 event totals are distinguished in the manifest. The peer uses a different build
 and additional categories, so this is capacity evidence, not a performance
-comparison or an exact forecast. The four new categories remain unmeasured;
+comparison or an exact forecast. Complete volume for the four new categories
+remains unmeasured;
 512 MiB is a finite allowance, not a promise that every capture fits.
 
 The peer's full flush took 16.561 seconds for 242,232,971 bytes. Linear scaling to
-the new cap is about 36.7 seconds. One 60-second trace finalization budget starts
-when Tracing.end is issued and covers its acknowledgement, the asynchronous
+the new cap is about 36.7 seconds; that evidence originally informed a 60-second
+finalization allowance. The first browser-owned capture then demonstrated a
+different constraint. In [capture run 45987971947](https://github.com/robjasper2084/Jungle-Lotto/actions/runs/45987971947),
+Tracing.end was acknowledged after 3 ms,
+but the completion notification arrived 58.009 seconds after stop issuance.
+Draining began after 58.012 seconds, leaving 1.988 seconds of the existing budget.
+The final read exhausted its remaining 4 ms allowance. Independent
+[archive audit 45992949088](https://github.com/robjasper2084/Jungle-Lotto/actions/runs/45992949088)
+confirmed a truncated 90,177,536-byte prefix with SHA-256
+6cee8382cf4fbd6b2e24071063d6902c9ae30554a10592c1673aff9849a9a675.
+The buffer high-water mark was 22.0138%; cap and loss flags were false. Both owned
+sessions acknowledged detach and closed cleanly. The original page/context had
+closed about 12.7/12.8 seconds after stop, before the browser trace notification,
+so the ownership repair is retained. This evidence establishes collection-budget
+exhaustion; it does not attribute the game's long frames.
+
+One 120-second trace finalization budget now starts when Tracing.end is issued
+and covers its acknowledgement, the asynchronous
 Tracing.tracingComplete notification, completion receipt, stream reads, indexing
 and trailing trace persistence. That notification is a flush event, not an RPC
 response. Every individual RPC, including Tracing.end and IO.read, still has its
 4-second timeout. The absolute stop-issuance deadline is passed into collection;
-stream arrival never grants a second 60-second allowance. Receipts retain stop
+stream arrival never grants a second 120-second allowance. The larger finite
+allowance applies only to post-stop collection; the 90-second workload, 110-second
+recording watchdog, original source/input/performance gates and all other observer
+bounds are unchanged. Complete trace size and collection cost remain unproved, so
+the allowance does not guarantee success. Receipts retain stop
 issuance, acknowledgement, notification, deadline and finalization timestamps.
 Missing or late notifications and late persistence remain partial, and late
 continuations cannot restore completeness. Parsing is synchronous and bounded by file size; a JavaScript timer
