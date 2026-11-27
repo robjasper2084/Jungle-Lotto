@@ -1,0 +1,77 @@
+{
+  "schema": "belle-rg8-world-source-v1",
+  "baseline": "75906273c0cd414c0d004320fc6f654b4783e5b1",
+  "baselineTree": "9f0351be133dd370a676090d27559a0adaf00605",
+  "candidate": "ef341f2f91a43aec26261f2778404ca7346de9a9",
+  "candidateTree": "24188d608d8f54cf6aafd9d669e6a529252cbdc8",
+  "runtimeBlob": "2d5ab8f194c5552680008dcd4775ef19ed0523b9",
+  "testBlob": "4018bb3758f6d51c5540655e4408966112e546a3",
+  "styles": [
+    "authentic",
+    "golden",
+    "noir",
+    "detroit2084"
+  ],
+  "cases": [
+    "jefferson-day",
+    "jefferson-night",
+    "island-day",
+    "island-night",
+    "conservatory-day",
+    "conservatory-night",
+    "ramp-grazing-day",
+    "under-ramp-day"
+  ],
+  "partitions": {
+    "all": [
+      "jefferson-day",
+      "jefferson-night",
+      "island-day",
+      "island-night",
+      "conservatory-day",
+      "conservatory-night",
+      "ramp-grazing-day",
+      "under-ramp-day"
+    ],
+    "linux-a": [
+      "jefferson-day",
+      "jefferson-night",
+      "island-day",
+      "island-night"
+    ],
+    "linux-b": [
+      "conservatory-day",
+      "conservatory-night",
+      "ramp-grazing-day",
+      "under-ramp-day"
+    ]
+  },
+  "scope": "Source-bound frozen full-world storage equivalence. Original release, input, physics and performance gates are independent.",
+  "fixedPlan": {
+    "width": 960,
+    "height": 600,
+    "dpr": 1,
+    "near": 0.08,
+    "far": 22000,
+    "warmupRendersPerLane": 3,
+    "lanes": [
+      "original",
+      "rg8",
+      "restored"
+    ],
+    "firstSelectedCaseControlLanes": [
+      "lost-g",
+      "lost-g-restored",
+      "shadow-off",
+      "shadow-restored"
+    ],
+    "rgbaTolerance": 0,
+    "minimumChangedControlPixels": 16,
+    "elapsedLimitMinutes": 35,
+    "jobLimitMinutes": 40,
+    "nativeJobs": 4,
+    "softwareJobs": 8,
+    "releaseAcceptance": false
+  }
+}
+
