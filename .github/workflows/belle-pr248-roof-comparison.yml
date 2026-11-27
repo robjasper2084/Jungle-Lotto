@@ -100,9 +100,11 @@ jobs:
           bundle="$GITHUB_WORKSPACE/diagnostic/.github/diagnostics/pr248-roof-compare"
           out="$GITHUB_WORKSPACE/evidence"
           node --check "$bundle/driver.mjs"
-          node "$bundle/build.mjs" before "$GITHUB_WORKSPACE/before" "$out/before" 2>&1 | tee "$out/before-build.log"
-          node "$bundle/build.mjs" candidate "$GITHUB_WORKSPACE/candidate" "$out/candidate" 2>&1 | tee "$out/candidate-build.log"
-          node --test "$bundle/contract.test.mjs" "$bundle/provenance.test.mjs" "$bundle/evidence-transfer.test.mjs" 2>&1 | tee "$out/contract-tests.log"
+          node "$bundle/build.mjs" before "$GITHUB_WORKSPACE/before" "$out/before" "$GITHUB_WORKSPACE/shared-assets" 2>&1 | tee "$out/before-build.log"
+          node "$bundle/build.mjs" candidate "$GITHUB_WORKSPACE/candidate" "$out/candidate" "$GITHUB_WORKSPACE/shared-assets" 2>&1 | tee "$out/candidate-build.log"
+          export ROOF_DISPLAY_ASSET_ROOT="$GITHUB_WORKSPACE/shared-assets"
+          export ROOF_DISPLAY_GAME_ROOT="$GITHUB_WORKSPACE/before/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game"
+          node --test "$bundle/contract.test.mjs" "$bundle/provenance.test.mjs" "$bundle/evidence-transfer.test.mjs" "$bundle/scoped-submission.test.mjs" "$bundle/landmark-index-manifest.test.mjs" "$bundle/display-index.test.mjs" 2>&1 | tee "$out/contract-tests.log"
       - name: Capture matched native roof views and retain changed pixels
         timeout-minutes: 30
         run: |

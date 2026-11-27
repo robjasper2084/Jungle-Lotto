@@ -6,10 +6,12 @@ import {readFile,mkdir,writeFile} from 'node:fs/promises';
 import {dirname,resolve,relative} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {pins,sha256,gitBlob,json,checkout,helperPins,modelPins,manifest} from './provenance.mjs';
+import {verifyLandmarkIndexManifest} from './landmark-index-manifest.mjs';
 
-const [mode,appArg,outArg]=process.argv.slice(2);assert(pins.sources[mode]&&appArg&&outArg);
+const [mode,appArg,outArg,assetArg]=process.argv.slice(2);assert(pins.sources[mode]&&appArg&&outArg&&assetArg);
 const app=resolve(appArg),game=resolve(app,pins.gamePath),out=resolve(outArg),bundle=import.meta.dirname;
 const source=checkout(app,mode),helpers=await helperPins(game),models=await modelPins(game,mode);
+const landmarkIndices=await verifyLandmarkIndexManifest(resolve(assetArg),game);
 const require=createRequire(resolve(game,'package.json')),three=dirname(require.resolve('three'));
 assert.equal(JSON.parse(await readFile(resolve(three,'../package.json'),'utf8')).version,'0.185.1');
 await mkdir(out,{recursive:true});
@@ -41,6 +43,6 @@ await build({configFile:false,root:game,publicDir:false,base:'./',
 await writeFile(resolve(out,'fixture/index.html'),'<!doctype html><meta charset="utf-8"><title>Controlled Aquarium roof comparison — diagnostic only</title><style>html,body{margin:0;background:#000}canvas{display:block}</style><canvas id="game" tabindex="0"></canvas><script type="module" src="./roof-compare.js"></script>\n');
 const rows=[...inputs.values()].sort((a,b)=>a.path.localeCompare(b.path));
 for(const file of ['world.ts','stagedLandmarkStudies.ts','islandSky.ts','staticArchitectureBatch.ts','sharedGeometryBuffers.ts'])assert(rows.some(r=>r.path.endsWith('/src/belle/'+file)),'Required original module missing: '+file);
-await json(resolve(out,'source-inputs.json'),{mode,source,helpers,models,stagedFlag:'VITE_STAGED_BELLE_ARCHITECTURE=1',inputs:rows});
+await json(resolve(out,'source-inputs.json'),{mode,source,helpers,models,landmarkIndices,stagedFlag:'VITE_STAGED_BELLE_ARCHITECTURE=1',inputs:rows});
 await json(resolve(out,'fixture-manifest.json'),await manifest(resolve(out,'fixture')));
 checkout(app,mode);console.log(JSON.stringify({mode,source,inputs:rows.length,fixture:resolve(out,'fixture')}));

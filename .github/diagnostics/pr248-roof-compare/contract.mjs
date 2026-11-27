@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
 import {pins} from './provenance.mjs';
+import {assertScopedSubmittedOwner} from './scoped-submission-contract.mjs';
+import {assertDisplayIndexSubmittedOwner} from './display-index-contract.mjs';
+import landmarkIndexPins from './landmark-index-pins.json' with {type:'json'};
 
 const equal=(a,b,label)=>assert.deepEqual(a,b,label);
 const without=(o,keys)=>Object.fromEntries(Object.entries(o).filter(([k])=>!keys.includes(k)));
@@ -36,7 +39,10 @@ export function assertFence(completion){
  assert(['ALREADY_SIGNALED','CONDITION_SATISFIED'].includes(completion.result),'Native GPU fence did not signal');
 }
 const hash=h=>assert.match(h??'',/^[a-f0-9]{64}$/,'Missing exact submitted-owner byte hash');
-export function assertSubmittedOwner(draw,object){
+export function assertSubmittedOwner(draw,object,sceneRoot){
+ assert([draw.submittedOwnership,draw.scopedSubmission,draw.displayIndexSubmission].filter(value=>value!=null).length<=1,'Ambiguous native submitted ownership proof');
+ if(draw.scopedSubmission){assertScopedSubmittedOwner(draw,object);return;}
+ if(draw.displayIndexSubmission){assertDisplayIndexSubmittedOwner(draw,object,sceneRoot,landmarkIndexPins);return;}
  const actual=draw.submittedGeometry,source=object?.geometry;assert(source,'Native draw owner is missing from the complete scene: '+draw.path);
  const positionCount=source.attributes.position.count,indexCount=source.index?.count??0,o=draw.submittedOwnership;
  if(!o){equal(actual,{positionCount,indexCount,...source.drawRange},'A changed submitted backing store has no owner proof');return;}
@@ -142,7 +148,7 @@ export function analyze(raw){
      equal(e.captures[0].pixelSha256,e.captures[1].pixelSha256,'Frozen repeated framebuffer is not stable');
      equal(e.captures[0].preparationActivity,e.captures[1].preparationActivity,'Original scenery work continued between frozen captures');
      for(const frame of e.captures)checkFrame(frame,view,mode);
-     for(const frame of [...e.preparationPasses,...e.captures,...(e.transitionAfterCapture?[e.transitionAfterCapture]:[])])for(const draw of frame.draws)assertSubmittedOwner(draw,e.scene.objects.find(o=>o.path===draw.path));
+     for(const frame of [...e.preparationPasses,...e.captures,...(e.transitionAfterCapture?[e.transitionAfterCapture]:[])])for(const draw of frame.draws)assertSubmittedOwner(draw,e.scene.objects.find(o=>o.path===draw.path),e.scene.objects[0]);
      assert(e.preparationPasses[0].draws.some(d=>d.pass==='shadow'&&d.calls>0&&d.triangles>0),'Missing original native shadow preparation');
      assert(e.preparationPasses[0].shadowMaps.some(s=>s.castShadow&&s.intensity>0&&s.allocated?.every(x=>x>0)),'Missing native High shadow allocation');
     }

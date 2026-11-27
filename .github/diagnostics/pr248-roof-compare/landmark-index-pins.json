@@ -1,0 +1,1029 @@
+{
+  "schema": 1,
+  "source": {
+    "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/landmarkDetail.ts",
+    "sha256": "250463508b35a2772fd080c0f2109094a03dff2888b338aa3d868d4ef2c7e765"
+  },
+  "assets": {
+    "metadata": {
+      "path": "belle/landmark-detail.json",
+      "bytes": 7113,
+      "sha256": "5e38eb76ab3a9efc82c3c99170e2761bb99e33eed8bd3afeeb7ec3b1bbb3711f"
+    },
+    "encodedIndices": {
+      "path": "belle/landmark-detail.bin",
+      "bytes": 814456,
+      "sha256": "c0ce94cee9cac8e8ebc51e7348100aa619d9db1c4b3b668f47e2086598d60d79"
+    },
+    "model": {
+      "path": "belle/landmarks.glb",
+      "bytes": 30417032,
+      "sha256": "99bd8f7a8c1a5553bf78c0ab1e99cb771c275ca39fc6808c7fab07d8d899d3ba"
+    }
+  },
+  "metadata": {
+    "version": 1,
+    "sourceSha256": "560632f68f9f68974fef2f2f09f2e436f6742658ac864e35091e1c9a7c79e80f"
+  },
+  "entries": [
+    {
+      "key": "0:0",
+      "entry": {
+        "mesh": 0,
+        "primitive": 0,
+        "name": "Turtle water arc.001",
+        "vertices": 2496,
+        "originalCount": 14004,
+        "hash": 1467160675,
+        "count": 3258,
+        "offset": 0,
+        "length": 3266,
+        "error": 0.02295650728046894
+      },
+      "sourceIndex": {
+        "type": "Uint16Array",
+        "bytes": 28008,
+        "count": 14004,
+        "sha256": "ebb9e6414bc480c260ddadac09996c6e898e52d41606256f0875f54b94990f47"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 13032,
+        "count": 3258,
+        "sha256": "e2e29c55c3ca75d5c747e3b2bf2d7964c7667213033cf155d001fe7273e7cfa2"
+      }
+    },
+    {
+      "key": "2:0",
+      "entry": {
+        "mesh": 2,
+        "primitive": 0,
+        "name": "Bronze turtle shell.001",
+        "vertices": 15168,
+        "originalCount": 80640,
+        "hash": 1402646981,
+        "count": 20160,
+        "offset": 3266,
+        "length": 20815,
+        "error": 0.02595936879515648
+      },
+      "sourceIndex": {
+        "type": "Uint16Array",
+        "bytes": 161280,
+        "count": 80640,
+        "sha256": "8c98305919fc0c6c9127b80ce8f1afcc887b1a57c0e27b70f1fc1afa2adf64ca"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 80640,
+        "count": 20160,
+        "sha256": "9587b1a33c861c68ec60fb808db8c6370f879dfdbbf55a6464c8b73f135222ab"
+      }
+    },
+    {
+      "key": "4:0",
+      "entry": {
+        "mesh": 4,
+        "primitive": 0,
+        "name": "Basin floor.001",
+        "vertices": 18592,
+        "originalCount": 90852,
+        "hash": 2537582959,
+        "count": 23922,
+        "offset": 24081,
+        "length": 24694,
+        "error": 0.03943707048892975
+      },
+      "sourceIndex": {
+        "type": "Uint16Array",
+        "bytes": 181704,
+        "count": 90852,
+        "sha256": "5e15d38621c4eeafdfff683fd1821cecea33adf1abde31ddbb8bf7159e399f94"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 95688,
+        "count": 23922,
+        "sha256": "d2081b0e994602b905dcc9dcb3e7095a83a4de4a905e92e2d90f220e09bae2c8"
+      }
+    },
+    {
+      "key": "5:0",
+      "entry": {
+        "mesh": 5,
+        "primitive": 0,
+        "name": "Sphere",
+        "vertices": 1958,
+        "originalCount": 7920,
+        "hash": 1852418043,
+        "count": 1980,
+        "offset": 48775,
+        "length": 2029,
+        "error": 0.03988279774785042
+      },
+      "sourceIndex": {
+        "type": "Uint16Array",
+        "bytes": 15840,
+        "count": 7920,
+        "sha256": "e6f3699e2b91cc6f94c71e4bf605897bddd8c24f29db79d438ca18d4aa734d36"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 7920,
+        "count": 1980,
+        "sha256": "8526ffc83ecead7e5dd5d46b92124964cdd95e00c46d4008c0a797337b85e387"
+      }
+    },
+    {
+      "key": "22:0",
+      "entry": {
+        "mesh": 22,
+        "primitive": 0,
+        "name": "Cube.1592",
+        "vertices": 4824,
+        "originalCount": 13644,
+        "hash": 4124370787,
+        "count": 3612,
+        "offset": 50804,
+        "length": 4667,
+        "error": 0.00835526455193758
+      },
+      "sourceIndex": {
+        "type": "Uint16Array",
+        "bytes": 27288,
+        "count": 13644,
+        "sha256": "8dbee1c6144561a850a230d7716da6b6f5dbfbd0bf1476b5041138b1e362d92b"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 14448,
+        "count": 3612,
+        "sha256": "5662d789eb20348ba63fe32303d3143e65a998d8db794dac0413a121c7a02ed3"
+      }
+    },
+    {
+      "key": "31:0",
+      "entry": {
+        "mesh": 31,
+        "primitive": 0,
+        "name": "Six smooth corrugated slide lanes.001",
+        "vertices": 25638,
+        "originalCount": 140760,
+        "hash": 899420717,
+        "count": 35190,
+        "offset": 55471,
+        "length": 46795,
+        "error": 0.020069820806384087
+      },
+      "sourceIndex": {
+        "type": "Uint16Array",
+        "bytes": 281520,
+        "count": 140760,
+        "sha256": "ae0f981a059d3c5981bbdc54d21c9bb070cd5318b4762442531614dbffd471a3"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 140760,
+        "count": 35190,
+        "sha256": "a875d28d80ee3088033d87e29676e65e079baab71f3fd2316248e271e794a66e"
+      }
+    },
+    {
+      "key": "44:0",
+      "entry": {
+        "mesh": 44,
+        "primitive": 0,
+        "name": "Cube.179",
+        "vertices": 14601,
+        "originalCount": 33171,
+        "hash": 2677672991,
+        "count": 16107,
+        "offset": 102266,
+        "length": 16868,
+        "error": 0.03991219773888588
+      },
+      "sourceIndex": {
+        "type": "Uint16Array",
+        "bytes": 66342,
+        "count": 33171,
+        "sha256": "575f7c053614c88cb77acbead85cfffa40ac795b723d6b8aed2d286818e76e39"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 64428,
+        "count": 16107,
+        "sha256": "cafab20a73e2dea23d74941be9372f9453ad7d934d3fd1de420b702ce27c3689"
+      }
+    },
+    {
+      "key": "51:0",
+      "entry": {
+        "mesh": 51,
+        "primitive": 0,
+        "name": "107227742_Aquarium aged handrails",
+        "vertices": 5904,
+        "originalCount": 27696,
+        "hash": 1496884283,
+        "count": 6900,
+        "offset": 119134,
+        "length": 7002,
+        "error": 0.029313499107956886
+      },
+      "sourceIndex": {
+        "type": "Uint16Array",
+        "bytes": 55392,
+        "count": 27696,
+        "sha256": "0827ae3a4645c5d6692e7390e18eb6ba934f7942ed6842c8e1a2ebd60868dcee"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 27600,
+        "count": 6900,
+        "sha256": "e5d8979e24543f856a8592afe2816bef13b594f5f00735c3890bf6c7981854b2"
+      }
+    },
+    {
+      "key": "52:0",
+      "entry": {
+        "mesh": 52,
+        "primitive": 0,
+        "name": "107227742_Aquarium aged limestone",
+        "vertices": 17799,
+        "originalCount": 45927,
+        "hash": 1993957589,
+        "count": 18447,
+        "offset": 126136,
+        "length": 19175,
+        "error": 0.03995208814740181
+      },
+      "sourceIndex": {
+        "type": "Uint16Array",
+        "bytes": 91854,
+        "count": 45927,
+        "sha256": "ca7694495d7eb2cdc8e2aab3d7ec727581d0ee5abd5727769e7af2f113219ec7"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 73788,
+        "count": 18447,
+        "sha256": "2a71f89672d07c48a2af12c9864bbe711de8160ebdeb7be667b8f1abfabc2a89"
+      }
+    },
+    {
+      "key": "54:0",
+      "entry": {
+        "mesh": 54,
+        "primitive": 0,
+        "name": "107227742_Aquarium aquatic plants",
+        "vertices": 6464,
+        "originalCount": 33936,
+        "hash": 1512150333,
+        "count": 8484,
+        "offset": 145311,
+        "length": 8489,
+        "error": 0.020820241421461105
+      },
+      "sourceIndex": {
+        "type": "Uint16Array",
+        "bytes": 67872,
+        "count": 33936,
+        "sha256": "dd6793a540d4ec038b2ea59638b81e8fa637a9ed2ecfb7858a177037fe3215ff"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 33936,
+        "count": 8484,
+        "sha256": "e7046b3852c81ad1d51c9ee7edbd09775789d1de33048b7b7ba49a684393f8e8"
+      }
+    },
+    {
+      "key": "64:0",
+      "entry": {
+        "mesh": 64,
+        "primitive": 0,
+        "name": "107227742_Aquarium pale stone frames",
+        "vertices": 4776,
+        "originalCount": 8694,
+        "hash": 189528513,
+        "count": 6984,
+        "offset": 153800,
+        "length": 7026,
+        "error": 0.0386798232793808
+      },
+      "sourceIndex": {
+        "type": "Uint16Array",
+        "bytes": 17388,
+        "count": 8694,
+        "sha256": "f7e8d43863cff2666ea601d944e3524f1887d7268bb1aa64d2323caa45d7663e"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 27936,
+        "count": 6984,
+        "sha256": "e215c990ed1206a5b610d3f56c2ce5cc9b0dde24412f381bd19c7f405f6b0c78"
+      }
+    },
+    {
+      "key": "65:0",
+      "entry": {
+        "mesh": 65,
+        "primitive": 0,
+        "name": "107227742_Aquarium river gravel",
+        "vertices": 41976,
+        "originalCount": 229284,
+        "hash": 2829458093,
+        "count": 57318,
+        "offset": 160826,
+        "length": 60643,
+        "error": 0.012852763757109642
+      },
+      "sourceIndex": {
+        "type": "Uint16Array",
+        "bytes": 458568,
+        "count": 229284,
+        "sha256": "c8cf8c49295723106d6ba35086ca915b283b594bbd8e66a928a2e3ca5c871736"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 229272,
+        "count": 57318,
+        "sha256": "323b5613f9dfadf4c1631a519ce8af9b22db03f64482c048bb4db71d61af4b70"
+      }
+    },
+    {
+      "key": "68:0",
+      "entry": {
+        "mesh": 68,
+        "primitive": 0,
+        "name": "107227742_Aquarium warm pendant light",
+        "vertices": 1872,
+        "originalCount": 10368,
+        "hash": 2249439045,
+        "count": 2592,
+        "offset": 221469,
+        "length": 2793,
+        "error": 0.010276693850755692
+      },
+      "sourceIndex": {
+        "type": "Uint16Array",
+        "bytes": 20736,
+        "count": 10368,
+        "sha256": "2d8f02b29761117cda5b31a2fecf91783941defc12823d31bd4f01dc11bd27ab"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 10368,
+        "count": 2592,
+        "sha256": "e7bec3a549e11cf4f4d22ae7912704da12360b7d8aacc5a75c5653a5efaccd4b"
+      }
+    },
+    {
+      "key": "72:0",
+      "entry": {
+        "mesh": 72,
+        "primitive": 0,
+        "name": "107310050_Botanical label ivory",
+        "vertices": 22344,
+        "originalCount": 46296,
+        "hash": 1516370553,
+        "count": 26022,
+        "offset": 224262,
+        "length": 26683,
+        "error": 0.027645448222756386
+      },
+      "sourceIndex": {
+        "type": "Uint16Array",
+        "bytes": 92592,
+        "count": 46296,
+        "sha256": "40f87699e88834a493a6edf426f3526c190da140a3ad9b9e38e9493723dc92d4"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 104088,
+        "count": 26022,
+        "sha256": "b107d853354cea3c96786b140671b4f87cad3f71f1063adfd3ce0b11adaa0acd"
+      }
+    },
+    {
+      "key": "79:0",
+      "entry": {
+        "mesh": 79,
+        "primitive": 0,
+        "name": "107310050_Conservatory garden black iron",
+        "vertices": 4816,
+        "originalCount": 12060,
+        "hash": 183641339,
+        "count": 3300,
+        "offset": 250945,
+        "length": 3309,
+        "error": 0.03326036408543587
+      },
+      "sourceIndex": {
+        "type": "Uint16Array",
+        "bytes": 24120,
+        "count": 12060,
+        "sha256": "a143fc11e34c5d4c68f6a4f08b7a0dd4312d5babd4ab944ccad174bc2ebb8bca"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 13200,
+        "count": 3300,
+        "sha256": "ca39f22a74a334ea164f8fda105d865281bc6f96fe3d7b7d4251209945978e94"
+      }
+    },
+    {
+      "key": "80:0",
+      "entry": {
+        "mesh": 80,
+        "primitive": 0,
+        "name": "107310050_Conservatory leaf 0",
+        "vertices": 82168,
+        "originalCount": 147312,
+        "hash": 3219963695,
+        "count": 69132,
+        "offset": 254254,
+        "length": 69265,
+        "error": 0.039235442876815796
+      },
+      "sourceIndex": {
+        "type": "Uint32Array",
+        "bytes": 589248,
+        "count": 147312,
+        "sha256": "8d4519514c4a09b805908c060b3e401a31a5f11f30aa77093cfc2f2a453f86ba"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 276528,
+        "count": 69132,
+        "sha256": "2f398d39885b2b1c93d3436f5485813d77cdda63e705f2d2e7ef877227983060"
+      }
+    },
+    {
+      "key": "81:0",
+      "entry": {
+        "mesh": 81,
+        "primitive": 0,
+        "name": "107310050_Conservatory leaf 1",
+        "vertices": 153172,
+        "originalCount": 277044,
+        "hash": 2359512730,
+        "count": 163158,
+        "offset": 323519,
+        "length": 164401,
+        "error": 0.0393136627972126
+      },
+      "sourceIndex": {
+        "type": "Uint32Array",
+        "bytes": 1108176,
+        "count": 277044,
+        "sha256": "57e1f1edc030392ce990f05662927f1adaaea75a6ef19f8c7f2abef9f24911e1"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 652632,
+        "count": 163158,
+        "sha256": "7d33fdad84130a3e8132cc0b11408b36cb23d3a612ba6702953c216271cc42f4"
+      }
+    },
+    {
+      "key": "82:0",
+      "entry": {
+        "mesh": 82,
+        "primitive": 0,
+        "name": "107310050_Conservatory leaf 2",
+        "vertices": 97096,
+        "originalCount": 207360,
+        "hash": 425531290,
+        "count": 77142,
+        "offset": 487920,
+        "length": 77412,
+        "error": 0.039807721972465515
+      },
+      "sourceIndex": {
+        "type": "Uint32Array",
+        "bytes": 829440,
+        "count": 207360,
+        "sha256": "0dc50357f5c7d2398b2d11287a4bde9dab73ebad3e3ae0c21ab227f18f32de5d"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 308568,
+        "count": 77142,
+        "sha256": "4d5affbfb20337166cd54f4d188f366710cdb88f0fc7882fbea28b7caa320035"
+      }
+    },
+    {
+      "key": "83:0",
+      "entry": {
+        "mesh": 83,
+        "primitive": 0,
+        "name": "107310050_Conservatory leaf 3",
+        "vertices": 43344,
+        "originalCount": 65280,
+        "hash": 3593752818,
+        "count": 39846,
+        "offset": 565332,
+        "length": 39853,
+        "error": 0.03914617374539375
+      },
+      "sourceIndex": {
+        "type": "Uint16Array",
+        "bytes": 130560,
+        "count": 65280,
+        "sha256": "a1fb716fd5940cebcc98b60348382f14d935c1c00db55566277d0437c6e13983"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 159384,
+        "count": 39846,
+        "sha256": "3b6cf390850cc08c82b5d480bfc70fb2b0ef3b2c801276ce31e0d35afe5c87d0"
+      }
+    },
+    {
+      "key": "84:0",
+      "entry": {
+        "mesh": 84,
+        "primitive": 0,
+        "name": "107310050_Conservatory orchid ivory",
+        "vertices": 12800,
+        "originalCount": 61440,
+        "hash": 1226271173,
+        "count": 15360,
+        "offset": 605185,
+        "length": 15433,
+        "error": 0.014835052192211151
+      },
+      "sourceIndex": {
+        "type": "Uint16Array",
+        "bytes": 122880,
+        "count": 61440,
+        "sha256": "fd123e4ba83f2fa5bd6532e1690ebd6e262a1a4b68881a99a5d1f9e623916fb7"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 61440,
+        "count": 15360,
+        "sha256": "15f48e537a28c965730d4625d86ddaca006af9daefc4464e85965c012bd9c5cb"
+      }
+    },
+    {
+      "key": "85:0",
+      "entry": {
+        "mesh": 85,
+        "primitive": 0,
+        "name": "107310050_Conservatory orchid magenta",
+        "vertices": 17920,
+        "originalCount": 86016,
+        "hash": 2941043141,
+        "count": 21504,
+        "offset": 620618,
+        "length": 21691,
+        "error": 0.01289842277765274
+      },
+      "sourceIndex": {
+        "type": "Uint16Array",
+        "bytes": 172032,
+        "count": 86016,
+        "sha256": "802379366fdeee218fbe8ef5eaa011f9e1036a7bbe57907a9ad25ac577098d03"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 86016,
+        "count": 21504,
+        "sha256": "a76326fe6495b542f5fb1d4f678f4eb1edc9f98871a10820f3125b676d96b102"
+      }
+    },
+    {
+      "key": "86:0",
+      "entry": {
+        "mesh": 86,
+        "primitive": 0,
+        "name": "107310050_Conservatory palm bark",
+        "vertices": 47375,
+        "originalCount": 205578,
+        "hash": 3111659389,
+        "count": 49662,
+        "offset": 642309,
+        "length": 52578,
+        "error": 0.01997262053191662
+      },
+      "sourceIndex": {
+        "type": "Uint16Array",
+        "bytes": 411156,
+        "count": 205578,
+        "sha256": "fa66fdb6b77f34c85c28363b0d0d711ff73cd4b7cd9464939b7baeecee95ae96"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 198648,
+        "count": 49662,
+        "sha256": "4d04e3670094da6a866c8e15bf909c439f6d07e5ec3f47940d7dac9de80cedd2"
+      }
+    },
+    {
+      "key": "88:0",
+      "entry": {
+        "mesh": 88,
+        "primitive": 0,
+        "name": "107310050_Conservatory restored gray steel",
+        "vertices": 41494,
+        "originalCount": 229344,
+        "hash": 917035925,
+        "count": 53784,
+        "offset": 694887,
+        "length": 53950,
+        "error": 0.03113975003361702
+      },
+      "sourceIndex": {
+        "type": "Uint16Array",
+        "bytes": 458688,
+        "count": 229344,
+        "sha256": "7b6c78ab5b919c66e2a5ac4faf37a86a22355444001ec5623930157398e88843"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 215136,
+        "count": 53784,
+        "sha256": "e9caa79f16ddc5a5a432831685671172474ac8ec5590c393404bcfa0013bfa95"
+      }
+    },
+    {
+      "key": "91:0",
+      "entry": {
+        "mesh": 91,
+        "primitive": 0,
+        "name": "107310050_Koi pond ivory lily petals",
+        "vertices": 6400,
+        "originalCount": 30720,
+        "hash": 3215962565,
+        "count": 7680,
+        "offset": 748837,
+        "length": 7811,
+        "error": 0.014441569335758686
+      },
+      "sourceIndex": {
+        "type": "Uint16Array",
+        "bytes": 61440,
+        "count": 30720,
+        "sha256": "547bfb634542dc7321361ba6727401199c0887dad8d292b856ed37e92c16539c"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 30720,
+        "count": 7680,
+        "sha256": "833d34c6d35805261cbdafe92ca5878eb081aa8715762d3f550516e40400fde1"
+      }
+    },
+    {
+      "key": "94:0",
+      "entry": {
+        "mesh": 94,
+        "primitive": 0,
+        "name": "107310050_Monument white marble",
+        "vertices": 4584,
+        "originalCount": 10632,
+        "hash": 1981508271,
+        "count": 3756,
+        "offset": 756648,
+        "length": 3862,
+        "error": 0.03104882501065731
+      },
+      "sourceIndex": {
+        "type": "Uint16Array",
+        "bytes": 21264,
+        "count": 10632,
+        "sha256": "abde02c2e9fbd857e1b354df17e24eebd37212039cce51ff6f531cb3281bf3f3"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 15024,
+        "count": 3756,
+        "sha256": "1a6910abdbba8b42268d60b4a1f8eaaeb77d458aa0f96a36935b72f60f217752"
+      }
+    },
+    {
+      "key": "117:0",
+      "entry": {
+        "mesh": 117,
+        "primitive": 0,
+        "name": "Cube.004",
+        "vertices": 2709,
+        "originalCount": 6732,
+        "hash": 916599287,
+        "count": 2898,
+        "offset": 760510,
+        "length": 2945,
+        "error": 0.03969331085681915
+      },
+      "sourceIndex": {
+        "type": "Uint16Array",
+        "bytes": 13464,
+        "count": 6732,
+        "sha256": "ede4497fe5d096f3263c574a9712898197cda386162f84446e11bde9c6504f0a"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 11592,
+        "count": 2898,
+        "sha256": "a227f2ca79c4f0cf2831b50f4568443ac44a5db686c4f80e89c686343cb6c0b2"
+      }
+    },
+    {
+      "key": "125:0",
+      "entry": {
+        "mesh": 125,
+        "primitive": 0,
+        "name": "Coat torso.001",
+        "vertices": 5124,
+        "originalCount": 26652,
+        "hash": 2821156093,
+        "count": 6660,
+        "offset": 763455,
+        "length": 6882,
+        "error": 0.012701647356152534
+      },
+      "sourceIndex": {
+        "type": "Uint16Array",
+        "bytes": 53304,
+        "count": 26652,
+        "sha256": "5bb51edc747f6d2a0dc3a76222c2641a0c77b695ee966429a624e23840721fbc"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 26640,
+        "count": 6660,
+        "sha256": "427959403cf5ea126774d0a96fa920fc787a18e62371c9e51e3112e335806582"
+      }
+    },
+    {
+      "key": "128:0",
+      "entry": {
+        "mesh": 128,
+        "primitive": 0,
+        "name": "Chair seat.002",
+        "vertices": 2694,
+        "originalCount": 13524,
+        "hash": 610101731,
+        "count": 3378,
+        "offset": 770337,
+        "length": 3489,
+        "error": 0.030303679406642914
+      },
+      "sourceIndex": {
+        "type": "Uint16Array",
+        "bytes": 27048,
+        "count": 13524,
+        "sha256": "3901a4d7e205746da6c05019ad3930c2e5cb9d8ccf1ed0e6046b4b7953e9bcaa"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 13512,
+        "count": 3378,
+        "sha256": "21e90d22d6d27e468b3bb74207859974eecb54e9d69e8ebd00c9e8fbc79de699"
+      }
+    },
+    {
+      "key": "133:0",
+      "entry": {
+        "mesh": 133,
+        "primitive": 0,
+        "name": "Marble robed bust.001",
+        "vertices": 1886,
+        "originalCount": 8748,
+        "hash": 2896596335,
+        "count": 2184,
+        "offset": 773826,
+        "length": 2259,
+        "error": 0.031756848096847534
+      },
+      "sourceIndex": {
+        "type": "Uint16Array",
+        "bytes": 17496,
+        "count": 8748,
+        "sha256": "cec5b510e64d5b8208a50135995bcb5449283c73f548654b41d1fa7cc2075e26"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 8736,
+        "count": 2184,
+        "sha256": "68b27b0f8055f46680d79e99764e26c10c139c67b036cbaf07c42bd60224e05c"
+      }
+    },
+    {
+      "key": "137:0",
+      "entry": {
+        "mesh": 137,
+        "primitive": 0,
+        "name": "Coat torso.006",
+        "vertices": 3998,
+        "originalCount": 16908,
+        "hash": 3940496900,
+        "count": 4176,
+        "offset": 776085,
+        "length": 4301,
+        "error": 0.016690576449036598
+      },
+      "sourceIndex": {
+        "type": "Uint16Array",
+        "bytes": 33816,
+        "count": 16908,
+        "sha256": "8c7d1c079572502c71de121c8ddfcd7f9e50be95a174b29af8e7555e1780dcb7"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 16704,
+        "count": 4176,
+        "sha256": "843ab4c66e4f7876a2f0ba67f6b24fbcffb8b58dc2949a887d2f64504420cbcd"
+      }
+    },
+    {
+      "key": "139:0",
+      "entry": {
+        "mesh": 139,
+        "primitive": 0,
+        "name": "Corner eagle body.001",
+        "vertices": 2840,
+        "originalCount": 15396,
+        "hash": 2768826669,
+        "count": 3846,
+        "offset": 780386,
+        "length": 4000,
+        "error": 0.023219464346766472
+      },
+      "sourceIndex": {
+        "type": "Uint16Array",
+        "bytes": 30792,
+        "count": 15396,
+        "sha256": "f6f7d9d4d5cad1a673f5c925af26bb37ced2ab1e6575b2d1e348a8f973076e97"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 15384,
+        "count": 3846,
+        "sha256": "ba3ad0b5d43401494c6cdef2eb393519000d823c8d5fbbcec63464de4f06fe98"
+      }
+    },
+    {
+      "key": "141:0",
+      "entry": {
+        "mesh": 141,
+        "primitive": 0,
+        "name": "Chair seat.003",
+        "vertices": 2694,
+        "originalCount": 13524,
+        "hash": 610101731,
+        "count": 3378,
+        "offset": 784386,
+        "length": 3476,
+        "error": 0.029048319905996323
+      },
+      "sourceIndex": {
+        "type": "Uint16Array",
+        "bytes": 27048,
+        "count": 13524,
+        "sha256": "3901a4d7e205746da6c05019ad3930c2e5cb9d8ccf1ed0e6046b4b7953e9bcaa"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 13512,
+        "count": 3378,
+        "sha256": "3a54e4e50b71a6f5893c02f1475d766714447fb44f8d603775af5b1511e17a0f"
+      }
+    },
+    {
+      "key": "152:0",
+      "entry": {
+        "mesh": 152,
+        "primitive": 0,
+        "name": "Coat torso.010",
+        "vertices": 4844,
+        "originalCount": 24360,
+        "hash": 1294424697,
+        "count": 6090,
+        "offset": 787862,
+        "length": 6340,
+        "error": 0.017606740817427635
+      },
+      "sourceIndex": {
+        "type": "Uint16Array",
+        "bytes": 48720,
+        "count": 24360,
+        "sha256": "527ad043f4952329f41d1bcb87006988c4640db09ca422d5723491016e60161b"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 24360,
+        "count": 6090,
+        "sha256": "bb171a032d7cb06107043ad42af13b88ec1e249d0d7b5f95838846bf12579936"
+      }
+    },
+    {
+      "key": "155:0",
+      "entry": {
+        "mesh": 155,
+        "primitive": 0,
+        "name": "Coat torso.012",
+        "vertices": 4244,
+        "originalCount": 22440,
+        "hash": 4246775795,
+        "count": 5610,
+        "offset": 794202,
+        "length": 5795,
+        "error": 0.016990887001156807
+      },
+      "sourceIndex": {
+        "type": "Uint16Array",
+        "bytes": 44880,
+        "count": 22440,
+        "sha256": "8cf9cfe2be6db91730030e61ab14306c1ec5e6275e7b6d7ddedb527feb9b279e"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 22440,
+        "count": 5610,
+        "sha256": "cf7c776cd8e29c07f9380ef31c21e9af1b4279c71baf65d9c5312219d9802ced"
+      }
+    },
+    {
+      "key": "160:0",
+      "entry": {
+        "mesh": 160,
+        "primitive": 0,
+        "name": "Gazelle lifted torso.001",
+        "vertices": 3492,
+        "originalCount": 19104,
+        "hash": 4052060005,
+        "count": 4776,
+        "offset": 799997,
+        "length": 4932,
+        "error": 0.019704025238752365
+      },
+      "sourceIndex": {
+        "type": "Uint16Array",
+        "bytes": 38208,
+        "count": 19104,
+        "sha256": "fdd51a23f7c558eacd19689a650ae62f3f20db46b0acb6f27f4387c2bdbf4799"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 19104,
+        "count": 4776,
+        "sha256": "146cd72a72a1242f81e485b34b3a725a8328e6543776b87e3870f710400d74d8"
+      }
+    },
+    {
+      "key": "169:0",
+      "entry": {
+        "mesh": 169,
+        "primitive": 0,
+        "name": "Coat torso.013",
+        "vertices": 2574,
+        "originalCount": 13344,
+        "hash": 1931314219,
+        "count": 3336,
+        "offset": 804929,
+        "length": 3447,
+        "error": 0.019610729068517685
+      },
+      "sourceIndex": {
+        "type": "Uint16Array",
+        "bytes": 26688,
+        "count": 13344,
+        "sha256": "6095de0660a5cdeb423a9dd1576ae3ff4d57a753b4fcd20a4a6e0468f5ad7d8a"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 13344,
+        "count": 3336,
+        "sha256": "e4625561bdca0096213fa68a85ba9b3e873f8d08e7599a104f0f3ff5069f48f1"
+      }
+    },
+    {
+      "key": "177:0",
+      "entry": {
+        "mesh": 177,
+        "primitive": 0,
+        "name": "Inset memorial plaque.001",
+        "vertices": 4522,
+        "originalCount": 23328,
+        "hash": 555441427,
+        "count": 5832,
+        "offset": 808376,
+        "length": 6080,
+        "error": 0.03847091272473335
+      },
+      "sourceIndex": {
+        "type": "Uint16Array",
+        "bytes": 46656,
+        "count": 23328,
+        "sha256": "afc11178a5a178b7e124762ab0fdd568d662170575a798dbe2118a46aee71083"
+      },
+      "decodedIndex": {
+        "type": "Uint32Array",
+        "bytes": 23328,
+        "count": 5832,
+        "sha256": "1a86cdaf399a47cb2814af20c401ed3d28f39c252e90efac24b8590269c6782f"
+      }
+    }
+  ]
+}

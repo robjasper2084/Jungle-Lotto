@@ -9,14 +9,19 @@ import {playgroundLandmarks} from '@app/playgrounds.ts';
 import {prepareReferencePreferences} from '@app/sunsetReferencePolicy.ts';
 import {enableHardwareAntialiasing} from '@app/antiAliasingPolicy.ts';
 import {installSharedGeometryBuffers} from '@app/sharedGeometryBuffers.ts';
+import {LandmarkDetail} from '@app/landmarkDetail.ts';
 import {planDetroitProps} from '@app/detroitProps.ts';
 import {check,sha,f32,objectPath,roofPath,cameraReceipt,setRecordedCamera,sceneReceipt} from './scene-receipt';
 import pins from './pins.json';
 import {snapshotOwnedSubmission} from './submission-receipt.ts';
+import {snapshotScopedSubmission} from './scoped-submission-receipt.ts';
+import {installDisplayIndexObserver} from './display-index-receipt.ts';
+import landmarkIndexPins from './landmark-index-pins.json';
 import {createEvidencePager} from './evidence-transfer.ts';
 declare const __ROOF_VARIANT__:'before'|'candidate';
 
 const root=window as any,mode=__ROOF_VARIANT__,{width,height}=pins.viewport;
+const displayIndexObserver=installDisplayIndexObserver(LandmarkDetail,landmarkIndexPins);
 const same=(a:unknown,b:unknown)=>JSON.stringify(a)===JSON.stringify(b);
 const text=(e:unknown)=>e instanceof Error?e.stack||e.message:String(e);
 const canvas=document.querySelector<HTMLCanvasElement>('#game')!;
@@ -34,8 +39,17 @@ const evidence:any={schema:1,diagnosticOnly:true,releaseAcceptance:false,mode,so
   'World dynamics use the declared fixed simulation samples; no elapsed-time or 90-second performance acceptance.',
   'Original deferred prefetch ranges remain authoritative. The original public world landmark-preparation API completes the near-view queue; distant optional golf detail is not forced into view.'],
  construction:pins.construction,preparation:[],errors:[],cases:[]};
-let world:Awaited<ReturnType<typeof createWorld>>,current:any,draws:any[]=[],recordDraws=false,shared:any;
+let world:Awaited<ReturnType<typeof createWorld>>,current:any,draws:any[]=[],nativeSortInputs:any[]=[],recordDraws=false,shared:any;
 let ownedSnapshots:ReturnType<typeof snapshotOwnedSubmission>[]=[];
+let displayIndexContext:ReturnType<typeof displayIndexObserver.beforeRender>|undefined;
+let displayIndexSnapshots:NonNullable<ReturnType<typeof displayIndexObserver.snapshotSubmitted>>[]=[];
+type QuietMesh={geometry:T.BufferGeometry;drawRange:{start:number;count:number};callbacks:Function[]};
+const callbackNames=['onBeforeRender','onAfterRender','onBeforeShadow','onAfterShadow'] as const;
+let quietMeshes=new WeakMap<T.Object3D,QuietMesh>();
+let scopedSnapshots:{snapshot:NonNullable<ReturnType<typeof snapshotScopedSubmission>>;object:T.Mesh;quiet:QuietMesh}[]=[];
+function assertOriginalCallbacks(object:T.Object3D,quiet:QuietMesh){
+ check(callbackNames.every((name,i)=>object[name]===quiet.callbacks[i]),'Original mesh callback identity changed during native submission');
+}
 let requiredDetroitProps:{name:string;placements:number;instances:number}[]=[];
 function publishedDetroitProps(){
  const matches=[];
@@ -88,9 +102,27 @@ renderer.renderBufferDirect=function(...args:Parameters<typeof direct>){
  try{return Reflect.apply(direct,this,args);}
  finally{if(recordDraws){const after=counts();const row:any={path:objectPath(object),name:object.name,pass,materialType:material.type,materialName:material.name,
   materialSide:material.side,renderOrder:object.renderOrder,castShadow:object.castShadow,receiveShadow:object.receiveShadow,
+  submittedGroup:args[5]===null?null:args[5]===undefined?{undefined:true}:{...args[5]},
   submittedGeometry:{positionCount:geometry.getAttribute('position')?.count??0,indexCount:geometry.index?.count??0,start:geometry.drawRange.start,count:Number.isFinite(geometry.drawRange.count)?geometry.drawRange.count:'Infinity'},
   camera:cameraReceipt(cam as T.PerspectiveCamera),calls:after.calls-prior.calls,triangles:after.triangles-prior.triangles,lines:after.lines-prior.lines,points:after.points-prior.points};
-  const owner=snapshotOwnedSubmission(geometry,(object as T.Mesh).geometry,args[5],roofPath(row.path));if(owner){row.submittedOwnership=owner.receipt;ownedSnapshots.push(owner);}draws.push(row);
+  // Companion diagnostic data only. The authoritative native draw order is
+  // retained verbatim and still compared by the original strict contract.
+  nativeSortInputs.push({path:row.path,pass,objectId:object.id,materialId:(material as T.Material&{id:number}).id,renderOrder:object.renderOrder,
+   transparent:material.transparent,transmission:(material as T.MeshPhysicalMaterial).transmission??null,depthTest:material.depthTest,depthWrite:material.depthWrite});
+  check(displayIndexContext,'Missing original display selection observation');
+  const display=displayIndexObserver.snapshotSubmitted(displayIndexContext,geometry,object,args[5],pass);
+  const owner=snapshotOwnedSubmission(geometry,(object as T.Mesh).geometry,args[5],roofPath(row.path));
+  if(display){check(!owner,'Ambiguous native display/shared ownership');row.displayIndexSubmission=display.receipt;displayIndexSnapshots.push(display);}
+  else if(owner){row.submittedOwnership=owner.receipt;ownedSnapshots.push(owner);}
+  else{
+   const quiet=quietMeshes.get(object);
+   if(quiet&&Object.is(quiet.geometry,geometry)){
+    check(Object.is((object as T.Mesh).geometry,quiet.geometry),'Original quiet geometry identity changed at scoped submission');assertOriginalCallbacks(object,quiet);
+    const scoped=snapshotScopedSubmission(geometry,object,args[5],quiet.drawRange,roofPath(row.path));
+    if(scoped){row.scopedSubmission=scoped.receipt;scopedSnapshots.push({snapshot:scoped,object:object as T.Mesh,quiet});}
+   }
+  }
+  draws.push(row);
  }}
 };
 async function fence(){
@@ -133,19 +165,31 @@ function roofRegion(){
  check(right>x&&bottom>y,'Empty roof region');return {x,y,width:right-x,height:bottom-y,padding:12,localBounds:[[-6.9,7.6,-38.2],[6.9,9.8,38.2]],projected};
 }
 function draw():any{
- assertCamera();assertSettings();check(!pendingWork.loads&&!pendingWork.compiles&&!pendingWork.errors.length&&publishedDetroitProps(),'Original asset work/publication is incomplete during frozen render');draws=[];ownedSnapshots=[];recordDraws=true;const before=renderer.info.render.frame;
- try{renderer.render(scene,camera);}finally{recordDraws=false;}
+ assertCamera();assertSettings();check(!pendingWork.loads&&!pendingWork.compiles&&!pendingWork.errors.length&&publishedDetroitProps(),'Original asset work/publication is incomplete during frozen render');draws=[];nativeSortInputs=[];ownedSnapshots=[];scopedSnapshots=[];displayIndexSnapshots=[];quietMeshes=new WeakMap();
+ scene.traverse(o=>{const mesh=o as T.Mesh;if(mesh.geometry)quietMeshes.set(o,{geometry:mesh.geometry,drawRange:{...mesh.geometry.drawRange},callbacks:callbackNames.map(name=>o[name])});});
+ const displayContext=displayIndexObserver.beforeRender(scene,camera,renderer);displayIndexContext=displayContext;
+ recordDraws=true;const before=renderer.info.render.frame;
+ try{renderer.render(scene,camera);}finally{recordDraws=false;displayIndexContext=undefined;}
+ displayIndexObserver.assertRestored(displayContext);
+ for(const snapshot of displayIndexSnapshots)snapshot.assertRestored();
+ for(const {snapshot,object,quiet} of scopedSnapshots){check(Object.is(object.geometry,quiet.geometry),'Original quiet geometry identity was not restored');assertOriginalCallbacks(object,quiet);snapshot.assertRestored();}
  assertCamera();check(gl.getError()===gl.NO_ERROR&&!gl.isContextLost(),'Native WebGL render failed');
  const observer=root.__landmarkComparisonObserver.snapshot();
  check(observer.latest?.valid&&observer.fresh,'Incomplete original renderer submission observation');
  const expected=mode==='before'?48:98;
  const roof=draws.filter(d=>d.pass==='color'&&roofPath(d.path)&&d.calls>0);
  check(roof.length===1&&roof[0].path.includes('107227742_STAGED_LOD0#')&&roof[0].triangles===expected,'Actual color submission is not the original full-detail roof');
- const copies=ownedSnapshots.slice(),receipt={frameBefore:before,frameAfter:renderer.info.render.frame,camera:cameraReceipt(camera),settings:settings(),draws:draws.slice(),observer,
+ const scopedCopies=scopedSnapshots.slice(),copies=[...ownedSnapshots,...scopedCopies.map(item=>item.snapshot),...displayIndexSnapshots],receipt={frameBefore:before,frameAfter:renderer.info.render.frame,camera:cameraReceipt(camera),settings:settings(),draws:draws.slice(),nativeSortInputs:nativeSortInputs.slice(),observer,
   preparationActivity:{events:pendingWork.events,loads:pendingWork.loads,compiles:pendingWork.compiles,errors:pendingWork.errors.slice()}};
  // Hash synchronous copies only after native readPixels/toDataURL. The draw
  // itself and every source-owned buffer stay synchronous and unchanged.
- return Object.defineProperty(receipt,'settleOwners',{value:()=>Promise.all(copies.map(o=>o!.settle(sha)))});
+ return Object.defineProperty(receipt,'settleOwners',{value:async()=>{
+  const result=await Promise.allSettled(copies.map(o=>Promise.resolve().then(()=>o!.settle(sha))));
+  const failure=result.find(item=>item.status==='rejected');if(failure?.status==='rejected')throw failure.reason;
+  displayIndexObserver.assertRestored(displayContext);
+  for(const {snapshot,object,quiet} of scopedCopies){check(Object.is(object.geometry,quiet.geometry),'Original scoped geometry identity changed during deferred hashing');assertOriginalCallbacks(object,quiet);snapshot.assertRestored();}
+  return result.map(item=>{check(item.status==='fulfilled','Incomplete native owner hash settlement');return item.value;});
+ }});
 }
 const ready=(async()=>{
  check(root.__roofDeterminism&&root.__landmarkComparisonObserver,'Original observer and explicit construction seed must be installed before modules');

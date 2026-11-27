@@ -11,6 +11,7 @@ import {analyze,assertSourcePair} from './contract.mjs';
 import {verifyCapture,decodePng} from './png-evidence.mjs';
 import {assertNonblank,encodeRgba,cropRgba,comparePixels} from './png-derived.mjs';
 import {readEvidenceCheckpoint} from './evidence-transfer.ts';
+import landmarkIndexPins from './landmark-index-pins.json' with {type:'json'};
 
 const [beforeArg,candidateArg,distArg,outArg]=process.argv.slice(2);assert(beforeArg&&candidateArg&&distArg&&outArg);
 const apps={before:resolve(beforeArg),candidate:resolve(candidateArg)},dist=resolve(distArg),out=resolve(outArg);
@@ -161,6 +162,8 @@ async function differences(){
 try{
  assert.match(report.diagnosticHead,/^[0-9a-f]{40}$/,'Missing diagnostic source identity');
  const sources=await Promise.all(['before','candidate'].map(mode=>readFile(resolve(out,mode,'source-inputs.json'),'utf8').then(JSON.parse)));assertSourcePair(...sources);
+ for(const source of sources)assert.deepEqual(source.landmarkIndices,landmarkIndexPins,'Original full/display index decoding is missing or changed');
+ report.landmarkIndexAssets=landmarkIndexPins.assets;
  // Independently prove that the bundled loader delta is only the three reviewed hash strings.
  const loaders=await Promise.all(['before','candidate'].map(mode=>readFile(resolve(apps[mode],pins.gamePath,'src/belle/stagedLandmarkStudies.ts'),'utf8')));
  let restored=loaders[1];for(const [name,v] of Object.entries(pins.models))if(name.startsWith('Aquarium_')){assert.equal(restored.split(v.candidate.sha256).length,2);restored=restored.replace(v.candidate.sha256,v.before.sha256);}assert.equal(restored,loaders[0]);
