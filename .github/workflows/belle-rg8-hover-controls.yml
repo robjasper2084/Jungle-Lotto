@@ -1,0 +1,205 @@
+# UNBOUND SOURCE TEMPLATE. No candidate commit or controls execution is authorized
+# until the fixed full-world RG8 image proof passes and source checks are reviewed.
+# Replace only UNBOUND_COMBINED_SOURCE_SHA during the later reviewed binding step.
+name: Belle Isle RG8 and hover combined controls
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/belle-rg8-hover-controls.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: belle-rg8-hover-controls-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CADILLAC_MODS_SOURCE_SHA: 2d5d233a87cb4e7060889445df0240b39efdb0b8
+  CADILLAC_MODS_ORCHESTRATION_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Reject the unbound source template
+        shell: bash
+        run: |
+          if [[ ! "$CADILLAC_MODS_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            printf '%s\n' 'Combined source is unbound; the fixed RG8 image proof and source checks must pass before binding.'
+            exit 1
+          fi
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.CADILLAC_MODS_SOURCE_SHA }}
+          path: candidate
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Check out the one-file orchestration revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.CADILLAC_MODS_ORCHESTRATION_SHA }}
+          path: orchestration
+          fetch-depth: 2
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/workflows/belle-rg8-hover-controls.yml
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Verify the immutable five-file source and one-file orchestration
+        working-directory: candidate
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {execFileSync} from 'node:child_process';
+          import {createHash} from 'node:crypto';
+          import {readFileSync,writeFileSync} from 'node:fs';
+          import {resolve} from 'node:path';
+          const pins={"base":"75906273c0cd414c0d004320fc6f654b4783e5b1","baseTree":"9f0351be133dd370a676090d27559a0adaf00605","candidateTree":"ec37828d3f0bca3f5538468cbfa36cf37eeb9256","proofBase":"893f769838166e6e35624b7b979ed5cbb8414507","proofBaseTree":"769016dac2343cfa3a143a5e5f7cda471fae3e07","workflow":".github/workflows/belle-rg8-hover-controls.yml","sourceFiles":[{"path":"lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/cadillac-mods-browser-smoke.mjs","blob":"6addd9c0d6008222ad931c1dae3ac549ced599e2","sha256":"5e8b3777b0fee67947cafa5c9255a10bd070abea62809dcb9814dc4709629270","bytes":57715},{"path":"lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/cadillac-native-command-click.mjs","blob":"391bdadbfaafc9a1a435ac63a43106525a71cd23","sha256":"29da33238672f343cb062592fd556eb9e890829f7145cb7105c0fabfe796639f","bytes":19518},{"path":"lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/cadillac-native-command-click.test.mjs","blob":"9c1710281e12f5ab37abb1128b1c2013f99fad5c","sha256":"7f9fd53945e2156459fd16457d7f10b42e57236a1cb4b22c455bce1a65c3226b","bytes":41492},{"path":"lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/realisticMaterials.test.ts","blob":"4018bb3758f6d51c5540655e4408966112e546a3","sha256":"a5716b530bedf084361b4699b4fd1a05a4c69aa67e603f4175a4ce7dce583fc2","bytes":20491},{"path":"lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/realisticMaterials.ts","blob":"2d5ab8f194c5552680008dcd4775ef19ed0523b9","sha256":"5ce22064c9da897b26cc34ca29b4b3bca3658e616a6d119d8d793bb6e42f6c93","bytes":10347}],"guards":[{"path":"lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/sustained-ride-profile.mjs","blob":"c722b5810a7693e5ece72ed00b4401e7cde7267a","sha256":"8f6af949083800c491b65e0709c04cc29eb5712634f744c5b912f76ce651fcf5","bytes":20186},{"path":"lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/cadillac-case-lifecycle.mjs","blob":"cb4606a48421ed4c6ca2e78e65c61308c6449254","sha256":"84027a140f7ffc4df2d34b3a296ff6e84679a3426e639ef57651ff194ce12ea9","bytes":8658},{"path":"lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/cadillac-cdp-viewport-png.mjs","blob":"57151ffed665cbcd26078c3aafb1661a08e5d4e1","sha256":"02a5f5e7d179d57b9441d91cb9363ba8703caf05b2e0fb8ec27df28fcb33bf60","bytes":1698},{"path":"lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/cadillac-operation-timing.mjs","blob":"ecc1cd29ad03e9b38f3fc0fecfb80f5d87a9840b","sha256":"db64223ebf4402f42b124ca3e08cb22e2013b24bf6634368efbc1c36b96d1eac","bytes":2937},{"path":"lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/staticPaletteBatch.ts","blob":"75916e48e11f11ddc281a06a04a6fceb2b528001","sha256":"110a4e415213083b1ed04c630c5fb4b40e730bd28ebcadad0b4d20b59312344b","bytes":8429},{"path":"lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/staticArchitectureBatch.ts","blob":"948767d9b2535fa891e69f33288b7f619080ce06","sha256":"5de52f4ba2a21578d7603032be281e9c7727de02e8b47097111da5d303055701","bytes":2946},{"path":"lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/run-tests.mjs","blob":"3999a22bbd27fb72973357db7be0535f6c31baf5","sha256":"ae707e6ed22d692cdec081bb4f7f6e0036da433b753a9fefbbd191e73bb1eee0","bytes":9901},{"path":"lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/package.json","blob":"b29f57eaabd6aa44f3fe9d5314fe1286758e9490","sha256":"7b2c4da476587cab12a33c31f43a596c526f53775647b88e586b46dd2bb9c246","bytes":1294},{"path":"lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/package-lock.json","blob":"5ef4effc86aaa257620ab2c8d60d47b6c85965e4","sha256":"105e85e781044feb8f590a3ea1e5bd0e98bb20f5512dcb1aedab30a7af0686f2","bytes":42217},{"path":".github/workflows/belle-cadillac-mods.yml","blob":"3fe79931a1d28934a45829a473b43cc0ed078f45","sha256":"7fbff2a138681c9f6d271dbba8dce913a9587453c0d71d0e9a08825346703551","bytes":3952}]};
+          const source=process.env.CADILLAC_MODS_SOURCE_SHA,orchestration=process.env.CADILLAC_MODS_ORCHESTRATION_SHA;
+          assert.match(source,/^[0-9a-f]{40}$/,'Combined candidate must be explicitly bound after the image proof');
+          assert.match(orchestration,/^[0-9a-f]{40}$/);assert.equal(process.env.GITHUB_RUN_ATTEMPT,'1','Only the original attempt is permitted');
+          const sourceRoot=process.cwd(),proofRoot=resolve(sourceRoot,'../orchestration');
+          const git=(root,...args)=>execFileSync('git',['-C',root,...args],{encoding:'utf8',timeout:60000,maxBuffer:16*1024*1024}).trim();
+          const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+          assert.equal(git(sourceRoot,'rev-parse','HEAD'),source);
+          assert.equal(git(sourceRoot,'rev-parse','HEAD^{tree}'),pins.candidateTree);
+          assert.deepEqual(git(sourceRoot,'rev-list','--parents','-n','1','HEAD').split(' '),[source,pins.base]);
+          assert.equal(git(sourceRoot,'rev-parse',pins.base+'^{tree}'),pins.baseTree);
+          assert.deepEqual(git(sourceRoot,'diff','--name-only','--no-renames',pins.base,'HEAD').split('\n').sort(),pins.sourceFiles.map(row=>row.path).sort());
+          for(const row of [...pins.sourceFiles,...pins.guards]){
+           assert.equal(git(sourceRoot,'rev-parse','HEAD:'+row.path),row.blob,'Immutable source blob '+row.path);
+           const bytes=readFileSync(resolve(sourceRoot,row.path));assert.equal(bytes.length,row.bytes);assert.equal(hash(bytes),row.sha256,'Materialized source bytes '+row.path);
+          }
+          assert.equal(git(proofRoot,'rev-parse','HEAD'),orchestration);
+          assert.deepEqual(git(proofRoot,'rev-list','--parents','-n','1','HEAD').split(' '),[orchestration,pins.proofBase]);
+          assert.equal(git(proofRoot,'rev-parse',pins.proofBase+'^{tree}'),pins.proofBaseTree);
+          assert.deepEqual(git(proofRoot,'diff','--name-status','--no-renames',pins.proofBase,'HEAD').split('\n'),['A\t'+pins.workflow]);
+          const workflowBytes=readFileSync(resolve(proofRoot,pins.workflow));
+          const provenance={schema:'belle-rg8-hover-controls-source-v1',runId:process.env.GITHUB_RUN_ID,attempt:1,
+           source:{sha:source,tree:pins.candidateTree,parent:pins.base,baseTree:pins.baseTree,files:pins.sourceFiles,guards:pins.guards},
+           orchestration:{sha:orchestration,tree:git(proofRoot,'rev-parse','HEAD^{tree}'),parent:pins.proofBase,baseTree:pins.proofBaseTree,path:pins.workflow,blob:git(proofRoot,'rev-parse','HEAD:'+pins.workflow),sha256:hash(workflowBytes)},
+           scope:'The original six controls cases only. Native performance remains a separate, previously failed result.'};
+          assert.match(provenance.runId,/^[0-9]+$/);
+          writeFileSync(resolve(process.env.RUNNER_TEMP,'rg8-hover-controls-source-provenance.json'),JSON.stringify(provenance,null,2)+'\n');
+          console.log(JSON.stringify({source:provenance.source.sha,sourceTree:provenance.source.tree,orchestration:provenance.orchestration.sha,attempt:1,changedPaths:provenance.source.files.length}));
+          NODE
+      - name: Check, test and build the exact candidate
+        working-directory: candidate/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          test "$(git rev-parse HEAD)" = "$CADILLAC_MODS_SOURCE_SHA"
+          npm ci
+          npm run check
+          npm test
+          node --check scripts/cadillac-mods-browser-smoke.mjs
+          npm run build
+          node --input-type=module <<'NODE'
+          import {createHash} from 'node:crypto';
+          import {readFile,writeFile} from 'node:fs/promises';
+          const sourceSha=process.env.CADILLAC_MODS_SOURCE_SHA;
+          const indexSha256=createHash('sha256').update(await readFile('dist/index.html')).digest('hex');
+          await writeFile('dist/cadillac-mods-build.json',JSON.stringify({sourceSha,indexSha256,builtAt:new Date().toISOString()})+'\n');
+          NODE
+      - name: Attach verified source provenance to the original build artifact
+        working-directory: candidate/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          node --input-type=module <<'NODE'
+          import {copyFileSync} from 'node:fs';
+          import {resolve} from 'node:path';
+          copyFileSync(resolve(process.env.RUNNER_TEMP,'rg8-hover-controls-source-provenance.json'),'dist/rg8-hover-controls-source-provenance.json');
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cadillac-mods-game-${{ env.CADILLAC_MODS_SOURCE_SHA }}
+          path: candidate/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist/
+          if-no-files-found: error
+          retention-days: 1
+
+  controls:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        layout: [desktop, small-phone, compact]
+        ride: [cadillac, hydraulic-cadillac]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.CADILLAC_MODS_SOURCE_SHA }}
+          path: candidate
+          fetch-depth: 2
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@v4
+        with:
+          name: cadillac-mods-game-${{ env.CADILLAC_MODS_SOURCE_SHA }}
+          path: candidate/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist
+      - name: Verify source and build binding before installing the runtime
+        working-directory: candidate
+        env:
+          BELLE_CADILLAC_MODS_CASE: ${{ matrix.layout }}
+          BELLE_CADILLAC_MODS_RIDE: ${{ matrix.ride }}
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {execFileSync} from 'node:child_process';
+          import {createHash} from 'node:crypto';
+          import {copyFileSync,mkdirSync,readFileSync} from 'node:fs';
+          import {resolve} from 'node:path';
+          const source=process.env.CADILLAC_MODS_SOURCE_SHA,orchestration=process.env.CADILLAC_MODS_ORCHESTRATION_SHA;
+          const git=(...args)=>execFileSync('git',args,{encoding:'utf8',timeout:60000,maxBuffer:16*1024*1024}).trim();
+          const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+          const game="lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game";
+          const receipt=JSON.parse(readFileSync(resolve(game,'dist/rg8-hover-controls-source-provenance.json'),'utf8'));
+          assert.equal(receipt.schema,'belle-rg8-hover-controls-source-v1');assert.equal(receipt.runId,process.env.GITHUB_RUN_ID);assert.equal(receipt.attempt,1);assert.equal(process.env.GITHUB_RUN_ATTEMPT,'1');
+          assert.equal(receipt.source.sha,source);assert.equal(receipt.source.tree,'ec37828d3f0bca3f5538468cbfa36cf37eeb9256');assert.equal(receipt.source.parent,'75906273c0cd414c0d004320fc6f654b4783e5b1');
+          assert.equal(receipt.source.baseTree,'9f0351be133dd370a676090d27559a0adaf00605');
+          assert.equal(receipt.orchestration.sha,orchestration);assert.equal(receipt.orchestration.parent,'893f769838166e6e35624b7b979ed5cbb8414507');assert.equal(receipt.orchestration.baseTree,'769016dac2343cfa3a143a5e5f7cda471fae3e07');assert.equal(receipt.orchestration.path,'.github/workflows/belle-rg8-hover-controls.yml');
+          assert.match(receipt.orchestration.tree,/^[0-9a-f]{40}$/);assert.match(receipt.orchestration.blob,/^[0-9a-f]{40}$/);assert.match(receipt.orchestration.sha256,/^[0-9a-f]{64}$/);
+          assert.equal(git('rev-parse','HEAD'),source);assert.equal(git('rev-parse','HEAD^{tree}'),receipt.source.tree);assert.deepEqual(git('rev-list','--parents','-n','1','HEAD').split(' '),[source,receipt.source.parent]);
+          assert.equal(git('rev-parse',receipt.source.parent+'^{tree}'),receipt.source.baseTree);
+          assert.equal(receipt.source.files.length,5);assert.deepEqual(git('diff','--name-only','--no-renames',receipt.source.parent,'HEAD').split('\n').sort(),receipt.source.files.map(row=>row.path).sort());
+          for(const row of [...receipt.source.files,...receipt.source.guards]){
+           assert.equal(git('rev-parse','HEAD:'+row.path),row.blob);
+           if(row.path.startsWith(game+'/scripts/')){const bytes=readFileSync(row.path);assert.equal(bytes.length,row.bytes);assert.equal(hash(bytes),row.sha256,'Actual controls script '+row.path);}
+          }
+          const marker=JSON.parse(readFileSync(resolve(game,'dist/cadillac-mods-build.json'),'utf8'));
+          assert.equal(marker.sourceSha,source);assert.equal(marker.indexSha256,hash(readFileSync(resolve(game,'dist/index.html'))));
+          const layout=process.env.BELLE_CADILLAC_MODS_CASE,ride=process.env.BELLE_CADILLAC_MODS_RIDE;
+          assert(['desktop','small-phone','compact'].includes(layout));assert(['cadillac','hydraulic-cadillac'].includes(ride));
+          const evidence=resolve(game,'output/cadillac-mods',ride+'-'+layout);mkdirSync(evidence,{recursive:true});
+          copyFileSync(resolve(game,'dist/rg8-hover-controls-source-provenance.json'),resolve(evidence,'source-provenance.json'));
+          console.log(JSON.stringify({source,orchestration,runId:receipt.runId,attempt:1,layout:process.env.BELLE_CADILLAC_MODS_CASE,ride:process.env.BELLE_CADILLAC_MODS_RIDE,sourceAndBuildVerified:true}));
+          NODE
+      - name: Install the existing Chrome test runtime
+        working-directory: candidate/lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install --with-deps chrome
+      - name: Exercise actual Cadillac controls and capture all layouts
+        timeout-minutes: 34
+        working-directory: candidate/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          BELLE_CADILLAC_MODS_CASE: ${{ matrix.layout }}
+          BELLE_CADILLAC_MODS_RIDE: ${{ matrix.ride }}
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node scripts/cadillac-mods-browser-smoke.mjs
+      - name: Preserve exact-head reports and screenshots, including failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-cadillac-mods-${{ matrix.ride }}-${{ matrix.layout }}-${{ env.CADILLAC_MODS_SOURCE_SHA }}
+          path: candidate/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/cadillac-mods/${{ matrix.ride }}-${{ matrix.layout }}
+          if-no-files-found: warn
+          retention-days: 14
