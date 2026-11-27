@@ -1,5 +1,6 @@
 import * as T from 'three';
 import {installBatchedIndirectUpdates} from './batchedIndirectUpdates.ts';
+import {prepareIndexedStreetDisplayGroup} from './indexedStreetDisplayGeometry.ts';
 /** Display-only multi-draw groups. Each piece keeps its own transform, bounds and
  * visibility, so a hidden interior no longer splits an entire material batch.
  * Original scene meshes and collision remain authoritative outside split views.
@@ -11,7 +12,7 @@ export class StaticPaletteBatch {
  private active=false;
  private ownedMaterials:T.Material[]=[];
  private lods:T.LOD[]=[];
- constructor(sources:T.Mesh[],selection?:number|ReadonlySet<T.Mesh>,prepareBatch?:(batch:T.BatchedMesh,sources:T.Mesh[])=>void|false){
+ constructor(sources:T.Mesh[],selection?:number|ReadonlySet<T.Mesh>,prepareBatch?:(batch:T.BatchedMesh,sources:T.Mesh[])=>void|false,indexedStreetSources?:ReadonlySet<T.Mesh>){
   const sameMaterial=typeof selection==='number'?undefined:selection;
   this.root.name='Split static material batches';this.root.visible=false;
   const groups=new Map<string,T.Mesh[]>(),materials=new Map<T.Material,string>();
@@ -56,13 +57,18 @@ export class StaticPaletteBatch {
     material.customProgramCacheKey=()=>original.customProgramCacheKey();
    }
    const geometries=[...new Set(sources.map(s=>s.geometry))];
-   const vertices=geometries.reduce((n,g)=>n+g.attributes.position.count,0),indices=geometries.reduce((n,g)=>n+(g.index?.count??0),0);
+   // Classify by the original geometry/material keys first. Only a complete
+   // factory street group may use private indexed display inputs; originals
+   // remain in every identity/replacement/raycast and native sorting path.
+   const indexed=exact&&indexedStreetSources&&sources.every(source=>indexedStreetSources.has(source)&&source.matrix.equals(identity)&&source.matrixWorld.equals(identity))
+    ?prepareIndexedStreetDisplayGroup(geometries):null;
+   const vertices=indexed?.vertices??geometries.reduce((n,g)=>n+g.attributes.position.count,0),indices=indexed?.indices??geometries.reduce((n,g)=>n+(g.index?.count??0),0);
    const mesh=new T.BatchedMesh(sources.length,vertices,indices,material),geometryIds=new Map<T.BufferGeometry,number>();
    mesh.sortObjects=false;
    if(prepareBatch?.(mesh,sources)===false){mesh.dispose();if(!exact)material.dispose();continue;}
    if(!exact)this.ownedMaterials.push(material);
    installBatchedIndirectUpdates(mesh);
-   for(const geometry of geometries)geometryIds.set(geometry,mesh.addGeometry(geometry));
+   for(const geometry of geometries)geometryIds.set(geometry,indexed?indexed.addTo(mesh,geometry):mesh.addGeometry(geometry));
    const ids=sources.map(source=>{const id=mesh.addInstance(geometryIds.get(source.geometry)!);mesh.setMatrixAt(id,source.matrixWorld);if(!exact)mesh.setColorAt(id,(source.material as T.MeshStandardMaterial).color);return id;});
    mesh.name='Static multi-draw · '+first.name;mesh.castShadow=first.castShadow;mesh.receiveShadow=first.receiveShadow;mesh.renderOrder=first.renderOrder;mesh.layers.mask=first.layers.mask;mesh.matrixAutoUpdate=false;
    mesh.perObjectFrustumCulled=true;mesh.computeBoundingBox();mesh.computeBoundingSphere();this.root.add(mesh);

@@ -149,6 +149,69 @@ export async function clickCadillacCommand({page,locator,targetProof,record,time
   }
   finally{clearTimeout(timer);}
  }
+ async function hover(point){
+  // Chrome 158 frame-aligns standalone native mouse moves with a 5s fallback.
+  // The owned Overlay domain requests unbuffered debugger input only for this
+  // awaited hover. No event is synthesized and the original post-hover proof
+  // and click run only after both domains are disabled and the session detaches.
+  const scheduling=audit.hoverScheduling={version:1,mode:'temporary-unbuffered-native-hover',freshOwnedSession:true,
+   nativeMethod:'page.mouse.move',restored:false,detached:false,operations:[],error:null,cleanupError:null,totalMs:null};
+  const hoverScopeStarted=now(),cleanupOperations=new Map();let owned;
+  function operation(label,run){
+   const receipt={label,startedAtNodeMs:now(),completedAtNodeMs:null,outcome:'pending',error:null};scheduling.operations.push(receipt);
+   let pending;try{pending=Promise.resolve(run());}catch(error){pending=Promise.reject(error);}
+   const observed=pending.then(value=>{receipt.completedAtNodeMs=now();receipt.outcome='completed';return value;},error=>{
+    receipt.completedAtNodeMs=now();receipt.outcome='rejected';receipt.error=String(error.message||error);throw error;
+   });
+   observed.catch(()=>{});return observed;
+  }
+  function cleanupOnce(label,run){
+   if(!cleanupOperations.has(label))cleanupOperations.set(label,operation(label,run));
+   return cleanupOperations.get(label);
+  }
+  function disableDomains(){
+   // Queue both restorations on the same owned session. A stalled/rejected
+   // Overlay response must not suppress the DOM restoration request.
+   return Promise.all([
+    cleanupOnce('Overlay.disable',()=>owned.send('Overlay.disable')),
+    cleanupOnce('DOM.disable',()=>owned.send('DOM.disable')),
+   ]).then(()=>{scheduling.restored=true;});
+  }
+  function detach(){return cleanupOnce('detach',()=>owned.detach()).then(()=>{scheduling.detached=true;});}
+  try{
+   owned=await step('hover create owned CDP session',()=>operation('newCDPSession',()=>page.context().newCDPSession(page)),
+    late=>operation('late-session detach',()=>late.detach()));
+   await step('hover DOM.enable',()=>operation('DOM.enable',()=>owned.send('DOM.enable')));
+   await step('hover Overlay.enable',()=>operation('Overlay.enable',()=>owned.send('Overlay.enable')));
+   const hoverStarted=now();
+   try{await step('hover',()=>caseLifecycle
+    ?caseLifecycle.issue('command mouse.move '+identity.command,()=>page.mouse.move(point.x,point.y))
+    :page.mouse.move(point.x,point.y));}
+   finally{audit.hoverMs=now()-hoverStarted;}
+   await step('hover restore domains',disableDomains);
+   await step('hover detach owned CDP session',detach);
+   caseLifecycle?.check();
+  }catch(error){scheduling.error=String(error.message||error);throw error;}
+  finally{
+   if(owned&&(!scheduling.restored||!scheduling.detached)){
+    // Cleanup is release-only. Dispatch detach even if a prior response never
+    // settles; do not put it behind a blocked metadata/protocol promise. These
+    // attempts never grant another action window or allow a later click.
+    const pending=Promise.allSettled([disableDomains(),detach()]);let timer;
+    let ms=0;try{ms=Math.min(10000,actionRemaining(),caseLifecycle?.remaining()??Infinity);}catch{}
+    try{
+     if(ms<=0)throw Error('Native hover restoration has no remaining cleanup budget');
+     const results=await Promise.race([pending,new Promise((_,reject)=>{
+      timer=setTimeout(()=>reject(Error('Native hover restoration exceeded its remaining cleanup budget')),ms);
+     })]);
+     const failures=results.filter(result=>result.status==='rejected');
+     if(failures.length)throw new AggregateError(failures.map(result=>result.reason),'Native hover restoration is uncertain');
+    }catch(error){scheduling.cleanupError=String(error.message||error);}
+    finally{clearTimeout(timer);}
+   }
+   scheduling.totalMs=now()-hoverScopeStarted;
+  }
+ }
  try{
   element=await step('resolve',ms=>locator.elementHandle({timeout:ms}),handle=>handle?.dispose());
   assert(element,'Native command target did not resolve');
@@ -177,9 +240,7 @@ export async function clickCadillacCommand({page,locator,targetProof,record,time
    audit.before=await step('centered guard',()=>session.evaluate((value,rect)=>value.inspect({rect}),first.rect));
   }else audit.before=alignment.proof;
   const point={x:first.rect.left+first.rect.width/2,y:first.rect.top+first.rect.height/2};
-  const hoverStarted=now();await step('hover',()=>caseLifecycle
-   ?caseLifecycle.issue('command mouse.move '+identity.command,()=>page.mouse.move(point.x,point.y))
-   :page.mouse.move(point.x,point.y));audit.hoverMs=now()-hoverStarted;
+  await hover(point);
   // Reject movement before targetProof's scroll helper can compensate for it.
   await step('hover guard',()=>session.evaluate((value,rect)=>value.inspect({rect}),first.rect));
   const second=await step('second target proof',()=>targetProof(element,'native-command-'+identity.command+'-after-hover'));
