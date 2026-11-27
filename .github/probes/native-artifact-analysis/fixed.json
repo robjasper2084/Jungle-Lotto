@@ -1,0 +1,271 @@
+{
+  "version": 1,
+  "diagnosticOnly": true,
+  "nativeRunStarted": false,
+  "browserStarted": false,
+  "releaseAcceptance": false,
+  "capture": {
+    "repository": "robjasper2084/Jungle-Lotto",
+    "runId": 45987971947,
+    "attempt": 1,
+    "head": "a8e8b97a531d57b3c2b5b23d99aa0636d4c8dd25",
+    "artifactId": 15193147198,
+    "artifactName": "native-compositor-original-210-7590627-NOT-RELEASE",
+    "archiveBytes": 44195073,
+    "archiveSha256": "a07aad68f8970a53c9ac979fd94fbf04ba2587f09b1cf5adfda396fa0aba3aad",
+    "conclusion": "failure"
+  },
+  "publication": {
+    "head": "a8e8b97a531d57b3c2b5b23d99aa0636d4c8dd25",
+    "tree": "9254637264c720434534cdc1a1ff463508c1408a",
+    "parent": "43102a047603bf12a6a416a63499bb69670dfa54",
+    "syntheticCheckout": {
+      "sha": "7594cc90e76cf16468d789ae79e7243430e89dbb",
+      "tree": "9254637264c720434534cdc1a1ff463508c1408a",
+      "parents": [
+        "893f769838166e6e35624b7b979ed5cbb8414507",
+        "a8e8b97a531d57b3c2b5b23d99aa0636d4c8dd25"
+      ]
+    }
+  },
+  "observer": {
+    "preloadSha256": "99301382fe138de6556e9bbaf51130457c9fba07b1aecdc9e1a86771e273e722",
+    "manifestSha256": "04b84ed7ba6fd8181f229e76dc70354ec5dad19d328c7036010f3be3992d1aca",
+    "manifest": {
+      "version": 1,
+      "purpose": "Native compositor and GPU-service CPU scheduling attribution; no measured GPU execution and never release acceptance",
+      "diagnosticKind": "native-compositor-gpu-service",
+      "payloadBase": "893f769838166e6e35624b7b979ed5cbb8414507",
+      "observerBaseCommit": "ac88da2e62f46a50020391e8629ac0dbd995baea",
+      "observerBaseTree": "6ff52ffbf2c1eed6aef8557e542be7eb6fbb7754",
+      "preservedObserverFiles": {
+        "hooks.mjs": "afd64954dd76e9001fc1ec19c0363bb269ebe6ea6ef7d7a3bfbb821788d04798",
+        "page-probe.mjs": "39ca317672fd1274afc582564ae5316cca7edf540b2abc73309e43fbcc5fcff2"
+      },
+      "repository": "robjasper2084/Jungle-Lotto",
+      "cases": {
+        "cadillac": {
+          "pullRequest": 210,
+          "commit": "75906273c0cd414c0d004320fc6f654b4783e5b1",
+          "tree": "9f0351be133dd370a676090d27559a0adaf00605"
+        }
+      },
+      "project": "lottominded-ultra.io/games/gothtechnology2",
+      "game": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game",
+      "driver": {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/sustained-ride-profile.mjs",
+        "gitBlob": "c722b5810a7693e5ece72ed00b4401e7cde7267a",
+        "sha256": "8f6af949083800c491b65e0709c04cc29eb5712634f744c5b912f76ce651fcf5",
+        "bytes": 20186
+      },
+      "packageFiles": {
+        "package.json": "b7849345af649ba60ce5c8c1c95203c5e8eb3f2fe2a31ae29d63ab665df3b2f7",
+        "package-lock.json": "a54bba2d2b6226f3b8562c4b52f4be468af15d85ff8c0d992351bf9a3c5f8d32",
+        "belle-isle-source/game/package.json": "7b2c4da476587cab12a33c31f43a596c526f53775647b88e586b46dd2bb9c246",
+        "belle-isle-source/game/package-lock.json": "105e85e781044feb8f590a3ea1e5bd0e98bb20f5512dcb1aedab30a7af0686f2"
+      },
+      "runtime": {
+        "nodeMajor": 24,
+        "playwright": "1.61.1",
+        "platform": "darwin",
+        "device": "desktop",
+        "mode": "full",
+        "seconds": 90,
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "pixelRatio": 1,
+        "quality": "high",
+        "frameCap": 60,
+        "samplingIntervalUs": 2000
+      },
+      "bounds": {
+        "captureWatchdogMs": 110000,
+        "checkpointEveryMs": 30000,
+        "protocolTimeoutMs": 4000,
+        "cleanupTimeoutMs": 10000,
+        "traceBufferKiB": 524288,
+        "traceFileBytes": 536870912,
+        "traceDrainTimeoutMs": 60000,
+        "traceMetadataRows": 4096,
+        "traceTracks": 4096,
+        "bundleBytes": 33554432,
+        "bundleCount": 128,
+        "assetEvents": 8192,
+        "parsedScripts": 4096,
+        "debuggerScriptCacheBytes": 8388608,
+        "rafSamples": 16384,
+        "longTasks": 4096,
+        "marks": 256
+      },
+      "trace": {
+        "categories": [
+          "cc",
+          "viz",
+          "gpu",
+          "toplevel",
+          "toplevel.flow",
+          "devtools.timeline",
+          "blink.user_timing"
+        ],
+        "transport": "browser.newBrowserCDPSession",
+        "processScope": "browser-root/all-browser-processes",
+        "scopeChange": "Browser-root Tracing has no page target PID filter. This explicitly broadens the former trusted page trace scope; the original renderer is still identified by its unchanged trusted W marks, and actual named cross-process category/flow coverage remains required.",
+        "recordMode": "recordUntilFull",
+        "streamFormat": "json",
+        "rawFlowIdentifiersPreserved": true,
+        "enumerationPolicy": "Retain a valid string-array enumeration as advisory; request the unchanged seven categories once, then require actual trusted-W-window category and named track/flow evidence. Malformed enumeration and protocol/start errors fail.",
+        "requiredRawCategoryScope": "trusted-W-window",
+        "finalizationBudget": {
+          "start": "Tracing.end issuance",
+          "milliseconds": 60000,
+          "includes": [
+            "end acknowledgement",
+            "asynchronous tracingComplete event",
+            "completion receipt",
+            "stream drain",
+            "indexing",
+            "trace persistence"
+          ],
+          "individualRpcTimeoutMs": 4000,
+          "renewedOnStreamArrival": false
+        },
+        "gpuExecutionMeasured": false,
+        "semanticReference": {
+          "chrome": "158.0.8127.89",
+          "revision": "1de57fa19722fa6d6841d4f596c394d015580656",
+          "sourceArtifact": 15182970104,
+          "allRequiredCategoriesEnumerated": true,
+          "requiredCategoriesObservedInReferenceTrace": [
+            "devtools.timeline",
+            "blink.user_timing"
+          ],
+          "note": "The reference enumerated all seven proposed categories. Its CPU trace did not request cc, viz, gpu, toplevel or toplevel.flow; enumeration is not raw-event coverage."
+        },
+        "volumeSizingAllowance": {
+          "basis": "Observed shared-category volume supersedes the initial 128 MiB sizing assumption.",
+          "superseded128MiBPlan": {
+            "referenceTraceBytes": 27956883,
+            "referenceTraceEvents": 111977,
+            "referenceCaptureSeconds": 90.559861,
+            "referenceTraceSha256": "4ddce5500559f0a88bcf0a9d8aeb143eeeb10083b4fcc751e20d62737851099b",
+            "additionalRecordsPerFrameAllowance": 60,
+            "framesPerSecondAllowance": 60,
+            "captureSecondsAllowance": 110,
+            "estimatedBytesAtAllowance": 132826134,
+            "traceFileCapBytes": 134217728
+          },
+          "peerCapacityEvidence": {
+            "sourcePullRequest": 265,
+            "sourceArtifact": 15183580304,
+            "rawTraceBytes": 242232971,
+            "rawTraceSha256": "0a9beb4868980c9f8f6bfedebf6059b269d5f69f7fa9c82bb7cc5d9ece018986",
+            "rawTraceEvents": 1142915,
+            "trustedWindowSeconds": 90.024217,
+            "sharedCategories": [
+              "toplevel",
+              "devtools.timeline",
+              "blink.user_timing"
+            ],
+            "sharedTrustedWindowEvents": 623947,
+            "sharedTrustedWindowEstimatedReserializedBytes": 148551288,
+            "fullFlushSeconds": 16.561
+          },
+          "linearFlushSecondsAt512MiB": 36.704827,
+          "newCategoryVolumeMeasured": false,
+          "note": "The peer has a different application build and category set. Its exact raw hash/bytes and the estimated reserialized shared-category union are capacity evidence, not a performance comparison or exact forecast. The four new categories remain unmeasured. The 512 MiB buffer/file and single 60-second stop-to-finalization budget remain finite; any cap, loss, absent evidence or late completion makes the diagnostic partial."
+        }
+      },
+      "transportOwnership": {
+        "page": [
+          "Profiler",
+          "Debugger",
+          "Browser.getVersion"
+        ],
+        "browserTrace": [
+          "Tracing",
+          "IO"
+        ],
+        "creationTimeoutMs": 4000,
+        "detachAndCloseTimeoutMs": 2000,
+        "pageRelease": "After independent CPU saving, final page checkpoint and bounded pending bundle work settle; never waits for browser trace flush/drain.",
+        "browserTraceRelease": "After trace completion, EOF, stream close and finalization, or bounded cleanup failure.",
+        "requiredCloseEvidence": [
+          "exactly one owned detach call",
+          "successful detach acknowledgement",
+          "CDPSession close event"
+        ],
+        "failurePolicy": "Unexpected close, failed or late creation/detach, missing required CPU/trace data and cleanup expiry permanently invalidate completeness. Late-created sessions are detached without use; cleanup marks partial before forced detach and never waits beyond its existing total bound.",
+        "lifecycleReceipts": [
+          "page close",
+          "context close",
+          "browser disconnect",
+          "session creation",
+          "session close",
+          "detach request",
+          "detach acknowledgement"
+        ],
+        "originalPageAndContextClosureDelayed": false
+      },
+      "strictDriverStepTimeoutMinutes": 28,
+      "retryCount": 0
+    },
+    "files": [
+      {
+        "path": ".github/probes/native-compositor/README.md",
+        "bytes": 16014,
+        "sha256": "471fbfc09348aca2215e254019924d09274e55ca05eac7c741eb7160a1282667",
+        "gitBlob": "efba9acb0b6320360c08bbd8436043fccff74f02"
+      },
+      {
+        "path": ".github/probes/native-compositor/common.mjs",
+        "bytes": 18208,
+        "sha256": "69bf3ebfbf50bed57bf9c8f899bf2cae51abc7fea576ddffe9bb9d7f06cd23bf",
+        "gitBlob": "69262ecb56d44a1825b95eb3e5ae4aa29522877b"
+      },
+      {
+        "path": ".github/probes/native-compositor/contract.test.mjs",
+        "bytes": 52382,
+        "sha256": "7d656fdeb8202b0e525f4acf9b9fc6fe6ed84478c267de15c0dbc16465509942",
+        "gitBlob": "0cd6cca50f3beb37620c7d49bd9e262c9b0f0ee1"
+      },
+      {
+        "path": ".github/probes/native-compositor/hooks.mjs",
+        "bytes": 2855,
+        "sha256": "afd64954dd76e9001fc1ec19c0363bb269ebe6ea6ef7d7a3bfbb821788d04798",
+        "gitBlob": "5b15b2acd41cf66a1d5012de1956dc30c6c37790"
+      },
+      {
+        "path": ".github/probes/native-compositor/manifest.json",
+        "bytes": 7183,
+        "sha256": "04b84ed7ba6fd8181f229e76dc70354ec5dad19d328c7036010f3be3992d1aca",
+        "gitBlob": "641cff7f5c6d96271738a192780df34efd676f15"
+      },
+      {
+        "path": ".github/probes/native-compositor/page-probe.mjs",
+        "bytes": 4033,
+        "sha256": "39ca317672fd1274afc582564ae5316cca7edf540b2abc73309e43fbcc5fcff2",
+        "gitBlob": "edbd1c190e3b5d98f972df8167170e7c113a78ea"
+      },
+      {
+        "path": ".github/probes/native-compositor/preload.mjs",
+        "bytes": 31897,
+        "sha256": "99301382fe138de6556e9bbaf51130457c9fba07b1aecdc9e1a86771e273e722",
+        "gitBlob": "a9a3d576a77e2b388b998132421ed39f8f32117b"
+      },
+      {
+        "path": ".github/probes/native-compositor/run.mjs",
+        "bytes": 8114,
+        "sha256": "e8f8f51c68161c6bf659a4a70bf52dfe7b697596f157bd85b2d70a850d6ffaf1",
+        "gitBlob": "881a5b22538b488884ffd8ed83f22b704a5df40f"
+      },
+      {
+        "path": ".github/workflows/belle-native-compositor-diagnostic.yml",
+        "bytes": 2786,
+        "sha256": "a164e858b1d055de4770311ce57878c426799b188dddfe979348968ee6012e95",
+        "gitBlob": "0944dff375763291294868a4806490633d45999c"
+      }
+    ]
+  }
+}

@@ -1,0 +1,76 @@
+name: Retained 210 native trace audit (NO BROWSER)
+
+on:
+  pull_request:
+    paths:
+      - '.github/probes/native-artifact-analysis/**'
+      - '.github/workflows/belle-native-artifact-analysis.yml'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: retained-native-trace-audit-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  retained_artifact:
+    name: Audit frozen artifact 15193147198 (NO BROWSER)
+    if: ${{ github.run_attempt == 1 && github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out analysis source only
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: payload
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            .github/probes/native-artifact-analysis
+            .github/workflows/belle-native-artifact-analysis.yml
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Check analysis syntax and offline download fixtures
+        run: |
+          python -m py_compile payload/.github/probes/native-artifact-analysis/download.py payload/.github/probes/native-artifact-analysis/capture-audit.py
+          node --check payload/.github/probes/native-artifact-analysis/trace-audit.mjs
+          node --check payload/.github/probes/native-artifact-analysis/sustained-trace-json.mjs
+          python payload/.github/probes/native-artifact-analysis/download-test.py
+      - name: Download the one immutable retained ZIP
+        id: download
+        timeout-minutes: 6
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python payload/.github/probes/native-artifact-analysis/download.py payload/.github/probes/native-artifact-analysis/fixed.json evidence
+      - name: Audit retained source, native input and terminal receipts
+        id: capture
+        continue-on-error: true
+        run: python payload/.github/probes/native-artifact-analysis/capture-audit.py evidence/artifact.zip reports payload/.github/probes/native-artifact-analysis/fixed.json
+      - name: Audit raw trace bytes, clocks and topology
+        id: trace
+        if: ${{ always() && steps.download.outcome == 'success' }}
+        continue-on-error: true
+        run: node payload/.github/probes/native-artifact-analysis/trace-audit.mjs evidence/artifact.zip reports payload/.github/probes/native-artifact-analysis/fixed.json
+      - name: Preserve analysis receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: retained-native-210-15193147198-audit
+          path: |
+            reports
+            evidence/download-receipt.json
+            evidence/artifact-metadata.json
+            evidence/source-run.json
+            payload/.github/probes/native-artifact-analysis
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Keep failed or incomplete audits failed
+        if: always()
+        run: |
+          test '${{ steps.download.outcome }}' = success
+          test '${{ steps.capture.outcome }}' = success
+          test '${{ steps.trace.outcome }}' = success
