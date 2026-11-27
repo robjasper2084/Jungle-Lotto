@@ -121,16 +121,25 @@ export function selectCase(name) {
   assert(Object.hasOwn(manifest.cases, name), 'Only the immutable original 210 case is permitted');
   return manifest.cases[name];
 }
-export function requiredTraceCategories(available) {
+export function traceCategoryRequest(available) {
   assert(Array.isArray(available), 'Tracing.getCategories did not return an array');
+  assert(available.every(name => typeof name === 'string'), 'Tracing.getCategories returned a malformed category value');
   const missing = manifest.trace.categories.filter(name => !available.includes(name));
-  assert.equal(missing.length, 0, 'Required compositor trace categories unavailable: ' + missing.join(', '));
-  return [...manifest.trace.categories];
+  return {
+    requestedCategories: [...manifest.trace.categories],
+    enumeratedCategoryCount: available.length,
+    missingFromEnumeration: missing,
+    enumerationComplete: missing.length === 0,
+    warning: missing.length ? 'Category enumeration is ' + (available.length ? 'incomplete' : 'empty') +
+      '; requesting the unchanged seven categories exactly once. Enumeration does not certify tracing support; actual trusted-W-window categories, named tracks and qualifying flows are required.' : null,
+    enumerationIsCapabilityProof: false,
+    requiredEvidenceScope: 'trusted-W-window'
+  };
 }
 // The raw trace file is the authority for flow identifiers. This bounded index
 // never rewrites or converts those identifiers, and never claims GPU execution.
 export function summarizeTraceTopology(events, limits) {
-  const metadata = [], tracks = new Map(), flowFields = {}, flowPhases = {}, categories = {};
+  const metadata = [], tracks = new Map(), flowFields = {}, flowPhases = {}, categories = {}, trustedWindowCategories = {};
   let metadataOverflow = 0, trackOverflow = 0, flowRecords = 0, windowFlowRecords = 0;
   const first = events.find(row => row.name === 'belle-native-cpu:first-trusted-w');
   const last = events.find(row => row.name === 'belle-native-cpu:trusted-w-keyup');
@@ -167,6 +176,7 @@ export function summarizeTraceTopology(events, limits) {
       flowPhases[row.ph] = (flowPhases[row.ph] || 0) + 1;
     }
     if (!windowEvent) continue;
+    for (const cat of cats) trustedWindowCategories[cat] = (trustedWindowCategories[cat] || 0) + 1;
     if (flow && cats.includes('gpu')) recordFlowTrack(gpuFlowTracks, row);
     if (flow && cats.includes('viz')) recordFlowTrack(vizFlowTracks, row);
     if (cats.includes('toplevel')) topLevelTracks.set(key, {pid: row.pid, tid: row.tid});
@@ -190,8 +200,10 @@ export function summarizeTraceTopology(events, limits) {
   const qualifyingVizFlowTracks = qualifyingFlows(vizFlowTracks, vizTracks);
   const windowGpuFlowRecords = qualifyingGpuFlowTracks.reduce((sum, track) => sum + track.records, 0);
   const windowVizFlowRecords = qualifyingVizFlowTracks.reduce((sum, track) => sum + track.records, 0);
+  const requiredCategoryCounts = Object.fromEntries(manifest.trace.categories.map(name => [name, trustedWindowCategories[name] || 0]));
   const requirements = {
     trustedWindowAvailable: windowAvailable,
+    allRequiredCategoriesPresentInTrustedWindow: Object.values(requiredCategoryCounts).every(count => count > 0),
     rendererProcessNamed: !!first && named(first),
     mainThreadRafTracePresent: mainRafEvents > 0,
     namedBrowserTaskTrackPresent: [...topLevelTracks.values()].some(track => named(track) &&
@@ -209,6 +221,7 @@ export function summarizeTraceTopology(events, limits) {
     trustedWindow: windowAvailable ? {startTs: first.ts, endTs: last.ts, rendererPid: first.pid, rendererTid: first.tid} : null,
     metadata, metadataOverflow, tracks: [...tracks.values()], trackOverflow,
     flowRecords, windowFlowRecords, windowGpuFlowRecords, windowVizFlowRecords, flowFields, flowPhases, categories,
+    trustedWindowCategories, requiredCategoryCounts,
     qualifyingGpuFlowTracks, qualifyingVizFlowTracks,
     mainRafEvents, topLevelTracks: [...topLevelTracks.values()],
     gpuServiceEvents, gpuServiceTracks: [...serviceTracks.values()], vizEvents, vizTracks: [...vizTracks.values()], pipelineReporters,

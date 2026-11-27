@@ -5,7 +5,7 @@ import {writeFileSync} from 'node:fs';
 import {resolve} from 'node:path';
 import {manifest, sha256, saveJson, bounded, verifyDriver, invalidateDiagnostic,
   finalizeDiagnostic, terminalDiagnosticReceipt, boundedDiagnosticCleanup} from './common.mjs';
-import {requiredTraceCategories, summarizeTraceTopology} from './common.mjs';
+import {traceCategoryRequest, summarizeTraceTopology} from './common.mjs';
 import {installPageProbe} from './page-probe.mjs';
 import {installHooks} from './hooks.mjs';
 
@@ -169,9 +169,19 @@ class NativeMonitor {
       if (value >= 1) { state.trace.capReached = true; invalidateDiagnostic(state, 'trace-buffer-cap'); }
       void event('trace-buffer', usage);
     });
-    const available = (await this.send('Tracing.getCategories')).categories;
-    await saveJson(resolve(output, 'trace-categories.json'), available);
-    const categories = requiredTraceCategories(available);
+    const categoryResponse = await this.send('Tracing.getCategories');
+    await saveJson(resolve(output, 'trace-categories-response.json'), categoryResponse ?? null);
+    const available = categoryResponse?.categories;
+    await saveJson(resolve(output, 'trace-categories.json'), available ?? null);
+    const request = traceCategoryRequest(available);
+    await saveJson(resolve(output, 'trace-category-request.json'), request);
+    state.trace.categoryRequest = request;
+    if (request.warning) {
+      state.warnings ??= [];
+      state.warnings.push({where: 'trace-category-enumeration', message: request.warning});
+      void event('trace-category-enumeration-warning', {warning: request.warning, missingFromEnumeration: request.missingFromEnumeration});
+    }
+    const categories = request.requestedCategories;
     state.trace.categories = categories;
     await this.send('Profiler.enable');
     await this.send('Profiler.setSamplingInterval', {interval: manifest.runtime.samplingIntervalUs});
@@ -365,6 +375,7 @@ class NativeMonitor {
       state.trace.topology = {
         file: 'trace-process-threads.json', available: topology.available,
         requirements: topology.requirements, metadataRows: topology.metadata.length,
+        requiredCategoryCounts: topology.requiredCategoryCounts,
         metadataOverflow: topology.metadataOverflow, tracks: topology.tracks.length, trackOverflow: topology.trackOverflow,
         gpuServiceEvents: topology.gpuServiceEvents, vizEvents: topology.vizEvents,
         pipelineReporters: topology.pipelineReporters, flowRecords: topology.flowRecords,

@@ -38,10 +38,27 @@ The exact required category list is:
 cc,viz,gpu,toplevel,toplevel.flow,devtools.timeline,blink.user_timing
 ```
 
-All seven existed in the retained original-210 category receipt and must be
-returned at runtime; none is silently omitted. The reference browser was Chrome
-158.0.8127.89, revision 1de57fa19722fa6d6841d4f596c394d015580656.
+All seven existed in the retained original-210 enumeration receipt. That is
+discovery evidence, not proof of raw event coverage: the reference CPU trace did
+not request cc, viz, gpu, toplevel or toplevel.flow. The reference browser was
+Chrome 158.0.8127.89, revision 1de57fa19722fa6d6841d4f596c394d015580656.
 Each actual browser version is recorded again.
+
+The exact Chrome source turns the controller's returned category set directly
+into a successful protocol array; the discovery path does not expose service
+query/parse success. An empty array therefore does not establish that explicit
+tracing is unsupported. Tracing.start independently configures and enables the
+backend and enforces its permission/protocol errors.
+
+The full enumeration response and category value are retained exactly. A valid
+empty or incomplete string array produces an explicit warning. The observer then
+requests the same seven categories exactly once, with no discovery retry, extra
+protocol call or category substitution. Malformed enumeration, enumeration
+protocol errors and actual Tracing.start failures still fail the diagnostic.
+Completeness requires a raw event from every required category inside the trusted
+W window, independently of enumeration. Startup/shutdown events cannot satisfy
+that requirement. Instant toplevel.flow events are valid; legacy s/t/f phases are
+not required for category coverage.
 
 | Evidence | Interpretation |
 | --- | --- |
@@ -59,7 +76,8 @@ remains unknown.
 
 Exact Chrome source adds browser and existing GPU-process IDs to a trusted page
 trace, so the audited page CDP hook is retained. Actual cross-process coverage is
-required: named browser tasks, GPU-service and Viz tracks outside the renderer,
+required: all seven raw categories inside the trusted W window, named browser
+tasks, GPU-service and Viz tracks outside the renderer,
 main rAF callbacks, PipelineReporter events, separate GPU/Viz flow records and
 trusted-window marks. Renderer-only flow events cannot satisfy GPU/Viz coverage.
 GPU restart can still leave
@@ -94,25 +112,33 @@ complete GC trace coverage is not claimed. Resource/script receipts stay bounded
 The watchdog is 110 seconds around the original 90-second workload. Both recorder
 stop commands are issued independently of the serial metadata-write queue. A
 blocked stopping-event write cannot keep recording. Protocol calls retain a
-4-second timeout. The recordUntilFull buffer is 128 MiB; the raw saved trace has
-an independent 128 MiB cap.
+4-second timeout. The recordUntilFull buffer is 512 MiB; the raw saved trace has
+an independent 512 MiB cap (536,870,912 bytes).
 
-The manifest records the sizing allowance. The retained trace was 27,956,883 bytes,
-111,977 events and 90.559861 seconds: approximately 250 bytes per event. Scaling
-that rate through 110 seconds and allowing 60 additional records per 60 Hz frame
-estimates 132,826,134 bytes, below the 134,217,728-byte cap. The normal 90-second
-window leaves more headroom. This uses observed event size and an explicit
-additional-event allowance; it does not measure the new categories or promise
-that they fit. More traffic/larger arguments can overflow. Overflow never passes.
+The manifest retains the initial 128 MiB assumption as superseded history. That
+assumption scaled a 27,956,883-byte renderer CPU trace and allowed 60 additional
+records per 60 Hz frame; subsequent evidence shows that allowance was insufficient.
 
-The retained stop-to-trace-saved interval was 4.803 seconds for about 28 MB.
-Linear scaling to the file cap is about 23 seconds. A 32-second asynchronous
-trace drain/indexing budget provides bounded headroom, including trailing async
+A read-only, hash-verified peer trace from PR 265 contains 242,232,971 raw bytes and
+1,142,915 events. Inside its raw-confirmed 90.024217-second W window, just our three
+shared categories (toplevel, devtools.timeline and blink.user_timing) contribute
+623,947 events and approximately 148,551,288 reserialized bytes. This shared union
+already exceeds the former 134,217,728-byte cap, before the newly requested cc,
+viz, gpu and toplevel.flow traffic. Exact raw bytes/hash and estimated reserialized
+event totals are distinguished in the manifest. The peer uses a different build
+and additional categories, so this is capacity evidence, not a performance
+comparison or an exact forecast. The four new categories remain unmeasured;
+512 MiB is a finite allowance, not a promise that every capture fits.
+
+The peer's full flush took 16.561 seconds for 242,232,971 bytes. Linear scaling to
+the new cap is about 36.7 seconds. A 60-second asynchronous trace drain/indexing
+budget provides bounded headroom, including trailing async
 persistence. Parsing is synchronous and bounded by file size; a JavaScript timer
 cannot preempt its CPU work. Its wall cost is diagnostic overhead. Browser-close
 cleanup retains its total 10-second bound, including trailing writes, and the
 original driver step remains capped at 28 minutes. If close arrives before the
 diagnostic finishes, it records partial status instead of extending cleanup.
+Any buffer/file overflow or late completion still makes the diagnostic partial.
 
 Topology permits 4,096 metadata rows and 4,096 tracks. Existing bounds remain:
 16,384 raw rAF pairs; 4,096 long tasks; 256 marks; 32 MiB/128 loaded scripts;
@@ -133,8 +159,12 @@ failure. The original failed verdict remains failed and visible.
 - native-trace.json or native-trace.partial.json retains raw trace bytes.
 - trace-process-threads.json retains raw process/thread metadata, PID/TID inventory,
   flow counts and coverage requirements.
-- trace-categories.json, trace-completion.json and trace-observer-marks.json retain
-  actual categories, loss/stream receipt and trusted clock anchors.
+- trace-categories-response.json and trace-categories.json retain the discovery
+  response/value; trace-category-request.json retains the exact requested list,
+  missing-enumeration warning and distinct actual-data requirement.
+- trace-completion.json and trace-observer-marks.json retain the loss/stream receipt
+  and trusted clock anchors. trace-process-threads.json independently counts each
+  required category only within the trusted W window.
 - native.cpuprofile retains raw nodes, samples and signed deltas.
 - source-*.json, built-files.json, payload-manifest.json, invocation.json,
   loaded-bundles.json and bundles/*.js bind source to executed bytes.
@@ -146,7 +176,8 @@ failure. The original failed verdict remains failed and visible.
 
 Node syntax checks, contract.test.mjs and run.mjs inspect use no browser. Contracts
 retain the c722 lifecycle and negative finalization/blocked-write cases, then check
-fixed scope, category failure, raw IDs, missing names/flows and bounded overflow.
+fixed scope, malformed/protocol discovery failure, advisory receipts, one unchanged
+category request, actual window coverage, raw IDs, missing names/flows and overflow.
 
 Exact-revision Chromium sources used for semantic checks (all under
 https://github.com/chromium/chromium/blob/1de57fa19722fa6d6841d4f596c394d015580656/):

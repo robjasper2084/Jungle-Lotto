@@ -5,7 +5,7 @@ import {readFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {manifest, selectCase, verifyDriver, buildStatisticOnly, bounded, invalidateDiagnostic, sha256,
   finalizeDiagnostic, diagnosticStateIsClean, terminalDiagnosticReceipt, diagnosticRunIsClean,
-  boundedDiagnosticCleanup, requiredTraceCategories, summarizeTraceTopology} from './common.mjs';
+  boundedDiagnosticCleanup, traceCategoryRequest, summarizeTraceTopology} from './common.mjs';
 import {installHooks} from './hooks.mjs';
 import {installPageProbe} from './page-probe.mjs';
 
@@ -15,16 +15,42 @@ test('only original 210 and the fixed compositor categories are selectable', () 
   assert.throws(() => selectCase('armory'));
   assert.throws(() => selectCase('current-head'));
   assert.deepEqual(manifest.trace.categories, ['cc', 'viz', 'gpu', 'toplevel', 'toplevel.flow', 'devtools.timeline', 'blink.user_timing']);
-  assert.deepEqual(requiredTraceCategories([...manifest.trace.categories, 'unrequested']), manifest.trace.categories);
-  assert.throws(() => requiredTraceCategories(manifest.trace.categories.filter(name => name !== 'viz')), /viz/);
-  assert.throws(() => requiredTraceCategories([]), /Required compositor trace categories unavailable/);
+  assert.deepEqual(traceCategoryRequest([...manifest.trace.categories, 'unrequested']).requestedCategories, manifest.trace.categories);
   assert.equal(manifest.trace.gpuExecutionMeasured, false);
-  assert.equal(manifest.bounds.traceBufferKiB * 1024, 128 * 1024 * 1024);
-  assert.equal(manifest.bounds.traceFileBytes, 128 * 1024 * 1024);
+  assert.equal(manifest.bounds.traceBufferKiB * 1024, 512 * 1024 * 1024);
+  assert.equal(manifest.bounds.traceFileBytes, 512 * 1024 * 1024);
+  assert.equal(manifest.bounds.traceDrainTimeoutMs, 60000);
+  assert.equal(manifest.bounds.captureWatchdogMs, 110000);
+  assert.equal(manifest.bounds.protocolTimeoutMs, 4000);
+  assert.equal(manifest.bounds.cleanupTimeoutMs, 10000);
   assert.equal(manifest.runtime.samplingIntervalUs, 2000);
   assert.equal(manifest.runtime.seconds, 90);
   assert.equal(manifest.strictDriverStepTimeoutMinutes, 28);
   assert.equal(manifest.retryCount, 0);
+});
+test('empty or incomplete enumeration yields an explicit advisory receipt and never drops a requested category', () => {
+  for (const available of [[], ['cc'], [...manifest.trace.categories]]) {
+    const original = [...available], request = traceCategoryRequest(available);
+    assert.deepEqual(available, original);
+    assert.deepEqual(request.requestedCategories, manifest.trace.categories);
+    assert.equal(request.enumeratedCategoryCount, available.length);
+    assert.equal(request.enumerationIsCapabilityProof, false);
+    assert.equal(request.requiredEvidenceScope, 'trusted-W-window');
+    assert.equal(request.enumerationComplete, available.length === 7);
+    if (available.length === 7) assert.equal(request.warning, null);
+    else {
+      assert.match(request.warning, /exactly once/);
+      assert.equal(request.missingFromEnumeration.length, 7 - available.length);
+    }
+  }
+  assert.equal(manifest.trace.semanticReference.allRequiredCategoriesEnumerated, true);
+  assert.equal(manifest.trace.semanticReference.allRequiredCategoriesObserved, undefined);
+  assert.deepEqual(manifest.trace.semanticReference.requiredCategoriesObservedInReferenceTrace, ['devtools.timeline', 'blink.user_timing']);
+});
+test('malformed enumeration fails instead of being converted into an empty advisory list', () => {
+  for (const value of [undefined, null, {}, 'cc', ['cc', null], ['cc', 7], ['cc', {}]]) {
+    assert.throws(() => traceCategoryRequest(value), /Tracing.getCategories/);
+  }
 });
 test('audited page, input and ending-metrics hooks remain byte-identical to ac88', async () => {
   for (const [file, expected] of Object.entries(manifest.preservedObserverFiles)) {
@@ -76,6 +102,34 @@ test('cross-process index keeps raw metadata and never rewrites large flow ident
   assert.equal(topology.flowFields.id2, 1);
   assert.equal(topology.metadata.find(row => row.tid === 20).args.name, 'CrGpuMain');
   assert.equal(JSON.stringify(rows), unchanged, 'Derived index must not normalize the raw flow IDs');
+});
+test('incomplete enumeration cannot certify missing trusted-window categories using startup or shutdown events', () => {
+  const request = traceCategoryRequest(['cc']);
+  assert(request.warning);
+  assert.deepEqual(request.requestedCategories, manifest.trace.categories);
+  const rows = traceFixture().map(row => row.cat?.includes('toplevel.flow') ? {...row, cat: 'gpu'} : row);
+  rows.push(
+    {ph: 'I', name: 'Before ride', cat: 'toplevel.flow', ts: 99, pid: 3, tid: 30},
+    {ph: 'I', name: 'After ride', cat: 'toplevel.flow', ts: 201, pid: 3, tid: 30}
+  );
+  const topology = summarizeTraceTopology(rows, manifest.bounds);
+  assert.equal(topology.categories['toplevel.flow'], 2);
+  assert.equal(topology.requiredCategoryCounts['toplevel.flow'], 0);
+  assert.equal(topology.requirements.namedGpuServiceTrackOutsideRenderer, true);
+  assert.equal(topology.requirements.namedVizTrackOutsideRenderer, true);
+  assert.equal(topology.requirements.gpuFlowsPresentInTrustedWindow, true);
+  assert.equal(topology.requirements.vizFlowsPresentInTrustedWindow, true);
+  assert.equal(topology.requirements.allRequiredCategoriesPresentInTrustedWindow, false);
+  assert.equal(topology.available, false);
+});
+test('actual category coverage accepts valid instant toplevel.flow events inside the trusted window', () => {
+  const rows = traceFixture().map(row => row.cat?.includes('toplevel.flow') ? {...row, cat: 'gpu'} : row);
+  rows.push({ph: 'I', name: 'Task posted', cat: 'toplevel.flow', ts: 150, pid: 3, tid: 30,
+    bind_id: '0xfeed1234567890', flow_out: true});
+  const topology = summarizeTraceTopology(rows, manifest.bounds);
+  assert.equal(topology.requiredCategoryCounts['toplevel.flow'], 1);
+  assert.equal(topology.requirements.allRequiredCategoriesPresentInTrustedWindow, true);
+  assert.equal(topology.available, true);
 });
 test('missing GPU/Viz names, missing flows or metadata overflow cannot certify cross-process coverage', () => {
   const complete = traceFixture();
@@ -146,6 +200,62 @@ function finalOptions(overrides = {}) {
   return {eligible: true, detach: async () => {}, flush: async () => {},
     writeStatus: async () => true, ...overrides};
 }
+async function startupMonitorFixture({response = {categories: []}, failAt = null} = {}) {
+  const source = await readFile(new URL('./preload.mjs', import.meta.url), 'utf8');
+  const start = source.indexOf('class NativeMonitor {'), end = source.indexOf('\ninstallHooks(', start);
+  const state = finalState(), calls = [], saved = [], events = [];
+  let observerStarts = 0;
+  const NativeMonitor = vm.runInNewContext(source.slice(start, end) + '\nNativeMonitor;', {
+    assert, Buffer, resolve, state, manifest, limits: manifest.bounds, output: '/source-only-evidence',
+    bounded, traceCategoryRequest, setTimeout: () => ({unref() {}}), setInterval: () => ({unref() {}}),
+    async saveJson(path, value) { saved.push({path, value: structuredClone(value)}); },
+    async event(name, detail) { events.push({name, detail}); }
+  });
+  const cdp = {once() {}, on() {}, async send(method, parameters) {
+    calls.push({method, parameters});
+    if (method === failAt) throw Error('real protocol failure at ' + method);
+    if (method === 'Tracing.getCategories') return response;
+    return {};
+  }};
+  const monitor = new NativeMonitor({page: {async evaluate() { observerStarts++; return true; }}});
+  return {monitor, state, calls, saved, events, get observerStarts() { return observerStarts; }, start: () => monitor.start(async () => cdp)};
+}
+test('actual startup retains incomplete enumeration and requests the same seven categories exactly once', async () => {
+  for (const response of [{categories: []}, {categories: ['cc', 'viz']}]) {
+    const f = await startupMonitorFixture({response});
+    await f.start();
+    assert.deepEqual(f.calls.map(call => call.method), ['Browser.getVersion', 'Tracing.getCategories',
+      'Profiler.enable', 'Profiler.setSamplingInterval', 'Debugger.enable', 'Tracing.start', 'Profiler.start']);
+    assert.deepEqual(f.saved.find(row => row.path.endsWith('/trace-categories-response.json')).value, response);
+    assert.deepEqual(f.saved.find(row => row.path.endsWith('/trace-categories.json')).value, response.categories);
+    const requested = f.calls.find(call => call.method === 'Tracing.start').parameters.traceConfig.includedCategories;
+    assert.deepEqual(Array.from(requested), manifest.trace.categories);
+    assert.equal(f.calls.filter(call => call.method === 'Tracing.start').length, 1);
+    assert.equal(f.observerStarts, 1);
+    assert.equal(f.state.warnings.length, 1);
+    assert.equal(f.state.errors.length, 0);
+    assert(f.events.some(row => row.name === 'trace-category-enumeration-warning'));
+    assert.equal(f.state.complete, false, 'Successful startup is not capture completeness');
+  }
+});
+test('malformed protocol enumeration is retained and fails before any recorder start', async () => {
+  for (const response of [{}, {categories: null}, {categories: ['cc', 12]}]) {
+    const f = await startupMonitorFixture({response});
+    await assert.rejects(f.start(), /Tracing.getCategories/);
+    assert.deepEqual(f.saved.find(row => row.path.endsWith('/trace-categories-response.json')).value, response);
+    assert.deepEqual(f.calls.map(call => call.method), ['Browser.getVersion', 'Tracing.getCategories']);
+    assert.equal(f.observerStarts, 0);
+  }
+});
+test('real enumeration or Tracing.start protocol errors remain fatal and are never retried', async () => {
+  for (const failAt of ['Tracing.getCategories', 'Tracing.start']) {
+    const f = await startupMonitorFixture({failAt});
+    await assert.rejects(f.start(), /real protocol failure/);
+    assert.equal(f.calls.filter(call => call.method === failAt).length, 1);
+    assert.equal(f.calls.some(call => call.method === 'Profiler.start'), false);
+    assert.equal(f.observerStarts, 0);
+  }
+});
 test('completeness is promoted only after final detach and successful status persistence', async () => {
   const state = finalState(), order = [];
   let stored;
