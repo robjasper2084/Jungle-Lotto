@@ -1,0 +1,116 @@
+name: Belle Isle static factory transform diagnostic
+
+on:
+  push:
+    branches: ['upgrade-redesign-static-transforms-*']
+  pull_request:
+    paths:
+      - '.github/workflows/belle-static-transforms-proof.yml'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/static-transforms-*'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/staticWorldTransforms*'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/detroitScene.ts'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/detroitAssets.ts'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/lakeHabitat.ts'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: belle-static-transforms-proof-${{ github.event.pull_request.head.ref && format('refs/heads/{0}', github.event.pull_request.head.ref) || github.ref }}
+  cancel-in-progress: true
+
+env:
+  STATIC_TRANSFORMS_PROOF_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  STATIC_TRANSFORMS_PROOF_BASELINE_SHA: d4f4baa8e2016f4c9107b40176388bf2d3f6fe8c
+
+jobs:
+  original-world-diagnostic:
+    name: Static transforms, exact pixels and native timing (${{ matrix.os }}, ${{ matrix.partition }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            partition: linux-a
+          - os: ubuntu-latest
+            partition: linux-b
+          - os: macos-15
+            partition: all
+    env:
+      STATIC_TRANSFORMS_PROOF_PARTITION: ${{ matrix.partition }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.STATIC_TRANSFORMS_PROOF_SOURCE_SHA }}
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /AGENTS.md
+            /.github/workflows/belle-static-transforms-proof.yml
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Verify exact source and fetch the immutable full-world baseline
+        run: |
+          test "$(git rev-parse HEAD)" = "$STATIC_TRANSFORMS_PROOF_SOURCE_SHA"
+          git fetch --filter=blob:none --no-tags --depth=1 origin "$STATIC_TRANSFORMS_PROOF_BASELINE_SHA"
+      - name: Install locked browser and game dependencies
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install --with-deps chrome
+          cd belle-isle-source/game
+          npm ci
+      - name: Verify the disabled factory transform controller and independent proof validator
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          node --test src/belle/staticWorldTransforms.test.ts
+          node scripts/static-transforms-native-proof.mjs --self-test
+      - name: Compare fixed full-world pixels and collect balanced native samples
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: node scripts/static-transforms-native-proof.mjs
+      - name: Preserve every candidate result, source receipt, shader, pixel and raw sample
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-static-transforms-${{ matrix.os }}-${{ matrix.partition }}-${{ env.STATIC_TRANSFORMS_PROOF_SOURCE_SHA }}
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/static-transforms-proof/
+          if-no-files-found: error
+          retention-days: 14
+
+  complete-fixed-partitions:
+    name: Require the complete native and software case union
+    if: always()
+    needs: original-world-diagnostic
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.STATIC_TRANSFORMS_PROOF_SOURCE_SHA }}
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/workflows/belle-static-transforms-proof.yml
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/static-transforms-*
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/staticWorldTransforms*
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/detroitScene.ts
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/detroitAssets.ts
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/lakeHabitat.ts
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: belle-static-transforms-*-${{ env.STATIC_TRANSFORMS_PROOF_SOURCE_SHA }}
+          path: static-transforms-artifacts
+          merge-multiple: false
+      - name: Require all eight cases on each backend at the same exact source
+        run: node lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/static-transforms-native-proof.mjs --verify-partitions static-transforms-artifacts

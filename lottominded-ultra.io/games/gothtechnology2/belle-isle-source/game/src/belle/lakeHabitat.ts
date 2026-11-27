@@ -1,5 +1,6 @@
 import * as T from 'three';
 import type {LakeHabitatPlan,LakePlant} from './lakeHabitatPlan.ts';
+import {registerStaticWorldTransforms} from './staticWorldTransforms.ts';
 
 /** Shared low-poly habitat, tiled for culling; no animation or extra lights. */
 export async function addLakeHabitat(scene:T.Scene){
@@ -29,5 +30,6 @@ export async function addLakeHabitat(scene:T.Scene){
  function logPart(start:T.Vector3,end:T.Vector3,r:number){const center=start.clone().add(end).multiplyScalar(.5),group=getTile(center.x,center.z);if(!logBatches.has(group))logBatches.set(group,[]);dummy.position.copy(center);dummy.quaternion.setFromUnitVectors(axis,end.clone().sub(start).normalize());dummy.scale.set(r,start.distanceTo(end),r);dummy.updateMatrix();logBatches.get(group)!.push(dummy.matrix.clone());}
  for(const log of plan.logs){a.fromArray(log.a);b.fromArray(log.b);logPart(a,b,log.radius);const center=a.clone().lerp(b,.25),dir=b.clone().sub(a).normalize();for(const side of [-1,1])logPart(center,center.clone().add(new T.Vector3(dir.z*side*.55,.3,-dir.x*side*.55)),log.radius*.38);}
  for(const [group,matrices]of logBatches){const mesh=new T.InstancedMesh(cylinder,[bark,cut,cut],matrices.length);matrices.forEach((m,i)=>mesh.setMatrixAt(i,m));mesh.name='Fallen basking timber';mesh.computeBoundingSphere();group.add(mesh);}
+ registerStaticWorldTransforms(scene,'lake-habitat',tiles.map(tile=>tile.root));
  return{stats:{rocks:plan.rocks.length,reeds:plan.reeds.length,pads:plan.pads.length,logs:plan.logs.length,tiles:tiles.length},update(x:number,z:number){for(const tile of tiles)tile.root.visible=Math.hypot(tile.x-x,tile.z-z)<400;}};
 }

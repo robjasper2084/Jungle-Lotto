@@ -1,6 +1,6 @@
 # Surface fragment repair — investigation and acceptance
 
-Version 3 · 26 November 2026
+Version 4 · 26 November 2026
 
 **Status:** the grass candidate is withdrawn because native Metal changed 23 pixels across nine cases at maximum channel delta 1. The original terrain shader is restored byte-for-byte. Asphalt and MacArthur candidates remain disabled in normal game construction: their strict targeted pixels passed on both backends, but their timings do not establish a consistent native improvement. The unchanged full-game desktop release checks remain failing on the original source; merge and deployment are blocked until the final revision passes them.
 
@@ -139,7 +139,44 @@ The original surface timing was underpowered: it recorded only one ABBA group pe
 
 The follow-up keeps all 36 pixel cases, all 135 saved images, all controls and original zero-tolerance comparisons. It strengthens all nine existing Authentic native timing comparisons to eight ABBA groups with 16 retained renders per lane and three warm-up renders. Software pixel coverage and the original diagnostic deadline remain unchanged. This resolves the earlier sampling limitation; it does not enable a shader candidate or weaken an application release check.
 
+### Results at revision 76c719921
+
+The strengthened [surface run 45908554210](https://github.com/robjasper2084/Jungle-Lotto/actions/runs/45908554210) passed both renderers at source `76c719921e9b003c3807dd88edcd7b0f323f7464`, tree `a1fb7808367eec7ee9b82072ad10b06e886db6d8`. Independent native decoding verified all 135 PNGs and all 72 original/default/candidate nonself RGBA pairs, with zero changed pixels and zero channel delta. All 4,608 raw native queries, 288 lane means and 72 complete paired groups were retained and recomputed. The actual renderer was ANGLE Metal on an Apple Paravirtual device.
+
+The stronger sample did **not** establish useful GPU savings. All nine pointwise 95% and nine-comparison adjusted 99.4444% GPU intervals included zero. Asphalt near/mid/grazing mean changes were +0.0654, +0.0227 and −0.0405 ms; masonry near/mid/grazing changes were +0.0748, +0.0048 and −0.1108 ms. The prior one-block asphalt-grazing decrease did not persist. Every comparison, including the three unchanged-lawn controls and unfavorable point estimates, remains in the evidence. CPU submission and completion waiting are secondary separate measurements. Neither candidate is enabled, and no unchanged-candidate retry is planned. Native artifact `15158944545` has ZIP SHA-256 `bbbfa58a0e45cd6f770ba5713595fac34d28d1dadb0cfdeef7728db42e8b5842`.
+
+The [opaque-order run 45908554265](https://github.com/robjasper2084/Jungle-Lotto/actions/runs/45908554265) completed all eight appearance cases on native Metal and the two software partitions, but all three rendering jobs and the union gate **failed**. The early-terrain candidate changed pixels in four native cases and five software cases. Native maxima reached channel delta 48; software under-ramp differences occurred at seven pixels, all matching the terrain-hidden control at those coordinates. Early-terrain is rejected. No depth-function, offset, mask or tolerance adjustment is accepted.
+
+Late-sky had zero RGBA changes in all eight views on both renderers. That is a bounded pixel observation from a failed diagnostic, not an accepted rendering change. Every report failed strict restored program/order identity after the shadow-off control, while immediate restored RGBA, shadow comparisons and counts remained exact. Source review identified a plausible retained light-state/program-key effect in the first restored shadow pass. Raw restored draw records were not retained, so the exact differing field cannot be retroactively attributed. The reports remain failed; the proposed fixture repair would retain immediate evidence and apply the ordinary three-render warm procedure before a separate strict settled restoration check.
+
+All 6,144 native raw timing queries nevertheless completed. A separate, explicitly forensic analyzer preserved the original report, original preregistered plan and script; required this exact failed-control shape; independently verified every raw lane/group; and kept overall strict acceptance false. The statistical plan was unchanged: whole paired ABBA groups, all 12 comparisons, pointwise 95% and 12-comparison adjusted 99.5833% intervals. Native artifact `15158904190` has ZIP SHA-256 `fada84595c09a3685d2f6aadf59368638f362c1df66c3267464b148b0f0025b4`.
+
+| Late-sky view | Original GPU ms | Candidate GPU ms | Paired difference ms | 95% interval ms |
+| --- | ---: | ---: | ---: | --- |
+| Jefferson day | 10.7939 | 10.9251 | +0.1312 | [−0.1023, +0.4093] |
+| Jefferson night | 11.6883 | 11.8371 | +0.1488 | [−0.2637, +0.5275] |
+| Island day | 13.1020 | 13.0910 | −0.0110 | [−0.5794, +0.5072] |
+| Island night | 13.3115 | 13.1986 | −0.1130 | [−0.8214, +0.7684] |
+| Conservatory day | 13.1262 | 14.3506 | +1.2244 | [−0.0624, +2.6428] |
+| Conservatory night | 14.2260 | 15.1593 | +0.9333 | [−0.2743, +2.1409] |
+
+Every late-sky GPU and CPU pointwise/adjusted interval includes zero. The early-terrain Conservatory-night GPU regression remains positive even after adjustment: +2.2004 ms, adjusted interval [+0.1201, +4.4899]. No ordering candidate is selected or rerun unchanged. In addition, the actual application permits opaque non-depth-writing online-rider markers above the horizon, outside this frozen-world fixture; an unguarded global sky-order change would require resolving that concrete appearance risk.
+
+A subsequent source/profile review found repeated light-uniform traversal, but only 44–55 returns to previously used lit programs in the observed complete-world views. The total sampled structured-uniform traversal ceiling was about 0.455–0.571 ms per callback, including work the proposed cache could not remove. Existing scalar/vector caches already avoid unchanged GL writes. Camera-space light updates, nested renders and live callbacks make an identity-only epoch cache unsafe. No such cache is implemented.
+
 The separately prepared woodland leaf-detail helper also remains disabled and unmeasured. Its source tests preserve both unconditional derivatives and the original visible arithmetic, but compiled exact pixels and useful native performance have not been established. It is not part of the ordering experiment or any production build.
+
+### Static world transform experiment
+
+The next candidate follows the native matrix profile rather than another uniform microcache. Exact original-source operation reports put the entire scene matrix update at about 1.20–1.58 ms per observed render, but that is only an upper bound on removable work. Auditing the three already-frozen landmark/skyline/historic roots found only 210 descendants, so those roots alone were not selected as a substantial target.
+
+A larger factory-owned population still recomposes local matrices and multiplies world matrices every scene render despite fixed transforms: 200 initial Detroit objects, 147 habitat tile objects, a 496-object completed Street-at-Sunset stage and a 64-object completed scenery stage. The latter two are asynchronously published by the real original streamer. Their original GLB inputs contain no skins, animations, morph targets, cameras or lights; the instantiated outputs are ordinary fixed meshes. Later updates change visibility. Registration happens after final placement, and no scene-wide name lookup authorizes freezing.
+
+The candidate is disabled by default. Its explicit registry captures final factory references. Activation would establish the original exact matrices once, disable redundant local/world recomputation for these owned objects, and stop descendant traversal at their fixed roots. Reversible state and hierarchy invalidation preserve the original path if a registered hierarchy changes. Geometry, materials, shaders, all color/shadow draws, bounds, collision and dynamic actor updates remain unchanged.
+
+The usefulness proof must wait for actual publication of both streamed packs; the earlier frozen-world diagnostics omitted them. The preregistered native protocol compares six complete Authentic day/night views, 16 paired ABBA groups per view, 16 actual renders per lane and three warm renders. This totals 6,144 native GPU queries. Full render CPU submission is the primary metric, each view reported separately; GPU time, a separate paired scene-matrix measurement and completion waits are distinct. Analysis resamples whole paired groups 200,000 times with fixed seed `0x6d2b79f5`, reporting 95% and six-comparison-adjusted 99.1667% intervals. Operation counts alone are not sufficient evidence of useful full-render improvement.
+
+All eight existing full-world/ramp pixel views remain at zero tolerance on native Metal and SwiftShader, with exact matrix bytes, ordered draws, program IDs, shader source, geometry/material receipts and shadow comparisons. The immediate post-shadow-control evidence is retained separately from a strict restoration check after the ordinary three-render warm procedure. No result exists yet; no production enable call has been added, and the original release gates remain binding.
 
 ## Validation and remaining release gates
 

@@ -4,6 +4,7 @@ import {districts} from './detroitGround.ts';
 import {planDetroitProps} from './detroitProps.ts';
 import {warmLandmarkPrograms} from './landmarkPrograms.ts';
 import {warmObjectTextures} from './startupWork.ts';
+import {registerStaticWorldTransforms} from './staticWorldTransforms.ts';
 import models from './districtModelUrls.ts';
 import type {ParkTerrain,Point} from './terrain.ts';
 
@@ -62,7 +63,7 @@ export function streamDetroitArt(scene:T.Scene,renderer:T.WebGLRenderer,terrain:
     await warmLandmarkPrograms(renderer,stage,camera,scene);
     // The current location may have changed while the driver was compiling.
     // The next world update chooses visible batches before Three draws them.
-    ready.set(stage,publish);
+    ready.set(stage,{publish,source:url});
     lastX=Infinity;
    });
    preparation=task.catch(()=>{});
@@ -73,7 +74,7 @@ export function streamDetroitArt(scene:T.Scene,renderer:T.WebGLRenderer,terrain:
    console.warn('District art unavailable',url,error);
   });
  }
- const ready=new Map<T.Group,()=>void>();
+ const ready=new Map<T.Group,{publish:()=>void;source:string}>();
  function prepareStreets(pack:T.Group,stage:T.Group){
   const batches:ReturnType<typeof instances>=[];
   for(let i=0;i<4;i++){
@@ -109,7 +110,12 @@ export function streamDetroitArt(scene:T.Scene,renderer:T.WebGLRenderer,terrain:
     };
    });
   }
-  for(const [stage,publish] of ready){scene.add(stage);publish();}
+  for(const [stage,{publish,source}] of ready){
+   scene.add(stage);publish();
+   // Warmup temporarily reparents the stage. Register its fixed transforms
+   // only after final publication; subsequent updates change visibility.
+   registerStaticWorldTransforms(scene,'detroit-stream:'+source,[stage]);
+  }
   ready.clear();
   if(streetsReady)for(const proxy of fallback.children){const [cx,cz]=proxy.userData.tile as Point;proxy.visible=Math.hypot(x-cx,z-cz)>=405;}
   for(const t of tiles)t.mesh.visible=Math.hypot(x-t.cx,z-t.cz)<t.range;
