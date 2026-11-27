@@ -9,6 +9,10 @@ on:
       - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/polyhaven-gallery-comparison*'
       - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/island-zone-gallery.mjs'
       - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/environmentZones.json'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/geology.ts'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/world.ts'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/polyhaven-native-diagnostic*'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/native-select-typeahead.mjs'
   workflow_dispatch:
 permissions:
   contents: read
@@ -16,6 +20,58 @@ concurrency:
   group: polyhaven-review-${{ github.ref }}
   cancel-in-progress: true
 jobs:
+  rock-native-cost-diagnostic:
+    name: Candidate Nashua native CPU and submission evidence (not release acceptance)
+    needs: source-art
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        with:
+          name: polyhaven-opaque-review
+          path: ${{ runner.temp }}/polyhaven-review
+      - name: Verify diagnostic contracts and unchanged forwarding
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/
+        run: node --test scripts/polyhaven-native-diagnostic.test.mjs scripts/polyhaven-native-diagnostic-observer.test.mjs
+      - name: Stage the same three original prototype bytes
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/
+        run: |
+          mkdir -p public/belle/polyhaven-review
+          cp "$RUNNER_TEMP/polyhaven-review/namaqualand_boulder_03/boulder-automatic.glb" public/belle/polyhaven-review/
+          cp "$RUNNER_TEMP/polyhaven-review/rock_moss_set_01/moss-1-automatic.glb" public/belle/polyhaven-review/
+          cp "$RUNNER_TEMP/polyhaven-review/rock_moss_set_01/moss-2-automatic.glb" public/belle/polyhaven-review/
+      - name: Install original game and Chrome dependencies
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/
+        run: |
+          npm ci
+          npm run check
+          cd ../..
+          npm ci
+          npx playwright install chrome
+      - name: Build exact candidate and observe full-scene native Nashua rendering
+        timeout-minutes: 45
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/
+        env:
+          POLYHAVEN_EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+          POLYHAVEN_REVIEW_DIR: ${{ runner.temp }}/polyhaven-review
+        run: |
+          set -euo pipefail
+          mkdir -p output/polyhaven-native-diagnostic
+          node scripts/polyhaven-native-diagnostic.mjs 2>&1 | tee output/polyhaven-native-diagnostic/driver.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: polyhaven-native-nashua-cost-candidate-NOT-RELEASE
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/polyhaven-native-diagnostic/
+          if-no-files-found: error
+          retention-days: 14
   source-art:
     runs-on: ubuntu-latest
     timeout-minutes: 45

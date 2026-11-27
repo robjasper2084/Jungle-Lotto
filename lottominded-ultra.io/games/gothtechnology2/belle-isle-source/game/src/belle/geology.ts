@@ -65,8 +65,11 @@ function rockGeometry(shape:number,detail:'near'|'far'){
  }
  g.computeVertexNormals();g.computeBoundingBox();return g;
 }
-export function addGeology(scene:T.Scene,map:ParkMap,terrain:ParkTerrain,review?:readonly RockReviewPrototype[]){
- const boulders=planBoulders(map,terrain),pools:{shape:number;detail:'near'|'far';mesh:T.InstancedMesh;fallbackGeometry:T.BufferGeometry;fallbackMaterial:T.MeshStandardMaterial}[]=[];
+export function addGeology(scene:T.Scene,map:ParkMap,terrain:ParkTerrain,review?:readonly RockReviewPrototype[],prepareMaterial?:(material:T.MeshStandardMaterial,restore:{compile:T.Material['onBeforeCompile'];key:T.Material['customProgramCacheKey']})=>void){
+ // Detached GLTF materials cannot be discovered by the scene's child-added
+ // observer when a later quality change assigns them to an existing pool.
+ for(const {material}of review??[])prepareMaterial?.(material,{compile:material.onBeforeCompile,key:material.customProgramCacheKey});
+ const boulders=planBoulders(map,terrain),pools:{shape:number;detail:'near'|'far';mesh:T.InstancedMesh<T.BufferGeometry,T.MeshStandardMaterial>;fallbackGeometry:T.BufferGeometry;fallbackMaterial:T.MeshStandardMaterial;reviewActive:boolean}[]=[];
  const dummy=new T.Object3D(),color=new T.Color();
  let triangles=0;
  for(let shape=0;shape<3;shape++){
@@ -86,7 +89,7 @@ export function addGeology(scene:T.Scene,map:ParkMap,terrain:ParkTerrain,review?
    mesh.name='Clustered mapped mineral boulders '+shape+' '+detail;
    mesh.castShadow=false;mesh.receiveShadow=true;mesh.frustumCulled=false;mesh.count=0;mesh.visible=false;
    mesh.instanceMatrix.setUsage(T.DynamicDrawUsage);
-   scene.add(mesh);pools.push({shape,detail,mesh,fallbackGeometry:g,fallbackMaterial:material});
+   scene.add(mesh);pools.push({shape,detail,mesh,fallbackGeometry:g,fallbackMaterial:material,reviewActive:false});
    triangles+=(g.index?.count??g.attributes.position.count)/3*boulders.filter(b=>b.shape===shape).length;
   }
  }
@@ -117,6 +120,12 @@ export function addGeology(scene:T.Scene,map:ParkMap,terrain:ParkTerrain,review?
  }
  return {stats,boulders,update,setQuality(value:string){
   quality=value==='high'||value==='smooth'?value:'automatic';lastX=Infinity;
-  if(review)for(const pool of pools){const candidate=quality==='high'&&pool.detail==='near'?review[pool.shape]:undefined;pool.mesh.geometry=candidate?.geometry??pool.fallbackGeometry;pool.mesh.material=candidate?.material??pool.fallbackMaterial;}
+  if(review)for(const pool of pools){
+   // World surface dressing can replace the initial material. Retain that exact
+   // fallback, including later dressing, without ever saving an imported swap.
+   if(!pool.reviewActive)pool.fallbackMaterial=pool.mesh.material;
+   const candidate=quality==='high'&&pool.detail==='near'?review[pool.shape]:undefined;
+   pool.mesh.geometry=candidate?.geometry??pool.fallbackGeometry;pool.mesh.material=candidate?.material??pool.fallbackMaterial;pool.reviewActive=!!candidate;
+  }
  }};
 }
