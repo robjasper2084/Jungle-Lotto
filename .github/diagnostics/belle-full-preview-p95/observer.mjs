@@ -5,6 +5,8 @@ import {resolve} from 'node:path';
 import {MARKER_PREFIX,TRACE_CATEGORIES,TRACE_START_PARAMS,REPORT_PATH,isGameUrl,sha256,createTraceSummaryAccumulator,diagnosticVerdict,verifyOriginalVerdict,verifyPageObservations,verifyTraceControls} from './contract.mjs';
 import {summarizeTraceFile} from './sustained-trace-json.mjs';
 import {matchEmbeddedImage} from './embedded-assets.mjs';
+import {createNativeGpuSampler} from './native-gpu-sample.mjs';
+import {bindNativeGpuInput} from './native-gpu-input.mjs';
 
 const errorText=error=>error?.stack||String(error);
 const save=(file,value)=>writeFile(file,JSON.stringify(value,null,2)+'\n');
@@ -117,7 +119,7 @@ export function installPageEvidence({prefix}){
  }});
 }
 
-export async function installDesktopStallTrace(chromium,{game,output,source,driver,diagnosticSource=null}){
+export async function installDesktopStallTrace(chromium,{game,output,source,driver,diagnosticSource=null,nativeSamplerFactory=createNativeGpuSampler}){
  await mkdir(output,{recursive:true});
  const evidence={diagnosticOnly:true,releaseAcceptance:false,source,diagnosticSource,host:{platform:process.platform,arch:process.arch},
   status:'starting',errors:[],errorRecords:[],unsupported:[],launches:[],pages:[],bufferUsage:[],droppedBufferUsage:0,
@@ -127,7 +129,7 @@ export async function installDesktopStallTrace(chromium,{game,output,source,driv
  let persistQueue=Promise.resolve();
  const persist=()=>{const snapshot=JSON.stringify(evidence,null,2)+'\n';persistQueue=persistQueue.then(()=>writeFile(resolve(output,'trace-evidence.json'),snapshot)).catch(error=>fail('evidence.write',error));return persistQueue;};
  const optional=async(session,method)=>{try{return await cdp(session,method);}catch(error){evidence.unsupported.push({method,error:errorText(error)});return null;}};
- let browserSession,gameSession,gamePage,armed=false,recording=false,cpuRecording=false,arming,stopping,flushing,finishing,originalReport=null;
+ let browserSession,gameSession,gamePage,nativeSampler,armed=false,recording=false,cpuRecording=false,arming,stopping,flushing,finishing,originalReport=null;
  let completionListener,completionResolve,completionReject,completionTimer;
  const traceTasks=new Set(),traceStreams=new Map();
  const responseTasks=new Set(),observedPanels=new WeakSet(),observedButtons=new WeakSet();
@@ -246,6 +248,11 @@ export async function installDesktopStallTrace(chromium,{game,output,source,driv
   finishing=(async()=>{
    if(!stopping){fail('capture.finish',Error('Original native W release did not stop collection'));await stop('browser-close-fallback');}
    await stopping;await flushing;await joinTraceStreams();await Promise.allSettled([...responseTasks]);
+   try{
+    assert(nativeSampler,'Native GPU sampler was not initialized');
+    evidence.nativeGpuSample=await nativeSampler.finish();
+    assert.equal(evidence.nativeGpuSample.collectionComplete,true,'Native GPU sample incomplete; retain raw failure');
+   }catch(error){fail('native GPU sample',error);}
    if(browserSession)evidence.processesAtEnd=await optional(browserSession,'SystemInfo.getProcessInfo');
    let report=null;
    try{const bytes=await readFile(resolve(game,REPORT_PATH));
@@ -298,6 +305,10 @@ export async function installDesktopStallTrace(chromium,{game,output,source,driv
    observeCompletion(page.keyboard,'up',{onError:error=>fail('keyup observer',error),after:(_result,args)=>{
     if(args[0]==='w'){if(args.length!==1)fail('keyup arguments',Error('Original keyboard release arguments changed'));return stop('native-w-keyup');}
    },onRejected:(error,args)=>{if(args[0]==='w')fail('original keyup rejected',error);}});
+   try{
+    assert(nativeSampler,'Missing native GPU sampler');
+    evidence.nativeGpuInput=bindNativeGpuInput(page.keyboard,nativeSampler,{onError:error=>fail('native GPU input observation',error)}).receipt;
+   }catch(error){fail('native GPU input setup',error);}
    observeAsync(page.context(),'close',{onError:error=>fail('context close observer',error),before:async()=>{
     evidence.contextClose={requestedHostMs:performance.now(),nativeAllowedHostMs:null,settledHostMs:null};
     try{
@@ -355,6 +366,8 @@ export async function installDesktopStallTrace(chromium,{game,output,source,driv
   browserSession=await browser.newBrowserCDPSession();
   evidence.browser=await cdp(browserSession,'Browser.getVersion');evidence.systemInfo=await optional(browserSession,'SystemInfo.getInfo');
   evidence.processesAtStart=await optional(browserSession,'SystemInfo.getProcessInfo');
+  nativeSampler=nativeSamplerFactory({browserSession,browserVersion:evidence.browser,systemInfo:evidence.systemInfo,output,
+   onError:error=>fail('native GPU sampler',error)});
   // Keep the original one launch-time query. Empty/malformed/error enumeration
   // is advisory; actual literal-gpu coverage must be present in the raw ride.
   const query={method:'Tracing.getCategories',params:{},startedHostMs:performance.now(),finishedHostMs:null,responseReceived:false,response:null,error:null};

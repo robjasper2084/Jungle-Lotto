@@ -1,6 +1,6 @@
 # Isolated diagnostic; canonical acceptance workflows remain unchanged.
 # Reconstructs a new diagnostic preview; this is not a failed-build byte replay.
-name: Belle Isle pinned full preview p95 attribution (diagnostic only)
+name: Belle Isle pinned full preview native GPU stacks (diagnostic only)
 
 on:
   pull_request:
@@ -19,6 +19,12 @@ concurrency:
 
 jobs:
   desktop-preview-p95-attribution:
+    if: >-
+      (github.event_name == 'pull_request' &&
+       github.head_ref == 'upgrade-redesign-perf-268-native-stacks-20261127' &&
+       github.base_ref == 'upgrade-redesign-perf-261-full-trace-20261127') ||
+      (github.event_name == 'workflow_dispatch' &&
+       github.ref == 'refs/heads/upgrade-redesign-perf-268-native-stacks-20261127')
     runs-on: macos-15
     timeout-minutes: 35
     steps:
@@ -80,7 +86,7 @@ jobs:
           node "$bundle/archive-source.mjs" capture "$GITHUB_WORKSPACE/diagnostic" "$evidence" 2>&1 | tee "$evidence/source-capture.log"
           export STRICT_DRIVER_PATH="$game/scripts/sustained-ride-profile.mjs"
           export STRICT_GPS_PATH="$game/scripts/gps-full-scene-check.mjs"
-          node --test "$bundle/full-mode.test.mjs" "$bundle/embedded-assets.test.mjs" "$bundle/asset-receipts.test.mjs" "$bundle/upstream/observer.test.mjs" "$bundle/upstream/sustained-trace-json.test.mjs" "$bundle/upstream/source.test.mjs" 2>&1 | tee "$evidence/observer-checks.log"
+          node --test "$bundle/full-mode.test.mjs" "$bundle/native-gpu-input.test.mjs" "$bundle/native-gpu-sample.test.mjs" "$bundle/native-gpu-identity.test.mjs" "$bundle/embedded-assets.test.mjs" "$bundle/asset-receipts.test.mjs" "$bundle/upstream/observer.test.mjs" "$bundle/upstream/sustained-trace-json.test.mjs" "$bundle/upstream/source.test.mjs" 2>&1 | tee "$evidence/observer-checks.log"
           node --check "$bundle/preload.mjs"
           node --check "$bundle/validate-evidence.mjs"
       - name: Install the original parent browser runtime and Chrome
@@ -151,6 +157,39 @@ jobs:
               fi
             fi
           done
+      - name: Retain the native stack packet separately for bounded retrieval
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: belle-native-gpu-stack-packet-NOT-RELEASE
+          path: |
+            evidence/capture/native-gpu-*
+            evidence/capture/trace-evidence.json
+            evidence/capture/original-report.json
+            evidence/capture/process-exit.json
+            evidence/capture/preload-failure.json
+            evidence/capture/finalize-failure.json
+            evidence/application-commit.txt
+            evidence/diagnostic-commit.txt
+            evidence/diagnostic-source/
+            evidence/diagnostic-source-receipt.json
+            evidence/diagnostic-source-after.json
+            evidence/source-receipt.json
+            evidence/original-strict-driver.mjs
+            evidence/original-process-exit.txt
+            evidence/validation.json
+            evidence/validator.log
+            evidence/validator-process-exit.txt
+            evidence/source-verification.log
+            evidence/source-verification-process-exit.txt
+            evidence/host-before.txt
+            evidence/host-after.txt
+            evidence/host-after-process-exit.txt
+            evidence/original-driver.log
+            evidence/observer-checks.log
+            app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/sustained-profile/full/desktop/report.json
+          retention-days: 14
+          if-no-files-found: warn
       - uses: actions/upload-artifact@v4
         if: always()
         with:

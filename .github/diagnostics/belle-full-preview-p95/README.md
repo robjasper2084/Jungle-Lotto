@@ -1,5 +1,50 @@
 # Full preview p95 attribution
 
+## Native collector identity repair
+
+The first #278 attempt stopped before invoking the OS sampler: Chrome's
+in-memory command line contained an empty flags block and a second occurrence
+of a launch switch, so the old OS/CDP equality check failed. That capture and
+all original performance failures remain recorded as failures.
+
+The repaired comparator retains the exact raw strings, ordered tokens and
+duplicates. For the observed Chrome product and Chromium revision only, it
+qualifies the precise 43-switch launch prefix plus the documented three-token
+append. Any unexplained difference still fails. The existing fallback switch
+must already be present once at launch; actual ANGLE Metal evidence is required
+independently. [NATIVE_IDENTITY.md](NATIVE_IDENTITY.md) records the pinned source
+basis and the limits of that interpretation.
+
+Each initial, pre-sample and post-sample snapshot now obtains fresh, timed
+`Browser.getVersion`, `SystemInfo.getInfo` and `SystemInfo.getProcessInfo`
+responses. Partial failures remain recorded without retry. Raw OS observations,
+CDP responses, process identities, renderer identities and comparison results
+are checked both before attachment and during independent replay. Version-2
+receipts cannot be used to relabel the old version-1 capture as successful.
+
+Only collector source, its regression fixtures, documentation and the local
+collector test list change. The original driver, workload, inputs, sampler
+window, deadlines, trace settings and release criteria retain their identities.
+This repair must produce its own native result before any attribution claim.
+
+## Current extension: one bounded native GPU-process stack sample
+
+This child diagnostic starts from completed source `2806fbd4f9b445177b0fd37c6a417ec844312d30`. Its application stays at `9d2162e39188dcd0e42565f398b736734e481f73`. The original #261 desktop failures remain **51.1 ms default / 60.9 ms preview p95**. This extension cannot replace those acceptance results and does not select a runtime repair.
+
+The preceding complete capture identifies both IOSurface/Dawn scheduling-future waits and separate WebGL service spans. Its independent gap 132 starts 67.368769 seconds after the trusted W-keydown trace marker and lasts 184.7 ms, with 88.103 ms Dawn and 94.176 ms WebGL overlap. WebGL event 1428095 starts at 67.375934 seconds; the later Dawn event 1428644 starts at 67.469882 seconds. These facts support a predefined observation window; they do not predict recurrence.
+
+The new external sampler schedules **one attempt 64,000 ms after the first successful original W-down operation completes**, requesting **8 seconds at a 10 ms sampling interval**. Original native down/up methods retain their receiver, arguments, return promises and failures. The 450 ms input heartbeat, original 90-second ride, GPS, original report and exit priority remain intact. Host operation bounds are recorded separately from browser-event and trace time; the old capture has no corresponding first-down completion host receipt, so the prior nominal trace window is not an exact host-time replay.
+
+The collector selects exactly one browser and one GPU process through the existing browser CDP session, binds them to macOS process observations, verifies real/effective user, direct parent, official Chrome executable and native launch switches, and checks identity stability before and after sampling. It retains browser/system receipts, raw process observations, requested and observed timing, sampling stdout/stderr/report bytes and their hashes. No alternate target or automatic retry is permitted. A 30-second sample-process timeout and bounded termination handling do not change the existing 60-second trace flush, 28-minute native step, or 35-minute job limits.
+
+Independent verification reparses the raw sample report, checks PID/parent/executable and unchanged browser/system identity, and verifies actual overlap against the conservative first-W-down-completed to first-W-up-requested host bracket. Requested eight seconds is not substituted for actual observed duration. Permission, attachment, identity, output, overlap or symbolization problems remain explicit limitations or failures. Raw aggregate stack counts are statistical observations; they cannot be converted into GPU milliseconds or uniquely assigned to a frame gap.
+
+The decision after the single attempt is fixed: identifiable avoidable application work can motivate a narrowly tested lossless repair; a specific browser presentation/synchronization path can motivate a controlled compatibility comparison; supported scheduling/contention evidence can motivate a resource investigation. Missing useful attribution remains inconclusive. If symbols are unusable or only the already known wait location appears without additional work or a producer, do not repeat the same unchanged sampling attempt or claim a runtime fix.
+
+The sole existing diagnostic workflow runs this child automatically only for head `upgrade-redesign-perf-268-native-stacks-20261127` targeting base `upgrade-redesign-perf-261-full-trace-20261127`; manual dispatch is restricted to that same head branch. It retains the complete original evidence artifact and an additional small native-stack packet for bounded retrieval. The small packet is not represented as a complete raw browser-trace/build archive. Every application file, original acceptance workflow, trace category, CPU interval, buffer, visible asset and input requirement is preserved.
+
+The following sections retain the earlier diagnostic history.
+
 This isolated diagnostic investigates the recurring full-desktop failures: #227 recorded 82.5 ms p95, and the separate #257 integration recorded 84.2 ms p95 with one 266.3 ms eligible interval. It uses the unchanged application source from #261, whose six original native first runs are complete: four passed, while default full desktop failed at 51.1 ms p95 and preview full desktop failed at 60.9 ms p95. Instrumented results are attribution evidence only. The original acceptance runs and every prior failure remain authoritative.
 
 The first collector passed 52 focused local contract tests and independent source review before publication, but its native attempt exposed the asset-classification defect documented below. The direct-GLB image repair passed 78 focused tests; its subsequent native attempt exposed missing gzip-container provenance. The gzip extension passed 88 focused tests. This separate revision adds the targeted GPU category observations described below. Native execution and its result belong to the workflow artifacts; source publication alone does not establish successful collection, a causal runtime repair, or release acceptance.
