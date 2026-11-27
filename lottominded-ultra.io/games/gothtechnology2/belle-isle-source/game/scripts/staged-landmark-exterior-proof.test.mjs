@@ -6,8 +6,9 @@ import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {ParkTerrain} from '../src/belle/terrain.ts';
 import {STUDY_SITES} from '../src/belle/stagedLandmarkStudies.ts';
 import {readStagedExterior,readStagedRouteGround,readStagedRouteSweeps} from '../src/belle/stagedLandmarkGroundFit.ts';
+import {FlightSolids} from '../src/belle/flightCollision.ts';
 import {RideCore} from '../runtime/ride-core/src/ridecore.ts';
-import {createExteriorPlanner,assertExteriorEvidence,turnExteriorHeading} from './staged-landmark-exterior-proof.mjs';
+import {createExteriorPlanner,assertExteriorEvidence,turnExteriorHeading,checkExteriorProspectivePath,partiallyCoalesceExteriorPath,prepareExteriorLegs,exteriorLegProposals} from './staged-landmark-exterior-proof.mjs';
 
 const map=JSON.parse(await readFile(new URL('../public/belle/map.json',import.meta.url),'utf8'));
 const terrain=new ParkTerrain(map),root=new T.Group();
@@ -54,7 +55,7 @@ test('both real buildings have two opposite complete-model viewpoints reachable 
 
 test('a sub-grid thin collision wall is found by independent edge samples and cannot create a false connected route',async()=>{
  const planner=await createExteriorPlanner({bounds:{min:[-1,0,-1],max:[1,2,1],center:[0,1,0]},camera:{fov:60,aspect:1.6},layout:'desktop',
-  queryGround:points=>points.map(p=>({...p,height:2,walkable:Math.abs(p.x-2.17)>.3})),querySweeps:segments=>segments.map(()=>({clear:true,samples:[]}))});
+  queryGround:points=>points.map(p=>({...p,height:2,walkable:Math.abs(p.x-2.17)>.3,planningClearance:Math.abs(p.x-2.17)>.3?.7:0})),querySweeps:segments=>segments.map(()=>({clear:true,samples:[]}))});
  await assert.rejects(planner.route({x:-5,z:0},Math.PI/2),/No connected|could not pass/);
 });
 
@@ -149,3 +150,63 @@ test('an ignored native turn input cannot pass by increasing attempts or rewriti
   pulse:async()=>{pulses++;},settleHeading:async()=>({actor:{...actor},headingSettlement:cadence(60)})}),/did not reach/);
  assert.equal(receipt.complete,false);assert.equal(actor.headingY,0);assert.equal(pulses,18);
 });
+
+function fixture(solids=[]){
+ const loaded=new FlightSolids();for(const solid of solids)loaded.add(solid);
+ const terrain={height:()=>2,land:()=>true,obstructed:()=>false,raycastObstacle:(...args)=>loaded.ray(...args)},requests=[];
+ return{requests,queryGround:points=>readStagedRouteGround(terrain,points),querySweeps:segments=>{requests.push(...structuredClone(segments));return readStagedRouteSweeps(terrain,segments);}};
+}
+const line=Array.from({length:21},(_,i)=>({x:i*2,z:0}));
+test('partial compression retains the valid narrow route beside an actual cylinder when a wide stopping corridor rejects the long proposal',async()=>{
+ const queries=fixture([{x:9.8,z:1.3,bottom:2,top:8,radius:.15,kind:'lamp'}]),start={x:0,z:0};
+ const plain=await checkExteriorProspectivePath(start,line,queries);assert(plain.clear);
+ const long=await checkExteriorProspectivePath(start,[line.at(-1)],queries);assert.equal(long.clear,false);assert.equal(long.leg.sweep.maxForward,.75);assert(long.leg.sweep.maxLateral>.41);
+ assert(long.leg.sweep.samples.filter(row=>!row.clear).every(row=>row.bodyHits.every(hit=>hit===null)), 'The original body fits; the full permitted stopping corridor rejects the shortcut');
+ const partial=await partiallyCoalesceExteriorPath(start,line,queries);assert(partial.clear);assert(partial.rejected.length>0);assert(partial.waypoints.length<line.length/2);assert(partial.checkedLegs<plain.checkedLegs);
+ assert((await checkExteriorProspectivePath(start,partial.waypoints,queries)).clear);
+ assert(queries.requests.every(row=>row.maxForward===.75&&(row.maxLateral===.41||row.maxLateral===1.96)&&Math.hypot(row.to.x-row.from.x,row.to.z-row.from.z)<=12+1e-9));
+});
+test('partial compression never accepts an actual original-body collision merely to reduce waypoint count',async()=>{
+ const queries=fixture([{x:9.8,z:0,bottom:2,top:8,radius:.5,kind:'lamp'}]),partial=await partiallyCoalesceExteriorPath({x:0,z:0},line,queries);
+ assert.equal(partial.clear,false);assert(partial.rejected.length>0);const [direct]=queries.querySweeps([{from:{x:0,z:0},to:{x:20,z:0},maxLateral:.41,maxForward:.75}]);assert(direct.samples.some(row=>row.bodyHits.some(hit=>hit!==null&&hit<=row.acceptedBeyond)));assert(partial.rejected.every(row=>row.clear===false));
+});
+test('partial compression preserves every direction change and the actual nominal origin after a skipped sub-arrival waypoint',async()=>{
+ const queries=fixture(),points=[{x:.2,z:0},{x:2.2,z:0},{x:4.2,z:0},{x:4.2,z:2},{x:4.2,z:4}];
+ const result=await partiallyCoalesceExteriorPath({x:0,z:0},points,queries);
+ assert(result.clear);assert.deepEqual(result.waypoints,[points[0],points[2],points[4]]);assert.deepEqual(result.accepted[1].from,{x:0,z:0});assert.deepEqual(result.end,points[4]);
+});
+test('incomplete ground and sweep receipts cannot pass shortcut proposals',async()=>{
+ await assert.rejects(prepareExteriorLegs([{from:{x:0,z:0},to:{x:3,z:0}}],{queryGround:()=>[],querySweeps:()=>[]}),/Incomplete prospective ground/);
+ const queries=fixture();await assert.rejects(prepareExteriorLegs([{from:{x:0,z:0},to:{x:3,z:0}}],{...queries,querySweeps:()=>[]}),/Incomplete prospective body-sweep/);
+});
+test('prospective replanning remains bounded without offering any unsafe native leg',async()=>{
+ const route={waypoints:[{x:5,z:0}]},receipt={};let replans=0,offered=0;
+ const queries=fixture([{x:2,z:0,bottom:2,top:8,radius:.5,kind:'lamp'}]);
+ await assert.rejects(async()=>{for await(const leg of exteriorLegProposals({route,label:'blocked',motion:async()=>({actor:{x:0,z:0}}),phase:async()=>{},...queries,replan:async()=>{replans++;return route;},receipt}))offered++;},/replanning exceeded/);
+ assert.equal(offered,0);assert.equal(replans,4);assert.equal(receipt.rejected.length,5);assert(receipt.rejected.every(row=>row.nativeWIssued===false));
+});
+test('a consumer movement failure stops the generator before any replacement or retry',async()=>{
+ const receipt={},queries=fixture();let replans=0;const error=Error('actual native movement failed');
+ await assert.rejects(async()=>{for await(const leg of exteriorLegProposals({route:{waypoints:[{x:5,z:0}]},label:'movement',motion:async()=>({actor:{x:0,z:0}}),phase:async()=>{},...queries,replan:async()=>{replans++;throw Error('unexpected');},receipt}))throw error;},value=>value===error);
+ assert.equal(replans,0);assert.equal(receipt.offeredLegs,1);assert.equal(receipt.replans.length,0);
+});
+
+test('full original scenery reproduces every native c746 phone and desktop rejected stopping hit',async()=>{
+ const {originalExteriorTerrain}=await import('./staged-landmark-original-solids.test-support.mjs');
+ const {terrain:loaded,solids,boulderCount}=await originalExteriorTerrain(map);
+ assert.equal(solids.length,6043);assert.equal(boulderCount,90);
+ const fixture=JSON.parse(await readFile(new URL('./fixtures/staged-exterior-native-c746-sweeps.json',import.meta.url),'utf8'));
+ assert.equal(fixture.cases.length,2);
+ for(const row of fixture.cases){
+  const [sweep]=readStagedRouteSweeps(loaded,[row.segment]);assert.equal(sweep.clear,false,row.phase);
+  assert.equal(sweep.bodyRadius,.27);assert.deepEqual(sweep.bodyHeights,[.62,1.1,1.58]);
+  assert.equal(sweep.maxForward,.75);assert.equal(sweep.maxLateral,row.segment.maxLateral);
+  const actual=sweep.samples.map(({bodyHits,corridorHits,headHit,corridorHeadHit,groundClear,clear})=>({bodyHits,corridorHits,headHit,corridorHeadHit,groundClear,clear}));
+  assert.deepEqual(actual,row.samples,row.phase+' must retain every original native hit');
+  const [proposal]=await prepareExteriorLegs([{from:row.segment.from,to:row.segment.to}],{queryGround:points=>readStagedRouteGround(loaded,points),querySweeps:segments=>readStagedRouteSweeps(loaded,segments)});
+  assert.equal(proposal.clear,false,'The shared planner must reject the same original stopping obstruction before W');
+ }
+});
+
+// Register the complete prospective/executor rejection regressions in the existing test target.
+import './staged-landmark-exterior-envelope.test.mjs';

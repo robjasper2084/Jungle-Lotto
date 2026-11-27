@@ -19,6 +19,69 @@ const distance=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
 const site=(snapshot,id)=>{const value=snapshot.sites.find(item=>item.id===id);assert(value,'Missing observed site '+id);return value;};
 const finitePoint=value=>value&&['x','y','z'].every(key=>Number.isFinite(value[key]));
 
+export function readEntrancePulse(events,{name,key}){
+ const rows=events.filter(event=>event.phase===name&&event.code==='Key'+key.toUpperCase()&&['keydown','keyup'].includes(event.type));
+ assert.equal(rows.length,2,'Each entrance pulse requires exactly one native keydown and keyup');
+ assert(rows[0].type==='keydown'&&rows[1].type==='keyup'&&rows.every(row=>row.trusted&&Number.isFinite(row.at))&&rows[1].at>rows[0].at,'Entrance pulse events must be trusted, ordered and advancing');
+ return{keydownAt:rows[0].at,keyupAt:rows[1].at,heldMilliseconds:rows[1].at-rows[0].at};
+}
+
+/** Keep the original four corrections and 0.15-radian acceptance. A finite
+ * native key pulse ends before observing the result, so observation latency
+ * cannot keep steering through the target while a heading poll is pending. */
+export async function turnEntranceHeading({heading,name,receipt,motion,phase,setFirstPerson,focusCanvas,pulse,settleHeading}){
+ assert(Number.isFinite(heading),'Missing finite entrance heading');
+ Object.assign(receipt,{name,heading,tolerance:.15,maximumCorrections:4,before:await motion(),pulses:[],after:null,complete:false});
+ assert(receipt.before.actor?.onFoot&&Number.isFinite(receipt.before.actor.headingY),'Entrance turn must begin with the actual on-foot actor');
+ await phase(name+'-tpp');await setFirstPerson(false);await focusCanvas();
+ let current=await settleHeading(name+'-initial-settled'),radiansPerRequestedMs=2.7/1000;
+ for(let attempt=0;attempt<4;attempt++){
+  assert(current.actor?.onFoot&&!current.actor.firstPerson&&Number.isFinite(current.actor.headingY),'Native entrance turn left third-person walking');
+  const delta=angle(heading-current.actor.headingY);if(Math.abs(delta)<=.15)break;
+  const key=delta>0?'a':'d',milliseconds=Math.min(900,Math.max(8,Math.abs(delta)/radiansPerRequestedMs*.75));
+  const correction={name:name+'-pulse-'+attempt,key,milliseconds,radiansPerRequestedMs,before:current,after:null};receipt.pulses.push(correction);
+  await phase(correction.name);correction.native=await pulse(key,milliseconds,correction.name);
+  current=await settleHeading(correction.name+'-settled');correction.after=current;
+  correction.observedTurnRadians=angle(current.actor.headingY-correction.before.actor.headingY);
+  assert(current.actor.onFoot&&!current.actor.firstPerson&&distance(correction.before.actor,current.actor)<.015,'An entrance pulse changed the stationary walking mode');
+  // Use the fully settled native response to account for dispatch latency and
+  // the unchanged main-loop time cap. Ignored or wrong-direction input cannot
+  // supply a useful gain and remains subject to the original final gate.
+  if(Math.sign(correction.observedTurnRadians)===Math.sign(delta)&&Math.abs(correction.observedTurnRadians)>0)
+   radiansPerRequestedMs=Math.abs(correction.observedTurnRadians)/milliseconds;
+ }
+ assert(Math.abs(angle(heading-current.actor.headingY))<=.15,'Native heading turn did not reach the intended obstacle');
+ await phase(name+'-fpp');await setFirstPerson(true);current=await settleHeading(name+'-final-settled');receipt.after=current;
+ receipt.finalErrorRadians=Math.abs(angle(heading-current.actor.headingY));
+ assert(current.actor.onFoot&&current.actor.firstPerson,'Native entrance turn did not restore the walking camera');
+ assert(receipt.finalErrorRadians<=.15,'Native heading changed after restoring the walking camera');
+ assert(distance(receipt.before.actor,current.actor)<.015,'A stationary entrance turn moved the actual actor');
+ receipt.complete=true;return receipt;
+}
+
+export function assertEntranceTurns(report){
+ assert.equal(report.entranceTurns?.length,2,'Both original contact turns require receipts');
+ for(const [index,name]of['aquarium-tank-contact-turn','conservatory-wall-contact-turn'].entries()){
+  const turn=report.entranceTurns[index];
+  assert(turn.name===name&&turn.complete&&turn.tolerance===.15&&turn.maximumCorrections===4,'The original entrance heading limits changed');
+  assert(turn.before.actor.onFoot&&turn.after.actor.onFoot&&turn.after.actor.firstPerson,'Entrance turn did not remain on foot');
+  assert(turn.finalErrorRadians===Math.abs(angle(turn.heading-turn.after.actor.headingY))&&turn.finalErrorRadians<=.15,'Missing actual accepted entrance heading');
+  assert(distance(turn.before.actor,turn.after.actor)<.015&&turn.pulses.length<=4,'Entrance turn changed position or its correction limit');
+  let radiansPerRequestedMs=2.7/1000;
+  for(const correction of turn.pulses){
+   assert(correction.after&&correction.milliseconds>=8&&correction.milliseconds<=900&&['a','d'].includes(correction.key),'Missing bounded native entrance pulse');
+   const delta=angle(turn.heading-correction.before.actor.headingY);
+   assert.equal(correction.key,delta>0?'a':'d');assert.equal(correction.radiansPerRequestedMs,radiansPerRequestedMs);
+   assert.equal(correction.milliseconds,Math.min(900,Math.max(8,Math.abs(delta)/radiansPerRequestedMs*.75)));
+   assert.equal(correction.observedTurnRadians,angle(correction.after.actor.headingY-correction.before.actor.headingY));
+   assert(correction.before.actor.onFoot&&correction.after.actor.onFoot&&!correction.before.actor.firstPerson&&!correction.after.actor.firstPerson&&distance(correction.before.actor,correction.after.actor)<.015,'A pulse changed the stationary third-person actor');
+   assert.deepEqual(correction.native,readEntrancePulse(report.nativeEvidence.events,correction),'Native entrance pulse timing does not match its actual events');
+   if(Math.sign(correction.observedTurnRadians)===Math.sign(delta)&&Math.abs(correction.observedTurnRadians)>0)
+    radiansPerRequestedMs=Math.abs(correction.observedTurnRadians)/correction.milliseconds;
+  }
+ }
+}
+
 export function assertNativeEvidence(evidence){
  assert(evidence&&evidence.events.length>0,'No native input receipts');
  assert.equal(evidence.overflow,false,'Native evidence overflowed');
@@ -154,7 +217,7 @@ export async function run(){
  if(requireMetal)assert.equal(requestedRenderer,'metal','The native Metal lane cannot select software rendering');
  if(requestedRenderer==='metal')assert.equal(process.platform,'darwin','The strict Metal proof requires macOS');
  const report={version:1,passed:false,source,checkout,run:process.env.GITHUB_RUN_ID||null,startedAt:new Date(started).toISOString(),
-  phase:'setup',scope,layout,viewport,deviceScaleFactor:1,requestedRenderer,stagedFlag:STAGED_FLAG,caseBudgetMs:CASE_MS,snapshots:[],captures:[],passages:[],contacts:[],errors:[],failedRequests:[],
+  phase:'setup',scope,layout,viewport,deviceScaleFactor:1,requestedRenderer,stagedFlag:STAGED_FLAG,caseBudgetMs:CASE_MS,snapshots:[],captures:[],passages:[],contacts:[],entranceTurns:[],errors:[],failedRequests:[],
   limitations:'Actual staged full island, original terrain/colliders, normal default graphics, reduced motion, trusted native browser controls and genuine compositor PNGs. Functional evidence on the recorded renderer; not hardware FPS, physical-device certification, full collision parity or human visual approval.'};
  await mkdir(out,{recursive:true});
  const require=createRequire(resolve(game,'../../package.json'));
@@ -211,6 +274,12 @@ export async function run(){
     const tail=trace.slice(-4),first=tail[0];
     return row.frames-first.frames>=3&&tail.every(s=>Math.hypot(s.actor.x-first.actor.x,s.actor.z-first.actor.z)<.015)?row:false;
    }
+   if(rule.type==='heading-settled'){
+    if(trace.length<4)return false;
+    const tail=trace.slice(-4),first=tail[0];
+    return row.frames-first.frames>=3&&tail.every(s=>Math.hypot(s.actor.x-first.actor.x,s.actor.z-first.actor.z)<.015&&
+     Math.abs(Math.atan2(Math.sin(s.actor.headingY-row.actor.headingY),Math.cos(s.actor.headingY-row.actor.headingY)))<.002)?row:false;
+   }
    if(rule.type==='contact'){
     if(trace.length<9||Math.hypot(row.actor.x-rule.x,row.actor.z-rule.z)<=1.5)return false;
     const tail=trace.slice(-8),first=tail[0],local=s=>s.sites.find(site=>site.id===rule.id).local;
@@ -252,23 +321,20 @@ export async function run(){
   assert(distance(before.actor,after.actor)>1,'No genuine movement on '+name);
   return{before,after,trace:await trace(name)};
  }
- async function turnTo(heading){
-  // TPP keeps the turn control unambiguous even where FPP A/D is strafe.
-  await setFirstPerson(false);await focusCanvas();
-  for(let attempt=0;attempt<4;attempt++){
-   const current=await motion(),delta=angle(heading-current.actor.headingY);
-   if(Math.abs(delta)<=.15)break;
-   await phase('turn-'+attempt);const key=delta>0?'a':'d';
-   await keyDown(key);try{await waitMotion({type:'turn',start:current.actor.headingY,sign:Math.sign(delta),radians:Math.abs(delta)});}finally{await keyUp(key);}
-   await frames(2);
-  }
-  assert(Math.abs(angle(heading-(await motion()).actor.headingY))<=.15,'Native heading turn did not reach the intended obstacle');
-  await setFirstPerson(true);
+ async function turnTo(heading,name){
+  const receipt={};report.entranceTurns.push(receipt);
+  await turnEntranceHeading({heading,name,receipt,motion,phase,setFirstPerson,focusCanvas,
+   pulse:async(key,milliseconds,name)=>{
+    await keyDown(key);try{await new Promise(resolve=>setTimeout(resolve,milliseconds));}finally{await keyUp(key);}
+    const events=await page.evaluate(name=>window.__stagedWalkNativeEvidence.events.filter(event=>event.phase===name),name);
+    return readEntrancePulse(events,{name,key});
+   },
+   settleHeading:async label=>{await phase(label);return waitMotion({type:'heading-settled'});}});
  }
  async function contact(name,id,du,dv){
   const cfg=site(await snapshot(),id).layout;
   const dx=Math.cos(cfg.yaw)*du-Math.sin(cfg.yaw)*dv,dz=-Math.sin(cfg.yaw)*du-Math.cos(cfg.yaw)*dv;
-  await turnTo(Math.atan2(dx,dz));await phase(name);await focusCanvas();
+  await turnTo(Math.atan2(dx,dz),name+'-turn');await phase(name);await focusCanvas();
   const before=await snapshot(),axis=du?'u':'v';await keyDown('w');
   let after,contactFailure;
   try{await waitMotion({type:'contact',id,axis,x:before.actor.x,z:before.actor.z},300_000);after=await snapshot();}
@@ -381,6 +447,7 @@ export async function run(){
   if(scope==='exterior')assertExteriorEvidence(report);
   else{
   assertNativeEvidence(report.nativeEvidence);
+  assertEntranceTurns(report);
   assert.equal(report.passages.length,2);assert.equal(report.contacts.length,2);assert.equal(report.captures.length,8);
   assert(report.contacts.every(contact=>contact.passed),'A sampled contact did not satisfy the native visual/collider agreement gate');
   }

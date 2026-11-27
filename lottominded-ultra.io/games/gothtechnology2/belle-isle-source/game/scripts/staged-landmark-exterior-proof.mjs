@@ -7,9 +7,115 @@ const distance=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
 const edgeKey=(a,b)=>a<b?a+':'+b:b+':'+a;
 const linePoints=(a,b)=>{const count=Math.max(1,Math.ceil(distance(a,b)/.5));return Array.from({length:count+1},(_,i)=>({x:a.x+(b.x-a.x)*i/count,z:a.z+(b.z-a.z)*i/count}));};
 
+/** The unchanged executor leg policy, queried without input. Batch planner
+ * edges without changing the actual .7/2.25 occupancy or .75 coast envelope. */
+export async function prepareExteriorLegs(segments,{queryGround,querySweeps}){
+ const rows=segments.map(({from,to})=>{
+  const remaining=distance(from,to);assert([from.x,from.z,to.x,to.z,remaining].every(Number.isFinite));
+  const length=Math.min(12,remaining),complete=remaining<=.4;
+  return{from,waypoint:to,remaining,length,complete,clear:complete,
+   goal:complete?to:{x:from.x+(to.x-from.x)*length/remaining,z:from.z+(to.z-from.z)*length/remaining},ground:[]};
+ });
+ async function groundFor(values){
+  const samples=values.map(row=>linePoints(row.from,row.goal)),flat=samples.flat(),ground=flat.length?await queryGround(flat):[];
+  assert.equal(ground.length,flat.length,'Incomplete prospective ground receipt');let at=0;
+  for(let i=0;i<values.length;i++){values[i].ground=ground.slice(at,at+samples[i].length);at+=samples[i].length;}
+ }
+ const active=rows.filter(row=>!row.complete);await groundFor(active);
+ const shortened=active.filter(row=>row.ground.some(p=>p.planningClearance<2.25));
+ for(const row of shortened){row.length=Math.min(2.5,row.remaining);row.goal={x:row.from.x+(row.waypoint.x-row.from.x)*row.length/row.remaining,z:row.from.z+(row.waypoint.z-row.from.z)*row.length/row.remaining};}
+ await groundFor(shortened);
+ const sweepRows=[];
+ for(const row of active){
+  row.maxLateral=Math.min(...row.ground.map(p=>p.planningClearance))-.29;
+  if(!row.ground.every(p=>p.walkable)){row.reason='original-ground';continue;}
+  assert(Number.isFinite(row.maxLateral)&&row.maxLateral>0&&row.maxLateral<=1.96,'Invalid prospective planning clearance');sweepRows.push(row);
+ }
+ const swept=sweepRows.length?await querySweeps(sweepRows.map(row=>({from:row.from,to:row.goal,maxLateral:row.maxLateral,maxForward:.75}))):[];
+ assert.equal(swept.length,sweepRows.length,'Incomplete prospective body-sweep receipt');
+ for(let i=0;i<sweepRows.length;i++){sweepRows[i].sweep=swept[i];sweepRows[i].clear=swept[i].clear===true;if(!sweepRows[i].clear)sweepRows[i].reason='original-stopping-corridor';}
+ return rows;
+}
+
+/** Coalescing may change length, width selection and stopping endpoints.
+ * Validate every resulting prospective leg, including the actual connector. */
+export async function checkExteriorProspectivePath(start,waypoints,queries){
+ let current=start,checkedLegs=0;
+ for(const [waypointIndex,waypoint]of waypoints.entries())for(let legIndex=0;legIndex<80;legIndex++){
+  const [leg]=await prepareExteriorLegs([{from:current,to:waypoint}],queries);
+  if(leg.complete)break;checkedLegs++;
+  if(!leg.clear)return{clear:false,checkedLegs,waypointIndex,legIndex,leg};
+  current=leg.goal;
+  if(legIndex===79)return{clear:false,checkedLegs,waypointIndex,legIndex,leg,reason:'Original 80-leg waypoint bound'};
+ }
+ return{clear:true,checkedLegs,end:current};
+}
+
+/** Keep safe portions of a collinear grid run compressed. Every selected
+ * waypoint is checked through the same complete 12m/2.5m executor chunks.
+ * A rejected long proposal is shortened by grid index, never by weakening
+ * clearance. Geometric halving bounds failed queries; even the final one-edge
+ * proposal must pass independently. Nominal endpoints retain the original
+ * .4m arrival policy instead of pretending every grid point was reached. */
+export async function partiallyCoalesceExteriorPath(start,waypoints,queries){
+ const selected=[],accepted=[],rejected=[];let current=start,checkedLegs=0;
+ for(let first=0;first<waypoints.length;){
+  let last=first;
+  if(first>0){
+   const dx=waypoints[first].x-waypoints[first-1].x,dz=waypoints[first].z-waypoints[first-1].z;
+   while(last+1<waypoints.length&&Math.abs(waypoints[last+1].x-waypoints[last].x-dx)<1e-8&&Math.abs(waypoints[last+1].z-waypoints[last].z-dz)<1e-8)last++;
+  }
+  let target=last;
+  for(;;){
+   const from={...current},checked=await checkExteriorProspectivePath(from,[waypoints[target]],queries);
+   if(checked.clear){
+    selected.push(waypoints[target]);accepted.push({from,to:waypoints[target],firstGridIndex:first,lastGridIndex:target,checkedLegs:checked.checkedLegs,end:checked.end});
+    checkedLegs+=checked.checkedLegs;current=checked.end;first=target+1;break;
+   }
+   rejected.push({from,to:waypoints[target],firstGridIndex:first,lastGridIndex:target,...checked});
+   if(target===first)return{clear:false,selected,accepted,rejected,checkedLegs,waypointIndex:first,leg:checked.leg,reason:checked.reason};
+   target=first+Math.floor((target-first)/2);
+  }
+ }
+ return{clear:true,waypoints:selected,accepted,rejected,checkedLegs,end:current};
+}
+
+/** Only yields independently clear proposals. Four actual-start replans are
+ * shared across route replacements. A consumer failure closes this iterator,
+ * so a real turn or post-keydown failure cannot initiate another plan. */
+export async function* exteriorLegProposals({route,label,motion,phase,queryGround,querySweeps,replan,receipt}){
+ const originalWaypointCount=route.originalWaypointCount??route.waypoints.length;
+ assert(Number.isSafeInteger(originalWaypointCount)&&originalWaypointCount>0&&originalWaypointCount<=route.waypoints.length,'Invalid original waypoint allowance');
+ Object.assign(receipt,{label,originalWaypointCount,maximumLegs:originalWaypointCount*80,maximumReplans:4,offeredLegs:0,replans:[],rejected:[]});
+ let active=route,generation=0;
+ for(;;){
+  let replaced=false;
+  waypoints:for(const [index,waypoint]of active.waypoints.entries())for(let segment=0;segment<80;segment++){
+   const current=(await motion()).actor;if(distance(current,waypoint)<=.4)break;
+   assert(receipt.offeredLegs<receipt.maximumLegs,'Native exterior route exceeded its original total leg allowance');
+   const routeLabel=generation?label+'-replan-'+generation:label,name=routeLabel+'-walk-'+index+'-'+segment;
+   await phase(name+'-prospective');
+   const [proposal]=await prepareExteriorLegs([{from:current,to:waypoint}],{queryGround,querySweeps});
+   if(!proposal.clear){
+    receipt.rejected.push({name,stage:'prospective',generation,nativeWIssued:false,proposal});
+    assert(generation<receipt.maximumReplans,'Native exterior prospective replanning exceeded its bounded attempts');
+    generation++;const planName=label+'-replan-'+generation+'-plan';await phase(planName);
+    const replacementReceipt={name:planName,from:current,route:null,error:null};receipt.replans.push(replacementReceipt);
+    try{
+     const replacement=await replan(current);assert(replacement?.waypoints?.length>0,'Missing actual-start exterior replacement');
+     replacementReceipt.route=replacement;active=replacement;replaced=true;break waypoints;
+    }catch(error){replacementReceipt.error=String(error);throw error;}
+   }
+   receipt.offeredLegs++;yield{...proposal,name};
+   if(segment===79)throw Error('Native exterior waypoint exceeded its bounded leg count');
+  }
+  if(!replaced)return;
+ }
+}
+
 /** Neighbour grid plus independent half-metre and native body-sweep checks. A blocked
  * connector/edge fails or is replanned; it never teleports or relaxes terrain. */
-export async function createExteriorPlanner({bounds,camera,layout,queryGround,querySweeps}){
+export async function createExteriorPlanner({bounds,camera,layout,queryGround,querySweeps,receipt={}}){
  const center={x:bounds.center[0],z:bounds.center[2]},radius=Math.hypot(...bounds.max.map((n,i)=>n-bounds.min[i]))/2;
  const halfV=camera.fov*Math.PI/360,halfH=Math.atan(Math.tan(halfV)*camera.aspect);
  const viewDistance=radius/Math.sin(Math.min(halfV,halfH))*1.22,range=viewDistance+60,spacing=2,width=Math.ceil(range*2/spacing)+1;
@@ -17,13 +123,25 @@ export async function createExteriorPlanner({bounds,camera,layout,queryGround,qu
  const points=Array.from({length:width*width},(_,i)=>({x:center.x-range+i%width*spacing,z:center.z-range+Math.floor(i/width)*spacing}));
  async function query(values){const rows=[];for(let i=0;i<values.length;i+=10000)rows.push(...await queryGround(values.slice(i,i+10000)));assert.equal(rows.length,values.length,'Incomplete original terrain receipt');return rows;}
  assert.equal(typeof querySweeps,'function','Original native body sweeps are required');
- const ground=await query(points),blocked=new Set(),rejectedSweeps=[];let checkedEdges=0;
+ const blocked=new Set(),rejectedSweeps=[],rejectedProspectivePaths=[];let checkedEdges=0;
+ Object.assign(receipt,{layout,viewDistance,spacing,maximumSearchAttempts:64,plans:[],rejectedSweeps,rejectedProspectivePaths});
+ const ground=await query(points);
  async function sweeps(segments){const rows=[];for(let i=0;i<segments.length;i+=2000)rows.push(...await querySweeps(segments.slice(i,i+2000)));assert.equal(rows.length,segments.length,'Incomplete original body-sweep receipt');return rows;}
  async function route(start,bearing){
+  const planReceipt={from:{...start},bearing,status:'planning',connectors:[],attempts:[],selected:null,error:null};receipt.plans.push(planReceipt);
+  try{
   const starts=points.map((p,i)=>({i,d:distance(start,p)})).filter(v=>ground[v.i].walkable&&v.d<=12).sort((a,b)=>a.d-b.d);
   let first=-1;
-  for(const candidate of starts)if((await query(linePoints(start,points[candidate.i]))).every(p=>p.walkable)&&
-   (candidate.d<1e-6||(await sweeps([{from:start,to:points[candidate.i],maxLateral:.41}]))[0].clear)){first=candidate.i;break;}
+  for(const candidate of starts){
+   const connectorGround=await query(linePoints(start,points[candidate.i]));
+   const connector={from:start,to:points[candidate.i],groundClear:connectorGround.every(p=>p.walkable),failedGround:connectorGround.filter(p=>!p.walkable),originalSweep:null,prospective:null};planReceipt.connectors.push(connector);
+   if(!connector.groundClear)continue;
+   if(candidate.d>=1e-6){connector.originalSweep=(await sweeps([{from:start,to:points[candidate.i],maxLateral:.41}]))[0];if(!connector.originalSweep.clear)continue;}
+   const checked=await checkExteriorProspectivePath(start,[points[candidate.i]],{queryGround:query,querySweeps:sweeps});
+   connector.prospective=checked;
+   if(checked.clear){first=candidate.i;break;}
+   rejectedProspectivePaths.push({kind:'connector',from:start,waypoints:[points[candidate.i]],...checked});
+  }
   assert(first>=0,'The actual actor has no walkable original-terrain connector');
   const candidates=points.flatMap((p,i)=>{
    const d=distance(p,center),delta=Math.abs(angle(Math.atan2(p.x-center.x,p.z-center.z)-bearing));
@@ -31,6 +149,7 @@ export async function createExteriorPlanner({bounds,camera,layout,queryGround,qu
   }).sort((a,b)=>a.score-b.score);
   assert(candidates.length,'No dry exterior viewpoint exists in the required direction');
   for(let attempt=0;attempt<64;attempt++){
+   const pathReceipt={attempt,connectedCells:0,waypoints:[],failedGround:[],failedSweeps:[],failedProspective:[],coalesced:null,uncoalesced:null};planReceipt.attempts.push(pathReceipt);
    const parent=new Int32Array(points.length).fill(-1),queue=[first];parent[first]=first;
    for(let j=0;j<queue.length;j++){
     const current=queue[j],x=current%width,z=Math.floor(current/width);
@@ -40,25 +159,54 @@ export async function createExteriorPlanner({bounds,camera,layout,queryGround,qu
      parent[next]=current;queue.push(next);
     }
    }
+   pathReceipt.connectedCells=queue.length;
    const goal=candidates.find(c=>parent[c.i]>=0);assert(goal,`No connected original-terrain route reaches the required exterior direction (${queue.length} connected cells, ${candidates.length} candidate cells, ${blocked.size} rejected edges)`);
    const indices=[goal.i];while(indices.at(-1)!==first)indices.push(parent[indices.at(-1)]);indices.reverse();
+   pathReceipt.waypoints=indices.map(i=>points[i]);
    const samples=[],owners=[];
    for(let i=1;i<indices.length;i++)for(const p of linePoints(points[indices[i-1]],points[indices[i]])){samples.push(p);owners.push(edgeKey(indices[i-1],indices[i]));}
    const checked=await query(samples),edgeSweeps=await sweeps(indices.slice(1).map((next,i)=>({from:points[indices[i]],to:points[next],maxLateral:.41})));
    checkedEdges+=indices.length-1;let failed=false;
-   for(let i=0;i<checked.length;i++)if(!checked[i].walkable){blocked.add(owners[i]);failed=true;}
+   for(let i=0;i<checked.length;i++)if(!checked[i].walkable){blocked.add(owners[i]);failed=true;pathReceipt.failedGround.push({edge:owners[i],sample:checked[i]});}
    for(let i=0;i<edgeSweeps.length;i++)if(!edgeSweeps[i].clear){blocked.add(edgeKey(indices[i],indices[i+1]));failed=true;
-    rejectedSweeps.push({...edgeSweeps[i],samples:edgeSweeps[i].samples.filter(sample=>!sample.clear)});}
+    const rejected={...edgeSweeps[i],samples:edgeSweeps[i].samples.filter(sample=>!sample.clear)};rejectedSweeps.push(rejected);pathReceipt.failedSweeps.push(rejected);}
+   if(failed)continue;
+   const prospectiveEdges=await prepareExteriorLegs(indices.slice(1).map((next,i)=>({from:points[indices[i]],to:points[next]})),{queryGround:query,querySweeps:sweeps});
+   for(let i=0;i<prospectiveEdges.length;i++)if(!prospectiveEdges[i].clear){
+    blocked.add(edgeKey(indices[i],indices[i+1]));failed=true;const rejected={kind:'grid-edge',leg:prospectiveEdges[i]};rejectedProspectivePaths.push(rejected);pathReceipt.failedProspective.push(rejected);
+   }
    if(failed)continue;
    const waypoints=[points[first]];
    for(let i=1;i<indices.length-1;i++)if(indices[i]-indices[i-1]!==indices[i+1]-indices[i])waypoints.push(points[indices[i]]);
    waypoints.push(points[indices.at(-1)]);
-   return{bearing,viewDistance,spacing,layout,waypoints,endpoint:waypoints.at(-1),checkedEdges,halfMetreSamples:checked.length,rejectedSweeps,
+   let selected=waypoints,prospective=await checkExteriorProspectivePath(start,selected,{queryGround:query,querySweeps:sweeps}),coalesced=true;
+   pathReceipt.coalesced={waypoints:selected,...prospective};
+   if(!prospective.clear){
+    rejectedProspectivePaths.push({kind:'coalesced',from:start,waypoints:selected,...prospective});
+    const partial=await partiallyCoalesceExteriorPath(start,indices.map(i=>points[i]),{queryGround:query,querySweeps:sweeps});
+    pathReceipt.partial=partial;
+    for(const rejected of partial.rejected)rejectedProspectivePaths.push({kind:'partial-coalescing',...rejected});
+    if(partial.clear&&partial.waypoints.length<indices.length){selected=partial.waypoints;prospective=partial;coalesced=true;}
+    else{
+     selected=indices.map(i=>points[i]);coalesced=false;
+     prospective=await checkExteriorProspectivePath(start,selected,{queryGround:query,querySweeps:sweeps});
+     pathReceipt.uncoalesced={waypoints:selected,...prospective};
+     if(!prospective.clear){
+      rejectedProspectivePaths.push({kind:'uncoalesced',from:start,waypoints:selected,...prospective});
+      assert(prospective.waypointIndex>0,'The checked original-terrain connector changed during path validation');
+      blocked.add(edgeKey(indices[prospective.waypointIndex-1],indices[prospective.waypointIndex]));continue;
+     }
+    }
+   }
+   planReceipt.status='passed';planReceipt.selected={waypoints:selected,coalesced,checkedLegs:prospective.checkedLegs};
+   return{bearing,viewDistance,spacing,layout,waypoints:selected,originalWaypointCount:waypoints.length,endpoint:selected.at(-1),checkedEdges,halfMetreSamples:checked.length,rejectedSweeps,rejectedProspectivePaths:rejectedProspectivePaths.slice(),
+    prospective:{clear:true,checkedLegs:prospective.checkedLegs,coalesced,maxForward:.75},
     source:'Read-only original terrain land/obstruction and loaded native body-sweep queries; independently recorded actual native walking'};
   }
   throw Error('Exterior route could not pass all original-terrain edge checks');
+  }catch(error){planReceipt.status='failed';planReceipt.error=String(error);throw error;}
  }
- return{route,query,viewDistance,center};
+ return{route,query,viewDistance,center,receipt};
 }
 
 /** The original entrance turn helper remains unchanged. Its 100ms polling
@@ -164,6 +312,7 @@ export function assertExteriorEvidence(report){
 
 export async function runExteriorProof({page,report,phase,motion,snapshot,guideAction,dismount,focusCanvas,keyDown,keyUp,waitMotion,settle,frames,capture,trace}){
  report.exteriorViews=[];report.exteriorLegs=[];report.exteriorTurns=[];report.exteriorPlans=[];
+ report.exteriorProspectiveRoutes=[];report.exteriorPlanning=[];
  report.manualVisualReviewRequired=true;report.appearanceAccepted=null;report.occlusionAccepted=null;report.collisionAccepted=null;
  report.groundFit=await page.evaluate(()=>window.__stagedLandmarkProof.groundFit());assert(report.groundFit.structuralReceiptPassed,'Actual original terrain and loaded walking surfaces disagree');
  const queryGround=points=>page.evaluate(points=>window.__stagedLandmarkProof.routeGround(points),points);
@@ -188,31 +337,25 @@ export async function runExteriorProof({page,report,phase,motion,snapshot,guideA
   try{return await handle.jsonValue();}finally{await handle.dispose();}
  }
  const pulse=async(key,milliseconds)=>{await keyDown(key);try{await new Promise(resolve=>setTimeout(resolve,milliseconds));}finally{await keyUp(key);}};
- async function walkRoute(route,label){
-  for(const [index,waypoint]of route.waypoints.entries())for(let segment=0;segment<80;segment++){
-   const current=(await motion()).actor,remaining=distance(current,waypoint);if(remaining<=.4)break;
-   let length=Math.min(12,remaining),goal={x:current.x+(waypoint.x-current.x)*length/remaining,z:current.z+(waypoint.z-current.z)*length/remaining};
-   let ground=await queryGround(linePoints(current,goal));
-   if(ground.some(p=>p.planningClearance<2.25)){
-    // The original garden passages are narrower than a 4.5m corridor. Keep
-    // the original body/clearance requirements and use short legs whose
-    // observed lateral error remains inside the measured native corridor.
-    length=Math.min(2.5,remaining);goal={x:current.x+(waypoint.x-current.x)*length/remaining,z:current.z+(waypoint.z-current.z)*length/remaining};
-    ground=await queryGround(linePoints(current,goal));
-   }
+ async function walkRoute(route,label,replan){
+  const prospectiveReceipt={};report.exteriorProspectiveRoutes.push(prospectiveReceipt);
+  for await(const {name,from:current,length,goal,ground,maxLateral}of exteriorLegProposals({route,label,motion,phase,queryGround,querySweeps,replan,receipt:prospectiveReceipt})){
    assert(ground.every(p=>p.walkable),'Observed actor route approaches an original obstruction');
-   const maxLateral=Math.min(...ground.map(p=>p.planningClearance))-.29;
-   const name=label+'-walk-'+index+'-'+segment,turn={};report.exteriorTurns.push(turn);
+   const turn={};report.exteriorTurns.push(turn);let before,dx,dz,actualLength,sweep,leg;
+   try{
    await turnExteriorHeading({heading:Math.atan2(goal.x-current.x,goal.z-current.z),name:name+'-turn',receipt:turn,legLength:length,maxLateral,maxForward:.75,motion,phase,setFirstPerson,focusCanvas,pulse,settleHeading});
-   await phase(name);await focusCanvas();const before=await motion();
-   const dx=goal.x-before.actor.x,dz=goal.z-before.actor.z,actualLength=Math.hypot(dx,dz);
+   await phase(name);await focusCanvas();before=await motion();
+   dx=goal.x-before.actor.x;dz=goal.z-before.actor.z;actualLength=Math.hypot(dx,dz);
    assert(Math.abs(angle(Math.atan2(dx,dz)-before.actor.headingY))<=Math.min(.15,Math.atan2(maxLateral-.015,actualLength+.75)),'Native exterior heading exceeds the actual swept corridor');
-   const sweep=(await querySweeps([{from:before.actor,to:goal,maxLateral,maxForward:.75}]))[0];
-   const leg={name,before,after:null,goal,ground,maxLateral,sweep,trace:[],coastTrace:[]};report.exteriorLegs.push(leg);
+   sweep=(await querySweeps([{from:before.actor,to:goal,maxLateral,maxForward:.75}]))[0];
+   leg={name,before,after:null,goal,ground,maxLateral,sweep,trace:[],coastTrace:[]};report.exteriorLegs.push(leg);
    assert(sweep.clear,'The actual exterior leg or stopping corridor intersects an original native body obstacle');
+   }catch(error){
+    prospectiveReceipt.rejected.push({name,stage:turn.complete?'post-turn':'turn',nativeWIssued:false,turnIndex:report.exteriorTurns.length-1,turn,before:before??null,goal,ground,maxLateral,sweep:sweep??null,error:String(error)});throw error;
+   }
    let movementFailure;
-   await keyDown('w');try{await waitMotion({type:'world-target',x:before.actor.x,z:before.actor.z,dx:dx/actualLength,dz:dz/actualLength,length:actualLength,maxLateral},90_000);}catch(error){movementFailure=error;}finally{await keyUp('w');}
-   await settle(name);const after=await motion();Object.assign(leg,{after,trace:await trace(name),coastTrace:await trace('settle-'+name)});
+   await keyDown('w');try{await waitMotion({type:'world-target',x:before.actor.x,z:before.actor.z,dx:dx/actualLength,dz:dz/actualLength,length:actualLength,maxLateral},90_000);}catch(error){movementFailure=error;leg.movementError=String(error);}finally{await keyUp('w');}
+   try{await settle(name);}catch(error){leg.settleError=String(error);throw error;}const after=await motion();Object.assign(leg,{after,trace:await trace(name),coastTrace:await trace('settle-'+name)});
    if(movementFailure)throw movementFailure;
    for(const row of[...leg.trace,...leg.coastTrace,after]){
     const x=row.actor.x-before.actor.x,z=row.actor.z-before.actor.z;
@@ -220,7 +363,6 @@ export async function runExteriorProof({page,report,phase,motion,snapshot,guideA
     assert((x*dx+z*dz)/actualLength<=actualLength+sweep.maxForward,'Native exterior coast passed its swept stopping envelope');
    }
    assert(after.frames>before.frames+3&&distance(before.actor,after.actor)>.15,'Native exterior walk did not advance');
-   if(segment===79)throw Error('Native exterior waypoint exceeded its bounded leg count');
   }
  }
  async function aim(id,name){
@@ -244,13 +386,14 @@ export async function runExteriorProof({page,report,phase,motion,snapshot,guideA
  for(const [id,label,action]of[['107227742','aquarium','Travel to entrance'],['107310050','conservatory','Travel to path']]){
   await guideAction(id,action);await dismount();
   const current=await snapshot(),site=current.sites.find(s=>s.id===id),initial=await exterior(id);assert(initial.ready);
-  const planner=await createExteriorPlanner({bounds:initial.bounds,camera:initial.camera,layout:report.layout,queryGround,querySweeps});
+  const plannerReceipt={id,label};report.exteriorPlanning.push(plannerReceipt);
+  const planner=await createExteriorPlanner({bounds:initial.bounds,camera:initial.camera,layout:report.layout,queryGround,querySweeps,receipt:plannerReceipt});
   // Diagonal front/side and opposite rear/side directions expose all four
   // exterior orientations while preserving real surrounding scenery.
   const front=id==='107227742'?Math.atan2(Math.sin(site.layout.yaw),Math.cos(site.layout.yaw)):Math.atan2(-Math.cos(site.layout.yaw),Math.sin(site.layout.yaw));
   for(const [suffix,bearing]of[['front-side',front+Math.PI/4],['rear-side',front+Math.PI*1.25]]){
    const name=label+'-complete-'+suffix;await phase(name+'-plan');
-   const route=await planner.route((await motion()).actor,bearing);report.exteriorPlans.push({name,id,route});await walkRoute(route,name);
+   const route=await planner.route((await motion()).actor,bearing);report.exteriorPlans.push({name,id,route});await walkRoute(route,name,start=>planner.route(start,bearing));
    const before=await aim(id,name);await capture(name,id,{near:false});const after=await exterior(id);
    assert(after.completeBoundsInFrame,'The real capture camera cropped the model');
    report.exteriorViews.push({id,name,bearing:Math.atan2(after.camera.position[0]-after.bounds.center[0],after.camera.position[2]-after.bounds.center[2]),route,before,after});
