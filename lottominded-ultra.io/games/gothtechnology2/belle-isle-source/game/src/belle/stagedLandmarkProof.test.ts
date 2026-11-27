@@ -34,7 +34,7 @@ test('staging proof reads the actual actor and camera without exposing mutable g
  assert.deepEqual(root.toJSON(),before,'Snapshot must not rewrite scene transforms, visibility, geometry, or materials');
  snapshot.actor!.x=999;snapshot.sites[1].layout!.center[0]=999;motion.actor!.z=999;pose.x=777;cfg.center[0]=777;
  const again=proof.publicApi.snapshot();assert.equal(again.actor?.x,12);assert.equal(again.actor?.z,22);assert.deepEqual(again.sites[1].layout?.center,[10,20]);
- assert.equal(Object.isFrozen(proof.publicApi),true);assert.deepEqual(Object.keys(proof.publicApi).sort(),['exterior','frame','groundFit','motion','routeGround','routeSweeps','snapshot']);
+ assert.equal(Object.isFrozen(proof.publicApi),true);assert.deepEqual(Object.keys(proof.publicApi).sort(),['exterior','frame','groundFit','motion','routeGround','routeSweeps','snapshot','viewObstructions']);
  const segment={from:{x:0,z:0},to:{x:1,z:0},maxLateral:.41},saved=JSON.stringify(segment),sweep=proof.publicApi.routeSweeps([segment])[0];
  assert.equal(sweep.clear,false,'Actual native ray hits must reach the public proof receipt');sweep.from.x=999;sweep.samples[0].from.x=999;
  assert.equal(JSON.stringify(segment),saved);assert.equal(proof.publicApi.routeSweeps([segment])[0].from.x,0);

@@ -2,6 +2,7 @@ import * as T from 'three';
 import {replaceableLegacyMesh,legacyDetailName,STUDY_SITES} from './stagedLandmarkStudies.ts';
 import {waterfrontSkylineSiteReceipts} from './waterfrontSkyline.ts';
 import {sweepVisibleMeshTriangles} from './visibleTriangleSweep.ts';
+import {readStagedViewBounds} from './stagedLandmarkViewBounds.ts';
 import {readStagedGroundFit,readStagedExterior,readStagedRouteGround,readStagedRouteSweeps,type GroundLayout,type GroundRouteSegment} from './stagedLandmarkGroundFit.ts';
 
 type Point={x:number;y:number;z:number};
@@ -78,6 +79,7 @@ export function createStagedLandmarkProof(root:T.Object3D,terrain:Terrain,layout
   publicApi:Object.freeze({snapshot,motion,frame:()=>frames,
    groundFit:()=>readStagedGroundFit(root,terrain,{aquarium:copies.get('107227742'),conservatory:copies.get('107310050')}),
    exterior:(id:string)=>readStagedExterior(root,id,camera),
+   viewObstructions:(id:string)=>{const exterior=readStagedExterior(root,id,camera);return camera&&exterior.ready&&exterior.bounds?{...readStagedViewBounds(root,id,camera,exterior.bounds),camera:exterior.camera,selectedLevels:exterior.selectedLevels}:null;},
    routeGround:(points:readonly {x:number;z:number}[])=>readStagedRouteGround(terrain,points),
    routeSweeps:(segments:readonly GroundRouteSegment[])=>readStagedRouteSweeps(terrain,segments),
   }),
