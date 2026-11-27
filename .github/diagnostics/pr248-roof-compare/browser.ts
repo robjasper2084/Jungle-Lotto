@@ -12,6 +12,7 @@ import {installSharedGeometryBuffers} from '@app/sharedGeometryBuffers.ts';
 import {planDetroitProps} from '@app/detroitProps.ts';
 import {check,sha,f32,objectPath,roofPath,cameraReceipt,setRecordedCamera,sceneReceipt} from './scene-receipt';
 import pins from './pins.json';
+import {snapshotOwnedSubmission} from './submission-receipt.ts';
 declare const __ROOF_VARIANT__:'before'|'candidate';
 
 const root=window as any,mode=__ROOF_VARIANT__,{width,height}=pins.viewport;
@@ -33,6 +34,7 @@ const evidence:any={schema:1,diagnosticOnly:true,releaseAcceptance:false,mode,so
   'Original deferred prefetch ranges remain authoritative. The original public world landmark-preparation API completes the near-view queue; distant optional golf detail is not forced into view.'],
  construction:pins.construction,preparation:[],errors:[],cases:[]};
 let world:Awaited<ReturnType<typeof createWorld>>,current:any,draws:any[]=[],recordDraws=false,shared:any;
+let ownedSnapshots:ReturnType<typeof snapshotOwnedSubmission>[]=[];
 let requiredDetroitProps:{name:string;placements:number;instances:number}[]=[];
 function publishedDetroitProps(){
  const matches=[];
@@ -83,10 +85,12 @@ renderer.renderBufferDirect=function(...args:Parameters<typeof direct>){
  const depth=!!((material as any).isMeshDepthMaterial||(material as any).isMeshDistanceMaterial);
  const pass=target===null&&drawScene===scene&&cam===camera&&!depth?'color':target!==null&&depth?'shadow':'auxiliary';
  try{return Reflect.apply(direct,this,args);}
- finally{if(recordDraws){const after=counts();draws.push({path:objectPath(object),name:object.name,pass,materialType:material.type,materialName:material.name,
+ finally{if(recordDraws){const after=counts();const row:any={path:objectPath(object),name:object.name,pass,materialType:material.type,materialName:material.name,
   materialSide:material.side,renderOrder:object.renderOrder,castShadow:object.castShadow,receiveShadow:object.receiveShadow,
   submittedGeometry:{positionCount:geometry.getAttribute('position')?.count??0,indexCount:geometry.index?.count??0,start:geometry.drawRange.start,count:Number.isFinite(geometry.drawRange.count)?geometry.drawRange.count:'Infinity'},
-  camera:cameraReceipt(cam as T.PerspectiveCamera),calls:after.calls-prior.calls,triangles:after.triangles-prior.triangles,lines:after.lines-prior.lines,points:after.points-prior.points});}}
+  camera:cameraReceipt(cam as T.PerspectiveCamera),calls:after.calls-prior.calls,triangles:after.triangles-prior.triangles,lines:after.lines-prior.lines,points:after.points-prior.points};
+  const owner=snapshotOwnedSubmission(geometry,(object as T.Mesh).geometry,args[5],roofPath(row.path));if(owner){row.submittedOwnership=owner.receipt;ownedSnapshots.push(owner);}draws.push(row);
+ }}
 };
 async function fence(){
  const sync=gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE,0);check(sync,'Native WebGL2 fence unavailable');gl.flush();const start=performance.now();
@@ -127,8 +131,8 @@ function roofRegion(){
  const right=Math.min(width,Math.ceil(Math.max(...projected.map(v=>v[0])))+12),bottom=Math.min(height,Math.ceil(Math.max(...projected.map(v=>v[1])))+12);
  check(right>x&&bottom>y,'Empty roof region');return {x,y,width:right-x,height:bottom-y,padding:12,localBounds:[[-6.9,7.6,-38.2],[6.9,9.8,38.2]],projected};
 }
-function draw(){
- assertCamera();assertSettings();check(!pendingWork.loads&&!pendingWork.compiles&&!pendingWork.errors.length&&publishedDetroitProps(),'Original asset work/publication is incomplete during frozen render');draws=[];recordDraws=true;const before=renderer.info.render.frame;
+function draw():any{
+ assertCamera();assertSettings();check(!pendingWork.loads&&!pendingWork.compiles&&!pendingWork.errors.length&&publishedDetroitProps(),'Original asset work/publication is incomplete during frozen render');draws=[];ownedSnapshots=[];recordDraws=true;const before=renderer.info.render.frame;
  try{renderer.render(scene,camera);}finally{recordDraws=false;}
  assertCamera();check(gl.getError()===gl.NO_ERROR&&!gl.isContextLost(),'Native WebGL render failed');
  const observer=root.__landmarkComparisonObserver.snapshot();
@@ -136,8 +140,11 @@ function draw(){
  const expected=mode==='before'?48:98;
  const roof=draws.filter(d=>d.pass==='color'&&roofPath(d.path)&&d.calls>0);
  check(roof.length===1&&roof[0].path.includes('107227742_STAGED_LOD0#')&&roof[0].triangles===expected,'Actual color submission is not the original full-detail roof');
- return {frameBefore:before,frameAfter:renderer.info.render.frame,camera:cameraReceipt(camera),settings:settings(),draws:draws.slice(),observer,
+ const copies=ownedSnapshots.slice(),receipt={frameBefore:before,frameAfter:renderer.info.render.frame,camera:cameraReceipt(camera),settings:settings(),draws:draws.slice(),observer,
   preparationActivity:{events:pendingWork.events,loads:pendingWork.loads,compiles:pendingWork.compiles,errors:pendingWork.errors.slice()}};
+ // Hash synchronous copies only after native readPixels/toDataURL. The draw
+ // itself and every source-owned buffer stay synchronous and unchanged.
+ return Object.defineProperty(receipt,'settleOwners',{value:()=>Promise.all(copies.map(o=>o!.settle(sha)))});
 }
 const ready=(async()=>{
  check(root.__roofDeterminism&&root.__landmarkComparisonObserver,'Original observer and explicit construction seed must be installed before modules');
@@ -166,12 +173,12 @@ async function prepare(index:number){
  current.preparationQuiet=await finishOriginalPreparation();
  await world.sky.prepareReflections(camera,camera.position.x,camera.position.z);scene.updateMatrixWorld(true);
  await renderer.compileAsync(scene,camera);await fence();
- const first={...draw(),shadowMaps:shadowMaps()};current.preparationPasses.push(first);await fence();
- check(first.draws.some(d=>d.pass==='shadow'&&d.calls>0&&d.triangles>0),'Original scheduled shadow pass has no actual native submissions');
- check(first.shadowMaps.some(s=>s.castShadow&&s.intensity>0&&s.allocated?.[0]>0&&s.allocated?.[1]>0),'Original High shadow map is not allocated');
+ const first=draw();first.shadowMaps=shadowMaps();current.preparationPasses.push(first);await fence();await first.settleOwners();
+ check(first.draws.some((d:any)=>d.pass==='shadow'&&d.calls>0&&d.triangles>0),'Original scheduled shadow pass has no actual native submissions');
+ check(first.shadowMaps.some((s:any)=>s.castShadow&&s.intensity>0&&s.allocated?.[0]>0&&s.allocated?.[1]>0),'Original High shadow map is not allocated');
  const observer=root.__landmarkComparisonObserver;
  if(index===0){check(observer.canArm(),'Original observer cannot arm after complete preparation');current.captureWindow=observer.arm();}
- for(let i=0;i<2;i++){current.preparationPasses.push(draw());await fence();}
+ for(let i=0;i<2;i++){const frame=draw();current.preparationPasses.push(frame);await fence();await frame.settleOwners();}
  check(observer.ready(),'Original observer is not ready for native captures');
  current.roofRegion=roofRegion();current.scene=await sceneReceipt(scene);current.stats=JSON.parse(JSON.stringify(world.stats));current.random=root.__roofDeterminism();
  return {name:current.name,roofRegion:current.roofRegion};
@@ -182,10 +189,23 @@ async function capture(index:number){
  const receipt=draw(),pixels=new Uint8Array(width*height*4);
  // Same synchronous task: preserveDrawingBuffer stays at its original false.
  gl.readPixels(0,0,width,height,gl.RGBA,gl.UNSIGNED_BYTE,pixels);check(gl.getError()===gl.NO_ERROR,'Original framebuffer read failed');
- const png=canvas.toDataURL('image/png');const completion=await fence();
+ const png=canvas.toDataURL('image/png');const completion=await fence();await receipt.settleOwners();
  const row={index,...receipt,roofRegion:current.roofRegion,pixelSha256:await sha(pixels),completion,random:root.__roofDeterminism()};
  current.captures.push(row);return {...row,png,rawRgbaBase64:rawBase64(pixels)};
 }
-async function finishCase(){check(current.captures.length===2,'Missing frozen native captures');current.sceneAfter=await sceneReceipt(scene);return {name:current.name};}
+async function finishCase(){
+ check(current.captures.length===2,'Missing frozen native captures');
+ current.sceneAfter=await sceneReceipt(scene);
+ if(current.index+1<pins.nativeBeforeEvidence.views.length){
+  // The original cadence needs one intervening color-only frame at a distinct
+  // simulation time. Keep all four captured samples unchanged; a repeated
+  // frozen timestamp never advances that cadence. Do not force shadow flags.
+  const time=current.time+1/60,updateFlags={running:false,allowDeferred:false};
+  world.update(time,camera.position.x,camera.position.z,camera,updateFlags.running,updateFlags.allowDeferred);
+  const frame=draw();const completion=await fence();await frame.settleOwners();
+  current.transitionAfterCapture={time,stepSeconds:1/60,updateFlags,...frame,completion};
+ }
+ return {name:current.name};
+}
 const wrap=(fn:Function)=>async(...args:any[])=>{try{return await fn(...args);}catch(e){evidence.errors.push(text(e));throw e;}};
 root.__roofCompare=Object.freeze({ready:()=>ready,prepare:wrap(prepare),capture:wrap(capture),finishCase:wrap(finishCase),read:()=>evidence});

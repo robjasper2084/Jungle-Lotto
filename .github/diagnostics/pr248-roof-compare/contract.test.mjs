@@ -1,8 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+import {snapshotOwnedSubmission} from './submission-receipt.ts';
+import {assertSubmittedOwner} from './contract.mjs';
 import {pins,sha256,artifactMetadata} from './provenance.mjs';
-import {assertScenePair,assertDrawPair,assertCamera,assertSourcePair,assertFence,analyze} from './contract.mjs';
+import {assertScenePair,assertDrawPair,assertCamera,assertSourcePair,assertFence,assertTransition,analyze} from './contract.mjs';
 import {decodePng,verifyCapture} from './png-evidence.mjs';
 import {encodeRgba,cropRgba,comparePixels} from './png-derived.mjs';
 
@@ -56,6 +59,37 @@ test('GPU completion requires a successful native fence and ordered finite times
  for(const result of ['ALREADY_SIGNALED','CONDITION_SATISFIED'])assertFence({submittedAt:5,completedAt:6,result});
  for(const value of [null,{}, {submittedAt:5,completedAt:4,result:'ALREADY_SIGNALED'}, {submittedAt:5,completedAt:6,result:'WAIT_FAILED'}, {submittedAt:NaN,completedAt:6,result:'ALREADY_SIGNALED'}])assert.throws(()=>assertFence(value));
 });
+function transitionCase(index=0,mode='before'){
+ const view=pins.nativeBeforeEvidence.views[index],c=clone(view.camera);
+ const camera={projection:c.projection,gpu:{view:{bits:c.gpu.viewMatrixBits},projection:{bits:c.gpu.projectionMatrixBits},position:{bits:c.gpu.cameraPositionBits}}};
+ const frame={camera,frameBefore:40,frameAfter:41,
+  observer:{latest:{valid:true,camera:{gpu:c.gpu}},fresh:true,ready:true,captureInvalidPasses:0,errors:[],
+   coverage:{renderer:true,render:true,direct:true,currentRenderHook:true,currentDirectHook:true}},
+  settings:{viewport:{width:1280,height:800,pixelRatio:1,devicePixelRatio:1},quality:'high',effectiveQuality:'high',scale:1,hour:12,reducedMotion:true,focused:true,visible:true,
+   skySettings:{cycle:false,clouds:'clear'},artStyle:'authentic',exposure:.85,shadow:{enabled:true,type:1},actualContext:{preserveDrawingBuffer:false}},
+  preparationActivity:{events:12,loads:0,compiles:0,errors:[]},completion:{submittedAt:51,completedAt:52,result:'CONDITION_SATISFIED'},
+  draws:drawPair()[mode==='before'?0:1].filter(d=>d.pass==='color')};
+ const time=pins.construction.simulationTimeSeconds+index,last={...clone(frame),frameBefore:39,frameAfter:40,completion:{submittedAt:49,completedAt:50,result:'ALREADY_SIGNALED'}};
+ return {time,captures:[clone(last),last],...(index<3?{transitionAfterCapture:{time:time+1/60,stepSeconds:1/60,updateFlags:{running:false,allowDeferred:false},...frame}}:{})};
+}
+test('Inter-view cadence uses one recorded native color-only frame while keeping all capture clocks',()=>{
+ for(let index=0;index<4;index++)for(const mode of ['before','candidate'])assertTransition(transitionCase(index,mode),pins.nativeBeforeEvidence.views[index],mode,index);
+ const e=transitionCase(0);e.time+=1/60;assert.throws(()=>assertTransition(e,pins.nativeBeforeEvidence.views[0],'before',0));
+ const last=transitionCase(3);last.transitionAfterCapture=transitionCase(0).transitionAfterCapture;
+ assert.throws(()=>assertTransition(last,pins.nativeBeforeEvidence.views[3],'before',3));
+});
+test('Inter-view evidence rejects missing, reordered, changed-camera or forced-shadow transitions',()=>{
+ const edits=[e=>delete e.transitionAfterCapture,e=>e.transitionAfterCapture.time=e.time,
+  e=>e.transitionAfterCapture.stepSeconds=.1,e=>e.transitionAfterCapture.updateFlags.allowDeferred=true,
+  e=>e.transitionAfterCapture.frameBefore--,e=>e.transitionAfterCapture.frameAfter++,
+  e=>e.transitionAfterCapture.completion.submittedAt=49,e=>e.transitionAfterCapture.completion.result='WAIT_FAILED',
+  e=>e.transitionAfterCapture.camera.gpu.view.bits[0]^=1,e=>e.transitionAfterCapture.settings.shadow.enabled=false,
+  e=>e.transitionAfterCapture.settings.exposure=1,
+  e=>e.transitionAfterCapture.preparationActivity.events++,e=>e.transitionAfterCapture.preparationActivity.loads++,
+  e=>e.transitionAfterCapture.draws.push({...e.transitionAfterCapture.draws[1],pass:'shadow'}),
+  e=>e.transitionAfterCapture.observer.coverage.currentDirectHook=false];
+ for(const [index,edit] of edits.entries()){const e=transitionCase();edit(e);assert.throws(()=>assertTransition(e,pins.nativeBeforeEvidence.views[0],'before',0),undefined,'transition mutation '+index);}
+});
 test('Incomplete native evidence cannot become comparison acceptance',()=>{
  for(const value of [{},{before:{}},{before:{...pins.sources.before},candidate:{}}]){
   const r=analyze(value);assert.equal(r.complete,false);assert.equal(r.releaseAcceptance,false);assert.equal(r.pixelEquivalent,false);assert(r.errors.length);
@@ -103,4 +137,80 @@ test('Dedicated workflow pins both source heads and preserves original gates',as
  assert(workflow.includes("github.event.pull_request.head.ref == 'upgrade-redesign-pr248-roof-comparison-20261126'"));
  assert(workflow.includes('if: always()'));assert(workflow.includes('runs-on: macos-15'));
  assert(!/staged-landmark-walk-proof|sustained-ride-profile|continue-on-error/.test(workflow));
+});
+
+
+const byteHash=b=>createHash('sha256').update(b).digest('hex');
+const typedBytes=a=>new Uint8Array(a.buffer,a.byteOffset,a.byteLength);
+function ownerGeometry(vertices=3,indices=3){
+ const position=new Float32Array(vertices*3);for(let i=0;i<position.length;i++)position[i]=i/8;
+ const index=new Uint16Array(indices);for(let i=0;i<indices;i++)index[i]=i%vertices;
+ const attribute=(array,itemSize)=>({array,itemSize,count:array.length/itemSize,normalized:false,gpuType:1015,usage:35044});
+ return {attributes:{position:attribute(position,3)},index:attribute(index,1),drawRange:{start:0,count:Infinity},getAttribute(name){return this.attributes[name];}};
+}
+function ownerPage(source,vertexOffset=2,indexOffset=5,vertices=300,indices=900){
+ const page=ownerGeometry(vertices,indices);page.attributes.position.array.fill(0);page.index.array.fill(0);
+ page.attributes.position.array.set(source.attributes.position.array,vertexOffset*3);
+ for(let i=0;i<source.index.count;i++)page.index.array[indexOffset+i]=source.index.array[i]+vertexOffset;
+ const start=Math.max(0,source.drawRange.start),count=Math.min(source.index.count,source.drawRange.start+source.drawRange.count)-start;
+ page.drawRange={start:indexOffset+start,count};return page;
+}
+function ownerScene(source,isRoof=false){
+ const row=a=>({type:a.array.constructor.name,count:a.count,itemSize:a.itemSize,normalized:a.normalized,gpuType:a.gpuType,usage:a.usage,sha256:byteHash(typedBytes(a.array)),
+  ...(isRoof?{prefixSha256:byteHash(typedBytes(a.array).subarray(0,(a.itemSize===1?144:96*a.itemSize)*a.array.BYTES_PER_ELEMENT))}:{})});
+ return {isRoof,geometry:{attributes:{position:row(source.attributes.position)},index:row(source.index),drawRange:{start:source.drawRange.start,count:Number.isFinite(source.drawRange.count)?source.drawRange.count:'Infinity'}}};
+}
+async function ownerDraw(source,page,{isRoof=false,pass='color',name='Scene#0/Tree#0'}={}){
+ const copy=snapshotOwnedSubmission(page,source,null,isRoof);const submittedOwnership=await copy.settle(async b=>byteHash(b));
+ return {path:name,pass,calls:1,triangles:source.index.count/3,submittedGeometry:{positionCount:page.getAttribute('position').count,indexCount:page.index.count,start:page.drawRange.start,count:page.drawRange.count},submittedOwnership};
+}
+test('Actual shared owner bytes survive page growth and index relocation without weakening source proof',async()=>{
+ const source=ownerGeometry(),a=await ownerDraw(source,ownerPage(source)),b=await ownerDraw(source,ownerPage(source,56,155,462,1350));
+ const scene=ownerScene(source);assertSubmittedOwner(a,scene);assertSubmittedOwner(b,scene);
+ const [ra,rb]=drawPair();assertDrawPair([a,...ra.slice(1)],[b,...rb.slice(1)]);
+ for(const mutate of [d=>delete d.submittedOwnership,d=>d.submittedOwnership.attributes.position.submittedSha256='0'.repeat(64),
+  d=>d.submittedOwnership.index.submittedSha256='1'.repeat(64),d=>d.submittedOwnership.vertexOffset=-1,
+  d=>d.submittedOwnership.indexOffset++,d=>d.submittedOwnership.sourceActive.count--,
+  d=>d.submittedGeometry.count--,d=>delete d.submittedOwnership.index.rawSubmittedSha256]){
+  const c=clone(b);mutate(c);assert.throws(()=>assertSubmittedOwner(c,scene));
+ }
+ const wrongGrowth=clone(b);wrongGrowth.submittedGeometry.positionCount++;assert.throws(()=>assertDrawPair([a,...ra.slice(1)],[wrongGrowth,...rb.slice(1)]));
+});
+test('Owner snapshot rejects actual vertex/index changes, signed-zero changes and unsupported ranges',()=>{
+ for(const mutate of [p=>p.attributes.position.array[6]+=.125,p=>p.index.array[6]++,p=>p.drawRange.count--,
+  p=>p.drawRange.start++,p=>p.index.array=new Uint32Array(p.index.array),p=>p.attributes.position.normalized=true]){
+  const source=ownerGeometry(),page=ownerPage(source);mutate(page);assert.throws(()=>snapshotOwnedSubmission(page,source,null));
+ }
+ const source=ownerGeometry();source.attributes.position.array[0]=-0;const page=ownerPage(source);page.attributes.position.array[6]=0;
+ assert.throws(()=>snapshotOwnedSubmission(page,source,null),'Signed zero must be compared as original bytes');
+ assert.throws(()=>snapshotOwnedSubmission(ownerPage(source),source,{}),'Unknown group cannot claim exact owner coverage');
+});
+test('Owner bytes are copied before any asynchronous hashing or later shared-page changes',async()=>{
+ const source=ownerGeometry(),page=ownerPage(source),expected=byteHash(typedBytes(source.attributes.position.array));
+ const copied=snapshotOwnedSubmission(page,source,null);
+ source.attributes.position.array[0]=111;page.attributes.position.array.fill(222);page.index.array.fill(333);
+ const proof=await copied.settle(async bytes=>{await Promise.resolve();return byteHash(bytes);});
+ assert.equal(proof.attributes.position.sourceSha256,expected);assert.equal(proof.attributes.position.submittedSha256,expected);
+ assert.notEqual(proof.attributes.position.sourceSha256,byteHash(typedBytes(source.attributes.position.array)));
+});
+test('Pooled roof color/shadow draws retain exact old prefixes and add only the intended fifty triangles',async()=>{
+ const before=ownerGeometry(96,144),candidate=ownerGeometry(150,294);
+ candidate.index.array.set(before.index.array);
+ const a=await ownerDraw(before,ownerPage(before,2,5,300,900),{isRoof:true,name:path(0)});
+ const b=await ownerDraw(candidate,ownerPage(candidate,2,5,462,1350),{isRoof:true,name:path(0)});
+ assertSubmittedOwner(a,ownerScene(before,true));assertSubmittedOwner(b,ownerScene(candidate,true));
+ assert.deepEqual(assertDrawPair([a,{...a,pass:'shadow'}],[b,{...b,pass:'shadow'}]),{roofColor:1,roofShadow:1});
+ const c=clone(b);c.submittedOwnership.attributes.position.submittedPrefixSha256='0'.repeat(64);assert.throws(()=>assertSubmittedOwner(c,ownerScene(candidate,true)));
+ const d=clone(b);d.triangles--;assert.throws(()=>assertDrawPair([a],[d]));
+});
+test('Active-owner hashing cannot introduce an async boundary before the native PNG/readback',async()=>{
+ const browser=await readFile(new URL('./browser.ts',import.meta.url),'utf8');
+ const capture=browser.slice(browser.indexOf('async function capture('),browser.indexOf('async function finishCase('));
+ const draw=capture.indexOf('const receipt=draw()'),raw=capture.indexOf('gl.readPixels('),png=capture.indexOf("canvas.toDataURL('image/png')"),settle=capture.indexOf('await receipt.settleOwners()');
+ assert(draw>=0&&draw<raw&&raw<png&&png<settle);assert(!capture.slice(draw,png).includes('await '));
+ assert(browser.includes('snapshotOwnedSubmission(geometry,(object as T.Mesh).geometry,args[5],roofPath(row.path))'));
+ assert(browser.includes('await frame.settleOwners()'),'Preparation and inter-view hashes must be settled too');
+ const contract=await readFile(new URL('./contract.mjs',import.meta.url),'utf8');
+ assert(contract.includes('...(e.transitionAfterCapture?[e.transitionAfterCapture]:[])'),'Inter-view owner bytes must be verified');
+ assert(!browser.includes('shadowMap.needsUpdate='));
 });
