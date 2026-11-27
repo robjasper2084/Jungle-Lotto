@@ -1,0 +1,93 @@
+{
+  "version": 1,
+  "purpose": "Native compositor and GPU-service CPU scheduling attribution; no measured GPU execution and never release acceptance",
+  "diagnosticKind": "native-compositor-gpu-service",
+  "payloadBase": "893f769838166e6e35624b7b979ed5cbb8414507",
+  "observerBaseCommit": "ac88da2e62f46a50020391e8629ac0dbd995baea",
+  "observerBaseTree": "6ff52ffbf2c1eed6aef8557e542be7eb6fbb7754",
+  "preservedObserverFiles": {
+    "hooks.mjs": "afd64954dd76e9001fc1ec19c0363bb269ebe6ea6ef7d7a3bfbb821788d04798",
+    "page-probe.mjs": "39ca317672fd1274afc582564ae5316cca7edf540b2abc73309e43fbcc5fcff2"
+  },
+  "repository": "robjasper2084/Jungle-Lotto",
+  "cases": {
+    "cadillac": {
+      "pullRequest": 210,
+      "commit": "75906273c0cd414c0d004320fc6f654b4783e5b1",
+      "tree": "9f0351be133dd370a676090d27559a0adaf00605"
+    }
+  },
+  "project": "lottominded-ultra.io/games/gothtechnology2",
+  "game": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game",
+  "driver": {
+    "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/sustained-ride-profile.mjs",
+    "gitBlob": "c722b5810a7693e5ece72ed00b4401e7cde7267a",
+    "sha256": "8f6af949083800c491b65e0709c04cc29eb5712634f744c5b912f76ce651fcf5",
+    "bytes": 20186
+  },
+  "packageFiles": {
+    "package.json": "b7849345af649ba60ce5c8c1c95203c5e8eb3f2fe2a31ae29d63ab665df3b2f7",
+    "package-lock.json": "a54bba2d2b6226f3b8562c4b52f4be468af15d85ff8c0d992351bf9a3c5f8d32",
+    "belle-isle-source/game/package.json": "7b2c4da476587cab12a33c31f43a596c526f53775647b88e586b46dd2bb9c246",
+    "belle-isle-source/game/package-lock.json": "105e85e781044feb8f590a3ea1e5bd0e98bb20f5512dcb1aedab30a7af0686f2"
+  },
+  "runtime": {
+    "nodeMajor": 24,
+    "playwright": "1.61.1",
+    "platform": "darwin",
+    "device": "desktop",
+    "mode": "full",
+    "seconds": 90,
+    "viewport": {"width": 1440, "height": 900},
+    "pixelRatio": 1,
+    "quality": "high",
+    "frameCap": 60,
+    "samplingIntervalUs": 2000
+  },
+  "bounds": {
+    "captureWatchdogMs": 110000,
+    "checkpointEveryMs": 30000,
+    "protocolTimeoutMs": 4000,
+    "cleanupTimeoutMs": 10000,
+    "traceBufferKiB": 131072,
+    "traceFileBytes": 134217728,
+    "traceDrainTimeoutMs": 32000,
+    "traceMetadataRows": 4096,
+    "traceTracks": 4096,
+    "bundleBytes": 33554432,
+    "bundleCount": 128,
+    "assetEvents": 8192,
+    "parsedScripts": 4096,
+    "debuggerScriptCacheBytes": 8388608,
+    "rafSamples": 16384,
+    "longTasks": 4096,
+    "marks": 256
+  },
+  "trace": {
+    "categories": ["cc", "viz", "gpu", "toplevel", "toplevel.flow", "devtools.timeline", "blink.user_timing"],
+    "recordMode": "recordUntilFull",
+    "streamFormat": "json",
+    "rawFlowIdentifiersPreserved": true,
+    "gpuExecutionMeasured": false,
+    "semanticReference": {
+      "chrome": "158.0.8127.89",
+      "revision": "1de57fa19722fa6d6841d4f596c394d015580656",
+      "sourceArtifact": 15182970104,
+      "allRequiredCategoriesObserved": true
+    },
+    "volumeSizingAllowance": {
+      "referenceTraceBytes": 27956883,
+      "referenceTraceEvents": 111977,
+      "referenceCaptureSeconds": 90.559861,
+      "referenceTraceSha256": "4ddce5500559f0a88bcf0a9d8aeb143eeeb10083b4fcc751e20d62737851099b",
+      "referenceStopToTraceSavedMs": 4803,
+      "additionalRecordsPerFrameAllowance": 60,
+      "framesPerSecondAllowance": 60,
+      "captureSecondsAllowance": 110,
+      "estimatedBytesAtAllowance": 132826134,
+      "note": "Capacity planning only: scale the retained approximately 250-byte average event plus an assumed 60 additional records per 60 Hz frame through the watchdog. New categories were not measured; event sizes/rates can exceed this allowance. Any cap, loss, missing required tracks, or drain timeout makes the diagnostic partial."
+    }
+  },
+  "strictDriverStepTimeoutMinutes": 28,
+  "retryCount": 0
+}
