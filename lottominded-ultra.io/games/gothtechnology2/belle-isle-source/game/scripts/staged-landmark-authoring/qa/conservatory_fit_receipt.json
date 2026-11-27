@@ -1,0 +1,412 @@
+{
+  "sourcePackageSha256": "74d2eb591f1b5a9b4b67b679923b3cdf71b287cd26e00d8712e892fd9a597705",
+  "sourceMapBlob": "e5c741279fe981b928c9fd4d58a72d72ae7cb017",
+  "followupBase": "ee7c4515826fdbaca780b11f8e58cc216855abad",
+  "candidateGeneratorSha256": "716b9b6fff39112c7e770448c6f2cab55ccf9c6652506e1b12b4c06c495d16a8",
+  "models": [
+    {
+      "file": "Aquarium_Arched_Entrance_Study.glb",
+      "beforeSha256": "26447779b20c5bbd2ab1ee6eb3dc1489333722e045400697c40a32cae3c69b93",
+      "afterSha256": "cb34ee2d6d88bf9afebe98a93ffc3b85651271faa287a073d25106be4c717986",
+      "beforeBytes": 60268,
+      "afterBytes": 61528,
+      "meshGroups": 26,
+      "beforeTriangles": 2688,
+      "afterTriangles": 2688,
+      "changedComponents": [],
+      "unchangedComponents": [
+        "Entrance/FlatLanding__marble",
+        "Entrance/InsideSteps__marble",
+        "Entrance/OutsideSteps__marble",
+        "Entrance/RailPosts__darkIron",
+        "Entrance/Rails__darkIron",
+        "Facade/ArchSpandrels__brick",
+        "Facade/BrickWindowJambs__brick",
+        "Facade/FrontBrickAboveWindows__brick",
+        "Facade/FrontBrickBelowWindows__brick",
+        "Facade/FrontBrickWindowJambs__brick",
+        "Facade/FrontWindows__greenGlass",
+        "Facade/LongBrickWallAboveWindows__brick",
+        "Facade/LongBrickWallBelowWindows__brick",
+        "Facade/RearWall__brick",
+        "Facade/SideWindows__greenGlass",
+        "Facade/WindowMullions__darkIron",
+        "Facade/WindowSills__limestone",
+        "Portal/AbstractNeptuneCartoucheUnverified__limestone",
+        "Portal/EngravedSignStone__limestone",
+        "Portal/InnerRecessArch__limestone",
+        "Portal/RecessJambs__limestone",
+        "Portal/StoneBases__marbleEdge",
+        "Portal/StoneColumns__limestone",
+        "Portal/StoneVoussoirs__limestone",
+        "Roof/PatinatedCopperPanels__copper",
+        "Roof/StandingSeams__darkIron"
+      ],
+      "materialsTexturesUnchanged": true
+    },
+    {
+      "file": "Aquarium_Arched_Entrance_Study_LOD1.glb",
+      "beforeSha256": "51d265f0a664ac896c8c23eb50b51f39ff52eeb2adbbc252ed16340c419e3ad9",
+      "afterSha256": "142d194ddb69dbecda6683ba067615d96579ee446a2640221abf47eddc58c651",
+      "beforeBytes": 41788,
+      "afterBytes": 42720,
+      "meshGroups": 20,
+      "beforeTriangles": 1752,
+      "afterTriangles": 1752,
+      "changedComponents": [],
+      "unchangedComponents": [
+        "Entrance/FlatLanding__marble",
+        "Entrance/InsideSteps__marble",
+        "Entrance/OutsideSteps__marble",
+        "Facade/ArchSpandrels__brick",
+        "Facade/BrickWindowJambs__brick",
+        "Facade/FrontBrickAboveWindows__brick",
+        "Facade/FrontBrickBelowWindows__brick",
+        "Facade/FrontBrickWindowJambs__brick",
+        "Facade/FrontWindows__greenGlass",
+        "Facade/LongBrickWallAboveWindows__brick",
+        "Facade/LongBrickWallBelowWindows__brick",
+        "Facade/RearWall__brick",
+        "Facade/SideWindows__greenGlass",
+        "Portal/EngravedSignStone__limestone",
+        "Portal/InnerRecessArch__limestone",
+        "Portal/RecessJambs__limestone",
+        "Portal/StoneBases__marbleEdge",
+        "Portal/StoneColumns__limestone",
+        "Portal/StoneVoussoirs__limestone",
+        "Roof/PatinatedCopperPanels__copper"
+      ],
+      "materialsTexturesUnchanged": true
+    },
+    {
+      "file": "Aquarium_Arched_Entrance_Study_LOD2.glb",
+      "beforeSha256": "4295c700ff745bf9c413d78f3e58997f2abc5da22665ee4515bedcd72db3c554",
+      "afterSha256": "6bdfd9718cc9a7c1f18b12f3965962433afbaddd0e0bb798c0e4f0ab41b9c245",
+      "beforeBytes": 32144,
+      "afterBytes": 32832,
+      "meshGroups": 15,
+      "beforeTriangles": 1200,
+      "afterTriangles": 1200,
+      "changedComponents": [],
+      "unchangedComponents": [
+        "Entrance/FlatLanding__marble",
+        "Entrance/InsideSteps__marble",
+        "Entrance/OutsideSteps__marble",
+        "Facade/ArchSpandrels__brick",
+        "Facade/BrickWindowJambs__brick",
+        "Facade/FrontBrickAboveWindows__brick",
+        "Facade/FrontBrickBelowWindows__brick",
+        "Facade/FrontBrickWindowJambs__brick",
+        "Facade/LongBrickWallAboveWindows__brick",
+        "Facade/LongBrickWallBelowWindows__brick",
+        "Facade/RearWall__brick",
+        "Portal/EngravedSignStone__limestone",
+        "Portal/StoneColumns__limestone",
+        "Portal/StoneVoussoirs__limestone",
+        "Roof/PatinatedCopperPanels__copper"
+      ],
+      "materialsTexturesUnchanged": true
+    },
+    {
+      "file": "Conservatory_Architectural_Study.glb",
+      "beforeSha256": "953eab50553c37290f33c6eff91646ebae88497ad5a07b86aa318dcad65e3963",
+      "afterSha256": "312fb0530916d72e75aef4f33be47b66e1c1afb1a904070629132d3881d5565e",
+      "beforeBytes": 330828,
+      "afterBytes": 335380,
+      "meshGroups": 25,
+      "beforeTriangles": 17600,
+      "afterTriangles": 17780,
+      "changedComponents": [
+        {
+          "name": "Vestibule/GlassSideLights__glass",
+          "yRange": [
+            0.42500001192092896,
+            3.375
+          ],
+          "beforeTriangles": 24,
+          "afterTriangles": 96,
+          "materialUnchanged": true,
+          "verticalCoordinatesUnchanged": true
+        },
+        {
+          "name": "Vestibule/SideGlass__glass",
+          "yRange": [
+            0.0,
+            6.199999809265137
+          ],
+          "beforeTriangles": 24,
+          "afterTriangles": 24,
+          "materialUnchanged": true,
+          "verticalCoordinatesUnchanged": true
+        },
+        {
+          "name": "Vestibule/TransparentRoof__glass",
+          "yRange": [
+            6.262499809265137,
+            6.337500095367432
+          ],
+          "beforeTriangles": 12,
+          "afterTriangles": 48,
+          "materialUnchanged": true,
+          "verticalCoordinatesUnchanged": true
+        },
+        {
+          "name": "Vestibule/WestFacadePiers__steel",
+          "yRange": [
+            0.0,
+            6.5
+          ],
+          "beforeTriangles": 24,
+          "afterTriangles": 96,
+          "materialUnchanged": true,
+          "verticalCoordinatesUnchanged": true
+        }
+      ],
+      "unchangedComponents": [
+        "PalmHouse/DomeBaseCoping__steel",
+        "PalmHouse/DomeGlazing__glass",
+        "PalmHouse/DomeHorizontalRings__steel",
+        "PalmHouse/DomeRadialRibs__steel",
+        "PalmHouse/DrumCoping__steel",
+        "PalmHouse/DrumFrames__steel",
+        "PalmHouse/DrumGlass__glass",
+        "PalmHouse/LanternCap__steel",
+        "ShowHouse/EndGlazing__greenGlass",
+        "ShowHouse/RoofTrusses__steel",
+        "ShowHouse/SideGlazing__greenGlass",
+        "ShowHouse/SlopedRoofGlass__glass",
+        "Vestibule/DoorHeader__steel",
+        "Vestibule/DoorJambs__steel",
+        "Vestibule/FlushThreshold__sidewalk",
+        "Wings/CurvedRoofGlass__glass",
+        "Wings/CurvedRoofRibs__steel",
+        "Wings/EndGlazing__greenGlass",
+        "Wings/SideGlass__greenGlass",
+        "Wings/SillRails__steel",
+        "Wings/VerticalRibs__steel"
+      ],
+      "materialsTexturesUnchanged": true
+    },
+    {
+      "file": "Conservatory_Architectural_Study_LOD1.glb",
+      "beforeSha256": "dda98b48037f7f9196f64a9ca43e7112dc0681a0d1852aa02ca004bf65306604",
+      "afterSha256": "c1c28010258437a50647820aad6204cf947c78248771375e9dd57ad3273b0f2d",
+      "beforeBytes": 299200,
+      "afterBytes": 303452,
+      "meshGroups": 20,
+      "beforeTriangles": 16052,
+      "afterTriangles": 16232,
+      "changedComponents": [
+        {
+          "name": "Vestibule/GlassSideLights__glass",
+          "yRange": [
+            0.42500001192092896,
+            3.375
+          ],
+          "beforeTriangles": 24,
+          "afterTriangles": 96,
+          "materialUnchanged": true,
+          "verticalCoordinatesUnchanged": true
+        },
+        {
+          "name": "Vestibule/TransparentRoof__glass",
+          "yRange": [
+            6.262499809265137,
+            6.337500095367432
+          ],
+          "beforeTriangles": 12,
+          "afterTriangles": 48,
+          "materialUnchanged": true,
+          "verticalCoordinatesUnchanged": true
+        },
+        {
+          "name": "Vestibule/WestFacadePiers__steel",
+          "yRange": [
+            0.0,
+            6.5
+          ],
+          "beforeTriangles": 24,
+          "afterTriangles": 96,
+          "materialUnchanged": true,
+          "verticalCoordinatesUnchanged": true
+        }
+      ],
+      "unchangedComponents": [
+        "PalmHouse/DomeBaseCoping__steel",
+        "PalmHouse/DomeGlazing__glass",
+        "PalmHouse/DomeHorizontalRings__steel",
+        "PalmHouse/DomeRadialRibs__steel",
+        "PalmHouse/DrumCoping__steel",
+        "PalmHouse/DrumFrames__steel",
+        "PalmHouse/DrumGlass__glass",
+        "PalmHouse/LanternCap__steel",
+        "ShowHouse/EndGlazing__greenGlass",
+        "ShowHouse/SlopedRoofGlass__glass",
+        "Vestibule/DoorHeader__steel",
+        "Vestibule/DoorJambs__steel",
+        "Wings/CurvedRoofGlass__glass",
+        "Wings/CurvedRoofRibs__steel",
+        "Wings/EndGlazing__greenGlass",
+        "Wings/SideGlass__greenGlass",
+        "Wings/SillRails__steel"
+      ],
+      "materialsTexturesUnchanged": true
+    },
+    {
+      "file": "Conservatory_Architectural_Study_LOD2.glb",
+      "beforeSha256": "235e3a1ddcec89c037a7e5b894a80226e8f7402540c8ceb691d9ec9e6948d522",
+      "afterSha256": "5ea972e8d027e0fb46eadd65faac0ec49a4377e5b8710b2f5f07d7e4a5bb6716",
+      "beforeBytes": 72480,
+      "afterBytes": 75556,
+      "meshGroups": 12,
+      "beforeTriangles": 2988,
+      "afterTriangles": 3096,
+      "changedComponents": [
+        {
+          "name": "Vestibule/TransparentRoof__glass",
+          "yRange": [
+            6.262499809265137,
+            6.337500095367432
+          ],
+          "beforeTriangles": 12,
+          "afterTriangles": 48,
+          "materialUnchanged": true,
+          "verticalCoordinatesUnchanged": true
+        },
+        {
+          "name": "Vestibule/WestFacadePiers__steel",
+          "yRange": [
+            0.0,
+            6.5
+          ],
+          "beforeTriangles": 24,
+          "afterTriangles": 96,
+          "materialUnchanged": true,
+          "verticalCoordinatesUnchanged": true
+        }
+      ],
+      "unchangedComponents": [
+        "PalmHouse/DomeBaseCoping__steel",
+        "PalmHouse/DomeGlazing__glass",
+        "PalmHouse/DrumGlass__glass",
+        "PalmHouse/LanternCap__steel",
+        "ShowHouse/EndGlazing__greenGlass",
+        "ShowHouse/SlopedRoofGlass__glass",
+        "Vestibule/DoorHeader__steel",
+        "Wings/CurvedRoofGlass__glass",
+        "Wings/EndGlazing__greenGlass",
+        "Wings/SideGlass__greenGlass"
+      ],
+      "materialsTexturesUnchanged": true
+    },
+    {
+      "file": "Conservatory_Drive_Street_Detail_Study.glb",
+      "beforeSha256": "d1e6cc99f6edbf79ccfc6671145a5350cf435850ac50fd37a38e7a1683d502fa",
+      "afterSha256": "9a0b3608aceca5e91493b3bcd59b65ae08c0f3035eac07fc91ff4d7d5d370498",
+      "beforeBytes": 9432,
+      "afterBytes": 9700,
+      "meshGroups": 5,
+      "beforeTriangles": 384,
+      "afterTriangles": 384,
+      "changedComponents": [],
+      "unchangedComponents": [
+        "Road/CenterStripeSample__stripe",
+        "Road/CurbEdges__marbleEdge",
+        "Road/EstimatedSidewalk__sidewalk",
+        "Road/ExampleCurbCutRamp__sidewalk",
+        "Road/ExistingAuthoredWidth__asphalt"
+      ],
+      "materialsTexturesUnchanged": true
+    },
+    {
+      "file": "Conservatory_Drive_Street_Detail_Study_LOD1.glb",
+      "beforeSha256": "68f62aaee3f7b9421ed22f8d313738efc38b63372072027e1d81ac26c5cd3fe9",
+      "afterSha256": "4dd75c2f0565cf41375883538e767006148cc85dbd67d61c159457b706ecbfb9",
+      "beforeBytes": 8260,
+      "afterBytes": 8456,
+      "meshGroups": 4,
+      "beforeTriangles": 324,
+      "afterTriangles": 324,
+      "changedComponents": [],
+      "unchangedComponents": [
+        "Road/CurbEdges__marbleEdge",
+        "Road/EstimatedSidewalk__sidewalk",
+        "Road/ExampleCurbCutRamp__sidewalk",
+        "Road/ExistingAuthoredWidth__asphalt"
+      ],
+      "materialsTexturesUnchanged": true
+    },
+    {
+      "file": "Conservatory_Drive_Street_Detail_Study_LOD2.glb",
+      "beforeSha256": "9a117a51ee1456eda92f8a0176cb4933a95bb0f36581eec9e74ba974117695f3",
+      "afterSha256": "813559d2d2c58e93333d831116bfabd5fb122507a574db9a8590af52ae2295d3",
+      "beforeBytes": 2288,
+      "afterBytes": 2328,
+      "meshGroups": 1,
+      "beforeTriangles": 60,
+      "afterTriangles": 60,
+      "changedComponents": [],
+      "unchangedComponents": [
+        "Road/ExistingAuthoredWidth__asphalt"
+      ],
+      "materialsTexturesUnchanged": true
+    },
+    {
+      "file": "Scott_Fountain_Terraces_Study.glb",
+      "beforeSha256": "b32bd8558a76c40039b7d5d6441ccbaf28091e0ce5b85654d0701b8f7713759d",
+      "afterSha256": "efe55079ccb95b7729917c2dec16a437be7b28d7f96d681a237514acbad32320",
+      "beforeBytes": 77120,
+      "afterBytes": 77280,
+      "meshGroups": 6,
+      "beforeTriangles": 4192,
+      "afterTriangles": 4192,
+      "changedComponents": [],
+      "unchangedComponents": [
+        "Terrace/ConcentricTreads__marble",
+        "Terrace/Coping__marbleEdge",
+        "Terrace/FrontApproachSteps__marble",
+        "Terrace/RaisedBasinPlaceholder__marbleEdge",
+        "Terrace/StairSideParapets__marbleEdge",
+        "Terrace/WaterPlanePreview__water"
+      ],
+      "materialsTexturesUnchanged": true
+    },
+    {
+      "file": "Scott_Fountain_Terraces_Study_LOD1.glb",
+      "beforeSha256": "6ecd5c7f2d0687c15f4fc4619aa3f5e1c6ea2a31c503d3cb46367f88bd355dbc",
+      "afterSha256": "f400db143b8b2560d372d8782b31bd251c380638dbcfaecc0fe7f3016f6b483e",
+      "beforeBytes": 74852,
+      "afterBytes": 75012,
+      "meshGroups": 5,
+      "beforeTriangles": 3904,
+      "afterTriangles": 3904,
+      "changedComponents": [],
+      "unchangedComponents": [
+        "Terrace/ConcentricTreads__marble",
+        "Terrace/FrontApproachSteps__marble",
+        "Terrace/RaisedBasinPlaceholder__marbleEdge",
+        "Terrace/StairSideParapets__marbleEdge",
+        "Terrace/WaterPlanePreview__water"
+      ],
+      "materialsTexturesUnchanged": true
+    },
+    {
+      "file": "Scott_Fountain_Terraces_Study_LOD2.glb",
+      "beforeSha256": "9e13118ec3d6b7935d3ee5c7a9b4a75b757ce60aa39d421a82a85ac93c48bc3f",
+      "afterSha256": "a37382e3fa7fa9d610d60261ff8128bb1f160cff0fa9054b98b22a6343058c26",
+      "beforeBytes": 67764,
+      "afterBytes": 67868,
+      "meshGroups": 3,
+      "beforeTriangles": 3600,
+      "afterTriangles": 3600,
+      "changedComponents": [],
+      "unchangedComponents": [
+        "Terrace/ConcentricTreads__marble",
+        "Terrace/FrontApproachSteps__marble",
+        "Terrace/RaisedBasinPlaceholder__marbleEdge"
+      ],
+      "materialsTexturesUnchanged": true
+    }
+  ],
+  "passed": true
+}

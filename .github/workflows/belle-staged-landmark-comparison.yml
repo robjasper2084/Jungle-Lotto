@@ -1,0 +1,79 @@
+name: Belle Isle staged landmark matched native comparison
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/belle-staged-landmark-comparison.yml'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/**'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/**'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/staged-architecture/**'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/package*.json'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/vite.config.ts'
+      - 'lottominded-ultra.io/games/gothtechnology2/package*.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: belle-staged-landmark-comparison-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  STAGED_COMPARISON_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+
+jobs:
+  comparison-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          sparse-checkout-cone-mode: false
+          sparse-checkout: /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Require complete camera forwarding and negative evidence guards
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          node --check scripts/staged-landmark-native-comparison.mjs
+          node --test scripts/landmark-comparison-observer.test.mjs scripts/staged-landmark-comparison-contract.test.mjs
+
+  native-matched-views:
+    needs: comparison-contracts
+    runs-on: macos-15
+    timeout-minutes: 125
+    strategy:
+      fail-fast: false
+      matrix:
+        layout: [desktop, phone]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install locked game dependencies
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: npm ci
+      - name: Install the existing native Chrome and Playwright harness
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install chrome
+      - name: Build both exact-head modes and capture six matched native views
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          STAGED_COMPARISON_LAYOUT: ${{ matrix.layout }}
+        run: node scripts/staged-landmark-native-comparison.mjs
+      - name: Preserve both native PNG sets and complete comparison receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-staged-landmark-comparison-${{ matrix.layout }}-${{ github.event.pull_request.head.sha || github.sha }}
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/staged-landmark-comparison/${{ matrix.layout }}/
+          if-no-files-found: warn
+          retention-days: 14

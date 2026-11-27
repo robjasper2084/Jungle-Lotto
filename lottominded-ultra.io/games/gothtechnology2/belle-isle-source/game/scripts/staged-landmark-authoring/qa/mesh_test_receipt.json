@@ -1,0 +1,331 @@
+{
+  "status": "passed",
+  "checks": [
+    {
+      "description": "Anna Scripps Whitcomb Conservatory LOD0 SHA-256",
+      "passed": true
+    },
+    {
+      "description": "Anna Scripps Whitcomb Conservatory LOD0 mesh group count",
+      "passed": true
+    },
+    {
+      "description": "Anna Scripps Whitcomb Conservatory LOD0 triangle count",
+      "passed": true
+    },
+    {
+      "description": "Anna Scripps Whitcomb Conservatory LOD0 valid geometry and winding",
+      "passed": true
+    },
+    {
+      "description": "Anna Scripps Whitcomb Conservatory LOD0 closed opaque solids",
+      "passed": true
+    },
+    {
+      "description": "Conservatory west door standing clearance LOD0",
+      "passed": true
+    },
+    {
+      "description": "Conservatory existing Show House connector standing clearance LOD0",
+      "passed": true
+    },
+    {
+      "description": "Conservatory continuous connector glazing and retained exterior pane LOD0",
+      "passed": true
+    },
+    {
+      "description": "Anna Scripps Whitcomb Conservatory LOD1 SHA-256",
+      "passed": true
+    },
+    {
+      "description": "Anna Scripps Whitcomb Conservatory LOD1 mesh group count",
+      "passed": true
+    },
+    {
+      "description": "Anna Scripps Whitcomb Conservatory LOD1 triangle count",
+      "passed": true
+    },
+    {
+      "description": "Anna Scripps Whitcomb Conservatory LOD1 valid geometry and winding",
+      "passed": true
+    },
+    {
+      "description": "Anna Scripps Whitcomb Conservatory LOD1 closed opaque solids",
+      "passed": true
+    },
+    {
+      "description": "Conservatory west door standing clearance LOD1",
+      "passed": true
+    },
+    {
+      "description": "Conservatory existing Show House connector standing clearance LOD1",
+      "passed": true
+    },
+    {
+      "description": "Conservatory continuous connector glazing and retained exterior pane LOD1",
+      "passed": true
+    },
+    {
+      "description": "Anna Scripps Whitcomb Conservatory LOD2 SHA-256",
+      "passed": true
+    },
+    {
+      "description": "Anna Scripps Whitcomb Conservatory LOD2 mesh group count",
+      "passed": true
+    },
+    {
+      "description": "Anna Scripps Whitcomb Conservatory LOD2 triangle count",
+      "passed": true
+    },
+    {
+      "description": "Anna Scripps Whitcomb Conservatory LOD2 valid geometry and winding",
+      "passed": true
+    },
+    {
+      "description": "Anna Scripps Whitcomb Conservatory LOD2 closed opaque solids",
+      "passed": true
+    },
+    {
+      "description": "Conservatory west door standing clearance LOD2",
+      "passed": true
+    },
+    {
+      "description": "Conservatory existing Show House connector standing clearance LOD2",
+      "passed": true
+    },
+    {
+      "description": "Conservatory continuous connector glazing and retained exterior pane LOD2",
+      "passed": true
+    },
+    {
+      "description": "Anna Scripps Whitcomb Conservatory LOD triangle monotonicity",
+      "passed": true
+    },
+    {
+      "description": "Conservatory dome published 85ft constraint (approximate)",
+      "passed": true
+    },
+    {
+      "description": "Belle Isle Aquarium LOD0 SHA-256",
+      "passed": true
+    },
+    {
+      "description": "Belle Isle Aquarium LOD0 mesh group count",
+      "passed": true
+    },
+    {
+      "description": "Belle Isle Aquarium LOD0 triangle count",
+      "passed": true
+    },
+    {
+      "description": "Belle Isle Aquarium LOD0 valid geometry and winding",
+      "passed": true
+    },
+    {
+      "description": "Belle Isle Aquarium LOD0 closed opaque solids",
+      "passed": true
+    },
+    {
+      "description": "Aquarium arched passage standing clearance LOD0",
+      "passed": true
+    },
+    {
+      "description": "Belle Isle Aquarium LOD1 SHA-256",
+      "passed": true
+    },
+    {
+      "description": "Belle Isle Aquarium LOD1 mesh group count",
+      "passed": true
+    },
+    {
+      "description": "Belle Isle Aquarium LOD1 triangle count",
+      "passed": true
+    },
+    {
+      "description": "Belle Isle Aquarium LOD1 valid geometry and winding",
+      "passed": true
+    },
+    {
+      "description": "Belle Isle Aquarium LOD1 closed opaque solids",
+      "passed": true
+    },
+    {
+      "description": "Aquarium arched passage standing clearance LOD1",
+      "passed": true
+    },
+    {
+      "description": "Belle Isle Aquarium LOD2 SHA-256",
+      "passed": true
+    },
+    {
+      "description": "Belle Isle Aquarium LOD2 mesh group count",
+      "passed": true
+    },
+    {
+      "description": "Belle Isle Aquarium LOD2 triangle count",
+      "passed": true
+    },
+    {
+      "description": "Belle Isle Aquarium LOD2 valid geometry and winding",
+      "passed": true
+    },
+    {
+      "description": "Belle Isle Aquarium LOD2 closed opaque solids",
+      "passed": true
+    },
+    {
+      "description": "Aquarium arched passage standing clearance LOD2",
+      "passed": true
+    },
+    {
+      "description": "Belle Isle Aquarium LOD triangle monotonicity",
+      "passed": true
+    },
+    {
+      "description": "Aquarium original map stairs preserved",
+      "passed": true
+    },
+    {
+      "description": "Scott Fountain terrace LOD0 SHA-256",
+      "passed": true
+    },
+    {
+      "description": "Scott Fountain terrace LOD0 mesh group count",
+      "passed": true
+    },
+    {
+      "description": "Scott Fountain terrace LOD0 triangle count",
+      "passed": true
+    },
+    {
+      "description": "Scott Fountain terrace LOD0 valid geometry and winding",
+      "passed": true
+    },
+    {
+      "description": "Scott Fountain terrace LOD0 closed opaque solids",
+      "passed": true
+    },
+    {
+      "description": "Scott Fountain terrace LOD1 SHA-256",
+      "passed": true
+    },
+    {
+      "description": "Scott Fountain terrace LOD1 mesh group count",
+      "passed": true
+    },
+    {
+      "description": "Scott Fountain terrace LOD1 triangle count",
+      "passed": true
+    },
+    {
+      "description": "Scott Fountain terrace LOD1 valid geometry and winding",
+      "passed": true
+    },
+    {
+      "description": "Scott Fountain terrace LOD1 closed opaque solids",
+      "passed": true
+    },
+    {
+      "description": "Scott Fountain terrace LOD2 SHA-256",
+      "passed": true
+    },
+    {
+      "description": "Scott Fountain terrace LOD2 mesh group count",
+      "passed": true
+    },
+    {
+      "description": "Scott Fountain terrace LOD2 triangle count",
+      "passed": true
+    },
+    {
+      "description": "Scott Fountain terrace LOD2 valid geometry and winding",
+      "passed": true
+    },
+    {
+      "description": "Scott Fountain terrace LOD2 closed opaque solids",
+      "passed": true
+    },
+    {
+      "description": "Scott Fountain terrace LOD triangle monotonicity",
+      "passed": true
+    },
+    {
+      "description": "Conservatory Drive roadway detail example LOD0 SHA-256",
+      "passed": true
+    },
+    {
+      "description": "Conservatory Drive roadway detail example LOD0 mesh group count",
+      "passed": true
+    },
+    {
+      "description": "Conservatory Drive roadway detail example LOD0 triangle count",
+      "passed": true
+    },
+    {
+      "description": "Conservatory Drive roadway detail example LOD0 valid geometry and winding",
+      "passed": true
+    },
+    {
+      "description": "Conservatory Drive roadway detail example LOD0 closed opaque solids",
+      "passed": true
+    },
+    {
+      "description": "Conservatory Drive roadway detail example LOD1 SHA-256",
+      "passed": true
+    },
+    {
+      "description": "Conservatory Drive roadway detail example LOD1 mesh group count",
+      "passed": true
+    },
+    {
+      "description": "Conservatory Drive roadway detail example LOD1 triangle count",
+      "passed": true
+    },
+    {
+      "description": "Conservatory Drive roadway detail example LOD1 valid geometry and winding",
+      "passed": true
+    },
+    {
+      "description": "Conservatory Drive roadway detail example LOD1 closed opaque solids",
+      "passed": true
+    },
+    {
+      "description": "Conservatory Drive roadway detail example LOD2 SHA-256",
+      "passed": true
+    },
+    {
+      "description": "Conservatory Drive roadway detail example LOD2 mesh group count",
+      "passed": true
+    },
+    {
+      "description": "Conservatory Drive roadway detail example LOD2 triangle count",
+      "passed": true
+    },
+    {
+      "description": "Conservatory Drive roadway detail example LOD2 valid geometry and winding",
+      "passed": true
+    },
+    {
+      "description": "Conservatory Drive roadway detail example LOD2 closed opaque solids",
+      "passed": true
+    },
+    {
+      "description": "Conservatory Drive roadway detail example LOD triangle monotonicity",
+      "passed": true
+    },
+    {
+      "description": "Road curb study not asserted to be survey-aligned",
+      "passed": true
+    },
+    {
+      "description": "No survey certification claimed",
+      "passed": true
+    }
+  ],
+  "limitations": [
+    "No browser/native GPU run",
+    "No full collision-sweep validation",
+    "Architecture is a modeling approximation",
+    "Real-world survey grade not established"
+  ]
+}

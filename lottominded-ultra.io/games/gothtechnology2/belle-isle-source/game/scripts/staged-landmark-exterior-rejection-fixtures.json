@@ -1,0 +1,6765 @@
+{
+  "scope": "Exact native pre-W rejection receipts from both bf2 and c746, with complete recorded leg ground and sweeps. The earlier long-leg ground probe was not archived where noted; no missing observation is reconstructed. Full reports are pinned by artifact, ZIP digest and report SHA256. These fixtures do not establish a new native route or gameplay acceptance.",
+  "cases": [
+    {
+      "layout": "phone",
+      "source": "bf2fa1eaef4c529e8428f2ac1d0ac5a897a1e112",
+      "run": "45905497399",
+      "artifact": 15158802409,
+      "reportSha256": "8cbb7e5d7f475fb0c5a9d742cff2eac528613bd284ee538bafdf410b028e088a",
+      "zipSha256": "b95e80b47ad21863dc420c72cb878afe78d30c69d0bdb21ec5c2d415b304d020",
+      "phase": "aquarium-complete-front-side-walk-1-6",
+      "before": {
+        "x": 1317.0982291924415,
+        "y": 2,
+        "z": 1093.2595589135885,
+        "headingY": -2.3419999999999996,
+        "speed": 0,
+        "footBlend": 1,
+        "footMode": 2,
+        "firstPerson": true,
+        "onFoot": true
+      },
+      "goal": {
+        "x": 1315.3547142820105,
+        "z": 1091.4678681598298
+      },
+      "maxLateral": 1.96,
+      "plannedWaypoints": [
+        {
+          "x": 1350.0817925909585,
+          "z": 1125.109778735999
+        },
+        {
+          "x": 1276.0817925909585,
+          "z": 1051.109778735999
+        },
+        {
+          "x": 1274.0817925909585,
+          "z": 1053.109778735999
+        },
+        {
+          "x": 1238.0817925909585,
+          "z": 1017.109778735999
+        },
+        {
+          "x": 1236.0817925909585,
+          "z": 1017.109778735999
+        },
+        {
+          "x": 1180.0817925909585,
+          "z": 1073.109778735999
+        }
+      ],
+      "waypoint": {
+        "x": 1276.0817925909585,
+        "z": 1051.109778735999
+      },
+      "turn": {
+        "heading": -2.3698210980991794,
+        "tolerance": 0.04,
+        "finalErrorRadians": 0.027821098099179768,
+        "cadenceAllowanceUsed": false
+      },
+      "nativeWEventsForFailedPhase": [],
+      "ground": [
+        {
+          "x": 1317.0982291924415,
+          "z": 1093.2595589135885,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1316.7495262103553,
+          "z": 1092.9012207628368,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1316.400823228269,
+          "z": 1092.5428826120851,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1316.052120246183,
+          "z": 1092.1845444613332,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1315.7034172640967,
+          "z": 1091.8262063105815,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1315.3547142820105,
+          "z": 1091.4678681598298,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        }
+      ],
+      "planningClearances": [
+        2.25
+      ],
+      "sweep": {
+        "from": {
+          "x": 1317.0982291924415,
+          "y": 2,
+          "z": 1093.2595589135885,
+          "headingY": -2.3419999999999996,
+          "speed": 0,
+          "footBlend": 1,
+          "footMode": 2,
+          "firstPerson": true,
+          "onFoot": true
+        },
+        "to": {
+          "x": 1315.3547142820105,
+          "z": 1091.4678681598298
+        },
+        "length": 2.4999999999999907,
+        "maxLateral": 1.96,
+        "maxForward": 0.75,
+        "bodyRadius": 0.27,
+        "bodyHeights": [
+          0.62,
+          1.1,
+          1.58
+        ],
+        "samples": [
+          {
+            "from": {
+              "x": 1317.0982291924415,
+              "y": 2,
+              "z": 1093.2595589135885
+            },
+            "to": {
+              "x": 1316.9238777013984,
+              "y": 2,
+              "z": 1093.0803898382126
+            },
+            "direction": {
+              "x": -0.6974059641724151,
+              "y": 0,
+              "z": -0.7166763015035057
+            },
+            "step": 0.24999999999999928,
+            "rayLength": 0.5499999999999993,
+            "acceptedBeyond": 0.5199999999999994,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1316.9238777013984,
+              "y": 2,
+              "z": 1093.0803898382126
+            },
+            "to": {
+              "x": 1316.7495262103553,
+              "y": 2,
+              "z": 1092.9012207628368
+            },
+            "direction": {
+              "x": -0.6974059641724151,
+              "y": 0,
+              "z": -0.7166763015035057
+            },
+            "step": 0.24999999999999928,
+            "rayLength": 0.5499999999999993,
+            "acceptedBeyond": 0.5199999999999994,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1316.7495262103553,
+              "y": 2,
+              "z": 1092.9012207628368
+            },
+            "to": {
+              "x": 1316.5751747193121,
+              "y": 2,
+              "z": 1092.7220516874609
+            },
+            "direction": {
+              "x": -0.6974059641724151,
+              "y": 0,
+              "z": -0.7166763015035057
+            },
+            "step": 0.24999999999999922,
+            "rayLength": 0.5499999999999992,
+            "acceptedBeyond": 0.5199999999999992,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1316.5751747193121,
+              "y": 2,
+              "z": 1092.7220516874609
+            },
+            "to": {
+              "x": 1316.400823228269,
+              "y": 2,
+              "z": 1092.5428826120851
+            },
+            "direction": {
+              "x": -0.6974059641724151,
+              "y": 0,
+              "z": -0.7166763015035057
+            },
+            "step": 0.24999999999999933,
+            "rayLength": 0.5499999999999994,
+            "acceptedBeyond": 0.5199999999999994,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1316.400823228269,
+              "y": 2,
+              "z": 1092.5428826120851
+            },
+            "to": {
+              "x": 1316.226471737226,
+              "y": 2,
+              "z": 1092.3637135367092
+            },
+            "direction": {
+              "x": -0.6974059641724151,
+              "y": 0,
+              "z": -0.7166763015035057
+            },
+            "step": 0.24999999999999933,
+            "rayLength": 0.5499999999999994,
+            "acceptedBeyond": 0.5199999999999994,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1316.226471737226,
+              "y": 2,
+              "z": 1092.3637135367092
+            },
+            "to": {
+              "x": 1316.052120246183,
+              "y": 2,
+              "z": 1092.1845444613332
+            },
+            "direction": {
+              "x": -0.6974059641724151,
+              "y": 0,
+              "z": -0.7166763015035057
+            },
+            "step": 0.2499999999999991,
+            "rayLength": 0.5499999999999992,
+            "acceptedBeyond": 0.5199999999999991,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1316.052120246183,
+              "y": 2,
+              "z": 1092.1845444613332
+            },
+            "to": {
+              "x": 1315.8777687551399,
+              "y": 2,
+              "z": 1092.0053753859574
+            },
+            "direction": {
+              "x": -0.6974059641724151,
+              "y": 0,
+              "z": -0.7166763015035057
+            },
+            "step": 0.24999999999999956,
+            "rayLength": 0.5499999999999996,
+            "acceptedBeyond": 0.5199999999999996,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1315.8777687551399,
+              "y": 2,
+              "z": 1092.0053753859574
+            },
+            "to": {
+              "x": 1315.7034172640967,
+              "y": 2,
+              "z": 1091.8262063105815
+            },
+            "direction": {
+              "x": -0.6974059641724151,
+              "y": 0,
+              "z": -0.7166763015035057
+            },
+            "step": 0.2499999999999991,
+            "rayLength": 0.5499999999999992,
+            "acceptedBeyond": 0.5199999999999991,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1315.7034172640967,
+              "y": 2,
+              "z": 1091.8262063105815
+            },
+            "to": {
+              "x": 1315.5290657730536,
+              "y": 2,
+              "z": 1091.6470372352057
+            },
+            "direction": {
+              "x": -0.6974059641724151,
+              "y": 0,
+              "z": -0.7166763015035057
+            },
+            "step": 0.2499999999999991,
+            "rayLength": 0.5499999999999992,
+            "acceptedBeyond": 0.5199999999999991,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1315.5290657730536,
+              "y": 2,
+              "z": 1091.6470372352057
+            },
+            "to": {
+              "x": 1315.3547142820105,
+              "y": 2,
+              "z": 1091.4678681598298
+            },
+            "direction": {
+              "x": -0.6974059641724151,
+              "y": 0,
+              "z": -0.7166763015035057
+            },
+            "step": 0.24999999999999956,
+            "rayLength": 0.5499999999999996,
+            "acceptedBeyond": 0.5199999999999996,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1315.3547142820105,
+              "y": 2,
+              "z": 1091.4678681598298
+            },
+            "to": {
+              "x": 1315.1803627909674,
+              "y": 2,
+              "z": 1091.2886990844538
+            },
+            "direction": {
+              "x": -0.6974059641724151,
+              "y": 0,
+              "z": -0.7166763015035057
+            },
+            "step": 0.24999999999999956,
+            "rayLength": 0.5499999999999996,
+            "acceptedBeyond": 0.5199999999999996,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              0.3172288204650638,
+              0.3172288204650638,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": false
+          },
+          {
+            "from": {
+              "x": 1315.1803627909674,
+              "y": 2,
+              "z": 1091.2886990844538
+            },
+            "to": {
+              "x": 1315.0060112999242,
+              "y": 2,
+              "z": 1091.109530009078
+            },
+            "direction": {
+              "x": -0.6974059641724151,
+              "y": 0,
+              "z": -0.7166763015035057
+            },
+            "step": 0.24999999999999867,
+            "rayLength": 0.5499999999999987,
+            "acceptedBeyond": 0.5199999999999987,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              0.06722882046491298,
+              0.06722882046491298,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": false
+          },
+          {
+            "from": {
+              "x": 1315.0060112999242,
+              "y": 2,
+              "z": 1091.109530009078
+            },
+            "to": {
+              "x": 1314.831659808881,
+              "y": 2,
+              "z": 1090.930360933702
+            },
+            "direction": {
+              "x": -0.6974059641724151,
+              "y": 0,
+              "z": -0.7166763015035057
+            },
+            "step": 0.24999999999999956,
+            "rayLength": 0.5499999999999996,
+            "acceptedBeyond": 0.5199999999999996,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              0,
+              0,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": false
+          }
+        ],
+        "clear": false,
+        "scope": "Read-only original terrain and obstacle rays, including actual loaded flight solids. Anonymous ray distances do not identify a named obstacle."
+      },
+      "failureSamples": [
+        {
+          "from": {
+            "x": 1315.3547142820105,
+            "y": 2,
+            "z": 1091.4678681598298
+          },
+          "to": {
+            "x": 1315.1803627909674,
+            "y": 2,
+            "z": 1091.2886990844538
+          },
+          "direction": {
+            "x": -0.6974059641724151,
+            "y": 0,
+            "z": -0.7166763015035057
+          },
+          "step": 0.24999999999999956,
+          "rayLength": 0.5499999999999996,
+          "acceptedBeyond": 0.5199999999999996,
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorRadius": 2.23,
+          "corridorHits": [
+            0.3172288204650638,
+            0.3172288204650638,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": false,
+          "fromBeyondGoal": -0.0,
+          "corridorHitBeyondGoal": [
+            0.3172288204650638,
+            0.3172288204650638,
+            null
+          ]
+        },
+        {
+          "from": {
+            "x": 1315.1803627909674,
+            "y": 2,
+            "z": 1091.2886990844538
+          },
+          "to": {
+            "x": 1315.0060112999242,
+            "y": 2,
+            "z": 1091.109530009078
+          },
+          "direction": {
+            "x": -0.6974059641724151,
+            "y": 0,
+            "z": -0.7166763015035057
+          },
+          "step": 0.24999999999999867,
+          "rayLength": 0.5499999999999987,
+          "acceptedBeyond": 0.5199999999999987,
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorRadius": 2.23,
+          "corridorHits": [
+            0.06722882046491298,
+            0.06722882046491298,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": false,
+          "fromBeyondGoal": 0.25000000000008005,
+          "corridorHitBeyondGoal": [
+            0.317228820464993,
+            0.317228820464993,
+            null
+          ]
+        },
+        {
+          "from": {
+            "x": 1315.0060112999242,
+            "y": 2,
+            "z": 1091.109530009078
+          },
+          "to": {
+            "x": 1314.831659808881,
+            "y": 2,
+            "z": 1090.930360933702
+          },
+          "direction": {
+            "x": -0.6974059641724151,
+            "y": 0,
+            "z": -0.7166763015035057
+          },
+          "step": 0.24999999999999956,
+          "rayLength": 0.5499999999999996,
+          "acceptedBeyond": 0.5199999999999996,
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorRadius": 2.23,
+          "corridorHits": [
+            0,
+            0,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": false,
+          "fromBeyondGoal": 0.4999999999999971,
+          "corridorHitBeyondGoal": [
+            0.4999999999999971,
+            0.4999999999999971,
+            null
+          ]
+        }
+      ],
+      "allSampleBodyHitsNull": true,
+      "initialLongGroundNotArchived": true
+    },
+    {
+      "layout": "desktop",
+      "source": "bf2fa1eaef4c529e8428f2ac1d0ac5a897a1e112",
+      "run": "45905497399",
+      "artifact": 15159457667,
+      "reportSha256": "5441470e9f32539565b9c79ea94ca41d8a88bbec42a368ef32dc469c74bc4625",
+      "zipSha256": "6a34316f3839db66ab6ce25600933e4120cc680e77d014bed4fc59a69a829ec3",
+      "phase": "aquarium-complete-front-side-walk-1-3",
+      "before": {
+        "x": 1326.0202124188568,
+        "y": 2,
+        "z": 1098.1067632758109,
+        "headingY": 4.002999992381478,
+        "speed": 0,
+        "footBlend": 1,
+        "footMode": 2,
+        "firstPerson": true,
+        "onFoot": true
+      },
+      "goal": {
+        "x": 1317.7345674002454,
+        "z": 1090.7625535452858
+      },
+      "maxLateral": 1.96,
+      "plannedWaypoints": [
+        {
+          "x": 1351.7345674002454,
+          "z": 1124.7625535452858
+        },
+        {
+          "x": 1317.7345674002454,
+          "z": 1090.7625535452858
+        },
+        {
+          "x": 1315.7345674002454,
+          "z": 1090.7625535452858
+        },
+        {
+          "x": 1305.7345674002454,
+          "z": 1080.7625535452858
+        },
+        {
+          "x": 1269.7345674002454,
+          "z": 1116.7625535452858
+        }
+      ],
+      "waypoint": {
+        "x": 1317.7345674002454,
+        "z": 1090.7625535452858
+      },
+      "turn": {
+        "heading": -2.2960340308579648,
+        "tolerance": 0.04,
+        "finalErrorRadians": 0.01584870675099623,
+        "cadenceAllowanceUsed": false
+      },
+      "nativeWEventsForFailedPhase": [],
+      "ground": [
+        {
+          "x": 1326.0202124188568,
+          "z": 1098.1067632758109,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1325.659966983265,
+          "z": 1097.7874498092663,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1325.2997215476732,
+          "z": 1097.4681363427217,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1324.9394761120814,
+          "z": 1097.148822876177,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1324.5792306764895,
+          "z": 1096.8295094096327,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1324.2189852408978,
+          "z": 1096.510195943088,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1323.858739805306,
+          "z": 1096.1908824765435,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1323.498494369714,
+          "z": 1095.871569009999,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1323.1382489341224,
+          "z": 1095.5522555434543,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1322.7780034985306,
+          "z": 1095.2329420769097,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1322.4177580629387,
+          "z": 1094.913628610365,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1322.057512627347,
+          "z": 1094.5943151438205,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1321.6972671917551,
+          "z": 1094.2750016772761,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1321.3370217561635,
+          "z": 1093.9556882107315,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1320.9767763205716,
+          "z": 1093.636374744187,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1320.6165308849797,
+          "z": 1093.3170612776423,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1320.256285449388,
+          "z": 1092.9977478110977,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1319.8960400137962,
+          "z": 1092.6784343445531,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1319.5357945782043,
+          "z": 1092.3591208780085,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1319.1755491426127,
+          "z": 1092.039807411464,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1318.8153037070208,
+          "z": 1091.7204939449196,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1318.455058271429,
+          "z": 1091.401180478375,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1318.0948128358373,
+          "z": 1091.0818670118304,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1317.7345674002454,
+          "z": 1090.7625535452858,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        }
+      ],
+      "planningClearances": [
+        2.25
+      ],
+      "sweep": {
+        "from": {
+          "x": 1326.0202124188568,
+          "y": 2,
+          "z": 1098.1067632758109,
+          "headingY": 4.002999992381478,
+          "speed": 0,
+          "footBlend": 1,
+          "footMode": 2,
+          "firstPerson": true,
+          "onFoot": true
+        },
+        "to": {
+          "x": 1317.7345674002454,
+          "z": 1090.7625535452858
+        },
+        "length": 11.072006590513718,
+        "maxLateral": 1.96,
+        "maxForward": 0.75,
+        "bodyRadius": 0.27,
+        "bodyHeights": [
+          0.62,
+          1.1,
+          1.58
+        ],
+        "samples": [
+          {
+            "from": {
+              "x": 1326.0202124188568,
+              "y": 2,
+              "z": 1098.1067632758109
+            },
+            "to": {
+              "x": 1325.835901974133,
+              "y": 2,
+              "z": 1097.943394635405
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.2462918039690358,
+            "rayLength": 0.5462918039690358,
+            "acceptedBeyond": 0.5162918039690358,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1325.835901974133,
+              "y": 2,
+              "z": 1097.943394635405
+            },
+            "to": {
+              "x": 1325.6515915294094,
+              "y": 2,
+              "z": 1097.780025994999
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.2462918039690358,
+            "rayLength": 0.5462918039690358,
+            "acceptedBeyond": 0.5162918039690358,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1325.6515915294094,
+              "y": 2,
+              "z": 1097.780025994999
+            },
+            "to": {
+              "x": 1325.4672810846857,
+              "y": 2,
+              "z": 1097.616657354593
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.24629180396903577,
+            "rayLength": 0.5462918039690358,
+            "acceptedBeyond": 0.5162918039690358,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1325.4672810846857,
+              "y": 2,
+              "z": 1097.616657354593
+            },
+            "to": {
+              "x": 1325.282970639962,
+              "y": 2,
+              "z": 1097.453288714187
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.24629180396903583,
+            "rayLength": 0.5462918039690359,
+            "acceptedBeyond": 0.5162918039690358,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1325.282970639962,
+              "y": 2,
+              "z": 1097.453288714187
+            },
+            "to": {
+              "x": 1325.0986601952384,
+              "y": 2,
+              "z": 1097.289920073781
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.24629180396903572,
+            "rayLength": 0.5462918039690356,
+            "acceptedBeyond": 0.5162918039690357,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1325.0986601952384,
+              "y": 2,
+              "z": 1097.289920073781
+            },
+            "to": {
+              "x": 1324.914349750515,
+              "y": 2,
+              "z": 1097.1265514333752
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.24629180396903583,
+            "rayLength": 0.5462918039690359,
+            "acceptedBeyond": 0.5162918039690358,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1324.914349750515,
+              "y": 2,
+              "z": 1097.1265514333752
+            },
+            "to": {
+              "x": 1324.7300393057913,
+              "y": 2,
+              "z": 1096.9631827929693
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.2462918039690356,
+            "rayLength": 0.5462918039690356,
+            "acceptedBeyond": 0.5162918039690356,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1324.7300393057913,
+              "y": 2,
+              "z": 1096.9631827929693
+            },
+            "to": {
+              "x": 1324.5457288610676,
+              "y": 2,
+              "z": 1096.7998141525632
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.24629180396903605,
+            "rayLength": 0.5462918039690361,
+            "acceptedBeyond": 0.5162918039690361,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1324.5457288610676,
+              "y": 2,
+              "z": 1096.7998141525632
+            },
+            "to": {
+              "x": 1324.361418416344,
+              "y": 2,
+              "z": 1096.6364455121573
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.24629180396903583,
+            "rayLength": 0.5462918039690359,
+            "acceptedBeyond": 0.5162918039690358,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1324.361418416344,
+              "y": 2,
+              "z": 1096.6364455121573
+            },
+            "to": {
+              "x": 1324.1771079716202,
+              "y": 2,
+              "z": 1096.4730768717513
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.2462918039690356,
+            "rayLength": 0.5462918039690356,
+            "acceptedBeyond": 0.5162918039690356,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1324.1771079716202,
+              "y": 2,
+              "z": 1096.4730768717513
+            },
+            "to": {
+              "x": 1323.9927975268965,
+              "y": 2,
+              "z": 1096.3097082313454
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.24629180396903605,
+            "rayLength": 0.5462918039690361,
+            "acceptedBeyond": 0.5162918039690361,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1323.9927975268965,
+              "y": 2,
+              "z": 1096.3097082313454
+            },
+            "to": {
+              "x": 1323.8084870821729,
+              "y": 2,
+              "z": 1096.1463395909395
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.2462918039690356,
+            "rayLength": 0.5462918039690356,
+            "acceptedBeyond": 0.5162918039690356,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1323.8084870821729,
+              "y": 2,
+              "z": 1096.1463395909395
+            },
+            "to": {
+              "x": 1323.6241766374492,
+              "y": 2,
+              "z": 1095.9829709505334
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.24629180396903605,
+            "rayLength": 0.5462918039690361,
+            "acceptedBeyond": 0.5162918039690361,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1323.6241766374492,
+              "y": 2,
+              "z": 1095.9829709505334
+            },
+            "to": {
+              "x": 1323.4398661927255,
+              "y": 2,
+              "z": 1095.8196023101275
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.24629180396903516,
+            "rayLength": 0.5462918039690352,
+            "acceptedBeyond": 0.5162918039690352,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1323.4398661927255,
+              "y": 2,
+              "z": 1095.8196023101275
+            },
+            "to": {
+              "x": 1323.2555557480018,
+              "y": 2,
+              "z": 1095.6562336697216
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.24629180396903605,
+            "rayLength": 0.5462918039690361,
+            "acceptedBeyond": 0.5162918039690361,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1323.2555557480018,
+              "y": 2,
+              "z": 1095.6562336697216
+            },
+            "to": {
+              "x": 1323.0712453032781,
+              "y": 2,
+              "z": 1095.4928650293157
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.24629180396903605,
+            "rayLength": 0.5462918039690361,
+            "acceptedBeyond": 0.5162918039690361,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1323.0712453032781,
+              "y": 2,
+              "z": 1095.4928650293157
+            },
+            "to": {
+              "x": 1322.8869348585547,
+              "y": 2,
+              "z": 1095.3294963889098
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.24629180396903605,
+            "rayLength": 0.5462918039690361,
+            "acceptedBeyond": 0.5162918039690361,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1322.8869348585547,
+              "y": 2,
+              "z": 1095.3294963889098
+            },
+            "to": {
+              "x": 1322.702624413831,
+              "y": 2,
+              "z": 1095.1661277485036
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.2462918039690356,
+            "rayLength": 0.5462918039690356,
+            "acceptedBeyond": 0.5162918039690356,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1322.702624413831,
+              "y": 2,
+              "z": 1095.1661277485036
+            },
+            "to": {
+              "x": 1322.5183139691073,
+              "y": 2,
+              "z": 1095.0027591080977
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.2462918039690356,
+            "rayLength": 0.5462918039690356,
+            "acceptedBeyond": 0.5162918039690356,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1322.5183139691073,
+              "y": 2,
+              "z": 1095.0027591080977
+            },
+            "to": {
+              "x": 1322.3340035243837,
+              "y": 2,
+              "z": 1094.8393904676918
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.2462918039690356,
+            "rayLength": 0.5462918039690356,
+            "acceptedBeyond": 0.5162918039690356,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1322.3340035243837,
+              "y": 2,
+              "z": 1094.8393904676918
+            },
+            "to": {
+              "x": 1322.14969307966,
+              "y": 2,
+              "z": 1094.676021827286
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.2462918039690356,
+            "rayLength": 0.5462918039690356,
+            "acceptedBeyond": 0.5162918039690356,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1322.14969307966,
+              "y": 2,
+              "z": 1094.676021827286
+            },
+            "to": {
+              "x": 1321.9653826349363,
+              "y": 2,
+              "z": 1094.5126531868798
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.2462918039690365,
+            "rayLength": 0.5462918039690365,
+            "acceptedBeyond": 0.5162918039690365,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1321.9653826349363,
+              "y": 2,
+              "z": 1094.5126531868798
+            },
+            "to": {
+              "x": 1321.7810721902126,
+              "y": 2,
+              "z": 1094.3492845464739
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.24629180396903472,
+            "rayLength": 0.5462918039690348,
+            "acceptedBeyond": 0.5162918039690347,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1321.7810721902126,
+              "y": 2,
+              "z": 1094.3492845464739
+            },
+            "to": {
+              "x": 1321.596761745489,
+              "y": 2,
+              "z": 1094.185915906068
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.2462918039690365,
+            "rayLength": 0.5462918039690365,
+            "acceptedBeyond": 0.5162918039690365,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1321.596761745489,
+              "y": 2,
+              "z": 1094.185915906068
+            },
+            "to": {
+              "x": 1321.4124513007653,
+              "y": 2,
+              "z": 1094.022547265662
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.2462918039690356,
+            "rayLength": 0.5462918039690356,
+            "acceptedBeyond": 0.5162918039690356,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1321.4124513007653,
+              "y": 2,
+              "z": 1094.022547265662
+            },
+            "to": {
+              "x": 1321.2281408560416,
+              "y": 2,
+              "z": 1093.8591786252562
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.2462918039690365,
+            "rayLength": 0.5462918039690365,
+            "acceptedBeyond": 0.5162918039690365,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1321.2281408560416,
+              "y": 2,
+              "z": 1093.8591786252562
+            },
+            "to": {
+              "x": 1321.043830411318,
+              "y": 2,
+              "z": 1093.69580998485
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.2462918039690356,
+            "rayLength": 0.5462918039690356,
+            "acceptedBeyond": 0.5162918039690356,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1321.043830411318,
+              "y": 2,
+              "z": 1093.69580998485
+            },
+            "to": {
+              "x": 1320.8595199665945,
+              "y": 2,
+              "z": 1093.5324413444441
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.24629180396903472,
+            "rayLength": 0.5462918039690348,
+            "acceptedBeyond": 0.5162918039690347,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1320.8595199665945,
+              "y": 2,
+              "z": 1093.5324413444441
+            },
+            "to": {
+              "x": 1320.6752095218708,
+              "y": 2,
+              "z": 1093.3690727040382
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.2462918039690365,
+            "rayLength": 0.5462918039690365,
+            "acceptedBeyond": 0.5162918039690365,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1320.6752095218708,
+              "y": 2,
+              "z": 1093.3690727040382
+            },
+            "to": {
+              "x": 1320.490899077147,
+              "y": 2,
+              "z": 1093.2057040636323
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.2462918039690356,
+            "rayLength": 0.5462918039690356,
+            "acceptedBeyond": 0.5162918039690356,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1320.490899077147,
+              "y": 2,
+              "z": 1093.2057040636323
+            },
+            "to": {
+              "x": 1320.3065886324234,
+              "y": 2,
+              "z": 1093.0423354232264
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.2462918039690365,
+            "rayLength": 0.5462918039690365,
+            "acceptedBeyond": 0.5162918039690365,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1320.3065886324234,
+              "y": 2,
+              "z": 1093.0423354232264
+            },
+            "to": {
+              "x": 1320.1222781876997,
+              "y": 2,
+              "z": 1092.8789667828203
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.2462918039690356,
+            "rayLength": 0.5462918039690356,
+            "acceptedBeyond": 0.5162918039690356,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1320.1222781876997,
+              "y": 2,
+              "z": 1092.8789667828203
+            },
+            "to": {
+              "x": 1319.937967742976,
+              "y": 2,
+              "z": 1092.7155981424144
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.2462918039690356,
+            "rayLength": 0.5462918039690356,
+            "acceptedBeyond": 0.5162918039690356,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1319.937967742976,
+              "y": 2,
+              "z": 1092.7155981424144
+            },
+            "to": {
+              "x": 1319.7536572982524,
+              "y": 2,
+              "z": 1092.5522295020085
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.2462918039690365,
+            "rayLength": 0.5462918039690365,
+            "acceptedBeyond": 0.5162918039690365,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1319.7536572982524,
+              "y": 2,
+              "z": 1092.5522295020085
+            },
+            "to": {
+              "x": 1319.5693468535287,
+              "y": 2,
+              "z": 1092.3888608616026
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.24629180396903472,
+            "rayLength": 0.5462918039690348,
+            "acceptedBeyond": 0.5162918039690347,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1319.5693468535287,
+              "y": 2,
+              "z": 1092.3888608616026
+            },
+            "to": {
+              "x": 1319.385036408805,
+              "y": 2,
+              "z": 1092.2254922211966
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.2462918039690365,
+            "rayLength": 0.5462918039690365,
+            "acceptedBeyond": 0.5162918039690365,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1319.385036408805,
+              "y": 2,
+              "z": 1092.2254922211966
+            },
+            "to": {
+              "x": 1319.2007259640814,
+              "y": 2,
+              "z": 1092.0621235807905
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.24629180396903472,
+            "rayLength": 0.5462918039690348,
+            "acceptedBeyond": 0.5162918039690347,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1319.2007259640814,
+              "y": 2,
+              "z": 1092.0621235807905
+            },
+            "to": {
+              "x": 1319.0164155193577,
+              "y": 2,
+              "z": 1091.8987549403846
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.2462918039690365,
+            "rayLength": 0.5462918039690365,
+            "acceptedBeyond": 0.5162918039690365,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1319.0164155193577,
+              "y": 2,
+              "z": 1091.8987549403846
+            },
+            "to": {
+              "x": 1318.8321050746342,
+              "y": 2,
+              "z": 1091.7353862999787
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.2462918039690365,
+            "rayLength": 0.5462918039690365,
+            "acceptedBeyond": 0.5162918039690365,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1318.8321050746342,
+              "y": 2,
+              "z": 1091.7353862999787
+            },
+            "to": {
+              "x": 1318.6477946299105,
+              "y": 2,
+              "z": 1091.5720176595728
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.24629180396903472,
+            "rayLength": 0.5462918039690348,
+            "acceptedBeyond": 0.5162918039690347,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1318.6477946299105,
+              "y": 2,
+              "z": 1091.5720176595728
+            },
+            "to": {
+              "x": 1318.4634841851869,
+              "y": 2,
+              "z": 1091.408649019167
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.2462918039690365,
+            "rayLength": 0.5462918039690365,
+            "acceptedBeyond": 0.5162918039690365,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1318.4634841851869,
+              "y": 2,
+              "z": 1091.408649019167
+            },
+            "to": {
+              "x": 1318.2791737404632,
+              "y": 2,
+              "z": 1091.2452803787608
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.24629180396903472,
+            "rayLength": 0.5462918039690348,
+            "acceptedBeyond": 0.5162918039690347,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1318.2791737404632,
+              "y": 2,
+              "z": 1091.2452803787608
+            },
+            "to": {
+              "x": 1318.0948632957395,
+              "y": 2,
+              "z": 1091.0819117383548
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.2462918039690365,
+            "rayLength": 0.5462918039690365,
+            "acceptedBeyond": 0.5162918039690365,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1318.0948632957395,
+              "y": 2,
+              "z": 1091.0819117383548
+            },
+            "to": {
+              "x": 1317.9105528510158,
+              "y": 2,
+              "z": 1090.918543097949
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.2462918039690365,
+            "rayLength": 0.5462918039690365,
+            "acceptedBeyond": 0.5162918039690365,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1317.9105528510158,
+              "y": 2,
+              "z": 1090.918543097949
+            },
+            "to": {
+              "x": 1317.7262424062922,
+              "y": 2,
+              "z": 1090.755174457543
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.2462918039690365,
+            "rayLength": 0.5462918039690365,
+            "acceptedBeyond": 0.5162918039690365,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              0.32354152124512847,
+              0.32354152124512847,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": false
+          },
+          {
+            "from": {
+              "x": 1317.7262424062922,
+              "y": 2,
+              "z": 1090.755174457543
+            },
+            "to": {
+              "x": 1317.5419319615685,
+              "y": 2,
+              "z": 1090.5918058171371
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.24629180396903294,
+            "rayLength": 0.546291803969033,
+            "acceptedBeyond": 0.516291803969033,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              0.07724971727611862,
+              0.07724971727611862,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": false
+          },
+          {
+            "from": {
+              "x": 1317.5419319615685,
+              "y": 2,
+              "z": 1090.5918058171371
+            },
+            "to": {
+              "x": 1317.3576215168448,
+              "y": 2,
+              "z": 1090.428437176731
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.2462918039690365,
+            "rayLength": 0.5462918039690365,
+            "acceptedBeyond": 0.5162918039690365,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              0,
+              0,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": false
+          },
+          {
+            "from": {
+              "x": 1317.3576215168448,
+              "y": 2,
+              "z": 1090.428437176731
+            },
+            "to": {
+              "x": 1317.1733110721211,
+              "y": 2,
+              "z": 1090.265068536325
+            },
+            "direction": {
+              "x": -0.7483417708322498,
+              "y": 0,
+              "z": -0.6633133452808352
+            },
+            "step": 0.2462918039690365,
+            "rayLength": 0.5462918039690365,
+            "acceptedBeyond": 0.5162918039690365,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              0,
+              0,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": false
+          }
+        ],
+        "clear": false,
+        "scope": "Read-only original terrain and obstacle rays, including actual loaded flight solids. Anonymous ray distances do not identify a named obstacle."
+      },
+      "failureSamples": [
+        {
+          "from": {
+            "x": 1317.9105528510158,
+            "y": 2,
+            "z": 1090.918543097949
+          },
+          "to": {
+            "x": 1317.7262424062922,
+            "y": 2,
+            "z": 1090.755174457543
+          },
+          "direction": {
+            "x": -0.7483417708322498,
+            "y": 0,
+            "z": -0.6633133452808352
+          },
+          "step": 0.2462918039690365,
+          "rayLength": 0.5462918039690365,
+          "acceptedBeyond": 0.5162918039690365,
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorRadius": 2.23,
+          "corridorHits": [
+            0.32354152124512847,
+            0.32354152124512847,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": false,
+          "fromBeyondGoal": -0.23516721587614214,
+          "corridorHitBeyondGoal": [
+            0.08837430536898633,
+            0.08837430536898633,
+            null
+          ]
+        },
+        {
+          "from": {
+            "x": 1317.7262424062922,
+            "y": 2,
+            "z": 1090.755174457543
+          },
+          "to": {
+            "x": 1317.5419319615685,
+            "y": 2,
+            "z": 1090.5918058171371
+          },
+          "direction": {
+            "x": -0.7483417708322498,
+            "y": 0,
+            "z": -0.6633133452808352
+          },
+          "step": 0.24629180396903294,
+          "rayLength": 0.546291803969033,
+          "acceptedBeyond": 0.516291803969033,
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorRadius": 2.23,
+          "corridorHits": [
+            0.07724971727611862,
+            0.07724971727611862,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": false,
+          "fromBeyondGoal": 0.011124588092878262,
+          "corridorHitBeyondGoal": [
+            0.08837430536899689,
+            0.08837430536899689,
+            null
+          ]
+        },
+        {
+          "from": {
+            "x": 1317.5419319615685,
+            "y": 2,
+            "z": 1090.5918058171371
+          },
+          "to": {
+            "x": 1317.3576215168448,
+            "y": 2,
+            "z": 1090.428437176731
+          },
+          "direction": {
+            "x": -0.7483417708322498,
+            "y": 0,
+            "z": -0.6633133452808352
+          },
+          "step": 0.2462918039690365,
+          "rayLength": 0.5462918039690365,
+          "acceptedBeyond": 0.5162918039690365,
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorRadius": 2.23,
+          "corridorHits": [
+            0,
+            0,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": false,
+          "fromBeyondGoal": 0.2574163920618987,
+          "corridorHitBeyondGoal": [
+            0.2574163920618987,
+            0.2574163920618987,
+            null
+          ]
+        },
+        {
+          "from": {
+            "x": 1317.3576215168448,
+            "y": 2,
+            "z": 1090.428437176731
+          },
+          "to": {
+            "x": 1317.1733110721211,
+            "y": 2,
+            "z": 1090.265068536325
+          },
+          "direction": {
+            "x": -0.7483417708322498,
+            "y": 0,
+            "z": -0.6633133452808352
+          },
+          "step": 0.2462918039690365,
+          "rayLength": 0.5462918039690365,
+          "acceptedBeyond": 0.5162918039690365,
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorRadius": 2.23,
+          "corridorHits": [
+            0,
+            0,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": false,
+          "fromBeyondGoal": 0.50370819603107,
+          "corridorHitBeyondGoal": [
+            0.50370819603107,
+            0.50370819603107,
+            null
+          ]
+        }
+      ],
+      "allSampleBodyHitsNull": true,
+      "initialLongGroundNotArchived": false
+    },
+    {
+      "layout": "phone",
+      "source": "c7461c7c095cfb19ba8770b343952adb6eda5624",
+      "run": "45912829750",
+      "artifact": 15161590652,
+      "reportSha256": "7979585b0b70afcc2e38c18261a7ca9692a082048ed6392bb519fa51b37f04ef",
+      "zipSha256": "54c078f41235b6759468d14c3a27513620e5828d408de5803c9b5377cbf4b7e4",
+      "phase": "aquarium-complete-front-side-walk-1-6",
+      "before": {
+        "x": 1318.4376462237876,
+        "y": 2,
+        "z": 1091.9092085083453,
+        "headingY": -2.3644999999999996,
+        "speed": 0,
+        "footBlend": 1,
+        "footMode": 2,
+        "firstPerson": true,
+        "onFoot": true
+      },
+      "goal": {
+        "x": 1316.6371072031423,
+        "z": 1090.174832760379
+      },
+      "maxLateral": 0.41,
+      "plannedWaypoints": [
+        {
+          "x": 1350.0817925909585,
+          "z": 1125.109778735999
+        },
+        {
+          "x": 1276.0817925909585,
+          "z": 1051.109778735999
+        },
+        {
+          "x": 1274.0817925909585,
+          "z": 1053.109778735999
+        },
+        {
+          "x": 1238.0817925909585,
+          "z": 1017.109778735999
+        },
+        {
+          "x": 1236.0817925909585,
+          "z": 1017.109778735999
+        },
+        {
+          "x": 1180.0817925909585,
+          "z": 1073.109778735999
+        }
+      ],
+      "waypoint": {
+        "x": 1276.0817925909585,
+        "z": 1051.109778735999
+      },
+      "turn": {
+        "heading": -2.3374795982276657,
+        "tolerance": 0.04,
+        "finalErrorRadians": 0.02702040177233389,
+        "cadenceAllowanceUsed": false
+      },
+      "nativeWEventsForFailedPhase": [],
+      "ground": [
+        {
+          "x": 1318.4376462237876,
+          "z": 1091.9092085083453,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1318.0775384196586,
+          "z": 1091.562333358752,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1317.7174306155296,
+          "z": 1091.215458209159,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1317.3573228114003,
+          "z": 1090.8685830595655,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 0.7,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              0,
+              0,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1316.9972150072713,
+          "z": 1090.5217079099723,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 0.7,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              0,
+              0,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1316.6371072031423,
+          "z": 1090.174832760379,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 0.7,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              0,
+              0,
+              null
+            ]
+          }
+        }
+      ],
+      "planningClearances": [
+        0.7,
+        2.25
+      ],
+      "sweep": {
+        "from": {
+          "x": 1318.4376462237876,
+          "y": 2,
+          "z": 1091.9092085083453,
+          "headingY": -2.3644999999999996,
+          "speed": 0,
+          "footBlend": 1,
+          "footMode": 2,
+          "firstPerson": true,
+          "onFoot": true
+        },
+        "to": {
+          "x": 1316.6371072031423,
+          "z": 1090.174832760379
+        },
+        "length": 2.4999999999999623,
+        "maxLateral": 0.41,
+        "maxForward": 0.75,
+        "bodyRadius": 0.27,
+        "bodyHeights": [
+          0.62,
+          1.1,
+          1.58
+        ],
+        "samples": [
+          {
+            "from": {
+              "x": 1318.4376462237876,
+              "y": 2,
+              "z": 1091.9092085083453
+            },
+            "to": {
+              "x": 1318.257592321723,
+              "y": 2,
+              "z": 1091.7357709335486
+            },
+            "direction": {
+              "x": -0.7202156082581604,
+              "y": 0,
+              "z": -0.6937502991864781
+            },
+            "step": 0.24999999999999709,
+            "rayLength": 0.549999999999997,
+            "acceptedBeyond": 0.5199999999999971,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 0.6799999999999999,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1318.257592321723,
+              "y": 2,
+              "z": 1091.7357709335486
+            },
+            "to": {
+              "x": 1318.0775384196586,
+              "y": 2,
+              "z": 1091.562333358752
+            },
+            "direction": {
+              "x": -0.7202156082581604,
+              "y": 0,
+              "z": -0.6937502991864781
+            },
+            "step": 0.24999999999999709,
+            "rayLength": 0.549999999999997,
+            "acceptedBeyond": 0.5199999999999971,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 0.6799999999999999,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1318.0775384196586,
+              "y": 2,
+              "z": 1091.562333358752
+            },
+            "to": {
+              "x": 1317.897484517594,
+              "y": 2,
+              "z": 1091.3888957839554
+            },
+            "direction": {
+              "x": -0.7202156082581604,
+              "y": 0,
+              "z": -0.6937502991864781
+            },
+            "step": 0.24999999999999706,
+            "rayLength": 0.549999999999997,
+            "acceptedBeyond": 0.5199999999999971,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 0.6799999999999999,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1317.897484517594,
+              "y": 2,
+              "z": 1091.3888957839554
+            },
+            "to": {
+              "x": 1317.7174306155296,
+              "y": 2,
+              "z": 1091.215458209159
+            },
+            "direction": {
+              "x": -0.7202156082581604,
+              "y": 0,
+              "z": -0.6937502991864781
+            },
+            "step": 0.2499999999999971,
+            "rayLength": 0.5499999999999972,
+            "acceptedBeyond": 0.5199999999999971,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 0.6799999999999999,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1317.7174306155296,
+              "y": 2,
+              "z": 1091.215458209159
+            },
+            "to": {
+              "x": 1317.537376713465,
+              "y": 2,
+              "z": 1091.0420206343622
+            },
+            "direction": {
+              "x": -0.7202156082581604,
+              "y": 0,
+              "z": -0.6937502991864781
+            },
+            "step": 0.24999999999999722,
+            "rayLength": 0.5499999999999972,
+            "acceptedBeyond": 0.5199999999999972,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 0.6799999999999999,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1317.537376713465,
+              "y": 2,
+              "z": 1091.0420206343622
+            },
+            "to": {
+              "x": 1317.3573228114003,
+              "y": 2,
+              "z": 1090.8685830595655
+            },
+            "direction": {
+              "x": -0.7202156082581604,
+              "y": 0,
+              "z": -0.6937502991864781
+            },
+            "step": 0.2499999999999969,
+            "rayLength": 0.5499999999999969,
+            "acceptedBeyond": 0.5199999999999969,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 0.6799999999999999,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1317.3573228114003,
+              "y": 2,
+              "z": 1090.8685830595655
+            },
+            "to": {
+              "x": 1317.177268909336,
+              "y": 2,
+              "z": 1090.695145484769
+            },
+            "direction": {
+              "x": -0.7202156082581604,
+              "y": 0,
+              "z": -0.6937502991864781
+            },
+            "step": 0.24999999999999734,
+            "rayLength": 0.5499999999999974,
+            "acceptedBeyond": 0.5199999999999974,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 0.6799999999999999,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1317.177268909336,
+              "y": 2,
+              "z": 1090.695145484769
+            },
+            "to": {
+              "x": 1316.9972150072713,
+              "y": 2,
+              "z": 1090.5217079099723
+            },
+            "direction": {
+              "x": -0.7202156082581604,
+              "y": 0,
+              "z": -0.6937502991864781
+            },
+            "step": 0.2499999999999969,
+            "rayLength": 0.5499999999999969,
+            "acceptedBeyond": 0.5199999999999969,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 0.6799999999999999,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1316.9972150072713,
+              "y": 2,
+              "z": 1090.5217079099723
+            },
+            "to": {
+              "x": 1316.8171611052069,
+              "y": 2,
+              "z": 1090.3482703351758
+            },
+            "direction": {
+              "x": -0.7202156082581604,
+              "y": 0,
+              "z": -0.6937502991864781
+            },
+            "step": 0.2499999999999971,
+            "rayLength": 0.5499999999999972,
+            "acceptedBeyond": 0.5199999999999971,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 0.6799999999999999,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1316.8171611052069,
+              "y": 2,
+              "z": 1090.3482703351758
+            },
+            "to": {
+              "x": 1316.6371072031423,
+              "y": 2,
+              "z": 1090.174832760379
+            },
+            "direction": {
+              "x": -0.7202156082581604,
+              "y": 0,
+              "z": -0.6937502991864781
+            },
+            "step": 0.24999999999999734,
+            "rayLength": 0.5499999999999974,
+            "acceptedBeyond": 0.5199999999999974,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 0.6799999999999999,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1316.6371072031423,
+              "y": 2,
+              "z": 1090.174832760379
+            },
+            "to": {
+              "x": 1316.4570533010776,
+              "y": 2,
+              "z": 1090.0013951855824
+            },
+            "direction": {
+              "x": -0.7202156082581604,
+              "y": 0,
+              "z": -0.6937502991864781
+            },
+            "step": 0.24999999999999734,
+            "rayLength": 0.5499999999999974,
+            "acceptedBeyond": 0.5199999999999974,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 0.6799999999999999,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1316.4570533010776,
+              "y": 2,
+              "z": 1090.0013951855824
+            },
+            "to": {
+              "x": 1316.2769993990132,
+              "y": 2,
+              "z": 1089.827957610786
+            },
+            "direction": {
+              "x": -0.7202156082581604,
+              "y": 0,
+              "z": -0.6937502991864781
+            },
+            "step": 0.24999999999999645,
+            "rayLength": 0.5499999999999965,
+            "acceptedBeyond": 0.5199999999999965,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 0.6799999999999999,
+            "corridorHits": [
+              0.4061023997611966,
+              0.4061023997611966,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": false
+          },
+          {
+            "from": {
+              "x": 1316.2769993990132,
+              "y": 2,
+              "z": 1089.827957610786
+            },
+            "to": {
+              "x": 1316.0969454969486,
+              "y": 2,
+              "z": 1089.6545200359892
+            },
+            "direction": {
+              "x": -0.7202156082581604,
+              "y": 0,
+              "z": -0.6937502991864781
+            },
+            "step": 0.24999999999999734,
+            "rayLength": 0.5499999999999974,
+            "acceptedBeyond": 0.5199999999999974,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 0.6799999999999999,
+            "corridorHits": [
+              0.15610239976139553,
+              0.15610239976139553,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": false
+          }
+        ],
+        "clear": false,
+        "scope": "Read-only original terrain and obstacle rays, including actual loaded flight solids. Anonymous ray distances do not identify a named obstacle."
+      },
+      "failureSamples": [
+        {
+          "from": {
+            "x": 1316.4570533010776,
+            "y": 2,
+            "z": 1090.0013951855824
+          },
+          "to": {
+            "x": 1316.2769993990132,
+            "y": 2,
+            "z": 1089.827957610786
+          },
+          "direction": {
+            "x": -0.7202156082581604,
+            "y": 0,
+            "z": -0.6937502991864781
+          },
+          "step": 0.24999999999999645,
+          "rayLength": 0.5499999999999965,
+          "acceptedBeyond": 0.5199999999999965,
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorRadius": 0.6799999999999999,
+          "corridorHits": [
+            0.4061023997611966,
+            0.4061023997611966,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": false,
+          "fromBeyondGoal": 0.2500000000001248,
+          "corridorHitBeyondGoal": [
+            0.6561023997613213,
+            0.6561023997613213,
+            null
+          ]
+        },
+        {
+          "from": {
+            "x": 1316.2769993990132,
+            "y": 2,
+            "z": 1089.827957610786
+          },
+          "to": {
+            "x": 1316.0969454969486,
+            "y": 2,
+            "z": 1089.6545200359892
+          },
+          "direction": {
+            "x": -0.7202156082581604,
+            "y": 0,
+            "z": -0.6937502991864781
+          },
+          "step": 0.24999999999999734,
+          "rayLength": 0.5499999999999974,
+          "acceptedBeyond": 0.5199999999999974,
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorRadius": 0.6799999999999999,
+          "corridorHits": [
+            0.15610239976139553,
+            0.15610239976139553,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": false,
+          "fromBeyondGoal": 0.4999999999999281,
+          "corridorHitBeyondGoal": [
+            0.6561023997613237,
+            0.6561023997613237,
+            null
+          ]
+        }
+      ],
+      "allSampleBodyHitsNull": true,
+      "initialLongGroundNotArchived": false
+    },
+    {
+      "layout": "desktop",
+      "source": "c7461c7c095cfb19ba8770b343952adb6eda5624",
+      "run": "45912829750",
+      "artifact": 15161965049,
+      "reportSha256": "5f7a9db9caa246db87ab9b18fa4e8f2d0467af4733cf6acb06e3c98e21cb23d2",
+      "zipSha256": "97a95611ed178e6242c6ba2329fe5f54f9da1a75e4408f391455d28f8f99b5d6",
+      "phase": "aquarium-complete-front-side-walk-1-3",
+      "before": {
+        "x": 1325.5704422487925,
+        "y": 2,
+        "z": 1098.4974789808828,
+        "headingY": 3.9354999999999967,
+        "speed": 0,
+        "footBlend": 1,
+        "footMode": 2,
+        "firstPerson": true,
+        "onFoot": true
+      },
+      "goal": {
+        "x": 1317.7345674002454,
+        "z": 1090.7625535452858
+      },
+      "maxLateral": 1.96,
+      "plannedWaypoints": [
+        {
+          "x": 1351.7345674002454,
+          "z": 1124.7625535452858
+        },
+        {
+          "x": 1317.7345674002454,
+          "z": 1090.7625535452858
+        },
+        {
+          "x": 1315.7345674002454,
+          "z": 1090.7625535452858
+        },
+        {
+          "x": 1305.7345674002454,
+          "z": 1080.7625535452858
+        },
+        {
+          "x": 1269.7345674002454,
+          "z": 1116.7625535452858
+        }
+      ],
+      "waypoint": {
+        "x": 1317.7345674002454,
+        "z": 1090.7625535452858
+      },
+      "turn": {
+        "heading": -2.3497113296125076,
+        "tolerance": 0.04,
+        "finalErrorRadians": 0.0020260224329182504,
+        "cadenceAllowanceUsed": false
+      },
+      "nativeWEventsForFailedPhase": [],
+      "ground": [
+        {
+          "x": 1325.5704422487925,
+          "z": 1098.4974789808828,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1325.2297520379861,
+          "z": 1098.1611778749873,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1324.8890618271796,
+          "z": 1097.8248767690918,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1324.5483716163733,
+          "z": 1097.4885756631961,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1324.207681405567,
+          "z": 1097.1522745573006,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1323.8669911947604,
+          "z": 1096.8159734514052,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1323.5263009839541,
+          "z": 1096.4796723455097,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1323.1856107731478,
+          "z": 1096.143371239614,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1322.8449205623413,
+          "z": 1095.8070701337185,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1322.504230351535,
+          "z": 1095.470769027823,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1322.1635401407286,
+          "z": 1095.1344679219276,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1321.822849929922,
+          "z": 1094.798166816032,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1321.4821597191158,
+          "z": 1094.4618657101364,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1321.1414695083092,
+          "z": 1094.125564604241,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1320.800779297503,
+          "z": 1093.7892634983455,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1320.4600890866966,
+          "z": 1093.45296239245,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1320.11939887589,
+          "z": 1093.1166612865545,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1319.7787086650837,
+          "z": 1092.7803601806588,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1319.4380184542774,
+          "z": 1092.4440590747633,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1319.0973282434709,
+          "z": 1092.1077579688679,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1318.7566380326646,
+          "z": 1091.7714568629724,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1318.4159478218583,
+          "z": 1091.4351557570767,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1318.0752576110517,
+          "z": 1091.0988546511812,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "x": 1317.7345674002454,
+          "z": 1090.7625535452858,
+          "height": 2,
+          "walkable": true,
+          "planningClearance": 2.25,
+          "obstacleOccupancy": {
+            "bodyHeights": [
+              0.62,
+              1.1,
+              1.58
+            ],
+            "narrowRadius": 0.7,
+            "narrowHits": [
+              null,
+              null,
+              null
+            ],
+            "wideRadius": 2.25,
+            "wideHits": [
+              null,
+              null,
+              null
+            ]
+          }
+        }
+      ],
+      "planningClearances": [
+        2.25
+      ],
+      "sweep": {
+        "from": {
+          "x": 1325.5704422487925,
+          "y": 2,
+          "z": 1098.4974789808828,
+          "headingY": 3.9354999999999967,
+          "speed": 0,
+          "footBlend": 1,
+          "footMode": 2,
+          "firstPerson": true,
+          "onFoot": true
+        },
+        "to": {
+          "x": 1317.7345674002454,
+          "z": 1090.7625535452858
+        },
+        "length": 11.010449860761277,
+        "maxLateral": 1.96,
+        "maxForward": 0.75,
+        "bodyRadius": 0.27,
+        "bodyHeights": [
+          0.62,
+          1.1,
+          1.58
+        ],
+        "samples": [
+          {
+            "from": {
+              "x": 1325.5704422487925,
+              "y": 2,
+              "z": 1098.4974789808828
+            },
+            "to": {
+              "x": 1325.3960749158707,
+              "y": 2,
+              "z": 1098.32535801869
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.24500937209919327,
+            "rayLength": 0.5450093720991933,
+            "acceptedBeyond": 0.5150093720991933,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1325.3960749158707,
+              "y": 2,
+              "z": 1098.32535801869
+            },
+            "to": {
+              "x": 1325.2217075829487,
+              "y": 2,
+              "z": 1098.1532370564971
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.24500937209919327,
+            "rayLength": 0.5450093720991933,
+            "acceptedBeyond": 0.5150093720991933,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1325.2217075829487,
+              "y": 2,
+              "z": 1098.1532370564971
+            },
+            "to": {
+              "x": 1325.047340250027,
+              "y": 2,
+              "z": 1097.9811160943043
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.24500937209919327,
+            "rayLength": 0.5450093720991933,
+            "acceptedBeyond": 0.5150093720991933,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1325.047340250027,
+              "y": 2,
+              "z": 1097.9811160943043
+            },
+            "to": {
+              "x": 1324.8729729171052,
+              "y": 2,
+              "z": 1097.8089951321117
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.24500937209919327,
+            "rayLength": 0.5450093720991933,
+            "acceptedBeyond": 0.5150093720991933,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1324.8729729171052,
+              "y": 2,
+              "z": 1097.8089951321117
+            },
+            "to": {
+              "x": 1324.6986055841833,
+              "y": 2,
+              "z": 1097.6368741699189
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.24500937209919327,
+            "rayLength": 0.5450093720991933,
+            "acceptedBeyond": 0.5150093720991933,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1324.6986055841833,
+              "y": 2,
+              "z": 1097.6368741699189
+            },
+            "to": {
+              "x": 1324.5242382512615,
+              "y": 2,
+              "z": 1097.464753207726
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.24500937209919327,
+            "rayLength": 0.5450093720991933,
+            "acceptedBeyond": 0.5150093720991933,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1324.5242382512615,
+              "y": 2,
+              "z": 1097.464753207726
+            },
+            "to": {
+              "x": 1324.3498709183398,
+              "y": 2,
+              "z": 1097.2926322455332
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.2450093720991935,
+            "rayLength": 0.5450093720991935,
+            "acceptedBeyond": 0.5150093720991935,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1324.3498709183398,
+              "y": 2,
+              "z": 1097.2926322455332
+            },
+            "to": {
+              "x": 1324.1755035854178,
+              "y": 2,
+              "z": 1097.1205112833404
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.24500937209919305,
+            "rayLength": 0.5450093720991931,
+            "acceptedBeyond": 0.5150093720991931,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1324.1755035854178,
+              "y": 2,
+              "z": 1097.1205112833404
+            },
+            "to": {
+              "x": 1324.001136252496,
+              "y": 2,
+              "z": 1096.9483903211476
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.24500937209919327,
+            "rayLength": 0.5450093720991933,
+            "acceptedBeyond": 0.5150093720991933,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1324.001136252496,
+              "y": 2,
+              "z": 1096.9483903211476
+            },
+            "to": {
+              "x": 1323.8267689195743,
+              "y": 2,
+              "z": 1096.7762693589548
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.24500937209919327,
+            "rayLength": 0.5450093720991933,
+            "acceptedBeyond": 0.5150093720991933,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1323.8267689195743,
+              "y": 2,
+              "z": 1096.7762693589548
+            },
+            "to": {
+              "x": 1323.6524015866523,
+              "y": 2,
+              "z": 1096.6041483967622
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.24500937209919327,
+            "rayLength": 0.5450093720991933,
+            "acceptedBeyond": 0.5150093720991933,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1323.6524015866523,
+              "y": 2,
+              "z": 1096.6041483967622
+            },
+            "to": {
+              "x": 1323.4780342537306,
+              "y": 2,
+              "z": 1096.4320274345694
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.24500937209919327,
+            "rayLength": 0.5450093720991933,
+            "acceptedBeyond": 0.5150093720991933,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1323.4780342537306,
+              "y": 2,
+              "z": 1096.4320274345694
+            },
+            "to": {
+              "x": 1323.3036669208088,
+              "y": 2,
+              "z": 1096.2599064723765
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.24500937209919327,
+            "rayLength": 0.5450093720991933,
+            "acceptedBeyond": 0.5150093720991933,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1323.3036669208088,
+              "y": 2,
+              "z": 1096.2599064723765
+            },
+            "to": {
+              "x": 1323.1292995878869,
+              "y": 2,
+              "z": 1096.0877855101837
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.2450093720991937,
+            "rayLength": 0.5450093720991938,
+            "acceptedBeyond": 0.5150093720991937,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1323.1292995878869,
+              "y": 2,
+              "z": 1096.0877855101837
+            },
+            "to": {
+              "x": 1322.9549322549651,
+              "y": 2,
+              "z": 1095.915664547991
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.24500937209919282,
+            "rayLength": 0.5450093720991929,
+            "acceptedBeyond": 0.5150093720991928,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1322.9549322549651,
+              "y": 2,
+              "z": 1095.915664547991
+            },
+            "to": {
+              "x": 1322.7805649220434,
+              "y": 2,
+              "z": 1095.743543585798
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.24500937209919327,
+            "rayLength": 0.5450093720991933,
+            "acceptedBeyond": 0.5150093720991933,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1322.7805649220434,
+              "y": 2,
+              "z": 1095.743543585798
+            },
+            "to": {
+              "x": 1322.6061975891214,
+              "y": 2,
+              "z": 1095.5714226236053
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.24500937209919282,
+            "rayLength": 0.5450093720991929,
+            "acceptedBeyond": 0.5150093720991928,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1322.6061975891214,
+              "y": 2,
+              "z": 1095.5714226236053
+            },
+            "to": {
+              "x": 1322.4318302561996,
+              "y": 2,
+              "z": 1095.3993016614124
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.2450093720991937,
+            "rayLength": 0.5450093720991938,
+            "acceptedBeyond": 0.5150093720991937,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1322.4318302561996,
+              "y": 2,
+              "z": 1095.3993016614124
+            },
+            "to": {
+              "x": 1322.257462923278,
+              "y": 2,
+              "z": 1095.2271806992198
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.2450093720991937,
+            "rayLength": 0.5450093720991938,
+            "acceptedBeyond": 0.5150093720991937,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1322.257462923278,
+              "y": 2,
+              "z": 1095.2271806992198
+            },
+            "to": {
+              "x": 1322.0830955903562,
+              "y": 2,
+              "z": 1095.055059737027
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.24500937209919282,
+            "rayLength": 0.5450093720991929,
+            "acceptedBeyond": 0.5150093720991928,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1322.0830955903562,
+              "y": 2,
+              "z": 1095.055059737027
+            },
+            "to": {
+              "x": 1321.9087282574342,
+              "y": 2,
+              "z": 1094.8829387748342
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.24500937209919282,
+            "rayLength": 0.5450093720991929,
+            "acceptedBeyond": 0.5150093720991928,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1321.9087282574342,
+              "y": 2,
+              "z": 1094.8829387748342
+            },
+            "to": {
+              "x": 1321.7343609245124,
+              "y": 2,
+              "z": 1094.7108178126414
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.2450093720991937,
+            "rayLength": 0.5450093720991938,
+            "acceptedBeyond": 0.5150093720991937,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1321.7343609245124,
+              "y": 2,
+              "z": 1094.7108178126414
+            },
+            "to": {
+              "x": 1321.5599935915907,
+              "y": 2,
+              "z": 1094.5386968504486
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.24500937209919282,
+            "rayLength": 0.5450093720991929,
+            "acceptedBeyond": 0.5150093720991928,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1321.5599935915907,
+              "y": 2,
+              "z": 1094.5386968504486
+            },
+            "to": {
+              "x": 1321.3856262586687,
+              "y": 2,
+              "z": 1094.3665758882557
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.2450093720991937,
+            "rayLength": 0.5450093720991938,
+            "acceptedBeyond": 0.5150093720991937,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1321.3856262586687,
+              "y": 2,
+              "z": 1094.3665758882557
+            },
+            "to": {
+              "x": 1321.211258925747,
+              "y": 2,
+              "z": 1094.194454926063
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.2450093720991937,
+            "rayLength": 0.5450093720991938,
+            "acceptedBeyond": 0.5150093720991937,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1321.211258925747,
+              "y": 2,
+              "z": 1094.194454926063
+            },
+            "to": {
+              "x": 1321.0368915928252,
+              "y": 2,
+              "z": 1094.0223339638703
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.24500937209919282,
+            "rayLength": 0.5450093720991929,
+            "acceptedBeyond": 0.5150093720991928,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1321.0368915928252,
+              "y": 2,
+              "z": 1094.0223339638703
+            },
+            "to": {
+              "x": 1320.8625242599032,
+              "y": 2,
+              "z": 1093.8502130016775
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.2450093720991937,
+            "rayLength": 0.5450093720991938,
+            "acceptedBeyond": 0.5150093720991937,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1320.8625242599032,
+              "y": 2,
+              "z": 1093.8502130016775
+            },
+            "to": {
+              "x": 1320.6881569269815,
+              "y": 2,
+              "z": 1093.6780920394847
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.2450093720991937,
+            "rayLength": 0.5450093720991938,
+            "acceptedBeyond": 0.5150093720991937,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1320.6881569269815,
+              "y": 2,
+              "z": 1093.6780920394847
+            },
+            "to": {
+              "x": 1320.5137895940597,
+              "y": 2,
+              "z": 1093.5059710772919
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.24500937209919194,
+            "rayLength": 0.545009372099192,
+            "acceptedBeyond": 0.515009372099192,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1320.5137895940597,
+              "y": 2,
+              "z": 1093.5059710772919
+            },
+            "to": {
+              "x": 1320.3394222611378,
+              "y": 2,
+              "z": 1093.333850115099
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.2450093720991937,
+            "rayLength": 0.5450093720991938,
+            "acceptedBeyond": 0.5150093720991937,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1320.3394222611378,
+              "y": 2,
+              "z": 1093.333850115099
+            },
+            "to": {
+              "x": 1320.165054928216,
+              "y": 2,
+              "z": 1093.1617291529062
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.24500937209919282,
+            "rayLength": 0.5450093720991929,
+            "acceptedBeyond": 0.5150093720991928,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1320.165054928216,
+              "y": 2,
+              "z": 1093.1617291529062
+            },
+            "to": {
+              "x": 1319.9906875952943,
+              "y": 2,
+              "z": 1092.9896081907134
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.2450093720991937,
+            "rayLength": 0.5450093720991938,
+            "acceptedBeyond": 0.5150093720991937,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1319.9906875952943,
+              "y": 2,
+              "z": 1092.9896081907134
+            },
+            "to": {
+              "x": 1319.8163202623723,
+              "y": 2,
+              "z": 1092.8174872285208
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.2450093720991937,
+            "rayLength": 0.5450093720991938,
+            "acceptedBeyond": 0.5150093720991937,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1319.8163202623723,
+              "y": 2,
+              "z": 1092.8174872285208
+            },
+            "to": {
+              "x": 1319.6419529294506,
+              "y": 2,
+              "z": 1092.645366266328
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.24500937209919194,
+            "rayLength": 0.545009372099192,
+            "acceptedBeyond": 0.515009372099192,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1319.6419529294506,
+              "y": 2,
+              "z": 1092.645366266328
+            },
+            "to": {
+              "x": 1319.4675855965288,
+              "y": 2,
+              "z": 1092.4732453041352
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.2450093720991937,
+            "rayLength": 0.5450093720991938,
+            "acceptedBeyond": 0.5150093720991937,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1319.4675855965288,
+              "y": 2,
+              "z": 1092.4732453041352
+            },
+            "to": {
+              "x": 1319.2932182636068,
+              "y": 2,
+              "z": 1092.3011243419423
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.2450093720991937,
+            "rayLength": 0.5450093720991938,
+            "acceptedBeyond": 0.5150093720991937,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1319.2932182636068,
+              "y": 2,
+              "z": 1092.3011243419423
+            },
+            "to": {
+              "x": 1319.118850930685,
+              "y": 2,
+              "z": 1092.1290033797495
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.2450093720991937,
+            "rayLength": 0.5450093720991938,
+            "acceptedBeyond": 0.5150093720991937,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1319.118850930685,
+              "y": 2,
+              "z": 1092.1290033797495
+            },
+            "to": {
+              "x": 1318.9444835977633,
+              "y": 2,
+              "z": 1091.9568824175567
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.2450093720991937,
+            "rayLength": 0.5450093720991938,
+            "acceptedBeyond": 0.5150093720991937,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1318.9444835977633,
+              "y": 2,
+              "z": 1091.9568824175567
+            },
+            "to": {
+              "x": 1318.7701162648414,
+              "y": 2,
+              "z": 1091.7847614553639
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.24500937209919194,
+            "rayLength": 0.545009372099192,
+            "acceptedBeyond": 0.515009372099192,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1318.7701162648414,
+              "y": 2,
+              "z": 1091.7847614553639
+            },
+            "to": {
+              "x": 1318.5957489319196,
+              "y": 2,
+              "z": 1091.612640493171
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.2450093720991937,
+            "rayLength": 0.5450093720991938,
+            "acceptedBeyond": 0.5150093720991937,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1318.5957489319196,
+              "y": 2,
+              "z": 1091.612640493171
+            },
+            "to": {
+              "x": 1318.4213815989979,
+              "y": 2,
+              "z": 1091.4405195309785
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.2450093720991937,
+            "rayLength": 0.5450093720991938,
+            "acceptedBeyond": 0.5150093720991937,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1318.4213815989979,
+              "y": 2,
+              "z": 1091.4405195309785
+            },
+            "to": {
+              "x": 1318.247014266076,
+              "y": 2,
+              "z": 1091.2683985687856
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.24500937209919194,
+            "rayLength": 0.545009372099192,
+            "acceptedBeyond": 0.515009372099192,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1318.247014266076,
+              "y": 2,
+              "z": 1091.2683985687856
+            },
+            "to": {
+              "x": 1318.0726469331541,
+              "y": 2,
+              "z": 1091.0962776065928
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.2450093720991937,
+            "rayLength": 0.5450093720991938,
+            "acceptedBeyond": 0.5150093720991937,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1318.0726469331541,
+              "y": 2,
+              "z": 1091.0962776065928
+            },
+            "to": {
+              "x": 1317.8982796002324,
+              "y": 2,
+              "z": 1090.9241566444
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.2450093720991937,
+            "rayLength": 0.5450093720991938,
+            "acceptedBeyond": 0.5150093720991937,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              null,
+              null,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": true
+          },
+          {
+            "from": {
+              "x": 1317.8982796002324,
+              "y": 2,
+              "z": 1090.9241566444
+            },
+            "to": {
+              "x": 1317.7239122673104,
+              "y": 2,
+              "z": 1090.7520356822072
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.2450093720991937,
+            "rayLength": 0.5450093720991938,
+            "acceptedBeyond": 0.5150093720991937,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              0.3175051534843601,
+              0.3175051534843601,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": false
+          },
+          {
+            "from": {
+              "x": 1317.7239122673104,
+              "y": 2,
+              "z": 1090.7520356822072
+            },
+            "to": {
+              "x": 1317.5495449343887,
+              "y": 2,
+              "z": 1090.5799147200144
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.24500937209919194,
+            "rayLength": 0.545009372099192,
+            "acceptedBeyond": 0.515009372099192,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              0.07249578138504954,
+              0.07249578138504954,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": false
+          },
+          {
+            "from": {
+              "x": 1317.5495449343887,
+              "y": 2,
+              "z": 1090.5799147200144
+            },
+            "to": {
+              "x": 1317.375177601467,
+              "y": 2,
+              "z": 1090.4077937578215
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.2450093720991955,
+            "rayLength": 0.5450093720991955,
+            "acceptedBeyond": 0.5150093720991955,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              0,
+              0,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": false
+          },
+          {
+            "from": {
+              "x": 1317.375177601467,
+              "y": 2,
+              "z": 1090.4077937578215
+            },
+            "to": {
+              "x": 1317.200810268545,
+              "y": 2,
+              "z": 1090.235672795629
+            },
+            "direction": {
+              "x": -0.7116761756004474,
+              "y": 0,
+              "z": -0.7025076662092173
+            },
+            "step": 0.24500937209919194,
+            "rayLength": 0.545009372099192,
+            "acceptedBeyond": 0.515009372099192,
+            "bodyHits": [
+              null,
+              null,
+              null
+            ],
+            "corridorRadius": 2.23,
+            "corridorHits": [
+              0,
+              0,
+              null
+            ],
+            "headHit": null,
+            "corridorHeadHit": null,
+            "groundClear": true,
+            "clear": false
+          }
+        ],
+        "clear": false,
+        "scope": "Read-only original terrain and obstacle rays, including actual loaded flight solids. Anonymous ray distances do not identify a named obstacle."
+      },
+      "failureSamples": [
+        {
+          "from": {
+            "x": 1317.8982796002324,
+            "y": 2,
+            "z": 1090.9241566444
+          },
+          "to": {
+            "x": 1317.7239122673104,
+            "y": 2,
+            "z": 1090.7520356822072
+          },
+          "direction": {
+            "x": -0.7116761756004474,
+            "y": 0,
+            "z": -0.7025076662092173
+          },
+          "step": 0.2450093720991937,
+          "rayLength": 0.5450093720991938,
+          "acceptedBeyond": 0.5150093720991937,
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorRadius": 2.23,
+          "corridorHits": [
+            0.3175051534843601,
+            0.3175051534843601,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": false,
+          "fromBeyondGoal": -0.23003748839681132,
+          "corridorHitBeyondGoal": [
+            0.08746766508754877,
+            0.08746766508754877,
+            null
+          ]
+        },
+        {
+          "from": {
+            "x": 1317.7239122673104,
+            "y": 2,
+            "z": 1090.7520356822072
+          },
+          "to": {
+            "x": 1317.5495449343887,
+            "y": 2,
+            "z": 1090.5799147200144
+          },
+          "direction": {
+            "x": -0.7116761756004474,
+            "y": 0,
+            "z": -0.7025076662092173
+          },
+          "step": 0.24500937209919194,
+          "rayLength": 0.545009372099192,
+          "acceptedBeyond": 0.515009372099192,
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorRadius": 2.23,
+          "corridorHits": [
+            0.07249578138504954,
+            0.07249578138504954,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": false,
+          "fromBeyondGoal": 0.01497188370251317,
+          "corridorHitBeyondGoal": [
+            0.08746766508756271,
+            0.08746766508756271,
+            null
+          ]
+        },
+        {
+          "from": {
+            "x": 1317.5495449343887,
+            "y": 2,
+            "z": 1090.5799147200144
+          },
+          "to": {
+            "x": 1317.375177601467,
+            "y": 2,
+            "z": 1090.4077937578215
+          },
+          "direction": {
+            "x": -0.7116761756004474,
+            "y": 0,
+            "z": -0.7025076662092173
+          },
+          "step": 0.2450093720991955,
+          "rayLength": 0.5450093720991955,
+          "acceptedBeyond": 0.5150093720991955,
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorRadius": 2.23,
+          "corridorHits": [
+            0,
+            0,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": false,
+          "fromBeyondGoal": 0.25998125580167586,
+          "corridorHitBeyondGoal": [
+            0.25998125580167586,
+            0.25998125580167586,
+            null
+          ]
+        },
+        {
+          "from": {
+            "x": 1317.375177601467,
+            "y": 2,
+            "z": 1090.4077937578215
+          },
+          "to": {
+            "x": 1317.200810268545,
+            "y": 2,
+            "z": 1090.235672795629
+          },
+          "direction": {
+            "x": -0.7116761756004474,
+            "y": 0,
+            "z": -0.7025076662092173
+          },
+          "step": 0.24500937209919194,
+          "rayLength": 0.545009372099192,
+          "acceptedBeyond": 0.515009372099192,
+          "bodyHits": [
+            null,
+            null,
+            null
+          ],
+          "corridorRadius": 2.23,
+          "corridorHits": [
+            0,
+            0,
+            null
+          ],
+          "headHit": null,
+          "corridorHeadHit": null,
+          "groundClear": true,
+          "clear": false,
+          "fromBeyondGoal": 0.5049906279008385,
+          "corridorHitBeyondGoal": [
+            0.5049906279008385,
+            0.5049906279008385,
+            null
+          ]
+        }
+      ],
+      "allSampleBodyHitsNull": true,
+      "initialLongGroundNotArchived": false
+    }
+  ]
+}

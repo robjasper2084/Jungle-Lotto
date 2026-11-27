@@ -1,0 +1,280 @@
+{
+  "schema": "staged-belle-landmarks/v1",
+  "status": "not-production",
+  "basis": "Original 2026-11-24 modeling package; Conservatory vestibule and internal Show House connector fitted from source to the unchanged supplied map walls",
+  "baseGameMapCommit": "2a8901996e53b1f93474f3c2165e078b6dd16e57",
+  "models": [
+    {
+      "site": "Anna Scripps Whitcomb Conservatory",
+      "placement": {
+        "center_xz": [
+          1330.8,
+          1174.7
+        ],
+        "yaw_rad": 0.313,
+        "localZ": "-v",
+        "groundWorldY": 2.0,
+        "gameMapId": "107310050"
+      },
+      "authoringAssumptions": {
+        "entranceCenterLocal": [
+          -17,
+          0,
+          0
+        ],
+        "entranceGapLocalZ": [
+          -1.7,
+          1.7
+        ],
+        "domeHeightM": 25.9,
+        "domeHeightEvidence": "approximate 85 ft published; other dimensions estimated",
+        "domeSectorCount": 20,
+        "wingsEndV": [
+          -40.95,
+          41.7
+        ],
+        "vestibuleAlignment": {
+          "sourceHead": "d59ba05605d04f45a2e3278d1dcb7a7bf3b1cef3",
+          "sourceMapBlobSha": "e5c741279fe981b928c9fd4d58a72d72ae7cb017",
+          "wallIndices": [
+            56,
+            57,
+            58,
+            59,
+            60,
+            61,
+            62,
+            63,
+            64,
+            65
+          ],
+          "existingColliderAndInteriorUnchanged": true,
+          "heightsAndMaterialsUnchanged": true
+        },
+        "showHouseConnector": {
+          "sourceHead": "9b43b72acb72cfe69dd483614e5c2d95bb57a7ed",
+          "sourceMapBlobSha": "e5c741279fe981b928c9fd4d58a72d72ae7cb017",
+          "wallIndices": [
+            17,
+            32
+          ],
+          "westPaneU": 11.1,
+          "openingTopY": 3.5,
+          "paneThickness": 0.055,
+          "existingColliderAndInteriorUnchanged": true,
+          "exteriorGlazingAndMaterialsUnchanged": true
+        }
+      },
+      "lods": [
+        {
+          "lod": 0,
+          "file": "Conservatory_Architectural_Study.glb",
+          "sha256": "d4ca492b0c5d07f90c7e8a1e3a6369811e6fe765f15c73f707bd34c9d55f1ae2",
+          "bytes": 336092,
+          "total_triangles": 17796,
+          "total_mesh_groups": 25
+        },
+        {
+          "lod": 1,
+          "file": "Conservatory_Architectural_Study_LOD1.glb",
+          "sha256": "6dc9148964da3db834563cefa68aa22883eef051bea15136b9f72ad3d614e20f",
+          "bytes": 304168,
+          "total_triangles": 16248,
+          "total_mesh_groups": 20
+        },
+        {
+          "lod": 2,
+          "file": "Conservatory_Architectural_Study_LOD2.glb",
+          "sha256": "361951febb39f9b148b7298c10294d2a4c12590847b0021394fcbc4a24b5804e",
+          "bytes": 76272,
+          "total_triangles": 3112,
+          "total_mesh_groups": 12
+        }
+      ]
+    },
+    {
+      "site": "Belle Isle Aquarium",
+      "placement": {
+        "center_xz": [
+          1363.78,
+          1167.42
+        ],
+        "yaw_rad": -2.828592653589793,
+        "localZ": "-v",
+        "groundWorldY": 2.0,
+        "gameMapId": "107227742"
+      },
+      "authoringAssumptions": {
+        "entranceCenterLocal": [
+          0,
+          0,
+          38
+        ],
+        "physicalOpeningWidthM": 3.3,
+        "springHeightEstimatedM": 3.45,
+        "stairs": {
+          "rise": 0.15,
+          "count": 4,
+          "tread": 0.36,
+          "width": 4.2,
+          "outsideStart": -41.04,
+          "landingStart": -39.6,
+          "landingEnd": -36.4,
+          "insideEnd": -34.96
+        },
+        "baroqueCarvings": "abstract placeholders, not scanned",
+        "roofHeightUnverified": true
+      },
+      "lods": [
+        {
+          "lod": 0,
+          "file": "Aquarium_Arched_Entrance_Study.glb",
+          "sha256": "26447779b20c5bbd2ab1ee6eb3dc1489333722e045400697c40a32cae3c69b93",
+          "bytes": 60268,
+          "total_triangles": 2688,
+          "total_mesh_groups": 26
+        },
+        {
+          "lod": 1,
+          "file": "Aquarium_Arched_Entrance_Study_LOD1.glb",
+          "sha256": "51d265f0a664ac896c8c23eb50b51f39ff52eeb2adbbc252ed16340c419e3ad9",
+          "bytes": 41788,
+          "total_triangles": 1752,
+          "total_mesh_groups": 20
+        },
+        {
+          "lod": 2,
+          "file": "Aquarium_Arched_Entrance_Study_LOD2.glb",
+          "sha256": "4295c700ff745bf9c413d78f3e58997f2abc5da22665ee4515bedcd72db3c554",
+          "bytes": 32144,
+          "total_triangles": 1200,
+          "total_mesh_groups": 15
+        }
+      ]
+    },
+    {
+      "site": "Scott Fountain terrace",
+      "placement": {
+        "center_xz": [
+          199.34,
+          1310.53
+        ],
+        "yaw_rad": -1.18,
+        "localZ": "along",
+        "groundWorldY": 2.0,
+        "gameMapId": "9146545"
+      },
+      "authoringAssumptions": {
+        "mappedUpperBasinRadiusM": 17.06,
+        "terraceRadiiAreEstimates": true,
+        "derivedGroundHeightM": null,
+        "distalCascadeExistingGame": "Six steps at radius 78.5m to 90m, do not duplicate them"
+      },
+      "lods": [
+        {
+          "lod": 0,
+          "file": "Scott_Fountain_Terraces_Study.glb",
+          "sha256": "b32bd8558a76c40039b7d5d6441ccbaf28091e0ce5b85654d0701b8f7713759d",
+          "bytes": 77120,
+          "total_triangles": 4192,
+          "total_mesh_groups": 6
+        },
+        {
+          "lod": 1,
+          "file": "Scott_Fountain_Terraces_Study_LOD1.glb",
+          "sha256": "6ecd5c7f2d0687c15f4fc4619aa3f5e1c6ea2a31c503d3cb46367f88bd355dbc",
+          "bytes": 74852,
+          "total_triangles": 3904,
+          "total_mesh_groups": 5
+        },
+        {
+          "lod": 2,
+          "file": "Scott_Fountain_Terraces_Study_LOD2.glb",
+          "sha256": "9e13118ec3d6b7935d3ee5c7a9b4a75b757ce60aa39d421a82a85ac93c48bc3f",
+          "bytes": 67764,
+          "total_triangles": 3600,
+          "total_mesh_groups": 3
+        }
+      ]
+    },
+    {
+      "site": "Conservatory Drive roadway detail example",
+      "placement": {
+        "center_xz": [
+          1334.4633333333,
+          1086.5166666667
+        ],
+        "yaw_rad": 0,
+        "localZ": "worldZ",
+        "groundWorldY": 2.0,
+        "gameRoadId": "107230534"
+      },
+      "authoringAssumptions": {
+        "roadId": "107230534",
+        "existingGameWidthM": 7.2,
+        "recordedSourceWidthM": 6.3,
+        "sidewalkWidthEstimatedM": 1.75,
+        "curbHeightEstimatedM": 0.12,
+        "actualIntersectionCurbGeometryVerified": false,
+        "centerWorldXZ": [
+          1334.4633333333331,
+          1086.5166666666667
+        ],
+        "renderOnlyStudy": true
+      },
+      "lods": [
+        {
+          "lod": 0,
+          "file": "Conservatory_Drive_Street_Detail_Study.glb",
+          "sha256": "d1e6cc99f6edbf79ccfc6671145a5350cf435850ac50fd37a38e7a1683d502fa",
+          "bytes": 9432,
+          "total_triangles": 384,
+          "total_mesh_groups": 5
+        },
+        {
+          "lod": 1,
+          "file": "Conservatory_Drive_Street_Detail_Study_LOD1.glb",
+          "sha256": "68f62aaee3f7b9421ed22f8d313738efc38b63372072027e1d81ac26c5cd3fe9",
+          "bytes": 8260,
+          "total_triangles": 324,
+          "total_mesh_groups": 4
+        },
+        {
+          "lod": 2,
+          "file": "Conservatory_Drive_Street_Detail_Study_LOD2.glb",
+          "sha256": "9a117a51ee1456eda92f8a0176cb4933a95bb0f36581eec9e74ba974117695f3",
+          "bytes": 2288,
+          "total_triangles": 60,
+          "total_mesh_groups": 1
+        }
+      ]
+    }
+  ],
+  "entryRestrictions": {
+    "conservatory": "Existing wall/collision and interior remain authoritative; verify real camera entrance",
+    "aquarium": "Game-authored stairs/portal preserved; verify accessible route separately",
+    "fountain": "Preview only, not a candidate to replace all 9146545 meshes",
+    "road": "Preview only; no surveyed curbs"
+  },
+  "runtimeGate": "VITE_STAGED_BELLE_ARCHITECTURE=1",
+  "runtimeSwapSubjects": [
+    "107310050",
+    "107227742"
+  ],
+  "productionReady": false,
+  "nativePerformanceAccepted": false,
+  "conservatoryFitSource": {
+    "baseHead": "ee7c4515826fdbaca780b11f8e58cc216855abad",
+    "mapBlobSha": "e5c741279fe981b928c9fd4d58a72d72ae7cb017",
+    "generator": "scripts/staged-landmark-authoring/build_landmarks.py",
+    "nativeAcceptance": "Requires the unchanged native walk and ninety-second performance gates"
+  },
+  "conservatoryConnectorSource": {
+    "baseHead": "9b43b72acb72cfe69dd483614e5c2d95bb57a7ed",
+    "mapBlobSha": "e5c741279fe981b928c9fd4d58a72d72ae7cb017",
+    "generator": "scripts/staged-landmark-authoring/build_landmarks.py",
+    "changedComponent": "ShowHouse/EndGlazing",
+    "retainedMaterial": "greenGlass BLEND, alpha 167/255, roughness 0.17, doubleSided; runtime depthWrite=false",
+    "nativeAcceptance": "Requires the unchanged native walk, comparison, and ninety-second performance gates"
+  }
+}

@@ -1,0 +1,81 @@
+--- a/build_landmarks.py
++++ b/build_landmarks.py
+@@ -78,6 +78,27 @@
+    for k in range(4):
+     j=(k+1)%4;f.extend([[k,j,4+j],[k,4+j,4+k]])
+    m=trimesh.Trimesh(vertices=v,faces=f,process=True);m.fix_normals();self.put(group,m)
++ def wall_box(self,group,a,b,y,height,thickness,outset=0,inset=0):
++  # A rigid wall strip along the retained collision boundary in (u,v).
++  # The original material, vertical extent and physical strip thickness stay fixed.
++  a,b=np.array(a,dtype=float),np.array(b,dtype=float);d=b-a;length=np.linalg.norm(d)
++  if length<=2*inset:raise ValueError('Wall strip shorter than preserved frame inset')
++  direction=d/length;center=(a+b)/2
++  normal=np.array([-direction[1],direction[0]])
++  if np.dot(normal,np.array([-13.5,.3])-center)>0:normal=-normal
++  center=center+normal*outset
++  m=trimesh.creation.box(extents=[length-2*inset,height,thickness])
++  m.apply_transform(trimesh.transformations.rotation_matrix(math.atan2(d[1],d[0]),[0,1,0]))
++  m.apply_translation([center[0],y,-center[1]]);self.put(group,m)
++ def flat_plate(self,group,outline,y,thickness):
++  # Keep every perimeter corner; a centroid fan adds detail without decimation.
++  p=np.array([[u,-v] for u,v in outline],dtype=float);count=len(p);center=p.mean(axis=0)
++  verts=[[x,y-thickness/2,z] for x,z in p]+[[x,y+thickness/2,z] for x,z in p]+[[center[0],y-thickness/2,center[1]],[center[0],y+thickness/2,center[1]]]
++  faces=[]
++  for i in range(count):
++   j=(i+1)%count;faces.extend([[2*count,j,i],[2*count+1,count+i,count+j],[i,j,count+j],[i,count+j,count+i]])
++  m=trimesh.Trimesh(vertices=np.asarray(verts),faces=np.asarray(faces),process=True)
++  m.fix_normals();self.put(group,m)
+  def export(self, name, selected=None):
+   scene=trimesh.Scene();sizes={}
+   for label,items in sorted(self.groups.items()):
+@@ -146,17 +167,32 @@
+     a.rod('Wings/CurvedRoofRibs|steel',[x0,yroof+2.1*(1-(x0/width)**2),z],[x1,yroof+2.1*(1-(x1/width)**2),z],.047)
+   a.box('Wings/SillRails|steel',(0,.3,(zmin+zmax)/2),(2*width,.22,zmax-zmin))
+   a.box('Wings/EndGlazing|greenGlass',(0,2.85,zmax if side==1 else zmin),(9.95,5.1,.032))
+- # Conservatory west vestibule; passage opening preserved through all models.
+- # Actual map clearance is v=-1.7..+1.7 at x=-17; local z=-v.
+- for zc in (-3.15,3.15):
+-  a.box('Vestibule/WestFacadePiers|steel',(-17.0,3.25,zc),(.17,6.5,2.9))
+-  a.box('Vestibule/GlassSideLights|glass',(-17.08,1.9,zc),(.048,2.95,2.63))
+- for z in (-4.6,4.6):
+-  a.box('Vestibule/SideGlass|glass',(-14.0,3.1,z),(6.0,6.2,.052))
++ # Conservatory west vestibule: use the retained local wall segments rather
++ # than the study's symmetric +/-4.6m width. All heights, strip thicknesses,
++ # doorway parts, site placement and materials remain the authored values.
++ alignment=json.loads((ROOT/'source'/'vestibule_alignment.json').read_text())
++ if alignment['sourceMapBlobSha']!='e5c741279fe981b928c9fd4d58a72d72ae7cb017':raise ValueError('Unexpected vestibule alignment source')
++ walls={w['wallIndex']:w for w in alignment['vestibuleWalls']}
++ north=[walls[60]['b'],walls[60]['a'],walls[62]['b'],walls[63]['b'],walls[64]['b']]
++ south=[walls[61]['a'],walls[61]['b'],walls[59]['a'],walls[58]['a'],walls[57]['a']]
++ def clipped_east(segment):
++  aa,bb=np.array(segment['a']),np.array(segment['b']);t=(-11-aa[0])/(bb[0]-aa[0])
++  if not 0<=t<=1:raise ValueError('Vestibule inner edge left the source segment')
++  return (aa+(bb-aa)*t).tolist()
++ north_end=clipped_east(walls[65]);south_end=clipped_east(walls[56])
++ for chain in (north,south):
++  for aa,bb in zip(chain,chain[1:]):
++   a.wall_box('Vestibule/WestFacadePiers|steel',aa,bb,3.25,6.5,.17)
++   a.wall_box('Vestibule/GlassSideLights|glass',aa,bb,1.9,2.95,.048,outset=.08,inset=.135)
++ for aa,bb in ((north[-1],north_end),(south[-1],south_end)):
++  a.wall_box('Vestibule/SideGlass|glass',aa,bb,3.1,6.2,.052)
+  a.box('Vestibule/DoorHeader|steel',(-17,4.82,0),(.22,3.4,3.38))
+  a.box('Vestibule/DoorJambs|steel',(-17,1.6,-1.68),(.25,3.2,.06))
+  a.box('Vestibule/DoorJambs|steel',(-17,1.6,1.68),(.25,3.2,.06))
+- a.box('Vestibule/TransparentRoof|glass',(-14.1,6.3,0),(6.2,.075,9.2))
++ footprint=[north_end,*reversed(north),*south,south_end]
++ # Preserve the original roof's 0.2m west overhang and fixed u=-11 inner edge.
++ roof=[[-11+(u+11)*(6.2/6),v] for u,v in footprint]
++ a.flat_plate('Vestibule/TransparentRoof|glass',roof,6.3,.075)
+  a.box('Vestibule/FlushThreshold|sidewalk',(-18.8,.04,0),(5.6,.08,3.3))
+  # Eastern display house: connected, separately roofed pavilion; size estimated.
+  for x in (11.1,22.7): a.box('ShowHouse/EndGlazing|greenGlass',(x,3.1,0),(.055,5.8,17.6))
+@@ -167,7 +203,8 @@
+  a.quad('ShowHouse/SlopedRoofGlass|glass',[[11.1,7.95,0],[22.7,7.95,0],[22.7,5.85,9],[11.1,5.85,9]])
+  a.notes={'entranceCenterLocal':[ -17, 0, 0 ],'entranceGapLocalZ':[-1.7,1.7],
+   'domeHeightM':25.9,'domeHeightEvidence':'approximate 85 ft published; other dimensions estimated',
+-  'domeSectorCount':20,'wingsEndV':[-40.95,41.7]}
++  'domeSectorCount':20,'wingsEndV':[-40.95,41.7],
++  'vestibuleAlignment':{'sourceHead':alignment['sourceHead'],'sourceMapBlobSha':alignment['sourceMapBlobSha'],'wallIndices':[56,57,58,59,60,61,62,63,64,65],'existingColliderAndInteriorUnchanged':True,'heightsAndMaterialsUnchanged':True}}
+  return a
+ 
+ def aquarium():

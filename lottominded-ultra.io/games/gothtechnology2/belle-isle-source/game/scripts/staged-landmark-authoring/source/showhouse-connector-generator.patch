@@ -1,0 +1,47 @@
+--- a/build_landmarks.py
++++ b/build_landmarks.py
+@@ -194,8 +194,32 @@
+  roof=[[-11+(u+11)*(6.2/6),v] for u,v in footprint]
+  a.flat_plate('Vestibule/TransparentRoof|glass',roof,6.3,.075)
+  a.box('Vestibule/FlushThreshold|sidewalk',(-18.8,.04,0),(5.6,.08,3.3))
+- # Eastern display house: connected, separately roofed pavilion; size estimated.
+- for x in (11.1,22.7): a.box('ShowHouse/EndGlazing|greenGlass',(x,3.1,0),(.055,5.8,17.6))
++ # The west end lies across the retained Palm House -> Show House connection.
++ # Keep one closed glazing solid around that opening, with no coincident box
++ # interfaces that would add extra alpha layers. The far exterior pane is exact.
++ connector=json.loads((ROOT/'source'/'showhouse_connector_alignment.json').read_text())
++ if connector['sourceMapBlobSha']!=alignment['sourceMapBlobSha']:raise ValueError('Unexpected Show House connector source')
++ pane=connector['retainedWestPane'];opening=connector['openingTopY']
++ bounds=connector['connectorWalls'];verts=[]
++ for x in (pane['centerU']-pane['thickness']/2,pane['centerU']+pane['thickness']/2):
++  zs=[]
++  for wall in bounds:
++   aa,bb=wall['a'],wall['b'];t=(x-aa[0])/(bb[0]-aa[0])
++   if not 0<=t<=1:raise ValueError('Show House pane left the retained connector segment')
++   zs.append(-(aa[1]+t*(bb[1]-aa[1])))
++  zl,zr=sorted(zs);outer_l,outer_r=pane['outerZ'];bottom,top=pane['bottomY'],pane['topY']
++  if not outer_l<zl<zr<outer_r or not bottom<opening<top:raise ValueError('Invalid Show House connector opening')
++  verts.extend([[x,y,z] for z,y in [(outer_l,bottom),(zl,bottom),(zl,opening),(zr,opening),(zr,bottom),(outer_r,bottom),(outer_r,top),(outer_l,top)]])
++ # Six triangles fill each concave face without entering the open connector.
++ face=[(0,1,2),(0,2,7),(2,3,6),(2,6,7),(3,4,5),(3,5,6)]
++ faces=[list(t) for t in face]+[[a+8,c+8,b+8] for a,b,c in face]
++ for i in range(8):
++  j=(i+1)%8;faces.extend([[i,j+8,j],[i,i+8,j+8]])
++ west=trimesh.Trimesh(vertices=np.asarray(verts),faces=np.asarray(faces),process=True)
++ west.fix_normals()
++ if not west.is_watertight or not west.is_winding_consistent or west.volume<=0:raise ValueError('Show House connector glazing is not a closed solid')
++ a.put('ShowHouse/EndGlazing|greenGlass',west)
++ a.box('ShowHouse/EndGlazing|greenGlass',(22.7,3.1,0),(.055,5.8,17.6))
+  for z in (-9.0,9.0):a.box('ShowHouse/SideGlazing|greenGlass',(16.9,3.1,z),(11.6,5.8,.054))
+  for x in np.linspace(11.1,22.7,9):
+   a.rod('ShowHouse/RoofTrusses|steel',(x,5.85,-9),(x,7.95,0),.052);a.rod('ShowHouse/RoofTrusses|steel',(x,7.95,0),(x,5.85,9),.052)
+@@ -204,7 +228,8 @@
+  a.notes={'entranceCenterLocal':[ -17, 0, 0 ],'entranceGapLocalZ':[-1.7,1.7],
+   'domeHeightM':25.9,'domeHeightEvidence':'approximate 85 ft published; other dimensions estimated',
+   'domeSectorCount':20,'wingsEndV':[-40.95,41.7],
+-  'vestibuleAlignment':{'sourceHead':alignment['sourceHead'],'sourceMapBlobSha':alignment['sourceMapBlobSha'],'wallIndices':[56,57,58,59,60,61,62,63,64,65],'existingColliderAndInteriorUnchanged':True,'heightsAndMaterialsUnchanged':True}}
++  'vestibuleAlignment':{'sourceHead':alignment['sourceHead'],'sourceMapBlobSha':alignment['sourceMapBlobSha'],'wallIndices':[56,57,58,59,60,61,62,63,64,65],'existingColliderAndInteriorUnchanged':True,'heightsAndMaterialsUnchanged':True},
++  'showHouseConnector':{'sourceHead':connector['sourceHead'],'sourceMapBlobSha':connector['sourceMapBlobSha'],'wallIndices':[17,32],'westPaneU':pane['centerU'],'openingTopY':opening,'paneThickness':pane['thickness'],'existingColliderAndInteriorUnchanged':True,'exteriorGlazingAndMaterialsUnchanged':True}}
+  return a
+ 
+ def aquarium():
