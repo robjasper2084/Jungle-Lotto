@@ -2,7 +2,7 @@ import {BELLE_SUNSET, hudPreset} from './cinematicPolicy.ts';
 import type {SkySettings} from './skyModel.ts';
 type Sky = {configure(next: Partial<SkySettings>): void};
 /** One installation per page; no polling, render loop, extra assets or physics writes. */
-export function installCinematicPresentation(sky: Sky): void {
+export function installCinematicPresentation(sky: Sky, beforeHudReveal: () => void = () => {}): void {
   const settings = document.getElementById('settings');
   if (!settings || document.getElementById('cinematic-settings')) return;
   const field = document.createElement('fieldset');
@@ -33,7 +33,9 @@ export function installCinematicPresentation(sky: Sky): void {
   const animations = new Set<Animation>();
   const stop = () => { for (const a of animations) a.cancel(); animations.clear(); };
   const apply = () => {
-    document.body.dataset.hudPreset = hudPreset(preset.value);
+    const next = hudPreset(preset.value);
+    if (document.body.dataset.hudPreset === 'cinematic' && next !== 'cinematic') beforeHudReveal();
+    document.body.dataset.hudPreset = next;
     document.body.dataset.cockpitDensity = compact.checked ? 'compact' : 'full';
     document.body.dataset.presentationMotion = media.matches || motion?.checked ? 'reduced' : 'full';
     if (document.body.dataset.presentationMotion === 'reduced') stop();
