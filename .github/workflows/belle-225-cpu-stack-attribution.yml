@@ -1,7 +1,7 @@
 name: PR 225 CPU-only native stack attribution (NOT RELEASE)
 on:
-  push:
-    branches: [diagnostic/belle-225-native-operation-attribution-d4f4baa]
+  pull_request:
+    branches: [feature/belle-isle-cinematic-stone-bridge-20261125]
     paths: ['.github/workflows/belle-225-cpu-stack-attribution.yml']
 permissions:
   contents: read
@@ -62,7 +62,7 @@ jobs:
           PY
           git diff HEAD --exit-code
           test -z "$(git status --porcelain=v1 --untracked-files=no)"
-          node --input-type=module -e 'import {writeFileSync,readFileSync} from "node:fs";import {createHash} from "node:crypto";writeFileSync("dist/__belle_test_build.json",JSON.stringify({version:1,repository:"robjasper2084/Jungle-Lotto",pullRequest:225,commit:"d4f4baa8e2016f4c9107b40176388bf2d3f6fe8c",buildId:"cpu-stack-diagnostic-"+process.env.GITHUB_RUN_ID+"-"+process.env.VITE_BRIDGE_BALUSTRADE_PREVIEW,builtAt:new Date().toISOString(),indexSha256:createHash("sha256").update(readFileSync("dist/index.html")).digest("hex"),profileQuery:"manual"}))'
+          node --input-type=module -e 'import {writeFileSync,readFileSync} from "node:fs";import {createHash} from "node:crypto";writeFileSync("dist/__belle_test_build.json",JSON.stringify({version:1,repository:"robjasper2084/Jungle-Lotto",pullRequest:225,commit:"d4f4baa8e2016f4c9107b40176388bf2d3f6fe8c",buildId:"cpu-stack-diagnostic-"+process.env.GITHUB_RUN_ID+"-"+process.env.VITE_BRIDGE_BALUSTRADE_PREVIEW,builtAt:new Date().toISOString(),indexSha256:createHash("sha256").update(readFileSync("dist/index.html")).digest("hex"),profileQuery:"1&locationPerf=1"}))'
           (cd dist && find . -type f -exec sha256sum {} \; | LC_ALL=C sort) > diagnostic-dist.sha256
       - uses: actions/upload-artifact@v4
         with:
