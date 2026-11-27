@@ -71,6 +71,7 @@ import {GIANT_SLIDE,SLIDE_ENTRY,SLIDE_HEADING} from './giantSlide.ts';
 import {configureAssetDelivery} from './assetDelivery.ts';
 import {applyRealisticMaterials} from './realisticMaterials.ts';
 import {connectSkySettings} from './skySettings.ts';
+import {createLegacyMinimapForeground} from './legacyMinimapForeground.ts';
 import {BRIDGE_PICTURE_VIEW_ID,BRIDGE_PICTURE_VIEW_NAME,bridgePictureView} from './bridgePictureView.ts';
 import {setSharedSolarCalibration} from './skyModel.ts';
 import {Photography,mixGameAudio} from './photography.ts';
@@ -328,7 +329,8 @@ installShadowMatrixCache(renderer);
  // and loop-lifecycle guard. Other existing gated backends retain their fence policy.
  if(softwareStartup || /\bApple\b/i.test(gpuName))installGpuFramePacing(renderer,{mode:nativeAppleMetalRenderer(gpuName)?'browser':'fence'});
  actualMsaa=!!renderer.getContext().getContextAttributes()?.antialias;syncAaStatus();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.25));renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.85;renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;
- const core=new RideCore(terrain,{spawn:{position:{x:data.spawn.x,y:2,z:data.spawn.z},headingY:data.spawn.heading}});clearSimulationInput=()=>core.clearPendingActions();const loader=new GLTFLoader();const renderProbe=createNatureRenderProbe(location.search);const world=await createWorld(scene,renderer,data,terrain,status,renderProbe);el('profile').dataset.macarthurRailMeshes=String(world.stats.bridgeRailFinish.meshes);el('profile').dataset.macarthurRailMaterials=String(world.stats.bridgeRailFinish.newMaterials);world.sky.preview(!SUNSET_REFERENCE);const refreshSkySettings=connectSkySettings(world.sky);const sunsetPreview=SUNSET_REFERENCE?createSunsetPreview(camera,()=>hover,()=>active&&!trials?.active&&!race?.active&&!coop?.active&&!photo?.active,()=>{clear();cameraYaw=0;cameraPitch=.1;snap=true;},data.spawn,data):undefined;
+ let materializeLegacyMinimap=()=>{};
+ const core=new RideCore(terrain,{spawn:{position:{x:data.spawn.x,y:2,z:data.spawn.z},headingY:data.spawn.heading}});clearSimulationInput=()=>core.clearPendingActions();const loader=new GLTFLoader();const renderProbe=createNatureRenderProbe(location.search);const world=await createWorld(scene,renderer,data,terrain,status,renderProbe);el('profile').dataset.macarthurRailMeshes=String(world.stats.bridgeRailFinish.meshes);el('profile').dataset.macarthurRailMaterials=String(world.stats.bridgeRailFinish.newMaterials);world.sky.preview(!SUNSET_REFERENCE);const refreshSkySettings=connectSkySettings(world.sky,()=>materializeLegacyMinimap());const sunsetPreview=SUNSET_REFERENCE?createSunsetPreview(camera,()=>hover,()=>active&&!trials?.active&&!race?.active&&!coop?.active&&!photo?.active,()=>{clear();cameraYaw=0;cameraPitch=.1;snap=true;},data.spawn,data):undefined;
  const frameBudget=new FrameBudget();graphics.onchange=()=>{frameBudget.reset();world.setQuality(graphics.value);saveGraphics();};world.setQuality(graphics.value);window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();if(!vr?.active)renderer.setSize(innerWidth,innerHeight);});
  const preparationOwnership=new ScenePreparationOwnership(value=>{scenePreparing=value;resetFrameClock=true;});
  let releaseWarmup:(()=>void)|undefined;
@@ -577,8 +579,11 @@ installShadowMatrixCache(renderer);
  const px=(x:number)=>(x-mapFrame.minX)/(mapFrame.maxX-mapFrame.minX)*420,pz=(z:number)=>(z-mapFrame.minZ)/(mapFrame.maxZ-mapFrame.minZ)*290;
  const mapLayer=document.createElement('canvas');mapLayer.width=minimap.width;mapLayer.height=minimap.height;
  const baseCtx=mapLayer.getContext('2d')!;
+ const mapForeground=createLegacyMinimapForeground(ctx);materializeLegacyMinimap=mapForeground.materialize;
+ window.addEventListener('pagehide',event=>{if(!event.persisted)mapForeground.dispose();});
  let mapLayerOpacity=-1;
  function drawMapLayer(alpha:number){
+  mapForeground.materialize();
   baseCtx.clearRect(0,0,mapLayer.width,mapLayer.height);baseCtx.globalAlpha=alpha;
   baseCtx.fillStyle='#143f47';baseCtx.fillRect(0,0,420,290);
   function path(points:[number,number][]){
@@ -612,9 +617,10 @@ installShadowMatrixCache(renderer);
   if(cityMap!==nextCity||nextFrame.minX!==mapFrame.minX||nextFrame.maxX!==mapFrame.maxX||nextFrame.minZ!==mapFrame.minZ||nextFrame.maxZ!==mapFrame.maxZ)mapLayerOpacity=-1;
   cityMap=nextCity;mapFrame=nextFrame;
   if(mapLayerOpacity!==alpha)drawMapLayer(alpha);
-  ctx.clearRect(0,0,420,290);ctx.drawImage(mapLayer,0,0);
+  ctx.clearRect(0,0,420,290);mapForeground.backgroundCleared();ctx.drawImage(mapLayer,0,0);
+  mapForeground.draw(document.body.dataset.hudPreset==='cinematic',ctx=>{
   ctx.strokeStyle='#c3c98e';ctx.lineWidth=.65;
-  for(const l of data.landmarks){ctx.fillStyle=l===destination?'#ffd98b':l.kind==='monument'?'#96e7dc':'#e8deaa';ctx.beginPath();ctx.arc(px(l.x),pz(l.z),l===destination?4:2,0,Math.PI*2);ctx.fill();}for(const [i,m]of (online?.members??[]).entries()){if(m.id===online?.self)continue;const p=online?.buffers.get(m.id)?.sample(performance.now());if(!p)continue;ctx.fillStyle=PLAYER_COLORS[i];ctx.strokeStyle='#10252c';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(px(p.pose.x),pz(p.pose.z),4,0,Math.PI*2);ctx.fill();ctx.stroke();}race?.drawMap(ctx,px,pz);activities?.drawMap(ctx,px,pz);ctx.save();ctx.translate(px(x),pz(z));ctx.rotate(-heading);ctx.fillStyle='#a5fff0';ctx.beginPath();ctx.moveTo(0,7);ctx.lineTo(-4,-4);ctx.lineTo(4,-4);ctx.fill();ctx.restore();ctx.fillStyle='#f2f4e6';ctx.font='12px system-ui';ctx.fillText('N ↑',10,18);realLocation?.drawMap(ctx,px,pz);}
+  for(const l of data.landmarks){ctx.fillStyle=l===destination?'#ffd98b':l.kind==='monument'?'#96e7dc':'#e8deaa';ctx.beginPath();ctx.arc(px(l.x),pz(l.z),l===destination?4:2,0,Math.PI*2);ctx.fill();}for(const [i,m]of (online?.members??[]).entries()){if(m.id===online?.self)continue;const p=online?.buffers.get(m.id)?.sample(performance.now());if(!p)continue;ctx.fillStyle=PLAYER_COLORS[i];ctx.strokeStyle='#10252c';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(px(p.pose.x),pz(p.pose.z),4,0,Math.PI*2);ctx.fill();ctx.stroke();}race?.drawMap(ctx,px,pz);activities?.drawMap(ctx,px,pz);ctx.save();ctx.translate(px(x),pz(z));ctx.rotate(-heading);ctx.fillStyle='#a5fff0';ctx.beginPath();ctx.moveTo(0,7);ctx.lineTo(-4,-4);ctx.lineTo(4,-4);ctx.fill();ctx.restore();ctx.fillStyle='#f2f4e6';ctx.font='12px system-ui';ctx.fillText('N ↑',10,18);realLocation?.drawMap(ctx,px,pz);});}
  status('Warming up island lighting');await sceneWarmup.prepare();
  // Pack immutable display buffers at this preparation boundary. Meshes keep
  // their authored materials, transforms and draw order; later assets fall back.
