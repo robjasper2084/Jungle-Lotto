@@ -8,7 +8,7 @@ import {inSunsetGarden,SUNSET_GARDEN} from './sunsetReferencePolicy.ts';
 /** Original bounded scenery, kept clear of mapped roads, paths and buildings. */
 export async function addSunsetGarden(scene:T.Scene,map:ParkMap,terrain:ParkTerrain,options?:{name:string;x:number;z:number;radius:number;trees:number;seed:number;shore:boolean},occupied=roadIndex(map.roads,true)){
  const center=options??SUNSET_GARDEN,inside=(x:number,z:number)=>Math.hypot(x-center.x,z-center.z)<center.radius&&(!options||!inSunsetGarden(x,z));
- const root=new T.Group();root.name=(options?.name??'Sunset Point')+' reference garden';scene.add(root);
+ const root=new T.Group();root.name=(options?.name??'Sunset Point')+' reference garden';
  let seed=options?.seed??209584;const rand=()=>{seed=Math.imul(seed,1664525)+1013904223|0;return(seed>>>0)/4294967296;};
  const dummy=new T.Object3D(),color=new T.Color();
  const standard=(name:string,value:number,roughness=.85)=>new T.MeshStandardMaterial({name,color:value,roughness});
@@ -116,6 +116,9 @@ export async function addSunsetGarden(scene:T.Scene,map:ParkMap,terrain:ParkTerr
  let count=0;sites.forEach(p=>{for(let i=0;i<12;i++){const x=p.x+(rand()-.5)*p.r*2,z=p.z+(rand()-.5)*p.r*2;if(!terrain.land(x,z))continue;dummy.position.set(x,terrain.height(x,z)+.045,z);dummy.rotation.set(0,rand()*6,0);dummy.scale.setScalar(.32+rand()*.22);dummy.updateMatrix();litter.setMatrixAt(count++,dummy.matrix);}});litter.count=count;root.add(litter);
  // Flatten the small architectural parts into one mesh per material.
  staticParts.updateMatrixWorld(true);const batches=new Map<T.Material,T.BufferGeometry[]>();staticParts.traverse(o=>{if(!(o instanceof T.Mesh))return;const g=o.geometry.clone().applyMatrix4(o.matrixWorld),m=o.material as T.Material;const list=batches.get(m)||[];list.push(g);batches.set(m,list);});staticParts.clear();for(const [m,parts]of batches){const g=mergeGeometries(parts);if(g)mesh(staticParts,g,m,new T.Vector3());for(const p of parts)p.dispose();}
+ // Publish the completed subtree once: scene shader observers must see late
+ // road fittings and flowers even when construction yielded before they existed.
+ scene.add(root);
  return{setQuality(q:string){leaves.visible=q!=='smooth';},stats:{trees:sites.length,leaves:leafCount,rocks:rocks.length,lamps:decor.length,flowers:flowers.length},update(x:number,z:number,eyeX=x,eyeZ=z){
   root.visible=Math.hypot(x-center.x,z-center.z)<center.radius+610;
   if(root.visible&&flowers.length){
