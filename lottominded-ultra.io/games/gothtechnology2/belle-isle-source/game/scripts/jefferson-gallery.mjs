@@ -276,6 +276,7 @@ try{
    entry.observedSkyHour=Number(await page.locator('#sky-hour').inputValue({timeout:remaining()}));
    assert(Math.abs(entry.observedSkyHour-Number(hour))<.051,'Captured sky differs from requested hour');
    assert.equal(Number(entry.profileData.jeffersonBuildings),6,'Real game did not report all six Jefferson replicas');
+   assert.equal(Number(entry.profileData.jeffersonSignalIntersections),13,'Real game did not report all thirteen Jefferson signal intersections');
    entry.passed=true;entry.status='captured';
   }catch(error){
    entry.status='failed';entry.failure=error?.stack||String(error);
