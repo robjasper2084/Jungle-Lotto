@@ -57,8 +57,10 @@ export async function checkExteriorProspectivePath(start,waypoints,queries){
  * clearance. Geometric halving bounds failed queries; even the final one-edge
  * proposal must pass independently. Nominal endpoints retain the original
  * .4m arrival policy instead of pretending every grid point was reached. */
-export async function partiallyCoalesceExteriorPath(start,waypoints,queries){
+export async function partiallyCoalesceExteriorPath(start,waypoints,queries,receipt={}){
  const selected=[],accepted=[],rejected=[];let current=start,checkedLegs=0;
+ Object.assign(receipt,{status:'planning',clear:null,proposals:[],selected,accepted,rejected,checkedLegs,end:current,error:null});
+ const finish=result=>{Object.assign(receipt,result,{status:result.clear?'passed':'rejected'});return result;};
  for(let first=0;first<waypoints.length;){
   let last=first;
   if(first>0){
@@ -67,17 +69,21 @@ export async function partiallyCoalesceExteriorPath(start,waypoints,queries){
   }
   let target=last;
   for(;;){
-   const from={...current},checked=await checkExteriorProspectivePath(from,[waypoints[target]],queries);
+   const from={...current},proposal={from,to:waypoints[target],firstGridIndex:first,lastGridIndex:target,status:'querying',checkedLegs:null,error:null};
+   receipt.proposals.push(proposal);let checked;
+   try{checked=await checkExteriorProspectivePath(from,[waypoints[target]],queries);}
+   catch(error){proposal.status='failed';proposal.error=String(error);Object.assign(receipt,{status:'failed',clear:false,error:String(error)});throw error;}
+   proposal.status=checked.clear?'accepted':'rejected';proposal.checkedLegs=checked.checkedLegs;
    if(checked.clear){
     selected.push(waypoints[target]);accepted.push({from,to:waypoints[target],firstGridIndex:first,lastGridIndex:target,checkedLegs:checked.checkedLegs,end:checked.end});
-    checkedLegs+=checked.checkedLegs;current=checked.end;first=target+1;break;
+    checkedLegs+=checked.checkedLegs;current=checked.end;receipt.checkedLegs=checkedLegs;receipt.end=current;first=target+1;break;
    }
    rejected.push({from,to:waypoints[target],firstGridIndex:first,lastGridIndex:target,...checked});
-   if(target===first)return{clear:false,selected,accepted,rejected,checkedLegs,waypointIndex:first,leg:checked.leg,reason:checked.reason};
+   if(target===first)return finish({clear:false,selected,accepted,rejected,checkedLegs,waypointIndex:first,leg:checked.leg,reason:checked.reason});
    target=first+Math.floor((target-first)/2);
   }
  }
- return{clear:true,waypoints:selected,accepted,rejected,checkedLegs,end:current};
+ return finish({clear:true,waypoints:selected,accepted,rejected,checkedLegs,end:current});
 }
 
 /** Only yields independently clear proposals. Four actual-start replans are
@@ -183,9 +189,9 @@ export async function createExteriorPlanner({bounds,camera,layout,queryGround,qu
    pathReceipt.coalesced={waypoints:selected,...prospective};
    if(!prospective.clear){
     rejectedProspectivePaths.push({kind:'coalesced',from:start,waypoints:selected,...prospective});
-    const partial=await partiallyCoalesceExteriorPath(start,indices.map(i=>points[i]),{queryGround:query,querySweeps:sweeps});
-    pathReceipt.partial=partial;
-    for(const rejected of partial.rejected)rejectedProspectivePaths.push({kind:'partial-coalescing',...rejected});
+    const partialReceipt={};pathReceipt.partial=partialReceipt;let partial;
+    try{partial=await partiallyCoalesceExteriorPath(start,indices.map(i=>points[i]),{queryGround:query,querySweeps:sweeps},partialReceipt);}
+    finally{for(const rejected of partialReceipt.rejected??[])rejectedProspectivePaths.push({kind:'partial-coalescing',...rejected});}
     if(partial.clear&&partial.waypoints.length<indices.length){selected=partial.waypoints;prospective=partial;coalesced=true;}
     else{
      selected=indices.map(i=>points[i]);coalesced=false;

@@ -210,3 +210,4 @@ test('full original scenery reproduces every native c746 phone and desktop rejec
 
 // Register the complete prospective/executor rejection regressions in the existing test target.
 import './staged-landmark-exterior-envelope.test.mjs';
+import './staged-landmark-exterior-partial-receipt.test.mjs';
