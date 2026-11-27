@@ -1,0 +1,70 @@
+{
+  "sourceRepository": "robjasper2084/Jungle-Lotto",
+  "sourcePullRequest": 254,
+  "diagnosticHead": "4f42679db814debbe73db582cf2c70a585c3ebc6",
+  "diagnosticTree": "59b2e01e3eb9624d131b2f694d77b08525b625b9",
+  "sourceArtifactId": 15176472759,
+  "verification": "Every retained file is byte-identical to the independently verified source archive from this published diagnostic commit.",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 7965,
+      "sha256": "73aba2085083a3f4fbfc04a75ed3d93d9b768836934ecc35b3fc9634ceac017f"
+    },
+    {
+      "path": "archive-source.mjs",
+      "bytes": 3763,
+      "sha256": "1e2a7dec67a5e89f8d44586c94a26e5c421d00eabe25087125b6b95b1209e614"
+    },
+    {
+      "path": "contract.mjs",
+      "bytes": 20274,
+      "sha256": "c1c8f82747f0c6564c1846cf9151562f9c20c8e8ea70586e1dfeb2cc74ffbdb8"
+    },
+    {
+      "path": "download-build.py",
+      "bytes": 4386,
+      "sha256": "c89b25f26c87f0764980eca712292f81f3a84f37aac16982fc99400485303057"
+    },
+    {
+      "path": "observer.mjs",
+      "bytes": 23439,
+      "sha256": "08f77912209055ca7f9fe707468876570637bc862baeefdb6653e7f532ea66e7"
+    },
+    {
+      "path": "observer.test.mjs",
+      "bytes": 31462,
+      "sha256": "2b96e691145077a296fee8840f999f1058dd1f3e36e4758434424884664bae96"
+    },
+    {
+      "path": "preload.mjs",
+      "bytes": 3408,
+      "sha256": "8879e0807b0188e98862d465a1b08b94dd1895ec1cd3d9a3a52e7ed85d642c11"
+    },
+    {
+      "path": "source.test.mjs",
+      "bytes": 5303,
+      "sha256": "89acf03a5e98bd218a263829b386bdd36de78e4a5f18316f1cab7d464f83171d"
+    },
+    {
+      "path": "sustained-trace-json.mjs",
+      "bytes": 17962,
+      "sha256": "3c9149d3fa34b54bded326e8744d5bf62864dca66a063a4d12666b2a2935b93e"
+    },
+    {
+      "path": "sustained-trace-json.test.mjs",
+      "bytes": 11020,
+      "sha256": "508e0e62b106f53d2e0191b9f4743281a06290f4de1dc0e1d2faf55c34e54279"
+    },
+    {
+      "path": "validate-evidence.mjs",
+      "bytes": 5185,
+      "sha256": "9f2f3ebcb97d48aa96de2f54c89438c3d0bb0d721594927c298dece3abf39141"
+    },
+    {
+      "path": "belle-reduced-desktop-stall-attribution.yml",
+      "bytes": 5386,
+      "sha256": "0ceb8ecb46fb3de261bf87688258f7d80350040d62f55e3940779113b057d63c"
+    }
+  ]
+}
