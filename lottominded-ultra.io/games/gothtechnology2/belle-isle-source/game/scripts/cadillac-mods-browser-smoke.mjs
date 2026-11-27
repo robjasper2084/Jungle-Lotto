@@ -28,7 +28,11 @@ assert.match(source,/^[0-9a-f]{40}$/);assert.equal(checkout,source,'Checkout mus
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
 const report={version:2,case:caseName,source,checkout,run:process.env.GITHUB_RUN_ID??null,viewport,mobile,
  passed:false,phase:'setup',startedAt:new Date().toISOString(),checks:{},snapshots:[],captures:[],errors:[],failedRequests:[],startupWarnings:[],
- harness:{pointerActivations:0,diagnosticKeyboardActivations:0,explicitScrolls:0,alreadyVisibleScrolls:0,cooldownReports:0,cooldownReadinessPolls:0,snapshotTimings:[],commandClicks:[]},
+ harness:{pointerActivations:0,diagnosticKeyboardActivations:0,explicitScrolls:0,alreadyVisibleScrolls:0,cooldownReports:0,cooldownReadinessPolls:0,snapshotTimings:[],commandClicks:[],
+  hoverScheduling:{mode:mobile?'unchanged-native-touch':'temporary-unbuffered-native-hover',
+   scope:'Only existing whitelisted desktop command hovers in this fresh owned Chromium instance; each owns a fresh CDP session.',
+   protocol:'DOM.enable and Overlay.enable around awaited native mouse.move; Overlay.disable, DOM.disable and detach before the unchanged post-hover proof and click.',
+   limitation:'Explicit debugger input-scheduling change for functional control coverage; not evidence of improved game rendering or a completed original deadline.'}},
  limitations:'Actual built full island on Chrome SwiftShader. Functional/layout screenshots and native input only; not physical-device, hardware FPS, sustained-performance, or completed human visual acceptance. Short Ride profile reports below are paused UI state snapshots, not performance samples. Existing release gates are unchanged.'};
 const operationTiming=createCadillacOperationTiming();
 await mkdir(out,{recursive:true});
