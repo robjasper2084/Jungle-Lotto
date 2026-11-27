@@ -5,6 +5,8 @@ import {resolve} from 'node:path';
 import {verifyPinnedInputs,verifyOriginalVerdict,createTraceSummaryAccumulator,diagnosticVerdict,sha256,PIN,REPORT_PATH,verifyPageObservations,verifyTraceControls} from './contract.mjs';
 import {summarizeTraceFile} from './sustained-trace-json.mjs';
 import {verifyAssetReceipts} from './asset-receipts.mjs';
+import {verifyNativeGpuSample} from './native-gpu-sample.mjs';
+import {verifyNativeGpuInput} from './native-gpu-input.mjs';
 
 const game=resolve(process.argv[2]),directory=resolve(process.argv[3]),capture=resolve(directory,'capture');
 const failures=[];let summary={diagnosticOnly:true,releaseAcceptance:false,collectionComplete:false};
@@ -24,6 +26,13 @@ try{
  assert.deepEqual(reportBytes,await readFile(resolve(capture,'original-report.json')),'Observer changed the original report');
  const report=JSON.parse(reportBytes);assert.equal(sha256(reportBytes),evidence.originalReportSha256);
  verifyOriginalVerdict(report,originalDriver.toString(),evidence.baselineWitness);
+ const nativeInput=verifyNativeGpuInput(evidence.nativeGpuInput);
+ const nativeSample=JSON.parse(await readFile(resolve(capture,'native-gpu-sample.json'),'utf8'));
+ assert.deepEqual(nativeSample,evidence.nativeGpuSample,'Native sample receipt changed after collection');
+ const nativeGpuSampleValidation=await verifyNativeGpuSample(nativeSample,{readCapturedFile:file=>readFile(resolve(capture,file)),
+  rideStartHostMs:nativeInput.startHostMs,rideStopHostMs:nativeInput.endHostMs,browserVersion:evidence.browser,systemInfo:evidence.systemInfo});
+ assert.deepEqual(nativeGpuSampleValidation,nativeSample.validation,'Native stack validation did not replay exactly');
+ assert.equal(nativeSample.collectionComplete,true);assert.equal(nativeSample.validationPassed,true);
  const cpu=await readFile(resolve(capture,'renderer.cpuprofile'));assert.equal(sha256(cpu),evidence.cpuProfileSha256);
  const streamed=await summarizeTraceFile(resolve(capture,'browser-trace.json'),JSON.parse(cpu),evidence.pageEvidence,{createAccumulator:createTraceSummaryAccumulator});
  assert.equal(streamed.sha256,evidence.traceSha256);assert.deepEqual(streamed.receipt,evidence.traceReceipt);
@@ -50,7 +59,8 @@ try{
  summary={...verdict,originalProcessExit:originalStatus,originalReportSha256:evidence.originalReportSha256,
   traceSha256:evidence.traceSha256,cpuProfileSha256:evidence.cpuProfileSha256,sourceHead:PIN.head,tree:PIN.tree,diagnosticSource:evidence.diagnosticSource,
   nativeRide:observed.nativeRide,rendererTimeline:observed.rendererTimeline,cpuCoverage:observed.cpuCoverage,
-  longestNativeEvents:observed.longEvents,originalGpsPassed:report.gpsRegression.passed,assetVerification,traceControls,gpuCategoryCoverage:observed.gpuCategoryCoverage};
+  longestNativeEvents:observed.longEvents,originalGpsPassed:report.gpsRegression.passed,assetVerification,traceControls,gpuCategoryCoverage:observed.gpuCategoryCoverage,
+  nativeInput,nativeGpuSampleValidation};
 }catch(error){if(error.traceReceipt)summary.traceReceipt=error.traceReceipt;failures.push(error.stack||String(error));}
 summary.validationErrors=failures;summary.validationPassed=failures.length===0;
 await writeFile(resolve(directory,'validation.json'),JSON.stringify(summary,null,2)+'\n');

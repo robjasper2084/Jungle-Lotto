@@ -40,7 +40,7 @@ function fixture(){
   stop:{trigger:'native-w-keyup',cpuStopIssued:true,traceEndIssued:true,cpuStopped:true,traceEnded:true}};
 }
 
-async function nativeMock({listedCategories=[],listingResponse,listingError=false,missingGpu=false,startFailure=false,missingTimeline=false,cpuFailure=false,endFailure=false,streamFailure=false,badScript=false,deferredCpu=false,browserCloseFailure=null,completion='normal',deferredBrowserClose=false,afterTraceRead=null,deferredAsset=false,embeddedImageIndex=null,extraSourceFiles=[],extraResponses=[]}={}){
+async function nativeMock({listedCategories=[],listingResponse,listingError=false,missingGpu=false,startFailure=false,missingTimeline=false,cpuFailure=false,endFailure=false,streamFailure=false,badScript=false,deferredCpu=false,browserCloseFailure=null,completion='normal',deferredBrowserClose=false,afterTraceRead=null,deferredAsset=false,embeddedImageIndex=null,extraSourceFiles=[],extraResponses=[],sampleFailure=false}={}){
  const f=fixture(),root=await mkdtemp(resolve(tmpdir(),'desktop-stall-observer-')),output=resolve(root,'capture'),js=Buffer.from('function nativeWork() {}');
  if(missingTimeline)f.trace.traceEvents=f.trace.traceEvents.filter(e=>e.ph!=='X');
  if(missingGpu)f.trace.traceEvents=f.trace.traceEvents.filter(e=>e.cat!=='gpu');
@@ -72,9 +72,9 @@ async function nativeMock({listedCategories=[],listingResponse,listingError=fals
  const context={newCDPSession:async()=>pageSession,close:async()=>{calls.push({method:'native context.close'});contextClosed++;return 'context-closed';}};
  const button={async click(...args){calls.push({method:'native click',args,receiver:this});return 'clicked';}};
  const panel={getByRole(...args){calls.push({method:'native getByRole',args,receiver:this});return button;}};
- const nativeUp=Promise.resolve('released');
+ const nativeUp=Promise.resolve('released'),nativeDown=Promise.resolve('held');
  class Page extends EventEmitter{
-  keyboard={up:function(...args){calls.push({method:'native keyboard.up',args,receiver:this});return nativeUp;}};
+  keyboard={down:function(...args){calls.push({method:'native keyboard.down',args,receiver:this});return nativeDown;},up:function(...args){calls.push({method:'native keyboard.up',args,receiver:this});return nativeUp;}};
   url(){calls.push({method:'native page.url'});return f.page.url;}
   isClosed(){return false;}async addInitScript(){}context(){return context;}
   locator(...args){calls.push({method:'native locator',args,receiver:this});return panel;}
@@ -83,7 +83,11 @@ async function nativeMock({listedCategories=[],listingResponse,listingError=fals
  }
  const browser={newBrowserCDPSession:async()=>browserSession,newPage:async()=>new Page(),close:async()=>{closed++;calls.push({method:'native browser.close'});browserCloseEnteredResolve();if(deferredBrowserClose)await browserCloseDeferred;if(browserCloseFailure)throw browserCloseFailure;return 'browser-closed';}};
  const chromium={launch:async()=>browser};
- const observer=await installDesktopStallTrace(chromium,{game:root,output,source:f.source,driver});
+ // This fixture tests observer preservation only. Real native process identity,
+ // sampling and replay are exercised by the separate sampler fixtures.
+ const nativeSamplerFactory=()=>({startRide(t){calls.push({method:'sample.startRide',hostMs:t});},stopRide(t){calls.push({method:'sample.stopRide',hostMs:t});},
+  async finish(){calls.push({method:'sample.finish'});return {collectionComplete:!sampleFailure,validationPassed:!sampleFailure};}});
+ const observer=await installDesktopStallTrace(chromium,{game:root,output,source:f.source,driver,nativeSamplerFactory});
  const launched=await chromium.launch({channel:'chrome',headless:false,args:['--enable-gpu','--use-gl=angle','--use-angle=metal']});
  await launched.newPage();
  const page=await launched.newPage({viewport:{width:1440,height:900},deviceScaleFactor:1,isMobile:false,hasTouch:false,reducedMotion:'reduce'});
@@ -91,7 +95,9 @@ async function nativeMock({listedCategories=[],listingResponse,listingError=fals
  return {f,root,output,observer,calls,browser,page,panel,button,nativeUp,cpuResolve,assetResolve,context,browserSession,browserCloseResolve,browserCloseEntered,
   complete:event=>browserSession.emit('Tracing.tracingComplete',event??f.traceComplete),getCounts:()=>({closed,contextClosed}),
   async capture(){assert.equal(page.locator('#ride-profile'),panel);assert.equal(panel.getByRole('button',{name:'Start 10-minute capture'}),button);
-   assert.equal(await button.click(),'clicked');const promise=page.keyboard.up('w');assert.equal(promise,nativeUp);assert.equal(await promise,'released');},
+   assert.equal(await button.click(),'clicked');assert.equal(page.keyboard.down('w'),nativeDown);await nativeDown;
+   assert.equal(page.keyboard.down('w'),nativeDown);await nativeDown;
+   const promise=page.keyboard.up('w');assert.equal(promise,nativeUp);assert.equal(await promise,'released');},
   async finish({closeContext=true}={}){calls.push({method:'original post-ride actions'});page.url();if(closeContext)await context.close();
    const reportPath=resolve(root,'output/sustained-profile/full/desktop/report.json');await mkdir(resolve(root,'output/sustained-profile/full/desktop'),{recursive:true});
    const before=JSON.stringify(f.report);await writeFile(reportPath,before);
@@ -150,6 +156,24 @@ test('gpu is the sole added literal category and leaves the frozen seven-categor
  assert(Object.isFrozen(UPSTREAM_TRACE_CATEGORIES)&&Object.isFrozen(TRACE_CATEGORIES));
  assert.deepEqual(TRACE_START_PARAMS,{transferMode:'ReturnAsStream',streamFormat:'json',streamCompression:'none',bufferUsageReportingInterval:1000,
   traceConfig:{recordMode:'recordUntilFull',traceBufferSizeInKb:262144,includedCategories:[...original,'gpu']}});
+});
+
+test('native sample failure retains original input, GPS result, report bytes and browser cleanup',async()=>{
+ const h=await nativeMock({sampleFailure:true});try{
+  await h.capture();const e=await h.finish();
+  assert.equal(e.nativeGpuSample.collectionComplete,false);assert.equal(e.verdict.collectionComplete,false);
+  assert.equal(e.verdict.originalBaselinePassed,false);assert.equal(e.verdict.originalGpsPassed,true);
+  assert.equal(e.verdict.originalHarnessPassed,false);assert.equal(e.verdict.releaseAcceptance,false);
+  assert(e.errors.some(x=>x.includes('Native GPU sample incomplete')));
+  assert.equal(h.calls.filter(x=>x.method==='sample.startRide').length,1);
+  assert.equal(h.calls.filter(x=>x.method==='sample.stopRide').length,1);
+  assert.equal(h.calls.filter(x=>x.method==='native keyboard.down').length,2);
+  assert.equal(h.calls.filter(x=>x.method==='native keyboard.up').length,1);
+  assert(h.calls.findIndex(x=>x.method==='native keyboard.up')<h.calls.findIndex(x=>x.method==='sample.stopRide'));
+  assert(h.calls.findIndex(x=>x.method==='Tracing.end')<h.calls.findIndex(x=>x.method==='native page.url'));
+  assert(h.calls.findIndex(x=>x.method==='original post-ride actions')<h.calls.findIndex(x=>x.method==='sample.finish'));
+  assert.deepEqual(h.getCounts(),{closed:1,contextClosed:1});
+ }finally{await h.cleanup();}
 });
 
 test('raw launch enumeration remains advisory including empty, malformed, extra categories and actual errors',async()=>{
