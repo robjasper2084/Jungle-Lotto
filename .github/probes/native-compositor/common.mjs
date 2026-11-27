@@ -46,10 +46,18 @@ function diagnosticHasNoFailures(state) {
     state.trace?.capReached === false && state.trace?.dataLossOccurred === false &&
     state.finalization?.writesHealthy === true;
 }
+export function ownedTransportsClosed(state) {
+  return ['page', 'browserTrace'].every(name => {
+    const receipt = state?.transports?.[name];
+    return receipt?.created === true && receipt.creationTimedOut === false &&
+      receipt.detachCalls === 1 && receipt.detachAcknowledged === true && receipt.closeObserved === true &&
+      receipt.closed === true && receipt.unexpectedClose === false && !receipt.creationError && !receipt.detachError;
+  });
+}
 export function diagnosticStateIsClean(state) {
   return state?.complete === true && state.phase === 'complete-diagnostic-only' &&
     diagnosticHasNoFailures(state) && state.finalization?.transportClosed === true &&
-    state.finalization?.statusPersisted === true;
+    state.finalization?.statusPersisted === true && ownedTransportsClosed(state);
 }
 export async function finalizeDiagnostic(state, {eligible, detach, flush, writeStatus}) {
   state.complete = false;
@@ -62,7 +70,7 @@ export async function finalizeDiagnostic(state, {eligible, detach, flush, writeS
   }
   try { await flush(); }
   catch (error) { invalidateDiagnostic(state, 'final-flush', error, {io: true}); }
-  const candidate = eligible && diagnosticHasNoFailures(state) && state.finalization.transportClosed;
+  const candidate = eligible && diagnosticHasNoFailures(state) && state.finalization.transportClosed && ownedTransportsClosed(state);
   const revision = state.failureRevision;
   const snapshot = structuredClone(state);
   snapshot.complete = !!candidate; snapshot.partial = !candidate;
@@ -94,6 +102,7 @@ export function terminalDiagnosticReceipt(state, code = null) {
     errorCount: state.errors?.length ?? 0,
     errors: (state.errors || []).slice(0, 8).map(row => ({where: row.where, message: row.message.slice(0, 256)})),
     ioError: state.ioError ?? null, finalization: structuredClone(state.finalization),
+    transports: structuredClone(state.transports), lifecycle: structuredClone(state.lifecycle),
     bundleOverflow: state.bundleOverflow, assetEventOverflow: state.assetEventOverflow,
     parsedScriptOverflow: state.parsedScriptOverflow,
     trace: {capReached: state.trace?.capReached, dataLossOccurred: state.trace?.dataLossOccurred}

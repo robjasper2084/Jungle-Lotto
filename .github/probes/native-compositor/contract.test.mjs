@@ -1,11 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
+import {EventEmitter} from 'node:events';
 import {readFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {manifest, selectCase, verifyDriver, buildStatisticOnly, bounded, invalidateDiagnostic, sha256,
   finalizeDiagnostic, diagnosticStateIsClean, terminalDiagnosticReceipt, diagnosticRunIsClean,
-  boundedDiagnosticCleanup, traceCategoryRequest, summarizeTraceTopology} from './common.mjs';
+  boundedDiagnosticCleanup, traceCategoryRequest, summarizeTraceTopology, ownedTransportsClosed} from './common.mjs';
 import {installHooks} from './hooks.mjs';
 import {installPageProbe} from './page-probe.mjs';
 
@@ -17,6 +18,11 @@ test('only original 210 and the fixed compositor categories are selectable', () 
   assert.deepEqual(manifest.trace.categories, ['cc', 'viz', 'gpu', 'toplevel', 'toplevel.flow', 'devtools.timeline', 'blink.user_timing']);
   assert.deepEqual(traceCategoryRequest([...manifest.trace.categories, 'unrequested']).requestedCategories, manifest.trace.categories);
   assert.equal(manifest.trace.gpuExecutionMeasured, false);
+  assert.equal(manifest.trace.transport, 'browser.newBrowserCDPSession');
+  assert.equal(manifest.trace.processScope, 'browser-root/all-browser-processes');
+  assert.equal(manifest.transportOwnership.creationTimeoutMs, manifest.bounds.protocolTimeoutMs);
+  assert.equal(manifest.transportOwnership.detachAndCloseTimeoutMs, 2000);
+  assert.equal(manifest.transportOwnership.originalPageAndContextClosureDelayed, false);
   assert.equal(manifest.bounds.traceBufferKiB * 1024, 512 * 1024 * 1024);
   assert.equal(manifest.bounds.traceFileBytes, 512 * 1024 * 1024);
   assert.equal(manifest.bounds.traceDrainTimeoutMs, 60000);
@@ -196,6 +202,10 @@ function finalState() {
     invocationId: 'same-source-only-invocation', phase: 'stopping', complete: false, partial: false,
     errors: [], errorOverflow: 0, failureRevision: 0,
     finalization: {transportClosed: false, writesHealthy: true, statusPersisted: false},
+    transports: Object.fromEntries(['page', 'browserTrace'].map(name => [name, {
+      created: true, creationTimedOut: false, detachCalls: 1, detachAcknowledged: true,
+      closeObserved: true, closed: true, unexpectedClose: false
+    }])), lifecycle: {},
     bundleOverflow: 0, assetEventOverflow: 0, parsedScriptOverflow: 0,
     trace: {capReached: false, dataLossOccurred: false}, cpuProfile: {file: 'retained.cpuprofile'}
   };
@@ -221,7 +231,8 @@ async function startupMonitorFixture({response = {categories: []}, failAt = null
     if (method === 'Tracing.getCategories') return response;
     return {};
   }};
-  const monitor = new NativeMonitor({page: {async evaluate() { observerStarts++; return true; }}});
+  const monitor = new NativeMonitor({page: {async evaluate() { observerStarts++; return true; }},
+    browser: {async newBrowserCDPSession() { return cdp; }}});
   return {monitor, state, calls, saved, events, get observerStarts() { return observerStarts; }, start: () => monitor.start(async () => cdp)};
 }
 test('actual startup retains incomplete enumeration and requests the same seven categories exactly once', async () => {
@@ -383,6 +394,7 @@ test('a blocked event-write queue cannot delay either recorder stop or raw CPU p
     calls.push(method);
     return method === 'Profiler.stop' ? {profile} : {};
   }};
+  monitor.traceCdp = monitor.cdp;
   let finished = false;
   const pending = monitor.finish('original-ending-metrics');
   void pending.then(() => { finished = true; });
@@ -424,6 +436,7 @@ async function traceMonitorFixture({fileCap = 16, drainMs = 100, protocolMs = 10
     if (method === 'IO.close') notifyClosed();
     return {};
   }};
+  monitor.traceCdp = monitor.cdp;
   return {monitor, state, calls, writes, closed, budgets};
 }
 test('asynchronous trace completion can outlive the RPC limit within the single finalization budget', async () => {
@@ -520,6 +533,195 @@ test('a stalled raw trace read cannot escape the independent drain deadline', as
   assert.equal(f.state.trace.streamComplete, false);
   assert.equal(f.state.complete, false); assert.equal(f.state.partial, true);
   assert.strictEqual(f.state.cpuProfile, profile);
+});
+
+
+async function ownershipFixture({cpuError = false, lateBrowserCreation = null, pageDetach = null,
+  protocolMs = 40, cleanupMs = 10, detachMs = 2000, onEvent = null} = {}) {
+  const source = await readFile(new URL('./preload.mjs', import.meta.url), 'utf8');
+  const begin = source.indexOf('class NativeMonitor {'), end = source.indexOf('\ninstallHooks(', begin);
+  const state = finalState(), calls = [], events = [], files = new Map();
+  delete state.cpuProfile;
+  Object.assign(state, {checkpoints: [], bundles: [{file: 'exact-loaded-source.js'}], parsedScripts: 1,
+    originalMetricsCalls: 2, bundleBytes: 1, assetEvents: 0});
+  const profile = {nodes: [{id: 1}], samples: [1], timeDeltas: [300], startTime: 0, endTime: 300};
+  const snapshot = {timeOriginMs: 100000, stoppedBy: 'trusted-w-keyup', keydowns: 1, keyups: 1,
+    marks: [{name: 'first-trusted-w', atMs: .1}, {name: 'trusted-w-keyup', atMs: .2}],
+    raf: {stored: 1, overflow: 0}, longTasks: {overflow: 0}, markOverflow: 0, longTaskSupported: true};
+  const traceBytes = Buffer.from(JSON.stringify({traceEvents: traceFixture()}) + '\n');
+  let resolvePageDetached, resolveBrowserDetached;
+  const pageDetached = new Promise(done => { resolvePageDetached = done; });
+  const browserDetached = new Promise(done => { resolveBrowserDetached = done; });
+  const pageSession = new EventEmitter(), browserSession = new EventEmitter();
+  for (const [name, session, notify] of [['page', pageSession, resolvePageDetached], ['browserTrace', browserSession, resolveBrowserDetached]]) {
+    session.closed = false; session.detachCount = 0;
+    session.on('close', () => { session.closed = true; });
+    session.detach = async () => {
+      calls.push(name + ':detach'); session.detachCount++;
+      if (session.closed) throw Error('TargetClosed: owned session already closed');
+      if (name === 'page' && pageDetach) await pageDetach();
+      session.emit('close'); notify();
+    };
+  }
+  pageSession.send = async method => {
+    calls.push('page:' + method);
+    assert(!method.startsWith('Tracing.') && !method.startsWith('IO.'), 'Tracing/IO must use browser ownership');
+    if (pageSession.closed) throw Error('TargetClosed: original page session');
+    if (method === 'Profiler.stop') {
+      if (cpuError) throw Error('Required CPU profile unavailable');
+      return {profile};
+    }
+    return {};
+  };
+  browserSession.send = async method => {
+    calls.push('browserTrace:' + method);
+    assert(!method.startsWith('Profiler.') && !method.startsWith('Debugger.'), 'Profiler/Debugger must stay on original page');
+    if (browserSession.closed) throw Error('Browser tracing session closed');
+    if (method === 'Tracing.getCategories') return {categories: manifest.trace.categories};
+    if (method === 'IO.read') return {data: traceBytes.toString(), eof: true};
+    return {};
+  };
+  const context = new EventEmitter(), page = new EventEmitter(), browser = new EventEmitter();
+  page.closed = false; page.context = () => context; page.addInitScript = async () => {};
+  page.evaluate = async fn => {
+    if (page.closed) throw Error('Original page closed');
+    return String(fn).includes('.start()') ? true : snapshot;
+  };
+  browser.newBrowserCDPSession = () => lateBrowserCreation || Promise.resolve(browserSession);
+  const saveJson = async (path, value) => { files.set(path, Buffer.from(JSON.stringify(value))); };
+  const failure = (where, error) => invalidateDiagnostic(state, where, error);
+  const createMonitor = vm.runInNewContext(source.slice(begin, end) + `
+    (page, browser) => new NativeMonitor({page, browser,
+      launchArguments: [{channel: 'chrome', headless: false, args: ['--enable-gpu', '--use-gl=angle', '--use-angle=metal']}],
+      pageArguments: [{viewport: {width: 1440, height: 900}, deviceScaleFactor: 1, isMobile: false, hasTouch: false, reducedMotion: 'reduce'}]});`, {
+    assert, Buffer, resolve, state, manifest, output: '/source-only-evidence', structuredClone, installPageProbe,
+    limits: {...manifest.bounds, protocolTimeoutMs: protocolMs, cleanupTimeoutMs: cleanupMs, traceDrainTimeoutMs: 200},
+    bounded(promise, ms, label) { return bounded(promise, label.includes('CDP detach and close') ? detachMs : ms, label); },
+    setTimeout, setInterval, clearTimeout, clearInterval, sha256, summarizeTraceTopology,
+    traceCategoryRequest, invalidateDiagnostic, ownedTransportsClosed, finalizeDiagnostic, terminalDiagnosticReceipt, boundedDiagnosticCleanup,
+    failure, saveJson, writes: Promise.resolve(),
+    async persist() { await saveJson('/source-only-evidence/diagnostic-status.json', state); return true; },
+    async event(name, detail) { events.push({name, detail}); onEvent?.(name, detail); },
+    async queueWrite(_label, operation) { await operation(); return true; },
+    async writeFile(path, bytes) { files.set(path, Buffer.from(bytes)); },
+    writeFileSync(path, bytes) { files.set(path, Buffer.from(bytes)); },
+    async readFile(path) { assert(files.has(path), 'Missing in-memory raw file'); return files.get(path); },
+    async rename(from, to) { files.set(to, files.get(from)); files.delete(from); },
+    async open(path) {
+      const chunks = [];
+      return {async write(bytes) { chunks.push(Buffer.from(bytes)); }, async close() { files.set(path, Buffer.concat(chunks)); }};
+    }
+  });
+  const monitor = createMonitor(page, browser);
+  return {monitor, state, calls, files, events, pageSession, browserSession, pageDetached, browserDetached,
+    async start() { await monitor.attach(); await monitor.start(async () => pageSession); },
+    closeSource() {
+      page.closed = true; page.emit('close'); context.emit('close');
+      if (!pageSession.closed) pageSession.emit('close');
+      return 'original-source-context-closed';
+    },
+    completeTrace() { browserSession.emit('Tracing.tracingComplete', {stream: 'browser-owned-stream', dataLossOccurred: false}); }
+  };
+}
+test('original page closes while browser flush remains pending, then both owned sessions complete cleanly', async () => {
+  const f = await ownershipFixture(); await f.start();
+  const pending = f.monitor.stop('original-ending-metrics');
+  assert.deepEqual(f.calls.filter(value => value.endsWith('Profiler.stop') || value.endsWith('Tracing.end')),
+    ['page:Profiler.stop', 'browserTrace:Tracing.end']);
+  await bounded(f.pageDetached, 100, 'prompt page detach');
+  assert.equal(f.browserSession.detachCount, 0, 'Browser tracing must remain alive during flush');
+  assert.equal(f.closeSource(), 'original-source-context-closed', 'Original closure is never delayed');
+  f.completeTrace(); await bounded(pending, 150, 'complete ownership fixture');
+  assert.equal(f.state.complete, true); assert.equal(f.state.partial, false);
+  assert.equal(ownedTransportsClosed(f.state), true);
+  assert.equal(f.state.trace.topology.available, true);
+  assert.equal(f.state.alignment.available, true);
+  assert(f.files.has('/source-only-evidence/native.cpuprofile'));
+  assert(f.files.has('/source-only-evidence/native-trace.json'));
+  assert(Number.isFinite(f.state.lifecycle.pageClosedAtNodeEpochMs));
+  assert(Number.isFinite(f.state.lifecycle.contextClosedAtNodeEpochMs));
+  assert.equal(f.pageSession.detachCount, 1); assert.equal(f.browserSession.detachCount, 1);
+  await f.monitor.cleanup();
+  assert.equal(f.pageSession.detachCount, 1); assert.equal(f.browserSession.detachCount, 1);
+});
+test('early original-page closure remains a failure even when browser trace is retained', async () => {
+  const f = await ownershipFixture(); await f.start();
+  f.closeSource(); f.completeTrace();
+  await bounded(f.monitor.stop('original-ending-metrics'), 150, 'early source close');
+  assert.equal(f.state.complete, false); assert.equal(f.state.partial, true);
+  assert(f.state.errors.some(row => /closed|close/.test(row.where)));
+  assert.equal(f.state.transports.page.unexpectedClose, true);
+  assert(f.files.has('/source-only-evidence/native-trace.json'));
+});
+test('missing required CPU data cannot be masked by a complete browser trace', async () => {
+  const f = await ownershipFixture({cpuError: true}); await f.start();
+  const pending = f.monitor.stop('original-ending-metrics'); f.completeTrace(); await pending;
+  assert.equal(f.state.complete, false); assert.equal(f.state.partial, true);
+  assert.equal(f.state.cpuProfile, undefined);
+  assert(f.files.has('/source-only-evidence/native-trace.json'));
+  assert(f.state.errors.some(row => row.where === 'cpu-profile'));
+});
+test('unexpected browser-session closure preserves CPU evidence and cannot be relabeled as successful detach', async () => {
+  const f = await ownershipFixture(); await f.start();
+  const pending = f.monitor.stop('original-ending-metrics');
+  await f.pageDetached; f.browserSession.emit('close'); await pending;
+  assert.equal(f.state.complete, false); assert.equal(f.state.partial, true);
+  assert.equal(f.state.transports.browserTrace.unexpectedClose, true);
+  assert.equal(f.state.transports.browserTrace.detachAcknowledged, false);
+  assert(f.files.has('/source-only-evidence/native.cpuprofile'));
+});
+test('late owned-session creation is detached exactly once and never resumes capture', async () => {
+  let releaseCreation;
+  const creation = new Promise(resolve => { releaseCreation = resolve; });
+  const f = await ownershipFixture({lateBrowserCreation: creation, protocolMs: 5});
+  await assert.rejects(f.start(), /creation timed out/);
+  const finished = f.monitor.stop('setup-failure');
+  releaseCreation(f.browserSession);
+  await bounded(f.browserDetached, 100, 'late creation disposal'); await finished;
+  assert.equal(f.browserSession.detachCount, 1);
+  assert.equal(f.state.transports.browserTrace.creationTimedOut, true);
+  assert.equal(f.calls.some(call => call.endsWith('Tracing.start')), false);
+  assert.equal(f.state.complete, false); assert.equal(f.state.partial, true);
+});
+test('cleanup racing an already-created session prevents setup from resuming', async () => {
+  let f, cleanup;
+  f = await ownershipFixture({onEvent(name, detail) {
+    if (name === 'owned-session-created' && detail.transport === 'browserTrace') cleanup = f.monitor.cleanup();
+  }});
+  await assert.rejects(f.start(), /became unavailable before setup/);
+  await bounded(cleanup, 100, 'creation and cleanup race');
+  await bounded(f.browserDetached, 100, 'created session disposal');
+  assert.equal(f.browserSession.detachCount, 1);
+  assert.equal(f.calls.some(call => call.endsWith('Tracing.start')), false);
+  assert.equal(f.state.complete, false); assert.equal(f.state.partial, true);
+});
+test('a late detach acknowledgement cannot recover a failed ownership receipt', async () => {
+  let releaseDetach;
+  const held = new Promise(resolve => { releaseDetach = resolve; });
+  const f = await ownershipFixture({pageDetach: () => held, detachMs: 5}); await f.start();
+  const pending = f.monitor.stop('original-ending-metrics'); f.completeTrace(); await pending;
+  assert.equal(f.state.transports.page.closed, false);
+  releaseDetach(); await new Promise(setImmediate);
+  assert.equal(f.state.transports.page.detachAcknowledged, true);
+  assert.equal(f.state.transports.page.closed, false, 'Late success cannot overwrite the timed-out detach outcome');
+  assert.equal(f.state.complete, false); assert.equal(terminalDiagnosticReceipt(f.state).complete, false);
+});
+test('browser-close cleanup stays bounded and late trace data cannot restore completeness', async () => {
+  const f = await ownershipFixture({cleanupMs: 5}); await f.start();
+  const pending = f.monitor.stop('original-ending-metrics'); await f.pageDetached;
+  await bounded(f.monitor.cleanup(), 100, 'bounded owned-session cleanup');
+  f.completeTrace(); await pending;
+  assert.equal(f.state.complete, false); assert.equal(f.state.partial, true);
+  assert(f.files.has('/source-only-evidence/observer-cleanup-terminal.json'));
+  assert.equal(f.pageSession.detachCount, 1); assert.equal(f.browserSession.detachCount, 1);
+  assert.equal(terminalDiagnosticReceipt(f.state).complete, false);
+});
+test('completion validation requires both explicit owned transport acknowledgements', async () => {
+  for (const name of ['page', 'browserTrace']) for (const field of ['detachAcknowledged', 'closeObserved', 'closed']) {
+    const state = finalState(); state.transports[name][field] = false;
+    assert.equal(await finalizeDiagnostic(state, finalOptions()), false);
+    assert.equal(diagnosticStateIsClean(state), false);
+  }
 });
 
 function fakeBrowser() {

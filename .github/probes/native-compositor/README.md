@@ -74,14 +74,18 @@ can be estimated or missing. The retained Metal device was Apple Paravirtual;
 virtual display timing is not physical scan-out certification. Uncovered time
 remains unknown.
 
-Exact Chrome source adds browser and existing GPU-process IDs to a trusted page
-trace, so the audited page CDP hook is retained. Actual cross-process coverage is
-required: all seven raw categories inside the trusted W window, named browser
+Tracing and IO now use one owned browser CDP session. This is an explicit scope
+change: browser-root tracing has no page target PID filter and can include all
+browser processes. The former trusted page trace included the target, browser and
+existing GPU-process IDs, but its transport could be destroyed when the unchanged
+GPS check released the original page/context. The original renderer remains bound
+to the unchanged trusted W marks. Actual cross-process coverage is required: all
+seven raw categories inside the trusted W window, named browser
 tasks, GPU-service and Viz tracks outside the renderer,
 main rAF callbacks, PipelineReporter events, separate GPU/Viz flow records and
 trusted-window marks. Renderer-only flow events cannot satisfy GPU/Viz coverage.
-GPU restart can still leave
-coverage incomplete. Category availability alone never certifies these tracks.
+Missing process or thread records can still leave coverage incomplete. Category
+availability or browser-session ownership alone never certifies these tracks.
 
 The raw trace is saved unchanged with its SHA-256. PID/TID, id/id2/bind_id, flow
 flags, phases, timestamps, arguments and source-frame IDs are not normalized.
@@ -106,6 +110,40 @@ native task context. This is sampled evidence, never performance acceptance.
 No precise coverage, heap snapshot, forced GC, screenshot trace or broad disabled
 by default debug category is added. V8-specific tracing is no longer requested;
 complete GC trace coverage is not claimed. Resource/script receipts stay bounded.
+
+## Owned transport lifecycle
+
+One independent page CDP session owns Profiler and Debugger; one independent
+browser CDP session owns Tracing and IO. The original driver's CDP session remains
+untouched. Both Profiler.stop and Tracing.end start before waiting for the final
+page checkpoint, bundle work or metadata persistence. After the CPU result, final
+page checkpoint and bounded pending bundle work settle, the observer detaches its
+page session promptly. It does not wait for the potentially longer browser trace
+flush. The original page/context can close while browser tracing continues.
+
+This repairs a source-supported lifetime mismatch, not a demonstrated performance
+cause. The preceding attempt exhausted its 60-second finalization budget and then
+reported a closed target. Its retained timestamps bracket source-context release
+across that deadline; they do not establish the exact closure instant or prove
+that closure was the only reason the flush notification was absent. Neither the
+original GPS sequence nor page/context closure is delayed by this repair.
+
+Each owned session is created once with the existing 4-second bound. Each detach
+has the existing 2-second acknowledgement-and-close bound. Completeness requires
+both a successful explicit detach acknowledgement and the session's close event,
+with exactly one owned detach call for each session. A close event alone is not an
+acknowledgement. Unexpected closure, late creation, failed or late detach, and
+missing required CPU or trace data permanently invalidate completeness. A session
+created after cancellation or expiry is detached without being used. CPU and raw
+trace files are saved independently when available.
+
+Page close, context close, browser disconnect, owned session creation/close and
+detach request/acknowledgement receive Node epoch timestamps in the status/events.
+These listeners remain active during finalization and do not add awaits to the
+driver. Browser-close cleanup retains its total 10-second bound. On expiry it
+marks the diagnostic partial before initiating both remaining detach attempts,
+without extending the original browser-close wait. Late EOF, writes, close events
+or acknowledgements cannot recover completeness.
 
 ## Explicit bounds and sizing allowance
 
@@ -185,6 +223,11 @@ Node syntax checks, contract.test.mjs and run.mjs inspect use no browser. Contra
 retain the c722 lifecycle and negative finalization/blocked-write cases, then check
 fixed scope, malformed/protocol discovery failure, advisory receipts, one unchanged
 category request, actual window coverage, raw IDs, missing names/flows and overflow.
+Ownership fixtures close the original page while browser flush is pending and
+require a valid retained trace; negative cases cover early page closure, missing
+CPU data, unexpected browser-session closure, late creation/detach and bounded
+cleanup expiry. Both explicit detach acknowledgements and close events are
+required by terminal validation.
 
 Exact-revision Chromium sources used for semantic checks (all under
 https://github.com/chromium/chromium/blob/1de57fa19722fa6d6841d4f596c394d015580656/):
@@ -195,6 +238,9 @@ https://github.com/chromium/chromium/blob/1de57fa19722fa6d6841d4f596c394d0155806
 - components/viz/service/display/display.cc
 - base/task/common/task_annotator.cc
 - content/browser/devtools/protocol/tracing_handler.cc
+- content/browser/devtools/render_frame_devtools_agent_host.cc
+- content/browser/devtools/browser_devtools_agent_host.cc
+- content/browser/devtools/devtools_session.cc
 - docs/life_of_a_frame.md
 
 Official protocol references:
@@ -202,3 +248,13 @@ Official protocol references:
 - https://chromedevtools.github.io/devtools-protocol/tot/Tracing/
 - https://chromedevtools.github.io/devtools-protocol/tot/Profiler/
 - https://chromedevtools.github.io/devtools-protocol/tot/IO/
+- https://chromedevtools.github.io/devtools-protocol/tot/Target/
+- https://playwright.dev/docs/api/class-cdpsession#cdp-session-event-close
+
+The pinned Playwright 1.61.1 implementation uses Target.attachToBrowserTarget for
+browser.newBrowserCDPSession. Its CDPSession close event is emitted for the exact
+detached session, including explicit session.detach(); browser disconnection is a
+separate event. The corresponding source checks use
+https://github.com/microsoft/playwright/tree/v1.61.1/packages/playwright-core/src/
+(client/cdpSession.ts, server/chromium/crBrowser.ts and
+server/chromium/crConnection.ts).

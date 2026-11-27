@@ -65,6 +65,9 @@
   },
   "trace": {
     "categories": ["cc", "viz", "gpu", "toplevel", "toplevel.flow", "devtools.timeline", "blink.user_timing"],
+    "transport": "browser.newBrowserCDPSession",
+    "processScope": "browser-root/all-browser-processes",
+    "scopeChange": "Browser-root Tracing has no page target PID filter. This explicitly broadens the former trusted page trace scope; the original renderer is still identified by its unchanged trusted W marks, and actual named cross-process category/flow coverage remains required.",
     "recordMode": "recordUntilFull",
     "streamFormat": "json",
     "rawFlowIdentifiersPreserved": true,
@@ -115,6 +118,18 @@
       "newCategoryVolumeMeasured": false,
       "note": "The peer has a different application build and category set. Its exact raw hash/bytes and the estimated reserialized shared-category union are capacity evidence, not a performance comparison or exact forecast. The four new categories remain unmeasured. The 512 MiB buffer/file and single 60-second stop-to-finalization budget remain finite; any cap, loss, absent evidence or late completion makes the diagnostic partial."
     }
+  },
+  "transportOwnership": {
+    "page": ["Profiler", "Debugger", "Browser.getVersion"],
+    "browserTrace": ["Tracing", "IO"],
+    "creationTimeoutMs": 4000,
+    "detachAndCloseTimeoutMs": 2000,
+    "pageRelease": "After independent CPU saving, final page checkpoint and bounded pending bundle work settle; never waits for browser trace flush/drain.",
+    "browserTraceRelease": "After trace completion, EOF, stream close and finalization, or bounded cleanup failure.",
+    "requiredCloseEvidence": ["exactly one owned detach call", "successful detach acknowledgement", "CDPSession close event"],
+    "failurePolicy": "Unexpected close, failed or late creation/detach, missing required CPU/trace data and cleanup expiry permanently invalidate completeness. Late-created sessions are detached without use; cleanup marks partial before forced detach and never waits beyond its existing total bound.",
+    "lifecycleReceipts": ["page close", "context close", "browser disconnect", "session creation", "session close", "detach request", "detach acknowledgement"],
+    "originalPageAndContextClosureDelayed": false
   },
   "strictDriverStepTimeoutMinutes": 28,
   "retryCount": 0

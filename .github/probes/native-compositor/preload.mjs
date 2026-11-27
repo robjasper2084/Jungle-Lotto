@@ -4,7 +4,7 @@ import {appendFile, mkdir, open, readFile, rename, writeFile} from 'node:fs/prom
 import {writeFileSync} from 'node:fs';
 import {resolve} from 'node:path';
 import {manifest, sha256, saveJson, bounded, verifyDriver, invalidateDiagnostic,
-  finalizeDiagnostic, terminalDiagnosticReceipt, boundedDiagnosticCleanup} from './common.mjs';
+  finalizeDiagnostic, terminalDiagnosticReceipt, boundedDiagnosticCleanup, ownedTransportsClosed} from './common.mjs';
 import {traceCategoryRequest, summarizeTraceTopology} from './common.mjs';
 import {installPageProbe} from './page-probe.mjs';
 import {installHooks} from './hooks.mjs';
@@ -35,7 +35,9 @@ const state = {
   playwrightVersion: manifest.runtime.playwright, playwrightModule: require.resolve('@playwright/test'),
   checkpoints: [], bundles: [], bundleBytes: 0, bundleOverflow: 0,
   assetEvents: 0, assetEventOverflow: 0, parsedScripts: 0, parsedScriptOverflow: 0,
-  trace: {highWater: 0, dataLossOccurred: null, capReached: false, streamComplete: false}
+  lifecycle: {},
+  trace: {highWater: 0, dataLossOccurred: null, capReached: false, streamComplete: false,
+    processScope: manifest.trace.processScope}
 };
 let writes = Promise.resolve(), monitor;
 function queueWrite(label, operation) {
@@ -70,7 +72,85 @@ class NativeMonitor {
     this.pendingBundles = new Set(); this.seenBundles = new Set();
     this.requestIds = new WeakMap(); this.nextRequestId = 0;
     this.started = false; this.stopPromise = null; this.cdp = null;
+    this.traceCdp = null; this.owners = {}; this.disposing = false; this.pageWorkFinished = false;
+    state.lifecycle ??= {};
+    state.transports = Object.fromEntries(['page', 'browserTrace'].map(name => [name, {
+      created: false, creationTimedOut: false, detachCalls: 0, detachAcknowledged: false,
+      closeObserved: false, closed: false, unexpectedClose: false
+    }]));
     this.profilerStarted = false; this.traceStarted = false; this.checkpointBusy = false;
+  }
+  async acquireTransport(name, create) {
+    assert(!this.owners[name], 'A second owned transport was requested: ' + name);
+    const receipt = state.transports[name], owner = {session: null, detaching: false, cancelled: false, detachPromise: null};
+    this.owners[name] = owner;
+    receipt.createRequestedAtNodeEpochMs = Date.now();
+    owner.closed = new Promise(resolveClosed => { owner.resolveClosed = resolveClosed; });
+    owner.creation = Promise.resolve().then(create).then(session => {
+      owner.session = session; receipt.created = true; receipt.createdAtNodeEpochMs = Date.now();
+      session.on('close', () => {
+        receipt.closeObserved = true; receipt.closedAtNodeEpochMs = Date.now(); owner.resolveClosed();
+        void event('owned-session-close', {transport: name, expectedDetach: owner.detaching, atNodeEpochMs: receipt.closedAtNodeEpochMs});
+        if (!owner.detaching) {
+          receipt.unexpectedClose = true;
+          const error = Error('Owned ' + name + ' session closed before its explicit detach');
+          failure('unexpected-session-close-' + name, error);
+          if (name === 'browserTrace') this.traceReject?.(error);
+          if (this.started && !this.stopPromise) void this.stop('unexpected-session-close');
+        }
+      });
+      if (Date.now() - receipt.createRequestedAtNodeEpochMs >= limits.protocolTimeoutMs) receipt.creationTimedOut = true;
+      if (owner.cancelled || this.disposing || this.stopPromise || receipt.creationTimedOut) {
+        owner.cancelled = true;
+        failure('late-session-creation-' + name, Error('Late owned transport is being detached without use'));
+        void this.detachTransport(name);
+        throw Error('Owned transport creation completed too late: ' + name);
+      }
+      void event('owned-session-created', {transport: name, atNodeEpochMs: receipt.createdAtNodeEpochMs});
+      return session;
+    });
+    try {
+      const session = await bounded(owner.creation, limits.protocolTimeoutMs, 'Owned ' + name + ' CDP creation');
+      assert(!owner.cancelled && !this.disposing && !this.stopPromise && !receipt.unexpectedClose,
+        'Owned transport became unavailable before setup: ' + name);
+      return session;
+    } catch (error) {
+      owner.cancelled = true;
+      receipt.creationTimedOut ||= Date.now() - receipt.createRequestedAtNodeEpochMs >= limits.protocolTimeoutMs;
+      receipt.creationError = String(error);
+      failure('session-creation-' + name, error);
+      if (owner.session) void this.detachTransport(name);
+      throw error;
+    }
+  }
+  detachTransport(name) {
+    const owner = this.owners[name], receipt = state.transports[name];
+    if (!owner) return Promise.resolve(false);
+    owner.cancelled = true;
+    if (!owner.session) return Promise.resolve(false); // Late creation disposes itself.
+    if (!owner.detachPromise) {
+      owner.detaching = true; receipt.detachCalls++; receipt.detachRequestedAtNodeEpochMs = Date.now();
+      owner.detachPromise = (async () => {
+        await bounded(Promise.all([
+          Promise.resolve().then(() => owner.session.detach()).then(() => {
+            receipt.detachAcknowledged = true; receipt.detachAcknowledgedAtNodeEpochMs = Date.now();
+          }),
+          owner.closed
+        ]), 2000, 'Owned ' + name + ' CDP detach and close');
+        receipt.closed = true;
+        void event('owned-session-detached', {transport: name, atNodeEpochMs: Date.now()});
+        return true;
+      })().catch(error => {
+        receipt.closed = false; receipt.detachError = String(error);
+        failure('session-detach-' + name, error);
+        return false;
+      });
+    }
+    return owner.detachPromise;
+  }
+  async detachAllTransports() {
+    await Promise.allSettled(['page', 'browserTrace'].map(name => this.detachTransport(name)));
+    assert(ownedTransportsClosed(state), 'Both owned CDP sessions must acknowledge detach and close');
   }
   error(where, error) {
     failure(where, error);
@@ -79,6 +159,9 @@ class NativeMonitor {
   metricsCall(count) { state.originalMetricsCalls = count; }
   send(method, parameters = {}) {
     return bounded(this.cdp.send(method, parameters), limits.protocolTimeoutMs, method);
+  }
+  traceSend(method, parameters = {}) {
+    return bounded(this.traceCdp.send(method, parameters), limits.protocolTimeoutMs, method);
   }
   async attach() {
     const launch = this.launchArguments[0], page = this.pageArguments[0];
@@ -127,7 +210,23 @@ class NativeMonitor {
       void pending.finally(() => this.pendingBundles.delete(pending));
     });
     this.page.on('crash', () => { failure('page-crash', Error('Original game page crashed')); void this.stop('page-crash'); });
-    this.page.on('close', () => { if (this.started && !this.stopPromise) void this.stop('page-closed'); });
+    const pageLifetime = name => {
+      state.lifecycle[name] = Date.now();
+      void event(name, {atNodeEpochMs: state.lifecycle[name]});
+      if (this.started && !this.pageWorkFinished) failure(name, Error('Original source page closed before required page work finished'));
+      if (this.started && !this.stopPromise) void this.stop('page-closed');
+    };
+    this.page.on('close', () => pageLifetime('pageClosedAtNodeEpochMs'));
+    this.page.context().on('close', () => pageLifetime('contextClosedAtNodeEpochMs'));
+    this.browser.on('disconnected', () => {
+      state.lifecycle.browserDisconnectedAtNodeEpochMs = Date.now();
+      void event('browser-disconnected', {atNodeEpochMs: state.lifecycle.browserDisconnectedAtNodeEpochMs});
+      if (!ownedTransportsClosed(state)) {
+        const error = Error('Original browser disconnected before both owned transports closed');
+        failure('browser-disconnected', error); this.traceReject?.(error);
+        if (this.started && !this.stopPromise) void this.stop('browser-disconnected');
+      }
+    });
     state.phase = 'attached';
     await event('original-game-page-attached');
   }
@@ -159,17 +258,22 @@ class NativeMonitor {
   async start(createSession) {
     assert(!this.started, 'A second original capture was requested');
     this.started = true; state.phase = 'starting';
-    this.cdp = await bounded(createSession(), limits.protocolTimeoutMs, 'Independent CDP session');
+    this.cdp = await this.acquireTransport('page', createSession);
+    this.traceCdp = await this.acquireTransport('browserTrace', () => this.browser.newBrowserCDPSession());
     state.browserVersion = await this.send('Browser.getVersion');
     await event('before-capture-setup');
-    this.traceDone = new Promise(resolveTrace => this.cdp.once('Tracing.tracingComplete', resolveTrace));
-    this.cdp.on('Tracing.bufferUsage', usage => {
+    this.traceDone = new Promise((resolveTrace, rejectTrace) => {
+      this.traceReject = rejectTrace;
+      this.traceCdp.once('Tracing.tracingComplete', resolveTrace);
+    });
+    void this.traceDone.catch(() => {}); // A disconnect can precede the later stop await.
+    this.traceCdp.on('Tracing.bufferUsage', usage => {
       const value = Math.max(usage.percentFull || 0, usage.value || 0);
       state.trace.highWater = Math.max(state.trace.highWater, value);
       if (value >= 1) { state.trace.capReached = true; invalidateDiagnostic(state, 'trace-buffer-cap'); }
       void event('trace-buffer', usage);
     });
-    const categoryResponse = await this.send('Tracing.getCategories');
+    const categoryResponse = await this.traceSend('Tracing.getCategories');
     await saveJson(resolve(output, 'trace-categories-response.json'), categoryResponse ?? null);
     const available = categoryResponse?.categories;
     await saveJson(resolve(output, 'trace-categories.json'), available ?? null);
@@ -208,7 +312,7 @@ class NativeMonitor {
     }, limits.captureWatchdogMs);
     this.watchdog.unref();
     this.traceStarted = true;
-    await this.send('Tracing.start', {
+    await this.traceSend('Tracing.start', {
       transferMode: 'ReturnAsStream', streamFormat: manifest.trace.streamFormat, bufferUsageReportingInterval: 1000,
       traceConfig: {recordMode: manifest.trace.recordMode, traceBufferSizeInKb: limits.traceBufferKiB,
         includedCategories: categories}
@@ -258,18 +362,21 @@ class NativeMonitor {
     void event('capture-stopping', {reason});
     // Each result is saved independently. A trace/clock failure cannot discard
     // a successfully returned CPU profile.
-    const tasks = [];
-    if (this.profilerStarted) tasks.push(this.cpu().catch(error => failure('cpu-profile', error)));
-    if (this.traceStarted) tasks.push(this.trace().catch(error => failure('trace', error)));
-    if (this.started) tasks.push((async () => {
+    const pageTasks = [];
+    if (this.profilerStarted) pageTasks.push(this.cpu().catch(error => failure('cpu-profile', error)));
+    const traceTask = this.traceStarted ? this.trace().catch(error => failure('trace', error)) : Promise.resolve();
+    if (this.started) pageTasks.push((async () => {
       if (reason !== 'original-ending-metrics') {
         await bounded(this.page.evaluate(reason => window.__belleNativeCpuObserver.stop(reason), reason), limits.protocolTimeoutMs, 'Observer stop');
       }
       await this.checkpoint('final');
     })().catch(error => failure('final-observer', error)));
-    await Promise.allSettled(tasks);
+    await Promise.allSettled(pageTasks);
     await bounded(Promise.allSettled([...this.pendingBundles]), limits.protocolTimeoutMs, 'Bundle save completion')
       .catch(error => failure('bundle-completion', error));
+    this.pageWorkFinished = true; state.lifecycle.pageWorkFinishedAtNodeEpochMs = Date.now();
+    await this.detachTransport('page');
+    await traceTask;
     const raw = this.lastSnapshot;
     const pairs = ['first-trusted-w', 'trusted-w-keyup'].map(name => ({
       name, observer: raw?.marks?.find(mark => mark.name === name),
@@ -296,7 +403,7 @@ class NativeMonitor {
     await event('capture-collected', {eligibleForFinalization: eligible});
     await finalizeDiagnostic(state, {
       eligible,
-      detach: () => this.cdp ? bounded(this.cdp.detach(), 2000, 'Observer detach') : Promise.resolve(),
+      detach: () => this.detachAllTransports(),
       flush: () => writes,
       writeStatus: snapshot => queueWrite('final-status', () =>
         saveJson(resolve(output, 'diagnostic-status.json'), snapshot))
@@ -332,7 +439,7 @@ class NativeMonitor {
     // individual protocol timeout; notification, drain and persistence share
     // this one absolute deadline from stop issuance, with no fresh drain budget.
     await bounded((async () => {
-      await this.send('Tracing.end');
+      await this.traceSend('Tracing.end');
       state.trace.stopAcknowledgedAtNodeEpochMs = Date.now();
       const complete = await bounded(this.traceDone, remaining(), 'Tracing.tracingComplete within finalization deadline');
       remaining();
@@ -358,7 +465,7 @@ class NativeMonitor {
     try {
       while (!eof) {
         assert(Date.now() < deadline, 'Trace drain deadline reached; partial file retained');
-        const chunk = await withinDrain(this.send('IO.read', {handle: complete.stream, size: 1024 * 1024}), 'Trace read within drain deadline');
+        const chunk = await withinDrain(this.traceSend('IO.read', {handle: complete.stream, size: 1024 * 1024}), 'Trace read within drain deadline');
         const data = Buffer.from(chunk.data, chunk.base64Encoded ? 'base64' : 'utf8');
         const remaining = limits.traceFileBytes - bytes;
         if (data.length > remaining) {
@@ -371,7 +478,7 @@ class NativeMonitor {
       }
     } finally {
       await handle.close();
-      await this.send('IO.close', {handle: complete.stream}).catch(error => failure('trace-stream-close', error));
+      await this.traceSend('IO.close', {handle: complete.stream}).catch(error => failure('trace-stream-close', error));
       state.trace.savedBytes = bytes; state.trace.streamComplete = eof;
       await persist();
     }
@@ -410,12 +517,19 @@ class NativeMonitor {
     assert(Date.now() < deadline, 'Trace finalization deadline reached during persistence; raw evidence retained');
   }
   async cleanup() {
+    this.disposing = true;
     await boundedDiagnosticCleanup(state, {
       finish: () => this.stop(this.stopPromise ? state.stopReason : 'original-browser-close'),
       persist,
       timeoutMs: limits.cleanupTimeoutMs,
       terminal: receipt => writeFileSync(resolve(output, 'observer-cleanup-terminal.json'), JSON.stringify(receipt) + '\n')
     });
+    if (!ownedTransportsClosed(state)) {
+      invalidateDiagnostic(state, 'cleanup-forced-owned-detach');
+      this.traceReject?.(Error('Trace interrupted by bounded browser-close cleanup'));
+      // Both attempts begin without extending the original browser-close wait.
+      void Promise.allSettled(['page', 'browserTrace'].map(name => this.detachTransport(name)));
+    }
   }
 }
 
