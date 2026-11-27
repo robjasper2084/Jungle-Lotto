@@ -31,7 +31,8 @@ type Draw={object:number;name:string;sourceGeometry:number;material:number;phase
 type PoolCounts={renderCalls:number;pooledCalls:number;colorCalls:number;shadowCalls:number};
 type MatrixSnapshot={objects:{id:number;parentId:number|null;type:string;name:string;visible:boolean}[];bytes:Uint8Array};
 type Shadow={lightId:number;textureUuid:string;width:number;height:number;bytes:Uint8Array};
-type Frame={calls:number;triangles:number;draws:Draw[];rgba:Uint8Array;shadows:Shadow[];shadow:Uint8Array;poolDelta:PoolCounts;matrices:MatrixSnapshot};
+type ShadowLight=T.Light&{shadow:T.LightShadow<T.Camera>};
+type Frame={calls:number;triangles:number;draws:Draw[];rgba:Uint8Array;shadows:Shadow[];shadow:Uint8Array;poolDelta:PoolCounts;matrices:MatrixSnapshot;shadowLights:ReturnType<typeof shadowLightState>[]};
 type Detail={name:string;texture:T.Texture;source:T.Source<unknown>;image:HTMLImageElement;initial:Record<string,unknown>};
 type Upload={name:string;reason:string;textureUuid:string;sourceUuid:string;imageId:number;nativeTextureId:number;priorNativeTextureId:number|null;storage:unknown[];subImages:unknown[];mipmapCalls:number;state:Record<string,unknown>};
 declare global {interface Window {
@@ -136,6 +137,36 @@ function matrixSnapshot():MatrixSnapshot {
  scene.traverse(add);add(camera);scene.traverse(object=>{const shadow=(object as T.DirectionalLight).shadow;if(shadow?.camera)add(shadow.camera);});
  assert(values.every(Number.isFinite),'Nonfinite actual matrix');return {objects,bytes:new Uint8Array(new Float64Array(values).buffer)};
 }
+// The positive control changes sampled shadow attenuation only. Original
+// castShadow membership, tree-caster selection, depth draws and targets remain.
+function shadowLightState(light:ShadowLight){
+ const shadow=light.shadow,map=shadow.map;
+ return {lightId:light.id,lightUuid:light.uuid,type:light.type,visible:light.visible,castShadow:light.castShadow,layers:light.layers.mask,
+  lightIntensity:light.intensity,lightColor:light.color.toArray(),shadowIntensity:shadow.intensity,shadowCameraId:shadow.camera.id,
+  autoUpdate:shadow.autoUpdate,needsUpdate:shadow.needsUpdate,bias:shadow.bias,normalBias:shadow.normalBias,radius:shadow.radius,mapSize:shadow.mapSize.toArray(),
+  map:map?{textureUuid:map.texture.uuid,depthTextureUuid:map.depthTexture?.uuid??null,width:map.width,height:map.height}:null};
+}
+function actualShadowLights(){const lights:ShadowLight[]=[];scene.traverse(object=>{if(object instanceof T.Light&&object.castShadow){const light=object as ShadowLight;assert(light.shadow?.camera,'Actual shadow light has no shadow camera');lights.push(light);}});return lights;}
+async function withShadowIntensityZero(lights:readonly ShadowLight[],capture:()=>Promise<Frame>){
+ const owned=lights.map(light=>({light,shadow:light.shadow,camera:light.shadow.camera,map:light.shadow.map,intensity:light.shadow.intensity}));
+ const snapshot=()=>lights.map(shadowLightState),before=snapshot();
+ assert(before.length>0&&new Set(before.map(row=>row.lightId)).size===before.length,'Unique original shadow lights required');
+ assert(before.every(row=>row.castShadow&&Number.isFinite(row.shadowIntensity)&&row.shadowIntensity>=0&&row.shadowIntensity<=1),'Original shadow intensity is invalid');
+ assert(before.some(row=>row.shadowIntensity>0&&row.map!==null),'No positive original mapped shadow contribution');
+ const control={schema:'belle-shadow-intensity-control-v1',method:'LightShadow.intensity=0',before,disabled:[] as typeof before,afterCapture:[] as typeof before,restored:[] as typeof before};
+ const identities=()=>owned.every(row=>row.light.shadow===row.shadow&&row.shadow.camera===row.camera&&row.shadow.map===row.map);
+ try{
+  for(const row of owned)row.shadow.intensity=0;
+  control.disabled=snapshot();assert(same(control.disabled,before.map(row=>({...row,shadowIntensity:0}))),'Shadow control changed unrelated light state');
+  const frame=await capture();control.afterCapture=snapshot();
+  assert(identities()&&same(control.afterCapture,control.disabled),'Shadow control state drifted during capture');
+  assert(same(frame.shadowLights,control.afterCapture),'Captured shadow-light state differs from the control');
+  return {frame,control};
+ }finally{
+  for(const row of owned)row.shadow.intensity=row.intensity;
+  control.restored=snapshot();assert(identities()&&same(control.restored,before),'Original shadow-light state was not restored');
+ }
+}
 function beginCapture(draws:Draw[]){
  verifyPoolHooks();const direct=poolHooks!.direct;
  const observer:T.WebGLRenderer['renderBufferDirect']=function(this:T.WebGLRenderer,...args){
@@ -159,7 +190,7 @@ async function render():Promise<Frame>{
  for(const entry of after.entries)for(const phase of ['color','shadow']){const count=entry[phase+'Calls']-(entries.get(entry.sourceId)?.[phase+'Calls']??0),draws=work.draws.filter(draw=>draw.object===entry.sourceId&&draw.phase===phase);assert(count===0||count===draws.length,'Partial or unattributed original buffer substitution');if(count)for(const draw of draws)draw.substituted=true;}
  const poolDelta=poolDifference(poolCounts(before),poolCounts(after));assert(work.draws.reduce((n,d)=>n+d.nativeCalls,0)===work.calls,'Direct submissions do not explain native draw count');
  assert(work.draws.filter(d=>d.substituted).length===poolDelta.pooledCalls&&work.draws.filter(d=>d.substituted&&d.phase==='color').length===poolDelta.colorCalls&&work.draws.filter(d=>d.substituted&&d.phase==='shadow').length===poolDelta.shadowCalls,'Source-specific buffer substitutions differ');
- assert(gl.getError()===gl.NO_ERROR&&!gl.isContextLost(),'Native readback error');return {...work,rgba,shadows,shadow,poolDelta,matrices:matrixSnapshot()};
+ assert(gl.getError()===gl.NO_ERROR&&!gl.isContextLost(),'Native readback error');return {...work,rgba,shadows,shadow,poolDelta,matrices:matrixSnapshot(),shadowLights:actualShadowLights().map(shadowLightState)};
 }
 function difference(a:Uint8Array,b:Uint8Array){assert(a.length===b.length,'Readback length changed');let changedPixels=0,maxChannelDelta=0;for(let i=0;i<a.length;i+=4){let changed=false;for(let c=0;c<4;c++){const delta=Math.abs(a[i+c]-b[i+c]);changed ||= delta>0;maxChannelDelta=Math.max(maxChannelDelta,delta);}if(changed)changedPixels++;}return {changedPixels,maxChannelDelta};}
 function matching(a:Frame,b:Frame){const color=difference(a.rgba,b.rgba),shadow=a.shadow.length===b.shadow.length?difference(a.shadow,b.shadow):{changedPixels:-1,maxChannelDelta:-1};return {...color,shadowChangedPixels:shadow.changedPixels,shadowMaxChannelDelta:shadow.maxChannelDelta,shadowTargetsEqual:same(a.shadows.map(({bytes,...s})=>s),b.shadows.map(({bytes,...s})=>s)),orderEqual:same(a.draws,b.draws),countsEqual:a.calls===b.calls&&a.triangles===b.triangles,poolDeltaEqual:same(a.poolDelta,b.poolDelta),matricesEqual:bytesEqual(a.matrices.bytes,b.matrices.bytes)&&same(a.matrices.objects,b.matrices.objects)};}
@@ -196,7 +227,7 @@ async function persistFrame(style:Style,pose:Pose,lane:Lane,frame:Frame,uploads:
  for(const [index,shadow]of frame.shadows.entries()){const evidenceName=name+'-shadow-'+index,sha256=await persistRaw(evidenceName,shadow.bytes,'RGBA8-bottom-up',{width:shadow.width,height:shadow.height});shadowTargets.push({lightId:shadow.lightId,textureUuid:shadow.textureUuid,width:shadow.width,height:shadow.height,sha256,evidenceName});}
  const matrixSha256=await persistRaw(matrixEvidenceName,frame.matrices.bytes,'Float64-matrix-bytes',{littleEndian:true});
  for(const program of programEvidence.values())if(!savedPrograms.has(program.id)){await persist(style+'-program-'+program.id,{kind:'json',value:{...program,vertexSha256:await hash(new TextEncoder().encode(program.vertex)),fragmentSha256:await hash(new TextEncoder().encode(program.fragment))}});savedPrograms.add(program.id);}
- const receipt={name,caseName:pose.name,lane,style,calls:frame.calls,triangles:frame.triangles,rgbaSha256,colorEvidenceName,shadowSha256:await hash(frame.shadow),shadowTargets,draws:frame.draws,poolDelta:frame.poolDelta,matrixObjects:frame.matrices.objects,matrixSha256,matrixEvidenceName,geometrySha256,materialSha256,collisionSha256,textures:[...details.values()].map(d=>({name:d.name,...textureState(d.texture),nativeTextureId:nativeId((renderer.properties.get(d.texture) as any).__webglTexture)})),uploads};
+ const receipt={name,caseName:pose.name,lane,style,calls:frame.calls,triangles:frame.triangles,rgbaSha256,colorEvidenceName,shadowSha256:await hash(frame.shadow),shadowTargets,draws:frame.draws,poolDelta:frame.poolDelta,matrixObjects:frame.matrices.objects,matrixSha256,matrixEvidenceName,geometrySha256,materialSha256,collisionSha256,shadowLights:frame.shadowLights,textures:[...details.values()].map(d=>({name:d.name,...textureState(d.texture),nativeTextureId:nativeId((renderer.properties.get(d.texture) as any).__webglTexture)})),uploads};
  await persist(name+'-frame',{kind:'json',value:receipt});return receipt;
 }
 
@@ -237,16 +268,19 @@ window.__rg8WorldProof=async({style,partition})=>{
    const capture=async(lane:Lane,mode:Mode)=>{const uploads=use(mode);await warm();const frame=await render();frames.set(lane,frame);
     const geometryAfter=await textHash(await geometryReceipts()),materialAfter=await textHash(materialReceipts()),collisionAfter=await textHash(collision());
     const receipt=await persistFrame(style,pose,lane,frame,uploads,geometryAfter,materialAfter,collisionAfter);frameNames.push(receipt.name+'-frame');
-    if(geometryAfter!==geometrySha256)issues.push(lane+': source geometry changed');if(lane!=='shadow-off'&&materialAfter!==materialSha256)issues.push(lane+': source material identity changed');if(collisionAfter!==collisionSha256)issues.push(lane+': original map/contact data changed');return frame;
+    if(geometryAfter!==geometrySha256)issues.push(lane+': source geometry changed');if(materialAfter!==materialSha256)issues.push(lane+': source material identity changed');if(collisionAfter!==collisionSha256)issues.push(lane+': original map/contact data changed');return frame;
    };
    const original=await capture('original','original');assert(original.shadow.length>0,'Original world shadow target missing');
    for(const [lane,mode]of [['rg8','rg8'],['restored','original']] as const){const frame=await capture(lane,mode),comparison={lane,...matching(original,frame)};comparisons.push(comparison);if(!exact(comparison))issues.push(lane+': exact whole-image/shadow/draw/program/matrix comparison failed');}
    if(pose.name===selectedCases[0]){
     const lost=await capture('lost-g','lost-g');controls.lostG=difference(original.rgba,lost.rgba);if(controls.lostG.changedPixels<16)issues.push('Lost-G positive control changed fewer than16pixels');
     const lostRestored=await capture('lost-g-restored','original');controls.lostGRestored=matching(original,lostRestored);if(!exact(controls.lostGRestored))issues.push('Lost-G restoration failed exact comparison');
-    const lights:{light:T.Light;castShadow:boolean}[]=[];scene.traverse(object=>{if(object instanceof T.Light&&object.castShadow)lights.push({light:object,castShadow:object.castShadow});});assert(lights.length>0,'Original shadow light membership missing');
-    try{for(const {light}of lights)light.castShadow=false;const off=await capture('shadow-off','original');controls.shadowOff=difference(original.rgba,off.rgba);if(controls.shadowOff.changedPixels<16)issues.push('Shadow-off positive control changed fewer than16pixels');}finally{for(const {light,castShadow}of lights)light.castShadow=castShadow;}
+    const {frame:off,control}=await withShadowIntensityZero(actualShadowLights(),()=>capture('shadow-off','original'));controls.shadowControl=control;
+    controls.shadowOff=difference(original.rgba,off.rgba);if(controls.shadowOff.changedPixels<16)issues.push('Shadow-off positive control changed fewer than16pixels');
+    const noncolor=matching(original,off);if(noncolor.shadowChangedPixels!==0||noncolor.shadowMaxChannelDelta!==0||!noncolor.shadowTargetsEqual||!noncolor.orderEqual||!noncolor.countsEqual||!noncolor.poolDeltaEqual||!noncolor.matricesEqual)issues.push('Shadow intensity control changed original noncolor evidence');
+    if(!same(control.before,original.shadowLights))issues.push('Shadow intensity control did not start from the original light state');
     const shadowRestored=await capture('shadow-restored','original');controls.shadowRestored=matching(original,shadowRestored);if(!exact(controls.shadowRestored))issues.push('Shadow restoration failed exact comparison');
+    if(!same(shadowRestored.shadowLights,original.shadowLights))issues.push('Shadow restoration changed the original light state');
    }
    const direction=camera.getWorldDirection(new T.Vector3()),plannedDirection=new T.Vector3().fromArray(pose.target).sub(camera.position).normalize();assert(direction.distanceTo(plannedDirection)<1e-12,'Actual camera differs from the fixed target');verifyPoolHooks();assert(same(poolIdentity(pool.read()),poolIdentity(poolBefore)),'Original pool pages/preparation/eligibility changed');
    const row={name:pose.name,style,pose,camera:{position:camera.position.toArray(),target:pose.target,direction:direction.toArray(),matrix:camera.matrixWorld.toArray(),projection:camera.projectionMatrix.toArray()},frameNames,comparisons,controls,geometrySha256,materialSha256,collisionSha256,passed:issues.length===0,errors:issues};await persist(style+'-'+pose.name+'-case',{kind:'json',value:row});completed.push({name:pose.name,passed:row.passed,frameNames,controls});errors.push(...issues.map(issue=>pose.name+': '+issue));

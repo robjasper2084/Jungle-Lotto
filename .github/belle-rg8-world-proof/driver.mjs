@@ -10,13 +10,14 @@ import {readFile,writeFile,mkdir,readdir,mkdtemp,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {resolve,dirname,extname,sep,posix} from 'node:path';
 import {gunzipSync,inflateSync,deflateSync} from 'node:zlib';
+import {auditShadowLightStates,auditShadowContributionControl} from './artifact-audit.mjs';
 
 const BASELINE='75906273c0cd414c0d004320fc6f654b4783e5b1';
 const BASELINE_TREE='9f0351be133dd370a676090d27559a0adaf00605';
 const CANDIDATE='ef341f2f91a43aec26261f2778404ca7346de9a9';
 const CANDIDATE_TREE='24188d608d8f54cf6aafd9d669e6a529252cbdc8';
-const PROOF_PARENT='3b8839f005818bf5f146bb1118a0732d7c1f7e54';
-const PROOF_PARENT_TREE='5d5e50fa5df3fc69f4a311b7b101d0bc08971e1c';
+const PROOF_PARENT='a5c1c85b34459c1c3179ef53718ebb7dd8c2f1c8';
+const PROOF_PARENT_TREE='ec7af5824210e3529c785a75fc5006ff9324f3c9';
 const PROOF_BASE='893f769838166e6e35624b7b979ed5cbb8414507';
 const PROOF_BASE_TREE='769016dac2343cfa3a143a5e5f7cda471fae3e07';
 const SOURCE_ROOT='lottominded-ultra.io/games/gothtechnology2/';
@@ -342,7 +343,7 @@ async function main(){
     if(!compileOnly){
       assert.deepEqual(proofParents.slice(1),[PROOF_PARENT]);assert.equal(gitText(proof,'rev-parse',PROOF_PARENT+'^{tree}'),PROOF_PARENT_TREE);
       assert.equal(gitText(proof,'rev-parse',PROOF_BASE+'^{tree}'),PROOF_BASE_TREE);
-      const revisionFiles=[PROOF_PATH+'/browser.ts',PROOF_PATH+'/driver.mjs','.github/workflows/belle-rg8-world-proof.yml'].sort();
+      const revisionFiles=[PROOF_PATH+'/browser.ts',PROOF_PATH+'/artifact-audit.mjs',PROOF_PATH+'/driver.mjs','.github/workflows/belle-rg8-world-proof.yml'].sort();
       assert.deepEqual(gitText(proof,'diff','--name-only','--no-renames',PROOF_PARENT,'HEAD').split('\n').sort(),revisionFiles);
       assert.deepEqual(gitText(proof,'diff','--name-only','--no-renames',PROOF_BASE,'HEAD').split('\n').sort(),proofFiles);
     }
@@ -473,9 +474,11 @@ async function main(){
         assert.equal(sha256(readRaw(frame.colorEvidenceName)),frame.rgbaSha256);assert.equal(sha256(readRaw(frame.matrixEvidenceName)),frame.matrixSha256);
         assert.equal(readRaw(frame.colorEvidenceName).length,WIDTH*HEIGHT*4);
         for(const target of frame.shadowTargets)assert.equal(sha256(readRaw(target.evidenceName)),target.sha256);
+        auditShadowLightStates(frame.shadowLights,frame);
         frames.set(lane,frame);
       }
       const originalFrame=frames.get('original');
+      for(const lane of lanes)if(lane!=='shadow-off')assert.deepEqual(frames.get(lane).shadowLights,originalFrame.shadowLights,'Noncontrol shadow-light state changed');
       for(const lane of ['rg8','restored'])exactFrame(originalFrame,frames.get(lane),readRaw);
       const audit={name:caseName,style,frames:lanes.length,exactLanes:['rg8','restored']};
       if(index===0){
@@ -483,6 +486,8 @@ async function main(){
         const shadow=pixelDiff(readRaw(originalFrame.colorEvidenceName),readRaw(frames.get('shadow-off').colorEvidenceName));
         assert(lost.changedPixels>=16,'Lost-G control is ineffective');assert(shadow.changedPixels>=16,'Shadow-off control is ineffective');
         for(const lane of ['lost-g-restored','shadow-restored'])exactFrame(originalFrame,frames.get(lane),readRaw);
+        const control=jsonEvidence.get(prefix+'-case')?.controls?.shadowControl;
+        assert.deepEqual(auditShadowContributionControl(originalFrame,frames.get('shadow-off'),frames.get('shadow-restored'),control,readRaw),shadow,'Independent shadow intensity control differs');
         audit.controls={lostG:lost,shadowOff:shadow,exactRestorations:2};
       }
       const item=jsonEvidence.get(prefix+'-case');assert(item?.passed===true,'Case assertion failed or absent');

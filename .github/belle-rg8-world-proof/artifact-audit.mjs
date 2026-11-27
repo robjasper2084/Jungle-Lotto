@@ -229,6 +229,41 @@ function exactNames(actual,expected,label){assert.deepEqual([...actual].sort(),[
 function pixelDiff(a,b){assert.equal(a.length,b.length);let changedPixels=0,maxChannelDelta=0;for(let i=0;i<a.length;i+=4){let changed=false;for(let c=0;c<4;c++){const d=Math.abs(a[i+c]-b[i+c]);changed ||= d!==0;maxChannelDelta=Math.max(maxChannelDelta,d);}if(changed)changedPixels++;}return {changedPixels,maxChannelDelta};}
 function noErrors(value,label){assert(Array.isArray(value),label+' missing');assert.deepEqual(value,[],label);}
 function sourcePath(path){assert(typeof path==='string'&&path.startsWith(SOURCE_ROOT)&&!path.includes('\\')&&!path.includes('\0')&&!path.split('/').includes('..'),'Unsafe source path');}
+export function auditShadowLightStates(states,frame){
+ assert(Array.isArray(states)&&states.length>0,'Actual shadow-light state missing');const ids=new Set();
+ const keys=['lightId','lightUuid','type','visible','castShadow','layers','lightIntensity','lightColor','shadowIntensity','shadowCameraId','autoUpdate','needsUpdate','bias','normalBias','radius','mapSize','map'];
+ for(const row of states){
+  exactNames(Object.keys(row),keys,'Shadow-light state fields');integer(row.lightId,'Shadow light ID');assert(!ids.has(row.lightId),'Duplicate shadow light ID');ids.add(row.lightId);integer(row.shadowCameraId,'Shadow camera ID');integer(row.layers,'Shadow light layers');
+  for(const key of ['lightUuid','type'])assert(typeof row[key]==='string'&&row[key].length>0,'Shadow light '+key);
+  assert.equal(row.castShadow,true,'Shadow caster membership changed');for(const key of ['visible','autoUpdate','needsUpdate'])assert.equal(typeof row[key],'boolean','Shadow light '+key);
+  for(const key of ['lightIntensity','shadowIntensity','bias','normalBias','radius'])finite(row[key],'Shadow light '+key);assert(row.shadowIntensity>=0&&row.shadowIntensity<=1,'Shadow intensity outside original range');
+  assert(Array.isArray(row.lightColor)&&row.lightColor.length===3);row.lightColor.forEach(value=>finite(value,'Light color'));
+  assert(Array.isArray(row.mapSize)&&row.mapSize.length===2);row.mapSize.forEach(value=>integer(value,'Shadow map size',1));
+  if(row.map!==null){exactNames(Object.keys(row.map),['textureUuid','depthTextureUuid','width','height'],'Shadow map identity fields');assert(typeof row.map.textureUuid==='string'&&row.map.textureUuid.length>0);assert(row.map.depthTextureUuid===null||typeof row.map.depthTextureUuid==='string'&&row.map.depthTextureUuid.length>0);integer(row.map.width,'Shadow map width',1);integer(row.map.height,'Shadow map height',1);}
+ }
+ if(frame){
+  assert(Array.isArray(frame.shadowTargets));assert.deepEqual(frame.shadowTargets.map(({lightId,textureUuid,width,height})=>({lightId,textureUuid,width,height})),states.filter(row=>row.map!==null).map(row=>({lightId:row.lightId,textureUuid:row.map.textureUuid,width:row.map.width,height:row.map.height})),'Shadow-light receipt does not describe retained targets');
+  assert(Array.isArray(frame.matrixObjects));for(const row of states){assert(frame.matrixObjects.some(object=>object.id===row.lightId),'Shadow light missing from actual matrix graph');assert(frame.matrixObjects.some(object=>object.id===row.shadowCameraId),'Shadow camera missing from actual matrix graph');}
+ }
+ return states;
+}
+/** The control changes only LightShadow.intensity. It must retain every
+ * original noncolor byte/identity; absence of shadow draws is a failure. */
+export function auditShadowContributionControl(original,off,restored,control,readRaw){
+ assert(control&&typeof control==='object','Shadow intensity control receipt missing');exactNames(Object.keys(control),['schema','method','before','disabled','afterCapture','restored'],'Shadow control receipt fields');
+ assert.equal(control.schema,'belle-shadow-intensity-control-v1');assert.equal(control.method,'LightShadow.intensity=0');
+ for(const frame of [original,off,restored])auditShadowLightStates(frame.shadowLights,frame);
+ for(const key of ['before','disabled','afterCapture','restored'])auditShadowLightStates(control[key]);
+ assert(control.before.some(row=>row.shadowIntensity>0&&row.map!==null),'No positive mapped shadow contribution in original control');
+ const disabled=control.before.map(row=>({...row,shadowIntensity:0}));
+ assert.deepEqual(control.before,original.shadowLights,'Shadow control did not start from original lights');assert.deepEqual(control.disabled,disabled,'Shadow control changed unrelated light state');assert.deepEqual(control.afterCapture,disabled,'Shadow control did not hold intensity zero');assert.deepEqual(off.shadowLights,disabled,'Off frame did not capture intensity zero');assert.deepEqual(control.restored,control.before,'Shadow control did not restore exact intensities');assert.deepEqual(restored.shadowLights,control.before,'Restored frame changed original shadow-light state');
+ for(const key of ['calls','triangles','draws','poolDelta','matrixObjects','matrixSha256','geometrySha256','materialSha256','collisionSha256','shadowSha256'])assert.deepEqual(off[key],original[key],'Shadow intensity control changed noncolor '+key);
+ assert(original.calls>0&&original.triangles>0,'Empty original shadow control render');assert(original.draws.some(draw=>draw.phase==='shadow'),'Original control has no shadow submissions');assert(original.shadowTargets.length>0,'Original control has no shadow target');
+ assert.deepEqual(off.shadowTargets.map(({evidenceName,...row})=>row),original.shadowTargets.map(({evidenceName,...row})=>row),'Shadow control changed target identity');
+ assert(readRaw(off.matrixEvidenceName).equals(readRaw(original.matrixEvidenceName)),'Shadow control changed actual matrix bytes');
+ for(let i=0;i<original.shadowTargets.length;i++)assert(readRaw(off.shadowTargets[i].evidenceName).equals(readRaw(original.shadowTargets[i].evidenceName)),'Shadow control changed raw shadow bytes');
+ const color=pixelDiff(readRaw(original.colorEvidenceName),readRaw(off.colorEvidenceName));assert(color.changedPixels>=16,'Ineffective saved shadow intensity control');return color;
+}
 function validatePlan(context,style,partition){
  const selected=PARTITIONS[partition],plan={version:1,styles:STYLES,cases:CASES,partitions:PARTITIONS,controlCase:selected[0],lanes:LANES,controlLanes:CONTROL_LANES,warmupRenders:3,minimumControlPixels:16,deadlineMinutes:35};
  assert.deepEqual(context.plan,plan,'Fixed plan changed');assert.equal(context.planSha256,canonicalHash(plan),'Fixed plan hash');
@@ -390,11 +425,11 @@ export async function auditWorldArtifacts({directory,report,expectedProofHead,ex
     for(const object of frame.matrixObjects)assert(object.parentId===null||objectIds.has(object.parentId),'Matrix graph parent missing');
     cameraAudit(item.camera,pose,{...frame,geometryMeshes:sceneEvidence.geometry.meshes},matrix);
     drawAudit(frame,programs);for(const draw of frame.draws){assert(objectIds.has(draw.object),'Submitted object not in full scene matrix receipt');usedPrograms.add(draw.program);}
-    const shadowHash=createHash('sha256'),lightIds=new Set();assert(Array.isArray(frame.shadowTargets));if(lane!=='shadow-off')assert(frame.shadowTargets.length>0,'Missing original shadow target');
+    const shadowHash=createHash('sha256'),lightIds=new Set();assert(Array.isArray(frame.shadowTargets));assert(frame.shadowTargets.length>0,'Missing original shadow target');auditShadowLightStates(frame.shadowLights,frame);
     for(const [shadowIndex,target]of frame.shadowTargets.entries()){integer(target.lightId,'Shadow light');assert(!lightIds.has(target.lightId));lightIds.add(target.lightId);assert(objectIds.has(target.lightId));assert.equal(typeof target.textureUuid,'string');assert.equal(target.evidenceName,name+'-shadow-'+shadowIndex);const raw=readRaw(target.evidenceName),receipt=rawReceipts.get(target.evidenceName);assert.equal(receipt.kind,'pixels');assert.equal(receipt.width,target.width);assert.equal(receipt.height,target.height);assert.equal(raw.length,target.width*target.height*4);assert.equal(sha256(raw),target.sha256);shadowHash.update(raw);}
-    assert.equal(shadowHash.digest('hex'),frame.shadowSha256,'Combined original shadow receipt');assert.equal(frame.geometrySha256,sceneEvidence.geometrySha256);assert.match(frame.materialSha256,hashPattern);if(lane!=='shadow-off')assert.equal(frame.materialSha256,sceneEvidence.materialSha256);assert.equal(frame.collisionSha256,sceneEvidence.collisionSha256);frames.set(lane,frame);
+    assert.equal(shadowHash.digest('hex'),frame.shadowSha256,'Combined original shadow receipt');assert.equal(frame.geometrySha256,sceneEvidence.geometrySha256);assert.match(frame.materialSha256,hashPattern);assert.equal(frame.materialSha256,sceneEvidence.materialSha256);assert.equal(frame.collisionSha256,sceneEvidence.collisionSha256);frames.set(lane,frame);
    }
-   const original=frames.get('original');for(const lane of ['rg8','restored']){validators.exactFrame(original,frames.get(lane),readRaw);assert.deepEqual(frames.get(lane).poolDelta,original.poolDelta);assert.deepEqual(frames.get(lane).shadowTargets.map(({evidenceName,sha256,...r})=>r),original.shadowTargets.map(({evidenceName,sha256,...r})=>r));}
+   const original=frames.get('original');for(const lane of lanes)if(lane!=='shadow-off')assert.deepEqual(frames.get(lane).shadowLights,original.shadowLights,'Noncontrol shadow-light state changed');for(const lane of ['rg8','restored']){validators.exactFrame(original,frames.get(lane),readRaw);assert.deepEqual(frames.get(lane).poolDelta,original.poolDelta);assert.deepEqual(frames.get(lane).shadowTargets.map(({evidenceName,sha256,...r})=>r),original.shadowTargets.map(({evidenceName,sha256,...r})=>r));}
    const strictComparison=value=>{for(const key of ['changedPixels','maxChannelDelta','shadowChangedPixels','shadowMaxChannelDelta'])assert.equal(value[key],0);for(const key of ['shadowTargetsEqual','orderEqual','countsEqual','poolDeltaEqual','matricesEqual'])assert.equal(value[key],true);};
    assert.deepEqual(item.comparisons.map(row=>row.lane),['rg8','restored']);item.comparisons.forEach(strictComparison);
    const audit={name:caseName,style,frames:lanes.length,exactLanes:['rg8','restored']};
@@ -403,7 +438,7 @@ export async function auditWorldArtifacts({directory,report,expectedProofHead,ex
     for(const [lane,key]of [['lost-g-restored','lostGRestored'],['shadow-restored','shadowRestored']]){validators.exactFrame(original,frames.get(lane),readRaw);assert.deepEqual(frames.get(lane).poolDelta,original.poolDelta);strictComparison(item.controls[key]);}
     assert.deepEqual(frames.get('lost-g').draws,original.draws,'Lost-G control changed unrelated submissions');assert.deepEqual(frames.get('lost-g').matrixObjects,original.matrixObjects);assert(readRaw(frames.get('lost-g').matrixEvidenceName).equals(readRaw(original.matrixEvidenceName)));
     const lostFrame=frames.get('lost-g'),offFrame=frames.get('shadow-off');for(const key of ['calls','triangles','shadowSha256'])assert.equal(lostFrame[key],original[key],'Lost-G control changed unrelated '+key);assert.deepEqual(lostFrame.poolDelta,original.poolDelta);assert.deepEqual(lostFrame.shadowTargets.map(({evidenceName,...row})=>row),original.shadowTargets.map(({evidenceName,...row})=>row));
-    assert.equal(offFrame.shadowTargets.length,0,'Shadow-off control retained original shadow targets');assert.equal(offFrame.poolDelta.shadowCalls,0);assert(!offFrame.draws.some(draw=>draw.phase==='shadow'),'Shadow-off control retained shadow submissions');assert.deepEqual(offFrame.matrixObjects,original.matrixObjects);assert(readRaw(offFrame.matrixEvidenceName).equals(readRaw(original.matrixEvidenceName)),'Shadow control altered object transforms');
+    assert.deepEqual(auditShadowContributionControl(original,offFrame,frames.get('shadow-restored'),item.controls.shadowControl,readRaw),shadowOff,'Saved shadow intensity control differs');
     audit.controls={lostG,shadowOff,exactRestorations:2};
    }else assert.deepEqual(item.controls,{});
    const done=final.completed[index];assert.deepEqual(done,{name:caseName,passed:true,frameNames:item.frameNames,controls:item.controls});
