@@ -1099,3 +1099,101 @@ test('late topology persistence after cleanup cannot publish index completion or
   assert.equal(persisted.complete, false); assert.equal(persisted.partial, true);
   assert.equal(terminalDiagnosticReceipt(f.state).complete, false);
 });
+
+// Event-scanner contracts supplement the original collector suite. No native
+// capture or recorded-trace benchmark runs inside these synthetic fixtures.
+async function eventScannerFixture(bytes, {parts = [bytes], options = {}, visitor} = {}) {
+  const rows = [];
+  try {
+    const receipt = await scanTraceStream(Readable.from(parts), row => { rows.push(row); return visitor?.(row); }, options);
+    return {rows, receipt, error: null};
+  } catch (error) { return {rows, receipt: error.traceReceipt, error}; }
+}
+const eventScannerChunks = (bytes, size) => Array.from({length: Math.ceil(bytes.length / size)},
+  (_, i) => bytes.subarray(i * size, (i + 1) * size));
+function assertRejectedEventDocument(result, bytes) {
+  assert(result.error); assert.equal(result.receipt.completeFile, true);
+  assert.equal(result.receipt.completeDocument, false); assert.equal(result.receipt.bytes, bytes.length);
+  assert.equal(result.receipt.sha256, sha256(bytes));
+}
+
+test('structural event scanner: declared parser and unchanged index provenance match actual files', async () => {
+  assert.equal(sha256(await readFile(new URL('./trace-parser.mjs', import.meta.url))),
+    manifest.trace.streamingIndex.parserSource.forkSha256);
+  assert.equal(sha256(await readFile(new URL('./trace-index.mjs', import.meta.url))),
+    manifest.trace.streamingIndex.offlineEventParserComparison.unchangedIndexerSha256);
+});
+
+test('structural event scanner: every byte split preserves escaping, UTF-8 and native JSON semantics', async () => {
+  for (let slashes = 0; slashes <= 6; slashes++) {
+    const text = JSON.stringify({before: {x: 'Δ🌊'}, traceEvents: [{s: '\\'.repeat(slashes) + '"{}[]\nΔ🌊'}, {}], after: [true, null]});
+    const bytes = Buffer.from(text), expected = JSON.parse(text).traceEvents;
+    for (let split = 0; split <= bytes.length; split++) {
+      const result = await eventScannerFixture(bytes, {parts: [bytes.subarray(0, split), Buffer.alloc(0), bytes.subarray(split)]});
+      assert.equal(result.error, null); assert.deepEqual(result.rows, expected);
+      assert.equal(result.receipt.sha256, sha256(bytes)); assert.equal(result.receipt.completeDocument, true);
+    }
+  }
+  const text = '[{"x":1,"x":-0,"n":[1e999,1e-999,9007199254740993],"s":"\\ud800\\udfff","__proto__":{"fixture":true}}]';
+  const bytes = Buffer.from(text), result = await eventScannerFixture(bytes, {parts: eventScannerChunks(bytes, 1)});
+  assert.equal(result.error, null); assert.deepEqual(result.rows, JSON.parse(text));
+  assert(Object.is(result.rows[0].x, -0)); assert.equal({}.fixture, undefined);
+});
+
+test('structural event scanner: exact UTF-16 record and enclosing-depth limits remain bounded', async () => {
+  const event = JSON.stringify({s: 'Δ🌊\\"'.repeat(8)}), bytes = Buffer.from('[' + event + ']');
+  for (const limit of [event.length, event.length - 1]) {
+    const result = await eventScannerFixture(bytes, {parts: eventScannerChunks(bytes, 1), options: {maxRecordChars: limit}});
+    if (limit === event.length) assert.equal(result.error, null);
+    else assertRejectedEventDocument(result, bytes);
+  }
+  for (const depth of [4096, 4097]) {
+    const count = depth - 3, text = '{"traceEvents":[{"x":' + '['.repeat(count) + '0' + ']'.repeat(count) + '}]}';
+    const raw = Buffer.from(text), result = await eventScannerFixture(raw, {parts: eventScannerChunks(raw, 127), options: {maxDepth: 4096}});
+    if (depth === 4097) { assertRejectedEventDocument(result, raw); assert.equal(result.rows.length, 0); continue; }
+    assert.equal(result.error, null); assert.equal(result.rows.length, 1);
+    let value = result.rows[0].x, observed = 0;
+    while (Array.isArray(value)) { assert.equal(value.length, 1); value = value[0]; observed++; }
+    assert.equal(observed, count); assert.equal(value, 0);
+  }
+});
+
+test('structural event scanner: malformed bounded objects and mutations never bypass strict JSON validation', async () => {
+  const bad = ['{"x":01}', '{"x":1e+}', '{"x":tru}', '{"x":"\\q"}', '{"x":"\\u0x00"}',
+    '{"x":[1,]}', '{"x":[}}', '{"x":1 "y":2}', '{"x":/*comment*/1}'];
+  for (const event of bad) {
+    const bytes = Buffer.from('{"traceEvents":[{},' + event + '],"after":"drained"}');
+    const result = await eventScannerFixture(bytes, {parts: eventScannerChunks(bytes, 1)});
+    assertRejectedEventDocument(result, bytes); assert.deepEqual(result.rows, [{}]);
+  }
+  const original = '{"a":[0,-0,1.2e+3,true,null,{"s":"a\\\\\\\"{}[]\\u03b4"}],"b":{}}';
+  for (let at = 0; at < original.length; at++) for (const replacement of ['', '"', '\\', '{', '}', ']', ',', '0', '\n']) {
+    const text = '{"traceEvents":[' + original.slice(0, at) + replacement + original.slice(at + 1) + '],"after":true}';
+    const bytes = Buffer.from(text); let expected = null;
+    try { const value = JSON.parse(text); if (value.traceEvents.every(row => row && typeof row === 'object' && !Array.isArray(row))) expected = value.traceEvents; } catch {}
+    const result = await eventScannerFixture(bytes, {parts: eventScannerChunks(bytes, 11)});
+    if (expected) { assert.equal(result.error, null); assert.deepEqual(result.rows, expected); }
+    else assertRejectedEventDocument(result, bytes);
+  }
+  for (const text of ['{"traceEvents":[{}{}]}', '{"traceEvents":[{}]}false', '{"traceEvents":[],"trac\\u0065Events":[]}']) {
+    const bytes = Buffer.from(text); assertRejectedEventDocument(await eventScannerFixture(bytes), bytes);
+  }
+});
+
+test('structural event scanner: every truncation and invalid UTF-8 retains a failed full-file receipt', async () => {
+  const full = Buffer.from('{"traceEvents":[{"a":"Δ🌊\\\\\\\"{}","b":[true,{"x":null}]}],"after":true}');
+  for (let length = 0; length < full.length; length++) {
+    const bytes = full.subarray(0, length);
+    assertRejectedEventDocument(await eventScannerFixture(bytes, {parts: eventScannerChunks(bytes, 3)}), bytes);
+  }
+  const invalid = Buffer.concat([Buffer.from('{"traceEvents":[{"s":"'), Buffer.from([0xf0, 0x9f]), Buffer.from('"}]}')]);
+  assertRejectedEventDocument(await eventScannerFixture(invalid, {parts: eventScannerChunks(invalid, 1)}), invalid);
+});
+
+test('structural event scanner: visitor failures and Promise returns keep count semantics and drain the remainder', async () => {
+  const bytes = Buffer.from('{"traceEvents":[{"x":1},{"x":2}],"after":"' + 'tail'.repeat(32) + '"}');
+  for (const visitor of [() => { throw Error('fixture visitor failure'); }, () => Promise.resolve('not synchronous')]) {
+    const result = await eventScannerFixture(bytes, {parts: eventScannerChunks(bytes, 5), visitor});
+    assertRejectedEventDocument(result, bytes); assert.equal(result.rows.length, 1); assert.equal(result.receipt.events, 1);
+  }
+});

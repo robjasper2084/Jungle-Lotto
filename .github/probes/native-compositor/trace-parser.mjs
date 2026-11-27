@@ -1,5 +1,6 @@
 // Narrow fork of Jungle-Lotto blob 7cd2800adbcd140f1f476eb26543cc30cb6913d2.
-// Only root-key count/size guards are added; see manifest.trace.streamingIndex.parserSource.
+// The recorder fork adds root-key guards. This isolated candidate also finds
+// bounded event boundaries structurally, then validates each event with JSON.parse.
 /** Bounded Chrome trace JSON reader. No assumption about lines, property order,
  * UTF-8/chunk boundaries, or nested metadata. Only the current event and root
  * key are materialized. All other values are syntax-checked incrementally.
@@ -30,6 +31,8 @@ class TraceJsonParser {
   this.onEvent=onEvent;this.maxRecordChars=maxRecordChars;this.maxDepth=maxDepth;
   this.stack=[];this.events=0;this.topLevelKeys=[];this.started=false;this.done=false;
   this.sawEvents=false;this.lex=null;this.capture=null;this.keyParts=null;
+  this.eventClosers=[];this.eventInString=false;this.eventEscaped=false;
+  this.eventOuterTokens=/["{}\[\]]/g;this.eventStringTokens=/["\\]/g;
  }
  error(message){throw new SyntaxError(message);}
  append(parts,text){
@@ -67,6 +70,9 @@ class TraceJsonParser {
   const root=this.stack.length===0,flags=this.takeValue(type);
   if(this.stack.length>=this.maxDepth)this.error('JSON nesting exceeds bounded parser limit');
   this.stack.push({type,root,...flags,state:type==='object'?'keyOrEnd':'valueOrEnd',key:null});
+  if(flags.event){
+   this.eventClosers.push('}');this.eventInString=false;this.eventEscaped=false;
+  }
  }
  close(type){
   const frame=this.stack.at(-1),empty=type==='object'?'keyOrEnd':'valueOrEnd';
@@ -123,9 +129,43 @@ class TraceJsonParser {
   if((c==='e'||c==='E')&&['zero','integer','fraction'].includes(this.numberState)){this.numberState='exponent';return true;}
   this.takeValue('scalar');this.lex=null;return false;
  }
+ // Only an already-admitted event uses this scanner. It retains no scalar
+ // tokens or nested frames: JSON.parse below validates the entire bounded
+ // object before the visitor sees it. Root/ignored-metadata syntax still uses
+ // the original grammar. Regex scans skip ordinary runs in native code.
+ scanEvent(text,start){
+  let i=start;
+  while(i<text.length){
+   if(this.eventEscaped){this.eventEscaped=false;i++;continue;}
+   const tokens=this.eventInString?this.eventStringTokens:this.eventOuterTokens;
+   tokens.lastIndex=i;const token=tokens.exec(text);
+   if(!token)return text.length;
+   const at=token.index,c=token[0];
+   if(this.eventInString){
+    if(c==='\\'){
+     if(at+1===text.length){this.eventEscaped=true;return text.length;}
+     i=at+2;
+    }else{this.eventInString=false;i=at+1;}
+    continue;
+   }
+   if(c==='"'){this.eventInString=true;i=at+1;continue;}
+   if(c==='{'||c==='['){
+    // stack already includes the event frame, which is also the first closer.
+    if(this.stack.length+this.eventClosers.length-1>=this.maxDepth)this.error('JSON nesting exceeds bounded parser limit');
+    this.eventClosers.push(c==='{'?'}':']');
+   }else{
+    if(this.eventClosers.at(-1)!==c)this.error('Mismatched JSON closing delimiter');
+    this.eventClosers.pop();
+    if(!this.eventClosers.length){this.at=at;this.close('object');return at;}
+   }
+   i=at+1;
+  }
+  return text.length;
+ }
  push(text){
   this.text=text;if(this.capture)this.captureStart=0;if(this.keyParts)this.keyStart=0;
   for(let i=0;i<text.length;i++){
+   if(this.capture){i=this.scanEvent(text,i);continue;}
    this.at=i;const c=text[i];
    if(this.lex==='string'){
     if(c==='"')this.stringEnd();else if(c==='\\')this.lex='escape';else if(c.charCodeAt(0)<32)this.error('Unescaped control character in JSON string');

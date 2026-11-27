@@ -22,13 +22,15 @@ No game, graphics, pose, input, visibility, render scheduling or bundle is repla
 Source/driver/lock receipts, build hashes, actual Chrome version, launch arguments
 and loaded JavaScript response hashes are preserved.
 
-The new payload occupies only `.github/probes/native-compositor/` and its own
-workflow. Existing CPU-diagnostic files remain unchanged. A future publisher must
-publish only these eleven paths onto its approved base, or use ac88 as the PR
-base. A PR containing the inherited CPU workflow against main would also select
-that older pair and is outside this scope. There is one fixed job, no selectable
-source ref, matrix or retry. Attempts greater than one are skipped. Preparing this
-payload does not authorize a run.
+The payload occupies only `.github/probes/native-compositor/` and its own workflow.
+This parser revision overlays exactly four existing files on observer commit
+cff46940b20bd27fadbae1bc8039e4a2050a4e4f: trace-parser.mjs, manifest.json,
+README.md and contract.test.mjs. The only runtime change is the parser; all seven
+other payload files, including preload/indexing/ownership code and the workflow,
+remain byte-identical. Existing CPU-diagnostic files remain unchanged. Publish
+only that reviewed overlay, never an entire local tree. There is one fixed job,
+no selectable source ref, matrix or retry. Attempts greater than one are skipped.
+Preparing this payload does not authorize a run.
 
 ## Category evidence and limits
 
@@ -198,7 +200,7 @@ stream arrival never grants a second 120-second allowance. The larger finite
 allowance applies only to post-stop collection; the 90-second workload, 110-second
 recording watchdog and original source/input/performance gates are unchanged.
 The new post-stop reader limits are listed below; pre-existing resource, protocol
-and cleanup bounds remain unchanged. Complete trace size and collection cost remain unproved, so
+and cleanup bounds remain unchanged. Future native collection and indexing cost remain unproved, so
 the allowance does not guarantee success. Receipts retain stop
 issuance, acknowledgement, notification, deadline and finalization timestamps.
 Missing or late notifications and late persistence remain partial, and late
@@ -250,10 +252,21 @@ The grammar/UTF-8 scanner is a narrow fork of source blob
 7cd2800adbcd140f1f476eb26543cc30cb6913d2 at PR265 commit
 b8fd4ccc564f231ff7f9b605379f417b6bd1d4bc, path
 .github/diagnostics/belle-full-desktop-stall/sustained-trace-json.mjs.
-Only root-key count/size guards and a provenance comment are added. It is not
-byte-identical to that source. The source and fork SHA-256 values are retained in
-manifest.trace.streamingIndex.parserSource. Existing grammar, UTF-8, duplicate
-traceEvents, individual-record and nesting checks remain intact.
+The recorder fork adds root-key count/size guards. This revision also replaces
+the redundant JavaScript scalar lexer inside an already-admitted event with a
+bounded structural boundary scanner. It tracks matching brackets and string
+escapes, including escapes split across chunks, and retains the same total
+nesting and original UTF-16 record-character bounds. The same JSON.parse call
+validates each complete bounded event before incrementing its event count or
+calling the synchronous visitor. Native JSON duplicate-key, negative-zero,
+number and surrogate behavior is preserved. Error wording or the point within a
+malformed event at which rejection occurs can differ; invalid events cannot be
+delivered. Root/ignored-metadata grammar, UTF-8, duplicate root traceEvents,
+full-file hashing, hash-only failure drain and cancellation are unchanged.
+
+The parser is not byte-identical to its source ancestor. Its current SHA-256 is
+fba506d1925b0fd83bfa05750a6290cf5c122b96dcf6c22b76c4458e4ebd57fe;
+source and fork hashes remain in manifest.trace.streamingIndex.parserSource.
 
 Additional reader/index limits are explicit:
 
@@ -295,6 +308,65 @@ limit; the retained first execution reported 53,676 KiB max RSS and a 79,691,776
 heap limit. That synthetic document has 15 events and a large ignored scalar tail:
 it proves the whole-string limit is avoided, not millions-of-events throughput,
 representative native memory use, or success within the native 120-second budget.
+
+## Observed index deadline and scoped processing improvement
+
+[Run 46002058074, attempt 1](https://github.com/robjasper2084/Jungle-Lotto/actions/runs/46002058074)
+on cff46940b20bd27fadbae1bc8039e4a2050a4e4f retained the complete
+665,443,680-byte native-trace.json in artifact 15201045235. The independent
+two-pass raw inventory validated 4,005,489 events, an object root with exactly
+traceEvents and metadata keys, and SHA-256
+1b13ff539ccfd1f88099538fab6171598c69612b94d37d08fafc450435778da1.
+There was no file-cap hit or reported trace loss. Both owned sessions closed
+cleanly and the CPU profile was retained.
+
+That producer still failed. Its stop ACK arrived at +10 ms, trace completion
+notification at +63,900 ms, and drain began at +63,908 ms. The unchanged absolute
+120-second budget therefore left 56,092 ms for draining, both indexes and
+persistence. The first index pass expired with a null pass receipt; the second
+pass never started. The capture-collected receipt arrived at +120,007 ms. No
+distinct drain-finish/index-start timestamps were retained, so the native first
+pass's duration cannot be inferred. Complete raw bytes do not replace missing
+producer index, alignment and finalization receipts. That diagnostic remains
+partial and is not accepted for timing attribution.
+
+The parser change was measured once against the exact retained member using
+fresh Node v24.22.3 children on Linux, baseline first then candidate. Both used
+the unchanged full topology accumulator, two fresh bounded ZIP streams, identical
+256-MiB old-space/16-MiB semi-space limits and a fixed 120-second index scope.
+All four complete raw passes matched the exact bytes, SHA, event count, root and
+EOF. Aggregate receipts, topology, marks and retained bounds matched exactly.
+All four decompressors returned successful CRC/EOF receipts and exited cleanly.
+
+| Offline measure | Published parser | Event scanner |
+| --- | ---: | ---: |
+| Complete two-pass index | 54,534.004 ms | 32,282.774 ms |
+| First-pass completion | 20,405.497 ms | 14,221.532 ms |
+| Node user CPU | 54.074506 s | 31.968736 s |
+| Node self max RSS | 87,808 KiB | 101,672 KiB |
+| Parent wait4 max RSS | 87,808 KiB | 102,752 KiB |
+
+Elapsed indexing time decreased 40.8025% in this single comparison, corresponding
+to 1.68926 times the processing throughput. The higher candidate memory readings
+are retained. ZIP decompression and both stream startups were included; source
+and archive preflight plus final report writing were excluded. Archive prehashing
+warmed the filesystem cache before both lanes. Fixed order, JIT startup,
+decompression and shared-host activity remain confounders. There were no retries,
+warmup scans or replacement samples. The exact archive, source, harness and
+result-report hashes are retained in
+manifest.trace.streamingIndex.offlineEventParserComparison.
+
+This is offline processing evidence. Native macOS notification/drain/persistence
+duration and future completion within 120 seconds remain unproved. It does not
+explain a game stall, measure hardware GPU duration or establish release readiness.
+All categories, buffer/file/retention caps, deadlines, original source and driver,
+input, ownership, CPU saving and completeness gates remain unchanged.
+
+All 57 existing collector contracts passed against the exact approved parser.
+The new production contracts preserve their original bytes and add focused event
+boundary, byte-split escape, native JSON, record/depth, mutation, truncation,
+visitor-failure and parser-provenance checks. The separate frozen differential
+suite has 22 passing contracts; the offline harness has 17 passing small contracts.
 
 ## Artifacts and source-only validation
 
