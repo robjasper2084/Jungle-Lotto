@@ -4,6 +4,7 @@ import {RealLocationPanel} from './realLocationPanel.ts';
 import {REAL_LOCATION_ORIGIN,REAL_LOCATION_AXES,type RealLocationFix} from './realLocation.ts';
 import {LocationPresentation} from './locationPresentation.ts';
 import {roadContactPresentation} from './roadContactPresentation.ts';
+import {jeffersonAssetSnapshot} from './detroitAssets.ts';
 import {createLocationPerformancePanel} from './locationPerformance.ts';
 import {observeModalMeasurementBoundaries} from './modalMeasurementBoundary.ts';
 import './rideMedia.css';
@@ -238,6 +239,14 @@ const renderer=new T.WebGLRenderer({canvas,antialias:requestedMsaa,powerPreferen
  if(softwareStartup || /\bApple\b/i.test(gpuName))installGpuFramePacing(renderer,{mode:nativeAppleMetalRenderer(gpuName)?'browser':'fence'});
  actualMsaa=!!renderer.getContext().getContextAttributes()?.antialias;syncAaStatus();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.25));renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.85;renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;
  const core=new RideCore(terrain,{spawn:{position:{x:data.spawn.x,y:2,z:data.spawn.z},headingY:data.spawn.heading}});clearSimulationInput=()=>core.clearPendingActions();const loader=new GLTFLoader();const renderProbe=createNatureRenderProbe(location.search);const world=await createWorld(scene,renderer,data,terrain,status,renderProbe);el('profile').dataset.macarthurRailMeshes=String(world.stats.bridgeRailFinish.meshes);el('profile').dataset.macarthurRailMaterials=String(world.stats.bridgeRailFinish.newMaterials);world.sky.preview(!SUNSET_REFERENCE);const refreshSkySettings=connectSkySettings(world.sky);const sunsetPreview=SUNSET_REFERENCE?createSunsetPreview(camera,()=>hover,()=>active&&!trials?.active&&!race?.active&&!coop?.active&&!photo?.active,()=>{clear();cameraYaw=0;cameraPitch=.1;snap=true;},data.spawn,data):undefined;
+ // A query-gated observer for real-input visual review. It cannot reposition a
+ // rider or camera, and refuses to expose a real location-following session.
+ if(new URLSearchParams(location.search).has('jefferson-gallery'))Object.defineProperty(window,'__jeffersonGalleryState',{value:()=>{
+  if(locationFollowing)return {unavailable:'Real location follow is private.'};
+  const p=core.current,heading=camera.getWorldDirection(new T.Vector3());
+  return {pose:{x:p.x,y:p.y,z:p.z,headingY:p.headingY,speed:p.speed,footBlend:p.footBlend},poseSource:'core.current',
+   camera:{position:camera.position.toArray(),direction:heading.toArray(),fovDegrees:camera.fov},paused,active,renderer:gpuName,assetStats:jeffersonAssetSnapshot(scene)};
+ },configurable:false});
  const frameBudget=new FrameBudget();graphics.onchange=()=>{frameBudget.reset();world.setQuality(graphics.value);saveGraphics();};world.setQuality(graphics.value);window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();if(!vr?.active)renderer.setSize(innerWidth,innerHeight);});
  const sceneWarmup=new SceneWarmup(renderer,scene,camera,value=>{scenePreparing=value;resetFrameClock=true;if(value)clear();});
  async function prepareRideShadows(rider:T.Object3D,x:number,z:number,warmCrossing=false){
