@@ -1,5 +1,35 @@
 # Full preview p95 attribution
 
+## Offline replay of the completed native sample
+
+The identity correction at `cd6af9369dd8bb7f18f530a5a2d6579c92625b57`
+passed all three real identity snapshots in
+[run 46052003878](https://github.com/robjasper2084/Jungle-Lotto/actions/runs/46052003878).
+The single macOS sampler exited zero and its full subprocess was contained in
+the original W-input interval. Its report then exposed unsupported parser syntax:
+repeated horizontal spacing, load-address unknowns, grouped thread roots and
+collapsed frame locations. This revision repairs that grammar against the
+retained report, with no additional native capture. See
+[NATIVE_PARSER.md](NATIVE_PARSER.md) for the grammar, fixture provenance and limits.
+
+The original receipt remains `incomplete`, with `collectionComplete: false`,
+`validationPassed: false`, `analysis: null` and its two original errors. Its
+missing report-path resolution is not reconstructed as if it had been observed.
+Any later offline analysis is a separately named, source-bound supplement.
+
+The original instrumented ride **failed**: **76.5 ms p95**, **484.1 ms maximum**,
+**one interval above 250 ms**, and **2,737 eligible frames**. The small packet
+supports replay of those reported aggregates, not a complete eligible-frame
+vector, full browser trace, asset-body inventory or release acceptance. The
+original 51.1 / 60.9 ms desktop acceptance failures and historical 266.7 ms
+stall remain unresolved.
+
+The parser regression child targets this native diagnostic branch and has a
+separate Ubuntu-only offline workflow. The unchanged native workflow's exact
+head/base guard excludes it. The original application, sampling configuration,
+deadlines and production workflows retain their identities. Partial native
+symbols and aggregate counts do not identify a safe rendering optimization.
+
 ## Native collector identity repair
 
 The first #278 attempt stopped before invoking the OS sampler: Chrome's
@@ -25,7 +55,7 @@ receipts cannot be used to relabel the old version-1 capture as successful.
 Only collector source, its regression fixtures, documentation and the local
 collector test list change. The original driver, workload, inputs, sampler
 window, deadlines, trace settings and release criteria retain their identities.
-This repair must produce its own native result before any attribution claim.
+Its completed native result and remaining attribution limits are recorded above.
 
 ## Current extension: one bounded native GPU-process stack sample
 
