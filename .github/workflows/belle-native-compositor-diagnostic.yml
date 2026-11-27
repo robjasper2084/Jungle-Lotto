@@ -41,7 +41,7 @@ jobs:
       - name: Validate source and hook contracts without launching a browser
         run: |
           node --check payload/.github/probes/native-compositor/preload.mjs
-          node --test payload/.github/probes/native-compositor/contract.test.mjs
+          node --test payload/.github/probes/native-compositor/contract.test.mjs payload/.github/probes/native-compositor/webgl-timer.test.mjs
           node payload/.github/probes/native-compositor/run.mjs prepare cadillac source evidence/cadillac
       - name: Build exact default source with its original lock
         timeout-minutes: 15

@@ -9,11 +9,13 @@ import {traceCategoryRequest} from './common.mjs';
 import {createTraceFinalizationScope, indexTraceFile} from './trace-index.mjs';
 import {installPageProbe} from './page-probe.mjs';
 import {installHooks} from './hooks.mjs';
+import {installWebglTimerProbe, loadWebglTimerConfig, validateWebglTimerSnapshot, persistWebglTimerSnapshot} from './webgl-timer.mjs';
 
 const source = resolve(process.env.BELLE_NATIVE_COMPOSITOR_SOURCE);
 const output = resolve(process.env.BELLE_NATIVE_COMPOSITOR_OUTPUT);
 const limits = manifest.bounds;
 assert(process.env.BELLE_NATIVE_COMPOSITOR_INVOCATION, 'Missing invocation identity');
+const timerConfig = {...await loadWebglTimerConfig(manifest), invocationId: process.env.BELLE_NATIVE_COMPOSITOR_INVOCATION};
 assert.equal(process.platform, 'darwin', 'This probe requires the native Mac lane');
 assert.equal(Number(process.versions.node.split('.')[0]), manifest.runtime.nodeMajor);
 assert.equal(process.env.BELLE_PROFILE_DEVICE, 'desktop');
@@ -28,6 +30,8 @@ assert.equal(require('@playwright/test/package.json').version, manifest.runtime.
 const state = {
   version: 1, diagnosticOnly: true, releaseAcceptance: false,
   diagnosticKind: manifest.diagnosticKind, gpuExecutionMeasured: false,
+  gpuExecutionMeasuredFalseScope: 'trace-evidence', hardwareGpuBusyTimeAttributed: false,
+  webglCommandSpans: {enabled: true, evidenceComplete: false, distributionComplete: false, snapshots: [], final: null},
   invocationId: process.env.BELLE_NATIVE_COMPOSITOR_INVOCATION,
   phase: 'preloaded', complete: false, partial: false, errors: [], errorOverflow: 0, failureRevision: 0,
   finalization: {transportClosed: false, writesHealthy: true, statusPersisted: false},
@@ -75,6 +79,7 @@ class NativeMonitor {
     this.started = false; this.stopPromise = null; this.cdp = null;
     this.traceCdp = null; this.owners = {}; this.disposing = false; this.pageWorkFinished = false;
     this.traceScope = null; this.traceCancellationReason = null;
+    this.timerPersistence = new AbortController();
     state.lifecycle ??= {};
     state.transports = Object.fromEntries(['page', 'browserTrace'].map(name => [name, {
       created: false, creationTimedOut: false, detachCalls: 0, detachAcknowledged: false,
@@ -170,7 +175,13 @@ class NativeMonitor {
     assert.deepEqual(launch, {channel: 'chrome', headless: false, args: ['--enable-gpu', '--use-gl=angle', '--use-angle=metal']});
     assert.deepEqual(page, {viewport: {width: 1440, height: 900}, deviceScaleFactor: 1, isMobile: false, hasTouch: false, reducedMotion: 'reduce'});
     state.launch = structuredClone(launch); state.pageOptions = structuredClone(page);
-    await this.page.addInitScript(installPageProbe, limits);
+    // One init script fixes ordering without relying on Playwright's ordering
+    // between independent addInitScript calls. The old page probe is unchanged.
+    await this.page.addInitScript({content: `(() => {
+      try { (${installWebglTimerProbe.toString()})(${JSON.stringify(timerConfig)}); }
+      catch (error) { window.__belleWebglTimerInstallError = String(error).slice(0, 512); }
+      (${installPageProbe.toString()})(${JSON.stringify(limits)});
+    })();`});
     const asset = (kind, request) => {
       const url = new URL(request.url());
       if (url.hostname !== '127.0.0.1') return;
@@ -321,8 +332,15 @@ class NativeMonitor {
     });
     this.profilerStarted = true;
     await this.send('Profiler.start');
-    const started = await bounded(this.page.evaluate(() => window.__belleNativeCpuObserver.start()), limits.protocolTimeoutMs, 'Observer start');
-    assert.equal(started, true, 'Page observer did not start exactly once');
+    const started = await bounded(this.page.evaluate(() => {
+      const originalStarted = window.__belleNativeCpuObserver.start();
+      let timerArmed = false, timerError = window.__belleWebglTimerInstallError || null;
+      try { timerArmed = window.__belleWebglCommandSpanObserver?.arm() === true; }
+      catch (error) { timerError = String(error).slice(0, 512); }
+      return {originalStarted, timerArmed, timerError};
+    }), limits.protocolTimeoutMs, 'Observer start');
+    assert.equal(started.originalStarted, true, 'Page observer did not start exactly once');
+    if (!started.timerArmed || started.timerError) failure('webgl-timer-arm', Error(started.timerError || 'WebGL timer did not arm after verified registration'));
     state.phase = 'capturing'; state.captureStartedAt = new Date().toISOString();
     this.checkpointTimer = setInterval(() => { void this.checkpoint('periodic'); }, limits.checkpointEveryMs);
     this.checkpointTimer.unref();
@@ -341,12 +359,36 @@ class NativeMonitor {
     this.checkpointDone = new Promise(done => { finishCheckpoint = done; });
     const begin = Date.now();
     try {
-      const snapshot = await bounded(this.page.evaluate(() => window.__belleNativeCpuObserver.snapshot()), limits.protocolTimeoutMs, 'Observer snapshot');
+      const captured = await bounded(this.page.evaluate(final => {
+        const observer = window.__belleNativeCpuObserver.snapshot();
+        let timer = null, timerError = window.__belleWebglTimerInstallError || null;
+        try { timer = window.__belleWebglCommandSpanObserver?.snapshot(final) ?? null; }
+        catch (error) { timerError = String(error).slice(0, 512); }
+        return {observer, timer, timerError};
+      }, label === 'final'), limits.protocolTimeoutMs, 'Observer snapshot');
+      const snapshot = captured.observer;
       this.lastSnapshot = snapshot;
       const number = state.checkpoints.length;
       const file = 'observer-' + String(number).padStart(2, '0') + '-' + label + '.json';
       await saveJson(resolve(output, file), snapshot);
       state.checkpoints.push({file, label, wallMs: Date.now() - begin, rafStored: snapshot.raf.stored, endedAtMs: snapshot.endedAtMs});
+      assert(!captured.timerError, captured.timerError || 'WebGL timer init failure');
+      assert(state.webglCommandSpans.snapshots.length < timerConfig.bounds.snapshots, 'WebGL sidecar count cap');
+      const timerVerdict = validateWebglTimerSnapshot(captured.timer, timerConfig, {final: label === 'final'});
+      const timerFile = 'webgl-command-spans-' + String(number).padStart(2, '0') + '-' + label + '.json';
+      const timerReceipt = await persistWebglTimerSnapshot(resolve(output, timerFile), captured.timer, timerConfig, {
+        signal: this.timerPersistence.signal, timeoutMs: limits.protocolTimeoutMs
+      });
+      this.timerPersistence.signal.throwIfAborted();
+      const retained = {file: timerFile, label, ...timerReceipt, ...timerVerdict};
+      state.webglCommandSpans.snapshots.push(retained);
+      if (label === 'final') {
+        state.webglCommandSpans.final = retained;
+        state.webglCommandSpans.evidenceComplete = timerVerdict.evidenceComplete;
+        state.webglCommandSpans.distributionComplete = timerVerdict.distributionComplete;
+      }
+      if (!timerVerdict.valid || (label === 'final' && !timerVerdict.evidenceComplete))
+        failure('webgl-timer-evidence', Error(JSON.stringify(timerVerdict)));
       await persist();
     } catch (error) { failure('checkpoint-' + label, error); }
     finally { this.checkpointBusy = false; finishCheckpoint(); }
@@ -369,7 +411,10 @@ class NativeMonitor {
     const traceTask = this.traceStarted ? this.trace().catch(error => failure('trace', error)) : Promise.resolve();
     if (this.started) pageTasks.push((async () => {
       if (reason !== 'original-ending-metrics') {
-        await bounded(this.page.evaluate(reason => window.__belleNativeCpuObserver.stop(reason), reason), limits.protocolTimeoutMs, 'Observer stop');
+        await bounded(this.page.evaluate(reason => {
+          window.__belleNativeCpuObserver.stop(reason);
+          try { window.__belleWebglCommandSpanObserver?.stop(reason); } catch {}
+        }, reason), limits.protocolTimeoutMs, 'Observer stop');
       }
       await this.checkpoint('final');
     })().catch(error => failure('final-observer', error)));
@@ -398,11 +443,15 @@ class NativeMonitor {
     };
     const rawComplete = raw?.stoppedBy === 'trusted-w-keyup' && raw.keydowns > 0 && raw.keyups === 1 &&
       raw.raf.overflow === 0 && raw.longTasks.overflow === 0 && raw.markOverflow === 0 && raw.longTaskSupported;
+    state.webglCommandSpans.loadedBundleMatched = state.bundles.some(row => row.sha256 === timerConfig.bindings.bundle.sha256 &&
+      row.bytes === timerConfig.bindings.bundle.bytes && row.matchesBuiltFile === true &&
+      new URL(row.url).pathname.endsWith('/' + timerConfig.bindings.bundle.path));
     const eligible = !!(state.originalMetricsCalls === 2 && state.cpuProfile && state.trace.streamComplete && state.trace.dataLossOccurred === false &&
       !state.trace.capReached && state.trace.indexing?.complete && state.trace.indexing.receipt?.unchangedBetweenPasses &&
       state.trace.topology?.available && rawComplete && state.alignment.available && state.bundles.length &&
       !state.bundleOverflow && !state.assetEventOverflow && !state.parsedScriptOverflow &&
-      state.parsedScripts > 0 && !state.partial && !state.ioError && !state.errors.length);
+      state.parsedScripts > 0 && !state.partial && !state.ioError && !state.errors.length &&
+      state.webglCommandSpans.evidenceComplete && state.webglCommandSpans.loadedBundleMatched);
     await event('capture-collected', {eligibleForFinalization: eligible});
     await finalizeDiagnostic(state, {
       eligible,
@@ -568,7 +617,7 @@ class NativeMonitor {
       finish: () => this.stop(this.stopPromise ? state.stopReason : 'original-browser-close'),
       persist,
       timeoutMs: limits.cleanupTimeoutMs,
-      cancel: error => this.abortTrace(error),
+      cancel: error => { this.abortTrace(error); this.timerPersistence.abort(error); },
       terminal: receipt => writeFileSync(resolve(output, 'observer-cleanup-terminal.json'), JSON.stringify(receipt) + '\n')
     });
     if (!ownedTransportsClosed(state)) {

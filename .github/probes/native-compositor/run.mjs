@@ -6,10 +6,12 @@ import {cp, mkdir, readFile, writeFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {manifest, selectCase, verifySource, hashDirectory, saveJson, sha256, git, diagnosticRunIsClean} from './common.mjs';
+import {loadWebglTimerConfig, verifyWebglTimerBuild, validateWebglTimerSnapshot} from './webgl-timer.mjs';
 
 const [action, caseName, sourceArgument, outputArgument] = process.argv.slice(2);
 assert(['inspect', 'prepare', 'built', 'run'].includes(action), 'Unknown probe action');
 const target = selectCase(caseName), source = resolve(sourceArgument), output = resolve(outputArgument);
+const timerConfig = await loadWebglTimerConfig(manifest);
 await mkdir(output, {recursive: true});
 await saveJson(resolve(output, 'payload-manifest.json'), manifest);
 const contract = await verifySource(source, caseName, {objectsOnly: action === 'inspect', allowBuildStatistic: ['built', 'run'].includes(action)});
@@ -25,6 +27,7 @@ if (action === 'inspect') {
 } else if (action === 'built') {
   const build = await hashDirectory(resolve(source, manifest.game, 'dist'));
   await saveJson(resolve(output, 'built-files.json'), build);
+  verifyWebglTimerBuild(build, timerConfig);
   await writeFile(resolve(output, 'tracked-build-diff.patch'), git(source, 'diff', 'HEAD', '--'));
   console.log(JSON.stringify({case: caseName, buildFiles: build.files.length, buildManifestSha256: build.manifestSha256}));
 } else {
@@ -32,6 +35,7 @@ if (action === 'inspect') {
   const built = JSON.parse(await readFile(resolve(output, 'built-files.json'), 'utf8'));
   const current = await hashDirectory(resolve(source, manifest.game, 'dist'));
   assert.equal(current.manifestSha256, built.manifestSha256, 'Build changed before browser capture');
+  verifyWebglTimerBuild(current, timerConfig);
   const preload = fileURLToPath(new URL('./preload.mjs', import.meta.url));
   const driver = resolve(source, manifest.driver.path);
   const invocationId = randomUUID();
@@ -42,6 +46,8 @@ if (action === 'inspect') {
   const receipt = {
     invocationId, diagnosticOnly: true, releaseAcceptance: false, diagnosticKind: manifest.diagnosticKind,
     gpuExecutionMeasured: false, source: target, workflowHead: process.env.GITHUB_SHA ?? null,
+    gpuExecutionMeasuredFalseScope: 'trace-evidence', hardwareGpuBusyTimeAttributed: false,
+    webglCommandSpanConfiguration: manifest.webglCommandSpans,
     originalDriver: manifest.driver, preloadSha256: sha256(await readFile(preload)),
     originalReportPath: resolve(source, manifest.game, 'output/sustained-profile/full/desktop/report.json'),
     command: [process.execPath, '--import', preload, driver], cwd: resolve(source, manifest.game),
@@ -94,11 +100,26 @@ if (action === 'inspect') {
     stopReason: report.profile?.stopReason ?? null, input: report.input,
     browserObserverWindow: report.browserSchedulerProbe?.observationWindow ?? null
   } : null;
+  let webglCommandSpans = {valid: false, evidenceComplete: false, distributionComplete: false};
+  try {
+    const retained = diagnostic?.webglCommandSpans?.final;
+    assert(retained && /^webgl-command-spans-\d{2}-final\.json$/.test(retained.file), 'Missing final WebGL sidecar receipt');
+    assert(Number.isSafeInteger(retained.bytes) && retained.bytes > 0 && retained.bytes <= timerConfig.bounds.snapshotBytes, 'WebGL sidecar size receipt');
+    const bytes = await readFile(resolve(output, retained.file));
+    assert.equal(bytes.length, retained.bytes); assert.equal(sha256(bytes), retained.sha256);
+    webglCommandSpans = validateWebglTimerSnapshot(JSON.parse(bytes), {...timerConfig, invocationId}, {final: true});
+    assert.equal(diagnostic.webglCommandSpans.loadedBundleMatched, true);
+    assert.equal(diagnostic.webglCommandSpans.evidenceComplete, webglCommandSpans.evidenceComplete);
+    assert.equal(diagnostic.webglCommandSpans.distributionComplete, webglCommandSpans.distributionComplete);
+  } catch (error) {
+    webglCommandSpans = {valid: false, evidenceComplete: false, distributionComplete: false, error: String(error)};
+  }
   const diagnosticComplete = diagnosticRunIsClean(diagnostic, terminal, invocationId, cleanupTerminal) &&
+    webglCommandSpans.valid && webglCommandSpans.evidenceComplete &&
     !receipt.diagnosticReadError && !receipt.terminalReadError && !receipt.cleanupTerminalReadError;
   await saveJson(resolve(output, 'result.json'), {
     ...receipt, exit, sourceAndBuildPreserved: preserved, originalVerdict, runtimeReceipt,
-    diagnosticComplete, diagnosticPartial: !diagnosticComplete, terminalReceipt: terminal, cleanupTerminal,
+    diagnosticComplete, diagnosticPartial: !diagnosticComplete, terminalReceipt: terminal, cleanupTerminal, webglCommandSpans,
     note: 'Original source driver verdict is retained, including all failures. This sampled/instrumented run is diagnostic only and cannot approve release.'
   });
   console.log(JSON.stringify({case: caseName, originalVerdict, diagnosticComplete, preserved}));

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "purpose": "Native compositor and GPU-service CPU scheduling attribution; no measured GPU execution and never release acceptance",
+  "purpose": "Native compositor and GPU-service CPU scheduling plus separate bounded WebGL GPU-clock command-span observation; never release acceptance",
   "diagnosticKind": "native-compositor-gpu-service",
   "payloadBase": "893f769838166e6e35624b7b979ed5cbb8414507",
   "observerBaseCommit": "ac88da2e62f46a50020391e8629ac0dbd995baea",
@@ -295,5 +295,60 @@
     "originalPageAndContextClosureDelayed": false
   },
   "strictDriverStepTimeoutMinutes": 28,
-  "retryCount": 0
+  "retryCount": 0,
+  "webglCommandSpans": {
+    "version": 1,
+    "diagnosticOnly": true,
+    "releaseAcceptance": false,
+    "observerParentCommit": "10ae1ed6a84bb3cb7b18638843c4c87a8e07f727",
+    "observerParentTree": "6441481840a732131681c8d13cf87fcc204a9f57",
+    "bindings": {
+      "file": "webgl-timer-bindings.json",
+      "bytes": 16223,
+      "sha256": "031db42da4888464dcef9c4454c2ca3b622f92b0a3303c74f212e148086367da"
+    },
+    "bundle": {
+      "path": "assets/main-Cc8uS51_.js",
+      "bytes": 5152894,
+      "sha256": "bdeafe9e9eb83afe6dd58be7552e879494f13996ae5f2ea772df464040ca881e"
+    },
+    "bounds": {
+      "ownedQueries": 16,
+      "rows": 8192,
+      "errors": 32,
+      "errorChars": 256,
+      "snapshotBytes": 8388608,
+      "snapshots": 8
+    },
+    "elapsedCounterCapability": {
+      "query": "gl.getQuery(ext.TIME_ELAPSED_EXT, ext.QUERY_COUNTER_BITS_EXT)",
+      "target": 35007,
+      "pname": 34916,
+      "setupQueries": 1,
+      "minimumNonzeroBits": 30,
+      "maximumAcceptedBits": 64,
+      "maximumRationale": "Conservative limit matching the unsigned64-bit query result type; the minimum30 and zero-capability semantics are specified by EXT_disjoint_timer_query.",
+      "zeroCounterBits": "Unsupported; no useful elapsed information and no query admission",
+      "validZeroResults": "Retained as zero/resolution-limited only after supported counter capability",
+      "outOfWidthResults": "Invalid; raw finite number retained without promotion",
+      "overflowEnvelope": "Censor with counter-horizon-uncertain when availableAtMs minus queryBeginAtMs is greater than or equal to (2**elapsedCounterBits)/1e6; retain raw value, zero flag and CPU availability envelope. Independent validation requires resolved rows strictly below that horizon.",
+      "overflowLimitation": "The passive CPU observation envelope can censor delayed availability even for short GPU work. It is not GPU-duration evidence or an absolute CPU/GPU clock mapping; no added query, wait or drain is used.",
+      "webgl2Specification": "https://registry.khronos.org/webgl/extensions/EXT_disjoint_timer_query_webgl2/",
+      "baseSpecification": "https://registry.khronos.org/OpenGL/extensions/EXT/EXT_disjoint_timer_query.txt"
+    },
+    "installation": "Existing Three renderer observe, one startup microtask after synchronous original browser pacing and before awaited game registration; exact synchronous function-text checks",
+    "window": "First trusted W keydown through first trusted W keyup after existing observer start",
+    "queryScope": "Synchronous delivered original game callback; all original callback arguments, receiver, return and exceptions preserved",
+    "polling": "Only before an already-delivered original game callback; result only after availability, no additional waits, rAF, fences, flushes, readbacks or pacing",
+    "stop": "Trusted W keyup synchronously stops admission and censors pending rows; no query-result drain",
+    "gpuExecutionMeasuredFalseScope": "Existing trace evidence only; separate elapsed queries observe GPU-clock command-span intervals",
+    "hardwareGpuBusyTimeAttributed": false,
+    "queuedAheadWorkMeasured": false,
+    "absoluteGpuTimestamps": false,
+    "callbacksAreEligibleGameFrames": false,
+    "evidenceCompleteness": "Complete source/ownership/window/row bookkeeping may include explicit censored or uncovered rows; full distribution requires every row resolved",
+    "originalCollectorBoundsChanged": false,
+    "originalInputDriverOrApplicationChanged": false,
+    "nativeRunPerformed": false
+  }
 }

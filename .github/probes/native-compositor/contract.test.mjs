@@ -13,6 +13,8 @@ import {installHooks} from './hooks.mjs';
 import {installPageProbe} from './page-probe.mjs';
 import {createTraceFinalizationScope, createTraceTopologyAccumulator, indexTraceSource, indexTraceFile, reconcileTracePasses} from './trace-index.mjs';
 import {scanTraceStream} from './trace-parser.mjs';
+import {installWebglTimerProbe, loadWebglTimerConfig, validateWebglTimerSnapshot, persistWebglTimerSnapshot} from './webgl-timer.mjs';
+const timerConfig = {...await loadWebglTimerConfig(manifest), invocationId: 'same-source-only-invocation'};
 
 test('only original 210 and the fixed compositor categories are selectable', () => {
   assert.deepEqual(Object.keys(manifest.cases), ['cadillac']);
@@ -204,6 +206,7 @@ test('observer timeout is explicit rather than an infinite cleanup wait', async 
 function finalState() {
   return {
     invocationId: 'same-source-only-invocation', phase: 'stopping', complete: false, partial: false,
+    webglCommandSpans: {enabled: true, evidenceComplete: false, distributionComplete: false, snapshots: [], final: null},
     errors: [], errorOverflow: 0, failureRevision: 0,
     finalization: {transportClosed: false, writesHealthy: true, statusPersisted: false},
     transports: Object.fromEntries(['page', 'browserTrace'].map(name => [name, {
@@ -218,13 +221,44 @@ function finalOptions(overrides = {}) {
   return {eligible: true, detach: async () => {}, flush: async () => {},
     writeStatus: async () => true, ...overrides};
 }
+// Controlled page payload for the pre-existing CPU/trace ownership fixtures.
+// It models one censored query with complete bookkeeping; the actual new timer
+// validator and persistence helper still run. Browser/query behavior is tested
+// separately in webgl-timer.test.mjs. These fixtures do not run a game or browser.
+function timerSnapshotFixture() {
+  return {
+    version: 1, diagnosticOnly: true, releaseAcceptance: false,
+    scope: 'synchronous-original-game-callback-webgl-command-span', invocationId: timerConfig.invocationId,
+    sourceCommit: timerConfig.bindings.sourceCommit, bundleSha256: timerConfig.bindings.bundle.sha256,
+    functionHashes: Object.fromEntries(Object.entries(timerConfig.bindings.functions).map(([key, row]) => [key, row.functionTextSha256])),
+    bounds: {...timerConfig.bounds}, timeOriginMs: 100000,
+    hardwareGpuBusyTimeAttributed: false, queuedAheadWorkMeasured: false,
+    absoluteGpuTimestamps: false, callbacksAreEligibleGameFrames: false,
+    setup: {rendererCount: 1, nativeSetterMatched: true, pacingSetterMatched: true, gameFrameMatched: true,
+      registrationCompleted: true, installationMicrotasks: 1, contextMatched: true, nativeMetal: true,
+      extensionSupported: true, elapsedCounterBits: 64, elapsedCounterBitsType: 'number', elapsedCounterBitsQueries: 1, ready: true},
+    armedAtMs: 0, trustedStartMs: .1, trustedStopMs: .2, stoppedBy: 'trusted-w-keyup',
+    keydowns: 1, keyups: 1, callbackTotal: 1, stored: 1, rowOverflow: 0, errorOverflow: 0,
+    failureRevision: 0, contextGeneration: 0, contextLosses: 0, contextRestores: 0, active: false, stopped: true,
+    queries: {created: 1, deleteCalls: 1, deleted: 1, lostAbandoned: 0, live: 0, peakOwned: 1, peakActive: 1},
+    cleanup: {finalized: true, ownedHandlesClosed: true, setterRestored: true, disposeRestored: true,
+      listenersRemoved: true, devtoolsRestored: true, registeredCallbackRetainedInert: true},
+    errors: [], counts: {resolved: 0, pending: 0, active: 0, uncovered: 0, censored: 1, invalid: 0},
+    rows: [{id: 1, previousCallbackId: null, previousRenderedCallbackId: null, generation: 0, rafTimestampMs: .11,
+      callbackEntryMs: .12, callbackExitMs: .18, renderFrameBefore: 0, renderFrameAfter: 1, rendered: true,
+      originalThrew: false, slotId: 1, querySequence: 1, queryBeginAtMs: .13, queryEndAtMs: .17,
+      availableAtCallbackId: null, availableAtMs: null, rawNanoseconds: null, zeroResult: false,
+      resultValid: false, status: 'censored', reason: 'trusted-w-keyup'}],
+    evidenceComplete: true, distributionComplete: false, gpuClockIntervalsAvailable: false
+  };
+}
 async function startupMonitorFixture({response = {categories: []}, failAt = null} = {}) {
   const source = await readFile(new URL('./preload.mjs', import.meta.url), 'utf8');
   const start = source.indexOf('class NativeMonitor {'), end = source.indexOf('\ninstallHooks(', start);
   const state = finalState(), calls = [], saved = [], events = [];
   let observerStarts = 0;
   const NativeMonitor = vm.runInNewContext(source.slice(start, end) + '\nNativeMonitor;', {
-    assert, Buffer, resolve, state, createTraceFinalizationScope, indexTraceFile, manifest, limits: manifest.bounds, output: '/source-only-evidence',
+    assert, Buffer, AbortController, resolve, state, createTraceFinalizationScope, indexTraceFile, manifest, limits: manifest.bounds, output: '/source-only-evidence',
     bounded, traceCategoryRequest, setTimeout: () => ({unref() {}}), setInterval: () => ({unref() {}}),
     async saveJson(path, value) { saved.push({path, value: structuredClone(value)}); },
     async event(name, detail) { events.push({name, detail}); }
@@ -235,7 +269,7 @@ async function startupMonitorFixture({response = {categories: []}, failAt = null
     if (method === 'Tracing.getCategories') return response;
     return {};
   }};
-  const monitor = new NativeMonitor({page: {async evaluate() { observerStarts++; return true; }},
+  const monitor = new NativeMonitor({page: {async evaluate() { observerStarts++; return {originalStarted: true, timerArmed: true, timerError: null}; }},
     browser: {async newBrowserCDPSession() { return cdp; }}});
   return {monitor, state, calls, saved, events, get observerStarts() { return observerStarts; }, start: () => monitor.start(async () => cdp)};
 }
@@ -383,7 +417,7 @@ test('a blocked event-write queue cannot delay either recorder stop or raw CPU p
   const blockedWrite = new Promise(() => {});
   const profile = {nodes: [{id: 1}], samples: [1], timeDeltas: [2000], startTime: 0, endTime: 3000};
   const NativeMonitor = vm.runInNewContext(source.slice(start, end) + '\nNativeMonitor;', {
-    assert, Buffer, resolve, state, createTraceFinalizationScope, indexTraceFile, limits: manifest.bounds, output: '/source-only-evidence',
+    assert, Buffer, AbortController, resolve, state, createTraceFinalizationScope, indexTraceFile, limits: manifest.bounds, output: '/source-only-evidence',
     clearTimeout() {}, clearInterval() {},
     bounded: promise => promise,
     event(name) { events.push(name); return blockedWrite; },
@@ -423,7 +457,7 @@ async function traceMonitorFixture({fileCap = 16, drainMs = 100, protocolMs = 10
   let notifyClosed;
   const closed = new Promise(done => { notifyClosed = done; });
   const NativeMonitor = vm.runInNewContext(source.slice(start, end) + '\nNativeMonitor;', {
-    assert, Buffer, resolve, state, createTraceFinalizationScope, indexTraceFile, output: '/source-only-evidence',
+    assert, Buffer, AbortController, resolve, state, createTraceFinalizationScope, indexTraceFile, output: '/source-only-evidence',
     Date: clock ? class extends Date { static now() { return clock.now; } } : Date,
     bounded(promise, ms, label) { budgets.push({label, ms}); return bounded(promise, ms, label); },
     limits: {...manifest.bounds, traceFileBytes: fileCap, traceDrainTimeoutMs: drainMs, protocolTimeoutMs: protocolMs},
@@ -546,7 +580,8 @@ async function ownershipFixture({cpuError = false, lateBrowserCreation = null, p
   const begin = source.indexOf('class NativeMonitor {'), end = source.indexOf('\ninstallHooks(', begin);
   const state = finalState(), calls = [], events = [], files = new Map();
   delete state.cpuProfile;
-  Object.assign(state, {checkpoints: [], bundles: [{file: 'exact-loaded-source.js'}], parsedScripts: 1,
+  Object.assign(state, {checkpoints: [], bundles: [{file: 'exact-loaded-source.js', url: 'http://127.0.0.1/' + timerConfig.bindings.bundle.path,
+      bytes: timerConfig.bindings.bundle.bytes, sha256: timerConfig.bindings.bundle.sha256, matchesBuiltFile: true}], parsedScripts: 1,
     originalMetricsCalls: 2, bundleBytes: 1, assetEvents: 0});
   const profile = {nodes: [{id: 1}], samples: [1], timeDeltas: [300], startTime: 0, endTime: 300};
   const snapshot = {timeOriginMs: 100000, stoppedBy: 'trusted-w-keyup', keydowns: 1, keyups: 1,
@@ -589,7 +624,8 @@ async function ownershipFixture({cpuError = false, lateBrowserCreation = null, p
   page.closed = false; page.context = () => context; page.addInitScript = async () => {};
   page.evaluate = async fn => {
     if (page.closed) throw Error('Original page closed');
-    return String(fn).includes('.start()') ? true : snapshot;
+    return String(fn).includes('.start()') ? {originalStarted: true, timerArmed: true, timerError: null} :
+      {observer: snapshot, timer: timerSnapshotFixture(), timerError: null};
   };
   browser.newBrowserCDPSession = () => lateBrowserCreation || Promise.resolve(browserSession);
   const saveJson = async (path, value) => { await beforeSaveJson?.(path, value); files.set(path, Buffer.from(JSON.stringify(value))); };
@@ -598,7 +634,13 @@ async function ownershipFixture({cpuError = false, lateBrowserCreation = null, p
     (page, browser) => new NativeMonitor({page, browser,
       launchArguments: [{channel: 'chrome', headless: false, args: ['--enable-gpu', '--use-gl=angle', '--use-angle=metal']}],
       pageArguments: [{viewport: {width: 1440, height: 900}, deviceScaleFactor: 1, isMobile: false, hasTouch: false, reducedMotion: 'reduce'}]});`, {
-    assert, Buffer, resolve, state, createTraceFinalizationScope, indexTraceFile, manifest, output: '/source-only-evidence', structuredClone, installPageProbe,
+    assert, Buffer, AbortController, resolve, state, createTraceFinalizationScope, indexTraceFile, manifest, output: '/source-only-evidence', structuredClone, installPageProbe,
+    URL, timerConfig, installWebglTimerProbe, validateWebglTimerSnapshot,
+    persistWebglTimerSnapshot(path, snapshot, config, options) {
+      return persistWebglTimerSnapshot(path, snapshot, config, {...options, writer: async (file, bytes) => {
+        assert(!files.has(file), 'Exclusive sidecar path must not already exist'); files.set(file, Buffer.from(bytes));
+      }});
+    },
     limits: {...manifest.bounds, protocolTimeoutMs: protocolMs, cleanupTimeoutMs: cleanupMs, traceDrainTimeoutMs: 200},
     bounded(promise, ms, label) { return bounded(promise, label.includes('CDP detach and close') ? detachMs : ms, label); },
     setTimeout, setInterval, clearTimeout, clearInterval, sha256, summarizeTraceTopology,

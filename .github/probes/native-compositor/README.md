@@ -2,8 +2,10 @@
 
 This standalone diagnostic observes original PR 210 only. It adds Chrome compositor,
 frame-delivery, task-flow and GPU-service CPU evidence absent from the retained
-renderer CPU trace. It makes no product change, does not measure hardware GPU
-execution, and never grants release acceptance.
+renderer CPU trace. A separate bounded elapsed-query observer now records GPU-clock
+intervals for synchronous original game callbacks. Trace wall spans remain CPU/service
+scheduling evidence; elapsed queries do not attribute hardware GPU busy time,
+queued-ahead work, or compositor waits. This diagnostic never grants release acceptance.
 
 | Fixed input | Value |
 | --- | --- |
@@ -23,14 +25,22 @@ Source/driver/lock receipts, build hashes, actual Chrome version, launch argumen
 and loaded JavaScript response hashes are preserved.
 
 The payload occupies only `.github/probes/native-compositor/` and its own workflow.
-This parser revision overlays exactly four existing files on observer commit
-cff46940b20bd27fadbae1bc8039e4a2050a4e4f: trace-parser.mjs, manifest.json,
-README.md and contract.test.mjs. The only runtime change is the parser; all seven
-other payload files, including preload/indexing/ownership code and the workflow,
-remain byte-identical. Existing CPU-diagnostic files remain unchanged. Publish
-only that reviewed overlay, never an entire local tree. There is one fixed job,
-no selectable source ref, matrix or retry. Attempts greater than one are skipped.
-Preparing this payload does not authorize a run.
+The current query-observer revision overlays the complete reviewed observer
+10ae1ed6a84bb3cb7b18638843c4c87a8e07f727 / tree
+6441481840a732131681c8d13cf87fcc204a9f57. Its exact publication allowlist is recorded
+in the final freeze receipt. It changes only query observation, bounded sidecar
+persistence, source/provenance checks, focused contracts and documentation. The
+workflow changes only its source-test command. The existing hooks, page observer,
+common verdict/ownership helpers, strict trace parser and two-pass trace indexer
+remain byte-identical. Original source, source driver, locks, settings, seven trace
+categories and every existing capture/RPC/cleanup/finalization/job bound stay fixed.
+Publish only the reviewed overlay, never an entire local tree. There is one fixed
+job, no selectable source ref, matrix or retry. Attempts greater than one are
+skipped. Preparing this payload does not authorize a run.
+
+The previous parser-only revision remains documented below: it changed exactly
+trace-parser.mjs, manifest.json, README.md and contract.test.mjs on cff46940b20bd27fadbae1bc8039e4a2050a4e4f.
+That parser's approved bytes are preserved by this query revision.
 
 ## Category evidence and limits
 
@@ -431,3 +441,164 @@ separate event. The corresponding source checks use
 https://github.com/microsoft/playwright/tree/v1.61.1/packages/playwright-core/src/
 (client/cdpSession.ts, server/chromium/crBrowser.ts and
 server/chromium/crConnection.ts).
+
+## Bounded WebGL command-span observer
+
+This is an instrumented observation of the immutable original workload. It does
+not establish a renderer improvement or resolve the original release failure.
+The useful new value is the distribution of available elapsed-query intervals
+around the synchronous commands of delivered game callbacks. In particular, a
+long compositor `WaitForCommandsToBeScheduled` trace span is not automatically
+hardware GPU elapsed time, and this observer does not relabel it as such.
+
+### Source and registration binding
+
+The default main bundle must be exactly `assets/main-Cc8uS51_.js`, 5,152,894 bytes,
+SHA-256 `bdeafe9e9eb83afe6dd58be7552e879494f13996ae5f2ea772df464040ca881e`.
+The `built` and `run` stages check that identity before browser launch. The existing
+loaded-response receipt must independently match it after the run. The bindings
+file contains four exact UTF-16 slices from that byte-matched bundle; its own
+SHA-256 and the text lengths/hashes are checked before installation. The browser
+compares complete `Function.prototype.toString` texts synchronously. It never
+rewrites the application bundle or any function body.
+
+| Bound function | Purpose |
+| --- | --- |
+| Native Three setter | Confirms the constructor-end renderer observation |
+| Original pacing setter | Confirms installation after the original browser-pacing wrapper |
+| Original game frame | Allows only its first, exact registration to be observed |
+| Three animation scheduler | Actual-function source contract for scheduling and exception behavior |
+
+The original759 ordering is renderer construction at main.ts319, synchronous
+pacing installation at329, `await createWorld` at331, and game registration at769.
+The existing Three constructor's devtools event identifies the actual `#game`
+renderer. One startup microtask runs after pacing installation and before game
+registration. There are no recurring microtasks or added animation callbacks.
+The sidecar admits only one existing WebGL2 context with the original native
+Apple ANGLE Metal renderer and `EXT_disjoint_timer_query_webgl2` support. An
+incompatible foreign devtools channel, wrong signature, duplicate renderer,
+changed registration or unsupported context is explicit incomplete evidence.
+
+Before becoming ready, setup reads
+`gl.getQuery(ext.TIME_ELAPSED_EXT, ext.QUERY_COUNTER_BITS_EXT)` exactly once and
+retains its result and type. The [WebGL2 extension specification](https://registry.khronos.org/webgl/extensions/EXT_disjoint_timer_query_webgl2/)
+defines this `GLint` query and the `0x8864` counter-bits token. The
+[underlying extension specification](https://registry.khronos.org/OpenGL/extensions/EXT/EXT_disjoint_timer_query.txt)
+allows zero counter bits, which carries no useful elapsed information and can
+produce only zero results; nonzero counters have a minimum of 30 bits. This
+observer accepts integers from 30 through 64, using 64 as a conservative limit
+consistent with the unsigned 64-bit result type. Zero, subminimum, malformed or
+larger widths reject coverage before game registration is wrapped. The independent
+sidecar validator requires the same one-read capability receipt. A valid zero
+**result** remains zero when a supported counter exists; a zero-width counter is
+unsupported. Finite raw results outside the reported width are retained as invalid.
+Counter overflow is undefined by the underlying API, so an in-range raw value
+alone cannot certify a useful interval. After a result becomes available, passive
+arithmetic compares its recorded CPU observation envelope,
+`availableAtMs - queryBeginAtMs`, with `(2 ** elapsedCounterBits) / 1e6` milliseconds.
+At or above that counter horizon, the row becomes `censored` with reason
+`counter-horizon-uncertain`, retaining its raw value, zero flag, source identity
+and clocks. Its slot can be reused without a wait; the row can never become valid.
+The independent validator requires every resolved row to be strictly below this
+horizon and checks each horizon-censored row against its retained envelope.
+Correct censorship preserves bookkeeping completeness while leaving the
+measured distribution incomplete. Delayed polling can cross this conservative
+envelope even when the actual GPU interval was short. The envelope is a CPU
+observation bound, not another GPU duration or an absolute clock mapping; it
+adds no GL call, task, wait, drain or change to the original callback.
+
+The outer setter forwards the original receiver, all arguments and return value.
+Its observed callback is strict even when serialized into a non-module init
+script. It calls the original callback exactly once with the same `this` and
+arguments, returns the same value or promise without awaiting it, and propagates
+the original exception even if observer cleanup also fails. The original pacing
+wrapper and scheduler still own eligibility, scheduling and rendering. No manual
+render profile or frame gate is enabled.
+
+### Query ownership, boundaries and missing observations
+
+Arming occurs in the existing initial observer evaluation. Query admission begins
+only on the first trusted W keydown. Each query brackets one synchronous delivered
+game callback. The recorded rAF timestamp is the original argument, unmodified;
+entry, query begin/end, callback exit and first availability-poll clocks are
+`performance.now` values on the same page, with its time origin retained. The
+original `renderer.info.render.frame` counter distinguishes callbacks that drew
+from callbacks that did not draw. These rows are not original eligible-frame
+records and do not redefine the original performance metrics.
+
+Only one elapsed query can be active, and at most 16 query objects are owned. At
+most 8,192 callback rows and 32 error messages of 256 characters are retained. A
+query is reused only after its own available result is read. Availability is
+checked only at entry to an existing delivered game callback; the result is read
+only after `QUERY_RESULT_AVAILABLE === true`. Pool exhaustion creates an explicit
+uncovered row while the original callback continues normally. The observer never
+waits for results, consumes `getError`, starts a frame, inserts a fence, flushes,
+reads pixels/buffers, changes settings or adds a draw.
+
+Before beginning and before ending, `CURRENT_QUERY` must establish ownership.
+Foreign queries are never ended or deleted. Disjoint conditions conservatively
+invalidate all queried rows in this window, retain any already-read raw values as
+invalid, and stop further admission. Context loss invalidates the context
+generation and abandons lost objects; restoration does not resume measurement
+or reuse stale handles. Zero values remain explicit raw zero/resolution-limited
+results, including no-render callbacks. They are not evidence of free GPU work.
+
+Trusted W keyup synchronously disables admission and censors every outstanding
+query without making any GL call in that input listener. No later availability
+can promote a censored row. The existing final page checkpoint performs bounded
+owned-object deletion and restores the two public renderer descriptors only if
+they are still owned. It removes only owned listeners/channel state. The callback
+wrapper already held by the original animation loop is retained as inert,
+transparent forwarding; it is not re-registered merely to remove instrumentation.
+Original disposal sees its original pacing methods before it runs. A later owner
+is never overwritten. Missing cleanup, page loss or uncertain ownership remains
+incomplete evidence.
+
+### Persistence and verdicts
+
+The existing checkpoint evaluation returns the original CPU observer snapshot
+unchanged and a separate timer snapshot. There is no per-frame Node traffic.
+Each timer sidecar has a unique exclusive filename, at most 8 MiB, with at most 8
+files. A write has the existing 4-second RPC bound and an abort signal owned by
+collector cleanup. A timed-out write may leave a partial file, but it cannot
+overwrite another checkpoint, obtain a successful receipt after rejection or
+promote a terminal verdict. Final bytes/hash and invocation identity are checked
+again by the runner. The old ten-second browser-close cleanup bound remains fixed.
+
+`gpuExecutionMeasured:false` continues to describe **trace evidence**. Separate
+`webglCommandSpans` fields describe this query observer. Both scopes retain
+`hardwareGpuBusyTimeAttributed:false`.
+
+- `evidenceComplete` requires verified source/registration, trusted W boundaries,
+  complete callback/ownership bookkeeping, bounded healthy persistence and clean
+  owned cleanup. Properly recorded censored or uncovered rows may still satisfy
+  bookkeeping completeness.
+- `distributionComplete` additionally requires every retained callback row to have
+  its own resolved, valid query. Pending/censored/uncovered/disjoint/unsupported
+  observations are never imputed or silently dropped. Normal keyup censorship can
+  therefore leave a complete evidence record with an incomplete distribution.
+- The old trace/CPU completeness gates remain required. The diagnostic also
+  requires the new timer evidence verdict. The original driver verdict remains
+  authoritative and a failed original run always stays failed.
+
+Elapsed-query intervals have no absolute GPU timestamp mapping. They do not
+measure the queue already ahead of the begin marker; intervals may include gaps
+in command submission and implementation scheduling. Availability latency also
+includes callback delivery and polling cadence. This observer cannot identify
+hardware GPU utilization, determine that a future stall has the same cause, or
+attribute a compositor handoff wait to WebGL work solely from a nearby interval.
+Its own CPU/query overhead is part of the instrumented run.
+
+### Source-only validation scope
+
+The focused suite executes the actual reflected setter/pacing/game/scheduler
+bodies inside a 100 ms-per-operation VM with controlled captured bindings. The
+real game body stops at an injected sentinel in its first guard before game work;
+no application graph or browser is loaded. Additional contracts exercise the
+actual installer and sidecar helpers using a bounded mock WebGL/DOM host, including
+query pressure, ownership loss, original exceptions, zero/disjoint results,
+context loss, keyup censorship, late installation and abortable persistence.
+These tests establish source/lifecycle behavior; they do not claim browser
+extension support, query coverage, native timing benefit or a passed workload.
+The first combined source suite's obsolete VM-dependency failure is retained
+alongside the subsequent corrected fixture validation in the freeze receipt.
