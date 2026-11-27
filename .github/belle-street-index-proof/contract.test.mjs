@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {deflateSync} from 'node:zlib';
 import {requireCandidate,validateReflection,normalizedDraw,expectedBinaryBytes,finalVerdict,requireFullFrame,decodePng,pixelDiff,sha256} from './validation.mjs';
-import {compareCandidateTrees} from './driver.mjs';
+import {compareCandidateTrees,closeOwnedResources} from './driver.mjs';
 
 const clone=x=>structuredClone(x),word=x=>Array.from(new Uint32Array(new Float64Array([x]).buffer));
 const program={id:1,linked:true,street:true,vertex:'#undef USE_BATCHING\nvoid main(){}',fragment:'void main(){}',attributes:[{index:0,name:'position',size:1,type:35665,location:0},{index:1,name:'normal',size:1,type:35665,location:1},{index:2,name:'gl_VertexID',size:1,type:5124,location:-1}]};program.vertexSha256=sha256(program.vertex);program.fragmentSha256=sha256(program.fragment);
@@ -31,3 +31,15 @@ function pngFixture(){const chunk=(type,data)=>{const b=Buffer.alloc(12+data.len
 test('Independent PNG decoding verifies row orientation and rejects corrupt retained bytes',()=>{const png=pngFixture(),d=decodePng(png,1,2);assert.equal(d.readPixelsSha256,sha256(Buffer.from([9,8,7,255,1,2,3,255])));const bad=Buffer.from(png);bad[bad.length-1]^=1;assert.throws(()=>decodePng(bad,1,2));assert.throws(()=>decodePng(png.subarray(0,-1),1,2));assert.throws(()=>decodePng(png,2,1));});
 test('One differing channel in one pixel never passes the zero-tolerance comparison',()=>assert.deepEqual(pixelDiff(Buffer.from([0,0,0,255,0,0,0,255]),Buffer.from([0,0,0,255,0,0,1,255])),{changedPixels:1,maxChannelDelta:1}));
 test('A self-consistent crop cannot replace a complete frozen-viewport frame',()=>{const r={kind:'pixels',format:'RGBA8-bottom-up',width:960,height:600,bytes:2304000,png:true};requireFullFrame(r,960,600);assert.throws(()=>requireFullFrame({...r,width:1,height:1,bytes:4},960,600));assert.throws(()=>requireFullFrame({...r,png:false},960,600));});
+test('A stalled write and rejected earlier close cannot suppress other owned close attempts',async()=>{
+ const attempts=[];let resolveWrite,aborted=false;const write=new Promise(yes=>{resolveWrite=yes;});
+ const result=await closeOwnedResources([
+  {name:'persistence',run:()=>{attempts.push('persistence');return write;}},
+  {name:'context',run:()=>{attempts.push('context');throw Error('context rejected');}},
+  {name:'browser',run:()=>{attempts.push('browser');return Promise.resolve();}},
+  {name:'server',run:()=>{attempts.push('server');return Promise.resolve();}},
+ ],20,()=>{aborted=true;});
+ assert.deepEqual(attempts,['persistence','context','browser','server']);assert.equal(result.complete,false);assert.equal(aborted,true);assert.deepEqual(result.operations.map(o=>o.status),['timed-out','rejected','fulfilled','fulfilled']);assert(result.errors.some(e=>e.includes('context rejected')));assert(result.errors.some(e=>e.includes('persistence')));
+ const retained=clone(result);resolveWrite();await Promise.resolve();await Promise.resolve();assert.deepEqual(result,retained,'Late write settlement changed the retained timeout');
+});
+test('Owned cleanup succeeds only when every independent operation settles successfully',async()=>{const result=await closeOwnedResources(['persistence','context','browser','server'].map(name=>({name,run:()=>Promise.resolve()})),100);assert.equal(result.complete,true);assert.deepEqual(result.errors,[]);assert(result.operations.every(o=>o.status==='fulfilled'));});

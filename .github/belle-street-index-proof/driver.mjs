@@ -21,6 +21,25 @@ const gitText=(dir,...args)=>git(dir,...args).toString('utf8').trim();
 const writeJson=(p,v)=>writeFile(p,JSON.stringify(v,null,2)+'\n');
 const tree=(repo,rev)=>new Map(git(repo,'ls-tree','-rz',rev).toString('utf8').split('\0').filter(Boolean).map(row=>{const match=/^(\d+) (\w+) ([a-f0-9]{40})\t(.+)$/.exec(row);assert(match,'Unexpected Git tree record');return[match[4],{mode:match[1],type:match[2],blob:match[3]}];}));
 const bounded=(promise,ms,label)=>{let timer;return Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error(label+' exceeded '+ms+' ms')),ms);})]).finally(()=>clearTimeout(timer));};
+export async function closeOwnedResources(operations,timeoutMs,abortWrites=()=>{}){
+ assert(Number.isFinite(timeoutMs)&&timeoutMs>0);assert.equal(new Set(operations.map(o=>o.name)).size,operations.length);
+ const began=performance.now(),deadline=began+timeoutMs,states=operations.map(o=>({name:o.name,status:'pending',startedMs:performance.now()-began}));
+ // Issue every owned close before awaiting any drain or other close result.
+ // A rejected context close and a stalled write cannot suppress later attempts.
+ const tasks=operations.map((operation,i)=>{
+  let promise;try{promise=operation.run();}catch(error){promise=Promise.reject(error);}
+  return Promise.resolve(promise).then(()=>{states[i].status=performance.now()<=deadline?'fulfilled':'late';states[i].settledMs=performance.now()-began;},error=>{states[i].status='rejected';states[i].settledMs=performance.now()-began;states[i].error=String(error);});
+ });
+ let timer;const settled=await Promise.race([Promise.all(tasks).then(()=>true),new Promise(yes=>{timer=setTimeout(()=>yes(false),Math.max(0,deadline-performance.now()));})]);clearTimeout(timer);
+ const expired=!settled||performance.now()>deadline,errors=[];
+ if(expired){try{abortWrites();}catch(error){errors.push('Persistence abort: '+String(error));}}
+ // Copy receipts. Pending promises may settle later, but cannot promote or
+ // alter the returned cleanup verdict or its already-retained timeout rows.
+ const receipts=states.map(state=>({...state,status:state.status==='pending'?'timed-out':state.status}));
+ for(const row of receipts)if(row.status!=='fulfilled')errors.push(row.name+': '+(row.error??row.status+' within the single '+timeoutMs+' ms cleanup budget'));
+ if(expired&&!errors.length)errors.push('Owned cleanup exceeded its single '+timeoutMs+' ms deadline');
+ return{complete:errors.length===0,errors,operations:receipts,budgetMs:timeoutMs,elapsedMs:performance.now()-began};
+}
 export function compareCandidateTrees(original,candidate,expected){
  const changes=[];for(const path of new Set([...original.keys(),...candidate.keys()])){const a=original.get(path),b=candidate.get(path);if(JSON.stringify(a)!==JSON.stringify(b))changes.push({path,a,b});}
  assert.deepEqual(changes.map(x=>x.path).sort(),expected.map(x=>x.path).sort(),'Candidate changes exceed the eight declared paths');
@@ -43,8 +62,8 @@ export async function main(options){
  const originalBytes=path=>{assert(path.startsWith(ROOT+'/')&&!path.split('/').includes('..')&&!path.includes('\\'),'Unsafe immutable path');let bytes=sourceCache.get(path);if(bytes)return bytes;const entry=originalTree.get(path);assert(entry?.type==='blob'&&['100644','100755'].includes(entry.mode),'Original regular blob missing '+path);bytes=git(original,'cat-file','blob',entry.blob);assert.equal(blobHash(bytes),entry.blob);sourceCache.set(path,bytes);return bytes;};
  let browser,context,server,closing=false,failureRevision=0,deadlineTimer;
  const fail=message=>{report.errors.push(String(message));failureRevision++;};
- const pendingPersistence=new Set(),receipts=new Map(),requested=new Set();
- const recordFile=async(name,bytes)=>{safeName(name);await writeFile(resolve(output,name),bytes,{flag:'wx'});return{name,bytes:bytes.length,sha256:sha256(bytes)};};
+ const pendingPersistence=new Set(),receipts=new Map(),requested=new Set(),evidenceAbort=new AbortController();
+ const recordFile=async(name,bytes)=>{safeName(name);await writeFile(resolve(output,name),bytes,{flag:'wx',signal:evidenceAbort.signal});return{name,bytes:bytes.length,sha256:sha256(bytes)};};
  const persist=async(name,payload)=>{
   assert(!closing,'Evidence arrived after finalization');safeName(name);assert(!receipts.has(name),'Duplicate immutable receipt '+name);receipts.set(name,null);assert(payload&&['json','binary','pixels'].includes(payload.kind));let receipt={name,kind:payload.kind,files:[]};
   if(payload.kind==='json'){const bytes=Buffer.from(JSON.stringify(payload.value,null,2)+'\n');assert(bytes.length<=64*1024*1024,'JSON receipt bound');receipt.files.push(await recordFile(name+'.json',bytes));receipt.value=payload.value;
@@ -54,7 +73,7 @@ export async function main(options){
    const expected=expectedBinaryBytes(payload);assert(expected>0&&expected<=64*1024*1024);assert.equal(payload.bytes,expected);assert.match(payload.sha256??'',/^[a-f0-9]{64}$/);assert(typeof payload.gzipBase64==='string'&&payload.gzipBase64.length<=96*1024*1024);const compressed=Buffer.from(payload.gzipBase64,'base64'),raw=gunzipSync(compressed,{maxOutputLength:expected});assert.equal(raw.length,expected);assert.equal(sha256(raw),payload.sha256);
    const {gzipBase64,png,...metadata}=payload;receipt={...receipt,...metadata};receipt.files.push(await recordFile(name+'.raw.gz',compressed));if(png){assert(payload.kind==='pixels'&&/^data:image\/png;base64,/.test(png));const pngBytes=Buffer.from(png.slice('data:image/png;base64,'.length),'base64');assert.equal(decodePng(pngBytes,payload.width,payload.height).readPixelsSha256,payload.sha256,'PNG/raw disagreement');receipt.files.push(await recordFile(name+'.png',pngBytes));receipt.png=true;}
   }
-  assert(!closing,'Late persistence may not become complete evidence');receipts.set(name,receipt);await writeFile(resolve(output,'evidence.ndjson'),JSON.stringify(receipt)+'\n',{flag:'a'});return{persisted:true,name};
+  assert(!closing,'Late persistence may not become complete evidence');receipts.set(name,receipt);await writeFile(resolve(output,'evidence.ndjson'),JSON.stringify(receipt)+'\n',{flag:'a',signal:evidenceAbort.signal});return{persisted:true,name};
  };
  const exposed=(name,payload)=>{const task=persist(name,payload);pendingPersistence.add(task);task.finally(()=>pendingPersistence.delete(task)).catch(()=>{});return task;};
  try{
@@ -136,7 +155,13 @@ export async function main(options){
  }catch(error){fail(error);}
  finally{
   clearTimeout(deadlineTimer);closing=true;
-  try{await bounded((async()=>{await Promise.allSettled([...pendingPersistence]);if(context)await context.close();if(browser)await browser.close();if(server)await new Promise((yes,no)=>server.close(e=>e?no(e):yes()));})(),plan.bounds.closeMs,'Owned proof cleanup');report.cleanup.complete=true;}catch(error){report.cleanup.errors.push(String(error));fail(error);}
+  report.cleanup=await closeOwnedResources([
+   {name:'persistence',run:async()=>{const results=await Promise.allSettled([...pendingPersistence]);const errors=results.filter(r=>r.status==='rejected').map(r=>String(r.reason));if(errors.length)throw Error(errors.join('\n'));}},
+   {name:'context',run:()=>context?.close()},
+   {name:'browser',run:()=>browser?.close()},
+   {name:'server',run:()=>server?new Promise((yes,no)=>server.close(e=>e?no(e):yes())):undefined},
+  ],plan.bounds.closeMs,()=>evidenceAbort.abort(Error('Owned proof cleanup deadline expired')));
+  for(const error of report.cleanup.errors)fail(error);
   report.finishedAt=new Date().toISOString();report.passed=!compileOnly&&finalVerdict(report);const finalRevision=failureRevision;await writeJson(resolve(output,'report.json'),report);
   if(failureRevision!==finalRevision||(!compileOnly&&report.passed&&!finalVerdict(report))){report.passed=false;await writeJson(resolve(output,'report.json'),report);}
   if(!compileOnly&&!report.passed)process.exitCode=1;if(compileOnly&&report.errors.length)process.exitCode=1;
