@@ -1,0 +1,121 @@
+name: Belle Isle isolated projection program proof
+
+on:
+  pull_request:
+    paths:
+      - '.github/belle-planar-program-proof/**'
+      - '.github/workflows/belle-planar-program-proof.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: belle-planar-program-proof-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  projection-proof:
+    if: github.run_attempt == 1
+    name: Source-bound projection proof (${{ matrix.backend }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            backend: swiftshader
+          - os: macos-15
+            backend: metal
+    env:
+      PLANAR_PROBE_SOURCE_SHA: 75906273c0cd414c0d004320fc6f654b4783e5b1
+      PLANAR_PROBE_BACKEND: ${{ matrix.backend }}
+      PLANAR_PROBE_RUNTIME_ROOT: ${{ github.workspace }}/original/lottominded-ultra.io/games/gothtechnology2
+      PLANAR_PROBE_PLAYWRIGHT: ${{ github.workspace }}/original/lottominded-ultra.io/games/gothtechnology2/node_modules/playwright
+      PLANAR_PROBE_GAME: ${{ github.workspace }}/original/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+      PLANAR_PROBE_OUTPUT: ${{ github.workspace }}/planar-program-output
+    steps:
+      - name: Check out isolated diagnostic code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: proof
+          fetch-depth: 2
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/belle-planar-program-proof/
+            /.github/workflows/belle-planar-program-proof.yml
+      - name: Check out immutable application source and authored images
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.PLANAR_PROBE_SOURCE_SHA }}
+          path: original
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/package.json
+            /lottominded-ultra.io/games/gothtechnology2/package-lock.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/realisticMaterials.ts
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/skins/
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Bind both complete Git trees and the three diagnostic files
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {readFile,mkdir,writeFile} from 'node:fs/promises';
+          import {execFileSync} from 'node:child_process';
+          import {resolve} from 'node:path';
+          import {cpus,totalmem,freemem,platform,arch} from 'node:os';
+          const root=process.env.GITHUB_WORKSPACE,proof=resolve(root,'proof'),original=resolve(root,'original');
+          const runAttempt=Number(process.env.GITHUB_RUN_ATTEMPT);assert.equal(runAttempt,1,'Only the original fixed attempt is accepted');
+          const manifest=JSON.parse(await readFile(resolve(proof,'.github/belle-planar-program-proof/source-manifest.json'),'utf8'));
+          const git=(dir,...args)=>execFileSync('git',['-C',dir,...args],{encoding:'utf8'}).trim();
+          assert.equal(git(original,'rev-parse','HEAD'),manifest.sourceSha);
+          assert.equal(git(original,'rev-parse','HEAD^{tree}'),manifest.sourceTree);
+          const parents=git(proof,'rev-list','--parents','-n','1','HEAD').split(' ');
+          assert.equal(parents.length,2,'Diagnostic must have exactly one parent');
+          assert.equal(parents[1],manifest.sourceSha,'Diagnostic must be a direct child of the pinned original');
+          const changed=git(proof,'diff','--name-only','--no-renames',manifest.sourceSha,'HEAD').split('\n').filter(Boolean).sort();
+          assert.deepEqual(changed,[...manifest.permittedProofFiles].sort(),'Application/release source changed in the diagnostic');
+          await mkdir(process.env.PLANAR_PROBE_OUTPUT,{recursive:true});
+          await writeFile(resolve(process.env.PLANAR_PROBE_OUTPUT,'provenance.json'),JSON.stringify({
+            originalSha:manifest.sourceSha,originalTree:manifest.sourceTree,proofHead:parents[0],proofTree:git(proof,'rev-parse','HEAD^{tree}'),changed,
+            backend:process.env.PLANAR_PROBE_BACKEND,runAttempt,host:{platform:platform(),arch:arch(),cpus:cpus().map(({model,speed})=>({model,speed})),totalmem:totalmem(),freemem:freemem()},
+            purpose:'Isolated declaration-only shader proof and microtiming only; no full-world, FPS, controls, or release acceptance',
+          },null,2)+'\n');
+          NODE
+      - name: Install the original locked Chrome test runtime
+        working-directory: original/lottominded-ultra.io/games/gothtechnology2
+        shell: bash
+        run: |
+          npm ci
+          npx playwright install --with-deps chrome
+      - name: Check probe syntax and immutable source bindings
+        shell: bash
+        run: |
+          node --check proof/.github/belle-planar-program-proof/probe.mjs
+          PLANAR_PROBE_SOURCE_ONLY=1 node proof/.github/belle-planar-program-proof/probe.mjs "$PLANAR_PROBE_GAME" "$PLANAR_PROBE_OUTPUT"
+      - name: Compare declaration-only programs and retain all bounded timings
+        timeout-minutes: 18
+        shell: bash
+        run: |
+          if [ "$PLANAR_PROBE_BACKEND" = swiftshader ]; then
+            xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" node proof/.github/belle-planar-program-proof/probe.mjs "$PLANAR_PROBE_GAME" "$PLANAR_PROBE_OUTPUT"
+          else
+            node proof/.github/belle-planar-program-proof/probe.mjs "$PLANAR_PROBE_GAME" "$PLANAR_PROBE_OUTPUT"
+          fi
+      - name: Preserve every raw comparison and failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-planar-program-proof-${{ matrix.backend }}-${{ github.event.pull_request.head.sha || github.sha }}
+          path: planar-program-output/
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14

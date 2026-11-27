@@ -1,0 +1,399 @@
+{
+  "sourceSha": "75906273c0cd414c0d004320fc6f654b4783e5b1",
+  "sourceTree": "9f0351be133dd370a676090d27559a0adaf00605",
+  "gamePath": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game",
+  "runtimePath": "lottominded-ultra.io/games/gothtechnology2",
+  "materialSource": {
+    "path": "src/belle/realisticMaterials.ts",
+    "sha256": "9e1ed79a2993c3336d33a2832e010303b61f12fc5d813d3b0619e8b06a2604f1",
+    "gitBlob": "27afa040de6e57073f3ffe396fb9bfb02e49b42d"
+  },
+  "assets": [
+    {
+      "name": "asphalt-detail.webp",
+      "bytes": 298930,
+      "sha256": "1f550de87b7cbcb8cafd9e3efbb8cde6fc15319b289ddc6153bae6d5578c4f66",
+      "gitBlob": "02b4d6751441e2a898ebf95686d5dd7d832b8dea"
+    },
+    {
+      "name": "bark-detail.webp",
+      "bytes": 312428,
+      "sha256": "df66465631c2cfc1d69fccb0dc478ca250829b491362a813fdf54019c55d5223",
+      "gitBlob": "4102b40c50f1b78095fc743f98f9c93f3da40982"
+    },
+    {
+      "name": "brick-detail.webp",
+      "bytes": 219512,
+      "sha256": "99b34781744f04ef4fdec5baf29bafd386ae2f2decf49ea6358ddf5d93576d90",
+      "gitBlob": "137f81ec6637a163ffa29fd38fe76ca0960ae8d1"
+    },
+    {
+      "name": "bronze-detail.webp",
+      "bytes": 243414,
+      "sha256": "1f6deea89be8a5bd787c3bdf04a945b57699712b9f8ad0c0dd97b88adfe826f7",
+      "gitBlob": "84489a1937bada1182bb9f4bea2b4e80c2b37f5b"
+    },
+    {
+      "name": "ceramic-detail.webp",
+      "bytes": 201592,
+      "sha256": "b3007145f2f5d42c8d8f3dac3dc344655ffb525946e852f4653bb23c91a862de",
+      "gitBlob": "7fe1a8f8ce2b5f416837ae6bb0dc667f37a88e73"
+    },
+    {
+      "name": "cloth-detail.webp",
+      "bytes": 307548,
+      "sha256": "c89db78278ef294eae1382bc5de4a1b59aa27048b61ba0eb43bc68b0749fbf05",
+      "gitBlob": "dd1e43335d1427f12dee482414aff2b581739166"
+    },
+    {
+      "name": "concrete-detail.webp",
+      "bytes": 254782,
+      "sha256": "3e097ac48c7e61466c1b6508990ae9cb4c5fd3af26b88a501f47cace402b6b8f",
+      "gitBlob": "b54c0476c87fc0ecbed379999ee9c29ac73fe57d"
+    },
+    {
+      "name": "copper-detail.webp",
+      "bytes": 256274,
+      "sha256": "79e17845254d19ea19da9d1b9b9a754ef30b6b5ef8f6d454d196e040bdf48837",
+      "gitBlob": "359afbd85dffc3c228e69e037ad872c2e65095ea"
+    },
+    {
+      "name": "cork-detail.webp",
+      "bytes": 301608,
+      "sha256": "8e440caa164ad37f60eade226dcfc8f9a6241df2126d029d0676aad13e832e8d",
+      "gitBlob": "825f6fb5ede4637476dd1e539ac05037bc57faa7"
+    },
+    {
+      "name": "feather-detail.webp",
+      "bytes": 245188,
+      "sha256": "da504184c0da85a3370428ffe0b7537f6f39569e15c7a8a3929789c69ff0cefc",
+      "gitBlob": "044421edc157bd5fcc0ccddebc2b3bd340221254"
+    },
+    {
+      "name": "fur-detail.webp",
+      "bytes": 313144,
+      "sha256": "57d6c9569eee3472a6273c99c1636cf477737eefbd27c13a6cdbc7c83c5f7efd",
+      "gitBlob": "525d983ff012cfab919ad7607e36b43cbe919417"
+    },
+    {
+      "name": "granite-detail.webp",
+      "bytes": 231068,
+      "sha256": "07c533cf4293ea7a5fe61a550498b1bb71145ccd519feb0e44edfd20125a1416",
+      "gitBlob": "5e91a7c2b4d3205a85a5b402bfd305602781d127"
+    },
+    {
+      "name": "graphite-detail.webp",
+      "bytes": 230610,
+      "sha256": "e148956fdbcd3eee923f1e79cb5ee265ad6cba1880109b24b02ca28991845227",
+      "gitBlob": "69f8a729ccfdf2a74fc831f0dc13f7417b28f494"
+    },
+    {
+      "name": "grass-detail.webp",
+      "bytes": 312280,
+      "sha256": "c17f136680b21e091bef70cce4549f0b1d0c009319df924ee0cc2082c2c4fd82",
+      "gitBlob": "005d48ee233d6f16833c8ee7186dddf7fdfa46ce"
+    },
+    {
+      "name": "gravel-detail.webp",
+      "bytes": 239538,
+      "sha256": "478b4ed6eafbf4a23af22c634d4c5e5117513b49ee024d60887278af762237b4",
+      "gitBlob": "6a5b7a178ff4697fc3645aa002ceb097e5ac598d"
+    },
+    {
+      "name": "leaf-detail.webp",
+      "bytes": 299190,
+      "sha256": "94ba8b43613ec5607e85d756c4018efc5da5dede92f01fb1e4042f6df32ceff3",
+      "gitBlob": "426ff75108521812187522610c1618bed3a6c554"
+    },
+    {
+      "name": "leather-detail.webp",
+      "bytes": 254400,
+      "sha256": "20a2279ccca30ecea96bafd975d8f4277bdfad6cbbfdc49f6824bf7dc85da31c",
+      "gitBlob": "1c018d9c11f9526ece07542668ae00ca79e66f5a"
+    },
+    {
+      "name": "limestone-detail.webp",
+      "bytes": 255448,
+      "sha256": "36939611b5bd7133e995000943e8052a075fe3724a3a744c9de520fdebd9a55a",
+      "gitBlob": "04990d486c1ac5cc4169881b6e60c358839a49e7"
+    },
+    {
+      "name": "marble-detail.webp",
+      "bytes": 213538,
+      "sha256": "bc4e1b44a47d2bf015a137cb0080c6b4ec5f761ba842d8b1691975551a1915de",
+      "gitBlob": "f8b12bc9e4ebd780071495b53cb39587f917f791"
+    },
+    {
+      "name": "metal-detail.webp",
+      "bytes": 209384,
+      "sha256": "f2a10a13998faef414f028d3c8c90897c2de52dab5034c11351d82a1ca424f63",
+      "gitBlob": "b0c0811342ceeab911526529169ebb71345c76ba"
+    },
+    {
+      "name": "paint-detail.webp",
+      "bytes": 199178,
+      "sha256": "3665a017e7707ffe15591a146ef6a9a539ed62b1c1fa5c6aa1519de77df1f30a",
+      "gitBlob": "4c25e401f56073387898036b69422378fcd762a0"
+    },
+    {
+      "name": "roof-detail.webp",
+      "bytes": 217088,
+      "sha256": "4f3922ffbb848e2f260d6c65396890013d8f66d2c2fa5be23715b76dd0ea90ef",
+      "gitBlob": "6484496f4987689ad25b2115d2d103e591215b22"
+    },
+    {
+      "name": "rope-detail.webp",
+      "bytes": 233118,
+      "sha256": "ade1a0b46d0aa8eb4fd38dd1f94257ea827fa217ce2defd706730cf2f6e6f48a",
+      "gitBlob": "3d727b426f2884ed8298e2716e010a626c1739d4"
+    },
+    {
+      "name": "rubber-detail.webp",
+      "bytes": 311722,
+      "sha256": "935d464afd1ff54f79106cade3090b2fdc5abd91d93aaffbcb5c204f5f223171",
+      "gitBlob": "40347bd25e9f5ed4bf7d1f8746a5245bf8bdc035"
+    },
+    {
+      "name": "sand-detail.webp",
+      "bytes": 259400,
+      "sha256": "f3a41966a9eb65e313becb08f661aa37360a1db2f59d15ffb611cb8aad23bee2",
+      "gitBlob": "c0aa9ed9f9e5a25d595b9a03c424b76207e052b0"
+    },
+    {
+      "name": "scales-detail.webp",
+      "bytes": 224090,
+      "sha256": "d754fe91dae75474a9b390ac5a0475bd4dfd12643f5f93e31428a0b68f0bb1f1",
+      "gitBlob": "d0b9e3b7b9cbd36cbbc8474e2a58b2715821861f"
+    },
+    {
+      "name": "skin-detail.webp",
+      "bytes": 213784,
+      "sha256": "d9880e2f3a5bdb053ce17d0ada402fd53348b87dcd48bf42141769c1e97aea54",
+      "gitBlob": "2c8a14c9669dc7da2dcd024e49d707893de0efd5"
+    },
+    {
+      "name": "wood-detail.webp",
+      "bytes": 312538,
+      "sha256": "ffd9c4d599bece04fbbb6598409778dae105d415c7cfec874d44c365a9c19d33",
+      "gitBlob": "e2e72114c19ecaec9377ac23270a8fcd5fc789e3"
+    },
+    {
+      "name": "grass-color.webp",
+      "bytes": 459994,
+      "sha256": "95d1a99861eea7e55f60df8f7c59a09b3eac10df890ce1759b4f02fdd8389e7b",
+      "gitBlob": "6c26039e1183191953425fed67edf007402901c1"
+    },
+    {
+      "name": "asphalt-color.webp",
+      "bytes": 334260,
+      "sha256": "dd455673f52a123c881a553182c241e46c8586ff5d104391d7711ab483b3c171",
+      "gitBlob": "c6912e1541c394756ec81ab7763cc2aa07c6fdcf"
+    },
+    {
+      "name": "limestone-color.webp",
+      "bytes": 222314,
+      "sha256": "15069b349f557ab7c9f7cb40d8e44bc10391f847f8ce1a36e479ab7cdd020043",
+      "gitBlob": "24e1485029071e11d1e11be7928b39b4d7eb0623"
+    }
+  ],
+  "sourceBlocks": {
+    "sampling": "b22783ad22d79f98e1d5d17c7098d807d552ef0367585d1f7b0b9c08260ddb41",
+    "map": "13cee6f92689cf41a3b342202791bb628e0044da6b1c1a7eb3c3b834c7f19b97",
+    "roughness": "fc27264046c8ac31c287493dbbca6b7a5bba2b28246e5e895c1561c8edf5ac24",
+    "normal": "3c6484aad477f499b529eebbbcc20332f4f99d9ba7d606b1cab9a1ccd3e2627d"
+  },
+  "profiles": {
+    "grass": [
+      0.55,
+      0.78,
+      0.025,
+      0.94
+    ],
+    "asphalt": [
+      0.65,
+      0.7,
+      0.018,
+      0.94
+    ],
+    "limestone": [
+      0.7,
+      0.35,
+      0.012,
+      0.83
+    ]
+  },
+  "threeVersion": "0.185.1",
+  "threeFiles": [
+    {
+      "path": "src/textures/Texture.js",
+      "sha256": "ab2b297f91c58c69a95849ef8d1d3a9b7c0e7d2c3a574964b0ffd90b107452c6"
+    },
+    {
+      "path": "src/loaders/TextureLoader.js",
+      "sha256": "e774b09c9bb463e3eac3b35b69d26c733205a27372e2549a604494fec4b9075f"
+    },
+    {
+      "path": "src/loaders/ImageLoader.js",
+      "sha256": "0507db81b6214afd32f4c781e08acd88005ab4988f93de583f34ded571f1fbcc"
+    },
+    {
+      "path": "src/renderers/webgl/WebGLTextures.js",
+      "sha256": "241557c9b4a4cbbc76f4328329f6a26db2f27162e327ac2bb9eb4f851744184a"
+    },
+    {
+      "path": "src/renderers/webgl/WebGLUtils.js",
+      "sha256": "63b51eb813151817e52d9b2fcb9f91fee3f111f3924af71ec8337caf367ed740"
+    },
+    {
+      "path": "src/renderers/webgl/WebGLState.js",
+      "sha256": "fd6adb6c01d75a148ef6ebc8ea948a38acc1a48d3cfdbbb1d12dbde668092431"
+    }
+  ],
+  "permittedProofFiles": [
+    ".github/belle-planar-program-proof/probe.mjs",
+    ".github/belle-planar-program-proof/source-manifest.json",
+    ".github/workflows/belle-planar-program-proof.yml"
+  ],
+  "lockedRuntime": [
+    {
+      "path": "package.json",
+      "sha256": "b7849345af649ba60ce5c8c1c95203c5e8eb3f2fe2a31ae29d63ab665df3b2f7",
+      "gitBlob": "dacb04e89117b51135c164f6079c09d44caee7fa"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "a54bba2d2b6226f3b8562c4b52f4be468af15d85ff8c0d992351bf9a3c5f8d32",
+      "gitBlob": "ec14f2b0c173dc030eda273c4e206b2649712552"
+    }
+  ],
+  "schema": "belle-planar-program-source-v1",
+  "declarations": {
+    "uniform": "uniform bool skinPlanar;",
+    "planar": "const bool skinPlanar=true;",
+    "triplanar": "const bool skinPlanar=false;"
+  },
+  "plan": {
+    "version": 1,
+    "surfaces": [
+      "grass",
+      "asphalt",
+      "limestone"
+    ],
+    "projections": [
+      true,
+      false
+    ],
+    "extents": [
+      [
+        0.5,
+        0.3
+      ],
+      [
+        2,
+        1.5
+      ],
+      [
+        16,
+        12
+      ],
+      [
+        128,
+        1
+      ]
+    ],
+    "anisotropy": "one and original min(8, hardware maximum); both must be distinct",
+    "sampleSize": [
+      384,
+      256
+    ],
+    "timingSize": [
+      1280,
+      800
+    ],
+    "mipCaptures": 280,
+    "rgba8Pairs": 48,
+    "float32Pairs": 96,
+    "controlCases": 3,
+    "controlCapturesPerCase": 3,
+    "totalRawCaptures": 577,
+    "linkedPrograms": 7,
+    "warmupSequence": [
+      "a",
+      "b",
+      "b",
+      "a"
+    ],
+    "measurementSequence": [
+      "a",
+      "b",
+      "b",
+      "a",
+      "b",
+      "a",
+      "a",
+      "b",
+      "a",
+      "b",
+      "b",
+      "a",
+      "b",
+      "a",
+      "a",
+      "b"
+    ],
+    "rawQueries": 120,
+    "warmQueries": 24,
+    "measuredQueries": 96,
+    "rgbaTolerance": 0,
+    "floatBitTolerance": 0,
+    "minimumControlPixels": 16,
+    "deadlineMinutes": 15,
+    "jobDeadlineMinutes": 25,
+    "releaseAcceptance": false
+  },
+  "scope": "Isolated declaration-only shader specialization using the original RGBA8 detail and sRGB color objects. No runtime changes, full-world, FPS, ride, input deadline, or release acceptance. Additional programs may increase compilation cost.",
+  "programHashes": {
+    "mip": {
+      "vertexSha256": "9e10dc8500dcad421ff42d4deb9045354504bb79ef435d8cb2cab51a78ddbe62",
+      "fragmentSha256": "b9a169f5d1b055c132363b797b59daca034f00dc40aa71459f916c7fb5ad9974",
+      "projection": null,
+      "output": "mip"
+    },
+    "rgba8-uniform": {
+      "vertexSha256": "9e10dc8500dcad421ff42d4deb9045354504bb79ef435d8cb2cab51a78ddbe62",
+      "fragmentSha256": "675d16e57457445198f36495e07161d41d342dd01f007c548b266da38c7967b0",
+      "projection": null,
+      "output": "rgba8"
+    },
+    "rgba8-const-planar": {
+      "vertexSha256": "9e10dc8500dcad421ff42d4deb9045354504bb79ef435d8cb2cab51a78ddbe62",
+      "fragmentSha256": "fa96c5aaf44d3fc1cefbc02fdff1c2c85fb789296e474e37cc698074aa30cedb",
+      "projection": true,
+      "output": "rgba8"
+    },
+    "rgba8-const-triplanar": {
+      "vertexSha256": "9e10dc8500dcad421ff42d4deb9045354504bb79ef435d8cb2cab51a78ddbe62",
+      "fragmentSha256": "690729b0dfc0bb9571c2b3ab48fae7a6fb7d89f413feb33c355e07fa741a36ac",
+      "projection": false,
+      "output": "rgba8"
+    },
+    "float32-uniform": {
+      "vertexSha256": "9e10dc8500dcad421ff42d4deb9045354504bb79ef435d8cb2cab51a78ddbe62",
+      "fragmentSha256": "795d56114bfff10b4a9adfa929d282698aacc84dcda1c6fadd80f94cbb5ed5ce",
+      "projection": null,
+      "output": "float32"
+    },
+    "float32-const-planar": {
+      "vertexSha256": "9e10dc8500dcad421ff42d4deb9045354504bb79ef435d8cb2cab51a78ddbe62",
+      "fragmentSha256": "33297052bbc7494803a9f73dc984b9f8ad2da67d92781cb167a85de8e58b70d5",
+      "projection": true,
+      "output": "float32"
+    },
+    "float32-const-triplanar": {
+      "vertexSha256": "9e10dc8500dcad421ff42d4deb9045354504bb79ef435d8cb2cab51a78ddbe62",
+      "fragmentSha256": "f69d6e88e00303c45894f309b6cafd61a5b08cdcfaa82ff7cc6c296cc494fc59",
+      "projection": false,
+      "output": "float32"
+    }
+  }
+}
