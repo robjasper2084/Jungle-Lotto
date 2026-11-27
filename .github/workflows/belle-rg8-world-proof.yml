@@ -84,7 +84,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           path: proof
-          fetch-depth: 2
+          fetch-depth: 3
           persist-credentials: false
           sparse-checkout-cone-mode: false
           sparse-checkout: |

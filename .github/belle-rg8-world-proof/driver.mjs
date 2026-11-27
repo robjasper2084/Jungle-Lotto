@@ -15,8 +15,10 @@ const BASELINE='75906273c0cd414c0d004320fc6f654b4783e5b1';
 const BASELINE_TREE='9f0351be133dd370a676090d27559a0adaf00605';
 const CANDIDATE='ef341f2f91a43aec26261f2778404ca7346de9a9';
 const CANDIDATE_TREE='24188d608d8f54cf6aafd9d669e6a529252cbdc8';
-const PROOF_PARENT='893f769838166e6e35624b7b979ed5cbb8414507';
-const PROOF_PARENT_TREE='769016dac2343cfa3a143a5e5f7cda471fae3e07';
+const PROOF_PARENT='3b8839f005818bf5f146bb1118a0732d7c1f7e54';
+const PROOF_PARENT_TREE='5d5e50fa5df3fc69f4a311b7b101d0bc08971e1c';
+const PROOF_BASE='893f769838166e6e35624b7b979ed5cbb8414507';
+const PROOF_BASE_TREE='769016dac2343cfa3a143a5e5f7cda471fae3e07';
 const SOURCE_ROOT='lottominded-ultra.io/games/gothtechnology2/';
 const GAME_PATH=SOURCE_ROOT+'belle-isle-source/game';
 const PROOF_PATH='.github/belle-rg8-world-proof';
@@ -335,9 +337,15 @@ async function main(){
     assert.deepEqual(gitText(candidate,'diff','--name-only','--no-renames',BASELINE,CANDIDATE).split('\n').sort(),[materialPath,testPath].sort());
     const proofParents=gitText(proof,'rev-list','--parents','-n','1','HEAD').split(' ');
     report.proofHead=proofParents[0];report.proofTree=gitText(proof,'rev-parse','HEAD^{tree}');
-    report.proofParents=proofParents.slice(1);report.requiredProofParent=PROOF_PARENT;report.requiredProofParentTree=PROOF_PARENT_TREE;
+    report.proofParents=proofParents.slice(1);report.requiredProofParent=PROOF_PARENT;report.requiredProofParentTree=PROOF_PARENT_TREE;report.requiredProofBase=PROOF_BASE;report.requiredProofBaseTree=PROOF_BASE_TREE;
     const proofFiles=[PROOF_PATH+'/browser.ts',PROOF_PATH+'/driver.mjs',PROOF_PATH+'/artifact-audit.mjs',PROOF_PATH+'/source-manifest.json','.github/workflows/belle-rg8-world-proof.yml'].sort();
-    if(!compileOnly){assert.deepEqual(proofParents.slice(1),[PROOF_PARENT]);assert.equal(gitText(proof,'rev-parse',PROOF_PARENT+'^{tree}'),PROOF_PARENT_TREE);assert.deepEqual(gitText(proof,'diff','--name-only','--no-renames',PROOF_PARENT,'HEAD').split('\n').sort(),proofFiles);}
+    if(!compileOnly){
+      assert.deepEqual(proofParents.slice(1),[PROOF_PARENT]);assert.equal(gitText(proof,'rev-parse',PROOF_PARENT+'^{tree}'),PROOF_PARENT_TREE);
+      assert.equal(gitText(proof,'rev-parse',PROOF_BASE+'^{tree}'),PROOF_BASE_TREE);
+      const revisionFiles=[PROOF_PATH+'/browser.ts',PROOF_PATH+'/driver.mjs','.github/workflows/belle-rg8-world-proof.yml'].sort();
+      assert.deepEqual(gitText(proof,'diff','--name-only','--no-renames',PROOF_PARENT,'HEAD').split('\n').sort(),revisionFiles);
+      assert.deepEqual(gitText(proof,'diff','--name-only','--no-renames',PROOF_BASE,'HEAD').split('\n').sort(),proofFiles);
+    }
     const tree=git(original,'ls-tree','-rz',BASELINE,'--',SOURCE_ROOT).toString('utf8');
     for(const line of tree.split('\0').filter(Boolean)){const match=line.match(/^(\d+) (\w+) ([a-f0-9]{40})\t([\s\S]+)$/);assert(match);sourceFiles.set(match[4],{mode:match[1],type:match[2],blob:match[3]});}
     assert(sourceFiles.size>100,'Pinned tree missing');
