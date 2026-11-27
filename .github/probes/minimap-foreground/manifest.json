@@ -1,0 +1,328 @@
+{
+  "schema": "minimap-foreground-proof-v1",
+  "executionBound": true,
+  "source": {
+    "originalCommit": "75906273c0cd414c0d004320fc6f654b4783e5b1",
+    "originalTree": "9f0351be133dd370a676090d27559a0adaf00605",
+    "originalFiles": [
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/main.ts",
+        "bytes": 106676,
+        "sha256": "8ec347111a3de37cd5140e1014f5c07869398f7d8491e558ad862a9c41ddb985",
+        "gitBlob": "19b73a232124acb33bbc0152c2d83ab36d5d4e9a"
+      },
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/raceMap.ts",
+        "bytes": 2624,
+        "sha256": "49ada0f554101de036068a8ffa78340fdf9162dd9692fc3f2e126a8bab3c455c",
+        "gitBlob": "0f0fe310d577b591966016eb4409a0f20c7de799"
+      },
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/racing.ts",
+        "bytes": 26410,
+        "sha256": "73dacc822fb33f82f33e01a1e2763977752810b9fbb24cc586c2f1b3d7ad9936",
+        "gitBlob": "9e059f0defd62cebafd25a46ad5ab824c8787d3e"
+      },
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/raceCourses.ts",
+        "bytes": 1663,
+        "sha256": "e7b64f60b41ed5ff898c65144720b4e0374e1e15d82e3554a51bdad8cfb4d9c2",
+        "gitBlob": "117a512282f7a18f0327b908c5382a6601337ffe"
+      },
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/onlineProtocol.ts",
+        "bytes": 5232,
+        "sha256": "c9a26ebb0a98a786c3abfbff1e8a5bb6fa4a9997743edfe14c7ca2c829a67289",
+        "gitBlob": "b311d868064beca6c5f834d99d6565c32c5d9eb4"
+      },
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/islandActivities.ts",
+        "bytes": 31856,
+        "sha256": "ca97c8fa2d8043bc5a8ea519c0e0fc0cc31b9ee3e93ea0ee71694604437edaba",
+        "gitBlob": "9297056e4a42d8e31f9e1b2f9b7242f7860996ae"
+      },
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/dispatchRules.ts",
+        "bytes": 12856,
+        "sha256": "c75e50c19e6dba09ab361af065a86ff8414c886b1b7bfe4808a6f02b26b8d497",
+        "gitBlob": "3f14ebe7fd2a26cf47b0424564977d9ff4ac0486"
+      },
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/realLocationPanel.ts",
+        "bytes": 15667,
+        "sha256": "ca5b25a77591864378595d7a62d2240dd0b2b7eea32d6fd57c2eae7ebd4f93cc",
+        "gitBlob": "24c00aeb3755fa1f419ee4a4f735ce5620f849bd"
+      },
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/cinematicPresentation.ts",
+        "bytes": 5351,
+        "sha256": "823fc5e3842212edcd6ca0d4e0772ffc151f45bc7e954700bee4cc74798c0b3c",
+        "gitBlob": "15c8f51a1e060544857faa5d581876a3d9fc6e52"
+      },
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/cinematicPolicy.ts",
+        "bytes": 1328,
+        "sha256": "fca2a341cf55b8c9c0eb53eef4b369c94fd6b6f5b9d1ea69b02ff7392a79b785",
+        "gitBlob": "8353faa727b8c5c39f4908c50fd03c56a499c1e5"
+      },
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/skySettings.ts",
+        "bytes": 2314,
+        "sha256": "30cc9d07b031872548063f9b08b0e59a9254914c6208271082fa583724111291",
+        "gitBlob": "be790e0b2e4998bb3509710fc2ad2c5fcbc11305"
+      },
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/visualPolish.css",
+        "bytes": 17113,
+        "sha256": "b007de18b0fa823683c299630ba4aceaf91825d71ec1c3422243ae860e926b52",
+        "gitBlob": "50d7cf3239d28f26368cd87fa0527c57e17a8986"
+      },
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/hudFocus.css",
+        "bytes": 1226,
+        "sha256": "e2d4aa243084342145569d564acf8e7552033cc4e746fcc25ba27139595cd40e",
+        "gitBlob": "787fc16085f9f8f11ffdb3f55693c3456201a8c4"
+      },
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/islandTrials.css",
+        "bytes": 21943,
+        "sha256": "4c1e6d23fa45f907922832471126bcc8788bf47c04b070c69dbefeb3edc9bd3b",
+        "gitBlob": "15521bcb141e0b78907c1c08a9bca31e7e39f4eb"
+      },
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/index.html",
+        "bytes": 22567,
+        "sha256": "a0ebd460f7cad9744fc70675b121d5cee26a3f949c9304500b8e7b1eb1265baf",
+        "gitBlob": "666a7c2ba13f4011969fc7b753643710e8329fec"
+      },
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/package.json",
+        "bytes": 1294,
+        "sha256": "7b2c4da476587cab12a33c31f43a596c526f53775647b88e586b46dd2bb9c246",
+        "gitBlob": "b29f57eaabd6aa44f3fe9d5314fe1286758e9490"
+      },
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/package-lock.json",
+        "bytes": 42217,
+        "sha256": "105e85e781044feb8f590a3ea1e5bd0e98bb20f5512dcb1aedab30a7af0686f2",
+        "gitBlob": "5ef4effc86aaa257620ab2c8d60d47b6c85965e4"
+      },
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/package.json",
+        "bytes": 1858,
+        "sha256": "b7849345af649ba60ce5c8c1c95203c5e8eb3f2fe2a31ae29d63ab665df3b2f7",
+        "gitBlob": "dacb04e89117b51135c164f6079c09d44caee7fa"
+      },
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/package-lock.json",
+        "bytes": 161941,
+        "sha256": "a54bba2d2b6226f3b8562c4b52f4be468af15d85ff8c0d992351bf9a3c5f8d32",
+        "gitBlob": "ec14f2b0c173dc030eda273c4e206b2649712552"
+      }
+    ],
+    "candidateCommit": "d02c2e7346d08914ba3c6cc0d5611c5b17ababc6",
+    "candidateTree": "838ba0b1238fd63211d0d1dada94b714f8274aff",
+    "candidateParent": "75906273c0cd414c0d004320fc6f654b4783e5b1",
+    "candidateFiles": [
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/main.ts",
+        "kind": "modified",
+        "bytes": 107175,
+        "sha256": "ee11c8e89605168da525ac4a050bd71ed430ec46a4d97659098b2d3a0951364d",
+        "gitBlob": "b1a22230464f58a1bfb2b4f45031ec654a96275f",
+        "mode": "100644",
+        "baseBlob": "19b73a232124acb33bbc0152c2d83ab36d5d4e9a"
+      },
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/cinematicPresentation.ts",
+        "kind": "modified",
+        "bytes": 5514,
+        "sha256": "0112f5ed392e1f85b204bee8a6ec3b996150a05b94b0b8825ca9c955e0e26f9a",
+        "gitBlob": "15a6900de6d2b70fafd668e17b91b0ebef5c221e",
+        "mode": "100644",
+        "baseBlob": "15c8f51a1e060544857faa5d581876a3d9fc6e52"
+      },
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/skySettings.ts",
+        "kind": "modified",
+        "bytes": 2362,
+        "sha256": "97367bf457f75340d195e2850b9d90bb394defc26eea05dd7f003e23efe591ad",
+        "gitBlob": "b3373fbb39d2319e1a2bd1df26c8eb27c0d4b34b",
+        "mode": "100644",
+        "baseBlob": "be790e0b2e4998bb3509710fc2ad2c5fcbc11305"
+      },
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/run-tests.mjs",
+        "kind": "modified",
+        "bytes": 9945,
+        "sha256": "25d68cf91435507b707151390c6bd28b85e062646b5ca0b1aca74a9b46f4c070",
+        "gitBlob": "86c70aa66fe40bba4fbd322dfb2347b8eb032877",
+        "mode": "100644",
+        "baseBlob": "3999a22bbd27fb72973357db7be0535f6c31baf5"
+      },
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/legacyMinimapForeground.ts",
+        "kind": "added",
+        "bytes": 11098,
+        "sha256": "96aefa067a44a8dd56f606c23d9de9809c8a7e49e8288c209d8797cdce94b37c",
+        "gitBlob": "0165fad6405045ad9034b100343cdc1041825750",
+        "mode": "100644",
+        "baseBlob": null
+      },
+      {
+        "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/legacyMinimapForeground.test.ts",
+        "kind": "added",
+        "bytes": 17002,
+        "sha256": "7da9e74f562d6d9f750a22c743ff306897702028dbb6c8c4077e06fbd988205a",
+        "gitBlob": "340b85c37fbd8fdcb12089dc360e07f106128505",
+        "mode": "100644",
+        "baseBlob": null
+      }
+    ],
+    "candidateFreezeSha256": "9f4aabdad3e20298260f04ed2d5952a7845d4490357867587a93d75adf9a1694",
+    "sourcePublicationReceiptSha256": "4218451ac780f6ccc2801f0c3fad08fb9ca912d728f5148bab83f47915412028"
+  },
+  "publication": {
+    "mode": "verified-github-context",
+    "base": "893f769838166e6e35624b7b979ed5cbb8414507",
+    "baseTree": "769016dac2343cfa3a143a5e5f7cda471fae3e07",
+    "runBinding": "First attempt only: proofHead=MINIMAP_PROOF_HEAD from the explicit PR head or github.sha checkout; runId=GITHUB_RUN_ID; attempt=1=GITHUB_RUN_ATTEMPT; repository=GITHUB_REPOSITORY; manifestSha256=SHA256 of the exact checked-out manifest bytes. The workflow writes the separate runtime binding; the driver verifies checkout head, sole production parent, exact proof delta and all source pins. The artifact audit compares the independently supplied binding.",
+    "attempt": 1
+  },
+  "runtime": {
+    "nodeMajor": 24,
+    "playwright": "1.61.1",
+    "typescript": "5.9.3",
+    "esbuild": "0.28.2",
+    "dpr": 1,
+    "viewport": {
+      "width": 1340,
+      "height": 650
+    },
+    "matte": "rgb(40, 57, 65)",
+    "lanes": [
+      "metal",
+      "swiftshader"
+    ],
+    "browserLanes": {
+      "metal": {
+        "product": "Chrome/158.0.8127.89",
+        "revision": "1de57fa19722fa6d6841d4f596c394d015580656",
+        "revisionPolicy": "exact-retained",
+        "productEvidence": {
+          "artifactId": 15205299201,
+          "reportSha256": "c01ccebf5ed76901ede69e669a3c37a68ebf0dc516689a1d8ab526294768f342"
+        },
+        "revisionEvidence": {
+          "runId": 46011706257,
+          "artifactId": 15204576113,
+          "auditSha256": "56b409a319d048a9541eb1e9d4023a348f3b1d5908355d95737a73694563962c"
+        }
+      },
+      "swiftshader": {
+        "product": "Chrome/158.0.8127.88",
+        "revision": null,
+        "revisionPolicy": "observe-first-capture",
+        "productEvidence": {
+          "artifactId": 15204829886,
+          "reportSha256": "874bdea851ba3b659436b060c83d2607ea30c8cd905cca7fce14088028c4c2c6"
+        },
+        "limitation": "No retained Linux CDP revision was available. Require and retain the actual first-capture 40-hex revision; do not assert it equals the independently pinned Metal revision. Both source lanes share the same browser instance."
+      }
+    }
+  },
+  "bounds": {
+    "absoluteMs": 180000,
+    "workMs": 170000,
+    "caseMs": 20000,
+    "launchMs": 30000,
+    "cleanupMs": 10000,
+    "jobMinutes": 10,
+    "maxPairedRawCheckpoints": 32,
+    "actualPairedRawCheckpoints": 26,
+    "compositionCheckpoints": 4,
+    "outputBytes": 41943040,
+    "ancillaryBytes": 8388608,
+    "pngBytes": 4194304,
+    "width": 420,
+    "height": 290,
+    "rawBytesPerCanvas": 487200,
+    "reservedStatusBytes": 1048576,
+    "reservedFailureBytes": 65536,
+    "reservedAuditBytes": 1048576
+  },
+  "claims": {
+    "gameStarted": false,
+    "performanceMeasured": false,
+    "realContextLossProven": false,
+    "canvasStorageBackendAttested": false
+  },
+  "build": {
+    "bundleSha256": "72887a36590a1cf1fbb8f6408df7bf0fafb6b1a975544111c64dd17e1bc307ea",
+    "sourceReceiptSha256": "97a3aae1a46ae4024f4d6bc14dfc302092e75bce56278a816accd3865ba27074",
+    "preparationOnly": false,
+    "note": "Reviewed source d02c2e7346d08914ba3c6cc0d5611c5b17ababc6 is published holding-only with sole original759 parent. This separate proof copy binds that exact source and the verified GitHub workflow context; first browser execution of this changed candidate is pending. The necessary binding-only source compile passed and preserved bundle72887a36590a1cf1fbb8f6408df7bf0fafb6b1a975544111c64dd17e1bc307ea and all source inputs/spans. Only executionBound and candidateCommit changed in its extraction receipt."
+  },
+  "proofFiles": [
+    {
+      "path": ".github/probes/minimap-foreground/README.md",
+      "bytes": 11993,
+      "sha256": "72b344de9fadf54a089a8ca7f1f906a1f583e9ce48ba8e9c3a9b1c948a6ab8ae",
+      "gitBlob": "0112dca6be357fd8deb07dcff2565bb759731908"
+    },
+    {
+      "path": ".github/probes/minimap-foreground/audit.py",
+      "bytes": 21101,
+      "sha256": "91181a0069a8ee0c4e7b2b9c61c860382daf5b86fbb8e15e3951444caab176eb",
+      "gitBlob": "45ebdc6b3429cbd1169e04378f5cda485d2dc6eb"
+    },
+    {
+      "path": ".github/probes/minimap-foreground/build.mjs",
+      "bytes": 9299,
+      "sha256": "9fff5b8b9dea194c96d4574ae715ad39ff28463fede4bf55451808c5a9ef54be",
+      "gitBlob": "6fab8899baba8e6d9e7cf4e412b6b8efae655d5b"
+    },
+    {
+      "path": ".github/probes/minimap-foreground/driver.mjs",
+      "bytes": 25895,
+      "sha256": "06ffe609401d69a099c416bb90264c345282142b79aac7d21783818f481a9aac",
+      "gitBlob": "9cbe63cbb797ee7c894aec875c3f6ecb939b23a5"
+    },
+    {
+      "path": ".github/probes/minimap-foreground/fixture.ts",
+      "bytes": 22898,
+      "sha256": "10a58eae05fe7131a4498829d3f45f333bbf759e9286d03a7a2d71b904b53891",
+      "gitBlob": "1e97d3e5cb8fa8e80eb73b654f5433635e65d95f"
+    },
+    {
+      "path": ".github/probes/minimap-foreground/offline.test.mjs",
+      "bytes": 6460,
+      "sha256": "f06792dc77c03e26ff5940930bc1ea73e5227818d1b66f3bf8f4e516e8b27ee5",
+      "gitBlob": "dd34eeb338732d34faeeeac84dc6b43a3fda0c48"
+    },
+    {
+      "path": ".github/probes/minimap-foreground/offline_test.py",
+      "bytes": 5071,
+      "sha256": "55f997e18f9ae03e4be9afbb8143e320423ee37f1550c835bc31d4a070c0db9f",
+      "gitBlob": "b0923f4e203b977220388587417b11147a3f63d8"
+    },
+    {
+      "path": ".github/probes/minimap-foreground/schedule.json",
+      "bytes": 8148,
+      "sha256": "f1271b07d7070a30b17d98cdce31e963f1b0200eb9a90f65c80a1d21ba4beb62",
+      "gitBlob": "59920b02481043ea3cf78ca5e9b97e6ad42b2e59"
+    },
+    {
+      "path": ".github/probes/minimap-foreground/tapes.json",
+      "bytes": 11287,
+      "sha256": "ed57e6670b8dcea7ba36885cf1907127464ad740f479281e3014f28e2001a66a",
+      "gitBlob": "2c02ad17d984aec6e80bda91fa0b51f4fd831f43"
+    },
+    {
+      "path": ".github/workflows/belle-minimap-foreground-proof.yml",
+      "bytes": 6163,
+      "sha256": "b880109db6bd1444ecf4bfb0e9b84e0fbb45c6444f3aac8872b4a1d1473b478c",
+      "gitBlob": "f80c8985ac080cb3f500452286b34e8d630d50f8"
+    }
+  ]
+}
