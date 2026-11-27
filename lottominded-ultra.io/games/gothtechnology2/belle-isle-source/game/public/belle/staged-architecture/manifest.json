@@ -1,7 +1,7 @@
 {
   "schema": "staged-belle-landmarks/v1",
   "status": "not-production",
-  "basis": "Original 2026-11-24 modeling package; Conservatory vestibule and internal Show House connector fitted from source to the unchanged supplied map walls",
+  "basis": "Original 2026-11-24 modeling package; Conservatory vestibule and internal Show House connector fitted from source to the unchanged supplied map walls; Aquarium upper roof ends closed against the unchanged estimated profile",
   "baseGameMapCommit": "2a8901996e53b1f93474f3c2165e078b6dd16e57",
   "models": [
     {
@@ -13,7 +13,7 @@
         ],
         "yaw_rad": 0.313,
         "localZ": "-v",
-        "groundWorldY": 2.0,
+        "groundWorldY": 2,
         "gameMapId": "107310050"
       },
       "authoringAssumptions": {
@@ -101,7 +101,7 @@
         ],
         "yaw_rad": -2.828592653589793,
         "localZ": "-v",
-        "groundWorldY": 2.0,
+        "groundWorldY": 2,
         "gameMapId": "107227742"
       },
       "authoringAssumptions": {
@@ -129,25 +129,25 @@
         {
           "lod": 0,
           "file": "Aquarium_Arched_Entrance_Study.glb",
-          "sha256": "26447779b20c5bbd2ab1ee6eb3dc1489333722e045400697c40a32cae3c69b93",
-          "bytes": 60268,
-          "total_triangles": 2688,
+          "sha256": "0a7d6eea2010f2787594afe1275ed42241786847ed9ae7a1ba9e79adaba0665c",
+          "bytes": 63652,
+          "total_triangles": 2738,
           "total_mesh_groups": 26
         },
         {
           "lod": 1,
           "file": "Aquarium_Arched_Entrance_Study_LOD1.glb",
-          "sha256": "51d265f0a664ac896c8c23eb50b51f39ff52eeb2adbbc252ed16340c419e3ad9",
-          "bytes": 41788,
-          "total_triangles": 1752,
+          "sha256": "7dac2de69c4756eb81f98553e85194aa9f38e33fdd6867a86fc4501437644558",
+          "bytes": 45172,
+          "total_triangles": 1802,
           "total_mesh_groups": 20
         },
         {
           "lod": 2,
           "file": "Aquarium_Arched_Entrance_Study_LOD2.glb",
-          "sha256": "4295c700ff745bf9c413d78f3e58997f2abc5da22665ee4515bedcd72db3c554",
-          "bytes": 32144,
-          "total_triangles": 1200,
+          "sha256": "a31c9c384abc0fa16bdf9b0cc9e0cb17e90a314b02f1bef6a1921c6f2861a555",
+          "bytes": 35528,
+          "total_triangles": 1250,
           "total_mesh_groups": 15
         }
       ]
@@ -161,7 +161,7 @@
         ],
         "yaw_rad": -1.18,
         "localZ": "along",
-        "groundWorldY": 2.0,
+        "groundWorldY": 2,
         "gameMapId": "9146545"
       },
       "authoringAssumptions": {
@@ -206,7 +206,7 @@
         ],
         "yaw_rad": 0,
         "localZ": "worldZ",
-        "groundWorldY": 2.0,
+        "groundWorldY": 2,
         "gameRoadId": "107230534"
       },
       "authoringAssumptions": {
@@ -276,5 +276,19 @@
     "changedComponent": "ShowHouse/EndGlazing",
     "retainedMaterial": "greenGlass BLEND, alpha 167/255, roughness 0.17, doubleSided; runtime depthWrite=false",
     "nativeAcceptance": "Requires the unchanged native walk, comparison, and ninety-second performance gates"
+  },
+  "aquariumRoofEndSource": {
+    "baseHead": "bf2fa1eaef4c529e8428f2ac1d0ac5a897a1e112",
+    "generator": "scripts/staged-landmark-authoring/build_landmarks.py",
+    "reproducer": "scripts/staged-landmark-authoring/aquarium_roof_ends.py",
+    "receipt": "scripts/staged-landmark-authoring/source/aquarium-roof-ends.json",
+    "changedComponent": "Roof/PatinatedCopperPanels__copper",
+    "addedVerticesPerLod": 54,
+    "addedTrianglesPerLod": 50,
+    "historicalUpperFacadeVerified": false,
+    "roofHeightVerified": false,
+    "collisionUpdated": false,
+    "pixelEquivalent": false,
+    "nativeAcceptance": "Pending additive native before/after appearance review and all unchanged walk/comparison/ninety-second gates; added opaque faces can legitimately change local occlusion and shadow pixels"
   }
 }

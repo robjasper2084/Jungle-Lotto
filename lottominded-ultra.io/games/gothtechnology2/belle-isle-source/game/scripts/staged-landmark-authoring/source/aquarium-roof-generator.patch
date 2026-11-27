@@ -1,0 +1,22 @@
+--- a/build_landmarks.py
++++ b/build_landmarks.py
+@@ -10,6 +10,7 @@
+ import trimesh
+ from trimesh.visual.material import PBRMaterial
+ from trimesh.visual.texture import TextureVisuals
++from aquarium_roof_ends import end_geometry
+ 
+ ROOT=Path(__file__).resolve().parent
+ for d in ('models','previews','qa','source'): (ROOT/d).mkdir(exist_ok=True)
+@@ -291,6 +292,11 @@
+   f=lambda x,z:[x,edge+(top-edge)*max(0,1-(x/rx)**2),z]
+   a.quad('Roof/PatinatedCopperPanels|copper',[f(x0,-38.2),f(x0,38.2),f(x1,38.2),f(x1,-38.2)])
+   if i%2==0:a.rod('Roof/StandingSeams|darkIron',f(x0,-38.2),f(x0,38.2),.026)
++ # Close only the demonstrated open upper ends of the existing estimated roof.
++ # Keep its profile/height, wall top, copper and all earlier vertices unchanged.
++ profile=[f(-rx+2*rx*i/24,0)[:2] for i in range(25)]
++ vertices,faces=end_geometry(profile,7.6,[-38.2,38.2])
++ a.put('Roof/PatinatedCopperPanels|copper',trimesh.Trimesh(vertices=vertices,faces=faces,process=False))
+  # Symmetric front window groups; rough placement derived from facade photo.
+  for xc in (-4.7,4.7):
+   a.box('Facade/FrontWindows|greenGlass',(xc,3.7,38.03),(2.30,2.35,.07))

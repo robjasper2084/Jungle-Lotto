@@ -19,6 +19,7 @@ const models=Promise.all(files.map(async file=>{
 const map=JSON.parse(await readFile(new URL('../../public/belle/map.json',import.meta.url),'utf8')).conservatory;
 const baseline=JSON.parse(await readFile(new URL('../../scripts/staged-landmark-authoring/source/conservatory-original-components.json',import.meta.url),'utf8'));
 const connectorBefore=JSON.parse(await readFile(new URL('../../scripts/staged-landmark-authoring/source/conservatory-connector-before.json',import.meta.url),'utf8'));
+const roofEnds=JSON.parse(await readFile(new URL('../../scripts/staged-landmark-authoring/source/aquarium-roof-ends.json',import.meta.url),'utf8'));
 const connectorComponent='ShowHouse/EndGlazing__greenGlass';
 const changed=new Set(['Vestibule/WestFacadePiers__steel','Vestibule/GlassSideLights__glass','Vestibule/SideGlass__glass','Vestibule/TransparentRoof__glass']);
 type Point=[number,number];
@@ -155,7 +156,7 @@ test('the fit preserves unaffected primitives, materials and original outer heig
   }
 });
 
-test('the connector correction changes one primitive per LOD and retains the far end triangles and other assets',async()=>{
+test('the connector correction retains its far end triangles and binds other assets, including the separately checked Aquarium roof additions',async()=>{
   assert.equal(connectorBefore.sourceHead,'9b43b72acb72cfe69dd483614e5c2d95bb57a7ed');
   assert.equal(connectorBefore.mapBlobSha,'e5c741279fe981b928c9fd4d58a72d72ae7cb017');
   assert.deepEqual(files.map(file=>connectorBefore.models[file].sha256),[
@@ -175,9 +176,16 @@ test('the connector correction changes one primitive per LOD and retains the far
     assert.equal(material.side,T.DoubleSide);assert.equal(material.roughness,.17);assert.equal(material.metalness,0);
   }
   assert.equal(Object.keys(connectorBefore.otherAssets).length,9);
+  assert.equal(Object.keys(roofEnds.models).length,3);
   for(const [file,expected] of Object.entries(connectorBefore.otherAssets) as [string,{bytes:number;sha256:string}][]){
     const raw=await readFile(new URL('../../public/belle/staged-architecture/'+file,import.meta.url));
-    assert.equal(raw.length,expected.bytes);assert.equal(createHash('sha256').update(raw).digest('hex'),expected.sha256,file+' unchanged asset');
+    const roof=roofEnds.models[file];
+    if(roof){
+      assert.equal(roof.before.bytes,expected.bytes);assert.equal(roof.before.sha256,expected.sha256,file+' original asset remains pinned');
+      assert.equal(raw.length,roof.after.bytes);assert.equal(createHash('sha256').update(raw).digest('hex'),roof.after.sha256,file+' separately proven additive roof repair');
+    }else{
+      assert.equal(raw.length,expected.bytes);assert.equal(createHash('sha256').update(raw).digest('hex'),expected.sha256,file+' unchanged asset');
+    }
   }
 });
 

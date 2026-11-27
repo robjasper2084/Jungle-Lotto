@@ -4,7 +4,39 @@ This is the recovered authoring generator from `Belle_Isle_GIS_Landmark_Correcti
 
 The game remains explicitly staged behind `VITE_STAGED_BELLE_ARCHITECTURE=1`. This repair aligns the model to the supplied game walls. It does not establish a surveyed footprint or height datum, change collision authority, or imply native acceptance.
 
-## What changed
+## Aquarium upper roof ends
+
+The separately retained native gallery at source `61a9db36df072850f4bcea4536471e3d92e07453` shows the Aquarium's standing-seam cylinders through an open region above the front brick wall. Current source `bf2fa1eaef4c529e8428f2ac1d0ac5a897a1e112` has the same three Aquarium GLBs and authoring source. The original opaque, single-sided copper roof contains 48 upward-facing triangles and no longitudinal end faces. From the recorded front camera, all 48 roof triangles face away from the viewer. The ray through native pixel (665.8184, 231.6222) passes through that gap without hitting any original Aquarium surface.
+
+This candidate adds only two planar endpoint polygons to `Roof/PatinatedCopperPanels`, at the existing local z = ±38.2 m roof endpoints. Their upper boundaries use every original point of the 24-segment roof profile; their lower edges meet the existing y = 7.6 m wall top. Each end has 27 vertices and 25 outward-wound triangles. Separate vertices preserve the original roof's flat shading and any subsequently computed vertex normals. All original vertices and indices remain in their original order. There is no new mesh group, material, roof height, profile, placement, LOD selection, portal, stair, collider or shadow-flag change.
+
+The closure uses the existing opaque copper material. This is a continuity repair to the existing estimated study, not historical verification of an upper facade. The original `roofHeightUnverified` and unverified carved-detail notes remain. The new opaque surfaces can legitimately change local occlusion and shadow pixels. Pixel equivalence, native appearance, native walking, collision acceptance and performance acceptance are not claimed.
+
+| Aquarium output | Triangles | Mesh groups | Bytes |
+| --- | ---: | ---: | ---: |
+| `Aquarium_Arched_Entrance_Study.glb` | 2,738 | 26 | 63,652 |
+| `Aquarium_Arched_Entrance_Study_LOD1.glb` | 1,802 | 20 | 45,172 |
+| `Aquarium_Arched_Entrance_Study_LOD2.glb` | 1,250 | 15 | 35,528 |
+
+The exact before/after hashes, original metadata/binary-prefix digests, unchanged collision inputs and native camera receipts are in `source/aquarium-roof-ends.json`. `aquarium_roof_ends.py` reproduces the three reviewed game files from the exact bf2 inputs using only the Python standard library. It retains the complete old binary buffer and accessor metadata, appends combined roof payloads, and redirects only the existing copper primitive's two accessor links. It refuses changed or already-patched input. The other nine staged GLBs remain byte-identical.
+
+From this directory, keep the three original bf2 files in a separate input directory and run:
+
+```sh
+python3 aquarium_roof_ends.py --source-assets /path/to/exact-bf2-assets --output-assets /tmp/aquarium-roof-ends
+```
+
+The complete authoring generator also contains the same two polygons. With the pinned dependencies, its original named primitive payloads match every old Aquarium primitive exactly, and its added oriented triangle coordinates match the append-only outputs. The append-only command is used for shipped files so unrelated exporter/container changes do not replace old bytes.
+
+From the game directory, run the focused geometry and existing Conservatory regression checks:
+
+```sh
+node --experimental-strip-types --test src/belle/stagedAquariumRoof.test.ts src/belle/stagedConservatoryFit.test.ts
+```
+
+These thirteen checks cover exact preservation of old binary and metadata, original vertex/index prefixes, outward winding, nondegenerate triangles, complete endpoint area, 432 actual GLTFLoader endpoint coverage rays across all three LODs, the exact native gap ray, unchanged optics, all other assets and original collision inputs. The historical Conservatory baseline remains unchanged; its three Aquarium asset assertions now bind the exact new hashes to the separately tested original roof payloads. Original public-input, matched-camera, entrance/contact and 90-second performance drivers are unchanged.
+
+## Conservatory placement repairs
 
 The original vestibule used two symmetric side panes centered at local v = ±4.6 m. The retained map has different positive and negative boundaries and rounded front corners. At local u = −12 m, the positive wall is at v = 5.3242324 m, and the negative wall is at v = −4.7532998 m.
 
@@ -38,7 +70,7 @@ python3 build_landmarks.py
 python3 qa/check_models.py
 ```
 
-The generator writes all twelve source studies into its local `models/` directory and records its output hashes and geometry counts in `qa/model_report.json`. Only these three repaired outputs replace staged game assets:
+The generator writes all twelve source studies into its local `models/` directory and records its output hashes and geometry counts in `qa/model_report.json`. The Conservatory repair retains these three reviewed staged outputs:
 
 | Output | Triangles | SHA-256 |
 | --- | ---: | --- |
@@ -46,13 +78,13 @@ The generator writes all twelve source studies into its local `models/` director
 | Conservatory_Architectural_Study_LOD1.glb | 16,248 | `6dc9148964da3db834563cefa68aa22883eef051bea15136b9f72ad3d614e20f` |
 | Conservatory_Architectural_Study_LOD2.glb | 3,112 | `361951febb39f9b148b7298c10294d2a4c12590847b0021394fcbc4a24b5804e` |
 
-The other nine shipped GLBs retain their original bytes. A newer exporter changes their GLB container encoding despite identical named primitive and material payloads, so they are deliberately not replaced by regeneration.
+The three Aquarium assets now receive only the roof-end addition above. The other six shipped GLBs retain their original package bytes. A newer exporter changes their GLB container encoding despite identical named primitive and material payloads, so those six are deliberately not replaced by regeneration.
 
-`source/showhouse-connector-generator.patch` records the change from the verified 9b43 generator. Reverse-applying it to a copy reproduces SHA-256 `716b9b6fff39112c7e770448c6f2cab55ccf9c6652506e1b12b4c06c495d16a8`. Then reverse-applying the retained `source/vestibule-generator.patch` reproduces the recovered original source file and its SHA-256 above. Regenerating the unmodified original source with these dependencies was independently compared with all twelve original GLBs: every named primitive attribute/index payload and material definition was identical.
+`source/aquarium-roof-generator.patch` records the new roof addition. Reverse-applying it to a copy of the current generator restores the exact bf2 generator SHA-256 `483bec881cc7ea286677d738be4a97c3b63bc40b266cd4f0897f44126ce9725d`; keep `aquarium_roof_ends.py` available for the current source. Starting from that restored generator, `source/showhouse-connector-generator.patch` records the change from the verified 9b43 generator. Reverse-applying it to a copy reproduces SHA-256 `716b9b6fff39112c7e770448c6f2cab55ccf9c6652506e1b12b4c06c495d16a8`. Then reverse-applying the retained `source/vestibule-generator.patch` reproduces the recovered original source file and its SHA-256 above. Regenerating the unmodified original source with these dependencies was independently compared with all twelve original GLBs: every named primitive attribute/index payload and material definition was identical.
 
 ## Evidence
 
-All original 74 authoring checks and six added connector clearance/closed-glazing checks pass, including winding, closed opaque solids, triangle counts, monotonic LODs and standing doorway clearance. The receipt is in `qa/mesh_test_receipt.json`.
+The retained `qa/mesh_test_receipt.json` records the earlier 74 original authoring checks and six added connector clearance/closed-glazing checks, including winding, closed opaque solids, triangle counts, monotonic LODs and standing doorway clearance. It predates the Aquarium roof addition; the current focused roof checks are described above.
 
 The historical `qa/conservatory_fit_receipt.json` compares the prior vestibule correction against the byte-verified original models. The current `qa/showhouse-connector-payload-receipt.json` binds the subsequent one-component correction against exact 9b43 and retains all other primitive, material and asset identities. `source/conservatory-original-components.json` preserves the original attribute/index digests, material definitions, vertical coordinates and component counts used by the game regression. The regression reads actual shipped GLBs and the original game map through the pinned Three GLTFLoader:
 

@@ -30,7 +30,8 @@ export class CrashContact {
     // SkinnedMesh refreshes its attached bind inverse in updateMatrixWorld.
     // updateWorldMatrix alone leaves probes in the previous root transform.
     root.updateWorldMatrix(true,false);root.updateMatrixWorld(true);
-    const groundCache=new Map<string,ReturnType<typeof createGroundSample>>();
+    // Numeric cell keys avoid allocating a coordinate string for every probe.
+    const groundCache=new Map<number,Map<number,ReturnType<typeof createGroundSample>>>();
     let lift=-Infinity;
     for(const {mesh,indices} of this.probes){
       if((mesh as T.SkinnedMesh).isSkinnedMesh)(mesh as T.SkinnedMesh).skeleton.update();
@@ -38,9 +39,12 @@ export class CrashContact {
         mesh.getVertexPosition(index,this.point).applyMatrix4(mesh.matrixWorld);
         let height=floor;
         if(terrain){
-          const x=Math.round(this.point.x/.35)*.35,z=Math.round(this.point.z/.35)*.35,key=x+','+z;
-          let sample=groundCache.get(key);
-          if(!sample){sample=terrain.sampleGround(x,z,createGroundSample(),floor);groundCache.set(key,sample);}
+          const x=Math.round(this.point.x/.35)*.35,z=Math.round(this.point.z/.35)*.35;
+          let sample=groundCache.get(x)?.get(z);
+          if(!sample){
+            sample=terrain.sampleGround(x,z,createGroundSample(),floor);
+            let column=groundCache.get(x);if(!column)groundCache.set(x,column=new Map());column.set(z,sample);
+          }
           height=sample.height;
           if(sample.normal.y>.2)height-=(sample.normal.x*(this.point.x-x)+sample.normal.z*(this.point.z-z))/sample.normal.y;
         }
