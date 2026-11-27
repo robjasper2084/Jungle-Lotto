@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "purpose": "Native CPU and GC attribution only; never release acceptance",
+  "payloadBase": "893f769838166e6e35624b7b979ed5cbb8414507",
+  "repository": "robjasper2084/Jungle-Lotto",
+  "cases": {
+    "cadillac": {
+      "pullRequest": 210,
+      "commit": "75906273c0cd414c0d004320fc6f654b4783e5b1",
+      "tree": "9f0351be133dd370a676090d27559a0adaf00605"
+    },
+    "armory": {
+      "pullRequest": 215,
+      "commit": "1e4feafa6964f4c68b27bae07e02d102f92a2c5d",
+      "tree": "58e2e20338be0ca9cac3a8058b836eaf9d990a1f"
+    }
+  },
+  "project": "lottominded-ultra.io/games/gothtechnology2",
+  "game": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game",
+  "driver": {
+    "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/sustained-ride-profile.mjs",
+    "gitBlob": "c722b5810a7693e5ece72ed00b4401e7cde7267a",
+    "sha256": "8f6af949083800c491b65e0709c04cc29eb5712634f744c5b912f76ce651fcf5",
+    "bytes": 20186
+  },
+  "packageFiles": {
+    "package.json": "b7849345af649ba60ce5c8c1c95203c5e8eb3f2fe2a31ae29d63ab665df3b2f7",
+    "package-lock.json": "a54bba2d2b6226f3b8562c4b52f4be468af15d85ff8c0d992351bf9a3c5f8d32",
+    "belle-isle-source/game/package.json": "7b2c4da476587cab12a33c31f43a596c526f53775647b88e586b46dd2bb9c246",
+    "belle-isle-source/game/package-lock.json": "105e85e781044feb8f590a3ea1e5bd0e98bb20f5512dcb1aedab30a7af0686f2"
+  },
+  "runtime": {
+    "nodeMajor": 24,
+    "playwright": "1.61.1",
+    "platform": "darwin",
+    "device": "desktop",
+    "mode": "full",
+    "seconds": 90,
+    "viewport": {"width": 1440, "height": 900},
+    "pixelRatio": 1,
+    "quality": "high",
+    "frameCap": 60,
+    "samplingIntervalUs": 2000
+  },
+  "bounds": {
+    "captureWatchdogMs": 110000,
+    "checkpointEveryMs": 30000,
+    "protocolTimeoutMs": 4000,
+    "cleanupTimeoutMs": 10000,
+    "traceBufferKiB": 32768,
+    "traceFileBytes": 67108864,
+    "bundleBytes": 33554432,
+    "bundleCount": 128,
+    "assetEvents": 8192,
+    "parsedScripts": 4096,
+    "debuggerScriptCacheBytes": 8388608,
+    "rafSamples": 16384,
+    "longTasks": 4096,
+    "marks": 256
+  },
+  "strictDriverStepTimeoutMinutes": 28,
+  "retryCount": 0
+}

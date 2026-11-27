@@ -1,0 +1,128 @@
+name: Original 210 and 215 native CPU attribution (NOT RELEASE)
+
+on:
+  pull_request:
+    paths:
+      - '.github/probes/native-cpu/**'
+      - '.github/workflows/belle-native-cpu-diagnostic.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: original-native-cpu-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  cadillac_original:
+    name: Original 210 7590627 desktop (NOT RELEASE)
+    if: ${{ github.run_attempt == 1 }}
+    runs-on: macos-15
+    timeout-minutes: 50
+    steps:
+      - name: Check out diagnostic payload only
+        uses: actions/checkout@v4
+        with:
+          path: payload
+          persist-credentials: false
+          sparse-checkout: |
+            .github/probes/native-cpu
+            .github/workflows
+      - name: Check out immutable original 210
+        uses: actions/checkout@v4
+        with:
+          ref: 75906273c0cd414c0d004320fc6f654b4783e5b1
+          path: source
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Validate source and hook contracts without launching a browser
+        run: |
+          node --check payload/.github/probes/native-cpu/preload.mjs
+          node --test payload/.github/probes/native-cpu/contract.test.mjs
+          node payload/.github/probes/native-cpu/run.mjs prepare cadillac source evidence/cadillac
+      - name: Build exact default source with its original lock
+        timeout-minutes: 15
+        working-directory: source/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm ci
+          npm run build
+      - name: Bind every built file to its immutable source
+        run: node payload/.github/probes/native-cpu/run.mjs built cadillac source evidence/cadillac
+      - name: Install original locked browser runtime and native Chrome
+        timeout-minutes: 6
+        working-directory: source/lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install chrome
+      - name: Run untouched original 90-second driver with independent CPU observer
+        timeout-minutes: 28
+        run: node payload/.github/probes/native-cpu/run.mjs run cadillac source evidence/cadillac
+      - name: Preserve complete or partial evidence and original failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-cpu-original-210-7590627-NOT-RELEASE
+          path: |
+            evidence/cadillac
+            source/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/sustained-profile/full/desktop
+          if-no-files-found: warn
+          retention-days: 14
+
+  armory_original:
+    name: Original 215 1e4feaf desktop (NOT RELEASE)
+    if: ${{ github.run_attempt == 1 }}
+    runs-on: macos-15
+    timeout-minutes: 50
+    steps:
+      - name: Check out diagnostic payload only
+        uses: actions/checkout@v4
+        with:
+          path: payload
+          persist-credentials: false
+          sparse-checkout: |
+            .github/probes/native-cpu
+            .github/workflows
+      - name: Check out immutable original 215
+        uses: actions/checkout@v4
+        with:
+          ref: 1e4feafa6964f4c68b27bae07e02d102f92a2c5d
+          path: source
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Validate source and hook contracts without launching a browser
+        run: |
+          node --check payload/.github/probes/native-cpu/preload.mjs
+          node --test payload/.github/probes/native-cpu/contract.test.mjs
+          node payload/.github/probes/native-cpu/run.mjs prepare armory source evidence/armory
+      - name: Build exact default source with its original lock
+        timeout-minutes: 15
+        working-directory: source/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm ci
+          npm run build
+      - name: Bind every built file to its immutable source
+        run: node payload/.github/probes/native-cpu/run.mjs built armory source evidence/armory
+      - name: Install original locked browser runtime and native Chrome
+        timeout-minutes: 6
+        working-directory: source/lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install chrome
+      - name: Run untouched original 90-second driver with independent CPU observer
+        timeout-minutes: 28
+        run: node payload/.github/probes/native-cpu/run.mjs run armory source evidence/armory
+      - name: Preserve complete or partial evidence and original failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-cpu-original-215-1e4feaf-NOT-RELEASE
+          path: |
+            evidence/armory
+            source/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/sustained-profile/full/desktop
+          if-no-files-found: warn
+          retention-days: 14
