@@ -9,6 +9,7 @@ import vm from 'node:vm';
 import {PIN,MARKER_PREFIX,TRACE_CATEGORIES,sha256,isGameUrl,createTraceSummaryAccumulator,diagnosticVerdict,verifyOriginalVerdict,verifyDriver,verifyPageObservations,verifyDistArchive,REPORT_PATH,ROCKS,buildInventory,verifyPreviewBuild} from './contract.mjs';
 import {installDesktopStallTrace,installPageEvidence} from './observer.mjs';
 import {verifySourceArtifact,onlyBuildTimingChanged} from './build-preview.mjs';
+import {buildEmbeddedAssetIndex} from './embedded-assets.mjs';
 const driver=await readFile(process.env.STRICT_DRIVER_PATH,'utf8');
 const gps=await readFile(process.env.STRICT_GPS_PATH,'utf8');
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
@@ -37,10 +38,10 @@ function fixture(){
   stop:{trigger:'native-w-keyup',cpuStopIssued:true,traceEndIssued:true,cpuStopped:true,traceEnded:true}};
 }
 
-async function nativeMock({listedCategories=[],listingError=false,missingTimeline=false,cpuFailure=false,endFailure=false,streamFailure=false,badScript=false,deferredCpu=false,browserCloseFailure=null,completion='normal',deferredBrowserClose=false,afterTraceRead=null,deferredAsset=false}={}){
+async function nativeMock({listedCategories=[],listingError=false,missingTimeline=false,cpuFailure=false,endFailure=false,streamFailure=false,badScript=false,deferredCpu=false,browserCloseFailure=null,completion='normal',deferredBrowserClose=false,afterTraceRead=null,deferredAsset=false,embeddedImageIndex=null,extraSourceFiles=[],extraResponses=[]}={}){
  const f=fixture(),root=await mkdtemp(resolve(tmpdir(),'desktop-stall-observer-')),output=resolve(root,'capture'),js=Buffer.from('function nativeWork() {}');
  if(missingTimeline)f.trace.traceEvents=f.trace.traceEvents.filter(e=>e.ph!=='X');
- f.source.files=[{file:'assets/game.js',bytes:js.length,sha256:sha256(js)}];
+ f.source.files=[{file:'assets/game.js',bytes:js.length,sha256:sha256(js)},...extraSourceFiles];f.source.embeddedImageIndex=embeddedImageIndex;
  const calls=[];let closed=0,contextClosed=0,cpuResolve,readCount=0,browserCloseResolve,browserCloseEnteredResolve,assetResolve;
  const assetDeferred=new Promise(ok=>{assetResolve=ok;});
  const cpuDeferred=new Promise(ok=>{cpuResolve=ok;});
@@ -75,7 +76,7 @@ async function nativeMock({listedCategories=[],listingError=false,missingTimelin
   isClosed(){return false;}async addInitScript(){}context(){return context;}
   locator(...args){calls.push({method:'native locator',args,receiver:this});return panel;}
   async evaluate(){return f.page;}
-  async goto(){this.emit('response',{url:()=> 'http://127.0.0.1:1234/assets/game.js',status:()=>200,body:async()=>{if(deferredAsset)await assetDeferred;return badScript?Buffer.from('wrong'):js;}});return 'navigated';}
+  async goto(){this.emit('response',{url:()=> 'http://127.0.0.1:1234/assets/game.js',status:()=>200,headers:()=>({'content-type':'application/javascript'}),body:async()=>{if(deferredAsset)await assetDeferred;return badScript?Buffer.from('wrong'):js;}});for(const response of extraResponses)this.emit('response',response);return 'navigated';}
  }
  const browser={newBrowserCDPSession:async()=>browserSession,newPage:async()=>new Page(),close:async()=>{closed++;calls.push({method:'native browser.close'});browserCloseEnteredResolve();if(deferredBrowserClose)await browserCloseDeferred;if(browserCloseFailure)throw browserCloseFailure;return 'browser-closed';}};
  const chromium={launch:async()=>browser};
@@ -226,6 +227,40 @@ test('an asset write that finishes after the absolute deadline is a retained fai
   const e=await h.finish(),asset=e.assetReceipts[0];assert.equal(asset.deadlineExceeded,true);assert.equal(asset.complete,false);assert.equal(e.verdict.collectionComplete,false);
   assert(asset.file&&asset.sha256);assert.equal(sha256(await readFile(resolve(h.output,asset.file))),asset.sha256);
  }finally{h.assetResolve();await h.cleanup();}
+});
+
+test('native response observation binds real embedded-image bytes and retains unknown or mismatched blob bodies as failures',async()=>{
+ const root=await mkdtemp(resolve(tmpdir(),'embedded-observer-fixture-'));
+ try{
+  const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
+  const text=Buffer.from(JSON.stringify({asset:{version:'2.0'},buffers:[{byteLength:png.length}],bufferViews:[{buffer:0,byteOffset:0,byteLength:png.length}],images:[{bufferView:0,mimeType:'image/png'}]}));
+  const json=Buffer.alloc(Math.ceil(text.length/4)*4,32);text.copy(json);const bin=Buffer.alloc(Math.ceil(png.length/4)*4);png.copy(bin);
+  const glb=Buffer.alloc(12+8+json.length+8+bin.length);glb.writeUInt32LE(0x46546c67,0);glb.writeUInt32LE(2,4);glb.writeUInt32LE(glb.length,8);
+  glb.writeUInt32LE(json.length,12);glb.writeUInt32LE(0x4e4f534a,16);json.copy(glb,20);const at=20+json.length;
+  glb.writeUInt32LE(bin.length,at);glb.writeUInt32LE(0x004e4942,at+4);bin.copy(glb,at+8);
+  const js=Buffer.from('function nativeWork() {}');await mkdir(resolve(root,'assets'));await writeFile(resolve(root,'assets/game.js'),js);await writeFile(resolve(root,'image.glb'),glb);
+  const glbRow={file:'image.glb',bytes:glb.length,sha256:sha256(glb)};
+  const index=await buildEmbeddedAssetIndex(root,[{file:'assets/game.js',bytes:js.length,sha256:sha256(js)},glbRow]);
+  const changed=Buffer.from(png);changed[changed.length-1]^=1;
+  for(const row of [
+   {name:'valid',url:'blob:http://127.0.0.1:1234/valid',payload:png,mime:'image/png',pass:true,read:true},
+   {name:'unknown bytes',url:'blob:http://127.0.0.1:1234/unknown',payload:changed,mime:'image/png',pass:false,read:true},
+   {name:'wrong MIME',url:'blob:http://127.0.0.1:1234/mime',payload:png,mime:'image/jpeg',pass:false,read:true},
+   {name:'different port',url:'blob:http://127.0.0.1:4321/foreign',payload:png,mime:'image/png',pass:false,read:false},
+  ]){
+   let bodyReads=0;const response={url:()=>row.url,status:()=>200,headers:()=>({'content-type':row.mime}),body:async()=>{bodyReads++;return row.payload;}};
+   const h=await nativeMock({embeddedImageIndex:index,extraSourceFiles:[glbRow],extraResponses:[response]});
+   try{
+    await h.capture();const e=await h.finish(),receipt=e.assetReceipts.find(x=>x.url===row.url);
+    assert.equal(e.gameUrl,h.f.page.url);assert.equal(bodyReads,row.read?1:0,row.name);assert.equal(receipt.complete,row.pass,row.name);
+    assert.equal(e.verdict.collectionComplete,row.pass,row.name);assert.equal(e.originalHarnessPassed,undefined);
+    if(row.read){assert.equal(receipt.bytes,row.payload.length);assert.equal(receipt.sha256,sha256(row.payload));assert.deepEqual(await readFile(resolve(h.output,receipt.file)),row.payload);}
+    if(row.pass){assert.equal(receipt.kind,'embedded-blob');assert.deepEqual(receipt.embeddedMatches,index.candidates);assert(receipt.bindingFinishedHostMs>=receipt.bodyFinishedHostMs);}
+    else assert(receipt.error&&e.errors.length>0,row.name);
+    assert.equal(e.verdict.originalHarnessPassed,false,'The original failed performance verdict is never replaced by collection success');
+   }finally{await h.cleanup();}
+  }
+ }finally{await rm(root,{recursive:true,force:true});}
 });
 
 test('retained dist archive is checked by every member byte, not only its ZIP hash',async()=>{

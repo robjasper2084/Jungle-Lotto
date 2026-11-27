@@ -4,6 +4,7 @@ import {mkdir,readFile,writeFile,open} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {MARKER_PREFIX,TRACE_CATEGORIES,REPORT_PATH,isGameUrl,sha256,createTraceSummaryAccumulator,diagnosticVerdict,verifyOriginalVerdict,verifyPageObservations} from './contract.mjs';
 import {summarizeTraceFile} from './sustained-trace-json.mjs';
+import {matchEmbeddedImage} from './embedded-assets.mjs';
 
 const errorText=error=>error?.stack||String(error);
 const save=(file,value)=>writeFile(file,JSON.stringify(value,null,2)+'\n');
@@ -120,7 +121,7 @@ export async function installDesktopStallTrace(chromium,{game,output,source,driv
  await mkdir(output,{recursive:true});
  const evidence={diagnosticOnly:true,releaseAcceptance:false,source,diagnosticSource,host:{platform:process.platform,arch:process.arch},
   status:'starting',errors:[],errorRecords:[],unsupported:[],launches:[],pages:[],bufferUsage:[],droppedBufferUsage:0,
-  scriptReceipts:[],assetReceipts:[],baselineWitness:null,stop:null,traceComplete:null,cpu:null,pageEvidence:null,summary:null,
+  scriptReceipts:[],assetReceipts:[],gameUrl:null,baselineWitness:null,stop:null,traceComplete:null,cpu:null,pageEvidence:null,summary:null,
   traceCompletion:{listenerAttachedHostMs:null,listenerDetachedHostMs:null,deadlineHostMs:null,timeoutHostMs:null,events:[]},traceStreams:[]};
  const fail=(where,error)=>{const message=errorText(error);evidence.errors.push(where+': '+message);evidence.errorRecords.push({where,message});};
  let persistQueue=Promise.resolve();
@@ -309,26 +310,36 @@ export async function installDesktopStallTrace(chromium,{game,output,source,driv
     // belong to the untouched driver's own reports, outside this asset window.
     if(stopping)return;
     let url;try{url=new URL(response.url());}catch(error){fail('asset receipt URL',error);return;}
-    const receipt={url:response.url(),status:response.status(),observedHostMs:performance.now(),phase:stopping?'after-native-keyup':armed?'during-capture':'before-capture',receivedBy:'browser-response-body',complete:false};
+    const receipt={url:response.url(),status:response.status(),mimeType:response.headers()['content-type']??null,observedHostMs:performance.now(),phase:stopping?'after-native-keyup':armed?'during-capture':'before-capture',receivedBy:'browser-response-body',complete:false};
     evidence.assetReceipts.push(receipt);
     const task=(async()=>{await assetSlot();try{
      const remaining=evidence.traceCompletion.deadlineHostMs===null?15000:Math.min(15000,evidence.traceCompletion.deadlineHostMs-performance.now());
      assert(remaining>0,'Asset receipt exceeded the unchanged post-stop collection deadline');
-     assert(url.protocol==='http:'&&url.hostname==='127.0.0.1','Unbound nonlocal asset: '+response.url());
-     const name=decodeURIComponent(url.pathname)==='/'?'index.html':decodeURIComponent(url.pathname).slice(1);
-     if(name==='favicon.ico'&&response.status()===204){Object.assign(receipt,{file:null,bytes:0,sha256:sha256(Buffer.alloc(0)),complete:true,expectedEmptyResponse:true});return;}
-     const expected=source.files.find(row=>row.file===name);assert(expected,'Unbound application asset: '+name);assert.equal(response.status(),200,'Asset response failed');
+     assert(isGameUrl(evidence.gameUrl),'Missing original game origin');
+     const origin=new URL(evidence.gameUrl).origin,embedded=url.protocol==='blob:';
+     const resourceUrl=embedded?new URL(url.pathname):url;
+     assert(resourceUrl.protocol==='http:'&&resourceUrl.origin===origin&&!resourceUrl.username&&!resourceUrl.password&&!url.hash&&(!embedded||(!url.search&&!resourceUrl.search&&!resourceUrl.hash)),'Unbound nonlocal asset: '+response.url());
+     receipt.kind=embedded?'embedded-blob':'http-file';
+     const name=embedded?response.url():decodeURIComponent(url.pathname)==='/'?'index.html':decodeURIComponent(url.pathname).slice(1);
+     if(!embedded&&name==='favicon.ico'&&response.status()===204){Object.assign(receipt,{file:null,bytes:0,sha256:sha256(Buffer.alloc(0)),complete:true,expectedEmptyResponse:true});return;}
+     const expected=embedded?null:source.files.find(row=>row.file===name);if(!embedded)assert(expected,'Unbound application asset: '+name);assert.equal(response.status(),200,'Asset response failed');
      receipt.bodyStartedHostMs=performance.now();receipt.bodyPhase=stopping?'after-native-keyup':armed?'during-capture':'before-capture';
      const bytes=await bounded(response.body(),'asset body '+name,remaining);
      const digest=sha256(bytes),file='assets/'+digest+'.bin';await mkdir(resolve(output,'assets'),{recursive:true});await writeFile(resolve(output,file),bytes);
      Object.assign(receipt,{file,bytes:bytes.length,sha256:digest,bodyFinishedHostMs:performance.now()});
      receipt.deadlineExceeded=evidence.traceCompletion.deadlineHostMs!==null&&receipt.bodyFinishedHostMs>evidence.traceCompletion.deadlineHostMs;
      assert(!receipt.deadlineExceeded,'Asset body/write completed after the unchanged absolute 60-second collection deadline; bytes retained');
-     assert.equal(bytes.length,expected.bytes,'Asset length mismatch');assert.equal(digest,expected.sha256,'Consumed asset hash mismatch');receipt.complete=true;
-     if(url.pathname.endsWith('.js'))evidence.scriptReceipts.push({...receipt});
+     if(embedded){
+      receipt.embeddedMatches=matchEmbeddedImage(source.embeddedImageIndex,bytes,receipt.mimeType);
+      assert(receipt.embeddedMatches.length>0,'Blob payload does not match a verified embedded image');
+     }else{assert.equal(bytes.length,expected.bytes,'Asset length mismatch');assert.equal(digest,expected.sha256,'Consumed asset hash mismatch');}
+     receipt.bindingFinishedHostMs=performance.now();
+     receipt.deadlineExceeded=evidence.traceCompletion.deadlineHostMs!==null&&receipt.bindingFinishedHostMs>evidence.traceCompletion.deadlineHostMs;
+     assert(!receipt.deadlineExceeded,'Asset source binding completed after the unchanged absolute 60-second collection deadline; bytes retained');receipt.complete=true;
+     if(!embedded&&url.pathname.endsWith('.js'))evidence.scriptReceipts.push({...receipt});
     }finally{assetRelease();}})().catch(error=>{receipt.error=errorText(error);fail('asset receipt',error);});responseTasks.add(task);task.finally(()=>responseTasks.delete(task));
    });
-   observeAsync(page,'goto',{onError:error=>fail('navigation observer',error),before:()=>{sourceObservation=true;},after:async(_result,args)=>{
+   observeAsync(page,'goto',{onError:error=>fail('navigation observer',error),before:args=>{assert(isGameUrl(args[0]),'Original full game navigation changed');assert.equal(evidence.gameUrl,null,'Original game page navigated more than once');evidence.gameUrl=args[0];sourceObservation=true;},after:async(_result,args)=>{
     assert(isGameUrl(args[0]),'Original full game navigation changed');
     gameSession=await page.context().newCDPSession(page);
     evidence.targetAtStart=await cdp(gameSession,'Target.getTargetInfo');assert.equal(evidence.targetAtStart.targetInfo.type,'page');

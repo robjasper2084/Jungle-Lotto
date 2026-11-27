@@ -6,6 +6,7 @@ import {resolve} from 'node:path';
 import {createTraceSummaryAccumulator as upstreamAccumulator} from './upstream/contract.mjs';
 export {sha256,gitBlob,hashFile,buildInventory,combinedExit,TRACE_CATEGORIES} from './upstream/contract.mjs';
 import {sha256,gitBlob,hashFile,buildInventory} from './upstream/contract.mjs';
+import {verifyEmbeddedAssetIndex} from './embedded-assets.mjs';
 
 export const GAME='lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game';
 export const PIN=Object.freeze({
@@ -119,10 +120,14 @@ export async function verifyPinnedInputs(game,evidenceDirectory){
  verifyDistArchive(resolve(evidenceDirectory,build.distArchive),files);
  // The entire retained ZIP, not a consumed-asset subset, binds every served file.
  const previewBuild=await verifyPreviewBuild(resolve(game,'dist'),files);
+ assert.equal(build.embeddedImageIndexFile,'embedded-image-index.json');
+ const embeddedImageIndexBytes=await readFile(resolve(evidenceDirectory,build.embeddedImageIndexFile));
+ assert.deepEqual({bytes:embeddedImageIndexBytes.length,sha256:sha256(embeddedImageIndexBytes)},build.embeddedImageIndexReceipt,'Retained embedded-image index changed');
+ const embeddedImageIndex=await verifyEmbeddedAssetIndex(resolve(game,'dist'),files,JSON.parse(embeddedImageIndexBytes));
  return {head:PIN.head,tree:PIN.tree,harness:{gitBlob:PIN.harness,sha256:sha256(driver),bytes:driver.length},
   diagnosticBuild:true,failedBuildByteReplay:false,canonicalPreviewRun:PIN.canonicalPreviewRun,canonicalMerge:PIN.canonicalMerge,
   artifact:{kind:'new-diagnostic-build',zipSha256:build.distArchiveReceipt.sha256,bytes:build.distArchiveReceipt.bytes},
-  buildReceiptSha256:sha256(await readFile(resolve(evidenceDirectory,'preview-build-receipt.json'))),previewBuild,files};
+  buildReceiptSha256:sha256(await readFile(resolve(evidenceDirectory,'preview-build-receipt.json'))),previewBuild,files,embeddedImageIndex};
 }
 export function diagnosticVerdict({source,report,traceComplete,summary,errors=[],stop}){
  const reasons=[...errors,...(summary?.errors||[])],check=(ok,why)=>{if(!ok)reasons.push(why);};

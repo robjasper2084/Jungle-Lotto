@@ -1,10 +1,22 @@
 # Full preview p95 attribution
 
-This isolated diagnostic investigates the recurring full-desktop failures: #227 recorded 82.5 ms p95, and the separate #257 integration recorded 84.2 ms p95 with one 266.3 ms eligible interval. It uses the unchanged application source from #261 while that candidate completes its original acceptance tests. Instrumented results are attribution evidence only. The original acceptance runs and every prior failure remain authoritative.
+This isolated diagnostic investigates the recurring full-desktop failures: #227 recorded 82.5 ms p95, and the separate #257 integration recorded 84.2 ms p95 with one 266.3 ms eligible interval. It uses the unchanged application source from #261, whose six original native first runs are complete: four passed, while default full desktop failed at 51.1 ms p95 and preview full desktop failed at 60.9 ms p95. Instrumented results are attribution evidence only. The original acceptance runs and every prior failure remain authoritative.
 
-The collector passed 52 focused local contract tests and independent source review before publication. Native execution and its result belong to the workflow artifacts; source publication alone does not establish successful collection, a causal runtime repair, or release acceptance.
+The first collector passed 52 focused local contract tests and independent source review before publication, but its native attempt exposed the asset-classification defect documented below. The repaired collector passes 78 focused tests. Native execution and its result belong to the workflow artifacts; source publication alone does not establish successful collection, a causal runtime repair, or release acceptance.
 
 The collector is adapted from #254's reduced desktop collector. The complete upstream sources are retained under `upstream/` with byte hashes in `upstream-manifest.json`. The stream parser and trace accumulator are reused. Application code, the c722 driver, GPS code, frame predicates and native input are not patched.
+
+## Retained first failure and strict Blob-image repair
+
+The first attempt at diagnostic head `d7145774a18d3f46080aa8db87daef0f87d526db`, run `45968368488` / job `140402444606`, failed both the original instrumented performance gate and collection validation. Its original report records 65.4 ms p95, a 234.8 ms maximum, zero eligible intervals above 250 ms, and passing GPS checks. Those values do not replace the uninstrumented 60.9 ms preview failure.
+
+The collector rejected 63 same-origin `blob:` responses before reading their bodies. All occurred before capture. Their payload bytes, lengths and hashes were never archived, so the failed attempt cannot be retrospectively certified complete. Artifact `15185853809` retains that failure: 513525587 bytes, SHA256 `91a7d5f62f33cfde7a33fa6c3fc6eac1ed7ce5cf2533cd9197c9216d9e005f0d`. Its trace, CPU profile, original report, source archives and all errors remain unchanged.
+
+The repair indexes embedded PNG/JPEG image bytes from every exact-built GLB2 file before the browser starts. The index binds each candidate to the complete source-file hash, image and bufferView identity, exact BIN byte range or data-URI source span, payload hash and MIME type. It records ordinary external images separately; they cannot authorize Blob responses. Unknown storage formats, escaping paths, malformed ranges and unsupported media types fail closed. See `EMBEDDED_ASSETS.md`.
+
+The observer requires the exact original game origin, including its port. It captures and retains a same-origin Blob body before matching its bytes and MIME to the independently rebuilt image index. All valid duplicate source matches are retained; they do not identify which duplicate instance created the Blob URL. Unknown or mismatched bodies remain archived failures. HTTP files keep their full-inventory byte checks. The final validator independently replays every response, and both body/hash/write and binding completion must fit the unchanged absolute 60000 ms post-stop deadline.
+
+This is a diagnostic-source repair. Application head/tree, build flags and assets, original driver/GPS/input, trace categories, sampling rate, buffer size, native deadlines and acceptance rules remain unchanged. The additional image-body reads add unquantified observational overhead; no correction is applied to any frame result.
 
 ## This is a new diagnostic build
 

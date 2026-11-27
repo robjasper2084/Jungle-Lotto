@@ -4,6 +4,7 @@ import {readFile,writeFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {verifyPinnedInputs,verifyOriginalVerdict,createTraceSummaryAccumulator,diagnosticVerdict,sha256,PIN,REPORT_PATH,verifyPageObservations} from './contract.mjs';
 import {summarizeTraceFile} from './sustained-trace-json.mjs';
+import {verifyAssetReceipts} from './asset-receipts.mjs';
 
 const game=resolve(process.argv[2]),directory=resolve(process.argv[3]),capture=resolve(directory,'capture');
 const failures=[];let summary={diagnosticOnly:true,releaseAcceptance:false,collectionComplete:false};
@@ -32,14 +33,13 @@ try{
  assert.equal(evidence.status,'finished');assert.equal(evidence.traceFlushed,true);assert.equal(evidence.stop.trigger,'native-w-keyup');
  assert.equal(evidence.errors.length,0,JSON.stringify(evidence.errors));assert.equal(verdict.collectionComplete,true,JSON.stringify(verdict.errors));
  assert(evidence.scriptReceipts.length>0,'No browser-consumed script receipts');
- for(const receipt of evidence.assetReceipts){
-  assert.equal(receipt.complete,true,'Incomplete consumed asset receipt');
-  if(receipt.expectedEmptyResponse){assert.equal(new URL(receipt.url).pathname,'/favicon.ico');assert.equal(receipt.status,204);assert.equal(receipt.bytes,0);continue;}
-  assert.equal(receipt.deadlineExceeded,false);assert(receipt.bodyFinishedHostMs<=evidence.traceCompletion.deadlineHostMs,'Asset body/write exceeded absolute deadline');
-  const script=await readFile(resolve(capture,receipt.file));assert.equal(script.length,receipt.bytes);assert.equal(sha256(script),receipt.sha256);
-  const url=new URL(receipt.url),expected=source.files.find(row=>row.file===(url.pathname==='/'?'index.html':decodeURIComponent(url.pathname).slice(1)));
-  assert(expected&&expected.bytes===receipt.bytes&&expected.sha256===receipt.sha256,'Script receipt is not from pinned build');
- }
+ assert.equal(evidence.gameUrl,evidence.pageEvidence.url,'Original game origin changed during capture');
+ const assetVerification=await verifyAssetReceipts(evidence.assetReceipts,{sourceFiles:source.files,gameUrl:evidence.gameUrl,
+  deadlineHostMs:evidence.traceCompletion.deadlineHostMs,embeddedImageIndex:source.embeddedImageIndex,
+  readCapturedFile:file=>readFile(resolve(capture,file))});
+ const scripts=evidence.assetReceipts.filter(r=>r.kind==='http-file'&&!r.expectedEmptyResponse&&new URL(r.url).pathname.endsWith('.js'));
+ const stableReceipts=rows=>rows.map(r=>JSON.stringify(r)).sort();
+ assert.deepEqual(stableReceipts(evidence.scriptReceipts),stableReceipts(scripts),'Script receipts are not the complete matching HTTP response subset');
  const exit=JSON.parse(await readFile(resolve(capture,'process-exit.json'),'utf8'));
  const statusText=(await readFile(resolve(directory,'original-process-exit.txt'),'utf8')).trim();
  assert(/^\d+$/.test(statusText));const originalStatus=Number(statusText);
@@ -49,7 +49,7 @@ try{
  summary={...verdict,originalProcessExit:originalStatus,originalReportSha256:evidence.originalReportSha256,
   traceSha256:evidence.traceSha256,cpuProfileSha256:evidence.cpuProfileSha256,sourceHead:PIN.head,tree:PIN.tree,diagnosticSource:evidence.diagnosticSource,
   nativeRide:observed.nativeRide,rendererTimeline:observed.rendererTimeline,cpuCoverage:observed.cpuCoverage,
-  longestNativeEvents:observed.longEvents,originalGpsPassed:report.gpsRegression.passed};
+  longestNativeEvents:observed.longEvents,originalGpsPassed:report.gpsRegression.passed,assetVerification};
 }catch(error){if(error.traceReceipt)summary.traceReceipt=error.traceReceipt;failures.push(error.stack||String(error));}
 summary.validationErrors=failures;summary.validationPassed=failures.length===0;
 await writeFile(resolve(directory,'validation.json'),JSON.stringify(summary,null,2)+'\n');

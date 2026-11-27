@@ -6,6 +6,7 @@ import {readFile,writeFile,mkdir,cp,lstat} from 'node:fs/promises';
 import {resolve,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {GAME,PIN,ROCKS,gitBlob,sha256,hashFile,buildInventory,verifyPreviewBuild,verifyDriver,verifySourceArtifact,verifyDistArchive} from './contract.mjs';
+import {buildEmbeddedAssetIndex} from './embedded-assets.mjs';
 export {verifySourceArtifact} from './contract.mjs';
 const save=(p,v)=>writeFile(p,JSON.stringify(v,null,2)+'\n',{flag:'wx'});
 const timingPath='lottominded-ultra.io/games/gothtechnology2/belle-isle-source/research/street-detail-stats.json';
@@ -63,6 +64,8 @@ export async function preparePreview({checkout,evidence,sourceArchive,sourceMeta
   await writeFile(resolve(checkout,timingPath),timingBefore);}
  assert.equal(git(['diff','--name-only','HEAD','--']),'');
  const files=await buildInventory(resolve(game,'dist')),previewBuild=await verifyPreviewBuild(resolve(game,'dist'),files);
+ const embeddedImageIndex=await buildEmbeddedAssetIndex(resolve(game,'dist'),files);
+ await save(resolve(evidence,'embedded-image-index.json'),embeddedImageIndex);
  const archive=resolve(evidence,'rebuilt-preview-dist.zip');
  const zipper=`import pathlib,sys,zipfile\nroot=pathlib.Path(sys.argv[1])\nwith zipfile.ZipFile(sys.argv[2],'x',compression=zipfile.ZIP_DEFLATED,compresslevel=6) as z:\n for p in sorted(root.rglob('*')):\n  assert not p.is_symlink()\n  if p.is_file(): z.write(p,p.relative_to(root).as_posix())\n`;
  execFileSync('python3',['-c',zipper,resolve(game,'dist'),archive]);
@@ -70,6 +73,7 @@ export async function preparePreview({checkout,evidence,sourceArchive,sourceMeta
  const receipt={diagnosticBuild:true,failedBuildByteReplay:false,head:PIN.head,tree:PIN.tree,canonicalPreviewRun:PIN.canonicalPreviewRun,
   sourceArtifactId:PIN.sourceArtifactId,sourceArtifactSha256:PIN.sourceArtifactSha256,rocks:ROCKS,buildCommand:['npm','run','build'],
   buildEnvironment:{VITE_POLYHAVEN_ROCK_PREVIEW:'1'},buildExit:0,cleanTrackedInputs:true,commands,previewBuild,files,
+  embeddedImageIndexFile:'embedded-image-index.json',embeddedImageIndexReceipt:await hashFile(resolve(evidence,'embedded-image-index.json')),
   distArchive:'rebuilt-preview-dist.zip',distArchiveReceipt:await hashFile(archive),node:process.version,npm:execFileSync('npm',['--version'],{encoding:'utf8'}).trim()};
  await save(resolve(evidence,'preview-build-receipt.json'),receipt);return receipt;
 }
