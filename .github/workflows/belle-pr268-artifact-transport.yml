@@ -1,0 +1,92 @@
+# Transport only: recover exact bytes of an already-completed diagnostic artifact.
+name: Belle Isle PR268 archived trace transport
+
+on:
+  pull_request:
+    branches:
+      - upgrade-redesign-perf-261-full-trace-20261127
+    paths:
+      - '.github/workflows/belle-pr268-artifact-transport.yml'
+      - '.github/diagnostics/belle-pr268-artifact-transport/**'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: belle-pr268-artifact-transport-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  archived-trace-transport:
+    if: github.repository == 'robjasper2084/Jungle-Lotto' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.base.sha == '2806fbd4f9b445177b0fd37c6a417ec844312d30'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out only the transport source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: transport-source
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/diagnostics/belle-pr268-artifact-transport/
+            /.github/workflows/belle-pr268-artifact-transport.yml
+      - name: Verify transport integrity and credential handling
+        run: |
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE/transport-source/.github/diagnostics/belle-pr268-artifact-transport"
+          python3 transport_test.py
+          python3 -m py_compile transport.py transport_test.py
+      - name: Verify and split the existing completed-run artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          transport_bundle="$GITHUB_WORKSPACE/transport-source/.github/diagnostics/belle-pr268-artifact-transport"
+          python3 "$transport_bundle/transport.py" "$RUNNER_TEMP/belle-pr268-artifact-transport" 2>&1 | tee "$RUNNER_TEMP/belle-pr268-artifact-transport.log"
+      - name: Retain original artifact bytes 0 through 268435455
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-pr268-artifact-15190968508-part-000
+          path: ${{ runner.temp }}/belle-pr268-artifact-transport/original-artifact.part-000.bin
+          compression-level: 0
+          if-no-files-found: error
+          retention-days: 14
+      - name: Retain original artifact bytes 268435456 through 536870911
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-pr268-artifact-15190968508-part-001
+          path: ${{ runner.temp }}/belle-pr268-artifact-transport/original-artifact.part-001.bin
+          compression-level: 0
+          if-no-files-found: error
+          retention-days: 14
+      - name: Retain the remaining original artifact bytes
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-pr268-artifact-15190968508-part-002
+          path: ${{ runner.temp }}/belle-pr268-artifact-transport/original-artifact.part-002.bin
+          compression-level: 0
+          if-no-files-found: error
+          retention-days: 14
+      - name: Retain the single-file reconstruction manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-pr268-artifact-15190968508-manifest
+          path: ${{ runner.temp }}/belle-pr268-artifact-transport/manifest.json
+          compression-level: 0
+          if-no-files-found: error
+          retention-days: 14
+      - name: Retain transport provenance and failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-pr268-artifact-15190968508-transport-metadata
+          path: |
+            ${{ runner.temp }}/belle-pr268-artifact-transport/*.json
+            ${{ runner.temp }}/belle-pr268-artifact-transport/*.jsonl
+            ${{ runner.temp }}/belle-pr268-artifact-transport.log
+          compression-level: 0
+          if-no-files-found: error
+          retention-days: 14
