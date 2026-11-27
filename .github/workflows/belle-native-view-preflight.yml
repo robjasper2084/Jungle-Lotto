@@ -1,0 +1,210 @@
+name: Belle Isle fixed-source native view preflight (diagnostic only)
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/belle-native-view-preflight.yml'
+      - '.github/diagnostics/belle-view-preflight/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: belle-native-view-preflight-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  DIAGNOSTIC_EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+
+jobs:
+  build-staged:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    outputs:
+      source_head: ${{ steps.pins.outputs.head }}
+      artifact_id: ${{ steps.upload.outputs.artifact-id }}
+      artifact_sha256: ${{ steps.upload.outputs.artifact-digest }}
+      inventory_sha256: ${{ steps.binding.outputs.inventory_sha256 }}
+      index_sha256: ${{ steps.binding.outputs.index_sha256 }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: diagnostic
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/diagnostics/belle-view-preflight/
+            /.github/workflows/belle-native-view-preflight.yml
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Require the reviewed immutable fixed-source pin
+        id: pins
+        run: node diagnostic/.github/diagnostics/belle-view-preflight/contract.mjs print-head >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.pins.outputs.head }}
+          path: app
+          persist-credentials: false
+      - name: Archive exact source and check the isolated collector
+        run: |
+          set -euo pipefail
+          bundle="$GITHUB_WORKSPACE/diagnostic/.github/diagnostics/belle-view-preflight"
+          game="$GITHUB_WORKSPACE/app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game"
+          evidence="$GITHUB_WORKSPACE/build-evidence"
+          mkdir -p "$evidence"
+          node "$bundle/archive-source.mjs" capture "$GITHUB_WORKSPACE/diagnostic" "$evidence"
+          node "$bundle/contract.mjs" source "$GITHUB_WORKSPACE/app" "$evidence"
+          export PREFLIGHT_PLANNER_PATH="$game/scripts/staged-landmark-exterior-proof.mjs"
+          export PREFLIGHT_APP_DIR="$GITHUB_WORKSPACE/app"
+          node --test "$bundle/contract.test.mjs" "$bundle/grid.test.mjs" "$bundle/source.test.mjs" 2>&1 | tee "$evidence/focused-checks.log"
+          python3 -B "$bundle/restore-build.test.py" 2>&1 | tee "$evidence/archive-checks.log"
+      - name: Original staged typecheck, full suite, and build
+        working-directory: app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          VITE_STAGED_BELLE_ARCHITECTURE: '1'
+        run: |
+          npm ci
+          npm run check
+          npm test
+          npm run build
+      - name: Original twelve-GLB verification and source/index marker
+        working-directory: app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          STAGED_LANDMARK_SOURCE_SHA: ${{ steps.pins.outputs.head }}
+        run: |
+          node --input-type=module <<'NODE'
+          import {createHash} from 'node:crypto';
+          import {readFile,writeFile} from 'node:fs/promises';
+          import {execFileSync} from 'node:child_process';
+          const base='dist/belle/staged-architecture/';
+          const manifest=JSON.parse(await readFile(base+'manifest.json','utf8'));
+          if(manifest.productionReady!==false||manifest.models.length!==4)throw Error('Staging manifest contract changed');
+          let count=0;
+          for(const site of manifest.models)for(const lod of site.lods){
+            const bytes=await readFile(base+lod.file);
+            if(bytes.length!==lod.bytes||createHash('sha256').update(bytes).digest('hex')!==lod.sha256)throw Error('dist asset hash mismatch: '+lod.file);
+            count++;
+          }
+          if(count!==12)throw Error('Expected twelve exact GLBs');
+          console.log('All 12 staged GLB bytes verified in built artifact');
+          const sourceSha=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
+          if(sourceSha!==process.env.STAGED_LANDMARK_SOURCE_SHA)throw Error('Staged build checkout changed');
+          const indexSha256=createHash('sha256').update(await readFile('dist/index.html')).digest('hex');
+          await writeFile('dist/staged-landmark-proof-build.json',JSON.stringify({sourceSha,indexSha256,stagedFlag:'VITE_STAGED_BELLE_ARCHITECTURE=1'})+'\n');
+          NODE
+      - name: Bind every compiled byte and verify unchanged source
+        id: binding
+        run: |
+          set -euo pipefail
+          bundle="$GITHUB_WORKSPACE/diagnostic/.github/diagnostics/belle-view-preflight"
+          node "$bundle/contract.mjs" built "$GITHUB_WORKSPACE/app" "$GITHUB_WORKSPACE/build-evidence" >> "$GITHUB_OUTPUT"
+          node "$bundle/archive-source.mjs" verify "$GITHUB_WORKSPACE/diagnostic" "$GITHUB_WORKSPACE/build-evidence"
+      - uses: actions/upload-artifact@v4
+        id: upload
+        with:
+          name: belle-view-preflight-fixed-staged-build-NOT-RELEASE
+          path: app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist/
+          if-no-files-found: error
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: belle-view-preflight-build-provenance-NOT-RELEASE
+          path: build-evidence/
+          if-no-files-found: warn
+          retention-days: 14
+
+  native-view-preflight:
+    needs: build-staged
+    runs-on: macos-15
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        layout: [desktop, phone]
+    env:
+      PREFLIGHT_BUILD_ARTIFACT_ID: ${{ needs.build-staged.outputs.artifact_id }}
+      PREFLIGHT_BUILD_ARTIFACT_SHA256: ${{ needs.build-staged.outputs.artifact_sha256 }}
+      PREFLIGHT_BUILD_INVENTORY_SHA256: ${{ needs.build-staged.outputs.inventory_sha256 }}
+      PREFLIGHT_BUILD_INDEX_SHA256: ${{ needs.build-staged.outputs.index_sha256 }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: diagnostic
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/diagnostics/belle-view-preflight/
+            /.github/workflows/belle-native-view-preflight.yml
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.build-staged.outputs.source_head }}
+          path: app
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/workflows/belle-staged-architecture-native.yml
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Verify source and restore only this run's immutable build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          bundle="$GITHUB_WORKSPACE/diagnostic/.github/diagnostics/belle-view-preflight"
+          evidence="$GITHUB_WORKSPACE/evidence"
+          mkdir -p "$evidence"
+          node "$bundle/archive-source.mjs" capture "$GITHUB_WORKSPACE/diagnostic" "$evidence"
+          node "$bundle/contract.mjs" source "$GITHUB_WORKSPACE/app" "$evidence"
+          cp "$bundle/README.md" "$evidence/scope.md"
+          python3 -B "$bundle/restore-build.py"
+      - name: Install the original native browser runtime
+        working-directory: app/lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install chrome
+      - name: Collect original arrival observations and constructor grids
+        timeout-minutes: 12
+        env:
+          PREFLIGHT_LAYOUT: ${{ matrix.layout }}
+        run: |
+          set -euo pipefail
+          bundle="$GITHUB_WORKSPACE/diagnostic/.github/diagnostics/belle-view-preflight"
+          export PREFLIGHT_APP_DIR="$GITHUB_WORKSPACE/app"
+          export PREFLIGHT_EVIDENCE="$GITHUB_WORKSPACE/evidence"
+          { date -u; sw_vers; uname -m; node -v; "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --version; } > "$PREFLIGHT_EVIDENCE/native-host.txt"
+          native_status=0
+          node "$bundle/preflight.mjs" > "$PREFLIGHT_EVIDENCE/native-preflight.log" 2>&1 || native_status=$?
+          printf '%s\n' "$native_status" > "$PREFLIGHT_EVIDENCE/native-process-exit.txt"
+          cat "$PREFLIGHT_EVIDENCE/native-preflight.log"
+          exit "$native_status"
+      - name: Independently verify raw receipts and unchanged inputs
+        if: always()
+        timeout-minutes: 2
+        run: |
+          set -euo pipefail
+          bundle="$GITHUB_WORKSPACE/diagnostic/.github/diagnostics/belle-view-preflight"
+          evidence="$GITHUB_WORKSPACE/evidence"
+          verification_status=0
+          node "$bundle/validate-evidence.mjs" "$GITHUB_WORKSPACE/app" "$evidence" || verification_status=$?
+          source_status=0
+          node "$bundle/archive-source.mjs" verify "$GITHUB_WORKSPACE/diagnostic" "$evidence" || source_status=$?
+          if [ "$verification_status" -ne 0 ]; then exit "$verification_status"; fi
+          exit "$source_status"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: belle-view-preflight-${{ matrix.layout }}-NOT-RELEASE
+          path: evidence/
+          if-no-files-found: warn
+          retention-days: 14
