@@ -1,11 +1,14 @@
 #!/usr/bin/env node
 /** Additional diagnostic only. Explicit static factory matrix work is disabled; all original release gates remain unchanged. */
 import assert from 'node:assert/strict';
-import {createHash} from 'node:crypto';
+import {createHash,randomBytes} from 'node:crypto';
 import {createRequire} from 'node:module';
 import {execFileSync} from 'node:child_process';
 import {createServer} from 'node:http';
-import {readFile,readdir,mkdir,writeFile} from 'node:fs/promises';
+import {readFile,readdir,mkdir,writeFile,open,rename,mkdtemp,rm} from 'node:fs/promises';
+import {readFileSync,createReadStream} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {Readable} from 'node:stream';
 import {resolve,dirname,extname,sep,posix} from 'node:path';
 import {inflateSync,deflateSync} from 'node:zlib';
 
@@ -195,7 +198,7 @@ function pngForTest(pixels,width,height,filter=0){
  for(let y=0;y<height;y++){raw[y*(stride+1)]=filter;for(let x=0;x<stride;x++){const left=x>=4?pixels[y*stride+x-4]:0,up=y?pixels[(y-1)*stride+x]:0,c=y&&x>=4?pixels[(y-1)*stride+x-4]:0,predictor=filter===0?0:filter===1?left:filter===2?up:filter===3?Math.floor((left+up)/2):paeth(left,up,c);raw[y*(stride+1)+1+x]=(pixels[y*stride+x]-predictor)&255;}}
  return Buffer.concat([Buffer.from('89504e470d0a1a0a','hex'),chunk('IHDR',head),chunk('IDAT',deflateSync(raw)),chunk('IEND',Buffer.alloc(0))]);
 }
-function selfTest(){
+async function selfTest(){
  const pixels=Buffer.from([1,2,3,255,250,4,5,255,17,31,63,255,99,100,101,255]);for(let filter=0;filter<=4;filter++)assert.deepEqual(decodePng(pngForTest(pixels,2,2,filter),2,2).rgba,pixels);const corrupt=pngForTest(pixels,2,2);corrupt[45]^=1;assert.throws(()=>decodePng(corrupt,2,2),/CRC/);assert.throws(()=>decodePng(pngForTest(pixels,2,2),3,2),/width/);const alpha=Buffer.from(pixels);alpha[3]--;assert.deepEqual(pixelDiff(pixels,alpha),{changedPixels:1,maxChannelDelta:1});
  assert.throws(()=>normalizeFactory('changed source','src/belle/detroitScene.ts'),/bookkeeping count/);assert.throws(()=>exactNames([{name:'a'},{name:'a'}],['a','b'],'name','fixture'),/identifiers/);
  const registry=enabled=>{let next=1;const owners=EXPECTED_OWNERS.map(expected=>{const nodeIds=Array.from({length:expected.nodes},()=>next++),rootIds=nodeIds.slice(0,expected.roots);return {owner:expected.owner,rootIds,nodeIds,rootCount:expected.roots,nodeCount:expected.nodes,eligible:true,active:enabled,invalidated:false,reason:null,flagBits:nodeIds.map(()=>enabled?0:3),flagCounts:flagCounts(nodeIds.map(()=>enabled?0:3))};});return {version:1,enabled,registeredOwners:4,registeredRoots:187,registeredNodes:907,activeOwners:enabled?4:0,activeRoots:enabled?187:0,activeNodes:enabled?907:0,invalidations:0,rejectedRegistrations:0,owners,rejections:[]};};
@@ -206,22 +209,126 @@ function selfTest(){
  assert.equal(validateTimings(result,true).length,6);const lane=result.timings[0].lanes[0];lane.samples[1].gpu.queryId=1;assert.throws(()=>validateTimings(result,true),/unique contiguous/);lane.samples[1].gpu.queryId=2;lane.cpuMs=2;assert.throws(()=>validateTimings(result,true),/raw render CPU mean/);lane.cpuMs=1;lane.observerAbsent=false;assert.throws(()=>validateTimings(result,true));lane.observerAbsent=true;lane.matrixOnly.afterSha256='0'.repeat(64);assert.throws(()=>validateTimings(result,true));lane.matrixOnly.afterSha256=lane.matrixOnly.beforeSha256;lane.registryAfter=candidate;assert.throws(()=>validateTimings(result,true),/actual mode/);lane.registryAfter=original;
  const wrongFlags=structuredClone(original);wrongFlags.owners[0].flagBits[0]=0;wrongFlags.owners[0].flagCounts=flagCounts(wrongFlags.owners[0].flagBits);lane.registryAfter=wrongFlags;assert.throws(()=>validateTimings(result,true),/original per-node matrix flags not restored/);lane.registryAfter=original;
  const programs=new Map([[1,{vertexSha256:'a',fragmentSha256:'b'}],[2,{vertexSha256:'a',fragmentSha256:'b'}],[3,{vertexSha256:'a',fragmentSha256:'changed'}]]),draw={object:1,geometry:2,program:1,transformWords:[0,1]},first={draws:[draw]},second={draws:[{...draw,program:2}]};assert.equal(immediateDrawIdentity(first,second,programs),true);second.draws[0].geometry=3;assert.equal(immediateDrawIdentity(first,second,programs),false);second.draws[0].geometry=2;second.draws[0].program=3;assert.equal(immediateDrawIdentity(first,second,programs),false);
+ await transportSelfTest();
  console.log('Static transform proof self-test passed: independent PNG/alpha/CRC decoding, binary signed-zero matrices, exact factory populations, absent measured observers, and all6144 raw GPU/render/matrix samples.');
 }
 
 async function verifyPartitions(directory){
  assert.equal(typeof directory,'string');const files=[];async function walk(path){for(const entry of await readdir(path,{withFileTypes:true})){const next=resolve(path,entry.name);if(entry.isDirectory())await walk(next);else if(entry.name==='report.json')files.push(next);}}await walk(resolve(directory));assert.equal(files.length,3,'Exactly two fixed software partitions and one full native artifact required');
  const game=resolve(import.meta.dirname,'..'),repo=execFileSync('git',['rev-parse','--show-toplevel'],{cwd:game,encoding:'utf8'}).trim(),sourceHead=execFileSync('git',['rev-parse','HEAD'],{cwd:repo,encoding:'utf8'}).trim();if(process.env.STATIC_TRANSFORMS_PROOF_SOURCE_SHA)assert.equal(sourceHead,process.env.STATIC_TRANSFORMS_PROOF_SOURCE_SHA);
- const reports=[];for(const file of files){const report=JSON.parse(await readFile(file,'utf8'));assert.equal(report.schema,'belle-static-transforms-native-proof-v1');assert.equal(report.sourceHead,sourceHead);assert.equal(report.baseline,BASELINE);assert.equal(report.baselineTree,'8754910f55ac44dd430cd5601d789c0d84d40e35');assert.equal(report.statisticalPlanSha256,STATISTICAL_PLAN_SHA256);assert.equal(report.compileOnly,false);assert.equal(report.compiled,true);assert.equal(report.passed,true,file+': strict proof failed');assert.deepEqual(report.errors,[]);assert.deepEqual(report.failedRequests,[]);assert.equal(report.fixtureSha256,sha256(await readFile(resolve(dirname(file),'fixture.js'))));
+ const reports=[];for(const file of files){const report=await readIndexedReport(file);assert.equal(report.schema,'belle-static-transforms-native-proof-v1');assert.equal(report.sourceHead,sourceHead);assert.equal(report.baseline,BASELINE);assert.equal(report.baselineTree,'8754910f55ac44dd430cd5601d789c0d84d40e35');assert.equal(report.statisticalPlanSha256,STATISTICAL_PLAN_SHA256);assert.equal(report.compileOnly,false);assert.equal(report.compiled,true);assert.equal(report.passed,true,file+': strict proof failed');assert.deepEqual(report.errors,[]);assert.deepEqual(report.failedRequests,[]);assert.equal(report.fixtureSha256,sha256(await readFile(resolve(dirname(file),'fixture.js'))));
   exactNames(report.sourceReceipts,SOURCE_RECEIPT_PATHS,'path','Complete current proof source receipts');for(const receipt of report.sourceReceipts){assert.equal(receipt.sha256,sha256(await readFile(resolve(repo,receipt.path))));assert.equal(receipt.matchesHead,true);assert.equal(receipt.headSha256,receipt.sha256);}
-  validateOverrides(report.factoryOverrides);for(const override of report.factoryOverrides)assert.deepEqual(override.patches,normalizeFactory(await readFile(resolve(repo,GAME_PATH,override.source),'utf8'),override.source).patches);validateAssets(report);const native=report.partition==='all';assert.equal(report.platform,native?'darwin':'linux');const decoded=new Map();exactNames(report.captures,PARTITIONS[report.partition].flatMap(name=>IMAGE_SUFFIXES.map(suffix=>name+'-'+suffix)),'name','Aggregate exact saved captures');for(const capture of report.captures){const bytes=await readFile(resolve(dirname(file),capture.file));assert.equal(sha256(bytes),capture.sha256);const value=decodePng(bytes,WIDTH,HEIGHT);assert.equal(value.rgbaSha256,capture.rgbaSha256);assert.equal(value.readPixelsSha256,capture.readPixelsSha256);decoded.set(capture.name,value);}
-  assert.deepEqual(report.independentPixelAudit,independentPixelAudit(decoded,report.partition));const checked=validateResult(report.result,decoded,native,report.partition,report.result.bridgeBasis);assert.deepEqual(checked.independent,report.independent);assert.deepEqual(checked.coverage,report.independentCoverage);assert.deepEqual(validateTimings(report.result,native),report.timingSummary);reports.push(report);
+  validateOverrides(report.factoryOverrides);for(const override of report.factoryOverrides)assert.deepEqual(override.patches,normalizeFactory(await readFile(resolve(repo,GAME_PATH,override.source),'utf8'),override.source).patches);validateAssets(report);const native=report.partition==='all';assert.equal(report.platform,native?'darwin':'linux');assert.equal(report.checkpointTransport.complete,true);assert.equal(report.checkpointTransport.finalReceived,true);assert.deepEqual(report.checkpointTransport.rejected,[]);const finalManifest=JSON.parse(await readFile(resolve(dirname(file),'checkpoint-final.json'),'utf8'));assert.equal(await hashFile(resolve(dirname(file),'checkpoint-final.json')),report.checkpointTransport.finalSha256);validateCheckpointManifest(finalManifest,report.checkpointTransport.records,report.partition);const decoded=lazyDecodedImages(dirname(file),report.captures);exactNames(report.captures,PARTITIONS[report.partition].flatMap(name=>IMAGE_SUFFIXES.map(suffix=>name+'-'+suffix)),'name','Aggregate exact saved captures');for(const capture of report.captures){const expectedRgba=capture.rgbaSha256,expectedRead=capture.readPixelsSha256;const value=decoded.get(capture.name);assert.equal(value.rgbaSha256,expectedRgba);assert.equal(value.readPixelsSha256,expectedRead);}
+  assert.deepEqual(report.independentPixelAudit,independentPixelAudit(decoded,report.partition));const checked=validateResult(report.result,decoded,native,report.partition,report.result.bridgeBasis);assert.deepEqual(checked.independent,report.independent);assert.deepEqual(checked.coverage,report.independentCoverage);assert.deepEqual(validateTimings(report.result,native),report.timingSummary);reports.push({sourceHead:report.sourceHead,baseline:report.baseline,platform:report.platform,partition:report.partition,fixtureSha256:report.fixtureSha256,sourceReceipts:report.sourceReceipts,pinnedSources:report.pinnedSources,factoryOverrides:report.factoryOverrides,result:{rows:report.result.rows.map(row=>({name:row.name}))}});
  }
  exactNames(reports,['all','linux-a','linux-b'],'partition','Complete fixed partition union');assert.deepEqual(reports.filter(report=>report.platform==='linux').flatMap(report=>report.result.rows.map(row=>row.name)).sort(),[...CASES].sort());const canonical=reports[0];for(const report of reports.slice(1)){assert.equal(report.fixtureSha256,canonical.fixtureSha256);assert.deepEqual([...report.sourceReceipts].sort((a,b)=>a.path.localeCompare(b.path)),[...canonical.sourceReceipts].sort((a,b)=>a.path.localeCompare(b.path)));assert.deepEqual([...report.pinnedSources].sort((a,b)=>a.path.localeCompare(b.path)),[...canonical.pinnedSources].sort((a,b)=>a.path.localeCompare(b.path)));assert.deepEqual(report.factoryOverrides,canonical.factoryOverrides);}
  console.log(JSON.stringify({passed:true,sourceHead,baseline:BASELINE,nativeCases:8,softwareCases:8,nativeComparisons:6,nativeGpuSamples:6144,matrixOnlySamples:6144,scope:'Complete diagnostic union only; original full-game release gates remain required.'}));
 }
 function validateOverrides(overrides){exactNames(overrides,Object.keys(FACTORY_OVERRIDES),'source','Exact registration-only current factory override set');for(const record of overrides){const expected=FACTORY_OVERRIDES[record.source];assert.equal(record.currentSha256,expected.current);assert.equal(record.originalSha256,expected.original);assert.equal(record.normalizedSha256,expected.original);assert.equal(record.restoresOriginalBytes,true);assert(record.patches.length>0);}}
 function validateAssets(report){assert.equal(report.assetBarrier?.count,1,'Exactly one completed publication barrier');assert.deepEqual(report.assetBarrier.lateRequests,[],'No streamed or lazy loading after scene freeze');assert.equal(report.assetBarrier.requests,report.assets.reduce((sum,asset)=>sum+asset.requests,0),'All scene asset requests completed before timing');for(const path of REQUIRED_PACKS){const asset=report.assets.find(asset=>asset.path===path);assert(asset&&asset.requests>0&&asset.bytes>0,'Actual required streamed pack was not served: '+path);assert.match(asset.sha256,hashPattern);assert.match(asset.gitBlob,/^[a-f0-9]{40}$/);}}
+// Checkpoint transport is outside every warm/render/sample loop. Raw bodies
+// remain immutable on disk; reconstructed rows are loaded one view at a time.
+const CHECKPOINT_SCHEMA='belle-static-transforms-checkpoint-v1';
+const ACK_SCHEMA='belle-static-transforms-checkpoint-ack-v1';
+const FINAL_SCHEMA='belle-static-transforms-checkpoint-final-v1';
+const MAX_CHECKPOINT_BYTES=128*1024*1024;
+function checkpointAck(record){return {schema:ACK_SCHEMA,partition:record.partition,sequence:record.sequence,name:record.name,sha256:record.sha256,bytes:record.bytes,persisted:true};}
+function inspectCheckpoint(part,records,partition,sourceHead,sha,bytes,declaredSha,routeSequence){
+ assert.equal(part?.schema,CHECKPOINT_SCHEMA,'Checkpoint schema');assert.equal(part.sourceHead,sourceHead,'Checkpoint source HEAD');assert.equal(part.baseline,BASELINE,'Checkpoint immutable baseline');assert.equal(part.partition,partition,'Checkpoint fixed partition');
+ assert.match(sha,hashPattern);assert.match(declaredSha,hashPattern);assert.equal(sha,declaredSha,'Checkpoint body SHA does not match browser declaration');integer(bytes,'Checkpoint body bytes',1);assert(bytes<=MAX_CHECKPOINT_BYTES,'Checkpoint body exceeds bounded transport');
+ integer(part.sequence,'Checkpoint sequence');assert.equal(part.sequence,routeSequence,'Checkpoint route/body sequence');assert.equal(part.sequence,records.length,'Duplicate, missing or misordered checkpoint');assert(part.sequence<PARTITIONS[partition].length,'Unexpected extra checkpoint');assert.equal(part.name,PARTITIONS[partition][part.sequence],'Checkpoint fixed case order');assert.equal(part.caseIndex,CASES.indexOf(part.name),'Checkpoint canonical trajectory index');assert.equal(part.previousSha256,records.at(-1)?.sha256??null,'Checkpoint hash chain');
+ assert.equal(part.context?.partition,partition);assert.deepEqual(part.context?.selectedCases,PARTITIONS[partition]);assert.equal(part.context.schema,'belle-static-transforms-experiment-v1');
+ for(const key of ['rows','controls','timings','images','programs','errors'])assert(Array.isArray(part[key]),'Checkpoint '+key+' must be an array');
+ for(const key of ['rows','controls']){assert(part[key].length<=1,'A checkpoint cannot mix view records');for(const row of part[key])assert.equal(row.name,part.name,'Checkpoint '+key+' view identity');}
+ const expectedTiming=partition==='all'&&part.caseIndex<6?1:0;assert(part.timings.length<=expectedTiming,'Checkpoint timing membership');for(const timing of part.timings)assert.equal(timing.name,part.name);
+ const expectedImages=IMAGE_SUFFIXES.map(suffix=>part.name+'-'+suffix),seen=new Set();for(const image of part.images){assert(expectedImages.includes(image.name),'Checkpoint foreign capture');assert(!seen.has(image.name),'Checkpoint duplicate capture');seen.add(image.name);assert(typeof image.png==='string'&&image.png.startsWith('data:image/png;base64,'),'Checkpoint PNG body');}
+ return {partition,sequence:part.sequence,name:part.name,caseIndex:part.caseIndex,previousSha256:part.previousSha256,sha256:sha,bytes,rowCount:part.rows.length,controlCount:part.controls.length,timingCount:part.timings.length,imageCount:part.images.length,programCount:part.programs.length};
+}
+function validateCheckpointManifest(manifest,records,partition){
+ assert.equal(manifest?.transport,FINAL_SCHEMA,'Small terminal transport manifest');assert.equal(manifest.metadata?.partition,partition);assert.deepEqual(manifest.metadata?.selectedCases,PARTITIONS[partition]);
+ for(const key of ['rows','controls','timings','images','programs'])assert(!Object.hasOwn(manifest.metadata,key),'Terminal metadata must not duplicate large '+key);
+ assert.equal(records.length,PARTITIONS[partition].length,'Missing completed view checkpoint');assert.deepEqual(manifest.checkpoints,records.map(checkpointAck),'Final checkpoint identities or SHA acknowledgements differ');
+ exactNames(manifest.completed,PARTITIONS[partition],'name','Terminal completed views');assert.deepEqual(manifest.completed.map(row=>row.name),PARTITIONS[partition]);
+ for(const [index,record]of records.entries()){assert.equal(record.sequence,index);assert.equal(record.name,PARTITIONS[partition][index]);assert.equal(record.rowCount,1,'Incomplete checkpoint row');assert.equal(record.controlCount,1,'Incomplete checkpoint controls');assert.equal(record.imageCount,10,'Incomplete checkpoint captures');assert.equal(record.timingCount,partition==='all'&&record.caseIndex<6?1:0,'Incomplete checkpoint timing row');integer(record.programCount,'Checkpoint linked programs',1);const completed=manifest.completed[index];assert.equal(completed.imageCount,record.imageCount);assert.equal(completed.timingCount,record.timingCount);}
+ assert.equal(records.reduce((sum,record)=>sum+record.imageCount,0),PARTITIONS[partition].length*10);assert.equal(records.reduce((sum,record)=>sum+record.timingCount,0),partition==='all'?6:0,'Complete native timing union');
+}
+function validateCheckpointRequest(request,origin,token,barrierCount,busy,attempts){assert.equal(request.method,'POST','Checkpoint endpoint requires POST');assert.equal(request.headers.origin,origin,'Checkpoint must originate in this exact local fixture');assert.equal(request.headers['x-static-proof-token'],token,'Checkpoint capability mismatch');assert.equal(request.headers['content-type'],'application/json','Checkpoint content type');assert.equal(barrierCount,1,'Checkpoint before final asset publication');assert(!busy,'Concurrent checkpoint request');assert(attempts<16,'Unexpected checkpoint retry volume');}
+async function receiveBody(request,file){const output=await open(file,'wx'),hash=createHash('sha256');let bytes=0;try{for await(const chunk of request){const value=Buffer.isBuffer(chunk)?chunk:Buffer.from(chunk);bytes+=value.length;assert(bytes<=MAX_CHECKPOINT_BYTES,'Checkpoint body exceeds bounded transport');hash.update(value);await output.writeFile(value);}await output.sync();}finally{await output.close();}return {bytes,sha256:hash.digest('hex')};}
+async function saveCheckpointImages(part,output,captures,routeSequence){
+ const saved=[];if(!Array.isArray(part?.images))return saved;
+ for(const [index,capture]of part.images.entries()){
+  const valid=typeof capture.name==='string'&&/^[a-z0-9-]+$/.test(capture.name),name=valid?capture.name:'invalid-checkpoint-'+routeSequence+'-capture-'+index,duplicate=captures.some(image=>image.name===name),file=(duplicate?name+'-duplicate-'+captures.length:name)+'.png';
+  const data=typeof capture.png==='string'?capture.png:'',bytes=Buffer.from(data.replace(/^data:image\/png;base64,/,''),'base64');await writeFile(resolve(output,file),bytes,{flush:true});
+  const receipt={name,file,sha256:sha256(bytes),bytes:bytes.length};captures.push(receipt);saved.push(receipt);
+ }
+ return saved;
+}
+function mergeCheckpointPrograms(programs,map){for(const program of programs){integer(program.id,'Checkpoint native program ID');for(const type of ['vertex','fragment'])assert.equal(sha256(program[type]),program[type+'Sha256'],'Checkpoint actual linked shader hash');const prior=map.get(program.id);if(prior)assert.deepEqual(program,prior,'Conflicting bytes/linked state for the same actual native program ID');else map.set(program.id,program);}}
+function checkpointReader(output,records,partition,sourceHead,captures){
+ let cachedSequence=-1,cached=null;const captureByName=new Map(captures.map(capture=>[capture.name,capture]));
+ return record=>{
+  if(cachedSequence===record.sequence)return cached;
+  assert.match(record.file,/^checkpoint-\d{5}\.json$/,'Checkpoint local filename');const bytes=readFileSync(resolve(output,record.file));assert.equal(bytes.length,record.bytes,'Saved checkpoint length');assert.equal(sha256(bytes),record.sha256,'Saved checkpoint SHA');
+  const part=JSON.parse(bytes.toString('utf8')),observed=inspectCheckpoint(part,records.slice(0,record.sequence),partition,sourceHead,record.sha256,record.bytes,record.sha256,record.sequence);
+  for(const key of Object.keys(observed))assert.deepEqual(record[key],observed[key],'Saved checkpoint receipt '+key);
+  for(const image of part.images){const saved=captureByName.get(image.name);assert(saved,'Saved PNG receipt absent');const body=Buffer.from(image.png.slice('data:image/png;base64,'.length),'base64');assert.equal(sha256(body),saved.sha256,'Checkpoint PNG body differs from saved capture');assert.equal(body.length,saved.bytes);}
+  part.images=[];cachedSequence=record.sequence;cached=part;return part;
+ };
+}
+function reconstructResult(output,records,partition,sourceHead,captures,metadata){
+ const read=checkpointReader(output,records,partition,sourceHead,captures),programs=new Map();
+ for(const record of records)mergeCheckpointPrograms(read(record).programs,programs);
+ const lazy=(key,countKey)=>{const rows=[];for(const record of records)for(let index=0;index<record[countKey];index++){const slot=rows.length;Object.defineProperty(rows,slot,{enumerable:true,configurable:true,get:()=>read(record)[key][index]});}return rows;};
+ const first=records.length?read(records[0]):null,header=metadata??{...first?.context,coverage:{hiddenChangedPixels:0,shadowChangedPixels:0},poolAfter:null,ownerFinal:null,poolHooksPreserved:false,passed:false,errors:['Browser terminated before the terminal metadata was received.']};
+ return {...header,rows:lazy('rows','rowCount'),controls:lazy('controls','controlCount'),timings:lazy('timings','timingCount'),programs:[...programs.values()]};
+}
+function lazyDecodedImages(output,captures){
+ const byName=new Map(captures.map(capture=>[capture.name,capture]));let currentCase='',cache=new Map();
+ return {get(name){const capture=byName.get(name);assert(capture,'Saved capture absent '+name);const caseName=CASES.find(caseName=>name.startsWith(caseName+'-'));assert(caseName,'Foreign saved capture');if(currentCase!==caseName){cache.clear();currentCase=caseName;}if(!cache.has(name)){const bytes=readFileSync(resolve(output,capture.file));assert.equal(sha256(bytes),capture.sha256,'Saved PNG bytes changed');const decoded=decodePng(bytes,WIDTH,HEIGHT);for(let i=3;i<decoded.rgba.length;i+=4)assert.equal(decoded.rgba[i],255,'Framebuffer alpha must survive PNG transport');Object.assign(capture,{width:decoded.width,height:decoded.height,rgbaSha256:decoded.rgbaSha256,readPixelsSha256:decoded.readPixelsSha256});cache.set(name,decoded);}return cache.get(name);}};
+}
+function* jsonTokens(value){
+ if(value===null||typeof value!=='object'){yield JSON.stringify(value)??'null';return;}
+ if(Array.isArray(value)){yield '[';for(let i=0;i<value.length;i++){if(i)yield ',';yield*jsonTokens(value[i]);}yield ']';return;}
+ yield '{';let first=true;for(const key of Object.keys(value)){const item=value[key];if(item===undefined||typeof item==='function'||typeof item==='symbol')continue;if(!first)yield ',';first=false;yield JSON.stringify(key)+':';yield*jsonTokens(item);}yield '}';
+}
+function* jsonChunks(value){let buffer='';for(const token of jsonTokens(value)){buffer+=token;if(buffer.length>=262144){yield buffer;buffer='';}}if(buffer)yield buffer;yield '\n';}
+async function writeJsonStream(file,value){const temp=file+'.writing',output=await open(temp,'w'),hash=createHash('sha256');try{for(const chunk of jsonChunks(value)){hash.update(chunk);await output.writeFile(chunk);}await output.sync();}finally{await output.close();}await rename(temp,file);return hash.digest('hex');}
+function hashJson(value){const hash=createHash('sha256');for(const chunk of jsonChunks(value))hash.update(chunk);return hash.digest('hex');}
+async function hashFile(file){const hash=createHash('sha256');for await(const chunk of createReadStream(file))hash.update(chunk);return hash.digest('hex');}
+async function writeReport(output,report){
+ const reportSha256=await writeJsonStream(resolve(output,'report.json'),report),resultMetadata=report.result?Object.fromEntries(Object.entries(report.result).filter(([key])=>!['rows','controls','timings','programs'].includes(key))):null;
+ await writeJsonStream(resolve(output,'report-index.json'),{schema:'belle-static-transforms-report-index-v1',reportSha256,report:{...report,result:null},resultMetadata});
+}
+async function readIndexedReport(file){
+ const output=dirname(file),index=JSON.parse(await readFile(resolve(output,'report-index.json'),'utf8'));assert.equal(index.schema,'belle-static-transforms-report-index-v1');assert.equal(await hashFile(file),index.reportSha256,'Saved full report bytes differ from index');const report=index.report;
+ if(index.resultMetadata)report.result=reconstructResult(output,report.checkpointTransport.records,report.partition,report.sourceHead,report.captures,index.resultMetadata);
+ assert.equal(hashJson(report),index.reportSha256,'Lossless checkpoint reconstruction differs from the full report');return report;
+}
+
+async function transportSelfTest(){
+ const output=await mkdtemp(resolve(tmpdir(),'belle-static-checkpoint-')),sourceHead='a'.repeat(40),partition='linux-a',records=[],captures=[];
+ const request={method:'POST',headers:{origin:'http://127.0.0.1:1234','x-static-proof-token':'token','content-type':'application/json'}};
+ validateCheckpointRequest(request,request.headers.origin,'token',1,false,0);assert.throws(()=>validateCheckpointRequest(request,'http://127.0.0.1:5678','token',1,false,0),/originate/);assert.throws(()=>validateCheckpointRequest(request,request.headers.origin,'wrong',1,false,0),/capability/);assert.throws(()=>validateCheckpointRequest(request,request.headers.origin,'token',0,false,0),/publication/);assert.throws(()=>validateCheckpointRequest(request,request.headers.origin,'token',1,true,0),/Concurrent/);
+ const pixels=Buffer.from([1,2,3,255,4,5,6,255,7,8,9,255,10,11,12,255]),png='data:image/png;base64,'+pngForTest(pixels,2,2).toString('base64'),program={id:1,linked:true,vertex:'void main(){gl_Position=vec4(0.);}',fragment:'void main(){}'};program.vertexSha256=sha256(program.vertex);program.fragmentSha256=sha256(program.fragment);
+ const parts=[];
+ try{
+  for(const [sequence,name]of PARTITIONS[partition].entries()){
+   const part={schema:CHECKPOINT_SCHEMA,sourceHead,baseline:BASELINE,partition,sequence,name,caseIndex:CASES.indexOf(name),previousSha256:records.at(-1)?.sha256??null,context:{schema:'belle-static-transforms-experiment-v1',partition,selectedCases:PARTITIONS[partition]},rows:[{name,passed:true,marker:'row'+sequence}],controls:[{name,passed:true,marker:'control'+sequence}],timings:[],images:IMAGE_SUFFIXES.map(suffix=>({name:name+'-'+suffix,png})),programs:[program],errors:[]},body=Buffer.from(JSON.stringify(part)),file='checkpoint-'+String(sequence).padStart(5,'0')+'.json';
+   const saved=await receiveBody(Readable.from([body.subarray(0,17),body.subarray(17)]),resolve(output,file));assert.equal(saved.sha256,sha256(body));assert.equal(saved.bytes,body.length);assert.deepEqual(await readFile(resolve(output,file)),body,'Exact raw checkpoint persisted before ACK');const images=await saveCheckpointImages(part,output,captures,sequence),record={...inspectCheckpoint(part,records,partition,sourceHead,saved.sha256,saved.bytes,saved.sha256,sequence),file,images};
+   assert.throws(()=>inspectCheckpoint(part,records,partition,sourceHead,saved.sha256,saved.bytes,'0'.repeat(64),sequence),/body SHA/);records.push(record);parts.push({part,body});assert.throws(()=>inspectCheckpoint(part,records,partition,sourceHead,saved.sha256,saved.bytes,saved.sha256,sequence),/Duplicate, missing or misordered/);
+  }
+  const manifest={transport:FINAL_SCHEMA,checkpoints:records.map(checkpointAck),metadata:{schema:'belle-static-transforms-experiment-v1',partition,selectedCases:PARTITIONS[partition],passed:true,errors:[]},completed:records.map(record=>({name:record.name,rowPassed:true,controlPassed:true,imageCount:record.imageCount,timingCount:record.timingCount}))};
+  validateCheckpointManifest(manifest,records,partition);assert.throws(()=>validateCheckpointManifest(manifest,records.slice(0,3),partition),/Missing completed/);const missing=structuredClone(manifest);missing.checkpoints.pop();assert.throws(()=>validateCheckpointManifest(missing,records,partition),/acknowledgements/);const wrongHash=structuredClone(manifest);wrongHash.checkpoints[1].sha256='0'.repeat(64);assert.throws(()=>validateCheckpointManifest(wrongHash,records,partition),/acknowledgements/);const outOfOrder=structuredClone(manifest);[outOfOrder.checkpoints[0],outOfOrder.checkpoints[1]]=[outOfOrder.checkpoints[1],outOfOrder.checkpoints[0]];assert.throws(()=>validateCheckpointManifest(outOfOrder,records,partition),/acknowledgements/);
+  const future=parts[2];assert.throws(()=>inspectCheckpoint(future.part,records.slice(0,1),partition,sourceHead,sha256(future.body),future.body.length,sha256(future.body),2),/Duplicate, missing or misordered/);const chain={...parts[1].part,previousSha256:'0'.repeat(64)},chainBody=Buffer.from(JSON.stringify(chain));assert.throws(()=>inspectCheckpoint(chain,records.slice(0,1),partition,sourceHead,sha256(chainBody),chainBody.length,sha256(chainBody),1),/hash chain/);
+  const failed={...parts[0].part,rows:[{name:parts[0].part.name,passed:false}],controls:[],timings:[],images:[],errors:['Rendering failed after a partial frame']},failedBody=Buffer.from(JSON.stringify(failed));assert.equal(inspectCheckpoint(failed,[],partition,sourceHead,sha256(failedBody),failedBody.length,sha256(failedBody),0).rowCount,1,'Failure evidence must persist without requiring passed=true');const incomplete=records.map(record=>({...record}));incomplete[0].controlCount=0;assert.throws(()=>validateCheckpointManifest(manifest,incomplete,partition),/Incomplete checkpoint controls/);
+  const programs=new Map();mergeCheckpointPrograms([program,structuredClone(program)],programs);assert.equal(programs.size,1);assert.throws(()=>mergeCheckpointPrograms([{...program,linked:false}],programs),/Conflicting/);const changed={...program,fragment:'void main(){discard;}'};changed.fragmentSha256=sha256(changed.fragment);assert.throws(()=>mergeCheckpointPrograms([changed],programs),/Conflicting/);
+  const result=reconstructResult(output,records,partition,sourceHead,captures,manifest.metadata);assert.equal(typeof Object.getOwnPropertyDescriptor(result.rows,'0').get,'function');assert.deepEqual(result.rows.map(row=>row.marker),['row0','row1','row2','row3']);assert.equal(result.programs.length,1);const report={schema:'fixture',sourceHead,partition,checkpointTransport:{records,complete:true},captures,result};await writeReport(output,report);const stored=JSON.parse(await readFile(resolve(output,'report.json'),'utf8'));const recovered=await readIndexedReport(resolve(output,'report.json'));assert.deepEqual(JSON.parse(JSON.stringify(recovered)),stored,'Lossless streaming/lazy report reconstruction');
+  const corrupt=Buffer.from(parts[0].body);corrupt[30]^=1;await writeFile(resolve(output,records[0].file),corrupt);await assert.rejects(()=>readIndexedReport(resolve(output,'report.json')),/checkpoint SHA/);await writeFile(resolve(output,records[0].file),parts[0].body);
+  const malicious={sequence:'../../outside',images:[{name:'../outside',png}]},isolated=[];await saveCheckpointImages(malicious,output,isolated,7);assert.equal(isolated[0].file,'invalid-checkpoint-7-capture-0.png','Malformed capture cannot choose a path from unvalidated payload sequence');
+  console.log('Checkpoint transport self-test passed: durable raw/PNG persistence, capability/origin/barrier guards, missing/duplicate/misordered/hash-chain corruption, partial failure retention, conflicting native program rejection, and lossless bounded-memory report reconstruction.');
+ }finally{await rm(output,{recursive:true,force:true});}
+}
+
 async function main(){
  const compileOnly=process.argv.includes('--compile-only');assert(process.argv.slice(2).every(arg=>arg==='--compile-only'),'Unknown driver argument');
  const game=resolve(import.meta.dirname,'..'),gitArgs={cwd:game,maxBuffer:256*1024*1024},git=(...args)=>execFileSync('git',args,gitArgs);
@@ -236,7 +343,9 @@ async function main(){
  const errors=[],failedRequests=[],pinnedSources=new Map(),assetEntries=new Map(),assetBytes=new Map(),literalAssets=new Map(),sourceFiles=new Map(),overrideSources=new Map();
  const environmentDefines={'import.meta.env.PROD':'false','import.meta.env.BASE_URL':'"/"','import.meta.env':'{}'};
  const report={schema:'belle-static-transforms-native-proof-v1',statisticalPlanSha256:STATISTICAL_PLAN_SHA256,partition,casePlan:PARTITIONS[partition],baseline:BASELINE,sourceHead,sourceTree,platform:process.platform,width:WIDTH,height:HEIGHT,dpr:1,compileOnly,compiled:false,passed:false,errors,failedRequests,fixtureSha256:null,sourceReceipts:[],pinnedSources:[],factoryOverrides:[],assetBarrier:{count:0,requests:0,lateRequests:[]},assetTransformations:[],assets:[],captures:[],independent:[],independentPixelAudit:[],timingSummary:[],result:null,environmentDefines,scope:'Additional diagnostic: immutable d4 full world, three registration-only current factories, actual published street/scenery packs, and original/static matrix modes. CPU render submission primary; GPU/matrix-only timings separate. No full-game, four-style/stone, input, physics, mobile or release acceptance implied.'};
- let browser,server,deadline;
+ let browser,server,deadline,origin='',initialNavigationComplete=false,closing=false,checkpointBusy=false,checkpointAttempts=0;
+ const checkpointToken=randomBytes(32).toString('hex');
+ report.browserEvents=[];report.checkpointTransport={schema:'belle-static-transforms-transport-v1',expectedCases:PARTITIONS[partition],records:[],rejected:[],finalReceived:false,complete:false};
  const safePath=path=>{assert(path.startsWith(SOURCE_ROOT)&&!path.includes('\\')&&!path.includes('\0')&&!path.split('/').includes('..')&&!posix.isAbsolute(path),'Unsafe immutable repository path '+path);return path;};
  function original(path){
   safePath(path);const entry=sourceFiles.get(path);assert(entry&&entry.type==='blob'&&['100644','100755'].includes(entry.mode),'Pinned regular Git blob unavailable: '+path);
@@ -306,41 +415,48 @@ async function main(){
   if(compileOnly){console.log('Compiled immutable full-world proof. Compile-only is not pixel or performance acceptance.');return;}
   const require=createRequire(resolve(game,'../../package.json')),{chromium}=require('@playwright/test');
   const types={'.json':'application/json','.bin':'application/octet-stream','.glb':'model/gltf-binary','.gltf':'model/gltf+json','.webp':'image/webp','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.hdr':'application/octet-stream','.wasm':'application/wasm','.js':'text/javascript','.mp3':'audio/mpeg','.ogg':'audio/ogg'};
-  server=createServer((req,res)=>{
+  server=createServer(async(req,res)=>{
    try{
-    const pathname=new URL(req.url,'http://127.0.0.1').pathname;assert(req.method==='GET'||req.method==='HEAD','Read-only fixture server');res.setHeader('Cache-Control','no-store');
+    const pathname=new URL(req.url,'http://127.0.0.1').pathname;res.setHeader('Cache-Control','no-store');
+    const checkpointRoute=pathname.match(/^\/__static_transforms_checkpoint\/(0|[1-7])$/);
+    if(checkpointRoute){
+     validateCheckpointRequest(req,origin,checkpointToken,report.assetBarrier.count,checkpointBusy,checkpointAttempts);checkpointBusy=true;
+     const routeSequence=Number(checkpointRoute[1]),file='checkpoint-'+String(checkpointAttempts++).padStart(5,'0')+'.json';let saved=null;
+     try{
+      saved=await receiveBody(req,resolve(output,file));const raw=await readFile(resolve(output,file));assert.equal(sha256(raw),saved.sha256,'Durably saved checkpoint SHA');const part=JSON.parse(raw.toString('utf8'));
+      const images=await saveCheckpointImages(part,output,report.captures,routeSequence);
+      const record={...inspectCheckpoint(part,report.checkpointTransport.records,partition,sourceHead,saved.sha256,saved.bytes,req.headers['x-static-proof-sha256'],routeSequence),file,images};
+      await writeJsonStream(resolve(output,file.replace(/\.json$/,'.receipt.json')),record);
+      report.checkpointTransport.records.push(record);res.setHeader('Content-Type','application/json');res.end(JSON.stringify(checkpointAck(record)));return;
+     }catch(error){report.checkpointTransport.rejected.push({file,routeSequence,...saved,error:String(error.stack||error)});throw error;}finally{checkpointBusy=false;}
+    }
+    assert(req.method==='GET'||req.method==='HEAD','Immutable assets are read-only');
     if(pathname==='/'){res.setHeader('Content-Type','text/html');res.end('<!doctype html><html><head><meta charset="utf-8"><link rel="icon" href="data:,"><style>html,body{margin:0;width:960px;height:600px;overflow:hidden}canvas{display:block}</style></head><body><canvas></canvas><script type="module" src="/proof.js"></script></body></html>');return;}
     if(pathname==='/proof.js'){res.setHeader('Content-Type','text/javascript');res.end(javascript);return;}
-    if(pathname==='/__asset_barrier'){assert.equal(report.assetBarrier.count,0,'Publication barrier repeated');report.assetBarrier.count++;report.assetBarrier.requests=[...assetEntries.values()].reduce((sum,asset)=>sum+asset.requests,0);res.setHeader('Content-Type','application/json');res.end(JSON.stringify({frozen:true,requests:report.assetBarrier.requests}));return;}
+    if(pathname==='/__asset_barrier'){assert.equal(report.assetBarrier.count,0,'Publication barrier repeated');report.assetBarrier.count++;report.assetBarrier.requests=[...assetEntries.values()].reduce((sum,asset)=>sum+asset.requests,0);res.setHeader('Content-Type','application/json');res.end(JSON.stringify({frozen:true,requests:report.assetBarrier.requests,checkpointToken,sourceHead,baseline:BASELINE}));return;}
     const decoded=decodeURIComponent(pathname);assert(!decoded.includes('\\')&&!decoded.includes('\0')&&!decoded.split('/').includes('..'),'Unsafe asset request');
     const path=decoded.startsWith('/__pinned_asset/')?literalAssets.get(decoded):GAME_PATH+'/public'+decoded;assert(path,'Unregistered original asset URL '+decoded);if(report.assetBarrier.count){report.assetBarrier.lateRequests.push({path,url:decoded});throw Error('Scene asset requested after publication barrier: '+decoded);}const bytes=asset(path,decoded);assetEntries.get(path).requests++;
     res.setHeader('Content-Type',types[extname(path)]||'application/octet-stream');res.setHeader('Content-Length',bytes.length);res.end(req.method==='HEAD'?undefined:bytes);
-   }catch(error){errors.push(String(error.stack||error));res.writeHead(500);res.end('Immutable fixture asset verification failed');}
+   }catch(error){errors.push(String(error.stack||error));if(!res.headersSent&&!res.destroyed){res.writeHead(500);res.end('Immutable fixture/checkpoint verification failed');}}
   });
-  await new Promise((ok,reject)=>{server.once('error',reject);server.listen(0,'127.0.0.1',ok);});const origin='http://127.0.0.1:'+server.address().port;
+  await new Promise((ok,reject)=>{server.once('error',reject);server.listen(0,'127.0.0.1',ok);});origin='http://127.0.0.1:'+server.address().port;
   assert(native||process.platform==='linux','Only actual Metal/macOS and SwiftShader/Linux backends are supported');
   const executablePath=process.env.STATIC_TRANSFORMS_PROOF_BROWSER_PATH;browser=await chromium.launch({headless:!native,args:native?['--enable-gpu','--use-gl=angle','--use-angle=metal']:['--use-angle=swiftshader','--enable-unsafe-swiftshader'],...(executablePath?{executablePath}:{channel:'chrome'})});report.browserVersion=browser.version();
   const context=await browser.newContext({viewport:{width:WIDTH,height:HEIGHT},deviceScaleFactor:1,reducedMotion:'reduce',serviceWorkers:'block'});
   await context.route('**/*',route=>{const url=route.request().url();if(url.startsWith(origin+'/')||url.startsWith('data:')||url.startsWith('blob:'))return route.continue();errors.push('Unexpected external asset request: '+url);return route.abort();});
   const page=await context.newPage();page.on('pageerror',error=>errors.push(String(error.stack||error)));page.on('requestfailed',request=>failedRequests.push({url:request.url(),failure:request.failure()}));
+  const observe=(type,details={})=>report.browserEvents.push({type,at:new Date().toISOString(),expected:closing,...details});
+  page.on('crash',()=>{observe('page-crash');if(!closing)errors.push('Proof browser page crashed');});
+  page.on('close',()=>{observe('page-close');if(!closing)errors.push('Proof page closed unexpectedly');});
+  browser.on('disconnected',()=>{observe('browser-disconnected');if(!closing)errors.push('Proof browser disconnected unexpectedly');});
+  page.on('framenavigated',frame=>{if(frame===page.mainFrame()&&initialNavigationComplete){observe('unexpected-main-frame-navigation',{url:frame.url()});if(!closing)errors.push('Unexpected proof navigation: '+frame.url());}});
   page.on('console',message=>{if(message.type()==='error')errors.push(message.text());else if(message.text().startsWith('static transforms proof '))console.log(message.text());});
-  await page.goto(origin+'/',{waitUntil:'load',timeout:120000});await page.waitForFunction(()=>typeof window.__staticTransformsProof==='function',{},{timeout:120000});
-  const result=await Promise.race([page.evaluate(partition=>window.__staticTransformsProof(partition),partition),new Promise((_,reject)=>{deadline=setTimeout(()=>reject(Error('Full-world proof exceeded35minutes')),35*60*1000);})]);clearTimeout(deadline);
-  const captures=result.images;delete result.images;report.result=result;
-  // Persist every well-named capture before inspecting dimensions/equality, so
-  // a failing row keeps the evidence needed to diagnose it.
-  const pending=[];assert(Array.isArray(captures),'Browser did not return captures');
-  for(const [index,capture]of captures.entries()){
-   const valid=typeof capture.name==='string'&&/^[a-z0-9-]+$/.test(capture.name),name=valid?capture.name:'invalid-capture-'+index;
-   const duplicate=pending.some(item=>item.name===name),file=(duplicate?name+'-duplicate-'+index:name)+'.png';
-   const data=typeof capture.png==='string'?capture.png:'',bytes=Buffer.from(data.replace(/^data:image\/png;base64,/,''),'base64');await writeFile(resolve(output,file),bytes);
-   pending.push({name,file,bytes,valid,duplicate,dataUrl:data.startsWith('data:image/png;base64,')});report.captures.push({name,file,sha256:sha256(bytes),bytes:bytes.length});
-  }
-  exactNames(pending,expectedImages,'name','Saved image names');const decoded=new Map();
-  for(const capture of pending){
-   assert(capture.valid&&!capture.duplicate&&capture.dataUrl,'Invalid/duplicate PNG capture '+capture.name);const value=decodePng(capture.bytes,WIDTH,HEIGHT);
-   let opaque=true;for(let i=3;i<value.rgba.length;i+=4)if(value.rgba[i]!==255){opaque=false;break;}assert(opaque,capture.name+': framebuffer alpha must survive PNG roundtrip');decoded.set(capture.name,value);Object.assign(report.captures.find(item=>item.file===capture.file),{width:value.width,height:value.height,rgbaSha256:value.rgbaSha256,readPixelsSha256:value.readPixelsSha256});
-  }
+  await page.goto(origin+'/',{waitUntil:'load',timeout:120000});initialNavigationComplete=true;await page.waitForFunction(()=>typeof window.__staticTransformsProof==='function',{},{timeout:120000});
+  const manifest=await Promise.race([page.evaluate(partition=>window.__staticTransformsProof(partition),partition),new Promise((_,reject)=>{deadline=setTimeout(()=>reject(Error('Full-world proof exceeded35minutes')),35*60*1000);})]);clearTimeout(deadline);
+  report.checkpointTransport.finalReceived=true;report.checkpointTransport.finalSha256=await writeJsonStream(resolve(output,'checkpoint-final.json'),manifest);
+  const result=reconstructResult(output,report.checkpointTransport.records,partition,sourceHead,report.captures,manifest.metadata);report.result=result;
+  validateCheckpointManifest(manifest,report.checkpointTransport.records,partition);report.checkpointTransport.complete=true;
+  exactNames(report.captures,expectedImages,'name','Saved image names');const decoded=lazyDecodedImages(output,report.captures);
   // Derive complete observations before enforcing appearance. Failure remains
   // strict, but no complete raw timing/pixel evidence is discarded by a later gate.
   report.independentPixelAudit=independentPixelAudit(decoded,partition);report.timingSummary=validateTimings(result,native);
@@ -350,11 +466,12 @@ async function main(){
   report.passed=result.passed===true;if(!report.passed){errors.push('Static transform candidate failed strict equivalence; see raw per-view results.');process.exitCode=1;}
  }catch(error){errors.push(String(error.stack||error));process.exitCode=1;}
  finally{
-  clearTimeout(deadline);await browser?.close();if(server)await new Promise(ok=>server.close(ok));
+  clearTimeout(deadline);closing=true;await browser?.close();if(server)await new Promise(ok=>server.close(ok));
+  if(!report.result&&report.checkpointTransport.records.length){try{report.result=reconstructResult(output,report.checkpointTransport.records,partition,sourceHead,report.captures,null);}catch(error){errors.push('Reconstructing preserved partial checkpoints: '+String(error.stack||error));}}
   report.pinnedSources=[...pinnedSources.values()].map(({content,...receipt})=>receipt);report.assetTransformations=report.pinnedSources.flatMap(source=>source.transformations.map(transform=>({source:source.path,...transform})));report.assets=[...assetEntries.values()];
-  await writeFile(resolve(output,'report.json'),JSON.stringify(report,null,2)+'\n');await writeFile(resolve(output,'summary.json'),JSON.stringify({passed:report.passed,compiled:report.compiled,compileOnly,sourceHead,baseline:BASELINE,gpu:report.result?.gpu,rows:report.result?.rows?.length,coverage:report.independentCoverage,partition,timingSummary:report.timingSummary,errors,scope:report.scope},null,2)+'\n');
+  await writeReport(output,report);await writeFile(resolve(output,'summary.json'),JSON.stringify({passed:report.passed,compiled:report.compiled,compileOnly,sourceHead,baseline:BASELINE,gpu:report.result?.gpu,rows:report.result?.rows?.length,coverage:report.independentCoverage,partition,timingSummary:report.timingSummary,errors,scope:report.scope},null,2)+'\n');
   console.log(JSON.stringify({passed:report.passed,compiled:report.compiled,compileOnly,sourceHead,baseline:BASELINE,partition,gpu:report.result?.gpu,rows:report.result?.rows?.length,errors,report:resolve(output,'report.json')}));
  }
 }
 
-if(process.argv.includes('--self-test')){assert.deepEqual(process.argv.slice(2),['--self-test']);selfTest();}else if(process.argv[2]==='--verify-partitions'){assert.equal(process.argv.length,4);await verifyPartitions(process.argv[3]);}else await main();
+if(process.argv.includes('--self-test')){assert.deepEqual(process.argv.slice(2),['--self-test']);await selfTest();}else if(process.argv[2]==='--verify-partitions'){assert.equal(process.argv.length,4);await verifyPartitions(process.argv[3]);}else await main();

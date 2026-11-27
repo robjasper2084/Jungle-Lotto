@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import ts from 'typescript';
 import * as T from 'three';
-import {finishParkLawn} from './parkLawn.ts';
 import {WebGLPrograms} from 'three/src/renderers/webgl/WebGLPrograms.js';
 import {WebGLUniforms} from 'three/src/renderers/webgl/WebGLUniforms.js';
 import {WebGLProperties} from 'three/src/renderers/webgl/WebGLProperties.js';
@@ -44,7 +43,7 @@ const authored=ts.transpileModule(
  'function garden(grass){'+span(world,'const pitchSurface=mat(','for(const a of data.areas)')+'return {gardenSoil,gardenLawn};}\n'+
  'function cut(lawn){'+span(oudolf,'const cutLawn=lawn.clone()','add(aisles,cutLawn')+'return cutLawn;}\n',
  {compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.None}}).outputText;
-const construction=Function('T','finishParkLawn',authored+';return {lawn,garden,cut,poly};')(T,finishParkLawn) as {
+const construction=Function('T',authored+';return {lawn,garden,cut,poly};')(T) as {
  lawn:()=>T.MeshStandardMaterial;
  garden:(grass:T.MeshStandardMaterial)=>{gardenSoil:T.MeshStandardMaterial;gardenLawn:T.MeshStandardMaterial};
  cut:(lawn:T.MeshStandardMaterial)=>T.MeshStandardMaterial;

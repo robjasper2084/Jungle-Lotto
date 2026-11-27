@@ -3,23 +3,10 @@ import * as T from 'three';
  * network textures or added draw calls. CC0 texture atlases remain an authoring
  * candidate until offline bake and screenshot review pass. */
 export type BridgeFinish='aged-concrete'|'weathered-red-iron'|'rusted-steel';
-export type BridgeFinishOptions={
- /** Opt-in comparison candidate. Keep disabled until the strict native pixel
-  * gate proves the compiled shader equivalent on every supported renderer. */
- skipInvisibleGrain?:boolean;
-};
-export function bridgeFinishFragment(type:BridgeFinish,options:BridgeFinishOptions={}):string{
+export function bridgeFinishFragment(type:BridgeFinish):string{
  const common='{\nfloat belleBridgePitted=.5+.25*sin(bridgeWorld.x*2.13+bridgeWorld.z*.71)+.25*sin(bridgeWorld.z*1.72-bridgeWorld.y*2.32);\n'
-  +(options.skipInvisibleGrain
-   // Evaluate derivatives for every fragment before the nonuniform branch.
-   // A zero filter weight makes the original grain term exactly zero; .5 is
-   // its neutral value in both unchanged diffuse products below. Do not use
-   // an epsilon: every nonzero contribution keeps the original hash.
-   ?'float belleBridgeAA=1.-smoothstep(.3,1.8,length(fwidth(bridgeWorld.xz))*9.);\n'
-    +'float belleBridgeGrain=.5;\n'
-    +'if(belleBridgeAA>0.){belleBridgeGrain=fract(sin(dot(floor(bridgeWorld.xz*9.),vec2(12.9898,78.233)))*43758.5453);}\n'
-   :'float belleBridgeGrain=fract(sin(dot(floor(bridgeWorld.xz*9.),vec2(12.9898,78.233)))*43758.5453);\n'
-    +'float belleBridgeAA=1.-smoothstep(.3,1.8,length(fwidth(bridgeWorld.xz))*9.);\n');
+  +'float belleBridgeGrain=fract(sin(dot(floor(bridgeWorld.xz*9.),vec2(12.9898,78.233)))*43758.5453);\n'
+  +'float belleBridgeAA=1.-smoothstep(.3,1.8,length(fwidth(bridgeWorld.xz))*9.);\n';
  if(type==='aged-concrete')return common+
   'float waterStain=1.-smoothstep(.2,2.3,bridgeWorld.y);\n'
   +'float chalk=smoothstep(.5,.83,belleBridgePitted);\n'
@@ -36,17 +23,14 @@ export function bridgeFinishFragment(type:BridgeFinish,options:BridgeFinishOptio
   +'diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.29,.15,.09),rust);\n'
   +'diffuseColor.rgb*=.94+.09*(belleBridgeGrain-.5)*belleBridgeAA;\n}\n';
 }
-export function finishBridgeMaterial(material:T.MeshStandardMaterial,type:BridgeFinish,options:BridgeFinishOptions={}){
- // Snapshot the option so later caller mutation cannot disagree with the
- // program cache key of an already compiled material.
- const skipInvisibleGrain=options.skipInvisibleGrain===true;
+export function finishBridgeMaterial(material:T.MeshStandardMaterial,type:BridgeFinish){
  const oldCompile=material.onBeforeCompile,oldKey=material.customProgramCacheKey();
  material.onBeforeCompile=(shader,renderer)=>{
   oldCompile(shader,renderer);
   shader.vertexShader='varying vec3 bridgeWorld;\n'+shader.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nbridgeWorld=(modelMatrix*vec4(transformed,1.)).xyz;');
-  shader.fragmentShader='varying vec3 bridgeWorld;\n'+shader.fragmentShader.replace('#include <map_fragment>','#include <map_fragment>\n'+bridgeFinishFragment(type,{skipInvisibleGrain}));
+  shader.fragmentShader='varying vec3 bridgeWorld;\n'+shader.fragmentShader.replace('#include <map_fragment>','#include <map_fragment>\n'+bridgeFinishFragment(type));
  };
- material.customProgramCacheKey=()=>oldKey+'-belle-bridge-weather-v2-'+type+(skipInvisibleGrain?'-masked-grain-candidate-v1':'');
+ material.customProgramCacheKey=()=>oldKey+'-belle-bridge-weather-v2-'+type;
  material.roughness=type==='aged-concrete'?.91:type==='weathered-red-iron'?.75:.82;
  material.needsUpdate=true;
  return material;

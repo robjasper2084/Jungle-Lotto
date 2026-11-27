@@ -77,7 +77,6 @@ import {addOudolfDetails} from './oudolfScene.ts';
 import {addDetroitDistricts} from './detroitScene.ts';
 import {addPavement} from './pavement.ts';
 import {finishAsphalt,finishBank} from './surfaceFinish.ts';
-import {finishParkLawn} from './parkLawn.ts';
 import {pathWeatherFragment,type PathSurface} from './pathWeather.ts';
 import {addEntrance} from './entrance.ts';
 import {addWaterBanks} from './waterBanks.ts';
@@ -97,7 +96,7 @@ export async function createWorld(scene:T.Scene,renderer:T.WebGLRenderer,data:Pa
  const [islandSky]=await Promise.all([createIslandSky(scene,renderer,status),loadRealisticMaterials(renderer)]);if(REFERENCE_STYLE)renderer.toneMappingExposure=1.02;
  const localLights=new LocalLightPool(scene);
  // Surface skins are ready before world creation. Do not fetch the discarded PNG fallback atlases.
- const grass=mat(0x8f9b7e);finishParkLawn(grass);const pavement=mat(0x979b99);finishAsphalt(pavement);const pathMat=mat(0x948f81),concrete=mat(0xbebdb2),sand=mat(0xc3b28c);
+ const grass=mat(0x8f9b7e);grass.onBeforeCompile=shader=>{shader.vertexShader='varying vec2 terrainXZ;\n'+shader.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nterrainXZ=(modelMatrix*vec4(transformed,1.)).xz;');shader.fragmentShader='varying vec2 terrainXZ;\n'+shader.fragmentShader.replace('#include <map_fragment>','#include <map_fragment>\nfloat meadowVariation=.5+.25*sin(terrainXZ.x*.037+sin(terrainXZ.y*.043)*2.)+.25*sin(terrainXZ.y*.077+terrainXZ.x*.019);diffuseColor.rgb*=mix(vec3(.72,.79,.62),vec3(1.05,1.04,.91),meadowVariation);');};const pavement=mat(0x979b99);finishAsphalt(pavement);const pathMat=mat(0x948f81),concrete=mat(0xbebdb2),sand=mat(0xc3b28c);
  grass.name='Park lawn';pavement.name='Island asphalt';pathMat.name='Concrete pathways';concrete.name='Poured concrete';sand.name='Beach sand';
  // The Higgsfield maps provide filtered aggregate. Keep broad weathering only;
  // the old high-frequency sine hash produced visible diagonal bands on paths.

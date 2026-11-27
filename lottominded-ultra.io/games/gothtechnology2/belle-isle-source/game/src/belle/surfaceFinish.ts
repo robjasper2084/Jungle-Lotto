@@ -1,13 +1,11 @@
 import * as T from 'three';
-import {ASPHALT_PATCH_DETAIL,ASPHALT_PATCH_DETAIL_MASKED} from './asphaltPolish.ts';
+import {ASPHALT_PATCH_DETAIL} from './asphaltPolish.ts';
 import {ART_ROAD_WETNESS} from './artDirection.ts';
 
 // All asphalt uses the same world coordinates, including overlapping junction
 // ribbons. Route-relative wear would give those coplanar surfaces different
 // colours and cause flickering at road joins.
-export type AsphaltFinishOptions={skipInvisiblePatches?:boolean};
-export function finishAsphalt(material:T.MeshStandardMaterial,options:AsphaltFinishOptions={}){
- const skipInvisiblePatches=options.skipInvisiblePatches===true;
+export function finishAsphalt(material:T.MeshStandardMaterial){
  material.roughness=.92;
  material.onBeforeCompile=shader=>{
   shader.uniforms.belleArtRoadWetness=ART_ROAD_WETNESS;
@@ -20,7 +18,7 @@ export function finishAsphalt(material:T.MeshStandardMaterial,options:AsphaltFin
    // Filtered Higgsfield maps supply aggregate without sine-hash banding.
    diffuseColor.rgb*=mix(vec3(.76,.78,.77),vec3(.98,.96,.92),mottling);
    diffuseColor.rgb*=1.-clamp(belleArtRoadWetness,0.,.55)*.17;
-   ${skipInvisiblePatches?ASPHALT_PATCH_DETAIL_MASKED:ASPHALT_PATCH_DETAIL}
+   ${ASPHALT_PATCH_DETAIL}
   `);
   shader.fragmentShader=shader.fragmentShader.replace('#include <roughnessmap_fragment>',`#include <roughnessmap_fragment>
     // Existing world-space aggregate; no additional sampler or new draw.
@@ -28,7 +26,7 @@ export function finishAsphalt(material:T.MeshStandardMaterial,options:AsphaltFin
     roughnessFactor=clamp(roughnessFactor+(asphaltRoughnessNoise-.5)*.075,.78,1.);
     roughnessFactor=mix(roughnessFactor,.36,clamp(belleArtRoadWetness,0.,.55));
   `);
- };material.customProgramCacheKey=()=>'world-asphalt-weather-v6-art-mood'+(skipInvisiblePatches?'-masked-patches-candidate-v1':'');
+ };material.customProgramCacheKey=()=>'world-asphalt-weather-v6-art-mood';
 }
 
 /** Colour the exposed bank by elevation, not rows of flat-colour triangles. */
