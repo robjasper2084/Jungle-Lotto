@@ -6,10 +6,12 @@ import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {readFile,realpath,lstat} from 'node:fs/promises';
 import {resolve,relative,isAbsolute,sep,posix} from 'node:path';
+import {inflateRawSync,crc32} from 'node:zlib';
 
 const FORMAT='belle-glb-embedded-images-v1';
 const IMAGE_MIMES=new Set(['image/png','image/jpeg']);
 const BUFFER_MIMES=new Set(['application/octet-stream','application/gltf-buffer']);
+export const MAX_GZIP_DECODED_BYTES=128*1024*1024;
 const has=(value,key)=>Object.prototype.hasOwnProperty.call(value,key);
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
 const object=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
@@ -59,6 +61,32 @@ async function readVerified(root,row){
  const stat=await lstat(path);assert(stat.isFile(),'Build entry is not a regular file');
  const bytes=await readFile(path);assert.equal(bytes.length,row.bytes,'Built file byte length mismatch: '+row.file);
  assert.equal(sha(bytes),row.sha256,'Built file hash mismatch: '+row.file);return bytes;
+}
+
+/** The pinned build emits one gzip member with no optional header fields.
+ * Decode one bounded raw DEFLATE stream, then verify its exact envelope rather
+ * than accepting gunzip's concatenated members or ignored zero-byte suffixes.
+ * Every returned GLB offset is in decoded bytes, never in the compressed file.
+ */
+function decodeGzipGLB(packed){
+ assert(packed.length>=18,'Truncated gzip envelope');
+ assert(packed[0]===0x1f&&packed[1]===0x8b,'Invalid gzip magic');
+ assert.equal(packed[2],8,'Unsupported gzip compression method');
+ assert.equal(packed[3],0,'Unsupported gzip flags or optional header fields');
+ const declaredBytes=packed.readUInt32LE(packed.length-4);
+ assert(declaredBytes>0&&declaredBytes<=MAX_GZIP_DECODED_BYTES,'Gzip decoded size exceeds the supported bound');
+ const decoded=inflateRawSync(packed.subarray(10),{info:true,maxOutputLength:declaredBytes});
+ const deflateBytes=decoded.engine.bytesWritten;
+ uint(deflateBytes,'gzip deflate byte length',1);
+ const trailerByteOffset=10+deflateBytes;
+ assert.equal(trailerByteOffset+8,packed.length,'Gzip has trailing data or additional members');
+ const bytes=decoded.buffer;
+ assert.equal(bytes.length,declaredBytes,'Gzip ISIZE differs from decoded byte length');
+ const checksum=packed.readUInt32LE(trailerByteOffset);
+ assert.equal(crc32(bytes),checksum,'Gzip CRC32 differs from decoded bytes');
+ return {bytes,compression:{kind:'gzip-single-member',headerBytes:10,deflateByteOffset:10,deflateBytes,trailerByteOffset,
+  crc32:checksum.toString(16).padStart(8,'0'),isize:declaredBytes,decodedByteLimit:MAX_GZIP_DECODED_BYTES},
+  decodedGLB:{bytes:bytes.length,sha256:sha(bytes)}};
 }
 
 /** Locate exact JSON string spans and reject duplicate keys. Positions are
@@ -143,18 +171,21 @@ function externalTarget(sourceFile,uri){
 }
 
 /** Build from the exact verified inventory. Every read is checked again against
- * its byte length/hash. Standalone .gltf is deliberately unsupported. External
+ * its byte length/hash. Exact .glb.gz containers are decoded with a bounded,
+ * fully consumed single-member gzip envelope before the same strict GLB parse.
+ * Standalone .gltf (including .gltf.gz) is deliberately unsupported. External
  * image references are verified and recorded separately; they never authorize
  * a blob response. Unknown image storage/extensions/MIME fail closed.
  */
 export async function buildEmbeddedAssetIndex(distDir,verifiedFiles){
  const rows=manifestRows(verifiedFiles),byName=new Map(rows.map(row=>[row.file,row]));
- assert(!rows.some(row=>/\.gltf$/i.test(row.file)),'Standalone .gltf image indexing is unsupported');
+ assert(!rows.some(row=>/\.gltf(?:\.gz)?$/i.test(row.file)),'Standalone .gltf image indexing is unsupported');
  const root=await realpath(distDir);assert((await lstat(root)).isDirectory(),'Build root is not a directory');
  const sources=[],candidates=[],externalImages=[];
- for(const source of rows.filter(row=>/\.glb$/i.test(row.file))){
-  const bytes=await readVerified(root,source),parsed=parseGLB(bytes),{json,binChunk,jsonChunk}=parsed;
-  sources.push({...source,jsonChunk,binChunk});
+ for(const source of rows.filter(row=>/\.glb(?:\.gz)?$/i.test(row.file))){
+  const delivered=await readVerified(root,source),gzip=/\.gz$/i.test(source.file)?decodeGzipGLB(delivered):null;
+  const bytes=gzip?gzip.bytes:delivered,parsed=parseGLB(bytes),{json,binChunk,jsonChunk}=parsed;
+  sources.push(gzip?{...source,compression:gzip.compression,decodedGLB:{...gzip.decodedGLB,jsonChunk,binChunk}}:{...source,jsonChunk,binChunk});
   const images=json.images??[],buffers=json.buffers??[],views=json.bufferViews??[];
   for(const [imageIndex,image] of images.entries()){
    assert(object(image),'Invalid glTF image');assert.equal(has(image,'uri')!==has(image,'bufferView'),true,'Image must have exactly one URI or bufferView');
@@ -187,9 +218,11 @@ export async function buildEmbeddedAssetIndex(distDir,verifiedFiles){
    }else{
     const targetFile=externalTarget(source.file,image.uri),target=byName.get(targetFile);assert(target,'External image absent from exact build manifest');
     const external=await readVerified(root,target);mimeType=has(image,'mimeType')?canonicalImageMime(image.mimeType):identifyImage(external);validateImage(external,mimeType);
-    externalImages.push({...common,uri:image.uri,targetFile,bytes:target.bytes,sha256:target.sha256,mimeType,blobBinding:false});continue;
+    externalImages.push({...common,...(gzip?{decodedGLB:gzip.decodedGLB}:{}),uri:image.uri,targetFile,bytes:target.bytes,sha256:target.sha256,mimeType,blobBinding:false});continue;
    }
-   validateImage(payload,mimeType);candidates.push({...common,mimeType,bytes:payload.length,sha256:sha(payload),storage});
+   validateImage(payload,mimeType);
+   if(gzip)storage={kind:'gzip-decoded-glb-image',offsetBasis:'decompressed-glb',decodedGLB:gzip.decodedGLB,decodedStorage:storage};
+   candidates.push({...common,mimeType,bytes:payload.length,sha256:sha(payload),storage});
   }
  }
  return {version:1,format:FORMAT,manifestSha256:sha(Buffer.from(JSON.stringify(rows),'utf8')),sources,candidates,externalImages};

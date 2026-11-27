@@ -2,7 +2,7 @@
 
 This isolated diagnostic investigates the recurring full-desktop failures: #227 recorded 82.5 ms p95, and the separate #257 integration recorded 84.2 ms p95 with one 266.3 ms eligible interval. It uses the unchanged application source from #261, whose six original native first runs are complete: four passed, while default full desktop failed at 51.1 ms p95 and preview full desktop failed at 60.9 ms p95. Instrumented results are attribution evidence only. The original acceptance runs and every prior failure remain authoritative.
 
-The first collector passed 52 focused local contract tests and independent source review before publication, but its native attempt exposed the asset-classification defect documented below. The repaired collector passes 78 focused tests. Native execution and its result belong to the workflow artifacts; source publication alone does not establish successful collection, a causal runtime repair, or release acceptance.
+The first collector passed 52 focused local contract tests and independent source review before publication, but its native attempt exposed the asset-classification defect documented below. The direct-GLB image repair passed 78 focused tests; its subsequent native attempt exposed missing gzip-container provenance. This extension passes 88 focused tests. Native execution and its result belong to the workflow artifacts; source publication alone does not establish successful collection, a causal runtime repair, or release acceptance.
 
 The collector is adapted from #254's reduced desktop collector. The complete upstream sources are retained under `upstream/` with byte hashes in `upstream-manifest.json`. The stream parser and trace accumulator are reused. Application code, the c722 driver, GPS code, frame predicates and native input are not patched.
 
@@ -12,11 +12,19 @@ The first attempt at diagnostic head `d7145774a18d3f46080aa8db87daef0f87d526db`,
 
 The collector rejected 63 same-origin `blob:` responses before reading their bodies. All occurred before capture. Their payload bytes, lengths and hashes were never archived, so the failed attempt cannot be retrospectively certified complete. Artifact `15185853809` retains that failure: 513525587 bytes, SHA256 `91a7d5f62f33cfde7a33fa6c3fc6eac1ed7ce5cf2533cd9197c9216d9e005f0d`. Its trace, CPU profile, original report, source archives and all errors remain unchanged.
 
-The repair indexes embedded PNG/JPEG image bytes from every exact-built GLB2 file before the browser starts. The index binds each candidate to the complete source-file hash, image and bufferView identity, exact BIN byte range or data-URI source span, payload hash and MIME type. It records ordinary external images separately; they cannot authorize Blob responses. Unknown storage formats, escaping paths, malformed ranges and unsupported media types fail closed. See `EMBEDDED_ASSETS.md`.
+The repair indexes embedded PNG/JPEG image bytes from every exact-built GLB2 file and `.glb.gz` delivery container before the browser starts. The index binds each candidate to the complete source-file hash, image and bufferView identity, exact BIN byte range or data-URI source span, payload hash and MIME type. Gzip provenance separately binds compressed source bytes and decoded GLB bytes; every image offset is explicitly in decoded coordinates. It records ordinary external images separately; they cannot authorize Blob responses. Unknown storage formats, escaping paths, malformed ranges and unsupported media types fail closed. See `EMBEDDED_ASSETS.md`.
 
 The observer requires the exact original game origin, including its port. It captures and retains a same-origin Blob body before matching its bytes and MIME to the independently rebuilt image index. All valid duplicate source matches are retained; they do not identify which duplicate instance created the Blob URL. Unknown or mismatched bodies remain archived failures. HTTP files keep their full-inventory byte checks. The final validator independently replays every response, and both body/hash/write and binding completion must fit the unchanged absolute 60000 ms post-stop deadline.
 
 This is a diagnostic-source repair. Application head/tree, build flags and assets, original driver/GPS/input, trace categories, sampling rate, buffer size, native deadlines and acceptance rules remain unchanged. The additional image-body reads add unquantified observational overhead; no correction is applied to any frame result.
+
+## Retained gzip-source failure and extension
+
+The next attempt at diagnostic head `16db81a51e083c025b0fc8e2fd49fc18003cc431`, run `45976078477` / job `140428014340`, retained all response bodies but could not bind three images. Its original collection and validation remain failed. Artifact `15187882232` is 535741921 bytes, SHA256 `73b1b3cfe8070aec5784bd0838b5aa3d6ace6dc5af265158ffe77d19b2121a5b`. The preserved original report, source receipts, trace, CPU samples and errors are not rewritten by this extension.
+
+Independent exact-byte comparison located two rejected JPEGs inside `belle/waterfront-detail.glb.gz` and one PNG inside `belle/nature/cherry.glb.gz`. The pinned production loader decompresses startup `.glb.gz` responses before `GLTFLoader.parseAsync`; the build's lossless packing step removes unpinned original GLBs. The preceding image index considered only direct `.glb` files, omitting these delivery containers.
+
+The index now considers every exact-manifest `.glb.gz`, including all startup and CORLEO packages. It requires one gzip member with the pinned build's zero-flags header, a decoded size bounded by ISIZE and 128 MiB, full DEFLATE-member consumption, and matching CRC32 and decoded length. Additional members, trailing bytes, optional headers and malformed or unsupported decoded GLBs fail. Compressed hash/length, decoded GLB hash/length and decoded image ranges remain distinct. Direct-GLB records and all duplicate matches are retained. The extension runs during prelaunch/final source verification and leaves the browser observer and original collection deadlines unchanged.
 
 ## This is a new diagnostic build
 
@@ -142,7 +150,7 @@ Run the focused tests against the actual immutable driver/helper paths:
 ```sh
 STRICT_DRIVER_PATH=/exact/game/scripts/sustained-ride-profile.mjs \
 STRICT_GPS_PATH=/exact/game/scripts/gps-full-scene-check.mjs \
-node --test full-mode.test.mjs upstream/observer.test.mjs \
+node --test full-mode.test.mjs embedded-assets.test.mjs asset-receipts.test.mjs upstream/observer.test.mjs \
   upstream/sustained-trace-json.test.mjs upstream/source.test.mjs
 ```
 

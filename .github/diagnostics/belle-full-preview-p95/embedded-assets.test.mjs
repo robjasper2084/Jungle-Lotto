@@ -4,7 +4,9 @@ import {createHash} from 'node:crypto';
 import {mkdtemp,mkdir,writeFile,readFile,rm,symlink} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,dirname} from 'node:path';
-import {buildEmbeddedAssetIndex,verifyEmbeddedAssetIndex,matchEmbeddedImage,canonicalImageMime} from './embedded-assets.mjs';
+import {gzipSync} from 'node:zlib';
+import {buildEmbeddedAssetIndex,verifyEmbeddedAssetIndex,matchEmbeddedImage,canonicalImageMime,MAX_GZIP_DECODED_BYTES} from './embedded-assets.mjs';
+import {verifyAssetReceipts} from './asset-receipts.mjs';
 
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
 const PNG=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aZ3sAAAAASUVORK5CYII=','base64');
@@ -192,4 +194,126 @@ test('unknown or escaping external image and image-buffer resources cannot autho
 test('MIME normalization is explicit and has no generic image fallback',()=>{
  assert.equal(canonicalImageMime(' IMAGE/JPEG '),'image/jpeg');
  for(const value of [null,undefined,'','image/jpg','image/*','application/octet-stream','image/png;foo=bar'])assert.throws(()=>canonicalImageMime(value),/MIME/);
+});
+
+test('gzip containers bind compressed manifest bytes and exact decoded GLB image ranges separately',async()=>{
+ for(const [payload,mime] of [[PNG,'image/png'],[JPEG,'image/jpeg']]){
+  const bytes=imageGLB(payload,mime),packed=gzipSync(bytes,{level:9});
+  await fixture({'belle/model.glb.gz':packed},async(d,m)=>{
+   const index=await buildEmbeddedAssetIndex(d,m),source=index.sources[0],row=index.candidates[0];
+   assert.equal(source.file,'belle/model.glb.gz');assert.equal(source.bytes,packed.length);assert.equal(source.sha256,hash(packed));
+   assert.equal(source.compression.kind,'gzip-single-member');assert.equal(source.compression.trailerByteOffset+8,packed.length);
+   assert.equal(source.compression.isize,bytes.length);assert.equal(source.compression.decodedByteLimit,MAX_GZIP_DECODED_BYTES);
+   assert.equal(source.decodedGLB.bytes,bytes.length);assert.equal(source.decodedGLB.sha256,hash(bytes));
+   assert.equal(source.jsonChunk,undefined);assert.equal(source.binChunk,undefined,'No decoded offsets are labeled compressed source chunks');
+   assert.equal(row.sourceFile,source.file);assert.equal(row.sourceBytes,packed.length);assert.equal(row.sourceSha256,hash(packed));
+   assert.equal(row.storage.kind,'gzip-decoded-glb-image');assert.equal(row.storage.offsetBasis,'decompressed-glb');
+   assert.deepEqual(row.storage.decodedGLB,{bytes:bytes.length,sha256:hash(bytes)});
+   const view=row.storage.decodedStorage;assert.equal(view.kind,'glb-bin-buffer-view');
+   assert.deepEqual(bytes.subarray(view.sourceByteOffset,view.sourceByteEnd),payload);
+   assert.equal(row.storage.sourceByteOffset,undefined,'No linear compressed-image byte offset is invented');
+   assert.deepEqual(matchEmbeddedImage(index,payload,mime),[row]);
+   assert.deepEqual(await verifyEmbeddedAssetIndex(d,m,index),index);
+  });
+ }
+});
+
+test('gzip and direct containers retain all duplicate matches without changing direct records',async()=>{
+ const bytes=imageGLB(PNG,'image/png',{duplicates:2});
+ await fixture({'a.glb':bytes,'b.glb.gz':gzipSync(bytes,{level:9}),'c.glb.gz':gzipSync(bytes,{level:1})},async(d,m)=>{
+  const index=await buildEmbeddedAssetIndex(d,m),direct=await buildEmbeddedAssetIndex(d,m.filter(x=>x.file==='a.glb'));
+  assert.deepEqual(index.sources.filter(x=>x.file==='a.glb'),direct.sources);
+  assert.deepEqual(index.candidates.filter(x=>x.sourceFile==='a.glb'),direct.candidates);
+  const matches=matchEmbeddedImage(index,PNG,'image/png');assert.equal(matches.length,6);
+  assert.deepEqual(matches.map(x=>[x.sourceFile,x.imageIndex]),[['a.glb',0],['a.glb',1],['b.glb.gz',0],['b.glb.gz',1],['c.glb.gz',0],['c.glb.gz',1]]);
+  assert.deepEqual(await buildEmbeddedAssetIndex(d,[...m].reverse()),index);
+ });
+});
+
+test('gzip data URI provenance keeps URI spans in decoded GLB coordinates',async()=>{
+ const uri='data:image/png;base64,'+PNG.toString('base64');
+ const bytes=glb({asset:{version:'2.0'},extras:{label:'Île 🌿'},images:[{uri}]}),packed=gzipSync(bytes);
+ await fixture({'model.glb.gz':packed},async(d,m)=>{
+  const row=(await buildEmbeddedAssetIndex(d,m)).candidates[0],storage=row.storage.decodedStorage;
+  assert.equal(storage.kind,'image-data-uri');assert.equal(row.storage.offsetBasis,'decompressed-glb');
+  assert.equal(JSON.parse(bytes.subarray(storage.jsonStringByteOffset,storage.jsonStringByteEnd).toString()),uri);
+  assert.equal(row.sha256,hash(PNG));assert.equal(storage.sourceByteOffset,undefined);
+ });
+});
+
+test('gzip external-image references retain the original directory and cannot authorize a blob',async()=>{
+ const bytes=glb({asset:{version:'2.0'},images:[{uri:'../texture.png',mimeType:'image/png'}]});
+ await fixture({'models/scene/model.glb.gz':gzipSync(bytes),'models/texture.png':PNG},async(d,m)=>{
+  const index=await buildEmbeddedAssetIndex(d,m);assert.equal(index.candidates.length,0);assert.equal(index.externalImages.length,1);
+  const external=index.externalImages[0];assert.equal(external.targetFile,'models/texture.png');assert.equal(external.blobBinding,false);
+  assert.deepEqual(external.decodedGLB,{bytes:bytes.length,sha256:hash(bytes)});assert.throws(()=>matchEmbeddedImage(index,PNG,'image/png'),/not bound/);
+ });
+});
+
+test('gzip envelopes reject unsupported headers, truncation and corrupted DEFLATE despite matching manifests',async()=>{
+ const original=gzipSync(imageGLB(),{level:9});
+ for(const mutate of [b=>b[0]=0,b=>b[2]=0,b=>b[3]=4,b=>b[3]=8,b=>b[3]=32,b=>b[10]=255]){
+  const bytes=Buffer.from(original);mutate(bytes);
+  await fixture({'bad.glb.gz':bytes},async(d,m)=>assert.rejects(buildEmbeddedAssetIndex(d,m)));
+ }
+ for(const bytes of [original.subarray(0,17),original.subarray(0,-1),original.subarray(0,-8)])
+  await fixture({'short.glb.gz':bytes},async(d,m)=>assert.rejects(buildEmbeddedAssetIndex(d,m)));
+});
+
+test('gzip CRC, ISIZE and maximum output bounds are independently enforced',async()=>{
+ const original=gzipSync(imageGLB(),{level:9});
+ const changes=[
+  ['CRC',b=>b[b.length-8]^=1,/CRC32/],
+  ['size smaller',b=>b.writeUInt32LE(b.readUInt32LE(b.length-4)-1,b.length-4),/larger than|ISIZE|buffer|Buffer/],
+  ['size larger',b=>b.writeUInt32LE(b.readUInt32LE(b.length-4)+1,b.length-4),/ISIZE/],
+  ['zero',b=>b.writeUInt32LE(0,b.length-4),/bound/],
+  ['oversize',b=>b.writeUInt32LE(MAX_GZIP_DECODED_BYTES+1,b.length-4),/bound/]
+ ];
+ for(const [label,mutate,pattern] of changes){const bytes=Buffer.from(original);mutate(bytes);
+  await fixture({'bad.glb.gz':bytes},async(d,m)=>assert.rejects(buildEmbeddedAssetIndex(d,m),pattern));assert(label);
+ }
+});
+
+test('gzip rejects trailing bytes and additional members, including empty members',async()=>{
+ const original=gzipSync(imageGLB()),empty=gzipSync(Buffer.alloc(0));
+ const cases=[Buffer.concat([original,Buffer.alloc(1)]),Buffer.concat([original,Buffer.alloc(8)]),Buffer.concat([original,Buffer.from('junk')]),
+  Buffer.concat([original,original]),Buffer.concat([empty,original]),Buffer.concat([original,empty])];
+ for(const bytes of cases)await fixture({'trailing.glb.gz':bytes},async(d,m)=>assert.rejects(buildEmbeddedAssetIndex(d,m)));
+});
+
+test('decoded gzip content still requires valid GLB and supported exact image storage',async()=>{
+ const nonGLB=gzipSync(Buffer.from('not a GLB'));
+ await fixture({'bad.glb.gz':nonGLB},async(d,m)=>assert.rejects(buildEmbeddedAssetIndex(d,m),/GLB/));
+ const badGLB=imageGLB();badGLB.writeUInt32LE(0,0);
+ await fixture({'bad.glb.gz':gzipSync(badGLB)},async(d,m)=>assert.rejects(buildEmbeddedAssetIndex(d,m),/magic/));
+ const badMime=imageGLB(PNG,'image/jpeg');
+ await fixture({'bad.glb.gz':gzipSync(badMime)},async(d,m)=>assert.rejects(buildEmbeddedAssetIndex(d,m),/signature/));
+ await fixture({'scene.gltf.gz':gzipSync(Buffer.from('{"asset":{"version":"2.0"}}'))},async(d,m)=>assert.rejects(buildEmbeddedAssetIndex(d,m),/Standalone/));
+});
+
+test('gzip source and decoded provenance mutations are rejected by independent rebuild',async()=>{
+ const packed=gzipSync(imageGLB());await fixture({'model.glb.gz':packed},async(d,m)=>{
+  const index=await buildEmbeddedAssetIndex(d,m);
+  for(const mutate of [x=>x.sources[0].decodedGLB.sha256='0'.repeat(64),x=>x.sources[0].compression.crc32='00000000',
+   x=>x.candidates[0].storage.decodedGLB.bytes++,x=>x.candidates[0].storage.decodedStorage.sourceByteOffset++]){
+   const changed=structuredClone(index);mutate(changed);await assert.rejects(verifyEmbeddedAssetIndex(d,m,changed),/differs/);
+  }
+  const changed=Buffer.from(packed);changed[9]^=1;await writeFile(join(d,'model.glb.gz'),changed);
+  await assert.rejects(verifyEmbeddedAssetIndex(d,m,index),/hash mismatch/);
+ });
+});
+
+test('existing strict response verifier replays complete gzip image bindings without altered deadline semantics',async()=>{
+ await fixture({'scene.glb.gz':gzipSync(imageGLB(PNG,'image/png',{duplicates:2}))},async(d,m)=>{
+  const index=await buildEmbeddedAssetIndex(d,m),payloadHash=hash(PNG);
+  const receipt={url:'blob:http://127.0.0.1:4321/fixture',status:200,mimeType:'image/png',kind:'embedded-blob',receivedBy:'browser-response-body',
+   complete:true,observedHostMs:1000,bodyStartedHostMs:1001,bodyFinishedHostMs:1002,bindingFinishedHostMs:1003,deadlineExceeded:false,
+   file:'assets/'+payloadHash+'.bin',bytes:PNG.length,sha256:payloadHash,embeddedMatches:matchEmbeddedImage(index,PNG,'image/png')};
+  const options={sourceFiles:m,gameUrl:'http://127.0.0.1:4321/?profile=1&locationPerf=1',deadlineHostMs:61000,embeddedImageIndex:index,
+   readCapturedFile:async file=>{assert.equal(file,receipt.file);return PNG;}};
+  const result=await verifyAssetReceipts([receipt],options);assert.equal(result.verified,true);assert.equal(result.receipts[0].embeddedMatches.length,2);
+  assert.deepEqual(result.receipts[0].embeddedMatches,receipt.embeddedMatches);
+  await assert.rejects(verifyAssetReceipts([{...receipt,bindingFinishedHostMs:61001}],options),/deadline/);
+  await assert.rejects(verifyAssetReceipts([{...receipt,embeddedMatches:receipt.embeddedMatches.slice(0,1)}],options),/omits/);
+ });
 });
