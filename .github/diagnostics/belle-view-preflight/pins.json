@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "state": "fixed-source-reviewed",
+  "repository": "robjasper2084/Jungle-Lotto",
+  "head": "bb3ba89f02b553d9d1065eed2fc087f0e22e013f",
+  "tree": "cfe47a2f3c456625d71c12c222b08427ccf04790",
+  "buildMode": "same-run-original-staged-build",
+  "artifactName": "belle-view-preflight-fixed-staged-build-NOT-RELEASE",
+  "sourceFiles": [
+    {
+      "path": ".github/workflows/belle-staged-architecture-native.yml",
+      "bytes": 9607,
+      "sha256": "ee3f2e444aad53e335306f545c910428ee695b148b9c58b6d2e55641d12754db",
+      "gitBlob": "34ff5c3175aafdff5d1eb7d28e9612f26766d283"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/staged-landmark-walk-proof.mjs",
+      "bytes": 37803,
+      "sha256": "b90add2c8244c2d3b829ce993443a0753a68dd6b0fe59668fccbe5f728241eea",
+      "gitBlob": "1c5ecd280f0d66369aaf153d6cd7da48554d3e83"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/staged-landmark-exterior-proof.mjs",
+      "bytes": 39830,
+      "sha256": "88f09d677544a9a8128a3446c15412e31d9bc6314af5a8d1c351abd808b06219",
+      "gitBlob": "534cb9b75cf93872da46d6559231d3c9085f17b0"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/staged-landmark-exterior-view-advice.mjs",
+      "bytes": 2793,
+      "sha256": "ea2f53e34a77201fc266b116da9aa6a647b760f23509b575f38626a8038c5c44",
+      "gitBlob": "8cc819fc8c4b759789e15703bf591423515910a6"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/coop-static-server.mjs",
+      "bytes": 1562,
+      "sha256": "b905f1c33ff6c115fe11d35242ec37a2c38832e1b1a2a507f2ee461e646c63c0",
+      "gitBlob": "86d780f2a77eff0e9e46beacd35a558903d3ec29"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/stagedLandmarkProof.ts",
+      "bytes": 7992,
+      "sha256": "fd17a32138dffe1b9ee107f0deebc81c6afdee168b6a2a4f2d21bc5814430d93",
+      "gitBlob": "4b6f69605447f032c6c27c2481018d6a6eb197ae"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/stagedLandmarkGroundFit.ts",
+      "bytes": 13515,
+      "sha256": "6255f9e0541b00bf064f1cc96f7c41a0817d65b445ffd6a793f0e7b6d02fb94b",
+      "gitBlob": "9092f26e12dceace35cc7fd3e09fc43812ad63c4"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/stagedLandmarkViewBounds.ts",
+      "bytes": 14139,
+      "sha256": "25c10f77f2f95a5acd1275c7d8ecf5b162e6c2a5d97409abd5059327c2ed71cd",
+      "gitBlob": "71cdfdbc92dc8c54a2b8cc75dcbd78d1f35b6aba"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/farTreeVisibility.ts",
+      "bytes": 18857,
+      "sha256": "8d4681959a3263315ec1e92750a4eaad72428f5ccd652a66ae956dc818503867",
+      "gitBlob": "91db1ed7c29ea4518b9a0826d3111a366f8b61ed"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/main.ts",
+      "bytes": 95486,
+      "sha256": "2e6441b485622582da7e9f05c38c3b4509ceac78214ea4b1f7f2b04ab46d48ad",
+      "gitBlob": "07f4568c6d2fa469ad83d9f6373ea3c7188a4ac0"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/world.ts",
+      "bytes": 34956,
+      "sha256": "23062000aa8e151c0ec15fcb945132f67406f95f5f779cf5bf867b9b7a653e3d",
+      "gitBlob": "5dd2bdc7dc7b8703eb7f5bed184d5e7543f11bc2"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/package.json",
+      "bytes": 1294,
+      "sha256": "7b2c4da476587cab12a33c31f43a596c526f53775647b88e586b46dd2bb9c246",
+      "gitBlob": "b29f57eaabd6aa44f3fe9d5314fe1286758e9490"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/package-lock.json",
+      "bytes": 42217,
+      "sha256": "105e85e781044feb8f590a3ea1e5bd0e98bb20f5512dcb1aedab30a7af0686f2",
+      "gitBlob": "5ef4effc86aaa257620ab2c8d60d47b6c85965e4"
+    }
+  ],
+  "note": "Reviewed selected-tree-source staging commit; the dedicated build job retains the original staged check/test/build and twelve-GLB verification commands. Native cases consume only its exact same-run artifact ID/digest and full inventory. No old build substitution."
+}
