@@ -1,0 +1,64 @@
+{
+  "glb_sha256": "b9c930f5b6b5edde03e2d93511b26bb7d4d266133800e9f78eeccd04d8f5e2cf",
+  "target_data_sha256": "4006a1c523b08a5403f7101a45bd9f739c4aa4632d55a1be5c3676148cde0bdf",
+  "assignments": [
+    {
+      "buildingId": "detroit-38139",
+      "prototype": "JEF_detroit_38139",
+      "vertices": 6080,
+      "triangles": 3396,
+      "materialBatches": 8,
+      "outsideVertexCount": 0,
+      "maxOutsideVertexM": 0,
+      "outsideProjectedTriangleCount": 0,
+      "maxProjectedTriangleLeakM2": 4.973799150320701e-14,
+      "sumProjectedTriangleLeakM2": 4.694022948115162e-13,
+      "minLocalY": 0.0,
+      "maxLocalY": 6.8,
+      "expectedHeightM": 6.8,
+      "normalizedBounds": {
+        "min": [
+          -0.5100702047348022,
+          0.0,
+          -0.5100914835929871
+        ],
+        "max": [
+          0.5100891590118408,
+          1.0,
+          0.5100914835929871
+        ]
+      },
+      "pass": true
+    },
+    {
+      "buildingId": "886253052",
+      "prototype": "JEF_886253052",
+      "vertices": 18697,
+      "triangles": 9764,
+      "materialBatches": 9,
+      "outsideVertexCount": 0,
+      "maxOutsideVertexM": 0,
+      "outsideProjectedTriangleCount": 0,
+      "maxProjectedTriangleLeakM2": 2.842170943040401e-14,
+      "sumProjectedTriangleLeakM2": 3.481659405224491e-13,
+      "minLocalY": 0.0,
+      "maxLocalY": 9.899999409914015,
+      "expectedHeightM": 9.899999999999999,
+      "normalizedBounds": {
+        "min": [
+          -0.5100359320640564,
+          0.0,
+          -0.5100138187408447
+        ],
+        "max": [
+          0.5100359320640564,
+          0.9999999403953552,
+          0.5100138187408447
+        ]
+      },
+      "pass": true
+    }
+  ],
+  "pass": true,
+  "scope": "Exact model-space polygon and vertical containment; actual game runtime collision and performance acceptance remain separate."
+}

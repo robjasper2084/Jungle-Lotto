@@ -1,0 +1,92 @@
+name: Belle Isle Jefferson asset gallery
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/belle-jefferson-gallery.yml'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/jefferson*'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/detroitAssets.ts'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/main.ts'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/jefferson/**'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/jefferson-asset-gallery.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: belle-jefferson-gallery-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [baseline, candidate]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Build the exact candidate with the explicit asset comparison switch
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          VITE_JEFFERSON_ASSET_SKINS: ${{ matrix.variant == 'baseline' && '0' || '1' }}
+        run: |
+          npm ci
+          node --check scripts/jefferson-asset-gallery.mjs
+          npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: jefferson-game-${{ matrix.variant }}
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist/
+          if-no-files-found: error
+          retention-days: 1
+  gallery:
+    needs: build
+    runs-on: macos-15
+    timeout-minutes: 18
+    strategy:
+      fail-fast: false
+      matrix:
+        device: [desktop, phone]
+        variant: [baseline, candidate]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/jeffersonPlacements.ts
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@v4
+        with:
+          name: jefferson-game-${{ matrix.variant }}
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist
+      - name: Install the existing Chrome test runtime
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install chrome
+      - name: Capture selected buildings through native movement and camera controls
+        timeout-minutes: 9
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          ENV_GALLERY_REQUIRE_METAL: '1'
+          JEFFERSON_GALLERY_DEVICE: ${{ matrix.device }}
+          JEFFERSON_GALLERY_VARIANT: ${{ matrix.variant }}
+        run: node scripts/jefferson-asset-gallery.mjs
+      - name: Preserve actual frames, input receipts, and asset telemetry
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-jefferson-${{ matrix.variant }}-${{ matrix.device }}
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/jefferson-gallery/${{ matrix.variant }}/${{ matrix.device }}/
+          if-no-files-found: warn
+          retention-days: 14

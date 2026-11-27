@@ -1,0 +1,161 @@
+{
+  "pass": true,
+  "sourceGlbSha256": "94390122fc6f8940b49e6d0d23b303a19869610912a7658739cdd38f32c72625",
+  "stagedGlbSha256": "b9c930f5b6b5edde03e2d93511b26bb7d4d266133800e9f78eeccd04d8f5e2cf",
+  "materialDefinitionsIdentical": true,
+  "textureDefinitionsIdentical": true,
+  "embeddedImageBytesIdentical": true,
+  "nodeMetadataAndTransformsIdentical": true,
+  "unchangedMeshesByteEquivalent": [
+    "JEF_detroit_38139__JEF_BuffLimestone",
+    "JEF_detroit_38139__JEF_CastConcrete",
+    "JEF_detroit_38139__JEF_RedBrick",
+    "JEF_detroit_38139__JEF_RoofMembrane",
+    "JEF_detroit_38139__JEF_SlateGlass_Opaque",
+    "JEF_detroit_38139__JEF_WarmWindow_Opaque",
+    "JEF_886253052__JEF_BuffLimestone",
+    "JEF_886253052__JEF_CastConcrete",
+    "JEF_886253052__JEF_RedBrick",
+    "JEF_886253052__JEF_RoofMembrane",
+    "JEF_886253052__JEF_SlateGlass_Opaque",
+    "JEF_886253052__JEF_StaticGold",
+    "JEF_886253052__JEF_WarmWindow_Opaque"
+  ],
+  "allNormalsFiniteUnitLength": true,
+  "maximumNormalLengthError": 1.1920928955078125e-07,
+  "allUVsFinite": true,
+  "images": [
+    {
+      "name": "buff_limestone_normal",
+      "mimeType": "image/png",
+      "bytes": 797711,
+      "sha256": "27818de905b11353852210537e9540eb5958a3ab63ac2396eb854b136696ee2d"
+    },
+    {
+      "name": "buff_limestone_basecolor",
+      "mimeType": "image/png",
+      "bytes": 1769850,
+      "sha256": "60dfa959c2ab72ccabc75018298e724ef7fba56119b37d4bb5b01cde5ff8dc26"
+    },
+    {
+      "name": "buff_limestone_orm",
+      "mimeType": "image/png",
+      "bytes": 678496,
+      "sha256": "56f5dcf4bba6f24e7fb22de28a2609d7e53468f818182b86c0ca5a249da4d542"
+    },
+    {
+      "name": "cast_concrete_normal",
+      "mimeType": "image/png",
+      "bytes": 1001679,
+      "sha256": "76a90ec99807451d3958802ca21680dcf601c0087c725bc0c9654cb49e13cc21"
+    },
+    {
+      "name": "cast_concrete_basecolor",
+      "mimeType": "image/png",
+      "bytes": 1963226,
+      "sha256": "8a55f5bcee62849bfbdeddb4cdc32f14ac7effd1697dd169d7bfa7a1f3583a9b"
+    },
+    {
+      "name": "cast_concrete_orm",
+      "mimeType": "image/png",
+      "bytes": 826982,
+      "sha256": "cfc4ccf8703e6788ed365753e6f9a805c77d2c80d7ed0a22d6749261a5f4bbd8"
+    },
+    {
+      "name": "painted_metal_normal",
+      "mimeType": "image/png",
+      "bytes": 809456,
+      "sha256": "1025a8c19b619c8a951c8cdfac979840b61c85e8565c1f528717e0535b11b218"
+    },
+    {
+      "name": "painted_metal_basecolor",
+      "mimeType": "image/png",
+      "bytes": 1119495,
+      "sha256": "3a7be82cf994f24ff7f9a7ad798a4efe626102e1b5491fbee475da6ac4487cbb"
+    },
+    {
+      "name": "painted_metal_orm",
+      "mimeType": "image/png",
+      "bytes": 518532,
+      "sha256": "a4320a69c06ed4f79b22cbbaf6c76f75323d0089929d6e05b1bd175d68b01bb0"
+    },
+    {
+      "name": "red_brick_normal",
+      "mimeType": "image/png",
+      "bytes": 934968,
+      "sha256": "5c36261d7086b5181b8e1a7de9f3dde84440334c940558a1da93c26ac8e63ef1"
+    },
+    {
+      "name": "red_brick_basecolor",
+      "mimeType": "image/png",
+      "bytes": 2110141,
+      "sha256": "ca74d936db588984087f5acb700965137cecd2809bd0c9bab81b51a04eb62774"
+    },
+    {
+      "name": "red_brick_orm",
+      "mimeType": "image/png",
+      "bytes": 757158,
+      "sha256": "b2c9b46c5cf8a1529afb4932b715e67f38a3a0a768cd4038009778b6956d0eb9"
+    }
+  ],
+  "buildings": [
+    {
+      "root": "JEF_886253052",
+      "buildingId": "886253052",
+      "frontCapTriangles": 254,
+      "backCapTriangles": 254,
+      "frontWindingAndNormalsOutward": true,
+      "backWindingAndNormalsOutward": true,
+      "glyphDepthM": 0.010000604747741448,
+      "frontToFasciaMinM": 0.01872381057365935,
+      "frontToFasciaMaxM": 0.01872381057365935,
+      "backToFasciaMinM": 0.008723205825917901,
+      "fasciaAheadOfBrickMinM": 0.005770686949011502,
+      "fasciaAheadOfBrickMaxM": 0.005770686949011509,
+      "supportRaySamples": 829,
+      "fasciaChangedExportVertices": 24,
+      "glyphBoundsLocalMetres": {
+        "min": [
+          -3.7788254884294754,
+          2.792239665985107,
+          9.090899454300907
+        ],
+        "max": [
+          -0.42817818669382385,
+          2.958229967951774,
+          9.100900059048648
+        ]
+      }
+    },
+    {
+      "root": "JEF_detroit_38139",
+      "buildingId": "detroit-38139",
+      "frontCapTriangles": 190,
+      "backCapTriangles": 190,
+      "frontWindingAndNormalsOutward": true,
+      "backWindingAndNormalsOutward": true,
+      "glyphDepthM": 0.009999915873928344,
+      "frontToFasciaMinM": 0.01941975829608289,
+      "frontToFasciaMaxM": 0.01941975829608289,
+      "backToFasciaMinM": 0.009419842422154545,
+      "fasciaAheadOfBrickMinM": 0.01028465995883288,
+      "fasciaAheadOfBrickMaxM": 0.01028465995883288,
+      "supportRaySamples": 697,
+      "fasciaChangedExportVertices": 24,
+      "glyphBoundsLocalMetres": {
+        "min": [
+          4.664115827009937,
+          4.7363828182220455,
+          9.045821010615596
+        ],
+        "max": [
+          7.402993988193651,
+          5.001949453353881,
+          9.055820926489524
+        ]
+      }
+    }
+  ],
+  "acceptanceScope": "Offline geometry/material validation and Blender preview only. Actual native game sign review remains required.",
+  "noPerformanceAttribution": true
+}

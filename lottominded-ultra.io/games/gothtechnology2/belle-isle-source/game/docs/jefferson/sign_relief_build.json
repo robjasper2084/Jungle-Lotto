@@ -1,0 +1,68 @@
+{
+  "sourceFiles": {
+    "Jefferson_Assigned_Buildings.blend": "175e1a212e2413c4dab0d3449d4d81d8a469e732b255b6154ff97e61bfa6fc29",
+    "Jefferson_Assigned_Buildings.glb": "94390122fc6f8940b49e6d0d23b303a19869610912a7658739cdd38f32c72625",
+    "Jefferson_Assigned_Street.glb": "0986558a3e0fc15ffad4835efae399c52ccd022ae9455791572723dc8af48207"
+  },
+  "frozenSourcesUnchanged": true,
+  "scope": "Two glyph depth ranges and two supporting fascia translations only; footprints/heights/materials/textures unchanged.",
+  "buildings": [
+    {
+      "root": "JEF_886253052",
+      "buildingId": "886253052",
+      "glyphMaterial": "JEF_LetteringIvory",
+      "signPanelVertices": 8,
+      "oldGlyphDepthRangeM": [
+        -9.0928997885057,
+        -9.0927281180329
+      ],
+      "newGlyphDepthRangeM": [
+        -9.1008997885057,
+        -9.0908997885057
+      ],
+      "glyphFrontAdvanceM": 0.008,
+      "glyphThicknessM": 0.01,
+      "fasciaRecessM": 0.01,
+      "predictedFrontToFasciaM": 0.018724001559197845,
+      "predictedBackToFasciaM": 0.008724001559198058,
+      "glyphNonManifoldEdgeCount": 12,
+      "zeroAreaCapTrianglesRemoved": 4,
+      "topologyNote": "Collinear FONT cap T-junction triangles with zero geometric area are omitted; no positive-area cap surface or visible outline was removed.",
+      "materialPropertiesChanged": false,
+      "allNonSignMeshCoordinatesChanged": false
+    },
+    {
+      "root": "JEF_detroit_38139",
+      "buildingId": "detroit-38139",
+      "glyphMaterial": "JEF_StaticGold",
+      "signPanelVertices": 8,
+      "oldGlyphDepthRangeM": [
+        -9.047820570379104,
+        -9.047416212607976
+      ],
+      "newGlyphDepthRangeM": [
+        -9.055820570379103,
+        -9.045820570379103
+      ],
+      "glyphFrontAdvanceM": 0.008,
+      "glyphThicknessM": 0.01,
+      "fasciaRecessM": 0.01,
+      "predictedFrontToFasciaM": 0.01941948631173318,
+      "predictedBackToFasciaM": 0.009419486311733394,
+      "glyphNonManifoldEdgeCount": 0,
+      "zeroAreaCapTrianglesRemoved": 0,
+      "topologyNote": "Collinear FONT cap T-junction triangles with zero geometric area are omitted; no positive-area cap surface or visible outline was removed.",
+      "materialPropertiesChanged": false,
+      "allNonSignMeshCoordinatesChanged": false
+    }
+  ],
+  "exportFloat32ZeroAreaIndexTrianglesRemoved": {
+    "JEF_detroit_38139__JEF_StaticGold": 0,
+    "JEF_886253052__JEF_LetteringIvory": 4
+  },
+  "outputs": {
+    "Jefferson_Assigned_Buildings.blend": "a9ed8d155d2555ba8824cabcf7ddb440a680c081013aa6e8d22dd3f9c14e08df",
+    "Jefferson_Assigned_Buildings.glb": "b9c930f5b6b5edde03e2d93511b26bb7d4d266133800e9f78eeccd04d8f5e2cf",
+    "Jefferson_Assigned_Street.glb": "0986558a3e0fc15ffad4835efae399c52ccd022ae9455791572723dc8af48207"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "sourceBlendSha256": "67495c652dd3347eea5e51d9a964b981e846d569319ee95023b033c236c841e4",
+  "sourceNormalizedGlbSha256": "eca222651282503cb13a2e424d2ba57647529e45c33177dea37a22484700cb21",
+  "targetDistrictDataSha256": "4006a1c523b08a5403f7101a45bd9f739c4aa4632d55a1be5c3676148cde0bdf",
+  "generatorSha256": "6d3673b3ca9a42efb5a530cc8ec8d62eda67c1ee1c69a1c6300ccc9fc1be787e",
+  "assignedBuildingsSha256": "b9c930f5b6b5edde03e2d93511b26bb7d4d266133800e9f78eeccd04d8f5e2cf",
+  "assignedStreetSha256": "0986558a3e0fc15ffad4835efae399c52ccd022ae9455791572723dc8af48207",
+  "geometryValidationPass": true,
+  "coplanarRepair": "Four authored workshop brick piers end at the underside of the continuous header, removing hidden overlapping front faces without changing the visible outer wall, lettering, roof, footprint or height.",
+  "previewFile": "Jefferson_Assigned_Models_Repaired_Preview.png",
+  "signCentersUnchanged": false,
+  "baseAssignedBuildingsSha256": "94390122fc6f8940b49e6d0d23b303a19869610912a7658739cdd38f32c72625",
+  "assignedBlendSha256": "a9ed8d155d2555ba8824cabcf7ddb440a680c081013aa6e8d22dd3f9c14e08df",
+  "signReliefCorrection": {
+    "generatorSha256": "4c3f181a4b84d2a13cadebb349385e987753027904f99deb2ce37081d2ce8299",
+    "validation": "sign_relief_validation.json",
+    "build": "sign_relief_build.json",
+    "sourceGlbSha256": "94390122fc6f8940b49e6d0d23b303a19869610912a7658739cdd38f32c72625",
+    "frontAdvanceM": 0.008,
+    "glyphDepthM": 0.01,
+    "fasciaRecessM": 0.01,
+    "materialAndImageBytesIdentical": true,
+    "nativeGameReview": "pending_new_candidate",
+    "marketTopology": "Twelve collinear cap T-junction boundary edges remain; projected glyph outline/coverage preserved. No watertightness claim."
+  },
+  "previewScope": "Historical pre-relief full-building preview; current relief close-ups are supplied separately.",
+  "signReliefPreviews": [
+    "Market_Sign_Relief_Closeup.png",
+    "Workshop_Sign_Relief_Closeup.png"
+  ]
+}
