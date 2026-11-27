@@ -86,7 +86,7 @@ jobs:
           node "$bundle/archive-source.mjs" capture "$GITHUB_WORKSPACE/diagnostic" "$evidence" 2>&1 | tee "$evidence/source-capture.log"
           export STRICT_DRIVER_PATH="$game/scripts/sustained-ride-profile.mjs"
           export STRICT_GPS_PATH="$game/scripts/gps-full-scene-check.mjs"
-          node --test "$bundle/full-mode.test.mjs" "$bundle/native-gpu-input.test.mjs" "$bundle/native-gpu-sample.test.mjs" "$bundle/embedded-assets.test.mjs" "$bundle/asset-receipts.test.mjs" "$bundle/upstream/observer.test.mjs" "$bundle/upstream/sustained-trace-json.test.mjs" "$bundle/upstream/source.test.mjs" 2>&1 | tee "$evidence/observer-checks.log"
+          node --test "$bundle/full-mode.test.mjs" "$bundle/native-gpu-input.test.mjs" "$bundle/native-gpu-sample.test.mjs" "$bundle/native-gpu-identity.test.mjs" "$bundle/embedded-assets.test.mjs" "$bundle/asset-receipts.test.mjs" "$bundle/upstream/observer.test.mjs" "$bundle/upstream/sustained-trace-json.test.mjs" "$bundle/upstream/source.test.mjs" 2>&1 | tee "$evidence/observer-checks.log"
           node --check "$bundle/preload.mjs"
           node --check "$bundle/validate-evidence.mjs"
       - name: Install the original parent browser runtime and Chrome

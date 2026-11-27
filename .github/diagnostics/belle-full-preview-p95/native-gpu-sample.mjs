@@ -25,6 +25,69 @@ const errorText=e=>String(e?.stack??e);
 const timestamp=now=>({monotonicMs:now(),wallMs:Date.now(),iso:new Date().toISOString()});
 async function deadline(promise,label,ms){let timer;try{return await Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error(label+' timed out')),ms);})]);}finally{clearTimeout(timer);}}
 const same=(a,b,label)=>assert.deepEqual(a,b,label);
+export const NATIVE_GPU_IDENTITY_POLICY=Object.freeze({version:1,
+ product:'Chrome/158.0.8127.89',revision:'@1de57fa19722fa6d6841d4f596c394d015580656',
+ appendedSwitches:Object.freeze(['--flag-switches-begin','--flag-switches-end','--enable-unsafe-swiftshader'])});
+const IDENTITY_METHODS=Object.freeze(['Browser.getVersion','SystemInfo.getInfo','SystemInfo.getProcessInfo']);
+
+/** CDP serializes Chromium's mutable CommandLine, not the OS launch argv.
+ * Only the documented, pinned, non-permission-introducing append is qualified.
+ * Both complete ordered vectors and all duplicates remain in the receipt.
+ * See NATIVE_IDENTITY.md; the failed version-1 capture stays failed. */
+export function compareBrowserCommandLines(osSwitches,systemSwitches,browserVersion){
+ for(const [label,values] of [['OS browser',osSwitches],['SystemInfo browser',systemSwitches]]){
+  assert(Array.isArray(values)&&values.length>0&&values.length<=4096,label+' switches missing or unbounded');
+  for(const value of values)assert(typeof value==='string'&&/^--[a-z0-9][a-z0-9-]*(?:=[^\s"'\\]*)?$/.test(value),label+' malformed switch');
+  assert(!values.some(value=>value.split('=')[0]==='--type'),'Browser root must not be a child process');
+  validateNativeSwitches(values,label);
+ }
+ const identical=osSwitches.length===systemSwitches.length&&osSwitches.every((value,i)=>value===systemSwitches[i]);
+ if(!identical){
+  same(browserVersion?.product,NATIVE_GPU_IDENTITY_POLICY.product,'Unqualified browser product for command-line relation');
+  same(browserVersion?.revision,NATIVE_GPU_IDENTITY_POLICY.revision,'Unqualified Chromium revision for command-line relation');
+  same(osSwitches.length,43,'Qualified startup extension requires the observed 43-switch launch');
+  same(systemSwitches.slice(0,osSwitches.length),osSwitches,'SystemInfo changed the ordered OS launch prefix');
+  same(systemSwitches.slice(osSwitches.length),NATIVE_GPU_IDENTITY_POLICY.appendedSwitches,'Unexplained SystemInfo command-line append');
+  assert(!osSwitches.some(value=>/^--flag-switches-(?:begin|end)$/.test(value.split('=')[0])),'OS launch already contains flag sentinels');
+  same(osSwitches.filter(value=>value.split('=')[0]==='--enable-unsafe-swiftshader'),['--enable-unsafe-swiftshader'],
+   'Qualified append requires exactly one existing identical bare fallback-permission switch');
+ }
+ return {version:1,mode:identical?'identical':'pinned-chromium-in-memory-append',sourceRevision:browserVersion?.revision??null,
+  osSwitches:[...osSwitches],systemSwitches:[...systemSwitches],appendedSwitches:systemSwitches.slice(osSwitches.length),
+  existingSwitchValuesPreserved:true,fallbackPermissionIntroduced:false};
+}
+/** Stable actual-backend fields only; dynamic counters remain in raw responses. */
+export function nativeRendererIdentity(systemInfo){
+ const gpu=systemInfo?.gpu,aux=gpu?.auxAttributes;
+ assert(aux&&typeof aux==='object','Actual native GPU information missing');
+ same(aux.displayType,'ANGLE_METAL','Actual native display backend changed');
+ same(aux.glImplementationParts,'(gl=egl-angle,angle=metal)','Actual native GL implementation changed');
+ assert(typeof aux.glRenderer==='string'&&/ANGLE Metal Renderer:/.test(aux.glRenderer)&&!/SwiftShader|llvmpipe|software/i.test(aux.glRenderer),'Actual native Metal renderer required');
+ same(aux.inProcessGpu,false,'Separate native GPU process required');
+ for(const name of ['glVendor','glVersion'])assert(typeof aux[name]==='string'&&aux[name].length>0,'Actual native '+name+' missing');
+ assert(Array.isArray(gpu.devices)&&gpu.devices.length>0&&gpu.devices.length<=16,'Bounded native device inventory required');
+ return {displayType:aux.displayType,glImplementationParts:aux.glImplementationParts,glRenderer:aux.glRenderer,
+  glVendor:aux.glVendor,glVersion:aux.glVersion,inProcessGpu:aux.inProcessGpu,skiaBackendType:aux.skiaBackendType??null,
+  devices:gpu.devices.map(device=>Object.fromEntries(['vendorId','deviceId','vendorString','deviceString','driverVendor','driverVersion']
+   .filter(key=>Object.hasOwn(device,key)).map(key=>[key,device[key]])))};
+}
+function validateFreshCdpObservations(snapshot){
+ assert(Array.isArray(snapshot.collectionErrors)&&snapshot.collectionErrors.length===0,'Fresh native identity collection failed');
+ assert(Array.isArray(snapshot.cdpObservations)&&snapshot.cdpObservations.length===IDENTITY_METHODS.length,'Exactly three fresh CDP identity observations required');
+ same(snapshot.cdpObservations.map(row=>row.method),IDENTITY_METHODS,'Fresh CDP identity methods changed');
+ for(const row of snapshot.cdpObservations){
+  same(row.params,{});same(row.status,'response','Fresh CDP identity response failed');same(row.error,null);
+  assert(finite(row.started?.monotonicMs)&&finite(row.received?.monotonicMs)&&
+   row.started.monotonicMs>=snapshot.before.monotonicMs&&row.received.monotonicMs>=row.started.monotonicMs&&
+   row.received.monotonicMs<=snapshot.cdpReceived.monotonicMs,'Fresh CDP identity timing is outside its observation bracket');
+  assert(row.received.monotonicMs-row.started.monotonicMs<=C.cdpTimeoutMs,'Fresh CDP identity exceeded its fixed deadline');
+ }
+ same(snapshot.browserVersion,snapshot.cdpObservations[0].response,'Fresh browser-version response changed');
+ same(snapshot.systemInfo,snapshot.cdpObservations[1].response,'Fresh SystemInfo response changed');
+ same(snapshot.cdp,snapshot.cdpObservations[2].response,'Fresh process-list response changed');
+ same(snapshot.browserCommandLine,snapshot.systemInfo?.commandLine,'Fresh command-line binding changed');
+ assert(/^Chrome\//.test(snapshot.browserVersion?.product??'')&&/^@[a-f0-9]{40}$/.test(snapshot.browserVersion?.revision??''),'Actual official browser identity missing');
+}
 
 export function parsePsIdentity(summary,args){
  const match=summary.trim().match(/^(\d+)\s+(\d+)\s+(\d+)\s+(\S+)\s+(\S+\s+\S+\s+\d+\s+\d{2}:\d{2}:\d{2}\s+\d{4})\s+([\d:.-]+)\s+(.+)$/);
@@ -67,7 +130,14 @@ export function validateNativeSwitches(switches,label='Browser'){
   assert(!/^--(?:enable-gpu-debugging|enable-gpu-client-logging|enable-gpu-command-logging|enable-gpu-service-(?:logging|tracing)|trace-startup(?:-[a-z0-9-]+)?|trace-config-file|enable-tracing)(?:=|$)/.test(value),label+' has a forbidden additional instrumentation switch');
  }
 }
-export function validateProcessIdentity(snapshot,baseline=null){
+export function validateProcessIdentity(snapshot,baseline=null,expected=null){
+ validateFreshCdpObservations(snapshot);
+ const nativeRenderer=nativeRendererIdentity(snapshot.systemInfo);
+ if(expected){
+  same(snapshot.browserVersion,expected.browserVersion,'Fresh browser identity differs from original browser receipt');
+  same(snapshot.browserCommandLine,expected.systemInfo?.commandLine,'Fresh browser arguments differ from original SystemInfo receipt');
+  same(nativeRenderer,nativeRendererIdentity(expected.systemInfo),'Fresh renderer differs from original SystemInfo receipt');
+ }
  const selected=selectBrowserAndGpu(snapshot.cdp.processInfo),{browser,gpu}=snapshot.os;
  assert(Number.isSafeInteger(snapshot.currentUid)&&snapshot.currentUid>=0,'Known current user required');
  assert.equal(snapshot.currentUid,snapshot.currentEffectiveUid,'Real/effective user must match; no elevation');
@@ -83,12 +153,15 @@ export function validateProcessIdentity(snapshot,baseline=null){
  assert(bundle&&/Google Chrome\.app$/.test(bundle),'Official Chrome channel app required');
  assert(gpu.realExecutable.startsWith(bundle+'/Contents/'),'GPU executable must belong to the same Chrome bundle');
  assert.deepEqual(gpuSwitches.filter(value=>value.split('=')[0]==='--type'),['--type=gpu-process'],'Exactly one OS GPU command type required');
- for(const [label,switches] of [['SystemInfo browser',systemSwitches],['OS browser',osSwitches]]){
-  assert(!switches.some(value=>value.split('=')[0]==='--type'),'Browser root must not be a child process');
-  validateNativeSwitches(switches,label);
- }
- assert.deepEqual(systemSwitches,osSwitches,'SystemInfo/OS flattened browser switches differ');
+ const commandLineRelation=compareBrowserCommandLines(osSwitches,systemSwitches,snapshot.browserVersion);
+ same(snapshot.browserCommandLine,browser.args+(commandLineRelation.mode==='identical'?'':' '+NATIVE_GPU_IDENTITY_POLICY.appendedSwitches.join(' ')),
+  'Raw command-line strings do not match the qualified relation');
+ commandLineRelation.rawOsCommandLine=browser.args;
+ commandLineRelation.rawSystemCommandLine=snapshot.browserCommandLine;
  if(baseline){
+  same(snapshot.browserVersion,baseline.browserVersion,'Fresh browser version changed');
+  same(snapshot.browserCommandLine,baseline.browserCommandLine,'Fresh browser command line changed');
+  same(nativeRenderer,nativeRendererIdentity(baseline.systemInfo),'Fresh native renderer identity changed');
   for(const name of ['browser','gpu']){
    const prior=baseline.os[name],current=snapshot.os[name];
    for(const key of ['pid','ppid','uid','user','startTime','executable','realExecutable','args'])assert.equal(current[key],prior[key],name+' process identity changed: '+key);
@@ -96,7 +169,7 @@ export function validateProcessIdentity(snapshot,baseline=null){
    assert(current.cpuSeconds>=prior.cpuSeconds,'OS CPU time moved backwards');
   }
  }
- return {browserPid:browser.pid,gpuPid:gpu.pid,sameUser:true,directBrowserChild:true,stable:baseline!==null};
+ return {browserPid:browser.pid,gpuPid:gpu.pid,sameUser:true,directBrowserChild:true,stable:baseline!==null,commandLineRelation,nativeRenderer};
 }
 export function makeSingleSampleRunner(output,{spawnImpl=spawn,timeoutMs=SAMPLE_PROCESS_TIMEOUT_MS,killGraceMs=1000,now=()=>clock.now()}={}){
  const stamp=()=>timestamp(now);
@@ -248,14 +321,37 @@ async function osProcess(pid,now){
  const row=parsePsIdentity(values[0].stdout,values[1].stdout);row.realExecutable=await realpath(row.executable);
  return {...row,observationBefore:before,observationAfter:timestamp(now),commands:commands.map((argv,i)=>({executable:'/bin/ps',argv,stdout:values[i].stdout,stderr:values[i].stderr,exitCode:0}))};
 }
-async function snapshot(session,commandLine,now){
- const before=timestamp(now),cdp=await deadline(session.send('SystemInfo.getProcessInfo'),'GPU sample process identity',C.cdpTimeoutMs),cdpReceived=timestamp(now);
- const selected=selectBrowserAndGpu(cdp.processInfo),[browser,gpu]=await Promise.all([osProcess(selected.browser.id,now),osProcess(selected.gpu.id,now)]);
- return {before,cdpReceived,after:timestamp(now),currentUid:process.getuid(),currentEffectiveUid:process.geteuid(),cdp,browserCommandLine:commandLine,os:{browser,gpu}};
+export async function captureNativeIdentitySnapshot(session,now=()=>clock.now(),testing={}){
+ const value={before:timestamp(now),cdpReceived:null,after:null,currentUid:(testing.getuid??process.getuid)(),
+  currentEffectiveUid:(testing.geteuid??process.geteuid)(),cdpObservations:[],collectionErrors:[],
+  browserVersion:null,systemInfo:null,cdp:null,browserCommandLine:null,os:{browser:null,gpu:null}};
+ value.cdpObservations=await Promise.all(IDENTITY_METHODS.map(async method=>{
+  const row={method,params:{},started:timestamp(now),received:null,status:'pending',response:null,error:null};
+  try{row.response=await deadline(Promise.resolve().then(()=>session.send(method,{})),'GPU identity '+method,C.cdpTimeoutMs);row.status='response';}
+  catch(error){row.status='error';row.error=errorText(error);}
+  row.received=timestamp(now);return row;
+ }));
+ value.cdpReceived=timestamp(now);
+ [value.browserVersion,value.systemInfo,value.cdp]=value.cdpObservations.map(row=>row.response);
+ value.browserCommandLine=value.systemInfo?.commandLine??null;
+ for(const row of value.cdpObservations)if(row.status!=='response')value.collectionErrors.push({where:row.method,error:row.error});
+ if(value.collectionErrors.length===0){
+  try{
+   const selected=selectBrowserAndGpu(value.cdp?.processInfo),observeOs=testing.osProcess??osProcess;
+   const results=await Promise.allSettled(['browser','gpu'].map(name=>observeOs(selected[name].id,now)));
+   for(const [i,result] of results.entries()){
+    const name=['browser','gpu'][i];
+    if(result.status==='fulfilled')value.os[name]=result.value;
+    else value.collectionErrors.push({where:'OS '+name,error:errorText(result.reason)});
+   }
+  }catch(error){value.collectionErrors.push({where:'process selection',error:errorText(error)});}
+ }
+ value.after=timestamp(now);return value;
 }
-function replaySnapshot(value,prior=null){
+function replaySnapshot(value,prior=null,expected=null){
  assert(value&&finite(value.before?.monotonicMs)&&finite(value.after?.monotonicMs)&&value.after.monotonicMs>=value.before.monotonicMs,'Malformed native process observation bracket');
  assert(finite(value.cdpReceived?.monotonicMs)&&value.cdpReceived.monotonicMs>=value.before.monotonicMs&&value.cdpReceived.monotonicMs<=value.after.monotonicMs,'Malformed CDP observation time');
+ validateFreshCdpObservations(value);
  for(const name of ['browser','gpu']){
   const row=value.os?.[name];assert(row&&Array.isArray(row.commands)&&row.commands.length===2,'Missing raw ps observations');
   const expected=psCommands(row.pid);
@@ -268,7 +364,7 @@ function replaySnapshot(value,prior=null){
   assert(finite(row.observationBefore?.monotonicMs)&&finite(row.observationAfter?.monotonicMs)&&row.observationBefore.monotonicMs>=value.cdpReceived.monotonicMs&&row.observationAfter.monotonicMs>=row.observationBefore.monotonicMs&&row.observationAfter.monotonicMs<=value.after.monotonicMs,'Malformed raw ps observation time');
  }
  if(prior)assert(value.before.monotonicMs>=prior.after.monotonicMs,'Process identity observations out of order');
- return validateProcessIdentity(value,prior);
+ return validateProcessIdentity(value,prior,expected);
 }
 function replayPhaseSignals(sample,raw){
  assert(Array.isArray(sample.streamEvents)&&sample.streamEvents.length<=256,'Missing bounded raw-stream observations');
@@ -303,7 +399,7 @@ function replayPhaseSignals(sample,raw){
 
 /** Replays successful collection from raw files and explicitly supplied external bindings. */
 export async function verifyNativeGpuSample(receipt,{readCapturedFile,rideStartHostMs,rideStopHostMs,browserVersion,systemInfo}){
- assert.equal(typeof readCapturedFile,'function');same(receipt.config,C,'Native sample controls changed');
+ assert.equal(typeof readCapturedFile,'function');same(receipt.version,2,'Fresh-identity receipt version required');same(receipt.config,C,'Native sample controls changed');
  assert.equal(receipt.diagnosticOnly,true);assert.equal(receipt.releaseAcceptance,false);assert.equal(receipt.mechanismAttributionUsable,null);
  assert.equal(receipt.platform,'darwin');same(receipt.browserVersion,browserVersion,'Browser version binding changed');same(receipt.systemInfo,systemInfo,'System identity binding changed');
  assert(typeof browserVersion?.product==='string'&&/^Chrome\//.test(browserVersion.product),'Official native browser version missing');
@@ -314,8 +410,9 @@ export async function verifyNativeGpuSample(receipt,{readCapturedFile,rideStartH
  assert(finite(receipt.taskStartedHostMs)&&receipt.taskStartedHostMs>=receipt.ride.scheduledHostMs,'Sampler task started before predefined offset');
  assert(Array.isArray(receipt.errors)&&receipt.errors.length===0,'Native sampler has collection errors');
  assert.equal(receipt.singleTaskAttempts,1,'Exactly one scheduled task required');
- const initial=replaySnapshot(receipt.initialSnapshot),before=replaySnapshot(receipt.beforeSnapshot,receipt.initialSnapshot),after=replaySnapshot(receipt.afterSnapshot,receipt.beforeSnapshot);
- for(const snap of [receipt.initialSnapshot,receipt.beforeSnapshot,receipt.afterSnapshot])same(snap.browserCommandLine,systemInfo.commandLine);
+ const expected={browserVersion,systemInfo};
+ const initial=replaySnapshot(receipt.initialSnapshot,null,expected),before=replaySnapshot(receipt.beforeSnapshot,receipt.initialSnapshot,expected),after=replaySnapshot(receipt.afterSnapshot,receipt.beforeSnapshot,expected);
+ same(receipt.processIdentity,{initial,before,after},'Captured process-identity relations did not replay exactly');
  const sample=receipt.sample;
  same(sample.executable,C.executable);same(sample.requestedSeconds,C.requestedSeconds);same(sample.requestedIntervalMs,C.requestedIntervalMs);
  same(sample.timeoutMs,C.processTimeoutMs);same(sample.killGraceMs,C.killGraceMs);assert.equal(sample.attempted,true);assert.equal(sample.attempts,1);
@@ -352,13 +449,13 @@ export async function verifyNativeGpuSample(receipt,{readCapturedFile,rideStartH
 
 /** Synchronous ride hooks never await identity, sampling, file writes or completion. */
 export function createNativeGpuSampler({browserSession,browserVersion,systemInfo,output,onError=()=>{},now=()=>clock.now()},testing={}){
- const platform=testing.platform??process.platform,observe=testing.snapshot??snapshot,runFactory=testing.runnerFactory??makeSingleSampleRunner;
+ const platform=testing.platform??process.platform,observe=testing.snapshot??captureNativeIdentitySnapshot,runFactory=testing.runnerFactory??makeSingleSampleRunner;
  const later=testing.setTimeout??setTimeout,cancelLater=testing.clearTimeout??clearTimeout,checkAccess=testing.access??access,resolvePath=testing.realpath??realpath;
- const receipt={version:1,diagnosticOnly:true,releaseAcceptance:false,mechanismAttributionUsable:null,config:{...C},platform,
+ const receipt={version:2,diagnosticOnly:true,releaseAcceptance:false,mechanismAttributionUsable:null,config:{...C},platform,
   browserVersion:structuredClone(browserVersion??null),systemInfo:structuredClone(systemInfo??null),outputDirectory:resolve(output),
   status:'initializing',collectionComplete:false,validationPassed:false,validation:null,errors:[],singleTaskAttempts:0,
   ride:{startHostMs:null,stopHostMs:null,scheduledHostMs:null},taskStartedHostMs:null,initialSnapshot:null,beforeSnapshot:null,afterSnapshot:null,
-  sample:null,rawFiles:[],analysis:null,reportPathResolution:null,
+  processIdentity:{initial:null,before:null,after:null},sample:null,rawFiles:[],analysis:null,reportPathResolution:null,
   interpretation:'One separately bounded statistical observation of native GPU-process host stacks. Overhead is unquantified; original reports and acceptance remain separate. Unknown symbols remain unknown.'};
  let timer=null,task=Promise.resolve(),finishing=null,runner=null;
  const fail=(where,error)=>{const message=errorText(error);receipt.errors.push({where,message,hostMs:now()});try{void Promise.resolve(onError(Error(where+': '+message))).catch(()=>{});}catch{/* Reporting must not replace the original native result. */}};
@@ -368,7 +465,8 @@ export function createNativeGpuSampler({browserSession,browserVersion,systemInfo
   assert(/^Chrome\//.test(browserVersion?.product??''),'Official Chrome version required');
   await checkAccess(C.executable,1);
   for(const file of [...Object.values(FILES),RECEIPT])try{await lstat(resolve(output,file));throw Error('Sampler output already exists: '+file);}catch(error){if(error.code!=='ENOENT')throw error;}
-  receipt.initialSnapshot=await observe(browserSession,systemInfo.commandLine,now);validateProcessIdentity(receipt.initialSnapshot);
+  receipt.initialSnapshot=await observe(browserSession,now);
+  receipt.processIdentity.initial=replaySnapshot(receipt.initialSnapshot,null,{browserVersion,systemInfo});
   receipt.status='ready';
  })().catch(error=>{receipt.status='unavailable';fail('initialize',error);});
  async function collect(){
@@ -377,12 +475,14 @@ export function createNativeGpuSampler({browserSession,browserVersion,systemInfo
    assert.equal(receipt.singleTaskAttempts,1,'Exactly one scheduled sample task allowed');await initial;
    assert(receipt.initialSnapshot&&receipt.errors.length===0,'Native identity initialization failed');
    assert.equal(receipt.ride.stopHostMs,null,'Native release already requested; no late sample');
-   receipt.beforeSnapshot=await observe(browserSession,systemInfo.commandLine,now);validateProcessIdentity(receipt.beforeSnapshot,receipt.initialSnapshot);
+   receipt.beforeSnapshot=await observe(browserSession,now);
+   receipt.processIdentity.before=replaySnapshot(receipt.beforeSnapshot,receipt.initialSnapshot,{browserVersion,systemInfo});
    assert.equal(receipt.ride.stopHostMs,null,'Native release occurred during sampler identity checks');
    assert(now()<receipt.ride.startHostMs+C.rideRequestedMs-C.requestedSeconds*1000-1000,'Insufficient remaining original ride time; no late sample or retry');
    runner=runFactory(output,{now});receipt.sample=runner.metadata;receipt.status='sampling';
    await runner.run(receipt.beforeSnapshot.os.gpu.pid);
-   receipt.afterSnapshot=await observe(browserSession,systemInfo.commandLine,now);validateProcessIdentity(receipt.afterSnapshot,receipt.beforeSnapshot);
+   receipt.afterSnapshot=await observe(browserSession,now);
+   receipt.processIdentity.after=replaySnapshot(receipt.afterSnapshot,receipt.beforeSnapshot,{browserVersion,systemInfo});
    receipt.status='sample-finished';
   }catch(error){receipt.status='incomplete';fail('collect',error);}
  }

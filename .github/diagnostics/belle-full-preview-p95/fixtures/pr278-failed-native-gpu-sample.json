@@ -1,0 +1,324 @@
+{
+  "version": 1,
+  "diagnosticOnly": true,
+  "releaseAcceptance": false,
+  "mechanismAttributionUsable": null,
+  "config": {
+    "version": 1,
+    "offsetMs": 64000,
+    "requestedSeconds": 8,
+    "requestedIntervalMs": 10,
+    "rideRequestedMs": 90000,
+    "executable": "/usr/bin/sample",
+    "processTimeoutMs": 30000,
+    "killGraceMs": 1000,
+    "cdpTimeoutMs": 5000,
+    "psTimeoutMs": 3000,
+    "maxRawStreamBytes": 4194304,
+    "maxReportBytes": 67108864,
+    "note": "One predeclared window; no retry or release acceptance. Requested duration/interval are not observed timing or stack counts."
+  },
+  "platform": "darwin",
+  "browserVersion": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/158.0.8127.89",
+    "revision": "@1de57fa19722fa6d6841d4f596c394d015580656",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/158.0.0.0 Safari/537.36",
+    "jsVersion": "15.8.62.31"
+  },
+  "systemInfo": {
+    "gpu": {
+      "devices": [
+        {
+          "vendorId": 0,
+          "deviceId": 0,
+          "vendorString": "Google Inc. (Apple)",
+          "deviceString": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Version 15.8.2 (Build 24H232))",
+          "driverVendor": "Apple",
+          "driverVersion": "15.8.2"
+        }
+      ],
+      "auxAttributes": {
+        "amdSwitchable": false,
+        "canSupportThreadedTextureMailbox": false,
+        "directRenderingVersion": "",
+        "displayType": "ANGLE_METAL",
+        "glExtensions": "GL_AMD_performance_monitor GL_ANGLE_base_vertex_base_instance_shader_builtin GL_ANGLE_blob_cache GL_ANGLE_client_arrays GL_ANGLE_clip_cull_distance GL_ANGLE_compressed_texture_etc GL_ANGLE_depth_texture GL_ANGLE_framebuffer_blit GL_ANGLE_framebuffer_multisample GL_ANGLE_get_serialized_context_string GL_ANGLE_get_tex_level_parameter GL_ANGLE_instanced_arrays GL_ANGLE_memory_size GL_ANGLE_pack_reverse_row_order GL_ANGLE_polygon_mode GL_ANGLE_program_binary_readiness_query GL_ANGLE_program_cache_control GL_ANGLE_provoking_vertex GL_ANGLE_renderability_validation GL_ANGLE_request_extension GL_ANGLE_rgbx_internal_format GL_ANGLE_robust_client_memory GL_ANGLE_shader_pixel_local_storage GL_ANGLE_shader_pixel_local_storage_coherent GL_ANGLE_stencil_texturing GL_ANGLE_texture_compression_dxt3 GL_ANGLE_texture_compression_dxt5 GL_ANGLE_texture_multisample GL_ANGLE_translated_shader_source GL_ANGLE_trim_memory GL_APPLE_clip_distance GL_ARM_rgba8 GL_CHROMIUM_bind_generates_resource GL_CHROMIUM_bind_uniform_location GL_CHROMIUM_copy_texture GL_CHROMIUM_lose_context GL_EXT_base_instance GL_EXT_blend_func_extended GL_EXT_blend_minmax GL_EXT_clip_control GL_EXT_color_buffer_float GL_EXT_color_buffer_half_float GL_EXT_compressed_ETC1_RGB8_sub_texture GL_EXT_conservative_depth GL_EXT_debug_label GL_EXT_debug_marker GL_EXT_depth_clamp GL_EXT_discard_framebuffer GL_EXT_disjoint_timer_query GL_EXT_draw_buffers GL_EXT_draw_buffers_indexed GL_EXT_draw_elements_base_vertex GL_EXT_float_blend GL_EXT_frag_depth GL_EXT_instanced_arrays GL_EXT_map_buffer_range GL_EXT_multisampled_render_to_texture GL_EXT_occlusion_query_boolean GL_EXT_polygon_offset_clamp GL_EXT_pvrtc_sRGB GL_EXT_read_format_bgra GL_EXT_render_snorm GL_EXT_robustness GL_EXT_sRGB GL_EXT_shader_texture_lod GL_EXT_texture_compression_bptc GL_EXT_texture_compression_dxt1 GL_EXT_texture_compression_rgtc GL_EXT_texture_compression_s3tc_srgb GL_EXT_texture_filter_anisotropic GL_EXT_texture_format_BGRA8888 GL_EXT_texture_mirror_clamp_to_edge GL_EXT_texture_norm16 GL_EXT_texture_rg GL_EXT_texture_sRGB_R8 GL_EXT_texture_sRGB_RG8 GL_EXT_texture_shadow_lod GL_EXT_texture_storage GL_IMG_texture_compression_pvrtc GL_KHR_debug GL_KHR_parallel_shader_compile GL_KHR_robustness GL_KHR_texture_compression_astc_ldr GL_KHR_texture_compression_astc_sliced_3d GL_MESA_framebuffer_flip_y GL_NV_fence GL_NV_framebuffer_blit GL_NV_pixel_buffer_object GL_NV_shader_noperspective_interpolation GL_OES_EGL_image GL_OES_EGL_sync GL_OES_compressed_ETC1_RGB8_texture GL_OES_depth24 GL_OES_depth32 GL_OES_depth_texture GL_OES_draw_buffers_indexed GL_OES_draw_elements_base_vertex GL_OES_element_index_uint GL_OES_fbo_render_mipmap GL_OES_get_program_binary GL_OES_mapbuffer GL_OES_packed_depth_stencil GL_OES_required_internalformat GL_OES_rgb8_rgba8 GL_OES_sample_variables GL_OES_shader_multisample_interpolation GL_OES_standard_derivatives GL_OES_surfaceless_context GL_OES_texture_3D GL_OES_texture_float GL_OES_texture_float_linear GL_OES_texture_half_float GL_OES_texture_half_float_linear GL_OES_texture_npot GL_OES_texture_stencil8 GL_OES_vertex_array_object GL_QCOM_render_shared_exponent ",
+        "glImplementationParts": "(gl=egl-angle,angle=metal)",
+        "glRenderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Version 15.8.2 (Build 24H232))",
+        "glResetNotificationStrategy": 33362,
+        "glVendor": "Google Inc. (Apple)",
+        "glVersion": "OpenGL ES 3.0 (ANGLE 2.1.29257 git hash: 1f6526a566c2)",
+        "glWsExtensions": "",
+        "glWsVendor": "",
+        "glWsVersion": "",
+        "inProcessGpu": false,
+        "initializationTime": 0.793085,
+        "isAsan": false,
+        "isClangCoverage": false,
+        "jpegDecodeAcceleratorSupported": false,
+        "maxMsaaSamples": "4",
+        "optimus": false,
+        "passthroughCmdDecoder": true,
+        "pixelShaderVersion": "3.00",
+        "processCrashCount": 0,
+        "sandboxed": false,
+        "skiaBackendType": "GraphiteDawnMetal",
+        "subpixelFontRendering": true,
+        "targetCpuBits": 64,
+        "vertexShaderVersion": "3.00",
+        "visibilityCallbackCallCount": 0
+      },
+      "featureStatus": {
+        "2d_canvas": "enabled",
+        "direct_rendering_display_compositor": "disabled_off_ok",
+        "gpu_compositing": "enabled",
+        "multiple_raster_threads": "disabled_off",
+        "opengl": "enabled_on",
+        "rasterization": "enabled",
+        "skia_graphite": "enabled_on",
+        "trees_in_viz": "disabled_off",
+        "video_decode": "enabled",
+        "video_encode": "enabled",
+        "webgl": "enabled",
+        "webgpu": "enabled",
+        "webnn": "disabled_off"
+      },
+      "driverBugWorkarounds": [
+        "enable_webgl_timer_query_extensions",
+        "disabled_extension_GL_KHR_blend_equation_advanced",
+        "disabled_extension_GL_KHR_blend_equation_advanced_coherent"
+      ],
+      "videoDecoding": [],
+      "videoEncoding": []
+    },
+    "modelName": "",
+    "modelVersion": "",
+    "commandLine": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate,RenderDocument,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --no-sandbox --enable-gpu --use-gl=angle --use-angle=metal --user-data-dir=/var/folders/9d/l02zfgrs7c16twd3wbpdmhkc0000gn/T/playwright_chromiumdev_profile-MY8xNx --remote-debugging-pipe --no-startup-window --flag-switches-begin --flag-switches-end --enable-unsafe-swiftshader"
+  },
+  "outputDirectory": "/Users/runner/work/Jungle-Lotto/Jungle-Lotto/evidence/capture",
+  "status": "incomplete",
+  "collectionComplete": false,
+  "validationPassed": false,
+  "validation": null,
+  "errors": [
+    {
+      "where": "initialize",
+      "message": "AssertionError [ERR_ASSERTION]: SystemInfo/OS flattened browser switches differ\n+ actual - expected\n... Skipped lines\n\n  [\n    '--disable-field-trial-config',\n    '--disable-background-networking',\n    '--disable-background-timer-throttling',\n    '--disable-backgrounding-occluded-windows',\n...\n    '--no-startup-window',\n+   '--flag-switches-begin',\n+   '--flag-switches-end',\n+   '--enable-unsafe-swiftshader'\n  ]\n\n    at validateProcessIdentity (file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/diagnostic/.github/diagnostics/belle-full-preview-p95/native-gpu-sample.mjs:90:9)\n    at file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/diagnostic/.github/diagnostics/belle-full-preview-p95/native-gpu-sample.mjs:371:84",
+      "hostMs": 6814.463459
+    },
+    {
+      "where": "collect",
+      "message": "AssertionError [ERR_ASSERTION]: Native identity initialization failed\n    at collect (file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/diagnostic/.github/diagnostics/belle-full-preview-p95/native-gpu-sample.mjs:378:4)",
+      "hostMs": 136717.952417
+    },
+    {
+      "where": "raw native-gpu-sample.stdout.txt",
+      "message": "Error: ENOENT: no such file or directory, lstat '/Users/runner/work/Jungle-Lotto/Jungle-Lotto/evidence/capture/native-gpu-sample.stdout.txt'\n    at async lstat (node:internal/fs/promises:1741:18)\n    at async file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/diagnostic/.github/diagnostics/belle-full-preview-p95/native-gpu-sample.mjs:412:21\n    at async file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/diagnostic/.github/diagnostics/belle-full-preview-p95/observer.mjs:253:30\n    at async observe (file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/diagnostic/.github/diagnostics/belle-full-preview-p95/observer.mjs:32:40)\n    at async Browser2.<anonymous> (file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/diagnostic/.github/diagnostics/belle-full-preview-p95/observer.mjs:34:3)\n    at async file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/sustained-ride-profile.mjs:276:13",
+      "hostMs": 324193.432917
+    },
+    {
+      "where": "raw native-gpu-sample.stderr.txt",
+      "message": "Error: ENOENT: no such file or directory, lstat '/Users/runner/work/Jungle-Lotto/Jungle-Lotto/evidence/capture/native-gpu-sample.stderr.txt'\n    at async lstat (node:internal/fs/promises:1741:18)\n    at async file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/diagnostic/.github/diagnostics/belle-full-preview-p95/native-gpu-sample.mjs:412:21\n    at async file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/diagnostic/.github/diagnostics/belle-full-preview-p95/observer.mjs:253:30\n    at async observe (file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/diagnostic/.github/diagnostics/belle-full-preview-p95/observer.mjs:32:40)\n    at async Browser2.<anonymous> (file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/diagnostic/.github/diagnostics/belle-full-preview-p95/observer.mjs:34:3)\n    at async file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/sustained-ride-profile.mjs:276:13",
+      "hostMs": 324194.092125
+    },
+    {
+      "where": "raw native-gpu-sample.report.txt",
+      "message": "Error: ENOENT: no such file or directory, lstat '/Users/runner/work/Jungle-Lotto/Jungle-Lotto/evidence/capture/native-gpu-sample.report.txt'\n    at async lstat (node:internal/fs/promises:1741:18)\n    at async file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/diagnostic/.github/diagnostics/belle-full-preview-p95/native-gpu-sample.mjs:412:21\n    at async file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/diagnostic/.github/diagnostics/belle-full-preview-p95/observer.mjs:253:30\n    at async observe (file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/diagnostic/.github/diagnostics/belle-full-preview-p95/observer.mjs:32:40)\n    at async Browser2.<anonymous> (file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/diagnostic/.github/diagnostics/belle-full-preview-p95/observer.mjs:34:3)\n    at async file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/sustained-ride-profile.mjs:276:13",
+      "hostMs": 324194.345375
+    },
+    {
+      "where": "verify",
+      "message": "AssertionError [ERR_ASSERTION]: Native sampler has collection errors\n    at verifyNativeGpuSample (file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/diagnostic/.github/diagnostics/belle-full-preview-p95/native-gpu-sample.mjs:315:2)\n    at file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/diagnostic/.github/diagnostics/belle-full-preview-p95/native-gpu-sample.mjs:419:34\n    at async file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/diagnostic/.github/diagnostics/belle-full-preview-p95/observer.mjs:253:30\n    at async observe (file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/diagnostic/.github/diagnostics/belle-full-preview-p95/observer.mjs:32:40)\n    at async Browser2.<anonymous> (file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/diagnostic/.github/diagnostics/belle-full-preview-p95/observer.mjs:34:3)\n    at async file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/sustained-ride-profile.mjs:276:13",
+      "hostMs": 324195.276875
+    }
+  ],
+  "singleTaskAttempts": 1,
+  "ride": {
+    "startHostMs": 72711.365709,
+    "stopHostMs": 162715.99425,
+    "scheduledHostMs": 136711.365709
+  },
+  "taskStartedHostMs": 136715.252834,
+  "initialSnapshot": {
+    "before": {
+      "monotonicMs": 6780.133584,
+      "wallMs": 1795801049954,
+      "iso": "2026-11-27T17:37:29.954Z"
+    },
+    "cdpReceived": {
+      "monotonicMs": 6787.580584,
+      "wallMs": 1795801049961,
+      "iso": "2026-11-27T17:37:29.961Z"
+    },
+    "after": {
+      "monotonicMs": 6811.633417,
+      "wallMs": 1795801049985,
+      "iso": "2026-11-27T17:37:29.985Z"
+    },
+    "currentUid": 501,
+    "currentEffectiveUid": 501,
+    "cdp": {
+      "processInfo": [
+        {
+          "type": "browser",
+          "id": 9678,
+          "cpuTime": 0.60842
+        },
+        {
+          "type": "GPU",
+          "id": 9685,
+          "cpuTime": 0.151674
+        },
+        {
+          "type": "network.mojom.NetworkService",
+          "id": 9687,
+          "cpuTime": 0.083118
+        },
+        {
+          "type": "storage.mojom.StorageService",
+          "id": 9688,
+          "cpuTime": 0.051229
+        },
+        {
+          "type": "tracing.mojom.TracingService",
+          "id": 9692,
+          "cpuTime": 0
+        }
+      ]
+    },
+    "browserCommandLine": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate,RenderDocument,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --no-sandbox --enable-gpu --use-gl=angle --use-angle=metal --user-data-dir=/var/folders/9d/l02zfgrs7c16twd3wbpdmhkc0000gn/T/playwright_chromiumdev_profile-MY8xNx --remote-debugging-pipe --no-startup-window --flag-switches-begin --flag-switches-end --enable-unsafe-swiftshader",
+    "os": {
+      "browser": {
+        "pid": 9678,
+        "ppid": 9631,
+        "uid": 501,
+        "user": "runner",
+        "startTime": "Fri Nov 27 17:37:27 2026",
+        "cpuTime": "0:00.61",
+        "cpuSeconds": 0.61,
+        "executable": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        "args": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate,RenderDocument,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --no-sandbox --enable-gpu --use-gl=angle --use-angle=metal --user-data-dir=/var/folders/9d/l02zfgrs7c16twd3wbpdmhkc0000gn/T/playwright_chromiumdev_profile-MY8xNx --remote-debugging-pipe --no-startup-window",
+        "realExecutable": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        "observationBefore": {
+          "monotonicMs": 6787.783875,
+          "wallMs": 1795801049961,
+          "iso": "2026-11-27T17:37:29.961Z"
+        },
+        "observationAfter": {
+          "monotonicMs": 6810.22,
+          "wallMs": 1795801049984,
+          "iso": "2026-11-27T17:37:29.984Z"
+        },
+        "commands": [
+          {
+            "executable": "/bin/ps",
+            "argv": [
+              "-ww",
+              "-p",
+              "9678",
+              "-o",
+              "pid=,ppid=,uid=,user=,lstart=,time=,comm="
+            ],
+            "stdout": " 9678  9631   501 runner Fri Nov 27 17:37:27 2026       0:00.61 /Applications/Google Chrome.app/Contents/MacOS/Google Chrome\n",
+            "stderr": "",
+            "exitCode": 0
+          },
+          {
+            "executable": "/bin/ps",
+            "argv": [
+              "-ww",
+              "-p",
+              "9678",
+              "-o",
+              "args="
+            ],
+            "stdout": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate,RenderDocument,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --no-sandbox --enable-gpu --use-gl=angle --use-angle=metal --user-data-dir=/var/folders/9d/l02zfgrs7c16twd3wbpdmhkc0000gn/T/playwright_chromiumdev_profile-MY8xNx --remote-debugging-pipe --no-startup-window\n",
+            "stderr": "",
+            "exitCode": 0
+          }
+        ]
+      },
+      "gpu": {
+        "pid": 9685,
+        "ppid": 9678,
+        "uid": 501,
+        "user": "runner",
+        "startTime": "Fri Nov 27 17:37:28 2026",
+        "cpuTime": "0:00.15",
+        "cpuSeconds": 0.15,
+        "executable": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/158.0.8127.89/Helpers/Google Chrome Helper (Aperitif GPU).app/Contents/MacOS/Google Chrome Helper (Aperitif GPU)",
+        "args": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/158.0.8127.89/Helpers/Google Chrome Helper (Aperitif GPU).app/Contents/MacOS/Google Chrome Helper (Aperitif GPU) --type=gpu-process --gpu-recent-crash-count=0 --no-sandbox --disable-breakpad --use-angle=metal --enable-unsafe-swiftshader --user-data-dir=/var/folders/9d/l02zfgrs7c16twd3wbpdmhkc0000gn/T/playwright_chromiumdev_profile-MY8xNx --gpu-preferences=WAAAAAAAAAAgAACBAAAAAAAAAAAAAGAAQAAAAAAAAAADAAAAAAAAADgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAoAAAAAAAAAAgAAAAAAAAADAAAAAEAAAAAAAAAAAAAAAgAAAAAAAAACAAAAAAAAAA= --use-gl=angle --shared-files --metrics-shmem-handle=1752395122,r,6302079220325854007,2262548907134627439,262144 --field-trial-handle=1718379636,r,16215863962067189321,12260915474223091226,262144 --enable-features=CDPScreenshotNewSurface --disable-features=AutoDeElevate,AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,OptimizationHints,PaintHolding,RenderDocument,ThirdPartyStoragePartitioning,Translate,msEdgeUpdateLaunchServicesPreferredVersion,msForceBrowserSignIn --variations-seed-version --pseudonymization-salt-handle=1935764596,r,8290177185918337780,16593271864218041752,4 --trace-process-track-uuid=3190708988185955192",
+        "realExecutable": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/158.0.8127.89/Helpers/Google Chrome Helper (Aperitif GPU).app/Contents/MacOS/Google Chrome Helper (Aperitif GPU)",
+        "observationBefore": {
+          "monotonicMs": 6794.048959,
+          "wallMs": 1795801049968,
+          "iso": "2026-11-27T17:37:29.968Z"
+        },
+        "observationAfter": {
+          "monotonicMs": 6811.610917,
+          "wallMs": 1795801049985,
+          "iso": "2026-11-27T17:37:29.985Z"
+        },
+        "commands": [
+          {
+            "executable": "/bin/ps",
+            "argv": [
+              "-ww",
+              "-p",
+              "9685",
+              "-o",
+              "pid=,ppid=,uid=,user=,lstart=,time=,comm="
+            ],
+            "stdout": " 9685  9678   501 runner Fri Nov 27 17:37:28 2026       0:00.15 /Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/158.0.8127.89/Helpers/Google Chrome Helper (Aperitif GPU).app/Contents/MacOS/Google Chrome Helper (Aperitif GPU)\n",
+            "stderr": "",
+            "exitCode": 0
+          },
+          {
+            "executable": "/bin/ps",
+            "argv": [
+              "-ww",
+              "-p",
+              "9685",
+              "-o",
+              "args="
+            ],
+            "stdout": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/158.0.8127.89/Helpers/Google Chrome Helper (Aperitif GPU).app/Contents/MacOS/Google Chrome Helper (Aperitif GPU) --type=gpu-process --gpu-recent-crash-count=0 --no-sandbox --disable-breakpad --use-angle=metal --enable-unsafe-swiftshader --user-data-dir=/var/folders/9d/l02zfgrs7c16twd3wbpdmhkc0000gn/T/playwright_chromiumdev_profile-MY8xNx --gpu-preferences=WAAAAAAAAAAgAACBAAAAAAAAAAAAAGAAQAAAAAAAAAADAAAAAAAAADgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAoAAAAAAAAAAgAAAAAAAAADAAAAAEAAAAAAAAAAAAAAAgAAAAAAAAACAAAAAAAAAA= --use-gl=angle --shared-files --metrics-shmem-handle=1752395122,r,6302079220325854007,2262548907134627439,262144 --field-trial-handle=1718379636,r,16215863962067189321,12260915474223091226,262144 --enable-features=CDPScreenshotNewSurface --disable-features=AutoDeElevate,AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,OptimizationHints,PaintHolding,RenderDocument,ThirdPartyStoragePartitioning,Translate,msEdgeUpdateLaunchServicesPreferredVersion,msForceBrowserSignIn --variations-seed-version --pseudonymization-salt-handle=1935764596,r,8290177185918337780,16593271864218041752,4 --trace-process-track-uuid=3190708988185955192\n",
+            "stderr": "",
+            "exitCode": 0
+          }
+        ]
+      }
+    }
+  },
+  "beforeSnapshot": null,
+  "afterSnapshot": null,
+  "sample": null,
+  "rawFiles": [
+    {
+      "file": "native-gpu-sample.stdout.txt",
+      "available": false,
+      "bytes": null,
+      "sha256": null,
+      "error": "Error: ENOENT: no such file or directory, lstat '/Users/runner/work/Jungle-Lotto/Jungle-Lotto/evidence/capture/native-gpu-sample.stdout.txt'\n    at async lstat (node:internal/fs/promises:1741:18)\n    at async file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/diagnostic/.github/diagnostics/belle-full-preview-p95/native-gpu-sample.mjs:412:21\n    at async file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/diagnostic/.github/diagnostics/belle-full-preview-p95/observer.mjs:253:30\n    at async observe (file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/diagnostic/.github/diagnostics/belle-full-preview-p95/observer.mjs:32:40)\n    at async Browser2.<anonymous> (file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/diagnostic/.github/diagnostics/belle-full-preview-p95/observer.mjs:34:3)\n    at async file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/sustained-ride-profile.mjs:276:13"
+    },
+    {
+      "file": "native-gpu-sample.stderr.txt",
+      "available": false,
+      "bytes": null,
+      "sha256": null,
+      "error": "Error: ENOENT: no such file or directory, lstat '/Users/runner/work/Jungle-Lotto/Jungle-Lotto/evidence/capture/native-gpu-sample.stderr.txt'\n    at async lstat (node:internal/fs/promises:1741:18)\n    at async file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/diagnostic/.github/diagnostics/belle-full-preview-p95/native-gpu-sample.mjs:412:21\n    at async file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/diagnostic/.github/diagnostics/belle-full-preview-p95/observer.mjs:253:30\n    at async observe (file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/diagnostic/.github/diagnostics/belle-full-preview-p95/observer.mjs:32:40)\n    at async Browser2.<anonymous> (file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/diagnostic/.github/diagnostics/belle-full-preview-p95/observer.mjs:34:3)\n    at async file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/sustained-ride-profile.mjs:276:13"
+    },
+    {
+      "file": "native-gpu-sample.report.txt",
+      "available": false,
+      "bytes": null,
+      "sha256": null,
+      "error": "Error: ENOENT: no such file or directory, lstat '/Users/runner/work/Jungle-Lotto/Jungle-Lotto/evidence/capture/native-gpu-sample.report.txt'\n    at async lstat (node:internal/fs/promises:1741:18)\n    at async file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/diagnostic/.github/diagnostics/belle-full-preview-p95/native-gpu-sample.mjs:412:21\n    at async file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/diagnostic/.github/diagnostics/belle-full-preview-p95/observer.mjs:253:30\n    at async observe (file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/diagnostic/.github/diagnostics/belle-full-preview-p95/observer.mjs:32:40)\n    at async Browser2.<anonymous> (file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/diagnostic/.github/diagnostics/belle-full-preview-p95/observer.mjs:34:3)\n    at async file:///Users/runner/work/Jungle-Lotto/Jungle-Lotto/app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/sustained-ride-profile.mjs:276:13"
+    }
+  ],
+  "analysis": null,
+  "reportPathResolution": null,
+  "interpretation": "One separately bounded statistical observation of native GPU-process host stacks. Overhead is unquantified; original reports and acceptance remain separate. Unknown symbols remain unknown.",
+  "finishedHostMs": 324195.355334
+}

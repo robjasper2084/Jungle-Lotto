@@ -1,5 +1,32 @@
 # Full preview p95 attribution
 
+## Native collector identity repair
+
+The first #278 attempt stopped before invoking the OS sampler: Chrome's
+in-memory command line contained an empty flags block and a second occurrence
+of a launch switch, so the old OS/CDP equality check failed. That capture and
+all original performance failures remain recorded as failures.
+
+The repaired comparator retains the exact raw strings, ordered tokens and
+duplicates. For the observed Chrome product and Chromium revision only, it
+qualifies the precise 43-switch launch prefix plus the documented three-token
+append. Any unexplained difference still fails. The existing fallback switch
+must already be present once at launch; actual ANGLE Metal evidence is required
+independently. [NATIVE_IDENTITY.md](NATIVE_IDENTITY.md) records the pinned source
+basis and the limits of that interpretation.
+
+Each initial, pre-sample and post-sample snapshot now obtains fresh, timed
+`Browser.getVersion`, `SystemInfo.getInfo` and `SystemInfo.getProcessInfo`
+responses. Partial failures remain recorded without retry. Raw OS observations,
+CDP responses, process identities, renderer identities and comparison results
+are checked both before attachment and during independent replay. Version-2
+receipts cannot be used to relabel the old version-1 capture as successful.
+
+Only collector source, its regression fixtures, documentation and the local
+collector test list change. The original driver, workload, inputs, sampler
+window, deadlines, trace settings and release criteria retain their identities.
+This repair must produce its own native result before any attribution claim.
+
 ## Current extension: one bounded native GPU-process stack sample
 
 This child diagnostic starts from completed source `2806fbd4f9b445177b0fd37c6a417ec844312d30`. Its application stays at `9d2162e39188dcd0e42565f398b736734e481f73`. The original #261 desktop failures remain **51.1 ms default / 60.9 ms preview p95**. This extension cannot replace those acceptance results and does not select a runtime repair.
