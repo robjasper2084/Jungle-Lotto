@@ -1,14 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtemp,mkdir,writeFile,readFile,stat,rm} from 'node:fs/promises';
+import {mkdtemp,mkdir,writeFile,readFile,readdir,stat,rm} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
 import {tmpdir} from 'node:os';
 import {resolve,dirname,sep} from 'node:path';
 import {shareRidingMedia} from './share-riding-media.mjs';
+import {sharePublishedRideTextures} from './share-published-ride-textures.mjs';
 
-function model(){
-  const json=Buffer.from(JSON.stringify({asset:{version:'2.0'},buffers:[{byteLength:0}],images:[{uri:'tree.png'}]}));
+function model(uri='tree.png',payload=Buffer.alloc(0)){
+  const json=Buffer.from(JSON.stringify({asset:{version:'2.0'},buffers:[{byteLength:payload.length}],images:[{uri}]}));
   const padded=Buffer.alloc(Math.ceil(json.length/4)*4,32);json.copy(padded);
-  const bytes=Buffer.alloc(28+padded.length);bytes.writeUInt32LE(0x46546c67,0);bytes.writeUInt32LE(2,4);bytes.writeUInt32LE(bytes.length,8);bytes.writeUInt32LE(padded.length,12);bytes.writeUInt32LE(0x4e4f534a,16);padded.copy(bytes,20);bytes.writeUInt32LE(0x004e4942,24+padded.length);return bytes;
+  const bytes=Buffer.alloc(28+padded.length+payload.length);bytes.writeUInt32LE(0x46546c67,0);bytes.writeUInt32LE(2,4);bytes.writeUInt32LE(bytes.length,8);bytes.writeUInt32LE(padded.length,12);bytes.writeUInt32LE(0x4e4f534a,16);padded.copy(bytes,20);bytes.writeUInt32LE(payload.length,20+padded.length);bytes.writeUInt32LE(0x004e4942,24+padded.length);payload.copy(bytes,28+padded.length);return bytes;
 }
 async function fixture(run){
   const root=await mkdtemp(resolve(tmpdir(),'riding-media-'));
@@ -92,3 +94,75 @@ test('rigged sharing fails closed on changed model bytes',()=>fixture(async({roo
   assert.ok((await stat(resolve(swoop,'exports/rigged-heroes/DS_Hoodie_Woman_01.glb'))).isFile());
   assert.equal(await readFile(resolve(swoop,'assets/game.js'),'utf8'),'load("./exports/rigged-heroes/"+name+".glb")');
 }));
+
+test('sharing rigged models before published texture aliases preserves payloads, URLs and byte accounting',async()=>{
+  const results=[];
+  for(const publishFirst of [true,false])await fixture(async({root,swoop,elmwood})=>{
+    const names=['DS_Man_01','DS_Hoodie_Woman_01','DS_Mascot_Suit_01','DS_Mascot_Hoodie_01','DS_Armored_Rider_01'];
+    const variants=['','mobile-512-20261017/'];
+    const pixels=Buffer.from('identical encoded image bytes');
+    const sha256=createHash('sha256').update(pixels).digest('hex');
+    const textureName=sha256+'.png';
+    const base='https://example.invalid/immutable/arcade/';
+    const spec={base,files:[]};
+    const originals=new Map();
+    for(const game of [swoop,elmwood]){
+      const gameName=game===swoop?'swoop-detroit':'elmwood-explorer';
+      await mkdir(resolve(game,'shared-textures'),{recursive:true});
+      await writeFile(resolve(game,'shared-textures',textureName),pixels);
+      spec.files.push({path:gameName+'/shared-textures/'+textureName,sha256});
+      for(const variant of variants){
+        const directory=resolve(game,'exports/rigged-heroes',variant);
+        await mkdir(directory,{recursive:true});
+        for(const [index,name] of names.entries()){
+          const bytes=model((variant?'../../../':'../../')+'shared-textures/'+textureName,Buffer.alloc(64,index+1));
+          await writeFile(resolve(directory,name+'.glb'),bytes);
+          if(game===elmwood)originals.set(variant+name+'.glb',bytes);
+        }
+        await writeFile(resolve(directory,'manifest.json'),JSON.stringify({game:gameName,variant}));
+      }
+    }
+    await writeFile(resolve(swoop,'assets/game.js'),'load("./exports/rigged-heroes/"+variant+name+".glb")');
+    async function totalBytes(directory){
+      let size=0;
+      for(const entry of await readdir(directory,{withFileTypes:true})){
+        const path=resolve(directory,entry.name);
+        size+=entry.isDirectory()?await totalBytes(path):(await stat(path)).size;
+      }
+      return size;
+    }
+    const before=await totalBytes(root);
+    let media,published;
+    if(publishFirst){published=await sharePublishedRideTextures(root,spec);media=await shareRidingMedia(root);}
+    else{media=await shareRidingMedia(root);published=await sharePublishedRideTextures(root,spec);}
+    // Publishing first produces unequal absolute URI aliases and blocks exact-model sharing.
+    assert.equal(media.files,publishFirst?5:15,'four nature models, unused map, and ten heroes only before publication');
+    const expectedPrefix=publishFirst?'./exports/rigged-heroes/':'../elmwood-explorer/exports/rigged-heroes/';
+    assert.equal(await readFile(resolve(swoop,'assets/game.js'),'utf8'),'load("'+expectedPrefix+'"+variant+name+".glb")');
+    for(const variant of variants)for(const name of names){
+      const key=variant+name+'.glb',original=originals.get(key);
+      const originalLength=original.readUInt32LE(12);
+      const canonical=await readFile(resolve(elmwood,'exports/rigged-heroes',key));
+      const length=canonical.readUInt32LE(12);
+      const originalJson=JSON.parse(original.toString('utf8',20,20+originalLength));
+      const json=JSON.parse(canonical.toString('utf8',20,20+length));
+      assert.equal(canonical.readUInt32LE(8),canonical.length);
+      assert.deepEqual(canonical.subarray(20+length),original.subarray(20+originalLength),'complete BIN chunk preserved');
+      assert.deepEqual(json,{...originalJson,images:[{uri:base+'elmwood-explorer/shared-textures/'+textureName}]});
+      const copied=await stat(resolve(swoop,'exports/rigged-heroes',key)).catch(()=>null);
+      assert.equal(Boolean(copied),publishFirst);
+      // Both normal and mobile loader paths resolve to the retained physical model.
+      const requested=new URL(expectedPrefix+key,'https://example.invalid/arcade/swoop-detroit/index.html');
+      const local=resolve(root,'lottominded-ultra.io/games/gothtechnology2',requested.pathname.slice(1));
+      assert.ok((await stat(local)).isFile());
+    }
+    for(const game of [swoop,elmwood])for(const variant of variants){
+      const manifest=JSON.parse(await readFile(resolve(game,'exports/rigged-heroes',variant,'manifest.json'),'utf8'));
+      assert.deepEqual(manifest,{game:game===swoop?'swoop-detroit':'elmwood-explorer',variant});
+    }
+    const saved=before-await totalBytes(root);
+    assert.equal(saved,media.saved+published.saved,'declared saving equals actual regular-file byte difference');
+    results.push(saved);
+  });
+  assert.ok(results[1]>results[0],'correct order recovers the previously missed duplicate model bytes');
+});
