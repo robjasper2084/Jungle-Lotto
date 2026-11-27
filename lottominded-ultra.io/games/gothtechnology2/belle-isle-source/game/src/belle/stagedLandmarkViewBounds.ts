@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {copySelectedTreeSource} from './farTreeVisibility.ts';
 
 type Bounds={min:number[];max:number[];center:number[]};
 type BoxReceipt={mesh:string;uuid:string;instanceId:number|null;material:number;min:number[];max:number[];conservativeAlpha:boolean;deformationUnresolved:boolean};
@@ -6,8 +7,9 @@ type IndexBlock={start:number;end:number;box:T.Box3};
 type LocalBounds={box:T.Box3;blocks:IndexBlock[]};
 const visible=(object:T.Object3D)=>{for(let o:T.Object3D|null=object;o;o=o.parent)if(!o.visible)return false;return true;};
 
-/** On-demand planning advice only. Copy attached, currently visible mesh and
- * instance bounds without updating transforms, invoking renderer callbacks, or
+/** On-demand planning advice only. Copy attached mesh and instance bounds,
+ * including the existing distance-selected tree sources before camera-frustum
+ * compaction, without updating transforms, invoking renderer callbacks, or
  * populating Three's geometry/batch bounding caches. Boxes conservatively fill
  * alpha holes and transparent panes. Shader displacement, future LOD selection
  * and scenery changes are not certified by this observation: the actual native
@@ -21,6 +23,7 @@ export function readStagedViewBounds(root:T.Object3D,id:string,camera:T.Camera,b
  let scene=root;while(scene.parent)scene=scene.parent;
  const boxes:BoxReceipt[]=[],unsupported:{mesh:string;reason:string}[]=[],localCache=new Map<T.BufferGeometry,Map<string,LocalBounds>>();
  const point=new T.Vector3(),instance=new T.Matrix4(),world=new T.Matrix4();let verticesRead=0,refinementVerticesRead=0,refinementSteps=0,refinedMeshGroups=0,indexBlocksRead=0,indexBlocksRetained=0,clippingPlanesRead=0;
+ let selectedTreePools=0,selectedTreeInstances=0,selectedTreeMatrixElements=0,currentRenderedTreeInstances=0;
  let context:{mesh:string;uuid:string;instanceId:number|null;material:number;start:number;end:number}|null=null;
  const fail=(reason:string):never=>{throw Error(reason+' '+JSON.stringify({context,range,verticesRead,refinementVerticesRead,refinementSteps,indexBlocksRead,indexBlocksRetained,clippingPlanesRead,boxes:boxes.length}));};
  const step=()=>{if(++refinementSteps>1000000)fail('View observation exceeds bounded spatial refinement');};
@@ -172,9 +175,14 @@ export function readStagedViewBounds(root:T.Object3D,id:string,camera:T.Camera,b
   }else if(mesh instanceof T.InstancedMesh){
    if(mesh.count>40000)throw Error('View observation exceeds bounded instance count');
    if(mesh.morphTexture)unsupported.push({mesh:mesh.name||mesh.uuid,reason:'Instance morph texture is not resolved by bound advice'});
-   for(let i=0;i<mesh.count;i++){mesh.getMatrixAt(i,instance);world.multiplyMatrices(mesh.matrixWorld,instance);append(mesh,i,world,0,count);}
+   const selected=copySelectedTreeSource(mesh,40000-selectedTreeInstances);
+   if(selected){selectedTreePools++;selectedTreeInstances+=selected.count;selectedTreeMatrixElements+=selected.matrices.length;currentRenderedTreeInstances+=mesh.count;}
+   for(let i=0;i<(selected?.count??mesh.count);i++){
+    if(selected)instance.fromArray(selected.matrices,i*16);else mesh.getMatrixAt(i,instance);
+    world.multiplyMatrices(mesh.matrixWorld,instance);append(mesh,i,world,0,count);
+   }
   }else append(mesh,null,mesh.matrixWorld,0,count);
  });
- return{version:1,id,target:{min:[...bounds.min],max:[...bounds.max],center:[...bounds.center]},range,boxes,unsupported,verticesRead,refinementVerticesRead,refinedMeshGroups,refinementSteps,indexBlocksRead,indexBlocksRetained,clippingPlanesRead,
-  scope:'On-demand current loaded-mesh bound advice only; transparent and alpha-tested surfaces are conservatively filled. No clear-pixel, future-LOD, surveyed-geometry or collision verdict. Actual native PNG review is required.'};
+ return{version:1,id,target:{min:[...bounds.min],max:[...bounds.max],center:[...bounds.center]},range,boxes,unsupported,verticesRead,refinementVerticesRead,refinedMeshGroups,refinementSteps,indexBlocksRead,indexBlocksRetained,clippingPlanesRead,selectedTreePools,selectedTreeInstances,selectedTreeMatrixElements,currentRenderedTreeInstances,
+  scope:'On-demand loaded-mesh bound advice includes existing distance-selected tree source matrices before camera-frustum compaction; transparent and alpha-tested surfaces are conservatively filled. No clear-pixel, future-LOD, surveyed-geometry or collision verdict. Actual native PNG review is required.'};
 }

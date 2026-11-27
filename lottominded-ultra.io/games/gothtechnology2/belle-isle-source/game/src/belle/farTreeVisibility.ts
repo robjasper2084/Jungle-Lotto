@@ -8,6 +8,16 @@ type Part={mesh:T.InstancedMesh;base:T.Sphere;streams:Stream[];saved:Map<T.Buffe
 const FLOAT32_EPSILON=2**-23;
 const IDENTITY_WORLD=new T.Matrix4();
 type TreeShadowView={frustum:T.Frustum;margin:number};
+type SelectedTreeSource={count:number;matrices:TypedArray};
+const selectedTreeSources=new WeakMap<T.InstancedMesh,(maximumCount:number)=>SelectedTreeSource>();
+
+/** Copy the existing distance-selected source matrices for an on-demand view
+ * observation. Render compaction is not a scenery selection policy. No caller
+ * receives the private saved stream or changes the current rendered prefix. */
+export function copySelectedTreeSource(mesh:T.InstancedMesh,maximumCount=40000):SelectedTreeSource|null{
+ if(!Number.isSafeInteger(maximumCount)||maximumCount<0||maximumCount>40000)throw Error('Invalid bounded tree source allowance');
+ return selectedTreeSources.get(mesh)?.(maximumCount)??null;
+}
 
 function finiteMatrix(matrix:T.Matrix4){return matrix.elements.every(Number.isFinite);}
 function affine(matrix:T.Matrix4){const e=matrix.elements;return finiteMatrix(matrix)&&e[3]===0&&e[7]===0&&e[11]===0&&e[15]===1;}
@@ -120,6 +130,14 @@ export class TreeInstanceVisibility {
    // Crown wind displaces local x/z by at most .12/.066 before instancing.
    if(pool==='near'&&mesh.userData.seasonalLeaf)base.radius+=.14;
    return {mesh,base,streams:[],saved:new Map(),matrix:undefined,world:new Float64Array(16).fill(NaN),localBounds:new LocalTreeBoundsCache(mesh.instanceMatrix.count)};
+  });
+  // Registration happens once. Capture, frustum selection, rendering and
+  // uploads retain their exact original code and do no advisory work.
+  for(const part of this.parts)selectedTreeSources.set(part.mesh,maximumCount=>{
+   if(!this.ready||!part.matrix)throw Error('Selected tree source snapshot is not ready: '+(part.mesh.name||part.mesh.uuid));
+   if(!Number.isSafeInteger(this.count)||this.count<0||this.count>maximumCount||part.matrix.source.length<this.count*16)
+    throw Error('View observation exceeds bounded selected tree sources '+JSON.stringify({mesh:part.mesh.name||part.mesh.uuid,count:this.count,maximumCount,matrixElements:part.matrix.source.length}));
+   return{count:this.count,matrices:part.matrix.source.slice(0,this.count*16)};
   });
   if(pool==='near')for(const part of this.parts){
    const mesh=part.mesh,raycast=mesh.raycast;
