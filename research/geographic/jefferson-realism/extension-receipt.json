@@ -1,0 +1,406 @@
+{
+  "schema": 1,
+  "output": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/jeffersonExtension.json",
+  "sha256": "9505ff4954b30b6932356bb0634cf30e4f98af274feeeed5e788b1843ac87612",
+  "counts": {
+    "mainlineRoads": 13,
+    "parallelCarriagewayRoads": 12,
+    "crossStreetRoads": 27,
+    "buildingParts": 49,
+    "buildingHoles": 1,
+    "collisionParts": 50,
+    "landPolygons": 1,
+    "flatPolygons": 1,
+    "skylineFootprintsConsidered": 352
+  },
+  "routeLengthM": 1338.308,
+  "sourceInputs": [
+    {
+      "name": "city-streets-grand-to-downtown.geojson",
+      "sha256": "bb697f91f8026450abfbba4a31cefbe2eb39fe0319518c5027b0b316c3818eb8"
+    },
+    {
+      "name": "building-footprints-complete.geojson",
+      "sha256": "b5b6a08379c0cc33ba2c3285bfc72449cdcb2d757e1957dba38dbab0d3a8fc8a"
+    },
+    {
+      "name": "traffic-signals.geojson",
+      "sha256": "7e38f8faa5a22720935363d3785386c808c2c2dee58c7025668cbb7d1352eb59"
+    }
+  ],
+  "protectedInputs": [
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/map.json",
+      "sha256": "eb36e093fc477055c217025668403fc5d2c422bfdc9d9021769192dbb5660d87"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/detroitDistricts.json",
+      "sha256": "4006a1c523b08a5403f7101a45bd9f739c4aa4632d55a1be5c3676148cde0bdf"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/research/detroit-skyline.osm",
+      "sha256": "3a14cf9492a3bdac59960130d25cd26ffa6904499a9963af2c539abe1647763e"
+    },
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/tools/build-skyline.py",
+      "sha256": "917d0c1d3d1fa7fb67a5942889fb623fffc036e1a652684af8b5a5f8733e3e25"
+    }
+  ],
+  "courtyards": [
+    {
+      "buildingId": "jefferson-city-8423552-0",
+      "sourceBuildingId": "8423552",
+      "witnesses": [
+        [
+          -2707.46974,
+          1478.05044
+        ]
+      ],
+      "parts": 2,
+      "decomposition": {
+        "method": "Constrained Delaunay triangles fully covered by rounded polygon, then exact shared-edge merges into simple hole-free rings",
+        "symmetricDifferenceAreaM2": 0.0,
+        "originalAreaM2": 798.268681656201,
+        "collisionAreaM2": 798.2686816562007
+      }
+    }
+  ],
+  "crossStreetsOmitted": [
+    {
+      "sourceId": "31969",
+      "reason": "Both endpoints connect to Jefferson; omitted potential ramp/chord"
+    },
+    {
+      "sourceId": "32008",
+      "reason": "Both endpoints connect to Jefferson; omitted potential ramp/chord"
+    },
+    {
+      "sourceId": "32583",
+      "reason": "Both endpoints connect to Jefferson; omitted potential ramp/chord"
+    },
+    {
+      "sourceId": "33131",
+      "reason": "Both endpoints connect to Jefferson; omitted potential ramp/chord"
+    },
+    {
+      "sourceId": "33620",
+      "reason": "Both endpoints connect to Jefferson; omitted potential ramp/chord"
+    },
+    {
+      "sourceId": "34000",
+      "reason": "Both endpoints connect to Jefferson; omitted potential ramp/chord"
+    },
+    {
+      "sourceId": "34001",
+      "reason": "Both endpoints connect to Jefferson; omitted potential ramp/chord"
+    }
+  ],
+  "buildingsOmitted": [
+    {
+      "sourceBuildingId": "8916101",
+      "address": "100 RENAISSANCE CENTER",
+      "reason": "Already represented by original skyline geometry",
+      "overlappingSkylineIds": [
+        "419447154",
+        "419447158",
+        "419447168",
+        "419447171",
+        "1307210646"
+      ]
+    },
+    {
+      "sourceBuildingId": "8030377",
+      "address": "1000 FRANKLIN ST",
+      "reason": "Already represented by original skyline geometry",
+      "overlappingSkylineIds": [
+        "59264067"
+      ]
+    },
+    {
+      "sourceBuildingId": "8029457",
+      "address": "500 WOODWARD AVE",
+      "reason": "Already represented by original skyline geometry",
+      "overlappingSkylineIds": [
+        "30260210"
+      ]
+    },
+    {
+      "sourceBuildingId": "8029036",
+      "address": "600 RENAISSANCE CTR",
+      "reason": "Already represented by original skyline geometry",
+      "overlappingSkylineIds": [
+        "56019569",
+        "105530713"
+      ]
+    },
+    {
+      "sourceBuildingId": "8029427",
+      "address": "100-300 RENAISSANCE CTR",
+      "reason": "Already represented by original skyline geometry",
+      "overlappingSkylineIds": [
+        "107460364",
+        "107460367",
+        "107550563",
+        "419447153",
+        "419447154",
+        "419447155",
+        "419447156",
+        "419447157",
+        "419447158",
+        "419447159",
+        "419447160",
+        "419447161",
+        "419447162",
+        "419447163",
+        "419447164",
+        "419447165",
+        "419447171",
+        "419447172",
+        "419447173",
+        "419447174",
+        "1307210646"
+      ]
+    },
+    {
+      "sourceBuildingId": "8424131",
+      "address": "441 E JEFFERSON AVE",
+      "reason": "Already represented by original skyline geometry",
+      "overlappingSkylineIds": [
+        "320394136",
+        "930266636"
+      ]
+    },
+    {
+      "sourceBuildingId": "8915757",
+      "address": "400 RENAISSANCE CTR",
+      "reason": "Already represented by original skyline geometry",
+      "overlappingSkylineIds": [
+        "30258238",
+        "107546101",
+        "419447165",
+        "419447166",
+        "1307210646"
+      ]
+    },
+    {
+      "sourceBuildingId": "8900380",
+      "address": "331 E LARNED ST",
+      "reason": "Already represented by original skyline geometry",
+      "overlappingSkylineIds": [
+        "468993844",
+        "760981192",
+        "760981193",
+        "760981194",
+        "760981195",
+        "1445379296"
+      ]
+    },
+    {
+      "sourceBuildingId": "8029706",
+      "address": "161 E LARNED ST",
+      "reason": "Already represented by original skyline geometry",
+      "overlappingSkylineIds": [
+        "69000335"
+      ]
+    },
+    {
+      "sourceBuildingId": "8900382",
+      "address": "333 E JEFFERSON AVE",
+      "reason": "Already represented by original skyline geometry",
+      "overlappingSkylineIds": [
+        "468993845",
+        "760981189",
+        "760981191",
+        "760981192",
+        "760981193",
+        "1445379296"
+      ]
+    },
+    {
+      "sourceBuildingId": "8916102",
+      "address": "200 RENAISSANCE CENTER",
+      "reason": "Already represented by original skyline geometry",
+      "overlappingSkylineIds": [
+        "107550563",
+        "419447164",
+        "419447170",
+        "419447172",
+        "1307210646"
+      ]
+    },
+    {
+      "sourceBuildingId": "8029376",
+      "address": "2 WOODWARD AVE",
+      "reason": "Already represented by original skyline geometry",
+      "overlappingSkylineIds": [
+        "69000343",
+        "320396455",
+        "1016981189"
+      ]
+    },
+    {
+      "sourceBuildingId": "8028510",
+      "address": "1 WOODWARD AVE",
+      "reason": "Already represented by original skyline geometry",
+      "overlappingSkylineIds": [
+        "69000331"
+      ]
+    },
+    {
+      "sourceBuildingId": "8029905",
+      "address": "160 E CONGRESS ST",
+      "reason": "Already represented by original skyline geometry",
+      "overlappingSkylineIds": [
+        "69000334"
+      ]
+    },
+    {
+      "sourceBuildingId": "8916106",
+      "address": "600 RENAISSANCE CENTER",
+      "reason": "Already represented by original skyline geometry",
+      "overlappingSkylineIds": [
+        "56019569",
+        "105530713",
+        "419448687"
+      ]
+    },
+    {
+      "sourceBuildingId": "8424132",
+      "address": "409 E JEFFERSON AVE",
+      "reason": "Already represented by original skyline geometry",
+      "overlappingSkylineIds": [
+        "320394137",
+        "930266636"
+      ]
+    },
+    {
+      "sourceBuildingId": "8916105",
+      "address": "500 RENAISSANCE CENTER",
+      "reason": "Already represented by original skyline geometry",
+      "overlappingSkylineIds": [
+        "105530713",
+        "107551662",
+        "419448688"
+      ]
+    },
+    {
+      "sourceBuildingId": "8030379",
+      "address": "555 BRUSH",
+      "reason": "Already represented by original skyline geometry",
+      "overlappingSkylineIds": [
+        "468993844",
+        "760981192",
+        "760981193",
+        "760981194"
+      ]
+    },
+    {
+      "sourceBuildingId": "8900391",
+      "address": "500 RENAISSANCE CTR",
+      "reason": "Already represented by original skyline geometry",
+      "overlappingSkylineIds": [
+        "105530713",
+        "107551662"
+      ]
+    },
+    {
+      "sourceBuildingId": "8030142",
+      "address": "415 E JEFFERSON AVE",
+      "reason": "Already represented by original skyline geometry",
+      "overlappingSkylineIds": [
+        "320394136",
+        "930266636"
+      ]
+    },
+    {
+      "sourceBuildingId": "8029348",
+      "address": "200 BEAUBIEN",
+      "reason": "Already represented by original skyline geometry",
+      "overlappingSkylineIds": [
+        "59451747"
+      ]
+    },
+    {
+      "sourceBuildingId": "8205146",
+      "address": "1501-1505 E LARNED ST",
+      "reason": "Overlaps original game building footprint",
+      "overlappingGameIds": [
+        "881318338"
+      ]
+    },
+    {
+      "sourceBuildingId": "8028196",
+      "address": "150 E JEFFERSON AVE",
+      "reason": "Already represented by original skyline geometry",
+      "overlappingSkylineIds": [
+        "105530722",
+        "453842037",
+        "1396584906",
+        "1396584907",
+        "1396584908",
+        "1396584909",
+        "1415656057"
+      ]
+    },
+    {
+      "sourceBuildingId": "8029467",
+      "address": "400 E JEFFERSON AVE",
+      "reason": "Already represented by original skyline geometry",
+      "overlappingSkylineIds": [
+        "107460366"
+      ]
+    },
+    {
+      "sourceBuildingId": "8900381",
+      "address": "331 E LARNED ST",
+      "reason": "Already represented by original skyline geometry",
+      "overlappingSkylineIds": [
+        "468993845",
+        "760981189",
+        "760981190",
+        "760981191",
+        "760981192",
+        "760981193",
+        "1016981189"
+      ]
+    },
+    {
+      "sourceBuildingId": "8028630",
+      "address": "170 E JEFFERSON AVE",
+      "reason": "Already represented by original skyline geometry",
+      "overlappingSkylineIds": [
+        "105530705"
+      ]
+    }
+  ],
+  "roadOriginalSourceIds": [
+    "31927",
+    "31966",
+    "31968",
+    "32005",
+    "32007",
+    "32076",
+    "32085",
+    "32137",
+    "32158",
+    "32175",
+    "32385",
+    "32465",
+    "32503",
+    "32633",
+    "32702",
+    "32853",
+    "32903",
+    "33069",
+    "33130",
+    "33430",
+    "33504",
+    "33619",
+    "33738",
+    "33847",
+    "33999"
+  ],
+  "allOriginalInputsUnchanged": true,
+  "nativePerformanceAccepted": false,
+  "visualAcceptanceComplete": false
+}

@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {JEFFERSON_BUILDING_IDS} from './jeffersonBuildings.ts';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {fitStreetBuilding,streamDetroitArt} from './detroitAssets.ts';
 import {districts,districtHeight} from './detroitGround.ts';
@@ -66,7 +67,7 @@ export function addDetroitDistricts(scene:T.Scene,renderer:T.WebGLRenderer,terra
     }
     if(points.length<2)continue;
     const roadHeight=(x:number,z:number)=>terrain.height(x,z)+.07;
-    if(r.id.startsWith('city-')&&r.name!=='Elmwood Cemetery entrance')sidewalks.add(points[0],road(points,r.width+3.6,(x,z)=>terrain.height(x,z)+.035));
+    if(r.sidewalk!==false&&r.id.startsWith('city-')&&r.name!=='Elmwood Cemetery entrance')sidewalks.add(points[0],road(points,r.width+3.6,(x,z)=>terrain.height(x,z)+.035));
     streets.add(points[0],road(points,r.width,roadHeight));
     if(r.name==='Jefferson')paint.add(points[0],road(points,.16,(x,z)=>roadHeight(x,z)+.025));
   }
@@ -87,12 +88,19 @@ export function addDetroitDistricts(scene:T.Scene,renderer:T.WebGLRenderer,terra
   const blocks=batches(scene,facade,'Detroit mapped buildings');
   const simple=batches(fallback,facade,'Detroit street model proxies',240);
   for(const b of districts.buildings){
+    if(JEFFERSON_BUILDING_IDS.has(b.id)){
+      // Keep the original fit slot so all unrelated Sunset variants retain
+      // their established index. Exclusion happens after variant selection.
+      const fit=b.holes?.length?undefined:fitStreetBuilding(b);if(fit)fits.push(fit);
+      continue;
+    }
     const shape=new T.Shape(b.points.map(([x,z])=>new T.Vector2(x,-z)));
+    for(const hole of b.holes??[])shape.holes.push(new T.Path(hole.map(([x,z])=>new T.Vector2(x,-z))));
     const h=new T.ExtrudeGeometry(shape,{depth:b.height,bevelEnabled:false});
     h.rotateX(-Math.PI/2);h.translate(0,terrain.height(...b.points[0])-.1,0);
     const asset=b.id==='313128810'?'elmwood-gatehouse':b.id==='313128826'?'elmwood-chapel':undefined;
     if(asset){const proxy=new T.Mesh(h,facade);scene.add(proxy);proxies.set(asset,proxy);continue;}
-    const fit=fitStreetBuilding(b);
+    const fit=b.holes?.length?undefined:fitStreetBuilding(b);
     if(fit){fits.push(fit);simple.add([fit.x,fit.z],h);}else blocks.add(b.points[0],h);
   }
   blocks.finish();simple.finish();
@@ -110,5 +118,5 @@ export function addDetroitDistricts(scene:T.Scene,renderer:T.WebGLRenderer,terra
     const pond=new T.Mesh(poly(ring,y+.06),new T.MeshStandardMaterial({color:0x416c6c,roughness:.36}));
     pond.name='Elmwood Pond';scene.add(pond);
   }
-  return streamDetroitArt(scene,renderer,terrain,fits,fallback,proxies);
+  return streamDetroitArt(scene,renderer,terrain,fits,fallback,proxies,JEFFERSON_BUILDING_IDS);
 }
