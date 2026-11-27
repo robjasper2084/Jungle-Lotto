@@ -1,0 +1,162 @@
+# Isolated diagnostic; canonical acceptance workflows remain unchanged.
+# Reconstructs a new diagnostic preview; this is not a failed-build byte replay.
+name: Belle Isle pinned full preview p95 attribution (diagnostic only)
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/belle-full-preview-p95-attribution.yml'
+      - '.github/diagnostics/belle-full-preview-p95/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: belle-full-preview-p95-attribution-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  desktop-preview-p95-attribution:
+    runs-on: macos-15
+    timeout-minutes: 35
+    steps:
+      - name: Check out the exact application candidate
+        uses: actions/checkout@v4
+        with:
+          ref: 9d2162e39188dcd0e42565f398b736734e481f73
+          path: app
+          persist-credentials: false
+      - name: Check out the separate diagnostic source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: diagnostic
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/diagnostics/belle-full-preview-p95/
+            /.github/workflows/belle-full-preview-p95-attribution.yml
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Verify pinned source and download the exact preview source-art archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          game="$GITHUB_WORKSPACE/app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game"
+          bundle="$GITHUB_WORKSPACE/diagnostic/.github/diagnostics/belle-full-preview-p95"
+          test "$(git -C app rev-parse HEAD)" = 9d2162e39188dcd0e42565f398b736734e481f73
+          test "$(git -C app rev-parse HEAD^{tree})" = 5a7f56b36477b615b96b5e19094c3d11d9a4c6cf
+          test "$(git hash-object "$game/scripts/sustained-ride-profile.mjs")" = c722b5810a7693e5ece72ed00b4401e7cde7267a
+          test "$(git hash-object "$game/scripts/gps-full-scene-check.mjs")" = 1ef56565ceb8892fb918a6848972ea8b9f37c2fd
+          git -C app diff --exit-code
+          test ! -e "$GITHUB_WORKSPACE/source-input"
+          test ! -e "$GITHUB_WORKSPACE/evidence"
+          python3 "$bundle/download-source.py" "$GITHUB_WORKSPACE/source-input" 2>&1 | tee "$GITHUB_WORKSPACE/source-download.log"
+      - name: Reconstruct and retain a new preview build from the exact clean checkout
+        env:
+          BELLE_TRACE_BUILD_AUTHORIZED: '1'
+        run: |
+          set -euo pipefail
+          bundle="$GITHUB_WORKSPACE/diagnostic/.github/diagnostics/belle-full-preview-p95"
+          # The builder creates evidence itself and rejects all pre-existing
+          # app dependencies, ignored files, preview staging and compiled output.
+          # Browser installation and diagnostic archiving must follow this step.
+          test ! -e "$GITHUB_WORKSPACE/evidence"
+          node "$bundle/build-preview.mjs" "$GITHUB_WORKSPACE/app" "$GITHUB_WORKSPACE/evidence" "$GITHUB_WORKSPACE/source-input/source-artifact.zip" "$GITHUB_WORKSPACE/source-input/source-artifact-metadata.json" 2>&1 | tee "$GITHUB_WORKSPACE/preview-build-driver.log"
+      - name: Archive the exact diagnostic source and verify the isolated collectors
+        env:
+          DIAGNOSTIC_EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          game="$GITHUB_WORKSPACE/app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game"
+          bundle="$GITHUB_WORKSPACE/diagnostic/.github/diagnostics/belle-full-preview-p95"
+          evidence="$GITHUB_WORKSPACE/evidence"
+          git -C app cat-file -p HEAD > "$evidence/application-commit.txt"
+          git -C diagnostic cat-file -p HEAD > "$evidence/diagnostic-commit.txt"
+          node "$bundle/archive-source.mjs" capture "$GITHUB_WORKSPACE/diagnostic" "$evidence" 2>&1 | tee "$evidence/source-capture.log"
+          export STRICT_DRIVER_PATH="$game/scripts/sustained-ride-profile.mjs"
+          export STRICT_GPS_PATH="$game/scripts/gps-full-scene-check.mjs"
+          node --test "$bundle/full-mode.test.mjs" "$bundle/upstream/observer.test.mjs" "$bundle/upstream/sustained-trace-json.test.mjs" "$bundle/upstream/source.test.mjs" 2>&1 | tee "$evidence/observer-checks.log"
+          node --check "$bundle/preload.mjs"
+          node --check "$bundle/validate-evidence.mjs"
+      - name: Install the original parent browser runtime and Chrome
+        run: |
+          set -euo pipefail
+          game="$GITHUB_WORKSPACE/app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game"
+          evidence="$GITHUB_WORKSPACE/evidence"
+          (cd "$game/../.." && npm ci && npx playwright install chrome) 2>&1 | tee "$evidence/browser-runtime-install.log"
+          git -C app diff --exit-code
+          { date -u; sw_vers; uname -m; sysctl hw.model hw.ncpu hw.memsize; node -v; "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --version; uptime; vm_stat; } > "$evidence/host-before.txt"
+      - name: Attribute the original ninety-second full preview desktop ride
+        timeout-minutes: 28
+        working-directory: app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          BELLE_PROFILE_DEVICE: desktop
+          BELLE_PROFILE_MODE: full
+          BELLE_PROFILE_SECONDS: '90'
+          BELLE_TRACE_CAPTURE_AUTHORIZED: '1'
+        run: |
+          set -euo pipefail
+          bundle="$GITHUB_WORKSPACE/diagnostic/.github/diagnostics/belle-full-preview-p95"
+          evidence="$GITHUB_WORKSPACE/evidence"
+          export GITHUB_SHA=9d2162e39188dcd0e42565f398b736734e481f73
+          export BELLE_STALL_EVIDENCE="$evidence"
+          # The original c722 driver controls the ride and its full GPS check.
+          # The external collector keeps its existing absolute 60-second
+          # stop/flush deadline; no timeout or original gate is overridden.
+          original_status=0
+          node --import "$bundle/preload.mjs" scripts/sustained-ride-profile.mjs > "$evidence/original-driver.log" 2>&1 || original_status=$?
+          printf '%s\n' "$original_status" > "$evidence/original-process-exit.txt"
+          cat "$evidence/original-driver.log" || true
+          host_status=0
+          { date -u; uptime; vm_stat; } > "$evidence/host-after.txt" 2>&1 || host_status=$?
+          printf '%s\n' "$host_status" > "$evidence/host-after-process-exit.txt"
+          diagnostic_status=0
+          node "$bundle/validate-evidence.mjs" "$PWD" "$evidence" > "$evidence/validator.log" 2>&1 || diagnostic_status=$?
+          printf '%s\n' "$diagnostic_status" > "$evidence/validator-process-exit.txt"
+          cat "$evidence/validator.log" || true
+          source_status=0
+          node "$bundle/archive-source.mjs" verify "$GITHUB_WORKSPACE/diagnostic" "$evidence" > "$evidence/source-verification.log" 2>&1 || source_status=$?
+          printf '%s\n' "$source_status" > "$evidence/source-verification-process-exit.txt"
+          cat "$evidence/source-verification.log" || true
+          if [ "$original_status" -ne 0 ]; then exit "$original_status"; fi
+          if [ "$diagnostic_status" -ne 0 ]; then exit "$diagnostic_status"; fi
+          if [ "$source_status" -ne 0 ]; then exit "$source_status"; fi
+          exit "$host_status"
+      - name: Preserve preparation evidence even when an earlier step failed
+        if: always()
+        run: |
+          set -euo pipefail
+          evidence="$GITHUB_WORKSPACE/evidence"
+          source_input="$GITHUB_WORKSPACE/source-input"
+          mkdir -p "$evidence"
+          for log in source-download.log preview-build-driver.log; do
+            if [ -f "$GITHUB_WORKSPACE/$log" ]; then cp "$GITHUB_WORKSPACE/$log" "$evidence/$log"; fi
+          done
+          # Successful builds already retained the exact source archive.
+          # On an earlier failure, retain even partial bytes without retrying.
+          for file in source-artifact.zip source-artifact-metadata.json; do
+            if [ -f "$source_input/$file" ]; then
+              if [ ! -e "$evidence/$file" ]; then
+                cp "$source_input/$file" "$evidence/$file"
+              elif ! cmp -s "$source_input/$file" "$evidence/$file"; then
+                # A failed builder copy may already have left partial bytes.
+                # Preserve both versions without replacing the original error.
+                mkdir -p "$evidence/source-input-before-build"
+                cp "$source_input/$file" "$evidence/source-input-before-build/$file"
+              fi
+            fi
+          done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: belle-pinned-full-preview-p95-attribution-NOT-RELEASE
+          path: |
+            evidence/
+            app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/sustained-profile/full/desktop/
+          retention-days: 14
+          if-no-files-found: warn

@@ -1,0 +1,150 @@
+/** Frozen full-preview diagnostic build contract, never failed-build replay. */
+import assert from 'node:assert/strict';
+import {execFileSync} from 'node:child_process';
+import {readFile} from 'node:fs/promises';
+import {resolve} from 'node:path';
+import {createTraceSummaryAccumulator as upstreamAccumulator} from './upstream/contract.mjs';
+export {sha256,gitBlob,hashFile,buildInventory,combinedExit,TRACE_CATEGORIES} from './upstream/contract.mjs';
+import {sha256,gitBlob,hashFile,buildInventory} from './upstream/contract.mjs';
+
+export const GAME='lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game';
+export const PIN=Object.freeze({
+ head:'9d2162e39188dcd0e42565f398b736734e481f73',tree:'5a7f56b36477b615b96b5e19094c3d11d9a4c6cf',
+ canonicalMerge:'55ed556cda718d94636f42c75644a05e64117872',canonicalPreviewRun:45960190700,
+ harness:'c722b5810a7693e5ece72ed00b4401e7cde7267a',
+ harnessSha256:'8f6af949083800c491b65e0709c04cc29eb5712634f744c5b912f76ce651fcf5',
+ gpsHelper:'1ef56565ceb8892fb918a6848972ea8b9f37c2fd',server:'86d780f2a77eff0e9e46beacd35a558903d3ec29',
+ sourceArtifactId:15182411775,sourceArtifactRun:45960190700,sourceArtifactBytes:204251647,
+ sourceArtifactSha256:'9e3cc0edeaf7a6fe4c95b7618b3c82cf0eeb9cb183439e141e73c2204fd5fbce',
+});
+export const ROCKS=Object.freeze([
+ {folder:'namaqualand_boulder_03',file:'boulder-automatic.glb',bytes:5193764,sha256:'a50c56ecf25cbe1b82f1a0211e9433d2695f4224017dfe3a820d160d6b0a035e'},
+ {folder:'rock_moss_set_01',file:'moss-1-automatic.glb',bytes:4210124,sha256:'3d25cd5c7f3cda897382f1a216a1891d4011486d6baf2cd050cb24f8ddade859'},
+ {folder:'rock_moss_set_01',file:'moss-2-automatic.glb',bytes:4220544,sha256:'35bfa44ed938a1ac450a4332cf62b78b686441336214e33093096ee9382e8d78'},
+]);
+export const MARKER_PREFIX='belle-full-preview-p95:';
+export const REPORT_PATH='output/sustained-profile/full/desktop/report.json';
+export function verifySourceArtifact(metadata){
+ assert.equal(metadata.id,PIN.sourceArtifactId);assert.equal(metadata.name,'polyhaven-opaque-review');assert.equal(metadata.expired,false);
+ assert.equal(metadata.workflow_run.id,PIN.sourceArtifactRun);assert.equal(metadata.workflow_run.head_sha,PIN.head);
+ assert.equal(metadata.size_in_bytes,PIN.sourceArtifactBytes);assert.equal(metadata.digest,'sha256:'+PIN.sourceArtifactSha256);
+}
+export function verifyDistArchive(archive,files){
+ const inspect=`import pathlib,sys,zipfile,stat,hashlib,json\nseen=set();rows=[]\nwith zipfile.ZipFile(sys.argv[1]) as z:\n for e in z.infolist():\n  p=pathlib.PurePosixPath(e.filename);assert e.filename and not p.is_absolute() and '..' not in p.parts and '\\\\' not in e.filename and e.filename not in seen and not stat.S_ISLNK(e.external_attr>>16);seen.add(e.filename)\n  if e.is_dir():continue\n  h=hashlib.sha256();n=0\n  with z.open(e) as f:\n   for b in iter(lambda:f.read(1048576),b''):h.update(b);n+=len(b)\n  rows.append({'file':e.filename,'bytes':n,'sha256':h.hexdigest()})\nprint(json.dumps(rows))\n`;
+ const rows=JSON.parse(execFileSync('python3',['-c',inspect,archive],{encoding:'utf8',maxBuffer:16*1024*1024}));
+ const sort=xs=>xs.slice().sort((a,b)=>a.file.localeCompare(b.file,'en'));
+ assert.deepEqual(sort(rows),sort(files),'Retained dist ZIP contents differ from the complete build inventory');return true;
+}
+export function isGameUrl(value){
+ try{const u=new URL(value);return u.protocol==='http:'&&u.hostname==='127.0.0.1'&&u.pathname==='/'&&!u.hash&&!u.username&&!u.password&&
+  JSON.stringify([...u.searchParams].sort())===JSON.stringify([['locationPerf','1'],['profile','1']]);}catch{return false;}
+}
+export function createTraceSummaryAccumulator(cpu,page,options={}){
+ return upstreamAccumulator(cpu,page,{markerPrefix:MARKER_PREFIX,isGameUrl,...options});
+}
+export function verifyPageObservations(page){
+ const o=page?.browserObservations;assert(o&&typeof o==='object','Missing complete page observation payload');
+ assert.equal(o.limit,1024);assert(o.dropped&&typeof o.dropped==='object');
+ const keys=['markers','tasks','animationFrames','rafGaps','transitions'];assert.deepEqual(Object.keys(o.dropped).sort(),keys.slice().sort());
+ for(const key of keys){assert(Number.isSafeInteger(o.dropped[key])&&o.dropped[key]>=0,'Malformed observation drop count: '+key);
+  assert.equal(o.dropped[key],0,'Bounded observer overflow: '+key);assert(Array.isArray(key==='markers'?page.markers:o[key]),'Missing observation array: '+key);}
+ assert.equal(page.droppedMarkers,o.dropped.markers);
+ for(const key of ['longtask','long-animation-frame'])assert.equal(typeof o.available?.[key],'boolean','Missing explicit observer availability: '+key);
+ if(!o.available.longtask)assert.equal(o.tasks.length,0);if(!o.available['long-animation-frame'])assert.equal(o.animationFrames.length,0);
+ assert(Number.isFinite(o.startAtMs)&&Number.isFinite(o.endAtMs)&&o.startAtMs<o.endAtMs,'Invalid page observation boundaries');
+ assert(Number.isSafeInteger(o.rafCallbacks)&&o.rafCallbacks>=2,'Independent RAF observer did not run');
+ assert(Number.isFinite(o.firstRafMs)&&Number.isFinite(o.lastRafMs)&&o.firstRafMs<=o.lastRafMs,'Invalid supplied RAF timestamps');
+ assert(Number.isFinite(o.firstRafInvocationMs)&&Number.isFinite(o.lastRafInvocationMs)&&o.firstRafInvocationMs>=o.startAtMs&&o.firstRafInvocationMs<=o.lastRafInvocationMs&&o.lastRafInvocationMs<=o.endAtMs,'Invalid independent RAF invocation bounds');
+ assert.equal(page.previewRuntime?.polyhavenRockReview,'loaded','Preview marker absent in captured page evidence');return true;
+}
+export function verifyDriver(driver,gps){
+ assert.equal(gitBlob(Buffer.from(driver)),PIN.harness,'Original c722 driver bytes changed');
+ assert.equal(sha256(Buffer.from(driver)),PIN.harnessSha256);
+ if(gps!==undefined){assert.equal(gitBlob(Buffer.from(gps)),PIN.gpsHelper,'Original GPS helper changed');
+  assert(gps.includes('const sourceUrl=page.url(),viewport=page.viewportSize(),browser=page.context().browser();'),'Pre-GPS observation boundary changed');}
+}
+/** GPS may append errors after baselinePassed was computed. Preserve the exact
+ * observed pre-GPS error prefixes instead of recomputing history from final errors. */
+export function verifyOriginalVerdict(report,driver,baselineWitness){
+ verifyDriver(driver);assert.equal(report.mode,'full','Original full lane changed');
+ assert(baselineWitness&&Array.isArray(baselineWitness.errors)&&Array.isArray(baselineWitness.failedRequests),'Missing pre-GPS error-prefix witness');
+ assert.equal(baselineWitness.boundary,'first-page-url-after-native-w-keyup');
+ for(const key of ['errors','failedRequests']){
+  assert(Array.isArray(report[key]));assert.deepEqual(report[key].slice(0,baselineWitness[key].length),baselineWitness[key],'Pre-GPS prefix mismatch: '+key);
+ }
+ const start=driver.indexOf(' const stats=report.profile;'),end=driver.indexOf(" if(mode==='full')",start);
+ assert(start>=0&&end>start);const baseline=driver.slice(start,end);
+ assert(baseline.includes('report.baselinePassed=report.passed;'));
+ const expected=structuredClone(report);expected.errors=[...baselineWitness.errors];expected.failedRequests=[...baselineWitness.failedRequests];
+ new Function('report',baseline)(expected);
+ for(const key of ['baselinePassed','frameQualityAccepted','classification','releasePerformanceVerified'])assert.equal(report[key],expected[key],'Original baseline verdict mismatch: '+key);
+ assert(report.gpsRegression&&typeof report.gpsRegression.passed==='boolean','Original full GPS result absent; preserve raw failure');
+ const final='report.passed=report.baselinePassed&&report.gpsRegression.passed&&!report.errors.length&&!report.failedRequests.length;';
+ assert.equal(driver.split(final).length,2,'Original full verdict source changed');
+ expected.errors=structuredClone(report.errors);expected.failedRequests=structuredClone(report.failedRequests);new Function('report',final)(expected);
+ assert.equal(report.passed,expected.passed,'Original full verdict mismatch');return true;
+}
+export async function verifyPreviewBuild(directory,files){
+ const inventory=new Map(files.map(row=>[row.file,row]));assert.equal(inventory.size,files.length);
+ assert(!inventory.has('__belle_test_build.json')&&!inventory.has('staged-landmark-proof-build.json'),'No injected manual/staged marker in the original full query');
+ const index=await readFile(resolve(directory,'index.html')),manifest=await readFile(resolve(directory,'asset-manifest.json'));
+ for(const [file,bytes] of [['index.html',index],['asset-manifest.json',manifest]])assert.deepEqual(inventory.get(file),{file,bytes:bytes.length,sha256:sha256(bytes)});
+ const assets=JSON.parse(manifest);assert(Array.isArray(assets)&&assets.every(x=>typeof x==='string')&&new Set(assets).size===assets.length);
+ assert(assets.every(x=>inventory.has(x)),'Manifest references missing build file');
+ for(const rock of ROCKS){const file='belle/polyhaven-review/'+rock.file;assert(assets.includes(file));
+  assert.deepEqual(inventory.get(file),{file,bytes:rock.bytes,sha256:rock.sha256},'Original three-GLB bytes changed: '+file);}
+ const scripts=[...index.toString().matchAll(/<script\b[^>]*\bsrc=["']([^"']+)["']/g)].map(x=>x[1].replace(/^\.\//,'').replace(/^\//,''));
+ assert(scripts.length&&scripts.every(x=>inventory.has(x)),'Unbound index script');
+ return {selection:'new exact-source full-preview diagnostic build; failed preview compiled bytes were not archived',indexSha256:sha256(index),assetManifestSha256:sha256(manifest),assets:assets.length,entryScripts:scripts,rocks:ROCKS};
+}
+export async function verifyPinnedInputs(game,evidenceDirectory){
+ const git=args=>execFileSync('git',args,{cwd:game,encoding:'utf8'}).trim();
+ assert.equal(git(['rev-parse','HEAD']),PIN.head);assert.equal(git(['rev-parse','HEAD^{tree}']),PIN.tree);
+ assert.equal(process.env.GITHUB_SHA,PIN.head,'Report must name actual application checkout, not fabricate the earlier merge');
+ assert.equal(git(['diff','--name-only','HEAD','--']),'','Tracked application inputs changed');
+ const driver=await readFile(resolve(game,'scripts/sustained-ride-profile.mjs')),gps=await readFile(resolve(game,'scripts/gps-full-scene-check.mjs'));
+ verifyDriver(driver.toString(),gps.toString());assert.equal(gitBlob(await readFile(resolve(game,'scripts/coop-static-server.mjs'))),PIN.server);
+ const build=JSON.parse(await readFile(resolve(evidenceDirectory,'preview-build-receipt.json'),'utf8'));
+ assert.equal(build.diagnosticBuild,true);assert.equal(build.failedBuildByteReplay,false);assert.equal(build.head,PIN.head);assert.equal(build.tree,PIN.tree);
+ assert.deepEqual(build.buildCommand,['npm','run','build']);assert.deepEqual(build.buildEnvironment,{VITE_POLYHAVEN_ROCK_PREVIEW:'1'});
+ assert.equal(build.distArchive,'rebuilt-preview-dist.zip');assert.equal(build.buildExit,0);assert.equal(build.cleanTrackedInputs,true);
+ assert.equal(build.sourceArtifactId,PIN.sourceArtifactId);assert.equal(build.sourceArtifactSha256,PIN.sourceArtifactSha256);assert.deepEqual(build.rocks,ROCKS);
+ verifySourceArtifact(JSON.parse(await readFile(resolve(evidenceDirectory,'source-artifact-metadata.json'),'utf8')));
+ assert.deepEqual(await hashFile(resolve(evidenceDirectory,'source-artifact.zip')),{bytes:PIN.sourceArtifactBytes,sha256:PIN.sourceArtifactSha256},'Retained source-art ZIP changed');
+ assert.deepEqual(build.commands.map(x=>x.argv),[['npm','ci'],['npm','run','check'],['npm','test'],['npm','run','build']]);
+ for(const [i,name] of ['ci','check','test','build'].entries()){
+  assert.equal(build.commands[i].status,0);assert.deepEqual(await hashFile(resolve(evidenceDirectory,name+'.log')),build.commands[i].log,'Build preparation log changed: '+name);}
+ assert.deepEqual(await hashFile(resolve(evidenceDirectory,build.distArchive)),build.distArchiveReceipt,'Retained complete dist ZIP changed');
+ const files=await buildInventory(resolve(game,'dist'));assert.deepEqual(files,build.files,'Served build differs from frozen diagnostic build');
+ verifyDistArchive(resolve(evidenceDirectory,build.distArchive),files);
+ // The entire retained ZIP, not a consumed-asset subset, binds every served file.
+ const previewBuild=await verifyPreviewBuild(resolve(game,'dist'),files);
+ return {head:PIN.head,tree:PIN.tree,harness:{gitBlob:PIN.harness,sha256:sha256(driver),bytes:driver.length},
+  diagnosticBuild:true,failedBuildByteReplay:false,canonicalPreviewRun:PIN.canonicalPreviewRun,canonicalMerge:PIN.canonicalMerge,
+  artifact:{kind:'new-diagnostic-build',zipSha256:build.distArchiveReceipt.sha256,bytes:build.distArchiveReceipt.bytes},
+  buildReceiptSha256:sha256(await readFile(resolve(evidenceDirectory,'preview-build-receipt.json'))),previewBuild,files};
+}
+export function diagnosticVerdict({source,report,traceComplete,summary,errors=[],stop}){
+ const reasons=[...errors,...(summary?.errors||[])],check=(ok,why)=>{if(!ok)reasons.push(why);};
+ check(summary&&Number.isFinite(summary.gameRendererPid),'Actual renderer/timestamp summary absent');
+ check(source?.head===PIN.head&&source?.tree===PIN.tree&&source?.harness?.gitBlob===PIN.harness,'Source/driver mismatch');
+ check(source?.diagnosticBuild===true&&source?.failedBuildByteReplay===false&&source?.artifact?.kind==='new-diagnostic-build','New build provenance missing');
+ check(report?.sourceHead===PIN.head&&report?.mode==='full'&&report?.device==='desktop'&&report?.requestedSeconds===90,'Original full desktop lane changed');
+ check(report?.renderBackend==='angle-metal'&&/Metal/i.test(report?.actualGpu?.renderer||'')&&!/SwiftShader|llvmpipe|software rasterizer/i.test(report?.actualGpu?.renderer||''),'Native Metal absent');
+ check(JSON.stringify(report?.profile?.viewport)===JSON.stringify([1440,900,1]),'Viewport/DPR changed');
+ for(const key of ['settingsAtStart','settings']){const s=report?.profile?.[key];
+  check(s?.quality==='high'&&s?.effectiveQuality==='high'&&s?.pixelRatio===1&&s?.adaptiveScale===1&&s?.cap===60,'Quality/scale/cap changed: '+key);
+  check(s?.world?.performanceDiagnostic===false&&s?.diagnosticReduction===false,'Full scene changed: '+key);}
+ check(report?.profile?.stopReason==='trusted-W-keyup'&&summary?.nativeRide?.durationMs>=90000,'Original native 90-second ride incomplete');
+ check(report?.gpsRegression&&typeof report.gpsRegression.passed==='boolean','Original full GPS report absent');
+ check(report?.releasePerformanceVerified===false,'Original release classification changed');
+ check(stop?.trigger==='native-w-keyup'&&stop.cpuStopIssued&&stop.traceEndIssued&&stop.cpuStopped&&stop.traceEnded,'Trace did not stop on original native release');
+ check(traceComplete?.dataLossOccurred===false&&typeof traceComplete?.stream==='string','Trace lost data or has no stream');
+ return {diagnosticOnly:true,releaseAcceptance:false,diagnosticBuild:true,failedBuildByteReplay:false,collectionComplete:reasons.length===0,errors:reasons,
+  originalHarnessPassed:report?.passed??null,originalBaselinePassed:report?.baselinePassed??null,originalGpsPassed:report?.gpsRegression?.passed??null,
+  originalP95Ms:report?.profile?.metrics?.frameMs?.p95??null,originalIntervalsOver250ms:report?.profile?.over250ms??null,nativeCapture:summary?.nativeRide??null,
+  limitations:['Fixed CPU sampling, trace recording, page observers and asset receipts add unquantified overhead; no numeric correction or acceptance substitution.',
+   'The rebuilt preview is pinned and retained, but is not proven byte-identical to the earlier unretained preview bundle.',
+   'Independent RAF gaps are timestamped; original eligible slow rows have no timestamps and cannot be exactly joined by matching rounded durations.',
+   'GPU-process tasks are host-process activity, not measured GPU execution, queue wait or presentation.']};
+}
