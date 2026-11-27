@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import {mkdir,readFile,writeFile,open} from 'node:fs/promises';
 import {resolve} from 'node:path';
-import {MARKER_PREFIX,TRACE_CATEGORIES,REPORT_PATH,isGameUrl,sha256,createTraceSummaryAccumulator,diagnosticVerdict,verifyOriginalVerdict,verifyPageObservations} from './contract.mjs';
+import {MARKER_PREFIX,TRACE_CATEGORIES,TRACE_START_PARAMS,REPORT_PATH,isGameUrl,sha256,createTraceSummaryAccumulator,diagnosticVerdict,verifyOriginalVerdict,verifyPageObservations,verifyTraceControls} from './contract.mjs';
 import {summarizeTraceFile} from './sustained-trace-json.mjs';
 import {matchEmbeddedImage} from './embedded-assets.mjs';
 
@@ -121,7 +121,7 @@ export async function installDesktopStallTrace(chromium,{game,output,source,driv
  await mkdir(output,{recursive:true});
  const evidence={diagnosticOnly:true,releaseAcceptance:false,source,diagnosticSource,host:{platform:process.platform,arch:process.arch},
   status:'starting',errors:[],errorRecords:[],unsupported:[],launches:[],pages:[],bufferUsage:[],droppedBufferUsage:0,
-  scriptReceipts:[],assetReceipts:[],gameUrl:null,baselineWitness:null,stop:null,traceComplete:null,cpu:null,pageEvidence:null,summary:null,
+  scriptReceipts:[],assetReceipts:[],gameUrl:null,baselineWitness:null,stop:null,traceComplete:null,cpu:null,pageEvidence:null,summary:null,categories:null,traceStart:null,
   traceCompletion:{listenerAttachedHostMs:null,listenerDetachedHostMs:null,deadlineHostMs:null,timeoutHostMs:null,events:[]},traceStreams:[]};
  const fail=(where,error)=>{const message=errorText(error);evidence.errors.push(where+': '+message);evidence.errorRecords.push({where,message});};
  let persistQueue=Promise.resolve();
@@ -146,9 +146,10 @@ export async function installDesktopStallTrace(chromium,{game,output,source,driv
     assert.equal(evidence.previewAtArm?.polyhavenRockReview,'loaded','Preview assets were not loaded by the unmodified game');
    }catch(error){fail('preview identity',error);}
    observeTimelineCompletion();
-   try{await cdp(browserSession,'Tracing.start',{transferMode:'ReturnAsStream',streamFormat:'json',streamCompression:'none',bufferUsageReportingInterval:1000,
-    traceConfig:{recordMode:'recordUntilFull',traceBufferSizeInKb:262144,includedCategories:[...TRACE_CATEGORIES]}});recording=true;
-   }catch(error){fail('Tracing.start',error);}
+   const traceStart=evidence.traceStart={method:'Tracing.start',params:structuredClone(TRACE_START_PARAMS),startedHostMs:performance.now(),finishedHostMs:null,completed:false,response:null,error:null};
+   try{traceStart.response=await cdp(browserSession,traceStart.method,traceStart.params);recording=true;traceStart.completed=true;
+   }catch(error){traceStart.error=errorText(error);fail('Tracing.start',error);}
+   finally{traceStart.finishedHostMs=performance.now();}
    try{await cdp(gameSession,'Profiler.start');cpuRecording=true;}catch(error){fail('Profiler.start',error);}
    armed=true;evidence.arm.hostReadyMs=performance.now();evidence.status='armed';await persist();
   })();return arming;
@@ -259,6 +260,7 @@ export async function installDesktopStallTrace(chromium,{game,output,source,driv
    if(!armed||!evidence.scriptReceipts.length)fail('source identity',Error('Capture was not armed or browser-consumed script receipts are missing'));
    if(evidence.previewAtArm?.polyhavenRockReview!=='loaded'||evidence.pageEvidence?.previewRuntime?.polyhavenRockReview!=='loaded')fail('preview identity',Error('Preview runtime marker missing at capture boundaries'));
    try{verifyPageObservations(evidence.pageEvidence);}catch(error){fail('page observation coverage',error);}
+   try{verifyTraceControls(evidence);}catch(error){fail('trace controls',error);}
    evidence.verdict=diagnosticVerdict({source,report,traceComplete:evidence.traceComplete,summary:evidence.summary,errors:evidence.errors,stop:evidence.stop});
    evidence.status='finished';await persist();return evidence;
   })();return finishing;
@@ -353,8 +355,17 @@ export async function installDesktopStallTrace(chromium,{game,output,source,driv
   browserSession=await browser.newBrowserCDPSession();
   evidence.browser=await cdp(browserSession,'Browser.getVersion');evidence.systemInfo=await optional(browserSession,'SystemInfo.getInfo');
   evidence.processesAtStart=await optional(browserSession,'SystemInfo.getProcessInfo');
-  const supported=await optional(browserSession,'Tracing.getCategories');
-  evidence.categories={available:Array.isArray(supported?.categories)?supported.categories:null,requested:[...TRACE_CATEGORIES],enumerationAdvisory:true};
+  // Keep the original one launch-time query. Empty/malformed/error enumeration
+  // is advisory; actual literal-gpu coverage must be present in the raw ride.
+  const query={method:'Tracing.getCategories',params:{},startedHostMs:performance.now(),finishedHostMs:null,responseReceived:false,response:null,error:null};
+  const categories=evidence.categories={available:null,requested:[...TRACE_CATEGORIES],enumerationAdvisory:true,wellFormed:false,gpuAdvertised:false,query};
+  try{query.response=await cdp(browserSession,query.method,query.params);query.responseReceived=true;
+   categories.available=Array.isArray(query.response?.categories)?query.response.categories:null;
+   categories.wellFormed=categories.available!==null&&categories.available.every(value=>typeof value==='string'&&value.length>0);
+   categories.gpuAdvertised=categories.wellFormed&&categories.available.includes('gpu');
+  }catch(error){query.error=errorText(error);evidence.unsupported.push({method:query.method,error:query.error});}
+  finally{query.finishedHostMs=performance.now();}
+  await persist();
   browserSession.on('Tracing.bufferUsage',value=>{if(evidence.bufferUsage.length<1024)evidence.bufferUsage.push({...value,observedHostMs:performance.now()});else evidence.droppedBufferUsage++;});
  }});
  return {evidence,finish,stop,arm};

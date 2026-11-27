@@ -6,7 +6,8 @@ import {tmpdir} from 'node:os';
 import {resolve} from 'node:path';
 import {execFileSync} from 'node:child_process';
 import vm from 'node:vm';
-import {PIN,MARKER_PREFIX,TRACE_CATEGORIES,sha256,isGameUrl,createTraceSummaryAccumulator,diagnosticVerdict,verifyOriginalVerdict,verifyDriver,verifyPageObservations,verifyDistArchive,REPORT_PATH,ROCKS,buildInventory,verifyPreviewBuild} from './contract.mjs';
+import {PIN,MARKER_PREFIX,TRACE_CATEGORIES,TRACE_START_PARAMS,sha256,isGameUrl,createTraceSummaryAccumulator,diagnosticVerdict,verifyOriginalVerdict,verifyDriver,verifyPageObservations,verifyTraceControls,verifyDistArchive,REPORT_PATH,ROCKS,buildInventory,verifyPreviewBuild} from './contract.mjs';
+import {TRACE_CATEGORIES as UPSTREAM_TRACE_CATEGORIES} from './upstream/contract.mjs';
 import {installDesktopStallTrace,installPageEvidence} from './observer.mjs';
 import {verifySourceArtifact,onlyBuildTimingChanged} from './build-preview.mjs';
 import {buildEmbeddedAssetIndex} from './embedded-assets.mjs';
@@ -23,6 +24,7 @@ function fixture(){
   ...['Browser','Renderer','GPU Process'].map((name,i)=>({ph:'M',name:'process_name',pid:i+1,args:{name}})),
   {ph:'M',name:'thread_name',pid:2,tid:9,args:{name:'CrRendererMain'}},
   ...markers.map(m=>({name:MARKER_PREFIX+m.label,cat:'blink.user_timing',pid:2,tid:9,ts:1_000_000+m.atMs*1000,ph:'R'})),
+  {ph:'X',cat:'gpu',name:'FixtureGpuScope',pid:3,tid:10,ts:4_000_000,dur:100},
   {ph:'X',cat:'devtools.timeline',name:'EventDispatch',pid:2,tid:9,ts:2_099_950,dur:100},
   {ph:'X',cat:'devtools.timeline',name:'FunctionCall',pid:2,tid:9,ts:90_000_000,dur:349500},
   {ph:'X',cat:'devtools.timeline',name:'EventDispatch',pid:2,tid:9,ts:92_107_950,dur:100}]};
@@ -38,9 +40,10 @@ function fixture(){
   stop:{trigger:'native-w-keyup',cpuStopIssued:true,traceEndIssued:true,cpuStopped:true,traceEnded:true}};
 }
 
-async function nativeMock({listedCategories=[],listingError=false,missingTimeline=false,cpuFailure=false,endFailure=false,streamFailure=false,badScript=false,deferredCpu=false,browserCloseFailure=null,completion='normal',deferredBrowserClose=false,afterTraceRead=null,deferredAsset=false,embeddedImageIndex=null,extraSourceFiles=[],extraResponses=[]}={}){
+async function nativeMock({listedCategories=[],listingResponse,listingError=false,missingGpu=false,startFailure=false,missingTimeline=false,cpuFailure=false,endFailure=false,streamFailure=false,badScript=false,deferredCpu=false,browserCloseFailure=null,completion='normal',deferredBrowserClose=false,afterTraceRead=null,deferredAsset=false,embeddedImageIndex=null,extraSourceFiles=[],extraResponses=[]}={}){
  const f=fixture(),root=await mkdtemp(resolve(tmpdir(),'desktop-stall-observer-')),output=resolve(root,'capture'),js=Buffer.from('function nativeWork() {}');
  if(missingTimeline)f.trace.traceEvents=f.trace.traceEvents.filter(e=>e.ph!=='X');
+ if(missingGpu)f.trace.traceEvents=f.trace.traceEvents.filter(e=>e.cat!=='gpu');
  f.source.files=[{file:'assets/game.js',bytes:js.length,sha256:sha256(js)},...extraSourceFiles];f.source.embeddedImageIndex=embeddedImageIndex;
  const calls=[];let closed=0,contextClosed=0,cpuResolve,readCount=0,browserCloseResolve,browserCloseEnteredResolve,assetResolve;
  const assetDeferred=new Promise(ok=>{assetResolve=ok;});
@@ -48,8 +51,8 @@ async function nativeMock({listedCategories=[],listingError=false,missingTimelin
  const browserCloseDeferred=new Promise(ok=>{browserCloseResolve=ok;}),browserCloseEntered=new Promise(ok=>{browserCloseEnteredResolve=ok;});
  class BrowserSession extends EventEmitter{async send(method,params){
   calls.push({method,params});
-  if(method==='Tracing.getCategories'){if(listingError)throw Error('enumeration unavailable');return {categories:listedCategories};}
-  if(method==='Tracing.start'){assert.equal(this.listenerCount('Tracing.tracingComplete'),1,'Completion observation must precede Tracing.start');if(completion==='early')this.emit('Tracing.tracingComplete',f.traceComplete);return {};}
+  if(method==='Tracing.getCategories'){if(listingError)throw Error('enumeration unavailable');return listingResponse===undefined?{categories:listedCategories}:listingResponse;}
+  if(method==='Tracing.start'){assert.equal(this.listenerCount('Tracing.tracingComplete'),1,'Completion observation must precede Tracing.start');if(startFailure)throw Error('native trace start failed');if(completion==='early')this.emit('Tracing.tracingComplete',f.traceComplete);return {};}
   if(method==='Tracing.end'){
    if(endFailure)throw Error('native trace stop failed');
    if(completion!=='deferred')queueMicrotask(()=>{
@@ -134,9 +137,97 @@ test('full capture stops on exact original native keyup before GPS and keeps all
   assert(h.calls.findIndex(c=>c.method==='Tracing.end')<h.calls.findIndex(c=>c.method==='native page.url'));
   const start=h.calls.find(c=>c.method==='Tracing.start').params;assert.equal(start.traceConfig.recordMode,'recordUntilFull');assert.equal(start.traceConfig.traceBufferSizeInKb,262144);
   assert.deepEqual(start.traceConfig.includedCategories,TRACE_CATEGORIES);assert.equal(h.calls.find(c=>c.method==='Profiler.setSamplingInterval').params.interval,1000);
+  assert.deepEqual(start,TRACE_START_PARAMS);assert.deepEqual(e.traceStart.params,start);assert.equal(verifyTraceControls(e).enumerationState,'empty');
+  assert.equal(e.summary.gpuCategoryCoverage.observed,true);assert.equal(e.summary.gpuCategoryCoverage.gameRenderer.events,0);assert.equal(e.summary.gpuCategoryCoverage.gpuProcess.events,1);
   assert.deepEqual(e.baselineWitness.errors,[]);assert.equal(e.assetReceipts.length,1);assert.equal(e.assetReceipts[0].complete,true);
   assert.deepEqual(h.getCounts(),{closed:1,contextClosed:1});
  }finally{await h.cleanup();}
+});
+
+test('gpu is the sole added literal category and leaves the frozen seven-category upstream export untouched',()=>{
+ const original=['toplevel','devtools.timeline','disabled-by-default-devtools.timeline','blink.user_timing','v8','disabled-by-default-v8.gc','renderer.scheduler'];
+ assert.deepEqual(UPSTREAM_TRACE_CATEGORIES,original);assert.deepEqual(TRACE_CATEGORIES,[...original,'gpu']);
+ assert(Object.isFrozen(UPSTREAM_TRACE_CATEGORIES)&&Object.isFrozen(TRACE_CATEGORIES));
+ assert.deepEqual(TRACE_START_PARAMS,{transferMode:'ReturnAsStream',streamFormat:'json',streamCompression:'none',bufferUsageReportingInterval:1000,
+  traceConfig:{recordMode:'recordUntilFull',traceBufferSizeInKb:262144,includedCategories:[...original,'gpu']}});
+});
+
+test('raw launch enumeration remains advisory including empty, malformed, extra categories and actual errors',async()=>{
+ for(const example of [
+  {options:{},state:'empty',response:{categories:[]}},
+  {options:{listedCategories:['gpu','other.extra']},state:'listed',response:{categories:['gpu','other.extra']}},
+  {options:{listedCategories:['toplevel']},state:'listed',response:{categories:['toplevel']}},
+  {options:{listingResponse:{categories:['gpu',null],extra:{retained:1}}},state:'malformed',response:{categories:['gpu',null],extra:{retained:1}}},
+  {options:{listingResponse:{unexpected:'missing list'}},state:'malformed',response:{unexpected:'missing list'}},
+  {options:{listingResponse:null},state:'malformed',response:null},
+  {options:{listingError:true},state:'error',response:null},
+ ]){
+  const h=await nativeMock(example.options);try{
+   await h.capture();const e=await h.finish(),controls=verifyTraceControls(e);
+   assert.equal(e.verdict.collectionComplete,true,JSON.stringify(e.errors));assert.equal(controls.enumerationState,example.state);
+   assert.deepEqual(e.categories.query.response,example.response);assert.equal(h.calls.filter(c=>c.method==='Tracing.getCategories').length,1);
+   assert(h.calls.findIndex(c=>c.method==='Tracing.getCategories')<h.calls.findIndex(c=>c.method==='Target.getTargetInfo'));
+   assert.equal(e.categories.query.responseReceived,example.state!=='error');
+   if(example.state==='error')assert(e.categories.query.error.includes('enumeration unavailable'));
+   assert.equal(e.verdict.originalHarnessPassed,false);assert.equal(e.verdict.originalGpsPassed,true);
+  }finally{await h.cleanup();}
+ }
+});
+
+test('recorded categories, actual start parameters and host ordering are independently validated',async()=>{
+ const h=await nativeMock();try{await h.capture();const e=await h.finish();verifyTraceControls(e);
+  for(const mutate of [x=>x.categories.requested.push('gpu.service'),x=>x.categories.available.push('gpu'),x=>x.categories.gpuAdvertised=true,
+   x=>delete x.categories.query.response,x=>x.categories.query.finishedHostMs=x.categories.query.startedHostMs-1,
+   x=>x.traceStart.params.traceConfig.includedCategories.pop(),x=>x.traceStart.params.traceConfig.traceBufferSizeInKb++,
+   x=>x.traceStart.params.streamCompression='gzip',x=>x.traceStart.completed=false,x=>x.traceStart.error='unreported failure',x=>delete x.traceStart.response,
+   x=>x.traceStart.finishedHostMs=x.arm.hostReadyMs+1,x=>x.arm.intervalUs=999]){
+   const changed=structuredClone(e);mutate(changed);assert.throws(()=>verifyTraceControls(changed));
+  }
+ }finally{await h.cleanup();}
+});
+
+test('actual literal gpu events prove only category coverage on either mapped role and retain raw phases and IDs',()=>{
+ const f=fixture();f.trace.traceEvents=f.trace.traceEvents.filter(e=>e.cat!=='gpu');
+ const scopes=[
+  {ph:'B',cat:'gpu,toplevel.flow',name:'FixtureBegin',pid:2,tid:9,ts:3_000_000,id:'raw-begin'},
+  {ph:'E',cat:'gpu',pid:2,tid:9,ts:3_000_001,id:'raw-end'},
+  {ph:'s',cat:'gpu,toplevel.flow',name:'FixtureFlow',pid:2,tid:9,ts:3_000_002,id2:{global:'unchanged-1'}},
+  {ph:'f',cat:'gpu,toplevel.flow',name:'FixtureFlow',pid:2,tid:9,ts:3_000_003,id2:{global:'unchanged-1'}},
+ ];
+ f.trace.traceEvents.push(...scopes);const before=JSON.stringify(f.trace);let summary=traceSummary(f.trace,f.cpu,f.page);
+ assert.equal(summary.gpuCategoryCoverage.observed,true);assert.equal(summary.gpuCategoryCoverage.gameRenderer.events,4);assert.equal(summary.gpuCategoryCoverage.gpuProcess.events,0);
+ assert.deepEqual(summary.gpuCategoryCoverage.gameRenderer.phases,{B:1,E:1,s:1,f:1});assert.equal(diagnosticVerdict({...f,summary}).collectionComplete,true);
+ assert.equal(JSON.stringify(f.trace),before,'Coverage must not reconstruct or rewrite any raw phase/ID');
+ f.trace.traceEvents=f.trace.traceEvents.filter(e=>!scopes.includes(e));f.trace.traceEvents.push({...scopes[0],pid:3,tid:10});summary=traceSummary(f.trace,f.cpu,f.page);
+ assert.equal(summary.gpuCategoryCoverage.gameRenderer.events,0);assert.equal(summary.gpuCategoryCoverage.gpuProcess.events,1);
+ assert.equal(diagnosticVerdict({...f,summary}).collectionComplete,true,'No renderer wait occurrence is required');
+});
+
+test('metadata, nonliteral categories, unrelated processes and out-of-window or malformed events cannot certify gpu coverage',()=>{
+ const valid={ph:'X',cat:'gpu',name:'FixtureGpu',pid:3,tid:10,ts:4_000_000,dur:100};
+ for(const changes of [{cat:'gpu.service'},{cat:'disabled-by-default-gpu.service'},{cat:'xgpu'},{ph:'M'},{ph:'?'},{pid:99},{tid:NaN},{ts:NaN},
+  {ts:2_099_999},{ts:92_108_000},{dur:-1},{dur:NaN}]){
+  const f=fixture();f.trace.traceEvents=f.trace.traceEvents.filter(e=>e.cat!=='gpu');f.trace.traceEvents.push({...valid,...changes});
+  const summary=traceSummary(f.trace,f.cpu,f.page),verdict=diagnosticVerdict({...f,summary});
+  assert.equal(summary.gpuCategoryCoverage.observed,false,JSON.stringify(changes));assert.equal(verdict.collectionComplete,false);
+  assert(verdict.errors.some(error=>error.includes('GPU category coverage unsupported')));
+ }
+ const f=fixture();f.trace.traceEvents=f.trace.traceEvents.filter(e=>e.cat!=='gpu');f.trace.traceEvents.push({...valid,ts:2_100_000});
+ assert.equal(traceSummary(f.trace,f.cpu,f.page).gpuCategoryCoverage.observed,true,'Trusted start is inclusive; end is exclusive');
+});
+
+test('zero gpu coverage or trace-start failure preserves original native W, GPS, report and failure priority',async()=>{
+ for(const options of [{missingGpu:true},{startFailure:true}]){
+  const h=await nativeMock(options);try{
+   const before=JSON.stringify(h.f.report);await h.capture();const e=await h.finish();
+   assert.equal(e.verdict.collectionComplete,false);assert.equal(e.verdict.originalHarnessPassed,false);assert.equal(e.verdict.originalGpsPassed,true);
+   assert.equal(JSON.stringify(h.f.report),before);assert.equal(h.calls.filter(c=>c.method==='native keyboard.up').length,1);
+   assert(h.calls.some(c=>c.method==='original post-ride actions'));assert(h.calls.some(c=>c.method==='native page.url'));assert.deepEqual(h.getCounts(),{closed:1,contextClosed:1});
+   if(options.missingGpu){assert.equal(e.traceFlushed,true);assert.deepEqual(JSON.parse(await readFile(resolve(h.output,'browser-trace.json'),'utf8')),h.f.trace);
+    assert(e.verdict.errors.some(error=>error.includes('GPU category coverage unsupported')));}
+   else{assert.equal(e.traceStart.completed,false);assert(e.traceStart.error.includes('native trace start failed'));assert(e.errors.some(error=>error.includes('Tracing.start')));}
+  }finally{await h.cleanup();}
+ }
 });
 
 test('pre-GPS witness observes original error order; the full result preserves a later GPS failure',async()=>{

@@ -3,10 +3,44 @@ import assert from 'node:assert/strict';
 import {execFileSync} from 'node:child_process';
 import {readFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
-import {createTraceSummaryAccumulator as upstreamAccumulator} from './upstream/contract.mjs';
-export {sha256,gitBlob,hashFile,buildInventory,combinedExit,TRACE_CATEGORIES} from './upstream/contract.mjs';
+import {createTraceSummaryAccumulator as upstreamAccumulator,TRACE_CATEGORIES as UPSTREAM_TRACE_CATEGORIES} from './upstream/contract.mjs';
+export {sha256,gitBlob,hashFile,buildInventory,combinedExit} from './upstream/contract.mjs';
 import {sha256,gitBlob,hashFile,buildInventory} from './upstream/contract.mjs';
 import {verifyEmbeddedAssetIndex} from './embedded-assets.mjs';
+
+// Only this active contract extends the frozen seven-category upstream copy.
+export const TRACE_CATEGORIES=Object.freeze([...UPSTREAM_TRACE_CATEGORIES,'gpu']);
+export const TRACE_START_PARAMS=Object.freeze({transferMode:'ReturnAsStream',streamFormat:'json',streamCompression:'none',bufferUsageReportingInterval:1000,
+ traceConfig:Object.freeze({recordMode:'recordUntilFull',traceBufferSizeInKb:262144,includedCategories:TRACE_CATEGORIES})});
+const finite=value=>typeof value==='number'&&Number.isFinite(value);
+const categoryTokens=event=>typeof event?.cat==='string'?event.cat.split(',').map(value=>value.trim()):[];
+const GPU_COVERAGE_PHASES=new Set(['B','E','X','I','i','b','e','n','s','t','f','R','C']);
+
+/** Enumeration is advisory. Its raw result/error must survive independently of
+ * the exact request and the actual native-window category coverage below. */
+export function verifyTraceControls(evidence){
+ const categories=evidence?.categories,query=categories?.query,start=evidence?.traceStart;
+ assert(categories&&query&&start,'Missing recorded category query or trace-start request');
+ assert.deepEqual(categories.requested,TRACE_CATEGORIES,'Requested trace categories changed');
+ assert.equal(categories.enumerationAdvisory,true);assert.equal(query.method,'Tracing.getCategories');assert.deepEqual(query.params,{});
+ assert(finite(query.startedHostMs)&&finite(query.finishedHostMs)&&query.startedHostMs>=0&&query.finishedHostMs>=query.startedHostMs,'Invalid category-query host timing');
+ assert.equal(typeof query.responseReceived,'boolean');
+ if(query.responseReceived){assert.equal(query.error,null);assert(Object.hasOwn(query,'response'),'Raw category-query response missing');}
+ else{assert.equal(query.response,null);assert(typeof query.error==='string'&&query.error,'Category-query failure missing');
+  assert(evidence.unsupported?.some(row=>row.method==='Tracing.getCategories'&&row.error===query.error),'Category-query failure not retained');}
+ const available=query.responseReceived&&Array.isArray(query.response?.categories)?query.response.categories:null;
+ const wellFormed=available!==null&&available.every(value=>typeof value==='string'&&value.length>0);
+ assert.deepEqual(categories.available,available,'Advertised category list differs from raw response');
+ assert.equal(categories.wellFormed,wellFormed);assert.equal(categories.gpuAdvertised,wellFormed&&available.includes('gpu'));
+ assert.equal(start.method,'Tracing.start');assert.deepEqual(start.params,TRACE_START_PARAMS,'Actual trace-start configuration changed');
+ assert.equal(start.completed,true);assert.equal(start.error,null);assert(Object.hasOwn(start,'response'),'Raw trace-start response missing');
+ assert(finite(start.startedHostMs)&&finite(start.finishedHostMs)&&start.finishedHostMs>=start.startedHostMs,'Invalid trace-start host timing');
+ assert(finite(evidence.arm?.hostStartMs)&&finite(evidence.arm?.hostReadyMs)&&query.finishedHostMs<=evidence.arm.hostStartMs&&
+  evidence.arm.hostStartMs<=start.startedHostMs&&start.finishedHostMs<=evidence.arm.hostReadyMs,'Category query/start did not preserve original launch/arm order');
+ assert.equal(evidence.arm.intervalUs,1000,'CPU sampling interval changed');
+ return {requested:[...TRACE_CATEGORIES],enumerationAdvisory:true,enumerationState:!query.responseReceived?'error':!wellFormed?'malformed':available.length?'listed':'empty',
+  gpuAdvertised:categories.gpuAdvertised,actualStartParams:start.params};
+}
 
 export const GAME='lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game';
 export const PIN=Object.freeze({
@@ -41,7 +75,50 @@ export function isGameUrl(value){
   JSON.stringify([...u.searchParams].sort())===JSON.stringify([['locationPerf','1'],['profile','1']]);}catch{return false;}
 }
 export function createTraceSummaryAccumulator(cpu,page,options={}){
- return upstreamAccumulator(cpu,page,{markerPrefix:MARKER_PREFIX,isGameUrl,...options});
+ const configured={markerPrefix:MARKER_PREFIX,isGameUrl,...options},base=upstreamAccumulator(cpu,page,configured);
+ const markerRows=new Map(['profile-start-click','first-w-keydown','w-keyup'].map(label=>[configured.markerPrefix+label,[]])),gpuPids=new Set();
+ let coverage,observeIndex=0;
+ const role=pids=>({pids,events:0,phases:{},firstEvent:null,lastEvent:null});
+ const index=event=>{
+  base.index(event);
+  if(event.ph==='M'&&event.name==='process_name'&&finite(event.pid)&&/gpu/i.test(event.args?.name||''))gpuPids.add(event.pid);
+  if(markerRows.has(event.name)&&categoryTokens(event).includes('blink.user_timing')&&finite(event.ts)&&finite(event.pid)&&finite(event.tid))markerRows.get(event.name).push(event);
+ };
+ const beginCoverage=()=>{
+  base.beginCoverage();
+  const markers=[...markerRows.values()].map(rows=>[...new Map(rows.map(event=>[[event.pid,event.tid,event.ts].join(':'),event])).values()]);
+  const valid=markers.every(rows=>rows.length===1)&&new Set(markers.map(rows=>[rows[0]?.pid,rows[0]?.tid].join(':'))).size===1;
+  const [start,down,end]=valid?markers.map(rows=>rows[0]):[];
+  const ordered=valid&&start.ts<=down.ts&&down.ts<end.ts;
+  coverage={category:'gpu',observed:false,nativeWindow:ordered?{startTraceUs:down.ts,endTraceUs:end.ts}:null,
+   gameRenderer:role(ordered?[start.pid]:[]),gpuProcess:role([...gpuPids]),otherProcessEvents:0,
+   selection:'Known non-metadata trace phase; literal comma-separated gpu token; finite PID/TID/timestamp; event timestamp in [trusted first W-keydown, trusted W-keyup). Complete events also require finite nonnegative dur. No async/flow pairing or duration inference.',
+   limitation:'Category coverage only. A captured event does not prove a client wait, a renderer-to-service dependency, GPU execution, queue depth or presentation. Every raw phase/ID remains in the trace archive.'};
+ };
+ const observe=event=>{
+  base.observe(event);const traceEventIndex=observeIndex++;
+  const window=coverage?.nativeWindow;
+  if(!window||!GPU_COVERAGE_PHASES.has(event.ph)||!categoryTokens(event).includes('gpu')||!finite(event.pid)||!finite(event.tid)||!finite(event.ts)||
+   event.ts<window.startTraceUs||event.ts>=window.endTraceUs)return;
+  if(event.ph==='X'&&(!finite(event.dur)||event.dur<0||!finite(event.ts+event.dur)))return;
+  let matched=false;
+  for(const current of [coverage.gameRenderer,coverage.gpuProcess])if(current.pids.includes(event.pid)){
+   matched=true;current.events++;current.phases[event.ph]=(current.phases[event.ph]??0)+1;
+   const ref={traceEventIndex,ph:event.ph,pid:event.pid,tid:event.tid,ts:event.ts};
+   if(current.firstEvent===null||event.ts<current.firstEvent.ts)current.firstEvent=ref;
+   if(current.lastEvent===null||event.ts>current.lastEvent.ts)current.lastEvent=ref;
+  }
+  if(!matched)coverage.otherProcessEvents++;
+ };
+ const finish=()=>{
+  const summary=base.finish();
+  // The unchanged upstream checks still establish marker/renderer identity.
+  if(coverage.nativeWindow&&(summary.gameRendererPid!==coverage.gameRenderer.pids[0]||summary.nativeRide?.startTraceUs!==coverage.nativeWindow.startTraceUs||
+   summary.nativeRide?.endTraceUs!==coverage.nativeWindow.endTraceUs))summary.errors.push('GPU category coverage disagrees with original mapped native boundaries');
+  coverage.observed=coverage.gameRenderer.events+coverage.gpuProcess.events>0;
+  summary.gpuCategoryCoverage=coverage;return summary;
+ };
+ return {index,beginCoverage,observe,finish};
 }
 export function verifyPageObservations(page){
  const o=page?.browserObservations;assert(o&&typeof o==='object','Missing complete page observation payload');
@@ -132,6 +209,7 @@ export async function verifyPinnedInputs(game,evidenceDirectory){
 export function diagnosticVerdict({source,report,traceComplete,summary,errors=[],stop}){
  const reasons=[...errors,...(summary?.errors||[])],check=(ok,why)=>{if(!ok)reasons.push(why);};
  check(summary&&Number.isFinite(summary.gameRendererPid),'Actual renderer/timestamp summary absent');
+ check(summary?.gpuCategoryCoverage?.observed===true,'No literal gpu-category activity captured during trusted W input on the mapped game renderer or identified GPU process; GPU category coverage unsupported');
  check(source?.head===PIN.head&&source?.tree===PIN.tree&&source?.harness?.gitBlob===PIN.harness,'Source/driver mismatch');
  check(source?.diagnosticBuild===true&&source?.failedBuildByteReplay===false&&source?.artifact?.kind==='new-diagnostic-build','New build provenance missing');
  check(report?.sourceHead===PIN.head&&report?.mode==='full'&&report?.device==='desktop'&&report?.requestedSeconds===90,'Original full desktop lane changed');
@@ -151,5 +229,6 @@ export function diagnosticVerdict({source,report,traceComplete,summary,errors=[]
   limitations:['Fixed CPU sampling, trace recording, page observers and asset receipts add unquantified overhead; no numeric correction or acceptance substitution.',
    'The rebuilt preview is pinned and retained, but is not proven byte-identical to the earlier unretained preview bundle.',
    'Independent RAF gaps are timestamped; original eligible slow rows have no timestamps and cannot be exactly joined by matching rounded durations.',
-   'GPU-process tasks are host-process activity, not measured GPU execution, queue wait or presentation.']};
+   'GPU-process tasks are host-process activity, not measured GPU execution, queue wait or presentation.',
+   'The added literal gpu category and any wait/scheduler scopes add unquantified recording overhead. Category coverage does not establish a wait or a renderer-to-service dependency; exact-browser source semantics require separate verification.']};
 }

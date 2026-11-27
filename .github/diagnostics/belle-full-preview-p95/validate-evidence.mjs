@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import {readFile,writeFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
-import {verifyPinnedInputs,verifyOriginalVerdict,createTraceSummaryAccumulator,diagnosticVerdict,sha256,PIN,REPORT_PATH,verifyPageObservations} from './contract.mjs';
+import {verifyPinnedInputs,verifyOriginalVerdict,createTraceSummaryAccumulator,diagnosticVerdict,sha256,PIN,REPORT_PATH,verifyPageObservations,verifyTraceControls} from './contract.mjs';
 import {summarizeTraceFile} from './sustained-trace-json.mjs';
 import {verifyAssetReceipts} from './asset-receipts.mjs';
 
@@ -14,6 +14,7 @@ try{
  assert.deepEqual(originalDriver,await readFile(resolve(directory,'original-strict-driver.mjs')),'Original driver changed during diagnostic');
  assert.deepEqual(source,JSON.parse(await readFile(resolve(directory,'source-receipt.json'),'utf8')),'Source/build receipt changed during diagnostic');
  const evidence=JSON.parse(await readFile(resolve(capture,'trace-evidence.json'),'utf8'));
+ const traceControls=verifyTraceControls(evidence);
  verifyPageObservations(evidence.pageEvidence);assert.equal(evidence.previewAtArm?.polyhavenRockReview,'loaded');
  assert.equal(evidence.traceCompletion.deadlineHostMs,evidence.stop.hostStartMs+60000);
  for(const stream of evidence.traceStreams){assert.equal(stream.deadlineExceeded,false);assert(stream.finishedHostMs<=evidence.traceCompletion.deadlineHostMs,'Raw stream flush exceeded absolute deadline');}
@@ -49,7 +50,7 @@ try{
  summary={...verdict,originalProcessExit:originalStatus,originalReportSha256:evidence.originalReportSha256,
   traceSha256:evidence.traceSha256,cpuProfileSha256:evidence.cpuProfileSha256,sourceHead:PIN.head,tree:PIN.tree,diagnosticSource:evidence.diagnosticSource,
   nativeRide:observed.nativeRide,rendererTimeline:observed.rendererTimeline,cpuCoverage:observed.cpuCoverage,
-  longestNativeEvents:observed.longEvents,originalGpsPassed:report.gpsRegression.passed,assetVerification};
+  longestNativeEvents:observed.longEvents,originalGpsPassed:report.gpsRegression.passed,assetVerification,traceControls,gpuCategoryCoverage:observed.gpuCategoryCoverage};
 }catch(error){if(error.traceReceipt)summary.traceReceipt=error.traceReceipt;failures.push(error.stack||String(error));}
 summary.validationErrors=failures;summary.validationPassed=failures.length===0;
 await writeFile(resolve(directory,'validation.json'),JSON.stringify(summary,null,2)+'\n');
