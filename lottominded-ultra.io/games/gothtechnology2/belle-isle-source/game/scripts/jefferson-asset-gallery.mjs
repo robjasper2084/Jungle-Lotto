@@ -48,6 +48,12 @@ const save = () => writeFile(resolve(output, 'report.json'), JSON.stringify(repo
 const elapsed = () => Date.now() - started;
 const remaining = () => Math.max(1, deadline - Date.now());
 function budget(label) { if (Date.now() >= deadline) throw Error('Eight-minute gallery deadline reached during ' + label); }
+// Actual Metal input receipts exposed two 120Hz physics steps per 60Hz input
+// frame: 2.7/60=.045rad. Half that attainable spacing plus .0025rad for the
+// authored easing tail avoids demanding an unreachable stationary heading.
+// At the existing 3s / 5.4m/s feedback interval this is <.405m lateral drift;
+// waypoint, final camera, pairing, frame/GPU and deadline checks stay unchanged.
+const routeHeadingTolerance = 2.7 / 60 / 2 + .0025;
 const wrap = angle => Math.atan2(Math.sin(angle), Math.cos(angle));
 const distance = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
 const finitePoint = (point, length) => Array.isArray(point) && point.length === length && point.every(Number.isFinite);
@@ -139,15 +145,29 @@ async function settle() {
 
 async function turnTo(heading) {
   await settle();
+  const correction = {requestedHeadingRad: heading, toleranceRad: routeHeadingTolerance, beganMs: elapsed(), pulses: [], completed: false};
+  (report.headingCorrections ||= []).push(correction);
   for (let n = 0; n < 24; n++) {
     const state = await observe(), error = wrap(heading - state.pose.headingY);
-    if (Math.abs(error) < .012) return;
+    if (Math.abs(error) <= routeHeadingTolerance) {
+      correction.finalPose = state.pose;
+      correction.finalResidualRad = error;
+      correction.elapsedMs = elapsed() - correction.beganMs;
+      correction.completed = true;
+      return;
+    }
     // onFoot.ts turns heading negatively for positive steer, at 2.7 rad/s.
-    await axes(error > 0 ? -1 : 1, 0);
-    await page.waitForTimeout(Math.min(650, Math.max(12, Math.abs(error) / 2.7 * 1000)));
+    const steer = error > 0 ? -1 : 1;
+    const holdMs = Math.min(650, Math.max(12, Math.abs(error) / 2.7 * 1000));
+    correction.pulses.push({observedHeadingRad: state.pose.headingY, residualRad: error, steer, requestedHoldMs: holdMs, beganMs: elapsed()});
+    await axes(steer, 0);
+    await page.waitForTimeout(holdMs);
     await axes(0, 0);
     await page.waitForTimeout(240);
   }
+  correction.finalPose = (await observe()).pose;
+  correction.finalResidualRad = wrap(heading - correction.finalPose.headingY);
+  correction.elapsedMs = elapsed() - correction.beganMs;
   throw Error('Native heading corrections did not converge');
 }
 
@@ -168,7 +188,7 @@ async function walkTo(point, routeEntry, tolerance = .7) {
     if (d < best - .35) { best = d; progressedAt = Date.now(); }
     if (Date.now() - progressedAt > 16000) throw Error('Native route made no useful progress for 16 seconds near ' + JSON.stringify({point, actual: p, distanceM: d}));
     const heading = Math.atan2(point[0] - p.x, point[1] - p.z);
-    if (!moving || Math.abs(wrap(heading - p.headingY)) > .025) await turnTo(heading);
+    if (!moving || Math.abs(wrap(heading - p.headingY)) > routeHeadingTolerance) await turnTo(heading);
     await axes(0, 1, true);
     await page.waitForTimeout(Math.min(3000, Math.max(55, (d - tolerance * .6) / 5.4 * 1000)));
   }
