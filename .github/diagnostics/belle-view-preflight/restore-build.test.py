@@ -2,6 +2,7 @@ import importlib.util
 import io
 from pathlib import Path
 import stat
+import subprocess
 import tempfile
 import unittest
 import zipfile
@@ -54,6 +55,28 @@ class ArchiveControls(unittest.TestCase):
             self.assertEqual((root / "dist/assets/main.js").read_bytes(), b"original script")
             with self.assertRaises(AssertionError):
                 module.restore(zipped, root / "dist")
+
+    def test_full_filename_prefix_order_matches_original_node_inventory_bytes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            zipped = root / "prefix-order.zip"
+            names = ["belle/vehicles/corleo/manifest.json", "belle/vehicles/corleo-professional.glb",
+                     "belle/vehicles/corleo-maverick.glb", "a/x.bin", "a.json"]
+            with zipfile.ZipFile(zipped, "w") as archive:
+                for name in names:
+                    archive.writestr(name, ("original bytes for " + name).encode())
+            rows = module.restore(zipped, root / "dist")
+            import json
+            expected_names = sorted(names)
+            self.assertNotEqual(sorted(names, key=Path), expected_names, "Fixture must expose component sorting")
+            self.assertEqual([row["file"] for row in rows], expected_names)
+            node = subprocess.run(["node", "--input-type=module", "-e",
+                                   "import {pathToFileURL} from 'node:url'; const {inventory}=await import(pathToFileURL(process.argv[2]).href); console.log(JSON.stringify(await inventory(process.argv[3]),null,2));",
+                                   "preflight-inventory-cross-language-control", str(Path(__file__).with_name("contract.mjs")), str(root / "dist")],
+                                  capture_output=True)
+            self.assertEqual(node.returncode, 0, node.stderr.decode())
+            python_bytes = (json.dumps(rows, indent=2, ensure_ascii=False) + "\n").encode()
+            self.assertEqual(python_bytes, node.stdout, "Exact Node/Python inventory bytes must agree")
 
 
 if __name__ == "__main__":

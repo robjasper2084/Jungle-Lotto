@@ -115,6 +115,7 @@ jobs:
         with:
           name: belle-view-preflight-build-provenance-NOT-RELEASE
           path: build-evidence/
+          include-hidden-files: true
           if-no-files-found: warn
           retention-days: 14
 
@@ -206,5 +207,6 @@ jobs:
         with:
           name: belle-view-preflight-${{ matrix.layout }}-NOT-RELEASE
           path: evidence/
+          include-hidden-files: true
           if-no-files-found: warn
           retention-days: 14

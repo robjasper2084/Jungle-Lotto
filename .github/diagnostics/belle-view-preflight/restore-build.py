@@ -51,8 +51,9 @@ def restore(archive, dist):
             with zipped.open(info) as source, destination.open("xb") as target:
                 while part := source.read(1024 * 1024):
                     target.write(part)
-    return [{"file": path.relative_to(dist).as_posix(), "bytes": path.stat().st_size, "sha256": digest_file(path)}
-            for path in sorted(dist.rglob("*")) if path.is_file()]
+    rows = [{"file": path.relative_to(dist).as_posix(), "bytes": path.stat().st_size, "sha256": digest_file(path)}
+            for path in dist.rglob("*") if path.is_file()]
+    return sorted(rows, key=lambda row: row["file"])
 
 
 def main():

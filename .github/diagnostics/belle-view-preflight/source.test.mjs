@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {readFile} from 'node:fs/promises';
+import {readFile,mkdtemp,readdir,rm} from 'node:fs/promises';
 import {resolve} from 'node:path';
+import {tmpdir} from 'node:os';
 import {fileURLToPath} from 'node:url';
 import {execFileSync} from 'node:child_process';
 import {PIN,GAME,verifySource,sha256} from './contract.mjs';
@@ -20,6 +21,19 @@ test('only the new diagnostic namespace triggers this workflow and the same-run 
  assert.match(workflow,/artifact_id: \$\{\{ steps\.upload\.outputs\.artifact-id \}\}/);assert.match(workflow,/artifact_sha256: \$\{\{ steps\.upload\.outputs\.artifact-digest \}\}/);
  assert.match(workflow,/PREFLIGHT_BUILD_ARTIFACT_ID: \$\{\{ needs\.build-staged\.outputs\.artifact_id \}\}/);
  assert.match(workflow,/fail-fast: false/);assert.match(workflow,/layout: \[desktop, phone\]/);assert.doesNotMatch(workflow,/pull_request_target|secrets\.|contents: write|actions: write/);
+});
+test('hidden-file uploads are scoped to explicit evidence directories containing only source-bound archives',async()=>{
+ const uploads=workflow.split(/      - uses: actions\/upload-artifact@v4/).slice(1),withHidden=uploads.filter(block=>/include-hidden-files: true/.test(block));
+ assert.equal(withHidden.length,2);assert.deepEqual(withHidden.map(block=>block.match(/          path: ([^\n]+)/)[1]),['build-evidence/','evidence/']);
+ assert(uploads.filter(block=>!block.includes('include-hidden-files: true')).every(block=>block.includes('path: app/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist/')));
+ const directory=await mkdtemp(resolve(tmpdir(),'belle-preflight-source-archive-'));
+ try{
+  const receipt=await verifySource(app,{archiveTo:directory}),expected=receipt.sourceFiles.map(row=>'application-source/'+row.path).concat('application-commit.txt').sort(),actual=[];
+  async function walk(path,prefix=''){for(const entry of await readdir(path,{withFileTypes:true})){assert(!entry.isSymbolicLink());if(entry.isDirectory())await walk(resolve(path,entry.name),prefix+entry.name+'/');else actual.push(prefix+entry.name);}}
+  await walk(directory);assert.deepEqual(actual.sort(),expected);
+  for(const row of receipt.sourceFiles)assert.equal(sha256(await readFile(resolve(directory,'application-source',row.path))),row.sha256);
+  assert(expected.includes('application-source/.github/workflows/belle-staged-architecture-native.yml'),'Pinned original workflow must survive the scoped hidden-file upload');
+ }finally{await rm(directory,{recursive:true,force:true});}
 });
 test('preflight imports the original constructor and exposes no route execution, render override or gameplay setter',()=>{
  assert.match(harness,/await import\(pathToFileURL\(resolve\(game,'scripts\/staged-landmark-exterior-proof\.mjs'\)\)\.href\)/);
