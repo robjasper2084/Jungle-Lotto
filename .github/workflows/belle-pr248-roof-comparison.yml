@@ -1,0 +1,160 @@
+name: Belle Isle Aquarium roof comparison (diagnostic only)
+
+on:
+  pull_request:
+    branches: [upgrade-redesign-aquarium-roof-ends-20261126]
+    paths:
+      - '.github/diagnostics/pr248-roof-compare/**'
+      - '.github/workflows/belle-pr248-roof-comparison.yml'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: belle-pr248-roof-comparison-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  ROOF_DIAGNOSTIC_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+
+jobs:
+  native-metal-comparison:
+    if: github.event.pull_request.head.ref == 'upgrade-redesign-pr248-roof-comparison-20261126'
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: diagnostic
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/diagnostics/pr248-roof-compare/
+            /.github/workflows/belle-pr248-roof-comparison.yml
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Preserve the exact diagnostic source before any fixture work
+        run: |
+          set -euo pipefail
+          bundle="$GITHUB_WORKSPACE/diagnostic/.github/diagnostics/pr248-roof-compare"
+          out="$GITHUB_WORKSPACE/evidence"
+          mkdir -p "$out"
+          node "$bundle/provenance.mjs" diagnostic "$GITHUB_WORKSPACE/diagnostic" "$out" "$ROOF_DIAGNOSTIC_SHA"
+      - uses: actions/checkout@v4
+        with:
+          ref: bf2fa1eaef4c529e8428f2ac1d0ac5a897a1e112
+          path: before
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/tsconfig.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/runtime/
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/staged-architecture/
+            /lottominded-ultra.io/games/gothtechnology2/greater-detroit-graphics/src/
+      - uses: actions/checkout@v4
+        with:
+          ref: c7461c7c095cfb19ba8770b343952adb6eda5624
+          path: candidate
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/tsconfig.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/runtime/
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/staged-architecture/
+            /lottominded-ultra.io/games/gothtechnology2/greater-detroit-graphics/src/
+      - name: Verify and extract the single immutable shared asset archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          bundle="$GITHUB_WORKSPACE/diagnostic/.github/diagnostics/pr248-roof-compare"
+          out="$GITHUB_WORKSPACE/evidence"
+          zip="$out/immutable-assets-15149060140.zip"
+          gh api repos/robjasper2084/Jungle-Lotto/actions/artifacts/15149060140 > "$out/original-artifact.json"
+          gh api repos/robjasper2084/Jungle-Lotto/actions/artifacts/15149060140/zip > "$zip"
+          node "$bundle/provenance.mjs" archive "$zip" "$out/original-artifact.json" "$GITHUB_WORKSPACE/shared-assets" "$out"
+      - name: Install both locked source compilers and the original Chrome harness
+        run: |
+          set -euo pipefail
+          for variant in before candidate; do
+            app="$GITHUB_WORKSPACE/$variant/lottominded-ultra.io/games/gothtechnology2"
+            npm --prefix "$app" ci
+            npm --prefix "$app/belle-isle-source/game" ci
+          done
+          cd "$GITHUB_WORKSPACE/before/lottominded-ultra.io/games/gothtechnology2"
+          npx playwright install chrome
+      - name: Compile both exact source fixtures and test evidence contracts
+        run: |
+          set -euo pipefail
+          bundle="$GITHUB_WORKSPACE/diagnostic/.github/diagnostics/pr248-roof-compare"
+          out="$GITHUB_WORKSPACE/evidence"
+          node --check "$bundle/driver.mjs"
+          node "$bundle/build.mjs" before "$GITHUB_WORKSPACE/before" "$out/before" 2>&1 | tee "$out/before-build.log"
+          node "$bundle/build.mjs" candidate "$GITHUB_WORKSPACE/candidate" "$out/candidate" 2>&1 | tee "$out/candidate-build.log"
+          node --test "$bundle/contract.test.mjs" "$bundle/provenance.test.mjs" 2>&1 | tee "$out/contract-tests.log"
+      - name: Capture matched native roof views and retain changed pixels
+        timeout-minutes: 30
+        run: |
+          set -euo pipefail
+          bundle="$GITHUB_WORKSPACE/diagnostic/.github/diagnostics/pr248-roof-compare"
+          out="$GITHUB_WORKSPACE/evidence"
+          node "$bundle/driver.mjs" "$GITHUB_WORKSPACE/before" "$GITHUB_WORKSPACE/candidate" "$GITHUB_WORKSPACE/shared-assets" "$out" 2>&1 | tee "$out/driver.log"
+      - name: Verify both original checkouts and shared assets remain unchanged
+        if: always()
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {readFile,mkdir} from 'node:fs/promises';
+          import {resolve} from 'node:path';
+          import {pathToFileURL} from 'node:url';
+          const root=process.env.GITHUB_WORKSPACE,out=resolve(root,'evidence');
+          await mkdir(out,{recursive:true});
+          const bundle=resolve(root,'diagnostic/.github/diagnostics/pr248-roof-compare');
+          const {checkout,helperPins,modelPins,verifyManifest,verifyDiagnostic,sha256,pins,json}=await import(pathToFileURL(resolve(bundle,'provenance.mjs')).href);
+          const receipt={passed:false,errors:[],sources:[],sharedAssetsUnchanged:false,inputArchiveUnchanged:false,diagnosticUnchanged:false};
+          for(const mode of ['before','candidate']){
+            try{
+              const app=resolve(root,mode),game=resolve(app,pins.gamePath);
+              receipt.sources.push({mode,source:checkout(app,mode),helpers:await helperPins(game),models:await modelPins(game,mode)});
+            }catch(error){receipt.errors.push({scope:mode,message:error?.stack||String(error)});}
+          }
+          try{
+            const expected=JSON.parse(await readFile(resolve(out,'dist-manifest.json'),'utf8'));
+            await verifyManifest(resolve(root,'shared-assets'),expected);receipt.sharedAssetsUnchanged=true;
+          }catch(error){receipt.errors.push({scope:'shared-assets',message:error?.stack||String(error)});}
+          try{
+            const original=JSON.parse(await readFile(resolve(out,'immutable-assets.json'),'utf8'));
+            assert.equal(original.archivePath,'immutable-assets-15149060140.zip');
+            const archive=await readFile(resolve(out,original.archivePath));
+            assert.equal(archive.length,pins.artifact.bytes);assert.equal(archive.length,original.archiveBytes);
+            assert.equal(sha256(archive),pins.artifact.sha256);assert.equal(sha256(archive),original.archiveSha256);
+            receipt.inputArchiveUnchanged=true;
+          }catch(error){receipt.errors.push({scope:'input-archive',message:error?.stack||String(error)});}
+          try{
+            await verifyDiagnostic(resolve(root,'diagnostic'),out,process.env.ROOF_DIAGNOSTIC_SHA);
+            receipt.diagnosticUnchanged=true;
+          }catch(error){receipt.errors.push({scope:'diagnostic',message:error?.stack||String(error)});}
+          receipt.passed=receipt.errors.length===0;
+          await json(resolve(out,'unchanged-inputs-after.json'),receipt);
+          assert(receipt.passed,JSON.stringify(receipt.errors));
+          NODE
+      - name: Preserve successful and failed comparison evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-pr248-roof-metal-${{ github.event.pull_request.head.sha || github.sha }}-NOT-RELEASE-ACCEPTANCE
+          path: evidence/
+          if-no-files-found: warn
+          retention-days: 14
