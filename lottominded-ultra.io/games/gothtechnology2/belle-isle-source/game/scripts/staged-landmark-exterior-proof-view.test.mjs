@@ -8,6 +8,8 @@ import {readFile} from 'node:fs/promises';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {STUDY_SITES} from '../src/belle/stagedLandmarkStudies.ts';
 import {readStagedExterior} from '../src/belle/stagedLandmarkGroundFit.ts';
+import {riverFarRing,flatRiverPatchIndex,RIVER_PATCH_SIZE,RIVER_PATCH_SEGMENTS} from '../src/belle/riverPatch.ts';
+import {addConservatoryGarden} from '../src/belle/conservatoryGarden.ts';
 
 const target={min:[-5,2,-5],max:[5,20,5],center:[0,11,0]};
 function sceneFixture(){
@@ -57,6 +59,17 @@ test('view ranking detects retained foreground crowns and ignores geometry beyon
  const behind=scoreExteriorViewpoint({...observation,boxes:[obstruction([-10,0,-30],[10,30,-20])]},[0,3.55,40]);assert.equal(behind.blockedSamples,0);
  assert.equal(JSON.stringify(observation),before);
  assert.throws(()=>scoreExteriorViewpoint({...observation,boxes:[{min:[NaN,0,0],max:[1,1,1]}]},[0,3,30]),/Invalid blocker/);
+});
+test('same-site retained foliage remains an obstruction outside the actual staged target subtree',()=>{
+ const {scene,root,lod,camera}=sceneFixture(),garden=new T.Group();garden.name='107310050_retained_garden';
+ const leaves=new T.Mesh(new T.BoxGeometry(12,32,3),new T.MeshStandardMaterial({alphaTest:.5}));leaves.name='107310050_leaf0';leaves.position.set(0,14,20);garden.add(leaves);scene.add(garden);
+ const ownDetail=new T.Mesh(new T.BoxGeometry(10,30,2),new T.MeshStandardMaterial());ownDetail.name='stage-owned dome detail';lod.add(ownDetail);scene.updateMatrixWorld(true);
+ const before=JSON.stringify(scene.toJSON()),observed=readStagedViewBounds(root,'107310050',camera,target);
+ assert(observed.boxes.some(box=>box.uuid===leaves.uuid&&box.conservativeAlpha),'A shared landmark prefix cannot hide visible retained scenery');
+ assert(!observed.boxes.some(box=>box.uuid===ownDetail.uuid),'Only actual target ancestry excludes self geometry');
+ assert(scoreExteriorViewpoint(observed,[0,3.55,40]).blockedSamples>0);
+ assert.equal(scoreExteriorViewpoint({...observed,boxes:[]},[0,3.55,40]).blockedSamples,0,'The old prefix omission would create a false-clear result');
+ assert.equal(JSON.stringify(scene.toJSON()),before);
 });
 test('occlusion ranking retains the original sector, opposite-angle geometry and every directed stopping sweep',async()=>{
  const requests=[],queryGround=points=>points.map(p=>({...p,height:2,walkable:true,planningClearance:2.25}));
@@ -113,4 +126,85 @@ test('broad merged surfaces preserve nearby triangles without filling empty spac
   assert(observation.boxes.some(box=>[x,y,z].every((n,axis)=>n>=box.min[axis]-1e-8&&n<=box.max[axis]+1e-8)),'Every sampled point on the retained crossing triangle remains covered');
  }
  assert.deepEqual(Array.from(geometry.getAttribute('position').array),source);assert.equal(geometry.boundingBox,null);assert.equal(geometry.boundingSphere,null);
+});
+
+function denseBlockGeometry(){
+ const geometry=new T.BufferGeometry(),positions=[],indices=[];
+ for(const x of [-40,40,2000]){
+  const first=positions.length/3;positions.push(x,3,18,x+1,3,18,x,5,18);
+  for(let n=0;n<32;n++)indices.push(first,first+1,first+2);
+ }
+ geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.setIndex(indices);return geometry;
+}
+const covers=(boxes,point)=>boxes.some(box=>point.every((n,axis)=>n>=box.min[axis]-1e-7&&n<=box.max[axis]+1e-7));
+test('small index blocks preserve every near vertex and draw alignment without revisiting dense triangles',()=>{
+ const {scene,root,camera}=sceneFixture(),geometry=denseBlockGeometry(),original=Array.from(geometry.index.array);
+ // A draw start need not be aligned to index zero. Keep complete triangles
+ // relative to that actual start, including both sides of a block boundary.
+ geometry.setIndex([6,7,8,...original]);geometry.setDrawRange(3,original.length);
+ const mesh=new T.Mesh(geometry,new T.MeshStandardMaterial({alphaTest:.5}));mesh.name='dense retained foliage';scene.add(mesh);scene.updateMatrixWorld(true);
+ const before=JSON.stringify(scene.toJSON()),observed=readStagedViewBounds(root,'107310050',camera,target);
+ assert.equal(observed.verticesRead,288);assert.equal(observed.refinementVerticesRead,0);
+ assert.equal(observed.indexBlocksRead,3);assert.equal(observed.indexBlocksRetained,2);assert.equal(observed.refinementSteps,3);
+ for(let vertex=0;vertex<6;vertex++)assert(covers(observed.boxes,new T.Vector3().fromBufferAttribute(geometry.attributes.position,vertex).toArray()));
+ assert(!observed.boxes.some(box=>box.min[0]>1000));assert(observed.boxes.every(box=>box.conservativeAlpha));
+ assert.equal(scoreExteriorViewpoint(observed,[0,3.55,40]).blockedSamples,0,'Separated retained leaves must not become a wall between patches');
+ assert.equal(JSON.stringify(scene.toJSON()),before);assert.equal(geometry.boundingBox,null);assert.equal(geometry.boundingSphere,null);
+});
+test('small block bounds account for each instance transform and current morph positions',()=>{
+ const {scene,root,camera}=sceneFixture(),geometry=denseBlockGeometry(),mesh=new T.InstancedMesh(geometry,new T.MeshStandardMaterial(),2);
+ const matrix=new T.Matrix4().compose(new T.Vector3(0,0,12),new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),.55),new T.Vector3(1.4,.8,1.2));
+ mesh.name='transformed retained blocks';mesh.setMatrixAt(0,matrix);mesh.setMatrixAt(1,new T.Matrix4().makeTranslation(2000,0,0));scene.add(mesh);scene.updateMatrixWorld(true);
+ const matrices=Array.from(mesh.instanceMatrix.array),observed=readStagedViewBounds(root,'107310050',camera,target);
+ const copiedMatrix=new T.Matrix4();mesh.getMatrixAt(0,copiedMatrix);
+ for(let vertex=0;vertex<6;vertex++)assert(covers(observed.boxes.filter(box=>box.instanceId===0),new T.Vector3().fromBufferAttribute(geometry.attributes.position,vertex).applyMatrix4(copiedMatrix).toArray()));
+ assert(!observed.boxes.some(box=>box.instanceId===1));assert.deepEqual(Array.from(mesh.instanceMatrix.array),matrices);
+ const morphGeometry=denseBlockGeometry();morphGeometry.morphAttributes.position=[new T.Float32BufferAttribute(Array.from(morphGeometry.attributes.position.array,n=>n),3)];
+ for(let n=0;n<morphGeometry.morphAttributes.position[0].count;n++)morphGeometry.morphAttributes.position[0].setY(n,13);
+ const low=new T.Mesh(morphGeometry,new T.MeshStandardMaterial()),high=new T.Mesh(morphGeometry,new T.MeshStandardMaterial());low.name='undeformed retained blocks';high.name='deformed retained blocks';low.morphTargetInfluences[0]=0;high.morphTargetInfluences[0]=1;
+ scene.remove(mesh);scene.add(low,high);scene.updateMatrixWorld(true);const before=JSON.stringify(scene.toJSON()),morph=readStagedViewBounds(root,'107310050',camera,target);
+ assert(covers(morph.boxes.filter(box=>box.mesh===low.name),[-40,3,18]));assert(covers(morph.boxes.filter(box=>box.mesh===high.name),[-40,13,18]));
+ assert.equal(morph.verticesRead,576,'Animated meshes sharing geometry must each be observed');assert.equal(JSON.stringify(scene.toJSON()),before);assert.equal(morphGeometry.boundingBox,null);
+});
+test('clipping a source-scale crossing triangle preserves every nearby surface and remains fail-closed for obstruction',()=>{
+ const {scene,root,camera}=sceneFixture(),geometry=new T.BufferGeometry();
+ geometry.setAttribute('position',new T.Float32BufferAttribute([-9000,-9000,20,9000,-9000,20,0,9000,20],3));
+ const mesh=new T.Mesh(geometry,new T.MeshStandardMaterial({side:T.DoubleSide}));mesh.name='retained giant crossing surface';scene.add(mesh);scene.updateMatrixWorld(true);
+ const before=JSON.stringify(scene.toJSON()),observed=readStagedViewBounds(root,'107310050',camera,target);
+ assert.equal(observed.verticesRead,3);assert.equal(observed.refinementVerticesRead,3);assert.equal(observed.clippingPlanesRead,6);
+ assert(observed.refinementSteps<10000,'Long edges outside the query region must not consume its refinement budget');
+ assert(observed.boxes.every(box=>box.max.every((n,i)=>n-box.min[i]<=32+1e-8)));
+ for(let x=-80;x<=80;x+=8)for(let y=-60;y<=80;y+=7)if(Math.hypot(x,y-target.center[1],20)<=observed.range)assert(covers(observed.boxes,[x,y,20]));
+ assert.equal(scoreExteriorViewpoint(observed,[0,3.55,40]).blockedSamples,27,'Clipping must never manufacture a clear architectural view through the retained surface');
+ assert.equal(scoreExteriorViewpoint({...observed,boxes:[]},[0,3.55,40]).blockedSamples,0,'The fixture distinguishes a real blocker from empty space');
+ assert.equal(JSON.stringify(scene.toJSON()),before);assert.equal(geometry.boundingBox,null);assert.equal(geometry.boundingSphere,null);
+});
+test('the unchanged spatial work guard fails closed with attributable mesh and work counters',()=>{
+ const {scene,root,camera}=sceneFixture(),geometry=new T.BufferGeometry();
+ geometry.setAttribute('position',new T.Float32BufferAttribute([-9000,4,20,9000,4,20,0,4,20],3));
+ const mesh=new T.InstancedMesh(geometry,new T.MeshStandardMaterial(),2400);mesh.name='retained repeated degenerate surfaces';scene.add(mesh);scene.updateMatrixWorld(true);
+ const before=Array.from(mesh.instanceMatrix.array);
+ assert.throws(()=>readStagedViewBounds(root,'107310050',camera,target),error=>{
+  assert.match(error.message,/^View observation exceeds bounded spatial refinement /);
+  const receipt=JSON.parse(error.message.slice(error.message.indexOf('{')));
+  assert.equal(receipt.context.mesh,mesh.name);assert.equal(receipt.context.start,0);assert.equal(receipt.context.end,3);assert(Number.isInteger(receipt.context.instanceId));
+  assert.equal(receipt.refinementSteps,1000001);assert(receipt.verticesRead+receipt.refinementVerticesRead<20000000);assert(receipt.boxes<40000);assert(receipt.indexBlocksRead>0&&receipt.clippingPlanesRead>0);return true;
+ });
+ assert.deepEqual(Array.from(mesh.instanceMatrix.array),before);assert.equal(geometry.boundingBox,null);assert.equal(geometry.boundingSphere,null);
+});
+test('source river and Conservatory garden geometry fit the unchanged bound without removing their surfaces',async t=>{
+ const {scene,root,lod,camera}=sceneFixture(),map=JSON.parse(await readFile(new URL('../public/belle/map.json',import.meta.url),'utf8'));lod.name='107227742_STAGED_LODS';
+ const actor={x:1350.8787341500893,y:2,z:1125.3483974696717};camera.aspect=390/844;camera.position.set(actor.x,3.55,actor.z);camera.updateProjectionMatrix();camera.updateMatrixWorld(true);
+ const bounds={min:[1345.4098449882,2,1127.7273441438022],max:[1382.1501550118,11.822516441345215,1205.8886281462787],center:[1363.78,6.911258220672607,1166.8079861450406]};
+ const ring=riverFarRing(),farGeometry=new T.BufferGeometry();farGeometry.setAttribute('position',new T.Float32BufferAttribute(ring.positions,3));farGeometry.setIndex(ring.indices);
+ const far=new T.Mesh(farGeometry,new T.MeshBasicMaterial());far.name='source distant river';far.position.set(Math.round(actor.x/2)*2,0,Math.round(actor.z/2)*2);scene.add(far);
+ const nearGeometry=new T.PlaneGeometry(RIVER_PATCH_SIZE,RIVER_PATCH_SIZE,RIVER_PATCH_SEGMENTS,RIVER_PATCH_SEGMENTS).rotateX(-Math.PI/2);nearGeometry.setIndex(new T.BufferAttribute(flatRiverPatchIndex(),1));
+ const near=new T.Mesh(nearGeometry,new T.MeshBasicMaterial());near.name='source near river';near.position.copy(far.position);scene.add(near);
+ const garden=addConservatoryGarden(scene,map);garden.update(actor.x,actor.z);scene.updateMatrixWorld(true);
+ const vertices=Array.from(farGeometry.attributes.position.array),gardenVisibility=garden.root.visible,now=performance.now(),observed=readStagedViewBounds(root,'107227742',camera,bounds);
+ assert(observed.refinementSteps<250000&&observed.verticesRead+observed.refinementVerticesRead<20000000&&observed.boxes.length<40000);
+ assert(observed.indexBlocksRetained>0&&observed.clippingPlanesRead>0);assert(observed.boxes.some(box=>box.mesh===far.name));assert(observed.boxes.some(box=>box.mesh===near.name));
+ assert(observed.boxes.some(box=>garden.root.children.some(child=>child.uuid===box.uuid)),'The original nearby garden remains observed');
+ assert.deepEqual(Array.from(farGeometry.attributes.position.array),vertices);assert.equal(garden.root.visible,gardenVisibility);assert.equal(farGeometry.boundingBox,null);assert.equal(nearGeometry.boundingBox,null);
+ t.diagnostic(JSON.stringify({scope:'Source-generated water and garden at the failed native actor; not whole-world or native acceptance',boxes:observed.boxes.length,verticesRead:observed.verticesRead,refinementVerticesRead:observed.refinementVerticesRead,refinementSteps:observed.refinementSteps,indexBlocksRead:observed.indexBlocksRead,indexBlocksRetained:observed.indexBlocksRetained,clippingPlanesRead:observed.clippingPlanesRead,elapsedMs:performance.now()-now}));
 });

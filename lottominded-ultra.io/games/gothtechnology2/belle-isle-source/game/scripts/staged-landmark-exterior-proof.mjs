@@ -81,6 +81,35 @@ export async function partiallyCoalesceExteriorPath(start,waypoints,queries){
  return{clear:true,waypoints:selected,accepted,rejected,checkedLegs,end:current};
 }
 
+const exteriorShortcutLimits=Object.freeze({maximumAttempts:32,maximumLegChecks:128,maximumLookaheadWaypoints:16,maximumDistance:48});
+export const createExteriorShortcutBudget=()=>({...exteriorShortcutLimits,attempts:0,checkedLegs:0,trials:[]});
+
+/** Optional forward jumps retain the original route and total movement allowance.
+ * Every proposed direct path uses the complete unchanged executor preparation.
+ * Reserve its entire conservative 2.5m-chunk cost before starting: exhausting
+ * this additional read-only work budget can never approve an unchecked suffix.
+ * Rejected shortcuts leave the original waypoint available; query errors abort.
+ * The caller shares one budget across every actual-start replan for this view. */
+export async function prepareExteriorShortcut(from,waypoints,first,queries,budget){
+ const limits=exteriorShortcutLimits;
+ for(let span=Math.min(limits.maximumLookaheadWaypoints,waypoints.length-1-first);span>=1;span=Math.floor(span/2)){
+  if(budget.attempts>=limits.maximumAttempts)return first;
+  const target=first+span,length=distance(from,waypoints[target]),maximumLegs=Math.ceil(length/2.5);
+  if(length<=.4||length>limits.maximumDistance||budget.checkedLegs+maximumLegs>limits.maximumLegChecks)continue;
+  const trial={from:{...from},firstGridIndex:first,lastGridIndex:target,to:waypoints[target],maximumLegs,clear:null,checkedLegs:0};
+  budget.attempts++;budget.trials.push(trial);
+  try{
+   await queries.beforeShortcutAttempt?.(trial);
+   const checked=await checkExteriorProspectivePath(from,[waypoints[target]],queries);
+   assert(checked.checkedLegs<=maximumLegs,'Shortcut exceeded its conservative complete-path work reservation');
+   budget.checkedLegs+=checked.checkedLegs;Object.assign(trial,checked);
+   if(checked.clear)return target;
+  }catch(error){trial.error=String(error);throw error;}
+ }
+ return first;
+}
+
+
 /** Only yields independently clear proposals. Four actual-start replans are
  * shared across route replacements. A consumer failure closes this iterator,
  * so a real turn or post-keydown failure cannot initiate another plan. */
@@ -88,13 +117,22 @@ export async function* exteriorLegProposals({route,label,motion,phase,queryGroun
  const originalWaypointCount=route.originalWaypointCount??route.waypoints.length;
  assert(Number.isSafeInteger(originalWaypointCount)&&originalWaypointCount>0&&originalWaypointCount<=route.waypoints.length,'Invalid original waypoint allowance');
  Object.assign(receipt,{label,originalWaypointCount,maximumLegs:originalWaypointCount*80,maximumReplans:4,offeredLegs:0,replans:[],rejected:[]});
+ const shortcutBudget=receipt.shortcutPlanning={...createExteriorShortcutBudget(),enabled:route.layout==='phone'};
  let active=route,generation=0;
  for(;;){
   let replaced=false;
-  waypoints:for(const [index,waypoint]of active.waypoints.entries())for(let segment=0;segment<80;segment++){
+  waypoints:for(let index=0;index<active.waypoints.length;index++){
+   let waypoint=active.waypoints[index];
+   for(let segment=0;segment<80;segment++){
    const current=(await motion()).actor;if(distance(current,waypoint)<=.4)break;
+   const routeLabel=generation?label+'-replan-'+generation:label;
+   if(shortcutBudget.enabled&&segment===0){
+    index=await prepareExteriorShortcut(current,active.waypoints,index,{queryGround,querySweeps,
+     beforeShortcutAttempt:trial=>phase(routeLabel+'-shortcut-'+trial.firstGridIndex+'-'+trial.lastGridIndex)},shortcutBudget);
+    waypoint=active.waypoints[index];
+   }
    assert(receipt.offeredLegs<receipt.maximumLegs,'Native exterior route exceeded its original total leg allowance');
-   const routeLabel=generation?label+'-replan-'+generation:label,name=routeLabel+'-walk-'+index+'-'+segment;
+   const name=routeLabel+'-walk-'+index+'-'+segment;
    await phase(name+'-prospective');
    const [proposal]=await prepareExteriorLegs([{from:current,to:waypoint}],{queryGround,querySweeps});
    if(!proposal.clear){
@@ -109,6 +147,7 @@ export async function* exteriorLegProposals({route,label,motion,phase,queryGroun
    }
    receipt.offeredLegs++;yield{...proposal,name};
    if(segment===79)throw Error('Native exterior waypoint exceeded its bounded leg count');
+   }
   }
   if(!replaced)return;
  }
