@@ -1,0 +1,330 @@
+{
+  "schema": "minimap-fixed-schedule-v1",
+  "groups": [
+    "P1",
+    "P2",
+    "P3",
+    "P4",
+    "P5",
+    "P6",
+    "P7",
+    "P8"
+  ],
+  "checkpoints": [
+    {
+      "group": "P1",
+      "id": "p1-visible",
+      "pair": "p1",
+      "composition": true,
+      "readbacksPerCanvasBefore": 0,
+      "savedRawMutation": false,
+      "expectedRawEqual": true,
+      "expectedStateEqual": true,
+      "detector": false
+    },
+    {
+      "group": "P1",
+      "id": "p1-city",
+      "pair": "p1",
+      "composition": false,
+      "readbacksPerCanvasBefore": 1,
+      "savedRawMutation": false,
+      "expectedRawEqual": true,
+      "expectedStateEqual": true,
+      "detector": false
+    },
+    {
+      "group": "P1",
+      "id": "n1-byte-mutant",
+      "pair": "saved-p1",
+      "composition": false,
+      "readbacksPerCanvasBefore": 0,
+      "savedRawMutation": true,
+      "expectedRawEqual": false,
+      "expectedStateEqual": true,
+      "detector": true
+    },
+    {
+      "group": "P2",
+      "id": "p2-latest",
+      "pair": "p2",
+      "composition": true,
+      "readbacksPerCanvasBefore": 0,
+      "savedRawMutation": false,
+      "expectedRawEqual": true,
+      "expectedStateEqual": true,
+      "detector": false
+    },
+    {
+      "group": "P2",
+      "id": "p2-second-reveal",
+      "pair": "p2",
+      "composition": false,
+      "readbacksPerCanvasBefore": 1,
+      "savedRawMutation": false,
+      "expectedRawEqual": true,
+      "expectedStateEqual": true,
+      "detector": false
+    },
+    {
+      "group": "P3",
+      "id": "p3-guards",
+      "pair": "p3",
+      "composition": false,
+      "readbacksPerCanvasBefore": 0,
+      "savedRawMutation": false,
+      "expectedRawEqual": true,
+      "expectedStateEqual": true,
+      "detector": false
+    },
+    {
+      "group": "P3",
+      "id": "p3-collapse-reveal",
+      "pair": "p3",
+      "composition": false,
+      "readbacksPerCanvasBefore": 1,
+      "savedRawMutation": false,
+      "expectedRawEqual": true,
+      "expectedStateEqual": true,
+      "detector": false
+    },
+    {
+      "group": "P4",
+      "id": "p4-before-rebuild",
+      "pair": "p4-success",
+      "composition": false,
+      "readbacksPerCanvasBefore": 0,
+      "savedRawMutation": false,
+      "expectedRawEqual": true,
+      "expectedStateEqual": true,
+      "detector": false
+    },
+    {
+      "group": "P4",
+      "id": "p4-new-generation",
+      "pair": "p4-success",
+      "composition": false,
+      "readbacksPerCanvasBefore": 1,
+      "savedRawMutation": false,
+      "expectedRawEqual": true,
+      "expectedStateEqual": true,
+      "detector": false
+    },
+    {
+      "group": "P4",
+      "id": "p4-base-failure",
+      "pair": "p4-base-failure",
+      "composition": true,
+      "readbacksPerCanvasBefore": 0,
+      "savedRawMutation": false,
+      "expectedRawEqual": true,
+      "expectedStateEqual": true,
+      "detector": false
+    },
+    {
+      "group": "P4",
+      "id": "p4-drawimage-failure",
+      "pair": "p4-drawimage-failure",
+      "composition": false,
+      "readbacksPerCanvasBefore": 0,
+      "savedRawMutation": false,
+      "expectedRawEqual": true,
+      "expectedStateEqual": true,
+      "detector": false
+    },
+    {
+      "group": "P5",
+      "id": "p5-partial",
+      "pair": "p5",
+      "composition": true,
+      "readbacksPerCanvasBefore": 0,
+      "savedRawMutation": false,
+      "expectedRawEqual": true,
+      "expectedStateEqual": true,
+      "detector": false
+    },
+    {
+      "group": "P5",
+      "id": "p5-continuation",
+      "pair": "p5",
+      "composition": false,
+      "readbacksPerCanvasBefore": 1,
+      "savedRawMutation": false,
+      "expectedRawEqual": true,
+      "expectedStateEqual": true,
+      "detector": false
+    },
+    {
+      "group": "P6",
+      "id": "p6-cap",
+      "pair": "p6-cap",
+      "composition": false,
+      "readbacksPerCanvasBefore": 0,
+      "savedRawMutation": false,
+      "expectedRawEqual": true,
+      "expectedStateEqual": true,
+      "detector": false
+    },
+    {
+      "group": "P6",
+      "id": "p6-after-cap",
+      "pair": "p6-cap",
+      "composition": false,
+      "readbacksPerCanvasBefore": 1,
+      "savedRawMutation": false,
+      "expectedRawEqual": true,
+      "expectedStateEqual": true,
+      "detector": false
+    },
+    {
+      "group": "P6",
+      "id": "p6-unsupported",
+      "pair": "p6-unsupported",
+      "composition": false,
+      "readbacksPerCanvasBefore": 0,
+      "savedRawMutation": false,
+      "expectedRawEqual": true,
+      "expectedStateEqual": true,
+      "detector": false
+    },
+    {
+      "group": "P7",
+      "id": "p7-canonical",
+      "pair": "p7",
+      "composition": false,
+      "readbacksPerCanvasBefore": 0,
+      "savedRawMutation": false,
+      "expectedRawEqual": true,
+      "expectedStateEqual": true,
+      "detector": false
+    },
+    {
+      "group": "P7",
+      "id": "p7-path-continuation",
+      "pair": "p7",
+      "composition": false,
+      "readbacksPerCanvasBefore": 1,
+      "savedRawMutation": false,
+      "expectedRawEqual": true,
+      "expectedStateEqual": true,
+      "detector": false
+    },
+    {
+      "group": "P7",
+      "id": "n2-state-only",
+      "pair": "p7",
+      "composition": false,
+      "readbacksPerCanvasBefore": 2,
+      "savedRawMutation": false,
+      "expectedRawEqual": true,
+      "expectedStateEqual": false,
+      "detector": true
+    },
+    {
+      "group": "P7",
+      "id": "n3-current-path",
+      "pair": "p7",
+      "composition": false,
+      "readbacksPerCanvasBefore": 3,
+      "savedRawMutation": false,
+      "expectedRawEqual": false,
+      "expectedStateEqual": true,
+      "detector": true
+    },
+    {
+      "group": "P7",
+      "id": "p7-arc-error",
+      "pair": "p7-arc-error",
+      "composition": false,
+      "readbacksPerCanvasBefore": 0,
+      "savedRawMutation": false,
+      "expectedRawEqual": true,
+      "expectedStateEqual": true,
+      "detector": false
+    },
+    {
+      "group": "P7",
+      "id": "p7-arc-continuation",
+      "pair": "p7-arc-error",
+      "composition": false,
+      "readbacksPerCanvasBefore": 1,
+      "savedRawMutation": false,
+      "expectedRawEqual": true,
+      "expectedStateEqual": true,
+      "detector": false
+    },
+    {
+      "group": "P8",
+      "id": "p8-source-reset",
+      "pair": "p8-source-reset",
+      "composition": false,
+      "readbacksPerCanvasBefore": 0,
+      "savedRawMutation": false,
+      "expectedRawEqual": true,
+      "expectedStateEqual": true,
+      "detector": false
+    },
+    {
+      "group": "P8",
+      "id": "p8-native-reset",
+      "pair": "p8-native-reset",
+      "composition": false,
+      "readbacksPerCanvasBefore": 0,
+      "savedRawMutation": false,
+      "expectedRawEqual": true,
+      "expectedStateEqual": true,
+      "detector": false
+    },
+    {
+      "group": "P8",
+      "id": "p8-after-reset",
+      "pair": "p8-native-reset",
+      "composition": false,
+      "readbacksPerCanvasBefore": 1,
+      "savedRawMutation": false,
+      "expectedRawEqual": true,
+      "expectedStateEqual": true,
+      "detector": false
+    },
+    {
+      "group": "P8",
+      "id": "p8-loss-listener",
+      "pair": "p8-loss-listener",
+      "composition": false,
+      "readbacksPerCanvasBefore": 0,
+      "savedRawMutation": false,
+      "expectedRawEqual": true,
+      "expectedStateEqual": true,
+      "detector": false
+    }
+  ],
+  "compositionIds": [
+    "p1-visible",
+    "p2-latest",
+    "p4-base-failure",
+    "p5-partial"
+  ],
+  "detectors": [
+    "n1-byte-mutant",
+    "n2-state-only",
+    "n3-current-path"
+  ],
+  "compositionPixelDetector": {
+    "checkpoint": "p1-visible",
+    "actualCanvas": "third-candidate-source-target",
+    "nativeMutation": {
+      "x": 1,
+      "y": 1,
+      "width": 1,
+      "height": 1,
+      "fillStyle": "#ff00ff"
+    },
+    "additionalScreenshotCount": 0
+  },
+  "staleImageDetector": {
+    "firstReference": "p1-visible",
+    "latest": "p2-latest",
+    "mustDiffer": true
+  },
+  "compositionReadbackRule": "No getImageData or other readback on either target in the pair before its first native screenshot. Native background raw checks occur only on p4-success."
+}
