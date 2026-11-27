@@ -244,7 +244,9 @@ class NativeMonitor {
     clearInterval(this.checkpointTimer); clearTimeout(this.watchdog);
     state.phase = 'stopping'; state.stopReason = reason;
     if (reason !== 'original-ending-metrics') invalidateDiagnostic(state, 'stop-' + reason);
-    await event('capture-stopping', {reason});
+    // A blocked metadata queue must not delay stopping either browser recorder.
+    // Final flush still validates every queued event and status write.
+    void event('capture-stopping', {reason});
     // Each result is saved independently. A trace/clock failure cannot discard
     // a successfully returned CPU profile.
     const tasks = [];

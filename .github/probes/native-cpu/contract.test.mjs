@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
+import {readFile} from 'node:fs/promises';
+import {resolve} from 'node:path';
 import {manifest, selectCase, verifyDriver, buildStatisticOnly, bounded, invalidateDiagnostic,
   finalizeDiagnostic, diagnosticStateIsClean, terminalDiagnosticReceipt, diagnosticRunIsClean,
   boundedDiagnosticCleanup} from './common.mjs';
@@ -136,6 +138,44 @@ test('cleanup deadline covers trailing persistence and never waits on the blocke
   assert.equal(persistenceCalls, 1);
   assert.equal(state.complete, false); assert.equal(state.partial, true);
   assert.equal(terminal.complete, false); assert.equal(terminal.partial, true);
+});
+test('a blocked event-write queue cannot delay either recorder stop or raw CPU persistence', async () => {
+  // Exercise the actual production monitor methods without running its preload,
+  // loading Playwright, opening a browser, or changing any source-driver code.
+  const source = await readFile(new URL('./preload.mjs', import.meta.url), 'utf8');
+  const start = source.indexOf('class NativeMonitor {');
+  const end = source.indexOf('\ninstallHooks(', start);
+  assert(start >= 0 && end > start, 'The production monitor class must be available');
+  const state = finalState(), calls = [], saved = [], events = [];
+  const blockedWrite = new Promise(() => {});
+  const profile = {nodes: [{id: 1}], samples: [1], timeDeltas: [2000], startTime: 0, endTime: 3000};
+  const NativeMonitor = vm.runInNewContext(source.slice(start, end) + '\nNativeMonitor;', {
+    assert, Buffer, resolve, state, limits: manifest.bounds, output: '/source-only-evidence',
+    clearTimeout() {}, clearInterval() {},
+    bounded: promise => promise,
+    event(name) { events.push(name); return blockedWrite; },
+    failure(where, error) { throw Error(where + ': ' + error); },
+    async writeFile(path, bytes) { saved.push({path, profile: JSON.parse(bytes.toString())}); },
+    sha256: () => 'source-only-profile-hash'
+  });
+  const monitor = new NativeMonitor({});
+  monitor.profilerStarted = true; monitor.traceStarted = true;
+  monitor.traceDone = new Promise(() => {});
+  monitor.cdp = {async send(method) {
+    calls.push(method);
+    return method === 'Profiler.stop' ? {profile} : {};
+  }};
+  let finished = false;
+  const pending = monitor.finish('original-ending-metrics');
+  void pending.then(() => { finished = true; });
+  assert.deepEqual(calls, ['Profiler.stop', 'Tracing.end'], 'Both stops must be issued before any event write can settle');
+  await new Promise(setImmediate);
+  assert.equal(saved.length, 1);
+  assert.equal(saved[0].path, '/source-only-evidence/native.cpuprofile');
+  assert.deepEqual(saved[0].profile, profile);
+  assert.deepEqual(events, ['capture-stopping', 'cpu-profile-saved']);
+  assert.equal(finished, false, 'The deliberately blocked queue still prevents complete finalization');
+  assert.equal(state.complete, false);
 });
 
 function fakeBrowser() {
