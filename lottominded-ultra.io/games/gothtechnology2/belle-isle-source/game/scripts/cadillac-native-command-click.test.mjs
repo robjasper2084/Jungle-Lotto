@@ -92,7 +92,9 @@ function fixture(options={}){
   async dispose(){f.elementDisposed=true;calls.push('dispose-element');}
  };
  const locator={async elementHandle({timeout}){assert(timeout>0&&timeout<=90000);calls.push('resolve');return elementHandle;}};
- const page={mouse:{
+ const cdp={async send(method){calls.push(['cdp',method]);await f.onProtocol?.(method);},
+  async detach(){calls.push(['cdp','detach']);await f.onProtocol?.('detach');}};
+ const page={context:()=>({async newCDPSession(target){assert.equal(target,page);calls.push(['cdp','newCDPSession']);return await f.onCDPSession?.()??cdp;}}),mouse:{
   async move(x,y){calls.push(['move',x,y]);await f.onHover?.();},
   async click(x,y,config){
    calls.push(['click',x,y,config]);assert.deepEqual(config,{button:'left',clickCount:1});
@@ -104,7 +106,7 @@ function fixture(options={}){
   assert.equal(handle,elementHandle,'Both proofs retain the original actual element');assert.deepEqual(rest,[],'No owner-selector shortcut is allowed');
   calls.push(['proof',label]);const rect={...button.rect};await f.onProof?.(calls.filter(call=>call[0]==='proof').length);return{rect};
  };
- f.run=(extra={})=>clickCadillacCommand({page,locator,targetProof,record:audit=>audits.push(audit),now:f.now,...extra});
+ f.cdp=cdp;f.run=(extra={})=>clickCadillacCommand({page,locator,targetProof,record:audit=>audits.push(audit),now:f.now,...extra});
  return f;
 }
 function cleaned(f){assert.equal(f.listenerCount(),0);assert.equal(f.sessionDisposed,true);assert.equal(f.elementDisposed,true);}
@@ -132,6 +134,116 @@ test('only the 17 actual command buttons enter the scoped native path',()=>{
 test('out-of-scope controls leave native dispatch and receipts untouched',async()=>{
  const f=fixture({id:'hydraulic-mode-toggle'});assert.equal(await f.run(),false);cleaned(f);
  assert.equal(clicks(f).length,0);assert.equal(f.audits.length,0);assert.equal(f.calls.filter(call=>call[0]==='proof').length,0);
+ assert.equal(f.calls.filter(call=>call[0]==='cdp').length,0);
+});
+
+test('only the awaited native hover uses unbuffered input; both proofs and click use restored domains',async()=>{
+ const f=fixture(),clock=caseClock(f);let dom=false,overlay=false,detached=false,hovered=false;
+ f.onProtocol=method=>{
+  if(method==='DOM.enable'){assert.equal(dom,false);dom=true;}
+  if(method==='Overlay.enable'){assert.equal(dom,true);overlay=true;}
+  if(method==='Overlay.disable')overlay=false;
+  if(method==='DOM.disable')dom=false;
+  if(method==='detach'){assert.equal(dom,false);assert.equal(overlay,false);detached=true;}
+ };
+ f.onProof=count=>{assert.equal(overlay,false);assert.equal(dom,false);if(count===2)assert(hovered&&detached);};
+ f.onHover=()=>{assert(dom&&overlay&&!detached);hovered=true;};
+ f.onClick=()=>{assert(hovered&&detached);assert.equal(overlay,false);assert.equal(dom,false);};
+ assert.equal(await f.run({caseLifecycle:clock.lifecycle}),true);cleaned(f);
+ assert.deepEqual(f.calls.filter(call=>call[0]==='cdp').map(call=>call[1]),
+  ['newCDPSession','DOM.enable','Overlay.enable','Overlay.disable','DOM.disable','detach']);
+ assert.deepEqual(clock.lifecycle.snapshot().inputs.map(input=>input.label),['command mouse.move hydraulic-front-up','command mouse.click hydraulic-front-up']);
+ const audit=f.audits[0].hoverScheduling;assert.equal(audit.restored,true);assert.equal(audit.detached,true);assert.equal(audit.error,null);
+ assert(audit.operations.every(operation=>operation.outcome==='completed'));clock.lifecycle.stop();
+});
+
+test('unsupported or rejected setup restores its fresh session without hover, second proof or click',async()=>{
+ for(const stage of ['DOM.enable','Overlay.enable']){
+  const f=fixture(),error=Error(stage+' failed');f.onProtocol=method=>{if(method===stage)throw error;};
+  await assert.rejects(f.run(),caught=>caught===error);cleaned(f);
+  assert.equal(f.calls.filter(call=>call[0]==='move').length,0);assert.equal(clicks(f).length,0);
+  assert.equal(f.calls.filter(call=>call[0]==='proof').length,1);
+  for(const method of ['Overlay.disable','DOM.disable','detach'])assert.equal(f.calls.filter(call=>call[0]==='cdp'&&call[1]===method).length,1);
+  assert.equal(f.audits[0].accepted,false);assert.equal(f.audits[0].hoverScheduling.restored,true);
+ }
+});
+
+test('native hover rejection retains its error, restores scheduling and never tries a click',async()=>{
+ const f=fixture(),error=Error('native move delivery uncertain');f.onHover=()=>{throw error;};
+ await assert.rejects(f.run(),caught=>caught===error);cleaned(f);assert.equal(clicks(f).length,0);
+ assert.equal(f.calls.filter(call=>call[0]==='move').length,1);assert.equal(f.calls.filter(call=>call[0]==='proof').length,1);
+ assert.equal(f.audits[0].hoverScheduling.restored,true);assert.equal(f.audits[0].hoverScheduling.detached,true);
+});
+
+test('any restoration rejection fails closed, attempts detach and never repeats a protocol command',async()=>{
+ for(const stage of ['Overlay.disable','DOM.disable','detach']){
+  const f=fixture(),error=Error(stage+' failed');f.onProtocol=method=>{if(method===stage)throw error;};
+  await assert.rejects(f.run(),caught=>caught===error);cleaned(f);assert.equal(clicks(f).length,0);
+  assert.equal(f.calls.filter(call=>call[0]==='proof').length,1);
+  for(const method of ['Overlay.disable','DOM.disable','detach'])assert.equal(f.calls.filter(call=>call[0]==='cdp'&&call[1]===method).length,1);
+  assert.match(f.audits[0].hoverScheduling.cleanupError,/uncertain/);assert.equal(f.audits[0].accepted,false);
+ }
+});
+
+test('setup finishing beyond the original action budget cannot issue the native hover',async()=>{
+ const f=fixture();f.onProtocol=method=>{if(method==='Overlay.enable')f.advance(90001);};
+ await assert.rejects(f.run(),/hover.*deadline/);cleaned(f);assert.equal(clicks(f).length,0);
+ assert.equal(f.calls.filter(call=>call[0]==='move').length,0);
+ assert(f.calls.some(call=>call[0]==='cdp'&&call[1]==='Overlay.disable'));
+ assert(f.calls.some(call=>call[0]==='cdp'&&call[1]==='detach'));
+});
+
+test('case stop during session creation or setup cannot activate a later input stage',async()=>{
+ for(const stage of ['newCDPSession','DOM.enable','Overlay.enable']){
+  const f=fixture(),clock=caseClock(f),pending=deferred(),entered=deferred();
+  if(stage==='newCDPSession')f.onCDPSession=()=>{entered.resolve();return pending.promise;};
+  else f.onProtocol=method=>{if(method===stage){entered.resolve();return pending.promise;}};
+  const running=f.run({caseLifecycle:clock.lifecycle});await entered.promise;clock.expire();
+  await assert.rejects(running,/case exceeded its deadline/);cleaned(f);
+  const saved=structuredClone(f.audits[0]);pending.resolve(stage==='newCDPSession'?f.cdp:undefined);await flush();
+  assert.equal(f.calls.filter(call=>call[0]==='move').length,0);assert.equal(clicks(f).length,0);
+  assert.equal(f.calls.filter(call=>call[0]==='cdp'&&call[1]==='detach').length,1);
+  if(stage!=='Overlay.enable')assert.equal(f.calls.filter(call=>call[0]==='cdp'&&call[1]==='Overlay.enable').length,0);
+  assert.deepEqual(f.audits[0],saved,'Late setup cannot rewrite the finalized command audit');
+ }
+});
+
+test('a blocked restore cannot hold case cleanup or postpone detach behind its response',async()=>{
+ const f=fixture(),clock=caseClock(f),pending=deferred(),entered=deferred();
+ f.onProtocol=method=>{if(method==='Overlay.disable'){entered.resolve();return pending.promise;}};
+ const running=f.run({caseLifecycle:clock.lifecycle});await entered.promise;clock.expire();
+ await assert.rejects(running,/case exceeded its deadline/);cleaned(f);
+ assert(f.calls.some(call=>call[0]==='cdp'&&call[1]==='DOM.disable'));
+ assert(f.calls.some(call=>call[0]==='cdp'&&call[1]==='detach'));
+ assert.equal(f.calls.filter(call=>call[0]==='proof').length,1);assert.equal(clicks(f).length,0);
+ const saved=structuredClone(f.audits[0]);assert.equal(saved.hoverScheduling.restored,false);
+ assert.match(saved.hoverScheduling.cleanupError,/no remaining cleanup budget/);
+ pending.resolve();await flush();assert.equal(clicks(f).length,0);assert.deepEqual(f.audits[0],saved);
+});
+
+test('a blocked detach is terminal at case stop and its late completion cannot resume proof or click',async()=>{
+ const f=fixture(),clock=caseClock(f),pending=deferred(),entered=deferred();
+ f.onProtocol=method=>{if(method==='detach'){entered.resolve();return pending.promise;}};
+ const running=f.run({caseLifecycle:clock.lifecycle});await entered.promise;clock.expire();
+ await assert.rejects(running,/case exceeded its deadline/);cleaned(f);assert.equal(clicks(f).length,0);
+ const saved=structuredClone(f.audits[0]);assert.equal(saved.hoverScheduling.restored,true);assert.equal(saved.hoverScheduling.detached,false);
+ pending.resolve();await flush();assert.equal(f.calls.filter(call=>call[0]==='proof').length,1);assert.deepEqual(f.audits[0],saved);
+});
+
+test('the original action deadline bounds a stalled restoration without granting a second action window',async t=>{
+ t.mock.timers.enable({apis:['setTimeout']});
+ const f=fixture(),pending=deferred(),entered=deferred();
+ f.onProtocol=method=>{if(method==='Overlay.disable'){entered.resolve();return pending.promise;}};
+ const running=f.run({timeout:25});await entered.promise;f.advance(25);t.mock.timers.tick(25);
+ await assert.rejects(running,/hover restore domains.*deadline/);cleaned(f);
+ assert.equal(clicks(f).length,0);assert(f.calls.some(call=>call[0]==='cdp'&&call[1]==='detach'));
+ pending.resolve();await flush();assert.equal(clicks(f).length,0);assert.equal(f.audits[0].accepted,false);
+});
+
+test('geometry changes during scheduling restoration are rejected by the unchanged post-hover guard',async()=>{
+ const f=fixture();f.onProtocol=method=>{if(method==='DOM.disable')f.button.rect=box(101,100);};
+ await assert.rejects(f.run(),/moved/);cleaned(f);assert.equal(clicks(f).length,0);
+ assert.equal(f.audits[0].hoverScheduling.restored,true);assert.equal(f.audits[0].hoverScheduling.detached,true);
 });
 
 test('native hover, both actual-button proofs and one primary-left sequence pass even when click hides the panel',async()=>{
@@ -210,8 +322,8 @@ test('readiness does not relax disabled-fieldset, inert or post-readiness state 
 
 test('an already issued native click that times out is never retried after its late completion',async t=>{
  t.mock.timers.enable({apis:['setTimeout']});
- const f=fixture(),delivery=deferred();f.dispatch=async()=>{f.emit('pointerdown');await delivery.promise;f.emit('pointerup');f.emit('click');};
- const running=f.run({timeout:25});await flush();assert.equal(clicks(f).length,1);
+ const f=fixture(),delivery=deferred(),issued=deferred();f.dispatch=async()=>{f.emit('pointerdown');issued.resolve();await delivery.promise;f.emit('pointerup');f.emit('click');};
+ const running=f.run({timeout:25});await issued.promise;assert.equal(clicks(f).length,1);
  f.advance(25);t.mock.timers.tick(25);await assert.rejects(running,/dispatch.*deadline/);cleaned(f);
  assert.equal(f.audits[0].dispatchAttempted,true);assert.equal(f.audits[0].receipts.totalEvents,1);
  delivery.resolve();await flush();assert.equal(clicks(f).length,1);assert.equal(f.audits[0].receipts.totalEvents,1);
@@ -375,9 +487,10 @@ test('the case deadline clips readiness and abandons late preflight before hover
 
 test('case stop during hover or the second proof never resumes into a native click',async()=>{
  for(const stage of ['hover','second proof']){
-  const f=fixture(),clock=caseClock(f),pending=deferred();
-  if(stage==='hover')f.onHover=()=>pending.promise;else f.onProof=count=>count===2?pending.promise:undefined;
-  const running=f.run({caseLifecycle:clock.lifecycle});await flush();assert.equal(f.calls.filter(call=>call[0]==='move').length,1);
+  const f=fixture(),clock=caseClock(f),pending=deferred(),entered=deferred();
+  if(stage==='hover')f.onHover=()=>{entered.resolve();return pending.promise;};
+  else f.onProof=count=>{if(count===2){entered.resolve();return pending.promise;}};
+  const running=f.run({caseLifecycle:clock.lifecycle});await entered.promise;assert.equal(f.calls.filter(call=>call[0]==='move').length,1);
   clock.expire();await assert.rejects(running,/case exceeded its deadline/);cleaned(f);
   pending.resolve();await flush();assert.equal(clicks(f).length,0);assert.equal(f.audits[0].accepted,false);
  }
