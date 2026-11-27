@@ -1,16 +1,17 @@
 import * as T from 'three';
 import type {LakeHabitatPlan,LakePlant} from './lakeHabitatPlan.ts';
+import {cacheStaticLocalTransform} from './staticLocalTransform.ts';
 
 /** Shared low-poly habitat, tiled for culling; no animation or extra lights. */
 export async function addLakeHabitat(scene:T.Scene){
  const plans:LakeHabitatPlan[]=await Promise.all(['okonoka','heron'].map(async name=>{const r=await fetch('./belle/nature/'+name+'.json');if(!r.ok)throw Error('Lake habitat '+r.status);return r.json();}));
  const plan={reeds:plans.flatMap(p=>p.reeds),pads:plans.flatMap(p=>p.pads),logs:plans.flatMap(p=>p.logs),rocks:plans.flatMap(p=>p.rocks||[])},tiles:{root:T.Group;x:number;z:number}[]=[],groups=new Map<string,T.Group>();
- const getTile=(x:number,z:number)=>{const key=Math.floor(x/96)+','+Math.floor(z/96);if(!groups.has(key)){const group=new T.Group();group.name='Lake and lagoon habitat '+key;scene.add(group);groups.set(key,group);tiles.push({root:group,x:Math.floor(x/96)*96+48,z:Math.floor(z/96)*96+48});}return groups.get(key)!;};
+ const getTile=(x:number,z:number)=>{const key=Math.floor(x/96)+','+Math.floor(z/96);if(!groups.has(key)){const group=new T.Group();group.name='Lake and lagoon habitat '+key;scene.add(cacheStaticLocalTransform(group));groups.set(key,group);tiles.push({root:group,x:Math.floor(x/96)*96+48,z:Math.floor(z/96)*96+48});}return groups.get(key)!;};
  const dummy=new T.Object3D(),tint=new T.Color();
  function scatter(items:LakePlant[],geometry:T.BufferGeometry,material:T.Material,name:string){
   const batches=new Map<T.Group,LakePlant[]>();for(const p of items){const group=getTile(p.x,p.z);if(!batches.has(group))batches.set(group,[]);batches.get(group)!.push(p);}
   for(const [group,plants]of batches){const mesh=new T.InstancedMesh(geometry,material,plants.length);mesh.name=name;mesh.receiveShadow=true;
-   plants.forEach((p,i)=>{dummy.position.set(p.x,p.y,p.z);dummy.rotation.set(0,p.yaw,0);dummy.scale.setScalar(p.size);dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);mesh.setColorAt(i,tint.setScalar(p.tint));});mesh.computeBoundingSphere();group.add(mesh);
+   plants.forEach((p,i)=>{dummy.position.set(p.x,p.y,p.z);dummy.rotation.set(0,p.yaw,0);dummy.scale.setScalar(p.size);dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);mesh.setColorAt(i,tint.setScalar(p.tint));});mesh.computeBoundingSphere();group.add(cacheStaticLocalTransform(mesh));
   }
  }
  const verts:number[]=[];for(let i=0;i<10;i++){const a=i*2.399,r=.12+(i%3)*.06,x=Math.cos(a)*r,z=Math.sin(a)*r,h=.58+(i%4)*.14;verts.push(x-.025,0,z,x+.025,0,z,x*1.6,h*.6,z*1.6,x+.025,0,z,x*2.1,h,z*2.1,x*1.6,h*.6,z*1.6);}
@@ -28,6 +29,6 @@ export async function addLakeHabitat(scene:T.Scene){
  const logBatches=new Map<T.Group,T.Matrix4[]>();
  function logPart(start:T.Vector3,end:T.Vector3,r:number){const center=start.clone().add(end).multiplyScalar(.5),group=getTile(center.x,center.z);if(!logBatches.has(group))logBatches.set(group,[]);dummy.position.copy(center);dummy.quaternion.setFromUnitVectors(axis,end.clone().sub(start).normalize());dummy.scale.set(r,start.distanceTo(end),r);dummy.updateMatrix();logBatches.get(group)!.push(dummy.matrix.clone());}
  for(const log of plan.logs){a.fromArray(log.a);b.fromArray(log.b);logPart(a,b,log.radius);const center=a.clone().lerp(b,.25),dir=b.clone().sub(a).normalize();for(const side of [-1,1])logPart(center,center.clone().add(new T.Vector3(dir.z*side*.55,.3,-dir.x*side*.55)),log.radius*.38);}
- for(const [group,matrices]of logBatches){const mesh=new T.InstancedMesh(cylinder,[bark,cut,cut],matrices.length);matrices.forEach((m,i)=>mesh.setMatrixAt(i,m));mesh.name='Fallen basking timber';mesh.computeBoundingSphere();group.add(mesh);}
+ for(const [group,matrices]of logBatches){const mesh=new T.InstancedMesh(cylinder,[bark,cut,cut],matrices.length);matrices.forEach((m,i)=>mesh.setMatrixAt(i,m));mesh.name='Fallen basking timber';mesh.computeBoundingSphere();group.add(cacheStaticLocalTransform(mesh));}
  return{stats:{rocks:plan.rocks.length,reeds:plan.reeds.length,pads:plan.pads.length,logs:plan.logs.length,tiles:tiles.length},update(x:number,z:number){for(const tile of tiles)tile.root.visible=Math.hypot(tile.x-x,tile.z-z)<400;}};
 }
