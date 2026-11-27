@@ -1,0 +1,65 @@
+name: Belle Isle fixed scenery exact pixel equivalence
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/belle-fixed-scenery-proof.yml'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/staticLocalTransform*'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/streetDetails.ts'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/gardens.ts'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/lakeHabitat.ts'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/fixed-scenery-*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: belle-fixed-scenery-proof-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FIXED_SCENERY_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+
+jobs:
+  pixels:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-15]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.FIXED_SCENERY_SOURCE_SHA }}
+          fetch-depth: 2
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /AGENTS.md
+            /.github/workflows/belle-fixed-scenery-proof.yml
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install the existing locked game and browser dependencies
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          test "$(git rev-parse HEAD)" = "$FIXED_SCENERY_SOURCE_SHA"
+          npm ci
+          npx playwright install --with-deps chrome
+          cd belle-isle-source/game
+          npm ci
+      - name: Compare twelve actual scenery views with strict positive controls
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: node scripts/fixed-scenery-native-proof.mjs
+      - name: Preserve source, native pixels and geometric receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-fixed-scenery-pixels-${{ matrix.os }}-${{ env.FIXED_SCENERY_SOURCE_SHA }}
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/fixed-scenery-proof/
+          if-no-files-found: error
+          retention-days: 14

@@ -4,6 +4,12 @@ import {createOpenDialogState} from './openDialogState.ts';
 
 const changed={type:'childList'} as MutationRecord;
 const opened={type:'attributes',attributeName:'open'} as MutationRecord;
+const childList=(added:number[],removed:number[])=>({type:'childList',
+ addedNodes:added.map(nodeType=>({nodeType})),removedNodes:removed.map(nodeType=>({nodeType})),
+}) as unknown as MutationRecord;
+const attribute=(localName:string,nodeType=1)=>({type:'attributes',attributeName:'open',
+ target:{nodeType,localName},
+}) as unknown as MutationRecord;
 function fixture(initial=false){
  let present=initial,queries=0,drains=0,disconnects=0,queryError:unknown,drainError:unknown;
  let queued:MutationRecord[]=[];
@@ -32,6 +38,67 @@ test('unchanged reads eliminate repeated selector scans while draining every pen
  const f=fixture();
  for(let i=0;i<10000;i++)assert.equal(f.hasOpenDialog(),false);
  assert.equal(f.queries(),1);assert.equal(f.drains(),10000);
+});
+
+test('text and comment replacements retain presence without rescanning, before and after delivery',()=>{
+ for(const initial of [false,true]){
+  const f=fixture(initial);assert.equal(f.hasOpenDialog(),initial);
+  for(let i=0;i<1000;i++){
+   f.mutate(initial,childList(i%2?[3,8]:[3],i%2?[8]:[3]));
+   if(i%2)f.deliver();
+   assert.equal(f.hasOpenDialog(),initial);
+  }
+  assert.equal(f.queries(),1);assert.equal(f.drains(),1001);
+ }
+});
+
+test('known non-dialog open attributes do not invalidate cached presence',()=>{
+ for(const initial of [false,true]){
+  const f=fixture(initial);assert.equal(f.hasOpenDialog(),initial);
+  for(const name of ['details','input','section','svg']){
+   f.mutate(initial,attribute(name));assert.equal(f.hasOpenDialog(),initial);
+   f.mutate(initial,attribute(name));f.deliver();assert.equal(f.hasOpenDialog(),initial);
+  }
+  assert.equal(f.queries(),1);
+ }
+});
+
+test('relevant transitions in a mixed mutation batch remain synchronous and delivered transitions invalidate',()=>{
+ const f=fixture();assert.equal(f.hasOpenDialog(),false);
+ f.mutate(false,childList([3],[3]));f.mutate(true,attribute('dialog'));
+ f.mutate(true,attribute('details'));assert.equal(f.hasOpenDialog(),true);
+ f.mutate(true,childList([8],[3]));f.mutate(false,attribute('dialog'));
+ f.mutate(false,childList([3],[8]));f.deliver();assert.equal(f.hasOpenDialog(),false);
+ assert.equal(f.queries(),3);
+});
+
+test('every element insertion or removal invalidates, regardless of mutable descendants',()=>{
+ const f=fixture();assert.equal(f.hasOpenDialog(),false);
+ for(const [present,record] of [[true,childList([1],[])],[false,childList([],[1])],
+  [true,childList([3,1],[8])],[false,childList([3],[8,1])]] as const){
+  f.mutate(present,record);assert.equal(f.hasOpenDialog(),present);
+ }
+ assert.equal(f.queries(),5);
+});
+
+test('incomplete, unfamiliar and non-element attribute records conservatively invalidate',()=>{
+ const f=fixture();let present=false;assert.equal(f.hasOpenDialog(),present);
+ const unknown=[changed,opened,attribute('dialog'),attribute('DIALOG'),attribute('details',9),
+  attribute(''),childList([11],[]),{type:'unrecognized'} as unknown as MutationRecord,
+  {type:'childList',addedNodes:[{}],removedNodes:[]} as unknown as MutationRecord];
+ for(const record of unknown){present=!present;f.mutate(present,record);assert.equal(f.hasOpenDialog(),present);}
+ assert.equal(f.queries(),unknown.length+1);
+});
+
+test('mutation inspection failures disable caching for both queued and delivered records',()=>{
+ const unreadable={get type(){throw Error('unreadable record');}} as unknown as MutationRecord;
+ for(const deliver of [false,true]){
+  const f=fixture();assert.equal(f.hasOpenDialog(),false);
+  f.mutate(true,unreadable);if(deliver)f.deliver();
+  assert.equal(f.hasOpenDialog(),true);assert.equal(f.disconnects(),1);
+  f.mutate(false,childList([3],[3]));assert.equal(f.hasOpenDialog(),false);
+  assert.equal(f.queries(),3);
+ }
 });
 
 test('same-task opening and closing are visible before observer delivery',()=>{

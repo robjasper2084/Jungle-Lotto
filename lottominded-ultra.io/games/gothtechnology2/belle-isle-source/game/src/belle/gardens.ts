@@ -2,6 +2,7 @@ import * as T from 'three';
 import type {GardenPlan,GardenPlant} from './gardenPlan.ts';
 import {gardenBotany} from './gardenBotany.ts';
 import {OUDOLF_COLORS,type GardenForm} from './oudolf.ts';
+import {cacheStaticLocalTransform} from './staticLocalTransform.ts';
 
 /** Small opaque meshes, shared by every plant; no alpha overdraw, animation,
  * individual scene objects or new image downloads. Tile culling bounds cost. */
@@ -66,7 +67,7 @@ export async function addGardens(scene:T.Scene){
    const mesh=new T.InstancedMesh(g,mat,plants.length);mesh.name=(flower?'Seasonal flowers ':'Garden foliage ')+key;mesh.receiveShadow=true;
    plants.forEach((p,i)=>{dummy.position.set(p.x,p.y,p.z);dummy.rotation.y=p.yaw;dummy.scale.set(p.spread,p.height,p.spread);dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);const color=flower?new T.Color(p.form?OUDOLF_COLORS[p.form]:palette[p.palette]):p.form?new T.Color(leafColors[p.form]).multiplyScalar(.84+(i%5)*.08):new T.Color().setHSL(.22+(i%4)*.012,.30,.22+(i%5)*.017);mesh.setColorAt(i,color);});
    triangles+=plants.length*g.attributes.position.count/3;
-   mesh.computeBoundingSphere();scene.add(mesh);tiles.push({mesh,x:tx*48+24,z:tz*48+24,count:plants.length,detailed:!!form});
+   mesh.computeBoundingSphere();scene.add(cacheStaticLocalTransform(mesh));tiles.push({mesh,x:tx*48+24,z:tz*48+24,count:plants.length,detailed:!!form});
   }
  }
  let radius=220;

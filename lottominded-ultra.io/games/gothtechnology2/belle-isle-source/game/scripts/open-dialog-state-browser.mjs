@@ -36,7 +36,23 @@ try{
    for(let i=0;i<10000;i++)if(state.hasOpenDialog())throw Error('Stable false changed');
    if(scans!==afterInitial)throw Error('Unchanged reads still scan the DOM');
    const one=query('#one'),two=query('#two'),parent=query('#parent');
+   const hud=document.createElement('output');document.body.append(hud);check('new HUD element stays false');
+   const beforeText=scans;
+   for(let i=0;i<1000;i++){
+    hud.textContent='Frame '+i;
+    if(state.hasOpenDialog())throw Error('HUD text replacement changed closed state');
+   }
+   hud.replaceChildren(document.createComment('HUD comment'));check('text replaced by comment');
+   hud.replaceChildren(document.createTextNode('Frame'),document.createComment('Counter'));check('mixed text and comment children');
+   await Promise.resolve();check('irrelevant child-list delivery');
+   if(scans!==beforeText)throw Error('Text/comment-only changes rescanned dialog presence');
    one.showModal();check('showModal before observer delivery');
+   const beforeOpenText=scans;
+   for(let i=0;i<1000;i++){
+    hud.textContent='Open frame '+i;
+    if(!state.hasOpenDialog())throw Error('HUD text replacement changed open state');
+   }
+   if(scans!==beforeOpenText)throw Error('Text-only changes rescanned an open dialog');
    one.close();check('close before observer delivery');
    one.show();check('show before observer delivery');
    two.open=true;check('multiple open dialogs');
@@ -52,11 +68,25 @@ try{
    nested.innerHTML='<section><dialog open></dialog></section>';fragment.append(nested);
    document.body.append(fragment);check('fragment with open descendant');
    nested.replaceChildren();check('replace open descendants');
+   const detached=document.createElement('div');detached.innerHTML='<dialog open></dialog>';
+   document.body.append(detached);check('open dialog inside removable ancestor');
+   detached.remove();detached.replaceChildren();check('removed ancestor emptied before mutation delivery');
+   hud.textContent='Before open';one.open=true;hud.textContent='After open';
+   check('relevant opening inside same-task text replacement batch');
+   hud.replaceChildren(document.createComment('Before close'));one.open=false;hud.textContent='After close';
+   await Promise.resolve();check('relevant closing inside delivered text replacement batch');
    const host=document.createElement('div');document.body.append(host);
    const shadow=host.attachShadow({mode:'open'});shadow.innerHTML='<dialog open></dialog>';
    check('shadow dialogs remain outside document query scope');
    const details=document.createElement('details');document.body.append(details);check('new details stays false');
+   const beforeDetails=scans;
    details.open=true;check('unrelated open attribute stays false');
+   details.open=false;await Promise.resolve();check('delivered unrelated open attribute stays false');
+   if(scans!==beforeDetails)throw Error('Non-dialog open attribute rescanned presence');
+   const svgDialog=document.createElementNS('http://www.w3.org/2000/svg','dialog');
+   document.body.append(svgDialog);check('non-HTML dialog element initially closed');
+   svgDialog.setAttribute('open','');check('non-HTML dialog open attribute matches original selector');
+   svgDialog.remove();check('non-HTML dialog removed');
    const beforeClass=scans;host.className='changed';check('unrelated class stays false');
    if(scans!==beforeClass)throw Error('Unobserved irrelevant class invalidated presence');
    await Promise.resolve();
@@ -76,7 +106,8 @@ try{
    query('dialog').open=true;check('disposed state delegates current open DOM');
    query('dialog').open=false;check('disposed state delegates current closed DOM');
    if(scans!==beforeDisposed+2)throw Error('Disposed reads did not stay live');
-   return {observations,stableReads:10000,stableReadScans:0,initialReadScans:afterInitial,totalScans:scans,independentBoundaryBatchPreserved:true};
+   return {observations,stableReads:10000,stableReadScans:0,textReplacementReads:2000,textReplacementScans:0,
+    nonDialogOpenAttributeScans:0,initialReadScans:afterInitial,totalScans:scans,independentBoundaryBatchPreserved:true};
   }finally{
    state.dispose();stopBoundary();
    if(original)Object.defineProperty(document,'querySelector',original);else delete document.querySelector;
