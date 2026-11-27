@@ -47,7 +47,7 @@ function frameClockFixture(){
  visit(ast);assert.ok(boundary?.initializer,'Missing actual measurement boundary');
  let wallNow=132,associationsBroken=0;
  const context={locationPerformance:undefined,pauseSoftwareStartupScene,softwareStartup:false,prepared:true,
-  active:true,document:{hidden:false,querySelector:()=>null},vr:undefined,scenePreparing:false,
+  active:true,document:{hidden:false,querySelector:()=>null},hasOpenDialog:()=>false,vr:undefined,scenePreparing:false,
   resetFrameClock:false,previous:100,lastRender:100,lastMeasurementEligible:true,
   rideProfile:{breakFrameAssociation(){associationsBroken++;}},paused:false,renderFocused:true,sceneFrameCap,cap:60,
   performance:{now:()=>wallNow},clock:0,world:{sky:{observeFrame(){},tick(){}}},coop:undefined,

@@ -1,0 +1,258 @@
+name: Poly Haven exact-source environment review
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/belle-polyhaven-review.yml'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/tools/polyhaven*'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/polyhavenRockReview*'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/vite.config.ts'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/polyhaven-gallery-comparison*'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/island-zone-gallery.mjs'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/environmentZones.json'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/geology.ts'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/world.ts'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/polyhaven-native-diagnostic*'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/native-select-typeahead.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: polyhaven-review-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  rock-native-cost-diagnostic:
+    name: Candidate Nashua native CPU and submission evidence (not release acceptance)
+    needs: source-art
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        with:
+          name: polyhaven-opaque-review
+          path: ${{ runner.temp }}/polyhaven-review
+      - name: Verify diagnostic contracts and unchanged forwarding
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/
+        run: node --test scripts/polyhaven-native-diagnostic.test.mjs scripts/polyhaven-native-diagnostic-observer.test.mjs
+      - name: Stage the same three original prototype bytes
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/
+        run: |
+          mkdir -p public/belle/polyhaven-review
+          cp "$RUNNER_TEMP/polyhaven-review/namaqualand_boulder_03/boulder-automatic.glb" public/belle/polyhaven-review/
+          cp "$RUNNER_TEMP/polyhaven-review/rock_moss_set_01/moss-1-automatic.glb" public/belle/polyhaven-review/
+          cp "$RUNNER_TEMP/polyhaven-review/rock_moss_set_01/moss-2-automatic.glb" public/belle/polyhaven-review/
+      - name: Install original game and Chrome dependencies
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/
+        run: |
+          npm ci
+          npm run check
+          cd ../..
+          npm ci
+          npx playwright install chrome
+      - name: Build exact candidate and observe full-scene native Nashua rendering
+        timeout-minutes: 45
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/
+        env:
+          POLYHAVEN_EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+          POLYHAVEN_REVIEW_DIR: ${{ runner.temp }}/polyhaven-review
+        run: |
+          set -euo pipefail
+          mkdir -p output/polyhaven-native-diagnostic
+          node scripts/polyhaven-native-diagnostic.mjs 2>&1 | tee output/polyhaven-native-diagnostic/driver.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: polyhaven-native-nashua-cost-candidate-NOT-RELEASE
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/polyhaven-native-diagnostic/
+          if-no-files-found: error
+          retention-days: 14
+  source-art:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Comparison evidence regression tests
+        run: node --test lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/polyhaven-gallery-comparison.test.mjs
+      - name: Source-intake tests
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/tools
+        run: |
+          python -m py_compile polyhaven_acquire.py polyhaven_export.py polyhaven_texture_budget.py
+          python -m unittest polyhaven_intake_test
+      - name: Record exact source-art revision
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python - <<'PYTHON'
+          import json, os, subprocess
+          from pathlib import Path
+          head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+          tree = subprocess.check_output(['git', 'rev-parse', 'HEAD^{tree}'], text=True).strip()
+          assert head == os.environ['EXPECTED_HEAD'], 'Source-art checkout head mismatch'
+          report = Path(os.environ['RUNNER_TEMP']) / 'polyhaven-review' / 'source-provenance.json'
+          report.parent.mkdir(parents=True, exist_ok=True)
+          report.write_text(json.dumps({'head': head, 'tree': tree, 'workflowSha': os.environ['GITHUB_SHA'], 'runId': os.environ['GITHUB_RUN_ID']}, indent=2) + '\n')
+          PYTHON
+      - name: Download exact user-uploaded source revisions
+        run: |
+          python lottominded-ultra.io/games/gothtechnology2/belle-isle-source/tools/polyhaven_acquire.py --sources "$RUNNER_TEMP/polyhaven-sources" --report "$RUNNER_TEMP/polyhaven-review/source-report.json"
+      - name: Install pinned Blender Python and image inspector
+        run: python -m pip install --disable-pip-version-check bpy==4.5.3 Pillow==11.3.0
+      - name: Verify headless Blender runtime
+        run: python -c "import bpy; assert bpy.app.version == (4, 5, 3), bpy.app.version_string; print(bpy.app.version_string)"
+      - name: Export bounded opaque review meshes and inspect GLB PBR textures
+        run: |
+          status=0
+          for asset in Barrel_02 dead_tree_trunk_02 dry_branches_medium_01 namaqualand_boulder_03 rock_moss_set_01; do
+            python lottominded-ultra.io/games/gothtechnology2/belle-isle-source/tools/polyhaven_export.py --id "$asset" --sources "$RUNNER_TEMP/polyhaven-sources" --source-report "$RUNNER_TEMP/polyhaven-review/source-report.json" --output "$RUNNER_TEMP/polyhaven-review" || status=1
+          done
+          exit "$status"
+      - name: Upload only verified derivatives and reports, never source archives
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: polyhaven-opaque-review
+          path: ${{ runner.temp }}/polyhaven-review
+          if-no-files-found: error
+          retention-days: 14
+  rock-game-capture:
+    needs: source-art
+    runs-on: macos-15
+    timeout-minutes: 100
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        with:
+          name: polyhaven-opaque-review
+          path: ${{ runner.temp }}/polyhaven-review
+      - name: Stage only three bounded medium-tier prototypes in ephemeral build
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/
+        run: |
+          mkdir -p public/belle/polyhaven-review
+          cp "$RUNNER_TEMP/polyhaven-review/namaqualand_boulder_03/boulder-automatic.glb" public/belle/polyhaven-review/
+          cp "$RUNNER_TEMP/polyhaven-review/rock_moss_set_01/moss-1-automatic.glb" public/belle/polyhaven-review/
+          cp "$RUNNER_TEMP/polyhaven-review/rock_moss_set_01/moss-2-automatic.glb" public/belle/polyhaven-review/
+          npm ci
+          npm run check
+          npm test
+          VITE_POLYHAVEN_ROCK_PREVIEW=1 npm run build
+      - name: Verify all preview assets survived the actual build and manifest
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/
+        run: |
+          for file in boulder-automatic.glb moss-1-automatic.glb moss-2-automatic.glb; do
+            cmp "public/belle/polyhaven-review/$file" "dist/belle/polyhaven-review/$file"
+          done
+          node --input-type=module -e 'import {readFileSync} from "node:fs"; import assert from "node:assert/strict"; const manifest=JSON.parse(readFileSync("dist/asset-manifest.json","utf8")); for(const file of ["boulder-automatic.glb","moss-1-automatic.glb","moss-2-automatic.glb"]) assert(manifest.includes("belle/polyhaven-review/"+file),file);'
+      - name: Install browser
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install chrome
+      - name: Capture genuine opt-in rock preview in existing island gallery
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/
+        env:
+          ENV_GALLERY_DEVICE: desktop
+          ENV_GALLERY_REQUIRE_METAL: '1'
+          ENV_GALLERY_QUICK: '1'
+          ENV_GALLERY_POLYHAVEN: '1'
+        run: node scripts/island-zone-gallery.mjs
+      - name: Upload real game captures (Metal runner, not physical-device FPS certification)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: polyhaven-rock-game-capture
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/island-zone-gallery/desktop
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Verify preview build on native desktop (unchanged full 90-second harness)
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/
+        env:
+          BELLE_PROFILE_DEVICE: desktop
+          BELLE_PROFILE_MODE: full
+          BELLE_PROFILE_SECONDS: '90'
+        run: node scripts/sustained-ride-profile.mjs
+      - name: Verify preview build on native phone viewport (unchanged full 90-second harness)
+        if: ${{ !cancelled() }}
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/
+        env:
+          BELLE_PROFILE_DEVICE: phone
+          BELLE_PROFILE_MODE: full
+          BELLE_PROFILE_SECONDS: '90'
+        run: node scripts/sustained-ride-profile.mjs
+      - name: Upload native preview performance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: polyhaven-rock-native-profile
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/sustained-profile/full/
+          if-no-files-found: warn
+          retention-days: 14
+
+  rock-environment-comparison:
+    needs: source-art
+    runs-on: macos-15
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      matrix:
+        device: [desktop, phone]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        with:
+          name: polyhaven-opaque-review
+          path: ${{ runner.temp }}/polyhaven-review
+      - name: Stage exact-source prototypes and install game dependencies
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/
+        run: |
+          mkdir -p public/belle/polyhaven-review
+          cp "$RUNNER_TEMP/polyhaven-review/namaqualand_boulder_03/boulder-automatic.glb" public/belle/polyhaven-review/
+          cp "$RUNNER_TEMP/polyhaven-review/rock_moss_set_01/moss-1-automatic.glb" public/belle/polyhaven-review/
+          cp "$RUNNER_TEMP/polyhaven-review/rock_moss_set_01/moss-2-automatic.glb" public/belle/polyhaven-review/
+          npm ci
+      - name: Install native Chrome gallery runtime
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install chrome
+      - name: Capture flag-off and flag-on Guide routes on native Metal
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/
+        env:
+          ENV_GALLERY_DEVICE: ${{ matrix.device }}
+          POLYHAVEN_EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+          POLYHAVEN_REVIEW_DIR: ${{ runner.temp }}/polyhaven-review
+        run: node scripts/polyhaven-gallery-comparison.mjs
+      - name: Preserve both modes and failures for manual pose and overlap review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: polyhaven-rock-environment-comparison-${{ matrix.device }}
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/polyhaven-comparison/${{ matrix.device }}
+          if-no-files-found: error
+          retention-days: 14

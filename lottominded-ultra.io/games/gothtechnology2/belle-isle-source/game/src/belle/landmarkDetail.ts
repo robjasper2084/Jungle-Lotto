@@ -84,7 +84,7 @@ export class LandmarkDetail{
  }
  get batchRoot(){return this.palette?.root;}
  get isSplitActive(){return this.splitActive;}
- beginView(){this.palette?.beginView();}
+ beginView(camera:T.Camera){this.palette?.beginView(undefined,camera);}
  endView(){this.palette?.endView();}
  setActive(active:boolean){this.splitActive=active;for(const i of this.items)i.mesh.geometry=active?i.reduced:i.full;}
 }

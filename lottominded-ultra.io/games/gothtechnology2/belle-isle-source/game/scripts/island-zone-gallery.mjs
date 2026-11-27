@@ -18,7 +18,7 @@ const {chromium,expect:rawExpect}=require('@playwright/test');
 const expect=rawExpect.configure({timeout:150000});
 const device=process.env.ENV_GALLERY_DEVICE==='phone'?'phone':'desktop';
 const viewport=device==='phone'?{width:390,height:844}:{width:1440,height:900};
-const output=resolve(game,'output/island-zone-gallery',device);
+const output=process.env.ENV_GALLERY_OUTPUT_DIR?resolve(process.env.ENV_GALLERY_OUTPUT_DIR):resolve(game,'output/island-zone-gallery',device);
 const sites=zones.zones.flatMap(zone=>zone.stops.map((stop,conditionIndex)=>({
  id:zone.id+'-'+stop.id,zone:zone.id,name:stop.destinationName,
  search:new RegExp('^'+stop.destinationName.replace(/[.*+?^$\{\}()|[\]\\]/g,'\\$&')+'$','i'),
@@ -34,7 +34,8 @@ const lights=[
 ];
 const lightsFor=site=>quick?[lights[site.conditionIndex%2]]:lights;
 await mkdir(output,{recursive:true});
-const report={head:process.env.GITHUB_SHA||null,route:zones.id,device,viewport,quick,qualities,skyConditions:lights,frameTargetFps:device==='phone'?30:60,
+const report={head:process.env.ENV_GALLERY_SOURCE_SHA||process.env.GITHUB_SHA||null,sourceTree:process.env.ENV_GALLERY_SOURCE_TREE||null,
+ mode:process.env.ENV_GALLERY_MODE||null,hostPlatform:process.platform,route:zones.id,device,viewport,quick,qualities,skyConditions:lights,frameTargetFps:device==='phone'?30:60,
  fpsCertified:false,
  source:'real built browser game; guide Travel action',
  limitations:['Not physical-device FPS certification','Travel cameras may not frame the intended bridge exactly','Reference photos are not bundled or distributed'],
@@ -97,6 +98,7 @@ try{
  await page.goto(origin,{waitUntil:'domcontentloaded'});
  await expect(page.locator('#welcome')).toHaveAttribute('data-state','ready');
  report.renderer=await galleryRenderer(page);
+ report.browserViewport=await page.evaluate(()=>({width:innerWidth,height:innerHeight,devicePixelRatio}));
  const motion=page.locator('#startup-motion');
  if(await motion.getAttribute('aria-pressed')!=='true')await motion.click();
  await page.locator('.cinema-ride-picker > summary').click();
@@ -120,19 +122,25 @@ try{
    entry.frame=frame;entry.place=await page.locator('#place').textContent();
    entry.profile=await page.locator('#profile').textContent();
    entry.profileData=await page.locator('#profile').evaluate(node=>Object.fromEntries(Object.entries(node.dataset)));
+   entry.rockReview=await page.evaluate(()=>({state:document.documentElement.dataset.polyhavenRockReview||null,loaded:document.documentElement.dataset.polyhavenRockReview==='loaded',visible:Number(document.documentElement.dataset.polyhavenRockVisible||0)}));
+   entry.settings=await page.evaluate(()=>({quality:document.querySelector('#quality')?.value,time:document.querySelector('#sky-hour')?.value,
+    clouds:document.querySelector('#sky-clouds')?.value,cycle:document.querySelector('#sky-cycle')?.checked,cap:document.querySelector('#fps')?.value,
+    focused:document.hasFocus(),visibility:document.visibilityState}));
    entry.benchmarkStatus='unverified/software GPU - run physical hardware review';
   }catch(error){
-   entry.failure=String(error);report.coverageGaps.push(site.id+' '+quality+' '+light.id+': '+error);
+   entry.passed=false;entry.failure=String(error);report.coverageGaps.push(site.id+' '+quality+' '+light.id+': '+error);
   }
   report.visits.push(entry);
  }
- report.passed=report.visits.length===sites.reduce((n,site)=>n+lightsFor(site).length,0)*qualities.length&&report.visits.every(v=>v.passed)&&!report.errors.length&&!report.failedRequests.length;
+ if(process.env.ENV_GALLERY_POLYHAVEN==='1'&&!report.visits.some(v=>v.passed&&v.rockReview?.loaded&&v.rockReview.visible>0))report.errors.push('No captured visit reported active source-rock instances');
+ report.passed=report.visits.length===sites.reduce((n,site)=>n+lightsFor(site).length,0)*qualities.length&&report.visits.every(v=>v.passed)&&!report.errors.length&&!report.failedRequests.length&&!report.coverageGaps.length;
 }catch(error){
  report.errors.push(error.stack||String(error));
 }finally{
- await writeFile(resolve(output,'report.json'),JSON.stringify(report,null,2)+'\n','utf8');
  if(browser)await browser.close().catch(e=>report.errors.push('Browser close: '+e.message));
- await new Promise(ok=>server.close(ok));
+ await new Promise((ok,reject)=>server.close(error=>error?reject(error):ok())).catch(e=>report.errors.push('Server close: '+e.message));
+ report.passed=report.passed&&!report.errors.length&&!report.failedRequests.length&&!report.coverageGaps.length;
+ await writeFile(resolve(output,'report.json'),JSON.stringify(report,null,2)+'\n','utf8');
 }
 const safe=s=>String(s||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;');
 const cards=sites.map(site=>'<section><h2>'+safe(site.zone)+' · '+safe(site.name)+'</h2><p>'+safe(site.note)+'</p>'+qualities.map(quality=>lightsFor(site).map(light=>{
