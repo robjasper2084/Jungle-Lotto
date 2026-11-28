@@ -1,0 +1,32 @@
+{
+  "name": "dequindre-cut-whole-map-preview",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Isolated, unpublished full Dequindre Cut integration preview for Belle Isle Explorer",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 8317 --strictPort",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 8317 --strictPort",
+    "check": "tsc --noEmit",
+    "test": "node scripts/run-tests.mjs",
+    "verify:isolation": "node scripts/verify-isolation.mjs",
+    "test:browser": "node scripts/browser-smoke.mjs"
+  },
+  "dependencies": {
+    "@dimforge/rapier3d-compat": "0.20.0",
+    "@supabase/realtime-js": "2.117.2",
+    "fflate": "0.8.3",
+    "polygon-clipping": "0.15.7",
+    "three": "0.185.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.59.1",
+    "@types/node": "24.13.3",
+    "@types/three": "0.185.3",
+    "magic-string": "0.30.21",
+    "typescript": "5.9.3",
+    "vite": "7.3.6"
+  }
+}

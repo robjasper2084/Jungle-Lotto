@@ -1,0 +1,87 @@
+name: Isolated Dequindre Cut preview evidence
+
+on:
+  push:
+    branches:
+      - staging/dequindre-cut-whole-map-20261127
+    paths:
+      - experiments/dequindre-cut-preview/**
+      - .github/workflows/dequindre-cut-preview.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dequindre-cut-preview-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/staging/dequindre-cut-whole-map-20261127'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: experiments/dequindre-cut-preview
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 0
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /AGENTS.md
+            /.gitignore
+            /.github/workflows/pages.yml
+            /.github/workflows/dequindre-cut-preview.yml
+            /scripts/build-pages-artifact.mjs
+            /experiments/dequindre-cut-preview/
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/ride-core/
+            /lottominded-ultra.io/games/gothtechnology2/swoop-source/
+            !/lottominded-ultra.io/games/gothtechnology2/swoop-source/public/
+            !/lottominded-ultra.io/games/gothtechnology2/swoop-source/dist/
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/
+            !/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/
+            !/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist/
+            !/lottominded-ultra.io/games/gothtechnology2/belle-isle-source/assets/
+            /lottominded-ultra.io/games/gothtechnology2/greater-detroit-world/
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/
+            /lottominded-ultra.io/games/gothtechnology2/swoop-source/public/exports/
+            /lottominded-ultra.io/games/gothtechnology2/swoop-source/public/textures/
+            /lottominded-ultra.io/games/gothtechnology2/swoop-source/public/audio/
+            /lottominded-ultra.io/games/gothtechnology2/greater-detroit-graphics/
+            /lottominded-ultra.io/games/gothtechnology2/elmwood-source/src/
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: experiments/dequindre-cut-preview/package-lock.json
+      - name: Validate and compile this isolated revision
+        run: |
+          npm ci
+          npm run check
+          npm test
+          npm run verify:isolation
+          node --check scripts/browser-smoke.mjs
+          node --check scripts/run-browser-suite.mjs
+          npm run build
+          mkdir -p output/ci
+          node --experimental-transform-types --import ./scripts/register-test-resolver.mjs scripts/source-inventory.ts > output/ci/source-inventory.json
+      - name: Install browser for functional preview checks
+        run: npx playwright install --with-deps chromium
+      - name: Capture native input and continuous draft observations
+        timeout-minutes: 22
+        run: node scripts/run-browser-suite.mjs
+      - name: Retain draft reports and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dequindre-cut-preview-evidence-${{ github.sha }}
+          path: |
+            experiments/dequindre-cut-preview/output/browser/
+            experiments/dequindre-cut-preview/output/ci/
+            experiments/dequindre-cut-preview/dist/preview-manifest.json
+          if-no-files-found: warn
+          retention-days: 14
