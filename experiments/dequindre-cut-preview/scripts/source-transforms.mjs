@@ -15,6 +15,9 @@ export const SOURCE_DIGESTS=Object.freeze({
   [GAME_ROOT+'/swoop-source/src/detroit/foodTrucks.ts']:'8ac473bdbc66556606316ca72492165473a952e927da14c5603bec183fef1a67',
   [GAME_ROOT+'/swoop-source/src/detroit/scenery.ts']:'9559295186403130a47ab8eeabb78535fb4995e0fb845188753b9153bb13d8ef',
   [GAME_ROOT+'/swoop-source/src/detroit/world.ts']:'791403098979325b32ffa51247224d2363c12357c8d8d6186d0f71bb3389ba7b',
+  [GAME_ROOT+'/swoop-source/src/detroit/architectureData.ts']:'dcaf68287d2d6f9f9d75ef34161d70cfe128559359a5e68ae390dde4649ef049',
+  [GAME_ROOT+'/swoop-source/src/detroit/atwater.ts']:'2bb6af80b5e62fa83b735ad9af45846eae740dfb2bcc158c1058658ede34516b',
+  [GAME_ROOT+'/swoop-source/src/detroit/architecture.ts']:'8f9d2229f916b9f1318eb559f46ba60141346351dcf9d19057c4a14e196bb4b9',
 });
 
 export const digest=content=>createHash('sha256').update(content).digest('hex');
@@ -123,9 +126,21 @@ export function belleWorldEdits(source,{verify=true}={}){
 /** Static compilation changes only: no fetch/loader monkey patch and no writes
  * to Belle's document settings. Source files on disk remain byte-for-byte intact. */
 export function swoopEdits(source,relativePath){
-  if(!relativePath.startsWith(GAME_ROOT+'/swoop-source/src/')||!relativePath.endsWith('.ts'))return [];
+  if(!relativePath.startsWith(GAME_ROOT+'/swoop-source/src/')||!/\.(?:ts|json)$/.test(relativePath))return [];
+  // Vite invokes this pre-transform before its JSON module plugin. Namespace
+  // data values in the same source boundary as TS constants and loader calls.
+  if(relativePath.endsWith('.json'))return swoopAssetEdits(source);
   if(/\/(?:main|boot)\.ts$/.test(relativePath))throw Error('The preview must share Belle Isle runtime; importing a second Swoop entry is forbidden.');
   const edits=[];
+  if(relativePath===GAME_ROOT+'/swoop-source/src/detroit/architectureData.ts')assertPinnedInput(source,relativePath);
+  if(relativePath===GAME_ROOT+'/swoop-source/src/detroit/atwater.ts'){
+    assertPinnedInput(source,relativePath);
+    edits.push(replaceExactlyOnce(source,"loadAsync('./'+SKYLINE_PATH)",'loadAsync(SKYLINE_PATH)','absolute source skyline asset URL'));
+  }
+  if(relativePath===GAME_ROOT+'/swoop-source/src/detroit/architecture.ts'){
+    assertPinnedInput(source,relativePath);
+    edits.push(replaceExactlyOnce(source,"gltf.loadAsync('./'+path)",'gltf.loadAsync(path)','absolute source architecture asset URLs'));
+  }
   if(relativePath===GAME_ROOT+'/swoop-source/src/detroit/world.ts'){
     assertPinnedInput(source,relativePath);
     const first="import {JAZZ_CLUBS,jazzGrade} from './jazzSites.ts';";
@@ -165,9 +180,17 @@ export function swoopEdits(source,relativePath){
     if(/^\s*(?:=(?!=)|\+\+|--|\+=|-=)/.test(after))throw Error('Swoop global quality writer cannot enter the shared preview: '+relativePath);
     edits.push({start:match.index,end:match.index+match[0].length,replacement:'globalThis.__dequindrePreviewSettings.'+match[1]});
   }
-  // Prefix only string/template literal beginnings. Relative module imports,
-  // embedded data URLs and external URLs are left alone.
-  const assets=/(["'`])(?:\.\/|\/)(exports|textures|audio)\//g;
+  edits.push(...swoopAssetEdits(source));
+  return edits;
+}
+
+/** Recognize bare, root-relative and explicitly relative source asset values.
+ * Already namespaced paths, module imports, data/blob URLs and remote URLs do
+ * not match. Consumers above no longer prepend './' to transformed data URLs.
+ * GLB image/buffer URIs are untouched and resolve relative to the model URL.
+ */
+function swoopAssetEdits(source){
+  const edits=[],assets=/(["'`])(?:\.\/|\/)?(exports|textures|audio|shared-textures)\//g;
   for(const match of source.matchAll(assets))edits.push({start:match.index+1,end:match.index+match[0].length,replacement:'/__swoop-assets__/'+match[2]+'/'});
   return edits;
 }
