@@ -137,6 +137,14 @@ export function clipHostSurface(geometry:T.BufferGeometry):T.BufferGeometry{
     const a=attribute as T.BufferAttribute;
     clipped.setAttribute(name,new T.Float32BufferAttribute(arrays.get(name)!,a.itemSize));
   }
+  // The original district batches mix unchanged and clipped road pieces.
+  // Three requires every part of a batch to retain the same index contract,
+  // including an indexed piece whose entire surface was removed.
+  if(index){
+    const indices=outputCount>65536?new Uint32Array(outputCount):new Uint16Array(outputCount);
+    for(let i=0;i<outputCount;i++)indices[i]=i;
+    clipped.setIndex(new T.BufferAttribute(indices,1));
+  }
   for(const g of groups)clipped.addGroup(g.start,g.count,g.materialIndex);
   clipped.name=geometry.name;clipped.userData={...geometry.userData,dequindreOverlapClipped:true};
   clipped.computeBoundingBox();clipped.computeBoundingSphere();
