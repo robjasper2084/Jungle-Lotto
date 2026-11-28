@@ -18,7 +18,7 @@ concurrency:
 jobs:
   validate:
     if: github.event_name == 'push' && github.ref == 'refs/heads/staging/dequindre-cut-whole-map-20261127'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     defaults:
       run:

@@ -28,7 +28,7 @@ export function assertPreviewWorkflow(source){
  const jobs=block('jobs');
  if((jobs.match(/^  [^\s:]+:/gm)||[]).join('\n')!=='  validate:')fail('only one validation job is allowed');
  if(!jobs.includes("    if: github.event_name == 'push' && github.ref == 'refs/heads/"+PREVIEW_BRANCH+"'\n"))fail('exact job ref guard is required');
- for(const line of ['    runs-on: ubuntu-latest','    timeout-minutes: 30','          ref: ${{ github.sha }}','          persist-credentials: false','          sparse-checkout-cone-mode: false'])if(!source.includes(line+'\n'))fail('missing '+line.trim());
+ for(const line of ['    runs-on: ubuntu-24.04','    timeout-minutes: 30','          ref: ${{ github.sha }}','          persist-credentials: false','          sparse-checkout-cone-mode: false'])if(!source.includes(line+'\n'))fail('missing '+line.trim());
  const upload=source.match(/uses: actions\/upload-artifact@v4\n([\s\S]*?)$/);
  if(!upload||(source.match(/uses: actions\/upload-artifact@/g)||[]).length!==1)fail('one evidence-only artifact is required');
  const paths=upload[1].match(/          path: \|\n([\s\S]*?)          if-no-files-found:/);

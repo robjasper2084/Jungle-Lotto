@@ -15,7 +15,7 @@ test('CI stays on the exact draft branch with read-only artifact-only scope',asy
   ['\npermissions:','  workflow_dispatch:\n\npermissions:'],
   ['  contents: read','  contents: write'],
   ["github.ref == 'refs/heads/"+PREVIEW_BRANCH+"'","github.ref != 'refs/heads/main'"],
-  ['    runs-on: ubuntu-latest','    environment: github-pages\n    runs-on: ubuntu-latest'],
+  ['    runs-on: ubuntu-24.04','    environment: github-pages\n    runs-on: ubuntu-24.04'],
   ['actions/upload-artifact@v4','actions/upload-pages-artifact@v4'],
   ['experiments/dequindre-cut-preview/dist/preview-manifest.json\n','experiments/dequindre-cut-preview/dist/\n'],
   ['          persist-credentials: false','          persist-credentials: true'],
