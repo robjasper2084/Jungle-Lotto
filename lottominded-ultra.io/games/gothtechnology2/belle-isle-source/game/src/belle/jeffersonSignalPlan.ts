@@ -47,7 +47,14 @@ export type SignalRoad=Readonly<{id:string;name:string;width:number;points:reado
 export type SignalFixture=Readonly<{axis:'jefferson'|'cross';travel:SignalPoint;pole:SignalPoint;support?:SignalPoint;heads:readonly SignalPoint[]}>;
 export type JeffersonJunction=Readonly<{id:string;source:JeffersonSignalSource;center:SignalPoint;jeffersonRoadId:string;crossRoadId?:string;offsetSeconds:number;fixtures:readonly SignalFixture[]}>;
 export type JeffersonSignalPlan=Readonly<{junctions:readonly JeffersonJunction[];excluded:readonly Readonly<{source:JeffersonSignalSource;reason:'outside-mapped-roads'|'no-clear-pole-placement'}>[]}>;
-type PlanInput={roads:readonly SignalRoad[];land:(x:number,z:number)=>boolean;obstructed:(x:number,z:number,margin:number)=>boolean;sources?:readonly JeffersonSignalSource[]};
+/** Matches the widest ground-level foot of the modeled signal pole. */
+export const JEFFERSON_SIGNAL_BASE_RADIUS=.33;
+type PlanInput={roads:readonly SignalRoad[];land:(x:number,z:number)=>boolean;obstructed:(x:number,z:number,margin:number)=>boolean;sources?:readonly JeffersonSignalSource[];
+ /** Return true only when the complete circular base avoids the protected
+  * pedestrian corridor. Applies to poles and span anchors, not overhead heads;
+  * this additional guard never replaces road, land or building clearance. */
+ pedestrianClearance?:(x:number,z:number,baseRadius:number)=>boolean;
+};
 type RoadSegment={road:SignalRoad;a:SignalPoint;b:SignalPoint;ux:number;uz:number;length:number};
 const POLE_CLEARANCE=.8;
 function nearest(p:SignalPoint,s:RoadSegment){
@@ -84,7 +91,7 @@ export function planJeffersonSignals(input:PlanInput):JeffersonSignalPlan{
   const nearby=segments.filter(s=>nearest(center,s).d<100);
   const cross=nearby.filter(s=>source.crossNames.some(n=>sourceName(s.road.name).includes(n))&&Math.abs(s.ux*main.ux+s.uz*main.uz)<.65)
    .map(s=>({s,d:nearest(center,s).d})).filter(v=>v.d<=22).sort((a,b)=>a.d-b.d||b.s.length-a.s.length)[0]?.s;
-  const safe=(p:SignalPoint)=>input.land(...p)&&!input.obstructed(...p,.7)&&!nearby.some(s=>nearest(p,s).d<s.road.width*.5+POLE_CLEARANCE);
+  const safe=(p:SignalPoint)=>input.land(...p)&&!input.obstructed(...p,.7)&&!nearby.some(s=>nearest(p,s).d<s.road.width*.5+POLE_CLEARANCE)&&(!input.pedestrianClearance||input.pedestrianClearance(...p,JEFFERSON_SIGNAL_BASE_RADIUS));
   const fixtures:SignalFixture[]=[];
   const addAxis=(s:RoadSegment,axis:'jefferson'|'cross',otherWidth:number)=>{
    const supported=nearby.filter(q=>axis==='jefferson'?mains.includes(q):source.crossNames.some(n=>sourceName(q.road.name).includes(n)));

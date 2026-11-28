@@ -23,6 +23,7 @@ on:
       - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/package*.json'
       - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/run-tests.mjs'
       - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/tools/build-jefferson-extension.py'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/tools/build-jefferson-sidewalks.py'
       - 'lottominded-ultra.io/games/gothtechnology2/package*.json'
       - 'research/geographic/jefferson-realism/**'
   workflow_dispatch:
@@ -111,13 +112,14 @@ jobs:
         run: |
           npm ci
           npx playwright install chrome
-      - name: Capture eight daytime and two nighttime public Guide views
+      - name: Capture Guide views, nighttime streets, and ground-level sidewalks
         timeout-minutes: 10
         working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
         env:
           ENV_GALLERY_DEVICE: ${{ matrix.device }}
           ENV_GALLERY_REQUIRE_METAL: '1'
           ENV_GALLERY_NIGHT: '1'
+          ENV_GALLERY_SIDEWALKS: '1'
         # The script retains its fixed eight-minute budget, including preparation.
         run: node scripts/jefferson-gallery.mjs
       - name: Preserve actual screenshots, partial attempts, and source receipts

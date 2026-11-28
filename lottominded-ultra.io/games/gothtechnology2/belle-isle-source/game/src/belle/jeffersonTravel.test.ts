@@ -6,6 +6,9 @@ import {districts,districtName} from './detroitGround.ts';
 import {JEFFERSON_BUILDINGS,addJeffersonBuildings,planJeffersonBuildings,registerJeffersonBuildingSolids} from './jeffersonBuildings.ts';
 import {jeffersonStreetDestinations,jeffersonViewOccluded,selectJeffersonTravelView,type JeffersonTravelView} from './jeffersonTravel.ts';
 import {ParkTerrain,segment,type ParkMap,type Point} from './terrain.ts';
+import {createJeffersonSidewalkSurface,type JeffersonSidewalkData} from './jeffersonSidewalks.ts';
+import {createGroundSample} from '../../runtime/ride-core/src/terrain.ts';
+import {RideCore} from '../../runtime/ride-core/src/ridecore.ts';
 const map=JSON.parse(readFileSync(new URL('../../public/belle/map.json',import.meta.url),'utf8')) as ParkMap;
 const rectangle=(x0:number,z0:number,x1:number,z1:number):Point[]=>[[x0,z0],[x1,z0],[x1,z1],[x0,z1],[x0,z0]];
 function actualTerrain(){const terrain=new ParkTerrain(map,true);registerJeffersonBuildingSolids(terrain,planJeffersonBuildings(map,(x,z)=>terrain.height(x,z)));return terrain;}
@@ -13,7 +16,7 @@ function actualTerrain(){const terrain=new ParkTerrain(map,true);registerJeffers
 // actual 1.55 m on-foot eye, vertical FOV, viewport aspect and 15 m look target.
 function cameraAt(terrain:ParkTerrain,view:JeffersonTravelView,aspect:number,verticalFov=60){
  const camera=new T.PerspectiveCamera(verticalFov,aspect,.08,22000);
- camera.position.set(view.x,terrain.height(view.x,view.z)+1.55,view.z);
+ camera.position.set(view.x,terrain.sampleGround(view.x,view.z,createGroundSample()).height+1.55,view.z);
  camera.lookAt(view.x+Math.sin(view.heading)*15,camera.position.y-Math.tan(view.pitch)*15,view.z+Math.cos(view.heading)*15);
  camera.updateMatrixWorld(true);return camera;
 }
@@ -30,7 +33,7 @@ test('all six actual building destinations resolve to clear local street frontag
   const distance=Math.min(...road.points.slice(1).map((p,i)=>segment(view.x,view.z,road.points[i],p).d));
   assert.ok(distance<=road.width/2+(view.surface==='sidewalk'?1.8:0)+1e-6);
   assert.ok(view.pitch<=0&&view.pitch>-.6);assert.ok(Math.abs(Math.atan2(Math.sin(view.heading-Math.atan2(view.lookX-view.x,view.lookZ-view.z)),Math.cos(view.heading-Math.atan2(view.lookX-view.x,view.lookZ-view.z))))<1e-9);
-  assert.ok(Math.abs(view.pitch+Math.atan2(view.lookY-terrain.height(view.x,view.z)-1.55,view.distance))<1e-9);
+  assert.ok(Math.abs(view.pitch+Math.atan2(view.lookY-terrain.sampleGround(view.x,view.z,createGroundSample()).height-1.55,view.distance))<1e-9);
  }
  assert.equal(JSON.stringify(terrain.boxes),before,'travel selection never changes collisions');
 });
@@ -107,6 +110,55 @@ test('viewport and vertical field of view affect normal travel without accepting
  assert.ok(Math.hypot(narrow.x-plan.center[0],narrow.z-plan.center[1])>Math.hypot(wide.x-plan.center[0],wide.z-plan.center[1]),'a narrower lens needs a farther safe view');
  for(const [view,fov] of [[narrow,45],[wide,75]] as const){const camera=cameraAt(terrain,view,1440/900,fov);for(const [x,z] of plan.source.points)for(const y of [plan.base,plan.base+21.34]){const p=new T.Vector3(x,y,z).project(camera);assert.ok(Math.abs(p.x)<1&&Math.abs(p.y)<1,'the requested vertical FOV fits the actual Palms envelope');}}
  for(const options of [{aspect:0},{aspect:NaN},{aspect:Infinity},{verticalFov:0},{verticalFov:180},{verticalFov:NaN}])assert.equal(selectJeffersonTravelView(terrain,destination,options),undefined);
+});
+test('registered pedestrian support changes the viewer eye and sight ray without moving the street-stop target',()=>{
+ const terrain=actualTerrain(),destination='jefferson-street-grand-boulevard',before=selectJeffersonTravelView(terrain,destination);assert.ok(before);
+ // A controlled slab at an existing valid street stop isolates the supported
+ // eye from source coverage. The separate sourced-data test below uses GIS.
+ const support=createJeffersonSidewalkSurface({schema:1,topOffsetM:.22,roadOffsetM:.07,tileSizeM:320,surfaces:[{id:'eye-height-fixture',kind:'sidewalk',outer:rectangle(before.x-3,before.z-3,before.x+3,before.z+3)}]},(x,z)=>terrain.height(x,z));
+ terrain.registerPedestrianSupport(support);const eyeRays:{x:number;y:number;z:number}[]=[],ray=terrain.raycastCamera.bind(terrain);
+ terrain.raycastCamera=(origin,direction,max,half)=>{eyeRays.push({...origin});return ray(origin,direction,max,half);};
+ const after=selectJeffersonTravelView(terrain,destination);assert.ok(after);
+ assert.deepEqual([after.x,after.z,after.lookX,after.lookY,after.lookZ,after.sourceId],[before.x,before.z,before.lookX,before.lookY,before.lookZ,before.sourceId]);
+ assert.ok(after.pitch>before.pitch,'a raised eye needs less upward pitch toward the unchanged target');
+ const camera=cameraAt(terrain,after,16/9),aim=new T.Vector3(after.lookX,after.lookY,after.lookZ).project(camera);
+ assert.ok(Math.abs(aim.x)<1e-9&&Math.abs(aim.y)<1e-9,'ordinary camera places the source intersection aim at its centre');
+ assert.ok(eyeRays.some(o=>o.x===after.x&&o.z===after.z&&Math.abs(o.y-camera.position.y)<1e-9),'visibility ray starts at the supported eye');support.dispose();
+});
+test('actual sourced sidewalks preserve normal motor dismount and desktop/phone building framing',()=>{
+ const terrain=actualTerrain(),source=JSON.parse(readFileSync(new URL('./jeffersonSidewalks.json',import.meta.url),'utf8')) as JeffersonSidewalkData;
+ const support=createJeffersonSidewalkSurface(source,(x,z)=>terrain.height(x,z));terrain.registerPedestrianSupport(support);
+ assert.equal(support.stats.rejectedTriangles,0,'actual sidewalk geometry is fully represented');
+ const scene=new T.Scene(),plans=addJeffersonBuildings(scene,terrain).plans;scene.updateMatrixWorld(true);
+ const partialByViewport=new Map<string,string[]>();
+ for(const [device,aspect]of [['desktop',1440/900],['phone',390/844]] as const){
+  const partial:string[]=[];
+  for(const destination of [...plans.map(p=>'jefferson-'+p.profile.id),...jeffersonStreetDestinations.map(s=>s.id)]){
+   const view=selectJeffersonTravelView(terrain,destination,{aspect,verticalFov:60});assert.ok(view,device+' '+destination);
+   const core=new RideCore(terrain,{spawn:{position:{x:view.x,y:terrain.height(view.x,view.z),z:view.z},headingY:view.heading}});
+   core.advance(1/60,{dismount:true,instantDismount:true});const pose=core.current;
+   assert.equal(pose.footBlend,1,'normal Guide motor completes the dismount');
+   const ground=terrain.sampleGround(pose.x,pose.z,createGroundSample(),pose.y);
+   assert.ok(Math.abs(pose.y-ground.height)<1e-7,'feet rest on the actual registered surface');
+   assert.equal(ground.offCourse,false);assert.equal(terrain.obstructed(pose.x,pose.z,.27),false);
+   // This camera uses the motor's final side-step and sampled y, not selector
+   // output substituted into a camera or a second implementation of framing.
+   const camera=new T.PerspectiveCamera(60,aspect,.08,22000);camera.position.set(pose.x,pose.y+1.55,pose.z);
+   camera.lookAt(pose.x+Math.sin(pose.headingY)*15,camera.position.y-Math.tan(view.pitch)*15,pose.z+Math.cos(pose.headingY)*15);camera.updateMatrixWorld(true);
+   const plan=plans.find(p=>'jefferson-'+p.profile.id===destination);if(!plan)continue;
+   if(!view.fullFootprint)partial.push(plan.profile.kind);
+   const root=scene.children.find(o=>o.userData.jeffersonId===plan.profile.id)!;
+   root.traverse(object=>{if(!(object instanceof T.Mesh))return;const vertices=object.geometry.getAttribute('position');
+    for(let i=0;i<vertices.count;i++){
+     const point=object.localToWorld(new T.Vector3().fromBufferAttribute(vertices,i)).project(camera);
+     assert.ok(point.z>-1&&point.z<1&&Math.abs(point.y)<1,device+' '+plan.profile.name+' roof/base fits after the actual dismount');
+     if(view.fullFootprint)assert.ok(Math.abs(point.x)<1,device+' '+plan.profile.name+' complete silhouette fits after the actual dismount');
+    }
+   });
+  }
+  partialByViewport.set(device,partial);
+ }
+ assert.deepEqual(partialByViewport.get('desktop'),[]);assert.deepEqual(partialByViewport.get('phone'),['stearns','pasadena']);support.dispose();
 });
 test('omitted sidewalks cannot provide Guide frontage positions',()=>{
  const terrain=actualTerrain(),destination='jefferson-868842406';

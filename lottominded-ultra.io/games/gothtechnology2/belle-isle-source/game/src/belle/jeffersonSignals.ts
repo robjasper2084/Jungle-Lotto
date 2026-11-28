@@ -1,7 +1,7 @@
 import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {districts} from './detroitGround.ts';
-import {JEFFERSON_SIGNAL_INVENTORY,JEFFERSON_SIGNAL_RETRIEVED,JEFFERSON_SIGNAL_SOURCE,jeffersonSignalPhase,planJeffersonSignals,type SignalAspect,type SignalPoint,type SignalRoad} from './jeffersonSignalPlan.ts';
+import {JEFFERSON_SIGNAL_BASE_RADIUS,JEFFERSON_SIGNAL_INVENTORY,JEFFERSON_SIGNAL_RETRIEVED,JEFFERSON_SIGNAL_SOURCE,jeffersonSignalPhase,planJeffersonSignals,type SignalAspect,type SignalPoint,type SignalRoad} from './jeffersonSignalPlan.ts';
 import type {ParkTerrain} from './terrain.ts';
 
 export const JEFFERSON_SIGNAL_PHOTO_REFERENCES=Object.freeze([
@@ -17,9 +17,9 @@ const INACTIVE={red:new T.Color(0x381812),amber:new T.Color(0x322713),green:new 
  * city intersection inventory. Joseph Campau's suspended yellow-head family
  * follows the linked photographs. Other unmeasured hardware is explicitly an
  * approximation. The deterministic game cycle never reads real traffic signals. */
-export function createJeffersonSignals(scene:T.Scene,terrain:ParkTerrain,options:{roads?:readonly SignalRoad[]}={}){
+export function createJeffersonSignals(scene:T.Scene,terrain:ParkTerrain,options:{roads?:readonly SignalRoad[];pedestrianClearance?:(x:number,z:number,baseRadius:number)=>boolean}={}){
  const roads=options.roads??[...terrain.map.roads,...districts.roads];
- const plan=planJeffersonSignals({roads,land:(x,z)=>terrain.land(x,z),obstructed:(x,z,r)=>terrain.obstructed(x,z,r)});
+ const plan=planJeffersonSignals({roads,land:(x,z)=>terrain.land(x,z),obstructed:(x,z,r)=>terrain.obstructed(x,z,r),pedestrianClearance:options.pedestrianClearance});
  const metal=new T.MeshStandardMaterial({name:'Jefferson galvanized signal supports',color:0x969c99,metalness:.65,roughness:.45});
  const black=new T.MeshStandardMaterial({name:'Jefferson signal backplates and span wires',color:0x171b1b,roughness:.86});
  const yellow=new T.MeshStandardMaterial({name:'Jefferson yellow traffic signal housings',color:0xe5ad2b,metalness:.08,roughness:.52});
@@ -54,7 +54,7 @@ export function createJeffersonSignals(scene:T.Scene,terrain:ParkTerrain,options
    const key=point.map(v=>v.toFixed(3)).join(','),existing=poleTops.get(key);if(existing)return existing;
    const base=terrain.height(...point),top=new T.Vector3(point[0],base+7.4,point[1]);
    const shaft=new T.CylinderGeometry(.115,.18,7.4,8);shaft.translate(point[0],base+3.7,point[1]);append(shaft,metal);
-   const foot=new T.CylinderGeometry(.28,.33,.42,8);foot.translate(point[0],base+.21,point[1]);append(foot,metal);
+   const foot=new T.CylinderGeometry(.28,JEFFERSON_SIGNAL_BASE_RADIUS,.42,8);foot.translate(point[0],base+.21,point[1]);append(foot,metal);
    poleTops.set(key,top);return top;
   }
   const headTransforms:{position:T.Vector3;yaw:number;axis:'jefferson'|'cross'}[]=[];

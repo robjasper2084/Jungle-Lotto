@@ -2,6 +2,7 @@ import {districts} from './detroitGround.ts';
 import {JEFFERSON_BUILDINGS,planJeffersonBuildings,type JeffersonBuildingPlan} from './jeffersonBuildings.ts';
 import {JEFFERSON_SIGNAL_INVENTORY,JEFFERSON_SIGNAL_SOURCE,projectJeffersonSignal} from './jeffersonSignalPlan.ts';
 import {inside,segment,type Landmark,type ParkTerrain,type Point} from './terrain.ts';
+import {createGroundSample} from '../../runtime/ride-core/src/terrain.ts';
 
 type Road={id:string;name:string;width:number;points:readonly Point[];foot?:boolean;bridge?:boolean;sidewalk?:boolean};
 type Building={id:string;points:Point[];holes?:Point[][]};
@@ -20,6 +21,9 @@ export type JeffersonTravelOptions={roads?:readonly Road[];plans?:readonly Jeffe
 // 1.55 m eye. The caller supplies its live viewport aspect; these are not
 // capture-specific cameras or positions.
 const CLEARANCE=1.25,MAX_VIEW_DISTANCE=140,EYE_HEIGHT=1.55,FRAME_MARGIN=.92;
+// Only the viewer follows a registered pedestrian slab. Building bases and
+// intersection aim heights retain the raw map elevation used to render them.
+function viewerHeight(terrain:ParkTerrain,x:number,z:number){return terrain.sampleGround(x,z,createGroundSample(),terrain.height(x,z)).height;}
 const streetStops=[
  {id:'jefferson-street-grand-boulevard',name:'Jefferson Avenue · East Grand Boulevard',sourceId:214},
  {id:'jefferson-street-woodward',name:'Jefferson Avenue · Woodward downtown',sourceId:1204},
@@ -138,7 +142,7 @@ type BuildingFrame={look:Point;lookY:number;heading:number;pitch:number;fullFoot
 function buildingFrame(point:Point,plan:JeffersonBuildingPlan,terrain:ParkTerrain,aspect:number,verticalFov:number):BuildingFrame|undefined{
  const dx=plan.center[0]-point[0],dz=plan.center[1]-point[1],distance=Math.hypot(dx,dz),front=(-dx*plan.front[0]-dz*plan.front[1])/distance;
  if(front<.28)return;
- const eyeY=terrain.height(...point)+EYE_HEIGHT,cfg=plan.profile;
+ const eyeY=viewerHeight(terrain,...point)+EYE_HEIGHT,cfg=plan.profile;
  // Match the full roof/finial envelope, not just the wall or an estimated
  // mid-height at the footprint centroid. The source outline is unchanged.
  const top=plan.base+Math.max(cfg.wallHeight+cfg.roofHeight,cfg.rearHeight??0)+(cfg.kind==='bagley'||cfg.kind==='wells'?1.1:0);
@@ -195,7 +199,7 @@ function clearView(candidate:Candidate,look:Point,lookY:number,terrain:ParkTerra
  if(jeffersonViewOccluded(candidate.point,end,target?.id,buildings))return false;
  // The original camera collision query retains poles, bridges, rails and all
  // unrelated solids. Stop before the target facade rather than bypassing it.
- const eye={x:candidate.point[0],y:terrain.height(...candidate.point)+EYE_HEIGHT,z:candidate.point[1]};
+ const eye={x:candidate.point[0],y:viewerHeight(terrain,...candidate.point)+EYE_HEIGHT,z:candidate.point[1]};
  const dx=end[0]-eye.x,dz=end[1]-eye.z,fullDistance=Math.hypot(look[0]-eye.x,look[1]-eye.z);
  const dy=(lookY-eye.y)*Math.hypot(dx,dz)/fullDistance,length=Math.hypot(dx,dy,dz);
  return length>.1&&terrain.raycastCamera(eye,{x:dx/length,y:dy/length,z:dz/length},length,.16)===null;
@@ -232,6 +236,6 @@ export function selectJeffersonTravelView(terrain:ParkTerrain,destinationId:stri
   const frame=frames.get(candidate.point),aim=frame?.look??look,aimY=frame?.lookY??lookY;
   if(!clearRoadConnection(candidate,terrain)||!clearView(candidate,aim,aimY,terrain,buildings,target))continue;
   const [x,z]=candidate.point,distance=Math.hypot(aim[0]-x,aim[1]-z);
-  return{x,z,heading:frame?.heading??Math.atan2(aim[0]-x,aim[1]-z),pitch:frame?.pitch??-Math.atan2(aimY-terrain.height(x,z)-EYE_HEIGHT,distance),lookX:aim[0],lookZ:aim[1],lookY:aimY,sourceId,roadId:candidate.road.id,distance,surface:candidate.surface,...(frame?{fullFootprint:frame.fullFootprint}:{})};
+  return{x,z,heading:frame?.heading??Math.atan2(aim[0]-x,aim[1]-z),pitch:frame?.pitch??-Math.atan2(aimY-viewerHeight(terrain,x,z)-EYE_HEIGHT,distance),lookX:aim[0],lookZ:aim[1],lookY:aimY,sourceId,roadId:candidate.road.id,distance,surface:candidate.surface,...(frame?{fullFootprint:frame.fullFootprint}:{})};
  }
 }

@@ -4,6 +4,7 @@
  * ENV_GALLERY_DEVICE=desktop|phone (desktop/high or phone/smooth, DPR 1)
  * ENV_GALLERY_SITES=stearns,garden-court,bagley,wells,pasadena,palms,grand-boulevard,woodward
  * ENV_GALLERY_NIGHT=1 adds night captures of the two street stops.
+ * ENV_GALLERY_SIDEWALKS=1 appends three ground close-ups using native canvas drags.
  * ENV_GALLERY_EXECUTABLE=/usr/bin/chromium selects local headless SwiftShader.
  * Otherwise the existing gallery launcher and optional Metal requirement apply.
  * ENV_GALLERY_OUTPUT and ENV_GALLERY_BUILD_DIR may select explicit directories.
@@ -27,6 +28,7 @@ assert(['desktop','phone'].includes(device),'Unknown ENV_GALLERY_DEVICE');
 const viewport=device==='phone'?{width:390,height:844}:{width:1440,height:900};
 const quality=device==='phone'?'smooth':'high',fps=device==='phone'?'30':'60';
 const night=process.env.ENV_GALLERY_NIGHT==='1';
+const sidewalks=process.env.ENV_GALLERY_SIDEWALKS==='1';
 const runId=new Date().toISOString().replaceAll(/[-:.]/g,'');
 const output=resolve(process.env.ENV_GALLERY_OUTPUT||resolve(game,'output/jefferson-gallery',device,runId));
 const build=resolve(process.env.ENV_GALLERY_BUILD_DIR||resolve(game,'dist'));
@@ -80,6 +82,7 @@ if(filter){
 const selected=new Set(filter||sites.map(s=>s.id));
 const scheduled=[...sites.map(site=>({site,light:'high-noon',hour:'12'})),
  ...(night?sites.filter(s=>s.street).map(site=>({site,light:'night',hour:'22'})):[])];
+const sidewalkSites=sidewalks?sites.filter(site=>['garden-court','palms','woodward'].includes(site.id)):[];
 await mkdir(output,{recursive:true});
 try{await access(resolve(output,'report.json'));throw Error('Output already has report.json; preserve it and select a new output directory');}
 catch(error){if(error.code!=='ENOENT')throw error;}
@@ -103,6 +106,10 @@ const report={schema:1,runId,startedAt:new Date().toISOString(),device,viewport,
   'Signal timing and pole/head dimensions are authored gameplay approximations; source intersection inventory is separate'],
  visits:scheduled.map(({site,light,hour})=>({id:site.id,name:site.name,guide:site.guide,light,hour:Number(hour),quality,
   selected:selected.has(site.id),status:selected.has(site.id)?'scheduled':'not-selected',passed:false,screenshot:null})),
+ sidewalksRequested:sidewalks,sidewalkCoverageComplete:false,
+ sidewalkVisits:sidewalkSites.map(site=>({id:site.id,name:site.name,guide:site.guide,light:'high-noon',hour:12,quality,
+  view:'ground-closeup',status:'scheduled',passed:false,screenshot:null})),
+ sidewalkCoverageGaps:[],
  errors:[],failedRequests:[],coverageGaps:[],cleanupErrors:[]};
 let server,browser,page,chromium,expect,currentPhase='preparation',watchdog;
 function recordError(message){report.errors.push({phase:currentPhase,elapsedMs:elapsed(),message:String(message)});}
@@ -204,6 +211,66 @@ async function travel(site){
  await page.bringToFront();await page.locator('#game').focus({timeout:remaining()});
  return found;
 }
+/** Read-only DOM hit testing selects real canvas pixels. Every point along the
+ * native drag avoids HUD controls, including the phone's movement touch zone. */
+async function sidewalkDragPath(requestedPixels){
+ const path=await page.locator('#game').evaluate((canvas,wanted)=>{
+  const r=canvas.getBoundingClientRect(),left=Math.max(0,r.left)+24,right=Math.min(innerWidth,r.right)-24;
+  const top=Math.max(0,r.top)+24,bottom=Math.min(innerHeight,r.bottom)-24;
+  const xs=[.52,.56,.60,.48,.66,.72,.80].map(f=>r.left+r.width*f).filter(x=>x>=left&&x<=right);
+  for(let pixels=Math.min(wanted,r.height*.28);pixels>=Math.min(12,wanted);pixels*=.7){
+   const ys=[];for(let y=top;y+pixels<=bottom;y+=12)ys.push(y);
+   ys.sort((a,b)=>Math.abs(a+pixels/2-(r.top+r.height*.52))-Math.abs(b+pixels/2-(r.top+r.height*.52)));
+   for(const x of xs)for(const y of ys){
+    const steps=Math.ceil(pixels),clear=Array.from({length:steps+1},(_,i)=>i).every(i=>document.elementFromPoint(x,y+pixels*i/steps)===canvas);
+    if(clear)return{from:{x,y},to:{x,y:y+pixels},deltaX:0,deltaY:pixels,hitTestSamples:steps+1,hitTarget:'game',canvasBounds:{x:r.x,y:r.y,width:r.width,height:r.height}};
+   }
+  }
+  return null;
+ },requestedPixels);
+ assert(path,'No unobstructed canvas interior can accommodate the sidewalk look drag');return path;
+}
+async function dragSidewalkView(entry){
+ const sensitivity=Number(await page.locator('#look-sensitivity').inputValue({timeout:remaining()}));
+ assert(Number.isFinite(sensitivity)&&sensitivity>=.4&&sensitivity<=1.8,'Invalid normal look sensitivity');
+ const observed=entry.travelCamera,startPitch=-Math.atan2(observed.direction[1],Math.hypot(observed.direction[0],observed.direction[2]));
+ const targetPitch=.30,requestedPixels=(targetPitch-startPitch)/(.002*sensitivity);
+ assert(requestedPixels>0&&Number.isFinite(requestedPixels),'The normal Guide view is not above the intended downward ground view');
+ entry.nativeInput={method:'Playwright native left-button mouse drag on the normal game canvas',sensitivity,
+  startPitchRadians:startPitch,targetPitchRadians:targetPitch,requestedDeltaPixels:{x:0,y:requestedPixels},drags:[]};
+ let pending=requestedPixels;
+ while(pending>.5){
+  remaining();assert(entry.nativeInput.drags.length<16,'Sidewalk look exceeded the bounded native drag count');
+  const drag=await sidewalkDragPath(pending);entry.nativeInput.drags.push(drag);
+  await page.mouse.move(drag.from.x,drag.from.y);
+  // Observe trusted input only; never alter a camera, player, control handler,
+  // simulation clock or render state. Remove this temporary observer after up.
+  await page.locator('#game').evaluate(canvas=>{
+   const key=Symbol.for('jefferson-sidewalk-pointer-observer');
+   if(canvas[key])throw Error('Previous sidewalk pointer observer was not released');
+   const events=[],types=['pointerdown','pointermove','pointerup','pointercancel'];
+   const observe=e=>events.push({type:e.type,x:e.clientX,y:e.clientY,button:e.button,buttons:e.buttons,pointerId:e.pointerId,pointerType:e.pointerType,trusted:e.isTrusted});
+   for(const type of types)canvas.addEventListener(type,observe,true);
+   canvas[key]={events,stop:()=>{for(const type of types)canvas.removeEventListener(type,observe,true);}};
+  });
+  try{
+   await page.mouse.down({button:'left'});
+   await page.mouse.move(drag.to.x,drag.to.y,{steps:Math.max(2,Math.ceil(drag.deltaY/12))});
+  }finally{
+   await page.mouse.up({button:'left'});
+   drag.events=await page.locator('#game').evaluate(canvas=>{
+    const key=Symbol.for('jefferson-sidewalk-pointer-observer'),observer=canvas[key];
+    if(!observer)throw Error('Sidewalk pointer observer is missing');observer.stop();delete canvas[key];return observer.events;
+   });
+  }
+  const down=drag.events.find(e=>e.type==='pointerdown'),up=drag.events.findLast(e=>e.type==='pointerup');
+  assert(down&&up&&drag.events.every(e=>e.trusted&&e.pointerType==='mouse')&&!drag.events.some(e=>e.type==='pointercancel'),'Sidewalk drag did not complete through trusted native mouse input');
+  drag.observedDeltaPixels={x:up.x-down.x,y:up.y-down.y};
+  assert(Math.abs(drag.observedDeltaPixels.x)<.51&&Math.abs(drag.observedDeltaPixels.y-drag.deltaY)<1.01,'Observed pointer displacement differs from the requested canvas drag');
+  pending-=drag.deltaY;
+ }
+ entry.nativeInput.observedDeltaPixels=entry.nativeInput.drags.reduce((sum,drag)=>({x:sum.x+drag.observedDeltaPixels.x,y:sum.y+drag.observedDeltaPixels.y}),{x:0,y:0});
+}
 function positionReceipt(observed,site){
  const dx=site.center[0]-observed.position[0],dz=site.center[1]-observed.position[2];
  const distance=Math.hypot(dx,dz),horizontalDirection=Math.hypot(observed.direction[0],observed.direction[2]);
@@ -285,6 +352,52 @@ try{
   }
   entry.completedAtMs=elapsed();await persist();
  }
+ // The original day/night schedule above is complete before any optional input
+ // or camera change below. These are additional views, never replacements for
+ // facade framing evidence. All original wall-clock limits remain in force.
+ for(let i=0;i<sidewalkSites.length;i++){
+  const site=sidewalkSites[i],entry=report.sidewalkVisits[i];
+  if(performance.now()>=deadline){entry.status='not-attempted';entry.failure='Fixed gallery budget exhausted';continue;}
+  currentPhase=site.id+'/sidewalk-closeup';entry.status='attempting';entry.startedAtMs=elapsed();
+  try{
+   if(currentHour!=='12'){await configure('12');currentHour='12';}
+   entry.destination=await travel(site);entry.travelFrame=await painted();entry.travelCamera=await camera();
+   entry.travelPosition=positionReceipt(entry.travelCamera,site);
+   await dragSidewalkView(entry);entry.frame=await painted();
+   await expect.poll(()=>page.locator('#profile').getAttribute('data-quality'),{timeout:remaining()}).toBe(quality);
+   entry.cameraBefore=await camera();entry.position=positionReceipt(entry.cameraBefore,site);
+   entry.observedPitchRadians=-Math.atan2(entry.cameraBefore.direction[1],Math.hypot(entry.cameraBefore.direction[0],entry.cameraBefore.direction[2]));
+   assert(Math.abs(entry.observedPitchRadians-entry.nativeInput.targetPitchRadians)<=.04,'Native canvas drag did not produce the downward ground view');
+   entry.inputPositionDriftM=Math.hypot(...entry.cameraBefore.position.map((v,n)=>v-entry.travelCamera.position[n]));
+   assert(entry.inputPositionDriftM<=3,'Look-only input unexpectedly moved the normal Guide arrival');
+   entry.focus=await page.evaluate(()=>({focused:document.hasFocus(),visibility:document.visibilityState,activeElement:document.activeElement?.id||null}));
+   assert(entry.focus.focused&&entry.focus.visibility==='visible','Game page is not foreground at sidewalk capture');
+   const filename=site.id+'-'+device+'-'+quality+'-high-noon-sidewalk-closeup.png';
+   const bytes=await page.screenshot({path:resolve(output,filename),timeout:remaining(limits.screenshotMs)});
+   entry.screenshot=filename;entry.screenshotBytes=bytes.length;entry.sha256=hash(bytes);
+   assert(bytes.length>=12000,'Sidewalk screenshot is unexpectedly small; inspect retained image');
+   assert.equal(bytes.readUInt32BE(16),viewport.width,'PNG width differs from requested viewport');
+   assert.equal(bytes.readUInt32BE(20),viewport.height,'PNG height differs from requested viewport');
+   entry.cameraAfter=await camera();
+   entry.cameraDrift={distanceM:Math.hypot(...entry.cameraAfter.position.map((v,n)=>v-entry.cameraBefore.position[n])),
+    directionDelta:Math.hypot(...entry.cameraAfter.direction.map((v,n)=>v-entry.cameraBefore.direction[n]))};
+   assert(entry.cameraDrift.distanceM<=3&&entry.cameraDrift.directionDelta<=.08,'Camera drift exceeded existing gallery tolerances during sidewalk screenshot');
+   entry.activeFramesAfterScreenshot=await frames();entry.profileData=await page.locator('#profile').evaluate(node=>({...node.dataset}));
+   entry.place=await page.locator('#place').textContent({timeout:remaining()});
+   entry.observedSkyHour=Number(await page.locator('#sky-hour').inputValue({timeout:remaining()}));
+   assert(Math.abs(entry.observedSkyHour-12)<.051,'Sidewalk capture sky differs from requested hour');
+   assert.equal(Number(entry.profileData.jeffersonBuildings),6,'Real game did not report all six Jefferson replicas');
+   assert.equal(Number(entry.profileData.jeffersonSignalIntersections),13,'Real game did not report all thirteen Jefferson signal intersections');
+   entry.sidewalkGeometry={surfaces:Number(entry.profileData.jeffersonSidewalkSurfaces),ramps:Number(entry.profileData.jeffersonSidewalkRamps),triangles:Number(entry.profileData.jeffersonSidewalkTriangles)};
+   for(const [kind,count]of Object.entries(entry.sidewalkGeometry))assert(Number.isInteger(count)&&count>0,'Real game did not report positive Jefferson sidewalk '+kind);
+   entry.passed=true;entry.status='captured';
+  }catch(error){
+   entry.status='failed';entry.failure=error?.stack||String(error);
+   try{entry.failureCamera=await camera();}catch(observerError){entry.failureObserverError=String(observerError);}
+   if(page&&!page.isClosed()&&performance.now()<deadline)await page.keyboard.press('Escape').catch(()=>{});
+  }
+  entry.completedAtMs=elapsed();await persist();
+ }
 }catch(error){recordError(error?.stack||String(error));}
 finally{
  clearTimeout(watchdog);currentPhase='cleanup';
@@ -293,10 +406,15 @@ finally{
  for(const entry of report.visits)if(entry.selected&&(entry.status==='scheduled'||entry.status==='attempting')){
   entry.status='not-attempted';entry.failure='Run ended before this scheduled capture completed';
  }
+ for(const entry of report.sidewalkVisits)if(entry.status==='scheduled'||entry.status==='attempting'){
+  entry.status='not-attempted';entry.failure='Run ended before this additional sidewalk capture completed';
+ }
  report.coverageGaps=report.visits.filter(v=>!v.passed).map(v=>({id:v.id,light:v.light,status:v.status,reason:v.failure||'Not selected for this run'}));
+ report.sidewalkCoverageGaps=report.sidewalkVisits.filter(v=>!v.passed).map(v=>({id:v.id,status:v.status,reason:v.failure||'Additional sidewalk capture did not complete'}));
+ report.sidewalkCoverageComplete=sidewalks&&report.sidewalkVisits.every(v=>v.passed);
  report.fullDayCoverageComplete=report.visits.filter(v=>v.light==='high-noon').every(v=>v.passed);
  report.selectedCoveragePassed=report.visits.filter(v=>v.selected).every(v=>v.passed)&&!report.errors.length&&!report.failedRequests.length&&!report.cleanupErrors.length;
- report.passed=report.fullDayCoverageComplete&&report.visits.every(v=>v.passed)&&report.selectedCoveragePassed;
+ report.passed=report.fullDayCoverageComplete&&report.visits.every(v=>v.passed)&&report.selectedCoveragePassed&&(!sidewalks||report.sidewalkCoverageComplete);
  report.status=report.passed?'complete':report.visits.some(v=>v.screenshot)?'partial':'failed';
  report.finishedAt=new Date().toISOString();report.elapsedMs=elapsed();await persist();
 }
@@ -305,7 +423,12 @@ const cards=report.visits.map(entry=>'<article><h2>'+escape(entry.name)+'</h2><p
  (entry.screenshot?'<a href="'+escape(entry.screenshot)+'"><img src="'+escape(entry.screenshot)+'" alt="Actual game capture of '+escape(entry.name)+'"></a>':'<p class="missing">No captured image for this scheduled view.</p>')+
  (entry.failure?'<details><summary>Capture limitation</summary><pre>'+escape(entry.failure)+'</pre></details>':'')+
  (entry.cameraBefore?'<details><summary>Observed game camera</summary><pre>'+escape(JSON.stringify(entry.cameraBefore,null,2))+'</pre></details>':'')+'</article>').join('');
-await writeFile(resolve(output,'index.html'),'<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Jefferson actual-game gallery</title><style>body{margin:0;padding:28px;background:#111921;color:#e7edf2;font:16px/1.5 system-ui,sans-serif}header{max-width:1000px}h1{font-size:32px;margin:0 0 10px}main{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,350px),1fr));gap:22px}article{background:#1a2632;border:1px solid #46596b;border-radius:10px;padding:18px;overflow:hidden}img{display:block;width:100%;height:auto}a{color:#85d7ff}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px}.missing{color:#f0c797}h2{font-size:20px}</style><header><h1>Jefferson Avenue — actual game captures</h1><p>'+escape(device)+' · '+escape(quality)+' · '+escape(report.status)+'. Captured '+report.visits.filter(v=>v.passed).length+' of '+report.visits.length+' scheduled views.</p><p>These images come from the built game and its public Guide travel controls. Partial selections remain marked. Visual likeness and the original sustained performance release gates are separate.</p><p><a href="report.json">Open the complete evidence report</a></p></header><main>'+cards+'</main></html>');
+const sidewalkCards=report.sidewalkVisits.map(entry=>'<article><h2>'+escape(entry.name)+' · sidewalk close-up</h2><p>'+escape(entry.quality)+' · '+escape(entry.light)+' · '+escape(entry.status)+'</p>'+
+ (entry.screenshot?'<a href="'+escape(entry.screenshot)+'"><img src="'+escape(entry.screenshot)+'" alt="Additional actual game sidewalk capture at '+escape(entry.name)+'"></a>':'<p class="missing">No captured image for this additional sidewalk view.</p>')+
+ (entry.failure?'<details><summary>Capture limitation</summary><pre>'+escape(entry.failure)+'</pre></details>':'')+
+ '<details><summary>Observed camera and native input</summary><pre>'+escape(JSON.stringify({camera:entry.cameraBefore,nativeInput:entry.nativeInput,frame:entry.frame},null,2))+'</pre></details></article>').join('');
+await writeFile(resolve(output,'index.html'),'<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Jefferson actual-game gallery</title><style>body{margin:0;padding:28px;background:#111921;color:#e7edf2;font:16px/1.5 system-ui,sans-serif}header{max-width:1000px}h1{font-size:32px;margin:0 0 10px}main{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,350px),1fr));gap:22px}article{background:#1a2632;border:1px solid #46596b;border-radius:10px;padding:18px;overflow:hidden}img{display:block;width:100%;height:auto}a{color:#85d7ff}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px}.missing{color:#f0c797}h2{font-size:20px}</style><header><h1>Jefferson Avenue — actual game captures</h1><p>'+escape(device)+' · '+escape(quality)+' · '+escape(report.status)+'. Captured '+report.visits.filter(v=>v.passed).length+' of '+report.visits.length+' scheduled views.</p><p>These images come from the built game and its public Guide travel controls. Partial selections remain marked. Visual likeness and the original sustained performance release gates are separate.</p><p><a href="report.json">Open the complete evidence report</a></p></header><main>'+cards+'</main>'+(sidewalks?'<section><h2>Additional sidewalk close-ups</h2><p>'+report.sidewalkVisits.filter(v=>v.passed).length+' of '+report.sidewalkVisits.length+' captured after the original views, using normal Guide travel and native canvas look input. Original framing evidence above is retained.</p><main>'+sidewalkCards+'</main></section>':'')+'</html>');
 console.log(JSON.stringify({output,passed:report.passed,selectedCoveragePassed:report.selectedCoveragePassed,partialSelection:report.partialSelection,
- status:report.status,renderer:report.renderer,captured:report.visits.filter(v=>v.passed).map(v=>v.screenshot),coverageGaps:report.coverageGaps,errors:report.errors.slice(0,4)}));
-if(!report.selectedCoveragePassed)process.exitCode=1;
+ status:report.status,renderer:report.renderer,captured:report.visits.filter(v=>v.passed).map(v=>v.screenshot),coverageGaps:report.coverageGaps,
+ sidewalksRequested:sidewalks,sidewalkCoverageComplete:report.sidewalkCoverageComplete,sidewalkCaptured:report.sidewalkVisits.filter(v=>v.passed).map(v=>v.screenshot),sidewalkCoverageGaps:report.sidewalkCoverageGaps,errors:report.errors.slice(0,4)}));
+if(!report.selectedCoveragePassed||(sidewalks&&!report.sidewalkCoverageComplete))process.exitCode=1;
