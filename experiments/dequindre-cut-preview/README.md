@@ -68,6 +68,8 @@ Swoop asset URLs receive a dedicated `/__swoop-assets__/` namespace during previ
 
 The preview shares Belle Isle's renderer and controls. Source updates go dormant away from the imported district, and active views share pooled position/traffic records and one visibility union. The source's distance-based visibility and releasable art jobs remain active. A tile-contained collision fast path avoids unnecessary cross-district sampling while matching the full query in the physics tests.
 
+Imported interiors retain the source game's original four-point-light budget, scoped to the imported world and selected for each actual rendering camera. Dormant source light slots and six zero-intensity source spotlights are excluded from shader light arrays; positive source lights return normally. Native host lights, authored light colors and ranges, and transformed world positions are preserved. This is a verified reduction in unnecessary light slots, not a measured frame-rate improvement or a diagnosis of the software-renderer desktop stall.
+
 Startup texture preparation filters only the added source subtree by visibility. This defers uploads for hidden Cut textures while retaining Belle Isle's existing preparation of its own hidden models. Destination preparation holds the destination and other active views visible until the original travel action is ready. Texture resolution and source geometry remain unchanged.
 
 Mainland overlap is computed in the original map frame before projecting the final boundary. The footprint calculation excludes only redundant triangles wholly contained by a complete source tile; their rendered geometry and collision remain present. This preserves actual gaps and boundaries without snapping coordinates or widening the imported area.

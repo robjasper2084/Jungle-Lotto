@@ -9,6 +9,7 @@ import { sourceCompanionObstacles } from './companionBridge.ts';
 import { DistrictViewHolds, type DistrictFrameView as FrameView, type PreparedDistrictView } from './swoopViewHolds.ts';
 import { SwoopStageError, describeSwoopLoadError } from './swoopLoadError.ts';
 import { registerSwoopTextureRoot } from './sourceTextureWarmup.ts';
+import { createSourceLighting } from './sourceLighting.ts';
 import { buildScenery } from '../../../lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/scenery.ts';
 import { buildFreestylePark } from '../../../lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/freestylePark.ts';
 import { NatureWorld } from '../../../lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/natureWorld.ts';
@@ -115,6 +116,7 @@ export async function createSwoopDistrict(options: SwoopDistrictOptions) {
   mapRoot.position.set(MAP_ORIGIN.x, -MAP_ORIGIN.y, -MAP_ORIGIN.z);
   root.add(mapRoot);
   root.updateWorldMatrix(true, true);
+  const sourceLighting = createSourceLighting(scene, root);
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const settings: SwoopPreviewSettings = { drawDistance: '600', renderQuality: 'detailed', reducedMotion: String(reduced.matches) };
   (globalThis as PreviewGlobal).__dequindrePreviewSettings = settings;
@@ -147,6 +149,7 @@ export async function createSwoopDistrict(options: SwoopDistrictOptions) {
     if (disposed) return;
     disposed = true;
     unregisterTextureRoot();
+    sourceLighting.dispose();
     reduced.removeEventListener('change', updateReduced);
     water?.dispose();
     clearPreviewTrafficFocus();
@@ -171,6 +174,7 @@ export async function createSwoopDistrict(options: SwoopDistrictOptions) {
     await stage('freestylePark', 'Preparing the complete Freestyle Yard and access path…', () => buildFreestylePark(mapRoot, world!));
     const initialMap = { x: SPOTS[0].x, z: SPOTS[0].z };
     scenery = await stage('scenery', 'Loading the Cut, its city blocks, murals, parks and riverfront…', () => buildScenery(mapRoot, world!, true, initialMap, options.applyAssets));
+    sourceLighting.registerSpots(mapRoot);
     atmosphere = mapRoot.getObjectByName('Subtle windborne atmosphere');
     const rawStreamUpdate = scenery.stream.update.bind(scenery.stream);
     // Source loaders retain one concurrency budget. Every view contributes to
@@ -320,6 +324,8 @@ export async function createSwoopDistrict(options: SwoopDistrictOptions) {
     setPreviewTrafficFocus(currentObservers, currentMapFocus);
     const radius = Number(settings.drawDistance) + 240;
     const nearby = sourceIsNearby(radius);
+    // The same live-view and held-target union controls shader-light residency.
+    sourceLighting.setActive(nearby);
     if (!nearby && dormant) {
       skippedDormantUpdates++;
       updateMilliseconds = performance.now() - before;
@@ -361,6 +367,7 @@ export async function createSwoopDistrict(options: SwoopDistrictOptions) {
     // so it does not add another atmosphere layer to Belle Isle when dormant.
     if (atmosphere) atmosphere.visible = nearby && !reduced.matches;
     retail!.update(localPoints, dt);
+    sourceLighting.prepare(views[0].camera);
     for (let i = 0; i < world!.traffic.length; i++) mapTraffic[i] = toLocalTraffic(world!.traffic[i], mapTraffic[i]);
     mapTraffic.length = world!.traffic.length;
     trafficCenter.x = trafficCenter.z = 0;
@@ -409,6 +416,7 @@ export async function createSwoopDistrict(options: SwoopDistrictOptions) {
         if (disposed) throw new Error('This district view was disposed during travel preparation');
         await scenery!.stream.warm([mapped], Number(settings.drawDistance) + 100);
         refresh();
+        sourceLighting.prepare(camera);
         await warmFirstView(renderer, scene, camera);
         if (disposed) throw new Error('This district view was disposed during travel preparation');
       });
@@ -447,6 +455,7 @@ export async function createSwoopDistrict(options: SwoopDistrictOptions) {
       retail: retail!.counts,
       actors: { sourceTraffic: world!.traffic.length, activeTrafficModels: traffic!.items.size, mapPhotographers: 18, ambientCyclists: ambientPacks!.rides.reduce((sum, ride) => sum + ride.riders.length, 0), activeObservers: currentObservers.length },
       stream: scenery!.stream.status,
+      lighting: sourceLighting.diagnostics(),
       rendering: { meshes, visibleMeshes, visibleChunks, updateMilliseconds, dormant, skippedDormantUpdates, pooledViewRecords: viewScratch.size, unionRecordsAllocated: visibilityUnion.allocatedRecords, pendingWarmTargets: viewHolds.pendingTargets, settings: { ...settings } },
       timings: { ...timings },
       lifecycle: 'One host renderer; original source collision remains resident; source tiles and owned art jobs use distance visibility and hysteresis. Terrain owns physics disposal.',

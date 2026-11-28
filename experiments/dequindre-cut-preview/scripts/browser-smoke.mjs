@@ -5,6 +5,7 @@ import {execFileSync} from 'node:child_process';
 import {previewRoot,repoRoot} from './paths.mjs';
 import {waitForPreviewReadiness} from './browser-readiness.mjs';
 import {readPreviewReadinessState} from './browser-dom-state.mjs';
+import {attemptOptionalCaptureAction} from './browser-optional-action.mjs';
 
 const compact=process.argv.includes('--compact'),phone=compact||process.argv.includes('--phone'),captureOnly=process.argv.includes('--capture-only'),profile=!captureOnly&&process.argv.includes('--profile'),reducedMotion=process.argv.includes('--reduced-motion');
 const viewport=compact?{width:320,height:568}:phone?{width:390,height:844}:{width:1440,height:900};
@@ -14,7 +15,7 @@ requestedUrl.searchParams.set('profile','1');
 const label=(compact?'compact-phone':phone?'phone':'desktop')+(reducedMotion?'-reduced-motion':'')+(captureOnly?'-pictures':profile?'-90s':'-smoke');
 const startedAt=new Date().toISOString(),run=startedAt.replace(/[.:]/g,'-')+'-'+process.pid;
 const output=resolve(previewRoot,'output/browser',label,run);await mkdir(output,{recursive:true});
-const report={schemaVersion:1,startedAt,sourceHead:execFileSync('git',['rev-parse','HEAD'],{cwd:repoRoot,encoding:'utf8'}).trim(),url:requestedUrl.href,device:compact?'compact-phone':phone?'phone':'desktop',viewport,reducedMotion,mode:captureOnly?'native-preview-pictures':profile?'supplemental-90-second-observation':'native-input-smoke',captureOnly,productionAcceptance:false,checks:[],captures:[],layout:[],nativeActions:[],pageErrors:[],failedRequests:[],httpErrors:[],consoleErrors:[],webSockets:[]};
+const report={schemaVersion:1,startedAt,sourceHead:execFileSync('git',['rev-parse','HEAD'],{cwd:repoRoot,encoding:'utf8'}).trim(),url:requestedUrl.href,device:compact?'compact-phone':phone?'phone':'desktop',viewport,reducedMotion,mode:captureOnly?'native-preview-pictures':profile?'supplemental-90-second-observation':'native-input-smoke',captureOnly,productionAcceptance:false,checks:[],captures:[],layout:[],nativeActions:[],warnings:[],pageErrors:[],failedRequests:[],httpErrors:[],consoleErrors:[],webSockets:[]};
 let browser,page;
 const record=(name,value)=>{report.checks.push({name,passed:!!value});if(!value)throw Error('Preview check failed: '+name);};
 const check=(name,value,detail)=>report.checks.push({name,passed:!!value,...(detail===undefined?{}:{detail})});
@@ -33,16 +34,17 @@ try{
   const context=await browser.newContext({viewport,deviceScaleFactor:1,isMobile:phone,hasTouch:phone,reducedMotion:reducedMotion?'reduce':'no-preference'});
   page=await context.newPage();
   const touchSession=phone?await context.newCDPSession(page):null;
-  const activate=async(locator,name)=>{
-    const action={name,method:phone?'native-touch':'native-keyboard',startedAt:new Date().toISOString()},began=Date.now();
+  const activate=async(locator,name,{timeout=30000,optional=false}={})=>{
+    const action={name,method:phone?'native-touch':'native-keyboard',optional,startedAt:new Date().toISOString()},began=Date.now();
     report.nativeActions.push(action);
     try{
-      await expect(locator).toBeVisible({timeout:30000});
-      await expect(locator).toBeEnabled({timeout:30000});
-      if(phone)await locator.tap({timeout:30000});
-      else{await locator.focus({timeout:30000});await expect(locator).toBeFocused();await locator.press('Enter',{timeout:30000});}
+      await expect(locator).toBeVisible({timeout});
+      await expect(locator).toBeEnabled({timeout});
+      if(phone)await locator.tap({timeout});
+      else{await locator.focus({timeout});await expect(locator).toBeFocused({timeout});await locator.press('Enter',{timeout});}
       action.completed=true;
-    }finally{action.elapsedMs=Date.now()-began;}
+    }catch(error){action.completed=false;action.error=String(error);throw error;}
+    finally{action.elapsedMs=Date.now()-began;}
   };
   const holdForward=async milliseconds=>{
     if(touchSession){
@@ -118,7 +120,16 @@ try{
   record('native startup reveals a usable preview HUD and renders the selected ride',true);
   if(captureOnly){
     const skip=page.getByRole('button',{name:'Skip first ride objective',exact:true});
-    if(await skip.isVisible()){await activate(skip,'Skip optional first ride objective');await expect(page.locator('#first-ride-objective')).toBeHidden();}
+    if(await skip.isVisible()){
+      report.optionalTipDismissal=await attemptOptionalCaptureAction(async()=>{
+        await activate(skip,'Skip optional first ride objective',{timeout:5000,optional:true});
+        await expect(page.locator('#first-ride-objective')).toBeHidden({timeout:5000});
+      },()=>skip.evaluate(button=>{
+        const bounds=button.getBoundingClientRect(),hit=document.elementFromPoint(bounds.x+bounds.width/2,bounds.y+bounds.height/2);
+        return {button:{pointerEvents:getComputedStyle(button).pointerEvents,bounds:{x:bounds.x,y:bounds.y,width:bounds.width,height:bounds.height}},cardPointerEvents:getComputedStyle(button.parentElement).pointerEvents,hit:hit?{tag:hit.tagName,id:hit.id,text:hit.textContent?.slice(0,120),withinSkip:button.contains(hit)}:null};
+      }));
+      if(!report.optionalTipDismissal.completed)report.warnings.push({name:'Optional first-ride tip could not be dismissed; required map capture checks continue',...report.optionalTipDismissal});
+    }else report.optionalTipDismissal={attempted:false,reason:'Optional first-ride tip is not visible'};
   }
   const bannerBounds=await page.locator('#dequindre-preview-banner').boundingBox();
   report.layout.push({element:'preview-banner',bounds:bannerBounds});
