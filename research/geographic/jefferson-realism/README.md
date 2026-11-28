@@ -147,6 +147,21 @@ Apartment wall bands now use adjoining material sections on the original wall pl
 
 Wells now has direct hip-roof faces joining its retained mapped eaves to an estimated level ridge, rather than a clipped rectangular gable closed with tall stone walls. A separate conical cap follows the small source bay at vertices 13–25. Two window stacks on the broad curved source arc 26–34 replace a blank facade caused by skipping its short individual edges. Roof, turret and window proportions remain photograph-informed estimates; the main/wing heights and all collision records remain unchanged. Actual-geometry regressions verify the street-facing roof at both detail levels, mapped eave coverage, supported turret cap and visible glazing on both wall stories. See the detailed inference and attribution in [photographic-evidence.md](photographic-evidence.md).
 
+Candidate `c0ecca42c8daae96d63eacda0527e90b7b6ecad4` completed all 20 captures in [gallery run 46090955391](https://github.com/robjasper2084/Jungle-Lotto/actions/runs/46090955391). Native review confirmed the clean Garden Court bands and corrected Wells roof/bay windows. Review also found pale triangular intrusions in distant window panes on the Stearns and Pasadena phone views. A still establishes this visible defect, but does not establish temporal flicker. The existing solid stone frame placed an opaque face only 20 mm behind its glass, creating an unnecessary competing surface.
+
+The same candidate passed all four original lanes in [90-second sustained run 46090955457](https://github.com/robjasper2084/Jungle-Lotto/actions/runs/46090955457):
+
+| Native lane | p95 frame time | Maximum interval | Intervals over 250 ms | Original result |
+| --- | ---: | ---: | ---: | --- |
+| Desktop / full | 33.6 ms | 149.5 ms | 0 | Passed |
+| Phone / full | 33.9 ms | 166.8 ms | 0 | Passed |
+| Desktop / diagnostic | 34.4 ms | 155.3 ms | 0 | Passed |
+| Phone / diagnostic | 33.4 ms | 232.4 ms | 0 | Passed |
+
+Both full-scene GPS regressions also passed. These are accepted results for that exact candidate, with every sampled frame retained and no hidden time, application errors or failed requests. They do not prove the cause of the earlier misses or establish that a visual change repaired them. The subsequent window-frame revision requires its own exact-candidate native results under the same original gates.
+
+Window frames now retain their four outer reveal faces and a rectangular front ring, with an open glazing aperture. The hidden wall-facing back and the stone face directly behind the pane are omitted. Outer dimensions, materials, depth, position, glazing, mullions and sills remain the same; neither polygon depth offsets nor the camera clipping planes are changed. A regression probes actual glazing centroids for stone in the 3–60 mm slice behind them and separately verifies that the visible border remains. It fails the previous solid frame and passes the hollow construction. The revised geometry uses 169,815 near-plus-far triangles in the same 60 meshes; the original allocation and native-performance gates remain unchanged.
+
 ## Sources
 
 - [Published building-footprint service](https://services2.arcgis.com/HsXtOCMp1Nis1Ogr/ArcGIS/rest/services/Building_Footprints_detroit_2024_20250724/FeatureServer/0)

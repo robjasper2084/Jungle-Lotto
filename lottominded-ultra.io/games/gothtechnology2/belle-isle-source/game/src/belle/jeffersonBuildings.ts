@@ -257,7 +257,15 @@ function wellsRoof(parts:Parts,p:JeffersonBuildingPlan,pal:Palette){
 function windowPane(parts:Parts,e:Edge,base:number,along:number,y:number,w:number,h:number,pal:Palette,seed:number,arched=false){
  const t=along/e.length,x=e.a[0]+(e.b[0]-e.a[0])*t,z=e.a[1]+(e.b[1]-e.a[1])*t;
  const shift=(n:number):Point=>[x+e.nx*n,z+e.nz*n];const [tx,tz]=shift(.055),[gx,gz]=shift(.135);
- parts.box(tx,base+y,tz,w+.16,h+.16,.12,e.yaw,pal.limestone);
+ // Keep the original outer reveal and front border, without a solid stone
+ // face only 20 mm behind the glass. Four outer sides plus this ring use
+ // 16 triangles; the hidden wall-facing back and glazing aperture stay open.
+ const reveal=new T.BoxGeometry(w+.16,h+.16,.12);
+ reveal.setIndex(Array.from(reveal.index!.array).slice(0,24));reveal.clearGroups();
+ const rectangle=(width:number,height:number)=>[new T.Vector2(-width/2,-height/2),new T.Vector2(width/2,-height/2),new T.Vector2(width/2,height/2),new T.Vector2(-width/2,height/2)];
+ const shape=new T.Shape(rectangle(w+.16,h+.16));shape.holes.push(new T.Path(rectangle(w,h)));
+ const border=new T.ShapeGeometry(shape);border.translate(0,0,.06);
+ for(const geometry of [reveal,border]){geometry.rotateY(e.yaw);geometry.translate(tx,base+y,tz);parts.add(geometry,pal.limestone);}
  const shade=.65+((Math.abs(Math.sin(seed*97.17))*917.7)%1)*.35;
  parts.plane(gx,base+y,gz,w,h,e.yaw,pal.glass,new T.Color(shade,shade*.99,Math.min(1,shade*1.05)));
  parts.box(gx+e.nx*.015,base+y,gz+e.nz*.015,.045,h,.025,e.yaw,pal.iron);

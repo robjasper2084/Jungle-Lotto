@@ -115,6 +115,32 @@ test('apartment facade bands have one surface at each depth rather than competin
  }
 });
 
+test('window frames retain their border without a stone face immediately behind the glazing',()=>{
+ let checked=0;
+ for(const id of requiredSites){
+  const p=plan(id),meshes=nearMeshes(id),stone=meshes.filter(m=>/limestone/.test((m.material as T.Material).name)),panes:T.Vector3[][]=[];
+  for(const mesh of meshes.filter(m=>/glazing/.test((m.material as T.Material).name)))forTriangles(mesh,(a,b,c)=>{
+   // The separate 2.5 m entrance pane has an iron surround, not windowPane's
+   // limestone frame. Sample actual window triangles throughout each facade.
+   if(Math.abs(Math.max(a.y,b.y,c.y)-Math.min(a.y,b.y,c.y)-2.5)<.001)return;
+   panes.push([a.clone(),b.clone(),c.clone()]);
+  });
+  const count=Math.min(32,panes.length);assert.ok(count>=16,p.profile.name+' needs representative window coverage');
+  for(let i=0;i<count;i++){
+   const [a,b,c]=panes[Math.floor(i*(panes.length-1)/(count-1))],center=a.clone().add(b).add(c).divideScalar(3);
+   const normal=new T.Triangle(a,b,c).getNormal(new T.Vector3()),ray=new T.Raycaster(center,normal.clone().negate(),.003,.06);
+   assert.equal(ray.intersectObjects(stone,false).length,0,p.profile.name+' has stone competing with glass in the 3–60 mm slice behind its pane');
+   // A side-border probe must still hit the retained front ring, so deleting
+   // the entire stone surround cannot make the aperture regression pass.
+   const right=new T.Vector3(normal.z,0,-normal.x),xs=[a,b,c].map(v=>v.dot(right));
+   const border=center.clone().addScaledVector(right,Math.max(...xs)+.04-center.dot(right));
+   border.y=(Math.min(a.y,b.y,c.y)+Math.max(a.y,b.y,c.y))/2;
+   ray.set(border,normal.clone().negate());assert.ok(ray.intersectObjects(stone,false).length>0,p.profile.name+' lost its visible window border');checked++;
+  }
+ }
+ assert.ok(checked>=96,'Probe small houses, apartment facades, and the Stearns upper block');
+});
+
 test('the retained entrance glazing has no window surrounds or facade bands crossing its opening',()=>{
  for(const id of requiredSites){
   const p=plan(id),meshes=nearMeshes(id),door:T.Vector3[][]=[];
