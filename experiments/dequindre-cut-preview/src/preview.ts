@@ -1,4 +1,5 @@
 import {previewSnapshot,previewState} from './previewState.ts';
+import {canPreviewTravel} from './previewAvailability.ts';
 import './preview.css';
 
 Object.defineProperty(window,'__dequindrePreview',{value:Object.freeze({snapshot:previewSnapshot}),configurable:false,writable:false});
@@ -22,6 +23,11 @@ const title=document.createElement('h2');title.id='dequindre-preview-title';titl
 const intro=document.createElement('p');intro.textContent='This separate preview brings the existing Swoop map into the Belle Isle world. The production game is unchanged.';
 const stage=document.createElement('p');stage.className='preview-stage';stage.setAttribute('role','status');stage.setAttribute('aria-live','polite');
 const places=document.createElement('div');places.className='preview-places';
+const canTravel=(destination:HTMLButtonElement|null)=>canPreviewTravel(previewState,{
+  start:document.querySelector<HTMLButtonElement>('#start'),
+  welcome:document.querySelector<HTMLElement>('#welcome'),
+  rideHud:document.querySelector<HTMLElement>('#ridehud'),destination,
+});
 for(const [id,label,detail]of [
   ['atwater','Atwater entrance','Start at the southern end of the Cut'],
   ['freight','Freight Yard','Explore the market and overpass section'],
@@ -32,7 +38,7 @@ for(const [id,label,detail]of [
   const name=document.createElement('strong');name.textContent=label;const description=document.createElement('span');description.textContent=detail;button.append(name,description);
   button.onclick=()=>{
     const native=document.querySelector<HTMLButtonElement>('[data-cut-travel="preview-cut-'+id+'"]');
-    if(!native){stage.textContent='The shared game is still preparing its destinations.';return;}
+    if(!native||!canTravel(native)){refresh();if(!native)stage.textContent='The shared game is still preparing its destinations.';return;}
     dialog.close();native.click();document.querySelector<HTMLCanvasElement>('canvas')?.focus();
   };
   places.append(button);
@@ -50,9 +56,11 @@ open.onclick=()=>dialog.showModal();dialog.addEventListener('close',()=>open.foc
 
 let lastStage='';
 const refresh=()=>{
-  const start=document.querySelector<HTMLButtonElement>('#start');
-  const usable=previewState.ready&&!previewState.travelPending&&!previewState.error&&!!start&&!start.disabled&&!!document.querySelector('[data-cut-travel="preview-cut-atwater"]');
-  for(const button of places.querySelectorAll<HTMLButtonElement>('button'))button.disabled=!usable;
+  let usable=false;
+  for(const button of places.querySelectorAll<HTMLButtonElement>('button')){
+    const native=document.querySelector<HTMLButtonElement>('[data-cut-travel="preview-cut-'+button.dataset.previewStop+'"]');
+    const available=canTravel(native);button.disabled=!available;usable||=available;
+  }
   const message=previewState.error?'Could not prepare this preview: '+previewState.error:usable?'The complete source district is ready to explore.':previewState.stage;
   if(message!==lastStage){stage.textContent=message;lastStage=message;}
   banner.dataset.ready=String(usable);

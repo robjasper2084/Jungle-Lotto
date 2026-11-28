@@ -13,7 +13,7 @@ requestedUrl.searchParams.set('profile','1');
 const label=(compact?'compact-phone':phone?'phone':'desktop')+(reducedMotion?'-reduced-motion':'')+(profile?'-90s':'-smoke');
 const startedAt=new Date().toISOString(),run=startedAt.replace(/[.:]/g,'-')+'-'+process.pid;
 const output=resolve(previewRoot,'output/browser',label,run);await mkdir(output,{recursive:true});
-const report={schemaVersion:1,startedAt,sourceHead:execFileSync('git',['rev-parse','HEAD'],{cwd:repoRoot,encoding:'utf8'}).trim(),url:requestedUrl.href,device:compact?'compact-phone':phone?'phone':'desktop',viewport,reducedMotion,mode:profile?'supplemental-90-second-observation':'native-input-smoke',productionAcceptance:false,checks:[],captures:[],layout:[],pageErrors:[],failedRequests:[],httpErrors:[],consoleErrors:[],webSockets:[]};
+const report={schemaVersion:1,startedAt,sourceHead:execFileSync('git',['rev-parse','HEAD'],{cwd:repoRoot,encoding:'utf8'}).trim(),url:requestedUrl.href,device:compact?'compact-phone':phone?'phone':'desktop',viewport,reducedMotion,mode:profile?'supplemental-90-second-observation':'native-input-smoke',productionAcceptance:false,checks:[],captures:[],layout:[],nativeActions:[],pageErrors:[],failedRequests:[],httpErrors:[],consoleErrors:[],webSockets:[]};
 let browser,page;
 const record=(name,value)=>{report.checks.push({name,passed:!!value});if(!value)throw Error('Preview check failed: '+name);};
 const check=(name,value,detail)=>report.checks.push({name,passed:!!value,...(detail===undefined?{}:{detail})});
@@ -25,6 +25,17 @@ try{
   const context=await browser.newContext({viewport,deviceScaleFactor:1,isMobile:phone,hasTouch:phone,reducedMotion:reducedMotion?'reduce':'no-preference'});
   page=await context.newPage();
   const touchSession=phone?await context.newCDPSession(page):null;
+  const activate=async(locator,name)=>{
+    const action={name,method:phone?'native-touch':'native-keyboard',startedAt:new Date().toISOString()},began=Date.now();
+    report.nativeActions.push(action);
+    try{
+      await expect(locator).toBeVisible({timeout:30000});
+      await expect(locator).toBeEnabled({timeout:30000});
+      if(phone)await locator.tap({timeout:30000});
+      else{await locator.focus({timeout:30000});await expect(locator).toBeFocused();await locator.press('Enter',{timeout:30000});}
+      action.completed=true;
+    }finally{action.elapsedMs=Date.now()-began;}
+  };
   const holdForward=async milliseconds=>{
     if(touchSession){
       await expect(page.locator('#touch-zone')).toBeVisible();
@@ -46,13 +57,36 @@ try{
   page.on('websocket',socket=>report.webSockets.push(socket.url()));
   const readinessState=async(stop=null)=>({
     ...await page.evaluate(stop=>{
-      const start=document.querySelector('#start'),native=stop?document.querySelector('[data-cut-travel="preview-cut-'+stop+'"]'):null;
-      return {preview:globalThis.__dequindrePreview?.snapshot?.()??null,bannerAttached:!!document.querySelector('#dequindre-preview-banner[data-dequindre-preview]'),startEnabled:!!start&&!start.disabled,loading:document.querySelector('#loading')?.textContent??'',travelState:native?.dataset.previewTravelState??null,travelMessage:native?.parentElement?.querySelector('[data-preview-travel-status]')?.textContent??''};
+      const start=document.querySelector('#start'),welcome=document.querySelector('#welcome'),banner=document.querySelector('#dequindre-preview-banner[data-dequindre-preview]'),native=stop?document.querySelector('[data-cut-travel="preview-cut-'+stop+'"]'):null;
+      const visible=element=>{if(!element||element.hidden)return false;const style=getComputedStyle(element),bounds=element.getBoundingClientRect();return style.display!=='none'&&style.visibility!=='hidden'&&bounds.width>0&&bounds.height>0;};
+      const destinations=[...document.querySelectorAll('[data-preview-stop]')];
+      return {preview:globalThis.__dequindrePreview?.snapshot?.()??null,bannerAttached:!!banner,startEnabled:!!start&&!start.disabled,startLabel:document.querySelector('#start-label')?.textContent?.trim()??'',loading:document.querySelector('#loading')?.textContent??'',welcomeHidden:welcome?.hidden??false,welcomeState:welcome?.dataset.state??null,bodyAtStart:document.body.classList.contains('at-start'),selectedVehicle:welcome?.dataset.vehicle??null,checkedVehicle:document.querySelector('input[name="startup-vehicle"]:checked')?.value??null,camera:welcome?.dataset.camera??null,rideHudVisible:visible(document.querySelector('#ridehud')),bannerVisible:visible(banner),previewUsable:banner?.dataset.ready==='true'&&destinations.length===4&&destinations.every(button=>!button.disabled),activeFrames:Number(document.querySelector('#profile')?.dataset.activeFrames??0),travelState:native?.dataset.previewTravelState??null,travelMessage:native?.parentElement?.querySelector('[data-preview-travel-status]')?.textContent??''};
     },stop),
     pageErrors:[...report.pageErrors],
   });
+  const navigationStarted=Date.now();
   await page.goto(requestedUrl.href,{waitUntil:'domcontentloaded'});
+  report.documentReadyElapsedMs=Date.now()-navigationStarted;
+  // Choose through the original accessible controls before heavy world work
+  // finishes. The shared map rider is One wheel; no storage or DOM override.
+  const picker=page.locator('.cinema-ride-picker'),summary=picker.locator('summary');
+  await expect(summary).toBeVisible({timeout:180000});
+  const choiceStarted=Date.now();
+  report.vehicleChoice={requested:'onewheel',method:phone?'native-touch-radio-label':'native-keyboard-radio',before:await readinessState()};
+  await activate(summary,'Open native ride chooser');
+  const oneWheel=picker.locator('input[name="startup-vehicle"][value="onewheel"]');
+  const oneWheelCard=picker.locator('label:has(input[name="startup-vehicle"][value="onewheel"])');
+  await expect(oneWheelCard).toBeVisible({timeout:30000});await expect(oneWheel).toBeEnabled({timeout:30000});
+  if(phone)await oneWheelCard.tap({timeout:30000});
+  else{await oneWheel.focus({timeout:30000});await expect(oneWheel).toBeFocused();await oneWheel.press('Space',{timeout:30000});}
+  await expect(oneWheel).toBeChecked();
+  await expect(page.locator('#welcome')).toHaveAttribute('data-vehicle','onewheel');
+  await activate(picker.getByRole('button',{name:'Use this ride',exact:true}),'Confirm native One wheel choice');
+  await expect(picker).toHaveJSProperty('open',false);
+  Object.assign(report.vehicleChoice,{after:await readinessState(),elapsedMs:Date.now()-choiceStarted});
+  record('native ride chooser selects One wheel',report.vehicleChoice.after.selectedVehicle==='onewheel'&&report.vehicleChoice.after.checkedVehicle==='onewheel');
   report.startupReadiness=await waitForPreviewReadiness(()=>readinessState());
+  report.startupReadiness.totalElapsedMs=Date.now()-navigationStarted;
   record('source-backed world is ready',true);
   report.initial=await snapshot(page);
   const imported=report.initial.diagnostics?.importedWorld,coverage=imported?.mapCoverage;
@@ -66,14 +100,16 @@ try{
     check('complete scene connector '+direction,route?.ok===true&&route.phase==='complete-scene'&&route.issues.length===0&&route.samples>=Math.floor(connection.route.length/.75),route);
   }
   check('connector verified in both directions',connection?.verified===true);
-  await expect(page.locator('#welcome-friends')).toBeEnabled({timeout:30000});
-  await page.locator('#welcome-friends').click();
+  await activate(page.locator('#welcome-friends'),'Open native friends notice');
   await expect(page.locator('#online-room[data-preview-offline="true"]')).toBeVisible();
   await expect(page.locator('#online-room')).toContainText('Online rooms are off in this preview.');
   record('offline room notice has no join or create inputs',await page.locator('#online-room input,#online-room select').count()===0);
-  await page.locator('#online-room').getByRole('button',{name:'Close preview room notice',exact:true}).click();
-  await page.locator('#start').click();
-  await expect(page.locator('#dequindre-preview-banner')).toBeVisible();
+  await activate(page.locator('#online-room').getByRole('button',{name:'Close preview room notice',exact:true}),'Close native friends notice');
+  const rideStarted=Date.now();
+  await activate(page.locator('#start'),'Start native One wheel ride');
+  report.nativeRideReadiness=await waitForPreviewReadiness(()=>readinessState(),{ride:true});
+  report.nativeRideReadiness.totalElapsedMs=Date.now()-rideStarted;
+  record('native startup reveals a usable preview HUD and renders the selected ride',true);
   const bannerBounds=await page.locator('#dequindre-preview-banner').boundingBox();
   report.layout.push({element:'preview-banner',bounds:bannerBounds});
   record('preview banner stays inside viewport',bannerBounds&&bannerBounds.x>=-.5&&bannerBounds.y>=-.5&&bannerBounds.x+bannerBounds.width<=viewport.width+.5&&bannerBounds.y+bannerBounds.height<=viewport.height+.5);
@@ -99,20 +135,21 @@ try{
   const choose=async stop=>{
     const button=page.locator(`[data-preview-stop="${stop}"]`);
     if(!await button.isVisible()){
-      await page.locator('#dequindre-preview-banner').getByRole('button',{name:'Preview places',exact:true}).click();
+      await activate(page.locator('#dequindre-preview-banner').getByRole('button',{name:'Preview places',exact:true}),'Open preview places');
       await expect(page.locator('#dequindre-preview-places')).toBeVisible();
     }
     await expect(button).toBeEnabled({timeout:30000});
-    await button.scrollIntoViewIfNeeded();
+    if(phone)await button.scrollIntoViewIfNeeded();else await button.focus({timeout:30000});
     const bounds=await button.boundingBox();report.layout.push({element:stop+'-travel',bounds});
     record(stop+' preview travel target stays in view',bounds&&bounds.x>=-.5&&bounds.y>=-.5&&bounds.x+bounds.width<=viewport.width+.5&&bounds.y+bounds.height<=viewport.height+.5);
     if(phone)record(stop+' preview travel target is at least 44px',bounds&&bounds.width>=44&&bounds.height>=44);
     const previous=await snapshot(page);
-    await button.click();
+    await activate(button,'Travel to '+stop);
     const readiness=await waitForPreviewReadiness(()=>readinessState(stop),{travel:true});
     report.checks.push({name:stop+' destination preparation completed',passed:true,elapsedMs:readiness.elapsedMs});
     await page.waitForFunction(frameCount=>(globalThis.__dequindrePreview?.snapshot?.().diagnostics?.runtime?.frameCount??0)>frameCount,previous.diagnostics.runtime.frameCount,{timeout:30000});
-    await page.locator('#game').click({position:{x:Math.floor(viewport.width/2),y:Math.floor(viewport.height/2)}});
+    if(phone)await page.locator('#game').tap({position:{x:Math.floor(viewport.width/2),y:Math.floor(viewport.height/2)}});
+    else{await page.locator('#game').focus({timeout:30000});await expect(page.locator('#game')).toBeFocused();}
   };
   for(const stop of ['atwater','freight','mack','island']){
     await choose(stop);
