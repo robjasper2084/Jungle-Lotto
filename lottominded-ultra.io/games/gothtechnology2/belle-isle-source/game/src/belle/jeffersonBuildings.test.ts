@@ -96,6 +96,35 @@ test('all accepted Jefferson sites build real finite geometry with distinct faca
  let lights=0;scene.traverse(o=>{if(o instanceof T.Light)lights++;});assert.equal(lights,0);
 });
 
+test('the retained entrance glazing has no window surrounds or facade bands crossing its opening',()=>{
+ for(const id of requiredSites){
+  const p=plan(id),meshes=nearMeshes(id),door:T.Vector3[][]=[];
+  const isDoor=(a:T.Vector3,b:T.Vector3,c:T.Vector3)=>
+   Math.abs(Math.min(a.y,b.y,c.y)-(p.base+.25))<.001&&Math.abs(Math.max(a.y,b.y,c.y)-(p.base+2.75))<.001;
+  // Locate the existing 2.5 m-high entrance pane in the built glazing batch.
+  // Geometry, not the facade generator's edge/slot selection, defines the probe.
+  for(const mesh of meshes.filter(m=>/glazing/.test((m.material as T.Material).name)))forTriangles(mesh,(a,b,c)=>{
+   if(isDoor(a,b,c))door.push([a.clone(),b.clone(),c.clone()]);
+  });
+  // Wells' curved source frontage has no separate entrance pane in the
+  // existing model. Preserve that placement decision rather than inventing one.
+  if(!door.length&&id==='955779335')continue;
+  assert.equal(door.length,2,p.profile.name+' must retain its original entrance pane');
+  const center=door.flat().reduce((sum,v)=>sum.add(v),new T.Vector3()).divideScalar(6);
+  const normal=new T.Triangle(...door[0] as [T.Vector3,T.Vector3,T.Vector3]).getNormal(new T.Vector3());
+  const along=new T.Vector3(normal.z,0,-normal.x);
+  const local=(v:T.Vector3)=>{const offset=v.clone().sub(center);return new T.Vector3(offset.dot(along),offset.y,offset.dot(normal));};
+  // The slab covers the retained 2 m-wide frame opening, its low base band,
+  // and projecting window sills. The underlying facade plane stays behind it.
+  const opening=new T.Box3(new T.Vector3(-.98,-1.37,-.17),new T.Vector3(.98,1.37,.2));
+  for(const mesh of meshes.filter(m=>/limestone|glazing/.test((m.material as T.Material).name)))forTriangles(mesh,(a,b,c)=>{
+   if(/glazing/.test((mesh.material as T.Material).name)&&isDoor(a,b,c))return;
+   assert.ok(!opening.intersectsTriangle(new T.Triangle(local(a),local(b),local(c))),
+    p.profile.name+' has a window or projecting stone band crossing the retained doorway');
+  });
+ }
+});
+
 test('Wells has a substantial pitched roof, and clipped house roofs stay on their actual outlines',()=>{
  for(const id of ['955779335','114282642']){
   const p=plan(id),meshes=nearMeshes(id),roof=meshes.filter(m=>/roof/.test((m.material as T.Material).name));

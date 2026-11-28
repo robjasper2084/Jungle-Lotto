@@ -14,6 +14,7 @@ on:
       - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/terrain.ts'
       - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/serviceBuildings.ts'
       - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/style.css'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/referenceHud*.ts'
       - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/jefferson-gallery.mjs'
       - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/gallery-renderer.mjs'
       - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/coop-static-server.mjs'

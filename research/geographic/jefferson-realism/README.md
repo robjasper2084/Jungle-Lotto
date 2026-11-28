@@ -2,7 +2,7 @@
 
 This candidate extends the mapped East Jefferson corridor from East Grand Boulevard toward Woodward and adds recognizable architecture, traffic signals and public Guide street views. Source maps, historic records, photographs and operator aerials support different parts of the reconstruction; authored dimensions and unresolved source fields are identified below. The original crosswalk remains a record of spatial identity checks, while separate runtime modules supply the additive streets, building models and collision solids.
 
-**Status: candidate, with full native game-gallery and sustained-performance acceptance pending.** Offline Blender previews render the candidate meshes for architectural inspection. They are not captures of the running game and do not establish WebGL, gameplay, phone-device or performance acceptance. The existing canonical 90-second native performance workflow and its gates remain separate and unchanged.
+**Status: candidate under review in [PR #284](https://github.com/robjasper2084/Jungle-Lotto/pull/284).** Fresh native gallery and original sustained-performance acceptance are required for each revised runtime candidate. Offline Blender previews render the candidate meshes for architectural inspection. They are not captures of the running game and do not establish WebGL, gameplay, phone-device or performance acceptance. The existing canonical 90-second native performance workflow and its gates remain separate and unchanged.
 
 ## Current runtime scope
 
@@ -24,6 +24,10 @@ All six landmarks retain persistent inexpensive distant massing and upper roof s
 The signal planner represents **all 13 source intersections** with **62 signal heads, 36 fixture assemblies and 28 spans**. City inventory coordinates establish intersection locations. Pole and head placement, support geometry, clearances and the deterministic red/amber/green cycle are authored game details, not surveyed fixtures or live municipal timing. The sourced parallel northern carriageway supplies the missing road support at the Chrysler west service-drive intersection.
 
 The public Guide provides **six building-frontage destinations** plus **Jefferson Avenue · East Grand Boulevard** and **Jefferson Avenue · Woodward downtown**. Their **Travel to street view** action uses ordinary player travel and first-person viewing to reach a clear mapped position facing the relevant frontage or street. The capture script uses these same visible controls; it does not inject player or camera state.
+
+Building arrival selection projects the source footprint and roof/base envelope with the live viewport aspect, the game's normal 60-degree vertical field of view and its 1.55 m on-foot eye. Positions remain within 140 m of the landmark center on Jefferson or a sourced cross street directly connected to it. Land, body clearance, continuous road connection and sightline checks remain required. Complete building framing is preferred; a long or obstructed silhouette can retain a partial horizontal frontage view in portrait while keeping its roof and base vertically visible. Current portrait qualifications apply to Stearns and Pasadena. Both street-end destinations retain their Jefferson approach views.
+
+The circular navigation map also receives the connected City street and land geometry. Land polygons use their complete rings and preserve holes, so downtown roads appear without changing the original island map or GPS overlay behavior.
 
 ## Preserved geometry and collision behavior
 
@@ -119,6 +123,12 @@ ENV_GALLERY_DEVICE=phone ENV_GALLERY_REQUIRE_METAL=1 ENV_GALLERY_NIGHT=1 node sc
 ```
 
 The receipt verifies every game source file, relevant map/configuration/capture inputs and every built asset across CI artifact transfer. Each gallery run retains the fixed **eight-minute** script budget, uses real advancing game-frame counters and a WebGL GPU fence, and records the actual renderer and read-only camera observations. `output/jefferson-gallery/<device>/<run>/` contains the standalone gallery HTML, screenshots and complete JSON report. CI uploads evidence even when a capture is partial or fails. An optional `ENV_GALLERY_SITES` filter is explicitly reported as partial coverage; it never establishes complete gallery or release acceptance. Offline Blender previews remain separate from this actual-game evidence.
+
+### Initial native review retained
+
+Candidate `0449793b358be35c4acd30c865dfba0dcbcf47ac` produced all 20 requested native screenshots in [gallery run 46084699068](https://github.com/robjasper2084/Jungle-Lotto/actions/runs/46084699068). Manual inspection found excessively close building arrivals, missing city roads in the circular map, and an entrance/window overlap. Those observations prompted the subsequent view, navigation and entrance corrections; capture completion alone was not treated as visual acceptance.
+
+The same candidate's unchanged [90-second sustained run 46084698965](https://github.com/robjasper2084/Jungle-Lotto/actions/runs/46084698965) passed desktop/full, phone/full and desktop/diagnostic. Phone/diagnostic failed its original zero-over-250-ms gate with one **255.5 ms** interval on MacArthur Bridge, despite a passing **33.4 ms p95**. The baseline production-runtime reports had zero such intervals. The recorded workload and current code do not establish a cause for this isolated miss. The view/navigation/entrance corrections are not represented as a proven repair for that timing event; the original failed result remains part of the evidence, and the original gates apply again to the revised candidate.
 
 ## Sources
 

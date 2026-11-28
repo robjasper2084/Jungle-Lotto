@@ -223,11 +223,25 @@ function windowPane(parts:Parts,e:Edge,base:number,along:number,y:number,w:numbe
   const arc=new T.RingGeometry(w/2,w/2+.13,12,1,0,Math.PI);arc.rotateY(e.yaw);arc.translate(gx+e.nx*.01,base+y+h/2-w/2,gz+e.nz*.01);parts.add(arc,pal.limestone);
  }
 }
-function wallBand(parts:Parts,p:JeffersonBuildingPlan,y:number,h:number,d:number,m:T.Material,color?:T.Color){for(const e of p.edges){parts.box((e.a[0]+e.b[0])/2+e.nx*.035,p.base+y,(e.a[1]+e.b[1])/2+e.nz*.035,e.length,h,d,e.yaw,m,color);}}
+const ENTRANCE={width:2,height:2.8,y:1.5,clearance:.08};
+function entranceEdge(p:JeffersonBuildingPlan){return p.edges.filter(e=>e.nx*p.front[0]+e.nz*p.front[1]>.6&&e.length>4).sort((a,b)=>b.length-a.length)[0];}
+function sameEdge(a:Edge,b:Edge|undefined){return !!b&&a.a===b.a&&a.b===b.b;}
+function wallBand(parts:Parts,p:JeffersonBuildingPlan,y:number,h:number,d:number,m:T.Material,color?:T.Color,entrance?:Edge){
+ for(const e of p.edges){
+  const crossesEntrance=sameEdge(e,entrance)&&y+h/2>ENTRANCE.y-ENTRANCE.height/2&&y-h/2<ENTRANCE.y+ENTRANCE.height/2;
+  const half=ENTRANCE.width/2+ENTRANCE.clearance;
+  const spans=crossesEntrance?[[0,e.length/2-half],[e.length/2+half,e.length]]:[[0,e.length]];
+  for(const [a,b] of spans){
+   if(b<=a)continue;const t=(a+b)/(2*e.length);
+   parts.box(e.a[0]+(e.b[0]-e.a[0])*t+e.nx*.035,p.base+y,e.a[1]+(e.b[1]-e.a[1])*t+e.nz*.035,b-a,h,d,e.yaw,m,color);
+  }
+ }
+}
 
 function detailedFacade(parts:Parts,p:JeffersonBuildingPlan,pal:Palette,zones?:WellsHeightZones){
  const cfg=p.profile,masonry=cfg.kind==='wells'?pal.stone:cfg.kind==='pasadena'?pal.buff:cfg.kind==='palms'?pal.limestone:pal.brick;
  const apartment=cfg.kind==='garden-court'||cfg.kind==='pasadena'||cfg.kind==='palms',step=cfg.wallHeight/cfg.floors;
+ const entrance=entranceEdge(zones?.main??p);
  for(const e of p.edges){
   const x=(e.a[0]+e.b[0])/2,z=(e.a[1]+e.b[1])/2;
   const low=zones?.isLowEdge(e),wallHeight=low?zones!.lowHeight:cfg.wallHeight,floors=low?1:cfg.floors;
@@ -239,10 +253,15 @@ function detailedFacade(parts:Parts,p:JeffersonBuildingPlan,pal:Palette,zones?:W
   if(e.length<1.1)continue;
   for(let floor=0;floor<floors;floor++)for(let b=0;b<bays;b++){
    const w=Math.min(apartment?1.52:cfg.kind==='stearns'?2.45:1.3,e.length/bays*.68),h=step*(cfg.kind==='stearns'?.58:.59);
-   windowPane(parts,e,p.base,(b+.5)*e.length/bays,step*(floor+.53),w,h,pal,floor*101+b+e.a[0],cfg.kind==='wells'&&floor===0||cfg.kind==='pasadena'&&floor===cfg.floors-1);
+   const along=(b+.5)*e.length/bays,y=step*(floor+.53);
+   // Reserve the existing doorway before adding windows. Include the sill's
+   // full width and the surround/arch height, not only the glazing rectangle.
+   if(sameEdge(e,entrance)&&Math.abs(along-e.length/2)<(w+.3+ENTRANCE.width)/2+ENTRANCE.clearance&&
+    y+h/2+.13>ENTRANCE.y-ENTRANCE.height/2&&y-h/2-.185<ENTRANCE.y+ENTRANCE.height/2)continue;
+   windowPane(parts,e,p.base,along,y,w,h,pal,floor*101+b+e.a[0],cfg.kind==='wells'&&floor===0||cfg.kind==='pasadena'&&floor===cfg.floors-1);
   }
  }
- wallBand(parts,p,.18,.36,.2,pal.limestone);
+ wallBand(parts,p,.18,.36,.2,pal.limestone,undefined,entrance);
  wallBand(parts,zones?.main??p,cfg.wallHeight-.12,.27,.35,pal.limestone);
  if(apartment){wallBand(parts,p,step*2,.22,.24,pal.limestone);wallBand(parts,p,cfg.wallHeight-step,.18,.2,pal.limestone);}
  if(cfg.kind==='stearns')for(let floor=1;floor<cfg.floors;floor++)wallBand(parts,p,step*floor,.12,.17,pal.limestone);
@@ -273,10 +292,10 @@ function detailedFacade(parts:Parts,p:JeffersonBuildingPlan,pal:Palette,zones?:W
 }
 function frontDetails(parts:Parts,p:JeffersonBuildingPlan,pal:Palette){
  const cfg=p.profile,w=p.u1-p.u0,d=p.v1-p.v0,u=(p.u0+p.u1)/2;
- const front=p.edges.filter(e=>e.nx*p.front[0]+e.nz*p.front[1]>.6&&e.length>4).sort((a,b)=>b.length-a.length)[0];
+ const front=entranceEdge(p);
  const [mx,mz]=front?[(front.a[0]+front.b[0])/2,(front.a[1]+front.b[1])/2]:p.center;
  // Dark entrance and thin projecting canopy, modeled from the photographs.
- if(front){parts.box(mx+front.nx*.12,p.base+1.5,mz+front.nz*.12,2.0,2.8,.12,front.yaw,pal.iron);
+ if(front){parts.box(mx+front.nx*.12,p.base+ENTRANCE.y,mz+front.nz*.12,ENTRANCE.width,ENTRANCE.height,.12,front.yaw,pal.iron);
  parts.plane(mx+front.nx*.2,p.base+1.5,mz+front.nz*.2,1.65,2.5,front.yaw,pal.glass);}
  if(cfg.kind==='garden-court'&&front){
   parts.box(mx+front.nx*.6,p.base+3.05,mz+front.nz*.6,3.7,.32,1.6,front.yaw,pal.iron);

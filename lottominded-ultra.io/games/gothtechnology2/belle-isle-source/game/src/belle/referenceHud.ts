@@ -1,10 +1,15 @@
-import type {ParkMap} from './terrain.ts';
+import type {ParkMap,Point} from './terrain.ts';
 
 type Pose={x:number;z:number;headingY:number;speed:number};
 type MapLocation=Readonly<{x:number;z:number;accuracy:number}>;
 export type ReferenceMapOverlay={
  position:()=>MapLocation|null|undefined;
  draw:(ctx:CanvasRenderingContext2D,px:(x:number)=>number,pz:(z:number)=>number)=>void;
+};
+/** Additive connected-city geometry; the original island map stays unchanged. */
+export type ReferenceMapContext={
+ land:readonly (readonly (readonly Point[])[])[];
+ roads:readonly {points:readonly Point[];width:number;foot?:boolean}[];
 };
 /** Keep a live location and its uncertainty inside the circular map's label margin. */
 export function referenceLocationRange(selected:number,pose:Pick<Pose,'x'|'z'>,location?:MapLocation|null){
@@ -18,31 +23,33 @@ function mapBounds(points:readonly [number,number][]){
  return {minX,minZ,maxX,maxZ};
 }
 /** North-up local navigation, drawn from the same mapped geometry as the full island guide. */
-export function createReferenceHud(map:ParkMap,overlay?:ReferenceMapOverlay){
+export function createReferenceHud(map:ParkMap,overlay?:ReferenceMapOverlay,context?:ReferenceMapContext){
  const panel=document.createElement('section');panel.id='reference-hud';panel.setAttribute('aria-label','Local navigation');
- panel.innerHTML='<button type="button" class="reference-map" aria-label="Change local map range"><canvas width="320" height="320" role="img" aria-label="Local island map, north at the top"></canvas><span>N ↑</span><small>350 m</small></button><div class="reference-readout"><output class="reference-speed" aria-label="Speed">0 <small>MPH</small></output><strong class="reference-place"></strong><span class="reference-objective"></span></div>';
+ panel.innerHTML='<button type="button" class="reference-map" aria-label="Change local map range"><canvas width="320" height="320" role="img" aria-label="Local street map, north at the top"></canvas><span>N ↑</span><small>350 m</small></button><div class="reference-readout"><output class="reference-speed" aria-label="Speed">0 <small>MPH</small></output><strong class="reference-place"></strong><span class="reference-objective"></span></div>';
  document.body.append(panel);panel.hidden=true;
  const canvas=panel.querySelector('canvas')!,ctx=canvas.getContext('2d')!,button=panel.querySelector('button')!,rangeLabel=button.querySelector('small')!,ranges=[350,700,180];let index=0;
  button.onclick=()=>{index=(index+1)%ranges.length;rangeLabel.textContent=ranges[index]+' m';button.setAttribute('aria-label',`Local map range ${ranges[index]} metres. Click to change range.`);};
  const speed=panel.querySelector('.reference-speed')!,place=panel.querySelector('.reference-place')!,objective=panel.querySelector('.reference-objective')!;
  const land='#657554',water='#254a59';
  const polygons=[
-  {points:map.island,fill:land},
-  ...(map.outerIslets||[]).map(i=>({points:i.points,fill:land})),
-  ...map.water.flatMap(w=>[{points:w.points,fill:water},...w.holes.map(points=>({points,fill:land}))])
- ].map(p=>({...p,bounds:mapBounds(p.points)}));
- const roads=map.roads.map(road=>({road,bounds:mapBounds(road.points)}));
+  ...(map.mainland?.length?[{rings:[map.mainland],fill:land}]:[]),
+  ...(context?.land??[]).map(rings=>({rings,fill:land})),
+  {rings:[map.island],fill:land},
+  ...(map.outerIslets||[]).map(i=>({rings:[i.points],fill:land})),
+  ...map.water.flatMap(w=>[{rings:[w.points],fill:water},...w.holes.map(points=>({rings:[points],fill:land}))])
+ ].filter(p=>p.rings.length&&p.rings[0].length).map(p=>({...p,bounds:mapBounds(p.rings[0])}));
+ const roads=[...map.roads,...(context?.roads??[])].map(road=>({road,bounds:mapBounds(road.points)}));
  return{update(p:Pose,visible:boolean,destination:{x:number;z:number;name:string}|undefined,location:string,competition:boolean){
   panel.hidden=!visible;panel.classList.toggle('reference-competition',competition);if(!visible)return;
   const range=referenceLocationRange(ranges[index],p,overlay?.position()),scale=160/range,px=(x:number)=>160+(x-p.x)*scale,pz=(z:number)=>160+(z-p.z)*scale;
   rangeLabel.textContent=range+' m'+(range>ranges[index]?' · GPS':'');
   button.setAttribute('aria-label',`Local map range ${range} metres. Click to change range.`);
   ctx.clearRect(0,0,320,320);ctx.fillStyle='#254a59';ctx.fillRect(0,0,320,320);
-  const polygon=(points:readonly [number,number][],fill:string)=>{ctx.beginPath();points.forEach((v,i)=>i?ctx.lineTo(px(v[0]),pz(v[1])):ctx.moveTo(px(v[0]),pz(v[1])));ctx.closePath();ctx.fillStyle=fill;ctx.fill();};
+  const polygon=(rings:readonly (readonly Point[])[],fill:string)=>{ctx.beginPath();for(const points of rings){points.forEach((v,i)=>i?ctx.lineTo(px(v[0]),pz(v[1])):ctx.moveTo(px(v[0]),pz(v[1])));ctx.closePath();}ctx.fillStyle=fill;ctx.fill('evenodd');};
   const intersects=(b:ReturnType<typeof mapBounds>,radius:number)=>
    b.minX<=p.x+radius && b.maxX>=p.x-radius && b.minZ<=p.z+radius && b.maxZ>=p.z-radius;
   const pixel=1/scale;
-  for(const shape of polygons)if(intersects(shape.bounds,range+pixel))polygon(shape.points,shape.fill);
+  for(const shape of polygons)if(intersects(shape.bounds,range+pixel))polygon(shape.rings,shape.fill);
   for(const {road,bounds} of roads){
    const width=road.foot?1.2:Math.max(2,road.width*scale);
    // Keep the antialiased edge and even the longest allowed miter at bends.
