@@ -210,6 +210,50 @@ function ridgeRoof(parts:Parts,p:JeffersonBuildingPlan,u0:number,u1:number,v0:nu
   }
  }
 }
+function wellsRoof(parts:Parts,p:JeffersonBuildingPlan,pal:Palette){
+ const cfg=p.profile,w=p.u1-p.u0,d=p.v1-p.v0,u=(p.u0+p.u1)/2,vertices:number[]=[];
+ // The photographed main body has tiled hip slopes, including above the
+ // broad curved front bay. Start the shell on the exact mapped eave ring;
+ // clipping a rectangular gable and closing its cuts creates false tall walls.
+ // A level, depth-running ridge and hip ends are photo-informed estimates,
+ // with the existing wall/rise heights retained. Direct eave-to-ridge faces
+ // give continuous hip planes; no sampled heightfield or vertical cut caps.
+ const rear=p.v0+d*.24,front=p.v0+d*.69;
+ // Give the small turret its own conical cap: replace its outer arc with the
+ // internal chord between original source13 and25 only for this roof shell.
+ const body=footprintPlan(p,[...p.source.points.slice(0,6),...p.source.points.slice(17)]);
+ const localV=(q:Point)=>(q[0]-p.center[0])*p.front[0]+(q[1]-p.center[1])*p.front[1];
+ const step=p.source.points[2],stepRun=Math.hypot(step[0]-p.source.points[1][0],step[1]-p.source.points[1][1]);
+ const ridgeV=(q:Point)=>Math.max(rear,Math.min(front,localV(q)+(q===step?stepRun:0)));
+ const vertex=(q:Point,height:number)=>[q[0],p.base+height,q[1]];
+ const triangle=(a:number[],b:number[],c:number[])=>{
+  const up=(b[2]-a[2])*(c[0]-a[0])-(b[0]-a[0])*(c[2]-a[2]);if(Math.abs(up)<1e-8)return;
+  vertices.push(...a,...(up>0?b:c),...(up>0?c:b));
+ };
+ for(const edge of body.edges){
+  const a=localV(edge.a),b=localV(edge.b),cuts=[0,1];
+  if(Math.abs(b-a)>1e-8)for(const end of [rear,front]){const t=(end-a)/(b-a);if(t>0&&t<1)cuts.push(t);}
+  cuts.sort((a,b)=>a-b);
+  for(let i=1;i<cuts.length;i++){
+   const points=cuts.slice(i-1,i+1).map(t=>t===0?edge.a:t===1?edge.b:[edge.a[0]+(edge.b[0]-edge.a[0])*t,edge.a[1]+(edge.b[1]-edge.a[1])*t] as Point);
+   const ridges=points.map(q=>point(p,u,ridgeV(q)));
+   const qa=vertex(points[0],cfg.wallHeight),qb=vertex(points[1],cfg.wallHeight),ra=vertex(ridges[0],cfg.wallHeight+cfg.roofHeight),rb=vertex(ridges[1],cfg.wallHeight+cfg.roofHeight);
+   triangle(qa,qb,rb);triangle(qa,rb,ra);
+  }
+ }
+ const shell=new T.BufferGeometry();shell.setAttribute('position',new T.Float32BufferAttribute(vertices,3));shell.computeVertexNormals();
+ parts.setFootprint(body.source);parts.add(shell,pal.roof);parts.setFootprint(p.source);
+ // Source vertices13..25 form the small forward-right round turret seen in
+ // the photograph. Circle-fit center/radius are map-derived model estimates;
+ // the broad source3..12 flat wing remains outside this main-roof footprint.
+ const [tx,tz]=point(p,4.279536940,12.062718906),radius=1.265,capHeight=cfg.roofHeight*.7;
+ const cone=new T.ConeGeometry(radius,capHeight,20);cone.translate(tx,p.base+cfg.wallHeight+capHeight/2,tz);parts.add(cone,pal.roof);
+ const collar=new T.CylinderGeometry(radius,radius,.18,20);collar.translate(tx,p.base+cfg.wallHeight+.04,tz);parts.add(collar,pal.copper);
+ const finial=new T.ConeGeometry(.16,1.1,8);finial.translate(tx,p.base+cfg.wallHeight+capHeight+.45,tz);parts.add(finial,pal.copper);
+ // Preserve the two existing chimney shaft positions, dimensions and heights.
+ for(const s of[-1,1])localBox(parts,p,u+s*w*.25,cfg.wallHeight+cfg.roofHeight*.62,p.v0+d*(s<0?.38:.72),.85,cfg.roofHeight*.92,.95,pal.stone,true);
+ for(const e of p.edges)if(e.nx*p.front[0]+e.nz*p.front[1]>.15)parts.box((e.a[0]+e.b[0])/2,p.base+cfg.wallHeight+.055,(e.a[1]+e.b[1])/2,e.length,.11,.12,e.yaw,pal.copper);
+}
 function windowPane(parts:Parts,e:Edge,base:number,along:number,y:number,w:number,h:number,pal:Palette,seed:number,arched=false){
  const t=along/e.length,x=e.a[0]+(e.b[0]-e.a[0])*t,z=e.a[1]+(e.b[1]-e.a[1])*t;
  const shift=(n:number):Point=>[x+e.nx*n,z+e.nz*n];const [tx,tz]=shift(.055),[gx,gz]=shift(.135);
@@ -242,15 +286,21 @@ function detailedFacade(parts:Parts,p:JeffersonBuildingPlan,pal:Palette,zones?:W
  const cfg=p.profile,masonry=cfg.kind==='wells'?pal.stone:cfg.kind==='pasadena'?pal.buff:cfg.kind==='palms'?pal.limestone:pal.brick;
  const apartment=cfg.kind==='garden-court'||cfg.kind==='pasadena'||cfg.kind==='palms',step=cfg.wallHeight/cfg.floors;
  const entrance=entranceEdge(zones?.main??p);
+ const curvedBayStarts=new Set(cfg.kind==='wells'?p.source.points.slice(26,34):[]),curvedBay=p.edges.filter(e=>curvedBayStarts.has(e.a));
  for(const e of p.edges){
   const x=(e.a[0]+e.b[0])/2,z=(e.a[1]+e.b[1])/2;
   const low=zones?.isLowEdge(e),wallHeight=low?zones!.lowHeight:cfg.wallHeight,floors=low?1:cfg.floors;
   const inner=cfg.kind==='palms'&&(p.source.holes??[]).some(h=>inside(x+e.nx*.15,z+e.nz*.15,h));
-  parts.plane(x,p.base+wallHeight/2,z,e.length,wallHeight,e.yaw,inner?pal.brick:masonry);
-  if(apartment&&!inner){parts.plane(x+e.nx*.008,p.base+step,z+e.nz*.008,e.length,step*2,e.yaw,pal.limestone);
-   if(cfg.kind==='garden-court')parts.plane(x+e.nx*.009,p.base+cfg.wallHeight-step*.5,z+e.nz*.009,e.length,step,e.yaw,pal.limestone);}
+  if(apartment&&!inner&&cfg.kind!=='palms'){
+   // Adjacent material sections share the original wall plane. Thin stone
+   // overlays over a complete brick wall fought for depth in distant views.
+   const top=cfg.kind==='garden-court'?wallHeight-step:wallHeight;
+   parts.plane(x,p.base+step,z,e.length,step*2,e.yaw,pal.limestone);
+   parts.plane(x,p.base+(step*2+top)/2,z,e.length,top-step*2,e.yaw,masonry);
+   if(top<wallHeight)parts.plane(x,p.base+(top+wallHeight)/2,z,e.length,wallHeight-top,e.yaw,pal.limestone);
+  }else parts.plane(x,p.base+wallHeight/2,z,e.length,wallHeight,e.yaw,inner?pal.brick:masonry);
   const bays=Math.max(1,Math.floor(e.length/(cfg.kind==='stearns'?3.4:apartment?2.85:3.2)));
-  if(e.length<1.1)continue;
+  if(e.length<1.1||curvedBayStarts.has(e.a))continue;
   for(let floor=0;floor<floors;floor++)for(let b=0;b<bays;b++){
    const w=Math.min(apartment?1.52:cfg.kind==='stearns'?2.45:1.3,e.length/bays*.68),h=step*(cfg.kind==='stearns'?.58:.59);
    const along=(b+.5)*e.length/bays,y=step*(floor+.53);
@@ -259,6 +309,17 @@ function detailedFacade(parts:Parts,p:JeffersonBuildingPlan,pal:Palette,zones?:W
    if(sameEdge(e,entrance)&&Math.abs(along-e.length/2)<(w+.3+ENTRANCE.width)/2+ENTRANCE.clearance&&
     y+h/2+.13>ENTRANCE.y-ENTRANCE.height/2&&y-h/2-.185<ENTRANCE.y+ENTRANCE.height/2)continue;
    windowPane(parts,e,p.base,along,y,w,h,pal,floor*101+b+e.a[0],cfg.kind==='wells'&&floor===0||cfg.kind==='pasadena'&&floor===cfg.floors-1);
+  }
+ }
+ if(curvedBay.length){
+  // The photographed broad Wells bay has windows, but its finely segmented
+  // map arc is shorter per edge than a window. Space two stacks along the
+  // retained arc, using each selected facet's real position and normal.
+  const length=curvedBay.reduce((sum,e)=>sum+e.length,0);
+  for(const fraction of [1/3,2/3]){
+   let along=length*fraction,edge=curvedBay.at(-1)!;
+   for(const candidate of curvedBay){if(along<=candidate.length){edge=candidate;break;}along-=candidate.length;}
+   for(let floor=0;floor<cfg.floors;floor++)windowPane(parts,edge,p.base,along,step*(floor+.53),1.08,step*.59,pal,701+floor*11+fraction*30,floor===0);
   }
  }
  wallBand(parts,p,.18,.36,.2,pal.limestone,undefined,entrance);
@@ -326,12 +387,14 @@ function frontDetails(parts:Parts,p:JeffersonBuildingPlan,pal:Palette){
    const edge:Edge={a,b,length,nx,nz,yaw:Math.atan2(nx,nz)},bays=Math.floor(length/3.3);
    for(let floor=4;floor<8;floor++)for(let bay=0;bay<bays;bay++)windowPane(parts,edge,p.base,(bay+.5)*length/bays,3.9*(floor+.5),2.15,2.4,pal,floor*111+bay);
   }
- }else if(cfg.kind==='bagley'||cfg.kind==='wells'){
-  const wall=cfg.kind==='wells'?pal.stone:pal.brick;
+ }else if(cfg.kind==='wells'){
+  wellsRoof(parts,p,pal);
+ }else if(cfg.kind==='bagley'){
+  const wall=pal.brick;
   // Roof body is inset from the original polygon bounds; photo-guided gables,
   // turret caps, dormers and chimneys create a distinct silhouette.
   ridgeRoof(parts,p,p.u0+w*.08,p.u1-w*.08,p.v0+d*.05,p.v1-d*.04,cfg.wallHeight,cfg.roofHeight,pal.roof,wall);
-  const turretU=cfg.kind==='bagley'?p.u0+w*.8:p.u0+w*.25, turretV=p.v1-d*.15,desired=point(p,turretU,turretV);
+  const turretU=p.u0+w*.8, turretV=p.v1-d*.15,desired=point(p,turretU,turretV);
   // Place the cap on a supported part of the actual curved footprint. The
   // photographed turret cannot be placed using only the outline's rectangle.
   let center=desired,r=Math.min(w*.135,d*.16),score=Infinity;
@@ -346,7 +409,6 @@ function frontDetails(parts:Parts,p:JeffersonBuildingPlan,pal:Palette){
   const collar=new T.CylinderGeometry(r,r,.18,20);collar.translate(tx,p.base+cfg.wallHeight+.04,tz);parts.add(collar,pal.copper);
   const finial=new T.ConeGeometry(.16,1.1,8);finial.translate(tx,p.base+cfg.wallHeight+cfg.roofHeight*.9+.45,tz);parts.add(finial,pal.copper);
   for(const s of[-1,1])localBox(parts,p,u+s*w*.25,cfg.wallHeight+cfg.roofHeight*.62,p.v0+d*(s<0?.38:.72),.85,cfg.roofHeight*.92,.95,wall,true);
-  if(cfg.kind==='wells')ridgeRoof(parts,p,u+w*.05,u+w*.29,p.v1-d*.21,p.v1-d*.025,cfg.wallHeight+cfg.roofHeight*.2,cfg.roofHeight*.37,pal.roof,pal.stone);
   // A narrow verdigris fascia follows the visible street-facing roof eaves.
   localBox(parts,p,u,cfg.wallHeight+.07,p.v1-d*.04,w*.84,.13,.16,pal.copper);
  }

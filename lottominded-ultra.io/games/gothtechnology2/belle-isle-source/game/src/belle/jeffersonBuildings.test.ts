@@ -96,6 +96,25 @@ test('all accepted Jefferson sites build real finite geometry with distinct faca
  let lights=0;scene.traverse(o=>{if(o instanceof T.Light)lights++;});assert.equal(lights,0);
 });
 
+test('apartment facade bands have one surface at each depth rather than competing thin skins',()=>{
+ for(const id of ['868842406','957898908','jefferson-city-8423552-0']){
+  const p=plan(id),meshes=nearMeshes(id).filter(m=>/red brick|buff brick|limestone/.test((m.material as T.Material).name));
+  const step=p.profile.wallHeight/p.profile.floors;
+  for(const edge of p.edges.filter(e=>e.length>4))for(const y of [step*.12,step*2.12,p.profile.wallHeight-step*.88]){
+   // Probe the built faces in the thin depth range where the portrait capture
+   // showed z-fighting. Projecting windows and belt courses sit outside it.
+   const x=edge.a[0]+(edge.b[0]-edge.a[0])*.317,z=edge.a[1]+(edge.b[1]-edge.a[1])*.317;
+   const ray=new T.Raycaster(new T.Vector3(x+edge.nx*.03,p.base+y,z+edge.nz*.03),new T.Vector3(-edge.nx,0,-edge.nz),0,.06);
+   const hits=ray.intersectObjects(meshes,false),depths:number[]=[];
+   for(const hit of hits)if(!depths.some(d=>Math.abs(d-hit.distance)<.002))depths.push(hit.distance);
+   assert.equal(depths.length,1,p.profile.name+' has overlapping or missing facade surfaces at height '+y);
+   const inner=id==='jefferson-city-8423552-0'&&(p.source.holes??[]).some(h=>inside(x+edge.nx*.15,z+edge.nz*.15,h));
+   const expected=inner?/red brick/:id==='jefferson-city-8423552-0'||y<step*2||id==='868842406'&&y>p.profile.wallHeight-step?/limestone/:id==='868842406'?/red brick/:/buff brick/;
+   assert.match(((hits[0].object as T.Mesh).material as T.Material).name,expected);
+  }
+ }
+});
+
 test('the retained entrance glazing has no window surrounds or facade bands crossing its opening',()=>{
  for(const id of requiredSites){
   const p=plan(id),meshes=nearMeshes(id),door:T.Vector3[][]=[];
@@ -148,9 +167,72 @@ test('Wells has a substantial pitched roof, and clipped house roofs stay on thei
  }
 });
 
-test('clipping house roofs closes elevated cut edges down to the mapped walls',()=>{
+test('Wells broad forward bay has visible glazing on both wall stories',()=>{
+ const p=plan('955779335'),meshes=nearMeshes(p.profile.id),arc=p.source.points.slice(26,35),areas=[0,0];
+ const lengths=arc.slice(1).map((q,i)=>Math.hypot(q[0]-arc[i][0],q[1]-arc[i][1])),length=lengths.reduce((a,b)=>a+b,0);
+ for(const mesh of meshes.filter(m=>/glazing/.test((m.material as T.Material).name)))forTriangles(mesh,(a,b,c)=>{
+  const center=a.clone().add(b).add(c).divideScalar(3);let nearest=Infinity,along=0,offset=0;
+  for(let i=1;i<arc.length;i++){
+   const hit=segment(center.x,center.z,arc[i-1],arc[i]);
+   if(hit.d<nearest){nearest=hit.d;along=offset+hit.t*lengths[i-1];}offset+=lengths[i-1];
+  }
+  // Restrict to the middle of the independently identified curved source arc,
+  // so windows on adjacent straight walls cannot satisfy this regression.
+  if(nearest>.35||along<.8||along>length-.8||center.y>p.base+p.profile.wallHeight)return;
+  const normal=new T.Triangle(a,b,c).getNormal(new T.Vector3()),ray=new T.Raycaster(center.clone().addScaledVector(normal,.4),normal.clone().negate(),0,.8);
+  const visible=ray.intersectObjects(meshes,false)[0];
+  assert.ok(visible&&/glazing/.test(((visible.object as T.Mesh).material as T.Material).name),'Curved-bay glazing is hidden inside its mapped wall');
+  const floor=center.y<p.base+p.profile.wallHeight/2?0:1;
+  areas[floor]+=b.clone().sub(a).cross(c.clone().sub(a)).length()/2;
+ });
+ for(const [floor,area]of areas.entries())assert.ok(area>3,'Photographed broad Wells bay has no substantial visible windows on story '+(floor+1));
+});
+
+test('Wells presents tiled hip slopes to the street instead of a tall stone roof closure',()=>{
+ const id='955779335',p=plan(id),eave=p.base+p.profile.wallHeight;
+ // The broad front bay (source vertices26..34) is below a tiled end slope in
+ // the reference photograph. Probe the rendered upper silhouette from the
+ // street, including its far representation, rather than testing helper data.
+ for(const distance of [0,2500]){
+  replicas.update(p.center[0]+distance,p.center[1]);const meshes=visibleMeshes(root(id));let roofHits=0,blocked=0;
+  for(const u of [-3,-2,-1,0,1,2])for(const rise of [.8,1.6,2.4,3.2]){
+   const v=p.v1+4,origin=new T.Vector3(p.center[0]+p.right[0]*u+p.front[0]*v,eave+rise,p.center[1]+p.right[1]*u+p.front[1]*v);
+   const ray=new T.Raycaster(origin,new T.Vector3(-p.front[0],0,-p.front[1]),0,24),hit=ray.intersectObjects(meshes,false)[0];
+   if(!hit)continue;
+   const material=(hit.object as T.Mesh).material as T.Material;
+   if(/roof/.test(material.name)&&Math.abs(hit.face?.normal.y??0)>.15)roofHits++;
+   else if(/fieldstone/.test(material.name))blocked++;
+  }
+  assert.ok(roofHits>=18,'Wells street roof must expose broad pitched tile surfaces at '+distance+'m; found '+roofHits);
+  assert.ok(blocked<=4,'Wells street roof is hidden by a tall stone closure at '+distance+'m; found '+blocked);
+  // Independent circle-fit witness in source lobe13..25: the photographed
+  // conical turret must sit on this bay rather than the broad front bay.
+  const roof=meshes.filter(m=>/roof/.test((m.material as T.Material).name));
+  for(const offset of [-.45,0,.45]){
+   const witness:Point=[-1421.91535+p.right[0]*offset,745.08169+p.right[1]*offset];
+   const hit=downwardHit(roof,witness,eave+15,eave+2);
+   assert.ok(hit,'Wells small mapped turret has no raised roof cap at '+distance+'m');
+  }
+ }
+});
+
+test('Wells hip slopes meet the mapped eaves without tall perimeter walls',()=>{
+ const p=plan('955779335'),roof=nearMeshes(p.profile.id).filter(m=>/roof/.test((m.material as T.Material).name));
+ const lowEdges=new Set(p.source.points.slice(3,12)),eave=p.base+p.profile.wallHeight;let checked=0;
+ for(const edge of p.edges){
+  if(lowEdges.has(edge.a)||edge.length<.1)continue;
+  for(const t of [.25,.5,.75]){
+   const q:Point=[edge.a[0]+(edge.b[0]-edge.a[0])*t-edge.nx*.035,edge.a[1]+(edge.b[1]-edge.a[1])*t-edge.nz*.035];
+   const hit=downwardHit(roof,q,eave+20,eave-.1);assert.ok(hit,'Missing Wells roof at a mapped main-body eave');
+   assert.ok(hit.point.y<eave+.3,'Wells roof requires a tall cut wall at a mapped eave');checked++;
+  }
+ }
+ assert.ok(checked>60,'Exercise curved and straight source eaves around the whole main body');
+});
+
+test('clipping Bagley roofs closes elevated cut edges down to the mapped walls',()=>{
  const ray=new T.Raycaster();let checked=0;
- for(const id of ['955779335','114282642']){
+ for(const id of ['114282642']){
   const p=plan(id),meshes=nearMeshes(id),roof=meshes.filter(m=>/roof/.test((m.material as T.Material).name));
   for(const edge of p.edges){
    if(edge.length<.8)continue;
@@ -170,7 +252,7 @@ test('clipping house roofs closes elevated cut edges down to the mapped walls',(
    }
   }
  }
- assert.ok(checked>=12,'Exercise actual elevated cuts on the irregular house footprints');
+ assert.ok(checked>=10,'Exercise actual elevated cuts around the irregular Bagley footprint');
 });
 
 test('the Stearns upper addition has a broad supported roof at both detail levels',()=>{

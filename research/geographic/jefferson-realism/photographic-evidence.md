@@ -162,6 +162,26 @@ The smaller forward round bays remain part of the taller house/turret form.
 This is an appearance-based height interpretation; the source does not provide
 surveyed sub-building heights.
 
+The same photograph distinguishes tiled hip slopes above the broad forward
+bay (source vertices 26–34) from the conical cap on the smaller forward-right
+bay (vertices 13–25). The revised roof uses a level ridge along the elongated
+main body and slopes down to the mapped eaves. The small bay's circle fit has
+game-world center `[-1421.91535, 745.08169]`, fitted radius `1.31970 m`, and
+minimum exterior-edge clearance `1.29527 m`; the modeled cap radius is
+`1.265 m`, inside that source outline. An internal chord between source
+vertices 13 and 25 separates the main roof shell from this cap without
+changing the building's mapped exterior or collision footprint.
+Two modeled window stacks follow the broad forward arc (vertices 26–34),
+with arched lower windows. They restore the photographed bay's glazing where
+the short map facets previously suppressed every window; spacing is estimated.
+
+The ridge direction, hip endpoints, and cap proportions are photographic
+interpretations, not surveyed roof geometry. The existing `7.3 m` main wall,
+`6.0 m` main roof rise, and `3.65 m` low-wing estimates remain unchanged, as do
+the two modeled chimney shafts and the existing collision envelopes. The
+2026-11-28 model revision removes the earlier tall stone roof-closure faces;
+it does not establish native game performance acceptance.
+
 ### Exact photo URLs used for key visual comparisons
 
 - [Garden Court — Petrov](https://qjxuiljsgrmymeayoqzi.supabase.co/storage/v1/object/public/building-photos/7b41d649-0ec3-4272-a66e-e1641c5978b1/1778204919-3595.jpg)
