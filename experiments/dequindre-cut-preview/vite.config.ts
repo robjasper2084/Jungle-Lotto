@@ -44,7 +44,7 @@ export default defineConfig(async()=>{
     async configurePreviewServer(server){
       const built=JSON.parse(await readFile(resolve(outputRoot,'preview-manifest.json'),'utf8'));
       if(built.status!=='UNPUBLISHED_DRAFT'||built.productionDeployment!==false)throw Error('Invalid isolated preview build receipt');
-      server.middlewares.use(previewAssets(assetRoots,{manifest:built.assets}));
+      server.middlewares.use(previewAssets(assetRoots,{manifest:built.assets,sourceBase:repoRoot}));
     },
     generateBundle(_options,bundle){
       for(const file of [BELLE_ROOT+'/src/belle/main.ts',BELLE_ROOT+'/src/belle/world.ts',BELLE_ROOT+'/src/belle/parkCompanion.ts',BELLE_ROOT+'/src/belle/detroitScene.ts',BELLE_ROOT+'/src/belle/detroitAssets.ts',BELLE_ROOT+'/src/belle/detroitProps.ts'])if(!transformed.has(file))throw Error('Required preview adapter was not compiled: '+file);

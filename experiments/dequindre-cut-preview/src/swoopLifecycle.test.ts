@@ -4,6 +4,17 @@ import * as T from 'three';
 import { createOwnedSceneRoot, disposeOwnedScene, SceneVisibilityUnion } from './ownedScene.ts';
 import { setPreviewTrafficFocus, clearPreviewTrafficFocus, previewTrafficDistance, previewTrafficObservers } from './swoopTrafficFocus.ts';
 import { DistrictViewHolds } from './swoopViewHolds.ts';
+import { SwoopStageError, describeSwoopLoadError } from './swoopLoadError.ts';
+
+test('source image failures identify their preparation stage, original URL and cause', () => {
+  const event = { type: 'error', target: { currentSrc: '', src: '/__swoop-assets__/textures/cut/brick.jpg' } };
+  const error = new SwoopStageError('scenery', event);
+  assert.equal(error.stage, 'scenery');
+  assert.equal(error.cause, event);
+  assert.equal(error.message, 'Source stage "scenery" failed: Asset load error: /__swoop-assets__/textures/cut/brick.jpg');
+  assert.equal(describeSwoopLoadError(new Error('HTTP 404')), 'HTTP 404');
+  assert.equal(describeSwoopLoadError({ type: 'error', currentTarget: { responseURL: '/__swoop-assets__/exports/original.glb' } }), 'Asset load error: /__swoop-assets__/exports/original.glb');
+});
 
 test('deferred district attachment isolates source materials from host construction and preserves its final transform', () => {
   const host = new T.Scene();

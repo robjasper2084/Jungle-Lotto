@@ -7,6 +7,7 @@ import { setPreviewTrafficFocus, clearPreviewTrafficFocus, type TrafficObserver 
 import { createOwnedSceneRoot, disposeOwnedScene, SceneVisibilityUnion } from './ownedScene.ts';
 import { sourceCompanionObstacles } from './companionBridge.ts';
 import { DistrictViewHolds, type DistrictFrameView as FrameView, type PreparedDistrictView } from './swoopViewHolds.ts';
+import { SwoopStageError, describeSwoopLoadError } from './swoopLoadError.ts';
 import { buildScenery } from '../../../lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/scenery.ts';
 import { buildFreestylePark } from '../../../lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/freestylePark.ts';
 import { NatureWorld } from '../../../lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/natureWorld.ts';
@@ -119,10 +120,12 @@ export async function createSwoopDistrict(options: SwoopDistrictOptions) {
   reduced.addEventListener('change', updateReduced);
 
   async function stage<Value>(name: string, message: string, work: () => Promise<Value> | Value) {
-    status(message);
-    await yieldToBrowser();
     const before = performance.now();
-    try { return await work(); }
+    try {
+      status(message);
+      await yieldToBrowser();
+      return await work();
+    } catch (error) { throw new SwoopStageError(name, error); }
     finally { timings[name] = performance.now() - before; }
   }
 
@@ -209,7 +212,7 @@ export async function createSwoopDistrict(options: SwoopDistrictOptions) {
     timings.totalReady = performance.now() - started;
     status('Complete Dequindre Cut district prepared. Preview only.');
   } catch (error) {
-    failure = error instanceof Error ? error.message : String(error);
+    failure = describeSwoopLoadError(error instanceof SwoopStageError ? error : new SwoopStageError('assembly', error));
     timings.failedAt = performance.now() - started;
     dispose();
     throw new Error('Dequindre Cut district could not prepare: ' + failure, { cause: error });

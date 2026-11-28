@@ -3,6 +3,7 @@ import {mkdir,writeFile,readFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {execFileSync} from 'node:child_process';
 import {previewRoot,repoRoot} from './paths.mjs';
+import {waitForPreviewReadiness} from './browser-readiness.mjs';
 
 const compact=process.argv.includes('--compact'),phone=compact||process.argv.includes('--phone'),profile=process.argv.includes('--profile'),reducedMotion=process.argv.includes('--reduced-motion');
 const viewport=compact?{width:320,height:568}:phone?{width:390,height:844}:{width:1440,height:900};
@@ -43,10 +44,15 @@ try{
   page.on('response',response=>{if(response.status()>=400)report.httpErrors.push({url:response.url(),status:response.status()});});
   page.on('console',message=>{if(message.type()==='error')report.consoleErrors.push(message.text());});
   page.on('websocket',socket=>report.webSockets.push(socket.url()));
+  const readinessState=async(stop=null)=>({
+    ...await page.evaluate(stop=>{
+      const start=document.querySelector('#start'),native=stop?document.querySelector('[data-cut-travel="preview-cut-'+stop+'"]'):null;
+      return {preview:globalThis.__dequindrePreview?.snapshot?.()??null,bannerAttached:!!document.querySelector('#dequindre-preview-banner[data-dequindre-preview]'),startEnabled:!!start&&!start.disabled,loading:document.querySelector('#loading')?.textContent??'',travelState:native?.dataset.previewTravelState??null,travelMessage:native?.parentElement?.querySelector('[data-preview-travel-status]')?.textContent??''};
+    },stop),
+    pageErrors:[...report.pageErrors],
+  });
   await page.goto(requestedUrl.href,{waitUntil:'domcontentloaded'});
-  await expect(page.locator('#dequindre-preview-banner[data-dequindre-preview]')).toBeAttached({timeout:30000});
-  await expect(page.locator('#start')).toBeEnabled({timeout:180000});
-  await page.waitForFunction(()=>globalThis.__dequindrePreview?.snapshot?.().ready===true,null,{timeout:180000});
+  report.startupReadiness=await waitForPreviewReadiness(()=>readinessState());
   record('source-backed world is ready',true);
   report.initial=await snapshot(page);
   const imported=report.initial.diagnostics?.importedWorld,coverage=imported?.mapCoverage;
@@ -103,7 +109,8 @@ try{
     if(phone)record(stop+' preview travel target is at least 44px',bounds&&bounds.width>=44&&bounds.height>=44);
     const previous=await snapshot(page);
     await button.click();
-    await expect(page.locator(`[data-cut-travel="preview-cut-${stop}"]`)).toHaveAttribute('data-preview-travel-state','ready',{timeout:180000});
+    const readiness=await waitForPreviewReadiness(()=>readinessState(stop),{travel:true});
+    report.checks.push({name:stop+' destination preparation completed',passed:true,elapsedMs:readiness.elapsedMs});
     await page.waitForFunction(frameCount=>(globalThis.__dequindrePreview?.snapshot?.().diagnostics?.runtime?.frameCount??0)>frameCount,previous.diagnostics.runtime.frameCount,{timeout:30000});
     await page.locator('#game').click({position:{x:Math.floor(viewport.width/2),y:Math.floor(viewport.height/2)}});
   };
@@ -166,7 +173,7 @@ try{
   record('no failed source model, image or module requests',report.sourceRequestFailures.length===0);
   record('all source stops support native movement',report.checks.filter(c=>c.name.endsWith('native movement')).every(c=>c.passed));
   report.passed=report.checks.every(c=>c.passed);
-}catch(error){report.passed=false;report.error=String(error?.stack||error);process.exitCode=1;}
+}catch(error){report.passed=false;report.error=String(error?.stack||error);if(error?.readiness)report.readinessFailure=error.readiness;process.exitCode=1;}
 finally{
   if(!report.passed&&page&&!page.isClosed()){
     try{await page.screenshot({path:resolve(output,'failure.png'),timeout:15000});report.failureScreenshot='failure.png';}catch(error){report.failureScreenshotError=String(error);}

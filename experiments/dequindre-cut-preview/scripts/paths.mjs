@@ -6,6 +6,7 @@ export const repoRoot=resolve(previewRoot,'../..');
 export const gameRoot=resolve(repoRoot,'lottominded-ultra.io/games/gothtechnology2');
 export const belleRoot=resolve(gameRoot,'belle-isle-source/game');
 export const swoopRoot=resolve(gameRoot,'swoop-source');
+export const publishedSwoopMediaRoot=resolve(gameRoot,'store/public/arcade/swoop-detroit');
 export const generatedRoot=resolve(previewRoot,'.generated');
 export const outputRoot=resolve(previewRoot,'dist');
 
@@ -22,6 +23,6 @@ export function assertPreviewOutput(directory){
 }
 
 export const assetRoots=Object.freeze([
-  {prefix:'/__swoop-assets__/',directory:resolve(swoopRoot,'public')},
+  ...['exports','textures','audio','shared-textures'].map(name=>({prefix:'/__swoop-assets__/'+name+'/',directories:[resolve(swoopRoot,'public',name),resolve(publishedSwoopMediaRoot,name)]})),
   {prefix:'/',directory:resolve(belleRoot,'public')},
 ]);

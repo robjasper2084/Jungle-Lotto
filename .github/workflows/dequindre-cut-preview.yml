@@ -51,6 +51,10 @@ jobs:
             /lottominded-ultra.io/games/gothtechnology2/swoop-source/public/exports/
             /lottominded-ultra.io/games/gothtechnology2/swoop-source/public/textures/
             /lottominded-ultra.io/games/gothtechnology2/swoop-source/public/audio/
+            /lottominded-ultra.io/games/gothtechnology2/store/public/arcade/swoop-detroit/exports/
+            /lottominded-ultra.io/games/gothtechnology2/store/public/arcade/swoop-detroit/textures/
+            /lottominded-ultra.io/games/gothtechnology2/store/public/arcade/swoop-detroit/audio/
+            /lottominded-ultra.io/games/gothtechnology2/store/public/arcade/swoop-detroit/shared-textures/
             /lottominded-ultra.io/games/gothtechnology2/greater-detroit-graphics/
             /lottominded-ultra.io/games/gothtechnology2/elmwood-source/src/
       - uses: actions/setup-node@v4

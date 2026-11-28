@@ -40,8 +40,12 @@ The required asset roots are:
 - `lottominded-ultra.io/games/gothtechnology2/swoop-source/public/exports/`
 - `lottominded-ultra.io/games/gothtechnology2/swoop-source/public/textures/`
 - `lottominded-ultra.io/games/gothtechnology2/swoop-source/public/audio/`
+- `lottominded-ultra.io/games/gothtechnology2/store/public/arcade/swoop-detroit/exports/`
+- `lottominded-ultra.io/games/gothtechnology2/store/public/arcade/swoop-detroit/textures/`
+- `lottominded-ultra.io/games/gothtechnology2/store/public/arcade/swoop-detroit/audio/`
+- `lottominded-ultra.io/games/gothtechnology2/store/public/arcade/swoop-detroit/shared-textures/`
 
-Swoop asset URLs receive a dedicated `/__swoop-assets__/` namespace during preview compilation, so similarly named Belle Isle assets cannot be substituted accidentally. No global fetch or loader implementation is replaced.
+Swoop asset URLs receive a dedicated `/__swoop-assets__/` namespace during preview compilation, so similarly named Belle Isle assets cannot be substituted accidentally. The original source build proxies media to an asset server: its source-public tree alone does not contain all referenced models, cut textures or audio. The preview therefore uses an explicit source-public-first overlay with the original published media as fallback. Model-relative shared-texture URLs stay in that same namespace. The manifest records the selected source path and exact Git blob; a changed primary asset or changed source selection is rejected, never hidden by fallback. No texture variants, replacement images, global fetch or loader implementation are introduced.
 
 ## Isolation and quality constraints
 
@@ -74,7 +78,7 @@ npm run test:browser -- --compact --reduced-motion
 
 The desktop check uses native keyboard input. The phone checks use native browser touch events on the game's real joystick. They visit Atwater, Freight Yard, Mack Avenue and the original island start through the preview's user-facing travel buttons, capture actual game screenshots, check travel-target bounds, and retain browser errors. Compact mode uses a 320 × 568 viewport. Each run writes its own timestamped evidence directory; unfavorable runs are not overwritten.
 
-The browser check compares imported route length, terrain chunks, triangle counts, building meshes, geospatial meshes and landmarks against an independent inventory constructed from the unmodified Swoop source. It also requires the complete-scene connector checks in both directions, actual native movement, visible imported meshes and no missing source assets. Failures retain a screenshot and loading/state snapshot whenever the browser is available.
+The browser check compares imported route length, terrain chunks, triangle counts, building meshes, geospatial meshes and landmarks against an independent inventory constructed from the unmodified Swoop source. It also requires the complete-scene connector checks in both directions, actual native movement, visible imported meshes and no missing source assets. Startup and travel waits stop immediately when the actual preview reports an error, a native loader fails or an unhandled browser error appears. Failures retain a screenshot and loading/state snapshot whenever the browser is available. Asset tests verify all five original Cut JPEGs, a published-only model and its original external JPEG dependencies before the browser run.
 
 An optional `--profile` appends 30 seconds of native movement at each of Atwater, Freight Yard and Mack Avenue. It samples continuously before the first travel action through the last segment, retaining all callback intervals, travel-dialog transitions and asset loads with segment timestamps. Its report labels those observations as supplemental browser callback measurements. It does not substitute them for the original rendered-frame performance gate or imply hardware certification. The default browser is the Chromium installed by Playwright; use `DEQUINDRE_CHROME` to select another installed Chrome/Chromium binary. Set `DEQUINDRE_HEADED=1` for a visible browser, and `DEQUINDRE_PREVIEW_URL` only for another localhost port.
 
