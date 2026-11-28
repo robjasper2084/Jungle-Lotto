@@ -5,11 +5,12 @@ import {resolve} from 'node:path';
 import {setTimeout as delay} from 'node:timers/promises';
 import {previewRoot,repoRoot} from './paths.mjs';
 
+const captureOnly=process.argv.includes('--capture-only');
 const output=resolve(previewRoot,'output/ci');await mkdir(output,{recursive:true});
 const sourceHead=execFileSync('git',['rev-parse','HEAD'],{cwd:repoRoot,encoding:'utf8'}).trim();
 const url='http://127.0.0.1:8317/';
-const summary={sourceHead,productionDeployment:false,productionAcceptance:false,startedAt:new Date().toISOString(),checks:[],passed:false};
-const log=createWriteStream(resolve(output,'preview-server.log'));
+const summary={sourceHead,mode:captureOnly?'requested-mobile-pictures':'full-native-suite',productionDeployment:false,productionAcceptance:false,startedAt:new Date().toISOString(),checks:[],passed:false};
+const log=createWriteStream(resolve(output,captureOnly?'preview-pictures-server.log':'preview-server.log'));
 const server=spawn(process.execPath,[resolve(previewRoot,'node_modules/vite/bin/vite.js'),'preview','--host','127.0.0.1','--port','8317','--strictPort'],{cwd:previewRoot,stdio:['ignore','pipe','pipe']});
 server.stdout.pipe(log,{end:false});server.stderr.pipe(log,{end:false});
 let serverError,serverExited=false,running;
@@ -31,7 +32,8 @@ try{
   }catch(error){lastError=error;await delay(500);}
  }
  if(!ready)throw Error('Preview server did not become ready: '+lastError);
- for(const args of [['--profile'],['--phone','--profile'],['--compact','--reduced-motion']]){
+ const modes=captureOnly?[['--phone','--capture-only']]:[['--profile'],['--phone','--profile'],['--compact','--reduced-motion']];
+ for(const args of modes){
   try{
    await new Promise((resolve,reject)=>{
     running=spawn(process.execPath,[resolvePath('scripts/browser-smoke.mjs'),...args],{cwd:previewRoot,stdio:'inherit',env:{...process.env,DEQUINDRE_PREVIEW_URL:url}});
@@ -45,7 +47,7 @@ try{
  if(!summary.passed)throw Error('One or more native preview checks failed; all attempted runs are retained');
 }catch(error){summary.error=String(error);throw error;
 }finally{
- summary.finishedAt=new Date().toISOString();await writeFile(resolve(output,'browser-suite.json'),JSON.stringify(summary,null,2)+'\n');
+ summary.finishedAt=new Date().toISOString();await writeFile(resolve(output,captureOnly?'picture-capture.json':'browser-suite.json'),JSON.stringify(summary,null,2)+'\n');
  stop();await Promise.race([closed,delay(5000)]);if(!serverExited)server.kill('SIGKILL');
  process.removeListener('SIGINT',stop);process.removeListener('SIGTERM',stop);
 }

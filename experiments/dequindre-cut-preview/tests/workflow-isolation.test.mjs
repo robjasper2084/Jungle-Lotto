@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
+import {runInNewContext} from 'node:vm';
 import {repoRoot,previewRoot} from '../scripts/paths.mjs';
 import {assertPreviewWorkflow,PREVIEW_BRANCH,PREVIEW_WORKFLOW} from '../scripts/workflow-isolation.mjs';
 
@@ -19,10 +20,32 @@ test('CI stays on the exact draft branch with read-only artifact-only scope',asy
   ['actions/upload-artifact@v4','actions/upload-pages-artifact@v4'],
   ['experiments/dequindre-cut-preview/dist/preview-manifest.json\n','experiments/dequindre-cut-preview/dist/\n'],
   ['          persist-credentials: false','          persist-credentials: true'],
+  ['experiments/dequindre-cut-preview/output/browser/phone-pictures/','experiments/dequindre-cut-preview/output/browser/'],
+  ['experiments/dequindre-cut-preview/output/ci/picture-capture.json','experiments/dequindre-cut-preview/output/ci/'],
+  ['dequindre-cut-preview-pictures-${{ github.sha }}','dequindre-cut-preview-evidence-${{ github.sha }}'],
+  ['        timeout-minutes: 6\n','        timeout-minutes: 22\n'],
+  ['        continue-on-error: true\n',''],
+  ['        timeout-minutes: 22\n','        timeout-minutes: 22\n        continue-on-error: true\n'],
+  ['        run: node scripts/run-browser-suite.mjs\n','        run: node scripts/run-browser-suite.mjs --capture-only\n'],
+  ['        if: always()\n','        if: success()\n'],
  ])assert.throws(()=>assertPreviewWorkflow(source.replace(from,to)),/workflow boundary changed/,to);
 });
 
-test('CI uses three bounded browser boots and samples every route transition',async()=>{
+test('requested pictures run only the phone capture and keep separate failure evidence',async()=>{
+ const suite=await readFile(resolve(previewRoot,'scripts/run-browser-suite.mjs'),'utf8');
+ const expression=suite.match(/const modes=([^;]+);/);
+ assert.ok(expression,'the runner must retain an explicit capture/full mode selection');
+ const modes=captureOnly=>JSON.parse(JSON.stringify(runInNewContext(expression[1],{captureOnly},{timeout:1000})));
+ assert.deepEqual(modes(true),[['--phone','--capture-only']]);
+ assert.deepEqual(modes(false),[['--profile'],['--phone','--profile'],['--compact','--reduced-motion']]);
+ assert.match(suite,/captureOnly\?'requested-mobile-pictures':'full-native-suite'/);
+ assert.match(suite,/captureOnly\?'preview-pictures-server\.log':'preview-server\.log'/);
+ assert.match(suite,/finally\{[\s\S]*writeFile\(resolve\(output,captureOnly\?'picture-capture\.json':'browser-suite\.json'\)/);
+ assert.match(suite,/catch\(error\)\{summary\.error=String\(error\);throw error;/,'capture failure must remain an error rather than become acceptance');
+ assert.match(suite,/productionDeployment:false,productionAcceptance:false/);
+});
+
+test('full CI keeps three bounded browser boots and samples every route transition',async()=>{
  const suite=await readFile(resolve(previewRoot,'scripts/run-browser-suite.mjs'),'utf8');
  assert.match(suite,/\[\['--profile'\],\['--phone','--profile'\],\['--compact','--reduced-motion'\]\]/);
  assert.match(suite,/const url='http:\/\/127\.0\.0\.1:8317\/'/);

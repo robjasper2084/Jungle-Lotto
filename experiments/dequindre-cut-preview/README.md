@@ -4,6 +4,8 @@
 
 This workspace adapts the existing Swoop Detroit world into the Belle Isle runtime. It uses the existing map, models and textures at their original quality. The integration lives entirely under `experiments/dequindre-cut-preview/`; production game entry points, source modules, dependencies, packaging and deployment configuration remain unchanged.
 
+The complete imported map includes its scenery, artwork and interiors, with Belle Isle's rider and companion. Source races and challenges, commerce and accounts, online room services, and embedded arcade and movie playback are not activated in this preview.
+
 ## Run locally
 
 Use Node 24 and a checkout containing the original Belle Isle and Swoop source assets:
@@ -51,7 +53,7 @@ Swoop asset URLs receive a dedicated `/__swoop-assets__/` namespace during previ
 
 ## Isolation and quality constraints
 
-- One Belle Isle renderer, player runtime, camera and control system.
+- One shared Belle Isle gameplay renderer, player runtime, camera and control system.
 - Complete existing authored Cut content, with its original terrain, ramps, bridges and asset references.
 - One documented map-frame adapter for positions, headings, ground normals, rays and collision queries.
 - Overlapping simplified mainland visuals are clipped or replaced only where the imported world supplies the corresponding surface. Existing Jefferson connections and Elmwood remain available.
@@ -90,6 +92,8 @@ npm run test:browser -- --compact --reduced-motion
 
 The desktop check uses native keyboard input. The phone checks use native browser touch events on the game's real joystick. They visit Atwater, Freight Yard, Mack Avenue and the original island start through the preview's user-facing travel buttons, capture actual game screenshots, check travel-target bounds, and retain browser errors. Compact mode uses a 320 × 568 viewport. Each run writes its own timestamped evidence directory; unfavorable runs are not overwritten.
 
+For requested preview pictures, `node scripts/run-browser-suite.mjs --capture-only` runs the same mobile startup, map inventory, connector, four-stop travel and native movement checks. It uses the original first-ride Skip control when available to clear the introductory tip, and omits only the separate friends-notice check and optional 90-second observations. Its screenshots and report are kept under `output/browser/phone-pictures/`; this picture pass does not replace the full validation suite.
+
 The browser check compares imported route length, terrain chunks, triangle counts, building meshes, geospatial meshes and landmarks against an independent inventory constructed from the unmodified Swoop source. It also requires the complete-scene connector checks in both directions, actual native movement, visible imported meshes and no missing source assets. Startup and travel waits stop immediately when the actual preview reports an error, a native loader fails or an unhandled browser error appears. Failures retain a screenshot and loading/state snapshot whenever the browser is available. Asset tests verify all five original Cut JPEGs, a published-only model and its original external JPEG dependencies before the browser run.
 
 An optional `--profile` appends 30 seconds of native movement at each of Atwater, Freight Yard and Mack Avenue. It samples continuously before the first travel action through the last segment, retaining all callback intervals, travel-dialog transitions and asset loads with segment timestamps. Its report labels those observations as supplemental browser callback measurements. It does not substitute them for the original rendered-frame performance gate or imply hardware certification. The default browser is the Chromium installed by Playwright; use `DEQUINDRE_CHROME` to select another installed Chrome/Chromium binary. Set `DEQUINDRE_HEADED=1` for a visible browser, and `DEQUINDRE_PREVIEW_URL` only for another localhost port.
@@ -106,7 +110,7 @@ npm run test:browser -- --phone --profile
 npm run test:browser -- --compact --reduced-motion
 ```
 
-The first two include the complete functional route smoke before their continuous source-route observations, avoiding redundant browser boots. Each run retains its failures; the suite attempts the remaining device checks even if an earlier one fails. Toolbar bounds and overlap, the offline-room notice, prepared travel, full source counts, both connector directions, real movement and source assets are checked. CI uploads only reports, screenshots, server logs, source inventory and `preview-manifest.json`. It never uploads a Pages artifact or the game bundle. The workflow boundary itself is covered by fail-closed isolation tests.
+An initial, separately bounded mobile picture pass saves the requested screenshots as an early artifact. The full suite then runs all three modes above regardless of that picture pass's outcome. The first two full modes include the complete functional route smoke before their continuous source-route observations. Each run retains its failures; the suite attempts the remaining device checks even if an earlier one fails. Toolbar bounds and overlap, the offline-room notice, prepared travel, full source counts, both connector directions, real movement and source assets are checked. CI uploads only reports, screenshots, server logs, source inventory and `preview-manifest.json`. It never uploads a Pages artifact or the game bundle. The workflow boundary itself is covered by fail-closed isolation tests.
 
 To run that same suite against a completed local build, stop any existing server on port 8317 and run `node scripts/run-browser-suite.mjs`. The script owns and shuts down its localhost server. These are functional draft diagnostics; the existing native production acceptance remains a separate requirement.
 

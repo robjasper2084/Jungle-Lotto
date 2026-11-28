@@ -21,7 +21,7 @@ export async function waitForPreviewReadiness(read,{travel=false,ride=false,time
   const result=previewReadiness(lastState,{travel,ride});
   if(result.error){const error=Error(result.error);error.readiness={elapsedMs:now()-started,samples,state:lastState};throw error;}
   if(result.ready)return {elapsedMs:now()-started,samples,state:lastState};
-  if(now()-started>=timeout){const error=Error('Preview '+(ride?'ride':travel?'travel':'startup')+' did not become ready within '+timeout+'ms; last stage: '+((ride?lastState.loading:null)||lastState.preview?.stage||lastState.loading||'initializing'));error.readiness={elapsedMs:now()-started,samples,state:lastState};throw error;}
+  if(now()-started>=timeout){const stage=ride&&lastState.welcomeHidden?'Welcome closed; waiting for visible native riding controls and active preview':(ride?lastState.loading:null)||lastState.preview?.stage||lastState.loading||'initializing';const error=Error('Preview '+(ride?'ride':travel?'travel':'startup')+' did not become ready within '+timeout+'ms; last stage: '+stage);error.readiness={elapsedMs:now()-started,samples,state:lastState};throw error;}
   await wait(Math.min(poll,Math.max(0,timeout-(now()-started))));
  }
 }

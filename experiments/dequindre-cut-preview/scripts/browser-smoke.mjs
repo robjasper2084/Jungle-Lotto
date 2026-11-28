@@ -4,16 +4,17 @@ import {resolve} from 'node:path';
 import {execFileSync} from 'node:child_process';
 import {previewRoot,repoRoot} from './paths.mjs';
 import {waitForPreviewReadiness} from './browser-readiness.mjs';
+import {readPreviewReadinessState} from './browser-dom-state.mjs';
 
-const compact=process.argv.includes('--compact'),phone=compact||process.argv.includes('--phone'),profile=process.argv.includes('--profile'),reducedMotion=process.argv.includes('--reduced-motion');
+const compact=process.argv.includes('--compact'),phone=compact||process.argv.includes('--phone'),captureOnly=process.argv.includes('--capture-only'),profile=!captureOnly&&process.argv.includes('--profile'),reducedMotion=process.argv.includes('--reduced-motion');
 const viewport=compact?{width:320,height:568}:phone?{width:390,height:844}:{width:1440,height:900};
 const requestedUrl=new URL(process.env.DEQUINDRE_PREVIEW_URL||'http://127.0.0.1:8317/');
 if(!['localhost','127.0.0.1','[::1]'].includes(requestedUrl.hostname))throw Error('This unpublished preview test only connects to a local server');
 requestedUrl.searchParams.set('profile','1');
-const label=(compact?'compact-phone':phone?'phone':'desktop')+(reducedMotion?'-reduced-motion':'')+(profile?'-90s':'-smoke');
+const label=(compact?'compact-phone':phone?'phone':'desktop')+(reducedMotion?'-reduced-motion':'')+(captureOnly?'-pictures':profile?'-90s':'-smoke');
 const startedAt=new Date().toISOString(),run=startedAt.replace(/[.:]/g,'-')+'-'+process.pid;
 const output=resolve(previewRoot,'output/browser',label,run);await mkdir(output,{recursive:true});
-const report={schemaVersion:1,startedAt,sourceHead:execFileSync('git',['rev-parse','HEAD'],{cwd:repoRoot,encoding:'utf8'}).trim(),url:requestedUrl.href,device:compact?'compact-phone':phone?'phone':'desktop',viewport,reducedMotion,mode:profile?'supplemental-90-second-observation':'native-input-smoke',productionAcceptance:false,checks:[],captures:[],layout:[],nativeActions:[],pageErrors:[],failedRequests:[],httpErrors:[],consoleErrors:[],webSockets:[]};
+const report={schemaVersion:1,startedAt,sourceHead:execFileSync('git',['rev-parse','HEAD'],{cwd:repoRoot,encoding:'utf8'}).trim(),url:requestedUrl.href,device:compact?'compact-phone':phone?'phone':'desktop',viewport,reducedMotion,mode:captureOnly?'native-preview-pictures':profile?'supplemental-90-second-observation':'native-input-smoke',captureOnly,productionAcceptance:false,checks:[],captures:[],layout:[],nativeActions:[],pageErrors:[],failedRequests:[],httpErrors:[],consoleErrors:[],webSockets:[]};
 let browser,page;
 const record=(name,value)=>{report.checks.push({name,passed:!!value});if(!value)throw Error('Preview check failed: '+name);};
 const check=(name,value,detail)=>report.checks.push({name,passed:!!value,...(detail===undefined?{}:{detail})});
@@ -22,6 +23,13 @@ try{
   const expected=JSON.parse(execFileSync(process.execPath,['--experimental-transform-types','--import',resolve(previewRoot,'scripts/register-test-resolver.mjs'),resolve(previewRoot,'scripts/source-inventory.ts')],{cwd:previewRoot,encoding:'utf8',maxBuffer:1024*1024}));
   report.expectedSource=expected;
   browser=await chromium.launch({executablePath:process.env.DEQUINDRE_CHROME||chromium.executablePath(),headless:process.env.DEQUINDRE_HEADED!=='1',args:['--no-sandbox','--enable-gpu']});
+  // Browser-process evidence survives an unresponsive page. This is a passive
+  // query before navigation; it changes no Chromium flags or game settings.
+  report.browserProcess={version:browser.version(),capturedAt:new Date().toISOString()};
+  let backendSession,backendTimer;
+  try{backendSession=await browser.newBrowserCDPSession();report.browserProcess.systemInfo=await Promise.race([backendSession.send('SystemInfo.getInfo'),new Promise((_,reject)=>{backendTimer=setTimeout(()=>reject(Error('Browser GPU information timed out')),5000);})]);}
+  catch(error){report.browserProcess.error=String(error);}
+  finally{clearTimeout(backendTimer);if(backendSession)await backendSession.detach().catch(()=>{});}
   const context=await browser.newContext({viewport,deviceScaleFactor:1,isMobile:phone,hasTouch:phone,reducedMotion:reducedMotion?'reduce':'no-preference'});
   page=await context.newPage();
   const touchSession=phone?await context.newCDPSession(page):null;
@@ -55,15 +63,11 @@ try{
   page.on('response',response=>{if(response.status()>=400)report.httpErrors.push({url:response.url(),status:response.status()});});
   page.on('console',message=>{if(message.type()==='error')report.consoleErrors.push(message.text());});
   page.on('websocket',socket=>report.webSockets.push(socket.url()));
-  const readinessState=async(stop=null)=>({
-    ...await page.evaluate(stop=>{
-      const start=document.querySelector('#start'),welcome=document.querySelector('#welcome'),banner=document.querySelector('#dequindre-preview-banner[data-dequindre-preview]'),native=stop?document.querySelector('[data-cut-travel="preview-cut-'+stop+'"]'):null;
-      const visible=element=>{if(!element||element.hidden)return false;const style=getComputedStyle(element),bounds=element.getBoundingClientRect();return style.display!=='none'&&style.visibility!=='hidden'&&bounds.width>0&&bounds.height>0;};
-      const destinations=[...document.querySelectorAll('[data-preview-stop]')];
-      return {preview:globalThis.__dequindrePreview?.snapshot?.()??null,bannerAttached:!!banner,startEnabled:!!start&&!start.disabled,startLabel:document.querySelector('#start-label')?.textContent?.trim()??'',loading:document.querySelector('#loading')?.textContent??'',welcomeHidden:welcome?.hidden??false,welcomeState:welcome?.dataset.state??null,bodyAtStart:document.body.classList.contains('at-start'),selectedVehicle:welcome?.dataset.vehicle??null,checkedVehicle:document.querySelector('input[name="startup-vehicle"]:checked')?.value??null,camera:welcome?.dataset.camera??null,rideHudVisible:visible(document.querySelector('#ridehud')),bannerVisible:visible(banner),previewUsable:banner?.dataset.ready==='true'&&destinations.length===4&&destinations.every(button=>!button.disabled),activeFrames:Number(document.querySelector('#profile')?.dataset.activeFrames??0),travelState:native?.dataset.previewTravelState??null,travelMessage:native?.parentElement?.querySelector('[data-preview-travel-status]')?.textContent??''};
-    },stop),
-    pageErrors:[...report.pageErrors],
-  });
+  const readinessState=async(stop=null)=>{
+    const state=await page.evaluate(readPreviewReadinessState,{stop,captureRenderer:!report.browser});
+    if(state.browser)report.browser=state.browser;
+    return {...state,pageErrors:[...report.pageErrors]};
+  };
   const navigationStarted=Date.now();
   await page.goto(requestedUrl.href,{waitUntil:'domcontentloaded'});
   report.documentReadyElapsedMs=Date.now()-navigationStarted;
@@ -100,16 +104,22 @@ try{
     check('complete scene connector '+direction,route?.ok===true&&route.phase==='complete-scene'&&route.issues.length===0&&route.samples>=Math.floor(connection.route.length/.75),route);
   }
   check('connector verified in both directions',connection?.verified===true);
-  await activate(page.locator('#welcome-friends'),'Open native friends notice');
-  await expect(page.locator('#online-room[data-preview-offline="true"]')).toBeVisible();
-  await expect(page.locator('#online-room')).toContainText('Online rooms are off in this preview.');
-  record('offline room notice has no join or create inputs',await page.locator('#online-room input,#online-room select').count()===0);
-  await activate(page.locator('#online-room').getByRole('button',{name:'Close preview room notice',exact:true}),'Close native friends notice');
+  if(!captureOnly){
+    await activate(page.locator('#welcome-friends'),'Open native friends notice');
+    await expect(page.locator('#online-room[data-preview-offline="true"]')).toBeVisible();
+    await expect(page.locator('#online-room')).toContainText('Online rooms are off in this preview.');
+    record('offline room notice has no join or create inputs',await page.locator('#online-room input,#online-room select').count()===0);
+    await activate(page.locator('#online-room').getByRole('button',{name:'Close preview room notice',exact:true}),'Close native friends notice');
+  }else report.offlineNotice='Not repeated in picture capture; covered by the full native smoke and offline adapter tests.';
   const rideStarted=Date.now();
   await activate(page.locator('#start'),'Start native One wheel ride');
   report.nativeRideReadiness=await waitForPreviewReadiness(()=>readinessState(),{ride:true});
   report.nativeRideReadiness.totalElapsedMs=Date.now()-rideStarted;
   record('native startup reveals a usable preview HUD and renders the selected ride',true);
+  if(captureOnly){
+    const skip=page.getByRole('button',{name:'Skip first ride objective',exact:true});
+    if(await skip.isVisible()){await activate(skip,'Skip optional first ride objective');await expect(page.locator('#first-ride-objective')).toBeHidden();}
+  }
   const bannerBounds=await page.locator('#dequindre-preview-banner').boundingBox();
   report.layout.push({element:'preview-banner',bounds:bannerBounds});
   record('preview banner stays inside viewport',bannerBounds&&bannerBounds.x>=-.5&&bannerBounds.y>=-.5&&bannerBounds.x+bannerBounds.width<=viewport.width+.5&&bannerBounds.y+bannerBounds.height<=viewport.height+.5);
@@ -126,12 +136,6 @@ try{
     const overlap=Math.min(a.x+a.width,b.x+b.width)-Math.max(a.x,b.x)>.5&&Math.min(a.y+a.height,b.y+b.height)-Math.max(a.y,b.y)>.5;
     record(toolbar[i].id+' and '+toolbar[j].id+' toolbar targets do not overlap',!overlap);
   }
-  report.browser=await page.evaluate(()=>{
-    const canvas=document.querySelector('#game');
-    const gl=canvas.getContext('webgl2')||canvas.getContext('webgl');
-    const debug=gl?.getExtension('WEBGL_debug_renderer_info');
-    return {userAgent:navigator.userAgent,viewport:{width:innerWidth,height:innerHeight},renderer:debug?gl.getParameter(debug.UNMASKED_RENDERER_WEBGL):null,vendor:debug?gl.getParameter(debug.UNMASKED_VENDOR_WEBGL):null,canvasAttributes:{...canvas.dataset}};
-  });
   const choose=async stop=>{
     const button=page.locator(`[data-preview-stop="${stop}"]`);
     if(!await button.isVisible()){

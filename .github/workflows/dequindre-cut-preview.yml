@@ -75,6 +75,21 @@ jobs:
           node --experimental-transform-types --import ./scripts/register-test-resolver.mjs scripts/source-inventory.ts > output/ci/source-inventory.json
       - name: Install browser for functional preview checks
         run: npx playwright install --with-deps chromium
+      - name: Capture requested mobile preview pictures
+        timeout-minutes: 6
+        continue-on-error: true
+        run: node scripts/run-browser-suite.mjs --capture-only
+      - name: Retain requested mobile preview pictures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dequindre-cut-preview-pictures-${{ github.sha }}
+          path: |
+            experiments/dequindre-cut-preview/output/browser/phone-pictures/
+            experiments/dequindre-cut-preview/output/ci/picture-capture.json
+            experiments/dequindre-cut-preview/output/ci/preview-pictures-server.log
+          if-no-files-found: warn
+          retention-days: 14
       - name: Capture native input and continuous draft observations
         timeout-minutes: 22
         run: node scripts/run-browser-suite.mjs

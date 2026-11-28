@@ -8,9 +8,16 @@ const events=`on:
       - experiments/dequindre-cut-preview/**
       - ${PREVIEW_WORKFLOW}`;
 const allowedArtifacts=[
- 'experiments/dequindre-cut-preview/output/browser/',
- 'experiments/dequindre-cut-preview/output/ci/',
- 'experiments/dequindre-cut-preview/dist/preview-manifest.json',
+ {name:'dequindre-cut-preview-pictures-${{ github.sha }}',paths:[
+  'experiments/dequindre-cut-preview/output/browser/phone-pictures/',
+  'experiments/dequindre-cut-preview/output/ci/picture-capture.json',
+  'experiments/dequindre-cut-preview/output/ci/preview-pictures-server.log',
+ ]},
+ {name:'dequindre-cut-preview-evidence-${{ github.sha }}',paths:[
+  'experiments/dequindre-cut-preview/output/browser/',
+  'experiments/dequindre-cut-preview/output/ci/',
+  'experiments/dequindre-cut-preview/dist/preview-manifest.json',
+ ]},
 ];
 
 /** This intentionally accepts only the reviewed, simple workflow shape. Any
@@ -29,10 +36,26 @@ export function assertPreviewWorkflow(source){
  if((jobs.match(/^  [^\s:]+:/gm)||[]).join('\n')!=='  validate:')fail('only one validation job is allowed');
  if(!jobs.includes("    if: github.event_name == 'push' && github.ref == 'refs/heads/"+PREVIEW_BRANCH+"'\n"))fail('exact job ref guard is required');
  for(const line of ['    runs-on: ubuntu-24.04','    timeout-minutes: 30','          ref: ${{ github.sha }}','          persist-credentials: false','          sparse-checkout-cone-mode: false'])if(!source.includes(line+'\n'))fail('missing '+line.trim());
- const upload=source.match(/uses: actions\/upload-artifact@v4\n([\s\S]*?)$/);
- if(!upload||(source.match(/uses: actions\/upload-artifact@/g)||[]).length!==1)fail('one evidence-only artifact is required');
- const paths=upload[1].match(/          path: \|\n([\s\S]*?)          if-no-files-found:/);
- if(!paths||paths[1].split('\n').map(line=>line.trim()).filter(Boolean).join('\n')!==allowedArtifacts.join('\n'))fail('artifact paths may contain only reports, captures, inventory, logs and build receipt');
- if(!source.includes('        run: node scripts/run-browser-suite.mjs\n'))fail('the bounded native browser suite is required');
+ const steps=jobs.split(/(?=^      - )/m).slice(1);
+ const uploads=steps.map((step,index)=>({step,index})).filter(({step})=>step.includes('uses: actions/upload-artifact@v4\n'));
+ if(uploads.length!==2||(source.match(/uses: actions\/upload-artifact@/g)||[]).length!==2)fail('exactly two evidence-only artifacts are required');
+ for(let i=0;i<uploads.length;i++){
+  const {step}=uploads[i],expected=allowedArtifacts[i];
+  if(!step.includes('        if: always()\n')||!step.includes('          name: '+expected.name+'\n'))fail('each evidence artifact must retain its exact name and failure capture');
+  const paths=step.match(/          path: \|\n([\s\S]*?)          if-no-files-found:/);
+  if(!paths||paths[1].split('\n').map(line=>line.trim()).filter(Boolean).join('\n')!==expected.paths.join('\n'))fail('artifact paths may contain only their reviewed captures, reports, logs and build receipt');
+  if(!step.includes('          if-no-files-found: warn\n')||!step.trimEnd().endsWith('          retention-days: 14'))fail('artifact retention policy changed');
+ }
+ const capture=steps.findIndex(step=>step.includes('        run: node scripts/run-browser-suite.mjs --capture-only\n'));
+ const full=steps.findIndex(step=>step.includes('        run: node scripts/run-browser-suite.mjs\n'));
+ if(capture<0||full<0||capture>=uploads[0].index||uploads[0].index>=full||full>=uploads[1].index)fail('requested pictures must be retained before the unchanged full native suite');
+ if(steps[capture].trimEnd()!==`      - name: Capture requested mobile preview pictures
+        timeout-minutes: 6
+        continue-on-error: true
+        run: node scripts/run-browser-suite.mjs --capture-only`)fail('only the bounded requested-picture step may continue after an error');
+ if(steps[full].trimEnd()!==`      - name: Capture native input and continuous draft observations
+        timeout-minutes: 22
+        run: node scripts/run-browser-suite.mjs`)fail('the unchanged bounded full native suite is required');
+ if((source.match(/^\s*continue-on-error:/gm)||[]).length!==1||(source.match(/        run: node scripts\/run-browser-suite\.mjs(?: --capture-only)?\n/g)||[]).length!==2)fail('picture capture cannot replace, repeat, or weaken the full native suite');
  return {productionDeployment:false,productionAcceptance:false,branch:PREVIEW_BRANCH,jobCount:1};
 }
