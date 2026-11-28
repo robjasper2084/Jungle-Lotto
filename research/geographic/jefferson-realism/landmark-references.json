@@ -1,0 +1,90 @@
+{
+  "schema": 1,
+  "purpose": "Named historic references for accepted footprint matches; facade and height acceptance remain separate.",
+  "buildings": [
+    {
+      "key": "stearns-building",
+      "name": "Frederick Stearns Building / Lofts at Rivertown",
+      "address": "6533 E Jefferson Avenue",
+      "gameId": "detroit-89989",
+      "sourceBuildingId": 8205689,
+      "spatialMatch": "accepted",
+      "originalGameHeightM": 6.8,
+      "heightStatus": "Existing game height retained; source stories=4 and median_hgt=63 indicate a possible mismatch requiring elevation verification. Median-height unit is unverified.",
+      "referenceUrls": [
+        "https://19january2025snapshot.epa.gov/sites/default/files/2021-04/documents/harbortown_report_final_0.pdf",
+        "https://commons.wikimedia.org/wiki/File:Frederick_Stearns_Building_Detroit_MI.jpg"
+      ]
+    },
+    {
+      "key": "garden-court",
+      "name": "Garden Court Apartments",
+      "address": "2900 E Jefferson Avenue",
+      "gameId": "868842406",
+      "sourceBuildingId": 8205294,
+      "spatialMatch": "accepted",
+      "originalGameHeightM": 9.9,
+      "heightStatus": "Existing generic game height retained; source stories=9 and median_hgt=105 require independent floor/roof-height verification before literal-scale replication. Median-height unit is unverified.",
+      "referenceUrls": [
+        "https://npgallery.nps.gov/AssetDetail/NRIS/85002937",
+        "https://commons.wikimedia.org/wiki/File:Garden_Court_Apartments_Detroit_MI.jpg"
+      ]
+    },
+    {
+      "key": "bagley-house",
+      "name": "John N. Bagley House",
+      "address": "2921 E Jefferson Avenue",
+      "gameId": "114282642",
+      "sourceBuildingId": 8205335,
+      "spatialMatch": "accepted",
+      "originalGameHeightM": 6.6,
+      "heightStatus": "Original height retained; source stories=3 and median_hgt=35 are not elevation survey acceptance. Median-height unit is unverified.",
+      "referenceUrls": [
+        "https://npgallery.nps.gov/AssetDetail/1fdcd5a2-786b-4fd9-a834-1ca47bcac422",
+        "https://commons.wikimedia.org/wiki/File:Bagley_House_Detroit_MI.jpg"
+      ]
+    },
+    {
+      "key": "wells-house",
+      "name": "William H. Wells House",
+      "address": "2931 E Jefferson Avenue",
+      "gameId": "955779335",
+      "sourceBuildingId": 8205346,
+      "spatialMatch": "accepted",
+      "originalGameHeightM": 9.9,
+      "heightStatus": "Original height retained; source stories=3 and median_hgt=29 are not elevation survey acceptance. Median-height unit is unverified.",
+      "referenceUrls": [
+        "https://npgallery.nps.gov/AssetDetail/cb34a874-4113-4f5d-a8f3-a943686fbe40"
+      ]
+    },
+    {
+      "key": "pasadena-apartments",
+      "name": "Pasadena Apartments",
+      "address": "2170 E Jefferson Avenue",
+      "candidateGameId": "957898908",
+      "sourceBuildingId": 8205189,
+      "spatialMatch": "pending-low-overlap",
+      "intersectionOverUnion": 0.641221,
+      "originalGameHeightM": 36.3,
+      "reason": "The apparent unique candidate does not meet the predeclared 0.65 footprint-overlap criterion; review footprint differences before replacing.",
+      "referenceUrls": [
+        "https://npgallery.nps.gov/AssetDetail/NRIS/85002944",
+        "https://commons.wikimedia.org/wiki/File:Pasadena_Apartments_Detroit_MI.jpg"
+      ]
+    },
+    {
+      "key": "manchester-apartments",
+      "name": "Manchester Apartments",
+      "address": "2016 E Jefferson Avenue",
+      "candidateGameId": "948815834",
+      "sourceBuildingId": 8205164,
+      "spatialMatch": "pending-low-overlap",
+      "intersectionOverUnion": 0.609026,
+      "originalGameHeightM": 9.9,
+      "reason": "The apparent unique candidate does not meet the predeclared 0.65 footprint-overlap criterion; review footprint differences before replacing.",
+      "referenceUrls": [
+        "https://npgallery.nps.gov/NRHP/GetAsset/NRHP/64000324_text"
+      ]
+    }
+  ]
+}

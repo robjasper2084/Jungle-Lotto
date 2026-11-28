@@ -1,0 +1,40 @@
+{
+  "schema": 1,
+  "generator": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/tools/build-jefferson-sidewalks.py",
+  "shapelyVersion": "2.2.0",
+  "counts": {
+    "selectedSourceFeatures": 588,
+    "surfaces": 345,
+    "flatSurfacePieces": 170,
+    "rampSurfacePieces": 175,
+    "qualifiedRampEndpoints": 171,
+    "curbRuns": 860,
+    "walkingCorridors": 591,
+    "holes": 6
+  },
+  "areaM2": 48640.94673961929,
+  "pairwiseSurfaceOverlapM2": 9.818481221411402e-14,
+  "flatRampOverlapM2": 0.0,
+  "buildingSolidOverlapM2": 0.0,
+  "outsideMappedLandM2": 0.0,
+  "vehicleCenterlineIntersectionM": 0.0,
+  "minimumVehicleCenterlineClearanceM": 0.5008466602156132,
+  "curbInsideCrossingOrRampLengthM": 0.0,
+  "curbInsideArtificialCutLengthM": 0.0,
+  "derivedWalkAreaDroppedM2": 0.008008000000008033,
+  "initialDerivedSlivers": {
+    "count": 0,
+    "areaM2": 0
+  },
+  "tiledDerivedSlivers": {
+    "count": 4,
+    "areaM2": 0.007125000000007732
+  },
+  "renderGridSymmetricDifferenceM2": 4.896861185140667,
+  "validSourceIds": true,
+  "originalGameInputsUnchanged": true,
+  "sourceSnapshotGeometrySha256": "3636731a590144935d6fd8e68c0c77a91352c4635adbb01eea7a7995227e6abf",
+  "status": "PASS",
+  "runtimeJsonSha256": "04fb7e91fe39307e26ca39c39b72d4bb8b9098901439d9bd4ac82a35c8d11acb",
+  "runtimeJsonBytes": 474573
+}

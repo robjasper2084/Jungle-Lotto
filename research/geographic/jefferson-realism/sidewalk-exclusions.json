@@ -1,0 +1,4839 @@
+{
+  "sourceClipping": [
+    {
+      "sourceId": 452438,
+      "category": "sidewalk",
+      "widthM": 1.8350000587200002,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 21.129164526275652,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "districts",
+          "id": "994923045",
+          "sourceCenterlineIntersectionM": 11.749135241079523,
+          "sourceWidthBufferIntersectionM2": 20.842905415543093
+        }
+      ]
+    },
+    {
+      "sourceId": 807474,
+      "category": "sidewalk",
+      "widthM": 5.062000161984,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 1.9548469240140371,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "districts",
+          "id": "detroit-89939",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 1.8762357003199057
+        }
+      ]
+    },
+    {
+      "sourceId": 809188,
+      "category": "sidewalk",
+      "widthM": 3.573000114336,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 0.0,
+      "vehicleCenterlineGuardM2": 3.594498249981637,
+      "buildingConflicts": []
+    },
+    {
+      "sourceId": 809195,
+      "category": "sidewalk",
+      "widthM": 3.1250001000000003,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 2.2431869720541164,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "districts",
+          "id": "detroit-38199",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 2.1293149851075914
+        }
+      ]
+    },
+    {
+      "sourceId": 809197,
+      "category": "sidewalk",
+      "widthM": 2.087000066784,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 6.488834251955874,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "districts",
+          "id": "detroit-38199",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 6.21059670587844
+        }
+      ]
+    },
+    {
+      "sourceId": 809199,
+      "category": "sidewalk",
+      "widthM": 2.917000093344,
+      "outsideScopeM2": 25.900638877211716,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 3.546771377080776,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "districts",
+          "id": "detroit-38199",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 3.38327280998732
+        }
+      ]
+    },
+    {
+      "sourceId": 809211,
+      "category": "sidewalk",
+      "widthM": 3.358000107456,
+      "outsideScopeM2": 30.55411453600525,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 2.64992147743239,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "districts",
+          "id": "detroit-38195",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 1.0177248433252806
+        },
+        {
+          "dataset": "districts",
+          "id": "detroit-38196",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 1.3957171386549554
+        }
+      ]
+    },
+    {
+      "sourceId": 809213,
+      "category": "sidewalk",
+      "widthM": 2.8000000896,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 13.749298698072252,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "districts",
+          "id": "detroit-38195",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 13.012740963157654
+        }
+      ]
+    },
+    {
+      "sourceId": 809223,
+      "category": "sidewalk",
+      "widthM": 3.0500000976000003,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 1.1108681521890498,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "districts",
+          "id": "detroit-89977",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 0.8982088208437511
+        }
+      ]
+    },
+    {
+      "sourceId": 809229,
+      "category": "sidewalk",
+      "widthM": 5.457000174624,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 3.228574685036712,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "districts",
+          "id": "detroit-515",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 3.0187358830733597
+        }
+      ]
+    },
+    {
+      "sourceId": 809247,
+      "category": "sidewalk",
+      "widthM": 4.61500014768,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 5.534626872684399,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "districts",
+          "id": "detroit-89984",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 5.1581660491729195
+        }
+      ]
+    },
+    {
+      "sourceId": 809802,
+      "category": "sidewalk",
+      "widthM": 4.368000139776,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 0.0,
+      "vehicleCenterlineGuardM2": 8.798051845456646,
+      "buildingConflicts": []
+    },
+    {
+      "sourceId": 811694,
+      "category": "sidewalk",
+      "widthM": 4.810000153920001,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 60.441495338515146,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "districts",
+          "id": "detroit-40004",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 42.36660689979524
+        },
+        {
+          "dataset": "districts",
+          "id": "detroit-89940",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 16.822114435933827
+        }
+      ]
+    },
+    {
+      "sourceId": 813394,
+      "category": "sidewalk",
+      "widthM": 2.593000082976,
+      "outsideScopeM2": 60.60759265562672,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 0.0,
+      "vehicleCenterlineGuardM2": 0.14019791120130265,
+      "buildingConflicts": []
+    },
+    {
+      "sourceId": 813407,
+      "category": "sidewalk",
+      "widthM": 4.51500014448,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 2.104902175387555,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "map",
+          "id": "396275756",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 1.9875525957316218
+        }
+      ]
+    },
+    {
+      "sourceId": 813408,
+      "category": "sidewalk",
+      "widthM": 5.037000161184001,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 4.9912784616842565,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "map",
+          "id": "396275756",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 4.626593346055337
+        }
+      ]
+    },
+    {
+      "sourceId": 813418,
+      "category": "sidewalk",
+      "widthM": 2.1000000672000003,
+      "outsideScopeM2": 55.77280619423137,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 0.0,
+      "vehicleCenterlineGuardM2": 2.110446475359929,
+      "buildingConflicts": []
+    },
+    {
+      "sourceId": 813422,
+      "category": "sidewalk",
+      "widthM": 4.105000131360001,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 14.938356214868733,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "map",
+          "id": "396275755",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 13.92326026509269
+        }
+      ]
+    },
+    {
+      "sourceId": 813432,
+      "category": "sidewalk",
+      "widthM": 4.721000151072,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 7.047241200535193,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "districts",
+          "id": "detroit-89977",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 6.720245424507727
+        }
+      ]
+    },
+    {
+      "sourceId": 813496,
+      "category": "sidewalk",
+      "widthM": 2.83215423408,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 0.0,
+      "vehicleCenterlineGuardM2": 1.0512829816619895,
+      "buildingConflicts": []
+    },
+    {
+      "sourceId": 813518,
+      "category": "sidewalk",
+      "widthM": 2.6967602208960004,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 0.0,
+      "vehicleCenterlineGuardM2": 0.6090519516490558,
+      "buildingConflicts": []
+    },
+    {
+      "sourceId": 842822,
+      "category": "sidewalk",
+      "widthM": 3.698000118336,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 0.0,
+      "vehicleCenterlineGuardM2": 3.7133138956994967,
+      "buildingConflicts": []
+    },
+    {
+      "sourceId": 842827,
+      "category": "sidewalk",
+      "widthM": 4.720000151040001,
+      "outsideScopeM2": 297.667213198906,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 0.0,
+      "vehicleCenterlineGuardM2": 4.747978667220082,
+      "buildingConflicts": []
+    },
+    {
+      "sourceId": 842830,
+      "category": "sidewalk",
+      "widthM": 1.897000060704,
+      "outsideScopeM2": 166.965883269034,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 0.0,
+      "vehicleCenterlineGuardM2": 1.9069313180037044,
+      "buildingConflicts": []
+    },
+    {
+      "sourceId": 842837,
+      "category": "sidewalk",
+      "widthM": 3.01500009648,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 0.0,
+      "vehicleCenterlineGuardM2": 3.0337396164126846,
+      "buildingConflicts": []
+    },
+    {
+      "sourceId": 842838,
+      "category": "sidewalk",
+      "widthM": 3.12000009984,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 0.0,
+      "vehicleCenterlineGuardM2": 3.1356472974399536,
+      "buildingConflicts": []
+    },
+    {
+      "sourceId": 843074,
+      "category": "sidewalk",
+      "widthM": 4.4450001422400005,
+      "outsideScopeM2": 54.01791285872775,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 4.405565061626993,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "extension",
+          "id": "jefferson-city-8205111-0",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 4.260188029605695
+        }
+      ]
+    },
+    {
+      "sourceId": 843081,
+      "category": "sidewalk",
+      "widthM": 3.4670001109440003,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 0.24287949518531343,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "extension",
+          "id": "jefferson-city-8205111-0",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 0.1899578248510918
+        }
+      ]
+    },
+    {
+      "sourceId": 843093,
+      "category": "sidewalk",
+      "widthM": 3.13500010032,
+      "outsideScopeM2": 79.84566279940287,
+      "outsideSafeLandM2": 13.928140836972366,
+      "buildingKeepoutM2": 0.0,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": []
+    },
+    {
+      "sourceId": 843175,
+      "category": "sidewalk",
+      "widthM": 3.3690001078080005,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.14713655954633575,
+      "buildingKeepoutM2": 0.0,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": []
+    },
+    {
+      "sourceId": 843196,
+      "category": "sidewalk",
+      "widthM": 2.8030000896960003,
+      "outsideScopeM2": 76.06269662941443,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 0.0,
+      "vehicleCenterlineGuardM2": 29.77864082816089,
+      "buildingConflicts": []
+    },
+    {
+      "sourceId": 844146,
+      "category": "sidewalk",
+      "widthM": 3.428160867312,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 0.0,
+      "vehicleCenterlineGuardM2": 1.2638628391956428,
+      "buildingConflicts": []
+    },
+    {
+      "sourceId": 884851,
+      "category": "sidewalk",
+      "widthM": 3.7890001212480002,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 0.0,
+      "vehicleCenterlineGuardM2": 3.8044918521580096,
+      "buildingConflicts": []
+    },
+    {
+      "sourceId": 884950,
+      "category": "sidewalk",
+      "widthM": 4.302000137664001,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 0.0,
+      "vehicleCenterlineGuardM2": 4.319749319545641,
+      "buildingConflicts": []
+    },
+    {
+      "sourceId": 884980,
+      "category": "sidewalk",
+      "widthM": 4.69500015024,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 0.0,
+      "vehicleCenterlineGuardM2": 9.428918777475488,
+      "buildingConflicts": []
+    },
+    {
+      "sourceId": 884983,
+      "category": "sidewalk",
+      "widthM": 2.9470000943040002,
+      "outsideScopeM2": 69.67682046627806,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 10.629206545314597,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "extension",
+          "id": "jefferson-city-8900388-0",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 10.13112835699762
+        }
+      ]
+    },
+    {
+      "sourceId": 885841,
+      "category": "sidewalk",
+      "widthM": 3.217000102944,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 13.501425821692552,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "extension",
+          "id": "jefferson-city-8029756-0",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 0.3086090216183526
+        },
+        {
+          "dataset": "extension",
+          "id": "jefferson-city-8900390-0",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 12.103061889174366
+        }
+      ]
+    },
+    {
+      "sourceId": 885928,
+      "category": "sidewalk",
+      "widthM": 4.46500014288,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 0.0,
+      "vehicleCenterlineGuardM2": 10.558989483305684,
+      "buildingConflicts": []
+    },
+    {
+      "sourceId": 885961,
+      "category": "sidewalk",
+      "widthM": 2.8020000896640003,
+      "outsideScopeM2": 0.479140913909807,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 4.603411651997962,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "extension",
+          "id": "jefferson-city-8028889-0",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 4.391006462880614
+        }
+      ]
+    },
+    {
+      "sourceId": 886058,
+      "category": "sidewalk",
+      "widthM": 3.5260001128320004,
+      "outsideScopeM2": 187.4128546382352,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 1.6916198413321675,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "extension",
+          "id": "jefferson-city-8029756-0",
+          "sourceCenterlineIntersectionM": 0.26633869574880886,
+          "sourceWidthBufferIntersectionM2": 1.4285474203872377
+        }
+      ]
+    },
+    {
+      "sourceId": 886134,
+      "category": "sidewalk",
+      "widthM": 3.316000106112,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 0.0,
+      "vehicleCenterlineGuardM2": 0.5653490660559303,
+      "buildingConflicts": []
+    },
+    {
+      "sourceId": 886186,
+      "category": "sidewalk",
+      "widthM": 2.299000073568,
+      "outsideScopeM2": 112.87622451412517,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 5.49804529591758,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "districts",
+          "id": "957898910",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 5.1555801106274135
+        }
+      ]
+    },
+    {
+      "sourceId": 886197,
+      "category": "sidewalk",
+      "widthM": 2.08500006672,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 0.07786659561163767,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "districts",
+          "id": "416897638",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 0.03257440387536874
+        }
+      ]
+    },
+    {
+      "sourceId": 886217,
+      "category": "sidewalk",
+      "widthM": 1.976000063232,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 9.52480796540667,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "districts",
+          "id": "416897638",
+          "sourceCenterlineIntersectionM": 1.6183939166919643,
+          "sourceWidthBufferIntersectionM2": 9.139239264156021
+        }
+      ]
+    },
+    {
+      "sourceId": 886239,
+      "category": "sidewalk",
+      "widthM": 4.720000151040001,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 0.42473153431286026,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "districts",
+          "id": "983637195",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 0.3798391471215828
+        }
+      ]
+    },
+    {
+      "sourceId": 886250,
+      "category": "sidewalk",
+      "widthM": 4.176000133632001,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 27.497641417637567,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "districts",
+          "id": "983637195",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 26.992488798334804
+        }
+      ]
+    },
+    {
+      "sourceId": 886286,
+      "category": "sidewalk",
+      "widthM": 2.809000089888,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 16.247617485518443,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "districts",
+          "id": "868843430",
+          "sourceCenterlineIntersectionM": 5.759127120908378,
+          "sourceWidthBufferIntersectionM2": 16.17738860030699
+        }
+      ]
+    },
+    {
+      "sourceId": 886300,
+      "category": "sidewalk",
+      "widthM": 5.011000160351999,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 16.631553878400677,
+      "vehicleCenterlineGuardM2": 2.740258618270542,
+      "buildingConflicts": [
+        {
+          "dataset": "districts",
+          "id": "868843430",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 16.30631998310903
+        }
+      ]
+    },
+    {
+      "sourceId": 886302,
+      "category": "sidewalk",
+      "widthM": 4.367000139744,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 6.288782052852285,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "districts",
+          "id": "955779331",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 5.5993215436092045
+        }
+      ]
+    },
+    {
+      "sourceId": 886353,
+      "category": "sidewalk",
+      "widthM": 3.0900000988800005,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 2.290709950199748,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "districts",
+          "id": "955810827",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 2.1584947642245833
+        }
+      ]
+    },
+    {
+      "sourceId": 886375,
+      "category": "sidewalk",
+      "widthM": 4.8500001552,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 13.856763794194205,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "districts",
+          "id": "955810826",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 1.5819934300252596
+        },
+        {
+          "dataset": "districts",
+          "id": "955810827",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 12.051228418352379
+        }
+      ]
+    },
+    {
+      "sourceId": 886393,
+      "category": "sidewalk",
+      "widthM": 5.4900001756800005,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 53.52142137862802,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "districts",
+          "id": "289957549",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 12.116350668984737
+        },
+        {
+          "dataset": "districts",
+          "id": "955810826",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 40.83436852350586
+        }
+      ]
+    },
+    {
+      "sourceId": 886412,
+      "category": "sidewalk",
+      "widthM": 6.104000195328,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 88.47935385244776,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "districts",
+          "id": "289957548",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 42.18685008382161
+        },
+        {
+          "dataset": "districts",
+          "id": "289957549",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 45.45914987395856
+        }
+      ]
+    },
+    {
+      "sourceId": 886413,
+      "category": "sidewalk",
+      "widthM": 5.660000181120001,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 2.373854574631861,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "districts",
+          "id": "59452058",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 2.226840305150372
+        }
+      ]
+    },
+    {
+      "sourceId": 886555,
+      "category": "sidewalk",
+      "widthM": 1.9652931280800001,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 0.0,
+      "vehicleCenterlineGuardM2": 1.992392319094452,
+      "buildingConflicts": []
+    },
+    {
+      "sourceId": 887255,
+      "category": "sidewalk",
+      "widthM": 2.9586474776640004,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 0.0,
+      "vehicleCenterlineGuardM2": 2.3343071716285113,
+      "buildingConflicts": []
+    },
+    {
+      "sourceId": 887296,
+      "category": "sidewalk",
+      "widthM": 13.612765748760001,
+      "outsideScopeM2": 246.1906860661272,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 0.0,
+      "vehicleCenterlineGuardM2": 41.989917247361426,
+      "buildingConflicts": []
+    },
+    {
+      "sourceId": 887670,
+      "category": "sidewalk",
+      "widthM": 5.511000176352001,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 15.26116980886556,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "districts",
+          "id": "868843430",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 14.957837420235649
+        }
+      ]
+    },
+    {
+      "sourceId": 887671,
+      "category": "sidewalk",
+      "widthM": 5.511000176352001,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 3.018658636867397,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "districts",
+          "id": "868843430",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 2.9322448142790103
+        }
+      ]
+    },
+    {
+      "sourceId": 887723,
+      "category": "sidewalk",
+      "widthM": 2.74134835524,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 0.0,
+      "vehicleCenterlineGuardM2": 2.970540934893486,
+      "buildingConflicts": []
+    },
+    {
+      "sourceId": 887767,
+      "category": "sidewalk",
+      "widthM": 2.737291900056,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 0.0,
+      "vehicleCenterlineGuardM2": 0.615519802963771,
+      "buildingConflicts": []
+    },
+    {
+      "sourceId": 887798,
+      "category": "sidewalk",
+      "widthM": 3.1000000992000003,
+      "outsideScopeM2": 71.17549962737664,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 0.18521181311062296,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "districts",
+          "id": "59452078",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 0.07582071603639289
+        }
+      ]
+    },
+    {
+      "sourceId": 890539,
+      "category": "sidewalk",
+      "widthM": 5.229000167328,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 3.379154245118602,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "districts",
+          "id": "868842406",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 3.118168738973781
+        }
+      ]
+    },
+    {
+      "sourceId": 890573,
+      "category": "sidewalk",
+      "widthM": 6.245000199840001,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 28.522421422353982,
+      "vehicleCenterlineGuardM2": 0.0,
+      "buildingConflicts": [
+        {
+          "dataset": "districts",
+          "id": "59585082",
+          "sourceCenterlineIntersectionM": 0.0,
+          "sourceWidthBufferIntersectionM2": 27.941790856321166
+        }
+      ]
+    },
+    {
+      "sourceId": 892396,
+      "category": "sidewalk",
+      "widthM": 5.88264,
+      "outsideScopeM2": 0.0,
+      "outsideSafeLandM2": 0.0,
+      "buildingKeepoutM2": 0.0,
+      "vehicleCenterlineGuardM2": 11.812905927821419,
+      "buildingConflicts": []
+    }
+  ],
+  "rampEndpointDecisions": [
+    {
+      "sourceId": 807356,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -1085.579,
+        544.368
+      ],
+      "result": "excluded: insufficient retained depth/area or overlapping ramp"
+    },
+    {
+      "sourceId": 807356,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -1081.626,
+        550.809
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1081.625,
+        550.809
+      ],
+      "crest": [
+        -1080.527,
+        552.599
+      ]
+    },
+    {
+      "sourceId": 809190,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -315.826,
+        152.84
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -315.826,
+        152.84
+      ],
+      "crest": [
+        -314.001,
+        151.8
+      ]
+    },
+    {
+      "sourceId": 809190,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -318.885,
+        154.584
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -318.886,
+        154.584
+      ],
+      "crest": [
+        -320.71,
+        155.624
+      ]
+    },
+    {
+      "sourceId": 809198,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -537.159,
+        281.281
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -537.159,
+        281.281
+      ],
+      "crest": [
+        -538.986,
+        282.317
+      ]
+    },
+    {
+      "sourceId": 809198,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -530.043,
+        277.248
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -530.043,
+        277.248
+      ],
+      "crest": [
+        -528.216,
+        276.213
+      ]
+    },
+    {
+      "sourceId": 809216,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -610.215,
+        295.885
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -610.215,
+        295.885
+      ],
+      "crest": [
+        -611.147,
+        294.003
+      ]
+    },
+    {
+      "sourceId": 809216,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -600.71,
+        315.072
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -600.71,
+        315.071
+      ],
+      "crest": [
+        -599.778,
+        316.953
+      ]
+    },
+    {
+      "sourceId": 809217,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -607.821,
+        322.612
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -607.821,
+        322.612
+      ],
+      "crest": [
+        -609.648,
+        323.648
+      ]
+    },
+    {
+      "sourceId": 809217,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -600.682,
+        318.561
+      ],
+      "result": "excluded: insufficient retained depth/area or overlapping ramp"
+    },
+    {
+      "sourceId": 809239,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -530.463,
+        241.008
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -530.463,
+        241.008
+      ],
+      "crest": [
+        -532.33,
+        241.969
+      ]
+    },
+    {
+      "sourceId": 809239,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -524.558,
+        237.967
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -524.558,
+        237.967
+      ],
+      "crest": [
+        -522.691,
+        237.006
+      ]
+    },
+    {
+      "sourceId": 811673,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -1048.654,
+        579.103
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1048.654,
+        579.103
+      ],
+      "crest": [
+        -1050.398,
+        580.273
+      ]
+    },
+    {
+      "sourceId": 811673,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -1041.264,
+        574.149
+      ],
+      "result": "excluded: crossing direction has no nearby exposed boundary"
+    },
+    {
+      "sourceId": 811755,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -1076.754,
+        559.869
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1074.477,
+        558.809
+      ],
+      "crest": [
+        -1076.381,
+        559.695
+      ]
+    },
+    {
+      "sourceId": 811755,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -1067.813,
+        555.705
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1067.812,
+        555.705
+      ],
+      "crest": [
+        -1065.909,
+        554.819
+      ]
+    },
+    {
+      "sourceId": 812998,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -694.69,
+        336.463
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -694.69,
+        336.464
+      ],
+      "crest": [
+        -692.87,
+        335.417
+      ]
+    },
+    {
+      "sourceId": 812998,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -704.011,
+        341.825
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -704.011,
+        341.824
+      ],
+      "crest": [
+        -705.831,
+        342.871
+      ]
+    },
+    {
+      "sourceId": 813380,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -740.372,
+        399.607
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -740.372,
+        399.607
+      ],
+      "crest": [
+        -742.194,
+        400.651
+      ]
+    },
+    {
+      "sourceId": 813380,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -731.647,
+        394.611
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -731.647,
+        394.611
+      ],
+      "crest": [
+        -729.825,
+        393.567
+      ]
+    },
+    {
+      "sourceId": 813412,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -197.137,
+        47.752
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -197.137,
+        47.752
+      ],
+      "crest": [
+        -198.952,
+        48.808
+      ]
+    },
+    {
+      "sourceId": 813412,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -189.911,
+        43.548
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -189.911,
+        43.547
+      ],
+      "crest": [
+        -188.095,
+        42.491
+      ]
+    },
+    {
+      "sourceId": 813457,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -669.278,
+        360.79
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -669.278,
+        360.789
+      ],
+      "crest": [
+        -667.415,
+        359.821
+      ]
+    },
+    {
+      "sourceId": 813457,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -675.843,
+        364.2
+      ],
+      "result": "excluded: endpoint does not connect to retained sidewalk"
+    },
+    {
+      "sourceId": 813461,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -663.944,
+        353.962
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -663.944,
+        353.963
+      ],
+      "crest": [
+        -663.07,
+        355.872
+      ]
+    },
+    {
+      "sourceId": 813461,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -675.294,
+        329.15
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -675.294,
+        329.15
+      ],
+      "crest": [
+        -676.168,
+        327.24
+      ]
+    },
+    {
+      "sourceId": 813462,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -691.347,
+        369.934
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -691.887,
+        368.978
+      ],
+      "crest": [
+        -690.854,
+        370.806
+      ]
+    },
+    {
+      "sourceId": 813462,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -705.044,
+        345.71
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -704.752,
+        346.227
+      ],
+      "crest": [
+        -705.786,
+        344.399
+      ]
+    },
+    {
+      "sourceId": 813463,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -588.627,
+        275.624
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -588.628,
+        275.624
+      ],
+      "crest": [
+        -590.416,
+        276.725
+      ]
+    },
+    {
+      "sourceId": 813463,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -576.706,
+        268.288
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -576.708,
+        268.289
+      ],
+      "crest": [
+        -574.919,
+        267.188
+      ]
+    },
+    {
+      "sourceId": 813466,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -481.492,
+        213.508
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -481.492,
+        213.508
+      ],
+      "crest": [
+        -483.308,
+        214.562
+      ]
+    },
+    {
+      "sourceId": 813466,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -473.433,
+        208.836
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -473.434,
+        208.837
+      ],
+      "crest": [
+        -471.618,
+        207.783
+      ]
+    },
+    {
+      "sourceId": 813467,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -380.445,
+        154.446
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -379.427,
+        153.866
+      ],
+      "crest": [
+        -381.251,
+        154.906
+      ]
+    },
+    {
+      "sourceId": 813467,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -370.188,
+        148.596
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -370.188,
+        148.597
+      ],
+      "crest": [
+        -368.364,
+        147.556
+      ]
+    },
+    {
+      "sourceId": 813475,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -278.438,
+        94.504
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -276.495,
+        93.501
+      ],
+      "crest": [
+        -278.361,
+        94.464
+      ]
+    },
+    {
+      "sourceId": 813475,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -262.232,
+        86.134
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -264.717,
+        87.417
+      ],
+      "crest": [
+        -262.852,
+        86.454
+      ]
+    },
+    {
+      "sourceId": 813499,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -679.336,
+        327.162
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -679.336,
+        327.162
+      ],
+      "crest": [
+        -677.579,
+        326.013
+      ]
+    },
+    {
+      "sourceId": 813499,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -688.033,
+        332.846
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -688.22,
+        332.969
+      ],
+      "crest": [
+        -689.978,
+        334.118
+      ]
+    },
+    {
+      "sourceId": 842913,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        10.254,
+        -54.607
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        10.254,
+        -54.607
+      ],
+      "crest": [
+        11.332,
+        -52.805
+      ]
+    },
+    {
+      "sourceId": 842913,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        3.133,
+        -66.512
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        3.134,
+        -66.509
+      ],
+      "crest": [
+        2.056,
+        -68.311
+      ]
+    },
+    {
+      "sourceId": 842919,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -30.207,
+        -30.343
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -30.207,
+        -30.343
+      ],
+      "crest": [
+        -29.237,
+        -28.481
+      ]
+    },
+    {
+      "sourceId": 842919,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -36.788,
+        -42.979
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -36.563,
+        -42.546
+      ],
+      "crest": [
+        -37.533,
+        -44.409
+      ]
+    },
+    {
+      "sourceId": 842921,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -18.577,
+        -6.673
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -18.577,
+        -6.672
+      ],
+      "crest": [
+        -17.736,
+        -4.748
+      ]
+    },
+    {
+      "sourceId": 842921,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -23.703,
+        -18.403
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -23.703,
+        -18.403
+      ],
+      "crest": [
+        -24.544,
+        -20.327
+      ]
+    },
+    {
+      "sourceId": 842922,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        24.941,
+        -30.264
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        24.941,
+        -30.264
+      ],
+      "crest": [
+        26.011,
+        -28.457
+      ]
+    },
+    {
+      "sourceId": 842922,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        17.569,
+        -42.708
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        17.569,
+        -42.708
+      ],
+      "crest": [
+        16.499,
+        -44.514
+      ]
+    },
+    {
+      "sourceId": 842923,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -106.357,
+        -6.112
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 1.5250000488000002,
+      "toe": [
+        -105.706,
+        -4.381
+      ],
+      "crest": [
+        -106.446,
+        -6.346
+      ]
+    },
+    {
+      "sourceId": 842923,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -99.391,
+        12.391
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 1.5250000488000002,
+      "toe": [
+        -99.391,
+        12.392
+      ],
+      "crest": [
+        -98.651,
+        14.357
+      ]
+    },
+    {
+      "sourceId": 842935,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -11.367,
+        -60.637
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -11.367,
+        -60.637
+      ],
+      "crest": [
+        -13.19,
+        -59.596
+      ]
+    },
+    {
+      "sourceId": 842935,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -0.598,
+        -66.785
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -0.906,
+        -66.609
+      ],
+      "crest": [
+        0.918,
+        -67.65
+      ]
+    },
+    {
+      "sourceId": 842937,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -14.794,
+        -4.835
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -14.794,
+        -4.835
+      ],
+      "crest": [
+        -16.626,
+        -3.81
+      ]
+    },
+    {
+      "sourceId": 842937,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -3.844,
+        -10.96
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3.844,
+        -10.96
+      ],
+      "crest": [
+        -2.011,
+        -11.986
+      ]
+    },
+    {
+      "sourceId": 842939,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -34.692,
+        -47.321
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -34.556,
+        -47.398
+      ],
+      "crest": [
+        -36.38,
+        -46.357
+      ]
+    },
+    {
+      "sourceId": 842939,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -24.366,
+        -53.216
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -24.366,
+        -53.216
+      ],
+      "crest": [
+        -22.542,
+        -54.257
+      ]
+    },
+    {
+      "sourceId": 842941,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -123.393,
+        4.412
+      ],
+      "result": "excluded: insufficient retained depth/area or overlapping ramp"
+    },
+    {
+      "sourceId": 842941,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -109.836,
+        -5.969
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -111.57,
+        -4.641
+      ],
+      "crest": [
+        -109.902,
+        -5.918
+      ]
+    },
+    {
+      "sourceId": 842942,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -94.389,
+        22.694
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -94.389,
+        22.694
+      ],
+      "crest": [
+        -95.395,
+        20.85
+      ]
+    },
+    {
+      "sourceId": 842942,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -87.905,
+        34.57
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -87.904,
+        34.57
+      ],
+      "crest": [
+        -86.898,
+        36.414
+      ]
+    },
+    {
+      "sourceId": 842951,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        12.388,
+        -20.04
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        12.388,
+        -20.04
+      ],
+      "crest": [
+        10.555,
+        -19.015
+      ]
+    },
+    {
+      "sourceId": 842951,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        23.902,
+        -26.481
+      ],
+      "result": "excluded: insufficient retained depth/area or overlapping ramp"
+    },
+    {
+      "sourceId": 842967,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        49.299,
+        -20.098
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        49.3,
+        -20.098
+      ],
+      "crest": [
+        47.281,
+        -20.677
+      ]
+    },
+    {
+      "sourceId": 842967,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        55.1,
+        -18.436
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        55.1,
+        -18.436
+      ],
+      "crest": [
+        57.118,
+        -17.858
+      ]
+    },
+    {
+      "sourceId": 842969,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -83.419,
+        42.144
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -83.419,
+        42.143
+      ],
+      "crest": [
+        -84.281,
+        40.228
+      ]
+    },
+    {
+      "sourceId": 842969,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -80.428,
+        48.789
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -81.192,
+        47.092
+      ],
+      "crest": [
+        -80.33,
+        49.007
+      ]
+    },
+    {
+      "sourceId": 843022,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -2672.074,
+        1522.305
+      ],
+      "result": "excluded: endpoint does not connect to retained sidewalk"
+    },
+    {
+      "sourceId": 843022,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -2679.786,
+        1496.504
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -2679.683,
+        1496.848
+      ],
+      "crest": [
+        -2680.283,
+        1494.835
+      ]
+    },
+    {
+      "sourceId": 843102,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -2384.097,
+        1356.63
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -2383.998,
+        1356.581
+      ],
+      "crest": [
+        -2385.882,
+        1357.509
+      ]
+    },
+    {
+      "sourceId": 843102,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -2375.328,
+        1352.311
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -2375.327,
+        1352.311
+      ],
+      "crest": [
+        -2373.444,
+        1351.383
+      ]
+    },
+    {
+      "sourceId": 843136,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -2280.2,
+        1270.05
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -2280.2,
+        1270.051
+      ],
+      "crest": [
+        -2281.236,
+        1268.224
+      ]
+    },
+    {
+      "sourceId": 843136,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -2270.757,
+        1286.701
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -2270.757,
+        1286.701
+      ],
+      "crest": [
+        -2269.721,
+        1288.528
+      ]
+    },
+    {
+      "sourceId": 843137,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -2259.238,
+        1285.447
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -2259.238,
+        1285.447
+      ],
+      "crest": [
+        -2257.416,
+        1284.402
+      ]
+    },
+    {
+      "sourceId": 843137,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -2267.224,
+        1290.028
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -2267.224,
+        1290.028
+      ],
+      "crest": [
+        -2269.045,
+        1291.073
+      ]
+    },
+    {
+      "sourceId": 843510,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -2269.355,
+        1264.259
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -2269.355,
+        1264.259
+      ],
+      "crest": [
+        -2270.391,
+        1262.432
+      ]
+    },
+    {
+      "sourceId": 843510,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -2259.524,
+        1281.594
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -2259.524,
+        1281.594
+      ],
+      "crest": [
+        -2258.488,
+        1283.421
+      ]
+    },
+    {
+      "sourceId": 844016,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -2667.36,
+        1486.977
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -2667.918,
+        1487.272
+      ],
+      "crest": [
+        -2666.062,
+        1486.289
+      ]
+    },
+    {
+      "sourceId": 844016,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -2678.607,
+        1492.937
+      ],
+      "result": "excluded: insufficient retained depth/area or overlapping ramp"
+    },
+    {
+      "sourceId": 844017,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -2655.78,
+        1514.404
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -2655.78,
+        1514.404
+      ],
+      "crest": [
+        -2655.141,
+        1516.404
+      ]
+    },
+    {
+      "sourceId": 844017,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -2664.391,
+        1487.472
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -2664.288,
+        1487.793
+      ],
+      "crest": [
+        -2664.928,
+        1485.793
+      ]
+    },
+    {
+      "sourceId": 844018,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -2654.987,
+        1516.819
+      ],
+      "result": "excluded: insufficient retained depth/area or overlapping ramp"
+    },
+    {
+      "sourceId": 844018,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -2664.76,
+        1522.13
+      ],
+      "result": "excluded: endpoint does not connect to retained sidewalk"
+    },
+    {
+      "sourceId": 844055,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -2148.099,
+        1182.441
+      ],
+      "result": "excluded: endpoint does not connect to retained sidewalk"
+    },
+    {
+      "sourceId": 844055,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -2139.074,
+        1178.108
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -2140.832,
+        1178.952
+      ],
+      "crest": [
+        -2138.939,
+        1178.043
+      ]
+    },
+    {
+      "sourceId": 844056,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -2150.058,
+        1220.359
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -2151.018,
+        1218.765
+      ],
+      "crest": [
+        -2149.935,
+        1220.564
+      ]
+    },
+    {
+      "sourceId": 844056,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -2165.404,
+        1194.86
+      ],
+      "result": "excluded: insufficient retained depth/area or overlapping ramp"
+    },
+    {
+      "sourceId": 844057,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -2123.041,
+        1203.09
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -2123.47,
+        1202.149
+      ],
+      "crest": [
+        -2122.599,
+        1204.06
+      ]
+    },
+    {
+      "sourceId": 844057,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -2134.572,
+        1177.768
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -2134.539,
+        1177.84
+      ],
+      "crest": [
+        -2135.41,
+        1175.929
+      ]
+    },
+    {
+      "sourceId": 844157,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -2165.304,
+        1190.703
+      ],
+      "result": "excluded: insufficient retained depth/area or overlapping ramp"
+    },
+    {
+      "sourceId": 844157,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -2156.682,
+        1186.562
+      ],
+      "result": "excluded: endpoint does not connect to retained sidewalk"
+    },
+    {
+      "sourceId": 844158,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -2166.736,
+        1191.39
+      ],
+      "result": "excluded: insufficient retained depth/area or overlapping ramp"
+    },
+    {
+      "sourceId": 844158,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -2165.304,
+        1190.703
+      ],
+      "result": "excluded: insufficient retained depth/area or overlapping ramp"
+    },
+    {
+      "sourceId": 844159,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -2156.682,
+        1186.562
+      ],
+      "result": "excluded: endpoint does not connect to retained sidewalk"
+    },
+    {
+      "sourceId": 844159,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -2148.099,
+        1182.441
+      ],
+      "result": "excluded: endpoint does not connect to retained sidewalk"
+    },
+    {
+      "sourceId": 877435,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -2665.012,
+        1522.136
+      ],
+      "result": "excluded: endpoint does not connect to retained sidewalk"
+    },
+    {
+      "sourceId": 877435,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -2668.885,
+        1525.519
+      ],
+      "result": "excluded: insufficient retained depth/area or overlapping ramp"
+    },
+    {
+      "sourceId": 884490,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -2845.058,
+        1607.037
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -2845.058,
+        1607.038
+      ],
+      "crest": [
+        -2843.998,
+        1608.851
+      ]
+    },
+    {
+      "sourceId": 884490,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -2851.535,
+        1595.957
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -2851.366,
+        1596.245
+      ],
+      "crest": [
+        -2852.426,
+        1594.432
+      ]
+    },
+    {
+      "sourceId": 884755,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -3312.052,
+        1862.713
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3312.052,
+        1862.713
+      ],
+      "crest": [
+        -3310.248,
+        1861.637
+      ]
+    },
+    {
+      "sourceId": 884755,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -3321.2,
+        1868.175
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3321.2,
+        1868.175
+      ],
+      "crest": [
+        -3323.003,
+        1869.252
+      ]
+    },
+    {
+      "sourceId": 884760,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -3232.287,
+        1814.316
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3232.287,
+        1814.316
+      ],
+      "crest": [
+        -3230.386,
+        1813.424
+      ]
+    },
+    {
+      "sourceId": 884760,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -3243.924,
+        1819.772
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3243.924,
+        1819.772
+      ],
+      "crest": [
+        -3245.825,
+        1820.664
+      ]
+    },
+    {
+      "sourceId": 884823,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -3140.526,
+        1760.127
+      ],
+      "result": "excluded: insufficient retained depth/area or overlapping ramp"
+    },
+    {
+      "sourceId": 884823,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -3149.022,
+        1764.287
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3149.022,
+        1764.287
+      ],
+      "crest": [
+        -3150.908,
+        1765.21
+      ]
+    },
+    {
+      "sourceId": 884825,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -3124.031,
+        1751.725
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3125.704,
+        1752.753
+      ],
+      "crest": [
+        -3123.915,
+        1751.653
+      ]
+    },
+    {
+      "sourceId": 884825,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -3131.775,
+        1756.557
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3129.248,
+        1754.962
+      ],
+      "crest": [
+        -3131.024,
+        1756.083
+      ]
+    },
+    {
+      "sourceId": 884826,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -3129.924,
+        1754.386
+      ],
+      "result": "excluded: crossing direction has no nearby exposed boundary"
+    },
+    {
+      "sourceId": 884826,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -3135.548,
+        1757.604
+      ],
+      "result": "excluded: insufficient retained depth/area or overlapping ramp"
+    },
+    {
+      "sourceId": 884847,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -3221.17,
+        1835.454
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3221.17,
+        1835.454
+      ],
+      "crest": [
+        -3220.386,
+        1837.402
+      ]
+    },
+    {
+      "sourceId": 884847,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -3229.155,
+        1815.622
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3228.805,
+        1816.491
+      ],
+      "crest": [
+        -3229.589,
+        1814.543
+      ]
+    },
+    {
+      "sourceId": 884848,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -3326.848,
+        1871.806
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3326.848,
+        1871.806
+      ],
+      "crest": [
+        -3324.979,
+        1870.849
+      ]
+    },
+    {
+      "sourceId": 884848,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -3333.903,
+        1875.419
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3333.904,
+        1875.419
+      ],
+      "crest": [
+        -3335.773,
+        1876.376
+      ]
+    },
+    {
+      "sourceId": 884849,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -3205.446,
+        1863.393
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3205.446,
+        1863.393
+      ],
+      "crest": [
+        -3204.395,
+        1865.211
+      ]
+    },
+    {
+      "sourceId": 884849,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -3213.358,
+        1849.709
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3213.358,
+        1849.709
+      ],
+      "crest": [
+        -3214.409,
+        1847.891
+      ]
+    },
+    {
+      "sourceId": 884853,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -3104.013,
+        1787.513
+      ],
+      "result": "excluded: insufficient retained depth/area or overlapping ramp"
+    },
+    {
+      "sourceId": 884853,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -3115.046,
+        1771.716
+      ],
+      "result": "excluded: endpoint does not connect to retained sidewalk"
+    },
+    {
+      "sourceId": 884986,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -2790.571,
+        1637.434
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -2790.571,
+        1637.434
+      ],
+      "crest": [
+        -2788.778,
+        1638.527
+      ]
+    },
+    {
+      "sourceId": 884986,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -2799.602,
+        1631.785
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -2799.602,
+        1631.785
+      ],
+      "crest": [
+        -2801.341,
+        1630.607
+      ]
+    },
+    {
+      "sourceId": 884990,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -2958.803,
+        1784.516
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -2958.803,
+        1784.516
+      ],
+      "crest": [
+        -2956.964,
+        1783.502
+      ]
+    },
+    {
+      "sourceId": 884990,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -2969.24,
+        1790.274
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -2969.24,
+        1790.273
+      ],
+      "crest": [
+        -2971.079,
+        1791.288
+      ]
+    },
+    {
+      "sourceId": 884996,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -2955.9,
+        1778.25
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -2955.919,
+        1778.208
+      ],
+      "crest": [
+        -2955.044,
+        1780.117
+      ]
+    },
+    {
+      "sourceId": 884996,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -2959.584,
+        1770.218
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -2959.584,
+        1770.218
+      ],
+      "crest": [
+        -2960.46,
+        1768.309
+      ]
+    },
+    {
+      "sourceId": 884999,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -2793.545,
+        1690.068
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -2793.544,
+        1690.068
+      ],
+      "crest": [
+        -2791.724,
+        1689.021
+      ]
+    },
+    {
+      "sourceId": 884999,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -2801.778,
+        1694.799
+      ],
+      "result": "excluded: insufficient retained depth/area or overlapping ramp"
+    },
+    {
+      "sourceId": 885874,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -2975.687,
+        1777.107
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -2975.687,
+        1777.107
+      ],
+      "crest": [
+        -2977.504,
+        1778.159
+      ]
+    },
+    {
+      "sourceId": 885874,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -2964.416,
+        1770.585
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -2964.416,
+        1770.585
+      ],
+      "crest": [
+        -2962.598,
+        1769.533
+      ]
+    },
+    {
+      "sourceId": 885927,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -2768.773,
+        1544.705
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -2768.772,
+        1544.705
+      ],
+      "crest": [
+        -2766.946,
+        1543.668
+      ]
+    },
+    {
+      "sourceId": 885927,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -2777.919,
+        1549.895
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -2777.919,
+        1549.895
+      ],
+      "crest": [
+        -2779.745,
+        1550.931
+      ]
+    },
+    {
+      "sourceId": 885969,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -3014.768,
+        1691.136
+      ],
+      "result": "excluded: insufficient retained depth/area or overlapping ramp"
+    },
+    {
+      "sourceId": 885969,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -3004.738,
+        1685.434
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3004.738,
+        1685.434
+      ],
+      "crest": [
+        -3002.912,
+        1684.396
+      ]
+    },
+    {
+      "sourceId": 886003,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -2841.262,
+        1587.675
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -2841.263,
+        1587.675
+      ],
+      "crest": [
+        -2839.377,
+        1586.751
+      ]
+    },
+    {
+      "sourceId": 886003,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -2850.06,
+        1591.99
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -2849.818,
+        1591.872
+      ],
+      "crest": [
+        -2851.703,
+        1592.796
+      ]
+    },
+    {
+      "sourceId": 886019,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -2974.645,
+        1749.826
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -2974.645,
+        1749.826
+      ],
+      "crest": [
+        -2972.661,
+        1749.138
+      ]
+    },
+    {
+      "sourceId": 886019,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -2991.794,
+        1755.771
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -2991.794,
+        1755.771
+      ],
+      "crest": [
+        -2993.778,
+        1756.459
+      ]
+    },
+    {
+      "sourceId": 886022,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -3092.392,
+        1800.124
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3092.392,
+        1800.124
+      ],
+      "crest": [
+        -3090.994,
+        1801.691
+      ]
+    },
+    {
+      "sourceId": 886022,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -3103.468,
+        1787.71
+      ],
+      "result": "excluded: insufficient retained depth/area or overlapping ramp"
+    },
+    {
+      "sourceId": 886085,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -2974.607,
+        1789.013
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -2974.607,
+        1789.013
+      ],
+      "crest": [
+        -2973.869,
+        1790.979
+      ]
+    },
+    {
+      "sourceId": 886085,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -2977.368,
+        1781.653
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -2977.368,
+        1781.653
+      ],
+      "crest": [
+        -2978.106,
+        1779.686
+      ]
+    },
+    {
+      "sourceId": 886133,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -2672.019,
+        1522.489
+      ],
+      "result": "excluded: endpoint does not connect to retained sidewalk"
+    },
+    {
+      "sourceId": 886133,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -2670.59,
+        1525.841
+      ],
+      "result": "excluded: crossing direction has no nearby exposed boundary"
+    },
+    {
+      "sourceId": 886214,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -1706.027,
+        958.918
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1706.027,
+        958.918
+      ],
+      "crest": [
+        -1705.147,
+        960.825
+      ]
+    },
+    {
+      "sourceId": 886214,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -1716.959,
+        935.227
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1716.897,
+        935.362
+      ],
+      "crest": [
+        -1717.777,
+        933.455
+      ]
+    },
+    {
+      "sourceId": 886216,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -1706.92,
+        963.741
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1706.92,
+        963.741
+      ],
+      "crest": [
+        -1705.084,
+        962.721
+      ]
+    },
+    {
+      "sourceId": 886216,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -1715.444,
+        968.476
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1715.444,
+        968.476
+      ],
+      "crest": [
+        -1717.279,
+        969.495
+      ]
+    },
+    {
+      "sourceId": 886255,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -1734.387,
+        976.641
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1734.387,
+        976.641
+      ],
+      "crest": [
+        -1733.43,
+        978.51
+      ]
+    },
+    {
+      "sourceId": 886255,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -1746.463,
+        953.045
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1746.463,
+        953.045
+      ],
+      "crest": [
+        -1747.42,
+        951.175
+      ]
+    },
+    {
+      "sourceId": 886428,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -1996.932,
+        1131.534
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1996.932,
+        1131.534
+      ],
+      "crest": [
+        -1998.864,
+        1132.357
+      ]
+    },
+    {
+      "sourceId": 886428,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -1988.598,
+        1127.983
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1988.598,
+        1127.983
+      ],
+      "crest": [
+        -1986.666,
+        1127.16
+      ]
+    },
+    {
+      "sourceId": 886521,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -3447.999,
+        2010.793
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3447.999,
+        2010.793
+      ],
+      "crest": [
+        -3446.185,
+        2009.734
+      ]
+    },
+    {
+      "sourceId": 886521,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -3457.124,
+        2016.119
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3456.975,
+        2016.032
+      ],
+      "crest": [
+        -3458.789,
+        2017.091
+      ]
+    },
+    {
+      "sourceId": 886562,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -3141.23,
+        1785.754
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3141.23,
+        1785.754
+      ],
+      "crest": [
+        -3140.267,
+        1787.62
+      ]
+    },
+    {
+      "sourceId": 886562,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -3149.038,
+        1770.623
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3149.038,
+        1770.623
+      ],
+      "crest": [
+        -3150.001,
+        1768.757
+      ]
+    },
+    {
+      "sourceId": 886577,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -3124.447,
+        1817.295
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3124.447,
+        1817.295
+      ],
+      "crest": [
+        -3123.478,
+        1819.158
+      ]
+    },
+    {
+      "sourceId": 886577,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -3131.543,
+        1803.647
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3131.543,
+        1803.647
+      ],
+      "crest": [
+        -3132.512,
+        1801.784
+      ]
+    },
+    {
+      "sourceId": 886585,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -3111.204,
+        1814.646
+      ],
+      "result": "excluded: endpoint does not connect to retained sidewalk"
+    },
+    {
+      "sourceId": 886585,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -3117.925,
+        1818.416
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3117.925,
+        1818.416
+      ],
+      "crest": [
+        -3119.757,
+        1819.443
+      ]
+    },
+    {
+      "sourceId": 886603,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -3327.491,
+        1896.026
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3327.491,
+        1896.026
+      ],
+      "crest": [
+        -3326.399,
+        1897.819
+      ]
+    },
+    {
+      "sourceId": 886603,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -3336.157,
+        1881.792
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3336.157,
+        1881.793
+      ],
+      "crest": [
+        -3337.249,
+        1879.999
+      ]
+    },
+    {
+      "sourceId": 886615,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -3309.376,
+        1928.41
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3309.376,
+        1928.41
+      ],
+      "crest": [
+        -3308.377,
+        1930.258
+      ]
+    },
+    {
+      "sourceId": 886615,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -3319.035,
+        1910.548
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3319.035,
+        1910.548
+      ],
+      "crest": [
+        -3320.034,
+        1908.701
+      ]
+    },
+    {
+      "sourceId": 886619,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -3298.285,
+        1921.415
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3298.285,
+        1921.415
+      ],
+      "crest": [
+        -3296.775,
+        1919.956
+      ]
+    },
+    {
+      "sourceId": 886619,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -3305.87,
+        1928.749
+      ],
+      "result": "excluded: insufficient retained depth/area or overlapping ramp"
+    },
+    {
+      "sourceId": 886621,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -3285.365,
+        1912.452
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3285.365,
+        1912.452
+      ],
+      "crest": [
+        -3283.577,
+        1911.349
+      ]
+    },
+    {
+      "sourceId": 886621,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -3294.594,
+        1918.147
+      ],
+      "result": "excluded: endpoint does not connect to retained sidewalk"
+    },
+    {
+      "sourceId": 887148,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -3507.316,
+        1997.577
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3507.317,
+        1997.577
+      ],
+      "crest": [
+        -3506.346,
+        1999.439
+      ]
+    },
+    {
+      "sourceId": 887148,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -3515.299,
+        1982.264
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3515.299,
+        1982.264
+      ],
+      "crest": [
+        -3516.27,
+        1980.402
+      ]
+    },
+    {
+      "sourceId": 887174,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -3115.046,
+        1771.716
+      ],
+      "result": "excluded: endpoint does not connect to retained sidewalk"
+    },
+    {
+      "sourceId": 887174,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -3123.303,
+        1756.034
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3123.303,
+        1756.034
+      ],
+      "crest": [
+        -3124.281,
+        1754.176
+      ]
+    },
+    {
+      "sourceId": 887175,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -3092.7,
+        1803.618
+      ],
+      "result": "excluded: insufficient retained depth/area or overlapping ramp"
+    },
+    {
+      "sourceId": 887175,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -3108.246,
+        1813.23
+      ],
+      "result": "excluded: endpoint does not connect to retained sidewalk"
+    },
+    {
+      "sourceId": 887642,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -1180.834,
+        654.787
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1180.835,
+        654.786
+      ],
+      "crest": [
+        -1179.764,
+        656.593
+      ]
+    },
+    {
+      "sourceId": 887642,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -1194.957,
+        630.968
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1194.957,
+        630.968
+      ],
+      "crest": [
+        -1196.028,
+        629.161
+      ]
+    },
+    {
+      "sourceId": 887715,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -1313.976,
+        735.641
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1314.713,
+        736.054
+      ],
+      "crest": [
+        -1312.881,
+        735.027
+      ]
+    },
+    {
+      "sourceId": 887715,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -1323.513,
+        740.984
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1323.468,
+        740.958
+      ],
+      "crest": [
+        -1325.3,
+        741.985
+      ]
+    },
+    {
+      "sourceId": 887717,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -1331.331,
+        742.055
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1331.838,
+        740.653
+      ],
+      "crest": [
+        -1331.124,
+        742.628
+      ]
+    },
+    {
+      "sourceId": 887717,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -1340.62,
+        716.348
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1340.62,
+        716.348
+      ],
+      "crest": [
+        -1341.334,
+        714.373
+      ]
+    },
+    {
+      "sourceId": 887718,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -1309.062,
+        728.858
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1309.092,
+        728.825
+      ],
+      "crest": [
+        -1307.674,
+        730.374
+      ]
+    },
+    {
+      "sourceId": 887718,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -1327.5,
+        708.73
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1327.5,
+        708.731
+      ],
+      "crest": [
+        -1328.918,
+        707.182
+      ]
+    },
+    {
+      "sourceId": 887721,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -1736.989,
+        942.51
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1736.988,
+        942.51
+      ],
+      "crest": [
+        -1735.233,
+        941.357
+      ]
+    },
+    {
+      "sourceId": 887721,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -1745.644,
+        948.197
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1745.644,
+        948.197
+      ],
+      "crest": [
+        -1747.399,
+        949.35
+      ]
+    },
+    {
+      "sourceId": 887722,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -1721.126,
+        933.807
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1721.126,
+        933.807
+      ],
+      "crest": [
+        -1719.262,
+        932.84
+      ]
+    },
+    {
+      "sourceId": 887722,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -1729.855,
+        938.335
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1729.855,
+        938.335
+      ],
+      "crest": [
+        -1731.72,
+        939.302
+      ]
+    },
+    {
+      "sourceId": 887759,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -1200.148,
+        630.267
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1200.148,
+        630.267
+      ],
+      "crest": [
+        -1198.36,
+        629.165
+      ]
+    },
+    {
+      "sourceId": 887759,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -1208.082,
+        635.155
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1208.082,
+        635.155
+      ],
+      "crest": [
+        -1209.87,
+        636.256
+      ]
+    },
+    {
+      "sourceId": 887766,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -1215.24,
+        639.339
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1215.084,
+        639.253
+      ],
+      "crest": [
+        -1213.241,
+        638.245
+      ]
+    },
+    {
+      "sourceId": 887766,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -1223.799,
+        644.022
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1223.8,
+        644.022
+      ],
+      "crest": [
+        -1225.642,
+        645.031
+      ]
+    },
+    {
+      "sourceId": 887769,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -1493.366,
+        805.499
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1493.366,
+        805.499
+      ],
+      "crest": [
+        -1494.252,
+        803.595
+      ]
+    },
+    {
+      "sourceId": 887769,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -1481.703,
+        830.46
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1481.931,
+        830.048
+      ],
+      "crest": [
+        -1480.915,
+        831.886
+      ]
+    },
+    {
+      "sourceId": 887771,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -1479.7,
+        830.811
+      ],
+      "result": "excluded: insufficient retained depth/area or overlapping ramp"
+    },
+    {
+      "sourceId": 887771,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -1467.346,
+        824.403
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1467.347,
+        824.403
+      ],
+      "crest": [
+        -1465.485,
+        823.432
+      ]
+    },
+    {
+      "sourceId": 887776,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -1876.952,
+        1060.964
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1877.337,
+        1060.27
+      ],
+      "crest": [
+        -1876.319,
+        1062.106
+      ]
+    },
+    {
+      "sourceId": 887776,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -1890.432,
+        1036.645
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1890.432,
+        1036.645
+      ],
+      "crest": [
+        -1891.45,
+        1034.808
+      ]
+    },
+    {
+      "sourceId": 887781,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -1866.682,
+        1054.499
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1866.682,
+        1054.499
+      ],
+      "crest": [
+        -1865.658,
+        1056.333
+      ]
+    },
+    {
+      "sourceId": 887781,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -1880.064,
+        1030.545
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1880.064,
+        1030.545
+      ],
+      "crest": [
+        -1881.088,
+        1028.712
+      ]
+    },
+    {
+      "sourceId": 887783,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -1867.399,
+        1059.08
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1867.399,
+        1059.08
+      ],
+      "crest": [
+        -1865.534,
+        1058.114
+      ]
+    },
+    {
+      "sourceId": 887783,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -1874.284,
+        1062.648
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1873.14,
+        1062.055
+      ],
+      "crest": [
+        -1875.005,
+        1063.021
+      ]
+    },
+    {
+      "sourceId": 887851,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -1466.306,
+        820.822
+      ],
+      "result": "excluded: insufficient retained depth/area or overlapping ramp"
+    },
+    {
+      "sourceId": 887851,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -1478.471,
+        796.43
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1478.471,
+        796.43
+      ],
+      "crest": [
+        -1479.408,
+        794.551
+      ]
+    },
+    {
+      "sourceId": 888162,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -3421.35,
+        1995.592
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3421.35,
+        1995.592
+      ],
+      "crest": [
+        -3419.542,
+        1994.525
+      ]
+    },
+    {
+      "sourceId": 888162,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -3429.462,
+        2000.381
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3429.462,
+        2000.381
+      ],
+      "crest": [
+        -3431.27,
+        2001.448
+      ]
+    },
+    {
+      "sourceId": 888165,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -3487.4,
+        2028.556
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3487.482,
+        2028.41
+      ],
+      "crest": [
+        -3486.458,
+        2030.243
+      ]
+    },
+    {
+      "sourceId": 888165,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -3494.044,
+        2016.657
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3494.044,
+        2016.658
+      ],
+      "crest": [
+        -3495.067,
+        2014.824
+      ]
+    },
+    {
+      "sourceId": 888168,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -3528.171,
+        2051.856
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3528.171,
+        2051.855
+      ],
+      "crest": [
+        -3527.229,
+        2053.732
+      ]
+    },
+    {
+      "sourceId": 888168,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -3534.634,
+        2038.979
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3534.634,
+        2038.98
+      ],
+      "crest": [
+        -3535.576,
+        2037.103
+      ]
+    },
+    {
+      "sourceId": 888172,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -3546.617,
+        2024.005
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3546.617,
+        2024.005
+      ],
+      "crest": [
+        -3545.519,
+        2025.795
+      ]
+    },
+    {
+      "sourceId": 888172,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -3556.823,
+        2007.366
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3556.324,
+        2008.18
+      ],
+      "crest": [
+        -3557.422,
+        2006.389
+      ]
+    },
+    {
+      "sourceId": 890551,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -1181.204,
+        658.396
+      ],
+      "result": "excluded: insufficient retained depth/area or overlapping ramp"
+    },
+    {
+      "sourceId": 890551,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -1188.956,
+        662.683
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1188.956,
+        662.682
+      ],
+      "crest": [
+        -1190.793,
+        663.699
+      ]
+    },
+    {
+      "sourceId": 890553,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -1213.44,
+        674.538
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1213.915,
+        673.507
+      ],
+      "crest": [
+        -1213.037,
+        675.415
+      ]
+    },
+    {
+      "sourceId": 890553,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -1225.202,
+        648.984
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -1225.202,
+        648.984
+      ],
+      "crest": [
+        -1226.08,
+        647.076
+      ]
+    },
+    {
+      "sourceId": 891541,
+      "part": 0,
+      "endpoint": 0,
+      "sourceEndpoint": [
+        -3278.878,
+        1909.295
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3278.878,
+        1909.294
+      ],
+      "crest": [
+        -3280.904,
+        1909.843
+      ]
+    },
+    {
+      "sourceId": 891541,
+      "part": 0,
+      "endpoint": 1,
+      "sourceEndpoint": [
+        -3270.16,
+        1906.933
+      ],
+      "result": "accepted",
+      "depthM": 2.1,
+      "widthM": 2,
+      "toe": [
+        -3272.892,
+        1907.673
+      ],
+      "crest": [
+        -3270.865,
+        1907.124
+      ]
+    }
+  ],
+  "initialDerivedSlivers": [],
+  "tiledDerivedSlivers": [
+    {
+      "areaM2": 0.0006045000000039254,
+      "bounds": [
+        -1866.084,
+        1059.502,
+        -1866.041,
+        1059.536
+      ],
+      "sourceIds": [
+        887784
+      ],
+      "reason": "derived tile/partition fragment below 0.01 square metre"
+    },
+    {
+      "areaM2": 0.0011265000000125482,
+      "bounds": [
+        -2667.918,
+        1487.272,
+        -2667.737,
+        1487.617
+      ],
+      "sourceIds": [
+        843085
+      ],
+      "reason": "derived tile/partition fragment below 0.01 square metre"
+    },
+    {
+      "areaM2": 0.005344999999991242,
+      "bounds": [
+        -1717.195,
+        935.362,
+        -1716.897,
+        935.528
+      ],
+      "sourceIds": [
+        886239
+      ],
+      "reason": "derived tile/partition fragment below 0.01 square metre"
+    },
+    {
+      "areaM2": 4.900000000001588e-05,
+      "bounds": [
+        -105.762,
+        -4.381,
+        -105.706,
+        -4.36
+      ],
+      "sourceIds": [
+        842822
+      ],
+      "reason": "derived tile/partition fragment below 0.01 square metre"
+    }
+  ],
+  "walkSourceIdsWithoutRenderedSurface": [],
+  "existingGradeSeparatedPathExclusions": [
+    {
+      "sourceId": 892360,
+      "sourceAndGuideRetained": true,
+      "reason": "Already-modeled Dequindre Cut route; 2D source has no grade field and must not be unioned into street-level raised pavement."
+    }
+  ],
+  "note": "No original source line is deleted from the archived snapshot. Derived fragments are excluded only at documented scope, land, building, centerline or sub-0.01-square-metre cuts."
+}

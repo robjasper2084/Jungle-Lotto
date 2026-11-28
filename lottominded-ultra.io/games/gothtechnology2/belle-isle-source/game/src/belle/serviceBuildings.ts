@@ -1,5 +1,6 @@
 import {addPondServiceBuildings,POND_SERVICE_IDS} from './pondServiceBuildings.ts';
 import * as T from 'three';
+import {JEFFERSON_BUILDING_IDS} from './jeffersonBuildings.ts';
 import {CUSTOM_ARCHITECTURE_IDS} from './referenceSites.ts';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {inside,segment,type ParkMap} from './terrain.ts';
@@ -55,6 +56,7 @@ export function addServiceBuildings(scene:T.Scene,map:ParkMap,night={value:0}){
  };
  const box=(x:number,y:number,z:number,w:number,h:number,d:number,yaw:number,m:T.Material)=>{const g=new T.BoxGeometry(w,h,d);g.rotateY(yaw);g.translate(x,y,z);add(g,m);};
  for(const b of map.buildings){
+  if(JEFFERSON_BUILDING_IDS.has(b.id))continue;
   if(b.id==='513165063'||POND_SERVICE_IDS.has(b.id)||custom.has(b.id)||CUSTOM_ARCHITECTURE_IDS.has(b.id)||map.dossin?.ids.includes(b.id))continue;
   const facility=map.facilities?.sites.find(s=>s.id===b.id);if(facility?.kind==='shelter')continue;
   // The window recesses, wall trim and entry canopies extend less than two

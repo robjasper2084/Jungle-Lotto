@@ -1,0 +1,132 @@
+name: Belle Isle Jefferson street gallery
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/belle-jefferson-gallery.yml'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/jefferson*'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/main.ts'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/world.ts'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/detroitGround.ts'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/detroitScene.ts'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/detroitAssets.ts'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/detroitDistricts.json'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/terrain.ts'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/serviceBuildings.ts'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/style.css'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/referenceHud*.ts'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/jefferson-gallery.mjs'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/gallery-renderer.mjs'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/coop-static-server.mjs'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/map.json'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/index.html'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/package*.json'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/run-tests.mjs'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/tools/build-jefferson-extension.py'
+      - 'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/tools/build-jefferson-sidewalks.py'
+      - 'lottominded-ultra.io/games/gothtechnology2/package*.json'
+      - 'research/geographic/jefferson-realism/**'
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch, tag, or commit to build and capture (blank uses this workflow ref)'
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: belle-jefferson-gallery-${{ github.event.pull_request.number || inputs.ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    outputs:
+      revision: ${{ steps.revision.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+      - name: Record exact candidate commit
+        id: revision
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Check source, deterministic geometry, signals, and travel
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm ci
+          npm run check
+          npm test
+          node --check scripts/jefferson-gallery.mjs
+      - name: Build and seal every candidate source and built asset
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        run: |
+          npm run build
+          node scripts/jefferson-gallery.mjs --write-build-receipt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: belle-jefferson-exact-build
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist/
+          if-no-files-found: error
+          retention-days: 14
+
+  gallery:
+    needs: build
+    # Both viewports use real Chrome/Metal. The phone lane is viewport emulation.
+    # The existing canonical 90-second sustained-profile workflow stays separate.
+    runs-on: macos-15
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        device: [desktop, phone]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.build.outputs.revision }}
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /lottominded-ultra.io/games/gothtechnology2/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/package*.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/index.html
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/tsconfig.json
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/vite.config.ts
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/scripts/
+            /lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/map.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@v4
+        with:
+          name: belle-jefferson-exact-build
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/dist/
+      - name: Install native Chrome browser runtime
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: |
+          npm ci
+          npx playwright install chrome
+      - name: Capture Guide views, nighttime streets, and ground-level sidewalks
+        timeout-minutes: 10
+        working-directory: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game
+        env:
+          ENV_GALLERY_DEVICE: ${{ matrix.device }}
+          ENV_GALLERY_REQUIRE_METAL: '1'
+          ENV_GALLERY_NIGHT: '1'
+          ENV_GALLERY_SIDEWALKS: '1'
+        # The script retains its fixed eight-minute budget, including preparation.
+        run: node scripts/jefferson-gallery.mjs
+      - name: Preserve actual screenshots, partial attempts, and source receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: belle-jefferson-gallery-${{ matrix.device }}
+          path: lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/output/jefferson-gallery/${{ matrix.device }}/
+          if-no-files-found: warn
+          retention-days: 14

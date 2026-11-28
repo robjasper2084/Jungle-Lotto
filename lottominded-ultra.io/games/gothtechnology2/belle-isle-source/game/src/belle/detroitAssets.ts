@@ -42,7 +42,10 @@ function instances(stage:T.Group,object:T.Object3D,locations:T.Matrix4[],name:st
  });
  return tiles;
 }
-export function streamDetroitArt(scene:T.Scene,renderer:T.WebGLRenderer,terrain:ParkTerrain,fits:Fit[],fallback:T.Group,architecturalProxies:Map<string,T.Mesh>){
+export function streetVariantFits(fits:readonly Fit[],variant:number,excluded:ReadonlySet<string>=new Set()):Fit[]{
+ return fits.filter((p,n)=>n%4===variant&&!excluded.has(p.id));
+}
+export function streamDetroitArt(scene:T.Scene,renderer:T.WebGLRenderer,terrain:ParkTerrain,fits:Fit[],fallback:T.Group,architecturalProxies:Map<string,T.Mesh>,excluded:ReadonlySet<string>=new Set()){
  const tiles:ReturnType<typeof instances>=[];
  const started=new Set<string>(),retry=new Map<string,number>();
  let preparation=Promise.resolve();
@@ -78,7 +81,7 @@ export function streamDetroitArt(scene:T.Scene,renderer:T.WebGLRenderer,terrain:
   const batches:ReturnType<typeof instances>=[];
   for(let i=0;i<4;i++){
    const prototype=pack.getObjectByName('SunsetBlock'+(i+1));if(!prototype)throw Error('Missing Sunset block');
-   const group=fits.filter((_,n)=>n%4===i).map(p=>matrix(p.x,terrain.height(p.x,p.z)-.05,p.z,p.yaw,p.w,p.h,p.d));
+   const group=streetVariantFits(fits,i,excluded).map(p=>matrix(p.x,terrain.height(p.x,p.z)-.05,p.z,p.yaw,p.w,p.h,p.d));
    batches.push(...instances(stage,prototype,group,'Street at Sunset · city blocks',405,true));
   }
   return ()=>{tiles.push(...batches);streetsReady=true;};

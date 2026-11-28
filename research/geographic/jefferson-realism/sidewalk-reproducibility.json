@@ -1,0 +1,40 @@
+{
+  "schema": 1,
+  "verifiedUtc": "2026-11-28T03:56:44.829218+00:00",
+  "status": "PASS",
+  "method": "Reran the offline generator from the frozen compressed snapshot. Compared all four generated files byte-for-byte with in-memory copies taken before the run. Verified original map/district/extension hashes before and after.",
+  "environment": {
+    "python": "3.12.14",
+    "shapely": "2.2.0",
+    "geos": "3.14.1"
+  },
+  "outputs": [
+    {
+      "path": "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/jeffersonSidewalks.json",
+      "sha256": "04fb7e91fe39307e26ca39c39b72d4bb8b9098901439d9bd4ac82a35c8d11acb",
+      "byteIdenticalOnRerun": true
+    },
+    {
+      "path": "research/geographic/jefferson-realism/sidewalk-integrity.json",
+      "sha256": "e211aee851de35f9c3f51559a83963443d98182579787964575e9145f94f1456",
+      "byteIdenticalOnRerun": true
+    },
+    {
+      "path": "research/geographic/jefferson-realism/sidewalk-exclusions.json",
+      "sha256": "bdb5aa27182d3c8c9b2858aa79c5ba63609efe5d9d818098efe1337b678fdd23",
+      "byteIdenticalOnRerun": true
+    },
+    {
+      "path": "research/geographic/jefferson-realism/sidewalk-selected-source-ids.json",
+      "sha256": "af0664e6a7a8d05c1d8c408b036a98321feb683eeefe3140a9a1ec40291cd23a",
+      "byteIdenticalOnRerun": true
+    }
+  ],
+  "originalInputHashes": {
+    "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/map.json": "eb36e093fc477055c217025668403fc5d2c422bfdc9d9021769192dbb5660d87",
+    "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/detroitDistricts.json": "4006a1c523b08a5403f7101a45bd9f739c4aa4632d55a1be5c3676148cde0bdf",
+    "lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/src/belle/jeffersonExtension.json": "9505ff4954b30b6932356bb0634cf30e4f98af274feeeed5e788b1843ac87612"
+  },
+  "originalInputsUnchanged": true,
+  "caveat": "Reproducibility is verified for these frozen inputs and dependency versions. Different GEOS releases can change polygon ordering or precision and require a new geometry receipt."
+}
