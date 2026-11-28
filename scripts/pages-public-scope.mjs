@@ -13,7 +13,15 @@ export const developmentOnlySourceRoots = Object.freeze([
   'lottominded-ultra.io/games/lottomind-jackpot-maze/source/',
   'lottominded-ultra.io/games/shadow-ops-canvas/docs/',
   'lottominded-ultra.io/games/lottomind-313-fortune-grid/docs/',
+  'lottominded-ultra.io/docs/staging-reviews/',
+  'lotto mind refined/docs/design/',
+]);
+// The website's staging builder also excludes this unused historical page.
+// Exclude it before the media-reference scan so its unused media are handled
+// by the existing reference rule; active media URLs stay eligible.
+const developmentOnlySourceFiles = new Set([
+  'lottominded-ultra.io/features-app.backup.html',
 ]);
 export function isDevelopmentOnlySource(file){
- return typeof file==='string' && developmentOnlySourceRoots.some(root=>file.startsWith(root));
+ return typeof file==='string' && (developmentOnlySourceRoots.some(root=>file.startsWith(root)) || developmentOnlySourceFiles.has(file));
 }

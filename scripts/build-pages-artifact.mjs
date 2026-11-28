@@ -232,10 +232,9 @@ const copiedBytes = publicBytes + await copyGothtechnologyBuild(sharedStoreBuild
 const rideTextureSharing = await shareRideTextures(outputRoot);
 const rideModelCompression = await compressRideModels(outputRoot);
 const rideVehicleSharing = await shareRideVehicles(outputRoot);
-// Compare local model/image bytes before publication gives each game's copy a different URL.
-const ridingMediaSharing = await shareRidingMedia(outputRoot);
 const publishedRideTextures = await sharePublishedRideTextures(outputRoot);
 const imageOptimization = await optimizePagesImages(outputRoot);
+const ridingMediaSharing = await shareRidingMedia(outputRoot);
 const textureConversion = await losslessRidingTextures(outputRoot);
 const stageVideo = await shareUnityStage(outputRoot);
 const cityDataSharing = await shareCityData(outputRoot);
