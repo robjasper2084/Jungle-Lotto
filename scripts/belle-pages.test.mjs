@@ -30,7 +30,7 @@ test('the backend exclusion matches only its exact anchored directory',()=>{
 // This is a delivery filter, not a source-tree deletion: published arcade
 // routes and assets still come from their existing compiled client paths.
 test('exclude non-deployable game authoring files, duplicate media and QA captures',()=>{
- assert.equal(developmentOnlySourceRoots.length,3);
+ assert.equal(developmentOnlySourceRoots.length,5);
  for(const file of [
   'lottominded-ultra.io/games/lottomind-jackpot-maze/source/package.json',
   'lottominded-ultra.io/games/lottomind-jackpot-maze/source/src/game/GameRuntime.ts',
@@ -52,4 +52,31 @@ test('retain real Jackpot Maze, Shadow Ops and Fortune Grid playing routes and m
   'lottominded-ultra.io/games/lottomind-313-fortune-grid/docs-image.png',
   null, undefined, {}
  ])assert.equal(isDevelopmentOnlySource(file),false,String(file));
+});
+
+test('omit reviewed authoring captures and the unused backup while retaining runtime assets and reference galleries',()=>{
+ for(const file of [
+  'lottominded-ultra.io/docs/staging-reviews/requested-corrections/screenshots/static-wav-1440x900.png',
+  'lottominded-ultra.io/docs/staging-reviews/support-utilities-assets/capture-report.json',
+  'lotto mind refined/docs/design/lottomind-studio-v9-branded-ui-reference.png',
+  'lottominded-ultra.io/features-app.backup.html',
+ ])assert.equal(isDevelopmentOnlySource(file),true,file);
+ for(const file of [
+  'lottominded-ultra.io/features-app.html',
+  'lottominded-ultra.io/features-app.backup.html-assets/runtime.png',
+  'lottominded-ultra.io/docs/staging-reviews-assets/runtime.png',
+  'lottominded-ultra.io/docs/secure-production-architecture.md',
+  'lotto mind refined/docs/design-assets/runtime.png',
+  'lottominded-ultra.io/assets/features-app/references/chatgpt-image2-cyberpunk-dashboard.png',
+  'lottominded-ultra.io/assets/live-events/references/neon-cyberpunk-streaming-platform-mockup.png',
+  'lottominded-ultra.io/games/gothtechnology2/store/public/arcade/elmwood-explorer/elmwood/references/gatehouse-reference.jpg',
+  'lottominded-ultra.io/games/gothtechnology2/store/public/arcade/swoop-detroit/exports/rigged-heroes/DS_Man_01.glb',
+  'lottominded-ultra.io/games/gothtechnology2/store/public/arcade/swoop-detroit/texture-variants/512/shared-textures/hero.webp',
+  'lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/belle/jefferson/models/Jefferson_Assigned_Buildings.glb',
+  'lotto mind refined/audio/digital-static.mp3',
+  'lotto mind refined/audio/detroit-rain-432.mp3',
+  // These copies are omitted only when the existing media scan finds no reference.
+  'lottominded-ultra.io/assets/audio/digital-static-live-mix.mp3',
+  'lottominded-ultra.io/assets/video/lm-feature-portal-loop.mp4',
+ ])assert.equal(isDevelopmentOnlySource(file),false,file);
 });
