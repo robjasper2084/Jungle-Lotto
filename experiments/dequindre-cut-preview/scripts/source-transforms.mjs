@@ -10,6 +10,7 @@ export const SOURCE_DIGESTS=Object.freeze({
   [BELLE_ROOT+'/src/belle/detroitAssets.ts']:'dc4e9be74658fba8bb52f3ec2d9b01d016aad2818aa4627ca9603a8d779d8f9e',
   [BELLE_ROOT+'/src/belle/detroitProps.ts']:'58c3066a32ecf64720a052739f73e0e9fa704781f1d25ba160e2c778d942ea52',
   [BELLE_ROOT+'/src/belle/parkCompanion.ts']:'8107630e0c623defb3b704eba97cd97264027f1050f05a0b30880893508f0e29',
+  [BELLE_ROOT+'/src/belle/startupWork.ts']:'861a0a0132322234d68d92ab1bc6dfa2c82b3aadeb95e4b01e036556562a1899',
   [BELLE_ROOT+'/index.html']:'a0ebd460f7cad9744fc70675b121d5cee26a3f949c9304500b8e7b1eb1265baf',
   [GAME_ROOT+'/swoop-source/src/detroit/compressedGLTFLoader.ts']:'342ff64c1bb8ab410f9797c15a139bae1104358c9795b818271bc67919d11cd6',
   [GAME_ROOT+'/swoop-source/src/detroit/foodTrucks.ts']:'8ac473bdbc66556606316ca72492165473a952e927da14c5603bec183fef1a67',
@@ -103,6 +104,22 @@ export function belleCompanionEdits(source,{verify=true}={}){
   while(index>=0){edits.push({start:index,end:index+reset.length,replacement:'this.previewGround.reset(()=>this.dog.reset(this.anchor));'});count++;index=source.indexOf(reset,index+reset.length);}
   if(count!==3)throw Error('Expected exactly three original companion reset hooks; refusing partial ground contact integration.');
   return edits;
+}
+
+/** Keep Belle's complete hidden-asset preparation; added source districts use
+ * their established view union to select textures. Uploading, caching, shader
+ * compilation, pacing and cancellation remain the original implementation.
+ */
+export function belleStartupWorkEdits(source,{verify=true}={}){
+  if(verify)assertPinnedInput(source,BELLE_ROOT+'/src/belle/startupWork.ts');
+  return [
+    replaceExactlyOnce(source,"import type {Object3D,Texture,WebGLRenderer} from 'three';",
+      "import type {Object3D,Texture,WebGLRenderer} from 'three';\nimport {shouldWarmPreviewTexture} from '@dequindre-preview/sourceTextureWarmup';",
+      'source-only texture warmup predicate import'),
+    replaceExactlyOnce(source,'root.traverse(object=>{const material=',
+      'root.traverse(object=>{if(!shouldWarmPreviewTexture(object))return;const material=',
+      'source-only texture warmup eligibility'),
+  ];
 }
 
 export function belleDistrictEdits(source,relativePath,{verify=true}={}){

@@ -60,6 +60,16 @@ Swoop asset URLs receive a dedicated `/__swoop-assets__/` namespace during previ
 - Renderer/source imports are validated before each build; importing Swoop's complete second game runtime is refused.
 - Existing production entry points and deployment workflows stay unchanged.
 
+## Performance design
+
+The preview shares Belle Isle's renderer and controls. Source updates go dormant away from the imported district, and active views share pooled position/traffic records and one visibility union. The source's distance-based visibility and releasable art jobs remain active. A tile-contained collision fast path avoids unnecessary cross-district sampling while matching the full query in the physics tests.
+
+Startup texture preparation filters only the added source subtree by visibility. This defers uploads for hidden Cut textures while retaining Belle Isle's existing preparation of its own hidden models. Destination preparation holds the destination and other active views visible until the original travel action is ready. Texture resolution and source geometry remain unchanged.
+
+Mainland overlap is computed in the original map frame before projecting the final boundary. The footprint calculation excludes only redundant triangles wholly contained by a complete source tile; their rendered geometry and collision remain present. This preserves actual gaps and boundaries without snapping coordinates or widening the imported area.
+
+The complete source terrain and collision stay resident. Initial assembly still downloads and decodes the source content; only source jobs with explicit release support unload their owned art. These changes therefore reduce unnecessary updates and GPU uploads, but they do not establish a fully demand-loaded world or hardware performance acceptance. The measured gates below remain required.
+
 ## Validation
 
 `npm test` runs the integration's source-alignment, geometry/physics, source-transform, asset-integrity and isolation tests. Node's test resolver uses only this workspace's dependencies; no repository-root `node_modules` symlink is needed.

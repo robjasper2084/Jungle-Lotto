@@ -8,6 +8,7 @@ import { createOwnedSceneRoot, disposeOwnedScene, SceneVisibilityUnion } from '.
 import { sourceCompanionObstacles } from './companionBridge.ts';
 import { DistrictViewHolds, type DistrictFrameView as FrameView, type PreparedDistrictView } from './swoopViewHolds.ts';
 import { SwoopStageError, describeSwoopLoadError } from './swoopLoadError.ts';
+import { registerSwoopTextureRoot } from './sourceTextureWarmup.ts';
 import { buildScenery } from '../../../lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/scenery.ts';
 import { buildFreestylePark } from '../../../lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/freestylePark.ts';
 import { NatureWorld } from '../../../lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/natureWorld.ts';
@@ -107,6 +108,7 @@ export async function createSwoopDistrict(options: SwoopDistrictOptions) {
     matrix: SWOOP_TO_BELLE_MATRIX,
     deferAttachment: options.deferAttachment,
   });
+  const unregisterTextureRoot = registerSwoopTextureRoot(root);
   const mapRoot = new T.Scene();
   mapRoot.name = 'Original Detroit cartographic frame';
   mapRoot.scale.x = -1;
@@ -144,6 +146,7 @@ export async function createSwoopDistrict(options: SwoopDistrictOptions) {
   function dispose() {
     if (disposed) return;
     disposed = true;
+    unregisterTextureRoot();
     reduced.removeEventListener('change', updateReduced);
     water?.dispose();
     clearPreviewTrafficFocus();

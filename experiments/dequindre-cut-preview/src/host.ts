@@ -5,7 +5,7 @@ import {SPOTS} from '../../../lottominded-ultra.io/games/gothtechnology2/swoop-s
 import type {ParkMap} from './terrain.ts';
 import {ParkTerrain} from './terrain.ts';
 import {fromSourceMap} from './geo.ts';
-import {configureVisualDistricts,overlapReceipt} from './visualDistricts.ts';
+import {configureVisualDistricts,overlapReceipt,sourceFootprintFailure} from './visualDistricts.ts';
 import {createSwoopDistrict} from './swoopDistrict.ts';
 import {previewState} from './previewState.ts';
 import {buildConnectorRoute,validateConnectorRoute,connectorNavigationRoad} from './connector.ts';
@@ -56,9 +56,9 @@ export async function createWorld(...args:OriginalArgs){
     configureVisualDistricts(terrain);
     const host=await originalCreateWorld(scene,renderer,data,terrain,report,renderProbe);
     scene.add(district.root);
-    // Belle primes visible textures before its first world.update. Apply the
-    // real opening-view culling first so that stage does not upload every
-    // distant Cut asset simply because the assembled root was just attached.
+    // Apply the opening view before Belle's first texture preparation. The
+    // preview's source-only warm predicate respects this visibility while
+    // retaining Belle's original warming policy for its own hidden models.
     const openingCamera=new T.PerspectiveCamera(60,Math.max(1,renderer.domElement.clientWidth)/Math.max(1,renderer.domElement.clientHeight),.08,22000);
     const openingHeight=terrain.height(data.spawn.x,data.spawn.z);
     openingCamera.position.set(data.spawn.x,openingHeight+1.8,data.spawn.z);
@@ -120,6 +120,8 @@ export async function createWorld(...args:OriginalArgs){
       },
     };
   }catch(error){
+    const failedFootprint=sourceFootprintFailure();
+    if(failedFootprint)previewState.diagnostics=()=>({overlapFailure:failedFootprint});
     unregisterTravel();district?.dispose();previewState.error=error instanceof Error?error.message:String(error);previewState.stage='Preview could not finish preparing';throw error;
   }
 }

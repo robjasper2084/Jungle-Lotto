@@ -18,6 +18,7 @@ type MultiPolygon=Polygon[];
  * We subtract the actual imported tiles, never an arbitrary city rectangle. */
 export let districts=originalDistricts;
 let footprint:MultiPolygon=[];
+let footprintFailure:{operation:string;sourceMapPolygons:MultiPolygon;message:string}|null=null;
 let bounds={minX:Infinity,minZ:Infinity,maxX:-Infinity,maxZ:-Infinity};
 export const overlapReceipt={configured:false,sourceTiles:0,sourceFootprintInputs:0,sourcePolygons:0,replacedBuildingIds:[] as string[],retainedBoundaryBuildingIds:[] as string[],oldCutReplaced:false,clippedMeshes:0,removedTriangles:0,splitTriangles:0};
 
@@ -29,11 +30,16 @@ function closed(ring:Point[]):Point[]{
 
 export function configureVisualDistricts(terrain:ParkTerrain){
   if(overlapReceipt.configured)throw Error('Preview mainland overlap has already been configured.');
-  const pieces:Polygon[]=terrain.swoopCoverage.mapFootprintPolygons().map(polygon=>polygon.map(ring=>closed(ring.map(([x,z])=>{
-    const p=fromSourceMap(x,0,z);return [p.x,p.z] as Point;
-  }))));
+  const pieces:Polygon[]=terrain.swoopCoverage.mapFootprintPolygons().map(polygon=>polygon.map(closed));
   if(!pieces.length)throw Error('Cannot replace mainland surfaces without source terrain.');
-  footprint=clipping.union(pieces[0],...pieces.slice(1)) as MultiPolygon;
+  // Resolve shared tile/triangle edges in their original coordinate frame.
+  // Projecting thousands of coincident input edges independently introduces
+  // rounding differences. One affine transform of the final boundary preserves
+  // the same footprint without snapping, enlarging or removing any surface.
+  let sourceUnion:MultiPolygon;
+  try{sourceUnion=clipping.union(pieces[0],...pieces.slice(1)) as MultiPolygon;}
+  catch(error){footprintFailure={operation:'source-map footprint union',sourceMapPolygons:pieces,message:error instanceof Error?error.message:String(error)};throw error;}
+  footprint=sourceUnion.map(polygon=>polygon.map(ring=>ring.map(([x,z])=>{const p=fromSourceMap(x,0,z);return [p.x,p.z] as Point;})));
   for(const polygon of footprint)for(const ring of polygon)for(const [x,z]of ring){bounds.minX=Math.min(bounds.minX,x);bounds.maxX=Math.max(bounds.maxX,x);bounds.minZ=Math.min(bounds.minZ,z);bounds.maxZ=Math.max(bounds.maxZ,z);}
   const replacementIds=new Set([
     ...terrain.sourceWorld.buildingMeshes.map(b=>b.data.id),
@@ -59,7 +65,8 @@ export function configureVisualDistricts(terrain:ParkTerrain){
 }
 
 export function sourceFootprint():MultiPolygon{return footprint;}
-export function resetVisualDistrictsForTest(){districts=originalDistricts;footprint=[];bounds={minX:Infinity,minZ:Infinity,maxX:-Infinity,maxZ:-Infinity};Object.assign(overlapReceipt,{configured:false,sourceTiles:0,sourceFootprintInputs:0,sourcePolygons:0,replacedBuildingIds:[],retainedBoundaryBuildingIds:[],oldCutReplaced:false,clippedMeshes:0,removedTriangles:0,splitTriangles:0});}
+export function sourceFootprintFailure(){return footprintFailure;}
+export function resetVisualDistrictsForTest(){districts=originalDistricts;footprint=[];footprintFailure=null;bounds={minX:Infinity,minZ:Infinity,maxX:-Infinity,maxZ:-Infinity};Object.assign(overlapReceipt,{configured:false,sourceTiles:0,sourceFootprintInputs:0,sourcePolygons:0,replacedBuildingIds:[],retainedBoundaryBuildingIds:[],oldCutReplaced:false,clippedMeshes:0,removedTriangles:0,splitTriangles:0});}
 
 /** Exact triangle/footprint difference for existing road ribbons and flat
  * surfaces. Outside triangles retain the original attribute values. New edge

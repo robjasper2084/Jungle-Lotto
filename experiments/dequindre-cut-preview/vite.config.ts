@@ -4,7 +4,7 @@ import {readFile,mkdir,writeFile,readdir} from 'node:fs/promises';
 import {resolve,relative} from 'node:path';
 import {execFileSync} from 'node:child_process';
 import {previewRoot,repoRoot,gameRoot,belleRoot,swoopRoot,generatedRoot,outputRoot,assetRoots,assertPreviewOutput} from './scripts/paths.mjs';
-import {BELLE_ROOT,GAME_ROOT,PINNED_BASE,SOURCE_DIGESTS,digest,previewHtml,belleMainEdits,belleWorldEdits,belleDistrictEdits,belleCompanionEdits,swoopEdits,assertOfflineRoomBoundary} from './scripts/source-transforms.mjs';
+import {BELLE_ROOT,GAME_ROOT,PINNED_BASE,SOURCE_DIGESTS,digest,previewHtml,belleMainEdits,belleWorldEdits,belleDistrictEdits,belleCompanionEdits,belleStartupWorkEdits,swoopEdits,assertOfflineRoomBoundary} from './scripts/source-transforms.mjs';
 import {previewAssets} from './scripts/asset-server.mjs';
 import {assetManifest} from './scripts/asset-manifest.mjs';
 
@@ -32,6 +32,7 @@ export default defineConfig(async()=>{
       if(file===BELLE_ROOT+'/src/belle/main.ts')edits=belleMainEdits(source);
       else if(file===BELLE_ROOT+'/src/belle/world.ts')edits=belleWorldEdits(source);
       else if(file===BELLE_ROOT+'/src/belle/parkCompanion.ts')edits=belleCompanionEdits(source);
+      else if(file===BELLE_ROOT+'/src/belle/startupWork.ts')edits=belleStartupWorkEdits(source);
       else if(file.startsWith(BELLE_ROOT+'/src/belle/detroit'))edits=belleDistrictEdits(source,file);
       else if(file.startsWith(GAME_ROOT+'/swoop-source/src/'))edits=swoopEdits(source,file);
       if(!edits.length)return null;
@@ -47,7 +48,7 @@ export default defineConfig(async()=>{
       server.middlewares.use(previewAssets(assetRoots,{manifest:built.assets,sourceBase:repoRoot}));
     },
     generateBundle(_options,bundle){
-      for(const file of [BELLE_ROOT+'/src/belle/main.ts',BELLE_ROOT+'/src/belle/world.ts',BELLE_ROOT+'/src/belle/parkCompanion.ts',BELLE_ROOT+'/src/belle/detroitScene.ts',BELLE_ROOT+'/src/belle/detroitAssets.ts',BELLE_ROOT+'/src/belle/detroitProps.ts'])if(!transformed.has(file))throw Error('Required preview adapter was not compiled: '+file);
+      for(const file of [BELLE_ROOT+'/src/belle/main.ts',BELLE_ROOT+'/src/belle/world.ts',BELLE_ROOT+'/src/belle/parkCompanion.ts',BELLE_ROOT+'/src/belle/startupWork.ts',BELLE_ROOT+'/src/belle/detroitScene.ts',BELLE_ROOT+'/src/belle/detroitAssets.ts',BELLE_ROOT+'/src/belle/detroitProps.ts'])if(!transformed.has(file))throw Error('Required preview adapter was not compiled: '+file);
       const threeRoots=new Set<string>();
       for(const item of Object.values(bundle))if(item.type==='chunk')for(const id of Object.keys(item.modules)){
         assertOfflineRoomBoundary([id]);

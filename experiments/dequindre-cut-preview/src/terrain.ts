@@ -36,7 +36,18 @@ export class SwoopCoverage {
     const polygons:Point[][][]=[];
     for(const key of this.mapCells){const [ix,iz]=key.split(',').map(Number),x=ix*GRID,z=iz*GRID;polygons.push([[[x,z],[x+GRID,z],[x+GRID,z+GRID],[x,z+GRID],[x,z]]]);}
     const seen=new Set<Triangle>();
-    for(const list of this.triangles.values())for(const t of list){if(seen.has(t))continue;seen.add(t);polygons.push([[[t[0],t[1]],[t[2],t[3]],[t[4],t[5]],[t[0],t[1]]]]);}
+    for(const list of this.triangles.values())for(const t of list){
+      if(seen.has(t))continue;seen.add(t);
+      const minX=Math.min(t[0],t[2],t[4]),minZ=Math.min(t[1],t[3],t[5]),maxX=Math.max(t[0],t[2],t[4]),maxZ=Math.max(t[1],t[3],t[5]);
+      const ix=Math.floor(minX/GRID),iz=Math.floor(minZ/GRID);
+      // A source triangle touching a tile's closed outer edge is indexed in
+      // its neighbour too. Do not send that redundant polygon into a Boolean
+      // union when its entire extent is already inside ONE complete tile.
+      // This is exact set reduction: no rounding, guessed bounds, altered
+      // collision membership, or removal of any uncovered triangle area.
+      if(this.mapCells.has(ix+','+iz)&&maxX<=(ix+1)*GRID&&maxZ<=(iz+1)*GRID)continue;
+      polygons.push([[[t[0],t[1]],[t[2],t[3]],[t[4],t[5]],[t[0],t[1]]]]);
+    }
     return polygons;
   }
   addRideTriangles(vertices:ArrayLike<number>,indices?:ArrayLike<number>,upwardOnly=false){

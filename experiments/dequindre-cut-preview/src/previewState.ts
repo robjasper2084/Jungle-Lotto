@@ -13,7 +13,7 @@ export function previewSnapshot(){
     ready:previewState.ready,travelPending:previewState.travelPending,error:previewState.error,stage:previewState.stage,
     lastPose:{...previewState.lastPose},
     startupMs:previewState.readyAt?previewState.readyAt-previewState.startedAt:null,
-    diagnostics:previewState.ready?previewState.diagnostics():{},
+    diagnostics:previewState.ready||previewState.error?previewState.diagnostics():{},
   };
 }
 
