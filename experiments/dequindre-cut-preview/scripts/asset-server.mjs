@@ -58,12 +58,15 @@ export function previewAssets(roots,{manifest,report,sourceBase}={}){
       if(record){
         const stamp=info.size+':'+info.mtimeMs;
         if(verified.get(canonicalFile)!==stamp){
-          const accumulator=createHash('sha1').update('blob '+info.size+'\0');
+          const expected=record.gitBlob??record.sha256;
+          if(!expected){response.writeHead(409,{'Content-Type':'text/plain'}).end('Asset receipt has no content identity');return;}
+          const accumulator=createHash(record.gitBlob?'sha1':'sha256');
+          if(record.gitBlob)accumulator.update('blob '+info.size+'\0');
           // Hash in bounded chunks; a second full GLB copy must not compete
           // with the browser's model/texture decode memory during startup.
           for await(const chunk of createReadStream(canonicalFile))accumulator.update(chunk);
           const hash=accumulator.digest('hex');
-          if(hash!==record.gitBlob){response.writeHead(409,{'Content-Type':'text/plain'}).end('Asset changed since preview build. Rebuild the isolated preview.');return;}
+          if(hash!==expected){response.writeHead(409,{'Content-Type':'text/plain'}).end('Asset changed since preview build. Rebuild the isolated preview.');return;}
           verified.set(canonicalFile,stamp);
         }
       }
@@ -73,7 +76,7 @@ export function previewAssets(roots,{manifest,report,sourceBase}={}){
       const headers={'Content-Type':contentTypes[extname(file).toLowerCase()],'Accept-Ranges':'bytes','Cache-Control':'private, max-age=0, must-revalidate','X-Dequindre-Asset-Source':root.prefix.startsWith('/__swoop-assets__/')?'swoop':'belle','Content-Length':String(range?range.end-range.start+1:info.size)};
       if(range)headers['Content-Range']=`bytes ${range.start}-${range.end}/${info.size}`;
       response.writeHead(status,headers);
-      report?.({url:pathname,bytes:info.size,gitBlob:record?.gitBlob});
+      report?.({url:pathname,bytes:info.size,gitBlob:record?.gitBlob,sha256:record?.sha256});
       if(request.method==='HEAD'||info.size===0){response.end();return;}
       const stream=createReadStream(canonicalFile,range??undefined);
       stream.once('error',error=>response.destroy(error));response.once('close',()=>stream.destroy());stream.pipe(response);

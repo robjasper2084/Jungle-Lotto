@@ -8,6 +8,7 @@ export const belleRoot=resolve(gameRoot,'belle-isle-source/game');
 export const swoopRoot=resolve(gameRoot,'swoop-source');
 export const publishedSwoopMediaRoot=resolve(gameRoot,'store/public/arcade/swoop-detroit');
 export const generatedRoot=resolve(previewRoot,'.generated');
+export const startupDerivedRoot=resolve(generatedRoot,'startup-assets');
 export const outputRoot=resolve(previewRoot,'dist');
 
 export function insidePath(parent,child){
@@ -24,5 +25,5 @@ export function assertPreviewOutput(directory){
 
 export const assetRoots=Object.freeze([
   ...['exports','textures','audio','shared-textures'].map(name=>({prefix:'/__swoop-assets__/'+name+'/',directories:[resolve(swoopRoot,'public',name),resolve(publishedSwoopMediaRoot,name)]})),
-  {prefix:'/',directory:resolve(belleRoot,'public')},
+  {prefix:'/',directories:[resolve(belleRoot,'public'),startupDerivedRoot]},
 ]);

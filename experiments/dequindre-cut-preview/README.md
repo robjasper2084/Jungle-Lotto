@@ -34,6 +34,8 @@ The compiled preview is written only to this workspace's ignored `dist/` directo
 
 Models, textures and audio are served read-only from the original checkout. The built-preview server verifies each asset against the Git blob identity recorded when it was built, and rejects changed bytes. This avoids duplicating the games' large media trees merely to review the branch. The `dist/` folder alone is therefore **not a self-contained distributable**; review it with this checkout and `npm run preview`.
 
+Belle's native production startup loader requests nine compressed files from its original `startupAssets.json`, even on localhost. The preview reproduces the original level-9 gzip recipe for every listed file, verifies the raw Git identity and exact decompression roundtrip, and writes only to ignored `.generated/startup-assets/`. Original source/public files remain untouched. The receipt records the packing-policy hashes, selected raw source/blob, compressed SHA-256 and byte counts. The Belle asset mount serves those derived files and verifies their packed hashes; raw requests still resolve to the original public files. The original startup loader, URL selection and decompression code stay unchanged.
+
 The required asset roots are:
 
 - `lottominded-ultra.io/games/gothtechnology2/belle-isle-source/game/public/`

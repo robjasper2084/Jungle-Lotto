@@ -7,12 +7,15 @@ import {previewRoot,repoRoot,gameRoot,belleRoot,swoopRoot,generatedRoot,outputRo
 import {BELLE_ROOT,GAME_ROOT,PINNED_BASE,SOURCE_DIGESTS,digest,previewHtml,belleMainEdits,belleWorldEdits,belleDistrictEdits,belleCompanionEdits,belleStartupWorkEdits,swoopEdits,assertOfflineRoomBoundary} from './scripts/source-transforms.mjs';
 import {previewAssets} from './scripts/asset-server.mjs';
 import {assetManifest} from './scripts/asset-manifest.mjs';
+import {prepareStartupAssets} from './scripts/prepare-startup-assets.mjs';
 
 export default defineConfig(async()=>{
   assertPreviewOutput(generatedRoot);assertPreviewOutput(outputRoot);
   await mkdir(generatedRoot,{recursive:true});
   await writeFile(resolve(generatedRoot,'index.html'),previewHtml(await readFile(resolve(belleRoot,'index.html'),'utf8')));
   const sourceManifest=assetManifest();
+  const startupPacking=await prepareStartupAssets(sourceManifest);
+  const runtimeManifest={...sourceManifest,...startupPacking.records};
   const transformed=new Set<string>();
   const previewInputs:Record<string,string>={};
   for(const name of ['package.json','package-lock.json','vite.config.ts',...(await readdir(resolve(previewRoot,'scripts'))).filter(name=>/\.(?:mjs|ts)$/.test(name)).map(name=>'scripts/'+name)]){
@@ -41,10 +44,11 @@ export default defineConfig(async()=>{
       transformed.add(file);
       return {code:code.toString(),map:code.generateMap({source:clean,includeContent:true,hires:true})};
     },
-    configureServer(server){server.middlewares.use(previewAssets(assetRoots));},
+    configureServer(server){server.middlewares.use(previewAssets(assetRoots,{manifest:runtimeManifest,sourceBase:repoRoot}));},
     async configurePreviewServer(server){
       const built=JSON.parse(await readFile(resolve(outputRoot,'preview-manifest.json'),'utf8'));
       if(built.status!=='UNPUBLISHED_DRAFT'||built.productionDeployment!==false)throw Error('Invalid isolated preview build receipt');
+      for(const [url,record]of Object.entries(startupPacking.records))if(built.assets[url]?.sha256!==(record as {sha256:string}).sha256)throw Error('Startup packing differs from the built preview receipt; rebuild this isolated preview: '+url);
       server.middlewares.use(previewAssets(assetRoots,{manifest:built.assets,sourceBase:repoRoot}));
     },
     generateBundle(_options,bundle){
@@ -57,7 +61,7 @@ export default defineConfig(async()=>{
       }
       if(threeRoots.size!==1)throw Error('Preview requires exactly one Three.js module installation; saw '+threeRoots.size);
       const workingTreeDirty=execFileSync('git',['status','--porcelain','--untracked-files=normal','--','experiments/dequindre-cut-preview'],{cwd:repoRoot,encoding:'utf8'}).trim()!=='';
-      this.emitFile({type:'asset',fileName:'preview-manifest.json',source:JSON.stringify({schemaVersion:1,status:'UNPUBLISHED_DRAFT',productionDeployment:false,productionRooms:false,base:PINNED_BASE,sourceHead:execFileSync('git',['rev-parse','HEAD'],{cwd:repoRoot,encoding:'utf8'}).trim(),workingTreeDirty,artifactState:workingTreeDirty?'working-tree-preview':'committed-source-preview',previewInputDigests:previewInputs,sourceDigests:SOURCE_DIGESTS,transformedSources:[...transformed].sort(),threeModuleRoots:threeRoots.size,assetMode:'read-only source mounts verified by Git blob identity',assets:sourceManifest},null,2)});
+      this.emitFile({type:'asset',fileName:'preview-manifest.json',source:JSON.stringify({schemaVersion:1,status:'UNPUBLISHED_DRAFT',productionDeployment:false,productionRooms:false,base:PINNED_BASE,sourceHead:execFileSync('git',['rev-parse','HEAD'],{cwd:repoRoot,encoding:'utf8'}).trim(),workingTreeDirty,artifactState:workingTreeDirty?'working-tree-preview':'committed-source-preview',previewInputDigests:previewInputs,sourceDigests:SOURCE_DIGESTS,transformedSources:[...transformed].sort(),threeModuleRoots:threeRoots.size,assetMode:'read-only original source mounts and lossless isolated startup gzip',startupPacking:{policy:startupPacking.policy,assetCount:startupPacking.assetCount,originalBytes:startupPacking.originalBytes,packedBytes:startupPacking.packedBytes},assets:runtimeManifest},null,2)});
     },
   };
   return {
