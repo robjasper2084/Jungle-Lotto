@@ -84,6 +84,16 @@ The complete source terrain and collision stay resident. Initial assembly still 
 
 Native browser route, visual and performance evidence must be retained separately from the unit checks. The production acceptance requirement remains the unchanged 90-second desktop and phone runs, p95 at or below 50 ms, and zero intervals above 250 ms. Streaming transitions and unfavorable samples belong in that evidence. The existing production workflow gates remain mandatory before any eventual integration.
 
+### Recorded draft evidence
+
+The implemented code at `d43101119b3f73040a3faa37c95ff8c447702b3d` passed 106 local tests, TypeScript, isolation and the production-style preview build. Its [mobile picture artifact](https://github.com/robjasper2084/Jungle-Lotto/actions/runs/46096857296/artifacts/15244485523) contains actual Atwater, Freight Yard, Mack Avenue and return-to-island screenshots. All three Cut stops passed native touch movement checks; the complete original map inventory, both complete-scene connector directions, asset checks and absence of browser page errors passed. Runtime diagnostics confirmed four source point-light slots in the imported district and zero visible source light slots after returning to the island.
+
+The picture report is **not a fully passing suite**: the short return-to-island input sample moved 0.1166 m against a 0.15 m minimum. An optional Skip tap also timed out after dispatch, with the card subsequently hidden; that warning was retained and capture continued. The [full workflow run](https://github.com/robjasper2084/Jungle-Lotto/actions/runs/46096857296) is the authority for its current overall result. Successful screenshots do not establish a green workflow or performance acceptance.
+
+The preceding [889cd9a browser evidence](https://github.com/robjasper2084/Jungle-Lotto/actions/runs/46096009710/artifacts/15244021663) passed all 70 compact-phone smoke checks, including all four native travel and movement destinations. Its phone run also completed sustained native movement of 43.8 m at Atwater, 35.1 m at Freight Yard and 30.1 m at Mack. Two short phone samples failed the same distance minimum; those samples advanced only eight and nine world frames. The unchanged native loop caps each simulation advance at 50 ms, so wall-clock input duration does not guarantee sufficient simulated time on this runner.
+
+The runner identifies its game renderer as ANGLE Vulkan SwiftShader with software compositing and no parallel shader compile extension. The earlier desktop browser became unresponsive during native UI interaction, and the retained phone callback observations were slow (550 ms p95, with 375 intervals above 250 ms). These are unfavorable software-runner observations, not physical-device measurements, and are not hidden or promoted to an acceptance pass. Native desktop and phone performance approval remains outstanding; this candidate stays unpublished and held.
+
 With the local preview server running, the supplemental browser checks are:
 
 ```sh
